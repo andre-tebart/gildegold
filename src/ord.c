@@ -1460,7 +1460,7 @@ int ord_DismissalOrder(char *c, int *m)
         if ((ORD_CHAR(c)->flags1cc & 0x40000) != 0)
             return 1;
         if (m[0] == 3)
-            r = ai_DismissalHandler(c, m);
+            r = ai_DismissalHandler((struct AICHARREC *)c, (struct LCORDMSG *)m);
         return r | 2;
     }
     if (m[0] == 4 || m[0] == 2) {
@@ -1471,7 +1471,7 @@ int ord_DismissalOrder(char *c, int *m)
         if ((ORD_CHAR(t)->flags1cc & 0x40000) != 0)
             return 1;
         if (m[0] == 4) {
-            r = ai_DismissalHandler(c, m);
+            r = ai_DismissalHandler((struct AICHARREC *)c, (struct LCORDMSG *)m);
         } else if (ORD_CHAR(c)->kind == 6)
             txt_Format(m + 5, "%s", 0x1e0d);
         return r | 0xa;

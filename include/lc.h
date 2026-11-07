@@ -212,7 +212,7 @@ int ai_LoadSettings(int f);  /* 0x5a8a20, reads the production settings chain ba
 void ai_FreePicture(void);                                         /* 0x5bc0f0 */
 
 /* declared in other units' headers before (moved to the owner) */
-int ai_DismissalHandler(unsigned short *param_1, int param_2);  /* 0x5ce950 */
+struct AICHARREC; struct LCORDMSG; int ai_DismissalHandler(struct AICHARREC *me, struct LCORDMSG *m);  /* 0x5ce950, the dismissal order's ask */
 struct AICHARREC; struct LCORDMSG; int ai_BewitchOrder(struct AICHARREC *me, struct LCORDMSG *m);  /* 0x5cacd0, the bewitch order's ask */
 struct AICHARREC; struct LCORDMSG; int ai_DismissOfficeAsk(struct AICHARREC *me, struct LCORDMSG *m);  /* 0x5ca560 */
 int ai_PenanceWindow(struct AICHARREC *me, struct LCORDMSG *m);  /* 0x5cca40, the penance order's ask */

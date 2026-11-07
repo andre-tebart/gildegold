@@ -158,7 +158,7 @@ int amt_AcceptApplication(AMTAPP *m);           /* 0x4e6430 */
 int amt_SendOfficeFree(char a);              /* 0x4e65e0 */
 int amt_SendOfficeCandidates(char *c, char *x);    /* 0x4e6600 */
 int amt_SendOfficeOwner(char a, char *b, unsigned char c);  /* 0x4e6650 */
-int amt_SendOfficeMessage(unsigned char a, char *b, char *c, unsigned char d, unsigned char e);  /* 0x4e6680 */
+int amt_SendOfficeMessage(unsigned char a, char *b, char *c, int d, unsigned char e);  /* 0x4e6680 */
 int amt_CheckOfficeMessage(struct AMTMSG *m);  /* 0x4e6710 */
 
 int amt_ExecuteOfficeMessage(AMTSET *p);           /* 0x4e67a0 */

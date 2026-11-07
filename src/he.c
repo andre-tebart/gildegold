@@ -10590,7 +10590,7 @@ void he_InitSixGroupEvent(int ev)
 
 int amt_GetColumnOffices(int col, int max, struct AMTREC *out);
 int amt_GetKind(int k, struct AMTKIND *out);
-int amt_SendOfficeMessage(unsigned char a, char *b, char *c, unsigned char d, unsigned char e);
+int amt_SendOfficeMessage(unsigned char a, char *b, char *c, int d, unsigned char e);
 int cm_SendRelations(int a, int b, int c, int d);
 
 /* 0x551d70, the run handler of the six-group event 0x7d (he_InitSixGroupEvent): at stage 0xc it tells every player

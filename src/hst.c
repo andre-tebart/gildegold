@@ -1561,7 +1561,7 @@ typedef struct G12OBJ {                 /* 0x18 bytes, filled by 0x4e6ec0 (hmt.h
 } G12OBJ;
 
 int amt_GetFirstOffice(unsigned int k, struct AMTREC *out);                                         /* 0x4e6ec0, defined elsewhere */
-int amt_SendOfficeMessage(unsigned char a, char *b, char *c, unsigned char d, unsigned char e);                /* 0x4e6680, defined elsewhere */
+int amt_SendOfficeMessage(unsigned char a, char *b, char *c, int d, unsigned char e);                /* 0x4e6680, defined elsewhere */
 
 /* 0x4b1060, the GILDENSITZE_BRACH text command (callback 0x601b50[17]): frees the holders of the offices
    0x1e..0x21 (0x4e6680) and sends message 0x80 (arg 4), today 8:00 */

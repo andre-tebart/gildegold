@@ -31544,7 +31544,7 @@ int ai_PenanceWindow(AICHARREC *me, LCORDMSG *m)
     return 0;
 }
 int ai_FindPartnersRandomWalk(struct AIPER *p, unsigned int a, int *flags, float lo, float hi, unsigned short *id); /* 0x4a5b50 (am.h, not included) */
-int amt_SendOfficeMessage(unsigned char a, char *b, char *c, unsigned char d, unsigned char e);  /* 0x4e6680 (amt.h) */
+int amt_SendOfficeMessage(unsigned char a, char *b, char *c, int d, unsigned char e);  /* 0x4e6680 (amt.h) */
 #define LC_MIRACLE_PICK_FLAGS3 0x400800  /* ai_FindPartnersRandomWalk flags of the miracle that takes an office (bits not read) */
 #define LC_MIRACLE_PICK_FLAGS4 0x300000  /* ai_FindPartnersRandomWalk flags of the miracle that raises a skill (bits not read) */
 /* 0x5ccc10, a miracle (ai_MiracleWindow, the miracle order's ask, rolls which = 0 .. 5): it builds the news title 0x1df7
@@ -32311,7 +32311,7 @@ void ai_Interrogate(AICHARREC *me, AICHARREC *ch)
     cm_SendSetField(me->netId, 0x1cc, 4, 0x80000, 0);
 }
 
-int amt_SendOfficeMessage(unsigned char a, char *b, char *c, unsigned char d, unsigned char e); int gm_TitleNumber();
+int amt_SendOfficeMessage(unsigned char a, char *b, char *c, int d, unsigned char e); int gm_TitleNumber();
 
 /* 0x5ce610, the interrogation order's ask (ord.c, the callers push (c, m)): the AI (not kind 6) interrogates the
    character m->target unless me already did (AICHARREC.flags1cc 0x80000: 0x20), he is unknown or holds no office
@@ -32380,17 +32380,15 @@ int ai_InterrogationWindow(AICHARREC *me, LCORDMSG *m)
 /* 0x5ce7f0, the worker dismissal window "privillegien_arbeiter_ausweisen" (352 B): the character ch, kinds
    6 / 7 only; its office (the byte +0x166) through amt_GetFirstOffice (the list out[0]); the window
    ai_WorkerDismissalForm with the text 0x1e24 (0x253 + (ch->sex != 0 ? 0x28 : 0) + the office) and the
-   button 0x1e25 / d2_GetWinObj; click 0 -> amt_SendOfficeMessage (out[0], 0, 0, the hour > 0xd ? -1 : 3, 0xff)
+   button 0x1e25 / d2_GetWinObj; click 0 -> amt_SendOfficeMessage (out[0], 0, 0, the hour > 0xd ? 0xff : 3, 0xff)
    and 0x90; click 1 closes; the pump 0x5309a0 (0x657c7) and the exit 0x4758f0. The return is 0x22 when nothing
    was clicked, 0x20 for another kind, 0x40 when the office has no list. The second argument m is not read
    @deep read the whole original 0x5ce7f0..0x5ce941 and reconciled every statement: the kind guard 6 / 7,
    the office list amt_GetFirstOffice(ch->officeKind, out), the window and caption 0x1e24 (0x253 + sex term
    + office), the two d2_GetWinObj buttons, the click dispatch with amt_SendOfficeMessage(out[0], 0, 0,
-   hour > 0xd ? -1 : 3, 0xff) and the pump. Only codegen is left: the caption id is lea [edx+eax+0x253] in
-   ours and two adds in the original, and the message kind is computed in al (the unsigned char 4th
-   parameter of amt_SendOfficeMessage) in ours and in edx (the int) in the original (asmdiff: ours 114 ins,
-   the original 115, differing 21; diffclass: code 13, regs 8, proof: the call's kind argument differs only
-   in the upper bits the callee ignores). Tried the 0x253-first and the sex-term-first sums and the typed
+   hour > 0xd ? 0xff : 3, 0xff) and the pump. Only codegen is left: the caption id is lea [edx+eax+0x253] in
+   ours and two adds in the original (diffclass: code 5, regs 22, proof: equal; the message kind is an int
+   parameter of amt_SendOfficeMessage, 0xff : 3, as ai_DismissalHandler's byte match shows). Tried the 0x253-first and the sex-term-first sums and the typed
    AICHARREC fields; the rest is register rotation */
 
 int ai_WorkerDismissalWindow(void *chp, int *m)
@@ -32425,7 +32423,7 @@ int ai_WorkerDismissalWindow(void *chp, int *m)
             sv_PopRequest = 1;
         } else if (d2_ClickedId != -1) {
             if (d2_PointerObj == click1) {
-                amt_SendOfficeMessage(out[0], 0, 0, (ai_Time.hour > 0xd ? -1 : 3), 0xff);
+                amt_SendOfficeMessage(out[0], 0, 0, (ai_Time.hour > 0xd ? 0xff : 3), 0xff);
                 ret = 0x90;
                 sv_PopRequest = 1;
             } else if (d2_PointerObj == click2) {
@@ -32438,109 +32436,96 @@ int ai_WorkerDismissalWindow(void *chp, int *m)
         }
     }
 }
-/* 0x5ce950, the dismissal handler / its window (1024 B): param_1 is the message record (AIMSG: +2 the
-   type, +0x1cc the flags, +0x194 the count, +4 the handle), param_2 the request (+0x214 the target id).
-   Other types: the target 0x505df0, its kind byte +0x166 through 0x4e6ec0, 0x4e6680 (out[0], 0, 0, the
-   hour 0x770ae4 > 0xd ? -1 : 3, 0xff), the close 0x4c5f60 (-8) and the flag 0x4c4a60 (+0x1cc, 4,
-   0x40000); the kinds 6 / 7 also send the text 0x5176d0 (0x1e10, the id, the kind 0x253 / the byte
-   +0x27b) through 0x53dda0 (the key "_NACHRICHTEN_NEU_07" 0x62d6a8). Type 6: the config window 0x5c1130
-   (cfg, U_I (0x14419f8), 0, 0) with the text 0x515960 (0x1e0f, the id) and two buttons; click 0 ->
-   0x520f90 (8) then the same message block and 0x91; the pump 0x5309a0 (0x657c7). */
+/* 0x5ce950, the dismissal order's ask (ord.c, the callers push (c, m)): me has an office holder dismissed for 8
+   (gm_SendMoneyDelta), once (AICHARREC.flags1cc 0x40000, set with cm_SendSetField). The dismissal is the office
+   message of the holder's first office (amt_GetFirstOffice, amt_SendOfficeMessage(office, 0, 0, after 13 o'clock
+   0xff else 3, 0xff)); a player holder gets the news 0x1e10 (me's id, 0x253 for a man, else 0x27b + the office).
+   The AI (not kind 6) dismisses m->target: 0x20 when already done or me has less than 8, 0x60 when he is unknown
+   or holds no office, 0x40 when the office has no record, else 0x10 ("_NACHRICHTEN_NEU_07"). A player who already
+   did gets the message box txt_Ptrs[0x1ce0] (0x81); else he picks the holder from the amount menu (mode 0xc00,
+   the gypsyFilter classes, kind 6, the title txt_Ptrs[0x1e0e]; none: 2, no office record: 0x40) and confirms in
+   the window "privillegien\verhoer" (the text 0x1e0f with the holder's id): the first button, when me can pay 8
+   (sv_CheckMoney), dismisses him and waits for the flag's slot (0x91); the second or a right click closes it (2) */
 
-int ai_DismissalHandler(unsigned short *param_1, int param_2)  /* @original: the callers push (c, m); the draft body reads its own byte offsets of the parameters */
+int ai_DismissalHandler(AICHARREC *me, LCORDMSG *m)
 {
-    int out[6];
-    int cfg[20];
-    char text[512];
+    AICHARREC *ch;
+    AMOUNTCFG cfg;
+    int office[6];
+    char text[0x200];
     int win;
     int t;
-    int click1;
-    int click2;
-    int rec;
-    int i;
-    int h;
+    int yes;
+    int no;
+    int slot;
     int ret;
 
-    if (*(char *)((char *)param_1 + 2) != 6) {
-        if ((*(unsigned int *)((char *)param_1 + 0x1cc) & 0x40000) != 0)
+    if (me->kind != 6) {
+        if ((me->flags1cc & 0x40000) != 0)
             return 0x20;
-        if (*(int *)((char *)param_1 + 0x194) < 8)
+        if (me->money < 8)
             return 0x20;
-        i = gm_FindChar(*(int *)(param_2 + 0x214));
-        if (i == 0)
+        ch = (AICHARREC *)gm_FindChar(m->target);
+        if (ch == 0)
             return 0x60;
-        if (*(char *)(i + 0x166) == 0)
+        if (ch->officeKind == 0)
             return 0x60;
-        h = amt_GetFirstOffice(*(unsigned char *)(i + 0x166), out);
-        if (h == 0)
+        if (amt_GetFirstOffice(ch->officeKind, office) == 0)
             return 0x40;
-        amt_SendOfficeMessage(out[0], 0, 0, (U_W((unsigned)&ai_Time.hour) > 0xd ? -1 : 3), 0xff);
-        cm_SendMoneyDelta(*(int *)((char *)param_1 + 4), -8);
-        cm_SendSetField(*(int *)((char *)param_1 + 4), 0x1cc, 4, 0x40000, 0);
-        if (*(char *)(i + 2) == 6 || *(char *)(i + 2) == 7) {
-            h = *(char *)(i + 9) == 0 ? 0x253
-                                      : *(unsigned char *)(i + 0x166) + 0x27b;
-            txt_Format(text, (char *)0x1e10, *param_1, h);
-            he_ShowNews(*(int *)(i + 4), -1, text, 0, 0x5fb, (char *)(unsigned)&full_data_62d6a8);
+        amt_SendOfficeMessage(office[0], 0, 0, (ai_Time.hour > 0xd ? 0xff : 3), 0xff);
+        gm_SendMoneyDelta(me->netId, -8);
+        cm_SendSetField(me->netId, 0x1cc, 4, 0x40000, 0);
+        if (ch->kind == 6 || ch->kind == 7) {
+            txt_Format(text, 0x1e10, me->id, ch->sex == 0 ? 0x253 : ch->officeKind + 0x27b);
+            he_ShowNews(ch->netId, -1, text, 0, 0x5fb, "_NACHRICHTEN_NEU_07");
         }
         return 0x10;
     }
     ret = 2;
-    for (i = 0; i < 20; i++)
-        cfg[i] = 0;
-    if ((*(unsigned int *)((char *)param_1 + 0x1cc) & 0x40000) != 0) {
-        sv_MessageBox(U_I(((unsigned)&ai_MessageFilterTexts + 0x40)));
+    memset(&cfg, 0, sizeof(cfg));
+    if ((me->flags1cc & 0x40000) != 0) {
+        sv_MessageBox(txt_Ptrs[0x1ce0], 0);
         return 0x81;
     }
-    cfg[1] = 0xc00;
-    cfg[2] = 0xa7fdfbb6;
-    cfg[3] = 1;
-    cfg[4] = 6;
-    rec = ai_AmountMenu(cfg, U_I(((unsigned)&ai_MessageFilterTexts + 0x4f8)), 0, 0);
-    if (rec == 0)
+    cfg.mode = 0xc00;
+    cfg.kind = 6;
+    cfg.filter = gypsyFilter;
+    ch = (AICHARREC *)ai_AmountMenu(&cfg, txt_Ptrs[0x1e0e], 0, 0);
+    if (ch == 0)
         return 2;
-    h = amt_GetFirstOffice(*(unsigned char *)(rec + 0x166), out);
-    if (h == 0)
+    if (amt_GetFirstOffice(ch->officeKind, office) == 0)
         return 0x40;
-    win = d2_OpenForm(0, 0, (char *)(unsigned)&full_data_62d5c4);
+    win = d2_OpenForm(0, 0, "privillegien\\verhoer");
     d2_SetPointerSprite(0, 0);
     d2_CentreViewWindows(win);
     d2_SetForm(win, 1);
-    t = io_PrintText(0x1e0f, *(unsigned short *)rec);
-    click1 = d2_GetWinObj(win, 1, t);
-    click2 = d2_GetWinObj(win, 1, t + 1);
-    U_I((unsigned)&d2_ClickedId) = -1;
-    for (;;) {
-        if (U_I((unsigned)&d2_ClickedId) != -1) {
-            if (U_I((unsigned)&d2_PointerObj) == click1) {
-                i = sv_CheckMoney(param_1, 8);
-                if (i != 0) {
-                    amt_SendOfficeMessage(out[0], 0, 0, (U_W((unsigned)&ai_Time.hour) > 0xd ? -1 : 3), 0xff);
-                    cm_SendMoneyDelta(*(int *)((char *)param_1 + 4), -8);
-                    i = cm_SendSetField(*(int *)((char *)param_1 + 4), 0x1cc, 4, 0x40000, 0);
-                    if (i != -1)
-                        while (cm_GetSlotState(i) == 0)
-                            sv_PumpNet();
-                    U_I((unsigned)&sv_PopRequest) = 1;
-                    ret = 0x91;
-                    if (*(char *)(rec + 2) == 6 || *(char *)(rec + 2) == 7) {
-                        i = *(char *)(rec + 9) == 0 ? 0x253
-                                                   : *(unsigned char *)(rec + 0x166) + 0x27b;
-                        txt_Format(text, (char *)0x1e10, *param_1, i);
-                        he_ShowNews(*(int *)(rec + 4), -1, text, 0, 0x5fb, 0);
-                    }
+    t = io_PrintText(0x1e0f, ch->id);
+    yes = d2_GetWinObj(win, 1, t);
+    no = d2_GetWinObj(win, 1, t + 1);
+    d2_ClickedId = -1;
+    do {
+        if (d2_ClickedId != -1) {
+            if (d2_PointerObj == yes && sv_CheckMoney(me, 8) != 0) {
+                amt_SendOfficeMessage(office[0], 0, 0, (ai_Time.hour > 0xd ? 0xff : 3), 0xff);
+                gm_SendMoneyDelta(me->netId, -8);
+                slot = cm_SendSetField(me->netId, 0x1cc, 4, 0x40000, 0);
+                while (slot != -1 && cm_GetSlotState(slot) == 0)
+                    sv_PumpNet();
+                sv_PopRequest = 1;
+                ret = 0x91;
+                if (ch->kind == 6 || ch->kind == 7) {
+                    txt_Format(text, 0x1e10, me->id, ch->sex == 0 ? 0x253 : ch->officeKind + 0x27b);
+                    he_ShowNews(ch->netId, -1, text, 0, 0x5fb, 0);
                 }
-            } else if (U_I((unsigned)&d2_PointerObj) == click2) {
-                U_I((unsigned)&sv_PopRequest) = 1;
+            } else if (d2_PointerObj == no) {
+                sv_PopRequest = 1;
             }
         }
-        if (U_I(((unsigned)&dm_L + 0x20)) != 0)
-            U_I((unsigned)&sv_PopRequest) = 1;
-        if (sv_RunFrame(ai_DismissalHandler, 0x657c7) == 0) {
-            d2_CloseView(win);
-            return ret;
-        }
-    }
+        if (dm_L.rup != 0)
+            sv_PopRequest = 1;
+    } while (sv_RunFrame((int)ai_DismissalHandler, 0x657c7) != 0);
+    d2_CloseView(win);
+    return ret;
 }
 /* 0x5ced50, sends the AIMSG type 0x45 "the interrogation was refused" (144 B): to the interrogator ch
    (its netId at +4, as 'to' and arg[0]), about the interrogated target (its netId as arg[1]) and the

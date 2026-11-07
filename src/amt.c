@@ -451,7 +451,7 @@ int amt_SendOfficeOwner(char a, char *b, unsigned char c)
 /* 0x4e6680, sends the office message (cm_SendOfficeRecord, message 0x45): the office a, the ids of the characters b and c (their +4, or -1),
    the kind d and the code e; returns the send slot of the message, -1 when a is not one of the 42 office records */
 
-int amt_SendOfficeMessage(unsigned char a, char *b, char *c, unsigned char d, unsigned char e)
+int amt_SendOfficeMessage(unsigned char a, char *b, char *c, int d, unsigned char e)
 {
     AMTMSG m;
     int i, netIdB, netIdC;
