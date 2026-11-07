@@ -785,6 +785,7 @@ typedef struct LCINVSLOT {              /* 8 bytes, a row of the inventory child
 #define d2_OpenFormS ((int (*)(short, short, char *))d2_OpenForm)  /* @original: the transport window computes x = d2_ScreenW - 0x68 in 16 bits (0x5af336 mov ax, [d2_ScreenW]; sub ax, 0x68; push eax), as sv_OpenPlayerBar */
 extern short d2_ScreenW;
 extern int d2_HitWindow;
+extern struct D2INPUT *d2_FocusedInput;
 extern char * ai_BTypes;
 extern GAPDATA full_data_60c28c[];
 extern GAPDATA full_data_62cc94[];
@@ -19299,44 +19300,99 @@ void ai_LoadTownMap(void)
         d2_FreeSurface(bmp);
     }
 }
-/* 0x5b2180, the run callback of the map window (944 B, ROUGH): the request record param_2 (0x14 dwords) is
-   copied into the window record (cleared first, at +0xc), param_1 is the record's flags (+4), the name param_3
-   (+0x5c, or the text 0x631090); 0x5a78a0 opens the map window "Misc\Landkarte2" and 0x5a6cb0 rebuilds it; the
-   pump 0x5309a0 (this, 0x677c7) starts the loop: the click id 0x5fe710 is matched against the ids at +0x26f0 ..,
-   the flag 0x14673a0 sets 0x6f22a0, 0x6ed9dc feeds 0x62c26c, 0x5a7cd0 is the per-frame step and param_4 (the
-   +4 flag) drives the drag / key branch. ROUGH: only the prologue and the pump loop are drafted, the click
-   dispatch is left as a comment. The record is 0x27ac bytes in the original's 0x27b0-byte frame (0x5a78a0
-   stores the background tile at +0x27a8); a smaller local let that store run into the caller's frame */
+/* 0x5b2180, the town map pick (936 B): opens the map window "Misc\Landkarte2" over its record (the request req
+   copied in as its filter, flags, the title name or ch_EmptyName) and runs it until the pick: flags 4 offers the
+   ambush spots (a click on a spot control hands its object to cb, or ends the window without one), flags 8 the
+   building placement sites (a click picks the ai_PlacementSites entry and ends the window), and a click on a
+   building mark picks the building (flags 1) or runs ai_LawSelectionEntry on it (flags 2, which calls cb
+   itself); with flags 1 the picked building goes to cb (with the window disabled meanwhile), without a cb the
+   pick ends the window. The right button closes it. Returns the pick (0: none) after the campaign step 0xd
+   and ai_CloseMapWindow. The record is 0x27ac bytes in the original's 0x27b0-byte frame (ai_OpenTownMap stores
+   the background tile at +0x27a8). The fifth argument is not read */
 
-int ai_MapPick(int param_1, int param_2, char *param_3, int param_4, int param_5)
+int ai_MapPick(unsigned int flags, int *req, char *name, void (*cb)(), int unused)
 {
-    struct {
-        int view;               /* +0x000 */
-        int flags;              /* +0x004 */
-        int screen;             /* +0x008 */
-        int req[0x14];          /* +0x00c, the request record */
-        char name[0x68];        /* +0x05c, the title */
-        char pad[0x27a8 - 0xc4];
-        int tile;               /* +0x27a8, the saved background tile */
-    } map;
+    LCMAPWIN map;
+    int picked;
+    int i;
 
+    picked = 0;
     memset(map.req, 0, sizeof(map.req));
-    if (param_2 != 0)
-        memcpy(map.req, (void *)param_2, sizeof(map.req));
-    map.flags = param_1;
-    if (param_3 != 0)
-        strcpy(map.name, param_3);
+    if (req != 0)
+        memcpy(map.req, req, sizeof(map.req));
+    map.flags = flags;
+    if (name != 0)
+        strcpy(map.name, name);
     else
-        map.name[0] = *(char *)(unsigned)&ch_EmptyName;
-    ai_OpenTownMap((LCMAPWIN *)&map);
-    ai_BuildTownMap((LCMAPWIN *)&map);
-    if (sv_RunFrame(ai_MapPick, 0x677c7) == 0)
-        return 0;
-    while (sv_RunFrame(ai_MapPick, 0x677c7) != 0) {
-        /* ROUGH: the click dispatch 0x5fe710, the flag 0x14673a0 / 0x1467398, 0x6ed9dc and 0x5a7cd0 */
-        ai_UpdateTownMap((LCMAPWIN *)&map);
+        map.name[0] = ch_EmptyName[0];
+    ai_OpenTownMap(&map);
+    ai_BuildTownMap(&map);
+    while (sv_RunFrame((int)ai_MapPick, 0x677c7) != 0) {
+        if (dm_L.rup != 0)
+            sv_PopRequest = 1;
+        ai_MapScrollEnabled = d2_FocusedInput == 0;
+        ai_UpdateTownMap(&map);
+        if (flags & 4) {
+            if (dm_L.lclick != 0 && d2_PointerObj != -1) {
+                for (i = 0; i < 0x10; i++) {
+                    if (map.spotCtrls[i] != -1 && d2_PointerObj == map.spotCtrls[i]) {
+                        picked = (int)d2_Objs[map.spotCtrls[i]].user;
+                        if (picked != 0 && cb != 0) {
+                            d2_SetViewEnabled(map.view, 0);
+                            d2_EnableObject(d2_Wins[map.screen].parent, 0);
+                            cb(picked, picked);
+                            d2_SetViewEnabled(map.view, 1);
+                            d2_EnableObject(d2_Wins[map.screen].parent, 1);
+                        } else {
+                            sv_PopRequest = 1;
+                        }
+                        break;
+                    }
+                }
+            }
+        } else if ((flags & 8) && dm_L.lclick != 0 && d2_PointerObj != -1) {
+            for (i = 0; i < 0x100; i++) {
+                if (map.siteCtrls[i] != -1 && map.siteCtrls[i] == d2_PointerObj) {
+                    picked = ai_PlacementSites[i];
+                    sv_PopRequest = 1;
+                    break;
+                }
+            }
+        }
+        for (i = 0; i < map.nMarks; i++) {
+            if (d2_PointerObj == -1 || d2_PointerObj != map.marks[i].ctrl || dm_L.lclick == 0)
+                continue;
+            picked = 0;
+            if (flags & 1) {
+                picked = (int)map.marks[i].bld;
+            } else if (flags & 2) {
+                d2_SetViewEnabled(map.view, 0);
+                d2_EnableObject(d2_Wins[map.screen].parent, 0);
+                picked = ai_LawSelectionEntry((unsigned char *)map.marks[i].bld, req, (int)name, cb);
+                d2_EnableObject(d2_Wins[map.screen].parent, 1);
+                d2_SetViewEnabled(map.view, 1);
+            } else {
+                continue;
+            }
+            if (picked == 0)
+                continue;
+            if (cb == 0) {
+                sv_PopRequest = 1;
+                break;
+            }
+            if (flags & 2)
+                continue;
+            d2_SetViewEnabled(map.view, 0);
+            d2_EnableObject(d2_Wins[map.screen].parent, 0);
+            cb(picked, map.marks[i].bld);
+            d2_SetViewEnabled(map.view, 1);
+            d2_EnableObject(d2_Wins[map.screen].parent, 1);
+            break;
+        }
     }
-    return 1;
+    ai_CampaignStep(0xd, picked, 1, 0);
+    ai_CloseMapWindow((int *)&map);
+    return picked;
 }
 /* 0x5b2530, a two-choice window (384 B): the kind record 0x7e3f30 + kind * 0x24d, the window "0x62ccfc"
    (0x4741f0 / 0x475600), the caption 0x10b; the kind 0x116 uses the +0x242 byte (option 0x10e against the
