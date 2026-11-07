@@ -584,7 +584,7 @@ int ord_SpyTargetOrder(char *c, int *m);     /* 0x4f50f0 */
 int ord_BlackmailBuildingOrder(char *c, int *m);     /* 0x4f5190 */
 int ord_IntimidateOrder(char *c, int *m);     /* 0x4f52e0 */
 int ord_BlackmailContactOrder(char *c, int *m);     /* 0x4f5350 */
-int ord_EmbezzlementOrder(char *c, int *m);     /* 0x4f5c30 */
+int ord_DismissOfficeOrder(char *c, int *m);     /* 0x4f5c30 */
 int ord_LawOrder(char *c, int *m);     /* 0x4f5d50 */
 int ord_LawOrder2(char *c, int *m);     /* 0x4f5f00 */
 int ord_Level3Order(char *c, int *m);     /* 0x4f5200 */

@@ -214,7 +214,7 @@ void ai_FreePicture(void);                                         /* 0x5bc0f0 *
 /* declared in other units' headers before (moved to the owner) */
 int ai_DismissalHandler(unsigned short *param_1, int param_2);  /* 0x5ce950 */
 char ai_EmbezzlementContract(int param_1, int param_2);  /* 0x5cacd0 */
-int ai_EmbezzlementPrivilege(unsigned short *param_1, int *param_2);  /* 0x5ca560 */
+struct AICHARREC; struct LCORDMSG; int ai_DismissOfficeAsk(struct AICHARREC *me, struct LCORDMSG *m);  /* 0x5ca560 */
 int ai_EspionageAmountWindow(int param_1, int *param_2);  /* 0x5cca40 */
 int ai_EspionageOrderHandler(int param_1, int *param_2);  /* 0x5cbe00 */
 int ai_EspionageOverviewHandler(void *ch, int *m);  /* 0x5cd2e0 */
