@@ -510,6 +510,12 @@ typedef struct AIMSG {                  /* 0xf8 bytes, given to cm_SendLongMessa
                     char pad58[2];
                     unsigned char talent;       /* 0x5a, the talent (AICHAR.skills index) the training raises */
                 } training;
+                struct {                        /* the sabotage message 0x19 (lc.c ai_SabotageCallback) */
+                    int bld;                    /* 0x58, the building sabotaged (AIBLD.id; the player's sabotage
+                                                   event 0x19 keeps it at +0xac, AIJOB.bldId) */
+                    char pad5c[0x20];
+                    int price;                  /* 0x7c, the price paid for it */
+                } sabotage;
             };
             union {
                 int amount[3];                  /* 0x88, of the bought goods */

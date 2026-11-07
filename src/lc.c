@@ -19845,14 +19845,116 @@ void ai_TalentWindow(struct AIBLD *bld, int room, int talent)
     sv_CameraFollow();
     d2_CloseView(form);
 }
-/* 0x5b3630, a Ghidra-missed start (1184 B, ROUGH SKELETON): the seam is the ret at 0x5b3626 and the nine nops to
-   0x5b3630; a 0x7c4-byte frame, param_1 tested first; it ends with the ret at 0x5b3acf. The body is left as a
-   comment */
+#pragma pack(push, 1)
+typedef struct AIWINDOWROW {            /* the row record the window page functions take (ai_Unk5c9990 builds it) */
+    int win;                            /* 0x00, the window, -1 none */
+    int pageA;                          /* 0x04, the page of the pictures */
+    int pageB;                          /* 0x08, the page of the text */
+    int pageC;                          /* 0x0c, the page of the balance bar */
+    int entry;                          /* 0x10, the page entry index */
+    int record;                         /* 0x14, the gv table record id */
+} AIWINDOWROW;
+#pragma pack(pop)
 
-int ai_SabotageCallback(int param_1)
+void ai_ShowWindowRow(AIWINDOWROW *row);
+
+/* 0x5b3630, the sabotage window "misc\perga_rolle" (ai_RobberContact's map pick callback, with the picked mark's
+   character ch and building target; nothing for none or an ownerless one). The price is 2 % of the player's worth
+   plus 5 % of the building's equipment value (gm_EquipmentValue 100), halved when the order 0x1b reports the flag
+   2; the player must have it (sv_CheckGoodAmount). A running sabotage event 0x19 of the player on the building
+   gives the text 0x1702, an insult running from ch to the player (he_NoEvent4bPair) 0x1703, a quarrel between
+   them (he_NoEvent2ePair) 0x1704, a building under protection (he_NoProtectionEvent) 0x1705 and a haunting of the
+   player by ch (he_NoEvent88Pair) 0x409f. Else the window (texts 0x1700 / 0x1711: the price, the owner, the
+   building kind's name; the row of the player's talent 2) asks: its button sends the sabotage message 0x19 (the
+   building, the price; in the cm group "sabotage") and tells it with the text 0x1701, a right click or the
+   button 1 close it. Returns 1 once the sabotage was ordered, else 0 */
+
+int ai_SabotageCallback(char *ch, AIBLD *target)
 {
-    /* ROUGH SKELETON: the window section of the 0x7c4 frame */
-    return 0;
+    int ordered;
+    int price;
+    int win;
+    int ok;
+    AIJOB *ev;
+    AIWINDOWROW row;
+    AIMSG msg;
+    char note[0x80];
+    char text[0x400];
+    int arg[0x88];
+
+    ordered = 0;
+    if (target == 0 || target->owner == 0xffff)
+        return 0;
+    memset(arg, 0, sizeof(arg));
+    arg[0] = 1;
+    price = (int)(gm_GetWorth(((AICHARREC *)ai_Chars)[ai_PlayerId].id) * 0.02f +
+                  gm_EquipmentValue((unsigned char *)target, 100) * 0.05f);
+    if (ord_DispatchOrder(0x1b, ai_Chars[ai_PlayerId], arg) & 2)
+        price /= 2;
+    if (sv_CheckGoodAmountB(ai_Chars[ai_PlayerId], price, ai_OwnPlayer) == 0)
+        return 0;
+    for (ev = (AIJOB *)he_FindEvent(2, 2, ai_PlayerId, 0, 0x19); ev != 0; ev = (AIJOB *)he_NextEvent()) {
+        if (ev->bldId == target->id) {
+            txt_Format(text, 0x1702, target->owner, target);
+            sv_MessageBox(text, 0);
+            return 0;
+        }
+    }
+    if (he_NoEvent4bPair((int)ch, (int)ai_Chars[ai_PlayerId]) == 0) {
+        txt_Format(text, 0x1703, target->owner, target);
+        sv_MessageBox(text, 0);
+        return 0;
+    }
+    if (he_NoEvent2ePair((int)ch, (int)ai_Chars[ai_PlayerId]) == 0) {
+        txt_Format(text, 0x1704, ((AICHARREC *)ch)->id);
+        sv_MessageBox(text, 0);
+        return 0;
+    }
+    if (he_NoProtectionEvent((int)target) == 0) {
+        txt_Format((char *)&msg, 0x1705, target);
+        sv_MessageBox((char *)&msg, 0);
+        return 0;
+    }
+    if (he_NoEvent88Pair((struct AICHAR *)ch, (struct AICHAR *)ai_Chars[ai_PlayerId]) == 0) {
+        txt_Format(text, 0x409f, ((AICHARREC *)ch)->id);
+        sv_MessageBox(text, 0);
+        return 0;
+    }
+    win = d2_OpenForm(0, 0, "misc\\perga_rolle");
+    d2_CentreViewWindows(win);
+    d2_SetForm(win, 1);
+    d2_SetPointerSprite(0, 0);
+    d2_SetForm(win, 1);
+    ok = d2_GetWinObj(win, 1, io_PrintText(0x1700, 0x1711, price, target->owner, target->kind * 14 + 0x48e));
+    memset(&row, 0xff, sizeof(row));
+    row.win = win;
+    row.pageA = 2;
+    row.pageB = 3;
+    row.pageC = 4;
+    row.entry = 2;
+    row.record = 0x18;
+    ai_ShowWindowRow(&row);
+    while (sv_RunFrame((int)ai_SabotageCallback, 0x677c7) != 0) {
+        if (dm_L.rup != 0 || d2_ClickedId == 1)
+            sv_PopRequest = 1;
+        if (d2_ClickedId == 0 && ok != -1 && d2_PointerObj == ok) {
+            msg.type = 0x19;
+            msg.to = ((AICHARREC *)ai_Chars)[ai_PlayerId].netId;
+            msg.fromId = ((AIBLD *)ai_PlayerBuilding)->id;
+            msg.flags = 1;
+            msg.sabotage.price = price;
+            msg.sabotage.bld = target->id;
+            cm_BeginGroup("sabotage");
+            cm_SendLongMessage((char *)&msg);
+            cm_EndGroup("sabotage");
+            txt_Format(note, 0x1701, target->masterId, target->kind * 14 + 0x48e);
+            sv_MessageBox(note, 0);
+            sv_PopRequest = 1;
+            ordered = 1;
+        }
+    }
+    d2_CloseView(win);
+    return ordered;
 }
 /* 0x5b3ad0, a Ghidra-missed start (1117 B, ROUGH SKELETON): the seam is the ret of 0x5b3630 at 0x5b3acf (no nop
    padding between the two) and the address is taken at 0x5b3cf5 (`0x5309a0 (0x5b3ad0, 0x677c7)`, the pump
@@ -20610,14 +20712,6 @@ void ai_LeftAlignedText(char *text, int x, int y, int w, int font)
     d2_SetObjFont(ctrl, font);
 }
 #pragma pack(push, 1)
-typedef struct AIWINDOWROW {            /* the row record the window page functions take (ai_Unk5c9990 builds it) */
-    int win;                            /* 0x00, the window, -1 none */
-    int pageA;                          /* 0x04, the page of the pictures */
-    int pageB;                          /* 0x08, the page of the text */
-    int pageC;                          /* 0x0c, the page of the balance bar */
-    int entry;                          /* 0x10, the page entry index */
-    int record;                         /* 0x14, the gv table record id */
-} AIWINDOWROW;
 
 typedef struct AIPOSVIEW {              /* 0x24 bytes, the record gv_GetTableRecord (0x4f2720) fills (AIPOS, ai.h) */
     char pad00[0xc];
