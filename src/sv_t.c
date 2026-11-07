@@ -9589,7 +9589,7 @@ void ai_GraveyardTradeContact(char *rec)
             else if (ai_ClickedObject == c1)
                 ai_OpenTransport((int)rec);
             else if (ai_ClickedObject == c2)
-                ai_MasterLetterWindow((unsigned char *)rec);
+                ai_MasterLetterWindow((struct AIBLD *)rec);
             else if (ai_ClickedObject == c3)
                 ai_HelperBook((struct AIBLD *)rec, "ob_GEHILFENBUCH");
             else if (ai_ClickedObject == c4)

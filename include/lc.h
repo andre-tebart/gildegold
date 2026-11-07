@@ -74,7 +74,7 @@ int ai_AmountMenu(struct AMOUNTCFG *cfg, char *caption, int prompt, int (*pick)(
 void ai_PersonnelBook(struct AIBLD *bld, char *model);  /* 0x5aab80, the personnel book of a building (ob_PERSONALBUCH) */
 void ai_MercenaryBook(struct AIBLD *bld, char *model);  /* 0x5ac110, the mercenary book of a building (ob_SOELDNERBUCH) */
 void ai_HelperBook(struct AIBLD *bld, char *model);     /* 0x5ad150, the helpers' book of a building (ob_GEHILFENBUCH) */
-void ai_MasterLetterWindow(unsigned char *building);    /* 0x5c3200, the master letter window */
+void ai_MasterLetterWindow(struct AIBLD *bld);         /* 0x5c3200, opens the master letter of the player's building */
 int ai_FreeProdSetting(int id);                     /* 0x5a86c0, unlinks and frees the production setting of the building id (ai_ProdSetting), -1 when it has none */
 
 /* the placement-candidate list of the build screen (ai_BauplatzFilter / ai_FindBauplaetze) */

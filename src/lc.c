@@ -5154,7 +5154,7 @@ void ai_InformationContact(int building)
         personal = sv_RegisterNamePlate("ob_PERSONALBUCH", ai_ContactTextPersonnelBook, 0xc);
         if (ai_ClickedObject != 0) {
             if (ai_ClickedObject == meister)
-                ai_MasterLetterWindow((unsigned char *)building);
+                ai_MasterLetterWindow((AIBLD *)building);
             else if (ai_ClickedObject == personal)
                 ai_PersonnelBook(building, "ob_PERSONALBUCH");
             else if (ai_ClickedObject == inf)
@@ -5838,7 +5838,7 @@ void ai_SmithyContact(AIBLD *bld, int room)
             else if (ai_ClickedObject == personal)
                 ai_PersonnelBook(bld, "ob_PERSONALBUCH");
             else if (ai_ClickedObject == meister)
-                ai_MasterLetterWindow((unsigned char *)bld);
+                ai_MasterLetterWindow((AIBLD *)bld);
         }
         ai_MarketContact(bld);
         r = sv_RunFrame(ai_SmithyContact, 0x67fff);
@@ -5888,7 +5888,7 @@ void ai_CarpenterContact(AIBLD *bld, int room)
             else if (ai_ClickedObject == lager)
                 ai_StorageWindow((int)bld, bld->objList);
             else if (ai_ClickedObject == meister)
-                ai_MasterLetterWindow((unsigned char *)bld);
+                ai_MasterLetterWindow((AIBLD *)bld);
         }
         r = sv_RunFrame(ai_CarpenterContact, 0x67fff);
     }
@@ -6249,7 +6249,7 @@ void ai_PerfumeryContact(int building, int room)
             else if (ai_ClickedObject == sammeln)
                 ai_TradeSearchWindow((unsigned char *)building, room);
             else if (ai_ClickedObject == meister)
-                ai_MasterLetterWindow((unsigned char *)building);
+                ai_MasterLetterWindow((AIBLD *)building);
         }
         r = sv_RunFrame(ai_PerfumeryContact, 0x67fff);
     }
@@ -6337,7 +6337,7 @@ void ai_MixingContact(AIBLD *bld, int room)
             else if (ai_ClickedObject == sammeln)
                 ai_TradeSearchWindow((unsigned char *)bld, room);
             else if (ai_ClickedObject == meister)
-                ai_MasterLetterWindow((unsigned char *)bld);
+                ai_MasterLetterWindow((AIBLD *)bld);
         }
         r = sv_RunFrame(ai_MixingContact, 0x67fff);
     }
@@ -6388,7 +6388,7 @@ void ai_StonecutterContact(AIBLD *bld, int room)
             else if (ai_ClickedObject == lager)
                 ai_StorageWindow((int)bld, bld->objList);
             else if (ai_ClickedObject == meister)
-                ai_MasterLetterWindow((unsigned char *)bld);
+                ai_MasterLetterWindow((AIBLD *)bld);
         }
         r = sv_RunFrame(ai_StonecutterContact, 0x67fff);
     }
@@ -8222,7 +8222,7 @@ void ai_BreweryContact(AIBLD *bld, int room)
             else if (ai_ClickedObject == lager)
                 ai_StorageWindow((int)bld, bld->objList);
             else if (ai_ClickedObject == meister)
-                ai_MasterLetterWindow((unsigned char *)bld);
+                ai_MasterLetterWindow((AIBLD *)bld);
             else if (ai_ClickedObject == brauen)
                 ai_ProductionWindow((AIBLD *)bld);
             else if (ai_ClickedObject == transport)
@@ -10096,7 +10096,7 @@ void ai_MoneyLenderContact(AIBLD *bld, int room)
         }
         if (ai_ClickedObject != 0) {
             if (ai_ClickedObject == meister)
-                ai_MasterLetterWindow((unsigned char *)bld);
+                ai_MasterLetterWindow((AIBLD *)bld);
             else if (ai_ClickedObject == overview)
                 ai_FortuneOverview(bld);
             if (ai_ClickedObject != 0) {
@@ -14395,7 +14395,7 @@ void ai_CityWatchListener(AIBLD *bld)
                 else if (ai_ClickedObject == zoll)
                     ai_ArrestStart((int)bld);
                 else if (ai_ClickedObject == meister)
-                    ai_MasterLetterWindow((unsigned char *)bld);
+                    ai_MasterLetterWindow((AIBLD *)bld);
             }
         }
         r = sv_RunFrame(ai_CityWatchListener, 0x67fff);

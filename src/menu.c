@@ -1591,7 +1591,7 @@ void ai_SaveNetworkGame(char *saveName, char *name)
 struct AIBLD; int ai_ProductionWindow(struct AIBLD *bld); /* 0x58bd60, lc.c: "Handel\Handel_PRODUKTION" */
 int ai_OpenTransport(int rec);             /* 0x5af1a0, lc.c */
 void ai_TradeSearchWindow(unsigned char *cfg, int arg); /* 0x595480, lc.c: "HANDEL\HANDEL_SUCHEN" */
-void ai_MasterLetterWindow(unsigned char *building); /* 0x5c3200, lc.c: "ob_MEISTERBRIEF" */
+void ai_MasterLetterWindow(struct AIBLD *bld); /* 0x5c3200, lc.c: "ob_MEISTERBRIEF" */
 void ai_MarketContact(struct AIBLD *rec);  /* 0x58f510, lc.c */
 int sv_CheckMoney(char *o, int n);         /* 0x520f90, sv.c: 1 when the object's money (+0x194)
                                               covers n, else a message box with the text 0x74 */
@@ -2562,7 +2562,7 @@ void ai_ProductionContact(int building, int arg)
             } else if (click == personal) {
                 ai_PersonnelBook((struct AIBLD *)building, "ob_PERSONALBUCH");
             } else if (click == meister) {
-                ai_MasterLetterWindow((unsigned char *)building);
+                ai_MasterLetterWindow((struct AIBLD *)building);
             } else if (click == roh) {
                 ai_TradeSearchWindow((unsigned char *)building, arg);
             } else if (click == plausch) {
@@ -3229,7 +3229,7 @@ void ai_GypsyProductionContact(int building)
                 else if (ai_ClickedObject == lager)
                     ai_StorageWindow(building, 0);
                 else if (ai_ClickedObject == meister)
-                    ai_MasterLetterWindow((unsigned char *)building);
+                    ai_MasterLetterWindow((struct AIBLD *)building);
                 else if (ai_ClickedObject == betteln)
                     ai_GypsyBeggingWindow(building);
             }
