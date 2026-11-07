@@ -23665,16 +23665,29 @@ rows:
     d2_CloseView(win);
     sv_CameraFollow();
 }
-/* 0x5bb950, an array walk (352 B, ROUGH SKELETON): the first parameter indexes a 0x2d-byte record array; the
-   body is a comment */
+typedef struct LCTRAINROW {             /* 0x1c bytes, a row of the training window (ai_TrainingWindow keeps three) */
+    int pic;                            /* 0x00, the training's picture (0x762 + the row), interactive */
+    int frame;                          /* 0x04, the row's frame picture 0x74c */
+    int window;                         /* 0x08, the row's child window (font 0x54) */
+    char pad0c[0x10];
+} LCTRAINROW;
 
-int ai_Unk5bb950(int param_1, int param_2, int param_3)
+/* 0x5bb950, opens a row of the training window in win (ai_TrainingWindow, the rows 0 .. 2 with the pictures 0x762 ..
+   0x764): the frame 0x74c at the row's height (0x78 per row), the picture beside it (interactive, style 3) and a
+   child window right of it; returns the frame */
+
+int ai_OpenTrainingRow(int n, int pic, LCTRAINROW *row, int win)
 {
-    /* ROUGH SKELETON: the record array walk */
-    (void)param_1;
-    (void)param_2;
-    (void)param_3;
-    return 0;
+    int y;
+
+    y = n * 0x78;
+    row->frame = d2_WinOpenPic(0, y, 0x74c, win);
+    row->pic = d2_WinOpenPic(0xd, y + 5, pic, win);
+    d2_Objs[row->pic].interactive = 1;
+    d2_Objs[row->pic].style = 3;
+    row->window = d2_CreateChildWindow(0x40, y, 0xcd, 0x57, 0x10, win);
+    d2_Wins[row->window].font = 0x54;
+    return row->frame;
 }
 /* 0x5bba00, a window (2368 B, ROUGH SKELETON): param_1, a 0x938-byte frame; the body is a comment */
 
