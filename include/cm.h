@@ -874,9 +874,9 @@ void d2_SetObjFont(int obj, int font);  /* 0x4760b0 */
 /* ---- declarations of cut.c (joined) ---- */
 /* Declarations of cut.c (the cutscene code 0x4d8c70..: council sessions, duels, executions; tag "cut_MainDuell()"). Names are ours. */
 
-extern int ai_Unk6f0d6c;  /* 0x6f0d6c */
-extern int ai_Unk6f0d68;  /* 0x6f0d68 */
-extern int ai_Unk6f0d70;  /* 0x6f0d70 */
+extern int cm_TallyYes;  /* 0x6f0d6c, the "yes" pictures of the deposition tally */
+extern int cm_TallyNo;  /* 0x6f0d68, the "no" pictures of the deposition tally */
+extern int cm_TallyAbstain;  /* 0x6f0d70, the abstentions of the deposition tally */
 struct CMAMOUNTROW; void cm_StackPicture(int unused, struct CMAMOUNTROW *o);  /* 0x4d8c70 */
 void cm_TallyStack(int a, int b, int c);  /* 0x4d8cb0 */
 

@@ -11969,20 +11969,20 @@ void cm_TallyStack(int a, int b, int c)
         txt_Format(buf, 0x12d5);
         o = d2_CreateWinText(0, 0x2f, buf, d2_LastWindow);
         d2_SetObjFont(o, 0x54);
-        ai_Unk6f0d6c = 0;
-        ai_Unk6f0d68 = 0;
-        ai_Unk6f0d70 = 0;
+        cm_TallyYes = 0;
+        cm_TallyNo = 0;
+        cm_TallyAbstain = 0;
         return;
     }
     if (c == 0) {
-        d2_WinOpenPic((ai_Unk6f0d6c * 5 + 0x28) * 2, 0x20, 0x4df, d2_LastWindow);
-        ai_Unk6f0d6c++;
+        d2_WinOpenPic((cm_TallyYes * 5 + 0x28) * 2, 0x20, 0x4df, d2_LastWindow);
+        cm_TallyYes++;
     } else if (c == 1) {
-        d2_WinOpenPic((ai_Unk6f0d68 * 5 + 0x28) * 2, 0x3e, 0x4df, d2_LastWindow);
-        ai_Unk6f0d68++;
+        d2_WinOpenPic((cm_TallyNo * 5 + 0x28) * 2, 0x3e, 0x4df, d2_LastWindow);
+        cm_TallyNo++;
     } else if (c == 2) {
-        d2_WinOpenPic((ai_Unk6f0d70 * 5 + 0x28) * 2, 0x2f, 0x4df, d2_LastWindow);
-        ai_Unk6f0d70++;
+        d2_WinOpenPic((cm_TallyAbstain * 5 + 0x28) * 2, 0x2f, 0x4df, d2_LastWindow);
+        cm_TallyAbstain++;
     }
 }
 /* 0x4d8e20, plays a council session (the run function of scene kind 1; a: its party record, saved on entry and put back at
@@ -17192,9 +17192,9 @@ int cm_FlagObjectCount = 0;  /* 0x6f0d58 */
 int cm_BootsObject = 0;  /* 0x6f0d5c */
 int cm_PointCount = 0;  /* 0x6f0d60 */
 int cm_FightForm = 0;  /* 0x6f0d64 */
-int ai_Unk6f0d68 = 0;  /* 0x6f0d68 */
-int ai_Unk6f0d6c = 0;  /* 0x6f0d6c */
-int ai_Unk6f0d70 = 0;  /* 0x6f0d70 */
+int cm_TallyNo = 0;  /* 0x6f0d68, the "no" pictures of the deposition tally (cm_TallyStack's stack 1) */
+int cm_TallyYes = 0;  /* 0x6f0d6c, the "yes" pictures of the deposition tally (cm_TallyStack's stack 0) */
+int cm_TallyAbstain = 0;  /* 0x6f0d70, the abstentions of the deposition tally (cm_TallyStack's stack 2) */
 char * cm_CutChar = 0;  /* 0x6f0d74 */
 int cm_PartyTurn = 0;  /* 0x6f0d78 */
 int cm_ScenePartyRuns = 0;  /* 0x6f0d7c */
