@@ -1231,6 +1231,14 @@ typedef struct AIBLD {             /* the building record fields this unit reads
     };
     int smokeEffect;               /* 0x95, the running chimney smoke effect (evt_FindById), -1 none (ai_bld.h AIBLD.smokeEffect) */
 } AIBLD;
+typedef struct LCWORKSET {       /* the work settings a building keeps at AIBLD +0x99 (ai_bld.h AIBLD.workSet) and a
+                                      hired worker takes over into AICHAR.flags1b4 .. target (ai_char.h; cm_ExHire
+                                      copies them as 16 bytes); the master letter window passes them by value */
+    unsigned int flags;            /* +0x0, the order flags (bit 0 .. 3: the page's four checkboxes) */
+    int budget;                    /* +0x4, AICHAR.budget */
+    int prod;                      /* +0x8, AICHAR.prod (the item the workshop makes) */
+    int target;                    /* +0xc, AICHAR.target (a building id or -1) */
+} LCWORKSET;
 typedef struct LCFIREEVENT {       /* the fire event 0x3d's word over AIJOB's union (its alloc 0x564860; the jail check
                                       0x591ad0 reads the burning building here) */
     char pad00[0xac];
@@ -26941,63 +26949,57 @@ void ai_LawBookInfoWindow(int textId, int lawText)
     } while (sv_RunFrame(ai_LawBookInfoWindow, 0x677c7) != 0);
     d2_CloseView(win);
 }
-/* 0x5c2490, the law entry controls (464 B): the checkbox 0x515960 (0x194f, 0, param_6, (flags & 1) + 0x1951)
-   and its 0x475cb0 (the flag), then (kind != 5) the three options (flags >> 1 / >> 2 / >> 3) into param_4[1..3],
-   the counter 0x515960 (0x1953, param_6, 0x6f1bc5) into *param_2 with 0x475cb0 (*param_3, 1000 .. 9000) and,
-   when kind != 5 and the last argument is set, the slider 0x46a960 (0x1002) into the 8th argument with its
-   0x50c550 percent; otherwise the 8th argument is -1 */
+/* 0x5c2490, fills the master letter window's work-settings page (464 B): the order checkbox (text 0x194f, on / off
+   0x1951 + bit 0 of the flags), for a building of another class than 5 the three option checkboxes (texts 0x1954 /
+   0x1957 / 0x195a, bits 1 .. 3; else those controls are -1), the budget counter (text 0x1953, 1000 .. 9000, the
+   converted budget *budget) and, for a class other than 5 with a production setting, the weight factor slider
+   (text 0x42c2, 50 .. 150, the setting's factor in percent) into *factorCtrl (else -1) */
 
-void ai_Unk5c2490(int param_1, int *param_2, int *param_3, int *param_4, unsigned char *param_5, int param_6,
-                  unsigned int param_7, int *param_8, int param_9)
+void ai_ShowWorkSettingsPage(int win, int *budgetCtrl, int *budget, int *checks, AIBLD *bld, int charId,
+                             LCWORKSET set, int *factorCtrl, G8SETTAIL *setting)
 {
-    int t;
-    unsigned int u;
-    char *kind;
-    int v;
+    int ctrl;
+    unsigned int on;
+    AIBTYPE *type;
 
-    d2_SetForm(param_1, 1);
-    io_PrintText((unsigned)"$C");
+    d2_SetForm(win, 1);
+    io_PrintText("$C");
     io_PrintText(0x1949);
-    d2_SetForm(param_1, 2);
-    io_PrintText((unsigned)&full_data_624cf8);
-    t = io_PrintText(0x194f, 0, param_6, (param_7 & 1) + 0x1951);
-    t = d2_GetWinObj(param_1, 2, t);
-    *param_4 = t;
-    d2_SetObjValue(t, param_7 & 1);
-    param_4[1] = -1;
-    param_4[2] = -1;
-    param_4[3] = -1;
-    kind = (char *)(U_I((unsigned)&ai_BTypes) + *param_5 * 0x24d);
-    if (*kind != 5) {
-        u = (param_7 >> 1) & 1;
-        t = io_PrintText(0x1954, 0, param_6, u + 0x1955);
-        t = d2_GetWinObj(param_1, 2, t);
-        param_4[1] = t;
-        d2_SetObjValue(t, u);
-        u = (param_7 >> 2) & 1;
-        t = io_PrintText(0x1957, 0, param_6, u + 0x1958);
-        t = d2_GetWinObj(param_1, 2, t);
-        param_4[2] = t;
-        d2_SetObjValue(t, u);
-        u = (param_7 >> 3) & 1;
-        t = io_PrintText(0x195a, 0, param_6, u + 0x195b);
-        t = d2_GetWinObj(param_1, 2, t);
-        param_4[3] = t;
-        d2_SetObjValue(t, u);
+    d2_SetForm(win, 2);
+    io_PrintText("$C$A");
+    on = set.flags & 1;
+    ctrl = d2_GetWinObj(win, 2, io_PrintText(0x194f, 0, charId, on + 0x1951));
+    checks[0] = ctrl;
+    d2_SetObjValue(ctrl, on);
+    checks[1] = -1;
+    checks[2] = -1;
+    checks[3] = -1;
+    type = &((AIBTYPE *)ai_BTypes)[bld->kind];
+    if (type->buildingClass != 5) {
+        on = (set.flags >> 1) & 1;
+        ctrl = d2_GetWinObj(win, 2, io_PrintText(0x1954, 0, charId, on + 0x1955));
+        checks[1] = ctrl;
+        d2_SetObjValue(ctrl, on);
+        on = (set.flags >> 2) & 1;
+        ctrl = d2_GetWinObj(win, 2, io_PrintText(0x1957, 0, charId, on + 0x1958));
+        checks[2] = ctrl;
+        d2_SetObjValue(ctrl, on);
+        on = (set.flags >> 3) & 1;
+        ctrl = d2_GetWinObj(win, 2, io_PrintText(0x195a, 0, charId, on + 0x195b));
+        checks[3] = ctrl;
+        d2_SetObjValue(ctrl, on);
     }
-    t = io_PrintText(0x1953, param_6, *(unsigned char *)(unsigned)&ai_OwnPlayer);
-    t = d2_GetWinObj(param_1, 2, t);
-    *param_2 = t;
-    d2_SetObjValue(t, 1000, 9000, *param_3);
-    if (*kind != 5 && param_9 != 0) {
+    ctrl = d2_GetWinObj(win, 2, io_PrintText(0x1953, charId, ai_OwnPlayer));
+    *budgetCtrl = ctrl;
+    d2_SetObjValue(ctrl, 1000, 9000, *budget);
+    if (type->buildingClass != 5 && setting != 0) {
         io_PrintText(0x42c2);
-        t = d2_WinOpenSlider(100, 300, 200, 0x32, 0x96, 0x7b, 0x1002, U_I((unsigned)&d2_LastWindow));
-        *param_8 = t;
-        v = 0; /* ROUGH: the __ftol of the lost float call (the slider percent) */
-        d2_SetObjValue(t, 0x32, 0x96, v);
+        ctrl = d2_WinOpenSlider(100, 300, 200, 0x32, 0x96, 0x7b, 0x1002, d2_LastWindow);
+        *factorCtrl = ctrl;
+        d2_SetObjValue(ctrl, 0x32, 0x96, (int)(setting->factor * ai_FloatHundred));
         return;
     }
-    *param_8 = -1;
+    *factorCtrl = -1;
 }
 /* 0x5c26a0, the master letter notice window "berufe\_meisterbrief_1" (176 B): the form on the screen
    (0x52ea30), the master letter caption 0x1949 and the text 0x194e, the pump 0x5309a0 (this, 0x677c7) and
@@ -27180,16 +27182,13 @@ void ai_Unk5c2a10(int param_1, char *param_2, int *param_3, int *param_4)
    0xf8f080 + id * 0x2ec + 0x28, 0x475e40), the page switches (0x6f2f90 0 / 1) and the four order flags
    (0x4c3ba0 / 0x4c3c00 / 0x4c49a0 on param_1 + 0x39 and param_2 + 0x1b4 / + 0x1b8); the exit writes
    0x5085f0 (b, 0x6f1bc5) back into param_1 + 0x39 and the delta into param_2 + 0x1b8, then 0x4758f0
-   ROUGH: the 0x5c2490 call passes four flag words in the original (the callee reads one) */
+   the work settings (param_2 + 0x1b4, 16 bytes) go to 0x5c2490 by value (LCWORKSET) */
 
 void ai_Unk5c2b90(char *param_1, short *param_2)
 {
     int win;
     char *recs;
-    int flags;
-    int f2;
-    int f3;
-    int f4;
+    LCWORKSET set;
     int tab1;
     int tab2;
     int master;
@@ -27207,7 +27206,7 @@ void ai_Unk5c2b90(char *param_1, short *param_2)
     mode = 0;
     master = -1;
     tab2 = -1;
-    flags = -1;
+    set.flags = -1;
     recs = (char *)ai_FindSettingSlots(*(int *)(param_1 + 1));
     for (i = 0; i < 7; i++)
         pics[i] = -1;
@@ -27223,12 +27222,9 @@ void ai_Unk5c2b90(char *param_1, short *param_2)
     d2_CentreViewWindows(win);
     d2_SetPointerSprite(0, 0);
     a = gm_ConvertMoney(*(int *)(param_1 + 0x39), U_I((unsigned)&ai_OwnPlayer));
-    flags = U_I((char *)param_2 + 0x1b4);
-    f2 = U_I((char *)param_2 + 0x1b8);
-    f3 = U_I((char *)param_2 + 0x1bc);
-    f4 = U_I((char *)param_2 + 0x1c0);
+    set = *(LCWORKSET *)((char *)param_2 + 0x1b4);
     if (U_I((unsigned)&full_data_6f2f90) == 0) {
-        ai_Unk5c2490(win, &b, &a, checks, (unsigned char *)param_1, *param_2, flags, &master, (int)recs);
+        ai_ShowWorkSettingsPage(win, &b, &a, checks, (AIBLD *)param_1, *param_2, set, &master, (G8SETTAIL *)recs);
     } else {
         ai_Unk5c2a10(win, recs, pics, sliders);
     }
@@ -27280,7 +27276,7 @@ void ai_Unk5c2b90(char *param_1, short *param_2)
                 if (U_I((unsigned)&d2_PointerObj) == tab2) {
                     /* ROUGH: 0x5c2490 (win, &a, &b, checks, param_1, *param_2, flags, &master, recs) again;
                        then 0x6f2f90 = 0, 0x5fe710 = -1 */
-                    ai_Unk5c2490(win, &b, &a, checks, (unsigned char *)param_1, *param_2, flags, &master, (int)recs);
+                    ai_ShowWorkSettingsPage(win, &b, &a, checks, (AIBLD *)param_1, *param_2, set, &master, (G8SETTAIL *)recs);
                     U_I((unsigned)&full_data_6f2f90) = 0;
                     U_I((unsigned)&d2_PointerObj) = -1;
                 } else {
@@ -27309,22 +27305,19 @@ void ai_Unk5c2b90(char *param_1, short *param_2)
                         if (U_I((unsigned)&d2_PointerObj) == -1)
                             break;
                         if (U_I((unsigned)&d2_PointerObj) == checks[j]) {
-                            flags = U_I((char *)param_2 + 0x1b4);
-                            f2 = U_I((char *)param_2 + 0x1b8);
-                            f3 = U_I((char *)param_2 + 0x1bc);
-                            f4 = U_I((char *)param_2 + 0x1c0);
+                            set = *(LCWORKSET *)((char *)param_2 + 0x1b4);
                             if (d2_GetObjValue(checks[j]) == 0)
-                                flags &= ~(1 << j);
+                                set.flags &= ~(1 << j);
                             else
-                                flags |= 1 << j;
+                                set.flags |= 1 << j;
                             cm_BeginFieldBlock((char *)param_2, *(int *)((char *)param_2 + 2));
-                            cm_AddFieldDelta(4, 1, (char *)param_2 + 0x1b4 - U_I((unsigned)&cm_FieldObject), &flags);
+                            cm_AddFieldDelta(4, 1, (char *)param_2 + 0x1b4 - U_I((unsigned)&cm_FieldObject), &set.flags);
                             cm_SendFieldDeltas();
                             cm_BeginFieldBlock(param_1, *(int *)(param_1 + 1));
-                            cm_AddFieldDelta(4, 1, param_1 + 0x99 - U_I((unsigned)&cm_FieldObject), &flags);
+                            cm_AddFieldDelta(4, 1, param_1 + 0x99 - U_I((unsigned)&cm_FieldObject), &set.flags);
                             cm_SendFieldDeltas();
-                            ai_Unk5c2490(win, &b, &a, checks, (unsigned char *)param_1, *param_2, flags,
-                                         &master, (int)recs);
+                            ai_ShowWorkSettingsPage(win, &b, &a, checks, (AIBLD *)param_1, *param_2, set,
+                                         &master, (G8SETTAIL *)recs);
                             U_I((unsigned)&d2_PointerObj) = -1;
                         }
                     }
