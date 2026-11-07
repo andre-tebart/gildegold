@@ -25017,7 +25017,7 @@ int ai_SpecialAmountList(G8CHARREC *ch, char *text)
     cfg.mode = 0x204;
     cfg.filter = gypsyFilter;
     cfg.kind = 6;
-    return ai_SpecialAmountWindow((int)&cfg, text, 0, 0);
+    return ai_SpecialAmountWindow((unsigned int *)&cfg, text, 0, 0);
 }
 /* 0x5bea50, the special-amount list window "special\amt2" (1655 B): the caption (the kind's name 0x12b2 + kind, or
    the text 0xa0 with the viewing character), the subcaption caption or caption2, and up to 8 rows: the kind 0 the
@@ -26088,10 +26088,12 @@ int ai_ShowOfficeTab(int view, int page, int scrollPage, unsigned int n, LCAMOUN
 typedef struct AIAMOUNTTAB {            /* 0x14 bytes, one tab of the special-amount list window's tab table:
                                            {id, count, control, fill function of the page, row builder} */
     int id;                             /* +0x00, 0 .. 7 */
-    int count;                          /* +0x04, the rows of the page */
-    int control;                        /* +0x08, the tab's control object, -1: none yet */
-    int (*fill)();                      /* +0x0c, the page fill (0x5bf0d0 .. 0x5bfd90) */
-    int (*rows)();                      /* +0x10, the page's row builder (0x5bffb0 .. 0x5c0790) */
+    unsigned int count;                 /* +0x04, the rows of the page */
+    int control;                        /* +0x08, the tab's button (ai_SpecialAmountWindow), -1: none yet */
+    unsigned int (*fill)(AICHARREC *me, unsigned int max, LCAMOUNTROW *rows, unsigned int *filter);
+                                        /* +0x0c, the page fill (ai_FillFamilyTab .. ai_FillOfficeTab) */
+    int (*show)(int view, int page, int scrollPage, unsigned int n, LCAMOUNTROW *rows);
+                                        /* +0x10, the page's rows (ai_ShowFamilyTab .. ai_ShowOfficeTab) */
 } AIAMOUNTTAB;
 extern AIAMOUNTTAB ai_AmountTabs[];     /* 0x62d148, the eight tabs */
 
@@ -26129,35 +26131,180 @@ void ai_AmountLikingRows(AICHARREC *me, unsigned count, int *rows)
         rows += 0xe;
     }
 }
-/* 0x5c0970, the tabbed special-amount list window ("special_amt3" 0x62d214, 1984 B, ROUGH SKELETON): the
-   eight tab entries 0x62d14c + i * 0x14 ([0] the count, [1] the tab control, [2] the fill function of the
-   page, [3] the row builder), cleared by 0x5c08b0, the tab controls 0x46bf10 / 0x46c260, the list records
-   (0xe dwords), the 0x5c08d0 slider refresh, the empty page 0x5bfed0, the click dispatch 0x14673a8 /
-   0xf8a668 / 0x5fe710 and the pump 0x5309a0 (this, 0x657c7); 0x4758f0 (win) at the end. The body is left
-   as a comment (the Ghidra call arguments of the function pointer calls are scrambled) */
+/* 0x5c0970, the tabbed special-amount window "special\amt3" (1972 B): counts the rows of the eight tabs
+   (ai_AmountTabs fill with max 0) and opens tab (0 .. 7; else the last one, ai_AmountTab), or the first tab with
+   rows when it has none; prints caption, makes one tab button per tab down the side (d2_WinCreateSlider, the tab
+   name txt_Ptrs[0x1688 + id], the window's height shared out evenly) and shows the open tab's rows (up to 16).
+   Each frame: a right release closes it; holding the right button on a row's slider shows the tab's likings
+   (ai_AmountLikingRows) as that character, letting go returns to the player's; a click on a tab button opens
+   that tab when it has rows (else disables its button), a click on a row's frame chooses its character (without
+   pick the window closes with it, else pick (character, 0) decides, the window disabled meanwhile); every 0xd8
+   ticks while the page is not scrolled the tabs are counted and the open one refilled again (state 3). Returns
+   the chosen character record (0: none) */
 
-int ai_SpecialAmountWindow(int param_1, int param_2, unsigned int param_3, int param_4)
+int ai_SpecialAmountWindow(unsigned int *filter, char *caption, int tab, int (*pick)(AICHARREC *, int))
 {
+    LCAMOUNTROW rows[16];
+    int page;
+    int hit;
+    unsigned long refresh;
+    AICHARREC *chosen;
+    int state;
+    AICHARREC *viewer;
     int win;
-    int r;
+    unsigned int prev;
+    int i;
+    int k;
+    int step;
+    int rest;
+    int y;
 
-    r = -1;
-    if ((int)param_3 >= 0 && (int)param_3 < 8)
-        ai_AmountTab = param_3;
-    if (ai_AmountTab > 7)
-        ai_AmountTab = 0;
+    hit = 0;
+    refresh = d3_Time;
     ai_ClearAmountTabs();
-    win = d2_OpenForm(0, 0, (char *)(unsigned)&full_data_62d214);
-    d2_CentreViewWindows(win);
-    /* ROUGH SKELETON: the tab table fill through the function pointers 0x62d154 (page fill) and 0x62d158
-       (row add), the tab controls 0x46bf10 (0xbf) with 0x46c260 (0xb9) of the screen 0x143fbe0, the page
-       switch 0x5bfed0 / 0x5c08d0, the click dispatch and the callback param_4; the loop ends on the pump */
-    while (sv_RunFrame(ai_SpecialAmountWindow, 0x657c7) != 0) {
-        if (U_I(((unsigned)&dm_L + 0x20)) != 0)
-            U_I((unsigned)&sv_PopRequest) = 1;
+    if (tab > -1 && tab < 8)
+        ai_AmountTab = tab;
+    if (ai_AmountTab >= 8)
+        ai_AmountTab = 0;
+    for (i = 0; i < 8; i++)
+        ai_AmountTabs[i].count = ai_AmountTabs[i].fill(&lc_CharRecs[ai_PlayerId], 0, rows, filter);
+    if (ai_AmountTabs[ai_AmountTab].count == 0) {
+        ai_AmountTab = 8;
+        for (i = 0; i < 8; i++) {
+            if (ai_AmountTabs[i].count != 0) {
+                ai_AmountTab = i;
+                break;
+            }
+        }
     }
+    win = d2_OpenForm(0, 0, "special\\amt3");
+    d2_CentreViewWindows(win);
+    d2_SetForm(win, 2);
+    page = d2_LastWindow;
+    d2_SetForm(win, 1);
+    io_PrintText(caption);
+    d2_SetForm(win, 4);
+    y = d2_Wins[d2_LastWindow].h - 0x107;
+    step = y / 7;
+    rest = y % 7;
+    y = 0;
+    for (i = 0; i < 8; i++) {
+        ai_AmountTabs[i].control = d2_WinCreateSlider((d2_Wins[d2_LastWindow].w - 0xb9) / 2, y, 0xbf,
+                                                      txt_Ptrs[0x1688 + ai_AmountTabs[i].id], d2_LastWindow);
+        d2_SetObjWidth(ai_AmountTabs[i].control, 0xb9);
+        y += step + (--rest >= 0) + 0x21;
+    }
+    if (ai_AmountTab < 8) {
+        d2_SetForm(win, 2);
+        ai_AmountTabs[ai_AmountTab].count =
+            ai_AmountTabs[ai_AmountTab].fill(&lc_CharRecs[ai_PlayerId], 16, rows, filter);
+        ai_AmountTabs[ai_AmountTab].show(win, 2, 3, ai_AmountTabs[ai_AmountTab].count, rows);
+    }
+    d2_ClickedId = -1;
+    state = 3;
+    viewer = &lc_CharRecs[ai_PlayerId];
+    do {
+        if (state == 3) {
+            prev = -1;
+            if (ai_AmountTab >= 8)
+                ai_AmountTab = 0;
+            else
+                prev = ai_AmountTabs[ai_AmountTab].count;
+            for (i = 0; i < 8; i++)
+                ai_AmountTabs[i].count = ai_AmountTabs[i].fill(&lc_CharRecs[ai_PlayerId], 0, rows, filter);
+            if (ai_AmountTabs[ai_AmountTab].count == 0) {
+                ai_AmountTab = 8;
+                for (i = 0; i < 8; i++) {
+                    if (ai_AmountTabs[i].count != 0) {
+                        ai_AmountTab = i;
+                        break;
+                    }
+                }
+            }
+            for (i = 0; i < 8; i++) {
+                d2_SetObjEnabled(ai_AmountTabs[i].control, ai_AmountTabs[i].count > 0);
+                d2_Objs[ai_AmountTabs[i].control].checked = i == ai_AmountTab;
+            }
+            if (ai_AmountTab < 8) {
+                ai_AmountTabs[ai_AmountTab].count =
+                    ai_AmountTabs[ai_AmountTab].fill(&lc_CharRecs[ai_PlayerId], 16, rows, filter);
+                if (ai_AmountTabs[ai_AmountTab].count != prev)
+                    ai_AmountTabs[ai_AmountTab].show(win, 2, 3, ai_AmountTabs[ai_AmountTab].count, rows);
+                else  /* the same number of rows: keep the page's scroll offset */
+                    ai_AmountTabs[ai_AmountTab].show(win, 2, -1, ai_AmountTabs[ai_AmountTab].count, rows);
+                ai_AmountLikingRows(viewer, ai_AmountTabs[ai_AmountTab].count, (int *)rows);
+            } else {
+                ai_AmountPageSwitch(win, 2, 3);
+                viewer = &lc_CharRecs[ai_PlayerId];
+            }
+        } else if (state == 1) {
+            ai_AmountTabs[hit].count = ai_AmountTabs[hit].fill(&lc_CharRecs[ai_PlayerId], 0, 0, filter);
+            if (ai_AmountTabs[hit].count != 0) {
+                d2_Objs[ai_AmountTabs[ai_AmountTab].control].checked = 0;
+                ai_AmountTab = hit;
+                d2_Objs[ai_AmountTabs[hit].control].checked = 1;
+                ai_AmountTabs[ai_AmountTab].count =
+                    ai_AmountTabs[ai_AmountTab].fill(&lc_CharRecs[ai_PlayerId], 16, rows, filter);
+                ai_AmountTabs[ai_AmountTab].show(win, 2, 3, ai_AmountTabs[ai_AmountTab].count, rows);
+            } else {
+                d2_SetObjEnabled(ai_AmountTabs[hit].control, 0);
+            }
+        } else if (state == 4) {
+            ai_AmountLikingRows(viewer, ai_AmountTabs[ai_AmountTab].count, (int *)rows);
+        } else if (state == 2) {
+            refresh = 0;
+        }
+        chosen = 0;
+        state = 0;
+        if (dm_L.rup != 0) {
+            sv_PopRequest = 1;
+        } else if (dm_L.rhold != 0 && viewer == &lc_CharRecs[ai_PlayerId]) {
+            chosen = 0;
+            viewer = 0;
+            k = -1;
+            for (i = 0; i < ai_AmountTabs[ai_AmountTab].count; i++) {
+                if (rows[i].ctl[1] == d2_PointerObj) {
+                    k = i;
+                    break;
+                }
+            }
+            if (k > -1 && k < ai_AmountTabs[ai_AmountTab].count && rows[k].rec != 0 && rows[k].rec->id != 0xffff) {
+                state = 4;
+                viewer = rows[k].rec;
+            }
+        } else if (dm_L.rhold == 0 && viewer != &lc_CharRecs[ai_PlayerId]) {
+            state = 4;
+            viewer = &lc_CharRecs[ai_PlayerId];
+        } else if (d2_ClickedId != -1) {
+            for (i = 0; i < 8; i++) {
+                if (ai_AmountTabs[i].control == d2_PointerObj) {
+                    state = 1;
+                    hit = i;
+                    goto next;
+                }
+            }
+            for (i = 0; i < ai_AmountTabs[ai_AmountTab].count; i++) {
+                if (rows[i].ctl[0] == d2_PointerObj) {
+                    state = 2;
+                    hit = i;
+                    if (pick == 0) {
+                        sv_PopRequest = 1;
+                        chosen = rows[i].rec;
+                    } else {
+                        d2_SetViewEnabled(win, 0);
+                        chosen = pick(rows[i].rec, 0) ? rows[i].rec : 0;
+                        d2_SetViewEnabled(win, 1);
+                    }
+                }
+            }
+        } else if (refresh <= d3_Time && d2_Wins[page].scrollRemY == 0) {
+            state = 3;
+            refresh = d3_Time + 0xd8;
+        }
+next:;
+    } while (sv_RunFrame((int)ai_SpecialAmountWindow, 0x657c7) != 0);
     d2_CloseView(win);
-    return r;
+    return (int)chosen;
 }
 /* 0x5c1130, the special-amount menu "special_amt1" 0x62d224 (2384 B, ROUGH): the nine buttons of the table
    (the order 0, 8, 6, 4, 5, 1, 2, 3, 7 and the texts 0x589 / 0x599 / 0x58d / 0x590 / 0x58c / 0x58a / 0x58f /
