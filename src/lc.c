@@ -712,6 +712,7 @@ extern struct D2WIN *d2_LastWindowPtr;
 extern struct D2OBJ *d2_Objs;
 extern D2WIN d2_Wins[];
 extern GAPDATA full_rdata_5eed8c[];
+extern const unsigned int ai_BuildingTypeMasks[6];  /* 0x5eed70 (ai.h, not includable here): three 64-bit building class masks */
 extern GAPDATA full_rdata_5eed90[];
 extern char * rt_MapSurface;
 extern struct D2SURF *d2_BackgroundTile;
@@ -14591,7 +14592,7 @@ void ai_BuildTownMap(LCMAPWIN *m)
             m->marks[i].cellX = x;
             m->marks[i].cellZ = y;
             d2_MoveObj(d2_LastWindowPtr->x + x, d2_LastWindowPtr->y + y, m->marks[i].ctrl);
-            if (ai_PassesMapPickFilter(ai_Chars[ai_PlayerId], m->req, m->marks[i].bld) == 0) {
+            if (ai_PassesMapPickFilter((AICHARREC *)ai_Chars[ai_PlayerId], m->req, m->marks[i].bld) == 0) {
                 d2_Objs[m->marks[i].ctrl].interactive = 0;
                 d2_Objs[m->marks[i].ctrl].style = 0;
             }
@@ -27622,83 +27623,89 @@ int ai_PassesBuildingFilter(AICHARREC *me, AMOUNTCFG *cfg, AIBLD *bld)
     }
     return match && ownerOk && listed;
 }
-/* 0x5c39a0, the same filter test with the mask 0xf82806f / 2 against the 0x40000000 flag (528 B): the
-   empty record test is +8 / +0x10 only, the dead check param_3 +0x5a bit 1 needs param_2 +0xc < 0, and
-   the accept is (both empty or a mask hit) && the target case && the +0x1c exclusions */
+/* 0x5c39a0, whether the town map's mark of the building bld passes the request filter cfg for the character me
+   (496 B .. its switch table 0x5c3b90; ai_BuildTownMap greys out the marks it fails): no filter passes all, no
+   building or character none, a filter without class bits and owner test all. A building of the classes
+   ai_BuildingTypeMasks[4..5] fails under classMask[1] bit 30, one that cannot be entered (flags5a bit 0) under
+   bit 63. The class must be one of classMask's bits (or classMask empty); the owner test cfg->kind and the ids of
+   option14 bit 0 as in ai_PassesBuildingFilter
+   @deep read in full against the original; every instruction matches but one: the original's dead 'lea
+   eax, [edx + eax*4]' at +0x65 (the AIBTYPE pointer of bld->kind, computed after its buildingClass load
+   and overwritten at +0xb1 unread). Tried: the pointer in a local (as now), the class read straight
+   through the cast, the pointer assigned inside the read expression, the zeroing of lo / hi before / after
+   it (85 instructions apart). A declaration / scheduling artifact for a variant round. */
 
-int ai_PassesMapPickFilter(short *param_1, char *param_2, unsigned char *param_3)
+int ai_PassesMapPickFilter(AICHARREC *me, AMOUNTCFG *cfg, AIBLD *bld)
 {
-    unsigned char kind;
-    unsigned int blo;
-    unsigned int bhi;
-    int mask;
-    int target;
-    int exclude;
+    AIBTYPE *type;
+    unsigned char cls;
+    unsigned int lo;
+    unsigned int hi;
+    int match;
+    int ownerOk;
+    int listed;
     int i;
-    short v;
-    short own;
 
-    if (param_2 == 0)
+    if (cfg == 0)
         return 1;
-    if (param_3 == 0)
+    if (bld == 0 || me == 0)
         return 0;
-    if (param_1 == 0)
-        return 0;
-    if (*(int *)(param_2 + 8) == 0 && *(int *)(param_2 + 0x10) == 0)
+    if (cfg->classMask[0] == 0 && cfg->kind == 0)
         return 1;
-    kind = *(unsigned char *)(U_I((unsigned)&ai_BTypes) + *param_3 * 0x24d);
-    if (kind < 0x20) {
-        blo = 1 << (kind & 0x1f);
-        bhi = 0;
-    } else {
-        blo = 0;
-        bhi = 1 << ((kind - 0x20) & 0x1f);
-    }
-    if (((blo & 0xf82806f) != 0 || (bhi & 2) != 0) && (*(unsigned int *)(param_2 + 0xc) & 0x40000000) != 0)
+    type = &((AIBTYPE *)ai_BTypes)[bld->kind];
+    cls = type->buildingClass;
+    lo = 0;
+    hi = 0;
+    if (cls > 0x1f)
+        hi = 1 << (cls - 0x20);
+    else
+        lo = 1 << cls;
+    if (((ai_BuildingTypeMasks[4] & lo) || (ai_BuildingTypeMasks[5] & hi)) && (cfg->classMask[1] & 0x40000000))
         return 0;
-    exclude = 1;
-    if ((int)*(unsigned int *)(param_2 + 0xc) < 0 && (param_3[0x5a] & 1))
+    ownerOk = 0;
+    match = 0;
+    listed = 1;
+    if ((cfg->classMask[1] & 0x80000000) && (bld->flags5a & 1))
         return 0;
-    mask = (*(unsigned int *)(param_2 + 8) == 0 && *(unsigned int *)(param_2 + 0xc) == 0) ||
-           (blo & *(unsigned int *)(param_2 + 8)) != 0 || (bhi & *(unsigned int *)(param_2 + 0xc)) != 0;
-    target = 0;
-    v = *(short *)(param_3 + 0x27);
-    switch (*(int *)(param_2 + 0x10)) {
+    if ((cfg->classMask[0] == 0 && cfg->classMask[1] == 0) || (lo & cfg->classMask[0]) || (hi & cfg->classMask[1]))
+        match = 1;
+    if (cfg->kind == 0)
+        ownerOk = 1;
+    else switch (cfg->kind) {
     case 0:
-        target = 1;
+        ownerOk = 1;
         break;
     case 1:
-        target = v == -1;
+        ownerOk = bld->owner == 0xffff;
         break;
     case 2:
-        target = v != -1;
+        ownerOk = bld->owner != 0xffff;
         break;
     case 3:
-        target = v == *param_1 || v == -1;
+        ownerOk = bld->owner == me->id || bld->owner == 0xffff;
         break;
     case 4:
-        target = v == *param_1;
+        ownerOk = bld->owner == me->id;
         break;
     case 5:
-        target = v != *param_1;
+        ownerOk = bld->owner != me->id;
         break;
     case 6:
-        target = v != *param_1 && v != -1;
+        ownerOk = bld->owner != me->id && bld->owner != 0xffff;
         break;
     case 7:
-        own = *(short *)U_I((unsigned)&ai_PlayerChar);
-        target = v != *param_1 && v != own && v != -1;
+        ownerOk = bld->owner != me->id && bld->owner != *ai_PlayerChar && bld->owner != 0xffff;
         break;
     }
-    if ((*(unsigned char *)(param_2 + 0x14) & 1) && v != -1) {
+    if ((cfg->option14 & 1) && bld->owner != 0xffff) {
         for (i = 0; i < 4; i++) {
-            if (v == *(short *)(param_2 + 0x1c + i * 2) && *(short *)(param_2 + 0x1c + i * 2) != -1) {
-                exclude = 0;
+            if (bld->owner == cfg->ids[i] && cfg->ids[i] != 0xffff) {
+                listed = 0;
                 break;
             }
         }
     }
-    return mask && target && exclude;
+    return match && ownerOk && listed;
 }
 /* 0x5c4100, the law selection entry of the map pick 0x5b2180: the picked building record; when its kind has a
    research class (0x50b090, the class written over the parameter) it returns 0, else it opens the law selection
