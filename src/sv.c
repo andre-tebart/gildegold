@@ -7415,7 +7415,7 @@ l64:
         if (u5 == 0)
             sv_HoverPick();
         if ((mask & 0x10) == 0) {
-            if (dm_L.rclick != 0)
+            if (dm_L.rhold != 0)
                 goto l2;
             if (d2_PointerObj == -1 || (((D2OBJ *)d2_Objs)[d2_PointerObj].style & 0x40) == 0)
                 d2_CopyCaption(ch_EmptyName);
@@ -7424,7 +7424,7 @@ l64:
             if (u5 == 0)
                 d2_SetPointerSprite(0, 0);
         }
-        if (dm_L.rclick == 0) {
+        if (dm_L.rhold == 0) {
             if ((mask & 0x10) != 0)
                 sv_HandleObjects();
             if ((mask & 0x20) != 0) {
@@ -7466,7 +7466,7 @@ l2:
                 cm_DrawScrollArrows();
             else if (sv_PanelShown != 0 || ai_FallbackBuilding != 0)
                 sv_DrawBorderArrows();
-            if ((mask & 0x1000) != 0 && dm_L.rclick == 0 && sv_CameraScrolled == 0 && d3t_CamMove == 0 && sv_BandActive == 0 && d2_CutsceneActive == 0 && he_ActiveSlot == 0)
+            if ((mask & 0x1000) != 0 && dm_L.rhold == 0 && sv_CameraScrolled == 0 && d3t_CamMove == 0 && sv_BandActive == 0 && d2_CutsceneActive == 0 && he_ActiveSlot == 0)
                 sv_DrawHint();
             sv_DrawStatusText();
             sv_DrawPanelPointer();
