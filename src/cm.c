@@ -7209,7 +7209,7 @@ float cm_CharCellDistXZ(char *c, int x, int y)
 
 int cm_OtherBuilding(char *a, char *b)
 {
-    return *(int *)(a + 0x16c) != *(int *)(b + 0x16c);
+    return ((AICHAR *)a)->bld != ((AICHAR *)b)->bld;
 }
 /* 0x4ce290, a bomb object "ob_BOMBE" at the position p in a free slot of the 32 (object, time) of cm_Bombs */
 
