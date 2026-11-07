@@ -79,14 +79,14 @@ typedef struct D3BASTREAM {         /* 0x16c bytes, "tp_veranimstream" */
     int nverts;                     /* 0x140 */
     int nlinks;                     /* 0x144 */
     int nframes;                    /* 0x148 */
-    int unk14c;
+    int refs;                       /* 0x14c, D3ANIMDATA.refs (d3_anim.h): d3anim_StartAnim counts the users */
     int first;                      /* 0x150 */
     int last;                       /* 0x154 */
-    int unk158;
+    unsigned int lastuse;           /* 0x158, D3ANIMDATA.lastuse: d3_FrameCount at the last use */
     D3BAFRAME *frames;              /* 0x15c */
     struct D3BASTREAM *prev;        /* 0x160, list of the loaded animations */
     struct D3BASTREAM *next;        /* 0x164 */
-    char unk168;
+    char normals;                   /* 0x168, D3ANIMDATA.normals: d3anim_StartAnim sets it once it has calculated the normals */
     char relative;                  /* 0x169, points relative to the frame position */
 } D3BASTREAM;
 

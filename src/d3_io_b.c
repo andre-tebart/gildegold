@@ -496,7 +496,7 @@ D3BASTREAM *d3_LoadBinaryAnimStream(char *path, char *name, char relative)
                     strncpy(stream->name, name, 0x3f);
                     stream->nframes = nframes;
                     stream->first = 0;
-                    stream->unk168 = 0;
+                    stream->normals = 0;
                     stream->last = stream->nframes - 1;
                     stream->relative = relative;
                     stream->frames = mem_Alloc(stream->nframes * sizeof(D3BAFRAME),
