@@ -213,7 +213,7 @@ extern unsigned gm_KindObjs[732];
 
 
 extern int d2_PointerObj;
-extern int sv_PanelKind1eBtn;
+extern int sv_PanelPlantBtn;
 extern int d2_ClickedId;
 
 
@@ -4935,6 +4935,7 @@ void ai_KontorContact(AIBLD *bld)
     }
     ai_CampaignStep(0x1c, (int)bld, 0, 0);
 }
+void ob_HandleBepflanzung(AIBLD *bld);
 /* 0x593b00, the wood-kontor contact listener (416 B): 0x52e190; the context *(param_1 + 0x71); the pump
    0x5309a0 (this, 0x67fff); while the flag 0x6f231c has 0x200: LAGER (0x1441f90, 0xe), PRODUKTION_HOLZ
    (0x1442128, 0x13), GELAGE (0x1441f88, 0x16), TRANSPORT (0x1441fa0, 0x15), ZIELSCHEIBE (0x1440acc, 0xc),
@@ -4988,8 +4989,8 @@ void ai_WoodKontorContact(AIBLD *bld)
             else if (ai_ClickedObject == stroh)
                 ai_TrainingWindow(bld);
         }
-        if (d2_ClickedId != -1 && sv_PanelKind1eBtn == d2_PointerObj)
-            ai_Kind1eWindow(bld);
+        if (d2_ClickedId != -1 && sv_PanelPlantBtn == d2_PointerObj)
+            ob_HandleBepflanzung(bld);
         r = sv_RunFrame(ai_WoodKontorContact, 0x67fff);
     }
 }
@@ -5057,7 +5058,7 @@ void ai_StoneKontorContact(AIBLD *bld)
     }
 }
 
-int ai_PickedObjectWindow(); int ai_Kind1eWindow();
+int ai_PickedObjectWindow();
 int ai_MapPick();
 
 /* 0x593e80, the information listener (186 B): the plates released (0x52e190) and registered again every frame
@@ -22621,14 +22622,198 @@ done:
         cm_SendMoveGoodsUnchecked(to, ch->netId, ai_OwnPlayer, remaining);
     return paid;
 }
-/* 0x5b9730, a window over the record +0x71 (1856 B, ROUGH SKELETON): param_1 read at +0x71, a 0x2e4-byte frame;
-   the body is a comment */
+/* 0x5b9730, the plant bar of a building with a vegetation map (ai_WoodKontorContact's panel button): the ground
+   type named "PFLANZBAR" of the terrain map and the plant goods (type 0x17) of the building's main room give the
+   bar "Misc\PlantBar" one picture per plant (a radio group, keys 'N' / 'J' step it); the chosen plant's model
+   "<data>vegetation/*pfl_<NAME>_04.ogr", half transparent, follows the mouse over the terrain (map_PickScreen),
+   uncoloured where it fits on that ground (veg_Fits), red where not; a left release there plants it (cm_SetPlant,
+   waiting for the answer), pays half its price for 100 (at least 0x400) and drops the new plant's model onto the
+   ground; a right release closes the bar
+   @deep Reconstructed in full from 0x5b9730..0x5b9da9 (the PFLANZBAR ground loop, the plant goods query,
+   the PlantBar form and radio group, the pick / transform / fit loop, cm_SetPlant with the payment and the
+   model drop, the 'N' / 'J' radio keys, the model reload with its alpha); every call, store, constant and
+   string read against the original; ours 486 = original 486 instructions, frame equal (pos / above are
+   D3VECTOR4). Left: the entry's zero stores in another order (code hunk at +0x2c: the original stores
+   pick.x/y/z from ebp, then pick.w from esi, then z from esi; ours stores z from esi first, then pick from
+   ebp: tried the statements reordered and 0.0f constants, no change), order hunks at +0x6 (the prologue
+   loads), +0x231 (ebx/edi swapped for x / z: and/sar order), +0x31e and +0x3a8 (push order of the veg_Fits
+   / cm_SetPlant arguments under that swap). Allocation / scheduling only: a variant round. */
 
-int ai_Kind1eWindow(int param_1)
+void ob_HandleBepflanzung(AIBLD *bld)
 {
-    /* ROUGH SKELETON: the 0x2e4-byte frame and the field +0x71 */
-    (void)param_1;
-    return 0;
+    char path[0x100];
+    char msg[0x100];
+    int types[8];                   /* the plant goods of the main room */
+    int pics[8];                    /* their pictures on the bar */
+    D3MATRIX m;
+    D3VECTOR4 above;                /* the engine's padded vectors */
+    D3VECTOR4 pos;
+    D3VECTOR4 pick;
+    D3TEXFLAGS tf;
+    G15PLANT *plants;
+    G15PLANT *plant;
+    G15TREE *type;
+    D3OBJECT *model;
+    D3OBJECT *obj;
+    unsigned short *item;
+    char *room;
+    int ground;                     /* the PFLANZBAR ground type */
+    int view;
+    int radio;
+    int count;
+    int sel;
+    int last;
+    int hit;
+    int ok;
+    int slot;
+    int price;
+    int cost;
+    int x;
+    int z;
+    int i;
+
+    last = -1;
+    radio = -1;
+    model = 0;
+    x = 0;
+    pick.x = 0.0f;
+    pick.y = 0.0f;
+    pick.z = 0.0f;
+    pick.w = 0.0f;
+    z = 0;
+    ok = 1;
+    ground = 0;
+    plants = (G15PLANT *)bld->plants;
+    sel = 0;
+    type = 0;
+    count = 0;
+    if (d3_Terrain == 0)
+        return;
+    for (i = 0; i < 8; i++) {
+        if (strstr(((G15MAP *)d3_Terrain)->ground[i], "PFLANZBAR"))
+            ground = i;
+    }
+    room = gm_Query((void *)bld->objList, 1, 0, 0xff);
+    if (room == 0)
+        return;
+    for (item = (unsigned short *)gm_Query((void *)((AIROOM *)room)->list, 1, 4, 0x17); item != 0;
+         item = gm_QueryNext())
+        types[count++] = *item;
+    view = d2_OpenFormS(d2_ScreenW - 0x5f, 0x10a, "Misc\\PlantBar");
+    if (view == -1)
+        return;
+    if (sv_PanelForm != -1)
+        d2_SetViewEnabled(sv_PanelForm, 0);
+    d2_SetForm(view, 1);
+    for (i = 0; i < count; i++) {
+        int pic;
+
+        pic = d2_WinOpenPic(0x1a, i * 0x32, types[i] + 0xdf, d2_LastWindow);
+        pics[i] = pic;
+        if (radio == -1) {
+            radio = d2_CreateRadioGroup(1, pic);
+            d2_Objs[pic].checked = 1;
+            d2_Objs[pic].highlighted = 1;
+        } else {
+            d2_RadioAdd(radio, pic);
+        }
+    }
+    do {
+        hit = map_PickScreen(d3_Terrain, dm_L.x, dm_L.y, 30.0f, (D3VECTOR *)&pick);
+        if (hit != -1 && model != 0) {
+            /* the picked point from the camera's space into the world */
+            z = hit >> 16;
+            x = hit & 0xffff;
+            d3_MatTranspose(&d3_Camera->matrix, &m);
+            pos.x = m._31 * pick.z + m._21 * pick.y + m._11 * pick.x;
+            pos.y = m._32 * pick.z + m._22 * pick.y + m._12 * pick.x;
+            pos.z = m._33 * pick.z + m._23 * pick.y + m._13 * pick.x;
+            pos.x += d3_Camera->pos.x;
+            pos.y += d3_Camera->pos.y;
+            pos.z += d3_Camera->pos.z;
+            d3_SetObjectPos(model, (D3VECTOR *)&pos);
+            if (((G15MAP *)d3_Terrain)->cells[((G15MAP *)d3_Terrain)->w * z + x] == ground
+                && veg_Fits(plants, x, z, type->size))
+                ok = 1;
+            else
+                ok = 0;
+            d3_RelightObject(model);
+        }
+        if (ok)
+            d3t_SetTreeColor(model, 0, 0, 0);
+        else
+            d3t_SetTreeColor(model, 0xc0, 0x40, 0x40);
+        if (dm_L.lup != 0 && hit != -1 && ok) {
+            slot = cm_SetPlant(bld->id, x, z, type->id, 0, -1);
+            while (cm_GetSlotState(slot) == 0)
+                sv_RunFrame(0, 0x677c7);
+            plant = (G15PLANT *)cm_GetSlotValue(slot);
+            if (plant != 0) {
+                price = (int)gm_ItemPrice(type->id, 100);
+                cost = (int)(price * 0.5);
+                if (cost <= 0x400)
+                    cost = 0x400;
+                cm_SendMoveGoods(-1, ai_CharInts[ai_PlayerId][0], ai_OwnPlayer, cost);
+                veg_LoadModel(plant, 0);
+                obj = (D3OBJECT *)plant->obj;
+                if (obj != 0) {
+                    above.x = pos.x;
+                    above.y = pos.y - 60.0;
+                    above.z = pos.z;
+                    d3_SetObjectPos(obj, (D3VECTOR *)&above);
+                    d3t_PlaceObjectV(obj, (D3VECTOR *)&pos, &obj->rotation, 0x32, 0x20);
+                    d3_RelightObject(obj);
+                }
+            }
+        }
+        if (dm_L.rup != 0)
+            sv_PopRequest = 1;
+        if (dm_L.lup != 0) {
+            for (i = 0; i < count; i++) {
+                if (d2_PointerObj == pics[i]) {
+                    sel = d2_Radios[radio].sel;
+                    break;
+                }
+            }
+        }
+        if (kb_Last == 'N') {
+            if (++sel > count - 1)
+                sel = 0;
+            d2_RadioSelect(radio, sel);
+        } else if (kb_Last == 'J') {
+            if (--sel < 0)
+                sel = count - 1;
+            d2_RadioSelect(radio, sel);
+        }
+        sel = d2_Radios[radio].sel;
+        if (sel != last) {
+            /* the model of the newly chosen plant */
+            type = veg_FindType(types[sel]);
+            if (model != 0)
+                d3if_Delete(model);
+            sprintf(path, "%svegetation/*pfl_%s_04.ogr", ai_DataPath, type->name);
+            model = d3_LoadGroup(path, 0, 0);
+            if (model == 0) {
+                sprintf(msg, "ob_HandleBepflanzung(): Could not load 3D-Objekt-roup '%s'...", path);
+                err_Message(msg);
+                sv_PopRequest = 1;
+            } else {
+                tf.all = 0;
+                tf.b[2] = 1;
+                tf.b[0] = 0xdc;
+                model->stateFlags &= ~2;
+                d3_SetAlpha(model, &tf);
+                model->stateFlags |= 2;
+            }
+            last = sel;
+        }
+    } while (sv_RunFrame((int)ob_HandleBepflanzung, 0x677cf) != 0);
+    if (model != 0)
+        d3if_Delete(model);
+    d2_RadioClear(radio);
+    if (sv_PanelForm != -1)
+        d2_SetViewEnabled(sv_PanelForm, 1);
+    d2_CloseView(view);
 }
 /* 0x5b9db0, a window gated by 0x6f22e8 (368 B, ROUGH SKELETON): with 0x6f22e8 == 0 it returns early, a
    0xf8-byte frame; the body is a comment */

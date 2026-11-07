@@ -3554,7 +3554,7 @@ void sv_OpenCartPanel(AIOBJ *c)
 }
 
 extern int sv_PanelBuildBtn;  /* 0x623884 */
-extern int sv_PanelKind1eBtn;  /* 0x623898 */
+extern int sv_PanelPlantBtn;  /* 0x623898 */
 extern int sv_PanelPortrait;  /* 0x623880 */
 extern int ai_SelectedCount;  /* 0x6f2334 */
 extern unsigned char ai_GameState;  /* 0x6f25ac */
@@ -3581,7 +3581,7 @@ void sv_OpenItemPanel(unsigned short *p);
    "standard" panel with the construction button 0x8c (sv_PanelBuildBtn) and the item button 0xa6; for the player's
    own fallback building (ai_FallbackBuilding, owner = ai_PlayerId) the building panel with the owner and kind name,
    the building picture, the health bar (its level), the button 0x8c and either the kind 0x1e button
-   (sv_PanelKind1eBtn) or the item button 0xa6 */
+   (sv_PanelPlantBtn) or the item button 0xa6 */
 void sv_OpenDefaultPanel(void)
 {
     int level;
@@ -3610,7 +3610,7 @@ void sv_OpenDefaultPanel(void)
         d2_SetObjValue4(sv_PanelHealthBar, 0, 100, level);
         sv_PanelActionBtn = sv_AddPanelButton(0, 0x8c, txt_PanelBtnOwn);
         if (((AIBLD *)ai_FallbackBuilding)->type == 0x1e) {
-            sv_PanelKind1eBtn = sv_AddPanelButton(0, 0xa6, txt_PanelBtnKind1e);
+            sv_PanelPlantBtn = sv_AddPanelButton(0, 0xa6, txt_PanelBtnKind1e);
             return;
         }
         sv_PanelItemBtn = sv_AddPanelButton(0, 0xa6, txt_PanelBtnItem);
@@ -3951,7 +3951,7 @@ void sv_ClosePanel(void)
         sv_PanelForm = -1;
         sv_PanelBldPic = -1;
         sv_PanelHealthBar = -1;
-        sv_PanelKind1eBtn = -1;
+        sv_PanelPlantBtn = -1;
         sv_PanelActionBtn = -1;
         sv_PanelTransportBtn = -1;
         sv_PanelCartBtn = -1;
@@ -7669,7 +7669,7 @@ int sv_PanelItemBtn = -1;  /* 0x623888 */
 int sv_PanelTransportBtn = -1;  /* 0x62388c */
 int sv_PanelCartBtn = -1;  /* 0x623890 */
 int sv_PanelActionBtn = -1;  /* 0x623894 */
-int sv_PanelKind1eBtn = -1;  /* 0x623898 */
+int sv_PanelPlantBtn = -1;  /* 0x623898 */
 int sv_BarToggle = -1;  /* 0x6238a4 */
 /* 0x6238a8, the skies of fair weather (sv_UpdateWeather picks one below 50 clouds, cm picks one for the fair cutscene) */
 SVSKYREC sv_SkyFair[4] = {

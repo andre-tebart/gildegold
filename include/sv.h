@@ -210,7 +210,7 @@ extern int sv_PanelItemBtn;                                    /* 0x623888 */
 extern int sv_PanelTransportBtn;                                    /* 0x62388c */
 extern int sv_PanelCartBtn;                                    /* 0x623890 */
 extern int sv_PanelActionBtn;                                    /* 0x623894 */
-extern int sv_PanelKind1eBtn;                                    /* 0x623898 */
+extern int sv_PanelPlantBtn;                                    /* 0x623898 */
 extern int sv_BarToggle;                                    /* 0x6238a4 */
 extern SVSKYREC sv_SkyFair[4];                              /* 0x6238a8 */
 extern SVSKYREC sv_SkyMedium[3];                            /* 0x6239d8 */

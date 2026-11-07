@@ -710,6 +710,7 @@ char d3_ForEachObject2(D3SCENE *scene, D3OBJECT *obj, unsigned int mask, void (*
 void d3e_LoadSceneEvents(void *f);  /* 0x43ea10 */
 void d3_ClipMesh(D3CLIP mask, D3PVERT *v, int nverts, D3PTRI *t, int ntris);  /* 0x439a60 */
 void d3_AppendSibling(D3OBJECT *first, D3OBJECT *obj);  /* 0x43cb20 */
+void d3_SetAlpha(D3OBJECT *obj, D3TEXFLAGS *f);  /* 0x43d690, the alpha flags f on obj and its group */
 char d3_AttachToBone(D3OBJECT *obj, char *name);  /* 0x43d6c0 */
 char d3_DeflateScene(unsigned int flags);  /* 0x43db30 */
 char d3_InflateScene(unsigned int flags);  /* 0x43deb0 */
