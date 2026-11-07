@@ -4565,7 +4565,7 @@ exe	0x005cf8a0	ai_UseGood	lc	draft	readable	deep
 exe	0x005cfb60	ai_UseGoodAddMoney	lc	byte	readable		
 exe	0x005cfb80	ai_UseGoodHeal	lc	byte	readable		
 exe	0x005cfc00	ai_UseGoodInfectOwner	lc	shape	readable		
-exe	0x005cff70	ai_UseGoodSendHome	lc	draft	draft	deep	
+exe	0x005cff70	ai_UseGoodSendHome	lc	draft	readable	deep	
 exe	0x005d0320	ai_UseGoodWeakenSkills	lc	shape	readable		
 exe	0x005d0530	ai_UseGoodWeakenSkills2	lc	shape	readable		
 exe	0x005d06e0	ai_UseGoodCureAilment	lc	byte	readable		
