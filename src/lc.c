@@ -6504,7 +6504,8 @@ void ai_FeastContact(AIBLD *bld, int room)
 typedef struct LCAMOUNTROW {            /* 0x38 bytes, one row of the special-amount list (ai_AmountRowStatus /
                                            ai_AmountRow; cm.c CMAMOUNTROW) */
     AICHARREC *rec;                     /* 0x00, the character the row shows */
-    int ctl[3];                         /* 0x04, the row's controls (ai_AmountRow) */
+    int ctl[2];                         /* 0x04, the row's controls (ai_AmountRow): the frame picture, the liking slider */
+    int office;                         /* 0x0c, of a vacant seat: its office, the text 0x253 + it (ai_ShowOfficeRows) */
     int x;                              /* 0x10 */
     int y;                              /* 0x14 */
     int portrait;                       /* 0x18, the portrait picture (ai_ShowAmountRows) */
@@ -24706,142 +24707,127 @@ int ai_ShowAmountRows(int win, int kind, unsigned int *filter, int n, LCAMOUNTRO
     }
     return 0;
 }
-/* 0x5bdb60, the entry rows of a kind 8 window (1648 B, ROUGH): the switch on param_2 (1 .. 8) sets the column
-   origins of the row records of param_5 (0xe dwords each: the x / y at +0x10 / +0x14, the other fields as in
-   0x5bd5e0), then per row: the text control 0x4731d0 (0x5da), the icon +0x54, the two texts 0x5176d0 /
-   0x5bd0c0 (0x62d1f4 / 0x62d1ec; a kind 8 row: 0x62d1fc and the page word 0x23 .. 0x27 of the flags +0x1cc),
-   the slider 0x46a960 (0x442) with 0x50c550, the 0x5c33c0 check and the window list +0x4c / +0x1c0 / +0x2e8.
-   ROUGH: the switch's field assignments are grouped by kind, the text arguments from the disassembly */
+/* 0x5bdb60, the seat rows of the special-amount list (1633 B, ai_SpecialAmountListWindow for the kinds 1 .. 6 and 8;
+   the seats as offices is a reasoned guess): the kind places the rows on fixed seats (1 .. 3: four, 4 .. 6: six,
+   8: five; another kind shows nothing), then per row the frame picture 0x5da and for a character the pictures and
+   the liking slider as ai_ShowAmountRows, the texts the title and name ("%s %1N7") and the name ("%1N5"), or for
+   kind 8 the name ("%1N7") and the office of AICHARREC.flags1cc (0x1000: 0x26, 0x2000: 0x27, 0x800: 0x25,
+   0x400: 0x24, 0x200: 0x23); a vacant row shows the picture 0x4fb and the text 0x253 + its office, its frame
+   disabled; returns 0 */
 
-int ai_Unk5bdb60(int param_1, int param_2, int param_3, int param_4, int param_5, unsigned short *param_6)
+int ai_ShowOfficeRows(int win, int kind, unsigned int *filter, int n, LCAMOUNTROW *rows, AICHARREC *viewer)
 {
-    int k;
+    int valid;
+    int left;
     int i;
+    char text[0x100];
     int x;
     int y;
-    int page;
+    int office;
     unsigned int flags;
-    char *chr;
-    char buf[256];
-    int ok;
 
-    ok = 0;
-    if (param_2 == 1 || param_2 == 2 || param_2 == 3) {
-        U_I(param_5 + 0x80) = 0x65;
-        U_I(param_5 + 0x10) = 0xca;
-        U_I(param_5 + 0x48) = 0xca;
-        U_I(param_5 + 0xb8) = 0x12f;
-        U_I(param_5 + 0x14) = 0;
-        U_I(param_5 + 0x4c) = 0x80;
-        U_I(param_5 + 0x84) = 0x100;
-        U_I(param_5 + 0xbc) = 0x100;
-        ok = 1;
-    } else if (param_2 == 4 || param_2 == 5 || param_2 == 6) {
-        U_I(param_5 + 0x10) = 0xca;
-        U_I(param_5 + 0xf0) = 0xca;
-        U_I(param_5 + 0x48) = 0x65;
-        U_I(param_5 + 0x4c) = 0x80;
-        U_I(param_5 + 0x84) = 0x80;
-        U_I(param_5 + 0x80) = 0x12f;
-        U_I(param_5 + 0xb8) = 0;
-        U_I(param_5 + 0x128) = 0x194;
-        U_I(param_5 + 0x14) = 0;
-        U_I(param_5 + 0xf4) = 0x100;
-        U_I(param_5 + 0x12c) = 0x100;
-        ok = 1;
-    } else if (param_2 == 8) {
-        U_I(param_5 + 0x10) = 0x12f;
-        U_I(param_5 + 0xb8) = 0x12f;
-        U_I(param_5 + 0x48) = 0x65;
-        U_I(param_5 + 0x14) = 0;
-        U_I(param_5 + 0x4c) = 0;
-        U_I(param_5 + 0x80) = 0xca;
-        U_I(param_5 + 0xf0) = 0x65;
-        U_I(param_5 + 0x84) = 0x80;
-        U_I(param_5 + 0xf4) = 0x100;
-        ok = 1;
+    if (kind == 1 || kind == 2 || kind == 3) {
+        rows[0].x = 0xca;
+        rows[1].x = 0xca;
+        rows[2].x = 0x65;
+        rows[3].x = 0x12f;
+        rows[0].y = 0;
+        rows[1].y = 0x80;
+        rows[2].y = 0x100;
+        rows[3].y = 0x100;
+        valid = 1;
+    } else if (kind == 4 || kind == 5 || kind == 6) {
+        rows[0].x = 0xca;
+        rows[1].x = 0x65;
+        rows[2].x = 0x12f;
+        rows[3].x = 0;
+        rows[4].x = 0xca;
+        rows[5].x = 0x194;
+        rows[0].y = 0;
+        rows[1].y = 0x80;
+        rows[2].y = 0x80;
+        rows[3].y = 0x100;
+        rows[4].y = 0x100;
+        rows[5].y = 0x100;
+        valid = 1;
+    } else if (kind == 8) {
+        rows[0].x = 0x12f;
+        rows[1].x = 0x65;
+        rows[2].x = 0xca;
+        rows[3].x = 0x12f;
+        rows[4].x = 0x65;
+        rows[0].y = 0;
+        rows[1].y = 0;
+        rows[2].y = 0x80;
+        rows[3].y = 0x100;
+        rows[4].y = 0x100;
+        valid = 1;
+    } else {
+        valid = 0;
     }
-    if (ok)
-        U_I(param_5 + 0xbc) = 0x100;
-    for (k = 0; k < param_4; k++) {
-        int *rec = (int *)((char *)param_5 + k * 0x38);
-        if (!ok)
-            return 0;
-        x = rec[4] + 0x65;
-        y = rec[5] + 0x23;
-        i = x - *(short *)(U_I((unsigned)&d2_Pics) + 0x1ebd8) / 2;
-        rec[1] = d2_WinOpenPic(i, y, 0x5da, U_I((unsigned)&d2_LastWindow));
-        rec[2] = -1;
-        chr = (char *)rec[0];
-        if (chr == 0) {
-            d2_WinOpenPic((x - *(short *)(U_I((unsigned)&d2_Pics) + 0x1a2ac) / 2) - 3, rec[5] + 0x24, 0x4fb,
-                         U_I((unsigned)&d2_LastWindow));
-            txt_Format(buf, "%s", rec[3] + 0x253);
-            ai_CentredText((int)buf, x, rec[5], 0xca, 0x56);
-            U_I((unsigned)&d2_Objs + rec[1] * 0x2ec + 0x4c) = 1;
-            U_I((unsigned)&d2_Objs + rec[1] * 0x2ec + 0x2e8) = 0;
-            d2_SetObjEnabled(rec[1], 0);
-        } else {
-            char kind = *(char *)(chr + 2);
-            if (kind == 6 || kind == 7 || kind == 5)
-                d2_WinOpenPic(i - 0x20, y, U_I(chr + 0x54), U_I((unsigned)&d2_LastWindow));
-            rec[6] = d2_WinOpenPic((x - *(short *)(U_I((unsigned)&d2_Pics) + 0x50 + U_I(chr + 0x18c) * 0x54) / 2) - 3,
-                                  rec[5] + 0x24, U_I(chr + 0x18c), U_I((unsigned)&d2_LastWindow));
-            d2_WinOpenPic(i + 3, rec[5] + 0x26, rec[7], U_I((unsigned)&d2_LastWindow));
-            if (rec[8] != 0)
-                d2_WinOpenPic(i + 3, rec[5] + 0x26 + *(short *)(U_I((unsigned)&d2_Pics) + 0x1ebda) - 0x13, rec[8],
-                             U_I((unsigned)&d2_LastWindow));
-            if (rec[9] != 0)
-                d2_WinOpenPic(i + *(short *)(U_I((unsigned)&d2_Pics) + 0x1ebd8) - 0x10, rec[5] + 0x26, rec[9],
-                             U_I((unsigned)&d2_LastWindow));
-            d2_WinOpenPic(i + *(short *)(U_I((unsigned)&d2_Pics) + 0x1ebd8) - 0x10,
-                         rec[5] + 0x26 + *(short *)(U_I((unsigned)&d2_Pics) + 0x1ebda) - 0x13, rec[10], U_I((unsigned)&d2_LastWindow));
-            if (param_2 == 8) {
-                flags = U_I(chr + 0x1cc);
-                if (flags & 0x1000)
-                    page = 0x26;
-                else if (flags & 0x2000)
-                    page = 0x27;
-                else if (flags & 0x800)
-                    page = 0x25;
-                else if (flags & 0x400)
-                    page = 0x24;
-                else
-                    page = (flags & 0x200) ? 0x23 : 0;
-                txt_Format(buf, (char *)(unsigned)&full_data_62d1fc, *(unsigned short *)chr);
-
-                ai_CentredText((int)buf, x, rec[5], 0xca, 0x56);
-                txt_Format(buf, "%s",
-                             (-(*(char *)(chr + 9) != 0) & 0x28) + 0x253 + page);
-                ai_CentredText((int)buf, x, rec[5] + 0xf, 0xca, 0x56);
+    for (i = 0; i < n && valid; i++) {
+        x = rows[i].x + 0x65;
+        y = rows[i].y + 0x23;
+        left = x - d2_Pics[0x5da].w / 2;
+        rows[i].ctl[0] = d2_WinOpenPic(left, y, 0x5da, d2_LastWindow);
+        rows[i].ctl[1] = -1;
+        if (rows[i].rec != 0) {
+            if (rows[i].rec->kind == 6 || rows[i].rec->kind == 7 || rows[i].rec->kind == 5)
+                d2_WinOpenPic(left - 0x20, y, rows[i].rec->ref54, d2_LastWindow);
+            rows[i].portrait = d2_WinOpenPic(x - d2_Pics[rows[i].rec->picture].w / 2 - 3, y + 1, rows[i].rec->picture,
+                                             d2_LastWindow);
+            d2_WinOpenPic(left + 3, y + 3, rows[i].icons[0], d2_LastWindow);
+            if (rows[i].icons[1] != 0)
+                d2_WinOpenPic(left + 3, d2_Pics[0x5da].h + y - 0x13, rows[i].icons[1], d2_LastWindow);
+            if (rows[i].icons[2] != 0)
+                d2_WinOpenPic(d2_Pics[0x5da].w + left - 0x10, y + 3, rows[i].icons[2], d2_LastWindow);
+            d2_WinOpenPic(d2_Pics[0x5da].w + left - 0x10, d2_Pics[0x5da].h + y - 0x13, rows[i].icons[3], d2_LastWindow);
+            if (kind != 8) {
+                txt_Format(text, "%s %1N7", (rows[i].rec->sex ? 0x11e : 0x114) + rows[i].rec->b00d, rows[i].rec->id);
+                ai_CentredText(text, x, rows[i].y, 0xca, 0x56);
+                txt_Format(text, "%1N5", rows[i].rec->id);
+                ai_CentredText(text, x, rows[i].y + 0xf, 0xca, 0x56);
             } else {
-                txt_Format(buf, (char *)(unsigned)&full_data_62d1f4,
-                             (-(*(char *)(chr + 9) != 0) & 10) + 0x114 + *(unsigned char *)(chr + 0xd),
-                             *(unsigned short *)chr);
-                ai_CentredText((int)buf, x, rec[5], 0xca, 0x56);
-                txt_Format(buf, (char *)(unsigned)&full_data_62d1ec, *(unsigned short *)chr);
-                ai_CentredText((int)buf, x, rec[5] + 0xf, 0xca, 0x56);
-            }
-            if ((unsigned short *)chr != param_6 && *(char *)(chr + 2) != 6) {
-                rec[2] = d2_WinOpenSlider(rec[4] + 0x42, *(short *)(U_I((unsigned)&d2_Pics) + 0x1ebda) + 5 + y, 0x40, 0,
-                                      100, 0x75, 0x442, U_I((unsigned)&d2_LastWindow));
-                if (*(char *)(chr + 2) == 7)
-                    d2_SetObjValue(rec[2], 0, 100, 0);
+                flags = rows[i].rec->flags1cc;
+                if (flags & 0x1000)
+                    office = 0x26;
+                else if (flags & 0x2000)
+                    office = 0x27;
+                else if (flags & 0x800)
+                    office = 0x25;
+                else if (flags & 0x400)
+                    office = 0x24;
                 else
-                    d2_SetObjValue(rec[2], 0, 100, (int)gm_Liking(*param_6, *(unsigned short *)chr, 1));
-                d2_SetObjEnabled(rec[2], 1);
-                U_I((unsigned)&d2_Objs + rec[2] * 0x2ec + 0x4c) = 1;
+                    office = (flags & 0x200) ? 0x23 : 0;
+                txt_Format(text, "%1N7", rows[i].rec->id);
+                ai_CentredText(text, x, rows[i].y, 0xca, 0x56);
+                txt_Format(text, "%s", (rows[i].rec->sex ? 0x27b : 0x253) + office);
+                ai_CentredText(text, x, rows[i].y + 0xf, 0xca, 0x56);
             }
-            if (param_6 != 0 && *(char *)(param_6 + 1) == 6) {
-                if (U_I(chr + 0x210) == U_I((char *)param_6 + 4))
-                    d2_WinOpenPic(i + *(short *)(U_I((unsigned)&d2_Pics) + 0x1ebd8), y, 0x6d3, U_I((unsigned)&d2_LastWindow));
+            if (rows[i].rec != viewer && rows[i].rec->kind != 6) {
+                rows[i].ctl[1] = d2_WinOpenSlider(x - 0x23, d2_Pics[0x5da].h + y + 5, 0x40, 0, 100, 0x75, 0x442,
+                                                  d2_LastWindow);
+                if (rows[i].rec->kind == 7)
+                    d2_SetObjValue(rows[i].ctl[1], 0, 100, 0, 1);
+                else
+                    d2_SetObjValue(rows[i].ctl[1], 0, 100, (int)gm_Liking(viewer->id, rows[i].rec->id, 1));
+                d2_SetObjEnabled(rows[i].ctl[1], 1);
+                d2_Objs[rows[i].ctl[1]].interactive = 1;
             }
-            if (param_3 == 0 ||
-                ai_PassesPartnerFilter(U_W((unsigned)&ai_PlayerId), *(unsigned short *)chr, (unsigned int *)param_3, 0) != 0) {
-                U_I((unsigned)&d2_Objs + rec[1] * 0x2ec + 0x4c) = 1;
-                U_I((unsigned)&d2_Objs + rec[1] * 0x2ec + 0x1c0) = 3;
-                U_I((unsigned)&d2_Objs + rec[1] * 0x2ec + 0x2e8) = (int)chr;
+            if (viewer != 0 && viewer->kind == 6 && rows[i].rec->partner == viewer->netId)
+                d2_WinOpenPic(d2_Pics[0x5da].w + left, y, 0x6d3, d2_LastWindow);
+            if (filter == 0 || ai_PassesPartnerFilter(ai_PlayerId, rows[i].rec->id, filter, 0) != 0) {
+                d2_Objs[rows[i].ctl[0]].interactive = 1;
+                d2_Objs[rows[i].ctl[0]].style = 3;
+                d2_Objs[rows[i].ctl[0]].user = rows[i].rec;
             }
+        } else {
+            d2_WinOpenPic(x - d2_Pics[0x4fb].w / 2 - 3, y + 1, 0x4fb, d2_LastWindow);
+            txt_Format(text, "%s", rows[i].office + 0x253);
+            ai_CentredText(text, x, rows[i].y, 0xca, 0x56);
+            d2_Objs[rows[i].ctl[0]].interactive = 1;
+            d2_Objs[rows[i].ctl[0]].user = 0;
+            d2_SetObjEnabled(rows[i].ctl[0], 0);
         }
     }
     return 0;
