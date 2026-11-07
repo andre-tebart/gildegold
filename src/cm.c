@@ -15735,13 +15735,13 @@ int cm_PlayVoice(int id, int bank, char *text, int var)
         return 0;
     return snd_PlayVoice(id, bank, text, var);
 }
-/* 0x4e32d0 */
+/* 0x4e32d0, queues the voice sample of speaker id in bank (text, var pick the sample; snd_QueueVoice) after delay, 0 in the replay mode */
 
-int cm_QueueVoice(int a, int b, int c, int d, int e)
+int cm_QueueVoice(int id, int bank, char *text, int var, unsigned int delay)
 {
     if (cm_SkipEvents != 0)
         return 0;
-    return snd_QueueVoice(a, b, c, d, e);
+    return snd_QueueVoice(id, bank, text, var, delay);
 }
 /* 0x4e32f0, unless replaying: the scene's sky cm_SceneSky (also d3_Sky; d3sky_Create horizon -2.25, fog start -0.2, scale 600)
    with the one layer cm_SkyLayer of the texture tex (flags 0, scale 3.0, v scale 0.8, v offset -0.25, as the SVSKYREC records
