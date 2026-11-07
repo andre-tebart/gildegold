@@ -1156,7 +1156,10 @@ typedef struct AICHARREC {         /* the character record fields this unit read
     unsigned int flags1cc;         /* 0x1cc, ai_char.h AICHAR.flags1cc (0x800: a bribe raises the relation by 6 instead of 4) */
     char pad1d0[0x1c];
     unsigned int goodsMask;        /* 0x1ec, the classes of the Domizil goods in use (G9DOMIZIL.mask; ai_UseGood sets them) */
-    char pad1f0[0x2c];
+    char pad1f0[0x20];
+    int partner;                   /* 0x210, the netId of the partner (ai_char.h AICHAR.partner; the amount rows mark
+                                      a kind 6 viewer's partner) */
+    char pad214[8];
 } AICHARREC;                       /* 0x21c bytes, ai_Chars[768] */
 #pragma pack(pop)
 
@@ -6504,7 +6507,8 @@ typedef struct LCAMOUNTROW {            /* 0x38 bytes, one row of the special-am
     int ctl[3];                         /* 0x04, the row's controls (ai_AmountRow) */
     int x;                              /* 0x10 */
     int y;                              /* 0x14 */
-    int pad18[5];
+    int portrait;                       /* 0x18, the portrait picture (ai_ShowAmountRows) */
+    int icons[4];                       /* 0x1c, the icons in the frame's corners (ai_ShowAmountRows) */
     int x2c;                            /* 0x2c, a value the row's text shows (the evidence book: the evidence count) */
     int x30;                            /* 0x30 */
     int x34;                            /* 0x34, a second value (the evidence book: the open evidence) */
@@ -24549,120 +24553,155 @@ int ai_ShowBuildingRows(AICHARREC *ch, int max, int *ctrls)
     }
     return n;
 }
-/* 0x5bd5e0, the entry rows of a window (1408 B, ROUGH): the layout switch on param_4 (1: one 0x80 column,
-   2 / 3: one, 4 / 5 / 6: two 0x40 columns, 7 / 8: three 0x80 columns) fills the 5-int layout local, then every
-   row record of param_5 (0xe dwords: +0 the character, +4 the row control, +8 the slider, +0xc unused,
-   +0x10 / +0x14 the position, +0x18 the icon, +0x1c / +0x20 / +0x24 / +0x28 the texts) gets the controls
-   0x4731d0 (0x5da; the icon +0x54 for the kinds 5 / 6 / 7, the slider 0x46a960 (0x442) and its 0x50c550
-   percent) and the two caption texts of the kind, the 0x5c33c0 check and the window list fields +0x4c /
-   0x1c0 / 0x2e8; the page byte of the kind 6 gets 0x6d3. ROUGH: the text arguments of 0x5176d0 are taken
-   from the disassembly order */
+/* 0x5bd5e0, the rows of the special-amount list (1374 B, ai_SpecialAmountListWindow for the kinds 0 / 7): lays out
+   the n rows in columns by n (1 .. 3: one column of n, 4 .. 6: two, 7 / 8: three; a column of three spaced 0xca
+   apart, of two centred in pairs, of one at 0xca; the columns 0x80 apart), then per row the frame picture 0x5da
+   (clickable with the character as its user record when the filter passes it, ai_PassesPartnerFilter), and for a
+   character: the family picture (AICHARREC.ref54) of the kinds 5 .. 7, the portrait, the four icons in the
+   corners, the title and name ("%s %1N7") and below it the office of kind 7 ("%s", the deputy office text) or the
+   name ("%1N5"); a character other than viewer and not of kind 6 gets the liking slider (gm_Liking of the viewer,
+   0 for kind 7); a viewer of kind 6 marks its partner with the picture 0x6d3; returns 0
+   @deep rewritten from the ROUGH draft and read through against the original (all 429 instructions; ours
+   428): the layout switch (cols[3], ncols, step), the column loop with the i < n guard, the row walk by
+   pointer, the frame / family / portrait / corner icon pictures, the two text lines, the liking slider
+   (d2_SetObjValue(slider, 0, 100, 0, 1) for kind 7: the original hoists the push 1 shared with gm_Liking's
+   third argument), the partner mark and the filter. Left: scheduling of the text block - ours hoists 'xor
+   ecx, ecx / mov cx, word ptr [eax] / push ecx' (rec->id) above the kind == 7 jne and cross-jumps the
+   first txt_Format, the original keeps both arms' first txt_Format + ai_CentredText whole and merges only
+   the third txt_Format tail ('lea edx, [esp + 0x50] / push edx / call'); the variants tried
+   (ai_CentredText in both arms, the first line outside the if, the ternaries folded or not) move it
+   further; plus the layout loop's 'xor edx, edx' / 'mov [esp + 0x20], eax' placement and the 'mov esi,
+   rows' before the n test (order), and register choice in the gm_Liking argument loads. (references: M8 at
+   +0x3c4: ours refers to d2_Pics (0x6ed918), the original's field to 0x6ed938 (d2_LastWindow), explained:
+   the ref line at +0x3c4 pairs our d2_Pics load with the original's d2_LastWindow load only by their order
+   before d2_WinOpenSlider: both sides load both and pass the same arguments) */
 
-int ai_Unk5bd5e0(int param_1, int param_2, int param_3, int param_4, int *param_5, unsigned short *param_6)
+int ai_ShowAmountRows(int win, int kind, unsigned int *filter, int n, LCAMOUNTROW *rows, AICHARREC *viewer)
 {
-    int lay[5];
-    int ncol;
-    int xstep;
-    int g;
-    int j;
+    int cols[3];
+    int col;
+    int colY;
+    char text[0x100];
+    int ncols;
+    int step;
     int i;
-    int k;
+    int j;
+    int off;
     int x;
     int y;
-    int ctrl;
-    char *chr;
-    char buf[256];
+    int left;
+    AICHARREC *ch;
+    LCAMOUNTROW *row;
 
-    lay[0] = -1;
-    lay[1] = -1;
-    lay[2] = -1;
-    lay[3] = 0;
-    ncol = 0;
-    xstep = 0;
-    switch (param_4) {
-    case 1: ncol = 1; xstep = 0x80; lay[0] = 1; break;
-    case 2: ncol = 1; xstep = 0x80; lay[0] = 2; break;
-    case 3: ncol = 1; xstep = 0x80; lay[0] = 3; break;
-    case 4: ncol = 2; xstep = 0x40; lay[0] = 2; lay[1] = 2; break;
-    case 5: ncol = 2; xstep = 0x40; lay[0] = 3; lay[1] = 2; break;
-    case 6: ncol = 2; xstep = 0x40; lay[0] = 3; lay[1] = 3; break;
-    case 7: ncol = 3; lay[2] = 2; lay[1] = 2; lay[0] = 3; break;
-    case 8: ncol = 3; lay[2] = 3; lay[1] = 2; lay[0] = 3; break;
+    cols[0] = -1;
+    cols[1] = -1;
+    cols[2] = -1;
+    ncols = 0;
+    step = 0;
+    switch (n) {
+    case 1:
+        ncols = 1;
+        step = 0x80;
+        cols[0] = 1;
+        break;
+    case 2:
+        ncols = 1;
+        step = 0x80;
+        cols[0] = 2;
+        break;
+    case 3:
+        ncols = 1;
+        step = 0x80;
+        cols[0] = 3;
+        break;
+    case 4:
+        ncols = 2;
+        step = 0x40;
+        cols[0] = 2;
+        cols[1] = 2;
+        break;
+    case 5:
+        ncols = 2;
+        step = 0x40;
+        cols[0] = 3;
+        cols[1] = 2;
+        break;
+    case 6:
+        ncols = 2;
+        step = 0x40;
+        cols[0] = 3;
+        cols[1] = 3;
+        break;
+    case 7:
+        ncols = 3;
+        cols[2] = 2;
+        cols[1] = 2;
+        cols[0] = 3;
+        break;
+    case 8:
+        ncols = 3;
+        cols[2] = 3;
+        cols[1] = 2;
+        cols[0] = 3;
+        break;
     }
     i = 0;
-    if (ncol != 0) {
-        lay[4] = xstep;
-        for (g = 0; g < ncol; g++) {
-            int cnt = lay[g];
-            int off = 0;
-            for (j = 0; j < cnt && i < param_4; j++) {
-                *(int *)((char *)param_5 + i * 0x38 + 0x14) = lay[4];
-                if (cnt == 3)
-                    *(int *)((char *)param_5 + i * 0x38 + 0x10) = off;
-                else if (cnt == 2)
-                    *(int *)((char *)param_5 + i * 0x38 + 0x10) = off + 0x65;
-                else
-                    *(int *)((char *)param_5 + i * 0x38 + 0x10) = 0xca;
-                off += 0xca;
-                i++;
-            }
-            lay[4] += 0x80;
+    for (col = 0, colY = step; col < ncols; col++) {
+        for (j = 0, off = 0; j < cols[col] && i < n; j++, off += 0xca, i++) {
+            rows[i].y = colY;
+            if (cols[col] == 3)
+                rows[i].x = off;
+            else if (cols[col] == 2)
+                rows[i].x = off + 0x65;
+            else
+                rows[i].x = 0xca;
         }
+        colY += 0x80;
     }
-    for (k = 0; k < param_4; k++) {
-        int *rec = (int *)((char *)param_5 + k * 0x38);
-        x = rec[4] + 0x65;
-        y = rec[5] + 0x23;
-        i = x - *(short *)(U_I((unsigned)&d2_Pics) + 0x1ebd8) / 2;
-        ctrl = d2_WinOpenPic(i, y, 0x5da, U_I((unsigned)&d2_LastWindow));
-        rec[1] = ctrl;
-        chr = (char *)rec[0];
-        if (chr != 0) {
-            char kind = *(char *)(chr + 2);
-            if (kind == 6 || kind == 7 || kind == 5)
-                d2_WinOpenPic(i - 0x20, y, U_I(chr + 0x54), U_I((unsigned)&d2_LastWindow));
-            rec[6] = d2_WinOpenPic((x - *(short *)(U_I((unsigned)&d2_Pics) + 0x50 + U_I(chr + 0x18c) * 0x54) / 2) - 3,
-                                  rec[5] + 0x24, U_I(chr + 0x18c), U_I((unsigned)&d2_LastWindow));
-            d2_WinOpenPic(i + 3, rec[5] + 0x26, rec[7], U_I((unsigned)&d2_LastWindow));
-            if (rec[8] != 0)
-                d2_WinOpenPic(i + 3, rec[5] + 0x26 + *(short *)(U_I((unsigned)&d2_Pics) + 0x1ebda) - 0x13, rec[8],
-                             U_I((unsigned)&d2_LastWindow));
-            if (rec[9] != 0)
-                d2_WinOpenPic(i + *(short *)(U_I((unsigned)&d2_Pics) + 0x1ebd8) - 0x10, rec[5] + 0x26, rec[9],
-                             U_I((unsigned)&d2_LastWindow));
-            d2_WinOpenPic(i + *(short *)(U_I((unsigned)&d2_Pics) + 0x1ebd8) - 0x10,
-                         rec[5] + 0x26 + *(short *)(U_I((unsigned)&d2_Pics) + 0x1ebda) - 0x13, rec[10], U_I((unsigned)&d2_LastWindow));
-            txt_Format(buf, (char *)(unsigned)&full_data_62d1f4,
-                         (-(*(char *)(chr + 9) != 0) & 10) + 0x114 + *(unsigned char *)(chr + 0xd),
-                         *(unsigned short *)chr);
-            ai_CentredText((int)buf, x, rec[5], 0xca, 0x56);
-            if (param_2 == 7) {
-                txt_Format(buf, "%s",
-                             (-(*(char *)(chr + 9) != 0) & 0x28) + 0x253 + *(unsigned char *)(chr + 0x169));
-            } else {
-                txt_Format(buf, (char *)(unsigned)&full_data_62d1ec, *(unsigned short *)chr);
-            }
-            ai_CentredText((int)buf, x, rec[5] + 0xf, 0xca, 0x56);
-            if ((unsigned short *)chr != param_6 && *(char *)(chr + 2) != 6) {
-                rec[2] = d2_WinOpenSlider(rec[4] + 0x42, *(short *)(U_I((unsigned)&d2_Pics) + 0x1ebda) + 5 + y, 0x40, 0,
-                                      100, 0x75, 0x442, U_I((unsigned)&d2_LastWindow));
-                if (*(char *)(chr + 2) == 7)
-                    d2_SetObjValue(rec[2], 0, 100, 0);
-                else
-                    d2_SetObjValue(rec[2], 0, 100, (int)gm_Liking(*param_6, *(unsigned short *)chr, 1));
-                d2_SetObjEnabled(rec[2], 1);
-                U_I((unsigned)&d2_Objs + rec[2] * 0x2ec + 0x4c) = 1;
-            }
-            if (param_6 != 0 && *(char *)(param_6 + 1) == 6) {
-                if (U_I(chr + 0x210) == U_I((char *)param_6 + 4))
-                    d2_WinOpenPic(i + *(short *)(U_I((unsigned)&d2_Pics) + 0x1ebd8), y, 0x6d3, U_I((unsigned)&d2_LastWindow));
-            }
-            if (param_3 == 0 ||
-                ai_PassesPartnerFilter(U_W((unsigned)&ai_PlayerId), *(unsigned short *)chr, (unsigned int *)param_3, 0) != 0) {
-                U_I((unsigned)&d2_Objs + rec[1] * 0x2ec + 0x4c) = 1;
-                U_I((unsigned)&d2_Objs + rec[1] * 0x2ec + 0x1c0) = 3;
-                U_I((unsigned)&d2_Objs + rec[1] * 0x2ec + 0x2e8) = (int)chr;
-            }
+    for (i = 0, row = rows; i < n; i++, row++) {
+        x = row->x + 0x65;
+        y = row->y + 0x23;
+        left = x - d2_Pics[0x5da].w / 2;
+        row->ctl[0] = d2_WinOpenPic(left, y, 0x5da, d2_LastWindow);
+        if (row->rec == 0)
+            continue;
+        ch = row->rec;
+        if (ch->kind == 6 || ch->kind == 7 || ch->kind == 5)
+            d2_WinOpenPic(left - 0x20, y, ch->ref54, d2_LastWindow);
+        row->portrait = d2_WinOpenPic(x - d2_Pics[row->rec->picture].w / 2 - 3, y + 1, row->rec->picture,
+                                         d2_LastWindow);
+        d2_WinOpenPic(left + 3, y + 3, row->icons[0], d2_LastWindow);
+        if (row->icons[1] != 0)
+            d2_WinOpenPic(left + 3, d2_Pics[0x5da].h + y - 0x13, row->icons[1], d2_LastWindow);
+        if (row->icons[2] != 0)
+            d2_WinOpenPic(d2_Pics[0x5da].w + left - 0x10, y + 3, row->icons[2], d2_LastWindow);
+        d2_WinOpenPic(d2_Pics[0x5da].w + left - 0x10, d2_Pics[0x5da].h + y - 0x13, row->icons[3], d2_LastWindow);
+        if (kind == 7) {
+            txt_Format(text, "%s %1N7", (row->rec->sex ? 0x11e : 0x114) + row->rec->b00d, row->rec->id);
+            ai_CentredText(text, x, row->y, 0xca, 0x56);
+            txt_Format(text, "%s", (row->rec->sex ? 0x27b : 0x253) + row->rec->secondOffice);
+        } else {
+            txt_Format(text, "%s %1N7", (row->rec->sex ? 0x11e : 0x114) + row->rec->b00d, row->rec->id);
+            ai_CentredText(text, x, row->y, 0xca, 0x56);
+            txt_Format(text, "%1N5", row->rec->id);
+        }
+        ai_CentredText(text, x, row->y + 0xf, 0xca, 0x56);
+        if (row->rec != viewer && row->rec->kind != 6) {
+            row->ctl[1] = d2_WinOpenSlider(x - 0x23, d2_Pics[0x5da].h + y + 5, 0x40, 0, 100, 0x75, 0x442,
+                                              d2_LastWindow);
+            if (row->rec->kind == 7)
+                d2_SetObjValue(row->ctl[1], 0, 100, 0, 1);
+            else
+                d2_SetObjValue(row->ctl[1], 0, 100, (int)gm_Liking(viewer->id, row->rec->id, 1));
+            d2_SetObjEnabled(row->ctl[1], 1);
+            d2_Objs[row->ctl[1]].interactive = 1;
+        }
+        if (viewer != 0 && viewer->kind == 6 && row->rec->partner == viewer->netId)
+            d2_WinOpenPic(d2_Pics[0x5da].w + left, y, 0x6d3, d2_LastWindow);
+        if (filter == 0 || ai_PassesPartnerFilter(ai_PlayerId, row->rec->id, filter, 0) != 0) {
+            d2_Objs[row->ctl[0]].interactive = 1;
+            d2_Objs[row->ctl[0]].style = 3;
+            d2_Objs[row->ctl[0]].user = row->rec;
         }
     }
     return 0;
