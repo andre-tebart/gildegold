@@ -29791,105 +29791,104 @@ int ai_MedicusHandler(AICHARREC *ch, LCORDMSG *m)
     d2_CloseView(win);
     return ret;
 }
-/* 0x5c8ef0, the divorce privilege handler (927 B, ROUGH): a message record (param_1, the AIMSG by word
-   offsets: +0 the id, +2 the type, +4 the handle, +9 a flag, +0xd a byte, +0x24 the amount, +0x5c the
-   partner's id record, +0x194 the choice count). Types 6 / 7 open the window "privillegien_scheidung"
-   0x62d4ac with the two buttons 0x515960 (0x1d8f, 0x114 + byte +0xd + (flag ? 10 : 0), 8, main - partner
-   price) / 0x475b80; the click 0 (0x520f90 (8) and 0x521040) closes 0x4c5f60 (-8) and runs the two carriers
-   0x4c3ba0 / 0x4c3d90 (4, 1, 0x5c / 2, 1, 0x50) with 0x4c49e0, pays 0x4c47e0 (partner handle, handle,
-   0x6f1bc5, main) and shows the texts 0x602568 / 0x1d90; the click 1 and the abort set 0x6f22a0. Other
-   types: the count < 8 returns 0x22, the ratio 0x509e60 / price < 0.12 returns 0x22, else the same carrier
-   chain with 0x4c49a0 and 0x4c47e0, return 0x11. The pump 0x5309a0 and the end 0x4758f0. ROUGH: the float
-   arguments of 0x5de518 are lost; the price conversions are written as float calls. */
-
-int ai_Unk5c8ef0(unsigned short *param_1, void *unused)
+/* 0x5c8ef0, the divorce order's ask (ord.c 0x4f5800, kind 3) on the character ch (927 B): of another kind than 6 / 7
+   it needs 8 in money and goods of at least 0.12 of its worth (else 0x22), pays 8, clears its spouse
+   (relatives[0], field 0x5c) and the spouse's spouse and family word (field 0x50) to -1 and pays the spouse 8 % of
+   its worth: 0x11. A kind 6 / 7 character's player gets the window "privillegien\scheidung" with the offer
+   (0x1d8f: the text 0x114 + b00d (+ 10 for sex), 8, the price 8 % of the worth plus 4 %, the spouse's id); its
+   first button pays 8 and the price (sv_CheckMoney / sv_CheckGoodAmount), sends the same fields and the money,
+   each waited for, and prints 0x1d90: 0x81; the second button or the right button close it: 2, else 0
+   @deep Reconstructed in full against the original: the AI path (money >= 8, goods / worth >= 0.12, the -1
+   fields 0x5c of both and 0x50 of the spouse through cm_BeginFieldBlock / cm_AddFieldValue /
+   cm_SendFieldDeltas, the spouse paid (int)(worth * 0.08), 0x11) and the player window (the offer 0x1d8f
+   with (sex ? 10 : 0) + 0x114 + b00d, 8, price - (int)(worth * -0.04) and the spouse's id twice, the two
+   buttons by d2_ClickedId 0 / 1, the waited sends with cm_SendFieldValues, 0x1d90, done 0x81 / 2). Every
+   call, argument and constant compared. Left: allocation: the original keeps done and price in frame slots
+   ([esp+0xc] next to the field value -1 at [esp+8]) and win in ebp, with the constant 1 in edi; ours keeps
+   done in ebp and spills win. A two-int array for the field value and done (v[0] = -1, v[1] = done) moves
+   89 -> 56 differing instructions, a hint that the original's done sits in an aggregate with the field
+   value, but it is not shape and not written that way. Hunks 0x5c8ef3 (6), 0x5c9065 (7), 0x5c9082 (45: the
+   done/win registers and the text arg's evaluation order), 0x5c9244 (12), 0x5c9277 (17). */
+int ai_DivorceDialog(AICHARREC *ch, LCORDMSG *m)
 {
-    int ret;
-    int done;
     int win;
-    int t;
-    int mainv;
-    int other;
-    int h;
-    int v;
-    unsigned short *partner;
+    AICHARREC *spouse;
+    int slot;
+    int none;
+    int done;
+    int price;
+    float worth;
 
-    ret = -1;
+    none = -1;
     done = 0;
-    if (*(char *)((char *)param_1 + 2) == 6 || *(char *)((char *)param_1 + 2) == 7) {
-        mainv = (int)((float (*)(unsigned short))gm_GetWorth)(*param_1);
-        partner = (unsigned short *)(int)gm_FindChar(*(int *)((char *)param_1 + 0x5c));
-        other = (int)((float (*)(unsigned short))gm_GetWorth)(*partner);
-        win = d2_OpenForm(0, 0, (char *)(unsigned)&full_data_62d4ac);
-        d2_SetPointerSprite(0, 0);
-        d2_CentreViewWindows(win);
-        d2_SetForm(win, 1);
-        t = io_PrintText(0x1d8f,
-                         *(unsigned char *)((char *)param_1 + 0xd) +
-                             (*(char *)((char *)param_1 + 9) != 0 ? 10 : 0) + 0x114,
-                         8, mainv - other);
-        d2_GetWinObj(win, 1, t);
-        d2_GetWinObj(win, 1, t + 1);
-        *(int *)(unsigned)&d2_ClickedId = -1;
-        do {
-            if (*(int *)(unsigned)&d2_ClickedId != -1) {
-                if (*(int *)(unsigned)&d2_ClickedId == 0) {
-                    if (sv_CheckMoney(param_1, 8) != 0 &&
-                        sv_CheckGoodAmount(param_1, mainv, *(int *)(unsigned)&ai_OwnPlayer) != 0) {
-                        cm_SendMoneyDelta(*(int *)((char *)param_1 + 4), 0xfffffff8);
-                        cm_BeginFieldBlock(param_1, *(int *)((char *)param_1 + 4));
-                        cm_AddFieldValue(4, 1, 0x5c, &ret);
-                        h = cm_SendFieldValues();
-                        while (cm_GetSlotState(h) == 0)
-                            sv_PumpNet();
-                        cm_BeginFieldBlock(partner, *(int *)((char *)partner + 4));
-                        cm_AddFieldValue(4, 1, 0x5c, &ret);
-                        cm_AddFieldValue(2, 1, 0x50, &ret);
-                        h = cm_SendFieldValues();
-                        while (cm_GetSlotState(h) == 0)
-                            sv_PumpNet();
-                        h = ((int (*)(int, int, int, int))cm_SendMoveGoods)(*(int *)((char *)partner + 4),
-                                         *(int *)((char *)param_1 + 4), *(int *)(unsigned)&ai_OwnPlayer, mainv);
-                        while (cm_GetSlotState(h) == 0)
-                            sv_PumpNet();
-                        io_PrintText((char *)(unsigned)"$C");
-                        io_PrintText(0x1d90);
-                        *(int *)(unsigned)&sv_PopRequest = 1;
-                        done = 0x81;
-                    }
-                } else if (*(int *)(unsigned)&d2_ClickedId == 1) {
-                    *(int *)(unsigned)&sv_PopRequest = 1;
-                    done = 2;
+    if (ch->kind != 6 && ch->kind != 7) {
+        if (ch->money < 8)
+            return 0x22;
+        worth = (float)gm_GetWorth(ch->id);
+        if (gm_GetGoodsValue(ch) / worth < 0.12)
+            return 0x22;
+        spouse = (AICHARREC *)gm_FindChar(ch->relatives[0]);
+        cm_SendMoneyDelta(ch->netId, -8);
+        cm_BeginFieldBlock((char *)ch, ch->netId);
+        cm_AddFieldValue(4, 1, 0x5c, &none);
+        cm_SendFieldDeltas();
+        cm_BeginFieldBlock((char *)spouse, spouse->netId);
+        cm_AddFieldValue(4, 1, 0x5c, &none);
+        cm_AddFieldValue(2, 1, 0x50, &none);
+        cm_SendFieldDeltas();
+        slot = cm_SendMoveGoods(spouse->netId, ch->netId, ai_OwnPlayer, (int)(worth * 0.08));
+        while (cm_GetSlotState(slot) == 0)
+            sv_PumpNet();
+        return 0x11;
+    }
+    worth = (float)gm_GetWorth(ch->id);
+    price = (int)(worth * 0.08);
+    spouse = (AICHARREC *)gm_FindChar(ch->relatives[0]);
+    win = d2_OpenForm(0, 0, "privillegien\\scheidung");
+    d2_SetPointerSprite(0, 0);
+    d2_CentreViewWindows(win);
+    d2_SetForm(win, 1);
+    slot = io_PrintText(0x1d8f, (ch->sex != 0 ? 10 : 0) + 0x114 + ch->b00d, 8, price - (int)(worth * -0.04), spouse->id,
+                        spouse->id);
+    d2_GetWinObj(win, 1, slot);
+    d2_GetWinObj(win, 1, slot + 1);
+    d2_ClickedId = -1;
+    do {
+        if (d2_ClickedId != -1) {
+            if (d2_ClickedId == 0) {
+                if (sv_CheckMoney(ch, 8) != 0 && sv_CheckGoodAmountB((char *)ch, price, ai_OwnPlayer) != 0) {
+                    cm_SendMoneyDelta(ch->netId, -8);
+                    cm_BeginFieldBlock((char *)ch, ch->netId);
+                    cm_AddFieldValue(4, 1, 0x5c, &none);
+                    slot = cm_SendFieldValues();
+                    while (cm_GetSlotState(slot) == 0)
+                        sv_PumpNet();
+                    cm_BeginFieldBlock((char *)spouse, spouse->netId);
+                    cm_AddFieldValue(4, 1, 0x5c, &none);
+                    cm_AddFieldValue(2, 1, 0x50, &none);
+                    slot = cm_SendFieldValues();
+                    while (cm_GetSlotState(slot) == 0)
+                        sv_PumpNet();
+                    slot = cm_SendMoveGoods(spouse->netId, ch->netId, ai_OwnPlayer, price);
+                    while (cm_GetSlotState(slot) == 0)
+                        sv_PumpNet();
+                    io_PrintText("$C");
+                    io_PrintText(0x1d90);
+                    sv_PopRequest = 1;
+                    done = 0x81;
                 }
-            }
-            if (*(int *)((unsigned)&dm_L + 0x20) != 0) {
-                *(int *)(unsigned)&sv_PopRequest = 1;
+            } else if (d2_ClickedId == 1) {
+                sv_PopRequest = 1;
                 done = 2;
             }
-        } while (sv_RunFrame(ai_Unk5c8ef0, 0x657c7) != 0);
-        d2_CloseView(win);
-        return done;
-    }
-    if (*(int *)((char *)param_1 + 0x194) < 8)
-        return 0x22;
-    mainv = (int)((float (*)(unsigned short))gm_GetWorth)(*param_1);
-    v = gm_GetGoodsValue(param_1);
-    if ((float)v / (float)mainv < 0.12f)
-        return 0x22;
-    partner = (unsigned short *)(int)gm_FindChar(*(int *)((char *)param_1 + 0x5c));
-    cm_SendMoneyDelta(*(int *)((char *)param_1 + 4), 0xfffffff8);
-    cm_BeginFieldBlock(param_1, *(int *)((char *)param_1 + 4));
-    cm_AddFieldValue(4, 1, 0x5c, &ret);
-    cm_SendFieldDeltas();
-    cm_BeginFieldBlock(partner, *(int *)((char *)partner + 4));
-    cm_AddFieldValue(4, 1, 0x5c, &ret);
-    cm_AddFieldValue(2, 1, 0x50, &ret);
-    cm_SendFieldDeltas();
-    h = ((int (*)(int, int, int, int))cm_SendMoveGoods)(*(int *)((char *)partner + 4), *(int *)((char *)param_1 + 4),
-                     *(int *)(unsigned)&ai_OwnPlayer, mainv);
-    while (cm_GetSlotState(h) == 0)
-        sv_PumpNet();
-    return 0x11;
+        }
+        if (dm_L.rup) {
+            sv_PopRequest = 1;
+            done = 2;
+        }
+    } while (sv_RunFrame((int)ai_DivorceDialog, 0x657c7) != 0);
+    d2_CloseView(win);
+    return done;
 }
 
 int gv_HeldCrimeIdsOf(int culprit, int *out, unsigned short t);
