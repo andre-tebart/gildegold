@@ -20053,14 +20053,100 @@ int ai_EspionageAmountCB(AICHARREC *ch)
     sv_CameraFollow();
     return ordered;
 }
-/* 0x5b3f30, a Ghidra-missed start (1035 B, ROUGH SKELETON): the seam is the ret at 0x5b3f2c and the three nops
-   to 0x5b3f30; a 0x744-byte frame with the 0x88-dword block at +0x130 cleared, the player 0x6f25b8 read first;
-   the body is left as a comment */
+/* 0x5b3f30, the beating window "misc\perga_rolle" (ai_RobberContact's amount menu callback, with the picked
+   character ch). The price is 0.85 % of the player's worth, halved when the order 0x1b reports the flag 2. A
+   running beating event 0x1a of the player on ch gives the text 0x170a; the player must have the price
+   (sv_CheckGoodAmount); an insult running from ch to the player (he_NoEvent4bPair) gives 0x170b, a quarrel between
+   them (he_NoEvent2ePair) 0x170c, a haunting of the player by ch (he_NoEvent88Pair) 0x409f. Else the window
+   (texts 0x1708 / 0x1711: the price, ch; the row of the player's talent 3) asks: its button sends the beat-up
+   message 0x1a (ch, a random object of ch's, the price; in the cm group "beatup", as am.c's ai_ExecuteBeatUp) and
+   tells it with the text 0x1709, a right click or the button 1 close it. Returns 1 once the beating was ordered,
+   else 0 */
 
-int ai_BeatingCallback(void)
+int ai_BeatingCallback(AICHARREC *ch)
 {
-    /* ROUGH SKELETON: the window section of the 0x744 frame */
-    return 0;
+    int ordered;
+    int ok;
+    int price;
+    int win;
+    AIJOB *ev;
+    AIWINDOWROW row;
+    union {
+        AIMSG msg;
+        char text[0x100];               /* the short notes reuse the message's buffer */
+    } buf;
+    char text[0x400];
+    int arg[0x88];
+
+    ok = -1;
+    ordered = 0;
+    memset(arg, 0, sizeof(arg));
+    arg[0] = 1;
+    price = (int)(gm_GetWorth(((AICHARREC *)ai_Chars)[ai_PlayerId].id) * 0.0085f);
+    if (ord_DispatchOrder(0x1b, ai_Chars[ai_PlayerId], arg) & 2)
+        price /= 2;
+    for (ev = (AIJOB *)he_FindEvent(2, 2, ai_PlayerId, 0, 0x1a); ev != 0; ev = (AIJOB *)he_NextEvent()) {
+        if (ev->id3 == ch->netId) {
+            txt_Format(text, 0x170a, ch->id);
+            sv_MessageBox(text, 4);
+            return 0;
+        }
+    }
+    if (sv_CheckGoodAmountB(ai_Chars[ai_PlayerId], price, ai_OwnPlayer) == 0)
+        return 0;
+    if (he_NoEvent4bPair((int)ch, (int)ai_Chars[ai_PlayerId]) == 0) {
+        txt_Format(buf.text, 0x170b, ch->id);
+        sv_MessageBox(buf.text, 0);
+        return 0;
+    }
+    if (he_NoEvent2ePair((int)ch, (int)ai_Chars[ai_PlayerId]) == 0) {
+        txt_Format(buf.text, 0x170c, ch->id);
+        sv_MessageBox(buf.text, 0);
+        return 0;
+    }
+    if (he_NoEvent88Pair((struct AICHAR *)ch, (struct AICHAR *)ai_Chars[ai_PlayerId]) == 0) {
+        txt_Format(buf.text, 0x409f);
+        sv_MessageBox(buf.text, 0);
+        return 0;
+    }
+    win = d2_OpenForm(0, 0, "misc\\perga_rolle");
+    d2_CentreViewWindows(win);
+    d2_SetForm(win, 1);
+    d2_SetPointerSprite(0, 0);
+    if (ch != 0) {
+        d2_SetForm(win, 1);
+        ok = d2_GetWinObj(win, 1, io_PrintText(0x1708, 0x1711, price, ch->id));
+    }
+    memset(&row, 0xff, sizeof(row));
+    row.win = win;
+    row.pageA = 2;
+    row.pageB = 3;
+    row.pageC = 4;
+    row.entry = 3;
+    row.record = 0x15;
+    ai_ShowWindowRow(&row);
+    while (sv_RunFrame((int)ai_BeatingCallback, 0x677c7) != 0) {
+        if (dm_L.rup != 0 || d2_ClickedId == 1)
+            sv_PopRequest = 1;
+        if (d2_ClickedId == 0 && ok != -1 && d2_PointerObj == ok) {
+            buf.msg.type = 0x1a;
+            buf.msg.to = ((AICHARREC *)ai_Chars)[ai_PlayerId].netId;
+            buf.msg.fromId = ((AIBLD *)ai_PlayerBuilding)->id;
+            buf.msg.flags = 1;
+            buf.msg.u.s.cost = price;
+            buf.msg.ch = ch->netId;
+            buf.msg.arg[0] = ord_RandomObjectId((char *)ch);
+            cm_BeginGroup("beatup");
+            cm_SendLongMessage((char *)&buf.msg);
+            cm_EndGroup("beatup");
+            txt_Format(text, 0x1709, ch->id);
+            sv_MessageBox(text, 0);
+            sv_PopRequest = 1;
+            ordered = 1;
+        }
+    }
+    d2_CloseView(win);
+    return ordered;
 }
 /* 0x5b4340, a list window of records (580 B, ROUGH): param_1 (its word -1 = empty), param_2 the query record;
    0x4f3fe0 (the +4 of param_2, the id array, the word of param_1) fills the ids, then each id 0x91f700 + id *
