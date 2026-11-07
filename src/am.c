@@ -3366,7 +3366,7 @@ int ai_EvalFest(AIGRP *g, int send)
 }
 /* 0x494d40, the favor (Gunst) a payment of n buys the payer a with the target b: (a's level - b's
    level + 10) * n, the relation change cm_SendRelations carries (the bewitch window's "Gunst",
-   ai_EmbezzlementContract) */
+   ai_BewitchOrder) */
 
 int ai_RelationGain(AIC4 *payer, AIC4 *target, int n)
 {

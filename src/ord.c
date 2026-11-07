@@ -804,7 +804,7 @@ int ord_JobMultiOrder2(char *c, int *m)
 }
 /* 0x4f66b0, an order handler (c, m; kinds 1 / 3 and the answers 2 / 4) for the jobs 0x16 / 0x19 / 0x12 (+0x166 of c; of m[0x87] for 2 / 4, where c needs the flag 0x100 of +0x1c8): a player's text 0x1dad (m + 0x14), 9 with the flag 0x200, kind 3 / 4 run 0x5cacd0, 0xa for 4 / 2, else 2 */
 
-int ord_EmbezzlementContractOrder(char *c, int *m)
+int ord_BewitchOrder(char *c, int *m)
 {
     char *t;
     unsigned char j;
@@ -818,7 +818,7 @@ int ord_EmbezzlementContractOrder(char *c, int *m)
         if ((ORD_CHAR(c)->flags1c8 & 0x200) != 0)
             return 9;
         if (m[0] == 3)
-            ai_EmbezzlementContract(c, m);
+            ai_BewitchOrder((struct AICHARREC *)c, (struct LCORDMSG *)m);
         return 2;
     }
     if (m[0] == 4 || m[0] == 2) {
@@ -828,7 +828,7 @@ int ord_EmbezzlementContractOrder(char *c, int *m)
         if (j != 0x16 && j != 0x19 && j != 0x12)
             return 1;
         if (m[0] == 4) {
-            ai_EmbezzlementContract(c, m);
+            ai_BewitchOrder((struct AICHARREC *)c, (struct LCORDMSG *)m);
             return 0xa;
         }
         if (c[2] == 6)

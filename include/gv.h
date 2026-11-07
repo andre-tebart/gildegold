@@ -593,7 +593,7 @@ int ord_Job34Order(char *c, int *m);     /* 0x4f6410 */
 int ord_JobRangeOrder(char *c, int *m);     /* 0x4f64e0 */
 int ord_JobMultiOrder2(char *c, int *m);     /* 0x4f65c0 */
 
-int ord_EmbezzlementContractOrder(char *c, int *m);     /* 0x4f66b0 */
+int ord_BewitchOrder(char *c, int *m);     /* 0x4f66b0 */
 
 int ord_Job17Order(char *c, int *m);     /* 0x4f68d0 */
 int ord_Job17Order2(char *c, int *m);     /* 0x4f69a0 */

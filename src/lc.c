@@ -28844,8 +28844,11 @@ int ai_CourtshipConfirm(AICHARREC *ch)
 typedef struct LCORDMSG {          /* the message record of an order (gv.h ORDMSG, which this unit cannot include): the
                                       order handlers get it with the character (ord_DispatchOrder) */
     int kind;                      /* 0x000, 1 do / 2 answer / 3 ask / 4 answer */
-    int law;                       /* 0x004, of the law orders: the decision record (AIDEC.id) the office may change
+    union {
+        int law;                   /* 0x004, of the law orders: the decision record (AIDEC.id) the office may change
                                       (gv.h ORDMSG.law) */
+        int amount;                /* 0x004, of the bewitch order asked of the AI: what it pays, 1 .. 5 (ai_BewitchOrder) */
+    };
     int value;                     /* 0x008, of the law orders asked of the AI: the value it wants (ai_LawPrivilegeWindow) */
     char pad00c[8];
     char text[0x200];              /* 0x014, the text the handlers fill */
@@ -30668,43 +30671,44 @@ int ai_BewitchWindow(AICHARREC *ch)
     d2_CloseView(win);
     return done;
 }
-/* 0x5cacd0, the embezzlement contract handler (302 B, a char result): param_1 is the message record (the
-   AIMSG: +2 the type 6 / 7, +4 the handle, +9 a flag, +0x194 the amount), param_2 the request (dword +4
-   the amount 1 .. 5, +0x214 the target id). Types 6 / 7: the config (0x400, the globals 0x5eed68 /
-   0x5eed6c, 6) and the text 0x5176d0 (0x1dae, 0x1daf / 0x1db0 by the flag +9) open the menu 0x5c1130
-   with the callback 0x5caab0; nonzero -> 1. Other types: the amount 1 .. 5 and <= the record +0x194, the
-   target 0x505df0, the payment 0x494d40 (the record, the target, the amount), the close 0x4c5f60 (-the
-   amount) and the line 0x4c4b00 (the handle, the target +4, the payment, 1), return 0x10; else 0x60. */
+/* 0x5cacd0, the bewitch order's ask (ord_BewitchOrder, kinds 3 / 4): a player (kind 6 / 7) picks the character in
+   the amount menu (the partner filter 0x400, gypsyFilter, the text 0x1dae with 0x1daf / 0x1db0 by me's sex) whose
+   callback ai_BewitchWindow does the rest: 1 when it bewitched someone, else 0. The AI pays m->amount (1 .. 5, not
+   above its money) for the relation with the character m->target (ai_RelationGain), sends the payment and the
+   relation change: 0x10; a wrong amount or an unknown target: 0x60 */
 
-char ai_EmbezzlementContract(int param_1, int param_2)  /* @original: the callers push (c, m) (0x4f66b0 / 0x4f67c0); the draft body reads its own offsets of the two params */
+int ai_BewitchOrder(AICHARREC *me, LCORDMSG *m)
 {
-    int cfg[20];
-    char text[64];
-    int i;
+    AMOUNTCFG cfg;
+    char text[0x40];
+    AICHARREC *target;
+    int gain;
+    int ret;
     int n;
-    int chr;
-    int v;
 
-    if (*(char *)(param_1 + 2) == 6 || *(char *)(param_1 + 2) == 7) {
-        for (i = 0; i < 0x14; i++)
-            cfg[i] = 0;
-        cfg[1] = 0x400;
-        cfg[4] = 6;
-        cfg[2] = U_I(((unsigned)&gypsyFilter));
-        cfg[3] = U_I(((unsigned)&gypsyFilter + 4));
-        txt_Format(text, (char *)0x1dae,
-                     *(char *)(param_1 + 9) == 0 ? 0x1daf : 0x1db0);
-        return ai_AmountMenu((int)cfg, (int)text, 0, (int)ai_BewitchWindow) != 0;
+    ret = 0;
+    if (me->kind == 6 || me->kind == 7) {
+        memset(&cfg, 0, sizeof(cfg));
+        cfg.mode = 0x400;
+        cfg.kind = 6;
+        cfg.filter = gypsyFilter;
+        if (me->sex == 0)
+            txt_Format(text, 0x1dae, 0x1daf);
+        else
+            txt_Format(text, 0x1dae, 0x1db0);
+        if (ai_AmountMenu(&cfg, text, 0, ai_BewitchWindow) != 0)
+            ret = 1;
+        return ret;
     }
-    n = *(int *)(param_2 + 4);
-    if (n > *(int *)(param_1 + 0x194) || n < 1 || n > 5)
+    if (me->money < m->amount || m->amount < 1 || m->amount > 5)
         return 0x60;
-    chr = gm_FindChar(*(int *)(param_2 + 0x214));
-    if (chr == 0)
+    target = (AICHARREC *)gm_FindChar(m->target);
+    if (target == 0)
         return 0x60;
-    v = ai_RelationGain(param_1, (void *)chr, n);
-    cm_SendMoneyDelta(*(int *)(param_1 + 4), -n);
-    cm_SendRelations(*(int *)(param_1 + 4), *(int *)(chr + 4), v, 1);
+    n = m->amount;
+    gain = ai_RelationGain(me, target, n);
+    cm_SendMoneyDelta(me->netId, -n);
+    cm_SendRelations(me->netId, target->netId, gain, 1);
     return 0x10;
 }
 /* 0x5cae00, the counter-espionage handler "privillegien\gegenspionage" 0x62d56c (979 B): param_1 is the
