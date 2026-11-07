@@ -15854,13 +15854,13 @@ int cm_RunSceneTicks(int a)
         }
     }
 }
-/* 0x4e3620 */
+/* 0x4e3620, clears the sound queue and plays the special track name (snd_PlaySpecialTrack), nothing in the replay mode */
 
-int cm_PlaySpecialTrack(char *a)
+int cm_PlaySpecialTrack(char *name)
 {
     if (cm_SkipEvents == 0) {
         snd_ClearQueue();
-        return ((int (*)(char *))snd_PlaySpecialTrack)(a);
+        return ((int (*)(char *))snd_PlaySpecialTrack)(name);
     }
 }
 /* 0x4e3640 */
