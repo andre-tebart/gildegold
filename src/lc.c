@@ -897,7 +897,6 @@ extern float ai_FloatZero;
 extern GAPDATA full_rdata_5ed0fc[];
 extern GAPDATA full_data_602568[];
 extern GAPDATA full_data_62d214[];
-extern GAPDATA full_data_6f2f8c[];
 extern int d2_PointerObj;
 extern int d2_ClickedId;
 
@@ -26144,9 +26143,9 @@ int ai_SpecialAmountWindow(int param_1, int param_2, unsigned int param_3, int p
 
     r = -1;
     if ((int)param_3 >= 0 && (int)param_3 < 8)
-        U_I((unsigned)&full_data_6f2f8c) = param_3;
-    if (U_I((unsigned)&full_data_6f2f8c) > 7)
-        U_I((unsigned)&full_data_6f2f8c) = 0;
+        ai_AmountTab = param_3;
+    if (ai_AmountTab > 7)
+        ai_AmountTab = 0;
     ai_ClearAmountTabs();
     win = d2_OpenForm(0, 0, (char *)(unsigned)&full_data_62d214);
     d2_CentreViewWindows(win);
@@ -32782,6 +32781,7 @@ int ai_Dragging = 0;  /* 0x6f26bc, 1 while the town map is dragged */
 char ai_NewsText[1024] = { 0 };  /* 0x6f26c8, the shared text buffer of the unit's news messages: txt_Format writes the text into it, he_ShowNews shows it */
 char ai_NewsSecond[1176] = { 0 };  /* 0x6f2ac8, the second text buffer of the news messages that append a part (txt_Format into it, strcat onto ai_NewsText); its size is the room up to ai_InvChar */
 struct AICHARREC *ai_InvChar = 0;  /* 0x6f2f60, the character whose inventory the inventory child window (ai_OpenInventoryWindow) lists: ai_OpenInventoryWindow points it at ai_Chars[id]; the transport window sends its goods by its netId */
+unsigned int ai_AmountTab = 0;  /* 0x6f2f8c, the open tab of the special-amount window (ai_SpecialAmountWindow, 0 .. 7; 8: no tab has rows) */
 int ai_BldCartCount = 0;  /* 0x6f40a0, the number of carts in ai_BldCarts (gm_BuildingCarts, at most 3) */
 struct AIOBJ *ai_BldCarts[3] = { 0 };  /* 0x6f40a4, the carts of the building the cart list shows */
 int ai_BldCartButtons[3] = { 0 };  /* 0x6f40b0, per cart the button to its destination building (picture 5), -1: none */

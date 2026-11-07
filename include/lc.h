@@ -148,6 +148,7 @@ extern char ai_EspionageOverviewForm[20];  /* 0x62d64c, the form of the espionag
 extern char ai_NewsText[1024];          /* 0x6f26c8, the shared text buffer of the unit's news messages (txt_Format into it, he_ShowNews reads it) */
 extern char ai_NewsSecond[1176];        /* 0x6f2ac8, the second text buffer of the news messages that append a part */
 extern struct AICHARREC *ai_InvChar;     /* 0x6f2f60, the character whose inventory the inventory child window lists */
+extern unsigned int ai_AmountTab;        /* 0x6f2f8c, the open tab of the special-amount window (0 .. 7; 8: no tab has rows) */
 extern int ai_BldCartCount;             /* 0x6f40a0, the number of carts in ai_BldCarts (at most 3) */
 extern struct AIOBJ *ai_BldCarts[3];    /* 0x6f40a4, the carts of the building the cart list shows (gm_BuildingCarts) */
 extern int ai_BldCartButtons[3];        /* 0x6f40b0, per cart the button to its destination building, -1: none */
