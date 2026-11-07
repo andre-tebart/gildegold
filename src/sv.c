@@ -172,6 +172,7 @@ extern unsigned char d2_HoverBlocked;  /* 0x6ed9c8 (d2.h) */
 extern unsigned char kb_Last;  /* 0x1468410 */
 /* d2_RadioSel: view of d2_Radios (tools/data_views.py) */
 extern char *d2_Objs;  /* 0xf8f080, 0x2ec bytes each; @original: d2.h declares D2OBJ *; the units add byte offsets to it and do not include d2.h yet (their own char * declarations of d2_Objs / d2_LastWindowPtr supersede d2.h's) */
+#define sv_D2Objs (*(D2OBJ **)&d2_Objs)  /* 0xf8f080, d2_Objs as d2.h types it (D2OBJ *), for the typed field reads */
 
 void d2_SetPointerSprite(int a, int pic);      /* 0x476f80, gfx.c */
 void d2_ClearPointerItems(void);                     /* 0x476c70 */
@@ -1823,10 +1824,10 @@ void sv_UpdateMemberList(unsigned char *g)
         sv_MemberRows[n].frame = d2_WinOpenPic(6, y, 0x5dc, d2_LastWindow);
         sv_MemberRows[n].check = d2_WinOpenPic(8, y + 0x11, ((SVCHARREC *)ai_Chars[i])->picture, d2_LastWindow);
         sv_MemberRows[n].text = d2_CreateWinText(0, y + 4, ch_EmptyName, d2_LastWindow);
-        *(int *)(d2_Objs + 0x5c + sv_MemberRows[n].text * 0x2ec) = 1;
-        *(short *)(d2_Objs + 0x14 + sv_MemberRows[n].text * 0x2ec) = 0x5f;
-        *(int *)(d2_Objs + 0x48 + sv_MemberRows[n].check * 0x2ec) = 1;
-        *(SVCHARREC **)(d2_Objs + 0x2e8 + sv_MemberRows[n].check * 0x2ec) = (SVCHARREC *)ai_Chars[i];
+        sv_D2Objs[sv_MemberRows[n].text].centred = 1;
+        sv_D2Objs[sv_MemberRows[n].text].w = 0x5f;
+        sv_D2Objs[sv_MemberRows[n].check].checkable = 1;
+        sv_D2Objs[sv_MemberRows[n].check].user = ai_Chars[i];
         if (sv_MemberRows[n].window != -1) {
             d2_RemoveWindow(sv_MemberRows[n].window);
             sv_MemberRows[n].window = -1;
@@ -1849,7 +1850,7 @@ void sv_UpdateMemberList(unsigned char *g)
     for (n = 0; n < 0x20; n++) {
         r = &sv_MemberRows[n];
         if (d2_ClickedId != -1 && r->chr != 0xffff && d2_PointerObj == r->check) {
-            if (*(int *)(d2_Objs + 0x28 + r->check * 0x2ec) != 0) {
+            if (sv_D2Objs[r->check].checked != 0) {
                 ((SVCHARREC *)ai_Chars[r->chr])->selected = 1;
                 snd_PlayWorkerClick((struct G16CHARCLICK *)ai_Chars[r->chr]);
             } else
@@ -1865,7 +1866,7 @@ void sv_UpdateMemberList(unsigned char *g)
         if (sv_MemberRows[n].chr == 0xffff)
             continue;
         if (((SVCHARREC *)ai_Chars[sv_MemberRows[n].chr])->selected != 0) {
-            d2_AddPointerItem(*(int *)(d2_Objs + 8 + sv_MemberRows[n].check * 0x2ec), 1);
+            d2_AddPointerItem(sv_D2Objs[sv_MemberRows[n].check].pic, 1);
             d2_SetObjValue(sv_MemberRows[n].check, 1);
         } else
             d2_SetObjValue(sv_MemberRows[n].check, 0);
@@ -1882,7 +1883,7 @@ void sv_UpdateMemberList(unsigned char *g)
         if (sv_MemberRows[n].text != -1) {
             sprintf(text, "%s %i%%", ((SVCHARREC *)ai_Chars[sv_MemberRows[n].chr])->name, (int)(gm_HealthRatio(ai_Chars[sv_MemberRows[n].chr]) * 100.0));
             d2_SetObjText(sv_MemberRows[n].text, text);
-            *(short *)(d2_Objs + 0x14 + sv_MemberRows[n].text * 0x2ec) = 0x5f;
+            sv_D2Objs[sv_MemberRows[n].text].w = 0x5f;
         }
         cnt = sv_CharStateIcons(ai_Chars[sv_MemberRows[n].chr], im);
         if (cnt == 0)
@@ -1896,7 +1897,7 @@ void sv_UpdateMemberList(unsigned char *g)
                     sv_MemberRows[n].icon[0] = d2_WinOpenPicStyledS(0x38, n * 0x4e + 0x10, im0, d2_LastWindow, -2);
                 else
                     sv_MemberRows[n].icon[0] = d2_WinOpenPic(0x38, n * 0x4e + 0x10, im0, d2_LastWindow);
-            } else if (im0 != *(int *)(d2_Objs + 8 + sv_MemberRows[n].icon[0] * 0x2ec)) {
+            } else if (im0 != sv_D2Objs[sv_MemberRows[n].icon[0]].pic) {
                 d2_RemoveObj(sv_MemberRows[n].icon[0]);
                 sv_MemberRows[n].icon[0] = -1;
                 if (im0 >= 0xdf && im0 <= 0x3bb)
@@ -1911,7 +1912,7 @@ void sv_UpdateMemberList(unsigned char *g)
                     sv_MemberRows[n].icon[1] = d2_WinOpenPicStyledS(0x38, n * 0x4e + 0x28, im1, d2_LastWindow, -2);
                 else
                     sv_MemberRows[n].icon[1] = d2_WinOpenPic(0x38, n * 0x4e + 0x28, im1, d2_LastWindow);
-            } else if (im1 != *(int *)(d2_Objs + 8 + sv_MemberRows[n].icon[1] * 0x2ec)) {
+            } else if (im1 != sv_D2Objs[sv_MemberRows[n].icon[1]].pic) {
                 d2_RemoveObj(sv_MemberRows[n].icon[1]);
                 sv_MemberRows[n].icon[1] = -1;
                 if (im1 != 0)                   /* the original tests im1 != 0 here, not the range */
@@ -1925,8 +1926,8 @@ void sv_UpdateMemberList(unsigned char *g)
         if (sv_MemberRows[n].chr != 0xffff) {
             i = ((SVCHARREC *)ai_Chars[sv_MemberRows[n].chr])->selected != 0;
             sv_MemberRows[n].selected = i;
-            *(int *)(d2_Objs + 0x28 + sv_MemberRows[n].check * 0x2ec) = i;
-            *(int *)(d2_Objs + 0x2c + sv_MemberRows[n].check * 0x2ec) = i;
+            sv_D2Objs[sv_MemberRows[n].check].checked = i;
+            sv_D2Objs[sv_MemberRows[n].check].highlighted = i;
         }
     }
     if (d2_ClickedId == 0x51d) {
