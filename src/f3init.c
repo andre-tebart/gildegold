@@ -3776,7 +3776,7 @@ int init_LoadCityINI(char *city, int slot)
     s = ai_PlayerSlots[slot];
     if (slot == 0)
         memset(ai_PlayerSlots[0], 0, 0x2f4 * 4);
-    sprintf(ini, "%s%s/%s.ini", "\\project\\gfx\\", "gamedata/cities", city);
+    sprintf(ini, "%s%s/%s.ini", main_GfxPath, "gamedata/cities", city);
     GetPrivateProfileStringA("A - ALLGEMEIN", "Stadtname", "Unknown", val, 0x100, ini);
     strcpy(s, val);
     GetPrivateProfileStringA("A - ALLGEMEIN", "KartenPosition", "0,0", val, 0x100, ini);

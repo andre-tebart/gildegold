@@ -4922,10 +4922,10 @@ void main_GameLoop(int ctl)
             if ((u & 0x42) == 0 && U_I((unsigned)&full_data_62456c) != 0 && U_I((unsigned)&ai_GameOver) == 0 && (char)u >= 0) {
                 ls_SaveSlot = 0;
                 if ((u & 4) == 0) {
-                    sprintf(ap, "%s\\gamedata\\saves\\autosave.sav", "\\project\\gfx\\");
+                    sprintf(ap, "%s\\gamedata\\saves\\autosave.sav", main_GfxPath);
                     i5 = fopen(ap, "rb");
                     if (i5 != 0) {
-                        sprintf(ab, "%s\\gamedata\\saves\\autosave.bak", "\\project\\gfx\\");
+                        sprintf(ab, "%s\\gamedata\\saves\\autosave.bak", main_GfxPath);
                         fseek(i5, 0, 2);
                         w = ftell(i5);
                         fseek(i5, 0, 0);

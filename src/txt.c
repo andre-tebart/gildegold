@@ -347,7 +347,7 @@ int txt_OpenText(char *file, int header)
         p = strrchr(txt_BinPath, '\\');
         if (p)
             *p = 0;
-        sprintf(path, "%s\\resources\\textbin_%s\\", "german");
+        sprintf(path, "%s\\resources\\textbin_%s\\", txt_Language);
         strcpy(txt_BinPath, path);
     } else {
         strcpy(txt_Dir, "text\\");
@@ -793,7 +793,7 @@ int txt_ReloadTextFile(char *name)
     fi = txt_FindFile(name);
     if (fi == -1)
         return 0;
-    sprintf(path, "textbin_%s\\%s.res", "german", txt_Files[fi].name);
+    sprintf(path, "textbin_%s\\%s.res", txt_Language, txt_Files[fi].name);
     f = vfs_Tfopen(path, "rb", vfs_Root);
     if (!f)
         return 0;
@@ -831,7 +831,7 @@ int txt_LoadTextFile(char *name)
             break;
     if (fi >= 0x80)
         return 0;
-    sprintf(path, "textbin_%s\\%s.res", "german", name);
+    sprintf(path, "textbin_%s\\%s.res", txt_Language, name);
     f = vfs_Tfopen(path, "rb", vfs_Root);
     if (!f) {
         sprintf(msg, "Could not open textfile:%s", path);

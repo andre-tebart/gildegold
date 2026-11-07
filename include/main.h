@@ -28,6 +28,7 @@ extern int main_DevMenu;                /* 0x6f245c, nonzero: the main menu show
 extern MAINFAMILY main_Family;          /* 0x75e180 */
 extern int main_QuitProgram;            /* 0x6f25b4, set by quit / Escape / WM_QUIT: WinMain exits */
 extern int main_ClockScale;              /* 0x6248b4, 100: the game seconds of a clock update per speed step (sv_UpdateClock) */
+extern unsigned char main_GfxPath[264];  /* 0x624588, the GfxPath option of game.INI (default \project\gfx\): the vfs root and the base of the city ini / save paths */
 extern char main_NetHost[0x80];        /* 0x75e1c0, the network host address (game.INI [Network] Host) */
 extern char main_NetSaveName[161];      /* 0x75e360, the network game's name */
 

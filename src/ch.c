@@ -39,6 +39,7 @@
 #include "tr.h"
 #include "d3_pose.h"
 #include "vfs.h"
+#include "chc.h"                      /* ch_StepSample */
 #define util_RandomU ((unsigned short (*)(int))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original this unit's callers read the 16-bit result (byte-matched ch_RandomNear 0x405160, ai_CalcMeisterBank 0x4836a0, cm_FightLoop 0x4d88c0 move it as a word / movzx) */
 #define d3t_CamMoveI (*(int *)&d3t_CamMove)  /* 0x6310e8, d3t_CamMove (d3_tools.c: D3ANIM *) as the int this unit tests and clears */
 
@@ -3089,7 +3090,7 @@ void ch_WalkSound(CHACTION *a, int ground)
                         strcpy(name, "Pfuetze_s");
                     snd = sb_GetSample(ch_SndLib, name);
                 } else
-                    snd = sb_GetSample(ch_SndLib, "normal_s");
+                    snd = sb_GetSample(ch_SndLib, ch_StepSample);
                 if (snd) {
                     d3snd_PlayAt(snd, ch->obj, 40, 500.0f);
                     ch_StepSounds++;
@@ -3660,7 +3661,7 @@ void ch_ActWalkCells(CHACTION *a)
                         strcpy(name, "Pfuetze_s");
                     snd = sb_GetSample(ch_SndLib, name);
                 } else
-                    snd = sb_GetSample(ch_SndLib, "normal_s");
+                    snd = sb_GetSample(ch_SndLib, ch_StepSample);
                 if (snd) {
                     d3snd_PlayAt(snd, ch->obj, 40, 500.0f);
                     ch_StepSounds++;

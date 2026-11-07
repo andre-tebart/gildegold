@@ -58,6 +58,7 @@
 #include "tr.h"
 #include "d3_pose.h"
 #include "ch.h"
+#include "txt.h"                      /* txt_Language */
 #define util_RandomU ((unsigned short (*)(int))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original this unit's callers read the 16-bit result (byte-matched ch_RandomNear 0x405160, ai_CalcMeisterBank 0x4836a0, cm_FightLoop 0x4d88c0 move it as a word / movzx) */
 #define sb_PlaySampleI ((struct SBSAMPLE *(*)(int, char *, int, int, int, int, int))sb_PlaySample)  /* 0x426fa0 (sblib.c: SBBANK *bank): this unit passes the bank as an int */
 #define sb_SetVolumeI ((void (*)(int, int))sb_SetVolume)  /* 0x427330 (sblib.c: SBSAMPLE *): @original f3snd.c passes the int handle view of the sample */
@@ -936,7 +937,7 @@ int snd_LoadVoiceBank(char *name, int a)
     char buf[0x104];
     int b;
 
-    sprintf(buf, "sprache_%s\\%s", "german", name);
+    sprintf(buf, "sprache_%s\\%s", txt_Language, name);
     b = sb_LoadSampleBank(buf, a);
     if (b == 0) {
         sprintf(buf, "sprache\\%s", name);
