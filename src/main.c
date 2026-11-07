@@ -700,7 +700,7 @@ sized:
         strcpy(evt_Path, "scripts/");
         sprintf(d2_FormsDir, "forms\\");
         ai_ApplyGfxOptions();
-        sprintf(path, "gilde_add_on_%s.gfx", "german");  /* the pooled literal 0x5f8ad0: 0x53ccf0 reads General/Language into the same string (its default) */
+        sprintf(path, "gilde_add_on_%s.gfx", txt_Language);
         if (d2_Open((int)main_Window, ai_ScreenModeW, ai_ScreenModeH, main_GamePath, path) != 0) {
             di_MaxY = d2_ScreenH;
             di_MaxX = d2_ScreenW - 8;
@@ -5196,8 +5196,8 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE prev, char *cmd, int show)
     GetPrivateProfileStringA("General", "GfxPath", "\\project\\gfx\\", (char *)(unsigned)&main_GfxPath, 0x104, (char *)(unsigned)&ai_OptionsFile);
     GetPrivateProfileStringA("General", "GamePath", "\\project\\game\\", (char *)(unsigned)&main_GamePath, 0x104, (char *)(unsigned)&ai_OptionsFile);
     GetPrivateProfileStringA("General", "MoviePath", "\\project\\movie\\", (char *)(unsigned)&main_MoviePath, 0x104, (char *)(unsigned)&ai_OptionsFile);
-    GetPrivateProfileStringA("General", "Language", "german", (char *)(unsigned)"german", 0x40, (char *)(unsigned)&ai_OptionsFile);
-    ls_LanguageOf((char *)(unsigned)"german");
+    GetPrivateProfileStringA("General", "Language", "german", txt_Language, 0x40, (char *)(unsigned)&ai_OptionsFile);
+    ls_LanguageOf(txt_Language);
     U_I((unsigned)&full_data_6f2574) = GetPrivateProfileIntA("General", "show_intro", 0, (char *)(unsigned)&ai_OptionsFile);
     res = GetPrivateProfileIntA("Gfx", "cur_res", 0, (char *)(unsigned)&ai_OptionsFile);
     ai_GfxResolution = (unsigned char)res;

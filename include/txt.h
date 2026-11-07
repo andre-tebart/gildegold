@@ -6,7 +6,8 @@ struct VFSFILE;
 #ifndef UNK_42C3B0_H
 #define UNK_42C3B0_H
 
-extern int txt_GroupCount;               /* 0x6333bc, text groups parsed by the last txt_OpenText, never read */
+extern char txt_Language[0x40];         /* 0x5f8ad0, the language name (General/Language of game.INI, default "german") */
+extern int txt_GroupCount;              /* 0x6333bc, text groups parsed by the last txt_OpenText, never read */
 extern char *txt_Buffer;                /* 0x6333c0, mem_Alloc'd text pool */
 extern int txt_Size;                    /* 0x6333c4, bytes used in txt_Buffer */
 extern char txt_BinPath[256];           /* 0xfe7c40 */

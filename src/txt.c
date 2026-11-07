@@ -872,6 +872,7 @@ int txt_FindKey(char *key)
     return -1;
 }
 
+char txt_Language[0x40] = "german";  /* 0x5f8ad0, the language name: WinMain reads General/Language of game.INI into it (default "german") and passes it to ls_LanguageOf; main_OpenScreen builds "gilde_add_on_<language>.gfx" from it */
 int txt_GroupCount = 0;  /* 0x6333bc, text groups parsed by the last txt_OpenText, never read */
 char * txt_Buffer = 0;  /* 0x6333c0, mem_Alloc'd text pool */
 int txt_Size = 0;  /* 0x6333c4, bytes used in txt_Buffer */
