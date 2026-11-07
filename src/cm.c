@@ -8233,13 +8233,13 @@ int cm_OrderEscape(char *rec, char *c, char *tgt)
     order.x = z;
     cm_SendCutEntry(((CMCUTINFO *)rec)->playerId, &order);
 }
-/* 0x4d02d0, an order kind 4 for the character c with the name of the object tgt (strcpy to +0x10) and its ground
-   point (x, z); returns 1, 0 when the point is not on the ground. Rough draft. */
+/* 0x4d02d0, an order kind 4 (the walk to a named dummy) for the character c with the name of the object tgt
+   (CMCUTENTRY.dummy) and its ground cell (cellX, cellZ); returns 1, 0 when the point is not on the ground. */
 
 int cm_OrderConquer(char *rec, char *c, char *tgt)
 {
     char *sc = (char *)d3_DefaultScene->hmap;
-    char *q;
+    CMCUTENTRY *q;
     float v[4];
     int x, z, h;
 
@@ -8247,13 +8247,13 @@ int cm_OrderConquer(char *rec, char *c, char *tgt)
     d3_PointToWorld(tgt, tgt + 0x4c, v);
     if ((char)d3_GetHeightAt(sc, v, &x, &z, &h) == 0)
         return 0;
-    q = (char *)cm_CutEntrySlot(rec, c);
-    q[0xc] = 0;
-    strcpy(q + 0x10, tgt);
-    *(int *)q = *(int *)(c + 4);
-    *(int *)(q + 4) = 4;
-    *(int *)(q + 0x20) = x;
-    *(int *)(q + 0x24) = z;
+    q = (CMCUTENTRY *)cm_CutEntrySlot(rec, c);
+    q->b0c = 0;
+    strcpy(q->dummy, tgt);
+    q->charId = ((AICHAR *)c)->netId;
+    q->state = 4;
+    q->cellX = x;
+    q->cellZ = z;
     return 1;
 }
 /* 0x4d0380, an order kind 6 with the name of the object tgt, copied to +0x10 of the order record that goes to 0x4c5c40;
