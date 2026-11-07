@@ -3039,3 +3039,4 @@
 2026-11-07T21:08:55 0x004d25a0 data ai_Unk4d25a0 -> cm_NearestWareObject by:main why:returns the closest object collected by cm_CollectWareObject (a WARE_ good of the other fight side) to the character c, or 0
 2026-11-07T21:15:35 0x004d3ac0 data ai_Unk4d3ac0 -> cm_CheerAction by:main why:cm_FightSlotCheer queues it for fight command 1 (cheer) with the animation gestik/jubeln; it hides that character's model
 2026-11-07T21:17:07 0x004d3ae0 data ai_Unk4d3ae0 -> cm_PickUpAction by:main why:cm_FightSlotPickUp queues it (fight command 4) to finish a pick-up: the object is owned by the fight's attacker side, carried by the fighter (AICHAR.v1ac) and hidden from the ground
+2026-11-07T21:22:31 0x004d4090 func ai_Unk4d4090 -> cm_LootList by:main why:builds the loot list of a won fight (cm_FightStartDialog / cm_FightEndDialog call it: 5 goods per row, picture, count and value; returns the sum)

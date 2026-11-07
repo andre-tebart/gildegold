@@ -10167,43 +10167,43 @@ int cm_FightRole(unsigned char *b)
    1 only those of the player, 2 only the others) get a cell of 5 per row (120 x 96 pixels from x, y): their picture
    (0x525 frame, 0xdf + id), the count "%i " plus a suffix, the value "%T"; returns the sum of the values */
 
-int ai_Unk4d4090(int x, int y, int mode)
+int cm_LootList(int x, int y, int mode)
 {
-    int off;
+    int i;
     int j = 0;
     int total = 0;
     int px, py;
     int t, t2;
-    char *q;
+    AIOBJ *q;
     char buf[0x100];
 
-    for (off = 0x100; off < 0x10c; off += 4) {
-        if (*(int *)(off + cm_FightRecord) == -1)
+    for (i = 0; i < 3; i++) {
+        if (cm_FightRecordT->carts[i] == -1)
             continue;
-        q = gm_Query(0, 2, 7, 1, *(int *)(off + cm_FightRecord));
-        q = gm_Query(*(int *)(q + 0x14), 1, 0, 0x1dd);
-        for (q = gm_Query(*(int *)(q + 0x14), 1, 5); q != 0; q = (char *)gm_QueryNext()) {
-            if (mode != 0 && !(mode == 1 && *(int *)(q + 0xa) == ai_PlayerId) &&
-                !(mode == 2 && *(int *)(q + 0xa) != ai_PlayerId))
+        q = (AIOBJ *)gm_Query(0, 2, 7, 1, cm_FightRecordT->carts[i]);
+        q = (AIOBJ *)gm_Query(q->list, 1, 0, 0x1dd);
+        for (q = (AIOBJ *)gm_Query(q->list, 1, 5); q != 0; q = (AIOBJ *)gm_QueryNext()) {
+            if (mode != 0 && !(mode == 1 && q->fightSide == ai_PlayerId) &&
+                !(mode == 2 && q->fightSide != ai_PlayerId))
                 continue;
             px = x + (j % 5) * 120;
             py = y + (j / 5) * 96;
             d2_WinOpenPic(px, py, 0x525, d2_LastWindow);
-            d2_WinOpenPic(px, py, *(unsigned short *)q + 0xdf, d2_LastWindow);
+            d2_WinOpenPic(px, py, q->id + 0xdf, d2_LastWindow);
             t = d2_CreateWinText(px - 0x10, py - 0xf, &ch_EmptyName, d2_LastWindow);
-            G19_R(t, 0x74, short) = 0x56;
-            G19_R(t, 0x14, short) = 0x50;
-            G19_R(t, 0x5c, int) = 1;
-            sprintf(buf, "%i ", *(int *)(q + 0xe));
+            d2_Objs[t].font = 0x56;
+            d2_Objs[t].w = 0x50;
+            d2_Objs[t].centred = 1;
+            sprintf(buf, "%i ", q->count);
             strcat(buf, txt_AmountUnit);
             d2_SetObjText(t, buf);
             t2 = d2_CreateWinText(px - 0x10, py + 0x34, &ch_EmptyName, d2_LastWindow);
-            G19_R(t2, 0x74, short) = 0x56;
-            G19_R(t2, 0x14, short) = 0x50;
-            G19_R(t2, 0x5c, int) = 1;
-            txt_FormatS(buf, "%T", (int)gm_GoodsPrice(*(unsigned short *)q, ai_OwnPlayer) * *(int *)(q + 0xe));
+            d2_Objs[t2].font = 0x56;
+            d2_Objs[t2].w = 0x50;
+            d2_Objs[t2].centred = 1;
+            txt_FormatS(buf, "%T", (int)gm_GoodsPrice(q->id, ai_OwnPlayer) * q->count);
             d2_SetObjText(t2, buf);
-            total = (int)(gm_GoodsPrice(*(unsigned short *)q, ai_OwnPlayer) * *(int *)(q + 0xe) + total);
+            total = (int)(gm_GoodsPrice(q->id, ai_OwnPlayer) * q->count + total);
             j++;
         }
     }
@@ -10376,7 +10376,7 @@ int cm_FightStartDialog(char *a)
             io_PrintText(0x113e, (r < 0 ? 0 : r) + 0x1128);
         else
             io_PrintText(0x113f);
-        ai_Unk4d4090(0x10, 0x96, 0);
+        cm_LootList(0x10, 0x96, 0);
         for (i = 0; i < 3; i++) {
             n = *(int *)(a + 0x100 + i * 4);
             if (n != -1) {
@@ -10676,9 +10676,9 @@ void cm_FightEndDialog(char *a)
     io_PrintText(0x1197);
     if (a[0x7c] & 1) {
         if (G20_US(&ai_PlayerId) == G20_US(G20_ATT))
-            ai_Unk4d4090(0x24, 0x32, 2);
+            cm_LootList(0x24, 0x32, 2);
         else if (G20_US(&ai_PlayerId) == G20_US(G20_DEF)) {
-            v = ai_Unk4d4090(0x24, 0x32, side == G20_DEF ? 0 : 1);
+            v = cm_LootList(0x24, 0x32, side == G20_DEF ? 0 : 1);
             q = gm_PlayerRecord(G20_DEF);
             if (q != 0)
                 *(int *)(q + 0x1c) += v;
