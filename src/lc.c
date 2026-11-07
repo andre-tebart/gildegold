@@ -24562,7 +24562,7 @@ int ai_ShowBuildingRows(AICHARREC *ch, int max, int *ctrls)
    corners, the title and name ("%s %1N7") and below it the office of kind 7 ("%s", the deputy office text) or the
    name ("%1N5"); a character other than viewer and not of kind 6 gets the liking slider (gm_Liking of the viewer,
    0 for kind 7); a viewer of kind 6 marks its partner with the picture 0x6d3; returns 0
-   @deep rewritten from the ROUGH draft and read through against the original (all 429 instructions; ours
+   @deep rewritten from the first draft and read through against the original (all 429 instructions; ours
    428): the layout switch (cols[3], ncols, step), the column loop with the i < n guard, the row walk by
    pointer, the frame / family / portrait / corner icon pictures, the two text lines, the liking slider
    (d2_SetObjValue(slider, 0, 100, 0, 1) for kind 7: the original hoists the push 1 shared with gm_Liking's
