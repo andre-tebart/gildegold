@@ -15719,7 +15719,7 @@ int cm_LoadVoiceBank(char *name, int a)
         return 0;
     return snd_LoadVoiceBank(name, a);
 }
-/* 0x4e3290 */
+/* 0x4e3290, drops the reference of the voice bank a (sb_UnloadSampleBank), 0 in the replay mode */
 
 int cm_UnloadVoiceBank(int a)
 {
