@@ -21277,17 +21277,54 @@ close:
     d2_CloseView(win);
     sv_CameraFollow();
 }
-/* 0x5b6950, a window over a record (1170 B, ROUGH SKELETON): param_1 read at +1, the window "0x62ce8c"
-   (0x4741f0), a 0x100-byte frame; the body is a comment */
+/* 0x5b6950, the building sale window "Panel\Gebaeude_Verkaufen_pergament" (ai_BuildingWindow, with the player's
+   building): the text 0x17c5 (the building, the currency name 0x9a8 + 2 * the city's money good) and a price
+   slider from half to one and a half of the building's equipment value (gm_EquipmentValue at its level, in the
+   player's currency). The first button puts the building up for sale: the message 0x1b (from -1, flags 2,
+   arg[0] the building, arg[1] the price in the base currency, gm_PlayerFactor) and the note txt_Ptrs[0x17c6];
+   the second button, a right click, the building gone or no longer enterable (flags5aw 0x400) close it */
 
-int ai_Unk5b6950(int param_1)
+void ai_SellBuildingWindow(AIBLD *bld)
 {
-    int rec;
+    int bldId;
+    int win;
+    int value;
+    int slider;
+    AIBLD *found;
+    AIMSG msg;
 
-    rec = U_I(param_1 + 1);
-    /* ROUGH SKELETON: the window "0x62ce8c" over the record */
-    (void)rec;
-    return 0;
+    bldId = bld->id;
+    win = d2_OpenForm(0, 0, "Panel\\Gebaeude_Verkaufen_pergament");
+    d2_CentreViewWindows(win);
+    value = gm_EquipmentValue(bld, bld->level);
+    value = gm_ConvertMoney(value, ai_OwnPlayer);
+    d2_SetForm(win, 2);
+    slider = d2_GetWinObj(win, 2, io_PrintText(0x17c5, bld, ai_PlayerCity[ai_OwnPlayer][0] * 2 + 0x9a8));
+    d2_SetObjValue(slider, (int)(value * 0.5), (int)(value * 1.5), value);
+    d2_SetPointerSprite(0, 0);
+    sv_RunFrame(0, 0x677c7);
+    do {
+        found = (AIBLD *)gm_FindBuildingById(bldId);
+        if ((bld->flags5aw & 0x400) != 0 || found == 0)
+            sv_PopRequest = 1;
+        if (dm_L.rup != 0)
+            sv_PopRequest = 1;
+        if (d2_ClickedId == 0) {
+            memset(&msg, 0, sizeof(msg));
+            msg.type = 0x1b;
+            msg.fromId = -1;
+            msg.flags = 2;
+            msg.to = ai_CharInts[ai_PlayerId][0];
+            msg.arg[0] = bld->id;
+            msg.arg[1] = gm_PlayerFactor(d2_GetObjValue(slider), ai_OwnPlayer);
+            cm_SendLongMessage((char *)&msg);
+            sv_MessageBox(txt_Ptrs[0x17c6], 0);
+            sv_PopRequest = 1;
+        } else if (d2_ClickedId == 1) {
+            sv_PopRequest = 1;
+        }
+    } while (sv_RunFrame((int)ai_SellBuildingWindow, 0x677c7) != 0);
+    d2_CloseView(win);
 }
 /* 0x5b6b20, a window over a record (902 B, ROUGH SKELETON): param_1 read at +1, 0x509b10 (the record, 0x64)
    first, a 0x11c-byte frame; the body is a comment */
