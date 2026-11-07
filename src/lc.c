@@ -28709,76 +28709,58 @@ unsigned int ai_MarriageTest(int idA, int idB)
     j = gm_CharLevel(b->id, 0);
     return (unsigned int)(abs(i - j) < 6);
 }
-/* 0x5c6620, the marriage rating of two characters (752 B, ROUGH): param_1 / param_2 the ids; the 0x220
-   local score record (0x88 dwords, [0] = 1); 0x505df0 resolves both; the partner records +0x30 / +0x32
-   (0x505df0, 0x50a640 / 2 the two halves into the heights 0x224 / 0x22c); the own amount 0x50a640 (the
-   larger of the two + the own, the ratio * 5 + 1, else 1.0); the relation 0x50c550 and the age 0x505e30
-   (clamped to 15 / 30) give (1 - age * 1/15) * 4 + 1 + (100 - relation) * 0.05 + 1 + the score + the
-   five bytes param_2 + 0x80 .. (each / 252); the 0x4f81c0 (0x10, the record, the score) bit 2 halves
-   it; the result is the __ftol of the score (the <= 2 / < 15 ladder). ROUGH: the float order of the sum
-   and the two __ftol exits from Ghidra */
+/* 0x5c6620, the courtship rounds the suitor idA needs for idB (742 B; the netIds, 0 when either is not found):
+   idB's standing is the larger of idB's worth (gm_GetWorth, at least 0) and half the worth of either parent
+   (AICHARREC.relatives[1] / [2]); a suitor worth less than that pays (standing - worth) / standing * 5 + 1, else 1;
+   to that come (100 - the liking of idA for idB) * 0.05 + 1, the age of idB clamped to 15 .. 30 as (1 - age / 15) * 4
+   + 1, and idB's five skills / 252 each. An order handler 0x10 of the suitor (ord_DispatchOrder) with the bit 2 set
+   halves it; the result is clamped to 2 .. 15 */
 
-int ai_CourtshipRounds(int param_1, int param_2)
+int ai_CourtshipRounds(int idA, int idB)
 {
-    char *a;
-    char *b;
-    char *p;
-    int score[0x88];
-    float hi1;
-    float hi2;
-    float lim;
+    float parentB;
+    float standing;
+    float parentA;
+    int req[0x88];
+    AICHARREC *a;
+    AICHARREC *b;
+    AICHARREC *p;
+    int worth;
     float rate;
-    float age;
-    float rel;
+    float liking;
+    float score;
     int i;
-    int v;
-    int n;
 
-    for (i = 0; i < 0x88; i++)
-        score[i] = 0;
-    hi1 = 0.0f;
-    hi2 = 0.0f;
-    score[0] = 1;
-    a = (char *)gm_FindChar(param_1);
-    b = (char *)gm_FindChar(param_2);
+    parentA = parentB = 0.0f;
+    memset(req, 0, sizeof(req));
+    req[0] = 1;
+    a = (AICHARREC *)gm_FindChar(idA);
+    b = (AICHARREC *)gm_FindChar(idB);
     if (a == 0 || b == 0)
         return 0;
-    p = (char *)gm_FindChar(U_I(b + 0x30));
-    if (p != 0) {
-        v = gm_GetWorth(*(unsigned short *)p);
-        hi2 = (float)(v / 2);
-    }
-    p = (char *)gm_FindChar(U_I(b + 0x32));
-    if (p != 0) {
-        v = gm_GetWorth(*(unsigned short *)p);
-        hi1 = (float)(v / 2);
-    }
-    v = gm_GetWorth(*(unsigned short *)b);
-    if ((float)v <= 0.0f)
-        lim = 0.0f;
-    else
-        lim = (float)gm_GetWorth(*(unsigned short *)b);
-    if (lim <= (hi1 < hi2 ? hi2 : hi1))
-        lim = hi1 <= hi2 ? hi2 : hi1;
-    v = gm_GetWorth(*(unsigned short *)a);
-    if ((float)v <= lim)
-        rate = ((lim - (float)v) / lim) * 5.0f + 1.0f;
-    else
+    p = (AICHARREC *)gm_FindChar(b->relatives[1]);
+    if (p != 0)
+        parentA = (float)(gm_GetWorth(p->id) / 2);
+    p = (AICHARREC *)gm_FindChar(b->relatives[2]);
+    if (p != 0)
+        parentB = (float)(gm_GetWorth(p->id) / 2);
+    standing = max((float)gm_GetWorth(b->id), 0.0f);
+    standing = max(standing, max(parentA, parentB));
+    worth = gm_GetWorth(a->id);
+    if ((float)worth > standing)
         rate = 1.0f;
-    rel = gm_Liking(*(unsigned short *)a, *(unsigned short *)b, 1);
-    age = (float)gm_CharAge(*(unsigned short *)b);
-    if (age > 15.0f)
-        age = age > 30.0f ? 30.0f : age;
     else
-        age = 15.0f;
-    n = (int)((1.0f - age * 0.06666667f) * 4.0f + 1.0f + (float)((100.0f - rel) * 0.05f + 1.0f) + rate);
-    /* ROUGH: the score sum is a float; the five bytes param_2 + 0x80 .. + 0x84 enter as
-       *(unsigned char *)(b + 0x80 + i) * 0.003968254 */
+        rate = (standing - (float)worth) / standing * 5.0f + 1.0f;
+    liking = (100.0f - gm_Liking(a->id, b->id, 1)) * 0.05f + 1.0f;
+    score = (1.0f - min(30.0f, max(gm_CharAge(b->id), 15.0f)) * 0.06666667f) * 4.0f + 1.0f;
+    score += liking;
+    score += rate;
     for (i = 0; i < 5; i++)
-        n = n + (int)(*(unsigned char *)(b + 0x80 + i) * 0.003968254f);
-    if (ord_DispatchOrder(0x10, a, score) & 2)
-        n = n / 2;
-    return n;
+        score += b->skills[i] * 0.003968254f;
+    if (ord_DispatchOrder(0x10, (char *)a, req) & 2)
+        score *= 0.5f;
+    score = min(max(score, 2.0f), 15.0f);
+    return (int)score;
 }
 
 void sv_PumpNet();
