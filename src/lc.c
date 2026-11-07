@@ -43,7 +43,11 @@
    intimidation, the law change, the dismissal, the embezzlement: ai_MedicusHandler .. ai_MisappropriationWindow)
    take the character and the order message (LCORDMSG: law, value, target / answerFlag, partner) as ord.c passes
    them, their AI path sending what the player's window sends (AIMSG.letter of 0x47, arg[] of 0x45 / 0x4b); the
-   privileges panel lists the orders.
+   privileges panel lists the orders. The privilege asks of the "privillegien" forms (the hatred, the peace, the
+   conversion, the penance, the miracle with its six outcomes ai_Miracle, the profession change) and the accusation
+   (ai_AccusationWindow, its evidence rows ai_AccuseWindow) end in the trial message 0x2c (ai_OpenTrial).
+   Open: head: am.h / gv.h / cm.h are not included: ai_FindPartnersRandomWalk, ai_PickPartnerRandomWalk,
+   amt_SendOfficeMessage, cm_SendSetJob, gv_SortCrimesByLaw and the two judges are copied declarations.
    Open: types: the amount rows and tabs (ai_ShowAmountRows, ai_Fill*Tab, ai_SpecialAmountListWindow) and am.c's
    partner chain still pass that filter as unsigned int *.
    Open: the AIMSG message records are built by raw offsets in most functions (the use callbacks of the Domizil

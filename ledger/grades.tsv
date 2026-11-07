@@ -2841,9 +2841,9 @@ exe	0x004f4d10	gv_CheckRankUps	gv	byte	readable
 exe	0x004f4d30	gv_EvidencePrice	gv	byte	readable		
 exe	0x004f4e20	ord_ApplyForOffice	ord	shape	readable	deep	
 exe	0x004f4f20	ord_LevelOrder	ord	shape	readable	deep	
-exe	0x004f4ff0	ord_EspionageResultOrder	ord	byte	readable		
+exe	0x004f4ff0	ord_ChangeProfessionOrder	ord	byte	readable		
 exe	0x004f5070	ord_MedicusOrder	ord	byte	readable		
-exe	0x004f50f0	ord_SpyTargetOrder	ord	byte	readable		
+exe	0x004f50f0	ord_AccusationOrder	ord	byte	readable		
 exe	0x004f5190	ord_BlackmailBuildingOrder	ord	byte	readable		
 exe	0x004f5200	ord_Level3Order	ord	byte	readable		
 exe	0x004f52e0	ord_IntimidateOrder	ord	byte	readable		
@@ -2880,11 +2880,11 @@ exe	0x004f6f10	ord_HatredOrder	ord	byte	readable
 exe	0x004f7000	ord_JobMultiOrder3	ord	byte	readable		
 exe	0x004f70f0	ord_HearingOrder	ord	byte	readable		
 exe	0x004f7200	ord_ExpelWorkerOrder	ord	byte	readable		
-exe	0x004f7300	ord_EspionagePaymentOrder2	ord	byte	readable		
-exe	0x004f7400	ord_EspionageRelationOrder	ord	byte	readable		
-exe	0x004f74f0	ord_EspionageAmountOrder	ord	byte	readable		
+exe	0x004f7300	ord_ConvertOrder	ord	byte	readable		
+exe	0x004f7400	ord_PeaceOrder	ord	byte	readable		
+exe	0x004f74f0	ord_PenanceOrder	ord	byte	readable		
 exe	0x004f75e0	ord_SpyTargetFlagOrder	ord	byte	readable		
-exe	0x004f76e0	ord_EspionageOverviewOrder	ord	byte	readable		
+exe	0x004f76e0	ord_MiracleOrder	ord	byte	readable		
 exe	0x004f77d0	ord_Level7Order	ord	byte	readable		
 exe	0x004f78b0	ord_Level8Order	ord	byte	readable		
 exe	0x004f7990	ord_Level9UpOrder	ord	byte	readable		
@@ -3536,7 +3536,7 @@ exe	0x0053f430	he_InnStaffLeave	he	shape	readable
 exe	0x0053f500	he_ClearInnDarkCorner	he	shape	readable		
 exe	0x0053f5b0	he_TopUpCharMoney	he	byte	readable		
 exe	0x0053f6b0	he_SpawnFounders	he	draft	readable	deep	
-exe	0x00540c90	he_PostEvent67	he	shape	draft	deep	
+exe	0x00540c90	he_PostEvent67	he	byte	draft	deep	
 exe	0x00540e40	he_InnReport	he	byte	readable		
 exe	0x00540fe0	he_DailyEventChecks	he	byte	readable		
 exe	0x00541010	he_PostEvent3a	he	byte	readable		
@@ -4541,15 +4541,15 @@ exe	0x005cb250	ai_SeatSwapWindow	lc	byte	readable
 exe	0x005cb4f0	ai_HatredWindow	lc	draft	readable	deep	
 exe	0x005cba90	ai_HearingWindow	lc	byte	readable		
 exe	0x005cbe00	ai_ExpelWorkerWindow	lc	draft	readable	deep	
-exe	0x005cc2b0	ai_EspionageRelation	lc	draft	draft		
-exe	0x005cc700	ai_EspionagePayment2	lc	draft	draft		
-exe	0x005cca40	ai_EspionageAmountWindow	lc	draft	draft		
-exe	0x005ccc10	ai_EspionageOverviewWindow	lc	draft	draft		
-exe	0x005cd2e0	ai_EspionageOverviewHandler	lc	draft	readable	deep	
-exe	0x005cd400	ai_EspionageResult	lc	draft	draft		
-exe	0x005cd8c0	ai_Unk5cd8c0	lc	draft	draft		
-exe	0x005cdb90	ai_Unk5cdb90	lc	draft	draft		
-exe	0x005cde90	ai_SpyTargetHandler	lc	draft	draft		
+exe	0x005cc2b0	ai_PeaceWindow	lc	shape	readable		
+exe	0x005cc700	ai_ConvertWindow	lc	draft	readable	deep	
+exe	0x005cca40	ai_PenanceWindow	lc	byte	readable		
+exe	0x005ccc10	ai_Miracle	lc	draft	readable	deep	
+exe	0x005cd2e0	ai_MiracleWindow	lc	draft	readable	deep	
+exe	0x005cd400	ai_ChangeProfessionWindow	lc	shape	readable		
+exe	0x005cd8c0	ai_OpenTrial	lc	byte	readable		
+exe	0x005cdb90	ai_AccuseWindow	lc	byte	readable		
+exe	0x005cde90	ai_AccusationWindow	lc	draft	readable	deep	
 exe	0x005ce1a0	ai_SpyTargetFlagHandler	lc	draft	draft		
 exe	0x005ce4b0	ai_Unk5ce4b0	lc	draft	draft		
 exe	0x005ce610	ai_InterrogationWindow	lc	draft	draft		
