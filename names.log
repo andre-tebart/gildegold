@@ -2917,3 +2917,4 @@
 2026-11-07T11:07:00 0x005b6b20 func ai_Unk5b6b20 -> ai_RenovationWindow by:main why:opens Panel\Gebaeude_Renovieren, offers a quarter / half / all of the missing level points (100 - level) at 0.5 % of the equipment value each, sends the message 0x1c in the group renovieren
 2026-11-07T11:09:41 0x005b6eb0 func ai_Unk5b6eb0 -> ai_WithdrawSaleWindow by:main why:finds the building's sale event 0x1b, shows its asking price (0x17cc) in the sale form; the button clears the sale flag 2 of the field 0x5a and frees the event
 2026-11-07T11:13:48 0x005b6fe0 func ai_Unk5b6fe0 -> ai_RoomUpgradeWindow by:main why:opens Panel\Gebaeude_Raum_Erweitern and sends the room_upgrade message 0x1f with the upgrade good
+2026-11-07T11:22:46 0x005b7690 func ai_Unk5b7690 -> ai_UpgradeBuilding by:main why:asks the price of the next type of the line (text 0x17d5) and sends the building_upgrade message 0x1e

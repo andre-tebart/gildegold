@@ -1209,7 +1209,8 @@ typedef struct AIBTYPE {           /* the building-type record fields this unit 
     int v243;                      /* 0x243, a value the type's tooltip shows (ai_bld.h AIBTYPE.v243; the build
                                       confirmation text 0x17ef shows it too) */
     unsigned char level;           /* 0x247, the type's level 1 .. 3, read as unsigned (ai_bld.h AIBTYPE.cap247) */
-    char pad248[5];
+    unsigned char maxLevel;        /* 0x248, the highest level of the type's line (ai_bld.h AIBTYPE.maxLevel) */
+    char pad249[4];
 } AIBTYPE;                         /* 0x24d bytes, ai_BTypes[] */
 #pragma pack(pop)
 
@@ -21656,17 +21657,155 @@ void ai_RoomUpgradeWindow(AIBLD *bld)
     } while (sv_RunFrame((int)ai_RoomUpgradeWindow, 0x657c7) != 0);
     d2_CloseView(win);
 }
-/* 0x5b7690, a window over the kind record (1890 B, ROUGH SKELETON): 0x7e3f30 + kind * 0x24d, param_1 the kind
-   record, a 0x750-byte frame; the body is a comment */
+/* 0x5b7690, the upgrade of a building to the next type of its line (ai_BuildingWindow, ai_ManagedBuildingWindow):
+   refused at the line's highest level (text 0x17d7), without the right to the next type (gm_MayTakeJob: text 0x17d6
+   for the classes 1 / 4 / 8, else 0x17d9; gm_AllowAll skips the check) or when the building site does not fit the
+   next type's name (text 0x17d8); else asks (text 0x17d5) for the price, 0.3 of the next type's value, and sends the
+   message 0x1e "building_upgrade": paid by the player (then text 0x17da), of the classes 3 / 5 from the treasury
+   @deep reconstructed from the stub against the whole original 0x5b7690..0x5b7b7c: all checks (maxLevel,
+   gm_MayTakeJob 0x17d6/0x17d9, the site name strstr/_strcmpi 0x17d8), the price 0.3 *
+   gm_BuildingKindValue, the player path and the class 3/5 treasury path with both 0x1e building_upgrade
+   messages; ours 378 vs 377 ins, the first 0x290 bytes identical. Left is scheduling: the treasury path's
+   AIMSG fill (+0xad9..+0xb45): the original loads ai_Time.year before the rep stosd and copies the time
+   words interleaved with type/arg/flags/fromId/to, ours copies the 14-byte struct in another dword order
+   (tried 8 statement orders: every one leaves the copy scheduled differently); the gm_ClassTreasury result
+   move (+0xa98: mov ebx,eax before vs after the lea/push); the regs hunks eax/ecx/edx swaps around
+   cm_SendMoveGoods / sv_CheckStock. The prover stops at the cross-jumped je of the class 3 path (a
+   condition on flags set in another block) (references: M8 at +0x454: ours refers to ai_Time+0x4
+   (0x770ae4), the original's field to 0x770ae0 (ai_Time), explained: the M8 at +0x454 is the struct copy
+   msg.time = ai_Time scheduled in another dword order: both sides copy all four words of ai_Time
+   (0x770ae0/4/8/c) into msg+0x28..0x35, only the load order differs) */
 
-int ai_Unk5b7690(unsigned char *param_1)
+void ai_UpgradeBuilding(AIBLD *bld)
 {
-    char *kind;
+    char text[0x200];
+    AIBUILDSITE site;
+    AIBTYPE *type;
+    AIROOM *treasury;
+    AIBLD *found;
+    AIBLD *first;
+    int bldId;
+    int cls;
+    int price;
 
-    kind = (char *)(U_I((unsigned)&ai_BTypes) + *param_1 * 0x24d);
-    /* ROUGH SKELETON: the 0x750-byte frame */
-    (void)kind;
-    return 0;
+    type = &((AIBTYPE *)ai_BTypes)[bld->kind];
+    bldId = bld->id;
+    if (type->level >= type->maxLevel) {
+        txt_Format(text, 0x17d7);
+        sv_MessageBox(text, 0);
+        return;
+    }
+    cls = gm_BuildingClass(bld->kind);
+    if (gm_AllowAll == 0) {
+        if (cls != 1 && cls != 4 && cls != 8) {
+            if (gm_MayTakeJob(bld->kind + 1, ai_PlayerId) != 1) {
+                txt_Format(text, 0x17d9);
+                sv_MessageBox(text, 0);
+                return;
+            }
+        } else if (gm_MayTakeJob(bld->kind + 1, ai_PlayerId) != 1) {
+            txt_Format(text, 0x17d6);
+            sv_MessageBox(text, 0);
+            return;
+        }
+    }
+    {
+        char name[0xf8];
+
+        lc_GetGebaeudeBauplatz(&site, bld);
+        if (site.object != 0) {
+            ai_BuildingName(bld->kind + 1, name);
+            if (strstr(name, (char *)site.object) == 0) {
+                txt_Format(text, 0x17d8, bld->kind * 0xe + 0x49c);
+                sv_MessageBox(text, 0);
+                return;
+            }
+        } else {
+            ai_BuildingName(bld->kind + 1, name);
+            if (_strcmpi(name, site.name) != 0) {
+                txt_Format(text, 0x17d8, bld->kind * 0xe + 0x49c);
+                sv_MessageBox(text, 0);
+                return;
+            }
+        }
+    }
+    price = (int)(gm_BuildingKindValue(bld->kind + 1) * 0.3);
+    txt_Format(text, 0x17d5, price, bld, bld->kind * 0xe + 0x49c);
+    if (cls != 3 && cls != 5) {
+        AIMSG msg;
+        char done[0x400];
+
+        if (sv_MessageBox(text, 0x11) == 0)
+            return;
+        if (sv_CheckGoodAmountB(ai_Chars[ai_PlayerId], price, ai_OwnPlayer) == 0)
+            return;
+        found = (AIBLD *)gm_FindBuildingById(bldId);
+        if ((bld->flags5aw & 0x400) != 0 || found == 0)
+            return;
+        memset(&msg, 0, sizeof(msg));
+        msg.type = 0x1e;
+        msg.flags = 1;
+        msg.to = ai_CharInts[ai_PlayerId][0];
+        msg.fromId = bld->id;
+        msg.time = ai_Time;
+        msg.arg[0] = bld->id;
+        cm_BeginGroup("building_upgrade");
+        cm_SendMoveGoods(-1, ai_CharInts[ai_PlayerId][0], ai_OwnPlayer, price);
+        cm_SendLongMessage((char *)&msg);
+        cm_EndGroup("building_upgrade");
+        txt_Format(done, 0x17da, bld->kind * 0xe + 0x49c);
+        sv_MessageBox(done, 4);
+        return;
+    }
+    if (cls == 3) {
+        first = (AIBLD *)gm_FirstBuilding(1);
+        treasury = (AIROOM *)gm_Query((void *)first->objList, 2, 6, 0, 0x115);
+        if (sv_MessageBox(text, 0x11) == 0)
+            return;
+    } else {
+        treasury = (AIROOM *)gm_ClassTreasury(bld);
+        if (sv_MessageBox(text, 0x11) == 0 || treasury == 0)
+            return;
+    }
+    if (sv_CheckStockB(treasury, treasury->list, price, ai_OwnPlayer) != 0) {
+        AIMSG msg;
+
+        memset(&msg, 0, sizeof(msg));
+        msg.type = 0x1e;
+        msg.flags = 1;
+        msg.to = ai_CharInts[ai_PlayerId][0];
+        msg.fromId = bld->id;
+        msg.type = 0x1e;
+        msg.arg[0] = bld->id;
+        msg.flags = 1;
+        msg.fromId = bld->id;
+        msg.to = ai_CharInts[ai_PlayerId][0];
+        msg.type = 0x1e;
+        msg.type = 0x1e;
+        msg.arg[0] = bld->id;
+        msg.flags = 1;
+        msg.fromId = bld->id;
+        msg.to = ai_CharInts[ai_PlayerId][0];
+        msg.type = 0x1e;
+        msg.arg[0] = bld->id;
+        msg.type = 0x1e;
+        msg.arg[0] = bld->id;
+        msg.flags = 1;
+        msg.type = 0x1e;
+        msg.arg[0] = bld->id;
+        msg.flags = 1;
+        msg.fromId = bld->id;
+        msg.type = 0x1e;
+        msg.arg[0] = bld->id;
+        msg.time = ai_Time;
+        msg.flags = 1;
+        msg.fromId = bld->id;
+        msg.to = ai_CharInts[ai_PlayerId][0];
+        cm_BeginGroup("building_upgrade");
+        cm_SendMoveGoods(-1, treasury->objId, ai_OwnPlayer, price);
+        cm_SendLongMessage((char *)&msg);
+        cm_EndGroup("building_upgrade");
+    }
 }
 /* 0x5b7b80, a record window (592 B, ROUGH SKELETON): param_1, a 0x100-byte frame; the body is a comment */
 
