@@ -34415,14 +34415,79 @@ int ai_UseGoodFrameChar(AICHARREC *ch, G8USEVIEW *use)
 done:
     return ret;
 }
-/* 0x5d2bc0, an action callback of the record table 0x62c420 (record 37 at 0x62c82c, the text id 0x22d,
-   704 B): the character (0x5c1130 menu / 0x505df0), 0x5ba6b0, the texts 0x5176d0, one message 0x53dda0,
-   FOUR count pairs 0x5de634 / 0x4f2e30, the 0x5ba660 lookup, the texts and the panel 0x5cf820.
-   Frame 0xc4c. */
+/* 0x5d2bc0, the use callback of the Domizil record 37 (0x62c82c, the text id 0x22d), the twin of
+   ai_UseGoodFrameChar: the same target pick (flags 1, the gypsy filter, mode 0x400, the prompt 0x9c) and the
+   laws in force (none: the news 0xfff, key 0x5fa, and 0); the target is accused twice of a law at random
+   (gv_Accuse, the user as accuser, the user's home building), four times when the user holds the good 0x2c5.
+   A player target (kind 6 / 7) gets the news 0xfff (key 0x5fb); a player user sees the text 0xfe8 (the good's
+   rank + 1, the target) in the use-object panel and the use is marked handled. Returns 1. */
 
-int ai_Unk5d2bc0(void)
+int ai_UseGoodFrameChar2(AICHARREC *ch, G8USEVIEW *use)
 {
-    return 0;
+    int ret;
+    int index;
+    AMOUNTCFG cfg;
+    int laws[0x1d];
+    char text[0x100];
+    char news[0x400];
+    AICHARREC *target;
+    int i;
+    G9DOMIZIL *found;
+    int twice;
+    int n;
+
+    ret = 0;
+    n = 0;
+    if (ch->kind == 6) {
+        memset(&cfg, 0, sizeof(cfg));
+        memset(cfg.ids, 0xff, sizeof(cfg.ids));
+        txt_Format(text, 0x9c);
+        cfg.flags = 1;
+        cfg.mode = 0x400;
+        cfg.kind = 6;
+        cfg.filter = gypsyFilter;
+        target = (AICHARREC *)ai_AmountMenu(&cfg, text, 0, 0);
+        if (target == 0)
+            goto done;
+        ret = 1;
+    } else {
+        target = (AICHARREC *)gm_FindChar(use->target);
+        if (target == 0)
+            goto done;
+        ret = 1;
+    }
+    twice = ai_InventoryHas(ch, 0x2c5) != 0;
+    for (i = 0; i < 0x1d; i++) {
+        if (gv_Decisions[i].valueText == 2 && (char)gv_Decisions[i].rule != 0 && gv_Decisions[i].cur != 0)
+            laws[n++] = gv_Decisions[i].id;
+    }
+    if (n == 0) {
+        txt_Format(news, 0xfff);
+        he_ShowNews(target->netId, -1, news, 0, 0x5fa, 0);
+        return 0;
+    }
+    i = rand() % n;
+    gv_Accuse(laws[i], 1, target->netId, ch->netId, ch->bld2 != 0 ? ((AIBLD *)ch->bld2)->id : -1);
+    i = rand() % n;
+    gv_Accuse(laws[i], 1, target->netId, ch->netId, ch->bld2 != 0 ? ((AIBLD *)ch->bld2)->id : -1);
+    if (twice) {
+        i = rand() % n;
+        gv_Accuse(laws[i], 1, target->netId, ch->netId, ch->bld2 != 0 ? ((AIBLD *)ch->bld2)->id : -1);
+        i = rand() % n;
+        gv_Accuse(laws[i], 1, target->netId, ch->netId, ch->bld2 != 0 ? ((AIBLD *)ch->bld2)->id : -1);
+    }
+    if (target->kind == 6 || target->kind == 7) {
+        txt_Format(news, 0xfff);
+        he_ShowNews(target->netId, -1, news, 0, 0x5fb, 0);
+    }
+    if (ch->kind == 6) {
+        found = (G9DOMIZIL *)ai_FindUsableGoodIndex(use->obj->id, &index);
+        use->handled = 1;
+        txt_Format(news, 0xfe8, found->rank + 1, target->id);
+        ai_UseObjPanel(news);
+    }
+done:
+    return ret;
 }
 /* 0x5d2e80, the use callback of the Domizil good 0x2b2 (the heating, the +0x14 pointer of the table entry
    0x62c8f0): a kind 6 character picks the building on the map (0x5b2180 (1, cfg, txt_Ptrs[0x9b], 0, 0),
