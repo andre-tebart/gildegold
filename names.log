@@ -2912,3 +2912,4 @@
 2026-11-07T09:48:52 0x005b2530 func ai_Unk5b2530 -> ai_NewStorageSlotWindow by:main why:opens "Handel\Handel_Lager_Neuer_Slot" and returns which of the two storage slot offers was clicked (ai_StorageWindow calls it)
 2026-11-07T10:01:42 0x005b3130 func ai_FiveTextWindow -> ai_TalentWindow by:main why:the window "Special\Talente" 0x62cd38: it shows one of the five skills and sends the training message 0x60 (as am.c ai_ExecuteTrainSkill)
 2026-11-07T10:22:45 0x005b4340 func ai_Unk5b4340 -> ai_EvidenceDetailsWindow by:main why:the window "privillegien\Beweise_Details" 0x62cd7c: the crimes of a character the player holds as evidence, opened from ai_EvidenceBookWindow
+2026-11-07T10:27:32 0x005b4820 func ai_Unk5b4820 -> ai_BribeAmountCB by:main why:the bribe window of ai_OpenRobberBribe: a money slider for the picked character, gives the amount (cm_SendMoveGoods), raises the relation and accuses the bribe (gv_Accuse law 0x10)

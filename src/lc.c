@@ -1108,7 +1108,8 @@ typedef struct AICHARREC {         /* the character record fields this unit read
     unsigned char heldRounds;      /* 0x1b1, the rounds the character is held (ai_char.h AICHAR.heldRounds) */
     char pad1b2[0x16];
     unsigned int powerFlags;       /* 0x1c8, the office-power bits already used (ai_char.h AICHAR.powerFlags) */
-    char pad1cc[0x50];
+    unsigned int flags1cc;         /* 0x1cc, ai_char.h AICHAR.flags1cc (0x800: a bribe raises the relation by 6 instead of 4) */
+    char pad1d0[0x4c];
 } AICHARREC;                       /* 0x21c bytes, ai_Chars[768] */
 #pragma pack(pop)
 
@@ -7271,7 +7272,9 @@ int gm_GetWorth(unsigned short id); int gm_ConvertMoney(int a, unsigned char k);
 int ai_DuelAct(); void ai_DuelNextPhase(); int ai_DuelOpponentAction(); int ai_DuelAcceptAction();
 
 typedef struct LCFIN {                  /* what gm_PlayerRecord finds for a character (ai.h AIFIN; ai.h cannot be included here yet) */
-    char pad00[0x48];
+    char pad00[0x28];
+    int spyPaid;                        /* 0x28, AIFIN.spyPaid: the money paid to spies and bribed characters (ai_BribeAmountCB) */
+    char pad2c[0x1c];
     int loansRepaid;                    /* 0x48, AIFIN.loansRepaid: the loan sums paid back at a money lender (ai_RepayLoan) */
     char pad4c[4];
     int cartSpent;                      /* 0x50, AIFIN.cartSpent: the money paid for new carts (ai_BuyCartWindow) */
@@ -20291,13 +20294,13 @@ void ai_EvidenceBookWindow(AIBLD *bld)
     d2_CloseView(win);
     sv_CameraFollow();
 }
-int ai_Unk5b4820(void);
+int ai_BribeAmountCB(AICHARREC *ch);
 
 /* 0x5b4bf0, the bribe amount menu of the robbers' room (105 B, ai_RobberContact): the AMOUNTCFG with mode
-   0x40400, the filter 0x100000000 and kind 6, the prompt 0x174f, the menu with the callback ai_Unk5b4820; the
+   0x40400, the filter 0x100000000 and kind 6, the prompt 0x174f, the menu with the callback ai_BribeAmountCB; the
    camera follows again
    @deep whole function rewritten to the original's body (AMOUNTCFG with mode 0x40400, filter = the
-   gypsyFilter high word << 32, kind 6, the prompt 0x174f, ai_AmountMenu with ai_Unk5b4820, the
+   gypsyFilter high word << 32, kind 6, the prompt 0x174f, ai_AmountMenu with ai_BribeAmountCB, the
    sv_CameraFollow tail); ours is 26 instructions like the original with 2 differing: the filter's low word
    store is hoisted right after the memset (mov [esp+0xc],eax with eax=0) where the original stores it last
    as mov [esp+0x14],0, so the prover sees the store order mode/kind/high/low against low/mode/kind/high;
@@ -20315,17 +20318,108 @@ void ai_OpenRobberBribe(void)
     cfg.kind = 6;
     cfg.filter = (unsigned __int64)(unsigned)gypsyFilterWords[1] << 32;
     txt_Format(text, 0x174f);
-    ai_AmountMenu(&cfg, text, 0, ai_Unk5b4820);
+    ai_AmountMenu(&cfg, text, 0, ai_BribeAmountCB);
     sv_CameraFollow();
 }
-/* 0x5b4820, a Ghidra-missed start (968 B, ROUGH SKELETON): 0x5b4590 ends with the tail call `jmp 0x52d7a0` at
-   0x5b480c and fifteen nops to 0x5b4820 (the ret scan cannot see a tail call; the ledger found the start from
-   the immediate at 0x5b4bf0 and the dword at 0x5b4bbd); a 0x430-byte frame. The body is a comment */
+/* 0x5b4820, the bribe window "misc\perga_rolle" (ai_OpenRobberBribe's amount menu callback, with the picked
+   character ch): the text 0x174d (ch, the player's currency) with a money slider (up to 0.078 % of the two
+   characters' worth together, ai_AmountLimit against the player's goods value, in the player's currency) and the
+   give button, the text 0x174e with the cancel button, the row of the player's talent 2. Give, when the player
+   has the amount: it goes on the player's record (LCFIN.spyPaid) and to ch (cm_SendMoveGoods), the relation of ch
+   to the player rises by amount * (6 with the flag 0x800 of the player's flags1cc, else 4) * 500 / the two worths
+   (cm_SendRelations, the slot waited for), a player character ch (kind 6 / 7) gets the news 0x1751, and the
+   bribe is a crime (gv_Accuse law 0x10). Returns 1 once the bribe was given, else 0
+   @deep Reconstructed whole against the original 0x5b4820..0x5b4be8 (bribe window: slider, give/cancel,
+   LCFIN.spyPaid, cm_SendMoveGoods, cm_SendRelations with the slot wait, the 0x1751 news for kinds 6/7,
+   gv_Accuse law 0x10): every callee, argument, constant and store matches, 293 vs 293 instructions. Left
+   only the evaluation order of the two gm_GetWorth calls in the relation divisor amount * (flags1cc &
+   0x800 ? 6 : 4) * 500 / (gm_GetWorth(ai_PlayerId) + gm_GetWorth(ch->id)): the original calls the player's
+   first (+0x288 'mov cx,[ai_PlayerId]' CSE'd from the flags1cc index, push ecx, call; then 'mov ax,[esi];
+   push eax; call'), ours calls ch's first (+0x284 'mov ax,[esi]; push eax; call', then 'mov
+   cx,[ai_PlayerId]; push ecx; call'); the rest are the register renamings that follow (regs 54: eax->edx
+   ecx->eax edx->ecx at +0x4ae6/+0x4b32/+0x4b84). Tried both operand orders (VC6 canonicalizes them), a
+   player-worth temp before the expression (fixes the call order but then the 6/4 ternary goes to a memory
+   slot: frame 0x434 vs 0x430), the ternary as if/else, double constants, a register float: the same or
+   worse. The max computation got the original's order with the worth temp (byte there) */
 
-int ai_Unk5b4820(void)
+int ai_BribeAmountCB(AICHARREC *ch)
 {
-    /* ROUGH SKELETON: the 0x430-byte frame */
-    return 0;
+    int given;
+    int win;
+    int text;
+    int slider;
+    int ok;
+    int cancel;
+    int max;
+    int limit;
+    int goods;
+    int value;
+    int amount;
+    int slot;
+    int relation;
+    int worth;
+    LCFIN *rec;
+    AIWINDOWROW row;
+    char news[0x400];
+
+    given = 0;
+    if (ch == 0)
+        return 0;
+    win = d2_OpenForm(0, 0, "misc\\perga_rolle");
+    d2_CentreViewWindows(win);
+    d2_SetPointerSprite(0, 0);
+    d2_SetForm(win, 1);
+    text = io_PrintText(0x174d, ch->id, ai_OwnPlayer);
+    slider = d2_GetWinObj(win, 1, text);
+    ok = d2_GetWinObj(win, 1, text + 1);
+    worth = gm_GetWorth(ai_PlayerId);
+    max = (int)(abs(worth + gm_GetWorth(ch->id)) * 0.00078431371f);
+    goods = gm_GetGoodsValue(ai_Chars[ai_PlayerId]);
+    ai_AmountLimit(max, goods, 0x20, &limit);
+    d2_SetObjValue(slider, gm_ConvertMoney(max, ai_OwnPlayer), gm_ConvertMoney(limit, ai_OwnPlayer),
+                   gm_ConvertMoney(max, ai_OwnPlayer));
+    cancel = d2_GetWinObj(win, 1, io_PrintText(0x174e));
+    memset(&row, 0xff, sizeof(row));
+    row.win = win;
+    row.pageA = 2;
+    row.entry = 2;
+    row.pageB = 3;
+    row.pageC = 4;
+    row.record = 0x10;
+    ai_ShowWindowRow(&row);
+    d2_ClickedId = -1;
+    do {
+        if (dm_L.rup != 0)
+            sv_PopRequest = 1;
+        if (d2_ClickedId == -1)
+            continue;
+        if (d2_PointerObj == ok) {
+            value = d2_GetObjValue(slider);
+            amount = gm_PlayerFactor(value, ai_OwnPlayer);
+            if (sv_CheckGoodAmountB(ai_Chars[ai_PlayerId], amount, ai_OwnPlayer) == 0)
+                continue;
+            rec = (LCFIN *)gm_PlayerRecord(ai_Chars[ai_PlayerId]);
+            if (rec != 0)
+                rec->spyPaid += amount;
+            cm_SendMoveGoods(ch->netId, ((AICHARREC *)ai_Chars)[ai_PlayerId].netId, ai_OwnPlayer, amount);
+            relation = (int)(amount * ((((AICHARREC *)ai_Chars)[ai_PlayerId].flags1cc & 0x800) ? 6.0f : 4.0f) * 500.0f /
+                             (gm_GetWorth(ai_PlayerId) + gm_GetWorth(ch->id)));
+            slot = cm_SendRelations(((AICHARREC *)ai_Chars)[ai_PlayerId].netId, ch->netId, relation, 1);
+            while (cm_GetSlotState(slot) == 0)
+                sv_PumpNet();
+            if (ch->kind == 6 || ch->kind == 7) {
+                txt_Format(news, 0x1751, ai_PlayerId, amount);
+                he_ShowNews(ch->netId, -1, news, 0, 0x5fb, "_NACHRICHTEN_HS_22");
+            }
+            gv_Accuse(0x10, 1, ((AICHARREC *)ai_Chars)[ai_PlayerId].netId, ch->netId, -1);
+            sv_PopRequest = 1;
+            given = 1;
+        } else if (d2_PointerObj == cancel) {
+            sv_PopRequest = 1;
+        }
+    } while (sv_RunFrame((int)ai_BribeAmountCB, 0x677c7) != 0);
+    d2_CloseView(win);
+    return given;
 }
 /* 0x5b4c60, a Ghidra-missed start (844 B, ROUGH SKELETON): 0x5b4bf0 ends with the tail call `jmp 0x52d7a0` at
    0x5b4c54 and seven nops to 0x5b4c60; the start is the callback that 0x5b4fb0 pushes (and the immediate at
