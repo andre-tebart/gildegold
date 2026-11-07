@@ -1451,7 +1451,7 @@ int sv_RegisterNamePlate();
    (main_MenuButton: new game, load, tutorial, network, game options, gfx / sfx options or with main_DevMenu the data
    tools "Create Save with INI" / "Create Save for Network" / "Check Textfile", credits, quit), starts one of three
    menu songs and runs the screen loop until a choice pops it; then it clears both scenes and lets the song fade
-   out. @deep body read against the original and completed: the full screen d3_SetViewport after the scene loads (missing in the draft), the D3_ZERO_AT clear of init_PlayerProfile (0x8c, the inline asm that makes the ebp frame), the two d3_LoadScene calls of an if/else, d2_LastWindow read once into win for the 9 buttons, the plain do..while (sv_RunFrame) loop; calls and constants match the original's sequence (asmdiff --all skeleton). Left is allocation: the original keeps 0 in ebx for the whole function (push ebx for every 0 argument, cmp al,bl) and pushes 1 as an immediate, ours keeps 1 in edi / 0 in esi, so the three msx_Play cases are not cross-jumped (push 1; push str; jmp shared call); the original saves edi late (push edi at 0x53393f, pop at 0x533fd9) and caches GetPrivateProfileStringA in esi, which puts f in the slot [ebp-0x3c] (frame 0x50c, ours 0x508 with f in ebx); the button ids take other slots. */
+   out. */
 void main_Menue(void)
 {
     unsigned char *fade;
@@ -1592,17 +1592,17 @@ void main_Menue(void)
         }
         if (dm_L.lclick != 0 && d2_PointerObj != -1) {
             if (d2_PointerObj == bnew) {
-                d2_EnableObject(f, 0);
+                d2_EnableObject(win, 0);
                 ((void (*)(void))d3io_NoopCallback)();  /* called with no argument (no push at the call) */
                 hmt_Reset();
                 if (main_NewSinglePlayerGame() != 0) {
                     sv_PopRequest = 1;
                     ai_GameFlags |= 1;
                 } else {
-                    d2_EnableObject(f, 1);
+                    d2_EnableObject(win, 1);
                 }
             } else if (d2_PointerObj == btut) {
-                d2_EnableObject(f, 0);
+                d2_EnableObject(win, 0);
                 if (ai_TutorialWindow() != 0) {
                     ai_SetupTutorialPlayer();
                     ai_NumPlayers = 1;
@@ -1610,52 +1610,52 @@ void main_Menue(void)
                     ai_GameFlags = 0x89;
                     sv_PopRequest = 1;
                 } else {
-                    d2_EnableObject(f, 1);
+                    d2_EnableObject(win, 1);
                 }
             } else if (d2_PointerObj == bini) {
-                d2_EnableObject(f, 0);
+                d2_EnableObject(win, 0);
                 if (ai_FilePickWindow(0x24087, 1, "$Z$[Load INI$]", "gamedata/cities", ".INI", ini) != 0) {
                     sprintf(path, "%s%s", main_GfxPath, ini);
                     GetPrivateProfileStringA("A - ALLGEMEIN", "Stadtname", "Unknown", city, 0x60, path);
                     main_StartCityGame(city, 0);
                 }
-                d2_EnableObject(f, 1);
+                d2_EnableObject(win, 1);
             } else if (d2_PointerObj == bnetsave) {
-                d2_EnableObject(f, 0);
+                d2_EnableObject(win, 0);
                 if (ai_FilePickWindow(0x24087, 1, "$Z$[Load INI$]", "gamedata/cities", ".INI", ini2) != 0) {
                     sprintf(path2, "%s%s", main_GfxPath, ini2);
                     GetPrivateProfileStringA("A - ALLGEMEIN", "Stadtname", "Unknown", city2, 0x60, path2);
                     main_StartCityGame(city2, 1);
                 }
-                d2_EnableObject(f, 1);
+                d2_EnableObject(win, 1);
             } else if (d2_PointerObj == bload) {
-                d2_EnableObject(f, 0);
+                d2_EnableObject(win, 0);
                 if (ai_LoadGameWindow() != 0)
                     sv_PopRequest = 1;
-                d2_EnableObject(f, 1);
+                d2_EnableObject(win, 1);
             } else if (d2_PointerObj == bnet) {
-                d2_EnableObject(f, 0);
+                d2_EnableObject(win, 0);
                 if (main_NetworkMenu() != 0) {
                     sv_PopRequest = 1;
                 } else {
-                    d2_EnableObject(f, 1);
+                    d2_EnableObject(win, 1);
                     ai_GameFlags = 0;
                 }
             } else if (d2_PointerObj == bopt1) {
-                d2_EnableObject(f, 0);
+                d2_EnableObject(win, 0);
                 ai_OptionsGfxScreen();
-                d2_EnableObject(f, 1);
+                d2_EnableObject(win, 1);
                 again = 1;
                 if (main_ScreenRestart != 0)
                     sv_PopRequest = 1;
             } else if (d2_PointerObj == bopt2) {
-                d2_EnableObject(f, 0);
+                d2_EnableObject(win, 0);
                 ai_OptionsSfxScreen();
-                d2_EnableObject(f, 1);
+                d2_EnableObject(win, 1);
             } else if (d2_PointerObj == bopt3) {
-                d2_EnableObject(f, 0);
+                d2_EnableObject(win, 0);
                 ai_OptionsGameScreen();
-                d2_EnableObject(f, 1);
+                d2_EnableObject(win, 1);
             } else if (d2_PointerObj == bquit) {
                 ai_GameOver = 1;
                 main_QuitProgram = 1;
@@ -1663,13 +1663,13 @@ void main_Menue(void)
             } else if (d2_PointerObj == bcheck) {
                 main_MoneyDialog();
             } else if (d2_PointerObj == bcred) {
-                d2_EnableObject(f, 0);
+                d2_EnableObject(win, 0);
                 if (snd_MusicEnabled != 0) {
                     msx_SetFadeTime(1000);
                     msx_Play("cd2\\ZumGutenEnd.mp3", 1);
                 }
                 ai_CreditsScreen();
-                d2_EnableObject(f, 1);
+                d2_EnableObject(win, 1);
                 if (snd_MusicEnabled != 0) {
                     msx_SetFadeTime(1000);
                     msx_Start(main_MenuSong, 1);
