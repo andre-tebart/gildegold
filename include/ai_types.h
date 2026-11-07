@@ -193,6 +193,10 @@ typedef struct AIJOB {                  /* 0x14c bytes, a job / event record (he
             float incomeRate;           /* 0xc4, (gm_MeanLiking - 0.5) * 0.25 */
             unsigned char incomeCounter; /* 0xc8, 0 at the start */
         };
+        struct {                        /* 0xac, of the bard event 0x6b (he.c's HEBARD; ai_BardWindow sells its song) */
+            unsigned short bardRec;     /* 0xac, the hmt record the song is about (hmt_GetRecord) */
+            unsigned short bardTextOff; /* 0xae, its text offset (hmt_RecordTextId) */
+        };
         struct {                        /* 0xac, of a production job 4 (lc.c ai_UpdateProdColumns shows its progress) */
             unsigned short prodGood;    /* 0xac, the goods it makes (an ai_Goods index) */
             char padprod[6];

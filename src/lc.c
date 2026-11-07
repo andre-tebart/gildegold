@@ -1253,6 +1253,8 @@ extern AITIME ai_Time;                   /* 0x770ae0, the game clock */
 #include "sv_types.h"
 #include "amt_types.h"
 #include "ch.h"
+#include "hmt_types.h"
+#include "msx.h"
 #define sv_SelectPanelObjectK ((int (*)())sv_SelectPanelObject)  /* 0x52c4c0?: @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) */
 #define ai_GfxDetailI (*(int *)&ai_GfxDetail)  /* 0x6f35c4 (menu.c: unsigned char): @original ai_ShowVgObjects reads the detail as a dword and takes its low byte (0x58f9d7 mov ecx, dword ptr [0x6f35c4] / and edx, 0xff); the byte object compiles to mov cl, byte ptr */
 #define d2_CreatePicObjS ((int (*)(short, short, int))d2_CreatePicObj)  /* 0x46cd80 (d2.h: int x, y): @original the town map update adds the window position to the mark pixel in 16 bits (0x5a8052 mov dx, word ptr [eax + 4] / add dx, di / push edx), as d2.c's callers */
@@ -8037,7 +8039,7 @@ int gm_PlayerFactor(int a, unsigned char k); int gm_GetCreditOffers(); int gm_Cr
 #define gm_SumListAmountsL ((int (*)(void *))gm_SumListAmounts)  /* 0x509e30: @original ai_WineCellarWindow passes the list alone (one push, no player slot) */
 void he_MessageBoxQuickjump(int a1, int a2, char *text, char fl, int a5, int a6, int a7, char *jump, char *text2); void he_FreeEvent(); void d2_RadioClear(int g); int d2_CreateRadioGroup(int n, ...);
 void ai_StorageWindow(); void ai_MasterLetterWindow(); int ai_OpenTransport();
-int ai_BardWindow(); void ai_NoticeBoardWindow(void); int ai_AmountRowStatus(); int ai_AmountRow();
+void ai_BardWindow(void); void ai_NoticeBoardWindow(void); int ai_AmountRowStatus(); int ai_AmountRow();
 void ai_LeftAlignedText(); void cm_BeginGroup(const char *s); void cm_SendScriptMessage(void *p); void cm_SendProofExecuted(int a, int b);
 
 /* 0x599af0, the tavern room's contact listener: it releases the name plates, then per frame (sv_RunFrame, this,
@@ -20828,13 +20830,140 @@ void ai_NoticeBoardWindow(void)
     d2_CloseView(win);
     sv_CameraFollow();
 }
-/* 0x5b5a20, a carrier window (1120 B, ROUGH SKELETON): the carrier walk 0x53e400 (1, 0, 0x6b), a 0x104-byte
-   frame; the body is a comment. Ghidra merged it into its 0x5b5610 record too */
+G11REC *hmt_GetRecord(unsigned short k);                    /* 0x4ac1e0, hmt.h's prototypes (hmt.h is not included yet: Open: head) */
+unsigned short hmt_RecordTextId(unsigned short k, unsigned short n); /* 0x4ac1a0 */
+int hmt_GetPrice(struct AICHAR *p);                         /* 0x4ac200 */
+void hmt_ApplyRecord(struct AICHAR *p, int d, unsigned short k); /* 0x4ac2f0 */
 
-int ai_BardWindow(void)
+/* 0x5b5a20, the bard's window "special\barde" (the TRIBUENE plate of the market, ai_MarketStandListener): without
+   a bard event 0x6b at its stage 2 the text 0x1e26; else the song's hmt record (AIJOB.bardRec), the player's
+   waiting event 0x11 for it is dropped (stage -1), a player who already bought a song (powerFlags 0x20000) gets
+   the text 0x1e27, one too poor for it (hmt_GetPrice 0) 0x1e28. Else the offer 0x1e2a (the record's text + 1,
+   the price) asks: the first button buys the song (hmt_ApplyRecord), then the window "special\barde2" shows the
+   record's title and its poem (text + 2) with scroll buttons, and after a right click its effect (0x1e5c, then
+   by the record's kind 0x1e5e with the skill, 0x1e5d with the profession or 0x1e5f). The two mp3 paths of the
+   announcement and the poem are formatted but not played. The camera follows */
+
+void ai_BardWindow(void)
 {
-    /* ROUGH SKELETON: the walk 0x53e400 (1, 0, 0x6b) and the window body */
-    return 1;
+    int win;
+    int win2;
+    int text;
+    int price;
+    int bought;
+    AIJOB *ev;
+    AIJOB *wait;
+    G11REC *rec;
+    char path[0x100];
+
+    ev = (AIJOB *)he_FindEvent(1, 0, 0x6b);
+    win = d2_OpenForm(0, 0, "special\\barde");
+    d2_SetForm(win, 0);
+    sv_FitForm(d2_LastWindow);
+    d2_CentreViewWindows(win);
+    d2_SetPointerSprite(0, 0);
+    d2_ClickedId = -1;
+    d2_SetForm(win, 1);
+    if (ev == 0 || ev->stage != 2) {
+        io_PrintText(0x1e26);
+        do {
+            if (dm_L.rup != 0)
+                sv_PopRequest = 1;
+        } while (sv_RunFrame((int)ai_BardWindow, 0x677c7) != 0);
+        d2_CloseView(win);
+        sv_CameraFollow();
+        return;
+    }
+    rec = hmt_GetRecord(ev->bardRec);
+    hmt_RecordTextId(ev->bardRec, ev->bardTextOff);
+    wait = (AIJOB *)he_FindEvent(3, 0, 0x11, 3, ev->id, 2, ai_PlayerId);
+    if (wait != 0)
+        wait->stage = -1;
+    if ((((AICHARREC *)ai_Chars)[ai_PlayerId].powerFlags & 0x20000) != 0) {
+        io_PrintText(0x1e27);
+        do {
+            if (dm_L.rup != 0)
+                sv_PopRequest = 1;
+        } while (sv_RunFrame((int)ai_BardWindow, 0x677c7) != 0);
+        d2_CloseView(win);
+        sv_CameraFollow();
+        return;
+    }
+    price = hmt_GetPrice((struct AICHAR *)ai_Chars[ai_PlayerId]);
+    if (price == 0) {
+        io_PrintText(0x1e28);
+        do {
+            if (dm_L.rup != 0)
+                sv_PopRequest = 1;
+        } while (sv_RunFrame((int)ai_BardWindow, 0x677c7) != 0);
+        d2_CloseView(win);
+        sv_CameraFollow();
+        return;
+    }
+    msx_SetFadeTime(1000);
+    io_PrintText(0x1e2a, rec->textId + 1, price);
+    sprintf(path, "Gedichte_Announcement\\%s.mp3", rec->name);
+    bought = 0;
+    do {
+        if (dm_L.rup != 0) {
+            sv_PopRequest = 1;
+        } else if (d2_ClickedId != -1) {
+            if (d2_ClickedId == 0) {
+                hmt_ApplyRecord((struct AICHAR *)ai_Chars[ai_PlayerId], price, ev->bardRec);
+                bought = 1;
+                sv_PopRequest = 1;
+            } else if (d2_ClickedId == 1) {
+                sv_PopRequest = 1;
+            }
+        }
+    } while (sv_RunFrame((int)ai_BardWindow, 0x677c7) != 0);
+    if (bought == 0) {
+        d2_CloseView(win);
+        sv_CameraFollow();
+        return;
+    }
+    d2_CloseView(win);
+    win2 = d2_OpenForm(0, 0, "special\\barde2");
+    d2_SetForm(win2, 0);
+    sv_FitForm(d2_LastWindow);
+    d2_CentreViewWindows(win2);
+    d2_SetPointerSprite(0, 0);
+    d2_ClickedId = -1;
+    d2_SetForm(win2, 1);
+    io_PrintText(rec->textId);
+    d2_SetForm(win2, 2);
+    text = d2_LastWindow;
+    d2_SetForm(win2, 3);
+    d2_CreateScrollButtons(-1, -1, d2_LastWindow, text, 0x767);
+    d2_Wins[text].visible = 0x30;
+    d2_SetForm(win2, 2);
+    io_PrintText(rec->textId + 2);
+    d2_ClickedId = -1;
+    sprintf(path, "gedichte\\%s.mp3", rec->name);
+    do {
+        if (dm_L.rup != 0)
+            sv_PopRequest = 1;
+    } while (sv_RunFrame((int)ai_BardWindow, 0x677c7) != 0);
+    d2_SetForm(win2, 3);
+    io_PrintText("$C");
+    d2_SetForm(win2, 1);
+    io_PrintText("$C");
+    io_PrintText(0x1e5c);
+    d2_SetForm(win2, 2);
+    io_PrintText("$C");
+    d2_Wins[d2_LastWindow].scrollY = 0;
+    if (rec->kind == 0)
+        io_PrintText(0x1e5e, rec->id + 0x16b7);
+    else if (rec->kind == 1)
+        io_PrintText(0x1e5d, rec->id + 0x1ee);
+    else
+        io_PrintText(0x1e5f);
+    do {
+        if (dm_L.rup != 0)
+            sv_PopRequest = 1;
+    } while (sv_RunFrame((int)ai_BardWindow, 0x677c7) != 0);
+    d2_CloseView(win2);
+    sv_CameraFollow();
 }
 /* 0x5b5e80, (2753 B, ROUGH SKELETON): the game clock 0x770ae0 is copied FIELD BY FIELD into the frame (+0x1c ..
    +0x34, the `mov ds:0x770ae0` form, not an AITIME assignment), then a 0x3e4-byte frame; the body is a comment */
