@@ -1779,7 +1779,7 @@ void ai_UpdateResourceColumns(int win, int part, int ncols, int unused)
 
 int gm_BuildingClass(); int d2_WinOpenPicStyled(); void d2_SetObjFont(); void d2_SetCaption();
 int gm_ClockSeason(); int ls_GetLanguage(); int d2_CountPointerItems(); void cm_BeginFieldBlock(char *o, int id);
-int cm_AddFieldValue(unsigned char size, unsigned char n, unsigned short field, void *v); void cm_SendFieldValues(void); void ai_ShowProdSlot(int view, int part, LCPRODSLOT *slot, int input, unsigned char side, AIBLD *bld); void d2_MoveObj(short x, short y, int obj);
+int cm_AddFieldValue(unsigned char size, unsigned char n, unsigned short field, void *v); int cm_SendFieldValues(void); void ai_ShowProdSlot(int view, int part, LCPRODSLOT *slot, int input, unsigned char side, AIBLD *bld); void d2_MoveObj(short x, short y, int obj);
 void d2_SetPointerItem(int id, int amount); void d2_ClearPointerItems(void); int d2_GetObjValue();
 
 /* 0x58cc10, shows the ncols goods columns (ai_ProdColumns) of the production window in the form win / its part form,
@@ -28392,13 +28392,13 @@ int ai_Unk5c8ef0(unsigned short *param_1, void *unused)
                         cm_SendMoneyDelta(*(int *)((char *)param_1 + 4), 0xfffffff8);
                         cm_BeginFieldBlock(param_1, *(int *)((char *)param_1 + 4));
                         cm_AddFieldValue(4, 1, 0x5c, &ret);
-                        h = ((int (*)())cm_SendFieldValues)();
+                        h = cm_SendFieldValues();
                         while (cm_GetSlotState(h) == 0)
                             sv_PumpNet();
                         cm_BeginFieldBlock(partner, *(int *)((char *)partner + 4));
                         cm_AddFieldValue(4, 1, 0x5c, &ret);
                         cm_AddFieldValue(2, 1, 0x50, &ret);
-                        h = ((int (*)())cm_SendFieldValues)();
+                        h = cm_SendFieldValues();
                         while (cm_GetSlotState(h) == 0)
                             sv_PumpNet();
                         h = ((int (*)(int, int, int, int))cm_SendMoveGoods)(*(int *)((char *)partner + 4),

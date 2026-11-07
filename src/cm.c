@@ -1332,15 +1332,15 @@ int cm_SendFieldDeltas(void)
     memcpy(m.data, &cm_FieldBlock, sizeof(G17FIELDS));
     return cm_QueueSend(&m);
 }
-/* 0x4c49e0, message 0x17: the field block (values) */
+/* 0x4c49e0, message 0x17: the field block (values); returns the cm slot of the send (cm_QueueSend) */
 
-void cm_SendFieldValues(void)
+int cm_SendFieldValues(void)
 {
     G17MSG m;
 
     m.type = 0x17;
     memcpy(m.data, &cm_FieldBlock, sizeof(G17FIELDS));
-    cm_QueueSend(&m);
+    return cm_QueueSend(&m);
 }
 /* 0x4c4a20, message 0x18: the second field block */
 

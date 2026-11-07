@@ -15619,7 +15619,7 @@ void he_RunMasterExamPassed(int ev)
 struct G15PLANT * veg_FindPlantId(struct G15PLANT *p, int id);
 int cm_SetPlant(int bldId, unsigned char x, unsigned char z, int type, unsigned char fall, int fallId);
 void cm_SendCharClear(int a, int b, int c);
-void cm_SendFieldValues(void);
+int cm_SendFieldValues(void);
 int cm_AddFieldValue(unsigned char size, unsigned char n, unsigned short field, void *v);
 int gm_Opinion(int a, int b);
 void cm_SendMessage5b(int a, int b, int c);
@@ -20037,7 +20037,6 @@ void he_AllocPatrolEvent(AIJOB *ev)
 unsigned short *gm_ObjectBuildingOwner(unsigned short *o);  /* 0x50a050, f3gm.h (not included here: the unit's Open: head) */
 int gm_ObjectBuilding(int o);                               /* 0x50a0f0, f3gm.h */
 float gm_ItemPrice(int item, unsigned char n);              /* 0x5087f0, f3gm.h */
-#define cm_SendFieldValuesSlot ((int (*)(void))cm_SendFieldValues)  /* 0x4c49e0: @original the caller keeps its result, the cm slot of the send (cm.h declares it void) */
 
 /* 0x567f50, one step of a guard cart c on the patrol event 0xa6 ev (he_RunPatrolEvent), unless the cart runs a job:
    below a fill of 40 + random(32) percent the cart is refilled (the message 0x10 to its owner, gm_ObjectBuildingOwner,
@@ -20098,7 +20097,7 @@ void he_PatrolStep(AIJOB *ev, AIOBJ *c)
             n = 0;
         cm_BeginFieldBlock((char *)c, c->objId);
         cm_AddFieldValue(4, 1, (char *)&c->routeIdx - cm_FieldObject, &n);
-        ev->exSlot = cm_SendFieldValuesSlot();
+        ev->exSlot = cm_SendFieldValues();
         return;
     }
     bld = gm_ObjectBuilding((int)c);

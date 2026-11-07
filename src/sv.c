@@ -1514,7 +1514,7 @@ void cm_SendExSetHE(unsigned char k, char *p);                     /* 0x4c4c60 *
 #define cm_SendExSetHEI ((void (*)(int, char *))cm_SendExSetHE)  /* @original: sv_MoveToGroup pushes -1, not 0xff (an int / signed parameter at its calls) */
 void he_FreeEvent();                     /* 0x53e1f0 */
 int cm_AddFieldValue(unsigned char size, unsigned char n, unsigned short field, void *v);                     /* 0x4c3d90 */
-void cm_SendFieldValues(void);                     /* 0x4c49e0 */
+int cm_SendFieldValues(void);                     /* 0x4c49e0 */
 
 /* 0x524260, moves the character c (index) from his current job (the group record AICHAR.job) to the job g;
    o is the building and it the room the character goes to (o defaults to his building): when the room is in
