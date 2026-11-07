@@ -1792,7 +1792,6 @@ void err_Message(char *text);
 /* HE_SET_CLOCK: the game clock (0x770ae0 ..) into a message at +0x28 .. +0x34, flag byte 2 at +0x36 */
 #define HE_CLK(m) do { HM_I(m, 0x28) = U_I((unsigned)&ai_Time); HM_I(m, 0x2c) = U_I((unsigned)&ai_Time.hour); HM_I(m, 0x30) = U_I(((unsigned)&ai_Time + 0x8)); *(short *)((m) + 0x34) = *(short *)((unsigned)&ai_Time + 0xc); HM_B(m, 0x36) = 2; } while (0)
 
-#define he_Jobs (*(AIJOB (*)[0x400])&he_Events)  /* 0x6fab40 */
 
 /* 0x53e040, creates the event record of the message `m`: its type needs both an alloc and a run handler (< 0xa7) and its
    receiver `to` (unless -1) must be a character; takes the first free of the 0x400 records he_Events (raising

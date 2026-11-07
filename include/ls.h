@@ -27,7 +27,7 @@ int ls_WritePlayerSlots(int f);                                               /*
 int ls_WriteRelations(int f);                                           /* 0x51b890 */
 int ls_WriteStatistics(int f);                                               /* 0x51b910 */
 int ls_WriteAvatars(void *f);                                           /* 0x51bdb0 */
-int ls_WritePlayerTable(int f);                                               /* 0x51bdc0 */
+int ls_WriteEventTables(int f);                                               /* 0x51bdc0 */
 int ls_WriteParties(int f);                                               /* 0x51c2f0 */
 int ls_WriteHistory(int f);                                             /* 0x51c450 */
 int ls_WriteMessageQueues(int f);                                               /* 0x51c560 */
@@ -106,6 +106,7 @@ extern int ai_NextEventId;                                    /* 0x6f2618 */
 extern int he_EventTop;                                      /* 0x6f261c, the highest used index of he_Events */
 extern int he_QuickTop;                                    /* 0x6f2620 */
 extern unsigned char he_Events[339968];                     /* 0x6fab40 */
+#define he_Jobs (*(struct AIJOB (*)[0x400])&he_Events)  /* 0x6fab40, he_Events as the 0x400 event records (AIJOB, ai_types.h) */
 extern char * he_QuickList[10921];                          /* 0x74db40 */
 extern int he_EventCount;                                    /* 0x7585e4 */
 #ifndef DATA_VIEWS_H
