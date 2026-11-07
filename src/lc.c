@@ -822,6 +822,7 @@ extern GAPDATA full_data_62a56c[];
 #define ai_FmtLabel (*(char (*)[4])&full_data_62a56c)  /* 0x62a56c, "%s:": a label's format (ai_TechEffectsWindow's skill captions) */
 #define d2_OpenFormS ((int (*)(short, short, char *))d2_OpenForm)  /* @original: the transport window computes x = d2_ScreenW - 0x68 in 16 bits (0x5af336 mov ax, [d2_ScreenW]; sub ax, 0x68; push eax), as sv_OpenPlayerBar */
 extern short d2_ScreenW;
+extern short d2_ScreenH;            /* 0xfb9070 (d2.h) */
 extern int d2_HitWindow;
 extern struct D2INPUT *d2_FocusedInput;
 extern char * ai_BTypes;
@@ -23260,15 +23261,64 @@ int ai_UseGoodWindow(G8INVOBJ *o)
     }
     return use.effect;
 }
-/* 0x5bac10, a window gated by 0x62c418 == -1 (512 B, ROUGH SKELETON): the 0x1000 path after the check; the body
-   is a comment */
+/* 0x5bac10, the player's inventory panel (sv's panel button; only while no child window is open and the run
+   allows 0x1000): campaign step 0x14 in and out; the form "panel\inventory_2" at the lower right corner, framed,
+   holds the inventory child window of the player (ai_OpenInventoryWindow, text 0x1f3b) and runs it every frame;
+   a click on a row's control (or a drop of picked goods on it) opens ai_UseGoodWindow for a Domizil good, else
+   says text 0xfe7 that it cannot be used; a right release puts the picked amounts back, or closes the panel */
 
-int ai_InventoryPanel(void)
+void ai_InventoryPanel(void)
 {
+    int win;
+    int i;
+
     if (ai_ChildWindowId != -1)
-        return 0;
-    /* ROUGH SKELETON: the 0x1000 allocation path */
-    return 0;
+        return;
+    if (ai_RunAllows(0x1000) == 0)
+        return;
+    ai_CampaignStep(0x14, 0, 0, 0);
+    win = d2_OpenFormS(d2_ScreenW - 0x158, d2_ScreenH - 0x108, "panel\\inventory_2");
+    d2_SetForm(win, 0);
+    d2_Wins[d2_LastWindow].padl = 0x18;
+    d2_Wins[d2_LastWindow].padt = 0x18;
+    d2_Wins[d2_LastWindow].padr = 0x18;
+    d2_Wins[d2_LastWindow].padb = 0x18;
+    d2_SetForm(win, 0);
+    d2_SetPointerSprite(0, 0);
+    ai_OpenInventoryWindow(d2_LastWindow, 0, 0, ai_PlayerId, 0x1f3b);
+    while (sv_RunFrame((int)ai_InventoryPanel, 0x657c7) != 0) {
+        ai_UpdateInventoryWindow();
+        if (d2_ClickedId != -1 || d2_CountPointerItems() != 0) {
+            for (i = 0; i < 6; i++) {
+                if (ai_InvSlots[i].obj == 0 || d2_PointerObj != ai_InvSlots[i].ctl)
+                    continue;
+                if (ai_FindUsableGood(ai_InvSlots[i].obj->id) != 0) {
+                    d2_SetViewEnabled(win, 0);
+                    ai_UseGoodWindow(ai_InvSlots[i].obj);
+                    d2_SetObjValue(ai_InvSlots[i].ctl, 0, 999, 0);
+                    d2_ClearPointerItems();
+                    d2_SetViewEnabled(win, 1);
+                } else {
+                    sv_MessageBox(txt_Ptrs[0xfe7], 0);
+                }
+            }
+        }
+        if (dm_L.rup != 0) {
+            if (d2_CountPointerItems() != 0) {
+                /* put the picked amounts back */
+                for (i = 0; i < 6; i++) {
+                    if (ai_InvSlots[i].obj != 0 && d2_GetObjValue(ai_InvSlots[i].ctl) != 0)
+                        d2_SetObjValue(ai_InvSlots[i].ctl, 0, 999, 0);
+                }
+                d2_ClearPointerItems();
+            } else {
+                sv_PopRequest = 1;
+            }
+        }
+    }
+    ai_CloseChildWindow();
+    d2_CloseView(win);
+    ai_CampaignStep(0x14, 0, 1, 0);
 }
 #pragma pack(push, 1)
 typedef struct AIEQUIPSLOT {            /* 8 bytes, an equipment slot of an equip window row */
