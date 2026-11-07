@@ -4468,16 +4468,16 @@ exe	0x005bf4f0	ai_FillEnemiesTab	lc	byte	readable
 exe	0x005bf6f0	ai_FillLoversTab	lc	draft	readable	deep	
 exe	0x005bf7c0	ai_FillWeddingTab	lc	draft	readable	deep	
 exe	0x005bfa90	ai_FillQuarrelTab	lc	draft	readable	deep	
-exe	0x005bfc40	ai_Unk5bfc40	lc	draft	draft		
-exe	0x005bfd90	ai_Unk5bfd90	lc	draft	draft		
+exe	0x005bfc40	ai_FillCandidacyTab	lc	byte	readable		
+exe	0x005bfd90	ai_FillOfficeTab	lc	byte	readable		
 exe	0x005bfed0	ai_AmountPageSwitch	lc	shape	readable		
 exe	0x005bff80	ai_EnableAmountRows	lc	byte	readable		
-exe	0x005bffb0	ai_Unk5bffb0	lc	draft	draft		
-exe	0x005c00b0	ai_Unk5c00b0	lc	draft	draft		
-exe	0x005c01c0	ai_Unk5c01c0	lc	draft	draft		
-exe	0x005c02d0	ai_Unk5c02d0	lc	draft	draft		
-exe	0x005c03e0	ai_Unk5c03e0	lc	draft	draft		
-exe	0x005c0550	ai_Unk5c0550	lc	draft	draft		
+exe	0x005bffb0	ai_ShowFamilyTab	lc	byte	readable		
+exe	0x005c00b0	ai_ShowFriendsTab	lc	byte	readable		
+exe	0x005c01c0	ai_ShowEnemiesTab	lc	byte	readable		
+exe	0x005c02d0	ai_ShowLoversTab	lc	byte	readable		
+exe	0x005c03e0	ai_ShowWeddingTab	lc	byte	readable		
+exe	0x005c0550	ai_ShowQuarrelTab	lc	byte	readable		
 exe	0x005c0650	ai_Unk5c0650	lc	draft	draft		
 exe	0x005c0790	ai_Unk5c0790	lc	draft	draft		
 exe	0x005c08b0	ai_ClearAmountTabs	lc	byte	readable		
