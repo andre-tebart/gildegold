@@ -16727,15 +16727,15 @@ int cm_RemovePartyMember(int id, int who)
         return 0;
     n = r->used;
     for (i = 0; i < n; i++) {
-        if (*(int *)((char *)r + 0x34 + i * 4) == who) {
-            *(int *)((char *)r + 0x34 + i * 4) = -1;
+        if (r->members[i] == who) {
+            r->members[i] = -1;
             break;
         }
     }
     if (cm_CurrentFight != 0 && *cm_CurrentFight == id) {
         for (i = 0; i < 16; i++) {
-            if (*(int *)(cm_CutInfos[i] + 0x10) == who) {
-                *(int *)(cm_CutInfos[i] + 0x10) = -1;
+            if (cm_CutInfosT[i].playerId == who) {
+                cm_CutInfosT[i].playerId = -1;
                 break;
             }
         }
