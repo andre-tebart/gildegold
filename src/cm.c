@@ -16981,20 +16981,20 @@ void ai_DumpPersonMoney(char *c, char *buf)
     p = (AICHAR *)c;
     sprintf(buf, "%i\t%i\t%i\t%i\t%i\t%i\t%i\t%i\t", p->v190, p->money, p->spent198, p->wage, p->v1a0, p->v1a4, gm_GetGoodsValue(c), gm_GetWorth(p->id));
 }
-/* 0x4e5b50, the debug dump of the 8 relatives (the ids at +0x5c): "%i\t%s" of each one's +4 and name (+0x30), -1 and 0x143b3f4 when it does not exist */
+/* 0x4e5b50, the debug dump of the 8 relatives of a person (the ids at +0x5c): "%i\t%s" of each one's netId and name, -1 and 0x143b3f4 (txt_NoRelative) when it does not exist */
 
-void ai_Unk4e5b50(char *c, char *buf)
+void ai_DumpPersonRelatives(char *c, char *buf)
 {
     char tmp[0x100];
     int *p;
-    char *o;
+    AICHAR *o;
     int i;
 
-    p = (int *)(c + 0x5c);
+    p = ((AICHAR *)c)->relatives;
     for (i = 8; i != 0; i--) {
-        o = (char *)gm_FindChar(*p);
+        o = (AICHAR *)gm_FindChar(*p);
         if (o != 0)
-            sprintf(tmp, "%i\t%s", *(int *)(o + 4), o + 0x30);
+            sprintf(tmp, "%i\t%s", o->netId, o->name);
         else
             sprintf(tmp, "%i\t%s", -1, txt_NoRelative);
         strcat(buf, tmp);
@@ -17014,7 +17014,7 @@ void ai_DebugDumpPerson(char *c)
         ai_DumpPersonSkills(c, buf + strlen(buf));
         ai_DumpPersonOffices(c, buf + strlen(buf));
         ai_DumpPersonMoney(c, buf + strlen(buf));
-        ai_Unk4e5b50(c, buf + strlen(buf));
+        ai_DumpPersonRelatives(c, buf + strlen(buf));
     }
 }
 
