@@ -4004,7 +4004,7 @@ exe	0x00578440	ai_TutorialFreeRuns	sv_t	byte	readable
 exe	0x005784a0	ai_TutorialInitMainIntro	sv_t	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	sv_t	byte	readable		
 exe	0x00578e40	ai_TutorialInitChapter2	sv_t	byte	readable		
-exe	0x00579570	ai_TutorialInitChapter3	sv_t	shape	readable		
+exe	0x00579570	ai_TutorialInitChapter3	sv_t	draft	readable		
 exe	0x0057aa80	ai_TutorialInitChapter4	sv_t	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	sv_t	byte	readable		
 exe	0x0057b750	ai_TutorialInitMainOutro	sv_t	byte	readable		
@@ -4492,16 +4492,16 @@ exe	0x005c1df0	ai_OpenAgendaMenu	lc	byte	readable
 exe	0x005c1e10	ai_AgendaOfficeList	lc	shape	readable		
 exe	0x005c2160	ai_OpenLawBook	lc	byte	readable		
 exe	0x005c2410	ai_LawBookInfoWindow	lc	byte	readable		
-exe	0x005c2490	ai_Unk5c2490	lc	draft	draft		
+exe	0x005c2490	ai_ShowWorkSettingsPage	lc	shape	readable		
 exe	0x005c26a0	ai_MasterLetterNoticeWindow	lc	byte	readable		
 exe	0x005c2730	ai_MasterLetterKindWindow	lc	byte	readable		
-exe	0x005c27b0	ai_Unk5c27b0	lc	draft	draft		
-exe	0x005c2a10	ai_Unk5c2a10	lc	draft	draft		
-exe	0x005c2b90	ai_Unk5c2b90	lc	draft	draft		
-exe	0x005c3200	ai_MasterLetterWindow	lc	draft	draft		
-exe	0x005c33c0	ai_PassesPartnerFilter	lc	draft	draft		
-exe	0x005c37a0	ai_PassesBuildingFilter	lc	draft	draft		
-exe	0x005c39a0	ai_PassesMapPickFilter	lc	draft	draft		
+exe	0x005c27b0	ai_MasterHireWindow	lc	shape	readable		
+exe	0x005c2a10	ai_ShowSettingGoods	lc	shape	readable		
+exe	0x005c2b90	ai_MasterLetterSettings	lc	shape	readable		
+exe	0x005c3200	ai_MasterLetterWindow	lc	draft	readable	deep	
+exe	0x005c33c0	ai_PassesPartnerFilter	lc	draft	readable	deep	
+exe	0x005c37a0	ai_PassesBuildingFilter	lc	draft	readable	deep	
+exe	0x005c39a0	ai_PassesMapPickFilter	lc	draft	readable	deep	
 exe	0x005c3bb0	ai_Unk5c3bb0	lc	draft	draft		
 exe	0x005c4100	ai_LawSelectionEntry	lc	draft	draft	deep	
 exe	0x005c4150	ai_FamilyTreeWindow	lc	draft	readable	deep	

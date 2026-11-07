@@ -30,6 +30,13 @@
    only), rows, the partner filter) and draws them with ai_Show*Tab; the tabbed window ai_SpecialAmountWindow keeps
    the open tab in ai_AmountTab. The menus ai_AmountMenu (AMOUNTCFG, lc.h) and ai_AmountKindMenu (a kind callback:
    ai_AmountListWindow, ai_AgendaOfficeList) lead to them; the law book ai_OpenLawBook reads AIDEC records.
+   The master letter (ai_MasterLetterWindow) opens ai_MasterHireWindow or ai_MasterLetterSettings, whose pages
+   (ai_MasterLetterPage) edit the work settings LCWORKSET (AIBLD / AICHARREC.workSet, ai_ShowWorkSettingsPage) and the
+   production setting's goods (ai_ShowSettingGoods). The partner, building and map-pick filters
+   (ai_PassesPartnerFilter / ai_PassesBuildingFilter / ai_PassesMapPickFilter) read AMOUNTCFG: mode (the partner
+   bits), classMask (the building classes), kind (the owner test), option14, ids and the liking range.
+   Open: types: the amount rows and tabs (ai_ShowAmountRows, ai_Fill*Tab, ai_SpecialAmountListWindow) and am.c's
+   partner chain still pass that filter as unsigned int *.
    Open: the AIMSG message records are built by raw offsets in most functions (the use callbacks of the Domizil
    table use AIMSG: ai_UseEventGood, the money messenger AIMSG.payment).
    Open: types: the event / message words LCAMBUSHEVENT, LCSEARCHEVENT, LCSEARCHWORDS, LCKIDNAPEVENT (he.c's
