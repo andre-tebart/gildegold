@@ -5990,7 +5990,7 @@ int cm_ExFightCommand(G17MSG *m, G17STAT *s)
         break;
     case 1:                                         /* cheer */
         if (c->health != 0)
-            cm_FightSlotCheer((char *)&m->fight.slot);
+            cm_FightSlotCheer(&m->fight.slot);
         break;
     case 4:                                         /* pick up the object at its place */
         if (c->health != 0)
@@ -11197,17 +11197,18 @@ void cm_FightSlotStop(CMFIGHTSLOT *f)
             ch_StopActions(c->scene);
     }
 }
-/* 0x4d6f90, the cheer of the winner in the slot f: event 0x4d3ac0 with the animation "gestik/jubeln" */
+/* 0x4d6f90, the cheer of the winner in the fight slot f: event 0x4d3ac0 with the animation "gestik/jubeln" */
 
-void cm_FightSlotCheer(char *f)
+void cm_FightSlotCheer(CMFIGHTSLOT *f)
 {
-    char *c, *ev;
+    AICHAR *c;
+    CHACTION *ev;
 
-    if (*(int *)(f + 4) != 0 && *(int *)f != -1) {
-        c = cm_FindFighter(*(int *)f);
-        ev = (char *)ch_AddActionCBK(*(char **)(c + 0x184), (unsigned)&cm_CheerAction, 5, 0x2e, 1);
-        *(char **)(ev + 0x17c) = c;
-        strcpy(ev + 0xf0, "gestik/jubeln");
+    if (f->active != 0 && f->id != -1) {
+        c = (AICHAR *)cm_FindFighter(f->id);
+        ev = ch_AddActionCBK(c->scene, (unsigned)&cm_CheerAction, 5, 0x2e, 1);
+        ev->cheer.fighter = c;
+        strcpy(ev->u.name, "gestik/jubeln");
     }
 }
 /* 0x4d7000, the fighter slot f picks up the object lying at its place (+0x10): the object (0x449690) is marked as owned
