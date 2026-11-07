@@ -34054,13 +34054,78 @@ int ai_UseGoodSpoilStock(AICHARREC *ch, G8USEVIEW *use)
     use->handled = 1;
     return 1;
 }
-/* 0x5d1fb0, an action callback of the record table 0x62c420 (record 57 at 0x62ca5c, the text id 0x2bf,
-   816 B): the character (0x5c1130 menu / 0x505df0), four 0x42ec00 picks, 0x4c4b00, 0x4fca40, four
-   texts 0x5176d0, three messages 0x53dda0 and the panel 0x5cf820. Frame 0xa54. */
+extern const int ai_CharWalkSteps[16];  /* 0x5ed100, the random walk steps (am.h, not included) */
+/* 0x5d1fb0, the use callback of the Domizil record 57 (0x62ca5c, the text id 0x2bf): picks the target
+   character, for a player (kind 6) with the special-amount menu (the gypsy filter, mode 0x400, option14 3,
+   the prompt txt_Ptrs[0x9c]), else the character use->target (gm_FindChar); none -> 0. Three office holders
+   (ai_Chars from a random start with a random ai_CharWalkSteps step: a used record holding an office, not the
+   user nor the target) each get the target's relation to them raised by 20 .. 51 (cm_SendRelations), and the
+   target loses 50 .. 113 life (gm_AddHealth). The target, if a player (kind 6 / 7), gets the news 0x100d,
+   each player office holder 0x100e / 0x100f (key 0x5fb); marks the use handled, and a player user sees the
+   text 0x10a1 (the target, the three) inside 0xfe8 in the use-object panel. Returns 1. */
 
-int ai_Unk5d1fb0(void)
+int ai_UseGoodCharmOfficials(AICHARREC *ch, G8USEVIEW *use)
 {
-    return 0;
+    AICHARREC *pick[3];
+    AMOUNTCFG cfg;
+    char news[0x800];
+    char text[0x200];
+    AICHARREC *target;
+    int id;
+    int step;
+    int n;
+    int i;
+
+    if (ch->kind == 6) {
+        memset(&cfg, 0, sizeof(cfg));
+        memset(cfg.ids, 0xff, sizeof(cfg.ids));
+        cfg.option14 = 3;
+        cfg.mode = 0x400;
+        cfg.kind = 6;
+        cfg.filter = gypsyFilter;
+        target = (AICHARREC *)ai_AmountMenu(&cfg, txt_Ptrs[0x9c], 0, 0);
+        if (target == 0)
+            return 0;
+    } else {
+        target = (AICHARREC *)gm_FindChar(use->target);
+        if (target == 0)
+            return 0;
+    }
+    id = util_RandomU(0x300);
+    step = ai_CharWalkSteps[util_RandomU(0x10)];
+    n = 3;
+    do {
+        if (lc_CharRecs[id].id != 0xffff && lc_CharRecs[id].officeKind != 0 && &lc_CharRecs[id] != ch &&
+            &lc_CharRecs[id] != target)
+            pick[--n] = &lc_CharRecs[id];
+        id = (id + step) % 0x300;
+    } while (n != 0);
+    for (i = 0; i < 3; i++)
+        cm_SendRelations(target->netId, pick[i]->netId, (util_Random(0x20) & 0xffff) + 20, 1);
+    gm_AddHealth(target->id, -50 - (util_Random(0x40) & 0xffff));
+    if (target->kind == 6 || target->kind == 7) {
+        txt_Format(news, 0x100d, pick[0]->id, pick[0]->id, pick[1]->id, pick[2]->id);
+        he_ShowNews(target->netId, -1, news, 1, 0x5fb, 0);
+    }
+    if (pick[0]->kind == 6 || pick[0]->kind == 7) {
+        txt_Format(news, 0x100e, target->id, pick[1]->id, pick[2]->id);
+        he_ShowNews(pick[0]->netId, -1, news, 1, 0x5fb, 0);
+    }
+    if (pick[1]->kind == 6 || pick[1]->kind == 7) {
+        txt_Format(news, 0x100f, target->id, pick[0]->id, pick[2]->id);
+        he_ShowNews(pick[1]->netId, -1, news, 1, 0x5fb, 0);
+    }
+    if (pick[2]->kind == 6 || pick[2]->kind == 7) {
+        txt_Format(news, 0x100f, target->id, pick[0]->id, pick[1]->id);
+        he_ShowNews(pick[2]->netId, -1, news, 1, 0x5fb, 0);
+    }
+    use->handled = 1;
+    if (ch->kind == 6) {
+        txt_Format(text, 0x10a1, target->id, pick[0]->id, pick[1]->id, pick[2]->id);
+        txt_Format(news, 0xfe8, text);
+        ai_UseObjPanel(news);
+    }
+    return 1;
 }
 /* 0x5d22e0, the use callback of the Domizil record 59 (0x62ca94, the text id 0x2c1, the mask 0x5a0): a
    character of kind 6 needs sv_CheckMoney (ch, 3) to pass (it shows the text 0x74 "not enough money"), every
