@@ -3010,3 +3010,4 @@
 2026-11-07T18:40:59 0x005d0780 func ai_Unk5d0780 -> ai_UseGoodHalveWorkerValue by:main why:the use callback of the Domizil good 0x161 (table entry 0x62c500): halves AICHAR.b1c5 (rounded up) of every character in the picked building
 2026-11-07T18:46:15 0x005d0b20 func ai_Unk5d0b20 -> ai_UseGoodRaiseRelation by:main why:the use callback of the Domizil good 0x167 (table entry 0x62c5a8): raises the picked character's relation to the user by 25 / 50 (cm_SendRelations)
 2026-11-07T18:51:21 0x005d0f20 func ai_Unk5d0f20 -> ai_UseGoodLowerOfficialRelations by:main why:the use callback of the Domizil good 0x16a: lowers the target's relation with three random office holders (cm_SendRelations -20)
+2026-11-07T18:58:21 0x005d1300 data ai_Unk5d1300 -> ai_UseGoodTwoTrialSteps by:main why:the use callback of the Domizil good 0x16c: two trial steps (ai_ApplyTrialStep) on shuffled skills, as ai_UseGoodTrialStep with one

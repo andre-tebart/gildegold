@@ -33671,17 +33671,42 @@ int ai_UseGoodLowerOfficialRelations(AICHARREC *ch, G8USEVIEW *use)
     }
     return ret;
 }
-/* 0x5d1300, an action callback of the record table 0x62c420 (record 19 at 0x62c634, the text id 0x16c,
-   224 B): the trial step pick of 0x5d0e60 - 0x505ca0 (5, the picks); up to two picks whose counter
-   (the record +0x80 + pick) is below 0xfc run the trial step 0x5d08c0 (the record, the pick) and are
-   remembered (the first and the second); type 6 closes 0x4c5870 (the handle +4) and sends the text
-   0x5176d0 (0xfe8, ...) through 0x5cf820. The frame is 0x818 and the pick array sits at esp+0x14.
-   ROUGH STUB (layout 2026-10-24, tools/disasm.py): from the first 60 instructions; the tail is not
-   written. */
+/* 0x5d1300, the use callback of the Domizil good 0x16c (the +0x14 pointer of the table entry 0x62c634): like
+   ai_UseGoodTrialStep with two steps - marks the use handled, gm_Shuffled (5, pick) gives a shuffled 0 .. 4
+   order and the first two picks whose skill counter ch->skills[pick[i]] is below 0xfc run the trial step
+   ai_ApplyTrialStep (ch, the pick) and are remembered. A kind 6 character: cm_SendSkillsChanged (ch->netId)
+   and the text 0xfe8 (the used object's id * 2 + 0xd71, the second and the first pick + 0x16b7) through the
+   use-object panel. Returns 1. */
 
-int ai_Unk5d1300(void)
+int ai_UseGoodTwoTrialSteps(AICHARREC *ch, G8USEVIEW *use)
 {
-    return 0;
+    int first;
+    int pick[5];
+    char text[0x800];
+    int second;
+    int i;
+    int n;
+
+    second = 0;
+    first = 0;
+    use->handled = 1;
+    gm_Shuffled(5, pick);
+    for (i = 0, n = 0; n < 2 && i < 5; i++) {
+        if (ch->skills[pick[i]] < 0xfc) {
+            ai_ApplyTrialStep((int)ch, pick[i]);
+            n++;
+            if (n == 1)
+                first = pick[i];
+            else if (n == 2)
+                second = pick[i];
+        }
+    }
+    if (ch->kind == 6) {
+        cm_SendSkillsChanged(ch->netId);
+        txt_Format(text, 0xfe8, use->obj->id * 2 + 0xd71, second + 0x16b7, first + 0x16b7);
+        ai_UseObjPanel(text);
+    }
+    return 1;
 }
 /* 0x5d13e0, an action callback of the record table 0x62c420 (record 22 at 0x62c688, the text id 0x170,
    672 B): three random picks 0x42ec00 (0x300 over the 0x300 character records 0x770b80, as 0x5d0f20),
