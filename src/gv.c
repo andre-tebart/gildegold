@@ -3654,7 +3654,7 @@ int gv_RetireCrime(int id, int force)
     return 0;
 }
 /* 0x4f4390, sorts the n crime records at r by the law broken (CRIME.law), ascending: an exchange sort with whole-record
-   swaps (the crime list windows ai_EvidenceDetailsWindow / ai_Unk5cdb90 sort their copies of the records held) */
+   swaps (the crime list windows ai_EvidenceDetailsWindow / ai_AccuseWindow sort their copies of the records held) */
 
 void gv_SortCrimesByLaw(int n, CRIME *r)
 {

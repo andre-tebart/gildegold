@@ -20298,6 +20298,7 @@ int ai_BeatingCallback(AICHARREC *ch)
     return ordered;
 }
 int gv_HeldCrimesOf(int culprit, int *out, unsigned short t);  /* 0x4f3fe0, gv.h's prototype (gv.h is not included yet: Open: head) */
+void gv_SortCrimesByLaw(int n, CRIME *r);  /* 0x4f4390, gv.h's prototype (gv.h is not included yet: Open: head) */
 
 /* 0x5b4340, the evidence details window "privillegien\Beweise_Details" (ai_EvidenceBookWindow, for the player's
    character me and a character of the book): the crimes of culprit that me holds (gv_HeldCrimesOf, up to 32),
@@ -31996,39 +31997,78 @@ int ai_OpenTrial(AICHARREC *me, AICHARREC *target, int n, int byFaith)
     cm_SendLongMessage((char *)&msg);
     return 0x10;
 }
-/* 0x5cdb90, the spy list window "privillegien\spionage2" 0x62cd7c (760 B, ROUGH SKELETON: no Ghidra
-   export; from the disassembly): the frame 0x878; param_1 the message record (+0 the id), param_2 the
-   request (+4 a handle, the word +0 0xffff closes), param_3 / param_4 the two ids. The list 0x4f3fe0
-   (the request handle, the ids, the id) returns the count (< 1 -> 0x60); each id picks the record
-   0x91f700 + the id * 0x2d (the flag when the first dword is 1); both ids equal clears the flag; the
-   sort 0x4f4390 and the window 0x4741f0 / 0x475600 with the list; the rest is a comment. ROUGH
-   SKELETON. */
+/* 0x5cdb90, the accusation window "privillegien\Beweise_Details" (the accusation order's ask, ai_SpyTargetHandler /
+   ai_SpyTargetFlagHandler, for me and a culprit of its list): as ai_EvidenceDetailsWindow the crimes of culprit
+   that me holds (gv_HeldCrimesOf), sorted by law, each a row of its law's name and pictures, the caption 0x1742;
+   when the order 0x16 reports the flag 2 for the culprit the text 0x174a, else the accuse button 0x1745, enabled
+   only while one of the crimes is open (state 1) and culprit is not me. The button opens the trial (ai_OpenTrial)
+   and closes the window; a right click closes it. Returns 0 */
 
-int ai_Unk5cdb90(int param_1, int *param_2, int param_3, int param_4)
+int ai_AccuseWindow(AICHARREC *me, AICHARREC *culprit)
 {
-    int ids[0x100];
-    char recs[0x400 * 4];
-    int out[8];
-    int count;
-    int flag;
+    int n;
     int i;
+    int k;
+    int win;
+    int list;
+    int accuse;
+    int open;
+    AIPOSVIEW pos;
+    int ids[0x20];
+    int arg[0x88];
+    CRIME crimes[0x20];
 
-    if (*(unsigned short *)param_2 == 0xffff)
+    open = 0;
+    accuse = -1;
+    if (culprit->id == 0xffff)
         return 0;
-    count = gv_HeldCrimesOf(*(int *)((char *)param_2 + 4), ids, *(unsigned short *)param_1);
-    if (count < 1)
+    n = gv_HeldCrimesOf(culprit->netId, ids, me->id);
+    if (n < 1)
         return 0x60;
-    flag = 0;
-    for (i = 0; i < count; i++) {
-        memcpy(recs + i * 0x2d, (char *)((unsigned)&ai_Crimes + ids[i] * 0x2d), 0x2d);
-        if (*(int *)(recs + i * 0x2d) == 1)
-            flag = 1;
+    for (i = 0; i < n; i++) {
+        crimes[i] = ((CRIME *)ai_Crimes)[ids[i]];
+        open |= crimes[i].state == 1;
     }
-    if (param_3 == param_4)
-        flag = 0;
-    gv_SortCrimesByLaw(count, (CRIME *)out);
-    /* ROUGH SKELETON: the window 0x62cd7c, the list and the pump 0x5309a0 are not written yet */
-    return flag;
+    if (me == culprit)
+        open = 0;
+    gv_SortCrimesByLaw(n, crimes);
+    win = d2_OpenForm(0, 0, "privillegien\\Beweise_Details");
+    d2_CentreViewWindows(win);
+    d2_SetForm(win, 2);
+    list = d2_LastWindow;
+    d2_SetForm(win, 4);
+    d2_CreateScrollButtons(-1, -1, d2_LastWindow, list, 0x767);
+    d2_SetPointerSprite(0, 0);
+    d2_SetForm(win, 1);
+    io_PrintText(0x1742, culprit->id);
+    d2_SetForm(win, 2);
+    for (i = 0; i < n; i++) {
+        ai_LeftAlignedText(txt_Ptrs[crimes[i].law * 5 + 0x13fd], 10, i * 0x28 + 10, 0x13b, 0x55);
+        if (gv_GetTableRecord(crimes[i].law, (int *)&pos) != 0 && pos.pics != 0)
+            for (k = 0; k < pos.pics; k++)
+                d2_WinOpenPic(k * 0x10 + 0x154, i * 0x28 + 10, 0x526, d2_LastWindow);
+    }
+    memset(arg, 0, sizeof(arg));
+    arg[0] = 1;
+    d2_SetForm(win, 3);
+    if (ord_DispatchOrder(0x16, culprit, arg) & 2) {
+        io_PrintText(0x174a);
+    } else {
+        accuse = d2_GetWinObj(win, 3, io_PrintText(0x1745));
+        if (open == 0)
+            d2_SetObjEnabled(accuse, 0);
+    }
+    d2_ClickedId = -1;
+    do {
+        if (dm_L.rup != 0)
+            sv_PopRequest = 1;
+        if (d2_ClickedId != -1 && d2_PointerObj == accuse) {
+            ai_OpenTrial(me, culprit, n, 0);
+            sv_PopRequest = 3;
+        }
+    } while (sv_RunFrame((int)ai_AccuseWindow, 0x657c7) != 0);
+    d2_CloseView(win);
+    return 0;
 }
 /* 0x5cde90, the spy target handler (775 B, ROUGH SKELETON: no Ghidra export; from the disassembly):
    param_1 the message record (the AIMSG: +0 the id, +2 the type 6 / 7, +0x166 the kind 0xd refused),
