@@ -10213,42 +10213,43 @@ int cm_LootList(int x, int y, int mode)
    (count + 1), 6 per row, rows of 100 pixels from x, y) with the frame 0x5da, the portrait, the health bar (0x504e00),
    the name and health text ("%1N1 %i%"), the building icon and the state icon (0x3b / 0x37) of the character */
 
-void ai_Unk4d4340(int *ids, int x, int y)
+void cm_FightPortraits(int *ids, int x, int y)
 {
     int i, n = 0;
     int w, px, py, v, t, f, ic;
-    char *c, *o;
+    AICHAR *c;
+    AIWEAPON *o;
     char buf[0x100];
 
     for (i = 0; i < 16; i++) {
         if (ids[i] != -1)
             n++;
     }
-    w = (*(short *)(d2_LastWindowPtrC + 8) - 0x30) / (n + 1);
+    w = (d2_LastWindowPtr->w - 0x30) / (n + 1);
     for (i = 0; i < 16; i++) {
         if (ids[i] == -1)
             continue;
-        c = cm_FindFighter(ids[i]);
+        c = (AICHAR *)cm_FindFighter(ids[i]);
         px = (i % 6 + 1) * w + x;
         py = y + i / 6 * 100;
         d2_WinOpenPic(px - 0x10, py, 0x5da, d2_LastWindow);
-        d2_WinOpenPic(px - 4, py, *(int *)(c + 0x18c), d2_LastWindow);
+        d2_WinOpenPic(px - 4, py, c->picture, d2_LastWindow);
         v = gm_SkillPoints(c, 3);
         sv_ValueBar(px, py + 0x3c, (int)(double)(float)v, 0x4eb);
         t = d2_CreateWinText(px - 0x24, py - 0x11, &ch_EmptyName, d2_LastWindow);
-        G19_R(t, 0x14, short) = 0x78;
-        G19_R(t, 0x5c, int) = 1;
-        G19_R(t, 0x74, short) = 0x56;
-        txt_FormatS(buf, "%1N1 %i%", *(unsigned short *)c, (int)(gm_HealthRatio(c) * 100.0));
+        d2_Objs[t].w = 0x78;
+        d2_Objs[t].centred = 1;
+        d2_Objs[t].font = 0x56;
+        txt_FormatS(buf, "%1N1 %i%", c->id, (int)(gm_HealthRatio(c) * 100.0));
         d2_SetObjText(t, buf);
-        o = cm_CharWeapon(c);
-        if (o != 0 && *(int *)o != 0) {
-            ic = d2_WinOpenPic(px + 0x28, py + 0xf, *(int *)o + 0xdf, d2_LastWindow);
+        o = (AIWEAPON *)cm_CharWeapon((char *)c);
+        if (o != 0 && o->id != 0) {
+            ic = d2_WinOpenPic(px + 0x28, py + 0xf, o->id + 0xdf, d2_LastWindow);
             d2_ScaleObject(ic, -2);
         }
-        if (c[8] == 0) {
-            f = (int)-*(float *)(c + 0x1c);
-            if ((double)*(int *)(c + 0x24) == (double)f - 20.0)
+        if (c->health == 0) {
+            f = (int)-c->f01c;
+            if ((double)c->v024 == (double)f - 20.0)
                 d2_WinOpenPic(px, py + 6, 0x3b, d2_LastWindow);
             else
                 d2_WinOpenPic(px, py + 6, 0x37, d2_LastWindow);
@@ -10326,7 +10327,7 @@ int cm_FightStartDialog(char *a)
         }
         d2_SetForm(win, 1);
         io_PrintText(0x1132);
-        ai_Unk4d4340((int *)(a + 0xc0), 0, 0xb4);
+        cm_FightPortraits((int *)(a + 0xc0), 0, 0xb4);
         d2_GetWinObj(win, 2, edi);
         edi++;
         d2_GetWinObj(win, 2, edi);
@@ -10655,7 +10656,7 @@ void cm_FightEndDialog(char *a)
     else if (*kr == 4)
         role = 2;
     io_PrintText(0x1193, G20_US(G20_DEF), role + 0x1125);
-    ai_Unk4d4340((int *)(a + 0xc0), 0, 100);
+    cm_FightPortraits((int *)(a + 0xc0), 0, 100);
     ca = gm_BuildQuery(1, 1, *(int *)(a + 0x14));
     if (ca != 0) {
         kr = ai_BTypes + (unsigned char)ca[0] * 0x24d;
@@ -10669,7 +10670,7 @@ void cm_FightEndDialog(char *a)
         role = 0;
     io_PrintText("$7A");
     io_PrintText(0x1193, G20_US(G20_ATT), role + 0x1125);
-    ai_Unk4d4340((int *)(a + 0x80), 0, 0x12c);
+    cm_FightPortraits((int *)(a + 0x80), 0, 0x12c);
     G20_PUMP();
     d2_SetForm(win, 1);
     io_PrintText("$C");

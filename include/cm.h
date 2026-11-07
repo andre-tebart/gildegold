@@ -792,7 +792,7 @@ struct AICHAR *cm_CheckFightWinner(struct CMFIGHTREC *rec);  /* 0x4d3b30 */
 int cm_LootStock(AIBLD *a, AIBLD *b, struct AICHAR *d, struct AICHAR *t);  /* 0x4d3d10 */
 int cm_FightRole(unsigned char *b);  /* 0x4d4050 */
 int cm_LootList(int x, int y, int mode);  /* 0x4d4090 */
-void ai_Unk4d4340(int *ids, int x, int y);  /* 0x4d4340 */
+void cm_FightPortraits(int *ids, int x, int y);  /* 0x4d4340 */
 int cm_FightStartDialog(char *a);  /* 0x4d4540 */
 void cm_FightEndDialog(char *a);  /* 0x4d4d70 */
 int ai_Unk4d60b0(char *a);  /* 0x4d60b0 */
