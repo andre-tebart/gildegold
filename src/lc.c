@@ -34142,13 +34142,42 @@ int ai_UsePayGood(G8CHARREC *ch)
     gm_SendMoneyDelta(ch->netId, -3);
     return 1;
 }
-/* 0x5d2320, an action callback of the record table 0x62c420 (record 60 at 0x62cab0, the text id 0x2c2,
-   288 B): the character (0x5c1130 menu / 0x505df0), 0x4c4a60, the texts 0x5176d0 and the panel
-   0x5cf820. Frame 0x950. */
+/* 0x5d2320, the use callback of the Domizil record 60 (0x62cab0, the text id 0x2c2): picks the target character,
+   for a player (kind 6) with the special-amount menu (the gypsy filter, mode 0x400, the prompt 0x9c), else the
+   character use->target (gm_FindChar); none -> 0. Sets the bit 0x200000 of the target's flags1cc
+   (cm_SendSetField): the next round start (main_RundenBeginn) charges it 8 action points (the AP event 0xf2c)
+   unless it holds the good 0x2c4, and clears the bit. Marks the use handled; a player user sees the text 0x10a7
+   (the target) inside 0xfe8 in the use-object panel. Returns 1. */
 
-int ai_Unk5d2320(void)
+int ai_UseGoodDrainActionPoints8(AICHARREC *ch, G8USEVIEW *use)
 {
-    return 0;
+    AMOUNTCFG cfg;
+    char text[0x200];
+    char news[0x400];
+    AICHARREC *target;
+
+    if (ch->kind == 6) {
+        memset(&cfg, 0, sizeof(cfg));
+        memset(cfg.ids, 0xff, sizeof(cfg.ids));
+        txt_Format(text, 0x9c);
+        cfg.flags = 0;
+        cfg.mode = 0x400;
+        cfg.kind = 6;
+        cfg.filter = gypsyFilter;
+        target = (AICHARREC *)ai_AmountMenu(&cfg, text, 0, 0);
+    } else {
+        target = (AICHARREC *)gm_FindChar(use->target);
+    }
+    if (target == 0)
+        return 0;
+    cm_SendSetField(target->netId, 0x1cc, 4, 0x200000, 0);
+    use->handled = 1;
+    if (ch->kind == 6) {
+        txt_Format(text, 0x10a7, target->id);
+        txt_Format(news, 0xfe8, text);
+        ai_UseObjPanel(news);
+    }
+    return 1;
 }
 /* 0x5d2440, an action callback of the record table 0x62c420 (record 61 at 0x62cacc, the text id 0x2c3,
    320 B): the character (0x5c1130 menu / 0x505df0), 0x5ba6b0, the float 0x42ec20, the close 0x4c5fa0,

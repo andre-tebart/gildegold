@@ -3017,3 +3017,4 @@
 2026-11-07T19:03:11 0x005d1990 func ai_Unk5d1990 -> ai_UseGoodDrainSkill by:main why:the use callback of the Domizil good 0x2bb: lowers one of the target's skills by 21 (cm_SendAddSkill -0x15)
 2026-11-07T19:04:58 0x005d1b30 data ai_Unk5d1b30 -> ai_UseGoodHarmBuilding by:main why:the use callback of the Domizil good 0x2bc: the kind 0 characters of a building lose 10..30% of their life (gm_AddHealth), the user's relation to its owner falls
 2026-11-07T19:05:56 0x005d1da0 data ai_Unk5d1da0 -> ai_UseGoodSpoilStock by:main why:the use callback of the Domizil good 0x2bd: every good in a building's store loses 10..30% of its count (cm_SendExSellObject)
+2026-11-07T19:12:41 0x005d2320 func ai_Unk5d2320 -> ai_UseGoodDrainActionPoints8 by:main why:the use callback of Domizil record 60: sets flags1cc bit 0x200000, which main_RundenBeginn charges as 8 action points (the AP event 0xf2c)
