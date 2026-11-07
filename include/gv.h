@@ -603,7 +603,7 @@ int ord_Job15Order(char *c, int *m);     /* 0x4f6d30 */
 int ord_CounterEspionageOrder(char *c, int *m);     /* 0x4f67c0 */
 int ord_MisappropriationOrder(char *c, int *m);     /* 0x4f6b40 */
 
-int ord_CounterEspionageWindowOrder(char *c, int *m);     /* 0x4f6e00 */
+int ord_SeatSwapOrder(char *c, int *m);     /* 0x4f6e00 */
 int ord_EspionageWindowOrder(char *c, int *m);     /* 0x4f6f10 */
 int ord_EspionagePaymentOrder(char *c, int *m);     /* 0x4f70f0 */
 int ord_EspionageOrder(char *c, int *m);     /* 0x4f7200 */

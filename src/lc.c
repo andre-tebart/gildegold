@@ -30809,7 +30809,7 @@ int amt_SendOfficeSwap();
 /* 0x5cb1e0, the counter-espionage office swap (64 B): amt_SendOfficeSwap (0x4e6ba0) sends the requester's
    request for the two characters; -1 returns 0, another requester returns 1; a player (kind 6) waits on the
    message slot 0x4c3ae0 with the pump 0x52fe00 and returns whether the answer's status is not 2. */
-int ai_CounterEspionageOfficeSwap(char *requester, char *b, char *c)
+int ai_SwapSeats(char *requester, char *b, char *c)
 {
     int h;
 
@@ -30824,114 +30824,100 @@ int ai_CounterEspionageOfficeSwap(char *requester, char *b, char *c)
     }
     return 0;
 }
-/* 0x5cb250, the counter-espionage window "privillegien\gegenspionage2" 0x62d588 (672 B, ROUGH: no Ghidra
-   function; from the disassembly): param_1 is the request record (dword +0: 3 (the message) or 4 (with
-   +0x21c the owner)), param_2 the message record (the AIMSG: +0 the id, +2 the type 6 / 7, +4 the handle,
-   +0x194 the amount). The owner kind (owner +0x166) picks the character kinds to find: 0xf -> 0xd (the
-   first record, local 0x10) and 0xe (the last, ebp); 0x15 -> 0x13 / 0x14; 0x1b -> 0x19 / 0x1a; other kinds
-   return 0x60. The walk over the 0x300 character records 0x770b80 .. 0x7d5f80 (stride 0x21c) stops when
-   both kinds were found. Types other than 6 / 7: the amount < 6 or a missing kind returns 0x20, else
-   0x5cb1e0 (the message, the two characters) decides 0x10 (sent) / 0x20 (failed). Types 6 / 7: a missing
-   kind shows the text 0x5176d0 (the format 0x624204, 0x1dcb) and returns 0; else the window 0x4741f0 /
-   0x476f80 / 0x475600 / 0x475f70 with the text 0x515960 (0x1dc9, 6, the two ids) and the two buttons
-   0x475b80: the first click 0x520f90 (6) runs 0x5cb1e0 and shows 0x5176d0 (0x1dca on success, the format
-   0x624204 / 0x1dcb on failure) through 0x521150 and sets 0x6f22a0; the second click sets it; the pump
-   0x5309a0 (this, 0x657c7) and the end 0x4758f0, return 2. ROUGH: the character walk and the text by
-   offset. */
+/* 0x5cb250, the seat swap order's ask (ord_SeatSwapOrder, kinds 3 / 4) "privillegien\sessel_vertauschen": the office
+   holder (me for kind 3, m->partner for kind 4; none: 0x60) of the office 0xf / 0x15 / 0x1b swaps the two offices below
+   it (0xd / 0xe, 0x13 / 0x14, 0x19 / 0x1a; another office: 0x20), whose holders it finds in ai_Chars. The AI needs 6 in
+   money and both holders (else 0x20) and returns 0x10 when ai_SwapSeats went through, else 0x20. A player gets the
+   text 0x1dcb when a seat is empty (0), else the window (0x1dc9: the 6, the two holders); the first button, when the
+   player has the 6 (sv_CheckMoney), swaps them and tells 0x1dca (or 0x1dcb when it failed); either button or a right
+   click close it, then 1 */
 
-int ai_CounterEspionageWindow(int *param_1, int param_2)  /* @original: the callers push (c, m); the draft body reads its own byte offsets of the parameters */
+int ai_SeatSwapWindow(AICHARREC *me, LCORDMSG *m)
 {
     char text[0x200];
-    int first;
-    int second;
-    int kind;
+    AICHARREC *first;
+    AICHARREC *second;
+    AICHARREC *c;
+    int office;
     int k1;
     int k2;
     int n;
-    int chr;
     int win;
-    int btn1;
-    int btn2;
     int t;
-    int r;
+    int ok;
+    int cancel;
 
-    first = 0;
     second = 0;
-    if (*param_1 == 3) {
-        kind = *(unsigned char *)(param_2 + 0x166);
-    } else {
-        if (*param_1 != 4)
-            return 0x60;
-        kind = param_1[0x87];
-        if (kind == 0)
-            return 0x60;
-        kind = *(unsigned char *)(kind + 0x166);
-    }
-    if (kind == 0xf) {
-        k1 = 0xd;
-        k2 = 0xe;
-    } else if (kind == 0x15) {
-        k1 = 0x13;
-        k2 = 0x14;
-    } else if (kind == 0x1b) {
-        k1 = 0x19;
-        k2 = 0x1a;
+    n = 2;
+    first = 0;
+    if (m->kind == 3) {
+        office = me->officeKind;
+    } else if (m->kind == 4 && m->partner != 0) {
+        office = m->partner->officeKind;
     } else {
         return 0x60;
     }
-    n = 2;
-    for (chr = (unsigned)&ai_Chars; chr < (unsigned)((unsigned)ai_Chars + 0x65400) && n != 0; chr += 0x21c) {
-        if (*(unsigned char *)(chr + 0x166) == k1) {
-            first = chr;
+    if (office == 0xf) {
+        k2 = 0xe;
+        k1 = 0xd;
+    } else if (office == 0x15) {
+        k2 = 0x14;
+        k1 = 0x13;
+    } else if (office == 0x1b) {
+        k2 = 0x1a;
+        k1 = 0x19;
+    } else {
+        return 0x20;
+    }
+    for (c = (AICHARREC *)ai_Chars; (int)c < (int)((AICHARREC *)ai_Chars + 0x300); c++) {
+        if (n == 0)
+            break;
+        if (c->officeKind == k1) {
+            first = c;
             n--;
-        } else if (*(unsigned char *)(chr + 0x166) == k2) {
-            second = chr;
+        } else if (c->officeKind == k2) {
+            second = c;
             n--;
         }
     }
-    if (*(char *)(param_2 + 2) != 6 && *(char *)(param_2 + 2) != 7) {
-        if (*(int *)(param_2 + 0x194) < 6)
+    if (me->kind != 6 && me->kind != 7) {
+        if (me->money < 6 || n > 0)
             return 0x20;
-        if (n > 0)
-            return 0x20;
-        return ai_CounterEspionageOfficeSwap(param_2, second, first) ? 0x10 : 0x20;
+        return ai_SwapSeats((char *)me, (char *)second, (char *)first) ? 0x10 : 0x20;
     }
     if (n > 0) {
-        txt_Format(text, (char *)(unsigned)"$Z%s", 0x1dcb);
+        txt_Format(text, "$Z%s", 0x1dcb);
         sv_MessageBox(text, 0);
         return 0;
     }
-    win = d2_OpenForm(0, 0, (char *)(unsigned)&full_data_62d588);
+    win = d2_OpenForm(0, 0, "privillegien\\sessel_vertauschen");
     d2_SetPointerSprite(0, 0);
     d2_CentreViewWindows(win);
     d2_SetForm(win, 1);
-    t = io_PrintText(0x1dc9, 6, *(unsigned short *)second, *(unsigned short *)first);
-    btn1 = d2_GetWinObj(win, 1, t);
-    btn2 = d2_GetWinObj(win, 1, t + 1);
-    *(int *)(unsigned)&d2_ClickedId = -1;
+    t = io_PrintText(0x1dc9, 6, second->id, first->id);
+    ok = d2_GetWinObj(win, 1, t);
+    cancel = d2_GetWinObj(win, 1, t + 1);
+    d2_ClickedId = -1;
     do {
-        if (*(int *)(unsigned)&d2_ClickedId != -1) {
-            if (*(int *)(unsigned)&d2_PointerObj == btn1) {
-                if (sv_CheckMoney(param_2, 6) != 0) {
-                    r = ai_CounterEspionageOfficeSwap(param_2, second, first);
-                    if (r != 0)
-                        txt_Format(text, (char *)0x1dca);
+        if (d2_ClickedId != -1) {
+            if (d2_PointerObj == ok) {
+                if (sv_CheckMoney(me, 6) != 0) {
+                    if (ai_SwapSeats((char *)me, (char *)second, (char *)first) != 0)
+                        txt_Format(text, 0x1dca);
                     else
-                        txt_Format(text, (char *)(unsigned)"$Z%s", 0x1dcb);
+                        txt_Format(text, "$Z%s", 0x1dcb);
                     sv_MessageBox(text, 0);
-                    *(int *)(unsigned)&sv_PopRequest = 1;
+                    sv_PopRequest = 1;
                 }
-            } else if (*(int *)(unsigned)&d2_PointerObj == btn2) {
-                *(int *)(unsigned)&sv_PopRequest = 1;
+            } else if (d2_PointerObj == cancel) {
+                sv_PopRequest = 1;
             }
         }
-        if (*(int *)((unsigned)&dm_L + 0x20) != 0)
-            *(int *)(unsigned)&sv_PopRequest = 1;
-        if (sv_RunFrame(ai_CounterEspionageWindow, 0x657c7) == 0) {
-            d2_CloseView(win);
-            return 2;
-        }
-    } while (1);
+        if (dm_L.rup)
+            sv_PopRequest = 1;
+    } while (sv_RunFrame((int)ai_CounterEspionage, 0x657c7) != 0);   /* the original passes the counter-espionage window here */
+    d2_CloseView(win);
+    return 1;
 }
 /* 0x5cb4f0, the espionage window (1440 B, ROUGH SKELETON: no Ghidra function; from the disassembly):
    param_1 is the request record (+2 the type 6 / 7, +0x194 the amount, +0x214 / +0x218 the two character
