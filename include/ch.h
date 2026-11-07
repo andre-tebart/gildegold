@@ -339,6 +339,11 @@ struct CHACTION {                   /* 0x194 bytes, 2000 of them in ch_Queue; fu
             int unk178;
             struct AICHAR *fighter;     /* 0x17c, the cheering character */
         } cheer;
+        struct {                        /* the pick-up of a lying object (cm.c: cm_FightSlotPickUp queues it, cm_PickUpAction) */
+            int unk178;
+            struct AICHAR *fighter;     /* 0x17c, the character picking it up */
+            struct D3OBJECT *object;    /* 0x180, the object picked up */
+        } pickUp;
     };
     char stop;                      /* 0x190 */
     char pad191[0x3];

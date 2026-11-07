@@ -9992,18 +9992,20 @@ void cm_CheerAction(char *ev)
 
     ch_SetVisible(b->cheer.fighter->scene, 0);
 }
-/* 0x4d3ae0, the target puts its carried object down: the object (+0x1ac of the attacker) belongs to the defender's side now */
+/* 0x4d3ae0, the end of a pick-up (fight command 4, cm_FightSlotPickUp): the object picked up gets the fight's
+   attacker side as its owner (AIOBJ.fightSide), is carried by the fighter (AICHAR.v1ac) and hidden on the ground */
 
-void ai_Unk4d3ae0(char *ev)
+void cm_PickUpAction(char *ev)
 {
-    char *att = *(char **)(ev + 0x17c);
-    int o = *(int *)(ev + 0x180);
-    char *p;
+    CHACTION *b = (CHACTION *)ev;
+    AICHAR *att = b->pickUp.fighter;
+    D3OBJECT *o = b->pickUp.object;
+    AIOBJ *p;
 
-    p = cm_ObjectOwner((char *)o);
+    p = (AIOBJ *)cm_ObjectOwner((char *)o);
     if (p != 0) {
-        *(int *)(p + 0xa) = *(unsigned short *)cm_FightAttacker;
-        *(int *)(att + 0x1ac) = o;
+        p->fightSide = ((AICHAR *)cm_FightAttacker)->id;
+        att->v1ac = (int)o;
     }
     d3if_ShowTree(o, 0);
 }
@@ -11222,7 +11224,7 @@ void cm_FightSlotPickUp(char *f)
         o = (char *)d3_FindObject(0, 0x40, 0, f + 0x10);
         if (o != 0) {
             *(int *)(*(char **)(o + 0x200) + 0xa) = G20_US(side);
-            ev = (char *)ch_AddActionCBK(*(char **)(c + 0x184), (unsigned)&ai_Unk4d3ae0, 5, 0x2e, 1);
+            ev = (char *)ch_AddActionCBK(*(char **)(c + 0x184), (unsigned)&cm_PickUpAction, 5, 0x2e, 1);
             *(char **)(ev + 0x17c) = c;
             *(char **)(ev + 0x180) = o;
             strcpy(ev + 0xf0, "spezial/einhaendig_vom_boden_nehmen");
