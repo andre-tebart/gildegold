@@ -16964,10 +16964,13 @@ void ai_DumpPersonSkills(char *c, char *buf)
 }
 /* 0x4e5a90, the four names (0x143ab0c) of the bytes +0x166 .. +0x169 of a person */
 
-void ai_Unk4e5a90(char *c, char *buf)
+void ai_DumpPersonOffices(char *c, char *buf)
 {
-    sprintf(buf, "%s\t%s\t%s\t%s\t", ai_Unk143ab0c[(unsigned char)c[0x166]], ai_Unk143ab0c[(unsigned char)c[0x167]], ai_Unk143ab0c[(unsigned char)c[0x168]],
-            ai_Unk143ab0c[(unsigned char)c[0x169]]);
+    AICHAR *p;
+
+    p = (AICHAR *)c;
+    sprintf(buf, "%s\t%s\t%s\t%s\t", txt_OfficeNames[p->officeKind], txt_OfficeNames[p->prevOffice], txt_OfficeNames[p->appliedOffice],
+            txt_OfficeNames[p->secondOffice]);
 }
 /* 0x4e5af0, the debug dump of the ints +0x190 .. +0x1a4 of a person, then 0x509e60 (c) and 0x50a640 (its id) */
 
@@ -17007,7 +17010,7 @@ void ai_DebugDumpPerson(char *c)
         ai_DumpPersonHead(c, buf + strlen(buf));
         ai_DumpPersonStats(c, buf + strlen(buf));
         ai_DumpPersonSkills(c, buf + strlen(buf));
-        ai_Unk4e5a90(c, buf + strlen(buf));
+        ai_DumpPersonOffices(c, buf + strlen(buf));
         ai_Unk4e5af0(c, buf + strlen(buf));
         ai_Unk4e5b50(c, buf + strlen(buf));
     }
@@ -17088,7 +17091,7 @@ extern int cm_PickCellZ;
 /* txt_HonourTitles: view of txt_Ptrs (build/mk_txt_views.py) */
 /* txt_JobNames: view of txt_Ptrs (build/mk_txt_views.py) */
 /* txt_TitleNames: view of txt_Ptrs (build/mk_txt_views.py) */
-/* ai_Unk143ab0c: view of txt_Ptrs (build/mk_txt_views.py) */
+/* txt_OfficeNames: view of txt_Ptrs (build/mk_txt_views.py) */
 /* txt_FaithNames: view of txt_Ptrs (build/mk_txt_views.py) */
 /* txt_SexNames: view of txt_Ptrs (build/mk_txt_views.py) */
 /* txt_FightPaused: view of txt_Ptrs (build/mk_txt_views.py) */

@@ -28,7 +28,7 @@ extern char *txt_Ptrs[0x4800];    /* 0x143a1c0, each text in its file's buffer *
 #define full_data_143a63c                        (*(unsigned char (*)[68])((char *)txt_Ptrs + 0x0047c))  /* 0x143a63c */
 #define txt_JobNames                            (*(char * (*)[221])((char *)txt_Ptrs + 0x004c0))  /* 0x143a680 */
 #define txt_TitleNames                            (*(char * (*)[70])((char *)txt_Ptrs + 0x00834))  /* 0x143a9f4 */
-#define ai_Unk143ab0c                            (*(char * (*)[84])((char *)txt_Ptrs + 0x0094c))  /* 0x143ab0c */
+#define txt_OfficeNames                            (*(char * (*)[84])((char *)txt_Ptrs + 0x0094c))  /* 0x143ab0c */
 #define txt_MaleFirstNames                            (*(char * (*)[197])((char *)txt_Ptrs + 0x00a9c))  /* 0x143ac5c */
 #define txt_FemaleFirstNames                            (*(char * (*)[130])((char *)txt_Ptrs + 0x00db0))  /* 0x143af70 */
 #define txt_FamilyNames                            (*(char * (*)[152])((char *)txt_Ptrs + 0x00fb8))  /* 0x143b178 */
