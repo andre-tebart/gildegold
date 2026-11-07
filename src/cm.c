@@ -17006,8 +17006,10 @@ void ai_DumpPersonRelatives(char *c, char *buf)
 void ai_DebugDumpPerson(char *c)
 {
     char buf[0x1fb8];
+    AICHAR *p;
 
-    if (c != 0 && *(unsigned short *)c != 0xffff) {
+    p = (AICHAR *)c;
+    if (p != 0 && p->id != 0xffff) {
         memset(buf, 0, sizeof(buf));
         ai_DumpPersonHead(c, buf + strlen(buf));
         ai_DumpPersonStats(c, buf + strlen(buf));
