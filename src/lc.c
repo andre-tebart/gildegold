@@ -6398,9 +6398,13 @@ typedef struct AMOUNTCFG {              /* 0x50 bytes, the config of the special
                                            (menu.h, same layout) */
     int flags;                          /* +0x00, 1 / 0x20400 / 0x2040a */
     int mode;                           /* +0x04, 0x400: the partner filter bits (ai_PassesPartnerFilter; 0x400 not under age) */
-    unsigned __int64 filter;            /* +0x08, 0x1a7fdfbb6 (the gypsy windows), 0x1a07c43a0 (the sabotage) */
-    int kind;                           /* +0x10, 6 */
-    int option14;                       /* +0x14, bit 2: ai_PassesPartnerFilter leaves out ids[0 .. 3] */
+    union {
+        unsigned __int64 filter;        /* +0x08, 0x1a7fdfbb6 (the gypsy windows), 0x1a07c43a0 (the sabotage) */
+        unsigned int classMask[2];      /* +0x08, as ai_PassesBuildingFilter reads it: the building classes 0 .. 63;
+                                           bit 63 also wants an enterable building with a scene object */
+    };
+    int kind;                           /* +0x10, 6; ai_PassesBuildingFilter's owner test 0 .. 7 */
+    int option14;                       /* +0x14, bit 0: ai_PassesBuildingFilter leaves out the owners in ids[0 .. 3]; bit 2: ai_PassesPartnerFilter leaves out ids[0 .. 3] */
     int lockSecond;                     /* +0x18, nonzero: ai_AmountMenu leaves its second button (picture 0x599)
                                            without input (ai_GuildLevel3Entry sets it) */
     unsigned short ids[16];             /* +0x1c, the character ids the menu leaves out / lists, 0xffff = none */
@@ -27528,85 +27532,95 @@ accept:
 
 int gm_ResearchClass(); void *ai_Unk5c3bb0();
 
-/* 0x5c37a0, a law / profession filter test (512 B): param_2 = the filter record (+8 / +0xc the two mask
-   words of the building kinds -8 .. -1, +0x10 the target cases 0 .. 7, +0x14 bit 1 with the four +0x1c
-   ids), param_3 = the building record (+0 the kind, +0x27 the owner word, +0x5a bit 1 the dead flag,
-   +0x61 the home), param_1 = the comparing character (+0x27 against the own character 0x6f1bf8 for
-   case 7). 1 = accepted */
-int ai_PassesBuildingFilter(short *param_1, char *param_2, unsigned char *param_3)
-{
-    unsigned char kind;
-    unsigned int blo;
-    unsigned int bhi;
-    int mask;
-    int target;
-    int exclude;
-    int i;
-    short v;
-    short own;
+/* 0x5c37a0, whether the building bld passes the amount menu's building filter cfg for the character me (480 B
+   .. its switch table 0x5c3980): no filter passes all, no building or character none, an empty filter (no kind
+   bits, case 0) all. The building's class (AIBTYPE.buildingClass, 0 .. 63) must be one of cfg->filter's bits (classMask); bit 63
+   also wants a building that can be entered (not flags5a bit 0) with a scene object. cfg->kind is the owner test:
+   0 any, 1 no owner, 2 an owner, 3 me or none, 4 me, 5 not me, 6 another one, 7 another one not the player; with
+   option14 bit 0 an owner listed in cfg->ids fails
+   @deep read in full against the original: the same tests in the same order (no filter / no building / no
+   character, the empty filter as the two classMask words and kind, the class bit lo / hi from
+   AIBTYPE.buildingClass > 0x1f, bit 63's flags5a / object test, the owner switch 0 .. 7 with the
+   original's kind == 0 test before it, the ids loop of option14 bit 0, match && ownerOk && listed); the
+   switch tables are equal. AMOUNTCFG +8 is a union of filter (__int64) and classMask[2] (the original
+   compares the two words). Left: allocation - the original keeps cfg in edx then ecx, the 0 / 0xffff
+   constant in esi, classMask[1] in ebx from +0x75 and match in a stack slot; ours keeps me in ebp and
+   spills cfg (+0xc3 mov [esp + 0x1c], ecx). Tried: lo / hi zeroed at the top or at the branch, an AIBTYPE
+   pointer, classMask[1] in a local (worse: 160). */
 
-    if (param_2 == 0)
+int ai_PassesBuildingFilter(AICHARREC *me, AMOUNTCFG *cfg, AIBLD *bld)
+{
+    AIBTYPE *type;
+    unsigned char cls;
+    unsigned int lo;
+    unsigned int hi;
+    int match;
+    int ownerOk;
+    int listed;
+    int i;
+
+    if (cfg == 0)
         return 1;
-    if (param_3 == 0)
+    if (bld == 0 || me == 0)
         return 0;
-    if (param_1 == 0)
-        return 0;
-    if (*(int *)(param_2 + 8) == 0 && *(int *)(param_2 + 0xc) == 0 && *(int *)(param_2 + 0x10) == 0)
+    if (cfg->classMask[0] == 0 && cfg->classMask[1] == 0 && cfg->kind == 0)
         return 1;
-    exclude = 1;
-    kind = *(unsigned char *)(U_I((unsigned)&ai_BTypes) + *param_3 * 0x24d);
-    if (kind < 0x20) {
-        blo = 1 << (kind & 0x1f);
-        bhi = 0;
-    } else {
-        blo = 0;
-        bhi = 1 << ((kind - 0x20) & 0x1f);
-    }
-    if ((int)*(unsigned int *)(param_2 + 0xc) < 0) {
-        if (param_3[0x5a] & 1)
+    match = 0;
+    ownerOk = 0;
+    listed = 1;
+    type = &((AIBTYPE *)ai_BTypes)[bld->kind];
+    cls = type->buildingClass;
+    lo = 0;
+    hi = 0;
+    if (cls > 0x1f)
+        hi = 1 << (cls - 0x20);
+    else
+        lo = 1 << cls;
+    if (cfg->classMask[1] & 0x80000000) {
+        if (bld->flags5a & 1)
             return 0;
-        if (*(int *)(param_3 + 0x61) == 0)
+        if (bld->object == 0)
             return 0;
     }
-    mask = (*(unsigned int *)(param_2 + 8) & blo) != 0 || (*(unsigned int *)(param_2 + 0xc) & bhi) != 0;
-    target = 0;
-    v = *(short *)(param_3 + 0x27);
-    switch (*(int *)(param_2 + 0x10)) {
+    if ((cfg->classMask[0] & lo) || (cfg->classMask[1] & hi))
+        match = 1;
+    if (cfg->kind == 0)
+        ownerOk = 1;
+    else switch (cfg->kind) {
     case 0:
-        target = 1;
+        ownerOk = 1;
         break;
     case 1:
-        target = v == -1;
+        ownerOk = bld->owner == 0xffff;
         break;
     case 2:
-        target = v != -1;
+        ownerOk = bld->owner != 0xffff;
         break;
     case 3:
-        target = v == *param_1 || v == -1;
+        ownerOk = bld->owner == me->id || bld->owner == 0xffff;
         break;
     case 4:
-        target = v == *param_1;
+        ownerOk = bld->owner == me->id;
         break;
     case 5:
-        target = v != *param_1;
+        ownerOk = bld->owner != me->id;
         break;
     case 6:
-        target = v != *param_1 && v != -1;
+        ownerOk = bld->owner != me->id && bld->owner != 0xffff;
         break;
     case 7:
-        own = *(short *)U_I((unsigned)&ai_PlayerChar);
-        target = v != *param_1 && v != own && v != -1;
+        ownerOk = bld->owner != me->id && bld->owner != *ai_PlayerChar && bld->owner != 0xffff;
         break;
     }
-    if ((*(unsigned char *)(param_2 + 0x14) & 1) && v != -1) {
+    if ((cfg->option14 & 1) && bld->owner != 0xffff) {
         for (i = 0; i < 4; i++) {
-            if (v == *(short *)(param_2 + 0x1c + i * 2) && *(short *)(param_2 + 0x1c + i * 2) != -1) {
-                exclude = 0;
+            if (bld->owner == cfg->ids[i] && cfg->ids[i] != 0xffff) {
+                listed = 0;
                 break;
             }
         }
     }
-    return mask && target && exclude;
+    return match && ownerOk && listed;
 }
 /* 0x5c39a0, the same filter test with the mask 0xf82806f / 2 against the 0x40000000 flag (528 B): the
    empty record test is +8 / +0x10 only, the dead check param_3 +0x5a bit 1 needs param_2 +0xc < 0, and

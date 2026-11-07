@@ -306,7 +306,7 @@ void ai_ShowIndulgenceNews(unsigned short *param_1, char *param_2, int param_3, 
 void ai_ShowPaymentNews(unsigned short *param_1, char *param_2, int param_3);  /* 0x5a8c00 */
 int ai_FindUsableGood(int param_1);  /* 0x5ba620 */
 int ai_PassesPartnerFilter(unsigned short me, unsigned short id, struct AMOUNTCFG *cfg, int unused);  /* 0x5c33c0, whether id passes the amount menu's partner filter cfg for me */
-int ai_PassesBuildingFilter(short *param_1, char *param_2, unsigned char *param_3);  /* 0x5c37a0 */
+int ai_PassesBuildingFilter(struct AICHARREC *me, struct AMOUNTCFG *cfg, struct AIBLD *bld);  /* 0x5c37a0, whether bld passes the amount menu's building filter cfg for me */
 int ai_UseGood(int param_1, int *param_2);  /* 0x5cf8a0 */
 void ai_SendSwapText(unsigned short *param_1, unsigned short *param_2, unsigned short *param_3);  /* 0x5a9330 */
 
