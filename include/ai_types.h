@@ -470,6 +470,12 @@ typedef struct AIMSG {                  /* 0xf8 bytes, given to cm_SendLongMessa
                         } s;
                     } u;
                 };
+                struct {                        /* the effect message 0x76 of a Domizil good used on a target (the event
+                                                   keeps these words 0x54 further: AIJOB.effectGood at 0xc2) */
+                    int target;                 /* 0x58, the id of the target (a building) */
+                    char pad5c[0x12];
+                    unsigned short good;        /* 0x6e, the Domizil good (G9DOMIZIL.id) */
+                } effect;
                 struct {                        /* the AI message 0x42 (ai_PostRandomMessages): the record a G14MSG view points
                                                    at (id at 0x58, type at 0x5c) */
                     int car;                    /* 0x58, the character the message is for (G14MSG.id) */

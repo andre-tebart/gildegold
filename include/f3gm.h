@@ -39,6 +39,7 @@ int gm_CollectCarried(int id, int *out);                                   /* 0x
 int gm_IsBankrupt(unsigned short *p, int n);                                  /* 0x50a6c0, p: an AICHAR */
 
 /* declared in other units' headers before (moved to the owner) */
+struct ORDCHAR; int gm_CatchDisease(struct ORDCHAR *c, int *kind, float *health);  /* 0x505230, the character catches a disease: *kind its kind, *health the new health (either may be 0); 1 when it caught one */
 struct ORDCHAR; int gm_CatchUpperDisease(struct ORDCHAR *c);  /* 0x5056a0, the character catches one of the upper diseases 5 .. 8; the kind or 0 */
 struct ORDCHAR; int gm_CureDisease(struct ORDCHAR *c);  /* 0x505840, cures one disease of the character; the kind or 0 */
 struct ORDCHAR; int gm_CureMinorDisease(struct ORDCHAR *c);  /* 0x5059d0, cures one of the minor diseases 2 .. 5 of the character; the kind or 0 */
