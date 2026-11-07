@@ -1050,7 +1050,7 @@ int cm_SceneTick();  /* 0x4e3210 */
 struct CHARACTER * ch_Create();  /* 0x403390 */
 int cm_CreateChar();  /* 0x4e3230 */
 void cm_RunBankruptcy(G28REC *m);  /* 0x4e1700 */
-int ai_Unk4e19a0(char *m);  /* 0x4e19a0 */
+int cm_CheckAuction(G28REC *m);  /* 0x4e19a0 */
 
 
 int gv_GetTableRecord(int i, int *out);  /* 0x4f2720 */

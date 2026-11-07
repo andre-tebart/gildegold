@@ -14988,26 +14988,29 @@ void cm_RunBankruptcy(G28REC *m)
     }
     gm_ForfeitEstate((struct ORDCHAR *)a, estate, 0);
 }
-/* 0x4e19a0, tells the party m (+0x30 count, +0x34 ids) about the thing +0x7c / +0x80 (text 0x3fd9, then 0x143e8c0 / 0x143e8bc by the flag
-   0x6f23f8 & 4): every one of the kinds 6 / 7 gets it (0x4e48b0). Returns 1 */
+/* 0x4e19a0, the check function of the auction (scene kind 10, run function 0x4e1a80) for its party m: the auctioned
+   building m->auction.building and its start price m->auction.price go into the text 0x3fd9, joined with
+   txt_AuctionNoteNet in the net run (ai_GameFlags & 4) or txt_AuctionNoteLocal; every member of the kinds 6 / 7 gets
+   it as a note (cm_SendPartyNote). 0 when the building is gone (the auction is cancelled), else 1 */
 
-int ai_Unk4e19a0(char *m)
+int cm_CheckAuction(G28REC *m)
 {
     char buf[0x200];
-    char *p;
-    int i, o;
+    AICHAR *p;
+    AIBLD *o;
+    int i;
 
-    o = gm_FindBuildingById(*(int *)(m + 0x7c));
+    o = (AIBLD *)gm_FindBuildingById(m->auction.building);
     if (o == 0)
         return 0;
-    txt_Format(buf, 0x3fd9, o, *(int *)(m + 0x80));
+    txt_Format(buf, 0x3fd9, o, m->auction.price);
     if ((ai_GameFlags & 4) != 0)
-        strcat(buf, ai_Unk143e8c0);
+        strcat(buf, txt_AuctionNoteNet);
     else
-        strcat(buf, ai_Unk143e8bc);
-    for (i = 0; i < (unsigned char)m[0x30]; i++) {
-        p = (char *)gm_FindChar(*(int *)(m + 0x34 + i * 4));
-        if (p != 0 && (p[2] == 6 || p[2] == 7))
+        strcat(buf, txt_AuctionNoteLocal);
+    for (i = 0; i < m->used; i++) {
+        p = (AICHAR *)gm_FindChar(m->members[i]);
+        if (p != 0 && (p->kind == 6 || p->kind == 7))
             cm_SendPartyNote(p, m, buf, &ch_EmptyName);
     }
     return 1;
@@ -16909,7 +16912,7 @@ void cm_InitScenes(void)
     ai_Unk4e5730(7, (int)cm_RunBirth, 0, 0, (int)cm_CheckBirth, 0);
     ai_Unk4e5730(8, (int)cm_RunDeath, 0, 0, (int)cm_DeathSceneCheck, 0);
     ai_Unk4e5730(9, (int)cm_RunBankruptcy, 0, 0, 0, 0);
-    ai_Unk4e5730(10, (int)cm_RunAuction, (int)cm_AuctionAskPlayer, (int)cm_AuctionAskAI, (int)ai_Unk4e19a0, 1);
+    ai_Unk4e5730(10, (int)cm_RunAuction, (int)cm_AuctionAskPlayer, (int)cm_AuctionAskAI, (int)cm_CheckAuction, 1);
     ai_Unk4e5730(11, (int)ai_Unk4e2860, 0, 0, 0, 0);
     cm_ResetCutInfos(0);
 }
@@ -17080,8 +17083,8 @@ extern int cm_PickCellZ;
 /* txt_WeaponEmpty176: view of txt_Ptrs (build/mk_txt_views.py) */
 /* txt_ClickNoGround: view of txt_Ptrs (build/mk_txt_views.py) */
 /* cm_FightButtonText: view of txt_Ptrs (build/mk_txt_views.py) */
-/* ai_Unk143e8bc: view of txt_Ptrs (build/mk_txt_views.py) */
-/* ai_Unk143e8c0: view of txt_Ptrs (build/mk_txt_views.py) */
+/* txt_AuctionNoteLocal: view of txt_Ptrs (build/mk_txt_views.py) */
+/* txt_AuctionNoteNet: view of txt_Ptrs (build/mk_txt_views.py) */
 /* txt_BirthNoteTail: view of txt_Ptrs (build/mk_txt_views.py) */
 /* txt_ExecNoteTail: view of txt_Ptrs (build/mk_txt_views.py) */
 /* txt_DuelNoteTail: view of txt_Ptrs (build/mk_txt_views.py) */
