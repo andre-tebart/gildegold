@@ -983,7 +983,7 @@ int cm_PlayVoice();  /* 0x4e32b0 */
 int sb_IsPlaying();  /* 0x426f20 */
 int cm_RunWedding(G28REC *m);  /* 0x4e0770 */
 
-int ai_Unk4e0e90(char *m);  /* 0x4e0e90 */
+int cm_CheckBirth(G28REC *m);  /* 0x4e0e90 */
 extern struct D2INPUT *d2_FocusedInput;  /* 0x6ed9dc, the focused input (as d2.h / rt.h) */
 extern int cm_TutorialActive;  /* 0x6f2438 */
 void snd_ClearQueue(void);  /* 0x4c01b0 */

@@ -14676,28 +14676,29 @@ int cm_RunWedding(G28REC *m)
     st[0] = -1;
     return cm_EndWedding(st);
 }
-/* 0x4e0e90, a divorce / separation message m (+0x34 / +0x38 the two): when the partner (+0x5c of the first) is not of the kind 0xf the
-   first, if a person of the kinds 6 / 7, gets the text 0x11c1 + 0x143e8c8 (0x4e48b0) and 1 is returned; else the second gets the state
-   (0x4c4e00, 1). Returns 0 otherwise */
+/* 0x4e0e90, the check function of the birth (scene kind 7, run function 0x4e0f70) for its party m: the mother
+   m->members[0] and the father m->members[1]; when the mother's partner (her relatives[0]) exists and is not dead
+   (kind 0xf) she gets the note text 0x11c1 with txt_BirthNoteTail (cm_SendPartyNote) and 1 is returned (the birth runs);
+   else the father is killed (cm_SendKillCharacter) and 0 */
 
-int ai_Unk4e0e90(char *m)
+int cm_CheckBirth(G28REC *m)
 {
     char buf[0x200];
-    char *a, *b, *p;
+    AICHAR *a, *b, *p;
 
-    a = (char *)gm_FindChar(*(int *)(m + 0x34));
-    b = (char *)gm_FindChar(*(int *)(m + 0x38));
+    a = (AICHAR *)gm_FindChar(m->members[0]);
+    b = (AICHAR *)gm_FindChar(m->members[1]);
     if (a != 0 && b != 0) {
-        p = (char *)gm_FindChar(*(int *)(a + 0x5c));
-        if (p != 0 && p[2] != 0xf) {
-            if (a[2] == 6 || a[2] == 7) {
+        p = (AICHAR *)gm_FindChar(a->relatives[0]);
+        if (p != 0 && p->kind != 0xf) {
+            if (a->kind == 6 || a->kind == 7) {
                 txt_Format(buf, 0x11c1);
-                strcat(buf + 8, ai_Unk143e8c8);
-                cm_SendPartyNote(a, m, buf + 8, &ch_EmptyName);
+                strcat(buf, txt_BirthNoteTail);
+                cm_SendPartyNote(a, m, buf, &ch_EmptyName);
             }
             return 1;
         }
-        cm_SendKillCharacter(*(int *)(b + 4), 1);
+        cm_SendKillCharacter(b->netId, 1);
     }
     return 0;
 }
@@ -16905,7 +16906,7 @@ void cm_InitScenes(void)
     ai_Unk4e5730(4, (int)cm_RunDuel, (int)cm_DuelAskPlayer, (int)cm_DuelAskAI, (int)cm_DuelAftermath, 0);
     ai_Unk4e5730(5, (int)cm_RunExecution, 0, 0, (int)cm_ExecutionAftermath, 0);
     ai_Unk4e5730(6, (int)cm_RunWedding, 0, 0, (int)cm_CheckWedding, 0);
-    ai_Unk4e5730(7, (int)cm_RunBirth, 0, 0, (int)ai_Unk4e0e90, 0);
+    ai_Unk4e5730(7, (int)cm_RunBirth, 0, 0, (int)cm_CheckBirth, 0);
     ai_Unk4e5730(8, (int)cm_RunDeath, 0, 0, (int)cm_DeathSceneCheck, 0);
     ai_Unk4e5730(9, (int)cm_RunBankruptcy, 0, 0, 0, 0);
     ai_Unk4e5730(10, (int)cm_RunAuction, (int)cm_AuctionAskPlayer, (int)cm_AuctionAskAI, (int)ai_Unk4e19a0, 1);
@@ -17081,7 +17082,7 @@ extern int cm_PickCellZ;
 /* cm_FightButtonText: view of txt_Ptrs (build/mk_txt_views.py) */
 /* ai_Unk143e8bc: view of txt_Ptrs (build/mk_txt_views.py) */
 /* ai_Unk143e8c0: view of txt_Ptrs (build/mk_txt_views.py) */
-/* ai_Unk143e8c8: view of txt_Ptrs (build/mk_txt_views.py) */
+/* txt_BirthNoteTail: view of txt_Ptrs (build/mk_txt_views.py) */
 /* txt_ExecNoteTail: view of txt_Ptrs (build/mk_txt_views.py) */
 /* txt_DuelNoteTail: view of txt_Ptrs (build/mk_txt_views.py) */
 /* txt_DuelDeathNews: view of txt_Ptrs (build/mk_txt_views.py) */
