@@ -3021,3 +3021,4 @@
 2026-11-07T19:13:33 0x005d2440 func ai_Unk5d2440 -> ai_UseGoodHoldRound by:main why:the use callback of Domizil record 61: the target is held one more round (cm_SendMessage5b +1) unless the good 0x2c4 protects it (75%)
 2026-11-07T19:14:42 0x005d2580 func ai_Unk5d2580 -> ai_UseGoodCharmPartner by:main why:the use callback of Domizil record 32: a character picked by sex (the partner filter bit by the player's sex) gets its relation to the user raised by 25 (cm_SendRelations)
 2026-11-07T19:19:05 0x005d2720 func ai_Unk5d2720 -> ai_UseGoodWeakenSkills3 by:main why:the use callback of Domizil record 34: the skill-bonus message 0x82 lowers skill 3 by 0.35 for 48 hours (a twin of ai_UseGoodWeakenSkills)
+2026-11-07T19:20:14 0x005d2960 func ai_Unk5d2960 -> ai_UseGoodFrameChar by:main why:the use callback of Domizil record 36: the target is accused (gv_Accuse) of a random law in force (gv_Decisions with valueText 2), twice with the good 0x2c5
