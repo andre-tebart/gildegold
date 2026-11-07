@@ -745,7 +745,7 @@ int cm_MostThreatenedCellNear(char *c, int cx, int cy, int r, int *ox, int *oy);
 char cm_CollectEscapeObject(char *o, int *list);  /* 0x4d2450 */
 char *cm_NearestEscapeObject(char *c);  /* 0x4d2490 */
 char cm_CollectWareObject(char *o, char *c);  /* 0x4d2550 */
-char *ai_Unk4d25a0(char *c);  /* 0x4d25a0 */
+char *cm_NearestWareObject(char *c);  /* 0x4d25a0 */
 char cm_CollectConquerPoint(char *o);  /* 0x4d2650 */
 struct D3OBJECT *cm_NearestConquerPoint(struct AICHAR *c);  /* 0x4d2680 */
 extern int cm_PointCount;  /* 0x6f0d60 */

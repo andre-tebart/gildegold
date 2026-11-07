@@ -9293,29 +9293,29 @@ char cm_CollectWareObject(char *o, char *c)
 }
 /* 0x4d25a0, the closest object of 0x4d2550 to the character c, or 0 */
 
-char *ai_Unk4d25a0(char *c)
+char *cm_NearestWareObject(char *c)
 {
-    float v[4];
+    D3VECTOR4 v;
     float best = 1000000.0f;
     float d, dx, dy, dz;
     char *res = 0;
-    char *m, *o;
+    D3OBJECT *m, *o;
     int i, n;
 
     cm_PointCount = 0;
     d3_ForEachObject(d3_DefaultScene, 0, 0x40, cm_CollectWareObject, c);
-    m = *(char **)(*(char **)(c + 0x184) + 0x34);
-    d3_PointToWorld(m, m + 0x4c, v);
+    m = ((AICHAR *)c)->scene->obj;
+    d3_PointToWorld(m, &m->pos, (D3VECTOR *)&v);
     n = cm_PointCount;
     for (i = 0; i < n; i++) {
-        o = cm_PointList[i];
-        dx = v[0] - *(float *)(o + 0x4c);
-        dy = v[1] - *(float *)(o + 0x50);
-        dz = v[2] - *(float *)(o + 0x54);
+        o = (D3OBJECT *)cm_PointList[i];
+        dx = v.x - o->pos.x;
+        dy = v.y - o->pos.y;
+        dz = v.z - o->pos.z;
         d = (float)sqrt(dx * dx + dy * dy + dz * dz);
         if (d < best) {
             best = d;
-            res = o;
+            res = (char *)o;
         }
     }
     return res;
@@ -9772,7 +9772,7 @@ void cm_CarryOutOrder(char *rec, char *c)
         cm_OrderEscape(rec, c, o);
         return;
     case 1:
-        o = ai_Unk4d25a0(c);
+        o = cm_NearestWareObject(c);
         if (o == 0)
             return;
         cm_OrderWare3(rec, c, o);
