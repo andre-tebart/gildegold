@@ -2435,27 +2435,27 @@ exe	0x004cf670	cm_UpdatePointer	cm	draft	readable	deep
 exe	0x004cf9c0	cm_UpdatePortraits	cm	draft	readable	deep	
 exe	0x004cfc10	cm_BuildPortraits	cm	shape	readable		
 exe	0x004cfe70	cm_ClosePortraits	cm	byte	readable		
-exe	0x004cfeb0	ai_Unk4cfeb0	cm	byte	draft		
+exe	0x004cfeb0	cm_ClickSceneChar	cm	byte	readable		
 exe	0x004cffd0	cm_OrderAttack	cm	draft	readable	deep	
 exe	0x004d0200	cm_OrderEscape	cm	byte	readable		
-exe	0x004d02d0	cm_OrderConquer	cm	byte	draft		
-exe	0x004d0380	cm_OrderWare	cm	shape	draft		
+exe	0x004d02d0	cm_OrderConquer	cm	byte	readable		
+exe	0x004d0380	cm_OrderWare	cm	shape	readable		
 exe	0x004d0460	cm_OrderToBestCell	cm	shape	readable		
-exe	0x004d0520	ai_Unk4d0520	cm	byte	draft		
+exe	0x004d0520	cm_OrderWait	cm	byte	readable		
 exe	0x004d0570	cm_OrderClick	cm	draft	readable	deep	
 exe	0x004d0740	cm_FightMouse	cm	draft	readable	deep	
 exe	0x004d08c0	cm_ClearMarks	cm	byte	readable		
 exe	0x004d0920	cm_AddFighter	cm	byte	readable		
 exe	0x004d0a30	cm_CollectSceneChars	cm	byte	readable		
-exe	0x004d0a80	ai_Unk4d0a80	cm	byte	draft		
-exe	0x004d0ca0	cm_PlaceFlagObjects	cm	byte	draft		
-exe	0x004d0cd0	ai_Unk4d0cd0	cm	byte	draft		
+exe	0x004d0a80	cm_CreateDummyFlag	cm	byte	readable		
+exe	0x004d0ca0	cm_PlaceFlagObjects	cm	byte	readable		
+exe	0x004d0cd0	cm_FreeNetIdSlot	cm	byte	readable		
 exe	0x004d0cf0	ai_ArmGateGuards	cm	byte	readable		
-exe	0x004d0f80	cm_ClearKind3MaskCB	cm	byte	draft		
+exe	0x004d0f80	cm_ClearKind3MaskCB	cm	byte	readable		
 exe	0x004d0fa0	cm_SetupFightScene	cm	draft	readable	deep	
 exe	0x004d1a10	cm_EndFightScene	cm	byte	readable		
 exe	0x004d1c20	cm_PlaceFighters	cm	shape	readable		
-exe	0x004d1e00	cm_FightIntro	cm	byte	draft		
+exe	0x004d1e00	cm_FightIntro	cm	byte	readable		
 exe	0x004d1eb0	cm_FightOutro	cm	byte	draft		
 exe	0x004d1f10	cm_NearestEnemy	cm	byte	readable		
 exe	0x004d2010	cm_ThreatAt	cm	byte	readable		
