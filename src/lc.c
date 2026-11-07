@@ -939,7 +939,6 @@ extern char * cm_FieldObject;
 
 
 extern GAPDATA full_data_62d2d4[];
-extern GAPDATA full_data_6f2f90[];
 extern int sv_PopRequest;
 extern char * ai_BTypes;
 extern char ai_Chars[768][0x21c];
@@ -27195,7 +27194,7 @@ void ai_Unk5c2b90(char *param_1, short *param_2)
         sliders[i] = -1;
     if (recs == 0 && (recs = (char *)ai_ProdSetting(param_1)) == 0) {
         mode = -1;
-        U_I((unsigned)&full_data_6f2f90) = 0;
+        ai_MasterLetterPage = 0;
     } else {
         ai_RefreshProdSetting(param_1);
     }
@@ -27206,7 +27205,7 @@ void ai_Unk5c2b90(char *param_1, short *param_2)
     d2_SetPointerSprite(0, 0);
     a = gm_ConvertMoney(*(int *)(param_1 + 0x39), U_I((unsigned)&ai_OwnPlayer));
     set = *(LCWORKSET *)((char *)param_2 + 0x1b4);
-    if (U_I((unsigned)&full_data_6f2f90) == 0) {
+    if (ai_MasterLetterPage == 0) {
         ai_ShowWorkSettingsPage(win, &b, &a, checks, (AIBLD *)param_1, *param_2, set, &master, (G8SETTAIL *)recs);
     } else {
         ai_ShowSettingGoods(win, (G8SLOT *)recs, sliders, locks);
@@ -27221,7 +27220,7 @@ void ai_Unk5c2b90(char *param_1, short *param_2)
     for (;;) {
         if (U_I(((unsigned)&dm_L + 0x20)) == 0) {
             if (U_I(((unsigned)&dm_L + 0x10)) != 0) {
-                if (U_I((unsigned)&full_data_6f2f90) == 1) {
+                if (ai_MasterLetterPage == 1) {
                     for (i = 0; i < 7; i++) {
                         if (U_I((unsigned)&d2_PointerObj) == sliders[i]) {
                             if (sliders[i] != -1) {
@@ -27236,7 +27235,7 @@ void ai_Unk5c2b90(char *param_1, short *param_2)
                             break;
                         }
                     }
-                } else if (U_I((unsigned)&full_data_6f2f90) == 0 && master != -1 && U_I((unsigned)&d2_PointerObj) == master) {
+                } else if (ai_MasterLetterPage == 0 && master != -1 && U_I((unsigned)&d2_PointerObj) == master) {
                     v = d2_GetObjValue(master);
                     ai_SetSettingFactor(param_1, (float)v * 0.01);
                 }
@@ -27255,12 +27254,12 @@ void ai_Unk5c2b90(char *param_1, short *param_2)
             }
         }
         if (U_I((unsigned)&d2_ClickedId) != -1) {
-            if (U_I((unsigned)&full_data_6f2f90) == 1) {
+            if (ai_MasterLetterPage == 1) {
                 if (U_I((unsigned)&d2_PointerObj) == tab2) {
                     /* ROUGH: 0x5c2490 (win, &a, &b, checks, param_1, *param_2, flags, &master, recs) again;
                        then 0x6f2f90 = 0, 0x5fe710 = -1 */
                     ai_ShowWorkSettingsPage(win, &b, &a, checks, (AIBLD *)param_1, *param_2, set, &master, (G8SETTAIL *)recs);
-                    U_I((unsigned)&full_data_6f2f90) = 0;
+                    ai_MasterLetterPage = 0;
                     U_I((unsigned)&d2_PointerObj) = -1;
                 } else {
                     for (i = 0; i < 7; i++) {
@@ -27277,11 +27276,11 @@ void ai_Unk5c2b90(char *param_1, short *param_2)
                         }
                     }
                 }
-            } else if (U_I((unsigned)&full_data_6f2f90) == 0) {
+            } else if (ai_MasterLetterPage == 0) {
                 a = d2_GetObjValue(b);
                 if (U_I((unsigned)&d2_PointerObj) == tab1) {
                     ai_ShowSettingGoods(win, (G8SLOT *)recs, sliders, locks);
-                    U_I((unsigned)&full_data_6f2f90) = 1;
+                    ai_MasterLetterPage = 1;
                     U_I((unsigned)&d2_PointerObj) = -1;
                 } else {
                     for (j = 0; j < 4; j++) {
@@ -27310,7 +27309,7 @@ void ai_Unk5c2b90(char *param_1, short *param_2)
         if (sv_RunFrame(ai_Unk5c2b90, 0x677c7) == 0)
             break;
     }
-    if (U_I((unsigned)&full_data_6f2f90) == 0)
+    if (ai_MasterLetterPage == 0)
         a = d2_GetObjValue(b);
     a = gm_PlayerFactor(a, U_I((unsigned)&ai_OwnPlayer));
     cm_BeginFieldBlock(param_1, *(int *)(param_1 + 1));
@@ -33173,6 +33172,7 @@ char ai_NewsText[1024] = { 0 };  /* 0x6f26c8, the shared text buffer of the unit
 char ai_NewsSecond[1176] = { 0 };  /* 0x6f2ac8, the second text buffer of the news messages that append a part (txt_Format into it, strcat onto ai_NewsText); its size is the room up to ai_InvChar */
 struct AICHARREC *ai_InvChar = 0;  /* 0x6f2f60, the character whose inventory the inventory child window (ai_OpenInventoryWindow) lists: ai_OpenInventoryWindow points it at ai_Chars[id]; the transport window sends its goods by its netId */
 unsigned int ai_AmountTab = 0;  /* 0x6f2f8c, the open tab of the special-amount window (ai_SpecialAmountWindow, 0 .. 7; 8: no tab has rows) */
+int ai_MasterLetterPage = 0;  /* 0x6f2f90, the open page of the master letter window (ai_MasterLetterSettings): 0 the work settings, 1 the goods weights */
 int ai_BldCartCount = 0;  /* 0x6f40a0, the number of carts in ai_BldCarts (gm_BuildingCarts, at most 3) */
 struct AIOBJ *ai_BldCarts[3] = { 0 };  /* 0x6f40a4, the carts of the building the cart list shows */
 int ai_BldCartButtons[3] = { 0 };  /* 0x6f40b0, per cart the button to its destination building (picture 5), -1: none */
