@@ -75,6 +75,8 @@ typedef struct AIJOB {                  /* 0x14c bytes, a job / event record (he
             };
             union {
                 int unkb0;                      /* 0xb0 */
+                unsigned short upgradeGood;     /* 0xb0, of the room upgrade event 0x1f the good being built in
+                                                   (AIMSG.roomUpgrade.good; lc.c ai_RoomUpgradeWindow) */
                 int salePrice;                  /* 0xb0, of a building sale event 0x1b the asking price (ai_BuyBuildingWindow
                                                    shows it, the buyer's money must cover it) */
                 int graveSize;                  /* 0xb0, of the graveyard order events 0x92 / 0x93 (the master exam at
@@ -522,6 +524,11 @@ typedef struct AIMSG {                  /* 0xf8 bytes, given to cm_SendLongMessa
                     char pad5c[0x20];
                     int price;                  /* 0x7c, the price paid for it */
                 } sabotage;
+                struct {                        /* the room upgrade message 0x1f (lc.c ai_RoomUpgradeWindow); the event
+                                                   keeps the words 0x54 further on (AIJOB.bldId, upgradeGood) */
+                    int bld;                    /* 0x58, the building upgraded (AIBLD.id) */
+                    unsigned short good;        /* 0x5c, the upgrade good built in (ai_Goods type 2 or 6) */
+                } roomUpgrade;
             };
             union {
                 int amount[3];                  /* 0x88, of the bought goods */

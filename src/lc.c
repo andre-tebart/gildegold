@@ -1189,8 +1189,11 @@ typedef struct AIBTYPE {           /* the building-type record fields this unit 
                                       matters: ai_BTypes is walked by the record */
     unsigned char buildingClass;   /* 0x00, the building class the goods groups test (4, 0x13, 0x10 in
                                       ai_GoodFitsBuilding; the record's kind byte of ai_FillPersonnelRow) */
-    char name[0x21];               /* 0x001, the type's name: its models "gb_<NAME>[_A..].ogr" (lc_GebaeudeAusrichten) */
-    char pad022[0x201];
+    char name[0x20];               /* 0x001, the type's name: its models "gb_<NAME>[_A..].ogr" (lc_GebaeudeAusrichten) */
+    unsigned char extensions;      /* 0x021, how many room upgrades the type takes (ai_bld.h AIBTYPE.extensions) */
+    char pad022;
+    unsigned short objs[0x40];     /* 0x023, the objects the type can hold, goods ids, bit 15 a flag (ai_bld.h AIBTYPE.objs) */
+    char pad0a3[0x180];
     unsigned char jobs[6];         /* 0x223, the six job ids of the kind (ai_bld.h AIBTYPE.jobs; text 0x130 + it names
                                       the job) */
     char pad229[6];
@@ -21490,14 +21493,168 @@ void ai_WithdrawSaleWindow(AIBLD *bld)
     } while (sv_RunFrame((int)ai_WithdrawSaleWindow, 0x677c7) != 0);
     d2_CloseView(win);
 }
-/* 0x5b6fe0, a list window (672 B, ROUGH SKELETON): param_1, three counters (esi / ebp / ebx) and a 0x2a8-byte
-   frame; the body is a comment */
+/* 0x5b6fe0, the room upgrade window of a building (ai_BuildingWindow, ai_ManagedBuildingWindow):
+   "Panel\Gebaeude_Raum_Erweitern" lists the upgrade goods its type can hold (AIBTYPE.objs of ai_Goods type 2 or 6,
+   not 0xfd) with their price (text 0x17d3: the goods price times 0.5 + difficulty / 4); a click on one buys it
+   (message 0x1f "room_upgrade", the price moved from the player) while the built and running upgrades stay below
+   AIBTYPE.extensions (else the message box 0x17d0); a running upgrade event 0x1f fills its picture by its progress
+   (text 0x17d1), a built one is marked (text 0x17d2); text 0x17cf shows the upgrades left
+   @deep reconstructed from the stub against the whole original (all calls, stores, the AIMSG 0x1f
+   room_upgrade message, the event 0x1f progress, the built marks, texts 0x17ce/0x17cf/0x17d0..0x17d3);
+   ours 488 vs 494 ins, no ref/literal differences. Left is register/slot allocation: the original keeps
+   nRows in ebp across the frame loop and running/built in slots (ours: running in ebp, nRows in a slot),
+   so the event loop (+0x4be: xor ebx/ebp vs mov [esp+0x1c],0; cmp edi,ebx vs test edi,edi), the built loop
+   (+0x5a0) and the 0x17cf print (+0x652 sub edx,ebp vs sub edx,esi) differ by allocation; the row-create
+   loop (+0x1c7..+0x2c0): the original keeps i in ebx and recomputes imul esi,i*0x3c with price spilled to
+   the factor's slot, ours strength-reduces i*0x3c+10 into a slot and keeps price in ebp (tried y local,
+   i*0x3c inline, factor inline / before the call); the kind byte load (+0x93: mov al,[eax] via eax vs mov
+   cl,[eax+ebx]); frame 0x2ac vs 0x2a8 (the original shares the factor / price slot and the fill total /
+   built slot) */
 
-int ai_Unk5b6fe0(int param_1)
+void ai_RoomUpgradeWindow(AIBLD *bld)
 {
-    /* ROUGH SKELETON: the 0x2a8-byte frame */
-    (void)param_1;
-    return 0;
+    struct {
+        int good;                       /* the upgrade good */
+        int pic;                        /* its picture (the button) */
+        int text;                       /* its price / state text */
+    } rows[32];
+    int nRows;
+    int built;
+    int running;
+    int bldId;
+    AIBTYPE *type;
+    int win;
+    int i;
+    int k;
+    int good;
+    char kind;
+    int price;
+    int down;
+    int up;
+    int bar;
+    unsigned short *obj;
+    AIJOB *ev;
+    float total;
+    AIBLD *found;
+
+    nRows = 0;
+    built = 0;
+    running = 0;
+    bldId = bld->id;
+    for (i = 0; i < 32; i++) {
+        rows[i].pic = -1;
+        rows[i].text = -1;
+        rows[i].good = 0;
+    }
+    for (ev = (AIJOB *)he_FindEvent(2, 0, 0x1f, 3, bldId); ev != 0; ev = (AIJOB *)he_NextEvent())
+        running++;
+    type = &((AIBTYPE *)ai_BTypes)[bld->kind];
+    for (i = 0; i < 0x40; i++) {
+        if (nRows >= 32)
+            break;
+        if (type->objs[i] != 0xffff) {
+            good = type->objs[i] & 0x7fff;
+            kind = ((AIGOOD *)ai_Goods)[good].type;
+            if ((kind == 2 || kind == 6) && good != 0xfd) {
+                rows[nRows].good = good;
+                nRows++;
+            }
+        }
+    }
+    for (obj = (unsigned short *)gm_Query((void *)bld->objList, 1, 5); obj != 0; obj = gm_QueryNext()) {
+        kind = ((AIGOOD *)ai_Goods)[*obj].type;
+        if ((kind == 2 || kind == 6) && *obj != 0xfd)
+            built++;
+    }
+    win = d2_OpenForm(0, 0, "Panel\\Gebaeude_Raum_Erweitern");
+    d2_CentreViewWindows(win);
+    d2_SetForm(win, 1);
+    io_PrintText(0x17ce);
+    d2_SetForm(win, 0);
+    if (nRows > 4) {
+        sv_CreateScrollButtons(d2_LastWindowPtr->w - 0x20, d2_LastWindowPtr->h - 0x4c, d2_LastWindow,
+                               d2_GetViewWin(win, 2), 0x3c, &down, &up, &bar);
+        d2_Objs[bar].font = 0x56;
+    }
+    d2_SetForm(win, 2);
+    for (i = 0; i < nRows; i++) {
+        char text[0x100];
+        float factor;
+
+        good = rows[i].good;
+        factor = ai_Difficulty * 0.25 + 0.5;
+        price = (int)(gm_ItemPrice(good, 100) * factor);
+        rows[i].pic = d2_WinOpenPic(0x10, i * 0x3c, good + 0xdf, d2_LastWindow);
+        d2_Objs[rows[i].pic].interactive = 1;
+        d2_Objs[rows[i].pic].style = 3;
+        d2_Objs[rows[i].pic].icon = 0x520;
+        d2_Objs[rows[i].pic].iconx = -2;
+        d2_Objs[rows[i].pic].icony = -2;
+        txt_Format(text, 0x17d3, txt_ObjectNames[good][0], price);
+        rows[i].text = d2_CreateWinText(0x60, i * 0x3c + 10, text, d2_LastWindow);
+    }
+    d2_SetPointerSprite(0, 0);
+    d2_ClearInput();
+    do {
+        found = (AIBLD *)gm_FindBuildingById(bldId);
+        if ((bld->flags5aw & 0x400) != 0 || found == 0)
+            sv_PopRequest = 1;
+        if (dm_L.rup != 0 || d2_ClickedId == 1)
+            sv_PopRequest = 1;
+        if (d2_ClickedId != -1) {
+            for (i = 0; i < nRows; i++) {
+                if (d2_PointerObj == rows[i].pic) {
+                    AIMSG msg;
+                    float factor;
+
+                    factor = ai_Difficulty * 0.25 + 0.5;
+                    price = (int)(gm_ItemPrice(rows[i].good, 100) * factor);
+                    if (running + built >= type->extensions) {
+                        sv_MessageBox(txt_Ptrs[0x17d0], 0);
+                    } else if (sv_CheckGoodAmountB(ai_Chars[ai_PlayerId], price, ai_OwnPlayer) != 0) {
+                        memset(&msg, 0, sizeof(msg));
+                        msg.type = 0x1f;
+                        msg.flags = 1;
+                        msg.to = ai_CharInts[ai_PlayerId][0];
+                        msg.fromId = bld->id;
+                        msg.time = ai_Time;
+                        msg.roomUpgrade.bld = bld->id;
+                        msg.roomUpgrade.good = (unsigned short)rows[i].good;
+                        cm_BeginGroup("room_upgrade");
+                        cm_SendMoveGoods(-1, ai_CharInts[ai_PlayerId][0], ai_OwnPlayer, price);
+                        cm_SendLongMessage((char *)&msg);
+                        cm_EndGroup("room_upgrade");
+                    }
+                    break;
+                }
+            }
+        }
+        running = 0;
+        for (ev = (AIJOB *)he_FindEvent(2, 0, 0x1f, 3, bld->id); ev != 0; ev = (AIJOB *)he_NextEvent()) {
+            for (k = 0; k < nRows; k++) {
+                d2_Objs[rows[k].pic].fillFraction = 0;
+                if (ev->upgradeGood == rows[k].good) {
+                    d2_Objs[rows[k].pic].interactive = 0;
+                    d2_SetObjText(rows[k].text, txt_Ptrs[0x17d1]);
+                    total = (float)gm_MinutesBetween(&ev->start, &ev->end);
+                    d2_Objs[rows[k].pic].fillFraction = (float)gm_MinutesBetween(&ev->start, &ai_Time) / total;
+                    break;
+                }
+            }
+            running++;
+        }
+        built = 0;
+        for (k = 0; k < nRows; k++) {
+            if (gm_Query((void *)bld->objList, 1, 0, rows[k].good) != 0) {
+                d2_Objs[rows[k].pic].interactive = 0;
+                d2_SetObjText(rows[k].text, txt_Ptrs[0x17d2]);
+                built++;
+            }
+        }
+        d2_SetForm(win, 3);
+        io_PrintText(0x17cf, bld, type->extensions - running - built, 0x17d4);
+    } while (sv_RunFrame((int)ai_RoomUpgradeWindow, 0x657c7) != 0);
+    d2_CloseView(win);
 }
 /* 0x5b7690, a window over the kind record (1890 B, ROUGH SKELETON): 0x7e3f30 + kind * 0x24d, param_1 the kind
    record, a 0x750-byte frame; the body is a comment */

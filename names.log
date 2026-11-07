@@ -2916,3 +2916,4 @@
 2026-11-07T11:03:38 0x005b6950 func ai_Unk5b6950 -> ai_SellBuildingWindow by:main why:opens Panel\Gebaeude_Verkaufen_pergament (sell building), a price slider 0.5..1.5 of gm_EquipmentValue, sends the building sale message 0x1b (arg[0] bld id, arg[1] the price)
 2026-11-07T11:07:00 0x005b6b20 func ai_Unk5b6b20 -> ai_RenovationWindow by:main why:opens Panel\Gebaeude_Renovieren, offers a quarter / half / all of the missing level points (100 - level) at 0.5 % of the equipment value each, sends the message 0x1c in the group renovieren
 2026-11-07T11:09:41 0x005b6eb0 func ai_Unk5b6eb0 -> ai_WithdrawSaleWindow by:main why:finds the building's sale event 0x1b, shows its asking price (0x17cc) in the sale form; the button clears the sale flag 2 of the field 0x5a and frees the event
+2026-11-07T11:13:48 0x005b6fe0 func ai_Unk5b6fe0 -> ai_RoomUpgradeWindow by:main why:opens Panel\Gebaeude_Raum_Erweitern and sends the room_upgrade message 0x1f with the upgrade good

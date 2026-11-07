@@ -74,8 +74,10 @@ typedef struct AIBLD {                  /* 0xa9 bytes, ai_Blds[256] */
 
 typedef struct AIBTYPE {                /* 0x24d bytes, ai_BTypes[] */
     char kind;                          /* 0x000 */
-    char name[0x21];                    /* 0x001, the type's name: its models "gb_<NAME>[_A..].ogr" (cm_ExGebUpgrade,
+    char name[0x20];                    /* 0x001, the type's name: its models "gb_<NAME>[_A..].ogr" (cm_ExGebUpgrade,
                                            amt_ExecGebaeudeBauen), its ground plan "riss_<name>.bmp" (sv.c) */
+    unsigned char extensions;           /* 0x021, how many room upgrades a building of the type takes (lc.c
+                                           ai_RoomUpgradeWindow: the built and running ones count against it) */
     unsigned char nslots;               /* 0x022 */
     union {
         unsigned short slot[0x100];     /* 0x023, needed goods (bit 15 = flag) */
