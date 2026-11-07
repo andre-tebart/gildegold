@@ -1118,10 +1118,13 @@ typedef struct AICHARREC {         /* the character record fields this unit read
                                       bits), the daily step 0x4fbe90 halves each, the diseases 2 .. 9 sit in the
                                       field pairs of gm_CatchMinorDisease / gm_CatchUpperDisease */
     char name[0x20];               /* 0x030, the character's name (ai_char.h AICHAR.name) */
-    char pad050[4];
+    unsigned short w050;           /* 0x050, the family's grave word (ai_char.h AICHAR.w050); the family tab takes the
+                                      characters with the same w050 and b058 */
+    char pad052[2];
     int ref54;                     /* 0x054, a reference word the related characters share (ai_char.h AICHAR.ref54;
                                       the game frame compares it with the player's) */
-    char pad058[4];
+    unsigned char b058;            /* 0x058, compared with w050 by the family tab (ai_FillFamilyTab) */
+    char pad059[3];
     unsigned int relatives[8];     /* 0x05c, the netIds of the character's relatives (ai_char.h AICHAR.relatives;
                                       the baptism window converts [3..7] with the player) */
     char pad07c[4];
@@ -25215,95 +25218,108 @@ int ai_SpecialAmountListWindow(int kind, unsigned int *filter, char *caption, ch
     d2_CloseView(win);
     return (int)chosen;
 }
-/* 0x5bf0d0, the candidate count / list of a special-amount page (560 B): with param_2 == 0 it counts the
-   characters 0x770b80 + i * 0x21c that are not param_1, alive (word 0 != -1), of the kind byte +2 < 10 and
-   either in the 8 ids at param_1 + 0x5c (the id +4) or of the same world (word +0x50) and land byte +0x58,
-   plus the carrier 0x53e400 (1, 0, 0x41) of the +0xac owner; with a count (param_2) it fills the records
-   param_3 (0xe dwords: +0 the character, +0x2c the class, +0x30 the 0x5c33c0 result) */
+/* 0x5bf0d0, the fill of the special-amount window's family tab (tab 0, 551 B): the characters other than me, alive
+   (id != 0xffff) and of a kind below 10 that are one of my relatives (the relation class 4 / 5 for relatives[0],
+   0 for [1], 1 for [2], 6 / 7 for the others; the odd class: a female character) or share my w050 and b058 (2 / 3),
+   then the partner of my running pair event 0x41 (8 / 9, unless it is relatives[0]). With max 0 it only counts
+   them; else it clears max rows of rows and fills up to max of them (LCAMOUNTROW.rec, x2c the class), gives each
+   its corner icons (ai_AmountRowStatus) and makes it pickable when it passes the partner filter filter
+   (ai_PassesPartnerFilter); returns the count
+   @deep Read the whole function against the original and rewrote it: the count path (max 0) and the fill
+   path, the relative search as a found flag (the original jumps from the match straight to the count / the
+   class switch), the character walk as an index loop (the signed jl end compare, the record base as the
+   induction pointer), the pair event 0x41 tail, the corner icons and ai_PassesPartnerFilter per row;
+   AICHARREC got w050 / b058. 208 vs 201 instructions; what is left is allocation: the original keeps n in
+   ebx and reloads me ([esp+0x14]) and max ([esp+0x18]) from their argument slots, ours keeps me in ebx and
+   spills n to a pushed slot (push ecx; mov [esp+0x10], ebp / mov edi, [esp+0x10]; inc edi at +0x1f5,
+   +0x2cb), which moves every later register. Tried: local declaration order (no change). */
 
-unsigned int ai_Unk5bf0d0(short *param_1, unsigned int param_2, int *param_3, int param_4)
+unsigned int ai_FillFamilyTab(AICHARREC *me, unsigned int max, LCAMOUNTROW *rows, unsigned int *filter)
 {
-    unsigned int n;
-    int i;
-    char *p;
-    char *car;
-    int *rec;
-    int *ids;
+    AICHARREC *c;
+    AIJOB *ev;
+    int found;
     int j;
+    int i;
+    unsigned int n;
 
     n = 0;
-    ids = (int *)((char *)param_1 + 0x5c);
-    if (param_2 == 0) {
-        for (p = (char *)(unsigned)&ai_Chars; p < (char *)(unsigned)((unsigned)ai_Chars + 0x65400); p += 0x21c) {
-            if (p == (char *)param_1 || *(short *)p == -1 || *(unsigned char *)(p + 2) >= 10)
+    if (max == 0) {
+        for (i = 0; i < 0x300; i++) {
+            c = &lc_CharRecs[i];
+            if (c == me || c->id == 0xffff || c->kind >= 10)
                 continue;
-            for (j = 0; j < 8; j++)
-                if (ids[j] == U_I(p + 4))
+            found = 0;
+            for (j = 0; j < 8; j++) {
+                if (me->relatives[j] == c->netId) {
+                    found = 1;
                     break;
-            if (j < 8 || (*(unsigned short *)(p + 0x50) == *(unsigned short *)((char *)param_1 + 0x50) &&
-                          *(char *)(p + 0x58) == *((char *)param_1 + 0x58)))
+                }
+            }
+            if (found || (c->w050 == me->w050 && c->b058 == me->b058))
                 n++;
         }
-        car = (char *)he_FindEvent(1, 0, 0x41);
-        while (car != 0) {
-            if (U_I(car + 0xac) == U_I((char *)param_1 + 4))
-                return n + 1;
-            car = (char *)he_NextEvent();
+        for (ev = (AIJOB *)he_FindEvent(1, 0, 0x41); ev != 0; ev = (AIJOB *)he_NextEvent()) {
+            if (ev->partner1 == me->netId) {
+                n++;
+                break;
+            }
         }
         return n;
     }
-    for (i = 0; i < (int)(param_2 * 0x38 / 4); i++)
-        param_3[i] = 0;
-    rec = param_3;
-    for (p = (char *)(unsigned)&ai_Chars; p < (char *)(unsigned)((unsigned)ai_Chars + 0x65400); p += 0x21c) {
-        if (n >= param_2)
+    memset(rows, 0, max * sizeof(LCAMOUNTROW));
+    for (i = 0; i < 0x300; i++) {
+        c = &lc_CharRecs[i];
+        if (n >= max)
             break;
-        if (p == (char *)param_1 || *(short *)p == -1 || *(unsigned char *)(p + 2) >= 10)
+        if (c == me || c->id == 0xffff || c->kind >= 10)
             continue;
-        for (j = 0; j < 8; j++)
-            if (ids[j] == U_I(p + 4))
+        found = 0;
+        for (j = 0; j < 8; j++) {
+            if (me->relatives[j] == c->netId) {
+                found = 1;
                 break;
-        if (j < 8) {
-            rec[0] = (int)p;
-            if (j == 0)
-                rec[0xb] = (*(char *)(p + 9) != 0) + 4;
-            else if (j == 1)
-                rec[0xb] = 0;
-            else if (j == 2)
-                rec[0xb] = 1;
-            else
-                rec[0xb] = (*(char *)(p + 9) != 0) + 6;
+            }
+        }
+        if (found) {
+            rows[n].rec = c;
+            switch (j) {
+            case 0:
+                rows[n].x2c = (c->sex != 0) + 4;
+                break;
+            case 1:
+                rows[n].x2c = 0;
+                break;
+            case 2:
+                rows[n].x2c = 1;
+                break;
+            default:
+                rows[n].x2c = (c->sex != 0) + 6;
+                break;
+            }
             n++;
-            rec += 0xe;
-        } else if (*(unsigned short *)(p + 0x50) == *(unsigned short *)((char *)param_1 + 0x50) &&
-                   *(char *)(p + 0x58) == *((char *)param_1 + 0x58)) {
-            rec[0] = (int)p;
-            rec[0xb] = (*(char *)(p + 9) != 0) + 2;
+        } else if (c->w050 == me->w050 && c->b058 == me->b058) {
+            rows[n].rec = c;
+            rows[n].x2c = (c->sex != 0) + 2;
             n++;
-            rec += 0xe;
         }
     }
-    if (n < param_2) {
-        car = (char *)he_FindEvent(1, 0, 0x41);
-        while (car != 0) {
-            if (U_I(car + 0xac) == U_I((char *)param_1 + 4)) {
-                i = gm_FindChar(U_I(car + 0xb0));
-                if (i != 0 && U_I(i + 4) != ids[0]) {
-                    rec[0] = i;
-                    rec[0xb] = (*(char *)(i + 9) != 0) + 8;
+    if (n < max) {
+        for (ev = (AIJOB *)he_FindEvent(1, 0, 0x41); ev != 0; ev = (AIJOB *)he_NextEvent()) {
+            if (ev->partner1 == me->netId) {
+                c = (AICHARREC *)gm_FindChar(ev->partner2);
+                if (c != 0 && c->netId != me->relatives[0]) {
+                    rows[n].rec = c;
+                    rows[n].x2c = (c->sex != 0) + 8;
                     n++;
                 }
                 break;
             }
-            car = (char *)he_NextEvent();
         }
     }
-    rec = param_3;
     for (i = 0; i < (int)n; i++) {
-        ai_AmountRowStatus(rec);
-        rec[0xc] = ai_PassesPartnerFilter(*(unsigned short *)param_1, *(unsigned short *)rec[0],
-                                (unsigned int *)param_4, 0);
-        rec += 0xe;
+        ai_AmountRowStatus(&rows[i]);
+        rows[i].pickable = ai_PassesPartnerFilter(me->id, rows[i].rec->id, filter, 0);
     }
     return n;
 }
@@ -32328,7 +32344,7 @@ char ai_NewsKeyFriedhof00[28] = "_NACHRICHTEN_FRIEDHOF_00";  /* 0x62c39c, the so
 int ai_ChildWindowId = -1;  /* 0x62c418, the child window ai_OpenInventoryWindow creates (d2_CreateChildWindow over its character list), -1: none; ai_CloseChildWindow removes it, the transport window and ai_InventoryPanel compare it with the clicked id */
 char ai_UseObjForm[13] = "panel\\useobj";  /* 0x62d010, the form of the use-object panel (d2_OpenForm) */
 AIAMOUNTTAB ai_AmountTabs[8] = {       /* 0x62d148, one table: 8 rows of 0x14 {id 0..7, count, control, two handlers}; ai_ClearAmountTabs clears count and control, the ids run 0..7 from 0x62d148 and row 7 ends where "%G" starts */
-    { 0, 0, -1, ai_Unk5bf0d0, ai_Unk5bffb0 },
+    { 0, 0, -1, ai_FillFamilyTab, ai_Unk5bffb0 },
     { 1, 0, -1, ai_Unk5bf300, ai_Unk5c00b0 },
     { 2, 0, -1, ai_Unk5bf4f0, ai_Unk5c01c0 },
     { 3, 0, -1, ai_Unk5bf6f0, ai_Unk5c02d0 },
