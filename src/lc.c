@@ -96,7 +96,9 @@
    uses it, but it lies before lobby's data, so its owner (a unit before lobby) is not settled.
    Open: layout: lc may hold more than one original TU: VC6 sees our ai_FindUsableGood (0x5ba620) write no memory
    and keeps use->obj->id in a register across the call in ai_UseGood (0x5cf8a0), where the original reloads it
-   (the callee was not visible to it there: a TU boundary between 0x5ba620 and 0x5cf8a0?).
+   (the callee was not visible to it there: a TU boundary between 0x5ba620 and 0x5cf8a0?); likewise the use
+   callbacks ai_UseGoodLowerOfficialRelations / ai_UseGoodCharmOtherSex load their pick ids before our
+   ai_FindUsableGoodIndex (0x5ba660) call where the original calls it first.
    Open: head: sv.h, so sv_CheckCharacterFlag / sv_ClearSelection and the other sv calls of the listeners and map
    picks stay without a prototype (M7); and not included yet (dcp headers conflicts lc HEADER): ahm.h
    ai.h am.h amt.h anm.h ch.h chc.h cm.h d2.h d3_int_io.h d3_tools.h f3snd.h gfx.h gv.h hst.h rt.h

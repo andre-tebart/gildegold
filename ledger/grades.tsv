@@ -4577,15 +4577,15 @@ exe	0x005d0ab0	ai_TrialStep4	lc	shape	readable
 exe	0x005d0b20	ai_UseGoodRaiseRelation	lc	draft	readable	deep	
 exe	0x005d0c70	ai_QuarrelCallback	lc	draft	readable	deep	
 exe	0x005d0e60	ai_UseGoodTrialStep	lc	byte	readable		
-exe	0x005d0f20	ai_Unk5d0f20	lc	draft	draft		
-exe	0x005d1300	ai_Unk5d1300	lc	draft	draft		
-exe	0x005d13e0	ai_Unk5d13e0	lc	draft	draft		
-exe	0x005d1680	ai_Unk5d1680	lc	draft	draft		
+exe	0x005d0f20	ai_UseGoodLowerOfficialRelations	lc	draft	readable	deep	
+exe	0x005d1300	ai_UseGoodTwoTrialSteps	lc	byte	readable		
+exe	0x005d13e0	ai_UseGoodCharmOtherSex	lc	draft	readable	deep	
+exe	0x005d1680	ai_UseGoodSowDiscord	lc	byte	readable		
 exe	0x005d1830	ai_UseGoodTributeClaim	lc	byte	readable		
-exe	0x005d18c0	ai_Unk5d18c0	lc	draft	draft		
-exe	0x005d1990	ai_Unk5d1990	lc	draft	draft		
-exe	0x005d1b30	ai_Unk5d1b30	lc	draft	draft		
-exe	0x005d1da0	ai_Unk5d1da0	lc	draft	draft		
+exe	0x005d18c0	ai_UseGoodDrainActionPoints	lc	byte	readable		
+exe	0x005d1990	ai_UseGoodDrainSkill	lc	byte	readable		
+exe	0x005d1b30	ai_UseGoodHarmBuilding	lc	byte	readable		
+exe	0x005d1da0	ai_UseGoodSpoilStock	lc	byte	readable		
 exe	0x005d1fb0	ai_Unk5d1fb0	lc	draft	draft		
 exe	0x005d22e0	ai_UsePayGood	lc	byte	readable		
 exe	0x005d2320	ai_Unk5d2320	lc	draft	draft		
