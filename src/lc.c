@@ -6398,7 +6398,7 @@ void ai_RhetoricContact(int bld, int room)
     }
 }
 
-int ai_FeastWindow(); int ai_DenounceWindow(); void sv_FitForm(int f); void sv_ButtonRow(int f, int y, int *out, int n, ...);
+int ai_FeastWindow(); void ai_DenounceWindow(AIBLD *bld); void sv_FitForm(int f); void sv_ButtonRow(int f, int y, int *out, int n, ...);
 int ai_AmountRowStatus(); int ai_AmountRow(); short * gm_FindChar(int id); int sv_CheckMoney();
 int cm_SendExSetHE(); /* @original: the callers here push the key as an int and read the return (byte-matched ai_TransportOrderDue), against cm.h's void (unsigned char, char *) view */ int cm_SendRelations(int a, int b, int c, int d); void cm_SendMoneyDelta(int a, int b); void d2_SetObjEnabled();
 
@@ -20547,17 +20547,94 @@ int ai_DrohbriefWindow(void)
     cfg.filter = gypsyFilter;
     return ai_AmountMenu(&cfg, txt_Ptrs[0x1758], 0, (void *)ai_DrohbriefAmountCB);
 }
-/* 0x5b5010, a window over the player's character record (779 B, ROUGH SKELETON): the record 0x770b80 +
-   0x6f25b8 * 0x21c and the object walk 0x4ffe90 (2, ...); a 0x390-byte frame. The body is a comment */
+/* 0x5b5010, the denounce window "misc\perga_rolle" (the ANSCHWAERZEN plate of ai_FeastContact; nothing for no
+   building or a player without 2 money): the amount menu (mode 0x400, kind 6, the gypsy filter) picks the
+   culprit (text 0x175f), a second one with the same config the character to denounce him to (0x1760). No
+   evidence of the culprit's crimes held by the player (gv_HeldCrimeCount) gives the text 0x1756, a player
+   without 3 money nothing; else the window (text 0x1761: the evidence count with the word 0x1752 / 0x1753, the
+   two characters) asks: its button sends the denunciation message 0x2f to the second character (flags 9,
+   arg[0] the culprit, arg[1] the player, arg[2] the receiver), takes the 3 (cm_SendMoneyDelta) and tells it
+   (0x1762); the second button or a right click close it. The camera follows after the menus
+   @deep Reconstructed whole against the original 0x5b5010..0x5b530b (both amount menus 0x175f / 0x1760
+   with the one config, gv_HeldCrimeCount 0x1756, the 3-money check, the window 0x1761 with 0x1752+(n!=1),
+   the message 0x2f flags 9 to/fromId/arg[2] the receiver, arg[0] the culprit, arg[1] the player,
+   cm_SendMoneyDelta -3, 0x1762, the sv_CameraFollow tail calls); every instruction outside the message
+   block equals the original. Left only the scheduling of the message stores: the original loads
+   judge->netId into ecx and stores to/fromId/arg[2] first, then lea/push &msg, then the byte stores 0x2f /
+   9 and arg[1] / arg[0]; ours hoists the constant byte stores (mov byte [esp+0xac],0x2f first, flags 9
+   next) and pushes &msg late (asmdiff +0x21a..+0x26c), and the cm_SendMoneyDelta / 0x1762 block after it
+   takes edx/eax for ecx/edx (regs). Tried the store orders: chained to=fromId=arg[2] both ways, type/flags
+   first or last, arg[0] before arg[1], fromId=msg.to copies: none moves the push or the byte stores */
 
-int ai_DenounceWindow(void)
+void ai_DenounceWindow(AIBLD *bld)
 {
-    char *per;
+    int n;
+    int win;
+    int text;
+    int ok;
+    int cancel;
+    AICHARREC *culprit;
+    AICHARREC *judge;
+    AMOUNTCFG cfg;
+    AIMSG msg;
+    char title[0x40];
+    char note[0x200];
 
-    per = (char *)((unsigned)&ai_Chars + U_W((unsigned)&ai_PlayerId) * 0x21c);
-    /* ROUGH SKELETON: the walk 0x4ffe90 (2, ...), the controls and the pump loop */
-    (void)per;
-    return 0;
+    if (sv_CheckMoney(ai_Chars[ai_PlayerId], 2) == 0 || bld == 0)
+        return;
+    memset(&cfg, 0, sizeof(cfg));
+    cfg.mode = 0x400;
+    cfg.kind = 6;
+    cfg.filter = gypsyFilter;
+    txt_Format(title, 0x175f);
+    culprit = (AICHARREC *)ai_AmountMenu(&cfg, title, 0, 0);
+    if (culprit == 0)
+        return;
+    txt_Format(title, 0x1760, culprit->id);
+    judge = (AICHARREC *)ai_AmountMenu(&cfg, title, 0, 0);
+    if (judge == 0)
+        return;
+    n = gv_HeldCrimeCount(culprit->netId, ai_PlayerId);
+    if (n <= 0) {
+        txt_Format(note, 0x1756, culprit->id);
+        sv_MessageBox(note, 0);
+        sv_CameraFollow();
+        return;
+    }
+    if (sv_CheckMoney(ai_Chars[ai_PlayerId], 3) == 0) {
+        sv_CameraFollow();
+        return;
+    }
+    win = d2_OpenForm(0, 0, "misc\\perga_rolle");
+    d2_CentreViewWindows(win);
+    d2_SetPointerSprite(0, 0);
+    d2_SetForm(win, 1);
+    text = io_PrintText(0x1761, n, (n != 1) + 0x1752, judge->id, culprit->id);
+    ok = d2_GetWinObj(win, 1, text);
+    cancel = d2_GetWinObj(win, 1, text + 1);
+    d2_ClickedId = -1;
+    do {
+        if (dm_L.rup != 0)
+            sv_PopRequest = 1;
+        if (d2_ClickedId != -1) {
+            if (d2_PointerObj == ok) {
+                msg.arg[2] = msg.fromId = msg.to = judge->netId;
+                msg.type = 0x2f;
+                msg.flags = 9;
+                msg.arg[1] = ai_CharInts[ai_PlayerId][0];
+                msg.arg[0] = culprit->netId;
+                cm_SendLongMessage((char *)&msg);
+                cm_SendMoneyDelta(ai_CharInts[ai_PlayerId][0], -3);
+                txt_Format(note, 0x1762, judge->id);
+                sv_MessageBox(note, 0);
+                sv_PopRequest = 1;
+            } else if (d2_PointerObj == cancel) {
+                sv_PopRequest = 1;
+            }
+        }
+    } while (sv_RunFrame((int)ai_DenounceWindow, 0x677c7) != 0);
+    d2_CloseView(win);
+    sv_CameraFollow();
 }
 /* 0x5b5310, a Ghidra-missed start (753 B, ROUGH SKELETON): the seam is the ret at 0x5b530b and the four nops to
    0x5b5310 (the functions.csv has only 0x5b5010 before 0x5b5610, so Ghidra merged this into the 0x5b5010
