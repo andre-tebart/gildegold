@@ -16571,9 +16571,9 @@ int cm_UpdateParties(void)
     }
     return 0;
 }
-/* 0x4e4f40, the pending party with the smallest id that has the flag 1 (used, id not -1): its record (0x4e50a0), 0 without */
+/* 0x4e4f40, the pending scene party with the smallest id (used, id not -1, flags 1): its record (cm_PartyById), 0 without */
 
-int ai_Unk4e4f40(void)
+int cm_FirstPendingParty(void)
 {
     int i;
     unsigned int best;
@@ -16598,7 +16598,7 @@ char ai_RunPendingParties(int pl)
 
     ret = 0;
     save = ai_CharInts[pl][0x208 / 4];
-    p = ai_Unk4e4f40();
+    p = cm_FirstPendingParty();
     while (p != 0) {
         if (cm_IsPartyMember(ai_CharInts[pl][0], (char *)p) != 0) {
             ai_CharInts[pl][0x208 / 4] = *(int *)p;
@@ -16607,7 +16607,7 @@ char ai_RunPendingParties(int pl)
             ret = 1;
         }
         cm_ClearParty(*(int *)p);
-        p = ai_Unk4e4f40();
+        p = cm_FirstPendingParty();
     }
     cm_BeginFieldBlock((char *)ai_CharInts[pl] - 4, ai_CharInts[pl][0]);
     cm_AddFieldValue(4, 1, (unsigned short)(pl * 0x21c - (int)cm_FieldObject + (int)ai_Unk770d8c), &save);

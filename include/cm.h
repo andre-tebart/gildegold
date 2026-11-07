@@ -1104,7 +1104,7 @@ extern char ai_Unk925538[];  /* 0x925538, the scene party records (0x114 bytes, 
 
 extern int cm_KindCheck[];  /* 0x92c510, the answer callbacks of the kind table (5 ints per kind) */
 
-int ai_Unk4e4f40();  /* 0x4e4f40 */
+int cm_FirstPendingParty();  /* 0x4e4f40 */
 char ai_RunPendingParties(int pl);  /* 0x4e4f80, runs the pending parties of the player pl */
 void ai_DebugDumpPerson(char *c);  /* 0x4e5bf0, the debug dump of a person */
 int cm_FindPartyOfKind();  /* 0x4e5050 */
