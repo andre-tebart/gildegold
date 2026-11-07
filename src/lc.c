@@ -26306,23 +26306,35 @@ next:;
     d2_CloseView(win);
     return (int)chosen;
 }
-/* 0x5c1130, the special-amount menu "special_amt1" 0x62d224 (2384 B, ROUGH): the nine buttons of the table
-   (the order 0, 8, 6, 4, 5, 1, 2, 3, 7 and the texts 0x589 / 0x599 / 0x58d / 0x590 / 0x58c / 0x58a / 0x58f /
-   0x58b / 0x58e), the images 0x143ec88, the captions 0x5bd0c0 (200), the list flag of the last button
-   0x4e86e0, the click dispatch on the buttons (the list 0x5bea50 with the page index) and the detail
-   0x5c0970 (param_1, param_2, -1, param_4); 0x4758f0 (win) and the chosen value at the end */
+/* 0x5c1130, the special-amount menu "special\amt1" (975 B): the caption (caption, else the text 0xa1), the
+   tabbed window's button (the text 0x1687, its object in form 3) and nine picture buttons, each named by its
+   kind's text txt_Ptrs[0x12b2 + kind] in the order 0, 8, 6, 4, 5, 1, 2, 3, 7; the second (kind 8) takes no
+   clicks when cfg->lockSecond is set, the last (kind 7) only while someone holds a column 7 office
+   (amt_HasColumn7Holder). A click on a picture opens the kind's list (ai_SpecialAmountListWindow), on the
+   button the tabbed window (ai_SpecialAmountWindow, the last tab), the menu disabled meanwhile; a character
+   chosen there closes the menu too unless pick decides or cfg->option14 has bit 4; a right release closes it.
+   Returns the chosen character record (0: none); prompt is not read
+   @deep Reconstructed the whole body against the original (975 B): the nine picture buttons in the order
+   0,8,6,4,5,1,2,3,7, the lockSecond / column-7 enables, the click dispatch (hit > -1 && hit < 9 list, else
+   the tabbed window button) and the pick / option14 close. Left (code 6, all at the loop entry): the
+   original computes r = 0 into ebp before d2_SetPointerSprite, pushes ebp twice and enters the do-while
+   past the loop head's xor ebp, ebp (+0x26c: xor ebp,ebp / push ebp / push ebp, +0x29e: jmp past +0x2a0);
+   ours pushes 0, 0 and falls into the head's xor, so the two zero stores of the column-7 button use eax
+   (the call's 0) instead of ebp (regs hunk +0x2a9). Tried: r = 0 before OpenForm (dead-store eliminated),
+   r = 0 with SetPointerSprite(r, r), the r = 0 in the latch (for(;;) with break, and a comma in the while:
+   loses the hoisted btn[8] offset, frame 0x4c). A loop-entry layout variant round. */
 
-int ai_AmountMenu(int param_1, int param_2, int param_3, int param_4)
+int ai_AmountMenu(AMOUNTCFG *cfg, char *caption, int prompt, int (*pick)(AICHARREC *, int))
 {
-    int win;
-    int text;
-    int r;
-    int i;
     int ctrl;
     int btn[9];
     int order[9];
-    int list;
+    int win;
+    int r;
+    int i;
+    int hit;
 
+    (void)prompt;
     order[0] = 0;
     order[1] = 8;
     order[2] = 6;
@@ -26332,70 +26344,68 @@ int ai_AmountMenu(int param_1, int param_2, int param_3, int param_4)
     order[6] = 2;
     order[7] = 3;
     order[8] = 7;
-    r = 0;
-    win = d2_OpenForm(0, 0, (char *)(unsigned)&full_data_62d224);
+    win = d2_OpenForm(0, 0, "special\\amt1");
     d2_CentreViewWindows(win);
     d2_SetForm(win, 2);
-    text = param_2 == 0 ? 0xa1 : param_2;
-    io_PrintText(text);
+    if (caption != 0)
+        io_PrintText(caption);
+    else
+        io_PrintText((char *)0xa1);
     d2_SetForm(win, 3);
-    list = io_PrintText(0x1687);
-    ctrl = d2_GetWinObj(win, 3, list);
+    ctrl = d2_GetWinObj(win, 3, io_PrintText((char *)0x1687));
     d2_SetForm(win, 1);
-    btn[0] = d2_WinOpenPic(0x45, 0x3c, 0x589, U_I((unsigned)&d2_LastWindow));
-    btn[1] = d2_WinOpenPic(0x10f, 0x25, 0x599, U_I((unsigned)&d2_LastWindow));
-    btn[2] = d2_WinOpenPic(0x10f, 0x93, 0x58d, U_I((unsigned)&d2_LastWindow));
-    btn[3] = d2_WinOpenPic(0x69, 0xab, 0x590, U_I((unsigned)&d2_LastWindow));
-    btn[4] = d2_WinOpenPic(0x1b5, 0xab, 0x58c, U_I((unsigned)&d2_LastWindow));
-    btn[5] = d2_WinOpenPic(0x45, 0x125, 0x58a, U_I((unsigned)&d2_LastWindow));
-    btn[6] = d2_WinOpenPic(0x10f, 0x125, 0x58f, U_I((unsigned)&d2_LastWindow));
-    btn[7] = d2_WinOpenPic(0x1d9, 0x125, 0x58b, U_I((unsigned)&d2_LastWindow));
-    btn[8] = d2_WinOpenPic(0x1d9, 0x3c, 0x58e, U_I((unsigned)&d2_LastWindow));
+    btn[0] = d2_WinOpenPic(0x45, 0x3c, 0x589, d2_LastWindow);
+    btn[1] = d2_WinOpenPic(0x10f, 0x25, 0x599, d2_LastWindow);
+    btn[2] = d2_WinOpenPic(0x10f, 0x93, 0x58d, d2_LastWindow);
+    btn[3] = d2_WinOpenPic(0x69, 0xab, 0x590, d2_LastWindow);
+    btn[4] = d2_WinOpenPic(0x1b5, 0xab, 0x58c, d2_LastWindow);
+    btn[5] = d2_WinOpenPic(0x45, 0x125, 0x58a, d2_LastWindow);
+    btn[6] = d2_WinOpenPic(0x10f, 0x125, 0x58f, d2_LastWindow);
+    btn[7] = d2_WinOpenPic(0x1d9, 0x125, 0x58b, d2_LastWindow);
+    btn[8] = d2_WinOpenPic(0x1d9, 0x3c, 0x58e, d2_LastWindow);
     for (i = 0; i < 9; i++) {
-        if (i != 1 || U_I(param_1 + 0x18) == 0) {
-            U_I((unsigned)&d2_Objs + btn[i] * 0x2ec + 0x4c) = 1;
-            U_I((unsigned)&d2_Objs + btn[i] * 0x2ec + 0x1c0) = 3;
+        if (i != 1 || cfg->lockSecond == 0) {
+            d2_Objs[btn[i]].interactive = 1;
+            d2_Objs[btn[i]].style = 3;
         }
-        *(unsigned short *)((unsigned)&d2_Objs + btn[i] * 0x2ec + 0x74) = 0x55;
-        ai_CentredText(U_I((unsigned)&full_data_143ec88 + order[i] * 4),
-                     (*(short *)((unsigned)&d2_Objs + btn[i] * 0x2ec + 0x10) - *(short *)(U_I((unsigned)&d2_LastWindowPtr) + 4)) + 0x20,
-                     (*(short *)((unsigned)&d2_Objs + btn[i] * 0x2ec + 0x12) - *(short *)(U_I((unsigned)&d2_LastWindowPtr) + 6)) - 0x19,
-                     200, 0x55);
+        d2_Objs[btn[i]].font = 0x55;
+        ai_CentredText(txt_Ptrs[0x12b2 + order[i]], d2_Objs[btn[i]].x - d2_LastWindowPtr->x + 0x20,
+                       d2_Objs[btn[i]].y - d2_LastWindowPtr->y - 0x19, 200, 0x55);
     }
     d2_SetPointerSprite(0, 0);
-    U_I((unsigned)&d2_ClickedId) = -1;
-    for (;;) {
+    d2_ClickedId = -1;
+    do {
         r = 0;
         if (amt_HasColumn7Holder() == 0) {
-            U_I((unsigned)&d2_Objs + btn[8] * 0x2ec + 0x4c) = 0;
-            U_I((unsigned)&d2_Objs + btn[8] * 0x2ec + 0x1c0) = 0;
+            d2_Objs[btn[8]].interactive = 0;
+            d2_Objs[btn[8]].style = 0;
         } else {
-            U_I((unsigned)&d2_Objs + btn[8] * 0x2ec + 0x4c) = 1;
-            U_I((unsigned)&d2_Objs + btn[8] * 0x2ec + 0x1c0) = 3;
+            d2_Objs[btn[8]].interactive = 1;
+            d2_Objs[btn[8]].style = 3;
         }
-        if (U_I(((unsigned)&dm_L + 0x20)) != 0) {
-            U_I((unsigned)&sv_PopRequest) = 1;
-        } else if (U_I((unsigned)&d2_ClickedId) != -1) {
+        if (dm_L.rup != 0) {
+            sv_PopRequest = 1;
+        } else if (d2_ClickedId != -1) {
+            hit = -1;
             for (i = 0; i < 9; i++) {
-                if (btn[i] == U_I((unsigned)&d2_PointerObj)) {
-                    d2_SetViewEnabled(win, 0);
-                    r = ai_SpecialAmountListWindow(order[i], param_1, param_2, 0, param_4);
-                    d2_SetViewEnabled(win, 1);
-                    goto done;
+                if (btn[i] == d2_PointerObj) {
+                    hit = i;
+                    break;
                 }
             }
-            if (U_I((unsigned)&d2_PointerObj) == ctrl) {
+            if (hit > -1 && hit < 9) {
                 d2_SetViewEnabled(win, 0);
-                r = ai_SpecialAmountWindow(param_1, param_2, -1, param_4);
+                r = ai_SpecialAmountListWindow(order[hit], (unsigned int *)cfg, caption, 0, pick);
+                d2_SetViewEnabled(win, 1);
+            } else if (d2_PointerObj == ctrl) {
+                d2_SetViewEnabled(win, 0);
+                r = ai_SpecialAmountWindow((unsigned int *)cfg, caption, -1, pick);
                 d2_SetViewEnabled(win, 1);
             }
+            if (r != 0 && pick == 0 && (cfg->option14 & 4) == 0)
+                sv_PopRequest = 1;
         }
-done:
-        if (r != 0 && param_4 == 0 && (*(unsigned char *)(param_1 + 0x14) & 4) == 0)
-            U_I((unsigned)&sv_PopRequest) = 1;
-        if (sv_RunFrame(ai_AmountMenu, 0x657c7) == 0)
-            break;
-    }
+    } while (sv_RunFrame((int)ai_AmountMenu, 0x657c7) != 0);
     d2_CloseView(win);
     return r;
 }

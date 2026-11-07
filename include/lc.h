@@ -64,7 +64,8 @@ void ai_TrainingWindow(struct AIBLD *bld);              /* 0x5bba00, the "specia
 void ai_EquipWindow(struct AIBLD *bld);                 /* 0x5bb350, the equip window of the AUSRUESTEN / weapon-stand plates */
 void ai_BuildingWindow(struct AIBLD *bld);              /* 0x5b84f0, the options window of a building (sell, renovate, upgrade, ...) */
 void ai_ManagedBuildingWindow(struct AIBLD *bld);       /* 0x5b8fc0, its variant for the classes 3 / 5 with the permission 0x10 */
-int ai_AmountMenu(int cfg, int title, int text, int check);  /* 0x5c1130, the special-amount menu (cfg: an AMOUNTCFG, menu.h) */
+struct AMOUNTCFG; struct AICHARREC;
+int ai_AmountMenu(struct AMOUNTCFG *cfg, char *caption, int prompt, int (*pick)(struct AICHARREC *, int));  /* 0x5c1130, the special-amount menu: returns the chosen character record (0: none) */
 void ai_PersonnelBook(struct AIBLD *bld, char *model);  /* 0x5aab80, the personnel book of a building (ob_PERSONALBUCH) */
 void ai_MercenaryBook(struct AIBLD *bld, char *model);  /* 0x5ac110, the mercenary book of a building (ob_SOELDNERBUCH) */
 void ai_HelperBook(struct AIBLD *bld, char *model);     /* 0x5ad150, the helpers' book of a building (ob_GEHILFENBUCH) */

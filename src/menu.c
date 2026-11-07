@@ -1597,8 +1597,6 @@ int sv_CheckMoney(char *o, int n);         /* 0x520f90, sv.c: 1 when the object'
                                               covers n, else a message box with the text 0x74 */
 int sv_MessageBox(int text, unsigned flags); /* 0x521150, sv.c: the modal message box */
 void sv_CameraFollow(void);                /* 0x52d7a0, sv.c: the per-frame camera follow */
-int ai_AmountMenu(int record, int text, int text2, int callback); /* 0x5c1130, lc.c: the
-                                              "special_amt1" amount menu, returns the chosen value */
 int d2_CreateWindow(); int d2_RemoveWindow(); int io_PrintText(char *fmt, ...);
 int d2_GetObjValue();
 
