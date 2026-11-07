@@ -804,7 +804,6 @@ extern int ai_SabotageCallback();
 extern int ai_EspionageAmountCB();
 extern int ai_BeatingCallback();
 extern char ai_Crimes[];
-extern GAPDATA full_data_62cda8[];
 extern char * ai_PickedObject;
 extern GAPDATA ai_DomizilTable[];
 extern GAPDATA ai_EquipRows[];
@@ -6439,9 +6438,10 @@ typedef struct LCAMOUNTROW {            /* 0x38 bytes, one row of the special-am
     int ctl[3];                         /* 0x04, the row's controls (ai_AmountRow) */
     int x;                              /* 0x10 */
     int y;                              /* 0x14 */
-    int pad18[6];
+    int pad18[5];
+    int x2c;                            /* 0x2c, a value the row's text shows (the evidence book: the evidence count) */
     int x30;                            /* 0x30 */
-    int pad34;
+    int x34;                            /* 0x34, a second value (the evidence book: the open evidence) */
 } LCAMOUNTROW;
 /* 0x5967c0, the window of one of the player's mistresses "locations\wohnsitz\geliebte2" (from ai_MistressWindow,
    with her character record and her pair event 0x6f): her name and her amount row, two buttons (the texts
@@ -6810,7 +6810,7 @@ void ai_EspionageAmountMenu(AIBLD *bld)
     sv_CameraFollow();
 }
 
-int gm_HasAdultRelative(); float gm_AddHealth(unsigned short id, int d); int ai_TutorialOff(); int ai_EvidenceBookWindow();
+int gm_HasAdultRelative(); float gm_AddHealth(unsigned short id, int d); int ai_TutorialOff(); void ai_EvidenceBookWindow(struct AIBLD *bld);
 
 /* 0x5973f0, the suicide window of the residence (the SELBSTMORD plate; the form "locations\wohnsitz\weinkeller",
    texts 0x42cf / 0x42d1): button 0 asks gm_HasAdultRelative of the player's record; with an adult relative (an
@@ -20212,22 +20212,84 @@ void ai_EvidenceDetailsWindow(AICHARREC *me, AICHARREC *culprit)
     } while (sv_RunFrame((int)ai_EvidenceDetailsWindow, 0x657c7) != 0);
     d2_CloseView(win);
 }
-/* 0x5b4590, a window over the player's character record (641 B, ROUGH SKELETON): the record 0x770b80 +
-   0x6f25b8 * 0x21c, the window "0x62cda8" (0x4741f0 / 0x475600 / 0x475f70), a 0x8c8-byte frame; the body
-   (the controls, the texts and the pump loop) is left as a comment */
+int gv_RankCulpritsAll(int *ids, int *open, int *total, unsigned short t);  /* 0x4f3dd0, gv.h's prototype (gv.h is not included yet: Open: head) */
+void ai_RightAlignedText(char *text, int x, int y, int w, int font);
 
-int ai_EvidenceBookWindow(void)
+/* 0x5b4590, the evidence book "privillegien\Beweise_Sichten" (the study's plate, ai_StudyContact): the caption 0x173f,
+   then one amount row per culprit the player holds evidence of (gv_RankCulpritsAll, up to 32; gm_FindChar), with
+   "%i (%i) %s": the evidence count, the open ones and the word 0x1748 / 0x1749 (one / more); none gives the text
+   0x1741. A clicked row opens its culprit's details (ai_EvidenceDetailsWindow); a right click closes the book and
+   the camera follows. bld (the study) is not read */
+
+void ai_EvidenceBookWindow(AIBLD *bld)
 {
-    char *per;
+    int n;
+    int count;
+    int i;
     int win;
+    int list;
+    int sel;
+    AICHARREC *me;
+    AICHARREC *ch;
+    char text[0x40];
+    int ids[0x20];
+    int open[0x20];
+    int total[0x20];
+    LCAMOUNTROW rows[0x20];
 
-    per = (char *)((unsigned)&ai_Chars + U_W((unsigned)&ai_PlayerId) * 0x21c);
-    win = d2_OpenForm((char *)(unsigned)&full_data_62cda8, 0, 0);
+    me = &((AICHARREC *)ai_Chars)[ai_PlayerId];
+    win = d2_OpenForm(0, 0, "privillegien\\Beweise_Sichten");
     d2_CentreViewWindows(win);
     d2_SetForm(win, 1);
-    /* ROUGH SKELETON: the controls of the record, the texts 0x5176d0 and the pump loop 0x5309a0 */
-    (void)per;
-    return 0;
+    io_PrintText(0x173f);
+    d2_SetForm(win, 2);
+    list = d2_LastWindow;
+    d2_SetForm(win, 3);
+    d2_CreateScrollButtons(-1, -1, d2_LastWindow, list, 0x767);
+    count = gv_RankCulpritsAll(ids, open, total, me->id);
+    n = 0;
+    for (i = 0; i < count; i++) {
+        ch = (AICHARREC *)gm_FindChar(ids[i]);
+        if (ch != 0) {
+            rows[n].rec = ch;
+            rows[n].x2c = total[i];
+            rows[n].x34 = open[i];
+            ai_AmountRowStatus(&rows[n]);
+            rows[n].x30 = 1;
+            n++;
+        }
+    }
+    d2_SetForm(win, 2);
+    if (n != 0) {
+        for (i = 0; i < n; i++) {
+            txt_Format(text, "%i (%i) %s", rows[i].x2c, rows[i].x34, (rows[i].x2c != 1) + 0x1748);
+            rows[i].x = 0x32;
+            rows[i].y = i * 0x69 + 10;
+            ai_AmountRow(0x32, i * 0x69 + 10, d2_LastWindow, 0x56, &rows[i], 1);
+            ai_RightAlignedText(text, d2_Wins[d2_LastWindow].w - 0xf, i * 0x69 + 10 + 0x2d, 200, 0x55);
+        }
+    } else {
+        io_PrintText(0x1741, ai_PlayerId);
+    }
+    d2_SetPointerSprite(0, 0);
+    d2_ClickedId = -1;
+    do {
+        if (dm_L.rup != 0) {
+            sv_PopRequest = 1;
+        } else if (d2_ClickedId != -1) {
+            sel = -1;
+            for (i = 0; i < n; i++) {
+                if (d2_PointerObj == rows[i].ctl[0]) {
+                    sel = i;
+                    break;
+                }
+            }
+            if (sel > -1)
+                ai_EvidenceDetailsWindow((AICHARREC *)ai_Chars[ai_PlayerId], rows[sel].rec);
+        }
+    } while (sv_RunFrame((int)ai_EvidenceBookWindow, 0x657c7) != 0);
+    d2_CloseView(win);
+    sv_CameraFollow();
 }
 int ai_Unk5b4820(void);
 
