@@ -16972,12 +16972,14 @@ void ai_DumpPersonOffices(char *c, char *buf)
     sprintf(buf, "%s\t%s\t%s\t%s\t", txt_OfficeNames[p->officeKind], txt_OfficeNames[p->prevOffice], txt_OfficeNames[p->appliedOffice],
             txt_OfficeNames[p->secondOffice]);
 }
-/* 0x4e5af0, the debug dump of the ints +0x190 .. +0x1a4 of a person, then 0x509e60 (c) and 0x50a640 (its id) */
+/* 0x4e5af0, the debug dump of a person's money fields (v190, money, spent198, wage, v1a0, v1a4), then its goods value (0x509e60) and its worth (0x50a640) */
 
-void ai_Unk4e5af0(char *c, char *buf)
+void ai_DumpPersonMoney(char *c, char *buf)
 {
-    sprintf(buf, "%i\t%i\t%i\t%i\t%i\t%i\t%i\t%i\t", *(int *)(c + 0x190), *(int *)(c + 0x194), *(int *)(c + 0x198), *(int *)(c + 0x19c), *(int *)(c + 0x1a0), *(int *)(c + 0x1a4),
-            gm_GetGoodsValue(c), ((int (*)(unsigned short))gm_GetWorth)(*(unsigned short *)c));
+    AICHAR *p;
+
+    p = (AICHAR *)c;
+    sprintf(buf, "%i\t%i\t%i\t%i\t%i\t%i\t%i\t%i\t", p->v190, p->money, p->spent198, p->wage, p->v1a0, p->v1a4, gm_GetGoodsValue(c), gm_GetWorth(p->id));
 }
 /* 0x4e5b50, the debug dump of the 8 relatives (the ids at +0x5c): "%i\t%s" of each one's +4 and name (+0x30), -1 and 0x143b3f4 when it does not exist */
 
@@ -17011,7 +17013,7 @@ void ai_DebugDumpPerson(char *c)
         ai_DumpPersonStats(c, buf + strlen(buf));
         ai_DumpPersonSkills(c, buf + strlen(buf));
         ai_DumpPersonOffices(c, buf + strlen(buf));
-        ai_Unk4e5af0(c, buf + strlen(buf));
+        ai_DumpPersonMoney(c, buf + strlen(buf));
         ai_Unk4e5b50(c, buf + strlen(buf));
     }
 }
