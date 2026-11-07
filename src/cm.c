@@ -5985,7 +5985,7 @@ int cm_ExFightCommand(G17MSG *m, G17STAT *s)
     case 6:                                         /* stop */
         if (c->health != 0) {
             cm_PlaceFighter(c, &m->fight.pos, &m->fight.rot, m->fight.health);
-            cm_FightSlotStop((char *)&m->fight.slot);
+            cm_FightSlotStop(&m->fight.slot);
         }
         break;
     case 1:                                         /* cheer */
@@ -11185,16 +11185,16 @@ void cm_FighterAct(CMFIGHTSLOT *f)
         f->active = 0;
     }
 }
-/* 0x4d6f60, the fighter slot f (+0 id, +4 active) of an active character: 0x405610 on its object */
+/* 0x4d6f60, stops the actions of the fighter in the fight slot f (id, active): 0x405610 on its scene character */
 
-void cm_FightSlotStop(char *f)
+void cm_FightSlotStop(CMFIGHTSLOT *f)
 {
-    char *c;
+    AICHAR *c;
 
-    if (*(int *)(f + 4) != 0 && *(int *)f != -1) {
-        c = cm_FindFighter(*(int *)f);
+    if (f->active != 0 && f->id != -1) {
+        c = (AICHAR *)cm_FindFighter(f->id);
         if (c != 0)
-            ch_StopActions(*(char **)(c + 0x184));
+            ch_StopActions(c->scene);
     }
 }
 /* 0x4d6f90, the cheer of the winner in the slot f: event 0x4d3ac0 with the animation "gestik/jubeln" */
