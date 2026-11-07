@@ -2527,29 +2527,29 @@ exe	0x004de900	cm_DuelRound	cm	shape	readable
 exe	0x004debe0	cm_DuelOutcome	cm	shape	readable		
 exe	0x004ded10	cm_RunDuel	cm	draft	readable	deep	
 exe	0x004dfa20	cm_DuelAftermath	cm	byte	readable		
-exe	0x004dfcb0	cm_DuelAskPlayer	cm	byte	readable		
+exe	0x004dfcb0	cm_DuelRoundDialog	cm	byte	readable		
 exe	0x004dfdd0	cm_DuelChooseRound	cm	shape	readable		
 exe	0x004dff80	cm_DuelAskAI	cm	byte	readable		
-exe	0x004dfff0	ai_Unk4dfff0	cm	byte	draft		
-exe	0x004e0010	ai_Unk4e0010	cm	byte	draft		
+exe	0x004dfff0	cm_DuelAskPlayer	cm	byte	readable		
+exe	0x004e0010	cm_RunPictureShow	cm	byte	readable		
 exe	0x004e0040	cm_ExecutionAftermath	cm	byte	readable		
 exe	0x004e01e0	cm_RunExecution	cm	byte	readable		
-exe	0x004e0580	ai_Unk4e0580	cm	byte	draft		
+exe	0x004e0580	cm_CheckWedding	cm	byte	readable		
 exe	0x004e06d0	cm_EndWedding	cm	byte	readable		
 exe	0x004e0770	cm_RunWedding	cm	shape	readable		
-exe	0x004e0e90	ai_Unk4e0e90	cm	shape	draft		
+exe	0x004e0e90	cm_CheckBirth	cm	byte	readable		
 exe	0x004e0f70	cm_RunBirth	cm	draft	readable	deep	
 exe	0x004e1220	cm_DeathSceneCheck	cm	byte	readable		
 exe	0x004e1250	cm_RunDeath	cm	draft	readable	deep	
 exe	0x004e1700	cm_RunBankruptcy	cm	byte	readable		
-exe	0x004e19a0	ai_Unk4e19a0	cm	byte	draft		
+exe	0x004e19a0	cm_CheckAuction	cm	byte	readable		
 exe	0x004e1a80	cm_RunAuction	cm	shape	readable		
 exe	0x004e24c0	cm_AuctionAskPlayer	cm	byte	readable		
 exe	0x004e26d0	cm_AuctionAskAI	cm	shape	readable		
-exe	0x004e2860	ai_Unk4e2860	cm	byte	draft		
-exe	0x004e2910	ai_Unk4e2910	cm	byte	draft		
+exe	0x004e2860	cm_RunSale	cm	byte	readable		
+exe	0x004e2910	cm_ShowObjectScene	cm	byte	readable		
 exe	0x004e2bd0	cm_SetViewEnabled	cm	byte	readable		
-exe	0x004e2bf0	cm_StartScript	cm	byte	draft		
+exe	0x004e2bf0	cm_StartScript	cm	byte	readable		
 exe	0x004e2c30	cm_StartEventArg	cm	byte	draft		
 exe	0x004e2c70	cm_WaitEvent	cm	byte	readable		
 exe	0x004e2cc0	cm_WaitEventOrClick	cm	byte	readable		
