@@ -1148,7 +1148,10 @@ typedef struct AICHARREC {         /* the character record fields this unit read
                                       (cm_AddFieldValues 0x1ac) and shows it with the text 0x1964 */
     char pad1b0;
     unsigned char heldRounds;      /* 0x1b1, the rounds the character is held (ai_char.h AICHAR.heldRounds) */
-    char pad1b2[0x16];
+    char pad1b2[6];
+    int budget;                    /* 0x1b8, the money the character may spend (ai_char.h AICHAR.budget; main_EndRound
+                                      copies the building's budget to its jobs; the master list page shows it) */
+    char pad1bc[0xc];
     unsigned int powerFlags;       /* 0x1c8, the office-power bits already used (ai_char.h AICHAR.powerFlags) */
     unsigned int flags1cc;         /* 0x1cc, ai_char.h AICHAR.flags1cc (0x800: a bribe raises the relation by 6 instead of 4) */
     char pad1d0[0x1c];
@@ -1168,7 +1171,9 @@ typedef struct AIBLD {             /* the building record fields this unit reads
     char pad2b[9];
     unsigned char side;            /* 0x34, of a foreign city (kind 'G') the side of the town map it lies at, 0 .. 7
                                       (ai_BuildTownMap's direction table: north, then clockwise) */
-    char pad35[8];
+    char pad35[4];
+    int budget;                    /* 0x39, the money the building may spend this round (ai_bld.h AIBLD.budget; the master
+                                      list page's input box sets it) */
     int wageRate;                  /* 0x3d, the percent of the job wages its workers get, 50 .. 150 (ai_bld.h AIBLD.wageRate;
                                       the personnel book's slider sends it as the field 0x3d) */
     int workRate;                  /* 0x41, the working-hours setting 0 .. 4 (ai_bld.h AIBLD.workRate; the personnel
@@ -24167,12 +24172,100 @@ void ai_BuildingDetailWindow(AIBLD *bld)
     }
     d2_CloseView(win);
 }
-/* 0x5bc9c0, a window (688 B, ROUGH SKELETON): a 0x10c-byte frame; the body is a comment */
+typedef struct LCMASTERROW {            /* 0x18 bytes, a row of the stats panel's master list page (128 rows) */
+    int pic;                            /* 0x00, the building type's picture, -1 none */
+    int input;                          /* 0x04, the budget input box, -1 none (ai_PlayerStatsPanel compares its value
+                                           with budget and sends a change to the building and its master) */
+    int budgetText;                     /* 0x08, the master's budget text, -1 none */
+    int nameText;                       /* 0x0c, the building's type and name text, -1 none */
+    int budget;                         /* 0x10, the input box value last sent */
+    AIBLD *bld;                         /* 0x14, the building */
+} LCMASTERROW;
+#define ai_MasterRows (*(LCMASTERROW (*)[0x80])&full_data_6f40e0)  /* 0x6f40e0, the master list page's rows */
+#define ai_MasterDown (*(int *)&full_data_6f3870)  /* 0x6f3870, the master list page's scroll down button */
+#define ai_MasterUp (*(int *)&full_data_6f4080)  /* 0x6f4080, the master list page's scroll up button */
+#define ai_MasterBar (*(int *)((char *)&full_data_6f4ce0 + 0x200))  /* 0x6f4ee0, the master list page's scroll bar */
+int d2_WinOpenInput(int x, int y, int w, int h, unsigned char flags, int win);  /* 0x46a360, d2.h's prototype (d2.h is not included yet: Open: head) */
 
-int ai_Unk5bc9c0(void)
+/* 0x5bc9c0, opens the master list page "panel\meister_liste_2" of the player stats panel (its third entry): the
+   captions 0x1934 / 0x1935 / 0x1936 and per building of the player (gm_BuildQuery(1, 4, id)) whose master is not
+   the player a row of ai_MasterRows: the type's picture, the type and name ("%s~ %s"), the master's budget ("%T")
+   and an input box 1000 .. 9000 on the building's budget; returns the form, or -1 (closed) without rows
+   @deep reconstructed from the skeleton (all 212 instructions read against the original: the row init,
+   scroll buttons, captions, the build query loop with the master filter, pic / name / budget texts, input
+   box, the -1 exit); the rows are ai_MasterRows[count] (index, the original's biased pointer
+   esi=&rows[count].nameText matches), init store order matched (no M8). Left: allocation only - the
+   original keeps count in edi (spilled to [esp+0x10], 'imul edi, 0x3e' for the row y, 'mov edi, edx' after
+   inc) and y in the stack slot [esp+0x14], ours the other way round (y in ebx, count in [esp+0x18]); the
+   exit 'test edi, edi / pop esi / jne' vs ours 'mov eax, [esp+0x10] / pop edi / test eax, eax' and the
+   epilogue pop order follow from it; nameText buffer slot differs by 0x20 (slots). Tried: declaration
+   order of count / y, a for loop (worse), buffer sizes 8..0xc0. (references: M8 at +0x242: ours refers to
+   d2_SetObjValue (0x475cb0), the original's field to 0x475980 (d2_GetObjValue), explained: the ref line
+   pairs our d2_SetObjValue call with the original's d2_GetObjValue only by the alignment shift around
+   +0x242: both sides call d2_SetObjValue then d2_GetObjValue once each, in that order, with the same
+   arguments) */
+
+int ai_OpenMasterListPage(void)
 {
-    /* ROUGH SKELETON: the 0x10c-byte frame */
-    return 0;
+    int count;
+    int y;
+    AICHARREC *master;
+    char nameText[0xe0];
+    char budgetText[0x20];
+    int i;
+    AIBLD *bld;
+    int win;
+
+    count = 0;
+    win = d2_OpenForm(0, 0, "panel\\meister_liste_2");
+    d2_CentreViewWindows(win);
+    d2_SetForm(win, 1);
+    io_PrintText(0x1934);
+    for (i = 0; i < 0x80; i++) {
+        ai_MasterRows[i].pic = -1;
+        ai_MasterRows[i].input = -1;
+        ai_MasterRows[i].budgetText = -1;
+        ai_MasterRows[i].nameText = -1;
+        ai_MasterRows[i].budget = 0;
+    }
+    d2_SetForm(win, 0);
+    sv_CreateScrollButtons(0x206, 0x167, d2_LastWindow, d2_GetViewWin(win, 2), 0x3e, &ai_MasterDown, &ai_MasterUp,
+                           &ai_MasterBar);
+    d2_Wins[d2_LastWindow].btnup = -1;
+    d2_Wins[d2_LastWindow].btndown = -1;
+    d2_SetForm(win, 3);
+    io_PrintText(0x1935);
+    d2_SetForm(win, 4);
+    io_PrintText(0x1936);
+    d2_SetForm(win, 2);
+    bld = (AIBLD *)gm_BuildQuery(1, 4, ai_PlayerId);
+    if (bld != 0) {
+        y = 0x14;
+        do {
+            master = (AICHARREC *)gm_FindCharacterByMaster((int)bld);
+            if (master != 0 && master->id != ai_PlayerId) {
+                d2_SetForm(win, 2);
+                ai_MasterRows[count].pic = d2_WinOpenPic(0, count * 0x3e, bld->kind + 0x427, d2_LastWindow);
+                txt_Format(nameText, "%s~ %s", bld->kind * 14 + 0x48e, bld->name);
+                ai_MasterRows[count].nameText = d2_CreateWinText(0x40, count * 0x3e + 8, nameText, d2_LastWindow);
+                d2_Objs[ai_MasterRows[count].nameText].w = 0xa0;
+                d2_SetObjFont(ai_MasterRows[count].nameText, 0x54);
+                txt_Format(budgetText, "%T", master->budget);
+                ai_MasterRows[count].budgetText = d2_CreateWinText(0x180, count * 0x3e + 0x14, budgetText, d2_LastWindow);
+                ai_MasterRows[count].input = d2_WinOpenInput(0xea, y, 0x40, 0x40, 0x82, d2_LastWindow);
+                d2_SetObjValue(ai_MasterRows[count].input, 1000, 9000, gm_ConvertMoney(bld->budget, ai_OwnPlayer));
+                ai_MasterRows[count].budget = d2_GetObjValue(ai_MasterRows[count].input);
+                ai_MasterRows[count].bld = bld;
+                y += 0x3e;
+                count++;
+            }
+        } while ((bld = (AIBLD *)gm_BuildNext()) != 0);
+    }
+    if (count == 0) {
+        d2_CloseView(win);
+        return -1;
+    }
+    return win;
 }
 
 void * d2_SetFont(int font); void d2_DrawTextBox(); void d2_FillPaintbox(int x, int y, int w, int h); int gv_GetTableRecord();
@@ -24209,7 +24302,7 @@ int ai_PlayerStatsPanel(void)
     sv_ButtonRow(U_I((unsigned)&d2_LastWindow), 0, out, 3, U_I((unsigned)&full_data_144a134), U_I((unsigned)&full_data_144a138), U_I((unsigned)&full_data_144a13c));
     ctrlA = ai_OpenMoneyInfoPage();
     ctrlB = ai_OpenBuildingListPage();
-    ctrlC = ai_Unk5bc9c0();
+    ctrlC = ai_OpenMasterListPage();
     id = d2_CreateRadioGroup(3, out[0], out[1], out[2]);
     off = id * 0x8c;
     U_I((unsigned)&d2_Radios + off) |= 1;
