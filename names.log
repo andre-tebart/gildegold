@@ -3034,3 +3034,4 @@
 2026-11-07T21:03:39 0x004d0cd0 data ai_Unk4d0cd0 -> cm_FreeNetIdSlot by:main why:returns the first free (-1) index of the 16 netId slots of CMGUARDREC.netIds (the guards already armed), -1 when none is free; the four inline copies of ai_ArmGateGuards call it
 2026-11-07T21:05:23 0x006f0d4c data ai_Unk6f0d4c -> cm_FightAmbient by:main why:the fight's atmosphere stream (MSXTRACK * from msx_PlayAmbient of Athmos\Kampfathmo_1/2.mp3), stopped by cm_FightOutro
 2026-11-07T21:05:49 0x004d2450 data ai_Unk4d2450 -> cm_CollectEscapeObject by:main why:a d3_ForEachObject callback of ai_Unk4d2490: appends each object named sp_ESCAPE to the list (list[cm_PointCount++])
+2026-11-07T21:07:13 0x004d2490 func ai_Unk4d2490 -> cm_NearestEscapeObject by:main why:returns the closest object named sp_ESCAPE to the character c (walks the scene with cm_CollectEscapeObject), or 0
