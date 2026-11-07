@@ -67,6 +67,7 @@ void ai_ManagedBuildingWindow(struct AIBLD *bld);       /* 0x5b8fc0, its variant
 struct AMOUNTCFG; struct AICHARREC;
 void ai_AmountInfoWindow(int kind, struct AICHARREC *ch);  /* 0x5c1a80, the info box of an amount kind (ch is not read) */
 void ai_AmountKindMenu(void (*pick)(int kind), char *caption, int withKind8);  /* 0x5c1b40, the seven-button amount kind menu: pick gets the clicked kind */
+void ai_AgendaOfficeList(int kind);  /* 0x5c1e10, the agenda of one office column (ai_AmountKindMenu's callback) */
 int ai_AmountMenu(struct AMOUNTCFG *cfg, char *caption, int prompt, int (*pick)(struct AICHARREC *, int));  /* 0x5c1130, the special-amount menu: returns the chosen character record (0: none) */
 void ai_PersonnelBook(struct AIBLD *bld, char *model);  /* 0x5aab80, the personnel book of a building (ob_PERSONALBUCH) */
 void ai_MercenaryBook(struct AIBLD *bld, char *model);  /* 0x5ac110, the mercenary book of a building (ob_SOELDNERBUCH) */

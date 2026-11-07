@@ -26602,7 +26602,6 @@ void ai_AmountInfoWindow(int kind, AICHARREC *ch)
     d2_CloseView(win);
 }
 
-int ai_AgendaOfficeList();
 
 /* 0x5c1b20, the office info entry of the Rathaus name plate: opens the seven-button amount kind menu
    (ai_AmountKindMenu) with the amount list window (ai_AmountListWindow) as its callback and the
@@ -26687,23 +26686,130 @@ void ai_AmountKindMenu(void (*pick)(int kind), char *caption, int withKind8)
 
 void ai_OpenAgendaMenu(void)
 {
-    ai_AmountKindMenu((int)ai_AgendaOfficeList, (int)txt_Ptrs[0x139c], 1);
+    ai_AmountKindMenu(ai_AgendaOfficeList, txt_Ptrs[0x139c], 1);
     sv_CameraFollow();
 }
-/* 0x5c1e10, the menu callback of 0x5c1df0 (846 B, ROUGH SKELETON): 0x4e6fc0 (param_1, 6, the local 0x8c
-   record buffer) first, then the list rows; the body is left as a comment. The frame is 0xac, the tail at
-   0x5c2159 */
+/* 0x5c1e10, the agenda of one office column "special\tagesordnung" (846 B), the callback of the Rathaus agenda
+   menu (ai_OpenAgendaMenu): nothing when the column has no offices (amt_GetColumnOffices, up to 6). The window
+   (two scrolled pages, forms 2 and 3) is titled with the text 0x13a3 + kind; page 2 (0x139e) lists the offices
+   of state 2 with their holder and the character in x14 (0x139f: x14's id, the holder's id, the office's name
+   0x253 + kind, 0x27b + kind for a female holder); page 3 lists, for the columns below 8 (0x13a0), every office
+   open for applications (state 3: 0x13a1 with its name) with up to four characters applying for it
+   (AICHARREC.appliedOffice); for the column 8 (0x13a2) the pending election's office (hmt_GetElectionObjType:
+   0x13a3 with its name) and up to four characters of its group (AICHARREC.flags1cc 0x8000 for 0x24, 0x10000
+   for 0x25, else 0x4000). An empty page says 0x139d. A right release closes it */
 
-int ai_AgendaOfficeList(int param_1)
+void ai_AgendaOfficeList(int kind)
 {
-    char buf[0x8c];
+    int shown;
     int n;
+    int count;
+    AICHARREC *group[4];
+    AMTREC seats[6];
+    AICHARREC *holder;
+    AICHARREC *other;
+    AICHARREC *c;
+    unsigned int mask;
+    int listed;
+    int found;
+    int type;
+    int win;
+    int view;
+    int i;
+    int m;
 
-    n = amt_GetColumnOffices(param_1, 6, buf);
+    n = amt_GetColumnOffices(kind, 6, seats);
     if (n <= 0)
-        return 0;
-    /* ROUGH SKELETON: the list rows of the records and the row builder */
-    return 0;
+        return;
+    win = d2_OpenForm(0, 0, "special\\tagesordnung");
+    d2_CentreViewWindows(win);
+    d2_SetForm(win, 2);
+    view = d2_LastWindow;
+    d2_SetForm(win, 4);
+    d2_CreateScrollButtons(-1, -1, d2_LastWindow, view, 0x767);
+    d2_SetForm(win, 3);
+    view = d2_LastWindow;
+    d2_SetForm(win, 5);
+    d2_CreateScrollButtons(-1, -1, d2_LastWindow, view, 0x767);
+    d2_SetForm(win, 1);
+    io_PrintText(kind + 0x13a3);
+    d2_SetForm(win, 2);
+    io_PrintText(0x139e);
+    listed = 0;
+    for (i = 0; i < n; i++) {
+        if (seats[i].state != 2)
+            continue;
+        holder = (AICHARREC *)gm_FindChar(seats[i].owner);
+        other = (AICHARREC *)gm_FindChar(seats[i].x14);
+        if (holder != 0 && other != 0) {
+            listed |= 1;
+            io_PrintText(0x139f, other->id, holder->id, holder->sex == 0 ? seats[i].kind + 0x253 : seats[i].kind + 0x27b);
+        }
+    }
+    if (listed == 0)
+        io_PrintText(0x139d);
+    d2_SetForm(win, 3);
+    if (kind < 8) {
+        io_PrintText(0x13a0);
+        shown = 0;
+        for (i = 0; i < n; i++) {
+            if (seats[i].state != 3)
+                continue;
+            shown |= 1;
+            found = 0;
+            io_PrintText(0x13a1, seats[i].kind + 0x253);
+            count = 0;
+            for (c = lc_CharRecs; (int)c < (int)&lc_CharRecs[0x300]; c++) {  /* a signed compare (jl) in the original */
+                if (count >= 4)
+                    break;
+                if (c->appliedOffice == seats[i].kind) {
+                    found |= 1;
+                    io_PrintText("$A$Z%1N2", c->id);
+                    count++;
+                }
+            }
+            if (found == 0)
+                io_PrintText(0x139d);
+        }
+    } else {
+        type = hmt_GetElectionObjType();
+        group[0] = 0;
+        group[1] = 0;
+        group[2] = 0;
+        group[3] = 0;
+        mask = 0;
+        if (type != 0) {
+            if (type == 0x24)
+                mask = 0x8000;
+            else
+                mask = type == 0x25 ? 0x10000 : 0x4000;
+        }
+        m = 0;
+        for (c = lc_CharRecs; m < 4; c++) {
+            if ((int)c >= (int)&lc_CharRecs[0x300])
+                break;
+            if (c->flags1cc & mask)
+                group[m++] = c;
+        }
+        shown = m;
+        io_PrintText(0x13a2);
+        if (type != 0) {
+            io_PrintText(0x13a3, type + 0x253);
+            for (i = 0; i < m; i++) {
+                if (i == 0)
+                    io_PrintText("$2A$Z%1N2", group[0]->id);
+                else
+                    io_PrintText("$A$Z%1N2", group[i]->id);
+            }
+        }
+    }
+    if (shown == 0)
+        io_PrintText(0x139d);
+    do {
+        if (dm_L.rup != 0)
+            sv_PopRequest = 1;
+    } while (sv_RunFrame((int)ai_OpenAgendaMenu, 0x657c7) != 0);
+    d2_CloseView(win);
 }
 
 int gv_TableRecordText();
