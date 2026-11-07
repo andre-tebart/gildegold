@@ -1193,7 +1193,10 @@ typedef struct AIBTYPE {           /* the building-type record fields this unit 
     unsigned char k231;            /* 0x231, with k232 the number of worker places of the type (ai_bld.h AIBTYPE.k231;
                                       the personnel book makes that many rows) */
     unsigned char k232;            /* 0x232 */
-    char pad233[0x10];
+    char pad233[0xd];
+    unsigned char min0;            /* 0x240, the storage slot level limit of the first slot (ai_bld.h AIBTYPE.min0) */
+    unsigned char min1;            /* 0x241, of the second slot (ai_bld.h AIBTYPE.min1) */
+    unsigned char max116;          /* 0x242, the limit of both slot levels for an object of type 0x116 (ai_bld.h AIBTYPE.max116) */
     int v243;                      /* 0x243, a value the type's tooltip shows (ai_bld.h AIBTYPE.v243; the build
                                       confirmation text 0x17ef shows it too) */
     unsigned char level;           /* 0x247, the type's level 1 .. 3, read as unsigned (ai_bld.h AIBTYPE.cap247) */
@@ -19394,58 +19397,57 @@ int ai_MapPick(unsigned int flags, int *req, char *name, void (*cb)(), int unuse
     ai_CloseMapWindow((int *)&map);
     return picked;
 }
-/* 0x5b2530, a two-choice window (384 B): the kind record 0x7e3f30 + kind * 0x24d, the window "0x62ccfc"
-   (0x4741f0 / 0x475600), the caption 0x10b; the kind 0x116 uses the +0x242 byte (option 0x10e against the
-   text 0x111), the other kinds the +0x240 byte for the first option (0x10c / 0x110) and the +0x241 byte for
-   the second (0x10d / 0x111) against param_4; the control ids come from 0x475b80 (win, 0, 0x515960 (id, 0x1f40))
-   and the tail 0x515960 (0x10f, 1); the pump 0x5309a0 (this, 0x677c7) drives the click dispatch (0xf8a668,
-   0x5fe710) and 0x14673a0; returns 1 / 2 for the two options, 0 otherwise; 0x4758f0 closes */
+/* 0x5b2530, the new storage slot window "Handel\Handel_Lager_Neuer_Slot" of the store obj in the building bld
+   (384 B, ai_StorageWindow): the caption 0x10b; a store of type 0x116 offers one upgrade (0x10e) while level is
+   below the type's max116, else the text 0x111; the others offer the first slot (0x10c) while level is below
+   min0 (else 0x110) and the second (0x10d) while level2 is below min1 (else 0x111); the closing text 0x10f.
+   Returns 1 for the first offer, 2 for the second, 0 when closed (the button 1 or the right button) */
 
-int ai_Unk5b2530(unsigned short *param_1, unsigned char *param_2, int param_3, int param_4)
+int ai_NewStorageSlotWindow(AIOBJ *obj, AIBLD *bld, int level, int level2)
 {
-    char *kind;
-    int win;
-    int ctrl;
-    int ctrl1;
     int r;
+    int first;
+    int second;
+    int win;
+    AIBTYPE *bt;
 
-    kind = (char *)(U_I((unsigned)&ai_BTypes) + *param_2 * 0x24d);
     r = 0;
-    ctrl = -1;
-    win = d2_OpenForm((char *)(unsigned)&full_data_62ccfc, 0, 0);
+    second = -1;
+    first = -1;
+    bt = &((AIBTYPE *)ai_BTypes)[bld->kind];
+    win = d2_OpenForm(0, 0, "Handel\\Handel_Lager_Neuer_Slot");
     d2_CentreViewWindows(win);
     io_PrintText(0x10b);
-    if (*param_1 == 0x116) {
-        if (param_3 >= *(unsigned char *)(kind + 0x242))
-            io_PrintText(0x111);
-        else
-            ctrl1 = d2_GetWinObj(win, 0, io_PrintText(0x10e, 0x1f40));
-    } else {
-        if (param_3 >= *(unsigned char *)(kind + 0x240))
+    if (obj->id != 0x116) {
+        if (level >= bt->min0)
             io_PrintText(0x110);
         else
-            ctrl = d2_GetWinObj(win, 0, io_PrintText(0x10c, 0x1f40));
-        if (param_4 >= *(unsigned char *)(kind + 0x241))
+            first = d2_GetWinObj(win, 0, io_PrintText(0x10c, 0x1f40));
+        if (level2 >= bt->min1)
             io_PrintText(0x111);
         else
-            ctrl1 = d2_GetWinObj(win, 0, io_PrintText(0x10d, 0x1f40));
+            second = d2_GetWinObj(win, 0, io_PrintText(0x10d, 0x1f40));
+    } else if (level >= bt->max116) {
+        io_PrintText(0x111);
+    } else {
+        first = d2_GetWinObj(win, 0, io_PrintText(0x10e, 0x1f40));
     }
     io_PrintText(0x10f, 1);
     do {
-        if (U_I((unsigned)&d2_ClickedId) != -1) {
-            if (U_I((unsigned)&d2_PointerObj) == ctrl1) {
+        if (d2_ClickedId != -1) {
+            if (d2_PointerObj == first) {
                 r = 1;
-                U_I((unsigned)&sv_PopRequest) = 1;
-            } else if (U_I((unsigned)&d2_PointerObj) == ctrl) {
+                sv_PopRequest = 1;
+            } else if (d2_PointerObj == second) {
                 r = 2;
-                U_I((unsigned)&sv_PopRequest) = 1;
-            } else if (U_I((unsigned)&d2_ClickedId) == 1) {
-                U_I((unsigned)&sv_PopRequest) = 1;
+                sv_PopRequest = 1;
+            } else if (d2_ClickedId == 1) {
+                sv_PopRequest = 1;
             }
         }
-        if (U_I(((unsigned)&dm_L + 0x20)) != 0)
-            U_I((unsigned)&sv_PopRequest) = 1;
-    } while (sv_RunFrame(ai_Unk5b2530, 0x677c7) != 0);
+        if (dm_L.rup != 0)
+            sv_PopRequest = 1;
+    } while (sv_RunFrame((int)ai_NewStorageSlotWindow, 0x677c7) != 0);
     d2_CloseView(win);
     return r;
 }
