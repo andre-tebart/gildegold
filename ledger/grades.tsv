@@ -772,7 +772,7 @@ exe	0x0043ce10	d3_InitSurf	d3_engine	byte	readable
 exe	0x0043ce60	d3_InitObject	d3_engine	shape	draft	deep	
 exe	0x0043cfb0	d3_AddObjectDrawData	d3_engine	byte	readable		
 exe	0x0043d0e0	d3_Unlink	d3_engine	byte	readable		
-exe	0x0043d180	d3_CloneObject	d3_engine	shape	draft	deep	
+exe	0x0043d180	d3_CloneObject	d3_engine	byte	draft	deep	
 exe	0x0043d430	d3_SetObjectAlpha	d3_engine	shape	readable	deep	
 exe	0x0043d630	d3_SetAlphaCB	d3_engine	byte	readable		
 exe	0x0043d690	d3_SetAlpha	d3_engine	byte	readable		
@@ -2476,20 +2476,20 @@ exe	0x004d3300	cm_FallDownAction	cm	byte	readable
 exe	0x004d3390	cm_CheckDeath	cm	byte	readable		
 exe	0x004d3550	cm_HitAction	cm	byte	readable		
 exe	0x004d3980	cm_LayBombAction	cm	byte	readable		
-exe	0x004d3a30	cm_ThrowBombAction	cm	byte	draft		
-exe	0x004d3ac0	ai_Unk4d3ac0	cm	byte	draft		
-exe	0x004d3ae0	ai_Unk4d3ae0	cm	byte	draft		
+exe	0x004d3a30	cm_ThrowBombAction	cm	byte	readable		
+exe	0x004d3ac0	cm_CheerAction	cm	byte	readable		
+exe	0x004d3ae0	cm_PickUpAction	cm	byte	readable		
 exe	0x004d3b30	cm_CheckFightWinner	cm	byte	readable		
-exe	0x004d3d10	cm_LootStock	cm	byte	draft		
-exe	0x004d3ea0	cm_LootCarts	cm	byte	draft		
+exe	0x004d3d10	cm_LootStock	cm	byte	readable		
+exe	0x004d3ea0	cm_LootCarts	cm	byte	readable		
 exe	0x004d4050	cm_FightRole	cm	shape	readable		
-exe	0x004d4090	ai_Unk4d4090	cm	shape	draft		
-exe	0x004d4340	ai_Unk4d4340	cm	byte	draft		
+exe	0x004d4090	cm_LootList	cm	byte	readable		
+exe	0x004d4340	cm_FightPortraits	cm	byte	readable		
 exe	0x004d4540	cm_FightStartDialog	cm	draft	draft	deep	
 exe	0x004d4d70	cm_FightEndDialog	cm	draft	draft	deep	
 exe	0x004d60b0	ai_Unk4d60b0	cm	draft	draft	deep	
 exe	0x004d63e0	cm_RunFight	cm	shape	readable		
-exe	0x004d6930	cm_FightResult	cm	byte	draft		
+exe	0x004d6930	cm_FightResult	cm	byte	readable		
 exe	0x004d6970	ai_Unk4d6970	cm	shape	draft		
 exe	0x004d6a50	ai_Unk4d6a50	cm	byte	draft		
 exe	0x004d6b70	ai_Unk4d6b70	cm	byte	draft		
@@ -4003,8 +4003,8 @@ exe	0x00578370	ai_TutorialStop	sv_t	byte	readable
 exe	0x00578440	ai_TutorialFreeRuns	sv_t	byte	readable		
 exe	0x005784a0	ai_TutorialInitMainIntro	sv_t	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	sv_t	byte	readable		
-exe	0x00578e40	ai_TutorialInitChapter2	sv_t	byte	readable		
-exe	0x00579570	ai_TutorialInitChapter3	sv_t	draft	readable		
+exe	0x00578e40	ai_TutorialInitChapter2	sv_t	shape	readable		
+exe	0x00579570	ai_TutorialInitChapter3	sv_t	shape	readable		
 exe	0x0057aa80	ai_TutorialInitChapter4	sv_t	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	sv_t	byte	readable		
 exe	0x0057b750	ai_TutorialInitMainOutro	sv_t	byte	readable		
