@@ -30160,61 +30160,55 @@ int ai_BlackmailContactWindow(AICHARREC *ch)
     d2_CloseView(win);
     return ret;
 }
-/* 0x5c9c50, the blackmail contact (406 B): param_1 is the message record (AIMSG: +2 the type, +4 the
-   handle), param_2 the building (+0x214 the target id). Types 6 / 7: the request record local_188 (20
-   dwords, +4 = 0x400, +0x10 = 6, +8 = 0xa7fdfbb6, +0xc = 1) with the text 0x5176d0 (0x1d66) through the
-   window 0x5c1130 (record, text, 0, the callback 0x5c9990), 0x81 when the record's +0x1c8 bit 0x400 is set,
-   else 2. Other types: the target 0x505df0; no target -> 0x60; the two rolls 0x42ec00 (9), the message
-   record (the clock 0x770ae0 .., the handle, the target handle, the kinds 0x47 / 2, the texts 0x1d6d /
-   0x1d76 + the rolls) sent by 0x4c4b70 and the close 0x4c5f60 (-2), return 0x10. ROUGH: record by offset. */
+/* 0x5c9c50, the blackmail contact order's ask (ord_BlackmailContactOrder, kind 3) for the character me with the
+   order message m. Of another kind than 6 / 7 (the AI): no character m->target: 0x60; else the letter 0x47 to it
+   as ai_BlackmailContactWindow sends it (not waited for), me pays 2: 0x10. A player picks the victim in the amount
+   menu (mode 0x400, kind 6, the gypsy filter, the caption 0x1d66) with the letter window ai_BlackmailContactWindow
+   as its pick callback: 0x81 when the picked character is marked (powerFlags 0x400) afterwards, else 2 */
 
-int ai_BlackmailContact(int param_1, int param_2)  /* @original: the callers push (c, m) (0x4f5350); the draft body reads its own offsets of the two params */
+int ai_BlackmailContact(AICHARREC *me, LCORDMSG *m)
 {
-    int rec[0x3e];
-    int cfg[20];
-    char text[64];
-    int i;
-    int h;
     int ret;
-    int target;
-    short r1;
-    short r2;
+    AICHARREC *victim;
+    AICHARREC *pick;
+    unsigned short text1;
+    unsigned short text2;
+    AMOUNTCFG cfg;
 
     ret = 2;
-    if (*(char *)(param_1 + 2) != 6 && *(char *)(param_1 + 2) != 7) {
-        target = (int)gm_FindChar(*(int *)(param_2 + 0x214));
-        if (target == 0)
+    if (me->kind != 6 && me->kind != 7) {
+        AIMSG msg;
+
+        victim = (AICHARREC *)gm_FindChar(m->target);
+        if (victim == 0)
             return 0x60;
-        r1 = util_Random(9);
-        r2 = util_Random(9);
-        for (i = 0; i < 0x3e; i++)
-            rec[i] = 0;
-        *(char *)((char *)rec + 4) = 0x47;
-        rec[2] = *(int *)(param_1 + 4);
-        rec[3] = *(int *)(param_1 + 4);
-        rec[0x16] = *(int *)(param_1 + 4);
-        rec[10] = *(int *)(unsigned)&ai_Time;
-        rec[11] = *(int *)(unsigned)&ai_Time.hour;
-        rec[12] = *(int *)((unsigned)&ai_Time + 0x8);
-        *(short *)((char *)rec + 0x34) = *(short *)((unsigned)&ai_Time + 0xc);
-        *(char *)((char *)rec + 0x36) = 2;
-        rec[0x17] = *(int *)(target + 4);
-        *(short *)((char *)rec + 0x60) = r2 + 0x1d6d;
-        *(short *)((char *)rec + 0x62) = r1 + 0x1d76;
-        h = cm_SendLongMessage(rec);
-        cm_SendMoneyDelta(*(int *)(param_1 + 4), 0xfffffffe);
+        text2 = util_RandomU(9) + 0x1d76;
+        text1 = util_RandomU(9) + 0x1d6d;
+        memset(&msg, 0, sizeof(msg));
+        msg.type = 0x47;
+        msg.to = me->netId;
+        msg.fromId = me->netId;
+        msg.flags = 2;
+        msg.time = ai_Time;
+        msg.letter.from = me->netId;
+        msg.letter.text1 = text1;
+        msg.letter.text2 = text2;
+        msg.letter.victim = victim->netId;
+        cm_SendLongMessage((char *)&msg);
+        cm_SendMoneyDelta(me->netId, -2);
         return 0x10;
+    } else {
+        char text[0x40];
+
+        memset(&cfg, 0, sizeof(cfg));
+        cfg.mode = 0x400;
+        cfg.kind = 6;
+        cfg.filter = gypsyFilter;
+        txt_Format(text, 0x1d66);
+        pick = (AICHARREC *)ai_AmountMenu(&cfg, text, 0, ai_BlackmailContactWindow);
+        if (pick != 0 && (pick->powerFlags & 0x400) != 0)
+            ret = 0x81;
     }
-    for (i = 0; i < 20; i++)
-        cfg[i] = 0;
-    cfg[1] = 0x400;
-    cfg[4] = 6;
-    cfg[2] = 0xa7fdfbb6;
-    cfg[3] = 1;
-    txt_Format(text, (char *)0x1d66);
-    i = ai_AmountMenu(cfg, text, 0, (void *)ai_BlackmailContactWindow);
-    if (i != 0 && (*(unsigned int *)(i + 0x1c8) & 0x400) != 0)
-        ret = 0x81;
     return ret;
 }
 /* 0x5c9df0, the blackmail payment window (511 B, a Ghidra-missed start): param_1 is the message record

@@ -306,7 +306,7 @@ int ord_BlackmailContactOrder(char *c, int *m)
 {
     if ((m[0] == 3 || m[0] == 1) && (unsigned char)c[0xd] >= 3 && (ORD_CHAR(c)->flags1c8 & 0x400) == 0) {
         if (m[0] == 3) {
-            ai_BlackmailContact(c, m);
+            ai_BlackmailContact((struct AICHARREC *)c, (struct LCORDMSG *)m);
             return 2;
         }
         if (m[0] == 1 && c[2] == 6)
