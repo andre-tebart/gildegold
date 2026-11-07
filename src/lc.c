@@ -25616,18 +25616,86 @@ unsigned int ai_FillWeddingTab(AICHARREC *me, unsigned int max, LCAMOUNTROW *row
     }
     return n;
 }
-/* 0x5bfa90, a page fill variant (428 B, ROUGH SKELETON): the character +0x1c8 flag 0x400, the carrier walk
-   0x53e400 (1, 0, 0x47), the records of 0xe dwords and the 0x5be1d0 / 0x5c33c0 tail; only reached through
-   the fill table 0x62d154. The body is left as a comment */
+/* 0x5bfa90, the fill of the special-amount window's quarrel tab (tab 5, 428 B): while me is in a quarrel
+   (AICHARREC.powerFlags 0x400) the other side of its insult event 0x47 (role 0), then the characters (id4) of the
+   crime events 0x18 of me (role 1). With max 0 it only counts them; else it fills rows with them (LCAMOUNTROW.rec,
+   x2c the role; the crimes up to max rows) and gives each the corner icons (ai_AmountRowStatus) and the partner
+   filter filter (ai_PassesPartnerFilter, pickable); returns the count
+   @deep Read the whole function against the original and reconstructed it from the skeleton: the quarrel
+   opponent of the insult event 0x47 (powerFlags 0x400), the crime events 0x18 of me (he_FindEvent(2, 2,
+   me->id, 0, 0x18), id4), the count path and the fill path with the corner icons and the partner filter.
+   The count path counts in its own variable (the original keeps it in edi, the fill path's n in ebp). 156
+   vs 155 instructions, the same calls, stores and branches; left is allocation: VC6 gives ours a zero
+   register (xor ebp, ebp; cmp eax, ebp / push ebp / mov [esi+0x2c], ebp instead of test eax, eax / push 0
+   / mov [esi+0x2c], 0) and keeps n in ebx, where the original keeps max in ebx (test ebx, ebx; cmp ebp,
+   ebx at +0x146) and n in ebp. Tried: one shared counter for both paths (code 84 instead of 49). */
 
-int ai_Unk5bfa90(int param_1, int param_2, int *param_3, int param_4)
+unsigned int ai_FillQuarrelTab(AICHARREC *me, unsigned int max, LCAMOUNTROW *rows, unsigned int *filter)
 {
-    /* ROUGH SKELETON: the guard on the count and the carrier list */
-    (void)param_1;
-    (void)param_2;
-    (void)param_3;
-    (void)param_4;
-    return 0;
+    AIJOB *ev;
+    AICHARREC *c;
+    unsigned int count;
+    unsigned int n;
+    int i;
+
+    count = 0;
+    if (max == 0) {
+        if ((me->powerFlags & 0x400) != 0) {
+            for (ev = (AIJOB *)he_FindEvent(1, 0, 0x47); ev != 0; ev = (AIJOB *)he_NextEvent()) {
+                if (ev->partner1 == me->netId) {
+                    if (gm_FindChar(ev->partner2) != 0)
+                        count = 1;
+                    break;
+                }
+                if (ev->partner2 == me->netId) {
+                    if (gm_FindChar(ev->partner1) != 0)
+                        count = 1;
+                    break;
+                }
+            }
+        }
+        for (ev = (AIJOB *)he_FindEvent(2, 2, me->id, 0, 0x18); ev != 0; ev = (AIJOB *)he_NextEvent()) {
+            if (gm_FindChar(ev->id4) != 0)
+                count++;
+        }
+        return count;
+    }
+    n = 0;
+    if ((me->powerFlags & 0x400) != 0) {
+        for (ev = (AIJOB *)he_FindEvent(1, 0, 0x47); ev != 0; ev = (AIJOB *)he_NextEvent()) {
+            if (ev->partner1 == me->netId) {
+                c = (AICHARREC *)gm_FindChar(ev->partner2);
+                if (c != 0) {
+                    rows[0].rec = c;
+                    rows[0].x2c = 0;
+                    n = 1;
+                }
+                break;
+            }
+            if (ev->partner2 == me->netId) {
+                c = (AICHARREC *)gm_FindChar(ev->partner1);
+                if (c != 0) {
+                    rows[0].rec = c;
+                    rows[0].x2c = 0;
+                    n = 1;
+                }
+                break;
+            }
+        }
+    }
+    for (ev = (AIJOB *)he_FindEvent(2, 2, me->id, 0, 0x18); ev != 0 && n < max; ev = (AIJOB *)he_NextEvent()) {
+        c = (AICHARREC *)gm_FindChar(ev->id4);
+        if (c != 0) {
+            rows[n].rec = c;
+            rows[n].x2c = 1;
+            n++;
+        }
+    }
+    for (i = 0; i < (int)n; i++) {
+        ai_AmountRowStatus(&rows[i]);
+        rows[i].pickable = ai_PassesPartnerFilter(me->id, rows[i].rec->id, filter, 0);
+    }
+    return n;
 }
 /* 0x5bfc40, a page fill variant (335 B, ROUGH SKELETON): the byte +0x168 of param_1 as the guard, the frame
    0x2c; only reached through the fill table 0x62d154. The body is left as a comment */
@@ -32442,7 +32510,7 @@ AIAMOUNTTAB ai_AmountTabs[8] = {       /* 0x62d148, one table: 8 rows of 0x14 {i
     { 2, 0, -1, ai_FillEnemiesTab, ai_Unk5c01c0 },
     { 3, 0, -1, ai_FillLoversTab, ai_Unk5c02d0 },
     { 4, 0, -1, ai_FillWeddingTab, ai_Unk5c03e0 },
-    { 5, 0, -1, ai_Unk5bfa90, ai_Unk5c0550 },
+    { 5, 0, -1, ai_FillQuarrelTab, ai_Unk5c0550 },
     { 6, 0, -1, ai_Unk5bfc40, ai_Unk5c0650 },
     { 7, 0, -1, ai_Unk5bfd90, ai_Unk5c0790 },
 };
