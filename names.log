@@ -2934,3 +2934,4 @@
 2026-11-07T12:59:59 0x005bd5e0 func ai_Unk5bd5e0 -> ai_ShowAmountRows by:main why:lays out the rows of the special-amount list: frame, portrait, icons, title / name / office texts, liking slider
 2026-11-07T13:04:02 0x005bdb60 func ai_Unk5bdb60 -> ai_ShowOfficeRows by:main why:the seat rows of the special-amount list: fixed seats by kind, a vacant seat shows its office text 0x253 + office, kind 8 the office of flags1cc (reasoned: the seats are offices)
 2026-11-07T13:20:26 0x005bf0d0 func ai_Unk5bf0d0 -> ai_FillFamilyTab by:main why:tab 0 fill of the special-amount window (ai_AmountTabs[0].fill): counts / fills the rows of the character's relatives, same-family characters (w050 / b058) and the pair event 0x41 partner
+2026-11-07T13:24:52 0x005bf300 func ai_Unk5bf300 -> ai_FillFriendsTab by:main why:tab 1 fill of the special-amount window (ai_AmountTabs[1].fill): the characters the given one likes at least 75 (gm_Liking), sorted by liking
