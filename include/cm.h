@@ -838,7 +838,7 @@ extern int cm_FightSettled;  /* 0x6f0cf8 */
 extern int cm_FightLootValue;  /* 0x6f0cfc */
 extern struct D2WIN *d2_LastWindowPtr;  /* 0x6ed980, window created last (d2.c); cm.c adds byte offsets through d2_LastWindowPtrC */
 
-int cm_LootCarts(char *a, char *b, char *d, int unused, float f);  /* 0x4d3ea0 */
+int cm_LootCarts(struct CMFIGHTREC *a, AIBLD *b, struct AICHAR *d, int unused, float f);  /* 0x4d3ea0 */
 float gm_GoodsPrice(unsigned id, unsigned char p);  /* 0x5089c0, a price */
 int gm_GetGoodsValue(char *ch);  /* 0x509e60 */
 struct D3HMAP * ch_GetHMap();  /* 0x402140 */
