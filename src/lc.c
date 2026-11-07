@@ -34571,7 +34571,21 @@ int ai_UseGoodStaffBonus(AICHARREC *ch, G8USEVIEW *use)
    else the character use->target (gm_FindChar); none -> 0. Sends it the event message 0xa3 (the petty loss of
    he.c's he_AllocPettyLoss / he_RunPettyLoss: it loses money over the next rounds; now, flags 1). A player user
    sees, inside 0xfe8, the text whose id is the good's rank + 1 (formatted with the target) in the use-object
-   panel. Marks the use handled and returns 1. */
+   panel. Marks the use handled and returns 1.
+   @deep Read whole against the original and written typed (AMOUNTCFG flags 1, AIMSG 0xa3 with msg.time =
+   ai_Time, G9DOMIZIL found); every call, argument, constant and store matches. Left: (1) the lc
+   TU-boundary effect of the lead's Open: layout: the original calls ai_FindUsableGoodIndex (+0x126) before
+   loading target->id for txt_Format (line, rank + 1, target->id), its pop deferred to the final add esp,
+   0x24; ours (+0x11c) loads and pushes target->id first and pops the call's 8 bytes at once, because VC6
+   sees our earlier-defined ai_FindUsableGoodIndex (as in ai_UseGoodCharmOtherSex; separate statement,
+   nested call and a textId temp all give the same code); (2) the AITIME copy order of msg.time (the
+   original loads ai_TimeHourW first and stores time+4, to, time+0, then type; msg.to before msg.time is
+   the closest, 55 -> 43 ins). The M8 lines at +0x12c / +0x15e are false pairings of the shifted call
+   sequence (ours FindUsable | the original's txt_Format, ours txt_Format | ai_UseObjPanel): both sides
+   call FindUsable, txt_Format x2 and ai_UseObjPanel once each, in that order. (references: M8 at +0x12c:
+   ours refers to ai_FindUsableGoodIndex (0x5ba660), the original's field to 0x5176d0 (txt_Format) (and 1
+   more), explained: the M8s pair calls shifted by the push order; the same calls in the same order on both
+   sides) */
 
 int ai_UseGoodPettyLoss(AICHARREC *ch, G8USEVIEW *use)
 {
