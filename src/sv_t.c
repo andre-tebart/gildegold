@@ -6954,7 +6954,7 @@ void ai_CabinetIntrigueWindow(AIBLD *rec)
     sv_CameraFollow();
 }
 
-void sv_ReleaseNamePlates(void); int sv_RegisterNamePlate(); int ai_OpenTransport(); int ai_StorageWindow();
+void sv_ReleaseNamePlates(void); int sv_RegisterNamePlate(); int ai_OpenTransport(); void ai_StorageWindow();
 int ai_ProductionWindow(); void ai_UnlockRoomWindow(); void ai_AlchemistResearchWindow(); void ai_AlchemistWindow();
 
 /* 0x5821d0, the contacts of the alchemist's laboratory (the room kind 0x24b of the enter-building driver

@@ -8029,7 +8029,7 @@ void sv_ClearNamePlates(void); struct D3OBJECT * d3if_Pick(float x, float y, int
 int gm_PlayerFactor(int a, unsigned char k); int gm_GetCreditOffers(); int gm_CreditEvents(); void d2_EnableViewObjects();
 #define gm_SumListAmountsL ((int (*)(void *))gm_SumListAmounts)  /* 0x509e30: @original ai_WineCellarWindow passes the list alone (one push, no player slot) */
 void he_MessageBoxQuickjump(int a1, int a2, char *text, char fl, int a5, int a6, int a7, char *jump, char *text2); void he_FreeEvent(); void d2_RadioClear(int g); int d2_CreateRadioGroup(int n, ...);
-int ai_StorageWindow(); void ai_MasterLetterWindow(); int ai_OpenTransport();
+void ai_StorageWindow(); void ai_MasterLetterWindow(); int ai_OpenTransport();
 int ai_BardWindow(); int ai_NoticeBoardWindow(); int ai_AmountRowStatus(); int ai_AmountRow();
 void ai_LeftAlignedText(); void cm_BeginGroup(const char *s); void cm_SendScriptMessage(void *p); void cm_SendProofExecuted(int a, int b);
 
@@ -8240,7 +8240,7 @@ void ai_CityInfoWindow(AIBLD *city, int unused)
 
 int d3t_PlayAnim(); void d2_SetBackgroundTexture();
 char d3if_ShowTree(struct D3OBJECT *obj, char show); int ls_GetLanguage(); void sv_ClearNamePlates(void); struct D3OBJECT * d3if_Pick(float x, float y, int flags, int mask);
-unsigned char * gm_BuildNext(void); int ai_StorageWindow(); void ai_MasterLetterWindow(); int ai_OpenTransport();
+unsigned char * gm_BuildNext(void); void ai_StorageWindow(); void ai_MasterLetterWindow(); int ai_OpenTransport();
 int ai_TransportWindow(); 
 
 /* 0x59a2c0, creates the city point object of a town (256 B): the name "dummy_<CITY>" (the uppercase city via
@@ -12410,7 +12410,7 @@ void ai_SermonWindow(AIBLD *bld)
     sv_CameraFollow();
 }
 
-int ai_StorageWindow(); int ai_ProductionWindow();
+void ai_StorageWindow(); int ai_ProductionWindow();
 int ai_OpenTransport(); void ai_MasterLetterWindow();
 
 /* 0x5a36c0, the production contact of the room 0xf7, the writing desk (330 B): the pump 0x5309a0 (0x5a36c0,
@@ -19451,38 +19451,264 @@ int ai_NewStorageSlotWindow(AIOBJ *obj, AIBLD *bld, int level, int level2)
     d2_CloseView(win);
     return r;
 }
-/* 0x5b26b0, a two-choice window of a kind record (2688 B, ROUGH SKELETON): 0x520fe0 (param_1) first; the kind
-   record 0x7e3f30 + kind * 0x24d; with no building (param_2) the +0x5d owner and its 0x4ffe90 (the +0x14);
-   the options are the objects 0x4ffe90 (owner, 2, 0, 0x2a, 6) / (owner, 2, 0, 0x116, 6) against the kind bytes
-   +0x240 / +0x241 / +0x242, then the window "0x62cd1c" with the caption texts and the click / pump loop. Only
-   the prologue and the first lookups are drafted; the window body is left as a comment. The 0x724 frame holds
-   two 0x40-byte record blocks and the text buffers */
+/* 0x5b26b0, the store options window "Handel\Handel_Lageroptionen" of the building bld (2685 B; the contact
+   listeners of the production buildings, kontors and stores): the store is the list's object of type 0x2a or
+   0x116 (the list: the given one, else the list of the room object 2 of the building, else its objList), else
+   the building's own 0x2a. Each frame it shows the store's two slot levels (lvl1c / lvl1d) against the type's
+   limits (min0 / min1, max116 for a 0x116 store) with the slot orders running (event 0x12: slotOrder1c /
+   slotOrder1d), the price 0x1f40 and the store's capacity level (count, text 0x107 + it, the price 0x3200).
+   The first button opens ai_NewStorageSlotWindow: a bought slot (0x1f40, cm_SendMoveGoods with the slot wait)
+   counts into the player record (+0x50) and the running order, or posts the order message 0x12 (n = 1: the
+   first slot, ch = 1: the second); the second button buys the capacity upgrade (0x3200, message 0x13) after
+   the confirmation 0x113. The buttons grey out at the limits; at capacity 3 with both slots full the text
+   0x112 replaces them. The tutorial steps 0x1d frame the window
+   @deep Reconstructed whole from the stub against the original (759 instructions read end to end): the
+   store lookup (0x2a / 0x116 via the list or the room object 2), the window, the two slot-order events
+   0x12 and the capacity event 0x13, the level texts 0xfe..0x107, the slot purchase through
+   ai_NewStorageSlotWindow (0x1f40, the cm_GetSlotState wait, the player record +0x50, message 0x12 n=1 /
+   ch=1), the capacity upgrade (0x3200, confirmation 0x113, message 0x13), the button limits and the 0x112
+   replacement, the goods lists. 765 vs 759 instructions; frame equal (0x724: btns[8], text[0x400]). Left,
+   allocation and layout only: the first event search keeps its cursor in eax and copies it to edi /
+   [esp+0x34] after the loop in the original, ours walks it in edi with a store per step (0x5b2834); the
+   three message builds store the same fields in another schedule (0x5b2b33, 0x5b2c96, 0x5b2e61); the
+   original keeps edx = 0 for the enable stores (0x5b2fab); the 'count >= 3 or upgrade' disable branch of
+   the second button sits after the goods-list calls in the original (0x5b306d) and inline in ours, with
+   its caption call tail-merged into the enable path in both (references: M8 at +0x988: ours refers to
+   txt_Ptrs+0x3f4 (0x143a5b4), the original's field to 0x143a5b0 (txt_Ptrs+0x3f0), explained: the M8 at
+   +0x988 is an alignment artifact of that moved block: both sides load txt_Ptrs[0xfc] (0x143a5b0) for the
+   enable caption and the no-upgrade disable caption and txt_Ptrs[0xfd] (0x143a5b4) for the running-upgrade
+   caption; the aligner pairs ours' 0xfd load with the original's 0xfc load because the disable block sits
+   elsewhere) */
 
-int ai_StorageWindow(int param_1, int param_2)
+void ai_StorageWindow(AIBLD *bld, int list)
 {
-    char *kind;
-    int own;
-    int a;
-    int b;
+    AIBTYPE *bt;
+    AIOBJ *store;
+    AIOBJ *room;
+    AIJOB *slots1;
+    AIJOB *slots2;
+    AIJOB *upgrade;
+    AIJOB *ev;
+    int *prec;
+    int btns[8];
+    int btn0, btn1;
+    int win;
+    int choice;
+    int slot;
+    int lim1, lim2;
+    int level, level2;
+    AIMSG msg1;
+    AIMSG msg2;
+    AIMSG msg3;
+    char text[0x400];
 
-    if (sv_CheckCharacterFlag(param_1) != 0)
-        return 0;
-    kind = (char *)(U_I((unsigned)&ai_BTypes) + *(unsigned char *)param_1 * 0x24d);
-    own = param_2;
-    if (own == 0) {
-        b = gm_Query(U_I(param_1 + 0x5d), 1, 4, 2);
-        if (b != 0)
-            own = *(int *)(b + 0x14);
+    if (sv_CheckCharacterFlag(bld) != 0)
+        return;
+    bt = &((AIBTYPE *)ai_BTypes)[bld->kind];
+    if (list == 0) {
+        room = (AIOBJ *)gm_Query((void *)bld->objList, 1, 4, 2);
+        if (room != 0)
+            list = room->list;
         else
-            own = U_I(param_1 + 0x5d);
+            list = bld->objList;
     }
-    a = gm_Query(own, 2, 0, 0x2a, 6);
-    if (a == 0)
-        a = gm_Query(own, 2, 0, 0x116, 6);
-    /* ROUGH SKELETON: the window "0x62cd1c" (0x4741f0 / 0x475600), the option controls 0x475b80 over the
-       texts, the kind bytes +0x240 .. +0x242, the click dispatch 0xf8a668 / 0x5fe710 and the pump 0x5309a0
-       (this, 0x677c7); the tail at 0x5b3123 closes with 0x4758f0 */
-    return 0;
+    if ((store = (AIOBJ *)gm_Query((void *)list, 2, 0, 0x2a, 6)) == 0
+        && (store = (AIOBJ *)gm_Query((void *)list, 2, 0, 0x116, 6)) == 0
+        && (store = (AIOBJ *)gm_Query((void *)bld->objList, 2, 0, 0x2a, 6)) == 0)
+        return;
+    ai_CampaignStep(0x1d, bld, 0, 0);
+    win = d2_OpenForm(0, 0, "Handel\\Handel_Lageroptionen");
+    d2_CentreViewWindows(win);
+    d2_SetForm(win, 3);
+    io_PrintText(0xfa);
+    d2_SetForm(win, 0);
+    sv_OpenWindowFrame(d2_LastWindow, 0x70b, 0x740);
+    d2_SetForm(win, 4);
+    sv_ButtonRow(d2_LastWindow, 0, btns, 2, txt_Ptrs[0xfb], txt_Ptrs[0xfc]);
+    btn0 = btns[0];
+    btn1 = btns[1];
+    if (ai_GameFlags & 0x80)
+        d2_SetObjEnabled(btn1, 0);
+    ai_InitProductionTables();
+    d2_SetPointerSprite(0, 0);
+    do {
+        for (ev = (AIJOB *)he_FindEvent(2, 0, 0x12, 3, bld->id); ev != 0 && ev->slotOrder1c == 0;
+             ev = (AIJOB *)he_NextEvent())
+            ;
+        slots1 = ev;
+        for (slots2 = (AIJOB *)he_FindEvent(2, 0, 0x12, 3, bld->id); slots2 != 0 && slots2->slotOrder1d == 0;
+             slots2 = (AIJOB *)he_NextEvent())
+            ;
+        upgrade = (AIJOB *)he_FindEvent(2, 0, 0x13, 3, bld->id);
+        d2_SetForm(win, 2);
+        if (store->id != 0x116) {
+            io_PrintText(0xfe, store->lvl1c, bt->min0);
+            io_PrintText(0xff, 0x1f40);
+            if (slots1 != 0)
+                io_PrintText(0x100, slots1->slotOrder1c);
+            else
+                io_PrintText(0x101);
+            io_PrintText(0x102, store->lvl1d, bt->min1);
+            io_PrintText(0xff, 0x1f40);
+            if (slots2 != 0)
+                io_PrintText(0x100, slots2->slotOrder1d);
+            else
+                io_PrintText(0x101);
+        } else {
+            io_PrintText(0x104, store->lvl1c, bt->max116);
+            io_PrintText(0x105, 0x1f40);
+            if (slots1 != 0)
+                io_PrintText(0x106, slots1->slotOrder1c);
+            else
+                io_PrintText(0x107);
+        }
+        io_PrintText(0x103, store->count + 0x107, 0x3200);
+        if (d2_ClickedId != -1) {
+            if (d2_PointerObj == btn0) {
+                level = store->lvl1c;
+                if (slots1 != 0)
+                    level += slots1->slotOrder1c;
+                level2 = store->lvl1d;
+                if (slots2 != 0)
+                    level2 += slots2->slotOrder1d;
+                choice = ai_NewStorageSlotWindow(store, bld, level, level2);
+                gm_SumListAmounts((void *)((AICHARREC *)ai_Chars)[ai_PlayerId].inventory, ai_OwnPlayer);
+                if (choice == 1) {
+                    if (sv_CheckGoodAmountB(ai_Chars[ai_PlayerId], 0x1f40, ai_OwnPlayer) != 0) {
+                        slot = cm_SendMoveGoods(-1, ((AICHARREC *)ai_Chars)[ai_PlayerId].netId, ai_OwnPlayer, 0x1f40);
+                        while (cm_GetSlotState(slot) == 0)
+                            sv_PumpNet();
+                        if (cm_GetSlotState(slot) == 1) {
+                            prec = (int *)gm_PlayerRecord(ai_Chars[ai_PlayerId]);
+                            if (prec != 0)
+                                prec[0x14] += 0x1f40;
+                            if (slots1 != 0) {
+                                slots1->slotOrder1c++;
+                            } else {
+                                memset(&msg1, 0, sizeof(msg1));
+                                msg1.type = 0x12;
+                                msg1.flags = 1;
+                                msg1.n = 1;
+                                msg1.ch = 0;
+                                msg1.fromId = bld->id;
+                                msg1.to = ((AICHARREC *)ai_Chars)[bld->owner].netId;
+                                msg1.time = ai_Time;
+                                msg1.car = store->objId;
+                                cm_SendLongMessage((char *)&msg1);
+                            }
+                        }
+                    }
+                } else if (choice == 2) {
+                    if (sv_CheckGoodAmountB(ai_Chars[ai_PlayerId], 0x1f40, ai_OwnPlayer) != 0) {
+                        slot = cm_SendMoveGoods(-1, ((AICHARREC *)ai_Chars)[ai_PlayerId].netId, ai_OwnPlayer, 0x1f40);
+                        while (cm_GetSlotState(slot) == 0)
+                            sv_PumpNet();
+                        if (cm_GetSlotState(slot) == 1) {
+                            prec = (int *)gm_PlayerRecord(ai_Chars[ai_PlayerId]);
+                            if (prec != 0)
+                                prec[0x14] += 0x1f40;
+                            if (slots2 != 0) {
+                                slots2->slotOrder1d++;
+                            } else {
+                                memset(&msg2, 0, sizeof(msg2));
+                                msg2.fromId = bld->id;
+                                msg2.type = 0x12;
+                                msg2.flags = 1;
+                                msg2.n = 0;
+                                msg2.ch = 1;
+                                msg2.to = ((AICHARREC *)ai_Chars)[bld->owner].netId;
+                                msg2.time = ai_Time;
+                                msg2.car = store->objId;
+                                cm_SendLongMessage((char *)&msg2);
+                            }
+                        }
+                    }
+                }
+            } else if (d2_PointerObj == btn1 && (ai_GameFlags & 0x80) == 0) {
+                if (sv_CheckGoodAmountB(ai_Chars[ai_PlayerId], 0x3200, ai_OwnPlayer) != 0) {
+                    txt_Format(text, 0x113, 0x3200);
+                    if (sv_MessageBox(text, 0x101) != 0) {
+                        slot = cm_SendMoveGoods(-1, ((AICHARREC *)ai_Chars)[ai_PlayerId].netId, ai_OwnPlayer, 0x3200);
+                        while (cm_GetSlotState(slot) == 0)
+                            sv_PumpNet();
+                        if (cm_GetSlotState(slot) == 1) {
+                            prec = (int *)gm_PlayerRecord(ai_Chars[ai_PlayerId]);
+                            if (prec != 0)
+                                prec[0x14] += 0x3200;
+                            if (upgrade != 0) {
+                                upgrade->capacityOrder++;
+                            } else {
+                                memset(&msg3, 0, sizeof(msg3));
+                                msg3.type = 0x13;
+                                msg3.flags = 1;
+                                msg3.n = 1;
+                                msg3.fromId = bld->id;
+                                msg3.to = ((AICHARREC *)ai_Chars)[bld->owner].netId;
+                                msg3.time = ai_Time;
+                                msg3.car = store->objId;
+                                cm_SendLongMessage((char *)&msg3);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        if (store->id != 0x116) {
+            lim1 = bt->min0;
+            if (slots1 != 0)
+                lim1 -= slots1->slotOrder1c;
+            lim2 = bt->min1;
+            if (slots2 != 0)
+                lim2 -= slots2->slotOrder1d;
+            if (store->lvl1c >= lim1 && store->lvl1d >= lim2 && btn0 != -1) {
+                d2_Objs[btn0].greyed = 1;
+                d2_Objs[btn0].clickDisabled = 1;
+            }
+        } else {
+            lim2 = 0;
+            lim1 = bt->max116;
+            if (slots1 != 0)
+                lim1 -= slots1->slotOrder1c;
+            if (store->lvl1c >= lim1 && btn0 != -1) {
+                d2_Objs[btn0].greyed = 1;
+                d2_Objs[btn0].clickDisabled = 1;
+            }
+        }
+        if (store->count >= 3 || upgrade != 0) {
+            if (btn1 != -1) {
+                d2_Objs[btn1].greyed = 1;
+                d2_Objs[btn1].clickDisabled = 1;
+                if (upgrade == 0)
+                    d2_SetCaption(btn1, txt_Ptrs[0xfc]);
+                else
+                    d2_SetCaption(btn1, txt_Ptrs[0xfd]);
+            }
+        } else if (btn1 != -1) {
+            d2_Objs[btn1].greyed = 0;
+            d2_Objs[btn1].clickDisabled = 0;
+            d2_SetCaption(btn1, txt_Ptrs[0xfc]);
+        }
+        if (store->count >= 3 && store->lvl1c >= lim1 && store->lvl1d >= lim2) {
+            if (btn1 != -1)
+                d2_EnableObject(btn1, 0);
+            d2_SetForm(win, 4);
+            io_PrintText(0x112);
+            btn1 = -1;
+            btn0 = -1;
+        }
+        if (store->id == 0x116) {
+            ai_UpdateStoreGoods((int)bld, (short *)store);
+            ai_LayoutStoreGoods(win, 1, 1, bld, (unsigned short *)store);
+        } else {
+            ai_UpdateProdGoodsList(bld, store);
+            ai_LayoutProdGoodsList(win, 1, 0, (int)bld);
+        }
+        if (dm_L.rup != 0 && ai_RunAllowsWindow() == 1)
+            sv_PopRequest = 1;
+    } while (sv_RunFrame((int)ai_StorageWindow, 0x657c7) != 0);
+    sv_CameraFollow();
+    d2_CloseView(win);
+    ai_CampaignStep(0x1d, bld, 1, 0);
 }
 /* 0x5b3130, a window with five text slots (1272 B, ROUGH SKELETON): the carrier 0x53e400 (2, 2, 0, 0x60, the
    player 0x6f25b8) first, the five caption ids 0x25e / 0x264 / 0x26a / 0x270 / 0x276 in a 0x358-byte frame;

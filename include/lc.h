@@ -56,7 +56,7 @@ void ai_CheckBuildSites(void);          /* 0x58fb60 */
 void ai_TradeContactChecks(void);       /* 0x5912c0, the pending trade / master checks every contact listener runs once per frame */
 /* The windows the building contacts open (defined far below their callers in the .c). */
 int ai_TransportWindow(struct AIBLD *bld, unsigned int mode);          /* 0x5af1d0, the transport window of a building (sv_UpdatePanel: mode 1) */
-int ai_StorageWindow(int building, int list);           /* 0x5b26b0, the store window */
+void ai_StorageWindow(struct AIBLD *bld, int list);           /* 0x5b26b0, the store window */
 int ai_ProductionGoodsWindow(struct AIBLD *bld);        /* 0x593150, the goods / production window a kontor contact opens */
 void ai_SpyReportsWindow(struct AIBLD *bld);           /* 0x5a45c0, the spy reports window "locations\diebesgilde\diebesgilde_informationen" of a guild building */
 int ai_GelageWindow(int building);                      /* 0x5b9f30, the "special\gelage" window of the kontor contacts */

@@ -1588,7 +1588,6 @@ void ai_SaveNetworkGame(char *saveName, char *name)
 
 /* the callees of the front-end stretch (their units' headers are not included here, so their
    prototypes are repeated as the definitions spell them; the building pointers are this TU's ints) */
-int ai_StorageWindow(int building, int list); /* 0x5b26b0, lc.c */
 struct AIBLD; int ai_ProductionWindow(struct AIBLD *bld); /* 0x58bd60, lc.c: "Handel\Handel_PRODUKTION" */
 int ai_OpenTransport(int rec);             /* 0x5af1a0, lc.c */
 void ai_TradeSearchWindow(unsigned char *cfg, int arg); /* 0x595480, lc.c: "HANDEL\HANDEL_SUCHEN" */
