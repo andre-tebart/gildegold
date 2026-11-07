@@ -1122,7 +1122,7 @@ typedef struct AICHARREC {         /* the character record fields this unit read
 typedef struct AIBLD {             /* the building record fields this unit reads (ai.h AIBLD, same layout) */
     unsigned char kind;            /* 0x00, the building kind (the index into the name tables) */
     int id;                        /* 0x01, the building's id (ai_bld.h AIBLD.id) */
-    char pad05[0x20];
+    char name[0x20];               /* 0x05, the building's name (ai_bld.h AIBLD.name; the building window's name input) */
     unsigned short masterId;       /* 0x25, the character id of the building's master (ai_bld.h AIBLD.masterId) */
     unsigned short owner;          /* 0x27, the owner's character id */
     unsigned short mainRoom;       /* 0x29, the room the building's panel opens with (ai_bld.h AIBLD.mainRoom) */
@@ -1151,9 +1151,16 @@ typedef struct AIBLD {             /* the building record fields this unit reads
         int victimId;              /* 0x65, the kidnapping room's victim character id (ai_bld.h AIBLD.unk65) */
         int playerSlot;            /* 0x65, of a kind 0x47 building: its player slot (ai_bld.h AIBLD.playerSlot) */
         int interest;              /* 0x65, of a bank: the interest its owner sets, 5 .. 0x28 (ai_bld.h AIBLD.interest) */
+        unsigned char residents;   /* 0x65, of a home (AIBTYPE.kind 1): the characters living in it (ai_bld.h AIBLD.residents;
+                                      the building window's text 0x17a2) */
+        int buyOutBase;            /* 0x65, of a class 2 building: with buyOutExtra what its buy-out pays half of, and set to that
+                                      payment (ai_BuildingWindow; ai_bld.h AIBLD.unk65; the name is a reasoned guess) */
     };
-    int messengerFee;              /* 0x69, of a bank: the money messenger's fee in percent, 3 .. 0xf (the fees window
+    union {
+        int messengerFee;          /* 0x69, of a bank: the money messenger's fee in percent, 3 .. 0xf (the fees window
                                       ai_ExchangeFeesWindow sets it as the field 0x69; reasoned: the messenger window shows it) */
+        int buyOutExtra;           /* 0x69, of a class 2 building: see buyOutBase (ai_bld.h AIBLD.unk69) */
+    };
     int exchangeFee;               /* 0x6d, of a bank: the exchange fee in percent, 3 .. 0xf (the fees window sets it as
                                       the field 0x6d; ai_ExchangeWindow takes it of the exchanged value) */
     union {
@@ -22051,13 +22058,324 @@ void ai_FireFightingWindow(AIBLD *bld)
     } while (sv_RunFrame((int)ai_FireFightingWindow, 0x677c7) != 0);
     d2_CloseView(win);
 }
-/* 0x5b84f0, a window (2752 B, ROUGH SKELETON): param_1, a 0x9d0-byte frame; the body is a comment */
+/* 0x5b84f0, the options window of a building "Panel\gebaeude_optionen_pergament" (sv_UpdatePanel: the panel's
+   building when no room of it is shown). Run by ai_RunAllows (0x100 for the player's own building, 0x4000 else);
+   rebuilt whenever the building's flags 0x5a or its burning event change. Another's building shows its state
+   (text 0x17a0 / 0x17fb: the master, the condition texts 0x17b1 / 0x17bb by the level, the equipment value), a
+   home its residents (0x17a2) and, but for the classes 3 / 5 and homes, the buy button of a running sale (0x17aa:
+   gm_SellBuilding) or the buy offer (0x17ad: ai_BuyBuildingOfferWindow, off while an offer runs, flag 0x200).
+   The player's own building (master or owner) shows its state (0x179e / 0x17f9), the master's name input (0x17a1 /
+   0x17fc, sent as the field 5 at the end), the sale (0x17a4: ai_SellBuildingWindow) or its withdrawal (0x17a7)
+   or of the class 2 the buy-out (0x17af: half of buyOutBase + buyOutExtra to the owner, then the ownership), the renovation
+   (0x17a5), the message 0x20 (0x17a6, confirmed by 0x17c7; a reasoned guess: the demolition), the technique tree
+   (0x17ac), the room upgrades (0x17a8, when the type takes more than one), the upgrade (0x17ab, off with flag
+   0x40), the fire fighting of a burning building (0x17b0) and for its owner the boss of a workshop (0x17a9:
+   cm_SendBoss); gm_AllowAll adds the take-over (0x1ba7). Flag 4 disables the technique, renovation, 0x20 and sale
+   buttons; ai_GameFlags 0x80 blocks the sub windows
+   @deep reconstructed from the stub against the whole original 0x5b84f0..0x5b8fc0: the run masks
+   0x100/0x4000 and the campaign steps 0x10, the sale event 0x1b lookup, the per-frame rebuild on flags
+   0x5a / the burning event 0x4f, both state texts with the condition texts by the level, every button
+   (0x17aa/0x17ad foreign, 0x17a1/0x17fc name input, 0x17af/0x17a4/0x17a7, 0x17a5, 0x17a6, 0x17ac, 0x17a8,
+   0x17ab, 0x17b0, 0x17a9 boss, 0x1ba7 take-over), the flag 4/0x40/0x200 enables, the whole click dispatch
+   (the sub windows behind ai_GameFlags 0x80, the 0x20 message, gm_SellBuilding, the buy-out with
+   cm_SendMoveGoods/cm_SendOwnership/field 0x65, the never-set effects button folded to -1) and the name
+   field 5 on close; ours 853 vs 858 ins. Left is the frame layout and allocation: the original's 26 locals
+   sit in another slot order (F00 shared by the level and the buy-out amount, frame 0x9d0 vs 0x9d4), the 15
+   -1 initialisations are scheduled before push edi in the original, after it in ours, and every button /
+   text access differs only by its slot (slots 216, regs 72, frame 48); the code hunks are those slot
+   shifts with the instruction order around them (e.g. +0x502..+0x576 the init block, +0x746 fild level
+   from another slot, +0xe8f the cm_SendMoveGoods argument order). Tried: the declaration order of the
+   original's layout, one variable for level and amount (frame 0x9d0 but code 377) (references: M8 at
+   +0x7d3: ours refers to ai_Time+0x4 (0x770ae4), the original's field to 0xc0, explained: the M8 at +0x7d3
+   pairs our msg.time copy (ai_Time+4) with the original's store of msg.arg[0] at [esp+0xc0]: an alignment
+   artefact of the scheduled AIMSG fill of the 0x20 message; both sides copy ai_Time into msg+0x28 and the
+   building id into +0xc / +0x58) */
 
-int ai_BuildingWindow(int param_1)
+void ai_BuildingWindow(AIBLD *bld)
 {
-    /* ROUGH SKELETON: the 0x9d0-byte frame */
-    (void)param_1;
-    return 0;
+    int level;
+    AIJOB *saleEv;
+    int upgradeBtn;
+    int sellBtn;
+    int offerBtn;
+    int cls;
+    int roomBtn;
+    AIBTYPE *type;
+    int demolishBtn;
+    int techBtn;
+    int nameInput;
+    int renovateBtn;
+    int value;
+    int withdrawBtn;
+    int buyOutBtn;
+    int bossBtn;
+    AIJOB *fireEv;
+    int buyBtn;
+    int fireBtn;
+    int takeOverBtn;
+    int lastFlags;
+    int bldId;
+    int effectsBtn;
+    AIMSG msg;
+    char name[0x80];
+    char text[0x200];
+    char buyText[0x200];
+    char buyOutText[0x400];
+    int win;
+    int redraw;
+    int cond;
+    int price;
+    int amount;
+    AIBLD *found;
+    AIJOB *ev;
+
+    type = &((AIBTYPE *)ai_BTypes)[bld->kind];
+    lastFlags = -1;
+    techBtn = -1;
+    renovateBtn = -1;
+    sellBtn = -1;
+    demolishBtn = -1;
+    buyBtn = -1;
+    withdrawBtn = -1;
+    offerBtn = -1;
+    bossBtn = -1;
+    roomBtn = -1;
+    upgradeBtn = -1;
+    nameInput = -1;
+    takeOverBtn = -1;
+    buyOutBtn = -1;
+    fireBtn = -1;
+    effectsBtn = -1;
+    redraw = 1;
+    saleEv = 0;
+    fireEv = 0;
+    bldId = bld->id;
+    if ((bld->flags5aw & 0x400) != 0)
+        return;
+    if (bld->masterId == ai_PlayerId) {
+        if (ai_RunAllows(0x100) == 0)
+            return;
+    } else if (ai_RunAllows(0x4000) == 0) {
+        return;
+    }
+    if (bld->masterId == ai_PlayerId)
+        ai_CampaignStep(0x10, bld, 0, 0);
+    cls = gm_BuildingClass(bld->kind);
+    win = d2_OpenForm(0, 0, "Panel\\gebaeude_optionen_pergament");
+    d2_CentreViewWindows(win);
+    d2_SetPointerSprite(0, 0);
+    value = gm_EquipmentValue(bld, bld->level);
+    gm_MayTakeJob(bld->kind, ai_PlayerId);
+    if ((bld->flags5a & 2) != 0 && bld->masterId != ai_PlayerId) {
+        for (saleEv = (AIJOB *)he_FindEvent(1, 0, 0x1b); saleEv != 0; saleEv = (AIJOB *)he_NextEvent())
+            if (saleEv->bldId == bld->id)
+                break;
+    }
+    do {
+        found = (AIBLD *)gm_FindBuildingById(bldId);
+        if ((bld->flags5aw & 0x400) != 0 || found == 0)
+            sv_PopRequest = 1;
+        if (bld->flags5aw != lastFlags)
+            redraw = 1;
+        if (bld->owner == ai_PlayerId) {
+            for (ev = (AIJOB *)he_FindEvent(1, 0, 0x4f); ev != 0; ev = (AIJOB *)he_NextEvent())
+                if (ev->bldId == bld->id)
+                    break;
+            if (ev != fireEv) {
+                redraw = 1;
+                fireEv = ev;
+            }
+        }
+        lastFlags = bld->flags5aw;
+        if (redraw != 0) {
+            techBtn = -1;
+            renovateBtn = -1;
+            sellBtn = -1;
+            demolishBtn = -1;
+            buyBtn = -1;
+            withdrawBtn = -1;
+            offerBtn = -1;
+            bossBtn = -1;
+            roomBtn = -1;
+            upgradeBtn = -1;
+            nameInput = -1;
+            buyOutBtn = -1;
+            fireBtn = -1;
+            d2_SetForm(win, 1);
+            level = gm_BuildingLevel((char *)bld);
+            if (bld->owner != ai_PlayerId && bld->masterId != ai_PlayerId) {
+                cond = (int)(9.0f - level * 0.1f + 0.5);
+                io_PrintText(type->buildingClass == 0x21 ? 0x17fb : 0x17a0, bld->masterId, bld, cond + 0x17b1,
+                             cond + 0x17bb, value);
+                if (type->buildingClass == 1)
+                    io_PrintText(0x17a2, bld->residents);
+                if (cls != 3 && cls != 5 && type->buildingClass != 1) {
+                    if (saleEv != 0)
+                        buyBtn = d2_GetWinObj(win, 1, io_PrintText(0x17aa));
+                    else if (cls != 2 || type->buildingClass == 0x10)
+                        offerBtn = d2_GetWinObj(win, 1, io_PrintText(0x17ad));
+                    if ((bld->flags5aw & 0x200) != 0)
+                        d2_SetObjEnabled(offerBtn, 0);
+                }
+            }
+            if (bld->masterId == ai_PlayerId || bld->owner == ai_PlayerId) {
+                cond = (int)(9.0f - level * 0.1f + 0.5);
+                io_PrintText(type->buildingClass == 0x21 ? 0x17f9 : 0x179e, bld, cond + 0x17b1, cond + 0x17bb, value);
+                if (bld->masterId == ai_PlayerId) {
+                    nameInput = d2_GetWinObj(win, 1, io_PrintText(type->buildingClass == 0x21 ? 0x17fc : 0x17a1,
+                                                                  bld->name));
+                    d2_SetObjMax(nameInput, 0x10);
+                }
+                if (type->buildingClass == 1)
+                    io_PrintText(0x17a2, bld->residents);
+                if (cls == 2)
+                    buyOutBtn = d2_GetWinObj(win, 1, io_PrintText(0x17af));
+                else if ((bld->flags5a & 2) == 0)
+                    sellBtn = d2_GetWinObj(win, 1, io_PrintText(0x17a4));
+                else
+                    withdrawBtn = d2_GetWinObj(win, 1, io_PrintText(0x17a7));
+                renovateBtn = d2_GetWinObj(win, 1, io_PrintText(0x17a5));
+                if ((bld->flags5a & 0x18) == 0 && cls != 2 && type->buildingClass != 0x10)
+                    demolishBtn = d2_GetWinObj(win, 1, io_PrintText(0x17a6));
+                if (type->buildingClass != 3 && type->buildingClass != 0x21)
+                    techBtn = d2_GetWinObj(win, 1, io_PrintText(0x17ac));
+                if (type->extensions > 1)
+                    roomBtn = d2_GetWinObj(win, 1, io_PrintText(0x17a8));
+                else
+                    roomBtn = -1;
+                if (cls != 2)
+                    upgradeBtn = d2_GetWinObj(win, 1, io_PrintText(0x17ab));
+                if (fireEv != 0)
+                    fireBtn = d2_GetWinObj(win, 1, io_PrintText(0x17b0));
+                if (bld->owner == ai_PlayerId) {
+                    d2_SetForm(win, 1);
+                    if (type->buildingClass == 2 && ((AICHARREC *)ai_Chars[ai_PlayerId])->bld2 != (int)bld)
+                        bossBtn = d2_GetWinObj(win, 1, io_PrintText(0x17a9));
+                }
+            }
+            if (gm_AllowAll != 0)
+                takeOverBtn = d2_GetWinObj(win, 1, io_PrintText(0x1ba7));
+            redraw = 0;
+        }
+        if ((bld->flags5a & 4) != 0) {
+            d2_SetObjEnabled(techBtn, 0);
+            d2_SetObjEnabled(renovateBtn, 0);
+            d2_SetObjEnabled(demolishBtn, 0);
+            d2_SetObjEnabled(sellBtn, 0);
+        }
+        if (upgradeBtn != -1) {
+            if ((bld->flags5a & 0x40) != 0)
+                d2_SetObjEnabled(upgradeBtn, 0);
+            else
+                d2_SetObjEnabled(upgradeBtn, 1);
+        }
+        if (dm_L.rup != 0 && d2_FocusedInput == 0)
+            sv_PopRequest = 1;
+        if (d2_ClickedId == -1)
+            continue;
+        if (d2_PointerObj == techBtn) {
+            d2_SetViewEnabled(win, 0);
+            ai_TechTreeWindow((int)bld, 0xfd);
+            d2_SetViewEnabled(win, 1);
+            continue;
+        }
+        if (d2_PointerObj == sellBtn && (ai_GameFlags & 0x80) == 0) {
+            d2_SetViewEnabled(win, 0);
+            ai_SellBuildingWindow(bld);
+        } else if (d2_PointerObj == renovateBtn && (ai_GameFlags & 0x80) == 0) {
+            d2_SetViewEnabled(win, 0);
+            ai_RenovationWindow(bld);
+        } else if (d2_PointerObj == offerBtn && (ai_GameFlags & 0x80) == 0) {
+            d2_SetViewEnabled(win, 0);
+            ai_BuyBuildingOfferWindow(bld);
+        } else if (d2_PointerObj == withdrawBtn && (ai_GameFlags & 0x80) == 0) {
+            d2_SetViewEnabled(win, 0);
+            ai_WithdrawSaleWindow(bld);
+        } else if (d2_PointerObj == roomBtn && (ai_GameFlags & 0x80) == 0) {
+            d2_SetViewEnabled(win, 0);
+            ai_RoomUpgradeWindow(bld);
+        } else if (d2_PointerObj == bossBtn) {
+            d2_SetViewEnabled(win, 0);
+            cm_SendBoss(ai_CharInts[ai_PlayerId][0], bld->id);
+            d2_SetViewEnabled(win, 1);
+            redraw = 1;
+            continue;
+        } else if (d2_PointerObj == upgradeBtn && (ai_GameFlags & 0x80) == 0) {
+            d2_SetViewEnabled(win, 0);
+            ai_UpgradeBuilding(bld);
+        } else if (d2_PointerObj == demolishBtn && (ai_GameFlags & 0x80) == 0) {
+            txt_Format(text, 0x17c7, bld);
+            d2_SetViewEnabled(win, 0);
+            if (sv_MessageBox(text, 1) != 0) {
+                memset(&msg, 0, sizeof(msg));
+                msg.type = 0x20;
+                msg.flags = 1;
+                msg.to = ai_CharInts[ai_PlayerId][0];
+                msg.fromId = bld->id;
+                msg.time = ai_Time;
+                msg.arg[0] = bld->id;
+                cm_SendLongMessage((char *)&msg);
+                sv_PopRequest = 1;
+            }
+            d2_SetViewEnabled(win, 1);
+            redraw = 1;
+            continue;
+        } else if (d2_PointerObj == buyBtn && (ai_GameFlags & 0x80) == 0) {
+            if (gm_MayTakeJob(bld->kind, ai_PlayerId) != 1) {
+                sv_MessageBox(txt_Ptrs[0x17dd], 0);
+                continue;
+            }
+            d2_SetViewEnabled(win, 0);
+            price = saleEv->salePrice;
+            if (gm_GetGoodsValue(ai_Chars[ai_PlayerId]) > price) {
+                txt_Format(buyText, 0x17db, bld->masterId, bld, price);
+                if (sv_MessageBox(buyText, 1) != 0)
+                    gm_SellBuilding(bld->id, ai_CharInts[ai_PlayerId][0], saleEv->salePrice, (int)saleEv, 0);
+            }
+            d2_SetViewEnabled(win, 1);
+            redraw = 1;
+            continue;
+        } else if (d2_PointerObj == effectsBtn) {
+            d2_SetViewEnabled(win, 0);
+            ai_TechEffectsWindow(bld);
+        } else if (d2_PointerObj == takeOverBtn) {
+            cm_SendOwnership(bld->id, ai_CharInts[ai_PlayerId][0], ai_CharInts[ai_PlayerId][0]);
+            redraw = 1;
+            continue;
+        } else if (d2_PointerObj == buyOutBtn) {
+            amount = bld->buyOutBase + bld->buyOutExtra;
+            amount = (int)(amount * 0.5);
+            d2_SetViewEnabled(win, 0);
+            txt_Format(buyOutText, 0x17e3, bld, bld, amount);
+            if (sv_MessageBox(buyOutText, 1) != 0) {
+                cm_SendMoveGoods(ai_CharInts[bld->owner][0], -1, ai_OwnPlayer, amount);
+                cm_SendOwnership(bld->id, ((AICHARREC *)ai_PlayerChar)->netId, ((AICHARREC *)ai_PlayerChar)->netId);
+                cm_BeginFieldBlock((char *)bld, bld->id);
+                cm_AddFieldValue(4, 1, (unsigned short)((char *)&bld->buyOutBase - cm_FieldObject), &amount);
+                cm_SendFieldDeltas();
+                sv_PopRequest = 1;
+            }
+            d2_SetViewEnabled(win, 1);
+            redraw = 1;
+            continue;
+        } else if (d2_PointerObj == fireBtn) {
+            d2_SetViewEnabled(win, 0);
+            ai_FireFightingWindow(bld);
+        } else {
+            continue;
+        }
+        d2_SetViewEnabled(win, 1);
+        redraw = 1;
+    } while (sv_RunFrame((int)ai_BuildingWindow, 0x657c7) != 0);
+    if (nameInput != -1) {
+        strcpy(name, (char *)d2_GetObjValue(nameInput));
+        cm_BeginFieldBlock((char *)bld, bld->id);
+        cm_AddFieldValue(1, 0x20, 5, name);
+        cm_SendFieldValues();
+    }
+    d2_CloseView(win);
+    if (bld->masterId == ai_PlayerId)
+        ai_CampaignStep(0x10, bld, 1, 0);
 }
 /* 0x5b8fc0, a window (800 B, ROUGH SKELETON): param_1, a 0x18-byte frame; the body is a comment */
 

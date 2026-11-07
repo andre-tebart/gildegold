@@ -4427,7 +4427,7 @@ void sv_UpdatePanel(void)
         if (ai_PlayerBuilding != 0 && (sv_PanelPerms & 0x10) != 0)
             ai_TechTreeWindow((int)ai_PlayerBuilding, ((AIBLD *)ai_PlayerBuilding)->mainRoom);
         else if (ai_FallbackBuilding != 0 && sv_PanelShown == 0)
-            ai_BuildingWindow((int)ai_FallbackBuilding);
+            ai_BuildingWindow((AIBLD *)ai_FallbackBuilding);
         else if (ai_FallbackBuilding != 0 && (sv_PanelPerms & 0x10) != 0)
             ai_TechTreeWindow((int)ai_FallbackBuilding, *sv_PanelShown);
         else if (sv_SelectedObject != 0) {
@@ -4436,7 +4436,7 @@ void sv_UpdatePanel(void)
             if ((cls == 3 || cls == 5) && (sv_PanelPerms & 0x10) != 0)
                 ai_ManagedBuildingWindow((int)sv_SelectedObject);
             else
-                ai_BuildingWindow((int)sv_SelectedObject);
+                ai_BuildingWindow((AIBLD *)sv_SelectedObject);
         }
     } else if (d2_ClickedId != -1) {
         if (sv_PanelTransportBtn != -1 && d2_PointerObj == sv_PanelTransportBtn && (sv_FrameMask & 0x2000) != 0) {
