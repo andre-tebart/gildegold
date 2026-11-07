@@ -4004,7 +4004,7 @@ exe	0x00578440	ai_TutorialFreeRuns	sv_t	byte	readable
 exe	0x005784a0	ai_TutorialInitMainIntro	sv_t	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	sv_t	byte	readable		
 exe	0x00578e40	ai_TutorialInitChapter2	sv_t	shape	readable		
-exe	0x00579570	ai_TutorialInitChapter3	sv_t	shape	readable		
+exe	0x00579570	ai_TutorialInitChapter3	sv_t	draft	readable		
 exe	0x0057aa80	ai_TutorialInitChapter4	sv_t	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	sv_t	byte	readable		
 exe	0x0057b750	ai_TutorialInitMainOutro	sv_t	byte	readable		
@@ -4422,19 +4422,19 @@ exe	0x005b82a0	ai_FireFightingWindow	lc	shape	readable
 exe	0x005b84f0	ai_BuildingWindow	lc	draft	readable	deep	
 exe	0x005b8fc0	ai_ManagedBuildingWindow	lc	shape	readable		
 exe	0x005b92e0	ai_LiquidateAssets	lc	draft	readable	deep	
-exe	0x005b9730	ai_Kind1eWindow	lc	draft	draft		
-exe	0x005b9db0	ai_PickedObjectWindow	lc	draft	draft		
-exe	0x005b9f30	ai_GelageWindow	lc	draft	draft		
-exe	0x005ba1c0	ai_OpenInventoryWindow	lc	draft	draft		
-exe	0x005ba290	ai_UpdateInventoryWindow	lc	draft	draft		
+exe	0x005b9730	ob_HandleBepflanzung	lc	draft	readable	deep	
+exe	0x005b9db0	ai_HandlePickedPlant	lc	byte	readable		
+exe	0x005b9f30	ai_GelageWindow	lc	byte	readable		
+exe	0x005ba1c0	ai_OpenInventoryWindow	lc	byte	readable		
+exe	0x005ba290	ai_UpdateInventoryWindow	lc	byte	readable		
 exe	0x005ba600	ai_CloseChildWindow	lc	byte	readable		
 exe	0x005ba620	ai_FindUsableGood	lc	byte	readable		
 exe	0x005ba660	ai_FindUsableGoodIndex	lc	byte	readable		
 exe	0x005ba6b0	ai_InventoryHas	lc	byte	readable		
 exe	0x005ba700	ai_BuildingHasItem	lc	byte	readable		
-exe	0x005ba750	lc_UpdateGoodsReserves	lc	draft	draft		
-exe	0x005ba980	ai_Unk5ba980	lc	draft	draft		
-exe	0x005bac10	ai_InventoryPanel	lc	draft	draft		
+exe	0x005ba750	lc_UpdateGoodsReserves	lc	draft	readable	deep	
+exe	0x005ba980	ai_UseGoodWindow	lc	byte	readable		
+exe	0x005bac10	ai_InventoryPanel	lc	byte	readable		
 exe	0x005bae10	ai_EquipRowsInit	lc	draft	readable	deep	
 exe	0x005bae50	ai_Unk5bae50	lc	draft	draft		
 exe	0x005bb2d0	ai_GoodFitsBuilding	lc	byte	readable		
