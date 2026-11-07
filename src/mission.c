@@ -471,24 +471,17 @@ int ai_CountMissionEvent(G13MIS *m, int ev)
     }
     return 0;
 }
-/* 0x4b4550, mission condition: the value of what 0x506430 finds for c is above t->goal
-   @hard read in full, byte-exact (gm_PlayerRecord, 0 for none, gm_ConvertMoney(value +0x38, ai_OwnPlayer)
-   > t->goal). Q1 is blocked on the five AIFIN money statistics at 0x2c .. 0x3c (ai.h AIFIN missionMoney[5]):
-   this condition reads +0x38, the three siblings ai_CondMissionMoney02 (0x2c + 0x34), ai_CondMissionMoney1 (0x30) and
-   ai_CondMissionMoney4 (0x3c) read the others. No drafted function writes any of them (every player-record writer is
-   named: madeValue, spyPaid, upgradeSpent, renovationSpent, officeSentences, roundFactors, the camera fields);
-   ls_WritePlayerRecords (0x51a1a0) saves 0x2c / 0x30 / 0x34 and 0x3c, and 0x38 only for ls_Version > 0x10013,
-   so the values come from saved data of an older build, and the only readers are these four mission conditions.
-   The mission texts that would name the category (t->text, not in the repo) are the only remaining evidence: a
-   function name would be invention (Q1). Q4 is typed now (f->missionMoney[3] is +0x38). */
-
+/* 0x4b4550, mission condition: the player record's saved money statistic missionMoney[3] (0x38), converted to
+   the own player's currency, is above t->goal; no player record: 0. The field has no writer in this build (it
+   comes from saved data, ls_WritePlayerRecords saves it only for ls_Version > 0x10013); the name follows the
+   field it reads, like ai_CondMissionMoney1 */
 int ai_CondMissionMoney3(AICHAR *c, G13TYPE *t)
 {
     AIFIN *f = gm_PlayerRecord(c);
 
     if (f == 0)
         return 0;
-    return gm_ConvertMoney(*(int *)((char *)f + 0x38), ai_OwnPlayer) > t->goal;
+    return gm_ConvertMoney(f->missionMoney[3], ai_OwnPlayer) > t->goal;
 }
 /* 0x4b4590, mission condition (types 2 / 7): the titles left in the job title group of c's title number
    (byte 0x164, gm_TitlesLeft) reach t->goal */
