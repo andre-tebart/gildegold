@@ -2951,3 +2951,4 @@
 2026-11-07T13:48:00 0x005c0650 func ai_Unk5c0650 -> ai_ShowCandidacyTab by:main why:the show handler of ai_AmountTabs row 6 beside ai_FillCandidacyTab: the candidacy tab's rows
 2026-11-07T13:48:51 0x005c0790 func ai_Unk5c0790 -> ai_ShowOfficeTab by:main why:the show handler of ai_AmountTabs row 7 beside ai_FillOfficeTab: the office tab's rows, headed by office
 2026-11-07T14:16:07 0x005c2490 func ai_Unk5c2490 -> ai_ShowWorkSettingsPage by:main why:fills the master letter window's work-settings page: the four order-flag checkboxes, the budget counter and the factor slider (its caller writes the flags back into AIBLD.workSet +0x99)
+2026-11-07T14:17:40 0x005c27b0 func ai_Unk5c27b0 -> ai_MasterHireWindow by:main why:the master letter's hire window (berufe\_meisterbrief_1): its button sends the master hire request AIMSG type 7 (hireMaster)
