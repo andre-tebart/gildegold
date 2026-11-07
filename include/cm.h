@@ -815,7 +815,7 @@ extern int cm_TextBox;  /* 0x60d368 */
 void cm_RunFight(struct CMFIGHTREC *a);  /* 0x4d63e0, runs a fight record */
 unsigned int cut_GetRandSeed();  /* 0x4e52c0 */
 void cut_RandSeed();  /* 0x4e52a0 */
-void cm_RunSceneParty();  /* 0x4e3830 */
+void cm_RunSceneParty(char *m, int ctx);  /* 0x4e3830 */
 char d3_SetLightSet(unsigned int set, float t, float scale, char calc);  /* 0x449de0 */
 extern int cm_SceneDuration;  /* 0x60d364 */
 extern int cm_FightFixedLight;  /* 0x6f244c */
@@ -934,7 +934,7 @@ extern unsigned char cm_DuelRightInsultWon;  /* 0x6f0dab, the right duellist won
 extern unsigned char cm_DuelLeftRollWon;  /* 0x6f0dac, the left duellist won the roll round */
 extern unsigned char cm_DuelRightRollWon;  /* 0x6f0dad, the right duellist won the roll round */
 int cm_CutInfoById();  /* 0x4e50e0 */
-int cm_WaitTicks();  /* 0x4e3420 */
+int cm_WaitTicks(int a);  /* 0x4e3420 */
 void cm_SinkDownAction(struct CHACTION *a);  /* 0x4de4b0 */
 int cm_DuelSinkDown(char *c, int dmg);  /* 0x4de530 */
 void cm_DuelRound(struct AICHAR *a, struct AICHAR *b, char *side);  /* 0x4de900 */
@@ -1024,7 +1024,7 @@ extern struct D3SKY *cm_SceneSky;  /* 0x6f0db8, the scene's sky (cm_CreateSceneS
 struct D3SKY; struct D3SKYLAYER; void d3sky_DeleteLayer(struct D3SKY *s, struct D3SKYLAYER *l);  /* 0x45d800 */
 void d3sky_Destroy();  /* 0x45daa0 */
 int cm_ShowPartyTexts();  /* 0x4e37a0 */
-int cm_WaitTicks();  /* 0x4e3420 */
+int cm_WaitTicks(int a);  /* 0x4e3420 */
 int cm_PartyAnswered();  /* 0x4e3750 */
 int cm_PrevPartyMember();  /* 0x4e3800 */
 int cm_ShowPartyTexts();  /* 0x4e37a0 */
