@@ -772,7 +772,7 @@ exe	0x0043ce10	d3_InitSurf	d3_engine	byte	readable
 exe	0x0043ce60	d3_InitObject	d3_engine	shape	draft	deep	
 exe	0x0043cfb0	d3_AddObjectDrawData	d3_engine	byte	readable		
 exe	0x0043d0e0	d3_Unlink	d3_engine	byte	readable		
-exe	0x0043d180	d3_CloneObject	d3_engine	byte	draft	deep	
+exe	0x0043d180	d3_CloneObject	d3_engine	shape	draft	deep	
 exe	0x0043d430	d3_SetObjectAlpha	d3_engine	shape	readable	deep	
 exe	0x0043d630	d3_SetAlphaCB	d3_engine	byte	readable		
 exe	0x0043d690	d3_SetAlpha	d3_engine	byte	readable		
@@ -4003,7 +4003,7 @@ exe	0x00578370	ai_TutorialStop	sv_t	byte	readable
 exe	0x00578440	ai_TutorialFreeRuns	sv_t	byte	readable		
 exe	0x005784a0	ai_TutorialInitMainIntro	sv_t	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	sv_t	byte	readable		
-exe	0x00578e40	ai_TutorialInitChapter2	sv_t	shape	readable		
+exe	0x00578e40	ai_TutorialInitChapter2	sv_t	byte	readable		
 exe	0x00579570	ai_TutorialInitChapter3	sv_t	draft	readable		
 exe	0x0057aa80	ai_TutorialInitChapter4	sv_t	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	sv_t	byte	readable		
@@ -4561,20 +4561,20 @@ exe	0x005cf020	ai_InterrogationWindow2	lc	byte	readable
 exe	0x005cf260	ai_ChooseProfessionWindow	lc	byte	readable		
 exe	0x005cf4f0	ai_UniversityWindow	lc	draft	readable	deep	
 exe	0x005cf820	ai_UseObjPanel	lc	byte	readable		
-exe	0x005cf8a0	ai_UseGood	lc	draft	draft		
+exe	0x005cf8a0	ai_UseGood	lc	draft	readable	deep	
 exe	0x005cfb60	ai_UseGoodAddMoney	lc	byte	readable		
 exe	0x005cfb80	ai_UseGoodHeal	lc	byte	readable		
-exe	0x005cfc00	ai_Unk5cfc00	lc	draft	draft		
-exe	0x005cff70	ai_Unk5cff70	lc	draft	draft		
-exe	0x005d0320	ai_Unk5d0320	lc	draft	draft		
-exe	0x005d0530	ai_Unk5d0530	lc	draft	draft		
+exe	0x005cfc00	ai_UseGoodInfectOwner	lc	shape	readable		
+exe	0x005cff70	ai_UseGoodSendHome	lc	draft	draft	deep	
+exe	0x005d0320	ai_UseGoodWeakenSkills	lc	shape	readable		
+exe	0x005d0530	ai_UseGoodWeakenSkills2	lc	shape	readable		
 exe	0x005d06e0	ai_UseGoodCureAilment	lc	byte	readable		
-exe	0x005d0780	ai_Unk5d0780	lc	draft	draft		
-exe	0x005d08c0	ai_ApplyTrialStep	lc	draft	draft		
+exe	0x005d0780	ai_UseGoodHalveWorkerValue	lc	draft	readable	deep	
+exe	0x005d08c0	ai_ApplyTrialStep	lc	shape	readable		
 exe	0x005d09d0	ai_TrialStep1	lc	shape	readable		
 exe	0x005d0a40	ai_TrialStep3	lc	shape	readable		
 exe	0x005d0ab0	ai_TrialStep4	lc	shape	readable		
-exe	0x005d0b20	ai_Unk5d0b20	lc	draft	draft		
+exe	0x005d0b20	ai_UseGoodRaiseRelation	lc	draft	readable	deep	
 exe	0x005d0c70	ai_QuarrelCallback	lc	draft	readable	deep	
 exe	0x005d0e60	ai_UseGoodTrialStep	lc	byte	readable		
 exe	0x005d0f20	ai_Unk5d0f20	lc	draft	draft		

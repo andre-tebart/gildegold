@@ -33055,7 +33055,7 @@ int ai_UseGoodInfectOwner(AICHARREC *ch, G8USEVIEW *use)
    object's bldId and sets the bit 0x20 of the building's word 0x5a (cm_SendSetField). An owner (not 0xffff) of
    kind 6 / 7 gets the news 0xff2 about the building (key 0x5fb). Returns 1. The message is cleared with
    D3_ZERO before and after the 0x76 message in each path, as the original's code has it.
-   @deep Rewritten from the original's whole extent (938 B; the old ROUGH note of a second ai_MapPick block
+   @deep Rewritten from the original's whole extent (938 B; the old draft note of a second ai_MapPick block
    was past the end): typed AICHARREC / G8USEVIEW / AMOUNTCFG / AIMSG (effect words), both paths written
    out as the original has them with the D3_ZERO before and after the 0x76 message; every call, argument,
    constant and store matches (252 vs 260 instructions). Left: (1) frame layout: the original puts msg next
