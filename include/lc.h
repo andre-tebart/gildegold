@@ -59,7 +59,7 @@ int ai_TransportWindow(struct AIBLD *bld, unsigned int mode);          /* 0x5af1
 void ai_StorageWindow(struct AIBLD *bld, int list);           /* 0x5b26b0, the store window */
 int ai_ProductionGoodsWindow(struct AIBLD *bld);        /* 0x593150, the goods / production window a kontor contact opens */
 void ai_SpyReportsWindow(struct AIBLD *bld);           /* 0x5a45c0, the spy reports window "locations\diebesgilde\diebesgilde_informationen" of a guild building */
-int ai_GelageWindow(int building);                      /* 0x5b9f30, the "special\gelage" window of the kontor contacts */
+void ai_GelageWindow(struct AIBLD *bld);                 /* 0x5b9f30, the "special\gelage" window of the kontor contacts */
 int ai_TrainingWindow(int building);                    /* 0x5bba00, the "special\training" window (regeneration / target / straw-dummy plates) */
 int ai_EquipWindow(int building);                       /* 0x5bb350, the equip window of the AUSRUESTEN / weapon-stand plates */
 void ai_BuildingWindow(struct AIBLD *bld);              /* 0x5b84f0, the options window of a building (sell, renovate, upgrade, ...) */

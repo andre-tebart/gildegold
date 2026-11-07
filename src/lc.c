@@ -4927,7 +4927,7 @@ void ai_KontorContact(AIBLD *bld)
             else if (ai_ClickedObject == metall)
                 ai_ProductionGoodsWindow((int)bld);
             else if (ai_ClickedObject == gelage)
-                ai_GelageWindow((int)bld);
+                ai_GelageWindow(bld);
             else if (ai_ClickedObject == ziel || ai_ClickedObject == stroh)
                 ai_TrainingWindow((int)bld);
         }
@@ -5043,7 +5043,7 @@ void ai_StoneKontorContact(AIBLD *bld)
             if (ai_ClickedObject == lager)
                 ai_StorageWindow((int)bld, bld->objList);
             else if (ai_ClickedObject == gelage)
-                ai_GelageWindow((int)bld);
+                ai_GelageWindow(bld);
             else if (ai_ClickedObject == abbau)
                 ai_ExtractResourceWindow(bld);
             else if (ai_ClickedObject == stein)
@@ -5656,7 +5656,7 @@ void ai_CriminalContact(AIBLD *bld)
             if (ai_ClickedObject == lager)
                 ai_StorageWindow((int)bld, bld->objList);
             else if (ai_ClickedObject == gelage)
-                ai_GelageWindow((int)bld);
+                ai_GelageWindow(bld);
             else if (ai_ClickedObject == transport)
                 ai_OpenTransport((int)bld);
             else if (ai_ClickedObject == ausruesten)
@@ -22867,13 +22867,60 @@ void ai_HandlePickedPlant(AIBLD *bld, int plants)
         d2_CopyCaption(txt_Ptrs[0x8e]);
     }
 }
-/* 0x5b9f30, a window "0x62cfdc" (560 B, ROUGH SKELETON): a 0xfc-byte frame; the body is a comment */
+/* 0x5b9f30, the feast window of a kontor (contact GELAGE): the form "special\gelage", centred and framed, prints
+   the title (text 0x19a9) and the amount (text 0x19aa); its slider runs from 100 to the player's money, at most
+   1000; the OK object pays the chosen amount (gm_PlayerFactor of the slider) and sends the feast event 0x38
+   (HE_GELAGE of cm_EventNames: the building, the amount) in the message group "party", then closes; the second
+   click id or a right release closes it too */
 
-int ai_GelageWindow(int building)
+void ai_GelageWindow(AIBLD *bld)
 {
-    /* ROUGH SKELETON: the window "0x62cfdc" and the 0xfc-byte frame */
-    (void)building;
-    return 0;
+    AIMSG msg;
+    int win;
+    int text;
+    int slider;
+    int ok;
+    int cost;
+
+    win = d2_OpenForm(0, 0, "special\\gelage");
+    d2_CentreViewWindows(win);
+    d2_SetForm(win, 0);
+    d2_Wins[d2_LastWindow].padl = 0xe;
+    d2_Wins[d2_LastWindow].padt = 0xe;
+    d2_Wins[d2_LastWindow].padr = 0xe;
+    d2_Wins[d2_LastWindow].padb = 0xe;
+    d2_SetForm(win, 1);
+    io_PrintText(0x19a9);
+    d2_SetForm(win, 2);
+    text = io_PrintText(0x19aa, ai_OwnPlayer);
+    slider = d2_GetWinObj(win, 2, text);
+    ok = d2_GetWinObj(win, 2, text + 1);
+    d2_SetObjValue(slider, 100, min(1000, gm_ConvertMoney(gm_GetGoodsValue(ai_Chars[ai_PlayerId]), ai_OwnPlayer)), 100);
+    while (sv_RunFrame((int)ai_GelageWindow, 0x677c7) != 0) {
+        if (d2_ClickedId == 0) {
+            if (ok != -1 && d2_PointerObj == ok) {
+                cost = gm_PlayerFactor(d2_GetObjValue(slider), ai_OwnPlayer);
+                memset(&msg, 0, sizeof(msg));
+                msg.type = 0x38;
+                msg.flags = 1;
+                msg.arg[0] = cost;
+                msg.to = ai_CharInts[ai_PlayerId][0];
+                msg.fromId = bld->id;
+                msg.time = ai_Time;
+                cm_BeginGroup("party");
+                cm_SendMoveGoods(-1, ai_CharInts[ai_PlayerId][0], ai_OwnPlayer, cost);
+                cm_SendLongMessage((char *)&msg);
+                cm_EndGroup("party");
+                sv_PopRequest = 1;
+            }
+        } else if (d2_ClickedId == 1) {
+            sv_PopRequest = 1;
+        }
+        if (dm_L.rup != 0)
+            sv_PopRequest = 1;
+    }
+    sv_CameraFollow();
+    d2_CloseView(win);
 }
 /* 0x5ba1c0, opens the inventory child window of the character charId (197 B, ROUGH SKELETON): only while
    ai_ChildWindowId is -1; clears the six ai_InvSlots rows (-1, 0), points ai_InvChar at ai_Chars[charId], creates
