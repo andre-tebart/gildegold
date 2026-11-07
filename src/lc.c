@@ -804,7 +804,6 @@ extern int ai_SabotageCallback();
 extern int ai_EspionageAmountCB();
 extern int ai_BeatingCallback();
 extern char ai_Crimes[];
-extern GAPDATA full_data_62cd7c[];
 extern GAPDATA full_data_62cda8[];
 extern char * ai_PickedObject;
 extern GAPDATA ai_DomizilTable[];
@@ -19854,6 +19853,14 @@ typedef struct AIWINDOWROW {            /* the row record the window page functi
     int entry;                          /* 0x10, the page entry index */
     int record;                         /* 0x14, the gv table record id */
 } AIWINDOWROW;
+
+typedef struct AIPOSVIEW {              /* 0x24 bytes, the record gv_GetTableRecord (0x4f2720) fills (AIPOS, ai.h) */
+    char pad00[0xc];
+    int pics;                           /* 0x0c, the page's picture count */
+    char pad10[8];
+    int texts;                          /* 0x18, the text count (AIPOS.unk18) */
+    char pad1c[8];
+} AIPOSVIEW;
 #pragma pack(pop)
 
 void ai_ShowWindowRow(AIWINDOWROW *row);
@@ -20148,32 +20155,62 @@ int ai_BeatingCallback(AICHARREC *ch)
     d2_CloseView(win);
     return ordered;
 }
-/* 0x5b4340, a list window of records (580 B, ROUGH): param_1 (its word -1 = empty), param_2 the query record;
-   0x4f3fe0 (the +4 of param_2, the id array, the word of param_1) fills the ids, then each id 0x91f700 + id *
-   0x2d (a 0x2d-byte record) is copied into the local array and 0x4f4390 (count, the array) builds the list;
-   the window "0x62cd7c" (0x4741f0 / 0x475600 / 0x475f70) with its control and pump loop follows */
+int gv_HeldCrimesOf(int culprit, int *out, unsigned short t);  /* 0x4f3fe0, gv.h's prototype (gv.h is not included yet: Open: head) */
 
-int ai_Unk5b4340(short *param_1, int param_2)
+/* 0x5b4340, the evidence details window "privillegien\Beweise_Details" (ai_EvidenceBookWindow, for the player's
+   character me and a character of the book): the crimes of culprit that me holds (gv_HeldCrimesOf, up to 32),
+   copied from ai_Crimes and sorted by law (gv_SortCrimesByLaw), each a row of its law's name (txt_Ptrs[law * 5 +
+   0x13fd]) and the law's pictures (gv_GetTableRecord); the caption 0x1742 names the culprit, the text 0x174a
+   follows when the order 0x16 reports the flag 2 for the culprit. A right click closes it. Nothing for an empty
+   culprit or none held */
+
+void ai_EvidenceDetailsWindow(AICHARREC *me, AICHARREC *culprit)
 {
-    int ids[0x10];
-    char list[0x2d * 0x10];
     int n;
     int i;
+    int k;
     int win;
+    int list;
+    AIPOSVIEW pos;
+    int ids[0x20];
+    int arg[0x88];
+    CRIME crimes[0x20];
 
-    if (*param_1 == -1)
-        return 0;
-    n = gv_HeldCrimesOf(*(int *)(param_2 + 4), ids, *param_1);
+    if (culprit->id == 0xffff)
+        return;
+    n = gv_HeldCrimesOf(culprit->netId, ids, me->id);
     if (n < 1)
-        return 0;
+        return;
     for (i = 0; i < n; i++)
-        memcpy(list + i * 0x2d, (void *)((unsigned)&ai_Crimes + U_I((int)ids + i * 4) * 0x2d), 0x2d);
-    gv_SortCrimesByLaw(n, (CRIME *)list);
-    win = d2_OpenForm((char *)(unsigned)&full_data_62cd7c, 0, 0);
+        crimes[i] = ((CRIME *)ai_Crimes)[ids[i]];
+    gv_SortCrimesByLaw(n, crimes);
+    win = d2_OpenForm(0, 0, "privillegien\\Beweise_Details");
     d2_CentreViewWindows(win);
     d2_SetForm(win, 2);
-    /* ROUGH: the list control, the texts and the pump loop 0x5309a0 */
-    return 1;
+    list = d2_LastWindow;
+    d2_SetForm(win, 4);
+    d2_CreateScrollButtons(-1, -1, d2_LastWindow, list, 0x767);
+    d2_SetPointerSprite(0, 0);
+    d2_SetForm(win, 1);
+    io_PrintText(0x1742, culprit->id);
+    d2_SetForm(win, 2);
+    for (i = 0; i < n; i++) {
+        ai_LeftAlignedText(txt_Ptrs[crimes[i].law * 5 + 0x13fd], 10, i * 0x28 + 10, 0x13b, 0x55);
+        if (gv_GetTableRecord(crimes[i].law, (int *)&pos) != 0 && pos.pics != 0)
+            for (k = 0; k < pos.pics; k++)
+                d2_WinOpenPic(k * 0x10 + 0x154, i * 0x28 + 10, 0x526, d2_LastWindow);
+    }
+    memset(arg, 0, sizeof(arg));
+    arg[0] = 1;
+    d2_SetForm(win, 3);
+    if (ord_DispatchOrder(0x16, culprit, arg) & 2)
+        io_PrintText(0x174a);
+    d2_ClickedId = -1;
+    do {
+        if (dm_L.rup != 0)
+            sv_PopRequest = 1;
+    } while (sv_RunFrame((int)ai_EvidenceDetailsWindow, 0x657c7) != 0);
+    d2_CloseView(win);
 }
 /* 0x5b4590, a window over the player's character record (641 B, ROUGH SKELETON): the record 0x770b80 +
    0x6f25b8 * 0x21c, the window "0x62cda8" (0x4741f0 / 0x475600 / 0x475f70), a 0x8c8-byte frame; the body
@@ -20886,13 +20923,6 @@ void ai_LeftAlignedText(char *text, int x, int y, int w, int font)
 }
 #pragma pack(push, 1)
 
-typedef struct AIPOSVIEW {              /* 0x24 bytes, the record gv_GetTableRecord (0x4f2720) fills (AIPOS, ai.h) */
-    char pad00[0xc];
-    int pics;                           /* 0x0c, the page's picture count */
-    char pad10[8];
-    int texts;                          /* 0x18, the text count (AIPOS.unk18) */
-    char pad1c[8];
-} AIPOSVIEW;
 #pragma pack(pop)
 
 /* 0x5bd250, the pictures and text block of a window row (192 B): with the window set, the gv record (0x4f2720
