@@ -3452,7 +3452,7 @@ exe	0x00533470	main_ChooseNetworkGame	main	byte	readable
 exe	0x005335b0	main_NetworkMenu	main	byte	readable		
 exe	0x00533740	main_MoneyDialog	main	byte	readable		
 exe	0x005337f0	main_MenuButton	main	byte	readable		
-exe	0x00533850	main_Menue	main	draft	readable	deep	
+exe	0x00533850	main_Menue	main	byte	readable		
 exe	0x00534040	main_GiveStartBuildings	main	byte	readable		
 exe	0x005344f0	main_PlaceFamilyModel	main	shape	readable		
 exe	0x00534610	main_ChooseTalents	main	shape	readable		
