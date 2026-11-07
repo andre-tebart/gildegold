@@ -33334,38 +33334,30 @@ int ai_UseGoodHalveWorkerValue(AICHARREC *ch, G8USEVIEW *use)
     }
     return 1;
 }
-/* 0x5d08c0, the trial step of a player (262 B), called from he.c 0x549770 twice (the bytes +0xb8 /
-   +0xb9): param_1 the player record (+0x80 + i the step counter, +4 the message handle), param_2 the
-   step index 0 .. 4 (>= 5 -> 0). The counter n = the byte +0x80 + i: 252.0 or more -> 0. The chance
-   x = (252.0f - n) * (1/252), y = x * 0.6f + 0.2f, v = (int)(((1.0f - y) + 0x42ec20 () * y) * 42.0f *
-   x + 1.0f); the low byte of v is the amount. When n + amount is still above 252.0 the amount becomes
-   the low byte of (int)(252.0f - n) instead. A nonzero amount goes through 0x4c6020 (the record + 4,
-   the index, the amount). Returns 1 (0 when the index is 5 or more or the counter is 252.0 or more). */
+/* 0x5d08c0, raises a skill of the character ch by a trial step (he.c's trial event calls it for both of its
+   skills): skill 0 .. 4 (>= 5 -> 0); a skill value n of 252 or more -> 0. With x = (252 - n) / 252 and
+   y = 0.6x + 0.2 the amount is (1 - y + util_RandomF() * y) * 42x + 1, cut so that n + amount stays at 252; a
+   nonzero amount goes out with cm_SendAddSkill (the netId, the skill, the amount). Returns 1. */
 
-int ai_ApplyTrialStep(int param_1, int param_2)
+int ai_ApplyTrialStep(AICHARREC *ch, int skill)
 {
-    unsigned char n;
-    unsigned char amount;
-    int total;
     float x;
     float y;
-    int v;
+    unsigned char amount;
 
-    if (param_2 >= 5)
+    if (skill >= 5)
         return 0;
-    n = *(unsigned char *)(param_1 + param_2 + 0x80);
-    if ((float)n >= 252.0f)
-        return 0;
-    x = (252.0f - n) * 0.003968254f;
-    y = x * 0.6f + 0.2f;
-    v = (int)(((1.0f - y) + util_RandomF() * y) * 42.0f * x + 1.0f);
-    amount = (unsigned char)v;
-    total = n + amount;
-    if ((float)total > 252.0f)
-        amount = (unsigned char)(int)(252.0f - n);
-    if (amount != 0)
-        cm_SendAddSkill(param_1 + 4, param_2, amount);
-    return 1;
+    if (!((float)ch->skills[skill] >= 252.0f)) {
+        x = (252.0f - ch->skills[skill]) * (1.0f / 252.0f);
+        y = x * 0.6f + 0.2f;
+        amount = (unsigned char)(int)(x * (((ai_FloatOne - y) + util_RandomF() * y) * 42.0f) + ai_FloatOne);
+        if ((float)(ch->skills[skill] + amount) > 252.0f)
+            amount = (unsigned char)(int)(252.0f - ch->skills[skill]);
+        if (amount != 0)
+            cm_SendAddSkill(ch->netId, skill, amount);
+        return 1;
+    }
+    return 0;
 }
 /* 0x5d09d0, the use callback of the Domizil record 9 (the good 0x162, 0x62c51c): the character kind 6 picks
    the target in the special-amount list 0x5bea00 (the text 0x5176d0 0x9d), every other kind takes the use's
