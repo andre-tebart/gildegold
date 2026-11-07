@@ -20421,14 +20421,113 @@ int ai_BribeAmountCB(AICHARREC *ch)
     d2_CloseView(win);
     return given;
 }
-/* 0x5b4c60, a Ghidra-missed start (844 B, ROUGH SKELETON): 0x5b4bf0 ends with the tail call `jmp 0x52d7a0` at
-   0x5b4c54 and seven nops to 0x5b4c60; the start is the callback that 0x5b4fb0 pushes (and the immediate at
-   0x5b4f80); a 0x51c-byte frame. The body is a comment */
+int gv_HeldCrimeCount(int culprit, unsigned short t);  /* 0x4f4130, gv.h's prototype (gv.h is not included yet: Open: head) */
 
-int ai_DrohbriefAmountCB(void)
+/* 0x5b4c60, the threatening letter window "misc\perga_rolle" (ai_DrohbriefWindow's amount menu callback, with the
+   picked character ch; nothing for none, an empty pick, the player, or a player without 2 money). A haunting of
+   the player by ch (he_NoEvent88Pair) gives the text 0x409f, no evidence of ch's crimes (gv_HeldCrimeCount) the
+   text 0x1756. Else the window (text 0x1759: the evidence count with the word 0x1752 / 0x1753, ch; the row of
+   the player's talent 4) asks: its button takes the 2 (cm_SendMoneyDelta) and, when a random number plus the
+   mix of the two characters (gm_Mix 4) reaches 1, sends the quarrel message 0x2e from ch to the player (text
+   0x175b), else tells the letter failed (0x175c); the second button or a right click close it. Returns 1 once
+   the letter went out, else 0
+   @deep Reconstructed whole against the original 0x5b4c60..0x5b4fab (threatening letter: the checks,
+   he_NoEvent88Pair 0x409f, gv_HeldCrimeCount 0x1756, the window 0x1759 with the talent row 4, the 2 money,
+   gm_Mix + util_RandomF >= 1 sending the quarrel message 0x2e (to ch, from -1, flags 2, arg[0] ch, arg[1]
+   the player) with 0x175b, else 0x175c): from +0xf1 on every instruction of the window, the loop and the
+   message equals the original. Left only the block layout of the early exits: the original keeps a
+   separate epilogue (xor eax,eax / pop edi / pop esi / pop ebx / add esp,0x51c / ret) after each of the 7
+   early returns and its own txt_Format/sv_MessageBox sequence for 0x409f and 0x1756, ours jumps to one
+   shared epilogue at +0xf1 and cross-jumps the two message sequences (+0x96 'push 0x409f; jmp +0xd2');
+   diffclass: tail 32, code 28 (+0x5f the sv_CheckMoney exit, +0x8d the merged message call), order 14.
+   Tried return sent for every early exit (no change) (size: 18 of the instruction difference are shared /
+   inline tails) (size: 247 vs 265 instructions, explained: ours 229 vs the original's 265: the original
+   duplicates the 6-instruction epilogue at each of its 8 returns and keeps both 6-instruction message call
+   sequences, ours shares one epilogue and one message sequence (returns=3/8 in asmdiff); no statement is
+   missing) */
+
+int ai_DrohbriefAmountCB(AICHARREC *ch)
 {
-    /* ROUGH SKELETON: the 0x51c-byte frame */
-    return 0;
+    int sent;
+    int n;
+    int win;
+    int text;
+    int ok;
+    int cancel;
+    float chance;
+    AICHARREC *me;
+    AIWINDOWROW row;
+    AIMSG msg;
+    char note[0x400];
+
+    sent = 0;
+    if (ch == 0)
+        return 0;
+    if (ch->id == 0xffff)
+        return 0;
+    if (ch->id == ai_PlayerId)
+        return 0;
+    if (sv_CheckMoney(ai_Chars[ai_PlayerId], 2) == 0)
+        return 0;
+    if (he_NoEvent88Pair((struct AICHAR *)ch, (struct AICHAR *)ai_Chars[ai_PlayerId]) == 0) {
+        txt_Format(note, 0x409f, ch->id);
+        sv_MessageBox(note, 0);
+        return 0;
+    }
+    me = &((AICHARREC *)ai_Chars)[ai_PlayerId];
+    n = gv_HeldCrimeCount(ch->netId, ai_PlayerId);
+    if (n <= 0) {
+        txt_Format(note, 0x1756, ch->id);
+        sv_MessageBox(note, 0);
+        return 0;
+    }
+    if (sv_CheckMoney(ai_Chars[ai_PlayerId], 2) == 0)
+        return 0;
+    win = d2_OpenForm(0, 0, "misc\\perga_rolle");
+    d2_CentreViewWindows(win);
+    d2_SetPointerSprite(0, 0);
+    d2_SetForm(win, 1);
+    text = io_PrintText(0x1759, n, (n != 1) + 0x1752, ch->id, ch->id);
+    ok = d2_GetWinObj(win, 1, text);
+    cancel = d2_GetWinObj(win, 1, text + 1);
+    memset(&row, 0xff, sizeof(row));
+    row.win = win;
+    row.pageA = 2;
+    row.pageB = 3;
+    row.pageC = 4;
+    row.entry = 4;
+    row.record = 0x13;
+    ai_ShowWindowRow(&row);
+    d2_ClickedId = -1;
+    do {
+        if (dm_L.rup != 0) {
+            sv_PopRequest = 1;
+        } else if (d2_ClickedId != -1) {
+            if (d2_PointerObj == ok) {
+                cm_SendMoneyDelta(me->netId, -2);
+                chance = gm_Mix((int)me, (int)ch, 4);
+                if (util_RandomF() + chance >= 1.0f) {
+                    msg.type = 0x2e;
+                    msg.to = ch->netId;
+                    msg.fromId = -1;
+                    msg.flags = 2;
+                    msg.arg[1] = me->netId;
+                    msg.arg[0] = ch->netId;
+                    cm_SendLongMessage((char *)&msg);
+                    txt_Format(note, 0x175b, ch->id);
+                } else {
+                    txt_Format(note, 0x175c, ch->id, ch->id);
+                }
+                sv_MessageBox(note, 0);
+                sv_PopRequest = 1;
+                sent = 1;
+            } else if (d2_PointerObj == cancel) {
+                sv_PopRequest = 1;
+            }
+        }
+    } while (sv_RunFrame((int)ai_DrohbriefAmountCB, 0x677c7) != 0);
+    d2_CloseView(win);
+    return sent;
 }
 /* 0x5b4fb0, the threatening-letter ("Drohbrief") window of the rhetoric contact 0x5965f0 (83 B): the amount
    menu 0x5c1130 with the config (mode 0x400, kind 6, the filter gypsyFilter, the rest cleared), the contact's

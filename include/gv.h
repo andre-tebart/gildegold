@@ -501,7 +501,7 @@ int gv_CulpritGuilt(int c);               /* 0x4f39e0 */
 
 int gv_HeldCrimesOf(int culprit, int *out, unsigned short t);  /* 0x4f3fe0 */
 int gv_HeldCrimeIdsOf(int culprit, int *out, unsigned short t);  /* 0x4f4080 */
-int gv_HeldCrimeCount(int culprit, unsigned t);   /* 0x4f4130 */
+int gv_HeldCrimeCount(int culprit, unsigned short t);   /* 0x4f4130 */
 void gv_ClearCrimes(void);               /* 0x4f4350 */
 int gv_CheckSentence(struct AICHAR *c, unsigned k); /* 0x4f4420 */
 short * gm_FindChar(int id);                   /* 0x505df0 */

@@ -3409,9 +3409,10 @@ int gv_HeldCrimeIdsOf(int culprit, int *out, unsigned short t)
     return n;
 }
 /* 0x4f4130, the count of gv_HeldCrimesOf without the list: how many crimes of the culprit the character t (low word)
-   holds evidence of, stopping past 0x20; 0 when the culprit does not exist */
+   holds evidence of, stopping past 0x20; 0 when the culprit does not exist (t is a character index, a 16-bit
+   word: lc.c's callers push it unextended) */
 
-int gv_HeldCrimeCount(int culprit, unsigned t)
+int gv_HeldCrimeCount(int culprit, unsigned short t)
 {
     int n, i, k;
     ORDCHAR *ch;
@@ -3419,7 +3420,7 @@ int gv_HeldCrimeCount(int culprit, unsigned t)
     n = 0;
     if (gm_FindChar(culprit) == 0)
         return 0;
-    ch = &ORD_CHARS[(unsigned short)t];
+    ch = &ORD_CHARS[t];
     if (ch == 0)
         return 0;
     for (i = 0; i < 0x800; i++) {
