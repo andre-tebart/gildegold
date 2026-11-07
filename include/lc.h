@@ -225,7 +225,7 @@ int ai_ChangeProfessionWindow(struct AICHARREC *me, struct LCORDMSG *m);  /* 0x5
 struct AICHARREC; struct LCORDMSG; int ai_HatredWindow(struct AICHARREC *me, struct LCORDMSG *m);  /* 0x5cb4f0, the hatred order's ask */
 void ai_Interrogate(struct AICHARREC *me, struct AICHARREC *ch);  /* 0x5ce4b0, carries out the interrogation */
 int ai_InterrogationWindow(struct AICHARREC *me, struct LCORDMSG *m);  /* 0x5ce610, the interrogation order's ask */
-int ai_InterrogationWindow1(int param_1, int param_2);  /* 0x5cede0 */
+int ai_InterrogationWindow1(struct AICHARREC *me, struct LCORDMSG *m);  /* 0x5cede0, the interrogation order's ask, variant 1 */
 int ai_InterrogationWindow2(int param_1, int param_2);  /* 0x5cf020 */
 struct AICHARREC; struct LCORDMSG; int ai_LawPrivilegeWindow(struct AICHARREC *me, struct LCORDMSG *m);  /* 0x5ca150 */
 struct AICHARREC; struct LCORDMSG; int ai_MisappropriationWindow(struct AICHARREC *me, struct LCORDMSG *m);  /* 0x5ca860 */

@@ -1537,7 +1537,7 @@ int ord_InterrogationOrder2(char *c, int *m)
     if ((ORD_CHAR(c)->flags1c8 & 0x40000) != 0)
         return 1;
     if (m[0] == 3)
-        r = ai_InterrogationWindow1(c, m);
+        r = ai_InterrogationWindow1((struct AICHARREC *)c, (struct LCORDMSG *)m);
     return r | 2;
 }
 /* 0x4f7ef0, an order handler (c, m; kinds 1 / 3) for characters with the flag 0x200 of +0x1cc: a player (+2 = 6) with kind 3 gets the text 0x1e1b (0x276, + 0x28 with +9, extra argument 0x16ba) shown through 0x4f8200 (mode 0); kind 1 writes text 0x1e1a into m + 0x14; else 2 */
