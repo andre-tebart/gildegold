@@ -4436,16 +4436,16 @@ exe	0x005ba750	lc_UpdateGoodsReserves	lc	draft	readable	deep
 exe	0x005ba980	ai_UseGoodWindow	lc	byte	readable		
 exe	0x005bac10	ai_InventoryPanel	lc	byte	readable		
 exe	0x005bae10	ai_EquipRowsInit	lc	draft	readable	deep	
-exe	0x005bae50	ai_Unk5bae50	lc	draft	draft		
+exe	0x005bae50	ai_UpdateEquipRows	lc	shape	readable		
 exe	0x005bb2d0	ai_GoodFitsBuilding	lc	byte	readable		
-exe	0x005bb350	ai_EquipWindow	lc	draft	draft		
-exe	0x005bb950	ai_Unk5bb950	lc	draft	draft		
-exe	0x005bba00	ai_TrainingWindow	lc	draft	draft		
+exe	0x005bb350	ai_EquipWindow	lc	byte	readable		
+exe	0x005bb950	ai_OpenTrainingRow	lc	byte	readable		
+exe	0x005bba00	ai_TrainingWindow	lc	draft	readable	deep	
 exe	0x005bc0f0	ai_FreePicture	lc	byte	readable		
-exe	0x005bc110	ai_ChooseCoatOfArms	lc	draft	draft		
-exe	0x005bc420	ai_Unk5bc420	lc	draft	draft		
-exe	0x005bc6d0	ai_Unk5bc6d0	lc	draft	draft		
-exe	0x005bc790	ai_Unk5bc790	lc	draft	draft		
+exe	0x005bc110	ai_ChooseCoatOfArms	lc	byte	readable		
+exe	0x005bc420	ai_OpenMoneyInfoPage	lc	byte	readable		
+exe	0x005bc6d0	ai_OpenBuildingListPage	lc	byte	readable		
+exe	0x005bc790	ai_BuildingDetailWindow	lc	byte	readable		
 exe	0x005bc9c0	ai_Unk5bc9c0	lc	draft	draft		
 exe	0x005bcc70	ai_PlayerStatsPanel	lc	draft	draft		
 exe	0x005bd060	ai_AmountLimit	lc	byte	readable		

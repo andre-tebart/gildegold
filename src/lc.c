@@ -18,6 +18,10 @@
    keeps its carts in ai_BldCarts, and the transport window buys and sells carts (ai_BuyCartWindow, ai_SellCarts).
    The building options windows (ai_BuildingWindow, ai_ManagedBuildingWindow) open the sale, renovation, room upgrade
    (AIMSG.roomUpgrade), upgrade (message 0x1e), buy offer (0x21), fire fighting and technique effect windows.
+   The thieves' guild windows: the equip window (ai_EquipWindow, its rows AIEQUIPROW in ai_EquipRows kept by
+   ai_UpdateEquipRows) and the training window (ai_TrainingWindow, rows LCTRAINROW, the thief message 0x16 and
+   AIJOB.thiefClass / thief); the player stats panel's pages (ai_OpenMoneyInfoPage, ai_OpenBuildingListPage, the
+   building detail ai_BuildingDetailWindow) and the coat of arms choice; lc_CharRecs reads ai_Chars as AICHARREC.
    Open: the AIMSG message records are built by raw offsets in most functions (the use callbacks of the Domizil
    table use AIMSG: ai_UseEventGood, the money messenger AIMSG.payment).
    Open: types: the event / message words LCAMBUSHEVENT, LCSEARCHEVENT, LCSEARCHWORDS, LCKIDNAPEVENT (he.c's
