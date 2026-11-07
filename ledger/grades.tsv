@@ -772,7 +772,7 @@ exe	0x0043ce10	d3_InitSurf	d3_engine	byte	readable
 exe	0x0043ce60	d3_InitObject	d3_engine	shape	draft	deep	
 exe	0x0043cfb0	d3_AddObjectDrawData	d3_engine	byte	readable		
 exe	0x0043d0e0	d3_Unlink	d3_engine	byte	readable		
-exe	0x0043d180	d3_CloneObject	d3_engine	byte	draft	deep	
+exe	0x0043d180	d3_CloneObject	d3_engine	shape	draft	deep	
 exe	0x0043d430	d3_SetObjectAlpha	d3_engine	shape	readable	deep	
 exe	0x0043d630	d3_SetAlphaCB	d3_engine	byte	readable		
 exe	0x0043d690	d3_SetAlpha	d3_engine	byte	readable		
@@ -1469,7 +1469,7 @@ exe	0x004817a0	ai_CalcAngriff	ai	draft	draft	deep
 exe	0x00481ef0	ai_CalcMeisterDiebe	ai	draft	draft	deep	
 exe	0x00482f00	ai_CalcMeisterRaeuber	ai	draft	readable	deep	
 exe	0x004836a0	ai_CalcMeisterBank	ai	byte	draft	deep	
-exe	0x00483a60	ai_Unk483a60	ai	shape	draft	deep	byte+draft -> shape+draft at d04121a3: ai_types.h AIMSG gains the payment message 0x27's words (payment.bld / player / amount, the words he.c's HEEV27 keeps) instead of raw offsets in lc's ai_MoneyMessengerWindow (now byte): a truer shared type. ai_Unk483a60 only flips two stack slots ([esp+0x10] / [esp+0x18]) under the changed declaration set, whatever the member's name; the ai.c lead comment already notes its slot match was lost the same way to an AIJOB change, so the match is no evidence of the original's source [waits for: match-deep on its slot allocation, or the declaration set of ai.c's includes (ai_types.h)]
+exe	0x00483a60	ai_Unk483a60	ai	byte	draft	deep	
 exe	0x00483d30	ai_StartBuildingWork	ai	shape	draft	deep	
 exe	0x00483ee0	ai_EndWorkerPose	ai	byte	readable		
 exe	0x00483fc0	ai_Unk483fc0	ai	draft	draft	deep	
@@ -4004,7 +4004,7 @@ exe	0x00578440	ai_TutorialFreeRuns	sv_t	byte	readable
 exe	0x005784a0	ai_TutorialInitMainIntro	sv_t	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	sv_t	byte	readable		
 exe	0x00578e40	ai_TutorialInitChapter2	sv_t	byte	readable		
-exe	0x00579570	ai_TutorialInitChapter3	sv_t	draft	readable		
+exe	0x00579570	ai_TutorialInitChapter3	sv_t	shape	readable		
 exe	0x0057aa80	ai_TutorialInitChapter4	sv_t	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	sv_t	byte	readable		
 exe	0x0057b750	ai_TutorialInitMainOutro	sv_t	byte	readable		
@@ -4395,15 +4395,15 @@ exe	0x005b2090	ai_LoadTownMap	lc	shape	readable
 exe	0x005b2180	ai_MapPick	lc	byte	readable		
 exe	0x005b2530	ai_NewStorageSlotWindow	lc	shape	readable		
 exe	0x005b26b0	ai_StorageWindow	lc	draft	readable	deep	
-exe	0x005b3130	ai_FiveTextWindow	lc	draft	draft		
-exe	0x005b3630	ai_SabotageCallback	lc	draft	draft		
-exe	0x005b3ad0	ai_EspionageAmountCB	lc	draft	draft		
-exe	0x005b3f30	ai_BeatingCallback	lc	draft	draft		
-exe	0x005b4340	ai_Unk5b4340	lc	draft	draft		
-exe	0x005b4590	ai_EvidenceBookWindow	lc	draft	draft		
-exe	0x005b4820	ai_Unk5b4820	lc	draft	draft		
-exe	0x005b4bf0	ai_OpenRobberBribe	lc	draft	draft	deep	
-exe	0x005b4c60	ai_DrohbriefAmountCB	lc	draft	draft		
+exe	0x005b3130	ai_TalentWindow	lc	shape	readable		
+exe	0x005b3630	ai_SabotageCallback	lc	byte	readable		
+exe	0x005b3ad0	ai_EspionageAmountCB	lc	byte	readable		
+exe	0x005b3f30	ai_BeatingCallback	lc	byte	readable		
+exe	0x005b4340	ai_EvidenceDetailsWindow	lc	byte	readable		
+exe	0x005b4590	ai_EvidenceBookWindow	lc	byte	readable		
+exe	0x005b4820	ai_BribeAmountCB	lc	draft	readable	deep	
+exe	0x005b4bf0	ai_OpenRobberBribe	lc	draft	readable	deep	
+exe	0x005b4c60	ai_DrohbriefAmountCB	lc	draft	readable	deep	
 exe	0x005b4fb0	ai_DrohbriefWindow	lc	byte	readable		
 exe	0x005b5010	ai_DenounceWindow	lc	draft	draft		
 exe	0x005b5310	ai_PamphletAmountCB	lc	draft	draft		
