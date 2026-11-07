@@ -31276,41 +31276,104 @@ int ai_ExpelWorkerWindow(AICHARREC *me, LCORDMSG *m)
     d2_CloseView(win);
     return ret;
 }
-/* 0x5cc2b0, the espionage relation handler (1104 B, ROUGH SKELETON: no Ghidra export; from the
-   disassembly): param_1 is the message record (the AIMSG: +2 the type 6, +4 the handle, +0x194 the
-   amount), param_2 the request (dword +0: 3 / 4, +0x214 / +0x218 the two character ids). Types other
-   than 6: the two rolls 0x42ec00 (0x28) + 0xf; the amount < 3 returns 0x20; the two characters
-   0x505df0 (missing -> 0x60); the two lines 0x4c4b00 (each handle, the other handle, the roll, 1); the
-   close 0x4c5f60 (-3); a target of the type 6 / 7 gets the message; the rest (the window at 0x5cc433)
-   is left as a comment. ROUGH SKELETON. */
+/* 0x5cc2b0, the peace order's ask (ord_PeaceOrder, kinds 3 / 4) "privillegien\frieden_stiften": me reconciles two
+   characters. Each one's relation to the other rises by a random 15 .. 54 (cm_SendRelations both ways), me pays 3
+   (cm_SendMoneyDelta), and a player among the two gets the news 0x1de8 naming the other and me. The AI (not kind 6)
+   names them in m->target / m->target2: 0x10, or 0x20 when it has less than 3, 0x60 when one is unknown. A player
+   (kind 6) picks them in two amount menus (texts 0x1de4, 0x1de5; none: 0), then the window (0x1de6: the 3, the two)
+   whose first button, when the player has the 3 (sv_CheckMoney), does it and tells 0x1de7; either button or a right
+   click close it. Returns 1 once it was done, else 0 */
 
-int ai_EspionageRelation(int param_1, int *param_2)  /* @original: the callers push (c, m); the draft body reads its own byte offsets of the parameters */
+int ai_PeaceWindow(AICHARREC *me, LCORDMSG *m)
 {
-    int chr1;
-    int chr2;
+    int done;
+    int ok;
+    int cancel;
+    int win;
+    AMOUNTCFG cfg;
+    char text[0x200];
+    AICHARREC *a;
+    AICHARREC *b;
     int r1;
     int r2;
+    int t;
 
-    if (*(char *)(param_1 + 2) != 6) {
-        r1 = (util_Random(0x28) & 0xffff) + 0xf;
-        r2 = (util_Random(0x28) & 0xffff) + 0xf;
-        if (*(int *)(param_1 + 0x194) < 3)
+    if (me->kind != 6) {
+        r1 = util_RandomU(0x28) + 0xf;
+        r2 = util_RandomU(0x28) + 0xf;
+        if (me->money < 3)
             return 0x20;
-        chr1 = gm_FindChar(param_2[0x214]);
-        if (chr1 == 0)
+        a = (AICHARREC *)gm_FindChar(m->target);
+        if (a == 0)
             return 0x60;
-        chr2 = gm_FindChar(param_2[0x218]);
-        if (chr2 == 0)
+        b = (AICHARREC *)gm_FindChar(m->target2);
+        if (b == 0)
             return 0x60;
-        cm_SendRelations(*(int *)(chr1 + 4), *(int *)(chr2 + 4), r1, 1);
-        cm_SendRelations(*(int *)(chr2 + 4), *(int *)(chr1 + 4), r2, 1);
-        cm_SendMoneyDelta(*(int *)(chr1 + 4), 0xfffffffd);
-        /* ROUGH SKELETON: the message chain and the return value are not written yet */
+        cm_SendRelations(a->netId, b->netId, r1, 1);
+        cm_SendRelations(b->netId, a->netId, r2, 1);
+        cm_SendMoneyDelta(me->netId, -3);
+        if (a->kind == 6 || a->kind == 7) {
+            txt_Format(text, 0x1de8, b->id, me->id);
+            he_ShowNews(a->netId, a->netId, text, 0, 0x5ec, ch_EmptyName);
+        }
+        if (b->kind == 6 || b->kind == 7) {
+            txt_Format(text, 0x1de8, a->id, me->id);
+            he_ShowNews(b->netId, b->netId, text, 0, 0x5ec, ch_EmptyName);
+        }
         return 0x10;
     }
-    /* ROUGH SKELETON: type 6 opens the window at 0x5cc433 (the 0x5c1130 menus, the records and the pump
-       0x5309a0 are not written yet) */
-    return 0;
+    memset(&cfg, 0, sizeof(cfg));
+    cfg.mode = 0x400;
+    cfg.kind = 6;
+    cfg.filter = gypsyFilter;
+    done = 0;
+    txt_Format(text, 0x1de4);
+    a = (AICHARREC *)ai_AmountMenu(&cfg, text, 0, 0);
+    if (a == 0)
+        return 0;
+    txt_Format(text, 0x1de5, a->id);
+    b = (AICHARREC *)ai_AmountMenu(&cfg, text, 0, 0);
+    if (b == 0)
+        return 0;
+    win = d2_OpenForm(0, 0, "privillegien\\frieden_stiften");
+    d2_SetPointerSprite(0, 0);
+    d2_CentreViewWindows(win);
+    d2_SetForm(win, 1);
+    t = io_PrintText(0x1de6, 3, a->id, b->id);
+    ok = d2_GetWinObj(win, 1, t);
+    cancel = d2_GetWinObj(win, 1, t + 1);
+    d2_ClickedId = -1;
+    do {
+        if (d2_ClickedId != -1) {
+            if (d2_PointerObj == ok) {
+                if (sv_CheckMoney(me, 3) != 0) {
+                    r1 = util_RandomU(0x28) + 0xf;
+                    r2 = util_RandomU(0x28) + 0xf;
+                    cm_SendRelations(a->netId, b->netId, r1, 1);
+                    cm_SendRelations(b->netId, a->netId, r2, 1);
+                    cm_SendMoneyDelta(me->netId, -3);
+                    txt_Format(text, 0x1de7, a->id, b->id);
+                    sv_MessageBox(text, 0);
+                    if (a->kind == 6 || a->kind == 7) {
+                        txt_Format(text, 0x1de8, b->id, me->id);
+                        he_ShowNews(a->netId, a->netId, text, 0, 0x5ec, 0);
+                    }
+                    if (b->kind == 6 || b->kind == 7) {
+                        txt_Format(text, 0x1de8, a->id, me->id);
+                        he_ShowNews(b->netId, b->netId, text, 0, 0x5ec, 0);
+                    }
+                    sv_PopRequest = 1;
+                    done = 1;
+                }
+            } else if (d2_PointerObj == cancel) {
+                sv_PopRequest = 1;
+            }
+        }
+        if (dm_L.rup)
+            sv_PopRequest = 1;
+    } while (sv_RunFrame((int)ai_PeaceWindow, 0x657c7) != 0);
+    d2_CloseView(win);
+    return done;
 }
 /* 0x5cc700, the espionage payment handler (827 B, ROUGH SKELETON: no Ghidra export; from the
    disassembly): param_1 is the message record (the AIMSG: +0 the id, +2 the type 6, +4 the handle, +0xc

@@ -220,7 +220,7 @@ struct AICHARREC; struct LCORDMSG; int ai_ExpelWorkerWindow(struct AICHARREC *me
 int ai_EspionageOverviewHandler(void *ch, int *m);  /* 0x5cd2e0 */
 struct AICHARREC; struct LCORDMSG; int ai_HearingWindow(struct AICHARREC *me, struct LCORDMSG *m);  /* 0x5cba90, the hearing order's ask */
 int ai_EspionagePayment2(int param_1, int *m);  /* 0x5cc700 */
-int ai_EspionageRelation(int param_1, int *param_2);  /* 0x5cc2b0 */
+struct AICHARREC; struct LCORDMSG; int ai_PeaceWindow(struct AICHARREC *me, struct LCORDMSG *m);  /* 0x5cc2b0, the peace order's ask */
 int ai_EspionageResult(int param_1, int *m);  /* 0x5cd400 */
 struct AICHARREC; struct LCORDMSG; int ai_HatredWindow(struct AICHARREC *me, struct LCORDMSG *m);  /* 0x5cb4f0, the hatred order's ask */
 int ai_InterrogationWindow(int param_1, int param_2);  /* 0x5ce610 */
