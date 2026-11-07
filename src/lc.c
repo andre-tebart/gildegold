@@ -25440,40 +25440,41 @@ unsigned int ai_FillEnemiesTab(AICHARREC *me, unsigned int max, LCAMOUNTROW *row
     }
     return n;
 }
-/* 0x5bf6f0, the carrier list of a special-amount page (195 B): up to 4 records 0x505df0 of the carriers
-   0x53e400 (1, 0, 0x6f) owned by param_1 + 4; then the param_2 records are zeroed and the first min(param_2,
-   count) get the character, the 0x5be1d0 init and the 0x5c33c0 result at +0x30; returns the carrier count */
+/* 0x5bf6f0, the fill of the special-amount window's lovers tab (tab 3, 195 B): the partners (gm_FindChar) of up to
+   four pair events 0x6f of me (AIJOB.partner1 me's netId); with max set it clears max rows of rows and fills the
+   first min(max, count) of them (LCAMOUNTROW.rec) with the corner icons (ai_AmountRowStatus) and the partner
+   filter filter (ai_PassesPartnerFilter, pickable); returns the count
+   @deep Read the whole function against the original and rewrote it (the pair event 0x6f scan into
+   lovers[4], the clear, the min(max, n) fill loop with the corner icons and the partner filter); the
+   statements and the control flow match (same branches, same calls and arguments). Left is allocation: the
+   original keeps n in ebx all through (frame 0x10, only lovers[4]) and max in ebp, reloading me and filter
+   from their argument slots; ours keeps n in esi during the scan, homes it in a stack slot (frame 0x14:
+   mov [esp+0x18], esi / mov [esp+0xc], esi) and keeps max in ebx and filter in ebp, so the fill loop
+   reloads n (mov ecx, [esp+0x10]) and the epilogue differs (hunks at +0x44, +0xab, +0xc5). Tried:
+   declaration order, unsigned / int counters and the casts in the min (no change, or jl instead of jae). */
 
-unsigned int ai_Unk5bf6f0(int param_1, unsigned int param_2, int *param_3, int param_4)
+unsigned int ai_FillLoversTab(AICHARREC *me, unsigned int max, LCAMOUNTROW *rows, unsigned int *filter)
 {
-    int ids[4];
-    unsigned int n;
+    int n;
     unsigned int i;
-    char *car;
-    int *rec;
-    int x;
+    AICHARREC *lovers[4];
+    AICHARREC *c;
+    AIJOB *ev;
 
     n = 0;
-    car = (char *)he_FindEvent(1, 0, 0x6f);
-    while (car != 0 && n < 4) {
-        if (U_I(car + 0xac) == U_I(param_1 + 4)) {
-            x = gm_FindChar(U_I(car + 0xb0));
-            if (x != 0)
-                ids[n++] = x;
+    for (ev = (AIJOB *)he_FindEvent(1, 0, 0x6f); ev != 0 && n < 4; ev = (AIJOB *)he_NextEvent()) {
+        if (ev->partner1 == me->netId) {
+            c = (AICHARREC *)gm_FindChar(ev->partner2);
+            if (c != 0)
+                lovers[n++] = c;
         }
-        car = (char *)he_NextEvent();
     }
-    if (param_2 != 0) {
-        for (i = 0; i < param_2 * 0x38 / 4; i++)
-            param_3[i] = 0;
-        i = param_2 < n ? param_2 : n;
-        rec = param_3;
-        for (x = 0; x < (int)i; x++) {
-            rec[0] = ids[x];
-            ai_AmountRowStatus(rec);
-            rec[0xc] = ai_PassesPartnerFilter(*(unsigned short *)param_1, *(unsigned short *)rec[0],
-                                    (unsigned int *)param_4, 0);
-            rec += 0xe;
+    if (max != 0) {
+        memset(rows, 0, max * sizeof(LCAMOUNTROW));
+        for (i = 0; i < (max < n ? max : n); i++) {
+            rows[i].rec = lovers[i];
+            ai_AmountRowStatus(&rows[i]);
+            rows[i].pickable = ai_PassesPartnerFilter(me->id, rows[i].rec->id, filter, 0);
         }
     }
     return n;
@@ -32316,7 +32317,7 @@ AIAMOUNTTAB ai_AmountTabs[8] = {       /* 0x62d148, one table: 8 rows of 0x14 {i
     { 0, 0, -1, ai_FillFamilyTab, ai_Unk5bffb0 },
     { 1, 0, -1, ai_FillFriendsTab, ai_Unk5c00b0 },
     { 2, 0, -1, ai_FillEnemiesTab, ai_Unk5c01c0 },
-    { 3, 0, -1, ai_Unk5bf6f0, ai_Unk5c02d0 },
+    { 3, 0, -1, ai_FillLoversTab, ai_Unk5c02d0 },
     { 4, 0, -1, ai_Unk5bf7c0, ai_Unk5c03e0 },
     { 5, 0, -1, ai_Unk5bfa90, ai_Unk5c0550 },
     { 6, 0, -1, ai_Unk5bfc40, ai_Unk5c0650 },
