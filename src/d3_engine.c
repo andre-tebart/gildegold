@@ -855,7 +855,7 @@ void d3_DrawSortedD3D(void)
             cur = (D3TEXV *)t->tex;
             if (!d3_Unk63345d && cur && cur->d3dtex != oldtext) {
                 oldtext = cur->d3dtex;
-#line 1219
+#line 1219 "D:\\develop\\Units\\d3\\d3_engine.c"
                 D3DCHECK(d3d_Device->lpVtbl->SetTexture(d3d_Device, 0, oldtext));
                 d3_TextureSwitches++;
                 if (cur->flags & 8)
