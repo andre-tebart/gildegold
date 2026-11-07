@@ -4586,18 +4586,18 @@ exe	0x005d18c0	ai_UseGoodDrainActionPoints	lc	byte	readable
 exe	0x005d1990	ai_UseGoodDrainSkill	lc	byte	readable		
 exe	0x005d1b30	ai_UseGoodHarmBuilding	lc	byte	readable		
 exe	0x005d1da0	ai_UseGoodSpoilStock	lc	byte	readable		
-exe	0x005d1fb0	ai_Unk5d1fb0	lc	draft	draft		
+exe	0x005d1fb0	ai_UseGoodCharmOfficials	lc	shape	readable		
 exe	0x005d22e0	ai_UsePayGood	lc	byte	readable		
-exe	0x005d2320	ai_Unk5d2320	lc	draft	draft		
-exe	0x005d2440	ai_Unk5d2440	lc	draft	draft		
-exe	0x005d2580	ai_Unk5d2580	lc	draft	draft		
-exe	0x005d2720	ai_Unk5d2720	lc	draft	draft		
-exe	0x005d2960	ai_Unk5d2960	lc	draft	draft		
-exe	0x005d2bc0	ai_Unk5d2bc0	lc	draft	draft		
+exe	0x005d2320	ai_UseGoodDrainActionPoints8	lc	byte	readable		
+exe	0x005d2440	ai_UseGoodHoldRound	lc	byte	readable		
+exe	0x005d2580	ai_UseGoodCharmPartner	lc	draft	readable	deep	
+exe	0x005d2720	ai_UseGoodWeakenSkills3	lc	shape	readable		
+exe	0x005d2960	ai_UseGoodFrameChar	lc	shape	readable		
+exe	0x005d2bc0	ai_UseGoodFrameChar2	lc	byte	readable		
 exe	0x005d2e80	ai_UseGoodHeatBuilding	lc	byte	readable		
 exe	0x005d2f20	ai_UseEventGood	lc	shape	readable		
 exe	0x005d2f90	ai_UseGoodStaffBonus	lc	byte	readable		
-exe	0x005d3030	ai_Unk5d3030	lc	draft	draft		
+exe	0x005d3030	ai_UseGoodPettyLoss	lc	draft	readable	deep	
 exe	0x005d31c0	ai_UseGoodSkillBonus	lc	byte	readable		
 exe	0x005d3270	ai_Unk5d3270	lc	draft	draft		
 exe	0x005d33b0	ai_ListFiles	menu	byte	readable		
