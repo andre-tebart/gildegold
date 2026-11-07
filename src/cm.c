@@ -15727,13 +15727,13 @@ int cm_UnloadVoiceBank(int a)
         return 0;
     return sb_UnloadSampleBank(a);
 }
-/* 0x4e32b0 */
+/* 0x4e32b0, plays the voice sample of speaker id in bank (text, var pick the sample; snd_PlayVoice), 0 in the replay mode */
 
-int cm_PlayVoice(int a, int b, int c, int d)
+int cm_PlayVoice(int id, int bank, char *text, int var)
 {
     if (cm_SkipEvents != 0)
         return 0;
-    return snd_PlayVoice(a, b, c, d);
+    return snd_PlayVoice(id, bank, text, var);
 }
 /* 0x4e32d0 */
 
