@@ -3019,20 +3019,20 @@ int ai_PlanWorth(AIPLAN *q)
     return util_RandomU(2);
 }
 /* 0x4941b0, the AI accuser's answer to the trial's torture question (request kind 1 of the trial's ask-AI callback
-   ai_Unk4de340): a coin toss, 1 to torture the accused */
+   cm_TrialAskAI): a coin toss, 1 to torture the accused */
 
 int ai_DecideTorture(void)
 {
     return util_RandomU(2) != 0;
 }
-/* 0x4941d0, the AI accuser's pick of the torture instrument (request kind 2 of ai_Unk4de340): a random 0 .. 6, the
+/* 0x4941d0, the AI accuser's pick of the torture instrument (request kind 2 of cm_TrialAskAI): a random 0 .. 6, the
    index of the seven instruments (plan.instrument) */
 
 int ai_DecideTortureInstrument(void)
 {
     return util_RandomU(7);
 }
-/* 0x4941e0, the torturer's mercy in the trial (request kind 3 of the trial's ask-AI callback ai_Unk4de340):
+/* 0x4941e0, the torturer's mercy in the trial (request kind 3 of the trial's ask-AI callback cm_TrialAskAI):
    the torturer (c28) gives in (1) when he likes the accused (c18) by more than 20 over the accuser (c14), goes on
    (0) when he likes the accuser by more than 20 more, and tosses a coin between; with no torturer 1 */
 
@@ -3100,7 +3100,7 @@ int ai_PlanRollTries(AIPLAN *q)
     q->penalty = -acc;
     return q->success;
 }
-/* 0x494410, the vote of a trial judge or assessor (request kind 4 of the trial's ask-AI callback ai_Unk4de340):
+/* 0x494410, the vote of a trial judge or assessor (request kind 4 of the trial's ask-AI callback cm_TrialAskAI):
    1 for the accused when his liking of and mix with the voter (c18) outweigh the accuser's (c14) plus the plan's
    score^2 * 0.0025, 0 otherwise; the accused's item 0x22e tips it and a torture raises his side, while a confession
    (success) or a guilty plea gives no vote for him */
@@ -3189,7 +3189,7 @@ int ai_PlanRank(AIPLAN *q)
         r--;
     return r;
 }
-/* 0x4946c0, the sentence a trial judge picks (request kind 5 of the trial's ask-AI callback ai_Unk4de340): the
+/* 0x4946c0, the sentence a trial judge picks (request kind 5 of the trial's ask-AI callback cm_TrialAskAI): the
    plan's rank raised by 0 / 1 / 2 by the judge's liking of the accused against thresholds scaled by record 0's
    current law value (k = 0.7 + (5 - cur) * 0.1), 5 -> 4 for a judge without an office, 7 -> 6 under rank 2,
    clamped to 0 .. 9 */

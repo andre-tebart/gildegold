@@ -13649,57 +13649,59 @@ void cm_TrialAskPlayer(CMCUTINFO *r, AIPLAN *m)
         return;
     }
 }
-/* 0x4de340, answers a request m of the AI's session code (kinds 0 .. 6; the bodies of 6, 4, 5 in this order) of the record r (+0x10 the asking character, +0x94 the result, +0x98 a
-   value): each kind asks one of the decision functions 0x494020 .. 0x4946c0 when the character matches the one named in m */
+/* 0x4de340, the trial's ask-AI callback (cm_RunTrial's scene party, scene kind 2; the plan m, the member's record r): when
+   r->playerId is the one the plan asks, the character answers its mode 0 .. 6 by the decision functions 0x494020 ..
+   0x4946c0 and the answer goes to r->session.answer (mode 0 the plea's amount into r->session.amount too) */
 
-void ai_Unk4de340(char *r, int *m)
+void cm_TrialAskAI(CMCUTINFO *r, AIPLAN *m)
 {
-    int c, id, res;
+    AICHAR *c;
+    int id, res;
 
-    *(int *)(r + 0x94) = -1;
-    switch (m[0]) {
+    r->session.answer = -1;
+    switch (m->mode) {
     case 0:
-        if (*(int *)(r + 0x10) != m[6])
+        if (r->playerId != m->ids[1])
             return;
-        c = gm_FindChar(m[6]);
-        *(float *)(r + 0x98) = (float)*(int *)(c + 0x24) + *(float *)(c + 0x1c);
-        *(int *)(r + 0x94) = ai_PlanWorth(m);
+        c = (AICHAR *)gm_FindChar(m->ids[1]);
+        r->session.amount = (float)c->v024 + c->f01c;
+        r->session.answer = ai_PlanWorth(m);
         return;
     case 1:
-        if (*(int *)(r + 0x10) != m[5])
+        if (r->playerId != m->ids[0])
             return;
-        *(int *)(r + 0x94) = ai_DecideTorture(m);
+        r->session.answer = ai_DecideTorture(m);
         return;
     case 2:
-        if (*(int *)(r + 0x10) != m[5])
+        if (r->playerId != m->ids[0])
             return;
-        *(int *)(r + 0x94) = ai_DecideTortureInstrument(m);
+        r->session.answer = ai_DecideTortureInstrument(m);
         return;
     case 3:
-        if (*(int *)(r + 0x10) != m[10])
+        if (r->playerId != m->ids[5])
             return;
         res = ai_DecideTortureMercy(m);
-        *(int *)(r + 0x94) = res;
+        r->session.answer = res;
         if (res == 1)
-            cm_SendRelations(*(int *)(r + 0x10), m[6], 0x23, res);
+            cm_SendRelations(r->playerId, m->ids[1], 0x23, res);
         return;
     case 6:
-        if (*(int *)(r + 0x10) != m[6])
+        if (r->playerId != m->ids[1])
             return;
-        *(int *)(r + 0x94) = util_RandomU(2) & 0xffff;
+        r->session.answer = util_RandomU(2) & 0xffff;
         return;
     case 4:
-        id = *(int *)(r + 0x10);
-        if (id != m[7] && id != m[8] && id != m[9])
+        id = r->playerId;
+        if (id != m->ids[2] && id != m->ids[3] && id != m->ids[4])
             return;
-        c = gm_FindChar(*(int *)(cm_CutChar + 4));
-        *(int *)(r + 0x94) = ai_DecideAcquittal(c, m);
+        c = (AICHAR *)gm_FindChar(((AICHAR *)cm_CutChar)->netId);
+        r->session.answer = ai_DecideAcquittal(c, m);
         return;
     case 5:
-        if (*(int *)(r + 0x10) != m[7])
+        if (r->playerId != m->ids[2])
             return;
-        c = gm_FindChar(m[7]);
-        *(int *)(r + 0x94) = ai_DecideSentence(c, m);
+        c = (AICHAR *)gm_FindChar(m->ids[2]);
+        r->session.answer = ai_DecideSentence(c, m);
         return;
     }
 }
@@ -16891,7 +16893,7 @@ void cm_InitScenes(void)
         cm_Parties[i].id = -1;
     ai_Unk4e5730(0, (int)ai_Unk4e0010, (int)d3io_NoopCallback, 0, 0, 0);
     ai_Unk4e5730(1, (int)cm_RunCouncilSession, (int)cm_SessionAskPlayer, (int)cm_SessionAskAI, 0, 0);
-    ai_Unk4e5730(2, (int)cm_RunTrial, (int)cm_TrialAskPlayer, (int)ai_Unk4de340, (int)cm_CheckTrial, 0);
+    ai_Unk4e5730(2, (int)cm_RunTrial, (int)cm_TrialAskPlayer, (int)cm_TrialAskAI, (int)cm_CheckTrial, 0);
     ai_Unk4e5730(3, (int)cm_RunFight, (int)cm_FightMember, 0, (int)ai_Unk4d60b0, 1);
     ai_Unk4e5730(4, (int)cm_RunDuel, (int)ai_Unk4dfff0, (int)ai_Unk4dff80, (int)cm_DuelAftermath, 0);
     ai_Unk4e5730(5, (int)cm_RunExecution, 0, 0, (int)cm_ExecutionAftermath, 0);
