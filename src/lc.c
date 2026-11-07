@@ -37,10 +37,10 @@
    bits), classMask (the building classes), kind (the owner test), option14, ids and the liking range.
    The courtship order's ask (ai_CourtshipWindow, from ord.c with the order message as LCORDMSG, gv.h ORDMSG) reads
    the courtship event 0x41 as AIJOB.partner1 / pair*, lists the candidates (ai_CourtshipListWindow) and rates them
-   (ai_CourtshipRounds); the statistics window's charts (ai_PlotRatingBaseChart, ai_PlotScoreChart,
-   ai_PlotNoFirstChart ..) take the current ORDSTATS by value and read ord_StatisticsHistory.
-   Open: types: the statistics window ai_DrawStatisticsCharts still takes the ORDSTATS as ten ints and passes *(ORDSTATS *)&param_2
-   to the typed charts; its two charts 0x5c76b0 / 0x5c7800 still take the ints.
+   (ai_CourtshipRounds); the statistics panel (ai_CityStatsPanel, its flags ai_StatsChartFlags) draws its five charts
+   (ai_DrawStatisticsCharts: ai_PlotRatingBaseChart .. ai_PlotNoSecondChart) from the current ORDSTATS by value and
+   ord_StatisticsHistory. The order asks of the medicus and the divorce (ai_MedicusHandler, ai_DivorceDialog) take
+   the character and the order message (LCORDMSG) as ord.c passes them; the privileges panel lists the orders.
    Open: types: the amount rows and tabs (ai_ShowAmountRows, ai_Fill*Tab, ai_SpecialAmountListWindow) and am.c's
    partner chain still pass that filter as unsigned int *.
    Open: the AIMSG message records are built by raw offsets in most functions (the use callbacks of the Domizil

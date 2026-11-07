@@ -4003,7 +4003,7 @@ exe	0x00578370	ai_TutorialStop	sv_t	byte	readable
 exe	0x00578440	ai_TutorialFreeRuns	sv_t	byte	readable		
 exe	0x005784a0	ai_TutorialInitMainIntro	sv_t	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	sv_t	byte	readable		
-exe	0x00578e40	ai_TutorialInitChapter2	sv_t	shape	readable		
+exe	0x00578e40	ai_TutorialInitChapter2	sv_t	byte	readable		
 exe	0x00579570	ai_TutorialInitChapter3	sv_t	shape	readable		
 exe	0x0057aa80	ai_TutorialInitChapter4	sv_t	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	sv_t	byte	readable		
@@ -4516,14 +4516,14 @@ exe	0x005c6d00	ai_CourtshipWindow	lc	draft	readable	deep
 exe	0x005c72d0	ai_PlotRatingBaseChart	lc	byte	readable		
 exe	0x005c7460	ai_PlotScoreChart	lc	shape	readable		
 exe	0x005c7560	ai_PlotNoFirstChart	lc	byte	readable		
-exe	0x005c76b0	ai_Unk5c76b0	lc	draft	draft		
-exe	0x005c7800	ai_Unk5c7800	lc	draft	draft		
-exe	0x005c7970	ai_Unk5c7970	lc	draft	draft		
-exe	0x005c7f00	ai_CityStatsPanel	lc	draft	draft		
-exe	0x005c82f0	ai_PlayerComparePanel	lc	draft	draft		
-exe	0x005c8640	ai_PrivilegesPanel	lc	draft	draft		
-exe	0x005c8bc0	ai_MedicusHandler	lc	draft	draft		
-exe	0x005c8ef0	ai_Unk5c8ef0	lc	draft	draft		
+exe	0x005c76b0	ai_PlotNoSecondChart	lc	byte	readable		
+exe	0x005c7800	ai_PlotCombinedChart	lc	byte	readable		
+exe	0x005c7970	ai_DrawStatisticsCharts	lc	draft	readable	deep	
+exe	0x005c7f00	ai_CityStatsPanel	lc	draft	readable	deep	
+exe	0x005c82f0	ai_PlayerComparePanel	lc	draft	readable	deep	
+exe	0x005c8640	ai_PrivilegesPanel	lc	shape	readable		
+exe	0x005c8bc0	ai_MedicusHandler	lc	byte	readable		
+exe	0x005c8ef0	ai_DivorceDialog	lc	draft	readable	deep	
 exe	0x005c9290	ai_Unk5c9290	lc	draft	draft		
 exe	0x005c9550	ai_BlackmailBuildingListener	lc	draft	draft		
 exe	0x005c9990	ai_Unk5c9990	lc	draft	draft		
