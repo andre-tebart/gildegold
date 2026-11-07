@@ -7484,11 +7484,11 @@ int cm_UpdateGrenades()
     }
     return cnt;
 }
-/* 0x4ceb70 */
+/* 0x4ceb70, the game record the object c stands for (its owner) */
 
 int cm_ObjectOwner(char *c)
 {
-    return *(int *)(c + 0x200);
+    return (int)((D3OBJECT *)c)->owner;
 }
 /* 0x4ceb80, waits for the event id to end, then stops it */
 
