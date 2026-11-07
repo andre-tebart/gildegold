@@ -2930,3 +2930,4 @@
 2026-11-07T12:37:36 0x005bc6d0 func ai_Unk5bc6d0 -> ai_OpenBuildingListPage by:main why:0x5bc6d0 opens the stats panel's building list page panel\geb_liste_2 and returns the form; ai_PlayerStatsPanel's second entry
 2026-11-07T12:39:05 0x005bc790 func ai_Unk5bc790 -> ai_BuildingDetailWindow by:main why:0x5bc790 is the building detail window panel\player_stats_geb_detail (level and the gm_BuildingBalance lines) opened from the stats panel's building rows
 2026-11-07T12:43:30 0x005bc9c0 func ai_Unk5bc9c0 -> ai_OpenMasterListPage by:main why:opens "panel\meister_liste_2", the third page of the stats panel: the buildings of the player with their masters budget inputs
+2026-11-07T12:54:10 0x005bd470 func ai_ShowCarrierRows -> ai_ShowBuildingRows by:main why:lists the buildings of gm_BuildQuery(1, 4, owner id) with the type picture, %G name and %T equipment value; the stats panel's building page and the money lender's first page

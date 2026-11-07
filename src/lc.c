@@ -9914,14 +9914,15 @@ void ai_MoneyExchangeWindow(AIBLD *bank)
     sv_CameraFollow();
 }
 
-int gm_GetWorth(unsigned short id); int ai_ShowCarrierRows(); void d2_ClearPaintbox(void);
+int gm_GetWorth(unsigned short id); void d2_ClearPaintbox(void);
+int ai_ShowBuildingRows(AICHARREC *ch, int max, int *ctrls);  /* 0x5bd470, defined below */
 int ai_ShowLoanRows(AICHARREC *ch, int max, CREDITLISTROW *rows, int win, int form);  /* 0x5bd330, defined below */
 
 /* 0x59dc00, the money lender's info window "locations\geldleihe\geldleihe_info" on the character ch (771 B), the
    callback the fortune overview (ai_FortuneOverview) hands the amount menu: the paddings 0xc / 0x14 / 0xc / 0xc,
    the texts 0x18ed, 0x18ee (the character) and 0x18ef (his worth gm_GetWorth, his goods value gm_GetGoodsValue),
    the two page buttons 0x18f0 / 0x18f1 and the scroll list (0x206 / 0x167); the page shown is rebuilt after every
-   change: page 1 the character's carriers (ai_ShowCarrierRows, or 0x18f2 when none), page 2 his loans as up to 9 credit
+   change: page 1 the character's buildings (ai_ShowBuildingRows, or 0x18f2 when none), page 2 his loans as up to 9 credit
    rows (ai_ShowLoanRows, or 0x18f3), the loan rows are freed when page 1 is built; a right click closes it, the
    rows are freed at the end */
 void ai_MoneyLenderInfoWindow(AICHARREC *ch)
@@ -9986,7 +9987,7 @@ void ai_MoneyLenderInfoWindow(AICHARREC *ch)
             d2_ClearPaintbox();
             d2_RemoveWindowObjects(d2_LastWindow, 1);
             if (page == 1) {
-                if (ai_ShowCarrierRows(ch, 0, 0) <= 0)
+                if (ai_ShowBuildingRows(ch, 0, 0) <= 0)
                     io_PrintText(0x18f2, ch->id);
             } else if (page == 2) {
                 if (ai_ShowLoanRows(ch, 9, rows, win, 2) == 0)
@@ -24086,11 +24087,11 @@ int ai_OpenMoneyInfoPage(void)
     }
     return win;
 }
-#define ai_StatsBldCount (*(int *)&full_data_6f2f80)  /* 0x6f2f80, the rows of the stats panel's building page (ai_ShowCarrierRows) */
+#define ai_StatsBldCount (*(int *)&full_data_6f2f80)  /* 0x6f2f80, the rows of the stats panel's building page (ai_ShowBuildingRows) */
 #define ai_StatsBldRows (*(int (*)[0x80])&full_data_6f4ce0)  /* 0x6f4ce0, the controls of the stats panel's building page rows */
 
 /* 0x5bc6d0, opens the building list page "panel\geb_liste_2" of the player stats panel (its second entry): the
-   caption 0xb2, the player's rows (ai_ShowCarrierRows into ai_StatsBldRows, their count in ai_StatsBldCount) under
+   caption 0xb2, the player's rows (ai_ShowBuildingRows into ai_StatsBldRows, their count in ai_StatsBldCount) under
    scroll buttons; returns the form */
 
 int ai_OpenBuildingListPage(void)
@@ -24109,7 +24110,7 @@ int ai_OpenBuildingListPage(void)
     d2_SetForm(win, 1);
     io_PrintText(0xb2);
     d2_SetForm(win, 2);
-    ai_StatsBldCount = ai_ShowCarrierRows((unsigned short *)ch, 0x80, ai_StatsBldRows);
+    ai_StatsBldCount = ai_ShowBuildingRows(ch, 0x80, ai_StatsBldRows);
     d2_SetForm(win, 0);
     sv_CreateScrollButtons(0x206, 0x167, d2_LastWindow, d2_GetViewWin(win, 2), 0x40, &down, &up, &bar);
     return win;
@@ -24505,45 +24506,46 @@ int ai_ShowLoanRows(AICHARREC *ch, int max, CREDITLISTROW *rows, int win, int fo
     }
     return n;
 }
-/* 0x5bd470, the carrier list of a screen (276 B): the out array (param_2 entries) is set to -1, then every
-   carrier 0x501190 (1, 4, *param_1) with the +0x5a bit 1 clear gets the picture 0x4731d0 (0x427 + the byte
-   0), the name 0x5176d0 (0x62d1e8) / 0x473650 and the kind text 0x5176d0 (0x60d224) / 0x473650; the window
-   list entry 0xf8f080 + id * 0x2ec gets +0x4c = 1, +0x1c0 = 3 and the carrier at +0x2e8; returns the count */
+/* 0x5bd470, the building rows of the character ch (362 B), the stats panel's building page and the money lender's
+   first page: with a ctrls array (max entries, set to -1 first) per building of ch (gm_BuildQuery(1, 4, id)) that
+   may be entered from the panel (AIBLD.flags5a bit 0 clear) a row in the current window: the type picture
+   0x427 + kind, the name ("%G") and the equipment value at its level ("%T", gm_EquipmentValue); while there is
+   room in ctrls the picture becomes clickable (style 3, the building as its user record) and is kept there;
+   returns the number of buildings */
 
-int ai_ShowCarrierRows(unsigned short *param_1, int param_2, int *param_3)
+int ai_ShowBuildingRows(AICHARREC *ch, int max, int *ctrls)
 {
+    char text[0x100];
+    int filled;
     int n;
-    int i;
-    int ctrl;
-    int text;
+    int value;
+    int pic;
     int y;
-    unsigned char *car;
-    char buf[256];
+    AIBLD *bld;
 
-    n = 0;
-    if (param_2 > 0 && param_3 != 0) {
-        for (i = 0; i < param_2; i++)
-            param_3[i] = -1;
+    filled = 0;
+    if (max > 0 && ctrls != 0) {
+        filled = 1;
+        memset(ctrls, -1, max * 4);
     }
-    car = (unsigned char *)gm_BuildQuery(1, 4, *param_1);
-    while (car != 0) {
-        if ((car[0x5a] & 1) == 0) {
-            text = gm_EquipmentValue(car, (int)(char)car[0x5c]);
-            y = n * 0x40;
-            ctrl = d2_WinOpenPic(0x20, y, *car + 0x427, U_I((unsigned)&d2_LastWindow));
-            txt_Format(buf, (char *)(unsigned)&full_data_62d1e8, car);
-            d2_CreateWinText(0x80, y, buf, U_I((unsigned)&d2_LastWindow));
-            txt_Format(buf, (char *)(unsigned)"%T", text);
-            d2_CreateWinText(0x80, y + 0x1b, buf, U_I((unsigned)&d2_LastWindow));
-            if (param_3 != 0 && n < param_2) {
-                U_I((unsigned)&d2_Objs + ctrl * 0x2ec + 0x4c) = 1;
-                U_I((unsigned)&d2_Objs + ctrl * 0x2ec + 0x1c0) = 3;
-                U_I((unsigned)&d2_Objs + ctrl * 0x2ec + 0x2e8) = (int)car;
-                param_3[n] = ctrl;
+    n = 0;
+    for (bld = (AIBLD *)gm_BuildQuery(1, 4, ch->id); bld != 0; bld = (AIBLD *)gm_BuildNext()) {
+        if ((bld->flags5a & 1) == 0) {
+            value = gm_EquipmentValue(bld, bld->level);
+            y = n << 6;
+            pic = d2_WinOpenPic(0x20, y, bld->kind + 0x427, d2_LastWindow);
+            txt_Format(text, "%G", bld);
+            d2_CreateWinText(0x80, y, text, d2_LastWindow);
+            txt_Format(text, "%T", value);
+            d2_CreateWinText(0x80, y + 0x1b, text, d2_LastWindow);
+            if (filled == 1 && n < max) {
+                d2_Objs[pic].interactive = 1;
+                d2_Objs[pic].style = 3;
+                d2_Objs[pic].user = bld;
+                ctrls[n] = pic;
             }
             n++;
         }
-        car = (unsigned char *)gm_BuildNext();
     }
     return n;
 }
