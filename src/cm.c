@@ -7653,7 +7653,7 @@ void cm_ClearDamagePops()
         cm_DamagePops[i].c = 0;
     }
 }
-/* 0x4cefe0 */
+/* 0x4cefe0, closes the fight view (cm_FightView) and marks it closed (-1) */
 
 void cm_CloseFightView()
 {
