@@ -14275,7 +14275,7 @@ int cm_DuelAftermath(G28REC *m)
    name, the timer slider): r->duel.round = 1 (the cheat) for the answer 0, 0 for the answer 1 and when the time runs
    out; r's text cleared */
 
-void cm_DuelAskPlayer(CMCUTINFO *r)
+void cm_DuelRoundDialog(CMCUTINFO *r)
 {
     int view, dlg;
 
@@ -14287,7 +14287,7 @@ void cm_DuelAskPlayer(CMCUTINFO *r)
     r->text[0] = ch_EmptyName[0];
     dlg = CUT_BOX();
     cm_DialogTimer(dlg, cm_SceneDuration * 0x4b, 1);
-    while (sv_RunFrame(cm_DuelAskPlayer, cm_DialogFrameFlags) != 0) {
+    while (sv_RunFrame(cm_DuelRoundDialog, cm_DialogFrameFlags) != 0) {
         if (cm_DialogTimer(dlg, 0, 0) == 0)
             sv_PopRequest = 1;
         if (d2_ClickedId == 0) {
@@ -14342,7 +14342,7 @@ void cm_DuelChooseRound(CMCUTINFO *r, G28REC *m)
     d2_CloseView(view);
 }
 /* 0x4dff80, the answer of a computer duellist (the member record r's duel.round): with cm_ScenePartyRuns == 0 the
-   question of cm_DuelAskPlayer (1 / 0 by a roll of 10 > 7), else the choice of cm_DuelChooseRound (4 with 50 %, 2 with
+   question of cm_DuelRoundDialog (1 / 0 by a roll of 10 > 7), else the choice of cm_DuelChooseRound (4 with 50 %, 2 with
    35 %, 3 with 15 %) */
 
 void cm_DuelAskAI(CMCUTINFO *r)
@@ -14364,12 +14364,13 @@ void cm_DuelAskAI(CMCUTINFO *r)
     else
         r->duel.round = 3;
 }
-/* 0x4dfff0, asks the player (0x4dfcb0 without the flag 0x6f0d7c, else the choice 0x4dfdd0) */
+/* 0x4dfff0, the player's round of the duel (the player's callback of the scene kind 4): the round dialog
+   cm_DuelRoundDialog without the party scene, else the party's choice cm_DuelChooseRound */
 
-void ai_Unk4dfff0(CMCUTINFO *r)
+void cm_DuelAskPlayer(CMCUTINFO *r)
 {
     if (cm_ScenePartyRuns == 0)
-        cm_DuelAskPlayer(r);
+        cm_DuelRoundDialog(r);
     else
         cm_DuelChooseRoundR(r);
 }
@@ -16898,7 +16899,7 @@ void cm_InitScenes(void)
     ai_Unk4e5730(1, (int)cm_RunCouncilSession, (int)cm_SessionAskPlayer, (int)cm_SessionAskAI, 0, 0);
     ai_Unk4e5730(2, (int)cm_RunTrial, (int)cm_TrialAskPlayer, (int)cm_TrialAskAI, (int)cm_CheckTrial, 0);
     ai_Unk4e5730(3, (int)cm_RunFight, (int)cm_FightMember, 0, (int)ai_Unk4d60b0, 1);
-    ai_Unk4e5730(4, (int)cm_RunDuel, (int)ai_Unk4dfff0, (int)cm_DuelAskAI, (int)cm_DuelAftermath, 0);
+    ai_Unk4e5730(4, (int)cm_RunDuel, (int)cm_DuelAskPlayer, (int)cm_DuelAskAI, (int)cm_DuelAftermath, 0);
     ai_Unk4e5730(5, (int)cm_RunExecution, 0, 0, (int)cm_ExecutionAftermath, 0);
     ai_Unk4e5730(6, (int)cm_RunWedding, 0, 0, (int)ai_Unk4e0580, 0);
     ai_Unk4e5730(7, (int)cm_RunBirth, 0, 0, (int)ai_Unk4e0e90, 0);
