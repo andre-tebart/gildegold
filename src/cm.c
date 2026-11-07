@@ -14374,13 +14374,14 @@ void cm_DuelAskPlayer(CMCUTINFO *r)
     else
         cm_DuelChooseRoundR(r);
 }
-/* 0x4e0010, plays the scene "cutscene_toby.ed3" and closes it */
+/* 0x4e0010, the run function of scene kind 0, the picture show: loads the scene "cutscene_toby.ed3", runs the party
+   twice (its members' texts, the kind's callbacks are the noop) and leaves the scene */
 
-int ai_Unk4e0010(int scene)
+void cm_RunPictureShow(G28REC *m)
 {
     cm_LoadEventScene("cutscene_toby.ed3");
-    cm_RunSceneParty(scene, 0);
-    cm_RunSceneParty(scene, 0);
+    cm_RunSceneParty((char *)m, 0);
+    cm_RunSceneParty((char *)m, 0);
     cm_WaitTicks(5);
     cm_LeaveEventScene();
 }
@@ -16895,7 +16896,7 @@ void cm_InitScenes(void)
     memset(cm_Parties, 0, 0x6780);
     for (i = 0; i < 96; i++)
         cm_Parties[i].id = -1;
-    ai_Unk4e5730(0, (int)ai_Unk4e0010, (int)d3io_NoopCallback, 0, 0, 0);
+    ai_Unk4e5730(0, (int)cm_RunPictureShow, (int)d3io_NoopCallback, 0, 0, 0);
     ai_Unk4e5730(1, (int)cm_RunCouncilSession, (int)cm_SessionAskPlayer, (int)cm_SessionAskAI, 0, 0);
     ai_Unk4e5730(2, (int)cm_RunTrial, (int)cm_TrialAskPlayer, (int)cm_TrialAskAI, (int)cm_CheckTrial, 0);
     ai_Unk4e5730(3, (int)cm_RunFight, (int)cm_FightMember, 0, (int)ai_Unk4d60b0, 1);

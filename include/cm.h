@@ -964,7 +964,7 @@ void cm_DuelRoundDialog(CMCUTINFO *r);  /* 0x4dfcb0 */
 void cm_DuelChooseRound(CMCUTINFO *, G28REC *);  /* 0x4dfdd0, the duel round dialog of the party scene (r, the duel record m) */
 void cm_DuelAskAI(CMCUTINFO *r);  /* 0x4dff80 */
 void cm_DuelAskPlayer(CMCUTINFO *r);  /* 0x4dfff0 */
-int ai_Unk4e0010(int scene);  /* 0x4e0010 */
+void cm_RunPictureShow(G28REC *m);  /* 0x4e0010 */
 
 int cm_ExecutionAftermath(G28REC *m);  /* 0x4e0040 */
 
