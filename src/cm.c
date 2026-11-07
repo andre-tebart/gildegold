@@ -15460,17 +15460,18 @@ void cm_SetViewEnabled(int view, int on)
     }
     d2_SetViewEnabled(view, on);
 }
-/* 0x4e2bf0, loads the named thing (0x4287b0, then 0x4299a0) and returns its +0x100; 0 in the replay mode */
+/* 0x4e2bf0, loads the script name (evt_Load), runs it (evt_RunScript) and returns its id; 0 when it does not load or in
+   the replay mode (cm_SkipEvents) */
 
 int cm_StartScript(char *name)
 {
-    char *p;
+    EVTSCRIPT *p;
 
     if (cm_SkipEvents == 0) {
-        p = (char *)evt_Load(name);
+        p = evt_Load(name);
         if (p != 0) {
-            evt_RunScript((EVTSCRIPT *)p);
-            return *(int *)(p + 0x100);
+            evt_RunScript(p);
+            return p->id;
         }
     }
     return 0;
