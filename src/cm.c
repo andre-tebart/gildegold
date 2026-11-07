@@ -11061,7 +11061,7 @@ void cm_FightFrame(char *r)
 /* 0x4d6a50, builds the fight UI: the form "cutscenes\combat" (cm_FightForm), the button cm_FightButton (text
    cm_FightButtonText) and the bar cm_FightTimeBar at the bottom, then the portrait boxes (0x4cfe70 / 0x4cfc10) */
 
-void cm_BuildFightUI()
+void cm_BuildFightUI(char *a)
 {
     int v, t;
 
