@@ -16368,15 +16368,16 @@ void cm_ExecCutscene(char *m)
     cm_CurrentFight = 0;
     evt_NoGroup = cm_SavedNoGroup;
 }
-/* 0x4e4870, 1 when the character id is one of the party m (+0x30 count, +0x34 ids) and still exists */
+/* 0x4e4870, 1 when the character id is one of the scene party m's members and still exists */
 
 int cm_IsPartyMember(int id, char *m)
 {
+    G28REC *party = (G28REC *)m;
     int i, n;
 
-    n = *(unsigned char *)(m + 0x30);
+    n = party->used;
     for (i = 0; i < n; i++) {
-        if (*(int *)(m + 0x34 + i * 4) == id) {
+        if (party->members[i] == id) {
             if (gm_FindChar(id) != 0)
                 return 1;
             break;
