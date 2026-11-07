@@ -6511,7 +6511,7 @@ typedef struct LCAMOUNTROW {            /* 0x38 bytes, one row of the special-am
     int portrait;                       /* 0x18, the portrait picture (ai_ShowAmountRows) */
     int icons[4];                       /* 0x1c, the icons in the frame's corners (ai_ShowAmountRows) */
     int x2c;                            /* 0x2c, a value the row's text shows (the evidence book: the evidence count) */
-    int x30;                            /* 0x30 */
+    int pickable;                       /* 0x30, nonzero: the row's frame takes clicks (ai_AmountRow) */
     int x34;                            /* 0x34, a second value (the evidence book: the open evidence) */
 } LCAMOUNTROW;
 /* 0x5967c0, the window of one of the player's mistresses "locations\wohnsitz\geliebte2" (from ai_MistressWindow,
@@ -6559,7 +6559,7 @@ void ai_MistressAffairWindow(AICHARREC *player, AICHARREC *ch, AIJOB *ev)
         row.x = (d2_LastWindowPtr->w - d2_Pics[0x5da].w) / 2;
         row.y = 0x19;
         row.rec = ch;
-        row.x30 = 0;
+        row.pickable = 0;
         ai_AmountRowStatus((int *)&row);
         ai_AmountRow(row.x, row.y, d2_LastWindow, 0x54, (int *)&row, 1);
     }
@@ -7661,7 +7661,7 @@ void ai_StammtischWindow(AIBLD *bld, AIOBJ *table)
                 off = (d2_LastWindowPtr->w - d2_Pics[0x5da].w * 2) % 3 / 2;
                 for (i = 0; i < n; i++) {
                     rows[i].x = (i % 2 + 1) * gap - 10 + off + (d2_Pics[0x5da].w + 10) * (i % 2);
-                    rows[i].x30 = 1;
+                    rows[i].pickable = 1;
                     rows[i].y = i / 2 * 0x82 + 100;
                     ai_AmountRowStatus(&rows[i]);
                     ai_AmountRow(rows[i].x, rows[i].y, d2_LastWindow, 0x54, &rows[i], 1);
@@ -7761,7 +7761,7 @@ void ai_StammtischJoinWindow(AIBLD *bld, AIOBJ *table)
                 off = (d2_LastWindowPtr->w - d2_Pics[0x5da].w * 2) % 3 / 2;
                 for (i = 0; i < n; i++) {
                     rows[i].x = (i % 2 + 1) * gap - 10 + off + (d2_Pics[0x5da].w + 10) * (i % 2);
-                    rows[i].x30 = 1;
+                    rows[i].pickable = 1;
                     rows[i].y = i / 2 * 0x82 + 100;
                     ai_AmountRowStatus(&rows[i]);
                     ai_AmountRow(rows[i].x, rows[i].y, d2_LastWindow, 0x54, &rows[i], 1);
@@ -7912,7 +7912,7 @@ void ai_DarkCornerMenu(AIBLD *bld, AIOBJ *room, AIOBJ *corner)
             for (i = 0, y = 0x46; y < 0x46 + 3 * 0x69; i++, y += 0x69) {
                 rows[i].x = x;
                 rows[i].y = y - 0x1e;
-                rows[i].x30 = rows[i].rec != 0;
+                rows[i].pickable = rows[i].rec != 0;
                 ai_AmountRowStatus(&rows[i]);
                 ai_AmountRow(rows[i].x, rows[i].y, d2_LastWindow, 0x54, &rows[i], 1);
                 if (cur[i] == -1)
@@ -8031,7 +8031,7 @@ void ai_DarkCornerBuy(AIBLD *bld, AIOBJ *corner)
             for (i = 0, y = 0x46; y < 0x46 + 3 * 0x69; i++, y += 0x69) {
                 rows[i].x = x;
                 rows[i].y = y - 0x1e;
-                rows[i].x30 = rows[i].rec != 0;
+                rows[i].pickable = rows[i].rec != 0;
                 ai_AmountRowStatus(&rows[i]);
                 ai_AmountRow(rows[i].x, rows[i].y, d2_LastWindow, 0x54, &rows[i], 1);
                 if (cur[i] == -1)
@@ -11109,7 +11109,7 @@ int ai_OfficeApplicantsWindow(AICHARREC *me, unsigned int office)
                     half = (d2_LastWindowPtr->w - d2_Pics[0x5da].w * 2) % 3 / 2;
                     for (i = 0; i < n; i++) {
                         rows[i].x = (i % 2 + 1) * colWidth + half + (d2_Pics[0x5da].w + 10) * (i % 2) - 10;
-                        rows[i].x30 = 0;
+                        rows[i].pickable = 0;
                         rows[i].y = i / 2 * 0x82 + 0x28;
                         rows[i].rec = chars[i];
                         ai_AmountRowStatus(&rows[i]);
@@ -12148,9 +12148,9 @@ void ai_Top5Window(void)
             for (i = 0, y = 0x34; y < 0x34 + 5 * 0x4c; i++, y += 0x4c) {
                 rows[i].y = y - 8;
                 rows[i].x = rowX;
-                rows[i].x30 = rows[i].rec != 0;
+                rows[i].pickable = rows[i].rec != 0;
                 ai_AmountRowStatus(&rows[i]);
-                rows[i].x30 = rows[i].rec != 0;
+                rows[i].pickable = rows[i].rec != 0;
                 ai_DrawAmountRow(rows[i].x, rows[i].y, d2_LastWindow, &rows[i]);
                 if (rows[i].rec != 0)
                     txt_Format(buf, 0x196d, id[i]);
@@ -12406,7 +12406,7 @@ void ai_SermonWindow(AIBLD *bld)
                              priest->id);
                 row.x = d2_LastWindowPtr->w / 2 - d2_Pics[0x5da].w / 2;
                 row.y = 0xc3;
-                row.x30 = 1;
+                row.pickable = 1;
                 row.rec = priest;
                 ai_AmountRowStatus(&row);
                 ai_AmountRow(row.x, row.y, d2_LastWindow, 0x54, &row, 1);
@@ -20334,7 +20334,7 @@ void ai_EvidenceBookWindow(AIBLD *bld)
             rows[n].x2c = total[i];
             rows[n].x34 = open[i];
             ai_AmountRowStatus(&rows[n]);
-            rows[n].x30 = 1;
+            rows[n].pickable = 1;
             n++;
         }
     }
@@ -24891,71 +24891,58 @@ int ai_AmountRowStatus(LCAMOUNTROW *row)
     }
     return 1;
 }
-/* 0x5be3b0, one row of the special-amount list at (x, y) (464 B): the control 0x4731d0 (0x5da), the icon
-   (the id +0x18c and its glyph width), four texts 0x4731d0, the two captions 0x5176d0 (0x62d1fc / 0x62d1f4
-   and 0x62d1ec) with 0x5bd0c0, the 0x46a960 slider (0x442) with the 0x50c550 percent for the kinds other
-   than 6 and the window list fields +0x4c / +0x1c0 / +0x2e8; the kinds 5 / 6 / 7 get the icon 0x54 at
-   x - 0x20 */
+/* 0x5be3b0, one row of a special-amount list at (x, y) in the current window (872 B): the frame picture 0x5da; for
+   a character the portrait, the corner icons of ai_AmountRowStatus, the title and name ("%s %1N7", only with titled
+   and a title) or the name ("%1N7") and below it "%1N5" in the font font, the liking slider of the player
+   (disabled; 0 for kind 7, none for kind 6), the frame clickable with the character as its user record when the
+   row is pickable, and the family picture (AICHARREC.ref54) of the kinds 5 .. 7; a vacant row shows the picture
+   0x4fb; returns 0 */
 
-int ai_AmountRow(int param_1, int param_2, int param_3, int param_4, int *param_5, int param_6)
+int ai_AmountRow(int x, int y, int win, int font, LCAMOUNTROW *row, int titled)
 {
-    int x, y, ix, iy, t, kind;
-    char *chr;
-    char buf[256];
+    char text[0x100];
+    int frameY;
+    int cx;
 
-    x = param_1;
-    y = param_2;
-    ix = *(short *)(U_I((unsigned)&d2_Pics) + 0x1ebd8) / 2 + x;
-    iy = y + 0x1c;
-    param_5[1] = d2_WinOpenPic(x, iy, 0x5da, U_I((unsigned)&d2_LastWindow));
-    param_5[2] = -1;
-    if (param_5[0] != 0) {
-        chr = (char *)param_5[0];
-        param_5[6] = d2_WinOpenPic((ix - *(short *)(U_I((unsigned)&d2_Pics) + 0x50 + U_I(chr + 0x18c) * 0x54) / 2) - 3,
-                                  y + 0x1d, U_I(chr + 0x18c), U_I((unsigned)&d2_LastWindow));
-        d2_WinOpenPic(x + 3, y + 0x1f, param_5[7], U_I((unsigned)&d2_LastWindow));
-        if (param_5[8] != 0)
-            d2_WinOpenPic(x + 3, y + 0x1f + *(short *)(U_I((unsigned)&d2_Pics) + 0x1ebda) - 0x13, param_5[8],
-                         U_I((unsigned)&d2_LastWindow));
-        if (param_5[9] != 0)
-            d2_WinOpenPic(x + *(short *)(U_I((unsigned)&d2_Pics) + 0x1ebd8) - 0x10, y + 0x1f, param_5[9],
-                         U_I((unsigned)&d2_LastWindow));
-        d2_WinOpenPic(x + *(short *)(U_I((unsigned)&d2_Pics) + 0x1ebd8) - 0x10,
-                     y + 0x1f + *(short *)(U_I((unsigned)&d2_Pics) + 0x1ebda) - 0x13, param_5[10], U_I((unsigned)&d2_LastWindow));
-        if (*(unsigned char *)(chr + 0xd) == 0 || param_6 == 0)
-            txt_Format(buf, (char *)(unsigned)&full_data_62d1fc, *(unsigned short *)chr);
+    cx = d2_Pics[0x5da].w / 2 + x;
+    frameY = y + 0x1c;
+    row->ctl[0] = d2_WinOpenPic(x, frameY, 0x5da, d2_LastWindow);
+    row->ctl[1] = -1;
+    if (row->rec != 0) {
+        row->portrait = d2_WinOpenPic(cx - d2_Pics[row->rec->picture].w / 2 - 3, y + 0x1d, row->rec->picture,
+                                      d2_LastWindow);
+        d2_WinOpenPic(x + 3, y + 0x1f, row->icons[0], d2_LastWindow);
+        if (row->icons[1] != 0)
+            d2_WinOpenPic(x + 3, d2_Pics[0x5da].h + y + 9, row->icons[1], d2_LastWindow);
+        if (row->icons[2] != 0)
+            d2_WinOpenPic(d2_Pics[0x5da].w + x - 0x10, y + 0x1f, row->icons[2], d2_LastWindow);
+        d2_WinOpenPic(d2_Pics[0x5da].w + x - 0x10, d2_Pics[0x5da].h + y + 9, row->icons[3], d2_LastWindow);
+        if (row->rec->b00d != 0 && titled != 0)
+            txt_Format(text, "%s %1N7", (row->rec->sex ? 0x11e : 0x114) + row->rec->b00d, row->rec->id);
         else
-            txt_Format(buf, (char *)(unsigned)&full_data_62d1f4,
-                         (-(*(char *)(chr + 9) != 0) & 10) + 0x114 + *(unsigned char *)(chr + 0xd),
-                         *(unsigned short *)chr);
-        ai_CentredText((int)buf, ix, param_5[5], 0xca, param_4);
-        txt_Format(buf, (char *)(unsigned)&full_data_62d1ec, *(unsigned short *)chr);
-        ai_CentredText((int)buf, ix, param_5[5] + 0xe, 0xca, param_4);
-        if (*(char *)(chr + 2) != 6) {
-            param_5[2] = d2_WinOpenSlider(ix - 0x23, *(short *)(U_I((unsigned)&d2_Pics) + 0x1ebda) + 0x1e + y, 0x40, 0,
-                                      100, 0x75, 0x442, U_I((unsigned)&d2_LastWindow));
-            if (*(char *)(chr + 2) == 7)
-                d2_SetObjValue(param_5[2], 0, 100, 0);
+            txt_Format(text, "%1N7", row->rec->id);
+        ai_CentredText(text, cx, row->y, 0xca, font);
+        txt_Format(text, "%1N5", row->rec->id);
+        ai_CentredText(text, cx, row->y + 0xe, 0xca, font);
+        if (row->rec->kind != 6) {
+            row->ctl[1] = d2_WinOpenSlider(cx - 0x23, d2_Pics[0x5da].h + y + 0x1e, 0x40, 0, 100, 0x75, 0x442,
+                                           d2_LastWindow);
+            if (row->rec->kind == 7)
+                d2_SetObjValue(row->ctl[1], 0, 100, 0, 1);
             else
-                d2_SetObjValue(param_5[2], 0, 100, (int)gm_Liking(U_W((unsigned)&ai_PlayerId), *(unsigned short *)chr, 1));
-            d2_SetObjEnabled(param_5[2], 0);
+                d2_SetObjValue(row->ctl[1], 0, 100, (int)gm_Liking(ai_PlayerId, row->rec->id, 1));
+            d2_SetObjEnabled(row->ctl[1], 0);
         }
-        if (param_5[0xc] != 0) {
-            U_I((unsigned)&d2_Objs + param_5[1] * 0x2ec + 0x4c) = 1;
-            U_I((unsigned)&d2_Objs + param_5[1] * 0x2ec + 0x1c0) = 3;
-            U_I((unsigned)&d2_Objs + param_5[1] * 0x2ec + 0x2e8) = param_5[0];
+        if (row->pickable != 0) {
+            d2_Objs[row->ctl[0]].interactive = 1;
+            d2_Objs[row->ctl[0]].style = 3;
+            d2_Objs[row->ctl[0]].user = row->rec;
         }
-        kind = *(char *)(chr + 2);
-        if (kind != 5 && kind != 6 && kind != 7)
-            return 0;
-        t = U_I(chr + 0x54);
-        x = x - 0x20;
+        if (row->rec->kind == 5 || row->rec->kind == 6 || row->rec->kind == 7)
+            d2_WinOpenPic(x - 0x20, frameY, row->rec->ref54, d2_LastWindow);
     } else {
-        iy = y + 0x1d;
-        t = 0x4fb;
-        x = (ix - *(short *)(U_I((unsigned)&d2_Pics) + 0x1a2ac) / 2) - 3;
+        d2_WinOpenPic(cx - d2_Pics[0x4fb].w / 2 - 3, y + 0x1d, 0x4fb, d2_LastWindow);
     }
-    d2_WinOpenPic(x, iy, t, U_I((unsigned)&d2_LastWindow));
     return 0;
 }
 /* 0x5be720, one compact row of the special-amount list (416 B): the control 0x4731d0 (0x5da), the icon, the
