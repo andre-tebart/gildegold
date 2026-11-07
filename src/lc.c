@@ -22922,17 +22922,27 @@ void ai_GelageWindow(AIBLD *bld)
     sv_CameraFollow();
     d2_CloseView(win);
 }
-/* 0x5ba1c0, opens the inventory child window of the character charId (197 B, ROUGH SKELETON): only while
-   ai_ChildWindowId is -1; clears the six ai_InvSlots rows (-1, 0), points ai_InvChar at ai_Chars[charId], creates
-   the child window (x, y, 0xcd, 0xc4, 0x10, win) as ai_ChildWindowId with the picture 0x587, an inner child window
-   (0, 0x2c, its width, 0x1e, 0x110) with the font 0x54, and prints the text; the body is still a stub */
+/* 0x5ba1c0, opens the inventory child window of the character charId: only while ai_ChildWindowId is -1; clears
+   the six ai_InvSlots rows (-1, 0), points ai_InvChar at ai_Chars[charId], creates the child window (x, y, 0xcd,
+   0xc4, 0x10, win) as ai_ChildWindowId with the picture 0x587, an inner child window (0, 0x2c, its width, 0x1e,
+   0x110) with the font 0x54, and prints the text there */
 
-int ai_OpenInventoryWindow(int win, int x, int y, unsigned short charId, int text)
+void ai_OpenInventoryWindow(int win, int x, int y, unsigned short charId, int text)
 {
+    int i;
+
     if (ai_ChildWindowId != -1)
-        return 0;
-    /* ROUGH SKELETON: the cleanup path */
-    return 0;
+        return;
+    for (i = 0; i < 6; i++) {
+        ai_InvSlots[i].ctl = -1;
+        ai_InvSlots[i].obj = 0;
+    }
+    ai_InvChar = (AICHARREC *)ai_Chars[charId];
+    ai_ChildWindowId = d2_CreateChildWindow(x, y, 0xcd, 0xc4, 0x10, win);
+    d2_WinOpenPic(0, 0, 0x587, ai_ChildWindowId);
+    d2_CreateChildWindow(0, 0x2c, d2_LastWindowPtr->w, 0x1e, 0x110, d2_LastWindow);
+    d2_Wins[d2_LastWindow].font = 0x54;
+    io_PrintText(text);
 }
 /* 0x5ba290, a window over the list 0x6f2f60 (880 B, ROUGH SKELETON): a 0x8-byte frame; the body is a comment */
 

@@ -153,7 +153,7 @@ extern struct AIOBJ *ai_BldCarts[3];    /* 0x6f40a4, the carts of the building t
 extern int ai_BldCartButtons[3];        /* 0x6f40b0, per cart the button to its destination building, -1: none */
 extern int ai_BldCartTexts[3];          /* 0x6f40bc, per cart its text control, -1: none */
 extern unsigned char ai_GfxDetail;  /* 0x6f35c4, the "details" key */
-int ai_OpenInventoryWindow(int win, int x, int y, unsigned short charId, int text);  /* 0x5ba1c0, opens the inventory child window of the character charId */
+void ai_OpenInventoryWindow(int win, int x, int y, unsigned short charId, int text);  /* 0x5ba1c0, opens the inventory child window of the character charId */
 int ai_UpdateInventoryWindow(void);                    /* 0x5ba290, the inventory child window's frame (1 while goods are picked from it) */
 void ai_CloseChildWindow(void);            /* 0x5ba600, closes the inventory child window */
 extern int ai_ChildWindowId;            /* 0x62c418, the child window ai_OpenInventoryWindow creates and ai_CloseChildWindow removes, -1: none */
