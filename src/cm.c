@@ -16434,30 +16434,32 @@ void cm_SendPartyNote(AICHAR *a, G28REC *b, char *text, char *extra)
     } else
         cm_SendLongMessageText((char *)&note, strlen(text) + 1, text);
 }
-/* 0x4e4a50, "cut_CheckMaster": 1 when the owner (m +0xc) is one of the party m (+0x30 count, +0x34 ids); else the first member of the kind 6 / 7 that
-   still exists (as long as none was found, 16 slots) becomes the new owner: the log "new master for id %i => %i", a request (0x4c61f0) and the wait for its
-   answer (0x4c3ae0 with the frame wait 0x52fe00); 0 then. The log "invalid master for id %i" comes first. ROUGH */
+/* 0x4e4a50, "cut_CheckMaster": 1 when the scene party m's host is one of its members; else the first member
+   of kind 6 / 7 that still exists (as long as none was found, 16 slots) becomes the new host: the log
+   "new master for id %i => %i", a request (cm_SendMasterChange) and the wait for its answer
+   (cm_GetSlotState with the frame wait sv_PumpNet); 0 then. The log "invalid master for id %i" comes first. */
 
 int cm_CheckMaster(char *m)
 {
+    G28REC *party = (G28REC *)m;
     char buf[0x80];
+    AICHAR *c;
     int flag, i, h;
-    char *c;
 
-    if (cm_IsPartyMember(*(int *)(m + 0xc), m) == 0) {
+    if (cm_IsPartyMember(party->host, m) == 0) {
         flag = 1;
-        c = (char *)gm_FindChar(*(int *)(m + 0xc));
-        sprintf(buf, "cut_CheckMaster(): invalid master for id %i", *(int *)m);
+        c = (AICHAR *)gm_FindChar(party->host);
+        sprintf(buf, "cut_CheckMaster(): invalid master for id %i", party->id);
         for (i = 0; i < 0x10 && flag != 0; i++) {
-            if (*(int *)(m + 0x34 + i * 4) != -1) {
-                c = (char *)gm_FindChar(*(int *)(m + 0x34 + i * 4));
-                if (c != 0 && (c[2] == 6 || c[2] == 7))
+            if (party->members[i] != -1) {
+                c = (AICHAR *)gm_FindChar(party->members[i]);
+                if (c != 0 && (c->kind == 6 || c->kind == 7))
                     flag = 0;
             }
         }
-        if (c != 0 && *(int *)(c + 4) != *(int *)(m + 0xc)) {
-            sprintf(buf, "cut_CheckMaster(): new master for id %i => %i", *(int *)m, *(int *)(c + 4));
-            h = ((int (*)())cm_SendMasterChange)(m, c);
+        if (c != 0 && c->netId != party->host) {
+            sprintf(buf, "cut_CheckMaster(): new master for id %i => %i", party->id, c->netId);
+            h = ((int (*)(G28REC *, AICHAR *))cm_SendMasterChange)(party, c);
             while (cm_GetSlotState(h) == 0)
                 sv_PumpNet();
             return 0;
