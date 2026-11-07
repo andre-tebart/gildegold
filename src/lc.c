@@ -27012,7 +27012,7 @@ void ai_ShowWorkSettingsPage(int win, int *budgetCtrl, int *budget, int *checks,
    (0x52ea30), the master letter caption 0x1949 and the text 0x194e, the pump 0x5309a0 (this, 0x677c7) and
    0x4758f0 (win) */
 
-void ai_MasterLetterNoticeWindow(void)
+void ai_MasterLetterNoticeWindow(AIBLD *bld)
 {
     int win;
 
@@ -27034,7 +27034,7 @@ void ai_MasterLetterNoticeWindow(void)
    ai_MasterLetterWindow mode 0x40): the 0x5c26a0 body with the single caption 0x195e (0x52ea30 the screen,
    the pump 0x5309a0 (this, 0x677c7), 0x4758f0 win) */
 
-void ai_MasterLetterKindWindow(void)
+void ai_MasterLetterKindWindow(AIBLD *bld)
 {
     int win;
 
@@ -27320,75 +27320,73 @@ void ai_MasterLetterSettings(AIBLD *bld, AICHARREC *ch)
     cm_SendFieldDeltas();
     d2_CloseView(win);
 }
-/* 0x5c3200, the master letter contact (448 B): the character param_1 (its kind byte 0 via 0x7e3f30 +
-   kind * 0x24d), the player word 0x6f25b8 against param_1 + 0x27; the mode: 0x40 for the kinds 5 / 9,
-   0x30 with a character (0x50a810), 0x20 without (the profession byte 0x223 of the kind record against
-   the six 0x504ad0 / 0x5044b0 slots, the match gives the own character 0x770b80), 0x50 when the carrier
-   0x53e400 (2, 0, 7, 3) chain ends. The windows: 0x10 / 0x20 -> 0x5c27b0 (param_1, the mode), 0x30 ->
-   0x5c2b90 (param_1, the character), 0x40 -> 0x5c2730 (param_1), 0x50 -> 0x5c26a0 (param_1); 0x52d7a0 */
+/* 0x5c3200, opens the master letter of the player's building (448 B .. its switch tables 0x5c3360 / 0x5c3374):
+   nothing unless the player owns it. The mode: 0x40 for the building classes 5 / 9 (ai_MasterLetterKindWindow),
+   0x30 when the building has a master (gm_FindCharacterByMaster: ai_MasterLetterSettings), else 0x20, or 0x10 when
+   the player's own job in the title group of the type's first job is one of the type's six jobs (the player is
+   the master: ai_MasterHireWindow with that mode); a running master hire event (he_FindEvent 2, 0, 7, 3, its
+   hireTitle 0) makes it 0x50 (ai_MasterLetterNoticeWindow). sv_CameraFollow after the window
+   @deep read whole against the original: same statements, the same switch tables (equal), the same calls
+   and slots (master in the bld arg slot); left is VC6's callee-save placement: ours pushes ebx at entry
+   and pops esi/ebp right after he_FindEvent (+0xda: pop esi; pop ebp), the original pushes ebx after the
+   owner check (+0x20) and keeps esi/ebp saved to every switch exit (+0x117 pop esi; pop ebp; pop ebx; pop
+   edi; jmp sv_CameraFollow, per case). Tried: the body as one if block, the locals declared in that block
+   (no change). Allocation / save-region work. */
 
-
-void ai_MasterLetterWindow(unsigned char *param_1)
+void ai_MasterLetterWindow(AIBLD *bld)
 {
-    char *kind;
-    unsigned int id;
-    int carrier;
+    AIBTYPE *type;
+    AICHARREC *me;
+    AICHARREC *master;
+    AIJOB *job;
     int mode;
-    int v;
-    int n;
+    int job2;
     int i;
-    char *ch;
 
-    if (param_1 == 0 || U_W((unsigned)&ai_PlayerId) != *(unsigned short *)(param_1 + 0x27))
+    if (bld == 0 || ai_PlayerId != bld->owner)
         return;
-    id = U_W((unsigned)&ai_PlayerId);
-    kind = (char *)(U_I((unsigned)&ai_BTypes) + *param_1 * 0x24d);
-    ch = (char *)gm_FindCharacterByMaster(param_1);
-    if (*kind == 5 || *kind == 9) {
+    me = &((AICHARREC *)ai_Chars)[ai_PlayerId];
+    type = &((AIBTYPE *)ai_BTypes)[bld->kind];
+    master = (AICHARREC *)gm_FindCharacterByMaster((int)bld);
+    if (type->buildingClass == 5 || type->buildingClass == 9) {
         mode = 0x40;
-    } else if (ch == 0) {
+    } else if (master != 0) {
+        mode = 0x30;
+    } else {
         mode = 0x20;
-        v = gm_TitleGroup(*(unsigned char *)(kind + 0x223));
-        n = gm_TitleJob(U_W((unsigned)&ai_PlayerId), v);
-        if (n != 0) {
-            for (i = 0; i < 6; i++) {   /* ROUGH: the loop index local */
-                if (n == *(unsigned char *)(kind + 0x223 + i)) {
+        job2 = gm_TitleJob(ai_PlayerId, gm_TitleGroup(type->jobs[0]));
+        if (job2 != 0) {
+            for (i = 0; i < 6; i++) {
+                if (job2 == type->jobs[i]) {
+                    master = me;
                     mode = 0x10;
-                    ch = (char *)(unsigned)&ai_Chars + id * 0x21c;
                     break;
                 }
             }
         }
-    } else {
-        mode = 0x30;
     }
-    carrier = he_FindEvent(2, 0, 7, 3, U_I(param_1 + 1));
-    for (;;) {
-        if (carrier == 0) {
-            break;
-        }
-        if (*(char *)(carrier + 0xac) == 0) {
+    for (job = (AIJOB *)he_FindEvent(2, 0, 7, 3, bld->id); job != 0; job = (AIJOB *)he_NextEvent()) {
+        if (job->hireTitle == 0) {
             mode = 0x50;
             break;
         }
-        carrier = he_NextEvent();
     }
     switch (mode) {
     case 0x10:
     case 0x20:
-        ai_MasterHireWindow((AIBLD *)param_1, mode);
+        ai_MasterHireWindow(bld, mode);
         sv_CameraFollow();
         return;
     case 0x30:
-        ai_MasterLetterSettings((AIBLD *)param_1, (AICHARREC *)ch);
+        ai_MasterLetterSettings(bld, master);
         sv_CameraFollow();
         return;
     case 0x40:
-        ai_MasterLetterKindWindow();
+        ai_MasterLetterKindWindow(bld);
         sv_CameraFollow();
         return;
     case 0x50:
-        ai_MasterLetterNoticeWindow();
+        ai_MasterLetterNoticeWindow(bld);
         break;
     }
     sv_CameraFollow();
