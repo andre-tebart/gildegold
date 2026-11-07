@@ -39,7 +39,7 @@
    the courtship event 0x41 as AIJOB.partner1 / pair*, lists the candidates (ai_CourtshipListWindow) and rates them
    (ai_CourtshipRounds); the statistics window's charts (ai_PlotRatingBaseChart, ai_PlotScoreChart,
    ai_PlotNoFirstChart ..) take the current ORDSTATS by value and read ord_StatisticsHistory.
-   Open: types: the statistics window ai_Unk5c7970 still takes the ORDSTATS as ten ints and passes *(ORDSTATS *)&param_2
+   Open: types: the statistics window ai_DrawStatisticsCharts still takes the ORDSTATS as ten ints and passes *(ORDSTATS *)&param_2
    to the typed charts; its two charts 0x5c76b0 / 0x5c7800 still take the ints.
    Open: types: the amount rows and tabs (ai_ShowAmountRows, ai_Fill*Tab, ai_SpecialAmountListWindow) and am.c's
    partner chain still pass that filter as unsigned int *.
@@ -984,7 +984,7 @@ extern ORDSTATROUND ord_StatisticsHistory[16]; /* 0x91ab00, the statistics of th
 extern float ai_RatingBase;              /* 0x6f1b9c, the running rating: it moves towards ai_Rating (ai.h, 0x6f1ba0) by ord_RatingRate */
 extern float ai_Unk5eb81c;
 extern float ai_Unk5eb988;
-extern unsigned int d2_PenSize;
+extern unsigned char d2_PenSize;
 extern GAPDATA full_data_5fe7d0[];
 extern GAPDATA full_data_62d43c[];
 extern char ai_PlayerSlots[4][0x2f4];
@@ -29061,7 +29061,7 @@ int ai_CourtshipWindow(AICHARREC *ch, LCORDMSG *m)
     d2_CloseView(win);
     return 2;
 }
-/* 0x5c72d0, the rating chart of the statistics window (ai_Unk5c7970, its flag 1; 393 B): the top value is the
+/* 0x5c72d0, the rating chart of the statistics window (ai_DrawStatisticsCharts, its flag 1; 393 B): the top value is the
    first of the thresholds 500 .. 20000 above the highest of the rounds' rating bases (ord_StatisticsHistory[].base)
    and the running ai_RatingBase (else that value); the rounds' bases are drawn as grey (0x33) line segments, scale
    = (width - 0x69) / 16 apart from x 0x2d, y from height - 0x16 up by (height - 0x1e) / top per unit, the last one
@@ -29111,7 +29111,7 @@ int ai_PlotRatingBaseChart(ORDSTATS stats, int width, int height)
                 (int)(bottom - ai_RatingBase * unit), 0x33, 0x33, 0x33);
     return top;
 }
-/* 0x5c7460, the score chart of the statistics window (ai_Unk5c7970, its flag 2; 255 B): the rounds' overall scores
+/* 0x5c7460, the score chart of the statistics window (ai_DrawStatisticsCharts, its flag 2; 255 B): the rounds' overall scores
    (ord_StatisticsHistory[].score, 0 .. 1) as green (0x10, 0xee, 0x10) line segments, scale = (width - 0x69) / 16
    apart from x 0x2d, y from height - 0x20 + 10 up by height - 0x1e for a score of 1, the last one to the current
    score stats.score. The highest score is looked for and not used */
@@ -29142,7 +29142,7 @@ void ai_PlotScoreChart(ORDSTATS stats, int width, int height)
     d2_PlotLine(0x2d + scale * 15, (int)(bottom - ord_StatisticsHistory[15].score * unit), 0x2d + scale * 16,
                 (int)(bottom - stats.score * unit), 0x10, 0xee, 0x10);
 }
-/* 0x5c7560, the first-object chart of the statistics window (ai_Unk5c7970, its flag 8; 325 B): the rounds' shares
+/* 0x5c7560, the first-object chart of the statistics window (ai_DrawStatisticsCharts, its flag 8; 325 B): the rounds' shares
    of characters without the first object (ord_StatisticsHistory[].noFirst, 0 .. 1, below 0 drawn as 0) as yellow
    (0xee, 0xee, 0x10) line segments, scale = (width - 0x69) / 16 apart from x 0x2d, y from height - 0x16 up by
    height - 0x1e for a share of 1, the last one to the current share stats.col[1] */
@@ -29172,7 +29172,7 @@ void ai_PlotNoFirstChart(ORDSTATS stats, int width, int height)
     d2_PlotLine(0x2d + scale * 15, (int)(bottom - from * unit), 0x2d + scale * 16, (int)(bottom - to * unit), 0xee, 0xee,
                 0x10);
 }
-/* 0x5c76b0, the second-object chart of the statistics window (ai_Unk5c7970, its flag 0x10; 325 B): the rounds'
+/* 0x5c76b0, the second-object chart of the statistics window (ai_DrawStatisticsCharts, its flag 0x10; 325 B): the rounds'
    shares of characters without the second object (ord_StatisticsHistory[].noSecond, 0 .. 1, below 0 drawn as 0)
    as purple (0xee, 0x10, 0xee) line segments, scale = (width - 0x69) / 16 apart from x 0x2d, y from height - 0x16
    up by height - 0x1e for a share of 1, the last one to the current share stats.col[3] */
@@ -29202,7 +29202,7 @@ void ai_PlotNoSecondChart(ORDSTATS stats, int width, int height)
     d2_PlotLine(0x2d + scale * 15, (int)(bottom - from * unit), 0x2d + scale * 16, (int)(bottom - to * unit), 0xee, 0x10,
                 0xee);
 }
-/* 0x5c7800, the combined rating chart of the statistics window (ai_Unk5c7970, its flag 4; 356 B): the rounds'
+/* 0x5c7800, the combined rating chart of the statistics window (ai_DrawStatisticsCharts, its flag 4; 356 B): the rounds'
    combined ratings (ord_StatisticsHistory[].combined, 0 .. 1, below 0 drawn as 0) as red (0xee, 0x10, 0x10) line
    segments, scale = (width - 0x69) / 16 apart from x 0x2d, y from height - 0x16 up by height - 0x1e for a rating of
    1, the last one to the current rating stats.col[2]. The highest score is looked for and not used */
@@ -29241,80 +29241,128 @@ void ai_PlotCombinedChart(ORDSTATS stats, int width, int height)
 
 int d2_TextWidth();
 
-/* 0x5c7970, the statistics chart window (1422 B, ROUGH): the flag mask param_1 selects the five bar charts
-   0x5c72d0 / 0x5c7460 / 0x5c7800 / 0x5c7560 / 0x5c76b0 (bits 1 .. 0x10), each called with the ten values
-   (param_2 .. param_11) and the two screen words (height - 1, width) of the screen record 0xf8f120 +
-   param_12 * 0x3c4; the frame 0x4764f0 (0x2d, 8, 0x2d, width - 0x13 / height - 0x3b); the grid lines
-   (0x28, i, 0x2d, i) of the four rows; the axis labels of the buffer (0x5176d0 with 0x62d43c) and the
-   control records 0xf8f080 + id * 0x2ec (+0x14 = 0x23, +0x60 = 1) placed by 0x473650. The tail (rough):
-   the time label of ai_Time 0x770ae0 via 0x4fe2c0 and the fifteen rows of labels (0x5176d0 with 0x5fe7d0,
-   0x46ea10, 0x473650, 0x4764f0). The window busy flag 0x6ed97c is saved and restored. ROUGH SKELETON: the
-   label / control section of the second half is only sketched. */
-void ai_Unk5c7970(int param_1, int param_2, int param_3, int param_4, int param_5, int param_6,
-                  int param_7, int param_8, int param_9, int param_10, int param_11, int param_12)
-{
-    char old;
-    int ret;
-    int h;
-    int w;
-    int scale;
-    int x;
-    int i;
-    int c;
-    int id;
-    char buf[0x64];
-    float f;
+/* 0x5c7970, draws the statistics charts into the paintbox window win (1422 B): the flag mask selects the charts
+   (1 the rating base, 2 the score, 4 the combined rating, 8 the share without the first object, 0x10 without the
+   second), each drawn from the current statistics stats over the window's width - 1 and height; then the axes, the
+   ticks and right-aligned percent labels 100% .. 25% of the four rows, the rating scale (the top value the rating
+   base chart returned and its half) on the right, and along the bottom one tick per round back from the game clock
+   ai_Time, a longer tick and the year at each round in the first month of a year. The pen size is restored
+   @deep Reconstructed in full against the original (charts by flag, axes, 4 row ticks, percent labels
+   100..25 right-aligned, the rating scale labels top and top/2, the year ticks from ai_Time back 15 rounds
+   with gm_ClockToDate); every statement, constant, call and argument read and compared. Left: register
+   allocation and spills. The original keeps width in ebx and height in ebp (height also saved at
+   [esp+0x18]), the year-loop counter in ebx, x in esi with -scale in the dead win slot [esp+0x78]; ours
+   swaps ebx/ebp for width/height (the 'M8 at +0x41' is that crossing: both sides load d2_Wins[win].w (+8)
+   first, then .h (+0xa)), spills x to [esp+0x4c] and keeps -scale at [esp+0x18], and CSEs width-0x37 once
+   (add ebp,-0x37) where the original recomputes lea eax,[ebx-0x37]. Hunks 0x5c7bf8 (2), 0x5c7c19 (5),
+   0x5c7d8c (27), 0x5c7e01 (18), 0x5c7e27 (24), 0x5c7e6b (15) are these moves. Tried: a separate year-loop
+   counter, width/height declaration order, x recomputed as 0x2d + i*scale (worse: the original
+   strength-reduces the tick x but imuls the label x). (references: M8 at +0x41: ours refers to d2_Wins+0x8
+   (0xf8f128), the original's field to 0xf8f12a (d2_Wins+0xa), explained: the M8 at +0x41 is a register
+   crossing: both sides load d2_Wins[win].w (0xf8f128) into the width register first and .h (0xf8f12a)
+   second; the aligner pairs ours' ebp load with the original's ebp load) */
 
-    old = *(char *)(unsigned)&d2_PenSize;
-    ret = 0;
+void ai_DrawStatisticsCharts(int flags, ORDSTATS stats, int win)
+{
+    unsigned char old;
+    int top;
+    int height;
+    int width;
+    int scale;
+    int i;
+    int round;
+    int pct;
+    int y;
+    int x;
+    int mid;
+    int obj;
+    int textW;
+    float range;
+    AITIME clock;
+    GMDATE date;
+    char buf[16];
+
+    old = d2_PenSize;
+    top = 0;
     d2_ClearPaintbox();
-    d2_RemoveWindowObjects(param_12, 1);
-    *(char *)(unsigned)&d2_PenSize = 1;
-    h = *(short *)((unsigned)&ai_Unkf8f128 + param_12 * 0x3c4);
-    w = *(short *)(((unsigned)&ai_Unkf8f128 + 0x2) + param_12 * 0x3c4);
-    scale = (h - 0x69) / 16;
-    if (param_1 & 1)
-        ret = ai_PlotRatingBaseChart(*(ORDSTATS *)&param_2, h - 1, w);  /* param_2 .. param_11: the ORDSTATS the original copies */
-    *(char *)(unsigned)&d2_PenSize = 1;
-    if (param_1 & 2)
-        ai_PlotScoreChart(*(ORDSTATS *)&param_2, h - 1, w);
-    if (param_1 & 4)
-        ai_PlotCombinedChart(*(ORDSTATS *)&param_2, h - 1, w);
-    if (param_1 & 8)
-        ai_PlotNoFirstChart(*(ORDSTATS *)&param_2, h - 1, w);
-    if (param_1 & 0x10)
-        ai_PlotNoSecondChart(*(ORDSTATS *)&param_2, h - 1, w);
-    *(char *)(unsigned)&d2_PenSize = 0;
-    d2_PlotLine(0x2d, 8, 0x2d, w - 0x13, 0x10, 0x10, 0x10);
-    d2_PlotLine(0x2d, w - 0x13, h - 0x3b, w - 0x13, 0x10, 0x10, 0x10);
-    f = (float)param_2 - *(float *)(unsigned)&ai_Unk5eb81c;
+    d2_RemoveWindowObjects(win, 1);
+    d2_PenSize = 1;
+    width = d2_Wins[win].w;
+    height = d2_Wins[win].h;
+    scale = (width - 0x69) / 16;
+    if (flags & 1)
+        top = ai_PlotRatingBaseChart(stats, width - 1, height);
+    d2_PenSize = 1;
+    if (flags & 2)
+        ai_PlotScoreChart(stats, width - 1, height);
+    if (flags & 4)
+        ai_PlotCombinedChart(stats, width - 1, height);
+    if (flags & 8)
+        ai_PlotNoFirstChart(stats, width - 1, height);
+    if (flags & 0x10)
+        ai_PlotNoSecondChart(stats, width - 1, height);
+    d2_PenSize = 0;
+    d2_PlotLine(0x2d, 8, 0x2d, height - 0x13, 0x10, 0x10, 0x10);
+    d2_PlotLine(0x2d, height - 0x13, width - 0x3b, height - 0x13, 0x10, 0x10, 0x10);
+    range = (float)height - 30.0f;
     for (i = 0; i < 4; i++) {
-        c = (int)((float)i * 0.25f * f + (8.0f));
-        d2_PlotLine(0x28, c, 0x2d, c, 0x10, 0x10, 0x10);
+        y = (int)(range * (i * 0.25f) + 8.0f);
+        d2_PlotLine(0x28, y, 0x2d, y, 0x10, 0x10, 0x10);
     }
     i = 0;
-    for (x = 0x64; x > 0; x -= 0x19) {
-        txt_Format(buf, (char *)(unsigned)&full_data_62d43c, x);
-        c = (int)((float)i * 0.25f * f + *(float *)(unsigned)&ai_Unk5eb988);
-        id = d2_CreateWinText(3, c);
-        *(unsigned short *)(*(int *)(unsigned)&d2_Objs + id * 0x2ec + 0x14) = 0x23;
-        *(int *)(*(int *)(unsigned)&d2_Objs + id * 0x2ec + 0x60) = 1;
+    for (pct = 100; pct > 0; pct -= 25) {
+        txt_Format(buf, "%i%", pct);
+        obj = d2_CreateWinText(3, (int)(range * (i * 0.25f) + 5.0f), buf, d2_LastWindow);
+        d2_Objs[obj].w = 0x23;
+        d2_Objs[obj].rightAligned = 1;
         i++;
     }
-    if (ret) {
-        d2_PlotLine(h - 0x3c, 8, h - 0x3c, w - 0x13, 0x10, 0x10, 0x10);
-        d2_PlotLine(h - 0x37, 8, h - 0x3c, 8, 0x10, 0x10, 0x10);
-        d2_PlotLine(h - 0x37, (w - 0x1e) / 2 + 8, h - 0x3c, (w - 0x1e) / 2 + 8, 0x10, 0x10, 0x10);
-        /* the labels of the chart values: 0x5176d0 (0x5fe7d0) + 0x46ea10 into the 0xf8f080 records,
-           0x5fe7d0 twice with the half width, then the remaining rows as in 0x5c7c23 .. 0x5c7cea */
-        txt_Format(buf, (char *)(unsigned)"%i", 0);
-        d2_TextWidth(buf, 0x55);
-        d2_CreateWinText(5, h - 0x3c, (w - 0x1e) / 2 + 5);
+    if (top != 0) {
+        d2_PlotLine(width - 0x3c, 8, width - 0x3c, height - 0x13, 0x10, 0x10, 0x10);
+        d2_PlotLine(width - 0x37, 8, width - 0x3c, 8, 0x10, 0x10, 0x10);
+        mid = (height - 0x1e) / 2;
+        d2_PlotLine(width - 0x37, mid + 8, width - 0x3c, mid + 8, 0x10, 0x10, 0x10);
+        txt_Format(buf, "%i", top);
+        textW = d2_TextWidth(buf, 0x55) + 2;
+        obj = d2_CreateWinText(width - 0x3c, 5, buf, d2_LastWindow);
+        d2_Objs[obj].w = textW;
+        d2_Objs[obj].rightAligned = 1;
+        txt_Format(buf, "%i", top / 2);
+        obj = d2_CreateWinText(width - 0x3c, mid + 5, buf, d2_LastWindow);
+        d2_Objs[obj].w = textW;
+        d2_Objs[obj].rightAligned = 1;
     }
-    /* the date label: the 14 byte ai_Time 0x770ae0 copied to a local AITIME and formatted by 0x4fe2c0,
-       then the fifteen rows (0x5c7db9 .. 0x5c7e78): 0x4fe2c0 per row, 0x473650 (0x2d + i * scale, ...)
-       0x4764f0, 0x5176d0 (0x5fe7d0) / 0x46ea10, and the last row of 0x5c7e7e */
-    *(char *)(unsigned)&d2_PenSize = old;
+    clock = ai_Time;
+    gm_ClockToDate(&clock, (unsigned char *)&date);
+    if (date.month == 1) {
+        txt_Format(buf, "%i", date.year);
+        textW = d2_TextWidth(buf, 0x55);
+        obj = d2_CreateWinText(0x2d + scale * 16, height - 0xd, buf, d2_LastWindow);
+        d2_Objs[obj].w = textW;
+    }
+    clock.year--;
+    gm_ClockToDate(&clock, (unsigned char *)&date);
+    x = 0x2d + scale * 15;
+    for (round = 15; round > 0; round--) {
+        d2_PlotLine(x, height - 0x13, x, height - 0x10, 0x10, 0x10, 0x10);
+        if (date.month == 1) {
+            txt_Format(buf, "%i", date.year);
+            textW = d2_TextWidth(buf, 0x55);
+            obj = d2_CreateWinText(0x2d + round * scale, height - 0xd, buf, d2_LastWindow);
+            d2_Objs[obj].w = textW;
+            d2_PlotLine(x, height - 0x13, x, height - 0xd, 0x10, 0x10, 0x10);
+        }
+        clock.year--;
+        gm_ClockToDate(&clock, (unsigned char *)&date);
+        x -= scale;
+    }
+    if (date.month == 1) {
+        txt_Format(buf, "%i", date.year);
+        textW = d2_TextWidth(buf, 0x55);
+        obj = d2_CreateWinText(0x2d, height - 0xd, buf, d2_LastWindow);
+        d2_Objs[obj].w = textW;
+    }
+    d2_PenSize = old;
 }
 
 float ord_GetStatistics(int *o);
@@ -29331,7 +29379,7 @@ float ord_GetStatistics(int *o);
 void ai_CityStatsPanel(void)
 {
     unsigned char colors[14];
-    int vals[10];
+    ORDSTATS stats;
     int ids[5];
     char buf[0x100];
     int win;
@@ -29367,7 +29415,7 @@ void ai_CityStatsPanel(void)
     d2_CentreViewWindows(win);
     d2_SetForm(win, 1);
     io_PrintText(0x1f0e, ((unsigned)&ai_PlayerSlots + 0x20) + *(unsigned char *)(unsigned)&ai_OwnPlayer * 0x2f4, (unsigned)&ai_Time);
-    f = ord_GetStatistics(vals);
+    f = ord_GetStatistics((int *)&stats);
     d2_SetForm(win, 2);
     io_PrintText(0x1f14, (int)ai_RatingBase);
     io_PrintText(0x1f15, min(4, (int)((f + *(double *)(unsigned)&full_rdata_5eb8a8) * (2.5))) + 0x1f16);
@@ -29375,8 +29423,7 @@ void ai_CityStatsPanel(void)
     io_PrintText(0x1f21, (int)f);
     io_PrintText(0x1f22, (int)f);
     d2_SetForm(win, 3);
-    ai_Unk5c7970(*(unsigned short *)(unsigned)&full_data_6f2f88, vals[0], vals[1], vals[2], vals[3], vals[4], vals[5],
-                 vals[6], vals[7], vals[8], vals[9], *(int *)(unsigned)&d2_LastWindow);
+    ai_DrawStatisticsCharts(*(unsigned short *)(unsigned)&full_data_6f2f88, stats, d2_LastWindow);
     d2_SetForm(win, 4);
     h = *(short *)((unsigned)&ai_Unkf8f128 + *(int *)(unsigned)&d2_LastWindow * 0x3c4);
     for (i = 0; i < 5; i++) {
@@ -29401,8 +29448,7 @@ void ai_CityStatsPanel(void)
                     *(unsigned short *)(unsigned)&full_data_6f2f88 |= (1 << i);
             }
             d2_SetForm(win, 3);
-            ai_Unk5c7970(*(unsigned short *)(unsigned)&full_data_6f2f88, vals[0], vals[1], vals[2], vals[3], vals[4],
-                         vals[5], vals[6], vals[7], vals[8], vals[9], *(int *)(unsigned)&d2_LastWindow);
+            ai_DrawStatisticsCharts(*(unsigned short *)(unsigned)&full_data_6f2f88, stats, d2_LastWindow);
         }
         if (*(int *)((unsigned)&dm_L + 0x20))
             *(int *)(unsigned)&sv_PopRequest = 1;

@@ -430,7 +430,7 @@ int d2_GetWinObj(int view, int idx, int k);         /* 0x475b80 */
 int d2_InputStep(D2INPUT *in);                      /* 0x475bf0 */
 void d2_SetObjMax(int obj, int v);                  /* 0x475f40 */
 int d2_SetForm(int view, int n);                    /* 0x475f70 */
-extern unsigned int d2_PenSize;   /* 0x6ed97c, pen size */
+extern unsigned char d2_PenSize;  /* 0x6ed97c, the pen size of d2_Plot (0: one pixel, 1: a cross) */
 extern D2DISSOLVE *d2_CurrentDissolve;    /* 0xf8abc8 */
 extern D2FRCT d2_PointerItems[6];   /* 0xf8ab80, the item list drawn next to the pointer */
 extern volatile int tb_Calls;       /* 0x6333d8, timer callbacks */

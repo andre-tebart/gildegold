@@ -97,7 +97,7 @@ int d2_TextDrawnW = 0;  /* 0x6ed968 */
 int d2_TextDrawnH = 0;  /* 0x6ed96c */
 int d2_TextLeft = 0;  /* 0x6ed970, left edge of the text drawn last */
 int d2_TextTop = 0;  /* 0x6ed974, top of the text drawn last */
-unsigned int d2_PenSize = 0;  /* 0x6ed97c, pen size */
+unsigned char d2_PenSize = 0;  /* 0x6ed97c, the pen size of d2_Plot (0: one pixel, 1: a cross); the statistics window stores it as a byte */
 D2WIN * d2_LastWindowPtr = 0;  /* 0x6ed980, window created last */
 int d2_FullFormPath = 0;  /* 0x6ed984, nonzero: the name given to d2_OpenForm is a full path (no d2_FormsDir prefix, no .form suffix); cleared after each load, nothing in the binary sets it */
 FILE *d2_File = 0;                  /* 0x6ed988 */
@@ -5429,11 +5429,11 @@ void d2_Plot(int x, int y, int r, int g, int b)
         err_Message("d2_Plot:Window is not a paintbox!");
         return;
     }
-    pen = d2_PenSize & 0xff;
+    pen = d2_PenSize;
     if (x < pen || x > w->w - pen || y < pen || y > w->h - pen)
         return;
     d2_LockSurface(w->paint);
-    switch (d2_PenSize & 0xff) {
+    switch (d2_PenSize) {
     case 0:
         d2_PutPixelRGB(x, y, r, g, b, w->paint);
         break;
