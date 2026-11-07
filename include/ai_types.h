@@ -130,7 +130,9 @@ typedef struct AIJOB {                  /* 0x14c bytes, a job / event record (he
                 struct { char padb8[4]; unsigned char rounds; };  /* 0xb8, of a trial event 0x5e the round counter (he.c 0x549430:
                                                               1 at the first round, the third one moves the event to the state 1) */
                 struct { char padidbc[8]; int idbc; };      /* 0xbc, a kind-specific id: of a kind 4 a building (shown with an exclamation mark
-                                                               while argc8 is set), of a tribute event 0x35 the collector's netId (he.c) */
+                                                               while argc8 is set), of a pamphlet event 0x35 the netId of the character it is about (he_NoEvent35Pair) */
+                struct { char padpamph[0xd]; unsigned char pamphletVariant; };  /* 0xc1, of a pamphlet event 0x35 the text
+                                                              variant the notice board shows (0x1916 + it; ai_NoticeBoardWindow) */
                 struct { char padbldd0[0x1c]; int bldd0; };  /* 0xd0, of a kind 0x1a the building id the blows are shown over (he.c 0x53e8b0) */
                 struct { char padgc4[0x10]; int members[4]; };  /* 0xc4, of a group job 'C' (0x43): the netIds of its up to four
                                                                   members, -1 = free (sv_SendSelectedToBuilding) */

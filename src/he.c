@@ -11590,8 +11590,8 @@ int he_NoEvent4bPair(int a, int b)
     }
     return 1;
 }
-/* 0x553db0, 1 unless a tribute event 0x35 of the character *a is running whose collector is b (AIJOB.idbc is
-   the collector's netId), then 0; *count (when given) receives the number of records visited */
+/* 0x553db0, 1 unless a pamphlet event 0x35 of the character *a is running about the character b (AIJOB.idbc is
+   that character's netId; ai_PamphletAmountCB), then 0; *count (when given) receives the number of a's pamphlets */
 
 int he_NoEvent35Pair(unsigned short *a, int b, int *count)
 {

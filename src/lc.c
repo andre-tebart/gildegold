@@ -8037,7 +8037,7 @@ int gm_PlayerFactor(int a, unsigned char k); int gm_GetCreditOffers(); int gm_Cr
 #define gm_SumListAmountsL ((int (*)(void *))gm_SumListAmounts)  /* 0x509e30: @original ai_WineCellarWindow passes the list alone (one push, no player slot) */
 void he_MessageBoxQuickjump(int a1, int a2, char *text, char fl, int a5, int a6, int a7, char *jump, char *text2); void he_FreeEvent(); void d2_RadioClear(int g); int d2_CreateRadioGroup(int n, ...);
 void ai_StorageWindow(); void ai_MasterLetterWindow(); int ai_OpenTransport();
-int ai_BardWindow(); int ai_NoticeBoardWindow(); int ai_AmountRowStatus(); int ai_AmountRow();
+int ai_BardWindow(); void ai_NoticeBoardWindow(void); int ai_AmountRowStatus(); int ai_AmountRow();
 void ai_LeftAlignedText(); void cm_BeginGroup(const char *s); void cm_SendScriptMessage(void *p); void cm_SendProofExecuted(int a, int b);
 
 /* 0x599af0, the tavern room's contact listener: it releases the name plates, then per frame (sv_RunFrame, this,
@@ -20734,14 +20734,99 @@ void ai_PamphletWindow(int bld)
     ai_AmountMenu(&cfg, text, 0, (void *)ai_PamphletAmountCB);
     sv_CameraFollow();
 }
-/* 0x5b5690, a window over the global 0x6333cc (848 B, ROUGH SKELETON): the window "0x62cdc8" (0x4741f0) and its
-   controls, a 0x2c-byte frame; the body is a comment. Ghidra merged it into its 0x5b5610 record (the original
-   span of that record runs to 0x5b5e80), so the ledger's undrafted scan does not flag it */
+/* 0x5b5690, the notice board window "misc\pamphlet_brett" (the SCHWARZES_BRETT plate of the market,
+   ai_MarketStandListener; text 0x1912): every half second (d3_Time + 500) it lists up to four running pamphlet
+   events 0x35 whose stage is set and whose character exists, two forms each (text 0x1913 with the variant's word
+   0x1916 + AIJOB.pamphletVariant and the character, and the tear-down button 0x1914), and hides the forms of the
+   empty rows. A clicked button tears that pamphlet down for 2 money: the event's end is set to now
+   (cm_SendExSetHE, waiting for its slot) and on success the 2 go off (gm_SendMoneyDelta); a right click closes
+   the window. The camera follows
+   @deep Reconstructed whole against the original 0x5b5690..0x5b5a0f (the window misc\pamphlet_brett, text
+   0x1912, the half-second refresh d3_Time+500, the pamphlet events 0x35 with stage > -1 and
+   gm_FindChar(idbc), the forms 2n-1 / 2n with 0x1913 (0x1916 + AIJOB.pamphletVariant at 0xc1) and the
+   button 0x1914, d2_EnableObject of d2_Wins[d2_Views[win].wins[2n-1]].parent, the fill of the empty rows
+   up to n < 5, the click search over ctl[4], he_FindEvent(1,1,evId), sv_CheckMoney 2, end = ai_Time,
+   cm_SendExSetHE(-1, ev) with the slot wait, gm_SendMoneyDelta -2, the sv_CameraFollow tail call); every
+   call, constant and reference equals the original. Left is allocation: the original caches -1 in ebx
+   through the function (or ebx,-1; the eight memset stores of ctl/evIds, d2_ClickedId = ebx, cmp
+   [d2_ClickedId], ebx, push ebx to cm_SendExSetHE, cmp edi, ebx) where ours materializes -1 at each use
+   (or ecx/edx,-1; mov [d2_ClickedId], 0xffffffff; push -1); and the row loop's induction variables: the
+   original keeps the row index as a byte offset in ebx (cmp ebx,0x10; [esp+ebx+0x54] / [esp+ebx+0x64]),
+   the form 2n in edi and n in a stack slot (frame 0x2c), ours keeps n in edi (cmp edi,5; [esp+edi*4+0x4c])
+   and the form in ebx (frame 0x28), which the proof reads as different branch conditions (+0xdb / +0xd5).
+   Tried a separate row index i (ctl[i], i < 4) beside n: VC6 merges it into n, the same code */
 
-int ai_NoticeBoardWindow(void)
+void ai_NoticeBoardWindow(void)
 {
-    /* ROUGH SKELETON: the window "0x62cdc8" and the global 0x6333cc */
-    return -1;
+    int win;
+    int n;
+    int i;
+    int slot;
+    unsigned long refresh;
+    AIJOB *ev;
+    AICHARREC *ch;
+    int ctl[4];                         /* the rows' tear-down buttons */
+    int evIds[4];                       /* the rows' pamphlet events */
+
+    refresh = d3_Time;
+    memset(ctl, 0xff, sizeof(ctl));
+    memset(evIds, 0xff, sizeof(evIds));
+    win = d2_OpenForm(0, 0, "misc\\pamphlet_brett");
+    d2_CentreViewWindows(win);
+    d2_SetPointerSprite(0, 0);
+    d2_SetForm(win, 0);
+    io_PrintText(0x1912);
+    d2_ClickedId = -1;
+    do {
+        if (refresh <= d3_Time) {
+            memset(ctl, 0xff, sizeof(ctl));
+            memset(evIds, 0xff, sizeof(evIds));
+            refresh = d3_Time + 500;
+            n = 1;
+            for (ev = (AIJOB *)he_FindEvent(1, 0, 0x35); ev != 0 && n < 5; ev = (AIJOB *)he_NextEvent()) {
+                if (ev->stage > -1) {
+                    ch = (AICHARREC *)gm_FindChar(ev->idbc);
+                    if (ch != 0) {
+                        d2_SetForm(win, n * 2 - 1);
+                        io_PrintText("$C");
+                        io_PrintText(0x1913, 0x1916 + ev->pamphletVariant, ch->id);
+                        d2_SetForm(win, n * 2);
+                        io_PrintText("$C");
+                        ctl[n - 1] = d2_GetWinObj(win, n * 2, io_PrintText(0x1914, 2));
+                        evIds[n - 1] = ev->id;
+                        d2_EnableObject(d2_Wins[d2_Views[win].wins[n * 2 - 1]].parent, 1);
+                        n++;
+                    }
+                }
+            }
+            for (; n < 5; n++) {
+                d2_SetForm(win, n * 2 - 1);
+                io_PrintText("$C");
+                d2_EnableObject(d2_Wins[d2_Views[win].wins[n * 2 - 1]].parent, 0);
+            }
+        }
+        if (dm_L.rup != 0) {
+            sv_PopRequest = 1;
+        } else if (d2_ClickedId != -1 && d2_PointerObj != -1) {
+            for (i = 0; i < 4; i++)
+                if (ctl[i] == d2_PointerObj)
+                    break;
+            if (i < 4) {
+                ev = (AIJOB *)he_FindEvent(1, 1, evIds[i]);
+                if (ev != 0 && sv_CheckMoney(ai_Chars[ai_PlayerId], 2) != 0) {
+                    ev->end = ai_Time;
+                    slot = cm_SendExSetHE(-1, ev);
+                    while (slot != -1 && cm_GetSlotState(slot) == 0)
+                        sv_RunFrame(0, 0x677c7);
+                    if (cm_GetSlotState(slot) == 1)
+                        gm_SendMoneyDelta(ai_CharInts[ai_PlayerId][0], -2);
+                    refresh = d3_Time;
+                }
+            }
+        }
+    } while (sv_RunFrame((int)ai_NoticeBoardWindow, 0x677c7) != 0);
+    d2_CloseView(win);
+    sv_CameraFollow();
 }
 /* 0x5b5a20, a carrier window (1120 B, ROUGH SKELETON): the carrier walk 0x53e400 (1, 0, 0x6b), a 0x104-byte
    frame; the body is a comment. Ghidra merged it into its 0x5b5610 record too */
