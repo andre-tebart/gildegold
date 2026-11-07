@@ -221,9 +221,9 @@ int ord_MedicusOrder(char *c, int *m)
     }
     return 1;
 }
-/* 0x4f50f0, an order handler (c, m; kinds 1 / 3): characters with the byte +0x166 = 0xd are not handled; so are those that already own an order 0x2c (0x53e400 (1, 0, 0x2c) .. +0xac = c's id); kind 3 goes to 0x5cde90, kind 1 of a player gets the text 0x1d44; else 2 */
+/* 0x4f50f0, an order handler (c, m; kinds 1 / 3): characters with the byte +0x166 = 0xd are not handled; so are those that already own an order 0x2c (0x53e400 (1, 0, 0x2c) .. +0xac = c's id); kind 3 goes to ai_AccusationWindow, kind 1 of a player gets the text 0x1d44; else 2 */
 
-int ord_SpyTargetOrder(char *c, int *m)
+int ord_AccusationOrder(char *c, int *m)
 {
     char *o;
 
@@ -240,7 +240,7 @@ int ord_SpyTargetOrder(char *c, int *m)
         } while (o != 0);
     }
     if (m[0] == 3) {
-        ai_SpyTargetHandler(c, m);
+        ai_AccusationWindow((struct AICHARREC *)c, (struct LCORDMSG *)m);
         return 2;
     }
     if (m[0] == 1 && c[2] == 6)

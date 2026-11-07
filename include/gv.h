@@ -568,7 +568,7 @@ int gm_CharCurrency(char *c, char p);                   /* 0x509ee0 */
 
 int ord_MedicusOrder(char *c, int *m);     /* 0x4f5070 */
 
-int ord_SpyTargetOrder(char *c, int *m);     /* 0x4f50f0 */
+int ord_AccusationOrder(char *c, int *m);     /* 0x4f50f0 */
 
 int ord_BlackmailBuildingOrder(char *c, int *m);     /* 0x4f5190 */
 int ord_IntimidateOrder(char *c, int *m);     /* 0x4f52e0 */
