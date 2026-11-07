@@ -742,7 +742,7 @@ float cm_ThreatAt(struct AICHAR *c, int a, int b, float limit);  /* 0x4d2010, th
 extern const double ai_Unk5edc60;  /* 0x5edc60 */
 
 int cm_MostThreatenedCellNear(char *c, int cx, int cy, int r, int *ox, int *oy);  /* 0x4d22d0 */
-char ai_Unk4d2450(char *o, int *list);  /* 0x4d2450 */
+char cm_CollectEscapeObject(char *o, int *list);  /* 0x4d2450 */
 char *ai_Unk4d2490(char *c);  /* 0x4d2490 */
 char ai_Unk4d2550(char *o, char *c);  /* 0x4d2550 */
 char *ai_Unk4d25a0(char *c);  /* 0x4d25a0 */

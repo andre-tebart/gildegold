@@ -9242,7 +9242,7 @@ int cm_MostThreatenedCellNear(char *c, int cx, int cy, int r, int *ox, int *oy)
 }
 /* 0x4d2450, a callback of the object walk: collects the objects named "sp_ESCAPE" into list[cm_PointCount++] */
 
-char ai_Unk4d2450(char *o, int *list)
+char cm_CollectEscapeObject(char *o, int *list)
 {
     if (_stricmp(o, "sp_ESCAPE") == 0) {
         list[cm_PointCount] = (int)o;
@@ -9263,7 +9263,7 @@ char *ai_Unk4d2490(char *c)
     int i, n;
 
     cm_PointCount = 0;
-    d3_ForEachObject(d3_DefaultScene, 0, 0xc0, ai_Unk4d2450, list);
+    d3_ForEachObject(d3_DefaultScene, 0, 0xc0, cm_CollectEscapeObject, list);
     m = *(char **)(*(char **)(c + 0x184) + 0x34);
     d3_PointToWorld(m, m + 0x4c, v);
     n = cm_PointCount;
