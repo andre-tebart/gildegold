@@ -2945,3 +2945,4 @@
 2026-11-07T13:40:50 0x005c00b0 func ai_Unk5c00b0 -> ai_ShowFriendsTab by:main why:the special-amount tab 1 row builder (ai_AmountTabs[1].rows): the caption and the friends' rows
 2026-11-07T13:41:31 0x005c01c0 func ai_Unk5c01c0 -> ai_ShowEnemiesTab by:main why:the special-amount tab 2 / 3 row builders (ai_AmountTabs[2] / [3].rows): the caption and the centred rows, as ai_ShowFriendsTab
 2026-11-07T13:41:31 0x005c02d0 func ai_Unk5c02d0 -> ai_ShowLoversTab by:main why:the special-amount tab 2 / 3 row builders (ai_AmountTabs[2] / [3].rows): the caption and the centred rows, as ai_ShowFriendsTab
+2026-11-07T13:43:55 0x0062a564 data full_data_62a564 -> ai_CharNameFmt by:main why:the text format "%1N3" (a character name by its id, txt_Format) of the special-amount wedding heading, the people list and the slot labels in lc

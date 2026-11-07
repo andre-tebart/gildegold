@@ -66,6 +66,8 @@
    use stamp at +0x2d).
    Open: data: 0x62a56c ai_FmtLabel ("%s:", ai_TechEffectsWindow's captions) is a view of main.c's full_data_62a56c;
    its owner (sv_t declares it too) is not settled.
+   Open: data: 0x62a564 ai_CharNameFmt ("%1N3", a character name for txt_Format) stays in main.c's gap block: only lc
+   uses it, but it lies before lobby's data, so its owner (a unit before lobby) is not settled.
    Open: head: sv.h, so sv_CheckCharacterFlag / sv_ClearSelection and the other sv calls of the listeners and map
    picks stay without a prototype (M7); and not included yet (dcp headers conflicts lc HEADER): ahm.h
    ai.h am.h amt.h anm.h ch.h chc.h cm.h d2.h d3_int_io.h d3_tools.h f3snd.h gfx.h gv.h hst.h rt.h
@@ -947,7 +949,7 @@ extern G17MSG cm_SendRing[];
 extern int d2_PointerObj;
 extern int d2_ClickedId;
 extern int d2_LastWindow;
-extern GAPDATA full_data_62a564[];
+extern char ai_CharNameFmt[];  /* 0x62a564, "%1N3" (main.c gap block; Open: data) */
 extern GAPDATA full_data_62d2ec[];
 extern struct D2OBJ *d2_Objs;
 extern GAPDATA full_data_62d1fc[];
@@ -27321,7 +27323,7 @@ void *ai_Unk5c3bb0(unsigned char *param_1, int *param_2, int param_3, void (*par
                 }
                 id = ids[i];
                 d2_WinOpenPic(0x98, y + 1, U_I(((unsigned)&ai_Selected + 0x4) + id * 0x87), U_I((unsigned)&d2_LastWindow));
-                txt_Format(text, (char *)(unsigned)&full_data_62a564, id);
+                txt_Format(text, (int)ai_CharNameFmt, id);
                 /* ROUGH: the text control 0x473650 (x, y, text, screen), 0x4760b0 (ctrl, 0x56) and the
                    slider 0x46a960 (0x8c, y + 4, 0x40, 0, 100, 0x75, 0x442) with 0x475cb0 / 0x475e40 /
                    0x46cda0 */
@@ -28878,7 +28880,7 @@ void ai_PlayerComparePanel(void)
         *(int *)((unsigned)&d2_Objs + id + 0x4c) = 1;
         *(int *)((unsigned)&d2_Objs + id + 0x1c0) = 3;
         *(int *)((unsigned)&d2_Objs + id + 0x2e8) = (unsigned)&ai_Chars + idx * 0x21c;
-        txt_Format(buf, (char *)(unsigned)&full_data_62a564, idx);
+        txt_Format(buf, (int)ai_CharNameFmt, idx);
         ai_CentredText(buf, 0x36, x + 0x24, 300, 0x56);
         n = *(int *)((unsigned)&ai_CharInts + idx * 0x21c + 0x50) - 0x59a;
         if (n > 7)

@@ -396,7 +396,7 @@ extern struct D2PIC *d2_Pics;
 extern GAPDATA full_data_62a53c[];
 extern GAPDATA full_data_62a544[];
 extern GAPDATA full_data_62a54c[];
-extern GAPDATA full_data_62a564[];
+extern char ai_CharNameFmt[];
 extern GAPDATA full_data_62a56c[];
 extern GAPDATA full_data_62a59c[];
 extern int d2_PointerObj;
