@@ -1071,14 +1071,14 @@ int d2_GetObjValue();  /* 0x475980 */
 void d2_SetObjValue();  /* 0x475cb0 */
 void cm_ShowObjectScene(char *o, int id);  /* 0x4e2910 */
 
-int d2_ClearSurface();  /* 0x4796c0 */
+int d2_ClearSurface(struct D2SURF *surf);  /* 0x4796c0 */
 void d2_BlitPart(int sx, int sy, int w, int h, struct D2SURF *src, int x, int y, struct D2SURF *dst);  /* 0x479480 */
 void d2_ReleaseFade(struct D2FADE *f);  /* 0x476860 */
 struct D2FADE * d2_StartFade(int x, int y, int w, int h, char *name, int dur, unsigned int flags);  /* 0x4767d0 */
 char d3_InflateScene(unsigned int flags);  /* 0x43deb0 */
 extern void *d2_BackSurf;  /* 0x6ed92c */
 extern unsigned int d3_SceneFlags;  /* 0x63349c */
-extern unsigned int ai_Unk6f0d98;  /* 0x6f0d98 */
+extern unsigned int cm_SceneInflateFlags;  /* 0x6f0d98 */
 
 char d3_LoadScene(char *name, void *f, void (*progress)(int a, int i, int n));  /* 0x44be60 */
 void d3fl_SetDetail();  /* 0x43f8a0 */

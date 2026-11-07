@@ -15379,21 +15379,23 @@ void cm_RunSale(G28REC *m)
     cm_EndSpecialTrack();
 }
 
-/* 0x4e2910, leaves the scene of the object o (+0x29 the id, +0x5d its owner / place, +0 the building kind) for the place id: draws the
-   frozen screen (0x6ed924 / 0x6ed92c, the window flag +0x26 & 0x20 of 0x6f0d90) and fades to black ("BLACK", 0x5a ticks) when o is
-   the current object (0x6f2308 / 0x6f230c) with that id; else selects the scene of the place (0x76faa0[id], or of the building kind
-   0x76fa60[kind]) and runs 0x513050; at the end the stop flag of 0x63349c / 0x6f0d98 is cleared (0x43deb0). Not in the replay mode. ROUGH */
 #define G27_FRAME(a, b) d2_BlitPart(0, 0, (short)d2_ScreenW, (short)d2_ScreenH, (a), 0, 0, (b))
-/* 0x4e2910 */
+/* 0x4e2910, shows the scene of the object o (a building record) for the place id: when o is the current building
+   (ai_PlayerBuilding / ai_FallbackBuilding) and its main room is that id, only the frozen screen is drawn (the party's
+   window flag 0x20) and the screen fades to black; else the place of the id in o's object list (gm_Query) gets its
+   scene selected - of the object (init_ObjectUniverse, loaded first when it is not loaded or still dirty) or, for a
+   home, of the building kind (init_BuildingUniverse) - and shown (init_ShowBuildingScene); the scene flags are
+   inflated without the stop bit 2. Nothing in the replay mode (cm_SkipEvents) */
 void cm_ShowObjectScene(char *o, int id)
 {
-    char *bld;
+    AIBLD *b;
     int k;
 
     if (cm_SkipEvents != 0)
         return;
-    if (((char *)ai_PlayerBuildingT == o && *(unsigned short *)(o + 0x29) == id) || ((char *)ai_FallbackBuildingT == o && *(unsigned short *)(o + 0x29) == id)) {
-        if (((char *)cm_CurrentFight)[0x26] & 0x20) {
+    b = (AIBLD *)o;
+    if ((ai_PlayerBuildingT == b && b->mainRoom == id) || (ai_FallbackBuildingT == b && b->mainRoom == id)) {
+        if (((G28REC *)cm_CurrentFight)->flags & 0x20) {
             d2_ClearSurface(d2_ScreenSurf);
             G27_FRAME(d2_ScreenSurf, d2_BackSurf);
             sv_RunFrame(0, 0x86);
@@ -15406,32 +15408,31 @@ void cm_ShowObjectScene(char *o, int id)
         }
         return;
     }
-    if (gm_Query(*(int *)(o + 0x5d), 1, 0, id) != 0) {
+    if (gm_Query(b->objList, 1, 0, id) != 0) {
         if (gm_IsHomeType(o) == 0) {
             if (init_ObjectUniverse[id] != (char)0xfe) {
-                if (init_ObjectUniverse[id] == (char)0xff || *(char *)(ai_Unkfd7c50 + 0x325 + init_ObjectUniverse[id] * 0x3e0) != 0)
+                if (init_ObjectUniverse[id] == (char)0xff || init_SceneDirty[init_ObjectUniverse[id] * 0x3e0] != 0)
                     init_LoadObjectScene(id);
                 d3if_SelectScene(init_ObjectUniverse[id], 0);
                 init_ShowBuildingScene(o, id);
             }
         } else {
-            bld = (char *)ai_BTypes + *(unsigned char *)o * 0x24d;
-            k = *(unsigned char *)bld;
+            k = (unsigned char)ai_BTypesT[b->type].kind;
             if (init_BuildingUniverse[k] != 0) {
-                if (init_BuildingUniverse[k] == (char)0xff || *(char *)(ai_Unkfd7c50 + 0x325 + init_BuildingUniverse[k] * 0x3e0) != 0)
+                if (init_BuildingUniverse[k] == (char)0xff || init_SceneDirty[init_BuildingUniverse[k] * 0x3e0] != 0)
                     init_LoadBuildingScene(k);
-                k = *(unsigned char *)((char *)ai_BTypes + *(unsigned char *)o * 0x24d);
+                k = (unsigned char)ai_BTypesT[b->type].kind;
                 d3if_SelectScene(init_BuildingUniverse[k], 0);
                 init_ShowBuildingScene(o, 0xfd);
             }
         }
     }
     if (d3_SceneFlags != 0) {
-        ai_Unk6f0d98 = d3_SceneFlags;
+        cm_SceneInflateFlags = d3_SceneFlags;
         d3_InflateScene(d3_SceneFlags & ~2);
-        ai_Unk6f0d98 = ai_Unk6f0d98 & ~2;
+        cm_SceneInflateFlags = cm_SceneInflateFlags & ~2;
     }
-    if (((char *)cm_CurrentFight)[0x26] & 0x20) {
+    if (((G28REC *)cm_CurrentFight)->flags & 0x20) {
         d2_ClearSurface(d2_ScreenSurf);
         G27_FRAME(d2_ScreenSurf, d2_BackSurf);
         sv_RunFrame(0, 0x86);
@@ -17219,7 +17220,7 @@ int cm_SceneTimedOut = 0;  /* 0x6f0d88 */
 int cm_SkipEvents = 0;  /* 0x6f0d8c */
 int * cm_CurrentFight = 0;  /* 0x6f0d90 */
 int cm_DuelOver = 0;  /* 0x6f0d94 */
-unsigned int ai_Unk6f0d98 = 0;  /* 0x6f0d98 */
+unsigned int cm_SceneInflateFlags = 0;  /* 0x6f0d98 */
 int cm_SceneDepth = 0;  /* 0x6f0d9c, the scene nesting depth */
 char * cm_SceneFade = 0;  /* 0x6f0da0, the fade */
 unsigned int cm_FightStart = 0;  /* 0x6f0da4, fight start (d3_Time) */
