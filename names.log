@@ -2900,3 +2900,4 @@
 2026-11-07T00:10:32 0x0060c7c0 data ai_Unk60c7c0 -> ai_WeaponRecordData by:main why:the ten 0x5c-byte weapon records ai_FindWeaponRecord searches (AIWEAPON, cm.h); a byte table the function views as AIWEAPON records
 2026-11-07T09:13:00 0x005ae6b0 func ai_Unk5ae6b0 -> ai_SendTransportOrder by:main why:sends the transport order message 0xf of a cart (msg.car = objId, the source / destination building ids) and pays its escort; ai_TransportWindow calls it per cart
 2026-11-07T09:16:48 0x005ae9a0 func ai_Unk5ae9a0 -> ai_TransportFromLager by:main why:its failure text "ob_TransportFromLager(): Could not find lager by id..." (0x62cc94)
+2026-11-07T09:18:59 0x005af010 func ai_Unk5af010 -> ai_TransportGoodsTotal by:main why:sums the picked goods' amount times price over both goods grids into sv_PendingMoney (negated) for the transport window

@@ -18123,51 +18123,63 @@ int ai_TransportFromLager(int lagerId, AIOBJ *cart, AIBLD *bld, int priced, char
         sv_PumpNet();
     return 1;
 }
-/* 0x5af010, the total amount of a transport record (400 B): the kind record 0x7e3f30 + kind * 0x24d; the owner
-   is the +0x65 word for the kind 0x47, else the player 0x6f1bc5. Both carrier tables (0x6f58a0 .. 0x6f5a60 and
-   0x6f4f60 .. 0x6f52e0, 0x38-byte rows, the good at +0, the control id at +0x10) add the row's amount 0x475980
-   times its price 0x5089c0 (times 1.1 for a "\n" kind, else times the float +0x49 of the record; the +0x65
-   amount again for the modes 2 / 4). sv_PendingMoney = the negated total */
+/* 0x5af010, the transport window's goods total (388 B): every picked slot of the goods grids ai_ProdGoods2 and
+   ai_ProdGoods adds its amount (its check control) times the goods price at the owner (the building's player
+   slot for the kind 0x47, else ai_OwnPlayer), times 1.1 at the market class 0xa, else times bld->priceFactor;
+   the modes 2 / 4 take the plain price at the building's player slot instead. sv_PendingMoney becomes the
+   negated total. The second argument is not read
+   @deep Read whole against the original and rewritten (both goods grids, the owner / market-class /
+   priceFactor price, the modes 2 / 4 plain price kept in st0, the negated total into sv_PendingMoney); 133
+   vs 133 instructions, every instruction equal but the stack homes. Left: frame and slots only: ours 'push
+   ecx' (one local, sum in bld's dead parameter slot [esp+0x18], n in mode's slot [esp+0x20]), the original
+   'sub esp, 8' (sum [esp+0x10] and bt [esp+0x14] as locals, n in bld's slot [esp+0x1c]). Tried: other
+   declaration orders, n block-scoped per loop, mode as int / unsigned: no change in the slot choice */
 
-void ai_Unk5af010(unsigned char *param_1, int param_2, int param_3)
+void ai_TransportGoodsTotal(AIBLD *bld, int unused, int mode)
 {
     int n;
-    float sum;
-    char *kind;
+    LCPRODSLOT *slot;
+    int i;
+    float price;
     int owner;
-    int *row;
+    AIBTYPE *bt;
+    float sum;
 
-    kind = (char *)(U_I((unsigned)&ai_BTypes) + *param_1 * 0x24d);
+    bt = &((AIBTYPE *)ai_BTypes)[bld->kind];
     sum = 0.0f;
-    if (*param_1 == 0x47)
-        owner = *(int *)(param_1 + 0x65);
+    if (bld->kind == 0x47)
+        owner = bld->playerSlot;
     else
-        owner = *(unsigned char *)(unsigned)&ai_OwnPlayer;
-    for (row = (int *)(unsigned)&ai_ProdGoods2; (int)row < (unsigned)((unsigned)((char *)ai_ProdGoods2 + 0x1c0)); row += 0xe) {
-        if (row[4] == -1 || d2_GetObjValue(row[4]) == 0)
+        owner = ai_OwnPlayer;
+    for (i = 0; i < 8; i++) {
+        slot = &ai_ProdGoods2[i];
+        if (slot->check == -1 || d2_GetObjValue(slot->check) == 0)
             continue;
-        n = d2_GetObjValue(row[4]);
+        n = d2_GetObjValue(slot->check);
         if (n == 0)
             continue;
-        if (*kind == 0xa)
-            sum += (float)n * (gm_GoodsPrice(row[0], owner) * 1.1);
+        if (bt->buildingClass == 0xa)
+            price = gm_GoodsPrice(slot->good, owner) * 1.1;
         else
-            sum += (float)n * (gm_GoodsPrice(row[0], owner) * *(float *)(param_1 + 0x49));
-        if (param_3 == 2 || param_3 == 4)
-            gm_GoodsPrice(row[0], param_1[0x65]);
+            price = gm_GoodsPrice(slot->good, owner) * bld->priceFactor;
+        if (mode == 2 || mode == 4)
+            price = gm_GoodsPrice(slot->good, (unsigned char)bld->playerSlot);
+        sum += n * price;
     }
-    for (row = (int *)(unsigned)&ai_ProdGoods; (int)row < (unsigned)((unsigned)((char *)ai_ProdGoods + 0x380)); row += 0xe) {
-        if (row[4] == -1 || d2_GetObjValue(row[4]) == 0)
+    for (i = 0; i < 16; i++) {
+        slot = &ai_ProdGoods[i];
+        if (slot->check == -1 || d2_GetObjValue(slot->check) == 0)
             continue;
-        n = d2_GetObjValue(row[4]);
+        n = d2_GetObjValue(slot->check);
         if (n == 0)
             continue;
-        if (*kind == 0xa)
-            sum += (float)n * (gm_GoodsPrice(row[0], owner) * 1.1);
+        if (bt->buildingClass == 0xa)
+            price = gm_GoodsPrice(slot->good, owner) * 1.1;
         else
-            sum += (float)n * (gm_GoodsPrice(row[0], owner) * *(float *)(param_1 + 0x49));
-        if (param_3 == 2 || param_3 == 4)
-            gm_GoodsPrice(row[0], param_1[0x65]);
+            price = gm_GoodsPrice(slot->good, owner) * bld->priceFactor;
+        if (mode == 2 || mode == 4)
+            price = gm_GoodsPrice(slot->good, (unsigned char)bld->playerSlot);
+        sum += n * price;
     }
     sv_PendingMoney = -sum;
 }
