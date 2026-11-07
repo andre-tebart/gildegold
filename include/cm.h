@@ -571,7 +571,7 @@ int cm_ObjectOwner(char *c);  /* 0x4ceb70 */
 void cm_WaitEventStop(int id);  /* 0x4ceb80 */
 void cm_CloseCharInfoWins();  /* 0x4cec00 */
 void cm_OpenCharInfoWin(int a, char *c);  /* 0x4cec30 */
-void ai_Unk4ced80(int a);  /* 0x4ced80 */
+void cm_UpdateCharInfoWins(int a);  /* 0x4ced80 */
 void d3fl_MakeDivide();  /* 0x441300 */
 struct D3OBJECT; struct D3RECT; char d3if_ScreenBox(struct D3OBJECT *obj, struct D3RECT *r);  /* 0x4486e0 */
 int d2_WinOpenSlider();  /* 0x46a960 */

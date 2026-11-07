@@ -7556,9 +7556,10 @@ void cm_OpenCharInfoWin(int a, char *c)
         return;
     }
 }
-/* 0x4ced80 */
+/* 0x4ced80, refreshes the character info windows: closes them, then opens one for every selected fighter (a: the
+   fight record the cut entries go to) */
 
-void ai_Unk4ced80(int a)
+void cm_UpdateCharInfoWins(int a)
 {
     char *p;
 
@@ -11022,7 +11023,7 @@ void ai_Unk4d6970(char *r)
     ai_Unk4cfeb0();
     cm_FightMouse(r);
     cm_UpdateSceneChars();
-    ai_Unk4ced80(r);
+    cm_UpdateCharInfoWins(r);
     cm_UpdateBombs();
     cm_UpdateGrenades();
     if (cm_SceneTimedOut == 0 && cm_FightWinner == 0) {
