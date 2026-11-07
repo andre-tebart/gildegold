@@ -31375,35 +31375,108 @@ int ai_PeaceWindow(AICHARREC *me, LCORDMSG *m)
     d2_CloseView(win);
     return done;
 }
-/* 0x5cc700, the espionage payment handler (827 B, ROUGH SKELETON: no Ghidra export; from the
-   disassembly): param_1 is the message record (the AIMSG: +0 the id, +2 the type 6, +4 the handle, +0xc
-   a byte, +0x84 a flag byte, +0x194 the amount). Types other than 6: the amount < 6 returns 0x20; the
-   price (int)((float)0x50a640 (the id) * 0x5eb844) against the money 0x509e60 (the record) (too little
-   -> 0x20); the payment 0x4c47e0 (-1, the handle, 0x6f1bc5, the price) and the close 0x4c5f60 (-6),
-   then the walk over the character records 0x770b80 (the word -2 = 0xffff skips). Type 6: the window at
-   0x5cc836. ROUGH SKELETON: the walk body and the window are not written. */
+/* 0x5cc700, the conversion order's ask (ord_ConvertOrder, kinds 3 / 4) "privillegien\bekehren": me preaches to the
+   town. The price is 6 % of me's worth (gm_GetWorth); me pays it to the bank (cm_SendMoveGoods) and 6
+   (cm_SendMoneyDelta), and every living character (kind below 10) of the other faith whose skills[4] plus a random
+   0 .. 125 stays below me's skills[4] takes me's faith (field 0xc). The AI (not kind 6) leaves the players (kinds
+   6 / 7) alone: 0x10, or 0x20 when it has less than 6 or its goods are worth less than the price. A player (kind 6)
+   gets the window (0x1de1: the 6, the price) whose first button, when the player has the 6 (sv_CheckMoney) and the
+   price (sv_CheckGoodAmount), does it and tells 0x1de2 (the number converted); either button or a right click
+   close it. Returns 1 once it was done, else 0
+   @deep Rewritten whole from the original 0x5cc700..0x5cca3b (was a skeleton named ai_EspionagePayment2;
+   the form privillegien\bekehren): every call, argument, constant and branch read and matched; ours=260
+   original=260. Left: the player loop's induction pointer. VC6 strength-reduces the i-loop over ai_Chars
+   to a pointer; the original pivots it on c->kind (esi = ai_Chars+2: cmp word [esi-2],0xffff / cmp byte
+   [esi],0xa / mov dl,[esi+0xa] / mov cl,[esi+0x82] / cmp esi,0x7d5f82), ours on c->faith (esi =
+   ai_Chars+0xc: [esi-0xc], [esi-0xa], [esi], [esi+0x78], cmp end 0x7d5f8c), hence the two M8 lines. The AI
+   loop (kind read 3 times) pivots on kind on both sides. Adding a second use of c->kind (c->kind != 0xff)
+   moves our pivot to kind (the M8 lines go) but costs a compare: the original must have a second kind use
+   that folds away. Tried pointer walk, lc_CharRecs[i] indexing, (AICHARREC *)ai_Chars[i], continue form,
+   separate player-branch locals (frame grows). The rest: slots (faith / skill / price / ok / win share
+   other slots) and order of the two local stores at +0x1e5. (references: M8 at +0x241: ours refers to
+   ai_Chars+0xc (0x770b8c), the original's field to 0x770b82 (ai_Chars+0x2) (and 1 more), explained: the M8
+   pair is the strength-reduced loop pointer's base (ai_Chars+2 vs ai_Chars+0xc, the same records and
+   fields read): an induction-variable choice, not another object) */
 
-int ai_EspionagePayment2(int param_1, int *m)  /* m: the handler's second argument (unused here): the callers push (c, m); the draft body reads its own byte offsets of the parameters */
+int ai_ConvertWindow(AICHARREC *me, LCORDMSG *m)
 {
+    int faith;
+    unsigned char skill;
     int price;
-    int ret;
+    int done;
+    int win;
+    int ok;
+    int cancel;
+    int n;
+    int i;
+    int t;
+    AICHARREC *c;
+    char text[0x100];
 
-    if (*(char *)(param_1 + 2) != 6) {
-        if (*(int *)(param_1 + 0x194) < 6)
+    if (me->kind != 6) {
+        skill = me->skills[4];
+        faith = me->faith;
+        if (me->money < 6)
             return 0x20;
-        price = (int)((float)gm_GetWorth(*(unsigned short *)param_1) * (0.0599999987f));
-        if (gm_GetGoodsValue(param_1) < price)
+        price = (int)((float)gm_GetWorth(me->id) * 0.06f);
+        if (gm_GetGoodsValue(me) < price)
             return 0x20;
-        cm_SendMoveGoods(0xffffffff, *(int *)(param_1 + 4), U_I((unsigned)&ai_OwnPlayer), price);
-        cm_SendMoneyDelta(*(int *)(param_1 + 4), 0xfffffffa);
-        /* ROUGH SKELETON: the walk over the character records 0x770b80 (the word -2 == 0xffff skips)
-           and the return value are not written yet */
+        cm_SendMoveGoods(-1, me->netId, ai_OwnPlayer, price);
+        cm_SendMoneyDelta(me->netId, -6);
+        for (i = 0; i < 768; i++) {
+            c = &((AICHARREC *)ai_Chars)[i];
+            if (c->id != 0xffff && c->kind < 0xa && c->kind != 6 && c->kind != 7 && c->faith != me->faith &&
+                skill > (int)(util_RandomU(0x7e) + c->skills[4])) {
+                cm_BeginFieldBlock((char *)c, c->netId);
+                cm_AddFieldDelta(1, 1, 0xc, &faith);
+                cm_SendFieldDeltas();
+            }
+        }
         return 0x10;
     }
-    /* ROUGH SKELETON: type 6 opens the window at 0x5cc836 (the 0x5c1130 menu, the records and the pump
-       0x5309a0 are not written yet) */
-    ret = 0;
-    return ret;
+    done = 0;
+    price = (int)((float)gm_GetWorth(me->id) * 0.06f);
+    win = d2_OpenForm(0, 0, "privillegien\\bekehren");
+    d2_SetPointerSprite(0, 0);
+    d2_CentreViewWindows(win);
+    d2_SetForm(win, 1);
+    t = io_PrintText(0x1de1, 6, price);
+    ok = d2_GetWinObj(win, 1, t);
+    cancel = d2_GetWinObj(win, 1, t + 1);
+    d2_ClickedId = -1;
+    do {
+        if (d2_ClickedId != -1) {
+            if (d2_PointerObj == ok) {
+                skill = me->skills[4];
+                faith = me->faith;
+                n = 0;
+                if (sv_CheckMoney(me, 6) != 0 && sv_CheckGoodAmountB((char *)me, price, ai_OwnPlayer) != 0) {
+                    cm_SendMoveGoods(-1, me->netId, ai_OwnPlayer, price);
+                    cm_SendMoneyDelta(me->netId, -6);
+                    for (i = 0; i < 768; i++) {
+                        c = &((AICHARREC *)ai_Chars)[i];
+                        if (c->id != 0xffff && c->kind < 0xa && c->faith != me->faith &&
+                            skill > (int)(util_RandomU(0x7e) + c->skills[4])) {
+                            n++;
+                            cm_BeginFieldBlock((char *)c, c->netId);
+                            cm_AddFieldDelta(1, 1, 0xc, &faith);
+                            cm_SendFieldDeltas();
+                        }
+                    }
+                    txt_Format(text, 0x1de2, n);
+                    sv_MessageBox(text, 0);
+                    done = 1;
+                    sv_PopRequest = 1;
+                }
+            } else if (d2_PointerObj == cancel) {
+                sv_PopRequest = 1;
+            }
+        }
+        if (dm_L.rup)
+            sv_PopRequest = 1;
+    } while (sv_RunFrame((int)ai_ConvertWindow, 0x657c7) != 0);
+    d2_CloseView(win);
+    return done;
 }
 /* 0x5cca40, the espionage amount window 0x62d634 (455 B): param_1 is the message record (the AIMSG: +2
    the type 6, +4 the handle, +0x194 the amount), param_2 the request (dword +4 the value 1 .. 9). Types

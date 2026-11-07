@@ -607,7 +607,7 @@ int ord_SeatSwapOrder(char *c, int *m);     /* 0x4f6e00 */
 int ord_HatredOrder(char *c, int *m);     /* 0x4f6f10 */
 int ord_HearingOrder(char *c, int *m);     /* 0x4f70f0 */
 int ord_ExpelWorkerOrder(char *c, int *m);     /* 0x4f7200 */
-int ord_EspionagePaymentOrder2(char *c, int *m);     /* 0x4f7300 */
+int ord_ConvertOrder(char *c, int *m);     /* 0x4f7300 */
 int ord_PeaceOrder(char *c, int *m);     /* 0x4f7400 */
 int ord_EspionageAmountOrder(char *c, int *m);     /* 0x4f74f0 */
 int ord_SpyTargetFlagOrder(char *c, int *m);     /* 0x4f75e0 */

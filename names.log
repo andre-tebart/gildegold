@@ -2987,3 +2987,5 @@
 2026-11-07T17:17:49 0x00611258 data unk_Tab611258 -> gv_Decisions by:main why:the AI decision (law) table: 0x1d AIDEC records read by gv_GetTableRecord / gv_FindTableRecord, set by gv_OnDecisionValue; was already viewed as gv_Decisions
 2026-11-07T17:20:32 0x005cc2b0 func ai_EspionageRelation -> ai_PeaceWindow by:main why:its form is "privillegien\frieden_stiften" (0x62d5fc): the ask raises two characters relations to each other (+15..54 both ways)
 2026-11-07T17:20:32 0x004f7400 data ord_EspionageRelationOrder -> ord_PeaceOrder by:main why:its form is "privillegien\frieden_stiften" (0x62d5fc): the ask raises two characters relations to each other (+15..54 both ways)
+2026-11-07T17:22:45 0x005cc700 func ai_EspionagePayment2 -> ai_ConvertWindow by:main why:its form is "privillegien\bekehren" (0x62d61c): the ask sets the other-faith characters field 0xc (faith) to the asker's
+2026-11-07T17:22:45 0x004f7300 data ord_EspionagePaymentOrder2 -> ord_ConvertOrder by:main why:its form is "privillegien\bekehren" (0x62d61c): the ask sets the other-faith characters field 0xc (faith) to the asker's
