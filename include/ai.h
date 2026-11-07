@@ -220,7 +220,7 @@ extern AIWATCH ai_Watch;                /* 0xf895a0 */
 #ifndef DATA_VIEWS_H
 extern AIMAPREF ai_MapRefs[];         /* 0xfd7c4c, @original: rd.h declares G15MAP * (its rd_BuildRoad 0x4bcc20 loads the first record's map: [0xfd7c4c], then [eax] and [eax+0x1a64]); ai.c indexes the 0x3e0-byte records (ai_MapRefs[bld].map) */
 #endif
-extern const unsigned int ai_BuildingTypeMasks[4];  /* 0x5eed70, bit masks of building types (two 64 bit masks) */
+extern const unsigned int ai_BuildingTypeMasks[6];  /* 0x5eed70, bit masks of building classes (three 64 bit masks) */
 extern float ai_DifficultyValue;              /* 0x5fef04 */
 extern float ai_DifficultyScale;              /* 0x5fef08 */
 extern unsigned char ai_NumPlayers;    /* 0x62489c, the number of players */
