@@ -1308,9 +1308,9 @@ int ord_SpyTargetFlagOrder(char *c, int *m)
     }
     return 1;
 }
-/* 0x4f76e0, an order handler (c, m; kinds 1 / 3 and the answers 2 / 4) like 0x4f66b0 for the job(s) 0x1a (+0x166 of c; of m[0x87] for 2 / 4, where c needs the flag 0x100 of +0x1c8): runs 0x5cd2e0, a player's text 0x1df5 (m + 0x14), 9 with the flag 0x200, 0xa for 4 / 2, else 2 */
+/* 0x4f76e0, an order handler (c, m; kinds 1 / 3 and the answers 2 / 4) like 0x4f66b0 for the job(s) 0x1a (+0x166 of c; of m[0x87] for 2 / 4, where c needs the flag 0x100 of +0x1c8): runs ai_MiracleWindow, a player's text 0x1df5 (m + 0x14), 9 with the flag 0x200, 0xa for 4 / 2, else 2 */
 
-int ord_EspionageOverviewOrder(char *c, int *m)
+int ord_MiracleOrder(char *c, int *m)
 {
     char *t;
     unsigned char j;
@@ -1324,7 +1324,7 @@ int ord_EspionageOverviewOrder(char *c, int *m)
         if ((ORD_CHAR(c)->flags1c8 & 0x200) != 0)
             return 9;
         if (m[0] == 3)
-            ai_EspionageOverviewHandler(c, m);
+            ai_MiracleWindow(c, m);
         return 2;
     }
     if (m[0] == 4 || m[0] == 2) {
@@ -1334,7 +1334,7 @@ int ord_EspionageOverviewOrder(char *c, int *m)
         if (j != 0x1a)
             return 1;
         if (m[0] == 4) {
-            ai_EspionageOverviewHandler(c, m);
+            ai_MiracleWindow(c, m);
             return 0xa;
         }
         if (ORD_CHAR(c)->kind == 6)

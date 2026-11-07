@@ -31538,38 +31538,208 @@ int ai_PenanceWindow(AICHARREC *me, LCORDMSG *m)
     }
     return 0;
 }
-/* 0x5ccc10, the espionage overview window (1738 B, ROUGH SKELETON: no Ghidra export; from the
-   disassembly): a 0x1450-byte frame (__chkstk 0x5de9c0); param_1 is the message record (the AIMSG: +0
-   the id), param_2 the page 0 .. 5 (outside -> 0x60). The caption 0x5176d0 (0x1df7, the id); page 0:
-   the record 0x4a63f0 (the message, 2, 0x80, 0, 0, 100.0f, the out), 0x4fea50 and the character
-   0x770b80 + the word +0x27 * 0x21c, the price 0x50a640 * 0x5ece60 * (0x42ec00 (3) + 2) and the payment
-   0x4c4830. Pages 1 .. 5 at 0x5ccd41. ROUGH SKELETON: the rest (the window, the rows, the payment
-   chain) is left as a comment. */
+int ai_FindPartnersRandomWalk(struct AIPER *p, unsigned int a, int *flags, float lo, float hi, unsigned short *id); /* 0x4a5b50 (am.h, not included) */
+int amt_SendOfficeMessage(unsigned char a, char *b, char *c, unsigned char d, unsigned char e);  /* 0x4e6680 (amt.h) */
+#define LC_MIRACLE_PICK_FLAGS3 0x400800  /* ai_FindPartnersRandomWalk flags of the miracle that takes an office (bits not read) */
+#define LC_MIRACLE_PICK_FLAGS4 0x300000  /* ai_FindPartnersRandomWalk flags of the miracle that raises a skill (bits not read) */
+/* 0x5ccc10, a miracle (ai_MiracleWindow, the miracle order's ask, rolls which = 0 .. 5): it builds the news title 0x1df7
+   (me) and tells every player (kinds 6 / 7) what happened (he_ShowNews 0x5fe; 1 tells each character on its own, 0x601).
+   0: a building of the kind 0x80 found by ai_PickActionBuilding: its owner gives 2 .. 4 % of his worth
+      (cm_SendMoveGoodsUnchecked, the text 0x1df8).
+   1: the sick: every character whose health (v024) is below -20 is healed to half of it, with a chance of one in two
+      (the field 0x24; the texts 0x1df9 .. 0x1dfb: the healed and the others hear their own news).
+   2: a building found by ai_PickActionBuilding (the kinds 0x1a07c43b0) loses 10 .. 25 of its level, if it keeps some
+      (the field 0x5c, the text 0x1dfc).
+   3: a character of the random walk loses its office (amt_SendOfficeMessage 4, the text 0x1dfd).
+   4: a character of the random walk gains 0 .. 20 in one of its skills below 231 (cm_AddFieldValues, the text 0x1dfe
+      names the skill 0x16b7 + it).
+   5: the poorest of the first 8 players (kinds 5 .. 7) gets 3 .. 7 % of his worth for a building found by
+      ai_PickActionBuilding (the kinds 0x1b07d43b4; the text 0x1dff).
+   @deep Rewritten whole from the original 0x5ccc10..0x5cd2da (was a skeleton named
+   ai_EspionageOverviewWindow): all six miracle branches, the common news tail and every call, argument,
+   constant and branch read against the original; the frame matches (0x1450, the case-scoped locals), the
+   __int64 masks as LARGE_INTEGER halves like am.c's (that fixed the mov eax/ecx materialisation); ours=551
+   original=552. Left: slot assignment of the compiler temps and escaped locals (case 0: bld 0x14 vs 0x18
+   and the rand fild temp 0x18 vs 0x14; case 3/4: id 0x18 vs 0x10, flags 0x10 vs 0x14; case 5: out 0x1c vs
+   0x20, the worth spill), the lea/push scheduling that follows from them (case 3 amt_FindOffice args, the
+   0x1dfd txt_Format lea at 0x5cd038), and the skill loop's exit test (the original 'dec ecx; test ecx,ecx;
+   mov esi,edx; jne' at 0x5cd0dc, ours 'dec ecx; mov esi,edx; jne'). Tried declaration order (no effect),
+   the worth temp folded into the expression (worse), three loop forms (for j 5..0 with i=-1, for j 0..5, a
+   found index: the last is kept, closest). (references: M8 at +0x17d: ours refers to sprintf (0x5de652),
+   the original's field to 0x5176d0 (txt_Format), explained: the M8 at +0x17d pairs our first sprintf call
+   with the original's next txt_Format: an alignment shift by one push in the case-1 sprintf argument
+   scheduling; both sides call txt_Format, txt_Format, sprintf, txt_Format, sprintf in that order with the
+   same arguments) */
 
-int ai_EspionageOverviewWindow(int param_1, int param_2)
+void ai_Miracle(AICHARREC *me, int which)
 {
-    char text[0x100];
-    int out[2];
+    char text[0x400];
+    char title[0x400];
+    char line[0x400];
+    char healed[0x400];
+    char unhealed[0x400];
+    AICHARREC *c;
+    int price;
+    int i;
 
-    if (param_2 < 0 || param_2 > 5)
-        return 0x60;
-    txt_Format(text, (char *)0x1df7, *(unsigned short *)param_1);
-    if (param_2 == 0) {
-        if (AI_4A63F0_7(param_1, 2, 0x80, 0, 0, 100.0f, out) == 0)
-            return 0x60;
-        gm_FindById(out[0], param_2, param_2, out);
-        /* ROUGH SKELETON: the character record, the price and the payment 0x4c4830 are not written */
-        return 0;
+    if (which < 0 || which > 5)
+        return;
+    txt_Format(title, 0x1df7, me->id);
+    if (which == 0) {
+        AIBLD *bld;
+        int out;
+        int worth;
+        LARGE_INTEGER kinds;
+
+        kinds.LowPart = 0x80;
+        kinds.HighPart = 0;
+        if (ai_PickActionBuilding((struct AIPER *)me, 2, kinds.QuadPart, 0.0f, 100.0f, &out) == 0)
+            return;
+        gm_FindById((int *)&bld, 0, 0, out);
+        c = &((AICHARREC *)ai_Chars)[bld->owner];
+        worth = gm_GetWorth(c->id);
+        price = (int)((util_RandomU(3) + 2) * (worth * 0.01));
+        cm_SendMoveGoodsUnchecked(c->netId, -1, ai_OwnPlayer, price);
+        txt_Format(text, 0x1df8, c->id, bld, c->id, price, &ai_PlayerSlots[ai_OwnPlayer][0x20]);
+    } else if (which == 1) {
+        int v;
+
+        txt_Format(text, 0x1df9);
+        txt_Format(line, 0x1dfa);
+        sprintf(healed, "%s%s%s", title, text, line);
+        txt_Format(line, 0x1dfb);
+        sprintf(unhealed, "%s%s", title, text, line);  /* sic: the original's format drops the line */
+        strcat(title, text);
+        for (i = 0; i < 768; i++) {
+            c = &((AICHARREC *)ai_Chars)[i];
+            if (c->id == 0xffff)
+                continue;
+            if (c->v024 < -20) {
+                if (util_RandomU(2) != 0) {
+                    v = abs(c->v024 / 2);
+                    cm_BeginFieldBlock((char *)c, c->netId);
+                    cm_AddFieldDelta(4, 1, 0x24, &v);
+                    cm_SendFieldDeltas();
+                    if (c->kind == 6 || c->kind == 7)
+                        he_ShowNews(c->netId, -1, healed, 1, 0x601, 0);
+                } else if (c->kind == 6 || c->kind == 7) {
+                    he_ShowNews(c->netId, -1, unhealed, 1, 0x601, 0);
+                }
+            } else if (c->kind == 6 || c->kind == 7) {
+                he_ShowNews(c->netId, -1, title, 1, 0x601, 0);
+            }
+        }
+        return;
+    } else if (which == 2) {
+        AIBLD *bld;
+        int out;
+        char level;
+        LARGE_INTEGER kinds;
+
+        kinds.LowPart = 0xa07c43b0;
+        kinds.HighPart = 1;
+        if (ai_PickActionBuilding((struct AIPER *)me, 2, kinds.QuadPart, 0.0f, 100.0f, &out) == 0)
+            return;
+        gm_FindById((int *)&bld, 0, 0, out);
+        c = &((AICHARREC *)ai_Chars)[bld->owner];
+        level = bld->level - util_RandomU(0x10) - 10;
+        if (level <= 0)
+            return;
+        cm_BeginFieldBlock((char *)bld, bld->id);
+        cm_AddFieldDelta(1, 1, 0x5c, &level);
+        cm_SendFieldDeltas();
+        txt_Format(text, 0x1dfc, c->id, bld);
+    } else if (which == 3) {
+        int flags;
+        int id;
+        AMTKIND kind;
+        AMTREC office;
+
+        flags = LC_MIRACLE_PICK_FLAGS3;
+        if (ai_FindPartnersRandomWalk((struct AIPER *)me, 1, &flags, 0.0f, 100.0f, (unsigned short *)&id) == 0)
+            return;
+        c = &((AICHARREC *)ai_Chars)[(unsigned short)id];
+        if (amt_FindOffice((char *)c, &kind, &office) == 0)
+            return;
+        amt_SendOfficeMessage(office.idx, 0, 0, 4, 0xff);
+        txt_Format(text, 0x1dfd, c->id, c->id, c->id);
+    } else if (which == 4) {
+        int flags;
+        int id;
+        char gain;
+        int j;
+        int skill;
+
+        flags = LC_MIRACLE_PICK_FLAGS4;
+        gain = util_Random(0x15);
+        if (ai_FindPartnersRandomWalk((struct AIPER *)me, 1, &flags, 0.0f, 100.0f, (unsigned short *)&id) == 0)
+            return;
+        c = &((AICHARREC *)ai_Chars)[(unsigned short)id];
+        skill = -1;
+        i = util_RandomU(5);
+        for (j = 5; j != 0; j--) {
+            if (c->skills[i] < 0xe7) {
+                skill = i;
+                break;
+            }
+            i = (i + 1) % 5;
+        }
+        if (skill == -1)
+            return;
+        cm_BeginFieldBlock((char *)c, c->netId);
+        cm_AddFieldValues(1, 1, skill + 0x80, &gain);
+        cm_SendFieldDeltas();
+        txt_Format(text, 0x1dfe, c->id, c->id, skill + 0x16b7);
+    } else if (which == 5) {
+        AICHARREC *chars[8];
+        int n;
+        int worth;
+        int v;
+        int j;
+        AIBLD *bld;
+        int out;
+        LARGE_INTEGER kinds;
+
+        n = 0;
+        for (i = 0; i < 768; i++) {
+            if (n >= 8)
+                break;
+            c = &((AICHARREC *)ai_Chars)[i];
+            if (c->kind == 6 || c->kind == 7 || c->kind == 5)
+                chars[n++] = c;
+        }
+        c = chars[0];
+        worth = gm_GetWorth(c->id);
+        for (j = 1; j < n; j++) {
+            v = gm_GetWorth(chars[j]->id);
+            if (v < worth) {
+                worth = v;
+                c = chars[j];
+            }
+        }
+        kinds.LowPart = 0xb07d43b4;
+        kinds.HighPart = 1;
+        if (ai_PickActionBuilding((struct AIPER *)c, 4, kinds.QuadPart, 0.0f, 100.0f, &out) == 0)
+            return;
+        price = (int)((float)(util_RandomU(5) + 3) * worth * 0.01f);
+        gm_FindById((int *)&bld, 0, 0, out);
+        cm_SendMoveGoodsUnchecked(c->netId, -1, ai_OwnPlayer, price);
+        txt_Format(text, 0x1dff, c->id, bld, c->id, price);
+    } else {
+        return;
     }
-    /* ROUGH SKELETON: pages 1 .. 5 open the window at 0x5ccd41 (the rows and the pump 0x5309a0 are not
-       written yet) */
-    return 0;
+    strcat(title, text);
+    for (i = 0; i < 768; i++) {
+        c = &((AICHARREC *)ai_Chars)[i];
+        if (c->kind == 6 || c->kind == 7)
+            he_ShowNews(c->netId, -1, title, 1, 0x5fe, 0);
+    }
 }
-/* 0x5cd2e0, the espionage overview order handler (282 B): the character ch (its kind 6 / 7 at +2, its netId
+/* 0x5cd2e0, the miracle order's ask (ord_MiracleOrder; 282 B): the character ch (its kind 6 / 7 at +2, its netId
    at +4, its money at +0x194). A kind 7 character returns 0; another kind: money < 4 returns 0x20, else the
-   payment 0x4c5f60 (-4) and the overview window 0x5ccc10 (the character, 0x42ec00 (6) & 0xffff), return 0x10.
-   Kind 6: the window ai_EspionageOverviewForm, 0x476f80 / 0x475600 / 0x475f70 with the caption 0x515960
-   (0x1df6, 4); click 0 (0x520f90 (4)) pays 0x4c5f60 (-4) and runs 0x5ccc10 (0x42ec00 (6) & 0xffff), return 1;
+   payment 0x4c5f60 (-4) and a random miracle ai_Miracle (the character, 0x42ec00 (6) & 0xffff), return 0x10.
+   Kind 6: the window ai_MiracleForm, 0x476f80 / 0x475600 / 0x475f70 with the caption 0x515960
+   (0x1df6, 4); click 0 (0x520f90 (4)) pays 0x4c5f60 (-4) and runs ai_Miracle (0x42ec00 (6) & 0xffff), return 1;
    click 1 sets 0x6f22a0; the pump 0x5309a0 (this, 0x657c7) and the end 0x4758f0. The second argument m is not
    read
    @deep read the whole original 0x5cd2e0..0x5cd3fa and reconciled every statement: the kind tests 6 / 7,
@@ -31582,7 +31752,7 @@ int ai_EspionageOverviewWindow(int param_1, int param_2)
    (kind != 7), the kind-7 test first and the if / else-if / else chain; the ret = 0 before the window
    (that fixed the zero register and the argument pushes) */
 
-int ai_EspionageOverviewHandler(void *chp, int *m)
+int ai_MiracleWindow(void *chp, int *m)
 {
     AICHARREC *ch;
     int win;
@@ -31595,13 +31765,13 @@ int ai_EspionageOverviewHandler(void *chp, int *m)
             if (ch->money < 4)
                 return 0x20;
             cm_SendMoneyDelta(ch->netId, 0xfffffffc);
-            ai_EspionageOverviewWindow((int)ch, util_Random(6) & 0xffff);
+            ai_Miracle(ch, util_Random(6) & 0xffff);
             return 0x10;
         }
         return 0;
     }
     ret = 0;
-    win = d2_OpenForm(0, 0, ai_EspionageOverviewForm);
+    win = d2_OpenForm(0, 0, ai_MiracleForm);
     d2_SetPointerSprite(0, 0);
     d2_CentreViewWindows(win);
     d2_SetForm(win, 1);
@@ -31612,7 +31782,7 @@ int ai_EspionageOverviewHandler(void *chp, int *m)
             if (d2_ClickedId == 0) {
                 if (sv_CheckMoney((char *)ch, 4) != 0) {
                     cm_SendMoneyDelta(ch->netId, 0xfffffffc);
-                    ai_EspionageOverviewWindow((int)ch, util_Random(6) & 0xffff);
+                    ai_Miracle(ch, util_Random(6) & 0xffff);
                     ret = 1;
                     sv_PopRequest = 1;
                 }
@@ -31622,7 +31792,7 @@ int ai_EspionageOverviewHandler(void *chp, int *m)
         }
         if (dm_L.rup != 0)
             sv_PopRequest = 1;
-        if (sv_RunFrame(ai_EspionageOverviewHandler, 0x657c7) == 0) {
+        if (sv_RunFrame(ai_MiracleWindow, 0x657c7) == 0) {
             d2_CloseView(win);
             return ret;
         }
@@ -33499,7 +33669,7 @@ char ai_AmountInfoFmt[16] = "$Z$[ %s $]$A$Z";  /* 0x62d234, the caption of the a
 char ai_AmountInfoForm[16] = "special\\amtinfo";  /* 0x62d244, the form of the amount info box (d2_OpenForm) */
 char ai_CourtshipForm[24] = "privillegien\\werbung2";  /* 0x62d40c, the form of the courtship (advertising) confirm window (ai_CourtshipConfirm; the list's form "privillegien\\werbung1" 0x62d424 follows) */
 char ai_WorkerDismissalForm[32] = "privillegien\\arbeiter_ausweisen";  /* 0x62d5dc, the form of the worker dismissal window (ai_WorkerDismissalWindow) */
-char ai_EspionageOverviewForm[20] = "privillegien\\wunder";  /* 0x62d64c, the form of the espionage overview window (ai_EspionageOverviewHandler) */
+char ai_MiracleForm[20] = "privillegien\\wunder";  /* 0x62d64c, the form of the miracle order's window (ai_MiracleWindow) */
 int ai_ClickedObject = 0;  /* 0x6f22e4: the object clicked in the scene (cm.h declares it for the units that include cm.h) */
 int ai_BuildingPerms = 0;  /* 0x6f231c */
 int ai_BauplatzCount = 0;  /* 0x6f2688 */

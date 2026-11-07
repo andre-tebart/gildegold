@@ -613,7 +613,7 @@ int ord_PenanceOrder(char *c, int *m);     /* 0x4f74f0 */
 int ord_SpyTargetFlagOrder(char *c, int *m);     /* 0x4f75e0 */
 int ord_JobMultiOrder3(char *c, int *m);     /* 0x4f7000 */
 
-int ord_EspionageOverviewOrder(char *c, int *m);     /* 0x4f76e0 */
+int ord_MiracleOrder(char *c, int *m);     /* 0x4f76e0 */
 int ord_Level7Order(char *c, int *m);     /* 0x4f77d0 */
 int ord_Level8Order(char *c, int *m);     /* 0x4f78b0 */
 int ord_Level9UpOrder(char *c, int *m);     /* 0x4f7990 */
