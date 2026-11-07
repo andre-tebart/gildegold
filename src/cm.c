@@ -15949,14 +15949,15 @@ int cm_ShowPartyTexts(char *m)
         }
     }
 }
-/* 0x4e3800, the highest index below n (1 ..) of the ids m +0x34 that is not -1; 0 without */
+/* 0x4e3800, the highest index below n (1 ..) of the scene party m's members that is not -1; 0 without */
 
 int cm_PrevPartyMember(char *m, int n)
 {
+    G28REC *party = (G28REC *)m;
     int i;
 
     for (i = n - 1; i > 0; i--)
-        if (*(int *)(m + 0x34 + i * 4) != -1)
+        if (party->members[i] != -1)
             return i;
     return 0;
 }
