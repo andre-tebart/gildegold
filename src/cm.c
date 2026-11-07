@@ -9727,34 +9727,37 @@ void cm_GiveFightOrders(int side)
             cm_CarryOutOrder(cut, cm_FindFighter(ids[i]));
     }
 }
-/* 0x4d3120, the formation order for the character c of the fight record rec2 by its formation type (+0x1c4: 0 the best free
-   cell near the character for the kind 2 (0x4d22d0 / 0x4cffd0), else to the closest selected (0x4d1f10); 1 the closest "WARE_"
-   0x4d25a0 -> 0x4d0380; 2 the closest "sp_CONQUER" 0x4d2680 -> 0x4d02d0; 3 0x4d0520; 4 0x4d0460; 5 the closest "sp_ESCAPE"
-   0x4d2490 -> 0x4d0200). Rough draft. */
+/* 0x4d3120, the formation order for the character c of the fight record rec by its formation type (AICHAR.formation):
+   0 the best free cell near the character for a kind 2 weapon (cm_MostThreatenedCellNear), else the closest selected
+   enemy (cm_NearestEnemy), then cm_OrderAttack; 1 the closest "WARE_" object (cm_NearestWareObject) -> cm_OrderWare3;
+   2 the closest "sp_CONQUER" point (cm_NearestConquerPoint) -> cm_OrderConquer; 3 cm_OrderWait; 4 cm_OrderToBestCell;
+   5 the closest "sp_ESCAPE" object (cm_NearestEscapeObject) -> cm_OrderEscape */
 
 void cm_CarryOutOrder(char *rec, char *c)
 {
-    char *sc, *k, *o;
+    D3SM *sc;
+    AIWEAPON *k;
+    char *o;
     int x, y, h;
     float v[4];
     int r;
 
-    if (c != 0 && *(int *)(c + 0x184) != 0) {
-        if (c[8] == 0)
+    if (c != 0 && ((AICHAR *)c)->scene != 0) {
+        if (((AICHAR *)c)->health == 0)
             return;
-        if (*(int *)(*(char **)(*(char **)(c + 0x184) + 0x34) + 0x218) == 1)
+        if (((AICHAR *)c)->scene->obj->type == 1)
             return;
     }
-    switch ((unsigned char)c[0x1c4]) {
+    switch (((AICHAR *)c)->formation) {
     case 0:
-        k = cm_CharWeapon(c);
-        if ((*(int *)(k + 0x58) == 1 || *(int *)(k + 0x58) == 2) && *(int *)(cm_CharWeaponItem(c) + 0x20) <= 0)
+        k = (AIWEAPON *)cm_CharWeapon(c);
+        if ((k->kind == 1 || k->kind == 2) && ((AIOBJ *)cm_CharWeaponItem(c))->usesLeft <= 0)
             return;
-        if (*(int *)(k + 0x58) == 2) {
-            sc = (char *)d3_DefaultScene->hmap;
-            if ((char)d3_GetHeightAt(sc, *(char **)(*(char **)(c + 0x184) + 0x34) + 0x4c, &x, &y, &h) == 0)
+        if (k->kind == 2) {
+            sc = (D3SM *)d3_DefaultScene->hmap;
+            if ((char)d3_GetHeightAt(sc, &((AICHAR *)c)->scene->obj->pos, &x, &y, &h) == 0)
                 return;
-            r = (int)(500.0f / *(float *)(sc + 0x10));
+            r = (int)(500.0f / sc->cell.x);
             if (cm_MostThreatenedCellNear(c, x, y, r, &x, &y) == 0)
                 return;
             cm_OrderAttack(rec, c, 0, x, y);
