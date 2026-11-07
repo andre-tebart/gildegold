@@ -275,8 +275,9 @@ void ai_FamilyTreeWindow(int netId, unsigned char flags, int caption, int callId
 struct AICHARREC;
 void ai_CharInfoPanel(struct AICHARREC *chr, int other);  /* 0x5c5310, the character info panel */
 void ai_ShowOfficeNews(unsigned short *param_1, char *param_2);  /* 0x5a8cb0 */
-int ai_AmountRow(int param_1, int param_2, int param_3, int param_4, int *param_5, int param_6);  /* 0x5be3b0 */
-int ai_AmountRowStatus(int *param_1);  /* 0x5be1d0 */
+struct LCAMOUNTROW;
+int ai_AmountRow(int x, int y, int win, int font, struct LCAMOUNTROW *row, int titled);  /* 0x5be3b0, one row of a special-amount list (lc.c LCAMOUNTROW) */
+int ai_AmountRowStatus(struct LCAMOUNTROW *row);  /* 0x5be1d0, the corner icons of a special-amount row */
 int ai_DrawAmountRow(int x, int y, int win, int *row);  /* 0x5be720, draws the amount row row at (x, y) of the window win */
 void ai_GameFrame(void);  /* 0x591520 */
 void ai_DropObjectAt(struct D3OBJECT *obj, struct D3VECTOR *target);  /* 0x58feb0 */

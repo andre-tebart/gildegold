@@ -6466,7 +6466,7 @@ void ai_RhetoricContact(int bld, int room)
 }
 
 void ai_FeastWindow(AIBLD *bld, AIOBJ *table); void ai_DenounceWindow(AIBLD *bld); void sv_FitForm(int f); void sv_ButtonRow(int f, int y, int *out, int n, ...);
-int ai_AmountRowStatus(); int ai_AmountRow(); short * gm_FindChar(int id); int sv_CheckMoney();
+short * gm_FindChar(int id); int sv_CheckMoney();
 int cm_SendExSetHE(); /* @original: the callers here push the key as an int and read the return (byte-matched ai_TransportOrderDue), against cm.h's void (unsigned char, char *) view */ int cm_SendRelations(int a, int b, int c, int d); void cm_SendMoneyDelta(int a, int b); void d2_SetObjEnabled();
 
 /* 0x5966f0, the contact listener of the residence's social room (room kind 0x17 in ai_EnterBuilding; the feast window
@@ -6560,8 +6560,8 @@ void ai_MistressAffairWindow(AICHARREC *player, AICHARREC *ch, AIJOB *ev)
         row.y = 0x19;
         row.rec = ch;
         row.pickable = 0;
-        ai_AmountRowStatus((int *)&row);
-        ai_AmountRow(row.x, row.y, d2_LastWindow, 0x54, (int *)&row, 1);
+        ai_AmountRowStatus(&row);
+        ai_AmountRow(row.x, row.y, d2_LastWindow, 0x54, &row, 1);
     }
     d2_ClickedId = -1;
     do {
@@ -8107,7 +8107,7 @@ int gm_PlayerFactor(int a, unsigned char k); int gm_GetCreditOffers(); int gm_Cr
 #define gm_SumListAmountsL ((int (*)(void *))gm_SumListAmounts)  /* 0x509e30: @original ai_WineCellarWindow passes the list alone (one push, no player slot) */
 void he_MessageBoxQuickjump(int a1, int a2, char *text, char fl, int a5, int a6, int a7, char *jump, char *text2); void he_FreeEvent(); void d2_RadioClear(int g); int d2_CreateRadioGroup(int n, ...);
 void ai_StorageWindow(); void ai_MasterLetterWindow(); int ai_OpenTransport();
-void ai_BardWindow(void); void ai_NoticeBoardWindow(void); int ai_AmountRowStatus(); int ai_AmountRow();
+void ai_BardWindow(void); void ai_NoticeBoardWindow(void);
 void ai_LeftAlignedText(); void cm_BeginGroup(const char *s); void cm_SendScriptMessage(void *p); void cm_SendProofExecuted(int a, int b);
 
 /* 0x599af0, the tavern room's contact listener: it releases the name plates, then per frame (sv_RunFrame, this,
@@ -11024,7 +11024,7 @@ void ai_CitizenRightWindow(AIBLD *b)
 
 int amt_GetFirstOffice(unsigned int k, struct AMTREC *out); int amt_ApplyForOffice(); int amt_KindColumn(); void sv_PumpNet();
 int ai_SpecialAmountListWindow(); void ai_AmountInfoWindow(); int amt_GetOfficeCandidatesFull(); int amt_GetOfficeCandidates();
-int ai_AmountRowStatus(); int ai_AmountRow(); int ai_OpenLawBook(); int ai_AmountLimit();
+int ai_OpenLawBook(); int ai_AmountLimit();
 int amt_CanUseMayorPower2(); int sv_CheckMoney(); int ai_MapPick(); void d2_SetObjEnabled();
 int sv_ReturnZero(void);
 
@@ -12096,7 +12096,7 @@ void ai_BaptismWindow(AIBLD *bld, int room)
     sv_CameraFollow();
 }
 
-void gm_DonationTop5(unsigned *ids, int *sc); int ai_AmountRowStatus(); int ai_DrawAmountRow(); void ai_LeftAlignedText();
+void gm_DonationTop5(unsigned *ids, int *sc); int ai_DrawAmountRow(); void ai_LeftAlignedText();
 int d2_RemoveWindowObjects();
 
 /* 0x5a28f0, the church's top five donors window "Locations\Kirche\Top5" (opened by ai_IndulgenceWindow after a
@@ -27742,7 +27742,7 @@ int ai_CourtshipRounds(int param_1, int param_2)
     return n;
 }
 
-void sv_PumpNet(); int ai_AmountRowStatus(); int ai_AmountRow();
+void sv_PumpNet();
 void d2_EnableViewObjects(); void gm_AddTime(struct AITIME *c, int hours, int mins, int secs); 
 int sv_CheckGoodAmount(); int sv_MessageBox(); int cm_GetSlotState();
 
