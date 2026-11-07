@@ -39,8 +39,11 @@
    the courtship event 0x41 as AIJOB.partner1 / pair*, lists the candidates (ai_CourtshipListWindow) and rates them
    (ai_CourtshipRounds); the statistics panel (ai_CityStatsPanel, its flags ai_StatsChartFlags) draws its five charts
    (ai_DrawStatisticsCharts: ai_PlotRatingBaseChart .. ai_PlotNoSecondChart) from the current ORDSTATS by value and
-   ord_StatisticsHistory. The order asks of the medicus and the divorce (ai_MedicusHandler, ai_DivorceDialog) take
-   the character and the order message (LCORDMSG) as ord.c passes them; the privileges panel lists the orders.
+   ord_StatisticsHistory. The order asks (the medicus, the divorce, the blackmail and its contact letter, the
+   intimidation, the law change, the dismissal, the embezzlement: ai_MedicusHandler .. ai_MisappropriationWindow)
+   take the character and the order message (LCORDMSG: law, value, target / answerFlag, partner) as ord.c passes
+   them, their AI path sending what the player's window sends (AIMSG.letter of 0x47, arg[] of 0x45 / 0x4b); the
+   privileges panel lists the orders.
    Open: types: the amount rows and tabs (ai_ShowAmountRows, ai_Fill*Tab, ai_SpecialAmountListWindow) and am.c's
    partner chain still pass that filter as unsigned int *.
    Open: the AIMSG message records are built by raw offsets in most functions (the use callbacks of the Domizil
