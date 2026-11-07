@@ -9,8 +9,10 @@ typedef struct G9DOMIZIL {              /* 0x1c bytes, an entry of the Domizil t
     int id;                             /* 0x00, the good, 0 ends the table */
     int minutes;                        /* 0x04, the duration of its effect in minutes (he.c 0x54fb50 adds it to the clock
                                            with gm_AddTime's minute argument), 0: none */
-    char pad08[8];
-    unsigned int mask;                  /* 0x10, tested against the character's goodsMask (0x1ec) */
+    int law;                            /* 0x08, the law broken by using the good (ai_UseGood passes it to gv_Accuse),
+                                           -1: none */
+    char pad0c[4];
+    unsigned int mask;                 /* 0x10, tested against the character's goodsMask (0x1ec) */
     void *use;                          /* 0x14, the use callback ai_UseGood calls (the character, the G8USE request), 0: none */
     unsigned short rank;                /* 0x18, the rank the good asks for (the use window prints it with text 0xfe3;
                                            lc's range lookup tests it; the name is a reasoned guess) */

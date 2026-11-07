@@ -94,6 +94,9 @@
    its owner (sv_t declares it too) is not settled.
    Open: data: 0x62a564 ai_CharNameFmt ("%1N3", a character name for txt_Format) stays in main.c's gap block: only lc
    uses it, but it lies before lobby's data, so its owner (a unit before lobby) is not settled.
+   Open: layout: lc may hold more than one original TU: VC6 sees our ai_FindUsableGood (0x5ba620) write no memory
+   and keeps use->obj->id in a register across the call in ai_UseGood (0x5cf8a0), where the original reloads it
+   (the callee was not visible to it there: a TU boundary between 0x5ba620 and 0x5cf8a0?).
    Open: head: sv.h, so sv_CheckCharacterFlag / sv_ClearSelection and the other sv calls of the listeners and map
    picks stay without a prototype (M7); and not included yet (dcp headers conflicts lc HEADER): ahm.h
    ai.h am.h amt.h anm.h ch.h chc.h cm.h d2.h d3_int_io.h d3_tools.h f3snd.h gfx.h gv.h hst.h rt.h
@@ -848,7 +851,8 @@ typedef struct G8INVOBJ {               /* an object of a character's inventory 
     char pad12[0xa];
     int minutesLeft;                    /* +0x1c, of a Domizil good in use: the minutes its effect still runs
                                            (lc_UpdateGoodsReserves counts it down from G9DOMIZIL.minutes) */
-    char pad20;
+    char inUse;                         /* +0x20, of a Domizil good: set to 1 by ai_UseGood with minutesLeft (the name is
+                                           a reasoned guess) */
     int active;                         /* +0x21, nonzero when the object counts as held, of a Domizil good while its
                                            effect runs (ai_InventoryHas tests it; lc_UpdateGoodsReserves clears it
                                            when minutesLeft runs out; the name is a reasoned guess) */
@@ -1341,7 +1345,7 @@ typedef struct AIROOM {            /* the room object sv_PanelShown / the driver
 #pragma pack(push, 1)
 typedef struct G8USEVIEW {              /* a local view of am.h's G8USE (am.h cannot be included here yet): the
                                            record ai_UseGood hands to a Domizil record's use callback (+0x14) */
-    struct AIOBJ *obj;                  /* 0x00, the object record used (G8USE.obj; its +0 id) */
+    G8INVOBJ *obj;                      /* 0x00, the inventory object used (G8USE.obj; its +0 id) */
     int target;                         /* 0x04, the target reference (G8USE.target) */
     int arg;                            /* 0x08 */
     int effect;                         /* 0x0c, 1 the use took effect, 0 not, -1 backfired (G8USE.effect) */
@@ -23343,7 +23347,7 @@ int ai_UseGoodWindow(G8INVOBJ *o)
         d2_CloseView(win);
         if (!used)
             return 0;
-        use.obj = (struct AIOBJ *)o;
+        use.obj = o;
         use.target = -1;
         use.arg = -1;
         use.effect = 0;
@@ -32855,88 +32859,90 @@ void ai_UseObjPanel(char *text)
     } while (sv_RunFrame(ai_UseObjPanel, 0x677c7) != 0);
     d2_CloseView(win);
 }
-/* 0x5cf8a0, the use / target object of a window entry (1744 B): param_1 the user record (+0x1ec the
-   allowed class mask, +4 the window holder, +0x170 the owner record, +2 the type), param_2 the entry
-   (param_2[0] the object record, param_2[3] / [4] out). Errors: -1 param_1, -2 param_2, -3 no record,
-   -4 0x5ba620 failed, -5 the class mask (the object +0x10) against param_1 +0x1ec. param_2[3] = the
-   object word is not 0x175 or 0x42ec20 () >= 0.66f; the callback of the object +0x14 runs (0 -> return
-   0); 0x576040 (0x2d, 0, 0, the word); the mask 0x4c4a60 (+0x1ec, 4, the object +0x10); an object +4:
-   the object 0x4c3ba0 and the fields +0x1c (the +4 dword), +0x20 / +0x21 (1), +0x2d the clock, +0x31
-   the word 0x770ae4, +0x33 / +0x37 the clock, finished by 0x4c49a0; no +4: the carrier message 0x4c4880
-   (-1, the holder, the word, 1, U_B (0x6f1bc5)); the object +8 != -1: 0x4f2e30 (the id, 1, the holder,
-   -1, the owner +1). Type 6 with param_2[4] == 0: the record 0x5ba660 and, when param_2[3], the text
-   0x5176d0 (0xfe8, the record +0x18 + 1) through the panel 0x5cf820. ROUGH: the 0x4c3c00 field block
-   is transcribed from Ghidra (the CONCAT22 sums are the object's +0x1c .. +0x37 fields). */
+/* 0x5cf8a0, uses a Domizil good: ch the character, use the request (use->obj the inventory object). Errors: -1 no
+   character, -2 no request, -3 no object, -4 the good has no Domizil entry (ai_FindUsableGood), -5 a good of the
+   same class (G9DOMIZIL.mask against ch->goodsMask) is in use. use->effect is 1, but for the good 0x175 only when
+   util_RandomF() >= 0.66; the entry's use callback runs (0 -> return 0); ai_CampaignStep 0x2d; the class mask
+   is set on the character; a good with a duration (G9DOMIZIL.minutes) gets its object's minutesLeft, the
+   two flags and the start time ai_Time as field deltas, one without is sold from the character
+   (cm_SendExSellObject); a good with a law accuses the character (gv_Accuse, the home building's id). A player
+   (kind 6) whose callback did not report the use sees the panel, with the text 0xfe8 (rank + 1) on effect.
+   Returns the callback's result (1 without one).
+   @deep Read whole against the original and rewritten typed (AICHARREC ch, G8USEVIEW use, G9DOMIZIL entry,
+   G8INVOBJ fields minutesLeft/inUse/active/since): every call, argument, constant (0.66 double) and store
+   matches in order. Left: (1) VC6 keeps use->obj->id in bx across the ai_FindUsableGood call (ours +0x5b
+   mov bx,[eax] ... cmp bx,0x175) where the original reloads it (+0x96 mov eax,[esi]; cmp word ptr
+   [eax],0x175): ours treats the earlier-defined callee as writing no memory; replacing the call by
+   ai_FindUsableGoodIndex removes it (tested), so the original did not see that callee (lc TU boundary,
+   lead Open: layout); (2) allocation: the original keeps the constant 1 in ebx (push ebx for every count
+   1, mov eax,ebx) and ret in [esp+0x14], ours ret in a register and push 1. Tried: if/else order of the
+   callback (kept), ternary vs if for effect, return 0 vs ret, gv_Accuse as two calls (kept, -33 ins).
+   (references: M8 at +0x1d9: ours refers to ai_Time+0x6 (0x770ae6), the original's field to 0x770ae0
+   (ai_Time), explained: the M8 at +0x1d9 is misalignment: ours pushes ai_Time+6 for the +0x33 field
+   exactly as the original's +0x5cfa62 push 0x770ae6; the alignment pairs it with the original's +0x2d push
+   of ai_Time (the add esp,0x48 sits one call earlier on our side)) */
 
-int ai_UseGood(int param_1, int *param_2)
+int ai_UseGood(AICHARREC *ch, G8USEVIEW *use)
 {
-    char buf[0x800];
-    int out;
-    int kind;
+    char text[0x800];
+    int index;
+    int minutes;
     int one;
-    char byteone;
-    int rec;
-    int target;
-    int h;
+    char flag;
+    G9DOMIZIL *entry;
+    G9DOMIZIL *found;
     int ret;
-    int i;
 
-    if (param_1 == 0)
+    if (ch == 0)
         return -1;
-    if (param_2 == 0)
+    if (use == 0)
         return -2;
-    param_2[4] = 0;
-    if (*param_2 == 0)
+    use->handled = 0;
+    if (use->obj == 0)
         return -3;
-    rec = ai_FindUsableGood(*(unsigned short *)*param_2);
-    if (rec == 0)
+    entry = (G9DOMIZIL *)ai_FindUsableGood(use->obj->id);
+    if (entry == 0)
         return -4;
-    if ((*(unsigned int *)(rec + 0x10) & *(unsigned int *)(param_1 + 0x1ec)) != 0)
+    if ((entry->mask & ch->goodsMask) != 0)
         return -5;
-    if (*(unsigned short *)*param_2 != 0x175 || util_RandomF() >= 0.66f)
-        i = 1;
-    else
-        i = 0;
-    param_2[3] = i;
-    if (*(void **)(rec + 0x14) == 0) {
-        ret = 1;
-    } else {
-        ret = ((int (*)(int, int *))*(void **)(rec + 0x14))(param_1, param_2);
+    use->effect = (use->obj->id != 0x175 || util_RandomF() >= 0.66) ? 1 : 0;
+    if (entry->use != 0) {
+        ret = ((int (*)(AICHARREC *, G8USEVIEW *))entry->use)(ch, use);
         if (ret == 0)
             return 0;
+    } else {
+        ret = 1;
     }
-    ai_CampaignStep(0x2d, 0, 0, *(unsigned short *)*param_2);
-    if (*(int *)(rec + 0x10) != 0)
-        cm_SendSetField(*(int *)(param_1 + 4), 0x1ec, 4, *(int *)(rec + 0x10), 0);
-    if (*(int *)(rec + 4) != 0) {
-        kind = *(int *)(rec + 4);
+    ai_CampaignStep(0x2d, 0, 0, use->obj->id);
+    if (entry->mask != 0)
+        cm_SendSetField(ch->netId, 0x1ec, 4, entry->mask, 0);
+    if (entry->minutes != 0) {
+        minutes = entry->minutes;
         one = 1;
-        byteone = 1;
-        cm_BeginFieldBlock((char *)*param_2, *(int *)(*param_2 + 2));
-        cm_AddFieldDelta(4, 1, (short)(*param_2 - *(unsigned short *)(unsigned)&cm_FieldObject) + 0x1c, &kind);
-        cm_AddFieldDelta(4, 1, (short)(*param_2 - *(unsigned short *)(unsigned)&cm_FieldObject) + 0x21, &one);
-        cm_AddFieldDelta(1, 1, (short)(*param_2 - *(unsigned short *)(unsigned)&cm_FieldObject) + 0x20, &byteone);
-        cm_AddFieldDelta(4, 1, (short)(*param_2 - *(unsigned short *)(unsigned)&cm_FieldObject) + 0x2d, (void *)(unsigned)&ai_Time);
-        cm_AddFieldDelta(2, 1, (short)(*param_2 - *(unsigned short *)(unsigned)&cm_FieldObject) + 0x31, (void *)(unsigned)&ai_Time.hour);
-        cm_AddFieldDelta(4, 1, (short)(*param_2 - *(unsigned short *)(unsigned)&cm_FieldObject) + 0x33, (void *)((unsigned)&ai_Time + 0x6));
-        cm_AddFieldDelta(4, 1, (short)(*param_2 - *(unsigned short *)(unsigned)&cm_FieldObject) + 0x37, (void *)((unsigned)&ai_Time + 0xa));
+        flag = 1;
+        cm_BeginFieldBlock((char *)use->obj, use->obj->objId);
+        cm_AddFieldDelta(4, 1, (unsigned short)((char *)&use->obj->minutesLeft - cm_FieldObject), &minutes);
+        cm_AddFieldDelta(4, 1, (unsigned short)((char *)&use->obj->active - cm_FieldObject), &one);
+        cm_AddFieldDelta(1, 1, (unsigned short)((char *)&use->obj->inUse - cm_FieldObject), &flag);
+        cm_AddFieldDelta(4, 1, (unsigned short)((char *)&use->obj->since.year - cm_FieldObject), &ai_Time.year);
+        cm_AddFieldDelta(2, 1, (unsigned short)((char *)&use->obj->since.hour - cm_FieldObject), &ai_Time.hour);
+        cm_AddFieldDelta(4, 1, (unsigned short)((char *)&use->obj->since.min - cm_FieldObject), &ai_Time.min);
+        cm_AddFieldDelta(4, 1, (unsigned short)((char *)&use->obj->since.sec - cm_FieldObject), &ai_Time.sec);
         cm_SendFieldDeltas();
     }
-    if (*(int *)(rec + 4) == 0)
-        cm_SendExSellObject(-1, *(int *)(param_1 + 4), *(unsigned short *)*param_2, 1,
-                     *(unsigned char *)(unsigned)&ai_OwnPlayer, 0);
-    if (*(int *)(rec + 8) != -1) {
-        if (*(int *)(param_1 + 0x170) == 0)
-            target = -1;
+    if (entry->minutes == 0)
+        cm_SendExSellObject(-1, ch->netId, use->obj->id, 1, ai_OwnPlayer, 0);
+    if (entry->law != -1) {
+        if (ch->bld2 != 0)
+            gv_Accuse(entry->law, 1, ch->netId, -1, ((AIBLD *)ch->bld2)->id);
         else
-            target = *(int *)(*(int *)(param_1 + 0x170) + 1);
-        gv_Accuse(*(int *)(rec + 8), 1, *(int *)(param_1 + 4), -1, target);
+            gv_Accuse(entry->law, 1, ch->netId, -1, -1);
     }
-    if (*(char *)(param_1 + 2) == 6 && param_2[4] == 0) {
-        h = ai_FindUsableGoodIndex(*param_2, &out);
-        if (param_2[3] == 1)
-            txt_Format(buf, (char *)0xfe8, *(unsigned short *)(h + 0x18) + 1);
-        ai_UseObjPanel(buf);
+    if (ch->kind == 6 && use->handled == 0) {
+        found = (G9DOMIZIL *)ai_FindUsableGoodIndex(use->obj->id, &index);
+        if (use->effect == 1)
+            txt_Format(text, 0xfe8, found->rank + 1);
+        ai_UseObjPanel(text);
     }
     return ret;
 }
