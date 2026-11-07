@@ -20636,16 +20636,84 @@ void ai_DenounceWindow(AIBLD *bld)
     d2_CloseView(win);
     sv_CameraFollow();
 }
-/* 0x5b5310, a Ghidra-missed start (753 B, ROUGH SKELETON): the seam is the ret at 0x5b530b and the four nops to
-   0x5b5310 (the functions.csv has only 0x5b5010 before 0x5b5610, so Ghidra merged this into the 0x5b5010
-   record); param_1 == 0 returns 0, then a 0x518-byte frame. The body is a comment */
+/* 0x5b5310, the pamphlet window "misc\perga_rolle" (ai_PamphletWindow's amount menu callback, with the picked
+   character ch; nothing for none, an empty pick or the player). A running pamphlet of the player about ch
+   (he_NoEvent35Pair) gives the text 0x190f, a haunting of the player by ch (he_NoEvent88Pair) 0x409f, more
+   than 3 pamphlets of the player running 0x190e, a player without 1 money nothing. Else the window (text
+   0x1910 about ch; the row of the player's talent 4) asks: its first button sends the pamphlet message 0x35
+   (from and to the player, flags 2, the game time, ch's netId and a random text variant 0..0x1c), the second
+   button or a right click close it. Returns 1 once the pamphlet went out, else 0 */
 
-int ai_PamphletAmountCB(int param_1)
+int ai_PamphletAmountCB(AICHARREC *ch)
 {
-    if (param_1 == 0)
+    int sent;
+    int count;
+    int win;
+    AIWINDOWROW row;
+    AIMSG msg;
+    char note[0x400];
+
+    sent = 0;
+    if (ch == 0)
         return 0;
-    /* ROUGH SKELETON: the 0x518-byte frame */
-    return 0;
+    if (ch->id == 0xffff)
+        return 0;
+    if (ch->id == ai_PlayerId)
+        return 0;
+    if (he_NoEvent35Pair((unsigned short *)ai_Chars[ai_PlayerId], (int)ch, &count) == 0) {
+        txt_Format(note, 0x190f, ch->id);
+        sv_MessageBox(note, 0);
+        return 0;
+    }
+    if (he_NoEvent88Pair((struct AICHAR *)ch, (struct AICHAR *)ai_Chars[ai_PlayerId]) == 0) {
+        txt_Format(note, 0x409f, ch->id);
+        sv_MessageBox(note, 0);
+        return 0;
+    }
+    if (count > 3) {
+        txt_Format(note, 0x190e);
+        sv_MessageBox(note, 0);
+        return 0;
+    }
+    if (sv_CheckMoney(ai_Chars[ai_PlayerId], 1) == 0)
+        return 0;
+    win = d2_OpenForm(0, 0, "misc\\perga_rolle");
+    d2_CentreViewWindows(win);
+    d2_SetPointerSprite(0, 0);
+    d2_SetForm(win, 1);
+    io_PrintText(0x1910, ch->id, ch->id, 1, ch->id);
+    memset(&row, 0xff, sizeof(row));
+    row.win = win;
+    row.pageA = 2;
+    row.pageB = 3;
+    row.pageC = 4;
+    row.entry = 4;
+    row.record = 3;
+    ai_ShowWindowRow(&row);
+    d2_ClickedId = -1;
+    do {
+        if (dm_L.rup != 0)
+            sv_PopRequest = 1;
+        if (d2_ClickedId != -1) {
+            if (d2_ClickedId == 0) {
+                gm_BuildQuery(1, 5, 10);
+                msg.type = 0x35;
+                msg.to = ai_CharInts[ai_PlayerId][0];
+                msg.fromId = ai_CharInts[ai_PlayerId][0];
+                msg.flags = 2;
+                msg.pamphlet.when = ai_Time;
+                msg.pamphlet.variant = (unsigned char)util_Random(0x1d);
+                msg.pamphlet.about = ch->netId;
+                cm_SendLongMessage((char *)&msg);
+                sent = 1;
+                sv_PopRequest = 1;
+            } else if (d2_ClickedId == 1) {
+                sv_PopRequest = 1;
+            }
+        }
+    } while (sv_RunFrame((int)ai_PamphletAmountCB, 0x677c7) != 0);
+    d2_CloseView(win);
+    return sent;
 }
 /* 0x5b5610, the pamphlet window of the rhetoric contact 0x5965f0: the pamphlet text 0x190d (the plate text
    0x190c) formatted into a buffer, then the amount menu 0x5c1130 with the config (mode 0x400, kind 6, the
