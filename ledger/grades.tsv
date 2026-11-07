@@ -2502,26 +2502,26 @@ exe	0x004d7150	cm_FightSlotWinner	cm	byte	readable
 exe	0x004d7190	cm_PlantEscapeFlag	cm	draft	readable	deep	
 exe	0x004d7360	cm_Attack	cm	draft	readable	deep	
 exe	0x004d76a0	cm_RunCutOrders	cm	draft	readable	deep	
-exe	0x004d88c0	cm_FightLoop	cm	byte	draft		
+exe	0x004d88c0	cm_FightLoop	cm	byte	readable		
 exe	0x004d8b10	cm_FightMember	cm	draft	readable	deep	
 exe	0x004d8b30	cm_ClearSceneChars	cm	byte	readable		
 exe	0x004d8b50	cm_DrawFightTime	cm	shape	readable		
 exe	0x004d8c40	cm_DeleteSceneChars	cm	byte	readable		
-exe	0x004d8c70	cm_StackPicture	cm	byte	draft		
-exe	0x004d8cb0	cm_TallyStack	cm	byte	draft		
+exe	0x004d8c70	cm_StackPicture	cm	byte	readable		
+exe	0x004d8cb0	cm_TallyStack	cm	byte	readable		
 exe	0x004d8e20	cm_RunCouncilSession	cm	draft	readable	deep	
-exe	0x004da9e0	cm_AskDeposeVote	cm	byte	draft		
+exe	0x004da9e0	cm_AskDeposeVote	cm	byte	readable		
 exe	0x004dab50	cm_AskElectVote	cm	byte	readable		
 exe	0x004dada0	cm_SessionAskPlayer	cm	shape	readable		
 exe	0x004dae90	cm_SessionAskAI	cm	shape	readable		
 exe	0x004daf80	cm_CheckTrial	cm	byte	readable		
 exe	0x004db700	cm_RunTrial	cm	draft	readable	deep	
 exe	0x004dd960	cm_TrialAskPlayer	cm	shape	readable		
-exe	0x004de340	ai_Unk4de340	cm	byte	draft		
+exe	0x004de340	cm_TrialAskAI	cm	byte	readable		
 exe	0x004de4b0	cm_SinkDownAction	cm	shape	readable		
-exe	0x004de530	cm_DuelSinkDown	cm	byte	draft		
-exe	0x004de5e0	cm_DuelInitVariants	cm	byte	draft		
-exe	0x004de610	cm_DuelVariant	cm	byte	draft		
+exe	0x004de530	cm_DuelSinkDown	cm	byte	readable		
+exe	0x004de5e0	cm_DuelInitVariants	cm	byte	readable		
+exe	0x004de610	cm_DuelVariant	cm	byte	readable		
 exe	0x004de640	cm_DuelShotAction	cm	shape	readable		
 exe	0x004de900	cm_DuelRound	cm	shape	readable		
 exe	0x004debe0	cm_DuelOutcome	cm	shape	readable		
@@ -2529,7 +2529,7 @@ exe	0x004ded10	cm_RunDuel	cm	draft	readable	deep
 exe	0x004dfa20	cm_DuelAftermath	cm	byte	readable		
 exe	0x004dfcb0	cm_DuelAskPlayer	cm	byte	readable		
 exe	0x004dfdd0	cm_DuelChooseRound	cm	shape	readable		
-exe	0x004dff80	ai_Unk4dff80	cm	byte	draft		
+exe	0x004dff80	cm_DuelAskAI	cm	byte	readable		
 exe	0x004dfff0	ai_Unk4dfff0	cm	byte	draft		
 exe	0x004e0010	ai_Unk4e0010	cm	byte	draft		
 exe	0x004e0040	cm_ExecutionAftermath	cm	byte	readable		
@@ -4004,7 +4004,7 @@ exe	0x00578440	ai_TutorialFreeRuns	sv_t	byte	readable
 exe	0x005784a0	ai_TutorialInitMainIntro	sv_t	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	sv_t	byte	readable		
 exe	0x00578e40	ai_TutorialInitChapter2	sv_t	shape	readable		
-exe	0x00579570	ai_TutorialInitChapter3	sv_t	shape	readable		
+exe	0x00579570	ai_TutorialInitChapter3	sv_t	draft	readable		
 exe	0x0057aa80	ai_TutorialInitChapter4	sv_t	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	sv_t	byte	readable		
 exe	0x0057b750	ai_TutorialInitMainOutro	sv_t	byte	readable		
