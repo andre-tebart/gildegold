@@ -13724,14 +13724,15 @@ void cm_SinkDownAction(CHACTION *a)
 
 int cm_DuelSinkDown(char *c, int dmg)
 {
-    char *o;
+    AICHAR *ch = (AICHAR *)c;
+    CHACTION *o;
 
     if (gm_HealthRatio(c) < 0.2) {
-        d3t_CreateBloodK(*(int *)(*(char **)(c + 0x184) + 0x34), 0x40, 0x3e800000, 0x3dcccccd, 0x3e0f5c29, 0x425c0000);
-        ch_StopActions(*(char **)(c + 0x184));
-        o = (char *)ch_AddActionCBK(*(char **)(c + 0x184), cm_SinkDownAction, 0x12, 0x36, 1);
-        strcpy(o + 0xf0, "bewegung/zu_boden_sinken");
-        *(int *)(*(char **)(*(char **)(c + 0x184) + 0x34) + 0x220) = 0;
+        d3t_CreateBloodK(ch->scene->obj, 0x40, 0x3e800000, 0x3dcccccd, 0x3e0f5c29, 0x425c0000);
+        ch_StopActions(ch->scene);
+        o = ch_AddActionCBK(ch->scene, cm_SinkDownAction, 0x12, 0x36, 1);
+        strcpy(o->u.name, "bewegung/zu_boden_sinken");
+        ch->scene->obj->kind = 0;
         cm_DuelOver = 1;
         return 1;
     }
