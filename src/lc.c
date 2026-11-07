@@ -11037,7 +11037,7 @@ void ai_CitizenRightWindow(AIBLD *b)
 
 int amt_GetFirstOffice(unsigned int k, struct AMTREC *out); int amt_ApplyForOffice(); int amt_KindColumn(); void sv_PumpNet();
 int ai_SpecialAmountListWindow(); void ai_AmountInfoWindow(); int amt_GetOfficeCandidatesFull(); int amt_GetOfficeCandidates();
-int ai_OpenLawBook(); int ai_AmountLimit();
+int ai_AmountLimit();
 int amt_CanUseMayorPower2(); int sv_CheckMoney(); int ai_MapPick(); void d2_SetObjEnabled();
 int sv_ReturnZero(void);
 
@@ -26813,107 +26813,111 @@ void ai_AgendaOfficeList(int kind)
 }
 
 int gv_TableRecordText();
-void ai_LawBookInfoWindow();
 
-/* 0x5c2160, the law book listener (657 B): the pages 0x111 (Strafrecht), 0x112 (Steuern) and 0x113
-   (Verfassung) open the window 0x52f360 (the object names 0x62bde4 / 0x62be00 / 0x62bdc8, the book window
-   0x62d294), the section texts 0x13f8 / 0x13f7 / 0x13f6, the entries start .. end (0x11 .. 0x1d, 9 .. 0x11,
-   0 .. 9) in the two pages +0x228 / +0x22c (a break after 6 / 4 / 5 rows), each row 0x4f2fe0 + 0x515960
-   (0x62d284) + 0x475b80; the click opens 0x5c2410 (base 0x1452 / 0x142a / 0x13fd + i * 5, the kind text of
-   the record 0x4f2720 +0x18 by the byte +1: 0 / +0x13dd / +0x13e6 / +0x13ec); the pump 0x5309a0 (this,
-   0x677c7) and 0x52f530 / 0x52d7a0 at the end */
-int ai_OpenLawBook(int param_1)
+/* 0x5c2160, the law book (657 B): the book 0x111 (criminal law: the model "ob_GESETZBUCH_STRAFRECHT", the laws
+   0x11 .. 0x1c, the section text 0x13f8, the info texts from 0x1452), 0x112 (taxes: "ob_GESETZBUCH_STEUERN",
+   9 .. 0x10, 0x13f7, from 0x142a) or 0x113 (constitution: "ob_GESETZBUCH_VERFASSUNG", 0 .. 8, 0x13f6, from
+   0x13fd) opens at "Buch" with the two pages "Buch\Gesetzbuch" (sv_OpenBook); another book does nothing. Page 1
+   gets the section text and the first laws (6 / 4 / 5), page 2 the rest, each a line of its decision record's
+   text (gv_TableRecordText, "%it$1>%s$N$0>"); the page numbers 0x1a38. A click on a law's line opens its info
+   box (ai_LawBookInfoWindow: the info text base + 5 * i and the law's current value as a text, by
+   AIDEC.valueText the value itself or a name of 0x13dd / 0x13e6 / 0x13ec + it). A right release closes the
+   book; the camera goes back to the player */
+
+void ai_OpenLawBook(int book)
 {
-    int win;
-    int page;
-    int start, end, brk;
     int base;
-    int text;
+    int start;
+    int split;
+    int page;
+    AIDEC rec;
     int ctrl[12];
-    int i, n;
-    char buf[512];
-    char pos[0x24];
+    char text[0x200];
+    SVBOOK *bk;
+    int section;
+    int end;
+    int n;
+    int i;
+    int hit;
 
-    if (param_1 == 0x111) {
-        win = sv_OpenBook((char *)(unsigned)"ob_GESETZBUCH_STRAFRECHT", (char *)(unsigned)"Buch", 2, (char *)(unsigned)&full_data_62d294, (char *)(unsigned)&full_data_62d294);
+    switch (book) {
+    case 0x111:
+        bk = sv_OpenBook("ob_GESETZBUCH_STRAFRECHT", "Buch", 2, "Buch\\Gesetzbuch", "Buch\\Gesetzbuch");
         start = 0x11;
         end = 0x1d;
         base = 0x1452;
-        text = 0x13f8;
-        brk = 6;
-    } else if (param_1 == 0x112) {
-        win = sv_OpenBook((char *)(unsigned)"ob_GESETZBUCH_STEUERN", (char *)(unsigned)"Buch", 2, (char *)(unsigned)&full_data_62d294, (char *)(unsigned)&full_data_62d294);
+        section = 0x13f8;
+        split = 6;
+        break;
+    case 0x112:
+        bk = sv_OpenBook("ob_GESETZBUCH_STEUERN", "Buch", 2, "Buch\\Gesetzbuch", "Buch\\Gesetzbuch");
         start = 9;
         end = 0x11;
         base = 0x142a;
-        text = 0x13f7;
-        brk = 4;
-    } else if (param_1 == 0x113) {
-        win = sv_OpenBook((char *)(unsigned)"ob_GESETZBUCH_VERFASSUNG", (char *)(unsigned)"Buch", 2, (char *)(unsigned)&full_data_62d294, (char *)(unsigned)&full_data_62d294);
+        section = 0x13f7;
+        split = 4;
+        break;
+    case 0x113:
+        bk = sv_OpenBook("ob_GESETZBUCH_VERFASSUNG", "Buch", 2, "Buch\\Gesetzbuch", "Buch\\Gesetzbuch");
         start = 0;
         end = 9;
         base = 0x13fd;
-        text = 0x13f6;
-        brk = 5;
-    } else {
-        return 0;
+        section = 0x13f6;
+        split = 5;
+        break;
+    default:
+        return;
     }
-    d2_SetForm(U_I(win + 0x228), 1);
-    io_PrintText(text);
-    d2_SetForm(U_I(win + 0x228), 2);
-    page = U_I(win + 0x228);
-    i = 0;
-    for (n = start; n < end; n++) {
-        if (i == brk) {
-            d2_SetForm(U_I(win + 0x22c), 2);
-            page = U_I(win + 0x22c);
+    d2_SetForm(bk->views[0], 1);
+    io_PrintText(section);
+    d2_SetForm(bk->views[0], 2);
+    page = bk->views[0];
+    for (n = start, i = 0; n < end; n++, i++) {
+        if (i == split) {
+            d2_SetForm(bk->views[1], 2);
+            page = bk->views[1];
         }
-        gv_TableRecordText(buf, n);
-        text = io_PrintText((char *)(unsigned)&full_data_62d284, buf);
-        ctrl[i] = d2_GetWinObj(page, 2, text);
-        i++;
+        gv_TableRecordText(text, n);
+        ctrl[i] = d2_GetWinObj(page, 2, io_PrintText("%it$1>%s$N$0>", text));
     }
-    d2_SetForm(U_I(win + 0x228), 3);
+    d2_SetForm(bk->views[0], 3);
     io_PrintText(0x1a38, 1);
-    d2_SetForm(U_I(win + 0x22c), 3);
+    d2_SetForm(bk->views[1], 3);
     io_PrintText(0x1a38, 2);
-    U_I((unsigned)&d2_ClickedId) = -1;
-    for (;;) {
-        if (U_I((unsigned)&d2_ClickedId) != -1) {
-            for (i = 0; i < 0xc; i++) {
-                if (ctrl[i] == U_I((unsigned)&d2_PointerObj)) {
-                    gv_GetTableRecord(i + start, (int *)pos);
-                    switch (*(unsigned char *)(pos + 1)) {
-                    case 0:
-                        text = U_I(pos + 0x18);
-                        break;
-                    case 1:
-                        text = U_I(pos + 0x18) + 0x13dd;
-                        break;
-                    case 2:
-                        text = U_I(pos + 0x18) + 0x13e6;
-                        break;
-                    case 3:
-                        text = U_I(pos + 0x18) + 0x13ec;
-                        break;
-                    default:
-                        text = 0;
-                        break;
-                    }
-                    ai_LawBookInfoWindow(base + i * 5, text);
+    d2_ClickedId = -1;
+    do {
+        if (d2_ClickedId != -1) {
+            hit = -1;
+            for (i = 0; i < 12; i++) {
+                if (ctrl[i] == d2_PointerObj) {
+                    hit = i;
+                    break;
+                }
+            }
+            if (hit != -1) {
+                gv_GetTableRecord(hit + start, &rec);
+                switch (rec.valueText) {
+                case 0:
+                    ai_LawBookInfoWindow(base + hit * 5, rec.cur);
+                    break;
+                case 1:
+                    ai_LawBookInfoWindow(base + hit * 5, rec.cur + 0x13dd);
+                    break;
+                case 2:
+                    ai_LawBookInfoWindow(base + hit * 5, rec.cur + 0x13e6);
+                    break;
+                case 3:
+                    ai_LawBookInfoWindow(base + hit * 5, rec.cur + 0x13ec);
                     break;
                 }
             }
         }
-        sv_UpdateBook(win);
-        if (U_I(((unsigned)&dm_L + 0x20)) != 0)
-            U_I((unsigned)&sv_PopRequest) = 1;
-        if (sv_RunFrame(ai_OpenLawBook, 0x677c7) == 0) {
-            sv_CloseBook(win);
-            sv_CameraFollow();
-            return 0;
-        }
-    }
+        sv_UpdateBook(bk);
+        if (dm_L.rup != 0)
+            sv_PopRequest = 1;
+    } while (sv_RunFrame((int)ai_OpenLawBook, 0x677c7) != 0);
+    sv_CloseBook(bk);
+    sv_CameraFollow();
 }
 /* 0x5c2410, the law book info box "Gesetze\Gesetzbuch_Info" (176 B): the caption text id + 1 (with the id and
    the law text as arguments) and the body text id + 2 through 0x515960, the pump 0x5309a0 (this, 0x677c7) and
