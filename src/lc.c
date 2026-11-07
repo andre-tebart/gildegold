@@ -22479,13 +22479,142 @@ void ai_ManagedBuildingWindow(AIBLD *bld)
     d2_CloseView(win);
     sv_ResearchClass = 0;
 }
-/* 0x5b92e0, a window (1104 B, ROUGH SKELETON): param_1, a 0x110-byte frame; the body is a comment */
+/* 0x5b92e0, collects a debt of `amount` from the character ch for the netId `to` (f3gm.c gm_IsBankrupt, he.c's
+   partnership events): first the character's money as far as it reaches (cm_SendMoveGoods), then sells goods from
+   the stores (0x2a, else 0x116) of its buildings of the classes 1 / 2 / 8 at half their price (cm_SendExSellObject),
+   all goods but the types 0x17 / 0x25 first and then, from the 0x2a stores only, those two, round after round
+   while something sells. The sale proceeds go to `to`, noted in `note` (text 0x18eb appended); without any sale
+   the rest is moved unchecked. Returns what was paid
+   @deep reconstructed from the stub against the whole original 0x5b92e0..0x5b9727: the money first (min of
+   gm_GetGoodsValue and the amount, cm_SendMoveGoods), the two sale rounds over the class 1/2/8 buildings'
+   stores (0x2a else 0x116 for the other goods, 0x2a only for the types 0x17/0x25) at half gm_GoodsPrice
+   with the n <= 1 / gm_ListAmount clamps and cm_SendExSellObject, the stop flag per round, the proceeds
+   message 0x18eb strcat into the note and the rest through cm_SendMoveGoodsUnchecked; ours 359 vs 366 ins.
+   Left is register allocation: the original keeps the ai_Goods base in ebp before reusing ebp for the
+   price (+0x406..+0x41c: mov ebp,[ai_Goods]; add ebp,edx; add ecx,ebp; mov cl,[ecx] vs ours mov
+   ecx,[ai_Goods]; add ecx,edx; mov cl,[eax+ecx]) and so assigns eax/ecx/edx otherwise around
+   cm_SendExSellObject (+0x479..+0x4c0, +0x61d.., the same five pushes from other registers) and the second
+   round's character id load (+0x503). The prover stops at the goods type test (+0x144) whose byte comes
+   from the two address forms */
 
-int ai_LiquidateAssets(int param_1)
+int ai_LiquidateAssets(int to, AICHARREC *ch, int amount, char *note)
 {
-    /* ROUGH SKELETON: the 0x110-byte frame */
-    (void)param_1;
-    return 0;
+    int remaining;
+    int paid;
+    int stop;
+    int sold;
+    char text[0x100];
+    int value;
+    int take;
+    int got;
+    int n;
+    int price;
+    char kind;
+    int cls;
+    unsigned char *bld;
+    AIROOM *store;
+    unsigned short *item;
+
+    stop = 0;
+    paid = 0;
+    sold = 0;
+    value = gm_GetGoodsValue((char *)ch);
+    remaining = amount;
+    take = value < amount ? value : amount;
+    if (take > 0) {
+        cm_SendMoveGoods(to, ch->netId, ai_OwnPlayer, take);
+        remaining = amount - take;
+        paid = take;
+    }
+    while (remaining > 0 && stop == 0) {
+        bld = gm_BuildQuery(1, 4, ch->id);
+        stop = 1;
+        for (; bld != 0; bld = gm_BuildNext()) {
+            if (remaining <= 0)
+                goto other;
+            cls = gm_BuildingClass(*bld);
+            if (cls != 1 && cls != 2 && cls != 8)
+                continue;
+            store = (AIROOM *)gm_Query((void *)((AIBLD *)bld)->objList, 2, 6, 0, 0x2a);
+            if (store == 0) {
+                store = (AIROOM *)gm_Query((void *)((AIBLD *)bld)->objList, 2, 6, 0, 0x116);
+                if (store == 0)
+                    continue;
+            }
+            for (item = (unsigned short *)gm_Query((void *)store->list, 1, 5); item != 0;
+                 item = gm_QueryNext()) {
+                if (remaining <= 0)
+                    break;
+                kind = ((AIGOOD *)ai_Goods)[*item].type;
+                if (kind == 0x17 || kind == 0x25)
+                    continue;
+                price = (int)(gm_GoodsPrice(*item, ai_OwnPlayer) * 0.5);
+                if (price == 0)
+                    continue;
+                n = remaining / price;
+                if (n <= 1)
+                    n = 1;
+                if (n >= gm_ListAmount((short *)store, (char *)item))
+                    n = gm_ListAmount((short *)store, (char *)item);
+                cm_SendExSellObject(-1, store->objId, *item, n, ai_OwnPlayer, 0);
+                got = n * price;
+                sold += got;
+                remaining -= got;
+                paid += got;
+                if (got != 0)
+                    stop = 0;
+            }
+        }
+    }
+other:
+    stop = 0;
+    while (remaining > 0 && stop == 0) {
+        bld = gm_BuildQuery(1, 4, ch->id);
+        stop = 1;
+        for (; bld != 0; bld = gm_BuildNext()) {
+            if (remaining <= 0)
+                goto done;
+            cls = gm_BuildingClass(*bld);
+            if (cls != 1 && cls != 2 && cls != 8)
+                continue;
+            store = (AIROOM *)gm_Query((void *)((AIBLD *)bld)->objList, 2, 6, 0, 0x2a);
+            if (store == 0)
+                continue;
+            for (item = (unsigned short *)gm_Query((void *)store->list, 1, 5); item != 0;
+                 item = gm_QueryNext()) {
+                if (remaining <= 0)
+                    break;
+                kind = ((AIGOOD *)ai_Goods)[*item].type;
+                if (kind != 0x17 && kind != 0x25)
+                    continue;
+                price = (int)(gm_GoodsPrice(*item, ai_OwnPlayer) * 0.5);
+                if (price == 0)
+                    continue;
+                n = remaining / price;
+                if (n <= 1)
+                    n = 1;
+                if (n >= gm_ListAmount((short *)store, (char *)item))
+                    n = gm_ListAmount((short *)store, (char *)item);
+                cm_SendExSellObject(-1, store->objId, *item, n, ai_OwnPlayer, 0);
+                got = n * price;
+                paid += got;
+                remaining -= got;
+                sold += got;
+                if (got != 0)
+                    stop = 0;
+            }
+        }
+    }
+done:
+    if (sold != 0) {
+        cm_SendMoveGoods(to, -1, ai_OwnPlayer, sold);
+        txt_Format(text, 0x18eb, sold);
+        strcat(note, text);
+        return paid;
+    }
+    if (remaining > 0)
+        cm_SendMoveGoodsUnchecked(to, ch->netId, ai_OwnPlayer, remaining);
+    return paid;
 }
 /* 0x5b9730, a window over the record +0x71 (1856 B, ROUGH SKELETON): param_1 read at +0x71, a 0x2e4-byte frame;
    the body is a comment */
