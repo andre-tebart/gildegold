@@ -33993,14 +33993,64 @@ int ai_UseGoodHarmBuilding(AICHARREC *ch, G8USEVIEW *use)
     use->handled = 1;
     return 1;
 }
-/* 0x5d1da0, an action callback of the record table 0x62c420 (record 55 at 0x62ca24, the text id 0x2bd,
-   528 B): the request 0x5b2180, 0x4fea50, three 0x4ffe90 walks, two float 0x42ec20 through __ftol
-   0x5de518, 0x4c4880, 0x4ffcc0, the texts 0x5176d0, one message 0x53dda0 and the panel 0x5cf820.
-   Frame 0xbe0. */
+/* 0x5d1da0, the use callback of the Domizil good 0x2bd (the +0x14 pointer of the table entry 0x62ca24): picks a
+   building, for a player (kind 6) on the town map (ai_MapPick with the prompt txt_Ptrs[0x9b], the class filter
+   0x1a0744300, kind 6), else the building use->target (gm_FindById); none -> 0. In the building's store (the
+   object kind 6 / 0x2a of its objList, gm_Query) every good held more than once loses 10 .. 30% of its
+   count, at least 1 (cm_SendExSellObject from the store). A player owner (kind 6 / 7) gets the news 0x100c
+   naming the building (key 0x5fb), a player user sees the text 0x109d (the owner, the building) inside 0xfe8
+   in the use-object panel. Marks the use handled and returns 1. */
 
-int ai_Unk5d1da0(void)
+int ai_UseGoodSpoilStock(AICHARREC *ch, G8USEVIEW *use)
 {
-    return 0;
+    AIBLD *bld;
+    AMOUNTCFG cfg;
+    char text[0x200];
+    char news[0x800];
+    AICHARREC *owner;
+    AIOBJ *store;
+    AIOBJ *item;
+    int n;
+
+    if (ch->kind == 6) {
+        memset(&cfg, 0, sizeof(cfg));
+        memset(cfg.ids, 0xff, sizeof(cfg.ids));
+        cfg.flags = 1;
+        cfg.mode = -1;
+        cfg.kind = 6;
+        cfg.filter = 0x1a0744300;
+        bld = (AIBLD *)ai_MapPick(1, &cfg, txt_Ptrs[0x9b], 0, 0);
+        if (bld == 0)
+            return 0;
+    } else {
+        gm_FindById((int *)&bld, 0, 0, use->target);
+        if (bld == 0)
+            return 0;
+    }
+    owner = &lc_CharRecs[bld->owner];
+    store = (AIOBJ *)gm_Query((void *)bld->objList, 2, 6, 0, 0x2a);
+    if (store != 0) {
+        gm_Query((void *)store->list, 1, 5);
+        for (item = (AIOBJ *)gm_Query((void *)store->list, 1, 5); item != 0; item = (AIOBJ *)gm_QueryNext()) {
+            if (item->count > 1) {
+                n = (int)((util_RandomF() * 0.2f + 0.1f) * item->count) < 1
+                        ? 1
+                        : (int)((util_RandomF() * 0.2f + 0.1f) * item->count);
+                cm_SendExSellObject(-1, store->objId, item->id, n, ai_OwnPlayer, 0);
+            }
+        }
+    }
+    if (owner->kind == 6 || owner->kind == 7) {
+        txt_Format(news, 0x100c, bld);
+        he_ShowNews(owner->netId, -1, news, 0, 0x5fb, 0);
+    }
+    if (ch->kind == 6) {
+        txt_Format(text, 0x109d, bld->owner, bld);
+        txt_Format(news, 0xfe8, text);
+        ai_UseObjPanel(news);
+    }
+    use->handled = 1;
+    return 1;
 }
 /* 0x5d1fb0, an action callback of the record table 0x62c420 (record 57 at 0x62ca5c, the text id 0x2bf,
    816 B): the character (0x5c1130 menu / 0x505df0), four 0x42ec00 picks, 0x4c4b00, 0x4fca40, four
