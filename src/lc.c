@@ -26,8 +26,10 @@
    special-amount lists build their rows (LCAMOUNTROW) with ai_ShowAmountRows / ai_ShowOfficeRows / ai_AmountRow /
    ai_DrawAmountRow and ai_AmountRowStatus (lc.h declares them on struct LCAMOUNTROW); the list window
    (ai_SpecialAmountListWindow) writes the corner icons in line, and the special-amount window's tab table
-   ai_AmountTabs fills its pages with ai_FillFamilyTab, ai_FillFriendsTab, ai_FillEnemiesTab, ai_FillLoversTab,
-   ai_FillWeddingTab and ai_FillQuarrelTab (one signature: me, max (0: count only), rows, the partner filter).
+   ai_AmountTabs (AIAMOUNTTAB, typed fill / show handlers) fills its pages with ai_Fill*Tab (me, max (0: count
+   only), rows, the partner filter) and draws them with ai_Show*Tab; the tabbed window ai_SpecialAmountWindow keeps
+   the open tab in ai_AmountTab. The menus ai_AmountMenu (AMOUNTCFG, lc.h) and ai_AmountKindMenu (a kind callback:
+   ai_AmountListWindow, ai_AgendaOfficeList) lead to them; the law book ai_OpenLawBook reads AIDEC records.
    Open: the AIMSG message records are built by raw offsets in most functions (the use callbacks of the Domizil
    table use AIMSG: ai_UseEventGood, the money messenger AIMSG.payment).
    Open: types: the event / message words LCAMBUSHEVENT, LCSEARCHEVENT, LCSEARCHWORDS, LCKIDNAPEVENT (he.c's

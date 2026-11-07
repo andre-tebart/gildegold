@@ -4445,7 +4445,7 @@ exe	0x005bc0f0	ai_FreePicture	lc	byte	readable
 exe	0x005bc110	ai_ChooseCoatOfArms	lc	byte	readable		
 exe	0x005bc420	ai_OpenMoneyInfoPage	lc	byte	readable		
 exe	0x005bc6d0	ai_OpenBuildingListPage	lc	byte	readable		
-exe	0x005bc790	ai_BuildingDetailWindow	lc	shape	readable		
+exe	0x005bc790	ai_BuildingDetailWindow	lc	byte	readable		
 exe	0x005bc9c0	ai_OpenMasterListPage	lc	draft	readable	deep	
 exe	0x005bcc70	ai_PlayerStatsPanel	lc	shape	readable		
 exe	0x005bd060	ai_AmountLimit	lc	byte	readable		
@@ -4478,19 +4478,19 @@ exe	0x005c01c0	ai_ShowEnemiesTab	lc	byte	readable
 exe	0x005c02d0	ai_ShowLoversTab	lc	byte	readable		
 exe	0x005c03e0	ai_ShowWeddingTab	lc	byte	readable		
 exe	0x005c0550	ai_ShowQuarrelTab	lc	byte	readable		
-exe	0x005c0650	ai_Unk5c0650	lc	draft	draft		
-exe	0x005c0790	ai_Unk5c0790	lc	draft	draft		
+exe	0x005c0650	ai_ShowCandidacyTab	lc	byte	readable		
+exe	0x005c0790	ai_ShowOfficeTab	lc	byte	readable		
 exe	0x005c08b0	ai_ClearAmountTabs	lc	byte	readable		
 exe	0x005c08d0	ai_AmountLikingRows	lc	byte	readable		
-exe	0x005c0970	ai_SpecialAmountWindow	lc	draft	draft		
-exe	0x005c1130	ai_AmountMenu	lc	draft	draft		
-exe	0x005c1500	ai_AmountListWindow	lc	draft	draft		
+exe	0x005c0970	ai_SpecialAmountWindow	lc	shape	readable		
+exe	0x005c1130	ai_AmountMenu	lc	draft	readable	deep	
+exe	0x005c1500	ai_AmountListWindow	lc	byte	readable		
 exe	0x005c1a80	ai_AmountInfoWindow	lc	byte	readable		
 exe	0x005c1b20	ai_OpenAmountKindMenu	lc	byte	readable		
-exe	0x005c1b40	ai_AmountKindMenu	lc	draft	draft		
+exe	0x005c1b40	ai_AmountKindMenu	lc	byte	readable		
 exe	0x005c1df0	ai_OpenAgendaMenu	lc	byte	readable		
-exe	0x005c1e10	ai_AgendaOfficeList	lc	draft	draft		
-exe	0x005c2160	ai_OpenLawBook	lc	draft	draft		
+exe	0x005c1e10	ai_AgendaOfficeList	lc	shape	readable		
+exe	0x005c2160	ai_OpenLawBook	lc	byte	readable		
 exe	0x005c2410	ai_LawBookInfoWindow	lc	byte	readable		
 exe	0x005c2490	ai_Unk5c2490	lc	draft	draft		
 exe	0x005c26a0	ai_MasterLetterNoticeWindow	lc	byte	readable		
