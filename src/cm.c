@@ -15711,13 +15711,13 @@ int cm_DeleteChar(int a)
         return 1;
     return ch_Delete(a);
 }
-/* 0x4e3270 */
+/* 0x4e3270, loads the voice bank name (snd_LoadVoiceBank; a set preloads its entries), 0 in the replay mode */
 
-int cm_LoadVoiceBank(int a, int b)
+int cm_LoadVoiceBank(char *name, int a)
 {
     if (cm_SkipEvents != 0)
         return 0;
-    return snd_LoadVoiceBank(a, b);
+    return snd_LoadVoiceBank(name, a);
 }
 /* 0x4e3290 */
 
