@@ -878,4 +878,21 @@ typedef struct G28REC {
 typedef char cm_AssertG28REC[sizeof(G28REC) == 0x114 ? 1 : -1];
 
 
+typedef struct AIWEAPON {               /* 0x5c bytes, the 10 weapon records at ai_WeaponRecordData (ai_FindWeaponRecord) */
+    int id;                             /* 0x00, the goods item */
+    unsigned char accuracy;             /* 0x04, the hit chance in percent of the fighter's skill sk83 (cm_Attack) */
+    unsigned char dmgMin;               /* 0x05, the least damage (the bomb adds a random part below dmgMax - dmgMin) */
+    unsigned char dmgMax;               /* 0x06, the most damage */
+    char pad07[2];
+    unsigned char speed;                /* 0x09, times 2/7 the fighter's CHARACTER.walkSpeed (cm_AddFighter) */
+    char pad0a[2];
+    float range;                        /* 0x0c, the farthest a hit reaches (cm_HitAction: the hitter's distance to the
+                                           victim's body) */
+    char pad10;
+    char anim[0x43];                    /* 0x11, the hitter's animation (copied to the hit action's name) */
+    int text054;                        /* 0x54, an argument of the text 0x1188 (a stunning hit, weapon 0x16e) */
+    int kind;                           /* 0x58, 1 / 2: used up with the item (cm_CharWeapon refuses an item with nothing left) */
+} AIWEAPON;
+typedef char cm_AssertAIWEAPON[sizeof(AIWEAPON) == 0x5c ? 1 : -1];
+
 #endif

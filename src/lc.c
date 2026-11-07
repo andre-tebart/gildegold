@@ -5691,7 +5691,7 @@ void ai_CriminalContact(AIBLD *bld)
             else if (ai_ClickedObject == transport)
                 ai_OpenTransport((int)bld);
             else if (ai_ClickedObject == ausruesten)
-                ai_EquipWindow((int)bld);
+                ai_EquipWindow(bld);
             else if (ai_ClickedObject == ziel || ai_ClickedObject == stroh ||
                      ai_ClickedObject == regen)
                 ai_TrainingWindow((int)bld);
@@ -14238,7 +14238,7 @@ void ai_GuildHallListener(AIBLD *bld)
             if (ai_ClickedObject == lager)
                 ai_StorageWindow((int)bld, ((AIOBJ *)sv_PanelShown)->list);
             else if (ai_ClickedObject == ausruesten)
-                ai_EquipWindow((int)bld);
+                ai_EquipWindow(bld);
             else if (ai_ClickedObject == razzia)
                 ai_RaidStart((int)bld);
             else if (ai_ClickedObject == ausspionieren)
@@ -23348,7 +23348,7 @@ typedef struct AIEQUIPROW {             /* 0x40 bytes, a row of the equip window
    (jb), an int pointer walk from the table plus 8 (matched the cmp but folded the bound to the literal
    address, rejected). Allocation of the induction variable base offset */
 
-void ai_EquipRowsInit(void)
+void ai_EquipRowsInit(AIBLD *bld)  /* bld: the equip window passes its building; the table is the same for all */
 {
     int k;
     AIEQUIPROW *row;
@@ -23505,15 +23505,165 @@ int ai_GoodFitsBuilding(void *ch, int good)
     }
     return 0;
 }
-/* 0x5bb350, the equip window (1536 B, ROUGH SKELETON): opened by the AUSRUESTEN / ub_STAENDER_WAFFEN plate of
-   three contacts (ai_MercenaryBookContact among them); param_1 is the building, a 0x120-byte frame; the body is a
-   comment */
+/* 0x5bb350, the equip window "locations\diebesgilde\diebesgilde_equipment" of the building bld (the AUSRUESTEN /
+   ub_STAENDER_WAFFEN plates of the thieves' guild and mercenary contacts): nothing when sv_CheckCharacterFlag
+   refuses; the building's store (gm_Query kind 0x2a, else 0x116; none: text 0x19de) shows its goods list (a store
+   0x116 or goods of type 0x11: ai_UpdateStoreGoods, type 5: ai_UpdateProdGoodsList) and ai_UpdateEquipRows the
+   rows of the scene's fighters. A click on a row's frame hands the first goods picked in the first grid to its
+   character (only a weapon, ai_FindWeaponRecord, else text 0x19dd; not when the character holds one, 0x19df;
+   not when it does not fit the building, ai_GoodFitsBuilding, 0x19e0), then the first one of the second grid;
+   goods picked from the rows and dropped on the list go back to the store. A right click puts the picked
+   amounts back or closes the window; the row count shows on the scroll bar */
 
-int ai_EquipWindow(int param_1)
+void ai_EquipWindow(AIBLD *bld)
 {
-    /* ROUGH SKELETON: the 0x120-byte frame */
-    (void)param_1;
-    return 0;
+    int listShown;
+    int bar;
+    int win;
+    int mask;
+    int down;
+    int up;
+    int picked;
+    int i;
+    int k;
+    AIOBJ *store;
+    AIGOOD *g;
+    AICHARREC *ch;
+    char count[0x100];
+
+    listShown = 0;
+    bar = -1;
+    if (sv_CheckCharacterFlag(bld) != 0)
+        return;
+    mask = (sv_FrameMask & 0x10000) ? 0x7d6c6 : 0x677c7;
+    store = (AIOBJ *)gm_Query((void *)bld->objList, 2, 0, 0x2a, 6);
+    if (store == 0) {
+        store = (AIOBJ *)gm_Query((void *)bld->objList, 2, 0, 0x116, 6);
+        if (store == 0) {
+            sv_MessageBox(txt_Ptrs[0x19de], 0);
+            return;
+        }
+    }
+    win = d2_OpenForm(0, 0, "locations\\diebesgilde\\diebesgilde_equipment");
+    d2_CentreViewWindows(win);
+    d2_SetForm(win, 3);
+    io_PrintText(0x19db);
+    ai_EquipRowsInit(bld);
+    d2_SetPointerSprite(0, 0);
+    ai_InitProductionTables();
+    d2_SetForm(win, 0);
+    sv_OpenWindowFrame(d2_LastWindow, 0x72f, 0);
+    sv_CreateScrollButtons(0x270, 0x15c, d2_LastWindow, d2_GetViewWin(win, 2), 0x78, &down, &up, &bar);
+    d2_Objs[bar].font = 0x54;
+    g = &((AIGOOD *)ai_Goods)[store->id];
+    do {
+        if (store->id == 0x116 || g->type == 0x11) {
+            listShown = ai_UpdateStoreGoods((int)bld, (short *)store);
+            ai_LayoutStoreGoods(win, 1, 1, bld, (unsigned short *)store);
+        } else if (g->type == 5) {
+            listShown = ai_UpdateProdGoodsList(bld, store);
+            ai_LayoutProdGoodsList(win, 1, 1, (int)bld);
+        }
+        if (d2_ClickedId != -1 && listShown != 0) {
+            /* a click on a row's frame: the picked goods go to its character */
+            for (i = 0; i < 0x20; i++)
+                if (ai_EquipRowTab[i].ch != 0 && ai_EquipRowTab[i].frame == d2_PointerObj)
+                    goto clicked;
+            goto rows;
+clicked:
+            ch = ai_EquipRowTab[i].ch;
+            if (ch != 0) {
+                cm_BeginSendGroup();
+                d2_EndInputEdit();
+                for (k = 0; k < 16; k++) {
+                    if (ai_ProdGoods[k].check == -1 || d2_GetObjValue(ai_ProdGoods[k].check) == 0)
+                        continue;
+                    if (ai_FindWeaponRecord(ai_ProdGoods[k].good) != 0) {
+                        if (((AIWEAPON *)cm_CharWeapon(ch))->id != 0) {
+                            /* the character holds a weapon already */
+                            sv_MessageBox(txt_Ptrs[0x19df], 4);
+                            continue;
+                        }
+                        if (ai_GoodFitsBuilding(ch, ai_ProdGoods[k].good) != 0) {
+                            cm_SendExSellObject(ch->netId, store->objId, ai_ProdGoods[k].good, 1, ai_OwnPlayer, 0);
+                            d2_SetObjValue(ai_ProdGoods[k].check, 0, ai_ProdGoods[k].amount,
+                                           d2_GetObjValue(ai_ProdGoods[k].check) - 1, 0);
+                        } else {
+                            sv_MessageBox(txt_Ptrs[0x19e0], 4);
+                        }
+                    } else {
+                        sv_MessageBox(txt_Ptrs[0x19dd], 0);
+                    }
+                    break;
+                }
+                for (k = 0; k < 8; k++) {
+                    if (ai_ProdGoods2[k].check == -1 || d2_GetObjValue(ai_ProdGoods2[k].check) == 0)
+                        continue;
+                    if (ai_FindWeaponRecord(ai_ProdGoods2[k].good) != 0) {
+                        if (ai_GoodFitsBuilding(ch, ai_ProdGoods2[k].good) != 0) {
+                            cm_SendExSellObject(ch->netId, store->objId, ai_ProdGoods2[k].good, 1, ai_OwnPlayer, 0);
+                            d2_SetObjValue(ai_ProdGoods2[k].check, 0, ai_ProdGoods2[k].amount,
+                                           d2_GetObjValue(ai_ProdGoods2[k].check) - 1, 0);
+                        } else {
+                            sv_MessageBox(txt_Ptrs[0x19e0], 0);
+                        }
+                    } else {
+                        sv_MessageBox(txt_Ptrs[0x19dd], 0);
+                    }
+                    break;
+                }
+                cm_EndSendGroup();
+                while (cm_SendGroupState() == 0)
+                    sv_PumpNet();
+                cm_UpdateHandObject(ch);
+            }
+        }
+rows:
+        picked = ai_UpdateEquipRows(win, 2);
+        if (d2_HitWindow == d2_Views[win].wins[1] && picked != 0 && dm_L.lup != 0) {
+            /* goods picked from the rows and dropped on the list go back to the store */
+            cm_BeginSendGroup();
+            for (i = 0; i < 0x20; i++) {
+                if (ai_EquipRowTab[i].ch == 0)
+                    continue;
+                for (k = 0; k < 6; k++)
+                    if (ai_EquipRowTab[i].slot[k].pic != -1 && d2_GetObjValue(ai_EquipRowTab[i].slot[k].pic) != 0)
+                        cm_SendExSellObject(store->objId, ai_EquipRowTab[i].ch->netId, ai_EquipRowTab[i].slot[k].obj,
+                                            1, ai_OwnPlayer, 0);
+            }
+            cm_EndSendGroup();
+            while (cm_SendGroupState() == 0)
+                sv_PumpNet();
+            for (i = 0; i < 0x20; i++)
+                if (ai_EquipRowTab[i].ch != 0)
+                    cm_UpdateHandObject(ai_EquipRowTab[i].ch);
+        }
+        _itoa(ai_EquipRowCount, count, 10);
+        d2_SetObjText(bar, count);
+        if (dm_L.rup != 0) {
+            if (d2_CountPointerItems() == 0) {
+                sv_PopRequest = 1;
+            } else {
+                /* put the picked amounts back */
+                d2_ClearPointerItems();
+                for (k = 0; k < 16; k++)
+                    if (ai_ProdGoods[k].check != -1 && d2_GetObjValue(ai_ProdGoods[k].check) != 0)
+                        d2_SetObjValue(ai_ProdGoods[k].check, 0, ai_ProdGoods[k].amount, 0, 0);
+                for (k = 0; k < 8; k++)
+                    if (ai_ProdGoods2[k].check != -1 && d2_GetObjValue(ai_ProdGoods2[k].check) != 0)
+                        d2_SetObjValue(ai_ProdGoods2[k].check, 0, ai_ProdGoods2[k].amount, 0, 0);
+                for (i = 0; i < 0x20; i++) {
+                    if (ai_EquipRowTab[i].ch == 0)
+                        continue;
+                    for (k = 0; k < 6; k++)
+                        if (ai_EquipRowTab[i].slot[k].pic != -1)
+                            d2_SetObjValue(ai_EquipRowTab[i].slot[k].pic, 0, 0, 0);
+                }
+            }
+        }
+    } while (sv_RunFrame((int)ai_EquipWindow, mask) != 0);
+    d2_CloseView(win);
+    sv_CameraFollow();
 }
 /* 0x5bb950, an array walk (352 B, ROUGH SKELETON): the first parameter indexes a 0x2d-byte record array; the
    body is a comment */
