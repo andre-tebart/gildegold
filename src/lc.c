@@ -51,7 +51,8 @@
    AMOUNTCFG and mark me in AICHARREC.flags1cc / powerFlags; the character info panel's apprenticeship and
    university windows send AIMSG.apprenticeship (0x5e) and AIMSG.study (0x5f).
    Open: head: am.h / gv.h / cm.h are not included: ai_FindPartnersRandomWalk, ai_PickPartnerRandomWalk,
-   amt_SendOfficeMessage, cm_SendSetJob, gv_SortCrimesByLaw and the two judges are copied declarations.
+   amt_SendOfficeMessage, cm_SendSetJob, gv_SortCrimesByLaw, the two judges, ai_CharWalkSteps and gv_Decisions
+   are copied declarations; gv_Accuse and cm_SendSetField are called without a prototype (M7).
    Open: types: the amount rows and tabs (ai_ShowAmountRows, ai_Fill*Tab, ai_SpecialAmountListWindow) and am.c's
    partner chain still pass that filter as unsigned int *.
    Open: the AIMSG message records are built by raw offsets in most functions (the use callbacks of the Domizil
