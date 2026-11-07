@@ -16703,11 +16703,11 @@ int cm_AddPartyMember(int id, int who)
     if (r != 0) {
         n = r->used;
         for (; i < n; i++) {
-            if (*(int *)((char *)r + 0x34 + i * 4) == who)
+            if (r->members[i] == who)
                 return 0;
         }
         if (r->used < 0x10) {
-            *(int *)((char *)r + 0x34 + n * 4) = who;
+            r->members[n] = who;
             r->used++;
             return 1;
         }
