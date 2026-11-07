@@ -891,7 +891,7 @@ typedef struct G22ENT {                 /* 0x18 bytes, one participant of a sess
 #define G22_4C5580 ((int (*)())cm_SendHandOverCrimes)  /* cut.c calls it without arguments */
 extern struct D2PIC *d2_Pics;  /* 0x6ed918 */
 int cm_LoadVoiceBank();  /* 0x4e3270 */
-int cm_PlaySpecialTrack();  /* 0x4e3620 */
+int cm_PlaySpecialTrack(char *a);  /* 0x4e3620 */
 int amt_GetColumnOffices(int col, int max, struct AMTREC *out);  /* 0x4e6fc0 */
 int amt_IsColumnDecided();  /* 0x4e83b0 */
 void amt_ElectOffices();  /* 0x4e7c60 */
@@ -1069,7 +1069,7 @@ int gm_ConvertMoney(int a, unsigned char k);  /* 0x5085b0 */
 int gm_PlayerFactor(int a, unsigned char k);  /* 0x5085f0 */
 int d2_GetObjValue();  /* 0x475980 */
 void d2_SetObjValue();  /* 0x475cb0 */
-void ai_Unk4e2910();  /* 0x4e2910 */
+void cm_ShowObjectScene(char *o, int id);  /* 0x4e2910 */
 
 int d2_ClearSurface();  /* 0x4796c0 */
 void d2_BlitPart(int sx, int sy, int w, int h, struct D2SURF *src, int x, int y, struct D2SURF *dst);  /* 0x479480 */

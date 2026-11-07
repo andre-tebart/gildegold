@@ -15348,7 +15348,7 @@ void cm_AuctionAskAI(CMCUTINFO *r, CMAUCTION *m)
 /* 0x4e2860, the scene of a sale (the message m: +0x14 the object, +0x34 the seller, +0x38 .. +0x44 the buyers): the scene of the object
    (0x4fea50 -> 0x4e2910 with 0x17) or "ob_SALON.ed3", a pause of 5, then every buyer changes his opinion of the seller by +10 (0x4c4b00, both ways) */
 
-void ai_Unk4e2860(char *m)
+void cm_RunSale(char *m)
 {
     int o, f, i;
     int *p;
@@ -15357,7 +15357,7 @@ void ai_Unk4e2860(char *m)
     cm_PlaySpecialTrack(0);
     gm_FindById(&o, 0, 0, *(int *)(m + 0x14));
     if (o != 0)
-        ai_Unk4e2910(o, 0x17);
+        cm_ShowObjectScene(o, 0x17);
     else {
         f = 1;
         cm_LoadEventScene("ob_SALON.ed3");
@@ -15383,7 +15383,7 @@ void ai_Unk4e2860(char *m)
    0x76fa60[kind]) and runs 0x513050; at the end the stop flag of 0x63349c / 0x6f0d98 is cleared (0x43deb0). Not in the replay mode. ROUGH */
 #define G27_FRAME(a, b) d2_BlitPart(0, 0, (short)d2_ScreenW, (short)d2_ScreenH, (a), 0, 0, (b))
 /* 0x4e2910 */
-void ai_Unk4e2910(char *o, int id)
+void cm_ShowObjectScene(char *o, int id)
 {
     char *bld;
     int k;
@@ -15859,7 +15859,7 @@ int cm_RunSceneTicks(int a)
 }
 /* 0x4e3620 */
 
-int cm_PlaySpecialTrack(int a)
+int cm_PlaySpecialTrack(char *a)
 {
     if (cm_SkipEvents == 0) {
         snd_ClearQueue();
@@ -16913,7 +16913,7 @@ void cm_InitScenes(void)
     ai_Unk4e5730(8, (int)cm_RunDeath, 0, 0, (int)cm_DeathSceneCheck, 0);
     ai_Unk4e5730(9, (int)cm_RunBankruptcy, 0, 0, 0, 0);
     ai_Unk4e5730(10, (int)cm_RunAuction, (int)cm_AuctionAskPlayer, (int)cm_AuctionAskAI, (int)cm_CheckAuction, 1);
-    ai_Unk4e5730(11, (int)ai_Unk4e2860, 0, 0, 0, 0);
+    ai_Unk4e5730(11, (int)cm_RunSale, 0, 0, 0, 0);
     cm_ResetCutInfos(0);
 }
 /* 0x4e58e0, the debug dump of a person (log of the cutscenes): one line of tab separated fields (time, +4, id, the name of the kind (0x60eae0, 24 bytes each) ...) */
