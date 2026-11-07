@@ -4512,7 +4512,7 @@ exe	0x005c6530	ai_MarriageTest	lc	byte	readable
 exe	0x005c6620	ai_CourtshipRounds	lc	byte	readable		
 exe	0x005c6910	ai_CourtshipConfirm	lc	draft	readable	deep	
 exe	0x005c6aa0	ai_CourtshipListWindow	lc	byte	readable		
-exe	0x005c6d00	ai_CourtshipWindow	lc	draft	draft	deep	
+exe	0x005c6d00	ai_CourtshipWindow	lc	draft	readable	deep	
 exe	0x005c72d0	ai_PlotRatingBaseChart	lc	byte	readable		
 exe	0x005c7460	ai_PlotScoreChart	lc	shape	readable		
 exe	0x005c7560	ai_PlotNoFirstChart	lc	byte	readable		
