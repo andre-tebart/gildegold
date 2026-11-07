@@ -772,7 +772,7 @@ exe	0x0043ce10	d3_InitSurf	d3_engine	byte	readable
 exe	0x0043ce60	d3_InitObject	d3_engine	shape	draft	deep	
 exe	0x0043cfb0	d3_AddObjectDrawData	d3_engine	byte	readable		
 exe	0x0043d0e0	d3_Unlink	d3_engine	byte	readable		
-exe	0x0043d180	d3_CloneObject	d3_engine	shape	draft	deep	
+exe	0x0043d180	d3_CloneObject	d3_engine	byte	draft	deep	
 exe	0x0043d430	d3_SetObjectAlpha	d3_engine	shape	readable	deep	
 exe	0x0043d630	d3_SetAlphaCB	d3_engine	byte	readable		
 exe	0x0043d690	d3_SetAlpha	d3_engine	byte	readable		
@@ -4004,7 +4004,7 @@ exe	0x00578440	ai_TutorialFreeRuns	sv_t	byte	readable
 exe	0x005784a0	ai_TutorialInitMainIntro	sv_t	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	sv_t	byte	readable		
 exe	0x00578e40	ai_TutorialInitChapter2	sv_t	byte	readable		
-exe	0x00579570	ai_TutorialInitChapter3	sv_t	shape	readable		
+exe	0x00579570	ai_TutorialInitChapter3	sv_t	draft	readable		
 exe	0x0057aa80	ai_TutorialInitChapter4	sv_t	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	sv_t	byte	readable		
 exe	0x0057b750	ai_TutorialInitMainOutro	sv_t	byte	readable		
@@ -4405,15 +4405,15 @@ exe	0x005b4820	ai_BribeAmountCB	lc	draft	readable	deep
 exe	0x005b4bf0	ai_OpenRobberBribe	lc	draft	readable	deep	
 exe	0x005b4c60	ai_DrohbriefAmountCB	lc	draft	readable	deep	
 exe	0x005b4fb0	ai_DrohbriefWindow	lc	byte	readable		
-exe	0x005b5010	ai_DenounceWindow	lc	draft	draft		
-exe	0x005b5310	ai_PamphletAmountCB	lc	draft	draft		
+exe	0x005b5010	ai_DenounceWindow	lc	draft	readable	deep	
+exe	0x005b5310	ai_PamphletAmountCB	lc	byte	readable		
 exe	0x005b5610	ai_PamphletWindow	lc	byte	readable		
-exe	0x005b5690	ai_NoticeBoardWindow	lc	draft	draft		
-exe	0x005b5a20	ai_BardWindow	lc	draft	draft		
-exe	0x005b5e80	ai_FeastWindow	lc	draft	draft		
-exe	0x005b6950	ai_Unk5b6950	lc	draft	draft		
-exe	0x005b6b20	ai_Unk5b6b20	lc	draft	draft		
-exe	0x005b6eb0	ai_Unk5b6eb0	lc	draft	draft		
+exe	0x005b5690	ai_NoticeBoardWindow	lc	draft	readable	deep	
+exe	0x005b5a20	ai_BardWindow	lc	byte	readable		
+exe	0x005b5e80	ai_FeastWindow	lc	draft	readable	deep	
+exe	0x005b6950	ai_SellBuildingWindow	lc	byte	readable		
+exe	0x005b6b20	ai_RenovationWindow	lc	draft	readable	deep	
+exe	0x005b6eb0	ai_WithdrawSaleWindow	lc	byte	readable		
 exe	0x005b6fe0	ai_Unk5b6fe0	lc	draft	draft		
 exe	0x005b7690	ai_Unk5b7690	lc	draft	draft		
 exe	0x005b7b80	ai_Unk5b7b80	lc	draft	draft		
