@@ -21807,13 +21807,62 @@ void ai_UpgradeBuilding(AIBLD *bld)
         cm_EndGroup("building_upgrade");
     }
 }
-/* 0x5b7b80, a record window (592 B, ROUGH SKELETON): param_1, a 0x100-byte frame; the body is a comment */
+/* 0x5b7b80, the offer to buy a building from its master (ai_BuildingWindow, another's building): refused with the
+   note txt_Ptrs[0x17df] when the player may not hold the kind (gm_MayTakeJob); else "Panel\Gebaeude_Verkaufen_pergament"
+   shows the text 0x17de (the master, the building, the player's currency) and a price slider from half to ten
+   times the building's equipment value. The first button, when the player's money covers the price, sends the
+   offer message 0x21 to the master's player (from -1, flags 9, arg[0] the building, arg[1] the price in the base
+   currency, arg[2] the buyer) and marks the building (field 0x5a, flag 0x200); it, the second button, a right
+   click, the building gone or no longer enterable (flags5aw 0x400) close it */
 
-int ai_Unk5b7b80(int param_1)
+void ai_BuyBuildingOfferWindow(AIBLD *bld)
 {
-    /* ROUGH SKELETON: the 0x100-byte frame */
-    (void)param_1;
-    return 0;
+    int bldId;
+    int value;
+    AIMSG msg;
+    int win;
+    int slider;
+    AIBLD *found;
+
+    bldId = bld->id;
+    if (gm_MayTakeJob(bld->kind, ai_PlayerId) != 1) {
+        sv_MessageBox(txt_Ptrs[0x17df], 0);
+        return;
+    }
+    win = d2_OpenForm(0, 0, "Panel\\Gebaeude_Verkaufen_pergament");
+    d2_CentreViewWindows(win);
+    value = gm_EquipmentValue(bld, bld->level);
+    value = gm_ConvertMoney(value, ai_OwnPlayer);
+    d2_SetForm(win, 2);
+    slider = d2_GetWinObj(win, 2, io_PrintText(0x17de, bld->masterId, bld, ai_OwnPlayer));
+    d2_SetObjValue(slider, (int)(value * 0.5), (int)(value * 10.0), value);
+    d2_SetPointerSprite(0, 0);
+    sv_RunFrame(0, 0x677c7);
+    do {
+        found = (AIBLD *)gm_FindBuildingById(bldId);
+        if ((bld->flags5aw & 0x400) != 0 || found == 0)
+            sv_PopRequest = 1;
+        if (dm_L.rup != 0)
+            sv_PopRequest = 1;
+        if (d2_ClickedId == 0) {
+            if (sv_CheckGoodAmountB(ai_Chars[ai_PlayerId], gm_PlayerFactor(d2_GetObjValue(slider), ai_OwnPlayer),
+                                    ai_OwnPlayer) != 0) {
+                msg.type = 0x21;
+                msg.fromId = -1;
+                msg.flags = 9;
+                msg.to = ai_CharInts[bld->masterId][0];
+                msg.arg[0] = bld->id;
+                msg.arg[1] = gm_PlayerFactor(d2_GetObjValue(slider), ai_OwnPlayer);
+                msg.arg[2] = ai_CharInts[ai_PlayerId][0];
+                cm_SendLongMessage((char *)&msg);
+                cm_SendSetField(bld->id, 0x5a, 2, 0x200, 0);
+            }
+            sv_PopRequest = 1;
+        } else if (d2_ClickedId == 1) {
+            sv_PopRequest = 1;
+        }
+    } while (sv_RunFrame((int)ai_BuyBuildingOfferWindow, 0x677c7) != 0);
+    d2_CloseView(win);
 }
 /* 0x5b7dd0, a window (1232 B, ROUGH SKELETON): param_1, a 0x5d8-byte frame; the body is a comment */
 
