@@ -6400,7 +6400,7 @@ void ai_RhetoricContact(int bld, int room)
     }
 }
 
-int ai_FeastWindow(); void ai_DenounceWindow(AIBLD *bld); void sv_FitForm(int f); void sv_ButtonRow(int f, int y, int *out, int n, ...);
+void ai_FeastWindow(AIBLD *bld, AIOBJ *table); void ai_DenounceWindow(AIBLD *bld); void sv_FitForm(int f); void sv_ButtonRow(int f, int y, int *out, int n, ...);
 int ai_AmountRowStatus(); int ai_AmountRow(); short * gm_FindChar(int id); int sv_CheckMoney();
 int cm_SendExSetHE(); /* @original: the callers here push the key as an int and read the return (byte-matched ai_TransportOrderDue), against cm.h's void (unsigned char, char *) view */ int cm_SendRelations(int a, int b, int c, int d); void cm_SendMoneyDelta(int a, int b); void d2_SetObjEnabled();
 
@@ -6425,7 +6425,7 @@ void ai_FeastContact(AIBLD *bld, int room)
         ansch = sv_RegisterNamePlate("contact_ANSCHWAERZEN", txt_Ptrs[0x175e], 0xc);
         if (ai_ClickedObject != 0) {
             if (ai_ClickedObject == fest) {
-                ai_FeastWindow(bld, room);
+                ai_FeastWindow(bld, (AIOBJ *)room);
             } else if (ai_ClickedObject == kampf) {
                 ai_TalentWindow(bld, room, 3);
             } else if (ai_ClickedObject == ansch) {
@@ -20965,19 +20965,317 @@ void ai_BardWindow(void)
     d2_CloseView(win2);
     sv_CameraFollow();
 }
-/* 0x5b5e80, (2753 B, ROUGH SKELETON): the game clock 0x770ae0 is copied FIELD BY FIELD into the frame (+0x1c ..
-   +0x34, the `mov ds:0x770ae0` form, not an AITIME assignment), then a 0x3e4-byte frame; the body is a comment */
+int ai_EvalFest(AIGRP *g, int send);   /* 0x494ac0, am.h's prototype (am.h is not included yet: Open: head) */
 
-int ai_FeastWindow(void)
+/* 0x5b5e80, the feast window of the residence's social room (the FESTGEBEN plate of ai_FeastContact, with the
+   building and its feast table object). With no feast event 0x37 of the building running, the player plans one
+   for tomorrow at 20 o'clock: the window "locations\wohnsitz\fest2" picks the menu (text 0x1772, the six rows
+   0x1773 + i, sent as the table's field 0x2c), then, when the building has a stage (gm_Query kind 0x18), the
+   musicians (0x1779, the rows 0x177a + i, the field 0x2d; else the field gets 5, none). The window
+   "locations\wohnsitz\fest" then lists the guests (0x1769 with the time, 0x176a per guest: a click drops him)
+   and the cost (ai_EvalFest, 0x176b: the button invites one more through the amount menu); its first button
+   sends the feast message 0x37 and to every guest the invitation 0x36 (flags 9 for the kinds 6 / 7, else 1) and
+   writes the guests' netIds into the table (-1 for the empty seats), the second or a right click cancel. A
+   running feast (or a planned one) shows its summary in "fest2": the time (0x1780), the guests (0x1781), the
+   menu (0x1782), the musicians (0x1783, with a stage) and the cost (0x1784). The camera follows
+   @deep Reconstructed whole against the original 0x5b5e80..0x5b693c (feast planning: the clock + 24 h at
+   20:00, the feast event 0x37 search by AIJOB.from, the stage query gm_Query kind 0x18, the menu window
+   fest2 with the rows 0x1773+i and the table field 0x2c, the musician rows 0x177a+i and field 0x2d or 5,
+   the guest window fest with 0x1769 / 0x176a / ai_EvalFest / 0x176b / sv_ButtonRow 0x176c 0x176d, the
+   invite amount menu with the ids filled and option14 |= 2, the messages 0x37 and 0x36 with flags 9 / 1,
+   the table's guest fields 0x1c + 4k with -1 for empty seats, the summary 0x1780..0x1784, one shared close
+   tail): same instruction count (739 / 739), every call, constant and reference equal. Left is frame and
+   allocation: the original packs two pairs of locals into one slot each (the menu index byte i and the
+   guest window's refresh flag at frame+0x10, the done flag and the -1 of the empty seats at frame+0x14),
+   ours gives each its own slot (frame 0x3ec vs 0x3e4), and keeps 0 in edi where the original keeps it in
+   ebp at the start (the time copy and the cfg / guests stores scheduled around it, asmdiff +0x0..+0x80)
+   plus the store order of the AIGRP fields at +0x348. Tried: done reused for the -1 (puts done in memory
+   everywhere, worse), block-scoped i / refresh (no slot sharing), memset vs single stores of guests
+   (single stores give the original's per-slot stores) */
+
+void ai_FeastWindow(AIBLD *bld, AIOBJ *table)
 {
-    int clock[4];
+    int k;
+    int n;
+    int win;
+    int done;
+    int none;
+    int essen;
+    int musik;
+    int hasStage;
+    int invite;
+    int ok;
+    int cancel;
+    AIJOB *ev;
+    AICHARREC *ch;
+    AICHARREC *pick;
+    unsigned short *id;
+    AITIME when;
+    AICHARREC *guests[4];
+    AIGRP g;
+    int ctl[6];                         /* the pick rows, then the guests' rows */
+    int btns[2];
+    AMOUNTCFG cfg;
+    AIMSG msg;
+    char okText[0x100];
+    char cancelText[0x100];
 
-    clock[0] = U_I((unsigned)&ai_Time);
-    clock[1] = U_I((unsigned)&ai_Time.hour);
-    clock[2] = U_I(((unsigned)&ai_Time + 0x8));
-    U_W((int)clock + 0xc) = U_W(((unsigned)&ai_Time + 0xc));
-    /* ROUGH SKELETON: the 0x3e4-byte frame */
-    return 0;
+    when = ai_Time;
+    memset(&cfg, 0, sizeof(cfg));
+    essen = 6;
+    cfg.kind = 6;
+    done = 0;
+    guests[0] = 0;
+    guests[1] = 0;
+    guests[2] = 0;
+    guests[3] = 0;
+    musik = 5;
+    cfg.mode = 0x400;
+    cfg.filter = gypsyFilter;
+    gm_AddTime(&when, 0x18, 0, 0);
+    when.hour = 0x14;
+    when.min = 0;
+    for (ev = (AIJOB *)he_FindEvent(1, 0, 0x37); ev != 0; ev = (AIJOB *)he_NextEvent())
+        if (ev->from == bld->id)
+            break;
+    hasStage = gm_Query((void *)bld->objList, 1, 0, 0x18) != 0;
+    if (ev == 0) {
+        unsigned char i;
+        unsigned char noMusik;
+        int refresh;
+
+        win = d2_OpenForm(0, 0, "locations\\wohnsitz\\fest2");
+        d2_SetForm(win, 0);
+        sv_FitForm(d2_LastWindow);
+        d2_CentreViewWindows(win);
+        d2_SetPointerSprite(0, 0);
+        d2_ClickedId = -1;
+        d2_SetForm(win, 1);
+        io_PrintText("$C");
+        io_PrintText(0x1772);
+        for (i = 0; i < 5; i++)
+            ctl[i] = d2_GetWinObj(win, 1, io_PrintText("$L%ia[%s]$A", 0x1773 + i));
+        ctl[i] = d2_GetWinObj(win, 1, io_PrintText("$L%in[%s]", 0x1773 + i));
+        d2_ClickedId = -1;
+        do {
+            if (dm_L.rup != 0) {
+                done = 0;
+                sv_PopRequest = 1;
+            }
+            if (d2_ClickedId != -1) {
+                for (i = 0; i < 6; i++) {
+                    if (d2_PointerObj == ctl[i]) {
+                        cm_BeginFieldBlock((char *)table, table->objId);
+                        cm_AddFieldDelta(1, 1, 0x2c, &i);
+                        cm_SendFieldDeltas();
+                        sv_PopRequest = 1;
+                        done = 1;
+                        essen = i;
+                        break;
+                    }
+                }
+            }
+        } while (sv_RunFrame((int)ai_FeastWindow, 0x677c7) != 0);
+        if (done == 0)
+            goto close;
+        if (hasStage != 0) {
+            d2_SetForm(win, 1);
+            io_PrintText("$C");
+            io_PrintText(0x1779);
+            for (i = 0; i < 5; i++)
+                ctl[i] = d2_GetWinObj(win, 1, io_PrintText("$L%ia[%s]$A", 0x177a + i));
+            ctl[i] = d2_GetWinObj(win, 1, io_PrintText("$L%in[%s]", 0x177a + i));
+            d2_ClickedId = -1;
+            do {
+                if (dm_L.rup != 0) {
+                    done = 0;
+                    sv_PopRequest = 1;
+                }
+                if (d2_ClickedId != -1) {
+                    for (i = 0; i < 6; i++) {
+                        if (d2_PointerObj == ctl[i]) {
+                            cm_BeginFieldBlock((char *)table, table->objId);
+                            cm_AddFieldDelta(1, 1, 0x2d, &i);
+                            cm_SendFieldDeltas();
+                            sv_PopRequest = 1;
+                            done = 1;
+                            musik = i;
+                            break;
+                        }
+                    }
+                }
+            } while (sv_RunFrame((int)ai_FeastWindow, 0x677c7) != 0);
+        } else {
+            noMusik = (unsigned char)musik;
+            cm_BeginFieldBlock((char *)table, table->objId);
+            cm_AddFieldDelta(1, 1, 0x2d, &noMusik);
+            cm_SendFieldDeltas();
+        }
+        if (done == 0)
+            goto close;
+        d2_CloseView(win);
+        invite = -1;
+        refresh = 1;
+        ok = -1;
+        cancel = -1;
+        win = d2_OpenForm(0, 0, "locations\\wohnsitz\\fest");
+        d2_SetForm(win, 0);
+        sv_FitForm(d2_LastWindow);
+        d2_CentreViewWindows(win);
+        d2_SetPointerSprite(0, 0);
+        d2_ClickedId = -1;
+        do {
+            if (refresh != 0) {
+                refresh = 0;
+                d2_SetForm(win, 1);
+                io_PrintText("$C");
+                io_PrintText(0x1769, &when);
+                g.cost = 0;
+                n = 0;
+                g.n = 0;
+                g.musik = musik;
+                g.leader = (struct AIC4 *)ai_Chars[ai_PlayerId];
+                g.essen = essen;
+                for (k = 0; k < 4; k++) {
+                    ch = guests[k];
+                    if (ch != 0) {
+                        ctl[k] = d2_GetWinObj(win, 1, io_PrintText(0x176a, ch->id));
+                        g.mem[g.n].ch = (struct AIC4 *)ch;
+                        g.n++;
+                        n++;
+                    } else {
+                        ctl[k] = -1;
+                    }
+                }
+                ai_EvalFest(&g, 0);
+                d2_SetForm(win, 2);
+                io_PrintText("$C");
+                invite = d2_GetWinObj(win, 2, io_PrintText(0x176b, g.cost));
+                if (n == 4)
+                    d2_SetObjEnabled(invite, 0);
+                d2_SetForm(win, 3);
+                io_PrintText("$C");
+                txt_Format(okText, 0x176c);
+                txt_Format(cancelText, 0x176d);
+                sv_ButtonRow(d2_LastWindow, 0, btns, 2, okText, cancelText);
+                ok = btns[0];
+                cancel = btns[1];
+                if (n == 0)
+                    d2_SetObjEnabled(ok, 0);
+            }
+            if (d2_ClickedId != -1) {
+                if (dm_L.rup != 0) {
+                    done = 0;
+                    sv_PopRequest = 1;
+                }
+                if (d2_PointerObj == invite) {
+                    memset(cfg.ids, 0xff, sizeof(cfg.ids));
+                    cfg.option14 |= 2;
+                    id = cfg.ids;
+                    for (k = 0; k < 4; k++)
+                        if (guests[k] != 0)
+                            *id++ = guests[k]->id;
+                    pick = (AICHARREC *)ai_AmountMenu(&cfg, "$ZZum Fest einladen", 0, 0);
+                    if (pick != 0) {
+                        for (k = 0; k < 4; k++) {
+                            if (guests[k] == 0) {
+                                guests[k] = pick;
+                                refresh = 1;
+                                break;
+                            }
+                        }
+                    }
+                } else if (d2_PointerObj == ok) {
+                    none = -1;
+                    msg.type = 0x37;
+                    msg.arg[5] = 0;
+                    msg.flags = 2;
+                    msg.to = ai_CharInts[ai_PlayerId][0];
+                    msg.fromId = bld->id;
+                    cm_SendLongMessage((char *)&msg);
+                    n = 0;
+                    for (k = 0; k < 4; k++) {
+                        ch = guests[k];
+                        if (ch != 0) {
+                            cm_BeginFieldBlock((char *)table, table->objId);
+                            cm_AddFieldDelta(4, 1, 0x1c + n * 4, &ch->netId);
+                            cm_SendFieldDeltas();
+                            msg.type = 0x36;
+                            msg.arg[4] = 0;
+                            msg.to = ch->netId;
+                            msg.fromId = bld->id;
+                            msg.inviteWhen = when;
+                            if (ch->kind == 6 || ch->kind == 7)
+                                msg.flags = 9;
+                            else
+                                msg.flags = 1;
+                            cm_SendLongMessage((char *)&msg);
+                            n++;
+                        }
+                    }
+                    for (k = n; k < 4; k++) {
+                        cm_BeginFieldBlock((char *)table, table->objId);
+                        cm_AddFieldDelta(4, 1, 0x1c + k * 4, &none);
+                        cm_SendFieldDeltas();
+                    }
+                    done = 1;
+                    sv_PopRequest = 1;
+                } else if (d2_PointerObj == cancel) {
+                    done = 0;
+                    sv_PopRequest = 1;
+                } else {
+                    for (k = 0; k < 4; k++) {
+                        if (d2_PointerObj == ctl[k]) {
+                            guests[k] = 0;
+                            refresh = 1;
+                        }
+                    }
+                }
+            }
+        } while (sv_RunFrame((int)ai_FeastWindow, 0x677c7) != 0);
+        if (done == 0)
+            goto close;
+        d2_CloseView(win);
+    } else {
+        when = ev->end;
+        for (k = 0; k < 4; k++)
+            guests[k] = (AICHARREC *)gm_FindChar(table->festGuests[k]);
+        essen = table->festEssen;
+        musik = table->festMusik;
+    }
+    g.musik = musik;
+    g.essen = essen;
+    g.cost = 0;
+    g.leader = (struct AIC4 *)ai_Chars[ai_PlayerId];
+    win = d2_OpenForm(0, 0, "locations\\wohnsitz\\fest2");
+    d2_SetForm(win, 0);
+    sv_FitForm(d2_LastWindow);
+    d2_CentreViewWindows(win);
+    d2_SetPointerSprite(0, 0);
+    d2_SetForm(win, 1);
+    io_PrintText("$C");
+    io_PrintText(0x1780, &when);
+    g.n = 0;
+    for (k = 0; k < 4; k++) {
+        if (guests[k] != 0) {
+            g.mem[g.n].ch = (struct AIC4 *)guests[k];
+            g.n++;
+            io_PrintText(0x1781, guests[k]->id);
+        }
+    }
+    io_PrintText(0x1782, essen + 0x1773);
+    if (hasStage != 0)
+        io_PrintText(0x1783, musik + 0x177a);
+    ai_EvalFest(&g, 0);
+    io_PrintText(0x1784, g.cost);
+    d2_ClickedId = -1;
+    do {
+        if (dm_L.rup != 0)
+            sv_PopRequest = 1;
+    } while (sv_RunFrame((int)ai_FeastWindow, 0x677c7) != 0);
+close:
+    d2_CloseView(win);
+    sv_CameraFollow();
 }
 /* 0x5b6950, a window over a record (1170 B, ROUGH SKELETON): param_1 read at +1, the window "0x62ce8c"
    (0x4741f0), a 0x100-byte frame; the body is a comment */

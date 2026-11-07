@@ -402,7 +402,7 @@ typedef struct AIOBJ {                  /* 0x43 bytes, an object (table behind a
                                            ai_Time.year (ai_DarkCornerMenu; reasoned: the year of the last order) */
         };
         struct {                        /* of a feast table object (gm_Query kind 0x17 in a building, he.c 0x5437c0) */
-            int festGuests[4];          /* 0x1c..0x2b, the guests' character ids, -1: none */
+            int festGuests[4];          /* 0x1c..0x2b, the guests' netIds (gm_FindChar; ai_FeastWindow writes them), -1: none */
             unsigned char festEssen;    /* 0x2c, the menu pick (AIGRP.essen) */
             unsigned char festMusik;    /* 0x2d, the musician pick (AIGRP.musik) */
         };
