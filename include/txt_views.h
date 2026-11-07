@@ -58,7 +58,7 @@ extern char *txt_Ptrs[0x4800];    /* 0x143a1c0, each text in its file's buffer *
 #define txt_WeaponEmpty174                            (*(int *)((char *)txt_Ptrs + 0x046e8))  /* 0x143e8a8 */
 #define txt_WeaponEmpty176                            (*(int *)((char *)txt_Ptrs + 0x046ec))  /* 0x143e8ac */
 #define txt_ClickNoGround                            (*(int *)((char *)txt_Ptrs + 0x046f0))  /* 0x143e8b0 */
-#define ai_Unk143e8b4                            (*(int *)((char *)txt_Ptrs + 0x046f4))  /* 0x143e8b4 */
+#define cm_FightButtonText                            (*(int *)((char *)txt_Ptrs + 0x046f4))  /* 0x143e8b4 */
 #define ai_Unk143e8bc                            (*(char * *)((char *)txt_Ptrs + 0x046fc))  /* 0x143e8bc */
 #define ai_Unk143e8c0                            (*(char * *)((char *)txt_Ptrs + 0x04700))  /* 0x143e8c0 */
 #define ai_Unk143e8c8                            (*(char * *)((char *)txt_Ptrs + 0x04708))  /* 0x143e8c8 */

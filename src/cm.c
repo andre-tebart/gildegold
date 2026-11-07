@@ -11058,25 +11058,25 @@ void cm_FightFrame(char *r)
     } else
         sv_PopRequest = 1;
 }
-/* 0x4d6a50, builds the fight UI: the view "cutscenes\combat" (0x6f0d64), the button 0x60cb68 (text 0x143e8b4) and the
-   bar 0x60cb64 at the bottom, then the portrait boxes (0x4cfe70 / 0x4cfc10) */
+/* 0x4d6a50, builds the fight UI: the form "cutscenes\combat" (cm_FightForm), the button cm_FightButton (text
+   cm_FightButtonText) and the bar cm_FightTimeBar at the bottom, then the portrait boxes (0x4cfe70 / 0x4cfc10) */
 
-void ai_Unk4d6a50()
+void cm_BuildFightUI()
 {
     int v, t;
 
     v = d2_OpenForm(0, 0, "cutscenes\\combat");
-    ai_Unk6f0d64 = v;
+    cm_FightForm = v;
     ((void (*)(int, int))d2_PlaceMainWindow)(v, 3);
     d2_SetForm(v, 0);
-    t = d2_WinCreateSlider(0x10, 0xc, 0xbf, ai_Unk143e8b4, d2_LastWindow);
+    t = d2_WinCreateSlider(0x10, 0xc, 0xbf, cm_FightButtonText, d2_LastWindow);
     cm_FightButton = t;
-    G19_R(t, 0x5c, int) = 1;
+    d2_Objs[t].centred = 1;
     d2_CenterObj(cm_FightButton);
-    t = d2_WinOpenSlider((*(short *)(d2_LastWindowPtrC + 8) - 0x190) / 2, 0x37, 0x190, 0, cm_SceneDuration, 0x83, 0x42, d2_LastWindow);
+    t = d2_WinOpenSlider((d2_LastWindowPtr->w - 0x190) / 2, 0x37, 0x190, 0, cm_SceneDuration, 0x83, 0x42, d2_LastWindow);
     cm_FightTimeBar = t;
-    G19_R(t, 0x74, short) = 0x54;
-    G19_R(*(int *)(ai_Unkf8f39c - 0x10 + d2_LastWindow * 0x3c4), 0x4c, int) = 1;
+    d2_Objs[t].font = 0x54;
+    d2_Objs[d2_Wins[d2_LastWindow].parent].interactive = 1;
     d2_SetForm(cm_TextBox, 0);
     io_PrintText("$C");
     cm_ClosePortraits();
@@ -11086,8 +11086,8 @@ void ai_Unk4d6a50()
 
 void ai_Unk4d6b70()
 {
-    d2_CloseView(ai_Unk6f0d64);
-    ai_Unk6f0d64 = 0;
+    d2_CloseView(cm_FightForm);
+    cm_FightForm = 0;
     cm_ClearMarks();
     cm_ClosePortraits();
 }
@@ -11845,7 +11845,7 @@ void cm_FightLoop(char *a)
     t = tb_Calls - 0x15e;
     r = util_RandomU(100);
     cm_CollectSceneChars();
-    ai_Unk4d6a50(a);
+    cm_BuildFightUI(a);
     cm_FightAmbient = 0;
     if (r < 0x32)
         cm_FightAmbient = msx_PlayAmbient("Athmos\\Kampfathmo_1.mp3", 0xb);
@@ -17064,7 +17064,7 @@ extern int cm_PickCellZ;
 /* txt_WeaponEmpty174: view of txt_Ptrs (build/mk_txt_views.py) */
 /* txt_WeaponEmpty176: view of txt_Ptrs (build/mk_txt_views.py) */
 /* txt_ClickNoGround: view of txt_Ptrs (build/mk_txt_views.py) */
-/* ai_Unk143e8b4: view of txt_Ptrs (build/mk_txt_views.py) */
+/* cm_FightButtonText: view of txt_Ptrs (build/mk_txt_views.py) */
 /* ai_Unk143e8bc: view of txt_Ptrs (build/mk_txt_views.py) */
 /* ai_Unk143e8c0: view of txt_Ptrs (build/mk_txt_views.py) */
 /* ai_Unk143e8c8: view of txt_Ptrs (build/mk_txt_views.py) */
@@ -17186,7 +17186,7 @@ int cm_DefenderRole = 0;  /* 0x6f0d54 */
 int cm_FlagObjectCount = 0;  /* 0x6f0d58 */
 int cm_BootsObject = 0;  /* 0x6f0d5c */
 int cm_PointCount = 0;  /* 0x6f0d60 */
-int ai_Unk6f0d64 = 0;  /* 0x6f0d64 */
+int cm_FightForm = 0;  /* 0x6f0d64 */
 int ai_Unk6f0d68 = 0;  /* 0x6f0d68 */
 int ai_Unk6f0d6c = 0;  /* 0x6f0d6c */
 int ai_Unk6f0d70 = 0;  /* 0x6f0d70 */
