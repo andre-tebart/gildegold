@@ -1212,7 +1212,10 @@ typedef struct AICHARREC {         /* the character record fields this unit read
                                       copies the building's budget to its jobs; the master list page shows it) */
         };
     };
-    char pad1c4[4];
+    char pad1c4;
+    unsigned char b1c5;            /* 0x1c5, ai_char.h AICHAR.b1c5 (a worker value am.c averages per building; the
+                                      Domizil good 0x161 halves it, rounded up, for everyone in the building) */
+    char pad1c6[2];
     unsigned int powerFlags;       /* 0x1c8, the office-power bits already used (ai_char.h AICHAR.powerFlags) */
     unsigned int flags1cc;         /* 0x1cc, ai_char.h AICHAR.flags1cc (0x800: a bribe raises the relation by 6 instead of 4) */
     char pad1d0[0x1c];
@@ -33282,55 +33285,54 @@ int ai_UseGoodCureAilment(AICHARREC *ch)
     }
     return 1;
 }
-/* 0x5d0780, a message callback (317 B): param_1 the message record (+2 the type), param_2 the request
-   record. Type 6: the config cfg (20 dwords, [0] = 1, [1] = -1, [2] = 0x90010, [3] = 0, [4] = 4, [7 ..
-   14] = -1) with the text 0x5176d0 (0x9b) creates the request 0x5b2180 (1, cfg, text, 0, 0); other
-   types: the building 0x501190 (1, 1, param_2 + 4); 0 when absent. Then over the 0x300 character
-   records 0x770b80 + i * 0x21c: when its +0x16c is the request, the object block 0x4c3ba0 (the
-   character, its +4) and 0x4c3c00 (1, 1, the byte +0x1c5 of the record as (x & 1) + (x >> 1) at the
-   pointer 0x770d45 + i * 0x21c) and 0x4c49a0. Returns 1 once a request was created (0 otherwise). */
+/* 0x5d0780, the use callback of the Domizil good 0x161 (reached through its table entry +0x14): picks the target
+   building, for a player (kind 6) on the town map (ai_MapPick with the prompt 0x9b, the class filter 0x90010,
+   kind 4), else the building use->target; none -> 0. Every character in that building (AICHARREC.bld) has its
+   b1c5 halved, rounded up, sent as a field delta. Returns 1. (am.c's AI uses the good where the workers' b1c5
+   averages at least 6; what b1c5 means is not known.)
+   @deep Read whole against the original and rewritten typed (AMOUNTCFG, AIBLD, lc_CharRecs[i].bld / .b1c5
+   named in AICHARREC): the pick, the query, the loop over the 0x300 characters with b1c5 % 2 + b1c5 / 2
+   and the field block match instruction for instruction (the loop body is equal). Left: allocation of
+   constants: the original keeps 0 in esi from the entry (xor esi,esi; push esi x2, cfg filter high = esi,
+   cmp ebx,esi, the failure returns mov eax,esi) and 1 in ebp (mov ebp,1; push ebp, cfg.flags = ebp, the
+   end returns mov eax,ebp; path 2 sets mov ebp,1 after its null check), ours pushes immediates and returns
+   0 / 1 literally; with it the frame shifts by the extra push (slots). Tried: a ret variable 0 -> 1 (VC6
+   propagates it, no change), one shared if (bld != 0) { .. } (50 ins but the original checks in each path,
+   kept the per-path returns). */
 
-int ai_Unk5d0780(int param_1, int param_2)
+int ai_UseGoodHalveWorkerValue(AICHARREC *ch, G8USEVIEW *use)
 {
-    int cfg[20];
+    AMOUNTCFG cfg;
     char text[0x100];
-    char b;
-    int req;
+    unsigned char value;
+    AIBLD *bld;
     int i;
-    int ret;
 
-    ret = 0;
-    if (*(char *)(param_1 + 2) == 6) {
-        for (i = 0; i < 20; i++)
-            cfg[i] = 0;
-        for (i = 7; i < 15; i++)
-            cfg[i] = -1;
-        txt_Format(text, (char *)0x9b);
-        cfg[0] = 1;
-        cfg[1] = -1;
-        cfg[2] = 0x90010;
-        cfg[3] = 0;
-        cfg[4] = 4;
-        req = ai_MapPick(1, (int)cfg, text, 0, 0);
-        if (req == 0)
+    if (ch->kind == 6) {
+        memset(&cfg, 0, sizeof(cfg));
+        memset(cfg.ids, 0xff, sizeof(cfg.ids));
+        txt_Format(text, 0x9b);
+        cfg.flags = 1;
+        cfg.mode = -1;
+        cfg.kind = 4;
+        cfg.filter = 0x90010;
+        bld = (AIBLD *)ai_MapPick(1, &cfg, text, 0, 0);
+        if (bld == 0)
             return 0;
     } else {
-        req = gm_BuildQuery(1, 1, *(int *)(param_2 + 4));
-        if (req == 0)
+        bld = (AIBLD *)gm_BuildQuery(1, 1, use->target);
+        if (bld == 0)
             return 0;
     }
-    ret = 1;
     for (i = 0; i < 0x300; i++) {
-        unsigned char x = *(unsigned char *)(((unsigned)&ai_Selected + 0x3d) + i * 0x21c);
-
-        if (*(int *)((unsigned)&ai_Unk770cec + i * 0x21c) == req) {
-            b = (char)((x & 1) + (x >> 1));
-            cm_BeginFieldBlock((char *)((unsigned)&ai_Chars + i * 0x21c), *(int *)((unsigned)&ai_CharInts + i * 0x21c));
-            cm_AddFieldDelta(1, 1, (short)(((unsigned)&ai_Selected + 0x3d) + i * 0x21c) - (short)U_I((unsigned)&cm_FieldObject), &b);
+        if (lc_CharRecs[i].bld == bld) {
+            value = lc_CharRecs[i].b1c5 % 2 + lc_CharRecs[i].b1c5 / 2;
+            cm_BeginFieldBlock((char *)&lc_CharRecs[i], lc_CharRecs[i].netId);
+            cm_AddFieldDelta(1, 1, (unsigned short)((char *)&lc_CharRecs[i].b1c5 - cm_FieldObject), &value);
             cm_SendFieldDeltas();
         }
     }
-    return ret;
+    return 1;
 }
 /* 0x5d08c0, the trial step of a player (262 B), called from he.c 0x549770 twice (the bytes +0xb8 /
    +0xb9): param_1 the player record (+0x80 + i the step counter, +4 the message handle), param_2 the
