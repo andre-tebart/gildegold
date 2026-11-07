@@ -7770,7 +7770,8 @@ turn:
 }
 /* 0x4cf370, draws the scroll arrows (sprite ids 0 .. 7 of the sheet d2_GetPic(0x52c)): the mouse hit tests and
    whether the camera's preset views d3_Camera->views[1] .. [4] are set (their position not d3_Origin) pick the
-   pressed (2) or the free (1) look. Rough draft. */
+   pressed (2) or the free (1) look; the top and bottom arrows sit 75 screen units in from the edge (the top one's
+   sprite 30 units tall) */
 
 void cm_DrawScrollArrows()
 {
@@ -7806,11 +7807,11 @@ void cm_DrawScrollArrows()
         if (d3_VecEqual(&d3_Camera->views[2].pos, &d3_Origin, 0.2f) == 0)
             b = 1;
     }
-    d2_SetClipRect(0, 0, *(int *)((char *)d2_ScreenSurf + 4), *(int *)((char *)d2_ScreenSurf + 8));
+    d2_SetClipRect(0, 0, ((D2SURF *)d2_ScreenSurf)->w, ((D2SURF *)d2_ScreenSurf)->h);
     if (a == 2)
-        d2_DrawShape(d2_ScreenW / 2 - 0x14, (int)(d2_ScreenScale * ai_Unk5edc50 - ai_Unk5eb81c), d2_ScreenSurf, t, 0);
+        d2_DrawShape(d2_ScreenW / 2 - 0x14, (int)(d2_ScreenScale * 525.0f - 30.0f), d2_ScreenSurf, t, 0);
     else if (a == 1)
-        d2_DrawShape(d2_ScreenW / 2 - 0x14, (int)(d2_ScreenScale * ai_Unk5edc50 - ai_Unk5eb81c), d2_ScreenSurf, t, a);
+        d2_DrawShape(d2_ScreenW / 2 - 0x14, (int)(d2_ScreenScale * 525.0f - 30.0f), d2_ScreenSurf, t, a);
     if (e == 2)
         d2_DrawShape(8, d2_ScreenH / 2 + 0x14, d2_ScreenSurf, t, e);
     else if (e == 1)
