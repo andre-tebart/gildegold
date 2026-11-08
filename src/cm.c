@@ -38,6 +38,9 @@
    as the fight command's slot, cm_RunCutOrders casts between them); one type for both is unsettled.
    Open: layout: the fight code 0x4cf670.. may be a TU of its own (cm_UpdatePointer reloads ai_PickedObject after
    calls of ai_LedSelectBits, a leaf defined above in this unit, as if it were external).
+   Open: data: 0x60d38c / 0x60d3a0 (cm_RunAuction's "handwerker3_MANN" / "buerger2_MANN") are the original's
+   string literals in cm's data block: the code inline-copies from them, and naming them as arrays makes VC6
+   copy byte-wise (cm_RunAuction shape -> draft), so they stay gap bytes.
    unit of rea 8cef7d5b (src/game/cm.c); boundaries in decl/text.dcl */
 #include "d2_types.h"
 #include "txt_views.h"

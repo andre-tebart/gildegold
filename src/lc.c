@@ -71,26 +71,19 @@
    ai_ProdGoods2 and the column slots ai_ProdColumnSlots (LCPRODROW / LCPRODSLOT); the member list rows are sv's SVMEMBERROW (sv_types.h, sv_MemberRows).
    Open: the other users of those tables (ai_InitProductionTables, the transport / storage / equip windows) still
    read them through byte offsets.
-   Open: data: the shared float 0x5ebb40 (ai_FloatHundred, he.c reads it too) still sits in main.c's full_rdata
-   gap block.
+   Open: data: the shared float 0x5ebb40 (ai_FloatHundred, cm.c and he.c read it too) is the compiler's pooled
+   100.0f: one copy in the image's constant pool, shared by 30 functions; a named array reproduces the loads but
+   would add a second object, so its bytes stay in main.c's full_rdata gap block.
    Open: data: 0x6f2450 ai_DebugHotkeys (a view of main.c's full_data_6f2450), owner cm or am (between cm's
    0x6f244c and am's 0x6f2464; only this unit reads it).
    Open: data: 0x5f3418 d3t_BoxCornerIdx, owner di_input or d3_tools (only ai_GameFrame writes it, -1; it lies
    between di_input's literals and d3_tools' d3t_SunFadeStart, before four corner vectors), named in main.c's gap block.
    Open: data: 0x6f2314 sv_LastRoom, owner sv or f3gm (between sv's sv_PanelShown and f3gm's ai_PermsDirty; only
    ai_EnterBuilding writes it), named in main.c's gap block.
-   Open: data: the stats panel's master list rows ai_MasterRows (0x6f40e0) and its scroll buttons ai_MasterDown /
-   ai_MasterUp / ai_MasterBar (0x6f3870, 0x6f4080, 0x6f4ee0) are views of main.c's full_data blocks (this unit
-   is their only user, the owner not settled).
-   Open: data: 0x6f3840 ai_InvSlots (the inventory child window's six LCINVSLOT rows) is a view of main.c's
-   full_data_6f3680. (The Domizil goods' clock at 0x6f2f64 is LCSETTINGS lc_Settings.) The transport window's
-   cart rows are LCCARTROW, the inventory window's character
-   ai_InvChar (0x6f2f60, after ai_NewsSecond), its objects G8INVOBJ (a view of AIOBJ: its union does not reach the
+   The Domizil goods' clock at 0x6f2f64 is LCSETTINGS lc_Settings; the transport window's cart rows are LCCARTROW,
+   the inventory window's character ai_InvChar (0x6f2f60, after ai_NewsSecond), its six rows ai_InvSlots
+   (LCINVSLOT) and their objects G8INVOBJ (a view of AIOBJ: its union does not reach the
    use stamp at +0x2d).
-   Open: data: 0x62a56c ai_FmtLabel ("%s:", ai_TechEffectsWindow's captions) is a view of main.c's full_data_62a56c;
-   its owner (sv_t declares it too) is not settled.
-   Open: data: 0x62a564 ai_CharNameFmt ("%1N3", a character name for txt_Format) stays in main.c's gap block: only lc
-   uses it, but it lies before lobby's data, so its owner (a unit before lobby) is not settled.
    Open: layout: lc may hold more than one original TU: VC6 sees our ai_FindUsableGood (0x5ba620) write no memory
    and keeps use->obj->id in a register across the call in ai_UseGood (0x5cf8a0), where the original reloads it
    (the callee was not visible to it there: a TU boundary between 0x5ba620 and 0x5cf8a0?); likewise the use
