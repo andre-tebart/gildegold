@@ -26,9 +26,9 @@
    it void; this unit calls it through the cast cm_SendExSellObjectH.
    Open: the head tables (gm_BoyHead .. gm_SpyHeads, gm_OwnNameHeads) are GMHEAD records but still defined as
    unsigned arrays; their readers cast them.
-   Open: not included yet (dcp headers conflicts f3gm HEADER): ai.h anm.h cm.h d2.h d3_interface.h d3_tools.h
+   Open: not included yet (dcp headers conflicts f3gm HEADER): ai.h anm.h cm.h d3_interface.h d3_tools.h
    gfx.h hmt.h hst.h rt.h d3_pose.h mission.h; held by own declarations that differ from the owner's:
-   d2_Objs, gm_MinutesBetween, gm_ClockSeason, gm_CompareTime; calls whose argument count differs from the
+   gm_MinutesBetween, gm_ClockSeason, gm_CompareTime; calls whose argument count differs from the
    definition (read the original's pushes): gm_Liking.
    Open: data: gm_KindObjCount (0x76fdc4) is defined '= 0' as D5 asks, but gm_BuildKindObjects is byte-identical
    only with a tentative definition (or none in this TU): its definition form / owner is unsettled.

@@ -79,7 +79,6 @@
    run / theft 0x94 (HEGRAVETHEFT), the gypsy approaches 0x573760 .. 0x573c20 and the curse 0x9e / slowdown 0x9f /
    trial scene 0xa0 / petty loss 0xa3 / event good 0xa4 handlers (0x573f20 .. 0x5755c0) still read the event and
    message records through raw offsets
-   Open: head: d2.h's K&R view d2_PlaceMainWindow is the last M7 line here (its callers push two arguments).
    Open: head: ai.h is not included (ai_FINVIEW stands in), nor are anm.h f3snd.h hmt.h hst.h menu.h; the @original
    cast macros next to the includes keep the spellings the definitions disagree with: cm_SendExSetHEI (an int key,
    the return kept), cm_SendSpawnCharacterR (the send slot kept), ai_PlagueMessageK (two arguments),
