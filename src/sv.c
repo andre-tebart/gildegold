@@ -51,13 +51,10 @@ struct VFSDIR;
 #include "menu_types.h"
 #include "ai_types.h"
 extern OPTIONBYTES ai_OptionPanelHelp;
-extern char ai_PlayerSlots[4][0x2f4];
 
 extern GAPDATA full_data_623e90[];
 extern GAPDATA full_data_6f2364[];
 
-extern char * ai_PickedObject;
-extern int ai_PickedChar;
 extern int d2_HitUnderPointer;
 
 
@@ -77,23 +74,13 @@ extern int hst_KeyNext;
 extern GAPDATA full_data_623240[];
 extern int ai_PermsDirty;
 extern OPTIONBYTES ai_GameSwitches;
-extern char d2_CaptionCopy[0x80];
 extern float d3s_QuadUV[6];
 extern int ai_SceneChars[32];
-extern char cm_ChatLog[2048];
 
 extern GAPDATA full_data_602568[];
 extern char cm_ChatLog[2048];
 
-extern int cm_NoticeCount;
-extern unsigned int cm_FightStart;
-extern int cm_SceneRain;
 extern char * ai_PickedObject;
-extern int ai_TimeCopy[4];
-extern int cm_NextNetStep;
-extern int cm_DayEndRequest;
-extern char cm_RequestedSaveName[72];
-extern int cm_RequestedSaveSlot;
 extern int d2_CutsceneActive;
 extern int d2_HitUnderPointer;
 
@@ -240,6 +227,7 @@ extern SVPLATE sv_NamePlates[0x20];
 #include "sblib.h"
 #include "d2.h"
 #include "gfx.h"
+#include "cm.h"
 #define d2_AddHitRectI ((int (*)(int, int, int, int, int))d2_AddHitRect)  /* 0x478890 (gfx.h: short x, y, w, h): @original sv_BuildScreenLayout pushes d2_ScreenW - 0x50 unextended, an int x (0x521e9c sub edx, 0x50 / 0x521ea1 push edx) */
 #define util_RandomU ((unsigned short (*)(int))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original this unit's callers read the 16-bit result (byte-matched ch_RandomNear 0x405160, ai_CalcMeisterBank 0x4836a0, cm_FightLoop 0x4d88c0 move it as a word / movzx) */
 #define ai_PlayerCharC (*(char **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) read bytewise, as this unit does (ai_PlayerChar + 4, ch[2]) */
