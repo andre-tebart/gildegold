@@ -390,19 +390,19 @@ int ls_RelinkScene(int f)
 {
     int saved = d3_CurrentScene;
     int k;
-    char *b;
+    AIBLD *b;
 
     d3if_SelectScene(0, 1);
     for (k = 0; k < 0xa900; k += 0xa9) {
-        b = ai_Blds + k;
-        if (*b != 0 && *(int *)(b + 0x61) != 0)
-            *(int *)(*(int *)(b + 0x61) + 0x200) = *(int *)(b + 1);
+        b = (AIBLD *)(ai_Blds + k);
+        if (b->type != 0 && b->object != 0)
+            ((D3OBJECT *)b->object)->owner = (void *)b->id;
     }
     d3_SaveScene(0, f);
     for (k = 0; k < 0xa900; k += 0xa9) {
-        b = ai_Blds + k;
-        if (*b != 0 && *(int *)(b + 0x61) != 0)
-            *(char **)(*(int *)(b + 0x61) + 0x200) = b;
+        b = (AIBLD *)(ai_Blds + k);
+        if (b->type != 0 && b->object != 0)
+            ((D3OBJECT *)b->object)->owner = b;
     }
     d3if_SelectScene(saved, 1);
     return 1;
