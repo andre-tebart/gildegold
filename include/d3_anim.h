@@ -152,7 +152,8 @@ typedef struct D3PATH {             /* 0x44 bytes, at D3OBJECT + 0x1d0 */
     int key;                        /* 0x04 */
     int next;                       /* 0x08 */
     int time;                       /* 0x0c */
-    int unk10;
+    int maxStep;                    /* 0x10, the largest update step (ms) the path interpolates: a longer one
+                                       relights the object instead of moving it (d3_anim.c:759), 100 at creation */
     D3VECTOR pos;                   /* 0x14, the object's position and angles at the start */
     D3VECTOR rot;                   /* 0x20 */
     D3ANIMFLAGS flags;              /* 0x2c */

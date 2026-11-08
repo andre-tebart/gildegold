@@ -756,7 +756,7 @@ normalize:
             P->keys[P->key - 1].rotin.x = P->keys[P->key - 1].rotin.y = P->keys[P->key - 1].rotin.z = 0;
             P->keys[P->key - 2].rotout.x = P->keys[P->key - 2].rotout.y = P->keys[P->key - 2].rotout.z = 0;
         }
-        if (now - OBJ_LAST(obj) > (unsigned int)P->unk10)
+        if (now - OBJ_LAST(obj) > (unsigned int)P->maxStep)
             over2 = 1;
         acc = ((P->flags.b[8] >> 1) & 1) * P->fadeEnd * dt + *(float *)&P->timeout;
         *(float *)&P->timeout = acc;
@@ -958,13 +958,13 @@ D3ANIM *d3anim_CreatePath(D3OBJECT *obj, D3ANIMFLAGS f, int nkeys, D3ANIMKEY *ke
     D3PATH *p = 0;
     int i;
 
-    if (D3_OBJPATH(obj))
+    if (obj->path)
         d3anim_FreePath(obj);
     if (obj->type == 4 || obj->type == 3 || obj->type0 == 4) {
         p = mem_Alloc(sizeof(D3PATH), "d3_int:CreateObjAnim");
         p->nkeys = nkeys;
         p->flags = f;
-        p->unk10 = 100;
+        p->maxStep = 100;
         p->fadeEnd = 1.0f;
         p->timeout = 0;
         p->flags.b[1] &= ~0x20;
@@ -991,7 +991,7 @@ D3ANIM *d3anim_CreatePath(D3OBJECT *obj, D3ANIMFLAGS f, int nkeys, D3ANIMKEY *ke
         }
         d3path_Init(p);
     }
-    D3_OBJPATH(obj) = p;
+    obj->path = p;
     ((D3ANIMOBJ *)obj)->time = d3_Time;
     return (D3ANIM *)p;
 }
