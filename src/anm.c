@@ -2,9 +2,8 @@
    "CHICK", "PIG", "HORSE" (.data 0x602688, right after rmsg.c's table), "katze_KATZE", "hund_HUND", ..
    Start: 0x4bb810 (first user of the tag); 0x4bb720 / 0x4bb7d0 before it post random messages (rmsg.c).
    End: the place helpers after anm_UpdateSheep (0x4bc2e0..) share "dummy_TUER" with the road code, so they are rd.c's.
-   Names are ours.
-   Open: the animal object is read through raw offsets although anm.c sees ch.h and d3.h now (the CHARACTER /
-   D3OBJECT views can replace them); D3OBJECT.unk224 still needs a name.
+   An animal's obj is its CHARACTER (ch.h), reached as CHARACTER.obj / D3_MESH; the buildings it walks between
+   are G15BLD (rd.h). Names are ours.
    unit of rea 8cef7d5b (src/game/anm.c); boundaries in decl/text.dcl */
 #include <stdio.h>
 #include <string.h>
