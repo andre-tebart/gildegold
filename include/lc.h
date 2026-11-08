@@ -194,6 +194,7 @@ extern LCSETTINGS lc_Settings;          /* 0x6f2f64 */
 extern unsigned short ai_StatsChartFlags; /* 0x6f2f88, the charts the statistics panel shows (bit i: the legend row i) */
 extern unsigned int ai_AmountTab;        /* 0x6f2f8c, the open tab of the special-amount window (0 .. 7; 8: no tab has rows) */
 extern int ai_MasterLetterPage;          /* 0x6f2f90, the open page of the master letter window: 0 the work settings, 1 the goods weights */
+extern int ai_MasterDown;                /* 0x6f3870, the master list page's scroll down button */
 /* 0x6f3880: the equip window's row table, 32 rows of 0x40 (ai_EquipRowsInit frees every row, ai_UpdateEquipRows keeps
    the rows of the scene characters of the job groups 10 .. 12, ai_EquipWindow lays them out) */
 typedef struct AIEQUIPSLOT {            /* 8 bytes, one equipment slot of a row: a good as an input icon */
@@ -208,6 +209,7 @@ typedef struct AIEQUIPROW {             /* 0x40 bytes, one row */
     AIEQUIPSLOT slot[6];                /* 0x10, the six equipment slots: the character's goods as input icons */
 } AIEQUIPROW;
 extern AIEQUIPROW ai_EquipRows[0x20];   /* 0x6f3880, 32 rows; written until 0x6f4080 */
+extern int ai_MasterUp;                 /* 0x6f4080, the master list page's scroll up button */
 extern int ai_BldCartCount;             /* 0x6f40a0, the number of carts in ai_BldCarts (at most 3) */
 extern struct AIOBJ *ai_BldCarts[3];    /* 0x6f40a4, the carts of the building the cart list shows (gm_BuildingCarts) */
 extern int ai_BldCartButtons[3];        /* 0x6f40b0, per cart the button to its destination building, -1: none */

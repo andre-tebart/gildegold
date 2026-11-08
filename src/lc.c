@@ -667,8 +667,6 @@ extern GAPDATA full_data_62d134[];
 extern GAPDATA full_data_6f2f80[];
 extern GAPDATA full_data_6f2f84[];
 extern GAPDATA full_data_6f3680[];
-extern GAPDATA full_data_6f3870[];
-extern GAPDATA full_data_6f4080[];
 extern int d2_LastWindow;
 extern struct D2OBJ *d2_Objs;
 extern char ai_Chars[768][0x21c];
@@ -23806,8 +23804,6 @@ void ai_BuildingDetailWindow(AIBLD *bld)
     }
     d2_CloseView(win);
 }
-#define ai_MasterDown (*(int *)&full_data_6f3870)  /* 0x6f3870, the master list page's scroll down button */
-#define ai_MasterUp (*(int *)&full_data_6f4080)  /* 0x6f4080, the master list page's scroll up button */
 int d2_WinOpenInput(int x, int y, int w, int h, unsigned char flags, int win);  /* 0x46a360, d2.h's prototype (d2.h is not included yet: Open: head) */
 
 /* 0x5bc9c0, opens the master list page "panel\meister_liste_2" of the player stats panel (its third entry): the
@@ -34365,7 +34361,9 @@ LCSETTINGS lc_Settings = { 0 };  /* 0x6f2f64, the escort kind of the last transp
 unsigned short ai_StatsChartFlags = 0;  /* 0x6f2f88, the charts the statistics panel shows (ai_CityStatsPanel: bit i the legend row i, 1 at the first open) */
 unsigned int ai_AmountTab = 0;  /* 0x6f2f8c, the open tab of the special-amount window (ai_SpecialAmountWindow, 0 .. 7; 8: no tab has rows) */
 int ai_MasterLetterPage = 0;  /* 0x6f2f90, the open page of the master letter window (ai_MasterLetterSettings): 0 the work settings, 1 the goods weights */
+int ai_MasterDown = 0;  /* 0x6f3870, the master list page's scroll down button (ai_PlayerStatsPanel passes it to sv_CreateScrollButtons and compares d2_PointerObj with it) */
 AIEQUIPROW ai_EquipRows[0x20] = { 0 };  /* 0x6f3880, the equip window's rows: ai_EquipRowsInit frees all 32, ai_UpdateEquipRows fills and updates them, ai_EquipWindow lays them out; 32 x 0x40 runs to 0x6f4080 */
+int ai_MasterUp = 0;  /* 0x6f4080, the master list page's scroll up button (sv_CreateScrollButtons) */
 int ai_BldCartCount = 0;  /* 0x6f40a0, the number of carts in ai_BldCarts (gm_BuildingCarts, at most 3) */
 struct AIOBJ *ai_BldCarts[3] = { 0 };  /* 0x6f40a4, the carts of the building the cart list shows */
 int ai_BldCartButtons[3] = { 0 };  /* 0x6f40b0, per cart the button to its destination building (picture 5), -1: none */
