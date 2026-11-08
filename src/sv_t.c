@@ -313,7 +313,6 @@ extern GAPDATA full_data_602568[];
 extern GAPDATA full_data_62a3ec[];
 extern GAPDATA full_data_62a3f8[];
 extern int sv_PopRequest;
-extern unsigned short ai_PlayerId;
 extern int d2_PointerObj;
 extern int d2_ClickedId;
 extern int d2_LastWindow;
@@ -342,12 +341,10 @@ extern int d2_ClickedId;
 extern int d2_LastWindow;
 extern GAPDATA full_data_602568[];
 extern GAPDATA full_data_62a418[];
-extern int ai_BuildingPerms;
 
 extern GAPDATA full_data_62a4bc[];
 extern int sv_PopRequest;
 extern int ai_BuildingPerms;
-extern int ai_ClickedObject;
 
 
 
@@ -6913,8 +6910,8 @@ void ai_CabinetIntrigueWindow(AIBLD *rec)
     sv_CameraFollow();
 }
 
-void sv_ReleaseNamePlates(void); int sv_RegisterNamePlate(); int ai_OpenTransport(); void ai_StorageWindow();
-int ai_ProductionWindow(); void ai_AlchemistResearchWindow(); void ai_AlchemistWindow();
+void sv_ReleaseNamePlates(void); int sv_RegisterNamePlate(); void ai_StorageWindow();
+void ai_AlchemistResearchWindow(); void ai_AlchemistWindow();
 
 /* 0x5821d0, the contacts of the alchemist's laboratory (the room kind 0x24b of the enter-building driver
    ai_EnterBuilding): rec = the building, room = the room object. The name plates are released once, then each frame
@@ -9507,8 +9504,6 @@ void ai_GraveInsuranceContact(AIBLD *rec)
     sv_ClearSelection();
     sv_CameraFollow();
 }
-
-struct AIBLD; int ai_ProductionWindow(struct AIBLD *bld); int ai_OpenTransport(int rec);
 
 /* 0x587560, the graveyard trade-contact dispatcher (317 B): rec = the building record. Releases the name plates
    (sv_ReleaseNamePlates); each frame (sv_RunFrame, pump 0x67fff) the graveyard chatter (ai_GraveyardChatter); with

@@ -31,6 +31,7 @@ extern char ai_NewsKeyFriedhof13[28];   /* 0x62c380, the sound of the graveyard 
 extern char ai_NewsKeyFriedhof00[28];   /* 0x62c39c, the sound of the graveyard news ai_GraveyardMessage (event 0x5fa): the key "_NACHRICHTEN_FRIEDHOF_00" */
 
 void ai_InitProductionTables(void);                /* 0x58bbd0, the production window's table init */
+int ai_ProductionWindow(struct AIBLD *bld);        /* 0x58bd60, the production window "Handel\Handel_PRODUKTION" of the building */
 void ai_MarketContact(struct AIBLD *b); /* 0x58f510, the shop-counter contact of a building */
 void ai_RunObjectRoom(struct AIOBJ *room); /* 0x59f410, runs the room object of the building the player is in (its kind's handler) */
 int ai_BuildingName(int id, char *out); /* 0x58f640, the building name of a kind id */
@@ -352,6 +353,9 @@ void ai_CityWatchListener(struct AIBLD *bld, int room);  /* 0x5a67a0 */
 void ai_GuildHallListener(struct AIBLD *bld, int room);  /* 0x5a6920 */
 void ai_TrainingRoomListener(struct AIBLD *bld, int room);  /* 0x5a6a90 */
 int ai_OpenTransportSell(int building);  /* 0x5af1b0 */
+int ai_OpenTransport(int building);  /* 0x5af1a0, the transport list of the building (ai_TransportWindow mode 1) */
+int ai_CreateCityPoint(char *city);  /* 0x59a2c0, creates the city point object of a town, 0 when its dummy is missing */
+void ai_LoadTownMap(void);  /* 0x5b2090, loads the town map picture of the own player */
 int ai_OpenTransportBuy(int building);  /* 0x5af1c0 */
 int ai_MapPick(unsigned int flags, int *req, char *name, void (*cb)(), int unused);  /* 0x5b2180 */
 void ai_OpenRobberBribe(int bld);  /* 0x5b4bf0 */
