@@ -1150,46 +1150,47 @@ int ls_WriteEventTables(int f)
   }
   return 1;
 }
-/* 0x51c2f0, ROUGH: converted from the Ghidra pseudocode, absolute data addresses; save writer */
+/* 0x51c2f0, writes the used scene party records (cm_Parties) to the save file f: their count, then per record the
+   id, kind, thing, flags, used, the 16 member netIds, the offer kind, the 0x98-byte kind payload (+0x7c), the clock
+   time and the host
+   @deep read whole against the original and rewrote the ROUGH draft typed (G28REC *p, the LS_W sequence id
+   / kind / thing / flags / used / members (0x10 of 4) / offerKind / the 0x98-byte payload / time / host,
+   the count loop). 130 vs 129 instructions, 3 differing and only the second loop's bound: ours
+   materialises the record base for the test (lea eax,[esi-0x14]; cmp eax, cm_Parties+0x6780; jl) where the
+   original compares the induction itself (cmp esi, cm_Parties+0x6794; jl) - the induction is the record's
+   thing word (esi) on both sides, so this is VC6's address fold in the loop test. Tried one build each:
+   unsigned p < cm_Parties + 96 (jb and the same lea), the int casts kept, a do-while tail, and a test on
+   &p->thing / &cm_Parties[96].thing (VC6 re-based the induction at +0x26, 28 differing, shape by proof but
+   with a crossed-reference M8 there) - reverted to the clean form. */
 
 
 int ls_WriteParties(int f)
 {
-  char *piVar1;
-  int iVar2;
-  char *puVar3;
-  int local_4;
-  local_4 = 0;
-  piVar1 = ((char *)(unsigned)&cm_Parties);
-  do {
-    if (*(int *)piVar1 != -1) {
-      local_4 = local_4 + 1;
+    G28REC *p;
+    int n;
+
+    n = 0;
+    for (p = cm_Parties; (int)p < (int)(cm_Parties + 96); p++) {
+        if (p->id != -1)
+            n++;
     }
-    piVar1 = piVar1 + 0x114;
-  } while ((int)piVar1 < (unsigned)((unsigned)cm_Parties + 0x6780));
-  LS_W(&local_4, 4)
-  puVar3 = ((char *)((unsigned)&cm_Parties + 0x14));
-  do {
-    if (*(int *)(puVar3 - 0x14) != -1) {
-      LS_W(puVar3 - 0x14, 4)
-      LS_W(puVar3 - 0xc, 1)
-      LS_W(puVar3, 4)
-      LS_W(puVar3 + 0x12, 1)
-      LS_W(puVar3 + 0x1c, 1)
-      iVar2 = vfs_fwrite(puVar3 + 0x20,4,0x10,f);
-      if (iVar2 == 0) {
-        return 0;
-      }
-      LS_W(puVar3 + 0x60, 1)
-      LS_W(puVar3 + 0x68, 0x98)
-      LS_W(puVar3 + 4, 0xe)
-      LS_W(puVar3 - 8, 4)
+    LS_W(&n, 4)
+    for (p = cm_Parties; (int)p < (int)(cm_Parties + 96); p++) {
+        if (p->id != -1) {
+            LS_W(&p->id, 4)
+            LS_W(&p->kind, 1)
+            LS_W(&p->thing, 4)
+            LS_W(&p->flags, 1)
+            LS_W(&p->used, 1)
+            if (vfs_fwrite(p->members, 4, 0x10, f) <= 0)
+                return 0;
+            LS_W(&p->offerKind, 1)
+            LS_W(&p->eventId, 0x98)
+            LS_W(&p->time, 0xe)
+            LS_W(&p->host, 4)
+        }
     }
-    puVar3 = puVar3 + 0x114;
-    if (((unsigned)&cm_Parties + 0x6793) < (int)puVar3) {
-      return 1;
-    }
-  } while( 1 );
+    return 1;
 }
 /* 0x51c450, saves the history (hst.c) part of a save game: the texts-on byte hst_TextsOn, the offsets of the
    current text (hst_TextCurrent - hst_TextFirst) and of the next key-list entry (hst_KeyNext - hst_KeyFirst),
