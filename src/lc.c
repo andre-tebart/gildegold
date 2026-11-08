@@ -161,7 +161,6 @@ struct D3SM;
 #include "data_views.h"
 
 /* full rebuild: the symbols whose original addresses the code above spells literally */
-extern const volatile unsigned __int64 gypsyFilter;  /* 0x5eed68, menu.c */
 #define gypsyFilterWords (*(int (*)[2])&gypsyFilter)  /* 0x5eed68, the filter's two 32-bit words */
 extern GAPDATA full_data_6f40e0[];
 extern GAPDATA full_data_62b038[];
@@ -172,12 +171,10 @@ extern int sv_ClickedContact;  /* 0x6f22fc, sv.h */
 extern int sv_ClickedItem;  /* 0x76045c, sv.h */
 
 
-extern int d2_LastWindow;
 extern struct D2OBJ *d2_Objs;
 extern D2VIEW d2_Views[];
 extern D2WIN d2_Wins[];
 extern GAPDATA full_data_62b098[];
-extern int d2_PointerObj;
 extern char * cm_FieldObject;
 extern struct D2PIC *d2_Pics;
 extern unsigned char kb_Last;
@@ -201,7 +198,6 @@ extern int sv_PanelFlag;
 extern char * sv_PanelObject;
 extern unsigned short * sv_PanelRecord;
 extern int ai_Unk75f280[576];
-extern int ai_GameFlags;
 extern float gm_DayStartHours[];
 extern float gm_DayEndHours[];
 extern int sv_PanelBuildBtn;
@@ -237,7 +233,6 @@ extern unsigned gm_KindObjs[732];
 
 extern int d2_PointerObj;
 extern int sv_PanelPlantBtn;
-extern int d2_ClickedId;
 
 
 
@@ -346,7 +341,6 @@ extern unsigned char kb_Last;
 
 extern int d2_LastWindow;
 extern struct D2OBJ *d2_Objs;
-extern int ai_CameraStep;
 extern D2VIEW d2_Views[];
 extern D2WIN d2_Wins[];
 extern int sv_PopRequest;
@@ -370,7 +364,6 @@ extern char ai_PlayerSlots[4][0x2f4];
 
 
 extern char ai_Chars[768][0x21c];
-extern unsigned char ai_OwnPlayer;
 extern int d2_ClickedId;
 extern int d2_LastWindow;
 extern unsigned short * sv_PanelShown;
@@ -953,7 +946,6 @@ extern GAPDATA full_data_62d468[];
 
 extern int d2_PointerObj;
 extern char cm_TextNewline[4];
-extern volatile unsigned long d3_Time;
 extern int d2_ClickedId;
 extern int d2_LastWindow;
 extern struct D2OBJ *d2_Objs;
@@ -1244,6 +1236,7 @@ typedef struct G8USEVIEW {              /* a local view of am.h's G8USE (am.h ca
 #include "gfx.h"
 #include "cm.h"
 #include "ahm.h"
+#include "menu.h"
 #define sv_SelectPanelObjectK ((int (*)())sv_SelectPanelObject)  /* 0x52c4c0?: @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) */
 #define ai_GfxDetailI (*(int *)&ai_GfxDetail)  /* 0x6f35c4 (menu.c: unsigned char): @original ai_ShowVgObjects reads the detail as a dword and takes its low byte (0x58f9d7 mov ecx, dword ptr [0x6f35c4] / and edx, 0xff); the byte object compiles to mov cl, byte ptr */
 #define d2_CreatePicObjS ((int (*)(short, short, int))d2_CreatePicObj)  /* 0x46cd80 (d2.h: int x, y): @original the town map update adds the window position to the mark pixel in 16 bits (0x5a8052 mov dx, word ptr [eax + 4] / add dx, di / push edx), as d2.c's callers */
@@ -6289,26 +6282,7 @@ void ai_StonecutterContact(AIBLD *bld, int room)
         r = sv_RunFrame(ai_StonecutterContact, 0x67fff);
     }
 }
-typedef struct AMOUNTCFG {              /* 0x50 bytes, the config of the special-amount menu ai_AmountMenu
-                                           (menu.h, same layout) */
-    int flags;                          /* +0x00, 1 / 0x20400 / 0x2040a */
-    int mode;                           /* +0x04, 0x400: the partner filter bits (ai_PassesPartnerFilter; 0x400 not under age) */
-    union {
-        unsigned __int64 filter;        /* +0x08, 0x1a7fdfbb6 (the gypsy windows), 0x1a07c43a0 (the sabotage) */
-        unsigned int classMask[2];      /* +0x08, as ai_PassesBuildingFilter reads it: the building classes 0 .. 63;
-                                           bit 63 also wants an enterable building with a scene object */
-    };
-    int kind;                           /* +0x10, 6; ai_PassesBuildingFilter's owner test 0 .. 7 */
-    int option14;                       /* +0x14, bit 0: ai_PassesBuildingFilter leaves out the owners in ids[0 .. 3]; bit 2: ai_PassesPartnerFilter leaves out ids[0 .. 3] */
-    int lockSecond;                     /* +0x18, nonzero: ai_AmountMenu leaves its second button (picture 0x599)
-                                           without input (ai_GuildLevel3Entry sets it) */
-    unsigned short ids[16];             /* +0x1c, the character ids the menu leaves out / lists, 0xffff = none */
-    char pad3c[4];
-    int liking;                         /* +0x40, nonzero: ai_PassesPartnerFilter wants the liking in [likingMin, likingMax] */
-    float likingMin;                    /* +0x44 */
-    float likingMax;                    /* +0x48 */
-    int option4c;                       /* +0x4c, 0x727 / 0x71f */
-} AMOUNTCFG;
+
 #define PF_KIND67   0x100000             /* the partner filter's one-of bits (AMOUNTCFG.mode, ai_PassesPartnerFilter): kind 6 / 7 */
 #define PF_KIND5    0x200000             /* kind 5 */
 #define PF_SERVANT  0x400000             /* not kind 5, working for a master (ai_WorksForMaster) */
@@ -14573,7 +14547,8 @@ void ai_BuildTownMap(LCMAPWIN *m)
 }
 
 
-int d2_OpenForm(); void d2_PlaceMainWindow(); void d2_RaiseWindow(); int io_PrintText(char *fmt, ...);
+int d2_OpenForm(); void d2_RaiseWindow(); int io_PrintText(char *fmt, ...);
+#define d2_PlaceMainWindowF ((void (*)(int, int))d2_PlaceMainWindow)  /* 0x475850 (menu.h: 1-arg): @original ai_SwitchRoomI pushes the flags too (0x5a78cf) */
 int d2_SetForm(int view, int n); int d2_CreateChildWindow(short x, short y, short w, short h, unsigned int flags, int win);
 void d2_CloseView(int view); void d2_RemoveObj(); void d2_ScrollWindowBy();
 void ai_CharInfoWindow(); int d2_CreatePicObj();
@@ -14587,7 +14562,7 @@ int ai_OpenTownMap(LCMAPWIN *m)
     m->tile = d2_BackgroundTile;
     d2_BackgroundTile = (struct D2SURF *)rt_MapSurface;
     m->view = d2_OpenForm(0, 0, "Misc\\Landkarte2");
-    d2_PlaceMainWindow(m->view, 3);
+    d2_PlaceMainWindowF(m->view, 3);
     d2_SetForm(m->view, 0);
     m->screen = d2_CreateChildWindow(0x4a, 0x4c, 0x206, 0x164, 0, d2_LastWindow);
     d2_LastWindow = m->screen;
@@ -32593,19 +32568,7 @@ int ai_ChooseProfessionWindow(AICHARREC *parent, AICHARREC *child)
    0x16b7 + level and the fee ("%T"); the third form holds the close button 0x1ba8. A click on a row sends the
    study message 0x5f to the child (flags 0x12; the player's character, the fee, the subject, the level), sets
    the child's powerFlags 0x10000 and closes the window (1); the close button or a right click closes it (0).
-   parent (the caller passes the player's character) is not read
-   @deep Rewritten whole from the original 0x5cf4f0..0x5cf81d: ai_RollStudyOffers of the player's character
-   into offers[3][3], the form special\uni, the caption 0x1a9d (sex, id, 5), the three rows (picture 0x4c6
-   interactive / style 3, the slot i + 1 town name, 0x16b7 + subject / level, the fee by %T), the close
-   button 0x1ba8, the pump and the click: the study message 0x5f (AIMSG.study: ch, child, subject, level;
-   flags 0x12, fromId -1) and cm_SendSetField(child, 0x1c8, 4, 0x10000, 0); read and matched call by call,
-   ours=226 original=226, no ref / literal difference; everything after the row loop is equal under the
-   4-byte frame shift. Left: the row loop's induction variables: the original keeps i in ebx (ctrl[ebx*4]),
-   recomputes i * 0x5a with imul esi each round and spills i * 0x5a + 10 to a slot of its own (the frame
-   0x234 vs ours 0x230), using lea [esi + 0x1e] / [esi + 0x32] / add esi, 0x46; ours (0x5cf57a: mov esi,
-   0x1e ... imul ecx, 0x5a; add ecx, 0xa; 0x5cf6b1 add esi, 0x5a) strength-reduces i * 0x5a + 0x1e into esi
-   and keeps the + 10 in ecx. Tried y = i * 0x5a (fully reduced, dist 88) and y = i * 0x5a + 10 as a
-   variable (dist 137); the spelled-out i * 0x5a + N kept (dist 54). */
+   parent (the caller passes the player's character) is not read */
 
 int ai_UniversityWindow(AICHARREC *parent, AICHARREC *child)
 {
