@@ -20,8 +20,8 @@
    original's pushes): ai_DecideTorture, ai_DecideTortureInstrument, d2_SetObjValue, gm_SkillPoints (rt.h: its d2_SetObjValue);
    gv_PassSentence takes five arguments here (gv_PassSentenceK).
    Open: head: cm.h carries the parameter lists of cm_StartEventArg, cm_QueueVoice, cm_LoadVoiceBank,
-   cm_RunSceneTicks, cm_RunSceneTicksOrClick, cm_WaitEvent, cm_DialogTimer and cm_PartyById; cm_PlayVoice,
-   cm_UnloadVoiceBank, cm_MessageBox, cm_StopScript, cm_DeleteChar, cm_WaitEventOrClick, cm_CutInfoById,
+   cm_RunSceneTicks, cm_RunSceneTicksOrClick, cm_WaitEvent, cm_DialogTimer, cm_PartyById, cm_UnloadVoiceBank and
+   cm_MessageBox; cm_PlayVoice, cm_StopScript, cm_DeleteChar, cm_WaitEventOrClick, cm_CutInfoById,
    cm_ClearParty, cm_StartScript, cm_ResetCutInfos and cm_ShowPartyTexts still lack them (their calls stay M7).
    cm_ClearParty's real prototype and declaration changes in cm.h / cm_types.h flip the register tie-breaks of
    ai_TutorialInitChapter2 (byte) / ai_TutorialInitChapter3 (shape) in sv_t and of ord_CountGridObjects. Types only

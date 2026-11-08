@@ -2,17 +2,17 @@
    "misc\\MessageBoxGreen" 0x623ed0), the groundplan bitmaps, the city / time panels, the pause / player bar, the book. Starts at 0x520ec0 (a tick callback, registered by 0x520ee0); ends before
    0x531670, main.c's program level code. Names are ours.
    Open: the start and the end rest on the .data order only.
-   Open: sv.c includes ai.h but not d2.h yet: its char * declarations of d2_Objs / d2_LastWindowPtr and its K&R
-   d2_BlitPartMode supersede d2.h's, so the d2 records go through the SV* views, the SV_I / SV_W address macros and
-   the typed view sv_D2Objs (D2OBJ *); Q7 of every function that calls a K&R d2 / gfx prototype stays open.
-   Open: head: include/gfx.h, include/d2.h unsettled (d2_Objs / d2_LastWindowPtr char *, d2_AddHitRect and
-   d2_BlitPartMode K&R; 39 K&R d2 prototypes whose calls need a re-grade); also not included: cm.h (the same
-   d2_Objs / d2_LastWindowPtr clash; the cm_SendChr* / cm_PartyById calls stay without a prototype), f3snd.h rt.h sblib.h
-   (d2_Wins is declared in the head as D2WIN[], the D2OBJ fields through ((D2OBJ *)d2_Objs)[i]).
+   Open: head: d2.h is included (the d2 records through the SV* views, the SV_I / SV_W address macros with their
+   byte offsets and sv_D2Objs = d2_Objs as D2OBJ *); include/gfx.h is not (d2_LoadBmpSurface, d2_GetPixelColour,
+   d2_CompareColour, d2_AddHitRect / d2_RemoveHitRect, d2_CreateWindow, d2_FocusInput and d2_PlaceWindowScaled
+   stay K&R), nor cm.h (cm_SendChrStop / cm_SendChrGotoBuilding / cm_SendChrUseGates / cm_SendChrWalkTo / cm_SendTime /
+   cm_UpdateParties / cm_PartyById / cm_DrawFightTime / cm_DrawScrollArrows without a prototype), nor lc.h (the ai_
+   panel / key / save calls), anm.h (anm_Update), f3snd.h, rt.h (rt_EditCartRoute) and sblib.h.
    Calls whose argument count differs from the definition (read the original's pushes): sb_PlaySample (sblib.h:
-   6 calls to re-grade), d2_SetObjValue. The
+   6 calls to re-grade), d2_SetObjValue (the 4- and 2-argument calls use d2_SetObjValue4 / d2_SetObjValue2). The
    @original cast macros (d2_PutPixelRGBc, d2_CreatePicObjS, d2_WinOpenPicStyledS, d2_OpenFormS, d2_SetObjValue4,
-   ai_SwitchRoomI, cm_SendExSetHEI, d2_PlaceMainWindowF) record the parameter types the original's calls show.
+   d2_SetObjValue2, ai_SwitchRoomI, cm_SendExSetHEI, d2_PlaceMainWindowF) record the parameter types the original's
+   calls show.
    Open: data: 0x6f23f1 sv_InMissionComplete, owner sv (only sv_RunFrame uses it; it follows sv_BookPhase) but kept
    typed in main.c's gap block. ai_GameState, main_GameEnded and sv_MenuOpen (0x6f25ac..ae) lie in main's block
    (0x6f25a4..): whose unit they are is open.

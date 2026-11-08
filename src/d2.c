@@ -5,8 +5,8 @@
    windows (text layout, drawing, creation, scrolling, destruction, draw order) and views / forms.
    End: d2.c's .data runs to "d2:fadeinfo"; 0x4768a0 .. 0x476b40 use d2's globals and lists. Names are ours.
    Open: 0x476b70 (d2_ClearInput) may belong to gfx.c instead; the evidence does not decide, codegen neutral.
-   Open: d2.h is not yet the only declaration of d2's functions (K&R copies in sv.c, lc.c,
-   menu.c, sv_t.c, cm.h, rt.h and others), and it declares vfs_ / err_ functions itself.
+   Open: d2.h is not yet the only declaration of d2's functions (K&R copies in menu.c, sv_t.c, cm.h, rt.h and
+   others), and it declares vfs_ / err_ functions itself.
    Open: d2.h views D2WINF / D2PAINTWIN (of D2WIN) and D2TEXX (of D2TEX) are still to be folded into their types.
    unit of rea 8cef7d5b (src/game/d2.c); boundaries in decl/text.dcl */
 #include "txt_views.h"

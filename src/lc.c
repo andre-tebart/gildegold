@@ -50,9 +50,6 @@
    variants ai_InterrogationWindow1 / 2) and the dismissal (ai_DismissalHandler) pick their holder through
    AMOUNTCFG and mark me in AICHARREC.flags1cc / powerFlags; the character info panel's apprenticeship and
    university windows send AIMSG.apprenticeship (0x5e) and AIMSG.study (0x5f).
-   Open: head: am.h / gv.h / cm.h are not included: ai_FindPartnersRandomWalk, ai_PickPartnerRandomWalk,
-   amt_SendOfficeMessage, cm_SendSetJob, gv_SortCrimesByLaw, the two judges, ai_CharWalkSteps and gv_Decisions
-   are copied declarations; gv_Accuse and cm_SendSetField are called without a prototype (M7).
    Open: types: the amount rows and tabs (ai_ShowAmountRows, ai_Fill*Tab, ai_SpecialAmountListWindow) and am.c's
    partner chain still pass that filter as unsigned int *.
    Open: the AIMSG message records are built by raw offsets in most functions (the use callbacks of the Domizil
@@ -100,18 +97,14 @@
    (the callee was not visible to it there: a TU boundary between 0x5ba620 and 0x5cf8a0?); likewise the use
    callbacks ai_UseGoodLowerOfficialRelations / ai_UseGoodCharmOtherSex load their pick ids before our
    ai_FindUsableGoodIndex (0x5ba660) call where the original calls it first.
-   Open: head: sv.h, so sv_CheckCharacterFlag / sv_ClearSelection and the other sv calls of the listeners and map
-   picks stay without a prototype (M7); and not included yet (dcp headers conflicts lc HEADER): ahm.h
-   ai.h am.h amt.h anm.h ch.h chc.h cm.h d2.h d3_int_io.h d3_tools.h f3snd.h gfx.h gv.h hst.h rt.h
-   hmt.h mission.h menu.h vfs.h; held by own declarations that differ from the owner's: ai_Time,
-   d3sm_GetVertex, d2_CreateWinText, AIBLD, AIBTYPE, cm_SendExSetHE, d3sm_Pick; calls whose argument count differs from
-   the definition (read the original's pushes): vfs_GetPath, d2_SetViewEnabled, d2_GetWinObj, d2_CreateWinText,
-   d2_GetObjValue, d3_LoadGroup, d2_GetViewWin, sv_MessageBox, d2_CreateScrollButtons, d2_PlotLine,
-   sv_CheckGoodAmount, d2_SetObjValue, d2_PlaceMainWindow, d3t_PlayAnim, d3t_SetTreeColor,
-   sv_CreateScrollButtons. gv.h is in the way of its cm_SendSetField (void) results the unit reads, so the evidence
-   windows copy gv.h's prototypes of gv_HeldCrimesOf / gv_RankCulpritsAll / gv_HeldCrimeCount (their 16-bit holder);
-   hmt.h (through am.h's ai_bld.h AIBLD / AIBTYPE) is in the way too, so the bard window copies hmt.h's four
-   prototypes (their unsigned short pushes) and the feast window am.h's ai_EvalFest.
+   Open: head: ai_MapPick's cb (0x5b2180) is still declared void (*)() (its two indirect calls stay M7);
+   ai_CharInfoWindow (sv_t.h) and rt_EditCartRoute (rt.h) are called without a prototype; held by own declarations
+   that differ from the owner's: ai_Time, d3sm_GetVertex, d2_CreateWinText, AIBLD, AIBTYPE, cm_SendExSetHE,
+   d3sm_Pick; calls whose argument count differs from the definition (read the original's pushes): vfs_GetPath,
+   d2_SetViewEnabled, d2_GetWinObj, d2_CreateWinText, d2_GetObjValue, d3_LoadGroup, d2_GetViewWin, sv_MessageBox,
+   d2_CreateScrollButtons, d2_PlotLine, d2_PlaceMainWindow, d3t_PlayAnim, d3t_SetTreeColor. gv.h's cm_SendSetField
+   (void) results the unit reads stay a cast; hmt.h's four prototypes (their unsigned short pushes) and am.h's
+   ai_EvalFest stay copied in the bard / feast windows.
    unit of rea 8cef7d5b (src/game/unk_58bbd0.c); boundaries in decl/text.dcl */
 #define GAPDATA __declspec(align(1)) unsigned char
 
