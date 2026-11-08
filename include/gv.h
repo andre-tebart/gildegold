@@ -479,7 +479,6 @@ extern AIDEC gv_Decisions[];           /* 0x611258, 0x1d AIDEC records of 0x24 b
 
 int gv_WriteCrimes(void *f);             /* 0x4f28d0 */
 float gv_SchoolLevelFactor(unsigned short *c);          /* 0x4f2da0 */
-int gm_BuildingSkill();                     /* 0x5092e0 */
 
 int gv_ReadCrimes(int f);             /* 0x4f2b30 */
 int gv_TableRecordText(char *out, int i);    /* 0x4f2fe0 */

@@ -59,7 +59,6 @@ extern D2VIEW d2_Views[];
 #include "amt.h"
 extern char ai_Crimes[];
 #define GAPDATA __declspec(align(1)) unsigned char
-extern GMBLOCK gm_StockBlocks[];             /* 0x7d6a60, the five stock blocks (one per player slot) */
 /* The stock area is ONE 0xd4d0-byte object at 0x7d6a60 (five blocks of 0x2a90: four header ints, then
    0x55 records of 0x80 bytes). The other names are views into it: a separate definition would reserve
    its own memory and the block writer/reader (gm_LoadTables, ls_ReadPlayerSlots, ls_WritePlayerSlots) would then
@@ -89,12 +88,7 @@ extern GAPDATA full_data_7585f4[];
 extern int gm_PlayerRecords[688];
 extern int gm_TreeNodeCount;
 void ch_PreloadAnims(struct CHARACTER *ch, int n, ...);
-unsigned short *gm_CreateObject(int id, int proto, int n);
-char *gm_FindCharacterByMaster(int m);
 void gm_FreeObjectExtra(unsigned short *o);
-void gm_ShowBuildingObjects(unsigned char *b);
-void gm_ResetCharacters(void);
-int gm_TitleJob(int i, int p);
 unsigned short gm_ObjectOwnerNo(unsigned short *o);
 void gm_UpdatePrices(unsigned p, void *t);
 
@@ -137,7 +131,6 @@ typedef struct GMCARRY {
 #pragma pack(pop)
 typedef char gm_AssertGMCARRY[sizeof(GMCARRY) == 0x21d ? 1 : -1];
 
-int gm_GetGoodsValue(char *c);              /* 0x509e60 */
 int gm_IsUnderAge(unsigned short id);         /* 0x4fd7e0 */
 
 #define CH(i) (ai_Chars[(unsigned short)(i)])
@@ -170,6 +163,7 @@ int gm_IsUnderAge(unsigned short id);         /* 0x4fd7e0 */
 #include "hst.h"
 #include "d3_pose.h"
 #include "mission.h"
+#include "f3gm.h"
 void *ai_ProdSetting(int param_1);  /* 0x5a8560 */
 #define ai_ProdSettingK ((int (*)())ai_ProdSetting)  /* 0x5a8560: @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) */
 #define util_RandomU ((unsigned short (*)(int))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original this unit's callers read the 16-bit result (byte-matched ch_RandomNear 0x405160, ai_CalcMeisterBank 0x4836a0, cm_FightLoop 0x4d88c0 move it as a word / movzx) */
@@ -1396,7 +1390,6 @@ void gm_PartnerStep(ORDCHAR *c);                 /* 0x4fccc0 */
     (m).flags = 2;                                                     \
     (m).arg0 = (m).to;                                                 \
     cm_SendLongMessage((char *)&(m))
-int gm_BuildingSkill(unsigned char *b, unsigned k, int flag);  /* 0x5092e0 */
 
 /* 0x4fbe90, the daily step of the character c; returns its new life value (-1 for no step). A free slot and a
    character of kind 0xf take no step (the latter is killed when gm_MayRemoveChar lets it go); a raised dead
@@ -2716,7 +2709,6 @@ int gm_LoadTables(char *root)
 
 extern int f3gm_ObjectCount;
 extern char ai_PlayerSlots[4][0x2f4];      /* 0x7e3f40, the player slots */
-int gm_FreeBuilding();                     /* 0x5012e0 */
 int gm_RemoveObject();                     /* 0x4ffff0 */
 int gm_FindById(int *bld, int *obj, int *chr, int id);
 int gm_GoodsStock(int p, int i);                   /* 0x4ff950 */
@@ -2938,7 +2930,6 @@ void gm_InitPlayerRecord(int p)
     }
 }
 
-float gm_StockPrice();                   /* 0x4ffa10 */
 int gm_FreeList(int *list);                     /* 0x500140 */
 void cm_SendGoodsDelta(struct GMSTOCK *p, unsigned char k);                     /* 0x4c5710 */
 
