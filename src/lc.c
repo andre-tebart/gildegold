@@ -636,8 +636,6 @@ typedef struct G8INVOBJ {               /* an object of a character's inventory 
     AITIME since;                       /* +0x2d, of a Domizil good in use: when minutesLeft was last counted down */
 } G8INVOBJ;
 #pragma pack(pop)
-extern GAPDATA full_data_62a56c[];
-#define ai_FmtLabel (*(char (*)[4])&full_data_62a56c)  /* 0x62a56c, "%s:": a label's format (ai_TechEffectsWindow's skill captions) */
 #define d2_OpenFormS ((int (*)(short, short, char *))d2_OpenForm)  /* @original: the transport window computes x = d2_ScreenW - 0x68 in 16 bits (0x5af336 mov ax, [d2_ScreenW]; sub ax, 0x68; push eax), as sv_OpenPlayerBar */
 extern char * ai_BTypes;
 extern GAPDATA full_data_60c28c[];

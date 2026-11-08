@@ -251,6 +251,7 @@ extern unsigned char ai_GfxDetail;  /* 0x6f35c4, the "details" key */
 void ai_OpenInventoryWindow(int win, int x, int y, unsigned short charId, int text);  /* 0x5ba1c0, opens the inventory child window of the character charId */
 int ai_UpdateInventoryWindow(void);                    /* 0x5ba290, the inventory child window's frame (1 while goods are picked from it) */
 void ai_CloseChildWindow(void);            /* 0x5ba600, closes the inventory child window */
+extern char ai_FmtLabel[4];             /* 0x62a56c, "%s:", the label format of ai_TechEffectsWindow's skill captions (txt_Format); defined in main.c (main's data block) */
 extern int ai_ChildWindowId;            /* 0x62c418, the child window ai_OpenInventoryWindow creates and ai_CloseChildWindow removes, -1: none */
 extern G9DOMIZIL ai_DomizilTable[0x42]; /* 0x62c420, the Domizil goods: 66 entries of 0x1c (id +0, minutes +4, law +8, weight +0xc, mask +0x10, use +0x14, rank +0x18) */
 
