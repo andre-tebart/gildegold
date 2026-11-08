@@ -1391,14 +1391,14 @@ int ai_MsgWorkerTitleType2c(G14MSG *m)
     he_ShowNews(c->netId, c->netId, buf, strlen(buf) > 0x100, 0x603, 0);
     return 0;
 }
-/* 0x4ba0c0, message: one of c's buildings of kind 1 / 2 is picked, and when at least 2 of its kind-0 workers (up
-   to k231 + k232 of the building type) all have a gm_Liking (c, worker, 1) of at least a 0x19..0x2c roll, an
-   AIMSG type 0x4a names the building (id, fromId, n), c, the object gm_BuildingMainObject (0x501b50) gives and
-   the news text id, to the local player ai_PlayerId; the receive side (cm.c 0x4cbb90) finds that object and tears
-   it down (f3gm.c 0x5034b0). The three 0x400 guards share one exit: the goto none keeps that block last, as in
-   the original. */
+/* 0x4ba0c0, message 0x2e: frees the main object of one of c's class-1 / 2 buildings. One of those buildings is
+   picked, and when at least 2 of its kind-0 workers (fewer than k231 + k232 of the building type) all have a
+   gm_Liking (c, worker, 1) of at least a 0x19..0x2c roll, an AIMSG type 0x4a (free object) names the building
+   (id, fromId, n), c, the object gm_BuildingMainObject (0x501b50) gives and the news text 0x12e7 + 0x2e, to the
+   local player ai_PlayerId; the receive side (cm.c 0x4cbb90) finds that object and frees it (f3gm.c 0x5034b0).
+   The three 0x400 guards share one exit: the goto none keeps that block last, as in the original. */
 
-int ai_Unk4ba0c0(G14MSG *m)
+int ai_MsgFreeBuildingObjectType2e(G14MSG *m)
 {
     AICHAR *c;
     AIBLD *b;
@@ -1440,9 +1440,8 @@ int ai_Unk4ba0c0(G14MSG *m)
         msg.n = msg.fromId;
         msg.to = ai_CharsT[ai_PlayerId].netId;
         msg.time = ai_Time;
-        /* the text id at 0x64 is the only 16-bit store of AIMSG (a word over dst[0]); a textId union arm in
-           ai.h regresses ai_Unk483a60's slots (ai.c's note), so the shared-header view is match-deep's */
-        *(unsigned short *)&msg.dst[0] = m->type + 0x12e7;
+        /* the text id at 0x64 is the message's 16-bit news text field (freeBuilding.textId) */
+        msg.freeBuilding.textId = m->type + 0x12e7;
         msg.car = c->netId;
         msg.ch = e->objId;
         cm_SendLongMessage(&msg);
@@ -1950,7 +1949,7 @@ G14CB ai_MsgCallbacks[0x45] = {                                                 
     ai_MsgLoseMoney2to4Type20, ai_MsgGainMoney3to5Type21, ai_MsgCartFillDropType22, ai_MsgJobTime,
     ai_MsgJobEndPlayerType24, ai_MsgJobEndPayType25, ai_MsgJobBothEndsType26, ai_MsgJobBothEndsType27,
     ai_MsgUnusedSlot, ai_MsgJobEndDateType29, ai_MsgJobEndValueType2a, ai_MsgWorkerStop,
-    ai_MsgWorkerTitleType2c, sv_ReturnZero, ai_Unk4ba0c0, ai_MsgWorkerAddSkillType2f,
+    ai_MsgWorkerTitleType2c, sv_ReturnZero, ai_MsgFreeBuildingObjectType2e, ai_MsgWorkerAddSkillType2f,
     ai_MsgWorkerLoseSkillType30, ai_Unk4ba630, ai_MsgTakeBuildingGoodsPct13to25Type32, ai_MsgTakeBuildingGoodsPct5to19Type33,
     ai_MsgTakeBuildingGoodsPct5to24Type34, ai_MsgUnusedSlot, ai_MsgUnusedSlot, ai_MsgUnusedSlot,
     ai_MsgLoseGood, ai_MsgRewardPct1to3Skill82Type39, ai_MsgAddSkill8to24Type3a, ai_MsgLoseSkill6to17Type3b,

@@ -470,6 +470,11 @@ typedef struct AIMSG {                  /* 0xf8 bytes, given to cm_SendLongMessa
                         } s;
                     } u;
                 };
+                struct {                        /* the free-object message 0x4a of the AI message 0x2e (rmsg.c
+                                                   ai_MsgFreeBuildingObjectType2e): the news text id of the message kind */
+                    char pad58[0xc];
+                    unsigned short textId;      /* 0x64, the news text (0x12e7 + the AI message type) */
+                } freeBuilding;
                 struct {                        /* the skill-bonus message 0x82 (its event's words GMSKILLEV, 0x54
                                                    further; he_StartSkillBonus) */
                     unsigned char skill1;       /* 0x58, the first skill number (GMSKILLEV.skill1) */
