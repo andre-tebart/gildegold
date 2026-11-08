@@ -954,7 +954,7 @@ char d3_SetFogSet(unsigned int a, unsigned int b, float t);  /* 0x44a170 */
 int cm_StartScript();  /* 0x4e2bf0 */
 int cm_PlayVoice(int id, int bank, char *text, int var);  /* 0x4e32b0, plays the voice sample of speaker id in bank (text, var pick the sample); 0 in the replay mode */
 int sb_IsPlaying();  /* 0x426f20 */
-int cm_StopScript();  /* 0x4e2d90 */
+int cm_StopScript(int a);  /* 0x4e2d90 */
 void cm_RunDuel(G28REC *m);  /* 0x4ded10 */
 
 
