@@ -1152,16 +1152,7 @@ int ls_WriteEventTables(int f)
 }
 /* 0x51c2f0, writes the used scene party records (cm_Parties) to the save file f: their count, then per record the
    id, kind, thing, flags, used, the 16 member netIds, the offer kind, the 0x98-byte kind payload (+0x7c), the clock
-   time and the host
-   @deep read whole against the original and rewrote the ROUGH draft typed (G28REC *p, the LS_W sequence id
-   / kind / thing / flags / used / members (0x10 of 4) / offerKind / the 0x98-byte payload / time / host,
-   the count loop). 130 vs 129 instructions, 3 differing and only the second loop's bound: ours
-   materialises the record base for the test (lea eax,[esi-0x14]; cmp eax, cm_Parties+0x6780; jl) where the
-   original compares the induction itself (cmp esi, cm_Parties+0x6794; jl) - the induction is the record's
-   thing word (esi) on both sides, so this is VC6's address fold in the loop test. Tried one build each:
-   unsigned p < cm_Parties + 96 (jb and the same lea), the int casts kept, a do-while tail, and a test on
-   &p->thing / &cm_Parties[96].thing (VC6 re-based the induction at +0x26, 28 differing, shape by proof but
-   with a crossed-reference M8 there) - reverted to the clean form. */
+   time and the host */
 
 
 int ls_WriteParties(int f)
