@@ -1888,7 +1888,7 @@ void d3fl_DrawWater(D3FLMAP *map, D3FLTILE *t)
         if (d3_FogOn) {
             for (i = npoints, v = (D3PVERT *)t->wpoints; i > 0; i--, v++)
                 if (v->flags & 0x80) {
-                    k = 1.0f / v->z;
+                    k = ai_FloatOne / v->z;
                     v->sx = d3_ScaleX * v->x * k + d3_CenterX;
                     v->sy = d3_ScaleY * v->y * k + d3_CenterY;
                     v->rhw = k;
@@ -1899,7 +1899,7 @@ void d3fl_DrawWater(D3FLMAP *map, D3FLTILE *t)
         } else {
             for (i = npoints, v = (D3PVERT *)t->wpoints; i > 0; i--, v++)
                 if (v->flags & 0x80) {
-                    k = 1.0f / v->z;
+                    k = ai_FloatOne / v->z;
                     v->sx = d3_ScaleX * v->x * k + d3_CenterX;
                     v->sy = d3_ScaleY * v->y * k + d3_CenterY;
                     v->rhw = k;
@@ -1971,7 +1971,27 @@ void d3fl_DrawWater(D3FLMAP *map, D3FLTILE *t)
 /* 0x4439e0, draws the floor: transforms the map into camera space; if the map is dirty, rebuilds the tile meshes
    (vertices, lit from the light map, and triangles; extra vertices on edges next to finer tiles), projects them and
    culls the triangles; then animates the water (water != 0) and queues the visible triangles of all tiles,
-   rendering their cache textures on first use */
+   rendering their cache textures on first use
+   @deep read the function against the original: the same call set (no dcp diffclass call difference) and
+   the same global store set (no differs line); 2791 vs 2816 instructions (the 25 fewer are merged tails:
+   VC6 shares the repeated tile-corner blocks' copies in ours), 10122 vs 10143 bytes. Q4 settled: the UV
+   copy is a memcpy(uv, poly->uv, sizeof(D3FLTRIUV)) instead of the raw struct cast, the 1.0f numerators
+   are ai_FloatOne (the datum the original loads) and the MinZ/MaxZ clamps are the negated comparisons
+   (2509 -> 2503 differing, code 1769 -> 1746). What is left is allocation: the frame 0x14c against 0x150
+   (the local slot permutation, e.g. ebp-0x14 vs ebp-8, ebp-0x64 vs ebp-0x20), 1276 slots, 272 regs, 153
+   fpu and 212 frame hunks, plus one branch-target pairing; the six ref lines are crossed pairs (ours'
+   d3fl_Origin+0x4 load against the original's d3fl_AxisX+0x8 multiply - d3fl_Origin's declared extent
+   covers d3fl_AxisX, so 0xfc0d58 resolves as Origin+0x5028 - and ours' d3_SortPtr store against the
+   original's d3_FrameCount load in the mipmap block, both sequences storing the same values). Tried: the
+   Q4 field typing then the header-free memcpy, ai_FloatOne, the negated clamps, the tile-corner copy
+   spellings; none moves the frame or the slot assignment. (references: M8 at +0x11f8: ours refers to
+   d3fl_Origin+0x4 (0xfbbd34), the original's field to 0xfc0d58 (d3fl_Origin+0x5028) (and 5 more),
+   explained: the six ref lines are crossed pairings of the same accesses: our three d3fl_Origin.x/y/z adds
+   are emitted as three fadd [d3fl_Origin+n] where the original keeps the x in an FPU register (fld
+   d3fl_Origin / fadd st,st(1)) and multiplies d3fl_AxisX.z at the paired line; the dcp symbol d3fl_Origin
+   has an extent that covers the d3fl_AxisX datum at 0xfc0d58, so the original's d3fl_AxisX+0x8 operand is
+   named Origin+0x5028. The mipmap pair is ours' *d3_SortPtr = (esi - d3_Textures) / 128 + 1 then obj+0x54
+   = d3_FrameCount against the original's same two statements in the other instruction order.) */
 void d3fl_Draw(D3FLMAP *map, char water)
 {
     D3OBJECT *cam;
@@ -2269,7 +2289,7 @@ void d3fl_Draw(D3FLMAP *map, char water)
                                     sp->p = (D3FLPOINT *)v;
                                     sp->y = ly;
                                     D3FL_LIGHT(v, light[idx])
-                                    *(D3FLTRIUV *)uv = *(D3FLTRIUV *)poly->uv;
+                                    memcpy(uv, poly->uv, sizeof(D3FLTRIUV));
                                     if (poly->flip & 1) {
                                         u = (uv[4] + uv[0]) * 0.5f;
                                         w = (uv[5] + uv[1]) * 0.5f;
@@ -2488,7 +2508,7 @@ void d3fl_Draw(D3FLMAP *map, char water)
                         if (d3_FogOn) {
                             for (i = 0, v = (D3PVERT *)t->points; i < npts; i++, v++)
                                 if (v->flags < 0) {
-                                    k = 1.0f / v->z;
+                                    k = ai_FloatOne / v->z;
                                     v->sx = k * v->x * d3_ScaleX + d3_CenterX;
                                     v->sy = k * v->y * d3_ScaleY + d3_CenterY;
                                     v->rhw = k;
@@ -2499,7 +2519,7 @@ void d3fl_Draw(D3FLMAP *map, char water)
                         } else {
                             for (i = 0, v = (D3PVERT *)t->points; i < npts; i++, v++)
                                 if (v->flags < 0) {
-                                    k = 1.0f / v->z;
+                                    k = ai_FloatOne / v->z;
                                     v->sx = k * v->x * d3_ScaleX + d3_CenterX;
                                     v->sy = k * v->y * d3_ScaleY + d3_CenterY;
                                     v->rhw = k;
@@ -2527,9 +2547,9 @@ void d3fl_Draw(D3FLMAP *map, char water)
         for (y = 0, t = map->tiles[0]; y < 8; y++)
             for (x = 0; x < 8; x++, t++)
                 if (t->lodLevel) {
-                    if (t->zmin <= d3_MinZ)
+                    if (!(t->zmin > d3_MinZ))
                         d3_MinZ = t->zmin;
-                    if (t->zmax >= d3_MaxZ)
+                    if (!(t->zmax < d3_MaxZ))
                         d3_MaxZ = t->zmax;
                     clip = (D3CLIPINFO *)d3_ClipInfo[t->clip & 0x3f];
                     d3_TriCount += t->npolys;
