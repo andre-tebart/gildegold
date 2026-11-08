@@ -222,6 +222,7 @@ extern int sv_LampPhase;                                    /* 0x623e80 */
 extern int sv_LoadSlider;                                    /* 0x623e84 */
 extern int sv_PanelEnabled;                                    /* 0x623e88 */
 extern int sv_GroundplanScene;                                    /* 0x623e8c */
+extern int sv_BarSlots;                                    /* 0x623e90 */
 extern float sv_DayPhaseFrac;                                  /* 0x623e94 */
 extern int sv_ScrollForm;                                    /* 0x623ea0 */
 extern int sv_ScrollEndTop;                                    /* 0x623ea4 */

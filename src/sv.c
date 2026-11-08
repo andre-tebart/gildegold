@@ -50,8 +50,6 @@ struct VFSDIR;
 #include "ai_types.h"
 extern OPTIONBYTES ai_OptionPanelHelp;
 
-extern GAPDATA full_data_623e90[];
-
 extern int d2_HitUnderPointer;
 
 
@@ -4110,7 +4108,7 @@ void sv_UpdateCityPanel(unsigned char a, int b)
         }
         if (d2_ClickedId != -1 && d2_PointerObj == sv_BarToggle)
             sv_BarMoved = sv_BarMoved == 0;
-        if (SV_I((unsigned)&full_data_623e90) != he_LastSlot || (d2_ClickedId != -1 && d2_PointerObj == sv_BarToggle)) {
+        if (sv_BarSlots != he_LastSlot || (d2_ClickedId != -1 && d2_PointerObj == sv_BarToggle)) {
             if (sv_BarMoved != 0) {
                 d2_SetForm(he_BarView, 0);
                 d2_MoveObj(d2_ScreenW - (he_LastSlot << 5) - 0x1d, d2_Wins[d2_LastWindow].y, d2_Wins[d2_LastWindow].parent);
@@ -4120,7 +4118,7 @@ void sv_UpdateCityPanel(unsigned char a, int b)
                 d2_MoveObj(d2_ScreenW - 0x7d, d2_Wins[d2_LastWindow].y, d2_Wins[d2_LastWindow].parent);
                 d2_MoveObj(d2_ScreenW - 0xad, d2_ScreenH - 0x21, sv_BarToggle);
             }
-            SV_I((unsigned)&full_data_623e90) = he_LastSlot;
+            sv_BarSlots = he_LastSlot;
         }
         if (sv_BarMoved != 0) {
             d2_SetClipRect(0, 0, d2_ScreenW - 0x8c, d2_ScreenH);
@@ -7598,6 +7596,7 @@ int sv_LampPhase = -1;  /* 0x623e80 */
 int sv_LoadSlider = -1;  /* 0x623e84, the object handle of the scene load's progress slider (sv_SceneLoadProgress), -1: none */
 int sv_PanelEnabled = 1;  /* 0x623e88 */
 int sv_GroundplanScene = -1;  /* 0x623e8c */
+int sv_BarSlots = -1;  /* 0x623e90, the slot count he_BarView (the player bar) was laid out for: sv_UpdateCityPanel lays it out again when it differs from he_LastSlot, -1: no layout yet */
 float sv_DayPhaseFrac = 0.5f;  /* 0x623e94 */
 int sv_PickX = -1;  /* 0x623e98, the pointer x of the last hover pick (sv_HoverPick) */
 int sv_PickY = -1;  /* 0x623e9c, the pointer y of the last hover pick */
