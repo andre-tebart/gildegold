@@ -425,8 +425,9 @@ void lobby_ShowMyPlayer(void)
     sprintf(text, lobby_FmtName, txt_FaithLabel, txt_FaithNames[lobby_Player.faith]);
     d2_CreateWinText(x, y + 2 + y + 0xc, text, d2_LastWindow);
 }
-/* 0x58ad20, waits for the player list (128 B): 0x4cd610 and its answer 0x4c3ae0; the list 0x4cd5d0 -> 0x6f267c;
-   the entry 0x6f267c[1 .. 8] with a player (0x4cd820) is awaited (0x4c3ae0) */
+/* 0x58ad20, waits for the lobby player list: cm_LobbyRequestList's slot until cm_GetSlotState answers, then
+   lobby_List = cm_LobbyPlayerList(); each of the entries 1 .. 8 with a player is requested
+   (cm_LobbyRequestPlayer) and the last one's slot awaited (cm_GetSlotState) */
 
 void lobby_FetchPlayers(void)
 {
@@ -439,9 +440,9 @@ void lobby_FetchPlayers(void)
         sv_PumpNet();
     lobby_List = cm_LobbyPlayerList();
     r = -1;
-    for (i = 4; i < 0x24; i += 4)
-        if (U_I((char *)lobby_List + i) != 0)
-            r = ((int (*)(int))cm_LobbyRequestPlayer)(U_I((char *)lobby_List + i));
+    for (i = 1; i < 9; i++)
+        if (lobby_List[i] != 0)
+            r = ((int (*)(int))cm_LobbyRequestPlayer)(lobby_List[i]);
     if (r != -1)
         while (cm_GetSlotState(r) == 0)
             sv_PumpNet();
