@@ -59,6 +59,7 @@ extern char main_JobName[0x104];  /* 0x6f2470, the job name of the BERUF=" comma
 extern int main_ReplaceFigureOn;  /* 0x6f25b0, nonzero: a bankrupt player's figure is replaced (main_RoundReport) */
 extern int main_DirectStart;  /* 0x6f2434, nonzero: WinMain skips the main menu and starts the single player game at once */
 extern int main_StartCoupleOn;  /* 0x6f2428, nonzero: main_GameLoop creates the starting couple after main_StartGame */
+extern int main_AutoSaveOn;  /* 0x62456c, 1: the end of a round writes the autosave (main_GameLoop) */
 extern int main_WeatherSound;  /* 0x6f2580, the [Sound] weather key */
 extern int main_DayEnding;  /* 0x6f25a8, the day is ending (sv_RunFrame sets, main_GameLoop clears) */
 extern int snd_SystemBank;  /* 0x6f2400 */
