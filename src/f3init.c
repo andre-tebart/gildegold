@@ -255,10 +255,11 @@ typedef struct INIT_TORCHLIST {
 #define INIT_PROTO_MASK 0xffffffu      /* the prototype reference's index bits (o + 0x48), the original's plain
                                           immediates: `and esi, 0xffffff` (init_SyncSceneObjects 0x511f3e,
                                           `and eax, 0xffffff` 0x511fd1) and `and eax, 0xffffff`
-                                          (init_AllocSceneBuilding 0x50d5d3). Not `&txt_Keys + 0x181bf`: that only
-                                          spells 0xffffff while txt_Keys keeps its original address 0xfe7e40, and
-                                          our link puts it at 0x6d0448 (build/link/exe/exe.map), which made the
-                                          mask 0x6e8607 and every id / parent lookup miss */
+                                          (init_AllocSceneBuilding 0x50d5d3). An absolute constant that must not
+                                          be written as symbol arithmetic: `&txt_Keys + 0x181bf` spells it only
+                                          while txt_Keys keeps its original address 0xfe7e40, and our link puts
+                                          it at 0x6d0448 (build/link/exe/exe.map), which made the mask 0x6e8607
+                                          and every id / parent lookup miss */
 #define INIT_PLAYER_SLOTS_END ((unsigned)&init_SlotCurrency + 0x888)   /* one past the player slot table 0x7e3f40 (0x2f4 bytes per slot) */
 #define INIT_SLOT_CURRENCY_END ((unsigned)&init_SlotCurrency + 0x8dc)  /* one past the currency words of the player slots 1 .. 3: the original's `cmp esi, 0x7e4b64` (0x510cf0) = init_SlotCurrency (0x7e4288) + 3 * 0x2f4, not &gm_Offers + 0x44 (that equals it only while gm_Offers follows the slot table at 0x7e4b20) */
 #define INIT_SCENE_HEIGHTMAP_END ((unsigned)init_SceneHeightMaps + 0x40 * 0x3e0) /* one past the height map of the last scene: 0xfd7c50 + 0x40 * 0x3e0 (init_FreeScenes); anchored on the array, not on d3anim_Tail + 0x10 (their linked distance differs from the original's) */
@@ -2891,9 +2892,10 @@ extern unsigned char init_TextureSet;      /* 0x6f1c24 */
    ours and eax / test ax - a short v gave the and but sign extensions, 471 instructions, reverted), base
    at [esp+0x34] vs [esp+0x30] (the original's slot is the dead argument slot above o), the no_ branch's
    two returns tail-merged in ours. Meaning fix (runtime): INIT_PROTO_MASK is the original's plain
-   0xffffff (`and esi, 0xffffff` 0x511f3e, `and eax, 0xffffff` 0x511fd1) - the old spelling
-   `&txt_Keys + 0x181bf` only spelled it while txt_Keys kept its original address, and the mask came out
-   0x6e8607 in our link, so the instance / parent queries missed and the parts were hidden */
+   0xffffff (`and esi, 0xffffff` 0x511f3e, `and eax, 0xffffff` 0x511fd1) - an absolute constant, not
+   symbol arithmetic: the old `&txt_Keys + 0x181bf` only spelled it while txt_Keys kept its
+   original address, and the mask came out 0x6e8607 in our link, so the instance / parent
+   queries missed and the parts were hidden */
 void init_SyncSceneObjects(char *o)
 {
     SCENEOBJ *so = (SCENEOBJ *)o;
