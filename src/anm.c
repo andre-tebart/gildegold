@@ -339,7 +339,7 @@ void anm_UpdateCat(ANMREC *a)
 void anm_UpdateSheep(ANMREC *a)
 {
     int px;
-    char *h;
+    G15GRID *h;
     int pz;
     float py;
     int n;
@@ -347,7 +347,7 @@ void anm_UpdateSheep(ANMREC *a)
     float (*p)[4];
     char *act;
 
-    if (*(int *)((char *)a->obj + 0x128) != 0)
+    if (((CHARACTER *)a->obj)->anim != 0)
         return;
     if (util_RandomS(100) > 0x14) {
         if (util_RandomS(100) > 0x32)
@@ -356,7 +356,7 @@ void anm_UpdateSheep(ANMREC *a)
             ch_QueueAnim(a->obj, "bewegung/fressen", util_RandomS(3) + 1);
         return;
     }
-    h = *(char **)((char *)d3_DefaultScene + 0xb0);
+    h = ((G15SCENE *)d3_DefaultScene)->hmap;
     n = util_RandomS(3) + 1;
     n = rd_PointsNear(a->pos, n, pts);
     if (n > 0) {
