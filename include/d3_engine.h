@@ -331,7 +331,7 @@ typedef struct D3OBJX {             /* 0x228 bytes, the whole D3OBJECT as far as
 } D3OBJX;
 #define D3_X(o) ((D3OBJX *)(o))
 
-extern char d3_Unk633438;                   /* 0x633438 */
+extern char d3_EditorMode;                   /* 0x633438, editor / tool mode (reasoned guess) */
 extern float d3_InvZFar;                    /* 0xfc2dd4, 1 / d3_ZFar */
 extern char d3_LightsChanged;                   /* 0x633b14 */
 char d3s_FreeLightCB(D3OBJECT *obj, D3OBJECT *light);                                         /* 0x45cd60, d3s.c, d3_ForEachObject callback */

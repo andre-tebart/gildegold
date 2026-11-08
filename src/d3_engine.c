@@ -1295,7 +1295,7 @@ char d3_Init(D3INITCFG *cfg, HWND wnd, int unk)
     unsigned char x, y, c;
 
     d3_D3DActive = 0;
-    d3_Unk633438 = 0;
+    d3_EditorMode = 0;
     D3E_COPY_AT(offset d3_Cfg, cfg, sizeof(D3INITCFG));
     if (d3_Cfg.viewW + d3_Cfg.viewX > (float)d3_Cfg.w)
         d3_Cfg.viewW = (float)d3_Cfg.w - d3_Cfg.viewX;
@@ -1497,7 +1497,10 @@ void d3_ApplyGraphicsOptions(int a, unsigned char b, unsigned char c, unsigned c
         tex_ReloadAll(1, e);
     }
 }
-/* 0x43c570, allocates an object; types >= 5 are lights, the kind taken from the name's first letter. @deep Q2: d3_Unk633438 (0x633438) has no evidenced name: the exe references it four times only (raw .text scan in the d3_light.c note at d3_LightInvalidate): d3_Init sets it 0 and nothing writes it 1; it gates the three orthographic view cameras Oben / Vorne / Seite in d3if_CreateCameras, makes the type-6 ("r") spawns type 5 here, and makes d3_LightInvalidate(on=0) relight. The role (editor / view mode?) is not provable from these uses. The other identifier unk194 is D3LIGHTINFO.time now (D3LDATA.time in d3_light.h). */
+/* 0x43c570, allocates an object; types >= 5 are lights, the kind taken from the name's first letter. d3_EditorMode
+   (0x633438) is a reasoned guess: its only uses are editor-like (the ortho Oben/Vorne/Seite cameras, type-6 "r"
+   objects as type 5 here, the on=0 relight of d3_LightInvalidate) and this build only ever stores 0. The other
+   identifier unk194 is D3LIGHTINFO.time now (D3LDATA.time in d3_light.h). */
 
 D3OBJECT *d3_SpawnObject(int type, char *name)
 {
@@ -1521,7 +1524,7 @@ D3OBJECT *d3_SpawnObject(int type, char *name)
             obj->type = 5;
             break;
         }
-        if (d3_Unk633438 && obj->type == 6)
+        if (d3_EditorMode && obj->type == 6)
             obj->type = 5;
     } else
         obj->type = type;
@@ -2592,7 +2595,8 @@ char *d3e_EventName(int id)
 
 D3EVRESOLVE d3e_Resolve = d3e_DefaultResolve;  /* 0x5fb920 */
 /* d3d_Caps98d: view of d3d_UsedCard (tools/data_views.py) */
-char d3_Unk633438 = 0;  /* 0x633438 */
+char d3_EditorMode = 0;  /* 0x633438, editor / tool mode (reasoned guess: the ortho view cameras, the type-6 lights
+                            and the on=0 relight; only ever set 0 in this build) */
 int d3_FrameCount = 0;  /* 0x63343c */
 int d3_MirrorObject = 0;  /* 0x63344c, the object the frame's mirror was built for (0 none) */
 unsigned char d3_Hardware = 0;  /* 0x633450 */

@@ -725,14 +725,14 @@ void d3_RelightObjectFrame(D3OBJECT *obj, struct D3ANIMFRAME *frame)
 }
 /* 0x4538a0, last function of the TU: invalidates the cached scene lighting (light generation ++, all light
    records dropped, the lights-changed flag set) and rebuilds the terrain light map. on > 1 relights every
-   object of the default scene at once; on 0 it does nothing unless 0x633438 is set. */
+   object of the default scene at once; on 0 it does nothing unless d3_EditorMode is set. */
 
 void d3_LightInvalidate(unsigned char on)
 {
     d3_Busy++;
     d3_LightGeneration++;
     if (on == 0) {
-        if (d3_Unk633438 == 0)
+        if (d3_EditorMode == 0)
             goto done;
     } else if (on > 1) {
         d3_ForEachObject2(d3_DefaultScene, 0, 0x40, (void (*)(D3OBJECT *))d3_RelightObject);
