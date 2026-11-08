@@ -26,10 +26,9 @@
    cm_ClearParty, cm_StartScript, cm_ResetCutInfos and cm_ShowPartyTexts still lack them (their calls stay M7).
    cm_ClearParty's real prototype and declaration changes in cm.h / cm_types.h flip the register tie-breaks of
    ai_TutorialInitChapter2 (byte) / ai_TutorialInitChapter3 (shape) in sv_t and of ord_CountGridObjects. Types only
-   cm.c uses (CMNOTE, CMCUTTYPEMSG, CMFIELD, CMWALKPATHMSG) stay in its head for that reason. Meanwhile cm.h's own
-   declarations of ord_AddGridAmount, gm_RemoveOwned, gm_BuildingSkill, gm_HealthRatio, rt_FreePoints and
-   rt_CopyPoints are the owner headers' prototypes (gv.h, f3gm.h, rt.h; RTPOINT from rt_types.h); the other calls
-   into those headers stay M7.
+   cm.c uses (CMNOTE, CMCUTTYPEMSG, CMFIELD, CMWALKPATHMSG) stay in its head for that reason. cm.h still
+   repeats ord_AddGridAmount, gm_RemoveOwned, gm_BuildingSkill, gm_HealthRatio, rt_FreePoints and rt_CopyPoints
+   (the owner headers' prototypes: gv.h, f3gm.h, rt.h; RTPOINT from rt_types.h).
    Open: head: message 0x3f has no record type in cm_types.h (a struct typedef there flips
    ord_CountGridObjects shape -> draft, a declaration-set tie-break the probe does not reproduce), so 0x3f / 0x40
    read the player / item head of the goods record through G17GOODSMSG.goods.
