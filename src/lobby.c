@@ -501,12 +501,12 @@ void lobby_ShowPlayers(void)
 }
 
 
-/* 0x58b880, the choose-profession window (496 B): the window "Menu\nCHOOSEPROFESSION" 0x6250b8 (0x4741f0 /
-   0x475600), control 0 and the text 0x1afa; the eleven profession buttons (the kinds 1 .. 7, 0xb, 0xd .. 0xf)
-   at (i % 3) * 0x60 + 100, ((i / 3) * 5 + 5) * 0x10 through 0x4731d0 (the id i + 0x5a1), their window entry
-   0xf8f080 + id * 0x2ec (+0x4c = 1, +0x1c0 = 3), the text +0xbc = the profession name 0x143a978[i], +0x1bc =
-   0x56 and 0x46c560 (the object list); the frame loop 0x5309a0 (0x58b880, mask) with 0x46c6c0, the clicked
-   control 0x5fe710 against the ids -> 0x5043d0 (the profession, 1) into 0x75e5a3, 0x6f22a0 = 1, return 1 */
+/* 0x58b880, the choose-profession window (496 B): opens "Menu\CHOOSEPROFESSION" with its text and a radio
+   group of eleven profession buttons (the kinds 1 .. 7, 0xb, 0xd .. 0xf) at (i % 3) * 0x60 + 100,
+   ((i / 3) * 5 + 5) * 0x10, each the picture kind + 0x5a1 captioned with the profession name, interactive,
+   style 3; the frame loop navigates the radio group and a click on one of the buttons stores its
+   gm_TitleNumber into init_PlayerProfile.job, raises sv_PopRequest and returns 1 */
+
 int lobby_ChooseProfession(int param)
 {
     int ids[22];
@@ -515,7 +515,6 @@ int lobby_ChooseProfession(int param)
     int ret;
     int i;
     int id;
-    int n;
 
     ret = 0;
     ids[0] = 1;
@@ -535,36 +534,33 @@ int lobby_ChooseProfession(int param)
     io_PrintText(0x1afa);
     obj = d2_CreateRadioGroup(0);
     for (i = 0; i < 0xb; i++) {
-        id = d2_WinOpenPic((i % 3) * 0x60 + 100, ((i / 3) * 5 + 5) * 0x10, ids[i] + 0x5a1, U_I((unsigned)&d2_LastWindow));
+        id = d2_WinOpenPic((i % 3) * 0x60 + 100, ((i / 3) * 5 + 5) * 0x10, ids[i] + 0x5a1, d2_LastWindow);
         ids[i + 0xb] = id;
-        n = id * 0x2ec;
-        U_I(n + 0x4c + U_I((unsigned)&d2_Objs)) = 1;
-        U_I(n + 0x1c0 + U_I((unsigned)&d2_Objs)) = 3;
-        strcpy((char *)(n + 0xbc + U_I((unsigned)&d2_Objs)), (char *)U_I(ids[i] * 4 + ((unsigned)&txt_JobNames + 0x2f8)));
-        U_I(n + 0x1bc + U_I((unsigned)&d2_Objs)) = 0x56;
+        d2_Objs[id].interactive = 1;
+        d2_Objs[id].style = 3;
+        strcpy(d2_Objs[id].caption, txt_ProfessionNames[ids[i]]);
+        d2_Objs[id].capfont = 0x56;
         d2_RadioAdd(obj, id);
     }
-    U_I((unsigned)&d2_ClickedId) = -1;
-    n = sv_RunFrame((int)lobby_ChooseProfession, param);
-    while (1) {
-        if (n == 0) {
-            d2_RadioClear(obj);
-            d2_CloseView(win);
-            return ret;
-        }
-        d2_MenuNavigate(obj);
-        if (U_I((unsigned)&d2_ClickedId) != -1) {
-            for (i = 0; i < 0xb; i++) {
-                if (U_I((unsigned)&d2_PointerObj) == ids[i + 0xb]) {
-                    U_B(((unsigned)&init_PlayerProfile + 0x3)) = gm_TitleNumber(ids[i], 1);
-                    U_I((unsigned)&sv_PopRequest) = 1;
-                    ret = 1;
-                    break;
+    d2_ClickedId = -1;
+    if (sv_RunFrame((int)lobby_ChooseProfession, param)) {
+        do {
+            d2_MenuNavigate(obj);
+            if (d2_ClickedId != -1) {
+                for (i = 0; i < 0xb; i++) {
+                    if (d2_PointerObj == ids[i + 0xb]) {
+                        init_PlayerProfile.job = gm_TitleNumber(ids[i], 1);
+                        sv_PopRequest = 1;
+                        ret = 1;
+                        break;
+                    }
                 }
             }
-        }
-        n = sv_RunFrame((int)lobby_ChooseProfession, param);
+        } while (sv_RunFrame((int)lobby_ChooseProfession, param));
     }
+    d2_RadioClear(obj);
+    d2_CloseView(win);
+    return ret;
 }
 /* 0x58ba70, the chat lines of the lobby (352 B): control 5 of 0x62aa88 and the text 0x602568; the chat records
    from 0x4cd480 / 0x4cd4c0 (0x6f2684 counts them): the speaker 0x4cd380 (the record +0x68), its id (+0xc) or 9;

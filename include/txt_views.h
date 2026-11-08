@@ -28,6 +28,7 @@ extern char *txt_Ptrs[0x4800];    /* 0x143a1c0, each text in its file's buffer *
 #define txt_FemaleHonourTitle                       (*(char * *)((char *)txt_Ptrs + 0x0047c))  /* 0x143a63c, the honour title a female player's name line shows (the male one is txt_HonourTitles[1], 0x143a614) */
 #define txt_JobNames                            (*(char * (*)[221])((char *)txt_Ptrs + 0x004c0))  /* 0x143a680 */
 #define txt_FemaleJobNames                      (txt_JobNames + 0x5f)  /* 0x143a7fc = txt_JobNames + 0x17c, the female professions (the same job index as txt_JobNames) */
+#define txt_ProfessionNames                     (txt_JobNames + 0xbe)  /* 0x143a978 = txt_JobNames + 0x2f8, the profession names the profession chooser shows, by kind */
 #define txt_TitleNames                            (*(char * (*)[70])((char *)txt_Ptrs + 0x00834))  /* 0x143a9f4 */
 #define txt_OfficeNames                            (*(char * (*)[84])((char *)txt_Ptrs + 0x0094c))  /* 0x143ab0c */
 #define txt_MaleFirstNames                            (*(char * (*)[197])((char *)txt_Ptrs + 0x00a9c))  /* 0x143ac5c */
