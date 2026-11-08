@@ -71,8 +71,8 @@
    ai_ProdGoods2 and the column slots ai_ProdColumnSlots (LCPRODROW / LCPRODSLOT); the member list rows are sv's SVMEMBERROW (sv_types.h, sv_MemberRows).
    Open: the other users of those tables (ai_InitProductionTables, the transport / storage / equip windows) still
    read them through byte offsets.
-   Open: data: the production settings head 0x6f26c0 (ai_Settings) and the shared float 0x5ebb40 (ai_FloatHundred,
-   he.c reads it too) still sit in the full_data / full_rdata gap blocks of main.c.
+   Open: data: the shared float 0x5ebb40 (ai_FloatHundred, he.c reads it too) still sits in main.c's full_rdata
+   gap block.
    Open: data: 0x6f2450 ai_DebugHotkeys (a view of main.c's full_data_6f2450), owner cm or am (between cm's
    0x6f244c and am's 0x6f2464; only this unit reads it).
    Open: data: 0x5f3418 d3t_BoxCornerIdx, owner di_input or d3_tools (only ai_GameFrame writes it, -1; it lies
@@ -83,9 +83,8 @@
    ai_MasterUp / ai_MasterBar (0x6f3870, 0x6f4080, 0x6f4ee0) are views of main.c's full_data blocks (this unit
    is their only user, the owner not settled).
    Open: data: 0x6f3840 ai_InvSlots (the inventory child window's six LCINVSLOT rows) is a view of main.c's
-   full_data_6f3680, and 0x6f2f64 lc_Settings.escort, 0x6f2f68 lc_Settings.reserveTime and 0x6f2f78 lc_Settings.reserveCursor
-   (the Domizil goods' clock) are views of full_data_6f2f64; their owner (this unit, the only reader and writer, or
-   main) is not settled. The transport window's cart rows are LCCARTROW, the inventory window's character
+   full_data_6f3680. (The Domizil goods' clock at 0x6f2f64 is LCSETTINGS lc_Settings.) The transport window's
+   cart rows are LCCARTROW, the inventory window's character
    ai_InvChar (0x6f2f60, after ai_NewsSecond), its objects G8INVOBJ (a view of AIOBJ: its union does not reach the
    use stamp at +0x2d).
    Open: data: 0x62a56c ai_FmtLabel ("%s:", ai_TechEffectsWindow's captions) is a view of main.c's full_data_62a56c;
