@@ -203,5 +203,20 @@ int gm_JobSlots(int job, int *a, int *b);  /* 0x504100 */
 int gm_LikingChance(int a, int b, int c, int d);  /* 0x50b290 */
 struct ORDCHAR; int gm_MayRemoveChar(struct ORDCHAR *c);  /* 0x5075c0 */
 int gm_TrialBuildingKind(char *b);  /* 0x50d060 */
+void gm_StatisticsScreen(void);  /* 0x4f9e30, the city statistics screen */
+struct AITIME; void gm_ClockToDate(struct AITIME *c, unsigned char *out);  /* 0x4fe2c0, the calendar record of a clock */
+char *gm_ClassTreasury(struct ORDBLD *b);  /* 0x5049e0, the treasury text of a building */
+int gm_CurrencyFactor(int a, int i);  /* 0x508620 */
+int gm_CurrencyDivide(int a, int i);  /* 0x508640 */
+int gm_BuildingCarts(struct ORDBLD *b, int *out);  /* 0x509060 */
+int gm_BuildingRankGate(unsigned char *b, unsigned char *c);  /* 0x509120 */
+int gm_CharMoney(int c);  /* 0x509f20 */
+int gm_ResearchClass(int k, int *out);  /* 0x50b090 */
+int gm_DonationRank(int c, int d);  /* 0x50b170 */
+int gm_CreditEvents(int c, struct ORDBLD *bld, int *out);  /* 0x50a150 */
+int gm_BuildingEvents(unsigned owner, int b, int c, int *out);  /* 0x50a1c0 */
+void gm_UpdateTechTree(unsigned char *bld, unsigned short *item);  /* 0x50b9f0 */
+int gm_TechTreeWindow(char *form, unsigned char *bld, unsigned short *item);  /* 0x50c340 */
+int gm_Homeless(char *c);  /* 0x50ccd0 */
 
 #endif

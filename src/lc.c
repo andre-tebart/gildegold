@@ -181,7 +181,6 @@ extern int d2_LastWindow;
 extern struct D2OBJ *d2_Objs;
 extern unsigned char kb_Last;
 extern char * ai_BTypes;
-extern char * ai_Goods;
 extern float gm_DayStartHours[];
 extern float gm_DayEndHours[];
 extern char * sv_SelectedObject;
@@ -196,11 +195,8 @@ extern int gm_TreeNodeCount;
 
 
 
-extern char * ai_Goods;
 extern int d2_LastWindow;
 extern struct D2OBJ *d2_Objs;
-extern unsigned short gm_KindObjCount;
-extern unsigned gm_KindObjs[732];
 
 
 
@@ -256,7 +252,6 @@ extern struct D2OBJ *d2_Objs;
 
 extern int ai_SabotageCallback();
 extern int ai_BeatingCallback();
-extern int gm_AllowAll;
 
 
 
@@ -366,7 +361,6 @@ extern int d2_LastWindow;
 
 
 extern char * ai_BTypes;
-extern int ai_GameFlags;
 
 extern int d2_CutsceneActive;
 extern int snd_RoomBank;
@@ -379,7 +373,6 @@ extern char ch_EmptyName[1];
 extern int d2_ClickedId;
 extern int d2_LastWindow;
 
-extern int gm_AllowAll;
 
 
 
@@ -455,7 +448,6 @@ extern struct D2WIN *d2_LastWindowPtr;
 extern struct D2PIC *d2_Pics;
 extern GAPDATA full_data_602568[];
 
-extern int gm_AllowAll;
 
 
 
@@ -742,7 +734,6 @@ extern int d2_LastWindow;
 extern GAPDATA full_data_602568[];
 extern GAPDATA full_data_624cf8[];
 extern GAPDATA full_data_62d2bc[];
-extern char * ai_Goods;
 extern struct D2OBJ *d2_Objs;
 extern char * cm_FieldObject;
 
@@ -3433,7 +3424,7 @@ void ai_ChooseCoatOfArms(void); void snd_StartMarketAmbience(void); int tb_SetFu
 void d2_CopyCaption(char *caption);
 struct AIBLD; int ai_ScriptQuery();
 int gm_IsType10(unsigned char *b);
-int gm_TechTreeWindow(); int d2_GetWinObj(); void ai_TechEffectsWindow(AIBLD *bld);
+int d2_GetWinObj(); void ai_TechEffectsWindow(AIBLD *bld);
 float gm_ItemPrice(int item, unsigned char n);
 void cm_BeginGroup(const char *s); void cm_SendMoveGoodsUnchecked(int a, int b, unsigned char c, int d); int cm_SendMoveGoods(int a, int b, unsigned char c, int d); short * gm_PlayerRecord(char *c);
 int cm_SendLongMessage(char *msg); int cm_EndGroup(const char *s); int cm_GetSlotState(); void cm_SendMoneyDelta(int a, int b);
@@ -7835,7 +7826,7 @@ void ai_DarkCornerTable(AIBLD *bld, AIOBJ *room)
 
 int d3t_PlaceAtObject(); void d2_SetBackgroundTexture(); 
 struct D3OBJECT * d3if_Pick(float x, float y, int flags, int mask); int gm_GetGoodsValue(); int gm_SumListAmounts(void *list, unsigned char p);
-int gm_PlayerFactor(int a, unsigned char k); int gm_GetCreditOffers(); int gm_CreditEvents(); void d2_EnableViewObjects();
+int gm_PlayerFactor(int a, unsigned char k); int gm_GetCreditOffers(); void d2_EnableViewObjects();
 #define gm_SumListAmountsL ((int (*)(void *))gm_SumListAmounts)  /* 0x509e30: @original ai_WineCellarWindow passes the list alone (one push, no player slot) */
 void he_MessageBoxQuickjump(int a1, int a2, char *text, char fl, int a5, int a6, int a7, char *jump, char *text2); void he_FreeEvent(); void d2_RadioClear(int g); int d2_CreateRadioGroup(int n, ...);
 void ai_StorageWindow(); void ai_MasterLetterWindow(); int ai_OpenTransport();
@@ -8444,9 +8435,9 @@ void ai_NewCreditWindow(AIBLD *bank)
 }
 
 short * gm_FindChar(int id); void txt_Format(char *out, int id0, ...);
-short * gm_PlayerRecord(char *c); void he_MessageBoxQuickjump(int a1, int a2, char *text, char fl, int a5, int a6, int a7, char *jump, char *text2); void he_FreeEvent(); int gm_CreditEvents();
+short * gm_PlayerRecord(char *c); void he_MessageBoxQuickjump(int a1, int a2, char *text, char fl, int a5, int a6, int a7, char *jump, char *text2); void he_FreeEvent();
 void d2_RadioClear(int g); int d2_CreateRadioGroup(int n, ...); void d2_SetObjText(); int d2_CreateChildWindow(short x, short y, short w, short h, unsigned int flags, int win);
-int d2_RemoveWindow(); void d2_RemoveObj(); int gm_BuildingEvents(); int gm_SumSlotAmounts(void *list, unsigned char i);
+int d2_RemoveWindow(); void d2_RemoveObj(); int gm_SumSlotAmounts(void *list, unsigned char i);
 void gm_SortCharsByName(int n, int *ids, int flag); void d2_AddPointerItem(int id, int amount); void d2_ClearPointerItems(void); int d2_CountPointerItems();
 void d2_EndInputEdit(void); void d2_EnableObject(); void d2_ScrollWindowBy(); void d2_MoveObj(short x, short y, int obj);
 int d2_WinOpenInputIcon(int x, int y, int icon, unsigned char flags, int win); void d2_SetObjFont(); void d2_CopyCaption(char *caption);
@@ -8752,7 +8743,7 @@ void ai_CreditReleaseWindow(AIBLD *bank)
 
 int gm_SumSlotAmounts(void *list, unsigned char i); int gm_GetGoodsValue(); int gm_ConvertMoney(int a, unsigned char k); int gm_PlayerFactor(int a, unsigned char k);
 void d2_SetObjEnabled(); void d2_EnableViewObjects(); void d2_EnableObject();
-int gm_BuildingEvents(); void gm_SortCharsByName(int n, int *ids, int flag); int d2_RemoveWindow(); void d2_RemoveObj();
+void gm_SortCharsByName(int n, int *ids, int flag); int d2_RemoveWindow(); void d2_RemoveObj();
 void d2_SetObjText(); void d2_MoveObj(short x, short y, int obj); int d2_WinOpenInputIcon(int x, int y, int icon, unsigned char flags, int win); void d2_SetObjFont();
 
 /* 0x59bad0, the money lender's credit giver window "locations\geldleihe\geldleihe_KreditGeber" of the bank bank
@@ -11591,7 +11582,7 @@ int ai_InventoryHas(void *ch, int id); int d2_OpenForm(); void d2_SetPointerSpri
 int d2_SetForm(int view, int n); int io_PrintText(char *fmt, ...); int d2_GetWinObj();
 void cm_BeginFieldBlock(char *o, int id); int cm_AddFieldValues(unsigned char size, unsigned char n, unsigned short field, void *v); int cm_SendFieldDeltas(void);
 int gv_RetireCrimesOf(int p, int n); int cm_SendMoveGoods(int a, int b, unsigned char c, int d); void ai_ShowIndulgenceNews(); int cm_GetSlotState();
-int gm_DonationRank(); void txt_Format(char *out, int id0, ...);
+void txt_Format(char *out, int id0, ...);
 void d2_CloseView(int view); int _ftol();
 void ai_Top5Window();
 
@@ -12323,7 +12314,6 @@ void ai_ChurchContact(int building, int arg)
     }
 }
 
-int gm_Homeless();
 
 #pragma pack(push, 1)
 typedef struct G8CHARREC {              /* a character record of ai_Chars (AICHAR, ai_char.h): the fields the
@@ -12410,7 +12400,7 @@ void ai_DungeonContact(int building, int room)
     }
 }
 
-int amt_GetFirstOffice(unsigned int k, struct AMTREC *out); int gm_CharMoney(); void cm_BeginGroup(const char *s); int cm_EndGroup(const char *s);
+int amt_GetFirstOffice(unsigned int k, struct AMTREC *out); void cm_BeginGroup(const char *s); int cm_EndGroup(const char *s);
 
 /* 0x5a3b90, the dungeon's bribe window "locations\kerker\kerker_bestechen" (from ai_DungeonBribeListener; bld is not
    read): the jailer is the holder of the office 0x11 (amt_GetFirstOffice, gm_FindChar); without one the text
@@ -12510,7 +12500,7 @@ void ai_DungeonEmptyListener(int building, int room)
         ;
 }
 
-int he_NoProtectionEvent(); int gm_BuildingRankGate(); void snd_PlayFavourComment(void); 
+int he_NoProtectionEvent(); void snd_PlayFavourComment(void); 
 
 /* 0x5a3f10, the burglary window "locations\diebesgilde\diebesgilde_einbruch" (the map pick's callback: ai_MapPick
    calls it with its context, not read here, and the picked building bld): a protected building
@@ -16055,7 +16045,7 @@ void ai_FillPersonnelRow(AICHARREC *ch, G9DOMIZILROW *row, int bars)
     }
 }
 
-void d2_RemoveObj(); int gm_BuildingCarts(); int gm_HeadIconNumber(); int gm_ObjectBuilding(int y);
+void d2_RemoveObj(); int gm_HeadIconNumber(); int gm_ObjectBuilding(int y);
 void d2_SetObjFont(); void d2_SetCaption();
 
 
@@ -27192,7 +27182,6 @@ accept:
     return 1;
 }
 
-int gm_ResearchClass();
 
 /* 0x5c37a0, whether the building bld passes the amount menu's building filter cfg for the character me (480 B
    .. its switch table 0x5c3980): no filter passes all, no building or character none, an empty filter (no kind
