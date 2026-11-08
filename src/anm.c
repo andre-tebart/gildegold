@@ -108,8 +108,7 @@ void anm_Update(void)
                 anm_Animals[anm_NextAnimal].remove = 1;
         }
         if (anm_Animals[anm_NextAnimal].remove
-            && ((*(unsigned char *)(*(char **)(*(char **)((char *)anm_Animals[anm_NextAnimal].obj + 0x34) + 0x1ec)
-                                    + 0x96d) & 0x40)
+            && ((D3_MESH(((CHARACTER *)anm_Animals[anm_NextAnimal].obj)->obj)->flags & 0x40)
                 || s == 3 || anm_NAnimals > m))
             anm_RemoveAnimal(&anm_Animals[anm_NextAnimal]);
     }
