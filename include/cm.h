@@ -775,6 +775,16 @@ extern double ai_Unk5eb9b0;  /* 0x5eb9b0 */
 void cm_CarryOutOrder(char *rec, char *c);  /* 0x4d3120 */
 void cm_FallDownAction(char *c);  /* 0x4d3300 */
 extern float cm_Pi;  /* 0x5eb7dc */
+extern float cm_DegToRad;  /* 0x5eb7e0, the pooled degrees-to-radians factor */
+extern double cm_DoubleHalf;  /* 0x5eb7e8, the shared double 0.5 (a VC6 pooled literal) */
+extern float ai_Unk5eb87c;  /* 0x5eb87c */
+extern double ai_Unk5eb880;  /* 0x5eb880 */
+extern double ai_Unk5eb888;  /* 0x5eb888 */
+extern float ai_Unk5eb890;  /* 0x5eb890 */
+extern float ai_Unk5eb894;  /* 0x5eb894 */
+extern float ai_Unk5eb898;  /* 0x5eb898 */
+extern float ai_Unk5eb89c;  /* 0x5eb89c */
+extern float ai_Unk5eb8a0;  /* 0x5eb8a0 */
 extern const double cm_Inv180;  /* 0x5edc68 */
 
 int cm_CheckDeath(struct AICHAR *c);  /* 0x4d3390 */

@@ -17132,9 +17132,19 @@ float ai_FloatZero = 0.0f;  /* 0x5eb788 */
 /* 0x5eb7ac is the pooled float 0.5f (0x3f000000): use the literal at the call sites. */
 double ai_Unk5eb7b0 = 15.0;  /* 0x5eb7b0 */
 float cm_Pi = 3.14159274f;  /* 0x5eb7dc */
+float cm_DegToRad = 0.017453292f;  /* 0x5eb7e0, pi / 180: the pooled degrees-to-radians factor (10 users, ch_ActTurn 0x406ea7 first) */
+double cm_DoubleHalf = 0.5;  /* 0x5eb7e8, the shared double 0.5 VC6 pooled here: 56 sites across the units add it before a conversion to int (`fadd qword ptr [0x5eb7e8]`, e.g. main_SettleRound 0x53afeb) or compare against it; the call sites read the literal, as 0x5eb7ac's 0.5f does */
 float cm_Float75 = 75.0f;  /* 0x5eb7fc */
 float ai_Unk5eb81c = 30.0f;  /* 0x5eb81c */
 float ai_Unk5eb878 = 1.39999998f;  /* 0x5eb878 */
+float ai_Unk5eb87c = 0.9090909f;  /* 0x5eb87c, the pooled 10 / 11 (4 users) */
+double ai_Unk5eb880 = -0.04;  /* 0x5eb880, the pooled -0.04 (5 users) */
+double ai_Unk5eb888 = 0.04;  /* 0x5eb888, the pooled +0.04 (4 users) */
+float ai_Unk5eb890 = 2.5f;  /* 0x5eb890, the pooled 2.5f (9 users) */
+float ai_Unk5eb894 = 2.2f;  /* 0x5eb894, the pooled 2.2f (4 users) */
+float ai_Unk5eb898 = 1.9f;  /* 0x5eb898, the pooled 1.9f (4 users) */
+float ai_Unk5eb89c = 1.7f;  /* 0x5eb89c, the pooled 1.7f (2 users) */
+float ai_Unk5eb8a0 = 0.7f;  /* 0x5eb8a0, the pooled 0.7f (6 users) */
 double cm_DoubleOne = 1.0;  /* 0x5eb8a8, the shared double 1.0 VC6 pooled here: 58 sites across the units compare a float against it (`fcomp qword ptr [0x5eb8a8]`, e.g. main_UpdateFigure 0x53a358, ch_ActWalk 0x409a1f); the call sites read the literal, as 0x5eb8b0's 0.2f does */
 /* 0x5eb8b0 is the pooled float 0.2f (0x3e4ccccd): use the literal at the call sites. */
 double ai_Unk5eb8b8 = 1.2;  /* 0x5eb8b8 */

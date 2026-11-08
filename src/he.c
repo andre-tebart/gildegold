@@ -198,7 +198,6 @@ extern char he_MeetingSceneBig[56];             /* 0x628fac, the meeting scene s
 extern const float gv_SaleShares[];
 extern GAPDATA full_data_628fe4[];
 extern GAPDATA full_data_629000[];
-extern GAPDATA full_rdata_5eb7e8[];
 extern int gm_PlayerRecords[688];
 extern GAPDATA full_data_62901c[];
 extern GAPDATA full_data_629038[];

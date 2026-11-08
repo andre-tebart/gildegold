@@ -5333,7 +5333,6 @@ extern void * main_Instance;
 
 /* ---- full-link gap data (tools/full_addrs.py) ---- */
 #define GAPDATA __declspec(align(1)) unsigned char
-GAPDATA full_rdata_5eb7e8[8] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xe0, 0x3f };  /* 0x5eb7e8 */
 GAPDATA full_rdata_5ebb40[4] = { 0x00, 0x00, 0xc8, 0x42 };  /* 0x5ebb40 */
 GAPDATA full_rdata_5ebb44[4] = { 0x00, 0x00, 0x80, 0x43 };  /* 0x5ebb44 */
 GAPDATA full_rdata_5ed0fc[4] = { 0x00, 0x00, 0x04, 0x42 };  /* 0x5ed0fc */
