@@ -39,8 +39,9 @@
    Open: head: include/d2.h not included (the d2_* calls lack prototypes, M7): it supersedes the local
    d2_CreateWinText declaration and its trial drops 6 shape functions to draft (dcp headers conflicts sv_t
    d2.h --trial).
-   Open: head: cm.h's declaration set moves ai_TutorialInitChapter3 (shape -> draft) by the declaration set alone
-   (a tie-break, dcp build probes it); cm.h's declaration set is not the original's yet.
+   Open: head: cm.h's declaration set still moves the chapter builders by the declaration set alone (a register
+   tie-break, dcp build probes it: ai_TutorialInitChapter2 byte, ai_TutorialInitChapter3 shape); cm.h's declaration
+   set is not the original's yet.
    Open: the alchemist windows ai_AlchemistWindow / ai_AlchemistResearchWindow are @deep (allocation); their buttons call
    ai_AlchemistFundWindow / ai_AlchemistRescheduleWindow with (obj, record), the record parameter unread.
    Open: type debt - the graveyard detail window record GVDETAILWIN is typed in the seance and contact functions
