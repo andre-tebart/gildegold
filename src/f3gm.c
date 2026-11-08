@@ -165,7 +165,7 @@ int gm_IsUnderAge(unsigned short id);         /* 0x4fd7e0 */
 #include "mission.h"
 #include "f3gm.h"
 void *ai_ProdSetting(int param_1);  /* 0x5a8560 */
-#define ai_ProdSettingK ((int (*)())ai_ProdSetting)  /* 0x5a8560: @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) */
+#define ai_ProdSettingK ((int (*)(void *))ai_ProdSetting)  /* 0x5a8560 (lc.c: void *ai_ProdSetting(int bld)): @original this unit's callers pass the building pointer (gm_CreateBuilding 0x501676 pushes the record, as lc.c's own callers cast it); the result is unused */
 #define util_RandomU ((unsigned short (*)(int))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original this unit's callers read the 16-bit result (byte-matched ch_RandomNear 0x405160, ai_CalcMeisterBank 0x4836a0, cm_FightLoop 0x4d88c0 move it as a word / movzx) */
 #define gm_AssignBuildingI ((void (*)(unsigned char *, int, int))gm_AssignBuilding)  /* @original 0x502b60 called with int place / own: gm_TakeOverCharacter zero-extends the word load once for both (as f3init's byte-matched init caller does, see its prototype) */
 #define d2_TransparentBytes ((unsigned char *)&d2_TransparentColour)  /* 0x6f0454, @original: unk_LoadIconNames stores the key byte by byte (mov byte [0x6f0455], 0xff; [0x6f0454] and [0x6f0456] = bl), not through the D2KEY word gb */
