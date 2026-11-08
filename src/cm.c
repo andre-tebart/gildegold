@@ -22,10 +22,10 @@
    ai_DecideTortureInstrumentP, d2_SetObjValue2 / d2_SetObjValue4).
    Open: head: cm.h carries the parameter lists of cm_StartEventArg, cm_QueueVoice, cm_LoadVoiceBank,
    cm_RunSceneTicks, cm_RunSceneTicksOrClick, cm_WaitEvent, cm_DialogTimer, cm_PartyById, cm_UnloadVoiceBank,
-   cm_MessageBox, cm_PlayVoice, cm_StopScript, cm_DeleteChar, cm_StartScript and cm_CutInfoById;
-   cm_WaitEventOrClick, cm_ClearParty, cm_ResetCutInfos and cm_ShowPartyTexts still lack them (their calls stay M7).
-   cm_ClearParty's real prototype and declaration changes in cm.h / cm_types.h flip the register tie-breaks of
-   ai_TutorialInitChapter2 (byte) / ai_TutorialInitChapter3 (draft) in sv_t and of ord_CountGridObjects. Types only
+   cm_MessageBox, cm_PlayVoice, cm_StopScript, cm_DeleteChar, cm_StartScript, cm_CutInfoById,
+   cm_WaitEventOrClick, cm_ClearParty, cm_ResetCutInfos, cm_ShowPartyTexts, cm_AllocParty, cm_AddPartyMember
+   and cm_WaitEventFull; cm.h's declaration changes still flip the register tie-breaks of
+   ai_TutorialInitChapter2 / ai_TutorialInitChapter3 in sv_t and of ord_CountGridObjects. Types only
    cm.c uses (CMNOTE, CMCUTTYPEMSG, CMFIELD, CMWALKPATHMSG) stay in its head for that reason. cm.h still
    repeats ord_AddGridAmount, gm_RemoveOwned, gm_BuildingSkill, gm_HealthRatio, rt_FreePoints and rt_CopyPoints
    (the owner headers' prototypes: gv.h, f3gm.h, rt.h; RTPOINT from rt_types.h).
