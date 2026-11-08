@@ -1511,7 +1511,7 @@ int init_BuildingSceneUniverse();                     /* 0x511e60 */
 int init_ObjectSceneUniverse();                     /* 0x511dc0 */
 int gm_ClockSeason(AITIME *c);         /* 0x4fe350, f3gm.c */                     /* 0x4fe350 */
 char *strstr();                   /* 0x5de6b0, strstr (LIBC; as ls.c) */
-void cm_SendExSetHE(unsigned char k, char *p);                     /* 0x4c4c60 */
+int cm_SendExSetHE(unsigned char k, char *p);                     /* 0x4c4c60 */
 #define cm_SendExSetHEI ((void (*)(int, char *))cm_SendExSetHE)  /* @original: sv_MoveToGroup pushes -1, not 0xff (an int / signed parameter at its calls) */
 void he_FreeEvent();                     /* 0x53e1f0 */
 int cm_AddFieldValue(unsigned char size, unsigned char n, unsigned short field, void *v);                     /* 0x4c3d90 */

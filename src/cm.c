@@ -1425,9 +1425,10 @@ int cm_SendLongMessageText(char *msg, unsigned int len, void *extra)
     mem_Free(buf);
     return cm_QueueSend(&m);
 }
-/* 0x4c4c60, message 0x1d about p (three AITIMEs, its name from cm_EventNames); p + 0xac as the long message */
+/* 0x4c4c60, message 0x1d about p (three AITIMEs, its name from cm_EventNames); p + 0xac as the long message.
+   Returns cm_QueueSend's result (the callers' slot; the key is read as a byte: unsigned char k) */
 
-void cm_SendExSetHE(unsigned char k, char *p)
+int cm_SendExSetHE(unsigned char k, char *p)
 {
     G17MSG m;
     AIJOB *ev;
@@ -1441,7 +1442,7 @@ void cm_SendExSetHE(unsigned char k, char *p)
     m.setHE.kind = k;
     strcpy(m.setHE.name, cm_EventNames[(unsigned char)ev->kind]);
     cm_SetLongMsg(0xa0, ((AIJOBTAIL *)ev)->data);
-    cm_QueueSend(&m);
+    return cm_QueueSend(&m);
 }
 /* 0x4c4d40, message 0x1e with the time t; -1: t is not valid (0x4fe210) */
 
