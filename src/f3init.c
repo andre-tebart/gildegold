@@ -260,7 +260,7 @@ typedef struct INIT_TORCHLIST {
                                           our link puts it at 0x6d0448 (build/link/exe/exe.map), which made the
                                           mask 0x6e8607 and every id / parent lookup miss */
 #define INIT_PLAYER_SLOTS_END ((unsigned)&init_SlotCurrency + 0x888)   /* one past the player slot table 0x7e3f40 (0x2f4 bytes per slot) */
-#define INIT_SLOT_CURRENCY_END ((unsigned)&gm_Offers + 0x44)  /* one past the currency words of the player slots 1 .. 3 (0x7e4288 + 3 * 0x2f4) */
+#define INIT_SLOT_CURRENCY_END ((unsigned)&init_SlotCurrency + 0x8dc)  /* one past the currency words of the player slots 1 .. 3: the original's `cmp esi, 0x7e4b64` (0x510cf0) = init_SlotCurrency (0x7e4288) + 3 * 0x2f4, not &gm_Offers + 0x44 (that equals it only while gm_Offers follows the slot table at 0x7e4b20) */
 #define INIT_SCENE_HEIGHTMAP_END ((unsigned)init_SceneHeightMaps + 0x40 * 0x3e0) /* one past the height map of the last scene: 0xfd7c50 + 0x40 * 0x3e0 (init_FreeScenes); anchored on the array, not on d3anim_Tail + 0x10 (their linked distance differs from the original's) */
 #define INIT_CHARACTER_COUNT 0x300      /* ch.h's CH_MAX: the slots of the character list ch_List (0x1468ae0) */
 #define INIT_START_CHARACTERS_END ((unsigned)&ai_Unk770d8c + 0x1fb4) /* one past the 16th character record: 0x770b80 + 16 * 0x21c (init_StartNewGame) */
