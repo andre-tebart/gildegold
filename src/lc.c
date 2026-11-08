@@ -1152,8 +1152,8 @@ int d2_GetViewWin(); void d2_SetPointerSprite(int a, int pic); char * gm_Query(v
 int gm_FreeCapacity(); char * he_FindEvent(int n, ...); char * he_NextEvent(void);
 int ai_ScriptQuery(); int cm_SendLongMessage(char *msg); int cm_GetSlotState(); int cm_GetSlotValue(int h);
 void snd_PlayFavourComment(void); void d2_CloseView(int view);
-int gm_ListAmount(); char * gm_Query(void *list, int n, ...); void ai_UpdateProdColumns();
-int ai_UpdateProdGoodsList(); void ai_LayoutProdGoodsList(int param_1, int param_2, int param_3, int param_4); char *_itoa(int, char *, int); void d2_SetObjText();
+int gm_ListAmount(); char * gm_Query(void *list, int n, ...);
+void ai_LayoutProdGoodsList(int param_1, int param_2, int param_3, int param_4); char *_itoa(int, char *, int); void d2_SetObjText();
 
 #define sv_MemberRows (*(SVMEMBERROW (*)[0x20])&ai_Unk75f280)  /* 0x75f280, sv.c's member list rows (32 of SVMEMBERROW) */
 
@@ -3426,13 +3426,13 @@ void ai_ConstructionWindow(void)
     ai_CampaignStep(0xe, 0, 1, 0);
 }
 
-int ai_MapPick(); int gm_IsHomeType();
+int gm_IsHomeType();
 unsigned gm_PermissionBits(unsigned p1, unsigned char *b, unsigned short *o, int c); void init_ShowBuildingScene(unsigned char *b, int slot); void init_FinishBuildingScene(unsigned char *b, unsigned short *o);
 int d3t_PlaceObjectV(struct D3OBJECT *camera, struct D3VECTOR *pos, struct D3VECTOR *dir, int unk, char flags); int gm_ClockSeason(); void init_AfterTownLoad(void); void d3fl_MakeDivide();
 void ai_ChooseCoatOfArms(void); void snd_StartMarketAmbience(void); int tb_SetFunctionOff(); void snd_StopMarketAmbience(void);
 void d2_CopyCaption(char *caption);
 struct AIBLD; int ai_ScriptQuery();
-int gm_IsType10(unsigned char *b); void ai_EnterBuilding(); void ai_EnterOwnBuilding(); void ai_MarketStandListener();
+int gm_IsType10(unsigned char *b);
 int gm_TechTreeWindow(); int d2_GetWinObj(); void ai_TechEffectsWindow(AIBLD *bld);
 float gm_ItemPrice(int item, unsigned char n);
 void cm_BeginGroup(const char *s); void cm_SendMoveGoodsUnchecked(int a, int b, unsigned char c, int d); int cm_SendMoveGoods(int a, int b, unsigned char c, int d); short * gm_PlayerRecord(char *c);
@@ -4843,7 +4843,6 @@ void ai_StoneKontorContact(AIBLD *bld)
 }
 
 
-int ai_MapPick();
 
 /* 0x593e80, the information listener (186 B): the plates released (0x52e190) and registered again every frame
    (0x52e1c0): INFORMATION (0x143cb38, 0xc) -> the spy reports window 0x5a45c0, MEISTERBRIEF (0x143cbc8, 0xc) ->
@@ -5374,7 +5373,6 @@ void ai_OpenRaid(int building)
     }
 }
 
-int ai_OpenTransportBuy(); int ai_OpenTransportSell();
 
 /* 0x594e50, the criminal contact listener (643 B): the plates released (0x52e190) and, while the building
    permission 0x200 (0x6f231c) is set, registered again (0x52e1c0): AUSRUESTEN (0x1441fb8, 0xd), AUF_LAUER_LEGEN
@@ -6053,7 +6051,7 @@ void ai_MixingContact(AIBLD *bld, int room)
     }
 }
 
-int ai_AmountMenu(); void ai_TalentWindow(struct AIBLD *bld, int room, int talent); void ai_OpenRobberBribe(); int ai_DrohbriefWindow();
+int ai_AmountMenu(); void ai_TalentWindow(struct AIBLD *bld, int room, int talent);
 void ai_PamphletWindow(int bld);
 
 /* 0x5962b0, the stonecutter contact listener: it releases the name plates, pumps the frame (sv_RunFrame, this,
@@ -7568,7 +7566,7 @@ void ai_OpenStammtisch(AIBLD *bld, AIOBJ *room)
     sv_CameraFollow();
 }
 
-int gv_EvidencePrice(); void ai_LeftAlignedText(); void cm_SendScriptMessage(void *p); void cm_SendProofExecuted(int a, int b);
+int gv_EvidencePrice(); void cm_SendScriptMessage(void *p); void cm_SendProofExecuted(int a, int b);
 
 /* 0x5992c0, the dark-corner menu of the player's own tavern, "locations\Wirtshaus\DUNKLEECKE": per frame the
    corner's three evidence offers (corner->recs, gv_EvidencePrice with the building owner as the seller) fill the
@@ -7842,7 +7840,7 @@ int gm_PlayerFactor(int a, unsigned char k); int gm_GetCreditOffers(); int gm_Cr
 void he_MessageBoxQuickjump(int a1, int a2, char *text, char fl, int a5, int a6, int a7, char *jump, char *text2); void he_FreeEvent(); void d2_RadioClear(int g); int d2_CreateRadioGroup(int n, ...);
 void ai_StorageWindow(); void ai_MasterLetterWindow(); int ai_OpenTransport();
 void ai_BardWindow(void); void ai_NoticeBoardWindow(void);
-void ai_LeftAlignedText(); void cm_BeginGroup(const char *s); void cm_SendScriptMessage(void *p); void cm_SendProofExecuted(int a, int b);
+void cm_BeginGroup(const char *s); void cm_SendScriptMessage(void *p); void cm_SendProofExecuted(int a, int b);
 
 /* 0x599af0, the tavern room's contact listener: it releases the name plates, then per frame (sv_RunFrame, this,
    mask 0x67fff) runs ai_MarketContact and registers the plates contact_WUERFELSPIEL, contact_STAMMTISCH and
@@ -9470,13 +9468,8 @@ char d3_DeflateScene(unsigned int flags); char d3_InflateScene(unsigned int flag
 void init_ShowBuildingScene(unsigned char *b, int slot); void init_FinishBuildingScene(unsigned char *b, unsigned short *o); 
 int d3_VecEqual(struct D3VECTOR *a, struct D3VECTOR *b, float eps);
 void init_LeaveTownScene(void); void snd_UnloadBuildingVoices(void); void init_AfterTownLoad(void); 
-struct SBSAMPLE * sb_PlaySample(); void ai_ThievesGuildEmptyListener(); void ai_ThievesGuildListener(); void ai_StorageContact(); void ai_TrainingContact();
-void ai_KidnapContact(); void ai_DungeonContact(); void ai_DungeonBribeListener(); void ai_DungeonEmptyListener(); void ai_ChurchListener(); void ai_ChurchContact();
-void ai_GuildLevel1Listener(); void ai_ProductionWriteContact(); void ai_LawBookContact(); void ai_GuildLevel2Listener();
-void ai_GuildLevel3Listener(); void ai_TrainingRoomListener(); void ai_CityWatchListener(); void ai_GuildHallListener();
+struct SBSAMPLE * sb_PlaySample();
 void ai_AlchemistLabContact(struct AIBLD *rec, struct AIOBJ *room); void ai_CannonContact(struct AIBLD *rec, struct AIOBJ *room); void ai_CabinetContact(struct AIBLD *rec, struct AIOBJ *room); void ai_ProductionContact(int building, int arg);
-void ai_ConfessionListener(); void ai_TownHallContact();
-void ai_TownCashContact();
 
 /* 0x59d5e0, the money lender's window of the bank bank for its owner, "locations\geldleihe\geldleihe_Wechsel"
    (1557 B): the bank's currency rows (its object list, form 5, as in ai_ExchangeWindow) and the rows of the
@@ -10598,7 +10591,7 @@ void ai_GuildCashWindow(AIBLD *bld)
    0x770ce6 of the first record) set, the pump 0x5309a0 (0x59fca0, 0x67fff) looks up "ob_STADTKASSE" (text
    0x1a0e, class 0x16) and opens 0x59fbf0 */
 
-void ai_TownCashContact(AIBLD *bld)
+void ai_TownCashContact(AIBLD *bld, int room)
 {
     int c;
 
@@ -10619,7 +10612,7 @@ void ai_OpenAgendaMenu(void);
    (text 0x1fd0) / "contact_AMT_INFO" (text 0x8c); with the gate 0x6f2448 and the key 0x1468410 byte 0x14,
    0x4f9e30 opens; the clicks open 0x59f9a0 (buy building), 0x5c1df0 (agenda) and 0x5c1b20 (office info) */
 
-void ai_TownHallContact(void)
+void ai_TownHallContact(int building, int room)
 {
     int kaufen = 0;
     int agenda = 0;
@@ -10747,9 +10740,9 @@ void ai_CitizenRightWindow(AIBLD *b)
 }
 
 int amt_GetFirstOffice(unsigned int k, struct AMTREC *out); int amt_ApplyForOffice(); int amt_KindColumn();
-int ai_SpecialAmountListWindow(); void ai_AmountInfoWindow(); int amt_GetOfficeCandidatesFull(); int amt_GetOfficeCandidates();
+void ai_AmountInfoWindow(); int amt_GetOfficeCandidatesFull(); int amt_GetOfficeCandidates();
 int ai_AmountLimit();
-int amt_CanUseMayorPower2(); int ai_MapPick(); void d2_SetObjEnabled();
+int amt_CanUseMayorPower2(); void d2_SetObjEnabled();
 
 /* 0x5a0220, the applicants of the office kind office "locations\rathaus\amtsbewerbung2" for the character me
    (from ai_OfficeApplicationWindow): while the office is open (amt_GetFirstOffice) the up to 4 characters that
@@ -10952,7 +10945,7 @@ void ai_OfficeApplicationWindow(void)
    "contact_BUERGERRECHT" text 0x1fca); the clicks open the law book (0x112 / 0x111 / 0x113), the citizen
    right 0x59fe40 (bld) or the application 0x5a0590 */
 
-void ai_LawBookContact(AIBLD *bld)
+void ai_LawBookContact(AIBLD *bld, int room)
 {
     int steuern = 0;
     int strafrecht = 0;
@@ -11426,7 +11419,7 @@ void ai_GuildLevel3Entry(void)
    "contact_ZUNFTLEVEL2" plate (txt_Ptrs[0x165d], class 0x16) and a click on it opens the office application
    entry (0x5a0f10) */
 
-void ai_GuildLevel2Listener(int building)
+void ai_GuildLevel2Listener(int building, int room)
 {
     int c = 0;
 
@@ -11444,7 +11437,7 @@ void ai_GuildLevel2Listener(int building)
    with the guild office power (0x4e95a0, the player) and the id, the "contact_ZUNFTLEVEL3" plate (the text
    txt_Ptrs[id]); a click opens the guild cash payment window (0x5a0950) or the level 3 entry (0x5a17b0) */
 
-void ai_GuildLevel3Listener(int building)
+void ai_GuildLevel3Listener(int building, int room)
 {
     int kasse;
     int level3 = 0;
@@ -11478,7 +11471,7 @@ void ai_GuildLevel3Listener(int building)
    "contact_ZUNFTLEVEL1" plate (txt_Ptrs[0x1641], class 0x16) and a click on it opens the guild level 1 window
    (0x5a1000) */
 
-void ai_GuildLevel1Listener(int building)
+void ai_GuildLevel1Listener(int building, int room)
 {
     int c = 0;
 
@@ -11819,7 +11812,7 @@ void ai_BaptismWindow(AIBLD *bld, int room)
     sv_CameraFollow();
 }
 
-void gm_DonationTop5(unsigned *ids, int *sc); int ai_DrawAmountRow(); void ai_LeftAlignedText();
+void gm_DonationTop5(unsigned *ids, int *sc); int ai_DrawAmountRow();
 int d2_RemoveWindowObjects();
 
 /* 0x5a28f0, the church's top five donors window "Locations\Kirche\Top5" (opened by ai_IndulgenceWindow after a
@@ -11963,7 +11956,7 @@ void ai_ConfessionWindow(AIBLD *bld)
    0x5309a0 (0x5a2de0, 0x67fff) looks up the "contact_BEICHTE" plate (txt_Ptrs[0x197e], class 0x16) while the
    building permission 0x200 (0x6f231c) is clear and a click on it opens the confession window (0x5a2b60) */
 
-void ai_ConfessionListener(int building)
+void ai_ConfessionListener(int building, int room)
 {
     int c = 0;
 
@@ -12222,7 +12215,7 @@ int ai_OpenTransport(); void ai_MasterLetterWindow();
    building's object list), the production window (0x58bd60), the transport window (0x5af1a0) or the master
    letter (0x5c3200) */
 
-void ai_ProductionWriteContact(int building)
+void ai_ProductionWriteContact(int building, int room)
 {
     int schreiben = 0;
     int lager = 0;
@@ -12405,7 +12398,7 @@ void ai_DungeonPlanWindow(AIBLD *bld)
 /* 0x5a3b20, the dungeon listener (100 B): the pump 0x5309a0 (this, 0x67fff) looks up "ob_KERKERPLAN" (0x1440870,
    class 0x16) and opens 0x5a3a40 (the dungeon plan window) */
 
-void ai_DungeonContact(int building)
+void ai_DungeonContact(int building, int room)
 {
     int plan;
 
@@ -12492,7 +12485,7 @@ void ai_DungeonBribeWindow(AIBLD *bld)
    character is held (AICHAR.heldRounds), else 0x67fff) looks up "contact_BESTECHEN" (ai_ContactTextBribe, class
    0x10) only while it is held and opens the bribe window 0x5a3b90 for a known owner */
 
-void ai_DungeonBribeListener(AIBLD *bld)
+void ai_DungeonBribeListener(AIBLD *bld, int room)
 {
     int bribe = 0;
     int mask;
@@ -12510,7 +12503,7 @@ void ai_DungeonBribeListener(AIBLD *bld)
 }
 /* 0x5a3ef0, an empty listener (28 B): the pump 0x5309a0 (this, 0x67fff) until it returns 0 */
 
-void ai_DungeonEmptyListener(void)
+void ai_DungeonEmptyListener(int building, int room)
 {
     sv_ReleaseNamePlates();
     while (sv_RunFrame(ai_DungeonEmptyListener, 0x67fff) != 0)
@@ -12518,7 +12511,6 @@ void ai_DungeonEmptyListener(void)
 }
 
 int he_NoProtectionEvent(); int gm_BuildingRankGate(); void snd_PlayFavourComment(void); 
-int ai_MapPick();
 
 /* 0x5a3f10, the burglary window "locations\diebesgilde\diebesgilde_einbruch" (the map pick's callback: ai_MapPick
    calls it with its context, not read here, and the picked building bld): a protected building
@@ -13045,7 +13037,7 @@ void ai_PickpocketGangWindow(AIBLD *bld)
    dispatches the pending click 0x6f22e4 to ai_BurglaryStart / ai_EspionageStart / ai_AttackStart,
    ai_PickpocketGangWindow / ai_SpyReportsWindow / ai_PersonnelBook / ai_MasterLetterWindow */
 
-void ai_ThievesGuildListener(int building)
+void ai_ThievesGuildListener(int building, int room)
 {
     int burglary = 0;
     int espionage = 0;
@@ -13108,7 +13100,7 @@ void ai_ThievesGuildListener(int building)
 /* 0x5a4f50, an empty listener (28 B, room 0x4d of the building driver 0x59e420): 0x52e190 and the pump
    0x5309a0 (this, 0x67fff) until it returns 0 */
 
-void ai_ThievesGuildEmptyListener(void)
+void ai_ThievesGuildEmptyListener(int building, int room)
 {
     sv_ReleaseNamePlates();
     while (sv_RunFrame(ai_ThievesGuildEmptyListener, 0x67fff) != 0)
@@ -13120,7 +13112,7 @@ void ai_ThievesGuildEmptyListener(void)
    the shown room's object list) for LAGER, ai_OpenTransport for TRANSPORT, ai_EquipWindow for AUSRUESTEN and
    ai_TrainingWindow for REGENERATION */
 
-void ai_StorageContact(int building)
+void ai_StorageContact(int building, int room)
 {
     int ausruesten = 0;
     int regeneration = 0;
@@ -13157,7 +13149,7 @@ void ai_StorageContact(int building)
    0x5309a0 (this, 0x67fff); with the mask 0x200 the ob_ZIELSCHEIBE / contact_NACHT plates, and when the mask is
    still set and the pending click 0x6f22e4 is one of them, ai_TrainingWindow (the building) */
 
-void ai_TrainingContact(int building)
+void ai_TrainingContact(int building, int room)
 {
     int ziel = 0;
     int nacht = 0;
@@ -13949,7 +13941,7 @@ void ai_ArrestStart(int building)
    ub_INFORMATIONSPERGAMENT (0xc) and contact_TRANSPORT (0x15); a click opens ai_StorageWindow (the building, the
    shown room's objList), ai_EquipWindow, ai_RaidStart, ai_EspionageStart, ai_SpyReportsWindow or ai_OpenTransport */
 
-void ai_GuildHallListener(AIBLD *bld)
+void ai_GuildHallListener(AIBLD *bld, int room)
 {
     int lager = 0;
     int ausruesten = 0;
@@ -13992,7 +13984,7 @@ void ai_GuildHallListener(AIBLD *bld)
    0xc) and contact_REGENERATION (ai_ContactTextRegeneration, 0x17), and when the mask is still set and the
    pending click (ai_ClickedObject) is one of them, ai_TrainingWindow (the building) */
 
-void ai_TrainingRoomListener(AIBLD *bld)
+void ai_TrainingRoomListener(AIBLD *bld, int room)
 {
     int ziel = 0;
     int nacht = 0;
@@ -14054,7 +14046,7 @@ void ai_MapCellToScreen(LCMAPMARK *m, int originX, int originY)
    plate opens its window: ai_PersonnelBook, ai_PatrolStart, ai_WatchPlanStart, ai_ArrestStart,
    ai_MasterLetterWindow */
 
-void ai_CityWatchListener(AIBLD *bld)
+void ai_CityWatchListener(AIBLD *bld, int room)
 {
     int patrol = 0;
     int wachplan = 0;
@@ -14104,7 +14096,7 @@ void ai_PlaceMapControls(int screen, int id)
     d2_RaiseObject(d2_WinOpenPic(0x243, 0x78, id + 3, screen));
 }
 
-char d3_GetHeightAt(struct D3SM *h, struct D3VECTOR *pos, int *px, int *pz, float *py); void d2_RaiseObject(); int ai_PassesMapPickFilter(); void d2_ScrollWindow();
+char d3_GetHeightAt(struct D3SM *h, struct D3VECTOR *pos, int *px, int *pz, float *py); void d2_RaiseObject(); void d2_ScrollWindow();
 
 /* 0x5a6cb0, places the marks of the town map window m: the player's buildings (gm_BuildQuery (1, 6); not the kinds
    'D' / 'E' nor one with flags5a bit 0, a foreign city 'G' only while the player has a town hall) become marks;
@@ -20097,7 +20089,7 @@ int ai_BribeAmountCB(AICHARREC *ch);
    (reads the low word too, 29 ins); needs a source variant that keeps VC6 from hoisting the constant 0
    store; no other difference, the same callee and arguments */
 
-void ai_OpenRobberBribe(void)
+void ai_OpenRobberBribe(int bld)
 {
     AMOUNTCFG cfg;
     char text[0x100];
@@ -20322,7 +20314,7 @@ int ai_DrohbriefAmountCB(AICHARREC *ch)
    menu 0x5c1130 with the config (mode 0x400, kind 6, the filter gypsyFilter, the rest cleared), the contact's
    text 0x1758 and the callback 0x5b4c60, whose result it returns; bld is not read */
 
-int ai_DrohbriefWindow(void)
+int ai_DrohbriefWindow(int bld)
 {
     AMOUNTCFG cfg;
 
@@ -27951,7 +27943,7 @@ void ai_FamilyTreeWindow(int netId, unsigned char flags, int caption, int callId
 }
 
 int gm_GetGoodsValue();
-void ai_ShowMissions(int owner); int ai_GiftWindow();
+void ai_ShowMissions(int owner);
 
 /* 0x5c5310, the character info panel "panel\info_spieler" of the character chr (the family tree window opens it):
    page 1 the name (text 0x1f53), page 2 the birth date ("*d.m.y"), the death date ("+d.m.y") or the age, the

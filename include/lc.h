@@ -323,4 +323,44 @@ int ai_LiquidateAssets(int to, struct AICHARREC *ch, int amount, char *note);  /
 int ai_BuildingHasItem(struct AIBLD *bld, int id);  /* 0x5ba700, whether bld holds an item of the type id */
 int ai_CartAtBuilding(struct AIBLD *bld, struct AIOBJ *cart);  /* 0x5ae8e0, whether the cart is at its building */
 unsigned short ai_DomizilGoodInRange(int from, int to);  /* 0x5a9f10, a Domizil entry whose rank lies in from .. to */
+
+/* the unit's own contact listeners and window openers (defined in lc.c after their callers) */
+void ai_UpdateProdColumns(int win, int part, int ncols, int store, int mode);  /* 0x58cc10 */
+int ai_UpdateProdGoodsList(struct AIBLD *bld, struct AIOBJ *store);  /* 0x58d720 */
+void ai_MarketStandListener(struct AIBLD *market);  /* 0x59a800 */
+void ai_EnterBuilding(struct AIBLD *b, int mainRoom);  /* 0x59e420 */
+void ai_EnterOwnBuilding(struct AIBLD *b);  /* 0x59ee40 */
+void ai_TownCashContact(struct AIBLD *bld, int room);  /* 0x59fca0 */
+void ai_TownHallContact(int building, int room);  /* 0x59fd30 */
+void ai_LawBookContact(struct AIBLD *bld, int room);  /* 0x5a07d0 */
+void ai_GuildLevel2Listener(int building, int room);  /* 0x5a18d0 */
+void ai_GuildLevel3Listener(int building, int room);  /* 0x5a1960 */
+void ai_GuildLevel1Listener(int building, int room);  /* 0x5a1a60 */
+void ai_ConfessionListener(int building, int room);  /* 0x5a2de0 */
+void ai_ProductionWriteContact(int building, int room);  /* 0x5a36c0 */
+void ai_ChurchListener(int building, int room);  /* 0x5a3810 */
+void ai_ChurchContact(int building, int arg);  /* 0x5a39b0 */
+void ai_DungeonContact(int building, int room);  /* 0x5a3b20 */
+void ai_DungeonBribeListener(struct AIBLD *bld, int room);  /* 0x5a3df0 */
+void ai_DungeonEmptyListener(int building, int room);  /* 0x5a3ef0 */
+void ai_ThievesGuildListener(int building, int room);  /* 0x5a4d40 */
+void ai_ThievesGuildEmptyListener(int building, int room);  /* 0x5a4f50 */
+void ai_StorageContact(int building, int room);  /* 0x5a4f70 */
+void ai_TrainingContact(int building, int room);  /* 0x5a5080 */
+void ai_KidnapContact(int building, int room);  /* 0x5a5bc0 */
+void ai_CityWatchListener(struct AIBLD *bld, int room);  /* 0x5a67a0 */
+void ai_GuildHallListener(struct AIBLD *bld, int room);  /* 0x5a6920 */
+void ai_TrainingRoomListener(struct AIBLD *bld, int room);  /* 0x5a6a90 */
+int ai_OpenTransportSell(int building);  /* 0x5af1b0 */
+int ai_OpenTransportBuy(int building);  /* 0x5af1c0 */
+int ai_MapPick(unsigned int flags, int *req, char *name, void (*cb)(), int unused);  /* 0x5b2180 */
+void ai_OpenRobberBribe(int bld);  /* 0x5b4bf0 */
+int ai_DrohbriefWindow(int bld);  /* 0x5b4fb0 */
+void ai_LeftAlignedText(char *text, int x, int y, int w, int font);  /* 0x5bd1f0 */
+int ai_SpecialAmountListWindow(int kind, unsigned int *filter, char *caption, char *caption2,
+                               int (*pick)(struct AICHARREC *, int));  /* 0x5bea50 */
+int ai_SpecialAmountWindow(unsigned int *filter, char *caption, int tab, int (*pick)(struct AICHARREC *, int));  /* 0x5c0970 */
+int ai_PassesMapPickFilter(struct AICHARREC *me, struct AMOUNTCFG *cfg, struct AIBLD *bld);  /* 0x5c39a0 */
+int ai_LawSelectionEntry(struct AIBLD *bld, struct AMOUNTCFG *filter, char *text, void (*cb)(struct AICHARREC *, struct AIBLD *));  /* 0x5c4100 */
+int ai_GiftWindow(struct AICHARREC *giver, struct AICHARREC *chr);  /* 0x5c6050 */
 #endif
