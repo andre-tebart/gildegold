@@ -19912,16 +19912,17 @@ void he_AllocTip(AIJOB *ev)
    random(4) + 8 due clock, the 1-unit rerun with the tips off, the free of the stages -1 / -2; typed the
    data (he_TipOrder, txt_TipTexts, HETIPEVENT). Only allocation is left: ours keeps i in eax (mov
    eax,[esi+0xac]; inc eax; cmp eax,0x1a; mov [esi+0xac],eax), the original in ecx (mov ecx,[esi+0xac]; inc
-   ecx; mov eax,ecx; mov [esi+0xac],ecx; cmp eax,0x1a), and the util_Random stack cleanup: ours 0x14 after
-   gm_AddTime, the original add esp,4 after util_Random + add esp,0x10 after gm_AddTime; 78 vs 80
-   instructions. Tried: int and unsigned i, the declaration orders, the plain util_Random(4, 0, 0) call and
-   the 3-arg cast macro; no change. */
+   ecx; mov eax,ecx; mov [esi+0xac],ecx; cmp eax,0x1a); 79 vs 80 instructions. The due clock's call is
+   gm_AddTime(&ev->end, util_Random(4) + 8, 0, 0) - the random value is the hours argument: the original
+   pushes mins 0 and secs 0 before the inner call (push 0; push 0; push 4), calls util_Random, add esp,4,
+   push eax, push &ev->end, add esp,0x10 (0x567c92..0x567ccd; a 2-argument call left the callee reading
+   mins/secs from stale stack slots). Tried for the counter: int and unsigned i, the declaration orders; no
+   change. */
 
 void he_RunTip(AIJOB *ev)
 {
     HETIPEVENT *t = (HETIPEVENT *)ev;
     int st, i;
-    unsigned r;
 
     st = ev->stage;
     if (st < -2)
@@ -19936,8 +19937,7 @@ void he_RunTip(AIJOB *ev)
             if (0x1a < i)
                 ev->stage = 1;
             ev->end = ai_Time;
-            r = ((int (*)(int, int, int))util_Random)(4, 0, 0);
-            gm_AddTime(&ev->end, (r & 0xffff) + 8);
+            gm_AddTime(&ev->end, util_RandomU(4) + 8, 0, 0);
             return;
         }
         ev->end = ai_Time;
