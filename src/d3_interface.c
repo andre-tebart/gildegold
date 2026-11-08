@@ -1490,8 +1490,8 @@ void d3_WriteObject(VFSFILE *f, D3OBJECT *obj)
                 bio_wr_v3(f, (int *)&D3_X(obj)->unk090);
             }
             for (i = 0; i < 10; i++) {
-                bio_wr_v3(f, &D3_X(obj)->unk09c[i].v[0]);
-                bio_wr_v3(f, &D3_X(obj)->unk09c[i].v[3]);
+                bio_wr_v3(f, (int *)&D3_X(obj)->views[i].pos);
+                bio_wr_v3(f, (int *)&D3_X(obj)->views[i].dir);
             }
             break;
         case 0:

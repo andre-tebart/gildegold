@@ -1836,19 +1836,21 @@ void d3_InitSurf(D3SURF *s, D3OBJECT *owner)
         ((D3SURFTEX *)(t - 1))->flags = 0;
     }
 }
-/* 0x43ce60 */
-
+/* 0x43ce60, initialises an object: clears the ten preset camera views and the pivot / posOffset, unlinks it
+   (prev / next / parent / child / sound), gives it the type-1 defaults (objectFlags, state, stateFlags, flags,
+   kind, mask, meshMode), clears its path, events and last-light time, and gives a light the flicker defaults 0.3
+   and every 15 (the light and its seven keys); finally the angles and position are zeroed. */
 void d3_InitObject(D3OBJECT *obj)
 {
     unsigned int i;
 
     for (i = 0; i < 10; i++) {
-        D3_X(obj)->unk09c[i].v[0] = 0;
-        D3_X(obj)->unk09c[i].v[1] = 0;
-        D3_X(obj)->unk09c[i].v[2] = 0;
-        D3_X(obj)->unk09c[i].v[3] = 0;
-        D3_X(obj)->unk09c[i].v[4] = 0;
-        D3_X(obj)->unk09c[i].v[5] = 0;
+        D3_X(obj)->views[i].pos.x = 0;
+        D3_X(obj)->views[i].pos.y = 0;
+        D3_X(obj)->views[i].pos.z = 0;
+        D3_X(obj)->views[i].dir.x = 0;
+        D3_X(obj)->views[i].dir.y = 0;
+        D3_X(obj)->views[i].dir.z = 0;
     }
     obj->objectFlags = obj->objectFlags & 0xa2 | 2;
     D3_X(obj)->meshMode = 0;
@@ -1866,23 +1868,23 @@ void d3_InitObject(D3OBJECT *obj)
     D3_X(obj)->offTime = 0;
     D3_X(obj)->path = 0;
     D3_X(obj)->events = 0;
-    D3_X(obj)->unk044 = 0;
+    D3_X(obj)->lightTime = 0;
     if (D3_X(obj)->light) {
-        D3_X(obj)->light->unk198 = 0;
+        D3_X(obj)->light->list = 0;
         D3_X(obj)->light->interval = 15;
         D3_X(obj)->light->flicker = 0.3f;
-        D3_X(obj)->light->unk1a4 = 0;
+        D3_X(obj)->light->ramp = 0;
         for (i = 0; i < 7; i++) {
-            D3_X(obj)->light->e[i].unk34 = 15;
-            D3_X(obj)->light->e[i].unk30 = 0.3f;
+            D3_X(obj)->light->e[i].interval = 15;
+            D3_X(obj)->light->e[i].flicker = 0.3f;
         }
     }
-    D3_X(obj)->unk06c.x = 0;
-    D3_X(obj)->unk06c.y = 0;
-    D3_X(obj)->unk06c.z = 0;
-    D3_X(obj)->unk078.x = 0;
-    D3_X(obj)->unk078.y = 0;
-    D3_X(obj)->unk078.z = 0;
+    D3_X(obj)->pivot.x = 0;
+    D3_X(obj)->pivot.y = 0;
+    D3_X(obj)->pivot.z = 0;
+    D3_X(obj)->posOffset.x = 0;
+    D3_X(obj)->posOffset.y = 0;
+    D3_X(obj)->posOffset.z = 0;
     d3_SetObjectRotXYZ(obj, 0, 0, 0);
     d3_SetObjectPosXYZ(obj, 0, 0, 0);
 }
@@ -1936,7 +1938,10 @@ void d3_Unlink(D3OBJECT *obj)
     obj->next = 0;
     obj->state &= 0xfd;
 }
-/* 0x43d180, copies an object (name + "_"), without its children. @deep Q2 only, the body is byte: D3OBJX.unk09c (10 x 6 ints at 0x9c) has no evidenced meaning anywhere - zeroed in d3_InitObject, D3E_COPY3'd here and serialized for object types 2/3 (d3_int_io.c 0x44abb0 reader / d3_interface.c writer), no reader of any value in the exe (all 0x9c accesses in the Ghidra exports checked). The other five fields have views for the deep rename: unk058 = D3LOBJ.flickerEnd (d3_light.h 0x58), unk05c = D3LOBJ.color / D3IFLIGHT.color (light colour), unk06c = the pivot (XOBJ.p6c, d3_PointToWorld subtracts/adds it around the parent matrix), unk078 = D3OBJECT.posOffset, unk090 = D3LOBJ.range/power/atten. */
+/* 0x43d180, copies an object (name + "_"), without its children. @deep Q2 only, the body is byte: three D3OBJX
+   fields still have no evidenced name (unk058 = D3LOBJ.flickerEnd, d3_light.h 0x58; unk05c = D3LOBJ.color /
+   D3IFLIGHT.color, the light colour; unk090 = D3LOBJ.range / power / atten). The views, pivot, posOffset and
+   light time are named in d3_engine.h. */
 
 D3OBJECT *d3_CloneObject(D3OBJECT *src)
 {
@@ -1963,17 +1968,17 @@ D3OBJECT *d3_CloneObject(D3OBJECT *src)
         D3_X(obj)->unk090.x = D3_X(src)->unk090.x;
         D3_X(obj)->unk090.y = D3_X(src)->unk090.y;
         D3_X(obj)->unk090.z = D3_X(src)->unk090.z;
-        D3_X(obj)->unk06c.x = D3_X(src)->unk06c.x;
-        D3_X(obj)->unk06c.y = D3_X(src)->unk06c.y;
-        D3_X(obj)->unk06c.z = D3_X(src)->unk06c.z;
-        D3_X(obj)->unk078.x = D3_X(src)->unk078.x;
-        D3_X(obj)->unk078.y = D3_X(src)->unk078.y;
-        D3_X(obj)->unk078.z = D3_X(src)->unk078.z;
+        D3_X(obj)->pivot.x = D3_X(src)->pivot.x;
+        D3_X(obj)->pivot.y = D3_X(src)->pivot.y;
+        D3_X(obj)->pivot.z = D3_X(src)->pivot.z;
+        D3_X(obj)->posOffset.x = D3_X(src)->posOffset.x;
+        D3_X(obj)->posOffset.y = D3_X(src)->posOffset.y;
+        D3_X(obj)->posOffset.z = D3_X(src)->posOffset.z;
         D3_X(obj)->path = 0;
         D3_X(obj)->info = 0;
         if (D3_X(src)->light)
             D3E_COPY3(D3_X(obj)->light, D3_X(src)->light, 0x188);
-        D3E_COPY3(D3_X(obj)->unk09c, D3_X(src)->unk09c, 0xf0);
+        D3E_COPY3(D3_X(obj)->views, D3_X(src)->views, 0xf0);
         D3E_COPY3(&obj->state, &src->state, 0x18);
         if (src->material) {
             d3_AddObjectDrawData(obj);

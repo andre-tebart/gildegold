@@ -270,20 +270,21 @@ struct D3SM; struct D3TERRAIN; void d3sm_Build(struct D3SM *h, struct D3TERRAIN 
 void d3_AttachMesh(D3OBJECT *obj, int unk, char *name);                                  /* 0x44cbb0 */
 struct D3BGF *d3io_LoadObject(char *a, char *b);                                         /* 0x44e080, d3_io_t.c (d3io_LoadObject; d3_io_t.h declares it too) */
 
-typedef struct D3LIGHTENTRY {       /* 0x38 bytes */
+typedef struct D3LIGHTENTRY {       /* 0x38 bytes, one key of the 7 (D3LKEY in d3_light.h) */
     char pad00[0x30];
-    float unk30;
-    int unk34;
+    float flicker;                  /* 0x30, the key's flicker factor; 0.3 from d3_InitObject, else the scene file's */
+    int interval;                   /* 0x34, its flicker interval; 15 from d3_InitObject, else the scene file's */
 } D3LIGHTENTRY;
 
 typedef struct D3LIGHTINFO {        /* 0x1ac bytes, "d3:SpawnObject(lightinfo)", objects of type >= 5 */
     D3LIGHTENTRY e[7];
     char pad188[0xc];
     int time;                       /* 0x194, last flicker step (d3_Time); D3LDATA.time in d3_light.h */
-    int unk198;
+    void *list;                     /* 0x198, the lit vertex records (D3LDATA.list, a D3LREC * in d3_light.h); cleared
+                                       in d3_InitObject */
     float flicker;                  /* 0x19c, D3LDATA.flicker (d3_light.h); 0.3 from d3_InitObject, else the scene file's */
     int interval;                   /* 0x1a0, D3LDATA.interval (d3_light.h); 15 from d3_InitObject, else the scene file's */
-    int unk1a4;
+    float ramp;                     /* 0x1a4, D3LDATA.ramp (d3_light.h): the random brightness ramp sv_SetLampRamp sets */
     char pad1a8[0x4];
 } D3LIGHTINFO;
 
@@ -291,17 +292,18 @@ typedef struct D3OBJX {             /* 0x228 bytes, the whole D3OBJECT as far as
     char name[0x40];
     int offTime;                    /* 0x40, d3_Time when d3_ToggleRLightCB switched the light off (type 6);
                                        cleared in d3_InitObject, no reader in the sources so far */
-    int unk044;
+    int lightTime;                  /* 0x44, d3_Time of the last lighting (D3LOBJ.time in d3_light.h); d3_anim.c's
+                                       OBJ_LAST compares it with a timeout */
     char pad048[0x4];
     D3VECTOR pos;                   /* 0x04c */
     int unk058;
     D3VECTOR unk05c;
     float radius;                   /* 0x068 */
-    D3VECTOR unk06c;
-    D3VECTOR unk078;
+    D3VECTOR pivot;                 /* 0x06c, d3_PointToWorld subtracts / adds it around the parent matrix */
+    D3VECTOR posOffset;             /* 0x078, D3OBJECT.posOffset (d3.h) */
     D3VECTOR rot;                   /* 0x084 */
     D3VECTOR unk090;
-    struct { int v[6]; } unk09c[10];
+    struct { D3VECTOR pos; D3VECTOR dir; } views[10];   /* 0x09c, D3OBJECT.views (d3.h): the preset camera views */
     D3MATRIX matrix;                /* 0x18c */
     D3OBJINFO *info;                /* 0x1cc */
     void *path;                     /* 0x1d0, the object path animation (d3anim_FreePath) */
