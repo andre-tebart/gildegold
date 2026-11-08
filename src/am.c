@@ -11,8 +11,7 @@
    union member for the building offer's price flips ai_Unk483a60's byte match by the declaration set.
    Open: the use callers read am_types.h's G9DOMIZIL weight (+0xc) as g[3] through a float view; naming that
    field moved sv_t's ai_TutorialInitChapter3 (shape -> draft, a declaration-set tie-break).
-   Open: not included yet (dcp headers conflicts am HEADER): txt.h; held by own declarations that differ from
-   the owner's: txt_Keys.
+   Open: not included yet (dcp headers conflicts am HEADER): txt.h.
    unit of rea 8cef7d5b (src/game/am.c); boundaries in decl/text.dcl */
 #include "txt_views.h"
 #include <stdio.h>
@@ -25,7 +24,11 @@
 
 /* full rebuild: the symbols whose original addresses the code above spells literally */
 #include "cm_types.h"
-extern unsigned char txt_Keys;  /* @original ai_DecideBuildBusiness (0x498c70, byte) tests flags1c8 & 0x1000000 as &txt_Keys + 0x181c0 of this byte view: the char[0x4800][0x50] spelling, a view macro or the literal flip its add operands at +0x4cc (shape) */
+/* ai_DecideBuildBusiness (0x498c70, byte) tests flags1c8 & AI_CHF_BUILT: the original's
+   `test dword [edi+0x1c8], 0x1000000` at 0x498fc3. 0x1000000 is an absolute constant (as are
+   0xffffff / 0xff0000) and must not be written as symbol arithmetic: `&txt_Keys + 0x181c0` spells
+   it only while txt_Keys keeps its original address 0xfe7e40; our link puts it at 0x6d0448, so the
+   sum was 0x6e8608 and the test read an unrelated bit. */
 extern const float ai_FloatOne;  /* 0x5eb780, the shared 1.0f (bio.c) the original loads in ai_DecideLawSeverity */
 
 #define gm_TitleJobI ((int (*)(int, int))gm_TitleJob)  /* 0x5044b0 (f3gm.h: unsigned char), @original: the byte-matched callers (ai_DecideDarkCorner, ai_DecideBuildBusiness) read the result without the unsigned char mask (no `and eax,0xff` after the call) */
@@ -5266,7 +5269,7 @@ int ai_DecideBuildBusiness(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
             }
         }
     }
-    if (p->flags1c8 & ((unsigned)&txt_Keys + 0x181c0))
+    if (p->flags1c8 & AI_CHF_BUILT)
         return 0;
     if (cnt > 3)
         return 0;
