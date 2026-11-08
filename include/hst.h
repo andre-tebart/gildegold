@@ -57,5 +57,8 @@ void hst_ResetLists(void);                                                /* 0x4
 extern char ai_PlayerSlots[4][0x2f4];  /* 0x7e3f40 */
 extern int hst_SeedPending;  /* 0xf83650 */
 void hst_YearlyHistory(int cmd);  /* 0x4b3960, the yearly history */
+void hst_LoadPlayerTexts(void);  /* 0x4b1d20, loads the player texts */
+void hst_ResetPlayerTexts(void);  /* 0x4b1e40, resets the player texts */
+void hst_SetTextsOn(unsigned char on);  /* 0x4b1f90, switches the player texts on / off */
 
 #endif

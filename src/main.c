@@ -4642,7 +4642,7 @@ void main_GameLoop(int ctl)
     U_I(((unsigned)&ls_SavePath + 0x80)) = 0;
     if ((U_I((unsigned)&ai_GameFlags) & 4) != 0) {
         w = -1;
-        hst_SetTextsOn();
+        hst_SetTextsOn(0);
         if ((U_I((unsigned)&ai_GameFlags) & 0x10) != 0) {
             iv = main_CheckCD();
             if (iv != 1) {
