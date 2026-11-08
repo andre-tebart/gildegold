@@ -303,9 +303,9 @@ void pool_Free(MPOOL **pool, void *ptr)
     }
 }
 
-/* returns the next used slot (the record after its in-use flag) of the pool chain walked by it, 0 at the end.
-   The scan is `while (1) { if (*slot) break; ... }`: a plain while would be rotated by VC6. */
-/* 0x422ba0 */
+/* 0x422ba0, returns the next used slot (the record after its in-use flag) of the pool chain walked by it, 0 at
+   the end: it resumes at it->index, scans for a used slot, and moves to the next block when the pool's used slots
+   are spent. The scan is `while (1) { if (*slot) break; ... }`: a plain while would be rotated by VC6. */
 void *pool_Next(MPOOLITER *it)
 {
     int i, size;
