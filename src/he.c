@@ -149,7 +149,6 @@ extern int gm_PlayerRecords[688];
 extern int d2_ClickedForm;
 extern unsigned char ai_GameState;
 extern GAPDATA full_data_5fe7d0[];
-extern signed char ai_Relations[768][768];
 extern const int ai_CharWalkSteps[16];
 extern const int sv_PhaseMinutes[24];
 extern GAPDATA full_data_60d0d4[];
@@ -656,6 +655,7 @@ int he_RegisterEventTypeA2();
 #include "f3gm.h"
 #include "cm.h"
 #include "gv.h"
+#include "ahm.h"
 #define rt_UnloadAtPointC ((void (*)(char *, char))rt_UnloadAtPoint)  /* 0x4bfa40 (rt.c: int pl): @original he_RunTransport pushes its char player slot unextended (0x556bb9) */
 #define d2_SetObjValue2 ((void (*)(int, int))d2_SetObjValue)  /* 0x475cb0: @original he.c's two calls push only obj and the value (0x53dcd1, 0x53dd44) */
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
@@ -1700,7 +1700,6 @@ void d3t_SetColor(D3OBJECT *obj, unsigned char r, unsigned char g, unsigned char
 struct D3OBJECT;
 char d3if_Delete(struct D3OBJECT *obj);  /* 0x447190, d3_interface.h */
 int d3t_GetHeightRange();
-char * ahm_OwnerChar();
 void sv_PumpNet();
 int sprintf(char *buf, const char *fmt, ...);
 void mem_Free(void *p);
@@ -20180,7 +20179,6 @@ void he_AllocProduktion(AIJOB *ev)
     p->staff = 1.0f;
 }
 
-float ahm_PlaceFactor();
 void sv_CountGroupMembers(char *g);
 int he_HasEvent9f(AICHAR *a);
 int ai_BuildingHasItem();
@@ -21855,8 +21853,6 @@ int he_RegisterEventTypes95(void)
     return 1;
 }
 
-union AHMGRID * ahm_RandomRecipe();
-int ahm_ResearchMinutes();
 void snd_PlayFavourComment(void);
 
 /* 0x56d2d0, the allocation handler of the research event 0x95 (he_RunRecipeResearch): the character (alchemist) and
@@ -21895,7 +21891,6 @@ void he_AllocRecipeResearch(int ev)
 }
 
 void ai_DomizilMessage(int param_1, int param_2, int param_3);
-int ahm_SendAddPlace();
 
 /* 0x56d3d0, the run handler of the research event 0x95 (alloc he_AllocRecipeResearch): without its character or the
    character's alchemist record the event ends (stage -2); stages -2 / -1 free it; outside the day hours of the season
@@ -21950,8 +21945,6 @@ void he_RunRecipeResearch(int ev)
     gm_AddTime(&e->end, 1, 0, 0);
 }
 
-union AHMGRID * ahm_FindRecipe();
-float ahm_ResearchProgress();
 
 /* 0x56d610, the alloc of the alchemist research event 0x96: the character (chr), the recipe (id) and the minutes the
    research takes (start) are looked up (gm_FindChar, ahm_FindRecipe, ahm_ResearchProgress into progress); when that
@@ -21988,10 +21981,7 @@ done:
     he_FreeEvent((int *)ev);
 }
 
-struct AHMSLOT * ahm_FindSlot();
-AHMSLOT *ahm_SlotOf(char *c, int id);
 void ai_DomizilMessageResearchKind(int param_1, int param_2, int param_3, int param_4);
-int ahm_SendSetPlaceValue(char *c, int id, float v);
 
 /* 0x56d730, the run handler of the alchemist research event 0x96 (alloc he_AllocResearchRecipe): without its character,
    the character's alchemist record or the record's place of the recipe (ahm_SlotOf) the event ends (stage -2, freed);
@@ -22049,13 +22039,7 @@ void he_RunResearchRecipe(int ev)
     he_FreeEvent((int *)ev);
 }
 
-float ahm_ShareProgress();
-float ahm_Share();
 void ai_DomizilMessageResearch(int param_1, int param_2, int param_3, int param_4);
-int ahm_SendSetShare();  /* @original: he.c's call at 14930 passes 2 arguments to ahm.h's 3-parameter prototype, so this TU was compiled against the non-prototype declaration */
-/* @original the training run handler he_RunTrainShare passes the new share as a 4-byte float (push ecx / fstp [esp] at
-   0x56dba8): that call saw ahm.h's prototype, not the declaration above */
-#define ahm_SendSetShareF ((int (*)(char *, int, float))ahm_SendSetShare)
 
 /* 0x56d990, the alloc of the alchemist training event 0x97: the character (chr) and the share (id) are looked up
    (gm_FindChar, ahm_ShareProgress into progress, its minutes into start); when that progress is above ai_FloatZero
@@ -22118,7 +22102,7 @@ void he_RunTrainShare(int ev)
             to = (AICHAR *)gm_FindChar(e->netId);
             if (to != 0)
                 ai_DomizilMessageResearch((int)to, (int)c, (int)o, r->id);
-            ahm_SendSetShareF((char *)c, r->id, share + r->progress);
+            ahm_SendSetShare((char *)c, r->id, share + r->progress);
             sv_MoveToGroup(0, 0, c->id, 0);
             he_FreeEvent((int *)ev);
             return;
@@ -22179,8 +22163,6 @@ int he_RoomBusy(AIBLD *b, unsigned short kind)
     return 0;
 }
 
-int ahm_ResearchState();
-int ahm_SendAddValue(char *c, float v);
 void he_LabIncident();
 
 /* 0x56de10, the run handler of the alchemist's daily laboratory event 0x98 (alloc he_AllocAlchemistDay; the character
