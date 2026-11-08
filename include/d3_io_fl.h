@@ -75,6 +75,6 @@ int d3_FLChunkSize(D3BGF *m, D3BGFDESC *d);                                     
 /* declared in other units' headers before (moved to the owner) */
 void d3_AddFLChunk(char *path, char weld);  /* 0x451250 */
 void d3_CalcNormals(D3BGF *m);  /* 0x450dc0 */
-D3BGF *d3_FindBGF(char *path, char *name, char *texnames, int unk1e4, int ntex);  /* 0x450860 */
+D3BGF *d3_FindBGF(char *path, char *name, char *texnames, int ntexsets, int ntex);  /* 0x450860 */
 
 #endif

@@ -23,7 +23,7 @@ extern float ai_FloatZero;  /* 0x5eb788, the shared 0.0f (cm.c) */
 
 /* 0x450860, loads a mesh from its fast chunk file (the cache the BGF loader looks in first); returns 0 when
    there is none */
-D3BGF *d3_FindBGF(char *path, char *name, char *texnames, int unk1e4, int ntex)
+D3BGF *d3_FindBGF(char *path, char *name, char *texnames, int ntexsets, int ntex)
 {
     int a = 0;
     int b;
@@ -86,11 +86,11 @@ D3BGF *d3_FindBGF(char *path, char *name, char *texnames, int unk1e4, int ntex)
                 b += 0x38;
             } while (a < m->npolys);
         }
-        if (!texnames || unk1e4 <= 0 || ntex != m->ntex) {
+        if (!texnames || ntexsets <= 0 || ntex != m->ntex) {
             m->nsets = 1;
             m->texnames = (char *)mem_Alloc(m->ntex << 6, "d3_io_fl:LoadFastChunk(texset)");
         } else {
-            m->nsets = unk1e4;
+            m->nsets = ntexsets;
             m->texnames = texnames;
             kept = 1;
         }

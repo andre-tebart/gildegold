@@ -106,7 +106,7 @@ void d3iot_DeleteStockObject(D3BGF *m);                                         
 void d3iot_CalcBounds(D3BGF *m);                                                        /* 0x44ce40 */
 void d3iot_Finish(D3BGF *m, char bounds);                                               /* 0x44d1c0 */
 void d3iot_LoadTexSet(char *name, char **out, int *w, int *h);                          /* 0x44d1f0 */
-D3BGF *d3iot_LoadBGF(char *path, char *name, char *texnames, int unk1e4, int ntex);     /* 0x44d330 */
+D3BGF *d3iot_LoadBGF(char *path, char *name, char *texnames, int ntexsets, int ntex);     /* 0x44d330 */
 float d3iot_GetRadius(int unused, D3OBJINFO *info);                                     /* 0x44df20 */
 
 /* 0x44df40..0x44e570 (worker d3io3, joined at the round-10 close) */

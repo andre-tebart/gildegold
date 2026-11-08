@@ -185,9 +185,20 @@ void d3iot_LoadTexSet(char *name, char **out, int *w, int *h)
         }
     }
 }
-/* 0x44d330, loads a BGF mesh (or finds it among the loaded ones) */
+extern float cm_Pi;  /* 0x5eb7dc, the shared pi (cm.c) the rotation is added to */
 
-D3BGF *d3iot_LoadBGF(char *path, char *name, char *texnames, int unk1e4, int ntex)
+/* 0x44d330, loads a BGF mesh (or finds it among the loaded ones)
+   @deep read the whole function against the original: the same call set (no dcp diffclass call difference)
+   and no global store difference (no differs line), 940 vs 936 instructions, 3047 vs 3054 bytes, frames
+   equal. Q2 settled: the parameter is ntexsets (d3_FindBGF assigns it to m->nsets); the M10 is cleared by
+   loading cm_Pi (the shared pi, cm.c 0x5eb7dc) in the two sin/cos arguments instead of the literal. What
+   is left is allocation: the vertex-weld loop keeps i in ebx in the original and reloads j from a slot,
+   while ours spills i to the [ebp+0xc] argument slot and reloads it for the i == j compare and the poly
+   index rewrite (the 272 code / 136 slots / 96 regs / 48 fpu hunks are this frame-slot and register
+   permutation, the frame itself equal). Tried: the ntexsets rename, cm_Pi, the loop-variable spelling;
+   none moves the register assignment. */
+
+D3BGF *d3iot_LoadBGF(char *path, char *name, char *texnames, int ntexsets, int ntex)
 {
     D3BGF *m = 0;
     char buf[256];
@@ -203,13 +214,13 @@ D3BGF *d3iot_LoadBGF(char *path, char *name, char *texnames, int unk1e4, int nte
     strcpy(buf, path);
     _strupr(buf);
     if (strstr(buf, ".BGF")) {
-        m = d3_FindBGF(buf, name, texnames, unk1e4, ntex);
+        m = d3_FindBGF(buf, name, texnames, ntexsets, ntex);
         if (m) {
             d3iot_Finish(m, 0);
             return m;
         }
         d3_AddFLChunk(buf, d3_BGFCanWeld(buf));
-        m = d3_FindBGF(buf, name, texnames, unk1e4, ntex);
+        m = d3_FindBGF(buf, name, texnames, ntexsets, ntex);
         if (m) {
             d3iot_Finish(m, 0);
             return m;
@@ -331,11 +342,11 @@ D3BGF *d3iot_LoadBGF(char *path, char *name, char *texnames, int unk1e4, int nte
                             a = (m->polys[k].uv[n][0] * mt->su + 0.5f) - mt->su * 0.5f;
                             b = (m->polys[k].uv[n][1] * mt->sv + 0.5f) - mt->sv * 0.5f;
                             m->polys[k].uv[n][0] = (float)cos(mt->rot) * a - (float)sin(mt->rot) * b + mt->ou;
-                            m->polys[k].uv[n][1] = (float)sin(mt->rot + 3.1415927f) * a + (float)cos(mt->rot + 3.1415927f) * b + mt->ov;
+                            m->polys[k].uv[n][1] = (float)sin(mt->rot + cm_Pi) * a + (float)cos(mt->rot + cm_Pi) * b + mt->ov;
                         }
                     }
                 }
-                if (!texnames || unk1e4 < 1 || ntex != desc.nmat) {
+                if (!texnames || ntexsets < 1 || ntex != desc.nmat) {
                     m->ntex = desc.nmat;
                     m->nsets = 1;
                     m->texnames = mem_Alloc(desc.nmat << 6, "d3_io:LoadAGF(texset)");
@@ -350,7 +361,7 @@ D3BGF *d3iot_LoadBGF(char *path, char *name, char *texnames, int unk1e4, int nte
                     }
                 } else {
                     m->ntex = ntex;
-                    m->nsets = unk1e4;
+                    m->nsets = ntexsets;
                     m->texnames = texnames;
                 }
                 used2 = mem_Alloc(m->npolys, "d3_io:LoadAGF(texref)");
