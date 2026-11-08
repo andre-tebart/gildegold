@@ -263,7 +263,6 @@ extern GAPDATA full_data_602568[];
 
 extern GAPDATA full_data_602568[];
 extern GAPDATA full_data_5f36e0[];
-extern struct D2OBJ *d2_Objs;
 
 
 
@@ -278,7 +277,6 @@ extern GAPDATA full_data_62a38c[];
 extern GAPDATA full_data_62a3ac[];
 extern GAPDATA full_data_62a3cc[];
 
-extern int d2_LastWindow;
 extern struct D2OBJ *d2_Objs;
 
 
@@ -288,7 +286,6 @@ extern GAPDATA full_data_602568[];
 extern GAPDATA full_data_62a3ec[];
 extern GAPDATA full_data_62a3f8[];
 extern int sv_PopRequest;
-extern int d2_PointerObj;
 extern int d2_LastWindow;
 extern struct D2OBJ *d2_Objs;
 
@@ -301,7 +298,6 @@ extern GAPDATA full_data_62a3ec[];
 extern GAPDATA full_data_62a3f8[];
 extern int sv_PopRequest;
 extern int d2_PointerObj;
-extern int d2_ClickedId;
 extern int d2_LastWindow;
 extern struct D2OBJ *d2_Objs;
 
@@ -360,14 +356,12 @@ extern GAPDATA full_data_602568[];
 extern GAPDATA full_data_60c7b8[];
 extern GAPDATA full_data_623594[];
 extern GAPDATA full_data_62a570[];
-extern volatile unsigned long d3_Time;
 extern int d2_ClickedId;
 extern int d2_LastWindow;
 extern GAPDATA full_data_62a578[];
 extern GAPDATA full_data_62a580[];
 extern char ai_Chars[768][0x21c];
 extern unsigned short ai_PlayerId;
-extern struct D2PIC *d2_Pics;
 extern GAPDATA full_data_62a53c[];
 extern GAPDATA full_data_62a544[];
 extern GAPDATA full_data_62a54c[];
@@ -550,7 +544,6 @@ extern volatile unsigned long d3_Time;
 extern char ai_Chars[768][0x21c];
 extern int d2_PointerObj;
 extern struct D2OBJ *d2_Objs;
-extern int d2_RightHeldObj;
 extern int di_Absolute;
 extern int gm_PlayerRecords[688];
 extern unsigned short ai_PlayerId;
@@ -582,8 +575,6 @@ extern int d2_LastWindow;
 
 extern GAPDATA full_data_62aa38[];
 extern int sv_PopRequest;
-extern short d2_ScreenH;
-extern short d2_ScreenW;
 
 extern GAPDATA full_data_62aa4c[];
 extern GAPDATA full_data_62aa58[];
@@ -701,6 +692,7 @@ const float ai_CannonZoomRange = 1450.0f;  /* 0x5eecac, the distance the zoom mo
 #include "menu.h"
 #include "d2.h"
 #include "sv.h"
+#include "gfx.h"
 #define d2_SetObjValue2 ((void (*)(int, int))d2_SetObjValue)  /* 0x475cb0 (d2.h: five parameters): @original ai_AlchemistFundWindow pushes only the object and the value (0x57df47 push eax / push ebp); the unit's four-argument calls use menu.h's d2_SetObjValue4 */
 #define d2_PlaceMainWindowF ((void (*)(int, int))d2_PlaceMainWindow)  /* 0x475850 (d2.h: int view): @original the callers push the placement flags too, which the original's tail jump leaves on the stack for d2_PlaceWindowScaled */
 
