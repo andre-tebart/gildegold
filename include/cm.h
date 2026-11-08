@@ -891,7 +891,7 @@ typedef struct G22ENT {                 /* 0x18 bytes, one participant of a sess
 } G22ENT;
 #define G22_4C5580 ((int (*)())cm_SendHandOverCrimes)  /* cut.c calls it without arguments */
 extern struct D2PIC *d2_Pics;  /* 0x6ed918 */
-int cm_LoadVoiceBank();  /* 0x4e3270 */
+int cm_LoadVoiceBank(char *name, int a);  /* 0x4e3270 */
 int cm_PlaySpecialTrack(char *a);  /* 0x4e3620 */
 int amt_GetColumnOffices(int col, int max, struct AMTREC *out);  /* 0x4e6fc0 */
 int amt_IsColumnDecided();  /* 0x4e83b0 */
@@ -979,7 +979,6 @@ void sb_Stop();  /* 0x427290 */
 int cm_EndWedding(int *s);  /* 0x4e06d0 */
 int cm_RunSceneTicksOrClick(int ticks, int (*cb)(int), int arg);  /* 0x4e3490 */
 int cm_WaitEventOrClick();  /* 0x4e2cc0 */
-int cm_LoadVoiceBank();  /* 0x4e3270 */
 int cm_PlayVoice();  /* 0x4e32b0 */
 int sb_IsPlaying();  /* 0x426f20 */
 int cm_RunWedding(G28REC *m);  /* 0x4e0770 */
