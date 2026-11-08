@@ -139,35 +139,35 @@ void anm_RemoveAnimal(ANMREC *a)
     memset(a, 0, sizeof(ANMREC));
     anm_NAnimals--;
 }
-/* 0x4bbb80, kind 2 (once, unk08 -1): picks one of the buildings of the 0x501190(1, 6) list with an object (0x61)
+/* 0x4bbb80, kind 2 (once, unk08 -1): picks one of the buildings of the 0x501190(1, 6) list with a scene object
    and collects the positions of the others within 6000 of it (into a local list, which is dropped); unk08 = their
    count * 3 */
 
 void anm_UpdateBird(ANMREC *a)
 {
-    char *b, *f;
+    G15BLD *b, *f;
     unsigned short n, k;
     int i;
     float p[4];
     char *e;
     float q[4];
     float pts[16][4];
-    char *bs[256];
+    G15BLD *bs[256];
 
     if (a->nPoints != -1)
         return;
     n = 0;
-    for (b = gm_BuildQuery(1, 6); b != 0; b = gm_BuildNext()) {
-        if (!gm_IsHomeType(b) && !gm_IsType10(b) && *(int *)(b + 0x61) != 0)
+    for (b = (G15BLD *)gm_BuildQuery(1, 6); b != 0; b = (G15BLD *)gm_BuildNext()) {
+        if (!gm_IsHomeType((unsigned char *)b) && !gm_IsType10((unsigned char *)b) && b->object != 0)
             bs[n++] = b;
     }
     f = bs[util_RandomS(n)];
-    e = *(char **)(f + 0x61);
+    e = f->object;
     d3_PointToWorld(e, e + 0x4c, q);
     k = 0;
     for (i = 0; i < n && k < 0x10; i++) {
         b = bs[i];
-        e = *(char **)(b + 0x61);
+        e = b->object;
         d3_PointToWorld(e, e + 0x4c, p);
         if (b != f && d3_VecEqual(q, p, 6000.0f)) {
             pts[k++][0] = p[0];
