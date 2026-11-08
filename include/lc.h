@@ -212,6 +212,16 @@ extern int ai_BldCartCount;             /* 0x6f40a0, the number of carts in ai_B
 extern struct AIOBJ *ai_BldCarts[3];    /* 0x6f40a4, the carts of the building the cart list shows (gm_BuildingCarts) */
 extern int ai_BldCartButtons[3];        /* 0x6f40b0, per cart the button to its destination building, -1: none */
 extern int ai_BldCartTexts[3];          /* 0x6f40bc, per cart its text control, -1: none */
+typedef struct LCMASTERROW {            /* 0x18 bytes, a row of the stats panel's master list page (128 rows) */
+    int pic;                            /* 0x00, the building type's picture, -1 none */
+    int input;                          /* 0x04, the budget input box, -1 none (ai_PlayerStatsPanel compares its value
+                                           with budget and sends a change to the building and its master) */
+    int budgetText;                     /* 0x08, the master's budget text, -1 none */
+    int nameText;                       /* 0x0c, the building's type and name text, -1 none */
+    int budget;                         /* 0x10, the input box value last sent */
+    struct AIBLD *bld;                  /* 0x14, the building */
+} LCMASTERROW;
+extern LCMASTERROW ai_MasterRows[0x80];  /* 0x6f40e0, the master list page's rows (ai_PlayerStatsPanel fills them) */
 extern int ai_StatsBldRows[0x80];       /* 0x6f4ce0, the control of each row of the stats panel's building page (ai_ShowBuildingRows fills them) */
 extern int ai_MasterBar;                /* 0x6f4ee0, the master list page's scroll bar (sv_CreateScrollButtons) */
 extern unsigned char ai_GfxDetail;  /* 0x6f35c4, the "details" key */

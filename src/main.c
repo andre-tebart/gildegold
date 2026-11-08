@@ -5835,7 +5835,6 @@ GAPDATA full_data_6f3680[496] = { 0 };  /* 0x6f3680 */
 GAPDATA full_data_6f3870[16] = { 0 };  /* 0x6f3870 */
 GAPDATA full_data_6f4080[32] = { 0 };  /* 0x6f4080 */
 GAPDATA full_data_6f40c8[24] = { 0 };  /* 0x6f40c8 */
-GAPDATA full_data_6f40e0[0xc00] = { 0 };  /* 0x6f40e0, one table: 128 rows of 0x18 (ai_PlayerStatsPanel walks +0x4 / +0x10 / +0x14 of each, 0x5bcf00: from +0x14, bound +0xc14); the rows end where the array at 0x6f4ce0 starts */
 int ai_MapHeight = 0;  /* 0x6f4ee4, the height of the town map bitmap (ai_MapSize its width), set by lc's map loader 0x5b2090; f3init's by place (next to ai_MapSize), only lc reads it */
 GAPDATA full_data_6f4f50[16] = { 0 };  /* 0x6f4f50 */
 GAPDATA full_data_6f5310[16] = { 0 };  /* 0x6f5310 */
