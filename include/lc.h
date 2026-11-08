@@ -212,6 +212,8 @@ extern int ai_BldCartCount;             /* 0x6f40a0, the number of carts in ai_B
 extern struct AIOBJ *ai_BldCarts[3];    /* 0x6f40a4, the carts of the building the cart list shows (gm_BuildingCarts) */
 extern int ai_BldCartButtons[3];        /* 0x6f40b0, per cart the button to its destination building, -1: none */
 extern int ai_BldCartTexts[3];          /* 0x6f40bc, per cart its text control, -1: none */
+extern int ai_StatsBldRows[0x80];       /* 0x6f4ce0, the control of each row of the stats panel's building page (ai_ShowBuildingRows fills them) */
+extern int ai_MasterBar;                /* 0x6f4ee0, the master list page's scroll bar (sv_CreateScrollButtons) */
 extern unsigned char ai_GfxDetail;  /* 0x6f35c4, the "details" key */
 void ai_OpenInventoryWindow(int win, int x, int y, unsigned short charId, int text);  /* 0x5ba1c0, opens the inventory child window of the character charId */
 int ai_UpdateInventoryWindow(void);                    /* 0x5ba290, the inventory child window's frame (1 while goods are picked from it) */

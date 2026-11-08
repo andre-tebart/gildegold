@@ -670,7 +670,6 @@ extern GAPDATA full_data_6f2f84[];
 extern GAPDATA full_data_6f3680[];
 extern GAPDATA full_data_6f3870[];
 extern GAPDATA full_data_6f4080[];
-extern GAPDATA full_data_6f4ce0[];
 extern int d2_LastWindow;
 extern struct D2OBJ *d2_Objs;
 extern char ai_Chars[768][0x21c];
@@ -23723,7 +23722,6 @@ int ai_OpenMoneyInfoPage(void)
     return win;
 }
 #define ai_StatsBldCount (*(int *)&full_data_6f2f80)  /* 0x6f2f80, the rows of the stats panel's building page (ai_ShowBuildingRows) */
-#define ai_StatsBldRows (*(int (*)[0x80])&full_data_6f4ce0)  /* 0x6f4ce0, the controls of the stats panel's building page rows */
 
 /* 0x5bc6d0, opens the building list page "panel\geb_liste_2" of the player stats panel (its second entry): the
    caption 0xb2, the player's rows (ai_ShowBuildingRows into ai_StatsBldRows, their count in ai_StatsBldCount) under
@@ -23821,7 +23819,6 @@ typedef struct LCMASTERROW {            /* 0x18 bytes, a row of the stats panel'
 #define ai_MasterRows (*(LCMASTERROW (*)[0x80])&full_data_6f40e0)  /* 0x6f40e0, the master list page's rows */
 #define ai_MasterDown (*(int *)&full_data_6f3870)  /* 0x6f3870, the master list page's scroll down button */
 #define ai_MasterUp (*(int *)&full_data_6f4080)  /* 0x6f4080, the master list page's scroll up button */
-#define ai_MasterBar (*(int *)((char *)&full_data_6f4ce0 + 0x200))  /* 0x6f4ee0, the master list page's scroll bar */
 int d2_WinOpenInput(int x, int y, int w, int h, unsigned char flags, int win);  /* 0x46a360, d2.h's prototype (d2.h is not included yet: Open: head) */
 
 /* 0x5bc9c0, opens the master list page "panel\meister_liste_2" of the player stats panel (its third entry): the
@@ -34384,6 +34381,8 @@ int ai_BldCartCount = 0;  /* 0x6f40a0, the number of carts in ai_BldCarts (gm_Bu
 struct AIOBJ *ai_BldCarts[3] = { 0 };  /* 0x6f40a4, the carts of the building the cart list shows */
 int ai_BldCartButtons[3] = { 0 };  /* 0x6f40b0, per cart the button to its destination building (picture 5), -1: none */
 int ai_BldCartTexts[3] = { 0 };  /* 0x6f40bc, per cart its text control, -1: none */
+int ai_StatsBldRows[0x80] = { 0 };  /* 0x6f4ce0, the control of each row of the stats panel's building page (ai_ShowBuildingRows fills it, at most ai_StatsBldCount; ai_PlayerStatsPanel marks the clicked one) */
+int ai_MasterBar = 0;  /* 0x6f4ee0, the master list page's scroll bar (ai_PlayerStatsPanel passes it to sv_CreateScrollButtons and compares d2_PointerObj with it) */
 LCPRODROW ai_ProdRows[4] = { 0 };  /* 0x6f4f00 */
 LCPRODSLOT ai_ProdGoods[16] = { 0 };  /* 0x6f4f60 */
 LCPRODROW ai_ProdRows2[2] = { 0 };  /* 0x6f52e0 */
