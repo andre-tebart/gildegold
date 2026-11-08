@@ -139,6 +139,8 @@ typedef struct AIJOB {                  /* 0x14c bytes, a job / event record (he
                                                               1 at the first round, the third one moves the event to the state 1) */
                 struct { char padidbc[8]; int idbc; };      /* 0xbc, a kind-specific id: of a kind 4 a building (shown with an exclamation mark
                                                                while argc8 is set), of a pamphlet event 0x35 the netId of the character it is about (he_NoEvent35Pair) */
+                struct { char padalwin[8]; void *alwin; };  /* 0xbc, of the kind 0xc event: the 0x58-byte "f3_alwin_t:d"
+                                                               record ls_ReadEventTables allocates at it */
                 struct { char padpamph[0xd]; unsigned char pamphletVariant; };  /* 0xc1, of a pamphlet event 0x35 the text
                                                               variant the notice board shows (0x1916 + it; ai_NoticeBoardWindow) */
                 struct { char padbldd0[0x1c]; int bldd0; };  /* 0xd0, of a kind 0x1a the building id the blows are shown over (he.c 0x53e8b0) */

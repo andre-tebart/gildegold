@@ -1,5 +1,5 @@
 /* ls.c -- the save game (0x519010 ..): the tag "ls_" ("ls:tmp" 0x623654, "ls_LoadCharacter(): invalid next or prev-action pointer ...", "ls_SendGame"), the language number of a name (0x519010: the table "GERMAN" .. 0x5ee978), the save game writer 0x5190b0 (header 0x5194c0: "SCENARIO", the player, the party records and the screen shot of 0xe100 bytes, then one writer per subsystem), the pointer <-> index conversions before / after a save (0x519a00 / 0x519aa0 / 0x519b50) and the other writers (0x519bf0 ..), the readers (0x51c950 ..) and the network send / receive of a save game (0x520a30 / 0x520b80). The unit starts at its first global 0x62364c (the language number, -1); its strings run to "ls_SendGame" 0x62376c / "rbn" 0x623778, and it ends at 0x520ec0, sv.c's first function. Names are ours.
-   Open: three of ls_LoadGame's readers are unnamed (unk_Unk51fb90, unk_Unk520200, unk_Unk520310).
+   Open: two of ls_LoadGame's readers are unnamed (unk_Unk520200, unk_Unk520310).
    unit of rea 8cef7d5b (src/game/ls.c); boundaries in decl/text.dcl */
 struct D3SM;
 struct D3TERRAIN;
@@ -1352,7 +1352,7 @@ int ls_LoadGame(int name, int kind)
     }
     if ((ls_Version < 0x10045 && amt_LoadAemter(h, ls_Version) == 0) || gv_ReadCrimes(h) == 0
         || (ls_Version >= 0x10016 && ls_ReadRelations(h) == 0) || ls_ReadStatistics(h) == 0
-        || (ls_Version >= 0x1002a && ls_ReadAvatars((void *)h) == 0) || unk_Unk51fb90(h) == 0
+        || (ls_Version >= 0x1002a && ls_ReadAvatars((void *)h) == 0) || ls_ReadEventTables(h) == 0
         || ls_ReadParties(h) == 0 || unk_Unk520200(h) == 0)
         goto close;
     if (unk_Unk520310(h) == 0) {
@@ -2320,13 +2320,20 @@ int ls_ReadAvatars(void *f)
 {
     return gv_ReadAvatars(f);
 }
-/* 0x51fb90, reads the 0x14c-byte records of 0x6fab40 (the counterpart of 0x51bdc0): the counts, then each record in pieces (the 8 words +0x8c from 0x1002f), the text buffer of +0x7c (size +0x80, "messagebox", 0x400 bytes) and the type specific block of +0xac (the kind 0xc gets a 0x58-byte "f3_alwin_t:d" record at +0xbc, the kind 0xd -1 and, for the type 6, +0xd0 = 0), the records flagged 8 are listed in 0x74db40; then the 0x29-word table 0x74e1e0 (0x2c-byte entries) and the 0x14-word table 0x758ca0. Returns 1. ROUGH */
+/* 0x51fb90, the load game step that reads the event tables (the counterpart of ls_WriteEventTables): the count
+   and then each of the n used AIJOB records of he_Events (kind, id, chr, netId, from, the 12 words, the three
+   clocks, stage, opts, the eight ids from version 0x1002f, the text's size and buffer (mem_Alloc "messagebox")
+   or 0, and the kind-specific block +0xac: the kind 0xc gets a 0x58-byte "f3_alwin_t:d" record at +0xbc, the
+   kind 0xd -1 in it and, for stage 6, the byte +0xd0 = 0); the records flagged 8 go to he_QuickList; then the
+   used gm_CarryRecs records and the used he_ApEvents (counter, key, income, cost and name). Returns 1, 0 when a
+   read fails */
 
-int unk_Unk51fb90(int f)
+int ls_ReadEventTables(int f)
 {
     int n, size2, i, idx;
-    char *rec;
-    int *pi;
+    AIJOB *rec;
+    GMCARRYREC *cr;
+    HEAPEVENT *ap;
     char *tb;
 
     he_FreeEvents();
@@ -2338,45 +2345,44 @@ int unk_Unk51fb90(int f)
     if (n > 0) {
         do {
             idx = he_EventCount;
-            rec = (char *)(unsigned)&he_Events + idx * 0x14c;
-            LS_R(rec, 1)
-            LS_R(rec + 4, 4)
-            LS_R(rec + 8, 2)
-            LS_R(rec + 0xc, 4)
-            LS_R(rec + 0x10, 4)
-            LS_R(rec + 0x14, 0x30)
-            LS_R(rec + 0x44, 0xe)
-            LS_R(rec + 0x52, 0xe)
-            LS_R(rec + 0x60, 0xe)
-            LS_R(rec + 0x70, 4)
-            LS_R(rec + 0x78, 1)
+            rec = &he_Jobs[idx];
+            LS_R(&rec->kind, 1)
+            LS_R(&rec->id, 4)
+            LS_R(&rec->chr, 2)
+            LS_R(&rec->netId, 4)
+            LS_R(&rec->from, 4)
+            LS_R(rec->words14, 0x30)
+            LS_R(&rec->start, 0xe)
+            LS_R(&rec->end, 0xe)
+            LS_R(&rec->clock60, 0xe)
+            LS_R(&rec->stage, 4)
+            LS_R(&rec->opts, 1)
             if (ls_Version >= 0x1002f) {
                 for (i = 0; i < 8; i++)
-                    LS_R(rec + 0x8c + i * 4, 4)
+                    LS_R(&rec->ids[i], 4)
             }
-            pi = (int *)(rec + 0x80);
-            *(int *)(rec + 0x7c) = 0;
-            *pi = 0;
-            LS_R(pi, 4)
-            if (*pi != 0) {
+            rec->text = 0;
+            rec->textSize = 0;
+            LS_R(&rec->textSize, 4)
+            if (rec->textSize != 0) {
                 tb = (char *)mem_Alloc(0x400, "messagebox");
-                *(char **)(rec + 0x7c) = tb;
-                if (ls_Read((int)tb, *pi, 1, f) == 0)
+                rec->text = tb;
+                if (ls_Read((int)tb, rec->textSize, 1, f) == 0)
                     return 0;
             }
-            if (*rec == 0xc) {
-                LS_R(rec + 0xac, size2)
-                *(char **)(rec + 0xbc) = (char *)mem_Alloc(0x58, "f3_alwin_t:d");
-            } else if (*rec == 0xd) {
-                LS_R(rec + 0xac, size2)
-                *(int *)(rec + 0xbc) = -1;
-                if (*(int *)(rec + 0x70) == 6)
-                    rec[0xd0] = 0;
+            if (rec->kind == 0xc) {
+                LS_R(&rec->u, size2)
+                rec->alwin = (char *)mem_Alloc(0x58, "f3_alwin_t:d");
+            } else if (rec->kind == 0xd) {
+                LS_R(&rec->u, size2)
+                rec->idbc = -1;
+                if (rec->stage == 6)
+                    ((char *)rec)[0xd0] = 0;
             } else {
-                LS_R(rec + 0xac, size2)
+                LS_R(&rec->u, size2)
             }
-            if ((rec[0x78] & 8) != 0) {
-                he_QuickList[he_QuickTop] = rec;
+            if ((rec->opts & 8) != 0) {
+                he_QuickList[he_QuickTop] = (char *)rec;
                 he_QuickTop++;
             }
             he_EventCount++;
@@ -2386,32 +2392,32 @@ int unk_Unk51fb90(int f)
     LS_R(&n, 4)
     i = 0;
     if (n > 0) {
-        pi = (int *)((unsigned)&he_QuickList + 0x6a0);
+        cr = gm_CarryRecs;
         do {
-            *pi = 0;
-            LS_R(pi, 4)
-            LS_R(pi + 1, 1)
-            LS_R(pi + 2, 4)
-            LS_R(pi + 3, 4)
-            LS_R(pi + 4, 4)
-            LS_R(pi + 5, 0xe)
-            LS_R((int)pi + 0x22, 0x80)
+            cr->ref = 0;
+            LS_R(&cr->ref, 4)
+            LS_R(&cr->ttl, 1)
+            LS_R(&cr->hasValue, 4)
+            LS_R(&cr->owner, 4)
+            LS_R(&cr->value, 4)
+            LS_R(&cr->spec, 0xe)
+            LS_R(cr->data, 0x80)
             i++;
-            pi += 0x29;
+            cr++;
         } while (i < n);
     }
     LS_R(&n, 4)
     if (n > 0) {
         i = 0;
-        pi = (int *)((unsigned)&he_RunHandlers + 0x6a4);
+        ap = he_ApEvents;
         do {
-            LS_R(pi - 1, 1)
-            LS_R(pi, 4)
-            LS_R(pi + 1, 4)
-            LS_R(pi + 2, 4)
-            LS_R(pi + 3, 0x40)
+            LS_R(&ap->counter, 1)
+            LS_R(&ap->key, 4)
+            LS_R(&ap->income, 4)
+            LS_R(&ap->cost, 4)
+            LS_R(ap->name, 0x40)
             i++;
-            pi += 0x14;
+            ap++;
         } while (i < n);
     }
     return 1;
