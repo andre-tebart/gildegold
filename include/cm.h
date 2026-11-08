@@ -949,7 +949,7 @@ void cm_DuelShotAction(struct CHACTION *a);  /* 0x4de640 */
 extern int cm_DuelRight;  /* 0x92bca0 */
 int amt_FindOffice();  /* 0x4e6030 */
 void cm_DuelOutcome(G28REC *m);  /* 0x4debe0 */
-int cm_ResetCutInfos();  /* 0x4e36a0 */
+int cm_ResetCutInfos(char *m);  /* 0x4e36a0 */
 char d3_SetFogSet(unsigned int a, unsigned int b, float t);  /* 0x44a170 */
 int cm_StartScript(char *name);  /* 0x4e2bf0, loads the script name (evt_Load), runs it and returns its id */
 int cm_PlayVoice(int id, int bank, char *text, int var);  /* 0x4e32b0, plays the voice sample of speaker id in bank (text, var pick the sample); 0 in the replay mode */
@@ -1029,7 +1029,6 @@ void d3sky_SetLayerSpeed(struct D3SKY *s, struct D3SKYLAYER *l, float speed);  /
 void d3sky_FadeLayer(struct D3SKY *s, struct D3SKYLAYER *l, unsigned char alpha, float time);  /* 0x45d9a0 */
 void cm_CreateSceneSky(char *tex);  /* 0x4e32f0 */
 extern char *cm_SceneFade;  /* 0x6f0da0, the fade 0x4e3060 started */
-int cm_ResetCutInfos();  /* 0x4e36a0 */
 int tb_SetFunctionOff();  /* 0x42ea10 */
 int cm_PauseSceneChars();  /* 0x4e3fe0 */
 int cm_ResumeSceneChars();  /* 0x4e4020 */
