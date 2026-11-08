@@ -9,6 +9,8 @@ extern int lobby_Buttons[2];            /* 0x62aa7c, the button row: [0] ready, 
 extern int lobby_LeaveButton;           /* 0x62aa84, the leave button */
 extern int lobby_Form;                  /* 0x62aa88, the lobby form, -1: not open */
 extern unsigned int *lobby_List;        /* 0x6f267c, cm's player list: the count, then the eight player ids */
+extern int lobby_ChatShown;             /* 0x6f2680, the chat line count the chat box last showed */
+extern int lobby_ChatNewest;            /* 0x6f2684, the chat lines of the frame */
 extern int lobby_ChatTo;                /* 0x6f5e00, the player id the chat goes to, -1: everybody */
 extern CMLOBBYPLAYER lobby_Player;      /* 0x6f5e20, this player's record as sent to the lobby */
 extern CMLOBBYPLAYER *lobby_Me;         /* 0x6f5e78, this player's record in cm's table */

@@ -47,8 +47,6 @@ extern GAPDATA full_data_62aaac[];
 extern GAPDATA full_data_62aab4[];
 extern GAPDATA full_data_62aac0[];
 extern GAPDATA full_data_62aad0[];
-extern GAPDATA full_data_6f2680[];
-extern GAPDATA full_data_6f2684[];
 #include "f3init_types.h"
 #include "f3init.h"
 #include "net.h"
@@ -76,6 +74,8 @@ int lobby_Buttons[2] = { -1 };  /* 0x62aa7c, the controls of the lobby form's bu
 int lobby_LeaveButton = -1;  /* 0x62aa84, the control of the button row 8: leave the lobby */
 int lobby_Form = -1;  /* 0x62aa88, the lobby form "menu\netlobby" (d2_OpenForm), -1: not open */
 unsigned int *lobby_List = 0;  /* 0x6f267c, cm's player list (cm_LobbyPlayerList): the count, then the eight player ids */
+int lobby_ChatShown = 0;  /* 0x6f2680, the chat line count the chat box last showed (lobby_ShowChat grows the box and takes the frame's count when lobby_ChatNewest exceeds it) */
+int lobby_ChatNewest = 0;  /* 0x6f2684, the chat lines of the frame: lobby_ShowChat counts the records as it prints them, then copies it into lobby_ChatShown */
 int lobby_ChatTo = 0;  /* 0x6f5e00, the id of the player the chat lines go to (the selected list line), -1: everybody */
 CMLOBBYPLAYER lobby_Player = {0};  /* 0x6f5e20, this player's record as sent to the lobby (join / change) */
 CMLOBBYPLAYER *lobby_Me = 0;  /* 0x6f5e78, this player's record in cm's table (cm_LobbyMyPlayer) */
@@ -587,9 +587,9 @@ void lobby_ShowChat(void)
     d2_SetForm(lobby_Form, 5);
     q = U_I(((unsigned)&ai_Unkf8f13c + 0x228) + U_I((unsigned)&d2_LastWindow) * 0x3c4);
     io_PrintText((char *)(unsigned)"$C");
-    U_I((unsigned)&full_data_6f2684) = 0;
+    lobby_ChatNewest = 0;
     while (p != 0) {
-        U_I((unsigned)&full_data_6f2684)++;
+        lobby_ChatNewest++;
         n = cm_LobbyRecord(U_I(p + 0x68));
         if (n == 0 || U_I(n) != U_I(p + 0x68))
             id = 9;
@@ -604,10 +604,10 @@ void lobby_ShowChat(void)
         id = io_PrintText(text);
         p = cm_LobbyChatNextLine();
     }
-    if (U_I((unsigned)&full_data_6f2680) < U_I((unsigned)&full_data_6f2684) && -1 < id &&
+    if (lobby_ChatShown < lobby_ChatNewest && -1 < id &&
         *(short *)(((unsigned)&ai_Unkf8f128 + 0x2) + U_I((unsigned)&d2_LastWindow) * 0x3c4) < q) {
         q = q + 0x18;
-        U_I((unsigned)&full_data_6f2680) = U_I((unsigned)&full_data_6f2684);
+        lobby_ChatShown = lobby_ChatNewest;
         U_I(((unsigned)&ai_Unkf8f13c + 0x228) + U_I((unsigned)&d2_LastWindow) * 0x3c4) = q;
         U_I(((unsigned)&ai_Unkf8f13c + 0x22c) + U_I((unsigned)&d2_LastWindow) * 0x3c4) = q - *(short *)(((unsigned)&ai_Unkf8f128 + 0x2) + U_I((unsigned)&d2_LastWindow) * 0x3c4);
         d2_ScrollWindow(U_I((unsigned)&d2_LastWindow));
