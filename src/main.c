@@ -3668,7 +3668,7 @@ void main_RoundReport(void)
     int lines[0x2b];
     int a[3];
     int sum[6], cnt[6];
-    unsigned char kind[8];
+    unsigned char kind[0x38];  /* the GMINCOME record gm_CharacterIncomes clears (0xe ints) */
     unsigned char *fade;
     unsigned char *b;
     unsigned char *o;
@@ -3818,7 +3818,7 @@ void main_RoundReport(void)
             w1f8 = w1f8 + a[1] + a[2];
             w1fc = w1fc + a[1] + a[2];
         }
-        if (gm_CharacterIncomes(U_I((unsigned)&ai_PlayerId), kind, 0) != 0) {
+        if (gm_CharacterIncomes(U_I((unsigned)&ai_PlayerId), (GMINCOME *)kind, 0) != 0) {
             i = 0;
             do {
                 if (kind[i] == 0)
