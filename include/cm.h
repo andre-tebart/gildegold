@@ -342,8 +342,8 @@ void ai_SetFirstMission(int owner, int type);  /* 0x4b3bd0 */
 int ai_CountMissionEvent();  /* 0x4b44e0 */
 int cm_PartyById(int id);  /* 0x4e50a0, the used party with the id: its record, 0 without */
 extern G28REC cm_Parties[96];  /* 0x925520, the scene party records (cm.c) */
-int cm_AllocParty();  /* 0x4e5150 */
-int cm_AddPartyMember();  /* 0x4e51b0 */
+int cm_AllocParty(int *src);  /* 0x4e5150 */
+int cm_AddPartyMember(int id, int who);  /* 0x4e51b0 */
 int cm_RemovePartyMember(int id, int who);  /* 0x4e5210 */
 int gv_AddEvidence();  /* 0x4f3640 */
 int gv_FreeCrimeSlot();  /* 0x4f36b0 */
