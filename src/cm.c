@@ -199,7 +199,6 @@ typedef struct CMBOMB {             /* 8 bytes, one of the 32 bombs of cm_Bombs 
 #define ai_PlayerBuildingT (*(struct AIBLD **)&ai_PlayerBuilding)  /* 0x6f2308, ai_PlayerBuilding (sv.c: char *) as the AIBLD it points to */
 #define d3sm_GetVertexI ((int (*)())d3sm_GetVertex)  /* 0x45f100 (d3_sm.c: char, D3SM *, int, int, D3VECTOR *): @original this unit's callers read an int result (byte-matched ord_RandomCellPoint (ord.c): no 0f be c0 after the call) */
 #define ch_CreateK ((struct CHARACTER *(*)())ch_Create)  /* 0x403390 (ch.h: name, pos): @original cm_CreateChar (byte) passes its own arguments on untouched (jmp ch_Create): a call without a prototype */
-#define ch_AddActionCBK ((struct CHACTION *(*)())ch_AddActionCB)  /* 0x40b400 (ch.h): @original cm.c's calls were compiled without a prototype (default promotions) */
 #define amt_GetOfficeI ((int (*)(int, struct AMTREC *))amt_GetOffice)  /* 0x4e6f30 (amt.h: unsigned char i): @original this unit pushes its int index raw (0x4dab50 / 0x4aad30: push ebp / push edx, no zero-extension) */
 #define ahm_CreateAlchemistI ((int (*)(int *))ahm_CreateAlchemist)  /* 0x4ec500 (ahm.h: unsigned short): @original the caller 0x4ccf90 reads the id as an int (no and eax,0xffff) */
 #define cm_FightersT (*(AICHAR (*)[32])&cm_Fighters)  /* 0x930600, cm_Fighters (char[], with the 0x1000 bytes after the 32 records) as its AICHAR records */
@@ -11141,13 +11140,13 @@ void cm_FighterAct(CMFIGHTSLOT *f)
             else {
                 if (k->id == 0) {
                     if (lands != 0)
-                        ev = ch_AddActionCBK(c->scene, (unsigned)&cm_HitAction, 8, 0x2e, 1);
+                        ev = ch_AddActionCB(c->scene, (CHACTFUNC)cm_HitAction, 8, 0x2e, 1);
                     else
-                        ev = ch_AddActionCBK(c->scene, (unsigned)&cm_HitAction, 2, 0x2e, 1);
+                        ev = ch_AddActionCB(c->scene, (CHACTFUNC)cm_HitAction, 2, 0x2e, 1);
                 } else if (lands != 0)
-                    ev = ch_AddActionCBK(c->scene, (unsigned)&cm_HitAction, 6, 0x2e, 1);
+                    ev = ch_AddActionCB(c->scene, (CHACTFUNC)cm_HitAction, 6, 0x2e, 1);
                 else
-                    ev = ch_AddActionCBK(c->scene, (unsigned)&cm_HitAction, 2, 0x2e, 1);
+                    ev = ch_AddActionCB(c->scene, (CHACTFUNC)cm_HitAction, 2, 0x2e, 1);
                 ev->hit.speed = 1.4f;
                 ev->hit.victim = tgt;
                 ev->hit.hitter = c;
@@ -11164,7 +11163,7 @@ void cm_FighterAct(CMFIGHTSLOT *f)
         }
     }
     if (k->id == 0x174 && f->kill != 0) {
-        ev = ch_AddActionCBK(c->scene, (unsigned)&cm_LayBombAction, 6, 0x2e, 1);
+        ev = ch_AddActionCB(c->scene, (CHACTFUNC)cm_LayBombAction, 6, 0x2e, 1);
         ev->pot.victim = tgt;
         ev->pot.thrower = c;
         ev->pot.x = f->x;
@@ -11180,7 +11179,7 @@ void cm_FighterAct(CMFIGHTSLOT *f)
         }
     }
     if (k->id == 0x176 && f->hit != 0) {
-        ev = ch_AddActionCBK(c->scene, (unsigned)&cm_ThrowBombAction, 5, 0x2e, 1);
+        ev = ch_AddActionCB(c->scene, (CHACTFUNC)cm_ThrowBombAction, 5, 0x2e, 1);
         ev->bomb.thrower = c;
         ev->bomb.x = f->x;
         ev->bomb.y = f->y;
@@ -11214,7 +11213,7 @@ void cm_FightSlotCheer(CMFIGHTSLOT *f)
 
     if (f->active != 0 && f->id != -1) {
         c = (AICHAR *)cm_FindFighter(f->id);
-        ev = ch_AddActionCBK(c->scene, (unsigned)&cm_CheerAction, 5, 0x2e, 1);
+        ev = ch_AddActionCB(c->scene, (CHACTFUNC)cm_CheerAction, 5, 0x2e, 1);
         ev->cheer.fighter = c;
         strcpy(ev->u.name, "gestik/jubeln");
     }
@@ -11235,7 +11234,7 @@ void cm_FightSlotPickUp(CMFIGHTSLOT *f)
         o = d3_FindObject(0, 0x40, 0, f->dummy);
         if (o != 0) {
             ((AIOBJ *)o->owner)->fightSide = side->id;
-            ev = ch_AddActionCBK(c->scene, (unsigned)&cm_PickUpAction, 5, 0x2e, 1);
+            ev = ch_AddActionCB(c->scene, (CHACTFUNC)cm_PickUpAction, 5, 0x2e, 1);
             ev->pickUp.fighter = c;
             ev->pickUp.object = o;
             strcpy(ev->u.name, "spezial/einhaendig_vom_boden_nehmen");
@@ -13738,7 +13737,7 @@ int cm_DuelSinkDown(char *c, int dmg)
     if (gm_HealthRatio(c) < 0.2) {
         d3t_CreateBloodK(ch->scene->obj, 0x40, 0x3e800000, 0x3dcccccd, 0x3e0f5c29, 0x425c0000);
         ch_StopActions(ch->scene);
-        o = ch_AddActionCBK(ch->scene, cm_SinkDownAction, 0x12, 0x36, 1);
+        o = ch_AddActionCB(ch->scene, cm_SinkDownAction, 0x12, 0x36, 1);
         strcpy(o->u.name, "bewegung/zu_boden_sinken");
         ch->scene->obj->kind = 0;
         cm_DuelOver = 1;
@@ -13854,7 +13853,7 @@ void cm_DuelRound(AICHAR *a, AICHAR *b, char *side)
         snd_PlayVoice(a->id, 0, "_DUELL_INTRO_C2_AUSWAHL_SCHIESSEN", n);
         cm_WaitTicks(2);
         io_PrintText("$N");
-        act = ch_AddActionCBK(a->scene, cm_DuelShotAction, 6, 0x2e, 1);
+        act = ch_AddActionCB(a->scene, cm_DuelShotAction, 6, 0x2e, 1);
         act->shot.target = b;
         act->shot.shooter = a;
         strcpy(act->u.name, "kampf/schiessen_pistole");
@@ -14081,7 +14080,7 @@ void cm_RunDuel(G28REC *m)
         io_PrintText(n + 0x10df);
         io_PrintText(cm_TextNewline);
         snd_PlayVoice(r, snd2, "_DUELL_INTRO_C2_SEKUNDANTEN", n);
-        act = ch_AddActionCBK(ca.scene, cm_DuelShotAction, 6, 0x2e, 1);
+        act = ch_AddActionCB(ca.scene, cm_DuelShotAction, 6, 0x2e, 1);
         act->shot.target = &cb;
         act->shot.shooter = &ca;
         strcpy(act->u.name, "kampf/schiessen_pistole");
@@ -14099,7 +14098,7 @@ void cm_RunDuel(G28REC *m)
         d2_SetForm(cm_TextBox, 0);
         io_PrintText(n + 0x10df);
         snd_PlayVoice(r, snd2, "_DUELL_INTRO_C2_SEKUNDANTEN", n);
-        act = ch_AddActionCBK(cb.scene, cm_DuelShotAction, 6, 0x2e, 1);
+        act = ch_AddActionCB(cb.scene, cm_DuelShotAction, 6, 0x2e, 1);
         act->shot.target = &ca;
         act->shot.shooter = &cb;
         strcpy(act->u.name, "kampf/schiessen_pistole");
