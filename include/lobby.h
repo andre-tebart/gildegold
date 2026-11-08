@@ -8,6 +8,10 @@
 extern int lobby_Buttons[2];            /* 0x62aa7c, the button row: [0] ready, [1] the character */
 extern int lobby_LeaveButton;           /* 0x62aa84, the leave button */
 extern int lobby_Form;                  /* 0x62aa88, the lobby form, -1: not open */
+extern char lobby_FmtName[8];           /* 0x62aaac, "%s: %s", a player line's two texts */
+extern char lobby_FmtHonour[12];        /* 0x62aab4, "%s %s %s ", the honour title, name and family name */
+extern char lobby_FmtChat[16];          /* 0x62aac0, "$%dFF%s: %s$A", a chat line */
+extern char lobby_FmtChatShout[20];     /* 0x62aad0, "$%dFF%s (%s): %s$A", a chat line with the shout text */
 extern unsigned int *lobby_List;        /* 0x6f267c, cm's player list: the count, then the eight player ids */
 extern int lobby_ChatShown;             /* 0x6f2680, the chat line count the chat box last showed */
 extern int lobby_ChatNewest;            /* 0x6f2684, the chat lines of the frame */

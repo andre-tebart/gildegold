@@ -43,10 +43,6 @@ extern GAPDATA full_data_625100[];
 extern GAPDATA full_data_62510c[];
 extern GAPDATA full_data_60ea78[];
 extern GAPDATA full_data_629188[];
-extern GAPDATA full_data_62aaac[];
-extern GAPDATA full_data_62aab4[];
-extern GAPDATA full_data_62aac0[];
-extern GAPDATA full_data_62aad0[];
 #include "f3init_types.h"
 #include "f3init.h"
 #include "net.h"
@@ -73,6 +69,10 @@ int lobby_ChoosePlayer(); int lobby_ChooseProfession();
 int lobby_Buttons[2] = { -1 };  /* 0x62aa7c, the controls of the lobby form's button row 4 (sv_ButtonRow): [0] ready, [1] the character (the player and profession pickers) */
 int lobby_LeaveButton = -1;  /* 0x62aa84, the control of the button row 8: leave the lobby */
 int lobby_Form = -1;  /* 0x62aa88, the lobby form "menu\netlobby" (d2_OpenForm), -1: not open */
+char lobby_FmtName[8] = "%s: %s";  /* 0x62aaac, the player line's name and family name (lobby_ShowPlayers; the faith name row uses the second text) */
+char lobby_FmtHonour[12] = "%s %s %s ";  /* 0x62aab4, the honour title, the name and the family name of a player line (lobby_ShowPlayers) */
+char lobby_FmtChat[16] = "$%dFF%s: %s$A";  /* 0x62aac0, a chat line without a shout: the speaker id, the name and the text (lobby_ShowChat) */
+char lobby_FmtChatShout[20] = "$%dFF%s (%s): %s$A";  /* 0x62aad0, a chat line whose shout target is this player: the id, the name, the shout text and the text; 18 bytes used, the rest aligns ai_BuildNames */
 unsigned int *lobby_List = 0;  /* 0x6f267c, cm's player list (cm_LobbyPlayerList): the count, then the eight player ids */
 int lobby_ChatShown = 0;  /* 0x6f2680, the chat line count the chat box last showed (lobby_ShowChat grows the box and takes the frame's count when lobby_ChatNewest exceeds it) */
 int lobby_ChatNewest = 0;  /* 0x6f2684, the chat lines of the frame: lobby_ShowChat counts the records as it prints them, then copies it into lobby_ChatShown */
@@ -424,9 +424,9 @@ void lobby_ShowMyPlayer(void)
         u = (char *)U_I(((unsigned)&txt_JobNames + 0x17c) + lobby_Player.job * 4);
     else
         u = (char *)U_I((unsigned)&txt_JobNames + lobby_Player.job * 4);
-    sprintf(text, (char *)(unsigned)&full_data_62aaac, U_I((unsigned)&full_data_144abe0), u);
+    sprintf(text, lobby_FmtName, U_I((unsigned)&full_data_144abe0), u);
     d2_CreateWinText(x, y + 0xc, text, U_I((unsigned)&d2_LastWindow));
-    sprintf(text, (char *)(unsigned)&full_data_62aaac, U_I((unsigned)&full_data_144abe4), U_I((unsigned)&txt_FaithNames + lobby_Player.faith * 4));
+    sprintf(text, lobby_FmtName, U_I((unsigned)&full_data_144abe4), U_I((unsigned)&txt_FaithNames + lobby_Player.faith * 4));
     d2_CreateWinText(x, y + 2 + y + 0xc, text, U_I((unsigned)&d2_LastWindow));
 }
 /* 0x58ad20, waits for the player list (128 B): 0x4cd610 and its answer 0x4c3ae0; the list 0x4cd5d0 -> 0x6f267c;
@@ -480,7 +480,7 @@ void lobby_ShowPlayers(void)
         u = (char *)U_I(((unsigned)&txt_HonourTitles + 0x4));
         if ((char)p[4] != 0)
             u = (char *)U_I((unsigned)&full_data_143a63c);
-        sprintf(text, (char *)(unsigned)&full_data_62aab4, u, (char *)p + 0x12, (char *)p + 0x22);
+        sprintf(text, lobby_FmtHonour, u, (char *)p + 0x12, (char *)p + 0x22);
         if (p[1] != 0)
             strcat(text, (char *)U_I((unsigned)&full_data_144abf4));
         n = id * 0x2ec;
@@ -596,10 +596,10 @@ void lobby_ShowChat(void)
         else
             id = U_I(n + 0xc);
         if (U_I(p + 100) == 0) {
-            sprintf(text, (char *)(unsigned)&full_data_62aac0, id, (char *)(p + 0x40), (char *)p);
+            sprintf(text, lobby_FmtChat, id, (char *)(p + 0x40), (char *)p);
         } else if (((int)lobby_Me != 0 && U_I(p + 100) == (int)lobby_Me) ||
                    U_I(p + 0x68) == (int)lobby_Me) {
-            sprintf(text, (char *)(unsigned)&full_data_62aad0, id, (char *)(p + 0x40), U_I((unsigned)&full_data_144abf8), (char *)p);
+            sprintf(text, lobby_FmtChatShout, id, (char *)(p + 0x40), U_I((unsigned)&full_data_144abf8), (char *)p);
         }
         id = io_PrintText(text);
         p = cm_LobbyChatNextLine();
