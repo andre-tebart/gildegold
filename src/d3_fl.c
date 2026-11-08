@@ -442,25 +442,27 @@ void d3fl_MakeJitter(float *out)
         t[11].v = r.y * s + oy;
     }
 }
-/* 0x43f8a0 */
+/* 0x43f8a0, sets the terrain detail level n (4 .. 0x100): clamps n to 0x40, the detail scale is the power of two
+   of that lowest bit (1 << s), the detail shift 6 - s and the size shift n >> 7, then rebuilds the jitter and
+   flushes the floor cache */
 
 void d3fl_SetDetail(unsigned int n)
 {
-    unsigned int m;
-    int s;
-
     if (n <= 0x100 && n >= 4) {
-        m = n > 0x40 ? 0x40 : n;
-        s = 0;
+        unsigned int m = n > 0x40 ? 0x40 : n;
+        unsigned char d;
+        int s = 0;
+
         while (!(m & 1)) {
             m >>= 1;
             s++;
         }
+        d = (unsigned char)(n >> 7);
         d3fl_DetailSizeShift = 2;
         d3fl_DetailScale = 1 << s;
         d3fl_DetailShift = 6 - s;
-        if ((unsigned char)(n >> 7) <= 2)
-            d3fl_DetailSizeShift = (unsigned char)(n >> 7);
+        if (d <= 2)
+            d3fl_DetailSizeShift = d;
         d3fl_MakeJitter(d3fl_Jitter);
         d3fl_Flush();
     }
