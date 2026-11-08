@@ -757,7 +757,7 @@ exe	0x0043bb70	d3_SetHardwareMode	d3_engine	byte	readable
 exe	0x0043bc20	d3_Init	d3_engine	byte	draft	deep	
 exe	0x0043c240	d3_Shutdown	d3_engine	byte	readable		
 exe	0x0043c4e0	d3_ApplyGraphicsOptions	d3_engine	byte	readable		
-exe	0x0043c570	d3_SpawnObject	d3_engine	byte	draft	deep	
+exe	0x0043c570	d3_SpawnObject	d3_engine	byte	readable		
 exe	0x0043c670	d3_FreeObjectData	d3_engine	byte	readable		
 exe	0x0043c7a0	d3_DisposeObject	d3_engine	byte	readable		
 exe	0x0043ca20	d3_LinkTop	d3_engine	byte	readable		
@@ -867,7 +867,7 @@ exe	0x00448270	d3if_DrawSprite	d3_interface	byte	readable
 exe	0x00448540	d3if_PickCB	d3_interface	byte	readable		
 exe	0x00448630	d3if_Pick	d3_interface	byte	readable		
 exe	0x004486e0	d3if_ScreenBox	d3_interface	shape	readable		
-exe	0x00448910	d3if_CreateCameras	d3_interface	byte	draft	deep	
+exe	0x00448910	d3if_CreateCameras	d3_interface	byte	readable		
 exe	0x00448a50	d3if_ClearView	d3_interface	byte	readable		
 exe	0x00448ac0	d3_YawTo	d3_interface	shape	readable		
 exe	0x00448c20	d3_CornerCB	d3_interface	shape	readable	deep	
@@ -930,7 +930,7 @@ exe	0x0044eb60	agi_PolyVerts	d3_io_a	byte	readable
 exe	0x0044ebf0	agi_PolyUV	d3_io_a	byte	readable		
 exe	0x0044ec60	agi_PolyMat	d3_io_a	byte	readable		
 exe	0x0044ecb0	agi_EndObject	d3_io_a	byte	readable		
-exe	0x0044ece0	agi_Unk44ece0	d3_io_a	byte	draft		
+exe	0x0044ece0	agi_GeomInt	d3_io_a	byte	readable		
 exe	0x0044ed00	agi_NumPoints	d3_io_a	byte	readable		
 exe	0x0044ed50	agi_NumPolys	d3_io_a	byte	readable		
 exe	0x0044eda0	agi_Points	d3_io_a	byte	readable		
@@ -975,7 +975,7 @@ exe	0x004506f0	d3_BGFCanWeld	d3_io_b	byte	readable
 exe	0x004507a0	d3_OpenFastChunk	d3_io_b	byte	readable		
 exe	0x00450860	d3_FindBGF	d3_io_fl	draft	draft		
 exe	0x00450dc0	d3_CalcNormals	d3_io_fl	byte	readable		
-exe	0x00450ec0	d3_CalcBounds	d3_io_fl	byte	draft		
+exe	0x00450ec0	d3_CalcBounds	d3_io_fl	byte	readable		
 exe	0x00451180	d3_FLChunkSize	d3_io_fl	byte	readable		
 exe	0x00451250	d3_AddFLChunk	d3_io_fl	draft	draft		
 exe	0x00451e80	d3_LightResetVertexColors	d3_light	byte	readable		
@@ -991,7 +991,7 @@ exe	0x00453110	d3_LightCollectCB	d3_light	byte	readable
 exe	0x00453280	d3_RelightObject	d3_light	byte	readable		
 exe	0x00453580	d3_RelightObjects	d3_light	byte	readable		
 exe	0x004535b0	d3_RelightObjectFrame	d3_light	byte	readable		
-exe	0x004538a0	d3_LightInvalidate	d3_light	byte	draft		
+exe	0x004538a0	d3_LightInvalidate	d3_light	byte	readable		
 exe	0x00453920	d3_ShadeInit	d3_vec	byte	readable		
 exe	0x00453990	d3_ShadeReset	d3_vec	byte	readable		
 exe	0x004539b0	d3_Lerp3	d3_vec	byte	readable		
@@ -1090,7 +1090,7 @@ exe	0x0045d880	d3sky_CreateLayer	d3_sky	byte	readable
 exe	0x0045d960	d3sky_SetLayerSpeed	d3_sky	byte	readable		
 exe	0x0045d9a0	d3sky_FadeLayer	d3_sky	byte	readable		
 exe	0x0045d9f0	d3sky_SetLayerTex	d3_sky	byte	readable		
-exe	0x0045da30	d3sky_Create	d3_sky	byte	draft		
+exe	0x0045da30	d3sky_Create	d3_sky	byte	readable		
 exe	0x0045daa0	d3sky_Destroy	d3_sky	byte	readable		
 exe	0x0045dae0	d3sky_InitColors	d3_sky	byte	readable		
 exe	0x0045db20	d3sky_Free	d3_sky	byte	readable		
@@ -1470,7 +1470,7 @@ exe	0x00481ef0	ai_CalcMeisterDiebe	ai	draft	draft
 exe	0x00482f00	ai_CalcMeisterRaeuber	ai	draft	readable	deep	
 exe	0x004836a0	ai_CalcMeisterBank	ai	byte	draft	deep	
 exe	0x00483a60	ai_Unk483a60	ai	byte	draft	deep	
-exe	0x00483d30	ai_StartBuildingWork	ai	shape	draft		
+exe	0x00483d30	ai_StartBuildingWork	ai	shape	readable		
 exe	0x00483ee0	ai_EndWorkerPose	ai	byte	readable		
 exe	0x00483fc0	ai_Unk483fc0	ai	draft	draft		
 exe	0x00484a60	ai_Unk484a60	ai	draft	draft		
@@ -1843,7 +1843,7 @@ exe	0x004ad190	hmt_GetElectionObjType	hmt	byte	readable
 exe	0x004ad1b0	hmt_SetPendingElection	hmt	byte	readable		
 exe	0x004ad1c0	hmt_Election	hmt	draft	readable	deep	
 exe	0x004ad3b0	hmt_SendElectionMessage	hmt	byte	readable		
-exe	0x004ad3e0	hmt_Score	hmt	shape	draft		
+exe	0x004ad3e0	hmt_Score	hmt	shape	readable		
 exe	0x004ad510	hmt_ClearOffices	hmt	shape	readable	deep	
 exe	0x004ad580	hmt_DecideElection	hmt	draft	readable	deep	
 exe	0x004ad7a0	hmt_Unk4ad7a0	hmt	draft	draft		
@@ -1880,7 +1880,7 @@ exe	0x004afe80	ai_CommandSiegeStart	hst	byte	readable
 exe	0x004aff30	ai_CommandUprising	hst	shape	readable		
 exe	0x004affc0	ai_CommandFire	hst	byte	draft	deep	
 exe	0x004b0050	ai_CommandTornado	hst	byte	draft	deep	
-exe	0x004b00e0	ai_CommandCityTreasury	hst	shape	draft		
+exe	0x004b00e0	ai_CommandCityTreasury	hst	shape	readable		
 exe	0x004b02a0	ai_CommandWealthTax	hst	shape	readable	deep	
 exe	0x004b0360	ai_CommandWealth	hst	byte	readable		
 exe	0x004b04a0	ai_CommandOfficeStanding	hst	byte	readable		
@@ -2023,7 +2023,7 @@ exe	0x004b9820	ai_MsgJobEndDateType29	rmsg	byte	readable
 exe	0x004b9ab0	ai_MsgJobEndValueType2a	rmsg	byte	readable		
 exe	0x004b9cd0	ai_MsgWorkerStop	rmsg	draft	readable	deep	
 exe	0x004b9f30	ai_MsgWorkerTitleType2c	rmsg	byte	readable		
-exe	0x004ba0c0	ai_Unk4ba0c0	rmsg	shape	draft		
+exe	0x004ba0c0	ai_MsgFreeBuildingObjectType2e	rmsg	shape	readable		
 exe	0x004ba2d0	ai_MsgWorkerAddSkillType2f	rmsg	byte	readable		
 exe	0x004ba470	ai_MsgWorkerLoseSkillType30	rmsg	byte	readable		
 exe	0x004ba630	ai_Unk4ba630	rmsg	draft	draft		
@@ -4003,8 +4003,8 @@ exe	0x00578370	ai_TutorialStop	sv_t	byte	readable
 exe	0x00578440	ai_TutorialFreeRuns	sv_t	byte	readable		
 exe	0x005784a0	ai_TutorialInitMainIntro	sv_t	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	sv_t	byte	readable		
-exe	0x00578e40	ai_TutorialInitChapter2	sv_t	shape	readable		
-exe	0x00579570	ai_TutorialInitChapter3	sv_t	draft	readable		
+exe	0x00578e40	ai_TutorialInitChapter2	sv_t	byte	readable		
+exe	0x00579570	ai_TutorialInitChapter3	sv_t	shape	readable		
 exe	0x0057aa80	ai_TutorialInitChapter4	sv_t	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	sv_t	byte	readable		
 exe	0x0057b750	ai_TutorialInitMainOutro	sv_t	byte	readable		
