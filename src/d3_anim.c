@@ -454,9 +454,6 @@ typedef struct D3ANIMMATV {
     unsigned char flags;            /* 0x96d, 0x40 = no vertex animation */
 } D3ANIMMATV;
 
-#define OBJ_LAST(o) (*(unsigned int *)((char *)(o) + 0x44))
-#define SLOT_F(s, o) (*(float *)((char *)(s) + (o)))
-#define SLOT_TURN(s) (((*(int *)((char *)(s) + 0x70)) << 30) >> 30)
 #define FRAME_AT(d, i) ((D3ANIMFRAME *)((char *)(d)->frames + (i) * 0xc0))
 
 float d3_Hermite(float p0, float p1, float m0, float m1, float t);                      /* 0x453e20 */
@@ -465,9 +462,28 @@ char tex_Animate(D3OBJECT *obj, unsigned int time);                             
 void d3_RelightObjectFrame(D3OBJECT *obj, D3ANIMFRAME *f);                                       /* 0x4535b0, d3_light.h's canonical prototype; d3_anim.c keeps this local copy, the include is WORSE for d3anim_CreatePath / d3anim_CreateMorphAnim (+2 instructions each) */
 struct D3ANIMSLOT * d3anim_GetMainSlot(struct D3ANIMCTL *ctl);                                         /* 0x435900 */
 
+/* the shared 1.0f both paths' key fractions are subtracted from (the original loads it from memory) */
+extern const float ai_FloatOne;  /* 0x5eb780 */
+
 /* 0x432750, the per-object animation step (d3_ForEachObject callback, ctx = d3_Time, | 0x80000000 in the
    second pass): steps the three vertex animation slots of every active control of the mesh material, then
-   the object's path animation (hermite through the keys). */
+   the object's path animation (hermite through the keys).
+   @deep read the whole 1578-instruction function against the original: one call site fewer (the merged
+   NextFrame explained below), the same store and reference set (refs clean), the same 15-entry switch
+   table. The grade is dominated by the frame: ours 0x68 against the original 0xbc, 84 bytes more locals
+   and spills on the original side; the local layouts differ beyond a uniform shift, so the frame alignment
+   cannot mask them and the 1074 code / 492 slots hunks are the same instructions reading other stack slots
+   (e.g. the fade fraction temporaries at [esp+0x3c]/[esp+0x9c], the key pointer at [esp+0x18] vs
+   [esp+0x70], the attach vector at [esp+0x64..] vs [esp+0x30..]). Q4 is settled from the reconstructed
+   body: D3OBJECT+0x44 is D3_L(o)->time (the light view, d3_light.h), the D3ANIMSLOT float slots are the
+   attach position 0x20 and the stop position 0x4c / radius 0x5c, the 2-bit field at 0x70 is the signed
+   turn, and D3PATH+0x3c is a float frameTime; the raw macros are gone and the M10 is cleared by loading
+   ai_FloatOne. What is left is allocation: the two P->next = d3anim_NextFrame(P->flags, P->key, 0, nframes
+   - 1, nframes) sites (the P->time < 0 branch and the else-if tail, both continuing at stepped) have
+   identical arguments, so VC6 merged them into one call site here while the original keeps two, and our
+   compiler emits s->weight = s->fadeTo before the s->fadeEnd = 0 / s->fadeStart = 0 stores while the
+   original emits them before the float compare. Tried: the Q4 field typing, ai_FloatOne, statement
+   reorderings of the fade block, the merged-call spelling; none moves the frame or the local layout. */
 char d3anim_StepObject(D3OBJECT *obj, void *ctx)
 {
     unsigned int now = (unsigned int)ctx & 0x7fffffff;
@@ -499,7 +515,7 @@ char d3anim_StepObject(D3OBJECT *obj, void *ctx)
                 data = s->data;
                 if (!data || !(s->flags.b[8] & 2))
                     continue;
-                if (now - OBJ_LAST(obj) > (unsigned int)s->timeout)
+                if (now - D3_L(obj)->time > (unsigned int)s->timeout)
                     over = 1;
                 last = data->first;
                 nframes = data->nframes;
@@ -593,7 +609,7 @@ normalize:
                             s->subFrame -= n;
                             s->frame = last;
                             if (!data->relative)
-                                d3anim_ApplyRootMotion(obj, s, s->lastFrame, limit, SLOT_TURN(s));
+                                d3anim_ApplyRootMotion(obj, s, s->lastFrame, limit, s->turn);
                         }
                         s->nextFrame = d3anim_NextFrame(s->flags, s->frame, last, limit, nframes);
                     }
@@ -604,7 +620,7 @@ normalize:
                     if (s->subFrame >= 0 && s->subFrame < n)
                         half = s->subFrame;
                     d3anim_RootPosAt(obj, s, s->frame, half, &out);
-                    if (fabs(out.x - SLOT_F(s, 0x4c)) < SLOT_F(s, 0x5c) && fabs(out.z - SLOT_F(s, 0x54)) < SLOT_F(s, 0x5c)) {
+                    if (fabs(out.x - s->stopPos.x) < s->stopRadius && fabs(out.z - s->stopPos.z) < s->stopRadius) {
                         s->subFrame = half;
                         s->flags.b[8] |= 8;
                         done = 1;
@@ -619,7 +635,7 @@ normalize:
                         goto normalize;
                 }
                 if (data->relative)
-                    d3anim_ApplyMotionTo(obj, s, s->subFrame, s->frame, SLOT_TURN(s));
+                    d3anim_ApplyMotionTo(obj, s, s->subFrame, s->frame, s->turn);
                 if (s->attachFirst != -1 && s->attachLast != -1 && s->attachBone != -1 && s->attached) {
                     if (s->frame >= s->attachFirst) {
                         if (s->frame >= s->attachLast) {
@@ -633,9 +649,9 @@ normalize:
 
                             if (!(s->flags.b[8] & 0x40)) {
                                 s->flags.b[8] |= 0x40;
-                                SLOT_F(s, 0x20) = att->pos.x;
-                                SLOT_F(s, 0x24) = att->pos.y;
-                                SLOT_F(s, 0x28) = att->pos.z;
+                                s->attachPos.x = att->pos.x;
+                                s->attachPos.y = att->pos.y;
+                                s->attachPos.z = att->pos.z;
                             }
                             t = (float)s->subFrame / FRAME_AT(data, s->frame)->count;
                             d3_Lerp3((D3VECTOR4 *)&FRAME_AT(data, s->frame)->bone[s->attachBone].pos,
@@ -647,9 +663,9 @@ normalize:
                             out.x = v.z * att->matrix._31 + v.y * att->matrix._21 + v.x * att->matrix._11;
                             out.y = v.z * att->matrix._32 + v.y * att->matrix._22 + v.x * att->matrix._12;
                             out.z = v.z * att->matrix._33 + v.y * att->matrix._23 + v.x * att->matrix._13;
-                            out.x += SLOT_F(s, 0x20);
-                            out.y += SLOT_F(s, 0x24);
-                            out.z += SLOT_F(s, 0x28);
+                            out.x += s->attachPos.x;
+                            out.y += s->attachPos.y;
+                            out.z += s->attachPos.z;
                             d3_SetObjectPos(att, &out);
                         }
                     }
@@ -660,7 +676,7 @@ normalize:
                     if (!(s->flags.b[1] & 8)) {
                         released = 1;
                         if (!data->relative)
-                            d3anim_ApplyRootMotion(obj, s, s->lastFrame, limit, SLOT_TURN(s));
+                            d3anim_ApplyRootMotion(obj, s, s->lastFrame, limit, s->turn);
                         d3_ReleaseTexture(&((D3ANIMMATV *)obj->material)->ctl[i], (char *)data);
                     } else
                         s->flags.b[1] |= 0x20;
@@ -671,16 +687,16 @@ normalize:
         }
     }
     d3anim_PoseBones(obj);
-    P = D3_OBJPATH(obj);
+    P = obj->path;
     if (P && (P->flags.b[8] & 2)) {
         nframes = P->nkeys;
         P->flags.b[1] &= ~0x20;
         if (P->flags.b[1] & 2) {
             u = (float)P->time / P->keys[P->next].time;
-            t = 1.0f - u;
+            t = ai_FloatOne - u;
         } else {
             t = (float)P->time / P->keys[P->key].time;
-            u = 1.0f - t;
+            u = ai_FloatOne - t;
         }
         if (P->flags.b[1] & 4) {
             if (P->flags.b[1] & 2) {
@@ -757,15 +773,15 @@ normalize:
             P->keys[P->key - 1].rotin.x = P->keys[P->key - 1].rotin.y = P->keys[P->key - 1].rotin.z = 0;
             P->keys[P->key - 2].rotout.x = P->keys[P->key - 2].rotout.y = P->keys[P->key - 2].rotout.z = 0;
         }
-        if (now - OBJ_LAST(obj) > (unsigned int)P->maxStep)
+        if (now - D3_L(obj)->time > (unsigned int)P->maxStep)
             over2 = 1;
-        acc = ((P->flags.b[8] >> 1) & 1) * P->fadeEnd * dt + *(float *)&P->timeout;
-        *(float *)&P->timeout = acc;
+        acc = ((P->flags.b[8] >> 1) & 1) * P->fadeEnd * dt + P->frameTime;
+        P->frameTime = acc;
         if (P->flags.b[1] & 2)
             P->time -= (int)acc;
         else
             P->time += (int)acc;
-        *(float *)&P->timeout = acc - (int)acc;
+        P->frameTime = acc - (int)acc;
         for (;;) {
             f1 = P->flags.b[1];
             if (f1 & 2) {
@@ -967,7 +983,7 @@ D3ANIM *d3anim_CreatePath(D3OBJECT *obj, D3ANIMFLAGS f, int nkeys, D3ANIMKEY *ke
         p->flags = f;
         p->maxStep = 100;
         p->fadeEnd = 1.0f;
-        p->timeout = 0;
+        p->frameTime = 0;
         p->flags.b[1] &= ~0x20;
         p->flags.b[8] = p->flags.b[8] & ~0x20 | 0x10;
         p->keys = mem_Alloc(nkeys * sizeof(D3PATHKEY), "d3_int:CrObjAnimFrameData");

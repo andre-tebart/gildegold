@@ -83,7 +83,9 @@ typedef struct D3ANIMSLOT {         /* 0x7c bytes */
     int attachFirst;                /* 0x14, frame the bone attach starts at, -1: none */
     int attachLast;                 /* 0x18, frame it ends at, -1: none */
     int attachBone;                 /* 0x1c, bone index of the attached object */
-    char pad20[0x10];
+    D3VECTOR attachPos;             /* 0x20, the attached object's position when the attachment started
+                                       (d3anim_StepObject adds it to the attachment point) */
+    char pad2c[0x4];
     int attached;                   /* 0x30, the object attached to the bone, 0: none */
     int fadeStart;                  /* 0x34, fade-in start time (ms) */
     int fadeEnd;                    /* 0x38, fade-in end time */
@@ -91,7 +93,9 @@ typedef struct D3ANIMSLOT {         /* 0x7c bytes */
     float weight;                   /* 0x40, blend weight */
     float fadeFrom;                 /* 0x44, weight at fadeStart */
     float fadeTo;                   /* 0x48, weight at fadeEnd */
-    char pad4c[0x14];
+    D3VECTOR4 stopPos;              /* 0x4c, the root position the motion stops at (d3anim_StepObject
+                                       compares x/z with stopRadius) */
+    float stopRadius;               /* 0x5c */
     float speed;                    /* 0x60, animation speed, frames per ms */
     float frameTime;                /* 0x64, sub-frame time accumulator (d3_AnimBlendWeights) */
     D3ANIMDATA *data;               /* 0x68 */
@@ -104,8 +108,16 @@ typedef struct D3ANIMSLOT {         /* 0x7c bytes */
         };
         struct {                    /* D3ANIMFLAGS.b[4..7] as the dword the flag bitfields live in */
             unsigned char pad6c4[4];
-            unsigned int rootFlags; /* 0x70, bits 0/1 (CHANIMFLAGS.a / .b): the root motion
-                                       ch_ReleaseSlot applies; a sit animation clears them */
+            union {
+                unsigned int rootFlags; /* 0x70, bits 0/1 (CHANIMFLAGS.a / .b): the root motion
+                                           ch_ReleaseSlot applies; a sit animation clears them */
+                struct {
+                    int turn : 2;   /* 0x70 bits 0..1, signed -2..1: the turn the root motion
+                                       follows (d3anim_StepObject passes it to d3anim_ApplyRootMotion /
+                                       d3anim_ApplyMotionTo) */
+                    unsigned int turnPad : 30;
+                };
+            };
         };
     };
     unsigned char map[4];           /* 0x78, bone index per child object (d3anim_MapBones), 0xff = none */
@@ -158,7 +170,8 @@ typedef struct D3PATH {             /* 0x44 bytes, at D3OBJECT + 0x1d0 */
     D3VECTOR rot;                   /* 0x20 */
     D3ANIMFLAGS flags;              /* 0x2c */
     float fadeEnd;
-    int timeout;
+    float frameTime;                /* 0x3c, sub-frame time accumulator (d3anim_StepObject's
+                                       `acc - (int)acc`; d3path_Init clears it) */
     D3PATHKEY *keys;                /* 0x40 */
 } D3PATH;
 
