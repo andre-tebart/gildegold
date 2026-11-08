@@ -1135,48 +1135,48 @@ void snd_PlayFavourComment(void)
     }
     snd_PlayVoice(-5, snd_VoiceBankOrders, "MITTLERE_GUNST", -1);
 }
-/* 0x4c2f30, a comment about the player's favour from the selected character of the party record a (a random
-   variation r, 3 when the first check is clear): "_SCHLECHTE_GUNST" / "_MITTLERE_GUNST" / "_GUTE_GUNST" by
-   favour / 33. x is volatile because the original reloads it from its slot before every use (matching trick,
-   do not clean). */
+/* 0x4c2f30, plays the greeting of the character a's building: the player's favour for the building's owner
+   (gm_Liking / 33) picks "_SCHLECHTE_GUNST" (0), "_MITTLERE_GUNST" (1) or "_GUTE_GUNST" (2 and up); with the
+   building's goods list empty (AIRECIPE.count 0) the variation is 3, else the random r. a is the character's
+   scene record (AITASK). x is volatile because the original reloads it from its slot before every use
+   (matching trick, do not clean). */
 
 void ai_FavourComment(char *a)
 {
     volatile int x;
-    unsigned out[0x2e];
+    AIRECIPE out;
     unsigned int r;
-    short *c;
-    char *g;
+    AICHAR *c;
+    AIBLD *g;
     int level;
 
     x = 0;
     r = util_RandomU(3);
-    c = *(short **)(*(char **)(a + 0x34) + 0x200);
+    c = (AICHAR *)((AITASK *)a)->body->owner;
     if (c == 0)
         return;
-    g = *(char **)((char *)c + 0x16c);
-    level = (int)gm_Liking((unsigned short)ai_PlayerId, *(unsigned short *)(g + 0x27), 1) / 33;
-    /* the three building kinds with their own work check, all others the generic one; only the first out value
-       decides (a running order?) */
-    if ((*g == 0x20 || *g == 0x1f || *g == 0x1e) ? gm_BuildingGoodsList17(g, out, 0) : gm_BuildingGoodsList(g, out, 0)) {
-        if (out[1] == 0)
+    g = c->bld;
+    level = (int)gm_Liking((unsigned short)ai_PlayerId, g->owner, 1) / 33;
+    /* the three building kinds with their own goods list, all others the generic one */
+    if ((g->type == 0x20 || g->type == 0x1f || g->type == 0x1e) ? gm_BuildingGoodsList17((char *)g, (unsigned *)&out, 0) : gm_BuildingGoodsList((char *)g, (unsigned *)&out, 0)) {
+        if (out.count == 0)
             x = 1;
     }
     if (level == 0) {
         if (x)
-            snd_PlayVoice((unsigned short)*c, snd_VoiceBankGreeting, "_SCHLECHTE_GUNST", 3);
+            snd_PlayVoice(c->id, snd_VoiceBankGreeting, "_SCHLECHTE_GUNST", 3);
         else
-            snd_PlayVoice((unsigned short)*c, snd_VoiceBankGreeting, "_SCHLECHTE_GUNST", r);
+            snd_PlayVoice(c->id, snd_VoiceBankGreeting, "_SCHLECHTE_GUNST", r);
     } else if (level == 1) {
         if (x)
-            snd_PlayVoice((unsigned short)*c, snd_VoiceBankGreeting, "_MITTLERE_GUNST", 3);
+            snd_PlayVoice(c->id, snd_VoiceBankGreeting, "_MITTLERE_GUNST", 3);
         else
-            snd_PlayVoice((unsigned short)*c, snd_VoiceBankGreeting, "_MITTLERE_GUNST", r);
+            snd_PlayVoice(c->id, snd_VoiceBankGreeting, "_MITTLERE_GUNST", r);
     } else if (level >= 2) {
         if (x)
-            snd_PlayVoice((unsigned short)*c, snd_VoiceBankGreeting, "_GUTE_GUNST", 3);
+            snd_PlayVoice(c->id, snd_VoiceBankGreeting, "_GUTE_GUNST", 3);
         else
-            snd_PlayVoice((unsigned short)*c, snd_VoiceBankGreeting, "_GUTE_GUNST", r);
+            snd_PlayVoice(c->id, snd_VoiceBankGreeting, "_GUTE_GUNST", r);
     }
 }
 /* 0x4c30e0, starts the market ambience ("Athmo_Marktplatz_Mono_4Bit") at the market building's object:
