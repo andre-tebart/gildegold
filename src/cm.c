@@ -15,11 +15,11 @@
    cm_RunBankruptcy, cm_RunAuction, their checks and member callbacks) read the party record G28REC; the auction's
    member callbacks (cm_AuctionAskPlayer / cm_AuctionAskAI) read its state CMAUCTION. The spy report objects (AIOBJ
    kind 0xca) are read as CMSPYREPORT (defined above cm_ExSpyReport: the report's words 0x1c .. 0x37, HESPYREPORT).
-   Open: not included yet (dcp headers conflicts cm HEADER): am.h anm.h gfx.h hmt.h hst.h rt.h poker.h
-   mission.h menu.h; held by calls whose argument count differs from the definition (read the original's
-   pushes): ai_DecideTorture, ai_DecideTortureInstrument; gv_PassSentence takes five arguments here
-   (gv_PassSentenceK). d2_SetObjValue's 2- and 4-argument calls use this unit's d2_SetObjValue2 /
-   d2_SetObjValue4 cast macros.
+   Open: not included yet (dcp headers conflicts cm HEADER): anm.h gfx.h hmt.h hst.h rt.h poker.h
+   menu.h; held by calls whose argument count differs from the definition (read the original's pushes):
+   gv_PassSentence takes five arguments here (gv_PassSentenceK). ai_DecideTorture / ai_DecideTortureInstrument
+   and d2_SetObjValue's 2- and 4-argument calls use this unit's cast macros (ai_DecideTortureP /
+   ai_DecideTortureInstrumentP, d2_SetObjValue2 / d2_SetObjValue4).
    Open: head: cm.h carries the parameter lists of cm_StartEventArg, cm_QueueVoice, cm_LoadVoiceBank,
    cm_RunSceneTicks, cm_RunSceneTicksOrClick, cm_WaitEvent, cm_DialogTimer, cm_PartyById, cm_UnloadVoiceBank,
    cm_MessageBox, cm_PlayVoice and cm_StopScript; cm_DeleteChar, cm_WaitEventOrClick, cm_CutInfoById,
@@ -119,6 +119,7 @@ extern GAPDATA full_rdata_5ebb40[];
 #include "he.h"
 #include "amt.h"
 #include "am_types.h"
+#include "mission.h"
 #include "gv.h"
 #define d3sm_PickK ((int (*)())d3sm_Pick)  /* 0x45f2b0 (d3_sm.c): @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) */
 #define util_RandomU ((unsigned short (*)(int))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original this unit's callers read the 16-bit result (byte-matched ch_RandomNear 0x405160, ai_CalcMeisterBank 0x4836a0, cm_FightLoop 0x4d88c0 move it as a word / movzx) */
@@ -200,6 +201,8 @@ typedef struct CMBOMB {             /* 8 bytes, one of the 32 bombs of cm_Bombs 
 #define d3sm_GetVertexI ((int (*)())d3sm_GetVertex)  /* 0x45f100 (d3_sm.c: char, D3SM *, int, int, D3VECTOR *): @original this unit's callers read an int result (byte-matched ord_RandomCellPoint (ord.c): no 0f be c0 after the call) */
 #define ch_CreateK ((struct CHARACTER *(*)())ch_Create)  /* 0x403390 (ch.h: name, pos): @original cm_CreateChar (byte) passes its own arguments on untouched (jmp ch_Create): a call without a prototype */
 #define amt_GetOfficeI ((int (*)(int, struct AMTREC *))amt_GetOffice)  /* 0x4e6f30 (amt.h: unsigned char i): @original this unit pushes its int index raw (0x4dab50 / 0x4aad30: push ebp / push edx, no zero-extension) */
+#define ai_DecideTortureP ((int (*)(AIPLAN *))ai_DecideTorture)  /* 0x4941b0 (am.h: void): @original cm_TrialAskAI pushes the plan (0x4de3a6 push esi, add esp, 4) */
+#define ai_DecideTortureInstrumentP ((int (*)(AIPLAN *))ai_DecideTortureInstrument)  /* 0x4941d0 (am.h: void): @original cm_TrialAskAI pushes the plan (0x4de3c6 push esi, add esp, 4) */
 #define ahm_CreateAlchemistI ((int (*)(int *))ahm_CreateAlchemist)  /* 0x4ec500 (ahm.h: unsigned short): @original the caller 0x4ccf90 reads the id as an int (no and eax,0xffff) */
 #define cm_FightersT (*(AICHAR (*)[32])&cm_Fighters)  /* 0x930600, cm_Fighters (char[], with the 0x1000 bytes after the 32 records) as its AICHAR records */
 #define ai_SceneCharsT (*(AICHAR *(*)[32])&ai_SceneChars)  /* 0x7603a0, ai_SceneChars (f3init.h: int[32]) as the AICHAR pointers it holds */
@@ -13677,12 +13680,12 @@ void cm_TrialAskAI(CMCUTINFO *r, AIPLAN *m)
     case 1:
         if (r->playerId != m->ids[0])
             return;
-        r->session.answer = ai_DecideTorture(m);
+        r->session.answer = ai_DecideTortureP(m);
         return;
     case 2:
         if (r->playerId != m->ids[0])
             return;
-        r->session.answer = ai_DecideTortureInstrument(m);
+        r->session.answer = ai_DecideTortureInstrumentP(m);
         return;
     case 3:
         if (r->playerId != m->ids[5])
