@@ -114,7 +114,7 @@
    prototypes (their unsigned short pushes) and the feast window am.h's ai_EvalFest.
    unit of rea 8cef7d5b (src/game/unk_58bbd0.c); boundaries in decl/text.dcl */
 #define GAPDATA __declspec(align(1)) unsigned char
-#define init_LeaveTownSceneB ((int (*)())init_LeaveTownScene)  /* 0x5136b0 (f3init.c, void): @original the call passes more arguments than the draft definition names, compiled without a prototype (as before the definition's spelling reached this unit) */
+
 #define sv_ReturnZeroV ((int (*)(int))sv_ReturnZero)  /* @original 0x5c4100 passes the research class as an argument (sv.h declares the function void) */
 /* lc.c -- the production / trade windows and the tavern / location / money lender / Rathaus windows
    (0x58bbd0 .. 0x5d33b0): the
@@ -1051,7 +1051,6 @@ typedef struct G8USEVIEW {              /* a local view of am.h's G8USE (am.h ca
 #include "ahm.h"
 #include "menu.h"
 #include "sv.h"
-#define sv_SelectPanelObjectK ((int (*)())sv_SelectPanelObject)  /* 0x52c4c0?: @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) */
 #define ai_GfxDetailI (*(int *)&ai_GfxDetail)  /* 0x6f35c4 (menu.c: unsigned char): @original ai_ShowVgObjects reads the detail as a dword and takes its low byte (0x58f9d7 mov ecx, dword ptr [0x6f35c4] / and edx, 0xff); the byte object compiles to mov cl, byte ptr */
 #define d2_CreatePicObjS ((int (*)(short, short, int))d2_CreatePicObj)  /* 0x46cd80 (d2.h: int x, y): @original the town map update adds the window position to the mark pixel in 16 bits (0x5a8052 mov dx, word ptr [eax + 4] / add dx, di / push edx), as d2.c's callers */
 #define d2_SetObjValue2 ((void (*)(int, int))d2_SetObjValue)  /* 0x475cb0 (d2.h: five parameters): @original the checkbox / route-box calls push only the object and the value (0x5c81ab ai_CityStatsPanel: push esi; push edi; 0x5b0a1b ai_TransportWindow: push 0; push esi) */
@@ -3459,10 +3458,10 @@ void ai_HandleMapKey(void)
             if (ai_FallbackBuilding != 0) {
                 r = gm_IsHomeType((unsigned char *)p);
                 if (r != 0 && p->type == 'G') {
-                    sv_SelectPanelObjectK(p, 0xfd, (void *)(unsigned)&ch_EmptyName);
+                    sv_SelectPanelObject(p, 0xfd, (void *)(unsigned)&ch_EmptyName);
                     return;
                 }
-                sv_SelectPanelObjectK(p, -1, (void *)(unsigned)&ch_EmptyName);
+                sv_SelectPanelObject(p, -1, (void *)(unsigned)&ch_EmptyName);
                 return;
             }
             r = gm_IsHomeType((unsigned char *)p);
@@ -3471,11 +3470,11 @@ void ai_HandleMapKey(void)
                     sv_FlyCameraToObject((int)p);
                     return;
                 }
-                sv_SelectPanelObjectK(p, p->mainRoom, (void *)(unsigned)&ch_EmptyName);
+                sv_SelectPanelObject(p, p->mainRoom, (void *)(unsigned)&ch_EmptyName);
             } else {
                 u = gm_PermissionBits(ai_PlayerId, (unsigned char *)p, 0, 0);
                 if (u & 1) {
-                    sv_SelectPanelObjectK(p, 0xfd, (void *)(unsigned)&ch_EmptyName);
+                    sv_SelectPanelObject(p, 0xfd, (void *)(unsigned)&ch_EmptyName);
                     return;
                 }
             }
@@ -3759,7 +3758,7 @@ void lc_PlayerInJail(void)
         r = (AIOBJ *)gm_Query((void *)it->objList, 1, 0, 0x65);
         if (r == 0 || sv_PanelShown == (unsigned short *)r)
             return;
-        sv_SelectPanelObjectK(it, r->objId, (void *)(unsigned)&ch_EmptyName);
+        sv_SelectPanelObject(it, r->objId, (void *)(unsigned)&ch_EmptyName);
         return;
     }
     it = (AIBLD *)gm_BuildQuery(1, 5, 6);
@@ -3770,7 +3769,7 @@ void lc_PlayerInJail(void)
     r = (AIOBJ *)gm_Query((void *)it->objList, 1, 0, 0xba);
     if (r == 0 || sv_PanelShown == (unsigned short *)r)
         return;
-    sv_SelectPanelObjectK(it, r->objId, (void *)(unsigned)&ch_EmptyName);
+    sv_SelectPanelObject(it, r->objId, (void *)(unsigned)&ch_EmptyName);
 }
 typedef struct LCTREENODE {        /* a node of f3gm's research tree layout gm_TreeNodes (f3gm.c RTNODE, 0x34 bytes) */
     char pad00[0x24];
@@ -9459,7 +9458,7 @@ void init_LoadObjectScene();
 char d3_DeflateScene(unsigned int flags); char d3_InflateScene(unsigned int flags); void init_SetCharacterAnimations(unsigned char *b);
 void init_ShowBuildingScene(unsigned char *b, int slot); void init_FinishBuildingScene(unsigned char *b, unsigned short *o); 
 int d3_VecEqual(struct D3VECTOR *a, struct D3VECTOR *b, float eps);
-void init_LeaveTownScene(void); void snd_UnloadBuildingVoices(void); void init_AfterTownLoad(void); 
+void snd_UnloadBuildingVoices(void); void init_AfterTownLoad(void); 
 struct SBSAMPLE * sb_PlaySample();
 void ai_AlchemistLabContact(struct AIBLD *rec, struct AIOBJ *room); void ai_CannonContact(struct AIBLD *rec, struct AIOBJ *room); void ai_CabinetContact(struct AIBLD *rec, struct AIOBJ *room); void ai_ProductionContact(int building, int arg);
 
@@ -10139,7 +10138,7 @@ void ai_EnterBuilding(AIBLD *b, int mainRoom)
                 d3_DefaultScene->events[5].fn(d3_DefaultScene, 5, d3_DefaultScene->events[5].name, 0);
             if (evt_LastId != -1)
                 sv_RunFramesUntilStopped(evt_LastId);
-            init_LeaveTownSceneB(b);
+            init_LeaveTownScene(b);
             ai_FrameWait = 1;
             if (ai_PlayerBuilding == 0) {
                 sv_PopRequest = 1;
@@ -10324,7 +10323,7 @@ void ai_EnterOwnBuilding(AIBLD *b)
     if (evt_LastId != -1)
         sv_RunFramesUntilStopped(evt_LastId);
     snd_UnloadBuildingVoices();
-    init_LeaveTownSceneB(ai_FallbackBuilding);
+    init_LeaveTownScene(ai_FallbackBuilding);
     d3_DeflateScene(3);
     d3if_SelectScene(scene, 0);
     sv_SelectedChar = 0;
@@ -10550,7 +10549,7 @@ void ai_BuyBuildingWindow(void)
             for (i = 0; i < n; i++) {
                 if (d2_PointerObj == rows[i].control && rows[i].bld->owner != ai_PlayerId &&
                     sv_CheckGoodAmountB(ai_Chars[ai_PlayerId], rows[i].sale->salePrice, ai_OwnPlayer) != 0)
-                    sv_SelectPanelObjectK(rows[i].bld, -1, ch_EmptyName);
+                    sv_SelectPanelObject(rows[i].bld, -1, ch_EmptyName);
             }
         }
     } while (sv_RunFrame(ai_BuyBuildingWindow, 0x677c7) != 0);

@@ -3644,7 +3644,7 @@ upd:
    its end) and clears the scene callbacks and the current group */
 
 
-void init_LeaveTownScene(void)
+void init_LeaveTownScene(void *bld)
 {
     EVTSCRIPT *h;
 

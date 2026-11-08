@@ -68,7 +68,7 @@ void init_ShowBuildingScene(unsigned char *b, int slot);                /* 0x513
 void init_FinishBuildingScene(unsigned char *b, unsigned short *o);     /* 0x513400 */
 struct D3FLMAP;
 void init_SetDetailLevel(struct D3FLMAP *s, char f);                   /* 0x513590 */
-void init_LeaveTownScene(void);                                               /* 0x5136b0 */
+void init_LeaveTownScene(void *bld);                                               /* 0x5136b0, the building is not read */
 void init_AfterTownLoad(void);                                               /* 0x513740 */
 int init_ParseNumberList(char *s, int *out, int n);                     /* 0x513970 */
 int init_LoadCityINI(char *city, int slot);                             /* 0x513a20 */
