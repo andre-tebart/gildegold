@@ -183,5 +183,25 @@ int gm_PlaceOnStage(int id, int a, int b, int *p4, int *p5);  /* 0x4fbd10 */
 char *gm_Query(void *list, int n, ...);  /* 0x4ffe90 */
 void gm_RefreshGoodsLists(unsigned p);  /* 0x4ff190 */
 JOBTALENTS gm_GetJobTalents(int job);  /* 0x503ee0, the record of the job (0x5f and above: the first) */
+struct AITIME; void gm_AddTime(struct AITIME *c, int hours, int mins, int secs);  /* 0x4fe140 */
+struct AITIME; int gm_CompareTime(struct AITIME *a, struct AITIME *b);  /* 0x4fe210 */
+struct AITIME; int gm_MinutesBetween(struct AITIME *a, struct AITIME *b);  /* 0x4fe280, the minutes from clock a to clock b */
+struct AITIME; int gm_ClockSeason(struct AITIME *c);  /* 0x4fe350 */
+struct AITIME; void gm_AddTime2(struct AITIME *c, int unused, int hours, int mins, int secs);  /* 0x4fe310 */
+struct AITIME; int gm_WorkMinutesBetween(struct AITIME *a, struct AITIME *b, unsigned char *bld);  /* 0x509400 */
+struct AITIME; int gm_FixedWorkMinutesBetween(struct AITIME *a, struct AITIME *b);  /* 0x5096a0 */
+int gm_BuildingValues(unsigned char *b, int *out);  /* 0x5091a0 */
+struct ORDCHAR; float gm_CatchPlague(struct ORDCHAR *c);  /* 0x505440 */
+void gm_ChangeObjektZustand(int id, int d);  /* 0x50ca50 */
+float gm_CharacterBaseHealth(short *c);  /* 0x4fc890 */
+char *gm_CharacterHome(char *c, int *out2, int *out3);  /* 0x4fdcb0 */
+struct ORDCHAR; int gm_DropRank(struct ORDCHAR *c);  /* 0x504840 */
+int gm_FindPlayerBuilding(int p);  /* 0x501000 */
+int gm_GetDisease(int n, int *out);  /* 0x5051d0 */
+struct ORDBLD; int gm_HandOutMoney(struct ORDBLD *b, int *out);  /* 0x4fae50 */
+int gm_JobSlots(int job, int *a, int *b);  /* 0x504100 */
+int gm_LikingChance(int a, int b, int c, int d);  /* 0x50b290 */
+struct ORDCHAR; int gm_MayRemoveChar(struct ORDCHAR *c);  /* 0x5075c0 */
+int gm_TrialBuildingKind(char *b);  /* 0x50d060 */
 
 #endif
