@@ -277,7 +277,6 @@ extern char main_GamePath[];
 extern GAPDATA full_data_624cf8[];
 extern int main_TextureDivider;
 extern GAPDATA full_data_6f2434[];
-extern GAPDATA full_data_6f2470[];
 extern int main_Inactive;       /* 0x6f2584, 1 while the app is deactivated */
 extern char main_AppDir[];
 extern INIT_PLAYER init_PlayerProfile;
@@ -5215,7 +5214,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE prev, char *cmd, int show)
     r = strstr(cmd, "BERUF=\"");
     if (r != 0) {
         s = (char *)(r + 7);
-        d = (char *)(unsigned)&full_data_6f2470;
+        d = main_JobName;
         e = (char *)strchr(s, 0x22);
         if (e != 0)
             while (s < e)
@@ -5291,9 +5290,9 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE prev, char *cmd, int show)
             }
         } else {
             k = 0x38;
-            if (*(char *)(unsigned)&full_data_6f2470 != 0) {
+            if (main_JobName[0] != 0) {
                 for (i = 0; i < 0x5f; i++) {
-                    if (_strcmpi((char *)(unsigned)&full_data_6f2470, ((char **)(unsigned)&txt_JobNames)[i]) == 0) {
+                    if (_strcmpi(main_JobName, ((char **)(unsigned)&txt_JobNames)[i]) == 0) {
                         k = i;
                         break;
                     }
@@ -5826,7 +5825,7 @@ int main_DevMenu = 0;  /* 0x6f245c, nonzero: the main menu shows the data-tool b
 int main_TextReopen = 0;  /* 0x6f2460 */
 int main_HmtMode = 0;  /* 0x6f2468 */
 int main_HmtBuild = 0;  /* 0x6f246c */
-GAPDATA full_data_6f2470[260] = { 0 };  /* 0x6f2470 */
+char main_JobName[0x104] = { 0 };  /* 0x6f2470, the job name of the BERUF=" command line option (WinMain: the starting job, matched against txt_JobNames, else 0x38) */
 int main_MoviesOpen = 0;  /* 0x6f2574, nonzero while the movie player is set up (mov_Init); the outro opens and closes it itself otherwise */
 int main_WeatherSound = 0;  /* 0x6f2580, the "weather" key of [Sound] (WinMain): the rain / weather sounds play */
 int main_Inactive = 0;  /* 0x6f2584, 1 while the app is deactivated (WM_ACTIVATEAPP) */

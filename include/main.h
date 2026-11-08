@@ -55,6 +55,7 @@ extern int main_ScreenRestart;  /* 0x6f25a4 */
 extern int main_ObjectsOn;  /* 0x62457c, nonzero: sv_RunFrame draws the gui objects */
 extern int main_GfxOn;  /* 0x624560, nonzero when the round change shows its pages and fades (main_EndRound, main_RoundReport, main_BeginPlayerRound) */
 extern int main_MoviesOpen;  /* 0x6f2574, nonzero while the movie player is set up (mov_Init); the outro opens and closes it itself otherwise */
+extern char main_JobName[0x104];  /* 0x6f2470, the job name of the BERUF=" command line option (WinMain: the starting job) */
 extern int main_WeatherSound;  /* 0x6f2580, the [Sound] weather key */
 extern int main_DayEnding;  /* 0x6f25a8, the day is ending (sv_RunFrame sets, main_GameLoop clears) */
 extern int snd_SystemBank;  /* 0x6f2400 */
