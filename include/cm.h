@@ -833,7 +833,7 @@ void d2_PlaceMainWindow();  /* 0x475850 (int view, unsigned char flags), K&R */
 int d2_SetForm(int view, int n);  /* 0x475f70 */
 int d2_GetWinObj(int view, int idx, int k);  /* 0x475b80 */
 int io_PrintText(char *fmt, ...);  /* 0x515960 */
-int cm_MessageBox();  /* 0x4e5470 */
+int cm_MessageBox(int id, int flags);  /* 0x4e5470, a message box for the text id with the flags (see cm.c) */
 int gm_StallGoodsList(char *c, unsigned *out);  /* 0x50aa00 */
 extern int cm_FightSettled;  /* 0x6f0cf8 */
 extern int cm_FightLootValue;  /* 0x6f0cfc */
