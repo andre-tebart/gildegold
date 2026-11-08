@@ -164,18 +164,12 @@ struct D3SM;
 extern const volatile unsigned __int64 gypsyFilter;  /* 0x5eed68, menu.c */
 #define gypsyFilterWords (*(int (*)[2])&gypsyFilter)  /* 0x5eed68, the filter's two 32-bit words */
 extern GAPDATA full_data_6f40e0[];
-extern int d2_LastWindow;
-extern struct D2OBJ *d2_Objs;
 extern GAPDATA full_data_62b038[];
 extern float gm_DayStartHours[];
 extern float gm_DayEndHours[];
-extern int d2_PointerObj;
-extern struct D2PIC *d2_Pics;
 #include "d2_types.h"
 extern int sv_ClickedContact;  /* 0x6f22fc, sv.h */
 extern int sv_ClickedItem;  /* 0x76045c, sv.h */
-extern D2VIEW d2_Views[];
-extern D2WIN d2_Wins[];
 
 
 extern int d2_LastWindow;
@@ -213,8 +207,6 @@ extern float gm_DayStartHours[];
 extern float gm_DayEndHours[];
 extern int sv_PanelBuildBtn;
 extern char * sv_SelectedObject;
-extern short d2_MouseX;
-extern short d2_MouseY;
 extern short d2_PointerLook;
 extern int di_Absolute;
 extern int di_MaxX;
@@ -233,10 +225,8 @@ extern int sv_ResearchClass;
 extern char * ai_Goods;
 extern int d2_PointerObj;
 extern int ai_Unk75f280[576];
-extern int d2_ClickedId;
 extern int d2_LastWindow;
 extern struct D2OBJ *d2_Objs;
-extern int d2_ClickedForm;
 extern unsigned short * sv_PanelShown;
 extern unsigned short gm_KindObjCount;
 extern unsigned gm_KindObjs[732];
@@ -329,7 +319,6 @@ extern int d2_PointerObj;
 extern int d2_ClickedId;
 extern int d2_LastWindow;
 extern GAPDATA full_data_602568[];
-extern struct D2WIN *d2_LastWindowPtr;
 extern int ai_EspionageAmountCB();
 extern char ai_Chars[768][0x21c];
 
@@ -421,13 +410,11 @@ extern struct D2WIN *d2_LastWindowPtr;
 extern struct D2OBJ *d2_Objs;
 extern char ai_PlayerSlots[4][0x2f4];
 
-extern char ch_EmptyName[1];
 extern int d2_LastWindow;
 extern struct D2WIN *d2_LastWindowPtr;
 extern struct D2OBJ *d2_Objs;
 extern int d2_PointerObj;
 extern unsigned char ai_OwnPlayer;
-extern char d2_CaptionCopy[0x80];
 extern int d2_ClickedId;
 
 
@@ -721,7 +708,6 @@ extern D2WIN d2_Wins[];
 extern GAPDATA full_rdata_5eed8c[];
 extern GAPDATA full_rdata_5eed90[];
 extern char * rt_MapSurface;
-extern struct D2SURF *d2_BackgroundTile;
 extern GAPDATA full_data_62c274[];
 extern short d2_MouseX;
 extern short d2_MouseY;
@@ -733,8 +719,6 @@ extern int di_MinY;
 extern int d2_PointerObj;
 extern int ai_DragWindow;
 extern int ai_MapScrollEnabled;
-extern volatile unsigned long d3_Time;
-extern int d2_RightHeldObj;
 extern D2VIEW d2_Views[];
 extern GAPDATA full_data_6f26c0[];
 #include "am_types.h"
@@ -770,7 +754,6 @@ extern unsigned char kb_Last;
 extern int sv_PopRequest;
 
 extern char ch_EmptyName[1];
-extern int d2_CurrentView;
 extern int d2_LastWindow;
 extern struct D2OBJ *d2_Objs;
 extern char * ai_BTypes;
@@ -847,17 +830,13 @@ typedef struct LCINVSLOT {              /* 8 bytes, a row of the inventory child
 extern GAPDATA full_data_62a56c[];
 #define ai_FmtLabel (*(char (*)[4])&full_data_62a56c)  /* 0x62a56c, "%s:": a label's format (ai_TechEffectsWindow's skill captions) */
 #define d2_OpenFormS ((int (*)(short, short, char *))d2_OpenForm)  /* @original: the transport window computes x = d2_ScreenW - 0x68 in 16 bits (0x5af336 mov ax, [d2_ScreenW]; sub ax, 0x68; push eax), as sv_OpenPlayerBar */
-extern short d2_ScreenW;
-extern short d2_ScreenH;            /* 0xfb9070 (d2.h) */
 extern int d2_HitWindow;
-extern struct D2INPUT *d2_FocusedInput;
 extern char * ai_BTypes;
 extern GAPDATA full_data_60c28c[];
 extern GAPDATA full_data_62cc94[];
 extern int ai_MapSize;
 extern char ai_PlayerSlots[4][0x2f4];
 extern char * rt_MapSurface;
-extern char d2_GfxDir[256];
 extern GAPDATA full_data_62cce8[];
 extern char ch_EmptyName[1];
 extern GAPDATA full_data_62ccfc[];
@@ -869,7 +848,6 @@ extern GAPDATA ai_DomizilTable[];
 extern GAPDATA ai_EquipRows[];
 extern char * cm_FieldObject;
 extern struct D2OBJ *d2_Objs;
-extern D2RADIO d2_Radios[];
 
 
 
@@ -883,10 +861,6 @@ extern GAPDATA full_data_6f4ce0[];
 extern int sv_PopRequest;
 extern int d2_LastWindow;
 extern struct D2OBJ *d2_Objs;
-extern int d2_TextDrawnH;
-extern int d2_TextDrawnW;
-extern int d2_TextLeft;
-extern int d2_TextTop;
 extern char ai_Chars[768][0x21c];
 extern GAPDATA full_data_62a578[];
 extern struct D2WIN *d2_LastWindowPtr;
@@ -973,7 +947,6 @@ extern unsigned gm_OwnNameHeads[136];
 #include "ai_bld.h"                /* AIBLD, AIBTYPE */
 extern float ai_Unk5eb81c;
 extern float ai_Unk5eb988;
-extern unsigned char d2_PenSize;
 extern GAPDATA full_data_5fe7d0[];
 extern GAPDATA full_data_62d43c[];
 extern char ai_PlayerSlots[4][0x2f4];
@@ -1063,21 +1036,6 @@ extern char * cm_FieldObject;
 extern float ai_Unk5eb94c;
 extern const int sv_PhaseMinutes[24];
 extern signed char ai_Relations[768][768];
-int d2_CreateChildWindow(short x, short y, short w, short h, unsigned int flags, int win);
-int d2_WinOpenInputIcon(int x, int y, int icon, unsigned char flags, int win);
-int d2_WinOpenPic(short x, short y, int pic, int win);
-void d2_CreateScrollButtons();
-void d2_EnableObject();
-void d2_EnableViewObjects();
-void d2_RaiseObject();
-void d2_RemoveObj();
-void d2_ScrollWindowBy();
-void d2_SetBackgroundTexture();
-void d2_SetCaption();
-void d2_SetObjEnabled();
-void d2_SetObjFont();
-void d2_SetObjPic();
-void d2_SetObjText();
 void sv_CameraFollow();
 
 int sprintf(char *buf, const char *fmt, ...); /* 0x5de652, the CRT's sprintf */
@@ -1286,6 +1244,8 @@ typedef struct G8USEVIEW {              /* a local view of am.h's G8USE (am.h ca
 #include "d3_tools.h"
 #include "f3snd.h"
 #include "vfs.h"
+#include "d2.h"
+#include "gfx.h"
 #define sv_SelectPanelObjectK ((int (*)())sv_SelectPanelObject)  /* 0x52c4c0?: @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) */
 #define ai_GfxDetailI (*(int *)&ai_GfxDetail)  /* 0x6f35c4 (menu.c: unsigned char): @original ai_ShowVgObjects reads the detail as a dword and takes its low byte (0x58f9d7 mov ecx, dword ptr [0x6f35c4] / and edx, 0xff); the byte object compiles to mov cl, byte ptr */
 #define d2_CreatePicObjS ((int (*)(short, short, int))d2_CreatePicObj)  /* 0x46cd80 (d2.h: int x, y): @original the town map update adds the window position to the mark pixel in 16 bits (0x5a8052 mov dx, word ptr [eax + 4] / add dx, di / push edx), as d2.c's callers */
@@ -1760,7 +1720,7 @@ void ai_UpdateResourceColumns(int win, int part, int ncols, int unused)
 int gm_BuildingClass(); int d2_WinOpenPicStyled(); void d2_SetObjFont(); void d2_SetCaption();
 int gm_ClockSeason(); int ls_GetLanguage(); int d2_CountPointerItems(); void cm_BeginFieldBlock(char *o, int id);
 int cm_AddFieldValue(unsigned char size, unsigned char n, unsigned short field, void *v); int cm_SendFieldValues(void); void ai_ShowProdSlot(int view, int part, LCPRODSLOT *slot, int input, unsigned char side, AIBLD *bld); void d2_MoveObj(short x, short y, int obj);
-void d2_SetPointerItem(int id, int amount); void d2_ClearPointerItems(void); int d2_GetObjValue();
+void d2_SetPointerItem(int id, int amount); void d2_ClearPointerItems(void);
 
 /* 0x58cc10, shows the ncols goods columns (ai_ProdColumns) of the production window in the form win / its part form,
    for the player's building (ai_PlayerBuilding, else ai_FallbackBuilding): marks in each column the input picked
@@ -2344,8 +2304,8 @@ void ai_LayoutMarketGoodsList(int param_1, int param_2, int param_3, int param_4
                 d2_SetPointerItem(p[-4] + 0xdf, d2_GetObjValue(*p));
     }
 }
-int d2_CreateWinText();                                         /* 0x473650: @original the unit's calls at 20167 / 20180 / 20253 pass fewer arguments than d2.h's prototype (ai_ShowProdSlot calls it through d2_CreateWinTextS) */
 #define d2_CreateWinTextS ((int (*)(short, short, char *, int))d2_CreateWinText)  /* @original ai_ShowProdSlot passes 16-bit x / y (mov ax, word ptr / add ax, 0x40; push eax) */
+#define d2_GetObjValue2 ((int (*)(int, int))d2_GetObjValue)  /* @original ai_TransportFromLager's two calls push the dummy 0 (0x5aecf0 / 0x5aefa7: push 0; push eax; call; add esp,8), d2.h's prototype is 1-arg */
 int d2_WinOpenSlider(int x, int y, int len, int p4, int p5, int pic, unsigned int flags, int win);  /* 0x46a960 (d2.h) */
 int d2_RemoveWindow(int win);                                   /* 0x472ce0 (d2.h) */
 
@@ -3451,7 +3411,7 @@ int lc_GebaeudeAusrichten(int kind, char *out)
 
 int ai_RunAllows(); int d2_OpenForm();
 int d2_SetForm(int view, int n); int d2_GetViewWin(); int sv_CreateScrollButtons(); int io_PrintText(char *fmt, ...);
-int d2_WinOpenPic(short x, short y, int pic, int win); int d2_CreateWinText(); void d2_SetObjFont(); void d2_SetObjText();  /* @original: the calls at 18534 (2), 18620 (3) and 6884 (3) pass fewer arguments than d2.h's 4-parameter prototype */
+int d2_WinOpenPic(short x, short y, int pic, int win); void d2_SetObjFont(); void d2_SetObjText();  /* d2_CreateWinText: d2.h's prototype; ai_ShowProdSlot's 16-bit calls go through d2_CreateWinTextS */
 void d2_SetViewEnabled(); void d2_CloseView(int view); int cm_SendLongMessage(char *msg);
 int sv_CheckGoodAmount(); int sv_CheckStock(); void txt_Format(char *out, int id0, ...); int sv_MessageBox();
 int sv_UpdateCamera(); int gm_CharCurrency(char *c, char p); int gm_BuildingClass(); int gm_MayTakeJob(int k, int c);
@@ -8999,7 +8959,7 @@ void ai_CreditReleaseWindow(AIBLD *bank)
 }
 
 int gm_SumSlotAmounts(void *list, unsigned char i); int gm_GetGoodsValue(); int gm_ConvertMoney(int a, unsigned char k); int gm_PlayerFactor(int a, unsigned char k);
-int d2_GetObjValue(); void d2_SetObjEnabled(); void d2_EnableViewObjects(); void d2_EnableObject();
+void d2_SetObjEnabled(); void d2_EnableViewObjects(); void d2_EnableObject();
 int gm_BuildingEvents(); void gm_SortCharsByName(int n, int *ids, int flag); int d2_RemoveWindow(); void d2_RemoveObj();
 void d2_SetObjText(); void d2_MoveObj(short x, short y, int obj); int d2_WinOpenInputIcon(int x, int y, int icon, unsigned char flags, int win); void d2_SetObjFont();
 
@@ -9281,17 +9241,7 @@ int ai_FillExchangeRows(int list, LCEXCHROW *rows, int view, int form, char inpu
 }
 /* 0x59c450, shows the rows of the money lender's exchange window that hold a good (594 B), at most 16, 0x4c apart in
    the form view / form: the good's icon (an input icon 0x82 with input, else a clickable picture), below it a centred
-   text with the good's name ("%S") and under that one with the name of the row's player slot
-   @deep read the whole function against the original: the 16-row loop over y (0x4c steps, return on a row
-   without good), the input icon / picture branch, both texts, fonts, centring and widths all match; the
-   remaining hunk is induction: VC6 gives us an IV edi = i * 0x4c + 0x3f (mov edi, 0x3f; lea eax, [edi -
-   0xf]) where the original recomputes i * 0x4c from i each row (lea edx, [ebx + ebx*8]; lea edi, [ebx +
-   edx*2]; shl edi, 2; lea ecx, [edi + 0x30]; add edi, 0x3f), plus the load-order cross above; a pointer
-   walk over the rows gave the same; a strength-reduction variant round (references: M8 at +0xeb: ours
-   refers to d2_LastWindow (0x6ed938), the original's field to 0x6ed980 (d2_LastWindowPtr,
-   d2_LastWindowPtrC, d2_LastWindowPtrT), explained: the M8 at +0xeb is a load order: both sides load
-   d2_LastWindow and d2_LastWindowPtr for the same d2_CreateWinText call, ours in the other order (the text
-   call's arguments are the same: (w - 0xbe) >> 1, i * 0x4c + 0x30, ch_EmptyName, d2_LastWindow)) */
+   text with the good's name ("%S") and under that one with the name of the row's player slot */
 void ai_ShowExchangeRows(LCEXCHROW *rows, int view, int form, int input)
 {
     char text[0x80];
@@ -11751,7 +11701,7 @@ void ai_GuildLevel1Listener(int building)
 char * gm_Query(void *list, int n, ...); int gm_GetWorth(unsigned short id); int gm_GetGoodsValue(); int ai_AmountLimit();
 int d2_OpenForm(); void d2_SetPointerSprite(int a, int pic); int d2_SetForm(int view, int n);
 void sv_FitForm(int f); int io_PrintText(char *fmt, ...); int d2_GetWinObj(); void d2_SetObjValue();
-int gm_ConvertMoney(int a, unsigned char k); int d2_GetObjValue(); int gm_PlayerFactor(int a, unsigned char k); int sv_CheckGoodAmount();
+int gm_ConvertMoney(int a, unsigned char k); int gm_PlayerFactor(int a, unsigned char k); int sv_CheckGoodAmount();
 int cm_SendMoveGoods(int a, int b, unsigned char c, int d); int cm_SendRelations(int a, int b, int c, int d); void txt_Format(char *out, int id0, ...); int sv_MessageBox();
 int sv_RunFrame(int cb, unsigned mask); void d2_CloseView(int view); void sv_CameraFollow(); int _ftol();
 
@@ -18135,7 +18085,7 @@ int ai_TransportFromLager(int lagerId, AIOBJ *cart, AIBLD *bld, int priced, char
             sv_SetStatusText(text);
             sb_PlaySample(0, "RollenKurz_s_01", 1, 0x3f, 0x7f, 0, 0);
         }
-        d2_SetObjValue(slot->check, 0, slot->amount, d2_GetObjValue(slot->check, 0) - n);
+        d2_SetObjValue(slot->check, 0, slot->amount, d2_GetObjValue2(slot->check, 0) - n);
     }
     for (i = 0; i < 16; i++) {
         slot = &ai_ProdGoods[i];
@@ -18188,7 +18138,7 @@ int ai_TransportFromLager(int lagerId, AIOBJ *cart, AIBLD *bld, int priced, char
             sv_SetStatusText(text);
             sb_PlaySample(0, "RollenKurz_s_01", 1, 0x3f, 0x7f, 0, 0);
         }
-        d2_SetObjValue(slot->check, 0, slot->amount, d2_GetObjValue(slot->check, 0) - n);
+        d2_SetObjValue(slot->check, 0, slot->amount, d2_GetObjValue2(slot->check, 0) - n);
     }
     cm_EndSendGroup();
     while (cm_SendGroupState() == 0)
