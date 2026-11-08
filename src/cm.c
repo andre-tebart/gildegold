@@ -17135,6 +17135,7 @@ float cm_Pi = 3.14159274f;  /* 0x5eb7dc */
 float cm_Float75 = 75.0f;  /* 0x5eb7fc */
 float ai_Unk5eb81c = 30.0f;  /* 0x5eb81c */
 float ai_Unk5eb878 = 1.39999998f;  /* 0x5eb878 */
+double cm_DoubleOne = 1.0;  /* 0x5eb8a8, the shared double 1.0 VC6 pooled here: 58 sites across the units compare a float against it (`fcomp qword ptr [0x5eb8a8]`, e.g. main_UpdateFigure 0x53a358, ch_ActWalk 0x409a1f); the call sites read the literal, as 0x5eb8b0's 0.2f does */
 /* 0x5eb8b0 is the pooled float 0.2f (0x3e4ccccd): use the literal at the call sites. */
 double ai_Unk5eb8b8 = 1.2;  /* 0x5eb8b8 */
 double ai_Unk5eb8e0 = 20.0;  /* 0x5eb8e0 */

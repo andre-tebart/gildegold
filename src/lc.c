@@ -762,7 +762,6 @@ extern GAPDATA full_data_5fe7d0[];
 extern GAPDATA full_data_62d43c[];
 extern char ai_PlayerSlots[4][0x2f4];
 extern GAPDATA full_data_62d440[];
-extern GAPDATA full_rdata_5eb8a8[];
 extern GAPDATA full_data_62d458[];
 extern GAPDATA full_data_62d468[];
 

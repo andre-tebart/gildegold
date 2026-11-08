@@ -192,7 +192,6 @@ extern const int sv_PhaseMinutes[24];
 extern float gm_DayStartHours[];
 extern float gm_DayEndHours[];
 extern const float gm_MoodRanges[476];
-extern GAPDATA full_rdata_5eb8a8[];
 extern char he_MeetingSceneSmall[56];           /* 0x628f3c, the meeting scene script of the kind 0 / other */
 extern char he_MeetingSceneMiddle[56];          /* 0x628f74, the meeting scene script of the kind 1 */
 extern char he_MeetingSceneBig[56];             /* 0x628fac, the meeting scene script of the kind 2 */

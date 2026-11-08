@@ -753,6 +753,7 @@ extern float ai_FloatZero;  /* 0x5eb788 */
 extern float ai_Unk5eb988;  /* 0x5eb988 */
 extern double ai_Unk5eb990;  /* 0x5eb990 */
 extern double ai_Unk5eb7b0;  /* 0x5eb7b0 */
+extern double cm_DoubleOne;  /* 0x5eb8a8, the shared double 1.0 (a VC6 pooled literal) */
 extern double ai_Unk5ebbe8;  /* 0x5ebbe8 */
 
 void cm_InitOrderChances();  /* 0x4d27a0 */
