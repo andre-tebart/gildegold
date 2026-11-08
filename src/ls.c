@@ -90,7 +90,6 @@ extern char hst_Key[];                 /* 0xf83520, the history key ("G12", 0x20
 #include "menu.h"
 #include "dd_vesa.h"
 #include "hmt.h"
-int ai_LoadWind();                     /* 0x5dc0c0 */
 int gv_ReadEffects();                     /* 0x4ed910 */
 
 /* he_EventTop: view of ai_NextEventId (tools/data_views.py) */
