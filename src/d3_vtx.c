@@ -10,14 +10,13 @@
 #include "d3_anim.h"
 #include "d3_light.h"
 #include "d3_vtx.h"
+#include "bio.h"                      /* ai_FloatOne */
 
 /* d3_EnvMapCoords (was d3_pose.c: only 0x459300 calls it) works on the pose views of d3_pose.h; its
    prototypes there are for the other file. */
 #include "d3_pose.h"
 #include "d3_engine.h"
 #include "d3_vec.h"
-
-#define XENTRY(slot) ((slot)[0] * 0xc0 + *(int *)((slot)[0x1a] + 0x15c))
 
 /* 0x458e70, environment map coordinates of the vertices of a part that has a reflecting texture */
 void d3_EnvMapCoords(XOBJ *obj, XPART *part)
@@ -27,7 +26,8 @@ void d3_EnvMapCoords(XOBJ *obj, XPART *part)
     struct { float x, y; volatile float z; float w; } nv;
     volatile float d;
     int n, i, k;
-    int *slot, entry;
+    D3ANIMSLOT *slot;
+    D3ANIMFRAME *fr;
     XVERT *v;
 
     if (obj && part && part->ops && (n = part->ops->count) > 0) {
@@ -38,13 +38,13 @@ void d3_EnvMapCoords(XOBJ *obj, XPART *part)
         if (i < n) {
             d3_WorldMatrix((D3OBJECT *)obj, (obj->flags & 0x80) ? 0 : d3_Camera, 1, &m);
             slot = d3anim_GetMainSlot(part);
-            if (slot && (entry = XENTRY(slot)) != 0) {
+            if (slot && (fr = &slot->data->frames[slot->frame]) != 0) {
                 v = part->keys;
                 for (i = 0; i < part->nkeys; i++, v++) {
                     if (v->used) {
-                        b.x = ((float)(*(unsigned char **)(entry + 0xb8))[i * 3] - 128.0f) * 0.007843138f;
-                        b.y = ((float)(*(unsigned char **)(entry + 0xb8))[i * 3 + 1] - 128.0f) * 0.007843138f;
-                        b.z = ((float)(*(unsigned char **)(entry + 0xb8))[i * 3 + 2] - 128.0f) * 0.007843138f;
+                        b.x = ((float)fr->normals[i * 3] - 128.0f) * 0.007843138f;
+                        b.y = ((float)fr->normals[i * 3 + 1] - 128.0f) * 0.007843138f;
+                        b.z = ((float)fr->normals[i * 3 + 2] - 128.0f) * 0.007843138f;
                         nv.x = m._11 * b.x + m._21 * b.y + m._31 * b.z;
                         nv.y = m._12 * b.x + m._22 * b.y + m._32 * b.z;
                         nv.z = m._13 * b.x + m._23 * b.y + m._33 * b.z;
@@ -53,8 +53,8 @@ void d3_EnvMapCoords(XOBJ *obj, XPART *part)
                         b.y = d * nv.y + v->y;
                         b.z = nv.z * d + v->z;
                         d3_Normalize(&b);
-                        v->u = (b.x + 1.0f) * 0.5f;
-                        v->v = (b.y + 1.0f) * 0.5f;
+                        v->u = (b.x + ai_FloatOne) * 0.5f;
+                        v->v = (b.y + ai_FloatOne) * 0.5f;
                     }
                 }
                 return;
@@ -70,8 +70,8 @@ void d3_EnvMapCoords(XOBJ *obj, XPART *part)
                     b.y = d * nv.y + v->y;
                     b.z = nv.z * d + v->z;
                     d3_Normalize(&b);
-                    v->u = (b.x + 1.0f) * 0.5f;
-                    v->v = (b.y + 1.0f) * 0.5f;
+                    v->u = (b.x + ai_FloatOne) * 0.5f;
+                    v->v = (b.y + ai_FloatOne) * 0.5f;
                 }
             }
         }
