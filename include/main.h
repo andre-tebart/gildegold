@@ -57,6 +57,7 @@ extern int main_GfxOn;  /* 0x624560, nonzero when the round change shows its pag
 extern int main_MoviesOpen;  /* 0x6f2574, nonzero while the movie player is set up (mov_Init); the outro opens and closes it itself otherwise */
 extern char main_JobName[0x104];  /* 0x6f2470, the job name of the BERUF=" command line option (WinMain: the starting job) */
 extern int main_ReplaceFigureOn;  /* 0x6f25b0, nonzero: a bankrupt player's figure is replaced (main_RoundReport) */
+extern int main_DirectStart;  /* 0x6f2434, nonzero: WinMain skips the main menu and starts the single player game at once */
 extern int main_WeatherSound;  /* 0x6f2580, the [Sound] weather key */
 extern int main_DayEnding;  /* 0x6f25a8, the day is ending (sv_RunFrame sets, main_GameLoop clears) */
 extern int snd_SystemBank;  /* 0x6f2400 */

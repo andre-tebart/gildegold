@@ -275,7 +275,6 @@ extern unsigned char main_GfxPath[];
 extern char main_GamePath[];
 extern GAPDATA full_data_624cf8[];
 extern int main_TextureDivider;
-extern GAPDATA full_data_6f2434[];
 extern int main_Inactive;       /* 0x6f2584, 1 while the app is deactivated */
 extern char main_AppDir[];
 extern INIT_PLAYER init_PlayerProfile;
@@ -5270,7 +5269,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE prev, char *cmd, int show)
         return 0;
     }
     do {
-        if (U_I((unsigned)&full_data_6f2434) == 0) {
+        if (main_DirectStart == 0) {
             if (net == 0) {
                 main_Menue();
                 if (main_ScreenRestart != 0) {
@@ -5323,7 +5322,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE prev, char *cmd, int show)
                 main_GameLoop(0);
             } while (U_I((unsigned)&ai_LeaveGame) != 0);
         }
-        if (U_I((unsigned)&full_data_6f2434) != 0 || net != 0)
+        if (main_DirectStart != 0 || net != 0)
             U_I((unsigned)&main_QuitProgram) = 1;
         U_I((unsigned)&sv_PopRequest) = 0;
         U_I((unsigned)&sv_FrameDepth) = 0;
@@ -5818,7 +5817,7 @@ int main_Movie = 0;  /* 0x6f241c, the id mov_Open gave the movie that plays (int
 GAPDATA full_data_6f2420[8] = { 0 };  /* 0x6f2420 */
 GAPDATA full_data_6f2428[4] = { 0 };  /* 0x6f2428 */
 int main_TextureDivider = 0;  /* 0x6f242c, the Gfx/TextureDivider key of game.INI */
-GAPDATA full_data_6f2434[4] = { 0 };  /* 0x6f2434 */
+int main_DirectStart = 0;  /* 0x6f2434, nonzero: WinMain skips the main menu, starts the single player game at once (main_JobName picks the job) and quits after it; no writer in the image */
 GAPDATA full_data_6f2450[12] = { 0 };  /* 0x6f2450 */
 int main_DevMenu = 0;  /* 0x6f245c, nonzero: the main menu shows the data-tool buttons */
 int main_TextReopen = 0;  /* 0x6f2460 */
