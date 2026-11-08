@@ -1118,13 +1118,13 @@ int ai_CommandCityTreasury(int a, int b, char *fmt)
             o = gm_Query(bld->objList, 2, 6, 0, 0x115);
             if (o == 0)
                 return 0;
-            for (g = gm_Query(o->unk14, 1, 5); g != 0; g = gm_QueryNext()) {
+            for (g = gm_Query(o->list, 1, 5); g != 0; g = gm_QueryNext()) {
                 if (ai_GoodsT[g->id].type == 9)
                     break;
             }
             if (g == 0)
                 return 1;
-            v = g->unk0e;
+            v = g->count;
             if (v > 0) {
                 if (s == -1)
                     cm_SendMoveGoodsUnchecked(s, o->objId, 0, (int)(n * 0.01f * v));
