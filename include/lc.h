@@ -7,6 +7,7 @@
 #include "ai_types.h"                 /* AITIME, the goods-reserve clock (LCSETTINGS.reserveTime) */
 
 struct AIBLD;
+struct G8INVOBJ;
 struct D2SURF;
 struct AIOBJ;
 struct D3SCENE;
@@ -196,6 +197,24 @@ extern int ai_StatsPage;                 /* 0x6f2f84, the stats panel's page sel
 extern unsigned short ai_StatsChartFlags; /* 0x6f2f88, the charts the statistics panel shows (bit i: the legend row i) */
 extern unsigned int ai_AmountTab;        /* 0x6f2f8c, the open tab of the special-amount window (0 .. 7; 8: no tab has rows) */
 extern int ai_MasterLetterPage;          /* 0x6f2f90, the open page of the master letter window: 0 the work settings, 1 the goods weights */
+typedef struct LCEXCHROW {              /* 0x1c bytes, a row of the money lender's exchange window (16 of them; ai_FillExchangeRows
+                                           fills them, ai_ClickedExchangeRecord finds the clicked one) */
+    int icon;                           /* 0x00, the row's input icon (d2_WinOpenInputIcon), -1: none */
+    int text;                           /* 0x04, its text object (d2_CreateWinText) */
+    int name;                           /* 0x08, the text with the player slot's name (ai_ShowExchangeRows) */
+    int good;                           /* 0x0c, the currency good of the row (an object of the class 9 in the list,
+                                           gm_Query(list, 1, 4, 9); its name txt_ObjectNames, its icon good + 0xdf), 0: free */
+    unsigned char player;               /* 0x10, the player slot the row names (ai_ShowExchangeRows) */
+    char pad11[3];
+    int value;                          /* 0x14, the icon's value, the amount picked (d2_GetObjValue) */
+    int available;                      /* 0x18, the amount the list holds in it (gm_CurrencyDivide) */
+} LCEXCHROW;
+typedef struct LCINVSLOT {              /* 8 bytes, a row of the inventory child window (ai_OpenInventoryWindow clears them: -1, 0) */
+    int ctl;                            /* 0x0, its amount control */
+    struct G8INVOBJ *obj;               /* 0x4, the inventory object (its id the goods), 0: empty */
+} LCINVSLOT;
+extern LCEXCHROW ai_StatsMoneyRows[16];  /* 0x6f3680, the currency rows of the stats panel's money page */
+extern LCINVSLOT ai_InvSlots[6];         /* 0x6f3840, the six rows of the inventory child window */
 extern int ai_MasterDown;                /* 0x6f3870, the master list page's scroll down button */
 /* 0x6f3880: the equip window's row table, 32 rows of 0x40 (ai_EquipRowsInit frees every row, ai_UpdateEquipRows keeps
    the rows of the scene characters of the job groups 10 .. 12, ai_EquipWindow lays them out) */

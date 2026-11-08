@@ -612,7 +612,6 @@ extern unsigned char ai_OwnPlayer;
 extern int d2_ClickedId;
 extern int d2_LastWindow;
 extern GAPDATA full_data_62cc6c[];
-extern GAPDATA full_data_6f3680[];
 #pragma pack(push, 1)
 typedef struct G8INVOBJ {               /* an object of a character's inventory (AIOBJ, ai_types.h, read as a held good:
                                            ai_InventoryHas, ai_BuildingHasItem, the inventory window, the Domizil
@@ -637,11 +636,6 @@ typedef struct G8INVOBJ {               /* an object of a character's inventory 
     AITIME since;                       /* +0x2d, of a Domizil good in use: when minutesLeft was last counted down */
 } G8INVOBJ;
 #pragma pack(pop)
-typedef struct LCINVSLOT {              /* 8 bytes, a row of the inventory child window (ai_OpenInventoryWindow clears them: -1, 0) */
-    int ctl;                            /* 0x0, its amount control */
-    G8INVOBJ *obj;                      /* 0x4, the inventory object (its id the goods), 0: empty */
-} LCINVSLOT;
-#define ai_InvSlots (*(LCINVSLOT (*)[6])((char *)&full_data_6f3680 + 0x1c0))  /* 0x6f3840, the six rows of the inventory child window (ai_OpenInventoryWindow, the transport window) */
 extern GAPDATA full_data_62a56c[];
 #define ai_FmtLabel (*(char (*)[4])&full_data_62a56c)  /* 0x62a56c, "%s:": a label's format (ai_TechEffectsWindow's skill captions) */
 #define d2_OpenFormS ((int (*)(short, short, char *))d2_OpenForm)  /* @original: the transport window computes x = d2_ScreenW - 0x68 in 16 bits (0x5af336 mov ax, [d2_ScreenW]; sub ax, 0x68; push eax), as sv_OpenPlayerBar */
@@ -664,7 +658,6 @@ extern struct D2OBJ *d2_Objs;
 
 
 extern GAPDATA full_data_62d134[];
-extern GAPDATA full_data_6f3680[];
 extern int d2_LastWindow;
 extern struct D2OBJ *d2_Objs;
 extern char ai_Chars[768][0x21c];
@@ -8832,18 +8825,6 @@ void ai_CreditGiverWindow(AIBLD *bank)
     d2_CloseView(win);
     sv_CameraFollow();
 }
-typedef struct LCEXCHROW {          /* 0x1c bytes, a row of the money lender's exchange window (16 of them; ai_FillExchangeRows
-                                       fills them, ai_ClickedExchangeRecord finds the clicked one) */
-    int icon;                       /* 0x00, the row's input icon (d2_WinOpenInputIcon), -1: none */
-    int text;                       /* 0x04, its text object (d2_CreateWinText) */
-    int name;                       /* 0x08, the text with the player slot's name (ai_ShowExchangeRows) */
-    int good;                       /* 0x0c, the currency good of the row (an object of the class 9 in the list,
-                                       gm_Query(list, 1, 4, 9); its name txt_ObjectNames, its icon good + 0xdf), 0: free */
-    unsigned char player;           /* 0x10, the player slot the row names (ai_ShowExchangeRows) */
-    char pad11[3];
-    int value;                      /* 0x14, the icon's value, the amount picked (d2_GetObjValue) */
-    int available;                  /* 0x18, the amount the list holds in it (gm_CurrencyDivide) */
-} LCEXCHROW;
 
 /* 0x59be90, sorts the rows of the money lender's exchange window by the name of their currency good and places
    them (653 B): the rows are counted up to the last used one (a good and an icon), sorted by an exchange
@@ -23639,7 +23620,6 @@ void ai_ChooseCoatOfArms(void)
     d2_RadioClear(group);
     d2_CloseView(win);
 }
-#define ai_StatsMoneyRows (*(LCEXCHROW (*)[16])&full_data_6f3680)  /* 0x6f3680, the currency rows of the stats panel's money page (ai_FillExchangeRows) */
 
 /* 0x5bc420, opens the money page "Panel\geld_info_2" of the player stats panel (ai_PlayerStatsPanel's first
    entry): the captions 0x1f3e / 0x1f3f / 0x1f40, the player's currencies (ai_FillExchangeRows of the inventory
@@ -34358,6 +34338,8 @@ int ai_StatsPage = 0;  /* 0x6f2f84, the stats panel's page selected last (ai_Pla
 unsigned short ai_StatsChartFlags = 0;  /* 0x6f2f88, the charts the statistics panel shows (ai_CityStatsPanel: bit i the legend row i, 1 at the first open) */
 unsigned int ai_AmountTab = 0;  /* 0x6f2f8c, the open tab of the special-amount window (ai_SpecialAmountWindow, 0 .. 7; 8: no tab has rows) */
 int ai_MasterLetterPage = 0;  /* 0x6f2f90, the open page of the master letter window (ai_MasterLetterSettings): 0 the work settings, 1 the goods weights */
+LCEXCHROW ai_StatsMoneyRows[16] = { 0 };  /* 0x6f3680, the currency rows of the stats panel's money page (ai_FillExchangeRows fills them, ai_OpenMoneyInfoPage) */
+LCINVSLOT ai_InvSlots[6] = { 0 };  /* 0x6f3840, the six rows of the inventory child window (ai_OpenInventoryWindow clears them: -1, 0, and fills them from the character's inventory) */
 int ai_MasterDown = 0;  /* 0x6f3870, the master list page's scroll down button (ai_PlayerStatsPanel passes it to sv_CreateScrollButtons and compares d2_PointerObj with it) */
 AIEQUIPROW ai_EquipRows[0x20] = { 0 };  /* 0x6f3880, the equip window's rows: ai_EquipRowsInit frees all 32, ai_UpdateEquipRows fills and updates them, ai_EquipWindow lays them out; 32 x 0x40 runs to 0x6f4080 */
 int ai_MasterUp = 0;  /* 0x6f4080, the master list page's scroll up button (sv_CreateScrollButtons) */
