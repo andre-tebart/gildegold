@@ -290,7 +290,7 @@ exe	0x004112e0	di_PollKeyboard	di_input	byte	readable
 exe	0x004113f0	di_SetMousePos	di_input	byte	readable		
 exe	0x00411440	di_GetMouse	di_input	byte	readable		
 exe	0x004115b0	di_ClearEvents	di_input	byte	readable		
-exe	0x00411680	d3t_PlaceObject	d3_tools	draft	draft		
+exe	0x00411680	d3t_PlaceObject	d3_tools	draft	readable	deep	
 exe	0x00411860	d3t_PlaceObjectV	d3_tools	byte	readable		
 exe	0x004118a0	d3t_PlaceAtObject	d3_tools	byte	readable		
 exe	0x004118d0	d3t_FindObjectCB	d3_tools	byte	readable		
@@ -385,7 +385,7 @@ exe	0x0041cfb0	dd_Init	dd_vesa	byte	readable
 exe	0x0041d190	dd_SetClipRect	dd_vesa	byte	readable		
 exe	0x0041d1c0	dd_EnumVideoModesCallback	dd_vesa	byte	readable		
 exe	0x0041d230	dd_CheckModes	dd_vesa	byte	readable		
-exe	0x0041d2e0	dd_SetMode	dd_vesa	draft	draft		
+exe	0x0041d2e0	dd_SetMode	dd_vesa	draft	readable	deep	
 exe	0x0041ddb0	dd_LockSurface	dd_vesa	byte	readable		
 exe	0x0041de30	dd_LockSurfaceFlags	dd_vesa	byte	readable		
 exe	0x0041dec0	dd_Lock	dd_vesa	byte	readable		
@@ -427,7 +427,7 @@ exe	0x00420db0	qnt_MakePalette	qnt	byte	readable
 exe	0x00420e70	qnt_Map	qnt	draft	readable	deep	
 exe	0x00421410	qnt_Nearest	qnt	shape	readable	deep	
 exe	0x004214a0	err_Write	err	byte	readable		
-exe	0x004215c0	err_ExceptionFilter	err	draft	draft		
+exe	0x004215c0	err_ExceptionFilter	err	draft	readable	deep	
 exe	0x00421d50	err_WriteSymbol	err	byte	readable		
 exe	0x00421ed0	err_GetString	err	byte	readable		
 exe	0x00421f00	err_IsCodeProtect	err	byte	readable		
