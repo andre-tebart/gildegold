@@ -1,6 +1,5 @@
 /* ls.c -- the save game (0x519010 ..): the tag "ls_" ("ls:tmp" 0x623654, "ls_LoadCharacter(): invalid next or prev-action pointer ...", "ls_SendGame"), the language number of a name (0x519010: the table "GERMAN" .. 0x5ee978), the save game writer 0x5190b0 (header 0x5194c0: "SCENARIO", the player, the party records and the screen shot of 0xe100 bytes, then one writer per subsystem), the pointer <-> index conversions before / after a save (0x519a00 / 0x519aa0 / 0x519b50) and the other writers (0x519bf0 ..), the readers (0x51c950 ..) and the network send / receive of a save game (0x520a30 / 0x520b80). The unit starts at its first global 0x62364c (the language number, -1); its strings run to "ls_SendGame" 0x62376c / "rbn" 0x623778, and it ends at 0x520ec0, sv.c's first function. Names are ours.
-   Open: four of ls_LoadGame's readers are unnamed (unk_Unk51fb90, unk_Unk520200, unk_Unk520310,
-   unk_Unk5205f0).
+   Open: three of ls_LoadGame's readers are unnamed (unk_Unk51fb90, unk_Unk520200, unk_Unk520310).
    unit of rea 8cef7d5b (src/game/ls.c); boundaries in decl/text.dcl */
 struct D3SM;
 struct D3TERRAIN;
@@ -1361,7 +1360,7 @@ int ls_LoadGame(int name, int kind)
         ls_FixupAfterLoad();
         return 0;
     }
-    if ((ls_Version >= 0x1002e && unk_Unk5205f0(h) == 0) || ls_FixupAfterLoad() == 0)
+    if ((ls_Version >= 0x1002e && ls_ReadEnvironment(h) == 0) || ls_FixupAfterLoad() == 0)
         goto close;
     d3if_SelectScene(0, 1);
     init_PrepareTownScene();
@@ -2560,26 +2559,26 @@ int unk_Unk520310(int f)
     LS_R((unsigned)&cm_LastBuildingId, 4)
     return ls_Read((int)(unsigned)&cm_LastObjectId, 4, 1, f) != 0;
 }
-/* 0x5205f0, reads the table 0x7604e8 (the counterpart of 0x51c870): the count 0x760610 and the entries; from 0x10050 the two further blocks 0x5dc0c0 and 0x4ed910. Returns 1 */
+/* 0x5205f0, the reader of the weather environment ls_WriteEnvironment writes: the winter-weather flag
+   sv_WinterWeather and the 24 hours' clouds, storm, windX and windY of sv_Weather; from version 0x10050 also the
+   wind table (ai_LoadWind) and the effects (gv_ReadEffects). Returns 1, or 0 when a read fails */
 
 
-int unk_Unk5205f0(int f)
+int ls_ReadEnvironment(int f)
 {
-    int *p;
+  int i;
 
-    if (ls_Read((int)(unsigned)&sv_WinterWeather, 4, 1, f) == 0)
-        return 0;
-    p = (int *)sv_Weather.storm;
-    do {
-        LS_R(p - 0x18, 4)
-        LS_R(p, 4)
-        LS_R(p + 0x1a, 4)
-        LS_R(p + 0x32, 4)
-        p++;
-    } while ((int)p < (unsigned)((unsigned)sv_Weather.storm + 0x60));
-    if (ls_Version > 0x1004f && ai_LoadWind(f) != 0 && gv_ReadEffects(f, ls_Version) != 0)
-        return 1;
+  if (ls_Read((int)(unsigned)&sv_WinterWeather, 4, 1, f) == 0)
     return 0;
+  for (i = 0; i < 24; i++) {
+    LS_R(&sv_Weather.clouds[i], 4)
+    LS_R(&sv_Weather.storm[i], 4)
+    LS_R((int *)&sv_Weather.windX[i], 4)
+    LS_R((int *)&sv_Weather.windY[i], 4)
+  }
+  if (ls_Version >= 0x10050 && ai_LoadWind(f) != 0 && gv_ReadEffects(f, ls_Version) != 0)
+    return 1;
+  return 0;
 }
 /* 0x5206b0, the fix-up after a load, the counterpart of 0x519a00 before a save: it turns the loaded ids back into pointers: the player's character (ai_PlayerChar = gm_FindChar, 0 = fail), the market building (ai_MarketBuilding = gm_BuildQuery (1, 5, 10)), the eight kind 0xb characters (ai_KindBChars), the reference fields of the ai_Chars records (gm_FindById into +0x16c and +0x170, he_FindEvent into +0x17c, +0x184 cleared), the objects of ai_Objects (an object with an owner is chained into the owner's list: the heads at +0x5d building / +0x14 object / +0x178 character, +0x3f the next link; objects of the good type 0x1d lose their +0x24 word), the event records of he_Events (the kinds 0x29 0x2d 0x2f 0x11 0x25 5 10 0x26 or flagged 8 are re-initialised through he_RunHandlers[kind] with ai_GameState = 2, the stored +0x70 saved and put back; the kinds 0xd / 0xf / 0x78 / 0x76 / 0x14 get their own fixes), the first word of the 0xa4-byte records at 0x74e1e0 (an event owner id, he_FindEvent (1, 1, id)) and the target words of the reference records (ls_RefTargets, by kind: 1 gm_FindChar, 3 gm_FindObjectInst, 2 gm_FindBuildingById, 9 cm_PartyById); it closes with gm_ResetStock. Returns 1, 0 when the player's character is gone */
 

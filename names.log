@@ -3097,3 +3097,4 @@
 2026-11-08T19:48:54 0x0144abe4 data full_data_144abe4 -> txt_FaithLabel by:main why:the label of the faith line of the lobby info window (lobby_ShowMyPlayer 0x58acd0: sprintf text, lobby_FmtName, the label, txt_FaithNames[faith])
 2026-11-08T19:52:41 0x0144abf4 data full_data_144abf4 -> txt_ReadyMark by:main why:the text lobby_ShowPlayers (0x58ae5e) appends to a player's name line when the record's ready flag (+0x4) is set: the ready marker of the list line
 2026-11-08T20:50:30 0x00520000 func unk_Unk520000 -> ls_ReadParties by:main why:the reader counterpart of ls_WriteParties 0x51c2f0: the same cm_Parties fields in the same order, called by ls_LoadGame in the same step sequence
+2026-11-08T21:04:54 0x005205f0 func unk_Unk5205f0 -> ls_ReadEnvironment by:main why:the reader of ls_WriteEnvironment's table: sv_WinterWeather, the 24 hourly clouds/storm/windX/windY, then ai_LoadWind and gv_ReadEffects; called by ls_LoadGame (0x51cce4)

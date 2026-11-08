@@ -78,7 +78,7 @@ int unk_Unk51fb90(int f);                                               /* 0x51f
 int ls_ReadParties(int f);                                               /* 0x520000 */
 int unk_Unk520200(int f);                                               /* 0x520200 */
 int unk_Unk520310(int f);                                               /* 0x520310 */
-int unk_Unk5205f0(int f);                                               /* 0x5205f0 */
+int ls_ReadEnvironment(int f);                                               /* 0x5205f0 */
 int ls_FixupAfterLoad(void);                                            /* 0x5206b0 */
 int ls_SendGame(char *name);                                            /* 0x520a30 */
 int ls_ReceiveGame(void);                                               /* 0x520b80 */
