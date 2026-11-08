@@ -706,7 +706,7 @@ const float ai_CannonZoomRange = 1450.0f;  /* 0x5eecac, the distance the zoom mo
 #include "sv.h"
 #define d2_PlaceMainWindowF ((void (*)(int, int))d2_PlaceMainWindow)  /* 0x475850 (d2.c: int view): @original the callers pass the placement flags too, which the original's tail jump leaves on the stack for d2_PlaceWindowScaled */
 #define d2_SetObjValue2 ((void (*)(int, int))d2_SetObjValue)  /* 0x475cb0 (d2.h: five parameters): @original ai_AlchemistFundWindow pushes only the object and the value (0x57df47 push eax / push ebp); the unit's four-argument calls use menu.h's d2_SetObjValue4 */
-#define sv_SelectPanelObjectK ((int (*)())sv_SelectPanelObject)  /* 0x52c4c0?: @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) */
+
 /* 0x575860, the tutorial's tick: nothing (-4) without the tutorial, its run record or its event slot; puts the
    tutorial's own event window back to the state 3 (or its state to next when another window is active), then, while
    ai_TutorialRunning and no camera move / panel is busy, runs the state machine on ai_Tutorial->state: 1 starts a run
@@ -1418,7 +1418,7 @@ void ai_HookChapter2Step5(int arg)
         return;
     r = (char *)gm_BuildQuery(1, 5, 0xa);
     if (r)
-        sv_SelectPanelObjectK(r, -1, (char *)(unsigned)&ch_EmptyName);
+        sv_SelectPanelObject((unsigned char *)r, -1, (char *)(unsigned)&ch_EmptyName);
 }
 /* 0x576ab0, the kinds 0x19 / 0x1a with a record whose word is 0x13: the kind 0x19 only in the pending state 4
    (state 0xa), the kind 0x1a in any state (state 0xb); else 3 */
@@ -1872,7 +1872,7 @@ void ai_HookChapter3Intro(int arg)
     q = (AIOBJ *)gm_Query((void *)r->objList, 1, 0, 0x74);
     if (!q)
         return;
-    sv_SelectPanelObjectK(r, q->objId, ch_EmptyName);
+    sv_SelectPanelObject((unsigned char *)r, q->objId, ch_EmptyName);
 }
 /* 0x577540, when `arg` is 0 and the building 0x6f2308 is not already of the table byte 0x2: finds a record
    (0x501190 (2, 5, 2, 4, player) with the player word 0x6f25b8), picks 0x4ffe90 (r+0x5d, 1, 0, 0x13) and passes
@@ -1897,7 +1897,7 @@ void ai_HookChapter5Intro(int arg)
     q = (AIOBJ *)gm_Query((void *)r->objList, 1, 0, 0x13);
     if (!q)
         return;
-    sv_SelectPanelObjectK(r, q->objId, ch_EmptyName);
+    sv_SelectPanelObject((unsigned char *)r, q->objId, ch_EmptyName);
 }
 /* 0x5775c0, the run hook of the run record FTInitChapter5Step4: at the run's start (end 0) sends two messages for
    the player's character - cm_SendSetField (netId, 0x1c8, 4, 0x4000, 0) and cm_SendMoveGoodsUnchecked (netId, -1,
@@ -10509,8 +10509,6 @@ void ai_ValidateBookmarks(void)
     }
 }
 
-void sv_SelectPanelObject(unsigned char *o, int b, char *c);
-
 /* 0x5894d0, the bookmark keys (151 B): on a key (kb_Last) without the left shift held (kb_Down[0x2a]), the
    first bookmark of that key still set after ai_ValidateBookmarks selects its building and object (or -1) in
    the panel (sv_SelectPanelObject) */
@@ -10529,9 +10527,9 @@ void ai_SelectBookmark(void)
                 b = gm_FindBuildingById(ai_Bookmarks[i].building);
                 o = (AIOBJ *)gm_FindObjectInst(ai_Bookmarks[i].object);
                 if (o != 0)
-                    sv_SelectPanelObjectK(b, o->objId, ch_EmptyName);
+                    sv_SelectPanelObject((unsigned char *)b, o->objId, ch_EmptyName);
                 else
-                    sv_SelectPanelObjectK(b, -1, ch_EmptyName);
+                    sv_SelectPanelObject((unsigned char *)b, -1, ch_EmptyName);
                 return;
             }
         }
