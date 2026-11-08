@@ -36,11 +36,9 @@
    Open: d3_Time is volatile in the original (ai_TutorialTick reloads it after every read; the step callbacks
    and the marker update load it in the original's order only through the unit's view d3_Time); its
    owner and the other units declare it plain int.
-   Open: head: include/d2.h not included (the d2_* calls lack prototypes, M7): it supersedes the local
-   d2_CreateWinText declaration and its trial drops 6 shape functions to draft (dcp headers conflicts sv_t
-   d2.h --trial).
+   Open: head: gfx.h not included (d2_Convert16ToRgb's call stays M7; dcp headers conflicts sv_t gfx.h).
    Open: head: cm.h's declaration set still moves the chapter builders by the declaration set alone (a register
-   tie-break, dcp build probes it: ai_TutorialInitChapter2 byte, ai_TutorialInitChapter3 shape); cm.h's declaration
+   tie-break, dcp build probes it: ai_TutorialInitChapter2 byte, ai_TutorialInitChapter3 draft); cm.h's declaration
    set is not the original's yet.
    Open: the alchemist windows ai_AlchemistWindow / ai_AlchemistResearchWindow are @deep (allocation); their buttons call
    ai_AlchemistFundWindow / ai_AlchemistRescheduleWindow with (obj, record), the record parameter unread.
@@ -49,9 +47,6 @@
    still take int *w (the callers cast), the graveyard contacts before ai_GraveHauntContact take char *rec.
    Open: data: ai_TurnTable (0x6f5f60, 0x4000 bytes) is cleared once at engine open and no other code refers to
    it: what it holds, and so its true name and element type, is unknown (the name is ai_ClearTurnTable's).
-   Open: not included yet (dcp headers conflicts sv_t HEADER): d2.h gfx.h sv.h; held by own declarations that
-   differ from the owner's: d2_CreateWinText; calls whose argument count differs from the definition (read the
-   original's pushes): d2_GetObjValue, sv_DrawBalanceBar (d2_PlaceMainWindow goes through d2_PlaceMainWindowF).
    unit of rea 8cef7d5b (src/game/unk_575860.c); boundaries in decl/text.dcl */
 struct AHMSTEP;
 struct D3SKY;

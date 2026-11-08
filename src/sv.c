@@ -3,11 +3,9 @@
    0x531670, main.c's program level code. Names are ours.
    Open: the start and the end rest on the .data order only.
    Open: head: d2.h is included (the d2 records through the SV* views, the SV_I / SV_W address macros with their
-   byte offsets and sv_D2Objs = d2_Objs as D2OBJ *); include/gfx.h is not (d2_LoadBmpSurface, d2_GetPixelColour,
-   d2_CompareColour, d2_AddHitRect / d2_RemoveHitRect, d2_CreateWindow, d2_FocusInput and d2_PlaceWindowScaled
-   stay K&R), nor cm.h (cm_SendChrStop / cm_SendChrGotoBuilding / cm_SendChrUseGates / cm_SendChrWalkTo / cm_SendTime /
-   cm_UpdateParties / cm_PartyById / cm_DrawFightTime / cm_DrawScrollArrows without a prototype), nor lc.h (the ai_
-   panel / key / save calls), anm.h (anm_Update), f3snd.h, rt.h (rt_EditCartRoute) and sblib.h.
+   byte offsets and sv_D2Objs = d2_Objs as D2OBJ *), with gfx.h (d2_AddHitRect's int call goes through
+   d2_AddHitRectI) and cm.h; lc.h is not (the ai_ panel / key / save calls), nor anm.h (anm_Update), f3snd.h,
+   rt.h (rt_EditCartRoute) and sblib.h. d2_CreateWindow / d2_PlaceWindowScaled stay K&R (d2.h's own views).
    Calls whose argument count differs from the definition (read the original's pushes): sb_PlaySample (sblib.h:
    6 calls to re-grade), d2_SetObjValue (the 4- and 2-argument calls use d2_SetObjValue4 / d2_SetObjValue2). The
    @original cast macros (d2_PutPixelRGBc, d2_CreatePicObjS, d2_WinOpenPicStyledS, d2_OpenFormS, d2_SetObjValue4,
