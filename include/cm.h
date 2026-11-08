@@ -562,7 +562,7 @@ extern int cm_LobbyHelloValue;  /* 0x9367d4, the hello answer's second value (G1
 
 int cm_UpdateBombs();  /* 0x4ce300 */
 struct CMGRENADE *cm_ThrowGrenade(struct D3VECTOR *p, int x, int y);  /* 0x4ce5d0 */
-unsigned int cm_Random();  /* 0x4e52f0, a random number below n (two callers pass a second argument: no parameter list yet) */
+unsigned int cm_Random(unsigned int n);  /* 0x4e52f0, a random number below n */
 extern int cm_FightAttacker;  /* 0x6f0cec */
 extern int cm_BombSounds;  /* 0x6f0d14 */
 extern char cm_Grenades[];  /* 0x935a00 */
