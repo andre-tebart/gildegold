@@ -180,7 +180,6 @@ extern GAPDATA full_data_62b098[];
 extern int d2_PointerObj;
 extern char * cm_FieldObject;
 extern struct D2PIC *d2_Pics;
-extern char * ai_BTypes;
 extern unsigned char kb_Last;
 
 extern int d2_LastWindow;
@@ -320,7 +319,6 @@ extern int d2_ClickedId;
 extern int d2_LastWindow;
 extern GAPDATA full_data_602568[];
 extern int ai_EspionageAmountCB();
-extern char ai_Chars[768][0x21c];
 
 extern int sv_PopRequest;
 
@@ -361,7 +359,6 @@ extern char * sv_SelectedObject;
 extern int sv_PanelForm;
 extern unsigned short * sv_PanelShown;
 
-extern unsigned char ai_OwnPlayer;
 extern char ai_PlayerSlots[4][0x2f4];
 
 
@@ -870,7 +867,6 @@ extern GAPDATA full_data_62d1e8[];
 extern GAPDATA full_data_62d1ec[];
 extern GAPDATA full_data_62d1f4[];
 extern GAPDATA full_data_62d1fc[];
-extern signed char ai_Relations[768][768];
 extern const int sv_PhaseMinutes[24];
 extern GAPDATA full_data_62d204[];
 extern int gm_PlayerRecords[688];
@@ -1246,6 +1242,8 @@ typedef struct G8USEVIEW {              /* a local view of am.h's G8USE (am.h ca
 #include "vfs.h"
 #include "d2.h"
 #include "gfx.h"
+#include "cm.h"
+#include "ahm.h"
 #define sv_SelectPanelObjectK ((int (*)())sv_SelectPanelObject)  /* 0x52c4c0?: @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) */
 #define ai_GfxDetailI (*(int *)&ai_GfxDetail)  /* 0x6f35c4 (menu.c: unsigned char): @original ai_ShowVgObjects reads the detail as a dword and takes its low byte (0x58f9d7 mov ecx, dword ptr [0x6f35c4] / and edx, 0xff); the byte object compiles to mov cl, byte ptr */
 #define d2_CreatePicObjS ((int (*)(short, short, int))d2_CreatePicObj)  /* 0x46cd80 (d2.h: int x, y): @original the town map update adds the window position to the mark pixel in 16 bits (0x5a8052 mov dx, word ptr [eax + 4] / add dx, di / push edx), as d2.c's callers */
@@ -6407,7 +6405,8 @@ void ai_RhetoricContact(int bld, int room)
 
 void ai_FeastWindow(AIBLD *bld, AIOBJ *table); void ai_DenounceWindow(AIBLD *bld); void sv_FitForm(int f); void sv_ButtonRow(int f, int y, int *out, int n, ...);
 short * gm_FindChar(int id); int sv_CheckMoney();
-int cm_SendExSetHE(); /* @original: the callers here push the key as an int and read the return (byte-matched ai_TransportOrderDue), against cm.h's void (unsigned char, char *) view */ int cm_SendRelations(int a, int b, int c, int d); void cm_SendMoneyDelta(int a, int b); void d2_SetObjEnabled();
+#define cm_SendExSetHEI ((int (*)(int, char *))cm_SendExSetHE)  /* @original: the callers here push the key as an int and read the return (byte-matched ai_TransportOrderDue), against cm.h's (unsigned char, char *) prototype */
+int cm_SendRelations(int a, int b, int c, int d); void cm_SendMoneyDelta(int a, int b); void d2_SetObjEnabled();
 
 /* 0x5966f0, the contact listener of the residence's social room (room kind 0x17 in ai_EnterBuilding; the feast window
    it opens is "locations\wohnsitz\fest"): it releases the name plates and pumps the frame (sv_RunFrame, this, mask
@@ -6522,7 +6521,7 @@ void ai_MistressAffairWindow(AICHARREC *player, AICHARREC *ch, AIJOB *ev)
                     if (sv_MessageBox(text, 1) != 0) {
                         ev->end = ai_Time;
                         ev->idbc = ai_Time.year;
-                        slot = cm_SendExSetHE(1, ev);
+                        slot = cm_SendExSetHEI(1, ev);
                         if (slot != -1)
                             do {
                                 if (cm_GetSlotState(slot) != 0)
@@ -6545,7 +6544,7 @@ void ai_MistressAffairWindow(AICHARREC *player, AICHARREC *ch, AIJOB *ev)
                         txt_Format(ask, 0x1a5b, 2, ch->id, pick->id);
                         if (sv_MessageBox(ask, 1) != 0 && sv_CheckMoney(ai_Chars[ai_PlayerId], 2) != 0) {
                             ev->idbc = ai_Time.year;
-                            cm_SendExSetHE(3, ev);
+                            cm_SendExSetHEI(3, ev);
                             gm_SendMoneyDelta(player->netId, -2);
                             cm_SendRelations(pick->netId, ch->netId, -0x21, 1);
                             sv_PopRequest = 1;
@@ -13551,7 +13550,7 @@ void ai_KidnapStart(AIBLD *bld)
             ch = (AICHARREC *)gm_FindChar(((LCRANSOMEVENT *)rec)->victim);
             if (ch != 0 && ch->heldRounds > 0)
                 goto found;
-            rec->exSlot = cm_SendExSetHE(-1, (int)rec);
+            rec->exSlot = cm_SendExSetHEI(-1, (int)rec);
         }
         rec = (AIJOB *)he_NextEvent();
     }
@@ -13705,7 +13704,7 @@ void ai_HostageEscape(AIBLD *bld)
                 cm_SendChrGotoBuilding(ch->netId, placeBld, placeObj, 0, 0, "L\366segeld");
             for (ev = (LCRANSOMEVENT *)he_FindEvent(1, 0, 0x3d); ev != 0; ev = (LCRANSOMEVENT *)he_NextEvent())
                 if (ev->guild == bld->id && ch->netId == ev->victim) {
-                    ((AIJOB *)ev)->exSlot = cm_SendExSetHE(-1, ev);
+                    ((AIJOB *)ev)->exSlot = cm_SendExSetHEI(-1, ev);
                     break;
                 }
             txt_Format(text, 0x3feb);
@@ -16348,15 +16347,7 @@ void ai_FillVacantPersonnelRow(AIBLD *bld, G9DOMIZILROW *row, int kind, int slot
    the carter's head (0x639 + the head icon of the four carter models by the cart's object id & 3), the goods'
    picture (0x4b1 + the goods id) and the text 0x1a3e with the cart's destination: the building of the job it
    runs (AIOBJ.job24's cartBld), or without a job the building it stands at (the market for a 'D' building);
-   a destination other than bld gets a button (picture 5, its user record the building) captioned 0x1a3d
-   @deep Read whole against the original and rewritten (SVBOOK views[3], AIOBJ carts with job24->cartBld,
-   the typed ai_BldCart* data, the button only for a destination other than bld; the init loop is the
-   original's pointer walk over ai_BldCartTexts with [p-3]). Every statement lines up; the one remaining
-   difference is strength reduction: ours keeps the text control's y (i * 0x78 + 0x48) as an induction slot
-   ([esp+0xc] = 0x48, add 0x78 per pass: 'mov dword ptr [esp + 0xc], 0x48', 'mov eax, dword ptr [esp +
-   0xc]', 'add ecx, 0x78 / mov [esp+0xc], ecx'), the original computes it from edi = i * 0x78 of the goods
-   picture ('lea eax, [edi + 0x48]'), frame 0x214 vs 0x210 from that slot. Tried: a local y = i * 0x78
-   (strength-reduces all three y), 0x48 + i * 0x78, no cart local: unchanged. */
+   a destination other than bld gets a button (picture 5, its user record the building) captioned 0x1a3d */
 
 void ai_ShowBldCarts(SVBOOK *book, AIBLD *bld)
 {
@@ -17934,7 +17925,7 @@ void ai_TransportOrderDue(AIOBJ *cart)
     while (ev != 0) {
         if (ev->u.id == cart->objId) {
             ev->end = ai_Time;
-            cm_SendExSetHE(-1, ev);
+            cm_SendExSetHEI(-1, ev);
             return;
         }
         ev = (AIJOB *)he_NextEvent();
@@ -20004,7 +19995,7 @@ int ai_EspionageAmountCB(AICHARREC *ch)
             txt_Format(text, 0x42c1, ch->id);
             if (sv_MessageBox(text, 0x101) != 0) {
                 ev->end = ai_Time;
-                ev->exSlot = cm_SendExSetHE(-1, ev);
+                ev->exSlot = cm_SendExSetHEI(-1, ev);
             }
             return 0;
         }
@@ -20818,7 +20809,7 @@ void ai_NoticeBoardWindow(void)
                 ev = (AIJOB *)he_FindEvent(1, 1, evIds[i]);
                 if (ev != 0 && sv_CheckMoney(ai_Chars[ai_PlayerId], 2) != 0) {
                     ev->end = ai_Time;
-                    slot = cm_SendExSetHE(-1, ev);
+                    slot = cm_SendExSetHEI(-1, ev);
                     while (slot != -1 && cm_GetSlotState(slot) == 0)
                         sv_RunFrame(0, 0x677c7);
                     if (cm_GetSlotState(slot) == 1)
@@ -22028,7 +22019,7 @@ void ai_FireFightingWindow(AIBLD *bld)
                     if (ev->bldId == bld->id)
                         break;
                 if (ev != 0) {
-                    ev->exSlot = cm_SendExSetHE(-1, ev);
+                    ev->exSlot = cm_SendExSetHEI(-1, ev);
                     sv_MessageBox(txt_Ptrs[0x17f7], 4);
                 }
                 sv_PopRequest = 1;
@@ -28932,7 +28923,7 @@ int ai_CourtshipWindow(AICHARREC *ch, LCORDMSG *m)
                         gm_AddTime(&ev->end, 0, 1, 0);
                     }
                     ev->pairDrawn = 0;
-                    ev->exSlot = cm_SendExSetHE(0, ev);
+                    ev->exSlot = cm_SendExSetHEI(0, ev);
                     cm_SendMoveGoods(-1, ch->netId, ai_OwnPlayer, price);
                     sv_MessageBox(answer, 0);
                     sv_PopRequest = 1;
@@ -28940,7 +28931,7 @@ int ai_CourtshipWindow(AICHARREC *ch, LCORDMSG *m)
             } else if (i == 3) {
                 txt_Format(closing, 0x1cfa, ((AICHARREC *)gm_FindChar(partner))->id);
                 ev->pairDrawn = 0;
-                ev->exSlot = cm_SendExSetHE(0, ev);
+                ev->exSlot = cm_SendExSetHEI(0, ev);
                 sv_MessageBox(closing, 0);
                 sv_PopRequest = 1;
             }
@@ -29261,21 +29252,7 @@ float ord_GetStatistics(int *o);
    two shares without the first / second object in percent; page 3 holds the charts ai_DrawStatisticsCharts draws
    by ai_StatsChartFlags, page 4 the legend: five check boxes with their texts 0x1f25 .. and a colour bar of the
    chart. A click on the legend rebuilds the flags from the check boxes and redraws the charts; the right button
-   closes the panel
-   @deep Reconstructed in full against the original: the colour table, the flag default,
-   ai_RunAllows/ai_CampaignStep, the form, the five texts (0x1f0e with GMPLAYERSLOT.townName and ai_Time,
-   0x1f14 the rating, 0x1f15/0x1f1b the rank texts min(4,..), 0x1f21/0x1f22 the shares max(..,0)*100; the
-   ord_GetStatistics result is discarded as in the original), the charts page, the legend loop (WinOpenPic,
-   txt_Format, CreateWinText, interactive/checkable, SetObjValue of the flag bit computed before the calls,
-   ten colour lines with the byte colours pushed raw: d2_PlotLine/d2_Plot/d2_PutPixelRGB now take unsigned
-   char r,g,b as dd_RGB does), and the redraw loop. Every call, argument and constant compared. Left:
-   allocation in the legend loop: the original keeps the line y (9 + 30*i) and the colour pointer in frame
-   slots [esp+0x20]/[esp+0x24] (frame 0x158) and the counter in ebx, ours keeps the colour pointer in ebx,
-   y at [esp+0x10] (frame 0x154); hunks 0x5c8102 (25), 0x5c813b (11), 0x5c8168 (7), 0x5c817f (16) are those
-   moves and the recomputed i*30 (+5 / +4). (references: M8 at +0x213: ours refers to d2_LastWindow
-   (0x6ed938), the original's field to 0x6f2f88 (ai_StatsChartFlags), explained: the M8 at the legend
-   loop's first load is two loads that cross: ours loads d2_LastWindow (WinOpenPic's argument) before
-   ai_StatsChartFlags (the flag bit), the original the other way; both read both) */
+   closes the panel */
 void ai_CityStatsPanel(void)
 {
     unsigned char colors[15];
@@ -30618,7 +30595,7 @@ int ai_CounterEspionage(AICHARREC *me, LCORDMSG *m)
                 ret |= 0x10;
                 ev->end = ai_Time;
                 ev->stopped18 = ai_Time;
-                cm_SendExSetHE(ev->stage, ev);
+                cm_SendExSetHEI(ev->stage, ev);
                 msg.espionage.target = ((AICHARREC *)ai_Chars)[ev->chr].netId;
                 cm_SendLongMessage((char *)&msg);
             }
@@ -30651,7 +30628,7 @@ int ai_CounterEspionage(AICHARREC *me, LCORDMSG *m)
                         if (ev->id4 == me->netId) {
                             caught |= 1;
                             ev->end = ai_Time;
-                            cm_SendExSetHE(0, ev);
+                            cm_SendExSetHEI(0, ev);
                             msg.espionage.target = ((AICHARREC *)ai_Chars)[ev->chr].netId;
                             cm_SendLongMessage((char *)&msg);
                             txt_Format(p, 0x1db9, ev->chr);
@@ -33697,7 +33674,7 @@ int ai_UseGoodTributeClaim(AICHARREC *ch)
         if ((int)ch->netId == ev->idbc) {
             ai_ShowTributeClaimNews((int)ch, (int)ai_Chars[ev->chr]);
             ev->end = ai_Time;
-            cm_SendExSetHE(-1, (char *)ev);
+            cm_SendExSetHEI(-1, (char *)ev);
         }
         ev = (AIJOB *)he_NextEvent();
     }
