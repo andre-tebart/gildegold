@@ -258,7 +258,6 @@ extern int sv_ViewRectTop;
 extern char main_MoviePath[0x104];   /* 0x624798, the movie directory */
 extern int main_Movie;               /* 0x6f241c, the playing movie's id */
 extern int di_Disabled;
-extern GAPDATA full_data_6f2574[];
 extern unsigned char snd_AmbientOn;     /* 0x6f0b60, 1: ambient sounds on */
 extern unsigned char ai_GfxResolution;  /* 0x6f2f94 (menu.c: OPTIONBYTES): @original main_OpenScreen reads it as a byte object (0x531d43 mov al, byte ptr [0x6f2f94]); through the 4-byte union VC6 loads the dword and masks it (and eax, 0xff: 264 instead of 226 differing instructions) */
 extern char ai_OptionsFile[288];
@@ -279,7 +278,6 @@ extern GAPDATA full_data_624cf8[];
 extern int main_TextureDivider;
 extern GAPDATA full_data_6f2434[];
 extern GAPDATA full_data_6f2470[];
-extern GAPDATA full_data_6f2574[];
 extern int main_Inactive;       /* 0x6f2584, 1 while the app is deactivated */
 extern char main_AppDir[];
 extern INIT_PLAYER init_PlayerProfile;
@@ -5080,7 +5078,6 @@ void main_PlayIntroMovies(void)
     mov_Play(main_Movie);
     sv_PumpMessages();
 }
-#define main_MoviesOpen (*(int *)&full_data_6f2574)  /* 0x6f2574, nonzero while the movie player is set up (mov_Init); the outro opens and closes it itself otherwise */
 /* 0x53cb40, the outro: fades the music out and waits for the black fade, switches the ambient sounds off, plays outro.mpg (input released, own window), restores the focus, the input and the music volume (msxVolume / 127) and the ambient flag */
 void main_PlayOutro(void)
 {
@@ -5195,7 +5192,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE prev, char *cmd, int show)
     GetPrivateProfileStringA("General", "MoviePath", "\\project\\movie\\", (char *)(unsigned)&main_MoviePath, 0x104, (char *)(unsigned)&ai_OptionsFile);
     GetPrivateProfileStringA("General", "Language", "german", txt_Language, 0x40, (char *)(unsigned)&ai_OptionsFile);
     ls_LanguageOf(txt_Language);
-    U_I((unsigned)&full_data_6f2574) = GetPrivateProfileIntA("General", "show_intro", 0, (char *)(unsigned)&ai_OptionsFile);
+    main_MoviesOpen = GetPrivateProfileIntA("General", "show_intro", 0, (char *)(unsigned)&ai_OptionsFile);
     res = GetPrivateProfileIntA("Gfx", "cur_res", 0, (char *)(unsigned)&ai_OptionsFile);
     ai_GfxResolution = (unsigned char)res;
     ai_ScreenModeW = ai_ScreenModes[(unsigned char)res].w;
@@ -5262,7 +5259,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE prev, char *cmd, int show)
         main_Exit();
         return 0;
     }
-    if (U_I((unsigned)&full_data_6f2574) != 0)
+    if (main_MoviesOpen != 0)
         main_PlayIntroMovies();
     i = main_OpenScreen(mode);
     if (i == 0) {
@@ -5830,7 +5827,7 @@ int main_TextReopen = 0;  /* 0x6f2460 */
 int main_HmtMode = 0;  /* 0x6f2468 */
 int main_HmtBuild = 0;  /* 0x6f246c */
 GAPDATA full_data_6f2470[260] = { 0 };  /* 0x6f2470 */
-GAPDATA full_data_6f2574[4] = { 0 };  /* 0x6f2574 */
+int main_MoviesOpen = 0;  /* 0x6f2574, nonzero while the movie player is set up (mov_Init); the outro opens and closes it itself otherwise */
 int main_WeatherSound = 0;  /* 0x6f2580, the "weather" key of [Sound] (WinMain): the rain / weather sounds play */
 int main_Inactive = 0;  /* 0x6f2584, 1 while the app is deactivated (WM_ACTIVATEAPP) */
 HWND main_Window = 0;  /* 0x6f2588, the game window ("Die Gilde") */
