@@ -952,7 +952,7 @@ void cm_DuelOutcome(G28REC *m);  /* 0x4debe0 */
 int cm_ResetCutInfos();  /* 0x4e36a0 */
 char d3_SetFogSet(unsigned int a, unsigned int b, float t);  /* 0x44a170 */
 int cm_StartScript();  /* 0x4e2bf0 */
-int cm_PlayVoice();  /* 0x4e32b0 */
+int cm_PlayVoice(int id, int bank, char *text, int var);  /* 0x4e32b0, plays the voice sample of speaker id in bank (text, var pick the sample); 0 in the replay mode */
 int sb_IsPlaying();  /* 0x426f20 */
 int cm_StopScript();  /* 0x4e2d90 */
 void cm_RunDuel(G28REC *m);  /* 0x4ded10 */
@@ -979,7 +979,6 @@ void sb_Stop();  /* 0x427290 */
 int cm_EndWedding(int *s);  /* 0x4e06d0 */
 int cm_RunSceneTicksOrClick(int ticks, int (*cb)(int), int arg);  /* 0x4e3490 */
 int cm_WaitEventOrClick();  /* 0x4e2cc0 */
-int cm_PlayVoice();  /* 0x4e32b0 */
 int sb_IsPlaying();  /* 0x426f20 */
 int cm_RunWedding(G28REC *m);  /* 0x4e0770 */
 

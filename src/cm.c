@@ -21,8 +21,8 @@
    (gv_PassSentenceK). d2_SetObjValue's 2- and 4-argument calls use this unit's d2_SetObjValue2 /
    d2_SetObjValue4 cast macros.
    Open: head: cm.h carries the parameter lists of cm_StartEventArg, cm_QueueVoice, cm_LoadVoiceBank,
-   cm_RunSceneTicks, cm_RunSceneTicksOrClick, cm_WaitEvent, cm_DialogTimer, cm_PartyById, cm_UnloadVoiceBank and
-   cm_MessageBox; cm_PlayVoice, cm_StopScript, cm_DeleteChar, cm_WaitEventOrClick, cm_CutInfoById,
+   cm_RunSceneTicks, cm_RunSceneTicksOrClick, cm_WaitEvent, cm_DialogTimer, cm_PartyById, cm_UnloadVoiceBank,
+   cm_MessageBox and cm_PlayVoice; cm_StopScript, cm_DeleteChar, cm_WaitEventOrClick, cm_CutInfoById,
    cm_ClearParty, cm_StartScript, cm_ResetCutInfos and cm_ShowPartyTexts still lack them (their calls stay M7).
    cm_ClearParty's real prototype and declaration changes in cm.h / cm_types.h flip the register tie-breaks of
    ai_TutorialInitChapter2 (byte) / ai_TutorialInitChapter3 (shape) in sv_t and of ord_CountGridObjects. Types only
