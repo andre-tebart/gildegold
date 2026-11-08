@@ -901,7 +901,7 @@ void d2_SetViewEnabled(int view, int on);  /* 0x475590 */
 void d2_CloseView(int view);  /* 0x4758f0 */
 int ai_AmountRowStatus();  /* 0x5be1d0 */
 int ai_AmountRow();  /* 0x5be3b0 */
-int cm_QueueVoice();  /* 0x4e32d0 */
+int cm_QueueVoice(int id, int bank, char *text, int var, unsigned int delay);  /* 0x4e32d0 */
 int cm_RunSceneTicks();  /* 0x4e3570 */
 int amt_SendOfficeMessage(unsigned char a, char *b, char *c, int d, unsigned char e);  /* 0x4e6680 */
 unsigned * gm_CharNameRecord();  /* 0x4fb390 */
@@ -994,7 +994,6 @@ void d2_SetObjMax();  /* 0x475f40 */
 void d2_FocusInput();  /* 0x478320 */
 int d2_GetObjValue();  /* 0x475980 */
 int cm_StartScript();  /* 0x4e2bf0 */
-int cm_QueueVoice();  /* 0x4e32d0 */
 void cm_RunBirth(G28REC *m);  /* 0x4e0f70 */
 int cm_DeathSceneCheck(G28REC *m);  /* 0x4e1220 */
 float gm_CharacterHealth();  /* 0x4fc820 */
