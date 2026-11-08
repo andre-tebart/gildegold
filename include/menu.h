@@ -392,5 +392,12 @@ int ai_SolveCannonAim(float *from, float *to, float *range, float *outElev, floa
 int ai_SphereVolume(float radius, float size, float *out);  /* 0x5dc1a0 */
 int ai_StepShot(SHOTREC *shot);  /* 0x5dc4a0 */
 int ai_StepShotSlow(SHOTREC *shot);  /* 0x5dc9d0 */
+void ai_OptionsMenu(void);  /* 0x5d7770, the options menu */
+void ai_PauseGame(void);  /* 0x5d7e90, the pause game menu */
+void ai_MessageFilterScreen(void);  /* 0x5d7f10, the message filter screen */
+void ai_UpdateWind(void);  /* 0x5dbed0, the wind option's update */
+struct VFSFILE; int ai_SaveWind(struct VFSFILE *f);  /* 0x5dbfc0, writes the wind option */
+void ai_SaveNetworkGame(char *saveName, char *name);  /* 0x5d7530, the network game's save screen */
+int ai_ListFiles(char *dirPath, const char *ext, char *records);  /* 0x5d33b0, the file selector's list */
 
 #endif

@@ -84,7 +84,6 @@ extern int d2_HitUnderPointer;
 
 
 extern int main_Inactive;
-extern int ai_OptionSpeed;
 extern int ai_TimeCopy[4];
 
 
