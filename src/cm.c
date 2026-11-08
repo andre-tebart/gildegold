@@ -15,8 +15,8 @@
    cm_RunBankruptcy, cm_RunAuction, their checks and member callbacks) read the party record G28REC; the auction's
    member callbacks (cm_AuctionAskPlayer / cm_AuctionAskAI) read its state CMAUCTION. The spy report objects (AIOBJ
    kind 0xca) are read as CMSPYREPORT (defined above cm_ExSpyReport: the report's words 0x1c .. 0x37, HESPYREPORT).
-   Open: not included yet (dcp headers conflicts cm HEADER): anm.h gfx.h hmt.h hst.h rt.h poker.h
-   menu.h; held by calls whose argument count differs from the definition (read the original's pushes):
+   Open: not included yet (dcp headers conflicts cm HEADER): anm.h hmt.h hst.h rt.h menu.h;
+   held by calls whose argument count differs from the definition (read the original's pushes):
    gv_PassSentence takes five arguments here (gv_PassSentenceK). ai_DecideTorture / ai_DecideTortureInstrument
    and d2_SetObjValue's 2- and 4-argument calls use this unit's cast macros (ai_DecideTortureP /
    ai_DecideTortureInstrumentP, d2_SetObjValue2 / d2_SetObjValue4).

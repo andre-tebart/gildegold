@@ -36,7 +36,6 @@
    Open: d3_Time is volatile in the original (ai_TutorialTick reloads it after every read; the step callbacks
    and the marker update load it in the original's order only through the unit's view d3_Time); its
    owner and the other units declare it plain int.
-   Open: head: gfx.h not included (d2_Convert16ToRgb's call stays M7; dcp headers conflicts sv_t gfx.h).
    Open: head: cm.h's declaration set still moves the chapter builders by the declaration set alone (a register
    tie-break, recorded in ledger/tiebreak.tsv: ai_TutorialInitChapter2 / ai_TutorialInitChapter3 shape); cm.h's
    declaration set is not the original's yet.

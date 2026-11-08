@@ -32,8 +32,7 @@
    Open: gv_FindCrime and gv_EvidenceSlot still read ai_Crimes (cm.c's char[], the 0x2d-byte CRIME records) and ai_Evidence (cm.c, the int pairs) through raw offsets.
    Open: data: gv_RankWorth (0x5ee0f8) is declared with 7 entries, gv_CheckRankUp reads 11 (the last 4 lie under
    hmt_Unk5ee114 ..).
-   Open: some functions index ai_PlayerSlots with the stride 0x5e8 where gv_ReserveGrave shows 0x2f4 (gv_PlayerRecs);
-   gv_FindEntry's callback is an unprototyped int (*)() (its callbacks take differing pointer types).
+   Open: some functions index ai_PlayerSlots with the stride 0x5e8 where gv_ReserveGrave shows 0x2f4 (gv_PlayerRecs).
    Open: head: cm.h redeclares gv functions (gv_GrowGraveyard as struct GVYARD *); cm.c cannot include gv.h yet (two
    calls conflict: gv_CrimeText, gv_PassSentence).
    Open: GVEFFPART duplicates SHOTREC and UNKHITS-style copies remain (am.h G9KIND / G9CANNON view gv's records); gv.h

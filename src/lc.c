@@ -97,8 +97,7 @@
    (the callee was not visible to it there: a TU boundary between 0x5ba620 and 0x5cf8a0?); likewise the use
    callbacks ai_UseGoodLowerOfficialRelations / ai_UseGoodCharmOtherSex load their pick ids before our
    ai_FindUsableGoodIndex (0x5ba660) call where the original calls it first.
-   Open: head: ai_MapPick's cb (0x5b2180) is still declared void (*)() (its two indirect calls stay M7); held by own
-   declarations that differ from the owner's: ai_Time, d3sm_GetVertex, d2_CreateWinText, AIBLD, AIBTYPE, cm_SendExSetHE,
+   Open: head: held by own declarations that differ from the owner's: ai_Time, d3sm_GetVertex, d2_CreateWinText, AIBLD, AIBTYPE, cm_SendExSetHE,
    d3sm_Pick; calls whose argument count differs from the definition (read the original's pushes): vfs_GetPath,
    d2_SetViewEnabled, d2_GetWinObj, d2_CreateWinText, d2_GetObjValue, d3_LoadGroup, d2_GetViewWin, sv_MessageBox,
    d2_CreateScrollButtons, d2_PlotLine, d2_PlaceMainWindow, d3t_PlayAnim, d3t_SetTreeColor. gv.h's cm_SendSetField
