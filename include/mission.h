@@ -44,4 +44,7 @@ int ai_IsMissionFulfilled(G13MIS *m);  /* 0x4b4f00, 1 if mission m is fulfilled 
 extern int sv_FrameMask;  /* 0x760638 */
 
 int ai_SaveMissions(void *f);  /* 0x4b62e0, saves the mission kind and the running missions to f */
+int ai_LoadMissions(void *f);  /* 0x4b63b0, loads the mission kind and the running missions from f */
+int ai_ChooseMission(void);  /* 0x4b4040, the mission choice */
+void ai_MissionCompleteSequence(int id);  /* 0x4b62a0, the completion sequence of mission id */
 #endif
