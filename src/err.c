@@ -13,7 +13,7 @@
 /* symbol map: header, then nsyms ERRSYM records (each 0x10 + len bytes) at data + symoff, and
    nstrings ERRSTR records (each 4 + len bytes) at data */
 typedef struct ERRMAP {
-    int unk0;
+    int cryptKey;
     unsigned int nstrings;          /* 0x04 */
     unsigned int nsyms;             /* 0x08 */
     int symoff;                     /* 0x0c */
@@ -62,7 +62,7 @@ LONG WINAPI err_ExceptionFilter(EXCEPTION_POINTERS *ep);
 ERRSTR *err_GetString(ERRMAP *map, unsigned int i);
 char err_WriteSymbol(ERRWALK *w);
 char err_IsCodeProtect(unsigned char prot);
-char err_CheckCall(char *p, int n, int base, int *target);
+unsigned char err_CheckCall(char *p, int n, int base, int *target);
 
 /* 0x4214a0, writes a line to the channel's log file, the debugger and the console as the ERR_ flags say */
 void err_Write(char *text, unsigned int flags, int channel)
@@ -100,7 +100,24 @@ write:
         WriteConsole(err_Console, "\n", 1, &n, NULL);
     }
 }
-/* 0x4215c0, unhandled exception filter: writes <exe>.dbg-symbolized crash info to _crashdump.log */
+/* 0x4215c0, unhandled exception filter: writes <exe>.dbg-symbolized crash info to _crashdump.log
+   @deep read the whole function against the original: 532 vs 539 instructions, 1653 vs 1652 bytes, the
+   same call set and store set. Fixed the real meaning difference: err_CheckCall returns unsigned char and
+   the stack walk tests it in the positive form (w.addr == ctx->Eip || err_CheckCall(...) > 0), which took
+   the diff from 419 to 313 instructions. What is left is allocation and schedule: the frame is 0x288
+   against the original 0x280 (the compiler local layout: handled at +0x12 vs +0x16, text and sep 8 lower
+   in the original), the registers rotate (ebx/esi/ebp/edi, the work register ebp where the original has
+   edi, a zero register in edi where the original pushes immediate 0), the CRLF init copies the NUL before
+   the word where the original copies the word first, the ERR_EXC WriteFile(log, crlf, 2, &n, NULL) tail is
+   merged by the compiler at another place (7 fewer instructions), and err_CheckCall folds to jbe where the
+   original materializes it (test/seta/and/test/je). Tried: <= 0, > 0 and the || form for the stack-walk
+   test (kept the || form: 419 -> 313), a separate loop variable, the flat and the parenthesized expression
+   forms; none moves the frame or the register assignment. (references: M9 at +0x190: our literal "\x0d\n"
+   where the original's field refers to "" at 0x5f70ae, explained: the M9 at +0x190 is the crlf[3]
+   initialization: ours copies the NUL byte first (from our CRLF literal plus 2) and the word later; the
+   original copies the word from 0x5f70b0 first and its NUL from 0x5f70b2 later. Both load the same three
+   literal bytes 0d 0a 00; the checker pairs the two shifted copies and resolves the original 0x5f70b0 to
+   the pooled empty string at 0x5f70ae) */
 
 LONG WINAPI err_ExceptionFilter(EXCEPTION_POINTERS *ep)
 {
@@ -139,7 +156,7 @@ LONG WINAPI err_ExceptionFilter(EXCEPTION_POINTERS *ep)
                     ReadFile(mapfile, map, size, &got, NULL);
                     if (size == got) {
                         log = CreateFile("_crashdump.log", GENERIC_WRITE, 0, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
-                        key = map->unk0;
+                        key = map->cryptKey;
                         p = (unsigned int *)(map + 1);
                         for (size = 0; size < (got >> 2) - 4; size++) {
                             key = (key << 15) | (key >> 17);
@@ -215,11 +232,12 @@ nocode:
                                         for (len = 7; len > 0; len--)
                                             if (ReadProcessMemory(proc, (void *)(w.addr - len), win + 7 - len, len, NULL))
                                                 break;
-                                        if (err_CheckCall(win + 7, len, w.addr, (int *)&w.prev) <= 0)
-                                            goto next;
                                     }
-                                    if (err_WriteSymbol(&w))
-                                        remaining--;
+                                    if (w.addr == ctx->Eip || err_CheckCall(win + 7, len, w.addr, (int *)&w.prev) > 0) {
+                                        if (err_WriteSymbol(&w))
+                                            remaining--;
+                                    } else
+                                        goto next;
                                 }
 next:
                                 stack++;
@@ -333,7 +351,7 @@ char err_IsCodeProtect(unsigned char prot)
    32-bit relative target plus base stored to *target; 2 = an indirect FF /2 call (register or memory,
    including the FF 15 disp32 IAT form); 0 = no call */
 
-char err_CheckCall(char *p, int n, int base, int *target)
+unsigned char err_CheckCall(char *p, int n, int base, int *target)
 {
     int *rel;
 
