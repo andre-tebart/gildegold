@@ -1157,31 +1157,33 @@ int ls_WriteEventTables(int f)
 
 int ls_WriteParties(int f)
 {
-    G28REC *p;
-    int n;
+  G28REC *p;
+  int n;
+  int i;
 
-    n = 0;
-    for (p = cm_Parties; (int)p < (int)(cm_Parties + 96); p++) {
-        if (p->id != -1)
-            n++;
+  n = 0;
+  for (i = 0; i < 96; i++) {
+    if (cm_Parties[i].id != -1)
+      n++;
+  }
+  LS_W(&n, 4)
+  for (i = 0; i < 96; i++) {
+    p = &cm_Parties[i];
+    if (p->id != -1) {
+      LS_W(&p->id, 4)
+      LS_W(&p->kind, 1)
+      LS_W(&p->thing, 4)
+      LS_W(&p->flags, 1)
+      LS_W(&p->used, 1)
+      if (vfs_fwrite(p->members, 4, 0x10, f) <= 0)
+        return 0;
+      LS_W(&p->offerKind, 1)
+      LS_W(&p->eventId, 0x98)
+      LS_W(&p->time, 0xe)
+      LS_W(&p->host, 4)
     }
-    LS_W(&n, 4)
-    for (p = cm_Parties; (int)p < (int)(cm_Parties + 96); p++) {
-        if (p->id != -1) {
-            LS_W(&p->id, 4)
-            LS_W(&p->kind, 1)
-            LS_W(&p->thing, 4)
-            LS_W(&p->flags, 1)
-            LS_W(&p->used, 1)
-            if (vfs_fwrite(p->members, 4, 0x10, f) <= 0)
-                return 0;
-            LS_W(&p->offerKind, 1)
-            LS_W(&p->eventId, 0x98)
-            LS_W(&p->time, 0xe)
-            LS_W(&p->host, 4)
-        }
-    }
-    return 1;
+  }
+  return 1;
 }
 /* 0x51c450, saves the history (hst.c) part of a save game: the texts-on byte hst_TextsOn, the offsets of the
    current text (hst_TextCurrent - hst_TextFirst) and of the next key-list entry (hst_KeyNext - hst_KeyFirst),
