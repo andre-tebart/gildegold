@@ -1375,7 +1375,7 @@ __inline char dd_CpuHasMMX(void)
     }
 }
 
-/* 0x41d2e0, sets up the display: mode DD_GDI..DD_FULLMEM, xres x yres at bpp bits @deep B3: 84 code hunks left, all from the constant-8 / constant-0 scratch web (instr 328: original cmp [ebp+0x10],0x9 / jl vs ours mov eax,8 / cmp / jle - the `>= 9` spelling chosen after the recorded `> 8` experiment matches 327 instrs byte for byte but swaps eax/ecx from `if (biHeight > 0)` on); the fix is IR order / temp count, not a meaning error */
+/* 0x41d2e0, sets up the display: mode DD_GDI..DD_FULLMEM, xres x yres at bpp bits */
 char dd_SetMode(int xres, int yres, int bpp, int mode, HWND wnd, int unk6, char triple)
 {
     DDSURFACEDESC2 ddsd;

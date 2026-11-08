@@ -20,8 +20,7 @@
 #include "vfs.h"
 
 /* 0x450860, loads a mesh from its fast chunk file (the cache the BGF loader looks in first); returns 0 when
-   there is none
-   @deep behaviour: the 220 code hunks are register allocation only (the original keeps the file handle in ebp and compares against the zero register edi - cmp ebp,edi / cmp eax,edi - where ours uses ebx as zero and test against 0; same instructions otherwise), readable not: Q2 d3_OpenFastChunk (callee in d3_io_b.c, opens the chunk file, no naming evidence beyond that) and the unk1e4 parameter (the field is D3BGF.nsets now, the parameter name stays), Q4 the 9 poly accesses (a typed D3BGFPOLY *p loop was tried and reverted: 102 -> 296 differing asm lines, the original computes m->polys + byte offset per write; the +0x2c block has no named field and Q2 forbids an unk name) */
+   there is none */
 D3BGF *d3_FindBGF(char *path, char *name, char *texnames, int unk1e4, int ntex)
 {
     int a = 0;
@@ -309,8 +308,7 @@ int d3_FLChunkSize(D3BGF *m, D3BGFDESC *d)
 }
 
 /* 0x451250, loads the BGF file path, cleans it up as d3iot_LoadBGF does and appends the converted mesh to
-   the file as a fast-load chunk (0x2d ... 0x2f)
-   @deep behaviour: the 377 code hunks are register allocation and stack slots only (seen in the hunks: ebx where the original uses edi as the zero register, [ebp-0x198] slot reuse), no meaning difference; Q2 the unk1e4 parameter (the field is D3BGF.nsets now, the parameter name stays); Q4 7 raw access casts in the writer loop */
+   the file as a fast-load chunk (0x2d ... 0x2f) */
 void d3_AddFLChunk(char *path, char weld)
 {
     char buf[256];

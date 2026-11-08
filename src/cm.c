@@ -727,15 +727,7 @@ void cm_BeginFieldBlock(char *o, int id)
     if (gm_FindById(&a, &b, &id, id) != 0)
         cm_FieldObject = o;
 }
-/* 0x4c3c00, adds n values of size bytes at field as differences to the object's values
-   @deep read in full against the original: fixed the signature (size, n unsigned char, field unsigned
-   short: cmp cl / and 0xff / and 0xffff; all declarations updated, no grade fell), the bound (len >= 0x77,
-   jb), the field offset read once (cm_FieldObject + field before the switch: the dec/dec/sub-2 switch on
-   size). 101 vs 100 instructions, the head now equal but for the esi/edi push order. Tried: 3 typed
-   pointers (counter i, i = n down, n itself), mixed pointer/index, char pointers with casts: all keep an
-   extra register (ebp) and worse. Left: the copy loops' induction form: ours (indexed) '- sub ecx,edx; sub
-   eax,edx; mov ebx,[ecx+edx]; mov [eax+edx],esi' where the original walks three pointers '+ mov ebx,[ecx];
-   add ecx,4; mov [eax],esi; add eax,4' (cases 1, 2, 4), and edi/esi swapped */
+/* 0x4c3c00, adds n values of size bytes at field as differences to the object's values */
 
 int cm_AddFieldDelta(unsigned char size, unsigned char n, unsigned short field, void *v)
 {
@@ -10274,15 +10266,7 @@ void cm_FightPortraits(int *ids, int x, int y)
    text): the line of the winner (texts 0x1138 .. 0x113c, 0x1125 + role), the loot list 0x4d4090,
    the portrait row 0x4d4340, and the buttons: the player picks the share 10 / 50 / 90 (chance share <= random 10 .. 99)
    or the AI side picks at random; the loot goes through 0x4d3ea0, the result is 0x6f0cfc (-1: refused), 0x6f0cf8 = 1 when
-   the loot was taken. Returns 1 when the fight goes on. Rough draft.
-   @deep Read against the original in full: fixed the loot total (summed into total and printed by 0x1141,
-   not v), the per-block rc init (int rc[0x2e] = {0} in the loot block: mov [esp+0x24],0 + rep stosd 0x2d),
-   the share test (rand+10 <= st takes the loot, else refuse), b4 = 0 on the AI path, tb/tc 0x400 (frame
-   now 0x8cc both). No ref/literal/call differences left, frame equal, ins 607 vs 611. Left: allocation -
-   the original keeps win in a slot ([esp+0x1c], mov ebx,[esp+0x1c] before d2_SetForm(win,1) at 0x4d4797
-   and reloads at each d2_SetForm/d2_GetWinObj), ca in ebp, a reloaded from [esp+0x8e0]; ours holds win in
-   ebx and a in ebp; the three PrintText branches share one 'mov edi,eax' join (0x4d4795) where ours keeps
-   a copy per branch; b1..b3 in ebx/ebp/slot vs our slots. */
+   the loot was taken. Returns 1 when the fight goes on. Rough draft. */
 
 int cm_FightStartDialog(char *a)
 {
@@ -10558,23 +10542,7 @@ int cm_FightStartDialog(char *a)
    sides (0x4d4340), then by the kind of the fight: the loot of the carts (bit 1: money 0x4d4090, goods moved to the
    winner), the destruction of a building (bit 4: the 0x5db cells with the bars, money by 0x4c47e0), or the capture
    of the defeated character (bit 2: texts 0x119f .. 0x11a7 pick one of four outcomes: 1 the building is taken,
-   2 a share of money and goods is taken, 3 the winner loses face, 0 the guards of the town are called). Rough draft.
-   @deep Read against the original in full (0x4d4d70..0x4d60a3). Fixed: frame 0x1124 (ba 0x800, bb, tc
-   0x400, tmp 0x100: alloca_probe now on both sides), TAKE/FACE write tc (the 0x134 buffer), path 1's
-   guards text in ba and the AI branch's in bb, the AI branch tests gm_TitleJob once and picks k = 0 (text
-   0x11a4 only) or rand(3)+1, gm_PlayerFactor gets ai_OwnPlayer, 1.0f is ai_FloatOne, obj = 0 first. The
-   original shares code between branches (path 1 n==3 jumps into the AI branch's FACE at 0x4d5f72, the AI
-   TAKE joins path 1's TAKE tail at 0x4d590d, TAKE and the &4 branch join the &1 pump at 0x4d5402): written
-   as goto face / take_done / pump. Left: the shared pump at 0x4d5402 is unrotated in the original (one
-   sv_RunFrame, back edges jmp 0x4d5407), ours VC6 rotates it whatever the form (while, for(;;), goto loop
-   tried: 6 vs 5 sv_RunFrame); ours keeps total in esi like v so the &4 tail (+0x4d += total) merges with
-   TAKE_END (gm_BuildQuery 7 vs 8) where the original keeps total in a slot; side lives in a slot and edi
-   on our side, the original only edi then one store; the rest regs/slots. ins 1510 vs 1508. (references:
-   M8 at +0xfd5: ours refers to cm_FightAttacker (0x6f0cec), the original's field to 0x6f0ce8
-   (cm_FightDefender), explained: M8 +0xfd5 is the alignment pairing two loads of one cm_SendMoveGoods call
-   whose registers are swapped: both sides push (cm_FightAttacker+4, cm_FightDefender+4, ai_OwnPlayer, v) -
-   ours loads Defender into eax and Attacker into edx, the original Defender into edx and Attacker into
-   ecx) */
+   2 a share of money and goods is taken, 3 the winner loses face, 0 the guards of the town are called). Rough draft. */
 void cm_FightEndDialog(char *a)
 {
     char ba[0x800];
@@ -10826,13 +10794,7 @@ void cm_FightEndDialog(char *a)
    line each, by the kind of the fight (bit 1: 0x11e0 / 0x11e1, bit 2: 0x11e3 / 0x11e4 with the role of the target
    building 0x4d4050, bit 4: 0x11e6 / 0x11e7), the suffix of the kind (0x143e948 / 0x143e954 / 0x143e960) appended and
    handed to 0x4e48b0. 0 when a leader is missing or the leaders are the same, a cart has no goods (0x50aa00) or the
-   target is gone. Rough draft.
-   @deep Read against the original in full: each branch ends with its own cm_SendPartyNote(cb, ...) call (the
-   original has 5 calls: &1 and &4 share the second call's tail at 0x4d6373, &2 keeps its own with its own
-   return 1), now on our side too (calls equal, frame equal, ins 283 vs 282). Left: allocation - the
-   original keeps i in a slot ([esp+0x10], 0x4d60fc / 0x4d6142..0x4d614d) and cb in esi + slot [esp+0x18],
-   ca in ebp; ours i in edi, cb only in the slot (mov eax,[esp+0x10] before each mov dx,[eax]), the target
-   building in esi vs edi; role kept in ebp on our side vs a slot ([esp+0x30]). */
+   target is gone. Rough draft. */
 
 int cm_CheckFight(char *a)
 {

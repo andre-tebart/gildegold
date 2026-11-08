@@ -604,8 +604,7 @@ int ai_TokenMoney(int mode, G12ARG *args, int k, char *fmt, char *out)
     return 0;
 }
 /* 0x4af2c0, text token: n percent of the count of the first goods of type 9 in the stock (object 0x115) of
-   building 0x50b010(1), as a money text
-   @deep behaviour: 31 code hunks; the reading is right (building 1 = class 1 via 0x50b010(1), the object 0x115 of its stock, the first goods of type 9, its count in unk0e, then n1 percent of it as money) and the money tail is the same unsolved gm_ConvertMoney call shape as ai_TokenMoney's @deep reason. Q2: gm_FirstBuilding (0x50b010, f3gm.c) has a name with evidence ('the first building of the class n', class 1 = the type 0xf) but its canonical definition returns unsigned char * while all its callers (am.c 5, cm.c, hst.c, this unit) use it as AIBLD *: the rename needs that return type unified first (type debt noted in f3gm.c's layout section), so it is a blocked shared-header/type decision; AIOBJ.unk0e (the count field) and AIOBJ.unk14 (the same list field gm_Query walks) have no evidence yet. Q1 name has evidence (callback 0x601b10[9] = 0x4af2c0, name 0x601730[9] STADTKASSE) */
+   building 0x50b010(1), as a money text */
 
 int ai_TokenCityTreasury(int mode, G12ARG *args, int k, char *fmt, char *out)
 {
@@ -639,7 +638,7 @@ int ai_TokenCityTreasury(int mode, G12ARG *args, int k, char *fmt, char *out)
 /* 0x4af3f0, the same as 0x4aec00 for a character whose byte 0x164 is 13..18 */
 #define G12_AGED(i) (G12_B(i, 0x164) > 12 && G12_B(i, 0x164) < 19)
 
-/* 0x4af3f0 @deep behaviour: far draft, 105 code hunks, 20 slot hunks (the RND_KIRCHENBERUF token, callback 0x601b10[10] = 0x4af3f0, name 0x601730[10]): the reading matches (a random character with a church profession) but the frame/slot layout, the loops and the folded return tails remain as in ai_TokenRandomGuildMaster's @deep reason */
+/* 0x4af3f0 */
 int ai_TokenRandomChurchProfession(int mode, G12ARG *args, int k, char *fmt, char *out)
 {
     char buf[512];
@@ -942,8 +941,7 @@ int ai_TokenRandomPlayer(int mode, G12ARG *args, int k, char *fmt, char *out)
     return 1;
 }
 /* 0x4afdd0, the FEST text command (callback 0x601b50[0], name 0x601070[0]) "-n" (n > 0): sends message 0x53
-   for the character ai_PlayerChar, today 12:00
-   @deep B: 38 code hunks / 23 differing instructions of 54 vs 53 - one scheduling region, meaning read and equal (type 0x53, to = ((AICHAR *)ai_PlayerChar)->netId, msg.time = ai_Time, fromId -1, flags 1, byte 0 at 0x58, hour 12, min 0, cm_SendLongMessage): the original hoists ai_Time's first dword above the msg zeroing loop and stores the clock copy's dwords 0,8,4,c with the '&msg' push before fromId/flags/car/hour/min, ours 4,8,0,c and pushes after car/min. Tried, one build each: source order (the clock copy before msg.to moves the hoist but stores 0,4,c,8, 29 differing - reverted), msg.car as int (no change), typed netId (byte-neutral). spell: width hint at 0x4afdf6 is the hoisted dword read of the clock slot. Needs vargen perm/mask rounds (store order + hoisted load). Q4 left: (1) settled, the clock is copied as msg.time = ai_Time (AITIME, no view); (2) *(char *)&msg.car = 0: the byte at AIMSG+0x58 has no evidenced name (G6MSG/G8MSG call it unk58, a Q2 placeholder; every other sender writes the int car there), so a typed view would invent a name. Q1 fixed by the rename (callback 0x601b50[0], name 0x601070[0] FEST), Q2/Q3/Q5/Q6/Q7 pass. */
+   for the character ai_PlayerChar, today 12:00 */
 
 int ai_CommandFest(int a, int b, char *fmt)
 {
@@ -1058,8 +1056,7 @@ int ai_CommandTornado(void)
 }
 /* 0x4b00e0, the STADTKASSE text command (callback 0x601b50[5], name 0x601070[5]) "-PLUS_n" / "-MINUS_n":
    moves n percent of the count of the first goods of type 9 in the stock (object 0x115) of building 0x50b010(1)
-   to or from that stock (0x4c4830)
-   @deep B near: 184/184 instructions, was 96 code hunks (ours 416 vs 445 bytes). The big win this session: the guard as an early return 'if (*fmt != '-') return 0;' plus a block for the sign/name tables (the original puts its return-0 block inline at the top; the if(...) {body} return 0; spelling puts it after and shifted everything). Left, 3 hunks, 8 differing instructions: (1) slots at 0x4b01a6: the original keeps n (the atoi result) in the dead fmt parameter slot [esp+0x30] and v (g->unk0e) in sign's dead slot [esp+0x10], ours swaps them; tried int i,s,v,n; v declared first; v declared inside the 'if (n > 0)' block - all byte-identical to the current form; (2) code at 0x4b0238 and (3) order at 0x4b0269 are the same swap in the fpu pair (original fild n / fmul 0.01f / fimul v, ours fild v / fimul n / fmul 0.01f). Slot/fpu allocation -> vargen perm rounds. Q2 blocked: gm_FirstBuilding's canonical definition returns unsigned char * while every caller (am.c, cm.c, hst.c, f3gm.c) uses AIBLD * (the type debt noted in ai_TokenCityTreasury's @deep reason) - a shared-header/type decision; AIOBJ.unk0e (the stock count) and AIOBJ.unk14 (the object list gm_Query walks) have no role evidence in the sources. Q1 has evidence (callback 0x601b50[5], name 0x601070[5] STADTKASSE), Q3/Q5/Q6/Q7 pass. */
+   to or from that stock (0x4c4830) */
 
 int ai_CommandCityTreasury(int a, int b, char *fmt)
 {
@@ -1243,8 +1240,7 @@ int cm_SendNewParty(void *p);                                                   
 
 /* 0x4b0640, the STRAFE_HINRICHTUNG text command (callback 0x601b50[10], name 0x601070[10])
    "-KANONE" / "-GALGEN" / "-KOEPFEN" / "-SHAUFEN": starts the execution (kind 3, 0, 2, 4) of the character args[k]
-   in 24 hours at 10:00, with the judge, ai_JudgeCatholic / ai_JudgeProtestant and up to 12 councillors
-   @deep B: 153 code hunks, 189 vs 187 instructions, frame 0x158 vs 0x16c (20 B): the nested blocks name[4][8] / kinds[4] / list[16] get other slots in ours, so every [esp+N] after the prologue is shifted (first hunk 4b0640: sub esp,0x158 vs 0x16c, args at [esp+0x160]/[esp+0x15c] vs [esp+0x174]/[esp+0x170]); the constants, callees and statements were read against the original (the KANONE/GALGEN/KOEPFEN/SHAUFEN table and kinds 3/0/2/4, the kind list, msg.type 5 with unk14 -1 / unk26 0 / unk7d 1 and the judge + councillor netIds, the call to 0x4c4fa0) and match. Block-scope slot reuse -> match-deep's slotmap/vargen work. Q2 blocked: ai_Unk4c4fa0 (0x4c4fa0, cm.c) has no evidenced name in its unit (the note calls it only 'the vote / execution message' sender); G12XMSG.unk0c / unk14 / unk26 / unk7d are written here only, no reader in any source names them. Q4: the clock is copied as msg.time = ai_Time (AITIME, no view). Q1 done (callback 0x601b50[10], name 0x601070[10] STRAFE_HINRICHTUNG), Q3/Q5/Q6/Q7 pass. */
+   in 24 hours at 10:00, with the judge, ai_JudgeCatholic / ai_JudgeProtestant and up to 12 councillors */
 int ai_CommandExecution(G12ARG *args, int k, char *fmt)
 {
     G12XMSG msg;
@@ -2115,8 +2111,7 @@ extern int (*hst_TokenCallbacks[15])(int mode, G12ARG *args, int k, char *fmt, c
 
 /* 0x4b21c0, leaked name (its messages): one replacement "[_NEWn_NAME...]": mode _NEW / _USE / _REL with
    slot n of ctx (ctx[n + 1].unk00 holds the replacement, ctx[0].unk00 the valid flag), then the callback of
-   NAME; the error messages are written to a local buffer only
-   @deep only allocation left plus two Q blocks. Meaning read equal hunk by hunk against the disassembly: the 3-mode loop over hst_Modes (0x601af0, 5-byte stride, 4-byte compare), AI_ZERO(buf, 0x100) (the original's rep stos alignment dance is exactly am.h's AI_ZERO), buf[0] = s[5] / atoi / s += 6 / the 0..7 slot check, the mode == 1 path (k = ctx[slot + 1].unk00), the 15-token loop over hst_TokenNames (0x601730, 0x40 stride, strlen + memcmp), s += strlen, the mode == 0 store ctx[slot + 1].unk00 = k, the two 'Unknown Replacement' error exits and the tail call hst_TokenCallbacks[k](mode, ctx, slot, s, out) + ctx[0].unk00 = 0 on failure. The whole 116 asm comes from ONE 4-byte frame difference: sub esp,0x10c vs 0x110 - ours gives AI_ZERO's _zn the dead parameter slot [ebp+0x8] and _zp [ebp-0xc], the original gives _zn [ebp-0xc] and _zp [ebp-0x10] (its s spill stays in [ebp+0x8]); that shifts buf from [ebp-0x10c] to [ebp-0x110] and every lea/push with it. Same AI_ZERO temp-slot problem as the ai_Token* @deep reasons. Also slot order: slot/mode at [ebp-0x8]/[ebp-0x4] here vs [ebp-0x4]/[ebp-0x8] in the original (diffclass: 2 slots hunks). Q2 block: G12ARG.unk00 (hst.h) - slot 0 holds the valid flag and slots 1..8 the token index, no reader names it, so a name would be invented. Q4 block: the 2 '*(int *)s == *(int *)hst_Modes[i]' 4-byte compares (a strncmp/memcmp spelling adds a call). */
+   NAME; the error messages are written to a local buffer only */
 int hst_ParseContext(char *s, char *out, G12ARG *ctx)
 {
     char buf[0x100];
@@ -2230,8 +2225,7 @@ int (*hst_CommandCallbacks[27])(G12ROW *row, int slot, char *fmt) = { ai_Command
 
 /* 0x4b2530, leaked name (its messages): runs every word of text k (or a string above 0x4800) through the text
    commands of hst_CommandNames / hst_CommandCallbacks; a leading "[_SET_n" / "[_USE_n" selects list n of hst_Lists (it
-   must be in use)
-   @deep only allocation left (317/317 instructions, 82 differing: 30 slots + 120 code hunks) plus a Q4 block. Meaning read equal: the two AI_ZERO clears (buf 0x17d0, word 0x100), the k < 0x4800 / strlen 0x17c0 / strncpy path and the string-copy else, the '[_SET' / '[_USE' prefix compare (hst_ListModes 0x601b00), word[0] = buf[6] + atoi + the 0..3 range check, row = &hst_Lists[n] + row->inUse, p = buf + 7 / p = buf, the word loop (space starts a command, slot 8 or atoi for the _USE prefix, q = word + 8 / word + 2, the 27-name loop over hst_CommandNames and the hst_CommandCallbacks call with q + strlen), the per-word re-clear and the tail command. What is left is the AI_ZERO temp allocation (ours gives _zn the dead parameter slot [ebp+0x8] and _zp [ebp-0x8], the original gives both their own slots) and the variable slot pair [-0x4]/[-0x8] swapped (slot / n / i order) - the same AI_ZERO problem as hst_ParseContext and the ai_Token* @deep reasons. Q4 block: the 8 '*(int *)(p + 1) == *(int *)hst_ListModes[n]' 4-byte prefix compares; a memcmp(p + 1, hst_ListModes[n], 4) spelling adds a call and was measured WORSE (it also lost the byte match of hst_ParseCommandline_1st_Pass), so it needs a typed 4-byte view of the mode string (shared-header decision). */
+   must be in use) */
 int hst_ParseCommandline_2nd_Pass(int k)
 {
     char buf[0x17d0];

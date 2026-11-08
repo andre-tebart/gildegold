@@ -754,8 +754,7 @@ int ai_MsgWorkerHealthLossType1d(G14MSG *m)
     return 0;
 }
 /* 0x4b84b0, message: as 0x4b82c0, the worker chosen from more than 2; 0x4fca40 of p by -(p's 0x1c float + 1) (not
-   with item 0x290)
-   @deep behaviour draft (5 -> 1 close after the sibling idiom): 10 differing instructions in one hunk. The 0x230/0x20d ternary spelling of its sibling ai_MsgWorkerHealthLossType1d is applied and took 54 -> 11; the rest is the while (util_Random(k) == s) test: the original pushes k (push edi) before loading p = a[s] and merges the cleanup of the previous util_Random argument into add esp,0x8 after the test call, ours does add esp,4 / and esi / mov ebp / push edi / call. Read: the loop, s, p and the two calls are the same statements (p = a[s] before the loop matches the original's load order), no meaning error. spell.py: no hunk matches the menu ('no menu rule; meaning check first'), the fill hunk is only the tail. Pure argument-push scheduling/instruction order - match-deep's scheduling work. */
+   with item 0x290) */
 
 int ai_Unk4b84b0(G14MSG *m)
 {
@@ -1397,8 +1396,7 @@ int ai_MsgWorkerTitleType2c(G14MSG *m)
    AIMSG type 0x4a names the building (id, fromId, n), c, the object gm_BuildingMainObject (0x501b50) gives and
    the news text id, to the local player ai_PlayerId; the receive side (cm.c 0x4cbb90) finds that object and tears
    it down (f3gm.c 0x5034b0). The three 0x400 guards share one exit: the goto none keeps that block last, as in
-   the original.
-   @deep behaviour reached (10 order hunks: 168/168 instructions, spell.py 'same instructions, other order') - byte needs the scheduler (the order of the b->id load, the type / flags stores and the ai_PlayerId lea). Raised here: the frame (0x128 -> 0x124) and the FP compare via the liking operand order (gm_Liking(...) < r: fild after the call, fcompp, no float spill), the shared 0x400 exit via goto none, msg.n = msg.fromId (one b->id load). Q1: no name evidence - the gate is the workers' liking, but the 0x4a receive side (0x4cbb90 -> 0x5034b0) tears the building's object down and the text 0x1315 is not in the exe, so the message's wording cannot be stated. Q4: the one left is the 16-bit text-id store over AIMSG.dst[0] (0x64); the textId union arm in ai.h was built and regressed ai_Unk483a60 byte -> 5 differing (its slots, the same failure ai.c's note records for 0x60), reverted - a shared-header decision. */
+   the original. */
 
 int ai_Unk4ba0c0(G14MSG *m)
 {
@@ -1534,8 +1532,7 @@ int ai_MsgWorkerLoseSkillType30(G14MSG *m)
 }
 /* 0x4ba630, message: one of c's buildings of kind 1 / 2 gets item 0x134 / 0x135 (0x4c4880); the text names one of
    up to 16 characters (not kind 6 / 7, below 10) of one half of ai_Chars, else c (the reverse direction finds
-   nobody); sent with 0x53dee0
-   @deep behaviour: 112 code hunks + 4 regs, 188/192 instructions, far. Read against the original: the statements match (the building loop, the 0x180/0x300 half pick with d = -1, the kind/id filter, the 16-entry cap, p = c fallback, cm_SendExSellObject, the text and he_MessageBoxQuickjump's 8 arguments). The root difference is allocation, not meaning: the original keeps k in ebp (xor ebp,ebp at the entry, inc ebp / cmp ebp,0x10 in the loop) and uses the zeroed ebp for its NULL compares (cmp eax,ebp), ours keeps k in [esp+0xc] and reloads it; that also drags p (original spills it to [esp+0x10], ours keeps it in edi) and the entry block (the original's zero store to c's slot before the call). Leads tried: spell.py has 'no menu rule; meaning check first' on the two entry hunks and reload leads on 4ba74f / 4ba7d4 / 4ba84f (the original re-reads, ours keeps the value - i.e. its spills, not a dropped local in our source; b->id is already re-read at both uses); adding p = 0 (the sibling idiom) compiled identically and was reverted. Q1: no name evidence - the text of message 0x31 (0x1318) is not in the exe and the good / object ids 0x134 / 0x135 it sells are unnamed, so the event's wording cannot be stated. Q4 is fixed (b->type, b->id) and Q2 by the he_MessageBoxQuickjump rename. */
+   nobody); sent with 0x53dee0 */
 
 int ai_Unk4ba630(G14MSG *m)
 {

@@ -305,7 +305,7 @@ void pool_Free(MPOOL **pool, void *ptr)
 
 /* returns the next used slot (the record after its in-use flag) of the pool chain walked by it, 0 at the end.
    The scan is `while (1) { if (*slot) break; ... }`: a plain while would be rotated by VC6. */
-/* 0x422ba0 @deep byte work only (behaviour + readable met): 2 B / 4 asm lines, the imul operand order (ours mov esi,edx; imul esi,edi; the original mov esi,edi; imul esi,edx); grade.py diffclass verdict regs 6, spell.py finds no menu hunk; size*i, parentheses, casts, unsigned, an off temp, declaration orders and moving i = it->index all give the same code */
+/* 0x422ba0 */
 void *pool_Next(MPOOLITER *it)
 {
     int i, size;

@@ -539,8 +539,7 @@ void hmt_SendElectionMessage(int v)
     cm_SendExSysMessage(0x14, msg);
 }
 /* 0x4ad3e0, the election score of candidate c for the office of obj: relation to obj's holder (0x50c550, * 0.01,
-   twice if `twice`), (age byte + 1) * 0.1 * 2, and the two titles (0x166 / 0x167) weighted against title 0x1b
-   @deep code 107 + slots 16 (71 ours / 74 original instructions, calls 4 = 4): the original's code is the same expression - rel = 0x50c550(c->id, obj's word, 1) * 0.01 doubled when twice, age = (byte +0xd + 1) * 0.1 doubled, w1/w2 = 0x4e7c40(title)/0x4e7c40(0x1b), t = 0x4ea5c0(c, 0x4e6f10(title)), return t1*w1 + t2*w2 + age + rel - with the four float locals in other stack slots and the x87 stack in another order (fild/fld/faddp positions differ); no constant, callee or statement differs */
+   twice if `twice`), (age byte + 1) * 0.1 * 2, and the two titles (0x166 / 0x167) weighted against title 0x1b */
 
 float hmt_Score(AICHAR *c, void *obj, int type, int twice)
 {
@@ -683,8 +682,7 @@ int hmt_Save(VFSFILE *f)
 }
 /* 0x4ad7a0, at the start of a game: counts the members of the three councils (each other character counts 0.33,
    a new one 0.67 more) and creates new characters (0x4c4650 type 3) until each has two, with age 7, title
-   hmt_Titles[i], money (1 + rand) * 0.5 * 8000000 and the council bits
-   @deep B: 16 code hunks read: all are the same operation spelled differently, no meaning error. The council loop (for i = 2; i >= 0) exits on lea eax,[edi-2]/test/jge here against lea eax,[edi-1]/test/jne in the original (edi is i+2: the original tests i != -1), with sub ecx,4 and dec edi swapped; the wait loop while (!cm_GetSlotState(h)) sv_PumpNet() is rotated (ours tests after the call at 4ad989, the original jumps back to a top test at 4ad977); the money expression multiplies fmul 0x5eb7ac before fimul hmt_Unk5ee114 in the original, after it here; two xor edi,edi / xor ebx,ebx stores swapped. Q1 name and Q2 (ai_Unk5... callees, HMT_ macros) still open */
+   hmt_Titles[i], money (1 + rand) * 0.5 * 8000000 and the council bits */
 
 void hmt_Unk4ad7a0(void)
 {
@@ -774,8 +772,7 @@ void hmt_Unk4ad7a0(void)
 
 /* 0x4adbb0, makes c the historical event (type 0x15, bit 0x1000) or person (bit 0x2000) hmt_Event / hmt_Person:
    new relations to everybody, default values, skills 210..251, age 9, the names of the record; tells the first
-   human player and moves on to the next record
-   @deep B: 17 code hunks left after the one meaning fix (the character scan's i was unsigned short; the original strength-reduces an int counter to a pointer walk with a signed cmp/jl and cmp cx,0x300/jb does not come from a 16-bit induction variable: now int i, 43 -> 17 hunks). The rest are spelling/order: the hmt_Find argument is a ?: here (mov eax,evt; cmp; je; mov eax,per) against the original's if/else jump shape (cmp; jne; mov ecx,evt; lea; push; push; jmp), lea edi,[ebp+0x5c] before the rep stos here vs after the or, xor ecx,ecx earlier; Q2 (amt_SetEventOwner/amt_SetPersonOwner/500970/505d30/5043d0, HMT_ macros, the 0x5176d0/0x53dda0 rename block) still open */
+   human player and moves on to the next record */
 void hmt_Create(int type, int unk, unsigned short v, AICHAR *c)
 {
     char text[256];

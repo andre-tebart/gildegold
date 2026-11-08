@@ -202,7 +202,7 @@ int ai_IsLocalMaster(AICHAR *c)
     return 1;
 }
 /* 0x47ddf0, looks for a partner (a character that suits this one) and sends the messages about it; returns
-   the partner when the two have met enough, else 0 @deep read the whole function against the original 0x47ddf0..0x47e356 (the partner search over ai_CharsT with gm_CharLevel / ai_RelationMemory / gm_Liking, the warning message block with the clamp, the four partner states and the reset block); fixed: the scan ends at the array end (cmp ebp, &ai_CharsT[768].kind, signed: (int)o < (int)(ai_CharsT + 768)), the clamp bounds written inline (max(min(a, diff * 2 + 0x23), diff * 2 + 0xf), the original keeps no k / k2). Every statement, callee, field offset and constant matches. Left: block layout and allocation: the original returns through 7 duplicated epilogues and lays the state blocks a = 1 (0x47e2ba) and a = b216 + 1 (0x47e307) out of line after the reset block, its zero returns as xor edi,edi / mov eax,edi (p = 0); ours keeps them inline with 3 epilogues ('- cmp al,dl / - ja 0x47e15e' vs '+ cmp dl,al / + jae 0x47e2ba'); tried a single-exit form with p = 0 assignments (else-if chain): 408 -> 463 differing, the blocks still inline, reverted. The loop keeps i * 0x300 in the dead parameter slot [esp+0x28] (ours a register), frame 0x14 vs 0x1c. (size: 419 vs 445 instructions, explained: the 26 missing instructions are epilogues: the original has 7 return paths each with its own pop edi/esi/ebp/ebx, add esp, ret (6 instructions), ours 3) */
+   the partner when the two have met enough, else 0 */
 
 AICHAR *ai_FindPartner(AICHAR *c)
 {
@@ -1313,7 +1313,7 @@ check:
     ai_MeisterCollectTrans(ch);
     ai_MeisterTrade(ch, b);
 }
-/* 0x480e70, the guard master: patrols the town, checks a workshop or patrols the surroundings @deep B3 far draft (frame 0x508 vs the original 0x50c; diffclass 886 code / 32 regs / 20 order / 14 slots): the body was read against build/ghidra/480e70.c and tools/asmdiff - same statements, constants, callees and field offsets; the diff is register allocation (ours ch=ebp, original ch=edi), the slot rotation and the schedule it causes, plus one 4-byte frame difference with no missing / extra source statement found in the read (the original's larger frame comes out of its allocation, not out of a statement ours lacks). spell.py on this function: no meaning-class lead (wrong type / signedness / offset / width) in the reload / dup-tail entries; they describe that same allocation. Readability advanced: ai_Unk486190 -> ai_FillSlotTable, ai_Unk487780 -> ai_AddEquipmentNeeds, ai_Unk489300 -> ai_CheckFreeThieves, ai_Unk489660 -> ai_SendFreeThieves, ai_Unk501190 -> gm_BuildQuery, ai_Unk501030 -> gm_BuildNext, ai_Unk502020 -> gm_FindBuildingById, ai_Unk50c520 -> gm_Opinion, ai_Unk501ce0 -> gm_GetGebaeudeHauptraum, ai_Unk625720 -> ai_AmbushSpots. Q2 evidence gaps left: ord_GetGridCell is ord.c's ord_GetGridCell (the role - the grid cell of a scene object - is read, but the unit has no name, @named_by guess, so no prefix can be chosen here), AIMSG.unk89 (written util_Random(4) + 2 only; no reader names it), AIBLD.budget (a building amount used as the purchase limit and scaled by 1/64000 in ai.c, compared against the capacity limits in am.c; no source names it). */
+/* 0x480e70, the guard master: patrols the town, checks a workshop or patrols the surroundings */
 
 void ai_CalcMeisterWache(AICHAR *ch)
 {
@@ -1589,7 +1589,7 @@ send3:
     for (; k < 8; k++)                                                                                      \
         msg.ids[k] = -1;
 
-/* 0x4817a0, ai_CalcAngriff: spy on a building, then attack it @deep Read whole against the original and fixed: weight split into (8-rank)*w*0.5 then rand*w*0.01 (rank call inline), best/bestw chosen with if(!best)/else-if, the reportKnow test signed (no unsigned cast), the spy/attack busy checks goto two shared sprintf exits, the id count clamped into its own variable (cmp 8/jl), the attack send under ids[0] != -1 so the return 1 is shared. Instruction multiset now equal but for register names (ch ebx, eax/ecx/edx rotations in the FindEvent loops) and one sprintf tail VC6 does not cross-jump. Left is block layout only: VC6 places our spy send (sprintf 'spioniert bei' + fill + SendLongMessage) after the attack code (ours jmp +0x606 from the third spy loop) where the original falls into it at +0x3c7, and our return 0 of the kind check sits at the function end instead of inline at +0x2d8 (je at +0x2d0: ours to +0x2de, the original's to +0x2e5); the if/goto/loop-break variants of the query loop all compile to the same layout. */
+/* 0x4817a0, ai_CalcAngriff: spy on a building, then attack it */
 int ai_CalcAngriff(AICHAR *ch, int n)
 {
     AIOBJ *o;
@@ -1719,7 +1719,7 @@ spying:
     sprintf(buf, "ai_CalcAngriff(): Meister %s hat schon eine Spionage bei '%s' laufen", ch->name, best->name);
     return 1;
 }
-/* 0x481ef0 @deep Read whole against the original and fixed: both best-building picks as if(!best)/else-if, the entfuehren filter kind <= 7 (cmp 7/ja), the einbrechen test reportKnow >= 0x5f (jae) || (float)reportKnow >= rand(20) + reportGuard*2.0f (reportKnow converted first, the fadd st,st), the id counts clamped into their own variable (cmp 8/jl, three sites), the busy checks of the burgle and the spy part as gotos to one sprintf exit each, placed after their send as in the original (0x4827be, 0x48297e). The instruction multiset is now equal up to register / slot names, symbol aliases (ai_Chars+4 vs ai_CharInts) and reloads. Left: register allocation (ch in ebp, the original ebx; ours reloads ch / obj from the frame: 13 extra mov reg,[esp+N], loads 10 into a register for the BuySlots/BuyCapacity pushes where the original pushes 0xa), a frame 4 bytes smaller (0x524 vs 0x528, one slot fewer, not changed by keeping the rank in r), and block layout: the r==1 (entfuehren) block, which the original places after the CalcAngriff call (+0xac0..), sits inline after the r==1 test in ours (jnp at +0x349: ours to +0xee7, the original's to +0xeb7; jne at +0x32a: ours to +0x7b2, the original's to +0x3bc). (size: 1195 vs 1181 instructions, explained: ours 1195 vs 1181: the 13 extra mov reg,[esp+N] reloads of ch / obj / n that the original keeps in ebx / ebp (asmdiff +0x482016 mov edi,[esp+0x538], +0x482023 mov esi,[esp+0x24]) plus mov ebx,0xa for the pushed 10s) */
+/* 0x481ef0 */
 
 void ai_CalcMeisterDiebe(AICHAR *ch)
 {
@@ -2315,8 +2315,7 @@ void ai_Unk483a60(AICHAR *ch)
 }
 /* 0x483d30, starts a work on a building (the event 0x8d) for the kind-0x1d master at 7 / 12 / 18 o'clock
    when none runs yet: picks the work entry below a random threshold (gv_FindWornEntry) and a free worker
-   of the building, then sends message 0x8d with the entry's value, its list index and the worker's netId
-   @deep behaviour, Q-only handover. Q2: AIBLD.unk65 only - read as the work record pointer (a char * load at building + 0x65 in gv.c / f3gm.c, the work event 0x571640 in he.c) and as a number in ai_CalcMeisterBank (compared to AIPOS.unk18 and written as field delta 0x65), so no single role name exists in the sources. Q4: the one raw access (a char cast written into msg.arg[2]) needs an AIMSG view; the typed member tried this session (an anonymous struct with a char entryIndex at 0x60 in the arg union) was built and regressed ai_Unk483a60 from byte to 5 differing bytes (the [esp+0x10]/[esp+0x18] slot swap) - reverted; a shared-header decision for match-deep. Readability done here: Q1 ai_StartBuildingWork (role: posts the work event 0x8d for the kind-0x1d master), Q6 description, ai_Unk4ef6b0 -> gv_EntryIndex (with its gv.c definition), and the work entry 0x4f22a0 -> gv_FindWornEntry, which returns GVENTRY * (this function's p is typed so). the remaining 13 differing bytes are order hunks (behaviour). */
+   of the building, then sends message 0x8d with the entry's value, its list index and the worker's netId */
 
 void ai_StartBuildingWork(AICHAR *ch)
 {
@@ -2394,7 +2393,7 @@ void ai_EndWorkerPose(AICHAR *ch)
             ai_EndCharExtra(f, 0);
     }
 }
-/* 0x483fc0, evaluates the production of a master's workshop (the variant with the 0x400 entry flag) @deep B3 far draft (668 code / 40 regs / 22 slots / 2 fill hunks). Every hunk of the first blocks was read against tools/disasm.py 0x483fc0 and the VC6 listing (tools/listing.py): statements, constants, callees and field offsets match; the whole diff is one form - the original keeps the AIENTRY byte offset (i*0x58) in esi and folds each field into the absolute address ([esi+0xf88a80] = capacity, [esi+0xf88a94] = flags, [esi+0xf88a40] = item) while ours materializes &ai_Entries[i] and uses [esi+0x40] / [esi+0x54]; the compare operands and the esi/edi roles follow from that. Last-bytes pass lead (source spelling, the meaning-class lead): spell the entry accesses as ai_Entries[i].item / ai_Entries[i].capacity and pass &ai_Entries[i] as the argument; the pattern occurs three times in this function and the trial edit was cut off by the session end, the source is unchanged (no WORSE: unitdiff ai.c 29/55, 37601 B before and after). What is left is that rewrite plus the allocation/scheduling of the other blocks = match-deep. Q1 blocked: the five production variants of 0x47e990 differ only in the AIENTRY flags they test and the kind-to-profession table is in no source (0x47e990's note). Q2 gaps: ai_CheckFreeStaff / ai_SendFreeSpies (roles readable from the bodies but not evidenced by a name) and AIENTRY.unk1c / unk20 (the ai.h need1c / need20 aliases exist; the project-wide rename is undecided - AIOBJ has unk1c / unk20 with other roles). Q6 done (description above the definition). */
+/* 0x483fc0, evaluates the production of a master's workshop (the variant with the 0x400 entry flag) */
 
 void ai_Unk483fc0(AICHAR *ch)
 {
@@ -2627,7 +2626,7 @@ done:
     ai_MeisterCollectTrans(ch);
     ai_MeisterTrade(ch, b);
 }
-/* 0x484a60, evaluates the production of a master's workshop (the variant with the 0x400 entry flag) @deep B3 far draft (765 code / 24 regs / 18 slots / 9 fill hunks). The first blocks were read against tools/disasm.py 0x484a60 and tools/listing.py: statements, constants, callees and field offsets match; the whole diff is the same entry form as 0x483fc0 - the original keeps the AIENTRY byte offset (i*0x58) in esi and folds each field into the absolute address ([esi+0xf88a80] = capacity) while ours materializes &ai_Entries[i] and uses [esi+0x40] / [esi+0x54]; the compare operands and the esi/edi roles follow from it. Last-bytes pass lead (source spelling, measured one edit one build): the first prod loop spelled as ai_Entries[i].item / ai_Entries[i].capacity with &ai_Entries[i] as the argument took the asm diff 612 -> 559 lines and the code hunks 765 -> 715 (fill 9 -> 4) but the differing bytes 1839 -> 1861, so unitdiff said WORSE and it was reverted (source unchanged) - match-deep: the spelling moves the instruction text toward the original, the remaining blocks need the same rewrite plus the allocation/scheduling. Q1 blocked: the five production variants of 0x47e990 differ only in the AIENTRY flags they test and the kind-to-profession table is in no source (0x47e990's note). Q2 done: AIENTRY.unk1c / unk20 -> the ai.h need1c / need20 aliases (AIOBJ.lvl1c / lvl1d compare against them), byte-neutral. Q6 done. */
+/* 0x484a60, evaluates the production of a master's workshop (the variant with the 0x400 entry flag) */
 
 void ai_Unk484a60(AICHAR *ch)
 {
@@ -2856,7 +2855,7 @@ done:
     ai_MeisterCollectTrans(ch);
     ai_MeisterTrade(ch, b);
 }
-/* 0x4854f0 @deep B2/B3 behaviour only (no Q failure: name, Q2, Q6 all pass): 176 code hunks, 172 asm diff lines, 3161 of 3248 bytes differ. Read against tools/disasm.py 0x4854f0 and tools/listing.py: statements, constants, callees and field offsets match - the diff is the entry-init block. The original hoists one pointer PER FIELD of the new ai_Entries entry into stack slots ([esp+0x10] item, 0x14 flags, 0x18 unk44, 0x24 pending, 0x28 unk48, 0x2c amount, 0x30 capacity) and bumps each by 0x58 per iteration (mov [esi],0 / [edi],0 / [ecx],abs / [ebx],0x21 / [ebx],0x24 at 0x48587f..0x4858c3), i.e. VC6s per-field loop-invariant pointer form; ours keeps the index and the absolute addressing. Last-bytes pass, measured one edit one build each (both reverted, source unchanged): (1) the memset(ai_Entries[n].slot, 0xff, 16) written as four slot[i] = -1 stores: differing bytes 2361 -> 2334 but asm lines 172 -> 244 and code hunks 176 -> 240, unitdiff WORSE; (2) the 0x24 block (ai_Slots[j].flags |= 0x24 + the entry loop) is present in the source in the same statement order - its hunks are the ebx slot-pointer caching and the block order, not a missing statement. What is left is that allocation / scheduling = match-deep. Q2 note: AISLOT.unk34 / unk38 (0x34 / 0x38) have no evidenced role yet; they are not touched here. */
+/* 0x4854f0 */
 
 void ai_UpdateProduction(AICHAR *ch, AIOBJ *a, AIOBJ *b)
 {
@@ -3114,7 +3113,7 @@ void ai_UpdateProduction(AICHAR *ch, AIOBJ *a, AIOBJ *b)
     for (i = 0; i < ai_NEntries; i++)
         ai_Entries[i].rank = i;
 }
-/* 0x486190, the workshop's slot table: the goods of two fixed lists, and what the running jobs bring in and out @deep B3 far draft (426 code / 7 fill hunks, 554 of 736 bytes differ). The first blocks were read against tools/disasm.py 0x486190 and the round-21 note: statements, constants, callees and field offsets match; what differs is exactly the allocation the note recorded - the original keeps ai_NSlots in ecx, the zero in esi and the two goods-list pointers in ebp / edi, ours the count in esi and the zero in edx - pure allocation, no meaning-class lead (the source already spells the item / price / amount stores as the original does at the same field offsets). Q2 done this session: gm_FindObjectInst -> gm_FindObjectInst (unified with the f3gm.c definition, 38 refs), gm_StallGoodsList -> gm_StallGoodsList (the f3gm.c definition: the list of the stall object 0x1dd of the object c), gm_ListAmountById -> gm_ListAmountById (the f3gm.c definition: the amount of the object id in the list l, beside gm_ListAmount) - all byte-neutral, 14 files. Q2 gaps left: AISLOT.unk10 / unk18 / unk30 (0 / 0 / 0x81 stores only, no reader in any source) and AISLOT.unk1c (a price - s->unk1c = gm_GoodsPrice(*q, ai_OwnPlayer) - but the rename collides with AIENTRY.unk1c, the workshop-level need, so it is a shared-header decision). Q1 and Q6 pass. */
+/* 0x486190, the workshop's slot table: the goods of two fixed lists, and what the running jobs bring in and out */
 
 void ai_FillSlotTable(AICHAR *ch, AIOBJ *obj)
 {
@@ -3217,8 +3216,7 @@ void ai_FillSlotTable(AICHAR *ch, AIOBJ *obj)
    slots' pending pieces and their out goods likewise; then each slot's amount = min (its capacity, the entry's
    other-store capacity, budget / 4 / price), each entry's amount = min (amount, the other store's capacity), and
    both tables are selection-sorted by amount * sort key, the result positions kept in AIENTRY.unk48 /
-   AISLOT.unk30
-   @deep B3 far draft, behaviour-side: 461 code / 52 slots / 22 regs / 10 fpu hunks and a 4-byte frame difference (sub esp,0x124 original vs 0x120 ours = one local too many, the unit's known variable-reuse lesson from 47e560, where the original kept one int for two purposes). Last-bytes pass meaning-class lead: the frame (merge two int locals that never overlap - candidates read: i / j / k / m / off / found; k and m are only used in the job loop, off only in the ai_Blds walk) - not tried, a rewrite this size needs a build per candidate. The rest of the diff is slots / allocation of the three table pointers. Q1 done this session: ai_BuildTradeOffers -> ai_BuildTradeOffers (role: it clears and rebuilds the two ranked trade offer tables ai_Slots / ai_Entries with their sort keys, amounts and positions; the only caller ai_Unk483a60 and the notes call it the trade decision builder). Q6 done (description above the definition). Q2 done: gm_FindGoods -> gm_FindGoods (unified with the f3gm.c definition, 21 refs in 7 files). Q2 gaps left: the AIENTRY / AISLOT amount and key fields (unk10, unk18, unk1c, unk20, unk24, unk28, unk30, unk34, unk38, unk44, unk48, unk4c, unk50) - their roles differ per struct and several already have union aliases (need1c / need20 / amount / capacity / pending / make), so the renames are a shared-header decision; AIBLD.unk65 (an index 1..3, type 'G' = bank). Q4 gaps: 3 raw accesses - the AISLOT swap through the AIENTRY scratch etmp (*(AISLOT *)&etmp), fixable with a typed AISLOT tmp but it changes the copy size, and *(int *)((char *)bld + 0x45) (a percent factor: price * that * 0.01, no evidenced AIBLD field name). */
+   AISLOT.unk30 */
 
 void ai_BuildTradeOffers(AICHAR *ch, AIOBJ *store, int f)
 {
@@ -4170,8 +4168,7 @@ void ai_FreeJobCharacters(AICHAR *ch, int n)
    the building's main object go into the message, the spare characters of the building are collected), 0x8c and
    the trade kinds 3 / 4 / 8 name the carts' objects (info->b / info->c) and the building in the message.
    Side effects: info->z2 counts what was sent (also across calls), info->z1 is set as the round flag; the order
-   message goes as one cm_SendLongMessage (0x28: one per free character, then the round ends).
-   @deep behaviour draft: 519 code hunks (was 562); every branch read against tools/asmdiff.py and build/ghidra/4889f0.c - statements, constants, callees and field offsets equal the original for 0x28 (harvest: the n2/n1 split, the plant counting, the 64-record map scan, the message block), 0x14 / 0x15 (goods orders), 0x8c and 3 / 4 / 8 (cart objects). Left: the register allocation of the map pointer (original ecx / ebp, ours eax), the AIMSG store scheduling and the [esi+0x1c] reloads. Last-bytes leads tried: the map scan as the original do { } while (!found) with the k>=64 null return inside (kept, 562 -> 519 code hunks); spell.py reload / width leads (488b81, 488d44, 488ef8, 489240, 488f90) measured byte-identical; the typed itemId write compiles the same as the raw cast. Q2 evidence gaps: AIMAPENT.unk10 (the vegetation record +0x10, written -1 by veg_SetPlant, only compared == -1 here), AIMSG.unk14 (only ever written 0 / -1, no reader), AIJOB.unkb8 (a per-kind payload word: the plant id here, counters / ids / news ids in he.c). Q4 blocked header: the AIMSG 0x58 count byte and 0x5a item word need an anonymous struct in the AIMSG.arg union, and that flips ai_Unk483a60 to 5 differing bytes (the [esp+0x10]/[esp+0x18] slot swap; measured again this session, reverted). */
+   message goes as one cm_SendLongMessage (0x28: one per free character, then the round ends). */
 
 void ai_SendJobOrders(AIINFO *info)
 {
@@ -4709,8 +4706,7 @@ void ai_MeisterBewaffnen(AICHAR *ch, AIOBJ *b)
    a cart that belongs to another building gets the move message 0xf to that building. Then, for a kind-9 master,
    it buys a transporter (0x134 / 0x135 / 0x136) when the counts, the cap247 limit, the budget (twice the item
    price), the 1-in-0x2ee roll and the flags1c8 bit 8 allow it, and sets flags1c8 bit 8; on an even hour the
-   flag 0x80 is cleared only.
-   @deep behaviour draft: 593 code hunks of 1696 bytes; the diff start was read against tools/asmdiff.py - the statements and constants equal the original (the hour%2 gate, the flags1b4 bit 0x80 set / clear, the 0x5008-record walk with the 0x1d / 0x136 counts, the two he_FindEvent kinds 11 / 15, the +6 owner chain, the message 0xf fields, the kind-9 buy blocks with the 0x2ee roll and the price times 2), and the diff is allocation / scheduling: the zero register (original edi / ebp, ours ebp), the slot rotation (n / n136 at 0x1c / 0x18 vs 0x10 / 0x18) and the cmp cx,bp vs test cx,cx spelling. Q2 evidence gaps: AIOBJ.unk06 (a link id with three meanings in the sources - the owner chain here, a building id in am.c 4254, a good / object id in ai.c 0x481ef0), AIOBJ.unk1c (a building id here, a count / level elsewhere in its union), AIMSG.unka0 (only ever written -1 in the sources). Q4 cleared this session: q is AIOBJ* now (q->unk06), the two job->unkac uses are job->u.id (the union's generic id). Q6 rewritten. */
+   flag 0x80 is cleared only. */
 
 
 void ai_MeisterCollectTrans(AICHAR *ch)
@@ -4881,8 +4877,7 @@ void ai_UnloadCarts(AICHAR *ch)
    cart without a running job 11 is unloaded - the goods are sold to the market stalls (cm_SendExSellObject, the
    sellAmount counts down) and the buys of the slots with a make plan are collected into one message 11 (up to
    three sells and three buys), sent unless the ai_TradeMsgOff gate is set (then ai_TradeMsgCount counts it).
-   The gm_Query lists are walked to their end (the second loop drains the cursor).
-   @deep behaviour draft: 1955 code hunks / 4851 of 6032 bytes. Meaning fix found and kept this session: the field-delta block compared o->unk1c with 4 and wrote 4; the original tests o->unk1c != 0 and writes 0 (0x48aa34: mov eax,[esi+0x1c]; test eax,eax; je; mov [esp+0x10],0; cm_AddFieldDelta(4,1,o - cm_FieldObject + 0x1c,&v)) - 4894 -> 4851 bytes, 1316 -> 1310 asm lines. The rest of the diff (tools/asmdiff.py) is allocation / scheduling: the frame 0x74c vs 0x754 (one spilled local), the ebp / edi register pair and the block order. Q2 evidence gaps: ai_TradeMsgOff (a gate global, read only, no writer in any source, no reader names it), AIOBJ.unk1c (a state here, a building id / count / level elsewhere in its union), AIMSG.u.s.cost (only ever written 0 in the trade messages), AIMSG.unk9d (written 1 in the 0x10 messages, no other reader). Readability advanced this session: AIENTRY.unk44 -> sellAmount, AISLOT.unk18 -> sellAmount, AIOBJ.unk12 -> fill, AISLOT.unk08 -> the existing bld alias, gm_AddTime / gm_BuildingGoodsList / ai_SettingFactor names, Q6 rewritten. */
+   The gm_Query lists are walked to their end (the second loop drains the cursor). */
 
 int ai_MeisterTrade(AICHAR *ch, AIOBJ *b)
 {
@@ -5293,8 +5288,7 @@ int ai_MeisterTrade(AICHAR *ch, AIOBJ *b)
    the flags1b4 bit 0x200 gate, then handles the building's carts: a cart below a third full gets the reload
    message 0x10 (10 seconds ahead); a full one without a running job 11 is unloaded against the market - the stall
    goods are sold to the market stalls (cm_SendExSellObject) and the buys collected into one message 11, sent
-   unless the ai_TradeMsgOff gate is set.
-   @deep behaviour draft: 238 code + 132 slots + 14 fpu + 7 fill + 4 order hunks (1414 of 5008 bytes). Read with tools/spell.py: every entry is allocation - the slot rotation (48beb1 +0x18/+0x24, 48c08c +0x28/+0x30, 48c28b / 48c2af +0x24/+0x2c), the reloads of [esp+0x24] and [esp+0x200] (48bf16, 48bf5e, 48c211) and the 48bd87 iv-shift (the loop base only; the body was read against the source and the statements match ai_MeisterTrade's plan / cart blocks). Q2 evidence gaps (the same four as ai_MeisterTrade): ai_TradeMsgOff (a gate global, no writer in any source), AIOBJ.unk1c (a state here, a building id / count elsewhere in its union), AIMSG.u.s.cost (written 0 only), AIMSG.unk9d (written 1 only in the 0x10 messages). Q6 rewritten. */
+   unless the ai_TradeMsgOff gate is set. */
 
 int ai_MeisterTradeAllgemein(AICHAR *ch, AIOBJ *b)
 {
@@ -5623,8 +5617,7 @@ int ai_MeisterTradeAllgemein(AICHAR *ch, AIOBJ *b)
     return 1;
 }
 /* 0x48d010, ai_MeisterTradeFernEinkauf: the long-distance buyer sends every cart that is in the world to a
-   market store (unloads it, then orders the purchases of the slots / entries)
-   @deep behaviour draft: 547 code + 32 slots hunks (1460 of 2064 bytes). The diff was read with tools/asmdiff.py: the whole delta is the frame (sub esp,0x69c vs the original 0x694 = one local too many) and the stack-slot rotation it causes - the spell.py 'code (no menu rule)' hunks are the same instructions at shifted slots (48d170 BYTE [esp+0xdd] vs [esp+0xd5], 48d24f [esp+edi*4+0x1a0] vs +0x198, 48d30a +0x1cc vs +0x1c4), no missing / extra statement, constant or callee. Lead for match-deep: merge two locals that never overlap to shrink the frame by 8. Q2 evidence gaps: ai_TradeMsgOff (a gate global, no writer), ai_Carts / ai_NumCarts (ledger globals, roles documented in the ai.c header comment but no source names them), AISLOT.unk20 (the buy sort key, no name in any source), AIENTRY.unk4c (how many to buy, the slot's unk34 is already buyAmount - a shared-header decision), AIMSG.u.s.cost / AIMSG.unk9d (written only). Q4: the two raw accesses *(int *)(bl + 1) and *(int *)(bl + 0x65) - bl is a char * view of an AIBLD record; AIBLD.id covers the first, the second is AIBLD.unk65 which has no evidenced role (a work record pointer in gv.c / f3gm.c, a number in ai_CalcMeisterBank). */
+   market store (unloads it, then orders the purchases of the slots / entries) */
 
 int ai_MeisterTradeFernEinkauf(AICHAR *ch, AIOBJ *b)
 {
@@ -5801,8 +5794,7 @@ int ai_MeisterTradeFernEinkauf(AICHAR *ch, AIOBJ *b)
    gets the unload order (message 0x10); a loaded one first unloads its goods at the market (a fake sale at the
    market's price credits the budget), then buys entry 0 and up to two more entries whose building is dst[3],
    then the slots (up to three buys per player, the expected value exp[] per player from the banks of the type
-   'G'), and sends the trade message 0xb (unless ai_TradeMsgOff)
-   @deep behaviour: 610/611 insns, 69 differing, 6 code hunks, all allocation / scheduling - 48db76 + 48dbc2 (the original keeps b in edi and amt in esi, ours market in esi / amt in edi, b->objId reloaded from [ebp+0xc]), 48dd6f (the original loads nB into eax before the exp[] / i zero stores and zeroes from edx, ours zeroes from eax and loads nB after), 48ddbc (eax / ecx roles), 48de19 (the original cmp BYTE PTR [ecx],0x47, ours mov al,[ecx]; cmp al,0x47) plus an extra amt home store at the gm_ListStock result in ours, 48e06d (3 nop fill). Every hunk read against asmdiff / disasm.py: no missing / extra statement, constant, callee or field offset. spell.py: dup-tail 48db76 (no if/else at that hunk - the sides differ by b vs market in a register), reload 48dd6f (both sides load nB, only the schedule differs), code 48de19 / 48e06d (no rule). One edit one build each: bl as AIBLD* with bl->id / bl->type / bl->unk65 instead of the char* view - byte-identical, kept (Q4); buf[1028] (Ghidra local_408) frame 0x69c / 71 differing, reverted; reusing d for amt in the slots block - byte-identical, reverted. Q2 left: AIBLD.unk65 (a player slot 0..4 in the shop / bank uses - gm_GoodsPrice's p, this function's exp[] per player - and a char* work record for a kind-0x1d building, gv_EntryIndex's r; a union playerSlot / work compiled byte-identical here but flipped ai_Unk483a60 (byte) to 5 differing bytes - the header tie-break - reverted), AIMSG.u.s.cost and AIMSG.unk9d (written only, no reader in any source). */
+   'G'), and sends the trade message 0xb (unless ai_TradeMsgOff) */
 
 int ai_MeisterTradeFernEinkauf2(AICHAR *ch, AIOBJ *b)
 {

@@ -442,7 +442,7 @@ void d3fl_MakeJitter(float *out)
         t[11].v = r.y * s + oy;
     }
 }
-/* 0x43f8a0 @deep B: code hunk 0 (51 instructions) - the complete 40-instruction original at 0x43f8a0..0x43f907 was read against ours (42 instructions): every operation, constant, call and store is present; the original keeps n in eax (compared, shifted at the end) and the clamped min(n,0x40) in edx, ours allocates the clamp to eax and n to edx, so ours has one extra mov eax,edx before the n>>7 shift and the same block is scheduled around it. Tried the ternary, if/else on m, m=n+if, both store orders of DetailShift/DetailSizeShift and an early-return guard: the clamp value always gets eax (c2prio: m priority 38-40, n 11-15; C2 hands the scratch registers out by priority). Same operation, other register spelling - needs c2prio/vargen */
+/* 0x43f8a0 */
 
 void d3fl_SetDetail(unsigned int n)
 {
@@ -1969,7 +1969,7 @@ void d3fl_DrawWater(D3FLMAP *map, D3FLTILE *t)
 /* 0x4439e0, draws the floor: transforms the map into camera space; if the map is dirty, rebuilds the tile meshes
    (vertices, lit from the light map, and triangles; extra vertices on edges next to finer tiles), projects them and
    culls the triangles; then animates the water (water != 0) and queues the visible triangles of all tiles,
-   rendering their cache textures on first use @deep read the whole function against the original 0x4439e0..0x4460d0 (light colours, camera transform of origin and axes, the tile vertex / triangle rebuild with GetTexture and the jitter uv, the four edge blocks of extra split vertices, the split re-light pass, the projection and culling, UpdateWater / DrawWater, the per-tile queueing and cache re-render), segment by segment between calls and the D3FL_LIGHT fistp sites; fixed: D3FL_POS in the original's two phases (a = AxisX * X; p = Origin + a; q = AxisZ * Z; p = q + p, as the tile vertex block writes it: the original stores the x products to the stack and adds the origin first, 0x444b3e..0x444c45), which brought the four edge blocks from -13 / -19 / -5 / -7 to -7 / -12 / +2 instructions; D3FLTILE.unk38 / unk40 named nsplit / nbpUsed from their use here. ours 2791 vs 2816 instructions, frame 0x14c vs 0x150. Left: allocation and scheduling throughout: the triangle setup of each quad keeps v0 / v1 in ebx / edi swapped with the original's edi / ebx and stores the uv / vertex pointers in another order (0x4442ff..0x444396); the edge blocks load the tile fields (+0xf0 / +0x100 / +0x108 / +0x11c / +0x120) in another order and spill other temporaries ('- mov [ebp-0x118],0 / - mov [ebp-0x128],0' vs '+ xor edx,edx / + mov [ebp-0x10c],edx', 0x444b2d); the split counters (+0xf0 / +0x100 / +0x118 / +0x120) incremented in another order (0x445b7a); the frame counters at the end (d3_TriCount / d3_VertCount / d3_DrawnVerts, 0x446016); one stack dword fewer in ours. */
+   rendering their cache textures on first use */
 void d3fl_Draw(D3FLMAP *map, char water)
 {
     D3OBJECT *cam;
@@ -2566,8 +2566,7 @@ void d3fl_Draw(D3FLMAP *map, char water)
 #undef T
 
 /* 0x446180, renders the cache textures of all tiles at their current detail level and precaches them;
-   returns the number of textures drawn
-   @deep B: read the whole 123-line asmdiff against 0x446180..0x4463b0 and diffclass: one slot correction at entry (0xc vs 0x10), then the same expressions with the locals permuted over slots 0x10..0x28 and other registers (the tile base edi+edx*4+0xe0 vs eax+0x5e is the same address), the three loop counters in another nesting order and the fpu stores scheduled differently; no different constant, callee, condition or field. Register/slot allocation only, needs vargen/try.py. Readability still draft: D3FLTEX.unk58 has no evidence (all uses are zero stores, no reader) */
+   returns the number of textures drawn */
 int d3fl_Prerender(D3FLMAP *map)
 {
     int count = 0;

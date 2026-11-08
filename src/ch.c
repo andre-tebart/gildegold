@@ -445,7 +445,7 @@ void ch_SetLowPoly(unsigned char mode)
     ch_LowPoly = 2 - mode;
     d3if_SelectScene(cur, 1);
 }
-/* 0x402ba0, ch_Updatelowpoly: shows the body or the low-poly body and keeps the latter in sync @deep behaviour: 84 code hunks left, all read against asmdiff/Ghidra. The camera-distance if/else block order (original: far block inline, near out-of-line at 402db8 with the far block's jmp into the shared hide tail; ours: near inline whatever the spelling) and jp at 402ca6 vs jnp at 402ca2; last-bytes pass (spell menu): dup-tail 'statements in both arms' applied (180 -> 84 differing asm lines, the gain kept), 'pull them after the branch' and 'swap the branch polarity' (positive &&, !(&&) forms, also after the tail fix) give identical code; reload 402f9a: the original re-tests s (402f72/402f93) and reloads anim->slots[0].data into edx (402f9b), ours CSEs both - the local s stays in ecx in the original too, so the ch->slot / D3OBJ_ANIM(ch->lowPolyBody) re-read spellings cannot produce the reloads. Remaining hunks are that block order/branch, two register swaps (95/153) and the tail re-tests (287/298). Q4 left: D3OBJECT 0x48 / 0x200 have no evidenced name: 0x48 = the item type | 0x3000000 in the item-sprite spawners (f3gm.c 0x4fbb80, ls.c 0x51e900) and 0x3000000 in ch_CreateMesh, copied to the low-poly body; 0x200 = the per-object int d3_WriteObject (0x44a2c0) writes and rd_object reads, and the item pointer in the sprite spawners. Q1/Q2/Q3/Q5/Q6/Q7 pass (names ch_Updatelowpoly string, d3if_Show, d3_LoadAnimStream, ch_CurrentGroup/ch_CurrentScriptGroup, lowPolyBody, lowPolyAnimFailed). */
+/* 0x402ba0, ch_Updatelowpoly: shows the body or the low-poly body and keeps the latter in sync */
 
 void ch_UpdateLowPoly(CHARACTER *ch)
 {
@@ -888,7 +888,7 @@ void ch_ReleaseMorph(CHARACTER *ch)
         ch->morph = 0;
     }
 }
-/* 0x403dc0, ends a finished animation or morph and starts the next animation, blending into it @deep behaviour: far (123 code + 26 slots + 4 order + 4 fill differing instructions), read hunk by hunk against build/ghidra/403dc0.c and tools/asmdiff.py: statements, constants, callees, field offsets and conditions match. Left: the original's redundant re-test if (!ch->morph && !ch->slot) at 40408b-404096 (ours proves both are 0 and drops it; earlier tries: if/else-if, separate ifs, swapped order, local copy - only a volatile read keeps it), six reload hunks (spell 403e87, 403ed7, 403f58, 40400f, 404113, 40418b: the original re-reads ch->morph / ch->slot / slots[0] fields where ours keeps the value; the source's own locals are used in both), dup-tail 4041fc (artifact of the re-test), and the slots hunks 403dd3 / 4040ca (released/f/n at [esp+0x10..0x20]; earlier tries: initialization places, declaration in block) - no meaning-class lead left. Q2 left: CHARACTER.flags.unk1 (bit 0x02) has one reader (ch.c 0x848) and no writer in any drafted source - no evidence for its role. Readability done this session: ch_MorphTimeout -> ch_MorphTimeout (-1), ch_MotionTimeout -> ch_MotionTimeout (2), D3ANIMFRAME.unk00 -> time (frame start time, ch.c 0x2332 writes it to D3ANIMKEY.time), CHARACTER.lastActionFrame -> lastActionFrame (CH_FRAME, written -1 here, compared with slot->flags.b[0] in ch_UpdateAction 0x404b90); Q1/Q3/Q4/Q5/Q6/Q7 pass. */
+/* 0x403dc0, ends a finished animation or morph and starts the next animation, blending into it */
 
 void ch_CheckAniMorph(CHARACTER *ch)
 {
@@ -2688,8 +2688,7 @@ int ch_GetWaypoints(D3SM *h, CHARACTER *ch, CHWAYPT *out)
 }
 /* 0x4079b0, walk actions: checks the next path cells against the nearby characters others[0..n-1] and,
    if one blocks the way, marks them in the ground map and searches a new path around them ("ch:GetNewPath"
-   is the mem_Alloc tag). Returns the new path length, 0 nothing to do, -1 failed, -2 no way around.
-   @deep B3 draft, 2291/2768 bytes, 382 differing instructions of 842. Read hunk by hunk against tools/asmdiff and the original 0x4079b0..0x40847f: same statements, one stack slot more (frame 0x9bc vs 0x9b8) and the scalars permuted over the slots (ours tx/tz 0x1c/0x20 vs 0x20/0x24, gx/gz 0x2c/0x30 vs 0x30/0x2c, sx/cx 0x34/0x38 vs 0x20/0x24), oa in edi vs esi; plus two scheduled forms read as the same source: the contacts loop base (ours shares the memset's edx = &ch->contacts, original lea ecx,[ebp+0x94] and stores ch at [ecx-4]) and the rest-buffer loop (original walks path by index in edi and rest by a pointer at rest+1, [ecx-1]/[ecx], ours q at [eax]/[eax+1]). spell menu: 20 reload entries, all re-reading ch/others[i] fields the source already re-reads; dup-tail 407a28/407b3d/408420 are the k==last?0xd:1 and retryAt!=-1?0xd:1 calls already written as two-armed calls; 74 slots hunks. Leads tried this session, one build each: dead locals fx/fz/sz/ret removed (original slot sharing; byte-identical, kept); rest[nrest*2] counter form instead of q++ (2253 bytes but 432 asm lines, reverted - the original does walk the buffer by pointer); contacts store order and the transport?cur-2:cur if/else (byte-identical, reverted). Q2 gap left: u.walk.unk0fc - written -1 by all four path (re)builders (0x408387 ch_GetNewPath, 0x408652 ch_PathToTarget, 0x408984 ch_InitWalk, 0x409d1e ch_ActWalkCells) and read nowhere: the whole ch TU disassembly has only those four [reg+0xfc] references and chc.c never touches 0xfc, so no role name can be evidenced. Everything else named: CHARACTER.contactSteps (0x8e), CHARACTER.speedScale (0x1a4), u.walk.flags + CH_WALK_* (0x160), CHARACTER.pathType (0x240, the path_Find unit type), CH_ACTIONS reads the typed ch->actions (Q4 gone). */
+   is the mem_Alloc tag). Returns the new path length, 0 nothing to do, -1 failed, -2 no way around. */
 
 int ch_GetNewPath(CHARACTER *ch, int n, CHARACTER **others)
 {
@@ -2913,7 +2912,7 @@ int ch_GetNewPath(CHARACTER *ch, int n, CHARACTER **others)
     }
     return 0;
 }
-/* 0x408490, walk actions: finds a path from the character to the target character ("ch:GetNewPath"?) @deep B3 draft, 14/512 bytes, 28 differing instructions of 173 (173/173, same multiset). Only the slot choice is left: which of two symmetric address-taken locals gets the dead parameter slot - original x1 in a's slot (px = &[esp+0x30], z1 = &[esp+0x14], x2/z2 likewise), ours z1 in a's slot and x1 in the low local. Kept this session (measurable gain): z1's clamp written before x1's (independent clamps, same meaning) makes the store schedule and the clamp slots match: 34 -> 28 differing instructions, 16 -> 14 bytes; with it only the 4084ad and 4084d8 slots hunks remain. Tried with no effect, one build each: declaration order (x1,z1,... and z1,x1,...), the copy-back order (x1=ox;z1=oz vs z1=oz;x1=ox). This is the pattern in notes/vc6-matching.md ('two address-taken int x/z locals with swapped stack slots: declaration order, names, scope did not help; only a dead z = 0 or storing z first flipped them (both add code)'). Q2 gap: u.walk.unk0fc - written -1 by the four path builders (0x408387, 0x408652, 0x408984, 0x409d1e) and read nowhere (the whole ch TU disassembly holds only those four [reg+0xfc] references, chc.c never touches 0xfc), so no role name can be evidenced. Q7 fixed: d3sm_FindGround's prototype is in d3_sm.h now. */
+/* 0x408490, walk actions: finds a path from the character to the target character ("ch:GetNewPath"?) */
 
 int ch_PathToTarget(CHACTION *a)
 {
@@ -2964,7 +2963,7 @@ int ch_PathToTarget(CHACTION *a)
 
 /* ---- 0x408690..0x40a900 (worker ch5) ---- */
 
-/* 0x408690, walk actions: drops the current animation and finds the path to args[0], args[1] in scene args[2] @deep B3 draft, 15/1056 bytes, 32 differing instructions (1056/1056 same multiset): the whole diff is the slot order of the target cell and y - original z,x,t[0],t[1],y,name (t at frame+0x8, y at +0x10), ours z,x,y,t (y +0x8, t +0xc); x/z, name and the frame size (0x74) match. Read against tools/disasm 0x408690 and the VC6 listing (slot map _x=-112 _z=-116 _y=-108 _t=-104 _name=-96). Tried this session, one build each: int t[2] declared after y (byte-identical, the listing's map does not move), name declared first (byte-identical), scalars tx/tz instead of t[2] (24 bytes / 50 asm lines, reverted). Earlier attempts: declaration orders, y as float[1], 4-byte struct, x/z arrays, t as a struct, dead x=z=0; VC6 puts the address-taken array above the float whatever the declaration order. Q2 gaps: u.walk.unk0fc (written -1 by the four path builders, no reader in the whole ch TU). Q4 gaps: CH_UNK080 (0x80: the struct calls it D3ANIMDATA *next, but ch_TakingObject prints it with %s, so its type needs a decision with evidence) and CH_UNK110 (0x110: a single byte store 0 at 0x4088ec, no reader). Readability advanced for the unit this session: CH_SLOT/CH_FLAGB/CH_FLAGW are gone from ch.c (ch->slot, ch->flags.bytes.lo, ch->flags.all; CH_XSLOT now casts ch->slot). */
+/* 0x408690, walk actions: drops the current animation and finds the path to args[0], args[1] in scene args[2] */
 int ch_InitWalk(CHACTION *a, D3SM *h)
 {
     CHARACTER *ch = a->ch;
@@ -3394,7 +3393,7 @@ void ch_WalkRotate(CHACTION *a)
         }
     }
 }
-/* 0x4097d0, action callback 0x2d: walks along the path to the cell args[0], args[1] in scene args[2] @deep B3 draft, 440/1024 bytes, 8 differing instructions of 323: exactly one redundant test is missing - the original tests ch->slot a third time after the f6d_20 bit test (4099c4 mov eax,[edi+0x70]; cmp eax,ebx; je start; test [eax+0x6d],0x20; jne start; cmp eax,ebx; jne skip), ours drops that last cmp/jne; the other hunk is the 409bcc alignment fill. The source condition is 'if (!a->u.walk.started && (!ch->slot || CH_XSLOT(ch)->f6d_20 || !ch->slot))' and VC6 propagates the value in eax across the three terms. spell: 4099cf has no menu rule (meaning check: the third term is the same load), 409bcc dup-tail is the fill. Earlier attempts (== 0 / == NULL / CH_XSLOT spellings, a->ch for one term -> reloads, ternary, !(slot && !f6d_20 && slot), nested ifs, else-if with the call duplicated, goto, call folded into the condition, a static __inline helper, f6d_20 == 1/!= 0, a raw byte test); this session only re-read the original flow (the same shape is kept correctly in the following block, where the original re-tests started at 4099fc and our build reproduces it). Q2 gaps: cm_SpeedFactor (0x5f1290 = 1.0f, read only here as the speed factor of a group -1 object with D3OBJ_UNK200 set; no other reader or data alias), Q4 gap: D3OBJ_UNK200 is D3OBJECT.pad200[0] (0x200); its role is evidenced (the per-object int d3_WriteObject saves and rd_object restores, the item pointer the sprite spawners store), so a typed d3.h field is the next step, but d3.h is shared and was not touched in this session. Readability advanced: CHSLOT.unk60 -> playSpeed (0x60, the playback speed the walk code sets from ground type x speedScale). */
+/* 0x4097d0, action callback 0x2d: walks along the path to the cell args[0], args[1] in scene args[2] */
 
 void ch_ActWalk(CHACTION *a)
 {
@@ -3505,8 +3504,7 @@ void ch_ActWalk(CHACTION *a)
     }
 }
 /* 0x409bd0, action callback 0x3a: walks along the cells of a->u.walk.path (0x100 cells, filled by the caller;
-   empty cells are skipped) to the cell args[0], args[1] in scene args[2]
-   @deep B3 far draft, 2130/3376 bytes, 138 differing instructions of 971 (ours 969, two fewer - the same redundant ch->slot test as ch_ActWalk: the source writes '!ch->slot || CH_XSLOT(ch)->f6d_20 || !ch->slot' and VC6 propagates the slot value, see ch_ActWalk's @deep for the exhaustive spelling list). All other code hunks were read against the original (the function is the inline copy of ch_InitWalk/ch_StartWalkAnim/ch_WalkSound/ch_NextWaypoint/ch_WalkRotate; the noted sign bug of the original's right turn - the 2.0943952f branch subtracting, step*0.32f - is already reproduced) and are allocation: 104 slots hunks, the frame 4 bytes larger (n in a stack slot) and the cell-skip loop bound min(0x100, n+32) hoisted (the 'n = cur + 1; for (i = n; ...)' form reproduces the original loop but moves ground into edi and spills the constant 0 - tried and reverted). Readability: no gap left beyond the unit-wide ones in the lead comment (CH_UNK080, D3OBJ_UNK200, ch_InflateModel, cm_SpeedFactor, u.walk.unk0fc). */
+   empty cells are skipped) to the cell args[0], args[1] in scene args[2] */
 
 void ch_ActWalkCells(CHACTION *a)
 {

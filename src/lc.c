@@ -1017,8 +1017,7 @@ typedef struct G8USEVIEW {              /* a local view of am.h's G8USE (am.h ca
 /* 0x58bbd0, the production window's table init (400 B): the five-entry table 0x6f4f08 (-1 / -1 every 0x14 B) and
    0x6f52e8 (0 / -1); the eight 0x58-byte records 0x6f5334 + i * 0x58 (i = 0 .. 7, the id 0x10 + i * 0x78 and the
    slot values -1); the 0xe-entry records 0x6f5a84 + i * 0x38 (the id 0x10 + i * 0x45, +4 = 0x1a, -1 fields); the
-   0xe-entry grids 0x6f4f64 and 0x6f58a4 (x = (i % 4) * 0x40 + 0x10, y = (i / 4) * 0x40 + 0x10 / 0xd0)
-   @deep B: 231 code hunks left after the two meaning fixes the original's code proves (the two grid loops compute x with the signed % 4 idiom (and eax,X/jns/dec/or/inc) and y with the signed / 4 (cdq/and edx,3/add/sar), not n & 3 / n >> 2; the note already says i % 4 / i / 4). What remains is code shape: the table walks compare with jl in the original (signed) and jb here (pointer compare), the 0x58-byte record init unrolls the 9 -1 stores in the original where VC6 makes rep stos of our for loop, and the field stores interleave with the loop increments differently (the original writes p[4]=0x10, p[5]=n before the -1 block and p[14] after the pointer bump). All hunks read; no other missing statement or constant found. Q1/Q2/Q3/Q4 (raw 0x6f4f08 addresses, U_I) also open */
+   0xe-entry grids 0x6f4f64 and 0x6f58a4 (x = (i % 4) * 0x40 + 0x10, y = (i / 4) * 0x40 + 0x10 / 0xd0) */
 
 void ai_InitProductionTables(void)
 {
@@ -1938,8 +1937,7 @@ void ai_LayoutProdGoodsList(int view, int part, int pointer, int bld)
    0x4ffcc0: an entry of the list 0x6f4f60 is matched by its id (its +0x30 = 0) or a new row is created
    (the id and the three zeros); after the walk the amounts (0x50aaf0 / 0x50ab50 on the character records
    param_1 + 0x14) refresh the rows 0x6f4f90, and the text check 0x475980 of the controls 0x6f4f70 (window +0x18
-   == 0x41) gives the return 1
-   @deep B: 186 code hunks left after the one meaning fix the original's frame proves: the 68-dword kind table is a local automatic array (the original does sub esp,0x110 and initialises every entry on the stack), not the static const it was; 255 -> 186 hunks. What remains is code shape: the original's init stores interleave in another order (e.g. it writes 0x74, 0x78, 0x88, 0x98 .. with edx/esi where ours writes 0x74 early with ecx), the table walks compare with jl in the original and jb here (pointer compare), and the row search keeps the id in dx and walks a pointer with add 0x38 / inc / cmp / jl against our mov di,WORD PTR + cmp eax,esi. No other missing statement or constant. Q1/Q2/Q3/Q4 also open */
+   == 0x41) gives the return 1 */
 int ai_UpdateMarketGoodsList(int param_1, int param_2)
 {
     int tbl[68] = {
@@ -2000,8 +1998,7 @@ int ai_UpdateMarketGoodsList(int param_1, int param_2)
    their texts 0x469250 (id + 0x741), the positions (width - the icon width) / 2 and (the row height + 0x1c) * i;
    the visibility 0x46cda0 (the screen 0xf8f124 + scr * 0x3c4); the goods rows 0x6f4f60 through 0x58e6a0
    (param_5 = 3, the other side); with param_3 the entry texts 0x476c00 (0x475980, the goods + 0xdf) after
-   0x476c70
-   @deep B: 309 code hunks; 608 B ROUGH short column display (title controls 0x6f4f10, texts 0x469250, positions (width - icon width) / 2 and (row height + 0x1c) * i, visibility 0x46cda0 on 0xf8f124 + scr * 0x3c4, the rows through 0x58e6a0 with param_5 = 3, the entry texts 0x476c00): broad layout/register shape only, no meaning error found by reading */
+   0x476c70 */
 
 void ai_LayoutMarketGoodsList(int param_1, int param_2, int param_3, int param_4)
 {
@@ -2242,8 +2239,7 @@ char * gm_FindGoods(int p, unsigned id);
    0x4ffc40 (param_1 + 0x65, the goods) has a non-zero +4; the second pass 0x6f4f90 refreshes the amounts
    (0x50aaf0 / 0x50ab50, +0x2c = the amount * the count / 4) for the other kinds, and with 0x6f231c & 0x200 and
    0x1467398 the clicked entry 0x5fe710 cycles its state +0x1c (0x4c3ba0 / 0x4c3d90 / 0x4c49e0); the text check
-   0x475980 (window +0x18 == 0x41) gives the return 1
-   @deep B: 445 code hunks; ROUGH reverse direction table. The 68-dword kind table looked like 0x58e130's (the original has sub esp,0x114 + stack init stores of 2 / 3 / 4), and it is an automatic int tbl[68] (the original fills it on the stack at 0x58ee51.., register stores; a static one has no counterpart in the exe's data and cannot be linked), although that form has more hunks (470 vs 445). No other meaning error found; the row fill / second pass / click cycle are all present, the difference is code shape */
+   0x475980 (window +0x18 == 0x41) gives the return 1 */
 int ai_UpdateStoreGoods(int param_1, short *param_2)
 {
     int tbl[68] = {
@@ -2514,8 +2510,7 @@ int d3_VecEqual(struct D3VECTOR *a, struct D3VECTOR *b, float eps);  /* 0x453e80
 /* 0x58f7a0, collects the placement candidates of a prefix (369 B): d3_ForEachObject (scene 0x5fb5b0, mask
    0x180) with the filter 0x58f6a0 fills the list param_2 (count 0x6f2688); each collected object is dropped again
    when a character of the build query is within 100.0 of its owner (+0x1f8) or of one of its "bk_" named
-   children (+0x1fc list); returns the count
-   @deep B: 82 code hunks over 369 B. Read the whole original (0x58f7a0..0x58f910): the one meaning difference is that the list pointer is re-read through 0x6f5308 every iteration (ai_BauplatzList[i]) instead of the parameter list[i]; writing that compiles to 384 B against the original's 369 and unitdiff marks it WORSE, so it was reverted. The rest are register / slot / scheduling hunks (the lea pair ecx/edx, the esi reuse for obj and the bk_ walk): a c2prio / variant round. */
+   children (+0x1fc list); returns the count */
 int ai_FindBauplaetze(char *prefix, int *list)
 {
     int i;

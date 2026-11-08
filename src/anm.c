@@ -42,8 +42,7 @@ void anm_Free(void)
 #define ANM_AGE_TIME(rec) ((rec).birth + 0x834)
 
 /* 0x4bb860, the animal step: every 350 ms maybe a new animal (not in season 3), then one of the 32 records is
-   updated by kind and removed when flagged
-   @deep Q2 + Q4: ai_GfxDetail (0x6f35c4, the "details" option ai_LoadOptions reads; the step reads it as the animal limit 0/16/32) and 3 raw accesses obj+0x34->+0x1ec->+0x96d flag 0x40 (D3MATERIAL has no field at 0x96d) */
+   updated by kind and removed when flagged */
 void anm_Update(void)
 {
     int scene, s, m;
@@ -143,8 +142,7 @@ void anm_RemoveAnimal(ANMREC *a)
 }
 /* 0x4bbb80, kind 2 (once, unk08 -1): picks one of the buildings of the 0x501190(1, 6) list with an object (0x61)
    and collects the positions of the others within 6000 of it (into a local list, which is dropped); unk08 = their
-   count * 3
-   @deep Q2 + Q4: the gm_BuildQuery/501030/502520/5024f0 callees are f3gm.c's gm_BuildQuery/BuildNext/IsHomeType/IsType10 (AIBLD* return; a void* declaration in anm.h is a new lint cross-TU conflict) and 3 raw *(T*) building accesses at +0x61 */
+   count * 3 */
 
 void anm_UpdateBird(ANMREC *a)
 {
@@ -180,7 +178,7 @@ void anm_UpdateBird(ANMREC *a)
     }
     a->nPoints = k;
 }
-/* 0x4bbcd0, creates a cat (kind 1) at a free place (0x4bc2e0) @deep Q4: 3 raw *(T*) accesses on the animal object (scale 0x1a0, kind 0x04, 0x34->0x224); typed fields need ch.h in anm.c, blocked by rd.c's char* d3_DefaultScene view and the d3.h/ch.h/rd.h conflicts in the lead comment */
+/* 0x4bbcd0, creates a cat (kind 1) at a free place (0x4bc2e0) */
 
 void anm_CreateCat(ANMREC *a)
 {
@@ -200,7 +198,7 @@ void anm_CreateCat(ANMREC *a)
     *(int *)(*(char **)((char *)a->obj + 0x34) + 0x224) = 0;
     ch_AddAction(a->obj, 0x38, 1);
 }
-/* 0x4bbd60, creates a dog (kind 0) at a free place (0x4bc2e0) @deep Q4: 3 raw *(T*) accesses on the animal object; typed fields need ch.h in anm.c, blocked by rd.c's d3_DefaultScene view (see the lead comment) */
+/* 0x4bbd60, creates a dog (kind 0) at a free place (0x4bc2e0) */
 
 void anm_CreateDog(ANMREC *a)
 {
@@ -220,7 +218,7 @@ void anm_CreateDog(ANMREC *a)
     *(int *)(*(char **)((char *)a->obj + 0x34) + 0x224) = 0;
     ch_AddAction(a->obj, 0x38, 1);
 }
-/* 0x4bbde0, creates a sheep (kind 4) at the dummy "dummy_SHEEP" @deep Q4: 3 raw *(T*) accesses on the animal object; typed fields need ch.h in anm.c, blocked by rd.c's d3_DefaultScene view (see the lead comment) */
+/* 0x4bbde0, creates a sheep (kind 4) at the dummy "dummy_SHEEP" */
 
 void anm_CreateSheep(ANMREC *a)
 {
@@ -243,7 +241,7 @@ void anm_CreateSheep(ANMREC *a)
     *(int *)(*(char **)((char *)a->obj + 0x34) + 0x224) = 0;
     ch_AddAction(a->obj, 0x38, 1);
 }
-/* 0x4bbe70, creates a cow (kind 3) at the dummy "dummy_COW" @deep Q4: 3 raw *(T*) accesses on the animal object; typed fields need ch.h in anm.c, blocked by rd.c's d3_DefaultScene view (see the lead comment) */
+/* 0x4bbe70, creates a cow (kind 3) at the dummy "dummy_COW" */
 
 void anm_CreateCow(ANMREC *a)
 {
@@ -267,8 +265,7 @@ void anm_CreateCow(ANMREC *a)
     ch_AddAction(a->obj, 0x38, 1);
 }
 /* 0x4bbf00, creates an animal of kind k at the dummy "dummy_<name of k>" (cows, pigs and horses with their own
-   models, the others with the dummy's name)
-   @deep Q4: 3 raw *(T*) accesses on the animal object; typed fields need ch.h in anm.c, blocked by rd.c's d3_DefaultScene view (see the lead comment) */
+   models, the others with the dummy's name) */
 
 void anm_CreateAnimal(ANMREC *a, int k)
 {
@@ -300,8 +297,7 @@ void anm_CreateAnimal(ANMREC *a, int k)
     ch_AddAction(a->obj, 0x38, 1);
 }
 /* 0x4bc030, dogs and cats (kinds 0 / 1; name from the string it puts into its actions): mostly stand (dogs also
-   bark), else walk to 1..3 points near where they were created
-   @deep Q4: 2 raw accesses (CHARACTER anim test at 0x128, d3_DefaultScene+0xb0 hmap); typed fields need ch.h/d3.h in anm.c, blocked by rd.c's char* d3_DefaultScene arithmetic (see the lead comment) */
+   bark), else walk to 1..3 points near where they were created */
 
 void anm_UpdateCat(ANMREC *a)
 {
@@ -339,8 +335,7 @@ void anm_UpdateCat(ANMREC *a)
     }
 }
 /* 0x4bc1a0, the farm animals (kinds 3..7; name from the string it puts into its actions): mostly stand or graze,
-   else walk to 1..3 points near where they were created
-   @deep Q4: 2 raw accesses (CHARACTER anim test at 0x128, d3_DefaultScene+0xb0 hmap); typed fields need ch.h/d3.h in anm.c, blocked by rd.c's char* d3_DefaultScene arithmetic (see the lead comment) */
+   else walk to 1..3 points near where they were created */
 
 void anm_UpdateSheep(ANMREC *a)
 {

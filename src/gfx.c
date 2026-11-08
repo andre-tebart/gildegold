@@ -201,7 +201,7 @@ void d2_SetPointerSprite(int a, int pic)
     }
     d2_PointerLook = 0;
 }
-/* 0x477000, hover time and the scroll wheel / scroll buttons of windows @deep B3: 151 code hunks; read the whole body against 0x477000..0x47731c: flow, stores, conditions and calls are the same (reset block 5 stores, f8aac8/6ed9e4 if-else, held block with di_ClearEvents 0x10, f8a650/f8a652/f8ab64 stores, btndown/btnup order, both scroll-button branches, wup/wdown, saved font); the code hunks are instruction shape only: the original caches the mouse shorts in di/bx at entry and re-reads them after di_ClearEvents (0x4115b0) (mov di,WORD; movsx ecx,di), ours loads/re-uses them as 32-bit (mov eax,dword / mov di late); previous note already tried short locals (71 asm lines, no reload). No meaning error found */
+/* 0x477000, hover time and the scroll wheel / scroll buttons of windows */
 
 void d2_Unk477000(void)
 {
@@ -513,7 +513,7 @@ void d2_DragInput(void)
         }
     }
 }
-/* 0x477ba0, mouse and keys on the focused slider object @deep B3: 134 code + 4 slots hunks (20 fpu / 5 fill explained); read the body against 0x477ba0..0x477ec0: same flow (focus d2_Unk5febec, type 0x45, flags & 0x40, buf->unk198 picks d2_PointerX/0c, the ldown block loads f0/f6 and the six fields min/max/flags/len/value2, the fl & 0x48 / 2 / 1 branches with mn/v2/mx clamps, wheel: lclick/lhold, max < 100, hilo/hihi inc/dec, same clamps; the original spills flags/max/min/len/value2/range to six stack slots ([esp+0x10] keeps fl as a byte, read at the wheel) and takes edi from the entry, ours keeps max in ebx/ebp; the unit note records that all 120 orders of the five field loads were tried with no change. No meaning error found */
+/* 0x477ba0, mouse and keys on the focused slider object */
 
 void d2_SliderInput(void)
 {
@@ -774,7 +774,7 @@ void d2_FocusInput(int obj)
 /* 0x4784c0, mouse handling: object and window under the pointer, clicks (sound, radio groups, toggles), the hit
    rectangles, dragging the scroll bar of a window */
 #define RAD(i) ((D2RADIO *)((char *)d2_Radios + (i)))
-/* 0x4784c0 @deep B3, 257 code hunks / 602 of 896 bytes, register allocation: the original hoists no zero register (test / mov esi,[mem]; test esi,esi where ours keeps 0 in edi and uses cmp [mem],edi) and the mouse / hit loads repeat differently; the flow, branches and stores read the same (the old note's fit: swapped branches, comma-expression call argument, do-while radio loop); readability is also open here: Q2 (27 mouse / hit table identifiers), Q4 (2 casts) and Q7 (d2_SetObjValue, d3io_NoopCallback declared K&R) */
+/* 0x4784c0 */
 void d2_MouseUpdate(void)
 {
     D2OBJ *o;

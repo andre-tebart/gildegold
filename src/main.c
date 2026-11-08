@@ -1970,7 +1970,7 @@ int main_ChooseTalents(void)
    (next 0x1a, previous 0x1b, ok 0x51b, placed in 800-wide screen units scaled by d2_ScreenScale) and the preview model of the
    current entry, put at the dummy "dummy_SPIELER" with the effect "Effekte/choose_character.esc"; the chosen name goes to
    init_PlayerProfile.model, its id to modelId; job is the profile's job, its title group is the start index; returns 1 when ok
-   was pressed (Enter), 0 when cancelled (the original counts both tables through the men table) @deep body reconstructed against the original (calls, arguments, constants, loop forms match; the 34 table strings verified identical by simulating both sides' stores; cur is 0x30). Left: (1) fpu: the original keeps two products for the button x/y sums (fld s; fmul 150.0f; fld s; fmul 330.0f; faddp at +0xaf7 and +0xbb0/+0xbcf), ours is factored by VC6 into fld s; fadd/fmul (s*(150+330)); tried float/int/double literals, reversed operands, casts, static const x0/y0 (fadd [x0] then fmul): all factored; only a second symbol for the scale (extern ai_Unk5fe708) or a '+ 0.0f' keeps two products, neither has evidence. (2) allocation: the original keeps idx in edi, obj in ebp, shown in esi, bnext in ebx and a slot (frame 0x4a0 vs our 0x49c), ours idx in ebp / obj in esi / shown in ebx; the init block is the same stores in another schedule. Q7 open: ch.h does not include into main (D3ANIMSLOT tag, PATHOUT), gm_TitleGroup has no header prototype */
+   was pressed (Enter), 0 when cancelled (the original counts both tables through the men table) */
 
 int main_ChooseModel(int job)
 {
@@ -2076,7 +2076,7 @@ int main_ChooseModel(int job)
 /* 0x5359f0, the family choice of the character creation ("Menu\CHOOSECITY_HEADER" over the sky "Sky_Mittel_02"): nine template persons (0x5344f0: thief / gypsy 0 / 8, craftsmen 1 / 7, fighter 4, traders 3 / 5, priest 2 / 6) stand
    in the scene; the player clicks one for each of the four slots 0x75e180 [4] (father) and [5] (mother) (the clicked person 0x6f22e4 + 0x200 gets the slot in +0x23c and the dummy name "dummy_VATER" / "dummy_MUTTER" ..), the
    value stored in the slot is the profession group 0 .. 4; with both slots set the talent choice main_ChooseTalents and the model choice main_ChooseModel follow; returns 1 when the character was created (the dummy name table
-   dn[6] of 0x30 bytes, entries 4 / 5 are the only ones used) @deep read against the original and corrected: the odd slot (mother, k=5) is tested first in both the camera target choice (+0xfc.. before +0xe4..) and the click handling, both branches share the slot store; k >= 6; talents ok -> (lobby_ChooseProfession(0xc6) && main_ChooseModel(job)) else pop with ret 0, then if (ret == 0) d2_SetViewEnabled (the original's jump threading). Left is allocation only: the original pushes ebp in the prologue and keeps f in ebp (ours esi), zeroes ret / fade via ebp before the dn table copies (ours esi after them), and has one more stack slot (frame 0x16c vs 0x168: dn at esp+0x5c vs 0x58). Q7 / Q4 open: ch_* (ch.h does not include into main), the scene event table (D3EVENT) is read by offsets */
+   dn[6] of 0x30 bytes, entries 4 / 5 are the only ones used) */
 
 int main_ChooseFamily(int unused)
 {
@@ -2449,7 +2449,7 @@ int main_CharacterIntro(int unused);
    "patrizier_MANN2" (0x75e628 = index + 0x639), -1 = back) and the scripted start menu pages "Startmenu/B_Persoenliches.esc" / "Startmenu/A_Stadtwahl.esc" (0x4e2bf0 / 0x4e2c70, 0x760638 = 0x12d6); returns
    non-zero when the character was created, sets the mode flag ai_GameFlags |= 8 then (else clears it). The quick start copies the
    talents of the job's record: gm_GetJobTalents returns a 6-byte record by value in the original (hidden pointer, eax), the call here
-   passes the buffer by hand @deep read against the original and rebuilt (259 -> 112 ins, size 1018 vs 1015): the language branch inverted (ls_GetLanguage() != 0 = three buttons) and its io_PrintText with the original's six arguments (0x1ac0, 0x1ac2, 0x1ac4, 0x1ac2, 0x1ac4, 1), if / do .. while (sv_RunFrame), the plain-click path continues without d2_SetViewEnabled(f, 1), ai_Unk58b880 is tested (the draft assigned it to ret), the shared lok / lback2 tails, main_MessageBox, txt_Ptrs[0x1af9]. Left: (1) frame 0x24 vs 0x1c: gm_Unk503ee0 returns its 6-byte record by value in the original (hidden pointer; the caller copies the record to a temp: mov dx,[eax+4] / mov word [esp+0x34],dx, then 5 bytes into init_PlayerProfile.talents); typing it needs gm_Unk503ee0's definition (f3gm), am.h and sv_t's prototype changed; (2) allocation: the original keeps again in ebx and ret in ebp, hist in a slot, ours ret in a slot and hist in ebx; the epilogue's ai_GameFlags |= 8 as load / or al / store */
+   passes the buffer by hand */
 int main_ChooseHistory(void)
 {
     int again, back, ret, f, b0, b1, b2, grp, hist, h, r;
@@ -2695,17 +2695,7 @@ void main_ChooseOpponents(int n)
    creates the name object of the city (0x59a2c0 "stadt_<name>", the text plate 0x52e1c0 from the table 0x143a1c0 by the key "_STADTAUSWAHL_<NAME>_INFO+0" (0x42e770)), puts the city tower "sp_STADTTURM" (0x446e10,
    "sonstiges\wimpel_STADTTURM.baf") over the picked city (the pick object 0x448630 with a name starting with "stadt_" selects: sel; the default is the object of the 5th city) and shows its description
    ("_STADTAUSWAHL_<NAME>_BESCHR+0"); the buttons: ok (or enter / 0x1c) goes on to main_ChooseDifficulty and main_ChooseHistory (host: ends at once), the second button opens the opponent
-   selection main_ChooseOpponents (diff of the picked city); returns 1 when a game was set up (the second parameter is the host flag, the first unused)
-   @deep read against the original and rebuilt (193 -> 26 ins, size equal): the ListFiles call as if / else
-   per extension, strcpy for the three inline copies (the name from d2_Strings or the header,
-   "stadt_<name>" into the object, the city name into ai_DataPath + 0x220), the screen size through two
-   locals (H loaded first) for d3_SetViewport, if / do .. while frame loop, the two button tests as plain
-   ifs (the original's jump threading), d3if_Pick prototyped in d3_interface.h (floats, not doubles), the
-   texts txt_Ptrs[0x42cc / 0x42cd]; the header is an LSHEADER, its name (+5) and slotByte (+0x30) loads
-   match the original. Left: (1) slots: the original has cityobj at esp+0x294 and buf4 at 0x394 (ours
-   swapped); declaration order and a block-scoped buf4 have no effect; (2) scheduling: the tower position
-   loads (ecx/edx/eax from sel+0x4c..0x54) before the d3_CreateObject pushes, pos[2] stored after the
-   zeros; a D3VECTOR struct copy makes it worse (123 ins) */
+   selection main_ChooseOpponents (diff of the picked city); returns 1 when a game was set up (the second parameter is the host flag, the first unused) */
 
 int main_ChooseCity(int unused, int host)
 {
@@ -3577,7 +3567,7 @@ void main_EndRound(void)
     amt_TellOpenOffices(ai_Chars[MAIN_PLAYER]);
     snd_FadeMusic(1.0f, 2000);
 }
-/* 0x539620, a player (the character slot p, kind 6 = prisoner / dead, health 0) is replaced by a new figure: first it checks that some slot of kind 6 with health is left (else ai_GameOver); every he_Events record (0x14c bytes) of that character whose kind is in the first list is closed (he_FreeEvent), in the second its +0x70 is set to -1; the kind byte becomes 5, a name is copied from the name table 0x143ac5c (flag9 clear, random 0xbf) or 0x143af70 (random 0x70), the running number and the eight ids are reset, and the events of the table 0x925520 that concern the character in the states 3 .. 9 are dropped @deep All statements read against the original and fixed: two separate lists (la 15 entries from 0x5d, lb {0x45, 0x47, 0} walked as for (j = 0; lb[j]; j++) la[j] == kind), the character scan as an index loop (kind 6 and health != 0), typed MAINCHARNEW fields, two inline strcpy of txt_MaleFirstNames / af70 pointer tables, signed pointer compares; only 'order' hunks and one code hunk are left: after the index scan the original keeps two identical blocks ('mov [ai_GameOver],1; pop edi; add esp,0x48; ret' at 0x5396cb and 0x5396e2, 'cmp ecx,0xffff; jne 0x5396f1' between them) where VC6 cross-jumps the second into the first (ours: 'je 0x5396cb', 17 bytes shorter, size 558 vs 581). Tried: if/else around the rest, return inside the while vs after it. A tail-merge layout question, not a statement. */
+/* 0x539620, a player (the character slot p, kind 6 = prisoner / dead, health 0) is replaced by a new figure: first it checks that some slot of kind 6 with health is left (else ai_GameOver); every he_Events record (0x14c bytes) of that character whose kind is in the first list is closed (he_FreeEvent), in the second its +0x70 is set to -1; the kind byte becomes 5, a name is copied from the name table 0x143ac5c (flag9 clear, random 0xbf) or 0x143af70 (random 0x70), the running number and the eight ids are reset, and the events of the table 0x925520 that concern the character in the states 3 .. 9 are dropped */
 
 void main_ReplaceFigure(unsigned p)
 {
@@ -3643,7 +3633,7 @@ void main_ReplaceFigure(unsigned p)
 }
 /* 0x539870, the end of the round report of the player (0x6f25b8): the bookkeeping of the character record (0x506430: income / expense fields +0x14 .. +0x54, texts 0x2005 .. 0x204e of 0x515960)
    shown on a page (BLACK fade, the window 0x52fa10, the loop 0x5309a0 until a key), then the fields are rolled over (+0x14 .. +0x24 added to +0x2c .. +0x38 and cleared); when the balance goes
-   negative (0x50a6c0) a message of kind 0x60 / 9 is sent and a replacement figure is created (0x539620) if 0x6f25b0 is set; the two row sums are float sums (price 0xc0 * 0.01 * count 0xb4, truncated per step) @deep Reconstructed the two stubbed row loops from the original (r = lines[j]; sum = (int)(sum +/- (double)r[0xc0] * 0.01 * r[0xb4]) for three running sums, 0.01 = double 0x5ece60), the player id as an expression (ai_PlayerId & 0xffff) at each use instead of a local, the (a + b) grouping of the 0x3c roll-up, and the frame (lines[0x2b] gives sub esp,0x200 like the original; dist 676 -> 378 ins). What remains is allocation / slot order: the original keeps the running sums in [esp+0x10] / [esp+0x14] / [esp+0x18] / [esp+0x1c] / [esp+0x20] with a different pairing (ours swaps 0x18 <-> 0x1c <-> 0x20: 'mov [esp+0x18], ebx' vs '[esp+0x1c]' at 0x539892, 'mov [esp+0x20], edi' vs '[esp+0x1c]' at 0x5399a8), puts the row list at [esp+0x78] where the original has it at [esp+0x8c] (the declaration order of lines / a / sum / cnt / kind vs the frame), and uses ebx / ebp where ours reloads ecx from the slots (0x539a1b ..). The code hunks that remain cascade from those slot / register differences; no statement difference is known after 0x539a1b but the cascade hides it. */
+   negative (0x50a6c0) a message of kind 0x60 / 9 is sent and a replacement figure is created (0x539620) if 0x6f25b0 is set; the two row sums are float sums (price 0xc0 * 0.01 * count 0xb4, truncated per step) */
 
 void main_RoundReport(void)
 {
@@ -3898,7 +3888,7 @@ void main_RoundReport(void)
 #define PL(i) ((unsigned)&ai_CharsT + (i) * 0x21c)
 float gm_TitlePeriodServed(int n, int *out);
 
-/* 0x53a250, per-player update of figure `i` by the kind byte at +2: kinds 6 / 7 get the field delta 0x174 = 1 sent, kinds 0 .. 9 otherwise: the same delta for kinds 1 / 2 / 4 / 5 or a character with a building (ai_Unk770cec), and the master-exam start (message kind 0x24 when gm_TitlePeriodServed reaches 1.0 and the title group is below 6) for a character with a job @deep Read against the original: the frame is right now (ev must be 0x42 ints, giving sub esp,0x210 as the original), the string / message / sprintf calls and constants match, the top-level shape (kind 6 -> je block, kind 7 -> retest at 0x53a3fc, kind >= 10 -> ret, tail-jump to cm_SendFieldDeltas) is the draft's. Left: (1) the jump threading of kind == 7: the original's 'cmp al,7; je 0x53a3fc' goes to a second 'cmp al,6; je; cmp al,7; jne ret' before the block, ours threads both to the block ('je 0x53a407'), 2) allocation: the original keeps i on the stack ([esp+0x23c] after the prologue, 'mov eax,[esp+4]' before sub esp), base in edi and &ai_Chars[i] in esi, ours keeps i in ebx and base in esi (diffclass: first line 0x53a250). Tried: typed AICHAR pointer, block-scoped locals, if / else restructure (all worse, 'cmp al,0xa; jae' vs ours 'cmp al,9; ja' differs only in encoding of the same test). */
+/* 0x53a250, per-player update of figure `i` by the kind byte at +2: kinds 6 / 7 get the field delta 0x174 = 1 sent, kinds 0 .. 9 otherwise: the same delta for kinds 1 / 2 / 4 / 5 or a character with a building (ai_Unk770cec), and the master-exam start (message kind 0x24 when gm_TitlePeriodServed reaches 1.0 and the title group is below 6) for a character with a job */
 void main_UpdateFigure(int i)
 {
     int base = i * 0x21c;
@@ -4069,18 +4059,7 @@ void main_CreateStartCouple(void)
 void ord_InitMessageRecord(int a, float b, float c, float d);
 int sv_MessageBox();
 
-/* 0x53b2e0, starts the player's round: dumps every character and clears its round flags, takes the kind 6 one as the player, a random CD check loop (main_Unk53b830, text 0x79), the parties, the round intro page, the alchemists' plants and the kind 7 buildings, then the daily steps of the world (each followed by sv_PumpNet / Sleep(100), main_SettleRound for every living character) or only the income histories when this machine is not the master; the goal fanfare and the outro, the yearly history
-   @deep Rewrote 0x53b2e0 against the original: the character loop as an index loop (the original's jl end
-   compare), the 0x1c8 / 0x1cc masks, sv as the zero-extended int, the CD check loop as a do-while guarded
-   by the first call, the dirty rect order, the backslash of Runden\Spielerrunde_Beginn_NEU (it was lost:
-   \S compiled to S), the kind-7 dword +0x69, the main_SettleRound loop over id != 0xffff and health, 10.0
-   - (4 - difficulty) * 2.5 in double, the relation loops, the hst_YearlyHistory(0 / 1) pair. 384 vs 387
-   instructions, 115 differing. Left is allocation and block layout: the original hoists Sleep into ebp for
-   the whole function (mov ebp, [Sleep] at 0x53b356) where ours loads it into edi for the CD loop and into
-   esi later (every call ebp / call esi line), cur in ebx vs ebp, the loop index in edi vs ebp
-   (0x53b5a5..0x53b5cf); the original moves the CD loop's GameOver / sv_PopTo / return block out of line to
-   0x53b531 (ours emits it after the loop's jmp), and reads ai_GameFlags into al before test al, 4
-   (0x53b351) where ours tests the memory byte. */
+/* 0x53b2e0, starts the player's round: dumps every character and clears its round flags, takes the kind 6 one as the player, a random CD check loop (main_Unk53b830, text 0x79), the parties, the round intro page, the alchemists' plants and the kind 7 buildings, then the daily steps of the world (each followed by sv_PumpNet / Sleep(100), main_SettleRound for every living character) or only the income histories when this machine is not the master; the goal fanfare and the outro, the yearly history */
 void main_BeginPlayerRound(void)
 {
     int sv = snd_AmbientOn;
@@ -4248,24 +4227,7 @@ void main_BeginPlayerRound(void)
    kind 0 / 0xd go to the player (cm_SendOwnership, 0x1b, a 0x31 for every character living there); most kinds wear down (gm_ChangeBuildingState -2 .. -4 with 69 percent). Then every building of pl
    pays its workers (gm_ListWorkers's lists: wage * wageRate / 100, AICHAR.wage), places the ones without a figure on the stage, moves their opinion of pl by wageRate / workRate, lets the
    unhappy ones quit (message 0x33 / 0x34 in 4 .. 9 hours) and lose 10 percent of the skills +0x82 / +0x83 above 42, pays the others of the list, and moves the goods of gm_BuildingBalance's summary.
-   sv_PumpNet and Sleep(20) every 0x20 messages
-   @deep Rewrote 0x53a520 from the original's disassembly, block by block: the building walk (three round
-   sums, the word flags 0x3800, the kind 4/0x10/0x13 object ageing with the branchless clamp, kind 5
-   records and the level * 16000 payment, the kind 0xb..0xd master check with the four flags1b4..target
-   ints, the 0x1b messages that the original sends without a memset (msg1 at +0x144, msg2 at +0x4c), the
-   ownership hand-over with the 0x31 per resident, the 69-percent wear), the title group check, the worker
-   pay loop over gm_ListWorkers (its +4 list walked by one pointer over both passes, wage = gm_JobWage *
-   (wageRate * 0.01), the stage placement, the wageRate / workRate opinion steps with their else-if
-   structure, the 0x33 (msg4 +0x23c) / 0x34 (msg1) quit messages each with its own block, the 0.9 skill
-   loss above 42.0f), the 12 others of the list (a second wage slot) and the gm_BuildingBalance goods
-   moves. gm_ListWorkers returns the count (fixed in f3gm.c, its prototypes in f3gm.h). 1044 vs 1047
-   instructions, 561 differing. Left is allocation: the original keeps the building in esi with ebp as a
-   zero register (push ebp / cmp edi, ebp for every 0) and the type record spilled to [esp+0x18], ours
-   keeps the building in ebp and pushes immediates; that rotation runs through the whole first loop
-   (0x53a528 .. 0x53aa6f) and the [esp+0x1c]/[esp+0x20] counter slots of the pass loop (0x53ab72,
-   0x53b09d); plus scheduling in the 0x31 / 0x33 message stores (0x53a9a1, 0x53ae5a), the word test of
-   flags5a (original mov ax / test ah, 0x38) and a frame 0x10 smaller than the original's 0x378 (one of the
-   16-byte temporaries sits in registers). */
+   sv_PumpNet and Sleep(20) every 0x20 messages */
 void main_SettleRound(unsigned short pl)
 {
     AIMSG msg2;     /* 0x1b to a new owner; gm_ListWorkers's worker lists; 0x31 */
@@ -4585,19 +4547,7 @@ void main_SettleRound(unsigned short pl)
 void d3_SetViewport(float w, float h, float x, float y, float zn, float zf, float scale, int a, int b);
 
 /* 0x53bb20, the main game loop of the process (the dialog callback of the process level, `ctl` = 0 on the first call): the start-up / load of the game by the mode flags 0x6f23f8 (1 new game, 2 load, 4 network, 8, 0x10, 0x40 .., 0x80), the "Init" export of the optional
-   plug-in DLL (0x75dda0), the autosave, then the round loop: one player at a time (0x6f25b8) the day change 0x5384e0, the start of the round 0x53b2e0 ... until the game is left (0x6f259c); ends with the network error / player left messages (ROUGH)
-   @deep Read against the original and restructured 0x53bb20 (598 -> 198 differing, 992 vs 994
-   instructions, frame 0x4b4 vs 0x4bc): the network branch first (flags & 4), the separate 0x7c system
-   message buffer for AUTOSAVE, the load progress call pair, the mode dispatch (0x41: new city / network
-   with net_Conn.s != -1 around the 0x40 / start choice and the failure after it; 0x40; 2 with
-   sv_ClockSeason, not gm_ClockSeason), the money cheat order and the index loops, the panel object pair of
-   calls, the player id scans with the id in a short, the current player count loop, ls_SaveSlot as a byte,
-   the clock loops on a copy of ai_Time testing its hour. Left: the original reads ai_GameFlags
-   into al before each test (mov al, [ai_GameFlags] / test al, X at 0x53bb6a, 0x53c418, 0x53c42a, 0x53c443,
-   0x53c49c, js for bit 7 at 0x53c4c7) where ours tests memory, with the knock-on of ebp as the zero
-   register (push ebp / cmp edx, ebp at 0x53bb5b, 0x53c20a, 0x53c2ab) and edi = 0x17 held for the hour
-   compares (0x53c695, 0x53c6b8); the store schedule of the AUTOSAVE copy (0x53c5de) and of the office
-   record (0x53c883 .. 0x53c8df); an 8-byte smaller frame (slot rotation of the clock copies). */
+   plug-in DLL (0x75dda0), the autosave, then the round loop: one player at a time (0x6f25b8) the day change 0x5384e0, the start of the round 0x53b2e0 ... until the game is left (0x6f259c); ends with the network error / player left messages (ROUGH) */
 void main_GameLoop(int ctl)
 {
     int iv, i6, i5;
@@ -5108,18 +5058,7 @@ void main_PlayOutro(void)
         mov_Exit();
 }
 /* 0x53ccf0, the program entry (WinMain: instance, previous, command line, show): reads game.INI (Network / Gfx / Sound / General), parses the command line (STADT=" BERUF=" IP=" PORT=" MO_MONEY FULLSCREEN DIRECTWINDOW), starts the engine
-   (0x5324f0 / 0x531ba0 / 0x531c50 / 0x532160), then the game loop 0x53bb20 until the game ends (ROUGH)
-   @deep Read against the original and fixed: the two path copies as do { c = src[i]; dst[i] = c; i++; }
-   while (c), mode as an int, the resolution byte stored before the screen mode lookup
-   (ai_ScreenModes[(unsigned char)res]), the quoted-argument copies as while (s < e) *d++ = *s++, the IP
-   flag is net itself (the draft's second r variable is gone; the job index has its own variable), the
-   OpenEngine / OpenScreen failures with their own exits, the default profile typed (coat as the int 0x59a,
-   the job byte), the talents copied from gm_GetJobTalents's record as an int plus the +4 byte, then bytes 3 /
-   0 / 1 set to 0xa8 / 0 / 0 (the draft had a misread mask). 507 vs 508 instructions, 83 differing, size
-   1849 / 1849. Left: the three quoted-argument copies (0x53d06a, 0x53d0a6, 0x53d0e2) where ours keeps the
-   source in ebx and walks a copy in ecx with the destination in esi, the original walks the source in esi
-   and the destination in ebx; the resolution zero-extension order (0x53cfc0: xor ecx, ecx / mov cl, al);
-   the frame 4 bytes smaller (one slot); the talent byte schedule (0x53d368). */
+   (0x5324f0 / 0x531ba0 / 0x531c50 / 0x532160), then the game loop 0x53bb20 until the game ends (ROUGH) */
 
 int WINAPI WinMain(HINSTANCE hInst, HINSTANCE prev, char *cmd, int show)
 {

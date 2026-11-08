@@ -424,8 +424,7 @@ void d3if_Prerender(char map)
     d3d_Device->lpVtbl->EndScene(d3d_Device);
 }
 /* 0x4478e0, makes scene `index` the current one: saves the engine's global state into the old scene and
-   loads the new scene's; with `keep` the objects, sky and map of the old state stay as they are
-   @deep Q2 d3if_Unk5fb5c0 / d3if_Unk5fb5c4: the same write-only scene pair as d3if_Reset (.text scan: only this function's two save/restore pairs and d3if_Reset's stores; .data initials 4 / 0xf; no reader, no pointer to it, no meaning derivable). The other 12 identifiers (d3s_ResetShadows/45e620, d3sm_Shadow, d3_Mirror.obj, d3_Mirror.info/08, d3if_TexturesEvicted/dc, d3s_ShadowMapSize, d3if_Unkfba944) still need reading; behaviour is already reached (the 22 code hunks are moved instructions per diffclass) */
+   loads the new scene's; with `keep` the objects, sky and map of the old state stay as they are */
 
 char d3if_SelectScene(int index, char keep)  /* @original: the definition returns char and takes a char keep (byte-matched); the headers declare void (int, int) */
 {

@@ -394,8 +394,7 @@ void lobby_ShowCity(void)
    (5, 10, city + 0x59a) and the name / family name text 0x473650 (x + 0xf, 10); then "%s: %s" 0x62aaac
    with the honour title of the gender (U_I (0x143a614), U_I (0x143a63c) for the female byte 0x6f5e30) and
    the profession (the tables 0x143a7fc / 0x143a680 by 0x6f5e2b) and the religion (0x143b3d8 by 0x6f5e31),
-   each below the last
-   @deep Q1 (unit unnamed, @named_by -); B: code 117 + slots 12 + fill 3; Q2 (6 callees incl. 0x4731d0/0x473650/0x5de652), Q3 (21 addresses), Q4 U_I/U_B + 2 casts; the same missing control API and typed player record */
+   each below the last */
 
 void lobby_ShowMyPlayer(void)
 {
@@ -429,8 +428,7 @@ void lobby_ShowMyPlayer(void)
     d2_CreateWinText(x, y + 2 + y + 0xc, text, U_I((unsigned)&d2_LastWindow));
 }
 /* 0x58ad20, waits for the player list (128 B): 0x4cd610 and its answer 0x4c3ae0; the list 0x4cd5d0 -> 0x6f267c;
-   the entry 0x6f267c[1 .. 8] with a player (0x4cd820) is awaited (0x4c3ae0)
-   @deep Q1 (unit unnamed, @named_by -); B: code 28 (the entry scan of the player list 0x6f267c, 0x4cd820); Q2 (5 callees), Q3 (0x6f267c), Q4 U_I; needs the player-list API and the record typed */
+   the entry 0x6f267c[1 .. 8] with a player (0x4cd820) is awaited (0x4c3ae0) */
 
 void lobby_FetchPlayers(void)
 {
@@ -455,8 +453,7 @@ void lobby_FetchPlayers(void)
    0x473650 (x + 10, y, "%s %s %s " 0x62aab4 of the honour title, the name +0x12 and the family name +0x22,
    plus the status text 0x144abf4 when +4 is set); the control id into 0x6f5e80[i], y += 5 + the control
    height; the chosen player 0x6f5e78 gives 0x6f5ea0 = i, the others are marked selectable (+0x4c = 1,
-   +0x1c0 = 3); the record id equal 0x6f5e00 marks the control (+0x28 = 1)
-   @deep Q1 (unit unnamed, @named_by -); B: code 117 + fill 3 + slots 2 (the original's strcat is a rep movs hand loop, note Open work); Q2 (6 callees), Q3 (13 addresses), Q4 U_I + 2 casts */
+   +0x1c0 = 3); the record id equal 0x6f5e00 marks the control (+0x28 = 1) */
 
 void lobby_ShowPlayers(void)
 {
@@ -503,8 +500,7 @@ void lobby_ShowPlayers(void)
    at (i % 3) * 0x60 + 100, ((i / 3) * 5 + 5) * 0x10 through 0x4731d0 (the id i + 0x5a1), their window entry
    0xf8f080 + id * 0x2ec (+0x4c = 1, +0x1c0 = 3), the text +0xbc = the profession name 0x143a978[i], +0x1bc =
    0x56 and 0x46c560 (the object list); the frame loop 0x5309a0 (0x58b880, mask) with 0x46c6c0, the clicked
-   control 0x5fe710 against the ids -> 0x5043d0 (the profession, 1) into 0x75e5a3, 0x6f22a0 = 1, return 1
-   @deep Q1 (unit unnamed, @named_by -); B: code 70 + fill 3 + regs 2 (the choose-profession window); Q2 (12 callees), Q3 (8 addresses), Q4 U_I/U_B */
+   control 0x5fe710 against the ids -> 0x5043d0 (the profession, 1) into 0x75e5a3, 0x6f22a0 = 1, return 1 */
 int lobby_ChooseProfession(int param)
 {
     int ids[22];
@@ -569,8 +565,7 @@ int lobby_ChooseProfession(int param)
    the line "$%dFF%s: %s$A" 0x62aac0 (the name +0x40, the text) for a record without +100, or
    "$%dFF%s (%s): %s$A" 0x62aad0 with the shout text U_I (0x144abf8) when +100 is the chosen player 0x6f5e78;
    each line through 0x515960; the newest line count grows the chat box (0x6f2684 > 0x6f2680 and the control
-   height 0xf8f12a < the box) -> 0xf8f364 = +0x18, 0xf8f368 = the delta, 0x46f840 (the screen)
-   @deep Q1 (unit unnamed, @named_by -); B: code 151 + regs 14 (the chat lines); Q2 (7 callees), Q3 (12 addresses), Q4 U_I + 2 casts */
+   height 0xf8f12a < the box) -> 0xf8f364 = +0x18, 0xf8f368 = the delta, 0x46f840 (the screen) */
 
 void lobby_ShowChat(void)
 {

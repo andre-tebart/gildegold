@@ -4185,18 +4185,7 @@ int ai_ExecuteTrainJobSkill(AIPER *p, AIARG *s1, AIARG *s2)
     cm_SendLongMessage((AIMSG *)&m);
     return 5;
 }
-/* 0x496b10, evaluate: without an office application, the least liked (gm_Liking) of the three characters +0xb4 / +0xb8 / +0xbc of the character's event 0x2c (no judge at +0xb4) becomes the target (o1 kind 7) and the action's weights count against the moods; no such event or office kind 0xd: the guilt or mood weights
-   @deep read against 0x496b10..0x496e36: same statements, calls (gm_Liking(p->id, c->id, 1),
-   ai_EvalGuiltWeights / ai_EvalMoodWeights argument order), constants and conditions; the fallback
-   rewritten as an inline block under the event test compiles identically (tried, reverted). Left is
-   allocation and block layout: the original keeps i in ebx and a in edi (ours swapped), y (the protestant
-   judge's id) in ebp where ours spills it to [esp+0x60] (mov eax,[eax+4] / mov [esp+0x60],eax vs mov
-   ebp,[eax+4]), loads p->sel into bl before each cmp al,bl (ours cmp al,[esi+0x130]), lea ecx,[eax+0x34]
-   vs mov/add, and places the bi==-1 reload stub (mov ebx,[esp+0x5c] / jmp 0x496be1) and the
-   ai_EvalMoodWeights return at the end where ours has it mid-loop; 254 vs 258 instructions. Q2 left:
-   AIJOBX.unkb0..unkbc are the event's per-kind payload words (event 0x2c: +0xb0 the character's netId,
-   +0xb4/+0xb8/+0xbc three character ids; event 0x1b: +0xb0 a price), no one name fits the shared struct
-   (same gap as ai.h AIJOB.unkb8). */
+/* 0x496b10, evaluate: without an office application, the least liked (gm_Liking) of the three characters +0xb4 / +0xb8 / +0xbc of the character's event 0x2c (no judge at +0xb4) becomes the target (o1 kind 7) and the action's weights count against the moods; no such event or office kind 0xd: the guilt or mood weights */
 
 int ai_EvalLeastLikedOfEvent(float *a, float *b, int i, AIPER *p, int f, AIARG *o1, AIARG *o2)
 {
@@ -4488,21 +4477,7 @@ int ai_ExecuteApplyForOffice(G5CH *p, AIARG *s1)
         return 0;
     return amt_ApplyForOffice(p, s1->ref) ? 10 : 0;
 }
-/* 0x497660, decide of action 11: whether the good o1 (kind 2) can be made where o2 points (a store object, a building by its type's recipe list, or a character) and its owner can pay gm_GoodsPrice (11, else 0)
-   @deep read against 0x497660..0x4979cc: same checks, calls, arguments and constants for the three o2
-   kinds and the rate block. Fixed this session: the rate block's owner is its own variable (original:
-   result in eax, c stays in [esp+0x10]), the duplicate c test dropped, success paths goto rate and fails
-   fall to the one return 0 (330 -> 315 instructions). Tried and reverted: flat early returns (325/334),
-   kind 1's type block with its own return 0 (321), the outer test as an early return (320), the loop as
-   for (..; i < n && k != id; i++) (no change). Left: the return block layout and tail duplication
-   explained in size, the esi zero register, the ebp reload placement; Q2 evidence gaps AIOBJ.unk06 (a link
-   id with three meanings, see ai.c 0x4890..), AIGOODX.unk40 (a goods flag only tested here). (size: 315 vs
-   296 instructions, explained: ours 315 vs 296: three extra copies of the 6-instruction return-0 epilogue
-   (xor eax,eax / pop edi..ecx / ret at ours 0x49776e, 0x49779f, 0x497889) where the original reaches its
-   one block 0x4978ca by conditional jumps; VC6 duplicated the tail at our loop exits because ours reloads
-   obj (mov ebp,[esp+0x20]) only on the found path while the original reloads it at the loop merge point
-   (0x497771 / 0x4977a6 / 0x497873), plus ours caches 0 in esi (xor esi,esi / push esi) where the original
-   pushes 0) */
+/* 0x497660, decide of action 11: whether the good o1 (kind 2) can be made where o2 points (a store object, a building by its type's recipe list, or a character) and its owner can pay gm_GoodsPrice (11, else 0) */
 
 int ai_DecideProduceGood(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
 {

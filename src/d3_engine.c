@@ -639,8 +639,7 @@ D3OBJINFO *d3_SelectSurf(D3OBJECT *obj)
     return (D3OBJINFO *)s;
 }
 /* 0x43a160, d3_ForEachObject callback: transforms, clips and projects a visible mesh and adds its
-   triangles to the sort buffer (by texture with Direct3D, by depth in software).
-   @deep behaviour draft: 408 code hunks - the register allocation differs from the first hunk (orig keeps the object in esi, the surf in edi, the mesh in ebp and the state byte in bl at 0x43a172..0x43a1d6; ours uses ebx/ecx) and whole blocks sit at other addresses (orig 0x43a256 state/info stores, 0x43a2be the z range and 0x43a3e8 the sort entry); reading also shows meaning differences in the draft (ours clears obj->state bit 2 with D3_OBJBITS(obj).dirty = 0 at 0x43a1cc -> and cl,0xfb, while the original only clears bit 3 -> and cl,0xf3 and keeps bit 2). The function is a first draft (structure right, not iterated); re-deriving it is match-deep work, not a reading fix */
+   triangles to the sort buffer (by texture with Direct3D, by depth in software). */
 
 char d3_DrawObjectCB(D3OBJECT *obj)
 {
@@ -780,7 +779,7 @@ void d3_SetFogRange(float start, float end)
         d3_UpdateAll(0);
     }
 }
-/* 0x43a6f0 @deep Q2 blocked like d3_SetFogRange: d3_Unkfc2df0 / d3_Unkfc2df4 are only stored from d3_SetViewport's last two int parameters and passed back, no role evidence; behaviour draft 50 code hunks: the original duplicates the four tail stores (FogEnd2, FogOn, FogStart1, FogColor) in both branches at 0x43a72b..0x43a74b and 0x43a7a1..0x43a7b3 while VC6 shares one tail after a jmp in ours; moving the stores into both branches was tried and made it worse (74 -> 89 differing bytes) */
+/* 0x43a6f0 */
 
 void d3_SetFog(float start, float end, unsigned long color)
 {
@@ -802,8 +801,7 @@ void d3_SetFog(float start, float end, unsigned long color)
     }
 }
 /* 0x43a7d0, Direct3D rendering: draws the sorted triangles in texture order through the vertex buffer,
-   clipping the ones that cross a frustum plane into fans.
-   @deep behaviour draft: 779 code hunks / 36 slots; the frame differs at once (orig sub esp,0x80, ours 0x78 - two dwords of locals missing) and so does the register allocation (orig zeroes edi and keeps the texture in edi/[ebp-0x18], ours uses esi); the source is a first draft (register allocation differs from the start), so the local set has to be re-derived, which is match-deep work */
+   clipping the ones that cross a frustum plane into fans. */
 
 void d3_DrawSortedD3D(void)
 {
@@ -1817,7 +1815,7 @@ void d3_InitSurf(D3SURF *s, D3OBJECT *owner)
         ((D3SURFTEX *)(t - 1))->flags = 0;
     }
 }
-/* 0x43ce60 @deep B3 draft: the whole original 0x43ce60..0x43cf95 was read; only the same instructions in another schedule/encoding remain. All 6 orders of the state/stateFlags/flags RMWs were built (state,stateFlags,flags = 10/336 B best; a stateFlags-first order explodes to 233+ B). Left: or cl,0x65 and and bl,0xc1 swapped, the 0x212 store before 0x210, and the light-entry loop addressed as [eax+ebx-4]/[eax+ebx-8] (original) vs [ebx+eax-4]/[ebx+eax-8] (ours); i[e], (e+i)-> and byte-offset spellings were tried. Readability debt left: Q2 on the D3OBJX/D3LOPS fields (offTime unk044 unk06c unk078 unk09c unk198 unk19c unk1a0 unk1a4, light e[] unk30/unk34), Q6. */
+/* 0x43ce60 */
 
 void d3_InitObject(D3OBJECT *obj)
 {
@@ -2210,8 +2208,7 @@ char d3_DeflateScene(unsigned int flags)
     return 1;
 }
 /* 0x43dbc0, d3_ForEachObject2 callback: builds the drawable points and triangles of all surfaces
-   from the loaded mesh data.
-   @deep B: 140 code hunks, the first 118 instructions equal; from the triangle loop (0x43dd26) the same operations are allocated differently - the zero register is ebx throughout ours and ecx/edx/edi in the original (xor/cmp vs test), add vs lea, mov [..],0 vs xor+bl stores, plus one dead 'jmp .+2; xor ecx,ecx' at 0x43dd49 that ours folds; read the whole body against the disassembly: no missing statement, wrong constant, callee or field - whole-function register allocation, match-deep's toolbox. Also Q2 D3PTRI.unk18/unk1c/unk20 and D3PVERT.unk4d plus the Q4 raw *(unsigned char *)&t->v[m]->flags have no evidenced name in callers or data. */
+   from the loaded mesh data. */
 
 void d3_InflateObject(D3OBJECT *obj)
 {

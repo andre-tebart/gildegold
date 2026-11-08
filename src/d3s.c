@@ -250,7 +250,7 @@ void d3s_DrawSpans(int rows, int w, unsigned char flags, char top, int y0)
         }
     }
 }
-/* 0x45a2e0, a shadow triangle: edges from the three points p (x, y pairs), colours c, radius pixels / rows around @deep B code hunks 215: the edge selection and the two span calls are the same operations with b/c/d/l and y in other registers / homes (original b in ebx, d in memory, y in ebp; ours d in esi, b in memory, y in esi) and the same stores in another order; no missing statement, constant or call - 72 selection/entry statement orders were tried. Q4: 2 raw byte views of flags remain */
+/* 0x45a2e0, a shadow triangle: edges from the three points p (x, y pairs), colours c, radius pixels / rows around */
 
 void d3s_ShadowTriangle(float *p, unsigned char *c, unsigned char *dst, int pitch, unsigned int flags, char *base, int radius)
 {
@@ -388,7 +388,7 @@ void d3s_FillRows(int n)
         }
     }
 }
-/* 0x45a880, draws one polygon of the shadow mesh into the shadow texture (bpp bits per pixel) @deep B code hunks 248: the edge selection, the bpp checks and the two span fills are the same operations in other registers / homes (original top in ebx loaded from the bpp slot per branch, minY in the size slot cached in ebp; ours minY in ebx, top in memory); 360 entry/selection statement orders, volatile minY and the <= 8 / < 9 forms were tried. Q4: 2 raw dword views of the byte bpp remain */
+/* 0x45a880, draws one polygon of the shadow mesh into the shadow texture (bpp bits per pixel) */
 
 void d3s_ShadowPoly(D3SPOLY *poly, unsigned char bpp, int size)
 {
@@ -1043,7 +1043,7 @@ float d3s_GetGround(D3OBJECT *obj, D3OBJINFO *info, D3OBJECT *light)
     }
     return y;
 }
-/* 0x45be10, projects the mesh along the light onto the ground and renders the shadow texture @deep B code hunks (591 asm lines, was 625; 1789 bytes): after the rect ends were fixed (+ 1.0 double inside the cast, the original's fadd QWORD 1.0) the rest is allocation - every local of the frame in another slot, the block-max scan keeps the pointer in another register and steps 0x320 per row (0x64 per block in the original), far-branch register roles; the 17 calls and every non-stack constant agree. Q2: dd_LockSurfaceFlags/dd_FillSurface/dd_UnlockSurface and d3d_BuildMipmaps are other units' unnamed functions. Q4 1 raw access */
+/* 0x45be10, projects the mesh along the light onto the ground and renders the shadow texture */
 
 void d3s_Project(D3OBJECT *obj, D3OBJINFO *info, D3OBJINFO *mesh, D3TERRAIN *t, D3VECTOR *ldir,
                  D3VECTOR *lpos, D3OBJECT *light, D3SSLOT *slot)
@@ -1205,7 +1205,7 @@ void d3s_Project(D3OBJECT *obj, D3OBJINFO *info, D3OBJINFO *mesh, D3TERRAIN *t, 
         }
     }
 }
-/* 0x45c620, updates the shadow of obj cast by light @deep B code hunks 409 (279 asm lines, was 283; 660 bytes): the original builds the tex_Load flags as a 4-byte local (memset + b[0]=0x7f + b[2]|=2, pushed from [esp+0x10]) where our source passes the same value as the literal 0x2007f, and spills the mesh 0x1d8 float to [esp+0x14] (frame 0x3c vs ours 0x34); a D3TEXFLAGS local + float local reproduce that frame but were WORSE in two tries (682/314 and 688/305 asm lines), so the slot layout is deep's; register roles (zero register ebp/ebx, esi/edi light/info) differ. Meaning fixes done: type >= 5, power test with a double 0.0, block scan field is .lod (was .hi). Q2 unk090 / Q4 4 raw accesses remain */
+/* 0x45c620, updates the shadow of obj cast by light */
 
 char d3s_Update(D3OBJECT *obj, D3OBJECT *light, D3TERRAIN *t)
 {
@@ -1332,7 +1332,7 @@ void d3s_UpdateObject(D3OBJECT *obj)
             d3s_Update(obj, d3s_Lights[i], (D3TERRAIN *)d3_Terrain);
     }
 }
-/* 0x45ca60 @deep B code hunks 176, fpu 20: the original keeps all five float temps (y f x z w) in memory (frame 0x44 = lpos 24 + ldir 24 + 20) where ours keeps them in registers (frame 0x20), and esi/edi hold info and light the other way round (regs 2); the seven calls (d3_UpdateWorldMatrix, d3_PointToWorld, d3_DirToWorld, d3s_GetGround, GetBox, d3_ClipBox, d3s_Update) are the same and every non-stack constant agrees, so the box projection / clip maths is the same operations in another allocation */
+/* 0x45ca60 */
 
 void d3s_UpdateObjectAt(D3OBJECT *obj)
 {

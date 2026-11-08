@@ -725,8 +725,7 @@ void d3_RelightObjectFrame(D3OBJECT *obj, struct D3ANIMFRAME *frame)
 }
 /* 0x4538a0, last function of the TU: invalidates the cached scene lighting (light generation ++, all light
    records dropped, the lights-changed flag set) and rebuilds the terrain light map. on > 1 relights every
-   object of the default scene at once; on 0 it does nothing unless 0x633438 is set.
-   @deep Q2: 0x633438 has no evidenced name. The whole exe references it four times (4 raw hits): d3_Init only sets it 0; it gates the three orthographic view cameras Oben/Vorne/Seite in d3if_CreateCameras (0x448910) and makes type-6 spawns type 5 in d3_SpawnObject (0x43d..., case 'r'); here it skips the relight when on == 0. No code writes it to 1, so what the condition stands for (editor/view mode?) is unproven. Q1 fixed (d3_LightInvalidate), the other identifiers named (633738 -> d3_Terrain, 633b14 -> d3_LightsChanged). */
+   object of the default scene at once; on 0 it does nothing unless 0x633438 is set. */
 
 void d3_LightInvalidate(unsigned char on)
 {

@@ -100,7 +100,7 @@ write:
         WriteConsole(err_Console, "\n", 1, &n, NULL);
     }
 }
-/* 0x4215c0, unhandled exception filter: writes <exe>.dbg-symbolized crash info to _crashdump.log @deep read whole against the original: inline extension scan (fwd to NUL, back to '.', 'dbg'), locals crlf/sp/sep declared after proc = GetCurrentProcess() in the log block (copied from .data), size reused as the xor-loop counter with got as bound, switch case order (jump tables equal), shared WriteFile tail, walk loop. Remaining: register allocation (original keeps ep in edi, Esp in ebx, WriteFile in esi; ours keeps a zero constant in edi and stack in memory, so every push 0 and the slot pairs differ: asmdiff 0x42166b..0x421ba9 are regs/slots permutations) and one 3-instruction spot at the err_CheckCall result (original: test al,al; seta al; and al,1; test al,al; je, ours: test al,al; je/jle), tried !, <= 0, == 0, > 0 with unsigned char and an int ok, none makes VC6 emit the seta */
+/* 0x4215c0, unhandled exception filter: writes <exe>.dbg-symbolized crash info to _crashdump.log */
 
 LONG WINAPI err_ExceptionFilter(EXCEPTION_POINTERS *ep)
 {

@@ -59,7 +59,7 @@ static int d3t_SunFade = 0;              /* 0x631124, 1 fading in, -1 fading out
 static int d3t_Unk631128 = 0;            /* 0x631128 */
 int d3t_SunFadeStart = -1;  /* 0x5f345c, initialized to -1; TODO define here once .data is matched */
 
-/* 0x411680, starts an animation that moves the object to pos and turns it to dir (angles). @deep B: read the whole 137-line asmdiff against 0x411680..0x411860: the same statements with another register allocation and scheduling - the three af flag byte updates (|= 0x14, &= ~8, |= 2) are interleaved differently, the d3_UnwrapAngles argument setup and the D3ANIMKEY copies use other registers/slots (key[0].time and the two vec copies swapped), the FPU projection/relative-vector sequence has another stack order; no different constant, callee, condition or field. Readability Q2 d3t_PlaceTarget/d3_Unk1466630 (globals) and d3anim_CreatePath (the animation creator) is deep work. Needs vargen/try.py */
+/* 0x411680, starts an animation that moves the object to pos and turns it to dir (angles). */
 int d3t_PlaceObject(D3OBJECT *camera, float px, float py, float pz,
                     float dx, float dy, float dz, int unk, char flags)
 {

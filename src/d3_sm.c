@@ -214,7 +214,7 @@ void d3sm_Replace(D3SM *h, int from, int to)
         }
     }
 }
-/* 0x45e620, (re)builds the map from the terrain and the objects of the default scene @deep behaviour: 669 code hunks (frame sub esp 0x110 vs 0x108, the pos/rot copies and corner[8]/box/mn/mx/uv locals land on other stack slots; the asmdiff mnemonics differ as well: 7 je vs 1, 7 jp vs 2, fdiv vs fdivr, extra and/lea - the short-circuit chains and the FP divisions are compiled in another form); readability: Q2 three callees in other units still unnamed (d3_RadixSort 0x43b300 sorts d3_SortBuf, d3_TransformMeshes 0x43d840, d3s_ShadowTriangle 0x45a2e0) and the field rotation, Q4 two raw dereferences ('*(D3VECTOR *)&d3_Camera->pos' / '->rotation', fixable to plain struct copies but Q2 stays); needs the whole toolbox and the other units' names */
+/* 0x45e620, (re)builds the map from the terrain and the objects of the default scene */
 
 void d3sm_Build(D3SM *h, D3TERRAIN *t)
 {

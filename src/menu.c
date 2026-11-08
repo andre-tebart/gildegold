@@ -267,8 +267,7 @@ int d2_CreateRadioGroup(int n, ...); void d2_RadioAdd(int g, int obj); void d2_M
    and adds every control record 0xf8f080 + id * 0x2ec whose +0x18 is not 0x40 (0x46c560). The pump
    0x5309a0 runs with this function as its callback (0x46c6c0 per frame); a click id 0 (0x475600?) means
    yes -> 1, id 1 -> 0. 0x6f2f95 byte 1 marks the box open (a second box returns 0 at once).
-   Returns 1 / 0.
-   @deep meaning matches the original: the six messagebox names by flags 2/0x10/0x20/0x100, the 0x717c6 override, 0x46c490/0x46c560 control filter (!= 0x40), the pump loop (0x46c6c0, 0x4741a0 on 0x40, 0xf8a668 0/1 -> ret 1/0, 0x14673a0, the +500 ms timeout on 0x6333cc) and the 0x6f2f95 open flag all match 0x5d3810's disassembly; the loop bound is re-read each iteration now. 273 code hunks remain from codegen only: frame 0x0c vs 0x10 (a 4th original slot with no reader), register allocation (list ebp, flags ebx, name edi vs the original's esi loop index) and the store/scheduling order of the flag tests */
+   Returns 1 / 0. */
 int ai_MessageBox(int param_1, int param_2)
 {
     int win;
@@ -343,8 +342,7 @@ created:
    check), param_4 the request record (the name at +9). The name must equal the slot's string
    ("QUICKSAVE" 0x624528 / "AUTOSAVE" 0x62451c, case-insensitive). A free slot (+8 == -1) gets the byte
    +0 = the slot and the 0x84 dwords of param_4 copied to +0x10. Returns the slot, -1 when taken / the
-   name does not match.
-   @deep meaning matches the original/Ghidra: the QUICKSAVE/AUTOSAVE name rules over param_4+9, param_3 0/1/-1 handling, the second case-insensitive compare, the slot = param_2 + param_3*0x220 free check at +8 == -1, the byte store and the 0x84-dword copy from param_4; the 100 code hunks are control-flow layout (the two strcmpi paths with the inline -1 returns at 0x5d3a46/0x5d3a56 and 0x5d3a6d) and register allocation (param_4 in edi vs esi, param_3 in ebx) only */
+   name does not match. */
 
 int ai_RegisterSaveSlot(int param_1, int param_2, int param_3, void *param_4)
 {
@@ -1125,8 +1123,7 @@ extern INIT_LOD d3io_Lod;          /* 0x5fbf78 */
    ch_SetLowPoly gets the character detail (ai_GfxFloor.byte[3]), the camera limit pair of the camera_limits byte
    (ai_GfxFloor.byte[1]) is copied to sv_CameraHeightNear .. sv_CameraAngleFar, the game state re-places the
    camera, the mipmaps follow the floor setting and the scene is selected around the build-site check and the
-   red lights. Returns 0
-   @deep behaviour from the ROUGH stub rewritten against the whole original 0x5d5c40..0x5d5e8b (the stub was 16 B): the shadow detail (ai_GfxShadowDetail) picks ch_ShadowEnabled + the 0x20 / 0x40 size and the changed flag, a changed size resets / frees the shadows (mask 0x40) and clamps d3s_TexSize to d3s_MaxTexSize before d3_UpdateAll(0); init_SetDetailLevel(ai_MapRefs, 0); the LOD handling (byte[2]) picks d3io_Lod (2 / 4), deselects the scene, reloads the meshes (0x40, 3) and reselects; d3_ApplyGraphicsOptions(floor byte, 0, 2 - texture_scale, changed, 0); the fog scale 1.0 - fog*0.01 (double constants) only while neither ai_PlayerBuilding nor ai_FallbackBuilding is set; the town-scene character bodies get the shadow bit (+0x211 bit 3, the xor idiom); ch_SetLowPoly(character_detail); the camera limit pair of the camera_limits byte (table 0x6237d0, 6 pairs, the pair +3) into sv_CameraHeightNear / sv_CameraAngleNear / ...Far; sv_PlaceCamera when ai_GameState; d3fl_SetMips on a floor change; then select the scene, ai_CheckBuildSites, d3_SetRLights(detail != 0), reselect. Q1/Q2/Q5/Q7 cleared (ch.h's CHARACTER + ch_List, INIT_LOD union for the whole-dword d3io_Lod, INIT_MAPREF via data_views' ai_MapRefs, prototypes for all 13 callees). Left: 6 hunks / 98 differing instructions before this session, all codegen shape: the camera limit copy - ours did float copies (fld/fstp) from (0x623800 - 0x30) where the original copies the four dwords from the table symbol 0x6237d0; that table was missing from the C, so the copies read whatever the linker put before sv_CameraHeightNear (the camera angle became 8.2e20 and the whole 3D view culled blue); it is now sv_CameraLimits in sv.c and the copies come from it. Still open: the changed flag / lod / scene registers (slots hunk [esp+4]/[esp+8]). Renames: ch_Unk5f122c -> ch_ShadowEnabled, sv_Unk525dd0 -> sv_PlaceCamera, ai_Unk623800/04/08/0c -> sv_CameraHeightNear / sv_CameraAngleNear / sv_CameraHeightFar / sv_CameraAngleFar, ai_Unk6f22d4 / d8 -> sv_CameraHeightFactor / sv_CameraAngleFactor. */
+   red lights. Returns 0 */
 int ai_ApplyGfxOptions(void)
 {
     unsigned char level, changed;
@@ -1453,8 +1450,7 @@ void ai_LoadScreenImage(char *path)
 /* 0x5d73e0, is there a character that can be quicksaved (78 B): 0 -> no game (ai_GameState 0x6f25ac
    == 0); otherwise walks the character records (0x770b82, ai_Chars + 2, stride 0x21c) for one with the
    record flag +6 > 0, the kind +0 in {6, 7} and the dword +0x20a != -1; 0 if found, 1 when the walk
-   passes gm_PlayerRecordBytes 0x7d5f82.
-   @deep behaviour: 41 code hunks against the 78-byte original, 37 vs 35 instructions; the differences are VC6 register allocation (our state byte al + pointer eax, the original loads cl before mov eax,1 and keeps the pointer in ecx) and constant scheduling (our -1 materialized in edx with or edx,-1 where the original compares with the imm8 -1), not a missing statement: the record walk, the p[6] > 0 unsigned test (now jbe as the original), the kind 6/7 test and the -1 sentinel test all match. Meaning-class leads tried: the do-while pointer walk form, the return-1 placement (early constant, late constant, variable), the state test spelling (U_B(0x6f25ac) == 0 vs > 0), the p[6] > 0 vs != 0 (fixed one instruction). tools/spell.py: 38 of 72 differing, no hunk matched the menu - the allocation/scheduling byte work is match-deep's. Q4 blocked: the only raw access left is U_I(p + 0x20a), the dword at character +0x20a that this function tests for -1; no evidence for its meaning anywhere (ai.h's AICHAR pads 0x1e8..0x210, the only other reader is the raw save slice of ls.c 0x51a5b4), so a typed view field would be an invented name (Q2 flags unk20a). Q1/Q2/Q3/Q6 are done (ai_HasQuicksavePlayer, ai_GameState, ai_Chars + 2, gm_PlayerRecordBytes 0x7d5f82). */
+   passes gm_PlayerRecordBytes 0x7d5f82. */
 
 int ai_HasQuicksavePlayer(void)
 {

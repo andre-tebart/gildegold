@@ -322,7 +322,7 @@ int ls_WriteSaveHeader(int f, unsigned flags)
     vfs_fwrite(ls_SavePath.path, 0x60, 1, f);
     return 1;
 }
-/* 0x519a00, before a save: the objects of the buildings get their building back (+0x200 of the building's scene object, +0x61), and the references of the 10-byte table 0xf31166 (kind byte at -5: 1 character, 2 building, 3 object, 9 ..) are turned into plain ids (the id inside the record: +4 / +1 / +2 / +0) @deep B: 50 code hunks, read in asmdiff: they are register / scheduling shapes with no meaning difference - the first loop swaps the index and base registers (ours [edx+eax*1] vs the original [eax+edx*1], k in edx vs eax), the second loop's comparison polarity (ours cmp/jge, the original cmp/jl) and the *p reload: the original reloads [eax] after the store in the kind==3 / kind==9 branches, ours forwards the register (edx) - the kinds, offsets (+4/+2/+1/+0) and bounds (0xa900 / 0xf81166) match the original at 0x519a00 exactly. Shape is match-deep's. Q2/Q7: the callees d3if_SelectScene, ai_Unkf31166 and the referenced globals are unnamed; Q6 is described. */
+/* 0x519a00, before a save: the objects of the buildings get their building back (+0x200 of the building's scene object, +0x61), and the references of the 10-byte table 0xf31166 (kind byte at -5: 1 character, 2 building, 3 object, 9 ..) are turned into plain ids (the id inside the record: +4 / +1 / +2 / +0) */
 
 
 void ls_RefsToIds(void)
@@ -382,7 +382,7 @@ void ls_IdsToRefs(void)
         }
     }
 }
-/* 0x519b50, after a load: the buildings' objects point back to their buildings, the scene is restored (0x44aa10) and the pointers are set again @deep B: 16 code hunks, all one register-order choice: the same addressing modes with the index and base registers swapped (ours [edx+eax*1] / [ecx+edx*1], the original [eax+edx*1] / [edx+ecx*1] - k lives in eax in the original and in edx/ecx in ours); every other instruction is equal (8 + 12 + 29 equal). No meaning difference: the two loops, 0x44aa10(0, f), the restores and the return 1 match the original at 0x519b50. Register assignment is match-deep's (vargen ren). Q2/Q7: the unnamed callees/globals; Q6 is described. */
+/* 0x519b50, after a load: the buildings' objects point back to their buildings, the scene is restored (0x44aa10) and the pointers are set again */
 
 
 int ls_RelinkScene(int f)
@@ -450,7 +450,7 @@ int ls_WriteObjects(int f)
     } while (off < 0x14f218);
     return 1;
 }
-/* 0x519d20, the buildings: the count of the used ones (0x100 records of 0xa9 bytes at 0x889f74), then each in pieces (the fields +0 .. +0x5c, then the type specific tail: type 0x1e (the 0x600 bytes of 0x18-byte stock records behind +0x71), the types 0x48 .. 0x4a by 0x4f17f0, 0x4b .. 0x4d by 0x4ecf10, the others 0x30 bytes at +0x65), the 0x10 bytes at +0x99; at the end the table of the bounding boxes 0xf812e4 (count 0xf812e0, 0x60 bytes each: name, min, max) @deep B: 280 code + 114 regs hunks, one systematic register swap through the whole body: ours keeps the building record in edi and the file f in esi, the original esi / edi (sampled asmdiff at 0x519d9a .. 0x519ded: every block is push esi / lea edx,[edi+off] vs push edi / lea edx,[esi+off] with the same offsets and sizes); the count n lives in a stack slot in the original (inc DWORD PTR [esp+0x10]) and the original's frame is 1 slot (push ecx) against our 2 (sub esp,0x8), which shifts everything. The meaning matches (0x100 records of 0xa9 bytes, the field pieces, the type tails). Shape is match-deep's (vargen ren). Q2/Q7: the callees (0x430e30 -> vfs_fwrite is now named) and the ai_Unk globals are still unnamed; Q6 described. */
+/* 0x519d20, the buildings: the count of the used ones (0x100 records of 0xa9 bytes at 0x889f74), then each in pieces (the fields +0 .. +0x5c, then the type specific tail: type 0x1e (the 0x600 bytes of 0x18-byte stock records behind +0x71), the types 0x48 .. 0x4a by 0x4f17f0, 0x4b .. 0x4d by 0x4ecf10, the others 0x30 bytes at +0x65), the 0x10 bytes at +0x99; at the end the table of the bounding boxes 0xf812e4 (count 0xf812e0, 0x60 bytes each: name, min, max) */
 
 
 int ls_WriteBuildings(int f)
@@ -572,8 +572,7 @@ int ls_WritePlayerRecords(int f)
    records of 0x770b80 (0x21c bytes each, a record is used when its id is not -1), the two judges 0x6f1bfc /
    0x6f1c00 and the eight slots of 0x6f1c04 as ids (+4 of the record, -1 for none), then each used record in
    pieces (the pointers at +0x16c / +0x170 / +0x17c / +0x184 as ids, the words at +0x54 / +0x18c stored with an
-   offset of -0x59a / -0x639). The record pointer runs at +2 (the original's bias). Returns 1.
-   @deep draft: 836 differing instructions, every one read in the asmdiff/diffclass: the record field list and its order match the original at 0x51a5b4..0x51ad15 exactly (offsets c-2, c+0, c+2, c+4, c+6, c+7, c+8, c+0xa, c+0xb, c+0xe, c+0x12 .. c+0x20a, sizes 1/2/4/5/0x10/0x18/0x20/0xa8, the four reference fields with +1 / +4 and -1, the two -0x59a / -0x639 offsets), so no meaning error is left; what differs is stack slot choice (the original keeps local_c, cnt and local_4 in the top local slot [esp+0x1c], ours puts local_c in [esp+0x20] and cnt in [esp+0xc] and uses the dead argument slot differently) and push scheduling (the original hoists push esi / push 0x1 / push 0x4 above the je of the table loop and of the three pointer-field blocks, ours merges the branches and schedules the pushes after); needs vargen slot / order rounds. The two manual vfs_fwrite checks are fixed to the original's unsigned jbe (LS_W); the record loop now uses the natural unbiased pointer and VC6 biases the induction variable to +2 as the original does. Readability Q2/Q4 need AICHAR field names for the record (the save writes raw slices) + the judge/slot globals named. */
+   offset of -0x59a / -0x639). The record pointer runs at +2 (the original's bias). Returns 1. */
 
 
 int ls_WriteCharacters(int f)
@@ -742,7 +741,7 @@ CHACTION *ls_ActionAt(int n)
         return 0;
     return &ch_Queue[n];
 }
-/* 0x51ad80, the record r of a character scene (+0 / +8 .. , the names +0x170 / +0x130, the object's bounding box from +0x34, the word `id`, the 0x40 bytes of +0x64 / the 0x40 bytes of its parent's +0x68): writes the pieces; returns 1 when all was written @deep draft: one code hunk left, the 0x1c-byte zero substitute (7 mov DWORD PTR [esp+X],0 stores in the original at 0x51aea1..0x51aed1 vs our rep stosd; tried int[7]={0} (mov + rep stosd), char[0x1c]+memset (rep stosd ecx=7), a zero loop (rep stosd), two arrays, a struct with members and one with ={0} (all force ebp), seven separate ints (dead, frame 0x40) - VC6 always inlines the zero with rep stosd; the original's 7 immediate stores need the shape a vargen round can search). Everything else matches: 233/232 instructions, the field order/sizes, the blank[0x40] buffer, zero+0xc, the per-branch != 0x40 checks and the <= 0 LS_W checks; the two condition chains are written from the non-zero case (q != 0 && ...) as the original lays them out. Q1/Q2/Q4 remain: the function name, ch_EmptyName, and the raw pointer casts of the scene record field offsets. */
+/* 0x51ad80, the record r of a character scene (+0 / +8 .. , the names +0x170 / +0x130, the object's bounding box from +0x34, the word `id`, the 0x40 bytes of +0x64 / the 0x40 bytes of its parent's +0x68): writes the pieces; returns 1 when all was written */
 
 
 int unk_Unk51ad80(char *r, int id, int f)
@@ -794,7 +793,7 @@ int unk_Unk51ad80(char *r, int id, int f)
 /* 0x51aff0, the characters' scene records and the action queue ch_Queue (CH_QUEUE CHACTION records, type != 0: used): the count and the records of the characters (0x770d04, 0x21c each) through 0x51ad80, the same for the objects of the kind 0x1d in the list 0x7e3f34, then the queue's pointers are turned into indices (ch: the character's id, prev / next through ls_ActionIndex), each record whose character (ch_List) has a body owner is written in pieces (the type byte, the vectors, the names, the 0xa0-byte union u and stop), and the pointers are restored (ch_List, ls_ActionAt). Returns 1. ROUGH: the pieces of the record copy (local_188 .. local_4) are the fields of the 0x65-word copy */
 extern char *ai_Goods;              /* 0x91aaf0, the object prototypes (0x41 bytes) */
 int mem_IsValid();                     /* 0x4225e0 */
-/* 0x51aff0 @deep draft: the loop structure is now read against the original at 0x51aff0..0x51b340 and the record pieces fixed - the draft wrote rec+0x70 / rec+0x2c / rec+0x38, the original at 0x51b262 / 0x51b29f / 0x51b2b9 writes rec+0xf0 (0xa0 bytes) / rec+0x24 / rec+0x28, exactly what the reader in ls_ReadSceneRecords reads back (t+0x3c, t+9, t+10), so three wrong offsets were a meaning error and are corrected; the flag/rec reset moved before the fourth loop (the original zeroes them once at 0x51b165..0x51b177), the tab local removed so both queue loops re-read ch_Queue per iteration as the original does. Remaining 209 code hunks: register allocation and scheduling - the original's first count loop runs in eax/ecx with no callee-saved register and the pushes ebx/ebp/esi/edi come only after it at 0x51b013, ours pushes them at entry (so cnt is memory-incremented in [esp+0x14] and the zero sits in edi), then the whole function is shifted (ebp/esi/ebx/edi roles and the esp-relative offsets of the rec pieces). Readability Q2/Q4: the queue loops are typed (CHACTION, ch_List); the copy rec is still an int[0x65]. */
+/* 0x51aff0 */
 int ls_WriteSceneRecords(int f)
 {
     int cnt = 0, i, k, n;
@@ -992,7 +991,7 @@ int ls_WriteRelations(int f)
   } while ((int)p < (int)ai_RelationMemory + 0x300 * 0x300);
   return 1;
 }
-/* 0x51b910, ROUGH: converted from the Ghidra pseudocode, absolute data addresses; save writer @deep B3 code hunks 81, all four hunks are two loops' induction-variable base: 0x51bc0f/0x51bd2e VC6 bases the IV at p+4 (lea [edi-8]..[edi+8], cmp edi-4) / row+2, the original keeps p (lea [edi-4]..[edi+0xc], cmp edi) / row; the 372 instructions before them are equal after the LS_W early-return rewrite (the if(r!=0){...} return 0 form made VC6 merge every return block, 361 hunks); read both loops and tried char* byte offsets, int*, int address, while and for spellings, VC6 canonicalizes the same; the loops' data/offsets are identical, only the base register spelling differs. Readability Q1/Q2/Q3/Q5 open: 34 save-image globals have no role evidence yet */
+/* 0x51b910, ROUGH: converted from the Ghidra pseudocode, absolute data addresses; save writer */
 
 
 int ls_WriteStatistics(int f)
@@ -1149,7 +1148,7 @@ int ls_WriteEventTables(int f)
   }
   return 1;
 }
-/* 0x51c2f0, ROUGH: converted from the Ghidra pseudocode, absolute data addresses; save writer @deep B3 code hunks 116, both are VC6 register spellings, not meaning: the count loop at 0x51c2f9 keeps the counter in ecx and stores it once at 0x51c31e (push ecx frame), ours keeps it in the stack slot (inc DWORD PTR [esp]); the record loop at 0x51c334 keeps the loop pointer in esi at 0x925534 (record base +0x14, accesses [esi-0x14]/[esi-0xc]/[esi]/[esi+0x12]/[esi+0x1c]/[esi+0x20]/[esi+0x60]/[esi+0x68]/[esi+4]/[esi-8]), ours bases esi at 0x925520 with shifted offsets, same addresses. Read the whole function: stride 0x114 (add eax,0x114), 96 records, field order/sizes/args match the original; tried char* byte offsets, int* element offsets, for and do-while spellings, VC6 canonicalises to the lowest base and spills the counter either way. Readability Q1/Q2/Q3/Q5 open (the 0x925520 table is unnamed) */
+/* 0x51c2f0, ROUGH: converted from the Ghidra pseudocode, absolute data addresses; save writer */
 
 
 int ls_WriteParties(int f)
@@ -1311,7 +1310,7 @@ extern char * cm_LoadBuf;                /* 0xf31140 */
 extern int ai_TimeCopy[4];  /* 0x75e130, the clock copy */
 #define LS_RD(p, sz) ls_Read((int)(p), (sz), 1, h)
 #define LS_LOADFAIL { vfs_fclose(h); mem_Free(cm_LoadBuf); cm_LoadBuf = 0; return 0; }   /* a late reader failed: the file closed, the load buffer freed */
-/* 0x51c950 @deep read whole against 0x51c950..0x51cee0 (420 vs 420 instructions, 1421 vs 1421 bytes): every reader, each version gate on ls_Version with the read first, the map-only early end (a failed fix-up goes through the close again, as the original does), the inline LS_LOADFAIL blocks of the late readers, ls_ReadAvatars (the forwarder the original calls), the inline strcpy of the path. Left: scheduling only - the original hoists the next call's push esi above the failure branch of the || chains and jumps to the shared close one byte later (0x51ced0, after its push esi) where ours pushes after the branch and jumps to 0x51cecf (order 58, branch 7) */
+/* 0x51c950 */
 int ls_LoadGame(int name, int kind)
 {
     int h;
@@ -1465,7 +1464,7 @@ int ls_ReadSaveHeader(int f, int *h)
         strcpy(hd->title, "Savegame");
     return 1;
 }
-/* 0x51d2d0, after a load: builds the scene (0x44be60 with the loader 0x537b60), the scene tree (0x45eeb0, size 0x100, 0x80 when the scene kind is 0x40), sets the detail bits (+0x71c, mask 0x1c, from 0x61adf8) and registers the two scene callbacks 0x51d4f0 (0x1c0) / 0x51d530 (0xc0) with 0x438e60. Returns 1 @deep B3 code hunks 52: same operations, VC6 scheduling/register shape - the scene size (0x100, 0x80 when the kind is 0x40) is materialised in eax and pushed once where the original duplicates push 2 per branch and pushes the constant at each site (0x51d323/0x51d32c); ours saves esi (the 'saved' local 0x633444) before the 0x45eeb0 call (push esi at 0x51d32d) and cleans 0x14 bytes later, the original pushes esi after the call (0x51d341) with the 45eeb0 args cleaned at 0x51d339 and mov ds:0xfd7c50,eax before the push; the +0x1c70 byte xor is only a register choice (eax/cl vs ecx/al). Read the whole function; tried the size select as an if/else and as an inline ternary, VC6 emits the same. Q1/Q2/Q3/Q5 open (0x537b60/0x51d4f0/0x51d530 function pointers, 0x71c field) */
+/* 0x51d2d0, after a load: builds the scene (0x44be60 with the loader 0x537b60), the scene tree (0x45eeb0, size 0x100, 0x80 when the scene kind is 0x40), sets the detail bits (+0x71c, mask 0x1c, from 0x61adf8) and registers the two scene callbacks 0x51d4f0 (0x1c0) / 0x51d530 (0xc0) with 0x438e60. Returns 1 */
 
 
 int ls_LoadScene(int f)
@@ -1541,7 +1540,7 @@ char ls_ClearObjectFlag(char *o)
     o[0x213] &= ~4;
     return 1;
 }
-/* 0x51d550, reads the buildings ai_Blds from the save file f (the counterpart of the writer 0x519d20): for each of n records the fields (+0 .. +0x5c), for the type 0x1e the plant map ("f3g:PlantMap", 0x600 bytes of 0x18-byte plants, its pointer at +0x71), for the types 0x48 .. 0x4a / 0x4b .. 0x4d the type specific record at +0x65 (read by gv_ReadGraveyard / ahm_ReadRecord, or built by gv_AllocGraveyard / a new "AHM_INFO" record for the versions below 0x10047 / 0x10049), then the 0x10 flag bytes at +0x99 (for the versions below 0x10043: zero, 0xffffffff at +0xa5, bit 0 set) and the fixed +0x30 = 0x1388 and +0x95 = -1; at the end the building sites ai_Bauplaetze (ai_NBauplaetze records of 0x60 bytes). Returns 1, 0 when a read fails. @deep Q4: the 13 raw accesses need the AIBLD fields at +0x65 / +0x71 / +0x41 / the 0x18-byte plant record (ai.h; ls.c includes ai.h now, so AIBLD is available: the same open typing as 0x51d4f0). B: the meaning is verified instruction by instruction (all hunks read against 0x51d550..0x51daff); the remaining code hunks are source shape: the off=0 / k=0 preheader init and the k / off stack slots ([esp+0x10] / [esp+0x20] swapped), the K/L/M and H/I/J version branches laid out with the old-version arm inline where the original puts the read inline, and the i / j register pair of the building-site loop. The plant map loop now re-reads the pointer field (+0x71) every read like the original (1200 -> 935 differing bytes). */
+/* 0x51d550, reads the buildings ai_Blds from the save file f (the counterpart of the writer 0x519d20): for each of n records the fields (+0 .. +0x5c), for the type 0x1e the plant map ("f3g:PlantMap", 0x600 bytes of 0x18-byte plants, its pointer at +0x71), for the types 0x48 .. 0x4a / 0x4b .. 0x4d the type specific record at +0x65 (read by gv_ReadGraveyard / ahm_ReadRecord, or built by gv_AllocGraveyard / a new "AHM_INFO" record for the versions below 0x10047 / 0x10049), then the 0x10 flag bytes at +0x99 (for the versions below 0x10043: zero, 0xffffffff at +0xa5, bit 0 set) and the fixed +0x30 = 0x1388 and +0x95 = -1; at the end the building sites ai_Bauplaetze (ai_NBauplaetze records of 0x60 bytes). Returns 1, 0 when a read fails. */
 
 int ls_ReadBuildings(int f)
 {
@@ -1653,7 +1652,7 @@ tail:
     }
     return 1;
 }
-/* 0x51db00, reads the 16 player records gm_PlayerRecords (0xac bytes each; the counterpart of the writer 0x51a1a0): the fields, each version gated (+0x26 from 0x1002c, +0x52 .. +0x6a from 0x10014, +0x5e = 1.0 below 0x10056, the 0x11 (0x0e below 0x10046) name bytes at +0x72 from 0x10015, +0x6e from 0x10018). Returns 1, 0 when a read fails. @deep byte + readable blocked on two Q rules. Q3: the loop bound 0x7d6a42 (the end of gm_PlayerRecords in the +2 byte view, = 0x7d5f80 + 16 * 0xac + 2) is an image literal; spelling it as an extern at that address (gm_PlayerRecordsEnd, tried) changes the codegen to 84 differing asm lines instead of 0, and (int)gm_PlayerRecordBytes + 0xac0 doubles the frame - the literal form is byte-identical (the do-while over the pointer is what the original does: add esi,0xac; cmp esi,0x7d6a42; jl). Q4: the one raw access left is *(int *)(p + 0x5e) = 0x3f800000 (the 1.0 float default for the versions below 0x10056) - it needs the 0xac-byte player-record fields, ai.h blocked in ls.c (gv.h type debt). Everything else fixed: v removed so every version check reads ls_Version directly (287 instructions became equal), the '> 0x1002b/0x10013/0x10014/0x10017/0x10045' bounds written as the original's '>= 0x1002c/0x10014/0x10015/0x10018/0x10046', the 0x5e branch laid out with the read inline. */
+/* 0x51db00, reads the 16 player records gm_PlayerRecords (0xac bytes each; the counterpart of the writer 0x51a1a0): the fields, each version gated (+0x26 from 0x1002c, +0x52 .. +0x6a from 0x10014, +0x5e = 1.0 below 0x10056, the 0x11 (0x0e below 0x10046) name bytes at +0x72 from 0x10015, +0x6e from 0x10018). Returns 1, 0 when a read fails. */
 
 
 int ls_ReadPlayerRecords(int f)
@@ -1707,7 +1706,7 @@ int ls_ReadPlayerRecords(int f)
     } while ((int)p < (int)((char *)gm_PlayerRecords + 0xac2));  /* one past the 16th record (gm_PlayerRecordBytes + 0xac0; a byte offset, the array is int[]); the original's literal 0x7d6a42 is an absolute address that does not hold in the linked image, where it made the loop read ~70 records and the .cty load fail */
     return 1;
 }
-/* 0x51de70, reads the characters (the counterpart of the header writer 0x5194c0 and the character writer 0x51a4b0): ai_PlayerId, ai_CharCount, the two judge pointers ai_JudgeCatholic / ai_JudgeProtestant and the eight slots of ai_KindBChars (from 0x10016), then ai_CharCount records of the 0x21c bytes of ai_Chars (the id word first, it picks the record): each field from its version (the reference fields +0x54 / +0x18c get their base 0x59a / 0x639 added, +0x174 is 2 instead of 4 below 0x10020), some fields with their defaults for older versions (+0x20c = -1 and +0x190 = 4 below 0x1003e, +0x1cc = 0 below 0x10049); the last chunk +0x210 .. +0x218 from 0x10036. Returns 1, 0 when a read fails. @deep Q4: the 8 raw accesses need the AICHAR fields of ai_Chars (+0x54 / +0x18c the reference fields, +0x20c, +0x190, +0x1cc the defaulted ones, +0x16c / +0x170 / +0x17c zeroed then read); ai.h cannot be included in ls.c (gv.h declares ai_Blds/ai_Chars/... with other types, type debt). B: 467 code hunks = the Ghidra conversion's shape, not a meaning fix: read against 0x51de70..0x51e74f - the order, offsets, sizes and version gates match the disassembly (ai_PlayerId 2, count 4, the two judges 4, the 8 slots from 0x10016, then per record id 2 -> ai_Chars[id & 0xffff] and the field list +2 .. +0x218 with its gates 0x1003e / 0x10030 / 0x10023 / 0x10020 / 0x10029 / 0x10035 / 0x10049 and the +0x59a / +0x639 bases), so this is the rewrite that 0x51a4b0 has as @deep, not a base reading fix. Q1/Q2/Q3/Q6 done: ls_ReadCharacters, ai_CharCount / ai_JudgeCatholic / ai_JudgeProtestant / ai_KindBChars named project-wide, the 0x6f1c04 loop by symbol. */
+/* 0x51de70, reads the characters (the counterpart of the header writer 0x5194c0 and the character writer 0x51a4b0): ai_PlayerId, ai_CharCount, the two judge pointers ai_JudgeCatholic / ai_JudgeProtestant and the eight slots of ai_KindBChars (from 0x10016), then ai_CharCount records of the 0x21c bytes of ai_Chars (the id word first, it picks the record): each field from its version (the reference fields +0x54 / +0x18c get their base 0x59a / 0x639 added, +0x174 is 2 instead of 4 below 0x10020), some fields with their defaults for older versions (+0x20c = -1 and +0x190 = 4 below 0x1003e, +0x1cc = 0 below 0x10049); the last chunk +0x210 .. +0x218 from 0x10036. Returns 1, 0 when a read fails. */
 
 
 int ls_ReadCharacters(int f)
@@ -2313,7 +2312,7 @@ int ls_ReadAvatars(void *f)
 {
     return gv_ReadAvatars(f);
 }
-/* 0x51fb90, reads the 0x14c-byte records of 0x6fab40 (the counterpart of 0x51bdc0): the counts, then each record in pieces (the 8 words +0x8c from 0x1002f), the text buffer of +0x7c (size +0x80, "messagebox", 0x400 bytes) and the type specific block of +0xac (the kind 0xc gets a 0x58-byte "f3_alwin_t:d" record at +0xbc, the kind 0xd -1 and, for the type 6, +0xd0 = 0), the records flagged 8 are listed in 0x74db40; then the 0x29-word table 0x74e1e0 (0x2c-byte entries) and the 0x14-word table 0x758ca0. Returns 1. ROUGH @deep diff read against the source (97 lines, 70 code / 6 regs / 4 order): meaning verified - the three 4-byte counts, the record loop (rec = 0x6fab40 + idx*0x14c, the 11 pieces incl. the version-gated 8 words +0x8c, the text buffer +0x7c / +0x80 via mem_Alloc and the direct read, the kind 0xc / 0xd block of +0xac and the +0xbc pointer / -1 / +0xd0 clear), the flagged records into 0x74db40, then the 0x29-int table 0x74e1e0 and the 0x14-int table 0x758ca4. Left is codegen: a store-order pair (the +0x7c store before/after the following load) and the induction-variable base - the original keeps the middle-loop pointer 8 bytes above ours (its edi with 0/+4/+8/... vs our edi-8 with -8/-4/0/...; both reach the same 0x74e1e8 start), the `if (n > 0) do {} while` loop shape was tried. Readability: Q3 on every table literal (0x6fab40, 0x74db40, 0x74e1e0, 0x758ca4), Q2 on he_FreeEvents / he_EventCount / he_EventTop / he_QuickTop, Q1/Q5. */
+/* 0x51fb90, reads the 0x14c-byte records of 0x6fab40 (the counterpart of 0x51bdc0): the counts, then each record in pieces (the 8 words +0x8c from 0x1002f), the text buffer of +0x7c (size +0x80, "messagebox", 0x400 bytes) and the type specific block of +0xac (the kind 0xc gets a 0x58-byte "f3_alwin_t:d" record at +0xbc, the kind 0xd -1 and, for the type 6, +0xd0 = 0), the records flagged 8 are listed in 0x74db40; then the 0x29-word table 0x74e1e0 (0x2c-byte entries) and the 0x14-word table 0x758ca0. Returns 1. ROUGH */
 
 int unk_Unk51fb90(int f)
 {
@@ -2409,7 +2408,7 @@ int unk_Unk51fb90(int f)
     }
     return 1;
 }
-/* 0x520000, reads the party records (0x925520, 0x114 bytes; the counterpart of 0x51c2f0): the count, then per record the words and bytes (+0x20 is 16 bytes of 0x40-byte pieces below 0x10059, else 16 words; the clock at +4 is set from 0x770ae0 and 0x4fe140 below 0x1003f; +0x14 = -1 below 0x10040). Returns 1 @deep read 0x520000..0x5201f1 against the source; two real fixes: the temp buffer is 0x1000 bytes (the original's frame is 0x1008 with __chkstk, ours was 0x408 for tmp[0x400]) and the three version branches are written from the >= side so the non-zero arm is inline (the original jl's to the <0x10059 / <0x1003f / <0x10040 arm); 131 -> 95 code hunks, 100 -> 70 asm lines. Meaning verified: the count, the per-record reads p-0x14 / p-0xc / p / p+0x12 / p+0x1c, the tmp[0x40] + memcpy to p+0x20 vs the 4-byte p+0x20 from 0x10059, the +0x60 / +0x68 (0x98) reads, the 0xe memcpy from 0x770ae0 + 0x4fe140(p+4, i+1, 0, 0) vs the 0xe read from 0x1003f, the -1 to p-8 below 0x10040, the 0x114 stride and count loop. Left is codegen: the IV base - the original's ebx = 0x925534, ours = 0x925540 (0xc higher, every displacement differs by 0xc), and i in esi (the original) vs edi (ours) which is entangled with the memcpy's esi restore. Readability: Q1, Q2 (gm_AddTime, ai_Time), Q3 (0x925534), Q4, Q7 (gm_AddTime has no prototype). */
+/* 0x520000, reads the party records (0x925520, 0x114 bytes; the counterpart of 0x51c2f0): the count, then per record the words and bytes (+0x20 is 16 bytes of 0x40-byte pieces below 0x10059, else 16 words; the clock at +4 is set from 0x770ae0 and 0x4fe140 below 0x1003f; +0x14 = -1 below 0x10040). Returns 1 */
 
 
 int unk_Unk520000(int f)
@@ -2449,7 +2448,7 @@ int unk_Unk520000(int f)
     }
     return 1;
 }
-/* 0x520200, reads the mission table 0x6f0724 / 0x601058 .. 0x60106c, 0xf83520 (0x10 bytes), and the 0x11-word records from 0xf83548 (8 pairs of words each). Returns 1 @deep diff read against the source and the original: meaning verified - the 1-byte hst_TextsOn read, hst_LoadPlayerTexts, the two 4-byte counts (hst_TextCurrent / hst_KeyNext = the first + n), the 16 bytes at 0xf83520, the record loop p = 0xf83548 with the 8 word pairs read from p-4 / p and p += 0x11 to > 0xf83657 - all match. The 100 code hunks are the known epilogue shape (the original inlines pop pop pop pop ret after every failed read, ours shares one return-0 block) plus register/order scheduling (inc ebx before/after add esi, xor ebx placement). Readability: Q1, Q2 hst_LoadPlayerTexts (also Q7: undeclared), Q3 the 0xf83520 / 0xf83548 / 0xf83657 image literals. */
+/* 0x520200, reads the mission table 0x6f0724 / 0x601058 .. 0x60106c, 0xf83520 (0x10 bytes), and the 0x11-word records from 0xf83548 (8 pairs of words each). Returns 1 */
 
 
 int unk_Unk520200(int f)
@@ -2480,7 +2479,7 @@ int unk_Unk520200(int f)
     }
     return 0;
 }
-/* 0x520310, reads the two record pools 0x9367e0 / 0xa69140 (0x99-byte records: the references at +0x91 / +0x95 are indices turned into pointers (-1 = NULL)), the pool heads 0xa68d24 / 0xa68c00 / 0xf81160, the reference table 0xf31160 (10 bytes each, 0x2000 or 0x8000 of them from 0x1003c) and the words 0xf81168, 0xf8121c, 0xa68c04, 0x60bd88 .. 0x60bd90. Returns true when all was read @deep diff read against the source: meaning verified - the 0x99-byte pool loop 0x9367e0 .. (refs at +0x91/+0x95, -1 -> NULL, else pool + n*0x99), the pool heads a68d24 / a68c00, the 0x2000/0x8000 table from 0x1003c, the reference table 0xf31160 (10-byte entries, p[1]=0, *p=-1, byte -2 = 1), the second pool loop 0xa69140, the f81160 head and the final reads (0xf8121c, 0xa68c04, 0x60bd88 / 0x60bd8c / 0x60bd90) all match. Left is codegen: the IV base - ours keeps esi at p+4 (reads [esi-0x4] / [esi] and the record at esi-0x95), the original keeps esi at p (record at esi-0x91, refs at [esi] / [esi+0x4]) - same addresses, and the loop bound n in a stack slot vs ecx; plus the shared vs inline return-0 epilogue (xor eax,eax at 0x52039e). Readability: Q1, Q2 (cm_RecvFree / a68d24 / f81160 / f81168), Q3 (12 image literals), Q4. */
+/* 0x520310, reads the two record pools 0x9367e0 / 0xa69140 (0x99-byte records: the references at +0x91 / +0x95 are indices turned into pointers (-1 = NULL)), the pool heads 0xa68d24 / 0xa68c00 / 0xf81160, the reference table 0xf31160 (10 bytes each, 0x2000 or 0x8000 of them from 0x1003c) and the words 0xf81168, 0xf8121c, 0xa68c04, 0x60bd88 .. 0x60bd90. Returns true when all was read */
 
 
 int unk_Unk520310(int f)
@@ -2548,7 +2547,7 @@ int unk_Unk520310(int f)
     LS_R((unsigned)&cm_LastBuildingId, 4)
     return ls_Read((int)(unsigned)&cm_LastObjectId, 4, 1, f) != 0;
 }
-/* 0x5205f0, reads the table 0x7604e8 (the counterpart of 0x51c870): the count 0x760610 and the entries; from 0x10050 the two further blocks 0x5dc0c0 and 0x4ed910. Returns 1 @deep read against the original 0x5205f0..0x5206af: meaning verified - the 0x760610 count, the entry loop p = 0x7604e8 with the reads at p-0x60 / p / p+0x68 / p+0xc8 (our int offsets -0x18 / 0 / +0x1a / +0x32 are the same addresses) to p < 0x760548 (24 entries), then the version gate (our > 0x1004f is the original's jl 0x10050) and the two calls 0x5dc0c0(f) / 0x4ed910(f, ls_Version). Left is codegen: VC6 re-bases our loop pointer to p+0x68 (reads [esi-0xc8] / [esi-0x68] / [esi+0x60], condition lea eax,[esi-0x68]) where the original keeps esi = 0x7604e8 and reads [esi-0x60] / [esi] / [esi+0x68] / [esi+0xc8], plus the f register (edi in the original). Readability: Q1, Q2 (ai_LoadWind / gv_ReadEffects), Q3 (0x760610, 0x7604e8, 0x760548). */
+/* 0x5205f0, reads the table 0x7604e8 (the counterpart of 0x51c870): the count 0x760610 and the entries; from 0x10050 the two further blocks 0x5dc0c0 and 0x4ed910. Returns 1 */
 
 
 int unk_Unk5205f0(int f)
@@ -2569,7 +2568,7 @@ int unk_Unk5205f0(int f)
         return 1;
     return 0;
 }
-/* 0x5206b0, the fix-up after a load, the counterpart of 0x519a00 before a save: it turns the loaded ids back into pointers: the player's character (ai_PlayerChar = gm_FindChar, 0 = fail), the market building (ai_MarketBuilding = gm_BuildQuery (1, 5, 10)), the eight kind 0xb characters (ai_KindBChars), the reference fields of the ai_Chars records (gm_FindById into +0x16c and +0x170, he_FindEvent into +0x17c, +0x184 cleared), the objects of ai_Objects (an object with an owner is chained into the owner's list: the heads at +0x5d building / +0x14 object / +0x178 character, +0x3f the next link; objects of the good type 0x1d lose their +0x24 word), the event records of he_Events (the kinds 0x29 0x2d 0x2f 0x11 0x25 5 10 0x26 or flagged 8 are re-initialised through he_RunHandlers[kind] with ai_GameState = 2, the stored +0x70 saved and put back; the kinds 0xd / 0xf / 0x78 / 0x76 / 0x14 get their own fixes), the first word of the 0xa4-byte records at 0x74e1e0 (an event owner id, he_FindEvent (1, 1, id)) and the target words of the reference records (ls_RefTargets, by kind: 1 gm_FindChar, 3 gm_FindObjectInst, 2 gm_FindBuildingById, 9 cm_PartyById); it closes with gm_ResetStock. Returns 1, 0 when the player's character is gone @deep B3: code hunks 223, slots 18, regs 12, fill 6. All hunks read this session and in the 2026-10-24/25 sessions: every statement, constant, callee, field offset and size matches the original 0x5206b0..0x520a2f; the 0xffff / 0xef immediates, the kind bytes and the callback literals were scanned twice. Last-bytes leads tried: the IV based at 0x770cf0 (iv-shift, written as the original's biased pointer) read 226 asm lines, reverted; the compare written from the >= side (ls_Version >= 0x10017) 221 -> 217, kept; the loop based at the other member 0x770cec with the bound 0x7d60ec 221 -> 190 asm lines (code 333 -> 290), kept; the id test written as *(unsigned short *)id != 0xffff (the same form that materialises 0xffff in edi in 0x520b80) 190 -> 179, kept. Readability then advanced to 552 bytes / 165 asm lines: the Q3 symbols (ai_Chars, ai_KindBChars, he_Events, he_QuickList, ls_RefTargets), the Q4 typed pointer views (id, otype, owner, list, next, ev70, ev10, evb8, v24) and a/b scoped into the object loop, which removed the frame hunk (0x14 -> 0xc). Also tried and reverted: he_Events + 0x53000 as the event loop bound (WORSE, 188 asm lines) and the packed LSREF struct view of the reference records (WORSE, 186). Left for the deep toolbox: the character loop's bound computed as lea esi-4 against the original's direct cmp esi (the VC6 IV base, ours +4), the object loop's ai_Objects preheader/reload order, the a/b/c slot order ([esp+0x14]/[esp+0x18] against [esp+0x10]/[esp+0x14]) and the hoisted push ebp/edi. Q3 gap: 0x74e1e0 and 0x7585e0, the 256 records of 0xa4 bytes whose first word is an event owner id (he_FindEvent kind 1); he.c only memsets the block at init, the save writer 0x51bdc0 writes it and no unit names it, so there is no evidence for a name and the two literals stay. Q4 gap: the AIOBJ word at +0x24 (cleared for the objects of the good type 0x1d) - ai.h pads it and no unit reads it with a meaning, and an unkNN field name is itself a Q2 placeholder, so one raw access stays (a shared-header field decision). Q1/Q2/Q5/Q6/Q7 pass. */
+/* 0x5206b0, the fix-up after a load, the counterpart of 0x519a00 before a save: it turns the loaded ids back into pointers: the player's character (ai_PlayerChar = gm_FindChar, 0 = fail), the market building (ai_MarketBuilding = gm_BuildQuery (1, 5, 10)), the eight kind 0xb characters (ai_KindBChars), the reference fields of the ai_Chars records (gm_FindById into +0x16c and +0x170, he_FindEvent into +0x17c, +0x184 cleared), the objects of ai_Objects (an object with an owner is chained into the owner's list: the heads at +0x5d building / +0x14 object / +0x178 character, +0x3f the next link; objects of the good type 0x1d lose their +0x24 word), the event records of he_Events (the kinds 0x29 0x2d 0x2f 0x11 0x25 5 10 0x26 or flagged 8 are re-initialised through he_RunHandlers[kind] with ai_GameState = 2, the stored +0x70 saved and put back; the kinds 0xd / 0xf / 0x78 / 0x76 / 0x14 get their own fixes), the first word of the 0xa4-byte records at 0x74e1e0 (an event owner id, he_FindEvent (1, 1, id)) and the target words of the reference records (ls_RefTargets, by kind: 1 gm_FindChar, 3 gm_FindObjectInst, 2 gm_FindBuildingById, 9 cm_PartyById); it closes with gm_ResetStock. Returns 1, 0 when the player's character is gone */
 
 
 int ls_FixupAfterLoad(void)

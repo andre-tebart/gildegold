@@ -181,7 +181,7 @@ void rt_BuildMarkGroup(void)
         }
     }
 }
-/* 0x4bdb30, a mark (picture 0x7bb + the index of p in list) on window win at building p->buildingId; -1 if it has none @deep behaviour: every statement read against the disassembly (0x502020, 0x458a20, 0x45f170, 0x5a6b70, 0x4731d0, the mark bookkeeping) is already in the C; the 151 code hunks are stack slots: our frame 0x20 vs the original's 0x28, v at +0x24 vs +0x14, pt at +0x1c vs +0x24, px/pz swapped - VC6 local allocation (declaration order/sizes) and deferred arg cleanup, not a meaning error. Q1/Q2 (gm_FindBuildingById, ai_MapCellToScreen, ai_Unk7e422c, ai_Unkfd7c50, d2_WinOpenPic) stay open */
+/* 0x4bdb30, a mark (picture 0x7bb + the index of p in list) on window win at building p->buildingId; -1 if it has none */
 
 int rt_Unk4bdb30(char *win, int b, RTPOINT *list, RTPOINT *p)
 {
@@ -235,8 +235,7 @@ void rt_ReadMarkValues(void)
 }
 /* 0x4bdcd0, the dialog "misc\routing_choose_good_enhanced": the goods of building b to pick from (its stock of a
    market (type 0x1c, more than 1) / warehouse (type 9), else the last list with the stock of b), plus "none"
-   (picture 0x527); returns the good picked, def if none
-   @deep behaviour: the diff read end to end is one instruction stream shifted (ours 0xf bytes shorter): register allocation (ebx/ebp/esi), argument spills and stack slots (the original keeps b in [esp+0xc] and reads it at the end, ours keeps it in esi), tail nop fill - no statement differs; the 497 code hunks are the misalignment this causes. Needs the deep slot/register steering. Q2 (17 callees/globals) and Q4 (23 raw accesses, D2OBJ/d2_Objs view) stay open */
+   (picture 0x527); returns the good picked, def if none */
 
 int rt_Unk4bdcd0(unsigned char *b, int x, int def)
 {
@@ -333,8 +332,7 @@ int rt_Unk4bdcd0(unsigned char *b, int x, int def)
     return ret;
 }
 /* 0x4be180, the dialog "misc\routing_choose_good_enhanced" with the goods of route p (three slots per point,
-   loadSlots[2 * k] with a count above 0); returns the good picked, 0 if none
-   @deep behaviour: the whole diff is the prologue (17 code hunks, 10 tail nops, 167 equal instructions): the original loads p into eax before the register saves and moves it to esi after the test, stores n's 0 as an immediate; ours loads p straight into esi and stores ebx - same statements, VC6 register allocation/scheduling. Declaration initializers (int n = 0) tried, no change -> deep steers this. Q2 (10 callees/globals) and Q4 (5 raw accesses) stay open */
+   loadSlots[2 * k] with a count above 0); returns the good picked, 0 if none */
 
 int rt_Unk4be180(int x, RTPOINT *p)
 {
@@ -393,8 +391,7 @@ int rt_Unk4be180(int x, RTPOINT *p)
     return ret;
 }
 /* 0x4be3b0, the dialog "misc\routing_choose_good_enhanced" for building b with seven tabs (stock kinds 0x92..0x97,
-   0x2db; text "$Z%2N3$A%1G"): the goods of the tab picked; returns the good picked, def if none
-   @deep behaviour: frame 0x1d0 vs the original 0x2e4 (0x114 = 69 ints): the local arrays are too small/misordered (ours kinds/objs/goods/tabs land at +0x34/0x50/0x120/0x128, the original's at +0x44/0x54/0x104/0x1d0) and the s==0 arm differs in which value is pushed ([eax+0x14] vs [emp+0x5d] alignment) - the diff was read end to end; a real reread of the locals and that branch is needed. Q2/Q4 stay open */
+   0x2db; text "$Z%2N3$A%1G"): the goods of the tab picked; returns the good picked, def if none */
 
 unsigned int rt_Unk4be3b0(char *b, int x, unsigned int def)
 {
@@ -491,8 +488,7 @@ unsigned int rt_Unk4be3b0(char *b, int x, unsigned int def)
     return ret;
 }
 /* 0x4be790, the controls of one good slot (k 0..2) of a route point: a slider (0x50ab50(a, good) steps) and the
-   good's picture with its name; out = {-1, picture, slider}; returns the picture
-   @deep behaviour: frame matches (0x24) and every statement corresponds (offs inits, the slider 0x50ab50, d2_WinOpenSlider(x-8, y+0x1d, 0x2f, 0, s, 0x6a, 0x2d, win), d2_WinOpenInputIcon(x, y+0x22, good+0xdf, 0x8a, win), the out[] stores and the d2_Objs fields); the 102 code hunks are register allocation and scheduling (ebp/ebx/eax swaps, the two open calls interleaved, offs stores reordered) - misalignment, no statement differs. Q2 (txt_ObjectNames, gm_ListStock, d2_SetObjFont) and Q4 (4) stay open */
+   good's picture with its name; out = {-1, picture, slider}; returns the picture */
 
 int rt_Unk4be790(unsigned short *bt, int a, int good, int k, int x, int y, int win, int *out)
 {
@@ -547,8 +543,7 @@ void rt_InitControls(int *out)
 }
 /* 0x4be940, the dialog "misc/routing_edit_point" for route point p of the list rt_EditRoute: the goods to load
    (loadSlots) and to unload (unloadSlots), up to three each (by the cart type), with their amounts; a button deletes the
-   point and rebuilds the marks on window win
-   @deep behaviour: frame 0xb4 vs the original 0xd0 (7 ints of locals are missing: the original spills two more dword locals around +0x58/+0xdc and keeps a copy at +0x18) and the stores are scheduled differently; the draft was made from the disassembly (Ghidra lost the frame) - the locals have to be reread from the original's frame, then the register/order pass. Q2/Q4 stay open */
+   point and rebuilds the marks on window win */
 
 void rt_Unk4be940(RTPOINT *p, int *win)
 {
@@ -736,8 +731,7 @@ void rt_Unk4be940(RTPOINT *p, int *win)
     d2_EnableViewObjects(*win, 1);
 }
 /* 0x4bf080, the dialog "misc\routing_settings" for cart c: a 5-step slider (c->unk31), a button that starts a new
-   route at c's building (marks on window win), a button that toggles c->unk33; changes go out as AI updates
-   @deep behaviour: frame 0x10 vs the original 0x34 (9 dwords of locals missing, the original spills several around +0x14..+0x18 and +0x68) and the argument setup differs (the original reloads the 4 args at +0x74..+0x7c into locals before the call); far draft from the disassembly (Ghidra lost the frame). Locals must be reread from the frame first, then registers/order. Q2/Q4 stay open */
+   route at c's building (marks on window win), a button that toggles c->unk33; changes go out as AI updates */
 
 void rt_Unk4bf080(char *c, char *win)
 {
@@ -843,8 +837,7 @@ void rt_RemoveMark(int i)
     rt_Marks[i].p = 0;
 }
 /* 0x4bf440, on map window m: the building buttons (0x18 bytes each from 0xdc, count at 0x27a4) of buildings other
-   than rt_PickedBuilding off; then those of route p's points on
-   @deep behaviour: the if/else was checked against the raw disassembly (equal arm: +0x1c0 &= ~1, +0x2c = 1; not-equal: |= 1, = 0 - matches the C) and the rest is scheduling (order 8, regs 8: mov edi,0x1 placement, the mark loop's ebp/eax reload at the end). Q4 (12 raw accesses through the char* d2_Objs view and the map window m+0xdc/+0x27a4) needs typed views - rt.h type debt */
+   than rt_PickedBuilding off; then those of route p's points on */
 
 void rt_HighlightRoute(RTPOINT *p, char *m)
 {
@@ -882,8 +875,7 @@ void rt_HighlightRoute(RTPOINT *p, char *m)
 /* 0x4bf5b0, the route editor for cart c on the town map window (0x5a78a0 / 0x5a7cd0 / 0x5a82f0): a copy of c's
    route (one point at c's building if it has none), a mark per point, buttons to edit the selected point, to add
    the building picked on the map and for the settings (0x4bf080); at the end the route goes to c (0x4c62a0), or
-   with fewer than two points c's route mode is reset
-   @deep behaviour + Q4: the local map window view is short - the original memsets 0x27dc where our int m[0x9ea] view gives 0x27b8 (the +0x24 shifts every later local) and reads m+0x27a4/+0xdc/+0xe0 through it; the typed map window struct (rt.h type debt) is the fix, then the 306 code hunks can be reread. Far draft from the disassembly (Ghidra lost the frame) */
+   with fewer than two points c's route mode is reset */
 
 void rt_EditCartRoute(char *c)
 {
@@ -1060,8 +1052,7 @@ void rt_UnloadAtPoint(char *c, int pl)
     }
 }
 /* 0x4bfc60, cart c loads at its current route point: the goods of the point's loadSlots slots go from the building's
-   stock (market: 0x1dc) into the cart, paid by player pl (a message when pl cannot afford it)
-   @deep behaviour: the price factors are fixed (1.1f / *(float*)(b+0x49)); what remains is the local frame: the original zeroes each RTINV local as rep stos 0x2d dwords (0xb4) plus a separate dword store at +0x15c/+0x24 where we zero 0x2e dwords, and the stores/registers differ (67 code hunks, slots 16, order 8). The RTINV zeroing seam suggests the original's local is not the plain RTINV view (rt.h type debt). Q2/Q4 stay open */
+   stock (market: 0x1dc) into the cart, paid by player pl (a message when pl cannot afford it) */
 
 void rt_LoadAtPoint(char *c, char pl)
 {
@@ -1129,7 +1120,7 @@ void rt_LoadAtPoint(char *c, char pl)
         s += 2;
     }
 }
-/* 0x4bff40, saves the routes of all carts (0x4ffe90(0, 2, 7, 4, 0x1d)): the number of points, then each point @deep behaviour: all 15 code hunks are the five vfs_fwrite tests (ours test eax,eax; je return 0 from 'if (!vfs_fwrite(...))', the original test eax,eax; ja body from a '> 0' test with jump-to-body layout) plus the q null test the original keeps separate (mov eax,[eax+0x29]; test; je before moving esi); the statements and the saved order (cartId, buildingId, loadSlots 0x18, unloadSlots 0x18) are the original's. Rewriting the five guards as '> 0' needs the restructured layout - deep. Q2 (gm_Query/4ffcc0, vfs_fwrite) and Q4 (c+0x29 raw) stay open */
+/* 0x4bff40, saves the routes of all carts (0x4ffe90(0, 2, 7, 4, 0x1d)): the number of points, then each point */
 
 int rt_SaveRoutes(void *f)
 {
@@ -1158,7 +1149,7 @@ int rt_SaveRoutes(void *f)
     }
     return 1;
 }
-/* 0x4c0040, loads the routes (0x4bff40) into the carts (their id in cartId, consecutive points per cart) @deep behaviour: 168 code hunks, all shifts of the same stream - frame 0xc vs the original 0x8 (one extra int local), esi/ebx/ebp register allocation throughout and the load loop's pointer arithmetic (add esi,0x8 vs lea esi,[ebx+0x8]); the statements (n = fread; buf = mem_Alloc(n << 6, "rt_load"); the four freads per point; the cart chain via rt_AddPoint with cartId/buildingId/slots) match the disassembly. Needs frame/register steering. Q2 (ls_Read, gm_FindObjectInst) and Q4 (c+0x29 / c+2 raw) stay open */
+/* 0x4c0040, loads the routes (0x4bff40) into the carts (their id in cartId, consecutive points per cart) */
 
 int rt_LoadRoutes(void *f)
 {

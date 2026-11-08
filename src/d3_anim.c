@@ -466,7 +466,7 @@ struct D3ANIMSLOT * d3anim_GetMainSlot(struct D3ANIMCTL *ctl);                  
 
 /* 0x432750, the per-object animation step (d3_ForEachObject callback, ctx = d3_Time, | 0x80000000 in the
    second pass): steps the three vertex animation slots of every active control of the mesh material, then
-   the object's path animation (hermite through the keys). @deep match-base 2026-10-31: read both parts against the original (slot loop and path), now 1577 vs 1578 instructions (was 1521). Meaning fixes: the backward wrap of the path keeps playing backward and sets key = nkeys - 1 (only the bounce arm clears bit 2 and sets key 0); d3path_Tangents gets &keys[nkeys - 1], not &keys[key - 1]; the linear path lerps u * key + t * next (was reversed) and tests d3_VecEqual(&v, &d3_Origin, 0); D3ANIMSLOT.frameTime is a float (fadd, not fiadd); dt and the fade time are unsigned (fild qword); the slot loop takes s = &material->ctl[i].slots[j] each iteration (material re-read, no mat local), (int)acc in each arm, nframes = P->nkeys for the path NextFrame calls, hermite / lerp results first and + P->pos / P->rot after, the fade and nextFrame <= last tests in the original branch order. Left: the frame (0x68 vs 0xbc: the original keeps more FPU / conversion temps on the stack, e.g. the qword temps of the unsigned conversions at 0xa4, the attach bone z spilled into the ctx parameter slot, the lerp result at 0x8c), hence slots 378 / regs 42 hunks and register rotations (ebx/ebp/edi roles in the slot loop, e.g. limit in ebp, data->relative in bl). Readability open: Q2 P->unk10, Q4 OBJ_LAST / SLOT_F / SLOT_TURN / D3_OBJPATH and the D3ANIMMATV casts (material typing debt, notes Open work). */
+   the object's path animation (hermite through the keys). */
 char d3anim_StepObject(D3OBJECT *obj, void *ctx)
 {
     unsigned int now = (unsigned int)ctx & 0x7fffffff;
@@ -951,7 +951,7 @@ void d3path_Init(D3PATH *p)
         }
     }
 }
-/* 0x433d70, gives the object a path animation through nkeys keys (copied; times in frames). @deep B draft: 20 code hunks (16 bytes off; position/angle copies per component, the inline-asm key copy D3PATH_COPY) - deep matching. Readability is blocked on shared fields: Q2 obj->rotation (118 refs; the d3.h union view made d3_MirDrawObject stop matching), Q4 D3_OBJPATH (its typed-field fix also regressed d3_MirDrawObject) and one raw cast. */
+/* 0x433d70, gives the object a path animation through nkeys keys (copied; times in frames). */
 
 D3ANIM *d3anim_CreatePath(D3OBJECT *obj, D3ANIMFLAGS f, int nkeys, D3ANIMKEY *keys)
 {

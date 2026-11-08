@@ -311,8 +311,7 @@ void snd_UpdateRain(void)
 /* 0x4c0e60, the animal ambience by season (ai_Unk602bd8[season], records birds "Voegel_s", crickets "Grillen_l"
    (hpLocusts / hpLocustsPerm, with a debug log in ai_Unk6f0960), chickens "Gackern_s", horses "Wiehern_s" /
    "Schnauben_s", dogs "Bellt_s"), quieter with the camera height and silent in rain; the bird song of 0x6f0b80 by
-   the distance to the player's house; then the atmosphere mp3 of the building the player is in ("Athmos\..")
-   @deep B draft, 337 code hunks, two meaning errors fixed: (1) the atmosphere track volume is not ch_Count*100 - the original computes n = ch_Count(d3_CurrentScene, 0) * 9 for the Witshaus (0x16) and * 6 for Handwerk (0x12/0x14/8/0x15/0xe) and Schreibstube (7), caps it with the float 64.0f min (0x5eb808) and keeps it on the FPU stack to the ftol at the play / set-volume call; our source recomputed ch_Count*100.0f at each call; (2) the two d3_Time * 0xd sites are F3SND_TIME (three volatile reads). Read against the original 0x4c0e60..0x4c18a0: the season change, h = (2000 - camera.y - meanHeight) * 0.0005f, the five animal blocks (birds / crickets+hpLocusts / dogs / horses / chickens), the bird song by house distance and the atmosphere branches all correspond in statements, constants and calls. What is left is scheduling / register allocation (337 hunks): stack slots differ ([esp+0x8] vs [esp+0xc]), the min comes out as fcom + jnp where the original has fld 64.0f / fcomp st(1) / jp (the arguments spelled the other way, likely max(64.0f, n)), and the whole body's webs differ. Readability debt: Q1, Q2 (ai_Unk602bd8 the animal table, ai_Unk6f0960 log text, snd_AmbientTrack bird song, ai_Unk6f0b94/98 hpLocusts*, ai_Unk6f0b9c season, ai_Unk6f0ba0 atmosphere track, ai_MarketBuilding player house, ai_PlayerBuilding/2310 building/room - several also declared in cm.h), Q4 9 raw accesses incl. the SND_STOPLOG macro. */
+   the distance to the player's house; then the atmosphere mp3 of the building the player is in ("Athmos\..") */
 void snd_UpdateAnimals(void)
 {
     unsigned int t;
@@ -683,8 +682,7 @@ int snd_FindTrackKind(int kind)
 }
 /* 0x4c2000, the music step: a new season stops the outdoor track; a finished track starts a pause (its name kept
    in snd_LastTrack); after the pause, or when the player moved to another building / room (and the current track
-   loses a random draw against its priority), the track of the place starts (0x4c18a0 / 0x4c1bd0)
-   @deep B draft, 279 code hunks / 18 regs, no meaning error left: read the whole original 0x4c2000..0x4c23ef against the source. Fixed here: t = F3SND_TIME (the original reads the volatile d3_Time three times; the source had d3_Time * 0xd, one read), the pause length (int)((1.0f - snd_MusicVolume) * 240000.0f) (0x5eb780=1.0f, 0x5edc0c=240000.0f, call 0x5de518 = __ftol) instead of util_RandomF()*60000.0f, and the five debug texts to the exe's strings (seasonchange, reached its end!, pauseLength is, propability). Remaining: register allocation and basic-block layout only - ours keeps the same instruction multiset up to register choice but hoists loads (e.g. the t computation uses ebx where the original uses edi), inlines the cb4==0 early return where the original jumps to an out-of-line copy, and inverts the final branch polarity; the time/branch/loop/table walks, every constant and callee correspond. Readability debt: Q1 snd_UpdateMusic, Q2 ai_GameState, snd_MusicVolume, ai_Unk6f0cb4, ai_Unk6f0ca8, ai_Unk6f0cac, ai_Unk6f0cb8, ai_Unk6f0cb0, ai_Unk60b0d8, snd_SpecialTrack, ai_Unk6f0860, ai_PlayerBuilding/230c/2310, Q4 the current-track bytes [0x104]/[0x108]/[0x10c]. */
+   loses a random draw against its priority), the track of the place starts (0x4c18a0 / 0x4c1bd0) */
 
 void snd_UpdateMusic(void)
 {
@@ -842,8 +840,7 @@ int snd_VoiceVariant(unsigned int voice, int woman)
     return voice % 3 - 5;
 }
 /* 0x4c2510, the voice sample text of speaker id (a character: "_M%i" / "_W%i" by sex, -1.. -6: "_W2", "_W1", "_M1",
-   "_M2", "_M3", "_HS"; -7: text itself, -8: none) in bank, variation var if >= 0 ("%02i" appended)
-   @deep B draft, 268 code hunks / 2 slots. Read the whole original 0x4c2510..0x4c275d against the source: no missing statement, constant, callee or condition - the id < 0x300 table sex/voice read, the six strcpy suffixes, id -7 sprintf(buf, text), -8 the empty first byte, both %s%s + sb_IsVariation (0x426f60), the inlined strcat, the second %s%s, sb_GetVariation (0x426190) and the two not-found messages, sb_GetSample (0x426030) all correspond; our call multiset is the same. Left is codegen: our frame is 0x12c vs the original's 0x128 (a 4-byte unused local slot shifts every local), the character table is read through the G16CHAR view at 0x770b84 (sex +5, voice +0) as lea chain + shl eax,2 + [eax+disp] where the original reads the record base 0x770b80 (sex +9, voice +4) with the folded [eax*4+disp], and the rest is register allocation / basic-block layout (the early return inlined and moved after the body). Lead: the real AICHAR view at 0x770b80 (ai.h) for the table access, and the extra 4-byte slot. Readability: Q1 done (snd_FindVoiceSample); Q2 ch_EmptyName, ai_CharInts, unk00. */
+   "_M2", "_M3", "_HS"; -7: text itself, -8: none) in bank, variation var if >= 0 ("%02i" appended) */
 
 int snd_FindVoiceSample(int id, int bank, char *text, int var)
 {
@@ -1141,8 +1138,7 @@ void snd_PlayFavourComment(void)
 /* 0x4c2f30, a comment about the player's favour from the selected character of the party record a (a random
    variation r, 3 when the first check is clear): "_SCHLECHTE_GUNST" / "_MITTLERE_GUNST" / "_GUTE_GUNST" by
    favour / 33. x is volatile because the original reloads it from its slot before every use (matching trick,
-   do not clean).
-   @deep 14 code hunks, one scheduling cluster only: the whole original 0x4c2f30..0x4c30df read against the source; ours differs only in the position of the pop esi (ours right after the two out calls, the original after the level test at 0x4c2fea), which shifts the esp offsets of out[1] and x by 4 in that one block; the next 102 instructions are equal. Meaning fixes done in this session: out is a 0xb8-byte unsigned array (the 0xbc frame: x at R-0xbc, out at R-0xb8), r is a 32-bit unsigned (the original's mov bp,ax + and ebp,0xffff), x is volatile (the original stores it to its slot and reloads it at every use - a matching trick, not cleaned), and the special-kind / generic calls are one ternary so that the compiler emits the original's single shared test tail. Readability debt: Q1 name, Q2 gm_BuildingGoodsList / gm_BuildingGoodsList17 / gm_Liking, Q4 the four raw casts (the party record +0x34 / +0x200 and the character +0x16c). */
+   do not clean). */
 
 void ai_FavourComment(char *a)
 {

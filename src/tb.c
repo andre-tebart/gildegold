@@ -9,7 +9,7 @@
 #include "tb.h"
 #include "err.h"
 
-/* 0x42e7b0, the multimedia timer callback. @deep Q2: tb_Unk6333d4 stays unnamed - it is write-only in the whole exe (one store site 0x42e837/0x42e83d, no reader anywhere, no string or text id); the role is unclear, no name without inventing one. tb_Unk6333d0 became tb_AnimTick (gfx/shp step animations by it). behaviour byte */
+/* 0x42e7b0, the multimedia timer callback. */
 void CALLBACK tb_TimerProc(UINT id, UINT msg, DWORD user, DWORD dw1, DWORD dw2)
 {
     int i;

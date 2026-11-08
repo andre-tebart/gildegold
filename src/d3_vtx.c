@@ -19,7 +19,7 @@
 
 #define XENTRY(slot) ((slot)[0] * 0xc0 + *(int *)((slot)[0x1a] + 0x15c))
 
-/* 0x458e70, environment map coordinates of the vertices of a part that has a reflecting texture @deep behaviour: the only code hunk is an instruction order/stack-slot artifact (the original loads [esp+0x7c] before the call's add esp,0x4 where ours loads [esp+0x78] after it - the same local, same value); readability: Q2 d3_WorldMatrix (callee in d3_pose.c, fills the object's world matrix) and state (object flag byte, bit 0x80 = no camera), Q4 the XENTRY macro and the three *(unsigned char **)(entry + 0xb8) reads of the animation entry */
+/* 0x458e70, environment map coordinates of the vertices of a part that has a reflecting texture */
 void d3_EnvMapCoords(XOBJ *obj, XPART *part)
 {
     D3MATRIX m;
@@ -148,7 +148,7 @@ typedef struct D3MVEC2 {
     float w;
 } D3MVEC2;
 
-/* 0x459300 @deep behaviour: 225 fpu + 107 code hunks are the FPU operand ranks and register allocation of the blend/transform loops (the volatile-z / volatile-weight ordering the unit note records, worked to 176 lines before); readability: Q2 objectFlags (object flag byte), Q4 14 raw access casts (frame and slot views) */
+/* 0x459300 */
 void d3_TransformVerts(D3OBJECT *obj, D3LINFO *info, D3MATRIX *m)
 {
     D3ANIMCTL *ctl = (D3ANIMCTL *)info;

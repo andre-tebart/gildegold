@@ -185,7 +185,7 @@ void d3iot_LoadTexSet(char *name, char **out, int *w, int *h)
         }
     }
 }
-/* 0x44d330, loads a BGF mesh (or finds it among the loaded ones) @deep behaviour: 558 code hunks are the frame/register cascade of a 3 KB function - frame 0x2d0 vs ours 0x2b0 (the 14 local slots of which 6 stay unused, note's block-by-block reading: all blocks present and in the original order), zero register ebx vs edi, dead-parameter slots and pointer forms (hunks at 181/207/303/333); Q2 d3_BGFCanWeld (callee reads the BGF header flags, bit meaning unknown) and the unk1e4 parameter (the field is D3BGF.nsets now, the parameter name stays) */
+/* 0x44d330, loads a BGF mesh (or finds it among the loaded ones) */
 
 D3BGF *d3iot_LoadBGF(char *path, char *name, char *texnames, int unk1e4, int ntex)
 {
