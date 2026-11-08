@@ -980,7 +980,6 @@ extern int d2_PicShift;                   /* 0x6ed98c, d2.h (not includable here
 #define d2_PutPixelRGBc ((int (*)(int, int, unsigned char, unsigned char, unsigned char, struct D2SURF *))d2_PutPixelRGB)  /* @original: sv_LoadGroundplan pushes the colour bytes as dwords loaded from the pixel buffer (char parameters, gfx.c masks them) */
 int d2_CompareColour();                     /* 0x478930 */
 int gm_BuildingClass(int kind);                /* 0x501d80, f3gm.c, the class of a building kind */
-int gm_GoodPicture();                     /* 0x502570 */
 int d2_CreatePicObj();                     /* 0x46cd80 */
 #define d2_CreatePicObjS ((int (*)(short, short, int))d2_CreatePicObj)  /* @original: sv_LoadGroundplan adds d2_ScreenW + x in 16 bits (a short x, as d2.c's callers) */
 unsigned short * gm_QueryNext(void);                   /* 0x4ffcc0 */

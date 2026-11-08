@@ -38,6 +38,7 @@ int d3_VecEqual(struct D3VECTOR *a, struct D3VECTOR *b, float eps);             
 unsigned char * gm_BuildQuery(int n, ...);                                                  /* 0x501190, ai.h: AIBLD * */
 unsigned char * gm_BuildNext(void);                                                        /* 0x501030 */
 int gm_IsHomeType(unsigned char *b);                                                       /* 0x502520 */
+void anm_Update(void);                                                                     /* 0x4bb860, the animal step */
 int ch_QueueAnim(struct CHARACTER *ch, char *name, int n);                                   /* 0x4057a0, ch.c */
 char d3_GetHeightAt(struct D3SM *h, struct D3VECTOR *pos, int *px, int *pz, float *py);           /* 0x45f170, ch.h: D3SM *, D3VECTOR * */
 extern struct D3SCENE *d3_DefaultScene; /* 0x5fb5b0 (as d3.h / lc.h) */

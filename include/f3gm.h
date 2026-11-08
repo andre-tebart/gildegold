@@ -216,6 +216,8 @@ int gm_CurrencyDivide(int a, int i);  /* 0x508640 */
 int gm_BuildingCarts(struct ORDBLD *b, int *out);  /* 0x509060 */
 int gm_BuildingRankGate(unsigned char *b, unsigned char *c);  /* 0x509120 */
 int gm_CharMoney(int c);  /* 0x509f20 */
+int gm_CharacterIncomes(unsigned id, GMINCOME *out, unsigned char flags);  /* 0x4fa4b0, fills out with the character's incomes of the kind flags */
+int gm_GoodPicture(unsigned short *o);  /* 0x502570, the string-table number (0x60e + n) of the good's picture, -1 when none */
 int gm_ResearchClass(int k, int *out);  /* 0x50b090 */
 int gm_DonationRank(int c, int d);  /* 0x50b170 */
 int gm_CreditEvents(int c, struct ORDBLD *bld, int *out);  /* 0x50a150 */
