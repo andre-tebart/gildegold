@@ -772,7 +772,7 @@ exe	0x0043ce10	d3_InitSurf	d3_engine	byte	readable
 exe	0x0043ce60	d3_InitObject	d3_engine	shape	draft	deep	
 exe	0x0043cfb0	d3_AddObjectDrawData	d3_engine	byte	readable		
 exe	0x0043d0e0	d3_Unlink	d3_engine	byte	readable		
-exe	0x0043d180	d3_CloneObject	d3_engine	byte	draft	deep	
+exe	0x0043d180	d3_CloneObject	d3_engine	shape	draft	deep	
 exe	0x0043d430	d3_SetObjectAlpha	d3_engine	shape	readable	deep	
 exe	0x0043d630	d3_SetAlphaCB	d3_engine	byte	readable		
 exe	0x0043d690	d3_SetAlpha	d3_engine	byte	readable		
@@ -1469,7 +1469,7 @@ exe	0x004817a0	ai_CalcAngriff	ai	draft	draft	deep
 exe	0x00481ef0	ai_CalcMeisterDiebe	ai	draft	draft	deep	
 exe	0x00482f00	ai_CalcMeisterRaeuber	ai	draft	readable	deep	
 exe	0x004836a0	ai_CalcMeisterBank	ai	byte	draft	deep	
-exe	0x00483a60	ai_Unk483a60	ai	shape	draft	deep	byte+draft -> shape+draft at 47fe9542: ai_types.h AIJOB gains the thief event 0x16's words (thiefClass at 0xac, the thief's netId at 0xb0; AIMSG.thiefClass is the same byte 0x54 earlier) instead of local views or raw offsets in lc's ai_TrainingWindow: a truer shared type. ai_Unk483a60 uses neither member; under the changed declaration set it only swaps stack slots (slots 12, its existing @deep note), as the lc lead comment notes for every AIJOB / AIMSG member (ord_CountGridObjects is debt for the same cause), so its byte match was no evidence of the original's source [waits for: match-deep on its slot allocation, or the declaration set of ai.c's includes (ai.h > ai_types.h)]
+exe	0x00483a60	ai_Unk483a60	ai	byte	draft	deep	
 exe	0x00483d30	ai_StartBuildingWork	ai	shape	draft	deep	
 exe	0x00483ee0	ai_EndWorkerPose	ai	byte	readable		
 exe	0x00483fc0	ai_Unk483fc0	ai	draft	draft	deep	
@@ -3735,7 +3735,7 @@ exe	0x0055ba00	he_AllocEvent1f	he	byte	readable
 exe	0x0055bad0	he_RunEvent1f	he	byte	readable		
 exe	0x0055bd20	he_AllocDemolish	he	byte	readable		
 exe	0x0055bd80	he_RunDemolish	he	byte	readable		
-exe	0x0055bf50	he_AllocBuyBuilding	he	shape	readable		
+exe	0x0055bf50	he_AllocBuyBuilding	he	byte	readable		
 exe	0x0055bfd0	he_RunBuyBuilding	he	draft	readable	deep	
 exe	0x0055c540	he_AllocKredit	he	byte	readable		
 exe	0x0055c700	he_RunKredit	he	byte	readable		
@@ -4004,7 +4004,7 @@ exe	0x00578440	ai_TutorialFreeRuns	sv_t	byte	readable
 exe	0x005784a0	ai_TutorialInitMainIntro	sv_t	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	sv_t	byte	readable		
 exe	0x00578e40	ai_TutorialInitChapter2	sv_t	shape	readable		
-exe	0x00579570	ai_TutorialInitChapter3	sv_t	draft	readable		
+exe	0x00579570	ai_TutorialInitChapter3	sv_t	shape	readable		
 exe	0x0057aa80	ai_TutorialInitChapter4	sv_t	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	sv_t	byte	readable		
 exe	0x0057b750	ai_TutorialInitMainOutro	sv_t	byte	readable		
@@ -4226,8 +4226,8 @@ exe	0x0059b630	ai_BorrowerLoansWindow	lc	byte	readable
 exe	0x0059b880	ai_CreditReleaseWindow	lc	byte	readable		
 exe	0x0059bad0	ai_CreditGiverWindow	lc	byte	readable		
 exe	0x0059be90	ai_SortExchangeRows	lc	draft	readable	deep	
-exe	0x0059c120	ai_FillExchangeRows	lc	shape	readable		
-exe	0x0059c450	ai_ShowExchangeRows	lc	draft	readable	deep	
+exe	0x0059c120	ai_FillExchangeRows	lc	byte	readable		
+exe	0x0059c450	ai_ShowExchangeRows	lc	byte	readable		
 exe	0x0059c6b0	ai_ClickedExchangeRecord	lc	byte	readable		
 exe	0x0059c6e0	ai_UsedRecordCount	lc	byte	readable		
 exe	0x0059c700	ai_ExchangeWindow	lc	draft	readable	deep	
@@ -4374,7 +4374,7 @@ exe	0x005aa0d0	ai_CreatePersonnelRow	lc	shape	readable
 exe	0x005aa1f0	ai_FillPersonnelRow	lc	byte	readable		
 exe	0x005aa4b0	ai_DomizilFreeRow	lc	byte	readable		
 exe	0x005aa520	ai_FillVacantPersonnelRow	lc	byte	readable		
-exe	0x005aa700	ai_ShowBldCarts	lc	draft	readable	deep	
+exe	0x005aa700	ai_ShowBldCarts	lc	byte	readable		
 exe	0x005aa9a0	ai_UpdateBldCarts	lc	draft	readable	deep	
 exe	0x005aab80	ai_PersonnelBook	lc	draft	readable	deep	
 exe	0x005ac110	ai_MercenaryBook	lc	draft	readable	deep	
@@ -4446,7 +4446,7 @@ exe	0x005bc110	ai_ChooseCoatOfArms	lc	byte	readable
 exe	0x005bc420	ai_OpenMoneyInfoPage	lc	byte	readable		
 exe	0x005bc6d0	ai_OpenBuildingListPage	lc	byte	readable		
 exe	0x005bc790	ai_BuildingDetailWindow	lc	byte	readable		
-exe	0x005bc9c0	ai_OpenMasterListPage	lc	draft	readable	deep	
+exe	0x005bc9c0	ai_OpenMasterListPage	lc	shape	readable	deep	
 exe	0x005bcc70	ai_PlayerStatsPanel	lc	shape	readable		
 exe	0x005bd060	ai_AmountLimit	lc	byte	readable		
 exe	0x005bd0c0	ai_CentredText	lc	byte	readable		
@@ -4519,7 +4519,7 @@ exe	0x005c7560	ai_PlotNoFirstChart	lc	byte	readable
 exe	0x005c76b0	ai_PlotNoSecondChart	lc	byte	readable		
 exe	0x005c7800	ai_PlotCombinedChart	lc	byte	readable		
 exe	0x005c7970	ai_DrawStatisticsCharts	lc	draft	readable	deep	
-exe	0x005c7f00	ai_CityStatsPanel	lc	draft	readable	deep	
+exe	0x005c7f00	ai_CityStatsPanel	lc	byte	readable		
 exe	0x005c82f0	ai_PlayerComparePanel	lc	draft	readable	deep	
 exe	0x005c8640	ai_PrivilegesPanel	lc	shape	readable		
 exe	0x005c8bc0	ai_MedicusHandler	lc	byte	readable		
@@ -4559,7 +4559,7 @@ exe	0x005ced50	ai_SendInterrogationRefusal	lc	byte	readable
 exe	0x005cede0	ai_InterrogationWindow1	lc	byte	readable		
 exe	0x005cf020	ai_InterrogationWindow2	lc	byte	readable		
 exe	0x005cf260	ai_ChooseProfessionWindow	lc	byte	readable		
-exe	0x005cf4f0	ai_UniversityWindow	lc	draft	readable	deep	
+exe	0x005cf4f0	ai_UniversityWindow	lc	byte	readable		
 exe	0x005cf820	ai_UseObjPanel	lc	byte	readable		
 exe	0x005cf8a0	ai_UseGood	lc	draft	readable	deep	
 exe	0x005cfb60	ai_UseGoodAddMoney	lc	byte	readable		

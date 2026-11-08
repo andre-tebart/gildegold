@@ -79,9 +79,12 @@
    run / theft 0x94 (HEGRAVETHEFT), the gypsy approaches 0x573760 .. 0x573c20 and the curse 0x9e / slowdown 0x9f /
    trial scene 0xa0 / petty loss 0xa3 / event good 0xa4 handlers (0x573f20 .. 0x5755c0) still read the event and
    message records through raw offsets
-   Open: head: gm_StockBlocks / gm_StockPrice are declared here for he_RunMarketSupervisor (f3gm.h not included)
-   Open: head: no prototypes for gm_AddTime, gm_FindCharacterByMaster, cm_GetSlotState and others (ai.h / f3gm.h /
-   cm.h not included; their calls stay M7)
+   Open: head: d2.h's K&R view d2_PlaceMainWindow is the last M7 line here (its callers push two arguments).
+   Open: head: ai.h is not included (ai_FINVIEW stands in), nor are anm.h f3snd.h hmt.h hst.h menu.h; the @original
+   cast macros next to the includes keep the spellings the definitions disagree with: cm_SendExSetHEI (an int key,
+   the return kept), cm_SendSpawnCharacterR (the send slot kept), ai_PlagueMessageK (two arguments),
+   ai_DomizilMessageK (four), gm_SumListAmountsL, util_RandomU, rt_UnloadAtPointC, d2_SetObjValue2,
+   ai_PickActionBuildingI, gm_NearestBuildingK, sv_SelectPanelObjectK, gm_LevelPayoutK.
    Open: data: he_QuickList (0x74db40, 10921 words) and he_RunHandlers (0x758600) are declared over several objects
    (the quick list, the alloc handlers 0x74df40, the cursor 0x7585e0; the gfx infos 0x7588a0): read through views.
    Open: data: 0x6faa80 he_EventSlots, 0x6faa60 he_BarView, 0x6f262c he_ActiveSlot, 0x6f2630 he_SlotConfirmed,
@@ -91,13 +94,6 @@
    Open: data: 0x5ebb40 ai_FloatHundred (VC6's pooled 100.0f: lc.c's view, defined in main.c's rdata gap block, owner
    lc or main).
    Open: types: SVFRAME / the frame stack view is declared in sv.c, lc.c and here (it belongs in sv_types.h).
-   Open: not included yet (dcp headers conflicts he HEADER): ahm.h ai.h am.h amt.h anm.h cm.h d3_tools.h
-   f3gm.h f3snd.h gv.h hmt.h hst.h rt.h sblib.h sv.h mission.h rmsg.h menu.h; held by own
-   declarations that differ from the owner's: ai_Time, cm_SendExSetHE, ahm_SendSetShare; calls whose argument
-   count differs from the definition (read the original's pushes): gm_AddTime, gm_Liking, gm_TitleNumber,
-   gm_TitleGroup, d2_SetObjValue, d3t_PlayAnim, ahm_SendSetShare, sb_Stop, sv_IsAtDoor; cm.h's void senders whose
-   send slot the handlers keep (cm_SendExSellObject, cm_SendCartRoute: the @original cast macros ..H). Until am.h is included
-   the head keeps am.h's ai_FindPartnersRandomWalk prototype (he_FillWalkSlot passes floats to it).
    unit of rea 8cef7d5b (src/game/he.c); boundaries in decl/text.dcl */
 struct AHMSLOT;
 struct D3HMAP;
@@ -16355,7 +16351,7 @@ void he_AllocMarket(AIJOB *ev)
     gm_AddTime(&ev->end, 1, 0, 0);
 }
 #define HE_SUPERVISOR_MONEY 5120000  /* the market supervisor tops the player's money up to it */
-float gm_StockPrice(int p, int n);
+float gm_StockPrice(int p, int n);  /* 0x4ffa10 (f3gm.c; f3gm.h does not declare it) */
 
 /* 0x55fa90, the run handler "he_RunMarktSupervisor" of the market event 0x3b (its alloc handler he_AllocMarket):
    without a market building, or past 20:00, the record is freed; it runs once per new minute count since its last
