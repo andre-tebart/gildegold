@@ -3022,7 +3022,7 @@ int ch_InitWalk(CHACTION *a, D3SM *h)
     ch_Path.xy = ch_PathBuf;
     ch_Path.max = 0x200;
     if (path_Find(&ch_Path, (PMAP *)h, x, z, t[1], t[0], ch->pathType) == 0xffff) {
-        CH_UNK110(a->ch) = 0;
+        a->ch->pathState = 0;
         if (ch_MarkWalkErrors)
             a->ch->flags.bytes.lo |= 8;
         if (a->u.walk.path) {

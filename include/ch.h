@@ -80,7 +80,9 @@ typedef struct CHARACTER {         /* 0x244 bytes */
         struct CHARACTER *ch;
         int flags;                  /* ch_GetNewPath result */
     } contacts[16];
-    char pad110[0x14];
+    unsigned char pathState;        /* 0x110, cleared when a walk action's path search fails (reasoned: the only
+                                       access the image has, ch_InitWalk) */
+    char pad111[0x13];
     D3OBJECT **transport;              /* points to a CHTRANSPORT */
     union {                         /* 0x128 */
         CHANIM *anim;               /* the animation file in use */
@@ -531,7 +533,6 @@ typedef struct CHSLOT {             /* D3ANIMSLOT as the walk code sees it */
     unsigned char f74_1 : 1, play : 1, f74_4 : 1, f74_8 : 1, f74_10 : 4; /* 0x74 */
 } CHSLOT;
 #define CH_XSLOT(ch)    ((CHSLOT *)(ch)->slot)
-#define CH_UNK110(ch)   (*(unsigned char *)((char *)(ch) + 0x110))
 #define CH_POS038(ch)   ((D3VECTOR *)((char *)(ch) + 0x38))
 
 extern char ch_MarkWalkErrors;           /* 0x631058, marks a failed walk animation on the character (a debug switch, always 0) */
