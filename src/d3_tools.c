@@ -59,7 +59,16 @@ static int d3t_SunFade = 0;              /* 0x631124, 1 fading in, -1 fading out
 static int d3t_Unk631128 = 0;            /* 0x631128 */
 int d3t_SunFadeStart = -1;  /* 0x5f345c, initialized to -1; TODO define here once .data is matched */
 
-/* 0x411680, starts an animation that moves the object to pos and turns it to dir (angles). */
+/* 0x411680, starts an animation that moves the object to pos and turns it to dir (angles).
+   @deep read the whole function against the original: same 142 instructions and 474 bytes on both sides,
+   the same calls (d3_UnwrapAngles, d3_SetObjectRot, d3anim_CreatePath) and the same stores (keys[0].time,
+   keys[1].rot/pos, d3t_PlaceAngles, d3t_PlaceTarget), references clean. The 26 differing instructions are
+   the last block's schedule: we hoist the d3anim_CreatePath stack setup (lea [ebp-0xe8], push, push 2, sub
+   esp,0xc, the af[0..2] loads) ahead of the FPU results and put the keys[1].rot.z store after the
+   fxch/fstp rot.x, while the original finishes the FPU stores first and loads af[0] into edx before the
+   block. Tried: split dir.x -= and inline assign, dir store orders x,y,z / z,x,y / rot.z first, pos before
+   rot, the original's exact store order; best is 26 ins / 93 bytes with no call or store set difference
+   left. */
 int d3t_PlaceObject(D3OBJECT *camera, float px, float py, float pz,
                     float dx, float dy, float dz, int unk, char flags)
 {
@@ -74,23 +83,23 @@ int d3t_PlaceObject(D3OBJECT *camera, float px, float py, float pz,
         return 0;
     D3_ZERO(&af, sizeof(af));
     af.b[1] |= 0x14;
-    af.b[1] &= ~8;
     af.b[8] |= 2;
+    af.b[1] &= ~8;
     keys[0].rot.x = 0.0f;
     keys[0].rot.y = 0.0f;
     keys[0].rot.z = 0.0f;
     keys[0].pos.x = 0.0f;
     keys[0].pos.y = 0.0f;
     keys[0].pos.z = 0.0f;
+    dir.x = dx;
     dir.y = dy;
     dir.z = dz;
-    dir.x = dx;
     if (flags & 8) {
         d3_UnwrapAngles(&camera->rotation, &dir, &rot, &dir);
         d3_SetObjectRot(camera, &rot);
     }
     if (camera == d3_Camera) {
-        d3_Unk1466630 = dir;
+        d3t_PlaceAngles = dir;
         d3t_PlaceTarget.x = px;
         d3t_PlaceTarget.y = py;
         d3t_PlaceTarget.z = pz;
@@ -99,13 +108,15 @@ int d3t_PlaceObject(D3OBJECT *camera, float px, float py, float pz,
     rel.y = py - camera->pos.y;
     rel.z = pz - camera->pos.z;
     keys[0].time = unk;
-    keys[1].rot.x = (dir.x -= camera->rotation.x);
-    keys[1].rot.y = (dir.y -= camera->rotation.y);
+    dir.x -= camera->rotation.x;
+    dir.y -= camera->rotation.y;
     dir.z -= camera->rotation.z;
+    keys[1].rot.x = dir.x;
+    keys[1].rot.y = dir.y;
+    keys[1].rot.z = dir.z;
     keys[1].pos.x = rel.x;
     keys[1].pos.y = rel.y;
     keys[1].pos.z = rel.z;
-    keys[1].rot.z = dir.z;
     anim = d3anim_CreatePath(camera, af, 2, keys);
     if (camera == d3_Camera) {
         d3t_CamMoving = 1;
@@ -2232,7 +2243,7 @@ D3PARTSYS *d3t_CreateEarth(void *parent, D3VECTOR *pos, int count, float size, f
 D3RECT d3_Viewport = {0};  /* 0xfc2930 */
 DDSURFACEDESC2 d3t_SnowMip8[9] = {0};       /* 0x14661c0, 8-bit palettized */
 D3VECTOR d3t_PlaceTarget = {0};  /* 0x1466620, camera target position */
-D3VECTOR d3_Unk1466630 = {0};  /* 0x1466630, camera target angles */
+D3VECTOR d3t_PlaceAngles = {0};  /* 0x1466630, camera target angles */
 DDSURFACEDESC2 d3t_SnowDither[9] = {0};     /* 0x1466640, 8-bit blurred noise */
 DDSURFACEDESC2 d3t_SnowMip16[9] = {0};      /* 0x1466aa0 */
 DDSURFACEDESC2 d3t_SnowMip32[9] = {0};      /* 0x1466f00 */

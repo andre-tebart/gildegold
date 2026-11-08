@@ -272,7 +272,7 @@ struct D3IOPATH *d3_LoadObjectAnim(char *file, struct D3IOOBJ *obj, char reload)
 extern struct VFSDIR *d3io_StockDir;          /* 0xfba940, the stock object directory (d3io_SetStockDir, d3_int_io.c) */
 char *util_BaseName(char *path);            /* 0x401040, strips the extension in place, returns the file name */
 extern D3VECTOR d3t_PlaceTarget;             /* 0x1466620, camera target position */
-extern D3VECTOR d3_Unk1466630;              /* 0x1466630, camera target angles */
+extern D3VECTOR d3t_PlaceAngles;              /* 0x1466630, camera target angles */
 void d3anim_FreePath(D3OBJECT *obj);                                                       /* 0x433b10 */
 char d3if_Delete(D3OBJECT *obj);                                                       /* 0x447190, d3_interface.h */
 struct D3OBJECT * d3_FindObject(int a, int flags, int c, char *name);                     /* 0x449690 */
