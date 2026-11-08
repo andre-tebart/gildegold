@@ -45,9 +45,8 @@ struct CHTRANSPORT;
 struct AICHAR;
 #include "d2_types.h"
 #include "f3gm_types.h"
-extern D2WIN d2_Wins[];
-extern D2VIEW d2_Views[];
 #include "txt_views.h"
+#include "d2.h"
 #include <windows.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -10240,12 +10239,8 @@ int gm_LayoutTree(unsigned char *bld, unsigned short *item, int w, int h)
     return 0;
 }
 
-extern char *d2_Objs;  /* 0xf8f080, 0x2ec bytes each; @original: d2.h declares D2OBJ *; the units add byte offsets to it and do not include d2.h yet (their own char * declarations of d2_Objs / d2_LastWindowPtr supersede d2.h's) */
-extern int d2_LastWindow;  /* 0x6ed938 */
-int d2_RemoveWindow();                     /* 0x472ce0 */
-int d2_CreateChildWindow(short x, short y, short w, short h, unsigned int flags, int win);                     /* 0x472aa0 */
 int d2_WinOpenPic(short x, short y, int pic, int win);                     /* 0x4731d0 */
-#define WIDGET(i) (d2_Objs + (i) * 0x2ec)
+#define WIDGET(i) ((char *)d2_Objs + (i) * 0x2ec)
 #define D2OBJ_AT(i) ((D2OBJ *)d2_Objs + (i))  /* the object i of d2_Objs (char * here) as its D2OBJ record */
 
 /* 0x50b9f0, (re)builds the widgets of the tech tree nodes gm_LayoutTree laid out for the building bld and the
