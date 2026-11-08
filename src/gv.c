@@ -98,7 +98,6 @@ extern int gm_PlayerRecords[688];
 extern const float gv_SaleShares[];
 extern const float gv_GraveWear[];
 
-#define UNK_FW ((unsigned (*)())vfs_fwrite)
 #define UNK_FR ((unsigned (*)())ls_Read)
 
 #define gv_AvatarsT (*(GVAVATAR (*)[0x20])&unk_Avatars)  /* 0x60f310, unk_Avatars (char[0x20][0xf4]) as the GVAVATAR records they are */
@@ -2381,41 +2380,41 @@ int gv_WriteGraveyard(void *f, unsigned char *o)
     g = bld->yard;
     if (g == 0)
         return 0;
-    if (UNK_FW(&g->id, 4, 1, f) == 0)
+    if (vfs_fwrite(&g->id, 4, 1, f) == 0)
         return 0;
-    if (UNK_FW(&g->kind, 4, 1, f) == 0)
+    if (vfs_fwrite(&g->kind, 4, 1, f) == 0)
         return 0;
-    if (UNK_FW(&g->open[0], 1, 1, f) == 0)
+    if (vfs_fwrite(&g->open[0], 1, 1, f) == 0)
         return 0;
-    if (UNK_FW(&g->open[1], 1, 1, f) == 0)
+    if (vfs_fwrite(&g->open[1], 1, 1, f) == 0)
         return 0;
-    if (UNK_FW(&g->open[2], 1, 1, f) == 0)
+    if (vfs_fwrite(&g->open[2], 1, 1, f) == 0)
         return 0;
-    if (UNK_FW(&g->open[3], 1, 1, f) == 0)
+    if (vfs_fwrite(&g->open[3], 1, 1, f) == 0)
         return 0;
     z = g->graves;
     i = 0;
     if (gv_GraveTotals[g->kind] > 0) {
         do {
-            if (UNK_FW(&z->id, 4, 1, f) == 0)
+            if (vfs_fwrite(&z->id, 4, 1, f) == 0)
                 return 0;
-            if (UNK_FW(z->first, 0x10, 1, f) == 0)
+            if (vfs_fwrite(z->first, 0x10, 1, f) == 0)
                 return 0;
-            if (UNK_FW(z->family, 0x10, 1, f) == 0)
+            if (vfs_fwrite(z->family, 0x10, 1, f) == 0)
                 return 0;
-            if (UNK_FW(z->traits, 5, 1, f) == 0)
+            if (vfs_fwrite(z->traits, 5, 1, f) == 0)
                 return 0;
-            if (UNK_FW(&z->v2c, 4, 1, f) == 0)
+            if (vfs_fwrite(&z->v2c, 4, 1, f) == 0)
                 return 0;
-            if (UNK_FW(&z->v30, 4, 1, f) == 0)
+            if (vfs_fwrite(&z->v30, 4, 1, f) == 0)
                 return 0;
-            if (UNK_FW(&z->nameId, 4, 1, f) == 0)
+            if (vfs_fwrite(&z->nameId, 4, 1, f) == 0)
                 return 0;
-            if (UNK_FW(&z->sex, 4, 1, f) == 0)
+            if (vfs_fwrite(&z->sex, 4, 1, f) == 0)
                 return 0;
-            if (UNK_FW(&z->icon, 4, 1, f) == 0)
+            if (vfs_fwrite(&z->icon, 4, 1, f) == 0)
                 return 0;
-            if (UNK_FW(&z->year, 4, 1, f) == 0)
+            if (vfs_fwrite(&z->year, 4, 1, f) == 0)
                 return 0;
             i++;
             z++;
@@ -2425,18 +2424,18 @@ int gv_WriteGraveyard(void *f, unsigned char *o)
     i = 0;
     if (gv_EntryTotals[g->kind] > 0) {
         do {
-            if (UNK_FW(&e->size, 4, 1, f) == 0)
+            if (vfs_fwrite(&e->size, 4, 1, f) == 0)
                 return 0;
-            if (UNK_FW(&e->id, 4, 1, f) == 0)
+            if (vfs_fwrite(&e->id, 4, 1, f) == 0)
                 return 0;
-            if (UNK_FW(&e->w08, 2, 1, f) == 0)
+            if (vfs_fwrite(&e->w08, 2, 1, f) == 0)
                 return 0;
-            if (UNK_FW(&e->until, 2, 1, f) == 0)
+            if (vfs_fwrite(&e->until, 2, 1, f) == 0)
                 return 0;
-            if (UNK_FW(&e->b0c, 1, 1, f) == 0)
+            if (vfs_fwrite(&e->b0c, 1, 1, f) == 0)
                 return 0;
             idx = e->grave - g->graves;
-            if (UNK_FW(&idx, 4, 1, f) == 0)
+            if (vfs_fwrite(&idx, 4, 1, f) == 0)
                 return 0;
             i++;
             e++;
