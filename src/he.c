@@ -213,7 +213,6 @@ extern GAPDATA full_data_629054[];
 extern GAPDATA he_TheaterScripts[];
 extern GAPDATA full_rdata_5ee01c[];
 
-void amt_ChangeDistrictOpinion();
 struct AIPER; struct AMTREC; struct CHARACTER; struct CHACTION; struct EVTSCRIPT; struct G15PLANT; struct G11REC; struct AITIME;
 
 
@@ -647,6 +646,7 @@ int he_RegisterEventTypeA2();
 #include "gv.h"
 #include "ahm.h"
 #include "am.h"
+#include "amt.h"
 #define rt_UnloadAtPointC ((void (*)(char *, char))rt_UnloadAtPoint)  /* 0x4bfa40 (rt.c: int pl): @original he_RunTransport pushes its char player slot unextended (0x556bb9) */
 #define d2_SetObjValue2 ((void (*)(int, int))d2_SetObjValue)  /* 0x475cb0: @original he.c's two calls push only obj and the value (0x53dcd1, 0x53dd44) */
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
