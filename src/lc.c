@@ -108,6 +108,7 @@
 #define GAPDATA __declspec(align(1)) unsigned char
 
 #define sv_ReturnZeroV ((int (*)(int))sv_ReturnZero)  /* @original 0x5c4100 passes the research class as an argument (sv.h declares the function void) */
+#define ai_MapPickCb(cb) ((void (*)(void *, void *))(cb))  /* @original: ai_MapPick's cb is void (*)() (lc.h, its callbacks take differing pointer types); both indirect calls push two dwords and read no result (0x5b22f6/0x5b22f7 push ebp twice; 0x5b248f/0x5b2490 push the picked building and picked) */
 /* lc.c -- the production / trade windows and the tavern / location / money lender / Rathaus windows
    (0x58bbd0 .. 0x5d33b0): the
    "Handel\Handel_PRODUKTION" screen of a building (0x58bd60) and its helpers (the table init 0x58bbd0, the
@@ -19107,7 +19108,7 @@ int ai_MapPick(unsigned int flags, int *req, char *name, void (*cb)(), int unuse
                         if (picked != 0 && cb != 0) {
                             d2_SetViewEnabled(map.view, 0);
                             d2_EnableObject(d2_Wins[map.screen].parent, 0);
-                            cb(picked, picked);
+                            ai_MapPickCb(cb)((void *)picked, (void *)picked);
                             d2_SetViewEnabled(map.view, 1);
                             d2_EnableObject(d2_Wins[map.screen].parent, 1);
                         } else {
@@ -19151,7 +19152,7 @@ int ai_MapPick(unsigned int flags, int *req, char *name, void (*cb)(), int unuse
                 continue;
             d2_SetViewEnabled(map.view, 0);
             d2_EnableObject(d2_Wins[map.screen].parent, 0);
-            cb(picked, map.marks[i].bld);
+            ai_MapPickCb(cb)((void *)picked, (void *)map.marks[i].bld);
             d2_SetViewEnabled(map.view, 1);
             d2_EnableObject(d2_Wins[map.screen].parent, 1);
             break;
