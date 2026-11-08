@@ -4605,7 +4605,7 @@ int ai_AlchemistHire(unsigned char *obj, AHMSTEP *step, int value)
     return 0;
 }
 
-int ai_AlchemistSendRecipeResearch(); int ai_AlchemistSendResearchStart(); int ahm_ResearchState(); char * ahm_OwnerChar(); AHMGRID * ahm_RandomRecipe();
+int ahm_ResearchState(); char * ahm_OwnerChar(); AHMGRID * ahm_RandomRecipe();
 
 /* 0x57c690, the alchemist's research window of the alchemist object obj ("Locations\Domizil\Alchemistry2"):
    without an owning character only the text 0x4051 (0x182); else the places of the record at +0x65 as
@@ -4844,7 +4844,6 @@ int ai_AlchemistSendResearchStart(unsigned char *obj, AHMREC *rec)
     cm_SendLongMessage((char *)&msg);
     return 1;
 }
-int ai_AlchemistTrainShareWindow(); int ai_AlchemistFundWindow(); int ai_AlchemistRescheduleWindow();
 
 /* 0x57cf90, the alchemist's window of the alchemist object obj ("Locations\Domizil\Alchemistry3"): without an
    owning character only the text 0x4051 (0x182); else the character panel (ai_AlchemistPanel; rebuilt when the
@@ -5337,11 +5336,11 @@ char * gv_FindEffect(int id); int gv_RequestEffectLoad(struct AIBLD *bld); int c
 struct D2FADE *d2_StartFade(int x, int y, int w, int h, char *name, int dur, unsigned int flags); /* 0x4767d0, d2.h */
 void d3_SetViewport(float w, float h, float x, float y, float zn, float zf, float scale, int a, int b); void sv_SetPanelEnabled(); void d3sky_Init(struct D3SKY *s, char build);
 void d3t_GetObjectBounds(); 
-void ai_CannonBuildPanel(); void ai_CannonPanel(); char d3if_ShowTree(struct D3OBJECT *obj, char show);
+char d3if_ShowTree(struct D3OBJECT *obj, char show);
 struct D3OBJECT;
 char d3if_Delete(struct D3OBJECT *obj);                 /* 0x447190, d3_interface.h */
 char d3if_Show(struct D3OBJECT *obj, char show);        /* 0x4471b0, d3_interface.h */
-void he_ShowObjectInfos(); void ai_CannonAxes(CANNONSCENE *sc); void ai_CannonAim(CANNONSCENE *sc, float dt); void ai_CannonCamera();
+void he_ShowObjectInfos(); void ai_CannonAxes(CANNONSCENE *sc); void ai_CannonAim(CANNONSCENE *sc, float dt);
 void ai_CannonShotResults(CANNONSCENE *sc); void ai_CannonSwitchAnim(char *rec, CANNONSCENE *sc, GVEFFECT *run, int sel, int mask); int ai_CannonFireCheck(CANNONSCENE *sc); void ai_CannonExplosion(CANNONSCENE *sc, char *rec);
 void sv_SetStatusText(char *s); void sv_RedrawScreen();
 void d3if_Prerender(char map); 
@@ -6915,7 +6914,7 @@ void ai_CabinetIntrigueWindow(AIBLD *rec)
 }
 
 void sv_ReleaseNamePlates(void); int sv_RegisterNamePlate(); int ai_OpenTransport(); void ai_StorageWindow();
-int ai_ProductionWindow(); void ai_UnlockRoomWindow(); void ai_AlchemistResearchWindow(); void ai_AlchemistWindow();
+int ai_ProductionWindow(); void ai_AlchemistResearchWindow(); void ai_AlchemistWindow();
 
 /* 0x5821d0, the contacts of the alchemist's laboratory (the room kind 0x24b of the enter-building driver
    ai_EnterBuilding): rec = the building, room = the room object. The name plates are released once, then each frame
@@ -7250,7 +7249,7 @@ void ai_GraveList(AIBLD *rec, int *w, int sel)
     d2_ScrollWindow(w[2]);
 }
 
-void ai_GraveDeadName(GVGRAVE *e, char *out); void ai_GraveDeadDescription();
+void ai_GraveDeadName(GVGRAVE *e, char *out);
 
 
 /* 0x582b40, the detail of the selected grave in the graveyard contact window: rec = the graveyard building, w = the
@@ -8653,7 +8652,7 @@ int ai_SeanceWindow(char *unused, GVDETAILWIN *w, GVSEANCE *out)
     return r;
 }
 
-void ai_SeanceRollFormulas(); int sb_IsInit(); void d2_PlaceViewWindows(int view, unsigned char flags);
+int sb_IsInit(); void d2_PlaceViewWindows(int view, unsigned char flags);
 
 /* 0x5859c0, the seance ritual of the seance kinds (ch unused, ev the seance window's result): rolls the eight
    formula texts (ai_SeanceRollFormulas from txt 0x40d7), opens "Locations\Friedhof\Seance2" and starts the script

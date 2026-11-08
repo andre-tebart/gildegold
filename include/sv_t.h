@@ -7,6 +7,11 @@ struct HEEVSLOT;
 struct SBSAMPLE;
 struct AHMSTEP;
 struct AIBLD;
+struct AIOBJ;
+struct AHMREC;
+struct GVGRAVE;
+struct GVEFFECT;
+struct CANNONSCENE;
 
 typedef struct TUTSTEP {                /* 0x10 bytes, a step of a run record's chain (TUTRUN.steps) */
     unsigned int delay;                 /* 0x00, ms after the step started until its control is enabled */
@@ -194,6 +199,11 @@ int ai_TutorialInitMainOutro(void);                 /* 0x57b750, the main-outro 
 void ai_TutorialBezier(float *a, float *b, float *c, float *d, float t, float *out);  /* 0x57b810, the Bezier */
 void ai_AlchemistCandidates(unsigned char *obj);  /* 0x57bf00, the alchemist's candidates window: hires one of the walk steps */
 int ai_AlchemistHire(unsigned char *obj, struct AHMSTEP *step, int value);  /* 0x57c560, hires the candidate step (ROUGH) */
+int ai_AlchemistSendRecipeResearch(unsigned char *obj, struct AHMREC *rec, int slot);  /* 0x57cde0, starts the research of the place slot (message 0x96) */
+int ai_AlchemistSendResearchStart(unsigned char *obj, struct AHMREC *rec);  /* 0x57ced0, starts the alchemist's own research (message 0x95) */
+int ai_AlchemistTrainShareWindow(unsigned char *obj, struct AHMREC *rec, int idx);  /* 0x57dc50, the share research window of the share idx */
+int ai_AlchemistFundWindow(unsigned char *obj, struct AHMREC *rec);  /* 0x57de60, the money window (rec unread) */
+int ai_AlchemistRescheduleWindow(unsigned char *obj, struct AHMREC *rec);  /* 0x57e0e0, the dismissal window (rec unread) */
 
 /* declared in other units' headers before (moved to the owner) */
 int ai_PermissionBits1d(char *ch, char *b, char *x);  /* 0x587b70, the permission bits of the character ch in the building b of the type class 0x1d (gm_PermissionBits) */
@@ -210,6 +220,9 @@ void ai_GraveCareContact(char *rec);       /* 0x587300, the graveyard contact GR
 void ai_GraveHelperContact(char *rec);     /* 0x587340, the graveyard contact GEHILFEN_ERSCHAFFEN */
 void ai_GraveInsuranceContact(struct AIBLD *rec);/* 0x587370, the graveyard contact VERSICHERUNG */
 void ai_GraveyardChatter(char *unused);    /* 0x587c90, the graveyard's idle-chatter tick */
+void ai_GraveDeadDescription(struct GVGRAVE *g, char *out);  /* 0x583150, the second line of a dead person in a grave (ai_GraveDetail) */
+void ai_SeanceRollFormulas(int n, int *ids, int *variants, int base);  /* 0x585c40, rolls the seance formula texts into ids / variants */
+void ai_UnlockRoomWindow(struct AIBLD *rec, struct AIOBJ *room);  /* 0x5823b0, the window that unlocks a locked room for a fee */
 void ai_HandleItemDrag(void);  /* 0x587e00, the right-button tooltip handler */
 int ai_OpenBuildingTooltip(int idx);  /* 0x588160, opens the tooltip view of the building type idx */
 int ai_OpenItemTooltip(int idx);  /* 0x588310, opens the item tooltip view of the goods item idx */
@@ -229,6 +242,9 @@ extern const struct D3VECTOR ai_WimpelPos;  /* 0x5eec80, the wimpel's place on t
 extern const float ai_CannonSwitchMs;    /* 0x5eec94, the length of each half of the barrel switch (ms) */
 extern const float ai_CannonSwitchDist;  /* 0x5eec98, how far the cannon sinks back while the barrel switches */
 extern const float ai_CannonZoomRange;  /* 0x5eecac, the distance the zoom moves the camera out */
+void ai_CannonCamera(struct CANNONSCENE *sc);  /* 0x57f0e0, the cannon camera update */
+void ai_CannonPanel(char *rec, struct CANNONSCENE *sc, struct GVEFFECT *run);  /* 0x57f890, the cannon control panel */
+void ai_CannonBuildPanel(struct CANNONSCENE *sc, struct GVEFFECT *run);  /* 0x580a90, builds the cannon control panel */
 extern unsigned char ai_TurnTable[0x4000];  /* 0x6f5f60, the 0x4000-byte table ai_ClearTurnTable clears at engine open (nothing else refers to it) */
 void ai_SlotKeys(void);  /* 0x589c90, a bare function key selects its bookmark (ai_SelectBookmark) */
 void ai_SpeedKeys(void);  /* 0x589cf0, the game speed keys (cm_RaiseSpeedLevel / cm_LowerSpeedLevel) */
