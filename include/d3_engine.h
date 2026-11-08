@@ -241,8 +241,8 @@ extern float d3_ViewX;                  /* 0xfe73a8 */
 extern float d3_ViewY;                  /* 0xfc5328 */
 extern float d3_ZNear;                  /* 0xfe73b4 */
 extern float d3_ZFar;                   /* 0xfc2564 */
-extern int d3_Unkfc2df4;                /* 0xfc2df4 */
-extern int d3_Unkfc2df0;                /* 0xfc2df0 */
+extern int d3_ScreenW;                /* 0xfc2df4 */
+extern int d3_ScreenH;                /* 0xfc2df0 */
 extern float d3_FogEnd;                     /* 0xfc2dd8 */
 extern float d3_SavedZFar;                  /* 0xfe73bc, d3_ZFar while the fog is off */
 extern float d3_FogEnd2;                    /* 0xfc5340 */

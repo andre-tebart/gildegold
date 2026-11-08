@@ -759,7 +759,9 @@ draw:
 }
 /* 0x43a610, sets the fog range: the fog scale (255 / (end - start)), the squared start, and when the
    fog is off, shrinks the far plane to the fog end; then refreshes all objects.
-   @deep Q2: d3_Unkfc2df0 / d3_Unkfc2df4 (0xfc2df0, 0xfc2df4) are only written from d3_SetViewport's last two int parameters at 0x43b950 and passed back unchanged by both of its callers (d3_SetFogRange 0x43a610, d3_SetFog 0x43a6f0); nothing else reads them, the data has no initial value and no caller ever varies them, so there is no evidence for a role name */
+   d3_ScreenH / d3_ScreenW (0xfc2df0, 0xfc2df4) are the int screen height / width d3_SetViewport
+   (0x43b950) last took (every caller passes d2_ScreenW, d2_ScreenH or d3_Cfg.w, d3_Cfg.h); they are
+   stored only for its change check, so this function passes them back unchanged */
 
 void d3_SetFogRange(float start, float end)
 {
@@ -775,11 +777,27 @@ void d3_SetFogRange(float start, float end)
         else
             zf = d3_SavedZFar = d3_ZFar;
         if (end < zf)
-            d3_SetViewport(d3_ViewW, d3_ViewH, d3_ViewX, d3_ViewY, d3_ZNear, end, d3_ScaleX, d3_Unkfc2df4, d3_Unkfc2df0);
+            d3_SetViewport(d3_ViewW, d3_ViewH, d3_ViewX, d3_ViewY, d3_ZNear, end, d3_ScaleX, d3_ScreenW, d3_ScreenH);
         d3_UpdateAll(0);
     }
 }
-/* 0x43a6f0 */
+/* 0x43a6f0, turns the fog on (start < end: sets the range through d3_SetFogRange) or off (start >= end:
+   restores the viewport when the fog was on), then stores the fog range, the on flag and the colour
+   @hard read the whole function against the original 0x43a6f0..0x43a7c6 and rebuilt its structure: two
+   exits with char on in bl (mov bl,1 in the start<end arm, xor bl,bl in the other), the shared tail in the
+   original's order (FogOn, FogStart1, FogEnd2, colour), the start<end / else split with the else's
+   conditional d3_SetViewport; renamed the viewport's two int globals d3_ScreenW/d3_ScreenH (Q2) and wrote
+   the description (Q6), readability readable. Tried six source forms: shared tail with the tail in path2's
+   order and in path1's order, duplicated stores per arm, early return in the start<end arm, char on = 1
+   inside the outer if, and the inverted start >= end condition (that flips the FPU test to 'and eax,0x100;
+   jne', wrong). Left: ours 52 vs the original 60 instructions and one code hunk from +0x2a to +0x51: the
+   original keeps a copy of the tail inline in the start<end arm ('mov eax,[esp+0x14] / mov edx,[esp+0x10]
+   / add esp,8 / mov [d3_FogEnd2],eax / mov eax,[esp+0x10] / mov [d3_FogOn],bl / mov [d3_FogStart1],edx /
+   mov [d3_fog_color],eax / pop ebx / ret') where ours has 'add esp,8 / jmp' to the merged tail (the
+   original's store4 [0xfc5340] at +0x2a is that copy; our start<end arm reaches the same four stores
+   through the jmp at +0x33), and the other hunk is the same d3_SetViewport call under an eax/ecx/edx
+   rotation (the M8 refs are that one-instruction shift). No source form I tried makes this VC6 duplicate
+   that tail. */
 
 void d3_SetFog(float start, float end, unsigned long color)
 {
@@ -792,7 +810,7 @@ void d3_SetFog(float start, float end, unsigned long color)
         } else {
             on = 0;
             if (d3_FogOn)
-                d3_SetViewport(d3_ViewW, d3_ViewH, d3_ViewX, d3_ViewY, d3_ZNear, d3_SavedZFar, d3_ScaleX, d3_Unkfc2df4, d3_Unkfc2df0);
+                d3_SetViewport(d3_ViewW, d3_ViewH, d3_ViewX, d3_ViewY, d3_ZNear, d3_SavedZFar, d3_ScaleX, d3_ScreenW, d3_ScreenH);
         }
         d3_FogOn = on;
         d3_FogStart1 = start;
@@ -1198,7 +1216,10 @@ void d3_SetObjectRotXYZ(D3OBJECT *obj, float x, float y, float z)
     v.z = z;
     d3_SetObjectRot(obj, &v);
 }
-/* 0x43b950, sets the view rectangle, the depth range and the projection scale. @deep Q2: d3_Unkfc2df0 / d3_Unkfc2df4 (0xfc2df0, 0xfc2df4) are write-only - stored from the last two int parameters and passed back unchanged by d3_SetFogRange and d3_SetFog, nothing else reads them, no initial value and no caller varies them; d3_Unkfe73a4 (0xfe73a4 = (int)(65536.0f * (h + y))) and d3_Unkfc2ddc (0xfc2ddc, set to 1.0f) have no reader at all: the Ghidra exports 43a610 / 43a6f0 / 43b950 / 43bb70 / 43bc20 / 43c240 are the only references to these addresses, so no role name can be evidenced. Everything else in the body is byte and named (d3_Unk4391d0 -> d3_SetupFrustum, d3_Unk63345c -> d3_D3DActive this session). */
+/* 0x43b950, sets the view rectangle, the depth range and the projection scale. d3_ScreenH / d3_ScreenW
+   (0xfc2df0, 0xfc2df4) are the int screen height / width last set (every caller passes d2_ScreenW,
+   d2_ScreenH or d3_Cfg.w, d3_Cfg.h); they are write-only - this function's change check compares them and
+   d3_SetFogRange / d3_SetFog pass them back unchanged. @deep Q2: d3_Unkfe73a4 (0xfe73a4 = (int)(65536.0f * (h + y))) and d3_Unkfc2ddc (0xfc2ddc, set to 1.0f) have no reader at all: the Ghidra exports 43a610 / 43a6f0 / 43b950 / 43bb70 / 43bc20 / 43c240 are the only references to these addresses, so no role name can be evidenced. Everything else in the body is byte and named (d3_Unk4391d0 -> d3_SetupFrustum, d3_Unk63345c -> d3_D3DActive this session). */
 
 void d3_SetViewport(float w, float h, float x, float y, float zn, float zf, float scale, int a, int b)
 {
@@ -1206,12 +1227,12 @@ void d3_SetViewport(float w, float h, float x, float y, float zn, float zf, floa
     float hw, hh;
 
     if (d3_ViewW != w || d3_ViewH != h || d3_Viewport.left != x || d3_Viewport.top != y || d3_ScaleX != scale
-        || d3_ZNear != zn || d3_ZFar != zf || d3_Unkfc2df4 != a || d3_Unkfc2df0 != b) {
+        || d3_ZNear != zn || d3_ZFar != zf || d3_ScreenW != a || d3_ScreenH != b) {
         if (d3_D3DActive)
             d3d_SetViewport(w, h, x, y, zn, zf);
         d3_HalfW = hw = w * 0.5f;
-        d3_Unkfc2df4 = a;
-        d3_Unkfc2df0 = b;
+        d3_ScreenW = a;
+        d3_ScreenH = b;
         d3_ViewW = w;
         d3_CenterX = hw + x;
         d3_ViewH = h;
@@ -2626,8 +2647,8 @@ float d3_FogEnd = 0;  /* 0xfc2dd8 */
 float d3_Unkfc2ddc = 0;  /* 0xfc2ddc */
 D3SORTENT * d3_SortBuf = 0;  /* 0xfc2de0 */
 D3OBJECT *d3_Camera = 0;  /* 0xfc2dec, the camera object */
-int d3_Unkfc2df0 = 0;  /* 0xfc2df0 */
-int d3_Unkfc2df4 = 0;  /* 0xfc2df4 */
+int d3_ScreenH = 0;  /* 0xfc2df0 */
+int d3_ScreenW = 0;  /* 0xfc2df4 */
 char d3_Unkfc2e00[0x200] = {0};  /* 0xfc2e00, the head sentinel of the stock object list; its next field at +0x1fc (0xfc2ffc) is d3_StockListHead (a header macro, not a separate object) */
 int d3_Unkfc3000 = 0;  /* 0xfc3000 */
 float d3_FogStart = 0;  /* 0xfc300c */
