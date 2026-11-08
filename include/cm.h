@@ -865,7 +865,7 @@ extern int d2_TextDrawnH;  /* 0x6ed96c */
 void cm_ClearSceneChars();  /* 0x4d8b30 */
 void cm_DrawFightTime();  /* 0x4d8b50 */
 
-int cm_DeleteChar();  /* 0x4e3250 */
+int cm_DeleteChar(int a);  /* 0x4e3250 */
 void cm_DeleteSceneChars();  /* 0x4d8c40 */
 
 int d2_RemoveWindowObjects();  /* 0x472d20 */
