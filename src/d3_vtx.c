@@ -17,6 +17,7 @@
 #include "d3_pose.h"
 #include "d3_engine.h"
 #include "d3_vec.h"
+#include "cm.h"
 
 /* 0x458e70, environment map coordinates of the vertices of a part that has a reflecting texture */
 void d3_EnvMapCoords(XOBJ *obj, XPART *part)
@@ -84,52 +85,57 @@ void d3_EnvMapCoords(XOBJ *obj, XPART *part)
 /* 0x4591a0, blend weights of the two key frames around the current time of an animation slot */
 #define UNK64(s) (*(float *)&(s)->time)
 
-/* 0x4591a0 */
+/* 0x4591a0, the blend weights of the two key frames around the current sub-frame time of a vertex animation
+   slot s: *a the weight of its frame, *b of its nextFrame (flags bit 1 blends backwards and swaps them; at the
+   animation's ends the cosine eases the weight towards the frame) */
 void d3_AnimBlendWeights(D3ANIMSLOT *s, float *a, float *b)
 {
     D3ANIMDATA *d = s->data;
     int n;
     float t;
-    volatile float r;
+    union {
+        volatile float v;           /* the store / read the original keeps in its slot */
+        float f;                    /* the non-volatile read (a fld ai_FloatOne; fsub [r] order) */
+    } r;
 
     if (s->flags.b[1] & 2) {
-        t = s->subFrame * (1.0f / d->frames[s->nextFrame].count);
+        t = s->subFrame * (ai_FloatOne / d->frames[s->nextFrame].count);
         if (s->flags.b[1] & 4) {
             n = d->nframes;
             if (n <= 2 && !(0 < s->nextFrame)) {
-                t = ((float)cos(t * 3.1415927f) + 1.0f) * 0.5f;
-                t = 1.0f - t;
+                t = ((float)cos(t * cm_Pi) + ai_FloatOne) * 0.5f;
+                t = ai_FloatOne - t;
             } else if (!(0 < s->nextFrame)) {
                 t = (float)cos(t * 1.5707964f);
-                t = 1.0f - t;
+                t = ai_FloatOne - t;
             } else if (s->frame >= n - 1) {
-                t = (float)cos((t + 1.0f) * 1.5707964f) + 1.0f;
-                t = 1.0f - t;
+                t = (float)cos((t + ai_FloatOne) * 1.5707964f) + ai_FloatOne;
+                t = ai_FloatOne - t;
             }
         }
-        r = t - (1.0f / d->frames[s->nextFrame].count) * ((float *)s)[25];
-        /* the non-volatile read is needed: it makes VC6 load 1.0f first (fld 1.0f; fsub [r]) */
-        *a = 1.0f - *(float *)&r;
-        *b = r;
+        r.v = t - (ai_FloatOne / d->frames[s->nextFrame].count) * s->frameTime;
+        /* the non-volatile read is needed: it makes VC6 load ai_FloatOne first (fld ai_FloatOne; fsub [r]) */
+        *a = ai_FloatOne - r.f;
+        *b = r.v;
     } else {
-        t = s->subFrame * (1.0f / d->frames[s->frame].count);
+        t = s->subFrame * (ai_FloatOne / d->frames[s->frame].count);
         if (s->flags.b[1] & 4) {
             n = d->nframes;
             if (n <= 2 && s->frame + 1 >= n - 1) {
-                t = ((float)cos(t * 3.1415927f) + 1.0f) * 0.5f;
-                t = 1.0f - t;
+                t = ((float)cos(t * cm_Pi) + ai_FloatOne) * 0.5f;
+                t = ai_FloatOne - t;
             } else if (s->nextFrame >= n - 1) {
-                t = (float)cos((t + 1.0f) * 1.5707964f) + 1.0f;
-                t = 1.0f - t;
+                t = (float)cos((t + ai_FloatOne) * 1.5707964f) + ai_FloatOne;
+                t = ai_FloatOne - t;
             } else if (!(0 < s->frame)) {
                 t = (float)cos(t * 1.5707964f);
-                t = 1.0f - t;
+                t = ai_FloatOne - t;
             }
         }
-        t = (1.0f / d->frames[s->frame].count) * ((float *)s)[25] + t;
-        r = 1.0f - t;
+        t = (ai_FloatOne / d->frames[s->frame].count) * s->frameTime + t;
+        r.v = ai_FloatOne - t;
         *a = t;
-        *b = r;
+        *b = r.v;
     }
 }
 
