@@ -246,7 +246,6 @@ extern int cm_NetFlags;
 
 
 extern GAPDATA full_data_62456c[];
-extern GAPDATA full_data_6f2428[];
 extern GAPDATA full_data_760454[];
 extern int init_StatusForm;
 extern int sv_FrameMask;
@@ -4735,7 +4734,7 @@ void main_GameLoop(int ctl)
     sv_PumpMessages();
     main_SetLoadProgress(U_I(((unsigned)&d2_Strings + 0x1b0)), 5);
     main_StartGame();
-    if ((U_I((unsigned)&ai_GameFlags) & 1) != 0 && U_I((unsigned)&full_data_6f2428) != 0)
+    if ((U_I((unsigned)&ai_GameFlags) & 1) != 0 && main_StartCoupleOn != 0)
         main_CreateStartCouple();
     main_SetLoadProgress(0, 10);
     if ((ai_GameFlags & 0x41) != 0) {
@@ -5815,7 +5814,7 @@ int snd_TransportBank = 0;  /* 0x6f2414 */
 struct MSXTRACK *main_MenuSong = 0;  /* 0x6f2418, the main menu's song (main_Menue) */
 int main_Movie = 0;  /* 0x6f241c, the id mov_Open gave the movie that plays (intro movies, outro.mpg) */
 GAPDATA full_data_6f2420[8] = { 0 };  /* 0x6f2420 */
-GAPDATA full_data_6f2428[4] = { 0 };  /* 0x6f2428 */
+int main_StartCoupleOn = 0;  /* 0x6f2428, nonzero: main_GameLoop creates the starting couple (main_CreateStartCouple) after main_StartGame in a single player game; no writer in the image */
 int main_TextureDivider = 0;  /* 0x6f242c, the Gfx/TextureDivider key of game.INI */
 int main_DirectStart = 0;  /* 0x6f2434, nonzero: WinMain skips the main menu, starts the single player game at once (main_JobName picks the job) and quits after it; no writer in the image */
 GAPDATA full_data_6f2450[12] = { 0 };  /* 0x6f2450 */
