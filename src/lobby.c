@@ -389,43 +389,40 @@ void lobby_ShowCity(void)
     sprintf(name, "%s: %d", txt_NetPlayers, players);
     d2_CreateWinText(x, d2_Objs[obj].h + 0x1b, name, d2_LastWindow);
 }
-/* 0x58aba0, the current player's info window (384 B): the player record 0x6f267c[0x6f5ea0 + 1] (0x4cd380)
-   gives the city (+0xc); control 3 of 0x62aa88 and the text 0x602568; the city image control 0x4731d0
-   (5, 10, city + 0x59a) and the name / family name text 0x473650 (x + 0xf, 10); then "%s: %s" 0x62aaac
-   with the honour title of the gender (U_I (0x143a614), U_I (0x143a63c) for the female byte 0x6f5e30) and
-   the profession (the tables 0x143a7fc / 0x143a680 by 0x6f5e2b) and the religion (0x143b3d8 by 0x6f5e31),
-   each below the last */
+/* 0x58aba0, the current player's info window (384 B): the coat of the player's lobby record, control 3 of the
+   lobby form and the chart picture of the coat (5, 10); below the picture the honour title of the sex with the
+   first and family name, then the profession and the faith lines, each through lobby_FmtName ("%s: %s") */
 
 void lobby_ShowMyPlayer(void)
 {
     char text[256];
     char *u;
-    int p;
+    CMLOBBYPLAYER *p;
     int id;
     int x;
     int y;
 
-    p = cm_LobbyRecord(lobby_List[lobby_MyRow + 1]);
+    p = (CMLOBBYPLAYER *)cm_LobbyFindPlayer(lobby_List[lobby_MyRow + 1]);
     if (p != 0)
-        lobby_Player.coat = U_I(p + 0xc);
+        lobby_Player.coat = p->coat;
     d2_SetForm(lobby_Form, 3);
-    io_PrintText((char *)(unsigned)"$C");
-    id = d2_WinOpenPic(5, 10, lobby_Player.coat + 0x59a, U_I((unsigned)&d2_LastWindow));
-    x = *(short *)(U_I((unsigned)&d2_Objs) + 0x14 + id * 0x2ec) + 0xf;
-    u = (char *)U_I(((unsigned)&txt_HonourTitles + 0x4));
+    io_PrintText("$C");
+    id = d2_WinOpenPic(5, 10, lobby_Player.coat + 0x59a, d2_LastWindow);
+    x = d2_Objs[id].w + 0xf;
+    u = txt_HonourTitles[1];
     if (lobby_Player.sex != 0)
-        u = (char *)U_I((unsigned)&full_data_143a63c);
-    sprintf(text, (char *)(unsigned)"%s %s %s", u, lobby_Player.firstName, lobby_Player.familyName);
-    id = d2_CreateWinText(x, 10, text, U_I((unsigned)&d2_LastWindow));
-    y = *(short *)(U_I((unsigned)&d2_Objs) + 0x16 + id * 0x2ec);
+        u = txt_FemaleHonourTitle;
+    sprintf(text, "%s %s %s", u, lobby_Player.firstName, lobby_Player.familyName);
+    id = d2_CreateWinText(x, 10, text, d2_LastWindow);
+    y = d2_Objs[id].h;
     if (lobby_Player.sex == 1)
-        u = (char *)U_I(((unsigned)&txt_JobNames + 0x17c) + lobby_Player.job * 4);
+        u = txt_FemaleJobNames[lobby_Player.job];
     else
-        u = (char *)U_I((unsigned)&txt_JobNames + lobby_Player.job * 4);
-    sprintf(text, lobby_FmtName, U_I((unsigned)&full_data_144abe0), u);
-    d2_CreateWinText(x, y + 0xc, text, U_I((unsigned)&d2_LastWindow));
-    sprintf(text, lobby_FmtName, U_I((unsigned)&full_data_144abe4), U_I((unsigned)&txt_FaithNames + lobby_Player.faith * 4));
-    d2_CreateWinText(x, y + 2 + y + 0xc, text, U_I((unsigned)&d2_LastWindow));
+        u = txt_JobNames[lobby_Player.job];
+    sprintf(text, lobby_FmtName, txt_JobLabel, u);
+    d2_CreateWinText(x, y + 0xc, text, d2_LastWindow);
+    sprintf(text, lobby_FmtName, txt_FaithLabel, txt_FaithNames[lobby_Player.faith]);
+    d2_CreateWinText(x, y + 2 + y + 0xc, text, d2_LastWindow);
 }
 /* 0x58ad20, waits for the player list (128 B): 0x4cd610 and its answer 0x4c3ae0; the list 0x4cd5d0 -> 0x6f267c;
    the entry 0x6f267c[1 .. 8] with a player (0x4cd820) is awaited (0x4c3ae0) */
@@ -475,7 +472,7 @@ void lobby_ShowPlayers(void)
         id = d2_WinOpenPic(5, y, p[3] + 0x59a, U_I((unsigned)&d2_LastWindow));
         u = (char *)U_I(((unsigned)&txt_HonourTitles + 0x4));
         if ((char)p[4] != 0)
-            u = (char *)U_I((unsigned)&full_data_143a63c);
+            u = (char *)U_I((unsigned)&txt_FemaleHonourTitle);
         sprintf(text, lobby_FmtHonour, u, (char *)p + 0x12, (char *)p + 0x22);
         if (p[1] != 0)
             strcat(text, (char *)U_I((unsigned)&full_data_144abf4));

@@ -5820,7 +5820,7 @@ GAPDATA full_data_930370[16] = { 0 };  /* 0x930370 */
 /* txt_Tribune: view of txt_Ptrs (build/mk_txt_views.py) */
 /* full_data_143a3f0: view of txt_Ptrs (build/mk_txt_views.py) */
 /* ai_ContactTextParchment: view of txt_Ptrs (build/mk_txt_views.py) */
-/* full_data_143a63c: view of txt_Ptrs (build/mk_txt_views.py) */
+/* txt_FemaleHonourTitle: view of txt_Ptrs (build/mk_txt_views.py) */
 /* full_data_143b3f8: view of txt_Ptrs (build/mk_txt_views.py) */
 /* ai_ContactTextInformation: view of txt_Ptrs (build/mk_txt_views.py) */
 /* full_data_143ccf0: view of txt_Ptrs (build/mk_txt_views.py) */
@@ -6057,8 +6057,8 @@ GAPDATA full_data_930370[16] = { 0 };  /* 0x930370 */
 /* full_data_144a8b4: view of txt_Ptrs (build/mk_txt_views.py) */
 /* full_data_144a8b8: view of txt_Ptrs (build/mk_txt_views.py) */
 /* txt_NetPlayers: view of txt_Ptrs (build/mk_txt_views.py) */
-/* full_data_144abe0: view of txt_Ptrs (build/mk_txt_views.py) */
-/* full_data_144abe4: view of txt_Ptrs (build/mk_txt_views.py) */
+/* txt_JobLabel: view of txt_Ptrs (build/mk_txt_views.py) */
+/* txt_FaithLabel: view of txt_Ptrs (build/mk_txt_views.py) */
 /* full_data_144abe8: view of txt_Ptrs (build/mk_txt_views.py) */
 /* full_data_144abec: view of txt_Ptrs (build/mk_txt_views.py) */
 /* full_data_144abf0: view of txt_Ptrs (build/mk_txt_views.py) */
