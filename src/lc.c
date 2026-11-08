@@ -550,7 +550,6 @@ extern int di_MinX;
 extern int di_MinY;
 extern int ai_MapScrollEnabled;
 extern D2VIEW d2_Views[];
-extern GAPDATA full_data_6f26c0[];
 #include "am_types.h"
 extern GAPDATA gm_SpecialItemGroups[];
 extern GAPDATA full_rdata_5eedd3[];
@@ -14643,28 +14642,7 @@ typedef struct G8BLD {                  /* a local view of gv.h's ORDBLD (gv.h c
     unsigned char type;                 /* +0x00, the building kind */
     int id;                             /* +0x01, the building's id (the production settings chain's key) */
 } G8BLD;
-typedef struct G8SLOT {                 /* one {good, weight, lock} slot of a setting (the table at +0xc, stride 8) */
-    int good;                           /* +0x00, the good id of the slot */
-    unsigned char weight;               /* +0x04, the slot's weight in percent (ai_FillSettingWeights sums the seven to 100) */
-    unsigned char lock;                 /* +0x05, 1 when the row is locked (ai_MasterLetterSettings toggles it) */
-    char pad06[2];
-} G8SLOT;
-typedef struct G8SETTING {              /* a production setting record (the list 0x6f26c0, the next at +0x48) */
-    int bldId;                          /* +0x00, the id of the building it is for (G8BLD.id; the chain's key,
-                                           ai_FindSetting / ai_FindSettingSlots) */
-    int seed;                           /* +0x04, the LCG state of the record's random */
-    unsigned char rotate;               /* +0x08, the rotation index ai_SetSettingWeight advances */
-    char pad09[3];
-    G8SLOT slots[7];                    /* +0x0c, the seven good slots (ai_FindSettingSlots returns this table) */
-    float factor;                       /* +0x44, the weight factor (1.0f at creation, ai_SettingFactor) */
-    struct G8SETTING *next;             /* +0x48, the next setting of the chain (ai_FreeSettingChain frees it first) */
-} G8SETTING;
-typedef struct G8SETTAIL {              /* the tail a setting's slot table points at: the seven slots, then the factor */
-    G8SLOT slots[7];
-    float factor;                       /* +0x38 of the table (= +0x44 of the record), ai_SettingFactor */
-} G8SETTAIL;
 #pragma pack(pop)
-#define ai_Settings (*(G8SETTING * *)((char *)&full_data_6f26c0 + 0x0))  /* 0x6f26c0, the head of the production settings chain */
 #define ai_FloatHundred (*(float *)&full_rdata_5ebb40)  /* 0x5ebb40, the float 100.0f */
 
 /* 0x5a8340, the record's random in [0, 1) (68 B): the LCG at +4 (0x41c64e6d, 0x3039) advanced, then its high
@@ -34399,6 +34377,7 @@ int *ai_PlacementSites = 0;  /* 0x6f26b0, the candidate site list of the running
 int ai_DragStartX = 0;  /* 0x6f26b4, the mouse position (dm_L) the drag began at */
 int ai_DragStartY = 0;  /* 0x6f26b8 */
 int ai_Dragging = 0;  /* 0x6f26bc, 1 while the town map is dragged */
+G8SETTING *ai_Settings = 0;  /* 0x6f26c0, the head of the production settings chain (the "hp_" records, 0x4c each), 0: none; ai_FindSetting / ai_FindSettingSlots walk it, ai_ProdSetting links and unlinks, ai_SaveSettings / ai_LoadSettings write and read it */
 char ai_NewsText[1024] = { 0 };  /* 0x6f26c8, the shared text buffer of the unit's news messages: txt_Format writes the text into it, he_ShowNews shows it */
 char ai_NewsSecond[1176] = { 0 };  /* 0x6f2ac8, the second text buffer of the news messages that append a part (txt_Format into it, strcat onto ai_NewsText); its size is the room up to ai_InvChar */
 struct AICHARREC *ai_InvChar = 0;  /* 0x6f2f60, the character whose inventory the inventory child window (ai_OpenInventoryWindow) lists: ai_OpenInventoryWindow points it at ai_Chars[id]; the transport window sends its goods by its netId */

@@ -154,6 +154,28 @@ extern int *ai_PlacementSites;          /* 0x6f26b0, the candidate site list of 
 extern char ai_CourtshipForm[24];       /* 0x62d40c, the form of the courtship (advertising) confirm window "privillegien\werbung2" (ai_CourtshipConfirm) */
 extern char ai_WorkerDismissalForm[32];  /* 0x62d5dc, the form of the worker dismissal window "privillegien\arbeiter_ausweisen" (ai_WorkerDismissalWindow) */
 extern char ai_MiracleForm[20];  /* 0x62d64c, the form of the miracle order's window "privillegien\wunder" (ai_MiracleWindow) */
+/* The production settings chain (0x6f26c0, the head ai_Settings): one 0x4c-byte record per building, the seed at +4,
+   the rotation byte at +8, seven {good, weight, lock} slots at +0xc (stride 8) and the factor at +0x44 */
+typedef struct G8SLOT {                 /* one slot of a setting (stride 8) */
+    int good;                           /* +0x00, the good id of the slot */
+    unsigned char weight;               /* +0x04, the slot's weight in percent (ai_FillSettingWeights sums the seven to 100) */
+    unsigned char lock;                 /* +0x05, 1 when the row is locked (ai_MasterLetterSettings toggles it) */
+    char pad06[2];
+} G8SLOT;
+typedef struct G8SETTING {              /* 0x4c bytes, a production setting record (the next at +0x48) */
+    int bldId;                          /* +0x00, the id of the building it is for (G8BLD.id; the chain's key, ai_FindSetting / ai_FindSettingSlots) */
+    int seed;                           /* +0x04, the LCG state of the record's random */
+    unsigned char rotate;               /* +0x08, the rotation index ai_SetSettingWeight advances */
+    char pad09[3];
+    G8SLOT slots[7];                    /* +0x0c, the seven good slots (ai_FindSettingSlots returns this table) */
+    float factor;                       /* +0x44, the weight factor (1.0f at creation, ai_SettingFactor) */
+    struct G8SETTING *next;             /* +0x48, the next setting of the chain (ai_FreeSettingChain frees it first) */
+} G8SETTING;
+typedef struct G8SETTAIL {              /* the tail a setting's slot table points at: the seven slots, then the factor */
+    G8SLOT slots[7];
+    float factor;                       /* +0x38 of the table (= +0x44 of the record), ai_SettingFactor */
+} G8SETTAIL;
+extern G8SETTING *ai_Settings;          /* 0x6f26c0, the head of the production settings chain, 0: none */
 extern char ai_NewsText[1024];          /* 0x6f26c8, the shared text buffer of the unit's news messages (txt_Format into it, he_ShowNews reads it) */
 extern char ai_NewsSecond[1176];        /* 0x6f2ac8, the second text buffer of the news messages that append a part */
 extern struct AICHARREC *ai_InvChar;     /* 0x6f2f60, the character whose inventory the inventory child window lists */
