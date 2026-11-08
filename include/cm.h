@@ -45,6 +45,7 @@ typedef struct CMPORTRAIT {             /* 0x20 bytes, a portrait box of a selec
 } CMPORTRAIT;
 typedef struct G18LOG { char text[0x40]; char name[0x24]; int to; int id; } G18LOG;      /* 0x6c bytes, a lobby chat line: the text, the sender's name, the receiver (0: everybody), the sender */
 
+#include "d2_types.h"                /* D2OBJ (d2_Objs); outside the packed region below */
 #pragma pack(push, 1)
 #include "cm_types.h"                /* G17MSG, G17STAT, CRIME */
 #include "rt_types.h"                /* RTPOINT */
@@ -634,7 +635,7 @@ void d2_AddPointerItem(int id, int amount);  /* 0x476b90 */
 void d2_ClearPointerItems(void);  /* 0x476c70 */
 extern int d2_ClickedId;  /* 0xf8a668 */
 extern CMPORTRAIT cm_Portraits[6];  /* 0x930400 */
-extern struct D2OBJ *d2_Objs;  /* 0xf8f080, 0x2ec bytes each (d2.c); this header's unit adds byte offsets through d2_ObjsC */
+extern D2OBJ *d2_Objs;          /* 0xf8f080, 0x2ec bytes each (d2.c); this header's unit adds byte offsets through d2_ObjsC */
 
 void cm_BuildPortraits();  /* 0x4cfc10 */
 void cm_ClosePortraits();  /* 0x4cfe70 */

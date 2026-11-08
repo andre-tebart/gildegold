@@ -9,6 +9,7 @@ struct D3VECTOR;
 #define RT_H
 
 #include "rt_types.h"                /* RTPOINT */
+#include "d2_types.h"                /* D2OBJ (d2_Objs) */
 
 typedef struct RTINV {                  /* 0xb8 bytes, filled by 0x5098a0 / 0x50aa00 */
     char pad00[0xb4];
@@ -26,7 +27,7 @@ extern unsigned char ai_OwnPlayer;      /* 0x6f1bc5, the player */
 #ifndef DATA_VIEWS_H
 extern char ai_Unkfd7c50[];            /* 0xfd7c50 (as cm.h) */
 #endif
-extern struct D2OBJ *d2_Objs;  /* 0xf8f080, 0x2ec bytes each (d2.c); this header's unit adds byte offsets through d2_ObjsC */
+extern D2OBJ *d2_Objs;  /* 0xf8f080, 0x2ec bytes each (d2.c); this header's unit adds byte offsets through d2_ObjsC */
 
 extern int d2_ClickedId;                /* 0xf8a668 */
 extern int d2_LastWindow;                /* 0x6ed938, window created last */
