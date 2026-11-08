@@ -646,6 +646,7 @@ int he_RegisterEventTypeA2();
 #include "rmsg.h"
 #define rt_UnloadAtPointC ((void (*)(char *, char))rt_UnloadAtPoint)  /* 0x4bfa40 (rt.c: int pl): @original he_RunTransport pushes its char player slot unextended (0x556bb9) */
 #define d2_SetObjValue2 ((void (*)(int, int))d2_SetObjValue)  /* 0x475cb0: @original he.c's two calls push only obj and the value (0x53dcd1, 0x53dd44) */
+#define d2_PlaceMainWindowF ((void (*)(int, int))d2_PlaceMainWindow)  /* 0x475850 (d2.h: int view): @original he_OpenEventSlot pushes the placement flags too (0x53d7c3 push 3), which the tail jump leaves on the stack for d2_PlaceWindowScaled */
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
 #define ai_BldsT (*(AIBLD **)&ai_Blds)  /* 0x889f74, ai_Blds (f3gm.c: char *) as the AIBLD records it points to */
 #define ai_BTypesT (*(AIBTYPE **)&ai_BTypes)  /* 0x7e3f30, ai_BTypes (ahm.c: char *) as the AIBTYPE records it points to */
@@ -1407,7 +1408,7 @@ int he_OpenEventSlot(int ev, int x, int y, char *form, int pic)
     job->slot->obj = d2_WinOpenPic(i << 5, 0, pic, d2_LastWindow);
     d2_Objs[job->slot->obj].checkable = 1;
     job->slot->win = d2_OpenForm(x, y, form);
-    d2_PlaceMainWindow(job->slot->win, 3);
+    d2_PlaceMainWindowF(job->slot->win, 3);
     d2_SetViewEnabled(job->slot->win, 0);
     if (job->slot->obj == -1) {
         __asm int 3

@@ -1265,7 +1265,7 @@ exe	0x0046c3f0	d2_DrawRaw	d2	98c640981915f1eb	no	byte	control=byte p1=byte p2=by
 exe	0x0046c490	d2_CreateRadioGroup	d2	49c26cd989df65f8	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0046c560	d2_RadioAdd	d2	01435a4d8f2c5071	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0046c600	d2_RadioClear	d2	72e89e32a899f075	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x0046c630	d2_RadioSelect	d2	994df3723725045e	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
+exe	0x0046c630	d2_RadioSelect	d2	0083b01e4ea55f3b	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0046c6a0	d2_RadioGetSel	d2	e6a6f12172dd5551	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0046c6c0	d2_MenuNavigate	d2	e7f1a5e27a784d0b	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0046c9e0	d2_DeleteObject	d2	787cf9dc5858d4f5	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
@@ -1297,7 +1297,7 @@ exe	0x004713c0	d2_DrawWindowBackground	d2	f768938f7a2f5dc9	no	byte	control=byte 
 exe	0x00471a90	d2_DrawWindow	d2	b1aa4da2aac1d42a	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
 exe	0x004721e0	d2_SetBackgroundTexture	d2	804cc91f22321fbf	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00472270	d2_CreateScrollButtons	d2	e8cf563d92a5282e	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x00472390	d2_CreateWindow	d2	dfaa8e150f652de0	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x00472390	d2_CreateWindow	d2	88cb0aae623b5234	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x00472760	d2_ScrollWindowBy	d2	e9a6f971c3a14adb	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00472800	d2_ResizeWindow	d2	d3331b739cc273d6	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x00472a60	d2_FinishFades	d2	b974d5f762471029	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
@@ -1330,7 +1330,7 @@ exe	0x00475590	d2_SetViewEnabled	d2	570f62b833f17fe0	no	byte	control=byte p1=byt
 exe	0x00475600	d2_CentreViewWindows	d2	62ef3f6563da8a5a	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004756b0	d2_PlaceWindow	d2	ed81f0527475c516	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x00475730	d2_PlaceWindowScaled	d2	9c5afaabc6ab9bf4	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x00475850	d2_PlaceMainWindow	d2	9ac3e0bbe24b23e2	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
+exe	0x00475850	d2_PlaceMainWindow	d2	d67d2e8b38a01333	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00475870	d2_PlaceViewWindows	d2	23b5d1706f40aaff	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004758f0	d2_CloseView	d2	b15b4e1720ebce6f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00475980	d2_GetObjValue	d2	90f7cb3d322ffe47	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
@@ -1347,8 +1347,8 @@ exe	0x00475ff0	d2_GetViewWin	d2	332f1c217bad1540	no	byte	control=byte p1=byte p2
 exe	0x00476030	d2_SetFont	d2	5109342bf9e4e088	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004760b0	d2_SetObjFont	d2	8670d5f51b648d82	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00476110	d2_DissolveStep	d2	f465b8e8a3c7592d	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x00476220	d2_Plot	d2	60e35f8d33a700ca	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x004764f0	d2_PlotLine	d2	97561eb4f62ca90d	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x00476220	d2_Plot	d2	fd7d06fdf3f23844	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
+exe	0x004764f0	d2_PlotLine	d2	27a5233e49b7162d	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x00476710	d2_ClearPaintbox	d2	5d6a4d96ca4b6b12	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00476760	d2_FillPaintbox	d2	38dfc6560847cbdd	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004767d0	d2_StartFade	d2	99f33c38fd69c639	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape

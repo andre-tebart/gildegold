@@ -423,8 +423,8 @@ void d2_EnableViewObjects(int view, int on);                                    
 void d2_SetViewEnabled(int view, int on);                /* 0x475590 */
 void d2_CentreViewWindows(int view);                        /* 0x475600 */
 void d2_PlaceWindow(int win, unsigned char flags);    /* 0x4756b0 */
-void d2_PlaceWindowScaled();                                /* 0x475730 (int win, unsigned char flags), K&R */
-void d2_PlaceMainWindow();   /* 0x475850 (int view, unsigned char flags), K&R: the original tail-jumps to d2_PlaceWindowScaled, so callers pass the flags */
+void d2_PlaceWindowScaled(int win, int fl);                 /* 0x475730, screen-scaled placement of the window win, kept on the screen (fl is read as the byte flags) */
+void d2_PlaceMainWindow(int view);   /* 0x475850, places the view's first window; the original tail-jumps to d2_PlaceWindowScaled, so its callers push the placement flags too (the units' @original cast macro d2_PlaceMainWindowF) */
 void d2_PlaceViewWindows(int view, unsigned char flags);   /* 0x475870 */
 void d2_CloseView(int view);                        /* 0x4758f0 */
 int d2_GetWinObj(int view, int idx, int k);         /* 0x475b80 */

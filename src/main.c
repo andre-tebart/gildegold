@@ -32,7 +32,7 @@ extern int gm_PlayerRecords[688];
 #include "ecmd.h"
 #include "ts_texture.h"
 #include "menu.h"
-#define d2_PlaceMainWindowF ((void (*)(int, int))d2_PlaceMainWindow)  /* 0x475850 (d2.c: int view): @original the callers pass the placement flags too, which the original's tail jump leaves on the stack for d2_PlaceWindowScaled */
+#define d2_PlaceMainWindowF ((void (*)(int, int))d2_PlaceMainWindow)  /* 0x475850 (d2.h: int view): @original the callers push the placement flags too, which the original's tail jump leaves on the stack for d2_PlaceWindowScaled */
 #include "ai.h"
 #include "gfx.h"
 #include "dd_vesa.h"

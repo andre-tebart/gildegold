@@ -5066,11 +5066,12 @@ int fl;
     y = min((float)(d2_ScreenH - w->h), y);
     d2_MoveObj((int)x, (int)y, w->parent);
 }
+#define d2_PlaceWindowScaledF ((void (*)(int))d2_PlaceWindowScaled)  /* @original: d2_PlaceMainWindow passes only the window; the placement flags travel in the caller's stack slot, which the original's tail jump (0x475868) leaves in place for d2_PlaceWindowScaled */
 /* 0x475850, places the view's first window (the form's main window) with the placement flags, screen-scaled */
 
 void d2_PlaceMainWindow(int view)
 {
-    d2_PlaceWindowScaled(d2_Views[view].wins[0]);
+    d2_PlaceWindowScaledF(d2_Views[view].wins[0]);
 }
 /* 0x475870, places every window of a view that is not a child window, flags as in d2_PlaceWindow */
 
