@@ -731,8 +731,8 @@ void cm_LeaveEventScene(void);  /* 0x4e30c0 */
 void d2_CopyCaption(char *caption);  /* 0x478870 */
 char ch_FindFreeCell(struct D3SM *h, struct D3VECTOR *from, struct D3VECTOR *to, int x, int z, int *px, int *pz, int max, int flags); /* 0x4072a0, ch.h */
 
-void cm_FightIntro();  /* 0x4d1e00 */
-void cm_FightOutro();  /* 0x4d1eb0 */
+void cm_FightIntro(char *a);  /* 0x4d1e00, the fight's intro: a random fight track and the cutscene "Kampf_Intro_Fluege" (a unread) */
+void cm_FightOutro(char *a);  /* 0x4d1eb0, the outro: stops cm_FightAmbient and runs "Kampf_outro_flug" (a unread) */
 struct AICHAR *cm_NearestEnemy(struct AICHAR *c);  /* 0x4d1f10, the enemy the fighter c goes for */
 void snd_PlaySpecialTrack(char *name);  /* 0x4c23f0 */
 extern int snd_MusicEnabled;  /* 0x6f2578 */
@@ -970,7 +970,7 @@ void cm_RunPictureShow(G28REC *m);  /* 0x4e0010 */
 int cm_ExecutionAftermath(G28REC *m);  /* 0x4e0040 */
 
 void cm_CreateSceneSky(char *tex);  /* 0x4e32f0 */
-int cm_StartSceneRain();  /* 0x4e33d0 */
+int cm_StartSceneRain(int a);  /* 0x4e33d0, remembers the result of 0x413b30(a) in 0x6f0dbc */
 int cm_StopSceneRain();  /* 0x4e33f0 */
 int cm_DestroySceneSky();  /* 0x4e3390 */
 void cm_RunExecution(G28REC *m);  /* 0x4e01e0 */
@@ -1087,7 +1087,9 @@ extern char cm_KindAllAtOnce[];  /* 0x92c50c */
 extern char cm_TextNewline[];  /* 0x60c6c0 */
 
 
-void cm_ExecCutscene();  /* 0x4e4060 */
+void cm_ExecCutscene(char *m);  /* 0x4e4060, runs the scene party m */
+int cm_UpdateParties(void);  /* 0x4e4060's caller: runs every done party within its hour (cm_ExecCutscene) */
+int cm_IsPartyMember(int id, char *m);  /* 0x4e4870, 1 when the character id is one of the scene party m's members and still exists */
 void gm_AddTime(struct AITIME *c, int hours, int mins, int secs);  /* 0x4fe140 */
 #ifndef DATA_VIEWS_H
 extern char ai_Unk925538[];  /* 0x925538, the scene party records (0x114 bytes, +0x18 used) */

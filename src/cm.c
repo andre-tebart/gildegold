@@ -9036,7 +9036,7 @@ void cm_PlaceFighters(int *ids, char *side)
 }
 /* 0x4d1e00, the intro of the fight: a random fight track (when the music is on) and the cutscene "Kampf_Intro_Fluege" */
 
-void cm_FightIntro()
+void cm_FightIntro(char *a)
 {
     int r;
     EVTSCRIPT *s;
@@ -9067,7 +9067,7 @@ void cm_FightIntro()
 }
 /* 0x4d1eb0, the outro: stops the stream cm_FightAmbient and runs the cutscene "Kampf_outro_flug" */
 
-void cm_FightOutro()
+void cm_FightOutro(char *a)
 {
     EVTSCRIPT *s;
 
