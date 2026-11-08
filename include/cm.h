@@ -902,7 +902,7 @@ void d2_CloseView(int view);  /* 0x4758f0 */
 int ai_AmountRowStatus();  /* 0x5be1d0 */
 int ai_AmountRow();  /* 0x5be3b0 */
 int cm_QueueVoice(int id, int bank, char *text, int var, unsigned int delay);  /* 0x4e32d0 */
-int cm_RunSceneTicks();  /* 0x4e3570 */
+int cm_RunSceneTicks(int a);  /* 0x4e3570 */
 int amt_SendOfficeMessage(unsigned char a, char *b, char *c, int d, unsigned char e);  /* 0x4e6680 */
 unsigned * gm_CharNameRecord();  /* 0x4fb390 */
 int cm_StartEventArg(char *name, int arg);  /* 0x4e2c30 */
@@ -1032,7 +1032,6 @@ struct D3SKY; struct D3SKY *d3sky_Create(float horizon, float fogstart, float fo
 void d3sky_SetLayerSpeed(struct D3SKY *s, struct D3SKYLAYER *l, float speed);  /* 0x45d960 */
 void d3sky_FadeLayer(struct D3SKY *s, struct D3SKYLAYER *l, unsigned char alpha, float time);  /* 0x45d9a0 */
 void cm_CreateSceneSky(char *tex);  /* 0x4e32f0 */
-int cm_RunSceneTicks();  /* 0x4e3570 */
 extern char *cm_SceneFade;  /* 0x6f0da0, the fade 0x4e3060 started */
 int cm_ResetCutInfos();  /* 0x4e36a0 */
 int tb_SetFunctionOff();  /* 0x42ea10 */
