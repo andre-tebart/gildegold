@@ -56,7 +56,6 @@
 struct AHMSTEP;
 struct D3SKY;
 #include "d2_types.h"
-extern D2RADIO d2_Radios[];
 #include "txt_views.h"
 #include <windows.h>
 #include <stdio.h>
@@ -252,14 +251,11 @@ extern GAPDATA full_data_62a248[];
 
 extern GAPDATA full_data_62a284[];
 extern GAPDATA full_data_62a2a4[];
-extern int d2_PointerObj;
 extern GAPDATA full_data_62a2c4[];
 extern const int sv_PhaseMinutes[24];
-extern int d2_DirtyRectLeft[4];         /* 0xfb9060, the rectangle d2_AddDirty tests against: left, top, right, bottom (one object: one memset clears it) */
 #define d2_DirtyRectTop (*(int *)((char *)&d2_DirtyRectLeft + 0x4))       /* 0xfb9064 */
 #define d2_DirtyRectRight (*(int *)((char *)&d2_DirtyRectLeft + 0x8))     /* 0xfb9068 */
 #define d2_DirtyRectBottom (*(int *)((char *)&d2_DirtyRectLeft + 0xc))    /* 0xfb906c */
-extern struct D2OBJ *d2_Objs;
 extern float d3s_QuadUV[6];
 extern GAPDATA full_data_5fea38[];
 extern GAPDATA full_data_62a2dc[];
@@ -278,15 +274,9 @@ extern GAPDATA full_data_602568[];
 
 
 extern GAPDATA full_data_602568[];
-extern volatile unsigned long d3_Time;
 extern int sv_PopRequest;
 extern GAPDATA full_data_5f36e0[];
-extern int d2_LastWindow;
 extern struct D2OBJ *d2_Objs;
-extern struct D2PIC *d2_Pics;
-extern short d2_ScreenH;
-extern short d2_ScreenW;
-extern D2WIN d2_Wins[];
 
 
 
@@ -313,7 +303,6 @@ extern GAPDATA full_data_62a3ec[];
 extern GAPDATA full_data_62a3f8[];
 extern int sv_PopRequest;
 extern int d2_PointerObj;
-extern int d2_ClickedId;
 extern int d2_LastWindow;
 extern struct D2OBJ *d2_Objs;
 
@@ -578,11 +567,8 @@ extern volatile unsigned long d3_Time;
 extern char ai_Chars[768][0x21c];
 extern int d2_PointerObj;
 extern int ai_DragWindow;
-extern short d2_MouseX;
-extern short d2_MouseY;
 extern struct D2OBJ *d2_Objs;
 extern int d2_RightHeldObj;
-extern D2VIEW d2_Views[];
 extern int di_Absolute;
 extern int sv_HoverItem;  /* 0x6f22f0 (sv.c) */
 extern int gm_PlayerRecords[688];
@@ -653,7 +639,6 @@ void ai_TutorialShowText();
 void ai_TutorialHideText();
 struct SBSAMPLE;
 extern int sv_FrameBase; /* 0x6f22a4 */
-extern char *txt_Ptrs[]; /* 0x143a1c0 */
 
 /* the state record is at 0x6fa060 (the 0x40 byte of main.c's 0x6fa020 block); 0x5eec60 is a const pointer to it
    in the original. A load through that pointer (not the fixed address) is what the unit's functions compile to,
@@ -740,7 +725,9 @@ const float ai_CannonZoomRange = 1450.0f;  /* 0x5eecac, the distance the zoom mo
 #include "d3_pose.h"
 #include "dd_vesa.h"
 #include "menu.h"
+#include "d2.h"
 #define d2_PlaceMainWindowF ((void (*)(int, int))d2_PlaceMainWindow)  /* 0x475850 (d2.c: int view): @original the callers pass the placement flags too, which the original's tail jump leaves on the stack for d2_PlaceWindowScaled */
+#define d2_SetObjValue2 ((void (*)(int, int))d2_SetObjValue)  /* 0x475cb0 (d2.h: five parameters): @original ai_AlchemistFundWindow pushes only the object and the value (0x57df47 push eax / push ebp); the unit's four-argument calls use menu.h's d2_SetObjValue4 */
 #define sv_SelectPanelObjectK ((int (*)())sv_SelectPanelObject)  /* 0x52c4c0?: @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) */
 /* 0x575860, the tutorial's tick: nothing (-4) without the tutorial, its run record or its event slot; puts the
    tutorial's own event window back to the state 3 (or its state to next when another window is active), then, while
@@ -4270,11 +4257,7 @@ void ai_TutorialBezier(float *a, float *b, float *c, float *d, float t, float *o
     out[1] = u * u * u * a[1] + 3.0f * u * t * (u * b[1] + t * c[1]) + t * t * t * d[1];
 }
 
-void d2_RaiseObject();
-void d2_EnableObject();
-int d2_CreatePicObj();
-struct G5CH; struct G9REC; struct VFSFILE; void d2_MoveObj(short x, short y, int obj);
-void d2_RemoveObj();
+struct G5CH; struct G9REC; struct VFSFILE;
 
 /* 0x57b8a0, moves the tutorial's position marker along the run's paths (TUTRUN.marks), once per frame: nothing
    while the tutorial is off or the run has no paths. `mode` is the caller's; the run's markPick (when set)
@@ -4645,7 +4628,6 @@ int ai_AlchemistHire(unsigned char *obj, AHMSTEP *step, int value)
 }
 
 int ai_AlchemistSendRecipeResearch(); int ai_AlchemistSendResearchStart(); int ahm_ResearchState(); char * ahm_OwnerChar(); AHMGRID * ahm_RandomRecipe();
-int d2_WinOpenSlider(); void d2_SetObjValue(); void d2_MenuNavigate(int group);
 
 /* 0x57c690, the alchemist's research window of the alchemist object obj ("Locations\Domizil\Alchemistry2"):
    without an owning character only the text 0x4051 (0x182); else the places of the record at +0x65 as
@@ -4767,7 +4749,7 @@ void ai_AlchemistResearchWindow(unsigned char *obj)
             d2_Objs[t].w = d2_LastWindowPtr->w;
             d2_Objs[t].centred = 1;
             d2_SetObjFont(t, 0x54);
-            d2_SetObjValue(slider, 0, 100, (int)(f * 100.0f));
+            d2_SetObjValue4(slider, 0, 100, (int)(f * 100.0f));
         }
         d2_SetObjEnabled(start, d2_Radios[group].sel != -1 && n != 0 && state == 0 ? 1 : 0);
         d2_SetObjEnabled(other, state == 0);
@@ -4885,7 +4867,6 @@ int ai_AlchemistSendResearchStart(unsigned char *obj, AHMREC *rec)
     return 1;
 }
 int ai_AlchemistTrainShareWindow(); int ai_AlchemistFundWindow(); int ai_AlchemistRescheduleWindow();
-int d2_WinOpenSlider(); void d2_SetObjWidth(int obj, short w); void d2_SetViewEnabled(int view, int on); int d2_GetWinObj();
 
 /* 0x57cf90, the alchemist's window of the alchemist object obj ("Locations\Domizil\Alchemistry3"): without an
    owning character only the text 0x4051 (0x182); else the character panel (ai_AlchemistPanel; rebuilt when the
@@ -4953,7 +4934,7 @@ void ai_AlchemistWindow(unsigned char *obj)
     d2_WinOpenPic(d2_LastWindowPtr->w / 2 - 0x18, 0x1e, 0x6c7, win2);
     d2_WinOpenPic(d2_LastWindowPtr->w / 2 - 0x16, 0x20, owner->picture, win2);
     slider = d2_WinOpenSlider((d2_LastWindowPtr->w - 0x32) / 2, 0x55, 0x32, 0, 100, 0x75, 0x42, d2_LastWindow);
-    d2_SetObjValue(slider, 0, 100, (int)(rec->value * 100.0f));
+    d2_SetObjValue4(slider, 0, 100, (int)(rec->value * 100.0f));
     txt_Format(line, (int)"%s %s", owner->first, owner->family);
     t = d2_CreateWinText(0, 0, line, win2);
     d2_Objs[t].w = d2_Wins[win2].w;
@@ -5011,7 +4992,7 @@ void ai_AlchemistWindow(unsigned char *obj)
             d2_Objs[t].w = d2_LastWindowPtr->w;
             d2_Objs[t].centred = 1;
             d2_SetObjFont(t, 0x54);
-            d2_SetObjValue(slider, 0, 100, (int)(f * 100.0f));
+            d2_SetObjValue4(slider, 0, 100, (int)(f * 100.0f));
         }
         if (state != lastState || d3_Time > lastClock + 0x32) {
             owner = (AICHAR *)ahm_OwnerChar(obj);
@@ -5026,7 +5007,7 @@ void ai_AlchemistWindow(unsigned char *obj)
             d2_WinOpenPic(d2_LastWindowPtr->w / 2 - 0x18, 0x1e, 0x6c7, win2);
             d2_WinOpenPic(d2_LastWindowPtr->w / 2 - 0x16, 0x20, owner->picture, win2);
             slider = d2_WinOpenSlider((d2_LastWindowPtr->w - 0x32) / 2, 0x55, 0x32, 0, 100, 0x75, 0x42, d2_LastWindow);
-            d2_SetObjValue(slider, 0, 100, (int)(rec->value * 100.0f));
+            d2_SetObjValue4(slider, 0, 100, (int)(rec->value * 100.0f));
             txt_Format(line, (int)"%s %s", owner->first, owner->family);
             t = d2_CreateWinText(0, 0, line, win2);
             d2_Objs[t].w = d2_Wins[win2].w;
@@ -5211,7 +5192,7 @@ int ai_AlchemistFundWindow(unsigned char *obj, AHMREC *rec)
     v = gm_ConvertMoney(tenth, ai_OwnPlayer);
     v = gm_ConvertMoney3(points, ai_OwnPlayer, v);
     v = gm_ConvertMoney3(tenth, ai_OwnPlayer, v);
-    d2_SetObjValue(field, v);
+    d2_SetObjValue2(field, v);
     d2_SetForm(win, 2);
     v = io_PrintText(0x403b);
     ok = d2_GetWinObj(win, 2, v);
@@ -5384,7 +5365,7 @@ char d3if_Delete(struct D3OBJECT *obj);                 /* 0x447190, d3_interfac
 char d3if_Show(struct D3OBJECT *obj, char show);        /* 0x4471b0, d3_interface.h */
 void he_ShowObjectInfos(); void ai_CannonAxes(CANNONSCENE *sc); void ai_CannonAim(CANNONSCENE *sc, float dt); void ai_CannonCamera();
 void ai_CannonShotResults(CANNONSCENE *sc); void ai_CannonSwitchAnim(char *rec, CANNONSCENE *sc, GVEFFECT *run, int sel, int mask); int ai_CannonFireCheck(CANNONSCENE *sc); void ai_CannonExplosion(CANNONSCENE *sc, char *rec);
-void sv_SetStatusText(char *s); void d2_RemoveObj(); void sv_RedrawScreen();
+void sv_SetStatusText(char *s); void sv_RedrawScreen();
 void d3if_Prerender(char map); 
 
 char ai_ShotCallbackArg[0x40] = { 0 };  /* 0x6fa020, the argument gv_SetEffectCallback stores with the shot callback ai_ShotTableStore (ai_CannonScene); never read by the code, its type is unknown; it runs to the tutorial state record at 0x6fa060 */
@@ -5997,7 +5978,7 @@ void ai_CannonShotResults(CANNONSCENE *sc)
 }
 
 float gv_SalvoCharge(); void gv_BuildingCannon(char *o, unsigned *a, unsigned *b); int gv_CannonCost(); float ai_GetDefaultEffectScale();
-int _ftol(); float ai_CannonPitchRatio(CANNONSCENE *sc); int d2_CreateWinText(); void d2_SetObjFont();  /* @original: the call at 4110 passes 1 argument to d2.h's 4-parameter prototype */
+int _ftol(); float ai_CannonPitchRatio(CANNONSCENE *sc);
 void txt_Format(char *out, int id0, ...); int gm_CharCurrency(char *c, char p);
 
 /* 0x57f890, the cannon control panel: rec = the building record, sc = the scene, run = its effect slot. The two
@@ -6028,7 +6009,7 @@ void ai_CannonPanel(char *rec, CANNONSCENE *sc, GVEFFECT *run)
     n = sc->kind;
     if (n < a)
         a = n;
-    d2_SetObjValue(sc->kindSlider, 0, n, a);
+    d2_SetObjValue4(sc->kindSlider, 0, n, a);
     d2_SetObjEnabled(sc->selBtn[1], sc->maxSel >= 1);
     d2_SetObjEnabled(sc->selBtn[2], sc->maxSel >= 2);
     d2_Objs[sc->selBtn[0]].highlighted = sc->selected == 0;
@@ -6394,8 +6375,6 @@ void ai_ShotTableReset(void)
     }
 }
 
-int d2_CreatePicObj(); void d2_MoveObj(short x, short y, int obj); int d2_WinOpenPic(short x, short y, int pic, int win);
-int d2_WinOpenSlider(); void d2_SetLabel(); void d2_SetList(int id, int n, ...);
 #define d2_CreatePicObjS ((int (*)(short, short, int))d2_CreatePicObj)  /* @original ai_CannonBuildPanel subtracts the picture height in 16 bits and pushes it unextended (0x580b18 sub cx / push ecx): a short y, as d2.c's callers (d2_WinOpenPic) */
 
 /* 0x580a90, builds the cannon control panel of the scene sc (run = its effect slot): the two edge pictures (by the
@@ -7188,7 +7167,6 @@ void ai_GraveSizeButtons(AIBLD *rec, int *w)
 }
 
 int sv_CreateScrollButtons(); unsigned gv_FindEntry(void *a, unsigned char *o, unsigned after, int (*cb)(), int l); int gv_EntryIndex(char *r, int *e);
-void d2_ScrollWindow();
 
 /* a row of the graveyard contact window's grave list (w + 0xd, 0x10 rows of 4 dwords; ai_GraveList fills them) */
 typedef struct GVROW {
@@ -7474,8 +7452,6 @@ void ai_GraveDeadDescription(GVGRAVE *g, char *out)
         *out = 0;
     }
 }
-
-void d2_SetViewEnabled(int view, int on);
 
 /* the grave the graveyard window hands out (ai_GraveWindow's out and its callback's record) */
 typedef struct GVPICK {
@@ -8321,7 +8297,7 @@ int ai_GraveRaiseHelper(AIBLD *rec, GVPICK *pick)
     return r;
 }
 
-int sv_CheckCharacterFlag(int id); char * he_FindEvent(int n, ...); char * he_NextEvent(void); void sv_OpenWindowFrame(int f, int b, int c); void d2_SetCaption();
+int sv_CheckCharacterFlag(int id); char * he_FindEvent(int n, ...); char * he_NextEvent(void); void sv_OpenWindowFrame(int f, int b, int c);
 void ai_InitProductionTables(void); int ai_UpdateProdGoodsList(); void ai_LayoutProdGoodsList(int param_1, int param_2, int param_3, int param_4);
 
 /* 0x584d70, the helpers window of a building (the form "HANDEL\HANDEL_SUCHEN"): rec = the building. Its type
@@ -8513,7 +8489,7 @@ void ai_GypsyHelperWindow(AIBLD *rec)
     sv_CameraFollow();
 }
 
-void d2_SetSliderFlags(); int snd_QueueVoice(int id, int bank, char *text, int var, unsigned int delay); int ai_MapPick();
+int snd_QueueVoice(int id, int bank, char *text, int var, unsigned int delay); int ai_MapPick();
 
 /* 0x585380, the graveyard's fog window (the Graveyard Owner's action 0x90, am.c ai_DecideGraveyardOwner1): rec =
    the graveyard. A fog of this graveyard still pending (he_FindEvent 0x90) -> the voice "_NACHRICHTEN_FRIEDHOF_14"
@@ -8570,12 +8546,12 @@ void ai_GraveFogWindow(AIBLD *rec)
         d2_SetForm(win, 1);
         io_PrintText(0x40b7, 0x40b6, target->owner, target);
         factor1 = d2_WinOpenSlider(100, 0xa0, 0xc8, 0, 2, 0x7b, 0x82, d2_LastWindow);
-        d2_SetObjValue(factor1, 0, 2, 0);
+        d2_SetObjValue4(factor1, 0, 2, 0);
         d2_SetSliderFlags(factor1, 0x82);
         d2_SetLabel(factor1, txt_Ptrs[0x40bf]);
         d2_SetList(factor1, 3, txt_Ptrs[0x40c0], txt_Ptrs[0x40c1], txt_Ptrs[0x40c2]);
         factor2 = d2_WinOpenSlider(100, 0xbe, 0xc8, 0, 2, 0x7b, 0x82, d2_LastWindow);
-        d2_SetObjValue(factor2, 0, 2, 0);
+        d2_SetObjValue4(factor2, 0, 2, 0);
         d2_SetSliderFlags(factor2, 0x82);
         d2_SetLabel(factor2, txt_Ptrs[0x40c3]);
         d2_SetList(factor2, 3, txt_Ptrs[0x40c4], txt_Ptrs[0x40c5], txt_Ptrs[0x40c6]);
@@ -9253,7 +9229,7 @@ void ai_GraveHauntContact(AIBLD *rec)
     k = io_PrintText((char *)0x4099);
     btnPay = d2_GetWinObj(win, 2, k);
     btnLeave = d2_GetWinObj(win, 2, k + 1);
-    d2_SetObjValue(slider, 4, 0xc, 4);
+    d2_SetObjValue4(slider, 4, 0xc, 4);
     d2_ClickedId = -1;
     do {
         if (dm_L.rup != 0) {
@@ -9645,7 +9621,7 @@ int ai_UpgradeWorkerSend(AIBLD *rec, AICHAR *ch, int sel)
     return 0;
 }
 
-float gm_GetSkill(char *c, int skill); int gm_ClockSeason(); char * he_FindEvent(int n, ...); void d2_SetObjEnabled();
+float gm_GetSkill(char *c, int skill); int gm_ClockSeason(); char * he_FindEvent(int n, ...);
 
 /* 0x587810, the graveyard's worker upgrade window for the graveyard rec (the contact of ai_GraveyardFogContact): nothing
    while sv_CheckCharacterFlag (rec) holds. Outside the season 2 of the game clock (gm_ClockSeason) and without
@@ -10629,7 +10605,7 @@ void ai_SetBookmark(int idx)
     sv_SetStatusText(buf);
 }
 
-int d2_GetViewWin(); int sv_CreateScrollButtons(); void d2_RadioClear(int g); int d2_RemoveWindowObjects(); void d2_MenuNavigate(int g);
+int sv_CreateScrollButtons(); void d2_RadioClear(int g);
 
 /* 0x589670, the bookmark window (1066 B): the form "special\geb_hotkeys" (ai_ValidateBookmarks first), the title
    text 0x205b, the scroll buttons of section 1 and the button row of section 3 (texts 0x206b / 0x206a: set,
@@ -10780,7 +10756,7 @@ int ai_LoadBookmarks(int fh)
     return 1;
 }
 
-void * mem_Alloc(int size, char *tag); char dd_Lock(void); void d2_Convert16ToRgb(); void dd_Unlock(); unsigned char bmp_Save24(char *path, int w, int h, unsigned char *data); void mem_Free(void *p);
+void * mem_Alloc(int size, char *tag); char dd_Lock(void); void dd_Unlock(); unsigned char bmp_Save24(char *path, int w, int h, unsigned char *data); void mem_Free(void *p);
 
 /* 0x589bc0, takes a screenshot (198 B): clears the status line and draws a frame (sv_RunFrame with no handler),
    then copies the screen surface (dd_Lock, d2_Convert16ToRgb) into a 24-bit image and saves it as
