@@ -23,8 +23,8 @@
    Open: head: cm.h carries the parameter lists of cm_StartEventArg, cm_QueueVoice, cm_LoadVoiceBank,
    cm_RunSceneTicks, cm_RunSceneTicksOrClick, cm_WaitEvent, cm_DialogTimer, cm_PartyById, cm_UnloadVoiceBank,
    cm_MessageBox, cm_PlayVoice, cm_StopScript, cm_DeleteChar, cm_StartScript, cm_CutInfoById,
-   cm_WaitEventOrClick, cm_ClearParty, cm_ResetCutInfos, cm_ShowPartyTexts, cm_AllocParty, cm_AddPartyMember
-   and cm_WaitEventFull; cm.h's declaration changes still flip the register tie-breaks of
+   cm_WaitEventOrClick, cm_ClearParty, cm_ResetCutInfos, cm_ShowPartyTexts, cm_AllocParty, cm_AddPartyMember,
+   cm_WaitEventFull and cm_CreateChar; cm.h's declaration changes still flip the register tie-breaks of
    ai_TutorialInitChapter2 / ai_TutorialInitChapter3 in sv_t and of ord_CountGridObjects. Types only
    cm.c uses (CMNOTE, CMCUTTYPEMSG, CMFIELD, CMWALKPATHMSG) stay in its head for that reason. cm.h still
    repeats ord_AddGridAmount, gm_RemoveOwned, gm_BuildingSkill, gm_HealthRatio, rt_FreePoints and rt_CopyPoints

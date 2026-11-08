@@ -4,8 +4,11 @@
    Open: the start and the end rest on the .data order only.
    Open: head: d2.h is included (the d2 records through the SV* views, the SV_I / SV_W address macros with their
    byte offsets and sv_D2Objs = d2_Objs as D2OBJ *), with gfx.h (d2_AddHitRect's int call goes through
-   d2_AddHitRectI) and cm.h; lc.h is not (the ai_ panel / key / save calls), nor anm.h (anm_Update), f3snd.h,
-   rt.h (rt_EditCartRoute) and sblib.h. d2_CreateWindow / d2_PlaceWindowScaled stay K&R (d2.h's own views).
+   d2_AddHitRectI), cm.h, lc.h (the ai_ panels), anm.h, f3snd.h, sblib.h, menu.h (the option / save screens,
+   the wind update), sv_t.h and mission.h; d2_CreateWindow / d2_PlaceWindowScaled stay K&R (d2.h's own views).
+   Open: head: rt.h is not included (rt_EditCartRoute through this unit's K&R declaration), anm.h has no
+   anm_Update and cm.h no cm_UpdateParties (both called undeclared); gm_GoodPicture stays K&R (f3gm.h is not
+   included).
    Calls whose argument count differs from the definition (read the original's pushes): sb_PlaySample (sblib.h:
    6 calls to re-grade), d2_SetObjValue (the 4- and 2-argument calls use d2_SetObjValue4 / d2_SetObjValue2). The
    @original cast macros (d2_PutPixelRGBc, d2_CreatePicObjS, d2_WinOpenPicStyledS, d2_OpenFormS, d2_SetObjValue4,
