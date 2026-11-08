@@ -255,7 +255,7 @@ extern GAPDATA full_data_62a310[];
 extern GAPDATA full_data_62a328[];
 extern GAPDATA full_data_62a340[];
 extern GAPDATA full_data_62a350[];
-extern GAPDATA full_data_6fa060[];
+
 extern int sv_PanelFlag;
 extern GAPDATA full_data_602568[];
 
@@ -605,7 +605,7 @@ struct SBSAMPLE;
 /* the state record is at 0x6fa060 (the 0x40 byte of main.c's 0x6fa020 block); 0x5eec60 is a const pointer to it
    in the original. A load through that pointer (not the fixed address) is what the unit's functions compile to,
    and the full link relocates the initializer, so the record is ours and no neighbour is touched. */
-TUTSTATE *const ai_Tutorial = (TUTSTATE *)full_data_6fa060;  /* 0x5eec60, the pointer to the tutorial state record */
+TUTSTATE *const ai_Tutorial = &ai_TutorialState;  /* 0x5eec60, the pointer to the tutorial state record */
 #define S (*(char **)(unsigned)&ai_Tutorial)  /* the tutorial state record (at 0x6fa060): the pointer ai_Tutorial holds */
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
 #define util_RandomU ((unsigned short (*)(int))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original ai_SeanceGhost reads the 16-bit result (mov si, ax) */
@@ -5332,6 +5332,7 @@ void sv_SetStatusText(char *s); void sv_RedrawScreen();
 void d3if_Prerender(char map); 
 
 char ai_ShotCallbackArg[0x40] = { 0 };  /* 0x6fa020, the argument gv_SetEffectCallback stores with the shot callback ai_ShotTableStore (ai_CannonScene); never read by the code, its type is unknown; it runs to the tutorial state record at 0x6fa060 */
+TUTSTATE ai_TutorialState = { 0 };  /* 0x6fa060, the tutorial state record ai_Tutorial points to (the tutorial code reads it through S); its last read field is progressSlider at +0x6c, the 0x10 bytes to he_OptionsPath at 0x6fa0e0 stay unowned */
 
 /* 0x57e270, the tutorial's cannon scene (the record rec = the cannon): the run record gv_FindEffect (rec->id), else
    loaded by gv_RequestEffectLoad (rec) and waited out (slot state, pump 0x20007), or returns; the clip rectangle,

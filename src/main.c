@@ -5843,7 +5843,7 @@ GAPDATA full_data_6f5f44[4] = { 0 };  /* 0x6f5f44 */
 GAPDATA full_data_6f5f48[4] = { 0 };  /* 0x6f5f48 */
 GAPDATA full_data_6f5f4c[20] = { 0 };  /* 0x6f5f4c */
 GAPDATA full_data_6fa008[24] = { 0 };  /* 0x6fa008 */
-GAPDATA full_data_6fa060[128] = { 0 };  /* 0x6fa060 */
+GAPDATA full_data_6fa0d0[16] = { 0 };  /* 0x6fa0d0, the rest of the 128-byte bss at 0x6fa060 (no reader) */
 char he_OptionsPath[256] = { 0 };  /* 0x6fa0e0, the options INI path he_LoadMessageFilter copies from ai_OptionsFile for its
                                       GetPrivateProfileIntA / WritePrivateProfileStringA calls (he_SaveMessageFilter) */
 int he_TipOrder[0x20] = { 0 };  /* 0x6fa1e0, he.h: the tip order (the 27 tip text slots, gm_Shuffled fills it) */

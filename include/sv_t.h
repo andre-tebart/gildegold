@@ -119,6 +119,7 @@ extern int ai_TutorialBanks[6];         /* 0x6f2640, the tutorial's voice banks 
 extern TUTRUN *ai_TutorialRuns;         /* 0x6f2658, the chain of the tutorial's run records */
 extern int ai_TutorialOn;               /* 0x6f265c, the tutorial runs */
 extern int ai_TutorialRunning;          /* 0x6f2660, its state machine advances */
+extern TUTSTATE ai_TutorialState;       /* 0x6fa060, the tutorial state record ai_Tutorial points to */
 int ai_TutorialTick(void);                 /* 0x575860, the tutorial's tick: runs its state machine */
 void ai_TutorialMarkerUpdate(int mode);  /* 0x57b8a0, moves the tutorial's position marker */
 void unk_ClearEndGameGate(void);                /* 0x576020, clears the gate 0x6f2660 */
