@@ -334,7 +334,7 @@ int rt_Unk4bdcd0(unsigned char *b, int x, int def)
 /* 0x4be180, the dialog "misc\routing_choose_good_enhanced" with the goods of route p (three slots per point,
    loadSlots[2 * k] with a count above 0); returns the good picked, 0 if none */
 
-int rt_Unk4be180(int x, RTPOINT *p)
+int rt_ChooseRouteGood(int x, RTPOINT *p)
 {
     int n;
     int ret;
@@ -365,16 +365,16 @@ int rt_Unk4be180(int x, RTPOINT *p)
     for (i = 0; i < n; i++) {
         o = d2_WinOpenPic(i % 4 << 6, i / 4 << 6, goods[i] + 0xdf, d2_LastWindow);
         objs[i] = o;
-        *(int *)(d2_ObjsC + o * 0x2ec + 0x4c) = 1;
-        *(int *)(d2_ObjsC + o * 0x2ec + 0x1c0) = 3;
-        *(int *)(d2_ObjsC + o * 0x2ec + 0x1d4) = 0x525;
+        d2_Objs[o].interactive = 1;
+        d2_Objs[o].style = 3;
+        d2_Objs[o].icon = 0x525;
     }
     goods[i] = 0;
     o = d2_WinOpenPic(i % 4 * 0x40 + 7, i / 4 * 0x40 + 7, 0x527, d2_LastWindow);
     objs[i] = o;
-    *(int *)(d2_ObjsC + o * 0x2ec + 0x4c) = 1;
-    *(int *)(d2_ObjsC + o * 0x2ec + 0x1c0) = 3;
-    while (sv_RunFrame(rt_Unk4be180, 0x657c7)) {
+    d2_Objs[o].interactive = 1;
+    d2_Objs[o].style = 3;
+    while (sv_RunFrame(rt_ChooseRouteGood, 0x657c7)) {
         if (dm_L.rup != 0 || ret != 0 || d2_ClickedId != -1 && d2_PointerObj == ok)
             sv_PopRequest = 1;
         if (d2_ClickedId != -1) {
@@ -687,7 +687,7 @@ void rt_Unk4be940(RTPOINT *p, int *win)
                     if (old != g)
                         rt_RemoveControls(selc);
                 } else
-                    *sel = rt_Unk4be180((int)bt, rt_EditRoute);
+                    *sel = rt_ChooseRouteGood((int)bt, rt_EditRoute);
                 d2_EnableViewObjects(w, 1);
                 sel = 0;
             }
