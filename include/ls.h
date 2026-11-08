@@ -75,7 +75,7 @@ int ls_ReadRelations(int f);                                            /* 0x51f
 int ls_ReadStatistics(int f);                                               /* 0x51f720 */
 int ls_ReadAvatars(void *f);                                            /* 0x51fb80 */
 int unk_Unk51fb90(int f);                                               /* 0x51fb90 */
-int unk_Unk520000(int f);                                               /* 0x520000 */
+int ls_ReadParties(int f);                                               /* 0x520000 */
 int unk_Unk520200(int f);                                               /* 0x520200 */
 int unk_Unk520310(int f);                                               /* 0x520310 */
 int unk_Unk5205f0(int f);                                               /* 0x5205f0 */

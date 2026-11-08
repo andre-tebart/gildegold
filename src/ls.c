@@ -1,5 +1,5 @@
 /* ls.c -- the save game (0x519010 ..): the tag "ls_" ("ls:tmp" 0x623654, "ls_LoadCharacter(): invalid next or prev-action pointer ...", "ls_SendGame"), the language number of a name (0x519010: the table "GERMAN" .. 0x5ee978), the save game writer 0x5190b0 (header 0x5194c0: "SCENARIO", the player, the party records and the screen shot of 0xe100 bytes, then one writer per subsystem), the pointer <-> index conversions before / after a save (0x519a00 / 0x519aa0 / 0x519b50) and the other writers (0x519bf0 ..), the readers (0x51c950 ..) and the network send / receive of a save game (0x520a30 / 0x520b80). The unit starts at its first global 0x62364c (the language number, -1); its strings run to "ls_SendGame" 0x62376c / "rbn" 0x623778, and it ends at 0x520ec0, sv.c's first function. Names are ours.
-   Open: five of ls_LoadGame's readers are unnamed (unk_Unk51fb90, unk_Unk520000, unk_Unk520200, unk_Unk520310,
+   Open: five of ls_LoadGame's readers are unnamed (unk_Unk51fb90, ls_ReadParties, unk_Unk520200, unk_Unk520310,
    unk_Unk5205f0).
    unit of rea 8cef7d5b (src/game/ls.c); boundaries in decl/text.dcl */
 struct D3SM;
@@ -1361,7 +1361,7 @@ int ls_LoadGame(int name, int kind)
     if ((ls_Version < 0x10045 && amt_LoadAemter(h, ls_Version) == 0) || gv_ReadCrimes(h) == 0
         || (ls_Version >= 0x10016 && ls_ReadRelations(h) == 0) || ls_ReadStatistics(h) == 0
         || (ls_Version >= 0x1002a && ls_ReadAvatars((void *)h) == 0) || unk_Unk51fb90(h) == 0
-        || unk_Unk520000(h) == 0 || unk_Unk520200(h) == 0)
+        || ls_ReadParties(h) == 0 || unk_Unk520200(h) == 0)
         goto close;
     if (unk_Unk520310(h) == 0) {
         vfs_fclose(h);
@@ -2424,43 +2424,47 @@ int unk_Unk51fb90(int f)
     }
     return 1;
 }
-/* 0x520000, reads the party records (0x925520, 0x114 bytes; the counterpart of 0x51c2f0): the count, then per record the words and bytes (+0x20 is 16 bytes of 0x40-byte pieces below 0x10059, else 16 words; the clock at +4 is set from 0x770ae0 and 0x4fe140 below 0x1003f; +0x14 = -1 below 0x10040). Returns 1 */
+/* 0x520000, reads the scene party records (cm_Parties) from the save file f, the counterpart of ls_WriteParties:
+   the count, then per record the id, kind, thing, flags, used, the 16 member netIds (16 words of the old 0x40 bytes
+   below version 0x10059), the offer kind, the 0x98-byte kind payload (+0x7c), the clock (the game clock plus i + 1
+   hours below version 0x1003f) and the host (-1 below 0x10040). Returns 1 */
 
 
-int unk_Unk520000(int f)
+int ls_ReadParties(int f)
 {
     char tmp[0x1000];
     int n, i;
-    char *p;
+    G28REC *r;
 
     LS_R(&n, 4)
-    i = 0;
-    p = (char *)((unsigned)&cm_Parties + 0x14);
-    for (; i < n; i++) {
-        LS_R(p - 0x14, 4)
-        LS_R(p - 0xc, 1)
-        LS_R(p, 4)
-        LS_R(p + 0x12, 1)
-        LS_R(p + 0x1c, 1)
+    r = cm_Parties;
+    for (i = 0; i < n; i++, r++) {
+        LS_R(&r->id, 4)
+        LS_R(&r->kind, 1)
+        LS_R(&r->thing, 4)
+        LS_R(&r->flags, 1)
+        LS_R(&r->used, 1)
         if (ls_Version >= 0x10059) {
-            LS_R(p + 0x20, 4)
+            if (ls_Read((int)r->members, 4, 0x10, f) == 0)
+                return 0;
         } else {
-            LS_R(tmp, 0x40)
-            memcpy(p + 0x20, tmp, 0x40);
+            if (ls_Read((int)tmp, 0x40, 0x10, f) == 0)
+                return 0;
+            memcpy(r->members, tmp, 0x40);
         }
-        LS_R(p + 0x60, 1)
-        LS_R(p + 0x68, 0x98)
+        LS_R(&r->offerKind, 1)
+        LS_R(&r->eventId, 0x98)
         if (ls_Version >= 0x1003f) {
-            LS_R(p + 4, 0xe)
+            LS_R(&r->time, 0xe)
         } else {
-            memcpy(p + 4, &ai_Time, 0xe);
-            gm_AddTime(p + 4, i + 1, 0, 0);
+            memcpy(&r->time, &ai_Time, 0xe);
+            gm_AddTime(&r->time, i + 1, 0, 0);
         }
-        if (ls_Version >= 0x10040)
-            LS_R(p - 8, 4)
-        else
-            *(int *)(p - 8) = -1;
-        p += 0x114;
+        if (ls_Version >= 0x10040) {
+            LS_R(&r->host, 4)
+        } else {
+            r->host = -1;
+        }
     }
     return 1;
 }
