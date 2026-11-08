@@ -17,7 +17,7 @@ void init_FreeScenes(void);                                             /* 0x50d
 void init_AllocSceneBuilding(int o);                                    /* 0x50d550 */
 void init_InheritOwner(char *o);                                        /* 0x50d6a0 */
 char init_LoadTownScene(char *n);                                       /* 0x50d6d0 */
-void init_AdjustSceneLights(int o);                                     /* 0x50d730 */
+void init_AdjustSceneLights(struct D3OBJECT *o);                        /* 0x50d730 */
 void init_LoadObjectScene(int n);                                       /* 0x50d7f0 */
 int init_BuildingKindName(int k, char *out);                            /* 0x50dba0 */
 void init_LoadBuildingScene(int k);                                     /* 0x50dc30 */

@@ -33,6 +33,7 @@ extern int gm_PlayerRecords[688];
 #include "ai_types.h"
 extern AISTORE gm_Offers[];            /* 0x7e4b20 */
 extern const float ai_FloatOne;         /* 0x5eb780, bio.c: the shared 1.0f the original loads rather than folding it */
+extern float ai_FloatZero;              /* 0x5eb788, cm.c: the shared 0.0f the original loads rather than folding it */
 
 /* the scene object view of this unit: a CHARACTER (ch.h, 0x244 bytes, the list 0x1468ae0); the unit cannot
    include ch.h (gv.h's d3sm_GetVertex is a K&R declaration), so the fields this unit reads are declared here
@@ -690,29 +691,27 @@ char init_LoadTownScene(char *n)
     d3_ForEachObject2(d3_DefaultScene, 0, 6, init_AdjustSceneLights);
     return 1;
 }
-/* 0x50d730, the callback for the light objects (type 6) of a loaded scene: a light without a third value gets one (the sum of the two others times 0.05) and its colours are scaled (0.8 / 0.5) */
+/* 0x50d730, the callback for the light objects (type 6) of a loaded scene: a key whose blue value is unset gets
+   one (the sum of its red and green times 0.05) and its green and value are scaled (0.8 / 0.5); the light's own
+   colour is treated the same way, and its power is scaled (0.5) */
 
 
-void init_AdjustSceneLights(int o)
+void init_AdjustSceneLights(D3OBJECT *o)
 {
-    int i, q;
-    int *l;
+    int i;
 
-    if (*(int *)(o + 0x218) == 6) {
-        i = 0;
-        do {
-            q = *(int *)(o + 0x1e8) + i;
-            if (*(float *)(q + 0x20) == 0.0f) {
-                *(float *)(q + 0x20) = (*(float *)(q + 0x1c) + *(float *)(q + 0x18)) * 0.05f;
-                *(float *)(*(int *)(o + 0x1e8) + 0x1c + i) = *(float *)(*(int *)(o + 0x1e8) + 0x1c + i) * 0.8f;
-                *(float *)(*(int *)(o + 0x1e8) + 0x24 + i) = *(float *)(*(int *)(o + 0x1e8) + 0x24 + i) * 0.5f;
+    if (o->type == 6) {
+        for (i = 0; i < 7; i++) {
+            if (D3_L(o)->light->keys[i].rgb[2] == ai_FloatZero) {
+                D3_L(o)->light->keys[i].rgb[2] = (D3_L(o)->light->keys[i].rgb[1] + D3_L(o)->light->keys[i].rgb[0]) * 0.05f;
+                D3_L(o)->light->keys[i].rgb[1] *= 0.8f;
+                D3_L(o)->light->keys[i].val *= 0.5f;
             }
-            i += 0x38;
-        } while (i < 0x188);
-        if (*(float *)(o + 100) == 0.0f) {
-            *(float *)(o + 100) = (*(float *)(o + 0x5c) + *(float *)(o + 0x60)) * 0.05f;
-            *(float *)(o + 0x60) = *(float *)(o + 0x60) * 0.8f;
-            *(float *)(o + 0x94) = *(float *)(o + 0x94) * 0.5f;
+        }
+        if (o->lightColor.z == ai_FloatZero) {
+            o->lightColor.z = (o->lightColor.x + o->lightColor.y) * 0.05f;
+            o->lightColor.y *= 0.8f;
+            o->lightParams.y *= 0.5f;
         }
     }
 }
