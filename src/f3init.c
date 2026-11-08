@@ -47,7 +47,10 @@ typedef struct SCENEOBJ {
     D3OBJECT *obj;                  /* 0x34, ch.h CHARACTER.obj: the character's body */
     D3VECTOR pos;                   /* 0x38, ch.h CHARACTER.pos: the character's stored position (ls_ReadCharacter) */
     char pad044[0x4];               /* 0x44 .. 0x47 */
-    unsigned proto;                 /* 0x48, the prototype reference: 0x1000000 | object index (ai_Goods), 0x2000000 | building index (ai_BTypes) */
+    union {
+        unsigned proto;                 /* 0x48, the prototype reference: 0x1000000 | object index (ai_Goods), 0x2000000 | building index (ai_BTypes) */
+        char protoBytes[4];             /* the same word by byte: [3] is its top byte (2 = a building, the bits 0x2000000) */
+    };
     char pad04c[0x1c];              /* 0x4c .. 0x67 */
     float soundRange;               /* 0x68, the radius of the object's sound (0x5126a0: + 50 = the range) */
     char pad06c[0x1c];              /* 0x6c .. 0x87 */
@@ -596,7 +599,23 @@ void init_FreeScenes(void)
         p += 0xf8;
     } while ((int)p < (int)INIT_SCENE_HEIGHTMAP_END);
 }
-/* 0x50d550, the scene object callback (a function start Ghidra missed) that allocates the building for a "gb_NAME" scene object o (0x50d100 resolved the name to the building type, bits 0x2000000 in +0x48): a new instance of the type without an owner (0x501580), for the KONTOR (type 0x47) the office of the player slot whose name is the part after the last '_' of the object name (the slot number goes to +0x65, its name to +5); the object and the building are linked (+0x61 / +0x200) and "f3_init:Gebaeude des Typs %s allokiert" is the (unused) log text. An object without a state of its own takes its parent's record. */
+/* 0x50d550, the scene object callback (a function start Ghidra missed) that allocates the building for a "gb_NAME" scene object o (0x50d100 resolved the name to the building type, bits 0x2000000 in +0x48): a new instance of the type without an owner (0x501580), for the KONTOR (type 0x47) the office of the player slot whose name is the part after the last '_' of the object name (the slot number goes to +0x65, its name to +5); the object and the building are linked (+0x61 / +0x200) and "f3_init:Gebaeude des Typs %s allokiert" is the (unused) log text. An object without a state of its own takes its parent's record.
+   @deep read the whole function against the original 0x50d550..0x50d6a0 and fixed its meaning and types:
+   the argument through SCENEOBJ (a new union for proto / protoBytes at 0x48 / 0x4b, parent 0x1f8, owner
+   0x200, type 0x218) and the new building through INIT_BLD (name +5, object +0x61, player +0x65); the
+   KONTOR branch (strrchr '_' -> the slot name, the ai_PlayerSlots walk with the signed bound, its name and
+   index into the building), the log sprintf and the two links; Q4 clear (no raw access), readability
+   readable. Left: ours 104 vs the original 103 instructions, one code hunk chain at +0x2d..+0x8f and regs
+   hunks: the original loads the proto top byte with 'movsx ecx, byte ptr [ebp + 0x4b]' and compares 'cmp
+   ecx, 2' where ours emits 'cmp byte ptr [ebp + 0x4b], 2', and it materialises the id and its stack slot
+   ('and eax, 0xffffff / mov esi, eax / mov dword ptr [esp + 0xc], esi') before the type test where ours
+   puts them after it; the ai_PlayerSlots walk keeps its base in eax/edi on the original and in edi/eax on
+   ours ('mov edi, 1 / mov esi, eax / cmp byte ptr [eax], 0 / push eax / lea eax, [esp + 0x18]' against
+   'mov esi, 1 / mov edi, 0x7e4234 / cmp byte ptr [edi], 0 / lea eax, [esp + 0x14] / push edi'), so the
+   _stricmp args differ in register only; the strcpy-loop pointer is ecx on ours and eax on the original.
+   All the same operations in the same order - register allocation and the scheduler's placement of the id
+   setup, nothing in the C's meaning. Tried the cast (int)INIT_PLAYER_SLOTS_END (fixed our jb against the
+   original's jl) and the typed fields above; the rest of the C is byte at other sites in the unit. */
 
 
 void init_AllocSceneBuilding(int o)
@@ -604,39 +623,41 @@ void init_AllocSceneBuilding(int o)
     char buf[0x100];
     char tail[0x80];
     unsigned id;
-    unsigned char *b;
+    SCENEOBJ *obj;
+    INIT_BLD *b;
+    SCENEOBJ *par;
     int i;
     char *u;
-    int par;
 
     if (init_SceneNameToPrototype((char *)o) != 0) {
-        if (*(int *)(o + 0x48) != -1 && *(char *)(o + 0x4b) == 2 && *(int *)(o + 0x218) != 0) {
-            id = *(unsigned *)(o + 0x48) & INIT_PROTO_MASK;
-            if (id == 0x47) {
-                b = (unsigned char *)gm_CreateBuilding(0x47, 0xffff);
+        obj = (SCENEOBJ *)o;
+        if (obj->proto != -1 && obj->protoBytes[3] == 2 && obj->type != 0) {
+            id = obj->proto & INIT_PROTO_MASK;
+            if (id == INIT_KONTOR_BUILDING) {
+                b = (INIT_BLD *)gm_CreateBuilding(INIT_KONTOR_BUILDING, 0xffff);
                 u = strrchr((char *)o, '_') + 1;
                 strcpy(tail, u);
-                for (i = 1; (int)ai_PlayerSlots[i] < INIT_PLAYER_SLOTS_END; i++) {
+                for (i = 1; (int)ai_PlayerSlots[i] < (int)INIT_PLAYER_SLOTS_END; i++) {
                     if (ai_PlayerSlots[i][0] == 0)
                         break;
                     if (_stricmp(tail, ai_PlayerSlots[i]) == 0) {
-                        *(int *)(b + 0x65) = i;
-                        strcpy((char *)b + 5, ai_PlayerSlots[i]);
+                        b->player = i;
+                        strcpy(b->name, ai_PlayerSlots[i]);
                         break;
                     }
                 }
             } else
-                b = (unsigned char *)gm_CreateBuilding(id, 0xffff);
+                b = (INIT_BLD *)gm_CreateBuilding(id, 0xffff);
             if (b != 0) {
                 sprintf(buf, "f3_init:Geb\xe4ude des Typs %s allokiert", (char *)ai_BuildingNames[id * 0xe - 2]);
-                *(int *)(b + 0x61) = o;
-                *(int *)(o + 0x200) = (int)b;
+                b->object = (D3OBJECT *)o;
+                obj->owner = (SCENEOBJ *)b;
             }
         }
-        if (*(int *)(o + 0x218) == 0) {
-            par = *(int *)(o + 0x1f8);
+        if (obj->type == 0) {
+            par = obj->parent;
             if (par != 0)
-                *(int *)(o + 0x200) = *(int *)(par + 0x200);
+                obj->owner = par->owner;
         }
     }
 }
