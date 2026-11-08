@@ -249,4 +249,6 @@ void ai_CannonBuildPanel(struct CANNONSCENE *sc, struct GVEFFECT *run);  /* 0x58
 extern unsigned char ai_TurnTable[0x4000];  /* 0x6f5f60, the 0x4000-byte table ai_ClearTurnTable clears at engine open (nothing else refers to it) */
 void ai_SlotKeys(void);  /* 0x589c90, a bare function key selects its bookmark (ai_SelectBookmark) */
 void ai_SpeedKeys(void);  /* 0x589cf0, the game speed keys (cm_RaiseSpeedLevel / cm_LowerSpeedLevel) */
+void ai_CharInfoWindow(char *ch);  /* 0x5890c0, the modal info window of the character ch */
+void ai_BookmarksPreset(void);  /* 0x589e50, presets the function-key bookmarks */
 #endif

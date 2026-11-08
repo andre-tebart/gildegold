@@ -14341,7 +14341,7 @@ int d2_OpenForm(); void d2_RaiseWindow(); int io_PrintText(char *fmt, ...);
 #define d2_PlaceMainWindowF ((void (*)(int, int))d2_PlaceMainWindow)  /* 0x475850 (d2.h: int view): @original ai_SwitchRoomI pushes the flags too (0x5a78cf) */
 int d2_SetForm(int view, int n); int d2_CreateChildWindow(short x, short y, short w, short h, unsigned int flags, int win);
 void d2_CloseView(int view); void d2_RemoveObj(); void d2_ScrollWindowBy();
-void ai_CharInfoWindow(); int d2_CreatePicObj();
+int d2_CreatePicObj();
 
 /* 0x5a78a0, opens the town map window "Misc\Landkarte2" for the record m: the town map bitmap becomes the background
    tile (the old one is kept in m->tile), the map child window (0x4a, 0x4c, 0x206 x 0x164) gets the tiled background,
