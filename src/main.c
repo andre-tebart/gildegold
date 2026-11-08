@@ -5829,7 +5829,6 @@ AIBLD *he_PatrolBuilding = 0;  /* 0x6f2638, he.h; owner he or main (an open ques
 int he_MessageFilterMask = 0;  /* 0x6f263c, he.h; owner he or main (an open question of he.c) */
 GAPDATA full_data_6f2678[4] = { 0 };  /* 0x6f2678 */
 GAPDATA full_data_6f26c4[4] = { 0 };  /* 0x6f26c4, the alignment after ai_Settings, before ai_NewsText */
-GAPDATA full_data_6f2f64[28] = { 0 };  /* 0x6f2f64 */
 GAPDATA full_data_6f2f80[4] = { 0 };  /* 0x6f2f80 */
 GAPDATA full_data_6f2f84[4] = { 0 };  /* 0x6f2f84 */
 GAPDATA full_data_6f3680[496] = { 0 };  /* 0x6f3680 */

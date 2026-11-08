@@ -83,7 +83,7 @@
    ai_MasterUp / ai_MasterBar (0x6f3870, 0x6f4080, 0x6f4ee0) are views of main.c's full_data blocks (this unit
    is their only user, the owner not settled).
    Open: data: 0x6f3840 ai_InvSlots (the inventory child window's six LCINVSLOT rows) is a view of main.c's
-   full_data_6f3680, and 0x6f2f64 ai_TransportEscort, 0x6f2f68 lc_ReserveTime and 0x6f2f78 lc_ReserveCursor
+   full_data_6f3680, and 0x6f2f64 lc_Settings.escort, 0x6f2f68 lc_Settings.reserveTime and 0x6f2f78 lc_Settings.reserveCursor
    (the Domizil goods' clock) are views of full_data_6f2f64; their owner (this unit, the only reader and writer, or
    main) is not settled. The transport window's cart rows are LCCARTROW, the inventory window's character
    ai_InvChar (0x6f2f60, after ai_NewsSecond), its objects G8INVOBJ (a view of AIOBJ: its union does not reach the
@@ -614,11 +614,6 @@ extern unsigned char ai_OwnPlayer;
 extern int d2_ClickedId;
 extern int d2_LastWindow;
 extern GAPDATA full_data_62cc6c[];
-extern GAPDATA full_data_6f2f64[];
-#define ai_TransportEscort (*(char *)&full_data_6f2f64)  /* 0x6f2f64, the escort kind of the last transport order (ai_TransportWindow clears it, the order sets it to the cart's AIOBJ.escort) */
-#define lc_ReserveTime (*(AITIME *)((char *)&full_data_6f2f64 + 4))  /* 0x6f2f68, when lc_UpdateGoodsReserves ran last (set to ai_Time at its end) */
-#define lc_ReserveCursor (*(int *)((char *)&full_data_6f2f64 + 0x14))  /* 0x6f2f78, the first character lc_UpdateGoodsReserves checks next (32 per call) */
-#define ai_EquipRowCount (*(int *)((char *)&full_data_6f2f64 + 0x18))  /* 0x6f2f7c, the rows of the equip window in use (ai_UpdateEquipRows counts them each frame) */
 extern GAPDATA full_data_6f3680[];
 #pragma pack(push, 1)
 typedef struct G8INVOBJ {               /* an object of a character's inventory (AIOBJ, ai_types.h, read as a held good:
@@ -17628,7 +17623,7 @@ int ai_SendTransportOrder(unsigned int who, AIOBJ *cart, AIBLD *from, AIBLD *to)
         msg.n = from->id;
         msg.ch = to->id;
         msg.dst[5] = cart->escort;
-        ai_TransportEscort = (char)msg.dst[5];
+        lc_Settings.escort = (char)msg.dst[5];
         cm_SendLongMessage((char *)&msg);
         if (cart->escort != 0) {
             gm_StallGoodsList((char *)cart, (unsigned *)&goods);
@@ -18064,7 +18059,7 @@ int ai_TransportWindow(AIBLD *bld, unsigned int mode)
         }
         b = ai_MarketBuilding;
     }
-    ai_TransportEscort = 0;
+    lc_Settings.escort = 0;
     bt = &((AIBTYPE *)ai_BTypes)[b->type];
     if (sv_PanelShown != 0) {
         mode1 = mode & 1;
@@ -22793,22 +22788,22 @@ int ai_BuildingHasItem(AIBLD *bld, int id)
     return 0;
 }
 /* 0x5ba750, the clock of the Domizil goods in use (cm's frame, while the player is a character): 32 characters
-   per call from lc_ReserveCursor on; each Domizil good with a duration (G9DOMIZIL.minutes) that is active loses
+   per call from lc_Settings.reserveCursor on; each Domizil good with a duration (G9DOMIZIL.minutes) that is active loses
    the minutes since its own stamp; when its time runs out it turns inactive, the character of kind 6 gets the
    news 0x1bc9 (_NACHRICHTEN_HS_37, the good's name text), the good 0x178 clears the flag 0x20 of its building's
    word 0x5a, and a character that can act (ai_CanAct) and is not of kind 7 sells it (one, cm_SendExSellObject);
-   a good without a duration is set inactive. Stamps lc_ReserveTime and moves the cursor on
-   @deep Reconstructed in full from 0x5ba750..0x5ba979: the 32-character window from lc_ReserveCursor, the
+   a good without a duration is set inactive. Stamps lc_Settings.reserveTime and moves the cursor on
+   @deep Reconstructed in full from 0x5ba750..0x5ba979: the 32-character window from lc_Settings.reserveCursor, the
    inventory walk, the Domizil duration count-down with the stamp copy, the run-out branch (news 0x1bc9 for
    kind 6, the 0x5a flag 0x20 of the 0x178 good's building, the sale when ai_CanAct and kind != 7), the
    inactive branch, the end stamp and cursor; every call, argument, constant and string read against the
    original; ours 159 vs 160 instructions, frame equal. Left: register rotation only (asmdiff: eax/ecx/edx
    swapped through the body, e.g. +0x86 xor edx,edx / push edx vs xor eax,eax / push eax; the cursor reload
    +0x1c2 mov edx,[cursor]; add edx,0x20 vs mov eax,[cursor]; lea ecx,[eax+0x20]); the two AITIME copies
-   (o->since = ai_Time, lc_ReserveTime = ai_Time) load and store the same four parts in another register
+   (o->since = ai_Time, lc_Settings.reserveTime = ai_Time) load and store the same four parts in another register
    order. A variant round. (references: M8 at +0xd2: ours refers to ai_Time+0x4 (0x770ae4), the original's
    field to 0x770ae0 (ai_Time) (and 5 more), explained: the M8 ref lines are the two 14-byte AITIME copies:
-   the same loads and stores of ai_Time and lc_ReserveTime in another order (the alignment pairs ai_Time+4
+   the same loads and stores of ai_Time and lc_Settings.reserveTime in another order (the alignment pairs ai_Time+4
    with ai_Time); no other object is read or written; the prover stops only at the byte push of
    ai_OwnPlayer through another register (Ins8Lo of a different upper half)) */
 
@@ -22822,8 +22817,8 @@ void lc_UpdateGoodsReserves(void)
 
     if (ai_PlayerId >= 0x300)
         return;
-    gm_MinutesBetween(&lc_ReserveTime, &ai_Time);
-    for (i = lc_ReserveCursor; i < lc_ReserveCursor + 0x20 && i < 0x300; i++) {
+    gm_MinutesBetween(&lc_Settings.reserveTime, &ai_Time);
+    for (i = lc_Settings.reserveCursor; i < lc_Settings.reserveCursor + 0x20 && i < 0x300; i++) {
         if (((AICHARREC *)ai_Chars)[i].id == 0xffff)
             continue;
         for (o = (G8INVOBJ *)gm_Query((void *)((AICHARREC *)ai_Chars)[i].inventory, 1, 5); o != 0;
@@ -22856,8 +22851,8 @@ void lc_UpdateGoodsReserves(void)
             }
         }
     }
-    lc_ReserveTime = ai_Time;
-    lc_ReserveCursor = (i + 1) % 0x300;
+    lc_Settings.reserveTime = ai_Time;
+    lc_Settings.reserveCursor = (i + 1) % 0x300;
 }
 /* 0x5ba980, asks whether the player uses the inventory good o (the inventory panel's click on a Domizil good):
    the form "panel\useobj" prints text 0xfe3 (its name and rank) when the good's mask leaves the player's
@@ -23038,11 +23033,11 @@ int ai_UpdateEquipRows(int view, int form)
 
     picked = 0;
     d2_SetForm(view, form);
-    ai_EquipRowCount = 0;
+    lc_Settings.equipRowCount = 0;
     for (r = 0; r < 0x20; r++) {
         if (ai_EquipRowTab[r].ch == 0)
             continue;
-        ai_EquipRowCount++;
+        lc_Settings.equipRowCount++;
         for (sc = ai_SceneChars; (int)sc < (int)&ai_SceneChars[0x20]; sc++)
             if ((int)ai_EquipRowTab[r].ch == *sc)
                 goto shown;
@@ -23290,7 +23285,7 @@ rows:
                 if (ai_EquipRowTab[i].ch != 0)
                     cm_UpdateHandObject(ai_EquipRowTab[i].ch);
         }
-        _itoa(ai_EquipRowCount, count, 10);
+        _itoa(lc_Settings.equipRowCount, count, 10);
         d2_SetObjText(bar, count);
         if (dm_L.rup != 0) {
             if (d2_CountPointerItems() == 0) {
@@ -34381,6 +34376,7 @@ G8SETTING *ai_Settings = 0;  /* 0x6f26c0, the head of the production settings ch
 char ai_NewsText[1024] = { 0 };  /* 0x6f26c8, the shared text buffer of the unit's news messages: txt_Format writes the text into it, he_ShowNews shows it */
 char ai_NewsSecond[1176] = { 0 };  /* 0x6f2ac8, the second text buffer of the news messages that append a part (txt_Format into it, strcat onto ai_NewsText); its size is the room up to ai_InvChar */
 struct AICHARREC *ai_InvChar = 0;  /* 0x6f2f60, the character whose inventory the inventory child window (ai_OpenInventoryWindow) lists: ai_OpenInventoryWindow points it at ai_Chars[id]; the transport window sends its goods by its netId */
+LCSETTINGS lc_Settings = { 0 };  /* 0x6f2f64, the escort kind of the last transport order, the goods-reserve clock and cursor and the equip window's row count (see LCSETTINGS) */
 unsigned short ai_StatsChartFlags = 0;  /* 0x6f2f88, the charts the statistics panel shows (ai_CityStatsPanel: bit i the legend row i, 1 at the first open) */
 unsigned int ai_AmountTab = 0;  /* 0x6f2f8c, the open tab of the special-amount window (ai_SpecialAmountWindow, 0 .. 7; 8: no tab has rows) */
 int ai_MasterLetterPage = 0;  /* 0x6f2f90, the open page of the master letter window (ai_MasterLetterSettings): 0 the work settings, 1 the goods weights */

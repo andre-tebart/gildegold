@@ -4,6 +4,7 @@
 #define LC_H
 
 #include "am_types.h"                 /* G9DOMIZIL, the Domizil table's entry (ai_DomizilTable) */
+#include "ai_types.h"                 /* AITIME, the goods-reserve clock (LCSETTINGS.reserveTime) */
 
 struct AIBLD;
 struct D2SURF;
@@ -179,6 +180,17 @@ extern G8SETTING *ai_Settings;          /* 0x6f26c0, the head of the production 
 extern char ai_NewsText[1024];          /* 0x6f26c8, the shared text buffer of the unit's news messages (txt_Format into it, he_ShowNews reads it) */
 extern char ai_NewsSecond[1176];        /* 0x6f2ac8, the second text buffer of the news messages that append a part */
 extern struct AICHARREC *ai_InvChar;     /* 0x6f2f60, the character whose inventory the inventory child window lists */
+/* 0x6f2f64: the transport and goods-reserve statics of the unit (one 0x1c-byte record; the fields were the
+   ai_TransportEscort / lc_ReserveTime / lc_ReserveCursor / ai_EquipRowCount views of the gap block) */
+typedef struct LCSETTINGS {
+    char escort;                        /* +0x00, the escort kind of the last transport order (ai_TransportWindow clears it, the order sets it to the cart's AIOBJ.escort) */
+    char pad01[3];
+    AITIME reserveTime;                 /* +0x04, when lc_UpdateGoodsReserves ran last (set to ai_Time at its end) */
+    char pad12[2];
+    int reserveCursor;                  /* +0x14, the first character lc_UpdateGoodsReserves checks next (32 per call) */
+    int equipRowCount;                  /* +0x18, the rows of the equip window in use (ai_UpdateEquipRows counts them each frame) */
+} LCSETTINGS;
+extern LCSETTINGS lc_Settings;          /* 0x6f2f64 */
 extern unsigned short ai_StatsChartFlags; /* 0x6f2f88, the charts the statistics panel shows (bit i: the legend row i) */
 extern unsigned int ai_AmountTab;        /* 0x6f2f8c, the open tab of the special-amount window (0 .. 7; 8: no tab has rows) */
 extern int ai_MasterLetterPage;          /* 0x6f2f90, the open page of the master letter window: 0 the work settings, 1 the goods weights */
