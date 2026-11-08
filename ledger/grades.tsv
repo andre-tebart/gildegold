@@ -110,9 +110,9 @@ exe	0x004076c0	ch_CopyVec	ch	byte	readable
 exe	0x004076e0	ch_PosToCell	ch	byte	readable		
 exe	0x00407740	ch_CellToCell	ch	byte	readable		
 exe	0x00407790	ch_GetWaypoints	ch	draft	readable	deep	
-exe	0x004079b0	ch_GetNewPath	ch	draft	draft		
-exe	0x00408490	ch_PathToTarget	ch	shape	draft		
-exe	0x00408690	ch_InitWalk	ch	shape	draft		
+exe	0x004079b0	ch_GetNewPath	ch	draft	readable		
+exe	0x00408490	ch_PathToTarget	ch	shape	readable		
+exe	0x00408690	ch_InitWalk	ch	shape	readable		
 exe	0x00408ab0	ch_WalkSound	ch	byte	readable		
 exe	0x00408cb0	ch_StartWalkAnim	ch	byte	readable		
 exe	0x00408e60	ch_NextWaypoint	ch	byte	readable		
@@ -1047,8 +1047,8 @@ exe	0x00458b20	d3_PointToRef	d3_pose	byte	readable
 exe	0x00458c10	d3_LocalToWorld	d3_pose	byte	readable		
 exe	0x00458ce0	d3_MatToWorld	d3_pose	byte	readable		
 exe	0x00458da0	d3_WorldMatrix	d3_pose	byte	readable		
-exe	0x00458e70	d3_EnvMapCoords	d3_vtx	shape	draft		
-exe	0x004591a0	d3_AnimBlendWeights	d3_vtx	byte	draft		
+exe	0x00458e70	d3_EnvMapCoords	d3_vtx	shape	readable		
+exe	0x004591a0	d3_AnimBlendWeights	d3_vtx	byte	readable		
 exe	0x00459300	d3_TransformVerts	d3_vtx	draft	draft		
 exe	0x004598d0	d3_TransformNormals	d3_vtx	byte	readable		
 exe	0x00459980	d3_FrameNormals	d3_vtx	byte	readable		
@@ -2135,7 +2135,7 @@ exe	0x004c2c00	snd_UnloadBuildingVoices	f3snd	byte	readable
 exe	0x004c2c70	snd_PlayWorkerClick	f3snd	byte	readable		
 exe	0x004c2ce0	snd_PlaySelectedClick	f3snd	byte	readable		
 exe	0x004c2d20	snd_PlayFavourComment	f3snd	draft	readable	deep	
-exe	0x004c2f30	ai_FavourComment	f3snd	shape	draft		
+exe	0x004c2f30	ai_FavourComment	f3snd	shape	readable		
 exe	0x004c30e0	snd_StartMarketAmbience	f3snd	byte	readable		
 exe	0x004c3140	snd_StopMarketAmbience	f3snd	byte	readable		
 exe	0x004c3180	cm_MessageSize	cm	draft	readable	deep	
@@ -3250,7 +3250,7 @@ exe	0x005190b0	ls_SaveGame	ls	draft	readable	deep
 exe	0x005194c0	ls_WriteSaveHeader	ls	byte	readable		
 exe	0x00519a00	ls_RefsToIds	ls	shape	readable		
 exe	0x00519aa0	ls_IdsToRefs	ls	byte	draft	deep	
-exe	0x00519b50	ls_RelinkScene	ls	shape	draft		
+exe	0x00519b50	ls_RelinkScene	ls	shape	readable		
 exe	0x00519bf0	ls_WriteObjects	ls	shape	readable		
 exe	0x00519d20	ls_WriteBuildings	ls	draft	draft		
 exe	0x0051a1a0	ls_WritePlayerRecords	ls	draft	readable	deep	
@@ -3284,7 +3284,7 @@ exe	0x0051f080	ls_ReadPlayerSlots	ls	shape	readable	deep
 exe	0x0051f650	ls_ReadRelations	ls	shape	readable		
 exe	0x0051f720	ls_ReadStatistics	ls	byte	readable		
 exe	0x0051fb80	ls_ReadAvatars	ls	byte	readable		
-exe	0x0051fb90	unk_Unk51fb90	ls	shape	draft		
+exe	0x0051fb90	ls_ReadEventTables	ls	shape	readable		
 exe	0x00520000	ls_ReadParties	ls	shape	readable		
 exe	0x00520200	unk_Unk520200	ls	draft	draft		
 exe	0x00520310	unk_Unk520310	ls	draft	draft		
@@ -3475,7 +3475,7 @@ exe	0x00537de0	main_StartGame	main	byte	readable
 exe	0x00537f40	main_EndGame	main	byte	readable		
 exe	0x00538140	main_RundenBeginn	main	byte	readable		
 exe	0x005384e0	main_EndRound	main	draft	readable	deep	
-exe	0x00539620	main_ReplaceFigure	main	shape	draft		
+exe	0x00539620	main_ReplaceFigure	main	shape	readable		
 exe	0x00539870	main_RoundReport	main	draft	draft		
 exe	0x0053a250	main_UpdateFigure	main	draft	draft		
 exe	0x0053a450	main_UpdateFigures	main	byte	readable		
@@ -4003,8 +4003,8 @@ exe	0x00578370	ai_TutorialStop	sv_t	byte	readable
 exe	0x00578440	ai_TutorialFreeRuns	sv_t	byte	readable		
 exe	0x005784a0	ai_TutorialInitMainIntro	sv_t	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	sv_t	byte	readable		
-exe	0x00578e40	ai_TutorialInitChapter2	sv_t	byte	readable		
-exe	0x00579570	ai_TutorialInitChapter3	sv_t	shape	readable		
+exe	0x00578e40	ai_TutorialInitChapter2	sv_t	shape	readable		
+exe	0x00579570	ai_TutorialInitChapter3	sv_t	draft	readable		
 exe	0x0057aa80	ai_TutorialInitChapter4	sv_t	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	sv_t	byte	readable		
 exe	0x0057b750	ai_TutorialInitMainOutro	sv_t	byte	readable		
@@ -4114,7 +4114,7 @@ exe	0x0058a940	lobby_AddButtons	lobby	byte	draft	deep
 exe	0x0058a9d0	lobby_AddChatScroll	lobby	byte	draft	deep	
 exe	0x0058aa30	lobby_ShowCity	lobby	draft	readable	deep	
 exe	0x0058aba0	lobby_ShowMyPlayer	lobby	shape	readable		
-exe	0x0058ad20	lobby_FetchPlayers	lobby	shape	draft		
+exe	0x0058ad20	lobby_FetchPlayers	lobby	byte	readable		
 exe	0x0058ada0	lobby_ShowPlayers	lobby	draft	readable	deep	
 exe	0x0058af50	lobby_ChoosePlayer	lobby	draft	readable	deep	
 exe	0x0058b880	lobby_ChooseProfession	lobby	byte	readable		
