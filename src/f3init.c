@@ -34,7 +34,6 @@ extern char ai_PlayerSlots[4][0x2f4];
 extern int gm_PlayerRecords[688];
 #include "ai_types.h"
 extern AISTORE gm_Offers[];            /* 0x7e4b20 */
-extern float sv_SkyScale;
 extern const float ai_FloatOne;         /* 0x5eb780, bio.c: the shared 1.0f the original loads rather than folding it */
 
 /* the scene object view of this unit: a CHARACTER (ch.h, 0x244 bytes, the list 0x1468ae0); the unit cannot
@@ -237,6 +236,7 @@ typedef struct INIT_TERRAIN {
 #include "sblib.h"
 #define util_RandomU ((unsigned short (*)(int))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original this unit's callers read the 16-bit result (byte-matched ch_RandomNear 0x405160, ai_CalcMeisterBank 0x4836a0, cm_FightLoop 0x4d88c0 move it as a word / movzx) */
 #define d3snd_AttachI ((int (*)(int, char *, int, float))d3snd_Attach)  /* 0x417710 (d3_snd.h: D3SOUND *(SNDHANDLE *, D3OBJECT *, int, float)): this unit's int handle / char * object view */
+#define sv_PlaceCameraB ((void (*)(int))sv_PlaceCamera)  /* 0x525dd0 (sv.h: void sv_PlaceCamera(float f)): @original init_AfterTownLoad pushes the angle's bits as an int (0x513740: push 0x3ea8f5c3 / the INIT_CAMREC angle union's int) */
 #define ai_PlayerCharC (*(char **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) read bytewise, as this unit does (ai_PlayerChar + 4, ch[2]) */
 
 /* the object list of init_LoadSiteScene (0x510770): the count, the objects by name and the name substring the
@@ -269,8 +269,6 @@ typedef struct INIT_TORCHLIST {
 /* the functions of f3gm.c this unit calls (declared by their addresses there) */
 float gm_JobWage();
 extern char ai_PlayerSlots[4][0x2f4];      /* 0x7e3f40, the player slots */
-extern char * ai_PlayerBuilding;                /* 0x6f2308 */
-extern char * ai_FallbackBuilding;                /* 0x6f230c */
 int gm_IsBuildingKind(int n);           /* 0x4fe940, f3gm.c: 1 when the object prototype n is a building part */
 int gm_FindBuildingKind(char *name);    /* 0x502060, f3gm.c: the building kind of the name */
 unsigned gm_PermissionBits(unsigned p1, unsigned char *b, unsigned short *o, int c);  /* 0x503530, f3gm.c: the permission bits of the character p in the building b (or the object o) */
@@ -278,14 +276,12 @@ unsigned gm_PermissionBits(unsigned p1, unsigned char *b, unsigned short *o, int
 
 struct D3SCENE;
 /* init_SceneDirty: view of d3_Scenes (tools/data_views.py) */
-extern unsigned char ai_GameState;      /* 0x6f25ac */
 extern int sv_FrameMask;           /* 0x760638 */
 extern short d2_ScreenW;  /* 0xfb9072 */
 extern short d2_ScreenH;  /* 0xfb9070 */
 struct D2FADE;
 struct D2FADE *d2_StartFade(int x, int y, int w, int h, char *name, int dur, unsigned int flags); /* 0x4767d0, d2.h */                     /* 0x4767d0 */
 void d2_ReleaseFade(struct D2FADE *f); /* 0x476860, d2.h */                     /* 0x476860 */
-int sv_RunFrame(int cb, unsigned mask);                     /* 0x5309a0 */
 
 /* the canonical declarations of the engine / other-unit functions the scene loaders call (their headers drag the
    gv.h conflicts in; the types match the canonical prototypes, the CHARACTER arguments are cast through the
@@ -299,8 +295,6 @@ int d2_ClearSurface(struct D2SURF *surf);                                       
 void gm_RandomMarketShake(int unk);                                             /* 0x4ff450, f3gm.c */  /* the original pushes the player at both call sites; the function does not use it */
 extern short d2_ScreenW;  /* 0xfb9072, d2.h */
 extern short d2_ScreenH;  /* 0xfb9070 */
-void sv_SceneLoadProgress(int kind, int cur, int total);                         /* 0x521c10, sv.c */
-void sv_UpdateClock(void);                                                       /* 0x5315c0, sv.c */
 extern char * cm_FieldObject;                /* 0xa68d2c */
 extern struct AICHAR *ai_JudgeCatholic;  /* 0x6f1bfc, the two judges (0x6f1bfc Katholisch, 0x6f1c00 Evangelisch) */
 extern struct AICHAR *ai_JudgeProtestant;  /* 0x6f1c00 */
@@ -325,7 +319,6 @@ int amt_SendOfficeOwner(char a, char *b, unsigned char c); /* 0x4e6650, amt.c */
 void gm_AgeCharacter(char *c, unsigned short age);    /* 0x4fc6f0, f3gm.c: ages the character c to the age */
 int ai_WorksForMaster(struct AICHAR *c);                 /* 0x47dd70, ai.c */
 void hmt_Begin(void);                           /* 0x4ad0a0, hmt.c */
-extern int sv_PanelFlag;                /* 0x75e8c0 */
 void ai_ObjectAngle(void *out, int plot);                 /* 0x58fd90, lc.c: the angle of the object plot to out */
 void cm_SendOwnership(int a, int b, int c);               /* 0x4c54a0, cm.c: message 0x38, the building a changes its person from b to c */
 void cm_SendBoss(int a, int b);                            /* 0x4c5540, cm.c: message 0x39, the building a gets the character b as its boss */
@@ -357,13 +350,10 @@ int main_StartHouseCheat = 0;  /* 0x6f2430, no writer in the exe: nonzero gives 
 extern char ai_Unk7e3f40_[];
 
 
-struct AIBLD; void sv_UpdateChimneySmoke(struct AIBLD *b);                     /* 0x528490 */
 void ai_CheckBuildSites(void);                     /* 0x58fb60 */
 void gm_UpdatePlayers(void);                 /* 0x4feb30, f3gm.c */
 void gm_InitPlayerRecord(int p);                 /* 0x4feb60, f3gm.c */
 void cm_SendOwnership(int a, int b, int c);                     /* 0x4c54a0 */
-int sv_PumpMessages();                     /* 0x52fb80 */
-void sv_NetworkSyncWait(unsigned fl);           /* 0x52fc10, sv.c */
 struct G13MIS;
 struct G13MIS *ai_NewRandomMission(int owner, int kind, int x);  /* 0x4b3c10, mission.h */
 void ai_ShowMissions(int owner);                /* 0x4b5310, mission.c */
@@ -373,7 +363,6 @@ void main_GiveStartBuildings(int p);                     /* 0x534040, main.c ran
 struct D3FLMAP;
 int d3fl_ReplaceTexture(struct D3FLMAP *map, char *name, int idx);  /* 0x442210, d3_fl.c */
 int cm_SendExSysMessage(unsigned char id, void *msg);                     /* 0x4c4db0 */
-extern INIT_OBJ *sv_PanelShown;          /* 0x6f2310, the room object the info panel shows (sv.c's unsigned short * view) */
 /* the animation names of a building class (0x6c4 bytes each, in the table 0x61ae08): the class kind, then the
    0x30-byte name slots of which the first 16 are used (ch_PreloadAnims gets 0x10 of them) */
 typedef struct INIT_ANIMSET {
@@ -386,11 +375,8 @@ int main_MoneyCheat = 0;  /* 0x6f2444, set from the command line switch "MO_MONE
 #include "anm.h"
 #include "rd.h"
 int ai_MapSize = 0;  /* 0x6f4ee8 */
-void sv_CollectGroupCharacters(char *b);                 /* 0x52b2a0, sv.c: the characters of the group b into 0x7603a0 */
 void d3if_Prerender(char map);                     /* 0x447860, d3_interface.c */
-void sv_UpdateSkyColors();                     /* 0x525940 */
 void d3fl_SetShift(struct D3FLMAP *map, unsigned char shift, char light);   /* 0x446dc0, d3_fl.c */
-void sv_RunFramesUntilStopped(int id);                     /* 0x52bb70 */
 extern int __mb_cur_max;                /* 0x62e3a0, the CRT locale state */
 extern unsigned short *_pctype;         /* 0x62e194, the CRT ctype table */
 #include "menu_types.h"
@@ -432,6 +418,7 @@ int ai_SceneChars[32] = {0};  /* 0x7603a0 .. INIT_WINDOWS_END: the characters of
 #include "lc.h"
 #include "menu.h"
 #include "vfs.h"
+#include "sv.h"
 signed char init_BuildingUniverse[0x22] = {0};  /* 0x76fa60, the universe of each building class's scene */
 unsigned short * ai_SceneObject = 0;  /* 0x76fa84 */
 signed char init_ObjectUniverse[0x2dc] = {0};  /* 0x76faa0, the universe of each object prototype's scene (-1 = not loaded) */
@@ -3472,7 +3459,7 @@ void init_ShowBuildingScene(unsigned char *b, int slot)
         if (sv_PanelShown == 0)
             evt_NoGroup = bd->id;
         else
-            evt_NoGroup = sv_PanelShown->objId;
+            evt_NoGroup = ((INIT_OBJ *)sv_PanelShown)->objId;
         if (season == 1)
             init_TextureSet = 1;
         else if (season == 0)
@@ -3680,10 +3667,10 @@ void init_AfterTownLoad(void)
     if (d3_CurrentScene == 0) {
         cam = (INIT_CAMREC *)gm_PlayerRecord(ai_Chars[(unsigned short)ai_PlayerId]);
         if (cam == 0 || cam->angle.f == -1.0f) {
-            sv_PlaceCamera(0x3ea8f5c3);
+            sv_PlaceCameraB(0x3ea8f5c3);
         } else {
             d3_SetObjectPos(d3_Camera, &cam->pos);
-            sv_PlaceCamera(cam->angle.bits);
+            sv_PlaceCameraB(cam->angle.bits);
             d3_Camera->rotation.y = cam->rot[1];
             d3_SetObjectRot(d3_Camera, &d3_Camera->rotation);
         }
