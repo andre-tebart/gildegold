@@ -1123,27 +1123,29 @@ void rt_LoadAtPoint(char *c, char pl)
 
 int rt_SaveRoutes(void *f)
 {
-    char *c;
+    AIOBJ *c;
     RTPOINT *q;
     int n;
 
     n = 0;
     for (c = gm_Query(0, 2, 7, 4, 0x1d); c != 0; c = gm_QueryNext()) {
-        if (*(RTPOINT **)(c + 0x29) != 0)
-            n += rt_PointCount(*(RTPOINT **)(c + 0x29));
+        if (c->route != 0)
+            n += rt_PointCount(c->route);
     }
-    if (!vfs_fwrite(&n, 4, 1, f))
+    if (vfs_fwrite(&n, 4, 1, f) <= 0)
         return 0;
     for (c = gm_Query(0, 2, 7, 4, 0x1d); c != 0; c = gm_QueryNext()) {
-        for (q = *(RTPOINT **)(c + 0x29); q != 0; q = q->next) {
-            if (!vfs_fwrite(&q->cartId, 4, 1, f))
-                return 0;
-            if (!vfs_fwrite(&q->buildingId, 4, 1, f))
-                return 0;
-            if (!vfs_fwrite(q->loadSlots, 0x18, 1, f))
-                return 0;
-            if (!vfs_fwrite(q->unloadSlots, 0x18, 1, f))
-                return 0;
+        if (c->route != 0) {
+            for (q = c->route; q != 0; q = q->next) {
+                if (vfs_fwrite(&q->cartId, 4, 1, f) <= 0)
+                    return 0;
+                if (vfs_fwrite(&q->buildingId, 4, 1, f) <= 0)
+                    return 0;
+                if (vfs_fwrite(q->loadSlots, 0x18, 1, f) <= 0)
+                    return 0;
+                if (vfs_fwrite(q->unloadSlots, 0x18, 1, f) <= 0)
+                    return 0;
+            }
         }
     }
     return 1;
