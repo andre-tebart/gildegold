@@ -69,6 +69,13 @@ char *he_NextEvent(void);
 char *he_FindEvent(int n, ...);
 int he_NoEvent9aFor(int bldId, struct AICHAR *c);   /* 0x56f360, 1 when no running type 0x9a event has both the building bldId and the netId of the character c */
 int he_NoEvent9bFor(struct AICHAR *a);   /* 0x56f3b0, 1 when no running domicile event 0x9b has the netId of the character a as its partner1 */
+void he_LabIncident(struct AICHAR *c, int ev, struct AIBLD *b, int state);  /* 0x56e070 */
+int he_SecretRoomAccuse(struct AICHAR *a, struct AICHAR *b, int c);  /* 0x56f1b0 */
+int he_FindMeetingSlot(int c);           /* 0x56f260 */
+int he_SecretRoomAttack(struct AICHAR *a, struct AICHAR *b, int c);  /* 0x56f2e0 */
+int he_SecretRoomDomizil(int bldId, struct AICHAR *victim);  /* 0x56f3f0 */
+struct AIJOB *he_FindNearestSpying(struct AICHAR *per, struct AICHAR *agent, int skip);  /* 0x56f600 */
+int he_SecretRoomCatchSpy(struct AICHAR *agent, int ev, struct AIJOB *spy);  /* 0x56f740 */
 int he_RoomBusy(struct AIBLD *b, unsigned short kind);     /* 0x56ddc0, 1 when the room `kind` of the building b is locked */
 int he_FindMeetingRoom(int ev);                 /* 0x574fe0, the first building of the meeting event's room classes, 0 when none */
 void he_ShowConstruction(int ev);               /* 0x56b780, the construction state of the building event ev */

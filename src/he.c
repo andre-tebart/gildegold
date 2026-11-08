@@ -22149,8 +22149,6 @@ int he_RoomBusy(AIBLD *b, unsigned short kind)
     return 0;
 }
 
-void he_LabIncident();
-
 /* 0x56de10, the run handler of the alchemist's daily laboratory event 0x98 (alloc he_AllocAlchemistDay; the character
    AIJOB.netId): stages -1 / -2 free it, a paused event (opts & 4) waits; without the character or its alchemist record
    the event is ended through cm_SendExSetHE (-1); it is due again next year at a random hour of the next season's
@@ -22379,14 +22377,6 @@ taken:
 }
 
 int ai_PickActionBuilding(struct AIPER *p, int a, __int64 mask, float lo, float hi, int *out);   /* 0x4a63f0 (am.h); the 7-dword callers go through AI_4A63F0_7 */
-int he_SecretRoomAccuse();                 /* 0x56f1b0 */
-int he_FindMeetingSlot();                 /* 0x56f260 */
-int he_SecretRoomAttack();                 /* 0x56f2e0 */
-int he_NoEvent9bFor(struct AICHAR *a);                 /* 0x56f3b0 */
-int he_SecretRoomDomizil();                 /* 0x56f3f0 */
-int he_SecretRoomDomizil();                 /* 0x56f3f0 */
-AIJOB *he_FindNearestSpying();                 /* 0x56f600 */
-int he_SecretRoomCatchSpy();                 /* 0x56f740 */
 void he_FreeEventNow(int *r);          /* 0x56f040 */
 
 /* 0x56e5b0, the run handler of the secret room event 0x99 (alloc he_AllocSecretRoom): the stages -1 / -2 remove the
@@ -22618,7 +22608,7 @@ void he_RunSecretRoom(int ev)
             e->exSlot = cm_SendExSetHEI(4, ev);
             return;
         }
-        caught = he_SecretRoomCatchSpy(agent, ev, he_FindEvent(2, 0, 0x18, 1, s->spyEvent));
+        caught = he_SecretRoomCatchSpy(agent, ev, (AIJOB *)he_FindEvent(2, 0, 0x18, 1, s->spyEvent));
         if (caught == 0) {
             gm_AddTime(&e->end, 0, 6, 0);
             e->end = ai_Time;
@@ -22753,15 +22743,15 @@ int he_FindMeetingSlot(int c)
 }
 /* 0x56f2e0, a message when the person a and the record b (its word at 0 is the target) can meet: b not 0 and (0x504ec0 (a, 2) - 0x504ec0 (b, 2) * 0.5f) + 0x42ec20 () >= 1.0; then 0x4fca40 (*b, (-1 - c) * 5) */
 
-int he_SecretRoomAttack(int a, unsigned short *b, int c)
+int he_SecretRoomAttack(AICHAR *a, AICHAR *b, int c)
 {
     float fa, fb;
 
     if (b != 0) {
-        fa = gm_GetSkill(a, 2);
-        fb = gm_GetSkill(b, 2);
+        fa = gm_GetSkill((char *)a, 2);
+        fb = gm_GetSkill((char *)b, 2);
         if (fa - fb * 0.5f + util_RandomF() >= 1.0f) {
-            ((float (*)(unsigned short, int))gm_AddHealth)(*b, (-1 - c) * 5);
+            ((float (*)(unsigned short, int))gm_AddHealth)(b->id, (-1 - c) * 5);
             return 1;
         }
     }
