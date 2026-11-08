@@ -226,7 +226,6 @@ extern int d2_DirtyRectLeft[4];         /* 0xfb9060, the rectangle d2_AddDirty t
 #define d2_DirtyRectRight (*(int *)((char *)&d2_DirtyRectLeft + 0x8))     /* 0xfb9068 */
 #define d2_DirtyRectBottom (*(int *)((char *)&d2_DirtyRectLeft + 0xc))    /* 0xfb906c */
 extern GAPDATA full_data_6024e4[];
-extern GAPDATA full_data_6f25b0[];
 extern int sv_FrameMask;
 extern int sv_PopRequest;
 extern char ai_MissionMode;
@@ -3899,9 +3898,9 @@ void main_RoundReport(void)
         MSG_B(msg, 8) = 9;
         MSG_I(msg, 0x34) = MSG_I(msg, 0xc);
         cm_ExecCutscene(msg);
-        if (U_I((unsigned)&full_data_6f25b0) != 0)
+        if (main_ReplaceFigureOn != 0)
             main_ReplaceFigure(U_I((unsigned)&ai_PlayerId) & 0xffff);
-        U_I((unsigned)&full_data_6f25b0) = 0;
+        main_ReplaceFigureOn = 0;
     }
 }
 
@@ -5834,7 +5833,7 @@ char main_ScreenOpen = 0;  /* 0x6f258c, the video mode is open ( */
 int main_Round = 0;  /* 0x6f2598, the round number (1 at the game start) */
 int main_ScreenRestart = 0;  /* 0x6f25a4, nonzero: the screen must be re-initialised (set by the gfx options screen 0x5d5fd0 when the resolution changed) */
 int main_DayEnding = 0;  /* 0x6f25a8, set by sv_RunFrame when the day ends (hour 23 or the end request) before it pops to main_GameLoop, cleared by main_GameLoop before the next day */
-GAPDATA full_data_6f25b0[4] = { 0 };  /* 0x6f25b0 */
+int main_ReplaceFigureOn = 0;  /* 0x6f25b0, nonzero: a bankrupt player's figure is replaced (main_RoundReport calls main_ReplaceFigure then clears it); no writer in the image */
 int main_QuitProgram = 0;  /* 0x6f25b4, set by quit / Escape / WM_QUIT: WinMain exits */
 int main_ScreenSaverOff = 0;  /* 0x6f25bc, the screen saver was switched off and is restored at exit */
 int main_NoRoundFade = 0;  /* 0x6f25c0, 1 skips the black fade before the round page (set by main_RoundReport, cleared at the game start) */
