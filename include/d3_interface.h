@@ -38,7 +38,7 @@ typedef struct D3IFSCENE {          /* 0x3e0 bytes: the per-scene copy of the en
     D3FOGSET fogs[6];               /* 0xe0, d3if_Fog */
     D3LIGHTSET levels[7];           /* 0x128, d3if_Levels */
     void *events;                   /* 0x3c8, the scene's event table (D3EVENT, "d3e:RegisterSceneEvent(eventtable)") */
-    int unk3cc, unk3d0;             /* 0x5fb5c0, 0x5fb5c4 */
+    int state0, state1;             /* 0x5fb5c0, 0x5fb5c4 */
     char loaded, dirty;             /* 0x3d4 / 0x3d5, copied from D3SCENE */
     char pad3d6[0x2];
     unsigned int sceneFlags;        /* 0x3d8, d3_SceneFlags */
@@ -55,14 +55,14 @@ extern int d3if_CamOben;              /* 0x6338b8 */
 extern int d3if_CamVorne;              /* 0x6338bc */
 extern int d3if_CamSeite;              /* 0x6338c0 */
 #ifndef DATA_VIEWS_H
-extern int d3if_Unk5fb5c0;              /* 0x5fb5c0 */
+extern int d3if_SceneState0;              /* 0x5fb5c0 */
 #endif
 
 extern int d3s_ShadowMapSize;          /* 0x633dcc */
 #ifndef DATA_VIEWS_H
-extern unsigned int d3if_Unk6339dc;     /* 0x6339dc, counts the scene switches */
+extern unsigned int d3if_SceneSwitches;     /* 0x6339dc, counts the scene switches */
 #endif
-extern int d3if_Unkfba944;          /* 0xfba944 */
+extern int d3if_LastMegaCam;          /* 0xfba944 */
 
 void d3_AddChild(D3OBJECT *parent, D3OBJECT *obj);                                      /* 0x43cb80, d3_engine.c */
 int d3io_FindStock(char *name);                                                           /* 0x44c5d0 */

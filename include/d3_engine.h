@@ -706,7 +706,7 @@ void bio_wr_i(struct VFSFILE *f, int i);         /* 0x401240 */
 
 /* declared in other units' headers before (moved to the owner) */
 void d3_Unlink(D3OBJECT *obj);  /* 0x43d0e0 */
-extern int d3if_Unk5fb5c4;  /* 0x5fb5c4 */
+extern int d3if_SceneState1;  /* 0x5fb5c4 */
 char d3_GetBounds(D3OBJECT *obj, D3OBJECT *camera, D3VECTOR *center, float *radius);  /* 0x43d860 */
 D3OBJECT *d3_NextGroup(D3OBJECT *obj);  /* 0x438c30 */
 char d3_ForEachObject2(D3SCENE *scene, D3OBJECT *obj, unsigned int mask, void (*cb)(D3OBJECT *obj));  /* 0x438e60 */

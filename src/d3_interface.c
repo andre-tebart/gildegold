@@ -264,8 +264,7 @@ char d3if_Reload(D3OBJECT *obj, char *name)
     return 0;
 }
 /* 0x4473f0, empties the current scene: all objects, particle systems, the map, the sky, and resets
-   the lighting globals
-   @deep Q2 d3if_Unk5fb5c0 / d3if_Unk5fb5c4 (D3IFSCENE.unk3cc / unk3d0): write-only state - .text scan of the whole exe finds only the one store pair in d3if_Reset and the two save/restore pairs in d3if_SelectScene, no reader, no pointer to them in .data; .data initials 4 / 0xf; no writer of D3SCENE.dirty outside these either. d3fl_FreeMap, loaded, dirty named this session */
+   the lighting globals */
 
 void d3if_Reset(void)
 {
@@ -317,15 +316,15 @@ void d3if_Reset(void)
     d3if_CamOben = 0;
     d3if_CreateCameras();
     d3_SceneFlags = 0;
-    d3if_Unk5fb5c0 = 4;
-    d3if_Unk5fb5c4 = 0xf;
+    d3if_SceneState0 = 4;
+    d3if_SceneState1 = 0xf;
     D3IF_SCENE(d3_CurrentScene).last = 0;
     D3IF_SCENE(d3_CurrentScene).first = 0;
     D3IF_SCENE(d3_CurrentScene).dirty = 0;
     D3IF_SCENE(d3_CurrentScene).loaded = 0;
     d3_Scenes[d3_CurrentScene].name[0] = 0;
 }
-/* 0x4475f0, initializes an empty scene: its first object is a camera ("MegaCam") @deep Q2 unk3cc / unk3d0: the D3IFSCENE mirrors of 0x5fb5c0 / 0x5fb5c4, same write-only pair as in d3if_Reset (no reader in the exe, initials 4 / 0xf, no evidenced meaning); all other identifiers of the function named this session (hmap, mapSize, sceneFlags, hardware, loaded, dirty) */
+/* 0x4475f0, initializes an empty scene: its first object is a camera ("MegaCam") */
 
 char d3if_InitScene(D3IFSCENE *s)
 {
@@ -378,8 +377,8 @@ char d3if_InitScene(D3IFSCENE *s)
             s->levels[i].sun.z = s->sun.z;
             D3_COPY3(s->levels[i].fog, s->fogs, sizeof(s->levels[i].fog));
         }
-        s->unk3cc = 4;
-        s->unk3d0 = 0xf;
+        s->state0 = 4;
+        s->state1 = 0xf;
         return 1;
     }
     return 0;
@@ -424,7 +423,26 @@ void d3if_Prerender(char map)
     d3d_Device->lpVtbl->EndScene(d3d_Device);
 }
 /* 0x4478e0, makes scene `index` the current one: saves the engine's global state into the old scene and
-   loads the new scene's; with `keep` the objects, sky and map of the old state stay as they are */
+   loads the new scene's; with `keep` the objects, sky and map of the old state stay as they are
+   @deep read the whole function against the original: 353 vs 353 instructions, 1400 vs 1400 bytes, the
+   same call set. Q2 settled: the two write-only scene dwords are d3if_SceneState0 / d3if_SceneState1
+   (D3IFSCENE.state0 / state1, a reasoned guess documented on both), d3if_SceneSwitches counts the scene
+   switches and d3if_LastMegaCam keeps the camera of the scene being left. What is left is the order in
+   which the scene-to-global restore block is emitted: ours stores TopLast = scene.last and state1 =
+   scene.state1 two statements earlier than the original, which emits ParHead = scene.par1, TopLast, Sky,
+   TopFirst, SceneFlags, Terrain, state1, ...; the instruction pair at 0x447bd6 and 0x447c2e moves by one
+   slot and the four fpu hunks are the 0.3 / 0.59 / 0.11 constants (the original pools them at 0x5ebb30 /
+   0x5eb99c / 0x5ebb34, ours are literals of our own). Tried: reordering the restore statements into the
+   original's emitted order (worse: 8 -> 28 differing), the two-loop-variable and negation spellings; the
+   source order is not the driver, the scheduler is. (references: M8 at +0x296: ours refers to
+   d3_Scenes+0x84 (0xfd7c24), the original's field to 0xfd7c44 (d3_Scenes+0xa4) (and 15 more), explained:
+   the 16 ref lines are the same scene-to-global pairs emitted in another order: every one of them is the
+   same assignment on both sides (TopLast = scene+0x84, ParHead = scene+0xa4, Sky = scene+0xb8, TopFirst =
+   scene+0x80, SceneFlags = scene+0x3d8, Terrain = scene+0xac, state0 = scene+0x3cc, state1 = scene+0x3d0,
+   ParTail = scene+0xa8, AmbientColor.x/y/z = scene+0xbc/0xc0/0xc4, SunColor.x = scene+0xc8), the aligner
+   pairs each store with the next because our two leading stores move up two slots; the prover's first
+   difference is exactly that pair (ours store4 [0xfc28f4] = scene+0x84 against the original's store4
+   [0xfb98f4] = scene+0xa4, both present on both sides later)) */
 
 char d3if_SelectScene(int index, char keep)  /* @original: the definition returns char and takes a char keep (byte-matched); the headers declare void (int, int) */
 {
@@ -465,8 +483,8 @@ char d3if_SelectScene(int index, char keep)  /* @original: the definition return
         D3IF_SCENE(d3_CurrentScene).fog.start = d3_FogStart1;
         D3IF_SCENE(d3_CurrentScene).fog.end = d3_FogEnd2;
         D3_COPY(D3IF_SCENE(d3_CurrentScene).fogs, offset d3if_Fog, sizeof(D3IF_SCENE(d3_CurrentScene).fogs));
-        D3IF_SCENE(d3_CurrentScene).unk3cc = d3if_Unk5fb5c0;
-        D3IF_SCENE(d3_CurrentScene).unk3d0 = d3if_Unk5fb5c4;
+        D3IF_SCENE(d3_CurrentScene).state0 = d3if_SceneState0;
+        D3IF_SCENE(d3_CurrentScene).state1 = d3if_SceneState1;
         D3IF_SCENE(d3_CurrentScene).hardware = d3_Hardware;
         cam = (D3OBJECT *)d3if_MegaCam;
         D3IF_SCENE(d3_CurrentScene).cam = cam;
@@ -485,12 +503,12 @@ char d3if_SelectScene(int index, char keep)  /* @original: the definition return
         d3_TopLast = D3IF_SCENE(index).last;
         d3_SceneFlags = D3IF_SCENE(index).sceneFlags;
         d3_Terrain = D3IF_SCENE(index).map;
-        d3if_Unk5fb5c4 = D3IF_SCENE(index).unk3d0;
+        d3if_SceneState1 = D3IF_SCENE(index).state1;
         d3_TopFirst = D3IF_SCENE(index).first;
         d3_AmbientColor.y = D3IF_SCENE(index).amb.y;
         d3_ParTail = D3IF_SCENE(index).par2;
         d3_AmbientColor.x = D3IF_SCENE(index).amb.x;
-        d3if_Unk5fb5c0 = D3IF_SCENE(index).unk3cc;
+        d3if_SceneState0 = D3IF_SCENE(index).state0;
         d3_AmbientColor.z = D3IF_SCENE(index).amb.z;
         d3_SunColor.x = D3IF_SCENE(index).sun.x;
         d3_Camera = 0;
@@ -501,8 +519,8 @@ char d3if_SelectScene(int index, char keep)  /* @original: the definition return
         D3_COPY_TO(offset d3if_Levels, D3IF_SCENE(index).levels, sizeof(D3IF_SCENE(index).levels));
         d3_CurrentScene = index;
         d3_DefaultScene = (D3SCENE *)&D3IF_SCENE(index);
-        if (d3if_Unkfba944 == d3if_MegaCam)
-            d3if_Unkfba944 = (int)D3IF_SCENE(index).cam;
+        if (d3if_LastMegaCam == d3if_MegaCam)
+            d3if_LastMegaCam = (int)D3IF_SCENE(index).cam;
         d3if_MegaCam = (int)D3IF_SCENE(index).cam;
         if (d3if_MegaCam) {
             d3_SetObjectPos((D3OBJECT *)d3if_MegaCam, &D3IF_SCENE(index).campos);
@@ -528,7 +546,7 @@ char d3if_SelectScene(int index, char keep)  /* @original: the definition return
     }
     if (!keep) {
         d3if_TexturesEvicted = 0;
-        if (d3_Hardware && d3d_D3D && d3_Busy <= 0 && (d3if_Unk6339dc++ & 0xf) == 0 &&
+        if (d3_Hardware && d3d_D3D && d3_Busy <= 0 && (d3if_SceneSwitches++ & 0xf) == 0 &&
         (d3d_hr = d3d_D3D->lpVtbl->EvictManagedTextures(d3d_D3D)) != 0)
             d3d_Error(__FILE__, 682, "d3d_D3D->lpVtbl->EvictManagedTextures(d3d_D3D)");
         d3if_TexturesEvicted = 1;
@@ -1649,8 +1667,8 @@ void d3_SaveScene(char *name, VFSFILE *f)
 }
 
 extern char d3if_ParList[0x31c];
-/* d3if_Unk5fb5c0: view of d3_DefaultD3DConfig (tools/data_views.py) */
-/* d3if_Unk5fb5c4 is defined in d3_engine.c, right after that block (0x5fb5c4, the same unit) */
+/* d3if_SceneState0: view of d3_DefaultD3DConfig (tools/data_views.py) */
+/* d3if_SceneState1 is defined in d3_engine.c, right after that block (0x5fb5c4, the same unit) */
 int d3o_LightSet = -1;  /* 0x5fbcfc, the current light set */
 int d3o_FogSet = -1;  /* 0x5fbd00, the current fog set */
 float d3if_Gray = 200.0f;  /* 0x5fcc74, 0.3 r + 0.59 g + 0.11 b of the ambient colour */
@@ -1658,9 +1676,9 @@ D3VECTOR d3_AmbientColor = {200.0f, 200.0f, 200.0f};  /* 0x5fcc78, the ambient c
 int d3if_CamOben = 0;  /* 0x6338b8 */
 int d3if_CamVorne = 0;  /* 0x6338bc */
 int d3if_CamSeite = 0;  /* 0x6338c0 */
-unsigned int d3if_Unk6339dc = 0;  /* 0x6339dc, counts the scene switches (an object of its own: 4-aligned after the byte d3if_TexturesEvicted) */
+unsigned int d3if_SceneSwitches = 0;  /* 0x6339dc, counts the scene switches (an object of its own: 4-aligned after the byte d3if_TexturesEvicted) */
 int d3s_ShadowMapSize = 0;  /* 0x633dcc */
 char d3if_ParList[0x31c] = {0};  /* 0xfb95e0, the default scene's particle list head node (a D3PARTSYS, 0x31c bytes: d3_ParHead is its next field, +0x318 its prev) */
-int d3if_Unkfba944 = 0;  /* 0xfba944 (own object: d3io_StockDir is a 4-byte pointer) */
+int d3if_LastMegaCam = 0;  /* 0xfba944 (own object: d3io_StockDir is a 4-byte pointer) */
 D3FOGSET d3if_Fog[6] = {0}; /* 0xfba960 */
 D3LIGHTSET d3if_Levels[7] = {0}; /* 0xfba9c0 */

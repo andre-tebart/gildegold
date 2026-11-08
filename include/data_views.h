@@ -81,7 +81,7 @@
 #define d3_SnapEpsilon           (*(double *)((char *)&d3_ScrollPool + 0x0))  /* 0x5ebc20 */
 
 /* d3_DefaultD3DConfig */
-#define d3if_Unk5fb5c0           (*(int *)((char *)&d3_DefaultD3DConfig + 0xc))  /* 0x5fb5c0 */
+#define d3if_SceneState0           (*(int *)((char *)&d3_DefaultD3DConfig + 0xc))  /* 0x5fb5c0 */
 
 /* d3_Scenes */
 #define ai_MapRefs               (*(void **)((char *)&d3_Scenes + 0xac))  /* 0xfd7c4c */
