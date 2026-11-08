@@ -34,5 +34,6 @@ extern unsigned int ai_RandomSeed;       /* 0x6f0730, random seed of the message
 typedef int (*G14CB)(G14MSG *m);
 extern G14CB ai_MsgCallbacks[0x45];        /* 0x602570 */
 int ai_PostRandomMessages(int n, int id);   /* 0x4bb720, posts 0..n random messages (AIMSG 0x42) for the character id */
+int ai_RunMessage(G14MSG *m);   /* 0x4bb6c0, runs the message m through ai_MsgCallbacks (from the 8th day on) */
 
 #endif
