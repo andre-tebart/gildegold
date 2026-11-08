@@ -339,6 +339,7 @@ extern float sv_ViewRot[4];                                 /* 0x75fb90, its rot
 extern float sv_SkyScale;                                  /* 0x760420 */
 extern int sv_BandActive;                                    /* 0x760440 */
 extern SVBAND sv_Band;                                       /* 0x760444 */
+extern int sv_Season;                                        /* 0x760454, the game clock's season (written by main) */
 extern int sv_ClickedBuilding;                               /* 0x760458 */
 extern int sv_ClickedItem;                                   /* 0x76045c */
 extern int sv_ClickedChar;                                   /* 0x760460 */

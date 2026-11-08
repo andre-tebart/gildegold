@@ -7722,6 +7722,7 @@ float sv_ViewRot[4] = {0};  /* 0x75fb90, its rotation (D3OBJECT.rotation) */
 float sv_SkyScale = 0;  /* 0x760420 */
 int sv_BandActive = 0;  /* 0x760440 */
 SVBAND sv_Band = {0};  /* 0x760444, the rubber band's corners */
+int sv_Season = 0;  /* 0x760454, the season of the game clock (sv_ClockSeason's result), stored by main_EndRound / main_GameLoop (sv.c itself never reads it) */
 int sv_ClickedBuilding = 0;  /* 0x760458, sv_HoverBuilding at the last click (sv_HandleObjects) */
 int sv_ClickedItem = 0;  /* 0x76045c, sv_HoverItem at the last click */
 int sv_ClickedChar = 0;  /* 0x760460, ai_PickedChar at the last click */

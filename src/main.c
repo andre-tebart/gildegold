@@ -208,7 +208,6 @@ extern int d2_DirtyRectLeft[4];         /* 0xfb9060, the rectangle d2_AddDirty t
 extern GAPDATA full_data_6253b0[];
 extern GAPDATA full_data_6253b4[];
 extern GAPDATA full_data_6253b8[];
-extern GAPDATA full_data_760454[];
 extern void (*he_RunHandlers[5544])(unsigned char *);
 extern int sv_PopRequest;
 extern int sv_ViewRectBottom;
@@ -245,7 +244,6 @@ extern char gm_TagTmp[4];
 extern int cm_NetFlags;
 
 
-extern GAPDATA full_data_760454[];
 extern int init_StatusForm;
 extern int sv_FrameMask;
 extern int sv_ViewRectBottom;
@@ -3266,7 +3264,6 @@ void main_RundenBeginn(void)
 #define main_PlayerIdInt (*(int *)&ai_PlayerId)  /* 0x6f25b8, ai_PlayerId (unsigned short) as the int the round change reads and masks */
 #define MAIN_PLAYER (main_PlayerIdInt & 0xffff)  /* the player character's index */
 extern unsigned char main_GameEnded;  /* 0x6f25ad, sv.c */
-#define main_Season (*(int *)&full_data_760454)  /* 0x760454, the season of the game clock (sv_ClockSeason / gm_ClockSeason) */
 /* the announcement message of the kind `kind` to the player's own character (fromId -1), stamped with the game clock */
 #define MAIN_NOTE(m, kind) do { memset(&(m), 0, sizeof(m)); (m).type = (kind); (m).fromId = -1; (m).flags = 1; (m).to = ai_CharsT[MAIN_PLAYER].netId; (m).time = ai_Time; } while (0)
 
@@ -3339,7 +3336,7 @@ void main_EndRound(void)
         sv_NetworkSyncWait(0x24087);
     gm_CollectCarried(MAIN_PLAYER, (int *)&carry);
     sv_FillDayPhases((int)&clk);
-    main_Season = sv_ClockSeason(&clk);
+    sv_Season = sv_ClockSeason(&clk);
     gm_FindRichest(&rid, &k);
     k = 0;
     sysmsg.clock0 = clk.year;
@@ -4785,7 +4782,7 @@ void main_GameLoop(int ctl)
             return;
         }
         sv_FillDayPhases((int)&ai_Time);
-        main_Season = sv_ClockSeason(&ai_Time);
+        sv_Season = sv_ClockSeason(&ai_Time);
     }
     init_LoadTypeBScene();
     if ((U_I((unsigned)&ai_GameFlags) & 1) != 0) {
@@ -5889,7 +5886,6 @@ GAPDATA full_data_75e401[127] = { 0 };  /* 0x75e401 */
 int main_PlatformNT = 0;  /* 0x75e62c, the OS is NT based (dwPlatformId != VER_PLATFORM_WIN32_WINDOWS) */
 int main_WindBank = 0;  /* 0x75e630, the wind sample bank (sb_LoadSampleBank "natur\wind.sbf" at the game start) */
 GAPDATA full_data_75e634[12] = { 0 };  /* 0x75e634 */
-GAPDATA full_data_760454[4] = { 0 };  /* 0x760454 */
 /* full_data_76f990 / full_data_76f994: views of ai_Unk76f920 (data_views.h), the save header's +0x70 / +0x74 */
 GAPDATA full_data_91f6e0[3] = { 0 };  /* 0x91f6e0 */
 GAPDATA full_data_91f6e3[1] = { 0 };  /* 0x91f6e3 */
