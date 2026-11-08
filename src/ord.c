@@ -14,7 +14,7 @@
 #include "di_input.h"
 #include "data_views.h"
 #define util_RandomU ((unsigned short (*)(int))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original this unit's callers read the 16-bit result (byte-matched ch_RandomNear 0x405160, ai_CalcMeisterBank 0x4836a0, cm_FightLoop 0x4d88c0 move it as a word / movzx) */
-#define d3sm_GetVertexI ((int (*)())d3sm_GetVertex)  /* 0x45f100 (d3_sm.c: char, D3SM *, int, int, D3VECTOR *): @original this unit's callers read an int result (byte-matched ord_RandomCellPoint (ord.c): no 0f be c0 after the call) */
+#define d3sm_GetVertexI ((int (*)(D3SM *, int, int, int))d3sm_GetVertex)  /* 0x45f100 (d3_sm.c: char, D3SM *, int, int, D3VECTOR *): @original this unit's caller reads an int result and passes its own int z through (byte-matched ord_RandomCellPoint 0x4f86e5: push ecx, no 0f be c0 after the call) */
 #include "d3_types.h"
 #include "ahm.h"
 #include "ai.h"
