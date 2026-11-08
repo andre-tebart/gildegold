@@ -52,16 +52,13 @@ struct VFSDIR;
 #include "ai_types.h"
 extern OPTIONBYTES ai_OptionPanelHelp;
 extern char ai_PlayerSlots[4][0x2f4];
-extern int d2_HitUnderPointer;
 
 extern GAPDATA full_data_623e90[];
 extern GAPDATA full_data_6f2364[];
 
 extern char * ai_PickedObject;
 extern int ai_PickedChar;
-extern char d2_CaptionCopy[0x80];
 extern int d2_HitUnderPointer;
-extern int d2_PointerSprite;
 
 
 
@@ -115,9 +112,6 @@ extern unsigned char kb_Last;  /* 0x1468410 */
 /* d2_RadioSel: view of d2_Radios (tools/data_views.py) */
 #define sv_D2Objs d2_Objs  /* 0xf8f080, the typed view d2.h gives it (D2OBJ *) */
 
-void d2_SetPointerSprite(int a, int pic);      /* 0x476f80, gfx.c */
-void d2_ClearPointerItems(void);                     /* 0x476c70 */
-void d2_CopyCaption(char *caption);            /* 0x478870, gfx.c */
 #define d2_SetObjValue4 ((void (*)(int, int, int, int))d2_SetObjValue)  /* 0x475cb0 (d2.c: five parameters): @original sv_OpenBuildingPanel pushes 4 arguments (0x528a1e), as rt.c's calls */
 #define d2_SetObjValue2 ((void (*)(int, int))d2_SetObjValue)  /* 0x475cb0: @original the checkbox / chat calls push two (0x524d64 sv_UpdateMemberList: 2 pushes, add esp, 8; 0x52fecc / 0x53008b sv_ChatConsole: 2 pushes) */
 /* ai_SeasonCloudChance: view of ai_PlayerSlots (tools/data_views.py) */
@@ -205,9 +199,6 @@ typedef struct SVCHARREC {
 #pragma pack(pop)
 extern SVPLATE sv_NamePlates[0x20];
 
-int d2_DrawMousePointer(int x, int y);         /* 0x476f00, gfx.c */
-int d2_AddHitRect();                     /* 0x478890, @original: sv.c's callers were compiled against the non-prototype declaration (sv_BuildScreenLayout passes an int d2_ScreenW - 0x50 without a short conversion, 464 bytes vs 480) */
-void d2_RemoveHitRect();                     /* 0x4788f0 */
 
 #include "io_text.h"
 #include "ls.h"
@@ -248,6 +239,8 @@ void d2_RemoveHitRect();                     /* 0x4788f0 */
 #include "f3snd.h"
 #include "sblib.h"
 #include "d2.h"
+#include "gfx.h"
+#define d2_AddHitRectI ((int (*)(int, int, int, int, int))d2_AddHitRect)  /* 0x478890 (gfx.h: short x, y, w, h): @original sv_BuildScreenLayout pushes d2_ScreenW - 0x50 unextended, an int x (0x521e9c sub edx, 0x50 / 0x521ea1 push edx) */
 #define util_RandomU ((unsigned short (*)(int))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original this unit's callers read the 16-bit result (byte-matched ch_RandomNear 0x405160, ai_CalcMeisterBank 0x4836a0, cm_FightLoop 0x4d88c0 move it as a word / movzx) */
 #define ai_PlayerCharC (*(char **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) read bytewise, as this unit does (ai_PlayerChar + 4, ch[2]) */
 /* 0x520ec0, the tick callback: turns the frame counter sv_TickFrames into the float sv_FramesPerTick and clears it */
@@ -758,7 +751,7 @@ void sv_BuildScreenLayout(int s)
     int *q;
 
     d2_SetClipRect(0, 0, (int)d2_ScreenW, (int)d2_ScreenH);
-    sv_AdvanceHit = d2_AddHitRect(d2_ScreenW - 0x50, 0x11, 0x30, 0x30, 0);
+    sv_AdvanceHit = d2_AddHitRectI(d2_ScreenW - 0x50, 0x11, 0x30, 0x30, 0);
     sv_BarWindow = d2_CreateWindow(4, 10, 0x288, 0x30, 0);
     d2_PlaceWindowScaled(sv_BarWindow, 1);
     if (sv_ViewShape != 0) {
