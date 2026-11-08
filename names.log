@@ -3095,3 +3095,4 @@
 2026-11-08T19:48:54 0x0143a63c data full_data_143a63c -> txt_FemaleHonourTitle by:main why:the honour title slot of the lobby info window's name line when the player is female (0x58ac2b in lobby_ShowMyPlayer, 0x58ae37 in lobby_ShowPlayers); the male line uses txt_HonourTitles[1]
 2026-11-08T19:48:54 0x0144abe0 data full_data_144abe0 -> txt_JobLabel by:main why:the label of the profession line of the lobby info window (lobby_ShowMyPlayer 0x58aca8: sprintf text, lobby_FmtName, the label, the profession name)
 2026-11-08T19:48:54 0x0144abe4 data full_data_144abe4 -> txt_FaithLabel by:main why:the label of the faith line of the lobby info window (lobby_ShowMyPlayer 0x58acd0: sprintf text, lobby_FmtName, the label, txt_FaithNames[faith])
+2026-11-08T19:52:41 0x0144abf4 data full_data_144abf4 -> txt_ReadyMark by:main why:the text lobby_ShowPlayers (0x58ae5e) appends to a player's name line when the record's ready flag (+0x4) is set: the ready marker of the list line

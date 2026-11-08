@@ -362,7 +362,7 @@ extern char *txt_Ptrs[0x4800];    /* 0x143a1c0, each text in its file's buffer *
 #define full_data_144abe8                        (*(unsigned char (*)[4])((char *)txt_Ptrs + 0x10a28))  /* 0x144abe8 */
 #define full_data_144abec                        (*(unsigned char (*)[4])((char *)txt_Ptrs + 0x10a2c))  /* 0x144abec */
 #define full_data_144abf0                        (*(unsigned char (*)[4])((char *)txt_Ptrs + 0x10a30))  /* 0x144abf0 */
-#define full_data_144abf4                        (*(unsigned char (*)[4])((char *)txt_Ptrs + 0x10a34))  /* 0x144abf4 */
+#define txt_ReadyMark                            (*(char * *)((char *)txt_Ptrs + 0x10a34))  /* 0x144abf4, the ready marker lobby_ShowPlayers appends to a ready player's line */
 #define full_data_144abf8                        (*(unsigned char (*)[224])((char *)txt_Ptrs + 0x10a38))  /* 0x144abf8 */
 #define full_data_144acd8                        (*(unsigned char (*)[4])((char *)txt_Ptrs + 0x10b18))  /* 0x144acd8 */
 #define full_data_144acdc                        (*(unsigned char (*)[4])((char *)txt_Ptrs + 0x10b1c))  /* 0x144acdc */

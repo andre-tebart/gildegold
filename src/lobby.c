@@ -445,49 +445,58 @@ void lobby_FetchPlayers(void)
         while (cm_GetSlotState(r) == 0)
             sv_PumpNet();
 }
-/* 0x58ada0, the player list window (432 B): control 1 of 0x62aa88 and the text 0x602568; the eight player
-   records 0x6f267c[i + 1] (0x4cd380): the city image 0x4731d0 (5, y, the city + 0x59a) and the line
-   0x473650 (x + 10, y, "%s %s %s " 0x62aab4 of the honour title, the name +0x12 and the family name +0x22,
-   plus the status text 0x144abf4 when +4 is set); the control id into 0x6f5e80[i], y += 5 + the control
-   height; the chosen player 0x6f5e78 gives 0x6f5ea0 = i, the others are marked selectable (+0x4c = 1,
-   +0x1c0 = 3); the record id equal 0x6f5e00 marks the control (+0x28 = 1) */
+/* 0x58ada0, the player list window (432 B): control 1 of the lobby form and its text; for each of the eight
+   list records a chart picture of the coat (5, y) and a line below it (x + 10) with the honour title of the sex,
+   the first and family name and, for a ready player, the ready mark; the control id goes into lobby_Rows, y grows
+   by the control height; the line of this player (lobby_Me) sets lobby_MyRow, the other lines are made
+   selectable (interactive, style 3) and the line the chat goes to is checked
+   @deep read the whole function against the original 0x58ada0..0x58af49 and fixed its meaning: the callee
+   is cm_LobbyFindPlayer (0x4cd5e0), the record read through CMLOBBYPLAYER fields (coat +0xc, sex +0x10,
+   ready +4, id +0, firstName +0x12, familyName +0x22), the control through D2OBJ fields (w +0x14, h +0x16,
+   interactive +0x4c, style +0x1c0, checked +0x28), and the appended ready mark named (txt_ReadyMark);
+   Q2/Q4 clear, readability readable. 128 vs 128 instructions, one hunk of 6 instructions (11 bytes) at
+   +0x86: ours 'mov cl, byte ptr [ebx + 0x10] / add esp, 0x10 / mov ebp, eax / mov eax,
+   [txt_HonourTitles+4] / test cl, cl / je' against the original's 'mov ebp, eax / mov al, byte ptr [ebx +
+   0x10] / add esp, 0x10 / test al, al / mov eax, [txt_HonourTitles+4] / je' - the same six instructions,
+   the original saves the d2_WinOpenPic result to ebp first, loads p->sex into the freed al and tests
+   before the title load, ours loads it into cl and tests last. Tried the two statement orders of the id /
+   u assignments (the swapped one cost 237 bytes) and 'if (p->sex)' against '!= 0' (no change); everything
+   else is byte. Only the register choice and the schedule of those five instructions remain. */
 
 void lobby_ShowPlayers(void)
 {
     char text[256];
     char *u;
-    int *p;
+    CMLOBBYPLAYER *p;
     int y;
     int i;
     int id;
-    int n;
 
     y = 10;
     d2_SetForm(lobby_Form, 1);
-    io_PrintText((char *)(unsigned)"$C");
+    io_PrintText("$C");
     for (i = 0; i < 8; i++) {
-        p = (int *)cm_LobbyRecord(lobby_List[i + 1]);
+        p = (CMLOBBYPLAYER *)cm_LobbyFindPlayer(lobby_List[i + 1]);
         if (p == 0)
             continue;
-        id = d2_WinOpenPic(5, y, p[3] + 0x59a, U_I((unsigned)&d2_LastWindow));
-        u = (char *)U_I(((unsigned)&txt_HonourTitles + 0x4));
-        if ((char)p[4] != 0)
-            u = (char *)U_I((unsigned)&txt_FemaleHonourTitle);
-        sprintf(text, lobby_FmtHonour, u, (char *)p + 0x12, (char *)p + 0x22);
-        if (p[1] != 0)
-            strcat(text, (char *)U_I((unsigned)&full_data_144abf4));
-        n = id * 0x2ec;
-        d2_CreateWinText(*(short *)(n + 0x14 + U_I((unsigned)&d2_Objs)) + 10, y, text, U_I((unsigned)&d2_LastWindow));
-        y = y + 5 + *(short *)(n + 0x16 + U_I((unsigned)&d2_Objs));
+        id = d2_WinOpenPic(5, y, p->coat + 0x59a, d2_LastWindow);
+        u = txt_HonourTitles[1];
+        if (p->sex)
+            u = txt_FemaleHonourTitle;
+        sprintf(text, lobby_FmtHonour, u, p->firstName, p->familyName);
+        if (p->ready != 0)
+            strcat(text, txt_ReadyMark);
+        d2_CreateWinText(d2_Objs[id].w + 10, y, text, d2_LastWindow);
+        y = y + 5 + d2_Objs[id].h;
         lobby_Rows[i] = id;
-        if (p == (int *)lobby_Me) {
+        if (p == lobby_Me) {
             lobby_MyRow = i;
         } else {
-            U_I(n + 0x4c + U_I((unsigned)&d2_Objs)) = 1;
-            U_I(n + 0x1c0 + U_I((unsigned)&d2_Objs)) = 3;
+            d2_Objs[id].interactive = 1;
+            d2_Objs[id].style = 3;
         }
-        if (lobby_ChatTo == *p)
-            U_I(n + 0x28 + U_I((unsigned)&d2_Objs)) = 1;
+        if (lobby_ChatTo == p->id)
+            d2_Objs[id].checked = 1;
     }
 }
 
