@@ -1007,13 +1007,13 @@ void rt_UnloadAtPoint(char *c, int pl)
     RTINV ci;
     RTINV bi;
 
-    if (*(RTPOINT **)(c + 0x29) == 0)
+    if (((AIOBJ *)c)->route == 0)
         return;
-    q = rt_PointAt(*(RTPOINT **)(c + 0x29), *(int *)(c + 0x2d));
+    q = rt_PointAt(((AIOBJ *)c)->route, ((AIOBJ *)c)->routeIdx);
     b = gm_FindBuildingById(q->buildingId);
     if (b == 0)
         return;
-    t = ai_BTypes + *(unsigned char *)b * 0x24d;
+    t = ai_BTypes + ((AIBLD *)b)->type * 0x24d;
     if (*t != 10 && *t != 0x1c && !gm_BuildingGoodsList(b, &bi, 0))
         return;
     o = gm_ObjectBuildingOwner(c);
@@ -1025,10 +1025,10 @@ void rt_UnloadAtPoint(char *c, int pl)
             if (*t == 10)
                 st = gm_FindMarketObject(s[0]);
             else if (*t == 0x1c)
-                st = gm_Query(*(int *)(b + 0x5d), 2, 0, 0x1db, 6);
+                st = gm_Query(((AIBLD *)b)->objList, 2, 0, 0x1db, 6);
             else
                 st = bi.stock;
-            g = gm_Query(*(int *)(ci.stock + 0x14), 1, 0, s[0]);
+            g = gm_Query(((AIOBJ *)ci.stock)->list, 1, 0, s[0]);
             if (g != 0) {
                 n = s[1];
                 if (n >= gm_ListAmount(ci.stock, g))
@@ -1036,14 +1036,14 @@ void rt_UnloadAtPoint(char *c, int pl)
                 n = gm_FreeCapacity(st, s[0], n);
                 if (n > 0) {
                     price = 0;
-                    if (*(short *)(b + 0x27) != *o) {
+                    if ((short)((AIBLD *)b)->owner != *o) {
                         if (*t == 10)
                             price = (int)(gm_GoodsPrice(*g, ai_OwnPlayer) * 1.1f);
                         else
-                            price = (int)(gm_GoodsPrice(*g, ai_OwnPlayer) * *(float *)(b + 0x49));
+                            price = (int)(gm_GoodsPrice(*g, ai_OwnPlayer) * ((AIBLD *)b)->priceFactor);
                     }
                     if (gm_CharCurrency(o, pl) >= price * n)
-                        cm_SendExSellObjectI(*(int *)(st + 2), *(int *)(ci.stock + 2), s[0], n, pl, price);
+                        cm_SendExSellObjectI(((AIOBJ *)st)->objId, ((AIOBJ *)ci.stock)->objId, s[0], n, pl, price);
                 }
             }
         }
