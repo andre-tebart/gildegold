@@ -206,5 +206,7 @@ extern char he_FindFirst;               /* 0x6f2624, 1 while he_Cursor stands on
 extern int he_LastSlot;                 /* 0x625718, the highest slot index given an event (he_OpenEventSlot), -1 = none; sv_UpdateCityPanel places the bar's end by it */
 extern int he_BarShown;                 /* 0x62571c, he_BarView while the event bar is shown (he_ShowEventBar), -1 = hidden */
 extern int he_BarView;                  /* 0x6faa60, the view "Panel\Event_Leiste" (he_CreateEventBar opens it) */
+void he_SetLifeByAge(struct AICHAR *c, int num);  /* 0x56fbc0, ages the character's life value by num years */
+void he_LoadMessageFilter(char *s);  /* 0x5755c0, reads the message filter from the INI */
 
 #endif

@@ -4003,8 +4003,8 @@ exe	0x00578370	ai_TutorialStop	sv_t	9d1db8f5a93c7021	no	byte	control=byte p1=byt
 exe	0x00578440	ai_TutorialFreeRuns	sv_t	7db4c5d18c22886f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x005784a0	ai_TutorialInitMainIntro	sv_t	798c8d26cb8bedf5	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00578570	ai_TutorialInitChapter1	sv_t	1104bf614d4657fb	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x00578e40	ai_TutorialInitChapter2	sv_t	1997337a7073c8ff	yes	byte	control=shape p1=byte* p2=shape p3=byte* p4=byte*
-exe	0x00579570	ai_TutorialInitChapter3	sv_t	7a7c849570dd38d6	yes	shape	control=draft p1=shape* p2=shape* p3=draft* p4=shape*
+exe	0x00578e40	ai_TutorialInitChapter2	sv_t	1997337a7073c8ff	yes	byte	control=shape p1=byte* p2=byte* p3=byte* p4=byte*
+exe	0x00579570	ai_TutorialInitChapter3	sv_t	7a7c849570dd38d6	yes	draft	control=draft p1=draft* p2=draft* p3=draft* p4=draft*
 exe	0x0057aa80	ai_TutorialInitChapter4	sv_t	6084c4a654a21837	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0057aeb0	ai_TutorialInitChapter5	sv_t	8774329fa9d901d6	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0057b750	ai_TutorialInitMainOutro	sv_t	fa030cb776dbd933	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
@@ -4066,9 +4066,9 @@ exe	0x00585380	ai_GraveFogWindow	sv_t	35fefb45365521bd	no	shape	control=shape p1
 exe	0x00585750	ai_SeanceWindow	sv_t	d9a497324bb2a1d3	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x005859c0	ai_SeanceRitual	sv_t	b4bf43c41922a1a5	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
 exe	0x00585c40	ai_SeanceRollFormulas	sv_t	70191b95c3fdc4d4	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x00585cb0	ai_SeanceGhost	sv_t	89ea634db9da4415	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x00585f30	ai_SeanceSacrifice	sv_t	f03c1eaef4c2c8eb	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x00586200	ai_SeanceGift	sv_t	ff50312753d94f61	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
+exe	0x00585cb0	ai_SeanceGhost	sv_t	bc1037df7eb0eb7f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
+exe	0x00585f30	ai_SeanceSacrifice	sv_t	407fd9543aa1d83c	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
+exe	0x00586200	ai_SeanceGift	sv_t	838dd5b54bd09810	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00586560	ai_SeancePick	sv_t	7d4731e0d4f9d634	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00586610	ai_GraveSeance	sv_t	9a4a38bb4b2c5912	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x005867c0	ai_GraveyardSchlag	sv_t	aa4eaea5f9b8d020	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte

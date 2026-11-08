@@ -8806,7 +8806,7 @@ void ai_SeanceGhost(AIBLD *rec, GVSEANCE *ev)
     if (mode == 0) {
         for (i = 0; i < cnt; i++)
             cm_SendProofExecuted(ids[i], ai_CharsT[ai_PlayerId].netId);
-        he_SetLifeByAge(ai_Chars[ai_PlayerId], 1);
+        he_SetLifeByAge(&ai_CharsT[ai_PlayerId], 1);
         io_PrintText(0x40ef, 0x40cc, accuser->id);
         snd_QueueVoice(voice, 0, "GEIST_KOMMT", util_Random(8) & 0xffff, 0xfa);
     } else if (mode == 1) {
@@ -8862,7 +8862,7 @@ void ai_SeanceSacrifice(AIBLD *rec, GVSEANCE *ev)
         msg.flags = 1;
         msg.arg[0] = amount;
         cm_SendLongMessage((char *)&msg);
-        he_SetLifeByAge(ai_Chars[ai_PlayerId], 3);
+        he_SetLifeByAge(&ai_CharsT[ai_PlayerId], 3);
     }
     win = d2_OpenForm(0, 0, "Locations\\Friedhof\\Friedhof");
     d2_SetPointerSprite(0, 0);
@@ -8952,7 +8952,7 @@ void ai_SeanceGift(AIBLD *rec, GVSEANCE *ev)
     d2_SetForm(win, 1);
     if (mode == 0) {
         cm_SendExSellObject(ai_CharsT[ai_PlayerId].netId, -1, item, 1, ai_OwnPlayer, 0);
-        he_SetLifeByAge(ai_Chars[ai_PlayerId], 2);
+        he_SetLifeByAge(&ai_CharsT[ai_PlayerId], 2);
         io_PrintText(0x40f2, 0x40cc, item * 2 + 0x9a8);
         snd_PlayVoice(voice, 0, "GEIST_KOMMT", util_Random(8) & 0xffff);
     } else if (mode == 1) {
