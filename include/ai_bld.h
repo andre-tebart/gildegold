@@ -19,7 +19,9 @@ typedef struct AIBLD {                  /* 0xa9 bytes, ai_Blds[256] */
     char pad2b[5];
     int travel30;                       /* 0x30, he_AllocTransport sums it over the start and the goal building into
                                            HETRANSPORT.travel (reasoned guess: a travel weight; no other reader read yet) */
-    char pad34[5];
+    unsigned char side;                 /* 0x34, of a foreign city (kind 'G') the side of the town map it lies at,
+                                           0 .. 7 (lc.c ai_BuildTownMap's direction table: north, then clockwise) */
+    char pad35[4];
     int budget;                         /* 0x39, the money the building may spend this round: main_EndRound spreads its owner's goods value (x 75) over the buildings by AIBTYPE.level (2 / 4 / 8 shares, capped) and copies it to the AICHAR.budget of the local jobs; ai.c buys up to it */
     int wageRate;                       /* 0x3d, the percent of the job wages its workers get (main_SettleRound pays wage * rate / 100; below 100 lowers their opinion of the owner, above raises it) */
     int workRate;                       /* 0x41, a percent setting whose distance from 100 moves the workers' opinion the other way (main_SettleRound; reasoned guess: the working hours) */
@@ -41,6 +43,9 @@ typedef struct AIBLD {                  /* 0xa9 bytes, ai_Blds[256] */
         struct {
             union {
                 int unk65;                      /* 0x65, moved by +-1 per event towards AIPOS.unk18 (ai.c 0x4836a0) */
+                int victimId;                   /* 0x65, of the kidnapping room: the victim character id (lc.c; -1 none) */
+                int buyOutBase;                 /* 0x65, of a class 2 building: with buyOutExtra what its buy-out pays
+                                                   half of, and set to that payment (lc.c ai_BuildingWindow; reasoned) */
                 int playerSlot;                 /* 0x65, of a kind 0x47 building: its ai_PlayerSlots index (sv_OpenBuildingPanel) */
                 int interest;                   /* 0x65, of a bank: the interest rate its owner sets, 5 .. 0x28 (lc.c ai_CreditReleaseWindow
                                                    sends it as the field delta 0x65) */
@@ -53,8 +58,14 @@ typedef struct AIBLD {                  /* 0xa9 bytes, ai_Blds[256] */
                                                    ai_CalcMeisterDiebe posts the kidnap event 0x3c only then, he_AllocEvent3c
                                                    cancels one otherwise) */
             };
-            int unk69;                          /* 0x69, cleared for the kind 7 buildings at every round start (main.c 0x53b2e0) */
-            char pad6d[4];
+            union {
+                int unk69;                          /* 0x69, cleared for the kind 7 buildings at every round start (main.c 0x53b2e0) */
+                int messengerFee;                   /* 0x69, of a bank: the money messenger's fee in percent, 3 .. 0xf
+                                                       (lc.c ai_ExchangeFeesWindow sends it as the field 0x69) */
+                int buyOutExtra;                    /* 0x69, of a class 2 building: see buyOutBase (lc.c ai_BuildingWindow) */
+            };
+            int exchangeFee;                        /* 0x6d, of a bank: the exchange fee in percent, 3 .. 0xf (lc.c
+                                                       ai_ExchangeWindow takes it of the exchanged value) */
         };
         struct {                        /* 0x65, of an inn (kind 5 / 0x16): the round's counters of the inn simulation
                                            (he.c 0x54d260 adds to them per sale, he_InnReport reports and resets them) */
@@ -64,16 +75,23 @@ typedef struct AIBLD {                  /* 0xa9 bytes, ai_Blds[256] */
             int lastTakings;            /* 0x6d, the takings of the last round (he_InnReport copies them) */
         } inn;
     };
-    int plants;                         /* 0x71, the 64 G15PLANT records (0x18 bytes each, rd.h) of the
+    union {
+        int plants;                     /* 0x71, the 64 G15PLANT records (0x18 bytes each, rd.h) of the
                                            building's vegetation map (rd.c: veg_Fits / veg_FindPlantId) */
-    char pad75[0x20];
+        struct {                        /* 0x71, of a bank: the credit offers kept for the player (ORDCREDIT,
+                                           gv_types.h / gv.h ORDBLD.credits, 12 bytes each) */
+            int amount;
+            int term;
+            int interest;
+        } credits[3];
+    };
     int smokeEffect;                    /* 0x95, the id of the running chimney smoke effect (evt_FindById), -1 none (sv.c 0x528490) */
     char workSet[0x10];                 /* 0x99, the work settings a hired worker takes over into AICHAR flags1b4 ..
                                            target (cm_ExHire); begins with flags (ls.c) */
 } AIBLD;
 
 typedef struct AIBTYPE {                /* 0x24d bytes, ai_BTypes[] */
-    char kind;                          /* 0x000 */
+    unsigned char kind;                 /* 0x000, the building class (gm_BuildingClass; zero-extended at the reads) */
     char name[0x20];                    /* 0x001, the type's name: its models "gb_<NAME>[_A..].ogr" (cm_ExGebUpgrade,
                                            amt_ExecGebaeudeBauen), its ground plan "riss_<name>.bmp" (sv.c) */
     unsigned char extensions;           /* 0x021, how many room upgrades a building of the type takes (lc.c
@@ -108,7 +126,7 @@ typedef struct AIBTYPE {                /* 0x24d bytes, ai_BTypes[] */
     unsigned char max116;               /* 0x242, the limit of both slot levels for an object of type 0x116 (he_RunSlotOrder) */
     int v243;                           /* 0x243, a value the type's tooltip shows (ai_OpenBuildingTooltip, text 0x29) */
     union {
-        char level;                     /* 0x247, the type's level 1 .. 3 (am.h AIBTYPEX: a count (level)); main_EndRound weighs a building's budget share 2 / 4 / 8 by it */
+        unsigned char level;            /* 0x247, the type's level 1 .. 3 (am.h AIBTYPEX: a count (level)); main_EndRound weighs a building's budget share 2 / 4 / 8 by it */
         unsigned char cap247;           /* 0x247, read as unsigned (0x489cb0) */
     };
     unsigned char maxLevel;             /* 0x248, the highest level of the type's line (reasoned: ai_DecideUpgradeGuild builds the next type only while cap247 is below it) */
