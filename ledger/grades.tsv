@@ -4445,7 +4445,7 @@ exe	0x005bc0f0	ai_FreePicture	lc	byte	readable
 exe	0x005bc110	ai_ChooseCoatOfArms	lc	byte	readable		
 exe	0x005bc420	ai_OpenMoneyInfoPage	lc	byte	readable		
 exe	0x005bc6d0	ai_OpenBuildingListPage	lc	byte	readable		
-exe	0x005bc790	ai_BuildingDetailWindow	lc	byte	readable		
+exe	0x005bc790	ai_BuildingDetailWindow	lc	shape	readable		
 exe	0x005bc9c0	ai_OpenMasterListPage	lc	shape	readable	deep	
 exe	0x005bcc70	ai_PlayerStatsPanel	lc	shape	readable		
 exe	0x005bd060	ai_AmountLimit	lc	byte	readable		
