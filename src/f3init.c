@@ -2,8 +2,6 @@
    Open: type debt - the local views SCENEOBJ (ch.h's CHARACTER, typed as this unit reads it) and INIT_* (ai.h's
    AICHAR / AIFIN / AIBLD / AIOBJ records) stand in for their types, and local canonical prototypes for ai.h /
    amt.h / rd.h, which do not compile into this unit (gv.h conflicts).
-   Open: head: include/sv.h, sv_PanelShown unsettled (this unit declares it as INIT_OBJ * for its objId, sv.h as
-   unsigned short *), so sv_PlaceCamera / sv_UpdateSkyPhase stay without a prototype (M7) in init_AfterTownLoad.
    Open: not included yet (dcp headers conflicts f3init HEADER): ai.h amt.h cm.h d2.h f3snd.h gfx.h hmt.h hst.h
    mission.h rmsg.h; held by own declarations that differ from the owner's: cm_SendExSellObject,
    amt_GetKind, amt_GetOffice, d2_ClearSurface, amt_GetFirstOffice, gm_AssignBuilding.
@@ -201,8 +199,8 @@ typedef struct INIT_CHAR {
     char pad188[0x94];              /* 0x188 .. 0x21b */
 } INIT_CHAR;
 
-/* AIFIN.camAngle (0x88) in both spellings the unit needs: the factor, and its bits for sv_PlaceCamera (whose
-   prototype is not in scope here, M7: a float argument would be pushed as a double) */
+/* AIFIN.camAngle (0x88) in both spellings the unit needs: the factor, and its bits for sv_PlaceCameraB (the
+   original's callers push the float's bits; sv.h's float prototype would convert them) */
 typedef union INIT_CAMANGLE {
     float f;
     int bits;

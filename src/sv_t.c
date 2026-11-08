@@ -38,8 +38,8 @@
    owner and the other units declare it plain int.
    Open: head: gfx.h not included (d2_Convert16ToRgb's call stays M7; dcp headers conflicts sv_t gfx.h).
    Open: head: cm.h's declaration set still moves the chapter builders by the declaration set alone (a register
-   tie-break, dcp build probes it: ai_TutorialInitChapter2 byte, ai_TutorialInitChapter3 shape); cm.h's declaration
-   set is not the original's yet.
+   tie-break, recorded in ledger/tiebreak.tsv: ai_TutorialInitChapter2 / ai_TutorialInitChapter3 shape); cm.h's
+   declaration set is not the original's yet.
    Open: the alchemist windows ai_AlchemistWindow / ai_AlchemistResearchWindow are @deep (allocation); their buttons call
    ai_AlchemistFundWindow / ai_AlchemistRescheduleWindow with (obj, record), the record parameter unread.
    Open: type debt - the graveyard detail window record GVDETAILWIN is typed in the seance and contact functions
