@@ -71,6 +71,7 @@ const volatile unsigned __int64 gypsyFilter = 0x1a7fdfbb6;  /* 0x5eed68 (volatil
 #define ai_FallbackBuildingB (*(unsigned char **)&ai_FallbackBuilding)  /* 0x6f230c, ai_FallbackBuilding (sv.c: char *) read bytewise, as this unit does */
 #define ai_PlayerBuildingB (*(unsigned char **)&ai_PlayerBuilding)  /* 0x6f2308, ai_PlayerBuilding (sv.c: char *) read bytewise, as this unit does */
 #define ai_CharsC (*(char (*)[768 * 0x21c])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) read flat, as this unit does */
+#define ai_CharsK ((AICHARKINDVIEW *)((char *)ai_Chars + 2))  /* 0x770b82, the records from their kind byte (ai_HasQuicksavePlayer walks them so) */
 
 extern OPTIONBYTES ai_GfxFloor, ai_GfxSet, ai_GfxFog, ai_GfxResolution, ai_GameSwitches, ai_GamePanel, ai_OptionPanelHelp;
 /* full rebuild: the symbols whose original addresses the code above spells literally */
@@ -1286,8 +1287,22 @@ typedef struct AICHARVIEW {
     int pic;                            /* +0x18c, the picture of the character the poker panel shows (reasoned: the picture index) */
     char pad190[0x3c];
     unsigned int flags1cc;             /* +0x1cc, ai.h's flags1cc (bit 0x20000 = the blood revenge) */
-    char pad1d0[0x4c];
+    char pad1d0[0x3c];
+    int partyId;                        /* +0x20c, the scene party the character belongs to, -1 = none (ai_char.h AICHAR.partyId) */
+    char pad210[0xc];
 } AICHARVIEW;
+
+/* the same records from their kind byte (ai_CharsC + 2), the base ai_HasQuicksavePlayer walks */
+#pragma pack(push, 1)
+typedef struct AICHARKINDVIEW {
+    unsigned char kind;                 /* +0x000 (record +2), 6 / 7 = a player */
+    char pad001[5];
+    unsigned char health;               /* +0x006 (record +8), > 0 = alive (ai_char.h AICHAR.health) */
+    char pad007[0x203];
+    int partyId;                        /* +0x20a (record +0x20c), -1 = none (ai_char.h AICHAR.partyId) */
+    char pad20e[0xe];
+} AICHARKINDVIEW;
+#pragma pack(pop)
 
 /* 0x5d6f40, creates one menu button of an options dialog (84 B): a control of the dialog (picture
    0xbf, the caption texts text1 / text2) at x 0x20 and the row's y, centred (d2_Objs[id].centred,
@@ -1448,21 +1463,35 @@ void ai_LoadScreenImage(char *path)
     vfs_fclose(h);
 }
 /* 0x5d73e0, is there a character that can be quicksaved (78 B): 0 -> no game (ai_GameState 0x6f25ac
-   == 0); otherwise walks the character records (0x770b82, ai_Chars + 2, stride 0x21c) for one with the
-   record flag +6 > 0, the kind +0 in {6, 7} and the dword +0x20a != -1; 0 if found, 1 when the walk
-   passes gm_PlayerRecordBytes 0x7d5f82. */
+   == 0); otherwise walks the character records (ai_Chars + 2, stride 0x21c) for a living player (kind
+   6 / 7) that belongs to a scene party (partyId != -1); 0 if found, 1 when the walk passes
+   gm_PlayerRecordBytes 0x7d5f82
+   @deep read the whole function against the original 0x5d73e0..0x5d7421 and rebuilt it: the walk over the
+   character records, typed as the AICHARKINDVIEW view at ai_Chars + 2 (kind +0 = record +2, health +6 =
+   record +8, partyId +0x20a = record +0x20c, the base and the gm_PlayerRecordBytes bound 0x7d5f82 the
+   original uses), the do-while, the living-player test (health > 0, kind 6 / 7, partyId != -1). Q4 clear
+   (no raw access), description written, readability readable. Tried the source shapes: if (ai_GameState !=
+   0) { ...; return 1; } return 0;, the natural early return with return 1 last, a ret = 1 variable
+   returned last, and the do-while vs the byte walk; the natural early-return form is kept (dist 25
+   instructions). Left: ours 22 vs the original 21 instructions, differing 25: the original drops
+   ai_GameState into cl with eax preset to 1 ('mov cl, [ai_GameState] / mov eax, 1 / test cl, cl / je ->
+   xor eax, eax; ret'), keeps our p in ecx and compares 'cmp dword ptr [ecx + 0x20a], -1'; ours loads into
+   al, keeps p in eax, hoists the -1 into edx ('or edx, -1' ... 'cmp dword ptr [eax + 0x20a], edx') and
+   sets 'mov eax, 1' just before the loop-exit ret. Same instructions, one pruned (ours 22), the difference
+   is the register for p and where the return value 1 is materialised - allocation and the exit-block
+   layout, nothing in the C's meaning. */
 
 int ai_HasQuicksavePlayer(void)
 {
-    unsigned char *p;
+    AICHARKINDVIEW *p;
 
     if (ai_GameState == 0)
         return 0;
-    p = (unsigned char *)ai_CharsC + 2;
+    p = ai_CharsK;
     do {
-        if (p[6] > 0 && (p[0] == 6 || p[0] == 7) && U_I(p + 0x20a) != -1)
+        if (p->health > 0 && (p->kind == 6 || p->kind == 7) && p->partyId != -1)
             return 0;
-        p += 0x21c;
+        p++;
     } while ((int)p < (int)gm_PlayerRecordBytes);
     return 1;
 }
