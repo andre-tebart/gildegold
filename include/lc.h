@@ -363,4 +363,10 @@ int ai_SpecialAmountWindow(unsigned int *filter, char *caption, int tab, int (*p
 int ai_PassesMapPickFilter(struct AICHARREC *me, struct AMOUNTCFG *cfg, struct AIBLD *bld);  /* 0x5c39a0 */
 int ai_LawSelectionEntry(struct AIBLD *bld, struct AMOUNTCFG *filter, char *text, void (*cb)(struct AICHARREC *, struct AIBLD *));  /* 0x5c4100 */
 int ai_GiftWindow(struct AICHARREC *giver, struct AICHARREC *chr);  /* 0x5c6050 */
+void ai_HandleMapKey(void);  /* 0x591170, a key of the map window */
+void ai_InventoryPanel(void);  /* 0x5bac10, the inventory panel */
+void ai_PlayerStatsPanel(void);  /* 0x5bcc70, the player's stats panel */
+void ai_CityStatsPanel(void);  /* 0x5c7f00, the city's stats panel */
+void ai_PlayerComparePanel(void);  /* 0x5c82f0, the two players' comparison panel */
+void ai_PrivilegesPanel(void);  /* 0x5c8640, the privileges panel */
 #endif
