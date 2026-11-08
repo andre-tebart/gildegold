@@ -25,7 +25,7 @@ void CALLBACK tb_TimerProc(UINT id, UINT msg, DWORD user, DWORD dw1, DWORD dw2)
         if (d3_Time % 3 == 0)
             tb_AnimTick++;
         if (d3_Time & 1)
-            tb_Unk6333d4++;
+            tb_OddTick++;
         if (tb_Slow) {
             if (++tb_SlowCount % 20 == 0)
                 d3_Time++;
@@ -125,7 +125,7 @@ extern TBFUNC tb_Funcs[32];
 MMRESULT tb_Timer = {0};  /* 0x6333c8 */
 volatile unsigned long d3_Time = 0;  /* 0x6333cc, the millisecond counter tb_TimerProc advances */
 volatile int tb_AnimTick = {0};  /* 0x6333d0, counted once per 3 ms; gfx/shp step animations by it */
-volatile int tb_Unk6333d4 = {0};  /* 0x6333d4, incremented when d3_Time is odd */
+volatile int tb_OddTick = {0};  /* 0x6333d4, counts the odd d3_Time ticks; no reader known */
 volatile int tb_Calls = {0};  /* 0x6333d8, timer callbacks */
 int tb_Busy = 0;  /* 0x6333dc */
 int tb_Paused = 0;  /* 0x6333e0 */

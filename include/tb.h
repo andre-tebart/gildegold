@@ -18,7 +18,7 @@ typedef struct TBFUNC {                 /* 12 bytes */
 extern MMRESULT tb_Timer;               /* 0x6333c8 */
 extern volatile unsigned long d3_Time;  /* 0x6333cc, also in d3.h */
 extern volatile int tb_AnimTick;        /* 0x6333d0, counted once per 3 ms; gfx/shp step animations by it */
-extern volatile int tb_Unk6333d4;               /* 0x6333d4, incremented when d3_Time is odd */
+extern volatile int tb_OddTick;               /* 0x6333d4, counts the odd d3_Time ticks; no reader known */
 extern volatile int tb_Calls;                 /* 0x6333d8, timer callbacks */
 extern int tb_Busy;                     /* 0x6333dc */
 extern int tb_Paused;                   /* 0x6333e0 */
