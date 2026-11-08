@@ -3505,7 +3505,6 @@ void he_AllocTribute(int ev)
 
 /* ---- drafted out of address order (the big 0x53f6b0 / 0x541b40 / 0x5437c0 are still missing above this point; move the functions below into address order when those exist) ---- */
 
-int ai_CourtshipRounds();
 
 /* 0x544330, the run handler of the tribute event 0x35: ends it at stage -1 / -2; runs once started (opts bit 4
    clear) and once its last post is settled (exSlot -1 or cm_GetSlotState nonzero). Without its collector (idbc) it
@@ -4285,7 +4284,6 @@ int ai_PickActionBuilding(struct AIPER *p, int a, __int64 mask, float lo, float 
 void amt_ChangeDistrictOpinion();
 
 
-int ai_ApplyTrialStep();
 
 /* 0x548230, the run handler of the insult news event (type 0x4b, whose start handler is 0x548110): a pending cm
    slot still in state 0 keeps it; a freed state (-2) ends it, a negative one frees it, and in state 0 with opts
@@ -14793,7 +14791,6 @@ void he_RunDemolish(int ev)
     }
 }
 
-int ai_LiquidateAssets();
 
 /* 0x55bf50, the allocation handler of the building purchase event 0x21: the building (AIJOB.bldId) gets the message
    0x5a / 2 / 0x200, the due clock is now + 10 .. 19 minutes */
@@ -20181,7 +20178,6 @@ void he_AllocProduktion(AIJOB *ev)
 
 void sv_CountGroupMembers(char *g);
 int he_HasEvent9f(AICHAR *a);
-int ai_BuildingHasItem();
 
 #define cm_SendMakeGoodsH ((int (*)(int, int, int))cm_SendMakeGoods)  /* 0x4c48e0: it returns the send slot of its message (cm_QueueSend's result stays in eax), which the void prototype drops; @original he_RunProduktion keeps it (HEPRODUCTION.slot) and passes the good as an int (zero-extended) */
 
@@ -20743,7 +20739,6 @@ void he_AllocTrade(AIJOB *ev)
         ev->modes = 4;
 }
 
-int ai_CartAtBuilding();
 
 /* 0x56a960, the run handler of the trade event 0xb (he_AllocTrade): a cart (t->cart) of the character t->chr trades
    at the building t->bld. Stage -2 restarts it for the player's character. While its move or message send is still

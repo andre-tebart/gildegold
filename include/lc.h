@@ -315,4 +315,12 @@ struct G8USEVIEW; int ai_UseGood(struct AICHARREC *ch, struct G8USEVIEW *use);  
 void ai_SendSwapText(unsigned short *param_1, unsigned short *param_2, unsigned short *param_3);  /* 0x5a9330 */
 
 int ai_SaveSettings(void *param_1);  /* 0x5a8940, saves the settings */
+
+int ai_CourtshipRounds(int idA, int idB);  /* 0x5c6620, the courtship rounds the suitor idA needs for idB (2 .. 15) */
+int ai_ApplyTrialStep(struct AICHARREC *ch, int skill);  /* 0x5d08c0, raises a skill of ch by a trial step (skill 0 .. 4) */
+int ai_IsBuildingOpen(struct AIBLD *b, unsigned int *open, unsigned int *close);  /* 0x59e170, whether b is open now, its hours to *open / *close */
+int ai_LiquidateAssets(int to, struct AICHARREC *ch, int amount, char *note);  /* 0x5b92e0, sells ch's assets for the amount, the receipt note */
+int ai_BuildingHasItem(struct AIBLD *bld, int id);  /* 0x5ba700, whether bld holds an item of the type id */
+int ai_CartAtBuilding(struct AIBLD *bld, struct AIOBJ *cart);  /* 0x5ae8e0, whether the cart is at its building */
+unsigned short ai_DomizilGoodInRange(int from, int to);  /* 0x5a9f10, a Domizil entry whose rank lies in from .. to */
 #endif
