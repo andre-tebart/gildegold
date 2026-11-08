@@ -327,7 +327,7 @@ exe	0x00413d30	d3t_SetRain	d3_tools	byte	readable
 exe	0x00413f30	d3t_UpdateRain	d3_tools	byte	readable		
 exe	0x00414590	d3t_DrawRain	d3_tools	byte	readable		
 exe	0x004148f0	d3t_CreateSnow	d3_tools	byte	draft	deep	
-exe	0x00414b50	d3t_FreeSnow	d3_tools	byte	draft	deep	
+exe	0x00414b50	d3t_FreeSnow	d3_tools	byte	readable		
 exe	0x00414c60	d3t_SetSnow	d3_tools	byte	draft	deep	
 exe	0x00414ea0	d3t_UpdateSnow	d3_tools	shape	readable		
 exe	0x00415380	d3t_DrawSnow	d3_tools	byte	readable		
@@ -444,7 +444,7 @@ exe	0x00422750	mem_Dump	mem	byte	readable
 exe	0x00422910	mem_Exit	mem	byte	readable		
 exe	0x00422a20	pool_Alloc	mem	byte	readable		
 exe	0x00422b30	pool_Free	mem	byte	readable		
-exe	0x00422ba0	pool_Next	mem	shape	draft		
+exe	0x00422ba0	pool_Next	mem	shape	readable		
 exe	0x00422c30	pool_First	mem	byte	readable		
 exe	0x00422c60	pool_Destroy	mem	byte	readable		
 exe	0x00422c90	mov_WndProc	mov	byte	readable		
@@ -632,7 +632,7 @@ exe	0x0042e320	txt_FreeFile	txt	byte	readable
 exe	0x0042e360	txt_ReloadTextFile	txt	byte	readable		
 exe	0x0042e530	txt_LoadTextFile	txt	byte	readable		
 exe	0x0042e770	txt_FindKey	txt	byte	readable		
-exe	0x0042e7b0	tb_TimerProc	tb	byte	draft		
+exe	0x0042e7b0	tb_TimerProc	tb	byte	readable		
 exe	0x0042e8c0	tb_Init	tb	byte	readable		
 exe	0x0042e940	tb_Exit	tb	byte	readable		
 exe	0x0042e970	tb_OpenFunction	tb	byte	readable		
@@ -690,7 +690,7 @@ exe	0x00432530	d3path_Tangents	d3_anim	byte	readable
 exe	0x00432750	d3anim_StepObject	d3_anim	draft	draft		
 exe	0x00433b10	d3anim_FreePath	d3_anim	byte	draft	deep	
 exe	0x00433b50	d3path_Init	d3_anim	shape	readable	deep	
-exe	0x00433d70	d3anim_CreatePath	d3_anim	shape	draft		
+exe	0x00433d70	d3anim_CreatePath	d3_anim	shape	readable		
 exe	0x00433f40	d3_FindAnim	d3_anim	byte	readable		
 exe	0x00433f80	d3anim_CreateMorphAnim	d3_anim	draft	readable	deep	
 exe	0x00434a80	d3anim_GetSize	d3_anim	byte	readable		
@@ -769,7 +769,7 @@ exe	0x0043cc10	d3_AllocObjectPolys	d3_engine	byte	readable
 exe	0x0043cc90	d3_FreeSurf	d3_engine	byte	readable		
 exe	0x0043cd80	d3_FreeMesh	d3_engine	byte	readable		
 exe	0x0043ce10	d3_InitSurf	d3_engine	byte	readable		
-exe	0x0043ce60	d3_InitObject	d3_engine	shape	draft		
+exe	0x0043ce60	d3_InitObject	d3_engine	shape	readable		
 exe	0x0043cfb0	d3_AddObjectDrawData	d3_engine	byte	readable		
 exe	0x0043d0e0	d3_Unlink	d3_engine	byte	readable		
 exe	0x0043d180	d3_CloneObject	d3_engine	byte	draft	deep	
@@ -811,9 +811,9 @@ exe	0x0043f8a0	d3fl_SetDetail	d3_fl	byte	readable
 exe	0x0043f910	d3fl_ReloadMap	d3_fl	byte	readable		
 exe	0x0043f930	d3fl_SetMips	d3_fl	byte	readable		
 exe	0x0043f990	d3fl_Flush	d3_fl	byte	readable		
-exe	0x0043faa0	d3fl_Alloc	d3_fl	byte	draft	deep	
+exe	0x0043faa0	d3fl_Alloc	d3_fl	byte	readable		
 exe	0x0043fb00	d3fl_Find	d3_fl	byte	readable		
-exe	0x0043fc10	d3fl_GetTexture	d3_fl	byte	draft	deep	
+exe	0x0043fc10	d3fl_GetTexture	d3_fl	byte	readable		
 exe	0x0043fe00	d3fl_Init	d3_fl	byte	readable		
 exe	0x0043fed0	d3fl_Exit	d3_fl	byte	readable		
 exe	0x0043fee0	d3fl_TileLod	d3_fl	byte	readable		
@@ -840,7 +840,7 @@ exe	0x00442ed0	d3fl_UpdateWater	d3_fl	shape	readable
 exe	0x004430c0	d3fl_DrawWater	d3_fl	draft	readable	deep	
 exe	0x004437f0	d3fl_UpdateTiles	d3_fl	draft	readable	deep	
 exe	0x004439e0	d3fl_Draw	d3_fl	draft	draft		
-exe	0x00446180	d3fl_Prerender	d3_fl	shape	draft		
+exe	0x00446180	d3fl_Prerender	d3_fl	shape	readable		
 exe	0x004463b0	map_Pick	d3_fl	draft	readable	deep	
 exe	0x00446750	map_PickScreen	d3_fl	draft	readable	deep	
 exe	0x00446910	map_Region	d3_fl	byte	readable		
@@ -908,7 +908,7 @@ exe	0x0044df40	d3io_LoadObjectFile	d3_io_t	byte	readable
 exe	0x0044e080	d3io_LoadObject	d3_io_t	byte	readable		
 exe	0x0044e190	d3io_LoadObjectRef	d3_io_t	byte	readable		
 exe	0x0044e2c0	d3io_ReleaseObject	d3_io_t	byte	readable		
-exe	0x0044e2e0	d3_LoadObjectAnim	d3_io_t	byte	draft		
+exe	0x0044e2e0	d3_LoadObjectAnim	d3_io_t	byte	readable		
 exe	0x0044e4a0	d3_LoadAnimStream	d3_io_t	byte	readable		
 exe	0x0044e570	agi_IsPow2	d3_io_a	byte	readable		
 exe	0x0044e5a0	agi_CheckBitmap	d3_io_a	byte	readable		
@@ -3264,7 +3264,7 @@ exe	0x0051b890	ls_WriteRelations	ls	shape	readable
 exe	0x0051b910	ls_WriteStatistics	ls	draft	draft		
 exe	0x0051bdb0	ls_WriteAvatars	ls	byte	readable		
 exe	0x0051bdc0	ls_WriteEventTables	ls	shape	readable		
-exe	0x0051c2f0	ls_WriteParties	ls	draft	draft	deep	
+exe	0x0051c2f0	ls_WriteParties	ls	byte	readable		
 exe	0x0051c450	ls_WriteHistory	ls	shape	readable		
 exe	0x0051c560	ls_WriteMessageQueues	ls	shape	readable		
 exe	0x0051c870	ls_WriteEnvironment	ls	draft	readable	deep	
@@ -3288,7 +3288,7 @@ exe	0x0051fb90	unk_Unk51fb90	ls	shape	draft
 exe	0x00520000	ls_ReadParties	ls	shape	readable		
 exe	0x00520200	unk_Unk520200	ls	draft	draft		
 exe	0x00520310	unk_Unk520310	ls	draft	draft		
-exe	0x005205f0	unk_Unk5205f0	ls	draft	draft		
+exe	0x005205f0	ls_ReadEnvironment	ls	byte	readable		
 exe	0x005206b0	ls_FixupAfterLoad	ls	draft	draft		
 exe	0x00520a30	ls_SendGame	ls	shape	readable		
 exe	0x00520b80	ls_ReceiveGame	ls	byte	readable		
@@ -4003,7 +4003,7 @@ exe	0x00578370	ai_TutorialStop	sv_t	byte	readable
 exe	0x00578440	ai_TutorialFreeRuns	sv_t	byte	readable		
 exe	0x005784a0	ai_TutorialInitMainIntro	sv_t	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	sv_t	byte	readable		
-exe	0x00578e40	ai_TutorialInitChapter2	sv_t	byte	readable		
+exe	0x00578e40	ai_TutorialInitChapter2	sv_t	shape	readable		
 exe	0x00579570	ai_TutorialInitChapter3	sv_t	draft	readable		
 exe	0x0057aa80	ai_TutorialInitChapter4	sv_t	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	sv_t	byte	readable		
