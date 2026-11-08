@@ -655,6 +655,7 @@ int he_RegisterEventTypeA2();
 #include "sv.h"
 #include "f3gm.h"
 #include "cm.h"
+#include "gv.h"
 #define rt_UnloadAtPointC ((void (*)(char *, char))rt_UnloadAtPoint)  /* 0x4bfa40 (rt.c: int pl): @original he_RunTransport pushes its char player slot unextended (0x556bb9) */
 #define d2_SetObjValue2 ((void (*)(int, int))d2_SetObjValue)  /* 0x475cb0: @original he.c's two calls push only obj and the value (0x53dcd1, 0x53dd44) */
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
@@ -3634,8 +3635,6 @@ void he_AllocCourtship(int ev)
 }
 
 unsigned int ai_MarriageTest(int param_1, int param_2);
-int gv_FindReservedEntry();
-int gv_OrderSetGraveHolder();
 
 /* 0x544840, a Ghidra miss (disassembled): the run handler of the courtship event 0x41 (see he_AllocCourtship) of
    partner1 (a) and partner2 (b), of different sex. Ending it (stage -1 / -2) after it was posted clears the flag
@@ -11397,7 +11396,6 @@ void he_AllocSale(int ev)
 }
 
 #define cm_SendExSellObjectH ((int (*)(int, int, int, int, unsigned char, int))cm_SendExSellObject)  /* 0x4c4880: it returns the slot handle of its message (cm_QueueSend's result stays in eax), which the void prototype drops; @original he_RunSale keeps it (as f3gm.c's cm_SendExSellObjectH) */
-int gv_OrderOpenSize();
 void he_MessageBoxQuickjump(int a1, int a2, char *text, char fl, int a5, int a6, int a7, char *jump, char *text2);
 
 /* 0x553e90, the run handler of the sale event 2 (HESALE; its init he_AllocSale sets it due after the good's
@@ -23423,7 +23421,6 @@ void he_AllocPlunder(int ev)
 }
 
 int ai_PickPartnerRandomWalk(struct AIPER *p, unsigned int fl, int n, unsigned short *ids, float lo, float hi, unsigned short *id); /* 0x4a5d30 */
-int gv_ProtectionPrice();                 /* 0x4f24a0 */
 void he_PlunderTakePrice(int *a, AICHAR *c);   /* 0x570bf0 */
 void he_PlunderFailNews(int *a, AICHAR *c);   /* 0x570c70 */
 
@@ -23633,13 +23630,11 @@ void he_RunPlunderOffer(int ev)
 }
 
 int ai_PickPartnerRandomWalk(struct AIPER *p, unsigned int fl, int n, unsigned short *ids, float lo, float hi, unsigned short *id); /* 0x4a5d30 */
-int gv_ProtectionPrice();                 /* 0x4f24a0 */
 void he_PlunderTakePrice(int *a, AICHAR *c);   /* 0x570bf0 */
 void he_PlunderFailNews(int *a, AICHAR *c);   /* 0x570c70 */
 int he_OpenEventSlot();                 /* 0x53d6f0 */
 int sv_UsedGroupSlots();                 /* 0x5241b0 */
 int gv_ListEntry(char *r, int i, unsigned char n);                 /* 0x4ef570 */
-int gv_OrderAdjustEntry();                 /* 0x4f0c20 */
 void ai_HauntingText(unsigned short *param_1, int param_2, unsigned int param_3);                 /* 0x5a9910 */
 
 /* 0x570ea0, 1 when no running haunting event 0x88 has b's netId as its character (+8) and a's netId as its victim
@@ -24424,7 +24419,6 @@ void he_AllocPlunderOfferLease(int ev)
 void ai_ShowGraveOrderExtended(int param_1, unsigned short *param_2, int param_3, int param_4, int param_5, int param_6);                 /* 0x5a97e0 */
 void ai_ShowGraveOrderCancelled(int param_1, unsigned short *param_2, int param_3, int param_4);                 /* 0x5a9880 */
 int gv_OrderExtendGrave(int *g, char *o, int v, int b, short s, int x);                 /* 0x4f0700 */
-int gv_OrderSetGraveHolder();                 /* 0x4f0900 */
 void he_AnswerGraveLease(int ev);          /* 0x5728d0 */
 void he_ExamCancelled(int ev);          /* 0x5729c0 */
 

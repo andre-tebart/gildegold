@@ -402,7 +402,6 @@ int gv_StartShot(struct GVSHOTMSG *m, int w);       /* 0x4eee00 */
 void gv_SetEffectCallback(int id, void *cb, void *arg);  /* 0x4eeee0 */
 float gv_SalvoCharge(int a, int b, int c);  /* 0x4eef50 */
 void gv_CannonKind(int n, int *out);    /* 0x4ef000 */
-int gv_Accuse();                     /* 0x4f2e30 */
 void cm_SendMoneyDelta(int a, int b);                     /* 0x4c5f60 */
 extern unsigned char ai_OwnPlayer;      /* 0x6f1bc5 */
 void gv_BuildingCannon(char *o, unsigned *balls, unsigned *kind);  /* 0x4ef170 */
