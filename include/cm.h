@@ -907,7 +907,7 @@ int amt_SendOfficeMessage(unsigned char a, char *b, char *c, int d, unsigned cha
 unsigned * gm_CharNameRecord();  /* 0x4fb390 */
 int cm_StartEventArg(char *name, int arg);  /* 0x4e2c30 */
 int cm_WaitEvent(int a);  /* 0x4e2c70 */
-int cm_UnloadVoiceBank();  /* 0x4e3290 */
+int cm_UnloadVoiceBank(int a);  /* 0x4e3290, drops the reference of the voice bank a (0 in the replay mode) */
 int cm_WaitEventFull();  /* 0x4e2d40 */
 int cm_EndSpecialTrack();  /* 0x4e3640 */
 void amt_UpdateOffices();  /* 0x4e85d0 */
@@ -987,7 +987,6 @@ int cm_CheckBirth(G28REC *m);  /* 0x4e0e90 */
 extern struct D2INPUT *d2_FocusedInput;  /* 0x6ed9dc, the focused input (as d2.h / rt.h) */
 extern int cm_TutorialActive;  /* 0x6f2438 */
 void snd_ClearQueue(void);  /* 0x4c01b0 */
-int cm_UnloadVoiceBank();  /* 0x4e3290 */
 void d2_CentreViewWindows(int view);  /* 0x475600 */
 void d2_SetObjMax();  /* 0x475f40 */
 void d2_FocusInput();  /* 0x478320 */
