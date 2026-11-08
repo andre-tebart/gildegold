@@ -3099,3 +3099,4 @@
 2026-11-08T20:50:30 0x00520000 func unk_Unk520000 -> ls_ReadParties by:main why:the reader counterpart of ls_WriteParties 0x51c2f0: the same cm_Parties fields in the same order, called by ls_LoadGame in the same step sequence
 2026-11-08T21:04:54 0x005205f0 func unk_Unk5205f0 -> ls_ReadEnvironment by:main why:the reader of ls_WriteEnvironment's table: sv_WinterWeather, the 24 hourly clouds/storm/windX/windY, then ai_LoadWind and gv_ReadEffects; called by ls_LoadGame (0x51cce4)
 2026-11-08T21:06:16 0x006333d4 data tb_Unk6333d4 -> tb_OddTick by:main why:counts the multimedia timer's odd d3_Time ticks (d3_Time & 1); no reader known, the name a reasoned guess
+2026-11-08T21:18:55 0x0044ece0 data agi_Unk44ece0 -> agi_GeomInt by:main why:the binary twin bgi_GeomInt (0x44f650) writes the same context field at 0x04 from chunk 0x18 of the object geometry table (BGIRD.geomInt); this text handler writes that field from the next int token

@@ -33,7 +33,7 @@ typedef struct AGIPOINT {           /* 0x18 bytes */
 
 typedef struct AGICTX {             /* reader context */
     int unk00;
-    int unk04;                      /* 0x04 */
+    int geomInt;                    /* 0x04, the object geometry int (chunk 0x18 of the binary format) */
     int cur;                        /* 0x08, current material */
     int nmats;                      /* 0x0c */
     AGIMAT *mats;                   /* 0x10 */
@@ -69,7 +69,7 @@ void agi_PolyVerts(void *unused, AGICTX *c);                                    
 void agi_PolyUV(void *unused, AGICTX *c);                                       /* 0x44ebf0 */
 void agi_PolyMat(void *unused, AGICTX *c);                                      /* 0x44ec60 */
 void agi_EndObject(void *unused, AGICTX *c);                                    /* 0x44ecb0 */
-void agi_Unk44ece0(void *unused, AGICTX *c);                                    /* 0x44ece0 */
+void agi_GeomInt(void *unused, AGICTX *c);                                    /* 0x44ece0 */
 void agi_NumPoints(void *unused, AGICTX *c);                                    /* 0x44ed00 */
 void agi_NumPolys(void *unused, AGICTX *c);                                     /* 0x44ed50 */
 void agi_Points(void *f, AGICTX *c);                                            /* 0x44eda0 */

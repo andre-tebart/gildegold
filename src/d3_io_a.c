@@ -222,11 +222,12 @@ void agi_EndObject(void *unused, AGICTX *c)
     c->ptbase += c->npts;
     c->npts = 0;
 }
-/* 0x44ece0, text-format line handler: reads one int token into the context's unk04 field */
+/* 0x44ece0, text-format line handler: reads the object geometry int from the next token into the reader
+   context (the field the binary reader's chunk 0x18 fills) */
 
-void agi_Unk44ece0(void *unused, AGICTX *c)
+void agi_GeomInt(void *unused, AGICTX *c)
 {
-    c->unk04 = atoi(AGI_TOK(" "));
+    c->geomInt = atoi(AGI_TOK(" "));
 }
 /* 0x44ed00, number of points of an object; allocates the point buffer once */
 
