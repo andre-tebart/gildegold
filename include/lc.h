@@ -3,6 +3,8 @@
 #ifndef LC_H
 #define LC_H
 
+#include "am_types.h"                 /* G9DOMIZIL, the Domizil table's entry (ai_DomizilTable) */
+
 struct AIBLD;
 struct D2SURF;
 struct AIOBJ;
@@ -181,6 +183,7 @@ void ai_OpenInventoryWindow(int win, int x, int y, unsigned short charId, int te
 int ai_UpdateInventoryWindow(void);                    /* 0x5ba290, the inventory child window's frame (1 while goods are picked from it) */
 void ai_CloseChildWindow(void);            /* 0x5ba600, closes the inventory child window */
 extern int ai_ChildWindowId;            /* 0x62c418, the child window ai_OpenInventoryWindow creates and ai_CloseChildWindow removes, -1: none */
+extern G9DOMIZIL ai_DomizilTable[0x42]; /* 0x62c420, the Domizil goods: 66 entries of 0x1c (id +0, minutes +4, law +8, weight +0xc, mask +0x10, use +0x14, rank +0x18) */
 
 /* 0x6f22e4: the object clicked in the scene (cm.h declares it for the units that include cm.h) */
 extern int ai_ClickedObject;

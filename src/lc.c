@@ -571,9 +571,7 @@ extern GAPDATA full_data_62c348[];
 extern GAPDATA full_data_62c3b8[]; 
 extern GAPDATA full_data_62c3e8[];
 extern GAPDATA full_data_62c400[];
-extern GAPDATA ai_DomizilTable[];
 extern int ai_DomizilCount;
-#define ai_DomizilEntries ((G9DOMIZIL *)ai_DomizilTable)  /* 0x62c420, the 0x42 entries of the Domizil table */
 extern char ai_Chars[768][0x21c];
 extern unsigned char ai_OwnPlayer;
 extern int d2_ClickedId;
@@ -668,7 +666,6 @@ extern int ai_SabotageCallback();
 extern int ai_EspionageAmountCB();
 extern int ai_BeatingCallback();
 extern char * ai_PickedObject;
-extern GAPDATA ai_DomizilTable[];
 extern char * cm_FieldObject;
 extern struct D2OBJ *d2_Objs;
 
@@ -15837,7 +15834,7 @@ unsigned short ai_RandomDomizilGoodNotIn(int nObjs, unsigned short *objs)
     if (n == 0)
         return 0;
     while (n != 0) {
-        entry = &ai_DomizilEntries[i];
+        entry = &ai_DomizilTable[i];
         for (k = 0; k < nObjs; k++) {
             if (objs[k] == entry->id)
                 break;
@@ -15851,16 +15848,6 @@ unsigned short ai_RandomDomizilGoodNotIn(int nObjs, unsigned short *objs)
     }
     return 0;
 }
-#pragma pack(push, 1)
-typedef struct G9DOMIZILRANGE {         /* 0x1c bytes, an entry of the Domizil table 0x62c420 as this range lookup
-                                           reads it (G9DOMIZIL, am_types.h: the int id at +0 and the padding at +0x18) */
-    unsigned short id;                  /* 0x00, the good id (the low word of G9DOMIZIL.id) */
-    char pad02[0x16];
-    unsigned short rank;                /* 0x18, the entry's rank word, tested against the range */
-    char pad1a[2];
-} G9DOMIZILRANGE;
-#pragma pack(pop)
-
 /* 0x5a9f10, a Domizil entry in a range (191 B): util_Random (the count) picks an index into the 0x42 entries of
    the Domizil table 0x62c420; each try returns the entry's +0 id when its +0x18 rank word lies in from .. to, else
    the index advances modulo the count; 0 when no entry does */
@@ -15869,21 +15856,22 @@ unsigned short ai_DomizilGoodInRange(int from, int to)
 {
     int n;
     int i;
-    G9DOMIZILRANGE *entry;
+    G9DOMIZIL *entry;
 
     i = util_Random((unsigned short)ai_DomizilCount) & 0xffff;
     n = ai_DomizilCount;
     if (n == 0)
         return 0;
     while (n != 0) {
-        entry = (G9DOMIZILRANGE *)((char *)&ai_DomizilTable + i * 0x1c);
+        entry = &ai_DomizilTable[i];
         if ((int)entry->rank >= from && (int)entry->rank <= to)
-            return entry->id;
+            return (unsigned short)entry->id;
         i = (i + 1) % ai_DomizilCount;
         n--;
     }
     return 0;
 }
+
 /* 0x5a9f80, asks the player for a bonus amount in the "misc\Messagebox" form with a percent slider (287 B):
    sv_CheckGoodAmount gates the box for the player (good 0x140); the window's text 0x1a34, the player's goods
    value (clamped at 0x12c0) / 32 as the slider, then the frame pump sv_RunFrame (sv_FrameMask): a click 0
@@ -22778,9 +22766,9 @@ int ai_FindUsableGood(int id)
 {
     int i;
 
-    for (i = 0; ai_DomizilEntries[i].id != 0; i++)
-        if (ai_DomizilEntries[i].id == id)
-            return (int)&ai_DomizilEntries[i];
+    for (i = 0; ai_DomizilTable[i].id != 0; i++)
+        if (ai_DomizilTable[i].id == id)
+            return (int)&ai_DomizilTable[i];
     return 0;
 }
 /* 0x5ba660, the Domizil table lookup with the index out (80 B): like 0x5ba620, and the index of the entry is
@@ -22790,11 +22778,11 @@ int ai_FindUsableGoodIndex(int id, int *index)
 {
     int i;
 
-    for (i = 0; ai_DomizilEntries[i].id != 0; i++)
-        if (ai_DomizilEntries[i].id == id) {
+    for (i = 0; ai_DomizilTable[i].id != 0; i++)
+        if (ai_DomizilTable[i].id == id) {
             if (index != 0)
                 *index = i;
-            return (int)&ai_DomizilEntries[i];
+            return (int)&ai_DomizilTable[i];
         }
     return 0;
 }
@@ -34312,6 +34300,74 @@ char ai_NewsKeyFriedhof12[28] = "_NACHRICHTEN_FRIEDHOF_12";  /* 0x62c364, the so
 char ai_NewsKeyFriedhof13[28] = "_NACHRICHTEN_FRIEDHOF_13";  /* 0x62c380, the sound of the graveyard work news (event 0x5fb) */
 char ai_NewsKeyFriedhof00[28] = "_NACHRICHTEN_FRIEDHOF_00";  /* 0x62c39c, the sound of the graveyard news ai_GraveyardMessage (event 0x5fa) */
 int ai_ChildWindowId = -1;  /* 0x62c418, the child window ai_OpenInventoryWindow creates (d2_CreateChildWindow over its character list), -1: none; ai_CloseChildWindow removes it, the transport window and ai_InventoryPanel compare it with the clicked id */
+G9DOMIZIL ai_DomizilTable[0x42] = {  /* 0x62c420, the 0x42 entries of 0x1c: id +0, minutes +4, law +8, weight +0xc, mask +0x10, use +0x14, rank +0x18; ai_FindUsableGood / ai_FindUsableGoodIndex walk it to the id 0, lc_UpdateGoodsReserves counts the minutes down and ai_UseGood calls the use callback and prints the rank text */
+    { 0x155, 4320, -1, 2.0f, 0x00000000, 0, 0x101a, { 1, 0 } },
+    { 0x157, 4320, -1, 3.0f, 0x00000000, 0, 0x101e, { 2, 0 } },
+    { 0x159, 4320, -1, 4.0f, 0x00000000, 0, 0x1022, { 3, 0 } },
+    { 0x15a, 4320, -1, 4.0f, 0x00000000, 0, 0x1024, { 3, 0 } },
+    { 0x15b, 5760, -1, 3.0f, 0x00000000, 0, 0x1026, { 1, 0 } },
+    { 0x15c, 4320, -1, 2.5f, 0x00000000, (void *)ai_UseGoodTributeClaim, 0x1028, { 1, 0 } },
+    { 0x15d, 7200, -1, 2.5f, 0x00000000, 0, 0x102a, { 2, 0 } },
+    { 0x15f, 5760, -1, 2.5f, 0x00000000, 0, 0x102e, { 3, 0 } },
+    { 0x161, 0, -1, 2.0f, 0x00000001, (void *)ai_UseGoodHalveWorkerValue, 0x1032, { 1, 0 } },
+    { 0x162, 0, -1, 1.0f, 0x00000002, (void *)ai_TrialStep1, 0x1034, { 1, 0 } },
+    { 0x163, 0, -1, 1.0f, 0x00000004, (void *)ai_TrialStep3, 0x1036, { 2, 0 } },
+    { 0x164, 0, -1, 1.0f, 0x00000008, (void *)ai_TrialStep4, 0x1038, { 2, 0 } },
+    { 0x165, 4320, -1, 5.0f, 0x00000000, 0, 0x103a, { 3, 0 } },
+    { 0x166, 1440, -1, 1.0f, 0x00000000, 0, 0x103c, { 3, 0 } },
+    { 0x167, 0, -1, 2.0f, 0x00000010, (void *)ai_UseGoodRaiseRelation, 0x103e, { 1, 0 } },
+    { 0x169, 0, 3, 6.0f, 0x00000020, (void *)ai_QuarrelCallback, 0x1042, { 2, 0 } },
+    { 0x168, 0, -1, 2.5f, 0x00000040, (void *)ai_UseGoodTrialStep, 0x1040, { 1, 0 } },
+    { 0x16a, 0, 3, 3.5f, 0x00000080, (void *)ai_UseGoodLowerOfficialRelations, 0x1044, { 2, 0 } },
+    { 0x16b, 4320, -1, 3.0f, 0x00000000, 0, 0x1046, { 3, 0 } },
+    { 0x16c, 0, -1, 3.8f, 0x00000100, (void *)ai_UseGoodTwoTrialSteps, 0x1048, { 3, 0 } },
+    { 0x16f, 1440, 17, 1.5f, 0x00000000, 0, 0x104e, { 2, 0 } },
+    { 0x16d, 0, 17, 2.0f, 0x00040000, (void *)ai_UseGoodSowDiscord, 0x104a, { 1, 0 } },
+    { 0x170, 0, 17, 1.5f, 0x00000200, (void *)ai_UseGoodCharmOtherSex, 0x1050, { 2, 0 } },
+    { 0x171, 1440, 17, 1.5f, 0x00000000, 0, 0x1052, { 3, 0 } },
+    { 0x173, 0, 18, 1.0f, 0x00000400, (void *)ai_UseGoodAddMoney, 0x1056, { 1, 0 } },
+    { 0x175, 0, 18, 4.0f, 0x00000800, (void *)ai_UseGoodHeal, 0x105a, { 2, 0 } },
+    { 0x177, 180, 24, 1.2f, 0x00001000, (void *)ai_UseGoodInfectOwner, 0x105e, { 3, 0 } },
+    { 0x178, 180, 24, 1.9f, 0x00002000, (void *)ai_UseGoodSendHome, 0x1060, { 3, 0 } },
+    { 0x17b, 1440, 18, 1.5f, 0x00004000, (void *)ai_UseGoodWeakenSkills, 0x1066, { 2, 0 } },
+    { 0x17c, 1400, 18, 1.5f, 0x00000000, (void *)ai_AlwaysTrue, 0x1068, { 2, 0 } },
+    { 0x17d, 1440, 18, 1.5f, 0x00010000, (void *)ai_UseGoodWeakenSkills2, 0x106a, { 3, 0 } },
+    { 0x17e, 0, 18, 1.5f, 0x00020000, (void *)ai_UseGoodCureAilment, 0x106c, { 3, 0 } },
+    { 0x229, 0, -1, 1.5f, 0x00080000, (void *)ai_UseGoodCharmPartner, 0x106e, { 1, 0 } },
+    { 0x22a, 2880, -1, 1.5f, 0x00000000, 0, 0x1070, { 1, 0 } },
+    { 0x22c, 2880, -1, 1.5f, 0x00000000, (void *)ai_UseGoodWeakenSkills3, 0x1074, { 2, 0 } },
+    { 0x22e, 1440, -1, 1.5f, 0x00000000, 0, 0x1078, { 3, 0 } },
+    { 0x22b, 0, -1, 1.5f, 0x00100000, (void *)ai_UseGoodFrameChar, 0x1072, { 2, 0 } },
+    { 0x22d, 0, -1, 1.5f, 0x00200000, (void *)ai_UseGoodFrameChar2, 0x1076, { 3, 0 } },
+    { 0x297, 1440, -1, 1.5f, 0x00000000, (void *)ai_UseGoodSkillBonus, 0x107a, { 1, 0 } },
+    { 0x298, 0, -1, 1.5f, 0x00400000, (void *)ai_UseGoodStaffBonus, 0x107c, { 1, 0 } },
+    { 0x299, 90, -1, 1.5f, 0x00000000, 0, 0x107e, { 2, 0 } },
+    { 0x29a, 1440, -1, 1.5f, 0x00000000, (void *)ai_UseGoodDistrust, 0x1080, { 2, 0 } },
+    { 0x29b, 4320, -1, 1.5f, 0x00000000, 0, 0x1082, { 3, 0 } },
+    { 0x29c, 1440, 28, 1.5f, 0x00000000, (void *)ai_UseGoodPettyLoss, 0x1084, { 3, 0 } },
+    { 0x2b2, 0, -1, 1.5f, 0x01000000, (void *)ai_UseGoodHeatBuilding, 0x1086, { 1, 0 } },
+    { 0x2b3, 2880, -1, 1.5f, 0x00000000, 0, 0x1088, { 1, 0 } },
+    { 0x2b4, 7200, -1, 1.5f, 0x00000000, 0, 0x108a, { 2, 0 } },
+    { 0x2b5, 8640, -1, 1.5f, 0x00000000, 0, 0x108c, { 2, 0 } },
+    { 0x2b6, 4320, -1, 1.5f, 0x00000000, 0, 0x108e, { 3, 0 } },
+    { 0x2b7, 4320, -1, 1.5f, 0x00000000, (void *)ai_UseEventGood, 0x1090, { 3, 0 } },
+    { 0x2b8, 0, -1, 1.5f, 0x00800000, (void *)ai_UseGoodDrainActionPoints, 0x1092, { 4, 0 } },
+    { 0x2b9, 1440, -1, 1.5f, 0x00000000, 0, 0x1094, { 4, 0 } },
+    { 0x2ba, 1440, 18, 1.5f, 0x00000000, 0, 0x1096, { 4, 0 } },
+    { 0x2bb, 0, -1, 1.5f, 0x04000000, (void *)ai_UseGoodDrainSkill, 0x1098, { 4, 0 } },
+    { 0x2bc, 0, -1, 1.5f, 0x08000000, (void *)ai_UseGoodHarmBuilding, 0x109a, { 4, 0 } },
+    { 0x2bd, 0, -1, 1.5f, 0x10000000, (void *)ai_UseGoodSpoilStock, 0x109c, { 5, 0 } },
+    { 0x2be, 1440, 17, 1.5f, 0x00000000, 0, 0x109e, { 5, 0 } },
+    { 0x2bf, 0, 17, 1.5f, 0x20000000, (void *)ai_UseGoodCharmOfficials, 0x10a0, { 5, 0 } },
+    { 0x2c0, 2880, 17, 1.5f, 0x00000000, 0, 0x10a2, { 5, 0 } },
+    { 0x2c1, 1440, 18, 1.5f, 0x00000000, (void *)ai_UsePayGood, 0x10a4, { 5, 0 } },
+    { 0x2c2, 0, -1, 1.5f, 0x40000000, (void *)ai_UseGoodDrainActionPoints8, 0x10a6, { 6, 0 } },
+    { 0x2c3, 0, -1, 1.5f, 0x80000000, (void *)ai_UseGoodHoldRound, 0x10a8, { 6, 0 } },
+    { 0x2c4, 2880, -1, 1.5f, 0x00000000, 0, 0x10aa, { 6, 0 } },
+    { 0x2c5, 2880, -1, 1.5f, 0x00000000, 0, 0x10ac, { 6, 0 } },
+    { 0x2c6, 1440, 18, 1.5f, 0x00000000, 0, 0x10ae, { 6, 0 } },
+    { 0x0, 0, -1, 0.0f, 0x00000000, 0, 0x0, { 0, 0 } },
+};
 char ai_UseObjForm[13] = "panel\\useobj";  /* 0x62d010, the form of the use-object panel (d2_OpenForm) */
 AIAMOUNTTAB ai_AmountTabs[8] = {       /* 0x62d148, one table: 8 rows of 0x14 {id 0..7, count, control, two handlers}; ai_ClearAmountTabs clears count and control, the ids run 0..7 from 0x62d148 and row 7 ends where "%G" starts */
     { 0, 0, -1, ai_FillFamilyTab, ai_ShowFamilyTab },
