@@ -1631,7 +1631,7 @@ exe	0x00498470	ai_ExecuteBuyBuilding	am	shape	readable	deep
 exe	0x004984d0	ai_DecideBuildResidence	am	draft	readable	deep	
 exe	0x00498a80	ai_ExecuteBuildResidence	am	shape	readable		
 exe	0x00498b80	ai_DecideUpgradeResidence	am	byte	readable		
-exe	0x00498c70	ai_DecideBuildBusiness	am	byte	readable		
+exe	0x00498c70	ai_DecideBuildBusiness	am	shape	readable		byte+readable -> shape+readable at 79dd397d: the byte match was on a wrong constant: the mask was written (unsigned)&txt_Keys + 0x181c0, a relocation that dcp compared as equal to the original's 0xffffff; the correct AI_CHF_BUILT leaves a 4-instruction register tie (add eax,edx / add edx,eax) [waits for: decompanion's by-value comparison of relocated operands (improvement-reports/symbol-arithmetic-constants.md), then re-match]
 exe	0x00499290	ai_ExecuteBuildBusiness	am	byte	readable		
 exe	0x00499400	ai_DecideUpgradeBusiness	am	draft	readable	deep	
 exe	0x00499520	ai_DecideVisitMedicus	am	byte	readable		
