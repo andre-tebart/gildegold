@@ -1382,7 +1382,7 @@ int cm_SendFieldValues(void);                     /* 0x4c49e0 */
 int cm_SendLongMessage(char *msg);                     /* 0x4c4b70 */
 void txt_Format(char *out, int id0, ...);  /* 0x5176d0 */
 int he_ShowNews(int pid, int fl, char *text, int unused, int ev, char *text2);                     /* 0x53dda0 */
-void cm_SendSetField(int a, int b, int c, int d, int e);                     /* 0x4c4a60 */
+int cm_SendSetField(int a, int b, int c, int d, int e);                     /* 0x4c4a60 */
 void gm_PartnerStep(ORDCHAR *c);                 /* 0x4fccc0 */
 
 /* sends the message 0x72 (the character c died) in the GMMSG m */

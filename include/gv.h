@@ -526,7 +526,7 @@ int gv_RankCulpritsAll(int *ids, int *open, int *total, unsigned short t);  /* 0
 extern const int gv_RankWorth[];             /* 0x5ee0f8, experience thresholds per level */
 extern unsigned char ai_NumPlayers;     /* 0x62489c, the number of players (as ai.h / cm.h / mission.c) */
 int gm_GetWorth(unsigned short id);    /* 0x50a640 */
-void cm_SendSetField(int a, int b, int c, int d, int e);                     /* 0x4c4a60 */
+int cm_SendSetField(int a, int b, int c, int d, int e);                     /* 0x4c4a60 */
 int cm_SendLongMessage(char *msg);                     /* 0x4c4b70 */
 void cm_BeginFieldBlock(char *o, int id);                     /* 0x4c3ba0 */
 int cm_AddFieldDelta(unsigned char size, unsigned char n, unsigned short field, void *v);                     /* 0x4c3c00 */

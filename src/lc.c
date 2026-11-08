@@ -160,30 +160,22 @@ struct D3SM;
 #include "d3_light.h"
 #include "data_views.h"
 
-extern void cm_SendFloatDelta(int id, int field, float delta);
 /* full rebuild: the symbols whose original addresses the code above spells literally */
 extern const volatile unsigned __int64 gypsyFilter;  /* 0x5eed68, menu.c */
 #define gypsyFilterWords (*(int (*)[2])&gypsyFilter)  /* 0x5eed68, the filter's two 32-bit words */
 extern GAPDATA full_data_6f40e0[];
-extern char * ai_BTypes;
 extern int d2_LastWindow;
 extern struct D2OBJ *d2_Objs;
 extern GAPDATA full_data_62b038[];
-extern char * ai_FallbackBuilding;
-extern char * ai_PlayerBuilding;
-extern char * ai_Goods;
 extern float gm_DayStartHours[];
 extern float gm_DayEndHours[];
 extern int d2_PointerObj;
-extern char * cm_FieldObject;
 extern struct D2PIC *d2_Pics;
 #include "d2_types.h"
 extern int sv_ClickedContact;  /* 0x6f22fc, sv.h */
 extern int sv_ClickedItem;  /* 0x76045c, sv.h */
 extern D2VIEW d2_Views[];
 extern D2WIN d2_Wins[];
-extern unsigned char ai_OwnPlayer;
-extern unsigned char ai_NumPlayers;  /* 0x62489c, the number of players (ai.h) */
 
 
 extern int d2_LastWindow;
@@ -216,15 +208,11 @@ extern int sv_PanelFlag;
 extern char * sv_PanelObject;
 extern unsigned short * sv_PanelRecord;
 extern int ai_Unk75f280[576];
-extern char ai_Chars[768][0x21c];
 extern int ai_GameFlags;
-extern unsigned char ai_GameState;
-extern struct AIBLD *ai_MarketBuilding;
 extern float gm_DayStartHours[];
 extern float gm_DayEndHours[];
 extern int sv_PanelBuildBtn;
 extern char * sv_SelectedObject;
-extern int d2_ClickedId;
 extern short d2_MouseX;
 extern short d2_MouseY;
 extern short d2_PointerLook;
@@ -236,12 +224,9 @@ extern int di_MinY;
 extern int d3t_BoxCornerIdx;  /* 0x5f3418 (main.c gap block) */
 extern int init_TerrainDivide;  /* 0x6f1c2c (f3init.h) */
 extern int sv_HoverBuilding;  /* 0x6f22f4 (sv.c) */
-extern unsigned char snd_AmbientOn;     /* 0x6f0b60, 1: ambient sounds on */
 extern void sv_UpdateClock(void);
-extern unsigned short * sv_PanelShown;
 extern int gm_TreeNodeCount;
 
-extern int sv_PopRequest;
 extern int sv_ResearchClass;
 
 
@@ -375,8 +360,6 @@ extern unsigned char kb_Last;
 extern int d2_LastWindow;
 extern struct D2OBJ *d2_Objs;
 extern int ai_CameraStep;
-extern char ai_PlayerSlots[4][0x2f4];
-extern volatile unsigned long d3_Time;
 extern D2VIEW d2_Views[];
 extern D2WIN d2_Wins[];
 extern int sv_PopRequest;
@@ -433,7 +416,6 @@ extern unsigned char ai_OwnPlayer;
 extern struct D2WIN *d2_LastWindowPtr;
 extern struct D2OBJ *d2_Objs;
 
-extern char ch_EmptyName[1];
 extern int d2_LastWindow;
 extern struct D2WIN *d2_LastWindowPtr;
 extern struct D2OBJ *d2_Objs;
@@ -462,7 +444,6 @@ extern struct D2OBJ *d2_Objs;
 
 
 #include "ai_types.h"
-extern AISTORE gm_Offers[];            /* 0x7e4b20 */
 extern int sv_PopRequest;
 extern int d2_PointerObj;
 extern int d2_ClickedId;
@@ -481,14 +462,11 @@ extern int ai_GameFlags;
 
 extern int sv_PanelFlag;
 extern char * ai_PlayerBuilding;
-extern const struct D3VECTOR d3_Origin;
-extern int evt_LastId;
 extern int sv_BorderViewX;
 extern int sv_BorderViewY;
 extern float sv_ViewPos[4];  /* 0x75fb80, sv.c: the stored camera position */
 extern float sv_ViewRot[4];  /* 0x75fb90, its rotation */
 extern int sv_SelectedChar;
-extern char ch_StepSample[];
 extern int d2_CutsceneActive;
 extern unsigned sv_SceneEventTime;  /* 0x6237c8, sv.h */
 extern struct AIOBJ *sv_LastRoom;  /* 0x6f2314, the room whose handler ai_EnterBuilding ran last (cleared on entering a building) */
@@ -729,7 +707,6 @@ extern unsigned short * sv_PanelShown;
 
 
 
-extern char ai_AmbushSpots[8][32];
 extern char ai_Chars[768][0x21c];
 extern char * ai_FallbackBuilding;
 extern int ai_MapSize;
@@ -742,7 +719,6 @@ extern struct D2WIN *d2_LastWindowPtr;
 extern struct D2OBJ *d2_Objs;
 extern D2WIN d2_Wins[];
 extern GAPDATA full_rdata_5eed8c[];
-extern const unsigned int ai_BuildingTypeMasks[6];  /* 0x5eed70 (ai.h, not includable here): three 64-bit building class masks */
 extern GAPDATA full_rdata_5eed90[];
 extern char * rt_MapSurface;
 extern struct D2SURF *d2_BackgroundTile;
@@ -762,7 +738,6 @@ extern int d2_RightHeldObj;
 extern D2VIEW d2_Views[];
 extern GAPDATA full_data_6f26c0[];
 #include "am_types.h"
-extern G7GRP gm_BuildingItemGroups[];           /* 0x61a348 */
 extern GAPDATA gm_SpecialItemGroups[];
 extern GAPDATA full_rdata_5eedd3[];
 extern GAPDATA full_data_62c284[];
@@ -792,7 +767,6 @@ extern int d2_ClickedId;
 
 extern GAPDATA full_data_60ea68[];
 extern unsigned char kb_Last;
-extern int sv_FrameMask;
 extern int sv_PopRequest;
 
 extern char ch_EmptyName[1];
@@ -890,7 +864,6 @@ extern GAPDATA full_data_62ccfc[];
 extern int ai_SabotageCallback();
 extern int ai_EspionageAmountCB();
 extern int ai_BeatingCallback();
-extern char ai_Crimes[];
 extern char * ai_PickedObject;
 extern GAPDATA ai_DomizilTable[];
 extern GAPDATA ai_EquipRows[];
@@ -974,7 +947,6 @@ extern GAPDATA full_data_62d2d4[];
 extern int sv_PopRequest;
 extern char * ai_BTypes;
 extern char ai_Chars[768][0x21c];
-extern unsigned short * ai_PlayerChar;
 extern signed char ai_Relations[768][768];
 #include "cm_types.h"
 extern G17MSG cm_SendRing[];
@@ -999,8 +971,6 @@ extern GAPDATA full_data_62d424[];
 extern unsigned gm_OwnNameHeads[136];
 #include "gv_types.h"
 #include "ai_bld.h"                /* AIBLD, AIBTYPE */
-extern ORDSTATROUND ord_StatisticsHistory[16]; /* 0x91ab00, the statistics of the last 16 rounds */
-extern float ai_RatingBase;              /* 0x6f1b9c, the running rating: it moves towards ai_Rating (ai.h, 0x6f1ba0) by ord_RatingRate */
 extern float ai_Unk5eb81c;
 extern float ai_Unk5eb988;
 extern unsigned char d2_PenSize;
@@ -1118,7 +1088,6 @@ struct AMTREC;  /* file-scope tag for the prototypes below */
 
 struct AITIME;  /* f3gm.h typedef; file-scope tag for the gm_AddTime prototype */
 
-unsigned short * gm_QueryNext(void); /* 0x4ffcc0, moved above its first call */
 
 #define U_I(a) (*(int *)(a))
 #define U_W(a) (*(unsigned short *)(a))
@@ -1277,7 +1246,6 @@ typedef struct G8USEVIEW {              /* a local view of am.h's G8USE (am.h ca
 } G8USEVIEW;
 #pragma pack(pop)
 
-extern AITIME ai_Time;                   /* 0x770ae0, the game clock */
 
 #include "ls.h"
 #include "f3init.h"
@@ -1305,6 +1273,19 @@ extern AITIME ai_Time;                   /* 0x770ae0, the game clock */
 #include "hmt_types.h"
 #include "msx.h"
 #include "rd.h"
+#include "am.h"
+#include "amt.h"
+#include "gv.h"
+#include "hst.h"
+#include "hmt.h"
+#include "mission.h"
+#include "ai.h"
+#include "anm.h"
+#include "chc.h"
+#include "d3_int_io.h"
+#include "d3_tools.h"
+#include "f3snd.h"
+#include "vfs.h"
 #define sv_SelectPanelObjectK ((int (*)())sv_SelectPanelObject)  /* 0x52c4c0?: @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) */
 #define ai_GfxDetailI (*(int *)&ai_GfxDetail)  /* 0x6f35c4 (menu.c: unsigned char): @original ai_ShowVgObjects reads the detail as a dword and takes its low byte (0x58f9d7 mov ecx, dword ptr [0x6f35c4] / and edx, 0xff); the byte object compiles to mov cl, byte ptr */
 #define d2_CreatePicObjS ((int (*)(short, short, int))d2_CreatePicObj)  /* 0x46cd80 (d2.h: int x, y): @original the town map update adds the window position to the mark pixel in 16 bits (0x5a8052 mov dx, word ptr [eax + 4] / add dx, di / push edx), as d2.c's callers */

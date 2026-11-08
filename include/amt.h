@@ -137,7 +137,7 @@ extern AITIME ai_Time;                   /* 0x770ae0, the game clock */
 void err_Message(char *text);                     /* 0x4222b0 */
 int cm_SendLongMessage(char *msg);                     /* 0x4c4b70 */
 char * he_FindEvent(int n, ...);                     /* 0x53e400 */
-void cm_SendSetField(int a, int b, int c, int d, int e);                     /* 0x4c4a60 */
+int cm_SendSetField(int a, int b, int c, int d, int e);                     /* 0x4c4a60 */
 void cm_SendMoneyDelta(int a, int b);                     /* 0x4c5f60 */
 int sv_MessageBox(int text, unsigned flags); /* 0x521150, sv.c */
 extern int amt_Flip;                    /* 0x60f118, 2 at the start */

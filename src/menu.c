@@ -2354,7 +2354,7 @@ void ai_PauseGame(void)
 /* ai_MessageFilterTexts: view of txt_Ptrs (build/mk_txt_views.py) */
 int he_IsMessageKindFiltered(int kind); /* 0x575640, he.c: nonzero when the kind is filtered */
 void he_SetMessageKindFiltered(int kind, int filtered); /* 0x575710, he.c: sets / clears the kind's bit */
-void cm_SendSetField(int a, int b, int c, int d, int e); /* 0x4c4a60, cm.c: message 0x19 (the field block) */
+int cm_SendSetField(int a, int b, int c, int d, int e); /* 0x4c4a60, cm.c: message 0x19 (the field block) */
 void d2_SetCaption(int obj, char *text);           /* 0x473540, d2.h: sets the caption and its width */
 
 /* 0x5d7f10, the message filter window "menu\messagefilter" 0x62dbc8 (390 B), opened from the message

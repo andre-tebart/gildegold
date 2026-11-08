@@ -219,7 +219,7 @@ void cm_SendRemoveGoods(int a, short b);                                        
 int cm_SendFieldDeltas(void);                                                         /* 0x4c49a0 */
 int cm_SendFieldValues(void);                                                          /* 0x4c49e0, returns the cm slot of the send */
 void ai_SendNeedBlock(void);                                                         /* 0x4c4a20 */
-void cm_SendSetField(int a, int b, int c, int d, int e);                            /* 0x4c4a60 */
+int cm_SendSetField(int a, int b, int c, int d, int e);                            /* 0x4c4a60 */
 void cm_SendFloatDelta(int id, int field, float delta);                                          /* 0x4c4ac0 */
 int cm_SendRelations(int a, int b, int c, int d);                                   /* 0x4c4b00 */
 int cm_SendLongMessage(char *msg);                                                    /* 0x4c4b70, AIMSG (am.h, 0xf8 bytes) */

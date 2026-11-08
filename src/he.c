@@ -3357,7 +3357,7 @@ char d3_GetHeightAt(struct D3SM *h, struct D3VECTOR *pos, int *px, int *pz, floa
 struct CHACTION * ch_AddAction(struct CHARACTER *ch, unsigned int type, ...);
 int ch_QueueAnim();
 void sv_MoveToGroup(unsigned char *o, short *it, int c, char *g);
-void cm_SendSetField(int a, int b, int c, int d, int e);
+int cm_SendSetField(int a, int b, int c, int d, int e);
 int cm_SendChrGotoBuilding();
 
 /* 0x541280, the idle behaviour of the event's characters (ids[], 8 of them) in the default scene: each one whose scene
@@ -10236,7 +10236,7 @@ void he_StartWalk(int ev)
 void cm_SendChrDelete(int a);
 void cm_SendChrStop(int a);
 int sv_IsAtDoor();
-void cm_SendSetField(int a, int b, int c, int d, int e);
+int cm_SendSetField(int a, int b, int c, int d, int e);
 
 /* 0x551340, steps one slot of the walk event 0x5512c0: a free slot gives 0; the character (gm_FindChar) walks to
    its building (gm_FindById): while it is not at the door yet (sv_IsAtDoor) and the hour is before 22 the result is
@@ -23770,7 +23770,7 @@ int gv_ProtectionPrice();                 /* 0x4f24a0 */
 int gm_GetWorth(unsigned short id);                 /* 0x50a640 */
 int gm_ConvertMoney(int a, unsigned char k); /* 0x5085b0 */
 void cm_SendMoveGoodsUnchecked(int a, int b, unsigned char c, int d); /* 0x4c4830 */
-void cm_SendSetField(int a, int b, int c, int d, int e); /* 0x4c4a60 */
+int cm_SendSetField(int a, int b, int c, int d, int e); /* 0x4c4a60 */
 void he_PlunderTakePrice(int *a, AICHAR *c);   /* 0x570bf0 */
 void he_PlunderFailNews(int *a, AICHAR *c);   /* 0x570c70 */
 
@@ -23984,7 +23984,7 @@ int gv_ProtectionPrice();                 /* 0x4f24a0 */
 int gm_GetWorth(unsigned short id);                 /* 0x50a640 */
 int gm_ConvertMoney(int a, unsigned char k); /* 0x5085b0 */
 void cm_SendMoveGoodsUnchecked(int a, int b, unsigned char c, int d); /* 0x4c4830 */
-void cm_SendSetField(int a, int b, int c, int d, int e); /* 0x4c4a60 */
+int cm_SendSetField(int a, int b, int c, int d, int e); /* 0x4c4a60 */
 void he_PlunderTakePrice(int *a, AICHAR *c);   /* 0x570bf0 */
 void he_PlunderFailNews(int *a, AICHAR *c);   /* 0x570c70 */
 int he_OpenEventSlot();                 /* 0x53d6f0 */

@@ -1355,7 +1355,7 @@ void ai_SendNeedBlock(void)
 }
 /* 0x4c4a60, message 0x19 */
 
-void cm_SendSetField(int a, int b, int c, int d, int e)
+int cm_SendSetField(int a, int b, int c, int d, int e)
 {
     G17MSG m;
 
@@ -1365,7 +1365,7 @@ void cm_SendSetField(int a, int b, int c, int d, int e)
     m.type = 0x19;
     m.setField.set = d;
     m.setField.clear = e;
-    cm_QueueSend(&m);
+    return cm_QueueSend(&m);
 }
 /* 0x4c4ac0, sends message 0x1a: adds delta to the float field at the offset field of the character with the netId id */
 

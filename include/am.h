@@ -221,7 +221,7 @@ int ai_EvalApplyForOffice(float *a, float *b, int i, AIPER *p, int f, AIARG *o1,
 int ai_ChooseSubAction(int kind, int id, int c, AIARG *s1, AIARG *s2);                /* 0x495a50 */
 int ai_EvalGuiltWeights(float *a, float *b, int i, AIPER *p, struct AIDEC *d);                /* 0x4a4c10 */
 int ai_PickPartnerChain(AIPER *p, int a, int *flags, float b, float f, unsigned short *id); /* 0x4a58d0 */
-void cm_SendSetField(int a, int b, int c, int d, int e);                   /* 0x4c4a60 */
+int cm_SendSetField(int a, int b, int c, int d, int e);                   /* 0x4c4a60 */
 void cm_SendMoneyDelta(int a, int b);                                               /* 0x4c5f60 */
 int amt_GetOfficeApplicants(int k, int n, char **out);                                   /* 0x4e76b0 */
 int ord_DispatchOrder(int id, char *c, int *m);                                     /* 0x4f81c0 */
