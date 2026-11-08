@@ -815,7 +815,7 @@ extern int cm_FightForm;  /* 0x6f0d64 */
 extern int cm_TextBox;  /* 0x60d368 */
 void cm_RunFight(struct CMFIGHTREC *a);  /* 0x4d63e0, runs a fight record */
 unsigned int cut_GetRandSeed();  /* 0x4e52c0 */
-void cut_RandSeed();  /* 0x4e52a0 */
+void cut_RandSeed(unsigned int seed);  /* 0x4e52a0 */
 void cm_RunSceneParty(char *m, int ctx);  /* 0x4e3830 */
 char d3_SetLightSet(unsigned int set, float t, float scale, char calc);  /* 0x449de0 */
 extern int cm_SceneDuration;  /* 0x60d364 */
