@@ -908,7 +908,7 @@ exe	0x0044df40	d3io_LoadObjectFile	d3_io_t	byte	readable
 exe	0x0044e080	d3io_LoadObject	d3_io_t	byte	readable		
 exe	0x0044e190	d3io_LoadObjectRef	d3_io_t	byte	readable		
 exe	0x0044e2c0	d3io_ReleaseObject	d3_io_t	byte	readable		
-exe	0x0044e2e0	d3_LoadObjectAnim	d3_io_t	byte	draft	deep	
+exe	0x0044e2e0	d3_LoadObjectAnim	d3_io_t	byte	draft		
 exe	0x0044e4a0	d3_LoadAnimStream	d3_io_t	byte	readable		
 exe	0x0044e570	agi_IsPow2	d3_io_a	byte	readable		
 exe	0x0044e5a0	agi_CheckBitmap	d3_io_a	byte	readable		
@@ -975,7 +975,7 @@ exe	0x004506f0	d3_BGFCanWeld	d3_io_b	byte	readable
 exe	0x004507a0	d3_OpenFastChunk	d3_io_b	byte	readable		
 exe	0x00450860	d3_FindBGF	d3_io_fl	draft	draft		
 exe	0x00450dc0	d3_CalcNormals	d3_io_fl	byte	readable		
-exe	0x00450ec0	d3_CalcBounds	d3_io_fl	byte	draft	deep	
+exe	0x00450ec0	d3_CalcBounds	d3_io_fl	byte	draft		
 exe	0x00451180	d3_FLChunkSize	d3_io_fl	byte	readable		
 exe	0x00451250	d3_AddFLChunk	d3_io_fl	draft	draft		
 exe	0x00451e80	d3_LightResetVertexColors	d3_light	byte	readable		
@@ -1048,7 +1048,7 @@ exe	0x00458c10	d3_LocalToWorld	d3_pose	byte	readable
 exe	0x00458ce0	d3_MatToWorld	d3_pose	byte	readable		
 exe	0x00458da0	d3_WorldMatrix	d3_pose	byte	readable		
 exe	0x00458e70	d3_EnvMapCoords	d3_vtx	shape	draft		
-exe	0x004591a0	d3_AnimBlendWeights	d3_vtx	byte	draft	deep	
+exe	0x004591a0	d3_AnimBlendWeights	d3_vtx	byte	draft		
 exe	0x00459300	d3_TransformVerts	d3_vtx	draft	draft		
 exe	0x004598d0	d3_TransformNormals	d3_vtx	byte	readable		
 exe	0x00459980	d3_FrameNormals	d3_vtx	byte	readable		
@@ -1869,13 +1869,13 @@ exe	0x004aec00	ai_TokenRandomOfficePerson	hst	draft	readable	deep
 exe	0x004aef10	ai_TokenRichestInhabitant	hst	draft	readable	deep	
 exe	0x004af090	ai_TokenBestInn	hst	byte	readable		
 exe	0x004af1b0	ai_TokenMoney	hst	draft	readable	deep	
-exe	0x004af2c0	ai_TokenCityTreasury	hst	draft	draft		
+exe	0x004af2c0	ai_TokenCityTreasury	hst	draft	readable	deep	
 exe	0x004af3f0	ai_TokenRandomChurchProfession	hst	draft	draft		draft+readable -> draft+draft at f274727: Q6: the description came from a foreign declaration copy or a file name only (decompanion 399f0a8); the definition has none
 exe	0x004af6c0	ai_TokenRandomRich	hst	draft	readable	deep	
 exe	0x004af8d0	ai_TokenRandomNpcInhabitant	hst	shape	readable		
 exe	0x004afa20	ai_TokenRandomMerchant	hst	draft	readable	deep	
 exe	0x004afc30	ai_TokenRandomPlayer	hst	draft	readable	deep	
-exe	0x004afdd0	ai_CommandFest	hst	draft	draft		
+exe	0x004afdd0	ai_CommandFest	hst	draft	readable	deep	
 exe	0x004afe80	ai_CommandSiegeStart	hst	byte	readable		
 exe	0x004aff30	ai_CommandUprising	hst	shape	readable		
 exe	0x004affc0	ai_CommandFire	hst	byte	draft	deep	
@@ -2101,15 +2101,15 @@ exe	0x004be8e0	rt_RemoveControls	rt	byte	readable
 exe	0x004be930	rt_InitControls	rt	byte	readable		
 exe	0x004be940	rt_Unk4be940	rt	draft	draft		
 exe	0x004bf080	rt_Unk4bf080	rt	draft	draft		
-exe	0x004bf360	rt_SetMarkPic	rt	byte	draft	deep	
+exe	0x004bf360	rt_SetMarkPic	rt	byte	draft		
 exe	0x004bf3b0	rt_UpdateMarkPics	rt	byte	readable		
 exe	0x004bf3e0	rt_FindMark	rt	byte	readable		
 exe	0x004bf410	rt_RemoveMark	rt	byte	readable		
 exe	0x004bf440	rt_HighlightRoute	rt	draft	draft		
 exe	0x004bf5b0	rt_EditCartRoute	rt	draft	draft		
-exe	0x004bfa40	rt_UnloadAtPoint	rt	byte	draft	deep	
+exe	0x004bfa40	rt_UnloadAtPoint	rt	byte	draft		
 exe	0x004bfc60	rt_LoadAtPoint	rt	draft	draft		
-exe	0x004bff40	rt_SaveRoutes	rt	draft	draft		
+exe	0x004bff40	rt_SaveRoutes	rt	byte	readable		
 exe	0x004c0040	rt_LoadRoutes	rt	draft	draft		
 exe	0x004c01b0	snd_ClearQueue	f3snd	byte	readable		
 exe	0x004c0210	snd_QueueTail	f3snd	byte	readable		
@@ -3184,7 +3184,7 @@ exe	0x0050d490	init_FreeScenes	f3init	byte	readable
 exe	0x0050d550	init_AllocSceneBuilding	f3init	draft	readable	deep	
 exe	0x0050d6a0	init_InheritOwner	f3init	shape	readable		
 exe	0x0050d6d0	init_LoadTownScene	f3init	byte	readable		
-exe	0x0050d730	init_AdjustSceneLights	f3init	draft	draft		
+exe	0x0050d730	init_AdjustSceneLights	f3init	byte	readable		
 exe	0x0050d7f0	init_LoadObjectScene	f3init	draft	readable	deep	
 exe	0x0050dba0	init_BuildingKindName	f3init	draft	readable	deep	
 exe	0x0050dc30	init_LoadBuildingScene	f3init	draft	readable	deep	
@@ -3248,7 +3248,7 @@ exe	0x00519010	ls_LanguageOf	ls	byte	readable
 exe	0x005190a0	ls_GetLanguage	ls	byte	readable		
 exe	0x005190b0	ls_SaveGame	ls	draft	readable	deep	
 exe	0x005194c0	ls_WriteSaveHeader	ls	byte	readable		
-exe	0x00519a00	ls_RefsToIds	ls	draft	draft		
+exe	0x00519a00	ls_RefsToIds	ls	shape	readable		
 exe	0x00519aa0	ls_IdsToRefs	ls	byte	draft	deep	
 exe	0x00519b50	ls_RelinkScene	ls	shape	draft		
 exe	0x00519bf0	ls_WriteObjects	ls	shape	readable		
@@ -3264,14 +3264,14 @@ exe	0x0051b890	ls_WriteRelations	ls	shape	readable
 exe	0x0051b910	ls_WriteStatistics	ls	draft	draft		
 exe	0x0051bdb0	ls_WriteAvatars	ls	byte	readable		
 exe	0x0051bdc0	ls_WriteEventTables	ls	shape	readable		
-exe	0x0051c2f0	ls_WriteParties	ls	draft	draft		
+exe	0x0051c2f0	ls_WriteParties	ls	draft	draft	deep	
 exe	0x0051c450	ls_WriteHistory	ls	shape	readable		
 exe	0x0051c560	ls_WriteMessageQueues	ls	shape	readable		
 exe	0x0051c870	ls_WriteEnvironment	ls	draft	readable	deep	
 exe	0x0051c920	ls_Read	ls	byte	readable		
 exe	0x0051c950	ls_LoadGame	ls	draft	draft		
 exe	0x0051cee0	ls_ReadSaveHeader	ls	draft	readable	deep	
-exe	0x0051d2d0	ls_LoadScene	ls	draft	draft		
+exe	0x0051d2d0	ls_LoadScene	ls	draft	readable	deep	
 exe	0x0051d3d0	ls_ReadObjects	ls	byte	readable		
 exe	0x0051d4f0	ls_HookBuildingCB	ls	byte	draft	deep	
 exe	0x0051d530	ls_ClearObjectFlag	ls	byte	readable		
@@ -3285,7 +3285,7 @@ exe	0x0051f650	ls_ReadRelations	ls	shape	readable
 exe	0x0051f720	ls_ReadStatistics	ls	byte	readable		
 exe	0x0051fb80	ls_ReadAvatars	ls	byte	readable		
 exe	0x0051fb90	unk_Unk51fb90	ls	shape	draft		
-exe	0x00520000	unk_Unk520000	ls	draft	draft		
+exe	0x00520000	ls_ReadParties	ls	shape	readable		
 exe	0x00520200	unk_Unk520200	ls	draft	draft		
 exe	0x00520310	unk_Unk520310	ls	draft	draft		
 exe	0x005205f0	unk_Unk5205f0	ls	draft	draft		
