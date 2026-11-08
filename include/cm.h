@@ -951,7 +951,7 @@ int amt_FindOffice();  /* 0x4e6030 */
 void cm_DuelOutcome(G28REC *m);  /* 0x4debe0 */
 int cm_ResetCutInfos();  /* 0x4e36a0 */
 char d3_SetFogSet(unsigned int a, unsigned int b, float t);  /* 0x44a170 */
-int cm_StartScript();  /* 0x4e2bf0 */
+int cm_StartScript(char *name);  /* 0x4e2bf0, loads the script name (evt_Load), runs it and returns its id */
 int cm_PlayVoice(int id, int bank, char *text, int var);  /* 0x4e32b0, plays the voice sample of speaker id in bank (text, var pick the sample); 0 in the replay mode */
 int sb_IsPlaying();  /* 0x426f20 */
 int cm_StopScript(int a);  /* 0x4e2d90 */
@@ -990,7 +990,6 @@ void d2_CentreViewWindows(int view);  /* 0x475600 */
 void d2_SetObjMax();  /* 0x475f40 */
 void d2_FocusInput();  /* 0x478320 */
 int d2_GetObjValue();  /* 0x475980 */
-int cm_StartScript();  /* 0x4e2bf0 */
 void cm_RunBirth(G28REC *m);  /* 0x4e0f70 */
 int cm_DeathSceneCheck(G28REC *m);  /* 0x4e1220 */
 float gm_CharacterHealth();  /* 0x4fc820 */
