@@ -124,11 +124,9 @@ struct D3SM;
 #include "evt.h"
 #include "data_views.h"
 #define GAPDATA __declspec(align(1)) unsigned char
-#define d3t_CreateEmitterK ((int (*)())d3t_CreateEmitter)  /* 0x415ad0 (d3_tools.c): @original he_CreateSmokeEffect / he_CreatePointsEffect call it without a prototype, the floats as dword bit patterns (draft: 19 instructions this way, 29 through the prototype) */
-#define ai_PlagueMessageK ((int (*)())ai_PlagueMessage)  /* 0x5a9240: @original the call passes more arguments than the draft definition names, compiled without a prototype (as before the definition's spelling reached this unit) */
-#define ai_DomizilMessageK ((int (*)())ai_DomizilMessage)  /* 0x5a9c30: @original the call passes more arguments than the draft definition names, compiled without a prototype (as before the definition's spelling reached this unit) */
+#define ai_PlagueMessageK ((void (*)(AICHAR *, AIBLD *))ai_PlagueMessage)  /* 0x5a9240 (lc.c: G8CHARREC *c): @original the caller here pushes two arguments (0x54a4ba..0x54a4bb, add esp,8): the character (read as the first) and the building (unused) */
+#define ai_DomizilMessageK ((void (*)(AICHAR *, AICHAR *, void *, int))ai_DomizilMessage)  /* 0x5a9c30 (lc.c: G8CHARREC *to, G8CHARREC *c, G8OBJ *obj, int level; lc.c-local types the header cannot spell): @original the caller here pushes four arguments (0x56d492..0x56d495, add esp,0x10) */
 #define cm_SendExSetHEI ((int (*)(int, char *))cm_SendExSetHE)  /* 0x4c4c60 (cm.h: unsigned char k): @original the callers here push the key as an int and read the return (byte-matched he_EndEventNow / he_AllocQuarrel / he_AllocInsultNews / he_RunMeeting) */
-#define gm_AddTimeK ((void (*)())gm_AddTime)  /* 0x4fe140 (f3gm.c): @original he_AllocBuyBuilding pushes three arguments (the clock, 0 hours, the minutes), compiled without a prototype; the seconds are read from the caller's stack */
 
 
 extern int ai_TransportWindow();
@@ -7654,8 +7652,6 @@ void he_RunDarkCorner(int ev)
     e->exSlot = cm_SendExSetHEI(-1, ev);
 }
 
-int ai_FindUsableGood(int param_1);
-D3PARTSYS *d3t_CreateEmitter(D3OBJECT *obj, char *tex, char flag, unsigned long color, D3VECTOR *pos, int count, int unused, float size, float a, float b, float c, float d);
 int mem_IsValid();
 void par_Delete();
 
@@ -7679,8 +7675,7 @@ void he_StartEffectEvent(int ev)
     he_FreeEvent((int *)ev);
 }
 /* 0x54fc00, the smoke emitter of the effect event: creates the effect 0x177 ("Rauch", the colour 0x64ffa0, a
-   30 / 2 / 7.5 / 0.4 / 1 emitter) on the scene record (AIBLD.object) of the building o and returns its handle;
-   the five floats go as dword bit patterns through d3t_CreateEmitterK */
+   30 / 2 / 7.5 / 0.4 / 1 emitter) on the scene record (AIBLD.object) of the building o and returns its handle */
 
 int he_CreateSmokeEffect(int o)
 {
@@ -7695,11 +7690,11 @@ int he_CreateSmokeEffect(int o)
     v[0] = 0.0f;
     v[1] = 200.0f;
     v[2] = 0.0f;
-    return d3t_CreateEmitterK(bld->object, "Rauch", 1, *color, v, 0x12c, 1, 0x41f00000, 0x40000000, 0x40f00000, 0x3ecccccd, 0x3f800000);
+    return d3t_CreateEmitter(bld->object, "Rauch", 1, *color, v, 0x12c, 1, 30.0f, 2.0f, 7.5f, 0.4f, 1.0f);
 }
 /* 0x54fc70, the points emitter of the effect event (like he_CreateSmokeEffect, the other colour 0x321e50 and
    size): creates the effect 0x178 ("punkte_nm_2", a 50 / 1 / 2 / 0.5 / 0.5 emitter) on the scene record
-   (AIBLD.object) of the building o and returns its handle; the five floats go as dword bit patterns */
+   (AIBLD.object) of the building o and returns its handle */
 
 int he_CreatePointsEffect(int o)
 {
@@ -7714,7 +7709,7 @@ int he_CreatePointsEffect(int o)
     v[0] = 0.0f;
     v[1] = 50.0f;
     v[2] = 0.0f;
-    return d3t_CreateEmitterK(bld->object, "punkte_nm_2", 1, *color, v, 0x12c, 1, 0x42480000, 0x3f800000, 0x40000000, 0x3f000000, 0x3f000000);
+    return d3t_CreateEmitter(bld->object, "punkte_nm_2", 1, *color, v, 0x12c, 1, 50.0f, 1.0f, 2.0f, 0.5f, 0.5f);
 }
 /* 0x54fce0, the run handler of the effect event 0x76: stage 0 creates the emitter on the building's scene object
    (he_CreateSmokeEffect for the Domizil good 0x177, he_CreatePointsEffect for 0x178, in scene 0) and goes on to 1
@@ -14795,7 +14790,7 @@ void he_AllocBuyBuilding(int ev)
 
     b = (AIBLD *)gm_FindBuildingById(e->bldId);
     e->end = ai_Time;
-    gm_AddTimeK(&e->end, 0, (unsigned short)((int (*)(int, int))util_Random)(10, 0) + 10);
+    gm_AddTime(&e->end, 0, (unsigned short)util_Random(10) + 10, 0);
     cm_SendSetField(b->id, 0x5a, 2, 0x200, 0);
 }
 /* 0x55bfd0, the run handler of the building purchase event 0x21 (HEBUYBLD: the buyer offers price for the building).
