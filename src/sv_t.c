@@ -70,8 +70,6 @@ struct D3SKY;
 #define GAPDATA __declspec(align(1)) unsigned char
 
 /* full rebuild: the symbols whose original addresses the code above spells literally */
-extern const int sv_PhaseMinutes[24];
-extern int sv_PanelFlag;
 extern GAPDATA full_data_5f1890[];
 extern GAPDATA full_data_624204[];
 extern GAPDATA full_data_629304[];
@@ -238,7 +236,6 @@ extern GAPDATA full_data_62a1fc[];
 extern GAPDATA full_data_62a210[];
 extern GAPDATA full_data_62a224[];
 extern GAPDATA full_data_62a238[];
-extern int sv_FrameDepth;
 
 
 extern GAPDATA full_data_624ee0[];
@@ -266,15 +263,10 @@ extern GAPDATA full_data_62a340[];
 extern GAPDATA full_data_62a350[];
 extern GAPDATA full_data_6fa060[];
 extern int sv_PanelFlag;
-extern int sv_ViewRectBottom;
-extern int sv_ViewRectLeft;
-extern int sv_ViewRectRight;
-extern int sv_ViewRectTop;
 extern GAPDATA full_data_602568[];
 
 
 extern GAPDATA full_data_602568[];
-extern int sv_PopRequest;
 extern GAPDATA full_data_5f36e0[];
 extern struct D2OBJ *d2_Objs;
 
@@ -291,7 +283,6 @@ extern GAPDATA full_data_62a38c[];
 extern GAPDATA full_data_62a3ac[];
 extern GAPDATA full_data_62a3cc[];
 
-extern int d2_PointerObj;
 extern int d2_LastWindow;
 extern struct D2OBJ *d2_Objs;
 
@@ -566,11 +557,9 @@ extern int gm_AllowAll;
 extern volatile unsigned long d3_Time;
 extern char ai_Chars[768][0x21c];
 extern int d2_PointerObj;
-extern int ai_DragWindow;
 extern struct D2OBJ *d2_Objs;
 extern int d2_RightHeldObj;
 extern int di_Absolute;
-extern int sv_HoverItem;  /* 0x6f22f0 (sv.c) */
 extern int gm_PlayerRecords[688];
 extern unsigned short ai_PlayerId;
 extern int d2_LastWindow;
@@ -596,7 +585,6 @@ extern GAPDATA full_data_6f5f48[];
 extern unsigned char kb_Last;
 extern GAPDATA full_data_62aa14[];
 extern GAPDATA full_data_62aa20[];
-extern unsigned short * sv_PanelShown;
 
 extern int d2_LastWindow;
 
@@ -621,7 +609,6 @@ extern char ai_Chars[768][0x21c];
 
 #define U_I(a) (*(int *)(a))
 
-void sv_CameraFollow();
 
 void ai_TutorialHideText2();
 void ai_TutorialProgressSlider();
@@ -631,14 +618,9 @@ int ai_TutorialStepForm();
 int ai_TutorialStepClicked();
 void ai_TutorialShowText2();
 void sv_CameraFollow();
-void sv_SetStatusText(char *s);
-void sv_SelectPanelObject(unsigned char *o, int b, char *c);
-void sv_BookForward();
-void sv_BookBack();
 void ai_TutorialShowText();
 void ai_TutorialHideText();
 struct SBSAMPLE;
-extern int sv_FrameBase; /* 0x6f22a4 */
 
 /* the state record is at 0x6fa060 (the 0x40 byte of main.c's 0x6fa020 block); 0x5eec60 is a const pointer to it
    in the original. A load through that pointer (not the fixed address) is what the unit's functions compile to,
@@ -726,6 +708,7 @@ const float ai_CannonZoomRange = 1450.0f;  /* 0x5eecac, the distance the zoom mo
 #include "dd_vesa.h"
 #include "menu.h"
 #include "d2.h"
+#include "sv.h"
 #define d2_PlaceMainWindowF ((void (*)(int, int))d2_PlaceMainWindow)  /* 0x475850 (d2.c: int view): @original the callers pass the placement flags too, which the original's tail jump leaves on the stack for d2_PlaceWindowScaled */
 #define d2_SetObjValue2 ((void (*)(int, int))d2_SetObjValue)  /* 0x475cb0 (d2.h: five parameters): @original ai_AlchemistFundWindow pushes only the object and the value (0x57df47 push eax / push ebp); the unit's four-argument calls use menu.h's d2_SetObjValue4 */
 #define sv_SelectPanelObjectK ((int (*)())sv_SelectPanelObject)  /* 0x52c4c0?: @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) */
