@@ -340,11 +340,11 @@ void ai_UpdateCharacters(void);  /* 0x47e560 */
 void ai_RunMasterEvaluation(struct AICHAR *c);  /* 0x47e990 */
 void ai_SetFirstMission(int owner, int type);  /* 0x4b3bd0 */
 int ai_CountMissionEvent();  /* 0x4b44e0 */
-int cm_PartyById();  /* 0x4e50a0 */
+int cm_PartyById(int id);  /* 0x4e50a0, the used party with the id: its record, 0 without */
 extern G28REC cm_Parties[96];  /* 0x925520, the scene party records (cm.c) */
 int cm_AllocParty();  /* 0x4e5150 */
 int cm_AddPartyMember();  /* 0x4e51b0 */
-int cm_RemovePartyMember();  /* 0x4e5210 */
+int cm_RemovePartyMember(int id, int who);  /* 0x4e5210 */
 int gv_AddEvidence();  /* 0x4f3640 */
 int gv_FreeCrimeSlot();  /* 0x4f36b0 */
 int gv_EvidenceSlot();  /* 0x4f3780 */
@@ -1108,7 +1108,7 @@ extern int cm_KindCheck[];  /* 0x92c510, the answer callbacks of the kind table 
 int cm_FirstPendingParty();  /* 0x4e4f40 */
 char ai_RunPendingParties(int pl);  /* 0x4e4f80, runs the pending parties of the player pl */
 void ai_DebugDumpPerson(char *c);  /* 0x4e5bf0, the debug dump of a person */
-int cm_FindPartyOfKind();  /* 0x4e5050 */
+int cm_FindPartyOfKind(int a, int b);  /* 0x4e5050, the used party of the kind a with the thing b: its record, 0 without */
 int cm_FreePartySlot();  /* 0x4e5120 */
 void cm_InitScenes(void);  /* 0x4e5770, clears the party records and registers the 12 scene kinds */
 
