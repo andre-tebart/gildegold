@@ -98,8 +98,6 @@ extern int gm_PlayerRecords[688];
 extern const float gv_SaleShares[];
 extern const float gv_GraveWear[];
 
-#define UNK_FR ((unsigned (*)())ls_Read)
-
 #define gv_AvatarsT (*(GVAVATAR (*)[0x20])&unk_Avatars)  /* 0x60f310, unk_Avatars (char[0x20][0xf4]) as the GVAVATAR records they are */
 
 /* 0x4ed170, picks a free avatar record (byte +0xf2 = 0) starting at a random one of the 32 (cyclic), marks it used (+0xf2 = 1) after setting the 14 floats at +0x30, +0x3c .. to the floats before them (+0x2c ..)
@@ -2640,41 +2638,41 @@ int gv_ReadGraveyard(void *f, unsigned char *o)
     g = gv_AllocGraveyard(o);
     if (g == 0)
         return 0;
-    if (UNK_FR(&g->id, 4, 1, f) == 0)
+    if (ls_Read(&g->id, 4, 1, (int)f) == 0)
         return 0;
-    if (UNK_FR(&g->kind, 4, 1, f) == 0)
+    if (ls_Read(&g->kind, 4, 1, (int)f) == 0)
         return 0;
-    if (UNK_FR(&g->open[0], 1, 1, f) == 0)
+    if (ls_Read(&g->open[0], 1, 1, (int)f) == 0)
         return 0;
-    if (UNK_FR(&g->open[1], 1, 1, f) == 0)
+    if (ls_Read(&g->open[1], 1, 1, (int)f) == 0)
         return 0;
-    if (UNK_FR(&g->open[2], 1, 1, f) == 0)
+    if (ls_Read(&g->open[2], 1, 1, (int)f) == 0)
         return 0;
-    if (UNK_FR(&g->open[3], 1, 1, f) == 0)
+    if (ls_Read(&g->open[3], 1, 1, (int)f) == 0)
         return 0;
     z = g->graves;
     i = 0;
     if (gv_GraveTotals[g->kind] > 0) {
         do {
-            if (UNK_FR(&z->id, 4, 1, f) == 0)
+            if (ls_Read(&z->id, 4, 1, (int)f) == 0)
                 return 0;
-            if (UNK_FR(z->first, 0x10, 1, f) == 0)
+            if (ls_Read(z->first, 0x10, 1, (int)f) == 0)
                 return 0;
-            if (UNK_FR(z->family, 0x10, 1, f) == 0)
+            if (ls_Read(z->family, 0x10, 1, (int)f) == 0)
                 return 0;
-            if (UNK_FR(z->traits, 5, 1, f) == 0)
+            if (ls_Read(z->traits, 5, 1, (int)f) == 0)
                 return 0;
-            if (UNK_FR(&z->v2c, 4, 1, f) == 0)
+            if (ls_Read(&z->v2c, 4, 1, (int)f) == 0)
                 return 0;
-            if (UNK_FR(&z->v30, 4, 1, f) == 0)
+            if (ls_Read(&z->v30, 4, 1, (int)f) == 0)
                 return 0;
-            if (UNK_FR(&z->nameId, 4, 1, f) == 0)
+            if (ls_Read(&z->nameId, 4, 1, (int)f) == 0)
                 return 0;
-            if (UNK_FR(&z->sex, 4, 1, f) == 0)
+            if (ls_Read(&z->sex, 4, 1, (int)f) == 0)
                 return 0;
-            if (UNK_FR(&z->icon, 4, 1, f) == 0)
+            if (ls_Read(&z->icon, 4, 1, (int)f) == 0)
                 return 0;
-            if (UNK_FR(&z->year, 4, 1, f) == 0)
+            if (ls_Read(&z->year, 4, 1, (int)f) == 0)
                 return 0;
             i++;
             z++;
@@ -2684,17 +2682,17 @@ int gv_ReadGraveyard(void *f, unsigned char *o)
     e = g->entries;
     if (gv_EntryTotals[g->kind] > 0) {
         do {
-            if (UNK_FR(&e->size, 4, 1, f) == 0)
+            if (ls_Read(&e->size, 4, 1, (int)f) == 0)
                 return 0;
-            if (UNK_FR(&e->id, 4, 1, f) == 0)
+            if (ls_Read(&e->id, 4, 1, (int)f) == 0)
                 return 0;
-            if (UNK_FR(&e->w08, 2, 1, f) == 0)
+            if (ls_Read(&e->w08, 2, 1, (int)f) == 0)
                 return 0;
-            if (UNK_FR(&e->until, 2, 1, f) == 0)
+            if (ls_Read(&e->until, 2, 1, (int)f) == 0)
                 return 0;
-            if (UNK_FR(&e->b0c, 1, 1, f) == 0)
+            if (ls_Read(&e->b0c, 1, 1, (int)f) == 0)
                 return 0;
-            if (UNK_FR(&idx, 4, 1, f) == 0)
+            if (ls_Read(&idx, 4, 1, (int)f) == 0)
                 return 0;
             e->grave = g->graves + idx;
             e++;
