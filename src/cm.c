@@ -198,7 +198,6 @@ typedef struct CMBOMB {             /* 8 bytes, one of the 32 bombs of cm_Bombs 
 #define ai_FallbackBuildingT (*(struct AIBLD **)&ai_FallbackBuilding)  /* 0x6f230c, ai_FallbackBuilding (sv.c: char *) as the AIBLD it points to */
 #define ai_PlayerBuildingT (*(struct AIBLD **)&ai_PlayerBuilding)  /* 0x6f2308, ai_PlayerBuilding (sv.c: char *) as the AIBLD it points to */
 #define d3sm_GetVertexI ((int (*)())d3sm_GetVertex)  /* 0x45f100 (d3_sm.c: char, D3SM *, int, int, D3VECTOR *): @original this unit's callers read an int result (byte-matched ord_RandomCellPoint (ord.c): no 0f be c0 after the call) */
-#define ch_CreateK ((struct CHARACTER *(*)())ch_Create)  /* 0x403390 (ch.h: name, pos): @original cm_CreateChar (byte) passes its own arguments on untouched (jmp ch_Create): a call without a prototype */
 #define amt_GetOfficeI ((int (*)(int, struct AMTREC *))amt_GetOffice)  /* 0x4e6f30 (amt.h: unsigned char i): @original this unit pushes its int index raw (0x4dab50 / 0x4aad30: push ebp / push edx, no zero-extension) */
 #define ai_DecideTortureP ((int (*)(AIPLAN *))ai_DecideTorture)  /* 0x4941b0 (am.h: void): @original cm_TrialAskAI pushes the plan (0x4de3a6 push esi, add esp, 4) */
 #define ai_DecideTortureInstrumentP ((int (*)(AIPLAN *))ai_DecideTortureInstrument)  /* 0x4941d0 (am.h: void): @original cm_TrialAskAI pushes the plan (0x4de3c6 push esi, add esp, 4) */
@@ -15119,7 +15118,7 @@ void cm_RunAuction(G28REC *m)
     o = d3_FindObject(0, 0x100, 0, "dummy_AUKTIONATOR");
     if (o != 0)
         d3_PointToWorld(o, &o->pos, (D3VECTOR *)pos);
-    auct = (CHARACTER *)cm_CreateChar(model, pos);
+    auct = cm_CreateChar(model, (D3VECTOR *)pos);
     if (auct != 0) {
         ch_PlaceAtObject(auct, o);
         strcpy(auct->name, "Auktionator");
@@ -15144,7 +15143,7 @@ void cm_RunAuction(G28REC *m)
                 strcpy(buf, "handwerker3_MANN");
         }
         if (w != 0) {
-            persons[i] = (CHARACTER *)cm_CreateChar(buf, pos);
+            persons[i] = cm_CreateChar(buf, (D3VECTOR *)pos);
             ch_PlaceAtObject(persons[i], o);
         } else
             persons[i] = 0;
@@ -15704,13 +15703,13 @@ int cm_SceneTick(void)
     cm_SceneTimedOut = cm_SceneTicks > cm_SceneDeadline;
     cm_SceneTicks++;
 }
-/* 0x4e3230, 0x403390 (arguments, if any, are passed on untouched) unless the replay mode is on */
+/* 0x4e3230, 0x403390 (its arguments are passed on untouched) unless the replay mode is on */
 
-int cm_CreateChar(void)
+CHARACTER *cm_CreateChar(char *name, D3VECTOR *pos)
 {
     if (cm_SkipEvents != 0)
         return 0;
-    return ch_CreateK();
+    return ch_Create(name, pos);
 }
 /* 0x4e3250, the scene helpers 0x4e3250 .. 0x4e3640 pass their arguments on to the sound / object calls unless the replay mode (0x6f0d8c) is on */
 

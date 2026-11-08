@@ -1040,7 +1040,7 @@ void d3sm_Destroy();  /* 0x45ef60 */
 void d3if_Reset();  /* 0x4473f0 */
 int cm_SceneTick();  /* 0x4e3210 */
 struct CHARACTER * ch_Create();  /* 0x403390 */
-int cm_CreateChar();  /* 0x4e3230 */
+struct CHARACTER *cm_CreateChar(char *name, struct D3VECTOR *pos);  /* 0x4e3230 */
 void cm_RunBankruptcy(G28REC *m);  /* 0x4e1700 */
 int cm_CheckAuction(G28REC *m);  /* 0x4e19a0 */
 
