@@ -3567,68 +3567,72 @@ void main_EndRound(void)
     amt_TellOpenOffices(ai_Chars[MAIN_PLAYER]);
     snd_FadeMusic(1.0f, 2000);
 }
-/* 0x539620, a player (the character slot p, kind 6 = prisoner / dead, health 0) is replaced by a new figure: first it checks that some slot of kind 6 with health is left (else ai_GameOver); every he_Events record (0x14c bytes) of that character whose kind is in the first list is closed (he_FreeEvent), in the second its +0x70 is set to -1; the kind byte becomes 5, a name is copied from the name table 0x143ac5c (flag9 clear, random 0xbf) or 0x143af70 (random 0x70), the running number and the eight ids are reset, and the events of the table 0x925520 that concern the character in the states 3 .. 9 are dropped */
+/* 0x539620, replaces a dead / imprisoned player (character slot p, kind 6 and health 0) by a new figure: with no
+   slot of kind 6 and health left it sets ai_GameOver; the character's events (he_Events as AIJOB records) whose
+   kind is in la are closed (he_FreeEvent), and a second walk (terminated by lb, comparing la) sets their stage
+   to -1; the kind becomes 5, the name is taken from txt_MaleFirstNames (flag9 clear, random 0xbf) or
+   txt_FemaleFirstNames (random 0x70), seq takes the old ai_NextCharNumber (then raised) and the eight ids are
+   reset; finally every party record (cm_Parties, G28REC) the character is a member of, with a kind 3 .. 9, is
+   cleared (cm_ClearParty). */
 
 void main_ReplaceFigure(unsigned p)
 {
     int la[15] = { 0x5d, 0x11, 0x30, 0x35, 0x42, 0x60, 0x4b, 0x5b, 0x5c, 0x5a, 0x46, 0x2e, 0x2d, 0x41, 0 };
     int lb[3] = { 0x45, 0x47, 0 };
     MAINCHARNEW *ch;
-    char *s;
-    unsigned char *e;
+    AIJOB *e;
+    G28REC *pt;
     int *pi;
-    unsigned u;
     int i, j;
 
     i = 0;
     while (ai_CharsT[i].kind != 6 || ai_CharsT[i].health == 0) {
         i++;
         if (i >= 768) {
-            U_I((unsigned)&ai_GameOver) = 1;
+            ai_GameOver = 1;
             return;
         }
     }
     if (i == 0xffff) {
-        U_I((unsigned)&ai_GameOver) = 1;
+        ai_GameOver = 1;
         return;
     } else if (ai_CharsT[p].kind == 6 && ai_CharsT[p].health == 0) {
         ch = (MAINCHARNEW *)&ai_CharsT[p];
-        e = (unsigned char *)(unsigned)&he_Events;
+        e = (AIJOB *)he_Events;
         do {
-            if (*e != 0 && *(unsigned short *)(e + 8) == p) {
+            if (e->kind != 0 && e->chr == p) {
                 for (pi = la; *pi != 0; pi++) {
-                    if (*pi == *e) {
-                        he_FreeEvent(e);
+                    if (*pi == (unsigned char)e->kind) {
+                        he_FreeEvent((int *)e);
                         break;
                     }
                 }
                 for (j = 0; lb[j] != 0; j++) {
-                    if (la[j] == *e) {
-                        *(int *)(e + 0x70) = -1;
+                    if (la[j] == (unsigned char)e->kind) {
+                        e->stage = -1;
                         break;
                     }
                 }
             }
-            e += 0x14c;
-        } while ((int)e < (int)((unsigned)he_Events + 0x53000));
+            e++;
+        } while ((int)e < (int)((AIJOB *)he_Events + 0x400));
         ch->kind = 5;
         if (ch->flag9 == 0) {
             strcpy(ch->name, txt_MaleFirstNames[(unsigned short)util_RandomInt(0xbf)]);
         } else {
             strcpy(ch->name, txt_FemaleFirstNames[(unsigned short)util_RandomInt(0x70)]);
         }
-        ch->seq = (short)U_I((unsigned)&ai_NextCharNumber);
+        ch->seq = (short)ai_NextCharNumber;
         for (i = 0; i < 8; i++)
             ch->clear[i] = -1;
-        U_I((unsigned)&ai_NextCharNumber) = U_I((unsigned)&ai_NextCharNumber) + 1;
-        s = (char *)((unsigned)&cm_Parties + 0x8);
-        do {
-            if (s[0x28] != 0) {
-                if (cm_IsPartyMember(ch->netId, s - 8) != 0 && (*s == 3 || *s == 5 || *s == 4 || *s == 6 || *s == 9 || *s == 7))
-                    cm_ClearParty(*(int *)(s - 8));
+        ai_NextCharNumber = ai_NextCharNumber + 1;
+        /* the original walks the records by their kind byte, 8 bytes into each */
+        for (pt = cm_Parties; (int)&pt->kind < (int)((unsigned)cm_Parties + 0x6788); pt++) {
+            if (pt->used != 0) {
+                if (cm_IsPartyMember(ch->netId, (char *)pt) != 0 && (pt->kind == 3 || pt->kind == 5 || pt->kind == 4 || pt->kind == 6 || pt->kind == 9 || pt->kind == 7))
+                    cm_ClearParty(pt->id);
             }
-            s += 0x114;
-        } while ((int)s < (int)((unsigned)cm_Parties + 0x6788));
+        }
     }
 }
 /* 0x539870, the end of the round report of the player (0x6f25b8): the bookkeeping of the character record (0x506430: income / expense fields +0x14 .. +0x54, texts 0x2005 .. 0x204e of 0x515960)
