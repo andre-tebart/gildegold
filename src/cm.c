@@ -135,6 +135,7 @@ extern GAPDATA full_rdata_5ebb40[];
 #define d2_ObjsC (*(char **)&d2_Objs)  /* 0xf8f080, d2_Objs (d2.c: D2OBJ *) read bytewise, as this unit does (+ obj * 0x2ec) */
 #define d2_SetObjValue2 ((void (*)(int, int))d2_SetObjValue)  /* 0x475cb0 (d2.h: five parameters): @original cm_UpdatePortraits pushes only the object and the value (0x4cfab2 push 1 / push ecx; 0x4cfacd push 0 / push edx, add esp, 8) */
 #define d2_SetObjValue4 ((void (*)(int, int, int, int))d2_SetObjValue)  /* 0x475cb0 (d2.h: five parameters): @original cm_OpenCharInfoWin (0x4ced5e), cm_FightFrame (0x4d698e), cm_AuctionAskPlayer (0x4e25c5), cm_DialogTimer (0x4e5458) and cm_MessageBox (0x4e56af) push four arguments */
+#define d2_PlaceMainWindowF ((void (*)(int, int))d2_PlaceMainWindow)  /* 0x475850 (d2.h: K&R): @original the callers push the placement flags too, which the tail jump leaves on the stack for d2_PlaceWindowScaled (the same cast macro menu.h / sv.c / menu.c / main.c / lc.c / sv_t.c use) */
 #define ai_GoodsT (*(AIGOOD **)&ai_Goods)  /* 0x91aaf0, ai_Goods (cm.h: char *) as the AIGOOD records it points to */
 #define cm_CutInfosT (*(CMCUTINFO (*)[16])&cm_CutInfos)  /* 0x92cae0, cm_CutInfos (char[16][0x35c]) as the cutscene records */
 #define ai_FloatHundred (*(float *)&full_rdata_5ebb40)  /* 0x5ebb40, VC6's pooled 100.0f (main.c's rdata gap block) */
@@ -10289,7 +10290,7 @@ int cm_FightStartDialog(char *a)
     char tc[0x400];
 
     win = d2_OpenForm(0, 0, "cutscenes\\combat_start");
-    ((void (*)(int, int))d2_PlaceMainWindow)(win, 3);
+    d2_PlaceMainWindowF(win, 3);
     cm_FightSettled = 0;
     ca = (int)gm_BuildQuery(1, 1, *(int *)(a + 0x14));
     cb = (int)gm_BuildQuery(1, 1, *(int *)(a + 0x10c));
@@ -10628,7 +10629,7 @@ void cm_FightEndDialog(char *a)
             side = G20_DEF;
     }
     win = d2_OpenForm(0, 0, "cutscenes\\combat_end");
-    ((void (*)(int, int))d2_PlaceMainWindow)(win, 3);
+    d2_PlaceMainWindowF(win, 3);
     d2_SetForm(win, 2);
     io_PrintText(0x7d);
     d2_SetForm(win, 1);
@@ -11074,7 +11075,7 @@ void cm_BuildFightUI(char *a)
 
     v = d2_OpenForm(0, 0, "cutscenes\\combat");
     cm_FightForm = v;
-    ((void (*)(int, int))d2_PlaceMainWindow)(v, 3);
+    d2_PlaceMainWindowF(v, 3);
     d2_SetForm(v, 0);
     t = d2_WinCreateSlider(0x10, 0xc, 0xbf, cm_FightButtonText, d2_LastWindow);
     cm_FightButton = t;
@@ -12102,7 +12103,7 @@ void cm_RunCouncilSession(G28REC *a)
         sv_SyncText(&ch_EmptyName);
         view = d2_OpenForm(0, 0, "cutscenes\\sitzung_main");
         d2_SetViewEnabled(view, 0);
-        d2_PlaceMainWindow(view, 3);
+        d2_PlaceMainWindowF(view, 3);
 
         /* the depositions */
         left = 0;
@@ -12142,9 +12143,9 @@ void cm_RunCouncilSession(G28REC *a)
                 if (holders[i]->officeKind != 0)
                     nvoters++;
             viewBottom = d2_OpenForm(0, 0, "cutscenes\\sitzung_bottom");
-            d2_PlaceMainWindow(viewBottom, 3);
+            d2_PlaceMainWindowF(viewBottom, 3);
             viewTop = d2_OpenForm(0, 0, "cutscenes\\sitzung_top_absetzen");
-            d2_PlaceMainWindow(viewTop, 3);
+            d2_PlaceMainWindowF(viewTop, 3);
             left--;
             holder = (AICHAR *)gm_FindChar(offices[j].owner);
             challenger = (AICHAR *)gm_FindChar(offices[j].x14);
@@ -12330,9 +12331,9 @@ void cm_RunCouncilSession(G28REC *a)
                 if (amt_CanTakeOffice((char *)holders[i], elect.kind) != 0 && holders[i]->heldRounds == 0)
                     nvoters++;
             viewBottom = d2_OpenForm(0, 0, "cutscenes\\sitzung_bottom");
-            d2_PlaceMainWindow(viewBottom, 3);
+            d2_PlaceMainWindowF(viewBottom, 3);
             viewLeft = d2_OpenForm(0, 0, "cutscenes\\sitzung_left_wahl");
-            d2_PlaceMainWindow(viewLeft, 2);
+            d2_PlaceMainWindowF(viewLeft, 2);
             d2_SetForm(viewLeft, 0);
             napp = 0;
             for (i = 0; i < 768 && napp < offices[j].cnt && napp < 4; i++) {
@@ -12525,7 +12526,7 @@ int cm_AskDeposeVote(AICHAR *a, AICHAR *b, AICHAR *c, int *out)
 
     *out = 0;
     v = d2_OpenForm(0, 0, "cutscenes\\sitzungen");
-    ((void (*)(int, int))d2_PlaceMainWindow)(v, 1);
+    d2_PlaceMainWindowF(v, 1);
     d2_SetForm(v, 0);
     r = io_PrintText(0x12c6, b->id, a->id);
     b1 = d2_GetWinObj(v, 0, r);
@@ -12578,7 +12579,7 @@ int cm_AskElectVote(unsigned char office, AICHAR *b, int *ids, int *click)
         return -1;
     res = ai_TrustedOfFourB(office, b, ids, proposed);
     view = d2_OpenForm(0, 0, "cutscenes\\sitzungen");
-    d2_PlaceMainWindow(view, 1);
+    d2_PlaceMainWindowF(view, 1);
     d2_SetForm(view, 0);
     if (k < 2)
         io_PrintText(0x12dc, b->id, b->id, rec.kind + 0x253);
@@ -13500,7 +13501,7 @@ void cm_TrialAskPlayer(CMCUTINFO *r, AIPLAN *m)
             return;
         r->session.amount = (float)accused->v024 + accused->f01c;
         view = d2_OpenForm(0, 0, "cutscenes\\prozess");
-        d2_PlaceMainWindow(view, 3);
+        d2_PlaceMainWindowF(view, 3);
         d2_SetForm(view, 0);
         io_PrintText(0x14bc, c->id);
         d2_ClickedId = -1;
@@ -13514,7 +13515,7 @@ void cm_TrialAskPlayer(CMCUTINFO *r, AIPLAN *m)
         if (r->playerId != m->ids[0])
             return;
         view = d2_OpenForm(0, 0, "cutscenes\\prozess");
-        d2_PlaceMainWindow(view, 3);
+        d2_PlaceMainWindowF(view, 3);
         d2_SetForm(view, 0);
         io_PrintText(0x14cb, c->id, accused->id);
         d2_ClickedId = -1;
@@ -13530,7 +13531,7 @@ void cm_TrialAskPlayer(CMCUTINFO *r, AIPLAN *m)
         gm_Shuffled(7, order);
         sum = (gm_GetWorth(c->id) + gm_GetWorth(accused->id)) / 2000;
         view = d2_OpenForm(0, 0, "cutscenes\\folterwahl");
-        d2_PlaceMainWindow(view, 3);
+        d2_PlaceMainWindowF(view, 3);
         d2_SetForm(view, 0);
         io_PrintText(0x14db, c->id);
         for (i = 0; i < 3; i++) {
@@ -13560,7 +13561,7 @@ void cm_TrialAskPlayer(CMCUTINFO *r, AIPLAN *m)
         if (r->playerId != m->ids[5])
             return;
         view = d2_OpenForm(0, 0, "cutscenes\\folterwahl");
-        d2_PlaceMainWindow(view, 3);
+        d2_PlaceMainWindowF(view, 3);
         d2_SetForm(view, 0);
         io_PrintText(0x14e3, c->id, accused->id, accused->id);
         d2_ClickedId = -1;
@@ -13586,7 +13587,7 @@ void cm_TrialAskPlayer(CMCUTINFO *r, AIPLAN *m)
         if (r->playerId != m->ids[1])
             return;
         view = d2_OpenForm(0, 0, "cutscenes\\prozess");
-        d2_PlaceMainWindow(view, 3);
+        d2_PlaceMainWindowF(view, 3);
         d2_SetForm(view, 0);
         io_PrintText(0x1512, c->id);
         d2_ClickedId = -1;
@@ -13601,7 +13602,7 @@ void cm_TrialAskPlayer(CMCUTINFO *r, AIPLAN *m)
         if (t != m->ids[2] && t != m->ids[3] && t != m->ids[4])
             return;
         view = d2_OpenForm(0, 0, "cutscenes\\prozess");
-        d2_PlaceMainWindow(view, 3);
+        d2_PlaceMainWindowF(view, 3);
         d2_SetForm(view, 0);
         io_PrintText(0x1529, c->id);
         io_PrintText(0x152a);
@@ -13621,7 +13622,7 @@ void cm_TrialAskPlayer(CMCUTINFO *r, AIPLAN *m)
         sel[2] = -1;
         rank = ai_PlanRank(m);
         view = d2_OpenForm(0, 0, "cutscenes\\prozess");
-        d2_PlaceMainWindow(view, 3);
+        d2_PlaceMainWindowF(view, 3);
         d2_SetForm(view, 0);
         io_PrintText(0x1532, c->id);
         for (i = 0; i < 3; i++) {
@@ -14287,7 +14288,7 @@ void cm_DuelRoundDialog(CMCUTINFO *r)
     int view, dlg;
 
     view = d2_OpenForm(0, 0, "cutscenes\\duell");
-    d2_PlaceMainWindow(view, 3);
+    d2_PlaceMainWindowF(view, 3);
     d2_SetForm(view, 0);
     io_PrintText(0x10de, ((AICHAR *)cm_CutChar)->id);
     r->duel.round = 0;
@@ -14322,7 +14323,7 @@ void cm_DuelChooseRound(CMCUTINFO *r, G28REC *m)
     if (a->netId != ((AICHAR *)cm_CutChar)->netId)
         other = a;
     view = d2_OpenForm(0, 0, "cutscenes\\duell");
-    d2_PlaceMainWindow(view, 3);
+    d2_PlaceMainWindowF(view, 3);
     d2_SetForm(view, 0);
     first = io_PrintText(0x10e6, cm_ScenePartyRuns, ((AICHAR *)cm_CutChar)->id, other->id);
     insult = d2_GetWinObj(view, 0, first);
@@ -14616,7 +14617,7 @@ int cm_RunWedding(G28REC *m)
     cm_LoadEventScene("KIRCHE_HOCHZEIT.ed3");
     cm_PlaySpecialTrack("cd2\\Hochzeit.mp3");
     st[1] = d2_OpenForm(0, 0, "cutscenes\\hochzeit");
-    d2_PlaceMainWindow(st[1], 3);
+    d2_PlaceMainWindowF(st[1], 3);
     d2_SetViewEnabled(st[1], 0);
     st[0] = cm_StartEventArg("cutscenes\\hochzeit\\hochzeit-create.esc", buf);
     st[0] = cm_StartEventArg("cutscenes\\hochzeit\\hochzeit-intro.esc", &ch_EmptyName);
@@ -15157,7 +15158,7 @@ void cm_RunAuction(G28REC *m)
     form = d2_OpenForm(0, 0, "cutscenes\\pacht_main");
     if (cm_SkipEvents != 0)
         d2_SetViewEnabled(form, 0);
-    d2_PlaceMainWindow(form, 3);
+    d2_PlaceMainWindowF(form, 3);
     d2_SetForm(form, 0);
     io_PrintText(0x1aa2, b, req.price);
     cm_WaitEvent(enter);
@@ -15284,7 +15285,7 @@ void cm_AuctionAskPlayer(CMCUTINFO *r, CMAUCTION *m)
     if (worth < price)
         return;
     view = d2_OpenForm(0, 0, "cutscenes\\pacht");
-    d2_PlaceMainWindow(view, 3);
+    d2_PlaceMainWindowF(view, 3);
     d2_ClickedId = -1;
     d2_SetForm(view, 0);
     t = io_PrintText(0x1aa6, ai_OwnPlayer);
@@ -16297,7 +16298,7 @@ void cm_ExecCutscene(char *m)
     else
         party->window = d2_OpenForm(0, 0, "cutscenes\\announcement");
     cm_TextBox = party->window;
-    d2_PlaceMainWindow(cm_TextBox, 3);
+    d2_PlaceMainWindowF(cm_TextBox, 3);
     if (cm_SkipEvents != 0)
         d2_SetViewEnabled(cm_TextBox, 0);
     cut_RandSeed(party->seed);
