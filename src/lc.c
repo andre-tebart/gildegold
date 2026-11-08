@@ -664,8 +664,6 @@ extern struct D2OBJ *d2_Objs;
 
 
 extern GAPDATA full_data_62d134[];
-extern GAPDATA full_data_6f2f80[];
-extern GAPDATA full_data_6f2f84[];
 extern GAPDATA full_data_6f3680[];
 extern int d2_LastWindow;
 extern struct D2OBJ *d2_Objs;
@@ -23718,7 +23716,6 @@ int ai_OpenMoneyInfoPage(void)
     }
     return win;
 }
-#define ai_StatsBldCount (*(int *)&full_data_6f2f80)  /* 0x6f2f80, the rows of the stats panel's building page (ai_ShowBuildingRows) */
 
 /* 0x5bc6d0, opens the building list page "panel\geb_liste_2" of the player stats panel (its second entry): the
    caption 0xb2, the player's rows (ai_ShowBuildingRows into ai_StatsBldRows, their count in ai_StatsBldCount) under
@@ -23890,8 +23887,6 @@ int ai_OpenMasterListPage(void)
 void * d2_SetFont(int font); void d2_DrawTextBox(); void d2_FillPaintbox(int x, int y, int w, int h); int gv_GetTableRecord();
 int gm_EquipmentValue(); void d2_RadioSelect(int g, int sel);
 int ai_PassesPartnerFilter(unsigned short me, unsigned short id, AMOUNTCFG *cfg, int unused);
-
-#define ai_StatsPage (*(int *)&full_data_6f2f84)  /* 0x6f2f84, the stats panel's page selected last (its radio group's sel) */
 
 /* 0x5bcc70, the player stats panel "Panel\player_stats" (1000 B, run by ai_RunAllows(0x800), campaign step 0x13):
    the button row of the texts 0x3fdd .. 0x3fdf over its three pages, the money page (ai_OpenMoneyInfoPage), the
@@ -34358,6 +34353,8 @@ char ai_NewsText[1024] = { 0 };  /* 0x6f26c8, the shared text buffer of the unit
 char ai_NewsSecond[1176] = { 0 };  /* 0x6f2ac8, the second text buffer of the news messages that append a part (txt_Format into it, strcat onto ai_NewsText); its size is the room up to ai_InvChar */
 struct AICHARREC *ai_InvChar = 0;  /* 0x6f2f60, the character whose inventory the inventory child window (ai_OpenInventoryWindow) lists: ai_OpenInventoryWindow points it at ai_Chars[id]; the transport window sends its goods by its netId */
 LCSETTINGS lc_Settings = { 0 };  /* 0x6f2f64, the escort kind of the last transport order, the goods-reserve clock and cursor and the equip window's row count (see LCSETTINGS) */
+int ai_StatsBldCount = 0;  /* 0x6f2f80, the rows of the stats panel's building page ai_ShowBuildingRows filled (ai_OpenBuildingListPage stores it, ai_PlayerStatsPanel loops over it) */
+int ai_StatsPage = 0;  /* 0x6f2f84, the stats panel's page selected last (ai_PlayerStatsPanel selects the radio group with it and stores the radio's sel back) */
 unsigned short ai_StatsChartFlags = 0;  /* 0x6f2f88, the charts the statistics panel shows (ai_CityStatsPanel: bit i the legend row i, 1 at the first open) */
 unsigned int ai_AmountTab = 0;  /* 0x6f2f8c, the open tab of the special-amount window (ai_SpecialAmountWindow, 0 .. 7; 8: no tab has rows) */
 int ai_MasterLetterPage = 0;  /* 0x6f2f90, the open page of the master letter window (ai_MasterLetterSettings): 0 the work settings, 1 the goods weights */

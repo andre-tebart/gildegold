@@ -191,6 +191,8 @@ typedef struct LCSETTINGS {
     int equipRowCount;                  /* +0x18, the rows of the equip window in use (ai_UpdateEquipRows counts them each frame) */
 } LCSETTINGS;
 extern LCSETTINGS lc_Settings;          /* 0x6f2f64 */
+extern int ai_StatsBldCount;             /* 0x6f2f80, the rows of the stats panel's building page */
+extern int ai_StatsPage;                 /* 0x6f2f84, the stats panel's page selected last */
 extern unsigned short ai_StatsChartFlags; /* 0x6f2f88, the charts the statistics panel shows (bit i: the legend row i) */
 extern unsigned int ai_AmountTab;        /* 0x6f2f8c, the open tab of the special-amount window (0 .. 7; 8: no tab has rows) */
 extern int ai_MasterLetterPage;          /* 0x6f2f90, the open page of the master letter window: 0 the work settings, 1 the goods weights */
