@@ -62,7 +62,7 @@ extern const unsigned int hmt_ElectionExcludedBits[3];                          
 extern const int hmt_ElectionOfficeBits[3];                                                     /* 0x5edb9c, .rdata: the office */
 void hmt_Election(void);                                                         /* 0x4ad1c0 */
 void hmt_SendElectionMessage(int v);                                                       /* 0x4ad3b0 */
-float hmt_Score(AICHAR *c, void *obj, int type, int twice);                      /* 0x4ad3e0 */
+float hmt_Score(AICHAR *c, AICHAR *obj, int type, int twice);                      /* 0x4ad3e0 */
 void hmt_ClearOffices(void);                                                        /* 0x4ad510 */
 void hmt_DecideElection(void);                                                        /* 0x4ad580 */
 void hmt_Unk4ad7a0(void);                                                        /* 0x4ad7a0 */

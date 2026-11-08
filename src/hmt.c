@@ -541,11 +541,11 @@ void hmt_SendElectionMessage(int v)
 /* 0x4ad3e0, the election score of candidate c for the office of obj: relation to obj's holder (0x50c550, * 0.01,
    twice if `twice`), (age byte + 1) * 0.1 * 2, and the two titles (0x166 / 0x167) weighted against title 0x1b */
 
-float hmt_Score(AICHAR *c, void *obj, int type, int twice)
+float hmt_Score(AICHAR *c, AICHAR *obj, int type, int twice)
 {
     float rel, age, t1, t2, w1, w2;
 
-    rel = gm_Liking(c->id, *(unsigned short *)obj, 1) * 0.01f;
+    rel = gm_Liking(c->id, obj->id, 1) * 0.01f;
     if (twice)
         rel = rel + rel;
     age = (HMT_B(c, 0x0d) + 1) * 0.1f;
@@ -554,7 +554,7 @@ float hmt_Score(AICHAR *c, void *obj, int type, int twice)
     t1 = 0;
     if (c->officeKind)
         t1 = amt_GetDistrictLiking(c, amt_KindColumn(c->officeKind));
-    t2 = 0.0f;
+    t2 = ai_FloatZero;
     if (c->prevOffice)
         t2 = amt_GetDistrictLiking(c, amt_KindColumn(c->prevOffice));
     return t1 * w1 + t2 * w2 + (age + age) + rel;
