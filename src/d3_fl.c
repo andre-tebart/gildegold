@@ -515,7 +515,7 @@ void d3fl_Flush(void)
         if (d3_Scenes[i].map && d3_Scenes[i].map != d3_Terrain)
             d3fl_Invalidate(d3_Scenes[i].map);
 }
-/* 0x43faa0, a free cache entry, or the least recently used one @deep Q2 only (byte already): D3FLTEX.unk58 (slot 0x58) has no role evidence - every use in the sources is a zero store (d3fl_Alloc eviction, d3fl_GetTexture creation, both d3fl_Draw re-render sites, ts_texture.c's tex_Load/tex_Create/tex_CreateHi initialisation, d3_tools' DC_ unload; TSTEXTURE.unk58 0x58 in ts_texture.h), no reader exists in the drafted source and the neighbouring 0x54 is the last-use stamp; callers (d3fl_GetTexture) and data (D3FLTEX, TSTEXTURE, D3TEXTURE views) read - a name would be invented */
+/* 0x43faa0, a free cache entry, or the least recently used one */
 
 D3FLCACHE *d3fl_Alloc(void)
 {
@@ -535,7 +535,7 @@ D3FLCACHE *d3fl_Alloc(void)
     if (best) {
         best->stamp = d3_FrameCount;
         if (best->tex)
-            best->tex->unk58 = 0;
+            best->tex->reserved = 0;
     }
     return best;
 }
@@ -564,7 +564,7 @@ D3FLCACHE *d3fl_Find(unsigned char *map, int mapsize, int x, int y, unsigned int
         }
     return 0;
 }
-/* 0x43fc10, the cache texture for the tiles at x, y (created if needed) @deep Q2 only after the Q4 fix (byte already, the *(int *)&f = 0 on D3TEXFLAGS replaced by a local int/D3TEXFLAGS union view): D3FLTEX.unk58 (slot 0x58) has no role evidence - only zero stores in the sources (here, d3fl_Alloc eviction, both d3fl_Draw re-render sites, ts_texture.c tex_Load/tex_Create/tex_CreateHi init, d3_tools DC_ unload), no reader in the drafted source, 0x54 next to it is the last-use stamp; callers and data read - a name would be invented */
+/* 0x43fc10, the cache texture for the tiles at x, y (created if needed) */
 
 D3FLTEX *d3fl_GetTexture(unsigned char *map, int mapsize, int x, int y, unsigned int size, D3FLSRC *src)
 {
@@ -598,7 +598,7 @@ D3FLTEX *d3fl_GetTexture(unsigned char *map, int mapsize, int x, int y, unsigned
             u.i = 0;
             u.f.b[0] = 0xff;
             c->tex = (D3FLTEX *)tex_CreateHi(names[size], c->t.texsize, u.f, 0, 0, d3fl_Mips);
-            c->tex->unk58 = 0;
+            c->tex->reserved = 0;
         } else
             strcpy(c->tex->name, names[size]);
         c->tex->cache = c;
@@ -2539,7 +2539,7 @@ void d3fl_Draw(D3FLMAP *map, char water)
                     for (i = 0, poly = t->polys; i < npolys; i++, poly++)
                         if (poly->flags < 0) {
                             if ((tex = poly->tex) && tex->name[0] == '*' && !(c = tex->cache)->flag) {
-                                tex->unk58 = 0;
+                                tex->reserved = 0;
                                 if (!tex->surf)
                                     tex_Prepare(tex);
                                 if (surf = dd_LockSurfaceFlags(tex->surf, 0x20)) {
@@ -2607,7 +2607,7 @@ int d3fl_Prerender(D3FLMAP *map)
                         if (tex && tex->name[0] == '*') {
                             c = tex->cache;
                             if (!c->flag) {
-                                tex->unk58 = 0;
+                                tex->reserved = 0;
                                 if (!tex->surf)
                                     tex_Prepare(tex);
                                 if (p = dd_LockSurfaceFlags(tex->surf, 0x20)) {

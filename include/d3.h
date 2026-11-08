@@ -166,7 +166,7 @@ typedef struct D3TEXTURE {          /* 0x80 bytes, d3_TexCount of them at d3_Tex
     char name[0x40];
     int refs;                       /* 0x40, 0 = free slot (TSTEXTURE.refs, ts_texture.h) */
     char pad44[0x14];
-    int unk58;
+    int reserved;                   /* 0x58, TSTEXTURE.reserved (ts_texture.h): only ever cleared, no reader (D3FLTEX) */
     char pad5c[0xc];
     unsigned char flags;            /* 0x68, bit 0 wrap, bit 3 compressed (size / 8); bit 4: no culling for
                                        the triangles using the texture (d3_SetVertexColors copies it) */

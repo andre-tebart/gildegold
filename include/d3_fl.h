@@ -13,7 +13,8 @@ typedef struct D3FLTEX {            /* view of the texture slot (TSTEXTURE in ts
     struct D3FLCACHE *cache;        /* 0x4c */
     char pad50[0x4];
     unsigned long stamp;            /* 0x54, d3_FrameCount of the last use */
-    int unk58;                      /* 0x58 */
+    int reserved;                   /* 0x58, TSTEXTURE.reserved (ts_texture.h): only ever cleared - when the slot is
+                                       created, evicted, re-rendered or unloaded; no reader, role unknown */
     char pad5c[0x4];
     void *surf;                     /* 0x60, IDirectDrawSurface4 */
     void *d3dtex;                   /* 0x64, IDirect3DTexture2 */

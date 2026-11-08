@@ -1489,8 +1489,7 @@ D3TSNOW *d3t_CreateSnow(int count)
 }
 /* 0x414b50, frees the snow system: the flake list and texture, then resets the "DC_" textures'
    hicolor state (high colour when the format has no FOURCC and the file is above 8 bpp), flushes
-   the texture cache and rebuilds the other scenes' tile maps; null snow is ignored.
-   @deep Q2: D3TEXTURE.unk58 (0x58, TSTEXTURE.unk58) has no reader anywhere in src - every use is a zero store (the d3_fl.c 0x43faa0 @deep note records the same) - so no role can be stated; the other Q2 names are gone this session (refs/filebpp, D3SCENE.first, d3fl_ReloadTextures, d3d_UsedTexFormat.fourcc) */
+   the texture cache and rebuilds the other scenes' tile maps; null snow is ignored. */
 
 void d3t_FreeSnow(D3TSNOW *snow)
 {
@@ -1509,7 +1508,7 @@ void d3t_FreeSnow(D3TSNOW *snow)
             if (tex->refs > 0 && _strnicmp("DC_", tex->name, 3) == 0 && !(tex->flags & 2)) {
                 if (!tex_SetHiColor(tex, !d3d_UsedTexFormat.fourcc && tex->filebpp > 8 ? 1 : 0))
                     tex_Unload(tex);
-                tex->unk58 = 0;
+                tex->reserved = 0;
             }
         }
         d3fl_Flush();

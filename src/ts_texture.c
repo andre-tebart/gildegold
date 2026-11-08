@@ -3,8 +3,8 @@
    the software renderer, 0x45f610..0x4616d0.
    Open: not included yet (dcp headers conflicts ts_texture HEADER): bio.h; held by own declarations that differ
    from the owner's: file_Exists.
-   Open: typing: TSTEXTURE.reserved (0x58) is only ever cleared (slot created / evicted / unloaded), no reader -
-   role unknown; D3TEXTURE (d3.h) and D3FLTEX (d3_fl.h) still spell the same slot unk58.
+   Open: typing: TSTEXTURE.reserved (0x58) is only ever cleared (slot created / evicted / re-rendered / unloaded),
+   no reader - role unknown; D3TEXTURE (d3.h) and D3FLTEX (d3_fl.h) spell the same slot reserved too.
    unit of rea 8cef7d5b (src/game/ts_texture.c); boundaries in decl/text.dcl */
 #line 1 "D:\\develop\\Units\\d3\\ts_texture.c"
 /* ts_texture.c -- original path D:\develop\Units\d3\ts_texture.c
