@@ -23,6 +23,7 @@ int gm_IsType10(unsigned char *b);              /* 0x5024f0, 1 for the town mark
 int gm_IsHomeType(unsigned char *b);            /* 0x502520, 1 for a home type */
 char *gm_FindCharacterByMaster(int m);          /* 0x50a810, the first kind 6 / 7 / 1 / 2 character with a job whose master (+0x16c) is m */
 void gm_ShowSlotObjects(int unused, int scene, int c);  /* 0x502a60, the scene objects of the character's five slots on */
+void gm_ShowBuildingObjects(unsigned char *b);  /* 0x502e30, for a building of the type 2: gm_ShowSlotObjects for every object of the kind 2 in its list (up to 32) */
 void gm_AssignBuilding(unsigned char *b, unsigned short place, unsigned own);  /* 0x502b60 */
 
 void gm_ClearBuildings(void);                   /* 0x4fe7f0, clears the 0x100 records of ai_Blds */
@@ -89,6 +90,7 @@ int gm_BuildingGoodsList17(char *b, unsigned *out, int kind);  /* 0x5099e0 */
 extern char gm_CharacterStatistics[128];  /* 0x91b500 */
 int gm_CharacterWages(unsigned short id, int flag, unsigned char *out);  /* 0x4fa700 */
 int gm_TakeObjekt(int id, int proto, int n);  /* 0x500a40 */
+unsigned short *gm_CreateObject(int id, int proto, int n);  /* 0x500190, the new object instance of the prototype proto with the amount n in the holder's list (gm_FindById); 0 on failure */
 void gm_FreeObject(int o);  /* 0x5034b0 */
 int gm_SkillPoints(char *c, int skill);  /* 0x504e00 */
 int gm_HasAdultRelative(char *c, int *n);  /* 0x506480 */
@@ -105,6 +107,8 @@ void gm_ShuffledBytes(unsigned char n, unsigned char *out);  /* 0x505be0 */
 int gm_FreeBuilding(char *b);  /* 0x5012e0 */
 int gm_RemoveObjectFromBuilding(int b, int id);  /* 0x503480 */
 unsigned char *gm_CreateBuilding(unsigned char k, unsigned short own);  /* 0x501580 */
+void gm_StockBuildingObjects(char *p);  /* 0x501400, stocks a new building p with the objects its building kind needs */
+void gm_SetCapacities(unsigned char *p);  /* 0x5014b0, sets the capacities of the objects of building p from its kind record */
 extern int gm_AllowAll;  /* 0x6f2448 */
 float gm_AddHealth(unsigned short id, int d);  /* 0x4fca40 */
 int gm_AddNegative(int id, int proto, int n);  /* 0x500ae0 */

@@ -4003,8 +4003,8 @@ exe	0x00578370	ai_TutorialStop	sv_t	9d1db8f5a93c7021	no	byte	control=byte p1=byt
 exe	0x00578440	ai_TutorialFreeRuns	sv_t	7db4c5d18c22886f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x005784a0	ai_TutorialInitMainIntro	sv_t	798c8d26cb8bedf5	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00578570	ai_TutorialInitChapter1	sv_t	1104bf614d4657fb	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x00578e40	ai_TutorialInitChapter2	sv_t	1997337a7073c8ff	yes	byte	control=byte p1=shape* p2=byte p3=shape* p4=shape*
-exe	0x00579570	ai_TutorialInitChapter3	sv_t	7a7c849570dd38d6	yes	shape	control=shape p1=draft* p2=draft* p3=draft* p4=draft*
+exe	0x00578e40	ai_TutorialInitChapter2	sv_t	1997337a7073c8ff	yes	byte	control=shape p1=shape p2=byte* p3=shape p4=shape
+exe	0x00579570	ai_TutorialInitChapter3	sv_t	7a7c849570dd38d6	yes	shape	control=draft p1=draft* p2=draft* p3=shape* p4=draft*
 exe	0x0057aa80	ai_TutorialInitChapter4	sv_t	6084c4a654a21837	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0057aeb0	ai_TutorialInitChapter5	sv_t	8774329fa9d901d6	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0057b750	ai_TutorialInitMainOutro	sv_t	fa030cb776dbd933	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
@@ -4080,7 +4080,7 @@ exe	0x005871e0	ai_GraveRentContact	sv_t	17778b03f619fc10	no	byte	control=byte p1
 exe	0x00587300	ai_GraveCareContact	sv_t	0666483d3fbf5bf0	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00587340	ai_GraveHelperContact	sv_t	d81d3d76138661cb	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00587370	ai_GraveInsuranceContact	sv_t	f5279e67b1a8fc92	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x00587560	ai_GraveyardTradeContact	sv_t	61a738bf2ee255a1	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
+exe	0x00587560	ai_GraveyardTradeContact	sv_t	fcc2bbda17f2fd3e	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x005876a0	ai_GraveyardSeanceContact	sv_t	58011c7e9565f92e	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00587700	ai_UpgradeWorkerSend	sv_t	cc4b71bfd6a0ff7a	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00587810	ai_UpgradeWorkerWindow	sv_t	d0ec71eee394d7b4	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte

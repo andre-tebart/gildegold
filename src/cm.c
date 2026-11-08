@@ -15,11 +15,11 @@
    cm_RunBankruptcy, cm_RunAuction, their checks and member callbacks) read the party record G28REC; the auction's
    member callbacks (cm_AuctionAskPlayer / cm_AuctionAskAI) read its state CMAUCTION. The spy report objects (AIOBJ
    kind 0xca) are read as CMSPYREPORT (defined above cm_ExSpyReport: the report's words 0x1c .. 0x37, HESPYREPORT).
-   Open: not included yet (dcp headers conflicts cm HEADER): am.h anm.h f3gm.h gfx.h hmt.h hst.h rt.h
-   poker.h mission.h menu.h; held by calls whose argument count differs from the definition (read the
-   original's pushes): ai_DecideTorture, ai_DecideTortureInstrument, gm_SkillPoints (rt.h: its d2_SetObjValue);
-   gv_PassSentence takes five arguments here (gv_PassSentenceK). d2_SetObjValue's 2- and 4-argument calls
-   use this unit's d2_SetObjValue2 / d2_SetObjValue4 cast macros.
+   Open: not included yet (dcp headers conflicts cm HEADER): am.h anm.h gfx.h hmt.h hst.h rt.h poker.h
+   mission.h menu.h; held by calls whose argument count differs from the definition (read the original's
+   pushes): ai_DecideTorture, ai_DecideTortureInstrument; gv_PassSentence takes five arguments here
+   (gv_PassSentenceK). d2_SetObjValue's 2- and 4-argument calls use this unit's d2_SetObjValue2 /
+   d2_SetObjValue4 cast macros.
    Open: head: cm.h carries the parameter lists of cm_StartEventArg, cm_QueueVoice, cm_LoadVoiceBank,
    cm_RunSceneTicks, cm_RunSceneTicksOrClick, cm_WaitEvent, cm_DialogTimer, cm_PartyById, cm_UnloadVoiceBank and
    cm_MessageBox; cm_PlayVoice, cm_StopScript, cm_DeleteChar, cm_WaitEventOrClick, cm_CutInfoById,
@@ -30,8 +30,7 @@
    declarations of ord_AddGridAmount, gm_RemoveOwned, gm_BuildingSkill, gm_HealthRatio, rt_FreePoints and
    rt_CopyPoints are the owner headers' prototypes (gv.h, f3gm.h, rt.h; RTPOINT from rt_types.h); the other calls
    into those headers stay M7.
-   Open: head: f3gm.h has no prototype of gm_ShowBuildingObjects (cm_ExSkillsChanged calls it undeclared, the f3gm.h
-   include above is blocked); message 0x3f has no record type in cm_types.h (a struct typedef there flips
+   Open: head: message 0x3f has no record type in cm_types.h (a struct typedef there flips
    ord_CountGridObjects shape -> draft, a declaration-set tie-break the probe does not reproduce), so 0x3f / 0x40
    read the player / item head of the goods record through G17GOODSMSG.goods.
    The fight scene (cm_SetupFightScene .. cm_MostThreatenedCellNear) reads its fight record as CMFIGHTREC (a partial
@@ -116,6 +115,7 @@ extern GAPDATA full_rdata_5ebb40[];
 #include "lc.h"
 #include "shp.h"
 #include "f3gm_types.h"
+#include "f3gm.h"
 #include "he.h"
 #include "amt.h"
 #include "am_types.h"
