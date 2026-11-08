@@ -378,8 +378,7 @@ void d2_DrawWindowText(void *surf, int win);                     /* 0x46fba0, la
 void d2_DrawWindowBackground(D2WIN *w, void *surf);                    /* 0x4713c0, draws the background of a window */
 void d2_SetBackgroundTexture(char *name, int win);          /* 0x4721e0 */
 void d2_CreateScrollButtons(int x, int y, int win, int obj, int pic); /* 0x472270, creates the scroll buttons */
-int d2_CreateWindow();                                         /* 0x472390, creates a window (x, y, w, h short; flags);
-                                                               called unprototyped */
+int d2_CreateWindow(short x, short y, short w, int h, unsigned int flags);  /* 0x472390, creates a window, its index; -1 none free, 0 no surface */
 void d2_ScrollWindowBy(int a, int b, int win);                   /* 0x472760, scrolls a window */
 void d2_ResizeWindow(short w, short h, int win);               /* 0x472800, resizes a window */
 void d2_FinishFades(void);                                    /* 0x472a60 */

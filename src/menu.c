@@ -407,8 +407,8 @@ extern D2WIN d2_Wins[];             /* 0xf8f120, d2.h: D2WIN d2_Wins[0x61] */
 extern float sv_FramesPerTick;          /* 0x62378c, sv.c: the frames drawn since the last timer tick
                                            (the frame loop counts them in 0x623790, the tick callback
                                            0x520ec0 copies the count as a float and clears it) */
-int d2_CreateWindow(int x, int y, int w, int h, unsigned int flags); /* 0x472390, d2.c: the callers
-                                           push ints although the K&R definition names short parameters */
+int d2_CreateWindow(short x, short y, short w, int h, unsigned int flags); /* 0x472390, d2.c: the callers
+                                           push ints although the definition names short x / y / w */
 void d2_PlaceWindowScaled(int win, int flags); /* 0x475730, d2.c */
 int d2_RemoveWindow(int win);           /* 0x472ce0, d2.c */
 int io_PrintText(char *fmt, ...);          /* 0x515960, io_text.c: prints a text (id or literal) with its
@@ -1611,7 +1611,7 @@ int sv_CheckMoney(char *o, int n);         /* 0x520f90, sv.c: 1 when the object'
                                               covers n, else a message box with the text 0x74 */
 int sv_MessageBox(int text, unsigned flags); /* 0x521150, sv.c: the modal message box */
 void sv_CameraFollow(void);                /* 0x52d7a0, sv.c: the per-frame camera follow */
-int d2_CreateWindow(); int d2_RemoveWindow(); int io_PrintText(char *fmt, ...);
+int d2_RemoveWindow(); int io_PrintText(char *fmt, ...);
 int d2_GetObjValue();
 
 /* 0x5d7770, the options menu screen (1112 B): param none, void. The game screen 0x5d7160 is copied

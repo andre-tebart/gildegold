@@ -576,7 +576,6 @@ void cm_UpdateCharInfoWins(int a);  /* 0x4ced80 */
 void d3fl_MakeDivide();  /* 0x441300 */
 struct D3OBJECT; struct D3RECT; char d3if_ScreenBox(struct D3OBJECT *obj, struct D3RECT *r);  /* 0x4486e0 */
 int d2_WinOpenSlider();  /* 0x46a960 */
-int d2_CreateWindow();  /* 0x472390 */
 int d2_RemoveWindow();  /* 0x472ce0 */
 int d2_WinOpenPic(short x, short y, int pic, int win);  /* 0x4731d0 */
 void d2_SetObjValue();  /* 0x475cb0 */
@@ -640,7 +639,6 @@ extern D2OBJ *d2_Objs;          /* 0xf8f080, 0x2ec bytes each (d2.c); this heade
 void cm_BuildPortraits();  /* 0x4cfc10 */
 void cm_ClosePortraits();  /* 0x4cfe70 */
 int d2_CreatePicObj();  /* 0x46cd80 */
-int d2_CreateWindow();  /* 0x472390 */
 int d2_CreateWinText(short x, short y, char *text, int win);  /* 0x473650 */
 
 void cm_ClickSceneChar();  /* 0x4cfeb0 */

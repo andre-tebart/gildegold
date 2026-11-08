@@ -3712,12 +3712,7 @@ int pic;
 }
 /* 0x472390, creates a window; returns its index, -1 if there is no free one, 0 if a surface could not be made @deep draft: 638/976 bytes differ, 121 asm lines after this session's two meaning fixes (win->w = w, the surface desc[1] = w; 740 bytes / 167 lines before), hunks code 121 / regs 58. Read against the original 0x472390..: the free-window scan (counter/pointer in ebp/eax vs eax/ecx), the index scaling lea chain, the flags register (ours ecx/bh vs original ebx), the -1 materialisation (or ebx,-1 vs or eax,-1) and the y+h add order at 472611 are register allocation / scheduling; the 4724a1 desc push order now reads right. Tried: the operand order win->h + win->y -> win->y + win->h at 472611 (identical bytes, reverted). Q2 left, no writer anywhere in src/ (name gaps): D2WIN.unk274 (written -1 here only). The two child-object slots are cornerObj / extraObj (0x3bc / 0x3c0). Named this session: d2_CreateWindow (from d2_CreateWindow), d2_LastWindow / d2_LastWindowPtr (d2_LastWindow / d2_LastWindowPtr, the window created last). */
 
-int d2_CreateWindow(x, y, w, h, flags)
-short x;
-short y;
-short w;
-short h;
-unsigned int flags;
+int d2_CreateWindow(short x, short y, short w, int h, unsigned int flags)
 {
     int desc[16];
     int i, j, ob;
@@ -3942,6 +3937,7 @@ void d2_FinishFades(void)
         }
     }
 }
+#define d2_CreateWindowI ((int (*)(int, int, int, int, unsigned int))d2_CreateWindow)  /* @original: d2.c's own call was compiled without a prototype, pushing the expressions as ints (d2_CreateChildWindow 0x472aa0 is byte-matched with plain pushes at 0x472b0e) */
 /* 0x472aa0, creates a window inside another one (relative to its scroll position) */
 
 int d2_CreateChildWindow(short x, short y, short pw, short h, unsigned int flags, int win)
@@ -3952,7 +3948,7 @@ int d2_CreateChildWindow(short x, short y, short pw, short h, unsigned int flags
 
     if (!w->active)
         return -1;
-    n = d2_CreateWindow(w->x - w->scrollX + x, w->y - w->scrollY + y, pw, h, flags);
+    n = d2_CreateWindowI(w->x - w->scrollX + x, w->y - w->scrollY + y, pw, h, flags);
     d2_AddToDrawOrder(d2_Wins[n].parent, w);
     w->objs[w->nobjs] = d2_Wins[n].parent;
     d2_Objs[d2_Wins[n].parent].win = w;
