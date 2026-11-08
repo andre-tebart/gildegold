@@ -977,7 +977,7 @@ void cm_RunExecution(G28REC *m);  /* 0x4e01e0 */
 int cm_CheckWedding(G28REC *m);  /* 0x4e0580 */
 void sb_Stop();  /* 0x427290 */
 int cm_EndWedding(int *s);  /* 0x4e06d0 */
-int cm_RunSceneTicksOrClick();  /* 0x4e3490 */
+int cm_RunSceneTicksOrClick(int ticks, int (*cb)(int), int arg);  /* 0x4e3490 */
 int cm_WaitEventOrClick();  /* 0x4e2cc0 */
 int cm_LoadVoiceBank();  /* 0x4e3270 */
 int cm_PlayVoice();  /* 0x4e32b0 */
@@ -1034,7 +1034,6 @@ void d3sky_SetLayerSpeed(struct D3SKY *s, struct D3SKYLAYER *l, float speed);  /
 void d3sky_FadeLayer(struct D3SKY *s, struct D3SKYLAYER *l, unsigned char alpha, float time);  /* 0x45d9a0 */
 void cm_CreateSceneSky(char *tex);  /* 0x4e32f0 */
 int cm_RunSceneTicks();  /* 0x4e3570 */
-int cm_RunSceneTicksOrClick();  /* 0x4e3490 */
 extern char *cm_SceneFade;  /* 0x6f0da0, the fade 0x4e3060 started */
 int cm_ResetCutInfos();  /* 0x4e36a0 */
 int tb_SetFunctionOff();  /* 0x42ea10 */
