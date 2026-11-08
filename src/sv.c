@@ -26,8 +26,6 @@ struct SBSAMPLE;
 struct VFSENTRY;
 struct VFSDIR;
 #include "d2_types.h"
-extern D2RADIO d2_Radios[];
-extern D2VIEW d2_Views[];
 #include "txt_views.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -49,23 +47,15 @@ extern D2VIEW d2_Views[];
 #define GAPDATA __declspec(align(1)) unsigned char
 
 /* full rebuild: the symbols whose original addresses the code above spells literally */
-extern void *d2_ScreenSurf;  /* 0x6ed924 */
-extern void *d2_ScreenSurf;  /* 0x6ed924 */
 
 #include "menu_types.h"
 #include "ai_types.h"
 extern OPTIONBYTES ai_OptionPanelHelp;
 extern char ai_PlayerSlots[4][0x2f4];
 extern int d2_HitUnderPointer;
-extern short d2_ShpH;
-extern short d2_ShpW;
 
-extern int d2_TextDrawnH;
-extern int d2_TextDrawnW;
-extern D2WIN d2_Wins[];
 extern GAPDATA full_data_623e90[];
 extern GAPDATA full_data_6f2364[];
-extern void *d2_ScreenSurf;  /* 0x6ed924 */
 
 extern char * ai_PickedObject;
 extern int ai_PickedChar;
@@ -82,51 +72,21 @@ extern int ai_SceneChars[32];
 extern int gm_PlayerRecords[688];
 extern int hst_KeyNext;
 
-extern int d2_TextDrawnH;
-extern int d2_TextDrawnW;
-extern void *d2_ScreenSurf;  /* 0x6ed924 */
-extern int d2_TextDrawnH;
-extern int d2_TextDrawnW;
-extern void *d2_ScreenSurf;  /* 0x6ed924 */
 
-extern int d2_TextDrawnH;
-extern int d2_TextDrawnW;
-extern void *d2_ScreenSurf;  /* 0x6ed924 */
 
-extern int d2_TextDrawnH;
-extern int d2_TextDrawnW;
 
 
 
 extern GAPDATA full_data_623240[];
-extern void *d2_ScreenSurf;  /* 0x6ed924 */
-extern int d2_HalfScreenH;
-extern int d2_HalfScreenW;
-extern void *d2_ScreenSurf;  /* 0x6ed924 */
 extern int ai_PermsDirty;
 extern OPTIONBYTES ai_GameSwitches;
 extern char d2_CaptionCopy[0x80];
-extern short d2_MouseX;
-extern short d2_MouseY;
-extern int d2_TextDrawnH;
-extern int d2_TextDrawnW;
-extern int d2_TextLeft;
-extern int d2_TextTop;
-extern void *d2_ScreenSurf;  /* 0x6ed924 */
-extern float d2_ScreenScale;
-extern int d2_HalfScreenW;
-extern int d2_TextDrawnH;
-extern int d2_TextDrawnW;
-extern void *d2_ScreenSurf;  /* 0x6ed924 */
 extern float d3s_QuadUV[6];
-extern struct D2PIC *d2_Pics;
 extern int ai_SceneChars[32];
 extern char cm_ChatLog[2048];
 
 extern GAPDATA full_data_602568[];
 extern char cm_ChatLog[2048];
-extern int d2_HalfScreenH;
-extern int d2_HalfScreenW;
 
 extern int cm_NoticeCount;
 extern unsigned int cm_FightStart;
@@ -138,56 +98,32 @@ extern int cm_DayEndRequest;
 extern char cm_RequestedSaveName[72];
 extern int cm_RequestedSaveSlot;
 extern int d2_CutsceneActive;
-extern struct D2INPUT *d2_FocusedInput;
 extern int d2_HitUnderPointer;
-extern short d2_MouseX;
-extern short d2_MouseY;
 
 
 extern int main_Inactive;
-extern void *d2_ScreenSurf;  /* 0x6ed924 */
 extern int ai_OptionSpeed;
 extern int ai_TimeCopy[4];
 
-int d2_CreateWinText(short x, short y, char *text, int win);
-int d2_WinOpenPic(short x, short y, int pic, int win);
-void d2_SetObjWidth(int obj, short w);
-void d2_BlitPart();
-void d2_EnableObject();
-void d2_RemoveObj();
-void d2_SetObjFont();
-void d2_SetObjWidth(int obj, short w);
 
 struct G16CHARCLICK;  /* file-scope tag for the prototypes below */
 struct AITIME;        /* f3gm.c typedef; file-scope tag for the gm_AddTime / gm_SetTime prototypes */
 struct D3SURF;        /* d3_engine.h typedef; file-scope tag for the d3if_SelectTextureSet prototype */
 
 extern int di_Absolute, di_MinX, di_MinY, di_MaxX, di_MaxY;  /* 0x5f3240, 0x6310b0, 0x6310b4, 0x5f3238, 0x5f323c (di_input.c) */
-extern short d2_ScreenW;  /* 0xfb9072 (d2.h), the screen size */
-extern short d2_ScreenH;  /* 0xfb9070 */
-extern char *d2_LastWindowPtr;  /* 0x6ed980, window created last; @original: d2.h declares D2WIN *; the units add byte offsets to it and do not include d2.h yet (their own char * declarations of d2_Objs / d2_LastWindowPtr supersede d2.h's) */
-extern unsigned char d2_HoverBlocked;  /* 0x6ed9c8 (d2.h) */
 extern unsigned char kb_Last;  /* 0x1468410 */
 /* d2_RadioSel: view of d2_Radios (tools/data_views.py) */
-extern char *d2_Objs;  /* 0xf8f080, 0x2ec bytes each; @original: d2.h declares D2OBJ *; the units add byte offsets to it and do not include d2.h yet (their own char * declarations of d2_Objs / d2_LastWindowPtr supersede d2.h's) */
-#define sv_D2Objs (*(D2OBJ **)&d2_Objs)  /* 0xf8f080, d2_Objs as d2.h types it (D2OBJ *), for the typed field reads */
+#define sv_D2Objs d2_Objs  /* 0xf8f080, the typed view d2.h gives it (D2OBJ *) */
 
 void d2_SetPointerSprite(int a, int pic);      /* 0x476f80, gfx.c */
 void d2_ClearPointerItems(void);                     /* 0x476c70 */
 void d2_CopyCaption(char *caption);            /* 0x478870, gfx.c */
-int d2_SetForm(int view, int n);                     /* 0x475f70 */
-void d2_CentreViewWindows(int view);            /* 0x475600 */
-void d2_RadioAdd(int g, int obj);                     /* 0x46c560 */
-void d2_RadioSelect(int g, int sel);                     /* 0x46c630 */
-void d2_RaiseViewWindows(int view);                     /* 0x4741a0 */
 #define d2_SetObjValue4 ((void (*)(int, int, int, int))d2_SetObjValue)  /* 0x475cb0 (d2.c: five parameters): @original sv_OpenBuildingPanel pushes 4 arguments (0x528a1e), as rt.c's calls */
-extern D2WIN d2_Wins[];  /* 0xf8f120, d2.h */
-void d2_CloseView(int view);            /* 0x4758f0 */
+#define d2_SetObjValue2 ((void (*)(int, int))d2_SetObjValue)  /* 0x475cb0: @original the checkbox / chat calls push two (0x524d64 sv_UpdateMemberList: 2 pushes, add esp, 8; 0x52fecc / 0x53008b sv_ChatConsole: 2 pushes) */
 /* ai_SeasonCloudChance: view of ai_PlayerSlots (tools/data_views.py) */
 /* ai_SeasonClimate: view of ai_PlayerSlots (tools/data_views.py) */
 extern int sv_ViewShape;  /* 0x6f22c0 */
 extern struct D2SURF *sv_GroundplanSurf, *sv_GroundplanView;  /* 0x6f22c4, 0x6f22c8 */
-extern void *d2_BackSurf;  /* 0x6ed92c */
 extern OPTIONBYTES ai_GamePanel;  /* 0x6f3668 */
 #define d2_TransparentBytes ((unsigned char *)&d2_TransparentColour)  /* 0x6f0454, @original: sv_BuildScreenLayout clears the key byte by byte (mov byte [0x6f0454] / [0x6f0455] / [0x6f0456], bl), not through the D2KEY word gb */
 /* the object / character record fields sv.c reads (AIBLD / AICHAR in ai.h; ai.h cannot be included here: its
@@ -271,19 +207,7 @@ extern SVPLATE sv_NamePlates[0x20];
 
 int d2_DrawMousePointer(int x, int y);         /* 0x476f00, gfx.c */
 int d2_AddHitRect();                     /* 0x478890, @original: sv.c's callers were compiled against the non-prototype declaration (sv_BuildScreenLayout passes an int d2_ScreenW - 0x50 without a short conversion, 464 bytes vs 480) */
-int d2_CreateWindow();                     /* 0x472390 */
-void d2_PlaceWindowScaled();                     /* 0x475730 */
-void * d2_GetPic();                     /* 0x4690b0 */
-int d2_LockSurface();                     /* 0x479020 */
-int d2_ClearSurface();                     /* 0x4796c0 */
-int d2_UnlockSurface();                     /* 0x4790e0 */
-struct D2SURF * d2_MakeSurface(struct D2SURF *desc, int flags);                     /* 0x478cc0 */
-int d2_CreatePicObj();                     /* 0x46cd80 */
-void d2_EnableObject();                     /* 0x475aa0 */
-void d2_RemoveObj();                     /* 0x46e710 */
-int d2_FreeSurface(struct D2SURF *s);                     /* 0x478fc0 */
 void d2_RemoveHitRect();                     /* 0x4788f0 */
-int d2_RemoveWindow();                     /* 0x472ce0 */
 
 #include "io_text.h"
 #include "ls.h"
@@ -323,6 +247,7 @@ int d2_RemoveWindow();                     /* 0x472ce0 */
 #include "f3gm.h"
 #include "f3snd.h"
 #include "sblib.h"
+#include "d2.h"
 #define util_RandomU ((unsigned short (*)(int))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original this unit's callers read the 16-bit result (byte-matched ch_RandomNear 0x405160, ai_CalcMeisterBank 0x4836a0, cm_FightLoop 0x4d88c0 move it as a word / movzx) */
 #define ai_PlayerCharC (*(char **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) read bytewise, as this unit does (ai_PlayerChar + 4, ch[2]) */
 /* 0x520ec0, the tick callback: turns the frame counter sv_TickFrames into the float sv_FramesPerTick and clears it */
@@ -470,13 +395,13 @@ int sv_MessageBox(int text, unsigned flags)
     d2_CentreViewWindows(form);
     sv_MessageBoxOpen = 1;
     idx = d2_CreateRadioGroup(0);
-    k = d2_LastWindowPtr;
+    k = (char *)d2_LastWindowPtr;
     if (*(short *)(k + 0x1c) > 0) {
         do {
             int w = *(int *)(*(int *)(k + 0x18) + i * 4);
             if (*(int *)(d2_Objs + 0x18 + w * 0x2ec) != 0x40)
                 d2_RadioAdd(idx, w);
-            k = d2_LastWindowPtr;
+            k = (char *)d2_LastWindowPtr;
             i++;
         } while (i < *(short *)(k + 0x1c));
     }
@@ -484,7 +409,7 @@ int sv_MessageBox(int text, unsigned flags)
     d2_SetForm(form, 0);
     timed = flags & 0x80;
     if (timed != 0)
-        bar = d2_WinOpenSlider(0x1c, *(short *)(d2_LastWindowPtr + 10) - 0x18, *(short *)(d2_LastWindowPtr + 8) - 0x40, 0, 500, 0x83, 0x42, d2_LastWindow);
+        bar = d2_WinOpenSlider(0x1c, *(short *)((char *)d2_LastWindowPtr + 10) - 0x18, *(short *)((char *)d2_LastWindowPtr + 8) - 0x40, 0, 500, 0x83, 0x42, d2_LastWindow);
     if (sv_RunFrame(sv_MessageBox, mask) != 0) {
         quick = flags & 0x40;
         n = flags & 4;
@@ -507,7 +432,7 @@ int sv_MessageBox(int text, unsigned flags)
             if (dm_L.rup != 0)
                 sv_PopRequest = 1;
             if (timed != 0 && bar != -1)
-                d2_SetObjValue(bar, 0, 500, d3_Time - t0);
+                d2_SetObjValue4(bar, 0, 500, d3_Time - t0);
             if (n != 0 && d3_Time > t0 + 500)
                 sv_PopRequest = 1;
         } while (sv_RunFrame(sv_MessageBox, mask) != 0);
@@ -544,12 +469,12 @@ int sv_MessageBoxGreen(int a, int b, unsigned flags)
     d2_CentreViewWindows(form);
     sv_MessageBoxGreenOpen = 1;
     idx = d2_CreateRadioGroup(0);
-    k = d2_LastWindowPtr;
+    k = (char *)d2_LastWindowPtr;
     while (i < *(short *)(k + 0x1c)) {
         int w = *(int *)(*(int *)(k + 0x18) + i * 4);
         if (*(int *)(d2_Objs + 0x18 + w * 0x2ec) != 0x40) {
             d2_RadioAdd(idx, w);
-            k = d2_LastWindowPtr;
+            k = (char *)d2_LastWindowPtr;
         }
         i++;
     }
@@ -558,7 +483,7 @@ int sv_MessageBoxGreen(int a, int b, unsigned flags)
     if ((flags & 0x80) == 0)
         bar = -1;
     else
-        bar = d2_WinOpenSlider(0x1c, *(short *)(d2_LastWindowPtr + 10) - 0x18, *(short *)(d2_LastWindowPtr + 8) - 0x40, 0, 500, 0x83, 0x42, d2_LastWindow);
+        bar = d2_WinOpenSlider(0x1c, *(short *)((char *)d2_LastWindowPtr + 10) - 0x18, *(short *)((char *)d2_LastWindowPtr + 8) - 0x40, 0, 500, 0x83, 0x42, d2_LastWindow);
     while (sv_RunFrame(sv_MessageBoxGreen, mask) != 0) {
         d2_MenuNavigate(idx);
         if ((flags & 0x40) != 0)
@@ -573,7 +498,7 @@ int sv_MessageBoxGreen(int a, int b, unsigned flags)
         if (dm_L.rup != 0)
             sv_PopRequest = 1;
         if ((flags & 0x80) != 0 && bar != -1)
-            d2_SetObjValue(bar, 0, 500, d3_Time - t0);
+            d2_SetObjValue4(bar, 0, 500, d3_Time - t0);
         if ((flags & 4) != 0 && t0 + 500 < d3_Time)
             sv_PopRequest = 1;
     }
@@ -614,19 +539,19 @@ int sv_MessageBoxYesNo(int text, unsigned flags)
     d2_CentreViewWindows(form);
     sv_MessageBoxYesNoOpen = 1;
     idx = d2_CreateRadioGroup(0);
-    k = d2_LastWindowPtr;
+    k = (char *)d2_LastWindowPtr;
     while (i < *(short *)(k + 0x1c)) {
         w = *(int *)(*(int *)(k + 0x18) + i * 4);
         if (*(int *)(d2_Objs + 0x18 + w * 0x2ec) != 0x40) {
             d2_RadioAdd(idx, w);
-            k = d2_LastWindowPtr;
+            k = (char *)d2_LastWindowPtr;
         }
         i++;
     }
     d2_RadioSelect(idx, 0);
     d2_SetForm(form, 0);
     if ((flags & 0x80) != 0)
-        bar = d2_WinOpenSlider(0x1c, *(short *)(d2_LastWindowPtr + 10) - 0x20, *(short *)(d2_LastWindowPtr + 8) - 0x40, 0, 500, 0x83, 0x42, d2_LastWindow);
+        bar = d2_WinOpenSlider(0x1c, *(short *)((char *)d2_LastWindowPtr + 10) - 0x20, *(short *)((char *)d2_LastWindowPtr + 8) - 0x40, 0, 500, 0x83, 0x42, d2_LastWindow);
     while (sv_RunFrame(sv_MessageBoxYesNo, mask) != 0) {
         d2_MenuNavigate(idx);
         if ((flags & 0x40) != 0)
@@ -641,7 +566,7 @@ int sv_MessageBoxYesNo(int text, unsigned flags)
         if (dm_L.rup != 0)
             sv_PopRequest = 1;
         if ((flags & 0x80) != 0 && bar != -1)
-            d2_SetObjValue(bar, 0, 500, d3_Time - t0);
+            d2_SetObjValue4(bar, 0, 500, d3_Time - t0);
         if ((flags & 4) != 0 && t0 + 500 < d3_Time)
             sv_PopRequest = 1;
     }
@@ -785,7 +710,7 @@ void sv_SceneLoadProgress(int kind, int cur, int total)
         sv_LoadFrame = 0;
         h = d2_OpenSlider((int)(d3_ViewW * 0.5f + d3_ViewX - 205.0f), d2_ScreenH - 0x40, 0x190, 0, 0x190, 0x83, 0x42);
         sv_LoadSlider = h;
-        d2_SetObjValue(h, 0, 0x190, 0);
+        d2_SetObjValue4(h, 0, 0x190, 0);
         d2_BlitPart(0, 0, ((D2SURF *)d2_BackSurf)->w, ((D2SURF *)d2_BackSurf)->h, d2_ScreenSurf, 0, 0, d2_BackSurf);
         if (sv_LoadSlider == -1)
             goto lend;
@@ -793,9 +718,9 @@ void sv_SceneLoadProgress(int kind, int cur, int total)
     if (kind == 0 || sv_LoadFrame % 10 == 0)
         d2_BlitPart(0, 0, ((D2SURF *)d2_BackSurf)->w, ((D2SURF *)d2_BackSurf)->h, d2_BackSurf, 0, 0, d2_ScreenSurf);
     if (kind == 0) {
-        d2_SetObjValue(sv_LoadSlider, 0, 0x190, cur * 200 / total);
+        d2_SetObjValue4(sv_LoadSlider, 0, 0x190, cur * 200 / total);
     } else if (kind == 1) {
-        d2_SetObjValue(sv_LoadSlider, 0, 0x190, cur * 200 / total + 200);
+        d2_SetObjValue4(sv_LoadSlider, 0, 0x190, cur * 200 / total + 200);
         if (cur >= total - 1) {
             d2_RemoveObj(sv_LoadSlider);
             sv_LoadSlider = -1;
@@ -1054,7 +979,7 @@ extern char *ai_Goods;              /* 0x91aaf0 */
 #define ai_BTypesT (*(AIBTYPE **)&ai_BTypes)  /* 0x7e3f30, ai_BTypes (ahm.c: char *) as the AIBTYPE records it points to */
 #define sv_ClickedObjectT (*(D3OBJECT **)&ai_ClickedObject)  /* 0x6f22e4, ai_ClickedObject (cm.h: int) as the scene object picked (d3if_Pick) */
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
-int d2_BlitPartMode();                     /* 0x479150 */  /* @original: sv.c's call at 1099 passes 1 argument to d2.h's 8-parameter prototype */
+/* 0x479150, with d2.h's prototype (the 9 pushes of 0x522b38 agree: push 1, d2_ScreenSurf, 0x5b, d2_ScreenW - 0x6e, view, h, w, 0, 0) */
 extern int sv_ResearchClass, sv_ScreenDirty, sv_GroundplanBuilding, sv_GroundplanRoom, sv_GroundplanScene;  /* 0x6f233c, 0x6f2358, 0x6f235c, 0x6f2360, 0x623e8c */
 extern int sv_ResearchClass;  /* 0x6f233c, the class number of the research list the panel shows (gm_BuildingClass) */
 extern char d2_GfxDir[];             /* 0xf8ef80, the data directory */
@@ -1843,9 +1768,9 @@ void sv_UpdateMemberList(unsigned char *g)
             sv_DrawBalanceBar(0x34, 4, ai_Chars[sv_MemberRows[n].chr], 3, 0x4f1);
         }
         if (((SVCHARREC *)ai_Chars[i])->selected != 0)
-            d2_SetObjValue(sv_MemberRows[n].check, 1);
+            d2_SetObjValue2(sv_MemberRows[n].check, 1);
         else
-            d2_SetObjValue(sv_MemberRows[n].check, 0);
+            d2_SetObjValue2(sv_MemberRows[n].check, 0);
     }
     for (n = 0; n < 0x20; n++) {
         r = &sv_MemberRows[n];
@@ -1867,9 +1792,9 @@ void sv_UpdateMemberList(unsigned char *g)
             continue;
         if (((SVCHARREC *)ai_Chars[sv_MemberRows[n].chr])->selected != 0) {
             d2_AddPointerItem(sv_D2Objs[sv_MemberRows[n].check].pic, 1);
-            d2_SetObjValue(sv_MemberRows[n].check, 1);
+            d2_SetObjValue2(sv_MemberRows[n].check, 1);
         } else
-            d2_SetObjValue(sv_MemberRows[n].check, 0);
+            d2_SetObjValue2(sv_MemberRows[n].check, 0);
         im1 = -1;
         if (sv_MemberRows[n].icon[0] != -1) {
             d2_RemoveObj(sv_MemberRows[n].icon[0]);
@@ -3339,7 +3264,6 @@ extern int sv_PanelWidgets[4];  /* 0x62386c */
 
 int d2_WinCreateSlider();                     /* 0x46bf10 */
 void d2_SetObjFont();                     /* 0x4760b0 */
-void d2_SetObjWidth(int obj, short w);                     /* 0x46c260 */
 int d2_WinOpenSlider(int x, int y, int len, int p4, int p5, int pic, unsigned int flags, int win);                     /* 0x46a960 */
 int sv_AddPanelButton(int x, int y, int text);
 
@@ -3976,12 +3900,11 @@ int sv_ReturnZero(void)
 #define SV_US(a) (*(unsigned short *)(a))
 #define SV_B(a) (*(unsigned char *)(a))
 #define SV_C(a) (*(char **)(a))
-#define SV_W(i) (d2_Objs + (i) * 0x2ec)            /* widget i */
+#define SV_W(i) ((char *)d2_Objs + (i) * 0x2ec)            /* widget i */
 #define SV_WI(i, o) (*(int *)(SV_W(i) + (o)))
 #define SV_WS(i, o) (*(short *)(SV_W(i) + (o)))
 #define SV_WB(i, o) (*(char *)(SV_W(i) + (o)))
 
-void d2_RemoveObj();                     /* 0x46e710 */
 int d2_WinOpenPic(short x, short y, int pic, int win);                     /* 0x4731d0 */
 int d2_CreateWinText(short x, short y, char *text, int win);                     /* 0x473650 */
 int d2_CreateScreenText(short x, short y, char *text);                     /* 0x473860 */
@@ -3993,7 +3916,6 @@ void d2_AddDirty();                     /* 0x468eb0 */
 int d2_ShpBlit();                     /* 0x47bd70 */
 void d2_SetClipRect(int x0, int y0, int x1, int y1);                     /* 0x47cb40 */
 void * d2_SetFont(int font);                     /* 0x476030 */
-void d2_EnableObject();                     /* 0x475aa0 */
 int d2_SetForm(int view, int n);                     /* 0x475f70 */
 void gm_ClockToDate(struct AITIME *c, unsigned char *out);                     /* 0x4fe2c0 */
 int gm_Season(char *d);                     /* 0x4fe330, f3gm.h */
@@ -6060,7 +5982,6 @@ extern char d3d_ZEnabled;
 struct D3OBJECT * d3t_FindObject(char *name, char flags);                     /* 0x411900 */
 int d2_TextWidth();                     /* 0x46ea10 */
 int d2_WinCreateSlider();                     /* 0x46bf10 */
-void d2_SetObjWidth(int obj, short w);                     /* 0x46c260 */
 
 /* 0x52e050, draws the hint text (d2_CaptionCopy) at the mouse position when it is not empty and the option
    ai_GameSwitches byte 2 (show_cursor_txt) is set */
@@ -6851,7 +6772,7 @@ void sv_ScrollFormAnimate(void)
 
     if (sv_ScrollForm != -1) {
         d2_SetForm(sv_ScrollForm, 1);
-        f = (((D2WIN *)d2_LastWindowPtr)->scrollY / 6) % 0xc;
+        f = ((d2_LastWindowPtr->scrollY) / 6) % 0xc;
         if (f < 0)
             f = 0;
         ((D2OBJ *)d2_Objs)[sv_ScrollEndTop].input = f;
@@ -7006,7 +6927,7 @@ void sv_ChatConsole(void)
             ids[i] = w;
             ((D2OBJ *)d2_Objs)[w].checkable = 1;
             ((D2OBJ *)d2_Objs)[w].user = &ai_CharsT[k];
-            d2_SetObjValue(w, sv_ChatRecipients[i]);
+            d2_SetObjValue2(w, sv_ChatRecipients[i]);
             i++;
         }
     }
@@ -7030,7 +6951,7 @@ void sv_ChatConsole(void)
             sprintf(msg.text, "$%iFF ", ai_CharsT[ai_PlayerId].ref54 - 0x59a);
             strcat(msg.text, (char *)d2_GetObjValue(ed));
             strcat(msg.text, "$A");
-            d2_SetObjValue(ed, ch_EmptyName);
+            d2_SetObjValue2(ed, ch_EmptyName);
             cm_SendChat(&msg);
             sv_PopRequest = 1;
         }
