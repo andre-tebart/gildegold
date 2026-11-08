@@ -5,6 +5,7 @@
 
 #include "cm_types.h"                     /* CMLOBBYPLAYER */
 
+extern char lobby_ChooseProfessionForm[24];  /* 0x6250b8, "Menu\CHOOSEPROFESSION", the choose-profession form */
 extern int lobby_Buttons[2];            /* 0x62aa7c, the button row: [0] ready, [1] the character */
 extern int lobby_LeaveButton;           /* 0x62aa84, the leave button */
 extern int lobby_Form;                  /* 0x62aa88, the lobby form, -1: not open */

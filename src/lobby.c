@@ -34,7 +34,6 @@ extern GAPDATA full_data_623110[];
 extern GAPDATA full_data_623594[];
 extern GAPDATA full_data_6240cc[];
 extern GAPDATA full_data_6240e0[];
-extern GAPDATA full_data_6250b8[];
 extern GAPDATA full_data_6250d0[];
 extern GAPDATA full_data_6250e4[];
 extern GAPDATA full_data_6250ec[];
@@ -528,7 +527,7 @@ int lobby_ChooseProfession(int param)
     ids[8] = 0xd;
     ids[9] = 0xe;
     ids[10] = 0xf;
-    win = d2_OpenForm(0, 0, (char *)(unsigned)&full_data_6250b8);
+    win = d2_OpenForm(0, 0, lobby_ChooseProfessionForm);
     d2_CentreViewWindows(win);
     d2_SetForm(win, 0);
     io_PrintText(0x1afa);
