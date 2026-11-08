@@ -1569,7 +1569,7 @@ char dd_SetMode(int xres, int yres, int bpp, int mode, HWND wnd, int unk6, char 
                 dd_BBits = 8;
                 dd_GBits = 8;
                 dd_RBits = 8;
-                dd_RMask = ((unsigned)&txt_Keys + 0x81c0);
+                dd_RMask = 0xff0000u;
                 dd_GMask = 0xff00;
                 dd_BMask = 0xff;
             }
