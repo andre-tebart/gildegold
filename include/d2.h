@@ -277,13 +277,14 @@ void d2_SubRefcount(int pic);                                                   
 #define d2_Unk46cac0 d2_SubRefcount
 void d2_MoveObj(short x, short y, int obj);                                       /* 0x46cda0, moves an object (d2.c); d2_CreatePicObj passes ints (d2_MoveObjI) */
 void d2_RemoveObj(int obj);                                                      /* 0x46e710, removes the object */
+void d2_DeleteObject(int obj);                                                   /* 0x46c9e0, forwards to d2_RemoveObj */
 int d2_TextWidth(char *text, int font);                                         /* 0x46ea10, text width */
 void d2_DrawText(int x, int y, void *surf, char *text, unsigned char flags);              /* 0x46f000, draws a text */
 void d2_DrawTextBox(int x, int y, int w, int h, void *surf, char *text, unsigned int flags); /* 0x46f1a0, text in a box */
 int d2_RemoveWindow(int win);                                                      /* 0x472ce0, 1 if the window was open */
 void d2_AddToDrawOrder(int obj, D2WIN *win);                                         /* 0x4730e0 */
 void d2_SetCaption(int obj, char *text);                                         /* 0x473540, button caption */
-void d2_SetObjValue();                                             /* 0x475cb0 (int obj, int a, int b, int c, int d); d2.c calls it with 2 */
+void d2_SetObjValue(int obj, int a, int b, int c, int d);                         /* 0x475cb0, sets the value (and range) of an input / slider / counter object; the original's call sites that push 2 or 4 arguments use their unit's cast macro (d2_SetObjValue2 / 4) */
 void *d2_SetFont(int font);                                                    /* 0x476030, selects the font */
 void d2_FreeFades(void);                                                        /* 0x476b40 */
 struct D2SURF * d2_MakeSurface(struct D2SURF *desc, int flags);                                  /* 0x478cc0, creates a surface */

@@ -309,6 +309,7 @@ int main_PreloadSound(char *f);         /* 0x537c70 */
 #define d2_MoveObjS ((void (*)(short, short, int))d2_MoveObj)  /* 0x46cda0 as its definition reads it (d2.c f_46cda0.c: short x, short y): this unit's callers push the short sums untruncated (0x532212 `sub dx, [..]; sub edx, 0x30; push edx`); d2.h keeps int for d2_CreatePicObj (@original) */
 #define util_RandomInt ((int (*)(unsigned short))util_Random)  /* 0x42ec00 as tr.c defines it: @original this unit reads the full int result (0x53b8c9 util_Random(4) + 0x20 pushed without the 16-bit mask ai.h's unsigned short prototype adds) */
 #define d2_SetObjValue4 ((void (*)(int, int, int, int))d2_SetObjValue)  /* the 4-argument call (as menu.h) */
+#define d2_SetObjValue2 ((void (*)(int, int))d2_SetObjValue)  /* 0x475cb0: @original the text-only calls push two (0x532c9d main_EnterHostAddress: push buf; push obj; 0x53649d / 0x5364ac main_ChoosePlayer: push 0x75e5aa / 0x75e5ca; push obj) */
 int main_ChooseCity(int unused, int host);  /* 0x537230, the player setup / city choice of a new game ("Menu\CHOOSECITY", the start menu page "Startmenu/A_Stadtwahl.esc"; host = 1 for a network host (the list of ".NET" files, else ".CTY"): lists the city files
    "gamedata/cities/*" (0x5d33b0: up to 64 records of 0x210 bytes, the path at +0x109), reads each header (0x51cee0, an LSHEADER: +5 the name, from which the city point is created (ai_CreateCityPoint, its dummy "dummy_<NAME>"), +0x30 slotByte the player limit; diff[i] = limit - players (0x62489c)),
    creates the name object of the city (0x59a2c0 "stadt_<name>", the text plate 0x52e1c0 from the table 0x143a1c0 by the key "_STADTAUSWAHL_<NAME>_INFO+0" (0x42e770)), puts the city tower "sp_STADTTURM" (0x446e10,
@@ -1059,7 +1060,7 @@ int main_EnterHostAddress(void)
     io_PrintText(0x1cae);
     d2_SetForm(f, 0);
     ed = d2_GetWinObj(f, 0, 0);
-    d2_SetObjValue(ed, buf);
+    d2_SetObjValue2(ed, buf);
     d2_SetForm(f, 1);
     ok = d2_GetWinObj(f, 1, io_PrintText(0x1cb0));
     run = sv_RunFrame((int)main_EnterHostAddress, 0x24087);
@@ -1421,7 +1422,7 @@ void main_MoneyDialog(void)
     d2_DirtyRectBottom = 2;
     dlg = d2_CreateWindow(0x20, 0x60, 0x26c, 400, 0x15);
     ed = d2_GetWinObj(-1, dlg, io_PrintText("$3ABetrag:%m"));
-    d2_SetObjValue(ed, 0, 10000, 0);
+    d2_SetObjValue4(ed, 0, 10000, 0);
     run = sv_RunFrame((int)main_MoneyDialog, 0x24087);
     while (run != 0) {
         if (kb_Last == 1)
@@ -2331,8 +2332,8 @@ int main_ChoosePlayer(int mask, int flag)
     }
     d2_SetForm(f, 6);
     ok = d2_GetWinObj(f, 6, io_PrintText(0x7e));
-    d2_SetObjValue(e1, init_PlayerProfile.firstName);
-    d2_SetObjValue(e2, init_PlayerProfile.familyName);
+    d2_SetObjValue2(e1, init_PlayerProfile.firstName);
+    d2_SetObjValue2(e2, init_PlayerProfile.familyName);
     for (i = 0; i < 8; i++) {
         if (d2_Objs[ent[i]].pic == init_PlayerProfile.coat) {
             d2_RadioSelect(list, i);
@@ -2687,7 +2688,7 @@ void main_ChooseOpponents(int n)
     for (i = 0; i < n; i++, y += h) {
         sprintf(buf, "%s %c", txt_Ptrs[0x42c6], i + 'A');
         ids[i] = d2_WinOpenSlider(0x80, y, 200, 0, 100, 0x7b, 0x802, d2_LastWindow);
-        d2_SetObjValue(ids[i], 0, 4, ai_Opponents[i]);
+        d2_SetObjValue4(ids[i], 0, 4, ai_Opponents[i]);
         d2_SetSliderFlags(ids[i], 0x82);
         d2_SetLabel(ids[i], buf);
         d2_SetList(ids[i], 5, txt_Ptrs[0x42c7], txt_Ptrs[0x42c8], txt_Ptrs[0x42c9], txt_Ptrs[0x42ca], txt_Ptrs[0x42cb]);
@@ -2946,7 +2947,7 @@ void main_SetLoadProgress(int unused, int pct)
         d2_SetForm(init_StatusForm, 0);
         d2_SetForm(init_StatusForm, 1);
         b = d2_GetWinObj(init_StatusForm, 1, 0);
-        d2_SetObjValue(b, 0, 0x246, (pct * 0x246) / 100);
+        d2_SetObjValue4(b, 0, 0x246, (pct * 0x246) / 100);
         d2_DrawAll();
     }
 }

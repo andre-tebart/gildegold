@@ -1054,6 +1054,8 @@ typedef struct G8USEVIEW {              /* a local view of am.h's G8USE (am.h ca
 #define sv_SelectPanelObjectK ((int (*)())sv_SelectPanelObject)  /* 0x52c4c0?: @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) */
 #define ai_GfxDetailI (*(int *)&ai_GfxDetail)  /* 0x6f35c4 (menu.c: unsigned char): @original ai_ShowVgObjects reads the detail as a dword and takes its low byte (0x58f9d7 mov ecx, dword ptr [0x6f35c4] / and edx, 0xff); the byte object compiles to mov cl, byte ptr */
 #define d2_CreatePicObjS ((int (*)(short, short, int))d2_CreatePicObj)  /* 0x46cd80 (d2.h: int x, y): @original the town map update adds the window position to the mark pixel in 16 bits (0x5a8052 mov dx, word ptr [eax + 4] / add dx, di / push edx), as d2.c's callers */
+#define d2_SetObjValue2 ((void (*)(int, int))d2_SetObjValue)  /* 0x475cb0 (d2.h: five parameters): @original the checkbox / route-box calls push only the object and the value (0x5c81ab ai_CityStatsPanel: push esi; push edi; 0x5b0a1b ai_TransportWindow: push 0; push esi) */
+#define d2_SetObjValue4 ((void (*)(int, int, int, int))d2_SetObjValue)  /* 0x475cb0 (d2.h: five parameters): @original the range calls push four (0x5c2610 ai_ShowWorkSettingsPage: push *budget; push 0x2328; push 0x3e8; push eax; 0x5c2675: push eax; push 0x96; push 0x32; push esi) */
 /* 0x58bbd0, the production window's table init (400 B): the five-entry table 0x6f4f08 (-1 / -1 every 0x14 B) and
    0x6f52e8 (0 / -1); the eight 0x58-byte records 0x6f5334 + i * 0x58 (i = 0 .. 7, the id 0x10 + i * 0x78 and the
    slot values -1); the 0xe-entry records 0x6f5a84 + i * 0x38 (the id 0x10 + i * 0x45, +4 = 0x1a, -1 fields); the
@@ -1971,7 +1973,6 @@ void ai_LayoutProdGoodsList(int view, int part, int pointer, int bld)
     }
 }
 
-void d2_SetObjValue();
 
 /* 0x58e130, the direction table and the entry fill of the production window (769 B, ROUGH): the 68-dword kind
    table (entry i = the label of the goods kind i) selected by the direction byte +0x1c of param_1 fills the
@@ -2216,7 +2217,7 @@ void ai_ShowProdSlot(int view, int part, LCPRODSLOT *slot, int input, unsigned c
             max = slot->amount;
             if ((ai_BuildingPerms & 0x200) == 0)
                 max -= slot->reserved;
-            d2_SetObjValue(slot->check, 0, max < 0 ? 0 : max, value);
+            d2_SetObjValue4(slot->check, 0, max < 0 ? 0 : max, value);
             if (slot->amount != 0)
                 d2_Objs[slot->check].greyed = 0;
             else
@@ -6485,7 +6486,7 @@ void ai_MistressContact(int building, int room)
 }
 
 int gm_TitlesLeft(); float gm_TitlePeriodServed(int n, int *out); int d2_WinOpenSlider();
-void d2_SetObjValue(); int gm_TitleGroup(); void gm_AddTime(struct AITIME *c, int hours, int mins, int secs);
+int gm_TitleGroup(); void gm_AddTime(struct AITIME *c, int hours, int mins, int secs);
 
 /* 0x596ff0, the master-exam window "locations\wohnsitz\meisterpruefung" (the MEISTERPRUEFUNG plate of the
    residence): the player's next title (gm_TitlesLeft of the job + 1) and the share of the current title's period
@@ -6554,7 +6555,7 @@ void ai_MasterExamWindow(AIBLD *bld)
         io_PrintText(0x15bc, ch->id, &left);
         slider = d2_WinOpenSlider(0x1c, d2_LastWindowPtr->h - 0x3c, d2_LastWindowPtr->w - 0x40, 0, 100, 0x83, 0x42,
                                   d2_LastWindow);
-        d2_SetObjValue(slider, 0, 100, (int)(served * 100.0f));
+        d2_SetObjValue4(slider, 0, 100, (int)(served * 100.0f));
     }
     while (sv_RunFrame(ai_MasterExamWindow, 0x677c7) != 0) {
         if (d2_ClickedId != -1 && served >= 1.0) {
@@ -8313,7 +8314,7 @@ void ai_WineCellarWindow(void)
     io_PrintText(0x1a4c);
     d2_SetForm(win, 2);
     ctl = d2_GetWinObj(win, 2, io_PrintText(0x1a4d, ai_OwnPlayer));
-    d2_SetObjValue(ctl, 0, max(gm_ConvertMoney(cellar, ai_OwnPlayer) + gm_ConvertMoney(own, ai_OwnPlayer),
+    d2_SetObjValue4(ctl, 0, max(gm_ConvertMoney(cellar, ai_OwnPlayer) + gm_ConvertMoney(own, ai_OwnPlayer),
                                gm_ConvertMoney(cellar, ai_OwnPlayer)),
                    gm_ConvertMoney(cellar, ai_OwnPlayer));
     d2_SetPointerSprite(0, 0);
@@ -8716,9 +8717,9 @@ void ai_CreditReleaseWindow(AIBLD *bank)
     text = io_PrintText(0x18e6, ((GMPLAYERSLOT *)ai_PlayerSlots)[ai_OwnPlayer].moneyGood * 2 + 0x9a8);
     interestCtl = d2_GetWinObj(win, 2, text);
     moneyCtl = d2_GetWinObj(win, 2, text + 1);
-    d2_SetObjValue(interestCtl, 5, 0x28, bank->interest);
+    d2_SetObjValue4(interestCtl, 5, 0x28, bank->interest);
     own = gm_GetGoodsValue(ai_Chars[bank->owner]);
-    d2_SetObjValue(moneyCtl, 0, gm_ConvertMoney(own, ai_OwnPlayer), gm_ConvertMoney(stock, ai_OwnPlayer));
+    d2_SetObjValue4(moneyCtl, 0, gm_ConvertMoney(own, ai_OwnPlayer), gm_ConvertMoney(stock, ai_OwnPlayer));
     d2_SetPointerSprite(0, 0);
     while (sv_RunFrame(ai_CreditReleaseWindow, 0x677c7) != 0) {
         if (dm_L.rup != 0 || d2_ClickedId == 1)
@@ -8993,7 +8994,7 @@ int ai_FillExchangeRows(int list, LCEXCHROW *rows, int view, int form, char inpu
         obj = (AIOBJ *)gm_Query((void *)list, 1, 0, rows[i].good);
         if (obj != 0 && gm_CurrencyDivide(obj->count, rows[i].good) != 0) {
             amount = gm_CurrencyDivide(obj->count, rows[i].good);
-            d2_SetObjValue(rows[i].icon, 0, amount, value);
+            d2_SetObjValue4(rows[i].icon, 0, amount, value);
             txt_Format(text, "%I %s", amount, txt_ObjectNames[rows[i].good][0]);
             d2_SetObjText(rows[i].text, text);
             d2_Objs[rows[i].text].w = 0xbe;
@@ -9192,9 +9193,9 @@ void ai_ExchangeWindow(AIBLD *bank)
                 d2_EndInputEdit();
                 for (i = 0; i <= 15; i++) {
                     if (bankRows[i].icon != -1)
-                        d2_SetObjValue(bankRows[i].icon, 0, 0, 0);
+                        d2_SetObjValue4(bankRows[i].icon, 0, 0, 0);
                     if (ownRows[i].icon != -1)
-                        d2_SetObjValue(ownRows[i].icon, 0, 0, 0);
+                        d2_SetObjValue4(ownRows[i].icon, 0, 0, 0);
                 }
             } else {
                 sv_PopRequest = 1;
@@ -9303,9 +9304,9 @@ void ai_ExchangeWindow(AIBLD *bank)
                         d2_EndInputEdit();
                         for (i = 0; i <= 15; i++) {
                             if (bankRows[i].icon != -1)
-                                d2_SetObjValue(bankRows[i].icon, 0, 0, 0);
+                                d2_SetObjValue4(bankRows[i].icon, 0, 0, 0);
                             if (ownRows[i].icon != -1)
-                                d2_SetObjValue(ownRows[i].icon, 0, 0, 0);
+                                d2_SetObjValue4(ownRows[i].icon, 0, 0, 0);
                         }
                     }
                 }
@@ -9351,9 +9352,9 @@ void ai_ExchangeWindow(AIBLD *bank)
                         d2_EndInputEdit();
                         for (i = 0; i <= 15; i++) {
                             if (bankRows[i].icon != -1)
-                                d2_SetObjValue(bankRows[i].icon, 0, 0, 0);
+                                d2_SetObjValue4(bankRows[i].icon, 0, 0, 0);
                             if (ownRows[i].icon != -1)
-                                d2_SetObjValue(ownRows[i].icon, 0, 0, 0);
+                                d2_SetObjValue4(ownRows[i].icon, 0, 0, 0);
                         }
                     }
                 }
@@ -9384,8 +9385,8 @@ void ai_ExchangeFeesWindow(AIBLD *bank)
     text = io_PrintText(0x1907);
     ctl1 = d2_GetWinObj(win, 1, text);
     ctl2 = d2_GetWinObj(win, 1, text + 1);
-    d2_SetObjValue(ctl2, 3, 0xf, bank->messengerFee);
-    d2_SetObjValue(ctl1, 3, 0xf, bank->exchangeFee);
+    d2_SetObjValue4(ctl2, 3, 0xf, bank->messengerFee);
+    d2_SetObjValue4(ctl1, 3, 0xf, bank->exchangeFee);
     for (;;) {
         if (sv_RunFrame(ai_ExchangeFeesWindow, 0x677c7) == 0) {
             d2_CloseView(win);
@@ -9565,7 +9566,7 @@ void ai_MoneyExchangeWindow(AIBLD *bank)
                 d2_EndInputEdit();
                 for (i = 0; i < 16; i++)
                     if (bankRows[i].icon != -1)
-                        d2_SetObjValue(bankRows[i].icon, 0, 0, 0);
+                        d2_SetObjValue4(bankRows[i].icon, 0, 0, 0);
             }
         }
         for (i = 0; i < 16; i++) {
@@ -11026,7 +11027,7 @@ void ai_GuildCashPayWindow(AIBLD *bld)
     if (master) {
         text = io_PrintText(0x1a1b, ai_PlayerCity[ai_OwnPlayer][0] * 2 + 0x9a8);
         ai_AmountLimit(0x640, worth, 0x20, &amount);
-        d2_SetObjValue(d2_GetWinObj(win, 1, text), gm_ConvertMoney(0x640, ai_OwnPlayer),
+        d2_SetObjValue4(d2_GetWinObj(win, 1, text), gm_ConvertMoney(0x640, ai_OwnPlayer),
                        gm_ConvertMoney(amount, ai_OwnPlayer), gm_ConvertMoney(0x640, ai_OwnPlayer));
         payBtn = d2_GetWinObj(win, 1, text + 1);
         cancelBtn = d2_GetWinObj(win, 1, text + 2);
@@ -11477,8 +11478,7 @@ void ai_GuildLevel1Listener(int building, int room)
 
 char * gm_Query(void *list, int n, ...); int gm_GetWorth(unsigned short id); int gm_GetGoodsValue(); int ai_AmountLimit();
 int d2_OpenForm(); void d2_SetPointerSprite(int a, int pic); int d2_SetForm(int view, int n);
-int io_PrintText(char *fmt, ...); int d2_GetWinObj(); void d2_SetObjValue();
-int gm_ConvertMoney(int a, unsigned char k); int gm_PlayerFactor(int a, unsigned char k);
+int io_PrintText(char *fmt, ...); int d2_GetWinObj(); int gm_ConvertMoney(int a, unsigned char k); int gm_PlayerFactor(int a, unsigned char k);
 int cm_SendMoveGoods(int a, int b, unsigned char c, int d); int cm_SendRelations(int a, int b, int c, int d); void txt_Format(char *out, int id0, ...);
 void d2_CloseView(int view); int _ftol();
 
@@ -11536,7 +11536,7 @@ void ai_DonationWindow(AIBLD *bld)
         v = io_PrintText(0x1988, ai_PlayerId, bld->owner, 0x48c, ai_PlayerCity[ai_OwnPlayer][0] * 2 + 0x9a8);
         ai_AmountLimit(least, money, 0x20, &amount);
         slider = d2_GetWinObj(win, 1, v);
-        d2_SetObjValue(slider, gm_ConvertMoney(least, ai_OwnPlayer), gm_ConvertMoney(amount, ai_OwnPlayer),
+        d2_SetObjValue4(slider, gm_ConvertMoney(least, ai_OwnPlayer), gm_ConvertMoney(amount, ai_OwnPlayer),
                        gm_ConvertMoney(least, ai_OwnPlayer));
         d2_SetForm(win, 2);
         v = io_PrintText(0x1989);
@@ -11876,8 +11876,7 @@ void ai_Top5Window(void)
     d2_CloseView(win);
 }
 
-void cm_SendMoneyDelta(int a, int b); void ai_ShowPaymentNews(); void d2_SetObjValue();
-
+void cm_SendMoneyDelta(int a, int b); void ai_ShowPaymentNews(); 
 /* 0x5a2b60, the confession window "Locations\Kirche\Beichte" of the church bld (none without an owner): the text
    0x197f; without graves of the player's (gv_CountOwnedGraves) the text 0x1980, else the text 0x1981 (the
    graves) with the amount slider (2 .. 6, step 2) and the buttons 0x1982 (confess) / 0x1983 (cancel). Confessing
@@ -11906,7 +11905,7 @@ void ai_ConfessionWindow(AIBLD *bld)
     io_PrintText(0x197f);
     if (graves != 0) {
         slider = d2_GetWinObj(win, 1, io_PrintText(0x1981, graves));
-        d2_SetObjValue(slider, 2, 6, 2);
+        d2_SetObjValue4(slider, 2, 6, 2);
         confessBtn = d2_GetWinObj(win, 1, io_PrintText(0x1982));
         cancelBtn = d2_GetWinObj(win, 1, io_PrintText(0x1983));
         active = 1;
@@ -12448,7 +12447,7 @@ void ai_DungeonBribeWindow(AIBLD *bld)
     slider = d2_GetWinObj(win, 1, textId);
     bribeBtn = d2_GetWinObj(win, 1, textId + 1);
     money = gm_CharMoney(ai_PlayerId);
-    d2_SetObjValue(slider, 0x96, gm_ConvertMoney(money, ai_OwnPlayer), 0xfa);
+    d2_SetObjValue4(slider, 0x96, gm_ConvertMoney(money, ai_OwnPlayer), 0xfa);
     d2_SetPointerSprite(0, 0);
     do {
         if (dm_L.rup != 0)
@@ -15918,7 +15917,7 @@ int ai_AskBonusAmount(void)
     v = gm_GetGoodsValue((char *)&ai_Chars[ai_PlayerId]);
     if (v >= 0x12c0)
         v = 0x12c0;
-    d2_SetObjValue(ctrl, 10, v / 32, 10);
+    d2_SetObjValue4(ctrl, 10, v / 32, 10);
     d2_CentreViewWindows(win);
     while (sv_RunFrame(ai_AskBonusAmount, mask) != 0) {
         if (d2_ClickedId != 0) {
@@ -16041,7 +16040,7 @@ void ai_FillPersonnelRow(AICHARREC *ch, G9DOMIZILROW *row, int bars)
     if (row->slider != -1) {
         v = gm_Opinion(ai_PlayerId, row->ch->id);
         f = (v + 128.0) * 100.0;
-        d2_SetObjValue(row->slider, 0, 100, (int)(f / 255.0));
+        d2_SetObjValue4(row->slider, 0, 100, (int)(f / 255.0));
     }
 }
 
@@ -16338,10 +16337,10 @@ void ai_PersonnelBook(AIBLD *bld, char *model)
         io_CharacterName(master->id, 1, 1, masterText);
     d2_SetForm(book->views[0], 3);
     wageSlider = d2_GetWinObj(book->views[0], 3, 2);
-    d2_SetObjValue(wageSlider, 0x32, 0x96, bld->wageRate);
+    d2_SetObjValue4(wageSlider, 0x32, 0x96, bld->wageRate);
     if (bt->kind != 4 && bt->kind != 0x13 && bt->kind != 0x10) {
         workList = d2_GetWinObj(book->views[0], 3, 3);
-        d2_SetObjValue(workList, 0, 4, bld->workRate);
+        d2_SetObjValue4(workList, 0, 4, bld->workRate);
         d2_SetList(workList, 5, txt_Ptrs[0x1a2e], txt_Ptrs[0x1a2f], txt_Ptrs[0x1a30], txt_Ptrs[0x1a31], txt_Ptrs[0x1a32]);
     }
     d2_SetForm(book->views[0], 3);
@@ -16953,7 +16952,7 @@ void ai_MercenaryBook(AIBLD *bld, char *model)
                 if (rows[i].slider != -1) {
                     v = gm_Opinion(ai_PlayerId, c->id);
                     f = (v + 128.0) * 100.0;
-                    d2_SetObjValue(rows[i].slider, 0, 100, (int)(f / 255.0));
+                    d2_SetObjValue4(rows[i].slider, 0, 100, (int)(f / 255.0));
                 }
             } else if (job != 0 && job->hireTitle == 0x13 && job->tourCounters[i] != 0) {
                 strcpy(hireText, txt_Ptrs[0x1a24]);
@@ -17107,7 +17106,7 @@ int ai_AskHelperBonus(void)
     v = gm_GetGoodsValue((char *)&ai_Chars[ai_PlayerId]);
     if (v >= 0x12c0)
         v = 0x12c0;
-    d2_SetObjValue(ctrl, 10, v / 32, 10);
+    d2_SetObjValue4(ctrl, 10, v / 32, 10);
     d2_CentreViewWindows(win);
     while (sv_RunFrame(ai_AskHelperBonus, mask) != 0) {
         if (d2_ClickedId != 0) {
@@ -17445,7 +17444,7 @@ void ai_HelperBook(AIBLD *bld, char *model)
                 if (rows[i].slider != -1) {
                     v = gm_Opinion(ai_PlayerId, c->id);
                     f = (v + 128.0) * 100.0;
-                    d2_SetObjValue(rows[i].slider, 0, 100, (int)(f / 255.0));
+                    d2_SetObjValue4(rows[i].slider, 0, 100, (int)(f / 255.0));
                 }
             } else if (job != 0 && job->hireTitle == 0x13 && job->tourCounters[i] != 0) {
                 strcpy(hireText, txt_Ptrs[0x1a24]);
@@ -17849,7 +17848,7 @@ int ai_TransportFromLager(int lagerId, AIOBJ *cart, AIBLD *bld, int priced, char
             sv_SetStatusText(text);
             sb_PlaySample(0, "RollenKurz_s_01", 1, 0x3f, 0x7f, 0, 0);
         }
-        d2_SetObjValue(slot->check, 0, slot->amount, d2_GetObjValue2(slot->check, 0) - n);
+        d2_SetObjValue4(slot->check, 0, slot->amount, d2_GetObjValue2(slot->check, 0) - n);
     }
     for (i = 0; i < 16; i++) {
         slot = &ai_ProdGoods[i];
@@ -17902,7 +17901,7 @@ int ai_TransportFromLager(int lagerId, AIOBJ *cart, AIBLD *bld, int priced, char
             sv_SetStatusText(text);
             sb_PlaySample(0, "RollenKurz_s_01", 1, 0x3f, 0x7f, 0, 0);
         }
-        d2_SetObjValue(slot->check, 0, slot->amount, d2_GetObjValue2(slot->check, 0) - n);
+        d2_SetObjValue4(slot->check, 0, slot->amount, d2_GetObjValue2(slot->check, 0) - n);
     }
     cm_EndSendGroup();
     while (cm_SendGroupState() == 0)
@@ -18392,7 +18391,7 @@ int ai_TransportWindow(AIBLD *bld, unsigned int mode)
             if (c->flags13 & 0x20)
                 io_PrintText("$Z%s", 0xde);
             if (rows[i].slider != -1)
-                d2_SetObjValue(rows[i].slider, 0, 100, c->fill);
+                d2_SetObjValue4(rows[i].slider, 0, 100, c->fill);
             if (rows[i].escortPic != -1) {
                 if (d2_Objs[rows[i].escortPic].pic != c->escort + 0x5e8)
                     d2_SetObjPic(rows[i].escortPic, c->escort + 0x5e8);
@@ -18455,8 +18454,8 @@ int ai_TransportWindow(AIBLD *bld, unsigned int mode)
                         if (v > 0)
                             changed = 1;
                         max = goods.max[k];
-                        d2_SetObjValue(ctl, 0, goods.amount[k], v);
-                        d2_SetObjValue(rows[i].goodsPic[j], 0, max, goods.amount[k] - v);
+                        d2_SetObjValue4(ctl, 0, goods.amount[k], v);
+                        d2_SetObjValue4(rows[i].goodsPic[j], 0, max, goods.amount[k] - v);
                         d2_Objs[ctl].style = 0x22;
                         d2_Objs[ctl].captionX = -1;
                         d2_Objs[ctl].captionY = 0;
@@ -18562,22 +18561,22 @@ int ai_TransportWindow(AIBLD *bld, unsigned int mode)
                     if (rows[i].cart != 0)
                         for (j = 0; j < 3; j++)
                             if (rows[i].goodsCtl[j] != -1)
-                                d2_SetObjValue(rows[i].goodsCtl[j], 0, 0, 0);
+                                d2_SetObjValue4(rows[i].goodsCtl[j], 0, 0, 0);
                 for (k = 0; k < 8; k++)
                     if (ai_ProdGoods2[k].check != -1)
-                        d2_SetObjValue(ai_ProdGoods2[k].check, 0, 0, 0);
+                        d2_SetObjValue4(ai_ProdGoods2[k].check, 0, 0, 0);
                 for (k = 0; k < 16; k++)
                     if (ai_ProdGoods[k].check != -1)
-                        d2_SetObjValue(ai_ProdGoods[k].check, 0, 0, 0);
+                        d2_SetObjValue4(ai_ProdGoods[k].check, 0, 0, 0);
                 for (k = 0; k < 6; k++)
                     if (ai_InvSlots[k].obj != 0)
-                        d2_SetObjValue(ai_InvSlots[k].ctl, 0, 0, 0);
+                        d2_SetObjValue4(ai_InvSlots[k].ctl, 0, 0, 0);
                 changed = 0;
                 listShown = 0;
                 dropActive = 0;
                 d2_ClearPointerItems();
             } else if (d2_GetObjValue(routeBox) != 0) {
-                d2_SetObjValue(routeBox, 0);
+                d2_SetObjValue2(routeBox, 0);
                 boxValue = 0;
             } else if (ai_RunAllowsWindow() == 1) {
                 sv_PopRequest = 1;
@@ -18623,7 +18622,7 @@ int ai_TransportWindow(AIBLD *bld, unsigned int mode)
                         n = gm_FreeCapacity(stall, item, v);
                         if (ok && n) {
                             cm_SendExSellObject(stall->objId, ai_InvChar->netId, item, n, owner, (int)sellPrice);
-                            d2_SetObjValue(s->ctl, 0, 100, 0);
+                            d2_SetObjValue4(s->ctl, 0, 100, 0);
                         }
                     }
                 } else {
@@ -18643,7 +18642,7 @@ int ai_TransportWindow(AIBLD *bld, unsigned int mode)
                         ai_TransportFromLager(ai_InvChar->netId, stall, b, canTrade, ai_Chars[ai_PlayerId], 1.0f, owner, mode);
                     for (k = 0; k < 6; k++)
                         if (ai_InvSlots[k].obj != 0)
-                            d2_SetObjValue(ai_InvSlots[k].ctl, 0, 0, 0);
+                            d2_SetObjValue4(ai_InvSlots[k].ctl, 0, 0, 0);
                     di_ClearButtons();
                 }
             } else if (d2_ClickedId != -1 && dropActive != 0 && dm_L.lclick != 0) {
@@ -18683,7 +18682,7 @@ int ai_TransportWindow(AIBLD *bld, unsigned int mode)
                         if (n == 0)
                             continue;
                         cm_SendExSellObject(sobj->objId, ai_InvChar->netId, item, n, owner, (int)loadPrice);
-                        d2_SetObjValue(s->ctl, 0, 100, 0);
+                        d2_SetObjValue4(s->ctl, 0, 100, 0);
                     }
                 }
             }
@@ -18773,7 +18772,7 @@ int ai_TransportWindow(AIBLD *bld, unsigned int mode)
                                 sb_PlaySample(0, "RollenKurz_s_01", 1, 0x3f, 0x7f, 0, 0);
                             }
                             if (n > 0)
-                                d2_SetObjValue(ctl, 0, 100, 0);
+                                d2_SetObjValue4(ctl, 0, 100, 0);
                         }
                     }
                 }
@@ -18781,10 +18780,10 @@ int ai_TransportWindow(AIBLD *bld, unsigned int mode)
             d2_ClearPointerItems();
             for (k = 0; k < 8; k++)
                 if (ai_ProdGoods2[k].check != -1)
-                    d2_SetObjValue(ai_ProdGoods2[k].check, 0, 0, 0);
+                    d2_SetObjValue4(ai_ProdGoods2[k].check, 0, 0, 0);
             for (k = 0; k < 16; k++)
                 if (ai_ProdGoods[k].check != -1)
-                    d2_SetObjValue(ai_ProdGoods[k].check, 0, 0, 0);
+                    d2_SetObjValue4(ai_ProdGoods[k].check, 0, 0, 0);
             di_ClearButtons();
         } else if (d2_HitWindow == ai_ChildWindowId && dm_L.lclick != 0 && dropActive == 0 && changed != 0
                    && (priced != 0 || own != 0)) {
@@ -18807,7 +18806,7 @@ int ai_TransportWindow(AIBLD *bld, unsigned int mode)
                         n = gm_TakeableCount(ai_Chars[ai_PlayerId], item, v);
                         if (n > 0) {
                             cm_SendExSellObject(((AICHARREC *)ai_Chars)[ai_PlayerId].netId, sobj->objId, item, n, owner, 0);
-                            d2_SetObjValue(ctl, 0, 100, 0);
+                            d2_SetObjValue4(ctl, 0, 100, 0);
                         }
                     }
                 }
@@ -18815,10 +18814,10 @@ int ai_TransportWindow(AIBLD *bld, unsigned int mode)
             d2_ClearPointerItems();
             for (k = 0; k < 8; k++)
                 if (ai_ProdGoods2[k].check != -1)
-                    d2_SetObjValue(ai_ProdGoods2[k].check, 0, 0, 0);
+                    d2_SetObjValue4(ai_ProdGoods2[k].check, 0, 0, 0);
             for (k = 0; k < 16; k++)
                 if (ai_ProdGoods[k].check != -1)
-                    d2_SetObjValue(ai_ProdGoods[k].check, 0, 0, 0);
+                    d2_SetObjValue4(ai_ProdGoods[k].check, 0, 0, 0);
             di_ClearButtons();
         }
 
@@ -18844,7 +18843,7 @@ int ai_TransportWindow(AIBLD *bld, unsigned int mode)
                             v = d2_GetObjValue(ai_ProdGoods2[k].check);
                             if (v > 0) {
                                 cm_SendExSellObject(-1, stall->objId, ai_ProdGoods2[k].good, v, ai_OwnPlayer, 0);
-                                d2_SetObjValue(ai_ProdGoods2[k].check, 0, ai_ProdGoods2[k].amount, 0);
+                                d2_SetObjValue4(ai_ProdGoods2[k].check, 0, ai_ProdGoods2[k].amount, 0);
                             } else if (v < 0) {
                                 cm_SendRemoveGoods(stall->objId, ai_ProdGoods2[k].good);
                             }
@@ -18855,7 +18854,7 @@ int ai_TransportWindow(AIBLD *bld, unsigned int mode)
                             v = d2_GetObjValue(ai_ProdGoods[k].check);
                             if (v > 0) {
                                 cm_SendExSellObject(-1, stall->objId, ai_ProdGoods[k].good, v, ai_OwnPlayer, 0);
-                                d2_SetObjValue(ai_ProdGoods[k].check, 0, ai_ProdGoods[k].amount, 0);
+                                d2_SetObjValue4(ai_ProdGoods[k].check, 0, ai_ProdGoods[k].amount, 0);
                             } else if (v < 0) {
                                 cm_SendRemoveGoods(stall->objId, ai_ProdGoods[k].good);
                             }
@@ -18875,7 +18874,7 @@ int ai_TransportWindow(AIBLD *bld, unsigned int mode)
                             v = d2_GetObjValue(ctl);
                             if (v > 0) {
                                 cm_SendExSellObject(-1, sobj->objId, item, v, ai_OwnPlayer, 0);
-                                d2_SetObjValue(ctl, 0, goods.amount[i], 0);
+                                d2_SetObjValue4(ctl, 0, goods.amount[i], 0);
                             }
                         }
                     }
@@ -20147,7 +20146,7 @@ int ai_BribeAmountCB(AICHARREC *ch)
     max = (int)(abs(worth + gm_GetWorth(ch->id)) * 0.00078431371f);
     goods = gm_GetGoodsValue(ai_Chars[ai_PlayerId]);
     ai_AmountLimit(max, goods, 0x20, &limit);
-    d2_SetObjValue(slider, gm_ConvertMoney(max, ai_OwnPlayer), gm_ConvertMoney(limit, ai_OwnPlayer),
+    d2_SetObjValue4(slider, gm_ConvertMoney(max, ai_OwnPlayer), gm_ConvertMoney(limit, ai_OwnPlayer),
                    gm_ConvertMoney(max, ai_OwnPlayer));
     cancel = d2_GetWinObj(win, 1, io_PrintText(0x174e));
     memset(&row, 0xff, sizeof(row));
@@ -21065,7 +21064,7 @@ void ai_SellBuildingWindow(AIBLD *bld)
     value = gm_ConvertMoney(value, ai_OwnPlayer);
     d2_SetForm(win, 2);
     slider = d2_GetWinObj(win, 2, io_PrintText(0x17c5, bld, ai_PlayerCity[ai_OwnPlayer][0] * 2 + 0x9a8));
-    d2_SetObjValue(slider, (int)(value * 0.5), (int)(value * 1.5), value);
+    d2_SetObjValue4(slider, (int)(value * 0.5), (int)(value * 1.5), value);
     d2_SetPointerSprite(0, 0);
     sv_RunFrame(0, 0x677c7);
     do {
@@ -21593,7 +21592,7 @@ void ai_BuyBuildingOfferWindow(AIBLD *bld)
     value = gm_ConvertMoney(value, ai_OwnPlayer);
     d2_SetForm(win, 2);
     slider = d2_GetWinObj(win, 2, io_PrintText(0x17de, bld->masterId, bld, ai_OwnPlayer));
-    d2_SetObjValue(slider, (int)(value * 0.5), (int)(value * 10.0), value);
+    d2_SetObjValue4(slider, (int)(value * 0.5), (int)(value * 10.0), value);
     d2_SetPointerSprite(0, 0);
     sv_RunFrame(0, 0x677c7);
     do {
@@ -22637,7 +22636,7 @@ void ai_GelageWindow(AIBLD *bld)
     text = io_PrintText(0x19aa, ai_OwnPlayer);
     slider = d2_GetWinObj(win, 2, text);
     ok = d2_GetWinObj(win, 2, text + 1);
-    d2_SetObjValue(slider, 100, min(1000, gm_ConvertMoney(gm_GetGoodsValue(ai_Chars[ai_PlayerId]), ai_OwnPlayer)), 100);
+    d2_SetObjValue4(slider, 100, min(1000, gm_ConvertMoney(gm_GetGoodsValue(ai_Chars[ai_PlayerId]), ai_OwnPlayer)), 100);
     while (sv_RunFrame((int)ai_GelageWindow, 0x677c7) != 0) {
         if (d2_ClickedId == 0) {
             if (ok != -1 && d2_PointerObj == ok) {
@@ -22719,7 +22718,7 @@ int ai_UpdateInventoryWindow(void)
             continue;
         }
         value = d2_GetObjValue(ai_InvSlots[i].ctl);
-        d2_SetObjValue(ai_InvSlots[i].ctl, 0, ai_InvSlots[i].obj->count, value);
+        d2_SetObjValue4(ai_InvSlots[i].ctl, 0, ai_InvSlots[i].obj->count, value);
         sprintf(d2_Objs[ai_InvSlots[i].ctl].caption, "%s~ %li %s", txt_ObjectNames[ai_InvSlots[i].obj->id][0],
                 ai_InvSlots[i].obj->count, txt_Ptrs[0x3fe9]);
         use = (G9DOMIZIL *)ai_FindUsableGood(ai_InvSlots[i].obj->id);
@@ -22952,7 +22951,7 @@ int ai_UseGoodWindow(G8INVOBJ *o)
                         for (i = 0; i < 6; i++) {
                             if (ai_InvSlots[i].obj != 0 && (n = d2_GetObjValue(ai_InvSlots[i].ctl)) != 0) {
                                 cm_SendExSellObject(-1, ai_InvChar->netId, ai_InvSlots[i].obj->id, n, ai_OwnPlayer, 0);
-                                d2_SetObjValue(ai_InvSlots[i].ctl, 0, 999, 0);
+                                d2_SetObjValue4(ai_InvSlots[i].ctl, 0, 999, 0);
                             }
                         }
                         d2_ClearPointerItems();
@@ -23009,7 +23008,7 @@ void ai_InventoryPanel(void)
                 if (ai_FindUsableGood(ai_InvSlots[i].obj->id) != 0) {
                     d2_SetViewEnabled(win, 0);
                     ai_UseGoodWindow(ai_InvSlots[i].obj);
-                    d2_SetObjValue(ai_InvSlots[i].ctl, 0, 999, 0);
+                    d2_SetObjValue4(ai_InvSlots[i].ctl, 0, 999, 0);
                     d2_ClearPointerItems();
                     d2_SetViewEnabled(win, 1);
                 } else {
@@ -23022,7 +23021,7 @@ void ai_InventoryPanel(void)
                 /* put the picked amounts back */
                 for (i = 0; i < 6; i++) {
                     if (ai_InvSlots[i].obj != 0 && d2_GetObjValue(ai_InvSlots[i].ctl) != 0)
-                        d2_SetObjValue(ai_InvSlots[i].ctl, 0, 999, 0);
+                        d2_SetObjValue4(ai_InvSlots[i].ctl, 0, 999, 0);
                 }
                 d2_ClearPointerItems();
             } else {
@@ -23155,7 +23154,7 @@ shown:
                 }
             }
 have:
-            d2_SetObjValue(ai_EquipRowTab[r].slot[i].pic, 0, item->count, d2_GetObjValue(ai_EquipRowTab[r].slot[i].pic));
+            d2_SetObjValue4(ai_EquipRowTab[r].slot[i].pic, 0, item->count, d2_GetObjValue(ai_EquipRowTab[r].slot[i].pic));
         }
     }
     /* a scene character of the job groups 10 .. 12 without a row gets the first free one */
@@ -23368,7 +23367,7 @@ rows:
                         continue;
                     for (k = 0; k < 6; k++)
                         if (ai_EquipRowTab[i].slot[k].pic != -1)
-                            d2_SetObjValue(ai_EquipRowTab[i].slot[k].pic, 0, 0, 0);
+                            d2_SetObjValue4(ai_EquipRowTab[i].slot[k].pic, 0, 0, 0);
                 }
             }
         }
@@ -23955,7 +23954,7 @@ int ai_OpenMasterListPage(void)
                 txt_Format(budgetText, "%T", master->budget);
                 ai_MasterRows[count].budgetText = d2_CreateWinText(0x180, count * 0x3e + 0x14, budgetText, d2_LastWindow);
                 ai_MasterRows[count].input = d2_WinOpenInput(0xea, y, 0x40, 0x40, 0x82, d2_LastWindow);
-                d2_SetObjValue(ai_MasterRows[count].input, 1000, 9000, gm_ConvertMoney(bld->budget, ai_OwnPlayer));
+                d2_SetObjValue4(ai_MasterRows[count].input, 1000, 9000, gm_ConvertMoney(bld->budget, ai_OwnPlayer));
                 ai_MasterRows[count].budget = d2_GetObjValue(ai_MasterRows[count].input);
                 ai_MasterRows[count].bld = bld;
                 y += 0x3e;
@@ -24388,7 +24387,7 @@ int ai_ShowAmountRows(int win, int kind, unsigned int *filter, int n, LCAMOUNTRO
             if (row->rec->kind == 7)
                 d2_SetObjValue(row->ctl[1], 0, 100, 0, 1);
             else
-                d2_SetObjValue(row->ctl[1], 0, 100, (int)gm_Liking(viewer->id, row->rec->id, 1));
+                d2_SetObjValue4(row->ctl[1], 0, 100, (int)gm_Liking(viewer->id, row->rec->id, 1));
             d2_SetObjEnabled(row->ctl[1], 1);
             d2_Objs[row->ctl[1]].interactive = 1;
         }
@@ -24505,7 +24504,7 @@ int ai_ShowOfficeRows(int win, int kind, unsigned int *filter, int n, LCAMOUNTRO
                 if (rows[i].rec->kind == 7)
                     d2_SetObjValue(rows[i].ctl[1], 0, 100, 0, 1);
                 else
-                    d2_SetObjValue(rows[i].ctl[1], 0, 100, (int)gm_Liking(viewer->id, rows[i].rec->id, 1));
+                    d2_SetObjValue4(rows[i].ctl[1], 0, 100, (int)gm_Liking(viewer->id, rows[i].rec->id, 1));
                 d2_SetObjEnabled(rows[i].ctl[1], 1);
                 d2_Objs[rows[i].ctl[1]].interactive = 1;
             }
@@ -24625,7 +24624,7 @@ int ai_AmountRow(int x, int y, int win, int font, LCAMOUNTROW *row, int titled)
             if (row->rec->kind == 7)
                 d2_SetObjValue(row->ctl[1], 0, 100, 0, 1);
             else
-                d2_SetObjValue(row->ctl[1], 0, 100, (int)gm_Liking(ai_PlayerId, row->rec->id, 1));
+                d2_SetObjValue4(row->ctl[1], 0, 100, (int)gm_Liking(ai_PlayerId, row->rec->id, 1));
             d2_SetObjEnabled(row->ctl[1], 0);
         }
         if (row->pickable != 0) {
@@ -24669,7 +24668,7 @@ int ai_DrawAmountRow(int x, int y, int win, LCAMOUNTROW *row)
             if (row->rec->kind == 7)
                 d2_SetObjValue(row->ctl[1], 0, 100, 0, 1);
             else
-                d2_SetObjValue(row->ctl[1], 0, 100, (int)gm_Liking(ai_PlayerId, row->rec->id, 1));
+                d2_SetObjValue4(row->ctl[1], 0, 100, (int)gm_Liking(ai_PlayerId, row->rec->id, 1));
             d2_SetObjEnabled(row->ctl[1], 0);
         }
         if (row->rec->partner == lc_CharRecs[ai_PlayerId].netId)
@@ -25806,9 +25805,9 @@ void ai_AmountLikingRows(AICHARREC *me, unsigned count, int *rows)
         chr = (AICHARREC *)*rows;
         if (chr != 0 && chr->id != 0xffff && rows[2] != -1) {
             if ((me->kind == 6 || me->kind == 7) && (chr->kind == 6 || chr->kind == 7))
-                d2_SetObjValue(rows[2], 0, 100, 0);
+                d2_SetObjValue4(rows[2], 0, 100, 0);
             else
-                d2_SetObjValue(rows[2], 0, 100, (int)gm_Liking(me->id, chr->id, 1));
+                d2_SetObjValue4(rows[2], 0, 100, (int)gm_Liking(me->id, chr->id, 1));
         }
         rows += 0xe;
     }
@@ -26642,7 +26641,7 @@ void ai_ShowWorkSettingsPage(int win, int *budgetCtrl, int *budget, int *checks,
     on = set.flags & 1;
     ctrl = d2_GetWinObj(win, 2, io_PrintText(0x194f, 0, charId, on + 0x1951));
     checks[0] = ctrl;
-    d2_SetObjValue(ctrl, on);
+    d2_SetObjValue2(ctrl, on);
     checks[1] = -1;
     checks[2] = -1;
     checks[3] = -1;
@@ -26651,24 +26650,24 @@ void ai_ShowWorkSettingsPage(int win, int *budgetCtrl, int *budget, int *checks,
         on = (set.flags >> 1) & 1;
         ctrl = d2_GetWinObj(win, 2, io_PrintText(0x1954, 0, charId, on + 0x1955));
         checks[1] = ctrl;
-        d2_SetObjValue(ctrl, on);
+        d2_SetObjValue2(ctrl, on);
         on = (set.flags >> 2) & 1;
         ctrl = d2_GetWinObj(win, 2, io_PrintText(0x1957, 0, charId, on + 0x1958));
         checks[2] = ctrl;
-        d2_SetObjValue(ctrl, on);
+        d2_SetObjValue2(ctrl, on);
         on = (set.flags >> 3) & 1;
         ctrl = d2_GetWinObj(win, 2, io_PrintText(0x195a, 0, charId, on + 0x195b));
         checks[3] = ctrl;
-        d2_SetObjValue(ctrl, on);
+        d2_SetObjValue2(ctrl, on);
     }
     ctrl = d2_GetWinObj(win, 2, io_PrintText(0x1953, charId, ai_OwnPlayer));
     *budgetCtrl = ctrl;
-    d2_SetObjValue(ctrl, 1000, 9000, *budget);
+    d2_SetObjValue4(ctrl, 1000, 9000, *budget);
     if (type->kind != 5 && setting != 0) {
         io_PrintText(0x42c2);
         ctrl = d2_WinOpenSlider(100, 300, 200, 0x32, 0x96, 0x7b, 0x1002, d2_LastWindow);
         *factorCtrl = ctrl;
-        d2_SetObjValue(ctrl, 0x32, 0x96, (int)(setting->factor * ai_FloatHundred));
+        d2_SetObjValue4(ctrl, 0x32, 0x96, (int)(setting->factor * ai_FloatHundred));
         return;
     }
     *factorCtrl = -1;
@@ -26819,7 +26818,7 @@ void ai_ShowSettingGoods(int win, G8SLOT *slots, int *sliders, int *locks)
             d2_Objs[pic].checked = slots[i].lock == 0;
             locks[i] = pic;
             sliders[i] = d2_WinOpenSlider(100, y, 200, 0, 0x64, 0x7b, 0x802, d2_LastWindow);
-            d2_SetObjValue(sliders[i], 0, 0x64, slots[i].weight);
+            d2_SetObjValue4(sliders[i], 0, 0x64, slots[i].weight);
             d2_SetObjEnabled(sliders[i], slots[i].lock == 0);
         }
         i++;
@@ -26898,7 +26897,7 @@ void ai_MasterLetterSettings(AIBLD *bld, AICHARREC *ch)
                     ai_SetSettingWeight((int)bld, slots[i].good, d2_GetObjValue(sliders[i]));
                     for (i = 0; i < 7; i++)
                         if (sliders[i] != -1)
-                            d2_SetObjValue(sliders[i], 0, 100, slots[i].weight);
+                            d2_SetObjValue4(sliders[i], 0, 100, slots[i].weight);
                 }
             } else if (ai_MasterLetterPage == 0 && factorCtrl != -1 && d2_PointerObj == factorCtrl) {
                 ai_SetSettingFactor((int)bld, d2_GetObjValue(factorCtrl) * 0.01f);
@@ -26928,7 +26927,7 @@ void ai_MasterLetterSettings(AIBLD *bld, AICHARREC *ch)
                         ai_SetSettingWeight((int)bld, slots[i].good, d2_GetObjValue(sliders[i]));
                         for (i = 0; i < 7; i++)
                             if (sliders[i] != -1)
-                                d2_SetObjValue(sliders[i], 0, 100, slots[i].weight);
+                                d2_SetObjValue4(sliders[i], 0, 100, slots[i].weight);
                     }
                 }
             } else if (ai_MasterLetterPage == 0) {
@@ -27484,7 +27483,7 @@ AICHARREC *ai_PickBuildingChar(AIBLD *bld, AMOUNTCFG *cfg, char *caption, void (
                     d2_Objs[rows[i].icon].greyed = usable == 0;
                     bar = d2_WinOpenSlider(0x8c, h + y + 4, 0x40, 0, 100, 0x75, 0x442, d2_LastWindow);
                     rows[i].bar = bar;
-                    d2_SetObjValue(bar, 0, 100, liking);
+                    d2_SetObjValue4(bar, 0, 100, liking);
                     d2_SetObjEnabled(bar, 0);
                     d2_MoveObj(d2_LastWindowPtr->x - (d2_Objs[bar].w - w) / 2 + 0x96, d2_LastWindowPtr->y + h + y + 4, bar);
                     step = 0x5a;
@@ -28269,7 +28268,7 @@ int ai_GiftWindow(AICHARREC *giver, AICHARREC *chr)
         text = io_PrintText(0x1f4e);
         giveBtn = d2_GetWinObj(win, 1, text);
         closeBtn = d2_GetWinObj(win, 1, text + 1);
-        d2_SetObjValue(slider, gm_ConvertMoney(least, ai_OwnPlayer), gm_ConvertMoney(most, ai_OwnPlayer),
+        d2_SetObjValue4(slider, gm_ConvertMoney(least, ai_OwnPlayer), gm_ConvertMoney(most, ai_OwnPlayer),
                        gm_ConvertMoney(least, ai_OwnPlayer));
     }
     given = 0;
@@ -29079,7 +29078,7 @@ void ai_CityStatsPanel(void)
         d2_CreateWinText(0x19, i * 30 + 4, buf, d2_LastWindow);
         d2_Objs[obj].interactive = 1;
         d2_Objs[obj].checkable = 1;
-        d2_SetObjValue(obj, checked);
+        d2_SetObjValue2(obj, checked);
         for (k = 0; k < 10; k++)
             d2_PlotLine(d2_Wins[d2_LastWindow].w - 1, i * 30 + 9 + k, d2_Wins[d2_LastWindow].w - 0xb, i * 30 + 9 + k,
                         colors[i * 3], colors[i * 3 + 1], colors[i * 3 + 2]);
@@ -29165,7 +29164,7 @@ void ai_PlayerComparePanel(void)
         ai_CentredText(buf, 0x36, LC_COMPARE_X(count, i) + 0x22, 300, 0x56);
         colour = min(max(((AICHARREC *)ai_Chars)[rank->id].ref54 - 0x59a, 0), 7);
         obj = d2_WinOpenSlider(0x5a, LC_COMPARE_X(count, i) + 7, 300, 0, 100, sliderPics[colour], 0x42, d2_LastWindow);
-        d2_SetObjValue(obj, 0, 100, value);
+        d2_SetObjValue4(obj, 0, 100, value);
         txt_Format(buf, "%i", rank->points);
         ai_CentredText(buf, 500, LC_COMPARE_X(count, i), 200, 0x55);
     }
@@ -30011,7 +30010,7 @@ int ai_LawPrivilegeWindow(AICHARREC *me, LCORDMSG *m)
             t = io_PrintText(0x13d0, word, 0x13d3);
             ctrl = d2_GetWinObj(win, 1, t);
             ctrl2 = d2_GetWinObj(win, 1, t + 1);
-            d2_SetObjValue(ctrl, rec.min, rec.max, rec.cur);
+            d2_SetObjValue4(ctrl, rec.min, rec.max, rec.cur);
             base = 0;
             break;
         case 1:
@@ -30264,7 +30263,7 @@ int ai_BewitchWindow(AICHARREC *ch)
     d2_CentreViewWindows(win);
     d2_SetForm(win, 1);
     slider = d2_GetWinObj(win, 1, io_PrintText(0x1db4, ch->id, ch->id));
-    d2_SetObjValue(slider, 1, 5, 1);
+    d2_SetObjValue4(slider, 1, 5, 1);
     d2_ClickedId = -1;
     do {
         if (d2_ClickedId != -1) {
@@ -31129,7 +31128,7 @@ int ai_PenanceWindow(AICHARREC *me, LCORDMSG *m)
         ok = d2_GetWinObj(win, 1, t + 1);
         cancel = d2_GetWinObj(win, 1, t + 2);
         slider = d2_GetWinObj(win, 1, t);
-        d2_SetObjValue(slider, 1, 9, 1);
+        d2_SetObjValue4(slider, 1, 9, 1);
         d2_ClickedId = -1;
         do {
             if (d2_ClickedId != -1) {

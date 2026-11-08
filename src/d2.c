@@ -23,6 +23,7 @@
 #include "txt.h"
 #include "dd_vesa.h"
 #include "d2.h"
+#define d2_SetObjValue2 ((void (*)(int, int))d2_SetObjValue)  /* 0x475cb0 (d2.h: five parameters): @original the radio loop's two calls push only the object and the value (0x46c661 push 0; push eax, 0x46c66a push 1; push ecx, add esp, 8) */
 #include "shp_bank.h"
 #ifdef REA_FRAME_DUMP
 #include "rea_dump.h"           /* debug build: REA_DUMP_TRACE */
@@ -1460,9 +1461,9 @@ void d2_RadioSelect(int g, int sel)
 
     for (i = 0; i < d2_Radios[g].n; i++)
         if (i != sel)
-            d2_SetObjValue(d2_Radios[g].objs[i], 0);  /* @original: this call site pushes 2 arguments (0x46c661: push 0; push eax) against the 5-parameter definition */
+            d2_SetObjValue2(d2_Radios[g].objs[i], 0);  /* @original: this call site pushes 2 arguments (0x46c661: push 0; push eax) against the 5-parameter definition */
         else
-            d2_SetObjValue(d2_Radios[g].objs[i], 1);  /* @original: this call site pushes 2 arguments (0x46c66a: push 1; push ecx) against the 5-parameter definition */
+            d2_SetObjValue2(d2_Radios[g].objs[i], 1);  /* @original: this call site pushes 2 arguments (0x46c66a: push 1; push ecx) against the 5-parameter definition */
     d2_Radios[g].sel = sel;
 }
 /* 0x46c6a0, the selected button of a radio button group */
