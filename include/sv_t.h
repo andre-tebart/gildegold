@@ -232,6 +232,7 @@ int ai_OpenCharTooltip(char *ch);  /* 0x588c60, opens the tooltip view of the ch
 
 void ai_InitBookmarks(void);  /* 0x589410, clears the 11 bookmark slots and sets their function keys */
 int ai_SaveBookmarks(int fh);  /* 0x589aa0, writes the slot table 0x6f5ec0 */
+int ai_LoadBookmarks(int fh);  /* 0x589b30, reads the slot table 0x6f5ec0 from a save game */
 
 extern const float ai_CannonPitchMax;   /* 0x5eec6c, 45 degrees: the highest pitch of the cannon */
 extern const float ai_CannonPitchMin;   /* 0x5eec70, -15 degrees: the lowest pitch */
