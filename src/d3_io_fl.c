@@ -188,7 +188,7 @@ void d3_CalcNormals(D3BGF *m)
         vt->nz = s.z;
     }
 }
-/* 0x450ec0, radius and the 8 corners of the bounding box (appended to the vertices) of a mesh @deep Q4: the 24 corner stores are *(float *)((char *)m->verts + N + m->nverts * 0x18); a typed D3BGFVERT view (vt[c].x/.y/.z) changes the codegen and loses the byte match (tried, reverted to the byte-identical form); behaviour byte */
+/* 0x450ec0, radius and the 8 corners of the bounding box (appended to the vertices) of a mesh */
 
 void d3_CalcBounds(D3BGF *m)
 {

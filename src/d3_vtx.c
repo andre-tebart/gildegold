@@ -84,7 +84,7 @@ void d3_EnvMapCoords(XOBJ *obj, XPART *part)
 /* 0x4591a0, blend weights of the two key frames around the current time of an animation slot */
 #define UNK64(s) (*(float *)&(s)->time)
 
-/* 0x4591a0 @deep Q4: the UNK64 macro (a float view over the int at 0x64) and the ((float *)s)[25] read of the same slot, needs the slot struct typed; behaviour byte */
+/* 0x4591a0 */
 void d3_AnimBlendWeights(D3ANIMSLOT *s, float *a, float *b)
 {
     D3ANIMDATA *d = s->data;

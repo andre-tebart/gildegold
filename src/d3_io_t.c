@@ -521,7 +521,7 @@ void d3io_ReleaseObject(D3BGF *obj)
     if (obj != 0 && obj->refs > 0)
         d3iot_DeleteStockObject(obj);
 }
-/* 0x44e2e0, loads the animation file (name + ".oam") of an object: keys of a path @deep Q2: D3IOOBJ.unk40 (the millisecond clock d3_Time at the load; nothing here reads it back, meaning unknown); the other names are derivable (vfs_Root for 0x6333fc, the frame stepper 0x4324e0, the anim release 0x433b10) but unk40 keeps Q2 failing, so no invented name */
+/* 0x44e2e0, loads the animation file (name + ".oam") of an object: keys of a path */
 
 D3IOPATH *d3_LoadObjectAnim(char *file, D3IOOBJ *obj, char reload)
 {

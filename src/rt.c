@@ -795,7 +795,7 @@ void rt_Unk4bf080(char *c, char *win)
     d2_CloseView(w);
     di_ClearButtons();
 }
-/* 0x4bf360, gives mark m the picture of its point's index (0x7bb + n) @deep Q4 only: the one raw access reads D2OBJ.pic (+8) through rt.h's char* d2_Objs view; a typed field needs d2.h in rt.c, whose declarations conflict with rt.h's views (d2_WinOpenPic int vs short), the recorded rt.h type debt */
+/* 0x4bf360, gives mark m the picture of its point's index (0x7bb + n) */
 
 void rt_SetMarkPic(RTMARK *m)
 {
@@ -990,8 +990,7 @@ void rt_EditCartRoute(char *c)
 }
 /* 0x4bfa40, cart c unloads at its current route point (c->unk2d): the goods of the point's unloadSlots slots go from the
    cart into the building's stock (market 0x1c: its stock 0x1db, warehouse 10: 0x500ec0), bought by player pl at
-   the building's price when it is not the cart owner's
-   @deep readability only, byte now: Q4 (10 raw accesses - AIBLD +0x27/+0x49/+0x5d/+0x65, AIOBJ +0x14, RTINV stock, d2_Objs view need typed fields; rt.h's views and the ai.h AIBLD pads) and Q2 (gm_Query/4ffcc0 stock lists, gm_ObjectBuildingOwner/50aa00/50ab80/50aaf0 stock and cart accessors, gm_GoodsPrice price, gm_CharCurrency money, cm_SendExSellObject transfer) - the stock/cart API needs names first */
+   the building's price when it is not the cart owner's */
 
 void rt_UnloadAtPoint(char *c, int pl)
 {
