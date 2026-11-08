@@ -3536,7 +3536,7 @@ exe	0x0053f430	he_InnStaffLeave	he	5a67a2c4bc8f66dc	no	shape	control=shape p1=sh
 exe	0x0053f500	he_ClearInnDarkCorner	he	1711bc0ea1b03f42	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
 exe	0x0053f5b0	he_TopUpCharMoney	he	fe5a2a673f36d36c	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0053f6b0	he_SpawnFounders	he	deea08cbc2d86af6	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
-exe	0x00540c90	he_PostEvent67	he	c762df4914856053	yes	byte	control=shape p1=byte* p2=byte* p3=byte* p4=byte*
+exe	0x00540c90	he_PostEvent67	he	c762df4914856053	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00540e40	he_InnReport	he	56eb0aee3478e3b8	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00540fe0	he_DailyEventChecks	he	de1f648336a0000f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00541010	he_PostEvent3a	he	6f63b7be49a1f8ae	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
@@ -3735,7 +3735,7 @@ exe	0x0055ba00	he_AllocEvent1f	he	2a24d167c27af618	no	byte	control=byte p1=byte 
 exe	0x0055bad0	he_RunEvent1f	he	4c371a9f76aa5ea8	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0055bd20	he_AllocDemolish	he	f665784c0f4f477e	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0055bd80	he_RunDemolish	he	6034053a66afafa4	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x0055bf50	he_AllocBuyBuilding	he	741c86d13990e534	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
+exe	0x0055bf50	he_AllocBuyBuilding	he	a54a940bc370b42f	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x0055bfd0	he_RunBuyBuilding	he	145b046242ad9210	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x0055c540	he_AllocKredit	he	9f98abcd6de38c8a	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0055c700	he_RunKredit	he	ddac6702d868550d	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
@@ -3800,11 +3800,11 @@ exe	0x00567810	he_OpenHelpEvents	he	3cc7e57adff69949	no	byte	control=byte p1=byt
 exe	0x005679b0	he_AllocHint	he	9c2b5e4a297d0e32	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00567a80	he_RunHint	he	bad16fa0ffce84b6	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x00567b80	he_AllocTip	he	7b27392d061db334	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x00567c00	he_RunTip	he	5fa3f2d6fe785652	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x00567c00	he_RunTip	he	348d639db6e92e0f	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x00567d20	he_AllocTutorialBuildingTour	he	14da3e1fac70990a	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00567d60	he_RunTutorialBuildingTour	he	f5f914a3823fda68	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x00567f00	he_AllocPatrolEvent	he	d1be52fa97ba6228	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x00567f50	he_PatrolStep	he	f8f7a5771866b11b	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
+exe	0x00567f50	he_PatrolStep	he	ad407b96ea6eaf56	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
 exe	0x00568220	he_RunPatrolEvent	he	811807481666d386	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00568310	he_RegisterEventTypes02	he	b08a213744e4542b	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00568aa0	he_EndKind23Events	he	a77de2841f8dcf4a	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
