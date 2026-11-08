@@ -905,7 +905,7 @@ int cm_QueueVoice();  /* 0x4e32d0 */
 int cm_RunSceneTicks();  /* 0x4e3570 */
 int amt_SendOfficeMessage(unsigned char a, char *b, char *c, int d, unsigned char e);  /* 0x4e6680 */
 unsigned * gm_CharNameRecord();  /* 0x4fb390 */
-int cm_StartEventArg();  /* 0x4e2c30 */
+int cm_StartEventArg(char *name, int arg);  /* 0x4e2c30 */
 int cm_WaitEvent();  /* 0x4e2c70 */
 int cm_UnloadVoiceBank();  /* 0x4e3290 */
 int cm_WaitEventFull();  /* 0x4e2d40 */
