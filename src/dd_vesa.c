@@ -815,7 +815,7 @@ int dd_Width = 0;  /* 0x1463598 */
 unsigned int dd_BMask = 0;  /* 0x146359c */
 void *dd_MemBottom = 0;  /* 0x14635a0 */
 int dd_PixelFormat = 0;  /* 0x14635a4 */
-unsigned int dd_Unk14635a8 = 0;  /* 0x14635a8 */
+unsigned int dd_ColorBitMask = 0;  /* 0x14635a8, the pixel format's colour bits below each channel's top bit at their shifts, high half set */
 int dd_Mode = 0;  /* 0x14635ac */
 int dd_NumDevices = 0;  /* 0x14635b0 */
 RECT dd_ClipRect = {0};  /* 0x14635c0 */
@@ -826,12 +826,12 @@ int d3d_NumDevices = {0}; /* 0x1464fa8 */
 int dd_MemPitch = 0;  /* 0x1464fac */
 unsigned int dd_GMask = 0;  /* 0x1464fb0 */
 int dd_LockBits = 0;  /* 0x1464fb4 */
-unsigned int dd_Unk1464fb8 = 0;  /* 0x1464fb8 */
+unsigned int dd_ColorBitMaskDword = 0;  /* 0x1464fb8, dd_ColorBitMask in both 16-bit halves (dword write) */
 unsigned char dd_BShift = 0;  /* 0x1464fbc */
 unsigned char dd_BBits = {0}; /* 0x1464fbd */
-int dd_Unk1464fc0 = 0;  /* 0x1464fc0 (own object: dd_BBits is one byte) */
+int dd_SurfaceFlags = 0;  /* 0x1464fc0, cleared with the surfaces on every mode set (own object: dd_BBits is one byte; a reasoned guess, the matched code never reads it) */
 unsigned char dd_BLoss = 0;  /* 0x1464fc4 */
-char dd_Unk1464fe0[0x100] = {0};  /* 0x1464fe0 */
+char dd_KeyCodes[0x100] = {0};  /* 0x1464fe0, character -> key code table (d3_InitKeyCodes) */
 HBITMAP dd_Bitmap = {0};  /* 0x14650e0 */
 unsigned char dd_RLoss = 0;  /* 0x14650e4 */
 DDDEVICE dd_Devices[8] = {0};  /* 0x1465100 */
@@ -1375,8 +1375,29 @@ __inline char dd_CpuHasMMX(void)
     }
 }
 
-/* 0x41d2e0, sets up the display: mode DD_GDI..DD_FULLMEM, xres x yres at bpp bits */
-char dd_SetMode(int xres, int yres, int bpp, int mode, HWND wnd, int unk6, char triple)
+/* the 888 pixel format's red mask (dd_RMask = ...; the original stores 0xff0000 to dd_RMask here) */
+#define DD_RMASK888 0xff0000u
+
+/* 0x41d2e0, sets up the display: mode DD_GDI..DD_FULLMEM, xres x yres at bpp bits
+   @deep read the whole function against the original: 853 vs 855 instructions, 2753 vs 2742 bytes, the
+   same call set (EnumDisplayModes, SetCooperativeLevel, SetDisplayMode, CreateSurface, GetAttachedSurface,
+   CreateClipper, SetHWnd, SetClipper, GetPixelFormat, GetDC, CreateDIBSection, ReleaseDC, dd_Exit,
+   dd_Restore, dd_Clear, dd_SetClipRect, dd_SetSurfaceName) and the same store set. The meaning differences
+   are fixed: the BShift/GShift/RShift reset is one chained assignment, the loop tail stores the same six
+   values, and the bpp guard is bpp > 8 (the original's mov eax,8 / cmp / jle). What is left is register
+   allocation and schedule in the two bit-scan loops: the original keeps r,g,b in ecx/edi/esi and spills
+   the loop counters to the dead parameter slots [ebp+0x20] and [ebp+0x10]; this source keeps r=edx, g=ecx,
+   b=edi and the loop-2 counter in esi, so the eight 8-RLoss/GBits stores come in another order. Tried: one
+   loop variable and two (i / j), split vs inline shifts, the loop tail in the original's order, the
+   pixel-format expression flat and parenthesized, bpp > 8 and bpp >= 9; none moves the loop allocation,
+   which is the remaining 130 of the 134 differing instructions. (references: M8 at +0x56e: ours refers to
+   dd_RLoss (0x14650e4), the original's field to 0x1463570 (dd_RBits, dd_RBitsC) (and 4 more), explained:
+   the 5 ref lines are the loop tail's crossed stores: ours writes dd_RBits, dd_RLoss, dd_GLoss, dd_GBits,
+   dd_BBits, dd_BLoss, the original dd_RBits, dd_GBits, dd_RLoss, dd_BBits, dd_GLoss, dd_BLoss; each of the
+   six fields is written exactly once on both sides with the same value (RBits=rb, GBits=gb, BBits=bb,
+   RLoss=8-rb, GLoss=8-gb, BLoss=8-bb), and the reference check pairs each shifted store with the next
+   field of the other side) */
+char dd_SetMode(int xres, int yres, int bpp, int mode, HWND wnd, int notused, char triple)
 {
     DDSURFACEDESC2 ddsd;
     BITMAPINFO bmi;
@@ -1391,14 +1412,12 @@ char dd_SetMode(int xres, int yres, int bpp, int mode, HWND wnd, int unk6, char 
         return 0;
     dd_Mode = mode;
     dd_Surface = NULL;
-    dd_Unk1464fc0 = 0;
+    dd_SurfaceFlags = 0;
     dd_MemBuff = NULL;
     dd_MemBottom = NULL;
     dd_Width = xres;
     dd_Height = yres;
-    dd_RShift = 0;
-    dd_GShift = 0;
-    dd_BShift = 0;
+    dd_RShift = dd_GShift = dd_BShift = 0;
     dd_BitPlanes = bpp;
     dd_Window = wnd;
     for (i = bpp; i & 7; i++)
@@ -1414,7 +1433,7 @@ char dd_SetMode(int xres, int yres, int bpp, int mode, HWND wnd, int unk6, char 
     dd_Has1152x864 = 0;
     if (!dd_HasMMX)
         return 0;
-    d3_InitKeyCodes(dd_Unk1464fe0);
+    d3_InitKeyCodes(dd_KeyCodes);
     dd_TripleBuffer = 0;
     if (dd_Mode == DD_FULLMEM || dd_Mode == DD_WINDOWMEM) {
         dd_MemBuff = mem_Alloc(dd_MemSize, "dd:membuff");
@@ -1569,7 +1588,7 @@ char dd_SetMode(int xres, int yres, int bpp, int mode, HWND wnd, int unk6, char 
                 dd_BBits = 8;
                 dd_GBits = 8;
                 dd_RBits = 8;
-                dd_RMask = 0xff0000u;
+                dd_RMask = DD_RMASK888;
                 dd_GMask = 0xff00;
                 dd_BMask = 0xff;
             }
@@ -1589,9 +1608,7 @@ char dd_SetMode(int xres, int yres, int bpp, int mode, HWND wnd, int unk6, char 
         }
         break;
     }
-    /* >= 9, not > 8: the immediate keeps VC6's constant-8 web out of this compare and matches
-       everything above it (56 bytes / 35 asm lines closer); the compare itself still differs. */
-    if (bpp >= 9 && dd_Mode != DD_GDI) {
+    if (bpp > 8 && dd_Mode != DD_GDI) {
         D3_ZERO(&ddpf, sizeof(ddpf));
         ddpf.dwSize = sizeof(ddpf);
 #line 1463
@@ -1631,19 +1648,19 @@ char dd_SetMode(int xres, int yres, int bpp, int mode, HWND wnd, int unk6, char 
             }
         }
         dd_RBits = rb;
-        dd_RLoss = 8 - rb;
         dd_GBits = gb;
-        dd_GLoss = 8 - gb;
+        dd_RLoss = 8 - rb;
         dd_BBits = bb;
+        dd_GLoss = 8 - gb;
         dd_BLoss = 8 - bb;
     }
     dd_PixelFormat = 888 - dd_RLoss * 100 - dd_GLoss * 10 - dd_BLoss;
     dd_Pitch = 0;
     dd_PitchPixels = 0;
-    dd_Unk14635a8 = ((1 << (7 - dd_BLoss)) - 1 << dd_BShift) + ((1 << (7 - dd_GLoss)) - 1 << dd_GShift)
+    dd_ColorBitMask = ((1 << (7 - dd_BLoss)) - 1 << dd_BShift) + ((1 << (7 - dd_GLoss)) - 1 << dd_GShift)
                   + ((1 << (7 - dd_RLoss)) - 1 << dd_RShift);
-    dd_Unk1464fb8 = dd_Unk14635a8 << 16 | dd_Unk14635a8;
-    dd_Unk14635a8 |= 0xffff0000;
+    dd_ColorBitMaskDword = dd_ColorBitMask << 16 | dd_ColorBitMask;
+    dd_ColorBitMask |= 0xffff0000;
     dd_Clear(NULL, 0, 0, 0);
     dd_SetClipRect(0, 0, xres - 1, yres - 1);
     return 1;

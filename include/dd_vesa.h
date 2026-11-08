@@ -99,7 +99,7 @@ extern int dd_Width;                            /* 0x1463598 */
 extern unsigned int dd_BMask;                   /* 0x146359c */
 extern void *dd_MemBottom;                      /* 0x14635a0, last row of a bottom-up DIB */
 extern int dd_PixelFormat;                       /* 0x14635a4, colour format code 888 - RLoss*100 - GLoss*10 - BLoss (888 / 565 / 555) */
-extern unsigned int dd_Unk14635a8;              /* 0x14635a8 */
+extern unsigned int dd_ColorBitMask;              /* 0x14635a8 */
 extern int dd_Mode;                             /* 0x14635ac, DD_GDI.. */
 extern int dd_NumDevices;                       /* 0x14635b0 */
 extern RECT dd_ClipRect;                        /* 0x14635c0 */
@@ -110,15 +110,15 @@ extern int d3d_NumDevices;                      /* 0x1464fa8 */
 extern int dd_MemPitch;                         /* 0x1464fac */
 extern unsigned int dd_GMask;                   /* 0x1464fb0 */
 extern int dd_LockBits;                         /* 0x1464fb4 */
-extern unsigned int dd_Unk1464fb8;              /* 0x1464fb8 */
+extern unsigned int dd_ColorBitMaskDword;              /* 0x1464fb8 */
 extern unsigned char dd_BShift;                 /* 0x1464fbc */
 extern unsigned char dd_BBits;                  /* 0x1464fbd */
-extern int dd_Unk1464fc0;                       /* 0x1464fc0 */
+extern int dd_SurfaceFlags;                       /* 0x1464fc0 */
 extern unsigned char dd_BLoss;                  /* 0x1464fc4 */
 extern HBITMAP dd_Bitmap;                       /* 0x14650e0 */
 extern unsigned char dd_RLoss;                  /* 0x14650e4 */
 extern DDDEVICE dd_Devices[8];                  /* 0x1465100 */
-extern char dd_Unk1464fe0[0x100];                      /* 0x1464fe0, passed to d3_InitKeyCodes */
+extern char dd_KeyCodes[0x100];                      /* 0x1464fe0, passed to d3_InitKeyCodes */
 extern int dd_PitchPixels;                      /* 0x14661a0 */
 
 /* outside this file */
@@ -139,7 +139,7 @@ char dd_Init(int mode, int bpp, HWND parent, int unk);                          
 void dd_SetClipRect(int left, int top, int right, int bottom);                          /* 0x41d190 */
 HRESULT WINAPI dd_EnumVideoModesCallback(LPDDSURFACEDESC2 ddsd, LPVOID ctx);            /* 0x41d1c0 */
 char dd_CheckModes(int mode, int bpp, HWND parent, int c);                              /* 0x41d230 */
-char dd_SetMode(int xres, int yres, int bpp, int mode, HWND wnd, int unk6, char triple);    /* 0x41d2e0 */
+char dd_SetMode(int xres, int yres, int bpp, int mode, HWND wnd, int notused, char triple);    /* 0x41d2e0 */
 void *dd_LockSurface(LPDIRECTDRAWSURFACE4 surf);                                        /* 0x41ddb0 */
 void * dd_LockSurfaceFlags(LPDIRECTDRAWSURFACE4 surf, DWORD flags);                      /* 0x41de30 */
 char dd_Lock(void);                                                                     /* 0x41dec0 */
