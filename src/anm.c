@@ -286,13 +286,13 @@ void anm_CreateAnimal(ANMREC *a, int k)
     a->obj = ch_Create(buf, pos);
     if (a->obj == 0)
         return;
-    *(float *)((char *)a->obj + 0x1a0) = 1.0f;
+    ((CHARACTER *)a->obj)->walkSpeed = 1.0f;
     a->pos[0] = pos[0];
     a->pos[1] = pos[1];
     a->pos[2] = pos[2];
     a->kind = k;
-    *(int *)((char *)a->obj + 4) = 2;
-    *(int *)(*(char **)((char *)a->obj + 0x34) + 0x224) = 0;
+    ((CHARACTER *)a->obj)->kind = 2;
+    ((CHARACTER *)a->obj)->obj->mask = 0;
     ch_AddAction(a->obj, 0x38, 1);
 }
 /* 0x4bc030, dogs and cats (kinds 0 / 1; name from the string it puts into its actions): mostly stand (dogs also
