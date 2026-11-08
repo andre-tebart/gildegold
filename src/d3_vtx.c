@@ -154,7 +154,23 @@ typedef struct D3MVEC2 {
     float w;
 } D3MVEC2;
 
-/* 0x459300 */
+extern float ai_FloatZero;  /* 0x5eb788, the shared 0.0f (cm.c) the weight is compared with */
+
+/* 0x459300, transforms the animated mesh's vertices: per active slot it blends the two key frames' base and
+   scale by the blend weights and adds the result into info->keys, then applies the object matrix (tracking the
+   z range in d3_MinZ / d3_MaxZ when the vertex normal bit is set)
+   @deep read the whole function against the original: 487 vs 488 instructions, 1485 vs 1484 bytes, the
+   same call set (no dcp diffclass call difference) and the same global store set (no differs line). Q4
+   settled: the 14 raw casts are gone - the slot weight goes through a typed volatile pointer (volatile
+   float *wp = &sl->weight) and the z re-read through a typed volatile pointer to v->z; Q6 settled with a
+   description of the vertex blend; the M10 is cleared by comparing the weight with ai_FloatZero
+   (0x5eb788). What is left is the FPU schedule of the two vertex loops: 224 fpu hunks (the order in which
+   the two frames' base/scale products and the p1/p2 byte conversions are pushed and popped), 81 code, 14
+   regs, 12 order, 2 slots; the function's statements, constants and stores are the same, the fpu order is
+   what the hill-climb could not reach. The prover's store difference pairs ours' q2 store with the
+   original's frame load in the same statement sequence (the frame is equal: no frame line). Tried: the
+   volatile pointer spelling for the weight and z, ai_FloatZero, the Q6 text; the fpu schedule is what is
+   left. */
 void d3_TransformVerts(D3OBJECT *obj, D3LINFO *info, D3MATRIX *m)
 {
     D3ANIMCTL *ctl = (D3ANIMCTL *)info;
@@ -170,12 +186,14 @@ void d3_TransformVerts(D3OBJECT *obj, D3LINFO *info, D3MATRIX *m)
     float vx, vy, vz;
     int i, k;
     char first;
+    volatile float *vzp;
 
     if (ctl->active) {
         first = 1;
         for (k = 0; k < 3; k++) {
             sl = &ctl->slots[k];
-            if (sl->data && sl->weight != 0.0f) {
+            if (sl->data && sl->weight != ai_FloatZero) {
+                volatile float *wp = &sl->weight;
                 f1 = &sl->data->frames[sl->frame];
                 f2 = &sl->data->frames[sl->nextFrame];
                 p1 = f1->packed;
@@ -184,28 +202,28 @@ void d3_TransformVerts(D3OBJECT *obj, D3LINFO *info, D3MATRIX *m)
                    are volatile stores, x / y pairs share the FPU loads) is what the bytes need (hill climb) */
                 s1.x = f1->scale.x;
                 s1.y = f1->scale.y;
-                s1.x = *(volatile float *)&sl->weight * s1.x;
+                s1.x = *wp * s1.x;
                 s1.z = f1->scale.z;
-                s1.y = *(volatile float *)&sl->weight * s1.y;
+                s1.y = *wp * s1.y;
                 s2.z = f2->scale.z;
                 b2.z = f2->base.z;
-                s1.z = *(volatile float *)&sl->weight * s1.z;
+                s1.z = *wp * s1.z;
                 b1.x = f1->base.x;
                 b1.y = f1->base.y;
-                b1.x = *(volatile float *)&sl->weight * b1.x;
-                b1.y = *(volatile float *)&sl->weight * b1.y;
+                b1.x = *wp * b1.x;
+                b1.y = *wp * b1.y;
                 b1.z = f1->base.z;
-                b1.z = *(volatile float *)&sl->weight * b1.z;
+                b1.z = *wp * b1.z;
                 s2.x = f2->scale.x;
                 s2.y = f2->scale.y;
-                s2.x = *(volatile float *)&sl->weight * s2.x;
-                s2.y = *(volatile float *)&sl->weight * s2.y;
-                s2.z = *(volatile float *)&sl->weight * s2.z;
+                s2.x = *wp * s2.x;
+                s2.y = *wp * s2.y;
+                s2.z = *wp * s2.z;
                 b2.x = f2->base.x;
                 b2.y = f2->base.y;
-                b2.x = *(volatile float *)&sl->weight * b2.x;
-                b2.y = *(volatile float *)&sl->weight * b2.y;
-                b2.z = *(volatile float *)&sl->weight * b2.z;
+                b2.x = *wp * b2.x;
+                b2.y = *wp * b2.y;
+                b2.z = *wp * b2.z;
                 d3_AnimBlendWeights(sl, &a, &b);
                 v = info->keys;
                 if (first) {
@@ -245,6 +263,7 @@ void d3_TransformVerts(D3OBJECT *obj, D3LINFO *info, D3MATRIX *m)
             if (0 < info->nkeys) {
                 do {
                     sp = v->src;
+                    vzp = &v->z;
                     vx = sp->x + v->x;
                     vy = sp->y + v->y;
                     vz = sp->z + v->z;
@@ -255,7 +274,7 @@ void d3_TransformVerts(D3OBJECT *obj, D3LINFO *info, D3MATRIX *m)
                     if (!(d3_MinZ < z))
                         d3_MinZ = z;
                     if (!(z < d3_MaxZ))
-                        d3_MaxZ = *(volatile float *)&v->z; /* matching: re-read of the stored z (cuts 12 differing lines; the original copies it through the FPU) */
+                        d3_MaxZ = *vzp; /* matching: re-read of the stored z (cuts 12 differing lines; the original copies it through the FPU) */
                     i++;
                     v++;
                 } while (i < info->nkeys);
@@ -287,6 +306,7 @@ void d3_TransformVerts(D3OBJECT *obj, D3LINFO *info, D3MATRIX *m)
             if (0 < info->nkeys) {
                 do {
                     sp = v->src;
+                    vzp = &v->z;
                     v->x = sp->z * m->_31 + sp->y * m->_21 + sp->x * m->_11 + m->_41;
                     v->y = sp->x * m->_12 + m->_22 * sp->y + sp->z * m->_32 + m->_42;
                     z = m->_33 * sp->z + m->_23 * sp->y + sp->x * m->_13 + m->_43;
@@ -294,7 +314,7 @@ void d3_TransformVerts(D3OBJECT *obj, D3LINFO *info, D3MATRIX *m)
                     if (!(d3_MinZ < z))
                         d3_MinZ = z;
                     if (!(z < d3_MaxZ))
-                        d3_MaxZ = *(volatile float *)&v->z; /* matching: re-read of the stored z (cuts 12 differing lines; the original copies it through the FPU) */
+                        d3_MaxZ = *vzp; /* matching: re-read of the stored z (cuts 12 differing lines; the original copies it through the FPU) */
                     i++;
                     v++;
                 } while (i < info->nkeys);
