@@ -205,7 +205,6 @@ extern int d2_DirtyRectLeft[4];         /* 0xfb9060, the rectangle d2_AddDirty t
 #define d2_DirtyRectTop (*(int *)((char *)&d2_DirtyRectLeft + 0x4))       /* 0xfb9064 */
 #define d2_DirtyRectRight (*(int *)((char *)&d2_DirtyRectLeft + 0x8))     /* 0xfb9068 */
 #define d2_DirtyRectBottom (*(int *)((char *)&d2_DirtyRectLeft + 0xc))    /* 0xfb906c */
-extern GAPDATA full_data_624560[];
 extern GAPDATA full_data_6253b0[];
 extern GAPDATA full_data_6253b4[];
 extern GAPDATA full_data_6253b8[];
@@ -227,7 +226,6 @@ extern int d2_DirtyRectLeft[4];         /* 0xfb9060, the rectangle d2_AddDirty t
 #define d2_DirtyRectRight (*(int *)((char *)&d2_DirtyRectLeft + 0x8))     /* 0xfb9068 */
 #define d2_DirtyRectBottom (*(int *)((char *)&d2_DirtyRectLeft + 0xc))    /* 0xfb906c */
 extern GAPDATA full_data_6024e4[];
-extern GAPDATA full_data_624560[];
 extern GAPDATA full_data_6f25b0[];
 extern int sv_FrameMask;
 extern int sv_PopRequest;
@@ -240,7 +238,6 @@ extern int d2_DirtyRectLeft[4];         /* 0xfb9060, the rectangle d2_AddDirty t
 #define d2_DirtyRectTop (*(int *)((char *)&d2_DirtyRectLeft + 0x4))       /* 0xfb9064 */
 #define d2_DirtyRectRight (*(int *)((char *)&d2_DirtyRectLeft + 0x8))     /* 0xfb9068 */
 #define d2_DirtyRectBottom (*(int *)((char *)&d2_DirtyRectLeft + 0xc))    /* 0xfb906c */
-extern GAPDATA full_data_624560[];
 extern int sv_FrameMask;
 extern int sv_PopRequest;
 
@@ -3277,7 +3274,6 @@ void main_RundenBeginn(void)
 #define main_PlayerIdInt (*(int *)&ai_PlayerId)  /* 0x6f25b8, ai_PlayerId (unsigned short) as the int the round change reads and masks */
 #define MAIN_PLAYER (main_PlayerIdInt & 0xffff)  /* the player character's index */
 extern unsigned char main_GameEnded;  /* 0x6f25ad, sv.c */
-#define main_GfxOn (*(int *)&full_data_624560)  /* 0x624560, nonzero when the round change shows its pages and fades (main_RoundReport tests it too) */
 #define main_Season (*(int *)&full_data_760454)  /* 0x760454, the season of the game clock (sv_ClockSeason / gm_ClockSeason) */
 /* the announcement message of the kind `kind` to the player's own character (fromId -1), stamped with the game clock */
 #define MAIN_NOTE(m, kind) do { memset(&(m), 0, sizeof(m)); (m).type = (kind); (m).fromId = -1; (m).flags = 1; (m).to = ai_CharsT[MAIN_PLAYER].netId; (m).time = ai_Time; } while (0)
@@ -3681,7 +3677,7 @@ void main_RoundReport(void)
     w1e8 = 0;
     fade = 0;
     U_I((unsigned)&sv_PanelFlag) = 0;
-    if (U_I((unsigned)&full_data_624560) != 0) {
+    if (main_GfxOn != 0) {
         fade = (unsigned char *)d2_StartFade(0, 0, (int)*(short *)(unsigned)&d2_ScreenW, (int)*(short *)(unsigned)&d2_ScreenH, "BLACK", 0x1e, 1);
         while ((*fade & 4) == 0)
             sv_RunFrame(0, U_I((unsigned)&sv_FrameMask));
@@ -3690,7 +3686,7 @@ void main_RoundReport(void)
     *(int *)(bk + 0x3c) = *(int *)(bk + 0x3c) + (U_I(((unsigned)&ai_Selected + 0x1c) + MAIN_PID * 0x21c) + U_I(((unsigned)&ai_Selected + 0x18) + MAIN_PID * 0x21c));
     d3_SetObjectPos((int)d3_Camera, bk + 0x8c);
     d3_SetObjectRot((int)d3_Camera, bk + 0x9c);
-    if (U_I((unsigned)&full_data_624560) != 0) {
+    if (main_GfxOn != 0) {
         w1f8 = 0;
         d2_SetPointerSprite(0, 0);
         sv_ClosePanelWidgets();
@@ -5371,7 +5367,7 @@ GAPDATA full_data_60da10[432] = { 0x20, 0x25, 0x73, 0x00, 0x5f, 0x50, 0x52, 0x4f
 GAPDATA full_data_623abc[4] = { 0x00, 0x00, 0x00, 0x00 };  /* 0x623abc */
 GAPDATA full_data_623e90[4] = { 0xff, 0xff, 0xff, 0xff };  /* 0x623e90 */
 GAPDATA full_data_623eb8[4] = { 0x01, 0x00, 0x00, 0x00 };  /* 0x623eb8 */
-GAPDATA full_data_624560[4] = { 0x01, 0x00, 0x00, 0x00 };  /* 0x624560 */
+int main_GfxOn = 1;  /* 0x624560, nonzero when the round change shows its pages and fades (main_EndRound, main_RoundReport and main_BeginPlayerRound test it) */
 GAPDATA full_data_62456c[4] = { 0x01, 0x00, 0x00, 0x00 };  /* 0x62456c */
 int main_ObjectsOn = 1;  /* 0x62457c, nonzero: sv_RunFrame draws the gui objects (d2_DrawObjects) each frame */
 GAPDATA full_data_624584[4] = { 0x01, 0x00, 0x00, 0x00 };  /* 0x624584 */
