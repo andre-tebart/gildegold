@@ -276,6 +276,7 @@ extern int sv_LoadFrame;                                  /* 0x6f2354 */
 extern int sv_ScreenDirty;                                  /* 0x6f2358 */
 extern int sv_GroundplanBuilding;                                    /* 0x6f235c */
 extern int sv_GroundplanRoom;                                    /* 0x6f2360 */
+extern int sv_BarMoved;                                   /* 0x6f2364 */
 extern char sv_PlayerBarKind;                                   /* 0x6f2368 */
 extern int sv_DayPhase;                                    /* 0x6f236c */
 extern int sv_ThunderFog;                                    /* 0x6f2370 */

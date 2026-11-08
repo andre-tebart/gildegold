@@ -51,7 +51,6 @@ struct VFSDIR;
 extern OPTIONBYTES ai_OptionPanelHelp;
 
 extern GAPDATA full_data_623e90[];
-extern GAPDATA full_data_6f2364[];
 
 extern int d2_HitUnderPointer;
 
@@ -4107,12 +4106,12 @@ void sv_UpdateCityPanel(unsigned char a, int b)
             d2_EnableObject(sv_BarToggle, 1);
         } else {
             d2_EnableObject(sv_BarToggle, 0);
-            SV_I((unsigned)&full_data_6f2364) = 0;
+            sv_BarMoved = 0;
         }
         if (d2_ClickedId != -1 && d2_PointerObj == sv_BarToggle)
-            SV_I((unsigned)&full_data_6f2364) = SV_I((unsigned)&full_data_6f2364) == 0;
+            sv_BarMoved = sv_BarMoved == 0;
         if (SV_I((unsigned)&full_data_623e90) != he_LastSlot || (d2_ClickedId != -1 && d2_PointerObj == sv_BarToggle)) {
-            if (SV_I((unsigned)&full_data_6f2364) != 0) {
+            if (sv_BarMoved != 0) {
                 d2_SetForm(he_BarView, 0);
                 d2_MoveObj(d2_ScreenW - (he_LastSlot << 5) - 0x1d, d2_Wins[d2_LastWindow].y, d2_Wins[d2_LastWindow].parent);
                 d2_MoveObj(d2_ScreenW - (he_LastSlot << 5) - 0x4d, d2_ScreenH - 0x21, sv_BarToggle);
@@ -4123,7 +4122,7 @@ void sv_UpdateCityPanel(unsigned char a, int b)
             }
             SV_I((unsigned)&full_data_623e90) = he_LastSlot;
         }
-        if (SV_I((unsigned)&full_data_6f2364) != 0) {
+        if (sv_BarMoved != 0) {
             d2_SetClipRect(0, 0, d2_ScreenW - 0x8c, d2_ScreenH);
             shape = d2_GetPic(sv_PanelPic + 3);
             d2_DrawShape(d2_ScreenW - (he_LastSlot << 5) - 0x37, d2_ScreenH - 0x37, d2_ScreenSurf, shape, 0);
@@ -7670,6 +7669,7 @@ int sv_LoadFrame = 0;  /* 0x6f2354, the frame counter of the scene load (sv_Scen
 int sv_ScreenDirty = 0;  /* 0x6f2358 */
 int sv_GroundplanBuilding = 0;  /* 0x6f235c */
 int sv_GroundplanRoom = 0;  /* 0x6f2360 */
+int sv_BarMoved = 0;  /* 0x6f2364, 1 when the player bar (he_BarView) is moved left of the panel edge: the sv_BarToggle click toggles it, he_LastSlot > 3 clears it, and the bar and its button take the further-left position */
 char sv_PlayerBarKind = 0;  /* 0x6f2368 */
 int sv_DayPhase = 0;  /* 0x6f236c */
 int sv_ThunderFog = 0;  /* 0x6f2370 */

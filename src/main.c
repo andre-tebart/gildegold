@@ -5790,7 +5790,6 @@ int sv_PendingMoney = 0;  /* 0x6f22dc, the money the money panel adds to the pla
 GAPDATA full_data_6f22e0[4] = { 0 };  /* 0x6f22e0 */
 struct AIOBJ *sv_LastRoom = 0;  /* 0x6f2314, the room whose handler ai_EnterBuilding ran last (cleared on entering a building); sv's by place (between sv_PanelShown and f3gm's ai_PermsDirty), only lc reads it */
 GAPDATA full_data_6f2330[4] = { 0 };  /* 0x6f2330 */
-GAPDATA full_data_6f2364[4] = { 0 };  /* 0x6f2364 */
 unsigned char sv_InMissionComplete = 0;  /* 0x6f23f1, 1 while sv_RunFrame plays ai_MissionCompleteSequence (no re-entry); sv's by use, see sv.c's lead comment */
 GAPDATA full_data_6f23f2[6] = { 0 };  /* 0x6f23f2 */
 int snd_SystemBank = 0;  /* 0x6f2400, the handle of the system sample bank system.sbf (main_ 0x532160 loads it) */
