@@ -468,7 +468,7 @@ void cm_FightSlotWinner(CMFIGHTSLOT *f);  /* 0x4d7150 */
 int cm_Attack(CMCUTINFO *rec, struct AICHAR *c, struct AICHAR *g);  /* 0x4d7360 */
 int ai_InventoryHas(void *ch, int id);  /* 0x5ba6b0 */
 void cm_PlantEscapeFlag(CMFIGHTSLOT *f);  /* 0x4d7190 */
-void cm_ClearParty();  /* 0x4e5180 */
+void cm_ClearParty(int id);  /* 0x4e5180 */
 void amt_ClearOfficesIfAll();  /* 0x4e6e20 */
 int ord_HandleMessageRecord();  /* 0x4f9710 */
 void ai_GameFrame(void);  /* 0x591520 */
