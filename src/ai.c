@@ -2351,8 +2351,8 @@ void ai_StartBuildingWork(AICHAR *ch)
                 msg.fromId = ch->bld->id;
                 msg.time = ai_Time;
                 msg.flags = 1;
-                msg.arg[1] = p->size;
-                *(char *)&msg.arg[2] = gv_EntryIndex((char *)ch->bld->yard, (int *)p);
+                msg.graveWork.size = p->size;
+                msg.graveWork.index = gv_EntryIndex((char *)ch->bld->yard, (int *)p);
                 msg.ids[0] = f->netId;
                 cm_SendLongMessage(&msg);
             }
