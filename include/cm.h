@@ -908,7 +908,7 @@ unsigned * gm_CharNameRecord();  /* 0x4fb390 */
 int cm_StartEventArg(char *name, int arg);  /* 0x4e2c30 */
 int cm_WaitEvent(int a);  /* 0x4e2c70 */
 int cm_UnloadVoiceBank(int a);  /* 0x4e3290, drops the reference of the voice bank a (0 in the replay mode) */
-int cm_WaitEventFull();  /* 0x4e2d40 */
+int cm_WaitEventFull(int a);  /* 0x4e2d40 */
 int cm_EndSpecialTrack();  /* 0x4e3640 */
 void amt_UpdateOffices();  /* 0x4e85d0 */
 void ai_CampaignStep(int a, int b, int c, int d);  /* 0x576040 */
