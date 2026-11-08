@@ -15,10 +15,11 @@
    cm_RunBankruptcy, cm_RunAuction, their checks and member callbacks) read the party record G28REC; the auction's
    member callbacks (cm_AuctionAskPlayer / cm_AuctionAskAI) read its state CMAUCTION. The spy report objects (AIOBJ
    kind 0xca) are read as CMSPYREPORT (defined above cm_ExSpyReport: the report's words 0x1c .. 0x37, HESPYREPORT).
-   Open: not included yet (dcp headers conflicts cm HEADER): am.h anm.h d2.h f3gm.h gfx.h hmt.h hst.h rt.h
+   Open: not included yet (dcp headers conflicts cm HEADER): am.h anm.h f3gm.h gfx.h hmt.h hst.h rt.h
    poker.h mission.h menu.h; held by calls whose argument count differs from the definition (read the
-   original's pushes): ai_DecideTorture, ai_DecideTortureInstrument, d2_SetObjValue, gm_SkillPoints (rt.h: its d2_SetObjValue);
-   gv_PassSentence takes five arguments here (gv_PassSentenceK).
+   original's pushes): ai_DecideTorture, ai_DecideTortureInstrument, gm_SkillPoints (rt.h: its d2_SetObjValue);
+   gv_PassSentence takes five arguments here (gv_PassSentenceK). d2_SetObjValue's 2- and 4-argument calls
+   use this unit's d2_SetObjValue2 / d2_SetObjValue4 cast macros.
    Open: head: cm.h carries the parameter lists of cm_StartEventArg, cm_QueueVoice, cm_LoadVoiceBank,
    cm_RunSceneTicks, cm_RunSceneTicksOrClick, cm_WaitEvent, cm_DialogTimer, cm_PartyById, cm_UnloadVoiceBank and
    cm_MessageBox; cm_PlayVoice, cm_StopScript, cm_DeleteChar, cm_WaitEventOrClick, cm_CutInfoById,
@@ -41,8 +42,6 @@
    calls of ai_LedSelectBits, a leaf defined above in this unit, as if it were external).
    unit of rea 8cef7d5b (src/game/cm.c); boundaries in decl/text.dcl */
 #include "d2_types.h"
-extern D2WIN d2_Wins[];
-extern D2RADIO d2_Radios[];
 #include "txt_views.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -51,6 +50,7 @@ extern D2RADIO d2_Radios[];
 #include <d3d.h>
 #include "net.h"
 #include "cm.h"
+#include "d2.h"
 #define cm_DuelChooseRoundR ((void (*)(CMCUTINFO *))cm_DuelChooseRound)  /* @original cm_DuelAskPlayer jumps to it with its own arguments in place (a tail jmp, byte-matched): called with r alone, the duel record stays on the stack */
 #include "d3.h"
 struct D3SKYLAYER; struct D3SKY; struct D3SKYLAYER *d3sky_CreateLayer(struct D3SKY *s, int first, char *tex, D3TEXFLAGS flags, float scale, float offset, float vscale, float voffset);  /* 0x45d880 */
@@ -133,6 +133,8 @@ extern GAPDATA full_rdata_5ebb40[];
 #define sb_PlaySampleI ((struct SBSAMPLE *(*)(int, char *, int, int, int, int, int))sb_PlaySample)  /* 0x426fa0 (sblib.c: SBBANK *bank): this unit passes the bank as an int */
 #define d2_LastWindowPtrC (*(char **)&d2_LastWindowPtr)  /* 0x6ed980, d2_LastWindowPtr (d2.c: D2WIN *) read bytewise, as this unit does */
 #define d2_ObjsC (*(char **)&d2_Objs)  /* 0xf8f080, d2_Objs (d2.c: D2OBJ *) read bytewise, as this unit does (+ obj * 0x2ec) */
+#define d2_SetObjValue2 ((void (*)(int, int))d2_SetObjValue)  /* 0x475cb0 (d2.h: five parameters): @original cm_UpdatePortraits pushes only the object and the value (0x4cfab2 push 1 / push ecx; 0x4cfacd push 0 / push edx, add esp, 8) */
+#define d2_SetObjValue4 ((void (*)(int, int, int, int))d2_SetObjValue)  /* 0x475cb0 (d2.h: five parameters): @original cm_OpenCharInfoWin (0x4ced5e), cm_FightFrame (0x4d698e), cm_AuctionAskPlayer (0x4e25c5), cm_DialogTimer (0x4e5458) and cm_MessageBox (0x4e56af) push four arguments */
 #define ai_GoodsT (*(AIGOOD **)&ai_Goods)  /* 0x91aaf0, ai_Goods (cm.h: char *) as the AIGOOD records it points to */
 #define cm_CutInfosT (*(CMCUTINFO (*)[16])&cm_CutInfos)  /* 0x92cae0, cm_CutInfos (char[16][0x35c]) as the cutscene records */
 #define ai_FloatHundred (*(float *)&full_rdata_5ebb40)  /* 0x5ebb40, VC6's pooled 100.0f (main.c's rdata gap block) */
@@ -7556,7 +7558,7 @@ void cm_OpenCharInfoWin(int a, char *c)
         sv_ValueBar(4, 4, gm_SkillPoints(c, 3), 0x4df);
         hp = (int)(gm_HealthRatio(c) * 100.0);
         bar = d2_WinOpenSlider(0, 0xe, 0x40, 0, 0x64, 0x75, 0x442, d2_LastWindow);
-        d2_SetObjValue(bar, 0, 0x64, hp);
+        d2_SetObjValue4(bar, 0, 0x64, hp);
         return;
     }
 }
@@ -7992,10 +7994,10 @@ void cm_UpdatePortraits()
         }
         if (c->selected != 0) {
             d2_AddPointerItem(c->picture, 1);
-            d2_SetObjValue(cm_Portraits[i].portrait, 1);
+            d2_SetObjValue2(cm_Portraits[i].portrait, 1);
             cm_SelectedCount++;
         } else
-            d2_SetObjValue(cm_Portraits[i].portrait, 0);
+            d2_SetObjValue2(cm_Portraits[i].portrait, 0);
         txt_FormatS(buf, "%1N1 %i%", cm_Portraits[i].c->id, (int)(gm_HealthRatio(cm_Portraits[i].c) * 100.0));
         d2_SetObjText(cm_Portraits[i].text, buf);
         w = (AIWEAPON *)cm_CharWeaponAny((char *)cm_Portraits[i].c);
@@ -11042,7 +11044,7 @@ void cm_FightFrame(char *r)
     CMCUTENTRY sl;
     CMCUTENTRY *q;
 
-    d2_SetObjValue(cm_FightTimeBar, 0, cm_SceneDuration, cm_SceneDeadline - cm_SceneTicks + 1);
+    d2_SetObjValue4(cm_FightTimeBar, 0, cm_SceneDuration, cm_SceneDeadline - cm_SceneTicks + 1);
     sv_BorderCameraView();
     cm_UpdatePortraits();
     cm_UpdatePointer();
@@ -15288,7 +15290,7 @@ void cm_AuctionAskPlayer(CMCUTINFO *r, CMAUCTION *m)
     t = io_PrintText(0x1aa6, ai_OwnPlayer);
     io_PrintText(0x1aa7);
     box = d2_GetWinObj(view, 0, t);
-    d2_SetObjValue(box, lo, hi, lo);
+    d2_SetObjValue4(box, lo, hi, lo);
     dlg = CUT_BOX();
     cm_DialogTimer(dlg, 0x5dc, 1);
     d2_ClickedId = -1;
@@ -16803,7 +16805,7 @@ int cm_DialogTimer(int dlg, int a, int c)
         v = (int)((ai_FloatOne - (float)(unsigned int)(d3_Time - cm_DialogStart) / cm_DialogLength) * ai_FloatHundred);
         v = v > 0 ? v : 0;
     }
-    d2_SetObjValue(dlg, 0, 100, v);
+    d2_SetObjValue4(dlg, 0, 100, v);
     return v;
 }
 /* 0x4e5470, a message box for the text id with the flags (2: "Messagebox_Autosize", 0x10: "_BIG", 0x20: "_VERY_BIG", 0x100: "_NONE_PERGA" (form 1), else "misc\\Messagebox";
@@ -16881,7 +16883,7 @@ int cm_MessageBox(int id, int flags)
             if (dm_L.rup != 0)
                 sv_PopRequest = 1;
             if (timed != 0 && slider != -1)
-                d2_SetObjValue(slider, 0, 0x1f4, d3_Time - t0);
+                d2_SetObjValue4(slider, 0, 0x1f4, d3_Time - t0);
             if (ends != 0 && d3_Time > t0 + 0x1f4)
                 sv_PopRequest = 1;
         } while (sv_RunFrame(cm_MessageBox, fl) != 0);
