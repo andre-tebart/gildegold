@@ -205,9 +205,6 @@ extern int d2_DirtyRectLeft[4];         /* 0xfb9060, the rectangle d2_AddDirty t
 #define d2_DirtyRectTop (*(int *)((char *)&d2_DirtyRectLeft + 0x4))       /* 0xfb9064 */
 #define d2_DirtyRectRight (*(int *)((char *)&d2_DirtyRectLeft + 0x8))     /* 0xfb9068 */
 #define d2_DirtyRectBottom (*(int *)((char *)&d2_DirtyRectLeft + 0xc))    /* 0xfb906c */
-extern GAPDATA full_data_6253b0[];
-extern GAPDATA full_data_6253b4[];
-extern GAPDATA full_data_6253b8[];
 extern void (*he_RunHandlers[5544])(unsigned char *);
 extern int sv_PopRequest;
 extern int sv_ViewRectBottom;
@@ -3569,7 +3566,7 @@ void main_EndRound(void)
                     evt_Stop(evt_FindById(fig->scriptId));
                 ch_StopActions((CHARACTER *)ai_CharsT[k].model);
                 if (y != -1 && (act = ch_AddAction((CHARACTER *)ai_CharsT[k].model, 0x33, place, x, y)) != 0)
-                    strcpy(CHACT_NAME70(act), "Beamed home");
+                    memcpy(CHACT_NAME70(act), main_BeamedHome, sizeof main_BeamedHome);
             }
         }
         if ((ai_GameFlags & 8) != 0 && ai_CharsT[k].model != 0 && ai_CharsT[k].kind == 0xd && ai_CharsT[k].job == 0)
@@ -3808,7 +3805,7 @@ void main_RoundReport(void)
             do {
                 if (kind[i] == 0)
                     break;
-                io_PrintText("$L%s %i%%:$R-%T$A", kind[i] + 0x1f64, cnt[i], sum[i]);
+                io_PrintText(main_RoundTotalFmt, kind[i] + 0x1f64, cnt[i], sum[i]);
                 t = sum[i];
                 w1f8 -= t;
                 w200 += t;
@@ -3939,7 +3936,7 @@ void main_UpdateFigure(int i)
                     ev[0x1e] = 1;
                     ev[0x1c] = ev[2];
                     cm_SendLongMessage(ev);
-                    sprintf(txt, "MeisterPr\xfc" "fung started: player_id:%i beruf:%i grad:%i", U_I((unsigned)&ai_CharInts + base), *(char *)(((unsigned)&ai_CharInts + 0x160) + base), pr + 1);
+                    sprintf(txt, main_MasterExamLog, U_I((unsigned)&ai_CharInts + base), *(char *)(((unsigned)&ai_CharInts + 0x160) + base), pr + 1);
                     cm_SendMoneyDelta(U_I((unsigned)&ai_CharInts + base), -4);
                 }
             }
@@ -5374,9 +5371,9 @@ GAPDATA full_data_624fcc[16] = { 0x68, 0x61, 0x6e, 0x64, 0x77, 0x65, 0x72, 0x6b,
 GAPDATA full_data_6250b8[24] = { 0x4d, 0x65, 0x6e, 0x75, 0x5c, 0x43, 0x48, 0x4f, 0x4f, 0x53, 0x45, 0x50, 0x52, 0x4f, 0x46, 0x45, 0x53, 0x53, 0x49, 0x4f, 0x4e, 0x00, 0x00, 0x00 };  /* 0x6250b8 */
 GAPDATA full_data_625150[4] = { 0x25, 0x69, 0x61, 0x5b };  /* 0x625150 */
 GAPDATA full_data_625154[4] = { 0x25, 0x73, 0x5d, 0x00 };  /* 0x625154 */
-GAPDATA full_data_6253b0[4] = { 0x42, 0x65, 0x61, 0x6d };  /* 0x6253b0 */
-GAPDATA full_data_6253b4[4] = { 0x65, 0x64, 0x20, 0x68 };  /* 0x6253b4 */
-GAPDATA full_data_6253b8[80] = { 0x6f, 0x6d, 0x65, 0x00, 0x24, 0x4c, 0x25, 0x73, 0x20, 0x25, 0x69, 0x25, 0x25, 0x3a, 0x24, 0x52, 0x2d, 0x25, 0x54, 0x24, 0x41, 0x00, 0x00, 0x00, 0x4d, 0x65, 0x69, 0x73, 0x74, 0x65, 0x72, 0x50, 0x72, 0xfc, 0x66, 0x75, 0x6e, 0x67, 0x20, 0x73, 0x74, 0x61, 0x72, 0x74, 0x65, 0x64, 0x3a, 0x20, 0x70, 0x6c, 0x61, 0x79, 0x65, 0x72, 0x5f, 0x69, 0x64, 0x3a, 0x25, 0x69, 0x20, 0x62, 0x65, 0x72, 0x75, 0x66, 0x3a, 0x25, 0x69, 0x20, 0x67, 0x72, 0x61, 0x64, 0x3a, 0x25, 0x69, 0x00, 0x00, 0x00 };  /* 0x6253b8 */
+char main_BeamedHome[12] = "Beamed home";  /* 0x6253b0, the activity name main_EndRound gives a character it beams home (CHACT.name70, the original copies the 12 bytes inline) */
+char main_RoundTotalFmt[20] = "$L%s %i%%:$R-%T$A";  /* 0x6253bc, the line of the player's round totals main_EndRound prints per income kind (io_PrintText; 18 bytes and 2 of padding) */
+char main_MasterExamLog[56] = "MeisterPr\xfc" "fung started: player_id:%i beruf:%i grad:%i";  /* 0x6253d0, the debug line main_EndRound sends to the log when a master exam starts (sprintf; 54 bytes and 2 of padding) */
 unsigned char he_FindKind = 0xff;  /* 0x625708, he.h */
 GAPDATA full_data_625709[3] = { 0x00, 0x00, 0x00 };  /* 0x625709 */
 int he_FindId = -1;  /* 0x62570c, he.h */
