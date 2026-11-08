@@ -40,6 +40,7 @@ extern int ai_GameOver;  /* 0x6f259c */
 extern char ai_MissionMode;  /* 0x624580 */
 extern int ai_MissionPartner;  /* 0x6248a0 */
 int ai_CountMissionEvent(G13MIS *m, int ev);  /* 0x4b44e0 */
+int ai_IsMissionFulfilled(G13MIS *m);  /* 0x4b4f00, 1 if mission m is fulfilled (the condition of its type) */
 extern int sv_FrameMask;  /* 0x760638 */
 
 int ai_SaveMissions(void *f);  /* 0x4b62e0, saves the mission kind and the running missions to f */

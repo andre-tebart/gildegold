@@ -177,7 +177,6 @@ extern GAPDATA full_data_628a28[];
 extern int d2_ClickedForm;
 #include "mission_types.h"
 #include "ahm_types.h"                /* AHMSLOT */
-extern G13MIS ai_Missions[];
 extern float gm_DayStartHours[];
 extern float gm_DayEndHours[];
 extern char he_AssassinName[12];  /* 0x628dc8, the name of the agent the secret room event 0x99 spawns */
@@ -647,6 +646,7 @@ int he_RegisterEventTypeA2();
 #include "ahm.h"
 #include "am.h"
 #include "amt.h"
+#include "mission.h"
 #define rt_UnloadAtPointC ((void (*)(char *, char))rt_UnloadAtPoint)  /* 0x4bfa40 (rt.c: int pl): @original he_RunTransport pushes its char player slot unextended (0x556bb9) */
 #define d2_SetObjValue2 ((void (*)(int, int))d2_SetObjValue)  /* 0x475cb0: @original he.c's two calls push only obj and the value (0x53dcd1, 0x53dd44) */
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
@@ -21704,8 +21704,6 @@ void he_AllocMissionCheck(AIJOB *ev)
     m->slot = -1;
     gm_AddTime(&ev->end, 0, 0xa, 0);
 }
-
-int ai_IsMissionFulfilled();
 
 /* 0x56ce40, the run handler of the mission check event 0x4c (alloc he_AllocMissionCheck): without a mission mode
    (ai_MissionMode negative) it frees the event; it finds the running mission (ai_Missions) of its character, none:
