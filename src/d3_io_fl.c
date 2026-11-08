@@ -19,6 +19,8 @@
 #include "ts_texture.h"
 #include "vfs.h"
 
+extern float ai_FloatZero;  /* 0x5eb788, the shared 0.0f (cm.c) */
+
 /* 0x450860, loads a mesh from its fast chunk file (the cache the BGF loader looks in first); returns 0 when
    there is none */
 D3BGF *d3_FindBGF(char *path, char *name, char *texnames, int unk1e4, int ntex)
@@ -199,7 +201,7 @@ void d3_CalcBounds(D3BGF *m)
     float b[6];
     float z1;
 
-    r = 0.0f;
+    r = ai_FloatZero;
     n = m->nverts;
     if (n > 0) {
         v = m->verts;
@@ -237,30 +239,32 @@ void d3_CalcBounds(D3BGF *m)
             v += 6;
         }
         }
+        /* the 8 box corners are appended as vertex records (six floats each: x, y, z and three unused
+           normals); the min/max of each axis is b[0]/b[1] (x), b[2]/b[3] (y), b[4]/z1 (z) */
         m->verts[m->nverts * 6] = b[0];
-        *(float *)((char *)m->verts + 4 + m->nverts * 0x18) = b[2];
-        *(float *)((char *)m->verts + 8 + m->nverts * 0x18) = b[4];
+        m->verts[m->nverts * 6 + 1] = b[2];
+        m->verts[m->nverts * 6 + 2] = b[4];
         m->verts[(m->nverts + 1) * 6] = b[1];
-        *(float *)((char *)m->verts + 0x1c + m->nverts * 0x18) = b[2];
-        *(float *)((char *)m->verts + 0x20 + m->nverts * 0x18) = b[4];
+        m->verts[(m->nverts + 1) * 6 + 1] = b[2];
+        m->verts[(m->nverts + 1) * 6 + 2] = b[4];
         m->verts[(m->nverts + 2) * 6] = b[0];
-        *(float *)((char *)m->verts + 0x34 + m->nverts * 0x18) = b[3];
-        *(float *)((char *)m->verts + 0x38 + m->nverts * 0x18) = b[4];
+        m->verts[(m->nverts + 2) * 6 + 1] = b[3];
+        m->verts[(m->nverts + 2) * 6 + 2] = b[4];
         m->verts[(m->nverts + 3) * 6] = b[1];
-        *(float *)((char *)m->verts + 0x4c + m->nverts * 0x18) = b[3];
-        *(float *)((char *)m->verts + 0x50 + m->nverts * 0x18) = b[4];
+        m->verts[(m->nverts + 3) * 6 + 1] = b[3];
+        m->verts[(m->nverts + 3) * 6 + 2] = b[4];
         m->verts[(m->nverts + 4) * 6] = b[0];
-        *(float *)((char *)m->verts + 0x64 + m->nverts * 0x18) = b[2];
-        *(float *)((char *)m->verts + 0x68 + m->nverts * 0x18) = z1;
+        m->verts[(m->nverts + 4) * 6 + 1] = b[2];
+        m->verts[(m->nverts + 4) * 6 + 2] = z1;
         m->verts[(m->nverts + 5) * 6] = b[1];
-        *(float *)((char *)m->verts + 0x7c + m->nverts * 0x18) = b[2];
-        *(float *)((char *)m->verts + 0x80 + m->nverts * 0x18) = z1;
+        m->verts[(m->nverts + 5) * 6 + 1] = b[2];
+        m->verts[(m->nverts + 5) * 6 + 2] = z1;
         m->verts[(m->nverts + 6) * 6] = b[0];
-        *(float *)((char *)m->verts + 0x94 + m->nverts * 0x18) = b[3];
-        *(float *)((char *)m->verts + 0x98 + m->nverts * 0x18) = z1;
+        m->verts[(m->nverts + 6) * 6 + 1] = b[3];
+        m->verts[(m->nverts + 6) * 6 + 2] = z1;
         m->verts[(m->nverts + 7) * 6] = b[1];
-        *(float *)((char *)m->verts + 0xac + m->nverts * 0x18) = b[3];
-        *(float *)((char *)m->verts + 0xb0 + m->nverts * 0x18) = z1;
+        m->verts[(m->nverts + 7) * 6 + 1] = b[3];
+        m->verts[(m->nverts + 7) * 6 + 2] = z1;
     }
 }
 /* 0x451180, size of a mesh in the fast chunk file (the description supplies the material and attachment names) */
