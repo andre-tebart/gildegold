@@ -114,7 +114,8 @@ float d3iot_GetRadius(int unused, D3OBJINFO *info);                             
 typedef struct D3IOOBJ D3IOOBJ;
 struct D3IOOBJ {                    /* a D3OBJECT as d3_LoadObjectAnim sees it (the stock objects are D3BGF) */
     char pad000[0x40];
-    int unk40;                      /* 0x40, set to d3_Time by d3_LoadObjectAnim */
+    int time;                       /* 0x40, d3_Time of the object's last animation update (D3ANIMOBJ.time);
+                                       d3_LoadObjectAnim sets it when the path is attached */
     char pad044[0x8];
     float pos[3];                   /* 0x4c */
     char pad058[0x2c];

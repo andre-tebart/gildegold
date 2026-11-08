@@ -1865,7 +1865,7 @@ void d3_InitObject(D3OBJECT *obj)
     obj->type = 1;
     obj->kind = 0;
     obj->mask = 0;
-    D3_X(obj)->offTime = 0;
+    D3_X(obj)->time = 0;
     D3_X(obj)->path = 0;
     D3_X(obj)->events = 0;
     D3_X(obj)->lightTime = 0;
@@ -2387,14 +2387,14 @@ void d3_ReloadMeshes(unsigned int mask, int type, void (*progress)(int a, int i,
 }
 /* 0x43e110, d3_ForEachObject callback (Ghidra missed it): switches the type 5 lights named "r..." to type 6
    (on) and the type 6 ones back to type 5; the light is updated either way and a switched-off one gets
-   D3OBJX.offTime = d3_Time, a switched-on one loses its light records. */
+   D3OBJX.time = d3_Time, a switched-on one loses its light records. */
 
 char d3_ToggleRLightCB(D3OBJECT *obj, char on)
 {
     if (on) {
         if (obj->type == 5 && obj->name[0] == 'r') {
             obj->type = 6;
-            D3_X(obj)->offTime = d3_Time;
+            D3_X(obj)->time = d3_Time;
             d3_UpdateObject(obj, 0);
         }
     } else if (obj->type == 6) {

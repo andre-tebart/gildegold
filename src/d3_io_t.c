@@ -572,7 +572,7 @@ D3IOPATH *d3_LoadObjectAnim(char *file, D3IOOBJ *obj, char reload)
         vfs_fclose(f);
     }
     obj->path = p;
-    obj->unk40 = d3_Time;
+    obj->time = d3_Time;
     return p;
 }
 /* 0x44e4a0, loads an animation stream "animations/" + name and links it into the animation list, before its

@@ -290,8 +290,9 @@ typedef struct D3LIGHTINFO {        /* 0x1ac bytes, "d3:SpawnObject(lightinfo)",
 
 typedef struct D3OBJX {             /* 0x228 bytes, the whole D3OBJECT as far as known */
     char name[0x40];
-    int offTime;                    /* 0x40, d3_Time when d3_ToggleRLightCB switched the light off (type 6);
-                                       cleared in d3_InitObject, no reader in the sources so far */
+    int time;                       /* 0x40, d3_Time of the object's last animation update (D3ANIMOBJ.time,
+                                       d3_anim.c 0x434...: dt = now - time): set by d3anim_CreatePath, stored to 0
+                                       here, and set by d3_ToggleRLightCB when it switches an "r" light */
     int lightTime;                  /* 0x44, d3_Time of the last lighting (D3LOBJ.time in d3_light.h); d3_anim.c's
                                        OBJ_LAST compares it with a timeout */
     char pad048[0x4];
