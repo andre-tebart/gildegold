@@ -934,7 +934,7 @@ extern unsigned char cm_DuelLeftInsultWon;  /* 0x6f0daa, the left duellist won t
 extern unsigned char cm_DuelRightInsultWon;  /* 0x6f0dab, the right duellist won the insult round */
 extern unsigned char cm_DuelLeftRollWon;  /* 0x6f0dac, the left duellist won the roll round */
 extern unsigned char cm_DuelRightRollWon;  /* 0x6f0dad, the right duellist won the roll round */
-int cm_CutInfoById();  /* 0x4e50e0 */
+int cm_CutInfoById(int id);  /* 0x4e50e0, the cutscene record cm_CutInfos whose playerId is id; 0 without */
 int cm_WaitTicks(int a);  /* 0x4e3420 */
 void cm_SinkDownAction(struct CHACTION *a);  /* 0x4de4b0 */
 int cm_DuelSinkDown(char *c, int dmg);  /* 0x4de530 */
