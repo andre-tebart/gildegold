@@ -322,33 +322,35 @@ int ls_WriteSaveHeader(int f, unsigned flags)
     vfs_fwrite(ls_SavePath.path, 0x60, 1, f);
     return 1;
 }
-/* 0x519a00, before a save: the objects of the buildings get their building back (+0x200 of the building's scene object, +0x61), and the references of the 10-byte table 0xf31166 (kind byte at -5: 1 character, 2 building, 3 object, 9 ..) are turned into plain ids (the id inside the record: +4 / +1 / +2 / +0) */
+/* 0x519a00, before a save: the objects of the buildings get their building back (the owner word of the
+   building's scene object, AIBLD.object), and the references of cm_SendStates (its value word: 1 a character,
+   2 a building, 3 an object, 9 a scene party) are turned into plain ids (the referenced record's id) */
 
 
 void ls_RefsToIds(void)
 {
     int saved = d3_CurrentScene;
     int k;
-    int *p;
+    AIBLD *b;
+    G17STAT *p;
 
     d3if_SelectScene(0, 1);
     for (k = 0; k < 0xa900; k += 0xa9) {
-        if (ai_Blds[k] != 0 && *(int *)(ai_Blds + k + 0x61) != 0)
-            *(int *)(*(int *)(ai_Blds + k + 0x61) + 0x200) = *(int *)(ai_Blds + k + 1);
+        b = (AIBLD *)(ai_Blds + k);
+        if (b->type != 0 && b->object != 0)
+            ((D3OBJECT *)b->object)->owner = (void *)b->id;
     }
     d3if_SelectScene(saved, 1);
-    for (p = ls_RefTargets; (int)p < (int)ls_RefTargets + 0x50000; p = (int *)((char *)p + 10)) {
-        if (*p != 0) {
-            char kind = *((char *)p - 5);
-
-            if (kind == 1)
-                *p = *(int *)(*p + 4);
-            if (kind == 3)
-                *p = *(int *)(*p + 2);
-            if (kind == 2)
-                *p = *(int *)(*p + 1);
-            if (kind == 9)
-                *p = *(int *)*p;
+    for (p = cm_SendStates; (int)&p->value < (int)ls_RefTargets + 0x50000; p++) {
+        if (p->value != 0) {
+            if (p->kind == 1)
+                p->value = ((AICHAR *)p->value)->netId;
+            if (p->kind == 3)
+                p->value = ((AIOBJ *)p->value)->objId;
+            if (p->kind == 2)
+                p->value = ((AIBLD *)p->value)->id;
+            if (p->kind == 9)
+                p->value = ((G28REC *)p->value)->id;
         }
     }
 }
