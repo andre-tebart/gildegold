@@ -193,7 +193,7 @@ void gm_StatisticsScreen(void)
 }
 /* 0x4f9ec0, the income rating 0 .. 1: a weighted sum over the income kinds 9 .. 0xf of the table 0x4f2720
    (weights 0.3 0.25 0.12 0.1 0.05 0.08 0.1), each value normalized by its record's range:
-   sum of (1 - (v - lo) / (hi - lo)) * weight */
+   sum of (1 - (v - lo) / (hi - lo)) * weight; the original's return adds the last term x once more */
 
 float gm_IncomeRating(void)
 {
@@ -216,7 +216,7 @@ float gm_IncomeRating(void)
         x = (1.0 - ((double)rec[6] - rec[1]) / ((double)rec[2] - rec[1])) * w[i - 9];
         sum = sum + x;
     }
-    return sum;
+    return sum + x;
 }
 /* 0x4f9f60, income kind 1 of the character id (rate of the record 9 * 0.01 * the character's int at +0x19c, not below 0): stores kind 1, the amount (+8 + 4k) and the record's rate (+0x20 + 4k) in the first free slot k of the 6 of out;
    flag 1 sends the amount to the player, flag 2 adds it to the sum 0x91b5c0. Returns 1 (slot found) or 0 */
