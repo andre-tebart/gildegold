@@ -978,7 +978,7 @@ int cm_CheckWedding(G28REC *m);  /* 0x4e0580 */
 void sb_Stop();  /* 0x427290 */
 int cm_EndWedding(int *s);  /* 0x4e06d0 */
 int cm_RunSceneTicksOrClick(int ticks, int (*cb)(int), int arg);  /* 0x4e3490 */
-int cm_WaitEventOrClick();  /* 0x4e2cc0 */
+int cm_WaitEventOrClick(int a, int (*cb)(int), int arg);  /* 0x4e2cc0 */
 int sb_IsPlaying();  /* 0x426f20 */
 int cm_RunWedding(G28REC *m);  /* 0x4e0770 */
 
