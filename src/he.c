@@ -138,18 +138,15 @@ extern const volatile unsigned __int64 gypsyFilter;  /* 0x5eed68, menu.c */
 #define gypsyFilterValue (*(unsigned __int64 *)&gypsyFilter)  /* 0x5eed68, gypsyFilter read as a plain value (he_AllocSpying passes it by value, the high word loaded first) */
 #include "menu_types.h"
 extern OPTIONBYTES ai_GameSwitches;
-extern const int ai_CharWalkSteps[16];
 extern int gm_PlayerRecords[688];
 extern GAPDATA full_data_602568[];
 extern GAPDATA full_data_5ff710[];
 
 extern GAPDATA full_data_5f320c[];
-extern const int ai_RandomStrides[16];
 extern int gm_PlayerRecords[688];
 extern int d2_ClickedForm;
 extern unsigned char ai_GameState;
 extern GAPDATA full_data_5fe7d0[];
-extern const int ai_CharWalkSteps[16];
 extern const int sv_PhaseMinutes[24];
 extern GAPDATA full_data_60d0d4[];
 extern struct G16TRACKHANDLES snd_TrackHandles;
@@ -157,9 +154,7 @@ extern int * d3t_Rain;
 extern GAPDATA full_data_5f1890[];
 extern int ai_PermsDirty;
 
-extern char * ai_FallbackBuilding;
 extern unsigned char ai_GameState;
-extern char * ai_PlayerBuilding;
 extern int snd_SystemBank;
 extern const int sv_PhaseMinutes[24];
 extern GAPDATA full_rdata_5ebb44[];
@@ -178,7 +173,6 @@ extern OPTIONBYTES ai_GamePanel;
 extern OPTIONBYTES ai_GamePanel;
 
 extern unsigned char ai_GameState;
-extern struct AIBLD *ai_MarketBuilding;
 extern int gm_PlayerRecords[688];
 extern GAPDATA full_data_628a28[];
 #include "cm_types.h"
@@ -224,7 +218,6 @@ extern GAPDATA full_rdata_5ee01c[];
 void amt_ChangeDistrictOpinion();
 struct AIPER; struct AMTREC; struct CHARACTER; struct CHACTION; struct EVTSCRIPT; struct G15PLANT; struct G11REC; struct AITIME;
 
-void gm_SetTime(struct AITIME *c, unsigned char hour, unsigned min, unsigned sec);
 
 #define U_I(a) (*(int *)(a))
 typedef void (*HEALLOC)(AIJOB *ev);     /* an event type's alloc handler (registered with its run handler by he_SetEventHandlers) */
@@ -601,7 +594,6 @@ typedef struct HEROUTEREFS {            /* the building ids an ordering event na
 #define HE_WALK_PARTNERS2 0x402c20
 #define HE_WALK_BUILDINGS 0x1a7f4c3a0i64 /* the building kinds of a walk (bit k: ai_BTypes kind k; he_StepWalk tests the same mask) */
 
-int ai_FindPartnersRandomWalk(struct AIPER *p, unsigned int a, int *flags, float lo, float hi, unsigned short *id); /* 0x4a5b50 (am.h, not included yet) */
 
 int he_RegisterEventTypes22(void);
 int he_RegisterEventTypes02();
@@ -656,6 +648,7 @@ int he_RegisterEventTypeA2();
 #include "cm.h"
 #include "gv.h"
 #include "ahm.h"
+#include "am.h"
 #define rt_UnloadAtPointC ((void (*)(char *, char))rt_UnloadAtPoint)  /* 0x4bfa40 (rt.c: int pl): @original he_RunTransport pushes its char player slot unextended (0x556bb9) */
 #define d2_SetObjValue2 ((void (*)(int, int))d2_SetObjValue)  /* 0x475cb0: @original he.c's two calls push only obj and the value (0x53dcd1, 0x53dd44) */
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
@@ -16125,8 +16118,6 @@ int he_FindFigurePlace(AICHAR *p, int *bldId, int *objId, int *scene)
     return 1;
 }
 
-void gm_SetTime(struct AITIME *c, unsigned char hour, unsigned min, unsigned sec);
-
 /* 0x55ee40, picks one of the `n` buildings `blds` for the character `c` (the inns of he_StepWalk's walk):
    each one without the flag 1 of flags5a, with a 3D object and the character's own building (bld2) placed, scores
    1 - its distance to that building / the largest such distance (at least 0.01) plus 0.0125 times its skill 9
@@ -24506,8 +24497,6 @@ void he_RunGraveLease(int ev)
         return;
     }
 }
-
-void gm_SetTime(struct AITIME *c, unsigned char hour, unsigned min, unsigned sec); /* 0x4fe1e0 */
 
 /* 0x572b90, the alloc of the graveyard workers event 0x93: the due clock (AIJOB.end) = now, set to 6:00 (gm_SetTime
    0x4fe1e0); the second clock (AIJOB.clock60) = the due clock */
