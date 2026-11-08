@@ -49,11 +49,11 @@ char d3sky_DrawLayer(D3SKY *s, D3SKYLAYER *l)
     D3DCHECK(d3d_Device->lpVtbl->SetTexture(d3d_Device, 0, l->t->surftext));
     d3_SetBlendState(l->alpha < 0xff, l->flags.b[2] & 1, (l->flags.b[2] >> 1) & 1);
     if (l->flags.b[2] & 1) {
-        col.c.r = s->color.r * s->color.a >> 8;
-        col.c.g = s->color.g * s->color.a >> 8;
-        col.c.b = s->color.b * s->color.a >> 8;
+        col.c.r = s->color.c.r * s->color.c.a >> 8;
+        col.c.g = s->color.c.g * s->color.c.a >> 8;
+        col.c.b = s->color.c.b * s->color.c.a >> 8;
     } else
-        col.d = RGBA_MAKE(s->color.r, s->color.g, s->color.b, l->alpha);
+        col.d = RGBA_MAKE(s->color.c.r, s->color.c.g, s->color.c.b, l->alpha);
     for (i = 0; i < s->num_buffer; i++) {
         if (s->buffer[i].visible) {
             s->buffer[i].color = col.d;
@@ -308,7 +308,7 @@ D3SKY *d3sky_Create(float horizon, float fogstart, float fogscale)
     D3SKY *s = mem_Alloc(sizeof(D3SKY), "d3_sky:Create");
 
     if (s) {
-        *(unsigned long *)&s->color = 0xffffffff;
+        s->color.col = 0xffffffff;
         s->layers = 0;
         s->horizon = horizon;
         s->lasttime = d3_Time;

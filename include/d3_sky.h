@@ -45,7 +45,7 @@ typedef struct D3SKY {              /* 0xacc bytes */
     D3SKYVERTEX buffer[D3SKY_ROWS * D3SKY_COLS];    /* 0x000 */
     D3VECTOR4 dir[D3SKY_ROWS * D3SKY_COLS];         /* 0x600, view direction per vertex; w = its angle */
     unsigned short indices[(D3SKY_ROWS - 1) * (D3SKY_COLS - 1) * 6];   /* 0x900 */
-    D3COLOR color;                  /* 0xaa4 */
+    D3COLORU color;                 /* 0xaa4, the sky tint (white when created) */
     int num_buffer;                 /* 0xaa8, -1: to be rebuilt */
     int num_indices;                /* 0xaac */
     float rot;                      /* 0xab0, camera heading */
