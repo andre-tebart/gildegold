@@ -2,8 +2,6 @@
    action queue and its callbacks, path search and walking. Extent in GildeGold.exe: 0x402140 (right after
    the UDP code; its .data starts at 0x5f1120 with the animation path) .. 0x40b580.
    Functions are kept in their original order. Names are ours.
-   Open: no evidenced role / type yet for fields the action and walk code share:
-   u.walk.unk0fc (written -1, never read).
    cm_SpeedFactor (0x5f1290, the game speed factor) is defined here under cm's name.
    Open: D3OBJ_UNK200 reads D3OBJECT.owner (d3.h, the game record of the object) as the int d3_WriteObject
    saves and rd_object restores (the item pointer of the sprite spawners).
@@ -2889,7 +2887,7 @@ int ch_GetNewPath(CHARACTER *ch, int n, CHARACTER **others)
                 }
                 a->u.walk.pathLen = tz + nrest;
                 a->u.walk.cur = 0;
-                a->u.walk.unk0fc = -1;
+                a->u.walk.prevCell = -1;
                 gx = ((unsigned char *)a->u.walk.path)[a->u.walk.pathLen * 2 - 2];
                 gz = ((unsigned char *)a->u.walk.path)[a->u.walk.pathLen * 2 - 1];
                 d3sm_GetVertex(h, gx, gz, &a->u.walk.end);
@@ -2954,7 +2952,7 @@ int ch_PathToTarget(CHACTION *a)
     a->u.walk.pathLen = ch_ThinPath(ch, &ch_Path, (CHPATHPT *)a->u.walk.path, (CHWALKDEF *)h);
     t = a->u.walk.target;
     a->u.walk.cur = 0;
-    a->u.walk.unk0fc = -1;
+    a->u.walk.prevCell = -1;
     a->u.walk.tpos.x = t->obj->pos.x;
     a->u.walk.tpos.y = t->obj->pos.y;
     a->u.walk.tpos.z = t->obj->pos.z;
@@ -3039,7 +3037,7 @@ int ch_InitWalk(CHACTION *a, D3SM *h)
     a->u.walk.path = mem_Alloc(ch_Path.count * 2, "ch_t:waypoints");
     a->u.walk.pathLen = ch_ThinPath(ch, &ch_Path, (CHPATHPT *)a->u.walk.path, (CHWALKDEF *)h);
     a->u.walk.cur = 0;
-    a->u.walk.unk0fc = -1;
+    a->u.walk.prevCell = -1;
     d3sm_GetVertex(h, ((unsigned char *)a->u.walk.path)[0], ((unsigned char *)a->u.walk.path)[1], &a->u.walk.end);
     a->u.walk.end.x += ch_PathOffset.x;
     a->u.walk.end.y += ch_PathOffset.y;
@@ -3556,7 +3554,7 @@ void ch_ActWalkCells(CHACTION *a)
             __asm int 3
         a->u.walk.pathLen = 0x100;
         a->u.walk.cur = 0;
-        a->u.walk.unk0fc = -1;
+        a->u.walk.prevCell = -1;
         for (i = 0; i < 0x200; i += 2) {
             ((unsigned char *)a->u.walk.path)[i] = 0;
             ((unsigned char *)a->u.walk.path)[i + 1] = 0;

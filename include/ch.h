@@ -272,7 +272,8 @@ struct CHACTION {                   /* 0x194 bytes, 2000 of them in ch_Queue; fu
             int pathLen;            /* 0xf0, number of cells in path (2 bytes each) */
             void *path;             /* 0xf4, walk actions: allocated path */
             int cur;                /* 0xf8, next path cell (from here: worker ch4) */
-            int unk0fc;
+            int prevCell;           /* 0xfc, reasoned: set to -1 with cur at every new path (the cell walked from, -1
+                                       before the first); no reader in the image */
             unsigned char lastframe;    /* 0x100, walk animation frame of the last step sound (worker ch5) */
             char pad101[0x3];
             int started;            /* 0x104, walk animation started */
