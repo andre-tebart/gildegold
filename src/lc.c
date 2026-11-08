@@ -1039,6 +1039,7 @@ typedef struct G8USEVIEW {              /* a local view of am.h's G8USE (am.h ca
 #include "f3snd.h"
 #include "vfs.h"
 #include "d2.h"
+#include "rt.h"
 #include "gfx.h"
 #include "cm.h"
 #include "ahm.h"

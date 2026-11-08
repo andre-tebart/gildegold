@@ -226,6 +226,7 @@ extern SVPLATE sv_NamePlates[0x20];
 #include "f3snd.h"
 #include "sblib.h"
 #include "d2.h"
+#include "rt.h"
 #include "gfx.h"
 #include "cm.h"
 #define d2_AddHitRectI ((int (*)(int, int, int, int, int))d2_AddHitRect)  /* 0x478890 (gfx.h: short x, y, w, h): @original sv_BuildScreenLayout pushes d2_ScreenW - 0x50 unextended, an int x (0x521e9c sub edx, 0x50 / 0x521ea1 push edx) */
@@ -3471,7 +3472,6 @@ extern int ai_BuildingPerms;  /* 0x6f231c */
 int gm_Opinion(int a, int b);                     /* 0x50c520 */
 int gm_MinutesBetween();                     /* 0x4fe280 */
 void gm_AddTime(struct AITIME *c, int hours, int mins, int secs);                     /* 0x4fe140 */
-void rt_EditCartRoute();                     /* 0x4bf5b0 */
 int d2_RemoveWindowObjects();                     /* 0x472d20 */
 int gm_ListAmount();                     /* 0x50aaf0 */
 int ai_RunAllows();                     /* 0x5763c0 */
