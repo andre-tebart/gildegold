@@ -687,7 +687,7 @@ exe	0x00431ae0	d3anim_PoseBones	d3_anim	draft	readable	deep
 exe	0x00432190	d3anim_RootPosAt	d3_anim	draft	readable	deep	
 exe	0x004324e0	d3anim_NextFrame	d3_anim	byte	readable		
 exe	0x00432530	d3path_Tangents	d3_anim	byte	readable		
-exe	0x00432750	d3anim_StepObject	d3_anim	draft	draft		
+exe	0x00432750	d3anim_StepObject	d3_anim	draft	readable	deep	
 exe	0x00433b10	d3anim_FreePath	d3_anim	byte	draft	deep	
 exe	0x00433b50	d3path_Init	d3_anim	shape	readable	deep	
 exe	0x00433d70	d3anim_CreatePath	d3_anim	shape	readable		
@@ -839,7 +839,7 @@ exe	0x00442ac0	d3fl_TileBox	d3_fl	shape	readable
 exe	0x00442ed0	d3fl_UpdateWater	d3_fl	shape	readable		
 exe	0x004430c0	d3fl_DrawWater	d3_fl	draft	readable	deep	
 exe	0x004437f0	d3fl_UpdateTiles	d3_fl	draft	readable	deep	
-exe	0x004439e0	d3fl_Draw	d3_fl	draft	draft		
+exe	0x004439e0	d3fl_Draw	d3_fl	draft	readable	deep	
 exe	0x00446180	d3fl_Prerender	d3_fl	shape	readable		
 exe	0x004463b0	map_Pick	d3_fl	draft	readable	deep	
 exe	0x00446750	map_PickScreen	d3_fl	draft	readable	deep	
@@ -853,11 +853,11 @@ exe	0x004471b0	d3if_Show	d3_interface	byte	readable
 exe	0x00447260	d3if_ShowCB	d3_interface	byte	readable		
 exe	0x00447300	d3if_ShowTree	d3_interface	byte	readable		
 exe	0x00447340	d3if_Reload	d3_interface	byte	readable		
-exe	0x004473f0	d3if_Reset	d3_interface	byte	draft	deep	
-exe	0x004475f0	d3if_InitScene	d3_interface	byte	draft	deep	
+exe	0x004473f0	d3if_Reset	d3_interface	byte	readable		
+exe	0x004475f0	d3if_InitScene	d3_interface	byte	readable		
 exe	0x00447800	d3if_PrecacheCB	d3_interface	byte	readable		
 exe	0x00447860	d3if_Prerender	d3_interface	byte	readable		
-exe	0x004478e0	d3if_SelectScene	d3_interface	draft	draft		shape+draft -> draft+draft at 7a3ed50: dcp's reference check (decompanion ef0c0b3) pairs reordered loads / stores of equal text crosswise and reads them as other targets; the effects are the same, the prover cannot show it yet [waits for: decompanion normalized-alignment / prover-coverage]
+exe	0x004478e0	d3if_SelectScene	d3_interface	draft	readable	deep	shape+draft -> draft+draft at 7a3ed50: dcp's reference check (decompanion ef0c0b3) pairs reordered loads / stores of equal text crosswise and reads them as other targets; the effects are the same, the prover cannot show it yet [waits for: decompanion normalized-alignment / prover-coverage]
 exe	0x00447e60	d3if_ClearScene	d3_interface	byte	readable		
 exe	0x00447f70	d3if_MoveCB	d3_interface	byte	readable		
 exe	0x00447fd0	d3if_MoveObject	d3_interface	byte	readable		
@@ -902,7 +902,7 @@ exe	0x0044cd40	d3iot_DeleteStockObject	d3_io_t	byte	readable
 exe	0x0044ce40	d3iot_CalcBounds	d3_io_t	shape	readable		
 exe	0x0044d1c0	d3iot_Finish	d3_io_t	byte	readable		
 exe	0x0044d1f0	d3iot_LoadTexSet	d3_io_t	byte	readable		
-exe	0x0044d330	d3iot_LoadBGF	d3_io_t	draft	draft		
+exe	0x0044d330	d3iot_LoadBGF	d3_io_t	draft	readable	deep	
 exe	0x0044df20	d3iot_GetRadius	d3_io_t	byte	readable		
 exe	0x0044df40	d3io_LoadObjectFile	d3_io_t	byte	readable		
 exe	0x0044e080	d3io_LoadObject	d3_io_t	byte	readable		
@@ -1049,7 +1049,7 @@ exe	0x00458ce0	d3_MatToWorld	d3_pose	byte	readable
 exe	0x00458da0	d3_WorldMatrix	d3_pose	byte	readable		
 exe	0x00458e70	d3_EnvMapCoords	d3_vtx	shape	readable		
 exe	0x004591a0	d3_AnimBlendWeights	d3_vtx	byte	readable		
-exe	0x00459300	d3_TransformVerts	d3_vtx	draft	draft		
+exe	0x00459300	d3_TransformVerts	d3_vtx	draft	readable	deep	
 exe	0x004598d0	d3_TransformNormals	d3_vtx	byte	readable		
 exe	0x00459980	d3_FrameNormals	d3_vtx	byte	readable		
 exe	0x00459ab0	d3_GetBoxVerts	d3_vtx	shape	readable		
@@ -4003,8 +4003,8 @@ exe	0x00578370	ai_TutorialStop	sv_t	byte	readable
 exe	0x00578440	ai_TutorialFreeRuns	sv_t	byte	readable		
 exe	0x005784a0	ai_TutorialInitMainIntro	sv_t	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	sv_t	byte	readable		
-exe	0x00578e40	ai_TutorialInitChapter2	sv_t	shape	readable		
-exe	0x00579570	ai_TutorialInitChapter3	sv_t	draft	readable		
+exe	0x00578e40	ai_TutorialInitChapter2	sv_t	byte	readable		
+exe	0x00579570	ai_TutorialInitChapter3	sv_t	shape	readable		
 exe	0x0057aa80	ai_TutorialInitChapter4	sv_t	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	sv_t	byte	readable		
 exe	0x0057b750	ai_TutorialInitMainOutro	sv_t	byte	readable		
