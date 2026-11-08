@@ -158,6 +158,20 @@ extern struct AICHARREC *ai_InvChar;     /* 0x6f2f60, the character whose invent
 extern unsigned short ai_StatsChartFlags; /* 0x6f2f88, the charts the statistics panel shows (bit i: the legend row i) */
 extern unsigned int ai_AmountTab;        /* 0x6f2f8c, the open tab of the special-amount window (0 .. 7; 8: no tab has rows) */
 extern int ai_MasterLetterPage;          /* 0x6f2f90, the open page of the master letter window: 0 the work settings, 1 the goods weights */
+/* 0x6f3880: the equip window's row table, 32 rows of 0x40 (ai_EquipRowsInit frees every row, ai_UpdateEquipRows keeps
+   the rows of the scene characters of the job groups 10 .. 12, ai_EquipWindow lays them out) */
+typedef struct AIEQUIPSLOT {            /* 8 bytes, one equipment slot of a row: a good as an input icon */
+    int pic;                            /* 0x00, the slot's picture object, -1 none */
+    int obj;                            /* 0x04, the slot's object, 0 none */
+} AIEQUIPSLOT;
+typedef struct AIEQUIPROW {             /* 0x40 bytes, one row */
+    struct AICHARREC *ch;               /* 0x00, the scene character shown, 0: a free row */
+    int portrait;                       /* 0x04, the character's portrait picture object (AICHARREC.picture), -1 none */
+    int frame;                          /* 0x08, the row's frame picture object (picture 0x74c), -1 none */
+    int window;                         /* 0x0c, the row's child window (name, health and skill bars), -1 none */
+    AIEQUIPSLOT slot[6];                /* 0x10, the six equipment slots: the character's goods as input icons */
+} AIEQUIPROW;
+extern AIEQUIPROW ai_EquipRows[0x20];   /* 0x6f3880, 32 rows; written until 0x6f4080 */
 extern int ai_BldCartCount;             /* 0x6f40a0, the number of carts in ai_BldCarts (at most 3) */
 extern struct AIOBJ *ai_BldCarts[3];    /* 0x6f40a4, the carts of the building the cart list shows (gm_BuildingCarts) */
 extern int ai_BldCartButtons[3];        /* 0x6f40b0, per cart the button to its destination building, -1: none */

@@ -4003,8 +4003,8 @@ exe	0x00578370	ai_TutorialStop	sv_t	9d1db8f5a93c7021	no	byte	control=byte p1=byt
 exe	0x00578440	ai_TutorialFreeRuns	sv_t	7db4c5d18c22886f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x005784a0	ai_TutorialInitMainIntro	sv_t	798c8d26cb8bedf5	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00578570	ai_TutorialInitChapter1	sv_t	1104bf614d4657fb	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x00578e40	ai_TutorialInitChapter2	sv_t	1997337a7073c8ff	yes	byte	control=shape p1=byte* p2=byte* p3=byte* p4=byte*
-exe	0x00579570	ai_TutorialInitChapter3	sv_t	7a7c849570dd38d6	yes	draft	control=draft p1=draft* p2=draft* p3=draft* p4=draft*
+exe	0x00578e40	ai_TutorialInitChapter2	sv_t	1997337a7073c8ff	yes	byte	control=shape p1=byte* p2=shape p3=shape p4=byte*
+exe	0x00579570	ai_TutorialInitChapter3	sv_t	7a7c849570dd38d6	yes	shape	control=draft p1=shape* p2=shape* p3=shape* p4=shape*
 exe	0x0057aa80	ai_TutorialInitChapter4	sv_t	6084c4a654a21837	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0057aeb0	ai_TutorialInitChapter5	sv_t	8774329fa9d901d6	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0057b750	ai_TutorialInitMainOutro	sv_t	fa030cb776dbd933	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
@@ -4178,7 +4178,7 @@ exe	0x00594e50	ai_CriminalContact	lc	6507108db6e7385f	no	shape	control=shape p1=
 exe	0x005950e0	ai_FarTradeContact	lc	2826dc29eca02f9f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00595170	ai_SmithyContact	lc	7b89b53e9278130f	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
 exe	0x00595330	ai_CarpenterContact	lc	11f0c47ab092a56a	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
-exe	0x00595480	ai_TradeSearchWindow	lc	67daff8d7e96f5b3	yes	draft	control=draft p1=draft p2=draft p3=draft* p4=draft
+exe	0x00595480	ai_TradeSearchWindow	lc	67daff8d7e96f5b3	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x00595a00	ai_AquariumSearchWindow	lc	a7e9abf439e34b64	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x00595ed0	ai_PerfumeryContact	lc	54f42bb8ba9a40c4	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
 exe	0x00596060	ai_IdleContact	lc	744a0d1f84529fda	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
@@ -4230,7 +4230,7 @@ exe	0x0059c120	ai_FillExchangeRows	lc	9461d3105ce1222a	no	byte	control=byte p1=b
 exe	0x0059c450	ai_ShowExchangeRows	lc	60f4dac23f5ce535	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0059c6b0	ai_ClickedExchangeRecord	lc	45d22571fe329b04	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0059c6e0	ai_UsedRecordCount	lc	ac684472964e9392	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x0059c700	ai_ExchangeWindow	lc	91948b68d09cdd1d	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x0059c700	ai_ExchangeWindow	lc	91948b68d09cdd1d	yes	draft	control=draft p1=draft p2=draft p3=draft* p4=draft
 exe	0x0059d2d0	ai_ExchangeFeesWindow	lc	30d16c0ba82c4140	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0059d410	ai_MoneyMessengerWindow	lc	e18fbf7d75ff4ceb	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0059d5e0	ai_MoneyExchangeWindow	lc	f6516a7e3c12a86a	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape

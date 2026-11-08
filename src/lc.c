@@ -669,7 +669,6 @@ extern int ai_EspionageAmountCB();
 extern int ai_BeatingCallback();
 extern char * ai_PickedObject;
 extern GAPDATA ai_DomizilTable[];
-extern GAPDATA ai_EquipRows[];
 extern char * cm_FieldObject;
 extern struct D2OBJ *d2_Objs;
 
@@ -23024,20 +23023,6 @@ void ai_InventoryPanel(void)
     d2_CloseView(win);
     ai_CampaignStep(0x14, 0, 1, 0);
 }
-#pragma pack(push, 1)
-typedef struct AIEQUIPSLOT {            /* 8 bytes, an equipment slot of an equip window row */
-    int pic;                            /* 0x00, the slot's picture object, -1 none */
-    int obj;                            /* 0x04, the slot's object, 0 none */
-} AIEQUIPSLOT;
-
-typedef struct AIEQUIPROW {             /* 0x40 bytes, a row of the equip window's table ai_EquipRows (32 rows) */
-    AICHARREC *ch;                      /* 0x00, the scene character shown, 0: a free row */
-    int portrait;                       /* 0x04, the character's portrait picture object (AICHARREC.picture), -1 none */
-    int frame;                          /* 0x08, the row's frame picture object (picture 0x74c), -1 none */
-    int window;                         /* 0x0c, the row's child window (name, health and skill bars), -1 none */
-    AIEQUIPSLOT slot[6];                /* 0x10, the six equipment slots: the character's goods as input icons */
-} AIEQUIPROW;
-#pragma pack(pop)
 
 /* 0x5bae10, the init of the equip window's row table (64 B): every row of ai_EquipRows is freed (the character 0,
    the objects -1, the six slots -1 / 0), so that ai_UpdateEquipRows finds no row in use
@@ -34364,6 +34349,7 @@ struct AICHARREC *ai_InvChar = 0;  /* 0x6f2f60, the character whose inventory th
 unsigned short ai_StatsChartFlags = 0;  /* 0x6f2f88, the charts the statistics panel shows (ai_CityStatsPanel: bit i the legend row i, 1 at the first open) */
 unsigned int ai_AmountTab = 0;  /* 0x6f2f8c, the open tab of the special-amount window (ai_SpecialAmountWindow, 0 .. 7; 8: no tab has rows) */
 int ai_MasterLetterPage = 0;  /* 0x6f2f90, the open page of the master letter window (ai_MasterLetterSettings): 0 the work settings, 1 the goods weights */
+AIEQUIPROW ai_EquipRows[0x20] = { 0 };  /* 0x6f3880, the equip window's rows: ai_EquipRowsInit frees all 32, ai_UpdateEquipRows fills and updates them, ai_EquipWindow lays them out; 32 x 0x40 runs to 0x6f4080 */
 int ai_BldCartCount = 0;  /* 0x6f40a0, the number of carts in ai_BldCarts (gm_BuildingCarts, at most 3) */
 struct AIOBJ *ai_BldCarts[3] = { 0 };  /* 0x6f40a4, the carts of the building the cart list shows */
 int ai_BldCartButtons[3] = { 0 };  /* 0x6f40b0, per cart the button to its destination building (picture 5), -1: none */
