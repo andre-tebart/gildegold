@@ -2699,7 +2699,21 @@ int ch_GetWaypoints(D3SM *h, CHARACTER *ch, CHWAYPT *out)
 }
 /* 0x4079b0, walk actions: checks the next path cells against the nearby characters others[0..n-1] and,
    if one blocks the way, marks them in the ground map and searches a new path around them ("ch:GetNewPath"
-   is the mem_Alloc tag). Returns the new path length, 0 nothing to do, -1 failed, -2 no way around. */
+   is the mem_Alloc tag). Returns the new path length, 0 nothing to do, -1 failed, -2 no way around.
+   @deep Read in full against 0x4079b0..0x408486: the blocker scan over the waypoints (flags 2 / 1 / 8, the
+   contact links, the speed scale), the contacts table, the ground marks of the blockers' paths and
+   positions, the rest of the path kept, the free cells, path_Find, the thinned path and its end. All
+   statements line up (ours 828 vs 832); the contacts store now writes ch then flags through the
+   flags-biased pointer as the original (dist 203 -> 200). Left: allocation and frame - our frame is 0x9bc
+   vs 0x9b8 (one 4-byte local more: the escaped cells cx/cz/sx/i/gx share slots otherwise, the prover stops
+   at frame+0x4), the scene-map test loads into edi with walk.cur read first in the original (+0x86), the
+   rest loop biases its pointer to rest+1 in the original ('+ lea ecx,[esp+0x1c9] / mov [ecx-1],bl / mov
+   [ecx],bl', an nrest-indexed loop compiles far worse: 297), 'or al,1' vs 'or ebx,1' on walk.flags | 1
+   with the FindFreeCell product in eax vs ebx (+0x878), the loop counters i / others pointer in
+   [esp+0x18]/[esp+0x1c] vs ours [esp+0x1c]/[esp+0x2c]. (references: M8 at +0x86: ours refers to
+   d3_DefaultScene (0x5fb5b0), the original's field to 0x63108c (ch_PathMap), explained: the M8 at +0x86
+   (d3_DefaultScene | ch_PathMap) is the shifted alignment of the scene-map test: both sides read
+   d3_DefaultScene[scene].map and store 60.0 to ch_PathMap->cell.x on both paths (asmdiff --symbols)) */
 
 int ch_GetNewPath(CHARACTER *ch, int n, CHARACTER **others)
 {
@@ -2808,8 +2822,8 @@ int ch_GetNewPath(CHARACTER *ch, int n, CHARACTER **others)
     if (res) {
         memset(ch->contacts, 0, 16 * sizeof(CHCONTACT));
         for (i = 0; i < n; i++) {
-            ch->contacts[i].flags = res;
             ch->contacts[i].ch = others[i];
+            ch->contacts[i].flags = res;
         }
         if (res & 1) {
             if (ch->speedScale < 0.5)
