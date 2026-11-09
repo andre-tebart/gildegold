@@ -40,6 +40,7 @@ int ls_Language = 65535;  /* 0x62364c, the language number ( */
 int ls_Version = 65626;  /* 0x623650 */
 const char ls_LanguageNames[][0x40] = { "GERMAN", "ENGLISH", "FRENCH", "ITALIAN", "SPANISH" };  /* 0x5ee978, the language names (5 of */
 extern int gm_PlayerRecords[688];          /* 0x7d5f80, the 16 player records (0xac bytes each; gm_PlayerRecord, f3gm.c) */
+#define gm_PlayerFins (*(AIFIN (*)[16])&gm_PlayerRecords)  /* 0x7d5f80, gm_PlayerRecords (f3gm.c: int[688]) as the 16 AIFIN records it holds */
 /* gm_PlayerRecordBytes: view of gm_PlayerRecords (tools/data_views.py) */
 int ai_NextCrimeId = 0;  /* 0x6f1b88 .. */
 int ls_SpareInt = 0;  /* 0x6f1bcc */
@@ -1639,58 +1640,56 @@ int ls_ReadBuildings(int f)
     }
     return 1;
 }
-/* 0x51db00, reads the 16 player records gm_PlayerRecords (0xac bytes each; the counterpart of the writer 0x51a1a0): the fields, each version gated (+0x26 from 0x1002c, +0x52 .. +0x6a from 0x10014, +0x5e = 1.0 below 0x10056, the 0x11 (0x0e below 0x10046) name bytes at +0x72 from 0x10015, +0x6e from 0x10018). Returns 1, 0 when a read fails. */
+/* 0x51db00, reads the 16 player records gm_PlayerRecords (AIFIN, 0xac bytes each; the counterpart of the writer 0x51a1a0): the fields, each version gated (spyPaid from 0x1002c, costB .. officeSentences from 0x10014, roundFactors[2] = 1.0 below 0x10056, the 0x11 (0x0e below 0x10046) jobByGroup bytes from 0x10015, saved70 from 0x10018). Returns 1, 0 when a read fails. */
 
 
 int ls_ReadPlayerRecords(int f)
 {
-    char *p = gm_PlayerRecordBytes;
-    int i, n;
+    int k, i, n;
 
-    do {
-        LS_R(p - 2, 2)
-        LS_R(p, 0x10)
-        LS_R(p + 0x12, 4)
+    for (k = 0; k < 0x10; k++) {
+        LS_R(&gm_PlayerFins[k].w00, 2)
+        LS_R(gm_PlayerFins[k].family, 0x10)
+        LS_R(&gm_PlayerFins[k].incomeA, 4)
         if (ls_Version >= 0x1002c)
-            LS_R(p + 0x26, 4)
-        LS_R(p + 0x1a, 4)
-        LS_R(p + 0x1e, 4)
-        LS_R(p + 0x2a, 4)
-        LS_R(p + 0x2e, 4)
-        LS_R(p + 0x32, 4)
-        LS_R(p + 0x36, 4)
-        LS_R(p + 0x3e, 4)
-        LS_R(p + 0x42, 4)
-        LS_R(p + 0x46, 4)
-        LS_R(p + 0x4a, 4)
-        LS_R(p + 0x4e, 4)
+            LS_R(&gm_PlayerFins[k].spyPaid, 4)
+        LS_R(&gm_PlayerFins[k].lootTakings, 4)
+        LS_R(&gm_PlayerFins[k].incomeC, 4)
+        LS_R(&gm_PlayerFins[k].missionMoney[0], 4)
+        LS_R(&gm_PlayerFins[k].missionMoney[1], 4)
+        LS_R(&gm_PlayerFins[k].missionMoney[2], 4)
+        LS_R(&gm_PlayerFins[k].missionMoney[3], 4)
+        LS_R(&gm_PlayerFins[k].upgradeSpent, 4)
+        LS_R(&gm_PlayerFins[k].renovationSpent, 4)
+        LS_R(&gm_PlayerFins[k].loansRepaid, 4)
+        LS_R(&gm_PlayerFins[k].costA, 4)
+        LS_R(&gm_PlayerFins[k].cartSpent, 4)
         if (ls_Version >= 0x10014) {
-            LS_R(p + 0x52, 4)
-            LS_R(p + 0x56, 4)
-            LS_R(p + 0x5a, 4)
-            LS_R(p + 0x3a, 4)
-            LS_R(p + 0x62, 4)
-            LS_R(p + 0x66, 4)
-            LS_R(p + 0x6a, 4)
+            LS_R(&gm_PlayerFins[k].costB, 4)
+            LS_R(&gm_PlayerFins[k].roundFactors[0], 4)
+            LS_R(&gm_PlayerFins[k].roundFactors[1], 4)
+            LS_R(&gm_PlayerFins[k].missionMoney[4], 4)
+            LS_R(&gm_PlayerFins[k].saved64[0], 4)
+            LS_R(&gm_PlayerFins[k].saved64[1], 4)
+            LS_R(&gm_PlayerFins[k].officeSentences, 4)
         }
         if (ls_Version >= 0x10056) {
-            LS_R(p + 0x5e, 4)
+            LS_R(&gm_PlayerFins[k].roundFactors[2], 4)
         } else {
-            *(int *)(p + 0x5e) = 0x3f800000;
+            gm_PlayerFins[k].roundFactors[2] = 1.0f;
         }
         if (ls_Version >= 0x10015) {
             n = (((ls_Version >= 0x10046) - 1) & 0xfffffffd) + 0x11;
             for (i = 0; i < n; i++)
-                LS_R(p + i + 0x72, 1)
+                LS_R(&gm_PlayerFins[k].jobByGroup[i], 1)
         }
-        LS_R(p + 0x86, 4)
-        LS_R(p + 0x8a, 0x10)
-        LS_R(p + 0x9a, 0xc)
-        LS_R(p + 0xa6, 4)
+        LS_R(&gm_PlayerFins[k].camAngle, 4)
+        LS_R(gm_PlayerFins[k].camPos, 0x10)
+        LS_R(gm_PlayerFins[k].camRot, 0xc)
+        LS_R(&gm_PlayerFins[k].savedA8, 4)
         if (ls_Version >= 0x10018)
-            LS_R(p + 0x6e, 4)
-        p += 0xac;
-    } while ((int)p < (int)((char *)gm_PlayerRecords + 0xac2));  /* one past the 16th record (gm_PlayerRecordBytes + 0xac0; a byte offset, the array is int[]); the original's literal 0x7d6a42 is an absolute address that does not hold in the linked image, where it made the loop read ~70 records and the .cty load fail */
+            LS_R(&gm_PlayerFins[k].saved70, 4)
+    }
     return 1;
 }
 /* 0x51de70, reads the characters (the counterpart of the header writer 0x5194c0 and the character writer 0x51a4b0): ai_PlayerId, ai_CharCount, the two judge pointers ai_JudgeCatholic / ai_JudgeProtestant and the eight slots of ai_KindBChars (from 0x10016), then ai_CharCount records of the 0x21c bytes of ai_Chars (the id word first, it picks the record): each field from its version (the reference fields +0x54 / +0x18c get their base 0x59a / 0x639 added, +0x174 is 2 instead of 4 below 0x10020), some fields with their defaults for older versions (+0x20c = -1 and +0x190 = 4 below 0x1003e, +0x1cc = 0 below 0x10049); the last chunk +0x210 .. +0x218 from 0x10036. Returns 1, 0 when a read fails. */

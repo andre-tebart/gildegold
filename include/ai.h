@@ -187,15 +187,19 @@ typedef struct AIFIN {                  /* what gm_PlayerRecord finds for a char
     int costB;                          /* 0x54, a round cost part (text 0x2015, cleared by the round report) */
     float roundFactors[3];              /* 0x58, set to 0.5, 1, 1 at every round change (main.c 0x5384e0); [0] the bias for who starts a dice duel
                                            (ai_DuelStart, am.h AGFIN.firstBias), [1] the chance of a tavern dice invitation (ai_TavernDiceWindow) */
-    char pad64[8];
+    int saved64[2];                     /* 0x64, two ints the save game keeps (ls_ReadPlayerRecords from version 0x10014);
+                                           no other reader known */
     int officeSentences;                /* 0x6c, the sentences 4 / 6 / 8 its character passed as the judge of a trial on an
                                            office holder (cm.c 0x4db700) */
-    char pad70[0x18];
+    int saved70;                        /* 0x70, an int the save game keeps (from version 0x10018); no other reader known */
+    unsigned char jobByGroup[0x11];     /* 0x74, one job id per title group (am.h AIFINX.jobByGroup; gm_SetJob fills it) */
+    char pad85[3];
     float camAngle;                     /* 0x88, the player's camera angle factor (sv_CameraAngleFactor; sv.c) */
     float camPos[3];                    /* 0x8c, the player's camera position, restored with the view (sv.c) */
     char pad98[4];
     float camRot[3];                    /* 0x9c, its rotation (D3OBJECT.rotation) */
-} AIFIN;
+    int savedA8;                        /* 0xa8, an int the save game keeps; no other reader known */
+} AIFIN;                                /* 0xac bytes, the 16 records of gm_PlayerRecords */
 
 typedef struct AIMAPENT {               /* 24 bytes, the AI's view of the vegetation records at AIBLD.plants (rd.h
                                            G15PLANT, the same 0x18-byte layout; ai.c includes rd.h now, so the readers
