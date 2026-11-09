@@ -18,6 +18,7 @@
 #define ai_BldsT (*(AIBLD **)&ai_Blds)  /* 0x889f74, ai_Blds (f3gm.c: char *) as the AIBLD records it points to */
 #define ai_BTypesT (*(AIBTYPE **)&ai_BTypes)  /* 0x7e3f30, ai_BTypes (ahm.c: char *) as the AIBTYPE records it points to */
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
+#define ai_PlayerSlotsT (*(GMPLAYERSLOT (*)[4])&ai_PlayerSlots)  /* 0x7e3f40, ai_PlayerSlots (cm.h: char[][0x2f4]) as the four player slots */
 #include "cm_types.h"
 #include "ahm.h"
 #include "amt.h"
@@ -765,11 +766,7 @@ void hmt_FillCouncils(void)
     }
 }
 
-#define HMT_I(c, o) (*(int *)((char *)(c) + (o)))
-#define HMT_F(c, o) (*(float *)((char *)(c) + (o)))
-#define HMT_S(c, o) (*(short *)((char *)(c) + (o)))
-/* the word at +0x14 of the 0x2f4-byte player records that start at 0x7e3f80 */
-#define HMT_PLAYERW(i) (*(unsigned short *)((char *)&ai_Unk7e3f80 + 0x14 + (i) * 0x2f4))
+#define HMT_START_MONEY 16000000  /* the money a historical character starts with (0xf42400, pushed as an immediate) */
 
 /* 0x4adbb0, makes c the historical event (type 0x15, bit 0x1000) or person (bit 0x2000) hmt_Event / hmt_Person:
    new relations to everybody, default values, skills 210..251, age 9, the names of the record; tells the first
@@ -789,29 +786,29 @@ void hmt_Create(int type, int unk, unsigned short v, AICHAR *c)
         c->flags1cc |= 0x2000;
         amt_SetPersonOwner(c->netId);
     }
-    HMT_S(c, 0x0a) = v;
-    HMT_B(c, 0x0c) = 0;
+    c->w00a = v;
+    c->b00c = 0;
     for (j = 0; j < 768; j++) {
         for (k = 0; k < 768; k++) {
             ai_Relations[j][k] = (char)util_RandomU(0x40) - 0x20;
             ai_RelationMemory[j][k] = 0;
         }
     }
-    HMT_S(c, 0x50) = 0x7fff;
-    HMT_I(c, 0x7c) = 0;
-    HMT_B(c, 0x58) = 0;
-    memset((char *)c + 0x5c, 0xff, 0x20);
-    HMT_I(c, 0x170) = 0;
-    HMT_I(c, 0x16c) = 0;
-    HMT_F(c, 0x1c) = 1000.0f;
-    HMT_F(c, 0x14) = 1.0f;
-    HMT_F(c, 0x20) = 12.0f;
-    HMT_F(c, 0x10) = 330.0f;
-    HMT_F(c, 0x18) = 1000.0f;
+    c->w050 = 0x7fff;
+    c->f07c = 0.0f;
+    c->b058 = 0;
+    memset(c->relatives, 0xff, sizeof c->relatives);
+    c->bld2 = 0;
+    c->bld = 0;
+    c->f01c = 1000.0f;
+    c->f014 = 1.0f;
+    c->f020 = 12.0f;
+    c->f010 = 330.0f;
+    c->f018 = 1000.0f;
     for (j = 0; j < 5; j++)
-        HMT_B(c, 0x80 + j) = (unsigned char)(util_RandomU(0x2a) + 210.0f);
-    HMT_B(c, 0x0d) = 9;
-    gm_AddObjekt(c->netId, HMT_PLAYERW(ai_OwnPlayer), &ai_Unkf42400);
+        c->skills[j] = (unsigned char)(util_RandomU(0x2a) + 210.0f);
+    c->b00d = 9;
+    gm_AddObjekt(c->netId, ai_PlayerSlotsT[ai_OwnPlayer].moneyGood, HMT_START_MONEY);
     pl = 0xffff;
     for (i = 0; i < 768; i++) {
         if (pl != 0xffff)
@@ -819,22 +816,25 @@ void hmt_Create(int type, int unk, unsigned short v, AICHAR *c)
         if (ai_CharsT[i].kind == 6)
             pl = i;
     }
-    r = hmt_Find(type == 0x15 ? hmt_Event : hmt_Person, &kind);
-    strcpy(c->name, r->vname);
-    strcpy(c->name + 0x10, r->nname);
+    if (type == 0x15)
+        r = hmt_Find(hmt_Event, &kind);
+    else
+        r = hmt_Find(hmt_Person, &kind);
+    strcpy(c->first, r->vname);
+    strcpy(c->family, r->nname);
     if (type == 0x15) {
         if (ai_Time.year > 0 && pl != 0xffff) {
             txt_Format(text, 0x42b3, c->id);
             he_ShowNews(ai_CharsT[pl].netId, -1, text, 0, 0x602, "_NACHRICHTEN_NEU_01");
         }
-        HMT_I(c, 0x18c) = hmt_RandomHeadIcon();
+        c->picture = hmt_RandomHeadIcon();
         hmt_NextEvent();
     } else {
         if (ai_Time.year > 0 && pl != 0xffff) {
             txt_Format(text, 0x42b5, c->id);
             he_ShowNews(ai_CharsT[pl].netId, -1, text, 0, 0x602, "_NACHRICHTEN_NEU_03");
         }
-        HMT_I(c, 0x18c) = hmt_RandomHeadIcon();
+        c->picture = hmt_RandomHeadIcon();
         hmt_NextPerson();
     }
     c->kind = 3;
@@ -885,7 +885,6 @@ int hmt_Person = 0;  /* 0x6f0714, idx of the person to appear next */
 int hmt_CurrentEvent = 0;  /* 0x6f0718, idx of the event in play, -1 for none */
 int hmt_Event = 0;  /* 0x6f071c, idx of the event to appear next */
 int hmt_PendingElection = 0;  /* 0x6f0720, the election to decide (0..2), -1 for none */
-/* ai_Unkf42400: view of cm_SendStates (tools/data_views.py) */
 const G11REC hmt_Records[51] = { { 0, 1, 0, 1, 0x1e60, "HANDWERKSKUNST" }, { 0, 2, 0, 0, 0x1e63, "NACHTUNDNEBEL" }, { 0, 3, 0, 1, 0x1e66, "KAMPF_1" }, { 0, 3, 0, 0, 0x1e69, "KAMPF_2" }, { 0, 3, 0, 0, 0x1e6c, "KAMPF_3" }, { 0, 3, 0, 0, 0x1e6f, "KAMPF_4" }, { 0, 4, 0, 0, 0x1e72, "RHETORIK" }, { 1, 1, 0, 0, 0x1e75, "SCHMIED_1" }, { 1, 1, 0, 0, 0x1e78, "SCHMIED_2" }, { 1, 1, 0, 0, 0x1eed, "SCHMIED_3" }, { 1, 2, 0, 1, 0x1e7b, "STEINMETZ" }, { 1, 3, 0, 1, 0x1e7e, "TISCHLER" }, { 1, 4, 0, 1, 0x1e81, "WIRT" }, { 1, 5, 0, 0, 0x1e84, "PARFUMEUR_1" }, { 1, 5, 0, 0, 0x1e87, "PARFUMEUR_2" }, { 1, 6, 0, 0, 0x1e8a, "KRAEUTERHAENDLER_1" }, { 1, 6, 0, 0, 0x1e8d, "KRAEUTERHAENDLER_2" }, { 1, 7, 0, 0, 0x1e90, "PRIESTER_1" }, { 1, 7, 0, 0, 0x1e93, "PRIESTER_2" }, { 1, 8, 0, 1, 0x1e96, "FERNHAENDLER" }, { 1, 9, 0, 0, 0x1e99, "BANKIER" }, { 1, 10, 0, 0, 0x1e9c, "GARDIST" }, { 1, 11, 0, 1, 0x1e9f, "DIEB_1" }, { 1, 11, 0, 0, 0x1ea2, "DIEB_2" }, { 1, 12, 0, 1, 0x1ea5, "RAEUBER_1" }, { 1, 12, 0, 1, 0x1ea8, "RAEUBER_2" }, { 1, 12, 0, 0, 0x1eab, "RAEUBER_3" }, { 1, 12, 0, 0, 0x1eae, "RAEUBER_4" }, { 2, 0, 0, 0, 0x1eb1, "BUERGERMEISTER" }, { 2, 0, 0, 0, 0x1eb4, "RICHTER" }, { 2, 0, 0, 0, 0x1eb7, "KAEMMERER" }, { 2, 0, 0, 0, 0x1eba, "SCHILFLIEDER" }, { 2, 0, 0, 1, 0x1ebd, "EDELSTEINE" }, { 2, 0, 0, 1, 0x1ec0, "NOVEMBERLAND" }, { 2, 0, 0, 0, 0x1ec3, "BUERGER_FRIEDBERT" }, { 2, 0, 0, 0, 0x1ec6, "DIE_LETZTE_WACHT" }, { 2, 0, 0, 0, 0x1ec9, "DIE_GUTEN_ALTEN_ZEITEN" }, { 2, 0, 0, 0, 0x1ecc, "NEBELKRAEHE" }, { 2, 0, 0, 0, 0x1ecf, "PEST" }, { 2, 0, 0, 0, 0x1ed2, "HERBSTBESUCH" }, { 2, 0, 0, 0, 0x1ed5, "SONNENUNTERGANG" }, { 2, 0, 0, 0, 0x1ed8, "HUHNS_END" }, { 2, 0, 0, 0, 0x1edb, "SPION" }, { 2, 0, 0, 0, 0x1ede, "DON_IM_GRAS" }, { 2, 0, 0, 0, 0x1ee1, "UEBERFALL" }, { 2, 0, 0, 0, 0x1ee4, "GOPPOCKS_GESCHICHT" }, { 2, 0, 0, 0, 0x1ee7, "BOKTORUS" }, { 2, 0, 0, 0, 0x1eea, "ABLASSBRIEF" }, { 2, 0, 0, 0, 0x1ef0, "DIE_LETZTE_KERZE" }, { 2, 0, 0, 0, 0x1ef3, "GRAF_ADALBERT" }, { 2, 0, 0, 0, 0x1ef6, "LEBENSLAUF" } };  /* 0x5ed1e8 */
 const int hmt_ElectionObjTypes[3] = { 35, 36, 37 };  /* 0x5edb78, .rdata: object type per election */
 const unsigned int hmt_ElectionGroupBits[3] = { 64, 128, 256 };  /* 0x5edb84, .rdata: candidates' group bits */

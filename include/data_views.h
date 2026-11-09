@@ -49,7 +49,6 @@
 
 /* cm_SendStates */
 #define ls_RefTargets            (*(int (*)[17574])((char *)&cm_SendStates + 0x6))  /* 0xf31166 */
-#define ai_Unkf42400             (*(char *)((char *)&cm_SendStates + 0x112a0))  /* 0xf42400 */
 
 /* cm_Parties */
 #define ai_Unk925538             (*(char (*)[26472])((char *)&cm_Parties + 0x18))  /* 0x925538 */

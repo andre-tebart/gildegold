@@ -70,9 +70,6 @@ void hmt_Create(int type, int unk, unsigned short v, struct AICHAR *c);         
 void hmt_NextEvent(void);                                                        /* 0x4ade60 */
 void hmt_NextPerson(void);                                                       /* 0x4adec0 */
 int hmt_RandomHeadIcon(void);                                                         /* 0x4adf20 */
-#ifndef DATA_VIEWS_H
-extern char ai_Unkf42400;                                                        /* 0xf42400 */
-#endif
 int hmt_Load(void *f, int version);                                              /* 0x4ada80, version: the save game's (ls_LoadGame passes ls_Version; unread) */
 int hmt_Save(VFSFILE *f);                                                        /* 0x4adb20 */
 extern char ch_EmptyName[];                                                      /* 0x631090, "" */

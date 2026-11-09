@@ -58,6 +58,7 @@ typedef struct AICHAR {                 /* 0x21c bytes, ai_Chars[768] */
             int ref54;                  /* 0x054, a reference word (the save adds the base 0x59a back,
                                            ls_ReadCharacters); its low byte picks a cart's texture set
                                            ('g' + it, ls_ReadSceneRecords) */
+            unsigned char b058;         /* 0x058, 0 at creation (hmt_Create) */
         };
         struct {
             char padname5c[0x2c];
