@@ -469,7 +469,7 @@ exe	0x00423a90	msx_Play	msx	byte	readable
 exe	0x00423b30	msx_Start	msx	byte	readable		
 exe	0x00423df0	msx_Stop	msx	byte	readable		
 exe	0x00423e70	msx_SetFadeTime	msx	byte	readable		
-exe	0x00423e80	msx_Update	msx	draft	readable	deep	
+exe	0x00423e80	msx_Update	msx	draft	readable	stuck	
 exe	0x004241a0	msx_FadeMaster	msx	byte	readable		
 exe	0x00424250	msx_Find	msx	byte	readable		
 exe	0x004242c0	msx_GetPlaying	msx	byte	readable		
@@ -484,7 +484,7 @@ exe	0x00424810	net_Count	net	byte	readable
 exe	0x00424860	net_PrintStats	net	byte	readable		
 exe	0x00424990	net_Connect	net	shape	readable		
 exe	0x00424c30	net_Close	net	byte	readable		
-exe	0x00424c80	net_Recv	net	draft	readable	deep	
+exe	0x00424c80	net_Recv	net	byte	readable		
 exe	0x00424e70	net_Send	net	byte	readable		
 exe	0x00424f30	path_Find	path	byte	readable		
 exe	0x004250a0	path_Search2	path	draft	readable	deep	
@@ -516,7 +516,7 @@ exe	0x00426f60	sb_IsVariation	sblib	byte	readable
 exe	0x00426fa0	sb_PlaySample	sblib	byte	readable		
 exe	0x00427010	sb_Resume	sblib	byte	readable		
 exe	0x00427050	sb_PlayVariation	sblib	byte	readable		
-exe	0x00427110	sb_Play	sblib	draft	readable	deep	
+exe	0x00427110	sb_Play	sblib	draft	readable	stuck	
 exe	0x00427290	sb_Stop	sblib	byte	readable		
 exe	0x004272f0	sb_SetPan	sblib	byte	readable		
 exe	0x00427330	sb_SetVolume	sblib	byte	readable		
@@ -895,7 +895,7 @@ exe	0x0044c3f0	d3_LoadGroup	d3_int_io	shape	readable
 exe	0x0044c510	d3io_SetStockDir	d3_int_io	byte	readable		
 exe	0x0044c530	d3io_StockFile	d3_int_io	byte	readable		
 exe	0x0044c5d0	d3io_FindStock	d3_int_io	byte	readable		
-exe	0x0044c610	d3io_AttachStock	d3_int_io	draft	readable	deep	
+exe	0x0044c610	d3io_AttachStock	d3_int_io	draft	readable	stuck	
 exe	0x0044c9d0	d3io_LodName	d3_int_io	byte	readable		
 exe	0x0044cbb0	d3_AttachMesh	d3_int_io	byte	readable		
 exe	0x0044cd40	d3iot_DeleteStockObject	d3_io_t	byte	readable		
@@ -2021,7 +2021,7 @@ exe	0x004b9630	ai_MsgJobBothEndsType27	rmsg	byte	readable
 exe	0x004b9810	ai_MsgUnusedSlot	rmsg	byte	readable		
 exe	0x004b9820	ai_MsgJobEndDateType29	rmsg	byte	readable		
 exe	0x004b9ab0	ai_MsgJobEndValueType2a	rmsg	byte	readable		
-exe	0x004b9cd0	ai_MsgWorkerStop	rmsg	draft	readable	deep	
+exe	0x004b9cd0	ai_MsgWorkerStop	rmsg	shape	readable	stuck	
 exe	0x004b9f30	ai_MsgWorkerTitleType2c	rmsg	byte	readable		
 exe	0x004ba0c0	ai_MsgFreeBuildingObjectType2e	rmsg	shape	readable		
 exe	0x004ba2d0	ai_MsgWorkerAddSkillType2f	rmsg	byte	readable		
