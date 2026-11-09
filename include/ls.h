@@ -21,7 +21,7 @@ int ls_WritePlayerRecords(int f);                                               
 int ls_WriteCharacters(int f);                                               /* 0x51a4b0 */
 unsigned ls_ActionIndex(struct CHACTION *p);                            /* 0x51ad30 */
 struct CHACTION *ls_ActionAt(int n);                                    /* 0x51ad60 */
-int unk_Unk51ad80(char *r, int id, int f);                              /* 0x51ad80 */
+int ls_WriteSceneCharacter(struct CHARACTER *c, int owner, int f);  /* 0x51ad80, writes one scene character record */
 int ls_WriteSceneRecords(int f);                                               /* 0x51aff0 */
 int ls_WritePlayerSlots(int f);                                               /* 0x51b340 */
 int ls_WriteRelations(int f);                                           /* 0x51b890 */

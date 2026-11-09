@@ -89,6 +89,7 @@ extern char hst_Key[];                 /* 0xf83520, the history key ("G12", 0x20
 #include "menu.h"
 #include "dd_vesa.h"
 #include "hmt.h"
+#include "d3_anim.h"
 int gv_ReadEffects();                     /* 0x4ed910 */
 
 /* he_EventTop: view of ai_NextEventId (tools/data_views.py) */
@@ -722,44 +723,49 @@ CHACTION *ls_ActionAt(int n)
         return 0;
     return &ch_Queue[n];
 }
-/* 0x51ad80, the record r of a character scene (+0 / +8 .. , the names +0x170 / +0x130, the object's bounding box from +0x34, the word `id`, the 0x40 bytes of +0x64 / the 0x40 bytes of its parent's +0x68): writes the pieces; returns 1 when all was written */
+/* 0x51ad80, writes one scene character (ls_WriteSceneRecords, for the characters and the carts): its id, mesh name,
+   group, script group, flags, full and body name, the body's position and angles (zeros while its scene is not
+   loaded), the body's type byte, the owner's id, the name of the right hand object and of the sit animation
+   (empty for none); returns 1, 0 when a write fails */
 
 
-int unk_Unk51ad80(char *r, int id, int f)
+int ls_WriteSceneCharacter(CHARACTER *c, int owner, int f)
 {
+    float zero[7];
     char blank[0x40];
-    char *q;
 
-    LS_W(r, 4)
-    LS_W(r + 8, 0x20)
-    LS_W(r + 0x2c, 4)
-    LS_W(r + 0x30, 4)
-    LS_W(r + 0x8c, 2)
-    LS_W(r + 0x170, 0x30)
-    LS_W(r + 0x130, 0x40)
-    if (*(int *)(r + 0x88) == 0 || *(char *)(*(int *)(r + 0x88) + 0x3d5) != 0) {
-        int zero[7] = {0};
-
-        LS_W(zero, 0x10)
-        LS_W((char *)zero + 0xc, 0xc)
+    LS_W(&c->id, 4)
+    LS_W(c->name, 0x20)
+    LS_W(&c->group, 4)
+    LS_W(&c->scriptGroup, 4)
+    LS_W(&c->flags, 2)
+    LS_W(c->fullname, 0x30)
+    LS_W(c->body, 0x40)
+    if (c->scene != 0 && c->scene->dirty == 0) {
+        LS_W(&c->obj->pos, 0x10)
+        LS_W(&c->obj->rotation, 0xc)
     } else {
-        LS_W(*(char **)(r + 0x34) + 0x4c, 0x10)
-        LS_W(*(char **)(r + 0x34) + 0x84, 0xc)
+        zero[0] = 0.0f;
+        zero[1] = 0.0f;
+        zero[2] = 0.0f;
+        zero[3] = 0.0f;
+        zero[4] = 0.0f;
+        zero[5] = 0.0f;
+        zero[6] = 0.0f;
+        LS_W(zero, 0x10)
+        LS_W(&zero[3], 0xc)
     }
-    LS_W(*(char **)(r + 0x34) + 0x218, 1)
-    LS_W(&id, 4)
-    q = *(char **)(r + 100);
-    if (q != 0) {
-        LS_W(q, 0x40)
-    }
-    else {
+    LS_W(&c->obj->type, 1)
+    LS_W(&owner, 4)
+    if (c->rightHand != 0) {
+        LS_W(c->rightHand->name, 0x40)
+    } else {
         blank[0] = ch_EmptyName[0];
         memset(blank + 1, 0, 0x3f);
         LS_W(blank, 0x40)
     }
-    q = *(char **)(r + 0x74);
-    if (q != 0 && q != *(char **)(r + 0x70) && *(int *)(q + 0x68) != 0) {
-        if (vfs_fwrite(*(char **)(q + 0x68), 1, 0x40, f) != 0x40)
+    if (c->sitSlot != 0 && c->sitSlot != c->slot && c->sitSlot->data != 0) {
+        if (vfs_fwrite(c->sitSlot->data->name, 1, 0x40, f) != 0x40)
             return 0;
     } else {
         blank[0] = ch_EmptyName[0];
@@ -790,7 +796,7 @@ int ls_WriteSceneRecords(int f)
     }
     LS_W(&cnt, 4)
     for (p = (int *)((unsigned)&ai_Unk770cec + 0x18); (int)p < ((unsigned)((unsigned)ai_Unk770cec + 0x65296) + 0x182); p += 0x87) {
-        if (*p != 0 && unk_Unk51ad80(*p, p[-0x60], f) == 0)
+        if (*p != 0 && ls_WriteSceneCharacter((CHARACTER *)*p, p[-0x60], f) == 0)
             return 0;
     }
     cnt = 0;
@@ -808,7 +814,7 @@ int ls_WriteSceneRecords(int f)
         char *q = (char *)ai_Objects + k;
 
         if (*(char *)(ai_Goods + *(unsigned short *)q * 0x41) == 0x1d
-            && unk_Unk51ad80(*(int *)(q + 0x3b), *(int *)(q + 2), f) == 0)
+            && ls_WriteSceneCharacter(*(CHARACTER **)(q + 0x3b), *(int *)(q + 2), f) == 0)
             return 0;
     }
     for (i = 0; i < CH_QUEUE; i++) {
