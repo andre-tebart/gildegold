@@ -225,7 +225,20 @@ void qnt_MakePalette(int idx, int lvl)
 }
 /* 0x420e70, maps the image to palette indices: without dither through a lookup table over the 5-bit
    colors (qnt_Nearest per entry), with dither by error diffusion (err0 / err1 rows, cache)
-   @deep behaviour: register / addressing / reload spellings only - grade.py code 147, regs 14; unitdiff 318 B / 87 asm lines (2026-10-26) (the clamp loop's three stores run on ebp/esi/edi with the 0x200 folded into one base instead of three, [eax+ecx+0xc] vs [ecx+eax+0xc], the ecx/edi/eax assignments of the palette loops and the cur / prev / lim slot reloads); same stores, same values, no meaning error; 216+ clamp / palette spellings tried (the 6 clamp store orders, (lim + 256)[x] forms, the cur / prev flip order) */
+   @stuck earlier: register / addressing / reload spellings only, no meaning error; 216+ clamp / palette
+   spellings tried (the 6 clamp store orders, (lim + 256)[x] forms, the cur / prev flip order). 2026-11-09:
+   40 more variants, all worse (87 ins / 318 B is the best): the 18 clamp store orders over
+   cl[k]/cl[k-256]/cl[k+256], clamp[k]/clamp[k+512], clamp[k+256] spellings; cl = clamp + 0x100 placed
+   after the mallocs / inside if (clamp) / after the memset; lim + 256 as a local lm (loops 2/3 and the
+   three error lookups: lim parts then match the original's [edi+eax+0x100] but the frame grows, 134 ins);
+   lim[256 + x], lim[x + 256 - pal], (lim + 256)[x]; prev before cur in either flip arm (+70 ins each); cur
+   += -3. Remaining hunks: clamp in ebp / cl in esi (the original esi / ebp), the clamp loop's IV
+   clamp+0x200 (the original cl, stores k / 0 / 0xff at [eax] / [edx+eax] / [edi+eax]), loop 3 via the
+   CSE'd lim+0x100 (the original [edi+eax+0x100], lim kept in edi to the frees), the flip arm computing
+   prev before cur, sub esi,6 vs add esi,-6, the error lookups [ebx+edx+0x100] x3 vs the original's
+   [ebx+eax+0x100] then lea edx,[eax+0x100] / [ecx+edx] / [ebx+edx], the rgb/out step reload order, and
+   [ecx+eax+0xc] vs [eax+ecx+0xc] in the lut loop. Every local change reshuffles the whole allocation: a
+   whole-function allocator question (tiebreak: insensitive under the four probes only, best draft) */
 
 int qnt_Map(unsigned char *rgb, unsigned char *out, int w, int h, int dither)
 {
