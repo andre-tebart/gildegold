@@ -2221,45 +2221,48 @@ lauer:
     if (msg.ids[0] != -1 && k > 1)
         cm_SendLongMessage(&msg);
 }
-/* 0x4836a0, the bank master's money balance: moves money between the four banks / the town @deep byte, Q-only handover: Q2 only, after this session's readability work (Q1 named by role - the bank master of 0x47e990's kind-5 dispatch, its comment already described it; ai_Unk508660 -> gm_SumSlotAmounts with the f3gm.c definition). Q2 evidence gaps left, all three read in the callers, callees and data: cm_FieldObject (the object the cm_AddFieldDelta addresses are formed against; no source names it), AIPOS.unk18 (the table record 0xe field the building's 0x65 value is steered towards within +-2, clamped to >= 4; no reader names it), AIBLD.unk65 (the value moved by +-1 per event and written as field delta 0x65; no source names it). */
+/* 0x4836a0, the bank master's step (building kind 5, ai_RunMasterEvaluation), once a round (flags1c8 bit 3): steers
+   the bank's interest towards the bank rate of the decision table (record 0xe, AIDEC.cur; by 1 while it is more than
+   3 off, else down by 1 .. 3 with no credit event 0x23 running, up with more than 3), then balances the bank's money
+   of the three foreign currencies against the budget (3/20 .. 6/20, a 3% exchange) and its own money ("Bankmeister") */
 
 void ai_CalcMeisterBank(AICHAR *ch)
 {
-    AIPOS p;
+    AIDEC rate;
     AIJOB *job;
     AIBLD *b;
     int i, n, v, d, m, sum;
 
     if (ch->flags1c8 & 8)
         return;
-    if (!gv_GetTableRecord(0xe, &p))
+    if (!gv_GetTableRecord(0xe, &rate))
         return;
     n = 0;
     for (job = he_FindEvent(2, 0, 0x23, 3, ch->bld->id); job; job = he_NextEvent())
         n++;
-    if (abs(ch->bld->unk65 - p.unk18) > 3) {
-        if (ch->bld->unk65 > p.unk18)
-            v = ch->bld->unk65 - 1;
+    if (abs(ch->bld->interest - rate.cur) > 3) {
+        if (ch->bld->interest > rate.cur)
+            v = ch->bld->interest - 1;
         else
-            v = ch->bld->unk65 + 1;
+            v = ch->bld->interest + 1;
         cm_BeginFieldBlock(ch->bld, ch->bld->id);
         cm_AddFieldDelta(4, 1, (short)ch->bld - (short)cm_FieldObject + 0x65, &v);
         cm_SendFieldDeltas();
     } else if (n == 0) {
-        if (ch->bld->unk65 > p.unk18 - 2) {
-            v = ch->bld->unk65 - util_RandomU(3) - 1;
-            if (p.unk18 - 2 > v)
-                v = p.unk18 - 2;
+        if (ch->bld->interest > rate.cur - 2) {
+            v = ch->bld->interest - util_RandomU(3) - 1;
+            if (rate.cur - 2 > v)
+                v = rate.cur - 2;
             if (v < 4)
                 v = 4;
             cm_BeginFieldBlock(ch->bld, ch->bld->id);
             cm_AddFieldDelta(4, 1, (short)ch->bld - (short)cm_FieldObject + 0x65, &v);
             cm_SendFieldDeltas();
         }
-    } else if (n > 3 && ch->bld->unk65 < p.unk18) {
-        v = util_RandomU(3) + 1 + ch->bld->unk65;
-        if (v >= p.unk18 + 3)
-            v = p.unk18 + 3;
+    } else if (n > 3 && ch->bld->interest < rate.cur) {
+        v = util_RandomU(3) + 1 + ch->bld->interest;
+        if (v >= rate.cur + 3)
+            v = rate.cur + 3;
         cm_BeginFieldBlock(ch->bld, ch->bld->id);
         cm_AddFieldDelta(4, 1, (short)ch->bld - (short)cm_FieldObject + 0x65, &v);
         cm_SendFieldDeltas();

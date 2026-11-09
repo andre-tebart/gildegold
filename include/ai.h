@@ -159,7 +159,7 @@ typedef struct AIGRID {                 /* 24 bytes, a cell of the statistics gr
 
 typedef struct AIPOS {                  /* filled by gv_GetTableRecord */
     char pad00[0x18];
-    int unk18;                          /* 0x18 */
+    int unk18;                          /* 0x18, AIDEC.cur (gv_types.h: the full record) */
     int unk1c;
     int unk20;
 } AIPOS;
