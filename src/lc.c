@@ -1930,68 +1930,53 @@ void ai_LayoutProdGoodsList(int view, int part, int pointer, int bld)
 }
 
 
-/* 0x58e130, the direction table and the entry fill of the production window (769 B, ROUGH): the 68-dword kind
-   table (entry i = the label of the goods kind i) selected by the direction byte +0x1c of param_1 fills the
-   column titles 0x6f4f0c (i * 5); the goods of the carrier 0x4ffe90 (param_2 + 0x14, 1, 5) walk through
-   0x4ffcc0: an entry of the list 0x6f4f60 is matched by its id (its +0x30 = 0) or a new row is created
-   (the id and the three zeros); after the walk the amounts (0x50aaf0 / 0x50ab50 on the character records
-   param_1 + 0x14) refresh the rows 0x6f4f90, and the text check 0x475980 of the controls 0x6f4f70 (window +0x18
-   == 0x41) gives the return 1 */
-int ai_UpdateMarketGoodsList(int param_1, int param_2)
+/* 0x58e130, fills the goods grid of the transport (market) window from the market object market for the stall:
+   the stall's level (AIOBJ.lvl1c) opens the slots of the four rows of ai_ProdRows; each goods of the market
+   (gm_Query 1, 5) keeps its slot in ai_ProdGoods (its amount cleared) or gets the first free one (the goods, its
+   reserved part, amount and stock 0); then every slot takes the amount and stock of its goods in the stall.
+   Returns 1 when a slot's check box (an object of type 0x41) is set, as ai_UpdateProdGoodsList does */
+int ai_UpdateMarketGoodsList(AIOBJ *stall, AIOBJ *market)
 {
-    int tbl[68] = {
-        2, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0, 3, 0, 0, 0,
-        4, 0, 0, 0, 3, 2, 0, 0, 4, 3, 2, 0, 4, 3, 3, 0,
-        4, 4, 4, 4, 4, 3, 4, 4, 4, 3, 3, 0, 4, 4, 3, 0,
-        4, 4, 4, 0, 4, 4, 3, 0, 4, 4, 3, 3, 4, 4, 4, 3,
-        4, 4, 4, 4
+    int rows[17][4] = {
+        { 2, 0, 0, 0 }, { 2, 0, 0, 0 }, { 2, 0, 0, 0 }, { 3, 0, 0, 0 }, { 4, 0, 0, 0 }, { 3, 2, 0, 0 },
+        { 4, 2, 0, 0 }, { 4, 3, 0, 0 }, { 4, 4, 0, 0 }, { 4, 3, 2, 0 }, { 4, 3, 3, 0 }, { 4, 4, 3, 0 },
+        { 4, 4, 4, 0 }, { 4, 4, 3, 2 }, { 4, 4, 3, 3 }, { 4, 4, 4, 3 }, { 4, 4, 4, 4 }
     };
-    int *p;
-    unsigned short *g;
-    int *q;
+    AIOBJ *item;
+    int any;
     int i;
-    int n;
 
-    i = 0;
-    for (p = (int *)(unsigned)((char *)ai_ProdRows + 0xc); p < (int *)(unsigned)((unsigned)((char *)ai_ProdRows + 0x5c)); p += 5, i++)
-        *p = tbl[i + ((unsigned char *)param_1)[0x1c] * 4];
-    g = (unsigned short *)gm_Query(U_I(param_2 + 0x14), 1, 5);
-    while (1) {
-        if (g == 0) {
-            for (p = (int *)(unsigned)((char *)ai_ProdGoods + 0x30); p < (int *)(unsigned)((unsigned)((char *)ai_ProdGoods + 0x3b0)); p += 0xe) {
-                q = (int *)gm_Query(U_I(param_1 + 0x14), 1, 0, p[-0xc]);
-                if (q != 0) {
-                    p[0] = gm_ListAmount(param_1, q);
-                    p[1] = gm_ListStock(param_1, *q);
-                }
-            }
-            i = 0;
-            for (p = (int *)(unsigned)((char *)ai_ProdGoods + 0x10); p <= (int *)(unsigned)((unsigned)((char *)ai_ProdGoods + 0x38f)); p += 0xe) {
-                n = *p;
-                if (n != -1 && U_I(U_I((unsigned)&d2_Objs) + 0x18 + n * 0x2ec) == 0x41 && d2_GetObjValue(n) != 0)
-                    i = 1;
-            }
-            return i;
-        }
-        n = 0;
-        for (p = (int *)(unsigned)&ai_ProdGoods; p < (int *)(unsigned)((unsigned)((char *)ai_ProdGoods + 0x380)); p += 0xe, n++) {
-            if (*p == *g) {
-                if (n < 0x10)
-                    *(int *)((unsigned)((char *)ai_ProdGoods + 0x30) + n * 0x38) = 0;
+    for (i = 0; i < 4; i++)
+        ai_ProdRows[i].slots = rows[stall->lvl1c][i];
+    for (item = (AIOBJ *)gm_Query((void *)market->list, 1, 5); item != 0; item = (AIOBJ *)gm_QueryNext()) {
+        for (i = 0; i < 16; i++)
+            if (ai_ProdGoods[i].good == item->id)
                 break;
+        if (i >= 16) {
+            for (i = 0; i < 16; i++)
+                if (ai_ProdGoods[i].good == 0)
+                    break;
+            if (i < 16) {
+                ai_ProdGoods[i].good = item->id;
+                ai_ProdGoods[i].reserved = 0;
+                ai_ProdGoods[i].amount = 0;
+                ai_ProdGoods[i].stock = 0;
             }
-            if (*p == 0) {
-                if (n < 0x10) {
-                    *(int *)((unsigned)&ai_ProdGoods + n * 0x38) = *g;
-                    *(int *)((unsigned)((char *)ai_ProdGoods + 0x2c) + n * 0x38) = 0;
-                    *(int *)((unsigned)((char *)ai_ProdGoods + 0x30) + n * 0x38) = 0;
-                    *(int *)((unsigned)((char *)ai_ProdGoods + 0x34) + n * 0x38) = 0;
-                }
-                break;
-            }
-        }
-        g = (unsigned short *)gm_QueryNext();
+        } else
+            ai_ProdGoods[i].amount = 0;
     }
+    for (i = 0; i < 16; i++) {
+        item = (AIOBJ *)gm_Query((void *)stall->list, 1, 0, ai_ProdGoods[i].good);
+        if (item != 0) {
+            ai_ProdGoods[i].amount = gm_ListAmount(stall, item);
+            ai_ProdGoods[i].stock = gm_ListStock(stall, item->id);
+        }
+    }
+    any = 0;
+    for (i = 0; !any && i < 16; i++)
+        if (ai_ProdGoods[i].check != -1 && d2_Objs[ai_ProdGoods[i].check].type == 0x41 && d2_GetObjValue(ai_ProdGoods[i].check) != 0)
+            any = 1;
+    return any;
 }
 /* 0x58e440, the short column display (608 B, ROUGH): the title controls 0x6f4f10 (0x4731d0 (0, 0, 0x743)) and
    their texts 0x469250 (id + 0x741), the positions (width - the icon width) / 2 and (the row height + 0x1c) * i;
