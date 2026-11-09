@@ -274,7 +274,7 @@ extern const struct D3VECTOR d3_ZAxis;  /* 0x5ebb74, (0, 0, 1), d3_vec.c */
 static const float ai_ShotStep = 0.013513514f;    /* 0x5eee00, .rdata: 1/74, the time (s) of one flight step of ai_StepShot */
 static const float ai_ShotHalfStep = 0.0067567569f;  /* 0x5eee04, .rdata: 1/148, the step of ai_StepShotSlow */
 static const float ai_AirDensity = 1.2f;          /* 0x5eee0c, .rdata: kg/m^3 */
-static const float ai_WindGain = 60.0f;  /* 0x5eee14, .rdata: the factor of ai_Unk5dbc30's per-direction random values (the original loads it from memory, it is not folded) */
+static const float ai_WindGain = 60.0f;  /* 0x5eee14, .rdata: the wind scale (60): the factor of ai_InitWind's per-direction random values and the range ai_NormalizeEffectScale clamps to (the original loads it from memory, it is not folded) */
 int ai_ShotHitsGround(struct D3SM *map, D3VECTOR *from, D3VECTOR *to, int px, int pz, int *npx, int *npz);  /* 0x5dcf00, 1 when the move from -> to of a flight step hits the ground (to is moved to the hit) */
 int d2_WinOpenSlider(int x, int y, int len, int p4, int p5, int pic, unsigned int flags, int win); /* 0x46a960, d2.c: a slider in a window */
 int sv_CheckGoodAmount(char *o, int n, unsigned t);   /* 0x521040, sv.c: 1 when the character's stock covers n of the good t (callers that push the good as a byte: sv_CheckGoodAmountB in their head) */
