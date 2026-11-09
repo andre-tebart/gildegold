@@ -9,8 +9,8 @@ struct SBSAMPLE;
 #include "d2.h"
 
 typedef struct D2SLOT {             /* 12 bytes, a surface for the picture of an item list */
-    int unk00;
-    int unk04;
+    int key0;                       /* 0x00, -1 = empty (set on create / free); a reasoned name: nothing in the binary reads it */
+    int key1;                       /* 0x04, -1 = empty, as key0; never read */
     void *surf;                     /* 0x08 */
 } D2SLOT;
 

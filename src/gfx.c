@@ -272,7 +272,9 @@ held:
     if (saved != -1)
         d2_SetFont(saved);
 }
-/* 0x477320, creates the surfaces of the item list @deep Q2 only left: D2SLOT.unk00/unk04 (the definition writes both -1 when creating / freeing each slot), and no reader of either field exists in any drafted function (grep D2SLOT/f8aa90/f8aaa0/f8aadc: only this unit; the surfaces are created and freed but not drawn yet), so no evidence for their role; the function, d2_MakeSurface, d2_ExtraSymbolsPic / d2_TextCursorPic / d2_TextCursorOffset and d2_ItemListSurf64/128/256 are renamed */
+/* 0x477320, creates the surfaces of the item list: one 64x64 (d2_ItemListSurf64), three 128x128 and one 256x256
+   slot (keys -1, empty); resets the pointer picture, the text cursor offset (-7 when the cursor picture is the
+   extra symbols') and the six held pointer items */
 
 void d2_CreateItemListSurfaces(void)
 {
@@ -288,15 +290,15 @@ void d2_CreateItemListSurfaces(void)
     d2_ItemListSurf64 = d2_MakeSurface(desc, 1);
     for (i = 0; i < 3; i++) {
         memset(desc, 0, sizeof desc);
-        d2_ItemListSurf128[i].unk00 = -1;
-        d2_ItemListSurf128[i].unk04 = -1;
+        d2_ItemListSurf128[i].key0 = -1;
+        d2_ItemListSurf128[i].key1 = -1;
         desc[1] = 0x80;
         desc[2] = 0x80;
         d2_ItemListSurf128[i].surf = d2_MakeSurface(desc, 3);
     }
     memset(desc, 0, sizeof desc);
-    d2_ItemListSurf256.unk00 = -1;
-    d2_ItemListSurf256.unk04 = -1;
+    d2_ItemListSurf256.key0 = -1;
+    d2_ItemListSurf256.key1 = -1;
     desc[1] = 0x100;
     desc[2] = 0x100;
     d2_ItemListSurf256.surf = d2_MakeSurface(desc, 3);
@@ -305,7 +307,7 @@ void d2_CreateItemListSurfaces(void)
         d2_PointerItems[i].amount = 0;
     }
 }
-/* 0x477420, frees the surfaces of the item list @deep Q2 only left: D2SLOT.unk00/unk04 (both set -1 after freeing the slot's surface); no reader of either field in any drafted function, no evidence for their role; the function and d2_FreeSurface are renamed */
+/* 0x477420, frees the surfaces of the item list, the slots' keys set back to -1 (empty) */
 
 void d2_FreeItemListSurfaces(void)
 {
@@ -319,13 +321,13 @@ void d2_FreeItemListSurfaces(void)
         if (d2_ItemListSurf128[i].surf != 0) {
             d2_FreeSurface(d2_ItemListSurf128[i].surf);
             d2_ItemListSurf128[i].surf = 0;
-            d2_ItemListSurf128[i].unk00 = -1;
-            d2_ItemListSurf128[i].unk04 = -1;
+            d2_ItemListSurf128[i].key0 = -1;
+            d2_ItemListSurf128[i].key1 = -1;
         }
     }
     d2_FreeSurface(d2_ItemListSurf256.surf);
-    d2_ItemListSurf256.unk00 = -1;
-    d2_ItemListSurf256.unk04 = -1;
+    d2_ItemListSurf256.key0 = -1;
+    d2_ItemListSurf256.key1 = -1;
     d2_ItemListSurf256.surf = 0;
 }
 /* 0x4774a0, sets the value of a number input from the mouse drag (val at y0, now at y1) */
