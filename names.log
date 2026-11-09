@@ -3122,3 +3122,4 @@
 2026-11-09T10:12:48 0x0144a80c data ai_Unk144a80c -> ai_AlchemistFamilyNames by:main why:ahm_CreateAlchemist strcpy's entry p[6] / p[7] of these text pointer tables into the new alchemist's AICHAR.first (+0x30) / family (+0x40) name
 2026-11-09T10:33:31 0x004ad7a0 func hmt_Unk4ad7a0 -> hmt_FillCouncils by:main why:it counts the members of the three councils (hmt_ElectionGroupBits) and creates new characters with the council bits until each has two; main_BeginPlayerRound calls it
 2026-11-09T10:36:58 0x004b84b0 func ai_Unk4b84b0 -> ai_MsgWorkerKilledType1e by:main why:message 0x1e of ai_MsgCallbacks: a worker of one of c's buildings loses all its life (gm_AddHealth by -(f01c + 1))
+2026-11-09T10:37:30 0x004ba630 func ai_Unk4ba630 -> ai_MsgBuildingGetsItemType31 by:main why:message 0x31 of ai_MsgCallbacks: one of c's buildings gets item 0x134 / 0x135 (cm_SendExSellObject), the text names a character

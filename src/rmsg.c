@@ -1529,11 +1529,11 @@ int ai_MsgWorkerLoseSkillType30(G14MSG *m)
     he_ShowNews(c->netId, c->netId, buf, strlen(buf) > 0x100, 0x603, 0);
     return 0;
 }
-/* 0x4ba630, message: one of c's buildings of kind 1 / 2 gets item 0x134 / 0x135 (0x4c4880); the text names one of
-   up to 16 characters (not kind 6 / 7, below 10) of one half of ai_Chars, else c (the reverse direction finds
-   nobody); sent with 0x53dee0 */
+/* 0x4ba630, message 0x31: one of c's buildings of kind 1 / 2 gets item 0x134 / 0x135 (cm_SendExSellObject); the text
+   names one of up to 16 characters (not kind 6 / 7, below 10) of one half of ai_Chars, none found: nothing happens
+   (the reverse direction finds nobody); sent with he_MessageBoxQuickjump */
 
-int ai_Unk4ba630(G14MSG *m)
+int ai_MsgBuildingGetsItemType31(G14MSG *m)
 {
     AICHAR *c, *p;
     AIBLD *b;
@@ -1543,6 +1543,7 @@ int ai_Unk4ba630(G14MSG *m)
 
     k = 0;
     n = 0;
+    p = 0;
     c = gm_FindChar(m->id);
     if (c == 0)
         return 1;
@@ -1576,8 +1577,6 @@ int ai_Unk4ba630(G14MSG *m)
     }
     if (k != 0)
         p = a[util_RandomU(k)];
-    else
-        p = c;
     if (b == 0 || p == 0)
         return 0x400;
     cm_SendExSellObjectI(b->id, -1, util_RandomU(2) + 0x134, 1, ai_OwnPlayer, 0);
@@ -1950,7 +1949,7 @@ G14CB ai_MsgCallbacks[0x45] = {                                                 
     ai_MsgJobEndPlayerType24, ai_MsgJobEndPayType25, ai_MsgJobBothEndsType26, ai_MsgJobBothEndsType27,
     ai_MsgUnusedSlot, ai_MsgJobEndDateType29, ai_MsgJobEndValueType2a, ai_MsgWorkerStop,
     ai_MsgWorkerTitleType2c, sv_ReturnZero, ai_MsgFreeBuildingObjectType2e, ai_MsgWorkerAddSkillType2f,
-    ai_MsgWorkerLoseSkillType30, ai_Unk4ba630, ai_MsgTakeBuildingGoodsPct13to25Type32, ai_MsgTakeBuildingGoodsPct5to19Type33,
+    ai_MsgWorkerLoseSkillType30, ai_MsgBuildingGetsItemType31, ai_MsgTakeBuildingGoodsPct13to25Type32, ai_MsgTakeBuildingGoodsPct5to19Type33,
     ai_MsgTakeBuildingGoodsPct5to24Type34, ai_MsgUnusedSlot, ai_MsgUnusedSlot, ai_MsgUnusedSlot,
     ai_MsgLoseGood, ai_MsgRewardPct1to3Skill82Type39, ai_MsgAddSkill8to24Type3a, ai_MsgLoseSkill6to17Type3b,
     ai_MsgPayPct1to4Type3c, ai_Unk4bb250, ai_MsgPayMinorDisease, ai_MsgCatchUpperDisease,
