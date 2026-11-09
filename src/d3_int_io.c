@@ -695,7 +695,20 @@ int d3io_FindStock(char *name)
 }
 /* 0x44c610, builds surf from the stock object `name`: vertices and triangles, vertex colours from the colour
    key, the texture set; counts the surface (unless it is the shadow surface 3)
-   @deep spell.py menu: both hunks 'no menu rule' (44c737 add ecx,edx / mov esi,ecx vs lea esi,[ecx+edx*1]; 44c9cf is the alignment nop that follows from the 1-byte length difference), diffclass: code. Read the hunk against tools/disasm.py 0x44c720 0x40: same value, only the add/lea spelling differs - VC6 computed '(D3IOTEX *)d3_Textures + tri->src->tex' into a temp (ecx, the dead index register) and copied it to tex (esi) at the store. Tried this session: the double-assignment form 'tri->tex = tex = ...' (byte-identical, reverted). Already tried in the 2026-10-22 session (unit note): int ti = tri->src->tex before the test, ti + (D3IOTEX *)d3_Textures, a D3TEXTURE * local with casts at the uses, &((D3IOTEX *)d3_Textures)[i], tex += i, (int)d3_Textures + (i << 7) / * 0x80 - all identical or worse. Readability done: Q4 via D3IOCOL union (all / b,g,r,a) and D3IOVERT.col40/col44 typed D3IOCOL, D3IO_214 macro body now the typed field D3_X(o)->unk214, now meshMode (byte-neutral, check 2567). Left: the register-allocation choice that makes the sum's target esi instead of the dead operand - match-deep's toolbox. */
+   @stuck earlier: double assignment tri->tex = tex = ... (identical); int ti = tri->src->tex before the
+   test, ti + base, D3TEXTURE * local with casts, &((D3IOTEX *)d3_Textures)[i], tex += i, (int)d3_Textures
+   + (i << 7) / * 0x80 (all identical or worse). Readability done (D3IOCOL union, col40/col44 typed,
+   D3IO_214 -> meshMode). Deep session 3 (variants.py, all identical unless noted): tex in block scope; tex
+   declared first / last; tri->tex = sum then tex = tri->tex (+46 ins); else branch first (if tex < 0
+   tri->tex = 0; else ...: size 949 but adds jge/jmp hunks); &((D3IOTEX *)d3_Textures)[idx]; tex = 0 also
+   in the else; sum before the test (worse); store tri->tex at the end of the block; tri->f24 = 0 moved
+   into the arms (worse); colorkey != 0xff (worse); an unsigned char ck local for tex->colorkey (identical;
+   int ck worse); D3IOVERT *v at function scope; loop as for (i = 0, tri = s->tris ..), tri = &s->tris[i]
+   (worse), tri++ at the body end (worse). Left, the only hunk: 0x44c737 ours 'add ecx, edx / mov dl, 0xff
+   / mov esi, ecx' vs the original 'lea esi, [ecx + edx] / mov dl, 0xff' - VC6 coalesces the sum temp into
+   the dead index register (ecx) and copies it to tex (esi); the original targets esi directly. Pure
+   allocation (coalescing) choice; no source lever found. (tiebreak: insensitive under the four probes
+   only, best draft) */
 
 void d3io_AttachStock(D3OBJECT *obj, D3SURF *surf, char *name)
 {
