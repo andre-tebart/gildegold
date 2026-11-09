@@ -500,8 +500,9 @@ int sv_MessageBoxGreen(int a, int b, unsigned flags)
 
 int sv_MessageBoxYesNo(int text, unsigned flags)
 {
-    int t0, ret, form, bar, idx, i, k, w;
+    int t0, ret, form, bar, idx, i, w;
     unsigned mask;
+    D2WIN *win;
 
     t0 = d3_Time;
     i = 0;
@@ -524,35 +525,37 @@ int sv_MessageBoxYesNo(int text, unsigned flags)
     d2_CentreViewWindows(form);
     sv_MessageBoxYesNoOpen = 1;
     idx = d2_CreateRadioGroup(0);
-    k = (char *)d2_LastWindowPtr;
-    while (i < *(short *)(k + 0x1c)) {
-        w = *(int *)(*(int *)(k + 0x18) + i * 4);
+    win = d2_LastWindowPtr;
+    while (i < win->nobjs) {
+        w = win->objs[i];
         if (d2_Objs[w].type != 0x40) {
             d2_RadioAdd(idx, w);
-            k = (char *)d2_LastWindowPtr;
+            win = d2_LastWindowPtr;
         }
         i++;
     }
     d2_RadioSelect(idx, 0);
     d2_SetForm(form, 0);
     if ((flags & 0x80) != 0)
-        bar = d2_WinOpenSlider(0x1c, *(short *)((char *)d2_LastWindowPtr + 10) - 0x20, *(short *)((char *)d2_LastWindowPtr + 8) - 0x40, 0, 500, 0x83, 0x42, d2_LastWindow);
+        bar = d2_WinOpenSlider(0x1c, d2_LastWindowPtr->h - 0x20, d2_LastWindowPtr->w - 0x40, 0, 500, 0x83, 0x42, d2_LastWindow);
     while (sv_RunFrame(sv_MessageBoxYesNo, mask) != 0) {
         d2_MenuNavigate(idx);
         if ((flags & 0x40) != 0)
             d2_RaiseViewWindows(form);
-        if (d2_ClickedId == 0) {
+        if (d2_ClickedId != 0) {
+            if (d2_ClickedId == 1) {
+                sv_PopRequest = 1;
+                ret = 0;
+            }
+        } else {
             sv_PopRequest = 1;
             ret = 1;
-        } else if (d2_ClickedId == 1) {
-            sv_PopRequest = 1;
-            ret = 0;
         }
         if (dm_L.rup != 0)
             sv_PopRequest = 1;
         if ((flags & 0x80) != 0 && bar != -1)
             d2_SetObjValue4(bar, 0, 500, d3_Time - t0);
-        if ((flags & 4) != 0 && t0 + 500 < d3_Time)
+        if ((flags & 4) != 0 && d3_Time > t0 + 500)
             sv_PopRequest = 1;
     }
     sv_MessageBoxYesNoOpen = 0;
