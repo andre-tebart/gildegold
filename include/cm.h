@@ -804,7 +804,7 @@ int cm_LootList(int x, int y, int mode);  /* 0x4d4090 */
 void cm_FightPortraits(int *ids, int x, int y);  /* 0x4d4340 */
 int cm_FightStartDialog(struct CMFIGHTREC *a);  /* 0x4d4540 */
 void cm_FightEndDialog(struct CMFIGHTREC *a);  /* 0x4d4d70 */
-int cm_CheckFight(char *a);  /* 0x4d60b0 */
+int cm_CheckFight(struct CMFIGHTREC *a);  /* 0x4d60b0 */
 void cm_FightResult(char *r);  /* 0x4d6930 */
 void cm_FightFrame(char *r);  /* 0x4d6970 */
 void cm_BuildFightUI(char *a);  /* 0x4d6a50, a: the member record, unused */

@@ -10871,60 +10871,68 @@ void cm_FightEndDialog(CMFIGHTREC *a)
     di_ClearEvents(0x10);
     d2_CloseView(win);
 }
-/* 0x4d60b0, the speech texts of a fight (a: the fight record): for both leaders (the characters of +0x34 / +0x38) one
-   line each, by the kind of the fight (bit 1: 0x11e0 / 0x11e1, bit 2: 0x11e3 / 0x11e4 with the role of the target
-   building 0x4d4050, bit 4: 0x11e6 / 0x11e7), the suffix of the kind (0x143e948 / 0x143e954 / 0x143e960) appended and
-   handed to 0x4e48b0. 0 when a leader is missing or the leaders are the same, a cart has no goods (0x50aa00) or the
-   target is gone. Rough draft. */
-
-int cm_CheckFight(char *a)
+/* 0x4d60b0, the check of the fight scene (cm_InitScenes registers it for kind 3) and its opening lines (a: the fight
+   record): 0 when a leader is missing or both are the same, a cart is gone or its goods are worth nothing
+   (gm_StallGoodsList's value) or the attacker's building is gone; else for both leaders one party note each by the
+   kind of the fight (flags 1: texts 0x11e0 / 0x11e1, 2: 0x11e3 / 0x11e4 with the role of the attacker's building and
+   the target building, 4: 0x11e6 / 0x11e7), the kind's closing text (0x11e2 / 0x11e5 / 0x11e8) appended; 1
+   @deep Read in full against 0x4d60b0..0x4d63d0 and rewritten typed (CMFIGHTREC, AICHAR, AIRECIPE, the
+   closing texts as txt_Ptrs[0x11e2 / 0x11e5 / 0x11e8] instead of the ai_Unk143e9xx views). Meaning fix:
+   the cart test reads the goods' value (AIRECIPE +0xb0, pada8[2]). All statements line up (ours 283 vs
+   282), same calls, same pushes. Left: allocation - the original keeps cb in esi (stored to [esp+0x18])
+   and the cart loop counter i in [esp+0x10], ours keeps cb only in its slot [esp+0x10] and i in edi ('-
+   inc edi / add esi,4 / cmp edi,3' vs '+ mov eax,[esp+0x10] / add edi,4 / inc eax / cmp eax,3 / mov
+   [esp+0x10],eax'); hence the reload hunks at +0x20, +0x160 (role in ebp vs a slot [esp+0x14]) and the
+   SendPartyNote pushes at +0x1be; the variable declaration order does not move it. */
+int cm_CheckFight(CMFIGHTREC *a)
 {
     char buf[0x400];
-    int rc[0x2e];
-    char *ca, *cb, *edi, *p;
-    int i, role;
+    AIRECIPE rc;
+    int i, cart, role;
+    AICHAR *ca, *cb;
+    char *place;
 
-    ca = gm_FindChar(*(int *)(a + 0x34));
-    cb = gm_FindChar(*(int *)(a + 0x38));
+    ca = (AICHAR *)gm_FindChar(a->attackerId);
+    cb = (AICHAR *)gm_FindChar(a->defenderId);
     if (ca == 0 || cb == 0 || ca == cb)
         return 0;
-    if (a[0x7c] & 1) {
+    if (a->flags & 1) {
         for (i = 0; i < 3; i++) {
-            if (*(int *)(a + 0x100 + i * 4) != -1) {
-                p = (char *)gm_FindObjectInst(*(int *)(a + 0x100 + i * 4));
-                if (p == 0)
+            if (a->carts[i] != -1) {
+                cart = gm_FindObjectInst(a->carts[i]);
+                if (cart == 0)
                     return 0;
-                gm_StallGoodsList(p, rc);
-                if (rc[0x2c] <= 0)
+                gm_StallGoodsList((char *)cart, (unsigned *)&rc);
+                if (rc.pada8[2] <= 0)       /* the goods' value */
                     return 0;
             }
         }
     }
-    edi = gm_FindBuildingById(*(int *)(a + 0x14));
-    if (gm_BuildQuery(1, 1, *(int *)(a + 0x10c)) == 0)
+    place = gm_FindBuildingById(a->placeId);
+    if (gm_BuildQuery(1, 1, a->attackerBldId) == 0)
         return 0;
-    if (a[0x7c] & 1) {
-        txt_Format(buf, 0x11e0, G20_US(cb));
-        strcat(buf, ai_Unk143e948);
-        cm_SendPartyNote(ca, a, buf, &ch_EmptyName);
-        txt_Format(buf, 0x11e1, G20_US(ca));
-        strcat(buf, ai_Unk143e948);
-        cm_SendPartyNote(cb, a, buf, &ch_EmptyName);
-    } else if (a[0x7c] & 2) {
-        role = cm_FightRole((unsigned char *)gm_FindBuildingById(*(int *)(a + 0x10c))) + 0x1125;
-        txt_Format(buf, 0x11e3, role, G20_US(cb), edi);
-        strcat(buf, ai_Unk143e954);
-        cm_SendPartyNote(ca, a, buf, &ch_EmptyName);
-        txt_Format(buf, 0x11e4, G20_US(ca), role, edi);
-        strcat(buf, ai_Unk143e954);
-        cm_SendPartyNote(cb, a, buf, &ch_EmptyName);
-    } else if (a[0x7c] & 4) {
-        txt_Format(buf, 0x11e6, G20_US(cb));
-        strcat(buf, ai_Unk143e960);
-        cm_SendPartyNote(ca, a, buf, &ch_EmptyName);
-        txt_Format(buf, 0x11e7, G20_US(ca));
-        strcat(buf, ai_Unk143e960);
-        cm_SendPartyNote(cb, a, buf, &ch_EmptyName);
+    if (a->flags & 1) {
+        txt_Format(buf, 0x11e0, cb->id);
+        strcat(buf, txt_Ptrs[0x11e2]);
+        cm_SendPartyNote(ca, (G28REC *)a, buf, ch_EmptyName);
+        txt_Format(buf, 0x11e1, ca->id);
+        strcat(buf, txt_Ptrs[0x11e2]);
+        cm_SendPartyNote(cb, (G28REC *)a, buf, ch_EmptyName);
+    } else if (a->flags & 2) {
+        role = cm_FightRole((unsigned char *)gm_FindBuildingById(a->attackerBldId)) + 0x1125;
+        txt_Format(buf, 0x11e3, role, cb->id, place);
+        strcat(buf, txt_Ptrs[0x11e5]);
+        cm_SendPartyNote(ca, (G28REC *)a, buf, ch_EmptyName);
+        txt_Format(buf, 0x11e4, ca->id, role, place);
+        strcat(buf, txt_Ptrs[0x11e5]);
+        cm_SendPartyNote(cb, (G28REC *)a, buf, ch_EmptyName);
+    } else if (a->flags & 4) {
+        txt_Format(buf, 0x11e6, cb->id);
+        strcat(buf, txt_Ptrs[0x11e8]);
+        cm_SendPartyNote(ca, (G28REC *)a, buf, ch_EmptyName);
+        txt_Format(buf, 0x11e7, ca->id);
+        strcat(buf, txt_Ptrs[0x11e8]);
+        cm_SendPartyNote(cb, (G28REC *)a, buf, ch_EmptyName);
     }
     return 1;
 }
