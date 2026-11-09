@@ -32,7 +32,6 @@ typedef unsigned int SOCKET;            /* <winsock.h>, for net.h (as ai.c) */
 #include "d2.h"
 #include "gfx.h"
 #define util_RandomU ((unsigned short (*)(int))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original this unit's callers read the 16-bit result (byte-matched ch_RandomNear 0x405160, ai_CalcMeisterBank 0x4836a0, cm_FightLoop 0x4d88c0 move it as a word / movzx) */
-#define gm_ConvertMoneyOwn ((int (*)(int, unsigned char, int))gm_ConvertMoney)  /* @original: the call at 0x4af3b9 pushes a third word (ai_OwnPlayer again, promoted) that f3gm.c's 2-argument gm_ConvertMoney never reads - the caller pops the two it declared (add esp,8) and the stray word goes with mov esp,ebp; the evidence is the three pushes, a two-argument call does not produce that shape (the same 3-push shape at sv_t.c's gm_ConvertMoney3) */
 #define ai_GoodsT (*(AIGOOD **)&ai_Goods)  /* 0x91aaf0, ai_Goods (f3gm.c: char *) as the AIGOOD records it points to */
 #define ai_BldsT (*(AIBLD **)&ai_Blds)  /* 0x889f74, ai_Blds (f3gm.c: char *) as the AIBLD records it points to */
 #define ai_BTypesT (*(AIBTYPE **)&ai_BTypes)  /* 0x7e3f30, ai_BTypes (ahm.c: char *) as the AIBTYPE records it points to */
@@ -579,7 +578,7 @@ int ai_TokenBestInn(int mode, G12ARG *args, int k, char *fmt, char *out)
 }
 /* 0x4af1b0, text token (mode 2 only): fmt "...-n" gives n percent of the wealth (0x50a640) of the character
    args[k], as a money text (0x5085b0)
-   @deep behaviour: 49 code hunks. Read: the guard (mode == 2, args != 0, k != 8, gm_FindChar, ai_IsLivingCharacter) matches the original branch for branch, and so does v = gm_GetWorth(c->id). The differences are (1) the frame 0x204 vs 0x200 - ours spills c to [ebp-4], the original keeps it in eax; (2) the ai_SplitTokenFormat prologue slots: the original keeps n1 = 0x200 in the mode parameter slot [ebp+8], n2 = (int)buf in the args slot [ebp+0xc], v in the k slot [ebp+0x10], and AI_ZERO's _zp reads the n2 slot directly - ours allocates [_zn]/[ebp-4] and writes 0x200 twice; (3) the money tail: the original does fild n1 / fmul 0.01f (0x5eb7f0) / fimul v with al = ai_OwnPlayer, mov cl,al, then pushes 3 dwords (ecx = zero-extended ai_OwnPlayer, eax = the atoi result, then the __ftol (0x5de518) result) before gm_ConvertMoney with 'add esp,8' - a 3-push/2-pop shape (the leaked dword is dropped by mov esp,ebp) that a plain 2-arg gm_ConvertMoney((int)(n1*0.01f*v), ai_OwnPlayer) does not produce; the source form that yields it is unknown (the argument evaluation order and the __ftol call site). Q2 fixed this session: gm_ConvertMoney/gm_ConvertMoney -> gm_ConvertMoney (project-wide, 60 references, no byte change); Q1 name has evidence (callback 0x601b10[8] = 0x4af1b0, name 0x601730[8] GELD) */
+   @deep behaviour: 49 code hunks. Read: the guard (mode == 2, args != 0, k != 8, gm_FindChar, ai_IsLivingCharacter) matches the original branch for branch, and so does v = gm_GetWorth(c->id). The differences are (1) the frame 0x204 vs 0x200 - ours spills c to [ebp-4], the original keeps it in eax; (2) the ai_SplitTokenFormat prologue slots: the original keeps n1 = 0x200 in the mode parameter slot [ebp+8], n2 = (int)buf in the args slot [ebp+0xc], v in the k slot [ebp+0x10], and AI_ZERO's _zp reads the n2 slot directly - ours allocates [_zn]/[ebp-4] and writes 0x200 twice; (3) the money tail is the nested call txt_Format (out, buf, gm_ConvertMoney (v * (n1 * 0.01f), ai_OwnPlayer), ai_OwnPlayer) and matches. Q2 fixed this session: gm_ConvertMoney/gm_ConvertMoney -> gm_ConvertMoney (project-wide, 60 references, no byte change); Q1 name has evidence (callback 0x601b10[8] = 0x4af1b0, name 0x601730[8] GELD) */
 
 int ai_TokenMoney(int mode, G12ARG *args, int k, char *fmt, char *out)
 {
@@ -596,26 +595,14 @@ int ai_TokenMoney(int mode, G12ARG *args, int k, char *fmt, char *out)
         AI_ZERO(buf, n1);
         ai_SplitTokenFormat(fmt, buf, &n1, &n2);
         n1 = atoi(fmt + n1);
-        txt_FormatString(out, buf, gm_ConvertMoney((int)(n1 * 0.01f * v), ai_OwnPlayer));
+        txt_FormatString(out, buf, gm_ConvertMoney((int)(v * (n1 * 0.01f)), ai_OwnPlayer), ai_OwnPlayer);
         return 1;
     }
     return 0;
 }
 /* 0x4af2c0, text token: n percent of the count of the first goods of type 9 in the stock (object 0x115) of
-   building 0x50b010(1), as a money text
-   @deep read whole against the original: the first 83 instructions are identical (gm_FirstBuilding,
-   gm_Query/gm_QueryNext with o->list/o->count, AI_ZERO, ai_SplitTokenFormat, atoi) and the tail's calls,
-   arguments and constants all match; left is the compiler's stack-cleanup placement and FP multiply order.
-   Ours merges the tail's three pending cleanups into one add esp,0x2c before the epilogue where the
-   original keeps add esp,0x14 after atoi, add esp,8 after gm_ConvertMoney and add esp,0x10 after
-   txt_Format, and ours multiplies by v before 0.01f (fimul [ebp-8] then fmul 0.01) where the original does
-   0.01f first (asmdiff 0x4af3a3 / 0x4af3a8 / 0x4af3be / 0x4af3cc, 106 vs 108 instructions, diffclass code
-   16 + fpu 2). The three pushes of the call at 0x4af3b9 are reproduced by gm_ConvertMoneyOwn (a third
-   actual argument, ai_OwnPlayer again; add esp,8 after it). Tried one build each: two-argument call (17
-   differing), gm result in a variable then txt_FormatString, the amount in a variable first, 0.01f first,
-   braces; inlining atoi makes the FP order and the cleanups match but breaks the atoi argument setup that
-   is identical today. No meaning difference left (calls, arguments, constants, branches, stores equal).
-   The sibling ai_TokenMoney 0x4af1b0 has the same original tail and is in the deep queue for it. */
+   building 0x50b010(1), as a money text: txt_Format (out, the split format, gm_ConvertMoney (amount,
+   ai_OwnPlayer), ai_OwnPlayer) */
 
 int ai_TokenCityTreasury(int mode, G12ARG *args, int k, char *fmt, char *out)
 {
@@ -642,7 +629,7 @@ int ai_TokenCityTreasury(int mode, G12ARG *args, int k, char *fmt, char *out)
     AI_ZERO((char *)n2, cnt);
     ai_SplitTokenFormat(fmt, buf, &n1, &n2);
     n1 = atoi(fmt + n1);
-    txt_FormatString(out, buf, gm_ConvertMoneyOwn((int)(n1 * 0.01f * v), ai_OwnPlayer, ai_OwnPlayer));
+    txt_FormatString(out, buf, gm_ConvertMoney((int)(v * (n1 * 0.01f)), ai_OwnPlayer), ai_OwnPlayer);
     return 1;
 }
 
