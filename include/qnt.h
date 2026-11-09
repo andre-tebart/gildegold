@@ -19,7 +19,7 @@ typedef struct QHEAP {              /* heap entry: a leaf node */
 
 extern QNODE *qnt_Level[6];                 /* 0x632340 */
 extern QHEAP *qnt_Heap;                     /* 0x632360, 1-based min-heap on total */
-extern void *qnt_Unk632364;                 /* 0x632364 */
+extern void *qnt_UnusedBuffer;                 /* 0x632364 */
 extern unsigned int qnt_HeapCount;          /* 0x632358 */
 extern int qnt_Inited;                      /* 0x63235c */
 extern int qnt_Colors;                      /* 0x631728 */

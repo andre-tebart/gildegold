@@ -88,7 +88,7 @@ int qnt_Alloc(void)
     qnt_Colors = 0;
     return 1;
 }
-/* 0x420900, frees the octree levels and the heap @deep Q2: qnt_Unk632364 (0x632364, void * next to qnt_Heap) is never written in the binary - an exe scan finds the single reference to its address at 0x42097f, the free() in this function - so its role has no evidence; every other rule holds */
+/* 0x420900, frees the octree levels, the node heap and qnt_UnusedBuffer (a buffer this build never allocates) */
 
 void qnt_Free(void)
 {
@@ -106,8 +106,8 @@ void qnt_Free(void)
         free(qnt_Level[5]);
     if (qnt_Heap)
         free(qnt_Heap);
-    if (qnt_Unk632364)
-        free(qnt_Unk632364);
+    if (qnt_UnusedBuffer)
+        free(qnt_UnusedBuffer);
 }
 /* 0x420990, counts the n pixels into the finest level, sums their colors up to the root and puts every
    leaf into the min-heap on its pixel total
@@ -406,4 +406,4 @@ QNODE * qnt_Level[6] = {0};  /* 0x632340 */
 unsigned int qnt_HeapCount = 0;  /* 0x632358 */
 int qnt_Inited = 0;  /* 0x63235c */
 QHEAP * qnt_Heap = 0;  /* 0x632360, 1-based min-heap on total */
-void * qnt_Unk632364 = 0;  /* 0x632364 */
+void * qnt_UnusedBuffer = 0;  /* 0x632364, a heap buffer only qnt_Free refers to (it frees it; nothing in the binary allocates it) */
