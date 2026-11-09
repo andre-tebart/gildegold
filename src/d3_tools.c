@@ -2258,7 +2258,17 @@ DDSURFACEDESC2 d3t_SnowMip32[9] = {0};      /* 0x1466f00 */
    NONMATCHING: ~140 asm lines. Control flow and frame match; left: the D3_ZERO slots, height stored
    via the ddpf pointer in the mip loops, mul/store order of the 16/32-bit pitch, and in the dither
    loop the slots of n/up/row/down and n being kept in a register (the original reloads it).
-   @deep B3 code hunks 231, slots 30: readability done here (Q3 D3_MASK_RED, Q4 flags.all); the reload lead for n was tried (size * size inlined in the random-fill loop) and gave no codegen change; left is allocation/scheduling only - the D3_ZERO slot forms, the ddpf height stores, the 16/32-bit pitch mul/store order and the n/up/row/down slots (control flow and frame verified equal, prior reading in the address comment); no Q failure remains */
+   @stuck tie-break sensitive: dcp headers sample gives 3 codegens in 32 samples, none better than the
+   build (draft, 129 ins / 413 bytes, size 1978 vs 1986); the declaration set decides its allocation, park
+   it for the unit's declaration pass. Left: code 147 / slots 56 / regs 6 hunks (D3_ZERO slots, the ddpf
+   height stores, the 16/32-bit pitch mul/store order, the dither loop's n/up/row/down slots and n kept in
+   a register). The M10 at +0x6e5 (0.0 vs ai_FloatZero) is the image's shared pooled 0.0f literal (457
+   referrers), not a meaning difference. (tiebreak: sensitive) prior: B3 code hunks 231, slots 30:
+   readability done here (Q3 D3_MASK_RED, Q4 flags.all); the reload lead for n was tried (size * size
+   inlined in the random-fill loop) and gave no codegen change; left is allocation/scheduling only - the
+   D3_ZERO slot forms, the ddpf height stores, the 16/32-bit pitch mul/store order and the n/up/row/down
+   slots (control flow and frame verified equal, prior reading in the address comment); no Q failure
+   remains */
 void d3t_CreateSnowMipmaps(void)
 {
     D3TEXHANDLE *snow_tex;
