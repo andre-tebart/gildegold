@@ -6,6 +6,8 @@
    d3_interface.h, d3_int_io.h; K&R aliases in f3init.c); their callers must include d3_engine.h first.
    Open: d3_CloneObject (and d3_mir.c's d3_MirDrawObject) flip with TU-global changes - definitions added
    above them, declarations added to or removed from d3_engine.h / d3.h - so header moves need both rechecked.
+   Open: D3TEXTURE's tex_Load flag bytes 0x6c (alpha) / 0x6e (blend) are read through the D3TEXV view: the same
+   fields split out of d3.h's pad69 move he_PostEvent67 and ai_TutorialInitChapter2/3 off byte (struct text alone).
    unit of rea 8cef7d5b (src/game/d3_engine.c); boundaries in decl/text.dcl */
 #include <stdio.h>
 #include <stdlib.h>

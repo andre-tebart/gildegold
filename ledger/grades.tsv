@@ -739,8 +739,8 @@ exe	0x00439c90	d3_ClipPoly	d3_engine	shape	readable
 exe	0x0043a000	d3_SelectSurf	d3_engine	byte	readable		
 exe	0x0043a160	d3_DrawObjectCB	d3_engine	draft	readable	deep	
 exe	0x0043a610	d3_SetFogRange	d3_engine	byte	readable		
-exe	0x0043a6f0	d3_SetFog	d3_engine	draft	readable	hard	
-exe	0x0043a7d0	d3_DrawSortedD3D	d3_engine	draft	draft		
+exe	0x0043a6f0	d3_SetFog	d3_engine	draft	readable	deep	
+exe	0x0043a7d0	d3_DrawSortedD3D	d3_engine	draft	readable	deep	
 exe	0x0043b080	d3_DrawSortedSW	d3_engine	byte	readable		
 exe	0x0043b300	d3_RadixSort	d3_engine	byte	readable		
 exe	0x0043b600	d3_DrawSorted	d3_engine	byte	readable		
@@ -782,7 +782,7 @@ exe	0x0043d840	d3_TransformMeshes	d3_engine	byte	readable
 exe	0x0043d860	d3_GetBounds	d3_engine	draft	readable	deep	
 exe	0x0043da00	d3_DeflateObject	d3_engine	byte	readable		
 exe	0x0043db30	d3_DeflateScene	d3_engine	byte	readable		
-exe	0x0043dbc0	d3_InflateObject	d3_engine	draft	draft		
+exe	0x0043dbc0	d3_InflateObject	d3_engine	draft	readable	deep	
 exe	0x0043deb0	d3_InflateScene	d3_engine	byte	readable		
 exe	0x0043df60	d3_ReloadMeshCB	d3_engine	byte	readable		
 exe	0x0043e090	d3_ReloadMeshes	d3_engine	byte	readable		
@@ -1870,7 +1870,7 @@ exe	0x004aef10	ai_TokenRichestInhabitant	hst	draft	readable	deep
 exe	0x004af090	ai_TokenBestInn	hst	byte	readable		
 exe	0x004af1b0	ai_TokenMoney	hst	draft	readable	deep	
 exe	0x004af2c0	ai_TokenCityTreasury	hst	draft	readable	deep	
-exe	0x004af3f0	ai_TokenRandomChurchProfession	hst	draft	draft		draft+readable -> draft+draft at f274727: Q6: the description came from a foreign declaration copy or a file name only (decompanion 399f0a8); the definition has none
+exe	0x004af3f0	ai_TokenRandomChurchProfession	hst	draft	readable	deep	
 exe	0x004af6c0	ai_TokenRandomRich	hst	draft	readable	deep	
 exe	0x004af8d0	ai_TokenRandomNpcInhabitant	hst	shape	readable		
 exe	0x004afa20	ai_TokenRandomMerchant	hst	draft	readable	deep	
@@ -1885,7 +1885,7 @@ exe	0x004b02a0	ai_CommandWealthTax	hst	shape	readable	deep
 exe	0x004b0360	ai_CommandWealth	hst	byte	readable		
 exe	0x004b04a0	ai_CommandOfficeStanding	hst	byte	readable		
 exe	0x004b05e0	ai_CommandKillPlayer	hst	byte	readable		
-exe	0x004b0640	ai_CommandExecution	hst	draft	draft		
+exe	0x004b0640	ai_CommandExecution	hst	draft	readable	deep	
 exe	0x004b08e0	ai_CommandPrison	hst	byte	readable		
 exe	0x004b0950	ai_CommandOfficeInventoryPlus	hst	byte	readable		
 exe	0x004b09f0	ai_CommandLaw	hst	byte	readable		
@@ -1908,9 +1908,9 @@ exe	0x004b1ee0	hst_ResetList	hst	byte	readable
 exe	0x004b1f30	hst_ResetLists	hst	byte	readable		
 exe	0x004b1f90	hst_SetTextsOn	hst	byte	readable		
 exe	0x004b1fa0	hst_ParseText_Fake_1st_Pass	hst	byte	readable		
-exe	0x004b21c0	hst_ParseContext	hst	draft	draft		
+exe	0x004b21c0	hst_ParseContext	hst	draft	readable	deep	
 exe	0x004b2380	hst_ParseCommandline_1st_Pass	hst	byte	readable		
-exe	0x004b2530	hst_ParseCommandline_2nd_Pass	hst	draft	draft		
+exe	0x004b2530	hst_ParseCommandline_2nd_Pass	hst	shape	readable		
 exe	0x004b28d0	hst_ParseText_Fake_2nd_Pass	hst	draft	readable	deep	
 exe	0x004b2c90	hst_ParseEventText	hst	byte	readable		
 exe	0x004b2ce0	hst_ParseText_Real	hst	byte	readable		
@@ -2154,7 +2154,7 @@ exe	0x004c3b30	cm_BeginSendGroup	cm	byte	readable
 exe	0x004c3b40	cm_EndSendGroup	cm	byte	readable		
 exe	0x004c3b50	cm_SendGroupState	cm	shape	readable		
 exe	0x004c3ba0	cm_BeginFieldBlock	cm	byte	readable		
-exe	0x004c3c00	cm_AddFieldDelta	cm	draft	draft		
+exe	0x004c3c00	cm_AddFieldDelta	cm	draft	readable	deep	
 exe	0x004c3d00	cm_AddFieldValues	cm	shape	readable		
 exe	0x004c3d90	cm_AddFieldValue	cm	shape	readable		
 exe	0x004c3e70	ai_BeginNeedBlock	cm	byte	readable		
@@ -2485,7 +2485,7 @@ exe	0x004d3ea0	cm_LootCarts	cm	byte	readable
 exe	0x004d4050	cm_FightRole	cm	shape	readable		
 exe	0x004d4090	cm_LootList	cm	byte	readable		
 exe	0x004d4340	cm_FightPortraits	cm	byte	readable		
-exe	0x004d4540	cm_FightStartDialog	cm	draft	draft		
+exe	0x004d4540	cm_FightStartDialog	cm	draft	readable	deep	
 exe	0x004d4d70	cm_FightEndDialog	cm	draft	draft		
 exe	0x004d60b0	cm_CheckFight	cm	draft	draft		
 exe	0x004d63e0	cm_RunFight	cm	shape	readable		

@@ -36,6 +36,8 @@
    layout, defined in this file; cm_FightRecordT views cm_FightRecord as it).
    Open: types: CMFIGHTSLOT and CMCUTENTRY (cm_types.h) are one 0x2c-byte record in two views (a cutscene entry is sent
    as the fight command's slot, cm_RunCutOrders casts between them); one type for both is unsettled.
+   Open: types: CMFIGHTREC (this file) is G28REC's raid view (cm_types.h: defenders 0x80, attackers 0xc0, carts 0x100,
+   home 0x10c; escort 0x110 is G28REC's pad110), two declarations of one party record.
    Open: layout: the fight code 0x4cf670.. may be a TU of its own (cm_UpdatePointer reloads ai_PickedObject after
    calls of ai_LedSelectBits, a leaf defined above in this unit, as if it were external).
    Open: data: 0x60d38c / 0x60d3a0 (cm_RunAuction's "handwerker3_MANN" / "buerger2_MANN") are the original's
