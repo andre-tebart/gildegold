@@ -3814,7 +3814,7 @@ void sv_RefreshPanel(void)
     if (sv_SelectedItem == 0 || ai_Goods[*sv_SelectedItem * 0x41] != 0x1d)
         return;
     if (sv_PanelCartBtn != -1 && d2_ClickedId != -1 && d2_PointerObj == sv_PanelCartBtn && (sv_FrameMask & 0x2000) != 0)
-        rt_EditCartRoute((char *)sv_SelectedItem);
+        rt_EditCartRoute((AIOBJ *)sv_SelectedItem);
     if (sv_PanelHealthBar != -1)
         d2_SetObjValue4(sv_PanelHealthBar, 0, 100, SV_SELCART->fill);
     d2_SetForm(sv_PanelForm, 2);

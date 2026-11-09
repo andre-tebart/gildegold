@@ -38,9 +38,9 @@ extern RTMARK rt_Marks[8];
 /* txt_PanelBtnCart: view of txt_Ptrs (build/mk_txt_views.py) */
 /* txt_RouteLoadHead: view of txt_Ptrs (build/mk_txt_views.py) */
 /* txt_RouteUnloadHead: view of txt_Ptrs (build/mk_txt_views.py) */
-/* ai_Unk144ad30: view of txt_Ptrs (build/mk_txt_views.py) */
-/* ai_Unk144ad34: view of txt_Ptrs (build/mk_txt_views.py) */
-/* ai_Unk144ad38: view of txt_Ptrs (build/mk_txt_views.py) */
+/* txt_RouteEditPoint: view of txt_Ptrs (build/mk_txt_views.py) */
+/* txt_RouteAddPoint: view of txt_Ptrs (build/mk_txt_views.py) */
+/* txt_RouteSettings: view of txt_Ptrs (build/mk_txt_views.py) */
 /* txt_RouteOk: view of txt_Ptrs (build/mk_txt_views.py) */
 /* txt_RouteDeletePoint: view of txt_Ptrs (build/mk_txt_views.py) */
 /* txt_RouteNew: view of txt_Ptrs (build/mk_txt_views.py) */
@@ -50,11 +50,11 @@ extern RTMARK rt_Marks[8];
 /* txt_PatrolLevel3: view of txt_Ptrs (build/mk_txt_views.py) */
 /* txt_PatrolLevel4: view of txt_Ptrs (build/mk_txt_views.py) */
 /* txt_PatrolToggle: view of txt_Ptrs (build/mk_txt_views.py) */
-int rt_Unk6f074c = 0;  /* 0x6f074c, the saved screen of */
+struct D2SURF *rt_MapSaved = 0;  /* 0x6f074c, rt_EditCartRoute's copy of rt_MapSurface, blitted back at its end */
 int rt_MarkCount = 0;  /* 0x6f0750, the marks used */
 int rt_PickedBuilding = 0;  /* 0x6f0754, the building shown */
 RTPOINT * rt_EditRoute = 0;  /* 0x6f0758, the route being edited */
-char * rt_MapSurface = 0;  /* 0x6f26ac, the screen surface */
+struct D2SURF *rt_MapSurface = 0;  /* 0x6f26ac, the screen surface */
 /* ai_Unk7e422c: view of ai_PlayerSlots (tools/data_views.py) */
 RTMARK rt_Marks[8] = {0};  /* 0xf812a0 */
 
@@ -895,81 +895,89 @@ void rt_HighlightRoute(RTPOINT *p, LCMAPWIN *m)
         } while (q != 0);
     }
 }
-/* 0x4bf5b0, the route editor for cart c on the town map window (0x5a78a0 / 0x5a7cd0 / 0x5a82f0): a copy of c's
-   route (one point at c's building if it has none), a mark per point, buttons to edit the selected point, to add
-   the building picked on the map and for the settings (0x4bf080); at the end the route goes to c (0x4c62a0), or
-   with fewer than two points c's route mode is reset */
+/* 0x4bf5b0, the route editor for cart c on the town map window (ai_OpenTownMap / ai_UpdateTownMap /
+   ai_CloseMapWindow; title txt_PanelBtnCart): a copy of c's route (one point at c's building if it has none, and
+   c->patrolOn set), a mark per point, the tab buttons txt_RouteEditPoint (rt_EditPointDialog on the selected
+   point), txt_RouteAddPoint (adds the building picked on the map) and txt_RouteSettings (rt_CartSettingsDialog); at
+   the end the route goes to c (cm_SendSetRoute), or with fewer than two points c's route is cleared and
+   c->patrolOn reset. rt_MapSurface is saved before and restored after */
 
-void rt_EditCartRoute(char *c)
+void rt_EditCartRoute(AIOBJ *c)
 {
-    char v;
-    int btns[3];
-    int m[0x9ea];
+    unsigned char v;
+    int add;
+    int settings;
+    int btns[9];      /* three used; the size is computed from the original's frame (0x27dc) */
+    LCMAPWIN m;
     RTPOINT *q;
+    int edit;
     int i, k;
     int id;
 
     rt_PickedBuilding = 0;
     if (c == 0)
         return;
-    rt_EditRoute = rt_CopyPoints(*(RTPOINT **)(c + 0x29));
-    memset(&m[3], 0, 0x50);
-    m[4] = 0x400;
-    m[7] = 0;
-    m[6] = 0x40000001;
-    m[5] = 0xb07d7fb0;
-    m[1] = 0x10;
-    m[0x16] = 0x723;
-    strcpy((char *)&m[0x17], txt_PanelBtnCart);
-    ai_OpenTownMap(m);
-    ai_BuildTownMap(m);
-    rt_Unk6f074c = d2_CopySurface(rt_MapSurface);
+    rt_EditRoute = rt_CopyPoints(c->route);
+    memset(m.req, 0, sizeof(m.req));
+    m.req[1] = 0x400;
+    m.req[4] = 0;
+    m.req[3] = 0x40000001;
+    m.req[2] = 0xb07d7fb0;
+    m.flags = 0x10;
+    m.req[0x13] = 0x723;
+    strcpy(m.name, txt_PanelBtnCart);
+    ai_OpenTownMap(&m);
+    ai_BuildTownMap(&m);
+    rt_MapSaved = d2_CopySurface(rt_MapSurface);
     rt_MarkCount = 0;
     for (i = 0; i < 8; i++) {
         rt_Marks[i].obj = -1;
         rt_Marks[i].p = 0;
     }
     if (rt_EditRoute == 0) {
-        v = 0;
-        cm_BeginFieldBlock(c, *(int *)(c + 2));
-        cm_AddFieldValue(1, 1, c - cm_FieldObject + 0x33, &v);
+        v = 1;
+        cm_BeginFieldBlock((char *)c, c->objId);
+        cm_AddFieldValue(1, 1, (char *)c - cm_FieldObject + 0x33, &v);
         cm_SendFieldValues();
         rt_EditRoute = rt_AddPoint(0);
-        rt_EditRoute->buildingId = *(int *)(c + 0x1c);
-        rt_EditRoute->cartId = *(int *)(c + 2);
-        rt_PutRouteMark((LCMAPWIN *)m, (int)c, rt_EditRoute, rt_EditRoute);
+        rt_EditRoute->buildingId = c->bldId;
+        rt_EditRoute->cartId = c->objId;
+        rt_PutRouteMark(&m, (int)c, rt_EditRoute, rt_EditRoute);
         d2_RadioSelect(rt_MarkGroup, 0);
         rt_PickedBuilding = 0;
     } else {
         for (q = rt_EditRoute; q != 0; q = q->next)
-            rt_PutRouteMark((LCMAPWIN *)m, (int)c, rt_EditRoute, q);
+            rt_PutRouteMark(&m, (int)c, rt_EditRoute, q);
     }
-    d2_SetForm(m[0], 2);
-    sv_TabButtonRow(d2_LastWindow, 5, btns, 3, ai_Unk144ad30, ai_Unk144ad34, ai_Unk144ad38);
+    d2_SetForm(m.view, 2);
+    sv_TabButtonRow(d2_LastWindow, 5, btns, 3, txt_RouteEditPoint, txt_RouteAddPoint, txt_RouteSettings);
+    edit = btns[0];
+    add = btns[1];
+    settings = btns[2];
     while (sv_RunFrame(rt_EditCartRoute, 0x657c7)) {
         if (dm_L.rup != 0)
             sv_PopRequest = 1;
         ai_MapScrollEnabled = d2_FocusedInput == 0;
         if (d2_ClickedId != -1) {
-            if (d2_PointerObj == btns[2])
-                rt_CartSettingsDialog((AIOBJ *)c, (char *)m);
-            else if (d2_PointerObj == btns[0]) {
-                if (rt_MarkGroup != -1 && d2_RadioSel[rt_MarkGroup * 0x23] != -1)
-                    rt_EditPointDialog(rt_Marks[d2_RadioSel[rt_MarkGroup * 0x23]].p, m);
-            } else if (d2_PointerObj == btns[1] && rt_PickedBuilding != 0) {
+            if (d2_PointerObj == settings)
+                rt_CartSettingsDialog(c, (char *)&m);
+            else if (d2_PointerObj == edit) {
+                if (rt_MarkGroup != -1 && d2_Radios[rt_MarkGroup].sel != -1)
+                    rt_EditPointDialog(rt_Marks[d2_Radios[rt_MarkGroup].sel].p, (int *)&m);
+            } else if (d2_PointerObj == add && rt_PickedBuilding != 0) {
                 q = rt_AddPoint(rt_EditRoute);
-                q->buildingId = *(int *)(rt_PickedBuilding + 1);
-                q->cartId = *(int *)(c + 2);
-                rt_PutRouteMark((LCMAPWIN *)m, (int)c, rt_EditRoute, q);
+                q->buildingId = ((AIBLD *)rt_PickedBuilding)->id;
+                q->cartId = c->objId;
+                rt_PutRouteMark(&m, (int)c, rt_EditRoute, q);
                 d2_RadioSelect(rt_MarkGroup, rt_MarkCount - 1);
                 rt_PickedBuilding = 0;
             }
         }
-        ai_UpdateTownMap(m);
+        ai_UpdateTownMap(&m);
         if (dm_L.lclick != 0 && d2_PointerObj != -1) {
-            for (i = 0; i < m[0x27a4 / 4]; i++) {
-                if (m[0xdc / 4 + i * 6] == d2_PointerObj) {
-                    rt_PickedBuilding = m[0xe0 / 4 + i * 6];
+            for (i = 0; i < m.nMarks; i++) {
+                if (m.marks[i].ctrl == d2_PointerObj) {
+                    rt_PickedBuilding = (int)m.marks[i].bld;
                     for (k = 0; k < 8; k++) {
                         if (rt_Marks[k].p != 0 && (id = rt_Marks[k].p->buildingId) != -1
                             && rt_PickedBuilding == (int)gm_FindBuildingById(id)) {
@@ -981,29 +989,31 @@ void rt_EditCartRoute(char *c)
                 }
             }
         }
-        if (rt_PickedBuilding == 0)
-            d2_SetObjEnabled(btns[1], 0);
-        else
-            d2_SetObjEnabled(btns[1], 1);
-        d2_SetObjEnabled(btns[0], rt_PickedBuilding == 0);
-        rt_HighlightRoute(rt_EditRoute, (LCMAPWIN *)m);
+        if (rt_PickedBuilding != 0) {
+            d2_SetObjEnabled(add, 1);
+            d2_SetObjEnabled(edit, 0);
+        } else {
+            d2_SetObjEnabled(add, 0);
+            d2_SetObjEnabled(edit, 1);
+        }
+        rt_HighlightRoute(rt_EditRoute, &m);
         rt_UpdateMarkPics();
         rt_ReadMarkValues();
     }
     if (rt_PointCount(rt_EditRoute) > 1)
-        cm_SendSetRoute((AIOBJ *)c, rt_EditRoute);
+        cm_SendSetRoute(c, rt_EditRoute);
     else {
         v = 0;
-        cm_SendClearRoute((AIOBJ *)c);
-        cm_BeginFieldBlock(c, *(int *)(c + 2));
-        cm_AddFieldValue(1, 1, c - cm_FieldObject + 0x33, &v);
+        cm_SendClearRoute(c);
+        cm_BeginFieldBlock((char *)c, c->objId);
+        cm_AddFieldValue(1, 1, (char *)c - cm_FieldObject + 0x33, &v);
         cm_SendFieldValues();
     }
-    ai_CloseMapWindow(m);
-    if (rt_Unk6f074c != 0) {
-        d2_BlitPart(0, 0, *(int *)(rt_MapSurface + 4), *(int *)(rt_MapSurface + 8), rt_Unk6f074c, 0, 0, rt_MapSurface);
-        d2_FreeSurface(rt_Unk6f074c);
-        rt_Unk6f074c = 0;
+    ai_CloseMapWindow((int *)&m);
+    if (rt_MapSaved != 0) {
+        d2_BlitPart(0, 0, rt_MapSurface->w, rt_MapSurface->h, rt_MapSaved, 0, 0, rt_MapSurface);
+        d2_FreeSurface(rt_MapSaved);
+        rt_MapSaved = 0;
     }
     if (rt_MarkGroup != -1) {
         d2_RadioClear(rt_MarkGroup);

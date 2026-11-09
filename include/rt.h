@@ -49,8 +49,8 @@ extern int rt_PickedBuilding;                /* 0x6f0754, the building shown */
 
 
 
-extern int rt_Unk6f074c;                /* 0x6f074c, the saved screen of 0x4bf5b0 */
-extern char *rt_MapSurface;              /* 0x6f26ac, the screen surface */
+extern struct D2SURF *rt_MapSaved;   /* 0x6f074c, rt_EditCartRoute's copy of rt_MapSurface */
+extern struct D2SURF *rt_MapSurface;  /* 0x6f26ac, the screen surface */
 extern int ai_MapScrollEnabled;                /* 0x62c26c */
 extern struct D2INPUT *d2_FocusedInput;      /* 0x6ed9dc (as d2.h / cm.h) */
 extern char ch_EmptyName[];             /* 0x631090 */
@@ -102,6 +102,7 @@ int rt_PutRouteMark(struct LCMAPWIN *win, int cart, RTPOINT *list, RTPOINT *p);
 void rt_MarkValue(RTMARK *m);
 void rt_ReadMarkValues(void);
 struct AIBLD;
+struct AIOBJ;
 int rt_ChooseGoodsDialog(struct AIBLD *b, int x, int def);
 int rt_ChooseRouteGood(int x, RTPOINT *p);
 unsigned int rt_ChooseTabGood(struct AIBLD *b, int x, unsigned int def);
@@ -115,7 +116,7 @@ void rt_UpdateMarkPics(void);
 int rt_FindMark(RTPOINT *p);
 void rt_RemoveMark(int i);
 void rt_HighlightRoute(RTPOINT *p, struct LCMAPWIN *m);
-void rt_EditCartRoute(char *c);
+void rt_EditCartRoute(struct AIOBJ *c);
 void rt_UnloadAtPoint(char *c, int pl);
 void rt_LoadAtPoint(char *c, char pl);
 int rt_SaveRoutes(void *f);

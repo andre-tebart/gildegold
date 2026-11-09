@@ -530,7 +530,7 @@ extern struct D2OBJ *d2_Objs;
 extern D2WIN d2_Wins[];
 extern GAPDATA full_rdata_5eed8c[];
 extern GAPDATA full_rdata_5eed90[];
-extern char * rt_MapSurface;
+extern struct D2SURF *rt_MapSurface;
 extern GAPDATA full_data_62c274[];
 extern short d2_MouseX;
 extern short d2_MouseY;
@@ -635,7 +635,7 @@ extern GAPDATA full_data_60c28c[];
 extern GAPDATA full_data_62cc94[];
 extern int ai_MapSize;
 extern char ai_PlayerSlots[4][0x2f4];
-extern char * rt_MapSurface;
+extern struct D2SURF *rt_MapSurface;
 extern GAPDATA full_data_62cce8[];
 extern char ch_EmptyName[1];
 extern GAPDATA full_data_62ccfc[];
@@ -14256,7 +14256,7 @@ int d2_CreatePicObj();
 int ai_OpenTownMap(LCMAPWIN *m)
 {
     m->tile = d2_BackgroundTile;
-    d2_BackgroundTile = (struct D2SURF *)rt_MapSurface;
+    d2_BackgroundTile = rt_MapSurface;
     m->view = d2_OpenForm(0, 0, "Misc\\Landkarte2");
     d2_PlaceMainWindowF(m->view, 3);
     d2_SetForm(m->view, 0);
@@ -18279,7 +18279,7 @@ int ai_TransportWindow(AIBLD *bld, unsigned int mode)
                 d2_SetCaption(rows[i].label, c->patrolOn ? txt_Ptrs[0x42eb] : txt_Ptrs[0x42ea]);
             if (d2_ClickedId != -1 && d2_PointerObj == rows[i].label && (c->flags20 & 1) == 0) {
                 d2_SetViewEnabled(win, 0);
-                rt_EditCartRoute((char *)c);
+                rt_EditCartRoute(c);
                 d2_SetViewEnabled(win, 1);
             }
             if ((c->flags13 & 0x20) == 0 && (c->flags20 & 1) == 0) {
@@ -18931,15 +18931,15 @@ void ai_LoadTownMap(void)
         memset(&desc, 0, sizeof(desc));
         desc.w = bmp->w;
         desc.h = bmp->h;
-        rt_MapSurface = (char *)d2_MakeSurface(&desc, 0xb);
-        d2_LockSurface((D2SURF *)rt_MapSurface);
-        d2_ConvertRgbTo16(0, 0, bmp->w, bmp->h, (unsigned char *)bmp->bits, 0, 0, (D2SURF *)rt_MapSurface);
+        rt_MapSurface = d2_MakeSurface(&desc, 0xb);
+        d2_LockSurface(rt_MapSurface);
+        d2_ConvertRgbTo16(0, 0, bmp->w, bmp->h, (unsigned char *)bmp->bits, 0, 0, rt_MapSurface);
         ai_MapSize = bmp->w;
         ai_MapHeight = bmp->h;
         ai_MapCellScale = 7.5f;
         if (ai_MapSize < 0x780)
             ai_MapCellScale = 5.33f;
-        d2_UnlockSurface((D2SURF *)rt_MapSurface);
+        d2_UnlockSurface(rt_MapSurface);
         d2_FreeSurface(bmp);
     }
 }
