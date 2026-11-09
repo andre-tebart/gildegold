@@ -69,7 +69,6 @@
 /* The stock list head lives inside its 0xfc2e00 head sentinel (the original's +0x1fc relationship). As a
    separate COMMON pointer the linker would not keep it adjacent, so the loader would link the first object
    into one address while the readers start from another. */
-#define d3_StockListHead (*(D3BGF **)((char *)d3_Unkfc2e00 + 0x1fc))  /* 0xfc2ffc */
 extern D3INITCFG d3_Cfg;
 extern D3PARTSYS d3_ParEnd;
 void d3fl_FreeMap(struct D3FLMAP *map);     /* 0x43ff90, d3_fl.c (d3.h types d3_Terrain as void *) */
@@ -1376,10 +1375,10 @@ char d3_Init(D3INITCFG *cfg, HWND wnd, int unk)
     d3_TopFirst = &d3_ObjEnd;
     d3_TopLast = &d3_TopHead;
     d3_Camera = 0;
-    d3_StockListHead = &d3_StockListEnd;
+    d3_StockListStart.next = &d3_StockListEnd;
     d3_StockListEnd.next = 0;
-    d3_Unkfc3000 = 0;
-    d3_StockListEnd.prev = (D3BGF *)d3_Unkfc2e00;
+    d3_StockListStart.prev = 0;
+    d3_StockListEnd.prev = &d3_StockListStart;
     d3anim_Tail.next = 0;
     d3anim_Head.prev = 0;
     d3anim_Head.next = &d3anim_Tail;
@@ -1493,8 +1492,8 @@ void d3_Shutdown(void)
             mem_Free(d3_DefaultScene->events);
             d3_DefaultScene->events = 0;
         }
-        while (d3_StockListHead != &d3_StockListEnd)
-            d3_StockListHead->Release(d3_StockListHead);
+        while (d3_StockListStart.next != &d3_StockListEnd)
+            d3_StockListStart.next->Release(d3_StockListStart.next);
         while (d3anim_Head.next != &d3anim_Tail)
             d3anim_Release(d3anim_Head.next, 1);
         if (d3_Mirror.obj && d3_Mirror.planes) {
@@ -2708,8 +2707,8 @@ D3SORTENT * d3_SortBuf = 0;  /* 0xfc2de0 */
 D3OBJECT *d3_Camera = 0;  /* 0xfc2dec, the camera object */
 int d3_ScreenH = 0;  /* 0xfc2df0 */
 int d3_ScreenW = 0;  /* 0xfc2df4 */
-char d3_Unkfc2e00[0x200] = {0};  /* 0xfc2e00, the head sentinel of the stock object list; its next field at +0x1fc (0xfc2ffc) is d3_StockListHead (a header macro, not a separate object) */
-int d3_Unkfc3000 = 0;  /* 0xfc3000 */
+D3BGF d3_StockListStart = {0};  /* 0xfc2e00, the head sentinel of the stock object list (D3BGF, d3_io_t.h; 0x20c bytes up to
+                                   d3_FogStart): its next at 0xfc2ffc is the list's first stock object, its prev at 0xfc3000 */
 float d3_FogStart = 0;  /* 0xfc300c */
 char d3_ClipInfo[64][0x68] = {0};  /* 0xfc3020 */
 float d3_FovX = 0;  /* 0xfc4a20 */

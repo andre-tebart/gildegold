@@ -23,7 +23,6 @@
 #include "vfs.h"
 /* 0xfc2ffc is the next field of the 0xfc2e00 head sentinel (0xfc2e00 + 0x1fc), not a separate global:
    d3io_LoadObjectFile links the first stock object there. */
-#define d3_StockListHead (*(D3BGF **)((char *)d3_Unkfc2e00 + 0x1fc))  /* 0xfc2ffc */
 /* err.h's other declarations shift the /O2 register allocation of the byte-matched d3_LoadScene (3 bytes at
    0x44c0df); the file only calls err_Message. Its own prototype keeps the call typed, where a local copy of
    the whole header does not compile byte-identically. */
@@ -689,7 +688,7 @@ int d3io_FindStock(char *name)
 {
     D3BGF *s;
 
-    for (s = d3_StockListHead; s != &d3_StockListEnd; s = s->next)
+    for (s = d3_StockListStart.next; s != &d3_StockListEnd; s = s->next)
         if (!_strnicmp(name, s->name, 0x3f))
             return (int)s;
     return 0;

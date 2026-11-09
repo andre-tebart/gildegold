@@ -70,7 +70,7 @@ typedef struct D3BGF D3BGF;
 struct D3LINFO;
 struct D3BGF {                      /* 0x20c bytes, a loaded mesh ("d3_io:LoadAGI_obj"): a stock object, the mesh driver
                                        of the surfaces that show it (D3OBJINFO.mesh, read as D3OPS in d3_engine.h);
-                                       the loaded ones are linked between the sentinels d3_Unkfc2e00 and d3_StockListEnd */
+                                       the loaded ones are linked between the sentinels d3_StockListStart and d3_StockListEnd */
     char name[0x40];
     float *verts;                   /* 0x40, 6 floats each, followed by the 8 corners of the bounding box */
     int nverts;                     /* 0x44 */
@@ -93,7 +93,7 @@ struct D3BGF {                      /* 0x20c bytes, a loaded mesh ("d3_io:LoadAG
     struct D3BOXVERT *(*GetBox)(struct D3OBJECT *obj, struct D3OBJINFO *info, void *unk);       /* 0x1f4 */
     float (*GetRadius)(int unused, struct D3OBJINFO *info);                                     /* 0x1f8 */
     D3BGF *next;                    /* 0x1fc, the stock object list: towards d3_StockListEnd */
-    D3BGF *prev;                    /* 0x200, towards the head sentinel d3_Unkfc2e00 */
+    D3BGF *prev;                    /* 0x200, towards the head sentinel d3_StockListStart */
     char *texnames;                 /* 0x204, ntex names of 0x40 bytes */
     unsigned char nattach;          /* 0x208, the attachment points in use (d3_FindBGF stores the low byte of their count) */
     char pad209[3];

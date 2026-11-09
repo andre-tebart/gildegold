@@ -367,7 +367,7 @@ void d3_UnlinkTop(D3OBJECT *obj);                                               
 #define D3_SCENE3C8(s) ((s)->events)   /* D3SCENE.events (d3.h); the typed view is the field itself */
 extern unsigned int d3s_MaxPolys;           /* 0x633dc4 */
 extern int d3if_MegaCam;                    /* 0x6338c4 */
-extern struct D3BGF *d3_StockListHead;      /* 0xfc2ffc, head of the stock object (mesh driver, D3BGF in d3_io_t.h) list, walked with ->Release (a view of d3_Unkfc2e00+0x1fc in the units that use it) */
+extern struct D3BGF d3_StockListStart;     /* 0xfc2e00, the head sentinel of the stock object (mesh driver, D3BGF in d3_io_t.h) list: its next is the first one, walked with ->Release */
 extern struct D3BGF d3_StockListEnd;       /* 0xfc4a40, its end sentinel */
 extern struct D3ANIMDATA d3anim_Head;      /* 0xfc2580, the animation cache list (D3ANIMDATA, d3_anim.h): its head sentinel */
 extern struct D3ANIMDATA d3anim_Tail;      /* 0xfe7440, and its end sentinel */
@@ -527,9 +527,8 @@ extern int d3_ClipNone;                    /* 0xfc5060 */
 extern unsigned char d3_Unkfc5064, d3_Unkfc5065;  /* 0xfc5064, 0xfc5065 */
 extern D3OBJECT d3_TopHead;               /* 0xfc5100, list start marker */
 #ifndef DATA_VIEWS_H
-extern int d3_Unkfc3000, d3_Unkfe7400;  /* 0xfc3000, 0xfe7400 */
+extern int d3_Unkfe7400;                /* 0xfe7400 */
 #endif
-extern char d3_Unkfc2e00[];                 /* 0xfc2e00, the head sentinel; its next field at +0x1fc is d3_StockListHead */
 extern char d3_DefaultD3DConfig[];          /* 0x5fb5b4 */
 extern unsigned char dd_BBits, dd_GBits, dd_RBits;  /* 0x1464fbd, 0x1463580, 0x1463570 */
 extern float d3_Unkfe7600;              /* 0xfe7600 */
