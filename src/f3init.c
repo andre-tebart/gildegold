@@ -379,7 +379,7 @@ typedef struct INIT_ANIMSET {
     char names[36][0x30];           /* 0x04 .. 0x6c3 */
 } INIT_ANIMSET;
 extern INIT_ANIMSET init_ClassAnims[19];
-int ai_Unk6f2440 = 0;  /* 0x6f2440 */
+int init_BonusStart = 0;  /* 0x6f2440, a start bonus switch (a guess: only read, 0 in .data; init_CreateOpponents, main_GameLoop) */
 int main_MoneyCheat = 0;  /* 0x6f2444, set from the command line switch "MO_MONEY" (main.c); nonzero gives 500000 start money instead of 2000 and the first kind 6 character its starter buildings */
 #include "anm.h"
 #include "rd.h"
@@ -1042,9 +1042,9 @@ void init_StartNewGame(void)
    use): per opponent a prototype prm is taken from the list (an entry of 0 is skipped, the walk starts at a
    random index, steps by 1 or 3 and clears the entry it uses), the opponent's character record is created as
    message 0xb kind 5 (0x4c4650, money 0x10), its difficulty k is ai_Opponents[i] (0 .. 4) and it is paid with the
-   difficulty's price tab[k] (500 / 750 / 1000 / 20000 / 40000) through the player factor (0x4c4880), plus a
-   random 5000 .. 9999 when 0x6f2440 is set. After the group came through, the five skill bytes at +0x80 of every
-   created record are moved by the difficulty's value tab[k + 5] (-31 / -21 / 0 / +42 / +84, the upper clamp
+   difficulty's price[k] (500 / 750 / 1000 / 20000 / 40000) through the player factor (0x4c4880), plus a
+   random 5000 .. 9999 when init_BonusStart is set. After the group came through, the five skill bytes at +0x80 of every
+   created record are moved by the difficulty's delta[k] (-31 / -21 / 0 / +42 / +84, the upper clamp
    through a float compare against 252.0f, the lower one through the byte guard) as single field values
    (0x4c3d90) of the message 0x17 block; the difficulty 2 opponents are left alone and every opponent's block is
    sent on its own. */
@@ -1052,65 +1052,49 @@ void init_StartNewGame(void)
 
 void init_CreateOpponents(int n, int m, int *list)
 {
-    int i, j, k, v, id, cnt, idx, step;
-    unsigned short r;
-    short sw;
-    int tab[10];
-    int ids[8];
-    int prm;
-    INIT_CHAR *pc;
     unsigned char b;
+    int prm;
+    int price[5];
+    int delta[5];
+    int ids[8];
+    int i, j, cnt, idx, step, v;
+    INIT_CHAR *pc;
 
-    i = 0;
     prm = 0;
-    r = util_RandomU(m);
-    idx = r;
-    sw = util_RandomU(2);
-    step = sw != 0 ? 1 : 3;
-    tab[0] = 500;
-    tab[1] = 0x2ee;
-    tab[2] = 1000;
-    tab[3] = 20000;
-    tab[4] = 40000;
-    tab[5] = -31;
-    tab[6] = -21;
-    tab[7] = 0;
-    tab[8] = 0x2a;
-    tab[9] = 0x54;
+    i = 0;
+    idx = util_RandomU(m);
+    step = util_RandomU(2) != 0 ? 1 : 3;
+    price[0] = 500;
+    price[1] = 750;
+    price[2] = 1000;
+    price[3] = 20000;
+    price[4] = 40000;
+    delta[0] = -31;
+    delta[1] = -21;
+    delta[2] = 0;
+    delta[3] = 42;
+    delta[4] = 84;
     cm_BeginSendGroup();
-    if (0 < n) {
-        do {
-            if (m != 0) {
-                cnt = m;
-                do {
-                    if (list[idx] != 0) {
-                        prm = list[idx];
-                        list[idx] = 0;
-                        break;
-                    }
-                    idx = (idx + step) % m;
-                } while (--cnt != 0);
+    for (; i < n; i++) {
+        for (cnt = m; cnt != 0;) {
+            if (list[idx] != 0) {
+                prm = list[idx];
+                list[idx] = 0;
+                break;
             }
-            id = ((int (*)(int, int, int, int, int, int, int, int))cm_SendCreateCharacter)(5, -1, -1, 0x10, -1, prm, 0, 2);
-            k = ai_Opponents[i];
-            ids[i] = id;
-            v = gm_PlayerFactor(tab[k], ai_OwnPlayer);
-            cm_SendMoveGoods(-2, -1, ai_OwnPlayer, v);
-            if (ai_Unk6f2440 != 0) {
-                r = util_RandomU(5000);
-                v = gm_PlayerFactor((r & 0xffff) + 5000, ai_OwnPlayer);
-                cm_SendMoveGoods(-2, -1, ai_OwnPlayer, v);
-            }
-            i++;
-        } while (i < n);
+            cnt--;
+            idx = (idx + step) % m;
+        }
+        ids[i] = ((int (*)(int, int, int, int, int, int, int, int))cm_SendCreateCharacter)(5, -1, -1, 0x10, -1, prm, 0, 2);
+        cm_SendMoveGoods(-2, -1, ai_OwnPlayer, gm_PlayerFactor(price[ai_Opponents[i]], ai_OwnPlayer));
+        if (init_BonusStart != 0)
+            cm_SendMoveGoods(-2, -1, ai_OwnPlayer, gm_PlayerFactor(util_RandomU(5000) + 5000, ai_OwnPlayer));
     }
     cm_EndSendGroup();
-    k = cm_SendGroupState();
-    while (k == 0) {
+    while (cm_SendGroupState() == 0) {
         cm_FlushSendQueue();
         cm_ReceiveMessages();
         cm_ExecCommands();
-        k = cm_SendGroupState();
     }
     cm_BeginSendGroup();
     for (i = 0; i < n; i++) {
@@ -1118,21 +1102,19 @@ void init_CreateOpponents(int n, int m, int *list)
         if (ai_Opponents[i] != 2) {
             cm_BeginFieldBlock((char *)pc, pc->netId);
             for (j = 0; j < 5; j++) {
-                v = pc->skillBytes[j] + tab[ai_Opponents[i] + 5];
+                v = pc->skillBytes[j] + delta[ai_Opponents[i]];
                 v = (int)(252.0f < v ? 252.0f : v);
                 b = v < 0 ? 0 : v;
-                cm_AddFieldValue(1, 1, (char *)pc + j - cm_FieldObject + 0x80, &b);
+                cm_AddFieldValue(1, 1, (char *)&pc->skillBytes[j] - cm_FieldObject, &b);
             }
             cm_SendFieldValues();
         }
     }
     cm_EndSendGroup();
-    k = cm_SendGroupState();
-    while (k == 0) {
+    while (cm_SendGroupState() == 0) {
         cm_FlushSendQueue();
         cm_ReceiveMessages();
         cm_ExecCommands();
-        k = cm_SendGroupState();
     }
 }
 /* 0x50e5a0, lays out the n offices of the list ids (the office indexes, a byte each) in a row: every office x

@@ -4697,7 +4697,7 @@ void main_GameLoop(int ctl)
             init_FillMarkets(ai_OwnPlayer);
             main_SetLoadProgress(0, 100);
             main_SetLoadProgress(0, 100);
-            if (ai_Unk6f2440 != 0)
+            if (init_BonusStart != 0)
                 init_GiveFirstPlayerBuildings();
         } else if (net_Conn.s != -1) {
             if ((ai_GameFlags & 0x40) != 0) {

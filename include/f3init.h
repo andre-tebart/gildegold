@@ -89,7 +89,7 @@ extern int init_TerrainDivide;                              /* 0x6f1c2c, nonzero
 extern int init_TownSoundCount;                             /* 0x6f1c34 */
 extern int ai_FrameWait;                                    /* 0x6f22bc */
 extern int main_StartHouseCheat;                            /* 0x6f2430 */
-extern int ai_Unk6f2440;                                    /* 0x6f2440 */
+extern int init_BonusStart;                                    /* 0x6f2440, a start bonus switch (a guess: only read, 0 in .data): extra opponent money, the first player's buildings */
 extern int main_MoneyCheat;                                 /* 0x6f2444 */
 extern int ai_MapSize;                                      /* 0x6f4ee8 */
 extern int ai_MapHeight;                                    /* 0x6f4ee4, the height of the town map bitmap (ai_MapSize its width) */
