@@ -2674,3 +2674,27 @@ the original reloads `ds:0x633738` before every call (a call may change the glob
 a register, and two more local aliases (mark / fmt) turned the original's four near copies into one shared
 loop. Writing `(char *)d3_Terrain + 0x1a64 + i` at every use and unrolling the four seasons took 511 -> 82
 differing instructions. The same shape made the character loop of 0x512f30 pick the wrong registers.
+
+## match-deep 2026-11-09 (d3sndw_Update, lobby_ShowPlayers, lobby_ShowCity, dd_SetMode)
+
+- **A run of zero stores in their own register is an inline memset**: d3sndw_Update's original clears
+  found[0].type from the function's zero register (ebx) and the next five ints from a fresh `xor esi,esi`
+  (stores in the order last, first, second, ...; dir.y = 0.0f later reuses esi). Six `= 0` lines put all
+  stores into one zero web and moved the whole function's allocation (151 differing -> 14); `found[0].type
+  = 0; memset(&found[0].vol, 0, sizeof(found) - sizeof(int));` gave the original's code. When the zero
+  stores of a block use another register than the rest of the function's zeros, try a memset over them.
+- A non-const global holding 0.0f (`ai_FloatZero`, M10 "the original refers to the datum") instead of the
+  literal also moved the schedule elsewhere in d3sndw_Update (a latch's reload order): write the object
+  when M10 names it, even where the value is the same.
+- **`u = a; if (c) u = b;`** loads the default before the test; the original's `test; mov eax,[a]; je; mov
+  eax,[b]` (test first, then the default) is `if (!c) u = a; else u = b;` (lobby_ShowPlayers, byte).
+  `if (c) u = b; else u = a;` and the ternary `c ? b : a` give a third form.
+- **Callee-saved pushes shrink-wrapped after an if/else** in ours while the original pushes them in the
+  prologue: lobby_ShowCity's `players = g;` after two identical arms; writing it at the end of each arm
+  (VC6 merges the arms' tails) kept the pushes in the prologue - byte. At the start of each arm or before
+  the if moved the load instead.
+- dd_SetMode: `dd_RMask = r = ddpf.dwRBitMask;` funnels each mask through eax (the original's code);
+  `dd_RMask = ddpf..; r = dd_RMask;` changes the two bit-scan loops' spill choice to the original's
+  (counter in the dead bpp slot, r in [ebp+0x20]) but loses the funnel - the loop registers are still a
+  renaming apart. Loop forms (up / down / while(bpp--)), counter variables and declaration moves compile
+  to the same code there.
