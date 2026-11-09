@@ -179,20 +179,35 @@ typedef struct D3LIGHTKEY {         /* 0x38 bytes, D3LIGHTENTRY: one of the 7 da
     D3VECTOR pos;                   /* 0x00, relative to the light's parent */
     D3VECTOR rot;                   /* 0x0c */
     D3VECTOR color;                 /* 0x18, -> obj lightView color (0x5c) */
-    float intensity;                /* 0x24, -> obj lightView power (0x94); 0 = off */
-    float range;                    /* 0x28, -> obj lightView range (0x90) */
-    float atten;                    /* 0x2c, -> obj lightView atten (0x98) */
-    int unk30;
-    int unk34;
+    union {
+        float intensity;            /* 0x24, -> obj lightView power (0x94); 0 = off */
+        int intensityBits;          /* the same bits as an int (the scene file's bio_wr_i, d3_WriteObject) */
+    };
+    union {
+        float range;                /* 0x28, -> obj lightView range (0x90) */
+        int rangeBits;
+    };
+    union {
+        float atten;                /* 0x2c, -> obj lightView atten (0x98) */
+        int attenBits;
+    };
+    union {
+        float flicker;              /* 0x30, the key's flicker factor (D3LIGHTENTRY.flicker, d3_engine.h) */
+        int flickerBits;
+    };
+    int interval;                   /* 0x34, its flicker interval (D3LIGHTENTRY.interval) */
 } D3LIGHTKEY;
 
 typedef struct D3LIGHTKEYS {        /* 0x1ac bytes, D3LIGHTINFO */
     D3LIGHTKEY k[7];
     char pad188[0xc];
-    int unk194;
-    int unk198;
-    int unk19c;
-    int unk1a0;
+    int time;                       /* 0x194, D3LIGHTINFO.time (d3_engine.h): the last flicker step */
+    void *list;                     /* 0x198, D3LIGHTINFO.list: the lit vertex records */
+    union {
+        float flicker;              /* 0x19c, D3LIGHTINFO.flicker */
+        int flickerBits;            /* the same bits as an int (the scene file's bio_wr_i, d3_WriteObject) */
+    };
+    int interval;                   /* 0x1a0, D3LIGHTINFO.interval */
     float phase;                    /* 0x1a4, added to the day time */
     char pad1a8[0x4];
 } D3LIGHTKEYS;
@@ -205,9 +220,18 @@ typedef struct D3IFLIGHT {
     char pad000[0x5c];
     D3VECTOR color;                 /* 0x5c, light colour (r, g, b) */
     char pad068[0x28];
-    float range;                    /* 0x90 */
-    float power;                    /* 0x94, 0 = off */
-    float atten;                    /* 0x98 */
+    union {
+        float range;                /* 0x90 */
+        int rangeBits;              /* the same bits as an int (the scene file's bio_wr_i, d3_WriteObject) */
+    };
+    union {
+        float power;                /* 0x94, 0 = off */
+        int powerBits;
+    };
+    union {
+        float atten;                /* 0x98 */
+        int attenBits;
+    };
 } D3IFLIGHT;
 #define D3IF_LIGHT(o) ((D3IFLIGHT *)(o))
 

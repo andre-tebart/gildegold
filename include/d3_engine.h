@@ -295,7 +295,10 @@ typedef struct D3OBJX {             /* 0x228 bytes, the whole D3OBJECT as far as
     D3VECTOR pos;                   /* 0x04c */
     int unk058;
     D3VECTOR unk05c;
-    float radius;                   /* 0x068 */
+    union {
+        float radius;               /* 0x068 */
+        int radiusBits;             /* the same bits as an int: the scene file writes it with bio_wr_i (d3_WriteObject) */
+    };
     D3VECTOR pivot;                 /* 0x06c, d3_PointToWorld subtracts / adds it around the parent matrix */
     D3VECTOR posOffset;             /* 0x078, D3OBJECT.posOffset (d3.h) */
     D3VECTOR rot;                   /* 0x084 */
