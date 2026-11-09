@@ -258,7 +258,7 @@ extern unsigned int ai_ActionFlags[][37]; /* 0xf83f50, 0x94 byte entries, flags 
 extern int ai_TradeMsgOff;              /* 0xf86a24, read-only in every source: nonzero suppresses the trade
                                            message and its count (never set in this build) */
 extern AIOBJ *ai_Carts[16];             /* 0xf89540, the master's kind-0x1d cart objects without a running
-                                           job (ai_Unk483a60 fills them, ai_NumCarts counts them) */
+                                           job (ai_CalcMeisterFernhaendler fills them, ai_NumCarts counts them) */
 typedef struct AIUPDATE {               /* 0x18 bytes, the per-frame character update cycle (ai_Update): the save
                                            writes and reads it as one block (ls.c, vfs_fwrite at 0x5191ad) */
     int start;                          /* 0x00, the character index the per-frame update share starts at */
@@ -298,7 +298,7 @@ int ai_CalcAngriff(AICHAR *ch, int n);                                   /* 0x48
 void ai_CalcMeisterDiebe(AICHAR *ch);                                    /* 0x481ef0, the thieves' master */
 void ai_CalcMeisterRaeuber(AICHAR *ch);                                  /* 0x482f00, the robber master */
 void ai_CalcMeisterBank(AICHAR *ch);                                           /* 0x4836a0, the bank master's money balance */
-void ai_Unk483a60(AICHAR *ch);                                           /* 0x483a60 */
+void ai_CalcMeisterFernhaendler(AICHAR *ch);                                           /* 0x483a60 */
 void ai_StartBuildingWork(AICHAR *ch);                                           /* 0x483d30 */
 void ai_EndWorkerPose(AICHAR *ch);                                           /* 0x483ee0 */
 void ai_EvaluateProductionGraveyard(AICHAR *c);                                            /* 0x483fc0 */

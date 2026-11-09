@@ -61,7 +61,8 @@ typedef struct AIJOB {                  /* 0x14c bytes, a job / event record (he
     union {                             /* 0xac..0xeb: the three unions, or a kind's own words over them */
         struct {
             union {
-                int unkac;                      /* 0xac, a building id */
+                int cart;                       /* 0xac, of the trade event 0xb the objId of the trading cart (he.c HETRADE.cart;
+                                                   ai_CalcMeisterFernhaendler skips the carts a trade event runs with) */
                 int targetBld;                  /* 0xac, of the spy / break-in / attack events 0x40 / 0x3f / 0x49 the
                                                    building spied on, broken into or attacked (the message's arg[0];
                                                    ai_CalcAngriff, ai_CalcMeisterDiebe) */

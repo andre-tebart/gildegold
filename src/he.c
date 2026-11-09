@@ -60,7 +60,7 @@
    he_ActivityGraveCare (0x628e70 / 0x628e7c / 0x628e8c) and the secret room's agent name he_AssassinName
    (0x628dc8) are named. AIJOB's fields between
    0x14 and 0xac are named only as the message's words; a member added to AIJOB / AIMSG / G28REC can flip other
-   units' matches by declaration set (ai_Unk483a60, ord_CountGridObjects are debt for it; ai_TutorialInitChapter3
+   units' matches by declaration set (ai_CalcMeisterFernhaendler, ord_CountGridObjects are debt for it; ai_TutorialInitChapter3
    is a tie-break for it).
    The ransom 0x3d / 0x3e (HEEV3D / HEEV3E), burglary 0x3f (HEBURGLARY), building spying 0x40 (HEBLDSPY, its report
    HESPYREPORT), ambush 0x48 (HEAMBUSH), attack 0x49 (AIJOB's raid* words) and fire 0x4e (HEFIRE; the burning event's

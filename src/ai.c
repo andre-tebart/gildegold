@@ -10,7 +10,7 @@
    literals 0x5fef0c..0x5ffd18 follow the function order without a new data block; 0x5ffd1c starts the next obj.
    Names are ours except the ones taken from the strings.
    Open: ai_types.h's AIMSG / AIJOB declarations are shared with sv_t.c, whose tutorial builders flip their VC6
-   tie-break when a member is added (debt ai_TutorialInitChapter2, ai_TutorialInitChapter3; d3_CloneObject moves too); ai_Unk483a60's slot match
+   tie-break when a member is added (debt ai_TutorialInitChapter2, ai_TutorialInitChapter3; d3_CloneObject moves too); ai_CalcMeisterFernhaendler's slot match
    was lost the same way (debt, to AIMSG.payment).
    unit of rea 8cef7d5b (src/game/ai.c); boundaries in decl/text.dcl */
 extern int gm_PlayerRecords[688];
@@ -503,7 +503,11 @@ void ai_ResetJob(AICHAR *c)
         c->flags1b4 |= 1;
     }
 }
-/* 0x47e990, runs the evaluation of a master: which function depends on the kind of its building @deep byte; readability left: Q1/Q2 the seven master-evaluation callees are undefined names - 0x47edb0 (the default "evaluates the production of a master's workshop"), 0x47f700 (the same for building kinds 0xe / 8 / 0x20), 0x4801f0 (the same for building category 2), 0x483fc0 (kind 0x1d), 0x484a60 (kind 0x1f), 0x483a60 (no role comment, kind 9), 0x4836a0 (the bank master's money balance) - the five production variants differ only by the AIENTRY flags their bodies test and the kind-to-profession table that would name them is in no source; 0x501d80 same (no source, no Ghidra export). Named on the way: 0x6f2308 -> ai_PlayerBuilding (ai.h), 0x6f230c -> ai_FallbackBuilding (the f3snd.c 2308-then-230c fallback), 0xf8a0c8 -> ai_LoggedMaster (ai.h "the master whose decisions are logged"). */
+/* 0x47e990, runs the evaluation of a master from 6:30 on, for a local job whose flags1b4 bit 0 is set (the logged
+   master writes its budget lines first): sets the budget of the building's owner, fills ai_Watch for the player's
+   building, then calls the step of the building's kind: production (the classes 1 / 4: kinds 0xe / 8 / 0x20, 0x1d,
+   0x1f, the rest), class 2, or the masters of the guard (0x13), thieves (4), robbers (0x10), bank (5) and long-distance
+   trader (9) */
 
 void ai_RunMasterEvaluation(AICHAR *c)
 {
@@ -554,7 +558,7 @@ void ai_RunMasterEvaluation(AICHAR *c)
             }
             if (k != 9)
                 return;
-            ai_Unk483a60(c);
+            ai_CalcMeisterFernhaendler(c);
             return;
         }
         k = ai_BTypesT[c->bld->type].kind;
@@ -2292,13 +2296,12 @@ void ai_CalcMeisterBank(AICHAR *ch)
     }
     ch->flags1c8 |= 8;
 }
-/* 0x483a60, the kind-9 master's trade step (0x47e990 dispatches here on ai_BTypes[type].kind == 9): in every
-   third hour it buys slots / capacity, collects the building's kind 0x1d objects without a running job into
-   ai_Carts, lets ai_BuildTradeOffers decide the trade and runs ai_MeisterTradeFernEinkauf or ...2 by the ratio
-   of the first slot and entry; a watched building gets its slots copied
-   @deep byte, Q-only handover: Q6 description added this session (kind-9 trade step: buys slots / capacity, collects the free kind 0x1d objects into ai_Carts, ai_BuildTradeOffers decides the trade, then ai_MeisterTradeFernEinkauf or ...2 by the slot/entry ratio). Q1 no evidenced name: 0x47e990 dispatches here on ai_BTypes[type].kind == 9 only, the body has no string / text id, and no caller names the profession. Q2 evidence gaps: ai_BuildTradeOffers (the trade decision builder, no comment or named reader), ai_Carts / ai_NumCarts (the object list and its count this function fills; the reader is ai_BuildTradeOffers only), AIOBJ.unk1c (a building id here, but the rename across units is undecided against the other unk1c fields), AIOBJ.unk20 / AISLOT.unk34 / AIENTRY.unk4c / AIBTYPE.level (the slot and entry amounts, cap247 is only an unsigned alias), AIJOB.unkac (union id). */
+/* 0x483a60, the step of a long-distance trader (Fernhaendler) master, building kind 9 (ai_RunMasterEvaluation): in
+   every third hour it buys slots / capacity, collects the building's carts (objects of kind 0x1d) no trade event 0xb
+   runs with into ai_Carts (none: ai_MeisterCollectTrans buys one), lets ai_BuildTradeOffers decide the trade and runs
+   ai_MeisterTradeFernEinkauf or ...2 by the ratio of the first slot and entry; a watched building gets its slots copied */
 
-void ai_Unk483a60(AICHAR *ch)
+void ai_CalcMeisterFernhaendler(AICHAR *ch)
 {
     AIOBJ *obj, *o;
     AIJOB *job;
@@ -2323,7 +2326,7 @@ void ai_Unk483a60(AICHAR *ch)
             for (o = gm_Query(ch->bld->objList, 3, 6, 4, 0x1d, 3, ch->bld->owner); o; o = gm_QueryNext()) {
                 if (o->bldId == ch->bld->id) {
                     for (job = he_FindEvent(2, 0, 0xb, 3, ch->bld->id); job; job = he_NextEvent()) {
-                        if (job->unkac == o->objId)
+                        if (job->cart == o->objId)
                             break;
                     }
                     if (!job && ai_NumCarts < 0x10)
