@@ -1945,7 +1945,7 @@ exe	0x004b4630	ai_CondMoney	unk_4b39f0	fc4241424f3f6e49	no	byte	control=byte p1=
 exe	0x004b4670	ai_CondSkills	unk_4b39f0	95e0abd302d85101	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004b46c0	ai_CondOfficeTimed	unk_4b39f0	5c2f894b3293ab40	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004b46f0	ai_CondOldBuilding	unk_4b39f0	c3184bdcf4604aae	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x004b4760	ai_HasThreeStockedBuildings	unk_4b39f0	ea95ffed222562d6	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x004b4760	ai_HasThreeStockedBuildings	mission	ea95ffed222562d6	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x004b4830	ai_CondMissionMoney02	unk_4b39f0	e1826b8496de16ae	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004b4870	ai_CondMissionMoney1	unk_4b39f0	916b3ca8dd36bd6f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004b48b0	ai_CondMissionMoney4	unk_4b39f0	d7a510efdd66b95f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte

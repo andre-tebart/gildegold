@@ -2730,3 +2730,12 @@ differing instructions. The same shape made the character loop of 0x512f30 pick 
 - **Initialised locals' declaration order schedules the entry stores**: evt_Eval's `int next = 2; int val = 0;`
   (instead of val first) moved `xor edi,edi` after the flag load as in the original - byte. Generate all
   orders of the initialised declarations (and the statement form) when only an entry order hunk is left.
+- **`lea r,[base+idx*4+disp]` where the original has `lea eax,[base+idx*4]; lea edi,[eax+0x23]`**: the record
+  address is a named pointer and the array member is indexed through it: `bt = &ai_BTypesT[b->type];
+  for (j = 0; ... bt->slot[j] ...)` (ai_HasThreeStockedBuildings, byte). A pointer walk `w = bt->slot; w++`
+  folds the member offset again (= the one-lea code), and so does indexing `ai_BTypesT[b->type].slot[j]`
+  without the record local (worse: two IVs).
+- **One record's fields scaled into 16-byte locals**: d3_TransformVerts' weight block (`fld x; fld y; fld w;
+  fmul st,st(2) ... fstp st(0); fstp st(0)`, z by integer mov) is closest without volatile hacks as
+  `D3VECTOR4` locals filled field by field and then `s.x *= w` (frame equal); a `D3VECTOR` struct copy
+  shrinks the frame by 0x18.
