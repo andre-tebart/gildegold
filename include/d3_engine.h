@@ -294,8 +294,11 @@ typedef struct D3OBJX {             /* 0x228 bytes, the whole D3OBJECT as far as
                                        OBJ_LAST compares it with a timeout */
     char pad048[0x4];
     D3VECTOR pos;                   /* 0x04c */
-    int unk058;
-    D3VECTOR unk05c;
+    float flickerEnd;               /* 0x058, a light's flicker factor the current interval runs to (D3LOBJ, d3_light.h) */
+    union {
+        D3VECTOR savedPos;          /* 0x05c, a camera's saved position (D3OBJECT.savedPos, d3.h) */
+        D3VECTOR lightColor;        /* a light's colour */
+    };
     union {
         float radius;               /* 0x068 */
         int radiusBits;             /* the same bits as an int: the scene file writes it with bio_wr_i (d3_WriteObject) */
@@ -303,7 +306,10 @@ typedef struct D3OBJX {             /* 0x228 bytes, the whole D3OBJECT as far as
     D3VECTOR pivot;                 /* 0x06c, d3_PointToWorld subtracts / adds it around the parent matrix */
     D3VECTOR posOffset;             /* 0x078, D3OBJECT.posOffset (d3.h) */
     D3VECTOR rot;                   /* 0x084 */
-    D3VECTOR unk090;
+    union {
+        D3VECTOR savedRot;          /* 0x090, a camera's saved angles */
+        D3VECTOR lightParams;       /* a light's range / power / attenuation */
+    };
     struct { D3VECTOR pos; D3VECTOR dir; } views[10];   /* 0x09c, D3OBJECT.views (d3.h): the preset camera views */
     D3MATRIX matrix;                /* 0x18c */
     D3OBJINFO *info;                /* 0x1cc */

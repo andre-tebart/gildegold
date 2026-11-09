@@ -1979,10 +1979,9 @@ void d3_Unlink(D3OBJECT *obj)
     obj->next = 0;
     obj->state &= 0xfd;
 }
-/* 0x43d180, copies an object (name + "_"), without its children. @deep Q2 only, the body is byte: three D3OBJX
-   fields still have no evidenced name (unk058 = D3LOBJ.flickerEnd, d3_light.h 0x58; unk05c = D3LOBJ.color /
-   D3IFLIGHT.color, the light colour; unk090 = D3LOBJ.range / power / atten). The views, pivot, posOffset and
-   light time are named in d3_engine.h. */
+/* 0x43d180, copies an object (name + "_"), without its children: position, the saved camera / light fields,
+   angles, pivot, offset, the light keys, the views and the flags; a mesh object gets its draw data and its
+   first surface's mesh again */
 
 D3OBJECT *d3_CloneObject(D3OBJECT *src)
 {
@@ -1998,17 +1997,17 @@ D3OBJECT *d3_CloneObject(D3OBJECT *src)
         D3_X(obj)->pos.x = D3_X(src)->pos.x;
         D3_X(obj)->pos.y = D3_X(src)->pos.y;
         D3_X(obj)->pos.z = D3_X(src)->pos.z;
-        D3_X(obj)->unk058 = D3_X(src)->unk058;
-        D3_X(obj)->unk05c.x = D3_X(src)->unk05c.x;
-        D3_X(obj)->unk05c.y = D3_X(src)->unk05c.y;
-        D3_X(obj)->unk05c.z = D3_X(src)->unk05c.z;
+        D3_X(obj)->flickerEnd = D3_X(src)->flickerEnd;
+        D3_X(obj)->savedPos.x = D3_X(src)->savedPos.x;
+        D3_X(obj)->savedPos.y = D3_X(src)->savedPos.y;
+        D3_X(obj)->savedPos.z = D3_X(src)->savedPos.z;
         D3_X(obj)->radius = D3_X(src)->radius;
         D3_X(obj)->rot.x = D3_X(src)->rot.x;
         D3_X(obj)->rot.y = D3_X(src)->rot.y;
         D3_X(obj)->rot.z = D3_X(src)->rot.z;
-        D3_X(obj)->unk090.x = D3_X(src)->unk090.x;
-        D3_X(obj)->unk090.y = D3_X(src)->unk090.y;
-        D3_X(obj)->unk090.z = D3_X(src)->unk090.z;
+        D3_X(obj)->savedRot.x = D3_X(src)->savedRot.x;
+        D3_X(obj)->savedRot.y = D3_X(src)->savedRot.y;
+        D3_X(obj)->savedRot.z = D3_X(src)->savedRot.z;
         D3_X(obj)->pivot.x = D3_X(src)->pivot.x;
         D3_X(obj)->pivot.y = D3_X(src)->pivot.y;
         D3_X(obj)->pivot.z = D3_X(src)->pivot.z;
