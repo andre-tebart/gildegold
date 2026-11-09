@@ -74,8 +74,9 @@
    Open: data: the shared float 0x5ebb40 (ai_FloatHundred, cm.c and he.c read it too) is the compiler's pooled
    100.0f: one copy in the image's constant pool, shared by 30 functions; a named array reproduces the loads but
    would add a second object, so its bytes stay in main.c's full_rdata gap block.
-   Open: data: 0x6f2450 ai_DebugHotkeys (a view of main.c's full_data_6f2450), owner cm or am (between cm's
-   0x6f244c and am's 0x6f2464; only this unit reads it).
+   Open: data: 0x6f2450 ai_DebugHotkeys (a view of main.c's full_data_6f2450), owner cm or main (the bss
+   there interleaves f3init, cm, main and am: cm's 0x6f244c before, main's main_DevMenu 0x6f245c after; only
+   this unit reads it).
    Open: data: 0x5f3418 d3t_BoxCornerIdx, owner di_input or d3_tools (only ai_GameFrame writes it, -1; it lies
    between di_input's literals and d3_tools' d3t_SunFadeStart, before four corner vectors), named in main.c's gap block.
    Open: data: 0x6f2314 sv_LastRoom, owner sv or f3gm (between sv's sv_PanelShown and f3gm's ai_PermsDirty; only
