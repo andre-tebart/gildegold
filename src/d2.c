@@ -226,7 +226,9 @@ int d2_LoadPic(int idx, char *path)
     fclose(d2_File);
     return 1;
 }
-/* 0x468a90, frees everything of the layer @deep Q4 blocks the byte match: the four raw *(int *) accesses of the D2PIC free loop rewritten as D2PIC *p = (D2PIC *)(i + base) with p->data / p->size flip the address operand order to [ecx+ebx*1+0x34] where the original has [ebx+ecx*1+0x34] (i+base and base+i both, all four accesses, build check REGRESSED d2_Exit) - the original uses the loop offset as the base register; Q2 needs 9 names (d2_RemoveWindow, d2_FreeFades, d2_FrontSurf/92c/930/948/960/964/99c, roles only partly evidenced in d2.h); Q3 0xfa5d20 is the window walk's pointer-compare constant: w starts at &d2_Wins[0].active (0xf8f120 + 0x280 = 0xf8f3a0) and the end is &d2_Wins[0x60].active (0xfa5d20), 0x60 windows; the typed spelling `while (w < &d2_Wins[0x60].active)` clears Q3 but loses the byte match (check 2609, the original compares against the immediate), so the literal stays */
+/* 0x468a90, frees everything of the layer: removes the open windows (d2_Wins, 0x60) and the objects, frees the
+   loaded picture data (d2_Pics, 0x800; the base reread after each free, the offset kept as an int as the original
+   addresses [offset + base]) and the surfaces, the light table, the caption sprite, the archive file and the tables */
 
 void d2_Exit(void)
 {
@@ -251,11 +253,11 @@ void d2_Exit(void)
     i = 0;
     do {
         base = (int)d2_Pics;
-        t = *(int *)(i + 0x34 + base);
-        if (t && *(int *)(i + 0x38 + base)) {
+        t = (int)((D2PIC *)(i + base))->data;
+        if (t && ((D2PIC *)(i + base))->size) {
             mem_Free((void *)t);
-            *(int *)(i + 0x34 + base) = 0;
-            d2_PicBytes -= *(int *)(i + 0x38 + base);
+            ((D2PIC *)(i + base))->data = 0;
+            d2_PicBytes -= ((D2PIC *)(i + base))->size;
             base = (int)d2_Pics;
         }
         i += 0x54;
