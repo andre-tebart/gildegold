@@ -592,7 +592,8 @@ typedef struct AIMSG {                  /* 0xf8 bytes, given to cm_SendLongMessa
                 int amount[3];                  /* 0x88, of the bought goods */
                 struct {
                     char pad88;
-                    char unk89;                 /* 0x89 */
+                    char patrolRoll;            /* 0x89, of the patrol message 0x43 a random 2 .. 5 (ai_CalcMeisterWache);
+                                                   it lands at the event's +0xdd, after patrolRound; no reader known */
                 };
             };
             char pad94[8];

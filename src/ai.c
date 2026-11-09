@@ -1330,20 +1330,26 @@ check:
     ai_MeisterCollectTrans(ch);
     ai_MeisterTrade(ch, b);
 }
-/* 0x480e70, the guard master: patrols the town, checks a workshop or patrols the surroundings */
+/* 0x480e70, the guard master: the workshop's slots, equipment and trade first (its workshop object of kind 0x2a), the
+   staff, slots, capacity, upgrade and thieves; then, at most once in the hours past 6 whose (netId + hour) is a
+   multiple of 3 (flags1b4 0x20 marks it, cleared outside them), it counts his idle guards (title, no job, standing
+   in his building) and, when at least half are free, picks one of: an attack (ai_CalcAngriff), a patrol in the
+   town (message 0x43 to the best-rated grid cell's building of kind 6 he likes best, up to four guards), a check of
+   a workshop there (message 100, one guard) or a patrol of the surroundings (message 0x65 to one of the eight
+   ai_AmbushSpots, up to six guards, at least two) */
 
 void ai_CalcMeisterWache(AICHAR *ch)
 {
     AIOBJ *b, *o;
     AIBLD *sel, *bl;
-    AIGRID *best, *cell, *row;
+    AIGRID *best, *cell;
     AIMSG msg;
     char buf[1024];
     char *name;
-    int gx, gy;
-    int i, j, k, c, cnt, n, m, total, idle, half, r1, r2;
+    int gx, gy;             /* the grid cell of a building (ord_GetGridCell) */
+    int i, j, c, k, n, cnt, total, idle, half, found, guard;
     int r;
-    char q;
+    unsigned char kind;
 
     b = gm_Query(ch->bld->objList, 2, 6, 0, 0x2a);
     if (b) {
@@ -1367,9 +1373,9 @@ void ai_CalcMeisterWache(AICHAR *ch)
     }
     if (ch->flags1b4 & 0x20)
         return;
+    ch->flags1b4 |= 0x20;
     total = 0;
     idle = 0;
-    ch->flags1b4 |= 0x20;
     for (i = 0; i < 768; i++) {
         if (ai_CharsT[i].health > 0 && ai_CharsT[i].id != 0xffff && ai_CharsT[i].kind != 10 && ai_CharsT[i].bld == ch->bld
             && ai_CharsT[i].title && ai_CharsT[i].model && ai_CharsT[i].model->bldId == ai_CharsT[i].bld->id) {
@@ -1383,174 +1389,148 @@ void ai_CalcMeisterWache(AICHAR *ch)
         if (ch->target != -1)
             ai_Watch.target = gm_FindBuildingById(ch->target);
     }
-    half = total >> 1;
-    if (total - half <= half)
-        half = total - half;
+    half = min(total >> 1, total - (total >> 1));
     if (idle < half) {
         sprintf(buf, "ai_CalcMeisterWache(): Meister %s hat gerade keine Leute...", ch->name);
         return;
     }
-    if (ai_CharsT[ch->bld->owner].kind == 6 || ai_CharsT[ch->bld->owner].kind == 7) {
-        r = util_RandomU(3);
-        if (r == 0 || ch->target == -1 || util_RandomU(2) == 0)
-            goto choose;
-        goto city;
-    } else {
-        if (util_RandomF() <= 0.85 || idle < 3 || ai_Time.year < 7 - ai_Difficulty) {
+    kind = ai_CharsT[ch->bld->owner].kind;
+    if (kind != 6 && kind != 7) {
+        if (!(util_RandomF() > 0.85) || idle < 3 || ai_Time.year < 7 - ai_Difficulty)
             r = util_RandomU(3);
-choose:
-            if (r == 4)
-                goto guard;
-            if (r == 0)
-                goto city;
-            if (r == 1)
-                goto check;
-            if (r < 2)
-                return;
-        } else {
-guard:
-            if (ai_CalcAngriff(ch, idle) == 0)
-                goto city;
-        }
+        else
+            goto attack;
+    } else {
+        r = util_RandomU(3);
+        if (r != 0 && ch->target != -1 && util_RandomU(2) != 0)
+            goto city;
     }
-    goto umland;
-
+    if (r == 4) {
+attack:
+        if (ai_CalcAngriff(ch, idle) != 0)
+            goto umland;
+        goto city;
+    }
+    if (r == 0) {
 city:
-    sprintf(buf, "ai_CalcMeisterWache(): Meister %s m\xf6" "chte in der Stadt patroullieren", ch->name);
-    gx = 8;
-    gy = 8;
-    best = &ai_Grid[0][0];
-    for (row = &ai_Grid[0][0]; row < &ai_Grid[1][0]; row++) {
-        cell = row;
-        for (j = 8; j; j--) {
-            if (!best->used || (cell->used && (best->a >> 3) + best->b < (cell->a >> 3) + cell->b))
-                best = cell;
-            cell += 8;
+        /* a patrol in the town: the best-rated grid cell, there the building of kind 6 whose owner he likes best */
+        sprintf(buf, "ai_CalcMeisterWache(): Meister %s m\xf6" "chte in der Stadt patroullieren", ch->name);
+        gx = 8;
+        gy = 8;
+        best = &ai_Grid[0][0];
+        for (j = 0; j < 8; j++) {
+            cell = &ai_Grid[0][j];
+            for (i = 8; i; i--) {
+                if (!best->used || (cell->used && (cell->a >> 3) + cell->b > (best->a >> 3) + best->b))
+                    best = cell;
+                cell += 8;
+            }
         }
-    }
-    sel = 0;
-    bl = gm_BuildQuery(1, 6);
-    if (bl) {
+        sel = 0;
+        bl = gm_BuildQuery(1, 6);
+        if (!bl)
+            goto umland;
         do {
             if (bl->object && ord_GetGridCell(bl->object + 0x4c, &gx, &gy) && best == &ai_Grid[gx][gy]) {
-                if (!sel) {
+                if (!sel)
                     sel = bl;
-                } else if (bl->owner != 0xffff) {
-                    r1 = gm_Opinion(ch->id, sel->owner);
-                    r2 = gm_Opinion(ch->id, bl->owner);
-                    if (r1 < r2)
-                        sel = bl;
-                }
+                else if (bl->owner != 0xffff && gm_Opinion(ch->id, bl->owner) > gm_Opinion(ch->id, sel->owner))
+                    sel = bl;
             }
             bl = gm_BuildNext();
         } while (bl);
-        if (sel) {
-            sprintf(buf, "ai_CalcMeisterWache(): Meister %s patroulliert bei '%s'", ch->name, sel->name);
-            memset(&msg, 0, sizeof(msg));
-            msg.type = 0x43;
-            msg.to = ai_CharsT[ch->bld->owner].netId;
-            msg.fromId = ch->bld->id;
-            msg.time = ai_Time;
-            msg.flags = 2;
-            msg.arg[0] = sel->id;
-            msg.arg[1] = ch->bld->id;
-            msg.unk89 = util_RandomU(4) + 2;
-            n = idle;
-            if (n > 3)
-                n = 4;
-            k = 0;
-            if (0 < n) {
-                for (c = 0; k < n; c++) {
-                    if (c >= 768)
-                        break;
-                    if (ai_CharsT[c].id != 0xffff && ai_CharsT[c].bld == ch->bld && ai_CharsT[c].title
-                        && !ai_CharsT[c].job && ai_CharsT[c].model && ai_CharsT[c].model->bldId == ai_CharsT[c].bld->id)
-                        msg.arg[6 + k++] = ai_CharsT[c].netId;
-                }
-                if (k > 3)
-                    goto send;
+        if (!sel)
+            goto umland;
+        sprintf(buf, "ai_CalcMeisterWache(): Meister %s patroulliert bei '%s'", ch->name, sel->name);
+        memset(&msg, 0, sizeof(msg));
+        msg.type = 0x43;
+        msg.to = ai_CharsT[ch->bld->owner].netId;
+        msg.fromId = ch->bld->id;
+        msg.time = ai_Time;
+        msg.flags = 2;
+        msg.arg[0] = sel->id;
+        msg.arg[1] = ch->bld->id;
+        msg.patrolRoll = util_RandomU(4) + 2;
+        n = min(idle, 4);
+        for (k = 0, c = 0; k < n && c < 768; c++) {
+            if (ai_CharsT[c].id != 0xffff && ai_CharsT[c].bld == ch->bld && ai_CharsT[c].title
+                && !ai_CharsT[c].job && ai_CharsT[c].model && ai_CharsT[c].model->bldId == ai_CharsT[c].bld->id)
+                msg.arg[6 + k++] = ai_CharsT[c].netId;
+        }
+        for (; k < 4; k++)
+            msg.arg[6 + k] = -1;
+        if (msg.arg[6] == -1)
+            return;
+        cm_SendLongMessage(&msg);
+        return;
+    }
+    if (r == 1) {
+        /* a check of a workshop: as the town patrol, but the building he likes least (one not flagged 1) */
+        name = ch->name;
+        sprintf(buf, "ai_CalcMeisterWache(): Meister %s m\xf6" "chte Betrieb pr\xfc" "fen", name);
+        gx = 8;
+        gy = 8;
+        best = &ai_Grid[0][0];
+        for (j = 0; j < 8; j++) {
+            cell = &ai_Grid[0][j];
+            for (i = 8; i; i--) {
+                if (!best->used || (cell->used && (cell->a >> 3) + cell->b > (best->a >> 3) + best->b))
+                    best = cell;
+                cell += 8;
             }
-            for (; k < 4; k++)
-                msg.arg[6 + k] = -1;
-send:
-            if (msg.arg[6] == -1)
-                return;
-            cm_SendLongMessage(&msg);
+        }
+        sel = 0;
+        bl = gm_BuildQuery(1, 6);
+        if (!bl)
+            goto umland;
+        do {
+            if (bl->object && ord_GetGridCell(bl->object + 0x4c, &gx, &gy) && best == &ai_Grid[gx][gy]) {
+                if (!sel)
+                    sel = bl;
+                else if (bl->owner != 0xffff && !(bl->flags5a & 1)
+                         && gm_Opinion(ch->id, bl->owner) < gm_Opinion(ch->id, sel->owner))
+                    sel = bl;
+            }
+            bl = gm_BuildNext();
+        } while (bl);
+        if (!sel)
+            goto umland;
+        sprintf(buf, "ai_CalcMeisterWache(): Meister %s \xfc" "berpr\xfc" "ft '%s'", name, sel->name);
+        memset(&msg, 0, sizeof(msg));
+        msg.type = 100;
+        msg.to = ai_CharsT[ch->bld->owner].netId;
+        msg.fromId = ch->bld->id;
+        msg.time = ai_Time;
+        msg.flags = 1;
+        msg.arg[1] = sel->id;
+        msg.arg[2] = ch->bld->id;
+        o = gm_GetGebaeudeHauptraum(ch->bld);
+        if (!o) {
+            sprintf(buf, "ai_CalcMeisterWache() : gm_GetGebaeudeHauptraum() failed !!!");
             return;
         }
-    }
-    goto umland;
-
-check:
-    name = ch->name;
-    sprintf(buf, "ai_CalcMeisterWache(): Meister %s m\xf6" "chte Betrieb pr\xfc" "fen", name);
-    gx = 8;
-    gy = 8;
-    best = &ai_Grid[0][0];
-    for (row = &ai_Grid[0][0]; row < &ai_Grid[1][0]; row++) {
-        cell = row;
-        for (j = 8; j; j--) {
-            if (!best->used || (cell->used && (best->a >> 3) + best->b < (cell->a >> 3) + cell->b))
-                best = cell;
-            cell += 8;
-        }
-    }
-    sel = 0;
-    bl = gm_BuildQuery(1, 6);
-    if (bl) {
-        do {
-            if (bl->object && ord_GetGridCell(bl->object + 0x4c, &gx, &gy) && best == &ai_Grid[gx][gy]) {
-                if (!sel) {
-                    sel = bl;
-                } else if (bl->owner != 0xffff && !(bl->flags5a & 1)) {
-                    r1 = gm_Opinion(ch->id, sel->owner);
-                    r2 = gm_Opinion(ch->id, bl->owner);
-                    if (r2 < r1)
-                        sel = bl;
-                }
+        msg.arg[3] = o->objId;
+        guard = -1;
+        msg.arg[0] = guard;
+        /* @original found is never set before the search: the original reads the stack slot it shares with name
+           (nonzero), so the search never runs and the check is never sent */
+        for (c = 0; !found && c < 768; c++) {
+            if (ai_CharsT[c].id != 0xffff && ai_CharsT[c].bld == ch->bld && ai_CharsT[c].title
+                && !ai_CharsT[c].job && ai_CharsT[c].model && ai_CharsT[c].model->bldId == ai_CharsT[c].bld->id) {
+                guard = ai_CharsT[c].netId;
+                found++;
+                msg.arg[0] = guard;
             }
-            bl = gm_BuildNext();
-        } while (bl);
-        if (sel) {
-            sprintf(buf, "ai_CalcMeisterWache(): Meister %s \xfc" "berpr\xfc" "ft '%s'", name, sel->name);
-            memset(&msg, 0, sizeof(msg));
-            msg.type = 100;
-            msg.to = ai_CharsT[ch->bld->owner].netId;
-            msg.fromId = ch->bld->id;
-            msg.time = ai_Time;
-            msg.flags = 1;
-            msg.arg[1] = sel->id;
-            msg.arg[2] = ch->bld->id;
-            o = gm_GetGebaeudeHauptraum(ch->bld);
-            if (!o)
-                goto failed;
-            msg.arg[3] = o->objId;
-            msg.arg[6] = -1;
-            msg.arg[0] = -1;
-            if (name)
-                return;
-            k = 0;
-            for (c = 0; k == 0; c++) {
-                if (c >= 768)
-                    break;
-                if (ai_CharsT[c].id != 0xffff && ai_CharsT[c].bld == ch->bld && ai_CharsT[c].title
-                    && !ai_CharsT[c].job && ai_CharsT[c].model && ai_CharsT[c].model->bldId == ai_CharsT[c].bld->id) {
-                    msg.arg[6] = ai_CharsT[c].netId;
-                    k++;
-                    msg.arg[0] = msg.arg[6];
-                }
-            }
-            goto send2;
         }
-    }
-    goto umland;
-send2:
-    if (msg.arg[6] == -1)
+        if (guard == -1)
+            return;
+        cm_SendLongMessage(&msg);
         return;
-    cm_SendLongMessage(&msg);
-    return;
-
+    }
+    if (r < 2)
+        return;
 umland:
+    /* a patrol of the surroundings: one of the eight ambush spots, up to six guards (at least two) */
     sprintf(buf, "ai_CalcMeisterWache(): Meister %s patroulliert im Umland", ch->name);
     memset(&msg, 0, sizeof(msg));
     msg.type = 0x65;
@@ -1558,38 +1538,25 @@ umland:
     msg.fromId = ch->bld->id;
     msg.time = ai_Time;
     msg.flags = 2;
-    r = util_RandomU(8);
-    strcpy((char *)&msg.arg[0], ai_AmbushSpots[r]);
+    strcpy((char *)&msg.arg[0], ai_AmbushSpots[util_RandomU(8)]);
     msg.arg[8] = ch->bld->id;
     o = gm_GetGebaeudeHauptraum(ch->bld);
     if (!o) {
-failed:
         sprintf(buf, "ai_CalcMeisterWache() : gm_GetGebaeudeHauptraum() failed !!!");
         return;
     }
     msg.arg[9] = o->objId;
-    n = idle;
-    if (n > 5)
-        n = 6;
-    cnt = 0;
-    k = 0;
-    if (0 < n) {
-        for (c = 0; cnt < n; c++) {
-            if (c >= 768)
-                break;
-            if (ai_CharsT[c].id != 0xffff && ai_CharsT[c].bld == ch->bld && ai_CharsT[c].title && !ai_CharsT[c].job
-                && ai_CharsT[c].model && ai_CharsT[c].model->bldId == ai_CharsT[c].bld->id) {
-                msg.ids[k++] = ai_CharsT[c].netId;
-                cnt++;
-            }
+    n = min(idle, 6);
+    for (cnt = 0, k = 0, c = 0; cnt < n && c < 768; c++) {
+        if (ai_CharsT[c].id != 0xffff && ai_CharsT[c].bld == ch->bld && ai_CharsT[c].title && !ai_CharsT[c].job
+            && ai_CharsT[c].model && ai_CharsT[c].model->bldId == ai_CharsT[c].bld->id) {
+            msg.ids[k++] = ai_CharsT[c].netId;
+            cnt++;
         }
-        if (k > 5)
-            goto send3;
     }
     for (; k < 6; k++)
         msg.ids[k] = -1;
-send3:
-    if (msg.ids[0] != -1 && 1 < cnt)
+    if (msg.ids[0] != -1 && cnt >= 2)
         cm_SendLongMessage(&msg);
 }
 
