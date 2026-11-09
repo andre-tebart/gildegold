@@ -249,7 +249,16 @@ void d3s_DrawSpans(int rows, int w, unsigned char flags, char top, int y0)
         }
     }
 }
-/* 0x45a2e0, a shadow triangle: edges from the three points p (x, y pairs), colours c, radius pixels / rows around */
+/* 0x45a2e0, a shadow triangle: edges from the three points p (x, y pairs), colours c, radius pixels / rows around
+   @deep Read in full against 0x45a2e0..0x45a66a: the orientation test, both edge loops (reversed with the
+   p+4 / p+5 / c+2 walking pointers, forward indexed), the flag masks, the top-vertex edge choice (e / b /
+   d / l over d3_TriEdge), the colour gradient d3s_Area (65536 / area * (dc0 * (p5 - p3) - dc2 * (p1 -
+   p3)), inline FtoI), both span passes with their left / right edges; every statement, call and argument
+   agrees (ours 0x169 ins vs the original's, size 906 vs 905). Left: allocation - in the edge choice the
+   original keeps d in [esp+0x1c], b in ebx, e in esi and l in ecx ('+ mov ebx,[eax*8+TriEdge+4] / mov
+   [esp+0x1c],esi / mov esi,[esi*8+TriEdge] / mov ecx,eax'), ours keeps b in the slot and d in esi, which
+   renames every later EdgeY index and the d3s_DrawSpans / d3s_RightEdge pushes (+0x15b..+0x37e); the
+   orientation pointers in ebx vs ours edx; reordering the declarations does not move it. */
 
 void d3s_ShadowTriangle(float *p, unsigned char *c, unsigned char *dst, int pitch, unsigned char flags, char *base, int radius)
 {
