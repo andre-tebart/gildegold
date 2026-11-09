@@ -2090,10 +2090,10 @@ exe	0x004bda80	rt_PointAt	rt	byte	readable
 exe	0x004bdaa0	rt_PointCount	rt	byte	readable		
 exe	0x004bdac0	rt_ClearMarkGroup	rt	byte	readable		
 exe	0x004bdae0	rt_BuildMarkGroup	rt	byte	readable		
-exe	0x004bdb30	rt_Unk4bdb30	rt	draft	draft		
+exe	0x004bdb30	rt_PutRouteMark	rt	byte	readable		
 exe	0x004bdc90	rt_MarkValue	rt	byte	readable		
 exe	0x004bdca0	rt_ReadMarkValues	rt	byte	readable		
-exe	0x004bdcd0	rt_Unk4bdcd0	rt	draft	draft		
+exe	0x004bdcd0	rt_ChooseGoodsDialog	rt	shape	readable		
 exe	0x004be180	rt_ChooseRouteGood	rt	shape	readable		
 exe	0x004be3b0	rt_Unk4be3b0	rt	draft	draft		
 exe	0x004be790	rt_Unk4be790	rt	draft	draft		
@@ -3363,7 +3363,7 @@ exe	0x00529380	sv_RefreshPanel	sv	draft	readable	deep
 exe	0x00529fb0	sv_ClosePanel	sv	byte	readable		
 exe	0x0052a040	sv_ReturnZero	sv	byte	readable		
 exe	0x0052a050	sv_UpdatePanel	sv	byte	readable		
-exe	0x0052a680	sv_HoverPick	sv	draft	draft		
+exe	0x0052a680	sv_HoverPick	sv	byte	readable		
 exe	0x0052adb0	sv_ResetSelection	sv	draft	readable	deep	
 exe	0x0052ae40	sv_ClearSelection	sv	byte	readable		
 exe	0x0052ae70	sv_HandleObjects	sv	draft	readable	deep	
@@ -4119,22 +4119,22 @@ exe	0x0058ada0	lobby_ShowPlayers	lobby	draft	readable	deep
 exe	0x0058af50	lobby_ChoosePlayer	lobby	draft	readable	deep	
 exe	0x0058b880	lobby_ChooseProfession	lobby	byte	readable		
 exe	0x0058ba70	lobby_ShowChat	lobby	shape	readable		
-exe	0x0058bbd0	ai_InitProductionTables	lc	draft	draft		
+exe	0x0058bbd0	ai_InitProductionTables	lc	byte	readable		
 exe	0x0058bd60	ai_ProductionWindow	lc	draft	readable	deep	
 exe	0x0058c680	ai_UpdateResourceColumns	lc	draft	readable	deep	
 exe	0x0058cc10	ai_UpdateProdColumns	lc	draft	readable	deep	
 exe	0x0058d720	ai_UpdateProdGoodsList	lc	draft	readable	deep	
 exe	0x0058dd00	ai_LayoutProdGoodsList	lc	byte	readable		
-exe	0x0058e130	ai_UpdateMarketGoodsList	lc	draft	draft		
-exe	0x0058e440	ai_LayoutMarketGoodsList	lc	draft	draft		
+exe	0x0058e130	ai_UpdateMarketGoodsList	lc	byte	readable		
+exe	0x0058e440	ai_LayoutMarketGoodsList	lc	byte	readable		
 exe	0x0058e6a0	ai_ShowProdSlot	lc	draft	readable	deep	
-exe	0x0058ee30	ai_UpdateStoreGoods	lc	draft	draft		
+exe	0x0058ee30	ai_UpdateStoreGoods	lc	byte	readable		
 exe	0x0058f290	ai_LayoutStoreGoods	lc	byte	readable		
 exe	0x0058f510	ai_MarketContact	lc	byte	readable		
 exe	0x0058f620	ai_PumpFrames	lc	byte	readable		
 exe	0x0058f640	ai_BuildingName	lc	shape	readable	deep	
 exe	0x0058f6a0	ai_BauplatzFilter	lc	draft	readable	deep	
-exe	0x0058f7a0	ai_FindBauplaetze	lc	draft	draft		
+exe	0x0058f7a0	ai_FindBauplaetze	lc	byte	readable		
 exe	0x0058f920	ai_VgFilter	lc	byte	readable		
 exe	0x0058f980	ai_ShowVgObjects	lc	byte	readable		
 exe	0x0058fa20	ai_CheckBuildable	lc	byte	readable		
