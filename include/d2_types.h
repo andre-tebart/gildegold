@@ -83,7 +83,8 @@ typedef struct D2WIN {              /* 0x3c4 bytes, d2_Wins[0..0x60] */
                                        (save), 1: the next draw copies it back (restore), 0: nothing pending.
                                        d2_CreateWindow starts at 1; the writer of 2 is outside the drafted
                                        sources */
-    int unk274;                     /* 0x274 */
+    int spareObj;                   /* 0x274, -1 at creation like the window's object slots scrollBar / cornerObj /
+                                       extraObj (d2_CreateWindow); no reader is known, the role is a guess */
     int frame;                      /* 0x278, frame picture */
     short font;                     /* 0x27c */
     char pad27e[2];

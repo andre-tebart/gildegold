@@ -406,8 +406,8 @@ extern D2WIN d2_Wins[];             /* 0xf8f120, d2.h: D2WIN d2_Wins[0x61] */
 extern float sv_FramesPerTick;          /* 0x62378c, sv.c: the frames drawn since the last timer tick
                                            (the frame loop counts them in 0x623790, the tick callback
                                            0x520ec0 copies the count as a float and clears it) */
-int d2_CreateWindow(short x, short y, short w, int h, unsigned int flags); /* 0x472390, d2.c: the callers
-                                           push ints although the definition names short x / y / w */
+int d2_CreateWindow(short x, short y, short w, short h, unsigned int flags); /* 0x472390, d2.c */
+#define d2_CreateWindowI ((int (*)(int, int, int, int, unsigned int))d2_CreateWindow)  /* @original the callers push ints although the definition names short x / y / w / h (ai_CreditsScreen 0x5d7ba0, byte-matched, pushes d2_ScreenH sign-extended: movsx ecx) */
 void d2_PlaceWindowScaled(int win, int flags); /* 0x475730, d2.c */
 int d2_RemoveWindow(int win);           /* 0x472ce0, d2.c */
 int io_PrintText(char *fmt, ...);          /* 0x515960, io_text.c: prints a text (id or literal) with its
@@ -2306,7 +2306,7 @@ void ai_CreditsScreen(void)
     d2_StartFade(0, 0, d2_ScreenW, d2_ScreenH, "BLACK", 0x3c, 10);
     d2_ClearScreen();
     d2_ShowPicture(0x7ad);
-    bar = d2_CreateWindow(100, 0, 600, d2_ScreenH, 0x10);
+    bar = d2_CreateWindowI(100, 0, 600, d2_ScreenH, 0x10);
     d2_PlaceWindowScaled(bar, 1);
     io_PrintText(0x2004);
     d2_LastWindowPtr->scrollY = -d2_ScreenH;

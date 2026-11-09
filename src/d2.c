@@ -3741,9 +3741,20 @@ int pic;
     D2WOP(o)->scrollY = 0;
     d2_Wins[obj].visible = 0x30;
 }
-/* 0x472390, creates a window; returns its index, -1 if there is no free one, 0 if a surface could not be made */
+/* 0x472390, creates a window; returns its index, -1 if there is no free one, 0 if a surface could not be made
+   @deep Read the whole 0x472390..0x472757 against the C: the free-slot scan over d2_Wins (j, -1 when
+   none), the fields, the three surfaces (0x1000, 1 && 0x1000, 0x10000) with their early return 0, the
+   window object (type 0x40, clip rectangle, data), the -1 / 0 / 1 initialisations, objs / text allocation
+   and the scroll marker pictures all correspond. Fixed: h is a short (the original's movsx ecx, dx for
+   contentHeight = h and the desc sizes); menu.c's caller keeps the original's int pushes through a cast
+   macro (@original, byte-matched ai_CreditsScreen). Left is allocation: the original keeps flags in ebx
+   for the whole function (test bl / test bh, the final test bl, 8 without a reload) and materialises -1
+   per use (or eax,-1), ours caches -1 in ebx (or ebx,-1 at the found test, mov [esi+0x388], ebx ...) and
+   holds flags in ecx, reloading its low byte at the end (mov bl, [esp+0x6c]); the found test returns j
+   through eax in the original ('or eax, eax') and ebx in ours. The code hunks at +0x46 (50 lines), +0xd0,
+   +0x2c4, +0x31a are those register roles; clipy1's y + h order gives the same code either way. */
 
-int d2_CreateWindow(short x, short y, short w, int h, unsigned int flags)
+int d2_CreateWindow(short x, short y, short w, short h, unsigned int flags)
 {
     int desc[16];
     int i, j, ob;
@@ -3838,7 +3849,7 @@ int d2_CreateWindow(short x, short y, short w, int h, unsigned int flags)
     win->scrollBar = -1;
     win->cornerObj = -1;
     win->extraObj = -1;
-    win->unk274 = -1;
+    win->spareObj = -1;
     win->active = 1;
     win->btndown = -1;
     win->btnup = -1;
