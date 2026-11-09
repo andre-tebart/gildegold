@@ -396,9 +396,16 @@ void d3s_FillRows(int n)
         }
     }
 }
-/* 0x45a880, draws one polygon of the shadow mesh into the shadow texture (bpp bits per pixel) */
+/* 0x45a880, draws one polygon of the shadow mesh into the shadow texture (bpp bits per pixel, its low byte)
+   @deep Read whole against the original; fixed bpp<=8 (setbe), the ternary with +0xffff in both arms, bpp
+   as int param (whole slot is the first top index; d3s_Project calls via @original char cast macro).
+   Prover: every store/call/branch equal, only eax at the void return differs. Left: allocation - original
+   keeps lim in [esp+0x10] and the min y in ebp with lim-1 hoisted to edx before the bounds loop (ours lim
+   in ebp, lea edx,[ebp-1] in the loop, reload of [esp+0x20] at +0x13e); shl of size scheduled first; imul
+   eax,[dd_Pitch] memory-operand forms at +0x1dc/+0x1fe; the two FillRows tails pop add esp,8 then add
+   esp,4 where ours merges add esp,0xc. */
 
-void d3s_ShadowPoly(D3SPOLY *poly, unsigned char bpp, int size)
+void d3s_ShadowPoly(D3SPOLY *poly, int bpp, int size)
 {
     D3SVERT *v0, *v1, *v2;
     int i, top, lim;
@@ -413,7 +420,7 @@ void d3s_ShadowPoly(D3SPOLY *poly, unsigned char bpp, int size)
     if ((v0->tu - v1->tu) * (v0->tv - v2->tv) < (v0->tu - v2->tu) * (v0->tv - v1->tv)) {
         if (!(poly->flags & 4))
             return;
-        top = *(int *)&bpp;
+        top = bpp;
         for (i = 0; i < 3; i++) {
             d3s_EdgeX[i] = (int)(poly->v[2 - i]->tu * 65536.0f);
             d3s_EdgeY[i] = (int)(poly->v[2 - i]->tv * 65536.0f);
@@ -423,7 +430,7 @@ void d3s_ShadowPoly(D3SPOLY *poly, unsigned char bpp, int size)
             }
         }
     } else {
-        top = *(int *)&bpp;
+        top = bpp;
         for (i = 0; i < 3; i++) {
             d3s_EdgeX[i] = (int)(poly->v[i]->tu * 65536.0f);
             d3s_EdgeY[i] = (int)(poly->v[i]->tv * 65536.0f);
@@ -456,7 +463,7 @@ void d3s_ShadowPoly(D3SPOLY *poly, unsigned char bpp, int size)
         d3s_LeftEdge(c, b);
         if (d3s_EdgeY[a] - d3s_EdgeY[top] > 0) {
             d3s_RightEdge(top, a);
-            d3s_Byte = (unsigned char)bpp < 9;
+            d3s_Byte = (unsigned char)bpp <= 8;
             y = size + 0xffff >> 16;
             if (d3s_Byte) {
                 d3s_Dst = (unsigned char *)dd_Surface + y * dd_Pitch;
@@ -466,7 +473,7 @@ void d3s_ShadowPoly(D3SPOLY *poly, unsigned char bpp, int size)
                 d3s_Dst16 = (unsigned short *)dd_Surface + y * dd_PitchPixels;
             }
             left = d3s_EdgeY[b] < d3s_EdgeY[a];
-            n = d3s_EdgeY[left ? b : a] + 0xffff >> 16;
+            n = (left ? d3s_EdgeY[b] + 0xffff : d3s_EdgeY[a] + 0xffff) >> 16;
             d3s_FillRows(n - y);
             if (d3s_EdgeY[b] != d3s_EdgeY[a]) {
                 if (left) {
@@ -764,6 +771,8 @@ typedef struct TSTEXSIZE {          /* the parts of a texture slot (ts_texture.h
     char pad78[0x4];
     unsigned char bpp;              /* 0x7c */
 } TSTEXSIZE;
+
+#define d3s_ShadowPolyB ((void (*)(D3SPOLY *, unsigned char, int))d3s_ShadowPoly)  /* @original d3s_Project pushes the byte bpp unextended; d3s_ShadowPoly reads the whole slot as its first top index */
 
 void d3_DirToWorld(struct XOBJ *obj, float *in, float *out);                          /* 0x458810 */
 unsigned char d3_ClipBox(void *box, float *zmin, float *zmax);                                           /* 0x439650 */
@@ -1205,7 +1214,7 @@ void d3s_Project(D3OBJECT *obj, D3OBJINFO *info, D3OBJINFO *mesh, D3TERRAIN *t, 
             dd_FillSurface(tex->surf, 0, 0);
             dd_Surface = dd_LockSurfaceFlags(tex->surf, 0x20);
             for (i = 0, p = (D3SPOLY *)mesh->tris; i < mesh->ntris; i++, p++)
-                d3s_ShadowPoly(p, ((TSTEXSIZE *)tex)->bpp, ((TSTEXSIZE *)tex)->size);
+                d3s_ShadowPolyB(p, ((TSTEXSIZE *)tex)->bpp, ((TSTEXSIZE *)tex)->size);
             dd_UnlockSurface(tex->surf);
             dd_Surface = 0;
             if (slot->cache->flag)
