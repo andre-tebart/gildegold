@@ -507,7 +507,16 @@ void d2_DragInput(void)
         }
     }
 }
-/* 0x477ba0, mouse and keys on the focused slider object */
+/* 0x477ba0, mouse and keys on the focused slider object
+   @deep Read whole function against the original: fixed the 0.5 literal to cm_DoubleHalf (pooled), the
+   wheel branch order (fl & 2 first); the wheel/key part is now instruction-equal. Remaining: allocation
+   only - the original keeps mx (u.s.max, +0x84) in ebx with a home slot [esp+0x1c] (reloaded after _ftol:
+   'mov ebx, dword ptr [esp + 0x1c]' x2) and mn in ebp; ours keeps mx only in a slot ([esp+0x2c]), so ebx
+   is free and the vertical test reuses edi for o->y where the original reloads it ('movsx eax, word ptr
+   [esi + 0x12]'), and the clamp reads mx from the slot ('mov ecx, dword ptr [esp + 0x28]; cmp eax, ecx;
+   jg' vs 'cmp eax, ebx; jle; mov eax, ebx'). Tried: local declaration orders (no change), separate lo/hi
+   locals for the wheel part (no change), the clamp duplicated in both branches (worse), o->h + o->y
+   spelling (no change). */
 
 void d2_SliderInput(void)
 {
@@ -517,10 +526,10 @@ void d2_SliderInput(void)
     int px, py, v, mn, mx, len, v2, d, a;
     unsigned int fl;
 
-    if (dm_L.ldown == 0 || d2_Unk5febec == -1)
-        d2_Unk5febec = -1;
+    if (dm_L.ldown == 0 || d2_DragSlider == -1)
+        d2_DragSlider = -1;
     else
-        d2_PointerObj = d2_Unk5febec;
+        d2_PointerObj = d2_DragSlider;
     if (d2_PointerObj == -1)
         return;
     o = &d2_Objs[d2_PointerObj];
@@ -548,14 +557,14 @@ void d2_SliderInput(void)
         len = o->u.s.len;
         v2 = o->u.s.value2;
         d = mx - mn;
-        d2_Unk5febec = d2_PointerObj;
+        d2_DragSlider = d2_PointerObj;
         if ((fl & 0x48) == 0) {
             if ((fl & 2) && px > f6->w + o->x && px < o->w - f6->w + o->x) {
                 a = px - f0->w - o->x;
-                v = (int)(a * ((double)d / len) + mn + 0.5);
+                v = (int)(a * ((double)d / len) + mn + cm_DoubleHalf);
             } else if ((fl & 1) && py > f6->h + o->y && py < o->y + o->h - f6->h) {
                 a = o->y + o->h - f0->h - py;
-                v = (int)(a * ((double)d / len) + mn + 0.5);
+                v = (int)(a * ((double)d / len) + mn + cm_DoubleHalf);
             } else {
                 goto wheel;
             }
@@ -580,16 +589,16 @@ wheel:
     mn = d2_Objs[d2_PointerObj].u.s.min;
     o = &d2_Objs[d2_PointerObj];
     v = o->u.s.value;
-    if ((fl & 2) == 0) {
+    if (fl & 2) {
         if (o->hilo != 0)
-            v++;
-        else if (o->hihi != 0)
             v--;
+        else if (o->hihi != 0)
+            v++;
     } else {
         if (o->hilo != 0)
-            v--;
-        else if (o->hihi != 0)
             v++;
+        else if (o->hihi != 0)
+            v--;
     }
     if (v < mn)
         v = mn;
@@ -1711,4 +1720,4 @@ int d2_HoverX = -1;  /* 0x5febdc */
 int d2_HoverY = -1;  /* 0x5febe0 */
 int d2_LimitsChanged = -1;  /* 0x5febe4 */
 int d2_TextCursorSprite = -1;  /* 0x5febe8, sprite of the text cursor, -1: none */
-int d2_Unk5febec = -1;  /* 0x5febec */
+int d2_DragSlider = -1;  /* 0x5febec */

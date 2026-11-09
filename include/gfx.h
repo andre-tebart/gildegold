@@ -23,7 +23,7 @@ extern int d2_HoverX;            /* 0x5febdc */
 extern int d2_HoverY;            /* 0x5febe0 */
 extern int d2_LimitsChanged;            /* 0x5febe4 */
 extern int d2_TextCursorSprite;            /* 0x5febe8, sprite of the text cursor, -1: none */
-extern int d2_Unk5febec;            /* 0x5febec */
+extern int d2_DragSlider;            /* 0x5febec */
 extern int d2_DragStartValue;            /* 0x6ed9c4 */
 extern void *d2_PointerPic;          /* 0x6ed9cc, "_MOUSE_CURSOR" data */
 extern int d2_RightHolding;            /* 0x6ed9e4 */
