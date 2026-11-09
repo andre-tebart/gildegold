@@ -638,120 +638,140 @@ D3OBJINFO *d3_SelectSurf(D3OBJECT *obj)
     }
     return (D3OBJINFO *)s;
 }
-/* 0x43a160, d3_ForEachObject callback: transforms, clips and projects a visible mesh and adds its
-   triangles to the sort buffer (by texture with Direct3D, by depth in software). */
+/* 0x43a160, d3_ForEachObject callback: draws a visible mesh object. Counts it, picks its surf (d3_SelectSurf),
+   takes over its dirty bit and clips its box anew when it changed (a mesh already clipped this frame counts as
+   culled). A culled object only updates its shadow and is relit within the culled key budget. A visible one is
+   transformed (through its stock driver or d3_TransformVerts), clipped and projected when it changed, has a
+   shadow or is always drawn, is relit within the visible key budget, opens the mirror pass, and puts its visible
+   triangles into the sort buffer: keyed by texture with Direct3D (alpha / shadow / flagged surfs after the
+   opaque ones), by the far depth in software. Returns 1.
+   @deep read whole vs 0x43a160..0x43a60c, same size (1197 B). Fixed this session: D3OBJECT.state gets its
+   bitfield view as the union member bits (d3.h: dirty / drawDirty / reclip ..; the original's bit ops on
+   0x210 merge into one store, which needs one lvalue type), the culled / visible paths as if / else under
+   if (s), d3s_Count unsigned (ja), the z range tests as !(zMin > MinZ) / !(zMax < MaxZ), the sort key
+   factor (d3_InvZFar * 16777216.0f) * z * 3.0f (unfolded constant), the texture kept in tex,
+   D3TEXTURE.stamp (0x54), d3_ObjectsTested / d3_ObjectsDrawn, D3SURF.alwaysDraw. Left: the d3_MinZ /
+   d3_MaxZ stores at +0x165 / +0x184 (ours mov ecx/edx, the original fld / fstp the float; the compare
+   forms match), and register allocation in the sort loops (regs 242: the triangle pointer in ecx vs edi,
+   the counter edx vs ecx) (references: M8 at +0x428: ours refers to d3d_Config+0x1 (0xfe7671), the
+   original's field to 0x633450 (d3_Hardware), explained: the M8 at +0x428 is a load-order crossing in the
+   culled shadow test: both sides AND the same bytes (obj+0x213 >> 1 | dirty, obj+0x211 >> 2,
+   d3_ShadowMode, d3_Hardware) in the same order; ours loads d3_Hardware first into dl, the original into
+   cl and d3_ShadowMode later into al) */
 
 char d3_DrawObjectCB(D3OBJECT *obj)
 {
     D3SURF *s;
     D3MESH *m;
     unsigned char dirty;
-    unsigned char clip;
+    D3CLIP clip;
     int base;
     int n;
     D3PTRI *t;
+    D3TEXTURE *tex;
     float z;
 
-    d3_Unk633494++;
+    d3_ObjectsTested++;
     s = (D3SURF *)d3_SelectSurf(obj);
-    if (!s)
-        return 1;
-    m = D3_MESH(obj);
-    d3_TriCount += s->info.ntris;
-    d3_VertCount += s->info.nkeys;
-    obj->state &= 0xef;
-    dirty = D3_OBJBITS(obj).dirty;
-    D3_OBJBITS(obj).dirty = 0;
-    ((D3CLIP *)&obj->state)->bottom = dirty;
-    if (m->frameStamp == d3_FrameCount)
-        m->flags |= 0x40;
-    else if (dirty || (obj->state & 0x40))
-        m->flags = d3_ClipObject(obj, &s->info, d3_Camera);
-    clip = m->flags;
-    if (clip & 0x40) {
-        if ((obj->flags >> 1 | dirty) & obj->objectFlags >> 2 & d3_ShadowMode.mode & d3_Hardware & 1) {
-            d3s_Count = 0;
-            if (dirty)
-                d3s_UpdateObjectAt(obj);
-            else
-                d3s_UpdateObject(obj);
-        }
-        if (obj != d3s_Object && obj->type == 4 && m->lightGeneration < d3_LightGeneration && d3_LightKeysCulled < d3_LightKeyBudgetCulled) {
-            d3_LightKeysCulled += s->info.nkeys;
-            obj->state |= 4;
-            d3_RelightObject(obj);
-        }
-        return 1;
-    }
-    d3_DrawnVerts += s->info.nkeys;
-    d3_Unk633498++;
-    base = 1;
-    if (obj->state & 0x40) {
-        obj->info = &s->info;
-        dirty = 1;
-        D3_OBJBITS(obj).dirty = 1;
-        if (obj->type == 4 && obj != d3s_Object && (D3_MESH(obj)->lightGeneration < d3_LightGeneration || d3_LightsChanged))
-            d3_RelightObject(obj);
-        obj->state &= 0xbf;
-    } else if (!(obj->state & 4)) {
-        if (m->zMin <= d3_MinZ)
-            d3_MinZ = m->zMin;
-        if (m->zMax >= d3_MaxZ)
-            d3_MaxZ = m->zMax;
-    }
-    if (obj->objectFlags >> 2 & d3_ShadowMode.mode & d3_Hardware & 1) {
-        d3s_Count = 0;
-        d3s_UpdateObject(obj);
-        if (d3s_Count > 0)
-            goto draw;
-    }
-    if (dirty || s->unk194) {
-draw:
-        if (s->info.mesh)
-            D3_OPS(&s->info)->Transform(obj, &s->info, m->cameraMatrix);
-        else
-            d3_TransformVerts(obj, &s->info, m->cameraMatrix);
-        d3_ClipMesh(*(D3CLIP *)&clip, (D3PVERT *)s->info.keys, s->info.nkeys, (D3PTRI *)s->info.tris, s->info.ntris);
-        d3_ProjectMesh(obj);
-    }
-    if (obj != d3s_Object && obj->type == 4 && m->lightGeneration < d3_LightGeneration && d3_LightKeysVisible < d3_LightKeyBudgetVisible) {
-        d3_LightKeysVisible += s->info.nkeys;
-        d3_RelightObject(obj);
-    }
-    d3_MirBeginFrameE(obj, (D3OBJECT **)&d3_Mirror);
-    if (obj == d3s_Object || s->flags.f.b[0] < 0xff || (s->flags.f.b[2] & 1))
-        base = 0x4000;
-    n = min(s->info.ntris, d3_SortMax - (int)d3_SortCount);
-    t = (D3PTRI *)s->info.tris;
-    if (d3_Hardware) {
-        for (; n > 0; n--, t++) {
-            if (t->flags & 0x80) {
-                d3_SortPtr->item = t;
-                if (t->tex) {
-                    d3_SortPtr->key = (t->tex - (D3TEXTURE *)d3_Textures) + base;
-                    *(int *)((char *)t->tex + 0x54) = d3_FrameCount;
-                } else
-                    d3_SortPtr->key = 0;
-                t->clip = d3_ClipInfo[t->flags & 0x3f];
-                d3_SortPtr++;
-                d3_SortCount++;
+    if (s) {
+        m = D3_MESH(obj);
+        d3_TriCount += s->info.ntris;
+        d3_VertCount += s->info.nkeys;
+        obj->bits.b4 = 0;
+        dirty = obj->bits.dirty;
+        obj->bits.drawDirty = dirty;
+        obj->bits.dirty = 0;
+        if (m->frameStamp == d3_FrameCount)
+            m->flags |= 0x40;
+        else if (dirty || obj->bits.reclip)
+            m->flags = d3_ClipObject(obj, &s->info, d3_Camera);
+        clip.raw = m->flags;
+        if (!(clip.raw & 0x40)) {
+            d3_DrawnVerts += s->info.nkeys;
+            d3_ObjectsDrawn++;
+            base = 1;
+            if (obj->bits.reclip) {
+                obj->info = &s->info;
+                dirty = 1;
+                obj->bits.dirty = dirty;
+                if (obj->type == 4 && obj != d3s_Object && (D3_MESH(obj)->lightGeneration < d3_LightGeneration || d3_LightsChanged))
+                    d3_RelightObject(obj);
+                obj->bits.reclip = 0;
+            } else if (!obj->bits.dirty) {
+                if (!(m->zMin > d3_MinZ))
+                    d3_MinZ = m->zMin;
+                if (!(m->zMax < d3_MaxZ))
+                    d3_MaxZ = m->zMax;
             }
-        }
-    } else {
-        for (; n > 0; n--, t++) {
-            if (t->flags & 0x80) {
-                d3_SortPtr->item = t;
-                z = t->v[0]->z;
-                if (z < t->v[1]->z)
-                    z = t->v[1]->z;
-                if (z < t->v[2]->z)
-                    z = t->v[2]->z;
-                d3_FtoI((int *)&d3_SortPtr->key, d3_InvZFar * 16777216.0f * z * 3.0f);
-                if (t->tex)
-                    *(int *)((char *)t->tex + 0x54) = d3_FrameCount;
-                t->clip = d3_ClipInfo[t->flags & 0x3f];
-                d3_SortPtr++;
-                d3_SortCount++;
+            if (obj->objectFlags >> 2 & d3_Hardware & d3_ShadowMode.mode & 1) {
+                d3s_Count = 0;
+                d3s_UpdateObject(obj);
+                if (d3s_Count > 0)
+                    goto draw;
+            }
+            if (dirty || s->alwaysDraw) {
+    draw:
+                if (s->info.mesh)
+                    D3_OPS(&s->info)->Transform(obj, &s->info, m->cameraMatrix);
+                else
+                    d3_TransformVerts(obj, &s->info, m->cameraMatrix);
+                d3_ClipMesh(clip, (D3PVERT *)s->info.keys, s->info.nkeys, (D3PTRI *)s->info.tris, s->info.ntris);
+                d3_ProjectMesh(obj);
+            }
+            if (obj != d3s_Object && obj->type == 4 && m->lightGeneration < d3_LightGeneration && d3_LightKeysVisible < d3_LightKeyBudgetVisible) {
+                d3_LightKeysVisible += s->info.nkeys;
+                d3_RelightObject(obj);
+            }
+            d3_MirBeginFrameE(obj, (D3OBJECT **)&d3_Mirror);
+            if (obj == d3s_Object || s->flags.f.b[0] < 0xff || (s->flags.f.b[2] & 1))
+                base = 0x4000;
+            n = min(s->info.ntris, d3_SortMax - (int)d3_SortCount);
+            t = (D3PTRI *)s->info.tris;
+            if (d3_Hardware) {
+                for (; n > 0; n--, t++) {
+                    if (t->flags & 0x80) {
+                        tex = t->tex;
+                        d3_SortPtr->item = t;
+                        if (tex) {
+                            d3_SortPtr->key = (tex - (D3TEXTURE *)d3_Textures) + base;
+                            tex->stamp = d3_FrameCount;
+                        } else
+                            d3_SortPtr->key = 0;
+                        t->clip = d3_ClipInfo[t->flags & 0x3f];
+                        d3_SortPtr++;
+                        d3_SortCount++;
+                    }
+                }
+            } else {
+                for (; n > 0; n--, t++) {
+                    if (t->flags & 0x80) {
+                        d3_SortPtr->item = t;
+                        z = t->v[0]->z;
+                        if (z < t->v[1]->z)
+                            z = t->v[1]->z;
+                        if (z < t->v[2]->z)
+                            z = t->v[2]->z;
+                        d3_FtoI((int *)&d3_SortPtr->key, (d3_InvZFar * 16777216.0f) * z * 3.0f);
+                        if (t->tex)
+                            t->tex->stamp = d3_FrameCount;
+                        t->clip = d3_ClipInfo[t->flags & 0x3f];
+                        d3_SortPtr++;
+                        d3_SortCount++;
+                    }
+                }
+            }
+        } else {
+            if ((obj->flags >> 1 | dirty) & obj->objectFlags >> 2 & d3_ShadowMode.mode & d3_Hardware & 1) {
+                d3s_Count = 0;
+                if (dirty)
+                    d3s_UpdateObjectAt(obj);
+                else
+                    d3s_UpdateObject(obj);
+            }
+            if (obj != d3s_Object && obj->type == 4 && m->lightGeneration < d3_LightGeneration && d3_LightKeysCulled < d3_LightKeyBudgetCulled) {
+                d3_LightKeysCulled += s->info.nkeys;
+                obj->bits.dirty = 1;
+                d3_RelightObject(obj);
             }
         }
     }
@@ -2460,8 +2480,8 @@ void d3_Render(unsigned int mask, char flag)
         }
         d3_MirrorObject = 0;
         d3s_CollectLights();
-        d3_Unk633498 = 0;
-        d3_Unk633494 = 0;
+        d3_ObjectsDrawn = 0;
+        d3_ObjectsTested = 0;
         d3_ForEachObject(d3_DefaultScene, 0, mask, (D3OBJECTCB)d3_DrawObjectCB, 0);
         if (D3_MESH(d3s_Object)->surf[0].info.ntris > 0 && d3_ShadowMode.mode)
             ((D3OBJECTCB)d3_DrawObjectCB)(d3s_Object, 0);
@@ -2614,8 +2634,8 @@ int d3_Unk633484 = 0;  /* 0x633484 */
 int d3_Unk633488 = 0;  /* 0x633488 */
 unsigned int d3_Fps60 = 0;  /* 0x63348c, frames per second (two windows) */
 unsigned int d3_Fps10 = 0;  /* 0x633490 */
-int d3_Unk633494 = 0;  /* 0x633494, objects tested / drawn */
-int d3_Unk633498 = 0;  /* 0x633498 */
+int d3_ObjectsTested = 0;  /* 0x633494, objects tested / drawn */
+int d3_ObjectsDrawn = 0;  /* 0x633498 */
 D3COLORU d3_fog_color = {0};  /* 0x6334a0, the fog colour (the name: d3d_Clear's D3DCHECK string "d3_fog_color.col") */
 char d3_FogOn = 0;  /* 0x6334a4 */
 unsigned char d3_FogByDistance = 0;  /* 0x6334a5, the byte right after d3_FogOn: when set, d3_Render clamps the fog end to the

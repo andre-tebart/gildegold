@@ -100,15 +100,9 @@ extern float d3_FogScale;                   /* 0xfc2948 */
 /* ---- from 0x439000 on ---- */
 
 /* D3OBJECT fields not in d3.h's declaration */
-typedef struct D3OBJBITS {          /* view of D3OBJECT::state as bitfields */
-    unsigned char top : 1;          /* starts a group in a top-level list */
-    unsigned char linked : 1;
-    unsigned char dirty : 1;
-    unsigned char b3 : 5;
-} D3OBJBITS;
 __inline D3OBJBITS *d3_ObjBits(D3OBJECT *obj)
 {
-    return (D3OBJBITS *)&obj->state;
+    return &obj->bits;
 }
 #define D3_OBJBITS(o) (*d3_ObjBits(o))
 
@@ -149,7 +143,7 @@ typedef struct D3SURF {             /* 0x198 bytes, a mesh part with its own geo
         int i;
         D3TEXFLAGS f;               /* f.b[0] = alpha */
     } flags;                        /* 0x190 */
-    unsigned char unk194;           /* 0x194, nonzero: transforms / draws the surf even when nothing changed (D3IOSURF.f194) */
+    unsigned char alwaysDraw;       /* 0x194, nonzero: transforms / draws the surf even when nothing changed (D3IOSURF.f194) */
     unsigned char texSet;           /* 0x195, current texture set: index into the ops' name table (D3IOSURF.texSet) */
     char pad196[0x2];
 } D3SURF;
@@ -422,14 +416,14 @@ typedef struct D3MESHSRC {          /* view of D3OPS: the loaded mesh data */
    d3_RadixCount must be zero. */
 #define D3E_RADIX(n, b) {                                           int _rb = (b);                                                  __asm mov ecx, n                                                __asm mov edi, _rb                                              __asm xor eax, eax                                              __asm mov esi, d3_RadixSrc                                      __asm add esi, edi                                              __asm D3E_LBL(d3_rx1_, __LINE__): mov al, [esi]                 __asm lea ebx, d3_RadixCount[eax*4]                             __asm inc dword ptr [ebx]                                       __asm add esi, 8                                                __asm dec ecx                                                   __asm jne D3E_LBL(d3_rx1_, __LINE__)                            __asm mov ecx, 0xff                                             __asm lea ebx, d3_RadixCount                                    __asm D3E_LBL(d3_rx2_, __LINE__): mov eax, [ebx]                __asm add [ebx+4], eax                                          __asm add ebx, 4                                                __asm dec ecx                                                   __asm jne D3E_LBL(d3_rx2_, __LINE__)                            __asm mov ecx, n                                                __asm dec ecx                                                   __asm mov esi, d3_RadixSrc                                      __asm mov edx, esi                                              __asm add esi, edi                                              __asm mov edi, d3_RadixDst                                      __asm xor eax, eax                                              __asm D3E_LBL(d3_rx3_, __LINE__): mov al, [esi+ecx*8]           __asm lea ebx, d3_RadixCount[eax*4]                             __asm dec dword ptr [ebx]                                       __asm mov ebx, [ebx]                                            __asm mov eax, [edx+ecx*8]                                      __asm mov [edi+ebx*8], eax                                      __asm mov eax, [edx+ecx*8+4]                                    __asm mov [edi+ebx*8+4], eax                                    __asm xor eax, eax                                              __asm dec ecx                                                   __asm jns D3E_LBL(d3_rx3_, __LINE__)                        }
 
-extern int d3_Unk633494;                /* 0x633494, objects tested / drawn */
-extern int d3_Unk633498;                /* 0x633498 */
+extern int d3_ObjectsTested;                /* 0x633494, objects tested / drawn */
+extern int d3_ObjectsDrawn;                /* 0x633498 */
 extern unsigned int d3_LightKeysCulled;     /* 0x633b08, light keys this frame spent on culled lights */
 extern unsigned int d3_LightKeysVisible;    /* 0x633b0c, light keys this frame spent on visible lights */
 extern unsigned int d3_LightGeneration;     /* 0x633b10, lightmap generation, D3MESH::lightGeneration holds the one drawn */
 extern unsigned int d3_LightKeyBudgetCulled;  /* 0x5fcc6c, per-frame key budget for culled lights */
 extern unsigned int d3_LightKeyBudgetVisible; /* 0x5fcc70, per-frame key budget for visible lights */
-extern int d3s_Count;              /* 0x633dc0, d3s.c */
+extern unsigned int d3s_Count;     /* 0x633dc0, d3s.c: the shadow triangles d3s_UpdateObject produced (unsigned: d3_DrawObjectCB tests it with ja) */
 #ifndef DATA_VIEWS_H
 extern int d3_SortMax;                      /* 0xfe73f8 */
 #endif

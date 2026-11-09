@@ -105,7 +105,7 @@ void d3_ExitShadows(void);  /* 0x45aee0 */
 void d3_InitShadows(unsigned int size, unsigned int maxsize, int ncache, int age, char mips, int polys, int mapsize);  /* 0x45ad80 */
 void d3s_CollectLights(void);  /* 0x45c9f0 */
 void d3s_ShadowTriangle(float *p, unsigned char *c, unsigned char *dst, int pitch, unsigned char flags, char *base, int radius);  /* 0x45a2e0, a shadow triangle: edges from the three points p (x, y pairs), colours c, radius pixels / rows around */
-extern int d3s_Count;  /* 0x633dc0 */
+extern unsigned int d3s_Count;  /* 0x633dc0 */
 char d3s_FreeLightCB(D3OBJECT *obj, D3OBJECT *light);  /* 0x45cd60 */
 void d3s_FreeShadows(D3OBJECT *obj);  /* 0x45ccd0 */
 extern unsigned int d3s_MaxPolys;  /* 0x633dc4 */

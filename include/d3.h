@@ -50,6 +50,16 @@ typedef struct D3MATERIAL {
 struct D3OBJECT;
 
 typedef struct D3OBJECT D3OBJECT;
+typedef struct D3OBJBITS {          /* D3OBJECT::state as bitfields (D3OBJECT.bits) */
+    unsigned char top : 1;          /* starts a group in a top-level list */
+    unsigned char linked : 1;
+    unsigned char dirty : 1;
+    unsigned char drawDirty : 1;    /* the dirty bit as d3_DrawObjectCB took it (it clears dirty) */
+    unsigned char b4 : 1;           /* cleared by d3_DrawObjectCB */
+    unsigned char b5 : 1;
+    unsigned char reclip : 1;       /* 0x40, d3_DrawObjectCB clips the object anew and sets its info */
+    unsigned char b7 : 1;
+} D3OBJBITS;
 struct D3OBJECT {
     union {
         char name[0x4c];            /* compared with _strcmpi by name lookups; real length unknown */
@@ -95,8 +105,11 @@ struct D3OBJECT {
     D3OBJECT *flagObj;              /* 0x204, the flag put up at the object (cm.c: the escape flag at a fight's dummy) */
     D3SCENE *scene;                 /* 0x208 */
     struct D3SOUND *sound;          /* 0x20c, set by d3snd_Attach */
-    unsigned char state;            /* 0x210, object state bits: 1 = starts an object group, 2 = linked, 4 = dirty,
+    union {
+        unsigned char state;        /* 0x210, object state bits: 1 = starts an object group, 2 = linked, 4 = dirty,
                                        8 = mirrored, 0x20 = vertex normals, 0x80 = no camera transform */
+        struct D3OBJBITS bits;      /* the same bits by name (d3_DrawObjectCB) */
+    };
     unsigned char objectFlags;      /* 0x211, object flags, read and written bit by bit: 1 = has a saved position
                                        and angle (applied on load; d3t_RecordKeys keys it), 2 = saved with the
                                        scene, 4 = shadow caster (d3s_LightCB), 8 = simple shadow, 0x10 = light
@@ -165,7 +178,8 @@ void d3_PointToWorld(struct D3OBJECT *obj_, struct D3VECTOR *in, struct D3VECTOR
 typedef struct D3TEXTURE {          /* 0x80 bytes, d3_TexCount of them at d3_Textures */
     char name[0x40];
     int refs;                       /* 0x40, 0 = free slot (TSTEXTURE.refs, ts_texture.h) */
-    char pad44[0x14];
+    char pad44[0x10];
+    int stamp;                      /* 0x54, d3_FrameCount of the last use (TSTEXTURE.stamp; d3_DrawObjectCB sets it) */
     int reserved;                   /* 0x58, TSTEXTURE.reserved (ts_texture.h): only ever cleared, no reader (D3FLTEX) */
     char pad5c[0xc];
     unsigned char flags;            /* 0x68, bit 0 wrap, bit 3 compressed (size / 8); bit 4: no culling for
