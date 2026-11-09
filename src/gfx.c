@@ -203,44 +203,44 @@ void d2_SetPointerSprite(int a, int pic)
 }
 /* 0x477000, hover time and the scroll wheel / scroll buttons of windows */
 
-void d2_Unk477000(void)
+void d2_UpdateHoverScroll(void)
 {
     int saved = -1;
     D2WIN *w, *tw;
-    int i, step, id, bd, bu;
+    int i, step, bd, bu;
 
-    if (d2_Unkf8aacc != d2_Unkf8ab64 || d2_MouseX < d2_Unk5febdc - 5 || d2_MouseY < d2_Unk5febe0 - 5 ||
-        d2_MouseX > d2_Unk5febdc + 5 || d2_MouseY > d2_Unk5febe0 + 5 || dm_L.ldown != 0) {
+    if (d2_HoverObj != d2_PrevHoverObj || d2_MouseX < d2_HoverX - 5 || d2_MouseY < d2_HoverY - 5 ||
+        d2_MouseX > d2_HoverX + 5 || d2_MouseY > d2_HoverY + 5 || dm_L.ldown != 0) {
         d2_RightHeldObj = -1;
-        d2_Unkf8a654 = tb_AnimTick;
-        d2_Unk6ed9e4 = 0;
-        d2_Unk5febdc = d2_MouseX;
-        d2_Unk5febe0 = d2_MouseY;
+        d2_HoverTick = tb_AnimTick;
+        d2_RightHolding = 0;
+        d2_HoverX = d2_MouseX;
+        d2_HoverY = d2_MouseY;
     }
     if (d2_RightHeldObj == -1) {
-        if (d2_Unkf8aacc != -1 && dm_L.rhold != 0) {
-            d2_RightHeldObj = d2_Unkf8aacc;
-            d2_Unk6ed9e4 = 1;
-            d2_Unk5febdc = d2_MouseX;
-            d2_Unk5febe0 = d2_MouseY;
+        if (d2_HoverObj != -1 && dm_L.rhold != 0) {
+            d2_RightHeldObj = d2_HoverObj;
+            d2_HoverX = d2_MouseX;
+            d2_HoverY = d2_MouseY;
+            d2_RightHolding = 1;
             goto held;
         }
-    } else if (d2_Unk6ed9e4 != 0) {
+    } else if (d2_RightHolding != 0) {
 held:
         if (dm_L.rhold == 0) {
             d2_RightHeldObj = -1;
-            d2_Unkf8a654 = tb_AnimTick;
-            d2_Unk6ed9e4 = 0;
-            d2_Unk5febdc = d2_MouseX;
-            d2_Unk5febe0 = d2_MouseY;
+            d2_HoverTick = tb_AnimTick;
+            d2_HoverX = d2_MouseX;
+            d2_HoverY = d2_MouseY;
+            d2_RightHolding = 0;
             di_ClearEvents(0x10);
         }
     }
+    d2_PrevHoverObj = d2_HoverObj;
+    d2_LastMouseX = d2_MouseX;
+    d2_LastMouseY = d2_MouseY;
     if (d2_CurrentFont != -1)
         saved = d2_CurrentFont;
-    d2_Unkf8a650 = d2_MouseX;
-    d2_Unkf8a652 = d2_MouseY;
-    d2_Unkf8ab64 = d2_Unkf8aacc;
     for (i = 0; i < 0x60; i++) {
         w = &d2_Wins[i];
         if ((w->flags & 0x200) && w->active == 1 && w->font != 0)
@@ -261,20 +261,14 @@ held:
     if (d2_PointerWinVisible != -1) {
         w = &d2_Wins[d2_PointerWinVisible];
         if (w != 0) {
-            if (dm_L.wup != dm_L.wdown && (step = w->visible) != 0 && d2_FocusedInput == 0) {
-                if (dm_L.wup != 0) {
-                    id = w->id;
-                    step = -step;
-                } else {
-                    if (dm_L.wdown == 0)
-                        goto done;
-                    id = w->id;
-                }
-                d2_ScrollWindowBy(0, step, id);
+            if (dm_L.wup - dm_L.wdown != 0 && (step = w->visible) != 0 && d2_FocusedInput == 0) {
+                if (dm_L.wup != 0)
+                    d2_ScrollWindowBy(0, -step, w->id);
+                else if (dm_L.wdown != 0)
+                    d2_ScrollWindowBy(0, step, w->id);
             }
         }
     }
-done:
     if (saved != -1)
         d2_SetFont(saved);
 }
@@ -785,7 +779,7 @@ void d2_MouseUpdate(void)
     int i, j, k, m, n, found, win, v, line;
     short mx, my;
 
-    d2_Unkf8aacc = d2_HitTest(d2_MouseX, d2_MouseY);
+    d2_HoverObj = d2_HitTest(d2_MouseX, d2_MouseY);
     d2_UpdateInput();
     if (d2_PointerWin != -1) {
         d2_HitWindow = d2_PointerWin;
@@ -799,11 +793,11 @@ void d2_MouseUpdate(void)
     } else {
         d2_HitWindow = -1;
     }
-    d2_Unk477000();
+    d2_UpdateHoverScroll();
     if (dm_L.lclick != 0) {
         k = d2_PointerObj;
-        if (d2_Unkf8aacc != -1 && ((o = &d2_Objs[d2_PointerObj])->checkable != 0 || o->interactive != 0) && o->type != 0x45) {
-            d2_ClickedId = d2_Unkf8aacc;
+        if (d2_HoverObj != -1 && ((o = &d2_Objs[d2_PointerObj])->checkable != 0 || o->interactive != 0) && o->type != 0x45) {
+            d2_ClickedId = d2_HoverObj;
             di_GuiClick = 1;
             c = (D2CTRLX *)o->buf;
             if (c == 0) {
@@ -814,7 +808,7 @@ void d2_MouseUpdate(void)
             sb_PlaySampleI(d2_Unk6ed990,
                           o->checkable != 0 ? (o->checked ^= 1, d2_Objs[d2_PointerObj].highlighted = d2_Objs[d2_PointerObj].checked,
                                            "MausclickLinks_s_01")
-                                        : d2_Unkf8aacc == 1 ? "MausclickRechts_s_01" : "MausclickLinks_s_01",
+                                        : d2_HoverObj == 1 ? "MausclickRechts_s_01" : "MausclickLinks_s_01",
                           1, 0x3f, 0x7f, 0, 0);
             found = 0;
             k = d2_PointerObj;
@@ -1680,14 +1674,14 @@ void d2_SetSurfaceClip(int x, int y, int w, int h, D2SURF *surf)
 int d2_Unk6ed990 = 0;  /* 0x6ed990 */
 int d2_DragStartValue = 0;  /* 0x6ed9c4 */
 void * d2_PointerPic = 0;  /* 0x6ed9cc, "_MOUSE_CURSOR" data */
-int d2_Unk6ed9e4 = 0;  /* 0x6ed9e4 */
+int d2_RightHolding = 0;  /* 0x6ed9e4 */
 int d2_DragStartX = 0;  /* 0x6ed9e8 */
 int d2_DragStartY = 0;  /* 0x6ed9ec */
 int d2_ClickUsed = 0;  /* 0x6ed9f0 */
 int d2_DragActive = 0;  /* 0x6ed9f4 */
-short d2_Unkf8a650 = 0;  /* 0xf8a650 */
-short d2_Unkf8a652 = 0;  /* 0xf8a652 */
-int d2_Unkf8a654 = 0;  /* 0xf8a654 */
+short d2_LastMouseX = 0;  /* 0xf8a650 */
+short d2_LastMouseY = 0;  /* 0xf8a652 */
+int d2_HoverTick = 0;  /* 0xf8a654 */
 int d2_FocusObjIndex = 0;  /* 0xf8a658 */
 int d2_Unkf8a65c = 0;  /* 0xf8a65c */
 int d2_InputDragOffsetY = 0;  /* 0xf8a660 */
@@ -1702,19 +1696,19 @@ int d2_Unkf8aa9c = 0;  /* 0xf8aa9c */
 D2SLOT d2_ItemListSurf128[3] = {0};  /* 0xf8aaa0 */
 int d2_ClickedForm = 0;  /* 0xf8aac4 */
 int d2_RightHeldObj = 0;  /* 0xf8aac8 */
-int d2_Unkf8aacc = 0;  /* 0xf8aacc */
+int d2_HoverObj = 0;  /* 0xf8aacc */
 int d2_TextCursorX = 0;  /* 0xf8aad4 */
 int d2_TextCursorY = 0;  /* 0xf8aad8 */
 void * d2_ItemListSurf64 = 0;  /* 0xf8aadc */
 int d2_InputDragValue = 0;  /* 0xf8ab60 */
-int d2_Unkf8ab64 = 0;  /* 0xf8ab64 */
+int d2_PrevHoverObj = 0;  /* 0xf8ab64 */
 int d2_InputDragReleased = 0;  /* 0xf8ab68 */
 int d2_PointerSprite = -1;  /* 0x5febc8, sprite of the pointer, -1: none */
 int d2_TextCursorOffset = -7;  /* 0x5febcc, -7 or 0 */
 int d2_HitClicked = -1;  /* 0x5febd0 */
 int d2_HitUnderPointer = -1;  /* 0x5febd4 */
-int d2_Unk5febdc = -1;  /* 0x5febdc */
-int d2_Unk5febe0 = -1;  /* 0x5febe0 */
+int d2_HoverX = -1;  /* 0x5febdc */
+int d2_HoverY = -1;  /* 0x5febe0 */
 int d2_LimitsChanged = -1;  /* 0x5febe4 */
 int d2_TextCursorSprite = -1;  /* 0x5febe8, sprite of the text cursor, -1: none */
 int d2_Unk5febec = -1;  /* 0x5febec */

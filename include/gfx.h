@@ -19,21 +19,21 @@ typedef struct D2SLOT {             /* 12 bytes, a surface for the picture of an
 /* data */
 extern int d2_PointerSprite;            /* 0x5febc8, sprite of the pointer, -1: none */
 extern int d2_TextCursorOffset;            /* 0x5febcc, -7 or 0 */
-extern int d2_Unk5febdc;            /* 0x5febdc */
-extern int d2_Unk5febe0;            /* 0x5febe0 */
+extern int d2_HoverX;            /* 0x5febdc */
+extern int d2_HoverY;            /* 0x5febe0 */
 extern int d2_LimitsChanged;            /* 0x5febe4 */
 extern int d2_TextCursorSprite;            /* 0x5febe8, sprite of the text cursor, -1: none */
 extern int d2_Unk5febec;            /* 0x5febec */
 extern int d2_DragStartValue;            /* 0x6ed9c4 */
 extern void *d2_PointerPic;          /* 0x6ed9cc, "_MOUSE_CURSOR" data */
-extern int d2_Unk6ed9e4;            /* 0x6ed9e4 */
+extern int d2_RightHolding;            /* 0x6ed9e4 */
 extern int d2_DragStartX;            /* 0x6ed9e8 */
 extern int d2_DragStartY;            /* 0x6ed9ec */
 extern int d2_ClickUsed;            /* 0x6ed9f0 */
 extern int d2_DragActive;            /* 0x6ed9f4 */
-extern short d2_Unkf8a650;          /* 0xf8a650 */
-extern short d2_Unkf8a652;          /* 0xf8a652 */
-extern int d2_Unkf8a654;            /* 0xf8a654 */
+extern short d2_LastMouseX;          /* 0xf8a650 */
+extern short d2_LastMouseY;          /* 0xf8a652 */
+extern int d2_HoverTick;            /* 0xf8a654 */
 extern int d2_FocusObjIndex;            /* 0xf8a658 */
 extern int d2_InputDragOffsetY;            /* 0xf8a660 */
 extern int d2_SavedMaxY;            /* 0xf8a664 */
@@ -41,12 +41,12 @@ extern int d2_SavedMinY;            /* 0xf8a66c */
 extern D2SLOT d2_ItemListSurf256;         /* 0xf8aa90 */
 extern D2SLOT d2_ItemListSurf128[3];      /* 0xf8aaa0 */
 extern int d2_RightHeldObj;            /* 0xf8aac8 */
-extern int d2_Unkf8aacc;            /* 0xf8aacc */
+extern int d2_HoverObj;            /* 0xf8aacc */
 extern int d2_TextCursorX;            /* 0xf8aad4 */
 extern int d2_TextCursorY;            /* 0xf8aad8 */
 extern void *d2_ItemListSurf64;          /* 0xf8aadc */
 extern int d2_InputDragValue;            /* 0xf8ab60 */
-extern int d2_Unkf8ab64;            /* 0xf8ab64 */
+extern int d2_PrevHoverObj;            /* 0xf8ab64 */
 extern int d2_InputDragReleased;            /* 0xf8ab68 */
 
 /* functions of other units, or declared differently by d2.h */
@@ -59,7 +59,7 @@ void d2_ClearPointerItems(void);                            /* 0x476c70 */
 void d2_DrawPointer(void *surf, int x, int y, int a, int b);  /* 0x476cb0 */
 int d2_DrawMousePointer(int x, int y);                     /* 0x476f00 */
 void d2_SetPointerSprite(int a, int pic);                  /* 0x476f80 */
-void d2_Unk477000(void);                            /* 0x477000 */
+void d2_UpdateHoverScroll(void);                            /* 0x477000 */
 void d2_CreateItemListSurfaces(void);                            /* 0x477320 */
 void d2_FreeItemListSurfaces(void);                            /* 0x477420 */
 void d2_DragInputValue(D2INPUT *in, int val, int y0, int y1);    /* 0x4774a0 */
