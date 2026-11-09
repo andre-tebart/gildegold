@@ -697,12 +697,12 @@ void d3d_LoadTexture(char *name, DDPIXELFORMAT *pf, LPDIRECTDRAWSURFACE4 *surf, 
     ddsd.ddsCaps.dwCaps2 = DDSCAPS2_TEXTUREMANAGE;
 #line 931
     D3DCHECK(dd_DD->lpVtbl->CreateSurface(dd_DD, &ddsd, surf, NULL));
-    texture = *surf;
-    if (!texture) {
+    if (!*surf) {
         sprintf(msg, "Could not load create surface for %s", name);
         err_Message(msg);
         return;
     }
+    texture = *surf;
     dd_SetSurfaceName(texture, name, 0);
 #line 944
     D3DCHECK(texture->lpVtbl->QueryInterface(texture, &IID_IDirect3DTexture2, (LPVOID *)surftext));
