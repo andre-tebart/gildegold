@@ -551,7 +551,27 @@ void d3d_BuildMipmaps(LPDIRECTDRAWSURFACE4 tex, DDSURFACEDESC2 *ddsd)
 }
 /* 0x437390, loads an image file into a texture surface of format pf (scaled to the card's limits),
    with mip levels; palettized formats get the image's palette, others a color key from color 0.
-   bpp (the file's bits per pixel, which ts_texture passes) is not read. @deep behaviour: every code hunk is shape - the loadddsd/pal/adw stack-slot assignment (loadddsd at [ebp-0xb8] vs [ebp-0x9c], its field stores at +0x48/+0x68 move with it) and the dead-parameter slot reuse (stretcht/tempt in the w/h slots, [+0x1c] vs [+0x20], flipping between the level loop and the i loop), operand order [esi+eax]/[eax+esi] in the name copy, moved stores, tail nops; control flow and the w != ddsd.dwHeight quirk follow the original; readability met */
+   bpp (the file's bits per pixel, which ts_texture passes) is not read.
+   @stuck earlier: every code hunk is shape - the loadddsd/pal/adw stack-slot assignment (loadddsd at
+   [ebp-0xb8] vs [ebp-0x9c]) and the dead-parameter slot reuse (stretcht/tempt in the w/h slots, [+0x1c] vs
+   [+0x20]), operand order [esi+eax]/[eax+esi] in the name copy, moved stores, tail nops; control flow and
+   the w != ddsd.dwHeight quirk follow the original; readability met. 2026-11-09: the frame is the whole
+   problem; the original's layout (ebp offsets) is loadddsd -0x9c, num -0xa8, ddscaps2 -0xb8, ddsd -0x134,
+   dest -0x1b0, tempddsd -0x22c, pal -0x52c, adw -0x92c, namebuf -0xb2c, msg -0xd2c; ours num -0x2c,
+   ddscaps2 -0x3c, loadddsd -0xb8, (ddsd/dest/tempddsd equal), namebuf -0x42c, msg -0x62c, pal -0x92c, adw
+   -0xd2c (deep-tools framemap.py prints VC6's own frame symbols per variant in ~1 s, framesearch.py scores
+   variants against these targets). Measured: declaration order and local names change nothing; VC6 sorts
+   the frame by references per byte (element accesses count, loop depth does not; in this ebp frame more
+   references go nearer ebp); extra calibration references show num/ddscaps2 stay above loadddsd even at
+   +16 loadddsd refs, and pal/adw need ~+24 refs each to pass namebuf/msg - no honest spelling gives that.
+   Block scopes (96 combos of msg in if(!texture), namebuf/num/tempddsd in if(levels>1) or the mip loop,
+   ddscaps2 in if(levels>1)): msg in its block lands at -0xd2c as in the original but then shares its slot
+   with a block-scoped namebuf (the original's frame keeps both); best 11/14 slots (msg in the if block,
+   namebuf+ddscaps2 in the levels block) still has loadddsd -0xa8 / num -0x2c / msg overlapping namebuf.
+   Next: find what scope or reference structure puts loadddsd above num/ddscaps2 (perhaps num/ddscaps2 in
+   an inner block of a block that also holds loadddsd uses), then the remaining code hunks: mov [ebp-4],eax
+   (texture = *surf) after the !texture test in the original, levels counted in edx then mov edi,edx after
+   the loop (tiebreak: insensitive under the four probes only, best draft) */
 
 void d3d_LoadTexture(char *name, DDPIXELFORMAT *pf, LPDIRECTDRAWSURFACE4 *surf, LPDIRECT3DTEXTURE2 *surftext,
                      unsigned char mips, DWORD w, DWORD h, int bpp)
