@@ -79,7 +79,10 @@ struct D3BGF {                      /* 0x20c bytes, a loaded mesh ("d3_io:LoadAG
     char pad50[0x18];
     float cx, cy, cz;               /* 0x68, centre of the box */
     D3BGFATTACH attach[4];          /* 0x74 */
-    float radius;                   /* 0x1d4 */
+    union {
+        float radius;               /* 0x1d4 */
+        int radiusBits;             /* 0x1d4, the same as the fast chunk writes it (bio_wr_i, d3_AddFLChunk) */
+    };
     float diagonal;                 /* 0x1d8 */
     int refs;                       /* 0x1dc */
     int ntex;                       /* 0x1e0 */

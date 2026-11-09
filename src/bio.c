@@ -105,7 +105,7 @@ void bio_rd_i(VFSFILE *f, int *i)
 }
 /* 0x4011f0, writes one byte */
 
-void bio_wr_c(VFSFILE *f, char c)
+void bio_wr_c(VFSFILE *f, unsigned char c)
 {
     vfs_fwrite(&c, 1, 1, f);
 }

@@ -308,7 +308,24 @@ int d3_FLChunkSize(D3BGF *m, D3BGFDESC *d)
 }
 
 /* 0x451250, loads the BGF file path, cleans it up as d3iot_LoadBGF does and appends the converted mesh to
-   the file as a fast-load chunk (0x2d ... 0x2f) */
+   the file as a fast-load chunk (0x2d ... 0x2f)
+   @deep whole asmdiff read; fixed: the material de-dup loop is 0-based with j = i + 1 (VC6's induction
+   variable i+1 in [ebp+0xc], used[i] as [eax+edx-1], mat = i as lea [esi-1] now match), the uv rows are
+   written from float fields, bio_wr_c takes unsigned char (push 0xff, as the original), the radius is
+   written through D3BGF.radiusBits. Left: (1) allocation: the original keeps m in its slot [ebp-0x10] and
+   0 in ebx through the weld loops, ours m in ebx (+ a copy in [ebp-0x20]); (2) the vertex rotation
+   (0x451494..0x451517): the same products and sums, the original holds py / pz in edx / ecx (lea
+   [eax+ecx+4] / [eax+ecx+8]) and evaluates s1*py before c1*pz and u before bv.z, ours folds them into
+   [eax+ecx-0x14] and orders the FPU operands otherwise; (3) the uv row copies (0x451b9d..0x451bd5): the
+   original copies the three floats with integer moves off one &m->polys[i] (add eax,ebx), ours fld/fstp
+   with m->polys reloaded after each store (tried an array v and int copies: no change / worse); (4) block
+   layout: the original places the early return of an empty BGF (vfs_fclose; its own epilogue) inside the
+   polygon write loop at 0x451c0b, ours after the main epilogue, which also shifts the add esp merges
+   around 0x451a56..0x451b04. (references: M8 at +0xc2b: ours refers to vfs_fclose (0x430aa0), the
+   original's field to 0x422620 (mem_Free), explained: the ref line (ours vfs_fclose at +0xc2b, the
+   original's mem_Free) is the alignment pairing our early-return block (vfs_fclose) at the end with the
+   original's final mem_Free(m): the original has the same vfs_fclose call at 0x451c0c, placed
+   mid-function; both sides call vfs_fclose and mem_Free the same number of times) */
 void d3_AddFLChunk(char *path, char weld)
 {
     char buf[256];
@@ -373,14 +390,14 @@ void d3_AddFLChunk(char *path, char weld)
         }
         if (desc.nmat > 0) {
             used = mem_Alloc(desc.nmat, "d3_io_fs:RemoveDoubleMaterials");
-            for (i = 1; i - 1 < desc.nmat; i++) {
-                if (!used[i - 1]) {
-                    used[i - 1] = 1;
-                    for (j = i; j < desc.nmat; j++) {
-                        if (!memcmp(&desc.mats[i - 1], &desc.mats[j], 0xe0)) {
+            for (i = 0; i < desc.nmat; i++) {
+                if (!used[i]) {
+                    used[i] = 1;
+                    for (j = i + 1; j < desc.nmat; j++) {
+                        if (!memcmp(&desc.mats[i], &desc.mats[j], sizeof(D3BGFMAT))) {
                             for (k = 0; k < desc.npoly; k++)
                                 if (desc.polys[k].mat == j)
-                                    desc.polys[k].mat = i - 1;
+                                    desc.polys[k].mat = i;
                             used[j] = 1;
                         }
                     }
@@ -460,19 +477,19 @@ void d3_AddFLChunk(char *path, char weld)
                 bio_wr_v3(out, &m->verts[i * 6]);
                 bio_wr_v3(out, &m->verts[i * 6 + 3]);
             }
-        bio_wr_i(out, *(int *)&m->radius);
+        bio_wr_i(out, m->radiusBits);
         for (i = 0; i < m->npolys; i++) {
             bio_wr_i(out, m->polys[i].v[0]);
             bio_wr_i(out, m->polys[i].v[1]);
             bio_wr_i(out, m->polys[i].v[2]);
-            ((int *)&v)[0] = *(int *)&m->polys[i].uv[0][0];
-            ((int *)&v)[1] = *(int *)&m->polys[i].uv[1][0];
-            ((int *)&v)[2] = *(int *)&m->polys[i].uv[2][0];
-            bio_wr_v3(out, &v);
-            ((int *)&v)[0] = *(int *)&m->polys[i].uv[0][1];
-            ((int *)&v)[1] = *(int *)&m->polys[i].uv[1][1];
-            ((int *)&v)[2] = *(int *)&m->polys[i].uv[2][1];
-            bio_wr_v3(out, &v);
+            v.x = m->polys[i].uv[0][0];
+            v.y = m->polys[i].uv[1][0];
+            v.z = m->polys[i].uv[2][0];
+            bio_wr_v3(out, (int *)&v);
+            v.x = m->polys[i].uv[0][1];
+            v.y = m->polys[i].uv[1][1];
+            v.z = m->polys[i].uv[2][1];
+            bio_wr_v3(out, (int *)&v);
             bio_wr_v3(out, (int *)&m->polys[i].n);
             if (m->ntex > 0xfe) {
                 bio_wr_i(out, m->polys[i].mat);
