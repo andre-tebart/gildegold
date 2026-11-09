@@ -1592,7 +1592,27 @@ umland:
    well enough (reportKnow >= 50 + a random 0..49), sends up to eight idle guards to spy on it (message 0x40),
    else, with at least three, to attack it (message 0x49, the target cleared) - both only when none of his spy /
    break-in / attack events (0x40 / 0x3f / 0x49) runs on it. Returns 1 when he acted (or one runs), 0 when there is
-   no target or too few guards */
+   no target or too few guards
+   @deep Read whole against the original 0x4817a0..0x481ee5 and rewritten: the target keep / drop, the grid
+   maximum (i = j = 8 stored first, !(max > v)), the 256-building countdown scan with its filters and the
+   worth * random * (8 - rank) * guard weight, the report search (o->reportBld, reportKnow < rnd(0x32) +
+   0x32 spies again), the three event searches 0x40 / 0x3f / 0x49 on targetBld, both messages (0x40 / 0x49,
+   flags 1, arg[0] / arg[1], up to min(n, 8) ids, -1 fill) and the four texts all match; the prover follows
+   both sides through the target choice up to the spy message. Left is block layout: the original lays out
+   [spy searches][spy message][report test][attack][return 0 inline after the kind test at
+   +0x2d8][unfinished / spying sharing one sprintf tail at +0x725]; ours moves the spy message block
+   (+0x634) and the return 0 (+0x765) to the end and keeps the two text tails apart (sprintf x5 vs x4), so
+   the instructions after +0x3c4 align against other blocks (the code hunks; the M9 lines are the same four
+   strings crossed by that order). Tried: the structured if (!o || know < rnd) form, the
+   found-break-inside-the-loop form and the goto report: form - all three lay the spy message out last.
+   (size: 7 of the instruction difference are shared / inline tails) (references: M9 at +0x616: our literal
+   "ai_CalcAngriff(): Meister %s hat schon eine Spio" where the original's field refers to
+   "ai_CalcAngriff(): Meister %s hat aber noch eine " at 0x5ff2c0 (and 1 more), explained: the M9 literal
+   lines pair the same four format strings of the original in another block order (spy / attack /
+   unfinished / spying are all present on both sides); the sprintf count differs by the original's merged
+   text tail) (size: 569 vs 552 instructions, explained: 10 instructions: the original's cross-jumped
+   sprintf tail of the two text exits (one push / call / add / epilogue copy fewer) and the inline return
+   0) */
 int ai_CalcAngriff(AICHAR *ch, int n)
 {
     AIOBJ *o;
