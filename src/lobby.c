@@ -351,7 +351,7 @@ void lobby_AddChatScroll(void)
 }
 /* 0x58aa30, shows the city of the network game on part 2 of the lobby form: the city's emblem picture
    "_STADTWAPPEN_<NAME>" (upcased; "_STADTWAPPEN_BERLIN" when there is none), right of it the city name and
-   below that the label txt_NetPlayers with the game's player count @deep Read whole against the original: mode 0x3f test with strcpy x2 + _strupr in each branch, players byte hoisted into ebx after the branches, emblem pic, txt_NetPlayers label; instruction count equal (112/112). Only remaining: the original pushes ebx/esi/edi in the prologue (+0xb) while ours pushes them at the join after the branches (asmdiff: '+ push ebx/esi/edi' at 0x58aa3b, '- push ebx/esi/edi' at 0x58aac3), so every stack offset before the join differs by 0xc ([esp+eax] vs [esp+eax+0xc]) - saved-register placement, allocation/scheduling. */
+   below that the label txt_NetPlayers with the game's player count */
 
 void lobby_ShowCity(void)
 {
@@ -364,16 +364,19 @@ void lobby_ShowCity(void)
 
     d2_SetForm(lobby_Form, 2);
     io_PrintText("$C");
+    /* @original: both arms are the same code (each with its own players read: the callee-saved pushes stay
+       in the prologue) */
     if (cm_NetGame.mode == 0x3f) {
         strcpy(name, cm_NetGame.hdr.name);
         strcpy(city, cm_NetGame.hdr.name);
         _strupr(name);
+        players = cm_NetGame.hdr.players;
     } else {
         strcpy(name, cm_NetGame.hdr.name);
         strcpy(city, cm_NetGame.hdr.name);
         _strupr(name);
+        players = cm_NetGame.hdr.players;
     }
-    players = cm_NetGame.hdr.players;
     sprintf(pic, "_STADTWAPPEN_%s", name);
     obj = d2_FindPic(pic);
     if (obj == -1)
