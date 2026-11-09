@@ -3536,7 +3536,16 @@ void ch_ActWalk(CHACTION *a)
     }
 }
 /* 0x409bd0, action callback 0x3a: walks along the cells of a->u.walk.path (0x100 cells, filled by the caller;
-   empty cells are skipped) to the cell args[0], args[1] in scene args[2] */
+   empty cells are skipped) to the cell args[0], args[1] in scene args[2]
+   @deep Read in full against 0x409bd0..0x40a8fa (the retry wait, the first-step setup, the walk-animation
+   start, the morph release, the cell steps with the gap skip, the turn steering of both directions, the
+   missed-threshold check, the play speed). Meaning fix: both turn branches scale by 0.19999999f (the
+   original's 0x5eb860 is 0x3e4ccccc, not 0.2f); D3OBJ_UNK200 replaced by D3OBJECT.owner. All statements
+   line up (ours 963 vs 965). Left: (1) the same redundant slot test as ch_ActWalk after 'test byte
+   [eax+0x6d],0x20' at +0x1df ('+ jne / cmp eax,ebx / jne' vs '- je'); (2) the gap-skip loop (+0x632): the
+   original keeps n in edx and recomputes min(0x100, n + 32) at the loop head each iteration (non-rotated,
+   'jmp 0x40a224'), ours hoists it and spills n to [esp+0x18], hence our frame 0x1ac vs 0x1a8 and i in eax
+   vs edi; a for(;;) with the bound tested by break compiles worse (58 -> 96). */
 
 void ch_ActWalkCells(CHACTION *a)
 {
@@ -3782,7 +3791,7 @@ next:
             if (fabs(ang) > 2.0943952f && !(ch->kind & 8))
                 r = rot - step * 0.32f;
             else if (fabs(ang) > 1.5707964f)
-                r = rot - step * 0.2f;
+                r = rot - step * 0.19999999f;
             else if (fabs(ang) > 1.0471976f)
                 r = rot - step * 0.14f;
             else if (fabs(ang) > 0.5235988f)
@@ -3816,7 +3825,7 @@ next:
             if (fabs(ang) > 2.0943952f && !(ch->kind & 8))
                 r = rot - step * 0.32f;
             else if (fabs(ang) > 1.5707964f)
-                r = rot + step * 0.2f;
+                r = rot + step * 0.19999999f;
             else if (fabs(ang) > 1.0471976f)
                 r = rot + step * 0.14f;
             else if (fabs(ang) > 0.5235988f)
@@ -3849,7 +3858,7 @@ next:
     }
     if (ground && ground != 13 && ch->slot) {
         f = 0.7f;
-        if (ch->group == -1 && D3OBJ_UNK200(ch->obj)) {
+        if (ch->group == -1 && ch->obj->owner) {
             f = cm_SpeedFactor;
             if (!ch->transport)
                 f += 0.2f;
