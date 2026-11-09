@@ -67,7 +67,8 @@ typedef struct AISLOT {                 /* 0x40 bytes, ai_Slots[128]: a good the
         AIBLD *bld;                     /* 0x08 */
     };
     void *store;                        /* 0x0c */
-    int unk10;                          /* 0x10 */
+    int cleared10;                      /* 0x10, cleared with every new slot (ai_UpdateProduction, ai_FillSlotTable,
+                                           ai_BuildTradeOffers); no reader in the source (reasoned: unused) */
     int make;                           /* 0x14, the pieces to make / buy now (clamped to capacity) */
     int sellAmount;                     /* 0x18, the units of the slot's good this round sells (set from amount, counted down as the sales go out) */
     float price;                        /* 0x1c, a price (gm_GoodsPrice, 90% for a good the workshop makes) */
