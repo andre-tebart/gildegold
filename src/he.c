@@ -20972,7 +20972,7 @@ void he_AllocResearch(AIJOB *ev)
     r->rounds = 0;
 }
 
-void init_HookObject(char *o, unsigned short *p, int kind);
+void init_HookObject(struct D3OBJECT *o, void *p, int kind);
 
 /* 0x56b3f0, the run handler of the research event 0xc (HERESEARCH): stage 0, once due, orders the good it
    researches (cm_SendExSellObjectH: the building +0xac as buyer, the good +0xb4, one piece) and keeps the send
@@ -21023,7 +21023,7 @@ void he_RunResearch(int ev)
             gm_FindById(0, (int *)bo, 0, r->objId);
             gm_AddTime(&e->end, 0, 1, 0);
             if (r->rounds > r->limit) {
-                init_HookObject((char *)bo[0]->obj, (unsigned short *)bo[0], 1);
+                init_HookObject(bo[0]->obj, bo[0], 1);
                 he_FreeEvent(ev);
                 return;
             }
@@ -21295,7 +21295,7 @@ D3OBJECT *he_CreateConstruction(D3VECTOR *rot, D3VECTOR *pos, unsigned char *typ
     ((HECONSTRUCTION *)ev)->stage = -1;
     ((HECONSTRUCTION *)ev)->script = -1;
     he_ShowConstruction(ev);
-    init_HookObject((char *)obj, (unsigned short *)type, 2);
+    init_HookObject(obj, type, 2);
     d3if_SelectScene(scene, 1);
     return obj;
 }
@@ -21431,7 +21431,7 @@ void he_RunConstruction(int ev)
             d3if_SelectScene(scene, 1);
             return;
         }
-        init_HookObject(bld->object, (unsigned short *)bld, 2);
+        init_HookObject((D3OBJECT *)bld->object, bld, 2);
         bt = &ai_BTypesT[bld->type];
         if (gm_AllowAll != 0) {
             c->stages = he_ConstructionStage(ev);

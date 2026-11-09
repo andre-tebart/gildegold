@@ -4062,7 +4062,7 @@ int gm_ListStock(short *l, int id);     /* 0x50ab50 */
 int gm_ListAmount(short *l, char *o);   /* 0x50aaf0 */
 float gm_GoodsPrice(unsigned id, unsigned char p);                   /* 0x5089c0 */
 unsigned short * gm_ObjectBuildingOwner(unsigned short *p);                     /* 0x50a050 */
-void init_HookObject(char *o, unsigned short *p, int kind);                     /* 0x50d380 */
+void init_HookObject(struct D3OBJECT *o, void *p, int kind);                     /* 0x50d380 */
 struct CHTRANSPORT * ch_AttachTransport();                     /* 0x4034e0 */
 char d3if_SelectTextureSet(struct D3OBJECT *obj, struct D3SURF *surf, unsigned char set, char reload);                     /* 0x446f30 */
 struct CHARACTER * ch_Create();                     /* 0x403390 */
@@ -4248,7 +4248,7 @@ unsigned short *gm_CreateObject(int id, int proto, int n)
             model = ch_Create("pferd_PFERD", (D3VECTOR *)pos);
         r->model = model;
         ch_PreloadAnims(model, 1, "bewegung/karren_ziehen");
-        init_HookObject((char *)model->obj, (unsigned short *)r, 1);
+        init_HookObject(model->obj, r, 1);
         sprintf(model->obj->name, "sp_%i", r->objId);
         if (proto == 0x134)
             cart = d3_CreateObject(0, (D3VECTOR *)pos, (D3VECTOR *)rot, "ob_KARREN_klein");
@@ -4271,7 +4271,7 @@ unsigned short *gm_CreateObject(int id, int proto, int n)
                     d3if_SelectTextureSet(cart, (struct D3SURF *)cart->info, set, 1);
             }
             cart->mask = 1;
-            init_HookObject((char *)cart, (unsigned short *)r, 1);
+            init_HookObject(cart, r, 1);
         }
         if (home == 0) {
             model->scriptGroup = -1;

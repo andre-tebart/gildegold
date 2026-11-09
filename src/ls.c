@@ -1531,7 +1531,7 @@ char ls_HookBuildingCB(D3OBJECT *o)
     for (i = 0; i < 0xa900; i += 0xa9) {
         b = (AIBLD *)(ai_Blds + i);
         if (b->type != 0 && (int)o->owner == b->id)
-            init_HookObject((char *)o, (unsigned short *)b, 2);
+            init_HookObject(o, b, 2);
     }
     return 1;
 }
@@ -1966,7 +1966,7 @@ int ls_ReadSceneRecords(int f)
             cm_UpdateHandObject((char *)c);
         } else if (ch->owner != 0) {
             o = own;
-            init_HookObject((char *)ch->obj, own, 1);
+            init_HookObject(ch->obj, own, 1);
             sprintf(ch->obj->name, "sp_%i", o->objId);
             o->sceneObj = ch;
             if (o->id == 0x134)
@@ -1986,7 +1986,7 @@ int ls_ReadSceneRecords(int f)
                 d3if_SelectTextureSet(cart, (struct D3SURF *)cart->info, colour, 1);
                 ch_AttachTransport(ch, cart);
                 cart->mask = 1;
-                init_HookObject((char *)cart, own, 1);
+                init_HookObject(cart, own, 1);
             }
         }
         if ((ch->flags.bytes.lo & 0x20) != 0)

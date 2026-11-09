@@ -5043,7 +5043,7 @@ int cm_ExGebUpgrade(G17MSG *m, G17STAT *s)
                         }
                     }
                 }
-                init_HookObject((char *)o, (unsigned short *)b, 2);
+                init_HookObject(o, b, 2);
                 sv_CreateBanners((char *)b);
                 if (b->object != 0) {
                     season = gm_ClockSeason(&ai_Time);
@@ -5623,7 +5623,7 @@ int cm_ExCreateGeb(G17MSG *m, G17STAT *s)
                 d3_SetObjectPos(o, (D3VECTOR *)&pos);
                 d3_SetObjectRot(o, m->geb.rot);
                 ai_DropObjectAt(o, (D3VECTOR *)&pos);
-                init_HookObject((char *)o, (unsigned short *)b, 2);
+                init_HookObject(o, b, 2);
                 ai_BuildingName(b->type, tmp);
                 strcpy(site.name, tmp);
                 sprintf(name, "cm_ExCreateGeb(): bauplatze name:%s", tmp);

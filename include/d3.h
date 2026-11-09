@@ -33,7 +33,9 @@ typedef struct D3MESHOPS {          /* function table of a mesh driver */
 } D3MESHOPS;
 
 typedef struct D3MATERIAL {
-    char pad000[0x8];
+    void (*freeCallback)(struct D3OBJECT *obj); /* 0x000, called before the mesh is freed (d3_engine.h D3MESH.freeCallback;
+                                       init_HookObject sets init_SceneObjectDestroyCB) */
+    char pad004[0x4];
     char meshData[0xec];            /* 0x08..0xf4, the D3MESH block (d3_engine.h): worldMatrix 0x08 (a D3MATRIX,
                                        passed to d3_GetBoxVerts / GetBox), cameraMatrix 0x48, zMin/zMax, frameStamp */
     char animCtl[0x10];             /* 0xf4, the animation control (a D3ANIMCTL at 0xf4) passed to
