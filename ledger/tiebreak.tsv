@@ -1049,7 +1049,7 @@ exe	0x00458ce0	d3_MatToWorld	unk_458810	aac71bbcbd9c728e	no	byte	control=byte p1
 exe	0x00458da0	d3_WorldMatrix	unk_458810	e9205fe1e72cbb58	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00458e70	d3_EnvMapCoords	unk_4591a0	8e84bd737d12b56b	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
 exe	0x004591a0	d3_AnimBlendWeights	unk_4591a0	f1a14e930c55c886	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x00459300	d3_TransformVerts	unk_4591a0	6d1991492fd71637	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x00459300	d3_TransformVerts	d3_vtx	09bc0972dca9c589	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x004598d0	d3_TransformNormals	unk_4591a0	88aafe0ff71f0e6a	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00459980	d3_FrameNormals	unk_4591a0	381362ab9094e1d9	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00459ab0	d3_GetBoxVerts	unk_4591a0	e5ebc874c9a6c4af	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape

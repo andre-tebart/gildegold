@@ -159,18 +159,30 @@ extern float ai_FloatZero;  /* 0x5eb788, the shared 0.0f (cm.c) the weight is co
 /* 0x459300, transforms the animated mesh's vertices: per active slot it blends the two key frames' base and
    scale by the blend weights and adds the result into info->keys, then applies the object matrix (tracking the
    z range in d3_MinZ / d3_MaxZ when the vertex normal bit is set)
-   @deep read the whole function against the original: 487 vs 488 instructions, 1485 vs 1484 bytes, the
-   same call set (no dcp diffclass call difference) and the same global store set (no differs line). Q4
-   settled: the 14 raw casts are gone - the slot weight goes through a typed volatile pointer (volatile
-   float *wp = &sl->weight) and the z re-read through a typed volatile pointer to v->z; Q6 settled with a
-   description of the vertex blend; the M10 is cleared by comparing the weight with ai_FloatZero
-   (0x5eb788). What is left is the FPU schedule of the two vertex loops: 224 fpu hunks (the order in which
-   the two frames' base/scale products and the p1/p2 byte conversions are pushed and popped), 81 code, 14
-   regs, 12 order, 2 slots; the function's statements, constants and stores are the same, the fpu order is
-   what the hill-climb could not reach. The prover's store difference pairs ours' q2 store with the
-   original's frame load in the same statement sequence (the frame is equal: no frame line). Tried: the
-   volatile pointer spelling for the weight and z, ai_FloatZero, the Q6 text; the fpu schedule is what is
-   left. */
+   @stuck insensitive (headers sample: 1 codegen). The original's weight block reads like D3VECTOR4 locals
+   filled field by field and scaled by sl->weight (x, y loaded on the FPU and popped dead after the
+   products, z by integer mov): that spelling without any volatile (D3VECTOR4 s1, b1, s2, b2, q1, q2; s1.x
+   = f1->scale.x ... s1.x *= sl->weight) gives frame 0x74 = the original's but 211 ins / 1232 bytes (the
+   original reloads [esi] per product with fld [esi]; fmul st,st(2); ours fxch; fmul [esi]); 'sl->weight *
+   f->scale.x' direct: 231; D3VECTOR struct copy: 568 (frame 0x5c); *(D3VECTOR *)& copy: 496. z tracking
+   (flagged loops): the original stores v->z with fst, compares MinZ with z on the FPU (pops it into MinZ
+   or fstp st(0)), then re-reads v->z for MaxZ and copies it with fld/fstp. Tried with dcp try: v->z
+   instead of z in both ifs (A+B: 173 ins / 1084), z local for MinZ + ternary for MaxZ in both loops (159 /
+   1084), max(d3_MaxZ, v->z) on top (151 / 1089, but the MaxZ copy still an integer mov), max(v->z, MaxZ),
+   negated ternary, *1.0f / +0.0f arms (= control), <= forms (worse). The x expression's operand order (=
+   control: VC6 ranks them). None kept: each lowered ins but raised bytes, the committed hill-climbed
+   spelling stays. Left: the FPU schedule of the weight block and the blend loops (q1/q2 spills
+   [esp+0x64]/[esp+0x7c] the original keeps on the stack), the MaxZ fld/fstp copy, the 'mov eax,[ebx]'
+   placement after d3_AnimBlendWeights. (tiebreak: insensitive) prior: read the whole function against the
+   original: 487 vs 488 instructions, 1485 vs 1484 bytes, the same call set (no dcp diffclass call
+   difference) and the same global store set (no differs line). Q4 settled: the 14 raw casts are gone - the
+   slot weight goes through a typed volatile pointer (volatile float *wp = &sl->weight) and the z re-read
+   through a typed volatile pointer to v->z; Q6 settled with a description of the vertex blend; the M10 is
+   cleared by comparing the weight with ai_FloatZero (0x5eb788). What is left is the FPU schedule of the
+   two vertex loops: 224 fpu hunks (the order in which the two frames' base/scale products and the p1/p2
+   byte conversions are pushed and popped), 81 code, 14 regs, 12 order, 2 slots; the function's statements,
+   constants and stores are the same, the fpu order is what the hill-climb could not reach. The prover's
+   store difference pairs ours' q2 store with th... */
 void d3_TransformVerts(D3OBJECT *obj, D3LINFO *info, D3MATRIX *m)
 {
     D3ANIMCTL *ctl = (D3ANIMCTL *)info;
