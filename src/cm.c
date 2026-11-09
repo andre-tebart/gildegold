@@ -8676,6 +8676,8 @@ typedef struct CMFIGHTREC {
     int attackers[16];              /* 0x0c0, the netIds of the attacking fighters, -1 = none */
     int carts[3];                   /* 0x100, the object ids of the carts in the fight, -1 = none */
     int attackerBldId;              /* 0x10c, the attacker's building: its role picks the attacker voices */
+    int escort;                     /* 0x110, the carts' escort: the arming kind ai_ArmGateGuards keeps (0 none, 1 .. 3);
+                                       the AI side of a won raid takes the loot when random 0 .. 4 is above it */
 } CMFIGHTREC;
 #define cm_FightRecordT (*(CMFIGHTREC **)&cm_FightRecord)  /* 0x6f0d04, cm_FightRecord (cm.h: char *) as the fight record it points to */
 #define cm_FightAttackerC (*(AICHAR **)&cm_FightAttacker)  /* 0x6f0cec, cm_FightAttacker (cm.h: int) as the character it points to */
@@ -10271,46 +10273,62 @@ void cm_FightPortraits(int *ids, int x, int y)
         }
     }
 }
-/* 0x4d4540, the dialog "cutscenes\combat_start" that ends a fight (a: the fight record; its +0x7c bits 2 / 1 / 4 pick the
-   text): the line of the winner (texts 0x1138 .. 0x113c, 0x1125 + role), the loot list 0x4d4090,
-   the portrait row 0x4d4340, and the buttons: the player picks the share 10 / 50 / 90 (chance share <= random 10 .. 99)
-   or the AI side picks at random; the loot goes through 0x4d3ea0, the result is 0x6f0cfc (-1: refused), 0x6f0cf8 = 1 when
-   the loot was taken. Returns 1 when the fight goes on. Rough draft. */
+/* 0x4d4540, the dialog "cutscenes\combat_start" that ends a fight (a: the fight record; its flags bits 2 / 1 / 4 pick the
+   text): when the attacker is a player's character, the line of the winner (texts 0x1138 .. 0x113c, 0x1125 + role),
+   the portrait row (cm_FightPortraits) and two buttons (1: settle); then, for a raid in the open (flags bit 0) not
+   settled yet: a player defender sees the carts' loot (cm_LootList, their value at 10 / 50 / 80 per cent) and picks the
+   share 10 / 50 / 90 (taken when random 10 .. 99 is at most it, else refused), or the AI side picks one at random when
+   it fights no defenders or its random 0 .. 4 is above the escort. The loot goes through cm_LootCarts into
+   cm_FightLootValue (-1: refused), cm_FightSettled = 1 when it was taken. Returns 1 when the fight goes on.
+   @deep read the whole function against the original 0x4d4540..0x4d4d66 and fixed the meaning: the share
+   branches set res = 0 (the original's 'mov [esp+0x18],0' after the pushes is res at [esp+0x14], not b4),
+   the loot sum reads AIRECIPE.amount[k] (rc+0x68; the draft read rc+0x70), the cart's job is read once
+   before d2_SetForm (AIOBJ.job24 -> AIJOB.cartBld for gm_FindBuildingById); typed: a is CMFIGHTREC (new
+   field escort at 0x110, ai_ArmGateGuards' rec->kind; the cm.h prototype and the caller now pass
+   CMFIGHTREC *), the attacker / defender through cm_FightAttackerC / cm_FightDefenderC (kind, id, sex),
+   the goods list as AIRECIPE, no raw access left; the description rewritten. All statements line up (ours
+   609 vs 611). Left: allocation - the original keeps win in its slot [esp+0x1c] and reloads it for every
+   d2_SetForm / d2_GetWinObj ('+ mov edx,[esp+0x30] / + push edx'), ours holds it in ebx; place / home /
+   role in ebp / esi / ebx vs ours edi / esi / ebp; the zero register edi vs esi; the 0x1138 branch's
+   result line stored through the shared 'mov edi,eax' at 0x4d4795 (ours 'mov esi,eax' per branch); frame
+   0x8d0 vs 0x8cc (one more spill slot of ours). */
 
-int cm_FightStartDialog(char *a)
+int cm_FightStartDialog(CMFIGHTREC *a)
 {
     int res = 1;
     int st = 0;
-    int win, ca, cb, role, edi, i, n, r, v, sel, esi, total;
+    int win, role, line, i, n, r, v, sel, k, total;
     int b1, b2, b3, b4;
+    unsigned char *place, *home;
     float fv;
-    char *p;
+    AIJOB *job;
+    char *bld;
     char tb[0x400];
     char tc[0x400];
 
     win = d2_OpenForm(0, 0, "cutscenes\\combat_start");
     d2_PlaceMainWindowF(win, 3);
     cm_FightSettled = 0;
-    ca = (int)gm_BuildQuery(1, 1, *(int *)(a + 0x14));
-    cb = (int)gm_BuildQuery(1, 1, *(int *)(a + 0x10c));
-    role = cm_FightRole((unsigned char *)cb);
+    place = gm_BuildQuery(1, 1, a->placeId);
+    home = gm_BuildQuery(1, 1, a->attackerBldId);
+    role = cm_FightRole(home);
     d2_SetForm(win, 1);
-    if (*(char *)(cm_FightAttacker + 2) == 6) {
-        if (a[0x7c] & 2) {
-            io_PrintText(0x1138, role + 0x1125, cb, *(unsigned short *)cm_FightDefender, ca);
+    if (cm_FightAttackerC->kind == 6) {
+        if (a->flags & 2) {
+            io_PrintText(0x1138, role + 0x1125, home, cm_FightDefenderC->id, place);
             d2_SetForm(win, 2);
-            edi = io_PrintText(0x113a, *(unsigned short *)cm_FightDefender, ca);
-        } else if (a[0x7c] & 1) {
+            line = io_PrintText(0x113a, cm_FightDefenderC->id, place);
+        } else if (a->flags & 1) {
             for (i = 0; i < 3; i++) {
-                if (*(int *)(a + 0x100 + i * 4) != -1)
+                if (a->carts[i] != -1)
                     st++;
             }
-            fv = gm_GetSkill(cm_FightAttacker, 3);
-            io_PrintText(0x112e, cb, *(unsigned short *)cm_FightDefender);
+            fv = gm_GetSkill((char *)cm_FightAttacker, 3);
+            io_PrintText(0x112e, home, cm_FightDefenderC->id);
             d2_SetForm(win, 2);
             io_PrintText(0x112f, st, 0xc10);
             if (fv >= 0.5) {
-                if (*(int *)(a + 0x110) != 0)
+                if (a->escort != 0)
                     io_PrintText(0x1134);
                 else
                     io_PrintText(0x1135);
@@ -10323,22 +10341,22 @@ int cm_FightStartDialog(char *a)
                 r = r < 0 ? 0 : r;
                 io_PrintText(0x1131, r + 0x1128);
             }
-            if (*(char *)(cm_FightDefender + 9) == 0)
-                edi = io_PrintText(0x1133, 0x1136);
+            if (cm_FightDefenderC->sex == 0)
+                line = io_PrintText(0x1133, 0x1136);
             else
-                edi = io_PrintText(0x1133, 0x1137);
-        } else if (a[0x7c] & 4) {
-            io_PrintText(0x113b, cb, *(unsigned short *)cm_FightDefender);
+                line = io_PrintText(0x1133, 0x1137);
+        } else if (a->flags & 4) {
+            io_PrintText(0x113b, home, cm_FightDefenderC->id);
             d2_SetForm(win, 2);
-            edi = io_PrintText(0x113c, *(unsigned short *)cm_FightDefender, ca);
+            line = io_PrintText(0x113c, cm_FightDefenderC->id, place);
         }
         d2_SetForm(win, 1);
         io_PrintText(0x1132);
-        cm_FightPortraits((int *)(a + 0xc0), 0, 0xb4);
-        d2_GetWinObj(win, 2, edi);
-        edi++;
-        d2_GetWinObj(win, 2, edi);
-        while (sv_RunFrame(cm_FightStartDialog, 0x7d6c6)) {
+        cm_FightPortraits(a->attackers, 0, 0xb4);
+        d2_GetWinObj(win, 2, line);
+        line++;
+        d2_GetWinObj(win, 2, line);
+        while (sv_RunFrame((int)cm_FightStartDialog, 0x7d6c6)) {
             if (dm_L.rup != 0) {
                 sv_PopRequest = 1;
                 cm_FightSettled = 1;
@@ -10354,63 +10372,62 @@ int cm_FightStartDialog(char *a)
             }
         }
     }
-    if ((a[0x7c] & 1) && *(char *)(cm_FightDefender + 2) == 6 && cm_FightSettled == 0) {
-        int rc[0x2e] = {0};
+    if ((a->flags & 1) && cm_FightDefenderC->kind == 6 && cm_FightSettled == 0) {
+        AIRECIPE rc = {0};
 
         total = 0;
         for (i = 0; i < 3; i++) {
-            if (*(int *)(a + 0x100 + i * 4) != -1)
+            if (a->carts[i] != -1)
                 st++;
         }
-        p = gm_Query(0, 2, 7, 1, *(int *)(a + 0x100));
-        p = *(char **)(p + 0x24);
+        job = ((AIOBJ *)gm_Query(0, 2, 7, 1, a->carts[0]))->job24;     /* the job the first cart runs */
         d2_SetForm(win, 1);
         io_PrintText("$C");
-        if (p != 0) {
-            p = gm_FindBuildingById(*(int *)(p + 0xb4));
-            esi = 0;
+        if (job != 0) {
+            bld = gm_FindBuildingById(job->cartBld);
+            k = 0;
             for (i = 0; i < 16; i++) {
-                if (*(int *)(a + 0xc0 + i * 4) != -1)
-                    esi++;
+                if (a->attackers[i] != -1)
+                    k++;
             }
-            if (p != 0)
-                io_PrintText(0x113d, st, 0xc10, p, *(unsigned short *)cm_FightAttacker, esi);
+            if (bld != 0)
+                io_PrintText(0x113d, st, 0xc10, bld, cm_FightAttackerC->id, k);
         }
         v = gm_SkillPoints(cm_FightDefender, 3);
         r = (int)(v * 0.023809524f);
         if (r > 4)
             r = 4;
-        if (*(int *)(a + 0x110) != 0)
+        if (a->escort != 0)
             io_PrintText(0x113e, (r < 0 ? 0 : r) + 0x1128);
         else
             io_PrintText(0x113f);
         cm_LootList(0x10, 0x96, 0);
         for (i = 0; i < 3; i++) {
-            n = *(int *)(a + 0x100 + i * 4);
+            n = a->carts[i];
             if (n != -1) {
-                p = (char *)gm_FindObjectInst(n);
-                if (p != 0) {
-                    gm_StallGoodsList(p, rc);
-                    for (esi = 0; esi < rc[1]; esi++)
-                        total = (int)(gm_GoodsPrice(*(unsigned short *)((char *)rc + 0x48 + esi * 2), ai_OwnPlayer) * rc[0x1c + esi] + total);
+                bld = (char *)gm_FindObjectInst(n);
+                if (bld != 0) {
+                    gm_StallGoodsList(bld, (unsigned *)&rc);
+                    for (k = 0; k < rc.count; k++)
+                        total = (int)(gm_GoodsPrice(rc.item[k], ai_OwnPlayer) * rc.amount[k] + total);
                 }
             }
         }
         d2_SetForm(win, 2);
         io_PrintText("$C");
-        esi = io_PrintText(0x1141, (int)(total * 0.1), (int)(total * 0.5), (int)(total * 0.8));
-        b1 = d2_GetWinObj(win, 2, esi);
-        b2 = d2_GetWinObj(win, 2, esi + 1);
-        b3 = d2_GetWinObj(win, 2, esi + 2);
-        edi = 0;
+        k = io_PrintText(0x1141, (int)(total * 0.1), (int)(total * 0.5), (int)(total * 0.8));
+        b1 = d2_GetWinObj(win, 2, k);
+        b2 = d2_GetWinObj(win, 2, k + 1);
+        b3 = d2_GetWinObj(win, 2, k + 2);
+        line = 0;
         for (i = 0; i < 16; i++) {
-            if (*(int *)(a + 0x80 + i * 4) != -1)
-                edi++;
+            if (a->defenders[i] != -1)
+                line++;
         }
-        b4 = d2_GetWinObj(win, 2, esi + 3);
-        if (edi == 0)
+        b4 = d2_GetWinObj(win, 2, k + 3);
+        if (line == 0)
             d2_EnableObject(b4, 0);
-        while (sv_RunFrame(cm_FightStartDialog, 0x7d6c6)) {
+        while (sv_RunFrame((int)cm_FightStartDialog, 0x7d6c6)) {
             if (dm_L.rup != 0) {
                 sv_PopRequest = 1;
                 res = 0;
@@ -10430,14 +10447,14 @@ int cm_FightStartDialog(char *a)
                 else if (sel == b3)
                     st = 90;
                 if ((unsigned short)util_RandomU(0x5a) + 10 <= st) {
-                    cb = (int)gm_BuildQuery(1, 1, *(int *)(a + 0x10c));
+                    home = gm_BuildQuery(1, 1, a->attackerBldId);
                     txt_Format(tb, 0x1142);
                     cm_MessageBox(tb, 0);
                     fv = (float)(st * 0.01);
                     sv_PopRequest = 1;
-                    b4 = 0;
+                    res = 0;
                     cm_FightSettled = 1;
-                    cm_FightLootValue = cm_LootCarts(cm_FightRecord, cb, cm_FightAttacker, cm_FightDefender, fv);
+                    cm_FightLootValue = cm_LootCarts(cm_FightRecordT, (AIBLD *)home, cm_FightAttackerC, cm_FightDefender, fv);
                 } else {
                     txt_Format(tc, 0x1143);
                     cm_MessageBox(tc, 0);
@@ -10446,13 +10463,13 @@ int cm_FightStartDialog(char *a)
                 }
             }
         }
-    } else if ((a[0x7c] & 1) && *(char *)(cm_FightDefender + 2) != 6 && cm_FightSettled == 0) {
+    } else if ((a->flags & 1) && cm_FightDefenderC->kind != 6 && cm_FightSettled == 0) {
         n = 0;
         for (i = 0; i < 16; i++) {
-            if (*(int *)(a + 0x80 + i * 4) != -1)
+            if (a->defenders[i] != -1)
                 n++;
         }
-        if (n == 0 || (unsigned short)util_RandomU(5) > *(int *)(a + 0x110)) {
+        if (n == 0 || (unsigned short)util_RandomU(5) > a->escort) {
             st = 0;
             r = (unsigned short)util_RandomU(4);
             if (r == 0)
@@ -10462,11 +10479,11 @@ int cm_FightStartDialog(char *a)
             else if (r >= 2)
                 st = 50;
             if ((unsigned short)util_RandomU(0x5a) + 10 <= st) {
-                cb = (int)gm_BuildQuery(1, 1, *(int *)(a + 0x10c));
+                home = gm_BuildQuery(1, 1, a->attackerBldId);
                 fv = (float)(st * 0.01);
-                b4 = 0;
+                res = 0;
                 cm_FightSettled = 1;
-                cm_FightLootValue = cm_LootCarts(cm_FightRecord, cb, cm_FightAttacker, cm_FightDefender, fv);
+                cm_FightLootValue = cm_LootCarts(cm_FightRecordT, (AIBLD *)home, cm_FightAttackerC, cm_FightDefender, fv);
             } else {
                 cm_FightLootValue = -1;
                 res = 1;
@@ -10922,7 +10939,7 @@ void cm_RunFight(CMFIGHTREC *a)
         cm_FightWinner = 0;
         cm_FightSettled = 0;
         cm_FightLootValue = 0;
-        cm_FightStartDialog((char *)a);
+        cm_FightStartDialog(a);
         cut_RandSeed(seed);
         cm_CollectSceneChars();
         cm_CollectSceneChars();

@@ -802,7 +802,7 @@ int cm_LootStock(AIBLD *a, AIBLD *b, struct AICHAR *d, struct AICHAR *t);  /* 0x
 int cm_FightRole(unsigned char *b);  /* 0x4d4050 */
 int cm_LootList(int x, int y, int mode);  /* 0x4d4090 */
 void cm_FightPortraits(int *ids, int x, int y);  /* 0x4d4340 */
-int cm_FightStartDialog(char *a);  /* 0x4d4540 */
+int cm_FightStartDialog(struct CMFIGHTREC *a);  /* 0x4d4540 */
 void cm_FightEndDialog(char *a);  /* 0x4d4d70 */
 int cm_CheckFight(char *a);  /* 0x4d60b0 */
 void cm_FightResult(char *r);  /* 0x4d6930 */
