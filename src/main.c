@@ -2450,7 +2450,17 @@ int main_CharacterIntro(int unused);
    "patrizier_MANN2" (0x75e628 = index + 0x639), -1 = back) and the scripted start menu pages "Startmenu/B_Persoenliches.esc" / "Startmenu/A_Stadtwahl.esc" (0x4e2bf0 / 0x4e2c70, 0x760638 = 0x12d6); returns
    non-zero when the character was created, sets the mode flag ai_GameFlags |= 8 then (else clears it). The quick start copies the
    talents of the job's record: gm_GetJobTalents returns a 6-byte record by value in the original (hidden pointer, eax), the call here
-   passes the buffer by hand */
+   passes the buffer by hand
+   @deep Read whole against 0x536980..0x536d77: the form and radio group (3 or 4 buttons by language), the
+   history / mission choice, the start menu pages, the character intro outcomes (1 family choice, 0 quick
+   start with gm_GetJobTalents copied by memcpy 5 = the original's dword + byte move, -1 back) and the game
+   flag tail all agree, same instruction count 321/321. Left: allocation only. The original keeps back in
+   ebx and ret in ebp, ours the reverse (regs hunks ebp<->ebx at +0x197, +0x24a, +0x29d, +0x2c3, +0x364,
+   +0x37d, +0x3c9, +0x3db); and in the ret == 0 tail the original returns mov eax, ebp where ours has xor
+   eax, eax (VC6 propagated ret == 0 from the branch; the prover: only eax at the return differs, and it is
+   0 on both sides there). Tried: the declaration order (ret / back swapped), back = 0 before ret = 0
+   (worse, order hunks), the tail as if / else (frame grows to 0x28, much worse), as ?: (same), as if (ret
+   == 0) first (worse). */
 int main_ChooseHistory(void)
 {
     int again, back, ret, f, b0, b1, b2, grp, hist, h, r;
@@ -2540,8 +2550,7 @@ lback:
                     } else if (r == 0) {
                         if (lobby_ChooseProfession(0xc6) != 0) {
                             rec = gm_GetJobTalents(init_PlayerProfile.job);
-                            *(int *)init_PlayerProfile.talents = *(int *)rec.skills;
-                            init_PlayerProfile.talents[4] = rec.skills[4];
+                            memcpy(init_PlayerProfile.talents, rec.skills, 5);
                             init_PlayerProfile.modelId = gm_HeadIconNumber("patrizier_MANN2") + 0x639;
 lok:
                             ret = 1;
