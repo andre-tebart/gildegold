@@ -15128,48 +15128,43 @@ void ai_ShowTavernHelperNews(char *ownerRec, char *helperRec, int bld)
     } while ((int)p < (int)((unsigned)&ai_Chars + 0x65402));
 }
 /* 0x5a8ee0, the parting news of a character pair (162 B, a reasoned guess at the texts' meaning): for a kind
-   6 / 7 second character the texts 0x1336 + r and 0x1330 + 3 * (the second character's sex +9) + r (r the random
-   of the local player's slot 0x7e3f40 + ai_OwnPlayer * 0x2f4, each taken through 0x42ec00) pick the text 0x132f
-   with the first character's id, shown to the second character's netId (he_ShowNews 1, 0x5ec). Its only caller
-   is ai_FindPartner (0x47ddf0) on the path that drops the partner */
+   6 / 7 second character the text 0x132f is formatted with the first character's id, the text 0x1330 + 3 * (the
+   second character's sex != 0) + r, the second character's id, the text 0x1336 + r (each r = util_Random (3))
+   and the local player's slot ai_PlayerSlots[ai_OwnPlayer], and shown to the second character's netId
+   (he_ShowNews 1, 0x5ec). Its only caller is ai_FindPartner (0x47ddf0) on the path that drops the partner */
 
 void ai_ShowPartingNews(unsigned short *cRec, unsigned short *pRec)
 {
     G8CHARREC *c;
     G8CHARREC *p;
-    unsigned int v;
 
     c = (G8CHARREC *)cRec;
     p = (G8CHARREC *)pRec;
     if (p->kind == 6 || p->kind == 7) {
-        v = ((int (*)(int, void *))util_Random)(3, (unsigned)&ai_PlayerSlots + ai_OwnPlayer * 0x2f4);
-        v = ((int (*)(int, int, int))util_Random)(3, p->id, (v & 0xffff) + 0x1336);
-        txt_Format(ai_NewsText, 0x132f, c->id,
-                     (v & 0xffff) + (p->sex != 0 ? 3 : 0) + 0x1330);
+        txt_Format(ai_NewsText, 0x132f, c->id, (util_Random(3) & 0xffff) + (p->sex != 0 ? 3 : 0) + 0x1330, p->id,
+                   (util_Random(3) & 0xffff) + 0x1336, ai_PlayerSlots[ai_OwnPlayer]);
         he_ShowNews(p->netId, -1, ai_NewsText, 1, 0x5ec, 0);
     }
 }
-/* 0x5a8f90, the feud news of a character pair (162 B, a reasoned guess at the texts' meaning): for a kind 6 / 7
-   second character the texts 0x1340 + r and 0x133a + 3 * (the second character's sex +9) + r (r the random of
-   the first character's id, each taken through 0x42ec00) pick the text 0x1339 with the first character's id,
-   shown to the second character's netId (+4, he_ShowNews 1, 0x5ec). Its only caller is ai_FindPartner
-   (0x47ddf0), on the branch that gives the character a hated candidate as its partner */
+/* 0x5a8f90, the feud news of a character pair (180 B, a reasoned guess at the texts' meaning): for a kind 6 / 7
+   second character the text 0x1340 + r is formatted with the first character's id into a local buffer, then the
+   text 0x1339 with the first character's id, the text 0x133a + 3 * (the second character's sex != 0) + r, the
+   second character's id and that buffer (each r = util_Random (3)), shown to the second character's netId
+   (he_ShowNews 1, 0x5ec). Its only caller is ai_FindPartner (0x47ddf0), on the branch that gives the character
+   a hated candidate as its partner */
 
 void ai_ShowFeudNews(unsigned short *cRec, unsigned short *pRec)
 {
     G8CHARREC *c;
     G8CHARREC *p;
     char local[512];
-    unsigned int v;
 
     c = (G8CHARREC *)cRec;
     p = (G8CHARREC *)pRec;
     if (p->kind == 6 || p->kind == 7) {
-        v = ((int (*)(int, void *))util_Random)(3, c->id);
-        txt_Format(local, (v & 0xffff) + 0x1340);
-        v = ((int (*)(int, void *, int))util_Random)(3, p->id, local);
-        txt_Format(ai_NewsText, 0x1339, c->id,
-                     (v & 0xffff) + (p->sex != 0 ? 3 : 0) + 0x133a);
+        txt_Format(local, (util_Random(3) & 0xffff) + 0x1340, c->id);
+        txt_Format(ai_NewsText, 0x1339, c->id, (util_Random(3) & 0xffff) + (p->sex != 0 ? 3 : 0) + 0x133a, p->id,
+                   local);
         he_ShowNews(p->netId, -1, ai_NewsText, 1, 0x5ec, 0);
     }
 }
@@ -15182,16 +15177,13 @@ void ai_ShowPartnerNews(unsigned short *cRec, unsigned short *pRec)
     G8CHARREC *c;
     G8CHARREC *p;
     char local[512];
-    unsigned int v;
 
     c = (G8CHARREC *)cRec;
     p = (G8CHARREC *)pRec;
     if (p->kind == 6 || p->kind == 7) {
-        v = ((int (*)(int, void *))util_Random)(3, c->id);
-        txt_Format(local, (v & 0xffff) + 0x134a);
-        v = ((int (*)(int, void *, int))util_Random)(3, p->id, local);
-        txt_Format(ai_NewsText, 0x1343, c->id,
-                     (v & 0xffff) + (p->sex != 0 ? 3 : 0) + 0x1344);
+        txt_Format(local, (util_Random(3) & 0xffff) + 0x134a, c->id);
+        txt_Format(ai_NewsText, 0x1343, c->id, (util_Random(3) & 0xffff) + (p->sex != 0 ? 3 : 0) + 0x1344, p->id,
+                   local);
         he_ShowNews(p->netId, -1, ai_NewsText, 1, 0x5ec, 0);
     }
 }
