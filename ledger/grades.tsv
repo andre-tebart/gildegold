@@ -283,7 +283,7 @@ exe	0x00410710	di_AcquireMouse	di_input	byte	readable
 exe	0x00410740	di_AcquireKeyboard	di_input	byte	readable		
 exe	0x00410770	di_Init	di_input	byte	readable		
 exe	0x00410a50	di_Exit	di_input	byte	readable		
-exe	0x00410ac0	di_UpdateButtons	di_input	draft	readable	deep	
+exe	0x00410ac0	di_UpdateButtons	di_input	draft	readable	stuck	
 exe	0x00410ed0	di_SwapButtons	di_input	byte	readable		
 exe	0x00410f20	di_PollMouse	di_input	byte	readable		
 exe	0x004112e0	di_PollKeyboard	di_input	byte	readable		
@@ -806,7 +806,7 @@ exe	0x0043eef0	d3fl_Render	d3_fl	byte	readable
 exe	0x0043f080	d3fl_MakeWeights	d3_fl	byte	readable		
 exe	0x0043f180	d3fl_InitCache	d3_fl	byte	readable		
 exe	0x0043f270	d3fl_FreeCache	d3_fl	byte	readable		
-exe	0x0043f300	d3fl_MakeJitter	d3_fl	draft	readable	deep	
+exe	0x0043f300	d3fl_MakeJitter	d3_fl	draft	readable	stuck	
 exe	0x0043f8a0	d3fl_SetDetail	d3_fl	byte	readable		
 exe	0x0043f910	d3fl_ReloadMap	d3_fl	byte	readable		
 exe	0x0043f930	d3fl_SetMips	d3_fl	byte	readable		
@@ -2947,14 +2947,14 @@ exe	0x004fb770	gm_HeadIconNumber	f3gm	byte	readable
 exe	0x004fb890	gm_ChooseHeadIcon	f3gm	byte	readable		
 exe	0x004fbb80	gm_CreateCharModel	f3gm	shape	readable	deep	
 exe	0x004fbd10	gm_PlaceOnStage	f3gm	byte	readable		
-exe	0x004fbe90	gm_DailyCharacterStep	f3gm	draft	readable	deep	
+exe	0x004fbe90	gm_DailyCharacterStep	f3gm	byte	readable		
 exe	0x004fc6f0	gm_AgeCharacter	f3gm	shape	readable		
 exe	0x004fc7a0	gm_ExpectedDeathAge	f3gm	shape	readable		
 exe	0x004fc820	gm_CharacterHealth	f3gm	byte	readable		
 exe	0x004fc890	gm_CharacterBaseHealth	f3gm	byte	readable		
 exe	0x004fc8e0	gm_HealthRatio	f3gm	byte	readable		
 exe	0x004fc920	gm_DailyCharacters	f3gm	byte	readable		
-exe	0x004fca40	gm_AddHealth	f3gm	shape	readable		
+exe	0x004fca40	gm_AddHealth	f3gm	byte	readable		
 exe	0x004fccc0	gm_PartnerStep	f3gm	draft	readable	deep	
 exe	0x004fd090	gm_IsNoPlayerKin	f3gm	byte	readable		
 exe	0x004fd120	gm_PopulationStep	f3gm	shape	readable		
@@ -3066,8 +3066,8 @@ exe	0x00504ad0	gm_TitleGroup	f3gm	byte	readable
 exe	0x00504c00	gm_TitleJobGroup	f3gm	byte	readable		
 exe	0x00504ce0	gm_TitlesLeft	f3gm	shape	readable		
 exe	0x00504e00	gm_SkillPoints	f3gm	byte	readable		
-exe	0x00504e20	gm_Mix	f3gm	shape	readable		
-exe	0x00504e80	gm_Mix2	f3gm	shape	readable		
+exe	0x00504e20	gm_Mix	f3gm	byte	readable		
+exe	0x00504e80	gm_Mix2	f3gm	byte	readable		
 exe	0x00504ec0	gm_GetSkill	f3gm	byte	readable		
 exe	0x005051d0	gm_GetDisease	f3gm	shape	readable		
 exe	0x00505230	gm_CatchDisease	f3gm	byte	readable		
