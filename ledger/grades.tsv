@@ -2735,7 +2735,7 @@ exe	0x004eddf0	unk_ResetEffectSlots	gv	byte	readable
 exe	0x004ede70	gv_FreeEffectObjects	gv	byte	readable		
 exe	0x004eded0	gv_FindEffect	gv	byte	readable		
 exe	0x004edf10	gv_ReleaseEffect	gv	byte	readable		
-exe	0x004edf80	gv_UpdateEffects	gv	draft	readable	deep	
+exe	0x004edf80	gv_UpdateEffects	gv	byte	readable		
 exe	0x004ee360	gv_ExplodeShot	gv	draft	readable	deep	
 exe	0x004eea70	gv_RequestEffectLoad	gv	byte	readable		
 exe	0x004eeaa0	gv_ReserveEffect	gv	byte	readable		
@@ -2799,7 +2799,7 @@ exe	0x004f2440	gv_MovePrice	gv	byte	readable
 exe	0x004f24a0	gv_ProtectionPrice	gv	byte	readable		
 exe	0x004f2540	gv_FindHeldEntry	gv	byte	readable		
 exe	0x004f25d0	gv_FindReservedEntry	gv	byte	readable		
-exe	0x004f2660	gv_SeanceChance	gv	shape	readable		
+exe	0x004f2660	gv_SeanceChance	gv	byte	readable		
 exe	0x004f2720	gv_GetTableRecord	gv	byte	readable		
 exe	0x004f2750	gv_SetTableRecord	gv	byte	readable		
 exe	0x004f27d0	gv_OnDecisionValue	gv	byte	readable		
@@ -3194,7 +3194,7 @@ exe	0x0050e5a0	init_PlaceOffices	f3init	shape	readable	deep
 exe	0x0050e690	init_CreateStartCharacters	f3init	draft	readable	deep	
 exe	0x0050f0b0	init_CreateOpeningObjects	f3init	byte	readable		
 exe	0x0050f340	init_StockMarketStalls	f3init	shape	readable	deep	
-exe	0x0050f570	init_Betrieb	f3init	draft	readable	deep	
+exe	0x0050f570	init_Betrieb	f3init	draft	readable	stuck	
 exe	0x0050f750	init_OpenBuilding	f3init	shape	readable	deep	
 exe	0x0050f910	init_OpenTown	f3init	draft	readable	deep	
 exe	0x00510730	init_CollectSiteObject	f3init	byte	readable		
@@ -3279,7 +3279,7 @@ exe	0x0051d550	ls_ReadBuildings	ls	byte	readable
 exe	0x0051db00	ls_ReadPlayerRecords	ls	byte	readable		
 exe	0x0051de70	ls_ReadCharacters	ls	byte	readable		
 exe	0x0051e750	ls_ReadCharacter	ls	shape	readable		
-exe	0x0051e900	ls_ReadSceneRecords	ls	draft	readable	deep	
+exe	0x0051e900	ls_ReadSceneRecords	ls	draft	readable	stuck	
 exe	0x0051f080	ls_ReadPlayerSlots	ls	shape	readable	deep	
 exe	0x0051f650	ls_ReadRelations	ls	shape	readable		
 exe	0x0051f720	ls_ReadStatistics	ls	byte	readable		
@@ -4003,7 +4003,7 @@ exe	0x00578370	ai_TutorialStop	sv_t	byte	readable
 exe	0x00578440	ai_TutorialFreeRuns	sv_t	byte	readable		
 exe	0x005784a0	ai_TutorialInitMainIntro	sv_t	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	sv_t	byte	readable		
-exe	0x00578e40	ai_TutorialInitChapter2	sv_t	shape	readable		byte+readable -> shape+readable at 8089cb0d: promote --accept-falls
+exe	0x00578e40	ai_TutorialInitChapter2	sv_t	byte	readable		
 exe	0x00579570	ai_TutorialInitChapter3	sv_t	draft	readable		
 exe	0x0057aa80	ai_TutorialInitChapter4	sv_t	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	sv_t	byte	readable		
