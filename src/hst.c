@@ -2153,24 +2153,39 @@ char hst_Modes[3][5] = { "_NEW", "_USE", "_REL" };  /* 0x601af0, the modes of a 
 extern int (*hst_TokenCallbacks[15])(int mode, G12ARG *args, int k, char *fmt, char *out);
 
 /* 0x4b21c0, leaked name (its messages): one replacement "[_NEWn_NAME...]": mode _NEW / _USE / _REL with
-   slot n of ctx (ctx[n + 1].unk00 holds the replacement, ctx[0].unk00 the valid flag), then the callback of
-   NAME; the error messages are written to a local buffer only */
-int hst_ParseContext(char *s, char *out, G12ARG *ctx)
+   slot n of ctx (ctx[n + 1].token holds the replacement, ctx[0].token the valid flag), then the callback of
+   NAME; the error messages are written to a local buffer only
+   @deep read the whole function against the original 0x4b21c0..0x4b2373 and fixed: s is a local copy of
+   the src parameter living in the dead parameter slot (the original's 'mov [ebp+8],esi' at the entry; this
+   gave the AI_ZERO temps their own slots: frame 0x110 now equal, 371 -> 112 differing bytes); readable:
+   G12ARG.token (args[n+1].token is slot n's replacement token, args[0].token the valid flag), the mode
+   compare through HST_MODE.tag. ours 170 vs 159: the 11 extra are one error tail. Left: (1) the token
+   search's exits - the original threads both the exhausted loop ('+ push "...Unknown Replacement" / + jmp
+   0x4b22a1' straight after the 'cmp ebx,hst_Modes; jl') and the found path (je straight to the strlen)
+   past the 'k >= 15' test, where ours re-tests after the break ('- cmp ebx,0xf / - jge 0x4b2335') and
+   keeps its own sprintf/return-0 copy (0x4b2335..0x4b2351) instead of the original's push-and-jmp into the
+   'Wrong group reference' block's 'lea ecx,[ebp-0x110] / push ecx / call sprintf' (ours emits that lea
+   before the push, so the tails do not merge); (2) k in ebx (ours) vs edx and the token pointer in edx vs
+   ebx (regs hunks 0x4b22c2..0x4b2363). Tried: the error inside the loop ('if (++k >= 15)', 478 bytes) and
+   the strlen/store under 'if (k < 15)' with only the final check (484 bytes). */
+int hst_ParseContext(char *src, char *out, G12ARG *ctx)
 {
     char buf[0x100];
+    char *s;
     int slot, mode, k, i, r;
 
+    s = src;
     slot = -1;
     mode = 4;
     if (s == 0 || out == 0)
         return 0;
     for (i = 0; i < 3; i++) {
-        if (*(int *)s == *(int *)hst_Modes[i])
+        if (((HST_MODE *)s)->tag == ((HST_MODE *)hst_Modes[i])->tag)
             mode = i;
     }
     AI_ZERO(buf, 0x100);
     if (mode != 4) {
-        if (ctx == 0 || ctx[0].unk00 == 0) {
+        if (ctx == 0 || ctx[0].token == 0) {
             sprintf(buf, "hst_ParseContext() failed: Wrong group reference");
             return 0;
         }
@@ -2183,7 +2198,7 @@ int hst_ParseContext(char *s, char *out, G12ARG *ctx)
         }
     }
     if (mode == 1) {
-        k = ctx[slot + 1].unk00;
+        k = ctx[slot + 1].token;
     } else {
         s++;
         for (k = 0; k < 15; k++) {
@@ -2196,7 +2211,7 @@ int hst_ParseContext(char *s, char *out, G12ARG *ctx)
         }
         s += strlen(hst_TokenNames[k]);
         if (mode == 0)
-            ctx[slot + 1].unk00 = k;
+            ctx[slot + 1].token = k;
     }
     if (k >= 15) {
         sprintf(buf, "hst_ParseContext() failed: Unknown Replacement");
@@ -2204,7 +2219,7 @@ int hst_ParseContext(char *s, char *out, G12ARG *ctx)
     }
     r = hst_TokenCallbacks[k](mode, ctx, slot, s, out);
     if (r == 0 && ctx != 0)
-        ctx[0].unk00 = 0;
+        ctx[0].token = 0;
     return r;
 }
 

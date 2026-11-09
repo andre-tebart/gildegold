@@ -7,7 +7,9 @@
 #include "hst_types.h"               /* G12ROW */
 extern G12ROW hst_Lists[4];  /* 0xf83540 */
 typedef struct G12ARG {                 /* 8 bytes, the arguments of a text */
-    int unk00;
+    int token;                          /* 0x00, of args[n + 1]: the replacement token (hst_TokenNames index) slot n
+                                           took with "_NEWn" (each slot's token follows its id); of args[0]: the
+                                           context is valid (hst_ParseContext clears it when a token fails) */
     int id;                             /* 0x04, a character id */
 } G12ARG;                                                   /* 0xf83540 */
 
