@@ -319,7 +319,7 @@ exe	0x00413550	d3t_SetColor	d3_tools	ab50610852d1faa7	no	byte	control=byte p1=by
 exe	0x00413620	d3t_SetColorCB	d3_tools	003ec74f983c8588	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00413640	d3t_SetTreeColor	d3_tools	2f1d897f488a535d	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004136d0	d3t_MoveCameraPath	d3_tools	66e04c7ba2e4c0f3	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x00413960	d3t_MoveObjectPath	d3_tools	fb67b13725f46b63	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x00413960	d3t_MoveObjectPath	d3_tools	fb67b13725f46b63	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x00413b00	d3t_InflateObjectTree	d3_tools	30131cfb62fd6f22	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00413b30	d3t_CreateRain	d3_tools	be764dae465c7ab7	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00413d00	d3t_DeleteRain	d3_tools	03fa52abf300326f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte

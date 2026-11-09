@@ -1007,7 +1007,20 @@ int d3t_MoveCameraPath(int time, int n, ...)
     d3t_CamMoving = 1;
     return 1;
 }
-/* 0x413960, moves obj along the n objects in path (null entries are skipped) within time @deep B: all 6 diffclass hunks read; the 79 code instructions are the same statements with i and k in swapped registers (ours i=ecx/k=edx, original k=ecx/i=edx; asmdiff --regs ecx=edx,edx=ecx leaves only the k store/reload placement and a 6-byte-longer tail) plus nop fill, no missing/wrong statement, constant or field */
+/* 0x413960, moves obj along the n objects in path (null entries are skipped) within time
+   @stuck i/k register swap (ours i=ecx k=edx, original i=edx k=ecx; the original reloads k, step, i right
+   after d3_PointToWorld and keeps k in ecx to the end, ours reloads i after storing k and reloads k into
+   edx after the loop). headers sample: insensitive (32, one codegen). dcp try: decl order k,i / for
+   (k=1,i=0;..) / k=1 before keys[0].time / o=path[i] separate / path[i] twice / continue form / k=k+1 /
+   keys[k-1].time at the end or mid: = control; for (i=0,k=1;..) and i=0;k=1; before the loop (also as
+   if(n>0) do..while): 49 ins/132 B, regs 50 (only the prologue i/k pair flips); time store before the
+   call: 49/115 (+ i,k order: 45/105, but the original stores it after the call); k=1 at the top or after
+   step: 49/189; key pointer local: 59/153; k++ before the subtractions with k-1 indexes: 109; while form:
+   74. Left: asmdiff mov edx,1/xor ecx,ecx vs xor edx,edx/mov ecx,1, the k/step/i reloads after the call,
+   the k reload mov edx,[ebp+0xc] and the tail lea/push registers. (tiebreak: insensitive) prior: B: all 6
+   diffclass hunks read; the 79 code instructions are the same statements with i and k in swapped registers
+   (ours i=ecx/k=edx, original k=ecx/i=edx; asmdiff --regs ecx=edx,edx=ecx leaves only the k store/reload
+   placement and a 6-byte-longer tail) plus nop fill, no missing/wrong statement, constant or field */
 
 D3ANIM *d3t_MoveObjectPath(D3OBJECT *obj, int time, int n, D3OBJECT **path)
 {
