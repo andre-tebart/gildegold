@@ -1217,8 +1217,13 @@ int evt_Eval(char *end)
                 }
                 switch (v->type) {
                 case 1:
-                case 7:
                     val = v->data.i[idx];
+                    break;
+                case 7:
+                    /* a float variable leaves val as it is (floats are not evaluated, as the EVT_FLOAT token).
+                       @original the case keeps its own table entry to the switch end: an empty case is dropped */
+                    if (0) {
+                    }
                     break;
                 case 2:
                     val = v->data.b[idx];

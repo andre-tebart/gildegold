@@ -559,7 +559,7 @@ exe	0x004299a0	evt_RunScript	evt	7ed9c449e7f238f7	no	byte	control=byte p1=byte p
 exe	0x00429ab0	evt_RunScriptArgs	evt	f958c498df644869	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00429c40	evt_RunCommand	evt	a28820152bf7d196	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00429e90	evt_Stop	evt	0e3da59462d9cf03	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x00429f30	evt_Eval	evt	ed5939990112ce0d	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x00429f30	evt_Eval	evt	ed5939990112ce0d	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x0042a480	evt_Assign	evt	d1e2e6b98d0652ae	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0042a620	evt_CallBuiltin	evt	f021c2d828479b75	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0042a8f0	evt_Statement	evt	eaf41b292884d7e5	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
