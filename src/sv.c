@@ -337,12 +337,19 @@ show:
     return 0;
 }
 /* 0x521150, a modal message box (the form "misc\\Messagebox" in the sizes by the flags 2 Autosize / 0x10 BIG / 0x20 VERY_BIG, 0x100 the pergament "NONE_PERGA", 8 all messages): shows the text, loops
-   sv_RunFrame until a button, waits at most 500 ms with flag 4, a countdown bar with flag 0x80 and returns the button + 1 (0 for none / cancel). Not reentrant (sv_MessageBoxOpen, 0x6f2350) */
+   sv_RunFrame until a button, waits at most 500 ms with flag 4, a countdown bar with flag 0x80 and returns the button + 1 (0 for none / cancel). Not reentrant (sv_MessageBoxOpen, 0x6f2350)
+   @deep Read whole against the original; typed D2WIN (nobjs/objs/w/h) and d2_Radios[idx].sel; the radio
+   loop reloads d2_LastWindowPtr only after d2_RadioAdd as the original (its skip jumps straight to movsx
+   ecx,[edx+0x1c]). ours=211 original=211. Left: allocation - the original keeps 0 in esi from i = 0 and
+   pushes esi for the zero arguments (ours push 0), then bar in esi (else branch mov esi,[esp+0x1c] at
+   +0x177) where ours keeps bar in a slot, quick = flags & 0x40 in the flags slot [esp+0x2c] (ours in esi),
+   scene in the text slot; frame 0x18 vs ours 0x10 (two more slots in the original). */
 
 int sv_MessageBox(int text, unsigned flags)
 {
     int ret, form, bar, idx, i, k, scene, timed, quick, n;
     unsigned mask;
+    D2WIN *win;
     unsigned t0;
 
     t0 = d3_Time;
@@ -370,21 +377,22 @@ int sv_MessageBox(int text, unsigned flags)
     d2_CentreViewWindows(form);
     sv_MessageBoxOpen = 1;
     idx = d2_CreateRadioGroup(0);
-    k = (char *)d2_LastWindowPtr;
-    if (*(short *)(k + 0x1c) > 0) {
+    win = d2_LastWindowPtr;
+    if (win->nobjs > 0) {
         do {
-            int w = *(int *)(*(int *)(k + 0x18) + i * 4);
-            if (d2_Objs[w].type != 0x40)
-                d2_RadioAdd(idx, w);
-            k = (char *)d2_LastWindowPtr;
+            k = win->objs[i];
+            if (d2_Objs[k].type != 0x40) {
+                d2_RadioAdd(idx, k);
+                win = d2_LastWindowPtr;
+            }
             i++;
-        } while (i < *(short *)(k + 0x1c));
+        } while (i < win->nobjs);
     }
     d2_RadioSelect(idx, 0);
     d2_SetForm(form, 0);
     timed = flags & 0x80;
     if (timed != 0)
-        bar = d2_WinOpenSlider(0x1c, *(short *)((char *)d2_LastWindowPtr + 10) - 0x18, *(short *)((char *)d2_LastWindowPtr + 8) - 0x40, 0, 500, 0x83, 0x42, d2_LastWindow);
+        bar = d2_WinOpenSlider(0x1c, d2_LastWindowPtr->h - 0x18, d2_LastWindowPtr->w - 0x40, 0, 500, 0x83, 0x42, d2_LastWindow);
     if (sv_RunFrame(sv_MessageBox, mask) != 0) {
         quick = flags & 0x40;
         n = flags & 4;
@@ -394,7 +402,7 @@ int sv_MessageBox(int text, unsigned flags)
                 d2_RaiseViewWindows(form);
             if (d2_ClickedId == 0) {
                 if (d2_HitWindow == scene) {
-                    ret = d2_RadioSel[idx * 0x23] + 1;
+                    ret = d2_Radios[idx].sel + 1;
                     sv_PopRequest = 1;
                 } else if (kb_Last == 1) {
                     ret = 0;
