@@ -59,7 +59,7 @@ struct D3PARTSYS *d3t_CreateExplosion(void *parent, struct D3VECTOR *pos, int co
 struct D3PARTSYS *d3t_CreateSmoke(void *parent, struct D3VECTOR *pos, int count, float size, float unused, float height, float y, float alpha, float spread, struct D3VECTOR *start, unsigned int duration, int delay, struct D3COLOR color); /* 0x416340 */
 struct D3PARTSYS *d3t_CreateEarth(void *parent, struct D3VECTOR *pos, int count, float size, float a, float b, float c, float d, float e, float f, float g, struct D3COLOR color); /* 0x4168e0, creates the earth-brocken debris: count "Erdbrocken_an0" particles */
 void d3t_CreateSnowMipmaps(void);                                                /* 0x416980 */
-void d3t_FadeOutSunRays(int unused, int b);                                      /* 0x417150 */
+void d3t_FadeOutSunRays(struct D3OBJECT *unused, int b);                         /* 0x417150, fades the sun rays out (SunFade = -1 from now) */
 void d3t_FadeInSunRays(struct D3OBJECT *unused);                                        /* 0x417170, fades the sun rays in: SunFade = 1 from now and the value */
 struct D3OBJECT *d3t_CreateSunRays(void);                                               /* 0x417190, creates the "sonnenstrahlen" object at the camera position, rotated */
 float d3t_SmoothStep(float a, float b, float x);                                 /* 0x417270, smooth Hermite step: t = clamp((x - a) / (b - a), 0, 1), returns (3 - */

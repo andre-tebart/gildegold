@@ -56,7 +56,7 @@ D3ANIM *d3t_CamMove = 0;                 /* 0x6310e8, running camera animation *
 static D3OBJECT *d3t_FoundObject = 0;    /* 0x6310ec */
 D3OBJECT *d3t_SunRays = 0;               /* 0x631120, reached from main.c by its address */
 static int d3t_SunFade = 0;              /* 0x631124, 1 fading in, -1 fading out */
-static int d3t_Unk631128 = 0;            /* 0x631128 */
+static int d3t_SunFadeOutArg = 0;         /* 0x631128, the b of the last d3t_FadeOutSunRays, 0 after a fade-in; never read */
 int d3t_SunFadeStart = -1;  /* 0x5f345c, initialized to -1; TODO define here once .data is matched */
 
 /* 0x411680, starts an animation that moves the object to pos and turns it to dir (angles).
@@ -2476,20 +2476,21 @@ void d3t_CreateSnowMipmaps(void)
 /* Sun rays ("sonnenstrahlen"): a camera-attached object pointing at the light "pLicht", faded in
    and out over 500 ms. */
 
-/* 0x417150 @deep Q2 d3t_Unk631128: write-only (FadeOut stores the argument, FadeIn 0); no read anywhere in src and no caller of either fade function exists, so no role can be stated - the name needs the original's reader (match-deep). Byte otherwise */
-void d3t_FadeOutSunRays(int unused, int b)
+/* 0x417150, fades the sun rays out: SunFade = -1 from now; keeps b in d3t_SunFadeOutArg (sv_WeatherFrame passes
+   the rays object and 1; nothing reads the value) */
+void d3t_FadeOutSunRays(D3OBJECT *unused, int b)
 {
     d3t_SunFade = -1;
     d3t_SunFadeStart = d3_Time;
-    d3t_Unk631128 = b;
+    d3t_SunFadeOutArg = b;
 }
-/* 0x417170, fades the sun rays in: SunFade = 1 from now and the value d3t_FadeOutSunRays stored is cleared @deep Q2 d3t_Unk631128: the same write-only global (FadeOut stores its argument, this function 0); no read in src, no caller of either function, no role evidence - match-deep's name (Q6 fixed here: the 0x417170 comment now describes the fade-in). Byte otherwise */
+/* 0x417170, fades the sun rays in: SunFade = 1 from now, d3t_SunFadeOutArg cleared */
 
 void d3t_FadeInSunRays(D3OBJECT *unused)
 {
     d3t_SunFade = 1;
     d3t_SunFadeStart = d3_Time;
-    d3t_Unk631128 = 0;
+    d3t_SunFadeOutArg = 0;
 }
 
 void d3t_UpdateSunRays(D3OBJECT *obj);
