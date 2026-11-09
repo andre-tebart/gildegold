@@ -2270,7 +2270,25 @@ lskip:
    Familienname, Wappen (+ 0x59a), Geschlecht, Glauben), then six stages (stage): 0 first name edit, 1 family name edit (enter = next), 2 sex (two buttons, byte 0x75e5a8), 3 faith (two buttons, byte 0x75e5a9), 4 the coat
    of arms (eight objects 0x59a .. 0x5a1 in a list; click = next), 5 done (0x75e5a4 = the chosen coat object id, 0x75e5a2 = 0x12); the character record 0x75e5a0 holds the names at +0xa (0x75e5aa) / +0x2a (0x75e5ca).
    Writes the values back to the INI file on leaving; returns 1 when finished. The two button rows are copied into four variables
-   (male / female, faith0 / faith1); redraw is a char @deep read against the original and reconstructed (310 -> 184 ins): both button rows copied into four variables (two int[2] + male/female/faith0/faith1: the original's frame 0x190), redraw a char, the back / escape test with stage--; redraw = 1 (the original jumps straight into the redraw body), d2_EnableObject through a temp with if / else (push 1 / push 0), do .. while (sv_RunFrame) with the INI write-back after it, typed init_PlayerProfile / d2_Objs / d2_Radios / d2_Wins. Left: (1) allocation: the original keeps -1 in ebp (or ebp,-1 at the loop head, cmp [d2_ClickedId], ebp) and 1 in ecx, ours 1 in ebp; e1 / e2 / list / ret take other slots; (2) stage 5: the original loads flag (mov eax,[esp+0x1a8]) when ai_MissionMode != -1 and discards it before ret = 1; every spelling tried (if (..) ret = flag; if (..) flag; ret = .. ? flag : 1) is removed entirely by VC6. Q7: d2.h declares d2_SetObjValue() without parameters */
+   (male / female, faith0 / faith1); redraw is a char
+   @stuck deep pass: draft -> shape (184 -> 36 ins). Earlier: read against the original and reconstructed
+   (310 -> 184 ins: both button rows copied into four variables, redraw a char, back/escape stage--,
+   EnableObject via if/else, do..while sv_RunFrame, typed records); tried for the stage-5 dead load if (..)
+   ret = flag / ret = ..?flag:1 (removed by VC6). This pass: the stage-5 dead load is the lobby twin's 'if
+   (ai_MissionMode == -1 || flag) ret = 1; else ret = 1;' (also fixed the -1 in ebp / 1 in ecx allocation),
+   strcpy for the two name copies (the original's mov cl,[eax]/inc eax order), init order redraw, ret,
+   stage (xor ebx after). Left: slots only, the male/female/faith0/faith1/gsel/fsel cluster. Relative to
+   the sex sv_ButtonRow lea: the original male +0x5c, female +0x60, faith1 +0x64, sexb +0x68 with faith0
+   packed into sexb[1] (+0x6c), faithb +0x80; ours male +0x50, female +0x54, faith0 +0x64, sexb +0x70 with
+   faith1 packed into sexb[1]. Hunks: '- lea ecx,[esp+0x70] / + lea ecx,[esp+0x68]' (sexb), '- mov
+   [esp+0x68],eax / mov [esp+0x6c],ecx + mov [esp+0x74],eax / mov [esp+0x78],ecx' (male/female), '- mov
+   [esp+0x48],eax / mov [esp+0x58],ecx + [esp+0x50] / [esp+0x48]' (faith0/faith1), and their later loads
+   (0x536515, 0x53653d, 0x536550 gsel store, 0x5366be..0x53673e compares, 0x53688e). Tried this pass (no
+   effect or worse): declaration order (split, reversed, 6 random: no effect at all), faith1 copied before
+   faith0 (worse, 46 slot lines), male/female swapped copy (no effect), one shared row[2] for both rows
+   (frame 0x184 vs 0x190), block-scoped row arrays (draft, frame 0x180). The lobby twin
+   (lobby_ChoosePlayer, stuck) has the same slot problem. (tiebreak: not measured (dcp headers sample
+   main_ChoosePlayer)) */
 
 int main_ChoosePlayer(int mask, int flag)
 {
@@ -2278,11 +2296,10 @@ int main_ChoosePlayer(int mask, int flag)
     int sexb[2], faithb[2], male, female, faith0, faith1;
     int ent[8];
     char buf[0x30], txt[0x100], redraw;
-    char *s, *d;
 
-    stage = 0;
     redraw = 1;
     ret = 0;
+    stage = 0;
     GetPrivateProfileStringA("Network", "Name", "Vorname", init_PlayerProfile.firstName, 0x20, ai_OptionsFile);
     GetPrivateProfileStringA("Network", "Familienname", "Nachname", init_PlayerProfile.familyName, 0x20, ai_OptionsFile);
     init_PlayerProfile.coat = GetPrivateProfileIntA("Network", "Wappen", 0, ai_OptionsFile) + 0x59a;
@@ -2363,20 +2380,14 @@ int main_ChoosePlayer(int mask, int flag)
         }
         if (stage == 0) {
             if (kb_Last == 0x1c) {
-                s = (char *)d2_GetObjValue(e1);
-                d = init_PlayerProfile.firstName;
-                while ((*d++ = *s++) != 0)
-                    ;
+                strcpy(init_PlayerProfile.firstName, (char *)d2_GetObjValue(e1));
                 stage = 1;
                 kb_Last = 0;
                 redraw = 1;
             }
         } else if (stage == 1) {
             if (kb_Last == 0x1c) {
-                s = (char *)d2_GetObjValue(e2);
-                d = init_PlayerProfile.familyName;
-                while ((*d++ = *s++) != 0)
-                    ;
+                strcpy(init_PlayerProfile.familyName, (char *)d2_GetObjValue(e2));
                 stage = 2;
                 redraw = 1;
                 kb_Last = 0;
