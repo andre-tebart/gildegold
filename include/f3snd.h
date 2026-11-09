@@ -83,13 +83,6 @@ typedef struct G16CHARCLICK {           /* the click-comment view of the start o
     unsigned char kind;                 /* 0x02, the building kind (0x14: none) */
 } G16CHARCLICK;
 
-typedef struct G16CHAR {                /* 0x21c bytes, ai_CharInts[0x300] (AICHAR, ai.h) */
-    unsigned int unk00;                 /* 0x00 */
-    char pad04;
-    char sex;                           /* 0x05, 1: woman */
-    char pad06[0x216];
-} G16CHAR;
-
 extern G16SEASON snd_Gusts[];           /* 0x602ba8, by season */
 extern float snd_VoiceVolume;           /* 0x602b08, voice volume (1.0, scaled by 127) */
 extern float snd_MusicVolume;           /* 0x602d68, music volume 0..1: 0 = no music (0x4c23f0, 0x4c2000) */
