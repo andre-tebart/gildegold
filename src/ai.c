@@ -202,7 +202,23 @@ int ai_IsLocalMaster(AICHAR *c)
     return 1;
 }
 /* 0x47ddf0, looks for a partner (a character that suits this one) and sends the messages about it; returns
-   the partner when the two have met enough, else 0 */
+   the partner when the two have met enough, else 0
+   @deep Read whole against the original 0x47ddf0..0x47e356 and fixed: the candidate filter (officeKind /
+   secondOffice, not jobId / prevOffice), the feud relation sum computed before util_Random, the partner
+   part as one exit return p with p = 0 on the no-partner paths (the original's xor edi,edi / mov eax,edi
+   tails). Every call, constant (128.0, the level factor, 34.0, -0x32 - rnd(0x20), the difficulty clamp
+   2d+0x23 / 2d+0xf), field (0x210 / 0x214..0x218) and branch matches. Left: (1) allocation in the
+   candidate loop: the original keeps c->id in bx under the -1 constant ebx (or ebx,-1 at entry; the
+   prover's Ins16(0xffffffff, id) push), the kind basis in ebp, the RelationMemory row offset in the dead
+   parameter slot [esp+0x28] and spills gm_CharLevel(i) to [esp+0x1c]; ours keeps i in ebp, o in ebx, id
+   and the row offset in frame slots (frame 0x1c vs 0x14, the slots hunks); (2) block layout: the original
+   places the b216<=b215 block (AddFieldValues with ebx=1 pushes) and the relation>0 block after the reset
+   block at the end, each with its own epilogue, where ours lays them inline and cross-jumps their common
+   a=1 / AddFieldDelta(0x218) / SendFieldDeltas tail (calls: cm_AddFieldDelta ours x12 vs x13,
+   cm_SendFieldDeltas x4 vs x5). (size: 429 vs 445 instructions, explained: 16 instructions: the original's
+   two separate b216 / relation>0 tails (an AddFieldDelta + SendFieldDeltas + xor edi / mov eax,edi
+   epilogue copy, ~14 instructions) that ours cross-jumps into one, and its spill of gm_CharLevel(i) /
+   row-offset reloads in the loop) */
 
 AICHAR *ai_FindPartner(AICHAR *c)
 {
