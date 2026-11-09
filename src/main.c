@@ -337,6 +337,8 @@ void main_FreeSoundBanks(void);         /* 0x537db0 */
 #include "d3_fl.h"
 #define ai_GoodsT (*(AIGOOD **)&ai_Goods)  /* 0x91aaf0, ai_Goods (f3gm.c: char *) as the AIGOOD records it points to */
 #define ai_BldsT (*(AIBLD **)&ai_Blds)  /* 0x889f74, ai_Blds (f3gm.c: char *) as the AIBLD records it points to */
+#define ai_NumPlayersW (*(int *)&ai_NumPlayers)  /* 0x62489c, ai_NumPlayers as the dword around it: @original main_ChooseCity reads the count as mov ecx,[0x62489c]; and ecx,0xff (0x537319) */
+#define ai_CityName (ai_DataPath + 0x220)  /* 0x75dec0, the name of the chosen city (0x40 bytes inside ai_DataPath's block: game.INI [General] Stadt, main_ChooseCity) */
 #define ai_BTypesT (*(AIBTYPE **)&ai_BTypes)  /* 0x7e3f30, ai_BTypes (ahm.c: char *) as the AIBTYPE records it points to */
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
 #define cm_SendExSellObjectI ((void (*)(int, int, int, int, unsigned char, int))cm_SendExSellObject)  /* 0x4c4880 (cm.h: short c): @original this unit pushes the third argument as an int (byte-matched ai_MeisterBewaffnen / ai_ExecuteBuyRoom / ai_ExecuteBuyMarketObject) */
@@ -928,7 +930,7 @@ int main_PlayerCountDialog(void)
 extern int d2_PointerObj, d2_LastWindow;
 
 /* 0x5328f0, hosts a network game: the player count dialog (main_PlayerCountDialog), the player name / city choice (main_ChooseCity (1, 1)), then the network game record in ls_SavePath (106 bytes at
-   +0xa0: the record size 0x6a, two words of 1, the city name from ai_DataPath + 0x220, the player count, the word at +0x84) is filled, the save name "<gamedata/cities>/<city>.net" and the host address
+   +0xa0: the record size 0x6a, two words of 1, the city name from ai_CityName, the player count, the word at +0x84) is filled, the save name "<gamedata/cities>/<city>.net" and the host address
    127.0.0.1 are set, the network flag 0x10 of ai_GameFlags is raised and the record is copied to main_NetGameRecord; the view is set up (d3_SetViewport) and the mode mask 0x3f stored; returns 1,
    or 0 when cancelled (the screen is cleared and picture 0x797 shown) */
 int main_HostNetworkGame(void)
@@ -939,7 +941,7 @@ int main_HostNetworkGame(void)
     if (main_PlayerCountDialog() != 0) {
         ((void (*)(void))d3io_NoopCallback)();  /* called with no argument (no push at the call) */
         if (main_ChooseCity(1, 1) != 0) {
-            sprintf(main_NetSaveName, "%s/%s.net", "gamedata/cities", ai_DataPath + 0x220);
+            sprintf(main_NetSaveName, "%s/%s.net", "gamedata/cities", ai_CityName);
             strcpy(main_NetHost, "127.0.0.1");
             ai_GameFlags |= 0x10;
             ls_SavePath.net.players = ai_NumPlayers;
@@ -1593,7 +1595,7 @@ void main_Menue(void)
                 if (ai_TutorialWindow() != 0) {
                     ai_SetupTutorialPlayer();
                     ai_NumPlayers = 1;
-                    strcpy(ai_DataPath + 0x220, "Tutorial");
+                    strcpy(ai_CityName, "Tutorial");
                     ai_GameFlags = 0x89;
                     sv_PopRequest = 1;
                 } else {
@@ -2286,7 +2288,7 @@ int main_ChoosePlayer(int mask, int flag)
     init_PlayerProfile.faith = (unsigned char)GetPrivateProfileIntA("Network", "Glauben", 0, ai_OptionsFile);
     f = d2_OpenForm(0, 0, "Menu\\CHOOSEPLAYER");
     d2_CentreViewWindows(f);
-    io_TownDisplayName(((unsigned)&ai_DataPath + 0x220), txt);
+    io_TownDisplayName(ai_CityName, txt);
     d2_SetForm(f, 1);
     io_PrintText(0x1acf, txt);
     e1 = d2_GetWinObj(f, 1, io_PrintText(0x1ad0, 0x1ad2));
@@ -2705,15 +2707,29 @@ void main_ChooseOpponents(int n)
    creates the name object of the city (0x59a2c0 "stadt_<name>", the text plate 0x52e1c0 from the table 0x143a1c0 by the key "_STADTAUSWAHL_<NAME>_INFO+0" (0x42e770)), puts the city tower "sp_STADTTURM" (0x446e10,
    "sonstiges\wimpel_STADTTURM.baf") over the picked city (the pick object 0x448630 with a name starting with "stadt_" selects: sel; the default is the object of the 5th city) and shows its description
    ("_STADTAUSWAHL_<NAME>_BESCHR+0"); the buttons: ok (or enter / 0x1c) goes on to main_ChooseDifficulty and main_ChooseHistory (host: ends at once), the second button opens the opponent
-   selection main_ChooseOpponents (diff of the picked city); returns 1 when a game was set up (the second parameter is the host flag, the first unused) */
+   selection main_ChooseOpponents (diff of the picked city); returns 1 when a game was set up (the second parameter is the host flag, the first unused)
+   @deep Read whole against 0x537230..0x537924: the city file list (.CTY / .NET), the header reads, diff =
+   limit - players (the original reads ai_NumPlayers as dword & 0xff: kept as the ai_NumPlayersW view), the
+   city points (ai_CreateCityPoint now returns D3OBJECT *), the tower, the pick loop, the description texts
+   (cm_TextNewline as the original pushes it), the opponent / ok buttons and the cleanup all agree, 513/513
+   instructions. Left: the frame layout. The original puts cityobj[64] at esp+0x294 and the 0x100 plate
+   name buffer (objName) at esp+0x394; ours has the two 0x100-byte arrays the other way round, so the three
+   indexed cityobj accesses differ only in the displacement (code hunks +0x11e mov [esp+edi*4+0x394] vs
+   0x294, +0x4f2, +0x6d6) and the objName leas are slots hunks; plus one order hunk at +0x1f4 (the tower
+   position stores scheduled around the push of "sp_STADTTURM"). Tried: declaration order of cityobj / diff
+   / the char arrays (three placements), renaming the buffer, cityobj as int[] or D3OBJECT *[]: the layout
+   does not move. */
 
 int main_ChooseCity(int unused, int host)
 {
-    int ret, tower, last, cap, n, i, k, f, sel, f1, f2, h, ok, opp, out[2], w, ht;
-    int cityobj[64], diff[64];
-    char recs[64][0x210], key[0x100], name[0x40], buf4[0x100];
+    int ret, cap, n, i, k, f, f1, f2, ok, opp, out[2], w, ht;
+    D3OBJECT *tower, *last, *sel, *h;
+    D3OBJECT *cityobj[64];
+    int diff[64];
+    char recs[64][0x210], key[0x100], name[0x40], objName[0x100];
     LSHEADER hdr;
-    float pos[4], rot[3];
+    D3VECTOR4 pos;
+    D3VECTOR rot;
     char *s, *d;
     char c;
 
@@ -2724,15 +2740,15 @@ int main_ChooseCity(int unused, int host)
     sv_ClearNamePlates();
     sv_ReleaseNamePlates();
     d3if_SelectScene(0, 0);
-    d3_SetObjectPos((int)d3_Camera, &d3_Camera->savedPos);
-    d3_SetObjectRot((int)d3_Camera, &d3_Camera->savedRot);
+    d3_SetObjectPos(d3_Camera, &d3_Camera->savedPos);
+    d3_SetObjectRot(d3_Camera, &d3_Camera->savedRot);
     d3_SetLightSet(0, 0.0f, 1.0f, 0);
     if (host == 0)
         n = ai_ListFiles("gamedata/cities", ".CTY", (char *)recs);
     else
         n = ai_ListFiles("gamedata/cities", ".NET", (char *)recs);
     for (i = 0; i < n; i++) {
-        f = vfs_Tfopen(recs[i] + 0x109, (char *)(unsigned)"rb", (int)vfs_Root);
+        f = vfs_Tfopen(recs[i] + 0x109, "rb", (int)vfs_Root);
         if (f == 0)
             return 0;
         if (ls_ReadSaveHeader(f, (int *)&hdr) == 0) {
@@ -2740,7 +2756,7 @@ int main_ChooseCity(int unused, int host)
             return 0;
         }
         vfs_fclose(f);
-        diff[i] = (signed char)hdr.slotByte - (U_I((unsigned)&ai_NumPlayers) & 0xff);
+        diff[i] = (signed char)hdr.slotByte - (ai_NumPlayersW & 0xff);
         h = ai_CreateCityPoint(hdr.name);
         cityobj[i] = h;
         if (h != 0) {
@@ -2751,29 +2767,29 @@ int main_ChooseCity(int unused, int host)
                 strcpy(name, d2_Strings[k]);
             else
                 strcpy(name, hdr.name);
-            sprintf(buf4, "stadt_%s", hdr.name);
-            strcpy((char *)h, buf4);
-            sv_RegisterNamePlate(buf4, name, 0);
+            sprintf(objName, "stadt_%s", hdr.name);
+            strcpy(h->name, objName);
+            sv_RegisterNamePlate(objName, name, 0);
         }
     }
     sel = cityobj[4];
     if (sel != 0) {
-        pos[0] = *(float *)(sel + 0x4c);
-        pos[1] = *(float *)(sel + 0x50);
-        pos[2] = *(float *)(sel + 0x54);
-        pos[3] = 0;
-        rot[0] = 0;
-        rot[1] = 0;
-        rot[2] = 0;
-        tower = d3_CreateObject(0, pos, rot, "sp_STADTTURM");
-        *(unsigned char *)(tower + 0x211) |= 4;
-        *(unsigned char *)(tower + 0x212) = (*(unsigned char *)(tower + 0x212) & 0xf7) | 4;
+        pos.x = sel->pos.x;
+        pos.y = sel->pos.y;
+        pos.z = sel->pos.z;
+        pos.w = 0;
+        rot.x = 0;
+        rot.y = 0;
+        rot.z = 0;
+        tower = d3_CreateObject(0, (D3VECTOR *)&pos, &rot, "sp_STADTTURM");
+        tower->objectFlags |= 4;
+        tower->stateFlags = (tower->stateFlags & 0xf7) | 4;
         d3_RelightObject(tower);
         d3t_PlayAnim(tower, "sonstiges\\wimpel_STADTTURM.baf", 1);
     }
     d3if_Show(sel, 0);
-    U_I((unsigned)&sv_FrameMask) = 0x12d6;
-    U_I((unsigned)&cm_DialogFrameFlags) = 0x12d6;
+    sv_FrameMask = 0x12d6;
+    cm_DialogFrameFlags = 0x12d6;
     cm_WaitEvent(cm_StartScript("Startmenu/A_Stadtwahl.esc"));
     f1 = d2_OpenForm(0, 0, "Menu\\CHOOSECITY_HEADER");
     d2_PlaceMainWindowF(f1, 3);
@@ -2793,40 +2809,40 @@ int main_ChooseCity(int unused, int host)
     if (sv_RunFrame((int)main_ChooseCity, 0x10d6) != 0) {
         do {
             ai_ClickedObject = 0;
-            h = (int)d3if_Pick((float)dm_L.x, (float)dm_L.y, 0x60, 1);
+            h = d3if_Pick((float)dm_L.x, (float)dm_L.y, 0x60, 1);
             ai_PickedObject = (char *)h;
             if (dm_L.lup != 0) {
-                ai_ClickedObject = h;
+                ai_ClickedObject = (int)h;
             } else if (dm_L.rup != 0 || kb_Last == 1) {
                 sv_PopRequest = 1;
             }
             if (ai_ClickedObject != 0 && strncmp((char *)ai_ClickedObject, "stadt_", 6) == 0)
-                sel = ai_ClickedObject;
+                sel = (D3OBJECT *)ai_ClickedObject;
             if (sel != last) {
-                pos[0] = 0;
-                pos[1] = 0;
-                pos[2] = 0;
-                pos[3] = 0;
-                rot[0] = 0;
-                rot[1] = 0;
-                rot[2] = 0;
+                pos.x = 0;
+                pos.y = 0;
+                pos.z = 0;
+                pos.w = 0;
+                rot.x = 0;
+                rot.y = 0;
+                rot.z = 0;
                 d2_SetForm(f2, 1);
-                io_PrintText((unsigned)"$C");
-                pos[0] = pos[0] + *(float *)(sel + 0x4c);
-                pos[1] = pos[1] + *(float *)(sel + 0x50);
-                pos[2] = pos[2] + *(float *)(sel + 0x54);
-                d3t_PlaceObjectV(tower, pos, rot, 0x28, 0x20);
+                io_PrintText("$C");
+                pos.x = pos.x + sel->pos.x;
+                pos.y = pos.y + sel->pos.y;
+                pos.z = pos.z + sel->pos.z;
+                d3t_PlaceObjectV(tower, (D3VECTOR *)&pos, &rot, 0x28, 0x20);
                 for (i = 0; i < n; i++) {
                     if (sel == cityobj[i]) {
                         if (cityobj[i] != 0) {
-                            strcpy((char *)((unsigned)&ai_DataPath + 0x220), (char *)sel + 6);
-                            sprintf(key, "_STADTAUSWAHL_%s_BESCHR+0", (char *)((unsigned)&ai_DataPath + 0x220));
+                            strcpy(ai_CityName, sel->name + 6);
+                            sprintf(key, "_STADTAUSWAHL_%s_BESCHR+0", ai_CityName);
                             _strupr(key);
                             k = txt_FindKey(key);
                             if (k != -1) {
                                 d2_SetForm(f2, 1);
                                 io_PrintText(k);
-                                io_PrintText("$A");
+                                io_PrintText(cm_TextNewline);
                                 io_PrintText(k + 1);
                             }
                             d3if_Show(sel, 0);
@@ -2869,11 +2885,11 @@ int main_ChooseCity(int unused, int host)
         d2_CloseView(f1);
     if (tower != 0) {
         d3t_ReleaseObjectTexture(tower, "wimpel_STADTTURM");
-        d3if_Delete((struct D3OBJECT *)tower);
+        d3if_Delete(tower);
     }
     for (i = 0; i < n; i++) {
         if (cityobj[i] != 0)
-            d3if_Delete((struct D3OBJECT *)cityobj[i]);
+            d3if_Delete(cityobj[i]);
     }
     return ret;
 }
@@ -4696,7 +4712,7 @@ void main_GameLoop(int ctl)
     main_SetLoadProgress(0, 10);
     if ((ai_GameFlags & 0x41) != 0) {
         if ((ai_GameFlags & 4) == 0) {
-            sprintf(ap, "%s/%s.cty", "gamedata/cities", (char *)((unsigned)&ai_DataPath + 0x220));
+            sprintf(ap, "%s/%s.cty", "gamedata/cities", ai_CityName);
             if (ls_LoadGame(ap, 2) == 0) {
                 main_Exit();
                 return;
@@ -5141,13 +5157,13 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE prev, char *cmd, int show)
     ai_ScreenModeH = ai_ScreenModes[(unsigned char)res].h;
     if (strstr(cmd, "MO_MONEY") != 0)
         U_I((unsigned)&main_MoneyCheat) = 1;
-    GetPrivateProfileStringA("General", "Stadt", "Augsburg", (char *)((unsigned)&ai_DataPath + 0x220), 0x40, (char *)(unsigned)&ai_OptionsFile);
+    GetPrivateProfileStringA("General", "Stadt", "Augsburg", ai_CityName, 0x40, (char *)(unsigned)&ai_OptionsFile);
     GetPrivateProfileStringA("Network", "Host", "128.0.0.1", main_NetHost, 0x80, (char *)(unsigned)&ai_OptionsFile);
     U_I(((unsigned)&ls_SavePath + 0x84)) = GetPrivateProfileIntA("Network", "Port", 0x1d6b, (char *)(unsigned)&ai_OptionsFile);
     r = strstr(cmd, "STADT=\"");
     if (r != 0) {
         s = (char *)(r + 7);
-        d = (char *)((unsigned)&ai_DataPath + 0x220);
+        d = ai_CityName;
         e = (char *)strchr(s, 0x22);
         if (e != 0)
             while (s < e)

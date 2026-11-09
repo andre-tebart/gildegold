@@ -7959,7 +7959,7 @@ int ai_TransportWindow();
    into the vector v and the object "sp_STADTPUNKT_K" created there (0x446e10, the origin 0x5ebba4); kind 4,
    mask 1, objectFlags |= 4, stateFlags = (b & 0xf7) | 4; 0x453280 and the model
    "sonstiges\STADTPUNKT_ANM_K.baf" (0x411960, flag 1). Returns the object (0 when the dummy is missing) */
-int ai_CreateCityPoint(char *city)
+D3OBJECT *ai_CreateCityPoint(char *city)
 {
     char upper[0x100];
     char name[0x100];
@@ -7980,7 +7980,7 @@ int ai_CreateCityPoint(char *city)
     obj->stateFlags = (obj->stateFlags & 0xf7) | 4;
     d3_RelightObject(obj);
     d3t_PlayAnim(obj, "sonstiges\\STADTPUNKT_ANM_K.baf", 1);
-    return (int)obj;
+    return obj;
 }
 /* 0x59a3c0, the city map screen of the market hall's map table (416 B): creates the city point objects of the
    other players (the player slots 1 .. 3, each slot's name at +0, 0x59a2c0) and names them "stadt_%s" over
@@ -8002,7 +8002,7 @@ void ai_MapTableScreen(void)
     objs[2] = 0;
     objs[3] = 0;
     for (slot = (GMPLAYERSLOT *)ai_PlayerSlots + 1, i = 0; (int)slot < (int)((GMPLAYERSLOT *)ai_PlayerSlots + 4); slot++, i++) {
-        objs[i] = (D3OBJECT *)ai_CreateCityPoint(slot->name);
+        objs[i] = ai_CreateCityPoint(slot->name);
         sprintf(objs[i]->name, "stadt_%s", slot->name);
         sv_RegisterNamePlate(objs[i]->name, slot->name, 0);
     }

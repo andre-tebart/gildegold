@@ -441,7 +441,7 @@ void ai_GuildHallListener(struct AIBLD *bld, int room);  /* 0x5a6920 */
 void ai_TrainingRoomListener(struct AIBLD *bld, int room);  /* 0x5a6a90 */
 int ai_OpenTransportSell(int building);  /* 0x5af1b0 */
 int ai_OpenTransport(int building);  /* 0x5af1a0, the transport list of the building (ai_TransportWindow mode 1) */
-int ai_CreateCityPoint(char *city);  /* 0x59a2c0, creates the city point object of a town, 0 when its dummy is missing */
+struct D3OBJECT *ai_CreateCityPoint(char *city);  /* 0x59a2c0, creates the city point object of a town, 0 when its dummy is missing */
 void ai_LoadTownMap(void);  /* 0x5b2090, loads the town map picture of the own player */
 int ai_OpenTransportBuy(int building);  /* 0x5af1c0 */
 int ai_MapPick(unsigned int flags, int *req, char *name, void (*cb)(), int unused);  /* 0x5b2180 */
