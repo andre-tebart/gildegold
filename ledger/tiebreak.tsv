@@ -385,7 +385,7 @@ exe	0x0041cfb0	dd_Init	dd_vesa	bca7834010116d7e	no	byte	control=byte p1=byte p2=
 exe	0x0041d190	dd_SetClipRect	dd_vesa	cc80899d2aabaeeb	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0041d1c0	dd_EnumVideoModesCallback	dd_vesa	d2fa5a3327328922	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0041d230	dd_CheckModes	dd_vesa	83589f8049a1237b	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x0041d2e0	dd_SetMode	dd_vesa	019a8bb6a29d5e62	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x0041d2e0	dd_SetMode	dd_vesa	fd59663dabc23f13	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x0041ddb0	dd_LockSurface	dd_vesa	821bd2ced4efdc39	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0041de30	dd_LockSurfaceFlags	dd_vesa	192b24bf686bfb93	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0041dec0	dd_Lock	dd_vesa	ea4a005d534568b6	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte

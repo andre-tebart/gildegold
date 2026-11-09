@@ -1379,24 +1379,26 @@ __inline char dd_CpuHasMMX(void)
 #define DD_RMASK888 0xff0000u
 
 /* 0x41d2e0, sets up the display: mode DD_GDI..DD_FULLMEM, xres x yres at bpp bits
-   @deep read the whole function against the original: 853 vs 855 instructions, 2753 vs 2742 bytes, the
-   same call set (EnumDisplayModes, SetCooperativeLevel, SetDisplayMode, CreateSurface, GetAttachedSurface,
+   @stuck match-deep: headers sample insensitive (32, one codegen). Levers with no change (= control code):
+   loop forms i=bpp..>0, for(;bpp>0;bpp--), while(bpp-->0), a second counter j, declaration moves of r/g/b
+   and rb/gb/bb (dcp try --move-line, 12 positions), rgb unsigned int, bits char, the bpp>8 && dd_Mode test
+   in 5 spellings (the xor ebx,ebx / mov eax,8 order hunk at +0x40d stays). Moved but not closer in kind:
+   masks stored first and r/g/b read back (dd_RMask = ddpf..; r = dd_RMask; or r = dd_RMask = ddpf..): 134
+   -> 126 ins, both loops then spill like the original (counter in bpp's slot [ebp+0x10], r in [ebp+0x20],
+   g edi, b esi) but the three mask loads are no longer funneled through eax (original: mov eax,[mask]; mov
+   ecx,eax; mov [dd_RMask],eax per mask, i.e. the chain dd_RMask = r = ddpf..) and the loop registers are
+   renamed (ours RShift cl / rb cl gb al bb bl, original dl / bl dl cl); kept the chain. int r,g,b, int
+   rb..: worse. Left: the loop allocation (bpp in esi from before the mask stores, g spilled to [ebp+0x14])
+   and the pixel-format / ColorBitMask schedule after it (tiebreak: insensitive) prior: read the whole
+   function against the original: 853 vs 855 instructions, 2753 vs 2742 bytes, the same call set
+   (EnumDisplayModes, SetCooperativeLevel, SetDisplayMode, CreateSurface, GetAttachedSurface,
    CreateClipper, SetHWnd, SetClipper, GetPixelFormat, GetDC, CreateDIBSection, ReleaseDC, dd_Exit,
    dd_Restore, dd_Clear, dd_SetClipRect, dd_SetSurfaceName) and the same store set. The meaning differences
    are fixed: the BShift/GShift/RShift reset is one chained assignment, the loop tail stores the same six
    values, and the bpp guard is bpp > 8 (the original's mov eax,8 / cmp / jle). What is left is register
    allocation and schedule in the two bit-scan loops: the original keeps r,g,b in ecx/edi/esi and spills
    the loop counters to the dead parameter slots [ebp+0x20] and [ebp+0x10]; this source keeps r=edx, g=ecx,
-   b=edi and the loop-2 counter in esi, so the eight 8-RLoss/GBits stores come in another order. Tried: one
-   loop variable and two (i / j), split vs inline shifts, the loop tail in the original's order, the
-   pixel-format expression flat and parenthesized, bpp > 8 and bpp >= 9; none moves the loop allocation,
-   which is the remaining 130 of the 134 differing instructions. (references: M8 at +0x56e: ours refers to
-   dd_RLoss (0x14650e4), the original's field to 0x1463570 (dd_RBits, dd_RBitsC) (and 4 more), explained:
-   the 5 ref lines are the loop tail's crossed stores: ours writes dd_RBits, dd_RLoss, dd_GLoss, dd_GBits,
-   dd_BBits, dd_BLoss, the original dd_RBits, dd_GBits, dd_RLoss, dd_BBits, dd_GLoss, dd_BLoss; each of the
-   six fields is written exactly once on both sides with the same value (RBits=rb, GBits=gb, BBits=bb,
-   RLoss=8-rb, GLoss=8-gb, BLoss=8-bb), and the reference check pairs each shifted store with the next
-   field of the other side) */
+   b=edi and the loop-2 counter in esi, so the eight 8-RLoss/GBits stores come in another... */
 char dd_SetMode(int xres, int yres, int bpp, int mode, HWND wnd, int notused, char triple)
 {
     DDSURFACEDESC2 ddsd;
