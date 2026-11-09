@@ -340,8 +340,8 @@ void d3_FreeMesh(D3OBJECT *obj);                                                
 
 extern float d3_HalfW;                  /* 0xfe75f8 */
 extern float d3_HalfH;                  /* 0xfe75b8 */
-extern int d3_Unkfe73a4;                    /* 0xfe73a4 */
-extern float d3_Unkfc2ddc;                  /* 0xfc2ddc */
+extern int d3_ViewBottomFx;                 /* 0xfe73a4, the view's bottom edge (h + y) as 16.16 fixed (d3_SetViewport) */
+extern float d3_ViewZScale;                 /* 0xfc2ddc, 1.0 from d3_SetViewport (reasoned guess: a z scale; no reader) */
 extern char dd_Cleared;                     /* 0x631222, dd_vesa.c */
 extern char dd_ZCleared;                   /* 0x631223, dd_vesa.c */
 void d3d_SetViewport(float w, float h, float x, float y, float zn, float zf);          /* 0x436de0 */

@@ -1257,7 +1257,8 @@ void d3_SetObjectRotXYZ(D3OBJECT *obj, float x, float y, float z)
 /* 0x43b950, sets the view rectangle, the depth range and the projection scale. d3_ScreenH / d3_ScreenW
    (0xfc2df0, 0xfc2df4) are the int screen height / width last set (every caller passes d2_ScreenW,
    d2_ScreenH or d3_Cfg.w, d3_Cfg.h); they are write-only - this function's change check compares them and
-   d3_SetFogRange / d3_SetFog pass them back unchanged. @deep Q2: d3_Unkfe73a4 (0xfe73a4 = (int)(65536.0f * (h + y))) and d3_Unkfc2ddc (0xfc2ddc, set to 1.0f) have no reader at all: the Ghidra exports 43a610 / 43a6f0 / 43b950 / 43bb70 / 43bc20 / 43c240 are the only references to these addresses, so no role name can be evidenced. Everything else in the body is byte and named (d3_Unk4391d0 -> d3_SetupFrustum, d3_Unk63345c -> d3_D3DActive this session). */
+   d3_SetFogRange / d3_SetFog pass them back unchanged. d3_ViewBottomFx is the bottom edge as 16.16 fixed, d3_ViewZScale a scale
+   set to 1 (a reasoned guess: neither has a reader). */
 
 void d3_SetViewport(float w, float h, float x, float y, float zn, float zf, float scale, int a, int b)
 {
@@ -1274,7 +1275,7 @@ void d3_SetViewport(float w, float h, float x, float y, float zn, float zf, floa
         d3_ViewW = w;
         d3_CenterX = hw + x;
         d3_ViewH = h;
-        d3_Unkfe73a4 = (int)(65536.0f * (h + y));
+        d3_ViewBottomFx = (int)(65536.0f * (h + y));
         d3_HalfH = hh = h * 0.5f;
         d3_ZNear = zn;
         d3_ZFar = zf;
@@ -1295,7 +1296,7 @@ void d3_SetViewport(float w, float h, float x, float y, float zn, float zf, floa
         d3_ScaleY = scale * -1.0f;
         d3_ViewX = x;
         d3_ViewY = y;
-        d3_Unkfc2ddc = 1.0f;
+        d3_ViewZScale = 1.0f;
         d3_ScaleX = scale;
         d3_SetupFrustum();
         d3_UpdateAll(0);
@@ -2702,7 +2703,7 @@ D3SORTENT * d3_SortPtr = 0;  /* 0xfc2dc8 */
 unsigned int d3_SortCount = 0;  /* 0xfc2dcc */
 float d3_InvZFar = 0;  /* 0xfc2dd4, 1 / d3_ZFar */
 float d3_FogEnd = 0;  /* 0xfc2dd8 */
-float d3_Unkfc2ddc = 0;  /* 0xfc2ddc */
+float d3_ViewZScale = 0;  /* 0xfc2ddc */
 D3SORTENT * d3_SortBuf = 0;  /* 0xfc2de0 */
 D3OBJECT *d3_Camera = 0;  /* 0xfc2dec, the camera object */
 int d3_ScreenH = 0;  /* 0xfc2df0 */
@@ -2733,7 +2734,7 @@ D3CVERT d3_ClipPool[128] = {0};  /* 0xfc5360, vertices made by the clipper */
 int d3_TriCount = 0;  /* 0xfc7b60 */
 float d3_ZOfs = 0;  /* 0xfc7b64 */
 unsigned char d3_Noise[256][256] = {0};  /* 0xfc7b80 */
-int d3_Unkfe73a4 = 0;  /* 0xfe73a4 */
+int d3_ViewBottomFx = 0;  /* 0xfe73a4 */
 float d3_ViewX = 0;  /* 0xfe73a8 */
 float d3_UOfs = 0;  /* 0xfe73ac */
 float d3_ZNear = 0;  /* 0xfe73b4 */
