@@ -2829,7 +2829,9 @@ float gv_SeanceChance(char *o)
         x = x + 15.0f;
     if (gm_Query(bld->objList, 2, 6, 0, 0x223) != 0)
         x = x + 25.0f;
-    return 0.5f * (x * 0.0125f) + 0.5f;     /* the original keeps the * 0.5 and the + 0.5 apart (fmul 0.0125, fmul 0.5, fadd 0.5); this folds them into fadd 1.0, fmul 0.5 */
+    x = x * 0.0125f;
+    x = x * 0.5f;     /* in steps: one expression folds 0.5 * y + 0.5 into (y + 1) * 0.5 */
+    return x + 0.5f;
 }
 /* 0x4f2720, copies the AI decision record i (0 .. 0x1c, an AIDEC of the table 0x611258) to out (a struct copy); 0 for i > 0x1c */
 

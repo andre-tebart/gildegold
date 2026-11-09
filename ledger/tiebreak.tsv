@@ -2761,7 +2761,7 @@ exe	0x004ef740	gv_EntrySameId	gv	7378fd864d19b600	no	byte	control=byte p1=byte p
 exe	0x004ef760	gv_EntryIsFree	gv	ef4610a50ff2625a	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004ef770	gv_EntryIsUsed	gv	63e631f569640018	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004ef780	gv_EntryHasId	gv	374b3298db1a4fa5	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x004ef7c0	gv_FindEntry	gv	9720c6c7bf271379	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
+exe	0x004ef7c0	gv_FindEntry	gv	c41003a4d8de503c	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004ef900	gv_LoadGraveyard	gv	7679c4b8b8c617cd	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004ef930	gv_RandomGrave	gv	eadf6d3530738cf0	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004ef9c0	gv_BuryNewDead	gv	835d77ab86c3ed45	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
@@ -2789,8 +2789,8 @@ exe	0x004f1200	gv_RaiseDead	gv	f997dbf0e1314ad8	no	draft	control=draft p1=draft 
 exe	0x004f15e0	gv_SendGrave	gv	fdf5c9764366baf2	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004f1660	gv_DecayRaisedDead	gv	2681da77e0fe8a23	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004f16f0	gv_PreserveRate	gv	c1c7fb245f620f60	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x004f17f0	gv_WriteGraveyard	gv	edbf37f1ce3fe468	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x004f1aa0	gv_ReadGraveyard	gv	95ff2557e99a2c1e	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
+exe	0x004f17f0	gv_WriteGraveyard	gv	508fbbf017a494d2	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
+exe	0x004f1aa0	gv_ReadGraveyard	gv	dc3fd8c81a653f6a	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004f1d50	gv_RoomForRaised	gv	a2620a711a60d08a	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004f1de0	gv_GraveyardTurn	gv	30d09df5ebfb7969	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x004f22a0	gv_FindWornEntry	gv	9c123dde9658c7f0	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
@@ -2799,9 +2799,9 @@ exe	0x004f2440	gv_MovePrice	gv	4689238f8f0b2a7b	no	byte	control=byte p1=byte p2=
 exe	0x004f24a0	gv_ProtectionPrice	gv	ce128288177bb7e8	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004f2540	gv_FindHeldEntry	gv	24054121f18b286d	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004f25d0	gv_FindReservedEntry	gv	c7341aa498e9ee1d	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x004f2660	gv_SeanceChance	gv	a0c628b609f2b1ef	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
+exe	0x004f2660	gv_SeanceChance	gv	95e71c293fd09edf	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x004f2720	gv_GetTableRecord	gv	9c2f708a38ad877f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x004f2750	gv_SetTableRecord	gv	288d5536d71edb9e	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
+exe	0x004f2750	gv_SetTableRecord	gv	3788ed9edde7dc38	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004f27d0	gv_OnDecisionValue	gv	a5f58b3ba768c74b	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004f2870	gv_FindTableRecord	gv	0766dc149c69815e	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004f28d0	gv_WriteCrimes	gv	29fd502746284aa7	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
@@ -2829,12 +2829,12 @@ exe	0x004f3c50	gv_RankCulprits	gv	6aa9aabee1c41d60	no	shape	control=shape p1=sha
 exe	0x004f3dd0	gv_RankCulpritsAll	gv	29a9b0dddd09289a	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
 exe	0x004f3fe0	gv_HeldCrimesOf	gv	004cba9cac3c1805	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004f4080	gv_HeldCrimeIdsOf	gv	70f4e8ec02c95e92	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x004f4130	gv_HeldCrimeCount	gv	58879f3f0b318e6c	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x004f4130	gv_HeldCrimeCount	gv	0ade0ecdab6a1132	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004f41b0	gv_FindAccused	gv	c124b73ddac9cc27	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004f4350	gv_ClearCrimes	gv	751171baae92845b	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004f4390	gv_SortCrimesByLaw	gv	4c658224c4da1f52	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004f4420	gv_CheckSentence	gv	cdd01465657754f9	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x004f4460	gv_PassSentence	gv	2cb98c019af64b39	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
+exe	0x004f4460	gv_PassSentence	gv	c9ff718d3dca2349	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004f48f0	gv_SentenceText	gv	bf011dcf4f1ae0dd	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004f4970	gv_CheckRankUp	gv	f361d400f4e23504	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
 exe	0x004f4d10	gv_CheckRankUps	gv	e4ae1be51466e2bf	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
