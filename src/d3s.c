@@ -1060,19 +1060,27 @@ float d3s_GetGround(D3OBJECT *obj, D3OBJINFO *info, D3OBJECT *light)
     }
     return y;
 }
-/* 0x45be10, projects the mesh along the light onto the ground and renders the shadow texture */
+/* 0x45be10, projects the mesh along the light onto the ground and renders the shadow texture
+   @deep Read whole against the original and rebuilt: branch order (simple first, directional light first,
+   terrain before d3sm_Shadow), 1/-ldir->y hoisted via inv = -ldir->y, one D3VECTOR for the position and
+   the light vector (stored like the original), clamped cells into locals before the divisions by the new
+   D3TERRAIN.bs, iz0 from z1 and iz1 from z0 as the original does, sx/sz scale hoisted,
+   D3_OPS(mesh)->Transform, typed d3sm_Shadow (D3SM) and D3SVERT tu/tv. ours=609 original=609 instructions.
+   Left: allocation - the original keeps obj in ebp, mesh in ebx, ldir in edi and 0 in ebp for the compares
+   (cmp edi, ebp at +0x27c), y at [esp+0x10] in its own frame (frame 0x1c vs ours 0x18, ours puts it in a
+   param slot), so the five slot->x0..y stores at +0x6d3 load in another order; mh in ebp at +0x3f6 where
+   ours keeps [esp+0x4c]; the head schedule (d3s_Count++ before the dir copy). */
 
 void d3s_Project(D3OBJECT *obj, D3OBJINFO *info, D3OBJINFO *mesh, D3TERRAIN *t, D3VECTOR *ldir,
                  D3VECTOR *lpos, D3OBJECT *light, D3SSLOT *slot)
 {
     D3TEXHANDLE *tex = slot->tex;
-    D3VECTOR pos, d;
-    D3BOXVERT *v;
+    D3VECTOR pos;                   /* the object's position, then the light-to-vertex vector */
+    D3SVERT *v;
     D3SPOLY *p;
-    float y, f, inv, x0, x1, z0, z1;
-    unsigned int size, mh, m;
-    int i, k, bx0, bx1, bz0, bz1;
-    unsigned char *b;
+    float y, f, inv, x0, x1, z0, z1, sx, sz;
+    int i, k, size, mh, m;
+    int cx0, cx1, cz0, cz1;
 
     d3s_Count++;
     slot->dir = *ldir;
@@ -1081,28 +1089,21 @@ void d3s_Project(D3OBJECT *obj, D3OBJINFO *info, D3OBJINFO *mesh, D3TERRAIN *t, 
     x0 = 1e10f;
     z1 = -1e10f;
     x1 = -1e10f;
-    if (!slot->simple) {
-        ((void (*)(D3OBJECT *, D3OBJINFO *, void *))(*(void **)((char *)mesh->mesh + 0x1f0)))(obj, mesh, (char *)obj->material + 8);
+    if (slot->simple) {
+        d3_PointToWorld(obj, &obj->pos, &pos);
+        y += 3.0f;
+        x0 = pos.x - 16.0f;
+        x1 = pos.x + 16.0f;
+        z0 = pos.z - 16.0f;
+        z1 = pos.z + 16.0f;
+    } else {
+        D3_OPS(mesh)->Transform(obj, mesh, obj->material->meshData);
         obj->state |= 0x10;
-        v = (D3BOXVERT *)mesh->keys;
-        if (!(light->objectFlags & 0x10)) {
+        v = (D3SVERT *)mesh->keys;
+        if (light->objectFlags & 0x10) {
+            inv = -ldir->y;
             for (i = 0; i < mesh->nkeys; i++, v++) {
-                d.x = lpos->x - v->x;
-                d.y = lpos->y - v->y;
-                d.z = lpos->z - v->z;
-                f = -((lpos->y - y) / d.y);
-                v->x = d.x * f + lpos->x;
-                v->y = d.y * f + lpos->y;
-                v->z = f * d.z + lpos->z;
-                z0 = min(z0, v->z);
-                z1 = max(z1, v->z);
-                x0 = min(x0, v->x);
-                x1 = max(x1, v->x);
-            }
-        } else {
-            inv = ldir->y;
-            for (i = 0; i < mesh->nkeys; i++, v++) {
-                f = (v->y - y) * (1.0f / -inv);
+                f = (v->y - y) * (1.0f / inv);
                 v->x = f * ldir->x + v->x;
                 v->y = f * ldir->y + v->y;
                 v->z = f * ldir->z + v->z;
@@ -1111,14 +1112,21 @@ void d3s_Project(D3OBJECT *obj, D3OBJINFO *info, D3OBJINFO *mesh, D3TERRAIN *t, 
                 x0 = min(x0, v->x);
                 x1 = max(x1, v->x);
             }
+        } else {
+            for (i = 0; i < mesh->nkeys; i++, v++) {
+                pos.x = lpos->x - v->x;
+                pos.y = lpos->y - v->y;
+                pos.z = lpos->z - v->z;
+                f = -((lpos->y - y) / pos.y);
+                v->x = pos.x * f + lpos->x;
+                v->y = pos.y * f + lpos->y;
+                v->z = f * pos.z + lpos->z;
+                z0 = min(z0, v->z);
+                z1 = max(z1, v->z);
+                x0 = min(x0, v->x);
+                x1 = max(x1, v->x);
+            }
         }
-    } else {
-        d3_PointToWorld(obj, &obj->pos, &pos);
-        y += 3.0f;
-        x0 = pos.x - 16.0f;
-        x1 = pos.x + 16.0f;
-        z0 = pos.z - 16.0f;
-        z1 = pos.z + 16.0f;
     }
     if (fabs(x1) > 16384.0f || fabs(x0) > 16384.0f || fabs(z1) > 16384.0f || fabs(z0) > 16384.0f
         || fabs(x1 - x0) > 16384.0f || fabs(z1 - z0) > 16384.0f)
@@ -1127,50 +1135,25 @@ void d3s_Project(D3OBJECT *obj, D3OBJINFO *info, D3OBJINFO *mesh, D3TERRAIN *t, 
     slot->map = 0;
     slot->size = 0;
     if (d3s_Enabled) {
-        if (!t || slot->simple) {
-            if (d3sm_Shadow && !slot->simple) {
-                slot->ix0 = (int)((x0 - ((float *)d3sm_Shadow)[0]) / ((float *)d3sm_Shadow)[4]);
-                slot->ix1 = (int)((x1 - ((float *)d3sm_Shadow)[0]) / ((float *)d3sm_Shadow)[4] + 1.0);
-                slot->iz0 = (int)((z0 - ((float *)d3sm_Shadow)[2]) / ((float *)d3sm_Shadow)[6]);
-                slot->iz1 = (int)((z1 - ((float *)d3sm_Shadow)[2]) / ((float *)d3sm_Shadow)[6] + 1.0);
-                if (slot->ix0 < ((int *)d3sm_Shadow)[8] && slot->ix1 > 0 && slot->iz0 < ((int *)d3sm_Shadow)[8] && slot->iz1 > 0) {
-                    slot->map = (unsigned char *)((int *)d3sm_Shadow)[10];
-                    slot->size = ((int *)d3sm_Shadow)[8];
-                    slot->cell.x = ((float *)d3sm_Shadow)[4];
-                    slot->cell.y = ((float *)d3sm_Shadow)[5];
-                    slot->cell.z = ((float *)d3sm_Shadow)[6];
-                    slot->origin.x = ((float *)d3sm_Shadow)[0];
-                    slot->origin.y = ((float *)d3sm_Shadow)[1];
-                    slot->origin.z = ((float *)d3sm_Shadow)[2];
-                    x0 = slot->ix0 * ((float *)d3sm_Shadow)[4] + ((float *)d3sm_Shadow)[0];
-                    x1 = slot->ix1 * ((float *)d3sm_Shadow)[4] + ((float *)d3sm_Shadow)[0];
-                    z0 = slot->iz0 * ((float *)d3sm_Shadow)[6] + ((float *)d3sm_Shadow)[2];
-                    z1 = slot->iz1 * ((float *)d3sm_Shadow)[6] + ((float *)d3sm_Shadow)[2];
-                }
-            }
-        } else {
+        if (t && !slot->simple) {
             slot->ix0 = (int)((x0 - t->origin.x) / t->axisx.x);
             slot->ix1 = (int)((x1 - t->origin.x) / t->axisx.x + 1.0);
-            slot->iz0 = (int)((z0 - t->origin.z) / t->axisz.z);
-            slot->iz1 = (int)((z1 - t->origin.z) / t->axisz.z + 1.0);
+            slot->iz0 = (int)((z1 - t->origin.z) / t->axisz.z);
+            slot->iz1 = (int)((z0 - t->origin.z) / t->axisz.z + 1.0);
             size = t->size;
-            if (slot->ix0 < (int)size && slot->ix1 > 0 && slot->iz0 < (int)size && slot->iz1 > 0) {
+            if (slot->ix0 < size && slot->ix1 > 0 && slot->iz0 < size && slot->iz1 > 0) {
                 mh = 0;
-                bx0 = max(0, slot->ix0) / ((int *)t)[1];
-                bx1 = min((int)size - 1, slot->ix1) / ((int *)t)[1];
-                bz0 = max(0, slot->iz0) / ((int *)t)[1];
-                bz1 = min((int)size - 1, slot->iz1) / ((int *)t)[1];
-                slot->bx0 = bx0;
-                slot->bx1 = bx1;
-                slot->bz0 = bz0;
-                slot->bz1 = bz1;
-                for (k = bz0; k <= bz1; k++) {
-                    if (bx0 <= bx1) {
-                        b = &t->blocks[k][bx0].lod;
-                        for (i = bx1 - bx0 + 1; i; i--, b += sizeof(D3SMBLOCK))
-                            mh = max(mh, *b);
-                    }
-                }
+                cx0 = max(0, slot->ix0);
+                cx1 = min(size - 1, slot->ix1);
+                cz0 = max(0, slot->iz0);
+                cz1 = min(size - 1, slot->iz1);
+                slot->bx0 = cx0 / t->bs;
+                slot->bx1 = cx1 / t->bs;
+                slot->bz0 = cz0 / t->bs;
+                slot->bz1 = cz1 / t->bs;
+                for (k = slot->bz0; k <= slot->bz1; k++)
+                    for (i = slot->bx0; i <= slot->bx1; i++)
+                        mh = max(mh, t->blocks[k][i].lod);
                 slot->maxh = mh;
                 if (mh > 1) {
                     m = ~(mh - 1);
@@ -1194,6 +1177,25 @@ void d3s_Project(D3OBJECT *obj, D3OBJINFO *info, D3OBJINFO *mesh, D3TERRAIN *t, 
                 z0 = slot->iz0 * t->axisz.z + t->origin.z;
                 z1 = slot->iz1 * t->axisz.z + t->origin.z;
             }
+        } else if (d3sm_Shadow && !slot->simple) {
+            slot->ix0 = (int)((x0 - d3sm_Shadow->origin.x) / d3sm_Shadow->cell.x);
+            slot->ix1 = (int)((x1 - d3sm_Shadow->origin.x) / d3sm_Shadow->cell.x + 1.0);
+            slot->iz0 = (int)((z1 - d3sm_Shadow->origin.z) / d3sm_Shadow->cell.z);
+            slot->iz1 = (int)((z0 - d3sm_Shadow->origin.z) / d3sm_Shadow->cell.z + 1.0);
+            if (slot->ix0 < d3sm_Shadow->size && slot->ix1 > 0 && slot->iz0 < d3sm_Shadow->size && slot->iz1 > 0) {
+                slot->map = d3sm_Shadow->data;
+                slot->size = d3sm_Shadow->size;
+                slot->cell.x = d3sm_Shadow->cell.x;
+                slot->cell.y = d3sm_Shadow->cell.y;
+                slot->cell.z = d3sm_Shadow->cell.z;
+                slot->origin.x = d3sm_Shadow->origin.x;
+                slot->origin.y = d3sm_Shadow->origin.y;
+                slot->origin.z = d3sm_Shadow->origin.z;
+                x0 = slot->ix0 * d3sm_Shadow->cell.x + d3sm_Shadow->origin.x;
+                x1 = slot->ix1 * d3sm_Shadow->cell.x + d3sm_Shadow->origin.x;
+                z0 = slot->iz0 * d3sm_Shadow->cell.z + d3sm_Shadow->origin.z;
+                z1 = slot->iz1 * d3sm_Shadow->cell.z + d3sm_Shadow->origin.z;
+            }
         }
     }
     slot->z0 = z0;
@@ -1202,11 +1204,12 @@ void d3s_Project(D3OBJECT *obj, D3OBJINFO *info, D3OBJINFO *mesh, D3TERRAIN *t, 
     slot->z1 = z1;
     slot->y = y;
     if (!slot->simple) {
-        size = ((TSTEXSIZE *)tex)->size;
-        v = (D3BOXVERT *)mesh->keys;
+        sx = (float)((TSTEXSIZE *)tex)->size / (x1 - x0);
+        sz = (float)((TSTEXSIZE *)tex)->size / (z1 - z0);
+        v = (D3SVERT *)mesh->keys;
         for (i = 0; i < mesh->nkeys; i++, v++) {
-            ((float *)v)[4] = (v->x - x0) * ((float)size / (x1 - x0));
-            ((float *)v)[5] = (v->z - z0) * ((float)size / (z1 - z0));
+            v->tu = (v->x - x0) * sx;
+            v->tv = (v->z - z0) * sz;
         }
         if (!tex->surf && d3_Hardware)
             ts_CacheFetch(tex, 2, (int)d3s_Palette);
