@@ -1364,17 +1364,17 @@ exe	0x00476c90	d2_CountPointerItems	gfx	byte	readable
 exe	0x00476cb0	d2_DrawPointer	gfx	byte	readable		
 exe	0x00476f00	d2_DrawMousePointer	gfx	byte	readable		
 exe	0x00476f80	d2_SetPointerSprite	gfx	byte	readable		
-exe	0x00477000	d2_Unk477000	gfx	draft	draft		
+exe	0x00477000	d2_UpdateHoverScroll	gfx	byte	readable		
 exe	0x00477320	d2_CreateItemListSurfaces	gfx	byte	draft	deep	
 exe	0x00477420	d2_FreeItemListSurfaces	gfx	byte	draft	deep	
 exe	0x004774a0	d2_DragInputValue	gfx	byte	readable		
 exe	0x00477530	d2_EndInputEdit	gfx	byte	readable		
 exe	0x00477590	d2_InputKey	gfx	byte	readable		
 exe	0x00477a70	d2_DragInput	gfx	byte	readable		
-exe	0x00477ba0	d2_SliderInput	gfx	draft	draft		
+exe	0x00477ba0	d2_SliderInput	gfx	draft	readable	deep	
 exe	0x00477ed0	d2_UpdateInput	gfx	byte	readable		
 exe	0x00478320	d2_FocusInput	gfx	byte	readable		
-exe	0x004784c0	d2_MouseUpdate	gfx	draft	draft		
+exe	0x004784c0	d2_MouseUpdate	gfx	shape	readable		
 exe	0x00478870	d2_CopyCaption	gfx	byte	readable		
 exe	0x00478890	d2_AddHitRect	gfx	byte	readable		
 exe	0x004788f0	d2_RemoveHitRect	gfx	byte	readable		
@@ -2116,17 +2116,17 @@ exe	0x004c0210	snd_QueueTail	f3snd	byte	readable
 exe	0x004c0230	snd_AddToQueue	f3snd	byte	readable		
 exe	0x004c02e0	snd_UpdateQueue	f3snd	draft	readable	deep	
 exe	0x004c0470	snd_UpdateRain	f3snd	draft	readable	deep	
-exe	0x004c0e60	snd_UpdateAnimals	f3snd	draft	draft		
+exe	0x004c0e60	snd_UpdateAnimals	f3snd	shape	readable		
 exe	0x004c18a0	snd_EnterBuilding	f3snd	draft	readable	deep	
 exe	0x004c1bd0	snd_PlayOutdoorTrack	f3snd	byte	readable		
 exe	0x004c1f90	snd_FindActiveTrack	f3snd	byte	readable		
 exe	0x004c1fc0	snd_FindTrackKind	f3snd	draft	readable	deep	
-exe	0x004c2000	snd_UpdateMusic	f3snd	draft	draft		
+exe	0x004c2000	snd_UpdateMusic	f3snd	shape	readable		
 exe	0x004c23f0	snd_PlaySpecialTrack	f3snd	byte	readable		
 exe	0x004c2480	snd_EndSpecialTrack	f3snd	byte	readable		
 exe	0x004c24c0	snd_FadeMusic	f3snd	byte	readable		
 exe	0x004c24e0	snd_VoiceVariant	f3snd	byte	readable		
-exe	0x004c2510	snd_FindVoiceSample	f3snd	draft	draft		
+exe	0x004c2510	snd_FindVoiceSample	f3snd	draft	readable	deep	
 exe	0x004c2760	snd_PlayVoice	f3snd	byte	readable		
 exe	0x004c27d0	snd_QueueVoice	f3snd	byte	readable		
 exe	0x004c2830	snd_LoadVoiceBank	f3snd	byte	readable		
@@ -2853,7 +2853,7 @@ exe	0x004f54a0	ord_Level4Order2	ord	byte	readable
 exe	0x004f5580	ord_Level4To5Order	ord	byte	readable		
 exe	0x004f5660	ord_Level5UpOrder	ord	byte	readable		
 exe	0x004f5730	ord_Level5UpOrder2	ord	byte	readable		
-exe	0x004f5800	unk_Unk4f5800	ord	draft	draft		
+exe	0x004f5800	ord_DivorceOrder	ord	byte	readable		
 exe	0x004f58e0	ord_Level6UpOrder	ord	byte	readable		
 exe	0x004f59b0	ord_Level6UpOrder2	ord	byte	readable		
 exe	0x004f5a80	ord_WageReportOrder	ord	draft	readable	deep	
@@ -2908,7 +2908,7 @@ exe	0x004f86a0	ord_RandomCellPoint	ord	byte	readable
 exe	0x004f8700	ord_RandomObjectId	ord	shape	readable		
 exe	0x004f8890	ord_GetKindRecord	ord	byte	readable		
 exe	0x004f88c0	ord_AppendStatisticsRound	ord	byte	readable		
-exe	0x004f8920	ord_RebuildGridSums	ord	draft	draft		
+exe	0x004f8920	ord_RebuildGridSums	ord	byte	readable		
 exe	0x004f8ae0	ord_ComputeStatistics	ord	shape	readable	deep	
 exe	0x004f8ed0	ord_UpdateStatistics	ord	draft	draft		
 exe	0x004f9020	ord_LoadStatistics	ord	draft	readable	deep	
@@ -4003,8 +4003,8 @@ exe	0x00578370	ai_TutorialStop	sv_t	byte	readable
 exe	0x00578440	ai_TutorialFreeRuns	sv_t	byte	readable		
 exe	0x005784a0	ai_TutorialInitMainIntro	sv_t	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	sv_t	byte	readable		
-exe	0x00578e40	ai_TutorialInitChapter2	sv_t	byte	readable		
-exe	0x00579570	ai_TutorialInitChapter3	sv_t	draft	readable		
+exe	0x00578e40	ai_TutorialInitChapter2	sv_t	shape	readable		
+exe	0x00579570	ai_TutorialInitChapter3	sv_t	shape	readable		
 exe	0x0057aa80	ai_TutorialInitChapter4	sv_t	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	sv_t	byte	readable		
 exe	0x0057b750	ai_TutorialInitMainOutro	sv_t	byte	readable		
@@ -4445,7 +4445,7 @@ exe	0x005bc0f0	ai_FreePicture	lc	byte	readable
 exe	0x005bc110	ai_ChooseCoatOfArms	lc	byte	readable		
 exe	0x005bc420	ai_OpenMoneyInfoPage	lc	byte	readable		
 exe	0x005bc6d0	ai_OpenBuildingListPage	lc	byte	readable		
-exe	0x005bc790	ai_BuildingDetailWindow	lc	shape	readable		
+exe	0x005bc790	ai_BuildingDetailWindow	lc	byte	readable		
 exe	0x005bc9c0	ai_OpenMasterListPage	lc	shape	readable	deep	
 exe	0x005bcc70	ai_PlayerStatsPanel	lc	shape	readable		
 exe	0x005bd060	ai_AmountLimit	lc	byte	readable		
