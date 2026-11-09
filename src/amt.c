@@ -2,8 +2,6 @@
    "amt_fio_LoadAemter" 0x60f174), starts at 0x4e5cd0 (the init of the table; the cut_ code of cm.c ends with the debug dump 0x4e5bf0).
    The unit's .data starts at 0x60ec90 (a float table, first user 0x4e60b0). The end at 0x4eaa50, where ahm.c's
    building code and .data start, rests on subject and .data order only. Names are ours.
-   Open: AIMSG (ai.h) has no view of the 0xd build message's pos / angles / name (0x80 / 0x90 / 0x9c); amt_CalcZuenfte
-   and am.c's amt_ExecGebaeudeBauen both build it with raw casts, so the typed view is an ai.h + am.c decision.
    unit of rea 8cef7d5b (src/game/amt.c); boundaries in decl/text.dcl */
 #include <stdio.h>
 #include <stdlib.h>
@@ -35,6 +33,8 @@ extern int gm_PlayerRecords[688];
 #include "err.h"
 #include "d3_pose.h"
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ai.h: char[768][0x21c]) as the AICHAR records they are */
+#define ai_BTypesT (*(AIBTYPE **)&ai_BTypes)  /* 0x7e3f30, ai_BTypes (ahm.c: char *) as the AIBTYPE records it points to */
+#define amt_PlayerAiChar (*(AICHAR **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) as the AICHAR it points to */
 #define util_RandomU ((unsigned short (*)(int))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original this unit's callers read the 16-bit result (byte-matched ch_RandomNear 0x405160, ai_CalcMeisterBank 0x4836a0, cm_FightLoop 0x4d88c0 move it as a word / movzx) */
 
 /* 0x4e5cd0, clears the office table (42 records of 0x18 bytes at 0x925120) and numbers them: +0 the index, +4 and +0x14 -1, +8 the kind of the office
@@ -2063,23 +2063,38 @@ void amt_ElectKind22(void)
         amt_SendOfficeNews((unsigned short *)pick, 0x22);
     }
 }
-/* 0x4e8dc0, fills the office of the kind `kind` (0x1e .. 0x21, the mayors of the four towns) from the characters on the screen objects of the matching kind with
-   the ranks of the town: the best by 0x50a640 takes it. When the town's object (0x17 .. 0x1a) does not exist the town is built: a building (0x38 / 0x3b / 0x3e / 0x41) is
-   picked from the building records, a free place is looked for ("amt_calc_zuenfte(): could not find a free place...") and the order message (0xd) is sent
-   (0x4c4b70). The name is the function's own error string at 0x60f11c. */
+/* 0x4e8dc0, fills the office of the kind `kind` (0x1e .. 0x21, the mayors of the four towns) from the owners of the buildings of the matching kind whose
+   jobId lies in the town's range (up to 16): the richest by gm_GetWorth takes it, unless the holder is richer. With fewer than 3 such buildings nothing
+   happens. When the town's building (kind 0x17 .. 0x1a) does not exist yet it is built for the player: the building type 0x38 / 0x3b / 0x3e / 0x41 goes on a
+   free plot (ai_FindBauplaetze, a random one, else the first; none: "amt_calc_zuenfte(): could not find a free place...") with the build message 0xd
+   (cm_SendLongMessage). The name is the function's own error string at 0x60f11c.
+   @deep Read the whole 0x4e8dc0..0x4e9255 against the C: the kind switch (k1/k2/lo/hi/bld), the cand
+   dedupe loop over gm_BuildQuery(1,5,k1) (owner != 0xffff, flags5a bit 0, jobId in lo..hi), total < 3 || n
+   == 0, the k2 query, the plot pick (random, then the first non-zero, the j != 0 then-arm with the error
+   after it), the 0xd AIMSG fields (type, to, fromId -1, time, flags 2, buildPos x/z/y, arg[0..2],
+   buildRot, buildPath), the amt_Table scan 36..0 with the struct copy, cur/best, the richest loop and both
+   send arms all correspond (no differs/ref lines). Left: stack layout - the original shares the block's
+   pos/rot with a's slot (pos at 0x1c, rot 0x34, cand 0x40, msg 0x80), ours puts the msg at 0x40, cand at
+   0x138, rot/pos at 0x1c/0x34; that moves the message stores' schedule (the 50-line hunk at +0x2c1: the
+   same stores, other offsets and order) and the cand memset (proof stops at that fill). best lives in ebp
+   (ours) vs ebx; the in-loop jmp to the found arm (original 'test esi; je loop; jmp found' then 'test esi;
+   je err') is merged in ours (size 1170 vs 1173). Tried: declaration orders of the function and block
+   locals, pos/rot as arrays and D3VECTOR, statement orders of the msg fields (time before / after to /
+   fromId), the loop as for / while-break. */
 
 void amt_CalcZuenfte(unsigned int kind)
 {
     AMTREC a;
-    char *cand[16];
-    char *it, *cur, *pick, *cp, *q;
-    int n, total, i, j, best, s, bld, cnt, scene, k1, k2;
-    unsigned char k;
-    int lo, hi;
-    unsigned short id;
+    AICHAR *cand[16];
+    AIMSG m;
     char buf[128], name[128];
     int list[64];
-    char msg[0xf8];
+    AIBLD *it;
+    AICHAR *ch, *cur, *pick, *cp;
+    AIBTYPE *t;
+    int n, total, i, j, best, s, bld, cnt, scene, k1, k2;
+    int lo, hi, k;
+    unsigned short id;
 
     memset(&a, 0, sizeof(a));
     a.owner = -1;
@@ -2097,118 +2112,117 @@ void amt_CalcZuenfte(unsigned int kind)
     memset(cand, 0, sizeof(cand));
     n = 0;
     total = 0;
-    it = gm_BuildQuery(1, 5, k1);
-    if (it != 0) {
-        do {
-            if (n > 15)
-                break;
-            id = *(unsigned short *)(it + 0x27);
-            if (id != 0xffff && (it[0x5a] & 1) == 0) {
-                total++;
-                k = ai_Chars[id][0x164];
-                if (lo <= k && k <= hi) {
-                    for (i = 0; i < 16; i++) {
-                        if (cand[i] == ai_Chars[id])
-                            break;
-                    }
-                    if (i == 16) {
-                        cand[n] = ai_Chars[id];
-                        n++;
-                    }
-                }
-            }
-            it = gm_BuildNext();
-        } while (it != 0);
-        if (total > 2 && n != 0) {
-            it = gm_BuildQuery(1, 5, k2);
-            scene = d3_CurrentScene;
-            if (it == 0) {
-                int pos[3], v3[3];
-
-                d3if_SelectScene(0, 1);
-                q = ai_BTypes + bld * 0x24d;
-                ai_BuildingName(bld, buf);
-                cnt = ai_FindBauplaetze(buf, list);
-                j = list[util_RandomU(cnt) & 0xffff];
-                i = 0;
-                while (j == 0) {
-                    if (cnt <= i) {
-                        err_Message("amt_calc_zuenfte(): could not find a free place...");
-                        return;
-                    }
-                    if (list[i] != 0)
-                        j = list[i];
-                    i++;
-                }
-                d3_PointToWorld(j, j + 0x4c, pos);
-                ai_ObjectAngle(v3, j);
-                d3if_SelectScene(scene, 1);
-                strcpy(buf, "gb_");
-                strcat(buf, q + 1);
-                _strupr(buf + 2);
-                sprintf(name, "%sgebaeude/*%s.ogr", ai_DataPath, buf);
-                memset(msg, 0, sizeof(msg));
-                msg[4] = 0xd;
-                *(int *)(msg + 0x28) = ai_Time.year;
-                *(int *)(msg + 0x8) = *(int *)(*(char **)&ai_PlayerChar + 4);
-                *(int *)(msg + 0xc) = -1;
-                *(int *)(msg + 0x2c) = *(int *)&ai_Time.hour;
-                *(int *)(msg + 0x30) = *(int *)((char *)&ai_Time + 8);
-                *(short *)(msg + 0x34) = *(short *)((char *)&ai_Time + 0xc);
-                msg[0x36] = 2;
-                *(int *)(msg + 0x80) = pos[0];
-                *(int *)(msg + 0x58) = *(int *)(*(char **)&ai_PlayerChar + 4);
-                *(int *)(msg + 0x88) = pos[2];
-                *(int *)(msg + 0x84) = pos[1];
-                *(int *)(msg + 0x90) = v3[0];
-                *(int *)(msg + 0x5c) = bld;
-                *(int *)(msg + 0x60) = 0;
-                *(int *)(msg + 0x94) = v3[1];
-                *(int *)(msg + 0x98) = v3[2];
-                strcpy(msg + 0x9c, name);
-                cm_SendLongMessage(msg);
-                return;
-            }
-            if ((it[0x5a] & 1) == 0) {
-                i = 36;
-                j = 1;
-                do {
-                    if (j == 0)
+    it = (AIBLD *)gm_BuildQuery(1, 5, k1);
+    if (it == 0)
+        return;
+    do {
+        if (n >= 16)
+            break;
+        id = it->owner;
+        if (id != 0xffff && (it->flags5a & 1) == 0) {
+            total++;
+            ch = &ai_CharsT[id];
+            k = ch->jobId;
+            if (k >= lo && k <= hi) {
+                for (i = 0; i < 16; i++) {
+                    if (cand[i] == ch)
                         break;
-                    if (amt_Table[i].kind == kind) {
-                        j--;
-                        a = amt_Table[i];
-                    }
-                    i--;
-                } while (i >= 0);
-                best = 0;
-                cur = 0;
-                if (a.owner != -1 && (cur = gm_FindChar(a.owner)) != 0)
-                    best = gm_GetWorth(*(unsigned short *)cur);
-                pick = 0;
-                if (n > 0) {
-                    for (j = 0; j < n; j++) {
-                        cp = cand[j];
-                        s = gm_GetWorth(*(unsigned short *)cp);
-                        if (best < s) {
-                            best = s;
-                            pick = cp;
-                        }
-                    }
-                    if (pick != 0 && pick != cur) {
-                        if (cur != 0) {
-                            amt_SendOfficeMessage((char)a.idx, pick, 0, 1, 0xff);
-                            amt_SendOfficeLost((unsigned short *)cur, kind);
-                            amt_SendOfficeNews((unsigned short *)pick, kind);
-                            return;
-                        }
-                        amt_SendOfficeMessage((char)a.idx, pick, 0, 1, 0xff);
-                        amt_SendOfficeNews((unsigned short *)pick, kind);
-                    }
+                }
+                if (i == 16) {
+                    cand[n] = ch;
+                    n++;
                 }
             }
         }
+        it = (AIBLD *)gm_BuildNext();
+    } while (it != 0);
+    if (total < 3 || n == 0)
+        return;
+    it = (AIBLD *)gm_BuildQuery(1, 5, k2);
+    if (it == 0) {
+        D3VECTOR pos, rot;
+        D3OBJECT *plot;
+
+        scene = d3_CurrentScene;
+        d3if_SelectScene(0, 1);
+        t = &ai_BTypesT[bld];
+        ai_BuildingName(bld, buf);
+        cnt = ai_FindBauplaetze(buf, list);
+        j = list[util_RandomU(cnt)];
+        i = 0;
+        while (j == 0) {
+            if (i >= cnt)
+                break;
+            if (list[i] != 0)
+                j = list[i];
+            i++;
+        }
+        if (j != 0) {
+            plot = (D3OBJECT *)j;
+            d3_PointToWorld(plot, &plot->pos, &pos);
+            ai_ObjectAngle(&rot, j);
+            d3if_SelectScene(scene, 1);
+            strcpy(buf, "gb_");
+            strcat(buf, t->name);
+            _strupr(buf + 2);
+            sprintf(name, "%sgebaeude/*%s.ogr", ai_DataPath, buf);
+            m.type = 0xd;
+            m.to = amt_PlayerAiChar->netId;
+            m.time = ai_Time;
+            m.fromId = -1;
+            m.flags = 2;
+            m.buildPos[0] = pos.x;
+            m.arg[0] = amt_PlayerAiChar->netId;
+            m.buildPos[2] = pos.z;
+            m.buildPos[1] = pos.y;
+            m.buildRot[0] = rot.x;
+            m.arg[1] = bld;
+            m.arg[2] = 0;
+            m.buildRot[1] = rot.y;
+            m.buildRot[2] = rot.z;
+            strcpy(m.buildPath, name);
+            cm_SendLongMessage((char *)&m);
+            return;
+        }
+        err_Message("amt_calc_zuenfte(): could not find a free place...");
+        return;
     }
+    if (it->flags5a & 1)
+        return;
+    i = 36;
+    j = 1;
+    do {
+        if (j == 0)
+            break;
+        if (amt_Table[i].kind == kind) {
+            j--;
+            a = amt_Table[i];
+        }
+        i--;
+    } while (i >= 0);
+    best = 0;
+    cur = 0;
+    if (a.owner != -1 && (cur = (AICHAR *)gm_FindChar(a.owner)) != 0)
+        best = gm_GetWorth(cur->id);
+    pick = 0;
+    for (j = 0; j < n; j++) {
+        cp = cand[j];
+        s = gm_GetWorth(cp->id);
+        if (s > best) {
+            pick = cp;
+            best = s;
+        }
+    }
+    if (pick == 0 || pick == cur)
+        return;
+    if (cur != 0) {
+        amt_SendOfficeMessage(a.idx, (char *)pick, 0, 1, 0xff);
+        amt_SendOfficeLost((unsigned short *)cur, kind);
+        amt_SendOfficeNews((unsigned short *)pick, kind);
+        return;
+    }
+    amt_SendOfficeMessage(a.idx, (char *)pick, 0, 1, 0xff);
+    amt_SendOfficeNews((unsigned short *)pick, kind);
 }
 /* 0x4e9260, the office check run at the start of a round (main 0x53b2e0): every holder of a column-7 office (0x4e70f0: the deputies 0x1c / 0x1d,
    the town offices 0x1e .. 0x21, 0x22) whose character is gone, dead, holds another kind (+0x169) or is outside the kind's rank range
