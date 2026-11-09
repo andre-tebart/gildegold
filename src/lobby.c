@@ -59,9 +59,6 @@ extern int main_ChoosePlayer(int mask, int flag);
 #define d2_SetObjValue2 ((void (*)(int, char *))d2_SetObjValue)  /* 0x475cb0 (d2.c: five parameters): @original the lobby screen pushes 2 arguments (input, ch_EmptyName) */
 #define cm_JoinChar (*(CMJOIN *)((char *)&cm_LobbyRecords + 0x2c0))  /* 0x9367a0, the joined character (CMJOIN), as main.c reads it */
 
-#define U_I(a) (*(int *)(a))
-#define U_B(a) (*(unsigned char *)(a))
-#define U_W(a) (*(unsigned short *)(a))
 
 void d2_FocusInput(); int sprintf(char *buf, const char *fmt, ...);
 int lobby_ChoosePlayer(); int lobby_ChooseProfession();
@@ -323,23 +320,20 @@ int lobby_Screen(void)
 
 char *_itoa(int, char *, int); char *_strupr(char *);
 
-/* 0x58a940, adds the lobby's buttons (144 B): control 4 of the window 0x62aa88 and 0x52e350 (screen 0x6ed938,
-   0, the id 0x62aa7c, 2, U_I (0x144abe8), U_I (0x144abec)), control 8 and 0x52e350 (.., the id 0x62aa84, 1,
-   U_I (0x144abf0)); in the single-player mode 0x9364dc 0x7f the control 0x62aa80 is disabled (the window table
-   0xf8f080 + id * 0x2ec, +0x3c = 1)
-   @deep byte but not readable: Q1 (unit unnamed, @named_by -), Q2 (d2_SetForm control API, sv_ButtonRow), Q3 (10 lobby globals), Q4 U_I; the whole lobby/control API has to be named and the globals typed first; no Q6 fix exists */
+/* 0x58a940, adds the lobby form's buttons: row 4 (sv_ButtonRow) the ready and character buttons into
+   lobby_Buttons, row 8 the leave button; in the single-player mode (cm_NetGame.mode 0x7f) the character button
+   is not clickable */
 void lobby_AddButtons(void)
 {
     d2_SetForm(lobby_Form, 4);
-    sv_ButtonRow(U_I((unsigned)&d2_LastWindow), 0, lobby_Buttons, 2, U_I((unsigned)&full_data_144abe8), U_I((unsigned)&full_data_144abec));
+    sv_ButtonRow(d2_LastWindow, 0, lobby_Buttons, 2, txt_LobbyReady, txt_LobbyCharacter);
     d2_SetForm(lobby_Form, 8);
-    sv_ButtonRow(U_I((unsigned)&d2_LastWindow), 0, &lobby_LeaveButton, 1, U_I((unsigned)&full_data_144abf0));
+    sv_ButtonRow(d2_LastWindow, 0, &lobby_LeaveButton, 1, txt_LobbyLeave);
     if (cm_NetGame.mode == 0x7f)
-        U_I(U_I((unsigned)&d2_Objs) + 0x3c + lobby_Buttons[1] * 0x2ec) = 1;
+        d2_Objs[lobby_Buttons[1]].clickDisabled = 1;
 }
-/* 0x58a9d0, the lobby's control 5 / 6 hook (96 B): control 5 of 0x62aa88, the server query 0x52e860 (0, 0, the
-   screen 0x6ed938, U_I (0x6ed938), 0x35, three out ints) with control 6
-   @deep byte but not readable: Q1 (unit unnamed, @named_by -), Q2 (d2_SetForm, sv_CreateScrollButtons), Q3, Q4 U_I; same lobby/control API naming debt as 0x58a940 */
+/* 0x58a9d0, adds the scroll buttons of the lobby's chat: the window of the form's part 5 scrolled by the
+   buttons sv_CreateScrollButtons makes in part 6 (its p5 0x35); nothing while the form is not open */
 
 void lobby_AddChatScroll(void)
 {
@@ -350,9 +344,9 @@ void lobby_AddChatScroll(void)
 
     if (lobby_Form != -1) {
         d2_SetForm(lobby_Form, 5);
-        s = U_I((unsigned)&d2_LastWindow);
+        s = d2_LastWindow;
         d2_SetForm(lobby_Form, 6);
-        sv_CreateScrollButtons(0, 0, U_I((unsigned)&d2_LastWindow), s, 0x35, &a, &b, &c);
+        sv_CreateScrollButtons(0, 0, d2_LastWindow, s, 0x35, &a, &b, &c);
     }
 }
 /* 0x58aa30, shows the city of the network game on part 2 of the lobby form: the city's emblem picture
