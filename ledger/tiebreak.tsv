@@ -2099,7 +2099,7 @@ exe	0x004be3b0	rt_Unk4be3b0	rt	10ecaa472cc92aad	no	draft	control=draft p1=draft 
 exe	0x004be790	rt_Unk4be790	rt	c8bd5cb0a485e1fd	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x004be8e0	rt_RemoveControls	rt	8ea0d8e150852615	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004be930	rt_InitControls	rt	555f76e1152b87b6	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x004be940	rt_Unk4be940	rt	303e57a3f4de13f6	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x004be940	rt_EditPointDialog	rt	313c2e5eb7d7fdc1	yes	draft	sample n=32 seed=1 compiled=32 codegens=2 best=draft
 exe	0x004bf080	rt_Unk4bf080	rt	451ef1a8711c4936	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x004bf360	rt_SetMarkPic	rt	a82a9d6be6e6b746	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004bf3b0	rt_UpdateMarkPics	rt	6bc939f147bce261	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
