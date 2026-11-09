@@ -1278,7 +1278,7 @@ exe	0x0046cda0	d2_MoveObj	d2	byte	readable
 exe	0x0046cfd0	d2_ShowPicture	d2	byte	readable		
 exe	0x0046d040	d2_DrawPic	d2	shape	readable	deep	
 exe	0x0046d220	d2_DrawObjCaption	d2	draft	readable	deep	
-exe	0x0046d3d0	d2_DrawObjects	d2	draft	draft		
+exe	0x0046d3d0	d2_DrawObjects	d2	draft	readable	deep	
 exe	0x0046e150	d2_DrawAll	d2	byte	readable		
 exe	0x0046e190	d2_FindWindowAt	d2	byte	readable		
 exe	0x0046e260	d2_HitTestViews	d2	byte	readable		
@@ -1292,12 +1292,12 @@ exe	0x0046f180	d2_SetTextColour	d2	byte	readable
 exe	0x0046f1a0	d2_DrawTextBox	d2	draft	readable	deep	
 exe	0x0046f840	d2_ScrollWindow	d2	byte	readable		
 exe	0x0046fad0	d2_LayoutButtons	d2	byte	readable		
-exe	0x0046fba0	d2_DrawWindowText	d2	draft	draft		
+exe	0x0046fba0	d2_DrawWindowText	d2	draft	readable	deep	
 exe	0x004713c0	d2_DrawWindowBackground	d2	byte	readable		
 exe	0x00471a90	d2_DrawWindow	d2	shape	readable	deep	
 exe	0x004721e0	d2_SetBackgroundTexture	d2	byte	readable		
 exe	0x00472270	d2_CreateScrollButtons	d2	byte	readable		
-exe	0x00472390	d2_CreateWindow	d2	draft	draft		
+exe	0x00472390	d2_CreateWindow	d2	draft	readable	deep	
 exe	0x00472760	d2_ScrollWindowBy	d2	byte	readable		
 exe	0x00472800	d2_ResizeWindow	d2	draft	readable	deep	
 exe	0x00472a60	d2_FinishFades	d2	byte	readable		
@@ -1849,7 +1849,7 @@ exe	0x004ad580	hmt_DecideElection	hmt	draft	readable	deep
 exe	0x004ad7a0	hmt_FillCouncils	hmt	shape	readable		
 exe	0x004ada80	hmt_Load	hmt	shape	readable	deep	
 exe	0x004adb20	hmt_Save	hmt	byte	readable		
-exe	0x004adbb0	hmt_Create	hmt	draft	draft		
+exe	0x004adbb0	hmt_Create	hmt	shape	readable		
 exe	0x004ade60	hmt_NextEvent	hmt	byte	readable		
 exe	0x004adec0	hmt_NextPerson	hmt	byte	readable		
 exe	0x004adf20	hmt_RandomHeadIcon	hmt	byte	readable		
@@ -2008,7 +2008,7 @@ exe	0x004b7f40	ai_MsgPartnerRelationMinus6to14Type1a	rmsg	byte	readable
 exe	0x004b8060	ai_MsgPartnerRelationMinus10to38Type1b	rmsg	byte	readable		
 exe	0x004b81a0	ai_MsgPartnerRelationMinus4to18Type1c	rmsg	byte	readable		
 exe	0x004b82c0	ai_MsgWorkerHealthLossType1d	rmsg	byte	readable		
-exe	0x004b84b0	ai_Unk4b84b0	rmsg	draft	draft		
+exe	0x004b84b0	ai_MsgWorkerKilledType1e	rmsg	byte	readable		
 exe	0x004b86c0	ai_MsgWorkerOwnHealthLossType1f	rmsg	byte	readable		
 exe	0x004b8870	ai_MsgLoseMoney2to4Type20	rmsg	byte	readable		
 exe	0x004b8950	ai_MsgGainMoney3to5Type21	rmsg	byte	readable		
@@ -2026,7 +2026,7 @@ exe	0x004b9f30	ai_MsgWorkerTitleType2c	rmsg	byte	readable
 exe	0x004ba0c0	ai_MsgFreeBuildingObjectType2e	rmsg	shape	readable		
 exe	0x004ba2d0	ai_MsgWorkerAddSkillType2f	rmsg	byte	readable		
 exe	0x004ba470	ai_MsgWorkerLoseSkillType30	rmsg	byte	readable		
-exe	0x004ba630	ai_Unk4ba630	rmsg	draft	draft		
+exe	0x004ba630	ai_MsgBuildingGetsItemType31	rmsg	shape	readable		
 exe	0x004ba840	ai_SellBuildingGoodsShare	rmsg	byte	readable		
 exe	0x004ba970	ai_MsgTakeBuildingGoodsPct13to25Type32	rmsg	byte	readable		
 exe	0x004baa80	ai_MsgTakeBuildingGoodsPct5to19Type33	rmsg	byte	readable		
@@ -2653,7 +2653,7 @@ exe	0x004e78f0	amt_GetCreateRanges	amt	byte	readable
 exe	0x004e7aa0	amt_CreateApplicant	amt	draft	readable	deep	
 exe	0x004e7b60	amt_InitApplicant	amt	byte	readable		
 exe	0x004e7c40	amt_GetKindLevel	amt	byte	readable		
-exe	0x004e7c60	amt_ElectOffices	amt	draft	readable		
+exe	0x004e7c60	amt_ElectOffices	amt	shape	readable		
 exe	0x004e8160	amt_CheckOfficeColumns	amt	draft	readable	deep	
 exe	0x004e83b0	amt_IsColumnDecided	amt	shape	readable		
 exe	0x004e8530	amt_HasDeposalVote	amt	byte	readable		
@@ -2663,7 +2663,7 @@ exe	0x004e8730	amt_SendOfficeNews	amt	byte	readable
 exe	0x004e87e0	amt_SendOfficeLost	amt	byte	readable		
 exe	0x004e88a0	amt_ElectDeputies	amt	draft	readable	deep	
 exe	0x004e8c20	amt_ElectKind22	amt	byte	readable		
-exe	0x004e8dc0	amt_CalcZuenfte	amt	draft	draft		
+exe	0x004e8dc0	amt_CalcZuenfte	amt	draft	readable	deep	
 exe	0x004e9260	amt_CheckOffices	amt	byte	readable		
 exe	0x004e9400	amt_HasTownObject	amt	byte	readable		
 exe	0x004e94a0	amt_MayorBonusStep	amt	byte	readable		
@@ -4004,7 +4004,7 @@ exe	0x00578440	ai_TutorialFreeRuns	sv_t	byte	readable
 exe	0x005784a0	ai_TutorialInitMainIntro	sv_t	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	sv_t	byte	readable		
 exe	0x00578e40	ai_TutorialInitChapter2	sv_t	byte	readable		
-exe	0x00579570	ai_TutorialInitChapter3	sv_t	shape	readable		
+exe	0x00579570	ai_TutorialInitChapter3	sv_t	draft	readable		
 exe	0x0057aa80	ai_TutorialInitChapter4	sv_t	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	sv_t	byte	readable		
 exe	0x0057b750	ai_TutorialInitMainOutro	sv_t	byte	readable		
@@ -4445,7 +4445,7 @@ exe	0x005bc0f0	ai_FreePicture	lc	byte	readable
 exe	0x005bc110	ai_ChooseCoatOfArms	lc	byte	readable		
 exe	0x005bc420	ai_OpenMoneyInfoPage	lc	byte	readable		
 exe	0x005bc6d0	ai_OpenBuildingListPage	lc	byte	readable		
-exe	0x005bc790	ai_BuildingDetailWindow	lc	byte	readable		
+exe	0x005bc790	ai_BuildingDetailWindow	lc	shape	readable		
 exe	0x005bc9c0	ai_OpenMasterListPage	lc	shape	readable	deep	
 exe	0x005bcc70	ai_PlayerStatsPanel	lc	shape	readable		
 exe	0x005bd060	ai_AmountLimit	lc	byte	readable		
