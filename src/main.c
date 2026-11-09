@@ -334,6 +334,7 @@ void main_FreeSoundBanks(void);         /* 0x537db0 */
 #include "hst.h"
 #include "mission.h"
 #include "rmsg.h"
+#include "d3_fl.h"
 #define ai_GoodsT (*(AIGOOD **)&ai_Goods)  /* 0x91aaf0, ai_Goods (f3gm.c: char *) as the AIGOOD records it points to */
 #define ai_BldsT (*(AIBLD **)&ai_Blds)  /* 0x889f74, ai_Blds (f3gm.c: char *) as the AIBLD records it points to */
 #define ai_BTypesT (*(AIBTYPE **)&ai_BTypes)  /* 0x7e3f30, ai_BTypes (ahm.c: char *) as the AIBTYPE records it points to */
@@ -1687,17 +1688,17 @@ void main_Menue(void)
 /* 0x5344f0, puts a person (the template model name n of the list main_FamilyModelNames, index k) at the dummy "a" of the scene: the dummy position (0x458a20), a character object (0x403390 (b, pos)) that
    looks along the dummy's heading (0x458810 / 0x4539f0, 0x43b860), walks ("bewegung/gehen", walkSpeed 0.7), is registered as a status text plate (0x52e1c0); returns the new object or 0 */
 
-int main_PlaceFamilyModel(int a, int b, int k)
+CHARACTER *main_PlaceFamilyModel(char *dummy, char *model, int k)
 {
     D3OBJECT *o;
     CHARACTER *ch;
     float dir[3], pos[4], loc[3];
 
-    o = d3_FindObject(0, 0x100, 0, (char *)a);
+    o = d3_FindObject(0, 0x100, 0, dummy);
     if (o == 0)
         return 0;
     d3_PointToWorld(o, &o->pos, (D3VECTOR *)pos);
-    ch = ch_Create((char *)b, (D3VECTOR *)pos);
+    ch = ch_Create(model, (D3VECTOR *)pos);
     if (ch != 0) {
         dir[0] = 0;
         dir[1] = 0.0f;
@@ -1716,7 +1717,7 @@ int main_PlaceFamilyModel(int a, int b, int k)
         ch->pathType = 4;
         sv_RegisterNamePlate((char *)ch->obj, main_FamilyModelNames[k], 0);
     }
-    return (int)ch;
+    return ch;
 }
 /* 0x534040, gives the player p the start buildings: the home (kind 6, named "Home-Sweet-Home", its 0x13 objects
    shown by the character's slots, the start messages 0x15 / 0x17 / 0x18 / 0x14 to its id) and the buildings of
@@ -2098,38 +2099,37 @@ int main_ChooseModel(int job)
 
 int main_ChooseFamily(int unused)
 {
+    int ret = 0;
+    int redraw = 1;
+    D2FADE *fade = 0;
     char dn[6][0x30] = { "dummy_GROSSVATER_VAETERLICH", "dummy_GROSSMUTTER_VAETERLICH", "dummy_GROSSVATER_MUETTERLICH", "dummy_GROSSMUTTER_MUETTERLICH", "dummy_VATER", "dummy_MUTTER" };
-    int o1, o2, o3, o4, o5, o6, o7, o8, o9, f, run, k, sel, v, h, ret, scene, redraw;
-    int r1[3], r2[3];
-    unsigned char *fade;
-    int *p;
-    int q;
+    CHARACTER *o1, *o2, *o3, *o4, *o5, *o6, *o7, *o8, *o9, *sel;
+    D3OBJECT *at;
+    EVTSCRIPT *es;
+    int f, run, k, v, scene;
+    D3VECTOR4 camPos;               /* the 4th float is unused here */
+    D3VECTOR camDir;
 
-    ret = 0;
-    redraw = 1;
-    fade = 0;
-    for (k = 0; k < 11; k++)
-        ((int *)(unsigned)&main_Family)[k] = 0;
+    memset(&main_Family, 0, sizeof(main_Family));
     for (k = 0; k < 6; k++)
-        ((int *)(unsigned)&main_Family)[k] = -1;
+        main_Family.group[k] = -1;
     sv_ClearNamePlates();
     sv_ReleaseNamePlates();
     d3if_SelectScene(1, 0);
-    p = (int *)d3_DefaultScene;
-    if (p != 0 && (q = p[0x3c8 / 4]) != 0 && *(int *)(q + 0x210) != 0)
-        ((void (*)(int *, int, int, int))*(int *)(q + 0x210))(p, 4, q + 0x214, 0);
-    scene = U_I((unsigned)&evt_LastId);
-    if ((int)d3_Terrain != 0)
-        *(unsigned char *)((int)d3_Terrain + 0x1c70) = (*(unsigned char *)((int)d3_Terrain + 0x1c70) & 0xeb) | 8;
-    o1 = main_PlaceFamilyModel((int)"dummy_NACHT_UND_NEBEL_MANN", (int)"dieb_MANN2", 0);
-    o2 = main_PlaceFamilyModel((int)"dummy_NACHT_UND_NEBEL_FRAU", (int)"zigeunerin_FRAU", 8);
-    o3 = main_PlaceFamilyModel((int)"dummy_HANDWERKSKUNST_MANN", (int)"handwerker_MANN", 1);
-    o4 = main_PlaceFamilyModel((int)"dummy_HANDWERKSKUNST_FRAU", (int)"handwerkerin2_FRAU", 7);
-    o5 = main_PlaceFamilyModel((int)"dummy_KAMPF_MANN", (int)"offizier_SOLDAT", 4);
-    o6 = main_PlaceFamilyModel((int)"dummy_VERHANDELN_MANN", (int)"buerger3_DICKER", 3);
-    o7 = main_PlaceFamilyModel((int)"dummy_VERHANDELN_FRAU", (int)"buergerin2_FRAU", 5);
-    o8 = main_PlaceFamilyModel((int)"dummy_RHETORIK_MANN", (int)"priester_KUTTE", 2);
-    o9 = main_PlaceFamilyModel((int)"dummy_RHETORIK_FRAU", (int)"buergerin_FRAU", 6);
+    if (d3_DefaultScene != 0 && d3_DefaultScene->events != 0 && d3_DefaultScene->events[4].fn != 0)
+        d3_DefaultScene->events[4].fn(d3_DefaultScene, 4, d3_DefaultScene->events[4].name, 0);
+    scene = evt_LastId;
+    if (d3_Terrain != 0)
+        ((D3FLMAP *)d3_Terrain)->lod = 2;
+    o1 = main_PlaceFamilyModel("dummy_NACHT_UND_NEBEL_MANN", "dieb_MANN2", 0);
+    o2 = main_PlaceFamilyModel("dummy_NACHT_UND_NEBEL_FRAU", "zigeunerin_FRAU", 8);
+    o3 = main_PlaceFamilyModel("dummy_HANDWERKSKUNST_MANN", "handwerker_MANN", 1);
+    o4 = main_PlaceFamilyModel("dummy_HANDWERKSKUNST_FRAU", "handwerkerin2_FRAU", 7);
+    o5 = main_PlaceFamilyModel("dummy_KAMPF_MANN", "offizier_SOLDAT", 4);
+    o6 = main_PlaceFamilyModel("dummy_VERHANDELN_MANN", "buerger3_DICKER", 3);
+    o7 = main_PlaceFamilyModel("dummy_VERHANDELN_FRAU", "buergerin2_FRAU", 5);
+    o8 = main_PlaceFamilyModel("dummy_RHETORIK_MANN", "priester_KUTTE", 2);
+    o9 = main_PlaceFamilyModel("dummy_RHETORIK_FRAU", "buergerin_FRAU", 6);
     f = d2_OpenForm(0, 0, "Menu\\CHOOSECITY_HEADER");
     d2_PlaceMainWindowF(f, 1);
     k = 4;
@@ -2139,37 +2139,38 @@ int main_ChooseFamily(int unused)
         d2_CloseView(main_MessageBox);
         main_MessageBox = -1;
     }
-    U_I((unsigned)&d2_CutsceneActive) = 0;
+    d2_CutsceneActive = 0;
     run = sv_RunFrame((int)main_ChooseFamily, 0x12d6);
     if (run != 0) {
         do {
             if (redraw) {
+                /* the first parent slot still open: its prompt and the camera view on its side */
                 k = 4;
                 do {
-                    if (((int *)(unsigned)&main_Family)[k] == -1) {
+                    if (main_Family.group[k] == -1) {
                         if (k < 6) {
                             d2_SetForm(f, 0);
-                            io_PrintText((unsigned)"$C");
+                            io_PrintText("$C");
                             io_PrintText(0x1ae6, k + 0x1aea);
                             if (k % 2 != 0) {
-                                r1[0] = *(int *)&d3_Camera->views[4].pos.x;
-                                r1[1] = *(int *)&d3_Camera->views[4].pos.y;
-                                r1[2] = *(int *)&d3_Camera->views[4].pos.z;
-                                r2[0] = *(int *)&d3_Camera->views[4].dir.x;
-                                r2[1] = *(int *)&d3_Camera->views[4].dir.y;
-                                r2[2] = *(int *)&d3_Camera->views[4].dir.z;
+                                camPos.x = d3_Camera->views[4].pos.x;
+                                camPos.y = d3_Camera->views[4].pos.y;
+                                camPos.z = d3_Camera->views[4].pos.z;
+                                camDir.x = d3_Camera->views[4].dir.x;
+                                camDir.y = d3_Camera->views[4].dir.y;
+                                camDir.z = d3_Camera->views[4].dir.z;
                             } else {
-                                r1[0] = *(int *)&d3_Camera->views[3].pos.x;
-                                r1[1] = *(int *)&d3_Camera->views[3].pos.y;
-                                r1[2] = *(int *)&d3_Camera->views[3].pos.z;
-                                r2[0] = *(int *)&d3_Camera->views[3].dir.x;
-                                r2[1] = *(int *)&d3_Camera->views[3].dir.y;
-                                r2[2] = *(int *)&d3_Camera->views[3].dir.z;
+                                camPos.x = d3_Camera->views[3].pos.x;
+                                camPos.y = d3_Camera->views[3].pos.y;
+                                camPos.z = d3_Camera->views[3].pos.z;
+                                camDir.x = d3_Camera->views[3].dir.x;
+                                camDir.y = d3_Camera->views[3].dir.y;
+                                camDir.z = d3_Camera->views[3].dir.z;
                             }
-                            d3anim_FreePath((int)d3_Camera);
-                            U_I((unsigned)&d3t_CamMoving) = 0;
-                            U_I((unsigned)&d3t_CamMove) = 0;
-                            d3t_PlaceObjectV((int)d3_Camera, r1, r2, 0x50, 8);
+                            d3anim_FreePath(d3_Camera);
+                            d3t_CamMoving = 0;
+                            d3t_CamMove = 0;
+                            d3t_PlaceObjectV(d3_Camera, (D3VECTOR *)&camPos, &camDir, 0x50, 8);
                         }
                         break;
                     }
@@ -2177,10 +2178,10 @@ int main_ChooseFamily(int unused)
                 } while (k < 6);
                 redraw = 0;
             }
-            if (U_I(((unsigned)&dm_L + 0x20)) != 0)
+            if (dm_L.rup != 0)
                 sv_PopRequest = 1;
-            if (U_I((unsigned)&ai_ClickedObject) != 0 && (sel = *(int *)(U_I((unsigned)&ai_ClickedObject) + 0x200)) != 0) {
-                if (*(int *)(sel + 0x23c) == -1) {
+            if (ai_ClickedObject != 0 && (sel = (CHARACTER *)((D3OBJECT *)ai_ClickedObject)->owner) != 0) {
+                if (sel->familySlot == -1) {
                     v = 0;
                     if (sel == o1 || sel == o2)
                         v = 2;
@@ -2201,23 +2202,23 @@ int main_ChooseFamily(int unused)
                             goto lskip;
                         k = 4;
                     }
-                    ((int *)(unsigned)&main_Family)[k] = v;
-                    *(int *)(sel + 0x23c) = k;
-                    h = d3_FindObject(0, 0x100, 0, dn[k]);
-                    if (h != 0)
-                        ch_WalkToObjectTurn(sel, h);
+                    main_Family.group[k] = v;
+                    sel->familySlot = k;
+                    at = d3_FindObject(0, 0x100, 0, dn[k]);
+                    if (at != 0)
+                        ch_WalkToObjectTurn(sel, at);
                 }
 lskip:
                 redraw = 1;
             }
             if (k >= 6) {
                 d2_SetForm(f, 0);
-                io_PrintText((unsigned)"$C");
+                io_PrintText("$C");
                 d2_SetViewEnabled(f, 0);
-                d3anim_FreePath((int)d3_Camera);
-                U_I((unsigned)&d3t_CamMoving) = 0;
-                U_I((unsigned)&d3t_CamMove) = 0;
-                d3t_PlaceObjectV((int)d3_Camera, &d3_Camera->views[5].pos, &d3_Camera->views[5].dir, 0x50, 8);
+                d3anim_FreePath(d3_Camera);
+                d3t_CamMoving = 0;
+                d3t_CamMove = 0;
+                d3t_PlaceObjectV(d3_Camera, &d3_Camera->views[5].pos, &d3_Camera->views[5].dir, 0x50, 8);
                 if (main_ChooseTalents() != 0) {
                     if (lobby_ChooseProfession(0xc6) != 0 && main_ChooseModel(init_PlayerProfile.job) != 0) {
                         sv_PopRequest = 1;
@@ -2233,8 +2234,8 @@ lskip:
             run = sv_RunFrame((int)main_ChooseFamily, 0x12d6);
         } while (run != 0);
         if (ret == 1) {
-            fade = (unsigned char *)d2_StartFade(0, 0, (int)*(short *)(unsigned)&d2_ScreenW, (int)*(short *)(unsigned)&d2_ScreenH, "BLACK", 0x5a, 1);
-            while ((*fade & 4) == 0)
+            fade = d2_StartFade(0, 0, d2_ScreenW, d2_ScreenH, "BLACK", 0x5a, 1);
+            while ((fade->flags & 4) == 0)
                 sv_RunFrame(0, 0xc6);
         }
     }
@@ -2259,22 +2260,21 @@ lskip:
     if (f != -1)
         d2_CloseView(f);
     if (scene != -1) {
-        h = (int)evt_FindById(scene);
-        if (h != 0)
-            evt_Stop((EVTSCRIPT *)h);
+        es = evt_FindById(scene);
+        if (es != 0)
+            evt_Stop(es);
         sv_RunFramesUntilStopped(scene);
     }
-    if ((int)d3_DefaultScene->hmap != 0) {
-        d3sm_Destroy((int)d3_DefaultScene->hmap);
+    if (d3_DefaultScene->hmap != 0) {
+        d3sm_Destroy((D3SM *)d3_DefaultScene->hmap);
         d3_DefaultScene->hmap = 0;
     }
     cm_DestroySceneSky();
-    p = (int *)d3_DefaultScene;
-    if (p != 0 && (q = p[0x3c8 / 4]) != 0 && *(int *)(q + 0x294) != 0)
-        ((void (*)(int *, int, int, int))*(int *)(q + 0x294))(p, 5, q + 0x298, 0);
-    d3anim_FreePath((int)d3_Camera);
-    U_I((unsigned)&d3t_CamMoving) = 0;
-    U_I((unsigned)&d3t_CamMove) = 0;
+    if (d3_DefaultScene != 0 && d3_DefaultScene->events != 0 && d3_DefaultScene->events[5].fn != 0)
+        d3_DefaultScene->events[5].fn(d3_DefaultScene, 5, d3_DefaultScene->events[5].name, 0);
+    d3anim_FreePath(d3_Camera);
+    d3t_CamMoving = 0;
+    d3t_CamMove = 0;
     if (fade != 0)
         d2_ReleaseFade(fade);
     return ret;
