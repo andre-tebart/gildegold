@@ -608,7 +608,8 @@ typedef struct AIMSG {                  /* 0xf8 bytes, given to cm_SendLongMessa
             char pad94[8];
             unsigned char textFlags;            /* 0x9c, of a note with a text (cm_SendPartyNote): 0xc, 0xe with the party's building,
                                                    | 0x10 when a second text follows the first */
-            unsigned char unk9d;                /* 0x9d */
+            unsigned char deferTrade;           /* 0x9d, 1 in the trade message 11 when the AI is over its work limit
+                                                   (ai_WorkLoad > ai_WorkLimit); the event keeps it at +0xf1 (AIJOB.flags, nonzero defers the posting) */
             unsigned char flag9e;               /* 0x9e, 1 in the guard cart's message 0xf (he_PatrolStep); the meaning is not known */
             char pad9f;
             int moveArgA0;                      /* 0xa0, -1 in the lost-cart move message 0xf (ai_MeisterCollectTrans), 0 in the
