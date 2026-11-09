@@ -60,6 +60,7 @@
 #include "ch.h"
 #include "txt.h"                      /* txt_Language */
 #include "bio.h"
+#include "cm.h"
 #define util_RandomU ((unsigned short (*)(int))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original this unit's callers read the 16-bit result (byte-matched ch_RandomNear 0x405160, ai_CalcMeisterBank 0x4836a0, cm_FightLoop 0x4d88c0 move it as a word / movzx) */
 #define sb_PlaySampleI ((struct SBSAMPLE *(*)(int, char *, int, int, int, int, int))sb_PlaySample)  /* 0x426fa0 (sblib.c: SBBANK *bank): this unit passes the bank as an int */
 #define sb_SetVolumeI ((void (*)(int, int))sb_SetVolume)  /* 0x427330 (sblib.c: SBSAMPLE *): @original f3snd.c passes the int handle view of the sample */
@@ -679,111 +680,114 @@ int snd_FindTrackKind(int kind)
 }
 /* 0x4c2000, the music step: a new season stops the outdoor track; a finished track starts a pause (its name kept
    in snd_LastTrack); after the pause, or when the player moved to another building / room (and the current track
-   loses a random draw against its priority), the track of the place starts (0x4c18a0 / 0x4c1bd0) */
+   loses a random draw against its priority), the track of the place starts (snd_EnterBuilding /
+   snd_PlayOutdoorTrack) */
 
 void snd_UpdateMusic(void)
 {
     unsigned int t;
     int i;
-    int room;
+    unsigned short *room;
     unsigned char *b;
     unsigned char *b2;
-    char *trk;
+    MSXTRACK *trk;
     short prio;
     unsigned int kind;
     int k;
 
     t = F3SND_TIME;
-    if (ai_GameState == 0 || !(snd_MusicVolume > 0.0f))
+    if (ai_GameState == 0 || !(snd_MusicVolume > ai_FloatZero))
         return;
-    i = gm_ClockSeason(&ai_Time);
-    if (ai_Unk6f0cb4 != i) {
-        if (ai_Unk6f0cb4 == 0) {
-            ai_Unk6f0cb4 = gm_ClockSeason(&ai_Time);
-            return;
-        }
-        i = snd_FindTrackKind(0x2694);
-        ai_Unk6f0cb4 = gm_ClockSeason(&ai_Time);
-        if (i < 0)
-            return;
-        trk = snd_TrackHandles.current;
-        if (snd_LocationTracks[i].active != 0) {
-            sprintf(ai_Unk6f0860, "Outdoortrack %s stopped because of seasonchange !", snd_LocationTracks[i].track);
-            snd_LocationTracks[i].prio -= 0x1e;
-            snd_LocationTracks[i].active = 0;
-            trk = 0;
-            if (snd_TrackHandles.current != 0) {
-                msx_Stop(snd_TrackHandles.current, 1);
-                strcpy(snd_LastTrack, snd_TrackHandles.current);
-                ai_Unk60b0d8 = 1;
-                snd_TrackHandles.current = 0;
-                trk = 0;
+    if (snd_MusicSeason != gm_ClockSeason(&ai_Time)) {
+        if (snd_MusicSeason != 0) {
+            i = snd_FindTrackKind(0x2694);
+            snd_MusicSeason = gm_ClockSeason(&ai_Time);
+            if (i >= 0) {
+                if (snd_LocationTracks[i].active != 0) {
+                    sprintf(snd_MusicLog, "Outdoortrack %s stopped because of seasonchange !", snd_LocationTracks[i].track);
+                    snd_LocationTracks[i].prio -= 0x1e;
+                    snd_LocationTracks[i].active = 0;
+                    if (snd_TrackHandles.current != 0) {
+                        msx_Stop(snd_TrackHandles.current, 1);
+                        strcpy(snd_LastTrack, snd_TrackHandles.current->name);
+                        snd_PauseStart = 1;
+                        snd_TrackHandles.current = 0;
+                    }
+                }
+                snd_LocationTracks[i].track[0] = 0;
+                if (snd_TrackHandles.current != 0)
+                    sprintf(snd_MusicLog, "Track still running after seasonchange is %s", snd_TrackHandles.current->name);
             }
+        } else {
+            snd_MusicSeason = gm_ClockSeason(&ai_Time);
         }
-        snd_LocationTracks[i].track[0] = 0;
-        if (trk != 0)
-            sprintf(ai_Unk6f0860, "Track still running after seasonchange is %s", trk);
         return;
     }
-    room = (int)sv_PanelShown;
-    b2 = ai_FallbackBuildingB;
-    b = ai_PlayerBuildingB;
     trk = snd_TrackHandles.current;
-    if (snd_TrackHandles.current == 0) {
-        if (ai_Unk60b0d8 != 0 && ai_Unk6f0cb0 + ai_Unk60b0d8 >= t)
-            return;
-        ai_Unk60b0d8 = 0;
-        ai_Unk6f0ca8 = ai_PlayerBuildingB;
-        if (ai_PlayerBuildingB == 0)
-            ai_Unk6f0ca8 = ai_FallbackBuildingB;
-    } else {
-        if (snd_TrackHandles.current[0x104] == 0 && snd_TrackHandles.current[0x105] == 0) {
+    if (trk != 0) {
+        if (trk->playing == 0 && trk->queued == 0) {
             i = snd_FindActiveTrack();
             if (i >= 0) {
                 snd_LocationTracks[i].active = 0;
-                if (*(int *)(trk + 0x108) - *(int *)(trk + 0x10c) < 20000)
+                if (trk->length - trk->pos < 20000)
                     snd_LocationTracks[i].track[0] = 0;
-                sprintf(ai_Unk6f0860, "track %s has reached its end!", snd_LocationTracks[i].track);
+                sprintf(snd_MusicLog, "track %s has reached its end!", snd_LocationTracks[i].track);
                 trk = snd_TrackHandles.current;
             }
-            strcpy(snd_LastTrack, trk);
+            strcpy(snd_LastTrack, trk->name);
             snd_TrackHandles.current = 0;
-            ai_Unk60b0d8 = t;
-            ai_Unk6f0cb0 = (int)((1.0f - snd_MusicVolume) * 240000.0f);
-            sprintf(ai_Unk6f0860, "Pause starting at %d, pauseLength is %d ", t, ai_Unk6f0cb0);
+            snd_PauseStart = t;
+            snd_PauseLength = (int)((ai_FloatOne - snd_MusicVolume) * 240000.0f);
+            sprintf(snd_MusicLog, "Pause starting at %d, pauseLength is %d ", t, snd_PauseLength);
             return;
         }
-        if (!(t - ai_Unk6f0cb8 > 40000 && snd_TrackHandles.current != snd_SpecialTrack
-              && (ai_PlayerBuildingB != 0 && ai_Unk6f0ca8 != ai_PlayerBuildingB || ai_FallbackBuildingB != 0 && ai_Unk6f0ca8 != ai_FallbackBuildingB
-                  || ai_PlayerBuildingB == 0 && ai_FallbackBuildingB == 0 && ai_Unk6f0ca8 != 0))
-            && !(ai_Unk6f0cac != room && ai_Unk6f0ca8 != 0 && ai_BTypes[*ai_Unk6f0ca8 * 0x24d] == 2))
+        b2 = ai_FallbackBuildingB;
+        room = sv_PanelShown;
+        b = ai_PlayerBuildingB;
+        if (!(t - snd_LastDecision > 40000 && trk != snd_SpecialTrack
+              && (b != 0 && snd_TrackBuilding != b || b2 != 0 && snd_TrackBuilding != b2
+                  || b == 0 && b2 == 0 && snd_TrackBuilding != 0))
+            && (snd_TrackRoom == room || snd_TrackBuilding == 0 || ai_BTypesT[*snd_TrackBuilding].kind != 2))
             return;
         i = snd_FindActiveTrack();
-        ai_Unk6f0ca8 = b;
+        snd_TrackBuilding = b;
         if (b == 0)
-            ai_Unk6f0ca8 = b2;
-        ai_Unk6f0cac = room;
+            snd_TrackBuilding = b2;
+        snd_TrackRoom = room;
         prio = snd_LocationTracks[i].prio;
-        if (prio <= util_RandomU(0x80)) {
-            ai_Unk6f0cb8 = t - 15000;
+        if (util_RandomU(0x80) < prio) {
+            if (snd_TrackBuilding != 0)
+                kind = ai_BTypesT[*snd_TrackBuilding].kind;
+            else
+                kind = 0x2694;
+            for (k = 0; snd_LocationTracks[i].kinds[k] != 0 && snd_LocationTracks[i].kinds[k] != kind; k++)
+                ;
+            if (snd_LocationTracks[i].kinds[k] != 0)
+                return;
+            sprintf(snd_MusicLog, "Random decision: interrupt running track %s, propability was %d.", snd_LocationTracks[i].track, prio);
+            snd_LastDecision = t;
+            if (snd_TrackBuilding != 0)
+                snd_EnterBuilding();
+            else
+                snd_PlayOutdoorTrack();
+        } else {
+            snd_LastDecision = t - 15000;
             return;
         }
-        if (ai_Unk6f0ca8 == 0)
-            kind = 0x2694;
-        else
-            kind = (unsigned char)ai_BTypes[*ai_Unk6f0ca8 * 0x24d];
-        for (k = 0; snd_LocationTracks[i].kinds[k] != 0 && snd_LocationTracks[i].kinds[k] != kind; k++)
-            ;
-        if (snd_LocationTracks[i].kinds[k] != 0)
+    } else {
+        if (snd_PauseStart != 0 && snd_PauseLength + snd_PauseStart >= t)
             return;
-        sprintf(ai_Unk6f0860, "Random decision: interrupt running track %s, propability was %d.", snd_LocationTracks[i].track, prio);
+        snd_PauseStart = 0;
+        b = ai_PlayerBuildingB;
+        if (b == 0)
+            b = ai_FallbackBuildingB;
+        snd_TrackBuilding = b;
+        snd_LastDecision = t;
+        if (snd_TrackBuilding != 0)
+            snd_EnterBuilding();
+        else
+            snd_PlayOutdoorTrack();
     }
-    ai_Unk6f0cb8 = t;
-    if (ai_Unk6f0ca8 == 0) {
-        snd_PlayOutdoorTrack();
-        return;
-    }
-    snd_EnterBuilding();
 }
 /* 0x4c23f0, starts the special track of an event (fight, cutscene, ...): the first call saves the ambient flag
    and turns the ambient sounds off, then plays name (with name 0 only the music gets quieter, 0.4 over 2000 ms);
@@ -1226,16 +1230,16 @@ G16AMB snd_Animals[][5] = { { { 0.899999976f, 0.699999988f, 2, 4000, 0 }, { 0.44
 float snd_MusicVolume = 0.5f;  /* 0x602d68, music volume 0..1: 0 = no music ( */
 G16TRACKS snd_BuildingTracks[] = { { 7, 0, -1, { "cd1\\LichtUndGnade.mp3", "cd1\\Moenchsgesang.mp3", "cd1\\Sakral.mp3", "cd2\\AmKuehlenGrabe.mp3", "", "" } }, { 2, 23, -1, { "cd1\\AufDemBall.mp3", "", "", "", "", "" } }, { 2, 20, -1, { "cd1\\FinsterePlaene.mp3", "cd1\\RuestetEuch.mp3", "cd1\\FinstererPriester.mp3", "", "", "" } }, { 2, 19, -1, { "cd1\\Rittersleut.mp3", "cd1\\Burgfraeulein.mp3", "", "", "", "" } }, { 2, 21, -1, { "cd2\\DerSeuchenzug.mp3", "cd1\\ImDunklenTann.mp3", "", "", "", "" } }, { 2, 24, -1, { "cd1\\AufDemBall.mp3", "", "", "", "", "" } }, { 2, 22, -1, { "cd1\\finsterePlaene.mp3", "", "", "", "", "" } }, { 22, 0, -1, { "cd1\\AufspielZumTanz.mp3", "cd1\\ZurSommerzeit.mp3", "cd2\\KraeuterUndPhiolen.mp3", "", "", "" } }, { 19, 0, -1, { "cd1\\RuestetEuch.mp3", "cd1\\ImDunklenTann.mp3", "cd1\\Flucht.mp3", "cd1\\Rittersleut.mp3", "", "" } }, { 4, 0, -1, { "cd1\\FinsterePlaene.mp3", "cd1\\Flucht.mp3", "cd2\\ImKerker.mp3", "cd1\\Hungerlohn.mp3", "", "" } }, { 16, 0, -1, { "cd1\\FinsterePlaene.mp3", "cd1\\flucht.mp3", "cd1\\Hungerlohn.mp3", "cd1\\ImDunklenTann.mp3", "", "" } }, { 11, 0, -1, { "cd1\\BeiDerQuelle.mp3", "cd1\\ImDunklenTann.mp3", "", "", "", "" } }, { 13, 0, 2, { "cd1\\Immerkalt.mp3", "", "", "", "", "" } }, { 13, 0, 3, { "cd1\\Immerkalt.mp3", "", "", "", "", "" } }, { 13, 0, -1, { "cd1\\Hungerlohn.mp3", "", "", "", "", "" } }, { 12, 0, 2, { "cd1\\Immerkalt.mp3", "", "", "", "", "" } }, { 12, 0, 3, { "cd1\\Immerkalt.mp3", "", "", "", "", "" } }, { 12, 0, -1, { "cd1\\Hungerlohn.mp3", "", "", "", "", "" } }, { 28, 0, -1, { "", "", "", "", "", "" } }, { 14, 0, -1, { "cd2\\DasParfuem.mp3", "cd2\\DerFernhaendler.mp3", "cd2\\KraeuterUndPhiolen.mp3", "", "", "" } }, { 8, 0, -1, { "cd2\\KraeuterUndPhiolen.mp3", "cd2\\DasParfuem.mp3", "cd2\\DerFernhaendler.mp3", "", "", "" } }, { 6, 0, -1, { "cd2\\ArmerDelinquent.mp3", "cd2\\ImKerker.mp3", "", "", "", "" } }, { 18, 0, -1, { "cd1\\DieTaeglichMueh.mp3", "cd1\\Hungerlohn.mp3", "cd2\\AufDemMarkt.mp3", "", "", "" } }, { 18, 0, 2, { "cd1\\ImmerKalt.mp3", "cd1\\DieTaeglichMueh.mp3", "cd1\\Hungerlohn.mp3", "cd2\\AufDemMarkt.mp3", "", "" } }, { 18, 0, 3, { "cd1\\ImmerKalt.mp3", "cd1\\DieTaeglichMueh.mp3", "cd1\\Hungerlohn.mp3", "cd2\\AufDemMarkt.mp3", "", "" } }, { 20, 0, -1, { "cd1\\DieTaeglichMueh.mp3", "cd1\\Hungerlohn.mp3", "cd2\\AufDemMarkt.mp3", "", "", "" } }, { 20, 0, 2, { "cd1\\ImmerKalt.mp3", "cd1\\DieTaeglichMueh.mp3", "cd1\\Hungerlohn.mp3", "cd2\\AufDemMarkt.mp3", "", "" } }, { 20, 0, 3, { "cd1\\ImmerKalt.mp3", "cd1\\DieTaeglichMueh.mp3", "cd1\\Hungerlohn.mp3", "cd2\\AufDemMarkt.mp3", "", "" } }, { 21, 0, -1, { "cd1\\DieTaeglichMueh.mp3", "cd1\\Hungerlohn.mp3", "cd2\\AufDemMarkt.mp3", "", "", "" } }, { 21, 0, 2, { "cd1\\ImmerKalt.mp3", "cd1\\DieTaeglichMueh.mp3", "cd1\\Hungerlohn.mp3", "cd2\\AufDemMarkt.mp3", "", "" } }, { 21, 0, 3, { "cd1\\ImmerKalt.mp3", "cd1\\DieTaeglichMueh.mp3", "cd1\\Hungerlohn.mp3", "cd2\\AufDemMarkt.mp3", "", "" } }, { 5, 0, -1, { "cd2\\DerFernhaendler.mp3", "cd2\\ZumGutenEnd.mp3", "cd1\\mauerundtor.mp3", "", "", "" } }, { 9, 0, -1, { "cd2\\DerFernhaendler.mp3", "cd2\\ZumGutenEnd.mp3", "cd1\\mauerundtor.mp3", "", "", "" } }, { 15, 0, -1, { "cd1\\AufDemBall.mp3", "cd2\\Hochzeit.mp3", "cd1\\mauerundtor.mp3", "", "", "" } }, { 23, 0, -1, { "cd1\\AufDemBall.mp3", "cd2\\Hochzeit.mp3", "", "", "", "" } }, { 24, 0, -1, { "cd1\\AufDemBall.mp3", "cd2\\Hochzeit.mp3", "", "", "", "" } }, { 25, 0, -1, { "cd1\\AufDemBall.mp3", "cd2\\Hochzeit.mp3", "", "", "", "" } }, { 26, 0, -1, { "cd1\\AufDemBall.mp3", "cd2\\Hochzeit.mp3", "", "", "", "" } }, { 29, 0, -1, { "CD3\\DuestresGemaeuer.mp3", "CD3\\DunkleMondesnacht.mp3", "CD2\\AmKuehlenGrabe.mp3", "CD1\\FinstrerPriester.mp3", "CD3\\Grabesklang.mp3", "CD2\\DerSeuchenzug.mp3" } }, { 31, 0, -1, { "CD3\\DerStolzenTraum.mp3", "CD3\\Vagabundentanz.mp3", "CD3\\SchmerzlichErinnerung.mp3", "CD1\\ImDunklenTann.mp3", "CD1\\BeiDerQuelle.mp3", "CD1\\AufspielZumTanz.mp3" } }, { 32, 0, -1, { "CD3\\MitFlinkemStich.mp3", "CD3\\Medley.mp3", "CD2\\DasParfum.mp3", "CD2\\DerFernhaendler.mp3", "CD2\\Hochzeit.mp3", "CD1\\AufDemBall.mp3" } }, { 30, 587, -1, { "CD2\\ZumGutenEnd.mp3", "cd2\\DasParfuem.mp3", "cd2\\KraeuterUndPhiolen.mp3", "CD2\\DerFernhaendler.mp3", "", "" } }, { 30, 598, -1, { "CD3\\BurgUndFeste.mp3", "CD3\\Heldenglanz.mp3", "CD2\\Krieg.mp3", "CD2\\Satisfaktion.mp3", "CD1\\AufDenStrassen.mp3", "CD1\\FinsterePlaene.mp3" } }, { 30, 614, -1, { "CD2\\ArmerDelinquent.mp3", "CD2\\DerSeuchenzug.mp3", "CD1\\FinstererPriester.mp3", "CD1\\FinsterePlaene.mp3", "CD1\\AufDemBall.mp3", "CD3\\Heldenglanz.mp3" } }, { 0, 0, -1, { "", "", "", "", "", "" } } };  /* 0x602d70 */
 G16LOC snd_LocationTracks[] = { { { 7, 0, 0, 0 }, "", -20, 0, 0 }, { { 2, 0, 0, 0 }, "", -20, 0, 0 }, { { 22, 0, 0, 0 }, "", -20, 0, 0 }, { { 19, 0, 0, 0 }, "", -20, 0, 0 }, { { 4, 0, 0, 0 }, "", -20, 0, 0 }, { { 16, 0, 0, 0 }, "", -20, 0, 0 }, { { 11, 0, 0, 0 }, "", -20, 0, 0 }, { { 13, 0, 0, 0 }, "", -20, 0, 0 }, { { 12, 0, 0, 0 }, "", -20, 0, 0 }, { { 28, 0, 0, 0 }, "", -20, 0, 0 }, { { 14, 8, 0, 0 }, "", -20, 0, 0 }, { { 6, 0, 0, 0 }, "", -20, 0, 0 }, { { 18, 20, 21, 0 }, "", -20, 0, 0 }, { { 5, 0, 0, 0 }, "", -20, 0, 0 }, { { 9, 0, 0, 0 }, "", -20, 0, 0 }, { { 15, 0, 0, 0 }, "", -20, 0, 0 }, { { 23, 0, 0, 0 }, "", -20, 0, 0 }, { { 24, 0, 0, 0 }, "", -20, 0, 0 }, { { 25, 0, 0, 0 }, "", -20, 0, 0 }, { { 26, 0, 0, 0 }, "", -20, 0, 0 }, { { 29, 0, 0, 0 }, "", -20, 0, 0 }, { { 31, 0, 0, 0 }, "", -20, 0, 0 }, { { 32, 0, 0, 0 }, "", -20, 0, 0 }, { { 30, 0, 0, 0 }, "", -20, 0, 0 }, { { 9876, 0, 0, 0 }, "", -20, 0, 0 }, { { 0, 0, 0, 0 }, "", 0, 0, 0 } };  /* 0x6094d0 */
-unsigned int ai_Unk60b0d8 = 1;  /* 0x60b0d8, start of the music pause */
+unsigned int snd_PauseStart = 1;  /* 0x60b0d8, start of the music pause */
 char snd_TrackText[256] = {0};  /* 0x6f0760, a debug text */
-char ai_Unk6f0860[256] = {0};  /* 0x6f0860, a debug text */
+char snd_MusicLog[256] = {0};  /* 0x6f0860, a debug text */
 char snd_LocustLog[256] = {0};  /* 0x6f0960, a debug text */
 char snd_DebugText[256] = {0};  /* 0x6f0a60, a debug text */
 unsigned char snd_AmbientOn = 0;  /* 0x6f0b60, 1: ambient sounds on */
 unsigned int snd_AmbientOnSaved = 0;  /* 0x6f0b64, the saved snd_AmbientOn */
 int snd_QueuePaused = 0;  /* 0x6f0b68, nonzero: the queue does not advance */
 G16TRACKHANDLES snd_TrackHandles = {0};  /* 0x6f0b6c, the music track and its copy */
-char * snd_SpecialTrack = 0;  /* 0x6f0b74, the special track of */
+struct MSXTRACK *snd_SpecialTrack = 0;  /* 0x6f0b74, the special track of */
 int snd_AmbientSaved = 0;  /* 0x6f0b78, 1 while the ambient flag is off and saved ( */
 int snd_FanfareFade = 0;  /* 0x6f0b7c, 1 while a "Fanfare" has faded the music out */
 int snd_AmbientTrack = 0;  /* 0x6f0b80, the d3snd handle of the ambient track (bird song, market ambience) */
@@ -1248,11 +1252,11 @@ struct SBSAMPLE *snd_Locusts = 0;  /* 0x6f0b98, hpLocusts */
 int snd_AnimalSeason = 0;  /* 0x6f0b9c, the season */
 void * snd_AtmoTrack = 0;  /* 0x6f0ba0, the atmosphere mp3 (MSXTRACK *) */
 char snd_LastTrack[256] = {0};  /* 0x6f0ba8, the outdoor track played last */
-unsigned char * ai_Unk6f0ca8 = 0;  /* 0x6f0ca8, the building of the track */
-int ai_Unk6f0cac = 0;  /* 0x6f0cac, the room of the track */
-unsigned int ai_Unk6f0cb0 = 0;  /* 0x6f0cb0, the pause length */
-int ai_Unk6f0cb4 = 0;  /* 0x6f0cb4, the season of the music */
-unsigned int ai_Unk6f0cb8 = 0;  /* 0x6f0cb8, time of the last track decision */
+unsigned char * snd_TrackBuilding = 0;  /* 0x6f0ca8, the building of the track */
+unsigned short *snd_TrackRoom = 0;  /* 0x6f0cac, the room of the track */
+unsigned int snd_PauseLength = 0;  /* 0x6f0cb0, the pause length */
+int snd_MusicSeason = 0;  /* 0x6f0cb4, the season of the music */
+unsigned int snd_LastDecision = 0;  /* 0x6f0cb8, time of the last track decision */
 int snd_VoiceBankOrders = 0;  /* 0x6f0cbc, voice bank: orders (snd_LoadBuildingVoices) */
 int snd_VoiceBankClick = 0;  /* 0x6f0cc0, voice bank: click comments */
 int snd_VoiceBankNoise = 0;  /* 0x6f0cc4, voice bank: click noises */

@@ -74,8 +74,8 @@ typedef struct G16BLDVIEW {             /* the market building as f3snd reads it
 
 typedef struct G16TRACKHANDLES {        /* 0x8 bytes, snd_TrackHandles: the music track and a copy of it,
                                            always written together (0x4c1bd0, 0x4c18a0) */
-    char *current;                      /* 0x00, the music track (MSXTRACK *) */
-    char *copy;                         /* 0x04, a copy of current, never read */
+    struct MSXTRACK *current;           /* 0x00, the music track */
+    struct MSXTRACK *copy;              /* 0x04, a copy of current, never read */
 } G16TRACKHANDLES;
 
 typedef struct G16CHARCLICK {           /* the click-comment view of the start of a character record (0x770b80) */
@@ -93,19 +93,19 @@ typedef struct G16CHAR {                /* 0x21c bytes, ai_CharInts[0x300] (AICH
 extern G16SEASON snd_Gusts[];           /* 0x602ba8, by season */
 extern float snd_VoiceVolume;           /* 0x602b08, voice volume (1.0, scaled by 127) */
 extern float snd_MusicVolume;           /* 0x602d68, music volume 0..1: 0 = no music (0x4c23f0, 0x4c2000) */
-extern unsigned int ai_Unk60b0d8;       /* 0x60b0d8, start of the music pause */
+extern unsigned int snd_PauseStart;       /* 0x60b0d8, start of the music pause */
 extern unsigned char ai_GameState;      /* 0x6f25ac, the game state (as cm.h / menu.h) */
 extern int snd_MusicEnabled;            /* 0x6f2578, the "msx" setting of game.INI [Sound]: music enabled */
 extern int snd_SfxEnabled;              /* 0x6f257c, the "sfx" setting of game.INI [Sound]: effects and voices on */
-extern int ai_Unk6f0cb4;                /* 0x6f0cb4, the season of the music */
-extern unsigned int ai_Unk6f0cb0;       /* 0x6f0cb0, the pause length */
-extern unsigned int ai_Unk6f0cb8;       /* 0x6f0cb8, time of the last track decision */
-extern unsigned char *ai_Unk6f0ca8;     /* 0x6f0ca8, the building of the track */
-extern int ai_Unk6f0cac;                /* 0x6f0cac, the room of the track */
-extern char *snd_SpecialTrack;          /* 0x6f0b74, the special track of 0x4c23f0 (MSXTRACK *) */
+extern int snd_MusicSeason;                /* 0x6f0cb4, the season of the music */
+extern unsigned int snd_PauseLength;       /* 0x6f0cb0, the pause length */
+extern unsigned int snd_LastDecision;       /* 0x6f0cb8, time of the last track decision */
+extern unsigned char *snd_TrackBuilding;     /* 0x6f0ca8, the building of the track */
+extern unsigned short *snd_TrackRoom;                /* 0x6f0cac, the room of the track */
+extern struct MSXTRACK *snd_SpecialTrack; /* 0x6f0b74, the special track of snd_PlaySpecialTrack */
 extern int snd_AmbientSaved;            /* 0x6f0b78, 1 while the ambient flag is off and saved (0x4c23f0) */
 extern unsigned int snd_AmbientOnSaved; /* 0x6f0b64, the saved snd_AmbientOn */
-extern char ai_Unk6f0860[];             /* 0x6f0860, a debug text */
+extern char snd_MusicLog[];             /* 0x6f0860, a debug text */
 extern char ch_EmptyName[];             /* 0x631090, "" */
 extern char ai_Chars[768][0x21c];        /* 0x770b80, the characters (ahm.c); f3snd.c reads them flat (ai_CharsC) */
 extern int snd_VoiceBankOrders;         /* 0x6f0cbc, voice bank: orders (snd_LoadBuildingVoices) */
