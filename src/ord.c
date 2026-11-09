@@ -32,6 +32,7 @@
 
 /* full rebuild: the symbols whose original addresses the code above spells literally */
 
+#define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
 #define ORD_FLAG_BLOCKED 0x400000  /* the privilege flag that blocks the misappropriation order (0x4f6b40) */
 
 /* ai_RatingBase as the int out[6] of the statistics record: the original moves the float's bits with a dword mov
@@ -416,40 +417,37 @@ int ord_Level5UpOrder2(char *c, int *m)
         txt_Format(m + 5, "%s", 0x1d8c);
     return 2;
 }
-/* 0x4f5800, an order handler (c, m; kinds 1 / 3) for characters of level 5 or more: m[0x17] (+0x5c) is a character id of the table 0x505df0 (-1 or none: 1), the record needs its byte +8; a character table entry that is in use must exist (the scan below only finds the first used record; its index must be below 0x300); kind 3 goes to ai_DivorceDialog, kind 1 of a player writes the text 0x1d8e; else 2 */
+/* 0x4f5800, the divorce order handler (c the character, m the message, kind 1 or 3) for level 5 and up (c[0xd]):
+   the character needs a partner (relatives[0], alive by gm_FindChar) and the character table a record in use
+   (the scan stops at the first one; the office test in it never holds); kind 3 opens ai_DivorceDialog, kind 1 of a
+   player (+2 = 6) writes the text 0x1d8e into m + 0x14; else 2; 1 when not allowed */
 
-int unk_Unk4f5800(char *c, int *m)
+int ord_DivorceOrder(char *c, int *m)
 {
+    AICHAR *ch = (AICHAR *)c;
+    AICHAR *partner;
     int i;
-    char *p;
-    char *o;
 
     if (m[0] != 3 && m[0] != 1)
         return 1;
-    if ((unsigned char)c[0xd] < 5)
+    if (ch->b00d < 5)
         return 1;
-    i = 0;
-    p = &ai_Chars[0][0x166];
-    do {
-        if (*(unsigned short *)(p - 0x166) != 0xffff) {
-            if (*p != 0x12 || (unsigned char)*p <= 0x15)
-                break;
-        }
-        p += 0x21c;
-        i++;
-    } while ((int)p < ((unsigned)((unsigned)ai_Chars + 0x65402) + 0x164));
-    if (*(int *)(c + 0x5c) == -1)
+    for (i = 0; i < 0x300; i++) {
+        if (ai_CharsT[i].id != 0xffff && (ai_CharsT[i].officeKind != 0x12 || ai_CharsT[i].officeKind <= 0x15))
+            break;
+    }
+    if (ch->relatives[0] == -1)
         return 1;
     if (i >= 0x300)
         return 1;
-    o = gm_FindChar(*(int *)(c + 0x5c));
-    if (o == 0)
+    partner = (AICHAR *)gm_FindChar(ch->relatives[0]);
+    if (partner == 0)
         return 1;
-    if (o[8] == 0)
+    if (partner->health == 0)
         return 1;
     if (m[0] == 3)
         return ai_DivorceDialog((struct AICHARREC *)c, (struct LCORDMSG *)m);
-    if (m[0] == 1 && c[2] == 6)
+    if (m[0] == 1 && ch->kind == 6)
         txt_Format(m + 5, "%s", 0x1d8e);
     return 2;
 }

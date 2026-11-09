@@ -636,7 +636,7 @@ extern int sv_PopRequest;                /* 0x6f22a0 */
 extern int d2_ClickedId;                /* 0xf8a668 */
 int ord_DispatchOrder(int id, char *c, int *m);  /* 0x4f81c0 */
 
-int unk_Unk4f5800(char *c, int *m);     /* 0x4f5800 */
+int ord_DivorceOrder(char *c, int *m);     /* 0x4f5800 */
 int ord_WageReportOrder(char *c, int *m);     /* 0x4f5a80 */
 int gm_CharacterWages(unsigned short id, int flag, unsigned char *out);  /* 0x4fa700, the wage record (ORDWAGES) of the character id for the report */
 
