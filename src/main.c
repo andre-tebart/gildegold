@@ -1972,26 +1972,13 @@ int main_ChooseTalents(void)
    cast to float: the original multiplies both terms, which VC6 folds into one product otherwise) and the preview model of the
    current entry, put at the dummy "dummy_SPIELER" with the effect "Effekte/choose_character.esc"; the chosen name goes to
    init_PlayerProfile.model, its id to modelId; job is the profile's job, its title group is the start index; returns 1 when ok
-   was pressed (Enter), 0 when cancelled (the original counts both tables through the men table)
-   @deep Read the whole function against the original: the two 17 x 0x20 model tables (men at frame 0x250,
-   women at 0x30, every entry and its length checked against the copies), the button placement, the count
-   loops (both count the men table, as the original does), the loop and its key / click tests, the model
-   swap and the cleanup all agree; fixed the button x/y sums (the original multiplies both terms, VC6
-   folded them into one constant: a (float) cast keeps them apart, the instruction count is now 757/757)
-   and typed obj as CHARACTER *. Left: allocation. The original keeps obj in ebp, idx in edi, shown in esi
-   with a frame slot (+0x28 = -1) besides and bnext in ebx and a slot (reloading ebx around the bprev test:
-   mov ebx,[esp+0x1c] / cmp ecx,ebx / mov ebx,[esp+0x24]), so its frame is 0x4a0 vs our 0x49c; ours keeps
-   shown in ebx, obj in esi, idx in ebp and 0 in esi for the d3_FindObject pushes (original: ebx). The
-   table initializer is the same copy set scheduled in another order under that register set (code/slots
-   hunks 0x534b38..0x5355c8). (references: M9 at +0x31: our literal "wirt_DICKER" where the original's
-   field refers to "patrizier_MANN2" at 0x624ee0 (and 36 more), explained: the M9 literal lines are the
-   initializer's dword copies of the same string literals crossing in the schedule (e.g. +0x31 ours copies
-   wirt_DICKER where the original copies patrizier_MANN2 first, both copy both); every table entry's source
-   string and offset was checked against the original's copies; the prover stops at the unaligned
-   byte-array stores) */
+   was pressed (Enter), 0 when cancelled (the original counts both tables through the men table) */
 
 int main_ChooseModel(int job)
 {
+    int result = 0;
+    CHARACTER *obj = 0;
+    int shown = -1;
     char men[17][0x20] = {"patrizier_MANN2", "wirt_DICKER", "arbeiter_MANN", "wirt3_MANN", "wirt2_DICKER", "buerger_MANN", "buerger2_MANN", "domherr_KUTTE", "buerger3_DICKER",
                           "patrizier_MANN2", "offizier_SOLDAT", "DIEB2_KUTTE", "raeubermeister_SOLDAT", "Nekromant_MEISTER", "zigeunermeister_MANN3", "schneider3_DICKER", ""};
     char women[17][0x20] = {"patrizierin_FRAU", "handwerkerin3_FRAU", "handwerkerin2_FRAU", "handwerkerin_FRAU", "magd_FRAU", "buergerin3_FRAU", "Bauerin_FRAU", "minerin2_FRAU", "buergerin2_FRAU",
@@ -2000,13 +1987,9 @@ int main_ChooseModel(int job)
     D3VECTOR4 pos;                  /* d3_PointToWorld writes the point and an angle after it */
     D3OBJECT *dummy;
     EVTSCRIPT *fx;
-    CHARACTER *obj;
-    int result, bnext, bprev, bok, idx, shown, nmen, nwomen;
+    int bnext, bprev, bok, idx, nmen, nwomen;
     char *s;
 
-    result = 0;
-    obj = 0;
-    shown = -1;
     idx = gm_TitleGroup(job);
     dummy = d3_FindObject(0, 0x100, 0, "dummy_SPIELER");
     if (dummy != 0)
@@ -2079,7 +2062,7 @@ int main_ChooseModel(int job)
                 ch_PlaceAtObject(obj, dummy);
                 ch_SetVisible(obj, 0);
                 obj->obj->objectFlags &= ~4;
-                obj->flags.bytes.lo |= 8;
+                obj->flags.all |= 8;
                 ch_AddAction(obj, 0x38, 1);
                 shown = idx;
             }
