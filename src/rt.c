@@ -182,40 +182,42 @@ void rt_BuildMarkGroup(void)
         }
     }
 }
-/* 0x4bdb30, a mark (picture 0x7bb + the index of p in list) on window win at building p->buildingId; -1 if it has none */
-
-int rt_Unk4bdb30(char *win, int b, RTPOINT *list, RTPOINT *p)
+/* 0x4bdb30, puts the mark of the route point p (the picture 0x7bb + its index in list) on the town map window win
+   at its building (RTPOINT.buildingId: the building object's height map cell, ai_MapCellToScreen around the own
+   player's town origin) and adds it to the radio group rt_MarkGroup (made with the first mark); returns its
+   control, -1 when the building or its cell is not found. cart is not read */
+int rt_PutRouteMark(LCMAPWIN *win, int cart, RTPOINT *list, RTPOINT *p)
 {
-    void *h;
-    int x, z;
-    char *bld;
-    float v[4];
-    float pt[2];
-    int px, pz;
+    D3SM *hmap;
+    int originX;
+    int originY;
+    AIBLD *b;
+    float pos[4];           /* d3_PointToWorld writes the angles after the position */
+    LCMAPMARK mark;
     float y;
     int o;
-    int k;
+    int index;
 
-    h = ai_Unkfd7c50;
-    x = *(int *)(ai_Unk7e422c + ai_OwnPlayer * 0x2f4);
-    z = *(int *)(ai_Unk7e422c + 4 + ai_OwnPlayer * 0x2f4);
-    bld = gm_FindBuildingById(p->buildingId);
-    if (bld == 0)
+    hmap = (D3SM *)d3_Scenes[0].hmap;
+    originX = ((GMPLAYERSLOT *)ai_PlayerSlots)[ai_OwnPlayer].townX;
+    originY = ((GMPLAYERSLOT *)ai_PlayerSlots)[ai_OwnPlayer].townY;
+    b = (AIBLD *)gm_FindBuildingById(p->buildingId);
+    if (b == 0)
         return -1;
-    d3_PointToWorld(*(char **)(bld + 0x61), *(char **)(bld + 0x61) + 0x4c, v);
-    if (!d3_GetHeightAt(h, v, &px, &pz, &y))
+    d3_PointToWorld((D3OBJECT *)b->object, &((D3OBJECT *)b->object)->pos, (D3VECTOR *)pos);
+    if (!d3_GetHeightAt(hmap, (D3VECTOR *)pos, &mark.cellX, &mark.cellZ, &y))
         return -1;
-    ai_MapCellToScreen(pt, x, z);
-    o = d2_WinOpenPic((int)pt[0] - 0x20, (int)pt[1] - 0x20, rt_PointIndex(list, p) + 0x7bb, *(int *)(win + 8));
+    ai_MapCellToScreen(&mark, originX, originY);
+    index = rt_PointIndex(list, p);
+    o = d2_WinOpenPic((int)mark.x - 0x20, (int)mark.y - 0x20, index + 0x7bb, win->screen);
     rt_Marks[rt_MarkCount].obj = o;
-    *(int *)(d2_ObjsC + o * 0x2ec + 0x48) = 1;
+    d2_Objs[o].checkable = 1;
     if (rt_MarkGroup == -1)
         rt_MarkGroup = d2_CreateRadioGroup(1, rt_Marks[rt_MarkCount].obj);
     else
         d2_RadioAdd(rt_MarkGroup, rt_Marks[rt_MarkCount].obj);
     rt_Marks[rt_MarkCount].p = p;
-    k = rt_MarkCount++;
-    return rt_Marks[k].obj;
+    return rt_Marks[rt_MarkCount++].obj;
 }
 /* 0x4bdc90, the slider value of mark m */
 
@@ -710,7 +712,7 @@ void rt_Unk4be940(RTPOINT *p, int *win)
                 p = rt_EditRoute;
                 if (rt_EditRoute != 0) {
                     for (q = rt_EditRoute; q != 0; q = q->next)
-                        rt_Unk4bdb30((char *)win, (int)bt, rt_EditRoute, q);
+                        rt_PutRouteMark((LCMAPWIN *)win, (int)bt, rt_EditRoute, q);
                     p = 0;
                 }
                 d2_RadioSelect(rt_MarkGroup, 0);
@@ -775,7 +777,7 @@ void rt_Unk4bf080(char *c, char *win)
                 rt_EditRoute = rt_AddPoint(0);
                 rt_EditRoute->buildingId = *(int *)(c + 0x1c);
                 rt_EditRoute->cartId = *(int *)(c + 2);
-                rt_Unk4bdb30(win, (int)c, rt_EditRoute, rt_EditRoute);
+                rt_PutRouteMark((LCMAPWIN *)win, (int)c, rt_EditRoute, rt_EditRoute);
                 d2_RadioSelect(rt_MarkGroup, 0);
                 sv_PopRequest = 2;
             }
@@ -915,12 +917,12 @@ void rt_EditCartRoute(char *c)
         rt_EditRoute = rt_AddPoint(0);
         rt_EditRoute->buildingId = *(int *)(c + 0x1c);
         rt_EditRoute->cartId = *(int *)(c + 2);
-        rt_Unk4bdb30((char *)m, (int)c, rt_EditRoute, rt_EditRoute);
+        rt_PutRouteMark((LCMAPWIN *)m, (int)c, rt_EditRoute, rt_EditRoute);
         d2_RadioSelect(rt_MarkGroup, 0);
         rt_PickedBuilding = 0;
     } else {
         for (q = rt_EditRoute; q != 0; q = q->next)
-            rt_Unk4bdb30((char *)m, (int)c, rt_EditRoute, q);
+            rt_PutRouteMark((LCMAPWIN *)m, (int)c, rt_EditRoute, q);
     }
     d2_SetForm(m[0], 2);
     sv_TabButtonRow(d2_LastWindow, 5, btns, 3, ai_Unk144ad30, ai_Unk144ad34, ai_Unk144ad38);
@@ -938,7 +940,7 @@ void rt_EditCartRoute(char *c)
                 q = rt_AddPoint(rt_EditRoute);
                 q->buildingId = *(int *)(rt_PickedBuilding + 1);
                 q->cartId = *(int *)(c + 2);
-                rt_Unk4bdb30((char *)m, (int)c, rt_EditRoute, q);
+                rt_PutRouteMark((LCMAPWIN *)m, (int)c, rt_EditRoute, q);
                 d2_RadioSelect(rt_MarkGroup, rt_MarkCount - 1);
                 rt_PickedBuilding = 0;
             }
