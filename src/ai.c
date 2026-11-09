@@ -563,7 +563,7 @@ void ai_RunMasterEvaluation(AICHAR *c)
             if (k == 0x1d)
                 ai_EvaluateProductionGraveyard(c);
             else if (k == 0x1f)
-                ai_Unk484a60(c);
+                ai_EvaluateProductionGypsies(c);
             else
                 ai_EvaluateProduction(c);
         } else
@@ -2690,16 +2690,32 @@ done:
     ai_MeisterCollectTrans(ch);
     ai_MeisterTrade(ch, b);
 }
-/* 0x484a60, evaluates the production of a master's workshop (the variant with the 0x400 entry flag) */
+/* 0x484a60, evaluates the production of a gypsy camp (building kind 0x1f): as ai_EvaluateProductionGraveyard
+   without the grave offer and the staff / spy / pose steps (ai_UpdateStaff instead): picks the good to make, skips
+   the entries flagged 0x400 (job orders of type 0x8c when a slot flagged 0x400 | 0x10 marks them 0x10), the others
+   get job orders of type 4 for flag 8
+   @deep Read whole against the original 0x484a60..0x485473 and rewritten as ai_EvaluateProductionGraveyard
+   (its twin, read the same way): the entry tests on ai_Entries[i] / [k] with the field on the left, the
+   0x400 / flag-8 loops each testing ai_NEntries, j >= ai_NEntries in the watch loop, health > 0, info.n2++
+   / info.n1++ in the struct, min(info.n1, info.n2), the job-order loop's 0x10 / 0x400 / 8 tests with type
+   before e and the watch copy from *info.e, info stored ch, b, c, z2, z1; the call list is the original's
+   (ai_UpdateStaff, no ai_StartBuildingWork). 569 -> 328 differing, every call, constant and field the
+   same. Left is block layout and allocation: the original keeps the first random loop's success block
+   inline (+0x4c7..+0x50b) and lays the second loop's success (StartProduction / 'obwohl Rohstoffe fehlen')
+   out of line inside the watch loop (+0x77a, jmp back to done at +0x679), ours the other way round (the
+   code hunks at +0x4c7 and +0x602); ch lives in ebx in the original and is reloaded from [esp+0x1c0] by
+   ours in the job-order loop where ours keeps j in ebx (+0x999 / +0x9ce / +0xa0e), the goods-record
+   address of the random loops (+0x43a: add ecx,edx / lea edx,[eax+ecx] vs ours add eax,edx / mov edx,eax),
+   the zero register compare at +0x1d6. Same layout quirk as ai_EvaluateProductionFlags 0x47f700. */
 
-void ai_Unk484a60(AICHAR *ch)
+void ai_EvaluateProductionGypsies(AICHAR *ch)
 {
     AIOBJ *a, *b, *x;
     AIENTRY *e;
     AIGOOD *g;
     AIINFOP info;
     char buf[256];
-    int i, j, k, id, r, t, n1, n2, found;
+    int i, j, k, id, r, t, found;
 
     found = 0;
     a = gm_Query(ch->bld->objList, 2, 6, 0, 0xff);
@@ -2720,11 +2736,11 @@ void ai_Unk484a60(AICHAR *ch)
         } else if (ch->prod != 0) {
             for (i = 0; i < ai_NEntries; i++) {
                 if (ai_Entries[i].item == ch->prod) {
-                    e = &ai_Entries[i];
-                    if (ai_GoodsT[e->item].batch <= e->capacity && ai_HasMaterials(ch, e, 1)) {
+                    if (ai_Entries[i].capacity >= ai_GoodsT[ai_Entries[i].item].batch
+                        && ai_HasMaterials(ch, &ai_Entries[i], 1)) {
                         ai_Entries[i].flags |= 8;
-                        ai_StartProduction(ch, e);
-                        ch->prod = (unsigned short)e->item;
+                        ai_StartProduction(ch, &ai_Entries[i]);
+                        ch->prod = (unsigned short)ai_Entries[i].item;
                         goto done;
                     }
                     break;
@@ -2734,11 +2750,11 @@ void ai_Unk484a60(AICHAR *ch)
     } else {
         for (i = 0; i < ai_NEntries; i++) {
             if (ai_Entries[i].item == ch->prod) {
-                e = &ai_Entries[i];
-                if (ai_GoodsT[e->item].batch <= e->capacity && ai_HasMaterials(ch, e, 1)) {
+                if (ai_Entries[i].capacity >= ai_GoodsT[ai_Entries[i].item].batch
+                    && ai_HasMaterials(ch, &ai_Entries[i], 1)) {
                     ai_Entries[i].flags |= 8;
-                    ai_StartProduction(ch, e);
-                    ch->prod = (unsigned short)e->item;
+                    ai_StartProduction(ch, &ai_Entries[i]);
+                    ch->prod = (unsigned short)ai_Entries[i].item;
                     found = 1;
                 }
                 break;
@@ -2751,10 +2767,10 @@ void ai_Unk484a60(AICHAR *ch)
     if (ai_CharsT[ch->bld->owner].kind == 6 && (id = ai_DrawSettingGood(ch->bld)) != 0) {
         for (i = 0; i < 32; i++) {
             if (ai_Entries[i].item == id) {
-                if (ai_Entries[i].need1c <= b->lvl1c && ai_Entries[i].need20 <= b->lvl1d) {
+                if (b->lvl1c >= ai_Entries[i].need1c && b->lvl1d >= ai_Entries[i].need20) {
                     e = &ai_Entries[i];
-                    if (ai_GoodsT[e->item].batch <= e->capacity && (x = gm_FindMarketObject(e->item)) != 0
-                        && ai_GoodsT[e->item].batch + e->amount <= gm_FreeCapacity(x, e->item, 1000000)) {
+                    if (ai_Entries[i].capacity >= ai_GoodsT[e->item].batch && (x = gm_FindMarketObject(e->item)) != 0
+                        && gm_FreeCapacity(x, e->item, 1000000) >= ai_GoodsT[e->item].batch + ai_Entries[i].amount) {
                         if (!ai_HasMaterials(ch, e, 1)) {
                             if (ai_HasMaterials(ch, e, 0)) {
                                 ai_StartProduction(ch, e);
@@ -2791,9 +2807,10 @@ void ai_Unk484a60(AICHAR *ch)
         if (!(ai_Entries[k].flags & 0x400)) {
             e = &ai_Entries[k];
             g = &ai_GoodsT[e->item];
-            if (((g->type != 0x17 && g->type != '%') || e->amount < 5) && e->need1c <= b->lvl1c
-                && e->need20 <= b->lvl1d && g->batch <= e->capacity && (x = gm_FindMarketObject(e->item)) != 0
-                && ai_GoodsT[e->item].batch + e->amount <= gm_FreeCapacity(x, e->item, 1000000)
+            if (((g->type != 0x17 && g->type != '%') || ai_Entries[k].amount < 5)
+                && b->lvl1c >= ai_Entries[k].need1c && b->lvl1d >= ai_Entries[k].need20
+                && ai_Entries[k].capacity >= g->batch && (x = gm_FindMarketObject(e->item)) != 0
+                && gm_FreeCapacity(x, e->item, 1000000) >= ai_GoodsT[e->item].batch + ai_Entries[k].amount
                 && ai_HasMaterials(ch, e, 1)) {
                 k = info.perm[i];
                 ai_Entries[k].flags |= 8;
@@ -2810,9 +2827,10 @@ void ai_Unk484a60(AICHAR *ch)
         if (!(ai_Entries[k].flags & 0x400)) {
             e = &ai_Entries[k];
             g = &ai_GoodsT[e->item];
-            if (((g->type != 0x17 && g->type != '%') || e->amount < 5) && e->need1c <= b->lvl1c
-                && e->need20 <= b->lvl1d && g->batch <= e->capacity && (x = gm_FindMarketObject(e->item)) != 0
-                && ai_GoodsT[e->item].batch + e->amount <= gm_FreeCapacity(x, e->item, 1000000)
+            if (((g->type != 0x17 && g->type != '%') || ai_Entries[k].amount < 5)
+                && b->lvl1c >= ai_Entries[k].need1c && b->lvl1d >= ai_Entries[k].need20
+                && ai_Entries[k].capacity >= g->batch && (x = gm_FindMarketObject(e->item)) != 0
+                && gm_FreeCapacity(x, e->item, 1000000) >= ai_GoodsT[e->item].batch + ai_Entries[k].amount
                 && ai_HasMaterials(ch, e, 0)) {
                 e = &ai_Entries[info.perm[i]];
                 ai_StartProduction(ch, e);
@@ -2826,19 +2844,17 @@ void ai_Unk484a60(AICHAR *ch)
 done:
     ai_SendRemoveEmptyGoods(b);
     ai_PlanSlots(ch, b);
-    if (0 < ai_NEntries) {
-        for (i = 0; i < ai_NEntries; i++) {
-            if (ai_Entries[i].flags & 8) {
-                for (k = 0; k < 4; k++) {
-                    if (ai_Slots[ai_Entries[i].slot[k]].amount < ai_GoodsT[ai_Entries[i].item].need[k])
-                        ai_Entries[i].flags &= ~8;
-                }
+    for (i = 0; i < ai_NEntries; i++) {
+        if (ai_Entries[i].flags & 8) {
+            for (k = 0; k < 4; k++) {
+                if (ai_Slots[ai_Entries[i].slot[k]].amount < ai_GoodsT[ai_Entries[i].item].need[k])
+                    ai_Entries[i].flags &= ~8;
             }
         }
-        for (i = 0; i < ai_NEntries; i++) {
-            if (ai_Entries[i].flags & 0x400)
-                ai_Entries[i].flags &= ~8;
-        }
+    }
+    for (i = 0; i < ai_NEntries; i++) {
+        if (ai_Entries[i].flags & 0x400)
+            ai_Entries[i].flags &= ~8;
     }
     for (i = 0; i < ai_NSlots; i++) {
         if ((ai_Slots[i].flags & 0x400) && (ai_Slots[i].flags & 0x10) && ai_Slots[i].entry >= 0)
@@ -2846,7 +2862,7 @@ done:
     }
     if (ai_Watch.bld == ch->bld) {
         for (j = 0; ai_Watch.nslots < 4; j++) {
-            if (ai_NEntries <= j)
+            if (j >= ai_NEntries)
                 break;
             ai_Watch.ent[ai_Watch.nslots] = ai_Entries[j];
             for (k = 0; k < 4; k++) {
@@ -2860,61 +2876,55 @@ done:
         }
     }
     ai_FreeJobCharacters(ch, 4);
-    n2 = 0;
     info.n2 = 0;
     for (j = 0; j < 768; j++) {
-        if (ai_CharsT[j].health && ai_CharsT[j].id != 0xffff && ai_CharsT[j].kind != 10 && ai_CharsT[j].bld == ch->bld
+        if (ai_CharsT[j].health > 0 && ai_CharsT[j].id != 0xffff && ai_CharsT[j].kind != 10 && ai_CharsT[j].bld == ch->bld
             && ai_CharsT[j].title && ai_CharsT[j].model && ai_CharsT[j].model->bldId == ai_CharsT[j].bld->id
             && (!ai_CharsT[j].job || ai_CharsT[j].job->kind == 4)) {
             sv_MoveToGroup(ch->bld, 0, ai_CharsT[j].id, 0);
-            n2 = info.n2 + 1;
-            info.n2 = n2;
+            info.n2++;
         }
     }
     if (ai_Watch.bld == ch->bld)
-        ai_Watch.n = n2;
-    n1 = 0;
+        ai_Watch.n = info.n2;
     info.n1 = 0;
     for (i = 0; i < ai_NEntries; i++) {
         if (ai_Entries[i].flags & 8)
-            n1++;
+            info.n1++;
         if (ai_Entries[i].flags & 0x10)
-            n1++;
-        info.n1 = n1;
+            info.n1++;
     }
-    if (n2 <= info.n1)
-        info.n1 = n2;
-    if (n2 == 0 || info.n1 == 0) {
-        ai_MeisterCollectTrans(ch);
-        ai_MeisterTrade(ch, b);
-        return;
-    }
-    info.z1 = 0;
-    info.z2 = 0;
-    info.c = 0;
-    info.ch = ch;
-    info.b = b;
-    for (j = 0; j < ai_NEntries; j++) {
-        e = &ai_Entries[j];
-        if (!(e->flags & 0x10)) {
-            if (e->flags & 8) {
-                info.e = e;
+    info.n1 = min(info.n1, info.n2);
+    if (info.n2 != 0 && info.n1 != 0) {
+        info.ch = ch;
+        info.b = b;
+        info.c = 0;
+        info.z2 = 0;
+        info.z1 = 0;
+        for (j = 0; j < ai_NEntries; j++) {
+            if (ai_Entries[j].flags & 0x10) {
+                if (ai_Entries[j].flags & 0x400) {
+                    info.type = 0x8c;
+                    info.e = &ai_Entries[j];
+                    ai_SendJobOrders((AIINFO *)&info);
+                    if (ai_Watch.bld == ch->bld && ai_Watch.nentries < 4) {
+                        ai_Watch.entries[ai_Watch.nentries] = *info.e;
+                        ai_Watch.nentries++;
+                    }
+                }
+            } else if (ai_Entries[j].flags & 8) {
                 info.type = 4;
+                info.e = &ai_Entries[j];
                 ai_SendJobOrders((AIINFO *)&info);
                 if (ai_Watch.bld == ch->bld && ai_Watch.nentries < 4) {
-                    ai_Watch.entries[ai_Watch.nentries] = *e;
+                    ai_Watch.entries[ai_Watch.nentries] = *info.e;
                     ai_Watch.nentries++;
                 }
             }
-        } else if (e->flags & 0x400) {
-            info.e = e;
-            info.type = 0x8c;
-            ai_SendJobOrders((AIINFO *)&info);
-            if (ai_Watch.bld == ch->bld && ai_Watch.nentries < 4) {
-                ai_Watch.entries[ai_Watch.nentries] = *e;
-                ai_Watch.nentries++;
-            }
         }
+        ai_MeisterCollectTrans(ch);
+        ai_MeisterTrade(ch, b);
+        return;
     }
     ai_MeisterCollectTrans(ch);
     ai_MeisterTrade(ch, b);

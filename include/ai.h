@@ -299,7 +299,7 @@ void ai_Unk483a60(AICHAR *ch);                                           /* 0x48
 void ai_StartBuildingWork(AICHAR *ch);                                           /* 0x483d30 */
 void ai_EndWorkerPose(AICHAR *ch);                                           /* 0x483ee0 */
 void ai_EvaluateProductionGraveyard(AICHAR *c);                                            /* 0x483fc0 */
-void ai_Unk484a60(AICHAR *c);                                            /* 0x484a60 */
+void ai_EvaluateProductionGypsies(AICHAR *c);                                            /* 0x484a60 */
 void ai_UpdateProduction(AICHAR *ch, AIOBJ *a, AIOBJ *b);                       /* 0x4854f0 */
 void ai_FillSlotTable(AICHAR *ch, AIOBJ *obj);                               /* 0x486190 */
 void ai_BuildTradeOffers(AICHAR *ch, AIOBJ *store, int f);                      /* 0x4864b0 */
