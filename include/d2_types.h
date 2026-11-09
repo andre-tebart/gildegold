@@ -54,8 +54,15 @@ typedef struct D2WIN {              /* 0x3c4 bytes, d2_Wins[0..0x60] */
     char *text;                     /* 0x2c */
     int textReset;                  /* 0x30, set 0 when the 'C' command clears the text (d2_DrawWindowText); no reader is
                                        known, the name is a guess */
-    char pad34[8];
-    int lines[0x7f];                /* 0x3c, text position of each laid out line */
+    int textPos;                    /* 0x34, text position of the first shown line: dragging the scroll marker sets it
+                                       from linePos (d2_MouseUpdate) */
+    union {
+        struct {
+            int line0;              /* 0x38 */
+            int lines[0x7f];        /* 0x3c, text position of each laid out line */
+        };
+        int linePos[0x80];          /* 0x38, the same table read one entry earlier: linePos[firstline] (d2_MouseUpdate) */
+    };
     int firstline;                  /* 0x238 */
     int nlines;                     /* 0x23c */
     int pad240;
@@ -180,6 +187,7 @@ typedef struct D2CTRL {             /* what D2OBJ::buf points to (a D2BUF) */
     char pad004[0x194];
     int loaded;                     /* 0x198, nonzero: its two surfaces exist (D2VIEW.loaded), so the
                                        pointer position is d2_PointerX / 0c, not the mouse */
+    int shown;                      /* 0x19c, the view is displayed (D2VIEW.shown) */
 } D2CTRL;
 
 typedef struct D2OBJ {              /* 0x2ec bytes, d2_Objs has 0x2ff: pictures, inputs, sliders, buttons */

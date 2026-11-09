@@ -776,26 +776,24 @@ void d2_FocusInput(int obj)
 
 /* 0x4784c0, mouse handling: object and window under the pointer, clicks (sound, radio groups, toggles), the hit
    rectangles, dragging the scroll bar of a window */
-#define RAD(i) ((D2RADIO *)((char *)d2_Radios + (i)))
-/* 0x4784c0 */
 void d2_MouseUpdate(void)
 {
     D2OBJ *o;
-    D2CTRLX *c;
+    D2CTRL *c;
     D2HIT *h;
     D2WIN *w;
-    int *p, *q;
-    int i, j, k, m, n, found, win, v, line;
+    int i, j, m, found, win, n, line;
     short mx, my;
 
     d2_HoverObj = d2_HitTest(d2_MouseX, d2_MouseY);
     d2_UpdateInput();
     if (d2_PointerWin != -1) {
         d2_HitWindow = d2_PointerWin;
-        d2_Unkf8aa80 = -1;
-        for (i = 0; i < d2_Wins[d2_PointerWin].nobjs; i++) {
-            if (d2_Wins[d2_PointerWin].objs[i] == d2_PointerObj) {
-                d2_Unkf8aa80 = i;
+        d2_PointerObjSlot = -1;
+        w = &d2_Wins[d2_PointerWin];
+        for (i = 0; i < w->nobjs; i++) {
+            if (w->objs[i] == d2_PointerObj) {
+                d2_PointerObjSlot = i;
                 break;
             }
         }
@@ -804,66 +802,53 @@ void d2_MouseUpdate(void)
     }
     d2_UpdateHoverScroll();
     if (dm_L.lclick != 0) {
-        k = d2_PointerObj;
         if (d2_HoverObj != -1 && ((o = &d2_Objs[d2_PointerObj])->checkable != 0 || o->interactive != 0) && o->type != 0x45) {
             d2_ClickedId = d2_HoverObj;
             di_GuiClick = 1;
-            c = (D2CTRLX *)o->buf;
-            if (c == 0) {
+            c = o->buf;
+            if (c != 0) {
+                if (c->shown != 0 && c->loaded == 0)
+                    d2_ClickedForm = c->view;
+            } else {
                 d2_ClickedForm = -1;
-            } else if (c->shown != 0 && c->loaded == 0) {
-                d2_ClickedForm = c->id;
             }
-            sb_PlaySampleI(d2_Unk6ed990,
-                          o->checkable != 0 ? (o->checked ^= 1, d2_Objs[d2_PointerObj].highlighted = d2_Objs[d2_PointerObj].checked,
-                                           "MausclickLinks_s_01")
-                                        : d2_HoverObj == 1 ? "MausclickRechts_s_01" : "MausclickLinks_s_01",
-                          1, 0x3f, 0x7f, 0, 0);
+            if (o->checkable != 0) {
+                o->checked ^= 1;
+                d2_Objs[d2_PointerObj].highlighted = d2_Objs[d2_PointerObj].checked;
+                sb_PlaySampleI(d2_ClickBank, "MausclickLinks_s_01", 1, 0x3f, 0x7f, 0, 0);
+            } else if (d2_HoverObj == 1) {
+                sb_PlaySampleI(d2_ClickBank, "MausclickRechts_s_01", 1, 0x3f, 0x7f, 0, 0);
+            } else {
+                sb_PlaySampleI(d2_ClickBank, "MausclickLinks_s_01", 1, 0x3f, 0x7f, 0, 0);
+            }
             found = 0;
-            k = d2_PointerObj;
-            i = 0;
-            do {
+            for (i = 0; i < 8; i++) {
                 if (found)
                     break;
-                j = 0;
-                if (RAD(i)->n > 0) {
-                    p = RAD(i)->objs;
-                    do {
-                        if (*p == k) {
-                            m = 0;
-                            if (RAD(i)->n > 0) {
-                                q = RAD(i)->objs;
-                                do {
-                                    n = *q;
-                                    if (n == k) {
-                                        d2_SetObjValue2(n, 1);
-                                        RAD(i)->sel = m;
-                                    } else {
-                                        d2_SetObjValue2(n, 0);
-                                    }
-                                    m++;
-                                    q++;
-                                    k = d2_PointerObj;
-                                } while (m < RAD(i)->n);
+                for (j = 0; j < d2_Radios[i].n; j++) {
+                    if (d2_Radios[i].objs[j] == d2_PointerObj) {
+                        for (m = 0; m < d2_Radios[i].n; m++) {
+                            if (d2_Radios[i].objs[m] != d2_PointerObj) {
+                                d2_SetObjValue2(d2_Radios[i].objs[m], 0);
+                            } else {
+                                d2_SetObjValue2(d2_Radios[i].objs[m], 1);
+                                d2_Radios[i].sel = m;
                             }
-                            found = 1;
                         }
-                        j++;
-                        p++;
-                    } while (j < RAD(i)->n);
+                        found = 1;
+                    }
                 }
-                i += 0x8c;
-            } while (i < 0x460);
-            if (d2_ClickedId != d2_Unkf8aa9c)
-                d2_Unkf8aa9c = d2_ClickedId;
-            d2_Unkf8a65c = d2_Unkf8aa80;
+            }
+            if (d2_ClickedId != d2_LastClickedId)
+                d2_LastClickedId = d2_ClickedId;
+            d2_ClickedSlot = d2_PointerObjSlot;
         }
-        if (k != -1)
-            d2_ClickedObj = &d2_Objs[k];
+        if (d2_PointerObj != -1)
+            d2_ClickedObj = &d2_Objs[d2_PointerObj];
     } else {
         d2_ClickedId = -1;
         d2_ClickedObj = 0;
-        d2_Unkf8a65c = -1;
+        d2_ClickedSlot = -1;
     }
     my = d2_MouseY;
     mx = d2_MouseX;
@@ -871,7 +856,7 @@ void d2_MouseUpdate(void)
     d2_HitUnderPointer = -1;
     for (i = 0; i < 0x20; i++) {
         h = &d2_HitRects[i];
-        if (!(mx < h->x || h->x + h->w < mx || my < h->y || h->y + h->h < my || h->used == 0)) {
+        if (!(mx < h->x || mx > h->x + h->w || my < h->y || my > h->y + h->h || h->used == 0)) {
             d2_HitUnderPointer = i;
             if (dm_L.lclick != 0)
                 d2_HitClicked = i;
@@ -881,17 +866,15 @@ void d2_MouseUpdate(void)
     win = d2_HitWindow;
     if (win != -1) {
         w = &d2_Wins[win];
-        if (dm_L.ldown != 0 && (w->flags & 0x20) != 0 && w->w - 0xc + w->x < mx) {
-            v = w->y;
-            if (v + 10 < my && my < w->h - 10 + v) {
-                n = ((my - v - 0xc) * w->contentHeight) / (w->h - 0x18) + 4;
-                w->scrollY = n;
-                line = n / d2_FontHeight;
-                w->firstline = line;
-                *(int *)((char *)w + 0x34) = *(int *)((char *)w + 0x38 + line * 4);
-                if (n != w->appliedScrollY)
-                    d3io_NoopCallback(win);
-            }
+        if (dm_L.ldown != 0 && (w->flags & 0x20) != 0 && mx > w->w + w->x - 0xc &&
+            my > w->y + 10 && my < w->h + w->y - 10) {
+            n = ((my - w->y - 0xc) * w->contentHeight) / (w->h - 0x18) + 4;
+            w->scrollY = n;
+            line = n / d2_FontHeight;
+            w->firstline = line;
+            w->textPos = w->linePos[line];
+            if (n != w->appliedScrollY)
+                d3io_NoopCallback(win);
         }
     }
 }
@@ -1680,7 +1663,7 @@ void d2_SetSurfaceClip(int x, int y, int w, int h, D2SURF *surf)
     }
 }
 
-int d2_Unk6ed990 = 0;  /* 0x6ed990 */
+int d2_ClickBank = 0;  /* 0x6ed990 */
 int d2_DragStartValue = 0;  /* 0x6ed9c4 */
 void * d2_PointerPic = 0;  /* 0x6ed9cc, "_MOUSE_CURSOR" data */
 int d2_RightHolding = 0;  /* 0x6ed9e4 */
@@ -1692,16 +1675,16 @@ short d2_LastMouseX = 0;  /* 0xf8a650 */
 short d2_LastMouseY = 0;  /* 0xf8a652 */
 int d2_HoverTick = 0;  /* 0xf8a654 */
 int d2_FocusObjIndex = 0;  /* 0xf8a658 */
-int d2_Unkf8a65c = 0;  /* 0xf8a65c */
+int d2_ClickedSlot = 0;  /* 0xf8a65c */
 int d2_InputDragOffsetY = 0;  /* 0xf8a660 */
 int d2_SavedMaxY = 0;  /* 0xf8a664 */
 int d2_SavedMinY = 0;  /* 0xf8a66c */
 D2OBJ * d2_ClickedObj = 0;  /* 0xf8a670 */
 D2HIT d2_HitRects[0x40] = {0};  /* 0xf8a680 (d2_AddHitRect allows i = 0x40, one past: the original's latent overrun) */
-int d2_Unkf8aa80 = 0;  /* 0xf8aa80 */
+int d2_PointerObjSlot = 0;  /* 0xf8aa80 */
 int d2_HitCount = 0;  /* 0xf8aa84 */
 D2SLOT d2_ItemListSurf256 = {0};  /* 0xf8aa90 */
-int d2_Unkf8aa9c = 0;  /* 0xf8aa9c */
+int d2_LastClickedId = 0;  /* 0xf8aa9c */
 D2SLOT d2_ItemListSurf128[3] = {0};  /* 0xf8aaa0 */
 int d2_ClickedForm = 0;  /* 0xf8aac4 */
 int d2_RightHeldObj = 0;  /* 0xf8aac8 */

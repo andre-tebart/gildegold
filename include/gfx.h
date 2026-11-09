@@ -76,24 +76,17 @@ typedef struct D2HIT {              /* 0x10 bytes, a mouse hit rectangle, d2_Hit
     int used;                       /* 0x0c */
 } D2HIT;
 
-typedef struct D2CTRLX {            /* D2CTRL as the mouse code sees it */
-    int id;                         /* 0x00 */
-    char pad04[0x194];
-    int loaded;                     /* 0x198, its two surfaces exist (D2CTRL.loaded) */
-    int shown;                      /* 0x19c, the view is displayed (D2VIEW.shown) */
-} D2CTRLX;
-
-extern int d2_Unkf8a65c;            /* 0xf8a65c */
+extern int d2_ClickedSlot;            /* 0xf8a65c */
 extern D2OBJ *d2_ClickedObj;         /* 0xf8a670 */
 extern D2HIT d2_HitRects[];        /* 0xf8a680 */
-extern int d2_Unkf8aa80;            /* 0xf8aa80 */
+extern int d2_PointerObjSlot;            /* 0xf8aa80 */
 extern int d2_HitCount;            /* 0xf8aa84 */
-extern int d2_Unkf8aa9c;            /* 0xf8aa9c */
+extern int d2_LastClickedId;            /* 0xf8aa9c */
 extern int d2_ClickedForm;            /* 0xf8aac4 */
 extern char d2_CaptionCopy[];         /* 0xf8aae0 */
 extern int d2_HitClicked;            /* 0x5febd0 */
 extern int d2_HitUnderPointer;            /* 0x5febd4 */
-extern int d2_Unk6ed990;            /* 0x6ed990 */
+extern int d2_ClickBank;            /* 0x6ed990 */
 
 struct SBSAMPLE *sb_PlaySample(struct SBBANK *bank, char *name, int loops, int pan, int volume, int fade, int delay); /* 0x426fa0, sblib.c (this header's units: sb_PlaySampleI) */
 
