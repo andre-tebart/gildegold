@@ -88,7 +88,7 @@ int *lobby_State = 0;  /* 0x6f5ea4, cm's lobby state (cm_LobbyState): [1] a lobb
    ready button toggles ready, the character button (when not ready) runs the player and profession pickers and
    sends the changed record, a click on a player line selects it as the chat target, the leave button leaves
    (returns -1, as does a lost connection); all players ready pops the screen. On leaving it writes the own
-   record back to init_PlayerProfile and the "Network" profile. @deep Read all of it against the original and rewrote it: AI_ZERO_AT clear of lobby_Player (0x57 temp at [ebp-4]), the profile reads, defaults and the cm_JoinChar copy, join / list waits, both message-box loops (while with continue: the original keeps the return inline), the form setup through d2_Objs / d2_Inputs fields, the do-while frame loop with the net_Conn.s / cm_LobbyAllReady / d2_ClickedId dispatch, the leave / ready / character buttons, the player-list pick with sel (VC6 threads the not-found exit), the lobby_State[1] refresh and the write-back into init_PlayerProfile; the form name literal had a newline (menu + \n), now the backslash path. 748 = 748 instructions. Left: scheduling and allocation only: the defaults (the original loads cm_NetGame.mode and keeps 0x5a in cl before the stores, ours al after), the d2_ClickedId = -1 store placed before the d2_Inputs w store instead of after it, the player-list pick registers (original i in ecx, row in edx, sel copied to edi and the checked state re-read with cmp [..], esi; ours i in edx, row in ecx, the state loaded into edi), and ecx/edx swapped for d2_PointerObj in the button compares. */
+   record back to init_PlayerProfile and the "Network" profile. */
 int lobby_Screen(void)
 {
     char buf[256];
@@ -101,7 +101,6 @@ int lobby_Screen(void)
     int slot;
     int sel;
     unsigned int i;
-    unsigned int n;
 
     ret = 0;
     cm_LobbyClearChat();
@@ -134,11 +133,11 @@ int lobby_Screen(void)
     lobby_Player.job = gm_TitleNumber(slot, 1);
     init_PlayerProfile.status = 0x10;
     lobby_Player.status = 0x10;
-    lobby_Player.talents[1] = 0x46;
-    lobby_Player.talents[3] = 0x46;
     lobby_Player.reserved = -1;
     lobby_Player.talents[0] = 0x5a;
+    lobby_Player.talents[1] = 0x46;
     lobby_Player.talents[2] = 0x78;
+    lobby_Player.talents[3] = 0x46;
     lobby_Player.talents[4] = 0x5a;
     if (cm_NetGame.mode == 0x7f) {
         lobby_Player.job = (unsigned char)cm_JoinChar.char164;
@@ -196,8 +195,8 @@ int lobby_Screen(void)
     d2_Objs[input].w = 0x26c;
     d2_Inputs[d2_Objs[input].input].flags |= 0x200;
     d2_Inputs[d2_Objs[input].input].w = 0x26c;
-    d2_ClickedId = -1;
     d2_Inputs[d2_Objs[input].input].maxw = 0x26c;
+    d2_ClickedId = -1;
     do {
         if (state == 0) {
             if (d2_FocusedInput != 0)
@@ -274,9 +273,9 @@ int lobby_Screen(void)
                     }
                 }
                 if (sel >= 0) {
-                    for (n = 0; n < lobby_List[0]; n++)
-                        if (n != sel)
-                            d2_Objs[lobby_Rows[n]].checked = 0;
+                    for (i = 0; i < lobby_List[0]; i++)
+                        if (sel != i)
+                            d2_Objs[lobby_Rows[i]].checked = 0;
                 }
             }
         }

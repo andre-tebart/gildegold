@@ -4109,7 +4109,7 @@ exe	0x00589c90	ai_SlotKeys	sv_t	b7f604e8b1a4443e	no	byte	control=byte p1=byte p2
 exe	0x00589cf0	ai_SpeedKeys	sv_t	3ef2081db5399fa7	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00589e00	ai_BookmarkSetBuilding	sv_t	7fd81ccb48201ca1	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00589e50	ai_BookmarksPreset	sv_t	309a431b83ed0b5d	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x00589f10	lobby_Screen	unk_589f10	7952864e4f09df98	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x00589f10	lobby_Screen	lobby	7952864e4f09df98	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x0058a940	lobby_AddButtons	unk_589f10	034ff8c649c3297e	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0058a9d0	lobby_AddChatScroll	unk_589f10	bc9a2359565534a2	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0058aa30	lobby_ShowCity	unk_589f10	b9ae5034de5cdf58	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
