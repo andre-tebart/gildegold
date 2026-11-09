@@ -108,7 +108,9 @@ __inline D3OBJBITS *d3_ObjBits(D3OBJECT *obj)
 
 typedef struct D3OPS D3OPS;
 struct D3OPS {                      /* the "driver" behind D3OBJINFO::unk10: a stock object, the same records as D3BGF (d3_io_t.h; not merged yet) */
-    char pad000[0x1e0];
+    char pad000[0x1d8];
+    float diagonal;                 /* 0x1d8, the diagonal of the bounding box (D3BGF.diagonal); picks the shadow size */
+    int pad1dc;
     int count;                      /* 0x1e0, number of textures */
     int nsets;                      /* 0x1e4, texture sets in the name table (D3BGF.nsets, d3_io_t.h) */
     void (*Release)(D3OPS *ops);    /* 0x1e8 */

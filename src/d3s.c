@@ -1232,15 +1232,15 @@ char d3s_Update(D3OBJECT *obj, D3OBJECT *light, D3TERRAIN *t)
     D3SSLOT *slot = 0;
     D3OBJINFO *info, *mesh;
     D3VECTOR ldir, lpos, opos;
-    unsigned int size, i;
-    int k, j;
-    float eps;
+    D3TEXFLAGS f;
+    unsigned int size, n;
+    int i, j, k;
+    float eps, dist;
     char redo;
     unsigned char mh;
-    unsigned char *b;
 
     if (!d3s_TexSize || obj->type >= 5 || !(obj->objectFlags & 4) || !obj->material || !(light->objectFlags & 4)
-        || *(unsigned int *)((char *)d3s_Object->material + 0x100) >= d3s_MaxPolys * 2 - 2
+        || D3_MESH(d3s_Object)->surf[0].info.ntris >= d3s_MaxPolys * 2 - 2
         || light->lightParams.y == 0.0)
         return 0;
     for (k = 0; k < 4; k++) {
@@ -1250,32 +1250,37 @@ char d3s_Update(D3OBJECT *obj, D3OBJECT *light, D3TERRAIN *t)
         }
     }
     if (k == 4) {
-        for (k = 0; D3S_SLOTS(obj->material)[k].tex; k++) {
-            if (k + 1 > 3)
-                return 0;
-        }
+        for (k = 0; k < 4; k++)
+            if (!D3S_SLOTS(obj->material)[k].tex)
+                goto found;
+        return 0;
+found:
         slot = &D3S_SLOTS(obj->material)[k];
         slot->light = light;
         slot->map = 0;
         slot->size = 0;
         slot->maxh = 0;
         slot->bz0 = -1;
-        slot->dir.x = 0;
         slot->simple = obj->objectFlags >> 3 & 1;
+        slot->dir.x = 0;
         slot->dir.y = 0;
         slot->dir.z = 0;
-        if (!slot->simple) {
+        if (slot->simple) {
+            f.all = 0;
+            f.b[0] = 0x7f;
+            f.b[2] |= 2;
+            slot->tex = (D3TEXHANDLE *)tex_Load("Schatten", f, 0, 0);
+            if (slot->tex && !slot->tex->surf)
+                tex_Reload(slot->tex, 0);
+        } else {
             size = d3s_TexSize;
             if (obj->info->mesh && d3s_LodTexSize) {
-                for (i = 0; i < 2 && !(*(float *)((char *)obj->info->mesh + 0x1d8) < d3s_Dist[i]); i++)
+                dist = D3_OPS(obj->info)->diagonal;
+                for (n = 0; n < 2 && !(dist < d3s_Dist[n]); n++)
                     size *= 2;
                 size = min(size, d3s_MaxTexSize);
             }
             slot->tex = d3s_CacheTexture(slot, d3s_ShadowMips, size, d3_FrameCount, &slot->cache);
-        } else {
-            slot->tex = ((D3TEXHANDLE *(*)(char *, int, int, int))tex_Load)("Schatten", 0x2007f, 0, 0);
-            if (slot->tex && !slot->tex->surf)
-                tex_Reload(slot->tex, 0);
         }
     }
     if (!slot || !slot->tex)
@@ -1284,34 +1289,28 @@ char d3s_Update(D3OBJECT *obj, D3OBJECT *light, D3TERRAIN *t)
         slot->cache->time = d3_FrameCount;
     info = obj->info;
     mesh = info;
-    if (*(int *)((char *)obj->material + 0x5c8) > 0 && *(int *)((char *)obj->material + 0x5c4) > 0)
-        mesh = (D3OBJINFO *)((char *)obj->material + 0x5bc);
+    if (D3_MESH(obj)->surf[3].info.ntris > 0 && D3_MESH(obj)->surf[3].info.nkeys > 0)
+        mesh = &D3_MESH(obj)->surf[3].info;
     d3_PointToWorld(light, &light->pos, &lpos);
-    if (!(light->objectFlags & 0x10)) {
+    if (light->objectFlags & 0x10) {
+        eps = 0.01f;
+        d3_DirToWorld(light, &d3_ZAxis, &ldir);
+    } else {
         eps = 1.0f;
         d3_PointToWorld(obj, &obj->pos, &opos);
         ldir.x = opos.x - lpos.x;
         ldir.y = opos.y - lpos.y;
         ldir.z = opos.z - lpos.z;
-    } else {
-        eps = 0.01f;
-        d3_DirToWorld(light, &d3_ZAxis, &ldir);
     }
-    redo = !d3_VecEqual(&ldir, &slot->dir, eps) || *((char *)info + 0x194) ? 1 : 0;
+    redo = !d3_VecEqual(&ldir, &slot->dir, eps) || ((D3SURF *)info)->alwaysDraw ? 1 : 0;
     if (t) {
         if (!redo) {
             j = slot->bz0;
             if (j != -1 && !slot->simple) {
                 mh = 0;
-                if (slot->bz1 < j)
-                    return 0;
-                for (; j <= slot->bz1; j++) {
-                    if (slot->bx0 <= slot->bx1) {
-                        b = &t->blocks[j][slot->bx0].lod;
-                        for (k = slot->bx1 - slot->bx0 + 1; k; k--, b += sizeof(D3SMBLOCK))
-                            mh = max(mh, *b);
-                    }
-                }
+                for (; j <= slot->bz1; j++)
+                    for (i = slot->bx0; i <= slot->bx1; i++)
+                        mh = max(mh, t->blocks[j][i].lod);
                 if (!mh)
                     return 0;
                 if (mh != slot->maxh)
