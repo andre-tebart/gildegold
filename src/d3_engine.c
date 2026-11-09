@@ -2475,7 +2475,9 @@ void d3_EndFrame(char tick)
     d3s_NumUVs = 0;
     d3s_NumVerts = 0;
 }
-/* 0x43e200, draws the default scene @deep Q2 only (byte already): 12 write-only engine statics (d3_Unk633470/474/478/47c/480/484/488/494/498, d3_MirrorObject, d3_Unkfb9928, d3_TextureBytes) are stored from the named counters (d3_SortCount, d3_TriCount, d3_VertCount, d3_DrawnVerts, d3_TextureSwitches) and never read anywhere in src/ (grep: only d3_engine.c + d3_engine.h; d3_MirrorObject is also written 0/obj in d3_mir.c) - no reader, no data.csv alias, so no name; d3_FogByDistance's canonical alias is d3_FogByDistance (f3init.c, placeholder); d3_MirDrawObject is the unnamed d3_mir.c D3MIRROR callback (own @deep). Evidence exists for three callees but the unit's header cleanup owns them: d3fl_Draw = d3fl_Draw, d3fl_FarDist = d3fl_FarDist (d3_fl.h types D3FLMAP*), d3sky_Draw = d3sky_Draw (char (D3SKY*)); d3_engine.h has void* views of all three and d3_engine.c includes d3_sky.h only. */
+/* 0x43e200, draws the default scene: clears the view, the terrain (with the fog range by distance), the
+   objects, the shadow object, the particle systems, the sky, the lights and the mirror, then sorts and draws
+   the polygons and keeps the frame's counters in the d3_Stat... statistics (write-only) */
 
 void d3_Render(unsigned int mask, char flag)
 {
@@ -2521,18 +2523,18 @@ void d3_Render(unsigned int mask, char flag)
             d3sky_Draw(d3_Sky);
         if (flag)
             d3_LightUpdate();
-        if (d3d_Config.mirrors == 1 && d3_MirrorObject && d3_Mirror.info && d3_Mirror.planes && (d3_Unkfb9928 & 1))
+        if (d3d_Config.mirrors == 1 && d3_MirrorObject && d3_Mirror.info && d3_Mirror.planes && d3_Mirror.flags.visible)
             d3_ForEachObject(d3_DefaultScene, 0, mask, (D3OBJECTCB)d3_MirDrawObject, &d3_Mirror.obj);
         if (d3_MinZ == 1e10f)
             d3_MinZ = 0.0f;
-        d3_Unk633470 = d3_SortCount;
-        d3_Unk633488 = d3_DrawnVerts;
-        d3_Unk633474 = d3_TriCount;
-        d3_Unk633484 = d3_VertCount;
-        d3_Unk633478 = d3s_Object->info->ntris;
+        d3_StatPolys = d3_SortCount;
+        d3_StatDrawnVerts = d3_DrawnVerts;
+        d3_StatTris = d3_TriCount;
+        d3_StatVerts = d3_VertCount;
+        d3_StatShadowTris = d3s_Object->info->ntris;
         d3_DrawSorted();
-        d3_Unk633480 = d3_TextureBytes;
-        d3_Unk63347c = d3_TextureSwitches;
+        d3_StatTexBytes = d3_TextureBytes;
+        d3_StatTexSwitches = d3_TextureSwitches;
         d3_Busy--;
     }
 }
@@ -2653,13 +2655,13 @@ unsigned int d3_ClipOut = 0;  /* 0x633454, vertices in the clipped polygon */
 unsigned int d3_ClipIn = 0;  /* 0x633458, vertices in the polygon to clip */
 D3ACTIVE d3_Active = { 0 };  /* 0x63345c, d3_D3DActive and d3_NoTextures (d3.h) */
 int d3_ClipExtraTris = 0;  /* 0x63346c */
-int d3_Unk633470 = 0;  /* 0x633470, frame statistics */
-int d3_Unk633474 = 0;  /* 0x633474 */
-int d3_Unk633478 = 0;  /* 0x633478 */
-int d3_Unk63347c = 0;  /* 0x63347c */
-int d3_Unk633480 = 0;  /* 0x633480 */
-int d3_Unk633484 = 0;  /* 0x633484 */
-int d3_Unk633488 = 0;  /* 0x633488 */
+int d3_StatPolys = 0;  /* 0x633470, frame statistics */
+int d3_StatTris = 0;  /* 0x633474 */
+int d3_StatShadowTris = 0;  /* 0x633478 */
+int d3_StatTexSwitches = 0;  /* 0x63347c */
+int d3_StatTexBytes = 0;  /* 0x633480 */
+int d3_StatVerts = 0;  /* 0x633484 */
+int d3_StatDrawnVerts = 0;  /* 0x633488 */
 unsigned int d3_Fps60 = 0;  /* 0x63348c, frames per second (two windows) */
 unsigned int d3_Fps10 = 0;  /* 0x633490 */
 int d3_ObjectsTested = 0;  /* 0x633494, objects tested / drawn */

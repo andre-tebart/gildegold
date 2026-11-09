@@ -668,13 +668,13 @@ extern unsigned char d3_Unkfb9928;          /* 0xfb9928 */
 #endif
 extern int d3_TextureSwitches;                /* 0xfe75b4 */
 extern int d3_TextureBytes;                /* 0xfc2dc0 */
-extern int d3_Unk633470;                /* 0x633470, frame statistics */
-extern int d3_Unk633474;                /* 0x633474 */
-extern int d3_Unk633478;                /* 0x633478 */
-extern int d3_Unk63347c;                /* 0x63347c */
-extern int d3_Unk633480;                /* 0x633480 */
-extern int d3_Unk633484;                /* 0x633484 */
-extern int d3_Unk633488;                /* 0x633488 */
+extern int d3_StatPolys;                /* 0x633470, frame statistics */
+extern int d3_StatTris;                /* 0x633474 */
+extern int d3_StatShadowTris;                /* 0x633478 */
+extern int d3_StatTexSwitches;                /* 0x63347c */
+extern int d3_StatTexBytes;                /* 0x633480 */
+extern int d3_StatVerts;                /* 0x633484 */
+extern int d3_StatDrawnVerts;                /* 0x633488 */
 extern unsigned int d3_Fps60Time;       /* 0x6334a8 */
 extern unsigned int d3_Fps60Frames;       /* 0x6334ac */
 extern unsigned int d3_Fps10Time;       /* 0x6334b0 */
