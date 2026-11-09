@@ -338,6 +338,10 @@ void main_FreeSoundBanks(void);         /* 0x537db0 */
 #define ai_GoodsT (*(AIGOOD **)&ai_Goods)  /* 0x91aaf0, ai_Goods (f3gm.c: char *) as the AIGOOD records it points to */
 #define ai_BldsT (*(AIBLD **)&ai_Blds)  /* 0x889f74, ai_Blds (f3gm.c: char *) as the AIBLD records it points to */
 #define ai_NumPlayersW (*(int *)&ai_NumPlayers)  /* 0x62489c, ai_NumPlayers as the dword around it: @original main_ChooseCity reads the count as mov ecx,[0x62489c]; and ecx,0xff (0x537319) */
+#define ai_NetLibName (ai_DataPath + 0x100)  /* 0x75dda0, the network plug-in DLL (0x104 bytes inside ai_DataPath's block: game.INI [Network] Server, "Server\Server.dll") */
+#define ls_SavePortW (*(int *)((char *)&ls_SavePath + 0x84))  /* 0x75e6c4, ls_SavePath.cur as the whole dword: @original main_GameLoop passes it so (0x53bce5 mov edx,[0x75e6c4]; push edx) */
+#define net_ConnectI ((unsigned int (*)(char *, int))net_Connect)  /* 0x424990 (net.h: unsigned short port): @original main_GameLoop pushes the port as a dword */
+#define ls_LoadedHeader (*(LSHEADER *)&ai_Unk76f920)  /* 0x76f920, the header of the loaded save game (ls.h: int[0x40]) */
 #define ai_CityName (ai_DataPath + 0x220)  /* 0x75dec0, the name of the chosen city (0x40 bytes inside ai_DataPath's block: game.INI [General] Stadt, main_ChooseCity) */
 #define ai_BTypesT (*(AIBTYPE **)&ai_BTypes)  /* 0x7e3f30, ai_BTypes (ahm.c: char *) as the AIBTYPE records it points to */
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
@@ -4627,138 +4631,160 @@ void main_CreateStartCouple(void)
     }
 }
 
-/* 0x53bb20, the main game loop of the process (the dialog callback of the process level, `ctl` = 0 on the first call): the start-up / load of the game by the mode flags 0x6f23f8 (1 new game, 2 load, 4 network, 8, 0x10, 0x40 .., 0x80), the "Init" export of the optional
-   plug-in DLL (0x75dda0), the autosave, then the round loop: one player at a time (0x6f25b8) the day change 0x5384e0, the start of the round 0x53b2e0 ... until the game is left (0x6f259c); ends with the network error / player left messages (ROUGH) */
+/* 0x53bb20, the main game loop of the process (the dialog callback of the process level, `ctl` = 0 on the first
+   call): the start-up / load of the game by the mode flags ai_GameFlags (1 new game, 2 load, 4 network, 0x10 the
+   network host with the CD check and the plug-in DLL ai_NetLibName and its "Init", 0x40 join, 0x80 the tutorial),
+   then the round loop: one player at a time (ai_PlayerId) the day change main_EndRound, the events, the autosave,
+   the rest of the day and the report main_RoundReport, the night, the office elections (a kind 1 party) and the
+   start of the next round main_BeginPlayerRound, until the game is over (ai_GameOver) or 800 rounds; a network
+   game ends with the network error / player left message
+   @deep Read whole against 0x53bb20..0x53c9af and rewritten typed: the host path (CD loop, the plug-in DLL
+   ai_NetLibName, its Init on ls_SavePath.net, udp), the joins / loads (LSHEADER startBuilding /
+   startObject through ls_LoadedHeader, AIOBJ), the start money, the viewport, the tutorial message
+   (AIMSG), the round loop with the day change, events, autosave (CMQUICKSAVE request), the half-hour clock
+   steps (AITIME), the office party (G28REC built by an index loop: the original's signed jl end compare),
+   the end messages (the error / left branches in the original's order). Meaning fixes: the player search
+   as ai_PlayerId++ on the 16-bit global (the original's inc cx / word store), the party branch before
+   amt_UpdateOffices, the port pushed as the whole dword (ls_SavePortW / net_ConnectI, @original). 993 vs
+   994 instructions. Left: the frame. The original's is 0x4bc, ours 0x440: the original keeps 0x60 bytes
+   between its clock (G+0x34) and the shared text / message buffer (G+0xa4) that no instruction refers to,
+   and 0x1c more at the top; every stack offset after them is shifted (frame / slots hunks), and the zero
+   register (ebp / ebx = 0 in the original, immediates in ours: code hunks +0x6ca, +0x7e3, +0x914, +0xe30).
+   Tried: the text buffer as 0x100 (frame 0x438 -> 0x440), an unused array (VC6 does not allocate it), the
+   player search as the for / us copy (worse). (references: M8 at +0xbcf: ours refers to ai_LeaveGame
+   (0x6f25a0), the original's field to 0x6f23f8 (ai_GameFlags, ai_GameFlagsB), explained: the M8 at +0xbcf
+   is the test ai_GameOver == 0 && ai_LeaveGame == 0 before ai_GameFlags &= ~0x42: the original compares
+   ai_LeaveGame in memory (cmp [0x6f25a0], ebx) and then loads ai_GameFlags, ours loads ai_LeaveGame into
+   eax first, so the aligned loads name the two globals crosswise; both read the same globals in the same
+   order) */
 void main_GameLoop(int ctl)
 {
-    int iv, i6, i5;
-    int w;
-    FARPROC pf;
-    char *pc;
-    int *pi;
-    unsigned short us;
-    unsigned u;
-    int cl[0x3e];
-    int sys[0x1f];
+    int iv, i, n, w, len;
+    FARPROC init;
+    char *text;
+    union {                         /* one buffer: the CD prompt's text, the tutorial message, the autosave request */
+        char text[0x100];
+        AIMSG msg;
+        CMQUICKSAVE save;
+    } m;
     AITIME ck;
-    int clk[4];
+    AITIME clk;
     char ap[0x104], ab[0x104];
-    int pl[0x45];
-    int idx;
-    int *pp;
-    int fx, fy, fh;
-    int dst;
-    unsigned char *p3;
-    unsigned short *p4;
+    G28REC party;
+    FILE *sav, *bak;
+    void *data;
+    AIBLD *bld;
+    AIOBJ *inst;
 
-    if ((U_I((unsigned)&ai_GameFlags) & 1) != 0 && ctl == 0)
+    if ((ai_GameFlags & 1) != 0 && ctl == 0)
         amt_InitTable();
-    U_I(((unsigned)&ls_SavePath + 0x80)) = 0;
-    if ((U_I((unsigned)&ai_GameFlags) & 4) != 0) {
+    ls_SavePath.netLib = 0;
+    if ((ai_GameFlags & 4) != 0) {
         w = -1;
         hst_SetTextsOn(0);
-        if ((U_I((unsigned)&ai_GameFlags) & 0x10) != 0) {
+        if ((ai_GameFlags & 0x10) != 0) {
+            /* the host: the CD, the network plug-in DLL and its "Init", the udp socket */
             iv = main_CheckCD();
             if (iv != 1) {
                 while (1) {
-                    U_I((unsigned)&sv_FrameMask) = 0x24087;
-                    txt_Format(cl, 0x79);
-                    iv = sv_MessageBox(cl, 1);
+                    sv_FrameMask = 0x24087;
+                    txt_Format(m.text, 0x79);
+                    iv = sv_MessageBox((int)m.text, 1);
                     if (iv == 0)
                         break;
                     d2_DrawAll();
                     Sleep(1000);
                 }
-                U_I((unsigned)&ai_GameOver) = 1;
-                U_I((unsigned)&ai_LeaveGame) = 0;
+                ai_GameOver = 1;
+                ai_LeaveGame = 0;
                 return;
             }
-            U_I(((unsigned)&ls_SavePath + 0x80)) = (int)LoadLibraryA((char *)((unsigned)&ai_DataPath + 0x100));
-            if (U_I(((unsigned)&ls_SavePath + 0x80)) == 0) {
-                U_I((unsigned)&sv_FrameMask) = 0x66087;
-                sv_MessageBox(U_I(((unsigned)&ai_DifficultyTexts + 0x7c)), 0x100);
-                U_I((unsigned)&ai_GameOver) = 1;
-                U_I((unsigned)&ai_LeaveGame) = 0;
+            ls_SavePath.netLib = (int)LoadLibraryA(ai_NetLibName);
+            if (ls_SavePath.netLib == 0) {
+                sv_FrameMask = 0x66087;
+                sv_MessageBox((int)txt_Ptrs[0x1cab], 0x100);
+                ai_GameOver = 1;
+                ai_LeaveGame = 0;
                 return;
             }
             w = d2_OpenForm(0, 0, "misc\\Messagebox_NONE_PERGA");
             d2_CentreViewWindows(w);
             io_PrintText(0x3ff6);
             sv_RunFrame(0, 0x24087);
-            pf = GetProcAddress((HMODULE)U_I(((unsigned)&ls_SavePath + 0x80)), "Init");
-            if (pf == 0) {
-                FreeLibrary((HMODULE)U_I(((unsigned)&ls_SavePath + 0x80)));
-                U_I(((unsigned)&ls_SavePath + 0x80)) = 0;
-                U_I((unsigned)&sv_FrameMask) = 0x66087;
+            init = GetProcAddress((HMODULE)ls_SavePath.netLib, "Init");
+            if (init == 0) {
+                FreeLibrary((HMODULE)ls_SavePath.netLib);
+                ls_SavePath.netLib = 0;
+                sv_FrameMask = 0x66087;
                 d2_CloseView(w);
-                sv_MessageBox(U_I(((unsigned)&ai_DifficultyTexts + 0x7c)), 0x100);
-                U_I((unsigned)&ai_GameOver) = 1;
-                U_I((unsigned)&ai_LeaveGame) = 0;
+                sv_MessageBox((int)txt_Ptrs[0x1cab], 0x100);
+                ai_GameOver = 1;
+                ai_LeaveGame = 0;
                 return;
             }
-            iv = ((int (*)(int))pf)(((unsigned)&ls_SavePath + 0xa0));
+            iv = ((int (*)(NETHDR *))init)(&ls_SavePath.net);
             if (iv == 0) {
-                FreeLibrary((HMODULE)U_I(((unsigned)&ls_SavePath + 0x80)));
-                U_I(((unsigned)&ls_SavePath + 0x80)) = 0;
-                U_I((unsigned)&sv_FrameMask) = 0x66087;
+                FreeLibrary((HMODULE)ls_SavePath.netLib);
+                ls_SavePath.netLib = 0;
+                sv_FrameMask = 0x66087;
                 d2_CloseView(w);
-                sv_MessageBox(U_I(((unsigned)&ai_DifficultyTexts + 0x7c)), 0x100);
-                U_I((unsigned)&ai_GameOver) = 1;
-                U_I((unsigned)&ai_LeaveGame) = 0;
+                sv_MessageBox((int)txt_Ptrs[0x1cab], 0x100);
+                ai_GameOver = 1;
+                ai_LeaveGame = 0;
                 return;
             }
             Sleep(0x9c4);
             udp_Init(0x3039);
             main_UdpOpen = 1;
         }
-        net_Connect(main_NetHost, U_I(((unsigned)&ls_SavePath + 0x84)));
+        net_ConnectI(main_NetHost, ls_SavePortW);
         d2_CloseView(w);
     } else {
         net_Connect(0, 0);
         iv = main_CheckCD();
         if (iv != 1) {
             while (1) {
-                U_I((unsigned)&d2_CutsceneActive) = 0;
-                U_I((unsigned)&sv_FrameMask) = 0x24087;
-                txt_Format(cl, 0x79);
-                iv = sv_MessageBox(cl, 1);
+                d2_CutsceneActive = 0;
+                sv_FrameMask = 0x24087;
+                txt_Format(m.text, 0x79);
+                iv = sv_MessageBox((int)m.text, 1);
                 if (iv == 0)
                     break;
-                U_I((unsigned)&d2_CutsceneActive) = 1;
+                d2_CutsceneActive = 1;
                 d2_DrawAll();
                 Sleep(1000);
             }
-            U_I((unsigned)&ai_GameOver) = 1;
-            U_I((unsigned)&ai_LeaveGame) = 0;
+            ai_GameOver = 1;
+            ai_LeaveGame = 0;
             return;
         }
     }
     ai_InitStates();
-    if ((U_I((unsigned)&ai_GameFlags) & 0x44) != 0) {
-        U_I((unsigned)&d2_CutsceneActive) = 0;
+    if ((ai_GameFlags & 0x44) != 0) {
+        d2_CutsceneActive = 0;
         iv = lobby_Screen();
         if (iv != 0) {
-            if (U_I(((unsigned)&ls_SavePath + 0x80)) != 0) {
+            if (ls_SavePath.netLib != 0) {
                 Sleep(1000);
-                FreeLibrary((HMODULE)U_I(((unsigned)&ls_SavePath + 0x80)));
-                U_I(((unsigned)&ls_SavePath + 0x80)) = 0;
+                FreeLibrary((HMODULE)ls_SavePath.netLib);
+                ls_SavePath.netLib = 0;
             }
-            U_I((unsigned)&ai_LeaveGame) = 0;
-            U_I((unsigned)&ai_GameOver) = 1;
+            ai_LeaveGame = 0;
+            ai_GameOver = 1;
             return;
         }
     }
-    U_I((unsigned)&d2_CutsceneActive) = 1;
+    d2_CutsceneActive = 1;
     main_LoadingScreen();
-    d2_SetForm(U_I((unsigned)&init_StatusForm), 1);
+    d2_SetForm(init_StatusForm, 1);
     if ((ai_GameFlags & 4) != 0)
-        main_SetLoadProgress(U_I(((unsigned)&ai_DifficultyTexts + 0x84)), 5);
+        main_SetLoadProgress((int)txt_Ptrs[0x1cad], 5);
     else
-        main_SetLoadProgress(U_I(((unsigned)&d2_Strings + 0x1b4)), 5);
+        main_SetLoadProgress((int)d2_Strings[0x6d], 5);
     sv_PumpMessages();
-    main_SetLoadProgress(U_I(((unsigned)&d2_Strings + 0x1b0)), 5);
+    main_SetLoadProgress((int)d2_Strings[0x6c], 5);
     main_StartGame();
-    if ((U_I((unsigned)&ai_GameFlags) & 1) != 0 && main_StartCoupleOn != 0)
+    if ((ai_GameFlags & 1) != 0 && main_StartCoupleOn != 0)
         main_CreateStartCouple();
     main_SetLoadProgress(0, 10);
     if ((ai_GameFlags & 0x41) != 0) {
@@ -4778,14 +4804,14 @@ void main_GameLoop(int ctl)
                 init_GiveFirstPlayerBuildings();
         } else if (net_Conn.s != -1) {
             if ((ai_GameFlags & 0x40) != 0) {
-                init_JoinNetworkGame(((unsigned)&ls_SavePath + 0xca));
+                init_JoinNetworkGame((int)ls_SavePath.net.save);
                 ai_Difficulty = 2;
             } else {
                 init_StartNetworkGame(main_NetSaveName);
                 ai_Difficulty = 2;
             }
         } else {
-            sv_MessageBox(U_I(((unsigned)&ai_DifficultyTexts + 0x80)), 0);
+            sv_MessageBox((int)txt_Ptrs[0x1cac], 0);
             main_EndGame();
             main_CloseLoadingScreen();
             return;
@@ -4793,9 +4819,9 @@ void main_GameLoop(int ctl)
     } else if ((ai_GameFlags & 0x40) != 0) {
         ai_Difficulty = 2;
         if (net_Conn.s != -1)
-            init_JoinNetworkGame(main_NetSaveName);
+            init_JoinNetworkGame((int)main_NetSaveName);
         else {
-            sv_MessageBox(U_I(((unsigned)&ai_DifficultyTexts + 0x80)), 0);
+            sv_MessageBox((int)txt_Ptrs[0x1cac], 0);
             main_EndGame();
             main_CloseLoadingScreen();
             return;
@@ -4804,7 +4830,7 @@ void main_GameLoop(int ctl)
         ai_Difficulty = ai_GamePanel.byte[2];
         if (ls_LoadGame(main_NetSaveName, 1) == 0) {
             sv_FrameMask = 0x46086;
-            sv_MessageBox(U_I((unsigned)&full_data_14414d0), 0);
+            sv_MessageBox((int)txt_Ptrs[0x1cc4], 0);
             ai_GameOver = 1;
             main_EndGame();
             main_CloseLoadingScreen();
@@ -4814,11 +4840,12 @@ void main_GameLoop(int ctl)
         sv_Season = sv_ClockSeason(&ai_Time);
     }
     init_LoadTypeBScene();
-    if ((U_I((unsigned)&ai_GameFlags) & 1) != 0) {
-        if ((U_I((unsigned)&ai_GameFlags) & 4) == 0) {
-            clk[0] = 0;
-            gm_SetTime(clk, 6, 0, 0);
-            w = cm_SendExSysMessage(3, clk);
+    if ((ai_GameFlags & 1) != 0) {
+        if ((ai_GameFlags & 4) == 0) {
+            /* a new single player game: the clock to 6:00, the start money of the players */
+            clk.year = 0;
+            gm_SetTime(&clk, 6, 0, 0);
+            w = cm_SendExSysMessage(3, &clk);
             iv = cm_GetSlotState(w);
             while (iv == 0) {
                 sv_PumpNet();
@@ -4828,99 +4855,96 @@ void main_GameLoop(int ctl)
                 iv = 750000;
             else
                 iv = (5 - ai_Difficulty) * 0xfa;
-            for (idx = 0; idx < 0x300; idx++) {
-                if (ai_CharsT[idx].health != 0 && (ai_CharsT[idx].kind == 6 || ai_CharsT[idx].kind == 7))
-                    cm_SendMoveGoods(ai_CharsT[idx].netId, -1, ai_OwnPlayer, gm_PlayerFactor(iv, ai_OwnPlayer));
+            for (i = 0; i < 0x300; i++) {
+                if (ai_CharsT[i].health != 0 && (ai_CharsT[i].kind == 6 || ai_CharsT[i].kind == 7))
+                    cm_SendMoveGoods(ai_CharsT[i].netId, -1, ai_OwnPlayer, gm_PlayerFactor(iv, ai_OwnPlayer));
             }
         }
-        if ((U_I((unsigned)&ai_GameFlags) & 1) != 0)
+        if ((ai_GameFlags & 1) != 0)
             hst_LoadPlayerTexts();
     }
     sv_PumpMessages();
     ai_LoadTownMap();
     sv_PumpMessages();
     main_CloseLoadingScreen();
-    U_I((unsigned)&d2_CutsceneActive) = 0;
+    d2_CutsceneActive = 0;
     w = sv_PanelImage();
     sv_BuildScreenLayout(w);
     d3if_SelectScene(0, 0);
-    if ((U_I((unsigned)&ai_GameFlags) & 1) != 0 && (U_I((unsigned)&ai_GameFlags) & 0x40) == 0) {
+    if ((ai_GameFlags & 1) != 0 && (ai_GameFlags & 0x40) == 0) {
         init_PrepareTownScene();
         init_RecreateQuadTree();
         ai_BookmarksPreset();
     }
     ai_ApplyOptions();
-    d3_SetViewport((float)(U_I((unsigned)&sv_ViewRectRight) - U_I((unsigned)&sv_ViewRectLeft)), (float)(U_I((unsigned)&sv_ViewRectBottom) - U_I((unsigned)&sv_ViewRectTop)), (float)U_I((unsigned)&sv_ViewRectLeft), (float)U_I((unsigned)&sv_ViewRectTop),
-                 *(float *)&U_I((unsigned)&d3_ZNear), *(float *)&U_I((unsigned)&d3_ZFar), *(float *)&U_I((unsigned)&d3_ScaleX), (int)*(short *)(unsigned)&d2_ScreenW, (int)*(short *)(unsigned)&d2_ScreenH);
-    if ((U_I((unsigned)&ai_GameFlags) & 2) != 0 && (sv_SetupWeather((unsigned)&ai_Time, 0), U_I((unsigned)&full_data_76f990) != -1)) {
-        p3 = (unsigned char *)gm_FindBuildingById(U_I((unsigned)&full_data_76f990));
-        p4 = (unsigned short *)gm_FindObjectInst(U_I((unsigned)&full_data_76f994));
-        U_I((unsigned)&ai_FrameWait) = 2;
-        if (p3 != 0 && p4 != 0) {
-            init_LoadObjectScene(*p4);
-            sv_SelectPanelObject(p3, *(int *)(p4 + 1), (unsigned)&ch_EmptyName);
+    d3_SetViewport((float)(sv_ViewRectRight - sv_ViewRectLeft), (float)(sv_ViewRectBottom - sv_ViewRectTop), (float)sv_ViewRectLeft, (float)sv_ViewRectTop,
+                   d3_ZNear, d3_ZFar, d3_ScaleX, d2_ScreenW, d2_ScreenH);
+    /* a loaded game: the weather, and the view at the building / object the save was made at */
+    if ((ai_GameFlags & 2) != 0 && (sv_SetupWeather(&ai_Time, 0), ls_LoadedHeader.startBuilding != -1)) {
+        bld = (AIBLD *)gm_FindBuildingById(ls_LoadedHeader.startBuilding);
+        inst = (AIOBJ *)gm_FindObjectInst(ls_LoadedHeader.startObject);
+        ai_FrameWait = 2;
+        if (bld != 0 && inst != 0) {
+            init_LoadObjectScene(inst->type);
+            sv_SelectPanelObject((unsigned char *)bld, inst->objId, ch_EmptyName);
         } else {
-            init_LoadBuildingScene(*p3);
-            sv_SelectPanelObject(p3, -1, (unsigned)&ch_EmptyName);
+            init_LoadBuildingScene(bld->type);
+            sv_SelectPanelObject((unsigned char *)bld, -1, ch_EmptyName);
         }
     }
-    for (us = ai_PlayerId; us < 0x300 && ai_GameOver == 0 && ai_CharsT[MAIN_PLAYER].kind != 6; ai_PlayerId = us)
-        us++;
+    while (ai_PlayerId < 0x300 && ai_GameOver == 0 && ai_CharsT[MAIN_PLAYER].kind != 6)
+        ai_PlayerId++;
     if ((ai_GameFlags & 0x80) != 0) {
         ai_TutorialStart();
-        memset(cl, 0, 0xf8);
-        /* `cl` is an int array, so the byte offsets must not pick up the int scaling of MSG_B / MSG_I. */
-        MSG_B((char *)cl, 4) = 0x87;
-        MSG_I((char *)cl, 0xc) = -1;
-        MSG_B((char *)cl, 0x36) = 9;
-        MSG_I((char *)cl, 8) = U_I((unsigned)&ai_CharInts + (U_I((unsigned)&ai_PlayerId) & 0xffff) * 0x21c);
-        cm_SendLongMessage(cl);
+        memset(&m.msg, 0, sizeof(m.msg));
+        m.msg.type = 0x87;
+        m.msg.fromId = -1;
+        m.msg.flags = 9;
+        m.msg.to = ai_CharsT[MAIN_PLAYER].netId;
+        cm_SendLongMessage((char *)&m.msg);
     }
-    while (U_I((unsigned)&ai_GameOver) == 0 && (iv = sv_RunFrame((int)main_GameLoop, 0x20007)) != 0 && main_Round < 800) {
+    /* the rounds */
+    while (ai_GameOver == 0 && (iv = sv_RunFrame((int)main_GameLoop, 0x20007)) != 0 && main_Round < 800) {
         iv = 0;
-        U_I((unsigned)&ai_CurrentPlayer) = 0;
-        if ((U_I((unsigned)&ai_GameFlags) & 0x42) == 0) {
-            *(unsigned short *)(unsigned)&ai_PlayerId = 0;
-            U_I((unsigned)&ai_CurrentPlayer) = 0;
+        ai_CurrentPlayer = 0;
+        if ((ai_GameFlags & 0x42) == 0) {
+            ai_PlayerId = 0;
+            ai_CurrentPlayer = 0;
             main_RundenBeginn();
         } else {
-            for (idx = 0; idx < MAIN_PLAYER; idx++) {
-                if (ai_CharsT[idx].kind == 6)
+            for (i = 0; i < MAIN_PLAYER; i++) {
+                if (ai_CharsT[i].kind == 6)
                     iv++;
             }
             ai_CurrentPlayer = iv;
         }
-        for (us = ai_PlayerId; us < 0x300 && ai_GameOver == 0 && ai_CharsT[MAIN_PLAYER].kind != 6; ai_PlayerId = us)
-            us++;
-        if (*(char *)(((unsigned)&ai_CharsT + 0x2) + (U_I((unsigned)&ai_PlayerId) & 0xffff) * 0x21c) == 6) {
-            if ((U_I((unsigned)&ai_GameFlags) & 0x46) == 0) {
-                clk[1] = U_I((unsigned)&ai_Time.hour);
-                clk[0] = U_I((unsigned)&ai_Time);
-                clk[2] = U_I(((unsigned)&ai_Time + 0x8));
-                *(short *)(clk + 3) = *(short *)((unsigned)&ai_Time + 0xc);
-                gm_SetTime(clk, 6, 0, 0);
-                w = cm_SendExSysMessage(3, clk);
+        while (ai_PlayerId < 0x300 && ai_GameOver == 0 && ai_CharsT[MAIN_PLAYER].kind != 6)
+            ai_PlayerId++;
+        if (ai_CharsT[MAIN_PLAYER].kind == 6) {
+            if ((ai_GameFlags & 0x46) == 0) {
+                clk = ai_Time;
+                gm_SetTime(&clk, 6, 0, 0);
+                w = cm_SendExSysMessage(3, &clk);
                 iv = cm_GetSlotState(w);
                 while (iv == 0) {
                     sv_PumpNet();
                     iv = cm_GetSlotState(w);
                 }
             }
-            if ((U_I((unsigned)&ai_GameFlags) & 0x42) == 0) {
+            if ((ai_GameFlags & 0x42) == 0) {
                 main_EndRound();
             } else {
                 init_AfterTownLoad();
                 sv_RedrawScreen();
-                if ((U_I((unsigned)&ai_GameFlags) & 4) != 0) {
+                if ((ai_GameFlags & 4) != 0) {
                     cm_SendExSysMessage(1, 0);
-                    if ((U_I((unsigned)&ai_GameFlags) & 4) != 0)
+                    if ((ai_GameFlags & 4) != 0)
                         sv_NetworkSyncWait(0x67fff);
                 }
             }
-            u = U_I((unsigned)&ai_GameFlags) & 0xff;
-            if ((u & 2) == 0) {
+            if ((ai_GameFlags & 2) == 0) {
                 cm_BeginSendGroup();
-                if ((U_I((unsigned)&ai_GameFlags) & 8) != 0 || (net_Conn.s != -1 && (U_I((unsigned)&cm_NetFlags) & 8) != 0)) {
+                if ((ai_GameFlags & 8) != 0 || (net_Conn.s != -1 && (cm_NetFlags & 8) != 0)) {
                     he_PostEvent3a();
                     he_PostEvent3b();
                     he_PostEventA6();
@@ -4932,38 +4956,38 @@ void main_GameLoop(int ctl)
                     sv_PumpNet();
                     iv = cm_SendGroupState();
                 }
-                u = U_I((unsigned)&ai_GameFlags) & 0xff;
             }
-            if ((u & 0x42) == 0 && main_AutoSaveOn != 0 && U_I((unsigned)&ai_GameOver) == 0 && (char)u >= 0) {
+            /* the autosave: the old one is kept as autosave.bak; a network host asks the clients for theirs */
+            if ((ai_GameFlags & 0x42) == 0 && main_AutoSaveOn != 0 && ai_GameOver == 0 && (ai_GameFlags & 0x80) == 0) {
                 ls_SaveSlot = 0;
-                if ((u & 4) == 0) {
+                if ((ai_GameFlags & 4) == 0) {
                     sprintf(ap, "%s\\gamedata\\saves\\autosave.sav", main_GfxPath);
-                    i5 = fopen(ap, "rb");
-                    if (i5 != 0) {
+                    sav = fopen(ap, "rb");
+                    if (sav != 0) {
                         sprintf(ab, "%s\\gamedata\\saves\\autosave.bak", main_GfxPath);
-                        fseek(i5, 0, 2);
-                        w = ftell(i5);
-                        fseek(i5, 0, 0);
-                        i6 = mem_Alloc(w, (unsigned)gm_TagTmp);
-                        iv = fopen(ab, "wb");
-                        if (i6 != 0) {
-                            if (iv != 0) {
-                                fread(i6, w, 1, i5);
-                                fwrite(i6, w, 1, iv);
-                                fclose(iv);
+                        fseek(sav, 0, 2);
+                        len = ftell(sav);
+                        fseek(sav, 0, 0);
+                        data = mem_Alloc(len, gm_TagTmp);
+                        bak = fopen(ab, "wb");
+                        if (data != 0) {
+                            if (bak != 0) {
+                                fread(data, len, 1, sav);
+                                fwrite(data, len, 1, bak);
+                                fclose(bak);
                             }
-                            mem_Free(i6);
+                            mem_Free(data);
                         }
-                        fclose(i5);
+                        fclose(sav);
                     }
                     sprintf(ap, "%s/standard.scr", "gamedata/cities");
                     ai_LoadScreenImage(ap);
                     ls_SaveGame("Gamedata\\Saves\\Autosave.SAV", "Autosave", 1);
-                } else if ((u & 0x10) != 0) {
-                    memset(sys, 0, 0x7c);
-                    strcpy((char *)sys + 4, "AUTOSAVE");
-                    sys[0] = 0;
-                    w = cm_SendExSysMessage(0xf, sys);
+                } else if ((ai_GameFlags & 0x10) != 0) {
+                    memset(&m.save, 0, sizeof(m.save));
+                    strcpy(m.save.name, "AUTOSAVE");
+                    m.save.slot = 0;
+                    w = cm_SendExSysMessage(0xf, &m.save);
                     iv = cm_GetSlotState(w);
                     while (iv == 0) {
                         sv_PumpNet();
@@ -4971,100 +4995,93 @@ void main_GameLoop(int ctl)
                     }
                 }
             }
-            he_ShowEventBar(U_I((unsigned)&ai_PlayerId) & 0xffff);
-            U_I((unsigned)&cm_DayEndRequest) = 0;
+            he_ShowEventBar(MAIN_PLAYER);
+            cm_DayEndRequest = 0;
             main_DayEnding = 0;
             ai_GameFrame();
-            if (U_I((unsigned)&ai_GameOver) == 0) {
+            if (ai_GameOver == 0) {
+                /* the rest of the day in half hours to 23:00, then the report */
                 tb_SetFunctionOff((unsigned)&sv_UpdateClock, 1);
-                if ((U_I((unsigned)&ai_GameFlags) & 8) == 0) {
+                if ((ai_GameFlags & 8) == 0) {
                     ck = ai_Time;
                     while (ck.hour < 0x17) {
-                        gm_AddTime((struct AITIME *)&ck, 0, 0x1e, 0);
+                        gm_AddTime(&ck, 0, 0x1e, 0);
                         w = cm_SendTime(&ck);
                         while (cm_GetSlotState(w) == 0)
                             sv_PumpNet();
                     }
                 }
                 main_RoundReport();
-                if (U_I((unsigned)&ai_GameOver) == 0 && U_I((unsigned)&ai_LeaveGame) == 0) {
-                    U_I((unsigned)&ai_GameFlags) &= 0xffffffbd;
-                    U_I((unsigned)&ai_CurrentPlayer)++;
-                    goto L_next;
+                if (ai_GameOver == 0 && ai_LeaveGame == 0) {
+                    ai_GameFlags &= ~0x42;
+                    ai_CurrentPlayer++;
+                    goto next;
                 }
             }
-            U_I((unsigned)&ai_CurrentPlayer)++;
+            ai_CurrentPlayer++;
         }
-L_next:
-        if (U_I((unsigned)&ai_GameOver) == 0) {
+next:
+        if (ai_GameOver == 0) {
             if (net_Conn.s == -1) {
+                /* alone: the night to 23:00, then the next day 6:00 */
                 tb_SetFunctionOff((unsigned)&sv_UpdateClock, 1);
                 ck = ai_Time;
                 while (ck.hour < 0x17) {
-                    gm_AddTime((struct AITIME *)&ck, 0, 0x1e, 0);
+                    gm_AddTime(&ck, 0, 0x1e, 0);
                     w = cm_SendTime(&ck);
                     while (cm_GetSlotState(w) == 0)
                         sv_PumpNet();
                 }
-                gm_AddTime((struct AITIME *)&ck, 0x18, 0, 0);
-                gm_SetTime((struct AITIME *)&ck, 6, 0, 0);
+                gm_AddTime(&ck, 0x18, 0, 0);
+                gm_SetTime(&ck, 6, 0, 0);
                 cm_SendTime(&ck);
                 tb_SetFunctionOff((unsigned)&sv_UpdateClock, 0);
             }
-            if ((U_I((unsigned)&cm_NetFlags) & 8) != 0 || net_Conn.s == -1) {
-                iv = amt_CheckOfficeColumns();
-                if (iv == 0) {
-                    amt_UpdateOffices();
-                } else {
-                    memset(pl, 0, 0x114);
-                    idx = 0;
-                    pp = (int *)(unsigned)&ai_CharInts;
-                    do {
-                        if (*((char *)pp - 2) == 6) {
-                            w = *pp;
-                            pl[3] = w;
-                            pl[0x0d + idx] = w;
-                            idx++;
-                        } else if (*((char *)pp - 2) == 7) {
-                            pl[0x0d + idx] = *pp;
-                            idx++;
+            if ((cm_NetFlags & 8) != 0 || net_Conn.s == -1) {
+                /* the office elections: a party (kind 1) of every player (the host the kind 6 one) */
+                if (amt_CheckOfficeColumns() != 0) {
+                    memset(&party, 0, sizeof(party));
+                    n = 0;
+                    for (i = 0; i < 0x300; i++) {
+                        if (ai_CharsT[i].kind == 6) {
+                            party.host = ai_CharsT[i].netId;
+                            party.members[n] = ai_CharsT[i].netId;
+                            n++;
+                        } else if (ai_CharsT[i].kind == 7) {
+                            party.members[n] = ai_CharsT[i].netId;
+                            n++;
                         }
-                        pp += 0x87;
-                    } while ((int)pp < ((unsigned)((unsigned)ai_CharInts + 0x653fe) + 0x2));
-                    *((char *)pl + 0x30) = (char)idx;
-                    pl[7] = U_I((unsigned)&ai_Time.hour);
-                    pl[6] = U_I((unsigned)&ai_Time);
-                    U_I((unsigned)&sv_FrameMask) = 0x24087;
-                    *((char *)pl + 8) = 1;
-                    *((char *)pl + 0x26) = 0x61;
-                    pl[5] = -1;
-                    pl[8] = U_I(((unsigned)&ai_Time + 0x8));
-                    *(short *)(pl + 9) = *(short *)((unsigned)&ai_Time + 0xc);
-                    w = cm_SendNewParty(pl);
+                    }
+                    party.used = (unsigned char)n;
+                    party.time = ai_Time;
+                    sv_FrameMask = 0x24087;
+                    party.kind = 1;
+                    party.flags = 0x61;
+                    party.thing = -1;
+                    w = cm_SendNewParty(&party);
                     iv = cm_GetSlotState(w);
                     while (iv == 0) {
                         sv_PumpNet();
                         iv = cm_GetSlotState(w);
                     }
+                } else {
+                    amt_UpdateOffices();
                 }
             }
-            if ((U_I((unsigned)&ai_GameFlags) & 4) != 0)
+            if ((ai_GameFlags & 4) != 0)
                 sv_NetworkSyncWait(0x24087);
             main_BeginPlayerRound();
         }
         main_Round++;
     }
-    if ((U_I((unsigned)&ai_GameFlags) & 4) != 0) {
-        if (U_I((unsigned)&cm_LeftPlayerId) == -1) {
-            pc = "$3AEs trat ein Netzwerkfehler auf! Das Spiel wurde beendet...$2A%ia[Okay]";
-        } else {
-            if (U_I((unsigned)&cm_LeftPlayerId) == U_I((unsigned)&ai_CharInts + (U_I((unsigned)&ai_PlayerId) & 0xffff) * 0x21c))
-                goto L_end;
-            pc = "$3AEin Spieler hat die Partie verlassen. Das Spiel wurde beendet...$2A%ia[Okay]";
-        }
-        sv_MessageBox(pc, 0);
+    /* a network game ends with the reason */
+    if ((ai_GameFlags & 4) != 0) {
+        if (cm_LeftPlayerId != -1) {
+            if (cm_LeftPlayerId != ai_CharsT[MAIN_PLAYER].netId)
+                sv_MessageBox((int)"$3AEin Spieler hat die Partie verlassen. Das Spiel wurde beendet...$2A%ia[Okay]", 0);
+        } else
+            sv_MessageBox((int)"$3AEs trat ein Netzwerkfehler auf! Das Spiel wurde beendet...$2A%ia[Okay]", 0);
     }
-L_end:
     if ((ai_GameFlags & 0x80) != 0)
         ai_TutorialStop();
     main_EndGame();
@@ -5174,10 +5191,10 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE prev, char *cmd, int show)
     p = strrchr((char *)(unsigned)&ai_OptionsFile, 0x5c);
     strcpy(p + 1, "game.INI");
     he_LoadMessageFilter((char *)(unsigned)&ai_OptionsFile);
-    GetPrivateProfileStringA("Network", "Server", "Server\\Server.dll", (char *)((unsigned)&ai_DataPath + 0x100), 0x104, (char *)(unsigned)&ai_OptionsFile);
+    GetPrivateProfileStringA("Network", "Server", "Server\\Server.dll", ai_NetLibName, 0x104, (char *)(unsigned)&ai_OptionsFile);
     i = 0;
     do {
-        c = ((char *)&ai_DataPath + 0x100)[i];
+        c = ai_NetLibName[i];
         ((char *)&ls_SavePath + 0x160)[i] = c;
         i++;
     } while (c != 0);
