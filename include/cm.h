@@ -1088,9 +1088,6 @@ extern char ai_GfxFloorLod;  /* 0x6f35ca */
 #endif
 
 extern int cm_PartyTurn;  /* 0x6f0d78 */
-extern int cm_KindAskPlayer[];  /* 0x92c504, the scene kind table (5 ints per kind) */
-extern int cm_KindAskOther[];  /* 0x92c508 */
-extern char cm_KindAllAtOnce[];  /* 0x92c50c */
 extern char cm_TextNewline[];  /* 0x60c6c0 */
 
 
@@ -1103,7 +1100,6 @@ extern char ai_Unk925538[];  /* 0x925538, the scene party records (0x114 bytes, 
 #endif
 
 
-extern int cm_KindCheck[];  /* 0x92c510, the answer callbacks of the kind table (5 ints per kind) */
 
 int cm_FirstPendingParty();  /* 0x4e4f40 */
 char ai_RunPendingParties(int pl);  /* 0x4e4f80, runs the pending parties of the player pl */
@@ -1127,7 +1123,7 @@ void d2_CentreViewWindows(int view);  /* 0x475600 */
 void d2_RadioClear(int g);  /* 0x46c600 */
 extern char cm_MessageBoxOpen;  /* 0x6f0dc4 */
 
-extern int cm_KindRun[];  /* 0x92c500, the scene kind table: run, callbacks, flag, check */
+extern CMKIND cm_Kinds[];  /* 0x92c500, the scene kind table (12 of 0x14 bytes): run, callbacks, flag, check */
 void d3io_NoopCallback(void *t);  /* 0x44ee40 */
 
 extern char ai_CharKindNames[][24];  /* 0x60eae0, the names of the NPC kinds */

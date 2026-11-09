@@ -16028,9 +16028,9 @@ int cm_PrevPartyMember(char *m, int n)
 }
 /* 0x4e3830, runs the scene party m for the scene context ctx: the party's cutscene records are reset (cm_ResetCutInfos),
    the owner announces the scene ("cut_type:%i", message 0x11). In the local run (ai_GameFlags & 8) every member's callback
-   of the scene kind (cm_KindAskPlayer for a player's character, kind 6, cm_KindAskOther for the others) fills his record and its
+   of the scene kind (cm_Kinds[].askPlayer for a player's character, kind 6, .askOther for the others) fills his record and its
    text is shown. In the net run (& 4) the records are sent as the long message with cm_RequestSendCutInfo: with the kind's
-   flag cm_KindAllAtOnce 1 the owner answers for the computer members, then each player for his own character, all at once;
+   flag cm_Kinds[].allAtOnce 1 the owner answers for the computer members, then each player for his own character, all at once;
    with 0 the members answer one after the other (a member once the one before him has answered, the owner the computer
    ones), until cm_PartyAnswered. The counter cm_ScenePartyRuns grows by one per run; the random seed is kept
    @deep reconstructed from the original's 551 instructions, every block read and compared (the local run,
@@ -16082,9 +16082,9 @@ void cm_RunSceneParty(char *m, int ctx)
             if (((AICHAR *)cm_CutChar)->kind == 6) {
                 cm_SceneDeadline = cm_SceneTicks + cm_SceneDuration;
                 cm_SceneTimedOut = 0;
-                ((int (*)(CMCUTINFO *, int))cm_KindAskPlayer[party->kind * 5])(&cm_CutInfosT[i], ctx);
+                ((int (*)(CMCUTINFO *, int))cm_Kinds[party->kind].askPlayer)(&cm_CutInfosT[i], ctx);
             } else {
-                cb = (int (*)(CMCUTINFO *, int))cm_KindAskOther[party->kind * 5];
+                cb = (int (*)(CMCUTINFO *, int))cm_Kinds[party->kind].askOther;
                 if (cb != 0)
                     cb(&cm_CutInfosT[i], ctx);
             }
@@ -16094,7 +16094,7 @@ void cm_RunSceneParty(char *m, int ctx)
         }
     } else if (ai_GameFlags & 4) {
         cm_CutChar = (char *)&ai_CharsT[ai_PlayerId];
-        if (cm_KindAllAtOnce[party->kind * 20] == 1) {
+        if (cm_Kinds[party->kind].allAtOnce == 1) {
             if (party->host == ai_CharsT[ai_PlayerId].netId) {
                 /* the owner answers for the computer members */
                 for (i = 0; i < party->used; i++) {
@@ -16103,7 +16103,7 @@ void cm_RunSceneParty(char *m, int ctx)
                         continue;
                     cm_CutChar = (char *)c;
                     rec = cm_CutInfosT[i];
-                    cb = (int (*)(CMCUTINFO *, int))cm_KindAskOther[party->kind * 5];
+                    cb = (int (*)(CMCUTINFO *, int))cm_Kinds[party->kind].askOther;
                     if (cb != 0)
                         cb(&rec, ctx);
                     rec.valid = 1;
@@ -16123,7 +16123,7 @@ void cm_RunSceneParty(char *m, int ctx)
                     rec = cm_CutInfosT[i];
                     cm_SceneDeadline = cm_SceneTicks + cm_SceneDuration;
                     cm_SceneTimedOut = 0;
-                    ((int (*)(CMCUTINFO *, int))cm_KindAskPlayer[party->kind * 5])(&rec, ctx);
+                    ((int (*)(CMCUTINFO *, int))cm_Kinds[party->kind].askPlayer)(&rec, ctx);
                     rec.valid = 1;
                     rec.ready = 0;
                     cm_SetLongMsg(0x35c, &rec);
@@ -16138,7 +16138,7 @@ void cm_RunSceneParty(char *m, int ctx)
                 sv_SetStatusText(txt_ScenePartyWait);
                 sv_RunFrame(0, cm_DialogFrameFlags | 0x8000);
             }
-        } else if (cm_KindAllAtOnce[party->kind * 20] == 0) {
+        } else if (cm_Kinds[party->kind].allAtOnce == 0) {
             /* one after the other: the player's character answers once the member before him has */
             me = -1;
             prev = -1;
@@ -16160,7 +16160,7 @@ void cm_RunSceneParty(char *m, int ctx)
                     cm_ShowPartyTexts(m);
                     cm_SceneDeadline = cm_SceneTicks + cm_SceneDuration;
                     cm_SceneTimedOut = 0;
-                    ((int (*)(CMCUTINFO *, int))cm_KindAskPlayer[party->kind * 5])(&rec, ctx);
+                    ((int (*)(CMCUTINFO *, int))cm_Kinds[party->kind].askPlayer)(&rec, ctx);
                     rec.valid = 1;
                     rec.ready = 0;
                     cm_SetLongMsg(0x35c, &rec);
@@ -16183,7 +16183,7 @@ void cm_RunSceneParty(char *m, int ctx)
                         cm_PartyTurn = i;
                         cm_CutChar = (char *)c;
                         next = cm_CutInfosT[i];
-                        cb = (int (*)(CMCUTINFO *, int))cm_KindAskOther[party->kind * 5];
+                        cb = (int (*)(CMCUTINFO *, int))cm_Kinds[party->kind].askOther;
                         if (cb != 0)
                             cb(&next, ctx);
                         next.valid = 1;
@@ -16233,7 +16233,7 @@ int cm_ResumeSceneChars(void)
    or 0x4e4870 says so in the net run); unless skipped, fades to "BLACK", keeps the camera, the fog and the dirty rect,
    starts the scene timer 0x4e3210, disables the shown d2 objects and for a cinemascope party (flags 0x20) narrows the
    viewport to the letterbox. Opens the scene window "cutscenes\\announcement" (the trial: "cutscenes\\prozess_main"),
-   seeds the random numbers with m->seed and calls the run function of the kind (cm_KindRun); then restores all of it,
+   seeds the random numbers with m->seed and calls the run function of the kind (cm_Kinds[].run); then restores all of it,
    fades in again, and the owner gives every member's character back its scene party field (+0x20c = -1, a field
    message) */
 
@@ -16361,7 +16361,7 @@ void cm_ExecCutscene(char *m)
     cut_RandSeed(party->seed);
     sprintf(buf, "Exec Cutscene(Mainfunc) <Type = %i>", party->kind);
     cm_CurrentFight = (int *)m;
-    ((void (*)(char *))cm_KindRun[party->kind * 5])(m);
+    ((void (*)(char *))cm_Kinds[party->kind].run)(m);
     d2_CloseView(party->window);
     cm_TextBox = savedBox;
     if (cm_SkipEvents == 0) {
@@ -16580,7 +16580,7 @@ int cm_CutsceneReady(char *m)
 /* 0x4e4cc0, the per-frame update of the 96 scene parties cm_Parties (used, not flags 1 / 4): a party without an owner
    gets the player's character in the local run (or cm_NetFlags & 8); within the hour before its time the owner asks
    cm_CutsceneReady (-1: again in 5 minutes, 0: in 30, from 22 o'clock on 9 hours later) and the kind's check
-   (cm_KindCheck; 0 cancels the party, message 0x58). Once its time has come the party is done when it has no check, when
+   (cm_Kinds[].check; 0 cancels the party, message 0x58). Once its time has come the party is done when it has no check, when
    the player's character is a member of it running in its own party (flags 0x80) or owns it with flags 2; else it is
    dropped (cm_ClearParty). A done party within its hour runs (cm_ExecCutscene) and is dropped */
 
@@ -16612,12 +16612,12 @@ int cm_UpdateParties(void)
                     gm_AddTime(&p->time, 9, 0, 0);
                 continue;
             }
-            if (cm_KindCheck[p->kind * 5] != 0 && ((int (*)(char *))cm_KindCheck[p->kind * 5])((char *)p) == 0) {
+            if (cm_Kinds[p->kind].check != 0 && ((int (*)(char *))cm_Kinds[p->kind].check)((char *)p) == 0) {
                 cm_SendCancelParty(p->id);
                 continue;
             }
         }
-        if (cm_KindCheck[p->kind * 5] == 0 && gm_CompareTime(&ai_Time, &p->time) > 0)
+        if (cm_Kinds[p->kind].check == 0 && gm_CompareTime(&ai_Time, &p->time) > 0)
             p->done = 1;
         if (gm_CompareTime(&ai_Time, &p->time) > 0 && p->done == 0) {
             if (cm_IsPartyMember(ai_CharsT[ai_PlayerId].netId, (char *)p) != 0 && (p->flags & 0x80)) {
@@ -16956,11 +16956,11 @@ int cm_MessageBox(int id, int flags)
 
 void cm_RegisterSceneKind(int kind, int run, int cb4, int cb8, int check, char flag)
 {
-    cm_KindRun[kind * 5] = run;
-    cm_KindAskPlayer[kind * 5] = cb4;
-    cm_KindAskOther[kind * 5] = cb8;
-    cm_KindCheck[kind * 5] = check;
-    cm_KindAllAtOnce[kind * 20] = flag;
+    cm_Kinds[kind].run = run;
+    cm_Kinds[kind].askPlayer = cb4;
+    cm_Kinds[kind].askOther = cb8;
+    cm_Kinds[kind].check = check;
+    cm_Kinds[kind].allAtOnce = flag;
 }
 /* 0x4e5770, the init of the scene code: the party records are cleared (id -1) and the scene kinds are registered: 0 the picture show (0x4e0010), 1 the council
    votes (0x4d8e20), 2 the trial (0x4db700), 3 the fight (0x4d63e0), 4 the duel, 5 the execution, 6 the wedding, 7 the birth, 8 the death, 9 the bankruptcy, 10
@@ -17099,11 +17099,7 @@ extern int cm_DuelVariants[128];
 extern int cm_OrderTicks;
 extern unsigned short cm_DisabledObjs[768];
 extern unsigned int cut_RandState;
-extern int cm_KindRun[1];
-extern int cm_KindAskPlayer[1];
-extern int cm_KindAskOther[1];
-extern char cm_KindAllAtOnce[4];
-extern int cm_KindCheck[60];
+extern CMKIND cm_Kinds[12];
 extern char cm_SceneState[1152];
 extern int cm_SceneChars[16];
 extern int cm_SavedNoGroup;
@@ -17352,11 +17348,7 @@ int cm_DuelVariants[128] = {0};  /* 0x92bcc0, the shuffled order of the duel var
 int cm_OrderTicks = 0;  /* 0x92bec0 */
 unsigned short cm_DisabledObjs[768] = {0};  /* 0x92bee0 */
 unsigned int cut_RandState = 0;  /* 0x92c4e0, the random seed of the scenes */
-int cm_KindRun[1] = {0};  /* 0x92c500, the scene kind table: run, callbacks, flag, check */
-int cm_KindAskPlayer[1] = {0};  /* 0x92c504, the scene kind table (5 ints per kind) */
-int cm_KindAskOther[1] = {0};  /* 0x92c508 */
-char cm_KindAllAtOnce[4] = {0};  /* 0x92c50c */
-int cm_KindCheck[60] = {0};  /* 0x92c510, the answer callbacks of the kind table (5 ints per kind) */
+CMKIND cm_Kinds[12] = {0};  /* 0x92c500, the scene kind table: run, callbacks, flag, check (cm_RegisterSceneKind) */
 char cm_SceneState[1152] = {0};  /* 0x92c600 */
 int cm_SceneChars[16] = {0};  /* 0x92ca80 */
 int cm_SavedNoGroup = 0;  /* 0x92cac0 */

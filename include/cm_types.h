@@ -879,6 +879,18 @@ typedef struct G28REC {
 } G28REC;
 typedef char cm_AssertG28REC[sizeof(G28REC) == 0x114 ? 1 : -1];
 
+/* a scene kind (cm_Kinds, 0x92c500, 12 of 0x14 bytes, filled by cm_RegisterSceneKind); the functions are kept as ints and
+   cast at their calls */
+typedef struct CMKIND {
+    int run;                            /* 0x00, void (*)(char *m): the scene (cm_ExecCutscene) */
+    int askPlayer;                      /* 0x04, int (*)(CMCUTINFO *, int): asks a player's character (kind 6), cm_RunSceneParty */
+    int askOther;                       /* 0x08, int (*)(CMCUTINFO *, int): asks the other members */
+    char allAtOnce;                     /* 0x0c, 1: cm_RunSceneParty asks the members all at once, 0: one after the other */
+    char pad0d[3];
+    int check;                          /* 0x10, int (*)(char *m): 0 cancels the party (cm_UpdateParties), 0: none */
+} CMKIND;
+typedef char cm_AssertCMKIND[sizeof(CMKIND) == 0x14 ? 1 : -1];
+
 
 typedef struct AIWEAPON {               /* 0x5c bytes, the 10 weapon records at ai_WeaponRecordData (ai_FindWeaponRecord) */
     int id;                             /* 0x00, the goods item */
