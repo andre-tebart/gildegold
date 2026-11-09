@@ -209,14 +209,16 @@ typedef struct D2OBJ {              /* 0x2ec bytes, d2_Objs has 0x2ff: pictures,
                                        clickDisabled) */
     int hitTestable;                /* 0x54, nonzero: takes part in the hit test even when not
                                        interactive / checkable (only reader known, writer in the original) */
-    int unk58;                      /* 0x58 */
+    int darkened;                   /* 0x58, nonzero: the picture is drawn half dark (d2_DrawShapeHalfDark) instead of
+                                       plainly, unless highlighted (d2_DrawObjects) */
     int centred;                    /* 0x5c, centred (d2_CenterObj) */
     int rightAligned;               /* 0x60, 1: the object's text is right aligned (d2_DrawTextBox flag 0x10) */
     int dirty;                      /* 0x64 */
     int hidden;                     /* 0x68, nonzero: skipped by the window's text layout and not
                                        drawn by the text-case (an input / link object in the text draws itself) */
     unsigned char shadowX, shadowY; /* 0x6c, shadow offset x / y (drawn at x + shadowX) */
-    char unk6e;                     /* 0x6e */
+    char noFrameInset;              /* 0x6e, nonzero: the frame borders of the object's windows (flag 4) are not taken off
+                                       its clip rectangle (d2_DrawObjects) */
     char pad6f;
     int picScale;                   /* 0x70, picture scale: 0 / 1 / -1 draw unscaled, > 1 larger, < -1 smaller (d2_ScaleObject) */
     short font;                     /* 0x74 */

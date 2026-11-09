@@ -1867,7 +1867,18 @@ D2OBJ *o;
             d2_DrawTextBox(x - 0x30, y, o->picW + 0x60, o->h, d2_ScreenSurf, o->caption, flags);
     }
 }
-/* 0x46d3d0, draws all objects in drawing order, each clipped to its windows */
+/* 0x46d3d0, draws all objects in drawing order, each clipped to its windows
+   @deep Read the whole 0x46d3d0..0x46e0d2 against the C (the clip walk over the windows with the frame
+   insets, the pending caption, all twelve switch arms; switch tables equal): the statements correspond.
+   Left is allocation: in the text arm of case 1 the original keeps mode in ebp and reloads x from its slot
+   after d2_DrawTextBox (mov ebp,[esp+0x30]) where ours keeps x in ebp and mode in edi, so o->w is loaded
+   early into edx and [esi+0x1d0] goes to edi (hunk at +0x80d, 24 lines); the caption test loads d2_Objs
+   after the index arithmetic (+0x83d, 16 lines); the AddDirty(x, y, d2_ShpW(+8), d2_ShpH(+8)) of case 1
+   uses edx=W / ecx=H / eax=y in the original, edx=H / eax=W / ecx=y in ours (+0x886, 30 lines). Tried the
+   caption coordinates as inline ternaries (worse) and as if/else (same). (references: M8 at +0x88a: ours
+   refers to d2_ShpH (0x6f044e), the original's field to 0x6f044c (d2_ShpW), explained: the M8 at +0x88a
+   (d2_ShpH vs d2_ShpW) is the register permutation of that AddDirty: both sides push ShpH(+8), ShpW(+8),
+   y, x in that order; the aligner pairs our movsx edx,[d2_ShpH] with the original's movsx edx,[d2_ShpW]) */
 
 void d2_DrawObjects(void)
 {
@@ -1896,7 +1907,7 @@ void d2_DrawObjects(void)
             for (win = o->win; win; win = p->win) {
                 fx = 0;
                 fy = 0;
-                if ((win->flags & 4) && !o->unk6e) {
+                if ((win->flags & 4) && !o->noFrameInset) {
                     frame = d2_GetPic(win->frame);
                     part = d2_GetFrame(frame, 4);
                     fy = part->h;
@@ -1941,11 +1952,11 @@ void d2_DrawObjects(void)
                 } else {
                     if (o->textShadow)
                         d2_DrawShapeMode2(x + o->shadowX, y + o->shadowY, d2_ScreenSurf, o->data, 0);
-                    if (!o->unk58)
+                    if (!o->darkened)
                         d2_DrawShape(x, y, d2_ScreenSurf, o->data, 0);
                     if (o->highlighted)
                         d2_DrawShapeMode3(x, y, d2_ScreenSurf, o->data, 0);
-                    else if (o->unk58)
+                    else if (o->darkened)
                         d2_DrawShapeHalfDark(x, y, d2_ScreenSurf, o->data, 0);
                     else if (o->greyed)
                         d2_DrawShapeMode2(x, y, d2_ScreenSurf, o->data, 0);
@@ -1968,7 +1979,7 @@ void d2_DrawObjects(void)
             case 4:
                 d2_DrawAnim(o->input, d2_ScreenSurf);
                 if (!o->win) {
-                    if (d2_AnimView[o->input].unk00)
+                    if (d2_Anims[o->input].shadow)
                         d2_AddDirty(x, y, o->w + 8, o->h + 8);
                     else
                         d2_AddDirty(x, y, o->w, o->h);
@@ -1993,14 +2004,14 @@ void d2_DrawObjects(void)
                 } else {
                     if (o->textShadow)
                         d2_DrawShapeMode2(x + o->shadowX, y + o->shadowY, d2_ScreenSurf, o->data, (char)o->input);
-                    if (!o->unk58)
+                    if (!o->darkened)
                         d2_DrawShape(x, y, d2_ScreenSurf, o->data, (char)o->input);
                     if (o->highlighted) {
                         if (o->style & 0x80)
                             d2_DrawShape(x, y, d2_ScreenSurf, o->data, (char)(o->input + 1));
                         else
                             d2_DrawShapeMode3(x, y, d2_ScreenSurf, o->data, (char)o->input);
-                    } else if (o->unk58)
+                    } else if (o->darkened)
                         d2_DrawShapeHalfDark(x, y, d2_ScreenSurf, o->data, (char)o->input);
                     else if (o->greyed) {
                         if (o->fillFraction == 0.0f)
@@ -2038,8 +2049,14 @@ void d2_DrawObjects(void)
                     if (o->rightAligned)
                         mode |= 0x10;
                     d2_GetObjPicSize(o->id, &tw, &th);
-                    tx = o->captionX != -1 ? o->x + o->captionX : o->x + tw + 6;
-                    ty = o->captionY != -1 ? o->y + o->captionY : o->y - 1;
+                    if (o->captionX != -1)
+                        tx = o->x + o->captionX;
+                    else
+                        tx = o->x + tw + 6;
+                    if (o->captionY != -1)
+                        ty = o->y + o->captionY;
+                    else
+                        ty = o->y - 1;
                     d2_DrawTextBox(tx, ty, o->w, o->h, d2_ScreenSurf, o->u.text, mode);
                 }
                 if (o->caption[0] && &d2_Objs[d2_PointerObj] == o && !d2_FocusedInput && !(o->style & 0x40)) {
