@@ -2436,73 +2436,46 @@ int ls_ReadHistory(int f)
     }
     return 1;
 }
-/* 0x520310, reads the two record pools 0x9367e0 / 0xa69140 (0x99-byte records: the references at +0x91 / +0x95 are indices turned into pointers (-1 = NULL)), the pool heads 0xa68d24 / 0xa68c00 / 0xf81160, the reference table 0xf31160 (10 bytes each, 0x2000 or 0x8000 of them from 0x1003c) and the words 0xf81168, 0xf8121c, 0xa68c04, 0x60bd88 .. 0x60bd90. Returns true when all was read */
+#define LS_MSG_SET(dst, idx, table) if ((int)(idx) == -1) (dst) = 0; else (dst) = &(table)[(int)(idx)];  /* a saved record index back to its record (-1: none) */
+/* 0x520310, reads cm's message queues, the counterpart of ls_WriteMessageQueues 0x51c560: the 0x2000 records of cm_RecvPool and the heads cm_RecvQueue / cm_RecvFree, then (all 0x8000 cm_SendStates reset first: free, idx -1, value 0) the records of cm_SendRing (0x2000 of them before version 0x1003c, 0x8000 from it) and its head cm_SendQueue, cm_LastSeq, as many states of cm_SendStates, the group bounds cm_GroupFirstSeq / cm_GroupEndSeq and the three ids cm_LastCharId / cm_LastBuildingId / cm_LastObjectId. The records' prev / next and the heads are saved as record indices (-1 for none) and turned back into pointers. Returns 1, 0 when a read fails. */
 
 
 int ls_ReadMessageQueues(int f)
 {
-    int *p;
     int i, n;
-    char *q;
 
-    for (p = (int *)((unsigned)&cm_RecvPool + 0x91); (int)p < ((unsigned)&cm_SplitMsg + 0x71); p = (int *)((char *)p + 0x99)) {
-        LS_R((char *)p - 0x91, 0x99)
-        if (*p == -1)
-            *p = 0;
-        else
-            *p = (unsigned)&cm_RecvPool + *p * 0x99;
-        if (p[1] == -1)
-            p[1] = 0;
-        else
-            p[1] = (unsigned)&cm_RecvPool + p[1] * 0x99;
+    for (i = 0; i < 0x2000; i++) {
+        LS_R(&cm_RecvPool[i], sizeof(G17MSG))
+        LS_MSG_SET(cm_RecvPool[i].prev, cm_RecvPool[i].prev, cm_RecvPool)
+        LS_MSG_SET(cm_RecvPool[i].next, cm_RecvPool[i].next, cm_RecvPool)
     }
     LS_R(&n, 4)
-    cm_RecvQueue = n == -1 ? 0 : (unsigned)&cm_RecvPool + n * 0x99;
-    i = 0;
+    LS_MSG_SET(cm_RecvQueue, n, cm_RecvPool)
     LS_R(&n, 4)
-    cm_RecvFree = n == -1 ? 0 : (unsigned)&cm_RecvPool + n * 0x99;
-    n = ((ls_Version < 0x1003c) - 1 & 0x6000) + 0x2000;
-    for (p = (int *)((unsigned)&cm_SendStates + 0x2); (int)p < ((unsigned)((unsigned)cm_SendStates + 0x50000) + 0x2); p = (int *)((char *)p + 10)) {
-        p[1] = 0;
-        *p = -1;
-        *((char *)p - 2) = 1;
+    LS_MSG_SET(cm_RecvFree, n, cm_RecvPool)
+    n = ls_Version >= 0x1003c ? 0x8000 : 0x2000;
+    for (i = 0; i < 0x8000; i++) {
+        cm_SendStates[i].value = 0;
+        cm_SendStates[i].idx = -1;
+        cm_SendStates[i].state = 1;
     }
-    if (n != 0) {
-        for (p = (int *)((unsigned)&cm_SendRing + 0x91); i < n; p = (int *)((char *)p + 0x99)) {
-            LS_R((char *)p - 0x91, 0x99)
-            if (*p == -1)
-                *p = 0;
-            else
-                *p = (unsigned)&cm_SendRing + *p * 0x99;
-            if (p[1] == -1)
-                p[1] = 0;
-            else
-                p[1] = (unsigned)&cm_SendRing + p[1] * 0x99;
-            i++;
-        }
+    for (i = 0; i < n; i++) {
+        LS_R(&cm_SendRing[i], sizeof(G17MSG))
+        LS_MSG_SET(cm_SendRing[i].prev, cm_SendRing[i].prev, cm_SendRing)
+        LS_MSG_SET(cm_SendRing[i].next, cm_SendRing[i].next, cm_SendRing)
     }
-    i = 0;
-    if (ls_Read((int)&n, 4, 1, f) == 0)
-        return 0;
-    cm_SendQueue = n == -1 ? 0 : (unsigned)&cm_SendRing + n * 0x99;
+    LS_R(&n, 4)
+    LS_MSG_SET(cm_SendQueue, n, cm_SendRing)
     LS_R(&cm_LastSeq, 4)
-    n = ((ls_Version < 0x1003c) - 1 & 0x6000) + 0x2000;
-    if (n != 0) {
-        q = (char *)(unsigned)&cm_SendStates;
-        do {
-            LS_R(q, 10)
-            i++;
-            q += 10;
-        } while (i < n);
-    }
-    if (ls_Read((int)(unsigned)&cm_GroupFirstSeq, 4, 1, f) == 0)
-        return 0;
-    LS_R((unsigned)&cm_GroupEndSeq, 4)
-    *(int *)(unsigned)&cm_LastCharId = 0;
-    if (ls_Read((int)(unsigned)&cm_LastCharId, 4, 1, f) == 0)
-        return 0;
-    LS_R((unsigned)&cm_LastBuildingId, 4)
-    return ls_Read((int)(unsigned)&cm_LastObjectId, 4, 1, f) != 0;
+    n = ls_Version >= 0x1003c ? 0x8000 : 0x2000;
+    for (i = 0; i < n; i++)
+        LS_R(&cm_SendStates[i], sizeof(G17STAT))
+    LS_R(&cm_GroupFirstSeq, 4)
+    LS_R(&cm_GroupEndSeq, 4)
+    cm_LastCharId = 0;
+    LS_R(&cm_LastCharId, 4)
+    LS_R(&cm_LastBuildingId, 4)
+    return ls_Read((int)&cm_LastObjectId, 4, 1, f) != 0;
 }
 /* 0x5205f0, the reader of the weather environment ls_WriteEnvironment writes: the winter-weather flag
    sv_WinterWeather and the 24 hours' clouds, storm, windX and windY of sv_Weather; from version 0x10050 also the
