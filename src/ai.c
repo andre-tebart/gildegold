@@ -266,7 +266,7 @@ AICHAR *ai_FindPartner(AICHAR *c)
                 cm_SendFieldDeltas();
                 return 0;
             }
-            if (ai_RelationMemory[p->id][c->id] + c->unk214 > 0) {
+            if (ai_RelationMemory[p->id][c->id] + c->relationBias > 0) {
                 a = c->b216 + 1;
                 cm_BeginFieldBlock(c, c->netId);
                 cm_AddFieldDelta(1, 1, 0x215, &a);

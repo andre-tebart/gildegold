@@ -570,161 +570,140 @@ int ls_WritePlayerRecords(int f)
             return 1;
     }
 }
-/* 0x51a4b0, writes the characters (the counterpart of 0x51de70): the player character, the count of the used
-   records of 0x770b80 (0x21c bytes each, a record is used when its id is not -1), the two judges 0x6f1bfc /
-   0x6f1c00 and the eight slots of 0x6f1c04 as ids (+4 of the record, -1 for none), then each used record in
-   pieces (the pointers at +0x16c / +0x170 / +0x17c / +0x184 as ids, the words at +0x54 / +0x18c stored with an
-   offset of -0x59a / -0x639). The record pointer runs at +2 (the original's bias). Returns 1. */
+/* 0x51a4b0, writes the characters (the counterpart of ls_ReadCharacters 0x51de70): the player character, the count
+   of the used AICHAR records of ai_Chars (a record is used when its id is not 0xffff), the two judges and the eight
+   characters of ai_KindBChars as netIds (-1 for none), then each used record field by field (the building, job and
+   scene pointers as their ids, ref54 and picture less their bases 0x59a / 0x639). Returns 1, 0 when a write fails. */
 
 
 int ls_WriteCharacters(int f)
 {
-  int cnt;
-  char *c;
-  short *psVar3;
-  int *puVar4;
-  int *piVar5;
-  int local_c;
-  int local_8;
-  int local_4;
+    int none;
+    int cnt;
+    int model;
+    int tmp;
+    int i;
+    AICHAR *c;
 
-  local_c = 0xffffffff;
-  LS_W(&ai_PlayerId, 2)
-  cnt = 0;
-  psVar3 = (short *)ai_Chars;
-  do {
-    if (*psVar3 != -1) {
-      cnt = cnt + 1;
+    none = -1;
+    LS_W(&ai_PlayerId, 2)
+    cnt = 0;
+    for (i = 0; i < 768; i++) {
+        if (ai_CharsT[i].id != 0xffff)
+            cnt++;
     }
-    psVar3 = psVar3 + 0x10e;
-  } while ((int)psVar3 < (int)&ai_Chars[768]);
-  LS_W(&cnt, 4)
-  if (ai_JudgeCatholic != 0) {
-    LS_W(&ai_JudgeCatholic->netId, 4)
-  }
-  else {
-    LS_W(&local_c, 4)
-  }
-  if (ai_JudgeProtestant != 0) {
-    LS_W(&ai_JudgeProtestant->netId, 4)
-  }
-  else {
-    LS_W(&local_c, 4)
-  }
-  piVar5 = (int *)ai_KindBChars;
-  do {
-    local_4 = 0xffffffff;
-    if (*piVar5 != 0) {
-      puVar4 = (int *)(*piVar5 + 4);
+    LS_W(&cnt, 4)
+    if (ai_JudgeCatholic != 0) {
+        LS_W(&ai_JudgeCatholic->netId, 4)
+    } else {
+        LS_W(&none, 4)
     }
-    else {
-      puVar4 = &local_4;
+    if (ai_JudgeProtestant != 0) {
+        LS_W(&ai_JudgeProtestant->netId, 4)
+    } else {
+        LS_W(&none, 4)
     }
-    LS_W(puVar4, 4)
-    piVar5 = piVar5 + 1;
-  } while ((int)piVar5 < (int)&ai_KindBChars[8]);
-  c = (char *)ai_Chars;
-  do {
-    if (*(short *)(c) != -1) {
-      LS_W(c, 2)
-      LS_W((c + 0x20c), 4)
-      LS_W((c + 2), 1)
-      LS_W((c + 4), 4)
-      LS_W((c + 8), 1)
-      LS_W((c + 9), 1)
-      LS_W((c + 0xa), 2)
-      LS_W((c + 0xc), 1)
-      LS_W((c + 0xd), 1)
-      LS_W((c + 0x10), 4)
-      LS_W((c + 0x14), 4)
-      LS_W((c + 0x18), 4)
-      LS_W((c + 0x1c), 4)
-      LS_W((c + 0x20), 4)
-      LS_W((c + 0x24), 4)
-      LS_W((c + 0x28), 2)
-      LS_W((c + 0x2c), 4)
-      LS_W((c + 0x30), 0x10)
-      LS_W((c + 0x40), 0x10)
-      LS_W((c + 0x50), 2)
-      cnt = *(int *)((c + 0x54)) + -0x59a;
-      LS_W(&cnt, 4)
-      LS_W((c + 0x58), 1)
-      LS_W((c + 0x5c), 0x20)
-      LS_W((c + 0x7c), 4)
-      LS_W((c + 0x80), 5)
-      LS_W((c + 0x88), 0xa8)
-      LS_W((c + 0x164), 1)
-      LS_W((c + 0x165), 1)
-      LS_W((c + 0x166), 1)
-      LS_W((c + 0x167), 1)
-      LS_W((c + 0x168), 1)
-      LS_W((c + 0x169), 1)
-      if (*(int *)((c + 0x16c)) != 0) {
-        puVar4 = (int *)(*(int *)((c + 0x16c)) + 1);
-      }
-      else {
-        puVar4 = &local_4;
-        local_4 = 0xffffffff;
-      }
-      LS_W(puVar4, 4)
-      if (*(int *)((c + 0x170)) != 0) {
-        puVar4 = (int *)(*(int *)((c + 0x170)) + 1);
-      }
-      else {
-        local_4 = 0xffffffff;
-        puVar4 = &local_4;
-      }
-      LS_W(puVar4, 4)
-      LS_W((c + 0x174), 4)
-      if (*(int *)((c + 0x17c)) != 0) {
-        puVar4 = (int *)(*(int *)((c + 0x17c)) + 4);
-      }
-      else {
-        puVar4 = &local_4;
-        local_4 = 0xffffffff;
-      }
-      LS_W(puVar4, 4)
-      LS_W((c + 0x180), 1)
-      cnt = *(int *)((c + 0x18c)) + -0x639;
-      LS_W(&cnt, 4)
-      LS_W((c + 0x190), 4)
-      LS_W((c + 0x194), 4)
-      LS_W((c + 0x198), 4)
-      LS_W((c + 0x19c), 4)
-      LS_W((c + 0x1a0), 4)
-      LS_W((c + 0x1a4), 4)
-      LS_W((c + 0x1a8), 4)
-      LS_W((c + 0x1ac), 4)
-      LS_W((c + 0x1b0), 1)
-      LS_W((c + 0x1b1), 1)
-      LS_W((c + 0x1b4), 0x10)
-      LS_W((c + 0x1c8), 4)
-      LS_W((c + 0x1cc), 4)
-      LS_W((c + 0x1d0), 4)
-      LS_W((c + 0x1d4), 0x10)
-      LS_W((c + 0x1e4), 4)
-      LS_W((c + 0x1e8), 4)
-      LS_W((c + 0x1ec), 4)
-      LS_W((c + 0x1f0), 4)
-      LS_W((c + 0x1c5), 1)
-      if (*(int **)((c + 0x184)) != 0) {
-        local_8 = **(int **)((c + 0x184));
-      }
-      else {
-        local_8 = 0xffffffff;
-      }
-      LS_W(&local_8, 4)
-      LS_W((c + 0x1f4), 0x18)
-      LS_W((c + 0x210), 4)
-      LS_W((c + 0x214), 1)
-      LS_W((c + 0x215), 1)
-      LS_W((c + 0x216), 1)
-      LS_W((c + 0x217), 1)
-      LS_W((c + 0x218), 1)
+    for (i = 0; i < 8; i++) {
+        tmp = -1;
+        if (ai_KindBChars[i] != 0) {
+            LS_W(&((AICHAR *)ai_KindBChars[i])->netId, 4)
+        } else {
+            LS_W(&tmp, 4)
+        }
     }
-    c = c + 0x21c;
-  } while ((int)c < (int)&ai_Chars[768]);
-  return 1;
+    for (i = 0; i < 768; i++) {
+        c = &ai_CharsT[i];
+        if (c->id != 0xffff) {
+            LS_W(&c->id, 2)
+            LS_W(&c->partyId, 4)
+            LS_W(&c->kind, 1)
+            LS_W(&c->netId, 4)
+            LS_W(&c->health, 1)
+            LS_W(&c->sex, 1)
+            LS_W(&c->w00a, 2)
+            LS_W(&c->b00c, 1)
+            LS_W(&c->b00d, 1)
+            LS_W(&c->f010, 4)
+            LS_W(&c->f014, 4)
+            LS_W(&c->f018, 4)
+            LS_W(&c->f01c, 4)
+            LS_W(&c->f020, 4)
+            LS_W(&c->v024, 4)
+            LS_W(&c->w028, 2)
+            LS_W(&c->v02c, 4)
+            LS_W(c->first, 0x10)
+            LS_W(c->family, 0x10)
+            LS_W(&c->w050, 2)
+            cnt = c->ref54 - 0x59a;
+            LS_W(&cnt, 4)
+            LS_W(&c->b058, 1)
+            LS_W(c->relatives, 0x20)
+            LS_W(&c->f07c, 4)
+            LS_W(c->skills, 5)
+            LS_W(c->mood, 0xa8)
+            LS_W(&c->jobId, 1)
+            LS_W(&c->title, 1)
+            LS_W(&c->officeKind, 1)
+            LS_W(&c->prevOffice, 1)
+            LS_W(&c->appliedOffice, 1)
+            LS_W(&c->secondOffice, 1)
+            if (c->bld != 0) {
+                LS_W(&c->bld->id, 4)
+            } else {
+                tmp = -1;
+                LS_W(&tmp, 4)
+            }
+            if (c->bld2 != 0) {
+                LS_W(&c->bld2->id, 4)
+            } else {
+                tmp = -1;
+                LS_W(&tmp, 4)
+            }
+            LS_W(&c->v174, 4)
+            if (c->job != 0) {
+                LS_W(&c->job->id, 4)
+            } else {
+                tmp = -1;
+                LS_W(&tmp, 4)
+            }
+            LS_W(&c->jobKind, 1)
+            cnt = c->picture - 0x639;
+            LS_W(&cnt, 4)
+            LS_W(&c->v190, 4)
+            LS_W(&c->money, 4)
+            LS_W(&c->spent198, 4)
+            LS_W(&c->wage, 4)
+            LS_W(&c->v1a0, 4)
+            LS_W(&c->v1a4, 4)
+            LS_W(&c->v1a8, 4)
+            LS_W(&c->v1ac, 4)
+            LS_W(&c->b1b0, 1)
+            LS_W(&c->heldRounds, 1)
+            LS_W(&c->flags1b4, 0x10)
+            LS_W(&c->flags1c8, 4)
+            LS_W(&c->flags1cc, 4)
+            LS_W(&c->v1d0, 4)
+            LS_W(c->block1d4, 0x10)
+            LS_W(&c->mood3Rate, 4)
+            LS_W(&c->v1e8, 4)
+            LS_W(&c->goodsMask, 4)
+            LS_W(&c->v1f0, 4)
+            LS_W(&c->b1c5, 1)
+            if (c->scene != 0)
+                model = c->scene->id;
+            else
+                model = -1;
+            LS_W(&model, 4)
+            LS_W(c->ownName, 0x18)
+            LS_W(&c->partner, 4)
+            LS_W(&c->relationBias, 1)
+            LS_W(&c->b215, 1)
+            LS_W(&c->b216, 1)
+            LS_W(&c->b217, 1)
+            LS_W(&c->mask, 1)
+        }
+    }
+    return 1;
 }
 /* 0x51ad30, the index of the action queue entry p in ch_Queue, -1 for NULL (the unsigned byte distance divided by
    sizeof(CHACTION): the original's mul by the reciprocal) */

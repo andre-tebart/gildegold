@@ -175,7 +175,7 @@ typedef struct ORDCHAR {
         };
     };
     int v210;                       /* 0x210, ai.h AICHAR.partner, -1 at creation */
-    signed char unk214;             /* 0x214 */
+    signed char relationBias;       /* 0x214, ai.h AICHAR.relationBias */
     unsigned char b215;             /* 0x215, ai.h AICHAR.b215, the partner search's step counter */
     unsigned char b216;             /* 0x216, ai.h AICHAR.b216, the steps the partner search needs */
     unsigned char b217;             /* 0x217, ai.h AICHAR.b217: one of 0x3c .. 0x5c (or 0xc2) by the kind, the title group and chance (gm_CreateCharacter), a child takes a parent's */

@@ -111,10 +111,10 @@ typedef struct AICHAR {                 /* 0x21c bytes, ai_Chars[768] */
     int v1a0;                           /* 0x1a0, the money of sales from an object of kind 0x1dc / purchases into one of kind
                                            0x1db (cm.c 0x4c70b0) */
     int v1a4;                           /* 0x1a4, the same for sales from 0x1db / purchases into 0x1dc */
-    char pad1a8[4];
+    int v1a8;                           /* 0x1a8, saved and loaded (ls_WriteCharacters); no reader read yet */
     int v1ac;                           /* 0x1ac, a scene object of the fighter (cm.c 0x4d1xxx puts it at the body, shows it and
                                            clears it; the fighter copy cm_AddFighter starts with 0) */
-    char pad1b0;
+    unsigned char b1b0;                 /* 0x1b0, saved and loaded (ls_WriteCharacters); no reader read yet */
     unsigned char heldRounds;           /* 0x1b1, rounds the character is held: message 0x5b (cm.c 0x4ccb10) adds to it, each
                                            round adds 0xff (main.c); nonzero: the AI chooses no new action (ai.c
                                            0x47e360), the character takes no office (amt.c), the player's room click
@@ -135,9 +135,10 @@ typedef struct AICHAR {                 /* 0x21c bytes, ai_Chars[768] */
     char pad1c6[2];
     unsigned int flags1c8;              /* 0x1c8 */
     unsigned int flags1cc;              /* 0x1cc */
-    char pad1d0[0x14];
+    int v1d0;                           /* 0x1d0, saved and loaded (ls_WriteCharacters); no reader read yet */
+    char block1d4[0x10];                /* 0x1d4, saved and loaded as one block (ls_WriteCharacters); no reader read yet */
     float mood3Rate;                    /* 0x1e4, scales the base growth of mood need 3; message 0x1a keeps it in sync */
-    char pad1e8[4];
+    int v1e8;                           /* 0x1e8, saved and loaded (ls_WriteCharacters); no reader read yet */
     unsigned int goodsMask;             /* 0x1ec, the classes of the Domizil goods in use (am.h / lc.c goodsMask: ai_UseGood sets them), cleared for every character at the round start (main_BeginPlayerRound) */
     int v1f0;                         /* 0x1f0, 0 at creation */
     union {
@@ -150,7 +151,7 @@ typedef struct AICHAR {                 /* 0x21c bytes, ai_Chars[768] */
         };
     };
     int partner;                        /* 0x210 */
-    signed char unk214;                 /* 0x214 */
+    signed char relationBias;           /* 0x214, added to the partner's relation memory of the character when the partner search advances (ai_FindPartner 0x47ddf0: the search advances while the sum is > 0); reasoned name */
     unsigned char b215;                 /* 0x215, a step counter of the partner search (ai_FindPartner: 0 when a partner is picked, advanced towards b216); reasoned */
     unsigned char b216;                 /* 0x216, the steps the partner search needs (ai_FindPartner: from the liking, clamped by ai_Difficulty); reasoned */
     unsigned char b217;                 /* 0x217, sent as field 0x218 when the partner search is done (ai_FindPartner) */
