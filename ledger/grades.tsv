@@ -772,7 +772,7 @@ exe	0x0043ce10	d3_InitSurf	d3_engine	byte	readable
 exe	0x0043ce60	d3_InitObject	d3_engine	shape	readable		
 exe	0x0043cfb0	d3_AddObjectDrawData	d3_engine	byte	readable		
 exe	0x0043d0e0	d3_Unlink	d3_engine	byte	readable		
-exe	0x0043d180	d3_CloneObject	d3_engine	byte	draft	deep	
+exe	0x0043d180	d3_CloneObject	d3_engine	shape	draft	deep	
 exe	0x0043d430	d3_SetObjectAlpha	d3_engine	shape	readable	deep	
 exe	0x0043d630	d3_SetAlphaCB	d3_engine	byte	readable		
 exe	0x0043d690	d3_SetAlpha	d3_engine	byte	readable		
@@ -1466,17 +1466,17 @@ exe	0x0047f700	ai_EvaluateProductionFlags	ai	draft	readable	deep
 exe	0x004801f0	ai_EvaluateProductionCategory2	ai	draft	readable	deep	
 exe	0x00480e70	ai_CalcMeisterWache	ai	draft	readable	deep	
 exe	0x004817a0	ai_CalcAngriff	ai	draft	readable	deep	
-exe	0x00481ef0	ai_CalcMeisterDiebe	ai	draft	draft		
+exe	0x00481ef0	ai_CalcMeisterDiebe	ai	draft	readable	deep	
 exe	0x00482f00	ai_CalcMeisterRaeuber	ai	draft	readable	deep	
 exe	0x004836a0	ai_CalcMeisterBank	ai	byte	draft	deep	
 exe	0x00483a60	ai_Unk483a60	ai	shape	draft	deep	byte+draft -> shape+draft at c0993bbb: ai_bld.h types AIBLD.workSet as the AIWORKSET record (flags / budget / prod / target, what cm_ExHire copies into AICHAR.flags1b4 .. target and ls_ReadBuildings sets) instead of char[0x10]; ai_Unk483a60 never touches workSet, only its two stack slots swap (slots 12, the same code otherwise) under the changed declaration of AIBLD, so its byte match was no evidence of the original's source [waits for: the declaration set of ai.c's includes (ai.h > ai_bld.h), match-deep on the slot order]
 exe	0x00483d30	ai_StartBuildingWork	ai	shape	readable		
 exe	0x00483ee0	ai_EndWorkerPose	ai	byte	readable		
-exe	0x00483fc0	ai_Unk483fc0	ai	draft	draft		
-exe	0x00484a60	ai_Unk484a60	ai	draft	draft		
-exe	0x004854f0	ai_UpdateProduction	ai	draft	draft		
-exe	0x00486190	ai_FillSlotTable	ai	draft	draft		
-exe	0x004864b0	ai_BuildTradeOffers	ai	draft	draft		
+exe	0x00483fc0	ai_EvaluateProductionGraveyard	ai	draft	readable	deep	
+exe	0x00484a60	ai_EvaluateProductionGypsies	ai	draft	readable	deep	
+exe	0x004854f0	ai_UpdateProduction	ai	draft	readable	deep	
+exe	0x00486190	ai_FillSlotTable	ai	draft	readable	deep	
+exe	0x004864b0	ai_BuildTradeOffers	ai	draft	readable	deep	
 exe	0x00487040	ai_CalcEntryCost	ai	byte	readable		
 exe	0x00487180	ai_HasMaterials	ai	draft	readable	deep	
 exe	0x00487410	ai_StartProduction	ai	draft	readable	deep	
@@ -1487,13 +1487,13 @@ exe	0x00487fb0	ai_BuyUpgrade	ai	draft	readable	deep
 exe	0x004884b0	ai_BuySlots	ai	byte	readable		
 exe	0x00488740	ai_BuyCapacity	ai	byte	readable		
 exe	0x004888c0	ai_FreeJobCharacters	ai	byte	readable		
-exe	0x004889f0	ai_SendJobOrders	ai	draft	draft		
+exe	0x004889f0	ai_SendJobOrders	ai	draft	readable	deep	
 exe	0x00489300	ai_CheckFreeThieves	ai	byte	readable		
 exe	0x00489480	ai_CheckFreeStaff	ai	byte	readable		
 exe	0x00489660	ai_SendFreeThieves	ai	byte	readable		
 exe	0x00489870	ai_SendFreeSpies	ai	draft	readable	deep	
 exe	0x00489a70	ai_MeisterBewaffnen	ai	byte	readable		
-exe	0x00489cb0	ai_MeisterCollectTrans	ai	draft	draft		
+exe	0x00489cb0	ai_MeisterCollectTrans	ai	draft	readable	deep	
 exe	0x0048a380	ai_UnloadCarts	ai	shape	readable		
 exe	0x0048a4d0	ai_MeisterTrade	ai	draft	draft		
 exe	0x0048bc80	ai_MeisterTradeAllgemein	ai	draft	draft		
@@ -4004,7 +4004,7 @@ exe	0x00578440	ai_TutorialFreeRuns	sv_t	byte	readable
 exe	0x005784a0	ai_TutorialInitMainIntro	sv_t	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	sv_t	byte	readable		
 exe	0x00578e40	ai_TutorialInitChapter2	sv_t	shape	readable		byte+readable -> shape+readable at 8089cb0d: promote --accept-falls
-exe	0x00579570	ai_TutorialInitChapter3	sv_t	shape	readable		
+exe	0x00579570	ai_TutorialInitChapter3	sv_t	draft	readable		
 exe	0x0057aa80	ai_TutorialInitChapter4	sv_t	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	sv_t	byte	readable		
 exe	0x0057b750	ai_TutorialInitMainOutro	sv_t	byte	readable		

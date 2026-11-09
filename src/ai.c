@@ -1,7 +1,7 @@
 /* ai.c -- the AI unit (0x47d9e0..0x48e070): the character update (needs / mood, 0x47dab0), the partner search
    and the per-frame loop over the 768 characters (0x47e560), the dispatcher that runs a master's evaluation by
    building kind (0x47e990), and the masters' evaluations: the production masters (0x47edb0, 0x47f700, 0x4801f0,
-   0x483fc0, 0x484a60), ai_CalcMeisterWache (0x480e70), ai_CalcAngriff (0x4817a0), ai_CalcMeisterDiebe (0x481ef0),
+   the graveyard 0x483fc0 and the gypsy camp 0x484a60), ai_CalcMeisterWache (0x480e70), ai_CalcAngriff (0x4817a0), ai_CalcMeisterDiebe (0x481ef0),
    ai_CalcMeisterRaeuber (0x482f00), the bank master (0x4836a0), the entry / slot tables (0x4854f0 .. 0x487ea0),
    the purchases and the order dispatcher (0x487fb0 .. 0x489870), ai_MeisterBewaffnen (0x489a70),
    ai_MeisterCollectTrans (0x489cb0), ai_MeisterTrade / ai_MeisterTradeAllgemein (0x48a4d0, 0x48bc80) and
@@ -10,7 +10,7 @@
    literals 0x5fef0c..0x5ffd18 follow the function order without a new data block; 0x5ffd1c starts the next obj.
    Names are ours except the ones taken from the strings.
    Open: ai_types.h's AIMSG / AIJOB declarations are shared with sv_t.c, whose tutorial builders flip their VC6
-   tie-break when a member is added (debt ai_TutorialInitChapter2, ai_TutorialInitChapter3); ai_Unk483a60's slot match
+   tie-break when a member is added (debt ai_TutorialInitChapter2, ai_TutorialInitChapter3; d3_CloneObject moves too); ai_Unk483a60's slot match
    was lost the same way (debt, to AIMSG.payment).
    Open: AIOBJ.unk1c (a building id in the trade code, a count / level elsewhere) - its rename across units is undecided.
    unit of rea 8cef7d5b (src/game/ai.c); boundaries in decl/text.dcl */
