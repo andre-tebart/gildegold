@@ -4,7 +4,7 @@
    Extent in GildeGold.exe: 0x4315c0 (after vfs_Exit) .. 0x4359f0, where d3_d3d.c starts.
    Functions are kept in their original order. Names are ours.
    Open: D3MATERIAL+0xf4 is the animation control block (read here through the local D3ANIMMATV view); typing it
-   in d3.h moves d3_Unk4550e0 by 8 bytes. D3OBJECT.path (0x1d0) is typed in d3.h and d3anim_CreatePath uses it,
+   in d3.h moves d3_Unk4550e0 by 8 bytes. D3OBJECT.path (0x1d0) is typed in d3.h and d3anim_CreatePath and d3anim_FreePath use it,
    the other path users still go through the D3_OBJPATH raw cast.
    unit of rea 8cef7d5b (src/game/d3_anim.c); boundaries in decl/text.dcl */
 #include <stdio.h>
