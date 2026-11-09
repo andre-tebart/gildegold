@@ -1336,7 +1336,19 @@ check:
    in his building) and, when at least half are free, picks one of: an attack (ai_CalcAngriff), a patrol in the
    town (message 0x43 to the best-rated grid cell's building of kind 6 he likes best, up to four guards), a check of
    a workshop there (message 100, one guard) or a patrol of the surroundings (message 0x65 to one of the eight
-   ai_AmbushSpots, up to six guards, at least two) */
+   ai_AmbushSpots, up to six guards, at least two)
+   @deep Read whole against the original 0x480e70..0x481794 and rewritten statement for statement (702 vs
+   702 instructions): the dispatch, the four branches, every call, constant, string, message field (types
+   0x43 / 100 / 0x65, flags, arg[] / ids[] slots, patrolRoll), the member searches and the -1 fills (rep
+   stosd) match. Left, all allocation / layout: (1) the town-patrol member loop: the original keeps ch in
+   ebx and 0xffff in ebp (cmp word [eax-0x165], bp), ours reloads ch from the parameter and compares the
+   immediate (+0x4d2..+0x4ba, 15 + 3 lines); the workshop check holds ch in edi and guard in ebx where ours
+   swaps them (+0x64e, +0x6f8); (2) the shared send tail: the original's town patrol (cmp [msg.arg+0x18],
+   -1) jumps into the workshop check's je / cm_SendLongMessage / epilogue at +0x767, ours keeps it inline
+   at +0x4da and cross-jumps the check into it (tail 38, the 7 branch-target lines); (3) the grid best-cell
+   compare computes the cell's value before the best's (ours mov si,[eax] vs the original mov si,[ebx],
+   +0x2a7 / +0x52c) and the gx / gy slot pair of ord_GetGridCell is swapped (+0x2ff, +0x5a1); (4) the gx =
+   gy = 8 store order (order hunks). */
 
 void ai_CalcMeisterWache(AICHAR *ch)
 {
