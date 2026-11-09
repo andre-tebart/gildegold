@@ -2428,22 +2428,41 @@ void sv_BorderCameraView(void)
    elapsed ms, at most 4) up to +-50, decay to 0 otherwise; d2_PointerLook gets the direction (1 .. 8, 5 .. 8
    the corners). The camera moves by the velocities rotated into the view (by the view's heading, or by the
    matrix rows when it looks straight down), slower inside a building, clamped to the height map 20 cells in,
-   unless the move equals the last one (sv_ScrollLastMove). Returns 1 when the camera moved @deep read whole against 0x5263a0..0x526ce2 (571 vs 579 instructions): the look 1..8 test, dt from the clock (1.0f first frame, min(dt, 4.0)), the border/key/corner speed ramps with their double 50/-50 bounds, both decays (x > 0 .. else x < 0), the building slow-down, k = speed * dt * (factor*1.5 + 0.6), the AxisPair rows, both branches with their dead dst stores, the clamp (x: < lo / else > hi; z: max(hi) / min(lo)) all match. Left, allocation and layout: the angle a kept in a register where the original stores and reloads it (0x526b36 fstp/fld, fld [esp] before fcos), fwd[2] kept with fst where the original stores and reloads (0x526aaa), the 0.1 bound compared as a double literal vs the original's float at 0x5eb91c, the x-decay block placed before the left/right bodies (ours 0x526820) where the original puts it after them (0x5268c4), one register (ecx vs edx at 0x526ad6), frame 0x74 vs 0x80 */
+   unless the move equals the last one (sv_ScrollLastMove). Returns 1 when the camera moved
+   @stuck deep pass: 146 -> 30 ins (1630 -> 252 bytes), frame now 0x80 like the original. Earlier: read
+   whole and reconstructed (look test, dt, ramps, decays, slow-down, AxisPair rows, dead dst stores,
+   clamp); tried keeping a / fwd[2] / 0.1 / block layout without success. This pass: the move flags are two
+   (xmoved / ymoved, the corners set both, the decays are 'if (!xmoved)' / 'if (!ymoved)' after one flat
+   else-if chain: the original's block order up, down, right, left, x decay, y decay); (float)sqrt(..) <
+   0.1f (the float 0.1 compare, also in sv_MouseCamera); dst / v / fwd are 4-float vectors (the 16-byte
+   holes of the 0x80 frame); dst[0] = v[0] after the two branches (the original's dead store); no sn / cs
+   locals (sin(a) / cos(a) at the uses: a spilled and reloaded as in the original); fwd[1] = 0 between
+   fwd[2] and the sqrt (the fstp/fld of fwd[2]); f = 5.0 * dt without the cast; init order xmoved, ymoved,
+   moved. Left (asmdiff): (1) the d3_VecEqual call: the original pushes its arguments before storing dst[0]
+   ('+ lea edx,[esp+0x10] / push 0x3dcccccd / push edx / push sv_ScrollLastMove / fstp [esp+0x1c] / mov
+   ecx,[eax+0x50]'), ours after dst[1] ('- push 0x3dcccccd / fstp [esp+0x14] / mov edx,[eax+0x50] / ... /
+   lea eax,[esp+0x14] / push eax / push X'); (2) register rotation: down branch 'mov ecx,[esp+0x34]' vs the
+   original's edx, the VecAngle2 argument 'lea edx' vs 'lea eax', dst[2] = v[1] via eax vs edx,
+   d3_DefaultScene loaded into ecx vs eax. Tried (no effect or worse): dst statement orders (1,0,2 /
+   0,2,1), camera field first in the sums, !d3_VecEqual, casts / &dst[0] on the call, D3VECTOR4 structs for
+   dst / v / fwd (identical code), double sn/cs/a, a 3-term sqrt, the other orders of ScrollTime / my / f.
+   (tiebreak: not measured (dcp headers sample sv_ScrollCamera)) */
 
 int sv_ScrollCamera(void)
 {
     int moved, my;
     float dt;                       /* the frame time factor, at most 4 */
     float k, f;
-    float pos[3], dst[3], v[3], right[16], fwd[3];   /* right is a D3MATRIX: d3_MatTranspose writes 0x40 bytes */
-    float a, sn, cs;
+    float dst[4], v[4], right[16], fwd[4];   /* right is a D3MATRIX: d3_MatTranspose writes 0x40 bytes */
+    float a;
     D3SM *hm;                       /* the scene's height map */
     float lo, hi;
-    int dirs;
+    int xmoved, ymoved;
     const float *ax = (const float *)&d3_ZAxis;
 
+    xmoved = 0;
+    ymoved = 0;
     moved = 0;
-    dirs = 0;
     if ((unsigned short)d2_PointerLook >= 1 && (unsigned short)d2_PointerLook <= 8)
         d2_PointerLook = 0;
     if (d3t_CamMove != 0 || d3t_CamMoving != 0)
@@ -2455,7 +2474,7 @@ int sv_ScrollCamera(void)
     dt = min(dt, 4.0);
     sv_ScrollTime = d3_Time;
     my = dm_L.y;
-    f = (float)(5.0 * dt);
+    f = 5.0 * dt;
     if ((my == di_MinY && dm_L.x < di_MinX + 0x40) || (my < di_MinY + 0x40 && dm_L.x == di_MinX)) {
         if (sv_ScrollVelY == 0.0f)
             sv_ScrollVelY = 10.0f;
@@ -2466,6 +2485,8 @@ int sv_ScrollCamera(void)
         if (-50.0 < sv_ScrollVelX)
             sv_ScrollVelX -= f;
         d2_PointerLook = 5;
+        xmoved = 1;
+        ymoved = 1;
     } else if ((my == di_MinY && dm_L.x > di_MaxX - 0x40) || (my < di_MinY + 0x40 && dm_L.x == di_MaxX)) {
         if (sv_ScrollVelY == 0.0f)
             sv_ScrollVelY = 10.0f;
@@ -2476,6 +2497,8 @@ int sv_ScrollCamera(void)
         if (sv_ScrollVelX < 50.0)
             sv_ScrollVelX += f;
         d2_PointerLook = 6;
+        xmoved = 1;
+        ymoved = 1;
     } else if ((my == di_MaxY && dm_L.x > di_MaxX - 0x40) || (my > di_MaxY - 0x40 && dm_L.x == di_MaxX)) {
         if (sv_ScrollVelY == 0.0f)
             sv_ScrollVelY = -10.0f;
@@ -2486,6 +2509,8 @@ int sv_ScrollCamera(void)
         if (sv_ScrollVelX < 50.0)
             sv_ScrollVelX += f;
         d2_PointerLook = 8;
+        xmoved = 1;
+        ymoved = 1;
     } else if ((my == di_MaxY && dm_L.x < di_MinX + 0x40) || (my > di_MaxY - 0x40 && dm_L.x == di_MinX)) {
         if (sv_ScrollVelY == 0.0f)
             sv_ScrollVelY = -10.0f;
@@ -2496,47 +2521,49 @@ int sv_ScrollCamera(void)
         if (-50.0 < sv_ScrollVelX)
             sv_ScrollVelX -= f;
         d2_PointerLook = 7;
-    } else {
-        if (dm_L.x == di_MinX || kb_Down[0xcb] != 0) {
-            if (sv_ScrollVelX == 0.0f)
-                sv_ScrollVelX = -10.0f;
-            if (-50.0 < sv_ScrollVelX)
-                sv_ScrollVelX -= f;
-            d2_PointerLook = 4;
-        } else if (dm_L.x == di_MaxX || kb_Down[0xcd] != 0) {
-            if (sv_ScrollVelX == 0.0f)
-                sv_ScrollVelX = 10.0f;
-            if (sv_ScrollVelX < 50.0)
-                sv_ScrollVelX += f;
-            d2_PointerLook = 3;
-        } else {
-            if (my == di_MaxY || kb_Down[0xd0] != 0) {
-                if (sv_ScrollVelY == 0.0f)
-                    sv_ScrollVelY = -10.0f;
-                if (-50.0 < sv_ScrollVelY)
-                    sv_ScrollVelY -= f;
-                dirs = 1;
-                d2_PointerLook = 1;
-            } else if (my == di_MinY || kb_Down[0xc8] != 0) {
-                if (sv_ScrollVelY == 0.0f)
-                    sv_ScrollVelY = 10.0f;
-                if (sv_ScrollVelY < 50.0)
-                    sv_ScrollVelY += f;
-                dirs = 1;
-                d2_PointerLook = 2;
-            }
-            if (sv_ScrollVelX > 0.0f) {          /* the x speed decays to 0 */
-                sv_ScrollVelX -= f;
-                if (sv_ScrollVelX < 0.0f)
-                    sv_ScrollVelX = 0.0f;
-            } else if (sv_ScrollVelX < 0.0f) {
-                sv_ScrollVelX += f;
-                if (sv_ScrollVelX > 0.0f)
-                    sv_ScrollVelX = 0.0f;
-            }
-            if (dirs)
-                goto scroll;
+        xmoved = 1;
+        ymoved = 1;
+    } else if (dm_L.x == di_MinX || kb_Down[0xcb] != 0) {
+        if (sv_ScrollVelX == 0.0f)
+            sv_ScrollVelX = -10.0f;
+        if (-50.0 < sv_ScrollVelX)
+            sv_ScrollVelX -= f;
+        d2_PointerLook = 4;
+        xmoved = 1;
+    } else if (dm_L.x == di_MaxX || kb_Down[0xcd] != 0) {
+        if (sv_ScrollVelX == 0.0f)
+            sv_ScrollVelX = 10.0f;
+        if (sv_ScrollVelX < 50.0)
+            sv_ScrollVelX += f;
+        d2_PointerLook = 3;
+        xmoved = 1;
+    } else if (my == di_MaxY || kb_Down[0xd0] != 0) {
+        if (sv_ScrollVelY == 0.0f)
+            sv_ScrollVelY = -10.0f;
+        if (-50.0 < sv_ScrollVelY)
+            sv_ScrollVelY -= f;
+        ymoved = 1;
+        d2_PointerLook = 1;
+    } else if (my == di_MinY || kb_Down[0xc8] != 0) {
+        if (sv_ScrollVelY == 0.0f)
+            sv_ScrollVelY = 10.0f;
+        if (sv_ScrollVelY < 50.0)
+            sv_ScrollVelY += f;
+        ymoved = 1;
+        d2_PointerLook = 2;
+    }
+    if (!xmoved) {
+        if (sv_ScrollVelX > 0.0f) {          /* the x speed decays to 0 */
+            sv_ScrollVelX -= f;
+            if (sv_ScrollVelX < 0.0f)
+                sv_ScrollVelX = 0.0f;
+        } else if (sv_ScrollVelX < 0.0f) {
+            sv_ScrollVelX += f;
+            if (sv_ScrollVelX > 0.0f)
+                sv_ScrollVelX = 0.0f;
         }
+    }
+    if (!ymoved) {
         if (sv_ScrollVelY > 0.0f) {              /* the y speed decays to 0 */
             sv_ScrollVelY -= f;
             if (sv_ScrollVelY < 0.0f)
@@ -2547,7 +2574,6 @@ int sv_ScrollCamera(void)
                 sv_ScrollVelY = 0.0f;
         }
     }
-scroll:
     if (d3_Camera != 0 && (sv_ScrollVelX != 0.0f || sv_ScrollVelY != 0.0f)) {
         if (ai_FallbackBuilding != 0)
             dt *= 0.5;
@@ -2556,24 +2582,23 @@ scroll:
         k = (float)(sv_ScrollSpeed * dt * (sv_CameraHeightFactor * 1.5 + 0.6000000238418579));
         d3_MatTranspose(&d3_Camera->matrix, right);
         v[0] = sv_ScrollVelX * k * 1.1;
-        fwd[1] = 0.0f;
         v[1] = sv_ScrollVelY * k * 1.1;
         fwd[0] = right[0] * ax[0] + right[4] * ax[1] + right[8] * ax[2];
         fwd[2] = right[2] * ax[0] + right[6] * ax[1] + right[10] * ax[2];
-        if (sqrt(fwd[0] * fwd[0] + fwd[2] * fwd[2]) < 0.1f) {   /* the view looks straight down: the matrix rows (0x526ac2) */
+        fwd[1] = 0.0f;
+        if ((float)sqrt(fwd[0] * fwd[0] + fwd[2] * fwd[2]) < 0.1f) {   /* the view looks straight down: the matrix rows (0x526ac2) */
             dst[1] = v[1];
             dst[2] = 0.0f;
             fwd[0] = 0.0f * right[8] + v[0] * right[0] + v[1] * right[4];
             fwd[2] = 0.0f * right[10] + v[0] * right[2] + v[1] * right[6];
         } else {                                                /* else rotated by the view's heading */
             a = -d3_VecAngle2((char *)&d3_ZAxis, fwd);
-            sn = (float)sin(a);
             dst[1] = 0.0f;
             dst[2] = v[1];
-            cs = (float)cos(a);
-            fwd[0] = sn * v[1] + cs * v[0];
-            fwd[2] = cs * v[1] - sn * v[0];
+            fwd[0] = v[0] * cos(a) + v[1] * sin(a);
+            fwd[2] = v[1] * cos(a) - v[0] * sin(a);
         }
+        dst[0] = v[0];
         fwd[1] = 0.0f;
         dst[0] = fwd[0] + d3_Camera->pos.x;
         dst[1] = d3_Camera->pos.y;
@@ -2756,7 +2781,7 @@ go:
                 v[1] = -(dm_P.y - sv_DragLastY) * k;
                 fwd[0] = right[0] * ax[0] + right[4] * ax[1] + right[8] * ax[2];
                 fwd[2] = right[2] * ax[0] + right[6] * ax[1] + right[10] * ax[2];
-                if (sqrt(fwd[0] * fwd[0] + fwd[2] * fwd[2]) < 0.1f) {   /* the view looks straight down: the matrix rows (0x527386) */
+                if ((float)sqrt(fwd[0] * fwd[0] + fwd[2] * fwd[2]) < 0.1f) {   /* the view looks straight down: the matrix rows (0x527386) */
                     dst[1] = v[1];
                     dst[2] = 0.0f;
                     fwd[0] = 0.0f * right[8] + v[0] * right[0] + v[1] * right[4];
