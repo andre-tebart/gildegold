@@ -752,9 +752,9 @@ exe	0x0043b7f0	d3_SetObjectPosXYZ	d3_engine	byte	readable
 exe	0x0043b820	d3_SetObject078	d3_engine	byte	readable		
 exe	0x0043b860	d3_SetObjectRot	d3_engine	byte	readable		
 exe	0x0043b920	d3_SetObjectRotXYZ	d3_engine	byte	readable		
-exe	0x0043b950	d3_SetViewport	d3_engine	byte	draft	deep	
+exe	0x0043b950	d3_SetViewport	d3_engine	byte	readable		
 exe	0x0043bb70	d3_SetHardwareMode	d3_engine	byte	readable		
-exe	0x0043bc20	d3_Init	d3_engine	byte	draft	deep	
+exe	0x0043bc20	d3_Init	d3_engine	byte	readable		
 exe	0x0043c240	d3_Shutdown	d3_engine	byte	readable		
 exe	0x0043c4e0	d3_ApplyGraphicsOptions	d3_engine	byte	readable		
 exe	0x0043c570	d3_SpawnObject	d3_engine	byte	readable		
@@ -772,7 +772,7 @@ exe	0x0043ce10	d3_InitSurf	d3_engine	byte	readable
 exe	0x0043ce60	d3_InitObject	d3_engine	shape	readable		
 exe	0x0043cfb0	d3_AddObjectDrawData	d3_engine	byte	readable		
 exe	0x0043d0e0	d3_Unlink	d3_engine	byte	readable		
-exe	0x0043d180	d3_CloneObject	d3_engine	shape	draft	deep	
+exe	0x0043d180	d3_CloneObject	d3_engine	byte	readable		
 exe	0x0043d430	d3_SetObjectAlpha	d3_engine	shape	readable	deep	
 exe	0x0043d630	d3_SetAlphaCB	d3_engine	byte	readable		
 exe	0x0043d690	d3_SetAlpha	d3_engine	byte	readable		
@@ -789,7 +789,7 @@ exe	0x0043e090	d3_ReloadMeshes	d3_engine	byte	readable
 exe	0x0043e110	d3_ToggleRLightCB	d3_engine	byte	readable		
 exe	0x0043e180	d3_SetRLights	d3_engine	byte	readable		
 exe	0x0043e1b0	d3_EndFrame	d3_engine	byte	readable		
-exe	0x0043e200	d3_Render	d3_engine	byte	draft	deep	
+exe	0x0043e200	d3_Render	d3_engine	byte	readable		
 exe	0x0043e4d0	d3_Animate	d3_engine	shape	readable	deep	
 exe	0x0043e680	d3_Frame	d3_engine	byte	readable		
 exe	0x0043e6b0	d3e_DefaultResolve	d3_engine	byte	readable		
@@ -884,7 +884,7 @@ exe	0x00449d80	d3_ScaleLightCB	d3_interface	byte	readable
 exe	0x00449da0	d3_SetLightKeyCB	d3_interface	byte	readable		
 exe	0x00449de0	d3_SetLightSet	d3_interface	byte	readable		
 exe	0x0044a170	d3_SetFogSet	d3_interface	byte	readable		
-exe	0x0044a2c0	d3_WriteObject	d3_interface	byte	draft	deep	
+exe	0x0044a2c0	d3_WriteObject	d3_interface	byte	readable		
 exe	0x0044a770	d3_WriteMap	d3_interface	byte	readable		
 exe	0x0044a9e0	d3_SceneVersion	d3_interface	byte	readable		
 exe	0x0044aa10	d3_SaveScene	d3_interface	byte	readable		
@@ -1878,8 +1878,8 @@ exe	0x004afc30	ai_TokenRandomPlayer	hst	draft	readable	deep
 exe	0x004afdd0	ai_CommandFest	hst	draft	readable	deep	
 exe	0x004afe80	ai_CommandSiegeStart	hst	byte	readable		
 exe	0x004aff30	ai_CommandUprising	hst	shape	readable		
-exe	0x004affc0	ai_CommandFire	hst	byte	draft	deep	
-exe	0x004b0050	ai_CommandTornado	hst	byte	draft	deep	
+exe	0x004affc0	ai_CommandFire	hst	byte	readable		
+exe	0x004b0050	ai_CommandTornado	hst	byte	readable		
 exe	0x004b00e0	ai_CommandCityTreasury	hst	shape	readable		
 exe	0x004b02a0	ai_CommandWealthTax	hst	shape	readable	deep	
 exe	0x004b0360	ai_CommandWealth	hst	byte	readable		
@@ -3249,7 +3249,7 @@ exe	0x005190a0	ls_GetLanguage	ls	byte	readable
 exe	0x005190b0	ls_SaveGame	ls	draft	readable	deep	
 exe	0x005194c0	ls_WriteSaveHeader	ls	byte	readable		
 exe	0x00519a00	ls_RefsToIds	ls	shape	readable		
-exe	0x00519aa0	ls_IdsToRefs	ls	byte	draft	deep	
+exe	0x00519aa0	ls_IdsToRefs	ls	byte	readable		
 exe	0x00519b50	ls_RelinkScene	ls	shape	readable		
 exe	0x00519bf0	ls_WriteObjects	ls	shape	readable		
 exe	0x00519d20	ls_WriteBuildings	ls	byte	readable		
@@ -3273,7 +3273,7 @@ exe	0x0051c950	ls_LoadGame	ls	byte	readable
 exe	0x0051cee0	ls_ReadSaveHeader	ls	draft	readable	deep	
 exe	0x0051d2d0	ls_LoadScene	ls	draft	readable	deep	
 exe	0x0051d3d0	ls_ReadObjects	ls	byte	readable		
-exe	0x0051d4f0	ls_HookBuildingCB	ls	byte	draft	deep	
+exe	0x0051d4f0	ls_HookBuildingCB	ls	byte	readable		
 exe	0x0051d530	ls_ClearObjectFlag	ls	byte	readable		
 exe	0x0051d550	ls_ReadBuildings	ls	byte	readable		
 exe	0x0051db00	ls_ReadPlayerRecords	ls	byte	readable		
@@ -4004,7 +4004,7 @@ exe	0x00578440	ai_TutorialFreeRuns	sv_t	byte	readable
 exe	0x005784a0	ai_TutorialInitMainIntro	sv_t	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	sv_t	byte	readable		
 exe	0x00578e40	ai_TutorialInitChapter2	sv_t	shape	readable		byte+readable -> shape+readable at 8089cb0d: promote --accept-falls
-exe	0x00579570	ai_TutorialInitChapter3	sv_t	draft	readable		
+exe	0x00579570	ai_TutorialInitChapter3	sv_t	shape	readable		
 exe	0x0057aa80	ai_TutorialInitChapter4	sv_t	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	sv_t	byte	readable		
 exe	0x0057b750	ai_TutorialInitMainOutro	sv_t	byte	readable		
