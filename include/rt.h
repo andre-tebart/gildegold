@@ -98,6 +98,7 @@ RTPOINT *rt_PointAt(RTPOINT *p, int n);
 int rt_PointCount(RTPOINT *p);
 void rt_ClearMarkGroup(void);
 void rt_BuildMarkGroup(void);
+struct LCMAPWIN;
 int rt_PutRouteMark(struct LCMAPWIN *win, int cart, RTPOINT *list, RTPOINT *p);
 void rt_MarkValue(RTMARK *m);
 void rt_ReadMarkValues(void);
