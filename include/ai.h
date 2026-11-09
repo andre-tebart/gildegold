@@ -55,7 +55,8 @@ typedef struct AIENTRY {                /* 0x58 bytes, ai_Entries[32]: a good th
     int sellAmount;                     /* 0x44, the units of the entry to sell this round (ai_MeisterTrade sets it from amount, 0 = none; the log "Verkauf von %li Einheiten") */
     int rank;                           /* 0x48, position after sorting (0x21 until ranked) */
     int buyAmount;                      /* 0x4c, how many to buy (min of the entry's amount and its space) */
-    int unk50;                          /* 0x50 */
+    int buyerCapacity;                  /* 0x50, the free capacity for the good in the buyer's store (gm_FreeCapacity of
+                                           the shop / market store, ai_BuildTradeOffers); caps buyAmount */
     unsigned int flags;                 /* 0x54 */
 } AIENTRY;
 
@@ -79,7 +80,8 @@ typedef struct AISLOT {                 /* 0x40 bytes, ai_Slots[128]: a good the
 int capacity;                    /* 0x2c, the upper bound of pieces (make is clamped to it) */
     int rank;                           /* 0x30, position after sorting (0x81 until ranked) */
     int buyAmount;                      /* 0x34, how many to buy: min (capacity, the entry's other store, budget / 4 / price) */
-    int unk38;                          /* 0x38 */
+    int sellerAmount;                   /* 0x38, the pieces of the good in the seller's store (gm_ListAmountById of the
+                                           shop / workshop store, ai_BuildTradeOffers) */
     unsigned int flags;                 /* 0x3c */
 } AISLOT;
 

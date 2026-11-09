@@ -3311,8 +3311,28 @@ void ai_FillSlotTable(AICHAR *ch, AIOBJ *obj)
    the running jobs (he_FindEvent 0xb) add their in goods against the entries' stock (AIENTRY.pending) and the
    slots' pending pieces and their out goods likewise; then each slot's amount = min (its capacity, the entry's
    other-store capacity, budget / 4 / price), each entry's amount = min (amount, the other store's capacity), and
-   both tables are selection-sorted by amount * sort key, the result positions kept in AIENTRY.unk48 /
-   AISLOT.unk30 */
+   both tables are selection-sorted by amount * sort key, the result positions kept in AIENTRY.rank /
+   AISLOT.rank
+   @deep Read whole against the original 0x4864b0..0x487035 and fixed: the shop and market price
+   differences kept as one float in the FPU across the search (margin = gm_GoodsPrice - gm_ItemPrice, the
+   original's fsub [esp+0x18] / fcom / fstp), the slot limit as i >= 0x80 (cmp 0x80 / jge), the kind 2
+   price as gm_GoodsPrice * bld->priceRate * 0.01f (fimul [bld+0x45] / fmul dword 0.01), the building walk
+   as do { ...; k++; bld = &ai_BldsT[k]; } while (k < 256) (the original's latch off += 0xa9 / lea bld),
+   the input search as !found && k < 3, the entry buyAmount as min(buyerCapacity, amount). Readability:
+   AIBLD.playerSlot (the kind 0x47 shop's player, was unk65), AIBLD.saved45 -> priceRate (its only reader),
+   AISLOT.unk38 -> sellerAmount, AIENTRY.unk50 -> buyerCapacity, an AISLOT temporary instead of the AIENTRY
+   cast. 276 -> 152 differing, 862 = 862 instructions, every call, constant and field the same. Left is
+   scheduling and allocation: the order of the record stores in the four fill blocks (+0x115, +0x2f2,
+   +0x371, +0x520: item / bld / fstp interleaved otherwise), the gm_Query argument pushes of the kind 2
+   store at +0x43a, the not-found saving = -1e6 tail the original shares at +0x7ad, and slot rotations of
+   the float temporaries ([esp+0x14] / [0x1c], [0x18] / [0x1c]). (size: 3 of the instruction difference are
+   shared / inline tails) (references: M8 at +0x30a: ours refers to ai_Entries+0x4 (0xf88a44), the
+   original's field to 0xf88a54 (ai_Entries+0x14) (and 1 more), explained: the two M8 lines are the new
+   entry's stores in the shop part (+0x2f2..+0x33b): both sides store item, slot[0..3] = -1, margin, bld,
+   store, sellAmount, cost, pending, rank, flags at the same fields; VC6 schedules our fstp margin before
+   the slot stores and the item after them, the original item / slots / margin, so the alignment pairs each
+   store with another field of the same record (moving the margin assignment anywhere in the source block
+   gives identical code)) */
 
 void ai_BuildTradeOffers(AICHAR *ch, AIOBJ *store, int f)
 {
@@ -3324,7 +3344,8 @@ void ai_BuildTradeOffers(AICHAR *ch, AIOBJ *store, int f)
     void *p;
     AIRECIPE rec;
     AIENTRY etmp;
-    int i, j, k, m, off, found;
+    AISLOT stmp;
+    int i, j, k, m, found;
     float price, diff;
 
     ai_NEntries = 0;
@@ -3334,9 +3355,9 @@ void ai_BuildTradeOffers(AICHAR *ch, AIOBJ *store, int f)
             o = gm_Query(bld->objList, 2, 0, 0x1db, 6);
             if (o) {
                 for (it = gm_Query(o->list, 1, 5); it; it = gm_QueryNext()) {
-                    q = gm_FindGoods(bld->unk65, it->id);
+                    q = gm_FindGoods(bld->playerSlot, it->id);
                     if (q && q[1]) {
-                        price = gm_GoodsPrice(it->id, (unsigned char)bld->unk65);
+                        price = gm_GoodsPrice(it->id, (unsigned char)bld->playerSlot);
                         diff = gm_ItemPrice(it->id, 100) - price;
                         i = 0;
                         if (ai_NSlots > 0) {
@@ -3347,7 +3368,7 @@ void ai_BuildTradeOffers(AICHAR *ch, AIOBJ *store, int f)
                                     break;
                                 }
                             }
-                            if (i > 0x7f)
+                            if (i >= 0x80)
                                 goto next1;
                         }
                         ai_Slots[i].saving = diff;
@@ -3365,7 +3386,7 @@ void ai_BuildTradeOffers(AICHAR *ch, AIOBJ *store, int f)
                         ai_Slots[i].amount = gm_ListAmountById(store, it->id);
                         ai_Slots[i].capacity = gm_FreeCapacity(store, it->id, 1000000);
                         ai_Slots[i].buyAmount = 0;
-                        ai_Slots[i].unk38 = gm_ListAmountById(o, it->id);
+                        ai_Slots[i].sellerAmount = gm_ListAmountById(o, it->id);
                         if (i == ai_NSlots)
                             ai_NSlots++;
                         it2 = gm_Query(o->list, 1, 5);
@@ -3377,15 +3398,15 @@ void ai_BuildTradeOffers(AICHAR *ch, AIOBJ *store, int f)
                 o2 = gm_Query(bld->objList, 2, 0, 0x1db, 6);
                 if (o2) {
                     for (it = gm_Query(o2->list, 1, 5); it; it = gm_QueryNext()) {
-                        q = gm_FindGoods(bld->unk65, it->id);
+                        q = gm_FindGoods(bld->playerSlot, it->id);
                         if (q && q[1]) {
                             diff = gm_ItemPrice(it->id, 100);
-                            price = gm_GoodsPrice(it->id, (unsigned char)bld->unk65);
+                            price = gm_GoodsPrice(it->id, (unsigned char)bld->playerSlot) - diff;
                             i = 0;
                             if (ai_NEntries > 0) {
                                 for (; i < ai_NEntries; i++) {
                                     if (ai_Entries[i].item == it->id) {
-                                        if (i < ai_NEntries && price - diff < ai_Entries[i].margin)
+                                        if (i < ai_NEntries && price < ai_Entries[i].margin)
                                             goto next2;
                                         break;
                                     }
@@ -3397,7 +3418,7 @@ void ai_BuildTradeOffers(AICHAR *ch, AIOBJ *store, int f)
                                 ai_Entries[i].slot[1] = -1;
                                 ai_Entries[i].slot[2] = -1;
                                 ai_Entries[i].slot[3] = -1;
-                                ai_Entries[i].margin = price - diff;
+                                ai_Entries[i].margin = price;
                                 ai_Entries[i].bld = bld;
                                 ai_Entries[i].store = o2;
                                 ai_Entries[i].sellAmount = 0;
@@ -3408,7 +3429,7 @@ void ai_BuildTradeOffers(AICHAR *ch, AIOBJ *store, int f)
                                 ai_Entries[i].amount = gm_ListAmountById(store, it->id);
                                 ai_Entries[i].capacity = gm_FreeCapacity(store, it->id, 1000000);
                                 ai_Entries[i].buyAmount = 0;
-                                ai_Entries[i].unk50 = gm_FreeCapacity(o2, it->id, 1000000);
+                                ai_Entries[i].buyerCapacity = gm_FreeCapacity(o2, it->id, 1000000);
                                 if (i == ai_NEntries)
                                     ai_NEntries++;
                                 it2 = gm_Query(o->list, 1, 5);
@@ -3422,7 +3443,7 @@ void ai_BuildTradeOffers(AICHAR *ch, AIOBJ *store, int f)
             }
         }
     }
-    off = 0;
+    k = 0;
     bld = ai_BldsT;
     do {
         if (AI_KIND(bld->type) == 2) {
@@ -3431,8 +3452,7 @@ void ai_BuildTradeOffers(AICHAR *ch, AIOBJ *store, int f)
                 for (it = gm_Query(o->list, 1, 5); it; it = gm_QueryNext()) {
                     q = gm_FindGoods(ai_OwnPlayer, it->id);
                     if (q && q[1]) {
-                        price = gm_GoodsPrice(it->id, ai_OwnPlayer);
-                        price = price * *(int *)((char *)bld + 0x45) * 0.01;
+                        price = gm_GoodsPrice(it->id, ai_OwnPlayer) * bld->priceRate * 0.01f;
                         diff = gm_ItemPrice(it->id, 100) - price;
                         i = 0;
                         if (ai_NSlots > 0) {
@@ -3443,7 +3463,7 @@ void ai_BuildTradeOffers(AICHAR *ch, AIOBJ *store, int f)
                                     break;
                                 }
                             }
-                            if (i > 0x7f)
+                            if (i >= 0x80)
                                 goto next3;
                         }
                         ai_Slots[i].saving = diff;
@@ -3461,7 +3481,7 @@ void ai_BuildTradeOffers(AICHAR *ch, AIOBJ *store, int f)
                         ai_Slots[i].amount = gm_ListAmountById(store, it->id);
                         ai_Slots[i].capacity = gm_FreeCapacity(store, it->id, 1000000);
                         ai_Slots[i].buyAmount = 0;
-                        ai_Slots[i].unk38 = gm_ListAmountById(o, it->id);
+                        ai_Slots[i].sellerAmount = gm_ListAmountById(o, it->id);
                         if (i == ai_NSlots)
                             ai_NSlots++;
                         it2 = gm_Query(o->list, 1, 5);
@@ -3472,9 +3492,9 @@ void ai_BuildTradeOffers(AICHAR *ch, AIOBJ *store, int f)
                 }
             }
         }
-        off += 0xa9;
-        bld = (AIBLD *)((char *)ai_BldsT + off);
-    } while (off < 0xa900);
+        k++;
+        bld = &ai_BldsT[k];
+    } while (k < 256);
     for (i = 0; i < ai_NSlots; i++) {
         for (j = 0; j < ai_NEntries; j++) {
             if (ai_Slots[i].item == ai_Entries[j].item)
@@ -3505,7 +3525,7 @@ void ai_BuildTradeOffers(AICHAR *ch, AIOBJ *store, int f)
                 ai_Entries[ai_NEntries].amount = gm_ListAmountById(store, ai_Slots[i].item);
                 ai_Entries[ai_NEntries].capacity = gm_FreeCapacity(store, ai_Slots[i].item, 1000000);
                 ai_Entries[ai_NEntries].buyAmount = 0;
-                ai_Entries[ai_NEntries].unk50 = gm_FreeCapacity(p, ai_Slots[i].item, 1000000);
+                ai_Entries[ai_NEntries].buyerCapacity = gm_FreeCapacity(p, ai_Slots[i].item, 1000000);
                 ai_NEntries++;
             }
         }
@@ -3517,7 +3537,7 @@ void ai_BuildTradeOffers(AICHAR *ch, AIOBJ *store, int f)
             for (i = 0; i < rec.n; i++) {
                 if (rec.item[i]) {
                     found = 0;
-                    for (k = 0; k < 3 && !found; k++) {
+                    for (k = 0; !found && k < 3; k++) {
                         if (job->in[k] == rec.item[i])
                             found = 1;
                     }
@@ -3550,20 +3570,20 @@ void ai_BuildTradeOffers(AICHAR *ch, AIOBJ *store, int f)
     for (i = 0; i < ai_NSlots; i++) {
         for (j = 0; j < ai_NEntries; j++) {
             if (ai_Slots[i].item == ai_Entries[j].item) {
-                k = ai_Slots[i].capacity < ai_Entries[j].unk50 ? ai_Slots[i].capacity : ai_Entries[j].unk50;
+                k = ai_Slots[i].capacity < ai_Entries[j].buyerCapacity ? ai_Slots[i].capacity : ai_Entries[j].buyerCapacity;
                 ai_Slots[i].buyAmount = k;
                 ai_Slots[i].buyAmount = (int)min((float)ai_Slots[i].buyAmount, (float)(ch->budget / 4) / ai_Slots[i].price);
             }
         }
     }
     for (j = 0; j < ai_NEntries; j++)
-        ai_Entries[j].buyAmount = ai_Entries[j].amount < ai_Entries[j].unk50 ? ai_Entries[j].amount : ai_Entries[j].unk50;
+        ai_Entries[j].buyAmount = min(ai_Entries[j].buyerCapacity, ai_Entries[j].amount);
     for (i = 0; i < ai_NSlots; i++) {
         for (j = i; j < ai_NSlots; j++) {
             if ((float)ai_Slots[i].buyAmount * ai_Slots[i].saving < (float)ai_Slots[j].buyAmount * ai_Slots[j].saving) {
-                *(AISLOT *)&etmp = ai_Slots[i];
+                stmp = ai_Slots[i];
                 ai_Slots[i] = ai_Slots[j];
-                ai_Slots[j] = *(AISLOT *)&etmp;
+                ai_Slots[j] = stmp;
             }
         }
     }
