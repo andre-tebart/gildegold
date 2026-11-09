@@ -559,12 +559,12 @@ exe	0x004299a0	evt_RunScript	evt	byte	readable
 exe	0x00429ab0	evt_RunScriptArgs	evt	byte	readable		
 exe	0x00429c40	evt_RunCommand	evt	byte	readable		
 exe	0x00429e90	evt_Stop	evt	byte	readable		
-exe	0x00429f30	evt_Eval	evt	draft	readable	deep	
+exe	0x00429f30	evt_Eval	evt	byte	readable		
 exe	0x0042a480	evt_Assign	evt	byte	readable		
 exe	0x0042a620	evt_CallBuiltin	evt	byte	readable		
 exe	0x0042a8f0	evt_Statement	evt	byte	readable		
 exe	0x0042abc0	evt_ResumeCall	evt	byte	readable		
-exe	0x0042ada0	evt_Step	evt	draft	readable	deep	
+exe	0x0042ada0	evt_Step	evt	byte	readable		
 exe	0x0042aef0	evt_StepAll	evt	byte	readable		
 exe	0x0042af30	evt_Shutdown	evt	byte	readable		
 exe	0x0042b010	evt_UnloadAll	evt	byte	readable		
@@ -2099,7 +2099,7 @@ exe	0x004be3b0	rt_ChooseTabGood	rt	shape	readable
 exe	0x004be790	rt_OpenSlotControls	rt	byte	readable		
 exe	0x004be8e0	rt_RemoveControls	rt	byte	readable		
 exe	0x004be930	rt_InitControls	rt	byte	readable		
-exe	0x004be940	rt_EditPointDialog	rt	draft	readable	deep	
+exe	0x004be940	rt_EditPointDialog	rt	draft	readable	stuck	
 exe	0x004bf080	rt_CartSettingsDialog	rt	shape	readable		
 exe	0x004bf360	rt_SetMarkPic	rt	byte	readable		
 exe	0x004bf3b0	rt_UpdateMarkPics	rt	byte	readable		
@@ -4109,7 +4109,7 @@ exe	0x00589c90	ai_SlotKeys	sv_t	byte	readable
 exe	0x00589cf0	ai_SpeedKeys	sv_t	byte	readable		
 exe	0x00589e00	ai_BookmarkSetBuilding	sv_t	byte	readable		
 exe	0x00589e50	ai_BookmarksPreset	sv_t	byte	readable		
-exe	0x00589f10	lobby_Screen	lobby	draft	readable	deep	
+exe	0x00589f10	lobby_Screen	lobby	byte	readable		
 exe	0x0058a940	lobby_AddButtons	lobby	byte	readable		
 exe	0x0058a9d0	lobby_AddChatScroll	lobby	byte	readable		
 exe	0x0058aa30	lobby_ShowCity	lobby	byte	readable		
