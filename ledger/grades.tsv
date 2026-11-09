@@ -39,7 +39,7 @@ exe	0x00402a30	ch_AllocAt	ch	byte	readable
 exe	0x00402a70	ch_FindByName	ch	byte	readable		
 exe	0x00402ac0	ch_FindByObject	ch	byte	readable		
 exe	0x00402af0	ch_SetLowPoly	ch	byte	readable		
-exe	0x00402ba0	ch_UpdateLowPoly	ch	draft	draft		
+exe	0x00402ba0	ch_UpdateLowPoly	ch	draft	readable	deep	
 exe	0x00403070	ch_CreateMesh	ch	byte	readable		
 exe	0x00403390	ch_Create	ch	byte	readable		
 exe	0x004033c0	ch_MoveToScene	ch	byte	readable		
@@ -51,7 +51,7 @@ exe	0x00403ab0	ch_AnimDone	ch	draft	readable	deep
 exe	0x00403b00	ch_SetNextAnim	ch	byte	readable		
 exe	0x00403c10	ch_StopAnim	ch	byte	readable		
 exe	0x00403d60	ch_ReleaseMorph	ch	byte	readable		
-exe	0x00403dc0	ch_CheckAniMorph	ch	draft	draft		
+exe	0x00403dc0	ch_CheckAniMorph	ch	shape	readable		
 exe	0x00404200	ch_PreloadAnims	ch	byte	readable		
 exe	0x00404360	ch_LoadLowAnims	ch	shape	readable	deep	
 exe	0x004044a0	ch_AttachAni	ch	draft	readable	deep	
@@ -110,15 +110,15 @@ exe	0x004076c0	ch_CopyVec	ch	byte	readable
 exe	0x004076e0	ch_PosToCell	ch	byte	readable		
 exe	0x00407740	ch_CellToCell	ch	byte	readable		
 exe	0x00407790	ch_GetWaypoints	ch	draft	readable	deep	
-exe	0x004079b0	ch_GetNewPath	ch	draft	readable		
+exe	0x004079b0	ch_GetNewPath	ch	draft	readable	deep	
 exe	0x00408490	ch_PathToTarget	ch	shape	readable		
 exe	0x00408690	ch_InitWalk	ch	shape	readable		
 exe	0x00408ab0	ch_WalkSound	ch	byte	readable		
 exe	0x00408cb0	ch_StartWalkAnim	ch	byte	readable		
 exe	0x00408e60	ch_NextWaypoint	ch	byte	readable		
 exe	0x004093d0	ch_WalkRotate	ch	byte	readable		
-exe	0x004097d0	ch_ActWalk	ch	draft	draft		
-exe	0x00409bd0	ch_ActWalkCells	ch	draft	draft		
+exe	0x004097d0	ch_ActWalk	ch	draft	readable	deep	
+exe	0x00409bd0	ch_ActWalkCells	ch	draft	readable	deep	
 exe	0x0040a900	ch_WalkToObject	ch	byte	readable		
 exe	0x0040a9c0	ch_ActWalk2RndDummy	ch	byte	readable		
 exe	0x0040aaf0	ch_WalkToObjectTurn	ch	byte	readable		
@@ -1057,7 +1057,7 @@ exe	0x00459d80	d3s_RightEdge	d3s	byte	readable
 exe	0x00459e50	d3s_LeftEdgeColor	d3s	byte	readable		
 exe	0x00459f90	d3s_MarkSpan	d3s	byte	readable		
 exe	0x00459fb0	d3s_DrawSpans	d3s	draft	readable	deep	
-exe	0x0045a2e0	d3s_ShadowTriangle	d3s	draft	readable		
+exe	0x0045a2e0	d3s_ShadowTriangle	d3s	draft	readable	deep	
 exe	0x0045a670	d3s_LeftEdge	d3s	byte	readable		
 exe	0x0045a740	d3s_FillRows	d3s	byte	readable		
 exe	0x0045a880	d3s_ShadowPoly	d3s	draft	draft		
@@ -2486,8 +2486,8 @@ exe	0x004d4050	cm_FightRole	cm	shape	readable
 exe	0x004d4090	cm_LootList	cm	byte	readable		
 exe	0x004d4340	cm_FightPortraits	cm	byte	readable		
 exe	0x004d4540	cm_FightStartDialog	cm	draft	readable	deep	
-exe	0x004d4d70	cm_FightEndDialog	cm	draft	draft		
-exe	0x004d60b0	cm_CheckFight	cm	draft	draft		
+exe	0x004d4d70	cm_FightEndDialog	cm	draft	readable	deep	
+exe	0x004d60b0	cm_CheckFight	cm	draft	readable	deep	
 exe	0x004d63e0	cm_RunFight	cm	shape	readable		
 exe	0x004d6930	cm_FightResult	cm	byte	readable		
 exe	0x004d6970	cm_FightFrame	cm	shape	readable		

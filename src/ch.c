@@ -3,8 +3,6 @@
    the UDP code; its .data starts at 0x5f1120 with the animation path) .. 0x40b580.
    Functions are kept in their original order. Names are ours.
    cm_SpeedFactor (0x5f1290, the game speed factor) is defined here under cm's name.
-   Open: D3OBJ_UNK200 reads D3OBJECT.owner (d3.h, the game record of the object) as the int d3_WriteObject
-   saves and rd_object restores (the item pointer of the sprite spawners).
    Open: not included yet (dcp headers conflicts ch HEADER): sv.h; held by calls whose argument count differs
    from the definition (read the original's pushes): sv_ReturnZero.
    unit of rea 8cef7d5b (src/game/ch.c); boundaries in decl/text.dcl */
