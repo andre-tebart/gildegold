@@ -2698,3 +2698,35 @@ differing instructions. The same shape made the character loop of 0x512f30 pick 
   (counter in the dead bpp slot, r in [ebp+0x20]) but loses the funnel - the loop registers are still a
   renaming apart. Loop forms (up / down / while(bpp--)), counter variables and declaration moves compile
   to the same code there.
+
+## match-deep 2026-11-09 (lobby_Screen, evt_Step, evt_Eval, rt_EditPointDialog)
+
+- **A run of constant field stores whose schedule is off: write the fields in field order.** lobby_Screen's
+  defaults (`reserved = -1; talents[0..4] = 0x5a, 0x46, 0x78, 0x46, 0x5a`) were grouped by value in the draft
+  (both 0x46 first); the original's "load cm_NetGame.mode first, 0x5a in cl" came from plain field order.
+  Generated all 720 orders with `dcp try` (17 s): 12 orders give the original's code, every one of them with
+  `reserved` first and talents[0] before talents[2]. A decompiler grouping by value is the usual culprit.
+- **One counter for two loops**: lobby_Screen's player pick (`for (i...) {... sel = i; break;}` then `for (n...)
+  if (n != sel)`) kept sel in i's register; reusing `i` for the second loop and writing `sel != i` gave the
+  original's `mov edi, ecx` copy and its register roles (draft 66 -> shape 2). Then `d2_ClickedId = -1;` after
+  the last d2_Inputs field store (not between them) made it byte.
+- **`if (!x || (f(), !x))` vs `if (x) f(); if (!x)`**: evt_Step's original keeps the global evt_Depth in edx and
+  reloads it right after every call (a promoted global web); the comma form loads it once at the use. The split
+  form gave the reloads. Writing the pop twice (no `goto pop` into the shared tail) gave the -1 constant its
+  callee-saved register (`or edi,-1`, `cmp eax,edi`). The two copies then needed different spellings - early
+  `cur = stack[d - 1]; d--; stack[d] = 0;`, at the end `d--; cur = stack[d]; stack[d] = 0;` - for VC6's
+  cross-jump between them to land where the original's does (generated 49 pairs, one byte).
+- **A switch-table entry to the switch end where we share a case**: evt_Eval's `case 1: case 7:` read a float
+  variable as an int; the original's table sends type 7 to the end (val unchanged), a meaning fix. An empty
+  `case 7: break;` is dropped and shrinks the table; `case 7: if (0) {} break;` keeps the entry (so does
+  `val = val;`). `dcp try` folds such a variant into "= control" (its code hash ignores the tables): apply and
+  build to see a table change.
+- **Relative-addressing strcpy (`sub edx, src; mov [edx+eax], cl`) where the original copies with two
+  pointers**: evt_Eval's `strcpy(evt_StrResult, (char *)(val = (int)(v->data.s + idx * 0x60)))`; writing the
+  element twice as a row of a `char (*)[0x60]` view (`val = (int)((char (*)[0x60])v->data.s)[idx];
+  strcpy(evt_StrResult, ((char (*)[0x60])v->data.s)[idx]);`) gave the two-pointer copy. The linear spelling
+  `v->data.s + idx * 0x60` in the same two statements did not. A `char (*str)[0x60]` member added to the union
+  in evt.h did the same but cost ai_TutorialInitChapter2 (sv_t) its byte (declaration set): the cast stays local.
+- **Initialised locals' declaration order schedules the entry stores**: evt_Eval's `int next = 2; int val = 0;`
+  (instead of val first) moved `xor edi,edi` after the flag load as in the original - byte. Generate all
+  orders of the initialised declarations (and the statement form) when only an entry order hunk is left.
