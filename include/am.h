@@ -166,14 +166,13 @@ typedef struct AIJOBX {                 /* a job (0x53e400 / 0x53e300 list) */
     char pad00[4];
     int id;                             /* 0x04, the event id (ai.h AIJOB.id) */
     char pad08[0xa4];
-    int bldId;                          /* 0xac, a building id (ai.h AIJOB.bldId) */
+    int bldId;                          /* 0xac, a building id (ai.h AIJOB.bldId); of the offer event 0x2c the suitor (he.c HEOFFER.who[0]) */
     union {
-        int unkb0;                      /* 0xb0 */
         int price;                      /* 0xb0, of a building offer (kind 0x1b, +0xac the building) the asking price (0x497fa0 sets it against two thirds of the buyer's money) */
+        int partner;                    /* 0xb0, of the offer event 0x2c the partner's netId (HEOFFER.who[1]) */
     };
-    int unkb4;                          /* 0xb4 */
-    int unkb8;                          /* 0xb8 */
-    int unkbc;                          /* 0xbc */
+    int guests[3];                      /* 0xb4, of the offer event 0x2c the first three guests' netIds (HEOFFER.who[2..4]):
+                                           ai_EvalLeastLikedOfEvent weighs them for the character whose event it is */
 } AIJOBX;
 
 #pragma pack(push, 1)
