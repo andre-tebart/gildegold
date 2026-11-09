@@ -123,7 +123,7 @@ typedef struct AICHAR {                 /* 0x21c bytes, ai_Chars[768] */
     unsigned int flags1b4;              /* 0x1b4 */
     int budget;                         /* 0x1b8, money */
     union {
-        int unk1bc;                     /* 0x1bc */
+        int prodAll;                    /* 0x1bc, prod read as the whole int (main_SettleRound copies flags1b4 .. target as four ints) */
         unsigned short prod;            /* 0x1bc, the item the workshop makes */
     };
     union {
