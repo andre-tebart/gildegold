@@ -1014,83 +1014,82 @@ typedef struct G8USEVIEW {              /* a local view of am.h's G8USE (am.h ca
 #define d2_CreatePicObjS ((int (*)(short, short, int))d2_CreatePicObj)  /* 0x46cd80 (d2.h: int x, y): @original the town map update adds the window position to the mark pixel in 16 bits (0x5a8052 mov dx, word ptr [eax + 4] / add dx, di / push edx), as d2.c's callers */
 #define d2_SetObjValue2 ((void (*)(int, int))d2_SetObjValue)  /* 0x475cb0 (d2.h: five parameters): @original the checkbox / route-box calls push only the object and the value (0x5c81ab ai_CityStatsPanel: push esi; push edi; 0x5b0a1b ai_TransportWindow: push 0; push esi) */
 #define d2_SetObjValue4 ((void (*)(int, int, int, int))d2_SetObjValue)  /* 0x475cb0 (d2.h: five parameters): @original the range calls push four (0x5c2610 ai_ShowWorkSettingsPage: push *budget; push 0x2328; push 0x3e8; push eax; 0x5c2675: push eax; push 0x96; push 0x32; push esi) */
-/* 0x58bbd0, the production window's table init (400 B): the five-entry table 0x6f4f08 (-1 / -1 every 0x14 B) and
-   0x6f52e8 (0 / -1); the eight 0x58-byte records 0x6f5334 + i * 0x58 (i = 0 .. 7, the id 0x10 + i * 0x78 and the
-   slot values -1); the 0xe-entry records 0x6f5a84 + i * 0x38 (the id 0x10 + i * 0x45, +4 = 0x1a, -1 fields); the
-   0xe-entry grids 0x6f4f64 and 0x6f58a4 (x = (i % 4) * 0x40 + 0x10, y = (i / 4) * 0x40 + 0x10 / 0xd0) */
+/* 0x58bbd0, sets up the production window's tables: the grid rows ai_ProdRows / ai_ProdRows2 (no title picture),
+   the 16 goods columns ai_ProdColumns (no inputs, x 0x10, y 8 + i * 0x78, no windows or pictures), the column
+   slots ai_ProdColumnSlots (at 0x1a / 0x10 + i * 0x45) and the goods grids ai_ProdGoods / ai_ProdGoods2 (four
+   slots a row, 0x40 apart from 0x10 / 0x10 resp. 0xd0), every picture and window -1 */
 
 void ai_InitProductionTables(void)
 {
-    int *p;
-    int *q;
     int i;
-    int n;
+    int j;
 
-    for (p = (int *)(unsigned)((char *)ai_ProdRows + 0x10); p < (int *)(unsigned)((unsigned)((char *)ai_ProdRows + 0x60)); p += 5) {
-        p[-2] = -1;
-        p[0] = -1;
+    for (i = 0; i < 4; i++) {
+        ai_ProdRows[i].shown = -1;
+        ai_ProdRows[i].title = -1;
     }
-    for (p = (int *)(unsigned)((char *)ai_ProdRows2 + 0x10); p < (int *)(unsigned)((unsigned)((char *)ai_ProdRows2 + 0x38)); p += 5) {
-        p[-2] = 0;
-        p[0] = -1;
+    for (i = 0; i < 2; i++) {
+        ai_ProdRows2[i].shown = 0;
+        ai_ProdRows2[i].title = -1;
     }
-    n = 8;
-    for (p = (int *)(unsigned)((char *)ai_ProdColumns + 0x14); n < 0x788; p += 0x16) {
-        p[-5] = 0;
-        for (q = p, i = 4; i != 0; i--) {
-            q[-4] = 0;
-            q[0] = -1;
-            q++;
+    for (i = 0; i < 16; i++) {
+        ai_ProdColumns[i].good = 0;
+        for (j = 0; j < 4; j++) {
+            ai_ProdColumns[i].in[j] = 0;
+            ai_ProdColumns[i].need[j] = -1;
         }
-        p[4] = 0x10;
-        p[5] = n;
-        for (i = 6; i < 0xf; i++)
-            p[i] = -1;
-        n += 0x78;
+        ai_ProdColumns[i].x = 0x10;
+        ai_ProdColumns[i].y = i * 0x78 + 8;
+        ai_ProdColumns[i].selected = -1;
+        ai_ProdColumns[i].win = -1;
+        ai_ProdColumns[i].pic = -1;
+        ai_ProdColumns[i].bar = -1;
+        for (j = 0; j < 4; j++)
+            ai_ProdColumns[i].inPics[j] = -1;
+        ai_ProdColumns[i].amountWin = -1;
     }
     ai_ProdSelectedInput = 0;
-    for (p = &ai_ProdColumnSlots[0].obj04, n = 0x10; n < 0x460; p += 0xe) {
-        p[2] = n;
-        p[-1] = 0;
-        p[0] = -1;
-        p[1] = 0x1a;
-        p[3] = -1;
-        p[4] = -1;
-        p[5] = -1;
-        p[6] = -1;
-        p[9] = -1;
-        p[7] = -1;
-        p[8] = -1;
-        p[0xc] = -1;
-        n += 0x45;
+    for (i = 0; i < 16; i++) {
+        ai_ProdColumnSlots[i].good = 0;
+        ai_ProdColumnSlots[i].obj04 = -1;
+        ai_ProdColumnSlots[i].x = 0x1a;
+        ai_ProdColumnSlots[i].y = i * 0x45 + 0x10;
+        ai_ProdColumnSlots[i].check = -1;
+        ai_ProdColumnSlots[i].label = -1;
+        ai_ProdColumnSlots[i].priceText = -1;
+        ai_ProdColumnSlots[i].buyPriceText = -1;
+        ai_ProdColumnSlots[i].obj28 = -1;
+        ai_ProdColumnSlots[i].slider = -1;
+        ai_ProdColumnSlots[i].win = -1;
+        ai_ProdColumnSlots[i].stock = -1;
     }
-    for (p = (int *)(unsigned)((char *)ai_ProdGoods + 0x4), n = 0; p < (int *)(unsigned)((unsigned)((char *)ai_ProdGoods + 0x384)); p += 0xe, n++) {
-        p[-1] = 0;
-        p[0] = -1;
-        p[1] = (n % 4) * 0x40 + 0x10;
-        p[3] = -1;
-        p[4] = -1;
-        p[5] = -1;
-        p[6] = -1;
-        p[2] = (n / 4) * 0x40 + 0x10;
-        p[9] = -1;
-        p[7] = -1;
-        p[8] = -1;
-        p[0xc] = -1;
+    for (i = 0; i < 16; i++) {
+        ai_ProdGoods[i].good = 0;
+        ai_ProdGoods[i].obj04 = -1;
+        ai_ProdGoods[i].x = (i % 4) * 0x40 + 0x10;
+        ai_ProdGoods[i].check = -1;
+        ai_ProdGoods[i].label = -1;
+        ai_ProdGoods[i].priceText = -1;
+        ai_ProdGoods[i].buyPriceText = -1;
+        ai_ProdGoods[i].y = (i / 4) * 0x40 + 0x10;
+        ai_ProdGoods[i].obj28 = -1;
+        ai_ProdGoods[i].slider = -1;
+        ai_ProdGoods[i].win = -1;
+        ai_ProdGoods[i].stock = -1;
     }
-    for (p = (int *)(unsigned)((char *)ai_ProdGoods2 + 0x4), n = 0; p < (int *)(unsigned)((unsigned)((char *)ai_ProdGoods2 + 0x1c4)); p += 0xe, n++) {
-        p[-1] = 0;
-        p[0] = -1;
-        p[1] = (n % 4) * 0x40 + 0x10;
-        p[3] = -1;
-        p[4] = -1;
-        p[5] = -1;
-        p[6] = -1;
-        p[2] = (n / 4) * 0x40 + 0xd0;
-        p[9] = -1;
-        p[7] = -1;
-        p[8] = -1;
-        p[0xc] = -1;
+    for (i = 0; i < 8; i++) {
+        ai_ProdGoods2[i].good = 0;
+        ai_ProdGoods2[i].obj04 = -1;
+        ai_ProdGoods2[i].x = (i % 4) * 0x40 + 0x10;
+        ai_ProdGoods2[i].check = -1;
+        ai_ProdGoods2[i].label = -1;
+        ai_ProdGoods2[i].priceText = -1;
+        ai_ProdGoods2[i].buyPriceText = -1;
+        ai_ProdGoods2[i].y = (i / 4) * 0x40 + 0xd0;
+        ai_ProdGoods2[i].obj28 = -1;
+        ai_ProdGoods2[i].slider = -1;
+        ai_ProdGoods2[i].win = -1;
+        ai_ProdGoods2[i].stock = -1;
     }
 }
 
