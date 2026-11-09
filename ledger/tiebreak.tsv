@@ -4115,7 +4115,7 @@ exe	0x0058a9d0	lobby_AddChatScroll	unk_589f10	bc9a2359565534a2	no	byte	control=b
 exe	0x0058aa30	lobby_ShowCity	unk_589f10	b9ae5034de5cdf58	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x0058aba0	lobby_ShowMyPlayer	unk_589f10	4114c31e87f412c1	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x0058ad20	lobby_FetchPlayers	unk_589f10	c1e2419f1f6315b8	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
-exe	0x0058ada0	lobby_ShowPlayers	unk_589f10	3987d15cf0698744	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x0058ada0	lobby_ShowPlayers	lobby	fbb5f7de57754772	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x0058af50	lobby_ChoosePlayer	unk_589f10	997e0e8c8cec55d5	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x0058b880	lobby_ChooseProfession	unk_589f10	e307d871cec2cf93	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x0058ba70	lobby_ShowChat	unk_589f10	75140d1c2514e18e	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft

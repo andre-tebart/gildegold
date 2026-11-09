@@ -445,19 +445,7 @@ void lobby_FetchPlayers(void)
    list records a chart picture of the coat (5, y) and a line below it (x + 10) with the honour title of the sex,
    the first and family name and, for a ready player, the ready mark; the control id goes into lobby_Rows, y grows
    by the control height; the line of this player (lobby_Me) sets lobby_MyRow, the other lines are made
-   selectable (interactive, style 3) and the line the chat goes to is checked
-   @deep read the whole function against the original 0x58ada0..0x58af49 and fixed its meaning: the callee
-   is cm_LobbyFindPlayer (0x4cd5e0), the record read through CMLOBBYPLAYER fields (coat +0xc, sex +0x10,
-   ready +4, id +0, firstName +0x12, familyName +0x22), the control through D2OBJ fields (w +0x14, h +0x16,
-   interactive +0x4c, style +0x1c0, checked +0x28), and the appended ready mark named (txt_ReadyMark);
-   Q2/Q4 clear, readability readable. 128 vs 128 instructions, one hunk of 6 instructions (11 bytes) at
-   +0x86: ours 'mov cl, byte ptr [ebx + 0x10] / add esp, 0x10 / mov ebp, eax / mov eax,
-   [txt_HonourTitles+4] / test cl, cl / je' against the original's 'mov ebp, eax / mov al, byte ptr [ebx +
-   0x10] / add esp, 0x10 / test al, al / mov eax, [txt_HonourTitles+4] / je' - the same six instructions,
-   the original saves the d2_WinOpenPic result to ebp first, loads p->sex into the freed al and tests
-   before the title load, ours loads it into cl and tests last. Tried the two statement orders of the id /
-   u assignments (the swapped one cost 237 bytes) and 'if (p->sex)' against '!= 0' (no change); everything
-   else is byte. Only the register choice and the schedule of those five instructions remain. */
+   selectable (interactive, style 3) and the line the chat goes to is checked */
 
 void lobby_ShowPlayers(void)
 {
@@ -476,8 +464,9 @@ void lobby_ShowPlayers(void)
         if (p == 0)
             continue;
         id = d2_WinOpenPic(5, y, p->coat + 0x59a, d2_LastWindow);
-        u = txt_HonourTitles[1];
-        if (p->sex)
+        if (!p->sex)
+            u = txt_HonourTitles[1];
+        else
             u = txt_FemaleHonourTitle;
         sprintf(text, lobby_FmtHonour, u, p->firstName, p->familyName);
         if (p->ready != 0)
