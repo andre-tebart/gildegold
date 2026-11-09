@@ -218,11 +218,10 @@ AICHAR *ai_FindPartner(AICHAR *c)
         bestf = 128.0f;
         if (!(c->officeKind || c->secondOffice || c->kind == 5))
             return 0;
-        i = 0;
-        o = ai_CharsT;
-        do {
+        for (i = 0; i < 768; i++) {
+            o = &ai_CharsT[i];
             id = c->id;
-            if (i != id && o->kind == 6 || o->kind == 7 || ai_WorksForMaster(o) && (o->jobId || o->prevOffice)) {
+            if (i != id && o->kind == 6 || o->kind == 7 || ai_WorksForMaster(o) && (o->officeKind || o->secondOffice)) {
                 d = gm_CharLevelS(i, 0);
                 d = d - gm_CharLevelS(id, 0);
                 d = abs(d);
@@ -232,12 +231,11 @@ AICHAR *ai_FindPartner(AICHAR *c)
                     best = i;
                 }
             }
-            i++;
-            o++;
-        } while ((int)o < (int)(ai_CharsT + 768));
+        }
         if (best == -1)
             return 0;
-        if (ai_Relations[best][c->id] / 2 + ai_RelationMemory[best][c->id] < -0x32 - util_RandomU(0x20)) {
+        d = ai_Relations[best][c->id] / 2 + ai_RelationMemory[best][c->id];
+        if (d < -0x32 - util_RandomU(0x20)) {
             a = 0;
             cm_BeginFieldBlock(c, c->netId);
             cm_AddFieldDelta(1, 1, 0x215, &a);
@@ -255,56 +253,59 @@ AICHAR *ai_FindPartner(AICHAR *c)
     }
     p = gm_FindChar(c->partner);
     if ((c->officeKind || c->secondOffice || c->kind == 5) && p &&
-        (p->secondOffice || p->officeKind || p->kind == 6 || p->kind == 7 || p->kind == 5)) {
-        if (c->b215 <= c->b216 + 5) {
-            if (c->b216 <= c->b215) {
-                a = 1;
-                cm_BeginFieldBlock(c, c->netId);
-                cm_AddFieldValues(1, 1, 0x215, &a);
-                a = 1;
-                cm_AddFieldDelta(1, 1, 0x218, &a);
-                cm_SendFieldDeltas();
-                return 0;
-            }
-            if (ai_RelationMemory[p->id][c->id] + c->relationBias > 0) {
-                a = c->b216 + 1;
-                cm_BeginFieldBlock(c, c->netId);
-                cm_AddFieldDelta(1, 1, 0x215, &a);
-                a = 1;
-                cm_AddFieldDelta(1, 1, 0x218, &a);
-                cm_SendFieldDeltas();
-                return 0;
-            }
-            if (c->b215 > 3)
-                return p;
+        (p->secondOffice || p->officeKind || p->kind == 6 || p->kind == 7 || p->kind == 5)
+        && c->b215 <= c->b216 + 5) {
+        if (c->b216 <= c->b215) {
+            /* the search has run its steps: it ends without a partner */
+            a = 1;
+            cm_BeginFieldBlock(c, c->netId);
+            cm_AddFieldValues(1, 1, 0x215, &a);
+            a = 1;
+            cm_AddFieldDelta(1, 1, 0x218, &a);
+            cm_SendFieldDeltas();
+            p = 0;
+        } else if (ai_RelationMemory[p->id][c->id] + c->relationBias > 0) {
+            /* the partner remembers the character well: the search jumps to its last step */
+            a = c->b216 + 1;
+            cm_BeginFieldBlock(c, c->netId);
+            cm_AddFieldDelta(1, 1, 0x215, &a);
+            a = 1;
+            cm_AddFieldDelta(1, 1, 0x218, &a);
+            cm_SendFieldDeltas();
+            p = 0;
+        } else if (c->b215 <= 3) {
+            /* one or two steps further; past the third the two have met */
             a = util_RandomU(2) + 1;
             cm_BeginFieldBlock(c, c->netId);
             cm_AddFieldValues(1, 1, 0x215, &a);
             if (c->b215 + a > 3)
                 cm_AddFieldDelta(1, 1, 0x218, &c->b217);
             cm_SendFieldDeltas();
-            if (c->b215 + a < 4)
-                return 0;
-            ai_ShowPartnerNews(c, p);
-            return p;
+            if (c->b215 + a > 3)
+                ai_ShowPartnerNews(c, p);
+            else
+                p = 0;
         }
+    } else {
+        /* no partner (any more): the search starts over */
+        a = 0;
+        z = 0;
+        m1 = -1;
+        cm_BeginFieldBlock(c, c->netId);
+        cm_AddFieldDelta(1, 1, 0x215, &a);
+        cm_AddFieldDelta(1, 1, 0x216, &a);
+        cm_AddFieldDelta(4, 1, 0x210, &m1);
+        cm_AddFieldDelta(1, 1, 0x214, &z);
+        a = 1;
+        cm_AddFieldDelta(1, 1, 0x218, &a);
+        cm_SendFieldDeltas();
+        if (p) {
+            cm_SendRelations(c->partner, c->netId, 0x3c, 2);
+            ai_ShowPartingNews(c, p);
+        }
+        p = 0;
     }
-    a = 0;
-    z = 0;
-    m1 = -1;
-    cm_BeginFieldBlock(c, c->netId);
-    cm_AddFieldDelta(1, 1, 0x215, &a);
-    cm_AddFieldDelta(1, 1, 0x216, &a);
-    cm_AddFieldDelta(4, 1, 0x210, &m1);
-    cm_AddFieldDelta(1, 1, 0x214, &z);
-    a = 1;
-    cm_AddFieldDelta(1, 1, 0x218, &a);
-    cm_SendFieldDeltas();
-    if (p) {
-        cm_SendRelations(c->partner, c->netId, 0x3c, 2);
-        ai_ShowPartingNews(c, p);
-    }
-    return 0;
+    return p;
 }
 /* 0x47e360, a master of this machine looks for a free workshop of its own that needs hiring, then lets its
    partner logic run
