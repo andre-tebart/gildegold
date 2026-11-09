@@ -494,14 +494,16 @@ unsigned int rt_ChooseTabGood(AIBLD *b, int x, unsigned int def)
     di_ClearButtons();
     return ret;
 }
-/* 0x4be790, the controls of one good slot (k 0..2) of a route point: a slider (0x50ab50(a, good) steps) and the
+/* 0x4be790, the controls of one good slot (k 0..2) of a route point: a slider (gm_ListStock(a, good) steps) and the
    good's picture with its name; out = {-1, picture, slider}; returns the picture */
 
-int rt_Unk4be790(unsigned short *bt, int a, int good, int k, int x, int y, int win, int *out)
+int rt_OpenSlotControls(unsigned short *bt, int a, int good, int k, int x, int y, int win, int *out)
 {
     int offs[9];
     int s;
     int o;
+    int px;
+    int py;
 
     offs[1] = 0;
     offs[2] = 0;
@@ -513,17 +515,18 @@ int rt_Unk4be790(unsigned short *bt, int a, int good, int k, int x, int y, int w
     offs[7] = 0x52;
     offs[8] = 0x93;
     s = gm_ListStock(a, good);
-    x = offs[(*bt - 0x134) * 3 + k] + 0x6e + x;
-    s = d2_WinOpenSlider(x - 8, y + 0x1d, 0x2f, 0, s, 0x6a, 0x2d, win);
-    o = d2_WinOpenInputIcon(x, y + 0x22, good + 0xdf, 0x8a, win);
+    px = offs[(*bt - 0x134) * 3 + k] + 0x6e + x;
+    py = y + 0x22;
+    s = d2_WinOpenSlider(px - 8, py - 5, 0x2f, 0, s, 0x6a, 0x2d, win);
+    o = d2_WinOpenInputIcon(px, py, good + 0xdf, 0x8a, win);
     d2_SetObjFont(o, 0x54);
     out[0] = -1;
     out[1] = o;
     out[2] = s;
-    *(int *)(d2_ObjsC + o * 0x2ec + 0x1c0) = 0x22;
-    *(int *)(d2_ObjsC + o * 0x2ec + 0x1cc) = 4;
-    *(int *)(d2_ObjsC + o * 0x2ec + 0x1d0) = 0xf;
-    sprintf(d2_ObjsC + o * 0x2ec + 0xbc, "%s", *(char **)(txt_ObjectNames + good * 8));
+    d2_Objs[o].style = 0x22;
+    d2_Objs[o].captionX = 4;
+    d2_Objs[o].captionY = 0xf;
+    sprintf(d2_Objs[o].caption, "%s", (char *)txt_ObjectNames[good][0]);
     return o;
 }
 /* 0x4be8e0, removes the three controls of out (0x4be790) */
@@ -652,7 +655,7 @@ void rt_Unk4be940(RTPOINT *p, int *win)
             d2_SetObjEnabled(btns[1], 0);
         for (i = 0; i < 3; i++) {
             if (ctl1[i][1] == -1 && p->loadSlots[i * 2] != 0) {
-                rt_Unk4be790(bt, (int)s, p->loadSlots[i * 2], i, 0, 0, v2, ctl1[i]);
+                rt_OpenSlotControls(bt, (int)s, p->loadSlots[i * 2], i, 0, 0, v2, ctl1[i]);
                 d2_SetObjValue4(ctl1[i][1], 1, a, p->loadSlots[i * 2 + 1] < 1 ? 1 : p->loadSlots[i * 2 + 1]);
             }
             if (ctl1[i][2] != -1)
@@ -660,7 +663,7 @@ void rt_Unk4be940(RTPOINT *p, int *win)
         }
         for (i = 0; i < 3; i++) {
             if (ctl2[i][1] == -1 && p->unloadSlots[i * 2] != 0) {
-                rt_Unk4be790(bt, (int)s, p->unloadSlots[i * 2], i, 0, 0x6e, v2, ctl2[i]);
+                rt_OpenSlotControls(bt, (int)s, p->unloadSlots[i * 2], i, 0, 0x6e, v2, ctl2[i]);
                 d2_SetObjValue4(ctl2[i][1], 1, a, p->unloadSlots[i * 2 + 1] < 1 ? 1 : p->unloadSlots[i * 2 + 1]);
             }
             if (ctl2[i][2] != -1)
