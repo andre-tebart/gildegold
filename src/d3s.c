@@ -1351,14 +1351,15 @@ void d3s_UpdateObject(D3OBJECT *obj)
             d3s_Update(obj, d3s_Lights[i], (D3TERRAIN *)d3_Terrain);
     }
 }
-/* 0x45ca60 */
+/* 0x45ca60, makes the shadows of obj: projects its box along each shadow light onto the ground, and updates
+   the shadow of every light whose projected box is on screen */
 
 void d3s_UpdateObjectAt(D3OBJECT *obj)
 {
     D3OBJECT *light;
     D3OBJINFO *info;
-    D3BOXVERT *box;
-    D3VECTOR lpos, ldir;
+    D3BOXVERT *verts, *box;
+    D3VECTOR lpos, ldir, d;
     float y, f, x, z, w;
     unsigned int i;
     int k;
@@ -1374,18 +1375,21 @@ void d3s_UpdateObjectAt(D3OBJECT *obj)
         d3_PointToWorld(light, &light->pos, &lpos);
         d3_DirToWorld(light, &d3_ZAxis, &ldir);
         y = d3s_GetGround(obj, info, light);
-        box = ((D3MESHOPS *)info->mesh)->GetBox(obj, info, (char *)obj->material + 8);
-        for (k = 8; k; k--, box++) {
-            if (!(light->objectFlags & 0x10)) {
-                f = -((lpos.y - y) / (lpos.y - box->y));
-                x = (lpos.x - box->x) * f + lpos.x;
-                w = (lpos.y - box->y) * f + lpos.y;
-                z = (lpos.z - box->z) * f + lpos.z;
-            } else {
+        verts = (D3BOXVERT *)D3_OPS(info)->GetBox(obj, info, obj->material->meshData);
+        for (k = 8, box = verts; k; k--, box++) {
+            if (light->objectFlags & 0x10) {
                 f = -((box->y - y) / ldir.y);
                 x = ldir.x * f + box->x;
                 w = ldir.y * f + box->y;
                 z = ldir.z * f + box->z;
+            } else {
+                d.x = lpos.x - box->x;
+                d.y = lpos.y - box->y;
+                d.z = lpos.z - box->z;
+                f = -((lpos.y - y) / d.y);
+                x = d.x * f + lpos.x;
+                w = d.y * f + lpos.y;
+                z = d.z * f + lpos.z;
             }
             x -= d3_Camera->pos.x;
             w -= d3_Camera->pos.y;
@@ -1394,7 +1398,7 @@ void d3s_UpdateObjectAt(D3OBJECT *obj)
             box->y = x * d3_Camera->matrix._12 + w * d3_Camera->matrix._22 + z * d3_Camera->matrix._32 + d3_Camera->matrix._42;
             box->z = x * d3_Camera->matrix._13 + w * d3_Camera->matrix._23 + z * d3_Camera->matrix._33 + d3_Camera->matrix._43;
         }
-        if (!(d3_ClipBox(box - 8, 0, 0) & 0x40)) {
+        if (!(d3_ClipBox(verts, 0, 0) & 0x40)) {
             obj->flags |= 2;
             d3s_Update(obj, light, (D3TERRAIN *)d3_Terrain);
         }
