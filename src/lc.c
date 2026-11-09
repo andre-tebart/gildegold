@@ -2207,96 +2207,82 @@ void ai_ShowProdSlot(int view, int part, LCPRODSLOT *slot, int input, unsigned c
 
 char * gm_FindGoods(int p, unsigned id);
 
-/* 0x58ee30, the reverse direction table and entry fill (1117 B, ROUGH): the 68-dword kind table (entry i = the
-   label, 2 / 3 / 4) selected by the byte +0x1c of param_2 fills the column titles 0x6f4f0c; the goods of the
-   character 0x4ffe90 (param_2 + 10, 1, 5) / 0x4ffcc0 fill the rows 0x6f4f60: an existing id refreshes +0x30
-   (0x50aaf0), a new row is created only when the record param_2[0] is not 0x1db / 0x1dc or the object
-   0x4ffc40 (param_1 + 0x65, the goods) has a non-zero +4; the second pass 0x6f4f90 refreshes the amounts
-   (0x50aaf0 / 0x50ab50, +0x2c = the amount * the count / 4) for the other kinds, and with 0x6f231c & 0x200 and
-   0x1467398 the clicked entry 0x5fe710 cycles its state +0x1c (0x4c3ba0 / 0x4c3d90 / 0x4c49e0); the text check
-   0x475980 (window +0x18 == 0x41) gives the return 1 */
-int ai_UpdateStoreGoods(int param_1, short *param_2)
+/* 0x58ee30, fills the goods grid of the store window from the store store of the building bld: the store's level
+   (AIOBJ.lvl1c) opens the slots of the four rows of ai_ProdRows; each goods of the store (gm_Query 1, 5) keeps its
+   slot in ai_ProdGoods (its amount refreshed) or gets the first free one; a market stall (0x1db / 0x1dc) takes
+   only goods the player of bld (AIBLD.playerSlot) holds (gm_FindGoods). Then every slot takes its reserved part,
+   amount and stock (a stall: amount and stock of the goods the player holds), or is cleared when its goods left
+   the store. A left click (with the permission 0x200, nothing on the pointer) on a slot's reserve button cycles
+   the goods' reserve 0 .. 4 and sends it (cm field message). Returns 1 when a slot's check box is set */
+int ai_UpdateStoreGoods(AIBLD *bld, AIOBJ *store)
 {
-    int tbl[68] = {
-        2, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0, 3, 0, 0, 0,
-        4, 0, 0, 0, 3, 2, 0, 0, 4, 3, 2, 0, 4, 3, 3, 0,
-        4, 4, 0, 0, 4, 0, 2, 0, 4, 3, 3, 0, 4, 4, 3, 0,
-        4, 4, 4, 0, 4, 4, 3, 0, 4, 4, 3, 3, 4, 4, 4, 3,
-        4, 4, 4, 4
+    unsigned int value;     /* the new reserve sent */
+    int rows[17][4] = {
+        { 2, 0, 0, 0 }, { 2, 0, 0, 0 }, { 2, 0, 0, 0 }, { 3, 0, 0, 0 }, { 4, 0, 0, 0 }, { 3, 2, 0, 0 },
+        { 4, 2, 0, 0 }, { 4, 3, 0, 0 }, { 4, 4, 0, 0 }, { 4, 3, 2, 0 }, { 4, 3, 3, 0 }, { 4, 4, 3, 0 },
+        { 4, 4, 4, 0 }, { 4, 4, 3, 2 }, { 4, 4, 3, 3 }, { 4, 4, 4, 3 }, { 4, 4, 4, 4 }
     };
-    int *p;
-    unsigned short *g;
-    int *q;
+    AIOBJ *item;
+    GMSTOCK *stock;
+    int any;
     int i;
-    int n;
-    int st;
 
-    i = 0;
-    for (p = (int *)(unsigned)((char *)ai_ProdRows + 0xc); p < (int *)(unsigned)((unsigned)((char *)ai_ProdRows + 0x5c)); p += 5, i++)
-        *p = tbl[i + ((unsigned char *)param_2)[0x1c] * 4];
-    g = (unsigned short *)gm_Query(U_I((char *)param_2 + 10), 1, 5);
-    while (g != 0) {
-        n = 0;
-        for (p = (int *)(unsigned)&ai_ProdGoods; p < (int *)(unsigned)((unsigned)((char *)ai_ProdGoods + 0x380)); p += 0xe, n++) {
-            if (*p == *g) {
-                if (n < 0x10)
-                    *(int *)((unsigned)((char *)ai_ProdGoods + 0x30) + n * 0x38) = gm_ListAmount((int)param_2, g);
+    for (i = 0; i < 4; i++)
+        ai_ProdRows[i].slots = rows[store->lvl1c][i];
+    for (item = (AIOBJ *)gm_Query((void *)store->list, 1, 5); item != 0; item = (AIOBJ *)gm_QueryNext()) {
+        for (i = 0; i < 16; i++)
+            if (ai_ProdGoods[i].good == item->id)
                 break;
+        if (i >= 16) {
+            for (i = 0; i < 16; i++)
+                if (ai_ProdGoods[i].good == 0)
+                    break;
+            if (i < 16 && (store->id != 0x1db && store->id != 0x1dc
+                           || (stock = (GMSTOCK *)gm_FindGoods(bld->playerSlot, item->id)) == 0 || stock->amount != 0)) {
+                ai_ProdGoods[i].good = item->id;
+                ai_ProdGoods[i].reserved = 0;
+                ai_ProdGoods[i].amount = 0;
+                ai_ProdGoods[i].stock = 0;
             }
-            if (*p == 0) {
-                q = (int *)gm_FindGoods(U_I(param_1 + 0x65), *g);
-                if (n < 0x10 && ((*param_2 != 0x1db && *param_2 != 0x1dc) || q == 0 || q[1] != 0)) {
-                    *(int *)((unsigned)((char *)ai_ProdGoods + 0x2c) + n * 0x38) = 0;
-                    *(int *)((unsigned)&ai_ProdGoods + n * 0x38) = *g;
-                    *(int *)((unsigned)((char *)ai_ProdGoods + 0x30) + n * 0x38) = 0;
-                    *(int *)((unsigned)((char *)ai_ProdGoods + 0x34) + n * 0x38) = 0;
+        } else
+            ai_ProdGoods[i].amount = gm_ListAmount(store, item);
+    }
+    for (i = 0; i < 16; i++) {
+        item = (AIOBJ *)gm_Query((void *)store->list, 1, 0, ai_ProdGoods[i].good);
+        if (item != 0) {
+            if (store->id != 0x1db && store->id != 0x1dc) {
+                ai_ProdGoods[i].reserved = (unsigned)(gm_ListStock(store, item->id) * item->reserve) >> 2;
+                ai_ProdGoods[i].amount = gm_ListAmount(store, item);
+                ai_ProdGoods[i].stock = gm_ListStock(store, item->id);
+            } else {
+                stock = (GMSTOCK *)gm_FindGoods(bld->playerSlot, item->id);
+                if (stock != 0 && stock->amount != 0) {
+                    ai_ProdGoods[i].amount = gm_ListAmount(store, item);
+                    ai_ProdGoods[i].stock = gm_ListStock(store, item->id);
                 }
-                break;
             }
-        }
-        g = (unsigned short *)gm_QueryNext();
+        } else
+            ai_ProdGoods[i].good = 0;
     }
-    for (q = (int *)(unsigned)((char *)ai_ProdGoods + 0x30); q < (int *)(unsigned)((unsigned)((char *)ai_ProdGoods + 0x3b0)); q += 0xe) {
-        g = (unsigned short *)gm_Query(U_I((char *)param_2 + 10), 1, 0, q[-0xc]);
-        if (g == 0) {
-            q[-0xc] = 0;
-            continue;
-        }
-        if (*param_2 == 0x1db || *param_2 == 0x1dc) {
-            n = gm_FindGoods(U_I(param_1 + 0x65), *g);
-            if (n != 0 && U_I(n + 4) != 0) {
-                q[0] = gm_ListAmount((int)param_2, g);
-                q[1] = gm_ListStock((int)param_2, *g);
-            }
-        } else {
-            q[-1] = (gm_ListStock((int)param_2, *g) * U_I((char *)g + 0xe * 2)) >> 2;
-            q[0] = gm_ListAmount((int)param_2, g);
-            q[1] = gm_ListStock((int)param_2, *g);
-        }
-    }
-    if ((U_I((unsigned)&ai_BuildingPerms) & 0x200) != 0 && U_I(((unsigned)&dm_L + 0x18)) != 0 && d2_CountPointerItems() == 0) {
-        for (p = (int *)(unsigned)((char *)ai_ProdGoods + 0x20); p < (int *)(unsigned)((unsigned)((char *)ai_ProdGoods + 0x3a0)); p += 0xe) {
-            if (*p == -1 || *p != U_I((unsigned)&d2_PointerObj))
+    if ((ai_BuildingPerms & 0x200) != 0 && dm_L.lclick != 0 && d2_CountPointerItems() == 0) {
+        for (i = 0; i < 16; i++) {
+            if (ai_ProdGoods[i].slider == -1 || ai_ProdGoods[i].slider != d2_PointerObj)
                 continue;
-            n = gm_Query(U_I((char *)param_2 + 10), 1, 0, p[-8]);
-            if (n == 0)
+            item = (AIOBJ *)gm_Query((void *)store->list, 1, 0, ai_ProdGoods[i].good);
+            if (item == 0)
                 break;
-            st = U_I(n + 0x1c) < 4 ? U_I(n + 0x1c) + 1 : 0;
-            cm_BeginFieldBlock(n, U_I(n + 2));
-            cm_AddFieldValue(4, 1, (n - U_I((unsigned)&cm_FieldObject)) + 0x1c, &st);
+            value = item->reserve >= 4 ? 0 : item->reserve + 1;
+            cm_BeginFieldBlock((char *)item, item->objId);
+            cm_AddFieldValue(4, 1, (char *)&item->reserve - cm_FieldObject, &value);
             cm_SendFieldValues();
-            U_I(n + 0x1c) = st;
+            item->reserve = value;
         }
     }
-    i = 0;
-    for (p = (int *)(unsigned)((char *)ai_ProdGoods + 0x10); p <= (int *)(unsigned)((unsigned)((char *)ai_ProdGoods + 0x38f)); p += 0xe) {
-        n = *p;
-        if (n != -1 && U_I(U_I((unsigned)&d2_Objs) + 0x18 + n * 0x2ec) == 0x41 && d2_GetObjValue(n) != 0) {
-            i = 1;
-            break;
-        }
-    }
-    return i;
+    any = 0;
+    for (i = 0; !any && i < 16; i++)
+        if (ai_ProdGoods[i].check != -1 && d2_Objs[ai_ProdGoods[i].check].type == 0x41 && d2_GetObjValue(ai_ProdGoods[i].check) != 0)
+            any = 1;
+    return any;
 }
 /* 0x58f290, lays out the first goods grid (ai_ProdRows / ai_ProdGoods) of the transport / storage / equip windows
    in the part form of the view, as ai_LayoutProdGoodsList does for the production window but with the rows
@@ -19355,7 +19341,7 @@ void ai_StorageWindow(AIBLD *bld, int list)
             btn0 = -1;
         }
         if (store->id == 0x116) {
-            ai_UpdateStoreGoods((int)bld, (short *)store);
+            ai_UpdateStoreGoods(bld, store);
             ai_LayoutStoreGoods(win, 1, 1, bld, (unsigned short *)store);
         } else {
             ai_UpdateProdGoodsList(bld, store);
@@ -23140,7 +23126,7 @@ void ai_EquipWindow(AIBLD *bld)
     g = &((AIGOOD *)ai_Goods)[store->id];
     do {
         if (store->id == 0x116 || g->type == 0x11) {
-            listShown = ai_UpdateStoreGoods((int)bld, (short *)store);
+            listShown = ai_UpdateStoreGoods(bld, store);
             ai_LayoutStoreGoods(win, 1, 1, bld, (unsigned short *)store);
         } else if (g->type == 5) {
             listShown = ai_UpdateProdGoodsList(bld, store);
