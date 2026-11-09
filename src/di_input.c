@@ -382,7 +382,24 @@ void di_Exit(void)
         di_Event = 0;
     }
 }
-/* 0x410ac0: button state machine (press timing, hold, double click) and event queue @deep behaviour draft, one code hunk left (7 differing instructions): the queue scan's tail. Ours sinks i=31 into the loop preheader, so the guard load dm_Q[31].valid takes eax (mov eax,ds:X; test eax,eax; jne) and the constant follows the branch; the original materialises i (mov eax,0x1f) between the load and its test, so the load takes ecx (mov ecx,ds:X; mov eax,0x1f; test ecx,ecx; jne). The 1-byte fill nop is an alignment artifact of the 1-byte-shorter body. Meaning is right (hunks read against the disassembly 410e58..410ec2). spell.py: no menu rule for either hunk. Last-bytes leads tried, each one edit + one build, all reverted as WORSE: (a) for-init form 'for (i = 31, q = &dm_Q[31].valid; *q == 0;)' with the && dm_Q[31].valid == 0 guard dropped -> 458 bytes / 180 asm lines; (b) comma form '(i = 31, q = &dm_Q[31].valid, *q == 0)' inside the guard -> identical 458 / 180; (c) 'changed && (i = 31, dm_Q[31].valid == 0)' with q initialised in the body -> 458 / 176, the same collapse: every form that materialises i before the guard test merges the loop head. The cost is the register-priority shift the note measured with c2prio (2026-10-23): the const#0 web lifts from -58 to -55 past _di_PressX (-57), the zero takes ebp and PressX loses its promotion -> allocation/scheduling work (match-deep). Readability done: Q4's 4 raw volatile-short casts replaced by the DIMOUSEST anonymous-union volatile view (dm_S.vx / dm_S.vy) with identical bytes; Q6 already described. */
+/* 0x410ac0: button state machine (press timing, hold, double click) and event queue
+   @stuck earlier: meaning right, read against 410e58..410ec2; Q4 views and Q6 done; one code hunk left at
+   +0x398 (ours mov eax,[dm_Q[31].valid]; test eax,eax; jne; mov eax,0x1f - the original mov ecx,[..]; mov
+   eax,0x1f; test ecx,ecx; jne): the original materialises i = 31 between the load and the test. Tried
+   earlier: for-init 'for (i = 31, q = &dm_Q[31].valid; *q == 0;)', comma forms in the guard and in the &&:
+   each collapses the allocation (const#0 web -55 past _di_PressX -57 in c2prio: zero takes ebp, PressX
+   loses its promotion). This pass: the plain index form 'if (changed) { i = 31; while (dm_Q[i].valid == 0)
+   { i--; if (i < 0) { i = 0; break; } } if (i < 31) { i++; copy } }' reproduces the original's tail
+   exactly (guard with i in eax, ecx/pointer loop with the jl bound, the threaded 'xor eax,eax; jmp inc'
+   miss path, the jge 31 test) - so it is very likely the source - but costs the same whole-function
+   reallocation (151 differing ins: const#0 in ebp, PressX unpromoted). Also tried on that form: !valid,
+   for(;;) form, do-while with guard, goto put, i <= -1, --i < 0, i != 31, for (..; i--) if (i == 0) break:
+   all identical 151. Reading: in the original the zero web (ebx) ends before the mup/mdown section
+   (0x410ce9 reuses ebx: mov ebx,[X]; test ebx,ebx), so the tail compares are immediates; ebp holds
+   di_PressX all through. Next step is priority work: find one more di_PressX reference or one fewer
+   const#0 reference in a high-P block that the original really had (uv run c2prio is not available in this
+   checkout: 'Failed to spawn: c2prio'). Kept the pointer form (6 ins / 69 bytes). (tiebreak: insensitive
+   under the four probes only, best draft) */
 
 void di_UpdateButtons(void)
 {
