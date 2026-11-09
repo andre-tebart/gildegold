@@ -328,7 +328,26 @@ void d3fl_FreeCache(void)
     d3fl_Blend = d3fl_BlendC;
 }
 /* 0x43f300, 256 texture triangles: 4 fixed ones covering the inner square (f..1-f), then 63 x 4 randomly
-   placed, scaled (0.9..1.23) and rotated copies of the same four triangles @deep read the whole function against the original 0x43f300..0x43f895: the loop now turns each corner (local vectors c01 / c10 / c11) by m into r and writes r * s + o (the original's x87 order: both components summed, then both scaled; the zero terms m * 0.0 kept, not factored as literal 0.0f made VC6 do), rot.z before rot.x / rot.y (the original stores the zeros after the 4th rand). The four loop blocks now match the original's sequence instruction for instruction but for registers and slots. Left: (1) the head (t[0..11]): the original keeps g = 1 - f - f in four stack slots ([esp+0x14], [esp+0x80], [esp+0x30], [esp+0x2c] via mov) and adds f to a different copy per corner (A+f for P1.x, B+f for P3.y, C+f / D+f for P2), storing t[1] before t[0]; ours computes g + f once and keeps it on the x87 stack (52 vs 70 instructions: '- fld st(1) / - fstp [eax] / - fadd st(1)' vs '+ fst [esp+0x14] / + fst [esp+0x80] / + fstp [esp+0x30] / + mov ecx,[esp+0x14]'); tried g + f / f + g, the corner form needs four variables that nothing in the bytes names; (2) the loop pointer: the original biases esi = out + 0x80 (t + 16 entries, '[esi-0x20]'), ours out + 0x60; (3) slots: ox/oy/s at [esp+0x10]/[0xc]/[8] vs ours, frame 0x84 vs 0x78. (size: 336 vs 359 instructions, explained: the 23 missing instructions are the head's: the original spills g to four stack copies and reloads each (fst/fld/mov pairs, 18 of them) where ours keeps g + f on the x87 stack; the loop blocks differ by 1..2 each (the esi bias and slot reloads)) */
+   placed, scaled (0.9..1.23) and rotated copies of the same four triangles
+   @stuck earlier: read whole against 0x43f300..0x43f895; loop turns corners c01/c10/c11 by m into r,
+   writes r * s + o (x87 order: both summed, then scaled; m * 0.0 terms kept), rot.z before rot.x/rot.y;
+   tried for the head g + f / f + g. This pass: rot.z = (rand() * D3FL_2PI) / (float)RAND_MAX gives the
+   original's fmul 2pi + fmul 1/RAND_MAX (was one folded constant, a real M10); r as D3VECTOR4 (frame 0x78
+   -> 0x7c, differing 415 -> 251). Tried without gain: head corners as D3FLUV structs (frame right, 0x84,
+   but every t[] becomes a mov copy: 497 ins), t[11] = t[4] / t[7] struct copies, four float copies A..D of
+   g (propagated away), rot.x/rot.y as the g copies, r replaced by rot (the original's loop spills its
+   m-product temp to [esp+0x2c], which is rot.x's slot; worse: 458), D3VECTOR4 corners, static corners.
+   Reading: the original's head stores g = 1 - f - f to [esp+0x14], [esp+0x80], [esp+0x30], then mov
+   [esp+0x2c] = [esp+0x14]; [esp+0x2c]/[esp+0x30] are rot.x/rot.y (rot at +0x2c, m at +0x3c: lea
+   eax,[esp+0x2c] pushed last for d3_MatFromAngles) - so the head likely wrote g into escaped locals (rot /
+   another 4-float vector at +0x80) and read them back per corner: t0.v = [80]+f, t2.u = [14]+f, t4 =
+   ([2c]+f, [30]+f), t11 = t4's values copied by mov from spill slots [14]/[28]. Left (frame 0x7c vs 0x84):
+   head code hunks +0x21 (lea esi,[eax+0x60] vs [eax+0x80]: the original biases the loop pointer by 16
+   entries, [esi-0x20]), +0x39/+0x5f/+0x7f (the g copies above vs ours keeping g + f on x87); loop: +0x135
+   / +0x39c (t[1] / t[6] = (ox, oy) by mov: ours [esi+8] where the original [esi-0x18], register order
+   ecx/edx), +0x4b9 (last block: ours mov [esp+0x38] from [esp+0x68], the original [esp+0x48] from
+   [esp+0x60], fadd st(1) vs st(2)), plus slots/fpu hunks from the same frame difference. Size 1352 vs 1429
+   bytes (348 vs 359 ins): the head's spills. (tiebreak: not measured (dcp headers sample d3fl_MakeJitter)) */
 
 void d3fl_MakeJitter(float *out)
 {
@@ -336,7 +355,7 @@ void d3fl_MakeJitter(float *out)
     float f, g, ox, oy, s;
     D3VECTOR4 rot;
     D3MATRIX m;
-    D3VECTOR r;                         /* a corner turned by m */
+    D3VECTOR4 r;                        /* a corner turned by m */
     D3VECTOR c01 = {0.0f, 1.0f, 0.0f}, c10 = {1.0f, 0.0f, 0.0f}, c11 = {1.0f, 1.0f, 0.0f};
     int i;
 
@@ -370,7 +389,7 @@ void d3fl_MakeJitter(float *out)
         ox = (float)rand() / RAND_MAX;
         oy = (float)rand() / RAND_MAX;
         s = (float)rand() / RAND_MAX / 3.0f + 0.9f;
-        rot.z = rand() * D3FL_2PI / RAND_MAX;
+        rot.z = (rand() * D3FL_2PI) / (float)RAND_MAX;
         rot.x = 0.0f;
         rot.y = 0.0f;
         d3_MatFromAngles(&rot, &m);
@@ -388,7 +407,7 @@ void d3fl_MakeJitter(float *out)
         ox = (float)rand() / RAND_MAX;
         oy = (float)rand() / RAND_MAX;
         s = (float)rand() / RAND_MAX / 3.0f + 0.9f;
-        rot.z = rand() * D3FL_2PI / RAND_MAX;
+        rot.z = (rand() * D3FL_2PI) / (float)RAND_MAX;
         rot.x = 0.0f;
         rot.y = 0.0f;
         d3_MatFromAngles(&rot, &m);
@@ -408,7 +427,7 @@ void d3fl_MakeJitter(float *out)
         ox = (float)rand() / RAND_MAX;
         oy = (float)rand() / RAND_MAX;
         s = (float)rand() / RAND_MAX / 3.0f + 0.9f;
-        rot.z = rand() * D3FL_2PI / RAND_MAX;
+        rot.z = (rand() * D3FL_2PI) / (float)RAND_MAX;
         rot.x = 0.0f;
         rot.y = 0.0f;
         d3_MatFromAngles(&rot, &m);
@@ -426,7 +445,7 @@ void d3fl_MakeJitter(float *out)
         ox = (float)rand() / RAND_MAX;
         oy = (float)rand() / RAND_MAX;
         s = (float)rand() / RAND_MAX / 3.0f + 0.9f;
-        rot.z = rand() * D3FL_2PI / RAND_MAX;
+        rot.z = (rand() * D3FL_2PI) / (float)RAND_MAX;
         rot.x = 0.0f;
         rot.y = 0.0f;
         d3_MatFromAngles(&rot, &m);
