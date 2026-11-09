@@ -450,7 +450,7 @@ exe	0x00422c60	pool_Destroy	mem	13eeb94bb5cf365e	no	byte	control=byte p1=byte p2
 exe	0x00422c90	mov_WndProc	mov	1f8f53b6cfa263ec	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00422d60	mov_Init	mov	f4b6eb291d1e9721	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00422d90	mov_Exit	mov	0fd24c72ca712103	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x00422dc0	mov_Open	mov	692fddc1646527f3	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x00422dc0	mov_Open	mov	7c266a5b21ede732	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x00423390	mov_Play	mov	629621ba2ac12470	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004234a0	mov_GetEvent	mov	cddb68e55fc74e59	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00423530	mov_Close	mov	167395cb68ed496f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte

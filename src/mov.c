@@ -13,7 +13,7 @@
 #include <evcode.h>
 #include "mov.h"
 
-extern const CLSID CLSID_FilterGraph;
+extern char ch_EmptyName[];   /* 0x631090, the shared empty string "" (ch.c) */
 
 /* 0x422c90, window procedure of a movie window: closes the movie on WM_DESTROY, stops and closes it on
    space/escape, and closes it when its graph reports EC_COMPLETE */
@@ -68,7 +68,23 @@ void mov_Exit(void)
     }
     CoUninitialize();
 }
-/* 0x422dc0 @deep 460 code hunks: the whole register map is shifted (the MOVIE pointer is ebp in the original and ebx in ours, the zero constant esi/ebx) and our frame is 4 bytes larger; `int id = 0` is a real stack store in ours and absent in the original. Every hunk read is the same operation with ebx/ebp/esi exchanged (argument copies, the five QueryInterface calls, the window setup); no missing or extra statement found. A 1472-byte register/frame job, not a meaning fix. */
+/* 0x422dc0
+   @stuck the zero constant and id: in the original id = 0 and every literal 0 (fopen/hwnd/m tests, the
+   NULL pushes) share esi (return paths mov eax, esi; later id = mov_NextId++ lands in esi), file is ebx, m
+   ebp, hwnd edi; ours keeps the zero in ebx/ebp, spills id to [esp+0x28] (the extra slot pushes wc and the
+   later slots 4 down) and swaps file/m (asmdiff --regs ebp=ebx,ebx=ebp leaves the zero/id hunks, the wc
+   slot shift and a store schedule around strcpy). headers sample: insensitive (32, one codegen). dcp try:
+   int id; id = 0; first, long id, the id declaration at every position, id = m->id = mov_NextId++,
+   separate id = mov_NextId; mov_NextId++: = control; id = 0 after fopen: 1244 B; early return 0 for
+   fopen/IsWindow/mov_Alloc with return id at the end: 1232-1257 B (no zero register at all then); id = 0
+   at each of 60 statement positions (changes meaning on the early paths): best 999 B, none byte. Fixed
+   here: CLSID_FilgraphManager (the original's strmiids symbol, M8) and ch_EmptyName for the window title
+   (M9). (tiebreak: not measured (dcp headers sample mov_Open)) prior: 460 code hunks: the whole register
+   map is shifted (the MOVIE pointer is ebp in the original and ebx in ours, the zero constant esi/ebx) and
+   our frame is 4 bytes larger; `int id = 0` is a real stack store in ours and absent in the original.
+   Every hunk read is the same operation with ebx/ebp/esi exchanged (argument copies, the five
+   QueryInterface calls, the window setup); no missing or extra statement found. A 1472-byte register/frame
+   job, not a meaning fix. */
 
 int mov_Open(char *file, HWND hwnd, HINSTANCE hinst, int x, int y, int w, int h, unsigned int flags)
 {
@@ -95,11 +111,11 @@ int mov_Open(char *file, HWND hwnd, HINSTANCE hinst, int x, int y, int w, int h,
             mov_Class = RegisterClassEx(&wc);
         }
         if (flags & MOV_FULL) {
-            hwnd = CreateWindowEx(WS_EX_TOPMOST, "MOVIEWNDCLASS", "", WS_POPUP | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
+            hwnd = CreateWindowEx(WS_EX_TOPMOST, "MOVIEWNDCLASS", ch_EmptyName, WS_POPUP | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
                                   0, 0, GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN), NULL, NULL, hinst, NULL);
             ShowCursor(FALSE);
         } else
-            hwnd = CreateWindowEx(WS_EX_TOPMOST, "MOVIEWNDCLASS", "", WS_OVERLAPPEDWINDOW,
+            hwnd = CreateWindowEx(WS_EX_TOPMOST, "MOVIEWNDCLASS", ch_EmptyName, WS_OVERLAPPEDWINDOW,
                                   CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, NULL, NULL, hinst, NULL);
         flags |= MOV_OWNWND;
     }
@@ -109,7 +125,7 @@ int mov_Open(char *file, HWND hwnd, HINSTANCE hinst, int x, int y, int w, int h,
     strcpy(m->file, file);
     m->hwnd = hwnd;
     m->flags = flags;
-    if (FAILED(CoCreateInstance(&CLSID_FilterGraph, NULL, CLSCTX_INPROC_SERVER, &IID_IGraphBuilder, (void **)&m->graph)))
+    if (FAILED(CoCreateInstance(&CLSID_FilgraphManager, NULL, CLSCTX_INPROC_SERVER, &IID_IGraphBuilder, (void **)&m->graph)))
         goto fail;
     if (FAILED(m->graph->lpVtbl->QueryInterface(m->graph, &IID_IBasicVideo, (void **)&m->video)))
         goto fail;
