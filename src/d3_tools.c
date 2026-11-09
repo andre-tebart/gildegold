@@ -1410,14 +1410,14 @@ typedef struct D3TSNOW {             /* 0x94 bytes */
     int capacity;
     int oldcount;
     int newcount;
-    int unk10;
-    int unk14[9];
+    int spare10;                     /* 0x10, 5 at creation; never read (no reader in the binary: DrawSnow / UpdateSnow / FreeSnow) */
+    int spare14[9];                  /* 0x14, 0 at creation; never read */
     D3TSNOWFLAKE *flakes;            /* 0x38 */
     float oldwindx, oldwindz;
     float windx, windz;              /* 0x44 */
     float newwindx, newwindz;
-    float unk54;
-    int unk58;
+    float peak;                      /* 0x54, the largest SetSnow command 3 value * 2500 seen; never read */
+    int spare58;                     /* 0x58, -1 at creation; never read */
     int time5c;                      /* last update */
     int time60, time64, time68, time6c;
     D3VECTOR4 campos;                /* 0x70 */
@@ -1428,8 +1428,8 @@ typedef struct D3TSNOW {             /* 0x94 bytes */
 /* 0x4148f0, allocates and initialises the snow system for count flakes: the D3TSNOW and its flake
    list, counts, wind vectors and times from d3_Time, the saved camera pose, per flake a random
    position in [-1,1], size 0.75..1.25 and wind / fall scales 0.025..0.035, and loads the
-   "Schneeflocke" texture; 0 on allocation failure.
-   @deep Q2: D3TSNOW.unk10, unk14[9], unk54 and unk58 are only ever written (CreateSnow, SetSnow command 3) and never read in src - D3TSNOW has no user outside d3_tools.c - so no role can be stated; the Q6 description is in place */
+   "Schneeflocke" texture; 0 on allocation failure. spare10 / spare14 / peak / spare58 are written but
+   never read anywhere in the binary (their names say only that). */
 D3TSNOW *d3t_CreateSnow(int count)
 {
     D3TSNOW *snow;
@@ -1444,18 +1444,18 @@ D3TSNOW *d3t_CreateSnow(int count)
     snow->capacity = count;
     snow->oldcount = count;
     snow->newcount = count;
-    snow->unk10 = 5;
-    snow->unk14[0] = 0;
-    snow->unk14[1] = 0;
-    snow->unk14[2] = 0;
-    snow->unk14[3] = 0;
-    snow->unk14[4] = 0;
-    snow->unk14[5] = 0;
-    snow->unk14[6] = 0;
-    snow->unk14[7] = 0;
-    snow->unk14[8] = 0;
-    snow->unk54 = 0;
-    snow->unk58 = -1;
+    snow->spare10 = 5;
+    snow->spare14[0] = 0;
+    snow->spare14[1] = 0;
+    snow->spare14[2] = 0;
+    snow->spare14[3] = 0;
+    snow->spare14[4] = 0;
+    snow->spare14[5] = 0;
+    snow->spare14[6] = 0;
+    snow->spare14[7] = 0;
+    snow->spare14[8] = 0;
+    snow->peak = 0;
+    snow->spare58 = -1;
     snow->oldwindx = 1.0f;
     snow->oldwindz = 0.0f;
     snow->windx = 1.0f;
@@ -1532,7 +1532,7 @@ void d3t_FreeSnow(D3TSNOW *snow)
         mem_Free(snow);
     }
 }
-/* 0x414c60: n commands follow: 0 count | 1 count duration | 2 windx windz duration | 3 unk @deep Q2: D3TSNOW.unk54 is only written (CreateSnow sets 0, SetSnow command 3 keeps max(unk54, arg*2500)) and never read in src - no role can be stated (the same gap the d3t_CreateSnow escalation records); Q6 description is already in the address comment */
+/* 0x414c60: n commands follow: 0 count | 1 count duration | 2 windx windz duration | 3 v: peak = max(peak, v * 2500) (peak is never read) */
 
 void d3t_SetSnow(D3TSNOW *snow, int n, ...)
 {
@@ -1585,7 +1585,7 @@ void d3t_SetSnow(D3TSNOW *snow, int n, ...)
             break;
         case 3:
             j = args[++k];
-            snow->unk54 = max(snow->unk54, j * 2500.0f);
+            snow->peak = max(snow->peak, j * 2500.0f);
             break;
         }
     }
