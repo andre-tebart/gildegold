@@ -2468,51 +2468,47 @@ char ai_BauplatzFilter(int obj, char *prefix)
 
 int d3_VecEqual(struct D3VECTOR *a, struct D3VECTOR *b, float eps);  /* 0x453e80 */
 
-/* 0x58f7a0, collects the placement candidates of a prefix (369 B): d3_ForEachObject (scene 0x5fb5b0, mask
-   0x180) with the filter 0x58f6a0 fills the list param_2 (count 0x6f2688); each collected object is dropped again
-   when a character of the build query is within 100.0 of its owner (+0x1f8) or of one of its "bk_" named
-   children (+0x1fc list); returns the count */
+/* 0x58f7a0, collects the build sites of a building kind: d3_ForEachObject (the default scene, mask 0x180) with the
+   filter ai_BauplatzFilter puts the objects named with prefix into list (ai_BauplatzList, count ai_BauplatzCount);
+   a site is dropped again when the object of a building (gm_BuildQuery 1, 6) stands within 100.0 of its parent
+   object or of one of its "bk_" named children; returns the count */
 int ai_FindBauplaetze(char *prefix, int *list)
 {
     int i;
-    int obj;
-    int o;
-    int it;
-    int c;
-    char *s;
-    float a[4];
-    float b[4];
+    D3OBJECT *obj;
+    D3OBJECT *o;
+    AIBLD *b;
+    float at[4];            /* d3_PointToWorld writes the angles after the position */
+    float pos[4];
 
-    U_I((unsigned)&ai_BauplatzCount) = 0;
-    U_I((unsigned)&ai_BauplatzList) = (int)list;
+    ai_BauplatzCount = 0;
+    ai_BauplatzList = list;
     d3_ForEachObject(d3_DefaultScene, 0, 0x180, ai_BauplatzFilter, prefix);
-    for (i = 0; i < U_I((unsigned)&ai_BauplatzCount); i++) {
-        obj = list[i];
-        if (obj == 0)
-            continue;
-        o = *(int *)(obj + 0x1f8);
-        if (o != 0) {
-            d3_PointToWorld(o, o + 0x4c, a);
-            for (it = gm_BuildQuery(1, 6); it != 0; it = gm_BuildNext()) {
-                c = *(int *)(it + 0x61);
-                if (c != 0) {
-                    d3_PointToWorld(c, c + 0x4c, b);
-                    if (d3_VecEqual(b, a, 100.0f) != 0) {
-                        list[i] = 0;
-                        goto next;
+    for (i = 0; i < ai_BauplatzCount; i++) {
+        if ((obj = (D3OBJECT *)ai_BauplatzList[i]) == 0)
+            goto next;
+        if (obj->parent != 0) {
+            d3_PointToWorld(obj->parent, &obj->parent->pos, (D3VECTOR *)at);
+            for (b = (AIBLD *)gm_BuildQuery(1, 6); b != 0; b = (AIBLD *)gm_BuildNext()) {
+                o = (D3OBJECT *)b->object;
+                if (o != 0) {
+                    d3_PointToWorld(o, &o->pos, (D3VECTOR *)pos);
+                    if (d3_VecEqual((D3VECTOR *)pos, (D3VECTOR *)at, 100.0f) != 0) {
+                        ai_BauplatzList[i] = 0;
+                        break;
                     }
                 }
             }
         }
-        for (s = *(char **)(obj + 0x1fc); s != 0; s = *(char **)(s + 0x1f0)) {
-            if (strncmp(s, "bk_", 3) == 0) {
-                d3_PointToWorld(s, s + 0x4c, a);
-                for (it = gm_BuildQuery(1, 6); it != 0; it = gm_BuildNext()) {
-                    c = *(int *)(it + 0x61);
-                    if (c != 0) {
-                        d3_PointToWorld(c, c + 0x4c, b);
-                        if (d3_VecEqual(b, a, 100.0f) != 0) {
-                            list[i] = 0;
+        for (obj = obj->child; obj != 0; obj = obj->next) {
+            if (strncmp(obj->name, "bk_", 3) == 0) {
+                d3_PointToWorld(obj, &obj->pos, (D3VECTOR *)at);
+                for (b = (AIBLD *)gm_BuildQuery(1, 6); b != 0; b = (AIBLD *)gm_BuildNext()) {
+                    o = (D3OBJECT *)b->object;
+                    if (o != 0) {
+                        d3_PointToWorld(o, &o->pos, (D3VECTOR *)pos);
+                        if (d3_VecEqual((D3VECTOR *)pos, (D3VECTOR *)at, 100.0f) != 0) {
+                            ai_BauplatzList[i] = 0;
                             goto next;
                         }
                     }
@@ -2522,7 +2518,7 @@ int ai_FindBauplaetze(char *prefix, int *list)
     next:
         ;
     }
-    return U_I((unsigned)&ai_BauplatzCount);
+    return ai_BauplatzCount;
 }
 
 #pragma pack(push, 1)
