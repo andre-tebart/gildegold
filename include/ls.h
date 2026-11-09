@@ -63,7 +63,7 @@ typedef struct LSHEADER {               /* 0x100 bytes, the header of a save gam
 int ls_ReadSaveHeader(int f, int *h);                                   /* 0x51cee0 */
 int ls_LoadScene(int f);                                               /* 0x51d2d0 */
 int ls_ReadObjects(int f);                                              /* 0x51d3d0 */
-char ls_HookBuildingCB(char *o);                                        /* 0x51d4f0 */
+char ls_HookBuildingCB(struct D3OBJECT *o);                                  /* 0x51d4f0 */
 char ls_ClearObjectFlag(char *o);                                       /* 0x51d530 */
 int ls_ReadBuildings(int f);                                            /* 0x51d550 */
 int ls_ReadPlayerRecords(int f);                                        /* 0x51db00 */
