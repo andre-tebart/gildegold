@@ -5219,7 +5219,7 @@ int cm_ExHire(G17MSG *m, G17STAT *s)
     c->v174 = 0;
     c->flags1c8 &= ~0x2000;
     ai_ResetJob(c);
-    memcpy(&c->flags1b4, b->workSet, sizeof(b->workSet));
+    memcpy(&c->flags1b4, &b->workSet, sizeof(b->workSet));
     if (m->hire.job != 0)
         c->budget = b->budget;
     if (s != 0) {

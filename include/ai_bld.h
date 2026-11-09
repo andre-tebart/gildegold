@@ -3,6 +3,13 @@
 #ifndef AI_BLD_H
 #define AI_BLD_H
 #pragma pack(push, 1)
+typedef struct AIWORKSET {              /* 0x10 bytes, a building's work settings (AIBLD.workSet), AICHAR.flags1b4 .. target */
+    unsigned int flags;                 /* 0x0, the order flags (AICHAR.flags1b4; ls_ReadBuildings sets bit 0 for saves
+                                           below 0x10043) */
+    int budget;                         /* 0x4, AICHAR.budget */
+    int prod;                           /* 0x8, AICHAR.prod */
+    int target;                         /* 0xc, AICHAR.target, a building id or -1 */
+} AIWORKSET;
 typedef struct AIBLD {                  /* 0xa9 bytes, ai_Blds[256] */
     unsigned char type;                 /* 0x00, index into ai_BTypes */
     int id;                             /* 0x01 */
@@ -93,8 +100,8 @@ typedef struct AIBLD {                  /* 0xa9 bytes, ai_Blds[256] */
         };
     };
     int smokeEffect;                    /* 0x95, the id of the running chimney smoke effect (evt_FindById), -1 none (sv.c 0x528490) */
-    char workSet[0x10];                 /* 0x99, the work settings a hired worker takes over into AICHAR flags1b4 ..
-                                           target (cm_ExHire); begins with flags (ls.c) */
+    AIWORKSET workSet;                  /* 0x99, the work settings a hired worker takes over into AICHAR flags1b4 ..
+                                           target (cm_ExHire copies the 16 bytes; lc.c LCWORKSET) */
 } AIBLD;
 
 typedef struct AIBTYPE {                /* 0x24d bytes, ai_BTypes[] */

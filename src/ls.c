@@ -513,7 +513,7 @@ int ls_WriteBuildings(int f)
             } else {
                 LS_W(b->kindData, 0x30)
             }
-            LS_W(b->workSet, 0x10)
+            LS_W(&b->workSet, 0x10)
         }
         off += 0xa9;
     } while (off < 0xa900);
@@ -1540,108 +1540,95 @@ char ls_ClearObjectFlag(char *o)
     o[0x213] &= ~4;
     return 1;
 }
-/* 0x51d550, reads the buildings ai_Blds from the save file f (the counterpart of the writer 0x519d20): for each of n records the fields (+0 .. +0x5c), for the type 0x1e the plant map ("f3g:PlantMap", 0x600 bytes of 0x18-byte plants, its pointer at +0x71), for the types 0x48 .. 0x4a / 0x4b .. 0x4d the type specific record at +0x65 (read by gv_ReadGraveyard / ahm_ReadRecord, or built by gv_AllocGraveyard / a new "AHM_INFO" record for the versions below 0x10047 / 0x10049), then the 0x10 flag bytes at +0x99 (for the versions below 0x10043: zero, 0xffffffff at +0xa5, bit 0 set) and the fixed +0x30 = 0x1388 and +0x95 = -1; at the end the building sites ai_Bauplaetze (ai_NBauplaetze records of 0x60 bytes). Returns 1, 0 when a read fails. */
+/* 0x51d550, reads the buildings ai_Blds from the save file f (the counterpart of ls_WriteBuildings): for each of n
+   AIBLD records the fields (workRate above 4 is reset to 2; priceFactor from 0x10028, the round sums from 0x10057, a
+   dropped int below 0x10032), for the type 0x1e a new vegetation map ("f3g:PlantMap", 64 records, their objects 0),
+   for the types 0x48 .. 0x4a / 0x4b .. 0x4d their graveyard / alchemist record (gv_ReadGraveyard / ahm_ReadRecord; below
+   0x10047 / 0x10049 a new one is made after the old 0x30 bytes), else the 0x30 kind bytes; then the work settings
+   (below 0x10043: cleared, target -1, flag bit 0 set), travel30 = 5000 and no smoke effect; at the end the building
+   sites ai_Bauplaetze (ai_NBauplaetze records). Returns 1, 0 when a read fails. */
 
 int ls_ReadBuildings(int f)
 {
-    int n, k, off = 0, i, r;
-    char *p;
-    char *q;
-    int *pi;
-    unsigned *flags;
+    int n, k, i, j;
+    AIBLD *b;
+    char c;
     int dummy;
 
     gm_ClearBuildings();
     LS_R(&n, 4)
     for (k = 0; k < n; k++) {
-        p = ai_Blds + off;
-        LS_R(p, 1)
-        LS_R(p + 1, 4)
-        LS_R(p + 5, 0x20)
-        LS_R(p + 0x25, 2)
-        LS_R(p + 0x27, 2)
-        LS_R(p + 0x29, 2)
-        LS_R(p + 0x2b, 4)
-        LS_R(p + 0x2f, 1)
-        LS_R(p + 0x34, 1)
-        LS_R(p + 0x35, 4)
-        LS_R(p + 0x39, 4)
-        LS_R(p + 0x3d, 4)
-        pi = (int *)(p + 0x41);
-        LS_R(pi, 4)
-        if (*pi > 4)
-            *pi = 2;
-        LS_R(p + 0x45, 4)
+        b = &((AIBLD *)ai_Blds)[k];
+        LS_R(&b->type, 1)
+        LS_R(&b->id, 4)
+        LS_R(b->name, 0x20)
+        LS_R(&b->masterId, 2)
+        LS_R(&b->owner, 2)
+        LS_R(&b->mainRoom, 2)
+        LS_R(&b->saved2b, 4)
+        LS_R(&b->saved2f, 1)
+        LS_R(&b->side, 1)
+        LS_R(&b->saved35, 4)
+        LS_R(&b->budget, 4)
+        LS_R(&b->wageRate, 4)
+        LS_R(&b->workRate, 4)
+        if (b->workRate > 4)
+            b->workRate = 2;
+        LS_R(&b->saved45, 4)
         if (ls_Version >= 0x10028)
-            LS_R(p + 0x49, 4)
+            LS_R(&b->priceFactor, 4)
         if (ls_Version < 0x10032)
             LS_R(&dummy, 4)
         if (ls_Version >= 0x10057) {
-            LS_R(p + 0x4d, 4)
-            LS_R(p + 0x51, 4)
-            LS_R(p + 0x55, 4)
+            LS_R(&b->roundSums[0], 4)
+            LS_R(&b->roundSums[1], 4)
+            LS_R(&b->roundSums[2], 4)
         }
-        LS_R(p + 0x5a, 2)
-        LS_R(p + 0x5c, 1)
-        if (*p == 0x1e) {
-            *(char **)(p + 0x71) = mem_Alloc(0x600, "f3g:PlantMap");
-            for (i = 0; i < 0x600; i += 0x18) {
-                LS_R(*(char **)(p + 0x71) + i, 4)
-                LS_R(*(char **)(p + 0x71) + i + 4, 4)
-                LS_R(*(char **)(p + 0x71) + i + 8, 1)
-                LS_R(*(char **)(p + 0x71) + i + 9, 1)
-                LS_R(*(char **)(p + 0x71) + i + 10, 2)
-                LS_R(*(char **)(p + 0x71) + i + 0x10, 4)
-                LS_R(*(char **)(p + 0x71) + i + 0xc, 1)
-                LS_R(*(char **)(p + 0x71) + i + 0xd, 1)
-                *(int *)(*(char **)(p + 0x71) + i + 0x14) = 0;
+        LS_R(&b->flags5aw, 2)
+        LS_R(&b->level, 1)
+        c = b->type;
+        if (c == 0x1e) {
+            b->plants = (int)mem_Alloc(0x600, "f3g:PlantMap");
+            for (j = 0; j < 0x40; j++) {
+                LS_R(&((AIMAPENT *)b->plants)[j].id, 4)
+                LS_R(&((AIMAPENT *)b->plants)[j].bldId, 4)
+                LS_R(&((AIMAPENT *)b->plants)[j].x, 1)
+                LS_R(&((AIMAPENT *)b->plants)[j].z, 1)
+                LS_R(&((AIMAPENT *)b->plants)[j].type, 2)
+                LS_R(&((AIMAPENT *)b->plants)[j].fallId, 4)
+                LS_R(&((AIMAPENT *)b->plants)[j].size, 1)
+                LS_R(&((AIMAPENT *)b->plants)[j].state, 1)
+                ((AIMAPENT *)b->plants)[j].obj = 0;
             }
-        } else {
-            if (*p == 'H' || *p == 'I' || *p == 'J') {
-                if (ls_Version < 0x10047) {
-                    LS_R(p + 0x65, 0x30)
-                    *(int *)(p + 0x65) = (int)gv_AllocGraveyard(p);
-                    goto tail;
-                }
-                r = gv_ReadGraveyard(f, p);
-            } else if (*p == 'K' || *p == 'L' || *p == 'M') {
-                if (ls_Version < 0x10049) {
-                    int *a;
-
-                    LS_R(p + 0x65, 0x30)
-                    a = (int *)mem_Alloc(0x3c, "AHM_INFO");
-                    *(int **)(p + 0x65) = a;
-                    *a = -1;
-                    goto tail;
-                }
-                r = ahm_ReadRecord(f, p);
+        } else if (c == 'H' || c == 'I' || c == 'J') {
+            if (ls_Version >= 0x10047) {
+                if (gv_ReadGraveyard((void *)f, (unsigned char *)b) == 0)
+                    return 0;
             } else {
-                r = ls_Read((int)(p + 0x65), 0x30, 1, f);
+                LS_R(b->kindData, 0x30)
+                b->yard = gv_AllocGraveyard((unsigned char *)b);
             }
-            if (r == 0)
-                return 0;
-        }
-tail:
-        flags = (unsigned *)(p + 0x99);
-        if (ls_Version < 0x10043) {
-            memset(p + 0x99, 0, 0x10);
-            p[0xa5] = -1;
-            p[0xa6] = -1;
-            p[0xa7] = -1;
-            p[0xa8] = -1;
-            *flags |= 1;
+        } else if (c == 'K' || c == 'L' || c == 'M') {
+            if (ls_Version >= 0x10049) {
+                if (ahm_ReadRecord((void *)f, (unsigned char *)b) == 0)
+                    return 0;
+            } else {
+                LS_R(b->kindData, 0x30)
+                b->ahm = (struct AHMREC *)mem_Alloc(0x3c, "AHM_INFO");
+                b->ahm->id = -1;
+            }
         } else {
-            LS_R(flags, 0x10)
+            LS_R(b->kindData, 0x30)
         }
-        p[0x30] = 0x88;
-        p[0x31] = 0x13;
-        p[0x32] = 0;
-        p[0x33] = 0;
-        p[0x95] = -1;
-        p[0x96] = -1;
-        p[0x97] = -1;
-        p[0x98] = -1;
-        off += 0xa9;
+        if (ls_Version >= 0x10043) {
+            LS_R(&b->workSet, 0x10)
+        } else {
+            memset(&b->workSet, 0, 0x10);
+            b->workSet.target = -1;
+            b->workSet.flags |= 1;
+        }
+        b->travel30 = 5000;
+        b->smokeEffect = -1;
     }
     LS_R(&ai_NBauplaetze, 4)
     ai_Bauplaetze = (G15BK *)realloc(ai_Bauplaetze, ai_NBauplaetze * 0x60);

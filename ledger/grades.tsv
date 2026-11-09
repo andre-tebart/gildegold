@@ -1469,7 +1469,7 @@ exe	0x004817a0	ai_CalcAngriff	ai	draft	draft
 exe	0x00481ef0	ai_CalcMeisterDiebe	ai	draft	draft		
 exe	0x00482f00	ai_CalcMeisterRaeuber	ai	draft	readable	deep	
 exe	0x004836a0	ai_CalcMeisterBank	ai	byte	draft	deep	
-exe	0x00483a60	ai_Unk483a60	ai	byte	draft	deep	
+exe	0x00483a60	ai_Unk483a60	ai	shape	draft	deep	byte+draft -> shape+draft at c0993bbb: ai_bld.h types AIBLD.workSet as the AIWORKSET record (flags / budget / prod / target, what cm_ExHire copies into AICHAR.flags1b4 .. target and ls_ReadBuildings sets) instead of char[0x10]; ai_Unk483a60 never touches workSet, only its two stack slots swap (slots 12, the same code otherwise) under the changed declaration of AIBLD, so its byte match was no evidence of the original's source [waits for: the declaration set of ai.c's includes (ai.h > ai_bld.h), match-deep on the slot order]
 exe	0x00483d30	ai_StartBuildingWork	ai	shape	readable		
 exe	0x00483ee0	ai_EndWorkerPose	ai	byte	readable		
 exe	0x00483fc0	ai_Unk483fc0	ai	draft	draft		
