@@ -2498,144 +2498,128 @@ int ls_ReadEnvironment(int f)
     return 1;
   return 0;
 }
-/* 0x5206b0, the fix-up after a load, the counterpart of 0x519a00 before a save: it turns the loaded ids back into pointers: the player's character (ai_PlayerChar = gm_FindChar, 0 = fail), the market building (ai_MarketBuilding = gm_BuildQuery (1, 5, 10)), the eight kind 0xb characters (ai_KindBChars), the reference fields of the ai_Chars records (gm_FindById into +0x16c and +0x170, he_FindEvent into +0x17c, +0x184 cleared), the objects of ai_Objects (an object with an owner is chained into the owner's list: the heads at +0x5d building / +0x14 object / +0x178 character, +0x3f the next link; objects of the good type 0x1d lose their +0x24 word), the event records of he_Events (the kinds 0x29 0x2d 0x2f 0x11 0x25 5 10 0x26 or flagged 8 are re-initialised through he_RunHandlers[kind] with ai_GameState = 2, the stored +0x70 saved and put back; the kinds 0xd / 0xf / 0x78 / 0x76 / 0x14 get their own fixes), the first word of the 0xa4-byte records at 0x74e1e0 (an event owner id, he_FindEvent (1, 1, id)) and the target words of the reference records (ls_RefTargets, by kind: 1 gm_FindChar, 3 gm_FindObjectInst, 2 gm_FindBuildingById, 9 cm_PartyById); it closes with gm_ResetStock. Returns 1, 0 when the player's character is gone */
+/* 0x5206b0, the fix-up after a load, the counterpart of ls_RefsToIds 0x519a00 before a save: it turns the loaded ids back into pointers: the player's character (ai_PlayerChar = gm_FindChar, 0 = fail), the market building (ai_MarketBuilding = gm_BuildQuery (1, 5, 10)), the eight kind 0xb characters (ai_KindBChars, from version 0x10017), the reference fields of the used ai_Chars records (bld / bld2 by gm_FindById, job by he_FindEvent, model cleared), the objects of ai_Objects (an object with an owner is appended to the owner's list: AIBLD.objList, AIOBJ.list or AICHAR.inventory, linked by AIOBJ.next; a cart of goods type 0x1d loses its job24), the events of he_Jobs in scene 0 (the kinds 0x29 0x2d 0x2f 0x11 0x25 5 10 0x26 or those in the event bar re-run their handler he_RunHandlers[kind] with ai_GameState = 2 and the stage cleared, the stage put back after; the kinds 0xd / 0xf / 0x78 / 0x76 / 0x14 get their own fixes), the events of the carried-goods records gm_CarryRecs and the values of cm_SendStates by kind (1 gm_FindChar, 3 gm_FindObjectInst, 2 gm_FindBuildingById, 9 cm_PartyById); it closes with gm_ResetStock. Returns 1, 0 when the player's character is gone */
 
 
 int ls_FixupAfterLoad(void)
 {
-    int *p, *q;
-    char *r;
-    int i, saved, v, c;
-    unsigned char kind, *pb;
-    unsigned short *id, *otype;
-    int *owner, *ev70, *ev10, *evb8, *list, *next;
-    unsigned char **v24;
+    int i, saved, v;
+    int bld, obj, chr;      /* what gm_FindById finds for an id: a building, an object or a character */
+    AICHAR *c;
+    AIOBJ *o, *last;
+    AIJOB *j;
 
     ai_PlayerCharC = (char *)gm_FindChar((int)ai_PlayerCharC);
     if (ai_PlayerCharC == 0)
         return 0;
-    ai_MarketBuilding = (int)gm_BuildQuery(1, 5, 10);
+    ai_MarketBuilding = (AIBLD *)gm_BuildQuery(1, 5, 10);
     if (ls_Version >= 0x10017) {
-        for (q = (int *)ai_KindBChars; (int)q < (int)(ai_KindBChars + 8); q++)
-            *q = (int)gm_FindChar(*q);
+        for (i = 0; i < 8; i++)
+            ai_KindBChars[i] = (char *)gm_FindChar((int)ai_KindBChars[i]);
     }
-    for (p = (int *)((char *)ai_Chars + 0x16c); (int)p < (int)(ai_Chars + 768) + 0x16c; p = (int *)((char *)p + 0x21c)) {
-        id = (unsigned short *)((char *)p - 0x16c);
-        if (*id != 0xffff) {
-            if (p[0] == -1)
-                p[0] = 0;
+    for (i = 0; i < 768; i++) {
+        c = &ai_CharsT[i];
+        if (c->id != 0xffff) {
+            if ((int)c->bld == -1)
+                c->bld = 0;
             else
-                gm_FindById(p, 0, 0, p[0]);
-            if (p[1] == -1)
-                p[1] = 0;
+                gm_FindById((int *)&c->bld, 0, 0, (int)c->bld);
+            if ((int)c->bld2 == -1)
+                c->bld2 = 0;
             else
-                gm_FindById(p + 1, 0, 0, p[1]);
-            if (p[4] == -1)
-                p[4] = 0;
+                gm_FindById((int *)&c->bld2, 0, 0, (int)c->bld2);
+            if ((int)c->job == -1)
+                c->job = 0;
             else
-                p[4] = (int)he_FindEvent(1, 1, p[4]);
-            p[6] = 0;
+                c->job = (AIJOB *)he_FindEvent(1, 1, (int)c->job);
+            c->model = 0;
         }
     }
     for (i = 0; i < f3gm_ObjectCount; i++) {
-        int a, b;
-
-        r = (char *)ai_Objects + i * 0x43;
-        otype = (unsigned short *)r;
-        owner = (int *)(r + 6);
-        if (ai_Goods[*otype * 0x41] == 0x1d)
-            *(int *)(r + 0x24) = 0;
-        if (*owner != -1 && gm_FindById(&a, &b, &c, *owner) != 0) {
-            int link;
-
-            if (a == 0) {
-                if (b == 0) {
-                    list = (int *)(c + 0x178);
-                    link = *list;
-                    if (link == 0) {
-                        *list = (int)r;
-                        continue;
-                    }
+        o = &ai_Objects[i];
+        if (((AIGOOD *)ai_Goods)[o->id].type == 0x1d)
+            o->job24 = 0;
+        if (o->ownerId != -1 && gm_FindById(&bld, &obj, &chr, o->ownerId) != 0) {
+            if (bld != 0) {
+                if (((AIBLD *)bld)->objList == 0) {
+                    ((AIBLD *)bld)->objList = (int)o;
                 } else {
-                    list = (int *)(b + 0x14);
-                    link = *list;
-                    if (link == 0) {
-                        *list = (int)r;
-                        continue;
-                    }
+                    for (last = (AIOBJ *)((AIBLD *)bld)->objList; last->next != 0; last = last->next)
+                        ;
+                    last->next = o;
+                }
+            } else if (obj != 0) {
+                if (((AIOBJ *)obj)->list == 0) {
+                    ((AIOBJ *)obj)->list = (int)o;
+                } else {
+                    for (last = (AIOBJ *)((AIOBJ *)obj)->list; last->next != 0; last = last->next)
+                        ;
+                    last->next = o;
                 }
             } else {
-                list = (int *)(a + 0x5d);
-                link = *list;
-                if (link == 0) {
-                    *list = (int)r;
-                    continue;
+                if (((AICHAR *)chr)->inventory == 0) {
+                    ((AICHAR *)chr)->inventory = (int)o;
+                } else {
+                    for (last = (AIOBJ *)((AICHAR *)chr)->inventory; last->next != 0; last = last->next)
+                        ;
+                    last->next = o;
                 }
             }
-            next = (int *)(link + 0x3f);
-            while (*next != 0) {
-                link = *next;
-                next = (int *)(link + 0x3f);
-            }
-            *next = (int)r;
         }
     }
     saved = d3_CurrentScene;
     d3if_SelectScene(0, 0);
-    for (pb = he_Events; (int)pb < (int)he_QuickList; pb += 0x14c) {
-        kind = *pb;
-        if (kind != 0) {
-            if ((kind == 0x29 || kind == 0x2d || kind == 0x2f || kind == 0x11 || kind == 0x25 || kind == 5
-                 || kind == 10 || kind == 0x26 || (pb[0x78] & 8) != 0)
-                && (v = *(ev70 = (int *)(pb + 0x70))) != 0) {
-                *ev70 = 0;
+    for (j = he_Jobs; (int)j < (int)&he_Jobs[0x400]; j++) {
+        if (j->kind == 0)
+            continue;
+        if (j->kind == 0x29 || j->kind == 0x2d || j->kind == 0x2f || j->kind == 0x11 || j->kind == 0x25 || j->kind == 5
+            || j->kind == 10 || j->kind == 0x26 || (j->opts & 8) != 0) {
+            v = j->stage;
+            if (v != 0) {
+                j->stage = 0;
                 ai_GameState = 2;
-                if (kind == 0x11)
-                    pb[0xf0] &= 0xef;
-                he_RunHandlers[kind](pb);
+                if (j->kind == 0x11)
+                    j->modes &= 0xef;
+                he_RunHandlers[(unsigned char)j->kind]((unsigned char *)j);
                 ai_GameState = 0;
-                *ev70 = v;
+                j->stage = v;
             }
-            kind = *pb;
-            if (kind != 0xc) {
-                if (kind == 0xd) {
-                    evb8 = (int *)(pb + 0xb8);
-                    gm_FindById(&c, 0, 0, *evb8);
-                    if (c != 0)
-                        he_ShowConstruction((int)pb);
-                } else if (kind == 0xf) {
-                    ev10 = (int *)(pb + 0x10);
-                    v = gm_FindObjectInst(*ev10);
-                    if (v != 0) {
-                        v24 = (unsigned char **)(v + 0x24);
-                        *v24 = pb;
-                    }
-                } else if (kind == 0x78) {
-                    memset(pb + 200, 0, 8);
-                } else if (kind == 0x76) {
-                    memset(pb + 0xb0, 0, 4);
-                } else if (kind == 0x14) {
-                    sv_CountGroupMembers((char *)pb);
-                    pb[0xac] = pb[0x14] + pb[0x18];
-                }
-            }
+        }
+        if (j->kind == 0xc) {
+            /* nothing (the original tests the kind 0xc first and leaves it alone) */
+        } else if (j->kind == 0xd) {
+            gm_FindById(&bld, 0, 0, j->constructBld);
+            if (bld != 0)
+                he_ShowConstruction((int)j);
+        } else if (j->kind == 0xf) {
+            o = (AIOBJ *)gm_FindObjectInst(j->from);
+            if (o != 0)
+                o->job24 = j;
+        } else if (j->kind == 0x78) {
+            j->argc8 = 0;
+            j->wordcc = 0;
+        } else if (j->kind == 0x76) {
+            j->effectObj = 0;
+        } else if (j->kind == 0x14) {
+            sv_CountGroupMembers((char *)j);
+            j->groupSize = (unsigned char)(j->rank1Count + j->rank2Count);
         }
     }
     d3if_SelectScene(saved, 0);
-    for (q = (int *)((unsigned)&he_QuickList + 0x6a0); (int)q < ((unsigned)&he_QuickList + 0xaaa0); q += 0x29) {
-        if (*q != 0)
-            *q = (int)he_FindEvent(1, 1, *q);
+    for (i = 0; i < 0x100; i++) {
+        if (gm_CarryRecs[i].ref != 0)
+            gm_CarryRecs[i].ref = (int)he_FindEvent(1, 1, gm_CarryRecs[i].ref);
     }
-    for (q = ls_RefTargets; (int)q < (int)ls_RefTargets + 0x50000; q = (int *)((char *)q + 10)) {
-        if (*q != 0) {
-            if (*((char *)q - 5) == 1)
-                *q = (int)gm_FindChar(*q);
-            if (*((char *)q - 5) == 3)
-                *q = gm_FindObjectInst(*q);
-            if (*((char *)q - 5) == 2)
-                *q = (int)gm_FindBuildingById(*q);
-            if (*((char *)q - 5) == 9)
-                *q = cm_PartyById(*q);
+    for (i = 0; i < 0x8000; i++) {
+        if (cm_SendStates[i].value != 0) {
+            if (cm_SendStates[i].kind == 1)
+                cm_SendStates[i].value = (int)gm_FindChar(cm_SendStates[i].value);
+            if (cm_SendStates[i].kind == 3)
+                cm_SendStates[i].value = gm_FindObjectInst(cm_SendStates[i].value);
+            if (cm_SendStates[i].kind == 2)
+                cm_SendStates[i].value = (int)gm_FindBuildingById(cm_SendStates[i].value);
+            if (cm_SendStates[i].kind == 9)
+                cm_SendStates[i].value = cm_PartyById(cm_SendStates[i].value);
         }
     }
     gm_ResetStock();

@@ -31,7 +31,14 @@ typedef struct AIJOB {                  /* 0x14c bytes, a job / event record (he
     char pad0a[2];
     int netId;                          /* 0x0c, the netId of that character, -1: none (the message's 'to') */
     int from;                           /* 0x10, the message's fromId */
-    int words14[12];                    /* 0x14, the message's 12 words from +0x10 */
+    union {
+        int words14[12];                /* 0x14, the message's 12 words from +0x10 */
+        struct {                        /* 0x14, of a group job 0x14 (sv.c SVGROUP): its members counted by the title
+                                           ranks of their building type (sv_CountGroupMembers) */
+            int rank1Count;             /* 0x14, the members of the type's first rank */
+            int rank2Count;             /* 0x18, those of its second rank */
+        };
+    };
     AITIME start;                       /* 0x44, the start time (sv_RefreshPanel measures the progress from it) */
     AITIME end;                         /* 0x52, the end time of the kinds whose length is fixed at the start (0x40, the building jobs 0x1e / 0x1f) */
     AITIME clock60;                     /* 0x60, of a running income event 3 its second clock (the alloc handler 0x568ae0
@@ -68,6 +75,8 @@ typedef struct AIJOB {                  /* 0x14c bytes, a job / event record (he
                         unsigned short hi;      /* 0xae */
                     } w;
                 } u;
+                unsigned char groupSize;        /* 0xac, of a group job 0x14 rank1Count + rank2Count (ls_FixupAfterLoad
+                                                   recounts it after a load) */
                 unsigned char thiefClass;       /* 0xac, of the thief event 0x16 (AIMSG.thiefClass, 0x54 further on): 2 / 3,
                                                    the two thief rows of lc.c ai_TrainingWindow */
                 struct {                        /* 0xac, of the talent training event 0x60 (AIMSG.training, 0x54 further on) */
@@ -109,15 +118,20 @@ typedef struct AIJOB {                  /* 0x14c bytes, a job / event record (he
                                                            second-kind slots it adds, added to AIOBJ.lvl1d and checked
                                                            against AIBTYPE.min1 (ai_BuySlots) */
                     };
-                    int unkb8;                          /* 0xb8, a job-kind specific payload word: of a harvest job (0x28) the
+                    union {
+                        int unkb8;                      /* 0xb8, a job-kind specific payload word: of a harvest job (0x28) the
                                                            plant it works (veg_FindPlantId, ai_SendJobOrders), else a counter / an
                                                            id / a news id (he.c per kind); no single role name */
+                        int constructBld;               /* 0xb8, of a construction event 0xd the id of the building under
+                                                           construction (he.c HECONSTRUCTION.bld, he_ShowConstruction) */
+                    };
                     char padbc[8];
                     int workTotal;                      /* 0xc4, of a building job 0xd the total that argc8 counts up to (sv_RefreshPanel: progress argc8 / workTotal) */
                     int argc8;                          /* 0xc8, a job-kind specific word (he.c: a random table entry, a task, an
                                                            object); a workshop's chimney smokes only while its job has none
                                                            (sv.c 0x528490) */
-                    char padcc[4];
+                    int wordcc;                         /* 0xcc, a job-kind specific word; of a kind 0x78 cleared with argc8
+                                                           after a load (ls_FixupAfterLoad) */
                     unsigned short in[3];               /* 0xd0, the workshop kinds */
                     unsigned short out[3];              /* 0xd6 */
                     int amount[3];                      /* 0xdc */
