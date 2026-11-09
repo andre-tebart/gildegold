@@ -33,6 +33,7 @@
 /* full rebuild: the symbols whose original addresses the code above spells literally */
 
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
+#define ai_BTypesT (*(AIBTYPE **)&ai_BTypes)  /* 0x7e3f30, ai_BTypes (ahm.c: char *) as the AIBTYPE records it points to */
 #define ORD_FLAG_BLOCKED 0x400000  /* the privilege flag that blocks the misappropriation order (0x4f6b40) */
 
 /* ai_RatingBase as the int out[6] of the statistics record: the original moves the float's bits with a dword mov
@@ -1902,53 +1903,58 @@ void ord_AppendStatisticsRound(void)
     ord_StatisticsHistory[15].score = ord_Statistics.score;
     ord_StatisticsHistory[15].base = (int)ai_RatingBase;
 }
-/* 0x4f8920, rebuilds the three float sums (+0xc, +0x10, +0x14) of every cell of the 8 x 8 grid 0x91ae60 from the 0x200 records of 0x2d bytes at 0x91f700 (+0x25 a pointer, +0 an id, -1 = free): the object with the id at +0x21 (0x501190 (1, 1, id)) must have a +0x61 record and a building kind (ai_BTypes[kind * 0x24d]) outside 0xb .. 0xd and not 0x10; its cell x, y (0x4f8300), the table record of the byte +0x1c (0x4f2720): w = (short)(+0x22) / rec[2] * rec[1]; the center cell gets w * 0x5eb7ac at +0xc, each cell of the 3 x 3 neighbourhood w at +0x10 and w * 0x5eb7ac at +0xc */
+/* 0x4f8920, rebuilds the three float sums of every cell of the 8 x 8 grid ai_Grid from the open crimes of ai_Crimes
+   (state set, id not -1): the building of the crime's place (gm_BuildQuery(1, 1, place)) must have a scene object
+   and a kind outside 0xb .. 0xd and not 0x10; its cell x, y (ord_GetGridCell), the law record of the crime
+   (gv_GetTableRecord): w = count / crimeCount * guilt (the share of the crime's weight still to run); the center
+   cell gets w * 0.5 in halfWeightSum, each cell of the 3 x 3 neighbourhood w in weightSum and w * 0.5 in
+   halfWeightSum */
 
 void ord_RebuildGridSums(void)
 {
-    char *p;
-    char r[0x2d];
-    int rec[9];
+    CRIME *p;
+    CRIME r;
+    AIDEC dec;
     int x;
     int y;
     float w;
-    float w2;
-    char *o;
-    char *b;
-    char *q;
+    ORDBLD *b;
+    AIBTYPE *bt;
+    struct D3OBJECT *q;
+    int n;
     int i;
     int j;
     int xhi;
     int yhi;
     int xlo;
     int ylo;
-    unsigned char k;
 
-    for (i = 0; i < 64; i++) {
-        ORD_CELLS[i].halfWeightSum = 0;
-        ORD_CELLS[i].weightSum = 0;
-        ORD_CELLS[i].buildingCount = 0;
+    for (i = 0; i < 8; i++) {
+        for (j = 0; j < 8; j++) {
+            ai_Grid[i][j].weightSum = 0;
+            ai_Grid[i][j].halfWeightSum = 0;
+            ai_Grid[i][j].buildingCount = 0;
+        }
     }
-    for (p = ai_Crimes; p < ai_Crimes + 0x5a00; p += 0x2d) {
-        if (*(int *)(p + 0x25) == 0 || *(int *)p == -1)
+    for (n = 0; n < 0x200; n++) {
+        p = &((CRIME *)ai_Crimes)[n];
+        if (p->state == 0 || p->id == -1)
             continue;
-        memcpy(r, p, 0x2d);
-        o = (char *)gm_BuildQuery(1, 1, *(int *)(r + 0x21));
-        if (o == 0 || o[0] == 0)
+        r = *p;
+        b = (ORDBLD *)gm_BuildQuery(1, 1, r.place);
+        if (b == 0 || b->type == 0)
             continue;
-        b = ai_BTypes + (unsigned char)o[0] * 0x24d;
-        q = *(char **)(o + 0x61);
+        bt = &ai_BTypesT[b->type];
+        q = b->object;
         if (q == 0)
             continue;
-        k = (unsigned char)b[0];
-        if ((k >= 0xb && k <= 0xd) || k == 0x10)
+        if ((bt->kind >= 0xb && bt->kind <= 0xd) || bt->kind == 0x10)
             continue;
-        if (ord_GetGridCell(q + 0x4c, &x, &y) == 0)
+        if (ord_GetGridCell((char *)&q->pos, &x, &y) == 0)
             continue;
-        gv_GetTableRecord((unsigned char)r[0x1c], rec);
-        w = (float)*(short *)(r + 0x22) / (float)rec[2] * (float)rec[1];
-        w2 = w * 0.5f;
-        ORD_CELLS[y + x * 8].halfWeightSum += w2;
+        gv_GetTableRecord(r.law, (int *)&dec);
+        w = (float)r.count / dec.crimeCount * dec.guilt;
+        ai_Grid[x][y].halfWeightSum += w * 0.5f;
         xhi = x + 1 > 8 ? 8 : x + 1;
         yhi = y + 1 > 8 ? 8 : y + 1;
         xlo = x - 1 < 0 ? 0 : x - 1;
@@ -1956,7 +1962,7 @@ void ord_RebuildGridSums(void)
             ylo = y - 1 < 0 ? 0 : y - 1;
             for (j = ylo; j <= yhi; j++) {
                 ORD_CELLS[j + i * 8].weightSum += w;
-                ORD_CELLS[j + i * 8].halfWeightSum += w2;
+                ORD_CELLS[j + i * 8].halfWeightSum += w * 0.5f;
             }
         }
     }
