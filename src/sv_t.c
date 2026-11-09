@@ -625,7 +625,6 @@ typedef struct SHOTRESULT {     /* 0x38 bytes, three of them in ai_ShotTable: th
     SHOTENTRY e[3];          /* +0x8 */
 } SHOTRESULT;
 #define sv_CheckGoodAmountB ((int (*)(char *, int, unsigned char))sv_CheckGoodAmount)  /* @original: ai_AlchemistHire pushes the player byte unextended (mov al, ai_OwnPlayer / push eax), a char third parameter; sv_CheckGoodAmount itself masks it (t & 0xff) */
-#define gm_ConvertMoney3 ((int (*)(int, unsigned char, int))gm_ConvertMoney)  /* @original: the calls at 0x57df2c / 0x57df3d push a third word (the previous result) that f3gm.c:7921 never reads (it takes a, k); no byte-matched caller, the evidence is the pushes in the original (the same 3-push shape is noted at hst.c ai_SplitTokenFormat); header unchanged because every matched caller passes two words */
 int ai_TutorialChapterOn[5] = { 1, 1, 1, 1, 1 };  /* 0x62918c, per chapter 1 = played (the start window's check boxes, ai_TutorialWindow) */
 int (*ai_TutorialChapterInit[5])(void) = { ai_TutorialInitChapter1, ai_TutorialInitChapter2, ai_TutorialInitChapter3, ai_TutorialInitChapter4, ai_TutorialInitChapter5 };  /* 0x6291a0, the chapter chain builders the start appends for every chapter played */
 unsigned int ai_GraveChatterAt = 0xffffffff;  /* 0x62a538, d3_Time at the last graveyard chatter tick (ai_GraveyardChatter runs every 0x1194 ms) */
@@ -690,7 +689,6 @@ const float ai_CannonZoomRange = 1450.0f;  /* 0x5eecac, the distance the zoom mo
 #include "d2.h"
 #include "sv.h"
 #include "gfx.h"
-#define d2_SetObjValue2 ((void (*)(int, int))d2_SetObjValue)  /* 0x475cb0 (d2.h: five parameters): @original ai_AlchemistFundWindow pushes only the object and the value (0x57df47 push eax / push ebp); the unit's four-argument calls use menu.h's d2_SetObjValue4 */
 #define d2_PlaceMainWindowF ((void (*)(int, int))d2_PlaceMainWindow)  /* 0x475850 (d2.h: int view): @original the callers push the placement flags too, which the original's tail jump leaves on the stack for d2_PlaceWindowScaled */
 
 /* 0x575860, the tutorial's tick: nothing (-4) without the tutorial, its run record or its event slot; puts the
@@ -5109,21 +5107,12 @@ int ai_AlchemistTrainShareWindow(unsigned char *obj, AHMREC *rec, int idx)
 }
 /* 0x57de60, the money window of the alchemist object obj ("Locations\\Domizil\\skill"; rec is not read): the
    object's value (ahm_ObjectValue) and its tenth, the share 3 of the owning character (ahm_Share; no owner
-   answers 0 at once), the text 0x403a with an input field (d2_GetWinObj) preset with the tenth converted to the
-   player's money (gm_ConvertMoney, called the original's way: the second and third call get the previous result
-   as a third word) and the answers 0x403b. The first answer takes the field's amount (gm_PlayerFactor) from
+   answers 0 at once), the text 0x403a with an input field (d2_GetWinObj) set to the range tenth .. value with
+   the tenth preset, each converted to the player's money (gm_ConvertMoney), and the answers 0x403b. The first answer takes the field's amount (gm_PlayerFactor) from
    the player's character when sv_CheckGoodAmount agrees: the value is raised by amount / object value * share
    * 0.75 (ahm_SendAddValue, the float passed by value), the amount is moved from the player (cm_SendMoveGoods)
    and the window closes with the answer 1; the second answer and the right mouse button close it. The window
-   closes with 0 when the owner is gone
-   @deep read whole against the original and reconstructed typed (signature (obj, rec) as the caller
-   pushes, gm_ConvertMoney's extra third word through a cast macro, the float passed by value to
-   ahm_SendAddValue through a cast macro, the loop as a do-while with the owner test on top; 625 vs 631
-   bytes, asmdiff --symbols: every call, argument, constant and branch in the original's order, 8
-   instructions apart). Left: stack-pop scheduling only: the original pops the three gm_ConvertMoney calls
-   separately (add esp,0x14 / 8 / 8 after the first, second and third call) and the whole prologue pile
-   once later (add esp,0x34), ours defers them into one add esp,0x40 / 0x18; the original's field-object
-   slot is [esp+0x3c] vs ours [esp+0x20] */
+   closes with 0 when the owner is gone */
 int ai_AlchemistFundWindow(unsigned char *obj, AHMREC *rec)
 {
     char *owner;
@@ -5152,10 +5141,8 @@ int ai_AlchemistFundWindow(unsigned char *obj, AHMREC *rec)
     d2_SetForm(win, 1);
     v = io_PrintText(0x403a, 0x182, ai_OwnPlayer);
     field = d2_GetWinObj(win, 1, v);
-    v = gm_ConvertMoney(tenth, ai_OwnPlayer);
-    v = gm_ConvertMoney3(points, ai_OwnPlayer, v);
-    v = gm_ConvertMoney3(tenth, ai_OwnPlayer, v);
-    d2_SetObjValue2(field, v);
+    d2_SetObjValue4(field, gm_ConvertMoney(tenth, ai_OwnPlayer), gm_ConvertMoney(points, ai_OwnPlayer),
+                    gm_ConvertMoney(tenth, ai_OwnPlayer));
     d2_SetForm(win, 2);
     v = io_PrintText(0x403b);
     ok = d2_GetWinObj(win, 2, v);
