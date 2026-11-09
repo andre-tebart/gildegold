@@ -1451,7 +1451,7 @@ exe	0x0047dd00	ai_WorkLimit	ai	byte	readable
 exe	0x0047dd30	ai_WorkLoad	ai	byte	readable		
 exe	0x0047dd70	ai_WorksForMaster	ai	byte	readable		
 exe	0x0047dd90	ai_IsLocalMaster	ai	byte	readable		
-exe	0x0047ddf0	ai_FindPartner	ai	draft	readable		
+exe	0x0047ddf0	ai_FindPartner	ai	draft	readable	deep	
 exe	0x0047e360	ai_MasterUpdate	ai	draft	readable	deep	
 exe	0x0047e560	ai_UpdateCharacters	ai	byte	readable		
 exe	0x0047e7f0	ai_CanAct	ai	byte	readable		
@@ -1464,8 +1464,8 @@ exe	0x0047ed60	ai_SendRemoveEmptyGoods	ai	byte	readable
 exe	0x0047edb0	ai_EvaluateProduction	ai	draft	readable	deep	
 exe	0x0047f700	ai_EvaluateProductionFlags	ai	draft	readable	deep	
 exe	0x004801f0	ai_EvaluateProductionCategory2	ai	draft	readable	deep	
-exe	0x00480e70	ai_CalcMeisterWache	ai	draft	draft		
-exe	0x004817a0	ai_CalcAngriff	ai	draft	draft		
+exe	0x00480e70	ai_CalcMeisterWache	ai	draft	readable	deep	
+exe	0x004817a0	ai_CalcAngriff	ai	draft	readable	deep	
 exe	0x00481ef0	ai_CalcMeisterDiebe	ai	draft	draft		
 exe	0x00482f00	ai_CalcMeisterRaeuber	ai	draft	readable	deep	
 exe	0x004836a0	ai_CalcMeisterBank	ai	byte	draft	deep	
@@ -3276,8 +3276,8 @@ exe	0x0051d3d0	ls_ReadObjects	ls	byte	readable
 exe	0x0051d4f0	ls_HookBuildingCB	ls	byte	draft	deep	
 exe	0x0051d530	ls_ClearObjectFlag	ls	byte	readable		
 exe	0x0051d550	ls_ReadBuildings	ls	byte	readable		
-exe	0x0051db00	ls_ReadPlayerRecords	ls	draft	draft		
-exe	0x0051de70	ls_ReadCharacters	ls	draft	draft		
+exe	0x0051db00	ls_ReadPlayerRecords	ls	byte	readable		
+exe	0x0051de70	ls_ReadCharacters	ls	byte	readable		
 exe	0x0051e750	ls_ReadCharacter	ls	shape	readable		
 exe	0x0051e900	ls_ReadSceneRecords	ls	draft	readable	deep	
 exe	0x0051f080	ls_ReadPlayerSlots	ls	shape	readable	deep	
@@ -3286,10 +3286,10 @@ exe	0x0051f720	ls_ReadStatistics	ls	byte	readable
 exe	0x0051fb80	ls_ReadAvatars	ls	byte	readable		
 exe	0x0051fb90	ls_ReadEventTables	ls	shape	readable		
 exe	0x00520000	ls_ReadParties	ls	shape	readable		
-exe	0x00520200	ls_ReadHistory	ls	draft	readable		
-exe	0x00520310	ls_ReadMessageQueues	ls	draft	draft		
+exe	0x00520200	ls_ReadHistory	ls	byte	readable		
+exe	0x00520310	ls_ReadMessageQueues	ls	shape	readable		
 exe	0x005205f0	ls_ReadEnvironment	ls	byte	readable		
-exe	0x005206b0	ls_FixupAfterLoad	ls	draft	draft		
+exe	0x005206b0	ls_FixupAfterLoad	ls	shape	readable		
 exe	0x00520a30	ls_SendGame	ls	shape	readable		
 exe	0x00520b80	ls_ReceiveGame	ls	byte	readable		
 exe	0x00520ec0	sv_UpdateFramesPerTick	sv	byte	readable		
@@ -4004,7 +4004,7 @@ exe	0x00578440	ai_TutorialFreeRuns	sv_t	byte	readable
 exe	0x005784a0	ai_TutorialInitMainIntro	sv_t	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	sv_t	byte	readable		
 exe	0x00578e40	ai_TutorialInitChapter2	sv_t	shape	readable		byte+readable -> shape+readable at 8089cb0d: promote --accept-falls
-exe	0x00579570	ai_TutorialInitChapter3	sv_t	draft	readable		shape+readable -> draft+readable at 8089cb0d: promote --accept-falls
+exe	0x00579570	ai_TutorialInitChapter3	sv_t	shape	readable		
 exe	0x0057aa80	ai_TutorialInitChapter4	sv_t	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	sv_t	byte	readable		
 exe	0x0057b750	ai_TutorialInitMainOutro	sv_t	byte	readable		
