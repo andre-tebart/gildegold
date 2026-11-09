@@ -21,6 +21,7 @@ table of 8 ints, then the strings "RCPID" .. "alchemy_data.ini"). Starts at 0x4e
 #include "main.h"
 #include "mem.h"
 #include "tr.h"
+#define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (defined below as char[768][0x21c]) as the AICHAR records they are */
 #define cm_SendExSetHEI ((void (*)(int, char *))cm_SendExSetHE)  /* 0x4c4c60 (cm.h: unsigned char k): @original ahm.c pushes the key as an int (0x4eb43e push 0xfffffffe) */
 
 #define vfs_freadU ((unsigned (*)(void *, int, int, VFSFILE *))vfs_fread)  /* 0x430bd0, vfs.h int: @original this unit compares the count as unsigned (ahm_LoadDfn 0x4ebabd test eax,eax; jbe for `<= 0`) */
@@ -792,118 +793,126 @@ int ahm_SendCreateAlchemist(unsigned char *o, AHMSTEP *s)
     m.proto = s->grid;
     m.x = s->x;
     m.y = s->y;
-    m.value = g->w[2];
+    m.value = g->rcp.b;
     return ((int (*)(void *))cm_SendCreateAlchemist)(&m);
 }
 
 #define AHM_ZERO6(m) memset(m, 0, 24)
 
-/* 0x4ec500, creates the alchemist character for the object o (p[2]) of the building kind 0x1e from the order record p (+0xc .. +0xf four shares, +0x10 a value for +0xa,
-   +0x14 / +0x20 the first place with its value, +0x18 / +0x1c the name indexes); the first free slot of ai_Chars (or one of kind 0xf), the relations to all others random
-   -0x20 .. 0x1f; returns the character id or 0xffff ("ahm_AllocAhmInfo" allocates the record at +0x65). The character record is written
-   through raw offsets: ai.h's AICHAR names id, kind, netId, health, name, jobId, title, bld / bld2, money, flags1cc, mood3Rate, partner, b215 .. b217 and
-   mask; the unnamed ones (+0x10 .. +0x20 the start values, +0x50, +0x5c, +0x80, +0x9, +0xc, +0x18c, +0x190, +0x1f0, +0x1f4, +0x20c) carry no evidence yet. */
-unsigned short ahm_CreateAlchemist(int *p)
+/* 0x4ec500, creates the alchemist character for the alchemist building m->building (kind 0x1e) from the creation message m: the first free slot
+   of ai_Chars (or one of kind 0xf), its start values, the age and the four skills of the player prototype, the names m->x / m->y, the relations
+   to all others random -0x20 .. 0x1f; the building's record ("ahm_AllocAhmInfo") gets the character, the shares and the first place with its
+   value, and the building's place object (kind 6) is emptied and gets the place's good. Returns the character id or 0xffff.
+   @deep whole asmdiff read; typed it (AICHAR via ai_CharsT, AIBLD, AHMREC, AIOBJ, AHMCREATEMSG), the
+   return type is int (mov eax,0xffff and the final xor eax,eax; mov ax,[esi]), the netId / relatives
+   stores go through ai_CharsT[n] (the original addresses them off n*0x21c, [edx+ai_Chars+4] / lea
+   [edx+ai_Chars+0x5c]). Left is allocation only: the original keeps 0 in ebx for the whole function (xor
+   ebx,ebx at +0x10; push ebx / cmp eax,ebx / mov [esi+2],bl ...) where ours uses immediates and test, so o
+   goes to ebx in ours but is reloaded from its slot [esp+0x10] in the original, and the relations loop
+   counter j lives in [esp+0x14] (shared with the fild temp) in the original but in ebx in ours; the id =
+   0xffff / bld / ai_NextObjectId stores are scheduled differently around the rep stosd. ours=318
+   original=324, no differs/ref lines */
+int ahm_CreateAlchemist(AHMCREATEMSG *m)
 {
-    unsigned char *o;
-    char *c;
-    char *sp;
+    AIBLD *o;
+    AICHAR *c;
+    AIOBJ *g;
+    AIOBJ *place;
     int n, i, j, k;
     float v;
-    int *g;
 
-    gm_FindById(&o, 0, 0, p[2]);
+    gm_FindById((int *)&o, 0, 0, m->building);
     if (o == 0)
         return 0xffff;
-    if (ai_BTypes[o[0] * 0x24d] != 0x1e)
+    if (ai_BTypes[o->type * 0x24d] != 0x1e)
         return 0xffff;
     for (n = 0; n < 0x300; n++)
-        if (*(short *)ai_Chars[n] == -1)
+        if (ai_CharsT[n].id == 0xffff)
             break;
     if (n == 0x300) {
         for (n = 0; n < 0x300; n++)
-            if (ai_Chars[n][2] == 0x0f)
+            if (ai_CharsT[n].kind == 0x0f)
                 break;
         if (n == 0x300)
             return 0xffff;
     }
-    if (ai_Chars[n][2] == 0x0f)
+    if (ai_CharsT[n].kind == 0x0f)
         ai_CharCount--;
-    c = ai_Chars[n];
-    memset(c, 0, 0x21c);
-    *(int *)(c + 4) = -1;
-    *(unsigned short *)c = 0xffff;
-    memset(c + 0x5c, 0xff, 0x20);
-    *(unsigned char **)(c + 0x170) = o;
-    *(unsigned char **)(c + 0x16c) = o;
+    c = &ai_CharsT[n];
+    memset(c, 0, sizeof(AICHAR));
+    ai_CharsT[n].netId = -1;
+    c->id = 0xffff;
+    memset(ai_CharsT[n].relatives, 0xff, sizeof(c->relatives));
+    c->bld2 = o;
+    c->bld = o;
     ai_CharCount++;
-    *(unsigned short *)c = (unsigned short)n;
-    *(int *)(c + 4) = ai_NextObjectId;
+    c->id = (unsigned short)n;
+    c->netId = ai_NextObjectId;
     ai_NextObjectId++;
-    c[2] = 0;
-    *(int *)(c + 0x1f0) = 0;
-    *(int *)(c + 0x210) = -1;
-    c[0x215] = 0;
-    c[0x216] = 0;
-    c[0x217] = 0;
-    c[0x218] = 1;
-    *(float *)(c + 0x1e4) = 1.0f;
-    c[8] = 100;
-    *(unsigned short *)(c + 0xa) = (unsigned char)((char *)p)[0x10];
-    c[0x164] = 0x52;
-    c[0x166] = 0;
-    c[0x165] = 0;
-    c[0x1f4] = 0;
-    *(int *)(c + 0x190) = 4;
-    *(int *)(c + 0x194) = 0;
-    c[0xd] = 1;
-    *(int *)(c + 0x18c) = -1;
-    *(int *)(c + 0x20c) = -1;
-    *(short *)(c + 0x50) = 0x7fff;
+    c->kind = 0;
+    c->v1f0 = 0;
+    c->partner = -1;
+    c->b215 = 0;
+    c->b216 = 0;
+    c->b217 = 0;
+    c->mask = 1;
+    c->mood3Rate = 1.0f;
+    c->health = 100;
+    c->w00a = m->proto.plr.attr[4];
+    c->jobId = 0x52;
+    c->officeKind = 0;
+    c->title = 0;
+    c->ownName[0] = 0;
+    c->v190 = 4;
+    c->money = 0;
+    c->b00d = 1;
+    c->picture = -1;
+    c->partyId = -1;
+    c->w050 = 0x7fff;
     for (i = 0; i < 5; i++)
-        c[0x80 + i] = (char)(util_Random(0x40) + 0x54);
-    c[9] = 0;
-    strcpy(c + 0x30, ai_Unk144a7a8[p[6]]);
-    strcpy(c + 0x40, ai_Unk144a80c[p[7]]);
-    *(float *)(c + 0x1c) = 1000.0f;
+        c->skills[i] = (unsigned char)(util_Random(0x40) + 0x54);
+    c->sex = 0;
+    strcpy(c->first, ai_AlchemistFirstNames[m->x]);
+    strcpy(c->family, ai_AlchemistFamilyNames[m->y]);
+    c->f01c = 1000.0f;
     v = util_RandomSq();
-    *(float *)(c + 0x20) = 12.0f;
-    *(float *)(c + 0x14) = v * 7.0f + 30.0f - 2.0f;
-    k = (int)(*(float *)(c + 0x1c) * 0.2f);
-    *(float *)(c + 0x18) = *(float *)(c + 0x1c);
-    *(float *)(c + 0x10) = *(float *)(c + 0x1c) * 0.33f + (float)util_Random(k) - *(float *)(c + 0x1c) * 0.1f;
+    c->f020 = 12.0f;
+    c->f014 = v * 7.0f + 30.0f - 2.0f;
+    k = (int)(c->f01c * 0.2f);
+    c->f018 = c->f01c;
+    c->f010 = c->f01c * 0.33f + (float)util_Random(k) - c->f01c * 0.1f;
     j = 0;
     for (i = 0; i < 0x90000; i += 0x300) {
-        ai_Relations[0][*(unsigned short *)c + i] = (signed char)util_Random(0x40) - 0x20;
-        ai_RelationMemory[0][*(unsigned short *)c + i] = 0;
-        ai_Relations[0][*(unsigned short *)c * 0x300 + j] = (signed char)util_Random(0x40) - 0x20;
-        ai_RelationMemory[0][*(unsigned short *)c * 0x300 + j] = 0;
+        ai_Relations[0][c->id + i] = (signed char)util_Random(0x40) - 0x20;
+        ai_RelationMemory[0][c->id + i] = 0;
+        ai_Relations[c->id][j] = (signed char)util_Random(0x40) - 0x20;
+        ai_RelationMemory[c->id][j] = 0;
         j++;
     }
-    g = (int *)gm_Query(*(int *)(o + 0x5d), 1, 0, 0x24b);
-    gm_PlaceOnStage(*(int *)(c + 4), *(int *)(o + 1), g != 0 ? *(int *)((char *)g + 2) : -1, 0, 0);
-    gm_ChooseHeadIcon(c);
-    if (*(int *)(o + 0x65) == 0)
-        *(void **)(o + 0x65) = mem_Alloc(0x3c, "ahm_AllocAhmInfo");
-    memset(*(void **)(o + 0x65), 0, 0x3c);
-    **(int **)(o + 0x65) = *(int *)(c + 4);
-    *(float *)(*(char **)(o + 0x65) + 4) = ((float)(unsigned char)((char *)p)[0xf] * 0.003968254f + 1.0f) * 0.5f;
-    (*(char **)(o + 0x65))[8] = ((char *)p)[0xc];
-    (*(char **)(o + 0x65))[9] = ((char *)p)[0xd];
-    (*(char **)(o + 0x65))[10] = ((char *)p)[0xe];
-    (*(char **)(o + 0x65))[11] = ((char *)p)[0xf];
-    *(int *)(*(char **)(o + 0x65) + 0xc) = p[5];
-    sp = gm_Query(*(int *)(o + 0x5d), 2, 6, 0, 0xff);
-    if (sp != 0) {
-        while (*(unsigned short **)(sp + 0x14) != 0)
-            gm_RemoveObject(sp + 0x14, **(unsigned short **)(sp + 0x14));
+    g = (AIOBJ *)gm_Query((void *)o->objList, 1, 0, 0x24b);
+    gm_PlaceOnStage(c->netId, o->id, g != 0 ? g->objId : -1, 0, 0);
+    gm_ChooseHeadIcon(&c->id);
+    if (o->ahm == 0)
+        o->ahm = mem_Alloc(sizeof(AHMREC), "ahm_AllocAhmInfo");
+    memset(o->ahm, 0, sizeof(AHMREC));
+    o->ahm->id = c->netId;
+    o->ahm->value = ((float)m->proto.plr.attr[3] * 0.003968254f + 1.0f) * 0.5f;
+    o->ahm->share[0] = m->proto.plr.attr[0];
+    o->ahm->share[1] = m->proto.plr.attr[1];
+    o->ahm->share[2] = m->proto.plr.attr[2];
+    o->ahm->share[3] = m->proto.plr.attr[3];
+    o->ahm->slots[0].id = m->proto.plr.id;
+    place = (AIOBJ *)gm_Query((void *)o->objList, 2, 6, 0, 0xff);
+    if (place != 0) {
+        while (place->items != 0)
+            gm_RemoveObject(&place->list, *place->items);
     }
-    *(int *)(*(char **)(o + 0x65) + 0x10) = p[8];
-    if (sp != 0)
-        gm_AddObjekt(*(int *)(sp + 2), p[5], 2);
+    o->ahm->slots[0].v = m->value;
+    if (place != 0)
+        gm_AddObjekt(place->objId, m->proto.plr.id, 2);
     gm_RefreshGoodsLists(ai_OwnPlayer);
-    *(int *)(c + 0x1cc) |= 4;
-    return *(unsigned short *)c;
+    c->flags1cc |= 4;
+    return c->id;
 }
 /* 0x4ec940, the message 'SsCa' (cm_SendCommand) of the character c with the id and the value v clamped to 0 .. 1; -1 when c has no object (0x4eaad0) */
 
@@ -1217,8 +1226,8 @@ extern char * ai_BTypes;
 extern signed char ai_Relations[768][768];
 extern signed char ai_RelationMemory[768][768];
 int ahm_Tab[8] = { 1, 3, 7, 11, 13, 17, 19, 21 };  /* 0x60f1b0 */
-/* ai_Unk144a7a8: view of txt_Ptrs (build/mk_txt_views.py) */
-/* ai_Unk144a80c: view of txt_Ptrs (build/mk_txt_views.py) */
+/* ai_AlchemistFirstNames: view of txt_Ptrs (build/mk_txt_views.py) */
+/* ai_AlchemistFamilyNames: view of txt_Ptrs (build/mk_txt_views.py) */
 int ai_WalkX = 0;  /* 0x6f0dc8 */
 int ai_WalkDX = 0;  /* 0x6f0dcc */
 int ai_WalkY = 0;  /* 0x6f0dd0 */

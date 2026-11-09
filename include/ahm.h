@@ -78,7 +78,7 @@ typedef struct AHMCREATEMSG {           /* 0x24 bytes, the data of the type 99 m
     int building;                       /* +0x8, the id of the alchemist building (AHMOBJ.id) */
     AHMGRID proto;                      /* +0xc, the step's prototype entry (the player view: its attributes and its place id) */
     int x, y;                           /* +0x18 / +0x1c, the name indexes of the creation (0x144a7a8 / 0x144a80c) */
-    int value;                          /* +0x20, the +8 of the recipe entry of the prototype's id (the bits of its float) */
+    float value;                        /* +0x20, the +8 of the recipe entry of the prototype's id (AHMGRID.rcp.b), the value of the first place */
 } AHMCREATEMSG;
 
 extern char *ai_BTypes;              /* 0x7e3f30 */
@@ -151,7 +151,7 @@ void cm_SendCreateAlchemist(void *p);                     /* 0x4c6170 */
 
 int ahm_StepValue(char *p);             /* 0x4ec320 */
 int ahm_ObjectValue(unsigned char *p);    /* 0x4ec3d0 */
-unsigned short ahm_CreateAlchemist(int *p);   /* 0x4ec500 */
+int ahm_CreateAlchemist(AHMCREATEMSG *m);   /* 0x4ec500, the alchemist character of the creation message m; its id or 0xffff */
 int ahm_SendSetShare(char *c, int id, float v);  /* 0x4ec940 */
 int ahm_SetShare(int *p, char *rec);   /* 0x4eca00 */
 int ahm_SendAddPlace(char *c, int id);     /* 0x4ecaa0 */

@@ -207,7 +207,6 @@ typedef struct CMBOMB {             /* 8 bytes, one of the 32 bombs of cm_Bombs 
 #define amt_GetOfficeI ((int (*)(int, struct AMTREC *))amt_GetOffice)  /* 0x4e6f30 (amt.h: unsigned char i): @original this unit pushes its int index raw (0x4dab50 / 0x4aad30: push ebp / push edx, no zero-extension) */
 #define ai_DecideTortureP ((int (*)(AIPLAN *))ai_DecideTorture)  /* 0x4941b0 (am.h: void): @original cm_TrialAskAI pushes the plan (0x4de3a6 push esi, add esp, 4) */
 #define ai_DecideTortureInstrumentP ((int (*)(AIPLAN *))ai_DecideTortureInstrument)  /* 0x4941d0 (am.h: void): @original cm_TrialAskAI pushes the plan (0x4de3c6 push esi, add esp, 4) */
-#define ahm_CreateAlchemistI ((int (*)(int *))ahm_CreateAlchemist)  /* 0x4ec500 (ahm.h: unsigned short): @original the caller 0x4ccf90 reads the id as an int (no and eax,0xffff) */
 #define cm_FightersT (*(AICHAR (*)[32])&cm_Fighters)  /* 0x930600, cm_Fighters (char[], with the 0x1000 bytes after the 32 records) as its AICHAR records */
 #define ai_SceneCharsT (*(AICHAR *(*)[32])&ai_SceneChars)  /* 0x7603a0, ai_SceneChars (f3init.h: int[32]) as the AICHAR pointers it holds */
 #define cm_FlagObjectsT (*(D3OBJECT *(*)[32])&cm_FlagObjects)  /* 0x935980, cm_FlagObjects (cm.h: char *[]) as the D3OBJECTs it holds */
@@ -6400,7 +6399,7 @@ int cm_ExCreateAlchemist(G17MSG *m, G17STAT *s)
     else
         ((AHMCREATEMSG *)m->data)->seed = rand();
     util_Seed(((AHMCREATEMSG *)m->data)->seed);
-    id = ahm_CreateAlchemistI((int *)m->data);
+    id = ahm_CreateAlchemist((AHMCREATEMSG *)m->data);
     if (id == 0xffff)
         return -1;
     if (s != 0) {

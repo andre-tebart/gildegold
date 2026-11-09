@@ -350,6 +350,7 @@ typedef struct AIOBJ {                  /* 0x43 bytes, an object (table behind a
     union {
         int unk14;                      /* 0x14, the object list it holds */
         int list;                       /* 0x14 */
+        unsigned short *items;          /* 0x14, the same as the item ids it points to (ahm_CreateAlchemist removes the first until none is left) */
     };
     struct D3OBJECT *obj;               /* 0x18, the scene object that shows it (sv_DrawItemNames draws its name above it) */
     union {

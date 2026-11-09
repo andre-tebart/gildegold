@@ -343,8 +343,8 @@ extern char *txt_Ptrs[0x4800];    /* 0x143a1c0, each text in its file's buffer *
 #define full_data_144a6c8                        (*(unsigned char (*)[80])((char *)txt_Ptrs + 0x10508))  /* 0x144a6c8 */
 #define full_data_144a714                        (*(unsigned char (*)[80])((char *)txt_Ptrs + 0x10554))  /* 0x144a714 */
 #define full_data_144a764                        (*(unsigned char (*)[68])((char *)txt_Ptrs + 0x105a4))  /* 0x144a764 */
-#define ai_Unk144a7a8                            (*(char * (*)[25])((char *)txt_Ptrs + 0x105e8))  /* 0x144a7a8 */
-#define ai_Unk144a80c                            (*(char * (*)[30])((char *)txt_Ptrs + 0x1064c))  /* 0x144a80c */
+#define ai_AlchemistFirstNames                            (*(char * (*)[25])((char *)txt_Ptrs + 0x105e8))  /* 0x144a7a8 */
+#define ai_AlchemistFamilyNames                            (*(char * (*)[30])((char *)txt_Ptrs + 0x1064c))  /* 0x144a80c */
 #define ai_ContactTextBloodRevenge               (*(char * *)((char *)txt_Ptrs + 0x106c4))  /* 0x144a884 */
 #define full_data_144a8a8                        (*(unsigned char (*)[12])((char *)txt_Ptrs + 0x106e8))  /* 0x144a8a8 */
 #define full_data_144a8b4                        (*(unsigned char (*)[4])((char *)txt_Ptrs + 0x106f4))  /* 0x144a8b4 */

@@ -474,7 +474,6 @@ int ord_HandleMessageRecord();  /* 0x4f9710 */
 void ai_GameFrame(void);  /* 0x591520 */
 
 int amt_ExecuteSwapMessage();  /* 0x4e6c50 */
-unsigned short ahm_CreateAlchemist(int *p);  /* 0x4ec500, ahm.c (cm.c reads it through ahm_CreateAlchemistI) */
 int gv_BuryCharacter();  /* 0x4f0240 */
 int gv_ReserveGrave();  /* 0x4f0490 */
 int gv_ExtendGrave();  /* 0x4f0770 */
