@@ -326,9 +326,9 @@ exe	0x00413d00	d3t_DeleteRain	d3_tools	byte	readable
 exe	0x00413d30	d3t_SetRain	d3_tools	byte	readable		
 exe	0x00413f30	d3t_UpdateRain	d3_tools	byte	readable		
 exe	0x00414590	d3t_DrawRain	d3_tools	byte	readable		
-exe	0x004148f0	d3t_CreateSnow	d3_tools	byte	draft	deep	
+exe	0x004148f0	d3t_CreateSnow	d3_tools	byte	readable		
 exe	0x00414b50	d3t_FreeSnow	d3_tools	byte	readable		
-exe	0x00414c60	d3t_SetSnow	d3_tools	byte	draft	deep	
+exe	0x00414c60	d3t_SetSnow	d3_tools	byte	readable		
 exe	0x00414ea0	d3t_UpdateSnow	d3_tools	shape	readable		
 exe	0x00415380	d3t_DrawSnow	d3_tools	byte	readable		
 exe	0x004156a0	d3t_EmitterCB	d3_tools	byte	readable		
@@ -342,8 +342,8 @@ exe	0x00416340	d3t_CreateSmoke	d3_tools	shape	readable
 exe	0x00416550	d3t_EarthCB	d3_tools	shape	readable		
 exe	0x004168e0	d3t_CreateEarth	d3_tools	byte	readable		
 exe	0x00416980	d3t_CreateSnowMipmaps	d3_tools	draft	readable	deep	
-exe	0x00417150	d3t_FadeOutSunRays	d3_tools	byte	draft	deep	
-exe	0x00417170	d3t_FadeInSunRays	d3_tools	byte	draft	deep	
+exe	0x00417150	d3t_FadeOutSunRays	d3_tools	byte	readable		
+exe	0x00417170	d3t_FadeInSunRays	d3_tools	byte	readable		
 exe	0x00417190	d3t_CreateSunRays	d3_tools	byte	readable		
 exe	0x00417270	d3t_SmoothStep	d3_tools	byte	readable		
 exe	0x004172e0	d3t_UpdateSunRays	d3_tools	byte	readable		
@@ -419,7 +419,7 @@ exe	0x004206d0	qnt_Quantize	qnt	byte	readable
 exe	0x00420780	qnt_GetPalette	qnt	byte	readable		
 exe	0x004207c0	qnt_InitTables	qnt	draft	readable	deep	
 exe	0x00420870	qnt_Alloc	qnt	byte	readable		
-exe	0x00420900	qnt_Free	qnt	byte	draft	deep	
+exe	0x00420900	qnt_Free	qnt	byte	readable		
 exe	0x00420990	qnt_Build	qnt	draft	readable	deep	
 exe	0x00420b90	qnt_Sift	qnt	byte	readable		
 exe	0x00420c90	qnt_Reduce	qnt	byte	readable		
@@ -1365,8 +1365,8 @@ exe	0x00476cb0	d2_DrawPointer	gfx	byte	readable
 exe	0x00476f00	d2_DrawMousePointer	gfx	byte	readable		
 exe	0x00476f80	d2_SetPointerSprite	gfx	byte	readable		
 exe	0x00477000	d2_UpdateHoverScroll	gfx	byte	readable		
-exe	0x00477320	d2_CreateItemListSurfaces	gfx	byte	draft	deep	
-exe	0x00477420	d2_FreeItemListSurfaces	gfx	byte	draft	deep	
+exe	0x00477320	d2_CreateItemListSurfaces	gfx	byte	readable		
+exe	0x00477420	d2_FreeItemListSurfaces	gfx	byte	readable		
 exe	0x004774a0	d2_DragInputValue	gfx	byte	readable		
 exe	0x00477530	d2_EndInputEdit	gfx	byte	readable		
 exe	0x00477590	d2_InputKey	gfx	byte	readable		
@@ -2036,7 +2036,7 @@ exe	0x004bae20	ai_MsgRewardPct1to3Skill82Type39	rmsg	byte	readable
 exe	0x004baf30	ai_MsgAddSkill8to24Type3a	rmsg	byte	readable		
 exe	0x004bb030	ai_MsgLoseSkill6to17Type3b	rmsg	byte	readable		
 exe	0x004bb150	ai_MsgPayPct1to4Type3c	rmsg	byte	readable		
-exe	0x004bb250	ai_Unk4bb250	rmsg	byte	draft	deep	
+exe	0x004bb250	ai_MsgSeasonAilingType3d	rmsg	byte	readable		
 exe	0x004bb330	ai_MsgPayMinorDisease	rmsg	byte	readable		
 exe	0x004bb430	ai_MsgCatchUpperDisease	rmsg	byte	readable		
 exe	0x004bb4f0	ai_MsgCureMinorDisease	rmsg	byte	readable		
@@ -4110,8 +4110,8 @@ exe	0x00589cf0	ai_SpeedKeys	sv_t	byte	readable
 exe	0x00589e00	ai_BookmarkSetBuilding	sv_t	byte	readable		
 exe	0x00589e50	ai_BookmarksPreset	sv_t	byte	readable		
 exe	0x00589f10	lobby_Screen	lobby	draft	readable	deep	
-exe	0x0058a940	lobby_AddButtons	lobby	byte	draft	deep	
-exe	0x0058a9d0	lobby_AddChatScroll	lobby	byte	draft	deep	
+exe	0x0058a940	lobby_AddButtons	lobby	byte	readable		
+exe	0x0058a9d0	lobby_AddChatScroll	lobby	byte	readable		
 exe	0x0058aa30	lobby_ShowCity	lobby	draft	readable	deep	
 exe	0x0058aba0	lobby_ShowMyPlayer	lobby	shape	readable		
 exe	0x0058ad20	lobby_FetchPlayers	lobby	byte	readable		

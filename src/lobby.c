@@ -6,9 +6,9 @@
    then the globals 0x62aa7c .. 0x62aa88 open this unit's .data block, whose first literal "menu\netlobby" is
    used by 0x589f10 (code seam at the nop fill 0x589f08). End: the literals climb through 0x58ba70; the next block
    starts with "Handel\Handel_PRODUKTION" 0x62b038 (0x58bd60), so its table init 0x58bbd0 opens the next unit.
-   Open: the U_I / U_B / U_W raw views remain in the pickers (lobby_AddButtons, lobby_AddChatScroll); the
-   info-window text slots are named in txt_views.h (txt_FemaleHonourTitle, txt_JobLabel, txt_FaithLabel,
-   txt_ReadyMark, txt_ChatPrivate, txt_FemaleJobNames, txt_ProfessionNames).
+   Its texts are views of txt_Ptrs in txt_views.h (the button labels txt_LobbyReady / txt_LobbyCharacter /
+   txt_LobbyLeave, the info-window slots txt_FemaleHonourTitle, txt_JobLabel, txt_FaithLabel, txt_ReadyMark,
+   txt_ChatPrivate, txt_FemaleJobNames, txt_ProfessionNames).
    unit of rea 8cef7d5b (src/game/unk_589f10.c); boundaries in decl/text.dcl */
 #include "d2_types.h"
 #include "txt_views.h"
