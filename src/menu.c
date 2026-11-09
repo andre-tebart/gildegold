@@ -1099,6 +1099,7 @@ void d3_UpdateAll(unsigned char full);          /* 0x43b6e0, d3_engine.c */
 char d3if_SelectScene(int index, char keep);    /* 0x4478e0, d3_interface.c */
 void d3_ReloadMeshes(unsigned int mask, int type, void (*progress)(int a, int i, int n));  /* 0x43e090, d3_engine.c */
 void d3_ApplyGraphicsOptions(int a, unsigned char b, unsigned char c, unsigned char mode, int e); /* 0x43c4e0 */
+#define d3_ApplyGraphicsOptionsB ((void (*)(unsigned char, unsigned char, unsigned char, unsigned char, int))d3_ApplyGraphicsOptions)  /* @original ai_ApplyGfxOptions (0x5d5d4d) pushes the floor option as a byte (mov dl, byte ptr; push edx) */
 void ch_SetLowPoly(unsigned char mode);         /* 0x402af0, ch.c */
 void d3fl_SetMips(char a);                      /* 0x43f930, d3_fl.c */
 void ai_CheckBuildSites(void);                  /* 0x58fb60, lc.c */
@@ -1126,23 +1127,39 @@ extern INIT_LOD d3io_Lod;          /* 0x5fbf78 */
    ch_SetLowPoly gets the character detail (ai_GfxFloor.byte[3]), the camera limit pair of the camera_limits byte
    (ai_GfxFloor.byte[1]) is copied to sv_CameraHeightNear .. sv_CameraAngleFar, the game state re-places the
    camera, the mipmaps follow the floor setting and the scene is selected around the build-site check and the
-   red lights. Returns 0 */
+   red lights. Returns 0
+   @deep read whole vs 0x5d5c40..0x5d5e8b; fixed this session: d3if_SelectScene(0, 1) around
+   ai_CheckBuildSites (was (1, 0)), lod = 0 / the d3s_TexSize copy at the top, the floor option passed as a
+   byte (@original cast d3_ApplyGraphicsOptionsB), the fog byte, the SetRLights branch pushes, the camera
+   pair copied as dwords. Left (codegen of the OPTIONBYTES union ai_GfxFloor): ours loads the dword (mov
+   ecx, dword ptr [ai_GfxFloor]; mov al, ch at +0x1a4) where the original reads the camera_limits byte (xor
+   eax, eax; mov al, byte ptr [0x6f35c9]), and the d3fl_Mips compare reuses that dword (cmp byte ptr
+   [d3fl_Mips], cl) where the original loads al / cl; the camera limit loads come in another register order
+   (the M8 at +0x1cc is that crossing: [i*8+0x18] / [i*8+0x1c] land in edx / eax, the original's in ecx /
+   edx); the level 0 branch stores changed = 0 as an immediate, the original stores al (known 0). Tried a
+   char view at +1 and an 8-bit bitfield view of ai_GfxFloor (same code): the original probably declares
+   the four option bytes otherwise (as menu.c's ai_GfxDetail .. bytes were split), a data question
+   (references: M8 at +0x1cc: ours refers to sv_CameraLimits+0x18 (0x6237e8), the original's field to
+   0x6237ec (sv_CameraLimits+0x1c), explained: the M8 at +0x1cc is the two far camera-limit loads crossing
+   registers (both sides read sv_CameraLimits[i*2+6] and [i*2+7] and store them to sv_CameraHeightFar /
+   sv_CameraAngleFar)) */
 int ai_ApplyGfxOptions(void)
 {
     unsigned char level, changed;
     unsigned size;
     int lod, scene, i;
     CHARACTER *c;
-    float *lim;
 
-    changed = 0;
     level = ai_GfxShadowDetail;
     size = d3s_TexSize;
+    lod = 0;
+    changed = 0;
     if (level == 0) {
+        changed = 0;
         ch_ShadowEnabled = 1;
         size = 0x20;
     } else if (level == 1) {
-        ch_ShadowEnabled = level;
+        ch_ShadowEnabled = 1;
         size = 0x20;
         changed = 1;
     } else if (level == 2) {
@@ -1159,7 +1176,6 @@ int ai_ApplyGfxOptions(void)
         d3_UpdateAll(0);
     }
     init_SetDetailLevel(ai_MapRefs, 0);
-    lod = 0;
     if (ai_GfxLodHandling == 0)
         lod = 2;
     else if (ai_GfxLodHandling == 1)
@@ -1171,29 +1187,30 @@ int ai_ApplyGfxOptions(void)
         d3_ReloadMeshes(0x40, 3, 0);
         d3if_SelectScene(scene, 0);
     }
-    d3_ApplyGraphicsOptions(ai_GfxFloor.byte[0], 0, 2 - ai_GfxTextureScale, changed, 0);
+    d3_ApplyGraphicsOptionsB(ai_GfxFloor.byte[0], 0, 2 - ai_GfxTextureScale, changed, 0);
     if (ai_PlayerBuildingB == 0 && ai_FallbackBuildingB == 0)
-        d3o_FogScale = 1.0 - (double)ai_GfxFog.byte[0] * 0.01;
+        d3o_FogScale = 1.0 - ai_GfxFog.byte[0] * 0.01;
     for (i = 0; i < 0x300; i++) {
         c = ch_List[i];
         if (c != 0 && c->scene == d3_Scenes)
             c->obj->objectFlags = ((ch_ShadowEnabled << 3 ^ c->obj->objectFlags) & 8) ^ c->obj->objectFlags;
     }
     ch_SetLowPoly(ai_GfxFloor.byte[3]);
-    lim = sv_CameraLimits;
-    i = ai_GfxFloor.byte[1];
-    sv_CameraHeightNear = lim[i * 2];
-    sv_CameraAngleNear = lim[i * 2 + 1];
-    sv_CameraHeightFar = lim[i * 2 + 6];
-    sv_CameraAngleFar = lim[i * 2 + 7];
+    sv_CameraHeightNear = sv_CameraLimits[ai_GfxFloor.byte[1] * 2];
+    sv_CameraAngleNear = sv_CameraLimits[ai_GfxFloor.byte[1] * 2 + 1];
+    sv_CameraHeightFar = sv_CameraLimits[ai_GfxFloor.byte[1] * 2 + 6];
+    sv_CameraAngleFar = sv_CameraLimits[ai_GfxFloor.byte[1] * 2 + 7];
     if (ai_GameState != 0)
         sv_PlaceCamera(sv_CameraAngleFactor);
-    if (d3fl_Mips != ai_GfxFloor.byte[0])
+    if (d3fl_Mips != (char)ai_GfxFloor.byte[0])
         d3fl_SetMips(ai_GfxFloor.byte[0]);
     scene = d3_CurrentScene;
-    d3if_SelectScene(1, 0);
+    d3if_SelectScene(0, 1);
     ai_CheckBuildSites();
-    d3_SetRLights(ai_GfxDetail != 0);
+    if (ai_GfxDetail == 0)
+        d3_SetRLights(0);
+    else
+        d3_SetRLights(1);
     d3if_SelectScene(scene, 1);
     return 0;
 }
