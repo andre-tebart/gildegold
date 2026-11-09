@@ -1184,14 +1184,25 @@ int rt_SaveRoutes(void *f)
     }
     return 1;
 }
-/* 0x4c0040, loads the routes (0x4bff40) into the carts (their id in cartId, consecutive points per cart) */
+/* 0x4c0040, "rt_load": reads the route points of a saved game from f (a count, then per point its cartId,
+   buildingId, loadSlots, unloadSlots) and rebuilds each cart's route from the consecutive points with its id;
+   returns 0 on a read error
+   @deep read whole against the original 0x4c0040..0x4c01a1: the same reads, the same rebuild loop (r =
+   &buf[i], c->route = 0, do { rt_AddPoint; first point becomes c->route; buildingId, cartId, i++, two
+   0x18-byte rep movsd copies; r++; break at i >= n } while (r && c->objId == r->cartId)), mem_Free; typed
+   AIOBJ c. Left: allocation only - the original keeps buf in ebx and i in ebp in both loops and puts n in
+   f's dead parameter home (frame 8: the prover stops at ls_Read(&n): ours frame, the original args+4);
+   ours keeps i in ebx (first loop) and in a stack slot (second loop) because VC6 made r+8 an induction
+   variable in ebp for the memcpy source (ours 'lea ebp,[ebx+8]', 'add ebp,0x40' vs the original's 'lea
+   esi,[ebx+8]' / 'lea esi,[ebx+0x20]'); frame 0xc vs 0x8. Tried: the i < n test in the do-while condition,
+   the declaration order (no change). */
 
 int rt_LoadRoutes(void *f)
 {
     RTPOINT *buf;
     RTPOINT *r;
     RTPOINT *q;
-    char *c;
+    AIOBJ *c;
     int i;
     int n;
 
@@ -1210,12 +1221,12 @@ int rt_LoadRoutes(void *f)
     }
     for (i = 0; i < n; ) {
         r = &buf[i];
-        c = gm_FindObjectInst(r->cartId);
-        *(RTPOINT **)(c + 0x29) = 0;
+        c = (AIOBJ *)gm_FindObjectInst(r->cartId);
+        c->route = 0;
         do {
-            q = rt_AddPoint(*(RTPOINT **)(c + 0x29));
-            if (*(RTPOINT **)(c + 0x29) == 0)
-                *(RTPOINT **)(c + 0x29) = q;
+            q = rt_AddPoint(c->route);
+            if (c->route == 0)
+                c->route = q;
             q->buildingId = r->buildingId;
             q->cartId = r->cartId;
             i++;
@@ -1223,10 +1234,9 @@ int rt_LoadRoutes(void *f)
             memcpy(q->unloadSlots, r->unloadSlots, sizeof(q->unloadSlots));
             r++;
             if (i >= n)
-                goto done;
-        } while (r != 0 && *(int *)(c + 2) == r->cartId);
+                break;
+        } while (r != 0 && c->objId == r->cartId);
     }
-done:
     mem_Free(buf);
     return 1;
 }
