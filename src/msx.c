@@ -248,7 +248,18 @@ void msx_SetFadeTime(int ms)
 /* 0x423e80, body of the update thread (called with msx_Lock held about every 50 ms): for every playing
    track it follows the stream position, retires a finished stream and starts the queued track, ramps the
    fade-in / fade-out volume, then advances the master fade; no return value
-   @deep B draft, 428/800 bytes: every code hunk is the loop IV base offset (ours &t->fadepos, original &t->volume, all field offsets +8), the same operations spelled differently. The attempts (582 operand-order variants, pointer/for/do-while loop forms, dead volume loads at 6 positions, volume read first in both fade blocks) all left the base unchanged; this is a VC6 base-selection choice, not a meaning error. Q6 added. */
+   @stuck earlier: every code hunk is the loop IV base offset (ours esi = &t->fadepos, msx_Tracks+0x110;
+   the original &t->volume, msx_Tracks+0x118; all field displacements shift by 8, the loop end cmp esi,
+   msx_Tracks+0xca0 vs +0xca8: the two M8 ref lines), the same operations; 582 operand-order variants,
+   pointer / for / do-while loop forms, dead volume loads at 6 positions, volume read first in both fade
+   blocks: base unchanged. Deep session 3 (probes, not kept): an extra read of t->length, t->fadevol,
+   t->curvol, t->stream, t->pos, t->name[0], t->name[0x80] or t[1].length after sfx_GetStreamPos leaves the
+   base at +0x110 - VC6's IV base here does not follow which fields the loop references (not first access,
+   not most used, not the middle of the referenced range). Also open: M10 at +0x283 our 0.0f literal vs the
+   original's ai_FloatZero (0x5eb788), probably a pooled literal named as a datum (not checked). Next lead:
+   the declaration of msx_Tracks / MSXTRACK itself (an outer struct or a different element type the
+   original indexes), or the IV coming from another expression than &msx_Tracks[i]. (tiebreak: insensitive
+   under the four probes only, best draft) */
 
 void msx_Update(void)
 {
