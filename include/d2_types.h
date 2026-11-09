@@ -52,7 +52,8 @@ typedef struct D2WIN {              /* 0x3c4 bytes, d2_Wins[0..0x60] */
     void *surf1;                    /* 0x24 */
     D2SURF *surf2;                  /* 0x28, overlay image */
     char *text;                     /* 0x2c */
-    int unk30;                      /* 0x30 */
+    int textReset;                  /* 0x30, set 0 when the 'C' command clears the text (d2_DrawWindowText); no reader is
+                                       known, the name is a guess */
     char pad34[8];
     int lines[0x7f];                /* 0x3c, text position of each laid out line */
     int firstline;                  /* 0x238 */

@@ -2928,7 +2928,24 @@ void d2_LayoutButtons(int win)
    collected in d2_TextSegs, d2_DrawTextLine draws each line. Commands start with '%' or '$' and an optional
    digit n: A (new line, n lines high), N / Y (paragraph, half line), < > (right / left margin n "M"s),
    T (tab), B Z R L (spread, centered, right, left), F (font n, FF: color n), C (clear), M, [ ], i (picture
-   or button), l, m / mt (inputs), t (text of an input); the arguments of i, l, m, t come from w->args */
+   or button), l, m / mt (inputs), t (text of an input); the arguments of i, l, m, t come from w->args
+   @deep Read the whole 0x46fba0..0x4713a4 against the C (the word loop, every command arm of the 21-entry
+   switch: tables equal, the wrap / hyphen split, the object avoidance loop, the fit-the-text resize, the
+   scroll marker). Fixed: the FF colour arm (pos++ on both arms shared after the if, the colour table built
+   in the else block), the hyphen split's pos += t + wl - 1 and cm_PickCellX before cm_PickCellZ, the
+   margin sum order; size now equal (6004). Left is allocation in the ebp frame: 434 slots lines (the
+   locals permuted: e.g. ours [ebp-0x10]/[ebp-0x28]/[ebp-0x60] for the original's
+   [ebp-8]/[ebp-0x20]/[ebp-0x40]), 102 regs, and code hunks that are those permutations plus argument-load
+   scheduling (+0x3a9 'i' arm picture placement, +0x46d.. WinOpenInput args, +0x7d2.. the 'C'/'m' arms,
+   +0x163d the fit-the-text MoveObj). One type-level lead: the original reads d2_ScreenH as a word (mov ax,
+   word ptr [d2_ScreenH]; movsx) where ours widens to a dword load, as VC6 does for a short defined in the
+   same unit: the original's d2_ScreenH may be defined in another unit (a data owner question, +0x1609 /
+   +0x163d hunks). (references: M8 at +0x876: ours refers to d2_FontHeight (0xf8f084), the original's field
+   to 0xfa5f04 (cm_PickCellZ) (and 1 more), explained: the two M8s are load scheduling of a commutative sum
+   / call arguments, not other objects: at +0x876 both sides load cm_PickCellZ and d2_FontHeight for
+   d2_WinOpenInput(xx - w->x, cm_PickCellZ - w->y, 0x10, d2_FontHeight, 0x82, win) in another order; at
+   +0x144d both compute d2_FontHeight + cm_PickCellZ <= o->y, the original loading d2_FontHeight first
+   (rewriting the sum's order gives the same code)) */
 
 void d2_DrawWindowText(void *surf, int win)
 {
@@ -3139,7 +3156,7 @@ void d2_DrawWindowText(void *surf, int win)
                         cm_PickCellZ = top - w->scrollY;
                         cm_PickCellX = left;
                         pos = 0;
-                        w->unk30 = 0;
+                        w->textReset = 0;
                         break;
                     case 'm':
                         if (text[pos + 1] != 't') {
@@ -3233,7 +3250,7 @@ void d2_DrawWindowText(void *surf, int win)
                         if (num == -1)
                             num = 0;
                         d2_DrawTextLine(cm_PickCellX, cm_PickCellZ, surf, win, 1, align, left, right);
-                        cm_PickCellX = left = w->x + d2_TextWidth("M", w->font) * num * 2 + w->ml;
+                        cm_PickCellX = left = d2_TextWidth("M", w->font) * num * 2 + w->ml + w->x;
                         pos++;
                         break;
                     case '<':
@@ -3274,14 +3291,12 @@ void d2_DrawWindowText(void *surf, int win)
                     case 'F':
                         if (text[pos + 1] != 'F') {
                             d2_SetFont(d2_DefaultFont + num);
-                            pos++;
                         } else {
-                            pos++;
-                            {
                             unsigned char tab[27] = {
                                 0xdc, 0, 0,  0, 0xdc, 0,  0, 0, 0xdc,  0xff, 0xff, 0,  0xff, 0, 0xa8,
                                 0xff, 0xff, 0xff,  0xa8, 0xa8, 0xa8,  0, 0xff, 0xc4,  0x96, 3, 3
                             };
+
                             if (num == 9) {
                                 d2_TextSegFlags &= ~0x40;
                             } else {
@@ -3290,9 +3305,9 @@ void d2_DrawWindowText(void *surf, int win)
                                 col.g = tab[num * 3 + 1];
                                 col.b = tab[num * 3 + 2];
                             }
-                            }
                             pos++;
                         }
+                        pos++;
                         break;
                     case '$':
                     case '%':
@@ -3359,12 +3374,12 @@ void d2_DrawWindowText(void *surf, int win)
                                     wl = strlen(word);
                                     memcpy(d2_TextSegs[d2_TextSegCount].text, word, wl + 1);
                                     d2_TextSegs[d2_TextSegCount++].w = d2_TextWidth(word, w->font);
-                                    pos = pos + t + wl - 1;
+                                    pos += t + wl - 1;
                                 } else
                                     strcpy(word, tmp2);
                                 d2_DrawTextLine(cm_PickCellX, cm_PickCellZ, surf, win, 0, align, left, right);
-                                cm_PickCellZ += d2_FontHeight;
                                 cm_PickCellX = left;
+                                cm_PickCellZ += d2_FontHeight;
                                 w->lines[w->firstline + nlines] = pos;
                                 nlines++;
                                 if (id > 0) {
