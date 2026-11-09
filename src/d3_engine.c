@@ -2273,7 +2273,18 @@ char d3_DeflateScene(unsigned int flags)
     return 1;
 }
 /* 0x43dbc0, d3_ForEachObject2 callback: builds the drawable points and triangles of all surfaces
-   from the loaded mesh data. */
+   from the loaded mesh data.
+   @deep read the whole function against the original 0x43dbc0..0x43deac: the surface loop, the tris/keys
+   allocations, the point init loop, the mat table, the per-triangle init (vofs, drawFlags b0, uofs, zofs
+   stores in the original's order), the vertex links with rawFlags |= 0x80, the texture lookup and its
+   alpha/blend colour, the wrap bits; all statements line up (ours 254 vs 252). Made readable:
+   D3PVERT/D3CVERT.wrap (0x4d), rawFlags, the D3TEXV view's alpha/blend instead of byte indexing (the typed
+   D3TEXTURE fields in d3.h move he_PostEvent67 and ai_TutorialInitChapter2/3 off byte by the struct text
+   alone: not taken). Left: allocation only - ours holds the constant 0 in ebx across the triangle loop ('-
+   xor ebx,ebx / - mov [eax+0x20],ebx', '- mov byte [eax+0x24],bl', '- mov [eax+0x14],ebx' and the
+   re-zeroing 'xor ebx,ebx' after each inner loop), the original rebuilds it in ecx at the loop head ('+
+   jmp 0x43dd4d / + xor ecx,ecx', 0x43dd49) and uses immediates for flags and tex, so it has ebx free for
+   'mov bl,[edi+0x6e] / test bl,1' and the mat pointer; the inner loops' counters swap ecx/edx accordingly. */
 
 void d3_InflateObject(D3OBJECT *obj)
 {
@@ -2323,7 +2334,7 @@ void d3_InflateObject(D3OBJECT *obj)
                     t->src = p = &src->polys[k];
                     for (m = 0; m < 3; m++) {
                         t->v[m] = &((D3PVERT *)s->info.keys)[((D3SRCPOLY *)t->src)->idx[m]];
-                        *(unsigned char *)&t->v[m]->flags |= 0x80;
+                        t->v[m]->rawFlags |= 0x80;
                     }
                     t->flags = 0;
                     if (((D3SRCPOLY *)t->src)->mat >= 0) {
@@ -2331,12 +2342,12 @@ void d3_InflateObject(D3OBJECT *obj)
                         if (m < 0)
                             mat[((D3SRCPOLY *)t->src)->mat] = m = ((D3TEXTURE **)s->texHandles)[j++] - (D3TEXTURE *)d3_Textures;
                         t->tex = tex = &((D3TEXTURE *)d3_Textures)[m];
-                        if (((unsigned char *)tex)[0x6c] < 0xff || (((unsigned char *)tex)[0x6e] & 3)) {
-                            col.c.a = ((unsigned char *)tex)[0x6c];
-                            if (((unsigned char *)tex)[0x6e] & 1) {
-                                col.c.b = ((unsigned char *)tex)[0x6c];
-                                col.c.g = ((unsigned char *)tex)[0x6c];
-                                col.c.r = ((unsigned char *)tex)[0x6c];
+                        if (((D3TEXV *)tex)->alpha < 0xff || (((D3TEXV *)tex)->blend & 3)) {
+                            col.c.a = ((D3TEXV *)tex)->alpha;
+                            if (((D3TEXV *)tex)->blend & 1) {
+                                col.c.b = ((D3TEXV *)tex)->alpha;
+                                col.c.g = ((D3TEXV *)tex)->alpha;
+                                col.c.r = ((D3TEXV *)tex)->alpha;
                             } else {
                                 col.c.b = 0xff;
                                 col.c.g = 0xff;
@@ -2349,7 +2360,7 @@ void d3_InflateObject(D3OBJECT *obj)
                         }
                         ((D3TRIBITS *)&t->drawFlags)->b3 = tex->flags;
                         for (m = 0; m < 3; m++)
-                            t->v[m]->unk4d = tex->flags & 1;
+                            t->v[m]->wrap = tex->flags & 1;
                     } else
                         t->tex = 0;
                 }

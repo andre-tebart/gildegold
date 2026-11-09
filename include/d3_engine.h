@@ -54,7 +54,7 @@ typedef struct D3PVERT {            /* 0x50 bytes, a mesh vertex after the trans
         D3CLIP clip;                /* the same byte as the clip code d3_ClipMesh computes */
         unsigned char rawFlags;
     };
-    unsigned char unk4d;
+    unsigned char wrap;             /* 0x4d, the triangle's texture wraps (its flags bit 0, d3_InflateObject) */
     char pad4e[0x1];
     unsigned char fog;              /* 0x4f */
 } D3PVERT;
@@ -470,7 +470,7 @@ typedef struct D3CVERT {            /* D3PVERT as the polygon clipper and the dr
     unsigned long specular;         /* 0x44 */
     void *src;                      /* 0x48 */
     signed char flags;              /* 0x4c, clip code, bit 7 = visible */
-    unsigned char unk4d;
+    unsigned char wrap;             /* 0x4d, the triangle's texture wraps (its flags bit 0, d3_InflateObject) */
     char pad4e[0x1];
     unsigned char fog;              /* 0x4f */
 } D3CVERT;
