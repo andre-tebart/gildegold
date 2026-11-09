@@ -2428,7 +2428,12 @@ int main_ChoosePlayer(int mask, int flag)
             init_PlayerProfile.tool2 = 0;
             init_PlayerProfile.status = 0x12;
             init_PlayerProfile.coat = d2_Objs[d2_Radios[list].objs[d2_Radios[list].sel]].pic;
-            ret = 1;
+            /* both arms are 1 in the original too (as in lobby's twin): it keeps the test of
+               ai_MissionMode and the load of flag and then stores 1 either way */
+            if (ai_MissionMode == -1 || flag)
+                ret = 1;
+            else
+                ret = 1;
             sv_PopRequest = 1;
         }
     } while (sv_RunFrame((int)main_ChoosePlayer, mask) != 0);
