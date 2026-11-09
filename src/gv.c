@@ -720,66 +720,57 @@ void gv_ExplodeShot(int damage, int effectId, SHOTREC *shot, GVEFFARG *out)
    to the three fade values of every used slot (up to 1.0); each part in flight (state 1) moves one step (ai_StepShot, ai_StepShotSlow
    when the slot's f14 is set) and gets its "kugel" object placed at the ball; a ball that left the map (3) or landed (2: the explosion
    gv_ExplodeShot) loses its object and is reported to the slot's callback (arg->cur = the part); a slot with three idle parts loses flags
-   1 / 2 and is released when flag 4 is set, as is a slot without flag 2
-   @deep read the whole function against the original (slot loop, fade clamps, the three part states,
-   StepShot/StepShotSlow with the part as SHOTREC, kugel object create/place/delete, callback reporting,
-   gv_ExplodeShot); 256 vs 260 instructions, frame 0x18 vs 0x1c. Left: the original keeps the first fade
-   sum a in a stack slot ([esp+0x20]: fst then fld/fcomp/jp/fld) where ours keeps it in st0 (fcom/jnp/fstp
-   st(0)) - FPU allocation, the extra frame slot; the fmul by 0.1 is scheduled before the AITIME copy in
-   the original (order); the shot pointer in ebp (lea ecx,[ebp+0x30]) vs ours from the state pointer (lea
-   ecx,[ebx-0x2c]); eax/edx swap at the recs[j].bldId store. Tried a = field = sum (worse, 42 code hunks). */
+   1 / 2 and is released when flag 4 is set, as is a slot without flag 2 */
 
 void gv_UpdateEffects(void)
 {
     int dt;
     int scene;
     float step;
-    float a, b, c;
     int i, j;
     int idle;
-    SHOTREC *shot;
 
     dt = gm_MinutesBetween(&gv_LastTime, &ai_Time);
     if (dt < 0)
         dt = 0;
     gv_LastTime = ai_Time;
     scene = d3_CurrentScene;
-    step = (float)dt * 0.016666668f * 0.1f;
+    step = (float)dt * 0.016666668f;
+    step = step * 0.1f;
     d3if_SelectScene(0, 1);
     for (i = 0; i < 8; i++) {
         if (gv_EffectsT[i].id == -1)
             continue;
         idle = 0;
-        gv_EffectsT[i].f08 = a = step + gv_EffectsT[i].f08;
-        gv_EffectsT[i].f0c = b = step + gv_EffectsT[i].f0c;
-        gv_EffectsT[i].f10 = c = step + gv_EffectsT[i].f10;
-        gv_EffectsT[i].f08 = a < 1.0f ? a : 1.0f;
-        gv_EffectsT[i].f0c = b < 1.0f ? b : 1.0f;
-        gv_EffectsT[i].f10 = c < 1.0f ? c : 1.0f;
+        gv_EffectsT[i].f08 += step;
+        gv_EffectsT[i].f0c += step;
+        gv_EffectsT[i].f10 += step;
+        gv_EffectsT[i].f08 = gv_EffectsT[i].f08 < ai_FloatOne ? gv_EffectsT[i].f08 : ai_FloatOne;
+        gv_EffectsT[i].f0c = gv_EffectsT[i].f0c < ai_FloatOne ? gv_EffectsT[i].f0c : ai_FloatOne;
+        gv_EffectsT[i].f10 = gv_EffectsT[i].f10 < ai_FloatOne ? gv_EffectsT[i].f10 : ai_FloatOne;
         if ((gv_EffectsT[i].flags & 2) == 0) {
             if (gv_EffectsT[i].flags & 4)
                 gv_ReleaseEffect(gv_EffectsT[i].id);
             continue;
         }
         for (j = 0; j < 3; j++) {
-            shot = (SHOTREC *)&gv_EffectsT[i].parts[j];
-            if (shot->state == 0) {
+            if (gv_EffectsT[i].parts[j].state == 0) {
                 if (++idle >= 3) {
                     gv_EffectsT[i].flags &= ~3;
                     if (gv_EffectsT[i].flags & 4)
                         gv_ReleaseEffect(gv_EffectsT[i].id);
                 }
-            } else if (shot->state == 1) {
-                if (gv_EffectsT[i].f14 == 0 ? ai_StepShot(shot) : ai_StepShotSlow(shot)) {
+            } else if (gv_EffectsT[i].parts[j].state == 1) {
+                if (gv_EffectsT[i].f14 == 0 ? ai_StepShot((SHOTREC *)&gv_EffectsT[i].parts[j]) : ai_StepShotSlow((SHOTREC *)&gv_EffectsT[i].parts[j])) {
                     if (gv_EffectsT[i].objs[j] == 0) {
                         gv_EffectsT[i].objs[j] = d3_CreateObject(0, &d3_Origin, (D3VECTOR *)ai_ZeroRot, "kugel");
                         gv_EffectsT[i].objs[j]->objectFlags |= 4;
                         gv_EffectsT[i].objs[j]->stateFlags |= 0xc;
                         gv_EffectsT[i].objs[j]->objectFlags &= ~8;
                     }
-                    d3_SetObjectPos(gv_EffectsT[i].objs[j], &shot->pos);
+                    d3_SetObjectPos(gv_EffectsT[i].objs[j], (D3VECTOR *)gv_EffectsT[i].parts[j].v3);
                 }
-                if (shot->state == 3) {
+                if (gv_EffectsT[i].parts[j].state == 3) {
                     if (gv_EffectsT[i].objs[j] != 0) {
                         d3if_Delete(gv_EffectsT[i].objs[j]);
                         gv_EffectsT[i].objs[j] = 0;
@@ -789,20 +780,20 @@ void gv_UpdateEffects(void)
                     gv_EffectsT[i].arg->recs[j].bldId = -1;
                     if (gv_EffectsT[i].cb != 0)
                         gv_EffectsT[i].cb(gv_EffectsT[i].arg);
-                    shot->state = 0;
+                    gv_EffectsT[i].parts[j].state = 0;
                     gv_EffectsT[i].tail[j] = 0;
-                } else if (shot->state == 2) {
+                } else if (gv_EffectsT[i].parts[j].state == 2) {
                     idle++;
                     if (gv_EffectsT[i].objs[j] != 0) {
                         d3if_Delete(gv_EffectsT[i].objs[j]);
                         gv_EffectsT[i].objs[j] = 0;
                     }
-                    gv_ExplodeShot(gv_EffectsT[i].flags & 1, gv_EffectsT[i].id, shot, gv_EffectsT[i].arg);
+                    gv_ExplodeShot(gv_EffectsT[i].flags & 1, gv_EffectsT[i].id, (SHOTREC *)&gv_EffectsT[i].parts[j], gv_EffectsT[i].arg);
                     if (gv_EffectsT[i].arg != 0)
                         gv_EffectsT[i].arg->cur = j;
                     if (gv_EffectsT[i].cb != 0)
                         gv_EffectsT[i].cb(gv_EffectsT[i].arg);
-                    shot->state = 0;
+                    gv_EffectsT[i].parts[j].state = 0;
                     gv_EffectsT[i].tail[j] = 0;
                     gv_EffectsT[i].arg->cur = -1;
                 }
