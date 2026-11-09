@@ -1860,21 +1860,24 @@ struct CHARACTER *ls_ReadCharacter(int f)
    queue head ("invalid stockptr" without one), '3' actions get their scene universe, walks are reset; an action
    with a broken link ("invalid next or prev-action pointer") is unlinked and cleared. Returns 1, 0 when a read
    fails.
-   @deep read whole against 0x51e900..0x51f07b and rewritten on the typed records (CHARACTER pos / rot /
-   owner / handObject / sitAnim, D3OBJECT pickId / owner, AICHAR jobKind / ref54 / ownName, AIOBJ sceneObj,
-   CHACTION u.scene): the two ls_ReadCharacter lists, the ch_List pass (universe, mesh name, hozfaeller
-   fix, gm_CharNameRecord fallback, ch_CreateMesh, hand object / sit anim, the character vs object owner
-   with the original's redundant owner re-test at 0x51ec3a, the cart models and texture set), the
-   action-record read (do-while; count 0x300 / 0x500 from 0x10044 / 2000 from 0x10058 - the draft had 0x300
-   for the middle range, a meaning fix) and the link pass (the type held in a local as the original's bl,
-   universe stored args[0] then u.scene.universe) all compared statement by statement; 619 vs 621
-   instructions. Left: allocation only - the ch_List loop pointer lives in [esp+0x14] and is reloaded into
-   edx at 0x51e9d6 (ours keeps it in eax), the original keeps the zero in ebp and the type in bl in the
-   link pass (ours: zero in ebx, the type spilled to [esp+0x18], the offset counter in ebp instead of
-   [esp+0x14] / edi, the 2 missing instructions), the eax/ecx/edx rotation through 0x51ea56..0x51ecd3 and
-   0x51ed71..0x51eff4 (e.g. ours mov ecx,[esi+0x34]; lea eax,[esi+0x48] vs the original's mov
-   edx,[esi+0x34]; lea ecx,[esi+0x48]), and the slot swaps [esp+0x34]/[esp+0x38], [esp+0x24]/[esp+0x28],
-   [esp+0x14]/[esp+0x1c] */
+   @stuck earlier: read whole against 0x51e900..0x51f07b and rewritten on the typed records, statement by
+   statement (count 0x300 / 0x500 / 2000 by version). deep session 2: fixed the truncated stockptr string (the original's 0x6236d8 reads '(character
+   perhaps created by script!)', ours had '(character per...)': a meaning bug, M.census gone) and gave the
+   link pass its own register byte 'kind' (the original reads the type into the stack byte at [esp+0x1b]
+   but tests it from bl in the link pass: two variables; 1330 -> 1227 bytes differ). Tried without effect:
+   declaration order of kind/type/colour (no change), int kind (worse), a uni temporary for the '3'
+   universe stores (the original's else stores xor eax,eax not the zero register: 319 ins but 1331 bytes),
+   a CHARACTER **pp pointer loop for the ch_List pass (code 102). The 2 M8 lines (+0x1ad _strupr/sprintf,
+   +0x2de d3_SetObjectRot/sprintf) are alignment artifacts of rotated hunks: both sides call the same
+   sequence. Left (allocation): ch_List pass pointer in [esp+0x14] reloaded into edx at 0x51e9ce (ours
+   keeps it in eax, slot 0x18); eax/ecx/edx rotation 0x51e9e1..0x51ed71 incl. the
+   sprintf/_strupr/vfs_GetPath push order at 0x51ea9f and the colour byte al vs dl at 0x51ecd3; read loop
+   at 0x51ed9e (xor eax,eax scheduled after lea esi) and the read byte at [esp+0x1b] vs ours [esp+0x17];
+   link pass 0x51eeb4: the original keeps zero in ebp, kind in bl and the byte offset in [esp+0x14] copied
+   to edi at 0x51f050 (mov eax,[esp+0x14]; add eax,0x194; mov edi,eax; mov [esp+0x14],eax; cmp edi,0xc5440)
+   where ours has zero in ebx, the offset in ebp and kind spilled to [esp+0x24]; 0x51efc4 the original's
+   '3' else branch stores xor eax,eax, ours the zero register. 617 vs 621 ins, 1906 vs 1915 bytes.
+   (tiebreak: not measured (dcp headers sample ls_ReadSceneRecords)) */
 
 
 int ls_ReadSceneRecords(int f)
@@ -1891,6 +1894,7 @@ int ls_ReadSceneRecords(int f)
     D3OBJECT *cart;
     unsigned char colour;
     unsigned char type;
+    unsigned char kind;
     CHACTION *a;
     char buf[0x80], file[0x104], path[0x104];
 
@@ -2016,8 +2020,8 @@ int ls_ReadSceneRecords(int f)
     } while (i < n);
     for (i = 0; i < CH_QUEUE; i++) {
         a = &ch_Queue[i];
-        type = a->type;
-        if (type != 0) {
+        kind = a->type;
+        if (kind != 0) {
             a->ch = ch_List[(int)a->ch];
             if (a->ch == 0) {
                 memset(a, 0, sizeof(CHACTION));
@@ -2025,7 +2029,7 @@ int ls_ReadSceneRecords(int f)
             }
             a->prev = ls_ActionAt((int)a->prev);
             a->next = ls_ActionAt((int)a->next);
-            a->func = ch_ActDefs[type].func;
+            a->func = ch_ActDefs[kind].func;
             a->count = 0;
             if (a->prev == 0) {
                 if (a->ch != 0) {
@@ -2033,7 +2037,7 @@ int ls_ReadSceneRecords(int f)
                         ch_ClearActions(a->ch);
                     a->ch->actions = a;
                 } else {
-                    sprintf(path, "ls_LoadCharacter(): invalid stockptr for action-type:%i (character per...)", type);
+                    sprintf(path, "ls_LoadCharacter(): invalid stockptr for action-type:%i (character perhaps created by script!)", kind);
                     a->type = 0;
                 }
             }
