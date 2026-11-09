@@ -6618,11 +6618,11 @@ char *cm_LobbyRecord(int id)
 
 void cm_LobbyAddChat(int id, int to, char *text)
 {
-    char *p;
+    CMLOBBYPLAYER *p;
 
     p = cm_LobbyFindPlayer(id);
     if (p != 0)
-        sprintf(cm_LobbyChat[cm_LobbyChatNext].name, "%s %s", p + 0x12, p + 0x22);
+        sprintf(cm_LobbyChat[cm_LobbyChatNext].name, "%s %s", p->firstName, p->familyName);
     else
         strcpy(cm_LobbyChat[cm_LobbyChatNext].name, "???????");
     cm_LobbyChat[cm_LobbyChatNext].id = id;
@@ -6696,7 +6696,7 @@ int cm_LobbyAllReady()
         return 0;
     for (p = cm_LobbyListIds; (int)p < (int)(cm_LobbyListIds + 8); p++) {
         if (*p != 0) {
-            q = (CMLOBBYPLAYER *)cm_LobbyFindPlayer(*p);
+            q = cm_LobbyFindPlayer(*p);
             if (q == 0)
                 return 0;
             if (q->ready == 1)
@@ -6725,9 +6725,9 @@ unsigned int *cm_LobbyPlayerList()
 }
 /* 0x4cd5e0, the lobby record (CMLOBBYPLAYER) of the player id, else a free one; 0 for id 0 */
 
-char *cm_LobbyFindPlayer(int id)
+CMLOBBYPLAYER *cm_LobbyFindPlayer(int id)
 {
-    return cm_LobbyRecord(id);
+    return (CMLOBBYPLAYER *)cm_LobbyRecord(id);
 }
 /* 0x4cd5f0, this player's lobby record (the one of the id cm_LobbyPlayerId) */
 

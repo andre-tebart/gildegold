@@ -506,7 +506,7 @@ void cm_LobbyClearChat();  /* 0x4cd500 */
 int cm_LobbyAllReady();  /* 0x4cd510 */
 void cm_LobbyStart(int lobbyId, int value);  /* 0x4cd580, opens the lobby from the hello answer */
 unsigned int *cm_LobbyPlayerList();  /* 0x4cd5d0 */
-char *cm_LobbyFindPlayer(int id);  /* 0x4cd5e0 */
+CMLOBBYPLAYER *cm_LobbyFindPlayer(int id);  /* 0x4cd5e0, the lobby record of the player id, else a free one; 0 for id 0 */
 CMLOBBYPLAYER *cm_LobbyMyPlayer();  /* 0x4cd5f0 */
 int *cm_LobbyState();  /* 0x4cd600 */
 int cm_LobbyRequestList();  /* 0x4cd610 */

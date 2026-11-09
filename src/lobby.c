@@ -403,7 +403,7 @@ void lobby_ShowMyPlayer(void)
     int x;
     int y;
 
-    p = (CMLOBBYPLAYER *)cm_LobbyFindPlayer(lobby_List[lobby_MyRow + 1]);
+    p = cm_LobbyFindPlayer(lobby_List[lobby_MyRow + 1]);
     if (p != 0)
         lobby_Player.coat = p->coat;
     d2_SetForm(lobby_Form, 3);
@@ -478,7 +478,7 @@ void lobby_ShowPlayers(void)
     d2_SetForm(lobby_Form, 1);
     io_PrintText("$C");
     for (i = 0; i < 8; i++) {
-        p = (CMLOBBYPLAYER *)cm_LobbyFindPlayer(lobby_List[i + 1]);
+        p = cm_LobbyFindPlayer(lobby_List[i + 1]);
         if (p == 0)
             continue;
         id = d2_WinOpenPic(5, y, p->coat + 0x59a, d2_LastWindow);
@@ -564,51 +564,48 @@ int lobby_ChooseProfession(int param)
     d2_CloseView(win);
     return ret;
 }
-/* 0x58ba70, the chat lines of the lobby (352 B): control 5 of 0x62aa88 and the text 0x602568; the chat records
-   from 0x4cd480 / 0x4cd4c0 (0x6f2684 counts them): the speaker 0x4cd380 (the record +0x68), its id (+0xc) or 9;
-   the line "$%dFF%s: %s$A" 0x62aac0 (the name +0x40, the text) for a record without +100, or
-   "$%dFF%s (%s): %s$A" 0x62aad0 with the shout text U_I (0x144abf8) when +100 is the chosen player 0x6f5e78;
-   each line through 0x515960; the newest line count grows the chat box (0x6f2684 > 0x6f2680 and the control
-   height 0xf8f12a < the box) -> 0xf8f364 = +0x18, 0xf8f368 = the delta, 0x46f840 (the screen) */
+/* 0x58ba70, prints the lobby chat into control 5 of the lobby form: one line per chat record (cm_LobbyChatFirst /
+   cm_LobbyChatNextLine) in the colour of the sender's coat of arms (cm_LobbyFindPlayer, 9 for an unknown sender),
+   "name: text" for a line to everybody, "name (txt_ChatPrivate): text" for a private line to or from this player
+   (a private line between others prints the previous text again); when lines came in since the last call and the
+   chat box overflows, its content grows by a line (0x18) and scrolls to the end */
 
 void lobby_ShowChat(void)
 {
     char text[352];
-    int p;
-    int q;
+    G18LOG *p;
+    CMLOBBYPLAYER *from;
     int id;
-    int top;
-    int n;
+    int height;
 
     id = -1;
     p = cm_LobbyChatFirst();
     d2_SetForm(lobby_Form, 5);
-    q = U_I(((unsigned)&ai_Unkf8f13c + 0x228) + U_I((unsigned)&d2_LastWindow) * 0x3c4);
-    io_PrintText((char *)(unsigned)"$C");
+    height = d2_Wins[d2_LastWindow].contentHeight;
+    io_PrintText("$C");
     lobby_ChatNewest = 0;
     while (p != 0) {
         lobby_ChatNewest++;
-        n = cm_LobbyRecord(U_I(p + 0x68));
-        if (n == 0 || U_I(n) != U_I(p + 0x68))
-            id = 9;
+        from = cm_LobbyFindPlayer(p->id);
+        if (from != 0 && from->id == p->id)
+            id = from->coat;
         else
-            id = U_I(n + 0xc);
-        if (U_I(p + 100) == 0) {
-            sprintf(text, lobby_FmtChat, id, (char *)(p + 0x40), (char *)p);
-        } else if (((int)lobby_Me != 0 && U_I(p + 100) == (int)lobby_Me) ||
-                   U_I(p + 0x68) == (int)lobby_Me) {
-            sprintf(text, lobby_FmtChatShout, id, (char *)(p + 0x40), U_I((unsigned)&full_data_144abf8), (char *)p);
+            id = 9;
+        if (p->to != 0) {
+            if ((lobby_Me != 0 && p->to == lobby_Me->id) || p->id == lobby_Me->id)
+                sprintf(text, lobby_FmtChatShout, id, p->name, txt_ChatPrivate, p->text);
+        } else {
+            sprintf(text, lobby_FmtChat, id, p->name, p->text);
         }
         id = io_PrintText(text);
         p = cm_LobbyChatNextLine();
     }
-    if (lobby_ChatShown < lobby_ChatNewest && -1 < id &&
-        *(short *)(((unsigned)&ai_Unkf8f128 + 0x2) + U_I((unsigned)&d2_LastWindow) * 0x3c4) < q) {
-        q = q + 0x18;
+    if (lobby_ChatNewest > lobby_ChatShown && id >= 0 && height > d2_Wins[d2_LastWindow].h) {
         lobby_ChatShown = lobby_ChatNewest;
-        U_I(((unsigned)&ai_Unkf8f13c + 0x228) + U_I((unsigned)&d2_LastWindow) * 0x3c4) = q;
-        U_I(((unsigned)&ai_Unkf8f13c + 0x22c) + U_I((unsigned)&d2_LastWindow) * 0x3c4) = q - *(short *)(((unsigned)&ai_Unkf8f128 + 0x2) + U_I((unsigned)&d2_LastWindow) * 0x3c4);
-        d2_ScrollWindow(U_I((unsigned)&d2_LastWindow));
+        height += 0x18;
+        d2_Wins[d2_LastWindow].contentHeight = height;
+        d2_Wins[d2_LastWindow].scrollY = height - d2_Wins[d2_LastWindow].h;
+        d2_ScrollWindow(d2_LastWindow);
     }
 }
 /* 0x58af50, the choose-player window "Menu\CHOOSEPLAYER" of the network lobby: loads the "Network" profile
@@ -706,7 +703,7 @@ int lobby_ChoosePlayer(unsigned mask, int b)
     for (i = 1; i < 9; i++) {
         if (lobby_List[i] == 0)
             continue;
-        p = (CMLOBBYPLAYER *)cm_LobbyFindPlayer(lobby_List[i]);
+        p = cm_LobbyFindPlayer(lobby_List[i]);
         if (p == 0 || p->id == 0 || p == lobby_Me)
             continue;
         d2_Objs[coats[p->coat]].clickDisabled = 1;
@@ -728,7 +725,7 @@ int lobby_ChoosePlayer(unsigned mask, int b)
             for (i = 1; i < 9; i++) {
                 if (lobby_List[i] == 0)
                     continue;
-                p = (CMLOBBYPLAYER *)cm_LobbyFindPlayer(lobby_List[i]);
+                p = cm_LobbyFindPlayer(lobby_List[i]);
                 if (p == 0 || p->id == 0 || p == lobby_Me)
                     continue;
                 d2_Objs[coats[p->coat]].clickDisabled = 1;
