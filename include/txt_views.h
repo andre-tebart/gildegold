@@ -383,13 +383,13 @@ extern char *txt_Ptrs[0x4800];    /* 0x143a1c0, each text in its file's buffer *
 #define ai_Unk144ad38                            (*(int *)((char *)txt_Ptrs + 0x10b78))  /* 0x144ad38 */
 #define txt_RouteOk                            (*(int *)((char *)txt_Ptrs + 0x10b7c))  /* 0x144ad3c */
 #define txt_RouteDeletePoint                            (*(int *)((char *)txt_Ptrs + 0x10b84))  /* 0x144ad44 */
-#define ai_Unk144ad4c                            (*(int *)((char *)txt_Ptrs + 0x10b8c))  /* 0x144ad4c */
-#define ai_Unk144ad54                            (*(int *)((char *)txt_Ptrs + 0x10b94))  /* 0x144ad54 */
-#define ai_Unk144ad58                            (*(int *)((char *)txt_Ptrs + 0x10b98))  /* 0x144ad58 */
-#define ai_Unk144ad5c                            (*(int *)((char *)txt_Ptrs + 0x10b9c))  /* 0x144ad5c */
-#define ai_Unk144ad60                            (*(int *)((char *)txt_Ptrs + 0x10ba0))  /* 0x144ad60 */
-#define ai_Unk144ad64                            (*(int *)((char *)txt_Ptrs + 0x10ba4))  /* 0x144ad64 */
-#define ai_Unk144ad78                            (*(int (*)[14])((char *)txt_Ptrs + 0x10bb8))  /* 0x144ad78 */
+#define txt_RouteNew                            (*(int *)((char *)txt_Ptrs + 0x10b8c))  /* 0x144ad4c */
+#define txt_PatrolLevel0                            (*(int *)((char *)txt_Ptrs + 0x10b94))  /* 0x144ad54 */
+#define txt_PatrolLevel1                            (*(int *)((char *)txt_Ptrs + 0x10b98))  /* 0x144ad58 */
+#define txt_PatrolLevel2                            (*(int *)((char *)txt_Ptrs + 0x10b9c))  /* 0x144ad5c */
+#define txt_PatrolLevel3                            (*(int *)((char *)txt_Ptrs + 0x10ba0))  /* 0x144ad60 */
+#define txt_PatrolLevel4                            (*(int *)((char *)txt_Ptrs + 0x10ba4))  /* 0x144ad64 */
+#define txt_PatrolToggle                            (*(int (*)[14])((char *)txt_Ptrs + 0x10bb8))  /* 0x144ad78 */
 #define txt_PanelPersons                            (*(int *)((char *)txt_Ptrs + 0x10bf0))  /* 0x144adb0 */
 #define full_data_144adb4                        (*(unsigned char (*)[5132])((char *)txt_Ptrs + 0x10bf4))  /* 0x144adb4 */
 

@@ -79,7 +79,6 @@ void d2_EnableViewObjects(int view, int on);                                    
 int d2_CreateWinText(short x, short y, char *text, int win);                         /* 0x473650 */
 void d2_SetObjEnabled(int obj, int on);                                              /* 0x475e40 */
 void d2_SetObjValue(int obj, int a, int b, int c, int d);                         /* 0x475cb0, d2.c: the 5th parameter (value2) is pushed by 18 of the original call sites; rt.c's push 4 (d2_SetObjValue4 in its head) */
-#define ai_Unk52e350x ((void (*)(int, int, int *, int, int, int, int))sv_ButtonRow) /* 3 button texts */
 void d2_SetCaption(int obj, char *text);                                            /* 0x473540 */
 void d2_SetSliderFlags(int obj, int a);                                               /* 0x46bdd0 */
 void d2_SetList(int id, int n, ...);                                          /* 0x46bca0 */
@@ -110,7 +109,7 @@ int rt_OpenSlotControls(struct AIOBJ *cart, int a, int good, int k, int x, int y
 void rt_RemoveControls(int *out);
 void rt_InitControls(int *out);
 void rt_EditPointDialog(RTPOINT *p, int *win);
-void rt_Unk4bf080(char *c, char *win);
+void rt_CartSettingsDialog(struct AIOBJ *c, char *win);
 void rt_SetMarkPic(RTMARK *m);
 void rt_UpdateMarkPics(void);
 int rt_FindMark(RTPOINT *p);

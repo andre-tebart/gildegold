@@ -43,13 +43,13 @@ extern RTMARK rt_Marks[8];
 /* ai_Unk144ad38: view of txt_Ptrs (build/mk_txt_views.py) */
 /* txt_RouteOk: view of txt_Ptrs (build/mk_txt_views.py) */
 /* txt_RouteDeletePoint: view of txt_Ptrs (build/mk_txt_views.py) */
-/* ai_Unk144ad4c: view of txt_Ptrs (build/mk_txt_views.py) */
-/* ai_Unk144ad54: view of txt_Ptrs (build/mk_txt_views.py) */
-/* ai_Unk144ad58: view of txt_Ptrs (build/mk_txt_views.py) */
-/* ai_Unk144ad5c: view of txt_Ptrs (build/mk_txt_views.py) */
-/* ai_Unk144ad60: view of txt_Ptrs (build/mk_txt_views.py) */
-/* ai_Unk144ad64: view of txt_Ptrs (build/mk_txt_views.py) */
-/* ai_Unk144ad78: view of txt_Ptrs (build/mk_txt_views.py) */
+/* txt_RouteNew: view of txt_Ptrs (build/mk_txt_views.py) */
+/* txt_PatrolLevel0: view of txt_Ptrs (build/mk_txt_views.py) */
+/* txt_PatrolLevel1: view of txt_Ptrs (build/mk_txt_views.py) */
+/* txt_PatrolLevel2: view of txt_Ptrs (build/mk_txt_views.py) */
+/* txt_PatrolLevel3: view of txt_Ptrs (build/mk_txt_views.py) */
+/* txt_PatrolLevel4: view of txt_Ptrs (build/mk_txt_views.py) */
+/* txt_PatrolToggle: view of txt_Ptrs (build/mk_txt_views.py) */
 int rt_Unk6f074c = 0;  /* 0x6f074c, the saved screen of */
 int rt_MarkCount = 0;  /* 0x6f0750, the marks used */
 int rt_PickedBuilding = 0;  /* 0x6f0754, the building shown */
@@ -743,15 +743,21 @@ void rt_EditPointDialog(RTPOINT *p, int *win)
     d2_CloseView(w);
     d2_EnableViewObjects(*win, 1);
 }
-/* 0x4bf080, the dialog "misc\routing_settings" for cart c: a 5-step slider (c->unk31), a button that starts a new
-   route at c's building (marks on window win), a button that toggles c->unk33; changes go out as AI updates */
+/* 0x4bf080, the dialog "misc\routing_settings" for cart c (title text 0x42e2): a 5-step slider for c->patrolLevel
+   (txt_PatrolLevel0..4), the button txt_RouteNew that starts a new route at c's building (its mark on the town map
+   window win), the button txt_PatrolToggle[c->patrolOn] that toggles c->patrolOn (text 0x42ec + patrolOn shows the
+   state); changes go out as field updates */
 
-void rt_Unk4bf080(char *c, char *win)
+void rt_CartSettingsDialog(AIOBJ *c, char *win)
 {
     int w;
     int sl;
-    int btns[3];
+    int ok;
+    int renew;
+    int toggle;
+    int btns[10];     /* three used; the size is computed from the original's frame (0x34) */
     unsigned char v;
+    int i;
 
     w = d2_OpenForm(0, 0, "misc\\routing_settings");
     d2_CentreViewWindows(w);
@@ -759,23 +765,24 @@ void rt_Unk4bf080(char *c, char *win)
     io_PrintText(0x42e2);
     sl = d2_GetWinObj(w, 2, 0);
     d2_SetForm(w, 4);
-    io_PrintText(*(unsigned char *)(c + 0x33) + 0x42ec);
+    io_PrintText(c->patrolOn + 0x42ec);
     d2_SetForm(w, 3);
-    ai_Unk52e350x(d2_LastWindow, 0, btns, 3, txt_RouteOk, ai_Unk144ad4c, ai_Unk144ad78[*(unsigned char *)(c + 0x33)]);
-    d2_SetCaption(btns[2], ai_Unk144ad78[*(unsigned char *)(c + 0x33)]);
-    d2_SetObjValue4(sl, 0, 4, *(unsigned char *)(c + 0x31));
+    sv_ButtonRow(d2_LastWindow, 0, btns, 3, txt_RouteOk, txt_RouteNew, txt_PatrolToggle[c->patrolOn]);
+    ok = btns[0];
+    renew = btns[1];
+    toggle = btns[2];
+    d2_SetCaption(toggle, txt_PatrolToggle[c->patrolOn]);
+    d2_SetObjValue4(sl, 0, 4, c->patrolLevel);
     d2_SetSliderFlags(sl, 0x82);
-    d2_SetList(sl, 5, ai_Unk144ad54, ai_Unk144ad58, ai_Unk144ad5c, ai_Unk144ad60, ai_Unk144ad64);
-    while (sv_RunFrame(rt_Unk4bf080, 0x657c7)) {
-        int i;
-
-        if (dm_L.rup != 0 || d2_ClickedId != -1 && d2_PointerObj == btns[0])
+    d2_SetList(sl, 5, txt_PatrolLevel0, txt_PatrolLevel1, txt_PatrolLevel2, txt_PatrolLevel3, txt_PatrolLevel4);
+    while (sv_RunFrame(rt_CartSettingsDialog, 0x657c7)) {
+        if (dm_L.rup != 0 || d2_ClickedId != -1 && d2_PointerObj == ok)
             sv_PopRequest = 1;
         d2_SetForm(w, 4);
-        io_PrintText(*(unsigned char *)(c + 0x33) + 0x42ec);
-        d2_SetCaption(btns[2], ai_Unk144ad78[*(unsigned char *)(c + 0x33)]);
+        io_PrintText(c->patrolOn + 0x42ec);
+        d2_SetCaption(toggle, txt_PatrolToggle[c->patrolOn]);
         if (d2_ClickedId != -1) {
-            if (d2_PointerObj == btns[1]) {
+            if (d2_PointerObj == renew) {
                 if (rt_EditRoute != 0)
                     rt_FreePoints(rt_EditRoute);
                 for (i = 0; i < 8; i++) {
@@ -785,24 +792,24 @@ void rt_Unk4bf080(char *c, char *win)
                 rt_MarkCount = 0;
                 rt_ClearMarkGroup();
                 rt_EditRoute = rt_AddPoint(0);
-                rt_EditRoute->buildingId = *(int *)(c + 0x1c);
-                rt_EditRoute->cartId = *(int *)(c + 2);
+                rt_EditRoute->buildingId = c->bldId;
+                rt_EditRoute->cartId = c->objId;
                 rt_PutRouteMark((LCMAPWIN *)win, (int)c, rt_EditRoute, rt_EditRoute);
                 d2_RadioSelect(rt_MarkGroup, 0);
                 sv_PopRequest = 2;
             }
-            if (d2_ClickedId != -1 && d2_PointerObj == btns[2]) {
-                v = *(char *)(c + 0x33) == 0;
-                cm_BeginFieldBlock(c, *(int *)(c + 2));
-                cm_AddFieldValue(1, 1, c - cm_FieldObject + 0x33, &v);
+            if (d2_ClickedId != -1 && d2_PointerObj == toggle) {
+                v = c->patrolOn == 0;
+                cm_BeginFieldBlock((char *)c, c->objId);
+                cm_AddFieldValue(1, 1, (char *)c - cm_FieldObject + 0x33, &v);
                 cm_SendFieldValues();
             }
         }
     }
-    if ((unsigned int)d2_GetObjValue(sl) != *(unsigned char *)(c + 0x31)) {
+    if ((unsigned int)d2_GetObjValue(sl) != c->patrolLevel) {
         v = (unsigned char)d2_GetObjValue(sl);
-        cm_BeginFieldBlock(c, *(int *)(c + 2));
-        cm_AddFieldValue(1, 1, c - cm_FieldObject + 0x31, &v);
+        cm_BeginFieldBlock((char *)c, c->objId);
+        cm_AddFieldValue(1, 1, (char *)c - cm_FieldObject + 0x31, &v);
         cm_SendFieldValues();
     }
     d2_CloseView(w);
@@ -942,7 +949,7 @@ void rt_EditCartRoute(char *c)
         ai_MapScrollEnabled = d2_FocusedInput == 0;
         if (d2_ClickedId != -1) {
             if (d2_PointerObj == btns[2])
-                rt_Unk4bf080(c, (char *)m);
+                rt_CartSettingsDialog((AIOBJ *)c, (char *)m);
             else if (d2_PointerObj == btns[0]) {
                 if (rt_MarkGroup != -1 && d2_RadioSel[rt_MarkGroup * 0x23] != -1)
                     rt_EditPointDialog(rt_Marks[d2_RadioSel[rt_MarkGroup * 0x23]].p, m);
