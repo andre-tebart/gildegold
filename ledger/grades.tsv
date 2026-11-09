@@ -1495,10 +1495,10 @@ exe	0x00489870	ai_SendFreeSpies	ai	draft	readable	deep
 exe	0x00489a70	ai_MeisterBewaffnen	ai	byte	readable		
 exe	0x00489cb0	ai_MeisterCollectTrans	ai	draft	readable	deep	
 exe	0x0048a380	ai_UnloadCarts	ai	shape	readable		
-exe	0x0048a4d0	ai_MeisterTrade	ai	draft	draft		
-exe	0x0048bc80	ai_MeisterTradeAllgemein	ai	draft	draft		
-exe	0x0048d010	ai_MeisterTradeFernEinkauf	ai	draft	draft		
-exe	0x0048d810	ai_MeisterTradeFernEinkauf2	ai	draft	draft		
+exe	0x0048a4d0	ai_MeisterTrade	ai	draft	readable	deep	
+exe	0x0048bc80	ai_MeisterTradeAllgemein	ai	draft	readable	deep	
+exe	0x0048d010	ai_MeisterTradeFernEinkauf	ai	draft	readable	deep	
+exe	0x0048d810	ai_MeisterTradeFernEinkauf2	ai	draft	readable	deep	
 exe	0x0048e070	ai_FindMasterBuilding	am	byte	readable		
 exe	0x0048e120	ai_DecideBuildDomizil	am	draft	readable	deep	
 exe	0x0048e370	ai_ExecBuildDomizil	am	draft	readable	deep	

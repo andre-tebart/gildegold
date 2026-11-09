@@ -12,7 +12,6 @@
    Open: ai_types.h's AIMSG / AIJOB declarations are shared with sv_t.c, whose tutorial builders flip their VC6
    tie-break when a member is added (debt ai_TutorialInitChapter2, ai_TutorialInitChapter3; d3_CloneObject moves too); ai_Unk483a60's slot match
    was lost the same way (debt, to AIMSG.payment).
-   Open: AIOBJ.unk1c (a building id in the trade code, a count / level elsewhere) - its rename across units is undecided.
    unit of rea 8cef7d5b (src/game/ai.c); boundaries in decl/text.dcl */
 extern int gm_PlayerRecords[688];
 #include <stdio.h>
@@ -2317,12 +2316,12 @@ void ai_Unk483a60(AICHAR *ch)
             ok = 1;
             it = ai_Objects;
             for (i = 0; ok && i < 0x5008; it++, i++) {
-                if (it->id && ai_GoodsT[it->id].type == 0x1d && it->unk1c == ch->bld->id && it->id == 0x136)
+                if (it->id && ai_GoodsT[it->id].type == 0x1d && it->bldId == ch->bld->id && it->id == 0x136)
                     ok = 0;
             }
             ai_NumCarts = 0;
             for (o = gm_Query(ch->bld->objList, 3, 6, 4, 0x1d, 3, ch->bld->owner); o; o = gm_QueryNext()) {
-                if (o->unk1c == ch->bld->id) {
+                if (o->bldId == ch->bld->id) {
                     for (job = he_FindEvent(2, 0, 0xb, 3, ch->bld->id); job; job = he_NextEvent()) {
                         if (job->unkac == o->objId)
                             break;
