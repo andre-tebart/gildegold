@@ -6,7 +6,6 @@
    Functions are kept in their original order. Names are ours.
    Open: d3s.h's D3STERR / D3STBLOCK / D3SMESH are local views of D3TERRAIN / D3SMBLOCK (d3_sm.h) and D3MESH
    (d3_engine.h), which lack bs / mip and the float at 0x954; a union in D3MESH moves d3_Unk4550e0 by 8 bytes.
-   Open: d3_sm.c declares d3s_ShadowTriangle itself instead of including d3s.h.
    unit of rea 8cef7d5b (src/game/d3s.c); boundaries in decl/text.dcl */
 #include <stdio.h>
 #include <stdlib.h>
@@ -252,7 +251,7 @@ void d3s_DrawSpans(int rows, int w, unsigned char flags, char top, int y0)
 }
 /* 0x45a2e0, a shadow triangle: edges from the three points p (x, y pairs), colours c, radius pixels / rows around */
 
-void d3s_ShadowTriangle(float *p, unsigned char *c, unsigned char *dst, int pitch, unsigned int flags, char *base, int radius)
+void d3s_ShadowTriangle(float *p, unsigned char *c, unsigned char *dst, int pitch, unsigned char flags, char *base, int radius)
 {
     int i, t, b, d, e, y, n, l;
     int minY;
@@ -287,10 +286,10 @@ void d3s_ShadowTriangle(float *p, unsigned char *c, unsigned char *dst, int pitc
     }
     if (t != -1) {
         if (base == 0)
-            *(unsigned char *)&flags &= 2;
+            flags &= 2;
         if (dst == 0)
-            *(unsigned char *)&flags &= 5;
-        if ((unsigned char)flags != 0) {
+            flags &= 5;
+        if (flags != 0) {
             e = d3_TriEdge[t][0];
             if (d3s_EdgeY[e] == minY) {
                 b = d3_TriEdge[t][1];

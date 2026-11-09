@@ -27,7 +27,7 @@ typedef struct D3SMBLOCK {          /* 0x64 bytes, 8x8 of them in a terrain */
 } D3SMBLOCK;
 
 typedef struct D3TERRAIN {          /* the terrain a height map is sampled from */
-    unsigned int size;              /* 0x000 */
+    int size;                       /* 0x000 */
     char pad004[0xc];
     unsigned char *heights;         /* 0x010 */
     unsigned char *types;           /* 0x014, index into the names, bit 7 = none */
