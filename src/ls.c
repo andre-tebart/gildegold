@@ -2412,36 +2412,29 @@ int ls_ReadParties(int f)
     }
     return 1;
 }
-/* 0x520200, reads the mission table 0x6f0724 / 0x601058 .. 0x60106c, 0xf83520 (0x10 bytes), and the 0x11-word records from 0xf83548 (8 pairs of words each). Returns 1 */
+/* 0x520200, reads the history (hst.c) part of a save game, the counterpart of ls_WriteHistory 0x51c450: the texts-on byte hst_TextsOn (then hst_LoadPlayerTexts resets the lists and opens the player's texts), the offsets of the current text and of the next key-list entry (hst_TextCurrent / hst_KeyNext from hst_TextFirst / hst_KeyFirst), the 0x10 bytes of the key hst_Key and the four lists hst_Lists (used flag and eight id/value pairs each). Returns 1, 0 when a read fails. */
 
 
 int ls_ReadHistory(int f)
 {
     int n, i, j;
-    int *p, *q;
 
     LS_R(&hst_TextsOn, 1)
     hst_LoadPlayerTexts();
     LS_R(&n, 4)
     hst_TextCurrent = hst_TextFirst + n;
-    if (ls_Read((int)&n, 4, 1, f) == 0)
-        return 0;
+    LS_R(&n, 4)
     hst_KeyNext = hst_KeyFirst + n;
     for (i = 0; i < 0x10; i++)
-        LS_R((char *)(unsigned)&hst_Key + i, 1)
-    p = (int *)((unsigned)&hst_Lists + 0x8);
-    while (ls_Read((int)(p - 2), 4, 1, f) != 0) {
-        q = p;
+        LS_R(hst_Key + i, 1)
+    for (i = 0; i < 4; i++) {
+        LS_R(&hst_Lists[i].inUse, 4)
         for (j = 0; j < 8; j++) {
-            LS_R(q - 1, 4)
-            LS_R(q, 4)
-            q += 2;
+            LS_R(&hst_Lists[i].e[j].id, 4)
+            LS_R(&hst_Lists[i].e[j].v, 4)
         }
-        p += 0x11;
-        if ((int)p > ((unsigned)((unsigned)hst_Lists + 0x114) + 0x3))
-            return 1;
     }
-    return 0;
+    return 1;
 }
 /* 0x520310, reads the two record pools 0x9367e0 / 0xa69140 (0x99-byte records: the references at +0x91 / +0x95 are indices turned into pointers (-1 = NULL)), the pool heads 0xa68d24 / 0xa68c00 / 0xf81160, the reference table 0xf31160 (10 bytes each, 0x2000 or 0x8000 of them from 0x1003c) and the words 0xf81168, 0xf8121c, 0xa68c04, 0x60bd88 .. 0x60bd90. Returns true when all was read */
 
