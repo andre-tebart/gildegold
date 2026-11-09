@@ -2746,10 +2746,18 @@ differing instructions. The same shape made the character loop of 0x512f30 pick 
   ai_MissionCompleteDialog draft -> shape, then byte from the zero-init order again, quit, nm). Look for the
   same local in sibling dialogs (`grep "flags = id | 0x80"`).
 
-## match-deep 2026-11-09 (d3t_PlaceObject, ...)
+## match-deep 2026-11-09 (d3t_PlaceObject, d3t_MoveObjectPath, d3t_CreateSnowMipmaps, mov_Open)
 
 - **Call-argument setup hoisted into the FPU result stores** (`lea eax,[keys]; push eax; push 2; sub esp,0xc`
   scheduled right after an early store, while the original finishes the field copies first): the early store
   into the array that is passed by address (`keys[0].time = unk`) sat in the source right before the call. A
   store into the passed array is the last thing VC6 orders before the pushes; move it next to the call
   (d3t_PlaceObject, 26 ins -> byte; an earlier worker had permuted every other store of the block).
+  Sibling: the same move in cm_ThrowGrenade (all `keys[n].time` stores next to the call) went 48 -> 26 ins,
+  still shape (left unapplied).
+- **Same-GUID symbols of a library**: strmiids.lib defines CLSID_FilterGraph and CLSID_FilgraphManager with
+  one value; an M8 naming the second means the original wrote that name (mov_Open). Same for the `""`
+  window title: the original passes ch_EmptyName (M9), as other units do.
+- **The zero constant shared with a return variable** (mov_Open: `id = 0`, every literal 0 and the final
+  `mov eax, esi` in one callee-saved register; ours spills id to the frame): no declaration order, init
+  placement, early-return form or id spelling made VC6 coalesce them. Not solved.
