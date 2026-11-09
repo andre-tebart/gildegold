@@ -2080,40 +2080,40 @@ void ord_ComputeStatistics(float *out)
     out[9] = (((1.0f - out[2]) + out[0] + (1.0f - out[1]) + (1.0f - out[3])) * 0.25f
               + (1.0f - out[2]) * out[0] * (1.0f - out[1]) * (1.0f - out[3]) * 2) * 0.33333334f;
 }
-/* 0x4f8ed0, recomputes the statistics (0x4f8ae0) into the record 0x91b4c0 (10 floats), smooths the rating out[5] into the floats 0x6f1b9c / 0x6f1ba0 (first time: 0x6f1b9c = 0.95 * rating), stores the time stamp and sends the
-   message 0x4c5800 with the record, the two floats, the change rate 0x91aaf4 and the clock. ROUGH */
+/* 0x4f8ed0, recomputes the statistics (ord_ComputeStatistics) into ord_Statistics, smooths the rating out[5] into
+   ai_Rating (the first time ai_RatingBase starts at 0.95 of it), sets the change rate ord_RatingRate from the gap
+   between the two, stamps ord_StatisticsClock and sends the record as message 0x41 (the ORDSAVE ord_LoadStatistics
+   restores) */
 
 void ord_UpdateStatistics(void)
 {
     float st[10];
-    int first;
-    int m[15];
-    float cur, base;
+    ORDSAVE m;
 
     ord_ComputeStatistics(st);
-    first = ai_RatingBase == 0.0f;
-    memcpy(&ord_Statistics, st, 0x28);
-    if (first) {
+    memcpy(&ord_Statistics, st, sizeof ord_Statistics);
+    if (ai_RatingBase == ai_FloatZero) {
         ai_Rating = st[5];
-        ai_RatingBase = st[5] * 0.95f;
+        ai_RatingBase = st[5] * 0.95;
     } else
         ai_Rating = (st[5] - ai_Rating) * 0.5f + ai_Rating;
-    base = ai_RatingBase;
-    cur = ai_Rating;
-    ord_RatingRate = (cur - base) * 0.0007336182f;
-    memcpy(m, st, 0x14);
-    ((float *)m)[5] = cur;
-    ((float *)m)[6] = base;
-    m[7] = ((int *)st)[7];
-    m[8] = ((int *)st)[8];
-    m[9] = ((int *)st)[9];
-    m[10] = *(int *)&ord_RatingRate;
+    ord_Statistics.rating = ai_Rating;
+    ord_Statistics.base = ai_RatingBase;
+    ord_RatingRate = (ai_Rating - ai_RatingBase) * 0.0007336182331406322;
     ord_StatisticsClock = ai_Time;
-    m[11] = ai_Time.year;
-    m[12] = *(int *)&ai_Time.hour;
-    m[13] = *(int *)((char *)&ai_Time + 8);
-    *(short *)(m + 14) = *(short *)((char *)&ai_Time + 0xc);
-    cm_SendMessage41(m);
+    m.col[0] = ord_Statistics.col[0];
+    m.col[1] = ord_Statistics.col[1];
+    m.col[2] = ord_Statistics.col[2];
+    m.col[3] = ord_Statistics.col[3];
+    m.chars = ord_Statistics.chars;
+    m.rating = ai_Rating;
+    m.base = ai_RatingBase;
+    m.sumC = ord_Statistics.sumC;
+    m.sumA = ord_Statistics.sumA;
+    m.score = ord_Statistics.score;
+    m.rate = ord_RatingRate;
+    m.clock = ord_StatisticsClock;
+    cm_SendMessage41(&m);
 }
 /* 0x4f9020, restores the statistics record from a saved record of 15 words (the fields of ORDSAVE): the five
    columns, ai_Rating / ai_RatingBase, the three values, the rate and the clock stamp; then rebuilds the rating
