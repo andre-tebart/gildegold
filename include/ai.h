@@ -164,23 +164,27 @@ typedef struct AIPOS {                  /* filled by gv_GetTableRecord */
 typedef struct AIFIN {                  /* what gm_PlayerRecord finds for a character */
     unsigned short w00;                 /* 0x00, the character's AICHAR.w050 (cm.c 0x4c6cd0 copies it) */
     char family[0x10];                  /* 0x02, the family name (cm.c 0x4c6cd0 sets it with the character's) */
-    char pad12[0xa];                    /* 0x12 */
+    char pad12[2];                      /* 0x12 */
+    int incomeA;                        /* 0x14, a round income part (the round report prints it with text 0x200d, then adds it
+                                           with incomeB to missionMoney[0] and clears it; the kind is a reasoned guess open) */
+    int incomeB;                        /* 0x18, a round income part (text 0x200c, rolled into missionMoney[0]) */
     int lootTakings;                    /* 0x1c, the loot value a won fight / raid took from the loser's goods
                                            (cm_LootStock and cm_LootCarts add it to the winner's record) */
-    char pad20[0x4];                    /* 0x20 */
+    int incomeC;                        /* 0x20, a round income part (text 0x2010, rolled into missionMoney[2]) */
     int madeValue;                      /* 0x24, the price value of the goods its workshops made (cm.c 0x4c78c0 adds it
                                            with the building's AIBLD.roundSums[0]) */
     int spyPaid;                        /* 0x28, the money the player paid to the cabinet's spies (ai_CabinetSpyWindow adds each payment) */
-    int missionMoney[5];                /* 0x2c .. 0x3f, saved money statistics: no writer in the build (they come
-                                           from older save files), read only by the mission conditions, converted with
+    int missionMoney[5];                /* 0x2c .. 0x3f, the money statistics: the round report (main_RoundReport) adds the
+                                           round parts in ([0] incomeA + incomeB, [1] lootTakings, [2] incomeC, [3]
+                                           madeValue, [4] the character's AICHAR.v1a4 + v1a0); read by the mission conditions, converted with
                                            gm_ConvertMoney: 0x38 by the types 1 / 6 / 14 / 22 / 32, 0x2c + 0x34 by
                                            20 / 25 / 36, 0x30 by 26 / 37, 0x3c by 27 */
     int upgradeSpent;                   /* 0x40, the money the record has paid for workshop upgrades (ai_BuyUpgrade) */
     int renovationSpent;                /* 0x44, the money it has paid for renovations (ai_BuyUpgrade, am.c 0x497ee0) */
     int loansRepaid;                    /* 0x48, the loan sums the character has paid back at a money lender (ai_RepayLoan adds each) */
-    char pad4c[4];
+    int costA;                          /* 0x4c, a round cost part (the round report prints it with text 0x201a and clears it) */
     int cartSpent;                      /* 0x50, the money the character has paid for new carts (lc.c ai_BuyCartWindow adds each price) */
-    char pad54[4];
+    int costB;                          /* 0x54, a round cost part (text 0x2015, cleared by the round report) */
     float roundFactors[3];              /* 0x58, set to 0.5, 1, 1 at every round change (main.c 0x5384e0); [0] the bias for who starts a dice duel
                                            (ai_DuelStart, am.h AGFIN.firstBias), [1] the chance of a tavern dice invitation (ai_TavernDiceWindow) */
     char pad64[8];

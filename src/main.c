@@ -3272,7 +3272,7 @@ void main_RundenBeginn(void)
 }
 
 /* message record (0xf8 bytes) of 0x4c4b70 / 0x4e4060: kind byte +4, owner id +8, target +0xc, time stamp (the 0x770ae0 clock, 14 bytes) +0x28 .. +0x36, flag +0x36 = 1 */
-#define MAIN_PID ((int)(U_I((unsigned)&ai_PlayerId) & 0xffff))  /* the player character */
+#define MAIN_PID ((int)(main_PlayerIdInt & 0xffff))  /* the player character, as the round change reads it (a dword load masked) */
 #define MSG_B(m, o) (*(unsigned char *)((m) + (o)))
 #define MSG_I(m, o) (*(int *)((m) + (o)))
 #define main_PlayerIdInt (*(int *)&ai_PlayerId)  /* 0x6f25b8, ai_PlayerId (unsigned short) as the int the round change reads and masks */
@@ -3661,40 +3661,63 @@ void main_ReplaceFigure(unsigned p)
         }
     }
 }
-/* 0x539870, the end of the round report of the player (0x6f25b8): the bookkeeping of the character record (0x506430: income / expense fields +0x14 .. +0x54, texts 0x2005 .. 0x204e of 0x515960)
-   shown on a page (BLACK fade, the window 0x52fa10, the loop 0x5309a0 until a key), then the fields are rolled over (+0x14 .. +0x24 added to +0x2c .. +0x38 and cleared); when the balance goes
-   negative (0x50a6c0) a message of kind 0x60 / 9 is sent and a replacement figure is created (0x539620) if 0x6f25b0 is set; the two row sums are float sums (price 0xc0 * 0.01 * count 0xb4, truncated per step) */
+/* 0x539870, the end of the round report of the player: the bookkeeping page (BLACK fade, the scroll form
+   sv_CreateScrollForm, the loop 0x5309a0 until a click or Enter): the character's wage and goods bought, the
+   round record's (AIFIN, gm_PlayerRecord) costs and incomes (texts 0x2005 .. 0x204e), the balance of every
+   building the player owns or masters (gm_BuildingBalance), the interest of the loans its banks gave and of its
+   own loans (HELOAN events, interest * 0.01 * amount, truncated per step), the office wages and the other
+   incomes (GMINCOME); then the round parts are rolled into AIFIN.missionMoney and cleared. When the balance goes
+   negative (gm_IsBankrupt) a bankruptcy scene party (kind 9) runs and, with main_ReplaceFigureOn set, the
+   figure is replaced (main_ReplaceFigure)
+   @deep Read whole against 0x539870..0x53a249 and rewritten typed: AIFIN (gm_PlayerRecord) got its round
+   fields (incomeA/B/C 0x14/0x18/0x20, costA/B 0x4c/0x54 in ai.h, by the texts that print them and the
+   roll-over into missionMoney), the balance is gm_BuildingBalance's 0x15-int summary (the old draft read
+   a[0..2]; the original adds [0x11] income, [3] wage cost, [0x10] costs, [0x14] net - fixed), the loan
+   interest from HELOAN, ORDWAGES / GMINCOME / GMDATE / G28REC records (frame now 0x200 = the original's,
+   the old draft had 0x230), the second d2_ReleaseFade inside the bankruptcy block and the field order of
+   the scene party as the original; gm_CharacterWages / gm_CharacterIncomes take the unmasked dword of
+   ai_PlayerId (main_PlayerIdInt) as the original pushes it. 741 vs 744 instructions. Left: allocation. The
+   original keeps the first page's running balance in edi with income in the slot [esp+0x14] and costs in
+   ebx + [esp+0x10] (reloading ebx on the else paths: +0x23b jmp / mov ebx,[esp+0x10]), ours keeps income
+   in ebx + [esp+0x18] and the zero in edi (code hunks +0x1ab, +0x1eb, +0x200, the one-instruction reloads
+   at +0x256 .. +0x366); the balance sums at +0x428 are the same four adds scheduled around other slots;
+   the incomes loop end stores ebx/ebp at another place (branch target +0x612); the prover stops at the FPU
+   loops. Tried: the wage line as income = wage - spent first (242 differing, worse), the cost line as iv
+   -= x; costs = x (worse), declaration orders of the sums (no change), splitting the page balance from the
+   credit interest variable (no change). */
 
 void main_RoundReport(void)
 {
-    char msg[0x114];
-    int lines[0x2b];
-    int a[3];
-    int sum[6], cnt[6];
-    unsigned char kind[0x38];  /* the GMINCOME record gm_CharacterIncomes clears (0xe ints) */
-    unsigned char *fade;
-    unsigned char *b;
-    unsigned char *o;
-    int bk, iv, v, t, tot, win, nrow, i, j, k;
-    int w200, w1fc, w1f8, w1ec, w1e8;
+    G28REC msg;                     /* the bankruptcy scene party */
+    int bal[0x15];                  /* gm_BuildingBalance's summary: [3] / [0x10] costs, [0x11] income, [0x14] net */
+    GMINCOME inc;
+    GMDATE date;
+    HELOAN *loans[9];
+    ORDWAGES wages;
+    D2FADE *fade;
+    AIFIN *fin;
+    AIBLD *b;
+    HELOAN *o;
+    int iv, cash, v, t, win, nrow, i, j, k;
+    int costs, net, income, wageCost, incomeSum;
 
     iv = 0;
-    w200 = 0;
-    w1ec = 0;
-    w1e8 = 0;
+    costs = 0;
+    wageCost = 0;
+    incomeSum = 0;
     fade = 0;
-    U_I((unsigned)&sv_PanelFlag) = 0;
+    sv_PanelFlag = 0;
     if (main_GfxOn != 0) {
-        fade = (unsigned char *)d2_StartFade(0, 0, (int)*(short *)(unsigned)&d2_ScreenW, (int)*(short *)(unsigned)&d2_ScreenH, "BLACK", 0x1e, 1);
-        while ((*fade & 4) == 0)
-            sv_RunFrame(0, U_I((unsigned)&sv_FrameMask));
+        fade = d2_StartFade(0, 0, d2_ScreenW, d2_ScreenH, "BLACK", 0x1e, 1);
+        while ((fade->flags & 4) == 0)
+            sv_RunFrame(0, sv_FrameMask);
     }
-    bk = gm_PlayerRecord((unsigned)&ai_CharsT + MAIN_PID * 0x21c);
-    *(int *)(bk + 0x3c) = *(int *)(bk + 0x3c) + (U_I(((unsigned)&ai_Selected + 0x1c) + MAIN_PID * 0x21c) + U_I(((unsigned)&ai_Selected + 0x18) + MAIN_PID * 0x21c));
-    d3_SetObjectPos((int)d3_Camera, bk + 0x8c);
-    d3_SetObjectRot((int)d3_Camera, bk + 0x9c);
+    fin = (AIFIN *)gm_PlayerRecord((char *)&ai_CharsT[MAIN_PID]);
+    fin->missionMoney[4] += ai_CharsT[MAIN_PID].v1a0 + ai_CharsT[MAIN_PID].v1a4;
+    d3_SetObjectPos(d3_Camera, (D3VECTOR *)fin->camPos);
+    d3_SetObjectRot(d3_Camera, (D3VECTOR *)fin->camRot);
     if (main_GfxOn != 0) {
-        w1f8 = 0;
+        net = 0;
         d2_SetPointerSprite(0, 0);
         sv_ClosePanelWidgets();
         sv_SetScreenCenter(0x24087);
@@ -3704,213 +3727,223 @@ void main_RoundReport(void)
             d2_ReleaseFade(fade);
             fade = 0;
         }
-        d2_StartFade(0, 0, (int)*(short *)(unsigned)&d2_ScreenW, (int)*(short *)(unsigned)&d2_ScreenH, "BLACK", 0x1e, 10);
+        d2_StartFade(0, 0, d2_ScreenW, d2_ScreenH, "BLACK", 0x1e, 10);
         d2_SetForm(win, 2);
         io_PrintText(0x7d);
-        gm_ClockToDate((unsigned)&ai_Time, (char *)lines);
+        gm_ClockToDate(&ai_Time, (unsigned char *)&date);
         d2_SetForm(win, 1);
         io_PrintText(0x2007);
-        iv = U_I(((unsigned)&ai_Selected + 0x14) + MAIN_PID * 0x21c);
-        w1fc = iv - U_I(((unsigned)&ai_Selected + 0x10) + MAIN_PID * 0x21c);
-        if (iv != 0)
-            io_PrintText(0x2008, iv);
-        if (U_I(((unsigned)&ai_Selected + 0x10) + MAIN_PID * 0x21c) != 0)
-            io_PrintText(0x2009, U_I(((unsigned)&ai_Selected + 0x10) + MAIN_PID * 0x21c));
-        iv = w1fc;
-        if (*(int *)(bk + 0x40) != 0) {
-            io_PrintText(0x2014, *(int *)(bk + 0x40));
-            w200 = *(int *)(bk + 0x40);
-            iv = w1fc - w200;
+        /* the character's own money: wage in, goods bought out */
+        cash = ai_CharsT[MAIN_PID].wage;
+        income = cash - ai_CharsT[MAIN_PID].spent198;
+        if (cash != 0)
+            io_PrintText(0x2008, cash);
+        if (ai_CharsT[MAIN_PID].spent198 != 0)
+            io_PrintText(0x2009, ai_CharsT[MAIN_PID].spent198);
+        cash = income;
+        /* the round's record: the costs, then the incomes */
+        if (fin->upgradeSpent != 0) {
+            io_PrintText(0x2014, fin->upgradeSpent);
+            costs = fin->upgradeSpent;
+            cash = income - costs;
         }
-        if (*(int *)(bk + 0x44) != 0) {
-            io_PrintText(0x2016, *(int *)(bk + 0x44));
-            iv -= *(int *)(bk + 0x44);
-            w200 += *(int *)(bk + 0x44);
+        if (fin->renovationSpent != 0) {
+            io_PrintText(0x2016, fin->renovationSpent);
+            cash -= fin->renovationSpent;
+            costs += fin->renovationSpent;
         }
-        if (*(int *)(bk + 0x48) != 0) {
-            io_PrintText(0x201b, *(int *)(bk + 0x48));
-            iv -= *(int *)(bk + 0x48);
-            w200 += *(int *)(bk + 0x48);
+        if (fin->loansRepaid != 0) {
+            io_PrintText(0x201b, fin->loansRepaid);
+            cash -= fin->loansRepaid;
+            costs += fin->loansRepaid;
         }
-        if (*(int *)(bk + 0x4c) != 0) {
-            io_PrintText(0x201a, *(int *)(bk + 0x4c));
-            iv -= *(int *)(bk + 0x4c);
-            w200 += *(int *)(bk + 0x4c);
+        if (fin->costA != 0) {
+            io_PrintText(0x201a, fin->costA);
+            cash -= fin->costA;
+            costs += fin->costA;
         }
-        if (*(int *)(bk + 0x54) != 0) {
-            io_PrintText(0x2015, *(int *)(bk + 0x54));
-            iv -= *(int *)(bk + 0x54);
-            w200 += *(int *)(bk + 0x54);
+        if (fin->costB != 0) {
+            io_PrintText(0x2015, fin->costB);
+            cash -= fin->costB;
+            costs += fin->costB;
         }
-        if (*(int *)(bk + 0x28) != 0) {
-            io_PrintText(0x201c, *(int *)(bk + 0x28));
-            iv -= *(int *)(bk + 0x28);
-            w200 += *(int *)(bk + 0x28);
+        if (fin->spyPaid != 0) {
+            io_PrintText(0x201c, fin->spyPaid);
+            cash -= fin->spyPaid;
+            costs += fin->spyPaid;
         }
-        if (*(int *)(bk + 0x14) != 0) {
-            io_PrintText(0x200d, *(int *)(bk + 0x14));
-            iv += *(int *)(bk + 0x14);
-            w1fc += *(int *)(bk + 0x14);
+        if (fin->incomeA != 0) {
+            io_PrintText(0x200d, fin->incomeA);
+            cash += fin->incomeA;
+            income += fin->incomeA;
         }
-        if (*(int *)(bk + 0x18) != 0) {
-            io_PrintText(0x200c, *(int *)(bk + 0x18));
-            iv += *(int *)(bk + 0x18);
-            w1fc += *(int *)(bk + 0x18);
+        if (fin->incomeB != 0) {
+            io_PrintText(0x200c, fin->incomeB);
+            cash += fin->incomeB;
+            income += fin->incomeB;
         }
-        if (*(int *)(bk + 0x1c) != 0) {
-            io_PrintText(0x200b, *(int *)(bk + 0x1c));
-            iv += *(int *)(bk + 0x1c);
-            w1fc += *(int *)(bk + 0x1c);
+        if (fin->lootTakings != 0) {
+            io_PrintText(0x200b, fin->lootTakings);
+            cash += fin->lootTakings;
+            income += fin->lootTakings;
         }
-        if (*(int *)(bk + 0x20) != 0) {
-            io_PrintText(0x2010, *(int *)(bk + 0x20));
-            iv += *(int *)(bk + 0x20);
-            w1fc += *(int *)(bk + 0x20);
+        if (fin->incomeC != 0) {
+            io_PrintText(0x2010, fin->incomeC);
+            cash += fin->incomeC;
+            income += fin->incomeC;
         }
-        if (*(int *)(bk + 0x50) != 0) {
-            io_PrintText(0x201d, *(int *)(bk + 0x50));
-            iv -= *(int *)(bk + 0x50);
-            w200 += *(int *)(bk + 0x50);
+        if (fin->cartSpent != 0) {
+            io_PrintText(0x201d, fin->cartSpent);
+            cash -= fin->cartSpent;
+            costs += fin->cartSpent;
         }
-        if (iv == 0)
+        if (cash == 0)
             io_PrintText(0x201e);
         else
-            io_PrintText(0x204c, iv);
+            io_PrintText(0x204c, cash);
         d2_SetForm(win, 3);
-        *(short *)(U_I((unsigned)&d2_LastWindowPtr) + 0x27c) = 0x55;
+        d2_LastWindowPtr->font = 0x55;
         io_PrintText(0x2005);
         d2_SetForm(win, 1);
-        io_PrintText((unsigned)"$N");
-        b = (unsigned char *)gm_BuildQuery(1, 6);
+        io_PrintText("$N");
+        /* the buildings the player owns or masters */
+        b = (AIBLD *)gm_BuildQuery(1, 6);
         while (b != 0) {
-            if (*(short *)(b + 0x27) == (short)U_I((unsigned)&ai_PlayerId) || *(short *)(b + 0x25) == (short)U_I((unsigned)&ai_PlayerId)) {
-                t = gm_BuildingClass(*b);
-                v = gm_BuildingBalance(b, U_I((unsigned)&ai_PlayerId) & 0xffff, a);
+            if (b->owner == ai_PlayerId || b->masterId == ai_PlayerId) {
+                t = gm_BuildingClass(b->type);
+                v = gm_BuildingBalance((unsigned char *)b, MAIN_PID, bal);
                 if (v != 0 || (t != 5 && t != 6)) {
-                    w1fc += a[0];
-                    w1ec += a[1];
-                    w200 += a[2];
-                    w1f8 += a[2];
+                    income += bal[0x11];
+                    wageCost += bal[3];
+                    costs += bal[0x10];
+                    net += bal[0x14];
                 }
             }
-            b = (unsigned char *)gm_BuildNext();
+            b = (AIBLD *)gm_BuildNext();
         }
-        nrow = gm_BuildingEvents(U_I((unsigned)&ai_PlayerId) & 0xffff, 0, 0xffff, lines);
+        /* the interest of the loans the player's banks gave */
+        nrow = gm_BuildingEvents(MAIN_PID, 0, 0xffff, (int *)loans);
         j = 0;
         v = 0;
         if (nrow > 0) {
             do {
-                o = (unsigned char *)lines[j];
-                w1fc = (int)((double)w1fc + (double)*(int *)(o + 0xc0) * 0.01 * *(int *)(o + 0xb4));
-                v = (int)((double)v + (double)*(int *)(o + 0xc0) * 0.01 * *(int *)(o + 0xb4));
-                w1f8 = (int)((double)w1f8 + (double)*(int *)(o + 0xc0) * 0.01 * *(int *)(o + 0xb4));
+                o = loans[j];
+                income = (int)(income + o->interest * 0.01 * o->amount);
+                v = (int)(v + o->interest * 0.01 * o->amount);
+                net = (int)(net + o->interest * 0.01 * o->amount);
                 j++;
             } while (j < nrow);
             if (v != 0)
                 io_PrintText(0x2048, v);
         }
-        k = MAIN_PID * 0x21c;
-        if (*(char *)(((unsigned)&ai_CharInts + 0x162) + k) != 0 || *(char *)(((unsigned)&ai_CharInts + 0x165) + k) != 0) {
-            gm_CharacterWages(U_I((unsigned)&ai_PlayerId), 0, (unsigned char *)a);
-            k = (U_I((unsigned)&ai_PlayerId) & 0xffff) * 0x21c;
-            t = (-(*(char *)((unsigned)&ai_CharSex + k) != 0) & 0x28) + 0x253;
-            if (*(char *)(((unsigned)&ai_CharInts + 0x162) + k) != 0)
-                io_PrintText(0x2049, *(unsigned char *)(((unsigned)&ai_CharInts + 0x162) + k) + t, a[1]);
-            if (*(char *)(((unsigned)&ai_CharInts + 0x165) + (U_I((unsigned)&ai_PlayerId) & 0xffff) * 0x21c) != 0)
-                io_PrintText(0x2049, *(unsigned char *)(((unsigned)&ai_CharInts + 0x165) + (U_I((unsigned)&ai_PlayerId) & 0xffff) * 0x21c) + t, a[2]);
-            w1f8 = w1f8 + a[1] + a[2];
-            w1fc = w1fc + a[1] + a[2];
+        /* the wages of the offices */
+        if (ai_CharsT[MAIN_PID].officeKind != 0 || ai_CharsT[MAIN_PID].secondOffice != 0) {
+            gm_CharacterWages(main_PlayerIdInt, 0, (unsigned char *)&wages);
+            t = ai_CharsT[MAIN_PID].sex != 0 ? 0x27b : 0x253;
+            if (ai_CharsT[MAIN_PID].officeKind != 0)
+                io_PrintText(0x2049, ai_CharsT[MAIN_PID].officeKind + t, wages.amount);
+            if (ai_CharsT[MAIN_PID].secondOffice != 0)
+                io_PrintText(0x2049, ai_CharsT[MAIN_PID].secondOffice + t, wages.amount2);
+            net += wages.amount + wages.amount2;
+            income += wages.amount + wages.amount2;
         }
-        if (gm_CharacterIncomes(U_I((unsigned)&ai_PlayerId), (GMINCOME *)kind, 0) != 0) {
+        /* the character's other incomes */
+        if (gm_CharacterIncomes(main_PlayerIdInt, &inc, 0) != 0) {
             i = 0;
             do {
-                if (kind[i] == 0)
+                if (inc.kind[i] == 0)
                     break;
-                io_PrintText(main_RoundTotalFmt, kind[i] + 0x1f64, cnt[i], sum[i]);
-                t = sum[i];
-                w1f8 -= t;
-                w200 += t;
-                w1e8 += t;
+                io_PrintText(main_RoundTotalFmt, inc.kind[i] + 0x1f64, inc.rate[i], inc.amount[i]);
+                t = inc.amount[i];
+                net -= t;
+                costs += t;
+                incomeSum += t;
                 i++;
             } while (i < 6);
         }
-        if (w1ec != 0)
-            io_PrintText(0x204a, w1ec);
-        j = gm_CreditEvents(U_I((unsigned)&ai_PlayerId) & 0xffff, 0, lines);
+        if (wageCost != 0)
+            io_PrintText(0x204a, wageCost);
+        /* the interest of the player's own loans */
+        j = gm_CreditEvents(MAIN_PID, 0, (int *)loans);
         iv = 0;
         k = 0;
         if (0 < j) {
             do {
-                o = (unsigned char *)lines[k];
-                w200 = (int)((double)w200 + (double)*(int *)(o + 0xc0) * 0.01 * *(int *)(o + 0xb4));
-                iv = (int)((double)iv + (double)*(int *)(o + 0xc0) * 0.01 * *(int *)(o + 0xb4));
-                w1f8 = (int)((double)w1f8 - (double)*(int *)(o + 0xc0) * 0.01 * *(int *)(o + 0xb4));
+                o = loans[k];
+                costs = (int)(costs + o->interest * 0.01 * o->amount);
+                iv = (int)(iv + o->interest * 0.01 * o->amount);
+                net = (int)(net - o->interest * 0.01 * o->amount);
                 k++;
             } while (k < j);
         }
-        if (w200 != 0 && iv != 0)
+        if (costs != 0 && iv != 0)
             io_PrintText(0x204b, iv);
-        io_PrintText(0x204c, w1f8);
-        w1fc -= w200;
-        if (w1fc > 0)
-            io_PrintText(0x204d, w1fc);
-        else if (w1fc < 0)
-            io_PrintText(0x204e, w1fc);
-        t = gm_GetGoodsValue((unsigned)&ai_CharsT + (U_I((unsigned)&ai_PlayerId) & 0xffff) * 0x21c);
-        io_PrintText(0x2029, ((t - w1e8) - w1ec) - iv);
+        io_PrintText(0x204c, net);
+        income -= costs;
+        if (income > 0)
+            io_PrintText(0x204d, income);
+        else if (income < 0)
+            io_PrintText(0x204e, income);
+        t = gm_GetGoodsValue((char *)&ai_CharsT[MAIN_PID]);
+        io_PrintText(0x2029, ((t - incomeSum) - wageCost) - iv);
         he_ShowEventBar(0xffff);
-        d2_ClearSurface(U_I((unsigned)&d2_ScreenSurf));
+        d2_ClearSurface(d2_ScreenSurf);
         d2_ShowPicture(0x79d);
-        U_I((unsigned)&d2_DirtyRectLeft) = (int)*(short *)(unsigned)&d2_ScreenW;
-        U_I((unsigned)&d2_DirtyRectBottom) = (int)*(short *)(unsigned)&d2_ScreenH;
-        U_I((unsigned)&main_NoRoundFade) = 1;
-        U_I((unsigned)&d2_DirtyRectRight) = 0;
-        U_I((unsigned)&d2_DirtyRectTop) = 0;
+        d2_DirtyRectLeft[0] = d2_ScreenW;
+        d2_DirtyRectBottom = d2_ScreenH;
+        main_NoRoundFade = 1;
+        d2_DirtyRectRight = 0;
+        d2_DirtyRectTop = 0;
         d2_SetForm(win, 1);
-        t = U_I((unsigned)&d2_LastWindow);
+        t = d2_LastWindow;
         d2_SetForm(win, 2);
         io_PrintText(0x7d);
-        d2_CreateScrollButtons(-1, -1, U_I((unsigned)&d2_LastWindow), t, 0x767);
-        U_I(((unsigned)&ai_Unkf8f13c + 0x248) + t * 0x3c4) = 0x18;
+        d2_CreateScrollButtons(-1, -1, d2_LastWindow, t, 0x767);
+        d2_Wins[t].visible = 0x18;
         sb_PlaySample(0, "RollenKurz_s_01", 1, 0x3f, 0x7f, 0, 0);
         t = sv_RunFrame((int)main_RoundReport, 0x24087);
         while (t != 0) {
             sv_ScrollFormAnimate();
-            if (U_I((unsigned)&d2_ClickedId) == 0 || *(char *)(unsigned)&kb_Last == 0x1c)
+            if (d2_ClickedId == 0 || kb_Last == 0x1c)
                 sv_PopRequest = 1;
             t = sv_RunFrame((int)main_RoundReport, 0x24087);
         }
         sv_DestroyScrollForm();
     }
-    *(int *)(bk + 0x2c) = *(int *)(bk + 0x2c) + *(int *)(bk + 0x18) + *(int *)(bk + 0x14);
-    *(int *)(bk + 0x14) = 0;
-    *(int *)(bk + 0x30) = *(int *)(bk + 0x30) + *(int *)(bk + 0x1c);
-    *(int *)(bk + 0x18) = 0;
-    *(int *)(bk + 0x34) = *(int *)(bk + 0x34) + *(int *)(bk + 0x20);
-    *(int *)(bk + 0x1c) = 0;
-    *(int *)(bk + 0x38) = *(int *)(bk + 0x38) + *(int *)(bk + 0x24);
-    *(int *)(bk + 0x20) = 0;
-    *(int *)(bk + 0x24) = 0;
-    *(int *)(bk + 0x28) = 0;
-    *(int *)(bk + 0x40) = 0;
-    *(int *)(bk + 0x44) = 0;
-    *(int *)(bk + 0x48) = 0;
-    *(int *)(bk + 0x4c) = 0;
-    *(int *)(bk + 0x50) = 0;
-    *(int *)(bk + 0x54) = 0;
-    if (fade != 0)
+    /* the round's parts go into the totals and are cleared */
+    fin->missionMoney[0] += fin->incomeB + fin->incomeA;
+    fin->incomeA = 0;
+    fin->missionMoney[1] += fin->lootTakings;
+    fin->incomeB = 0;
+    fin->missionMoney[2] += fin->incomeC;
+    fin->lootTakings = 0;
+    fin->missionMoney[3] += fin->madeValue;
+    fin->incomeC = 0;
+    fin->madeValue = 0;
+    fin->spyPaid = 0;
+    fin->upgradeSpent = 0;
+    fin->renovationSpent = 0;
+    fin->loansRepaid = 0;
+    fin->costA = 0;
+    fin->cartSpent = 0;
+    fin->costB = 0;
+    if (fade != 0) {
         d2_ReleaseFade(fade);
-    if (gm_IsBankrupt((unsigned)&ai_CharsT + (U_I((unsigned)&ai_PlayerId) & 0xffff) * 0x21c, -(w1e8 + w1ec + iv)) != 0) {
-        memset(msg, 0, 0x114);
-        MSG_I(msg, 0xc) = U_I((unsigned)&ai_CharInts + (U_I((unsigned)&ai_PlayerId) & 0xffff) * 0x21c);
-        MSG_B(msg, 0x30) = 1;
-        MSG_B(msg, 0x26) = 0x60;
-        MSG_I(msg, 0x14) = -1;
-        MSG_B(msg, 8) = 9;
-        MSG_I(msg, 0x34) = MSG_I(msg, 0xc);
-        cm_ExecCutscene(msg);
+        fade = 0;
+    }
+    if (gm_IsBankrupt((unsigned short *)&ai_CharsT[MAIN_PID], -(incomeSum + wageCost + iv)) != 0) {
+        memset(&msg, 0, sizeof(msg));
+        msg.kind = 9;
+        msg.flags = 0x60;
+        msg.thing = -1;
+        msg.used = 1;
+        msg.host = ai_CharsT[MAIN_PID].netId;
+        msg.members[0] = msg.host;
+        if (fade != 0)
+            d2_ReleaseFade(fade);
+        cm_ExecCutscene((char *)&msg);
         if (main_ReplaceFigureOn != 0)
-            main_ReplaceFigure(U_I((unsigned)&ai_PlayerId) & 0xffff);
+            main_ReplaceFigure(MAIN_PID);
         main_ReplaceFigureOn = 0;
     }
 }
