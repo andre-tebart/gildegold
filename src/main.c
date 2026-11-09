@@ -5155,7 +5155,18 @@ void main_PlayOutro(void)
         mov_Exit();
 }
 /* 0x53ccf0, the program entry (WinMain: instance, previous, command line, show): reads game.INI (Network / Gfx / Sound / General), parses the command line (STADT=" BERUF=" IP=" PORT=" MO_MONEY FULLSCREEN DIRECTWINDOW), starts the engine
-   (main_CreateWindow / main_Init / main_OpenScreen / main_OpenEngine), then runs the main menu or the direct start (a fixed player profile with the BERUF=" job) and the game loop until the program quits */
+   (main_CreateWindow / main_Init / main_OpenScreen / main_OpenEngine), then runs the main menu or the direct start (a fixed player profile with the BERUF=" job) and the game loop until the program quits
+   @deep body read against the original and readable (globals typed, LSSAVE.netDir, command line scans r +
+   N with d first, the direct start else-if order, memcpy of the talents). 508 = 508 instructions; left
+   only allocation at 0x53cfc0 (cur_res index): the original zero-extends ai_GfxResolution in ecx (xor
+   ecx,ecx; mov cl,al; mov eax,ecx; shl eax,3) and loads w/h into edx/eax, ours uses edx and loads into
+   ecx/edx; plus regs ecx->eax at 0x53ced5. The 3 M8 lines are that hunk misaligned (crossed: both sides
+   refer to ai_ScreenModes / ai_ScreenModes+4 / W / H). Tried: a local unsigned char res (spilled to a
+   slot), int i with (unsigned char) cast (and eax,0xff), k = ai_GfxResolution, a SCREENMODE pointer, a
+   struct copy view: all worse (references: M8 at +0x2ea: ours refers to ai_ScreenModes+0x4 (0x62d7bc), the
+   original's field to 0x62d7b8 (ai_ScreenModes) (and 2 more), explained: the M8 refs are crossed by the
+   alignment of a register-renamed load pair: both sides load ai_ScreenModes[res].w/.h and store them to
+   ai_ScreenModeW/H in the same order) */
 
 int WINAPI WinMain(HINSTANCE hInst, HINSTANCE prev, char *cmd, int show)
 {
