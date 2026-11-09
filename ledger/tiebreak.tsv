@@ -4003,8 +4003,8 @@ exe	0x00578370	ai_TutorialStop	sv_t	9d1db8f5a93c7021	no	byte	control=byte p1=byt
 exe	0x00578440	ai_TutorialFreeRuns	sv_t	7db4c5d18c22886f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x005784a0	ai_TutorialInitMainIntro	sv_t	798c8d26cb8bedf5	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00578570	ai_TutorialInitChapter1	sv_t	1104bf614d4657fb	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x00578e40	ai_TutorialInitChapter2	sv_t	1997337a7073c8ff	yes	byte	control=shape p1=byte* p2=shape p3=shape p4=byte*
-exe	0x00579570	ai_TutorialInitChapter3	sv_t	7a7c849570dd38d6	yes	shape	control=draft p1=shape* p2=shape* p3=shape* p4=shape*
+exe	0x00578e40	ai_TutorialInitChapter2	sv_t	1997337a7073c8ff	yes	byte	control=shape p1=byte* p2=byte* p3=byte* p4=byte*
+exe	0x00579570	ai_TutorialInitChapter3	sv_t	7a7c849570dd38d6	yes	shape	control=draft p1=shape* p2=draft* p3=draft* p4=shape*
 exe	0x0057aa80	ai_TutorialInitChapter4	sv_t	6084c4a654a21837	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0057aeb0	ai_TutorialInitChapter5	sv_t	8774329fa9d901d6	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0057b750	ai_TutorialInitMainOutro	sv_t	fa030cb776dbd933	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
