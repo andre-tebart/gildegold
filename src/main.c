@@ -5155,83 +5155,82 @@ void main_PlayOutro(void)
         mov_Exit();
 }
 /* 0x53ccf0, the program entry (WinMain: instance, previous, command line, show): reads game.INI (Network / Gfx / Sound / General), parses the command line (STADT=" BERUF=" IP=" PORT=" MO_MONEY FULLSCREEN DIRECTWINDOW), starts the engine
-   (0x5324f0 / 0x531ba0 / 0x531c50 / 0x532160), then the game loop 0x53bb20 until the game ends (ROUGH) */
+   (main_CreateWindow / main_Init / main_OpenScreen / main_OpenEngine), then runs the main menu or the direct start (a fixed player profile with the BERUF=" job) and the game loop until the program quits */
 
 int WINAPI WinMain(HINSTANCE hInst, HINSTANCE prev, char *cmd, int show)
 {
     int mode;
     char c;
     int net = 0;
-    int sv = 0;
-    int r, i, k;
+    int i, k;
     char *p;
-    char *s, *e;
+    char *e;
     char *d;
-    unsigned res;
-    char c224[4];
-    JOBTALENTS c21c;
+    char *r;
+    char *s;
+    void *mutex;
+    JOBTALENTS job;
     char num[0x80];
     OSVERSIONINFOA vi;
     char bm[0x100];
 
-    U_I((unsigned)&main_Instance) = (int)hInst;
+    main_Instance = hInst;
     vi.dwOSVersionInfoSize = 0x94;
     GetVersionExA(&vi);
-    U_I((unsigned)&main_PlatformNT) = (vi.dwPlatformId != 1);
-    GetModuleFileNameA((HMODULE)U_I((unsigned)&main_Instance), (char *)(unsigned)&ai_OptionsFile, 0x104);
+    main_PlatformNT = (vi.dwPlatformId != 1);
+    GetModuleFileNameA((HMODULE)main_Instance, ai_OptionsFile, 0x104);
     i = 0;
     do {
-        c = ((char *)&ai_OptionsFile)[i];
-        ((char *)&main_AppDir)[i] = c;
+        c = ai_OptionsFile[i];
+        main_AppDir[i] = c;
         i++;
     } while (c != 0);
-    p = strrchr((char *)(unsigned)&main_AppDir, 0x5c);
+    p = strrchr(main_AppDir, '\\');
     *p = 0;
-    p = strrchr((char *)(unsigned)&ai_OptionsFile, 0x5c);
+    p = strrchr(ai_OptionsFile, '\\');
     strcpy(p + 1, "game.INI");
-    he_LoadMessageFilter((char *)(unsigned)&ai_OptionsFile);
-    GetPrivateProfileStringA("Network", "Server", "Server\\Server.dll", ai_NetLibName, 0x104, (char *)(unsigned)&ai_OptionsFile);
+    he_LoadMessageFilter(ai_OptionsFile);
+    GetPrivateProfileStringA("Network", "Server", "Server\\Server.dll", ai_NetLibName, 0x104, ai_OptionsFile);
     i = 0;
     do {
         c = ai_NetLibName[i];
-        ((char *)&ls_SavePath + 0x160)[i] = c;
+        ls_SavePath.netDir[i] = c;
         i++;
     } while (c != 0);
-    p = strrchr((char *)((unsigned)&ls_SavePath + 0x160), 0x5c);
+    p = strrchr(ls_SavePath.netDir, '\\');
     *p = 0;
     _strupr(cmd);
-    U_I((unsigned)&main_TextureDivider) = GetPrivateProfileIntA("Gfx", "TextureDivider", 0, (char *)(unsigned)&ai_OptionsFile);
-    U_I((unsigned)&snd_MusicEnabled) = GetPrivateProfileIntA("Sound", "msx", 0, (char *)(unsigned)&ai_OptionsFile);
-    main_AmbientSoundOn = GetPrivateProfileIntA("Sound", "ambient", 0, (char *)(unsigned)&ai_OptionsFile);
-    snd_SfxEnabled = GetPrivateProfileIntA("Sound", "sfx", 0, (char *)(unsigned)&ai_OptionsFile);
-    main_WeatherSound = GetPrivateProfileIntA("Sound", "weather", 1, (char *)(unsigned)&ai_OptionsFile);
-    GetPrivateProfileStringA("General", "Bildmodus", "FULLSCREEN", bm, 0x100, (char *)(unsigned)&ai_OptionsFile);
+    main_TextureDivider = GetPrivateProfileIntA("Gfx", "TextureDivider", 0, ai_OptionsFile);
+    snd_MusicEnabled = GetPrivateProfileIntA("Sound", "msx", 0, ai_OptionsFile);
+    main_AmbientSoundOn = GetPrivateProfileIntA("Sound", "ambient", 0, ai_OptionsFile);
+    snd_SfxEnabled = GetPrivateProfileIntA("Sound", "sfx", 0, ai_OptionsFile);
+    main_WeatherSound = GetPrivateProfileIntA("Sound", "weather", 1, ai_OptionsFile);
+    GetPrivateProfileStringA("General", "Bildmodus", "FULLSCREEN", bm, 0x100, ai_OptionsFile);
     _strupr(bm);
     mode = (strcmp(bm, "DIRECTWINDOW") != 0) * 2 + 1;
     if (strstr(cmd, "DIRECTWINDOW") != 0)
         mode = 1;
     if (strstr(cmd, "FULLSCREEN") != 0)
         mode = 3;
-    GetPrivateProfileStringA("General", "GfxPath", "\\project\\gfx\\", (char *)(unsigned)&main_GfxPath, 0x104, (char *)(unsigned)&ai_OptionsFile);
-    GetPrivateProfileStringA("General", "GamePath", "\\project\\game\\", (char *)(unsigned)&main_GamePath, 0x104, (char *)(unsigned)&ai_OptionsFile);
-    GetPrivateProfileStringA("General", "MoviePath", "\\project\\movie\\", (char *)(unsigned)&main_MoviePath, 0x104, (char *)(unsigned)&ai_OptionsFile);
-    GetPrivateProfileStringA("General", "Language", "german", txt_Language, 0x40, (char *)(unsigned)&ai_OptionsFile);
+    GetPrivateProfileStringA("General", "GfxPath", "\\project\\gfx\\", (char *)main_GfxPath, 0x104, ai_OptionsFile);
+    GetPrivateProfileStringA("General", "GamePath", "\\project\\game\\", main_GamePath, 0x104, ai_OptionsFile);
+    GetPrivateProfileStringA("General", "MoviePath", "\\project\\movie\\", main_MoviePath, 0x104, ai_OptionsFile);
+    GetPrivateProfileStringA("General", "Language", "german", txt_Language, 0x40, ai_OptionsFile);
     ls_LanguageOf(txt_Language);
-    main_MoviesOpen = GetPrivateProfileIntA("General", "show_intro", 0, (char *)(unsigned)&ai_OptionsFile);
-    res = GetPrivateProfileIntA("Gfx", "cur_res", 0, (char *)(unsigned)&ai_OptionsFile);
-    ai_GfxResolution = (unsigned char)res;
-    ai_ScreenModeW = ai_ScreenModes[(unsigned char)res].w;
-    ai_ScreenModeH = ai_ScreenModes[(unsigned char)res].h;
+    main_MoviesOpen = GetPrivateProfileIntA("General", "show_intro", 0, ai_OptionsFile);
+    ai_GfxResolution = GetPrivateProfileIntA("Gfx", "cur_res", 0, ai_OptionsFile);
+    ai_ScreenModeW = ai_ScreenModes[ai_GfxResolution].w;
+    ai_ScreenModeH = ai_ScreenModes[ai_GfxResolution].h;
     if (strstr(cmd, "MO_MONEY") != 0)
-        U_I((unsigned)&main_MoneyCheat) = 1;
-    GetPrivateProfileStringA("General", "Stadt", "Augsburg", ai_CityName, 0x40, (char *)(unsigned)&ai_OptionsFile);
-    GetPrivateProfileStringA("Network", "Host", "128.0.0.1", main_NetHost, 0x80, (char *)(unsigned)&ai_OptionsFile);
-    U_I(((unsigned)&ls_SavePath + 0x84)) = GetPrivateProfileIntA("Network", "Port", 0x1d6b, (char *)(unsigned)&ai_OptionsFile);
+        main_MoneyCheat = 1;
+    GetPrivateProfileStringA("General", "Stadt", "Augsburg", ai_CityName, 0x40, ai_OptionsFile);
+    GetPrivateProfileStringA("Network", "Host", "128.0.0.1", main_NetHost, 0x80, ai_OptionsFile);
+    ls_SavePortW = GetPrivateProfileIntA("Network", "Port", 0x1d6b, ai_OptionsFile);
     r = strstr(cmd, "STADT=\"");
     if (r != 0) {
-        s = (char *)(r + 7);
         d = ai_CityName;
-        e = (char *)strchr(s, 0x22);
+        s = r + 7;
+        e = strchr(s, '"');
         if (e != 0)
             while (s < e)
                 *d++ = *s++;
@@ -5239,9 +5238,9 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE prev, char *cmd, int show)
     }
     r = strstr(cmd, "BERUF=\"");
     if (r != 0) {
-        s = (char *)(r + 7);
         d = main_JobName;
-        e = (char *)strchr(s, 0x22);
+        s = r + 7;
+        e = strchr(s, '"');
         if (e != 0)
             while (s < e)
                 *d++ = *s++;
@@ -5249,82 +5248,72 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE prev, char *cmd, int show)
     }
     r = strstr(cmd, "IP=\"");
     if (r != 0) {
-        s = (char *)(r + 4);
         d = main_NetHost;
-        e = (char *)strchr(s, 0x22);
+        s = r + 4;
+        e = strchr(s, '"');
         if (e != 0)
             while (s < e)
                 *d++ = *s++;
         *d = 0;
         net = 1;
     }
-    i = strstr(cmd, "PORT=\"");
-    if (i != 0) {
-        s = (char *)(i + 6);
+    r = strstr(cmd, "PORT=\"");
+    if (r != 0) {
+        s = r + 6;
         d = num;
-        e = (char *)strchr(s, 0x22);
+        e = strchr(s, '"');
         if (e != 0 && s < e) {
             k = e - s;
             memcpy(d, s, k);
             d += k;
         }
         *d = 0;
-        U_I(((unsigned)&ls_SavePath + 0x84)) = atoi(num);
+        ls_SavePortW = atoi(num);
     }
-    i = main_CreateMutex(c224);
-    if (i != 0)
+    if (main_CreateMutex(&mutex) != 0)
         exit(1);
-    i = main_CreateWindow(hInst, show, mode);
-    if (i == 0) {
+    if (main_CreateWindow(hInst, show, mode) == 0) {
         main_Exit();
         return 0;
     }
-    i = main_Init();
-    if (i == 0) {
+    if (main_Init() == 0) {
         main_Exit();
         return 0;
     }
     if (main_MoviesOpen != 0)
         main_PlayIntroMovies();
-    i = main_OpenScreen(mode);
-    if (i == 0) {
+    if (main_OpenScreen(mode) == 0) {
         main_Exit();
         return 0;
     }
-    i = main_OpenEngine();
-    if (i == 0) {
+    if (main_OpenEngine() == 0) {
         main_Exit();
         return 0;
     }
     do {
-        if (main_DirectStart == 0) {
-            if (net == 0) {
-                main_Menue();
-                if (main_ScreenRestart != 0) {
-                    main_ShutdownScreen();
-                    sv_PumpMessages();
-                    i = main_OpenScreen(mode);
-                    if (i == 0) {
-                        main_Exit();
-                        return 0;
-                    }
-                    main_ScreenRestart = net;
-                    sv_PumpMessages();
+        if (main_DirectStart == 0 && net == 0) {
+            main_Menue();
+            if (main_ScreenRestart != 0) {
+                main_ShutdownScreen();
+                sv_PumpMessages();
+                if (main_OpenScreen(mode) == 0) {
+                    main_Exit();
+                    return 0;
                 }
-            } else {
-                U_I((unsigned)&ai_GameFlags) = 5;
+                main_ScreenRestart = 0;
+                sv_PumpMessages();
             }
-        } else {
+        } else if (main_DirectStart != 0) {
             k = 0x38;
             if (main_JobName[0] != 0) {
                 for (i = 0; i < 0x5f; i++) {
-                    if (_strcmpi(main_JobName, ((char **)(unsigned)&txt_JobNames)[i]) == 0) {
+                    if (_strcmpi(main_JobName, txt_JobNames[i]) == 0) {
                         k = i;
                         break;
                     }
                 }
             }
-            U_I((unsigned)&ai_GameFlags) = 9;
+            ai_GameFlags = 9;
             init_PlayerProfile.tool1 = (unsigned char)util_RandomInt(0x5f) + 1;
             init_PlayerProfile.tool2 = (unsigned char)util_RandomInt(0x5f) + 1;
             init_PlayerProfile.job = (unsigned char)k;
@@ -5332,31 +5321,31 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE prev, char *cmd, int show)
             init_PlayerProfile.coat = 0x59a;
             init_PlayerProfile.sex = 0;
             init_PlayerProfile.faith = 1;
-            i = gm_HeadIconNumber("patrizier_MANN2");
-            init_PlayerProfile.modelId = i + 0x639;
+            init_PlayerProfile.modelId = gm_HeadIconNumber("patrizier_MANN2") + 0x639;
             strcpy(init_PlayerProfile.firstName, "Tobias");
             strcpy(init_PlayerProfile.familyName, "Severin");
-            c21c = gm_GetJobTalents(init_PlayerProfile.job);
-            *(int *)init_PlayerProfile.talents = *(int *)c21c.skills;
-            init_PlayerProfile.talents[4] = c21c.skills[4];
-            init_PlayerProfile.talents[3] = (char)0xa8;
+            job = gm_GetJobTalents(init_PlayerProfile.job);
+            memcpy(init_PlayerProfile.talents, job.skills, 5);
+            init_PlayerProfile.talents[3] = 0xa8;
             init_PlayerProfile.talents[0] = 0;
             init_PlayerProfile.talents[1] = 0;
             hst_SetTextsOn(1);
+        } else {
+            ai_GameFlags = 5;
         }
-        U_I((unsigned)&ai_LeaveGame) = 1;
-        if (U_I((unsigned)&ai_GameFlags) != 0 && U_I((unsigned)&main_QuitProgram) == 0) {
+        ai_LeaveGame = 1;
+        if (ai_GameFlags != 0 && main_QuitProgram == 0) {
             do {
                 main_GameLoop(0);
-            } while (U_I((unsigned)&ai_LeaveGame) != 0);
+            } while (ai_LeaveGame != 0);
         }
         if (main_DirectStart != 0 || net != 0)
-            U_I((unsigned)&main_QuitProgram) = 1;
-        U_I((unsigned)&sv_PopRequest) = 0;
-        U_I((unsigned)&sv_FrameDepth) = 0;
-        if (U_I((unsigned)&main_QuitProgram) != 0) {
+            main_QuitProgram = 1;
+        sv_PopRequest = 0;
+        sv_FrameDepth = 0;
+        if (main_QuitProgram != 0) {
             main_Exit();
-            if (U_I((unsigned)&main_ScreenSaverOff) != 0)
+            if (main_ScreenSaverOff != 0)
                 main_SetScreenSaver(1);
             return 1;
         }

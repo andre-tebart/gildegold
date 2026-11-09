@@ -57,7 +57,9 @@ typedef struct LSSAVE {             /* 0x280 bytes at 0x75e640 (ls_SavePath) */
     NETHDR net;                     /* 0x0a0, main: the network game record */
     char pad10a[0x16];
     char version[0x40];             /* 0x120, main: the version text (main_BuildVersionString) */
-    char rest[0x120];               /* 0x160 */
+    char netDir[0x104];             /* 0x160, main: the directory of the network DLL (WinMain: ai_NetLibName
+                                       up to its last backslash) */
+    char rest[0x1c];                /* 0x264 */
 } LSSAVE;
 typedef char ls_AssertLSSAVE[sizeof(LSSAVE) == 0x280 ? 1 : -1];
 
