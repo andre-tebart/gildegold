@@ -15,6 +15,7 @@ struct SBBANK;
 #include "d3.h"
 #include "sfx.h"
 #include "mem.h"
+#include "sblib.h"
 
 typedef struct SBDATA {             /* a loaded sample: 12-byte header, then the file data */
     char fmt;                       /* 1 wav, 2 mp3 */
@@ -45,45 +46,14 @@ typedef struct SBBANK {             /* 0x144 bytes, also the file header */
     int refs;                       /* 0x140 */
 } SBBANK;
 
-typedef struct SBSAMPLE {           /* 0x30 bytes, sb_Count of them at sb_Samples */
-    int handle;
-    SBENTRY *info;                  /* 0x04, NULL = unused */
-    int start;                      /* 0x08 */
-    int loops;                      /* 0x0c */
-    unsigned int fadestart;         /* 0x10 */
-    union {
-        unsigned int flags;         /* 0x14, 1 fade in, 2 fade out, 4 fixed variation, 8 stopped, 0x10 restart */
-        volatile unsigned int volatileFlags;    /* the same dword through a volatile store, where VC6 must keep
-                                                   two flag stores (sb_Update: stopped + fade bits) */
-    };
-    int delay;                      /* 0x18, repeat delay */
-    unsigned int last;              /* 0x1c */
-    int var;                        /* 0x20, variation index */
-    unsigned int volume;            /* 0x24 */
-    int pan;                        /* 0x28 */
-    void (*done)(struct SBSAMPLE *s);   /* 0x2c */
-} SBSAMPLE;
 
 
-struct SBSAMPLE * sb_GetSample(struct SBBANK *bank, char *name);                                       /* 0x426030 */
-SBENTRY *sb_FindEntry(SBBANK *bank, char *name);                                        /* 0x4260c0 */
-SBSAMPLE *sb_FindSampleOf(SBENTRY *e, int *idx);                                        /* 0x4262f0 */
-SBENTRY *sb_FindOldestEntry(void);                                                      /* 0x426350 */
-SBBANK *sb_GetBankOf(SBENTRY *e);                                                       /* 0x426450 */
-int sb_FreeMemory(int size);                                                            /* 0x4264a0 */
-SBSAMPLE *sb_AllocSample(void);                                                         /* 0x426540 */
-SBBANK *sb_LastBank(void);                                                              /* 0x426630 */
-int sb_LoadEntry(SBBANK *bank, SBENTRY *e);                                             /* 0x426660 */
-void sb_UnloadAll(void);                                                                /* 0x426db0 */
-int sb_Play(struct SBSAMPLE *s, int fade, int delay);                                          /* 0x427110 */
-void sb_Stop(struct SBSAMPLE *s, int fade);                                                    /* 0x427290 */
 
 int sb_Mem = 0;  /* 0x633190 */
 int sb_Used = 0;  /* 0x633194 */
 SBBANK * sb_Banks = 0;  /* 0x633198 */
 int sb_Driver = 0;  /* 0x63319c */
 char sb_Path[256] = {0};  /* 0x6331a8 */
-extern int sb_Count;
 SBSAMPLE * sb_Samples = 0;  /* 0x6332a8 */
 int sb_Count = 0;  /* 0x6332ac */
 int sb_Stopping = 0;  /* 0x6332b0 */

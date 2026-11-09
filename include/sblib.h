@@ -8,6 +8,25 @@ struct SBSAMPLE;
 struct SBBANK;
 struct SBENTRY;
 
+typedef struct SBSAMPLE {           /* 0x30 bytes, sb_Count of them at sb_Samples */
+    int handle;
+    struct SBENTRY *info;           /* 0x04, NULL = unused */
+    int start;                      /* 0x08 */
+    int loops;                      /* 0x0c */
+    unsigned int fadestart;         /* 0x10 */
+    union {
+        unsigned int flags;         /* 0x14, 1 fade in, 2 fade out, 4 fixed variation, 8 stopped, 0x10 restart */
+        volatile unsigned int volatileFlags;    /* the same dword through a volatile store, where VC6 must keep
+                                                   two flag stores (sb_Update: stopped + fade bits) */
+    };
+    int delay;                      /* 0x18, repeat delay */
+    unsigned int last;              /* 0x1c */
+    int var;                        /* 0x20, variation index */
+    unsigned int volume;            /* 0x24 */
+    int pan;                        /* 0x28 */
+    void (*done)(struct SBSAMPLE *s);   /* 0x2c */
+} SBSAMPLE;
+
 int sb_Init(int mem, int count, int a, int b, int c);                            /* 0x425bc0, opens the sound driver once and allocates the count sample slots */
 void sb_Exit(void);                                                              /* 0x425ce0, shuts the sample library down: unloads every sample bank, frees the */
 void sb_Update(void);                                                            /* 0x425d20, per-frame update of all samples: fades in / out (sb_FadeTime), repeat */
