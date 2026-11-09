@@ -794,7 +794,18 @@ SBSAMPLE *sb_PlayVariation(SBBANK *bank, char *name, int idx, int loops, int pan
    to ".wav" and 2 to ".mp3", hands data / len to sfx_SetSampleFile and sets volume / pan / loops / delay and
    the restart bookkeeping before sfx_StartSample; return 0, -1 when the bank, the load, the entry type or
    format or the driver handover fails
-   @deep behaviour: 20 code hunk lines are one block-layout difference - the original keeps the failure epilogue inline after the sfx_SetSampleFile test (jne + or ebp,-1; pop; mov eax,ebp; ret at 0x4271b5, the four failure sites jump into it) with the success epilogue at the end, ours puts the single end: return ret block at the function end (mov eax,ebp; pop...; ret; or ebp,-1); every source shape (return -1 per site, ret = -1; goto end, end: return ret, if/else, 162 variants tried) gives the shared end block, so the statements and operands agree and only VC6's block layout / ret register role differs (asmdiff, listing) */
+   @stuck earlier: 162 variants (return -1 per site, ret = -1; goto end, end: return ret, if/else) all give
+   the same layout. The statements and operands agree; only block layout differs: the original lays out the
+   shared failure block (or ebp,-1 + its own epilogue copy) inline right after the sfx_SetSampleFile test
+   (jne over it, the bank / type / fmt failures jump into it) and lets the success path fall into the end
+   epilogue (LoadEntry's nonzero ret jumps there); ours puts the failure block after the success path, so
+   the success path gets the duplicated epilogue (mov eax,ebp; pop edi; pop esi; pop ebp; ret at +0x174)
+   and the failure falls into the end one (or ebp,-1 at +0x17a); the far jumps become rel32 (size 387 vs
+   371). Deep session 3: a fail: label inside the sfx test's then-block (with goto end, with else { success
+   }, then/else swapped, return ret in it: worse); ext = NULL default and if (!ext || sfx(..) == -1) {
+   fail: ret = -1; } (identical, also with the else form); d = NULL default with nested fmt test (worse).
+   VC6 places the merged failure block after the success code whatever its textual place; no source lever
+   found. (tiebreak: insensitive under the four probes only, best draft) */
 
 int sb_Play(SBSAMPLE *s, int fade, int delay)
 {
