@@ -892,15 +892,15 @@ stepped:
     }
     return 1;
 }
-/* 0x433b10, frees the object's path animation. @deep Q4: D3_OBJPATH(obj) (raw cast of D3OBJECT+0x1d0) is used in the body; the typed-field fix (struct D3PATH *path in D3OBJECT plus (obj)->path) made d3_MirDrawObject (d3_mir.c) stop matching by 8 bytes - the same scheduling flip as the rotation union attempt - and moved 4 bytes in d3_anim.c, so it was reverted. Q1 fixed (d3_Unk433b10 -> d3anim_FreePath). */
+/* 0x433b10, frees the object's path animation (its keys, then the D3PATH) and clears obj->path */
 
 void d3anim_FreePath(D3OBJECT *obj)
 {
-    if (D3_OBJPATH(obj)) {
-        mem_Free(D3_OBJPATH(obj)->keys);
-        D3_OBJPATH(obj)->keys = 0;
-        mem_Free(D3_OBJPATH(obj));
-        D3_OBJPATH(obj) = 0;
+    if (obj->path) {
+        mem_Free(obj->path->keys);
+        obj->path->keys = 0;
+        mem_Free(obj->path);
+        obj->path = 0;
     }
 }
 /* 0x433b50, spline tangents of all keys (flags.b[1] & 4: smooth); b[8] & 1 wraps the angles first. @deep B draft: 46 code hunks, dominated by the strength-reduced key offset in the first loop ([edi+ecx+0x20] ours vs [ecx+edi+0x20] original); the attempts ((p->keys + i)->, i[p->keys], 0.0f vs 0) failed - deep matching. Q2: the callee 0x453d60 is d3_UnwrapAngles in d3_vec.c, but d3.h declares the D3VECTOR* view as d3_UnwrapAngles, so naming it needs a shared-header decision. */
