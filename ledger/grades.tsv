@@ -290,7 +290,7 @@ exe	0x004112e0	di_PollKeyboard	di_input	byte	readable
 exe	0x004113f0	di_SetMousePos	di_input	byte	readable		
 exe	0x00411440	di_GetMouse	di_input	byte	readable		
 exe	0x004115b0	di_ClearEvents	di_input	byte	readable		
-exe	0x00411680	d3t_PlaceObject	d3_tools	draft	readable	deep	
+exe	0x00411680	d3t_PlaceObject	d3_tools	byte	readable		
 exe	0x00411860	d3t_PlaceObjectV	d3_tools	byte	readable		
 exe	0x004118a0	d3t_PlaceAtObject	d3_tools	byte	readable		
 exe	0x004118d0	d3t_FindObjectCB	d3_tools	byte	readable		
@@ -319,7 +319,7 @@ exe	0x00413550	d3t_SetColor	d3_tools	byte	readable
 exe	0x00413620	d3t_SetColorCB	d3_tools	byte	readable		
 exe	0x00413640	d3t_SetTreeColor	d3_tools	byte	readable		
 exe	0x004136d0	d3t_MoveCameraPath	d3_tools	byte	readable		
-exe	0x00413960	d3t_MoveObjectPath	d3_tools	draft	readable	deep	
+exe	0x00413960	d3t_MoveObjectPath	d3_tools	draft	readable	stuck	
 exe	0x00413b00	d3t_InflateObjectTree	d3_tools	byte	readable		
 exe	0x00413b30	d3t_CreateRain	d3_tools	byte	readable		
 exe	0x00413d00	d3t_DeleteRain	d3_tools	byte	readable		
@@ -341,7 +341,7 @@ exe	0x00416240	d3t_SmokeCB	d3_tools	byte	readable
 exe	0x00416340	d3t_CreateSmoke	d3_tools	shape	readable		
 exe	0x00416550	d3t_EarthCB	d3_tools	shape	readable		
 exe	0x004168e0	d3t_CreateEarth	d3_tools	byte	readable		
-exe	0x00416980	d3t_CreateSnowMipmaps	d3_tools	draft	readable	deep	
+exe	0x00416980	d3t_CreateSnowMipmaps	d3_tools	draft	readable	stuck	
 exe	0x00417150	d3t_FadeOutSunRays	d3_tools	byte	readable		
 exe	0x00417170	d3t_FadeInSunRays	d3_tools	byte	readable		
 exe	0x00417190	d3t_CreateSunRays	d3_tools	byte	readable		
@@ -450,7 +450,7 @@ exe	0x00422c60	pool_Destroy	mem	byte	readable
 exe	0x00422c90	mov_WndProc	mov	byte	readable		
 exe	0x00422d60	mov_Init	mov	byte	readable		
 exe	0x00422d90	mov_Exit	mov	byte	readable		
-exe	0x00422dc0	mov_Open	mov	draft	readable	deep	
+exe	0x00422dc0	mov_Open	mov	draft	readable	stuck	
 exe	0x00423390	mov_Play	mov	byte	readable		
 exe	0x004234a0	mov_GetEvent	mov	byte	readable		
 exe	0x00423530	mov_Close	mov	byte	readable		
