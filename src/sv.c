@@ -2660,21 +2660,41 @@ int sv_MouseCamera(void);
         (r)->camRot[2] = d3_Camera->rotation.z; \
     } while (0)
 
+static const float sv_ZoomPixelsPerUnit = -666.6667f;  /* 0x5eeb78, .rdata: -1 / 0.0015, the mouse y pixels per unit of the zoom / angle factor (the original loads it from memory, it is not folded) */
+
 /* 0x526cf0, the camera by the mouse. The right button frees the mouse (the clip window opened to +-32000, the
    cursor put back on release). With both buttons the drag zooms (the height factor, 0.0015 per pixel of y and 5
    per wheel notch) and turns (the angle factor with it, rotation.y by 0.0035 per pixel of x); the right button
    alone drags the map by the mouse delta scaled by the scroll speed option, rotated into the view and clamped to
    the height map 20 cells in. The wheel alone zooms by 0.1 a notch. Each change goes into the player's camera
-   record. Returns the activity: sv_MouseCamActive - wheel down + wheel up + sv_ZoomTurnOn @deep read whole against 0x526cf0..0x527640 (556 vs 565 instructions): the free-mouse start (saved clip window, cursor), the zoom/turn start values and their y range (1 - angle) / -0.0015 and -angle / -0.0015 (was a 0 * y0 leftover), the release (0.004 per pixel), the both-button zoom/turn with the copied position / rotation, the wheel (0.1f a notch, max(min(z, 1), 0)), the drag (scroll speed * 0.0606, AxisPair rows, both branches with their dead dst stores, the clamp x < lo / > hi, z max / min) and the return all match. Left: allocation (register choice of the camera / my / constants 32000 / -32000 shifts with statement order: ours ebx/esi vs the original's esi/ebx/edi, frame 0x7c vs 0x90) and the -666.6667 drag-range constant, a float object in the original (0x5eeb78, fmul dword after fchs) that a literal folds into a double / positive constant */
+   record. Returns the activity: sv_MouseCamActive - wheel down + wheel up + sv_ZoomTurnOn
+   @stuck deep pass: 458 -> 182 ins. Earlier: read whole and reconstructed (free-mouse start, zoom/turn
+   start and y range, release, both-button zoom/turn, wheel, drag with dead dst stores and the clamp, the
+   return); left were allocation, frame 0x7c vs 0x90 and the -666.6667 constant. This pass (the
+   sv_ScrollCamera lessons): -666.6667 is a static const float of the unit (sv_ZoomPixelsPerUnit, 0x5eeb78,
+   loaded from memory: fmul dword after fchs; a literal or / -0.0015f folds); dst / v / fwd 4-float vectors
+   (frame 0x8c now); dst[0] = v[0] after the branches; sin / cos at the uses; fwd[1] = 0 between fwd[2] and
+   the sqrt; the zoom start stores in the original's order (StartHeight, StartX, StartY, StartAngle,
+   BaseY); the wheel clamp as two selects z = z > 1.0 ? 1.0 : z; z = z < 0.0 ? 0.0 : z (two compares as the
+   original; the original still has 'fld st(0) / fcomp' where ours has 'fcom'). Left: (1) registers: the
+   original keeps my in bp and the camera in esi ('mov bp,[dm_P.y] / mov esi,[d3_Camera]'), ours my in si
+   and the camera in ebp, which reorders nearly every hunk (the free-mouse start loads x, y, MinX before
+   the stores: '+ movsx ecx,word [dm_L.y] / mov edx,[di_MinX]'; ours loads di_MaxY first); (2) the
+   both-button block: the original takes &cam->pos into eax early ('lea eax,[esi+0x4c]', 'push 0x3dcccccd'
+   before the f2 math) and copies zpos / zrot field by field through esi, ours through edx = &cam->pos; (3)
+   frame 0x8c vs 0x90 (4 bytes: one more slot in the original, not located); (4) the wheel compare 'fcom'
+   vs 'fld st(0); fcomp'. Tried (no effect / worse): cam / my init order, if-statement clamp (worse),
+   double temp k for the clamp, min/max macros on z, a nested ternary. (tiebreak: not measured (dcp headers
+   sample sv_MouseCamera)) */
 int sv_MouseCamera(void)
 {
     short my;
     char *cam;
     AIFIN *rec;
-    float z, f2, ang, sn, cs, lo, hi;
+    float z, f2, ang, lo, hi;
     double k;                       /* the drag scale: the scroll speed option / 16.5 */
     D3VECTOR zpos, zrot;            /* the camera position / rotation of the zoom and turn */
-    float dst[3], right[16], fwd[3], v[2];   /* right is a D3MATRIX: d3_MatTranspose writes 0x40 bytes */
+    float dst[4], right[16], fwd[4], v[4];   /* right is a D3MATRIX: d3_MatTranspose writes 0x40 bytes */
     D3SM *hm;                       /* the scene's height map */
     const float *ax = (const float *)&d3_ZAxis;
 
@@ -2704,13 +2724,13 @@ int sv_MouseCamera(void)
         if (dm_L.ldown != 0) {
             if (sv_ZoomTurnOn == 0) {
                 sv_ZoomTurnOn = 1;                   /* the zoom / turn starts: its start values */
-                sv_ZoomStartX = dm_P.x;
                 sv_ZoomStartHeight = sv_CameraHeightFactor;
+                sv_ZoomStartX = dm_P.x;
                 sv_ZoomStartY = my;
-                sv_ZoomBaseY = ((D3OBJECT *)cam)->pos.y - ((sv_CameraHeightFar - sv_CameraHeightNear) * sv_ZoomStartHeight + sv_CameraAngleNear);
                 sv_ZoomStartAngle = sv_CameraAngleFactor;
-                di_MaxY = sv_ZoomStartY - (int)((1.0 - sv_ZoomStartAngle) * -666.6667f);   /* the drag range of the angle 0 .. 1 at 0.0015 per pixel */
-                di_MinY = sv_ZoomStartY - (int)(-sv_ZoomStartAngle * -666.6667f);
+                sv_ZoomBaseY = ((D3OBJECT *)cam)->pos.y - ((sv_CameraHeightFar - sv_CameraHeightNear) * sv_ZoomStartHeight + sv_CameraAngleNear);
+                di_MaxY = sv_ZoomStartY - (int)((1.0 - sv_ZoomStartAngle) * sv_ZoomPixelsPerUnit);   /* the drag range of the angle 0 .. 1 at 0.0015 per pixel */
+                di_MinY = sv_ZoomStartY - (int)(-sv_ZoomStartAngle * sv_ZoomPixelsPerUnit);
                 sv_ZoomStartTurn = ((D3OBJECT *)cam)->rotation.y;
             }
             goto chk;
@@ -2765,7 +2785,9 @@ go:
         if (cam != 0) {
             if (sv_ZoomTurnOn == 0 && dm_L.wup - dm_L.wdown != 0) {   /* the wheel: the zoom by 0.1 a notch */
                 z = sv_CameraHeightFactor = (dm_L.wup - dm_L.wdown) * 0.1f + sv_CameraHeightFactor;
-                sv_PlaceCamera((float)max(min(z, 1.0), 0.0));
+                z = z > 1.0 ? 1.0 : z;
+                z = z < 0.0 ? 0.0 : z;
+                sv_PlaceCamera(z);
                 rec = (AIFIN *)gm_PlayerRecord(ai_Chars[ai_PlayerId]);
                 if (rec != 0) {
                     rec->camAngle = sv_CameraAngleFactor;
@@ -2777,10 +2799,10 @@ go:
                 d3_MatTranspose(&d3_Camera->matrix, right);
                 k = ai_OptionScrollSpeed * 0.0606060606060606;
                 v[0] = (dm_P.x - sv_DragLastX) * k;
-                fwd[1] = 0.0f;
                 v[1] = -(dm_P.y - sv_DragLastY) * k;
                 fwd[0] = right[0] * ax[0] + right[4] * ax[1] + right[8] * ax[2];
                 fwd[2] = right[2] * ax[0] + right[6] * ax[1] + right[10] * ax[2];
+                fwd[1] = 0.0f;
                 if ((float)sqrt(fwd[0] * fwd[0] + fwd[2] * fwd[2]) < 0.1f) {   /* the view looks straight down: the matrix rows (0x527386) */
                     dst[1] = v[1];
                     dst[2] = 0.0f;
@@ -2788,13 +2810,12 @@ go:
                     fwd[2] = 0.0f * right[10] + v[0] * right[2] + v[1] * right[6];
                 } else {                                                /* else rotated by the view's heading */
                     ang = -d3_VecAngle2((char *)&d3_ZAxis, fwd);
-                    sn = (float)sin(ang);
                     dst[1] = 0.0f;
                     dst[2] = v[1];
-                    cs = (float)cos(ang);
-                    fwd[0] = sn * v[1] + cs * v[0];
-                    fwd[2] = cs * v[1] - sn * v[0];
+                    fwd[0] = v[0] * cos(ang) + v[1] * sin(ang);
+                    fwd[2] = v[1] * cos(ang) - v[0] * sin(ang);
                 }
+                dst[0] = v[0];
                 fwd[1] = 0.0f;
                 dst[0] = fwd[0] + d3_Camera->pos.x;
                 dst[1] = d3_Camera->pos.y;
