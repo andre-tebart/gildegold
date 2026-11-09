@@ -368,7 +368,7 @@ exe	0x00417e30	d3snd_PlayAt	d3_snd	byte	readable
 exe	0x00417ec0	d3sndw_Init	d3_snd	byte	readable		
 exe	0x00418030	d3sndw_Exit	d3_snd	byte	readable		
 exe	0x00418080	d3sndw_GetSound	d3_snd	byte	readable		
-exe	0x004183d0	d3sndw_Update	d3_snd	draft	readable	deep	
+exe	0x004183d0	d3sndw_Update	d3_snd	shape	readable	stuck	
 exe	0x00418ce0	d3_InitKeyCodes	dd_vesa	byte	readable		
 exe	0x00418e90	d3d_Error	dd_vesa	byte	readable		
 exe	0x0041bdd0	dd_Restore	dd_vesa	byte	readable		
@@ -385,7 +385,7 @@ exe	0x0041cfb0	dd_Init	dd_vesa	byte	readable
 exe	0x0041d190	dd_SetClipRect	dd_vesa	byte	readable		
 exe	0x0041d1c0	dd_EnumVideoModesCallback	dd_vesa	byte	readable		
 exe	0x0041d230	dd_CheckModes	dd_vesa	byte	readable		
-exe	0x0041d2e0	dd_SetMode	dd_vesa	draft	readable	deep	
+exe	0x0041d2e0	dd_SetMode	dd_vesa	draft	readable	stuck	
 exe	0x0041ddb0	dd_LockSurface	dd_vesa	byte	readable		
 exe	0x0041de30	dd_LockSurfaceFlags	dd_vesa	byte	readable		
 exe	0x0041dec0	dd_Lock	dd_vesa	byte	readable		
@@ -1825,7 +1825,7 @@ exe	0x004abe60	ai_ExecEhrerbietung	poker	byte	readable
 exe	0x004abed0	ai_RegisterSocialActions	poker	byte	readable		
 exe	0x004ac140	hmt_RecordCount	hmt	byte	readable		
 exe	0x004ac150	hmt_RandomRecord	hmt	byte	readable		
-exe	0x004ac170	hmt_RandomTextOffset	hmt	draft	readable	deep	
+exe	0x004ac170	hmt_RandomTextOffset	hmt	shape	readable	deep	
 exe	0x004ac1a0	hmt_RecordTextId	hmt	shape	readable	deep	
 exe	0x004ac1e0	hmt_GetRecord	hmt	byte	readable		
 exe	0x004ac200	hmt_GetPrice	hmt	byte	readable		
@@ -3194,7 +3194,7 @@ exe	0x0050e5a0	init_PlaceOffices	f3init	shape	readable	deep
 exe	0x0050e690	init_CreateStartCharacters	f3init	draft	readable	deep	
 exe	0x0050f0b0	init_CreateOpeningObjects	f3init	byte	readable		
 exe	0x0050f340	init_StockMarketStalls	f3init	shape	readable	deep	
-exe	0x0050f570	init_Betrieb	f3init	draft	readable	stuck	
+exe	0x0050f570	init_Betrieb	f3init	shape	readable	stuck	
 exe	0x0050f750	init_OpenBuilding	f3init	shape	readable	deep	
 exe	0x0050f910	init_OpenTown	f3init	draft	readable	deep	
 exe	0x00510730	init_CollectSiteObject	f3init	byte	readable		
@@ -4112,10 +4112,10 @@ exe	0x00589e50	ai_BookmarksPreset	sv_t	byte	readable
 exe	0x00589f10	lobby_Screen	lobby	draft	readable	deep	
 exe	0x0058a940	lobby_AddButtons	lobby	byte	readable		
 exe	0x0058a9d0	lobby_AddChatScroll	lobby	byte	readable		
-exe	0x0058aa30	lobby_ShowCity	lobby	draft	readable	deep	
+exe	0x0058aa30	lobby_ShowCity	lobby	byte	readable		
 exe	0x0058aba0	lobby_ShowMyPlayer	lobby	shape	readable		
 exe	0x0058ad20	lobby_FetchPlayers	lobby	byte	readable		
-exe	0x0058ada0	lobby_ShowPlayers	lobby	draft	readable	deep	
+exe	0x0058ada0	lobby_ShowPlayers	lobby	byte	readable		
 exe	0x0058af50	lobby_ChoosePlayer	lobby	shape	readable	stuck	
 exe	0x0058b880	lobby_ChooseProfession	lobby	byte	readable		
 exe	0x0058ba70	lobby_ShowChat	lobby	shape	readable		
