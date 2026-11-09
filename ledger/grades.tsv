@@ -2095,22 +2095,22 @@ exe	0x004bdc90	rt_MarkValue	rt	byte	readable
 exe	0x004bdca0	rt_ReadMarkValues	rt	byte	readable		
 exe	0x004bdcd0	rt_ChooseGoodsDialog	rt	shape	readable		
 exe	0x004be180	rt_ChooseRouteGood	rt	shape	readable		
-exe	0x004be3b0	rt_Unk4be3b0	rt	draft	draft		
-exe	0x004be790	rt_Unk4be790	rt	draft	draft		
+exe	0x004be3b0	rt_ChooseTabGood	rt	shape	readable		
+exe	0x004be790	rt_OpenSlotControls	rt	byte	readable		
 exe	0x004be8e0	rt_RemoveControls	rt	byte	readable		
 exe	0x004be930	rt_InitControls	rt	byte	readable		
-exe	0x004be940	rt_Unk4be940	rt	draft	draft		
-exe	0x004bf080	rt_Unk4bf080	rt	draft	draft		
+exe	0x004be940	rt_EditPointDialog	rt	draft	readable	deep	
+exe	0x004bf080	rt_CartSettingsDialog	rt	shape	readable		
 exe	0x004bf360	rt_SetMarkPic	rt	byte	readable		
 exe	0x004bf3b0	rt_UpdateMarkPics	rt	byte	readable		
 exe	0x004bf3e0	rt_FindMark	rt	byte	readable		
 exe	0x004bf410	rt_RemoveMark	rt	byte	readable		
-exe	0x004bf440	rt_HighlightRoute	rt	draft	draft		
-exe	0x004bf5b0	rt_EditCartRoute	rt	draft	draft		
+exe	0x004bf440	rt_HighlightRoute	rt	byte	readable		
+exe	0x004bf5b0	rt_EditCartRoute	rt	byte	readable		
 exe	0x004bfa40	rt_UnloadAtPoint	rt	byte	readable		
-exe	0x004bfc60	rt_LoadAtPoint	rt	draft	draft		
+exe	0x004bfc60	rt_LoadAtPoint	rt	shape	readable		
 exe	0x004bff40	rt_SaveRoutes	rt	byte	readable		
-exe	0x004c0040	rt_LoadRoutes	rt	draft	draft		
+exe	0x004c0040	rt_LoadRoutes	rt	draft	readable	deep	
 exe	0x004c01b0	snd_ClearQueue	f3snd	byte	readable		
 exe	0x004c0210	snd_QueueTail	f3snd	byte	readable		
 exe	0x004c0230	snd_AddToQueue	f3snd	byte	readable		
