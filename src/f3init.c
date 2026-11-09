@@ -349,6 +349,7 @@ unsigned char d3if_TexturesEvicted = 0;  /* 0x6339db */
 int d2_CutsceneActive = 0;  /* 0x6ed9d4 */
 char * ai_KindBChars[8] = {0};  /* 0x6f1c04, the characters of the kind */
 extern char ai_PlayerSlots[4][0x2f4];      /* 0x7e3f40, the player slots */
+#define ai_PlayerSlotsT (*(GMPLAYERSLOT (*)[4])&ai_PlayerSlots)  /* 0x7e3f40, ai_PlayerSlots (char[4][0x2f4]) as the four player slots */
 extern int cm_NetFlags;  /* 0x6f2594 */
 unsigned char init_TextureSet = 0;  /* 0x6f1c24 */
 int d3_QuadTree = 0;  /* 0x6f1c28 */
@@ -3764,144 +3765,134 @@ int init_ParseNumberList(char *s, int *out, int n)
 
 int init_LoadCityINI(char *city, int slot)
 {
-    char ini[260], val[256], key[512];
+    char val[0x100];
+    char ini[0x104];
     int nums[64];
-    char *s, *p, *dst;
-    int i, k, j, n;
-    char names[8][0x40];
-    char sep[4];
+    char buf[0x200];                    /* the neighbour names (0x40 bytes each), then the keys */
+    GMPLAYERSLOT *s;
+    char *p;
+    int i;
 
-    s = ai_PlayerSlots[slot];
     if (slot == 0)
-        memset(ai_PlayerSlots[0], 0, 0x2f4 * 4);
+        memset(ai_PlayerSlots, 0, sizeof ai_PlayerSlots);
+    s = &ai_PlayerSlotsT[slot];
     sprintf(ini, "%s%s/%s.ini", main_GfxPath, "gamedata/cities", city);
     GetPrivateProfileStringA("A - ALLGEMEIN", "Stadtname", "Unknown", val, 0x100, ini);
-    strcpy(s, val);
+    strcpy(s->name, val);
     GetPrivateProfileStringA("A - ALLGEMEIN", "KartenPosition", "0,0", val, 0x100, ini);
-    init_ParseNumberList(val, (int *)(s + 0x40), 2);
+    init_ParseNumberList(val, &s->mapX, 2);
     GetPrivateProfileStringA("A - ALLGEMEIN", "Glaube", "0", val, 0x100, ini);
-    s[0x49] = atoi(val);
+    s->faith = atoi(val);
     GetPrivateProfileStringA("A - ALLGEMEIN", "HistorieStart", "1400", val, 0x100, ini);
-    *(int *)(s + 0x4c) = atoi(val);
+    s->historyStart = atoi(val);
     GetPrivateProfileStringA("A - ALLGEMEIN", "HistorieEnde", "1400", val, 0x100, ini);
-    *(int *)(s + 0x50) = atoi(val);
+    s->historyEnd = atoi(val);
     GetPrivateProfileStringA("A - ALLGEMEIN", "Waehrung", "ob_GOLDGULDEN", val, 0x100, ini);
-    *(short *)(s + 0x54) = gm_FindObjectProto(val + 3);
+    s->moneyGood = gm_FindObjectProto(val + 3);
     GetPrivateProfileStringA("A - ALLGEMEIN", "Land", "0", val, 0x100, ini);
-    s[0x60] = atoi(val);
+    s->land = atoi(val);
     GetPrivateProfileStringA("A - ALLGEMEIN", "Sprache", "0", val, 0x100, ini);
-    s[0x61] = atoi(val);
+    s->language = atoi(val);
     GetPrivateProfileStringA("A - ALLGEMEIN", "KartenOffset", "0, 0", val, 0x100, ini);
-    init_ParseNumberList(val, (int *)(s + 0x2ec), 2);
+    init_ParseNumberList(val, &s->townX, 2);
     if (slot == 0) {
-        GetPrivateProfileStringA("A - ALLGEMEIN", "NachbarStadt", "", val, 0x100, ini);
-        p = strtok(val, ",");
+        int n;
+
         n = 0;
-        while (p != 0 && n <= 7) {
+        GetPrivateProfileStringA("A - ALLGEMEIN", "NachbarStadt", "", val, 0x100, ini);
+        for (p = strtok(val, ","); p != 0 && n < 8; n++) {
             while (*p == ' ')
                 p++;
-            strcpy(names[n], p);
+            strcpy(buf + n * 0x40, p);
             p = strtok(0, ",");
-            n++;
         }
         for (i = 0; i < n; i++)
-            init_LoadCityINI(names[i], i + 1);
+            init_LoadCityINI(buf + i * 0x40, i + 1);
     }
     GetPrivateProfileStringA("A - ALLGEMEIN", "MaxPlayer", "4", val, 0x100, ini);
-    s[0x48] = atoi(val);
+    s->maxPlayers = atoi(val);
     for (i = 0; i < 10; i++) {
-        sprintf(key, "Einwohner_%i", i);
-        GetPrivateProfileStringA("A - EINWOHNER", key, "1400,0", val, 0x100, ini);
+        sprintf(buf, "Einwohner_%i", i);
+        GetPrivateProfileStringA("A - EINWOHNER", buf, "1400,0", val, 0x100, ini);
         init_ParseNumberList(val, nums, 2);
-        *(int *)(s + 0x64 + i * 8) = nums[0];
-        *(int *)(s + 0x68 + i * 8) = nums[1];
+        s->inhabitants[i].year = nums[0];
+        s->inhabitants[i].value = nums[1];
     }
     for (i = 0; i < 10; i++) {
-        sprintf(key, "Prunk_%i", i);
-        GetPrivateProfileStringA("A - PRUNK", key, "1400,0", val, 0x100, ini);
+        sprintf(buf, "Prunk_%i", i);
+        GetPrivateProfileStringA("A - PRUNK", buf, "1400,0", val, 0x100, ini);
         init_ParseNumberList(val, nums, 2);
-        *(int *)(s + 0xb4 + i * 8) = nums[0];
-        *(int *)(s + 0xb8 + i * 8) = nums[1];
+        s->splendour[i].year = nums[0];
+        s->splendour[i].value = nums[1];
     }
     GetPrivateProfileStringA("B - WETTER", "Regenwahrscheinlichkeit", "0,0,0,0", val, 0x100, ini);
-    init_ParseNumberList(val, (int *)(s + 0x108), 4);
+    init_ParseNumberList(val, s->rainChance, 4);
     GetPrivateProfileStringA("B - WETTER", "Schneewahrscheinlichkeit", "0,0,0,0", val, 0x100, ini);
-    init_ParseNumberList(val, (int *)(s + 0x118), 4);
+    init_ParseNumberList(val, s->snowChance, 4);
     GetPrivateProfileStringA("B - WETTER", "Zufrierenwahrscheinlichkeit", "0", val, 0x100, ini);
-    *(int *)(s + 0x128) = atoi(val);
+    s->freezeChance = atoi(val);
     GetPrivateProfileStringA("C - PRIVILEGIEN", "Privilegien", "0,0,0,0,0,0,0,0,0,0,0", val, 0x100, ini);
-    init_ParseNumberList(val, nums, 0xb);
-    for (i = 0; i < 0xb; i++)
-        s[0x12c + i] = ((char *)nums)[i];
-    dst = s + 0x145;
-    k = 0;
-    j = 0xa1;
-    do {
-        sprintf(key, "Umland%i", k);
-        GetPrivateProfileStringA("E - UMLAND", key, "", val, 0x100, ini);
-        p = strtok(val, ",");
-        for (i = 0; p != 0 && i < 10; i++) {
-            while (*p == ' ')
-                p++;
-            if (i == 0)
-                dst[-1] = gm_FindBuildingKind(p + 3);
-            else if (i == 1)
-                *dst = atoi(p);
-            else
-                *(short *)(s + (i + j) * 2) = gm_FindObjectProto(p + 3);
-            p = strtok(0, ",");
+    init_ParseNumberList(val, nums, 11);
+    for (i = 0; i < 11; i++)
+        s->privileges[i] = nums[i];
+    {
+        int k;
+
+        for (k = 0; k < 8; k++) {
+                i = 0;
+            sprintf(buf, "Umland%i", k);
+            GetPrivateProfileStringA("E - UMLAND", buf, "", val, 0x100, ini);
+            p = strtok(val, ",");
+            for (; p != 0 && i < 10; i++) {
+                while (*p == ' ')
+                    p++;
+                if (i == 0)
+                    s->umland[k].kind = gm_FindBuildingKind(p + 3);
+                else if (i == 1)
+                    s->umland[k].count = atoi(p);
+                else
+                    s->umland[k].objects[i - 2] = gm_FindObjectProto(p + 3);
+                p = strtok(0, ",");
+            }
         }
-        j += 9;
-        k++;
-        dst += 0x12;
-    } while (j < 0xe9);
-    GetPrivateProfileStringA("F - GESETZE", "Verfassungsgesetze", "0,0,0,0", val, 0x100, ini);
-    init_ParseNumberList(val, (int *)(s + 0x1dc), 0xc);
-    GetPrivateProfileStringA("F - GESETZE", "Finanzgesetze", "0,0,0,0", val, 0x100, ini);
-    init_ParseNumberList(val, (int *)(s + 0x20c), 0xc);
-    GetPrivateProfileStringA("F - GESETZE", "Strafgesetze", "0,0,0,0", val, 0x100, ini);
-    init_ParseNumberList(val, (int *)(s + 0x22c), 0xc);
-    GetPrivateProfileStringA("F - GESETZE", "Gildengesetze", "0,0,0,0", val, 0x100, ini);
-    init_ParseNumberList(val, (int *)(s + 0x25c), 0xc);
-    GetPrivateProfileStringA("F - GESETZE", "Kirchengesetze", "0,0,0,0", val, 0x100, ini);
-    init_ParseNumberList(val, (int *)(s + 0x274), 0xc);
-    GetPrivateProfileStringA("F - GESETZE", "DiebeRaeubergesetze", "0,0,0,0", val, 0x100, ini);
-    init_ParseNumberList(val, (int *)(s + 0x290), 0xc);
-    strcpy(sep, ",");
-    GetPrivateProfileStringA("KONTOR", "Import", "", val, 0x100, ini);
-    p = strtok(val, sep);
-    i = 0;
-    if (p != 0) {
-        short *q = (short *)(s + 0x2ac);
-
-        do {
-            if (i > 0xf)
-                break;
-            while (isspace((unsigned char)*p))
-                p++;
-            *q = gm_FindObjectProto(p + 3);
-            p = strtok(0, sep);
-            i++;
-            q++;
-        } while (p != 0);
     }
-    strcpy(sep, ",");
-    i = 0;
-    GetPrivateProfileStringA("KONTOR", "Export", "", val, 0x100, ini);
-    p = strtok(val, sep);
-    if (p != 0) {
-        short *q = (short *)(s + 0x2cc);
+    GetPrivateProfileStringA("F - GESETZE", "Verfassungsgesetze", "0,0,0,0", val, 0x100, ini);
+    init_ParseNumberList(val, s->constitutionLaws, 12);
+    GetPrivateProfileStringA("F - GESETZE", "Finanzgesetze", "0,0,0,0", val, 0x100, ini);
+    init_ParseNumberList(val, s->financeLaws, 12);
+    GetPrivateProfileStringA("F - GESETZE", "Strafgesetze", "0,0,0,0", val, 0x100, ini);
+    init_ParseNumberList(val, s->penalLaws, 12);
+    GetPrivateProfileStringA("F - GESETZE", "Gildengesetze", "0,0,0,0", val, 0x100, ini);
+    init_ParseNumberList(val, s->guildLaws, 12);
+    GetPrivateProfileStringA("F - GESETZE", "Kirchengesetze", "0,0,0,0", val, 0x100, ini);
+    init_ParseNumberList(val, s->churchLaws, 12);
+    GetPrivateProfileStringA("F - GESETZE", "DiebeRaeubergesetze", "0,0,0,0", val, 0x100, ini);
+    init_ParseNumberList(val, s->thiefLaws, 12);
+    {
+        char sep[] = ",";
 
-        do {
-            if (i > 0xf)
-                return 1;
-            while (isspace((unsigned char)*p))
+        i = 0;
+        GetPrivateProfileStringA("KONTOR", "Import", "", val, 0x100, ini);
+        p = strtok(val, sep);
+        for (; p != 0 && i < 16; i++) {
+            while (isspace(*p))
                 p++;
-            *q = gm_FindObjectProto(p + 3);
+            s->import[i] = gm_FindObjectProto(p + 3);
             p = strtok(0, sep);
-            i++;
-            q++;
-        } while (p != 0);
+        }
+    }
+    {
+        char sep[] = ",";
+
+        i = 0;
+        GetPrivateProfileStringA("KONTOR", "Export", "", val, 0x100, ini);
+        p = strtok(val, sep);
+        for (; p != 0 && i < 16; i++) {
+            while (isspace(*p))
+                p++;
+            s->export[i] = gm_FindObjectProto(p + 3);
+            p = strtok(0, sep);
+        }
     }
     return 1;
 }

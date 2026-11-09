@@ -165,24 +165,56 @@ typedef struct GMPOINT {
     int value;
 } GMPOINT;
 
-/* a player slot (0x2f4 bytes, four of them at ai_PlayerSlots 0x7e3f40, declared char[4][0x2f4]) as far as known */
+/* an Umland entry of a player slot (0x12 bytes, eight at +0x144): a building kind of the surroundings with its
+   number and up to eight object prototypes (the city file's "Umland%i" = kind, number, objects ..; init_LoadCityINI) */
+typedef struct GMUMLAND {
+    unsigned char kind;                 /* 0x00, the building kind (gm_FindBuildingKind of the name 3 characters in) */
+    unsigned char count;                /* 0x01, the number */
+    unsigned short objects[8];          /* 0x02, object prototypes (gm_FindObjectProto) */
+} GMUMLAND;
+
+/* a player slot (0x2f4 bytes, four of them at ai_PlayerSlots 0x7e3f40, declared char[4][0x2f4]): the town the
+   player plays in, read from its city file by init_LoadCityINI (the INI key names in quotes) */
 typedef struct GMPLAYERSLOT {
-    char name[0x20];                    /* 0x00, the player's name (ls_WriteSaveHeader copies it into LSHDR.player and
+    char name[0x20];                    /* 0x00, "Stadtname" (ls_WriteSaveHeader copies it into LSHDR.player and
                                            writes 0x20 bytes of it) */
     char townName[0x20];                /* 0x20, the town's name the datelines print before the date (hst.c's
                                            "%s, %i %s %i", the statistics panel's text 0x1f0e with ai_Time) */
-    int mapX;                           /* 0x40, the player's place on the map (am.c 0x4948f0 measures gm_MapDistance from */
-    int mapY;                           /* 0x44   it to the other slots' places; the save header keeps both) */
-    unsigned char b48;                  /* 0x48, saved in the save header (LSHDR.playerByte); the meaning is unknown */
-    char pad049[0xb];
-    unsigned short moneyGood;           /* 0x54, the good the player's money is counted in (cm.c 0x4c70b0 pays a sale's price
-                                           with gm_AddObjekt / gm_TakeObjekt of it) */
-    char pad056[0xe];
-    GMPOINT tableA[10];                 /* 0x64, the yearly tables gm_UpdatePrices interpolates */
-    GMPOINT tableB[10];                 /* 0xb4 */
-    char pad104[0x1e8];
-    int townX;                          /* 0x2ec, where the player's town lies on the town map bitmap: its scene cells
-                                           are drawn around it (lc.c ai_BuildTownMap, ai_MapCellToScreen's origin) */
+    int mapX;                           /* 0x40, "KartenPosition": the player's place on the map (am.c 0x4948f0 measures */
+    int mapY;                           /* 0x44   gm_MapDistance from it to the other slots' places; the save header keeps both) */
+    unsigned char maxPlayers;           /* 0x48, "MaxPlayer" (saved in the save header, LSHDR.playerByte) */
+    unsigned char faith;                /* 0x49, "Glaube" */
+    char pad04a[2];
+    int historyStart;                   /* 0x4c, "HistorieStart" (the year) */
+    int historyEnd;                     /* 0x50, "HistorieEnde" */
+    unsigned short moneyGood;           /* 0x54, "Waehrung": the good the player's money is counted in (cm.c 0x4c70b0 pays a
+                                           sale's price with gm_AddObjekt / gm_TakeObjekt of it) */
+    char pad056[0xa];
+    unsigned char land;                 /* 0x60, "Land" */
+    unsigned char language;             /* 0x61, "Sprache" */
+    char pad062[2];
+    GMPOINT inhabitants[10];            /* 0x64, "Einwohner_%i" (year, value): the yearly tables gm_UpdatePrices interpolates */
+    GMPOINT splendour[10];              /* 0xb4, "Prunk_%i" */
+    char pad104[4];
+    int rainChance[4];                  /* 0x108, "Regenwahrscheinlichkeit" per season */
+    int snowChance[4];                  /* 0x118, "Schneewahrscheinlichkeit" */
+    int freezeChance;                   /* 0x128, "Zufrierenwahrscheinlichkeit" */
+    unsigned char privileges[11];       /* 0x12c, "Privilegien" */
+    char pad137[0xd];
+    GMUMLAND umland[8];                 /* 0x144, "Umland0" .. "Umland7" */
+    char pad1d4[8];
+    int constitutionLaws[12];           /* 0x1dc, "Verfassungsgesetze" */
+    int financeLaws[8];                 /* 0x20c, "Finanzgesetze" (the reader parses up to 12 into it; the next lists are
+                                           read after it) */
+    int penalLaws[12];                  /* 0x22c, "Strafgesetze" */
+    int guildLaws[6];                   /* 0x25c, "Gildengesetze" (up to 12 parsed, as above) */
+    int churchLaws[7];                  /* 0x274, "Kirchengesetze" (up to 12 parsed, as above) */
+    int thiefLaws[7];                   /* 0x290, "DiebeRaeubergesetze" (up to 12 parsed: the rest runs into import, read
+                                           after it) */
+    unsigned short import[16];          /* 0x2ac, "Import" (the KONTOR goods, object prototypes) */
+    unsigned short export[16];          /* 0x2cc, "Export" */
+    int townX;                          /* 0x2ec, "KartenOffset": where the player's town lies on the town map bitmap: its
+                                           scene cells are drawn around it (lc.c ai_BuildTownMap, ai_MapCellToScreen's origin) */
     int townY;                          /* 0x2f0 */
 } GMPLAYERSLOT;
 

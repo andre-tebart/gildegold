@@ -26,7 +26,7 @@ typedef struct LSHDR {              /* 0xfc bytes, the save game header: ls_Writ
     char player[0x20];              /* 0x05, the player's name */
     char pad25[3];
     int playerWords[2];             /* 0x28, the player slot's +0x40 / +0x44, its map place (GMPLAYERSLOT.mapX / mapY) */
-    unsigned char playerByte;       /* 0x30, the player slot's +0x48 (GMPLAYERSLOT.b48) */
+    unsigned char playerByte;       /* 0x30, the player slot's +0x48 (GMPLAYERSLOT.maxPlayers) */
     unsigned char players;          /* 0x31, ai_NumPlayers */
     char time[0xe];                 /* 0x32, ai_Time */
     char charText1[0x10];           /* 0x40, the char's +0x30 text, "SCENARIO" without a character */
