@@ -394,24 +394,27 @@ int rt_ChooseRouteGood(int x, RTPOINT *p)
     di_ClearButtons();
     return ret;
 }
-/* 0x4be3b0, the dialog "misc\routing_choose_good_enhanced" for building b with seven tabs (stock kinds 0x92..0x97,
-   0x2db; text "$Z%2N3$A%1G"): the goods of the tab picked; returns the good picked, def if none */
+/* 0x4be3b0, the dialog "misc\routing_choose_good_enhanced" for building b with seven tabs (txt_InfoPanelButtons;
+   each keeps the building's store of stock kind 0x95, 0x92, 0x93, 0x94, 0x97, 0x96, 0x2db in its object's user
+   field; title "$Z%2N3$A%1G" with the owner): the goods the store of the tab picked holds (the building's own
+   object 0xff when it has none), four to a row, then "none" (picture 0x527). Runs until a pick, a right click or
+   the button "ok" (text 0x7d); returns the good picked, def if none. x is not read */
 
-unsigned int rt_Unk4be3b0(char *b, int x, unsigned int def)
+unsigned int rt_ChooseTabGood(AIBLD *b, int x, unsigned int def)
 {
     int first;
     int last;
     int kinds[7];
     int objs[0x30];
     unsigned int goods[0x30];
-    int tabs[7];
+    int tabs[0x4c];     /* seven used; the size is computed from the original's frame (0x2e4, tabs last above goods) */
     unsigned int ret;
     int w;
     int ok;
     int g;
     int i;
     int y;
-    char *s;
+    AIOBJ *s;
     unsigned short *e;
     int n;
     int o;
@@ -429,7 +432,7 @@ unsigned int rt_Unk4be3b0(char *b, int x, unsigned int def)
     w = d2_OpenForm(0, 0, "misc\\routing_choose_good_enhanced");
     d2_CentreViewWindows(w);
     d2_SetForm(w, 1);
-    io_PrintText((int)"$Z%2N3$A%1G", *(unsigned short *)(b + 0x27), b);
+    io_PrintText((int)"$Z%2N3$A%1G", b->owner, b);
     d2_SetForm(w, 4);
     ok = d2_GetWinObj(w, 4, io_PrintText(0x7d));
     d2_SetForm(w, 3);
@@ -437,7 +440,7 @@ unsigned int rt_Unk4be3b0(char *b, int x, unsigned int def)
     for (i = 0, y = 4; y < 0xd6; i++, y += 0x1e) {
         o = sv_AddPanelButton(0, y, txt_InfoPanelButtons[i]);
         tabs[i] = o;
-        *(void **)(d2_ObjsC + o * 0x2ec + 0x2e8) = gm_Query(*(int *)(b + 0x5d), 2, 6, 0, kinds[i]);
+        d2_Objs[o].user = gm_Query((void *)b->objList, 2, 6, 0, kinds[i]);
         d2_RadioAdd(g, o);
     }
     d2_RadioSelect(g, 0);
@@ -445,24 +448,24 @@ unsigned int rt_Unk4be3b0(char *b, int x, unsigned int def)
     for (;;) {
         if (dm_L.rup != 0 || ret != 0 || d2_ClickedId != -1 && d2_PointerObj == ok)
             sv_PopRequest = 1;
-        if (d2_RadioSel[g * 0x23] != last || first) {
+        if (d2_Radios[g].sel != last || first) {
             d2_SetForm(w, 2);
             d2_RemoveWindowObjects(d2_GetViewWin(w, 2), 0);
             for (i = 0; i < 0x30; i++)
                 objs[i] = -1;
             n = 0;
-            s = *(char **)(d2_ObjsC + tabs[d2_RadioSel[g * 0x23]] * 0x2ec + 0x2e8);
-            if (s == 0)
-                s = gm_Query(*(int *)(b + 0x5d), 1, 0, 0xff);
+            s = (AIOBJ *)d2_Objs[tabs[d2_Radios[g].sel]].user;
+            if (s != 0)
+                s = (AIOBJ *)gm_Query((void *)s->list, 1, 0, 0xff);
             else
-                s = gm_Query(*(int *)(s + 0x14), 1, 0, 0xff);
+                s = (AIOBJ *)gm_Query((void *)b->objList, 1, 0, 0xff);
             if (s != 0) {
-                for (e = gm_Query(*(int *)(s + 0x14), 1, 5); e != 0; e = gm_QueryNext()) {
+                for (e = (unsigned short *)gm_Query((void *)s->list, 1, 5); e != 0; e = gm_QueryNext()) {
                     o = d2_WinOpenPic(n % 4 << 6, n / 4 << 6, *e + 0xdf, d2_LastWindow);
                     objs[n] = o;
-                    *(int *)(d2_ObjsC + o * 0x2ec + 0x4c) = 1;
-                    *(int *)(d2_ObjsC + o * 0x2ec + 0x1c0) = 3;
-                    *(int *)(d2_ObjsC + o * 0x2ec + 0x1d4) = 0x525;
+                    d2_Objs[o].interactive = 1;
+                    d2_Objs[o].style = 3;
+                    d2_Objs[o].icon = 0x525;
                     goods[n] = *e;
                     n++;
                 }
@@ -471,9 +474,9 @@ unsigned int rt_Unk4be3b0(char *b, int x, unsigned int def)
             o = d2_WinOpenPic(n % 4 * 0x40 + 7, n / 4 * 0x40 + 7, 0x527, d2_LastWindow);
             objs[n] = o;
             first = 0;
-            *(int *)(d2_ObjsC + o * 0x2ec + 0x4c) = 1;
-            *(int *)(d2_ObjsC + o * 0x2ec + 0x1c0) = 3;
-            last = d2_RadioSel[g * 0x23];
+            d2_Objs[o].interactive = 1;
+            d2_Objs[o].style = 3;
+            last = d2_Radios[g].sel;
         }
         if (d2_ClickedId != -1) {
             for (i = 0; i < 0x30; i++) {
@@ -483,7 +486,7 @@ unsigned int rt_Unk4be3b0(char *b, int x, unsigned int def)
                 }
             }
         }
-        if (!sv_RunFrame(rt_Unk4be3b0, 0x657c7))
+        if (!sv_RunFrame(rt_ChooseTabGood, 0x657c7))
             break;
     }
     d2_RadioClear(g);
@@ -684,7 +687,7 @@ void rt_Unk4be940(RTPOINT *p, int *win)
                 if (kind == 1) {
                     old = *sel;
                     if (*t == 10)
-                        g = rt_Unk4be3b0(bld, 1, old);
+                        g = rt_ChooseTabGood((AIBLD *)bld, 1, old);
                     else
                         g = rt_ChooseGoodsDialog((AIBLD *)bld, 1, old);
                     *sel = g;

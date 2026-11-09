@@ -105,7 +105,7 @@ void rt_ReadMarkValues(void);
 struct AIBLD;
 int rt_ChooseGoodsDialog(struct AIBLD *b, int x, int def);
 int rt_ChooseRouteGood(int x, RTPOINT *p);
-unsigned int rt_Unk4be3b0(char *b, int x, unsigned int def);
+unsigned int rt_ChooseTabGood(struct AIBLD *b, int x, unsigned int def);
 int rt_Unk4be790(unsigned short *bt, int a, int good, int k, int x, int y, int win, int *out);
 void rt_RemoveControls(int *out);
 void rt_InitControls(int *out);
