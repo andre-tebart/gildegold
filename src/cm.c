@@ -14361,7 +14361,7 @@ void cm_RunPictureShow(G28REC *m)
     cm_LeaveEventScene();
 }
 /* 0x4e0040, the execution's aftermath (the fourth callback of the execution event, cm_RegisterSceneKind kind 5 with the scene
-   0x4e01e0) for the delinquent m->members[0]: unless m->zero7d is set, the delinquent's player (kinds 6 / 7) gets the note
+   0x4e01e0) for the delinquent m->members[0]: unless m->quiet is set, the delinquent's player (kinds 6 / 7) gets the note
    text 0x11c5 + txt_ExecNoteTail; then every player's character among the other members gets the note text 0x11c8 with
    the delinquent's name (cm_SendPartyNote). The loop is written in both branches, as the original has it twice.
    Returns 0 when the delinquent is not found, else 1 */
@@ -14372,7 +14372,7 @@ int cm_ExecutionAftermath(G28REC *m)
     AICHAR *c, *o;
     int i;
 
-    if (m->zero7d == 0) {
+    if (m->quiet == 0) {
         c = (AICHAR *)gm_FindChar(m->members[0]);
         if (c == 0)
             return 0;

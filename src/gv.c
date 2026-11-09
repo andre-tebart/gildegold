@@ -3991,7 +3991,7 @@ void gv_PassSentence(AICHAR *c, int a)
         party.time.min = 0;
         party.kind = 5;
         party.variant = (unsigned char)util_Random(5);
-        party.zero7d = 0;
+        party.quiet = 0;
         party.flags = 0x22;
         if (c->kind == 6 || c->kind == 7)
             party.flags = 0xa2;

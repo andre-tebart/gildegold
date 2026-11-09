@@ -1260,46 +1260,43 @@ int ai_CommandKillPlayer(G12ARG *args, int k)
     return 0;
 }
 
-#pragma pack(push, 1)
-typedef struct G12XMSG {                /* 0x100 bytes, given to 0x4c4fa0 (a vote / an execution) */
-    int unk00;                          /* 0x00 */
-    int unk04;                          /* 0x04 */
-    unsigned char type;                 /* 0x08 */
-    char pad09[3];
-    int unk0c;                          /* 0x0c, the player's character */
-    int unk10;                          /* 0x10 */
-    int unk14;                          /* 0x14 */
-    AITIME time;                        /* 0x18 */
-    unsigned char unk26;                /* 0x26 */
-    char pad27[9];
-    unsigned char n;                    /* 0x30, entries of ids */
-    char pad31[3];
-    int ids[16];                        /* 0x34 */
-    char pad74[8];
-    unsigned char kind;                 /* 0x7c */
-    unsigned char unk7d;                /* 0x7d */
-    char pad7e[0x82];
-} G12XMSG;
-#pragma pack(pop)
-
-int cm_SendNewParty(void *p);                                                   /* 0x4c4fa0 */
-
 /* 0x4b0640, the STRAFE_HINRICHTUNG text command (callback 0x601b50[10], name 0x601070[10])
-   "-KANONE" / "-GALGEN" / "-KOEPFEN" / "-SHAUFEN": starts the execution (kind 3, 0, 2, 4) of the character args[k]
-   in 24 hours at 10:00, with the judge, ai_JudgeCatholic / ai_JudgeProtestant and up to 12 councillors */
+   "-SHAUFEN" / "-KOEPFEN" / "-GALGEN" / "-KANONE": posts the execution party (G28REC kind 5, variant 3, 0, 2, 4) of
+   the character args[k] for 10:00 in 24 hours, with the judges ai_JudgeCatholic / ai_JudgeProtestant, the
+   living humans (at most 16 members) and a non-player office holder in the second place (the last member when
+   there is none); quiet: the aftermath sends no notes
+   @deep read the whole function against the original 0x4b0640..0x4b08da and fixed: the record is cm's
+   G28REC (0x114 bytes: frame 0x16c now equal; was the local 0x100-byte G12XMSG with unk fields), kind 5 /
+   thing -1 / host / flags 0 then 0x22 before gm_AddTime / variant / quiet (G28REC.zero7d renamed quiet:
+   cm_ExecutionAftermath skips its notes when set), the name table in the original's slot order (name[0] =
+   SHAUFEN .. name[3] = KANONE, the copies read 0x601be4 into [esp+0x18]; kinds 3, 0, 2, 4 go with that
+   order), the member loop as an index loop (the original's jl end test) with the id read once, the -1 fill
+   as the loop VC6 turns into 'mov ecx,0x10 / sub ecx,edx / rep stosd' (memset gave the shl/shr/and-3
+   tail). ours 180 vs 181. Left: (1) the loop's induction pointer - the original biases it to the netId
+   word ('+ mov edx,ai_CharInts / + mov esi,[edx] / + mov al,[edx+0x162] / + cmp edx,0x7d5f84'), ours to
+   officeKind ('- mov edx,ai_Chars+0x166 / - mov esi,[edx-0x162] / - cmp byte ptr [edx],0 / - cmp
+   edx,ai_Chars+0x65566'): the same records and fields (tried the id through ai_CharInts[i][0] and the byte
+   through the same view: no change); (2) the scheduling of the 10 literal copies of the name table and of
+   fmt ('- mov ebx,[esp+0x188] / - inc ebx' vs '+ mov eax,[esp+0x188] / + lea ebx,[eax+1]'), and kind/-1
+   stores around the player's netId load (order hunks). (references: M9 at +0x7a: our literal "KOEPFEN"
+   where the original's field refers to "GALGEN" at 0x601bd4 (and 2 more), explained: the M8 refs are the
+   induction pointer's bias (ai_Chars+0x166 vs the original's ai_Chars+4 base, the loop end 0x7d60e6 vs
+   0x7d5f84 = the same 0x300 records), the M9 literal is the copy order of the same four strings into the
+   same slots (asmdiff: ours loads KOEPFEN where the original loads GALGEN on that line, both copies are
+   present on both sides)) */
 int ai_CommandExecution(G12ARG *args, int k, char *fmt)
 {
-    G12XMSG msg;
+    G28REC party;
     AICHAR *c;
     int kinds[4];
     int i, n, id;
-    unsigned char kind;
+    unsigned char variant;
 
     c = gm_FindChar(args[k].id);
     if (c == 0 || !ai_IsLivingCharacter(c->id))
         return 0;
     {
-        char name[4][8] = { "KANONE", "GALGEN", "KOEPFEN", "SHAUFEN" };
+        char name[4][8] = { "SHAUFEN", "KOEPFEN", "GALGEN", "KANONE" };
 
         n = 4;
         kinds[3] = 4;
@@ -1316,24 +1313,24 @@ int ai_CommandExecution(G12ARG *args, int k, char *fmt)
         if (i >= 4)
             return 0;
     }
-    kind = (unsigned char)kinds[i];
+    variant = (unsigned char)kinds[i];
     {
         int list[16];
 
-        msg.unk14 = -1;
+        party.thing = -1;
         list[1] = -1;
-        msg.type = 5;
-        msg.unk26 = 0;
-        msg.kind = kind;
-        msg.unk7d = 1;
-        msg.unk0c = ai_CharsT[ai_PlayerId].netId;
+        party.kind = 5;
+        party.flags = 0;
+        party.variant = variant;
+        party.quiet = 1;
+        party.host = ai_CharsT[ai_PlayerId].netId;
         list[0] = c->netId;
         list[2] = ai_JudgeCatholic->netId;
         list[3] = ai_JudgeProtestant->netId;
         for (i = 0; i < 0x300; i++) {
-            id = ai_CharsT[i].netId;
+            id = ai_CharInts[i][0];
             if (id != c->netId && ai_IsLivingNonPlayer((unsigned short)i)) {
-                if (G12_B(i, 0x166) != 0)
+                if (ai_CharsT[i].officeKind != 0)
                     list[1] = id;
             } else if (n < 16 && ai_IsLivingHuman((unsigned short)i)) {
                 list[n++] = id;
@@ -1342,16 +1339,16 @@ int ai_CommandExecution(G12ARG *args, int k, char *fmt)
         if (list[1] == -1)
             list[1] = list[n-- - 1];
         if (n > 0)
-            memcpy(msg.ids, list, n * 4);
+            memcpy(party.members, list, n * 4);
     }
     for (i = n; i < 16; i++)
-        msg.ids[i] = -1;
-    msg.n = (unsigned char)n;
-    msg.time = ai_Time;
-    gm_AddTime(&msg.time, 0x18, 0, 0);
-    msg.unk26 = 0x22;
-    msg.time.hour = 10;
-    cm_SendNewParty(&msg);
+        party.members[i] = -1;
+    party.used = (unsigned char)n;
+    party.time = ai_Time;
+    party.flags = 0x22;
+    gm_AddTime(&party.time, 0x18, 0, 0);
+    party.time.hour = 10;
+    cm_SendNewParty(&party);
     return 1;
 }
 /* 0x4b08e0, the STRAFE_KERKER text command (callback 0x601b50[11], name 0x601070[11]) "-n": sets the byte field
