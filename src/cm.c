@@ -726,11 +726,22 @@ void cm_BeginFieldBlock(char *o, int id)
     if (gm_FindById(&a, &b, &id, id) != 0)
         cm_FieldObject = o;
 }
-/* 0x4c3c00, adds n values of size bytes at field as differences to the object's values */
+/* 0x4c3c00, adds n values of size bytes at field as differences to the object's values
+   @deep read the whole function against the original 0x4c3c00..0x4c3cf4: the size check, the length test,
+   the entry header (size, n, the field word through the sibling cm_AddFieldValue's union pointer, readable
+   now), the object pointer and the three delta loops line up; ours 101 vs 100. Left: the loops' induction
+   variables - the original walks three pointers each stepped on its own ('+ mov esi,[edx] / + mov
+   ebx,[ecx] / + sub esi,ebx / + add ecx,4 / + mov [eax],esi / + add eax,4 / + add edx,4', the same for 2
+   and 1 bytes), ours fuses them into one base with two differences ('- sub ecx,edx / - sub eax,edx / - mov
+   edi,[edx] / - mov ebx,[ecx+edx] / - mov [eax+edx],edi'), plus the esi/edi swap of n and len. Tried:
+   block-local typed pointers with *d++ = *s++ - *o++ (fused all three), the counter as i = n .. 1 (same),
+   the entry and the object as unions of typed pointers (p and o stay apart, v still fuses with o, and the
+   header gets worse: 260 bytes), byte pointers stepped by += size with *(T *) reads (worse). */
 
 int cm_AddFieldDelta(unsigned char size, unsigned char n, unsigned short field, void *v)
 {
-    unsigned char *p, *b;
+    union { unsigned char *b; unsigned short *w; short *s; int *i; } p;    /* the entry: size, n, field, the deltas */
+    unsigned char *b;
     unsigned int i, len;
 
     if (size != 1 && size != 2 && size != 4)
@@ -738,26 +749,25 @@ int cm_AddFieldDelta(unsigned char size, unsigned char n, unsigned short field, 
     len = n * size + cm_FieldBlockLen + 4;
     if (len >= 0x77)
         return 1;
-    p = &cm_FieldBlock.buf[cm_FieldBlockLen];
+    p.b = &cm_FieldBlock.buf[cm_FieldBlockLen];
     cm_FieldBlock.n++;
     cm_FieldBlockLen = len;
-    *p++ = size;
-    *p++ = n;
-    *(unsigned short *)p = field;
-    p += 2;
+    *p.b++ = size;
+    *p.b++ = n;
+    *p.w++ = field;
     b = (unsigned char *)cm_FieldObject + field;
     switch (size) {
     case 1:
         for (i = 0; i < n; i++)
-            p[i] = ((unsigned char *)v)[i] - b[i];
+            p.b[i] = ((unsigned char *)v)[i] - b[i];
         break;
     case 2:
         for (i = 0; i < n; i++)
-            ((short *)p)[i] = ((short *)v)[i] - ((short *)b)[i];
+            p.s[i] = ((short *)v)[i] - ((short *)b)[i];
         break;
     case 4:
         for (i = 0; i < n; i++)
-            ((int *)p)[i] = ((int *)v)[i] - ((int *)b)[i];
+            p.i[i] = ((int *)v)[i] - ((int *)b)[i];
         break;
     }
     return 0;
