@@ -4455,6 +4455,7 @@ void sv_HoverPick(void)
     char *o;
     AIBLD *b;
     unsigned short *it;
+    AIGOOD *g;
     int x, y, n;
     char goods[0x60];
 
@@ -4462,13 +4463,31 @@ void sv_HoverPick(void)
     if ((unsigned short)d2_PointerLook >= 1 && (unsigned short)d2_PointerLook <= 8)
         return;
     x = dm_L.x;
-    y = dm_L.y;
     sv_PickX = x;
+    y = dm_L.y;
     sv_PickY = y;
     if (x > sv_ViewRectLeft && x < sv_ViewRectRight && y > sv_ViewRectTop && y < sv_ViewRectBottom && d2_HitWindow == -1
-        && d2_HitUnderPointer == -1
-        && ((ai_PickedObject = d3if_Pick((float)x, (float)y, 0x20, 1)) != 0
-            || (ai_PickedObject = d3if_Pick((float)dm_L.x, (float)dm_L.y, 0x40, 1)) != 0)) {
+        && d2_HitUnderPointer == -1) {
+        ai_PickedObject = d3if_Pick((float)x, (float)y, 0x20, 1);
+        if (ai_PickedObject == 0)
+            ai_PickedObject = d3if_Pick((float)dm_L.x, (float)dm_L.y, 0x40, 1);
+    }
+    if (ai_PickedObject == 0) {
+        if (d2_PointerObj == -1 || (((D2OBJ *)d2_Objs)[d2_PointerObj].style & 0x40) == 0)
+            d2_CaptionCopy[0] = 0;
+        if (d2_PointerSprite != -1) {
+            d2_FreeAnim(d2_PointerSprite);
+            d2_PointerSprite = -1;
+            sv_PointerSpriteFor = -1;
+        }
+        sv_HoverLast = 0;
+        sv_HoverItem = 0;
+        sv_HoverBuilding = 0;
+        ai_PickedChar = 0;
+        d2_PointerLook = 0;
+        return;
+    }
+    {
         if ((sv_FrameMask & 0x10) == 0 || d2_HoverBlocked != 0 || ai_PickedObject == 0 || d2_HitWindow != -1 || d2_HitUnderPointer != -1)
             return;
         sv_PanelPerms = 0;
@@ -4480,16 +4499,17 @@ void sv_HoverPick(void)
         sv_HoverBuilding = 0;
         ai_PickedChar = 0;
         sv_HoverContact = 0;
-        switch (ai_PickedObject[0x4b]) {
+        switch (ai_PickedObject[0x4b]) {   /* the top byte of D3OBJECT.pickId: the record kind the object stands for */
         case 1:
-            sv_HoverItem = *(int *)(ai_PickedObject + 0x200);
+            sv_HoverItem = (int)((D3OBJECT *)ai_PickedObject)->owner;
             if (ai_FallbackBuilding != 0)
             sv_PanelPerms = gm_PermissionBits(ai_PlayerId, (unsigned char *)ai_FallbackBuilding, sv_HoverItem, 0);
         else
             sv_PanelPerms = gm_PermissionBits(ai_PlayerId, 0, sv_HoverItem, 0);
             if (sv_HoverItem != 0) {
-                n = *(unsigned short *)sv_HoverItem;
-                if ((ai_Goods[n * 0x41] == 6 || ai_Goods[n * 0x41] == 2) && (sv_PanelPerms & 0x4000) != 0) {
+                n = ((AIOBJ *)sv_HoverItem)->id;
+                g = &ai_GoodsT[n];
+                if ((g->type == 6 || g->type == 2) && (sv_PanelPerms & 0x4000) != 0) {
                     sprintf(d2_CaptionCopy, "%s %s", txt_Ptrs[0x9a8 + n * 2], txt_Ptrs[0x83]);
                     d2_PointerLook = 0xb;
                 } else {
@@ -4500,7 +4520,7 @@ void sv_HoverPick(void)
             sv_HoverItemPerms = sv_PanelPerms;
             break;
         case 2:
-            sv_HoverBuilding = *(int *)(ai_PickedObject + 0x200);
+            sv_HoverBuilding = (int)((D3OBJECT *)ai_PickedObject)->owner;
             sv_PanelPerms = gm_PermissionBits(ai_PlayerId, (unsigned char *)sv_HoverBuilding, 0, 0);
             b = (AIBLD *)sv_HoverBuilding;
             if (b != 0 && (b->flags5a & 1) == 0) {
@@ -4512,7 +4532,7 @@ void sv_HoverPick(void)
             sv_HoverBldPerms = sv_PanelPerms;
             break;
         case 3:
-            ai_PickedChar = *(int *)(ai_PickedObject + 0x200);
+            ai_PickedChar = (int)((D3OBJECT *)ai_PickedObject)->owner;
             sv_PanelPerms = gm_PermissionBits(ai_PlayerId, 0, 0, ai_PickedChar);
             if (ai_PickedChar != 0) {
                 io_CharacterName(((AICHAR *)ai_PickedChar)->id, 1, 4, d2_CaptionCopy);
@@ -4537,9 +4557,11 @@ void sv_HoverPick(void)
                 it = (unsigned short *)gm_Query(b->objList, 1, 4, 6);
             else
                 it = (unsigned short *)gm_Query(b->objList, 1, 4, 2);
-            for (; it != 0; it = gm_QueryNext())
-                if (_strcmpi(goods, ai_Goods + *it * 0x41 + 1) == 0)
+            for (; it != 0; it = gm_QueryNext()) {
+                g = &ai_GoodsT[*it];
+                if (_strcmpi(goods, g->name) == 0)
                     break;
+            }
             if (it != 0)
                 sv_HoverContact = (int)it;
             else if (ai_FallbackBuilding != 0)
@@ -4548,19 +4570,19 @@ void sv_HoverPick(void)
                 sv_PanelPerms = gm_PermissionBits(ai_PlayerId, (unsigned char *)b, sv_HoverContact, 0);
                 if ((sv_PanelPerms & 1) != 0) {
                     d2_PointerLook = 0xb;
-                    if (*(unsigned short *)sv_HoverContact == 0xfd) {
+                    if (((AIOBJ *)sv_HoverContact)->id == 0xfd) {
                         if (sv_PanelShown != 0)
                             sprintf(d2_CaptionCopy, "%s %s", txt_Ptrs[0x9a8 + *sv_PanelShown * 2], txt_Ptrs[0x84]);
                         else
                             sprintf(d2_CaptionCopy, "%s %s", txt_Ptrs[0x48e + b->type * 14], txt_Ptrs[0x84]);
                     } else
-                        sprintf(d2_CaptionCopy, "%s %s", txt_Ptrs[0x9a8 + *(unsigned short *)sv_HoverContact * 2], txt_Ptrs[0x83]);
+                        sprintf(d2_CaptionCopy, "%s %s", txt_Ptrs[0x9a8 + ((AIOBJ *)sv_HoverContact)->id * 2], txt_Ptrs[0x83]);
                 } else
                     sv_HoverContact = 0;
             }
         }
         o = ai_PickedObject;
-        if (memcmp(o, "tp_TUER", 8) == 0 && (b = *(AIBLD **)(o + 0x200)) != 0) {
+        if (strcmp(o, "tp_TUER") == 0 && (b = (AIBLD *)((D3OBJECT *)o)->owner) != 0) {
             if ((sv_PanelPerms & 1) != 0) {
                 d2_PointerLook = 0xb;
                 if (b->name[0] != 0)
@@ -4583,19 +4605,7 @@ void sv_HoverPick(void)
             d2_PointerSprite = -1;
             sv_PointerSpriteFor = 0;
         }
-        sv_HoverLast = (int)ai_PickedObject;    } else {
-        if (d2_PointerObj == -1 || (((D2OBJ *)d2_Objs)[d2_PointerObj].style & 0x40) == 0)
-            d2_CaptionCopy[0] = 0;
-        if (d2_PointerSprite != -1) {
-            d2_FreeAnim(d2_PointerSprite);
-            d2_PointerSprite = -1;
-            sv_PointerSpriteFor = -1;
-        }
-        sv_HoverLast = 0;
-        sv_HoverItem = 0;
-        sv_HoverBuilding = 0;
-        ai_PickedChar = 0;
-        d2_PointerLook = 0;
+        sv_HoverLast = (int)ai_PickedObject;
     }
 }
 /* 0x52ae70, "sv_HandleObjects": turns a click into the selection. A pending quick jump (sv_PanelFlag) looks up its
