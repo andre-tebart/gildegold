@@ -6154,9 +6154,9 @@ GAPDATA full_data_930370[16] = { 0 };  /* 0x930370 */
 /* txt_NetPlayers: view of txt_Ptrs (build/mk_txt_views.py) */
 /* txt_JobLabel: view of txt_Ptrs (build/mk_txt_views.py) */
 /* txt_FaithLabel: view of txt_Ptrs (build/mk_txt_views.py) */
-/* full_data_144abe8: view of txt_Ptrs (build/mk_txt_views.py) */
-/* full_data_144abec: view of txt_Ptrs (build/mk_txt_views.py) */
-/* full_data_144abf0: view of txt_Ptrs (build/mk_txt_views.py) */
+/* txt_LobbyReady: view of txt_Ptrs (build/mk_txt_views.py) */
+/* txt_LobbyCharacter: view of txt_Ptrs (build/mk_txt_views.py) */
+/* txt_LobbyLeave: view of txt_Ptrs (build/mk_txt_views.py) */
 /* txt_ReadyMark: view of txt_Ptrs (build/mk_txt_views.py) */
 /* txt_ChatPrivate: view of txt_Ptrs (build/mk_txt_views.py) */
 /* full_data_144abfc: view of txt_Ptrs (build/mk_txt_views.py) */

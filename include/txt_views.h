@@ -360,9 +360,9 @@ extern char *txt_Ptrs[0x4800];    /* 0x143a1c0, each text in its file's buffer *
 #define txt_NetPlayers                           (*(char **)((char *)txt_Ptrs + 0x10a14))  /* 0x144abd4 */
 #define txt_JobLabel                             (*(char * *)((char *)txt_Ptrs + 0x10a20))  /* 0x144abe0, the label of the lobby info window's profession line */
 #define txt_FaithLabel                           (*(char * *)((char *)txt_Ptrs + 0x10a24))  /* 0x144abe4, the label of the lobby info window's faith line */
-#define full_data_144abe8                        (*(unsigned char (*)[4])((char *)txt_Ptrs + 0x10a28))  /* 0x144abe8 */
-#define full_data_144abec                        (*(unsigned char (*)[4])((char *)txt_Ptrs + 0x10a2c))  /* 0x144abec */
-#define full_data_144abf0                        (*(unsigned char (*)[4])((char *)txt_Ptrs + 0x10a30))  /* 0x144abf0 */
+#define txt_LobbyReady                           (*(char * *)((char *)txt_Ptrs + 0x10a28))  /* 0x144abe8, text 0x428a: the label of the lobby's ready button (lobby_AddButtons, sv_ButtonRow) */
+#define txt_LobbyCharacter                       (*(char * *)((char *)txt_Ptrs + 0x10a2c))  /* 0x144abec, text 0x428b: the label of the lobby's character button (the player / profession pickers) */
+#define txt_LobbyLeave                           (*(char * *)((char *)txt_Ptrs + 0x10a30))  /* 0x144abf0, text 0x428c: the label of the lobby's leave button */
 #define txt_ReadyMark                            (*(char * *)((char *)txt_Ptrs + 0x10a34))  /* 0x144abf4, the ready marker lobby_ShowPlayers appends to a ready player's line */
 #define txt_ChatPrivate                          (*(char * *)((char *)txt_Ptrs + 0x10a38))  /* 0x144abf8, the mark lobby_ShowChat puts after the sender's name of a private chat line */
 #define full_data_144abfc                        (*(unsigned char (*)[220])((char *)txt_Ptrs + 0x10a3c))  /* 0x144abfc */
