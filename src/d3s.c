@@ -5,7 +5,7 @@
    0x459d80); the end is proven by d3_sky.c, whose first D3DCHECK is at line 38 of that file.
    Functions are kept in their original order. Names are ours.
    Open: d3s.h's D3STERR / D3STBLOCK / D3SMESH are local views of D3TERRAIN / D3SMBLOCK (d3_sm.h) and D3MESH
-   (d3_engine.h), which lack bs / mip and the float at 0x954; a union in D3MESH moves d3_Unk4550e0 by 8 bytes.
+   (d3_engine.h); D3TERRAIN lacks mip and D3MESH the float at 0x954; a union in D3MESH moves d3_Unk4550e0 by 8 bytes.
    unit of rea 8cef7d5b (src/game/d3s.c); boundaries in decl/text.dcl */
 #include <stdio.h>
 #include <stdlib.h>

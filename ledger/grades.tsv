@@ -1060,7 +1060,7 @@ exe	0x00459fb0	d3s_DrawSpans	d3s	draft	readable	deep
 exe	0x0045a2e0	d3s_ShadowTriangle	d3s	draft	readable	deep	
 exe	0x0045a670	d3s_LeftEdge	d3s	byte	readable		
 exe	0x0045a740	d3s_FillRows	d3s	byte	readable		
-exe	0x0045a880	d3s_ShadowPoly	d3s	draft	draft		
+exe	0x0045a880	d3s_ShadowPoly	d3s	draft	readable	deep	
 exe	0x0045ab60	d3s_CacheInit	d3s	byte	readable		
 exe	0x0045ab90	d3s_CacheFree	d3s	byte	readable		
 exe	0x0045abc0	d3s_CacheBind	d3s	byte	readable		
@@ -1071,12 +1071,12 @@ exe	0x0045af50	d3s_TerrainShadowMesh	d3s	draft	readable	deep
 exe	0x0045b510	d3s_MeshFromMap	d3s	draft	readable	deep	
 exe	0x0045b8d0	d3s_AddShadow	d3s	draft	readable	deep	
 exe	0x0045bcd0	d3s_GetGround	d3s	byte	readable		
-exe	0x0045be10	d3s_Project	d3s	draft	draft		
-exe	0x0045c620	d3s_Update	d3s	draft	draft		
+exe	0x0045be10	d3s_Project	d3s	draft	readable	deep	
+exe	0x0045c620	d3s_Update	d3s	shape	readable		
 exe	0x0045c9c0	d3s_LightCB	d3s	byte	readable		
 exe	0x0045c9f0	d3s_CollectLights	d3s	byte	readable		
 exe	0x0045ca20	d3s_UpdateObject	d3s	byte	readable		
-exe	0x0045ca60	d3s_UpdateObjectAt	d3s	draft	draft		draft+readable -> draft+draft at f274727: Q6: the description came from a foreign declaration copy or a file name only (decompanion 399f0a8); the definition has none
+exe	0x0045ca60	d3s_UpdateObjectAt	d3s	shape	readable		
 exe	0x0045cc90	d3s_FreeSlot	d3s	byte	readable		
 exe	0x0045ccd0	d3s_FreeShadows	d3s	byte	readable		
 exe	0x0045cd60	d3s_FreeLightCB	d3s	byte	readable		
@@ -3300,9 +3300,9 @@ exe	0x00520f90	sv_CheckMoney	sv	byte	readable
 exe	0x00520fe0	sv_CheckCharacterFlag	sv	byte	readable		
 exe	0x00521040	sv_CheckGoodAmount	sv	byte	readable		
 exe	0x005210a0	sv_CheckStock	sv	byte	readable		
-exe	0x00521150	sv_MessageBox	sv	draft	draft		
-exe	0x00521410	sv_MessageBoxGreen	sv	draft	draft		
-exe	0x005216a0	sv_MessageBoxYesNo	sv	draft	draft		
+exe	0x00521150	sv_MessageBox	sv	draft	readable	deep	
+exe	0x00521410	sv_MessageBoxGreen	sv	shape	readable		
+exe	0x005216a0	sv_MessageBoxYesNo	sv	byte	readable		
 exe	0x00521900	sv_OpenMessageBox	sv	byte	readable		
 exe	0x00521960	sv_SelectPanelObject	sv	draft	readable	deep	
 exe	0x00521ba0	sv_DrawPanelPointer	sv	shape	readable	deep	
@@ -3315,7 +3315,7 @@ exe	0x005223c0	sv_DestroyScreen	sv	byte	readable
 exe	0x005224a0	sv_LoadGroundplan	sv	draft	readable	deep	
 exe	0x005229b0	sv_UpdateGroundplan	sv	draft	readable	deep	
 exe	0x00522ec0	sv_SetResearchClass	sv	byte	readable		
-exe	0x00522f10	sv_UpdateCityPanel	sv	draft	draft		
+exe	0x00522f10	sv_UpdateCityPanel	sv	byte	readable		
 exe	0x00524010	sv_RedrawScreen	sv	byte	readable		
 exe	0x00524100	sv_AddGroupMember	sv	byte	readable		
 exe	0x00524160	sv_RemoveGroupMember	sv	shape	readable	deep	
@@ -4003,8 +4003,8 @@ exe	0x00578370	ai_TutorialStop	sv_t	byte	readable
 exe	0x00578440	ai_TutorialFreeRuns	sv_t	byte	readable		
 exe	0x005784a0	ai_TutorialInitMainIntro	sv_t	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	sv_t	byte	readable		
-exe	0x00578e40	ai_TutorialInitChapter2	sv_t	byte	readable		
-exe	0x00579570	ai_TutorialInitChapter3	sv_t	byte	readable		
+exe	0x00578e40	ai_TutorialInitChapter2	sv_t	shape	readable		
+exe	0x00579570	ai_TutorialInitChapter3	sv_t	shape	readable		
 exe	0x0057aa80	ai_TutorialInitChapter4	sv_t	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	sv_t	byte	readable		
 exe	0x0057b750	ai_TutorialInitMainOutro	sv_t	byte	readable		
