@@ -3951,57 +3951,58 @@ void main_RoundReport(void)
 #define PL(i) ((unsigned)&ai_CharsT + (i) * 0x21c)
 float gm_TitlePeriodServed(int n, int *out);
 
-/* 0x53a250, per-player update of figure `i` by the kind byte at +2: kinds 6 / 7 get the field delta 0x174 = 1 sent, kinds 0 .. 9 otherwise: the same delta for kinds 1 / 2 / 4 / 5 or a character with a building (ai_Unk770cec), and the master-exam start (message kind 0x24 when gm_TitlePeriodServed reaches 1.0 and the title group is below 6) for a character with a job */
+/* 0x53a250, the daily update of the figure i by its kind: kinds 6 / 7 get the field delta 0x174 (AICHAR.v174, the
+   days in the job) = 1 sent; kinds 0 .. 9 otherwise the same delta when the character has a building or is of the
+   kind 1 / 2 / 4 / 5, and for a character with a job the master exam: with no exam event (he 0x24) pending, titles
+   left (gm_TitlesLeft 1 .. 5), the title period served counting this day (gm_TitlePeriodServed >= 1.0) and money
+   not negative, the long message 0x24 is sent, the main_MasterExamLog line formatted and 4 money taken
+   (gm_SendMoneyDelta) */
 void main_UpdateFigure(int i)
 {
-    int base = i * 0x21c;
-    unsigned char kind = *(unsigned char *)(((unsigned)&ai_CharsT + 0x2) + base);
-    int one;
-    int pr, iv;
+    AICHAR *c;
+    int one, left;
+    char *ev;
     float f;
-    int ev[0x42];
+    AITIME when;                    /* gm_TitlePeriodServed's completion date (not used here) */
+    AIMSG msg;
     char txt[256];
 
-    if (kind != 6) {
-        if (kind == 7 || kind > 9) {
-            if (kind == 6 || kind == 7)
-                goto L404;
-        } else {
-            one = 1;
-            if (U_I((unsigned)&ai_Unk770cec + base) != 0 || kind == 5 || kind == 1 || kind == 2 || kind == 4) {
-                cm_BeginFieldBlock(PL(i), U_I((unsigned)&ai_CharInts + base));
-                cm_AddFieldValues(4, 1, 0x174, &one);
-                cm_SendFieldDeltas();
-            }
-            if (*(char *)(((unsigned)&ai_CharInts + 0x160) + base) != 0) {
-                pr = gm_TitlesLeft(*(char *)(((unsigned)&ai_CharInts + 0x160) + base));
-                iv = he_FindEvent(2, 2, U_I((unsigned)&ai_CharsT + base), 0, 0x24);
-                U_I(((unsigned)&ai_Unk770cec + 0x8) + base) += 1;
-                f = gm_TitlePeriodServed(i, ev);
-                U_I(((unsigned)&ai_Unk770cec + 0x8) + base) -= 1;
-                if (iv == 0 && pr != 0 && pr < 6 && 1.0 <= f && U_I(((unsigned)&ai_Selected + 0xc) + base) > -1) {
-                    memset(ev, 0, 0xf8);
-                    ev[2] = U_I((unsigned)&ai_CharInts + base);
-                    ev[0x1f] = 0;
-                    ev[0x1d] = 0;
-                    ((char *)ev)[0x00 + 4] = 0x24;
-                    ev[3] = -1;
-                    ((char *)ev)[0x36] = 0x11;
-                    ev[0x1e] = 1;
-                    ev[0x1c] = ev[2];
-                    cm_SendLongMessage(ev);
-                    sprintf(txt, main_MasterExamLog, U_I((unsigned)&ai_CharInts + base), *(char *)(((unsigned)&ai_CharInts + 0x160) + base), pr + 1);
-                    cm_SendMoneyDelta(U_I((unsigned)&ai_CharInts + base), -4);
-                }
+    if (ai_CharsT[i].kind != 6 && ai_CharsT[i].kind != 7 && ai_CharsT[i].kind < 10) {
+        c = &ai_CharsT[i];
+        one = 1;
+        if (ai_CharsT[i].bld != 0 || ai_CharsT[i].kind == 5 || ai_CharsT[i].kind == 1 || ai_CharsT[i].kind == 2 || ai_CharsT[i].kind == 4) {
+            cm_BeginFieldBlock((char *)c, c->netId);
+            cm_AddFieldValues(4, 1, 0x174, &one);
+            cm_SendFieldDeltas();
+        }
+        if (ai_CharsT[i].jobId != 0) {
+            /* the master exam: due once the title period is served (counted with this day) */
+            left = gm_TitlesLeft(ai_CharsT[i].jobId);
+            ev = he_FindEvent(2, 2, c->id, 0, 0x24);
+            c->v174++;
+            f = gm_TitlePeriodServed(i, (int *)&when);
+            c->v174--;
+            if (ev == 0 && left != 0 && left < 6 && f >= 1.0 && ai_CharsT[i].money >= 0) {
+                memset(&msg, 0, sizeof(msg));
+                msg.arg[3] = 0;
+                msg.arg[1] = 0;
+                msg.type = 0x24;
+                msg.to = c->netId;
+                msg.fromId = -1;
+                msg.flags = 0x11;
+                msg.arg[2] = 1;
+                msg.arg[0] = msg.to;
+                cm_SendLongMessage((char *)&msg);
+                sprintf(txt, main_MasterExamLog, c->netId, c->jobId, left + 1);
+                gm_SendMoneyDelta(c->netId, -4);
             }
         }
-        return;
+    } else if (ai_CharsT[i].kind == 6 || ai_CharsT[i].kind == 7) {
+        one = 1;
+        cm_BeginFieldBlock((char *)&ai_CharsT[i], ai_CharsT[i].netId);
+        cm_AddFieldValues(4, 1, 0x174, &one);
+        cm_SendFieldDeltas();
     }
-L404:
-    one = 1;
-    cm_BeginFieldBlock(PL(i), U_I((unsigned)&ai_CharInts + base));
-    cm_AddFieldValues(4, 1, 0x174, &one);
-    cm_SendFieldDeltas();
 }
 /* 0x53a450, per-frame update of every character (768, ai_Chars): a figure with a job or a title goes through main_UpdateFigure; a bankrupt kind 2 / 4 / 5 loses health (the float at +0x1c plus 5); a set +0x1b1 byte is sent as a field delta (0xff) */
 
