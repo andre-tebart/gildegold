@@ -5743,17 +5743,17 @@ int ai_MeisterTradeAllgemein(AICHAR *ch, AIOBJ *b)
 /* 0x48d010, ai_MeisterTradeFernEinkauf: the long-distance buyer sends every cart that is in the world to a
    market store (unloads it, then orders the purchases of the slots / entries)
    @deep Read the whole function against the original. Fixed: the slot purchase loop continues while saving
-   <= ai_FloatZero (our draft had it inverted) and is an index loop for (; nB < 3 && i < ai_NSlots && ...),
-   the entries loop for (i = 0; nA < 3 && i < N && margin <= ai_FloatZero; i++), the sell amount min(amt,
-   buyAmount) as the original's cmp/jl, the slot search a plain index loop, the 'G' building's playerSlot /
-   id as AIBLD fields (Q4), ai_FloatZero as the original reads it. Left: allocation - the original keeps
-   the slot loop's i in memory ([esp+0xc], 'mov esi, dword ptr [esp + 0xc] / shl esi, 6') where ours
-   carries it in edi from the slot-0 block (code hunks 0x48d36f, 0x48d3cd), the induction base
-   (ai_Slots+0x34 buyAmount in the original, +0x8 bld in ours: the M8 at +0x3d6, the same field accesses,
-   hunk 0x48d40c), 'mov al, byte ptr [ecx] / cmp al, 0x47' vs 'cmp byte ptr [ecx], 0x47', slot homes.
-   (references: M8 at +0x3d6: ours refers to ai_Slots+0x8 (0xf86a48), the original's field to 0xf86a74
-   (ai_Slots+0x34), explained: the M8 is the strength-reduced ai_Slots[i] pointer's base offset (both walk
-   ai_Slots from i with the same fields saving, bld, buyAmount, item, price)) */
+   <= ai_FloatZero (our draft had it inverted), the clamped amount n = min(amt, buyAmount) is a variable of
+   its own that the 'G' expectation reads (frame 0x694 now equal), the entries loop for (i = 0; nA < 3 &&
+   ...; i++), min(amt, buyAmount) for the sale, the slot search an index loop, AIBLD fields for the 'G'
+   building (Q4), ai_FloatZero. Left (code 69, fpu 4, regs 2): the slot loop's i - the original keeps it in
+   memory after the slot-0 block ('mov esi, dword ptr [esp + 0xc] / shl esi, 6 / add esi, ai_Slots+0x34')
+   where ours carries it in edi (hunks 0x48d1c4, 0x48d36f, 0x48d392), and so the strength-reduced base is
+   +0x34 (buyAmount) there, +0x8 in ours (the M8, hunk 0x48d411 the same accesses at the other base); a
+   pointer do-while form (as ai_MeisterTradeFernEinkauf2's, which matches) gives the same. (references: M8
+   at +0x3d6: ours refers to ai_Slots+0x8 (0xf86a48), the original's field to 0xf86a74 (ai_Slots+0x34),
+   explained: the M8 is the base offset of the strength-reduced ai_Slots[i] pointer (both walk ai_Slots
+   from i with the same fields saving, bld, buyAmount, item, price)) */
 
 int ai_MeisterTradeFernEinkauf(AICHAR *ch, AIOBJ *b)
 {
@@ -5845,11 +5845,10 @@ int ai_MeisterTradeFernEinkauf(AICHAR *ch, AIOBJ *b)
                     if (bl) {
                         msg.u.item[nB + 3] = ai_Slots[i].item;
                         msg.dst[nB + 3] = bl->id;
-                        if (amt >= ai_Slots[i].buyAmount)
-                            amt = ai_Slots[i].buyAmount;
-                        msg.amount[nB] = amt;
+                        n = min(amt, ai_Slots[i].buyAmount);
+                        msg.amount[nB] = n;
                         if (bl->type == 'G')
-                            exp[bl->playerSlot] = (int)(amt * ai_Slots[i].price + exp[bl->playerSlot]);
+                            exp[bl->playerSlot] = (int)(n * ai_Slots[i].price + exp[bl->playerSlot]);
                         nB++;
                     }
                 }
