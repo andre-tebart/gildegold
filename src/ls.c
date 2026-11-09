@@ -981,70 +981,63 @@ int ls_WriteRelations(int f)
   } while ((int)p < (int)ai_RelationMemory + 0x300 * 0x300);
   return 1;
 }
-/* 0x51b910, ROUGH: converted from the Ghidra pseudocode, absolute data addresses; save writer */
+/* 0x51b910, writes the statistics: ord_Statistics field by field, ord_RatingRate, the clock ord_StatisticsClock,
+   ai_RatingBase, ai_Rating, the message record ord_MessageRecord, the 16 rounds of ord_StatisticsHistory, the five
+   0x44-byte rows of gm_IncomeHistory and the 8 x 8 cells of the grid ai_Grid (a, b, used, average). Returns 1, 0 when
+   a write fails */
 
 
 int ls_WriteStatistics(int f)
 {
-  int iVar1;
-  char *puVar3;
-  char *puVar4;
-  char *puVar5;
-  LS_W(((char *)(unsigned)&ord_Statistics), 4)
-  LS_W(((char *)((unsigned)&ord_Statistics + 0x4)), 4)
-  LS_W(((char *)((unsigned)&ord_Statistics + 0x8)), 4)
-  LS_W(((char *)((unsigned)&ord_Statistics + 0xc)), 4)
-  LS_W(((char *)((unsigned)&ord_Statistics + 0x10)), 4)
-  LS_W(((char *)((unsigned)&ord_Statistics + 0x14)), 4)
-  LS_W(((char *)((unsigned)&ord_Statistics + 0x18)), 4)
-  LS_W(((char *)((unsigned)&ord_Statistics + 0x1c)), 4)
-  LS_W(((char *)((unsigned)&ord_Statistics + 0x20)), 4)
-  LS_W(((char *)((unsigned)&ord_Statistics + 0x24)), 4)
-  LS_W(((char *)(unsigned)&ord_RatingRate), 4)
-  LS_W(((char *)(unsigned)&ord_StatisticsClock), 4)
-  LS_W(((char *)((unsigned)&ord_StatisticsClock + 0x4)), 2)
-  LS_W(((char *)((unsigned)&ord_StatisticsClock + 0x6)), 4)
-  LS_W(((char *)((unsigned)&ord_StatisticsClock + 0xa)), 4)
-  LS_W(((char *)(unsigned)&ai_RatingBase), 4)
-  LS_W(((char *)(unsigned)&ai_Rating), 4)
-  LS_W(((char *)(unsigned)&ord_MessageRecord), 4)
-  LS_W(((char *)((unsigned)&ord_MessageRecord + 0x4)), 4)
-  LS_W(((char *)((unsigned)&ord_MessageRecord + 0x8)), 4)
-  LS_W(((char *)((unsigned)&ord_MessageRecord + 0xc)), 4)
-  LS_W(((char *)((unsigned)&ord_MessageRecord + 0x10)), 4)
-  LS_W(((char *)((unsigned)&ord_MessageRecord + 0x14)), 4)
-  LS_W(((char *)((unsigned)&ord_MessageRecord + 0x18)), 4)
-  LS_W(((char *)((unsigned)&ord_MessageRecord + 0x1c)), 4)
-  LS_W(((char *)((unsigned)&ord_MessageRecord + 0x20)), 4)
-  puVar4 = ((char *)((unsigned)&ord_StatisticsHistory + 0x4));
-  do {
-    LS_W(puVar4 - 4, 4)
-    LS_W(puVar4, 4)
-    LS_W(puVar4 + 4, 4)
-    LS_W(puVar4 + 8, 4)
-    LS_W(puVar4 + 0xc, 4)
-    puVar4 = puVar4 + 0x14;
-  } while ((int)puVar4 < ((unsigned)((unsigned)ord_StatisticsHistory + 0x140) + 0x4));
-  LS_W(((char *)(unsigned)&gm_IncomeHistory), 0x44)
-  LS_W(((char *)(unsigned)&gm_IncomeHistory + 0x44), 0x44)
-  LS_W(((char *)(unsigned)&gm_IncomeHistory + 0x88), 0x44)
-  LS_W(((char *)(unsigned)&gm_IncomeHistory + 0xcc), 0x44)
-  LS_W(((char *)(unsigned)&gm_IncomeHistory + 0x110), 0x44)
-  puVar3 = ((char *)((unsigned)&ai_Grid + 0x2));
-  do {
-    iVar1 = 0;
-    puVar5 = puVar3;
-    do {
-      LS_W(puVar5 - 2, 2)
-      LS_W(puVar5, 2)
-      LS_W(puVar5 + 2, 1)
-      LS_W(puVar5 + 6, 4)
-      iVar1 = iVar1 + 1;
-      puVar5 = puVar5 + 0x18;
-    } while (iVar1 < 8);
-    puVar3 = puVar3 + 0xc0;
-  } while ((int)puVar3 < ((unsigned)((unsigned)ai_Grid + 0x600) + 0x2));
-  return 1;
+    int i, j;
+
+    LS_W(&ord_Statistics.col[0], 4)
+    LS_W(&ord_Statistics.col[1], 4)
+    LS_W(&ord_Statistics.col[2], 4)
+    LS_W(&ord_Statistics.col[3], 4)
+    LS_W(&ord_Statistics.chars, 4)
+    LS_W(&ord_Statistics.rating, 4)
+    LS_W(&ord_Statistics.base, 4)
+    LS_W(&ord_Statistics.sumC, 4)
+    LS_W(&ord_Statistics.sumA, 4)
+    LS_W(&ord_Statistics.score, 4)
+    LS_W(&ord_RatingRate, 4)
+    LS_W(&ord_StatisticsClock.year, 4)
+    LS_W(&ord_StatisticsClock.hour, 2)
+    LS_W(&ord_StatisticsClock.min, 4)
+    LS_W(&ord_StatisticsClock.sec, 4)
+    LS_W(&ai_RatingBase, 4)
+    LS_W(&ai_Rating, 4)
+    LS_W(&ord_MessageRecord.enabled, 4)
+    LS_W(&ord_MessageRecord.count, 4)
+    LS_W(&ord_MessageRecord.time, 4)
+    LS_W(&ord_MessageRecord.base, 4)
+    LS_W(&ord_MessageRecord.scale, 4)
+    LS_W(&ord_MessageRecord.value, 4)
+    LS_W(&ord_MessageRecord.limit, 4)
+    LS_W(&ord_MessageRecord.phase, 4)
+    LS_W(&ord_MessageRecord.stage, 4)
+    for (i = 0; i < 16; i++) {
+        LS_W(&ord_StatisticsHistory[i].noFirst, 4)
+        LS_W(&ord_StatisticsHistory[i].combined, 4)
+        LS_W(&ord_StatisticsHistory[i].noSecond, 4)
+        LS_W(&ord_StatisticsHistory[i].score, 4)
+        LS_W(&ord_StatisticsHistory[i].base, 4)
+    }
+    LS_W(gm_IncomeHistory, 0x44)
+    LS_W(gm_IncomeHistory + 0x44, 0x44)
+    LS_W(gm_IncomeHistory + 0x88, 0x44)
+    LS_W(gm_IncomeHistory + 0xcc, 0x44)
+    LS_W(gm_IncomeHistory + 0x110, 0x44)
+    for (i = 0; i < 8; i++) {
+        for (j = 0; j < 8; j++) {
+            LS_W(&ai_Grid[i][j].a, 2)
+            LS_W(&ai_Grid[i][j].b, 2)
+            LS_W(&ai_Grid[i][j].used, 1)
+            LS_W(&ai_Grid[i][j].average, 4)
+        }
+    }
+    return 1;
 }
 /* 0x51bdb0, the save game step that writes the avatar table (gv_WriteAvatars) */
 
