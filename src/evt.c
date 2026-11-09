@@ -1162,14 +1162,14 @@ int evt_Stop(EVTSCRIPT *sc)
     evt_Unload(sc);
     return 1;
 }
-/* 0x429f30 @deep B: hunks regs 180, code 162. Read asmdiff: evt_Cur and val hold the opposite callee-saved registers (ours edi/esi, original esi/edi) throughout; the string element copy is an inline two-pointer loop in the original vs relative-addressing strcpy in ours; one jump-table index is in ecx vs edx. No missing statement, no wrong constant. The val split / declaration orders / strcpy forms were tried; c2prio puts val above the first evt_Cur web. */
+/* 0x429f30 */
 
 int evt_Eval(char *end)
 {
     EVTTOKEN t;
     char buf[512];
-    int val = 0;
     int next = EVT_OP_ASSIGN;
+    int val = 0;
     int op = EVT_OP_ASSIGN;
     int result = 0;
     int idx;
@@ -1229,7 +1229,9 @@ int evt_Eval(char *end)
                     val = v->data.b[idx];
                     break;
                 case 6:
-                    strcpy(evt_StrResult, (char *)(val = (int)(v->data.s + idx * 0x60)));
+                    /* the element as a 0x60-char row, its address formed once per use */
+                    val = (int)((char (*)[0x60])v->data.s)[idx];
+                    strcpy(evt_StrResult, ((char (*)[0x60])v->data.s)[idx]);
                     break;
                 }
             } else if (t.type == EVT_INT) {
