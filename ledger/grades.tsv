@@ -737,7 +737,7 @@ exe	0x004399e0	d3_ClipObject	d3_engine	byte	readable
 exe	0x00439a60	d3_ClipMesh	d3_engine	byte	readable		
 exe	0x00439c90	d3_ClipPoly	d3_engine	shape	readable		
 exe	0x0043a000	d3_SelectSurf	d3_engine	byte	readable		
-exe	0x0043a160	d3_DrawObjectCB	d3_engine	draft	draft		
+exe	0x0043a160	d3_DrawObjectCB	d3_engine	draft	readable	deep	
 exe	0x0043a610	d3_SetFogRange	d3_engine	byte	readable		
 exe	0x0043a6f0	d3_SetFog	d3_engine	draft	readable	hard	
 exe	0x0043a7d0	d3_DrawSortedD3D	d3_engine	draft	draft		
@@ -2910,7 +2910,7 @@ exe	0x004f8890	ord_GetKindRecord	ord	byte	readable
 exe	0x004f88c0	ord_AppendStatisticsRound	ord	byte	readable		
 exe	0x004f8920	ord_RebuildGridSums	ord	byte	readable		
 exe	0x004f8ae0	ord_ComputeStatistics	ord	shape	readable	deep	
-exe	0x004f8ed0	ord_UpdateStatistics	ord	draft	draft		
+exe	0x004f8ed0	ord_UpdateStatistics	ord	shape	readable		
 exe	0x004f9020	ord_LoadStatistics	ord	draft	readable	deep	
 exe	0x004f9170	ord_GetMessageRecord	ord	byte	readable		
 exe	0x004f9190	ord_InitMessageRecord	ord	byte	readable		
@@ -3189,7 +3189,7 @@ exe	0x0050d7f0	init_LoadObjectScene	f3init	draft	readable	deep
 exe	0x0050dba0	init_BuildingKindName	f3init	draft	readable	deep	
 exe	0x0050dc30	init_LoadBuildingScene	f3init	draft	readable	deep	
 exe	0x0050e0d0	init_StartNewGame	f3init	draft	readable	deep	
-exe	0x0050e330	init_CreateOpponents	f3init	draft	draft		
+exe	0x0050e330	init_CreateOpponents	f3init	shape	readable		
 exe	0x0050e5a0	init_PlaceOffices	f3init	shape	readable	deep	
 exe	0x0050e690	init_CreateStartCharacters	f3init	draft	readable	deep	
 exe	0x0050f0b0	init_CreateOpeningObjects	f3init	byte	readable		
@@ -3201,7 +3201,7 @@ exe	0x00510730	init_CollectSiteObject	f3init	byte	readable
 exe	0x00510770	init_LoadSiteScene	f3init	shape	readable		
 exe	0x00510ad0	init_InitTown	f3init	shape	readable		
 exe	0x00510e20	init_ShowStatus	f3init	byte	readable		
-exe	0x00510e50	init_StartNetworkGame	f3init	draft	draft		draft+readable -> draft+draft at f274727: Q6: the description came from a foreign declaration copy or a file name only (decompanion 399f0a8); the definition has none
+exe	0x00510e50	init_StartNetworkGame	f3init	byte	readable		
 exe	0x005112d0	init_JoinNetworkGame	f3init	byte	readable		
 exe	0x00511400	init_SetupNewGame	f3init	byte	readable		
 exe	0x005115b0	init_CollectTorchObject	f3init	byte	readable		
@@ -3237,7 +3237,7 @@ exe	0x00513590	init_SetDetailLevel	f3init	draft	readable	deep
 exe	0x005136b0	init_LeaveTownScene	f3init	byte	readable		
 exe	0x00513740	init_AfterTownLoad	f3init	byte	readable		
 exe	0x00513970	init_ParseNumberList	f3init	byte	readable		
-exe	0x00513a20	init_LoadCityINI	f3init	draft	draft		
+exe	0x00513a20	init_LoadCityINI	f3init	byte	readable		
 exe	0x005142e0	io_TownDisplayName	io_text	byte	readable		
 exe	0x00514360	io_TrailingDigits	io_text	byte	readable		
 exe	0x005143d0	io_CharacterName	io_text	shape	readable		
@@ -4003,8 +4003,8 @@ exe	0x00578370	ai_TutorialStop	sv_t	byte	readable
 exe	0x00578440	ai_TutorialFreeRuns	sv_t	byte	readable		
 exe	0x005784a0	ai_TutorialInitMainIntro	sv_t	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	sv_t	byte	readable		
-exe	0x00578e40	ai_TutorialInitChapter2	sv_t	shape	readable		
-exe	0x00579570	ai_TutorialInitChapter3	sv_t	shape	readable		
+exe	0x00578e40	ai_TutorialInitChapter2	sv_t	byte	readable		
+exe	0x00579570	ai_TutorialInitChapter3	sv_t	byte	readable		
 exe	0x0057aa80	ai_TutorialInitChapter4	sv_t	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	sv_t	byte	readable		
 exe	0x0057b750	ai_TutorialInitMainOutro	sv_t	byte	readable		
@@ -4602,8 +4602,8 @@ exe	0x005d31c0	ai_UseGoodSkillBonus	lc	byte	readable
 exe	0x005d3270	ai_UseGoodDistrust	lc	draft	readable	deep	
 exe	0x005d33b0	ai_ListFiles	menu	byte	readable		
 exe	0x005d34b0	ai_FilePickWindow	menu	shape	readable		
-exe	0x005d3810	ai_MessageBox	menu	draft	draft		
-exe	0x005d3a00	ai_RegisterSaveSlot	menu	draft	draft		
+exe	0x005d3810	ai_MessageBox	menu	shape	readable		
+exe	0x005d3a00	ai_RegisterSaveSlot	menu	draft	readable	deep	
 exe	0x005d3ab0	ai_FillSaveSlots	menu	draft	readable	deep	
 exe	0x005d4080	ai_LoadGameWindow	menu	shape	readable		
 exe	0x005d42b0	ai_JoinGameWindow	menu	shape	readable		
@@ -4612,7 +4612,7 @@ exe	0x005d45d0	ai_SaveOptionWindow	menu	draft	readable	deep
 exe	0x005d4920	ai_SaveNameWindow	menu	draft	readable	deep	
 exe	0x005d4c70	ai_SaveOptions	menu	byte	readable		
 exe	0x005d5640	ai_LoadOptions	menu	draft	readable	deep	
-exe	0x005d5c40	ai_ApplyGfxOptions	menu	draft	readable		
+exe	0x005d5c40	ai_ApplyGfxOptions	menu	draft	readable	deep	
 exe	0x005d5e90	ai_ApplyOptions	menu	byte	readable		
 exe	0x005d5f10	ai_ApplyVolumes	menu	byte	readable		
 exe	0x005d5fd0	ai_OptionsGfxScreen	menu	draft	readable	deep	

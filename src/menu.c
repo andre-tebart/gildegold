@@ -14,6 +14,8 @@
    Open: not included yet (dcp headers conflicts menu HEADER): ch.h cm.h d2.h d3_int_io.h gfx.h; held by
    own declarations that differ from the owner's: d2_StartFade, d2_ReleaseFade, d2_WinOpenPic, d2_ScreenSurf,
    d2_Inputs, d2_LockSurface, d2_UnlockSurface, ch_List, d3io_Lod.
+   Open: data: ai_GfxFloor (0x6f35c8, OPTIONBYTES) - ai_ApplyGfxOptions reads its camera_limits byte as a byte object
+   (mov al, byte ptr [0x6f35c9]) where the union makes VC6 load the dword; the four option bytes may be objects of their own.
    unit of rea 8cef7d5b (src/game/unk_5d33b0.c); boundaries in decl/text.dcl */
 extern int gm_PlayerRecords[688];
 #include "txt_views.h"
