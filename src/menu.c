@@ -260,80 +260,68 @@ int ai_FilePickWindow(unsigned mask, int flags, char *caption, char *dir, char *
 
 int d2_CreateRadioGroup(int n, ...); void d2_RadioAdd(int g, int obj); void d2_MenuNavigate(int g); void d2_RaiseViewWindows(int view); void d2_RadioClear(int g);
 
-/* 0x5d3810, a message box (481 B): param_1 the text id (0x515960), param_2 the flags: 2 -> the
-   "misc\Messagebox_Autosize", 0x10 -> _BIG, 0x20 -> _VERY_BIG, 0x100 -> _NONE_PERGA (pump form 1),
-   else "misc\Messagebox"; bit 3 (8) replaces the pump flags with 0x717c6, bit 0x40 calls 0x4741a0 per
-   frame and bit 2 (4) closes the box when 0x6333cc has advanced 500 past the start. The box is created
-   with 0x4741f0 / 0x475600; the control list 0x46c490 walks the 0x6ed980 + 0x18 ids (the count +0x1c)
-   and adds every control record 0xf8f080 + id * 0x2ec whose +0x18 is not 0x40 (0x46c560). The pump
-   0x5309a0 runs with this function as its callback (0x46c6c0 per frame); a click id 0 (0x475600?) means
-   yes -> 1, id 1 -> 0. 0x6f2f95 byte 1 marks the box open (a second box returns 0 at once).
-   Returns 1 / 0. */
-int ai_MessageBox(int param_1, int param_2)
+#define ai_MessageBoxOpen (ai_GfxResolution.byte[1])  /* 0x6f2f95, 1 while ai_MessageBox runs (a second box returns 0 at once) */
+
+/* 0x5d3810, shows the message box with the text `text` (io_PrintText) and waits for its answer: the form by the
+   flags (2 "misc\Messagebox_Autosize", 0x10 _BIG, 0x20 _VERY_BIG, 0x100 _NONE_PERGA on form page 1, else
+   "misc\Messagebox"); 8 pumps with the mask 0x717c6 instead of the frame's own (less the bits 0x38), 0x40 raises
+   the windows every frame, 4 closes the box 500 ms after it opened. Every control of the window but the type 0x40
+   ones joins a radio group the keys walk; the button 0 answers 1 (yes), the button 1 answers 0, a right click
+   closes it. Returns the answer, 0 when another box is open. */
+int ai_MessageBox(int text, int flags)
 {
     int win;
     int list;
     int id;
     int i;
-    int n;
     int ret;
-    int pump_flags;
-    unsigned int start;
-    char *name;
+    unsigned mask;
+    unsigned long start;
 
-    start = (unsigned int)U_I((unsigned)&d3_Time);
+    start = d3_Time;
     ret = 0;
-    if (U_B(((unsigned)&ai_GfxResolution + 0x1)) != 0)
+    if (ai_MessageBoxOpen != 0)
         return 0;
-    pump_flags = U_I((unsigned)&sv_FrameMask) & 0xffffffc7;
-    if ((param_2 & 2) == 0) {
-        if ((param_2 & 0x10) == 0) {
-            if ((param_2 & 0x20) == 0) {
-                if ((param_2 & 0x100) != 0) {
-                    win = d2_OpenForm(0, 0, "misc\\Messagebox_NONE_PERGA");
-                    d2_SetForm(win, 1);
-                    goto created;
-                }
-                name = "misc\\Messagebox";
-            } else {
-                name = "misc\\Messagebox_VERY_BIG";
-            }
-        } else {
-            name = "misc\\Messagebox_BIG";
-        }
-    } else {
-        name = "misc\\Messagebox_Autosize";
-    }
-    win = d2_OpenForm(0, 0, name);
-created:
-    if ((param_2 & 8) != 0)
-        pump_flags = 0x717c6;
-    io_PrintText(param_1);
+    mask = sv_FrameMask & ~0x38;
+    if ((flags & 2) != 0)
+        win = d2_OpenForm(0, 0, "misc\\Messagebox_Autosize");
+    else if ((flags & 0x10) != 0)
+        win = d2_OpenForm(0, 0, "misc\\Messagebox_BIG");
+    else if ((flags & 0x20) != 0)
+        win = d2_OpenForm(0, 0, "misc\\Messagebox_VERY_BIG");
+    else if ((flags & 0x100) != 0) {
+        win = d2_OpenForm(0, 0, "misc\\Messagebox_NONE_PERGA");
+        d2_SetForm(win, 1);
+    } else
+        win = d2_OpenForm(0, 0, "misc\\Messagebox");
+    if ((flags & 8) != 0)
+        mask = 0x717c6;
+    io_PrintText(text);
     d2_CentreViewWindows(win);
-    U_B(((unsigned)&ai_GfxResolution + 0x1)) = 1;
+    ai_MessageBoxOpen = 1;
     list = d2_CreateRadioGroup(0);
-    for (i = 0; i < *(short *)(U_I((unsigned)&d2_LastWindowPtr) + 0x1c); i++) {
-        id = *(int *)(*(int *)(U_I((unsigned)&d2_LastWindowPtr) + 0x18) + i * 4);
-        if (U_I(U_I((unsigned)&d2_Objs) + 0x18 + id * 0x2ec) != 0x40)
+    for (i = 0; i < d2_LastWindowPtr->nobjs; i++) {
+        id = d2_LastWindowPtr->objs[i];
+        if (d2_Objs[id].type != 0x40)
             d2_RadioAdd(list, id);
     }
-    while (sv_RunFrame((int)ai_MessageBox, pump_flags) != 0) {
+    while (sv_RunFrame((int)ai_MessageBox, mask) != 0) {
         d2_MenuNavigate(list);
-        if ((param_2 & 0x40) != 0)
+        if ((flags & 0x40) != 0)
             d2_RaiseViewWindows(win);
-        if (U_I((unsigned)&d2_ClickedId) == 0) {
-            U_I((unsigned)&sv_PopRequest) = 1;
+        if (d2_ClickedId == 0) {
+            sv_PopRequest = 1;
             ret = 1;
-        } else if (U_I((unsigned)&d2_ClickedId) == 1) {
-            U_I((unsigned)&sv_PopRequest) = 1;
+        } else if (d2_ClickedId == 1) {
+            sv_PopRequest = 1;
             ret = 0;
         }
-        if (U_I(((unsigned)&dm_L + 0x20)) != 0)
-            U_I((unsigned)&sv_PopRequest) = 1;
-        if ((param_2 & 4) != 0 && start + 500 < (unsigned int)U_I((unsigned)&d3_Time))
-            U_I((unsigned)&sv_PopRequest) = 1;
+        if (dm_L.rup != 0)
+            sv_PopRequest = 1;
+        if ((flags & 4) != 0 && d3_Time > start + 500)
+            sv_PopRequest = 1;
     }
-    U_B(((unsigned)&ai_GfxResolution + 0x1)) = 0;
+    ai_MessageBoxOpen = 0;
     d2_RadioClear(list);
     d2_CloseView(win);
     return ret;
