@@ -110,8 +110,7 @@ void qnt_Free(void)
         free(qnt_UnusedBuffer);
 }
 /* 0x420990, counts the n pixels into the finest level, sums their colors up to the root and puts every
-   leaf into the min-heap on its pixel total
-   @deep behaviour: spellings only - grade.py sib 8, code 6; unitdiff 7 B / 10 asm lines (2026-10-26) - base/index swapped in the qnt_Level[lvl][idx] addressing ([eax+ecx+0x10] vs [ecx+eax+0x10]), mov esi,eax before vs after pop ebp, test esi,esi vs test eax,eax; no meaning error; 800 access spellings tried, and a for / while+dec / do shape, a fresh block variable k and idx / lvl declared inside the if block all compile identically (2026-10-26), so the entry test register and the pop ebp position are allocator-level */
+   leaf into the min-heap on its pixel total (heapified bottom-up) */
 
 int qnt_Build(unsigned char *rgb, unsigned int n)
 {
@@ -146,8 +145,11 @@ int qnt_Build(unsigned char *rgb, unsigned int n)
             }
         }
     }
-    for (i = qnt_HeapCount; i > 0; i--)
-        qnt_Sift(i);
+    i = qnt_HeapCount;
+    if (qnt_HeapCount > 0)
+        do
+            qnt_Sift(i);
+        while (--i);
     return 1;
 }
 /* 0x420b90, sift-down of heap entry k (heap on the nodes' total, 1-based) */
