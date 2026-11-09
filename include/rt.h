@@ -11,11 +11,6 @@ struct D3VECTOR;
 #include "rt_types.h"                /* RTPOINT */
 #include "d2_types.h"                /* D2OBJ (d2_Objs) */
 
-typedef struct RTINV {                  /* 0xb8 bytes, filled by 0x5098a0 / 0x50aa00 */
-    char pad00[0xb4];
-    char *stock;                        /* 0xb4 */
-} RTINV;
-
 typedef struct RTMARK {                 /* 8 bytes, rt_Marks[8] */
     int obj;                            /* 0x00, a d2 picture object (-1: none) */
     RTPOINT *p;                         /* 0x04 */
@@ -118,7 +113,7 @@ void rt_RemoveMark(int i);
 void rt_HighlightRoute(RTPOINT *p, struct LCMAPWIN *m);
 void rt_EditCartRoute(struct AIOBJ *c);
 void rt_UnloadAtPoint(char *c, int pl);
-void rt_LoadAtPoint(char *c, char pl);
+void rt_LoadAtPoint(struct AIOBJ *c, char pl);
 int rt_SaveRoutes(void *f);
 int rt_LoadRoutes(void *f);
 

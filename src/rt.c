@@ -1037,8 +1037,8 @@ void rt_UnloadAtPoint(char *c, int pl)
     int k;
     int n;
     int price;
-    RTINV ci;
-    RTINV bi;
+    AIRECIPE ci;
+    AIRECIPE bi;
 
     if (((AIOBJ *)c)->route == 0)
         return;
@@ -1047,10 +1047,10 @@ void rt_UnloadAtPoint(char *c, int pl)
     if (b == 0)
         return;
     t = ai_BTypes + ((AIBLD *)b)->type * 0x24d;
-    if (*t != 10 && *t != 0x1c && !gm_BuildingGoodsList(b, &bi, 0))
+    if (*t != 10 && *t != 0x1c && !gm_BuildingGoodsList(b, (unsigned *)&bi, 0))
         return;
     o = gm_ObjectBuildingOwner(c);
-    if (!gm_StallGoodsList(c, &ci))
+    if (!gm_StallGoodsList(c, (unsigned *)&ci))
         return;
     s = q->unloadSlots;
     for (k = 3; k != 0; k--) {
@@ -1060,12 +1060,12 @@ void rt_UnloadAtPoint(char *c, int pl)
             else if (*t == 0x1c)
                 st = gm_Query(((AIBLD *)b)->objList, 2, 0, 0x1db, 6);
             else
-                st = bi.stock;
-            g = gm_Query(((AIOBJ *)ci.stock)->list, 1, 0, s[0]);
+                st = (char *)bi.pada8[3];
+            g = gm_Query(((AIOBJ *)ci.pada8[3])->list, 1, 0, s[0]);
             if (g != 0) {
                 n = s[1];
-                if (n >= gm_ListAmount(ci.stock, g))
-                    n = gm_ListAmount(ci.stock, g);
+                if (n >= gm_ListAmount((char *)ci.pada8[3], g))
+                    n = gm_ListAmount((char *)ci.pada8[3], g);
                 n = gm_FreeCapacity(st, s[0], n);
                 if (n > 0) {
                     price = 0;
@@ -1076,7 +1076,7 @@ void rt_UnloadAtPoint(char *c, int pl)
                             price = (int)(gm_GoodsPrice(*g, ai_OwnPlayer) * ((AIBLD *)b)->priceFactor);
                     }
                     if (gm_CharCurrency(o, pl) >= price * n)
-                        cm_SendExSellObjectI(((AIOBJ *)st)->objId, ((AIOBJ *)ci.stock)->objId, s[0], n, pl, price);
+                        cm_SendExSellObjectI(((AIOBJ *)st)->objId, ((AIOBJ *)ci.pada8[3])->objId, s[0], n, pl, price);
                 }
             }
         }
@@ -1084,68 +1084,69 @@ void rt_UnloadAtPoint(char *c, int pl)
     }
 }
 /* 0x4bfc60, cart c loads at its current route point: the goods of the point's loadSlots slots go from the building's
-   stock (market: 0x1dc) into the cart, paid by player pl (a message when pl cannot afford it) */
+   stock (warehouse kind 10: gm_FindMarketObject, market 0x1c: its stock 0x1dc, else gm_BuildingGoodsList's) into the
+   cart, as much as the building holds and the cart takes; bought by player pl at the building's price (1.1 times the
+   goods price at a warehouse or market) when the building is not the cart owner's, with a news to the owner when pl
+   cannot afford it */
 
-void rt_LoadAtPoint(char *c, char pl)
+void rt_LoadAtPoint(AIOBJ *c, char pl)
 {
     RTPOINT *q;
-    short *o;
-    char *b;
-    char *t;
-    char *st;
+    AICHAR *o;
+    AIBLD *b;
+    AIBTYPE *t;
+    AIOBJ *st;
     unsigned short *g;
     int *s;
     int k;
     int n;
     int price;
-    RTINV ci;
+    AIRECIPE ci = {0};
     char name[0x80];
-    RTINV bi;
+    AIRECIPE bi = {0};
     char buf[0x400];
 
-    memset(&bi, 0, sizeof(bi));
-    memset(&ci, 0, sizeof(ci));
-    if (*(RTPOINT **)(c + 0x29) == 0)
+    if (c->route == 0)
         return;
-    q = rt_PointAt(*(RTPOINT **)(c + 0x29), *(int *)(c + 0x2d));
-    o = gm_ObjectBuildingOwner(c);
-    b = gm_FindBuildingById(q->buildingId);
+    q = rt_PointAt(c->route, c->routeIdx);
+    o = (AICHAR *)gm_ObjectBuildingOwner((unsigned short *)c);
+    b = (AIBLD *)gm_FindBuildingById(q->buildingId);
     if (b == 0)
         return;
-    t = ai_BTypes + *(unsigned char *)b * 0x24d;
-    if (*t != 10 && *t != 0x1c && !gm_BuildingGoodsList(b, &bi, 0) || !gm_StallGoodsList(c, &ci))
+    t = &((AIBTYPE *)ai_BTypes)[b->type];
+    if (t->kind != 10 && t->kind != 0x1c && !gm_BuildingGoodsList((char *)b, (unsigned *)&bi, 0) || !gm_StallGoodsList((char *)c, (unsigned *)&ci))
         return;
     s = q->loadSlots;
     for (k = 3; k != 0; k--) {
         if (s[0] != 0) {
             price = 0;
-            if (*t == 10)
-                st = gm_FindMarketObject(s[0]);
-            else if (*t == 0x1c)
-                st = gm_Query(*(int *)(b + 0x5d), 2, 0, 0x1dc, 6);
+            if (t->kind == 10)
+                st = (AIOBJ *)gm_FindMarketObject(s[0]);
+            else if (t->kind == 0x1c)
+                st = (AIOBJ *)gm_Query((void *)b->objList, 2, 0, 0x1dc, 6);
             else
-                st = bi.stock;
-            g = gm_Query(*(int *)(st + 0x14), 1, 0, s[0]);
+                st = (AIOBJ *)bi.pada8[3];
+            g = (unsigned short *)gm_Query((void *)st->list, 1, 0, s[0]);
             if (g != 0) {
                 n = s[1];
-                if (n >= gm_ListAmount(st, g))
-                    n = gm_ListAmount(st, g);
-                n = gm_FreeCapacity(ci.stock, s[0], n);
-                if (*(short *)(b + 0x27) != *o) {
-                    if (*t == 10)
+                if (n >= gm_ListAmount((char *)st, g))
+                    n = gm_ListAmount((char *)st, g);
+                n = gm_FreeCapacity((char *)ci.pada8[3], s[0], n);
+                if (b->owner != o->id) {
+                    if (t->kind == 10)
                         price = (int)(gm_GoodsPrice(*g, ai_OwnPlayer) * 1.1f);
-                    else if (*t == 0x1c)
-                        price = (int)(gm_GoodsPrice(*g, b[0x65]) * 1.1f);
+                    else if (t->kind == 0x1c)
+                        price = (int)(gm_GoodsPrice(*g, b->playerSlot) * 1.1f);
                     else
-                        price = (int)(gm_GoodsPrice(*g, ai_OwnPlayer) * *(float *)(b + 0x49));
+                        price = (int)(gm_GoodsPrice(*g, ai_OwnPlayer) * b->priceFactor);
                 }
                 if (n > 0) {
-                    if (gm_CharCurrency(o, pl) < n * price) {
-                        io_TownDisplayName((char *)ai_PlayerSlots + pl * 0x2f4, name);
+                    if (gm_CharCurrency((char *)o, pl) < n * price) {
+                        io_TownDisplayName(ai_PlayerSlots[pl], name);
                         txt_Format(buf, 0x42f0, name, 0xc14, name, pl);
-                        he_ShowNews(*(int *)(o + 2), -1, buf, 0, 0x5ef, ch_EmptyName);
+                        he_ShowNews(o->netId, -1, buf, 0, 0x5ef, ch_EmptyName);
                     }
-                    cm_SendExSellObjectI(*(int *)(ci.stock + 2), *(int *)(st + 2), s[0], n, pl, price);
+                    cm_SendExSellObject(((AIOBJ *)ci.pada8[3])->objId, st->objId, s[0], n, pl, price);
                 }
             }
         }

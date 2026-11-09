@@ -12498,7 +12498,7 @@ void he_RunTransport(int ev)
             pl = ai_OwnPlayer;
             if (b->type == 0x47)
                 pl = (char)b->playerSlot;
-            rt_LoadAtPoint((char *)tr, pl);
+            rt_LoadAtPoint(tr, pl);
             e->exSlot = cm_SendExSetHEI(-1, ev);
             return;
         }
