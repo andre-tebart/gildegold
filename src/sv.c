@@ -967,6 +967,7 @@ extern char *ai_Goods;              /* 0x91aaf0 */
 #define ai_BTypesT (*(AIBTYPE **)&ai_BTypes)  /* 0x7e3f30, ai_BTypes (ahm.c: char *) as the AIBTYPE records it points to */
 #define sv_ClickedObjectT (*(D3OBJECT **)&ai_ClickedObject)  /* 0x6f22e4, ai_ClickedObject (cm.h: int) as the scene object picked (d3if_Pick) */
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
+#define ai_PlayerSlotsT (*(GMPLAYERSLOT (*)[4])&ai_PlayerSlots)  /* 0x7e3f40, ai_PlayerSlots (cm.h: char[][0x2f4]) as the four player slots */
 /* 0x479150, with d2.h's prototype (the 9 pushes of 0x522b38 agree: push 1, d2_ScreenSurf, 0x5b, d2_ScreenW - 0x6e, view, h, w, 0, 0) */
 extern int sv_ResearchClass, sv_ScreenDirty, sv_GroundplanBuilding, sv_GroundplanRoom, sv_GroundplanScene;  /* 0x6f233c, 0x6f2358, 0x6f235c, 0x6f2360, 0x623e8c */
 extern int sv_ResearchClass;  /* 0x6f233c, the class number of the research list the panel shows (gm_BuildingClass) */
@@ -3930,14 +3931,15 @@ void sv_UpdateCityPanel(unsigned char a, int b)
     void *shape;
     int pic;
     int h, n, who;
+    D2WIN *win;
 
-    if (SV_B(((unsigned)&ai_Chars + 0x2) + ai_PlayerId * 0x21c) != 6)
+    if (ai_CharsT[ai_PlayerId].kind != 6)
         return;
     /* 0x522f42: the grabbed view shape back onto the screen at the view rectangle. The skeleton called
        d2_ShpBlit(0, 0, 0), so the shape was whatever the stack held (a click on "Weiter" then crashed in
        d2_ShpBlit with esi = 1); the original pushes sv_ViewRectLeft, sv_ViewRectTop, d2_ScreenSurf,
        sv_ViewShape. */
-    if (SV_I((unsigned)&sv_ViewShape) != 0)
+    if (sv_ViewShape != 0)
         d2_ShpBlit(sv_ViewRectLeft, sv_ViewRectTop, (struct D2SURF *)d2_ScreenSurf, (struct D2SHP *)sv_ViewShape);
     if (a & 1) {
         if (sv_ButtonFamilyTree != -1) { d2_RemoveObj(sv_ButtonFamilyTree); sv_ButtonFamilyTree = -1; }
@@ -3950,57 +3952,57 @@ void sv_UpdateCityPanel(unsigned char a, int b)
         if (sv_ButtonMessages != -1) { d2_RemoveObj(sv_ButtonMessages); sv_ButtonMessages = -1; }
         if (sv_PanelBuildingIcon != -1) { d2_RemoveObj(sv_PanelBuildingIcon); sv_PanelBuildingIcon = -1; }
         if (sv_PanelCompass != -1) { d2_RemoveObj(sv_PanelCompass); sv_PanelCompass = -1; }
-        sv_ButtonFamilyTree = d2_WinOpenPic(0x10, 8, SV_I(((unsigned)&ai_CharSex + 0x4b) + ai_PlayerId * 0x21c), sv_BarWindow);
-        SV_WI(sv_ButtonFamilyTree, 0x1c0) = 0x43;
-        SV_WI(sv_ButtonFamilyTree, 0x4c) = 1;
+        sv_ButtonFamilyTree = d2_WinOpenPic(0x10, 8, ai_CharsT[ai_PlayerId].ref54, sv_BarWindow);
+        d2_Objs[sv_ButtonFamilyTree].style = 0x43;
+        d2_Objs[sv_ButtonFamilyTree].interactive = 1;
         sv_ButtonCompare = d2_WinOpenPic(0x23a, 0xd, 0x522, sv_BarWindow);
-        SV_WI(sv_ButtonCompare, 0x1c0) = 0x43;
-        SV_WI(sv_ButtonCompare, 0x4c) = 1;
+        d2_Objs[sv_ButtonCompare].style = 0x43;
+        d2_Objs[sv_ButtonCompare].interactive = 1;
         sv_ButtonPrivileges = d2_CreateWinText(0x39, 0xd, ch_EmptyName, sv_BarWindow);
-        SV_WI(sv_ButtonPrivileges, 0x1c0) = 0x43;
-        SV_WI(sv_ButtonPrivileges, 0x4c) = 1;
-        SV_WS(sv_ButtonPrivileges, 0x74) = 0x55;
+        d2_Objs[sv_ButtonPrivileges].style = 0x43;
+        d2_Objs[sv_ButtonPrivileges].interactive = 1;
+        d2_Objs[sv_ButtonPrivileges].font = 0x55;
         sv_ButtonPlayerStats = d2_CreatePicObjS(d2_ScreenW - 0x8d, d2_ScreenH - 0x73, 0x583);
-        SV_WI(sv_ButtonPlayerStats, 0x1c0) = 0x43;
-        SV_WI(sv_ButtonPlayerStats, 0x4c) = 1;
+        d2_Objs[sv_ButtonPlayerStats].style = 0x43;
+        d2_Objs[sv_ButtonPlayerStats].interactive = 1;
         sv_ButtonMessages = d2_CreatePicObjS(d2_ScreenW - 0x57, d2_ScreenH - 0x4f, 0x7d9);
-        SV_WI(sv_ButtonMessages, 0x1c0) = 3;
-        SV_WI(sv_ButtonMessages, 0x4c) = 1;
+        d2_Objs[sv_ButtonMessages].style = 3;
+        d2_Objs[sv_ButtonMessages].interactive = 1;
         sv_ButtonInventory = d2_CreatePicObjS(d2_ScreenW - 0x2a, d2_ScreenH - 0x66, 0x584);
-        SV_WI(sv_ButtonInventory, 0x1c0) = 0x43;
-        SV_WI(sv_ButtonInventory, 0x4c) = 1;
+        d2_Objs[sv_ButtonInventory].style = 0x43;
+        d2_Objs[sv_ButtonInventory].interactive = 1;
         sv_PanelBuildingIcon = d2_CreatePicObjS(d2_ScreenW - 0x4a, 0xd6, 0x585);
-        SV_WI(sv_PanelBuildingIcon, 0x1c0) = 0x43;
-        SV_WI(sv_PanelBuildingIcon, 0x4c) = 1;
+        d2_Objs[sv_PanelBuildingIcon].style = 0x43;
+        d2_Objs[sv_PanelBuildingIcon].interactive = 1;
         sv_PanelCompass = d2_CreatePicObjS(d2_ScreenW - 0x48, 0xd7, 0x551);
-        SV_WI(sv_PanelCompass, 0x1c0) = 0x43;
-        SV_WI(sv_PanelCompass, 0x4c) = 1;
-        SV_WI(sv_PanelCompass, 0x18) = 8;
+        d2_Objs[sv_PanelCompass].style = 0x43;
+        d2_Objs[sv_PanelCompass].interactive = 1;
+        d2_Objs[sv_PanelCompass].type = 8;
         sv_PanelMoneyText = d2_CreateScreenText(d2_ScreenW - 0x6a, d2_ScreenH - 0x7e, ch_EmptyName);
-        SV_WI(sv_PanelMoneyText, 0x5c) = 1;
-        SV_WS(sv_PanelMoneyText, 0x74) = 0x54;
-        SV_WS(sv_PanelMoneyText, 0x14) = 0x6b;
-        SV_WS(sv_PanelMoneyText, 0x16) = 0x20;
+        d2_Objs[sv_PanelMoneyText].centred = 1;
+        d2_Objs[sv_PanelMoneyText].font = 0x54;
+        d2_Objs[sv_PanelMoneyText].w = 0x6b;
+        d2_Objs[sv_PanelMoneyText].h = 0x20;
     } else {
         /* the texts of the six plates come from the text lists 0x1441ec8 .. 0x1441ee0 (or are cleared) */
-        if (SV_B((unsigned)&ai_OptionPanelHelp) != 0) {
-            if (sv_ButtonFamilyTree != -1) strcpy(SV_W(sv_ButtonFamilyTree) + 0xbc, SV_C(((unsigned)&ai_MessageFilterTexts + 0x9d4)));
-            if (sv_ButtonCompare != -1) strcpy(SV_W(sv_ButtonCompare) + 0xbc, SV_C(((unsigned)&ai_MessageFilterTexts + 0x9e0)));
-            if (sv_ButtonPrivileges != -1) strcpy(SV_W(sv_ButtonPrivileges) + 0xbc, SV_C(((unsigned)&ai_MessageFilterTexts + 0x9d0)));
-            if (sv_ButtonPlayerStats != -1) strcpy(SV_W(sv_ButtonPlayerStats) + 0xbc, SV_C(((unsigned)&ai_MessageFilterTexts + 0x9cc)));
-            if (sv_ButtonInventory != -1) strcpy(SV_W(sv_ButtonInventory) + 0xbc, SV_C(((unsigned)&ai_MessageFilterTexts + 0x9c8)));
-            if (sv_PanelCompass != -1) strcpy(SV_W(sv_PanelCompass) + 0xbc, SV_C(((unsigned)&ai_MessageFilterTexts + 0x9d8)));
+        if (ai_OptionPanelHelp.byte[0] != 0) {
+            if (sv_ButtonFamilyTree != -1) strcpy(d2_Objs[sv_ButtonFamilyTree].caption, txt_Ptrs[0x1f45]);
+            if (sv_ButtonCompare != -1) strcpy(d2_Objs[sv_ButtonCompare].caption, txt_Ptrs[0x1f48]);
+            if (sv_ButtonPrivileges != -1) strcpy(d2_Objs[sv_ButtonPrivileges].caption, txt_Ptrs[0x1f44]);
+            if (sv_ButtonPlayerStats != -1) strcpy(d2_Objs[sv_ButtonPlayerStats].caption, txt_Ptrs[0x1f43]);
+            if (sv_ButtonInventory != -1) strcpy(d2_Objs[sv_ButtonInventory].caption, txt_Ptrs[0x1f42]);
+            if (sv_PanelCompass != -1) strcpy(d2_Objs[sv_PanelCompass].caption, txt_Ptrs[0x1f46]);
         } else {
-            if (sv_ButtonFamilyTree != -1) SV_WB(sv_ButtonFamilyTree, 0xbc) = ch_EmptyName[0];
-            if (sv_ButtonCompare != -1) SV_WB(sv_ButtonCompare, 0xbc) = ch_EmptyName[0];
-            if (sv_ButtonPrivileges != -1) SV_WB(sv_ButtonPrivileges, 0xbc) = ch_EmptyName[0];
-            if (sv_ButtonPlayerStats != -1) SV_WB(sv_ButtonPlayerStats, 0xbc) = ch_EmptyName[0];
-            if (sv_ButtonInventory != -1) SV_WB(sv_ButtonInventory, 0xbc) = ch_EmptyName[0];
-            if (sv_PanelCompass != -1) SV_WB(sv_PanelCompass, 0xbc) = ch_EmptyName[0];
+            if (sv_ButtonFamilyTree != -1) d2_Objs[sv_ButtonFamilyTree].caption[0] = ch_EmptyName[0];
+            if (sv_ButtonCompare != -1) d2_Objs[sv_ButtonCompare].caption[0] = ch_EmptyName[0];
+            if (sv_ButtonPrivileges != -1) d2_Objs[sv_ButtonPrivileges].caption[0] = ch_EmptyName[0];
+            if (sv_ButtonPlayerStats != -1) d2_Objs[sv_ButtonPlayerStats].caption[0] = ch_EmptyName[0];
+            if (sv_ButtonInventory != -1) d2_Objs[sv_ButtonInventory].caption[0] = ch_EmptyName[0];
+            if (sv_PanelCompass != -1) d2_Objs[sv_PanelCompass].caption[0] = ch_EmptyName[0];
         }
         sv_UpdateGroundplan(b);
         d2_SetFont(0x55);
-        gm_ClockToDate((struct AITIME *)&ai_Time, (unsigned char *)&t);
+        gm_ClockToDate(&ai_Time, (unsigned char *)&t);
         if (ls_GetLanguage() == 2) {
             sprintf(buf, "%s A.D.%i", d2_Strings[0x4c + gm_Season((char *)&t)], t.year);
             d2_DrawText(d2_Wins[sv_BarWindow].x + 0x181, 0x17, d2_ScreenSurf, buf, 0);
@@ -4008,30 +4010,26 @@ void sv_UpdateCityPanel(unsigned char a, int b)
             sprintf(buf, "%s A.D.%i", d2_Strings[0x4c + gm_Season((char *)&t)], t.year);
             d2_DrawText(d2_Wins[sv_BarWindow].x + 0x195, 0x17, d2_ScreenSurf, buf, 0);
         }
-        h = (int)((SV_I(((unsigned)&ai_Time + 0x6)) % 0x3c) * 0.8);
+        h = (int)((ai_Time.min % 0x3c) * 0.8);
         shape = d2_GetPic(0x581);
         d2_DrawShape(d2_ScreenW - 0x50, 0x11, d2_ScreenSurf, shape, h);
-        d2_AddDirty(d2_ScreenW - 0x50, 0x11, SV_S((unsigned)&d2_ShpW), SV_S((unsigned)&d2_ShpH));
-        h = (int)((float)((SV_US((unsigned)&ai_Time.hour) * 0x3c + SV_I(((unsigned)&ai_Time + 0x6))) * 4.0) / 60.0) % 0x30;
+        d2_AddDirty(d2_ScreenW - 0x50, 0x11, d2_ShpW, d2_ShpH);
+        h = (int)((float)((ai_Time.hour * 0x3c + ai_Time.min) * 4.0) / 60.0) % 0x30;
         shape = d2_GetPic(0x582);
         d2_DrawShape(d2_ScreenW - 0x50, 0x11, d2_ScreenSurf, shape, h);
-        d2_AddDirty(d2_ScreenW - 0x50, 0x11, SV_S((unsigned)&d2_ShpW), SV_S((unsigned)&d2_ShpH));
-        if (SV_I((unsigned)&d2_HitUnderPointer) == sv_AdvanceHit) {
-            sprintf(buf, "%02i:%02i", SV_US((unsigned)&ai_Time.hour), SV_I(((unsigned)&ai_Time + 0x6)));
+        d2_AddDirty(d2_ScreenW - 0x50, 0x11, d2_ShpW, d2_ShpH);
+        if (d2_HitUnderPointer == sv_AdvanceHit) {
+            sprintf(buf, "%02i:%02i", ai_Time.hour, ai_Time.min);
             d2_SetFont(0x54);
             d2_DrawTextBox(d2_ScreenW - 0x50, 2, 0x2e, 0x14, d2_ScreenSurf, buf, 0x28);
-            d2_AddDirty(d2_ScreenW - 0x50, 2, SV_I((unsigned)&d2_TextDrawnW), SV_I((unsigned)&d2_TextDrawnH));
+            d2_AddDirty(d2_ScreenW - 0x50, 2, d2_TextDrawnW, d2_TextDrawnH);
             d2_SetFont(0x55);
         }
-        if (SV_I((unsigned)&ai_FallbackBuilding) == 0 && SV_I((unsigned)&ai_PlayerBuilding) == 0 && sv_PanelCompass != -1) {
-            if (sv_PanelBuildingIcon != -1) {
-                d2_EnableObject(sv_PanelBuildingIcon, 0);
-                d2_EnableObject(sv_PanelCompass, 1);
-                h = (int)((float)fmod(d3_Camera->rotation.y, 6.2831853f) * 0.15915494f * 48.0 + 48.5) % 0x30;
-                SV_WI(sv_PanelCompass, 0x78) = h;
-            } else {
-                d2_EnableObject(sv_PanelCompass, 0);
-            }
+        if (ai_FallbackBuilding == 0 && ai_PlayerBuilding == 0 && sv_PanelCompass != -1 && sv_PanelBuildingIcon != -1) {
+            d2_EnableObject(sv_PanelBuildingIcon, 0);
+            d2_EnableObject(sv_PanelCompass, 1);
+            h = (int)((float)fmod(d3_Camera->rotation.y, 6.2831853f) * 0.15915494f * 48.0 + 48.5) % 0x30;
+            d2_Objs[sv_PanelCompass].input = h;
         } else {
             if (sv_PanelBuildingIcon != -1)
                 d2_EnableObject(sv_PanelBuildingIcon, 1);
@@ -4044,13 +4042,13 @@ void sv_UpdateCityPanel(unsigned char a, int b)
             strcpy(buf, name);
             d2_SetObjText(sv_ButtonPrivileges, buf);
         }
-        sprintf(buf, "%i", SV_I(((unsigned)&ai_Selected + 0xc) + ai_PlayerId * 0x21c));
+        sprintf(buf, "%i", ai_CharsT[ai_PlayerId].money);
         d2_DrawText(d2_Wins[sv_BarWindow].x + 0x23a, 0x17, d2_ScreenSurf, buf, 0);
         if (sv_ButtonCompare != -1)
-            d2_MoveObj(d2_Wins[sv_BarWindow].x + SV_S((unsigned)&d2_TextDrawnW) + 0x23d, 0x18, sv_ButtonCompare);
-        if (SV_I((unsigned)&ai_PlayerBuilding) == 0 && SV_I((unsigned)&ai_FallbackBuilding) == 0) {
+            d2_MoveObj(d2_Wins[sv_BarWindow].x + (short)d2_TextDrawnW + 0x23d, 0x18, sv_ButtonCompare);
+        if (ai_PlayerBuilding == 0 && ai_FallbackBuilding == 0) {
             if (sv_ButtonCityStats == -1) {
-                strcpy(name, (char *)(unsigned)&ai_PlayerSlots + SV_B((unsigned)&ai_OwnPlayer) * 0x2f4);
+                strcpy(name, ai_PlayerSlotsT[ai_OwnPlayer].name);
                 _strupr(name);
                 sprintf(arms, "_STADTWAPPEN_%s", name);
                 pic = d2_FindPic(arms);
@@ -4058,31 +4056,31 @@ void sv_UpdateCityPanel(unsigned char a, int b)
                     sv_ButtonCityStats = d2_CreatePicObjS(d2_ScreenW - 0x6e, 0x5b, pic);
                 else
                     sv_ButtonCityStats = d2_CreatePicObjS(d2_ScreenW - 0x6e, 0x5b, 0x5b1);
-                SV_WI(sv_ButtonCityStats, 0x1c0) = 0x43;
-                SV_WI(sv_ButtonCityStats, 0x4c) = 1;
+                d2_Objs[sv_ButtonCityStats].style = 0x43;
+                d2_Objs[sv_ButtonCityStats].interactive = 1;
             }
-            if (SV_B((unsigned)&ai_OptionPanelHelp) != 0) {
-                if (sv_ButtonCityStats != -1) strcpy(SV_W(sv_ButtonCityStats) + 0xbc, SV_C(((unsigned)&ai_MessageFilterTexts + 0x9dc)));
+            if (ai_OptionPanelHelp.byte[0] != 0) {
+                if (sv_ButtonCityStats != -1) strcpy(d2_Objs[sv_ButtonCityStats].caption, txt_Ptrs[0x1f47]);
             } else if (sv_ButtonCityStats != -1)
-                SV_WB(sv_ButtonCityStats, 0xbc) = ch_EmptyName[0];
+                d2_Objs[sv_ButtonCityStats].caption[0] = ch_EmptyName[0];
             d2_SetFont(0x56);
-            strcpy(name, (char *)((unsigned)&ai_PlayerSlots + 0x20) + SV_B((unsigned)&ai_OwnPlayer) * 0x2f4);
+            strcpy(name, ai_PlayerSlotsT[ai_OwnPlayer].townName);
             d2_DrawTextBox(d2_ScreenW - 0x70, 0x5d, 0x68, 0x14, d2_ScreenSurf, name, 8);
-            d2_AddDirty(d2_ScreenW - 0x70, 0x5d, SV_I((unsigned)&d2_TextDrawnW), SV_I((unsigned)&d2_TextDrawnH));
+            d2_AddDirty(d2_ScreenW - 0x70, 0x5d, d2_TextDrawnW, d2_TextDrawnH);
         } else if (sv_ButtonCityStats != -1) {
             d2_RemoveObj(sv_ButtonCityStats);
             sv_ButtonCityStats = -1;
         }
         d2_SetFont(0x54);
-        if (SV_I((unsigned)&sv_ResearchClass) == 0) {
-            if (SV_I((unsigned)&ai_FallbackBuilding) != 0 && SV_B(SV_I((unsigned)&ai_FallbackBuilding)) == 0x47)
-                who = *(int *)(SV_I((unsigned)&ai_FallbackBuilding) + 0x65);
+        if (sv_ResearchClass == 0) {
+            if (ai_FallbackBuilding != 0 && ((AIBLD *)ai_FallbackBuilding)->type == 0x47)
+                who = ((AIBLD *)ai_FallbackBuilding)->playerSlot;
             else
-                who = SV_B((unsigned)&ai_OwnPlayer);
-            n = gm_SumSlotAmounts(SV_I(((unsigned)&ai_Unk770cec + 0xc) + ai_PlayerId * 0x21c), who) + sv_PendingMoney;
+                who = ai_OwnPlayer;
+            n = gm_SumSlotAmounts((void *)ai_CharsT[ai_PlayerId].inventory, who) + sv_PendingMoney;
         } else {
-            n = ((int (*)(void *))gm_SumListAmounts)(*(int *)(gm_PlayerSeat(SV_I((unsigned)&sv_ResearchClass)) + 0x14)) + sv_PendingMoney;
-            who = SV_B((unsigned)&ai_OwnPlayer);
+            n = ((int (*)(void *))gm_SumListAmounts)(((AIOBJ *)gm_PlayerSeat(sv_ResearchClass))->list) + sv_PendingMoney;
+            who = ai_OwnPlayer;
         }
         if (sv_PanelMoneyText != -1) {
             if (n != 0) {
@@ -4091,15 +4089,15 @@ void sv_UpdateCityPanel(unsigned char a, int b)
                                                                     the same owner index, for the %w city name */
                 d2_SetObjText(sv_PanelMoneyText, buf);
             } else
-                d2_SetObjText(sv_PanelMoneyText, SV_C(((unsigned)&ai_MessageFilterTexts + 0x8c0)));
+                d2_SetObjText(sv_PanelMoneyText, txt_Ptrs[0x1f00]);
         }
     }
-    if (sv_ButtonFamilyTree != -1 && SV_WI(sv_ButtonFamilyTree, 8) != SV_I(((unsigned)&ai_CharSex + 0x4b) + ai_PlayerId * 0x21c)) {
+    if (sv_ButtonFamilyTree != -1 && d2_Objs[sv_ButtonFamilyTree].pic != ai_CharsT[ai_PlayerId].ref54) {
         d2_RemoveObj(sv_ButtonFamilyTree);
         sv_ButtonFamilyTree = -1;
-        sv_ButtonFamilyTree = d2_WinOpenPic(0x10, 8, SV_I(((unsigned)&ai_CharSex + 0x4b) + ai_PlayerId * 0x21c), sv_BarWindow);
-        SV_WI(sv_ButtonFamilyTree, 0x1c0) = 3;
-        SV_WI(sv_ButtonFamilyTree, 0x4c) = 1;
+        sv_ButtonFamilyTree = d2_WinOpenPic(0x10, 8, ai_CharsT[ai_PlayerId].ref54, sv_BarWindow);
+        d2_Objs[sv_ButtonFamilyTree].style = 3;
+        d2_Objs[sv_ButtonFamilyTree].interactive = 1;
     }
     if (he_BarShown >= 0) {
         if (he_LastSlot > 3) {
@@ -4113,11 +4111,13 @@ void sv_UpdateCityPanel(unsigned char a, int b)
         if (sv_BarSlots != he_LastSlot || (d2_ClickedId != -1 && d2_PointerObj == sv_BarToggle)) {
             if (sv_BarMoved != 0) {
                 d2_SetForm(he_BarView, 0);
-                d2_MoveObj(d2_ScreenW - (he_LastSlot << 5) - 0x1d, d2_Wins[d2_LastWindow].y, d2_Wins[d2_LastWindow].parent);
+                win = &d2_Wins[d2_LastWindow];
+                d2_MoveObj(d2_ScreenW - (he_LastSlot << 5) - 0x1d, win->y, win->parent);
                 d2_MoveObj(d2_ScreenW - (he_LastSlot << 5) - 0x4d, d2_ScreenH - 0x21, sv_BarToggle);
             } else {
                 d2_SetForm(he_BarView, 0);
-                d2_MoveObj(d2_ScreenW - 0x7d, d2_Wins[d2_LastWindow].y, d2_Wins[d2_LastWindow].parent);
+                win = &d2_Wins[d2_LastWindow];
+                d2_MoveObj(d2_ScreenW - 0x7d, win->y, win->parent);
                 d2_MoveObj(d2_ScreenW - 0xad, d2_ScreenH - 0x21, sv_BarToggle);
             }
             sv_BarSlots = he_LastSlot;
