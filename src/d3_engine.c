@@ -803,21 +803,22 @@ void d3_SetFogRange(float start, float end)
 }
 /* 0x43a6f0, turns the fog on (start < end: sets the range through d3_SetFogRange) or off (start >= end:
    restores the viewport when the fog was on), then stores the fog range, the on flag and the colour
-   @hard read the whole function against the original 0x43a6f0..0x43a7c6 and rebuilt its structure: two
-   exits with char on in bl (mov bl,1 in the start<end arm, xor bl,bl in the other), the shared tail in the
-   original's order (FogOn, FogStart1, FogEnd2, colour), the start<end / else split with the else's
-   conditional d3_SetViewport; renamed the viewport's two int globals d3_ScreenW/d3_ScreenH (Q2) and wrote
-   the description (Q6), readability readable. Tried six source forms: shared tail with the tail in path2's
-   order and in path1's order, duplicated stores per arm, early return in the start<end arm, char on = 1
-   inside the outer if, and the inverted start >= end condition (that flips the FPU test to 'and eax,0x100;
-   jne', wrong). Left: ours 52 vs the original 60 instructions and one code hunk from +0x2a to +0x51: the
-   original keeps a copy of the tail inline in the start<end arm ('mov eax,[esp+0x14] / mov edx,[esp+0x10]
-   / add esp,8 / mov [d3_FogEnd2],eax / mov eax,[esp+0x10] / mov [d3_FogOn],bl / mov [d3_FogStart1],edx /
-   mov [d3_fog_color],eax / pop ebx / ret') where ours has 'add esp,8 / jmp' to the merged tail (the
-   original's store4 [0xfc5340] at +0x2a is that copy; our start<end arm reaches the same four stores
-   through the jmp at +0x33), and the other hunk is the same d3_SetViewport call under an eax/ecx/edx
-   rotation (the M8 refs are that one-instruction shift). No source form I tried makes this VC6 duplicate
-   that tail. */
+   @deep read the whole function against the original 0x43a6f0..0x43a7c6: the same tests, the same
+   d3_SetFogRange / d3_SetViewport calls with the same arguments, the same four stores (FogOn=bl,
+   FogStart1=start, FogEnd2=end, fog_color=color) on both paths, bl=1 / bl=0 per arm. Left: VC6 tail
+   duplication only - the original keeps a copy of the store tail inline in the start<end arm (+0x2b 'mov
+   eax,[esp+0x14] / mov edx,[esp+0x10] / add esp,8 / mov [d3_FogEnd2],eax / mov eax,[esp+0x10] / mov
+   [d3_FogOn],bl / mov [d3_FogStart1],edx / mov [d3_fog_color],eax / pop ebx / ret') where ours has 'add
+   esp,8 / jmp' to the merged tail; the copy uses bl (not the constant 1), so it is made after allocation,
+   not by the source. The M8 lines are the one-instruction alignment shift of the d3_SetViewport pushes
+   under an eax/ecx/edx rotation and of the tail's stores. Tried (this and an earlier session): shared tail
+   in either order, duplicated stores per arm with return (gives 'mov [d3_FogOn],1' constants, wrong), on =
+   start < end, early return, on=1 inside the outer if, inverted condition. A variant round over the
+   statement form is what is left. (references: M8 at +0x4b: ours refers to d3_ScreenH (0xfc2df0), the
+   original's field to 0xfc2df4 (d3_ScreenW) (and 9 more), explained: the original's store4 [d3_FogEnd2] at
+   +0x2a is the first store of the duplicated tail copy in the start<end arm; ours does the same four
+   stores on that path through the jmp to the merged tail; the M8 refs are alignment shifts of identical
+   push/store sequences (asmdiff --symbols shows the same objects on both sides, offset by one line)) */
 
 void d3_SetFog(float start, float end, unsigned long color)
 {
