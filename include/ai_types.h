@@ -516,6 +516,12 @@ typedef struct AIMSG {                  /* 0xf8 bytes, given to cm_SendLongMessa
                     int car;                    /* 0x58, the character the message is for (G14MSG.id) */
                     unsigned short type;        /* 0x5c, the message type 0 .. 0x44 (G14MSG.type) */
                 } aiMsg;
+                struct {                        /* the goods orders 0x14 / 0x15 (ai_SendJobOrders); arg[1] / arg[2] carry
+                                                   the workshop's object */
+                    unsigned char count;        /* 0x58, how many workers the order names (its nIds) */
+                    char pad59;
+                    unsigned short item;        /* 0x5a, the good to make (AIENTRY.item) */
+                } goodsOrder;
                 struct {                        /* the rank message 0x69 (gv_CheckRankUp) */
                     unsigned char rank;         /* 0x58, the new rank (AICHAR.b00d) */
                     char pad59[3];
