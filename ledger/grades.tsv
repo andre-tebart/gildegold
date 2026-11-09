@@ -1049,7 +1049,7 @@ exe	0x00458ce0	d3_MatToWorld	d3_pose	byte	readable
 exe	0x00458da0	d3_WorldMatrix	d3_pose	byte	readable		
 exe	0x00458e70	d3_EnvMapCoords	d3_vtx	shape	readable		
 exe	0x004591a0	d3_AnimBlendWeights	d3_vtx	byte	readable		
-exe	0x00459300	d3_TransformVerts	d3_vtx	draft	readable	deep	
+exe	0x00459300	d3_TransformVerts	d3_vtx	draft	readable	stuck	
 exe	0x004598d0	d3_TransformNormals	d3_vtx	byte	readable		
 exe	0x00459980	d3_FrameNormals	d3_vtx	byte	readable		
 exe	0x00459ab0	d3_GetBoxVerts	d3_vtx	shape	readable		
@@ -1945,7 +1945,7 @@ exe	0x004b4630	ai_CondMoney	mission	byte	readable
 exe	0x004b4670	ai_CondSkills	mission	byte	readable		
 exe	0x004b46c0	ai_CondOfficeTimed	mission	byte	readable		
 exe	0x004b46f0	ai_CondOldBuilding	mission	byte	readable		
-exe	0x004b4760	ai_HasThreeStockedBuildings	mission	draft	readable	deep	
+exe	0x004b4760	ai_HasThreeStockedBuildings	mission	byte	readable		
 exe	0x004b4830	ai_CondMissionMoney02	mission	byte	readable		
 exe	0x004b4870	ai_CondMissionMoney1	mission	byte	readable		
 exe	0x004b48b0	ai_CondMissionMoney4	mission	byte	readable		
@@ -1969,11 +1969,11 @@ exe	0x004b5360	ai_MissionInfoDialog	mission	byte	readable
 exe	0x004b5460	ai_MissionSuccessDialog	mission	shape	readable	deep	
 exe	0x004b58b0	ai_MissionEndDialog	mission	shape	readable	deep	
 exe	0x004b5950	ai_QuitGame	mission	byte	readable		
-exe	0x004b5970	ai_MissionCompleteDialog	mission	draft	readable	deep	
+exe	0x004b5970	ai_MissionCompleteDialog	mission	byte	readable		
 exe	0x004b5c20	ai_MissionNextDialog	mission	byte	readable		
 exe	0x004b5ef0	ai_MissionCompleteByMode	mission	byte	readable		
-exe	0x004b5f10	ai_MissionResultDialog	mission	draft	readable	deep	
-exe	0x004b6040	ai_MissionPartnerDialog	mission	shape	readable		
+exe	0x004b5f10	ai_MissionResultDialog	mission	byte	readable		
+exe	0x004b6040	ai_MissionPartnerDialog	mission	byte	readable		
 exe	0x004b60f0	ai_MissionResultByMode	mission	byte	readable		
 exe	0x004b6110	ai_MissionCompleteSingle	mission	shape	readable		
 exe	0x004b62a0	ai_MissionCompleteSequence	mission	byte	readable		
@@ -2110,7 +2110,7 @@ exe	0x004bf5b0	rt_EditCartRoute	rt	byte	readable
 exe	0x004bfa40	rt_UnloadAtPoint	rt	byte	readable		
 exe	0x004bfc60	rt_LoadAtPoint	rt	shape	readable		
 exe	0x004bff40	rt_SaveRoutes	rt	byte	readable		
-exe	0x004c0040	rt_LoadRoutes	rt	draft	readable	deep	
+exe	0x004c0040	rt_LoadRoutes	rt	draft	readable	stuck	
 exe	0x004c01b0	snd_ClearQueue	f3snd	byte	readable		
 exe	0x004c0210	snd_QueueTail	f3snd	byte	readable		
 exe	0x004c0230	snd_AddToQueue	f3snd	byte	readable		
