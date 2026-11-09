@@ -1324,8 +1324,8 @@ void d3_SetHardwareMode(int on)
     }
 }
 /* 0x43bc20, starts the engine: copies the configuration, sets the display mode (and Direct3D), allocates
-   the sort buffers and the shadow object, sets the viewport and fills the noise table.
-   @deep Q2: d3io_NoopCallback has no evidence (d3_io_a.c 0x44ee40: the empty no-op triangle filler assigned to d3_TriFuncs[0..5], called with different signatures, recorded @deep there); the stock list's head sentinel d3_Unkfc2e00 (its next is d3_StockListHead; the sentinels' links are D3BGF / D3ANIMDATA fields) and the flags d3_Unkfc3000 / d3_Unkfe7400 / d3_Unkfc5064 / d3_Unkfc5065 / d3_Unkfe7600 / d3_Unkfe75bc are only stored here (write-only, no reader); d3s_Object = d3s_Object would need its extern moved to d3s.h, which flipped d3_CloneObject and d3_MirDrawObject when tried; dd_RBits / 1463580 / 1464fbd are dd_RBits / dd_GBits / dd_BBits (dd_vesa.c) but d3_d3d.h declares them char where dd_vesa.c defines unsigned char and d3_d3d.c 0x436xxx reads them (the byte-matched use needs the unsigned char view). Renamed this session: d3_Camera / d3_Scenes / d3io_StockDir / d3_ShadeInit / d3fl_Init / par_Init. Q4: the D3_ZERO_AT-style macro raw dereference. */
+   the sort buffers and the shadow object, sets the viewport and fills the noise table; clears
+   d3_Cfg.maxhicol and the write-only flags. unk is the instance, handed to dd_Init / d3d_Init / dd_SetMode. */
 
 char d3_Init(D3INITCFG *cfg, HWND wnd, int unk)
 {
@@ -1354,8 +1354,8 @@ char d3_Init(D3INITCFG *cfg, HWND wnd, int unk)
     for (i = 0; i < 128; i++)
         d3_ClipPool[i].flags &= 0x7f;
     d3_ClipNone = 6;
-    d3_Unkfc5064 = 0;
-    d3_Unkfc5065 = 0;
+    d3_ClipFlagA = 0;
+    d3_ClipFlagB = 0;
     dd_SetClipRect((int)d3_Cfg.viewX, (int)d3_Cfg.viewY, (int)(d3_Cfg.viewW + d3_Cfg.viewX - 1.0f),
                    (int)(d3_Cfg.viewH + d3_Cfg.viewY - 1.0f));
     d3_TriFuncs[0] = d3io_NoopCallback;
@@ -1386,7 +1386,7 @@ char d3_Init(D3INITCFG *cfg, HWND wnd, int unk)
     d3io_StockDir = 0;
     d3_ShadeInit(0x200, 1);
     d3_FrameCount = 0;
-    d3_Unkfe7400 = 0;
+    d3_Cfg.maxhicol = 0;
     tex_Init(d3_Cfg.texcount, 0, d3_Cfg.texParam, 0x40);
     if (d3_D3DActive) {
         d3_D3DActive = d3d_CreateDevice(8, d3_Cfg.texbpp, dd_RBits + dd_GBits + dd_BBits, d3_Cfg.zbpp);
@@ -1412,13 +1412,13 @@ char d3_Init(D3INITCFG *cfg, HWND wnd, int unk)
     d3_AllocObjectPolys(d3s_Object->info);
     d3s_Object->info->nkeys = 0;
     d3s_Object->info->ntris = 0;
-    d3_SetHardwareMode((*(struct D3BITS8 *)&d3_D3DActive).on);
+    d3_SetHardwareMode(d3_D3DActiveBits.on);
     d3_EngineReady = 1;
     d3_SetViewport(d3_Cfg.viewW, d3_Cfg.viewH, d3_Cfg.viewX, d3_Cfg.viewY, d3_Cfg.zn, d3_Cfg.zf, d3_Cfg.scale,
                    d3_Cfg.w, d3_Cfg.h);
     d3_CurrentScene = 0;
-    d3_Unkfe7600 = (float)atan2(d3_HalfW, d3_ScaleX);
-    d3_Unkfe75bc = (float)atan2(d3_HalfH, d3_ScaleY);
+    d3_HalfAngleX = (float)atan2(d3_HalfW, d3_ScaleX);
+    d3_HalfAngleY = (float)atan2(d3_HalfH, d3_ScaleY);
     D3_ZERO_AT(offset d3_Scenes, sizeof(d3_Scenes));
     for (i = 0; i < 256; i++)
         for (k = 0; k < 256; k++)
@@ -2716,8 +2716,8 @@ D3BGF d3_StockListEnd = {0};  /* 0xfc4a40, the end sentinel of the stock object 
 float d3_FovY = 0;  /* 0xfc4c4c, half the vertical view angle (d3_FovX the horizontal one) */
 D3CVERT * d3_ClipList[2][0x80] = {0};  /* 0xfc4c60, polygon vertex lists (ping-pong) */
 int d3_ClipNone = 0;  /* 0xfc5060 */
-unsigned char d3_Unkfc5064 = 0;  /* 0xfc5064 */
-unsigned char d3_Unkfc5065 = 0;  /* 0xfc5065 */
+unsigned char d3_ClipFlagA = 0;  /* 0xfc5064 */
+unsigned char d3_ClipFlagB = 0;  /* 0xfc5065 */
 D3VECTOR4 d3_Planes[6] = {0};  /* 0xfc5068, side planes of the view frustum (normal, distance); the code writes 6 */
 D3SORTENT * d3_RadixDst = 0;  /* 0xfc50c8 */
 D3OBJECT d3_TopHead = {0};  /* 0xfc5100, list start marker */
@@ -2748,12 +2748,12 @@ D3ANIMDATA d3anim_Tail = {0}; /* 0xfe7440, the end sentinel of the animation cac
 int d3_DrawnVerts = 0;  /* 0xfe75b0, vertices drawn this frame (d3_DrawSorted resets it) */
 int d3_TextureSwitches = 0;  /* 0xfe75b4 */
 float d3_HalfH = 0;  /* 0xfe75b8 */
-float d3_Unkfe75bc = 0;  /* 0xfe75bc */
+float d3_HalfAngleY = 0;  /* 0xfe75bc */
 D3SORTENT * d3_SortTmp = 0;  /* 0xfe75c0 */
 D3TRIFUNC d3_TriFuncs[6] = {0};  /* 0xfe75e0, software triangle fillers by mode */
 float d3_HalfW = 0;  /* 0xfe75f8 */
 float d3_CenterX = 0;  /* 0xfe75fc */
-float d3_Unkfe7600 = 0;  /* 0xfe7600 */
+float d3_HalfAngleX = 0;  /* 0xfe7600 */
 float d3_CenterY = 0;  /* 0xfe7604 */
 /* d3_ShadowMode: view of d3d_Config (tools/data_views.py) */
 

@@ -204,6 +204,7 @@ extern int d3_VertCount;                /* 0xfc2dc4 */
 extern int d3_DrawnVerts;              /* 0xfe75b0, vertices drawn this frame (d3_DrawSorted resets it) */
 /* a byte read as an int bitfield (mov dword; and 0xff): d3_Init passes d3_D3DActive so */
 struct D3BITS8 { unsigned int on : 8; };
+#define d3_D3DActiveBits (*(struct D3BITS8 *)&d3_Active)  /* 0x63345c */
 extern unsigned char d3_EngineReady;          /* 0x633451, engine up: set at the end of d3_Init, cleared in d3_Shutdown */
 struct D3BITS3 { unsigned char mode : 3; };  /* d3_ShadowMode (0xfe7671) is a view of d3d_Config + 1 (data_views.h): bit 0 = object shadows on (d3_UpdateObject / d3_Render); set by d3_ApplyGraphicsOptions */
 extern unsigned char d3_MipSkip;          /* 0x63342c, d3_d3d.c */
@@ -524,15 +525,15 @@ void d3_Shutdown(void);                     /* 0x43c240, stops the engine */
    spelling them as struct fields costs d3_MirDrawObject's and d3sm_GetGround's byte grade (the load
    schedule changes).  The two ledger overlaps are the price; the macro form is in the note. */
 extern int d3_ClipNone;                    /* 0xfc5060 */
-extern unsigned char d3_Unkfc5064, d3_Unkfc5065;  /* 0xfc5064, 0xfc5065 */
+extern unsigned char d3_ClipFlagA, d3_ClipFlagB;  /* 0xfc5064, 0xfc5065, cleared by d3_Init, no reader (the names are a reasoned guess) */
 extern D3OBJECT d3_TopHead;               /* 0xfc5100, list start marker */
 #ifndef DATA_VIEWS_H
 extern int d3_Unkfe7400;                /* 0xfe7400 */
 #endif
 extern char d3_DefaultD3DConfig[];          /* 0x5fb5b4 */
 extern unsigned char dd_BBits, dd_GBits, dd_RBits;  /* 0x1464fbd, 0x1463580, 0x1463570 */
-extern float d3_Unkfe7600;              /* 0xfe7600 */
-extern float d3_Unkfe75bc;              /* 0xfe75bc */
+extern float d3_HalfAngleX;              /* 0xfe7600, atan2(d3_HalfW, d3_ScaleX) (d3_Init), no reader */
+extern float d3_HalfAngleY;              /* 0xfe75bc, atan2(d3_HalfH, d3_ScaleY) (d3_Init), no reader */
 extern unsigned char d3_Noise[256][256];    /* 0xfc7b80 */
 void d3io_NoopCallback(void *t);               /* 0x44ee40 */
 char dd_Init(int mode, int bpp, HWND parent, int unk);                                  /* 0x41cfb0, dd_vesa.c */
