@@ -59,6 +59,7 @@
 #include "d3_pose.h"
 #include "ch.h"
 #include "txt.h"                      /* txt_Language */
+#include "bio.h"
 #define util_RandomU ((unsigned short (*)(int))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original this unit's callers read the 16-bit result (byte-matched ch_RandomNear 0x405160, ai_CalcMeisterBank 0x4836a0, cm_FightLoop 0x4d88c0 move it as a word / movzx) */
 #define sb_PlaySampleI ((struct SBSAMPLE *(*)(int, char *, int, int, int, int, int))sb_PlaySample)  /* 0x426fa0 (sblib.c: SBBANK *bank): this unit passes the bank as an int */
 #define sb_SetVolumeI ((void (*)(int, int))sb_SetVolume)  /* 0x427330 (sblib.c: SBSAMPLE *): @original f3snd.c passes the int handle view of the sample */
@@ -73,6 +74,8 @@
 #define ai_MarketBuildingV (*(G16BLDVIEW **)&ai_MarketBuilding)  /* 0x6f1bc8, ai_MarketBuilding (ai.c: AIBLD *) as this unit's G16BLDVIEW (its +0x4c / object fields) */
 #define ai_FallbackBuildingB (*(unsigned char **)&ai_FallbackBuilding)  /* 0x6f230c, ai_FallbackBuilding (sv.c: char *) read bytewise, as this unit does */
 #define ai_PlayerBuildingB (*(unsigned char **)&ai_PlayerBuilding)  /* 0x6f2308, ai_PlayerBuilding (sv.c: char *) read bytewise, as this unit does */
+#define ai_PlayerBuildingT (*(struct AIBLD **)&ai_PlayerBuilding)  /* 0x6f2308, ai_PlayerBuilding (sv.c: char *) as the AIBLD it points to */
+#define ai_BTypesT (*(AIBTYPE **)&ai_BTypes)  /* 0x7e3f30, ai_BTypes (ahm.c: char *) as the AIBTYPE records it points to */
 #define ai_CharsC (*(char (*)[768 * 0x21c])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) read flat, as this unit does */
 /* 0x4c01b0, stops the queue: restores the music after a fanfare (fade back to 1.0), frees every queued sound */
 void snd_ClearQueue(void)
@@ -305,13 +308,14 @@ void snd_UpdateRain(void)
 }
 
 /* stops locust sound s with log text t */
-#define SND_STOPLOG(s, t) if ((s) != 0) { sprintf(ai_Unk6f0960, (t), (s)); sb_Stop((s), 0); \
-    *(int *)((s) + 0x18) = 0; (s) = 0; }
+#define SND_STOPLOG(s, t) if ((s) != 0) { sprintf(snd_LocustLog, (t), (s)); sb_Stop((s), 0); \
+    (s)->delay = 0; (s) = 0; }
 
-/* 0x4c0e60, the animal ambience by season (ai_Unk602bd8[season], records birds "Voegel_s", crickets "Grillen_l"
-   (hpLocusts / hpLocustsPerm, with a debug log in ai_Unk6f0960), chickens "Gackern_s", horses "Wiehern_s" /
-   "Schnauben_s", dogs "Bellt_s"), quieter with the camera height and silent in rain; the bird song of 0x6f0b80 by
-   the distance to the player's house; then the atmosphere mp3 of the building the player is in ("Athmos\..") */
+/* 0x4c0e60, the animal ambience by season (snd_Animals[season]: birds "Voegel_s", crickets "Grillen_l"
+   (snd_Locusts / snd_LocustsPerm, with a debug log in snd_LocustLog), dogs "Bellt_s", horses "Wiehern_s" /
+   "Schnauben_s", chickens "Gackern_s"), quieter with the camera height and silent in rain; the market track
+   snd_AmbientTrack by the people around the market; then the atmosphere mp3 of the building the player is in
+   ("Athmos\..") */
 void snd_UpdateAnimals(void)
 {
     unsigned int t;
@@ -321,164 +325,157 @@ void snd_UpdateAnimals(void)
     float v[4];
     char *name;
     int k;
-    char c;
-    G16AMB *a;
+    AIBTYPE *bt;
+    unsigned short *panel;
 
-    if (d3_Terrain == 0 || snd_AmbientOn == 0) {
-        t = F3SND_TIME;
-        if (ai_Unk6f0b9c != gm_ClockSeason(&ai_Time))
-            ai_Unk6f0b9c = gm_ClockSeason(&ai_Time);
-        SND_STOPLOG(ai_Unk6f0b94, "hpLocustsPerm stopped, reason: !(boden && snd_AmbientActive) ! Handlevalue is %x");
-        SND_STOPLOG(ai_Unk6f0b98, "hpLocusts stopped, reason: !(boden && snd_AmbientActive) ! Handlevalue is %x");
-        a = ai_Unk602bd8[ai_Unk6f0b9c];
-        a[0].last = t;
-        a[1].last = t;
-        a[4].last = t;
-        a[3].last = t;
-        a[2].last = t;
-    } else {
+    if (d3_Terrain != 0 && snd_AmbientOn != 0) {
         n = 0;
         t = F3SND_TIME;
-        if (ai_Unk6f0b9c != gm_ClockSeason(&ai_Time)) {
-            ai_Unk6f0b9c = gm_ClockSeason(&ai_Time);
-            if (ai_Unk6f0b98 != 0) {
-                sb_Stop(ai_Unk6f0b98, 0);
-                *(int *)(ai_Unk6f0b98 + 0x18) = 0;
-                ai_Unk6f0b98 = 0;
+        if (snd_AnimalSeason != gm_ClockSeason(&ai_Time)) {
+            snd_AnimalSeason = gm_ClockSeason(&ai_Time);
+            if (snd_Locusts != 0) {
+                sb_Stop(snd_Locusts, 0);
+                snd_Locusts->delay = 0;
+                snd_Locusts = 0;
             }
-            if (ai_Unk6f0b94 != 0) {
-                sb_Stop(ai_Unk6f0b94, 0);
-                *(int *)(ai_Unk6f0b94 + 0x18) = 0;
-                ai_Unk6f0b94 = 0;
+            if (snd_LocustsPerm != 0) {
+                sb_Stop(snd_LocustsPerm, 0);
+                snd_LocustsPerm->delay = 0;
+                snd_LocustsPerm = 0;
             }
         }
         h = (2000.0f - d3_Camera->pos.y - d3t_GetMeanHeight(&d3_Camera->pos)) * 0.0005f;
         if (d3t_Rain != 0)
             n = *d3t_Rain;
-        a = ai_Unk602bd8[ai_Unk6f0b9c];
-        if ((unsigned int)(rand() % 2000 + a[0].interval) < t - a[0].last && n < 0x15e) {
-            a[0].last = t;
-            if (rand() * 3.0518509e-05f + ai_Unk602bd8[ai_Unk6f0b9c][0].chance > 1.0f)
-                sb_PlaySampleI(0, "Voegel_s", rand() % ai_Unk602bd8[ai_Unk6f0b9c][0].count + 1, 0x3f,
-                    (int)(ai_Unk602bd8[ai_Unk6f0b9c][0].vol * 127.0f), 0, 0);
+        if (t - snd_Animals[snd_AnimalSeason][0].last > rand() % 2000 + snd_Animals[snd_AnimalSeason][0].interval && n < 0x15e) {
+            snd_Animals[snd_AnimalSeason][0].last = t;
+            if (rand() * 3.0518509e-05f + snd_Animals[snd_AnimalSeason][0].chance > ai_FloatOne)
+                sb_PlaySampleI(0, "Voegel_s", rand() % snd_Animals[snd_AnimalSeason][0].count + 1, 0x3f,
+                    (int)(snd_Animals[snd_AnimalSeason][0].vol * 127.0f), 0, 0);
             if (rand() % 10 > 6)
-                sb_PlaySampleI(0, "Voegel_s", rand() % ai_Unk602bd8[ai_Unk6f0b9c][0].count + 1, 0x3f,
-                    (int)(ai_Unk602bd8[ai_Unk6f0b9c][0].vol * 127.0f), 0, 0);
+                sb_PlaySampleI(0, "Voegel_s", rand() % snd_Animals[snd_AnimalSeason][0].count + 1, 0x3f,
+                    (int)(snd_Animals[snd_AnimalSeason][0].vol * 127.0f), 0, 0);
         }
-        a = ai_Unk602bd8[ai_Unk6f0b9c];
-        if ((unsigned int)(rand() % 2000 + a[1].interval) < t - a[1].last && n < 100) {
-            a[1].last = t;
-            if (rand() * 3.0518509e-05f + ai_Unk602bd8[ai_Unk6f0b9c][1].chance > 1.0f) {
-                if (ai_Unk6f0b98 == 0)
-                    k = 0;
-                else
-                    k = *(int *)(ai_Unk6f0b98 + 0xc);
-                if (ai_Unk6f0b98 == 0 || k <= 2) {
-                    sprintf(ai_Unk6f0960, "About to trigger hpLocusts ! Handlevalue before triggering is %x, loopCount is %d.", ai_Unk6f0b98, k);
-                    ai_Unk6f0b98 = sb_PlaySampleI(0, "Grillen_l", rand() % ai_Unk602bd8[ai_Unk6f0b9c][1].count + 2,
-                        0x3f, (int)(h * ai_Unk602bd8[ai_Unk6f0b9c][1].vol * 127.0f), 0, 0);
-                    sprintf(ai_Unk6f0960, "hpLocusts triggered ! Handlevalue is %x", ai_Unk6f0b98);
-                }
+        if (t - snd_Animals[snd_AnimalSeason][1].last > rand() % 2000 + snd_Animals[snd_AnimalSeason][1].interval && n < 100) {
+            snd_Animals[snd_AnimalSeason][1].last = t;
+            if (rand() * 3.0518509e-05f + snd_Animals[snd_AnimalSeason][1].chance > ai_FloatOne &&
+                (snd_Locusts == 0 || snd_Locusts->loops <= 2)) {
+                sprintf(snd_LocustLog, "About to trigger hpLocusts ! Handlevalue before triggering is %x, loopCount is %d.",
+                    snd_Locusts, snd_Locusts != 0 ? snd_Locusts->loops : 0);
+                snd_Locusts = sb_PlaySampleI(0, "Grillen_l", rand() % snd_Animals[snd_AnimalSeason][1].count + 2,
+                    0x3f, (int)(h * snd_Animals[snd_AnimalSeason][1].vol * 127.0f), 0, 0);
+                sprintf(snd_LocustLog, "hpLocusts triggered ! Handlevalue is %x", snd_Locusts);
             }
-            if (ai_Unk6f0b9c == 1) {
-                if (ai_Unk6f0b94 == 0) {
-                    ai_Unk6f0b94 = sb_PlaySampleI(0, "Grillen_l", 0, 0x3f, (int)(0.7f * h * 127.0f) >> 1, 0, 0);
-                    sprintf(ai_Unk6f0960, "hpLocustsPerm triggered ! Handlevalue is %x", ai_Unk6f0b94);
+            if (snd_AnimalSeason == 1) {
+                if (snd_LocustsPerm == 0) {
+                    snd_LocustsPerm = sb_PlaySampleI(0, "Grillen_l", 0, 0x3f,
+                        (int)(snd_Animals[1][1].vol * h * 127.0f) >> 1, 0, 0);
+                    sprintf(snd_LocustLog, "hpLocustsPerm triggered ! Handlevalue is %x", snd_LocustsPerm);
                 } else {
-                    sb_SetVolumeI(ai_Unk6f0b94, (int)(0.7f * h * 127.0f) >> 1);
-                    sprintf(ai_Unk6f0960, "hpLocustsPerm volume adjusted ! Handlevalue is %x", ai_Unk6f0b94);
+                    sb_SetVolume(snd_LocustsPerm, (int)(snd_Animals[1][1].vol * h * 127.0f) >> 1);
+                    sprintf(snd_LocustLog, "hpLocustsPerm volume adjusted ! Handlevalue is %x", snd_LocustsPerm);
                 }
-            } else if (ai_Unk6f0b94 != 0) {
-                sprintf(ai_Unk6f0960, "hpLocustsPerm stopped, reason: s_season != GM_SUMMER ! Handlevalue is %x", ai_Unk6f0b94);
-                sb_Stop(ai_Unk6f0b94, 0);
-                ai_Unk6f0b94 = 0;
-                *(int *)(ai_Unk6f0b94 + 0x18) = 0;
+            } else if (snd_LocustsPerm != 0) {
+                sprintf(snd_LocustLog, "hpLocustsPerm stopped, reason: s_season != GM_SUMMER ! Handlevalue is %x", snd_LocustsPerm);
+                sb_Stop(snd_LocustsPerm, 0);
+                snd_LocustsPerm = 0;
+                snd_LocustsPerm->delay = 0;  /* the original clears the field through the null pointer it just stored */
             }
-        } else if (n < 0x65 && ai_Unk6f0b9c != 3) {
-            sprintf(ai_Unk6f0960, "Adjusting Volume for hpLocusts (%x) and hpLocustsPerm (%x) !", ai_Unk6f0b98, ai_Unk6f0b94);
-            if (ai_Unk6f0b94 != 0)
-                sb_SetVolumeI(ai_Unk6f0b94, (int)(h * ai_Unk602bd8[ai_Unk6f0b9c][1].vol * 127.0f) >> 1);
-            if (ai_Unk6f0b98 != 0)
-                sb_SetVolumeI(ai_Unk6f0b98, (int)(h * ai_Unk602bd8[ai_Unk6f0b9c][1].vol * 127.0f) >> 1);
+        } else if (n <= 100 && snd_AnimalSeason != 3) {
+            sprintf(snd_LocustLog, "Adjusting Volume for hpLocusts (%x) and hpLocustsPerm (%x) !", snd_Locusts, snd_LocustsPerm);
+            if (snd_LocustsPerm != 0)
+                sb_SetVolume(snd_LocustsPerm, (int)(h * snd_Animals[snd_AnimalSeason][1].vol * 127.0f) >> 1);
+            if (snd_Locusts != 0)
+                sb_SetVolume(snd_Locusts, (int)(h * snd_Animals[snd_AnimalSeason][1].vol * 127.0f) >> 1);
         } else {
-            SND_STOPLOG(ai_Unk6f0b94, "hpLocustsPerm stopped, reason: numDropsModifier > 100 || s_season == GM_WINTER ! Handlevalue is %x");
-            SND_STOPLOG(ai_Unk6f0b98, "hpLocusts stopped, reason: numDropsModifier > 100 || s_season == GM_WINTER ! Handlevalue is %x");
+            SND_STOPLOG(snd_LocustsPerm, "hpLocustsPerm stopped, reason: numDropsModifier > 100 || s_season == GM_WINTER ! Handlevalue is %x");
+            SND_STOPLOG(snd_Locusts, "hpLocusts stopped, reason: numDropsModifier > 100 || s_season == GM_WINTER ! Handlevalue is %x");
         }
-        a = ai_Unk602bd8[ai_Unk6f0b9c];
-        if ((unsigned int)(rand() % 2000 + a[4].interval) < t - a[4].last) {
-            a[4].last = t;
-            if (rand() * 3.0518509e-05f + ai_Unk602bd8[ai_Unk6f0b9c][0].chance > 1.0f)
-                sb_PlaySampleI(0, "Bellt_s", 1, 0x3f, (int)(h * ai_Unk602bd8[ai_Unk6f0b9c][4].vol * 127.0f), 0, 0);
+        if (t - snd_Animals[snd_AnimalSeason][4].last > rand() % 2000 + snd_Animals[snd_AnimalSeason][4].interval) {
+            snd_Animals[snd_AnimalSeason][4].last = t;
+            if (rand() * 3.0518509e-05f + snd_Animals[snd_AnimalSeason][0].chance > ai_FloatOne)
+                sb_PlaySampleI(0, "Bellt_s", 1, 0x3f, (int)(h * snd_Animals[snd_AnimalSeason][4].vol * 127.0f), 0, 0);
         }
-        a = ai_Unk602bd8[ai_Unk6f0b9c];
-        if ((unsigned int)(rand() % 2000 + a[3].interval) < t - a[3].last) {
-            a[3].last = t;
-            if (rand() * 3.0518509e-05f + ai_Unk602bd8[ai_Unk6f0b9c][3].chance > 1.0f) {
-                name = "Wiehern_s";
-                if (rand() % 10 > 4)
+        if (t - snd_Animals[snd_AnimalSeason][3].last > rand() % 2000 + snd_Animals[snd_AnimalSeason][3].interval) {
+            snd_Animals[snd_AnimalSeason][3].last = t;
+            if (rand() * 3.0518509e-05f + snd_Animals[snd_AnimalSeason][3].chance > ai_FloatOne) {
+                if (rand() % 10 < 5)
+                    name = "Wiehern_s";
+                else
                     name = "Schnauben_s";
-                sb_PlaySampleI(0, name, 1, 0x3f, (int)(h * ai_Unk602bd8[ai_Unk6f0b9c][3].vol * 127.0f), 0, 0);
+                sb_PlaySampleI(0, name, 1, 0x3f, (int)(h * snd_Animals[snd_AnimalSeason][3].vol * 127.0f), 0, 0);
             }
         }
-        a = ai_Unk602bd8[ai_Unk6f0b9c];
-        if ((unsigned int)(rand() % 2000 + a[2].interval) < t - a[2].last) {
-            a[2].last = t;
-            if (rand() * 3.0518509e-05f + ai_Unk602bd8[ai_Unk6f0b9c][2].chance > 1.0f)
-                sb_PlaySampleI(0, "Gackern_s", rand() % ai_Unk602bd8[ai_Unk6f0b9c][2].count + 1, 0x3f,
-                    (int)(h * ai_Unk602bd8[ai_Unk6f0b9c][2].vol * 127.0f), 0, 0);
+        if (t - snd_Animals[snd_AnimalSeason][2].last > rand() % 2000 + snd_Animals[snd_AnimalSeason][2].interval) {
+            snd_Animals[snd_AnimalSeason][2].last = t;
+            if (rand() * 3.0518509e-05f + snd_Animals[snd_AnimalSeason][2].chance > ai_FloatOne)
+                sb_PlaySampleI(0, "Gackern_s", rand() % snd_Animals[snd_AnimalSeason][2].count + 1, 0x3f,
+                    (int)(h * snd_Animals[snd_AnimalSeason][2].vol * 127.0f), 0, 0);
         }
         if (snd_AmbientTrack != 0 && ai_MarketBuildingV != 0) {
             d3_PointToWorld(ai_MarketBuildingV->object, ai_MarketBuildingV->object + 0x4c, v);
             k = ch_CountAt(0, 0, v, 900.0f) * 0x14;
-            if (k > 0x7e)
+            if (k >= 0x7f)
                 k = 0x7f;
             d3snd_SetVolumeI(snd_AmbientTrack, k);
         }
+    } else {
+        t = F3SND_TIME;
+        if (snd_AnimalSeason != gm_ClockSeason(&ai_Time))
+            snd_AnimalSeason = gm_ClockSeason(&ai_Time);
+        SND_STOPLOG(snd_LocustsPerm, "hpLocustsPerm stopped, reason: !(boden && snd_AmbientActive) ! Handlevalue is %x");
+        SND_STOPLOG(snd_Locusts, "hpLocusts stopped, reason: !(boden && snd_AmbientActive) ! Handlevalue is %x");
+        snd_Animals[snd_AnimalSeason][0].last = t;
+        snd_Animals[snd_AnimalSeason][1].last = t;
+        snd_Animals[snd_AnimalSeason][3].last = t;
+        snd_Animals[snd_AnimalSeason][2].last = t;
+        snd_Animals[snd_AnimalSeason][4].last = t;
     }
-    if (ai_PlayerBuildingB != 0 && snd_AmbientOn != 0) {
-        c = ai_BTypes[*ai_PlayerBuildingB * 0x24d];
-        if (c == 0x16 && sv_PanelShown != 0 && *sv_PanelShown == 0x120) {
+    if (ai_PlayerBuildingT != 0 && snd_AmbientOn != 0) {
+        bt = &ai_BTypesT[ai_PlayerBuildingT->type];
+        panel = sv_PanelShown;
+        if (bt->kind == 0x16 && panel != 0 && *panel == 0x120) {
+            if (snd_AtmoTrack == 0) {
+                snd_AtmoTrack = msx_PlayAmbient("Athmos\\Athmo_Witshaus.mp3", 5);
+                return;
+            }
             n = ch_Count(d3_CurrentScene, 0) * 9;
-            vol = min(n, 64.0f);
-            if (ai_Unk6f0ba0 != 0) {
-                msx_SetTrackVolume(ai_Unk6f0ba0, (int)vol);
-                return;
-            }
-            ai_Unk6f0ba0 = msx_PlayAmbient("Athmos\\Athmo_Witshaus.mp3", 5);
+            vol = 64.0f < n ? 64.0f : n;
+            msx_SetTrackVolume(snd_AtmoTrack, (int)vol);
             return;
         }
-        if (c == 0x12 || c == 0x14 || c == 8 || c == 0x15 || c == 0xe) {
+        if (bt->kind == 0x12 || bt->kind == 0x14 || bt->kind == 8 || bt->kind == 0x15 || bt->kind == 0xe) {
             n = ch_Count(d3_CurrentScene, 0) * 6;
-            vol = min(n, 64.0f);
-            if (ai_Unk6f0ba0 == 0) {
-                if (*(int *)(ai_PlayerBuildingB + 0x95) == -1)
+            vol = 64.0f < n ? 64.0f : n;
+            if (snd_AtmoTrack == 0) {
+                if (ai_PlayerBuildingT->smokeEffect == -1)
                     return;
-                ai_Unk6f0ba0 = msx_PlayAmbient("Athmos\\Athmo_Handwerk.mp3", (int)vol);
+                snd_AtmoTrack = msx_PlayAmbient("Athmos\\Athmo_Handwerk.mp3", (int)vol);
                 return;
             }
-            if (*(int *)(ai_PlayerBuildingB + 0x95) == -1) {
-                msx_StopAmbient(ai_Unk6f0ba0);
-                ai_Unk6f0ba0 = 0;
+            if (ai_PlayerBuildingT->smokeEffect == -1) {
+                msx_StopAmbient(snd_AtmoTrack);
+                snd_AtmoTrack = 0;
                 return;
             }
-            msx_SetTrackVolume(ai_Unk6f0ba0, (int)vol);
+            msx_SetTrackVolume(snd_AtmoTrack, (int)vol);
             return;
         }
-        if (c == 7 && sv_PanelShown != 0 && *sv_PanelShown == 0xf7) {
+        if (bt->kind == 7 && panel != 0 && *panel == 0xf7) {
             n = ch_Count(d3_CurrentScene, 0) * 6;
-            vol = min(n, 64.0f);
-            if (ai_Unk6f0ba0 == 0) {
-                ai_Unk6f0ba0 = msx_PlayAmbient("Athmos\\Athmo_Schreibstube.mp3", (int)vol);
+            vol = 64.0f < n ? 64.0f : n;
+            if (snd_AtmoTrack == 0) {
+                snd_AtmoTrack = msx_PlayAmbient("Athmos\\Athmo_Schreibstube.mp3", (int)vol);
                 return;
             }
-            msx_SetTrackVolume(ai_Unk6f0ba0, (int)vol);
+            msx_SetTrackVolume(snd_AtmoTrack, (int)vol);
             return;
         }
     }
-    if (ai_Unk6f0ba0 == 0)
+    if (snd_AtmoTrack == 0)
         return;
-    msx_StopAmbient(ai_Unk6f0ba0);
-    ai_Unk6f0ba0 = 0;
+    msx_StopAmbient(snd_AtmoTrack);
+    snd_AtmoTrack = 0;
 }
 /* 0x4c18a0, the music when the player enters a building: the current track loses 30 (20 without a building of
    its kinds); the building's kind gets its track (resumed, or a random one of the matching snd_BuildingTracks
@@ -1225,14 +1222,14 @@ extern int snd_RainHeavyFar;
 float snd_VoiceVolume = 1.0f;  /* 0x602b08, voice volume (1.0, scaled by 127) */
 char snd_GustNames[3][0x32] = { "Boehe_Leicht_s", "Boehe_Mittel_s", "Boehe_Stark_s" };  /* 0x602b10, "Boehe_Leicht_s", "Boehe_Mittel_s", "Boehe_Stark_s" */
 G16SEASON snd_Gusts[] = { { 0.699999988f, 0.5f, 16000 }, { 0.300000012f, 0.200000003f, 27000 }, { 0.899999976f, 0.600000024f, 12000 }, { 0.5f, 0.400000006f, 20000 } };  /* 0x602ba8, by season */
-G16AMB ai_Unk602bd8[][5] = { { { 0.899999976f, 0.699999988f, 2, 4000, 0 }, { 0.449999988f, 0.300000012f, 2, 7000, 0 }, { 0.400000006f, 0.5f, 2, 30000, 0 }, { 0.5f, 0.600000024f, 0, 27000, 0 }, { 0.600000024f, 0.600000024f, 0, 20000, 0 } }, { { 0.699999988f, 0.699999988f, 2, 5000, 0 }, { 0.899999976f, 0.699999988f, 4, 5000, 0 }, { 0.699999988f, 0.5f, 2, 20000, 0 }, { 0.600000024f, 0.600000024f, 0, 25000, 0 }, { 0.899999976f, 0.600000024f, 0, 17000, 0 } }, { { 0.300000012f, 0.25f, 1, 17000, 0 }, { 0.200000003f, 0.200000003f, 1, 18000, 0 }, { 0.800000012f, 0.5f, 2, 12000, 0 }, { 0.300000012f, 0.600000024f, 0, 20000, 0 }, { 0.600000024f, 0.600000024f, 0, 20000, 0 } }, { { 0.150000006f, 0.200000003f, 1, 30000, 0 }, { 0.0f, 0.0f, 1, 500000, 0 }, { 0.200000003f, 0.400000006f, 2, 23000, 0 }, { 0.200000003f, 0.5f, 0, 22000, 0 }, { 0.400000006f, 0.5f, 0, 20000, 0 } } };  /* 0x602bd8, per season: birds, crickets, chickens, horses, dogs */
+G16AMB snd_Animals[][5] = { { { 0.899999976f, 0.699999988f, 2, 4000, 0 }, { 0.449999988f, 0.300000012f, 2, 7000, 0 }, { 0.400000006f, 0.5f, 2, 30000, 0 }, { 0.5f, 0.600000024f, 0, 27000, 0 }, { 0.600000024f, 0.600000024f, 0, 20000, 0 } }, { { 0.699999988f, 0.699999988f, 2, 5000, 0 }, { 0.899999976f, 0.699999988f, 4, 5000, 0 }, { 0.699999988f, 0.5f, 2, 20000, 0 }, { 0.600000024f, 0.600000024f, 0, 25000, 0 }, { 0.899999976f, 0.600000024f, 0, 17000, 0 } }, { { 0.300000012f, 0.25f, 1, 17000, 0 }, { 0.200000003f, 0.200000003f, 1, 18000, 0 }, { 0.800000012f, 0.5f, 2, 12000, 0 }, { 0.300000012f, 0.600000024f, 0, 20000, 0 }, { 0.600000024f, 0.600000024f, 0, 20000, 0 } }, { { 0.150000006f, 0.200000003f, 1, 30000, 0 }, { 0.0f, 0.0f, 1, 500000, 0 }, { 0.200000003f, 0.400000006f, 2, 23000, 0 }, { 0.200000003f, 0.5f, 0, 22000, 0 }, { 0.400000006f, 0.5f, 0, 20000, 0 } } };  /* 0x602bd8, per season: birds, crickets, chickens, horses, dogs */
 float snd_MusicVolume = 0.5f;  /* 0x602d68, music volume 0..1: 0 = no music ( */
 G16TRACKS snd_BuildingTracks[] = { { 7, 0, -1, { "cd1\\LichtUndGnade.mp3", "cd1\\Moenchsgesang.mp3", "cd1\\Sakral.mp3", "cd2\\AmKuehlenGrabe.mp3", "", "" } }, { 2, 23, -1, { "cd1\\AufDemBall.mp3", "", "", "", "", "" } }, { 2, 20, -1, { "cd1\\FinsterePlaene.mp3", "cd1\\RuestetEuch.mp3", "cd1\\FinstererPriester.mp3", "", "", "" } }, { 2, 19, -1, { "cd1\\Rittersleut.mp3", "cd1\\Burgfraeulein.mp3", "", "", "", "" } }, { 2, 21, -1, { "cd2\\DerSeuchenzug.mp3", "cd1\\ImDunklenTann.mp3", "", "", "", "" } }, { 2, 24, -1, { "cd1\\AufDemBall.mp3", "", "", "", "", "" } }, { 2, 22, -1, { "cd1\\finsterePlaene.mp3", "", "", "", "", "" } }, { 22, 0, -1, { "cd1\\AufspielZumTanz.mp3", "cd1\\ZurSommerzeit.mp3", "cd2\\KraeuterUndPhiolen.mp3", "", "", "" } }, { 19, 0, -1, { "cd1\\RuestetEuch.mp3", "cd1\\ImDunklenTann.mp3", "cd1\\Flucht.mp3", "cd1\\Rittersleut.mp3", "", "" } }, { 4, 0, -1, { "cd1\\FinsterePlaene.mp3", "cd1\\Flucht.mp3", "cd2\\ImKerker.mp3", "cd1\\Hungerlohn.mp3", "", "" } }, { 16, 0, -1, { "cd1\\FinsterePlaene.mp3", "cd1\\flucht.mp3", "cd1\\Hungerlohn.mp3", "cd1\\ImDunklenTann.mp3", "", "" } }, { 11, 0, -1, { "cd1\\BeiDerQuelle.mp3", "cd1\\ImDunklenTann.mp3", "", "", "", "" } }, { 13, 0, 2, { "cd1\\Immerkalt.mp3", "", "", "", "", "" } }, { 13, 0, 3, { "cd1\\Immerkalt.mp3", "", "", "", "", "" } }, { 13, 0, -1, { "cd1\\Hungerlohn.mp3", "", "", "", "", "" } }, { 12, 0, 2, { "cd1\\Immerkalt.mp3", "", "", "", "", "" } }, { 12, 0, 3, { "cd1\\Immerkalt.mp3", "", "", "", "", "" } }, { 12, 0, -1, { "cd1\\Hungerlohn.mp3", "", "", "", "", "" } }, { 28, 0, -1, { "", "", "", "", "", "" } }, { 14, 0, -1, { "cd2\\DasParfuem.mp3", "cd2\\DerFernhaendler.mp3", "cd2\\KraeuterUndPhiolen.mp3", "", "", "" } }, { 8, 0, -1, { "cd2\\KraeuterUndPhiolen.mp3", "cd2\\DasParfuem.mp3", "cd2\\DerFernhaendler.mp3", "", "", "" } }, { 6, 0, -1, { "cd2\\ArmerDelinquent.mp3", "cd2\\ImKerker.mp3", "", "", "", "" } }, { 18, 0, -1, { "cd1\\DieTaeglichMueh.mp3", "cd1\\Hungerlohn.mp3", "cd2\\AufDemMarkt.mp3", "", "", "" } }, { 18, 0, 2, { "cd1\\ImmerKalt.mp3", "cd1\\DieTaeglichMueh.mp3", "cd1\\Hungerlohn.mp3", "cd2\\AufDemMarkt.mp3", "", "" } }, { 18, 0, 3, { "cd1\\ImmerKalt.mp3", "cd1\\DieTaeglichMueh.mp3", "cd1\\Hungerlohn.mp3", "cd2\\AufDemMarkt.mp3", "", "" } }, { 20, 0, -1, { "cd1\\DieTaeglichMueh.mp3", "cd1\\Hungerlohn.mp3", "cd2\\AufDemMarkt.mp3", "", "", "" } }, { 20, 0, 2, { "cd1\\ImmerKalt.mp3", "cd1\\DieTaeglichMueh.mp3", "cd1\\Hungerlohn.mp3", "cd2\\AufDemMarkt.mp3", "", "" } }, { 20, 0, 3, { "cd1\\ImmerKalt.mp3", "cd1\\DieTaeglichMueh.mp3", "cd1\\Hungerlohn.mp3", "cd2\\AufDemMarkt.mp3", "", "" } }, { 21, 0, -1, { "cd1\\DieTaeglichMueh.mp3", "cd1\\Hungerlohn.mp3", "cd2\\AufDemMarkt.mp3", "", "", "" } }, { 21, 0, 2, { "cd1\\ImmerKalt.mp3", "cd1\\DieTaeglichMueh.mp3", "cd1\\Hungerlohn.mp3", "cd2\\AufDemMarkt.mp3", "", "" } }, { 21, 0, 3, { "cd1\\ImmerKalt.mp3", "cd1\\DieTaeglichMueh.mp3", "cd1\\Hungerlohn.mp3", "cd2\\AufDemMarkt.mp3", "", "" } }, { 5, 0, -1, { "cd2\\DerFernhaendler.mp3", "cd2\\ZumGutenEnd.mp3", "cd1\\mauerundtor.mp3", "", "", "" } }, { 9, 0, -1, { "cd2\\DerFernhaendler.mp3", "cd2\\ZumGutenEnd.mp3", "cd1\\mauerundtor.mp3", "", "", "" } }, { 15, 0, -1, { "cd1\\AufDemBall.mp3", "cd2\\Hochzeit.mp3", "cd1\\mauerundtor.mp3", "", "", "" } }, { 23, 0, -1, { "cd1\\AufDemBall.mp3", "cd2\\Hochzeit.mp3", "", "", "", "" } }, { 24, 0, -1, { "cd1\\AufDemBall.mp3", "cd2\\Hochzeit.mp3", "", "", "", "" } }, { 25, 0, -1, { "cd1\\AufDemBall.mp3", "cd2\\Hochzeit.mp3", "", "", "", "" } }, { 26, 0, -1, { "cd1\\AufDemBall.mp3", "cd2\\Hochzeit.mp3", "", "", "", "" } }, { 29, 0, -1, { "CD3\\DuestresGemaeuer.mp3", "CD3\\DunkleMondesnacht.mp3", "CD2\\AmKuehlenGrabe.mp3", "CD1\\FinstrerPriester.mp3", "CD3\\Grabesklang.mp3", "CD2\\DerSeuchenzug.mp3" } }, { 31, 0, -1, { "CD3\\DerStolzenTraum.mp3", "CD3\\Vagabundentanz.mp3", "CD3\\SchmerzlichErinnerung.mp3", "CD1\\ImDunklenTann.mp3", "CD1\\BeiDerQuelle.mp3", "CD1\\AufspielZumTanz.mp3" } }, { 32, 0, -1, { "CD3\\MitFlinkemStich.mp3", "CD3\\Medley.mp3", "CD2\\DasParfum.mp3", "CD2\\DerFernhaendler.mp3", "CD2\\Hochzeit.mp3", "CD1\\AufDemBall.mp3" } }, { 30, 587, -1, { "CD2\\ZumGutenEnd.mp3", "cd2\\DasParfuem.mp3", "cd2\\KraeuterUndPhiolen.mp3", "CD2\\DerFernhaendler.mp3", "", "" } }, { 30, 598, -1, { "CD3\\BurgUndFeste.mp3", "CD3\\Heldenglanz.mp3", "CD2\\Krieg.mp3", "CD2\\Satisfaktion.mp3", "CD1\\AufDenStrassen.mp3", "CD1\\FinsterePlaene.mp3" } }, { 30, 614, -1, { "CD2\\ArmerDelinquent.mp3", "CD2\\DerSeuchenzug.mp3", "CD1\\FinstererPriester.mp3", "CD1\\FinsterePlaene.mp3", "CD1\\AufDemBall.mp3", "CD3\\Heldenglanz.mp3" } }, { 0, 0, -1, { "", "", "", "", "", "" } } };  /* 0x602d70 */
 G16LOC snd_LocationTracks[] = { { { 7, 0, 0, 0 }, "", -20, 0, 0 }, { { 2, 0, 0, 0 }, "", -20, 0, 0 }, { { 22, 0, 0, 0 }, "", -20, 0, 0 }, { { 19, 0, 0, 0 }, "", -20, 0, 0 }, { { 4, 0, 0, 0 }, "", -20, 0, 0 }, { { 16, 0, 0, 0 }, "", -20, 0, 0 }, { { 11, 0, 0, 0 }, "", -20, 0, 0 }, { { 13, 0, 0, 0 }, "", -20, 0, 0 }, { { 12, 0, 0, 0 }, "", -20, 0, 0 }, { { 28, 0, 0, 0 }, "", -20, 0, 0 }, { { 14, 8, 0, 0 }, "", -20, 0, 0 }, { { 6, 0, 0, 0 }, "", -20, 0, 0 }, { { 18, 20, 21, 0 }, "", -20, 0, 0 }, { { 5, 0, 0, 0 }, "", -20, 0, 0 }, { { 9, 0, 0, 0 }, "", -20, 0, 0 }, { { 15, 0, 0, 0 }, "", -20, 0, 0 }, { { 23, 0, 0, 0 }, "", -20, 0, 0 }, { { 24, 0, 0, 0 }, "", -20, 0, 0 }, { { 25, 0, 0, 0 }, "", -20, 0, 0 }, { { 26, 0, 0, 0 }, "", -20, 0, 0 }, { { 29, 0, 0, 0 }, "", -20, 0, 0 }, { { 31, 0, 0, 0 }, "", -20, 0, 0 }, { { 32, 0, 0, 0 }, "", -20, 0, 0 }, { { 30, 0, 0, 0 }, "", -20, 0, 0 }, { { 9876, 0, 0, 0 }, "", -20, 0, 0 }, { { 0, 0, 0, 0 }, "", 0, 0, 0 } };  /* 0x6094d0 */
 unsigned int ai_Unk60b0d8 = 1;  /* 0x60b0d8, start of the music pause */
 char snd_TrackText[256] = {0};  /* 0x6f0760, a debug text */
 char ai_Unk6f0860[256] = {0};  /* 0x6f0860, a debug text */
-char ai_Unk6f0960[256] = {0};  /* 0x6f0960, a debug text */
+char snd_LocustLog[256] = {0};  /* 0x6f0960, a debug text */
 char snd_DebugText[256] = {0};  /* 0x6f0a60, a debug text */
 unsigned char snd_AmbientOn = 0;  /* 0x6f0b60, 1: ambient sounds on */
 unsigned int snd_AmbientOnSaved = 0;  /* 0x6f0b64, the saved snd_AmbientOn */
@@ -1246,10 +1243,10 @@ G16SND * snd_Queue = 0;  /* 0x6f0b84, the queue (the first queued sound) */
 int snd_QueueTime = 0;  /* 0x6f0b88, time of the last queue change */
 int snd_Season = 0;  /* 0x6f0b8c, the season */
 unsigned int snd_LastGust = 0;  /* 0x6f0b90, time of the last gust */
-int ai_Unk6f0b94 = 0;  /* 0x6f0b94, hpLocustsPerm */
-int ai_Unk6f0b98 = 0;  /* 0x6f0b98, hpLocusts */
-int ai_Unk6f0b9c = 0;  /* 0x6f0b9c, the season */
-void * ai_Unk6f0ba0 = 0;  /* 0x6f0ba0, the atmosphere mp3 (MSXTRACK *) */
+struct SBSAMPLE *snd_LocustsPerm = 0;  /* 0x6f0b94, hpLocustsPerm */
+struct SBSAMPLE *snd_Locusts = 0;  /* 0x6f0b98, hpLocusts */
+int snd_AnimalSeason = 0;  /* 0x6f0b9c, the season */
+void * snd_AtmoTrack = 0;  /* 0x6f0ba0, the atmosphere mp3 (MSXTRACK *) */
 char snd_LastTrack[256] = {0};  /* 0x6f0ba8, the outdoor track played last */
 unsigned char * ai_Unk6f0ca8 = 0;  /* 0x6f0ca8, the building of the track */
 int ai_Unk6f0cac = 0;  /* 0x6f0cac, the room of the track */

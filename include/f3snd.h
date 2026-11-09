@@ -120,16 +120,16 @@ extern G16TRACKHANDLES snd_TrackHandles; /* 0x6f0b6c, the music track and its co
 extern char snd_DebugText[];             /* 0x6f0a60, a debug text */
 extern char snd_TrackText[];             /* 0x6f0760, a debug text */
 extern char snd_LastTrack[];             /* 0x6f0ba8, the outdoor track played last */
-extern G16AMB ai_Unk602bd8[][5];        /* 0x602bd8, per season: birds, crickets, chickens, horses, dogs */
-extern char ai_Unk6f0960[];             /* 0x6f0960, a debug text */
-extern int ai_Unk6f0b94;                /* 0x6f0b94, hpLocustsPerm */
-extern int ai_Unk6f0b98;                /* 0x6f0b98, hpLocusts */
-extern int ai_Unk6f0b9c;                /* 0x6f0b9c, the season */
+extern G16AMB snd_Animals[][5];        /* 0x602bd8, per season: birds, crickets, chickens, horses, dogs */
+extern char snd_LocustLog[];             /* 0x6f0960, a debug text */
+extern struct SBSAMPLE *snd_LocustsPerm;   /* 0x6f0b94, hpLocustsPerm: the summer cricket loop */
+extern struct SBSAMPLE *snd_Locusts;       /* 0x6f0b98, hpLocusts: the cricket sample */
+extern int snd_AnimalSeason;                /* 0x6f0b9c, the season */
 extern int snd_AmbientTrack;                /* 0x6f0b80, the d3snd handle of the ambient track (bird song, market ambience) */
 extern struct AIBLD *ai_MarketBuilding;        /* 0x6f1bc8, the market building (ai.c; f3snd.c reads it through ai_MarketBuildingV) */
 extern char *ai_PlayerBuilding;          /* 0x6f2308, the building the player is in: an AIBLD (sv.c defines char *; ai_PlayerBuildingT views) */
 extern unsigned short * sv_PanelShown;             /* 0x6f2310, its room */
-extern void *ai_Unk6f0ba0;              /* 0x6f0ba0, the atmosphere mp3 (MSXTRACK *) */
+extern void *snd_AtmoTrack;              /* 0x6f0ba0, the atmosphere mp3 (MSXTRACK *) */
 extern int d3_CurrentScene;             /* 0x633444 */        /* 0x602ba8 */
 extern char snd_GustNames[3][0x32];     /* 0x602b10, "Boehe_Leicht_s", "Boehe_Mittel_s", "Boehe_Stark_s" */
 extern void *d3_Terrain;                /* 0x633738 */
