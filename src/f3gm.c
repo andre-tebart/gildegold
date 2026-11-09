@@ -6585,17 +6585,23 @@ int gm_SkillPoints(char *c, int skill)
 
 float gm_Mix(int a, int b, int c)
 {
-    float u, v;
+    float u, v, x, y;
 
     u = gm_GetSkill(a, c);
     v = gm_GetSkill(b, c);
-    return (float)((((double)u * u - v) * 0.4 + 0.6 + ((double)u - (double)v * v) * 0.6 + 0.4) * 0.5);
+    x = (u * u - v) * 0.4f + 0.6f;
+    y = (u - v * v) * 0.6f + 0.4f;
+    return (x + y) * 0.5f;
 }
 /* 0x504e80, the same mix for two floats */
 
 float gm_Mix2(float u, float v)
 {
-    return (float)((((double)u * u - v) * 0.4 + 0.6 + ((double)u - (double)v * v) * 0.6 + 0.4) * 0.5);
+    float a, b;
+
+    a = (u * u - v) * 0.4f + 0.6f;
+    b = (u - v * v) * 0.6f + 0.4f;
+    return (a + b) * 0.5f;
 }
 
 int amt_GetKind(int k, struct AMTKIND *out);                     /* 0x4e6f80 */
