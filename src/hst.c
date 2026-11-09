@@ -2311,7 +2311,7 @@ int hst_ParseCommandline_2nd_Pass(int k)
         while ((*d++ = *s++) != 0)
             ;
     }
-    if (*(int *)(buf + 1) == *(int *)hst_ListModes[0] || *(int *)(buf + 1) == *(int *)hst_ListModes[1]) {
+    if (((HST_LABEL *)buf)->mode.tag == hst_ListModeSet || ((HST_LABEL *)buf)->mode.tag == hst_ListModeUse) {
         word[0] = buf[6];
         n = atoi(word);
         if (n <= -1 || n >= 4) {
@@ -2325,14 +2325,14 @@ int hst_ParseCommandline_2nd_Pass(int k)
         p = buf + 7;
     } else
         p = buf;
-    AI_ZERO(word, 0x100);
     started = 0;
+    AI_ZERO(word, 0x100);
     w = word;
     while (*p != 0) {
         if (*p == ' ') {
             if (started) {
                 slot = 8;
-                if (*(int *)(word + 1) == *(int *)hst_ListModes[1]) {
+                if (((HST_LABEL *)word)->mode.tag == hst_ListModeUse) {
                     slot = atoi(word);
                     q = word + 8;
                 } else
@@ -2343,8 +2343,8 @@ int hst_ParseCommandline_2nd_Pass(int k)
                 }
                 if (i < 27)
                     hst_CommandCallbacks[i](row, slot, q + strlen(hst_CommandNames[i]));
-                AI_ZERO(word, 0x100);
                 started = 0;
+                AI_ZERO(word, 0x100);
                 w = word;
                 continue;
             }
@@ -2357,7 +2357,7 @@ int hst_ParseCommandline_2nd_Pass(int k)
     }
     if (started) {
         slot = 8;
-        if (*(int *)(word + 1) == *(int *)hst_ListModes[1]) {
+        if (((HST_LABEL *)word)->mode.tag == hst_ListModeUse) {
             slot = atoi(word);
             q = word + 8;
         } else
