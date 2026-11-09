@@ -21843,8 +21843,8 @@ void he_AllocRecipeResearch(int ev)
             e->end = ai_Time;
             gm_AddTime(&e->end, 0, 5, 0);
             e->stage = 0;
-            v = (int)gm_Query((void *)c->bld->objList, 2, 6, 0, 0x24b, c->id, ev);
-            ((void (*)(int, int))sv_MoveToGroup)((int)c->bld, v);
+            sv_MoveToGroup((unsigned char *)c->bld, (short *)gm_Query((void *)c->bld->objList, 2, 6, 0, 0x24b), c->id,
+                           (char *)ev);
             snd_PlayFavourComment();
             return;
         }
@@ -21919,7 +21919,6 @@ void he_AllocResearchRecipe(int ev)
     HEAHMRESEARCH *r = (HEAHMRESEARCH *)ev;
     AICHAR *c;
     char *p;
-    int v;
 
     c = (AICHAR *)gm_FindChar(r->chr);
     if (c == 0)
@@ -21935,8 +21934,8 @@ void he_AllocResearchRecipe(int ev)
     e->end = ai_Time;
     gm_AddTime(&e->end, 0, 5, 0);
     e->stage = 0;
-    v = gm_Query((void *)c->bld->objList, 2, 6, 0, 0x24b, c->id, ev);
-    ((void (*)(int, int))sv_MoveToGroup)((int)c->bld, v);
+    sv_MoveToGroup((unsigned char *)c->bld, (short *)gm_Query((void *)c->bld->objList, 2, 6, 0, 0x24b), c->id,
+                   (char *)ev);
     snd_PlayFavourComment();
     return;
 done:
@@ -22012,7 +22011,6 @@ void he_AllocTrainShare(int ev)
     AIJOB *e = (AIJOB *)ev;
     HEAHMRESEARCH *r = (HEAHMRESEARCH *)ev;
     AICHAR *c;
-    int v;
 
     c = (AICHAR *)gm_FindChar(r->chr);
     if (c == 0)
@@ -22025,8 +22023,8 @@ void he_AllocTrainShare(int ev)
     e->end = ai_Time;
     gm_AddTime(&e->end, 0, 5, 0);
     e->stage = 0;
-    v = gm_Query((void *)c->bld->objList, 2, 6, 0, 0x24b, c->id, ev);
-    ((void (*)(int, int))sv_MoveToGroup)((int)c->bld, v);
+    sv_MoveToGroup((unsigned char *)c->bld, (short *)gm_Query((void *)c->bld->objList, 2, 6, 0, 0x24b), c->id,
+                   (char *)ev);
     snd_PlayFavourComment();
     return;
 done:
