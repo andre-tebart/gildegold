@@ -8,9 +8,6 @@
    Open: d2.h is not included yet: the unit's own declarations of d2_StartFade / d2_ReleaseFade / d2_WinOpenPic /
    d2_ScreenSurf / d2_Inputs / d2_LockSurface / d2_UnlockSurface disagree with d2.h's, so the unit reads the d2
    records through local views (D2INPUTVIEW, D2FADEVIEW, D2SURFVIEW ...).
-   Open: ai_SaveOptionWindow / ai_SaveNameWindow / ai_LoadGameWindow / ai_JoinGameWindow still cast
-   d2_GetViewWin to six arguments; as in ai_FilePickWindow the original likely nests d2_GetViewWin (win, 1)
-   in the 8-argument sv_CreateScrollButtons call (their @deep "cleanup split" notes).
    Open: not included yet (dcp headers conflicts menu HEADER): ch.h cm.h d2.h d3_int_io.h gfx.h; held by
    own declarations that differ from the owner's: d2_StartFade, d2_ReleaseFade, d2_WinOpenPic, d2_ScreenSurf,
    d2_Inputs, d2_LockSurface, d2_UnlockSurface, ch_List, d3io_Lod.
@@ -662,7 +659,7 @@ void ai_FillSaveSlots(int view, int form, SAVESLOTVIEW *slots, char *files, char
 /* 0x5d4080, the load-game window (558 B): opens the form "menu\loadgame_new" (d2_OpenForm), places
    its views (d2_PlaceViewWindows 1 / d2_PlaceMainWindow 2), fits the form (sv_FitForm), sets the
    pointer sprite (d2_SetPointerSprite 0, 0), prints the caption 0x1c57 and builds the slider
-   (sv_CreateScrollButtons 0x214 x 0x168) of the list control d2_GetViewWin (win, 1, 0x82); then
+   (sv_CreateScrollButtons 0x214 x 0x168, step 0x82) of the list control d2_GetViewWin (win, 1); then
    ai_FillSaveSlots (win, 1) fills the 16 slots from "gamedata/saves". The pump sv_RunFrame
    (0x5309a0) runs with this function and the mask of the frame; per frame a mouse event asks the
    screen to pop and, when dm_L.lclick is set, the 16 slots are walked: the slot is hit when the click
@@ -676,8 +673,7 @@ int ai_LoadGameWindow(void)
     int ret;
     unsigned mask;
     int win;
-    int ctrl;
-    int x14, x18, x1c;
+    int up, bar, down;
     char path[0x104];
     SAVESLOTVIEW slots[0x10];
     char list[0x4200];
@@ -694,12 +690,7 @@ int ai_LoadGameWindow(void)
     d2_SetForm(0, 2);
     io_PrintText(0x1c57);
     d2_SetForm(0, 0);
-    ctrl = ((int (*)(int, int, int, int *, int *, int *))d2_GetViewWin)(win, 1, 0x82, &x1c, &x14,
-                                                                      &x18); /* @original: the original pushes six
-        arguments (win, 1, 0x82, &x1c, &x14, &x18) to the two-parameter 0x475ff0; the K&R
-        declaration at the top of the file keeps those pushes */
-    ((int (*)(int, int, int, int))sv_CreateScrollButtons)(0x214, 0x168, d2_LastWindow, ctrl); /* @original:
-        the original pushes four of the eight arguments of sv.c's slider builder */
+    sv_CreateScrollButtons(0x214, 0x168, d2_LastWindow, d2_GetViewWin(win, 1), 0x82, &down, &up, &bar);
     ai_FillSaveSlots(win, 1, slots, list, "gamedata/saves", 0); /* @original: the original call pushes
         a sixth argument 0 that 0x5d3ab0 never reads */
     while (sv_RunFrame((int)ai_LoadGameWindow, mask) != 0) {
@@ -711,7 +702,7 @@ int ai_LoadGameWindow(void)
                     && (d2_PointerObj == slots[i].obj || d2_HitWindow == slots[i].win
                         || (d2_HitWindow != -1
                             && d2_Objs[d2_Wins[d2_HitWindow].parent].win == &d2_Wins[slots[i].win]))) {
-                    if (ai_GameState == 0 || ai_MessageBox(0x101, ai_LoadGameConfirmText) != 0) {
+                    if (ai_GameState == 0 || ai_MessageBox(ai_LoadGameConfirmText, 0x101) != 0) {
                         sprintf(path, "Gamedata\\Saves\\%s.SAV", slots[i].name);
                         strcpy(main_NetSaveName, path);
                         ai_GameFlags = 10;
@@ -728,7 +719,7 @@ int ai_LoadGameWindow(void)
 }
 /* 0x5d42b0, the window that picks a saved network game to join (520 B): the twin of ai_LoadGameWindow
    (the same form "menu\loadgame_new", the view placement, the fitted form, the pointer sprite, the
-   caption 0x1c57, the slider 0x214 x 0x168 of the list control d2_GetViewWin (win, 1, 0x82)) with
+   caption 0x1c57, the slider 0x214 x 0x168 (step 0x82) of the list control d2_GetViewWin (win, 1)) with
    ai_FillSaveSlots (win, 1, "gamedata/network", mode 1). The pump sv_RunFrame runs with this function
    and the frame's mask; a mouse event asks the screen to pop, and when dm_L.lclick is set the 16 slots
    are walked (the same hit test as ai_LoadGameWindow: the caption object, the slot's window, or a
@@ -741,8 +732,7 @@ int ai_JoinGameWindow(void)
     int ret;
     unsigned mask;
     int win;
-    int ctrl;
-    int x14, x18, x1c;
+    int up, bar, down;
     SAVESLOTVIEW slots[0x10];
     char list[0x4200];
     int i;
@@ -758,12 +748,7 @@ int ai_JoinGameWindow(void)
     d2_SetForm(0, 2);
     io_PrintText(0x1c57);
     d2_SetForm(0, 0);
-    ctrl = ((int (*)(int, int, int, int *, int *, int *))d2_GetViewWin)(win, 1, 0x82, &x1c, &x14,
-                                                                      &x18); /* @original: the original pushes six
-        arguments (win, 1, 0x82, &x1c, &x14, &x18) to the two-parameter 0x475ff0; the K&R
-        declaration at the top of the file keeps those pushes */
-    ((int (*)(int, int, int, int))sv_CreateScrollButtons)(0x214, 0x168, d2_LastWindow, ctrl); /* @original:
-        the original pushes four of the eight arguments of sv.c's slider builder */
+    sv_CreateScrollButtons(0x214, 0x168, d2_LastWindow, d2_GetViewWin(win, 1), 0x82, &down, &up, &bar);
     ai_FillSaveSlots(win, 1, slots, list, "gamedata/network", 1);
     while (sv_RunFrame((int)ai_JoinGameWindow, mask) != 0) {
         if (dm_L.rup != 0)
@@ -774,7 +759,7 @@ int ai_JoinGameWindow(void)
                     && (d2_PointerObj == slots[i].obj || d2_HitWindow == slots[i].win
                         || (d2_HitWindow != -1
                             && d2_Objs[d2_Wins[d2_HitWindow].parent].win == &d2_Wins[slots[i].win]))) {
-                    if (ai_GameState == 0 || ai_MessageBox(0x101, ai_LoadGameConfirmText) != 0) {
+                    if (ai_GameState == 0 || ai_MessageBox(ai_LoadGameConfirmText, 0x101) != 0) {
                         strcpy(main_NetSaveName, slots[i].name);
                         sv_PopRequest = 1;
                         ret = 1;
@@ -1809,14 +1794,13 @@ void ai_OptionsMenu(void)
    not cancelled (ai_MessageBox 0x101 asks first when "Gamedata\Saves\<name>.SAV" already exists) is
    saved: the file name "Gamedata/saves/GILDE_SAVEGAME_<i>.SAV", the screen image image (0x9600 bytes)
    into ai_ScreenImage, ls_SaveSlot = i, the message box 0x14414e8, ls_SaveGame (name, title, 1), the
-   pop request. The slot object is enabled again. Returns 0.
-   @deep body written from tools/disasm 0x5d45d0 and the meaning matches (the twin setup with the caption 0x1c58, ai_FillSaveSlots gamedata/saves mode 0, the two disabled autosave/quicksave slots, the list control d2_GetViewWin(win, 1) and its scrollRemY test, the slot walk 2 .. 15, the hit test, the name editor ai_EditText on the slot title, the overwrite question 0x14414ec, the file GILDE_SAVEGAME_%i.SAV, the 0x9600-byte image copy, ls_SaveSlot, sv_OpenMessageBox 0x14414e8, ls_SaveGame, the pop request, the re-enable). The 19 remaining code hunks have ONE root: the original splits the pending argument cleanup of the d2_GetViewWin call as add esp,8 right after it (and then add esp,0x40 / add esp,0x18 later), ours cleans the same 24 dwords as add esp,0x40 / add esp,0x20, which shifts every later [esp+..] by 8 - VC6's deferred push cleanup / argument-slot reuse (the same split as ai_LoadGameWindow / ai_JoinGameWindow, which grade behaviour). Tried: the exists = 0 + if(vfs_FindFile(...)) exists = 1 spelling (a real gain, 36 -> 21 hunks), the exists = 0 placement before the sprintf (21 -> 19), the path/name buffer sizes to make the frame 0x6628 exactly, the 2-argument d2_GetViewWin prototype + a cast for the six-argument calls (byte-neutral, Q7 fixed); the push 0x101 / push ecx order is the cdecl argument order and is not chased. spell.py: no menu rule for the cleanup split */
+   pop request. The slot object is enabled again. Returns 0. */
 int ai_SaveOptionWindow(int image)
 {
     unsigned mask;
     int win;
     int obj;
-    int x20, x1c, x24;
+    int down, up, bar;
     int exists;
     VFSDIR *found;
     int i;
@@ -1836,12 +1820,7 @@ int ai_SaveOptionWindow(int image)
     d2_SetForm(0, 2);
     io_PrintText(0x1c58);
     d2_SetForm(0, 0);
-    obj = ((int (*)(int, int, int, int *, int *, int *))d2_GetViewWin)(win, 1, 0x82, &x20, &x1c,
-                                                                     &x24); /* @original: the original pushes six
-        arguments (win, 1, 0x82, &x20, &x1c, &x24) to the two-parameter 0x475ff0; the K&R
-        declaration at the top of the file keeps those pushes */
-    ((int (*)(int, int, int, int))sv_CreateScrollButtons)(0x214, 0x168, d2_LastWindow, obj); /* @original:
-        the original pushes four of the eight arguments of sv.c's slider builder */
+    sv_CreateScrollButtons(0x214, 0x168, d2_LastWindow, d2_GetViewWin(win, 1), 0x82, &down, &up, &bar);
     ai_FillSaveSlots(win, 1, slots, list, "gamedata/saves", 0);
     d2_SetObjEnabled(slots[0].obj, 0);
     d2_SetObjEnabled(slots[1].obj, 0);
@@ -1864,7 +1843,7 @@ int ai_SaveOptionWindow(int image)
                         d2_EnableObject(slots[i].obj, 1);
                         break;
                     }
-                    if (exists == 0 || ai_MessageBox(0x101, ai_SaveOverwriteText) != 0) {
+                    if (exists == 0 || ai_MessageBox(ai_SaveOverwriteText, 0x101) != 0) {
                         sprintf(name, "Gamedata/saves/GILDE_SAVEGAME_%i.SAV", i);
                         memcpy(ai_ScreenImage, (void *)image, 0x9600);
                         ls_SaveSlot = i;
@@ -1889,15 +1868,14 @@ int ai_SaveOptionWindow(int image)
    (vfs_FindFile) and ai_MessageBox 0x101 asks when it exists; a saveable player
    (ai_HasQuicksavePlayer) sends the 0xf request with the CMQUICKSAVE record (slot i, the title as the
    name) through cm_SendExSysMessage, else the status text 0x14414a4 says there is no player to save.
-   The slot object is enabled again. Returns 0.
-   @deep body written from tools/disasm 0x5d4920 (the twin of ai_SaveOptionWindow with ai_FillSaveSlots gamedata/network mode 1, the one disabled slot 0, the list control + scrollRemY test, the slot walk 2 .. 15 and hit test, ai_EditText on the title, the exists check of Gamedata\network\<name>.SAV, the overwrite box 0x14414ec, ai_HasQuicksavePlayer -> sv_SetStatusText 0x14414a4 else the CMQUICKSAVE 0xf request through cm_SendExSysMessage, sv_PopRequest = 1, the re-enable) and the meaning matches. The 17 remaining code hunks have ONE root: the original splits the pending argument cleanup as add esp,8 right after the d2_GetViewWin call (then add esp,0x40 / add esp,0x10), ours cleans the same 32 dwords as add esp,0x40 / add esp,0x18, shifting every later [esp+..] by 8 - VC6's deferred push cleanup / argument-slot reuse (the same split in ai_LoadGameWindow / ai_JoinGameWindow, which grade behaviour). Tried: the sv_PopRequest = 1 in the save path (a real gain), the image parameter named, the path/rec buffer sizes to make the frame 0x65a0 exact, the 2-argument d2_GetViewWin prototype + a cast for the six-argument call (Q7). push 0x101 before push ecx is the cdecl evaluation order and is not chased. spell.py: no menu rule for the cleanup split */
+   The slot object is enabled again. Returns 0. */
 
 int ai_SaveNameWindow(int image)
 {
     unsigned mask;
     int win;
     int obj;
-    int x20, x1c, x24;
+    int down, up, bar;
     int exists;
     VFSDIR *found;
     int i;
@@ -1917,12 +1895,7 @@ int ai_SaveNameWindow(int image)
     d2_SetForm(0, 2);
     io_PrintText(0x1c58);
     d2_SetForm(0, 0);
-    obj = ((int (*)(int, int, int, int *, int *, int *))d2_GetViewWin)(win, 1, 0x82, &x20, &x1c,
-                                                                     &x24); /* @original: the original pushes six
-        arguments (win, 1, 0x82, &x20, &x1c, &x24) to the two-parameter 0x475ff0; the K&R
-        declaration at the top of the file keeps those pushes */
-    ((int (*)(int, int, int, int))sv_CreateScrollButtons)(0x214, 0x168, d2_LastWindow, obj); /* @original:
-        the original pushes four of the eight arguments of sv.c's slider builder */
+    sv_CreateScrollButtons(0x214, 0x168, d2_LastWindow, d2_GetViewWin(win, 1), 0x82, &down, &up, &bar);
     ai_FillSaveSlots(win, 1, slots, list, "gamedata/network", 1);
     d2_SetObjEnabled(slots[0].obj, 0);
     obj = d2_GetViewWin(win, 1);
@@ -1944,7 +1917,7 @@ int ai_SaveNameWindow(int image)
                         d2_EnableObject(slots[i].obj, 1);
                         break;
                     }
-                    if (exists == 0 || ai_MessageBox(0x101, ai_SaveOverwriteText) != 0) {
+                    if (exists == 0 || ai_MessageBox(ai_SaveOverwriteText, 0x101) != 0) {
                         if (ai_HasQuicksavePlayer() == 0) {
                             sv_SetStatusText(ai_QuickSaveNoPlayerText);
                         } else {
