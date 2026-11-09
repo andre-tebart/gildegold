@@ -973,11 +973,11 @@ exe	0x0044f870	d3_ReadBGF	d3_io_b	byte	readable
 exe	0x0044f8c0	d3_LoadBinaryAnimStream	d3_io_b	shape	readable		
 exe	0x004506f0	d3_BGFCanWeld	d3_io_b	byte	readable		
 exe	0x004507a0	d3_OpenFastChunk	d3_io_b	byte	readable		
-exe	0x00450860	d3_FindBGF	d3_io_fl	draft	draft		
+exe	0x00450860	d3_FindBGF	d3_io_fl	draft	readable	deep	
 exe	0x00450dc0	d3_CalcNormals	d3_io_fl	byte	readable		
 exe	0x00450ec0	d3_CalcBounds	d3_io_fl	byte	readable		
 exe	0x00451180	d3_FLChunkSize	d3_io_fl	byte	readable		
-exe	0x00451250	d3_AddFLChunk	d3_io_fl	draft	draft		
+exe	0x00451250	d3_AddFLChunk	d3_io_fl	draft	readable	deep	
 exe	0x00451e80	d3_LightResetVertexColors	d3_light	byte	readable		
 exe	0x00451f10	d3_LightFlicker	d3_light	byte	readable		
 exe	0x004522b0	d3_LightApply	d3_light	byte	readable		
@@ -1057,7 +1057,7 @@ exe	0x00459d80	d3s_RightEdge	d3s	byte	readable
 exe	0x00459e50	d3s_LeftEdgeColor	d3s	byte	readable		
 exe	0x00459f90	d3s_MarkSpan	d3s	byte	readable		
 exe	0x00459fb0	d3s_DrawSpans	d3s	draft	readable	deep	
-exe	0x0045a2e0	d3s_ShadowTriangle	d3s	draft	draft		
+exe	0x0045a2e0	d3s_ShadowTriangle	d3s	draft	readable		
 exe	0x0045a670	d3s_LeftEdge	d3s	byte	readable		
 exe	0x0045a740	d3s_FillRows	d3s	byte	readable		
 exe	0x0045a880	d3s_ShadowPoly	d3s	draft	draft		
@@ -1099,7 +1099,7 @@ exe	0x0045dc00	d3sm_Sample	d3_sm	draft	readable	deep
 exe	0x0045e180	d3sm_BoundsCB	d3_sm	byte	readable		
 exe	0x0045e210	d3sm_ShadowCB	d3_sm	draft	readable	deep	
 exe	0x0045e560	d3sm_Replace	d3_sm	shape	readable	deep	
-exe	0x0045e620	d3sm_Build	d3_sm	draft	draft		
+exe	0x0045e620	d3sm_Build	d3_sm	draft	readable	deep	
 exe	0x0045eeb0	d3sm_Create	d3_sm	byte	readable		
 exe	0x0045ef60	d3sm_Destroy	d3_sm	byte	readable		
 exe	0x0045efc0	d3sm_FindGround	d3_sm	byte	readable		
@@ -1614,13 +1614,13 @@ exe	0x004960b0	ai_DecideTrainSkill	am	draft	readable	deep
 exe	0x004965b0	ai_ExecuteTrainSkill	am	byte	readable		
 exe	0x00496610	ai_DecideTrainJobSkill	am	draft	readable	deep	
 exe	0x00496ab0	ai_ExecuteTrainJobSkill	am	byte	readable		
-exe	0x00496b10	ai_EvalLeastLikedOfEvent	am	draft	draft		
+exe	0x00496b10	ai_EvalLeastLikedOfEvent	am	draft	readable	deep	
 exe	0x00496e40	ai_DecideBribe	am	byte	readable		
 exe	0x004972d0	ai_ExecuteBribe	am	byte	readable		
 exe	0x004973f0	ai_EvalApplyForOffice	am	byte	readable		
 exe	0x00497490	ai_DecideApplyForOffice	am	shape	readable		
 exe	0x00497630	ai_ExecuteApplyForOffice	am	byte	readable		
-exe	0x00497660	ai_DecideProduceGood	am	draft	draft		
+exe	0x00497660	ai_DecideProduceGood	am	draft	readable	deep	
 exe	0x004979d0	ai_ExecuteProduceGood	am	draft	readable	deep	
 exe	0x00497af0	ai_DecideBuyRoom	am	byte	readable		
 exe	0x00497c80	ai_ExecuteBuyRoom	am	byte	readable		
@@ -1846,7 +1846,7 @@ exe	0x004ad3b0	hmt_SendElectionMessage	hmt	byte	readable
 exe	0x004ad3e0	hmt_Score	hmt	shape	readable		
 exe	0x004ad510	hmt_ClearOffices	hmt	shape	readable	deep	
 exe	0x004ad580	hmt_DecideElection	hmt	draft	readable	deep	
-exe	0x004ad7a0	hmt_Unk4ad7a0	hmt	draft	draft		
+exe	0x004ad7a0	hmt_FillCouncils	hmt	shape	readable		
 exe	0x004ada80	hmt_Load	hmt	shape	readable	deep	
 exe	0x004adb20	hmt_Save	hmt	byte	readable		
 exe	0x004adbb0	hmt_Create	hmt	draft	draft		
@@ -2711,7 +2711,7 @@ exe	0x004ec2f0	ahm_ClearStep	ahm	byte	readable
 exe	0x004ec320	ahm_StepValue	ahm	draft	readable	deep	
 exe	0x004ec3d0	ahm_ObjectValue	ahm	byte	readable		
 exe	0x004ec490	ahm_SendCreateAlchemist	ahm	byte	readable		
-exe	0x004ec500	ahm_CreateAlchemist	ahm	draft	draft		
+exe	0x004ec500	ahm_CreateAlchemist	ahm	draft	readable	deep	
 exe	0x004ec940	ahm_SendSetShare	ahm	shape	readable		
 exe	0x004eca00	ahm_SetShare	ahm	byte	readable		
 exe	0x004ecaa0	ahm_SendAddPlace	ahm	byte	readable		
@@ -4118,7 +4118,7 @@ exe	0x0058ad20	lobby_FetchPlayers	lobby	byte	readable
 exe	0x0058ada0	lobby_ShowPlayers	lobby	draft	readable	deep	
 exe	0x0058af50	lobby_ChoosePlayer	lobby	draft	readable	deep	
 exe	0x0058b880	lobby_ChooseProfession	lobby	byte	readable		
-exe	0x0058ba70	lobby_ShowChat	lobby	draft	draft		
+exe	0x0058ba70	lobby_ShowChat	lobby	shape	readable		
 exe	0x0058bbd0	ai_InitProductionTables	lc	draft	draft		
 exe	0x0058bd60	ai_ProductionWindow	lc	draft	readable	deep	
 exe	0x0058c680	ai_UpdateResourceColumns	lc	draft	readable	deep	
