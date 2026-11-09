@@ -871,7 +871,7 @@ exe	0x00448910	d3if_CreateCameras	d3_interface	byte	readable
 exe	0x00448a50	d3if_ClearView	d3_interface	byte	readable		
 exe	0x00448ac0	d3_YawTo	d3_interface	shape	readable		
 exe	0x00448c20	d3_CornerCB	d3_interface	shape	readable	deep	
-exe	0x00448e60	d3_ScreenToUV	d3_interface	draft	readable	deep	
+exe	0x00448e60	d3_ScreenToUV	d3_interface	draft	readable	stuck	
 exe	0x004495f0	d3_FindObjectCB	d3_interface	byte	readable		
 exe	0x00449690	d3_FindObject	d3_interface	byte	readable		
 exe	0x00449710	d3_FindObjectNoCaseCB	d3_interface	byte	readable		
@@ -1105,7 +1105,7 @@ exe	0x0045ef60	d3sm_Destroy	d3_sm	byte	readable
 exe	0x0045efc0	d3sm_FindGround	d3_sm	byte	readable		
 exe	0x0045f100	d3sm_GetVertex	d3_sm	byte	readable		
 exe	0x0045f170	d3_GetHeightAt	d3_sm	shape	readable	deep	
-exe	0x0045f2b0	d3sm_Pick	d3_sm	draft	readable	deep	
+exe	0x0045f2b0	d3sm_Pick	d3_sm	byte	readable		
 exe	0x0045f610	ts_InitCache	ts_texture	byte	readable		
 exe	0x0045f650	ts_FreeCache	ts_texture	byte	readable		
 exe	0x0045f6d0	ts_CacheStore	ts_texture	byte	readable		
@@ -2080,7 +2080,7 @@ exe	0x004bd500	rd_AllBauplatzToSupermap	rd	draft	readable	deep
 exe	0x004bd610	rd_FindSiteCB	rd	byte	readable		
 exe	0x004bd6a0	rd_GetBKSize	rd	byte	readable		
 exe	0x004bd710	rd_WorldToCell	rd	byte	readable		
-exe	0x004bd760	rd_FillQuad	rd	draft	readable	deep	
+exe	0x004bd760	rd_FillQuad	rd	byte	readable		
 exe	0x004bd950	rt_AddPoint	rt	byte	readable		
 exe	0x004bd9b0	rt_RemovePoint	rt	byte	readable		
 exe	0x004bd9e0	rt_FreePoints	rt	byte	readable		
@@ -4116,7 +4116,7 @@ exe	0x0058aa30	lobby_ShowCity	lobby	draft	readable	deep
 exe	0x0058aba0	lobby_ShowMyPlayer	lobby	shape	readable		
 exe	0x0058ad20	lobby_FetchPlayers	lobby	byte	readable		
 exe	0x0058ada0	lobby_ShowPlayers	lobby	draft	readable	deep	
-exe	0x0058af50	lobby_ChoosePlayer	lobby	draft	readable	deep	
+exe	0x0058af50	lobby_ChoosePlayer	lobby	shape	readable	stuck	
 exe	0x0058b880	lobby_ChooseProfession	lobby	byte	readable		
 exe	0x0058ba70	lobby_ShowChat	lobby	shape	readable		
 exe	0x0058bbd0	ai_InitProductionTables	lc	byte	readable		
