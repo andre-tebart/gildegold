@@ -36,13 +36,13 @@ int ai_MapScrollEnabled = 1;  /* 0x62c26c */
 extern RTMARK rt_Marks[8];
 /* txt_InfoPanelButtons: view of txt_Ptrs (build/mk_txt_views.py) */
 /* txt_PanelBtnCart: view of txt_Ptrs (build/mk_txt_views.py) */
-/* ai_Unk144ad28: view of txt_Ptrs (build/mk_txt_views.py) */
-/* ai_Unk144ad2c: view of txt_Ptrs (build/mk_txt_views.py) */
+/* txt_RouteLoadHead: view of txt_Ptrs (build/mk_txt_views.py) */
+/* txt_RouteUnloadHead: view of txt_Ptrs (build/mk_txt_views.py) */
 /* ai_Unk144ad30: view of txt_Ptrs (build/mk_txt_views.py) */
 /* ai_Unk144ad34: view of txt_Ptrs (build/mk_txt_views.py) */
 /* ai_Unk144ad38: view of txt_Ptrs (build/mk_txt_views.py) */
-/* ai_Unk144ad3c: view of txt_Ptrs (build/mk_txt_views.py) */
-/* ai_Unk144ad44: view of txt_Ptrs (build/mk_txt_views.py) */
+/* txt_RouteOk: view of txt_Ptrs (build/mk_txt_views.py) */
+/* txt_RouteDeletePoint: view of txt_Ptrs (build/mk_txt_views.py) */
 /* ai_Unk144ad4c: view of txt_Ptrs (build/mk_txt_views.py) */
 /* ai_Unk144ad54: view of txt_Ptrs (build/mk_txt_views.py) */
 /* ai_Unk144ad58: view of txt_Ptrs (build/mk_txt_views.py) */
@@ -497,7 +497,7 @@ unsigned int rt_ChooseTabGood(AIBLD *b, int x, unsigned int def)
 /* 0x4be790, the controls of one good slot (k 0..2) of a route point: a slider (gm_ListStock(a, good) steps) and the
    good's picture with its name; out = {-1, picture, slider}; returns the picture */
 
-int rt_OpenSlotControls(unsigned short *bt, int a, int good, int k, int x, int y, int win, int *out)
+int rt_OpenSlotControls(AIOBJ *cart, int a, int good, int k, int x, int y, int win, int *out)
 {
     int offs[9];
     int s;
@@ -515,7 +515,7 @@ int rt_OpenSlotControls(unsigned short *bt, int a, int good, int k, int x, int y
     offs[7] = 0x52;
     offs[8] = 0x93;
     s = gm_ListStock(a, good);
-    px = offs[(*bt - 0x134) * 3 + k] + 0x6e + x;
+    px = offs[(cart->id - 0x134) * 3 + k] + 0x6e + x;
     py = y + 0x22;
     s = d2_WinOpenSlider(px - 8, py - 5, 0x2f, 0, s, 0x6a, 0x2d, win);
     o = d2_WinOpenInputIcon(px, py, good + 0xdf, 0x8a, win);
@@ -553,22 +553,29 @@ void rt_InitControls(int *out)
 }
 /* 0x4be940, the dialog "misc/routing_edit_point" for route point p of the list rt_EditRoute: the goods to load
    (loadSlots) and to unload (unloadSlots), up to three each (by the cart type), with their amounts; a button deletes the
-   point and rebuilds the marks on window win */
+   point and rebuilds the marks on window win
+   @deep read whole against the original: fixed the delete-point loop (p walks the list, ends 0), the btns
+   copy into ok/del locals, btns[8] (frame 0xd0 now equal), the typed AIBLD/AIOBJ/AIBTYPE/D2OBJ accesses.
+   Left: allocation only - after gm_ListStock the original holds -1 in two registers (+0x147 'or edx,-1'
+   then objs1 stores from edx, objs2 from eax; ours one 'or eax,-1' for both), so the rt_InitControls loop
+   picks ecx/eax instead of eax/ecx (regs eax->edx edx->ecx), and two order hunks at +0x4e8/+0x523 (mov
+   edi,1/2 scheduled before vs after mov ebx,ecx). Tried chained assignment of objs1/objs2 (worse). */
 
-void rt_Unk4be940(RTPOINT *p, int *win)
+void rt_EditPointDialog(RTPOINT *p, int *win)
 {
     int cnt[3];
     int *sel;
     int *selc;
-    char *bld;
-    unsigned short *bt;
-    char *t;
+    AIBLD *bld;
+    AIOBJ *cart;
+    AIBTYPE *t;
     int w;
     int v2;
-    int btns[2];
+    int btns[8];
     int ok;
+    int del;
     int n;
-    char *s;
+    AIOBJ *s;
     int a;
     int objs1[3];
     int objs2[3];
@@ -581,30 +588,30 @@ void rt_Unk4be940(RTPOINT *p, int *win)
     int kind;
     int old;
     int g;
-    RTPOINT *q;
 
     cnt[0] = 1;
     cnt[1] = 2;
     cnt[2] = 3;
     sel = 0;
     selc = 0;
-    bld = gm_FindBuildingById(p->buildingId);
-    bt = gm_FindObjectInst(p->cartId);
-    if (bt == 0 || bld == 0)
+    bld = (AIBLD *)gm_FindBuildingById(p->buildingId);
+    cart = (AIOBJ *)gm_FindObjectInst(p->cartId);
+    if (cart == 0 || bld == 0)
         return;
     d2_EnableViewObjects(*win, 0);
-    t = ai_BTypes + *(unsigned char *)bld * 0x24d;
+    t = &((AIBTYPE *)ai_BTypes)[bld->type];
     w = d2_OpenForm(0, 0, "misc/routing_edit_point");
     d2_CentreViewWindows(w);
     v2 = d2_GetViewWin(w, 2);
     d2_GetViewWin(w, 1);
     d2_SetForm(w, 1);
-    io_PrintText((int)"$Z%2N3$A%1G", *(unsigned short *)(bld + 0x27), bld);
+    io_PrintText((int)"$Z%2N3$A%1G", bld->owner, bld);
     d2_SetForm(w, 3);
-    sv_ButtonRow(d2_LastWindow, 0, btns, 2, ai_Unk144ad3c, ai_Unk144ad44);
+    sv_ButtonRow(d2_LastWindow, 0, btns, 2, txt_RouteOk, txt_RouteDeletePoint);
     ok = btns[0];
-    n = cnt[*bt - 0x134];
-    s = gm_Query(*(int *)((char *)bt + 0x14), 1, 0, 0x1dd);
+    del = btns[1];
+    n = cnt[cart->id - 0x134];
+    s = (AIOBJ *)gm_Query((void *)cart->list, 1, 0, 0x1dd);
     a = gm_ListStock((int)s, 0);
     objs1[0] = -1;
     objs1[1] = -1;
@@ -616,14 +623,14 @@ void rt_Unk4be940(RTPOINT *p, int *win)
         rt_InitControls(ctl1[i]);
         rt_InitControls(ctl2[i]);
     }
-    d2_WinOpenPic(0x6e, 0x1a, *bt + 0x4ae, v2);
-    o = d2_CreateWinText(0x6e, 2, ai_Unk144ad28, v2);
-    *(int *)(d2_ObjsC + o * 0x2ec + 0x5c) = 1;
-    *(short *)(d2_ObjsC + o * 0x2ec + 0x14) = 0xcd;
-    d2_WinOpenPic(0x6e, 0x88, *bt + 0x4ae, v2);
-    o = d2_CreateWinText(0x6e, 0x70, ai_Unk144ad2c, v2);
-    *(int *)(d2_ObjsC + o * 0x2ec + 0x5c) = 1;
-    *(short *)(d2_ObjsC + o * 0x2ec + 0x14) = 0xcd;
+    d2_WinOpenPic(0x6e, 0x1a, cart->id + 0x4ae, v2);
+    o = d2_CreateWinText(0x6e, 2, txt_RouteLoadHead, v2);
+    d2_Objs[o].centred = 1;
+    d2_Objs[o].w = 0xcd;
+    d2_WinOpenPic(0x6e, 0x88, cart->id + 0x4ae, v2);
+    o = d2_CreateWinText(0x6e, 0x70, txt_RouteUnloadHead, v2);
+    d2_Objs[o].centred = 1;
+    d2_Objs[o].w = 0xcd;
     if (n > 0) {
         offs[0] = 0x51;
         offs[1] = 0;
@@ -635,27 +642,27 @@ void rt_Unk4be940(RTPOINT *p, int *win)
         offs[7] = 0x52;
         offs[8] = 0x93;
         for (i = 0; i < n; i++) {
-            x = offs[(*bt - 0x134) * 3 + i] + 0x6e;
+            x = offs[(cart->id - 0x134) * 3 + i] + 0x6e;
             o = d2_WinOpenPic(x, 0x22, 0x525, v2);
             objs1[i] = o;
-            *(int *)(d2_ObjsC + o * 0x2ec + 0x4c) = 1;
-            *(int *)(d2_ObjsC + o * 0x2ec + 0x1c0) = 3;
+            d2_Objs[o].interactive = 1;
+            d2_Objs[o].style = 3;
             o = d2_WinOpenPic(x, 0x90, 0x525, v2);
             objs2[i] = o;
-            *(int *)(d2_ObjsC + o * 0x2ec + 0x4c) = 1;
-            *(int *)(d2_ObjsC + o * 0x2ec + 0x1c0) = 3;
+            d2_Objs[o].interactive = 1;
+            d2_Objs[o].style = 3;
         }
     }
-    while (sv_RunFrame(rt_Unk4be940, 0x657c7)) {
+    while (sv_RunFrame(rt_EditPointDialog, 0x657c7)) {
         if (dm_L.rup != 0 || d2_ClickedId != -1 && d2_PointerObj == ok)
             sv_PopRequest = 1;
-        if (rt_EditRoute == 0 || btns[1] == -1 || rt_PointCount(rt_EditRoute) > 1)
-            d2_SetObjEnabled(btns[1], 1);
+        if (rt_EditRoute == 0 || del == -1 || rt_PointCount(rt_EditRoute) > 1)
+            d2_SetObjEnabled(del, 1);
         else
-            d2_SetObjEnabled(btns[1], 0);
+            d2_SetObjEnabled(del, 0);
         for (i = 0; i < 3; i++) {
             if (ctl1[i][1] == -1 && p->loadSlots[i * 2] != 0) {
-                rt_OpenSlotControls(bt, (int)s, p->loadSlots[i * 2], i, 0, 0, v2, ctl1[i]);
+                rt_OpenSlotControls(cart, (int)s, p->loadSlots[i * 2], i, 0, 0, v2, ctl1[i]);
                 d2_SetObjValue4(ctl1[i][1], 1, a, p->loadSlots[i * 2 + 1] < 1 ? 1 : p->loadSlots[i * 2 + 1]);
             }
             if (ctl1[i][2] != -1)
@@ -663,7 +670,7 @@ void rt_Unk4be940(RTPOINT *p, int *win)
         }
         for (i = 0; i < 3; i++) {
             if (ctl2[i][1] == -1 && p->unloadSlots[i * 2] != 0) {
-                rt_OpenSlotControls(bt, (int)s, p->unloadSlots[i * 2], i, 0, 0x6e, v2, ctl2[i]);
+                rt_OpenSlotControls(cart, (int)s, p->unloadSlots[i * 2], i, 0, 0x6e, v2, ctl2[i]);
                 d2_SetObjValue4(ctl2[i][1], 1, a, p->unloadSlots[i * 2 + 1] < 1 ? 1 : p->unloadSlots[i * 2 + 1]);
             }
             if (ctl2[i][2] != -1)
@@ -689,19 +696,19 @@ void rt_Unk4be940(RTPOINT *p, int *win)
                 d2_EnableViewObjects(w, 0);
                 if (kind == 1) {
                     old = *sel;
-                    if (*t == 10)
-                        g = rt_ChooseTabGood((AIBLD *)bld, 1, old);
+                    if (t->kind == 10)
+                        g = rt_ChooseTabGood(bld, 1, old);
                     else
-                        g = rt_ChooseGoodsDialog((AIBLD *)bld, 1, old);
+                        g = rt_ChooseGoodsDialog(bld, 1, old);
                     *sel = g;
                     if (old != g)
                         rt_RemoveControls(selc);
                 } else
-                    *sel = rt_ChooseRouteGood((int)bt, rt_EditRoute);
+                    *sel = rt_ChooseRouteGood((int)cart, rt_EditRoute);
                 d2_EnableViewObjects(w, 1);
                 sel = 0;
             }
-            if (d2_PointerObj == btns[1]) {
+            if (d2_PointerObj == del) {
                 g = rt_FindMark(p);
                 if (g != -1)
                     rt_RemoveMark(g);
@@ -716,12 +723,8 @@ void rt_Unk4be940(RTPOINT *p, int *win)
                 }
                 rt_MarkCount = 0;
                 rt_ClearMarkGroup();
-                p = rt_EditRoute;
-                if (rt_EditRoute != 0) {
-                    for (q = rt_EditRoute; q != 0; q = q->next)
-                        rt_PutRouteMark((LCMAPWIN *)win, (int)bt, rt_EditRoute, q);
-                    p = 0;
-                }
+                for (p = rt_EditRoute; p != 0; p = p->next)
+                    rt_PutRouteMark((LCMAPWIN *)win, (int)cart, rt_EditRoute, p);
                 d2_RadioSelect(rt_MarkGroup, 0);
                 sv_PopRequest = 1;
             }
@@ -758,7 +761,7 @@ void rt_Unk4bf080(char *c, char *win)
     d2_SetForm(w, 4);
     io_PrintText(*(unsigned char *)(c + 0x33) + 0x42ec);
     d2_SetForm(w, 3);
-    ai_Unk52e350x(d2_LastWindow, 0, btns, 3, ai_Unk144ad3c, ai_Unk144ad4c, ai_Unk144ad78[*(unsigned char *)(c + 0x33)]);
+    ai_Unk52e350x(d2_LastWindow, 0, btns, 3, txt_RouteOk, ai_Unk144ad4c, ai_Unk144ad78[*(unsigned char *)(c + 0x33)]);
     d2_SetCaption(btns[2], ai_Unk144ad78[*(unsigned char *)(c + 0x33)]);
     d2_SetObjValue4(sl, 0, 4, *(unsigned char *)(c + 0x31));
     d2_SetSliderFlags(sl, 0x82);
@@ -942,7 +945,7 @@ void rt_EditCartRoute(char *c)
                 rt_Unk4bf080(c, (char *)m);
             else if (d2_PointerObj == btns[0]) {
                 if (rt_MarkGroup != -1 && d2_RadioSel[rt_MarkGroup * 0x23] != -1)
-                    rt_Unk4be940(rt_Marks[d2_RadioSel[rt_MarkGroup * 0x23]].p, m);
+                    rt_EditPointDialog(rt_Marks[d2_RadioSel[rt_MarkGroup * 0x23]].p, m);
             } else if (d2_PointerObj == btns[1] && rt_PickedBuilding != 0) {
                 q = rt_AddPoint(rt_EditRoute);
                 q->buildingId = *(int *)(rt_PickedBuilding + 1);

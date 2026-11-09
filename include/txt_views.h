@@ -376,13 +376,13 @@ extern char *txt_Ptrs[0x4800];    /* 0x143a1c0, each text in its file's buffer *
 #define full_data_144acf4                        (*(unsigned char (*)[28])((char *)txt_Ptrs + 0x10b34))  /* 0x144acf4 */
 #define full_data_144ad10                        (*(unsigned char (*)[24])((char *)txt_Ptrs + 0x10b50))  /* 0x144ad10 */
 #define txt_PanelBtnCart                            (*(char * *)((char *)txt_Ptrs + 0x10b64))  /* 0x144ad24 */
-#define ai_Unk144ad28                            (*(char * *)((char *)txt_Ptrs + 0x10b68))  /* 0x144ad28 */
-#define ai_Unk144ad2c                            (*(char * *)((char *)txt_Ptrs + 0x10b6c))  /* 0x144ad2c */
+#define txt_RouteLoadHead                            (*(char * *)((char *)txt_Ptrs + 0x10b68))  /* 0x144ad28 */
+#define txt_RouteUnloadHead                            (*(char * *)((char *)txt_Ptrs + 0x10b6c))  /* 0x144ad2c */
 #define ai_Unk144ad30                            (*(int *)((char *)txt_Ptrs + 0x10b70))  /* 0x144ad30 */
 #define ai_Unk144ad34                            (*(int *)((char *)txt_Ptrs + 0x10b74))  /* 0x144ad34 */
 #define ai_Unk144ad38                            (*(int *)((char *)txt_Ptrs + 0x10b78))  /* 0x144ad38 */
-#define ai_Unk144ad3c                            (*(int *)((char *)txt_Ptrs + 0x10b7c))  /* 0x144ad3c */
-#define ai_Unk144ad44                            (*(int *)((char *)txt_Ptrs + 0x10b84))  /* 0x144ad44 */
+#define txt_RouteOk                            (*(int *)((char *)txt_Ptrs + 0x10b7c))  /* 0x144ad3c */
+#define txt_RouteDeletePoint                            (*(int *)((char *)txt_Ptrs + 0x10b84))  /* 0x144ad44 */
 #define ai_Unk144ad4c                            (*(int *)((char *)txt_Ptrs + 0x10b8c))  /* 0x144ad4c */
 #define ai_Unk144ad54                            (*(int *)((char *)txt_Ptrs + 0x10b94))  /* 0x144ad54 */
 #define ai_Unk144ad58                            (*(int *)((char *)txt_Ptrs + 0x10b98))  /* 0x144ad58 */
