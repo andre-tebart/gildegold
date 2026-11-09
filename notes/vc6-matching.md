@@ -2739,3 +2739,9 @@ differing instructions. The same shape made the character loop of 0x512f30 pick 
   fmul st,st(2) ... fstp st(0); fstp st(0)`, z by integer mov) is closest without volatile hacks as
   `D3VECTOR4` locals filled field by field and then `s.x *= w` (frame equal); a `D3VECTOR` struct copy
   shrinks the frame by 0x18.
+- **A loop-invariant call argument held in a local swaps two callee-saved webs**: the mission dialogs'
+  `flags = id | 0x80; do {...} while (sv_RunFrame(fn, flags));` put c in ebp and flags in ebp's partner
+  (`or ebp, 0x80`); the argument written inline, `sv_RunFrame(fn, id | 0x80)`, gives the original's `mov ebx,
+  esi; or bl, 0x80` and the c/t colours (ai_MissionResultDialog, ai_MissionPartnerDialog byte;
+  ai_MissionCompleteDialog draft -> shape, then byte from the zero-init order again, quit, nm). Look for the
+  same local in sibling dialogs (`grep "flags = id | 0x80"`).
