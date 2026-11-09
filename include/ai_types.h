@@ -62,6 +62,9 @@ typedef struct AIJOB {                  /* 0x14c bytes, a job / event record (he
         struct {
             union {
                 int unkac;                      /* 0xac, a building id */
+                int targetBld;                  /* 0xac, of the spy / break-in / attack events 0x40 / 0x3f / 0x49 the
+                                                   building spied on, broken into or attacked (the message's arg[0];
+                                                   ai_CalcAngriff, ai_CalcMeisterDiebe) */
                 int bldId;                      /* 0xac, of the building events (0x1b, 0x1c, 0x1e, 0x1f, 0x40) their building's id
                                                    (he_AddEventGfxInfo shows their gfx info over it) */
                 int partner1;                   /* 0xac, of a pair event (kinds 0x41 / 0x6f / 0x45, he_EndPersonEvents; the

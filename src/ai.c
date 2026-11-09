@@ -1585,19 +1585,28 @@ umland:
     for (; k < 8; k++)                                                                                      \
         msg.ids[k] = -1;
 
-/* 0x4817a0, ai_CalcAngriff: spy on a building, then attack it */
+/* 0x4817a0, the guard master's attack (ai_CalcMeisterWache): keeps his target building ch->target while it stands
+   and belongs to another owner, else picks a new one among the buildings of the kinds 0x13 / 4 / 0x10 of other
+   owners (not the player's, not flagged 1, no protection event) by the owner's worth times a random share of
+   (8 - rank) * how little guarded its grid cell is; then, unless a report of his (object 0xca) knows the building
+   well enough (reportKnow >= 50 + a random 0..49), sends up to eight idle guards to spy on it (message 0x40),
+   else, with at least three, to attack it (message 0x49, the target cleared) - both only when none of his spy /
+   break-in / attack events (0x40 / 0x3f / 0x49) runs on it. Returns 1 when he acted (or one runs), 0 when there is
+   no target or too few guards */
 int ai_CalcAngriff(AICHAR *ch, int n)
 {
     AIOBJ *o;
     AIBLD *bb, *best;
     AIJOB *job;
     AIBTYPE *bt;
+    char *name;
     int i, j, k, c, r, t;
     float max, v, w, bestw;
     AIMSG msg;
     char buf[1024];
 
-    sprintf(buf, "ai_CalcAngriff(): Meister %s m\xf6" "chte angreifen", ch->name);
+    name = ch->name;
+    sprintf(buf, "ai_CalcAngriff(): Meister %s m\xf6" "chte angreifen", name);
     if (ch->target != -1) {
         best = gm_FindBuildingById(ch->target);
         if (!best)
@@ -1606,10 +1615,13 @@ int ai_CalcAngriff(AICHAR *ch, int n)
             ch->target = -1;
     }
     if (ch->target == -1) {
+        /* the grid cell value most guarded, to scale the others by */
         max = 0.0f;
-        for (j = 0; j < 8; j++) {
-            for (i = 0; i < 8; i++) {
-                v = ai_Grid[i][j].a * 0.125f + ai_Grid[i][j].b;
+        i = 8;
+        j = 8;
+        for (c = 0; c < 8; c++) {
+            for (k = 0; k < 8; k++) {
+                v = ai_Grid[k][c].a * 0.125f + ai_Grid[k][c].b;
                 if (!(max > v))
                     max = v;
             }
@@ -1618,26 +1630,26 @@ int ai_CalcAngriff(AICHAR *ch, int n)
             max = 1.0f;
         best = 0;
         bb = ai_BldsT;
-        for (t = 0; t < 256; t++, bb++) {
-            if (bb->type) {
-                bt = &ai_BTypesT[bb->type];
-                if (bb->owner != ch->bld->owner && bb->owner != 0xffff && !(bb->flags5a & 1)
-                    && bb->owner != *ai_PlayerChar
-                    && (bt->kind == 0x13 || bt->kind == 4 || bt->kind == 0x10)
-                    && he_NoProtectionEvent(bb)) {
-                    if (!bb->object || !ord_GetGridCell(bb->object + 0x4c, &i, &j))
-                        w = 0.0f;
-                    else
-                        w = 1.0f - (ai_Grid[i][j].a * 0.125f + ai_Grid[i][j].b) / max;
-                    w = (8.0f - gm_BuildingRank(bb)) * w * 0.5;
-                    w = util_RandomU(100) * w * 0.01;
-                    if (!best) {
-                        bestw = w;
-                        best = bb;
-                    } else if ((float)gm_OwnerWorth(bb, 0) * w > (float)gm_OwnerWorth(best, 0) * bestw) {
-                        bestw = w;
-                        best = bb;
-                    }
+        for (t = 256; t; t--, bb++) {
+            if (!bb->type)
+                continue;
+            bt = &ai_BTypesT[bb->type];
+            if (bb->owner != ch->bld->owner && bb->owner != 0xffff && !(bb->flags5a & 1)
+                && bb->owner != *ai_PlayerChar
+                && (bt->kind == 0x13 || bt->kind == 4 || bt->kind == 0x10)
+                && he_NoProtectionEvent(bb)) {
+                if (!bb->object || !ord_GetGridCell(bb->object + 0x4c, &i, &j))
+                    w = 0.0f;
+                else
+                    w = 1.0f - (ai_Grid[i][j].a * 0.125f + ai_Grid[i][j].b) / max;
+                w = (8.0f - gm_BuildingRank(bb)) * w * 0.5;
+                w = util_RandomU(100) * w * 0.01;
+                if (!best) {
+                    bestw = w;
+                    best = bb;
+                } else if ((float)gm_OwnerWorth(bb, 0) * w > (float)gm_OwnerWorth(best, 0) * bestw) {
+                    bestw = w;
+                    best = bb;
                 }
             }
         }
@@ -1646,49 +1658,56 @@ int ai_CalcAngriff(AICHAR *ch, int n)
     if (!best || (ai_BTypesT[best->type].kind != 0x13 && ai_BTypesT[best->type].kind != 4
                   && ai_BTypesT[best->type].kind != 0x10))
         return 0;
-    for (o = gm_Query(ch->bld->objList, 1, 0, 0xca); o; o = gm_QueryNext()) {
+    for (o = gm_Query(ch->bld->objList, 1, 0, 0xca); o; o = gm_QueryNext())
         if (o->reportBld == best->id)
-            break;
+            goto report;
+spy:
+    /* no report on the building, or one that knows too little: spy on it (again) */
+    for (job = he_FindEvent(2, 0, 0x40, 3, ch->bld->id); job; job = he_NextEvent())
+        if (job->targetBld == best->id)
+            goto spying;
+    for (job = he_FindEvent(2, 0, 0x3f, 3, ch->bld->id); job; job = he_NextEvent())
+        if (job->targetBld == best->id)
+            goto spying;
+    for (job = he_FindEvent(2, 0, 0x49, 3, ch->bld->id); job; job = he_NextEvent())
+        if (job->targetBld == best->id)
+            goto spying;
+    sprintf(buf, "ai_CalcAngriff(): Meister %s spioniert bei '%s'", name, best->name);
+    memset(&msg, 0, sizeof(msg));
+    msg.type = 0x40;
+    msg.to = ai_CharsT[ch->bld->owner].netId;
+    msg.fromId = ch->bld->id;
+    msg.time = ai_Time;
+    msg.flags = 1;
+    msg.arg[0] = best->id;
+    msg.arg[1] = ch->bld->id;
+    t = min(n, 8);
+    for (k = 0, c = 0; k < t && c < 768; c++) {
+        if (ai_CharsT[c].id != 0xffff && ai_CharsT[c].bld == ch->bld && ai_CharsT[c].title
+            && !ai_CharsT[c].job && ai_CharsT[c].model && ai_CharsT[c].model->bldId == ai_CharsT[c].bld->id)
+            msg.ids[k++] = ai_CharsT[c].netId;
     }
-    /* no report on the building, or its knowledge (reportKnow) below a random 50..99: spy (again) */
-    if (!o || util_RandomU(0x32) + 0x32 > o->reportKnow) {
-        for (job = he_FindEvent(2, 0, 0x40, 3, ch->bld->id); job; job = he_NextEvent())
-            if (job->unkac == best->id)
-                goto spying;
-        for (job = he_FindEvent(2, 0, 0x3f, 3, ch->bld->id); job; job = he_NextEvent())
-            if (job->unkac == best->id)
-                goto spying;
-        for (job = he_FindEvent(2, 0, 0x49, 3, ch->bld->id); job; job = he_NextEvent())
-            if (job->unkac == best->id)
-                goto spying;
-        sprintf(buf, "ai_CalcAngriff(): Meister %s spioniert bei '%s'", ch->name, best->name);
-        memset(&msg, 0, sizeof(msg));
-        msg.type = 0x40;
-        msg.to = ai_CharsT[ch->bld->owner].netId;
-        msg.fromId = ch->bld->id;
-        msg.time = ai_Time;
-        msg.flags = 1;
-        msg.arg[0] = best->id;
-        msg.arg[1] = ch->bld->id;
-        t = n;
-        if (t >= 8)
-            t = 8;
-        AI_FILL_IDS(t)
-        cm_SendLongMessage(&msg);
-        return 1;
-    }
+    for (; k < 8; k++)
+        msg.ids[k] = -1;
+    cm_SendLongMessage(&msg);
+    return 1;
+
+report:
+    /* his report on the building: it must know it well enough (reportKnow 50 + a random 0..49), else spy again */
+    if (o->reportKnow < util_RandomU(0x32) + 0x32)
+        goto spy;
     if (n < 3)
         return 0;
     for (job = he_FindEvent(2, 0, 0x40, 3, ch->bld->id); job; job = he_NextEvent())
-        if (job->unkac == best->id)
+        if (job->targetBld == best->id)
             goto unfinished;
     for (job = he_FindEvent(2, 0, 0x3f, 3, ch->bld->id); job; job = he_NextEvent())
-        if (job->unkac == best->id)
+        if (job->targetBld == best->id)
             goto unfinished;
     for (job = he_FindEvent(2, 0, 0x49, 3, ch->bld->id); job; job = he_NextEvent())
-        if (job->unkac == best->id)
+        if (job->targetBld == best->id)
             goto unfinished;
-    sprintf(buf, "ai_CalcAngriff(): Meister %s greift an '%s' ", ch->name, best->name);
+    sprintf(buf, "ai_CalcAngriff(): Meister %s greift an '%s' ", name, best->name);
     memset(&msg, 0, sizeof(msg));
     msg.type = 0x49;
     msg.to = ai_CharsT[ch->bld->owner].netId;
@@ -1697,10 +1716,14 @@ int ai_CalcAngriff(AICHAR *ch, int n)
     msg.flags = 1;
     msg.arg[0] = best->id;
     msg.arg[1] = ch->bld->id;
-    t = n;
-    if (t >= 8)
-        t = 8;
-    AI_FILL_IDS(t)
+    t = min(n, 8);
+    for (k = 0, c = 0; k < t && c < 768; c++) {
+        if (ai_CharsT[c].id != 0xffff && ai_CharsT[c].bld == ch->bld && ai_CharsT[c].title
+            && !ai_CharsT[c].job && ai_CharsT[c].model && ai_CharsT[c].model->bldId == ai_CharsT[c].bld->id)
+            msg.ids[k++] = ai_CharsT[c].netId;
+    }
+    for (; k < 8; k++)
+        msg.ids[k] = -1;
     if (msg.ids[0] != -1) {
         cm_SendLongMessage(&msg);
         ch->target = -1;
@@ -1708,11 +1731,10 @@ int ai_CalcAngriff(AICHAR *ch, int n)
     return 1;
 
 unfinished:
-    sprintf(buf, "ai_CalcAngriff(): Meister %s hat aber noch eine Spionage bei '%s' nicht beendet", ch->name,
-            best->name);
+    sprintf(buf, "ai_CalcAngriff(): Meister %s hat aber noch eine Spionage bei '%s' nicht beendet", name, best->name);
     return 1;
 spying:
-    sprintf(buf, "ai_CalcAngriff(): Meister %s hat schon eine Spionage bei '%s' laufen", ch->name, best->name);
+    sprintf(buf, "ai_CalcAngriff(): Meister %s hat schon eine Spionage bei '%s' laufen", name, best->name);
     return 1;
 }
 /* 0x481ef0 */
@@ -1916,10 +1938,10 @@ burgle:
             if (o->reportBld == best->id) {
                 if (o->reportKnow >= 0x5f || (float)o->reportKnow >= util_RandomU(20) + o->reportGuard * 2.0f) {
                     for (job = he_FindEvent(2, 0, 0x40, 3, ch->bld->id); job; job = he_NextEvent())
-                        if (job->unkac == best->id)
+                        if (job->targetBld == best->id)
                             goto unfinished;
                     for (job = he_FindEvent(2, 0, 0x3f, 3, ch->bld->id); job; job = he_NextEvent())
-                        if (job->unkac == best->id)
+                        if (job->targetBld == best->id)
                             goto unfinished;
                     sprintf(buf, "ai_CalcMeisterDiebe(): Meister %s bricht bei '%s' ein", name, best->name);
                     memset(&msg, 0, sizeof(msg));
@@ -1948,10 +1970,10 @@ burgle:
             }
         }
         for (job = he_FindEvent(2, 0, 0x40, 3, ch->bld->id); job; job = he_NextEvent())
-            if (job->unkac == best->id)
+            if (job->targetBld == best->id)
                 goto spying;
         for (job = he_FindEvent(2, 0, 0x3f, 3, ch->bld->id); job; job = he_NextEvent())
-            if (job->unkac == best->id)
+            if (job->targetBld == best->id)
                 goto spying;
         sprintf(buf, "ai_CalcMeisterDiebe(): Meister %s spioniert bei '%s'", name, best->name);
         memset(&msg, 0, sizeof(msg));
