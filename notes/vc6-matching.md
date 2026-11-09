@@ -2745,3 +2745,11 @@ differing instructions. The same shape made the character loop of 0x512f30 pick 
   esi; or bl, 0x80` and the c/t colours (ai_MissionResultDialog, ai_MissionPartnerDialog byte;
   ai_MissionCompleteDialog draft -> shape, then byte from the zero-init order again, quit, nm). Look for the
   same local in sibling dialogs (`grep "flags = id | 0x80"`).
+
+## match-deep 2026-11-09 (d3t_PlaceObject, ...)
+
+- **Call-argument setup hoisted into the FPU result stores** (`lea eax,[keys]; push eax; push 2; sub esp,0xc`
+  scheduled right after an early store, while the original finishes the field copies first): the early store
+  into the array that is passed by address (`keys[0].time = unk`) sat in the source right before the call. A
+  store into the passed array is the last thing VC6 orders before the pushes; move it next to the call
+  (d3t_PlaceObject, 26 ins -> byte; an earlier worker had permuted every other store of the block).

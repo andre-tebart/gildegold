@@ -290,7 +290,7 @@ exe	0x004112e0	di_PollKeyboard	di_input	b0fbf36358da61fa	no	byte	control=byte p1
 exe	0x004113f0	di_SetMousePos	di_input	d1eeae4295072cb3	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00411440	di_GetMouse	di_input	2ed756e9f3806032	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004115b0	di_ClearEvents	di_input	ebdf0f25a7da5cb4	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x00411680	d3t_PlaceObject	d3_tools	636783602727128b	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x00411680	d3t_PlaceObject	d3_tools	a90ec9d96e6ab578	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x00411860	d3t_PlaceObjectV	d3_tools	028ec478487da2b0	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004118a0	d3t_PlaceAtObject	d3_tools	49ede1f99ee2bb52	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004118d0	d3t_FindObjectCB	d3_tools	f9766f3c04953d0f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte

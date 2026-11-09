@@ -59,16 +59,7 @@ static int d3t_SunFade = 0;              /* 0x631124, 1 fading in, -1 fading out
 static int d3t_SunFadeOutArg = 0;         /* 0x631128, the b of the last d3t_FadeOutSunRays, 0 after a fade-in; never read */
 int d3t_SunFadeStart = -1;  /* 0x5f345c, initialized to -1; TODO define here once .data is matched */
 
-/* 0x411680, starts an animation that moves the object to pos and turns it to dir (angles).
-   @deep read the whole function against the original: same 142 instructions and 474 bytes on both sides,
-   the same calls (d3_UnwrapAngles, d3_SetObjectRot, d3anim_CreatePath) and the same stores (keys[0].time,
-   keys[1].rot/pos, d3t_PlaceAngles, d3t_PlaceTarget), references clean. The 26 differing instructions are
-   the last block's schedule: we hoist the d3anim_CreatePath stack setup (lea [ebp-0xe8], push, push 2, sub
-   esp,0xc, the af[0..2] loads) ahead of the FPU results and put the keys[1].rot.z store after the
-   fxch/fstp rot.x, while the original finishes the FPU stores first and loads af[0] into edx before the
-   block. Tried: split dir.x -= and inline assign, dir store orders x,y,z / z,x,y / rot.z first, pos before
-   rot, the original's exact store order; best is 26 ins / 93 bytes with no call or store set difference
-   left. */
+/* 0x411680, starts an animation that moves the object to pos and turns it to dir (angles). */
 int d3t_PlaceObject(D3OBJECT *camera, float px, float py, float pz,
                     float dx, float dy, float dz, int unk, char flags)
 {
@@ -107,7 +98,6 @@ int d3t_PlaceObject(D3OBJECT *camera, float px, float py, float pz,
     rel.x = px - camera->pos.x;
     rel.y = py - camera->pos.y;
     rel.z = pz - camera->pos.z;
-    keys[0].time = unk;
     dir.x -= camera->rotation.x;
     dir.y -= camera->rotation.y;
     dir.z -= camera->rotation.z;
@@ -117,6 +107,7 @@ int d3t_PlaceObject(D3OBJECT *camera, float px, float py, float pz,
     keys[1].pos.x = rel.x;
     keys[1].pos.y = rel.y;
     keys[1].pos.z = rel.z;
+    keys[0].time = unk;
     anim = d3anim_CreatePath(camera, af, 2, keys);
     if (camera == d3_Camera) {
         d3t_CamMoving = 1;
