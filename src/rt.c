@@ -29,6 +29,7 @@
 #include "d3_sm.h"
 #include "gfx.h"
 #include "d3_pose.h"
+#include "d3.h"
 
 int rt_MarkGroup = -1;                  /* 0x602a90 */
 int ai_MapScrollEnabled = 1;  /* 0x62c26c */
