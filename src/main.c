@@ -2,11 +2,10 @@
    "Die Gilde", the single instance mutex, the version string, engine start / stop, the main menu, the
    network and character creation dialogs, the round loop. Its strings (0x62493c ..) follow sv.c's last one
    ("MASTER(): .." 0x624534); he.c starts at 0x53d430.
-   Open: data: 0x624ec4 main_ModelArbeiter / 0x624ed4 main_ModelWirt, owner main (the men's model names of
-   main_ChooseModel's automatic tables: the only access is the initializer copy at 0x534bb7 / 0x534b5d, so the
-   strings stay gap bytes until that table construction is rewritten)
-   Open: data: 0x624ee0 main_ModelPatrizier, owner main (the same table, copy at 0x534b51; the "Sky_Mittel_02" at
-   0x624ef0 after it has no reference at this address)
+   Open: data: 0x624e20 .. 0x624ef0, the model names main_ChooseModel's tables copy (byte-matched as string
+   literals of its initializers; the gap block still covers them, with "Sky_Mittel_02" at 0x624ef0 after them)
+   Open: data: 0x62489c ai_NumPlayers (mission.c) lies between main's data and is read as a dword and 0xff here
+   (ai_NumPlayersW): owner main or mission
    Open: 0x534040 is out of address order.
    unit of rea 8cef7d5b (src/game/main.c); boundaries in decl/text.dcl */
 extern int gm_PlayerRecords[688];

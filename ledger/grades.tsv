@@ -3456,14 +3456,14 @@ exe	0x00533850	main_Menue	main	byte	readable
 exe	0x00534040	main_GiveStartBuildings	main	byte	readable		
 exe	0x005344f0	main_PlaceFamilyModel	main	shape	readable		
 exe	0x00534610	main_ChooseTalents	main	shape	readable		
-exe	0x00534b30	main_ChooseModel	main	draft	draft		
-exe	0x005359f0	main_ChooseFamily	main	draft	draft		
+exe	0x00534b30	main_ChooseModel	main	byte	readable		
+exe	0x005359f0	main_ChooseFamily	main	byte	readable		
 exe	0x005361d0	main_ChoosePlayer	main	draft	readable	deep	
-exe	0x00536980	main_ChooseHistory	main	draft	draft		
+exe	0x00536980	main_ChooseHistory	main	draft	readable	deep	
 exe	0x00536d80	main_CharacterIntro	main	byte	readable		
 exe	0x00536e80	main_ChooseDifficulty	main	byte	readable		
 exe	0x00537040	main_ChooseOpponents	main	draft	readable	deep	
-exe	0x00537230	main_ChooseCity	main	draft	draft		
+exe	0x00537230	main_ChooseCity	main	draft	readable	deep	
 exe	0x00537930	main_NewSinglePlayerGame	main	byte	readable		
 exe	0x00537980	main_LoadingScreen	main	byte	readable		
 exe	0x00537af0	main_SetLoadProgress	main	byte	readable		
@@ -3476,14 +3476,14 @@ exe	0x00537f40	main_EndGame	main	byte	readable
 exe	0x00538140	main_RundenBeginn	main	byte	readable		
 exe	0x005384e0	main_EndRound	main	draft	readable	deep	
 exe	0x00539620	main_ReplaceFigure	main	shape	readable		
-exe	0x00539870	main_RoundReport	main	draft	draft		
-exe	0x0053a250	main_UpdateFigure	main	draft	draft		
+exe	0x00539870	main_RoundReport	main	draft	readable	deep	
+exe	0x0053a250	main_UpdateFigure	main	shape	readable		
 exe	0x0053a450	main_UpdateFigures	main	byte	readable		
-exe	0x0053a520	main_SettleRound	main	draft	draft		
-exe	0x0053b2e0	main_BeginPlayerRound	main	draft	draft		
+exe	0x0053a520	main_SettleRound	main	draft	readable	deep	
+exe	0x0053b2e0	main_BeginPlayerRound	main	shape	readable		
 exe	0x0053b830	main_CheckCD	main	byte	readable		
 exe	0x0053b840	main_CreateStartCouple	main	shape	readable	deep	
-exe	0x0053bb20	main_GameLoop	main	draft	draft		
+exe	0x0053bb20	main_GameLoop	main	draft	readable	deep	
 exe	0x0053c9b0	main_PlayIntroMovies	main	byte	readable		
 exe	0x0053cb40	main_PlayOutro	main	byte	readable		
 exe	0x0053ccf0	WinMain	main	draft	draft		
@@ -4003,7 +4003,7 @@ exe	0x00578370	ai_TutorialStop	sv_t	byte	readable
 exe	0x00578440	ai_TutorialFreeRuns	sv_t	byte	readable		
 exe	0x005784a0	ai_TutorialInitMainIntro	sv_t	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	sv_t	byte	readable		
-exe	0x00578e40	ai_TutorialInitChapter2	sv_t	shape	readable		
+exe	0x00578e40	ai_TutorialInitChapter2	sv_t	byte	readable		
 exe	0x00579570	ai_TutorialInitChapter3	sv_t	shape	readable		
 exe	0x0057aa80	ai_TutorialInitChapter4	sv_t	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	sv_t	byte	readable		
@@ -4445,7 +4445,7 @@ exe	0x005bc0f0	ai_FreePicture	lc	byte	readable
 exe	0x005bc110	ai_ChooseCoatOfArms	lc	byte	readable		
 exe	0x005bc420	ai_OpenMoneyInfoPage	lc	byte	readable		
 exe	0x005bc6d0	ai_OpenBuildingListPage	lc	byte	readable		
-exe	0x005bc790	ai_BuildingDetailWindow	lc	byte	readable		
+exe	0x005bc790	ai_BuildingDetailWindow	lc	shape	readable		
 exe	0x005bc9c0	ai_OpenMasterListPage	lc	shape	readable	deep	
 exe	0x005bcc70	ai_PlayerStatsPanel	lc	shape	readable		
 exe	0x005bd060	ai_AmountLimit	lc	byte	readable		
