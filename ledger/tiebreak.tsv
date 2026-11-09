@@ -2110,7 +2110,7 @@ exe	0x004bf5b0	rt_EditCartRoute	rt	36a14f3981bc6686	no	draft	control=draft p1=dr
 exe	0x004bfa40	rt_UnloadAtPoint	rt	b18fbb5ae51b7400	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x004bfc60	rt_LoadAtPoint	rt	5cb3669f0720e368	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x004bff40	rt_SaveRoutes	rt	fa06b59d75b2f243	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x004c0040	rt_LoadRoutes	rt	b3da79c11b103b06	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x004c0040	rt_LoadRoutes	rt	22fe3c8adababf2d	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x004c01b0	snd_ClearQueue	f3snd	61d4afa5b9ebdb73	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004c0210	snd_QueueTail	f3snd	013019ae75612274	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004c0230	snd_AddToQueue	f3snd	58441ab57cfbee62	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte

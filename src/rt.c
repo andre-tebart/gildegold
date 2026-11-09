@@ -1194,15 +1194,20 @@ int rt_SaveRoutes(void *f)
 /* 0x4c0040, "rt_load": reads the route points of a saved game from f (a count, then per point its cartId,
    buildingId, loadSlots, unloadSlots) and rebuilds each cart's route from the consecutive points with its id;
    returns 0 on a read error
-   @deep read whole against the original 0x4c0040..0x4c01a1: the same reads, the same rebuild loop (r =
-   &buf[i], c->route = 0, do { rt_AddPoint; first point becomes c->route; buildingId, cartId, i++, two
-   0x18-byte rep movsd copies; r++; break at i >= n } while (r && c->objId == r->cartId)), mem_Free; typed
-   AIOBJ c. Left: allocation only - the original keeps buf in ebx and i in ebp in both loops and puts n in
-   f's dead parameter home (frame 8: the prover stops at ls_Read(&n): ours frame, the original args+4);
-   ours keeps i in ebx (first loop) and in a stack slot (second loop) because VC6 made r+8 an induction
-   variable in ebp for the memcpy source (ours 'lea ebp,[ebx+8]', 'add ebp,0x40' vs the original's 'lea
-   esi,[ebx+8]' / 'lea esi,[ebx+0x20]'); frame 0xc vs 0x8. Tried: the i < n test in the do-while condition,
-   the declaration order (no change). */
+   @stuck insensitive (headers sample: 1 codegen). Rewrote the rebuild loop with buf[i] fields and r =
+   &buf[i] only for the r != 0 test: frame 0xc -> 0x8 (matches), 327 -> 286 bytes. Left: the original
+   pushes ebp in the prologue and keeps i in ebp in both loops, buf in ebx (kept in ebx into the second
+   loop: 'jmp' past 'mov ebx,[buf]' on first entry), c spilled to [esp+0x10] and reloaded per inner
+   iteration; ours keeps i in ebx (loop 1) and in a stack slot (loop 2), c in ebp with ebp pushed only
+   around loop 2, buf IV in esi ('add esi,8' vs 'lea esi,[ebx+8]'). Tried (dcp try): pointer r through the
+   inner loop with i++/r++ in 4 positions x r at outer top or inner x break vs while-condition (44
+   variants, best 73 ins/321 bytes, all frame 0xc), outer do-while with if (n > 0), i++ before AddPoint,
+   pointer first loop (= control), separate counter j for loop 2 in both declaration orders (= control),
+   unsigned n (worse), !c->route (= control). (tiebreak: not measured (dcp headers sample rt_LoadRoutes))
+   prior: read whole against the original 0x4c0040..0x4c01a1: the same reads, the same rebuild loop (per
+   point: rt_AddPoint, the first point becomes c->route, buildingId, cartId, two 0x18-byte rep movsd
+   copies, i++, break at i >= n, continue while the next point (r != 0) has the cart's id), mem_Free. Left:
+   allocation only - see the stuck reason. */
 
 int rt_LoadRoutes(void *f)
 {
@@ -1227,21 +1232,20 @@ int rt_LoadRoutes(void *f)
             return 0;
     }
     for (i = 0; i < n; ) {
-        r = &buf[i];
-        c = (AIOBJ *)gm_FindObjectInst(r->cartId);
+        c = (AIOBJ *)gm_FindObjectInst(buf[i].cartId);
         c->route = 0;
         do {
             q = rt_AddPoint(c->route);
             if (c->route == 0)
                 c->route = q;
-            q->buildingId = r->buildingId;
-            q->cartId = r->cartId;
+            q->buildingId = buf[i].buildingId;
+            q->cartId = buf[i].cartId;
+            memcpy(q->loadSlots, buf[i].loadSlots, sizeof(q->loadSlots));
+            memcpy(q->unloadSlots, buf[i].unloadSlots, sizeof(q->unloadSlots));
             i++;
-            memcpy(q->loadSlots, r->loadSlots, sizeof(q->loadSlots));
-            memcpy(q->unloadSlots, r->unloadSlots, sizeof(q->unloadSlots));
-            r++;
             if (i >= n)
                 break;
+            r = &buf[i];
         } while (r != 0 && c->objId == r->cartId);
     }
     mem_Free(buf);
