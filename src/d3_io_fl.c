@@ -22,7 +22,15 @@
 extern float ai_FloatZero;  /* 0x5eb788, the shared 0.0f (cm.c) */
 
 /* 0x450860, loads a mesh from its fast chunk file (the cache the BGF loader looks in first); returns 0 when
-   there is none */
+   there is none
+   @deep whole asmdiff read; typed the polygon / vertex / attachment reads (D3BGFPOLY.v / uv / n / tex /
+   mat, D3BGFVERT, D3BGF.nattach), the attachment loop is one for (the extra test eax,eax; jle gone). Left
+   (ours=425 original=425, 26 differing): two register / scheduling hunks only. 1) fl.s.c1 = mt.c2 & 1 is
+   the same add/xor/and 2/xor bit insert, the original in bl (0x450b97 mov bl,al; add bl,bl; xor bl,cl; and
+   bl,2; xor cl,bl) before it loads mt.name[2][0] into bl, ours in dl; 2) both D3BGF_TEXLOAD calls push the
+   same four arguments (flags byte, kind byte, fl, texnames + off2) with the loads of fl ([esp+0x14]) and
+   m->texnames + off2 in other registers / order (0x450c2a / 0x450c34, 0x450c96 / 0x450ca8). The prover
+   stops at a 1-byte shift (+0x351 / +0x32c), the same bitfield shr. */
 D3BGF *d3_FindBGF(char *path, char *name, char *texnames, int ntexsets, int ntex)
 {
     int a = 0;
@@ -49,42 +57,35 @@ D3BGF *d3_FindBGF(char *path, char *name, char *texnames, int ntexsets, int ntex
         if (*pn > 0) {
             m->verts = (float *)mem_Alloc((*pn * 3 + 0x18) * 8, "d3_io_fl:LoadFastChunk(poi)");
             for (cnt = 0; cnt < *pn + 8; cnt++) {
-                bio_rd_v3(f, (int *)((char *)m->verts + a));
-                bio_rd_v3(f, (int *)((char *)m->verts + a + 0xc));
-                a += 0x18;
+                bio_rd_v3(f, (int *)&((D3BGFVERT *)m->verts)[cnt].x);
+                bio_rd_v3(f, (int *)&((D3BGFVERT *)m->verts)[cnt].nx);
             }
         }
         bio_rd_i(f, (int *)&m->radius);
         m->polys = (D3BGFPOLY *)mem_Alloc(m->npolys * 0x38, "d3_io_fl:LoadFastChunk(pol)");
-        a = 0;
-        if (m->npolys > 0) {
-            b = 0;
-            do {
-                bio_rd_i(f, (int *)((char *)m->polys + b + 0x18));
-                bio_rd_i(f, (int *)((char *)m->polys + b + 0x1c));
-                bio_rd_i(f, (int *)((char *)m->polys + b + 0x20));
-                bio_rd_v3(f, (int *)&t);
-                *(float *)((char *)m->polys + b) = t.x;
-                *(float *)((char *)m->polys + b + 8) = t.y;
-                *(float *)((char *)m->polys + b + 0x10) = t.z;
-                bio_rd_v3(f, (int *)&t);
-                *(float *)((char *)m->polys + b + 4) = t.x;
-                *(float *)((char *)m->polys + b + 0xc) = t.y;
-                *(float *)((char *)m->polys + b + 0x14) = t.z;
-                bio_rd_v3(f, (int *)((char *)m->polys + b + 0x2c));
-                *(int *)((char *)m->polys + b + 0x24) = -1;
-                if (m->ntex > 0xfe) {
-                    bio_rd_i(f, (int *)((char *)m->polys + b + 0x28));
-                } else {
-                    bio_rd_c(f, (char *)&cb);
-                    if ((char)cb == -1)
-                        *(int *)((char *)m->polys + b + 0x28) = -1;
-                    else
-                        *(int *)((char *)m->polys + b + 0x28) = cb & 0xff;
-                }
-                a++;
-                b += 0x38;
-            } while (a < m->npolys);
+        for (a = 0; a < m->npolys; a++) {
+            bio_rd_i(f, &m->polys[a].v[0]);
+            bio_rd_i(f, &m->polys[a].v[1]);
+            bio_rd_i(f, &m->polys[a].v[2]);
+            bio_rd_v3(f, (int *)&t);
+            m->polys[a].uv[0][0] = t.x;
+            m->polys[a].uv[1][0] = t.y;
+            m->polys[a].uv[2][0] = t.z;
+            bio_rd_v3(f, (int *)&t);
+            m->polys[a].uv[0][1] = t.x;
+            m->polys[a].uv[1][1] = t.y;
+            m->polys[a].uv[2][1] = t.z;
+            bio_rd_v3(f, (int *)&m->polys[a].n);
+            m->polys[a].tex = -1;
+            if (m->ntex > 0xfe) {
+                bio_rd_i(f, &m->polys[a].mat);
+            } else {
+                bio_rd_c(f, (char *)&cb);
+                if ((char)cb == -1)
+                    m->polys[a].mat = -1;
+                else
+                    m->polys[a].mat = cb & 0xff;
+            }
         }
         if (!texnames || ntexsets <= 0 || ntex != m->ntex) {
             m->nsets = 1;
@@ -139,16 +140,11 @@ D3BGF *d3_FindBGF(char *path, char *name, char *texnames, int ntexsets, int ntex
             } while (cnt < m->ntex);
         }
         bio_rd_i(f, &idx);
-        m->pad208[0] = (char)idx;
-        a = 0;
-        if (idx > 0) {
-            for (j = 0; a < idx; ) {
-                bio_rd_s(f, m->attach[j].name);
-                bio_rd_v3(f, (int *)&m->attach[j].f[0]);
-                bio_rd_v3(f, (int *)&m->attach[j].f[3]);
-                a++;
-                j++;
-            }
+        m->nattach = (unsigned char)idx;
+        for (a = 0; a < idx; a++) {
+            bio_rd_s(f, m->attach[a].name);
+            bio_rd_v3(f, (int *)&m->attach[a].f[0]);
+            bio_rd_v3(f, (int *)&m->attach[a].f[3]);
         }
         vfs_fclose(f);
     }
@@ -169,7 +165,7 @@ void d3_CalcNormals(D3BGF *m)
     for (i = 0; i < m->npolys; i++) {
         v = m->verts;
         d3_TriNormal((D3VECTOR4 *)(v + p[i].v[0] * 6), (D3VECTOR4 *)(v + p[i].v[1] * 6),
-                     (D3VECTOR4 *)(v + p[i].v[2] * 6), (D3VECTOR4 *)p[i].pad2c);
+                     (D3VECTOR4 *)(v + p[i].v[2] * 6), (D3VECTOR4 *)&p[i].n);
     }
     vt = (D3BGFVERT *)m->verts;
     for (i = 0; i < m->nverts; i++, vt++) {
@@ -179,9 +175,9 @@ void d3_CalcNormals(D3BGF *m)
         p = m->polys;
         for (j = 0; j < m->npolys; j++) {
             if (p[j].v[0] == i || p[j].v[1] == i || p[j].v[2] == i) {
-                s.x += ((D3VECTOR *)p[j].pad2c)->x;
-                s.y += ((D3VECTOR *)p[j].pad2c)->y;
-                s.z += ((D3VECTOR *)p[j].pad2c)->z;
+                s.x += p[j].n.x;
+                s.y += p[j].n.y;
+                s.z += p[j].n.z;
             }
         }
         d3_Normalize(&s);
@@ -477,7 +473,7 @@ void d3_AddFLChunk(char *path, char weld)
             ((int *)&v)[1] = *(int *)&m->polys[i].uv[1][1];
             ((int *)&v)[2] = *(int *)&m->polys[i].uv[2][1];
             bio_wr_v3(out, &v);
-            bio_wr_v3(out, m->polys[i].pad2c);
+            bio_wr_v3(out, (int *)&m->polys[i].n);
             if (m->ntex > 0xfe) {
                 bio_wr_i(out, m->polys[i].mat);
             } else {

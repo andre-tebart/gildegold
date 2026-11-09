@@ -24,7 +24,7 @@ typedef struct D3BGFPOLY {          /* 0x38 bytes, D3BGF::polys */
     int v[3];                       /* 0x18, vertex indices */
     int tex;                        /* 0x24, index into d3_Textures or -1 */
     int mat;                        /* 0x28, material index while loading */
-    char pad2c[0xc];
+    D3VECTOR n;                     /* 0x2c, the face normal (d3_TriNormal of its three vertices, summed into the vertex normals, d3_io_fl.c) */
 } D3BGFPOLY;
 
 typedef struct D3BGFMAT {           /* 0xe0 bytes, a material as stored in the file */
@@ -92,7 +92,8 @@ struct D3BGF {                      /* 0x20c bytes, a loaded mesh ("d3_io:LoadAG
     D3BGF *next;                    /* 0x1fc, the stock object list: towards d3_StockListEnd */
     D3BGF *prev;                    /* 0x200, towards the head sentinel d3_Unkfc2e00 */
     char *texnames;                 /* 0x204, ntex names of 0x40 bytes */
-    char pad208[4];
+    unsigned char nattach;          /* 0x208, the attachment points in use (d3_FindBGF stores the low byte of their count) */
+    char pad209[3];
 };
 
 /* The eight bounding-box corners are appended to the vertex array as D3BGFVERT records (d3_io_fl.h):
