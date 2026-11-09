@@ -117,12 +117,6 @@
 #define ai_Unk75e138             (*(int *)((char *)&ai_TimeCopy + 0x8))  /* 0x75e138 */
 #define ai_Unk75e13c             (*(short *)((char *)&ai_TimeCopy + 0xc))  /* 0x75e13c */
 
-/* ai_Unk76f920 */
-#define ai_Unk76f924             (*(int *)((char *)&ai_Unk76f920 + 0x4))  /* 0x76f924 */
-#define full_data_76f990         (*(int *)((char *)&ai_Unk76f920 + 0x70))  /* 0x76f990 */
-#define full_data_76f994         (*(int *)((char *)&ai_Unk76f920 + 0x74))  /* 0x76f994 */
-#define ai_Unk76f9b8             (*(int *)((char *)&ai_Unk76f920 + 0x98))  /* 0x76f9b8 */
-#define ai_Unk76f9bc             (*(char (*)[100])((char *)&ai_Unk76f920 + 0x9c))  /* 0x76f9bc */
 
 /* ai_GameFlags */
 #define ai_GameFlagsB            (*(unsigned char *)&ai_GameFlags)  /* 0x6f23f8, its low byte (bit 7: sv_UpdateClock) */

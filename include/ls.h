@@ -34,7 +34,7 @@ int ls_WriteMessageQueues(int f);                                               
 int ls_WriteEnvironment(int f);                                               /* 0x51c870 */
 int ls_Read(void *buf, int size, int count, int f);                     /* 0x51c920 */
 int ls_LoadGame(int name, int kind);                                  /* 0x51c950, kind is not read (main passes 1 / 2, f3init 5) */
-typedef struct LSHEADER {               /* 0x100 bytes, the header of a save game (ls_ReadSaveHeader; ai_Unk76f920) */
+typedef struct LSHEADER {               /* 0x100 bytes, the header of a save game (ls_ReadSaveHeader; ls_LoadedHeader) */
     int version;                        /* 0x00, kept in ls_Version */
     unsigned char flags;                /* 0x04, bit 1: a map-only save */
     char name[0x20];                    /* 0x05 */
@@ -76,8 +76,8 @@ int ls_ReadStatistics(int f);                                               /* 0
 int ls_ReadAvatars(void *f);                                            /* 0x51fb80 */
 int ls_ReadEventTables(int f);                                               /* 0x51fb90 */
 int ls_ReadParties(int f);                                               /* 0x520000 */
-int unk_Unk520200(int f);                                               /* 0x520200 */
-int unk_Unk520310(int f);                                               /* 0x520310 */
+int ls_ReadHistory(int f);                                               /* 0x520200 */
+int ls_ReadMessageQueues(int f);                                               /* 0x520310 */
 int ls_ReadEnvironment(int f);                                               /* 0x5205f0 */
 int ls_FixupAfterLoad(void);                                            /* 0x5206b0 */
 int ls_SendGame(char *name);                                            /* 0x520a30 */
@@ -88,12 +88,7 @@ extern short ai_Unk75e13c;                                  /* 0x75e13c */
 #endif
 extern LSSAVE ls_SavePath;                                  /* 0x75e640 */
 extern unsigned short ai_ScreenImage[19200];                /* 0x766320 */
-extern int ai_Unk76f920[0x40];                              /* 0x76f920, the 0x100-byte header of the loaded save game */
-#ifndef DATA_VIEWS_H
-extern int ai_Unk76f924;                                    /* 0x76f924 */
-extern int ai_Unk76f9b8;                                    /* 0x76f9b8 */
-extern char ai_Unk76f9bc[100];                              /* 0x76f9bc */
-#endif
+extern LSHEADER ls_LoadedHeader;                            /* 0x76f920, the header of the loaded save game (ls_LoadGame) */
 extern int ai_NextPartyId;                                    /* 0x61a658 */
 extern int ls_Language;                                     /* 0x62364c */
 extern int ls_Version;                                      /* 0x623650 */

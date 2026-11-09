@@ -1,5 +1,4 @@
 /* ls.c -- the save game (0x519010 ..): the tag "ls_" ("ls:tmp" 0x623654, "ls_LoadCharacter(): invalid next or prev-action pointer ...", "ls_SendGame"), the language number of a name (0x519010: the table "GERMAN" .. 0x5ee978), the save game writer 0x5190b0 (header 0x5194c0: "SCENARIO", the player, the party records and the screen shot of 0xe100 bytes, then one writer per subsystem), the pointer <-> index conversions before / after a save (0x519a00 / 0x519aa0 / 0x519b50) and the other writers (0x519bf0 ..), the readers (0x51c950 ..) and the network send / receive of a save game (0x520a30 / 0x520b80). The unit starts at its first global 0x62364c (the language number, -1); its strings run to "ls_SendGame" 0x62376c / "rbn" 0x623778, and it ends at 0x520ec0, sv.c's first function. Names are ours.
-   Open: two of ls_LoadGame's readers are unnamed (unk_Unk520200, unk_Unk520310).
    unit of rea 8cef7d5b (src/game/ls.c); boundaries in decl/text.dcl */
 struct D3SM;
 struct D3TERRAIN;
@@ -1280,14 +1279,16 @@ int ls_Read(void *buf, int size, int count, int f)
 
 LSSAVE ls_SavePath = {0};  /* 0x75e640 */
 unsigned short ai_ScreenImage[19200] = {0};  /* 0x766320, the */
-int ai_Unk76f920[0x40] = {0};  /* 0x76f920, the 0x100-byte header of the loaded save game (id, flag byte, name, ..; ls_ReadSaveHeader fills it up to +0xfc) */
-/* 0x51c950, loads a save game: opens the file (0x430470, mode 0x5f1084), resets the game (0x503e80, 0x40b240, 0x50d490), reads the header (0x51cee0, versions 0x10026 .. 0x1005a only) and the fixed globals (each from its version: 0x6f1bcc from 0x10022, 0x61a658 from 0x10030, 0x6f1b88 from 0x1003d), then the readers of the subsystems in the order 0x51d3d0, 0x51d550, 0x51db00, 0x51de70, 0x51f080, 0x4ea7a0 (from 0x10045), 0x51d2d0, [unless the header flag +4 has bit 2 (a map only save): 0x4ea7a0, 0x4f2b30, 0x51f650 (from 0x10016), 0x51f720, 0x4ed270 (from 0x1002a), 0x51fb90, 0x520000, 0x520200, 0x520310, 0x5205f0 (from 0x1002e), 0x5206b0, then the references (0x511790 / 0x511840 / 0x51e900), the character pointers 0x6f1bfc / 0x6f1c00 (0x505df0), 0x4b63b0, 0x589b30 (from 0x10029), 0x5a8a20 (from 0x10047), 0x4ec140 (from 0x10049), 0x4ada80 (from 0x10052), 0x4c0040 (from 0x10053)]. The first one that fails closes the file, frees the buffer 0xf31140 and returns 0. At the end 0x528770, 0x511790, 0x513740, 0x513590(0x633738, 1) and the path 0x76f9bc is kept in 0x75e640. Returns 1. ROUGH */
-/* ai_Unk76f924 / ai_Unk76f9b8 / ai_Unk76f9bc: views of ai_Unk76f920 (data_views.h) */
+LSHEADER ls_LoadedHeader = {0};  /* 0x76f920, the 0x100-byte header of the loaded save game (id, flag byte, name, ..; ls_ReadSaveHeader fills it up to +0xfc) */
 extern char * cm_LoadBuf;                /* 0xf31140 */
 extern int ai_TimeCopy[4];  /* 0x75e130, the clock copy */
 #define LS_RD(p, sz) ls_Read((int)(p), (sz), 1, h)
+#define LS_CLOSEFAIL { vfs_fclose(h); return 0; }   /* a reader failed: the file closed */
 #define LS_LOADFAIL { vfs_fclose(h); mem_Free(cm_LoadBuf); cm_LoadBuf = 0; return 0; }   /* a late reader failed: the file closed, the load buffer freed */
-/* 0x51c950 */
+/* 0x51c950, loads a save game: resets the game, reads the header into ls_LoadedHeader (versions 0x10026 .. 0x1005a)
+   and the fixed globals, then the readers of the subsystems in the writer's order (a map-only save, header flag 2,
+   stops after the scene); a failed reader closes the file (the late ones also free cm_LoadBuf) and returns 0. At the
+   end the town scene is prepared and the save path kept in ls_SavePath. Returns 1 */
 int ls_LoadGame(int name, int kind)
 {
     int h;
@@ -1301,7 +1302,7 @@ int ls_LoadGame(int name, int kind)
     ai_JudgeCatholic = 0;
     ai_JudgeProtestant = 0;
     init_FreeScenes();
-    if (ls_ReadSaveHeader(h, ai_Unk76f920) == 0 || ai_Unk76f920[0] > 0x1005a || ai_Unk76f920[0] < 0x10026
+    if (ls_ReadSaveHeader(h, (int *)&ls_LoadedHeader) == 0 || ls_LoadedHeader.version > 0x1005a || ls_LoadedHeader.version < 0x10026
         || !LS_RD(&ai_NextObjectId, 4) || !LS_RD(&ai_NextEventId, 4) || !LS_RD(&ai_Time, 0xe)
         || !LS_RD(&ai_OwnPlayer, 1) || !LS_RD(&ai_PlayerCharC, 4) || !LS_RD(&ai_NextCharNumber, 4)
         || !LS_RD(&ai_NextPlayerNumber, 4) || !LS_RD(&ai_CharCount, 4))
@@ -1309,22 +1310,26 @@ int ls_LoadGame(int name, int kind)
     if (ls_Version >= 0x10022)
         LS_RD(&ls_SpareInt, 4);
     LS_RD(&ai_Update, sizeof(AIUPDATE));   /* 0xf89580 */
-    ai_Unk75e134 = *(int *)&ai_Time.hour;
-    ai_TimeCopy[0] = ai_Time.year;
-    ai_Unk75e138 = *(int *)((char *)&ai_Time + 8);
-    ai_Unk75e13c = *(short *)((char *)&ai_Time + 0xc);
-    if ((ai_Unk76f924 & 2) == 0)
-        ai_Difficulty = ai_Unk76f9b8;
+    ai_TimeCopyT = ai_Time;
+    if ((ls_LoadedHeader.flags & 2) == 0)
+        ai_Difficulty = ls_LoadedHeader.difficulty;
     if (ls_Version >= 0x10030)
         LS_RD(&ai_NextPartyId, 4);
     if (ls_Version >= 0x1003d)
         LS_RD(&ai_NextCrimeId, 4);
     else
         ai_NextCrimeId = 1000000;
-    if (ls_ReadObjects(h) == 0 || ls_ReadBuildings(h) == 0 || ls_ReadPlayerRecords(h) == 0 || ls_ReadCharacters(h) == 0
-        || ls_ReadPlayerSlots(h) == 0 || (ls_Version >= 0x10045 && amt_LoadAemter(h, ls_Version) == 0) || ls_LoadScene(h) == 0)
+    if (ls_ReadObjects(h) == 0)
+        LS_CLOSEFAIL
+    if (ls_ReadBuildings(h) == 0)
+        LS_CLOSEFAIL
+    if (ls_ReadPlayerRecords(h) == 0)
+        LS_CLOSEFAIL
+    if (ls_ReadCharacters(h) == 0)
+        LS_CLOSEFAIL
+    if (ls_ReadPlayerSlots(h) == 0 || (ls_Version >= 0x10045 && amt_LoadAemter(h, ls_Version) == 0) || ls_LoadScene(h) == 0)
         goto close;
-    if ((ai_Unk76f924 & 2) != 0) {          /* a map-only save ends here */
+    if ((ls_LoadedHeader.flags & 2) != 0) {          /* a map-only save ends here */
         vfs_fclose(h);
         ai_JudgeCatholic = 0;
         ai_JudgeProtestant = 0;
@@ -1334,10 +1339,15 @@ int ls_LoadGame(int name, int kind)
     }
     if ((ls_Version < 0x10045 && amt_LoadAemter(h, ls_Version) == 0) || gv_ReadCrimes(h) == 0
         || (ls_Version >= 0x10016 && ls_ReadRelations(h) == 0) || ls_ReadStatistics(h) == 0
-        || (ls_Version >= 0x1002a && ls_ReadAvatars((void *)h) == 0) || ls_ReadEventTables(h) == 0
-        || ls_ReadParties(h) == 0 || unk_Unk520200(h) == 0)
+        || (ls_Version >= 0x1002a && ls_ReadAvatars((void *)h) == 0))
         goto close;
-    if (unk_Unk520310(h) == 0) {
+    if (ls_ReadEventTables(h) == 0)
+        LS_CLOSEFAIL
+    if (ls_ReadParties(h) == 0)
+        LS_CLOSEFAIL
+    if (ls_ReadHistory(h) == 0)
+        LS_CLOSEFAIL
+    if (ls_ReadMessageQueues(h) == 0) {
         vfs_fclose(h);
         ls_FixupAfterLoad();
         return 0;
@@ -1368,7 +1378,7 @@ int ls_LoadGame(int name, int kind)
     init_PrepareTownScene();
     init_AfterTownLoad();
     init_SetDetailLevel(d3_Terrain, 1);
-    strcpy(ls_SavePath.path, ai_Unk76f9bc);
+    strcpy(ls_SavePath.path, ls_LoadedHeader.title);
     return 1;
 close:
     vfs_fclose(h);
@@ -2451,7 +2461,7 @@ int ls_ReadParties(int f)
 /* 0x520200, reads the mission table 0x6f0724 / 0x601058 .. 0x60106c, 0xf83520 (0x10 bytes), and the 0x11-word records from 0xf83548 (8 pairs of words each). Returns 1 */
 
 
-int unk_Unk520200(int f)
+int ls_ReadHistory(int f)
 {
     int n, i, j;
     int *p, *q;
@@ -2482,7 +2492,7 @@ int unk_Unk520200(int f)
 /* 0x520310, reads the two record pools 0x9367e0 / 0xa69140 (0x99-byte records: the references at +0x91 / +0x95 are indices turned into pointers (-1 = NULL)), the pool heads 0xa68d24 / 0xa68c00 / 0xf81160, the reference table 0xf31160 (10 bytes each, 0x2000 or 0x8000 of them from 0x1003c) and the words 0xf81168, 0xf8121c, 0xa68c04, 0x60bd88 .. 0x60bd90. Returns true when all was read */
 
 
-int unk_Unk520310(int f)
+int ls_ReadMessageQueues(int f)
 {
     int *p;
     int i, n;

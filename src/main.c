@@ -340,7 +340,6 @@ void main_FreeSoundBanks(void);         /* 0x537db0 */
 #define ai_NetLibName (ai_DataPath + 0x100)  /* 0x75dda0, the network plug-in DLL (0x104 bytes inside ai_DataPath's block: game.INI [Network] Server, "Server\Server.dll") */
 #define ls_SavePortW (*(int *)((char *)&ls_SavePath + 0x84))  /* 0x75e6c4, ls_SavePath.cur as the whole dword: @original main_GameLoop passes it so (0x53bce5 mov edx,[0x75e6c4]; push edx) */
 #define net_ConnectI ((unsigned int (*)(char *, int))net_Connect)  /* 0x424990 (net.h: unsigned short port): @original main_GameLoop pushes the port as a dword */
-#define ls_LoadedHeader (*(LSHEADER *)&ai_Unk76f920)  /* 0x76f920, the header of the loaded save game (ls.h: int[0x40]) */
 #define ai_CityName (ai_DataPath + 0x220)  /* 0x75dec0, the name of the chosen city (0x40 bytes inside ai_DataPath's block: game.INI [General] Stadt, main_ChooseCity) */
 #define ai_BTypesT (*(AIBTYPE **)&ai_BTypes)  /* 0x7e3f30, ai_BTypes (ahm.c: char *) as the AIBTYPE records it points to */
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
@@ -5900,7 +5899,6 @@ GAPDATA full_data_75e401[127] = { 0 };  /* 0x75e401 */
 int main_PlatformNT = 0;  /* 0x75e62c, the OS is NT based (dwPlatformId != VER_PLATFORM_WIN32_WINDOWS) */
 int main_WindBank = 0;  /* 0x75e630, the wind sample bank (sb_LoadSampleBank "natur\wind.sbf" at the game start) */
 GAPDATA full_data_75e634[12] = { 0 };  /* 0x75e634 */
-/* full_data_76f990 / full_data_76f994: views of ai_Unk76f920 (data_views.h), the save header's +0x70 / +0x74 */
 GAPDATA full_data_91f6e0[3] = { 0 };  /* 0x91f6e0 */
 GAPDATA full_data_91f6e3[1] = { 0 };  /* 0x91f6e3 */
 GAPDATA full_data_91f6e4[28] = { 0 };  /* 0x91f6e4 */
