@@ -777,78 +777,81 @@ int ls_WriteSceneCharacter(CHARACTER *c, int owner, int f)
 }
 
 
-/* 0x51aff0, the characters' scene records and the action queue ch_Queue (CH_QUEUE CHACTION records, type != 0: used): the count and the records of the characters (0x770d04, 0x21c each) through 0x51ad80, the same for the objects of the kind 0x1d in the list 0x7e3f34, then the queue's pointers are turned into indices (ch: the character's id, prev / next through ls_ActionIndex), each record whose character (ch_List) has a body owner is written in pieces (the type byte, the vectors, the names, the 0xa0-byte union u and stop), and the pointers are restored (ch_List, ls_ActionAt). Returns 1. ROUGH: the pieces of the record copy (local_188 .. local_4) are the fields of the 0x65-word copy */
-extern char *ai_Goods;              /* 0x91aaf0, the object prototypes (0x41 bytes) */
-int mem_IsValid();                     /* 0x4225e0 */
-/* 0x51aff0 */
+/* 0x51aff0, writes the scene records: the count and the scene characters of ai_Chars (ls_WriteSceneCharacter, owner
+   its netId), the count and the scene characters of the carts in ai_Objects (goods type 0x1d, owner the object id),
+   then the action queue ch_Queue: the used actions' character, prev and next pointers turned into indices (the free
+   ones cleared), per action whose character index is valid its type (0 when the character's body has no owner) and
+   the saved fields, and at the end the indices turned back into pointers. Returns 1, 0 when a write fails */
 int ls_WriteSceneRecords(int f)
 {
-    int cnt = 0, i, k, n;
-    int *p;
+    int cnt = 0, i;
+    int n;
     CHACTION *a;
     CHARACTER *c;
-    int rec[0x65];
+    CHACTION rec;
     char flag;
 
-    for (p = (int *)((unsigned)&ai_Unk770cec + 0x18); (int)p < ((unsigned)((unsigned)ai_Unk770cec + 0x65296) + 0x182); p += 0x87) {
-        if (*p)
+    for (i = 0; i < 768; i++) {
+        if (ai_CharsT[i].scene != 0)
             cnt++;
     }
     LS_W(&cnt, 4)
-    for (p = (int *)((unsigned)&ai_Unk770cec + 0x18); (int)p < ((unsigned)((unsigned)ai_Unk770cec + 0x65296) + 0x182); p += 0x87) {
-        if (*p != 0 && ls_WriteSceneCharacter((CHARACTER *)*p, p[-0x60], f) == 0)
+    for (i = 0; i < 768; i++) {
+        if (ai_CharsT[i].scene != 0 && ls_WriteSceneCharacter(ai_CharsT[i].scene, ai_CharsT[i].netId, f) == 0)
             return 0;
     }
     cnt = 0;
     {
-        unsigned short *q = (unsigned short *)ai_Objects;
+        AIOBJ *o = ai_Objects;
 
         for (i = 0x5008; i != 0; i--) {
-            if (*(char *)(ai_Goods + *q * 0x41) == 0x1d)
+            if (((AIGOOD *)ai_Goods)[o->id].type == 0x1d)
                 cnt++;
-            q = (unsigned short *)((char *)q + 0x43);
+            o++;
         }
     }
     LS_W(&cnt, 4)
-    for (k = 0; k < 0x14f218; k += 0x43) {
-        char *q = (char *)ai_Objects + k;
-
-        if (*(char *)(ai_Goods + *(unsigned short *)q * 0x41) == 0x1d
-            && ls_WriteSceneCharacter(*(CHARACTER **)(q + 0x3b), *(int *)(q + 2), f) == 0)
-            return 0;
+    for (i = 0; i < 0x5008; i++) {
+        if (((AIGOOD *)ai_Goods)[ai_Objects[i].id].type == 0x1d) {
+            c = ai_Objects[i].sceneObj;
+            if (ls_WriteSceneCharacter(c, ai_Objects[i].objId, f) == 0)
+                return 0;
+        }
     }
     for (i = 0; i < CH_QUEUE; i++) {
         a = &ch_Queue[i];
-        if (a->type == 0) {
-            memset(a, 0, sizeof(CHACTION));
-        } else {
+        if (a->type != 0) {
             a->ch = (CHARACTER *)a->ch->id;
             a->prev = (CHACTION *)ls_ActionIndex(a->prev);
             a->next = (CHACTION *)ls_ActionIndex(a->next);
+        } else {
+            memset(a, 0, sizeof(CHACTION));
         }
     }
-    flag = 0;
-    memset(rec, 0, sizeof(rec));
     for (i = 0; i < CH_QUEUE; i++) {
+        flag = 0;
+        memset(&rec, 0, sizeof(rec));
         a = &ch_Queue[i];
         n = (int)a->ch;
-        if (n > -1 && n < CH_MAX) {
+        if (n >= 0 && n < CH_MAX) {
             c = ch_List[n];
             if (mem_IsValid(c) == 0)
                 __asm int 3
             if (c != 0 && c->obj->owner != 0) {
                 flag = a->type;
-                memcpy(rec, a, sizeof(CHACTION));
+                rec = *a;
+                LS_W(&flag, 1)
+            } else {
+                LS_W(&flag, 1)
             }
-            LS_W(&flag, 1)
-            LS_W((char *)rec + 0xc, 4)
-            LS_W((char *)rec + 0x14, 4)
-            LS_W((char *)rec + 0x30, 0x20)
-            LS_W((char *)rec + 0x50, 0x20)
-            LS_W((char *)rec + 0xf0, 0xa0)
-            LS_W((char *)rec + 0x190, 1)
-            LS_W((char *)rec + 0x24, 4)
-            LS_W((char *)rec + 0x28, 4)
+            LS_W(&rec.count, 4)
+            LS_W(&rec.ch, 4)
+            LS_W(&rec.args[0], 0x20)
+            LS_W(&rec.args[8], 0x20)
+            LS_W(rec.u.name, 0xa0)
+            LS_W(&rec.stop, 1)
+            LS_W(&rec.prev, 4)
+            LS_W(&rec.next, 4)
         }
     }
     for (i = 0; i < CH_QUEUE; i++) {
