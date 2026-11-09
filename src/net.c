@@ -230,12 +230,13 @@ void net_Close(void)
     WSACleanup();
     net_WSAStarted = 0;
 }
-/* 0x424c80, reads the current packet from the connection (first the 3-byte header in pieces, then the rest), counts it, checks the sequence (a gap logs "Lost a Command" and resyncs net_Seq; the last sent Sync's count cm_LastSyncCount is tolerated) and hands the packet to net_Count; returns 1 when the connection is lost (EOF / error with Close), else 0 @deep behaviour: no meaning difference against the Ghidra reading (the seq bookkeeping sets net_Seq with the same values in every branch, the two recv calls, net_Count and the rxlen clear are the same); the code hunks are register allocation (ecx against ebx/eax around rxlen += n / net_RecvBytes += n), the block order of the three sprintf branches and the dword clear of rxlen (ours stores rxlen as a word, the original clears the low word of the rxlen/txlen dword), plus 7 tail nops; readability met */
+/* 0x424c80, reads the current packet from the connection (first the 3-byte header in pieces, then the rest), counts it, checks the sequence (a gap logs "Lost a Command" and resyncs net_Seq; the last sent Sync's count cm_LastSyncCount is tolerated) and hands the packet to net_Count; returns 1 when the connection is lost (EOF / error with Close), else 0 */
 
 int net_Recv(void)
 {
     char buf[256];
     int n;
+    NETPKT *cmd;    /* the packet as the log texts name it (cmd->Count) */
 
     if (net_Conn.s == INVALID_SOCKET)
         goto ret1;
@@ -268,18 +269,19 @@ lost:
 ret1:
         return 1;
     }
-    net_Conn.rxlen += n;
     net_RecvBytes += n;
+    net_Conn.rxlen += n;
     if (net_Conn.rxlen != net_Conn.rx->len)
         return 0;
+    cmd = net_Conn.rx;
     if (net_Conn.rx->idx != -1) {
         if (net_Conn.rx->seq != net_Seq + 1) {
             if (net_Conn.rx->seq == cm_LastSyncCount)
-                sprintf(buf, "nt_Recv(): Received a Command with Count == cm_LastSyncCount, cmd->Count is %li, LastRequCnt is %li", net_Conn.rx->seq, cm_LastSyncCount);
+                sprintf(buf, "nt_Recv(): Received a Command with Count == cm_LastSyncCount, cmd->Count is %li, LastRequCnt is %li", cmd->seq, cm_LastSyncCount);
             else if (net_Conn.rx->type == ' ' && net_Conn.rx->cmd == 14)
-                sprintf(buf, "nt_Recv(): Received Sync, cmd->Count is %li, LastRequCnt is %li", net_Conn.rx->seq, net_Seq);
+                sprintf(buf, "nt_Recv(): Received Sync, cmd->Count is %li, LastRequCnt is %li", cmd->seq, net_Seq);
             else {
-                sprintf(buf, "nt_Recv(): Lost a Command, cmd->Count is %li, nt_LastRequCount is %li", net_Conn.rx->seq, net_Seq);
+                sprintf(buf, "nt_Recv(): Lost a Command, cmd->Count is %li, nt_LastRequCount is %li", cmd->seq, net_Seq);
                 net_Seq = net_Conn.rx->seq;
             }
         } else
