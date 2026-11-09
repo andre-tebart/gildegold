@@ -1697,153 +1697,121 @@ int ls_ReadPlayerRecords(int f)
 
 int ls_ReadCharacters(int f)
 {
-    int *ref;               /* the reference field read (+0x54 / +0x18c): its saved index plus the base */
-    int v, ok;
-    unsigned idx;
-    int *slots;
-    int sz, k, cnt;
-    unsigned id;            /* the id word read at the start of a record */
-    int word;
-    char *c;
+    int cnt;
+    int i;
+    unsigned short id;      /* the id word at the start of a record: it picks the record */
+    int model;              /* the model record's id (+0x184), resolved after the load */
+    AICHAR *c;
 
-  LS_R(&ai_PlayerId, 2)
-  LS_R(&cnt, 4)
-  ai_CharCount = cnt;
-  LS_R(&ai_JudgeCatholic, 4)
-  LS_R(&ai_JudgeProtestant, 4)
-  if (0x10016 < ls_Version) {
-    slots = ai_KindBChars;
-    do {
-      LS_R(slots, 4)
-      slots = slots + 1;
-    } while (slots < ai_KindBChars + 8);
-  }
-  k = 0;
-  if (0 < cnt) {
-    do {
-      ok = ls_Read((int)&id, 2, 1, f);
-      v = ls_Version;
-      if (ok == 0) {
-        return 0;
-      }
-      idx = id & 0xffff;
-      c = ai_Chars[idx];
-      *(short *)c = (short)id;
-      if (v < 0x1003e) {
-        *(int *)(c + 0x20c) = 0xffffffff;
-      }
-      else {
-        LS_R((c + 0x20c), 4)
-      }
-      LS_R((c + 0x2), 1)
-      LS_R((c + 0x4), 4)
-      LS_R((c + 0x8), 1)
-      LS_R((c + 0x9), 1)
-      LS_R((c + 0xa), 2)
-      LS_R((c + 0xc), 1)
-      LS_R((c + 0xd), 1)
-      LS_R((c + 0x10), 4)
-      LS_R((c + 0x14), 4)
-      LS_R((c + 0x18), 4)
-      LS_R((c + 0x1c), 4)
-      LS_R((c + 0x20), 4)
-      LS_R((c + 0x24), 4)
-      if (0x1003a < ls_Version) {
-        LS_R((c + 0x28), 2)
-        LS_R((c + 0x2c), 4)
-      }
-      LS_R((c + 0x30), 0x10)
-      if ((0x10030 < ls_Version) &&
-         ls_Read((int)((c + 0x40)), 0x10, 1, f) == 0) {
-        return 0;
-      }
-      LS_R((c + 0x50), 2)
-      ref = (int *)(c + 0x54);
-      LS_R(ref, 4)
-      *ref = *ref + 0x59a;
-      LS_R((c + 0x58), 1)
-      LS_R((c + 0x5c), 0x20)
-      if ((0x10023 < ls_Version) &&
-         ls_Read((int)((c + 0x7c)), 4, 1, f) == 0) {
-        return 0;
-      }
-      LS_R((c + 0x80), 5)
-      LS_R((c + 0x88), 0xa8)
-      LS_R((c + 0x164), 1)
-      LS_R((c + 0x165), 1)
-      LS_R((c + 0x166), 1)
-      LS_R((c + 0x167), 1)
-      LS_R((c + 0x168), 1)
-      LS_R((c + 0x169), 1)
-      *(int *)(c + 0x16c) = 0;
-      LS_R((c + 0x16c), 4)
-      *(int *)(c + 0x170) = 0;
-      LS_R((c + 0x170), 4)
-      if (ls_Version < 0x10020) {
-        sz = 2;
-      }
-      else {
-        sz = 4;
-      }
-      LS_R((c + 0x174), sz)
-      *(int *)(c + 0x17c) = 0;
-      LS_R((c + 0x17c), 4)
-      LS_R((c + 0x180), 1)
-      ref = (int *)(c + 0x18c);
-      LS_R(ref, 4)
-      *ref = *ref + 0x639;
-      LS_R((c + 0x190), 4)
-      if (ls_Version < 0x1003e) {
-        *(int *)((c + 0x190)) = 4;
-      }
-      LS_R((c + 0x194), 4)
-      LS_R((c + 0x198), 4)
-      LS_R((c + 0x19c), 4)
-      LS_R((c + 0x1a0), 4)
-      LS_R((c + 0x1a4), 4)
-      LS_R((c + 0x1a8), 4)
-      LS_R((c + 0x1ac), 4)
-      LS_R((c + 0x1b0), 1)
-      LS_R((c + 0x1b1), 1)
-      LS_R((c + 0x1b4), 0x10)
-      LS_R((c + 0x1c8), 4)
-      if (ls_Version < 0x10049) {
-        *(int *)(c + 0x1cc) = 0;
-      }
-      else {
-        LS_R((c + 0x1cc), 4)
-      }
-      LS_R((c + 0x1d0), 4)
-      LS_R((c + 0x1d4), 0x10)
-      LS_R((c + 0x1e4), 4)
-      LS_R((c + 0x1e8), 4)
-      LS_R((c + 0x1ec), 4)
-      if ((0x10029 < ls_Version) &&
-         ls_Read((int)((c + 0x1f0)), 4, 1, f) == 0) {
-        return 0;
-      }
-      if ((0x10020 < ls_Version) &&
-         ls_Read((int)((c + 0x1c5)), 1, 1, f) == 0) {
-        return 0;
-      }
-      LS_R(&word, 4)
-      *(int *)(c + 0x184) = word;
-      if ((0x10020 < ls_Version) &&
-         ls_Read((int)((c + 0x1f4)), 0x18, 1, f) == 0) {
-        return 0;
-      }
-      if (0x10035 < ls_Version) {
-        LS_R((c + 0x210), 4)
-        LS_R((c + 0x214), 1)
-        LS_R((c + 0x215), 1)
-        LS_R((c + 0x216), 1)
-        LS_R((c + 0x217), 1)
-        LS_R((c + 0x218), 1)
-      }
-      k = k + 1;
-    } while (k < cnt);
-  }
-  return 1;
+    LS_R(&ai_PlayerId, 2)
+    LS_R(&cnt, 4)
+    ai_CharCount = cnt;
+    LS_R(&ai_JudgeCatholic, 4)
+    LS_R(&ai_JudgeProtestant, 4)
+    if (ls_Version >= 0x10017) {
+        for (i = 0; i < 8; i++)
+            LS_R(&ai_KindBChars[i], 4)
+    }
+    for (i = 0; i < cnt; i++) {
+        LS_R(&id, 2)
+        c = &ai_CharsT[id];
+        c->id = id;
+        if (ls_Version >= 0x1003e) {
+            LS_R(&c->partyId, 4)
+        } else {
+            c->partyId = -1;
+        }
+        LS_R(&c->kind, 1)
+        LS_R(&c->netId, 4)
+        LS_R(&c->health, 1)
+        LS_R(&c->sex, 1)
+        LS_R(&c->w00a, 2)
+        LS_R(&c->b00c, 1)
+        LS_R(&c->b00d, 1)
+        LS_R(&c->f010, 4)
+        LS_R(&c->f014, 4)
+        LS_R(&c->f018, 4)
+        LS_R(&c->f01c, 4)
+        LS_R(&c->f020, 4)
+        LS_R(&c->v024, 4)
+        if (ls_Version >= 0x1003b) {
+            LS_R(&c->w028, 2)
+            LS_R(&c->v02c, 4)
+        }
+        LS_R(c->first, 0x10)
+        if (ls_Version >= 0x10031)
+            LS_R(c->family, 0x10)
+        LS_R(&c->w050, 2)
+        LS_R(&c->ref54, 4)
+        c->ref54 += 0x59a;
+        LS_R(&c->b058, 1)
+        LS_R(c->relatives, 0x20)
+        if (ls_Version >= 0x10024)
+            LS_R(&c->f07c, 4)
+        LS_R(c->skills, 5)
+        LS_R(c->mood, 0xa8)
+        LS_R(&c->jobId, 1)
+        LS_R(&c->title, 1)
+        LS_R(&c->officeKind, 1)
+        LS_R(&c->prevOffice, 1)
+        LS_R(&c->appliedOffice, 1)
+        LS_R(&c->secondOffice, 1)
+        c->bld = 0;             /* the building ids, resolved after the load */
+        LS_R(&c->bld, 4)
+        c->bld2 = 0;
+        LS_R(&c->bld2, 4)
+        if (ls_Version >= 0x10020) {
+            LS_R(&c->v174, 4)
+        } else {
+            LS_R(&c->v174, 2)
+        }
+        c->job = 0;             /* the job id, resolved after the load */
+        LS_R(&c->job, 4)
+        LS_R(&c->jobKind, 1)
+        LS_R(&c->picture, 4)
+        c->picture += 0x639;
+        LS_R(&c->v190, 4)
+        if (ls_Version < 0x1003e)
+            c->v190 = 4;
+        LS_R(&c->money, 4)
+        LS_R(&c->spent198, 4)
+        LS_R(&c->wage, 4)
+        LS_R(&c->v1a0, 4)
+        LS_R(&c->v1a4, 4)
+        LS_R(&c->v1a8, 4)
+        LS_R(&c->v1ac, 4)
+        LS_R(&c->b1b0, 1)
+        LS_R(&c->heldRounds, 1)
+        LS_R(&c->flags1b4, 0x10)
+        LS_R(&c->flags1c8, 4)
+        if (ls_Version >= 0x10049) {
+            LS_R(&c->flags1cc, 4)
+        } else {
+            c->flags1cc = 0;
+        }
+        LS_R(&c->v1d0, 4)
+        LS_R(c->block1d4, 0x10)
+        LS_R(&c->mood3Rate, 4)
+        LS_R(&c->v1e8, 4)
+        LS_R(&c->goodsMask, 4)
+        if (ls_Version >= 0x1002a)
+            LS_R(&c->v1f0, 4)
+        if (ls_Version >= 0x10021)
+            LS_R(&c->b1c5, 1)
+        LS_R(&model, 4)
+        c->model = (AITASK *)model;
+        if (ls_Version >= 0x10021)
+            LS_R(c->ownName, 0x18)
+        if (ls_Version >= 0x10036) {
+            LS_R(&c->partner, 4)
+            LS_R(&c->relationBias, 1)
+            LS_R(&c->b215, 1)
+            LS_R(&c->b216, 1)
+            LS_R(&c->b217, 1)
+            LS_R(&c->mask, 1)
+        }
+    }
+    return 1;
 }
 /* 0x51e750, reads one ch.c CHARACTER record from the save (allocated by ch_AllocAt from the id read first): its name (+8, 0x20 bytes), the group / script group (+0x2c / +0x30), the flag word +0x8c (bit 5 set when the flag byte read is 1), the full name +0x170 (0x30) and the body name +0x130 (0x40), +0x38 (0x10), +0x48 (0xc), the texts +0x1a8 (from 0x10013) and +0x1e8 (from 0x1005a), the flags &= 0xdffb, then the reference index read last goes to +0x12c (0x51e900 turns it into a pointer). Returns the record */
 
