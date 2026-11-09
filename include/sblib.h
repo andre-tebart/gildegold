@@ -1,6 +1,6 @@
 /* Declarations of sblib.c (0x425bc0..0x4273d0): the sample library ("sb_Init", "sblib successfully initialzied"): sample
-   banks loaded on demand into a memory budget, and a fixed set of playing sample slots. SBBANK / SBENTRY / SBSAMPLE
-   are sblib.c's types. Names are ours. */
+   banks loaded on demand into a memory budget, and a fixed set of playing sample slots. SBSAMPLE (the playing slot)
+   is declared here for its users; SBBANK / SBENTRY stay sblib.c's types. Names are ours. */
 #ifndef SBLIB_H
 #define SBLIB_H
 
