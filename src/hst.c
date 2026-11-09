@@ -1059,15 +1059,14 @@ typedef struct G12EVENTMSG {
 } G12EVENTMSG;
 
 /* 0x4affc0, the BRAND text command (callback 0x601b50[3], name 0x601070[3]): sends message 0x4e (value 1000) for
-   the character ai_PlayerChar, today 7:00
-   @deep byte already (the event value at 0x9c via the G12EVENTMSG view, fixed this session; AIMSG.unka0 at 0xa0 was the wrong offset). Q4 settled: the clock is copied as msg.time = ai_Time (AITIME, no view). Q1 evidence: callback 0x601b50[3], name 0x601070[3] BRAND; Q2/Q3/Q5/Q6/Q7 pass. */
+   the character ai_PlayerChar, today 7:00 */
 int ai_CommandFire(void)
 {
     AIMSG msg;
 
     memset(&msg, 0, sizeof(msg));
     msg.type = 0x4e;
-    msg.to = *(int *)((char *)ai_PlayerChar + 4);
+    msg.to = ((AICHAR *)ai_PlayerChar)->netId;
     msg.fromId = -1;
     msg.car = -1;
     msg.flags = 1;
