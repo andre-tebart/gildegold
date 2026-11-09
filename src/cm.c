@@ -10498,232 +10498,208 @@ int cm_FightStartDialog(CMFIGHTREC *a)
 }
 
 #define G20_US(p) (*(unsigned short *)(p))
-#define G20_NAME(id) (((char **)txt_ObjectNames)[(id) * 2])
 #define G20_ME (ai_CharInts[ai_PlayerId][0])
 #define G20_ATT ((char *)cm_FightDefender)
 #define G20_DEF ((char *)cm_FightAttacker)
-/* the pump of the dialog: the click on a button (f8a668 == 0) or the abort flag closes it */
-#define G20_PUMP()                                                                                      \
-    while (sv_RunFrame(cm_FightEndDialog, 0x7d6c6)) {                                                       \
-        if (dm_L.rup != 0 || d2_ClickedId == 0)                                                    \
-            sv_PopRequest = 1;                                                                           \
-    }
-/* the winner takes a share of the loser's money (message 0x4c47e0) and of the goods of ob (80 .. 99 %), the text lines
-   go to tc; the money part v is added to the winner's record afterwards (0x506430, +0x4d of the building) */
-#define G20_TAKE()                                                                                      \
-    ba[0] = ch_EmptyName;                                                                               \
-    memset(ba + 1, 0, 0x3ff);                                                                           \
-    txt_Format(tc, 0x11a5, G20_US(G20_DEF), ca);                                                      \
-    cm_MessageBox(tc, 0);                                                                                \
-    ob = gm_Query(*(int *)(ca + 0x5d), 2, 6, 0, 0x2a);                                              \
-    if (ob == 0)                                                                                        \
-        ob = gm_Query(*(int *)(ca + 0x5d), 2, 6, 0, 0x116);                                         \
-    v = gm_GetGoodsValue(cm_FightDefender);                                                                     \
-    v = v < 0x9c400 ? v : 0x9c400;                                                                      \
-    v = (int)(((double)(unsigned int)cm_Random(0x32) * 0.001 + 0.07) * (v < 0 ? 0 : v));             \
-    txt_Format(tc, "$Z%T$A", v);                                                                      \
-    cm_SendMoveGoods(*(int *)(G20_DEF + 4), *(int *)(G20_ATT + 4), ai_OwnPlayer, v);                        \
-    if (ob != 0 && obj != 0) {                                                                          \
-        for (q = gm_Query(*(int *)(ob + 0x14), 1, 5); q != 0; q = (char *)gm_QueryNext()) {         \
-            cnt = (int)((double)(unsigned int)(cm_Random(0x14) + 0x50) * 0.01 * *(int *)(q + 0xe));  \
-            if (cnt < 1)                                                                                \
-                cnt = 1;                                                                                \
-            sprintf(tmp, "%i %s$A", cnt, G20_NAME(G20_US(q)));                                          \
-            strcat(tc, tmp);                                                                            \
-            if (G20_ME == cm_FightOwner)                                                                 \
-                G19_4C4880U(*(int *)(obj + 2), *(int *)(ob + 2), G20_US(q), cnt, ai_OwnPlayer, 0);      \
-            v = (int)(gm_GoodsPrice(G20_US(q), ai_OwnPlayer) * cnt + v);                                 \
-        }                                                                                               \
-    }
-/* the end of the take: the text shown, the money added to the winner's record and the building's */
-#define G20_TAKE_END()      \
-    d2_SetForm(win, 1);                                                                                 \
-    io_PrintText(tc);                                                                                   \
-    q = gm_PlayerRecord(G20_DEF);                                                                          \
-    if (q != 0)                                                                                         \
-        *(int *)(q + 0x1c) += v;                                                                        \
-    if (*(int *)(a + 0x10c) != -1) {                                                                    \
-        q = gm_BuildQuery(1, 1, *(int *)(a + 0x10c));                                                    \
-        *(int *)(q + 0x4d) += v;                                                                        \
-    }
-/* the winner loses face: the text 0x11a6 and a drop of 0x14 - random of the defender's mood (0x50cad0) */
-#define G20_FACE()                                                                                      \
-    tc[0] = ch_EmptyName;                                                                               \
-    memset(tc + 1, 0, 0x3ff);                                                                           \
-    txt_Format(tc, 0x11a6, G20_US(G20_DEF), ca);                                                      \
-    cm_MessageBox(tc, 0);                                                                                \
-    if (G20_ME == cm_FightOwner)                                                                         \
-        gm_ChangeBuildingState(ca, 0x14 - cm_Random(0x14));
-/* nothing taken: the text 0x11a7 and the fight with the tavern keepers' men: every character of the table of 0x770b80
-   that is a guard (kinds 10 .. 12) gets 0x4c4b00 */
-#define G20_GUARDS(bb)                                                                                    \
-    txt_Format(bb, 0x11a7, G20_US(G20_DEF), G20_US(G20_DEF));                                         \
-    cm_MessageBox(bb, 0);                                                                                \
-    for (p = (char *)ai_CharInts - 4; p < (char *)(unsigned)((unsigned)ai_CharInts + 0x653fc); p += 0x21c) {                                  \
-        if (*(short *)p != -1 && p[8] != 0 &&                                                           \
-            ((k = gm_TitleGroup((unsigned char)p[0x164])) == 10 || k == 11 || k == 12))                  \
-            cm_SendRelations(*(int *)(G20_DEF + 4), *(int *)(p + 4), 6, 1);                                 \
-    }
-
-/* 0x4d4d70, the end of a fight (a: the fight record, its +0x7c bits 1 / 2 / 4 say how it was fought): the dialog
-   "cutscenes\combat_end" with the winner's text (0x1189 .. 0x118f, 0x1191, 0x1193, 0x1197), the portrait rows of both
-   sides (0x4d4340), then by the kind of the fight: the loot of the carts (bit 1: money 0x4d4090, goods moved to the
-   winner), the destruction of a building (bit 4: the 0x5db cells with the bars, money by 0x4c47e0), or the capture
-   of the defeated character (bit 2: texts 0x119f .. 0x11a7 pick one of four outcomes: 1 the building is taken,
-   2 a share of money and goods is taken, 3 the winner loses face, 0 the guards of the town are called). Rough draft. */
-void cm_FightEndDialog(char *a)
+/* 0x4d4d70, the end of a fight (a: the fight record, its flags say how it was fought): the weapons the fighters lose
+   (cm_FightWeaponLoss, by the fight's owner), the side picked (side: by cm_FightWinner, else the side with more
+   fighters standing), the dialog "cutscenes\combat_end" with that side's text (0x1189 .. 0x118f), the portrait rows of
+   both sides with their roles (0x1191, 0x1193, cm_FightPortraits), then by the kind of the fight: the loot of the
+   carts (flags 1: cm_LootList, the goods moved to the attacker's building), the capture of the target building
+   (flags 2, the player attacking: texts 0x119f .. 0x11a3 offer four outcomes: 1 the building is taken, 2 a share of
+   money and goods is taken, 3 the attacker gains face, 0 the town guards are called, 0x11a4 .. 0x11a7), the bars of
+   the defenders of a building of kind 0x13 (flags 4: their health, the money for the wounded) or the AI's capture
+   (flags 2, the AI attacking: the same outcomes by random)
+   @deep Read in full against 0x4d4d70..0x4d60a3 and rewritten typed (CMFIGHTREC, AICHAR via
+   cm_FightAttackerC/DefenderC and ai_CharsT, AIBLD, AIBTYPE, AIOBJ, AIFIN; no G20_ macros). Meaning fixes:
+   the money/goods take clears tc (the draft cleared ba), tc[0] = ch_EmptyName[0] (the draft stored the
+   address), the loot list mode as two calls (the original's push 0 / push 1 merged tail, was setne). The
+   original's shared tails are kept as in its layout: the take tail (take_done) and the face block (face)
+   are reached from both capture branches, the last pump (pump) from the take and the flags-4 bars. All
+   statements line up (ours 1510 vs 1508). Left: allocation and tail placement - the original keeps a in
+   its arg slot and reloads it ([esp+0x1138]) where ours holds it in ebx, side in edi stored once to
+   [esp+0x14] (ours stores it per branch), our zero register edi (xor edi,edi; push edi) vs the original's
+   immediates, the slot pairs ob/cnt [esp+0x14]/[esp+0x1c] swapped between the two take copies; ours merges
+   the roundSums tail of the flags-4 branch into the take's (gm_BuildQuery x7 vs x8) and rotates the last
+   pump (sv_RunFrame x6 vs x5; the original's last pump is a non-rotated loop with esi=1 hoisted, a
+   for(;;)/break form compiles the same as ours); the epilogue after the n==1 path sits inline in the
+   original at 0x4d5685, ours jumps to it. (references: M8 at +0x9eb: ours refers to cm_FightAttacker
+   (0x6f0cec), the original's field to 0x6f0ce8 (cm_FightDefender, cm_FightDefenderC) (and 1 more),
+   explained: the three M8 lines (+0x9e8 cm_FightAttacker|cm_FightDefender, +0xe4f
+   gm_BuildingJob|gm_TitleJob, +0xf47 gm_Query|gm_GetGoodsValue) are alignment artefacts inside code hunks:
+   asmdiff --symbols shows the same calls on both sides one instruction pair off (gm_BuildingJob then
+   gm_TitleJob, gm_Query 0x2a/0x116 then gm_GetGoodsValue(cm_FightDefender)); the call-count lines are the
+   merged roundSums tail and the rotated pump) */
+void cm_FightEndDialog(CMFIGHTREC *a)
 {
     char ba[0x800];
     char bb[0x400];
     char tc[0x400];
     char tmp[0x100];
-    char *obj, *side, *c, *ca, *ob, *q, *p, *kr;
+    AIOBJ *obj, *ob, *q, *p;
+    AICHAR *side, *c, *ch;
+    AIBLD *b, *ca;
+    AIBTYPE *bt;
+    AIFIN *rec;
     int win, i, n, role = 0, v, cnt, total, na, nb, id, k;
     int h, row, col, px, py;
 
     obj = 0;
     d2_CopyCaption(&ch_EmptyName);
     sv_SetStatusText(&ch_EmptyName);
-    if (*(int *)(a + 0x10c) != -1) {
-        c = gm_BuildQuery(1, 1, *(int *)(a + 0x10c));
-        obj = gm_Query(*(int *)(c + 0x5d), 2, 6, 0, 0x116);
+    if (a->attackerBldId != -1) {
+        b = (AIBLD *)gm_BuildQuery(1, 1, a->attackerBldId);
+        obj = (AIOBJ *)gm_Query(b->objList, 2, 6, 0, 0x116);
         if (obj == 0)
-            obj = gm_Query(*(int *)(c + 0x5d), 2, 6, 0, 0x2a);
+            obj = (AIOBJ *)gm_Query(b->objList, 2, 6, 0, 0x2a);
     }
-    if (cm_FightOwner == G20_ME) {
+    if (cm_FightOwner == ai_CharsT[ai_PlayerId].netId) {
         for (i = 0; i < 16; i++) {
-            id = *(int *)(a + 0x80 + i * 4);
-            if (id != -1 && (c = gm_FindChar(id)) != 0)
-                cm_FightWeaponLoss(c);
+            id = a->defenders[i];
+            if (id != -1 && (c = (AICHAR *)gm_FindChar(id)) != 0)
+                cm_FightWeaponLoss((char *)c);
         }
         for (i = 0; i < 16; i++) {
-            id = *(int *)(a + 0xc0 + i * 4);
-            if (id != -1 && (c = gm_FindChar(id)) != 0)
-                cm_FightWeaponLoss(c);
+            id = a->attackers[i];
+            if (id != -1 && (c = (AICHAR *)gm_FindChar(id)) != 0)
+                cm_FightWeaponLoss((char *)c);
         }
     }
     if (cm_FightWinner == 0) {
         na = 0;
         for (i = 0; i < 16; i++) {
-            id = *(int *)(a + 0x80 + i * 4);
+            id = a->defenders[i];
             if (id != -1) {
-                c = cm_FindFighter(id);
-                if (c[8] != 0 && c[8] != 4 && *(int *)(*(char **)(*(char **)(c + 0x184) + 0x34) + 0x218) != 1)
+                c = (AICHAR *)cm_FindFighter(id);
+                if (c->health != 0 && c->health != 4 && c->model->body->type != 1)
                     na++;
             }
         }
         nb = 0;
         for (i = 0; i < 16; i++) {
-            id = *(int *)(a + 0xc0 + i * 4);
+            id = a->attackers[i];
             if (id != -1) {
-                c = cm_FindFighter(id);
-                if (c[8] != 0 && c[8] != 4 && *(int *)(*(char **)(*(char **)(c + 0x184) + 0x34) + 0x218) != 1)
+                c = (AICHAR *)cm_FindFighter(id);
+                if (c->health != 0 && c->health != 4 && c->model->body->type != 1)
                     nb++;
             }
         }
         if (nb > na)
-            side = G20_DEF;
+            side = cm_FightAttackerC;
         else
-            side = G20_ATT;
+            side = cm_FightDefenderC;
     } else {
-        side = G20_ATT;
+        side = cm_FightDefenderC;
         if (cm_FightWinner != cm_FightAttacker)
-            side = G20_DEF;
+            side = cm_FightAttackerC;
     }
     win = d2_OpenForm(0, 0, "cutscenes\\combat_end");
     d2_PlaceMainWindowF(win, 3);
     d2_SetForm(win, 2);
     io_PrintText(0x7d);
     d2_SetForm(win, 1);
-    if (G20_ME == *(int *)(side + 4)) {
-        if (side == G20_ATT) {
-            if (a[0x7c] & 1) {
-                io_PrintText(0x1189, G20_US(G20_ATT), G20_US(G20_DEF));
+    if (ai_CharsT[ai_PlayerId].netId == side->netId) {
+        if (side == cm_FightDefenderC) {
+            if (a->flags & 1) {
+                io_PrintText(0x1189, cm_FightDefenderC->id, cm_FightAttackerC->id);
                 io_PrintText(0x118a);
             } else
-                io_PrintText(0x1189, G20_US(G20_ATT), G20_US(G20_DEF));
+                io_PrintText(0x1189, cm_FightDefenderC->id, cm_FightAttackerC->id);
         } else
-            io_PrintText(0x118e, G20_US(G20_DEF), G20_US(G20_ATT));
-    } else if (side == G20_DEF) {
-        io_PrintText(0x118c, G20_US(G20_ATT), G20_US(G20_DEF));
-        if (a[0x7c] & 1) {
-            q = gm_Query(0, 2, 7, 1, *(int *)(a + 0x100));
-            if (*(int *)(q + 0x24) != 0 && gm_FindBuildingById(*(int *)(*(char **)(q + 0x24) + 0xb4)) != 0)
+            io_PrintText(0x118e, cm_FightAttackerC->id, cm_FightDefenderC->id);
+    } else if (side == cm_FightAttackerC) {
+        io_PrintText(0x118c, cm_FightDefenderC->id, cm_FightAttackerC->id);
+        if (a->flags & 1) {
+            p = (AIOBJ *)gm_Query(0, 2, 7, 1, a->carts[0]);
+            if (p->job24 != 0 && gm_FindBuildingById(p->job24->cartBld) != 0)
                 io_PrintText(0x118d);
         }
     } else
-        io_PrintText(0x118f, G20_US(G20_DEF), G20_US(G20_ATT));
-    G20_PUMP();
+        io_PrintText(0x118f, cm_FightAttackerC->id, cm_FightDefenderC->id);
+    while (sv_RunFrame((int)cm_FightEndDialog, 0x7d6c6)) {
+        if (dm_L.rup != 0 || d2_ClickedId == 0)
+            sv_PopRequest = 1;
+    }
     d2_SetForm(win, 1);
     io_PrintText("$C");
     io_PrintText(0x1191);
-    c = gm_BuildQuery(1, 1, *(int *)(a + 0x10c));
-    kr = ai_BTypes + (unsigned char)c[0] * 0x24d;
-    if (*kr == 0x13)
+    b = (AIBLD *)gm_BuildQuery(1, 1, a->attackerBldId);
+    bt = &ai_BTypesT[b->type];
+    if (bt->kind == 0x13)
         role = 0;
-    else if (*kr == 0x10)
+    else if (bt->kind == 0x10)
         role = 1;
-    else if (*kr == 4)
+    else if (bt->kind == 4)
         role = 2;
-    io_PrintText(0x1193, G20_US(G20_DEF), role + 0x1125);
-    cm_FightPortraits((int *)(a + 0xc0), 0, 100);
-    ca = gm_BuildQuery(1, 1, *(int *)(a + 0x14));
+    io_PrintText(0x1193, cm_FightAttackerC->id, role + 0x1125);
+    cm_FightPortraits(a->attackers, 0, 100);
+    ca = (AIBLD *)gm_BuildQuery(1, 1, a->placeId);
     if (ca != 0) {
-        kr = ai_BTypes + (unsigned char)ca[0] * 0x24d;
-        if (*kr == 0x13)
+        bt = &ai_BTypesT[ca->type];
+        if (bt->kind == 0x13)
             role = 0;
-        else if (*kr == 0x10)
+        else if (bt->kind == 0x10)
             role = 1;
-        else if (*kr == 4)
+        else if (bt->kind == 4)
             role = 2;
     } else
         role = 0;
     io_PrintText("$7A");
-    io_PrintText(0x1193, G20_US(G20_ATT), role + 0x1125);
-    cm_FightPortraits((int *)(a + 0x80), 0, 0x12c);
-    G20_PUMP();
+    io_PrintText(0x1193, cm_FightDefenderC->id, role + 0x1125);
+    cm_FightPortraits(a->defenders, 0, 0x12c);
+    while (sv_RunFrame((int)cm_FightEndDialog, 0x7d6c6)) {
+        if (dm_L.rup != 0 || d2_ClickedId == 0)
+            sv_PopRequest = 1;
+    }
     d2_SetForm(win, 1);
     io_PrintText("$C");
     io_PrintText(0x1197);
-    if (a[0x7c] & 1) {
-        if (G20_US(&ai_PlayerId) == G20_US(G20_ATT))
+    if (a->flags & 1) {
+        /* the carts: the loot list, the goods moved to the attacker's building */
+        if (ai_PlayerId == cm_FightDefenderC->id)
             cm_LootList(0x24, 0x32, 2);
-        else if (G20_US(&ai_PlayerId) == G20_US(G20_DEF)) {
-            v = cm_LootList(0x24, 0x32, side == G20_DEF ? 0 : 1);
-            q = gm_PlayerRecord(G20_DEF);
-            if (q != 0)
-                *(int *)(q + 0x1c) += v;
-            if (*(int *)(a + 0x10c) != -1) {
-                q = gm_BuildQuery(1, 1, *(int *)(a + 0x10c));
-                *(int *)(q + 0x4d) += v;
+        else if (ai_PlayerId == cm_FightAttackerC->id) {
+            if (side == cm_FightAttackerC)
+                v = cm_LootList(0x24, 0x32, 0);
+            else
+                v = cm_LootList(0x24, 0x32, 1);
+            rec = (AIFIN *)gm_PlayerRecord((char *)cm_FightAttacker);
+            if (rec != 0)
+                rec->lootTakings += v;
+            if (a->attackerBldId != -1) {
+                b = (AIBLD *)gm_BuildQuery(1, 1, a->attackerBldId);
+                b->roundSums[0] += v;
             }
         }
         for (i = 0; i < 3; i++) {
-            id = *(int *)(a + 0x100 + i * 4);
+            id = a->carts[i];
             if (id == -1)
                 continue;
-            p = gm_Query(0, 2, 7, 1, id);
-            p = gm_Query(*(int *)(p + 0x14), 1, 0, 0x1dd);
-            for (q = gm_Query(*(int *)(p + 0x14), 1, 5); q != 0; q = (char *)gm_QueryNext()) {
-                if (side == G20_DEF)
-                    *(int *)(q + 0xa) = G20_US(G20_DEF);
-                if (*(int *)(q + 0xa) == G20_US(G20_DEF)) {
-                    if (obj != 0 && cm_FightOwner == G20_ME) {
-                        gm_ObjectBuildingOwner(q);
-                        G19_4C4880U(*(int *)(obj + 2), *(int *)(q + 6), G20_US(q), *(int *)(q + 0xe), ai_OwnPlayer, 0);
+            p = (AIOBJ *)gm_Query(0, 2, 7, 1, id);
+            p = (AIOBJ *)gm_Query(p->list, 1, 0, 0x1dd);
+            for (q = (AIOBJ *)gm_Query(p->list, 1, 5); q != 0; q = (AIOBJ *)gm_QueryNext()) {
+                if (side == cm_FightAttackerC)
+                    q->fightSide = cm_FightAttackerC->id;
+                if (q->fightSide == cm_FightAttackerC->id) {
+                    if (obj != 0 && cm_FightOwner == ai_CharsT[ai_PlayerId].netId) {
+                        gm_ObjectBuildingOwner((unsigned short *)q);
+                        cm_SendExSellObject(obj->objId, q->ownerId, q->id, q->count, ai_OwnPlayer, 0);
                     }
-                    gm_GoodsPrice(G20_US(q), ai_OwnPlayer);
+                    gm_GoodsPrice(q->id, ai_OwnPlayer);
                 }
             }
         }
-        pump:
-        G20_PUMP();
-    } else if ((a[0x7c] & 2) && side == G20_DEF && G20_US(side) == ai_PlayerId) {
-        ca = gm_BuildQuery(1, 1, *(int *)(a + 0x14));
-        txt_Format(ba, 0x119f, ca, G20_US(G20_DEF), ca);
-        k = ca[0];
-        if (k != 0x1e && k != 0x20 && k != 0x1f) {
-            txt_Format(bb, 0x11a0, (unsigned char)ca[0] * 14 + 0x48e);
+    pump:   /* (the take and the bars of flags 4 too) */
+        while (sv_RunFrame((int)cm_FightEndDialog, 0x7d6c6)) {
+            if (dm_L.rup != 0 || d2_ClickedId == 0)
+                sv_PopRequest = 1;
+        }
+    } else if ((a->flags & 2) && side == cm_FightAttackerC && side->id == ai_PlayerId) {
+        /* the player took the building: four outcomes to choose */
+        ca = (AIBLD *)gm_BuildQuery(1, 1, a->placeId);
+        txt_Format(ba, 0x119f, ca, cm_FightAttackerC->id, ca);
+        if (ca->type != 0x1e && ca->type != 0x20 && ca->type != 0x1f) {
+            txt_Format(bb, 0x11a0, ca->type * 14 + 0x48e);
             strcat(ba, bb);
         }
         txt_Format(bb, 0x11a1);
@@ -10733,53 +10709,94 @@ void cm_FightEndDialog(char *a)
         txt_Format(bb, 0x11a3);
         strcat(ba, bb);
         n = cm_MessageBox(ba, 0x11);
-        k = ca[0];
-        if (k == 0x1e || k == 0x20 || k == 0x1f)
+        if (ca->type == 0x1e || ca->type == 0x20 || ca->type == 0x1f)
             n++;
         if (n == 1) {
-            k = ai_BTypes[(unsigned char)ca[0] * 0x24d];
+            /* the building is taken */
+            k = ai_BTypesT[ca->type].kind;
             if (k == 4 || k == 0x10)
-                ai_CountMissionEvent(G20_DEF, 0x1c);
-            cm_SendOwnership(*(int *)(ca + 1), *(int *)(G20_DEF + 4), *(int *)(G20_DEF + 4));
-            txt_Format(ba, 0x11a4, G20_US(G20_DEF), ca);
+                ai_CountMissionEvent(cm_FightAttacker, 0x1c);
+            cm_SendOwnership(ca->id, cm_FightAttackerC->netId, cm_FightAttackerC->netId);
+            txt_Format(ba, 0x11a4, cm_FightAttackerC->id, ca);
             cm_MessageBox(ba, 0);
         } else if (n == 2) {
-            G20_TAKE();
-        take_done:
-            G20_TAKE_END();
+            /* a share of the defender's money (5 .. 7 %, at most 0x9c400) and of the goods of the building's store
+               (80 .. 99 %) goes to the attacker */
+            tc[0] = ch_EmptyName[0];
+            memset(tc + 1, 0, 0x3ff);
+            txt_Format(tc, 0x11a5, cm_FightAttackerC->id, ca);
+            cm_MessageBox(tc, 0);
+            ob = (AIOBJ *)gm_Query(ca->objList, 2, 6, 0, 0x2a);
+            if (ob == 0)
+                ob = (AIOBJ *)gm_Query(ca->objList, 2, 6, 0, 0x116);
+            v = gm_GetGoodsValue((char *)cm_FightDefender);
+            v = v < 0x9c400 ? v : 0x9c400;
+            v = (int)(((double)cm_Random(0x32) * 0.001 + 0.07) * (v < 0 ? 0 : v));
+            txt_Format(tc, "$Z%T$A", v);
+            cm_SendMoveGoods(cm_FightAttackerC->netId, cm_FightDefenderC->netId, ai_OwnPlayer, v);
+            if (ob != 0 && obj != 0) {
+                for (q = (AIOBJ *)gm_Query(ob->list, 1, 5); q != 0; q = (AIOBJ *)gm_QueryNext()) {
+                    cnt = (int)((double)(cm_Random(0x14) + 0x50) * 0.01 * q->count);
+                    if (cnt < 1)
+                        cnt = 1;
+                    sprintf(tmp, "%i %s$A", cnt, (char *)txt_ObjectNames[q->id][0]);
+                    strcat(tc, tmp);
+                    if (ai_CharsT[ai_PlayerId].netId == cm_FightOwner)
+                        cm_SendExSellObject(obj->objId, ob->objId, q->id, cnt, ai_OwnPlayer, 0);
+                    v = (int)(gm_GoodsPrice(q->id, ai_OwnPlayer) * cnt + v);
+                }
+            }
+        take_done:     /* (k == 2 below too) the take shown, its value added to the attacker's records */
+            d2_SetForm(win, 1);
+            io_PrintText(tc);
+            rec = (AIFIN *)gm_PlayerRecord((char *)cm_FightAttacker);
+            if (rec != 0)
+                rec->lootTakings += v;
+            if (a->attackerBldId != -1) {
+                b = (AIBLD *)gm_BuildQuery(1, 1, a->attackerBldId);
+                b->roundSums[0] += v;
+            }
             goto pump;
         } else if (n == 3) {
             goto face;
         } else if (n == 0) {
-            G20_GUARDS(ba);
+            /* the town guards are called: every guard (title groups 10 .. 12) turns against the attacker */
+            txt_Format(ba, 0x11a7, cm_FightAttackerC->id, cm_FightAttackerC->id);
+            cm_MessageBox(ba, 0);
+            for (ch = &ai_CharsT[0]; ch < &ai_CharsT[0x300]; ch++) {
+                if (ch->id != 0xffff && ch->health != 0 &&
+                    ((k = gm_TitleGroup(ch->jobId)) == 10 || k == 11 || k == 12))
+                    cm_SendRelations(cm_FightAttackerC->netId, ch->netId, 6, 1);
+            }
         }
-    } else if (a[0x7c] & 4) {
-        c = gm_BuildQuery(1, 1, *(int *)(a + 0x10c));
-        if (ai_BTypes[(unsigned char)c[0] * 0x24d] == 0x13) {
+    } else if (a->flags & 4) {
+        /* the defenders of a building of kind 0x13: their bars, the wounded paid for */
+        b = (AIBLD *)gm_BuildQuery(1, 1, a->attackerBldId);
+        if (ai_BTypesT[b->type].kind == 0x13) {
             total = 0;
             for (i = 0; i < 16; i++) {
-                id = *(int *)(a + 0x80 + i * 4);
+                id = a->defenders[i];
                 if (id == -1)
                     continue;
-                c = cm_FindFighter(id);
+                c = (AICHAR *)cm_FindFighter(id);
                 col = i % 4;
                 row = i / 4 + 1;
                 px = col * 80 + 0x30;
                 py = row * 100;
                 d2_WinOpenPic(px, py, 0x5db, d2_LastWindow);
-                d2_WinOpenPic(px + 2, py, *(int *)(c + 0x18c), d2_LastWindow);
-                sv_ValueBar(px, py + 0x3c, (unsigned char)c[0x83], 0x4eb);
+                d2_WinOpenPic(px + 2, py, c->picture, d2_LastWindow);
+                sv_ValueBar(px, py + 0x3c, c->sk83, 0x4eb);
                 h = 0;
-                if (c[8] == 0) {
-                    v = (int)((unsigned char)c[0x83] * 0.023809524f + ai_FloatOne);
+                if (c->health == 0) {
+                    v = (int)(c->sk83 * 0.023809524f + ai_FloatOne);
                     d2_WinOpenPic(px + 6, py + 6, 0x3b, d2_LastWindow);
                     h = gm_PlayerFactor(v * 40, ai_OwnPlayer);
                 }
-                if (side == G20_DEF) {
-                    if ((unsigned char)c[8] > 0) {
+                if (side == cm_FightAttackerC) {
+                    if (c->health > 0) {
                         v = 0;
-                        cm_BeginFieldBlock(c, *(int *)(c + 4));
-                        cm_AddFieldValue(4, 1, (int)c - (int)cm_FieldObject + 0x16c, &v);
+                        cm_BeginFieldBlock((char *)c, c->netId);
+                        cm_AddFieldValue(4, 1, (char *)&c->bld - cm_FieldObject, &v);
                         cm_SendFieldDeltas();
                     }
                     txt_Format(tmp, "%T", h);
@@ -10789,30 +10806,66 @@ void cm_FightEndDialog(char *a)
                 }
             }
             if (total != 0)
-                cm_SendMoveGoods(*(int *)(G20_DEF + 4), -1, ai_OwnPlayer, total);
-            else if (G20_US(&ai_PlayerId) == G20_US(G20_DEF))
+                cm_SendMoveGoods(cm_FightAttackerC->netId, -1, ai_OwnPlayer, total);
+            else if (ai_PlayerId == cm_FightAttackerC->id)
                 io_PrintText(0x11b6);
-            if (*(int *)(a + 0x10c) != -1) {
-                q = gm_BuildQuery(1, 1, *(int *)(a + 0x10c));
-                *(int *)(q + 0x4d) += total;
+            if (a->attackerBldId != -1) {
+                b = (AIBLD *)gm_BuildQuery(1, 1, a->attackerBldId);
+                b->roundSums[0] += total;
             }
             goto pump;
         }
-    } else if ((a[0x7c] & 2) && side == G20_DEF && G20_DEF[2] != 6 && G20_DEF[2] != 7) {
+    } else if ((a->flags & 2) && side == cm_FightAttackerC && cm_FightAttackerC->kind != 6 && cm_FightAttackerC->kind != 7) {
+        /* the AI took the building: the outcome by random (a guard's or a job's building of its own always) */
         k = 0;
-        if (!gm_TitleJob(G20_US(G20_DEF), gm_BuildingJob((unsigned char)*kr)) || *kr == 0xd || *kr == 0xc || *kr == 0xb)
+        if (!gm_TitleJob(cm_FightAttackerC->id, gm_BuildingJob(bt->kind)) || bt->kind == 0xd || bt->kind == 0xc ||
+            bt->kind == 0xb)
             k = (unsigned short)util_RandomU(3) + 1;
         if (k == 0) {
-            txt_Format(bb, 0x11a4, G20_US(G20_DEF), ca);
+            txt_Format(bb, 0x11a4, cm_FightAttackerC->id, ca);
             cm_MessageBox(bb, 0);
         } else if (k == 2) {
-            G20_TAKE();
+            tc[0] = ch_EmptyName[0];
+            memset(tc + 1, 0, 0x3ff);
+            txt_Format(tc, 0x11a5, cm_FightAttackerC->id, ca);
+            cm_MessageBox(tc, 0);
+            ob = (AIOBJ *)gm_Query(ca->objList, 2, 6, 0, 0x2a);
+            if (ob == 0)
+                ob = (AIOBJ *)gm_Query(ca->objList, 2, 6, 0, 0x116);
+            v = gm_GetGoodsValue((char *)cm_FightDefender);
+            v = v < 0x9c400 ? v : 0x9c400;
+            v = (int)(((double)cm_Random(0x32) * 0.001 + 0.07) * (v < 0 ? 0 : v));
+            txt_Format(tc, "$Z%T$A", v);
+            cm_SendMoveGoods(cm_FightAttackerC->netId, cm_FightDefenderC->netId, ai_OwnPlayer, v);
+            if (ob != 0 && obj != 0) {
+                for (q = (AIOBJ *)gm_Query(ob->list, 1, 5); q != 0; q = (AIOBJ *)gm_QueryNext()) {
+                    cnt = (int)((double)(cm_Random(0x14) + 0x50) * 0.01 * q->count);
+                    if (cnt < 1)
+                        cnt = 1;
+                    sprintf(tmp, "%i %s$A", cnt, (char *)txt_ObjectNames[q->id][0]);
+                    strcat(tc, tmp);
+                    if (ai_CharsT[ai_PlayerId].netId == cm_FightOwner)
+                        cm_SendExSellObject(obj->objId, ob->objId, q->id, cnt, ai_OwnPlayer, 0);
+                    v = (int)(gm_GoodsPrice(q->id, ai_OwnPlayer) * cnt + v);
+                }
+            }
             goto take_done;
         } else if (k == 3) {
-        face:
-            G20_FACE();
+        face:   /* the attacker gains face (n == 3 above too): the building's state drops by 1 .. 20 */
+            tc[0] = ch_EmptyName[0];
+            memset(tc + 1, 0, 0x3ff);
+            txt_Format(tc, 0x11a6, cm_FightAttackerC->id, ca);
+            cm_MessageBox(tc, 0);
+            if (ai_CharsT[ai_PlayerId].netId == cm_FightOwner)
+                gm_ChangeBuildingState((unsigned char *)ca, 0x14 - cm_Random(0x14));
         } else if (k == 1) {
-            G20_GUARDS(bb);
+            txt_Format(bb, 0x11a7, cm_FightAttackerC->id, cm_FightAttackerC->id);
+            cm_MessageBox(bb, 0);
+            for (ch = &ai_CharsT[0]; ch < &ai_CharsT[0x300]; ch++) {
+                if (ch->id != 0xffff && ch->health != 0 &&
+                    ((k = gm_TitleGroup(ch->jobId)) == 10 || k == 11 || k == 12))
+                    cm_SendRelations(cm_FightAttackerC->netId, ch->netId, 6, 1);
+            }
         }
     }
     di_ClearEvents(0x10);
@@ -10956,7 +11009,7 @@ void cm_RunFight(CMFIGHTREC *a)
                 cm_DamagePops[i].v = 0;
                 cm_DamagePops[i].c = 0;
             }
-            cm_FightEndDialog((char *)a);
+            cm_FightEndDialog(a);
             cm_FightOutro((char *)a);
             cm_EndFightScene(a);
             return;
