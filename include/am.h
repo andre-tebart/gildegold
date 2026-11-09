@@ -671,7 +671,7 @@ typedef struct G5CH {                   /* a character, 0x21c bytes (ai_Chars[76
     unsigned int flags1c8;              /* 0x1c8, (AIPER.flags1c8): 0x2000000 keeps it from the regulars' table (ai_DecideStammtisch) */
     char pad1cc[0x1c];
     unsigned int flags1e8;              /* 0x1e8, (AIPER.flags1e8) */
-    unsigned int goodsMask;             /* 0x1ec, (AICHAR.unk1ec): a good whose Domizil entry mask (+0x10) shares a bit is not usable (0x4a5760); reasoned name */
+    unsigned int goodsMask;             /* 0x1ec, (AICHAR.goodsMask): a good whose Domizil entry mask (+0x10) shares a bit is not usable (0x4a5760); reasoned name */
     char pad1f0[0x20];
     int partner;                        /* 0x210 */
     char pad214[4];

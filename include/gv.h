@@ -261,7 +261,7 @@ typedef struct ORDBLD {
     };
     union {
         struct {
-            int daySum;             /* 0x69, ai.h AIBLD.unk69, cleared for the kinds 11 .. 13 at the end of every day (reasoned guess: a per-day sum, as roundSum) */
+            int daySum;             /* 0x69, ai.h AIBLD.daySum, cleared for the kinds 11 .. 13 at the end of every day (reasoned guess: a per-day sum, as roundSum) */
             int v6d;                /* 0x6d, gm_CreateBuilding: 5 for the kinds 0xe .. 0x10, 0 for 0x35 .. 0x37 */
             struct G15PLANT *plants; /* 0x71, of a kind 0x1e building its plant records (ai.h AIBLD.plants), freed by gm_FreeBuilding */
         };

@@ -7,7 +7,7 @@
    strings stay gap bytes until that table construction is rewritten)
    Open: data: 0x624ee0 main_ModelPatrizier, owner main (the same table, copy at 0x534b51; the "Sky_Mittel_02" at
    0x624ef0 after it has no reference at this address)
-   Open: 0x534040, 0x53a520 and 0x53b2e0 are out of address order.
+   Open: 0x534040 is out of address order.
    unit of rea 8cef7d5b (src/game/main.c); boundaries in decl/text.dcl */
 extern int gm_PlayerRecords[688];
 #include "txt_views.h"
@@ -4032,256 +4032,8 @@ void main_UpdateFigures(void)
         }
     }
 }
-/* 0x53b830, the CD check: returns 1 (the retry loops of main_BeginPlayerRound and main_GameLoop wait for 1; this build always passes) */
-
-int main_CheckCD(void)
-{
-    return 1;
-}
-/* 0x53b840, creates the player character from the profile (cm_SendMessage0c) and its parents, the start couple (cm_SendCreateCharacter, mother with the female flag): random first names (txt_FemaleFirstNames / txt_MaleFirstNames), the father the profile's family name, the player's number and coat, the family links (spouse, parents, child), the model, love 0x7f between all three, 16000 .. 32352 money for each parent, the profile's mission and talents
-   @deep Rewrote 0x53b840 typed against the original (154 -> 10 differing, 245 / 245 instructions, size 725
-   / 725): the profile's int coat argument, the two cm_SendCreateCharacter (mother with the female flag),
-   the start couple's fields through MAINCHARNEW (seq, coat, spouse / parent1 / parent2 / child, talents,
-   modelId, ownName), the random index taken before the destination and the table pointer, the name copy as
-   do { c = *t++; *d++ = c; } while (c) (the first copy now equal), the inline strcpy of the model,
-   ai_MissionMode > -1 as a char. Left is one register choice in the second name copy: 0x53b9b9 .. 0x53b9c7
-   ours mov eax, [tbl + idx*4] / mov cl, [eax] / inc eax / test cl, cl, the original mov ecx, [tbl + idx*4]
-   / mov al, [ecx] / inc ecx / test al, al (the original pops ebp, the first copy's destination, right
-   before this loop; ours keeps eax for the pointer). Tried: a second char / pointer variable for the
-   second copy (no change), the while ((*d++ = *t++)) form (22 differing). */
-
-void main_CreateStartCouple(void)
-{
-    MAINCHARNEW *a, *mother, *father;
-    int h1, h2;
-    char *d, *t;
-    int k;
-    char c;
-
-    ai_ClearMissions();
-    if (init_PlayerProfile.status != 0) {
-        cm_BeginSendGroup();
-        h1 = cm_SendMessage0c(-1, -1, 0x10, init_PlayerProfile.job, init_PlayerProfile.coat, init_PlayerProfile.sex, init_PlayerProfile.faith, init_PlayerProfile.firstName, init_PlayerProfile.familyName);
-        cm_EndSendGroup();
-        while (cm_SendGroupState() == 0)
-            sv_PumpNet();
-        a = (MAINCHARNEW *)cm_GetSlotValue(h1);
-        cm_BeginSendGroup();
-        h1 = cm_SendCreateCharacter(9, -1, -1, util_Random(4) + 0x20, -1, init_PlayerProfile.tool2, 0, 1);
-        h2 = cm_SendCreateCharacter(9, -1, -1, util_Random(4) + 0x20, -1, init_PlayerProfile.tool1, 0, 0);
-        cm_EndSendGroup();
-        while (cm_SendGroupState() == 0)
-            sv_PumpNet();
-        mother = (MAINCHARNEW *)cm_GetSlotValue(h1);
-        father = (MAINCHARNEW *)cm_GetSlotValue(h2);
-        strncpy(father->familyName, init_PlayerProfile.familyName, 0x10);
-        mother->seq = a->seq;
-        mother->coat = a->coat;
-        mother->rel.child = a->netId;
-        k = (unsigned short)util_Random(0x70);
-        d = mother->firstName;
-        t = txt_FemaleFirstNames[k];
-        do {
-            c = *t++;
-            *d++ = c;
-        } while (c != 0);
-        gm_CharNameRecord(mother->id);
-        father->seq = a->seq;
-        father->coat = a->coat;
-        father->rel.child = a->netId;
-        k = (unsigned short)util_Random(0xbf);
-        d = father->firstName;
-        t = txt_MaleFirstNames[k];
-        do {
-            c = *t++;
-            *d++ = c;
-        } while (c != 0);
-        gm_CharNameRecord(father->id);
-        mother->rel.spouse = father->netId;
-        father->rel.spouse = mother->netId;
-        a->rel.parent1 = father->netId;
-        a->rel.parent2 = mother->netId;
-        mother->rel.child = a->netId;
-        father->rel.child = a->netId;
-        strcpy(a->ownName, init_PlayerProfile.model);
-        a->modelId = init_PlayerProfile.modelId;
-        cm_SendRelations(a->netId, father->netId, 0x7f, 0);
-        cm_SendRelations(father->netId, a->netId, 0x7f, 0);
-        cm_SendRelations(a->netId, mother->netId, 0x7f, 0);
-        cm_SendRelations(mother->netId, a->netId, 0x7f, 0);
-        cm_SendRelations(father->netId, mother->netId, 0x7f, 0);
-        cm_SendRelations(mother->netId, father->netId, 0x7f, 0);
-        cm_SendMoveGoods(father->netId, -1, ai_OwnPlayer, ((unsigned short)util_Random(0x200) + 500) * 0x20);
-        cm_SendMoveGoods(mother->netId, -1, ai_OwnPlayer, ((unsigned short)util_Random(0x200) + 500) * 0x20);
-        if (ai_MissionMode > -1)
-            ai_NewMission(a->netId, init_PlayerProfile.mission, 0);
-        for (k = 0; k < 5; k++)
-            a->talents[k] = init_PlayerProfile.talents[k];
-    }
-}
-
 void ord_InitMessageRecord(int a, float b, float c, float d);
 int sv_MessageBox();
-
-/* 0x53b2e0, starts the player's round: dumps every character and clears its round flags, takes the kind 6 one as the player, a random CD check loop (main_Unk53b830, text 0x79), the parties, the round intro page, the alchemists' plants and the kind 7 buildings, then the daily steps of the world (each followed by sv_PumpNet / Sleep(100), main_SettleRound for every living character) or only the income histories when this machine is not the master; the goal fanfare and the outro, the yearly history */
-void main_BeginPlayerRound(void)
-{
-    int sv = snd_AmbientOn;
-    int cur = -1;
-    int i, w;
-    AIBLD *b;
-    char date[12];
-    int rec[9];
-    char buf[256];
-
-    ord_CountGridObjects();
-    for (i = 0; i < 0x300; i++) {
-        ai_DebugDumpPerson(ai_Chars[i]);
-        ai_CharsT[i].flags1c8 &= 0xe0874703;
-        ai_CharsT[i].flags1cc &= 0x3d31ffc7;
-        if (ai_CharsT[i].kind == 6)
-            cur = i;
-    }
-    ai_PlayerId = (unsigned short)cur;
-    he_RunEveryFrameEvents();
-    if ((ai_GameFlags & 4) == 0 && (unsigned short)util_Random(10) > 6 && main_CheckCD() != 1) {
-        do {
-            d2_CutsceneActive = 0;
-            sv_FrameMask = 0x24087;
-            txt_Format(buf, 0x79);
-            if (sv_MessageBox((int)buf, 1) == 0) {
-                ai_GameOver = 1;
-                sv_PopTo((int)main_GameLoop);
-                return;
-            }
-            d2_DrawAll();
-            Sleep(1000);
-        } while (main_CheckCD() != 1);
-    }
-    sv_FrameMask = 0x24087;
-    if ((ai_GameFlags & 4) != 0)
-        sv_NetworkSyncWait(0x24087);
-    cm_ResetCutInfos(0);
-    if (ai_RunPendingParties(cur) != 0 && main_GfxOn != 0) {
-        d2_DirtyRectRight = 0;
-        d2_DirtyRectLeft[0] = d2_ScreenW;
-        d2_DirtyRectTop = 0;
-        d2_DirtyRectBottom = d2_ScreenH;
-        d2_ClearSurface(d2_ScreenSurf);
-        d2_ShowPicture(0x79d);
-    }
-    he_AgeCarryRecs();
-    he_CountDownApEvents();
-    if (main_GfxOn != 0) {
-        w = d2_OpenForm(0, 0, "Runden\\Spielerrunde_Beginn_NEU");
-        d2_PlaceMainWindowF(w, 3);
-        d2_SetForm(w, 1);
-        io_PrintText(0x7d);
-        gm_ClockToDate((struct AITIME *)&ai_Time, date);
-        d2_SetForm(w, 0);
-        d2_CloseView(w);
-    }
-    b = (AIBLD *)gm_BuildQuery(1, 6);
-    while (b != 0) {
-        if (b->type == 0x1e) {
-            int scene;
-
-            i = init_BuildingSceneUniverse((unsigned char *)b);
-            scene = d3_CurrentScene;
-            if (i != -1) {
-                d3if_SelectScene(init_BuildingUniverse[ai_BTypesT[b->type].kind], 1);
-                d3_InflateScene(3);
-                veg_GrowPlants((G15PLANT *)b->plants);
-                d3_DeflateScene(3);
-                d3if_SelectScene(scene, 1);
-            }
-        } else if (ai_BTypesT[b->type].kind == 7)
-            b->unk69 = 0;
-        b = (AIBLD *)gm_BuildNext();
-    }
-    gm_UpdatePlayers();
-    ord_AppendStatisticsRound();
-    if ((cm_NetFlags & 8) == 0 && net_Conn.s != -1)
-        gm_EndDayIncomes(2);
-    else {
-        gv_SendCrimes();
-        sv_PumpNet();
-        Sleep(100);
-        for (i = 0; i < 0x300; i++) {
-            if (ai_CharsT[i].id != 0xffff && ai_CharsT[i].health != 0)
-                main_SettleRound((unsigned short)i);
-        }
-        sv_PumpNet();
-        Sleep(100);
-        gm_DailyCharacters();
-        sv_PumpNet();
-        Sleep(100);
-        gm_UpdateWorthMood();
-        sv_PumpNet();
-        Sleep(100);
-        gm_EndDayIncomes(3);
-        gm_CharacterUpkeep();
-        sv_PumpNet();
-        Sleep(100);
-        gm_PayAllCharacterWages();
-        amt_CheckOffices();
-        sv_PumpNet();
-        Sleep(100);
-        he_DailyEventChecks();
-        ((void (*)(void))d3io_NoopCallback)();  /* called with no argument (no push at the call) */
-        sv_PumpNet();
-        Sleep(100);
-        gv_CheckRankUps();
-        sv_PumpNet();
-        Sleep(100);
-        ai_RollCharFlags();
-        sv_PumpNet();
-        Sleep(100);
-        ord_UpdateStatistics();
-        ord_GetMessageRecord(rec);
-        if (rec[0] == -1)
-            ord_InitMessageRecord(1, 1.0f, 0.5f, (float)(10.0 - (4 - ai_Difficulty) * 2.5));
-        else
-            ord_UpdateMessageEvent();
-        he_SpawnFounders();
-        sv_PumpNet();
-        Sleep(100);
-        for (i = 0; i < 0x300; i++)
-            cm_SendRelations(-1, ai_CharsT[i].netId, 0, 3);
-        cm_SendRelations(-1, -1, 0, 4);
-        hmt_FillCouncils();
-    }
-    for (i = 0; i < 0x300; i++)
-        ai_CharsT[i].unk1ec = 0;
-    if (main_GfxOn != 0) {
-        if (main_GameEnded != 0 && (ai_GameFlags & 4) == 0) {
-            w = sv_CreateScrollForm();
-            d2_SetForm(w, 2);
-            io_PrintText(0x7d);
-            d2_SetForm(w, 1);
-            io_PrintText(0x1ba0, MAIN_PLAYER, MAIN_PLAYER);
-            snd_QueueVoice(-7, 0, "FanfarePositivHeldenhaftLang", -1, 0);
-            i = sv_RunFrame((int)main_BeginPlayerRound, 0x66087);
-            while (i != 0) {
-                if (d2_ClickedId == 0)
-                    sv_PopRequest = 1;
-                i = sv_RunFrame((int)main_BeginPlayerRound, 0x66087);
-            }
-            d2_CloseView(w);
-            main_PlayOutro();
-            ai_GameOver = 1;
-        }
-        if (main_GfxOn != 0 && ai_GameOver == 0) {
-            if ((cm_NetFlags & 8) == 0 && net_Conn.s != -1)
-                hst_YearlyHistory(0);
-            else
-                hst_YearlyHistory(1);
-        }
-    }
-    if ((cm_NetFlags & 8) != 0 || net_Conn.s == -1)
-        main_UpdateFigures();
-    snd_AmbientOn = (unsigned char)sv;
-}
 
 #define MAIN_ME ((AICHAR *)ai_PlayerChar)  /* the player's character (ai_PlayerChar: unsigned short *) */
 
@@ -4624,6 +4376,256 @@ void main_SettleRound(unsigned short pl)
 }
 
 void d3_SetViewport(float w, float h, float x, float y, float zn, float zf, float scale, int a, int b);
+
+/* 0x53b2e0, starts the player's round: dumps every character and clears its round flags, takes the kind 6 one as the player, a random CD check loop (main_CheckCD, text 0x79), the parties, the round intro page, the alchemists' plants and the kind 7 buildings, then the daily steps of the world (each followed by sv_PumpNet / Sleep(100), main_SettleRound for every living character) or only the income histories when this machine is not the master; the goal fanfare and the outro, the yearly history */
+void main_BeginPlayerRound(void)
+{
+    int sv = snd_AmbientOn;
+    int cur = -1;
+    int i, w;
+    AIBLD *b;
+    AIBTYPE *bt;
+    char date[12];
+    int rec[9];
+    char buf[256];
+
+    ord_CountGridObjects();
+    for (i = 0; i < 0x300; i++) {
+        ai_DebugDumpPerson(ai_Chars[i]);
+        ai_CharsT[i].flags1c8 &= 0xe0874703;
+        ai_CharsT[i].flags1cc &= 0x3d31ffc7;
+        if (ai_CharsT[i].kind == 6)
+            cur = i;
+    }
+    ai_PlayerId = (unsigned short)cur;
+    he_RunEveryFrameEvents();
+    if ((ai_GameFlags & 4) == 0 && (unsigned short)util_Random(10) > 6 && main_CheckCD() != 1) {
+        do {
+            d2_CutsceneActive = 0;
+            sv_FrameMask = 0x24087;
+            txt_Format(buf, 0x79);
+            if (sv_MessageBox((int)buf, 1) == 0) {
+                ai_GameOver = 1;
+                sv_PopTo((int)main_GameLoop);
+                return;
+            }
+            d2_DrawAll();
+            Sleep(1000);
+        } while (main_CheckCD() != 1);
+    }
+    sv_FrameMask = 0x24087;
+    if ((ai_GameFlags & 4) != 0)
+        sv_NetworkSyncWait(0x24087);
+    cm_ResetCutInfos(0);
+    if (ai_RunPendingParties(cur) != 0 && main_GfxOn != 0) {
+        d2_DirtyRectRight = 0;
+        d2_DirtyRectLeft[0] = d2_ScreenW;
+        d2_DirtyRectTop = 0;
+        d2_DirtyRectBottom = d2_ScreenH;
+        d2_ClearSurface(d2_ScreenSurf);
+        d2_ShowPicture(0x79d);
+    }
+    he_AgeCarryRecs();
+    he_CountDownApEvents();
+    if (main_GfxOn != 0) {
+        w = d2_OpenForm(0, 0, "Runden\\Spielerrunde_Beginn_NEU");
+        d2_PlaceMainWindowF(w, 3);
+        d2_SetForm(w, 1);
+        io_PrintText(0x7d);
+        gm_ClockToDate((struct AITIME *)&ai_Time, date);
+        d2_SetForm(w, 0);
+        d2_CloseView(w);
+    }
+    b = (AIBLD *)gm_BuildQuery(1, 6);
+    while (b != 0) {
+        bt = &ai_BTypesT[b->type];
+        if (b->type == 0x1e) {
+            int scene;
+
+            i = init_BuildingSceneUniverse((unsigned char *)b);
+            scene = d3_CurrentScene;
+            if (i != -1) {
+                d3if_SelectScene(init_BuildingUniverse[ai_BTypesT[b->type].kind], 1);
+                d3_InflateScene(3);
+                veg_GrowPlants((G15PLANT *)b->plants);
+                d3_DeflateScene(3);
+                d3if_SelectScene(scene, 1);
+            }
+        } else if (bt->kind == 7)
+            b->daySum = 0;
+        b = (AIBLD *)gm_BuildNext();
+    }
+    gm_UpdatePlayers();
+    ord_AppendStatisticsRound();
+    if ((cm_NetFlags & 8) == 0 && net_Conn.s != -1)
+        gm_EndDayIncomes(2);
+    else {
+        gv_SendCrimes();
+        sv_PumpNet();
+        Sleep(100);
+        for (i = 0; i < 0x300; i++) {
+            if (ai_CharsT[i].id != 0xffff && ai_CharsT[i].health != 0)
+                main_SettleRound((unsigned short)i);
+        }
+        sv_PumpNet();
+        Sleep(100);
+        gm_DailyCharacters();
+        sv_PumpNet();
+        Sleep(100);
+        gm_UpdateWorthMood();
+        sv_PumpNet();
+        Sleep(100);
+        gm_EndDayIncomes(3);
+        gm_CharacterUpkeep();
+        sv_PumpNet();
+        Sleep(100);
+        gm_PayAllCharacterWages();
+        amt_CheckOffices();
+        sv_PumpNet();
+        Sleep(100);
+        he_DailyEventChecks();
+        ((void (*)(void))d3io_NoopCallback)();  /* called with no argument (no push at the call) */
+        sv_PumpNet();
+        Sleep(100);
+        gv_CheckRankUps();
+        sv_PumpNet();
+        Sleep(100);
+        ai_RollCharFlags();
+        sv_PumpNet();
+        Sleep(100);
+        ord_UpdateStatistics();
+        ord_GetMessageRecord(rec);
+        if (rec[0] == -1)
+            ord_InitMessageRecord(1, 1.0f, 0.5f, (float)(10.0 - (4 - ai_Difficulty) * 2.5));
+        else
+            ord_UpdateMessageEvent();
+        he_SpawnFounders();
+        sv_PumpNet();
+        Sleep(100);
+        for (i = 0; i < 0x300; i++)
+            cm_SendRelations(-1, ai_CharsT[i].netId, 0, 3);
+        cm_SendRelations(-1, -1, 0, 4);
+        hmt_FillCouncils();
+    }
+    for (i = 0; i < 0x300; i++)
+        ai_CharsT[i].goodsMask = 0;
+    if (main_GfxOn != 0) {
+        if (main_GameEnded != 0 && (ai_GameFlags & 4) == 0) {
+            w = sv_CreateScrollForm();
+            d2_SetForm(w, 2);
+            io_PrintText(0x7d);
+            d2_SetForm(w, 1);
+            io_PrintText(0x1ba0, MAIN_PLAYER, MAIN_PLAYER);
+            snd_QueueVoice(-7, 0, "FanfarePositivHeldenhaftLang", -1, 0);
+            i = sv_RunFrame((int)main_BeginPlayerRound, 0x66087);
+            while (i != 0) {
+                if (d2_ClickedId == 0)
+                    sv_PopRequest = 1;
+                i = sv_RunFrame((int)main_BeginPlayerRound, 0x66087);
+            }
+            d2_CloseView(w);
+            main_PlayOutro();
+            ai_GameOver = 1;
+        }
+        if (main_GfxOn != 0 && ai_GameOver == 0) {
+            if ((cm_NetFlags & 8) == 0 && net_Conn.s != -1)
+                hst_YearlyHistory(0);
+            else
+                hst_YearlyHistory(1);
+        }
+    }
+    if ((cm_NetFlags & 8) != 0 || net_Conn.s == -1)
+        main_UpdateFigures();
+    snd_AmbientOn = (unsigned char)sv;
+}
+
+/* 0x53b830, the CD check: returns 1 (the retry loops of main_BeginPlayerRound and main_GameLoop wait for 1; this build always passes) */
+
+int main_CheckCD(void)
+{
+    return 1;
+}
+/* 0x53b840, creates the player character from the profile (cm_SendMessage0c) and its parents, the start couple (cm_SendCreateCharacter, mother with the female flag): random first names (txt_FemaleFirstNames / txt_MaleFirstNames), the father the profile's family name, the player's number and coat, the family links (spouse, parents, child), the model, love 0x7f between all three, 16000 .. 32352 money for each parent, the profile's mission and talents
+   @deep Rewrote 0x53b840 typed against the original (154 -> 10 differing, 245 / 245 instructions, size 725
+   / 725): the profile's int coat argument, the two cm_SendCreateCharacter (mother with the female flag),
+   the start couple's fields through MAINCHARNEW (seq, coat, spouse / parent1 / parent2 / child, talents,
+   modelId, ownName), the random index taken before the destination and the table pointer, the name copy as
+   do { c = *t++; *d++ = c; } while (c) (the first copy now equal), the inline strcpy of the model,
+   ai_MissionMode > -1 as a char. Left is one register choice in the second name copy: 0x53b9b9 .. 0x53b9c7
+   ours mov eax, [tbl + idx*4] / mov cl, [eax] / inc eax / test cl, cl, the original mov ecx, [tbl + idx*4]
+   / mov al, [ecx] / inc ecx / test al, al (the original pops ebp, the first copy's destination, right
+   before this loop; ours keeps eax for the pointer). Tried: a second char / pointer variable for the
+   second copy (no change), the while ((*d++ = *t++)) form (22 differing). */
+
+void main_CreateStartCouple(void)
+{
+    MAINCHARNEW *a, *mother, *father;
+    int h1, h2;
+    char *d, *t;
+    int k;
+    char c;
+
+    ai_ClearMissions();
+    if (init_PlayerProfile.status != 0) {
+        cm_BeginSendGroup();
+        h1 = cm_SendMessage0c(-1, -1, 0x10, init_PlayerProfile.job, init_PlayerProfile.coat, init_PlayerProfile.sex, init_PlayerProfile.faith, init_PlayerProfile.firstName, init_PlayerProfile.familyName);
+        cm_EndSendGroup();
+        while (cm_SendGroupState() == 0)
+            sv_PumpNet();
+        a = (MAINCHARNEW *)cm_GetSlotValue(h1);
+        cm_BeginSendGroup();
+        h1 = cm_SendCreateCharacter(9, -1, -1, util_Random(4) + 0x20, -1, init_PlayerProfile.tool2, 0, 1);
+        h2 = cm_SendCreateCharacter(9, -1, -1, util_Random(4) + 0x20, -1, init_PlayerProfile.tool1, 0, 0);
+        cm_EndSendGroup();
+        while (cm_SendGroupState() == 0)
+            sv_PumpNet();
+        mother = (MAINCHARNEW *)cm_GetSlotValue(h1);
+        father = (MAINCHARNEW *)cm_GetSlotValue(h2);
+        strncpy(father->familyName, init_PlayerProfile.familyName, 0x10);
+        mother->seq = a->seq;
+        mother->coat = a->coat;
+        mother->rel.child = a->netId;
+        k = (unsigned short)util_Random(0x70);
+        d = mother->firstName;
+        t = txt_FemaleFirstNames[k];
+        do {
+            c = *t++;
+            *d++ = c;
+        } while (c != 0);
+        gm_CharNameRecord(mother->id);
+        father->seq = a->seq;
+        father->coat = a->coat;
+        father->rel.child = a->netId;
+        k = (unsigned short)util_Random(0xbf);
+        d = father->firstName;
+        t = txt_MaleFirstNames[k];
+        do {
+            c = *t++;
+            *d++ = c;
+        } while (c != 0);
+        gm_CharNameRecord(father->id);
+        mother->rel.spouse = father->netId;
+        father->rel.spouse = mother->netId;
+        a->rel.parent1 = father->netId;
+        a->rel.parent2 = mother->netId;
+        mother->rel.child = a->netId;
+        father->rel.child = a->netId;
+        strcpy(a->ownName, init_PlayerProfile.model);
+        a->modelId = init_PlayerProfile.modelId;
+        cm_SendRelations(a->netId, father->netId, 0x7f, 0);
+        cm_SendRelations(father->netId, a->netId, 0x7f, 0);
+        cm_SendRelations(a->netId, mother->netId, 0x7f, 0);
+        cm_SendRelations(mother->netId, a->netId, 0x7f, 0);
+        cm_SendRelations(father->netId, mother->netId, 0x7f, 0);
+        cm_SendRelations(mother->netId, father->netId, 0x7f, 0);
+        cm_SendMoveGoods(father->netId, -1, ai_OwnPlayer, ((unsigned short)util_Random(0x200) + 500) * 0x20);
+        cm_SendMoveGoods(mother->netId, -1, ai_OwnPlayer, ((unsigned short)util_Random(0x200) + 500) * 0x20);
+        if (ai_MissionMode > -1)
+            ai_NewMission(a->netId, init_PlayerProfile.mission, 0);
+        for (k = 0; k < 5; k++)
+            a->talents[k] = init_PlayerProfile.talents[k];
+    }
+}
 
 /* 0x53bb20, the main game loop of the process (the dialog callback of the process level, `ctl` = 0 on the first call): the start-up / load of the game by the mode flags 0x6f23f8 (1 new game, 2 load, 4 network, 8, 0x10, 0x40 .., 0x80), the "Init" export of the optional
    plug-in DLL (0x75dda0), the autosave, then the round loop: one player at a time (0x6f25b8) the day change 0x5384e0, the start of the round 0x53b2e0 ... until the game is left (0x6f259c); ends with the network error / player left messages (ROUGH) */

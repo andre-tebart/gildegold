@@ -52,6 +52,7 @@ int main_PlayerCountDialog(void);
 void main_StartCityGame(char *name, int net);
 int main_NewSinglePlayerGame(void);                /* 0x537930, the new game (main_Menue), 0: cancelled */
 int main_NetworkMenu(void);
+int main_CheckCD(void);                  /* 0x53b830, the CD check: always 1 in this build */
 
 /* declared in other units' headers before (moved to the owner) */
 void main_GameLoop(int ctl);  /* 0x53bb20 */

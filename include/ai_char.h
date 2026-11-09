@@ -138,7 +138,7 @@ typedef struct AICHAR {                 /* 0x21c bytes, ai_Chars[768] */
     char pad1d0[0x14];
     float mood3Rate;                    /* 0x1e4, scales the base growth of mood need 3; message 0x1a keeps it in sync */
     char pad1e8[4];
-    int unk1ec;                         /* 0x1ec, cleared for every character at the round start (main.c 0x53b2e0) */
+    unsigned int goodsMask;             /* 0x1ec, the classes of the Domizil goods in use (am.h / lc.c goodsMask: ai_UseGood sets them), cleared for every character at the round start (main_BeginPlayerRound) */
     int v1f0;                         /* 0x1f0, 0 at creation */
     union {
         char ownName[0x1c];             /* 0x1f4, the character's own name, empty: the job's name record

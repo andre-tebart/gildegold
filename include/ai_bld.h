@@ -59,7 +59,7 @@ typedef struct AIBLD {                  /* 0xa9 bytes, ai_Blds[256] */
                                                    cancels one otherwise) */
             };
             union {
-                int unk69;                          /* 0x69, cleared for the kind 7 buildings at every round start (main.c 0x53b2e0) */
+                int daySum;                         /* 0x69, a per-day sum (gv.h ORDBLD.daySum; gm_BuildingBalance adds it to a kind 7 building's income), cleared for the kind 7 buildings at every round start (main_BeginPlayerRound) */
                 int messengerFee;                   /* 0x69, of a bank: the money messenger's fee in percent, 3 .. 0xf
                                                        (lc.c ai_ExchangeFeesWindow sends it as the field 0x69) */
                 int buyOutExtra;                    /* 0x69, of a class 2 building: see buyOutBase (lc.c ai_BuildingWindow) */
