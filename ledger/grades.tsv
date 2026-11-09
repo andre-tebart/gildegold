@@ -1451,7 +1451,7 @@ exe	0x0047dd00	ai_WorkLimit	ai	byte	readable
 exe	0x0047dd30	ai_WorkLoad	ai	byte	readable		
 exe	0x0047dd70	ai_WorksForMaster	ai	byte	readable		
 exe	0x0047dd90	ai_IsLocalMaster	ai	byte	readable		
-exe	0x0047ddf0	ai_FindPartner	ai	draft	draft		
+exe	0x0047ddf0	ai_FindPartner	ai	draft	readable		
 exe	0x0047e360	ai_MasterUpdate	ai	draft	readable	deep	
 exe	0x0047e560	ai_UpdateCharacters	ai	byte	readable		
 exe	0x0047e7f0	ai_CanAct	ai	byte	readable		
@@ -3252,16 +3252,16 @@ exe	0x00519a00	ls_RefsToIds	ls	shape	readable
 exe	0x00519aa0	ls_IdsToRefs	ls	byte	draft	deep	
 exe	0x00519b50	ls_RelinkScene	ls	shape	readable		
 exe	0x00519bf0	ls_WriteObjects	ls	shape	readable		
-exe	0x00519d20	ls_WriteBuildings	ls	draft	draft		
+exe	0x00519d20	ls_WriteBuildings	ls	byte	readable		
 exe	0x0051a1a0	ls_WritePlayerRecords	ls	draft	readable	deep	
-exe	0x0051a4b0	ls_WriteCharacters	ls	draft	draft		
+exe	0x0051a4b0	ls_WriteCharacters	ls	shape	readable		
 exe	0x0051ad30	ls_ActionIndex	ls	byte	readable		
 exe	0x0051ad60	ls_ActionAt	ls	byte	readable		
-exe	0x0051ad80	unk_Unk51ad80	ls	draft	draft		
-exe	0x0051aff0	ls_WriteSceneRecords	ls	draft	draft		
+exe	0x0051ad80	ls_WriteSceneCharacter	ls	byte	readable		
+exe	0x0051aff0	ls_WriteSceneRecords	ls	byte	readable		
 exe	0x0051b340	ls_WritePlayerSlots	ls	shape	readable	deep	
 exe	0x0051b890	ls_WriteRelations	ls	shape	readable		
-exe	0x0051b910	ls_WriteStatistics	ls	draft	draft		
+exe	0x0051b910	ls_WriteStatistics	ls	byte	readable		
 exe	0x0051bdb0	ls_WriteAvatars	ls	byte	readable		
 exe	0x0051bdc0	ls_WriteEventTables	ls	shape	readable		
 exe	0x0051c2f0	ls_WriteParties	ls	byte	readable		
@@ -3269,13 +3269,13 @@ exe	0x0051c450	ls_WriteHistory	ls	shape	readable
 exe	0x0051c560	ls_WriteMessageQueues	ls	shape	readable		
 exe	0x0051c870	ls_WriteEnvironment	ls	draft	readable	deep	
 exe	0x0051c920	ls_Read	ls	byte	readable		
-exe	0x0051c950	ls_LoadGame	ls	draft	draft		
+exe	0x0051c950	ls_LoadGame	ls	byte	readable		
 exe	0x0051cee0	ls_ReadSaveHeader	ls	draft	readable	deep	
 exe	0x0051d2d0	ls_LoadScene	ls	draft	readable	deep	
 exe	0x0051d3d0	ls_ReadObjects	ls	byte	readable		
 exe	0x0051d4f0	ls_HookBuildingCB	ls	byte	draft	deep	
 exe	0x0051d530	ls_ClearObjectFlag	ls	byte	readable		
-exe	0x0051d550	ls_ReadBuildings	ls	draft	draft		
+exe	0x0051d550	ls_ReadBuildings	ls	byte	readable		
 exe	0x0051db00	ls_ReadPlayerRecords	ls	draft	draft		
 exe	0x0051de70	ls_ReadCharacters	ls	draft	draft		
 exe	0x0051e750	ls_ReadCharacter	ls	shape	readable		
@@ -3286,8 +3286,8 @@ exe	0x0051f720	ls_ReadStatistics	ls	byte	readable
 exe	0x0051fb80	ls_ReadAvatars	ls	byte	readable		
 exe	0x0051fb90	ls_ReadEventTables	ls	shape	readable		
 exe	0x00520000	ls_ReadParties	ls	shape	readable		
-exe	0x00520200	unk_Unk520200	ls	draft	draft		
-exe	0x00520310	unk_Unk520310	ls	draft	draft		
+exe	0x00520200	ls_ReadHistory	ls	draft	readable		
+exe	0x00520310	ls_ReadMessageQueues	ls	draft	draft		
 exe	0x005205f0	ls_ReadEnvironment	ls	byte	readable		
 exe	0x005206b0	ls_FixupAfterLoad	ls	draft	draft		
 exe	0x00520a30	ls_SendGame	ls	shape	readable		
@@ -3486,7 +3486,7 @@ exe	0x0053b840	main_CreateStartCouple	main	shape	readable	deep
 exe	0x0053bb20	main_GameLoop	main	draft	readable	deep	
 exe	0x0053c9b0	main_PlayIntroMovies	main	byte	readable		
 exe	0x0053cb40	main_PlayOutro	main	byte	readable		
-exe	0x0053ccf0	WinMain	main	draft	draft		
+exe	0x0053ccf0	WinMain	main	draft	readable	deep	
 exe	0x0053d430	he_AllocNone	he	byte	readable		
 exe	0x0053d470	he_RunNone	he	byte	readable		
 exe	0x0053d4b0	he_InitEvents	he	byte	readable		
@@ -4003,8 +4003,8 @@ exe	0x00578370	ai_TutorialStop	sv_t	byte	readable
 exe	0x00578440	ai_TutorialFreeRuns	sv_t	byte	readable		
 exe	0x005784a0	ai_TutorialInitMainIntro	sv_t	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	sv_t	byte	readable		
-exe	0x00578e40	ai_TutorialInitChapter2	sv_t	byte	readable		
-exe	0x00579570	ai_TutorialInitChapter3	sv_t	shape	readable		
+exe	0x00578e40	ai_TutorialInitChapter2	sv_t	shape	readable		byte+readable -> shape+readable at 8089cb0d: promote --accept-falls
+exe	0x00579570	ai_TutorialInitChapter3	sv_t	draft	readable		shape+readable -> draft+readable at 8089cb0d: promote --accept-falls
 exe	0x0057aa80	ai_TutorialInitChapter4	sv_t	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	sv_t	byte	readable		
 exe	0x0057b750	ai_TutorialInitMainOutro	sv_t	byte	readable		
@@ -4445,7 +4445,7 @@ exe	0x005bc0f0	ai_FreePicture	lc	byte	readable
 exe	0x005bc110	ai_ChooseCoatOfArms	lc	byte	readable		
 exe	0x005bc420	ai_OpenMoneyInfoPage	lc	byte	readable		
 exe	0x005bc6d0	ai_OpenBuildingListPage	lc	byte	readable		
-exe	0x005bc790	ai_BuildingDetailWindow	lc	shape	readable		
+exe	0x005bc790	ai_BuildingDetailWindow	lc	byte	readable		
 exe	0x005bc9c0	ai_OpenMasterListPage	lc	shape	readable	deep	
 exe	0x005bcc70	ai_PlayerStatsPanel	lc	shape	readable		
 exe	0x005bd060	ai_AmountLimit	lc	byte	readable		
