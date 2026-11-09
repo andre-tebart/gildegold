@@ -1381,11 +1381,11 @@ void gm_PartnerStep(ORDCHAR *c);                 /* 0x4fccc0 */
 /* sends the message 0x72 (the character c died) in the GMMSG m */
 #define GM_SENDDEATH(m, c)                                             \
     memset(&(m), 0, sizeof(m));                                        \
-    (m).to = (c)->netId;                                               \
-    (m).time = ai_Time;                                               \
     (m).type = 0x72;                                                   \
+    (m).to = (c)->netId;                                               \
     (m).fromId = -1;                                                   \
     (m).flags = 2;                                                     \
+    (m).time = ai_Time;                                               \
     (m).arg0 = (m).to;                                                 \
     cm_SendLongMessage((char *)&(m))
 
@@ -1397,18 +1397,7 @@ void gm_PartnerStep(ORDCHAR *c);                 /* 0x4fccc0 */
    (news 0x1c51); else its life moves toward f010 while it is younger (w00a) than f020, beyond that it loses f014
    less 3.75 % per point of the building skill 8 of its home, and when f01c + v024 is used up it dies (news
    0x1c51, or 0x4080 with its name and age for a flags1cc bit 4 one) - unless flags1cc bit 1 saves it (not a
-   player): life 100, v024 0, flags1cc 2. A survivor runs gm_PartnerStep and ages by one.
-   @deep Reconstructed and read whole against the original (633 vs 634 ins, all
-   calls/fields/branches/strings matched: message 0x72 fill, nine counter halvings, the kind 0x14 /
-   flags1cc bit 2 / life paths, the 0x414a / 0x1c51 / 0x4080 news, the double 0.0 compares, short age with
-   its top init). Left: (1) fpu at +0x533..+0x552: the original computes skill*0.0125f, fmul -3.0f (literal
-   0x5ed1b4), fadd [lo], fld st(0) and keeps lo's copy (fstp st(0) after); our VC6 turns the same
-   expression into fmul 3.0 / fsubr [lo] / fxch - tried x*0.0125f*-3.0f+lo (folds to 0.0375), lo += ..., lo
-   + ..., -3.0f*(...), a float k=-3.0f, (float)(x*0.0125f) casts, lo - ...*3.0f: none keeps fmul -3 + fadd;
-   (2) order hunks +0xf3 / +0x3f9 / +0x6a0: the AITIME struct copy of the message (time+8 / time+0xc stored
-   before vs after type/fromId/flags) and the counter halving's and/or order. The one 'branch targets
-   differ' is the je at +0x514 whose target is +0x53d on both sides (the join after the skill block, inside
-   the fpu hunk). */
+   player): life 100, v024 0, flags1cc 2. A survivor runs gm_PartnerStep and ages by one. */
 
 float gm_DailyCharacterStep(unsigned short *id)
 {
@@ -1543,9 +1532,15 @@ float gm_DailyCharacterStep(unsigned short *id)
         t = ((c->f01c - c->f010) / c->f020) * h + c->f010;
     } else {
         lo = c->f014;
-        if (c->bld2 != 0)
-            lo = (gm_BuildingSkill((unsigned char *)c->bld2, 8, 1) * 0.0125f) * -3.0f + lo;
-        t = lo / c->f01c + (c->f01c - lo);
+        if (c->bld2 != 0) {
+            float p;   /* 3.75 % less per skill point */
+
+            p = gm_BuildingSkill((unsigned char *)c->bld2, 8, 1) * 0.0125f;
+            p = p * -3.0f;
+            lo += p;
+        }
+        t = lo / c->f01c;
+        t += c->f01c - lo;
         cm_BeginFieldBlock((char *)c, c->netId);
         cm_AddFieldDelta(4, 1, 0x1c, &t);
         cm_SendFieldDeltas();
