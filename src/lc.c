@@ -1978,75 +1978,66 @@ int ai_UpdateMarketGoodsList(AIOBJ *stall, AIOBJ *market)
             any = 1;
     return any;
 }
-/* 0x58e440, the short column display (608 B, ROUGH): the title controls 0x6f4f10 (0x4731d0 (0, 0, 0x743)) and
-   their texts 0x469250 (id + 0x741), the positions (width - the icon width) / 2 and (the row height + 0x1c) * i;
-   the visibility 0x46cda0 (the screen 0xf8f124 + scr * 0x3c4); the goods rows 0x6f4f60 through 0x58e6a0
-   (param_5 = 3, the other side); with param_3 the entry texts 0x476c00 (0x475980, the goods + 0xdf) after
-   0x476c70 */
-
-void ai_LayoutMarketGoodsList(int param_1, int param_2, int param_3, int param_4)
+/* 0x58e440, lays out the goods grid of the transport (market) window in the part form of the view, as
+   ai_LayoutProdGoodsList does for the first grid alone: makes the rows' title pictures (0x743), gives each row the
+   picture of its open slots (0x741 + slots) when they changed, centres the row in the window (0x1c below the
+   title's height apart; rows with fewer than 2 slots are hidden), places the slots of ai_ProdGoods row by row
+   (0x44 apart) and shows each (ai_ShowProdSlot, kind 3). With pointer set it puts the checked goods of both grids
+   on the mouse pointer (d2_SetPointerItem) */
+void ai_LayoutMarketGoodsList(int view, int part, int pointer, int bld)
 {
-    int *p;
-    int *q;
-    int scr;
-    int h;
+    D2WIN *win;
+    int width;
     int i;
+    int k;
+    int row;
     int n;
 
-    scr = U_I(((unsigned)&d2_Views + 0x4) + (param_2 + param_1 * 0xab) * 4);
-    h = *(short *)((unsigned)&ai_Unkf8f128 + scr * 0x3c4);
-    d2_SetForm(param_1, param_2);
-    for (p = (int *)(unsigned)((char *)ai_ProdRows + 0x10); p < (int *)(unsigned)((unsigned)((char *)ai_ProdRows + 0x60)); p += 5)
-        if (*p == -1)
-            *p = d2_WinOpenPic(0, 0, 0x743, U_I((unsigned)&d2_LastWindow));
-    i = 0;
-    for (p = (int *)(unsigned)((char *)ai_ProdRows + 0xc); p < (int *)(unsigned)((unsigned)((char *)ai_ProdRows + 0x5c)); p += 5, i++) {
-        if (p[-1] != *p)
-            d2_SetObjPic(p[1], *p + 0x741);
-        n = *p;
-        p[-1] = n;
-        if (n > 1) {
-            p[-3] = (h - *(short *)(U_I((unsigned)&d2_Pics) + 0x261a4 + n * 0x54)) / 2;
-            p[-2] = (*(short *)(U_I((unsigned)&d2_Pics) + 0x2624e) + 0x1c) * i;
+    win = &d2_Wins[d2_Views[view].wins[part]];
+    width = win->w;
+    d2_SetForm(view, part);
+    for (i = 0; i < 4; i++)
+        if (ai_ProdRows[i].title == -1)
+            ai_ProdRows[i].title = d2_WinOpenPic(0, 0, 0x743, d2_LastWindow);
+    for (i = 0; i < 4; i++) {
+        if (ai_ProdRows[i].shown != ai_ProdRows[i].slots)
+            d2_SetObjPic(ai_ProdRows[i].title, ai_ProdRows[i].slots + 0x741);
+        ai_ProdRows[i].shown = ai_ProdRows[i].slots;
+        if (ai_ProdRows[i].slots >= 2) {
+            ai_ProdRows[i].x = (width - d2_Pics[ai_ProdRows[i].slots + 0x741].w) >> 1;
+            ai_ProdRows[i].y = (d2_Pics[0x743].h + 0x1c) * i;
         }
     }
-    d2_SetForm(param_1, param_2);
-    for (p = (int *)(unsigned)((char *)ai_ProdRows + 0x10); p < (int *)(unsigned)((unsigned)((char *)ai_ProdRows + 0x60)); p += 5) {
-        n = *p;
-        if (p[-2] < 2) {
-            U_I(U_I((unsigned)&d2_Objs) + 0x38 + n * 0x2ec) = 1;
+    d2_SetForm(view, part);
+    for (i = 0; i < 4; i++) {
+        if (ai_ProdRows[i].shown >= 2) {
+            d2_Objs[ai_ProdRows[i].title].disabled = 0;
+            d2_MoveObj(ai_ProdRows[i].x + win->x, ai_ProdRows[i].y + win->y, ai_ProdRows[i].title);
         } else {
-            U_I(U_I((unsigned)&d2_Objs) + 0x38 + n * 0x2ec) = 0;
-            d2_MoveObj(*(short *)(((unsigned)&d2_Wins + 0x4) + scr * 0x3c4) + (short)p[-4],
-                         *(short *)(((unsigned)&d2_Wins + 0x4) + scr * 0x3c4 + 2) + (short)p[-3], n);
+            d2_Objs[ai_ProdRows[i].title].disabled = 1;
         }
     }
-    i = 0;
     n = 0;
-    q = (int *)(unsigned)((char *)ai_ProdGoods + 0xc);
-    do {
-        i++;
-        p = (int *)((unsigned)((char *)ai_ProdRows + 0x8) + n * 0x14);
-        if (p[0] < i) {
-            i = 1;
-            do {
-                p += 5;
-                n++;
-            } while (*p < 1);
+    row = 0;
+    for (k = 0; k < 16; k++) {
+        if (++n > ai_ProdRows[row].shown) {
+            n = 1;
+            do
+                row++;
+            while (ai_ProdRows[row].shown < 1);
         }
-        q[-1] = *(int *)((unsigned)&ai_ProdRows + n * 0x28) + -0x44 + i * 0x44;
-        *q = *(int *)((unsigned)((char *)ai_ProdRows + 0x4) + n * 0x28);
-        ai_ShowProdSlot(param_1, param_2, (LCPRODSLOT *)(q - 3), param_3, 3, (AIBLD *)param_4);
-        q += 0xe;
-    } while (q < (int *)(unsigned)((unsigned)((char *)ai_ProdGoods + 0x38c)));
-    if (param_3 != 0) {
+        ai_ProdGoods[k].x = ai_ProdRows[row].x + n * 0x44 - 0x44;
+        ai_ProdGoods[k].y = ai_ProdRows[row].y;
+        ai_ShowProdSlot(view, part, &ai_ProdGoods[k], pointer, 3, (AIBLD *)bld);
+    }
+    if (pointer) {
         d2_ClearPointerItems();
-        for (p = (int *)(unsigned)((char *)ai_ProdGoods + 0x10); p < (int *)(unsigned)((unsigned)((char *)ai_ProdGoods + 0x390)); p += 0xe)
-            if (*p != -1)
-                d2_SetPointerItem(p[-4] + 0xdf, d2_GetObjValue(*p));
-        for (p = (int *)(unsigned)((char *)ai_ProdGoods2 + 0x10); p < (int *)(unsigned)((unsigned)((char *)ai_ProdGoods2 + 0x1d0)); p += 0xe)
-            if (*p != -1)
-                d2_SetPointerItem(p[-4] + 0xdf, d2_GetObjValue(*p));
+        for (k = 0; k < 16; k++)
+            if (ai_ProdGoods[k].check != -1)
+                d2_SetPointerItem(ai_ProdGoods[k].good + 0xdf, d2_GetObjValue(ai_ProdGoods[k].check));
+        for (k = 0; k < 8; k++)
+            if (ai_ProdGoods2[k].check != -1)
+                d2_SetPointerItem(ai_ProdGoods2[k].good + 0xdf, d2_GetObjValue(ai_ProdGoods2[k].check));
     }
 }
 #define d2_CreateWinTextS ((int (*)(short, short, char *, int))d2_CreateWinText)  /* @original ai_ShowProdSlot passes 16-bit x / y (mov ax, word ptr / add ax, 0x40; push eax) */
