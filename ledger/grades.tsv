@@ -417,14 +417,14 @@ exe	0x00420450	surf_24To16	surf	byte	readable
 exe	0x004205c0	surf_Blit	surf	byte	readable		
 exe	0x004206d0	qnt_Quantize	qnt	byte	readable		
 exe	0x00420780	qnt_GetPalette	qnt	byte	readable		
-exe	0x004207c0	qnt_InitTables	qnt	draft	readable	deep	
+exe	0x004207c0	qnt_InitTables	qnt	byte	readable		
 exe	0x00420870	qnt_Alloc	qnt	byte	readable		
 exe	0x00420900	qnt_Free	qnt	byte	readable		
-exe	0x00420990	qnt_Build	qnt	draft	readable	deep	
+exe	0x00420990	qnt_Build	qnt	byte	readable		
 exe	0x00420b90	qnt_Sift	qnt	byte	readable		
 exe	0x00420c90	qnt_Reduce	qnt	byte	readable		
 exe	0x00420db0	qnt_MakePalette	qnt	byte	readable		
-exe	0x00420e70	qnt_Map	qnt	draft	readable	deep	
+exe	0x00420e70	qnt_Map	qnt	draft	readable	stuck	
 exe	0x00421410	qnt_Nearest	qnt	shape	readable	deep	
 exe	0x004214a0	err_Write	err	byte	readable		
 exe	0x004215c0	err_ExceptionFilter	err	draft	readable	deep	
@@ -719,7 +719,7 @@ exe	0x00437060	d3d_SetWBuffer	d3_d3d	byte	readable
 exe	0x004370d0	d3d_Restore	d3_d3d	byte	readable		
 exe	0x004370e0	d3d_Exit	d3_d3d	byte	readable		
 exe	0x004371d0	d3d_BuildMipmaps	d3_d3d	byte	readable		
-exe	0x00437390	d3d_LoadTexture	d3_d3d	draft	readable	deep	
+exe	0x00437390	d3d_LoadTexture	d3_d3d	draft	readable	stuck	
 exe	0x00438180	d3d_SetSurfacePalette	d3_d3d	byte	readable		
 exe	0x004383d0	d3d_CreateTexture	d3_d3d	byte	readable		
 exe	0x004385a0	d3_BeginScene	d3_d3d	byte	readable		
@@ -1869,7 +1869,7 @@ exe	0x004aec00	ai_TokenRandomOfficePerson	hst	draft	readable	deep
 exe	0x004aef10	ai_TokenRichestInhabitant	hst	draft	readable	deep	
 exe	0x004af090	ai_TokenBestInn	hst	byte	readable		
 exe	0x004af1b0	ai_TokenMoney	hst	draft	readable	deep	
-exe	0x004af2c0	ai_TokenCityTreasury	hst	draft	readable	deep	
+exe	0x004af2c0	ai_TokenCityTreasury	hst	byte	readable		
 exe	0x004af3f0	ai_TokenRandomChurchProfession	hst	draft	readable	deep	
 exe	0x004af6c0	ai_TokenRandomRich	hst	draft	readable	deep	
 exe	0x004af8d0	ai_TokenRandomNpcInhabitant	hst	shape	readable		
@@ -3832,7 +3832,7 @@ exe	0x0056cdd0	he_AllocMissionCheck	he	byte	readable
 exe	0x0056ce40	he_RunMissionCheck	he	byte	readable		
 exe	0x0056d050	he_RegisterEventTypes03	he	byte	readable		
 exe	0x0056d220	he_RegisterEventTypes95	he	byte	readable		
-exe	0x0056d2d0	he_AllocRecipeResearch	he	shape	readable		
+exe	0x0056d2d0	he_AllocRecipeResearch	he	byte	readable		
 exe	0x0056d3d0	he_RunRecipeResearch	he	byte	readable		
 exe	0x0056d610	he_AllocResearchRecipe	he	shape	readable		
 exe	0x0056d730	he_RunResearchRecipe	he	byte	readable		
@@ -4019,7 +4019,7 @@ exe	0x0057cde0	ai_AlchemistSendRecipeResearch	sv_t	draft	readable	deep
 exe	0x0057ced0	ai_AlchemistSendResearchStart	sv_t	draft	readable	deep	
 exe	0x0057cf90	ai_AlchemistWindow	sv_t	draft	readable	deep	
 exe	0x0057dc50	ai_AlchemistTrainShareWindow	sv_t	draft	readable	deep	
-exe	0x0057de60	ai_AlchemistFundWindow	sv_t	shape	readable	deep	
+exe	0x0057de60	ai_AlchemistFundWindow	sv_t	byte	readable		
 exe	0x0057e0e0	ai_AlchemistRescheduleWindow	sv_t	byte	readable		
 exe	0x0057e230	ai_ShotTableStore	sv_t	byte	readable		
 exe	0x0057e270	ai_CannonScene	sv_t	draft	readable	deep	
@@ -4605,11 +4605,11 @@ exe	0x005d34b0	ai_FilePickWindow	menu	shape	readable
 exe	0x005d3810	ai_MessageBox	menu	shape	readable		
 exe	0x005d3a00	ai_RegisterSaveSlot	menu	draft	readable	deep	
 exe	0x005d3ab0	ai_FillSaveSlots	menu	draft	readable	deep	
-exe	0x005d4080	ai_LoadGameWindow	menu	shape	readable		
-exe	0x005d42b0	ai_JoinGameWindow	menu	shape	readable		
+exe	0x005d4080	ai_LoadGameWindow	menu	byte	readable		
+exe	0x005d42b0	ai_JoinGameWindow	menu	byte	readable		
 exe	0x005d44c0	ai_EditText	menu	shape	readable		
-exe	0x005d45d0	ai_SaveOptionWindow	menu	draft	readable	deep	
-exe	0x005d4920	ai_SaveNameWindow	menu	draft	readable	deep	
+exe	0x005d45d0	ai_SaveOptionWindow	menu	byte	readable		
+exe	0x005d4920	ai_SaveNameWindow	menu	byte	readable		
 exe	0x005d4c70	ai_SaveOptions	menu	byte	readable		
 exe	0x005d5640	ai_LoadOptions	menu	draft	readable	deep	
 exe	0x005d5c40	ai_ApplyGfxOptions	menu	draft	readable	deep	
