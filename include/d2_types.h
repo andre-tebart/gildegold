@@ -132,7 +132,8 @@ typedef struct D2INPUT {            /* 0x160 bytes, d2_Inputs[1..0x7f] */
     int font;                       /* 0x138 */
     int icon;                       /* 0x13c, -1: none */
     int mult;                       /* 0x140 */
-    int unk144;
+    int step;                       /* 0x144, reasoned guess: the step of a value change, beside mult (only d2_OpenInput
+                                       sets it, to 1; no reader in the original's code) */
     int firstTextId;                     /* 0x148 */
     int currentTextId;                     /* 0x14c */
     int textCount;                     /* 0x150 */

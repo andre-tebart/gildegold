@@ -789,7 +789,8 @@ void d2_InputSetString(int in, int str)
         d2_Objs[p->obj].w = p->w;
     }
 }
-/* 0x46a110, opens a number input without icon @deep Q2 only: D2INPUT.unk144 is written once (in->unk144 = 1 beside mult = 1 in d2_OpenInput's slot setup; Ghidra 0x46a110 stores 1 at D2INPUT+0x144) and has no reader in the drafted sources, no string, caller or data evidence and no header comment - a name would be invented; the other identifiers cleared with D2OBJ.hidden -> hidden */
+/* 0x46a110, opens a number input without icon at x, y (w x h, flags: 2 sizes it to the digits of maxval, 1 a text
+   input of 0x20 characters, 0x30 hidden) in the first free d2_Inputs slot with its d2_Objs object; returns the object */
 
 int d2_OpenInput(int x, int y, int w, int h, unsigned char flags)
 {
@@ -819,7 +820,7 @@ int d2_OpenInput(int x, int y, int w, int h, unsigned char flags)
     in->minval = 0;
     in->value = 0;
     in->mult = 1;
-    in->unk144 = 1;
+    in->step = 1;
     in->ndigits = 3;
     in->flags = flags;
     in->used = 1;
