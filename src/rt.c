@@ -856,40 +856,43 @@ void rt_RemoveMark(int i)
     rt_Marks[i].obj = -1;
     rt_Marks[i].p = 0;
 }
-/* 0x4bf440, on map window m: the building buttons (0x18 bytes each from 0xdc, count at 0x27a4) of buildings other
-   than rt_PickedBuilding off; then those of route p's points on */
+/* 0x4bf440, on town map window m: the marks of the buildings other than rt_PickedBuilding plain, its mark
+   highlighted; then the marks of route p's points highlighted (found[] collects their buildings, unread) */
 
-void rt_HighlightRoute(RTPOINT *p, char *m)
+void rt_HighlightRoute(RTPOINT *p, LCMAPWIN *m)
 {
     int i;
-    int *e;
-    int found[8];
-    int *f;
+    LCMAPMARK *mk;
+    AIBLD *found[8];
+    AIBLD **f;
+    RTPOINT *q;
 
-    for (i = 0, e = (int *)(m + 0xdc); i < *(int *)(m + 0x27a4); i++, e += 6) {
-        if (e[1] != 0) {
-            if (e[1] == rt_PickedBuilding) {
-                *(unsigned int *)(d2_ObjsC + e[0] * 0x2ec + 0x1c0) &= ~1;
-                *(int *)(d2_ObjsC + e[0] * 0x2ec + 0x2c) = 1;
+    for (i = 0; i < m->nMarks; i++) {
+        mk = &m->marks[i];
+        if (mk->bld != 0) {
+            if ((int)mk->bld != rt_PickedBuilding) {
+                d2_Objs[mk->ctrl].style |= 1;
+                d2_Objs[mk->ctrl].highlighted = 0;
             } else {
-                *(unsigned int *)(d2_ObjsC + e[0] * 0x2ec + 0x1c0) |= 1;
-                *(int *)(d2_ObjsC + e[0] * 0x2ec + 0x2c) = 0;
+                d2_Objs[mk->ctrl].style &= ~1;
+                d2_Objs[mk->ctrl].highlighted = 1;
             }
         }
     }
-    if (p != 0) {
+    q = p;
+    if (q != 0) {
         f = found;
         do {
-            for (i = 0, e = (int *)(m + 0xe0); i < *(int *)(m + 0x27a4); i++, e += 6) {
-                if (*e != 0 && *(int *)(*e + 1) == p->buildingId) {
-                    *(int *)(d2_ObjsC + *(int *)(m + 0xdc + i * 0x18) * 0x2ec + 0x2c) = 1;
-                    *(unsigned int *)(d2_ObjsC + *(int *)(m + i * 0x18 + 0xdc) * 0x2ec + 0x1c0) &= ~1;
-                    *f++ = *(int *)(m + i * 0x18 + 0xe0);
+            for (i = 0, mk = m->marks; i < m->nMarks; i++, mk++) {
+                if (mk->bld != 0 && mk->bld->id == q->buildingId) {
+                    d2_Objs[m->marks[i].ctrl].highlighted = 1;
+                    d2_Objs[m->marks[i].ctrl].style &= ~1;
+                    *f++ = m->marks[i].bld;
                     break;
                 }
             }
-            p = p->next;
-        } while (p != 0);
+            q = q->next;
+        } while (q != 0);
     }
 }
 /* 0x4bf5b0, the route editor for cart c on the town map window (0x5a78a0 / 0x5a7cd0 / 0x5a82f0): a copy of c's
@@ -983,7 +986,7 @@ void rt_EditCartRoute(char *c)
         else
             d2_SetObjEnabled(btns[1], 1);
         d2_SetObjEnabled(btns[0], rt_PickedBuilding == 0);
-        rt_HighlightRoute(rt_EditRoute, (char *)m);
+        rt_HighlightRoute(rt_EditRoute, (LCMAPWIN *)m);
         rt_UpdateMarkPics();
         rt_ReadMarkValues();
     }

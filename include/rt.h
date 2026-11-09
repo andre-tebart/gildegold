@@ -114,7 +114,7 @@ void rt_SetMarkPic(RTMARK *m);
 void rt_UpdateMarkPics(void);
 int rt_FindMark(RTPOINT *p);
 void rt_RemoveMark(int i);
-void rt_HighlightRoute(RTPOINT *p, char *m);
+void rt_HighlightRoute(RTPOINT *p, struct LCMAPWIN *m);
 void rt_EditCartRoute(char *c);
 void rt_UnloadAtPoint(char *c, int pl);
 void rt_LoadAtPoint(char *c, char pl);
