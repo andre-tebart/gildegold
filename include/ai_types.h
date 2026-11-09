@@ -611,7 +611,8 @@ typedef struct AIMSG {                  /* 0xf8 bytes, given to cm_SendLongMessa
             unsigned char unk9d;                /* 0x9d */
             unsigned char flag9e;               /* 0x9e, 1 in the guard cart's message 0xf (he_PatrolStep); the meaning is not known */
             char pad9f;
-            int unka0;                          /* 0xa0 */
+            int moveArgA0;                      /* 0xa0, -1 in the lost-cart move message 0xf (ai_MeisterCollectTrans), 0 in the
+                                                   patrol's (he_PatrolStep); no reader known */
             int srcEvent;                       /* 0xa4, of the explosion message 0x4f from a fire (he_RunFire): the fire
                                                    event's id (the burning event 0x4f keeps it at +0xf8) */
             char pada8[8];
