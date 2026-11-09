@@ -64,9 +64,9 @@ typedef struct D3PTRI {             /* 0x28 bytes (D3TRI) */
     void *clip;                     /* 0x0c, &d3_ClipInfo[clip code] */
     void *src;                      /* 0x10, source polygon (D3SRCPOLY); a particle tri's static UV table */
     D3TEXTURE *tex;                 /* 0x14 */
-    int unk18;
-    int unk1c;
-    int unk20;
+    float zofs;                     /* 0x18, depth offset: d3_DrawSortedD3D adds it (less the frame's
+                                       nearest z) to every vertex's z */
+    float uofs, vofs;               /* 0x1c, texture offsets added to u and v (with the texture's scroll) */
     unsigned char flags;            /* 0x24, bit 7 = visible, 0x40 = double sided drawn, 0x10 = double sided */
     unsigned char unk25;
     unsigned char drawFlags;        /* 0x26, bit 2 (4) = no culling, bit 3 (8) = wrap (D3TRIBITS) */
@@ -551,9 +551,10 @@ typedef struct D3TEXV {             /* D3PTRI::tex as the draw loop sees it */
     char pad6b[0x1];
     unsigned char alpha;            /* 0x6c */
     char pad6d[0x1];
-    unsigned char unk6e;
+    unsigned char blend;            /* 0x6e, bit 0 glow (additive), bit 1 colour key: d3_SetBlendState's
+                                       2nd and 3rd arguments */
     char pad6f[0x5];
-    int w;                          /* 0x74 */
+    unsigned int w;                 /* 0x74, width in pixels (the size estimate shifts it unsigned) */
     char pad78[0x4];
     unsigned char bytes;            /* 0x7c, bytes per pixel */
 } D3TEXV;
@@ -562,13 +563,13 @@ typedef struct D3TLV {              /* D3DTLVERTEX as filled by the draw macros 
     unsigned long color, specular;
     float tu, tv;
 } D3TLV;
-extern int d3_Unkfc2dc0;                    /* 0xfc2dc0, texture bytes used this frame */
+extern int d3_TextureBytes;                    /* 0xfc2dc0, texture bytes used this frame */
 extern float d3_ZScale;                     /* 0xfc532c */
 extern float d3_ZOfs;                       /* 0xfc7b64 */
 extern float d3_UOfs, d3_VOfs;              /* 0xfe73ac, 0xfc26ec */
 extern float ts_ScrollV[32], ts_ScrollU[32];    /* 0xfb9120, 0xfb90a0 */
 /* 0x63345d: the first byte of d3_NoTextures (d3.h), read as a byte */
-#define d3_Unk63345d (*(unsigned char *)((char *)&d3_Active + 1))  /* 0x63345d */
+#define d3_NoTexturesByte (*(unsigned char *)((char *)&d3_Active + 1))  /* 0x63345d */
 int d3d_GetVertexBuffer(void **buf, int *n);                                            /* 0x4364f0, d3_d3d.c */
 void d3d_DrawTriangles(void *unk, struct _D3DTLVERTEX *buf, DWORD num);                                /* 0x436510, d3_d3d.c */
 /* Inline asm: one transformed vertex from a D3PVERT and a texture coordinate pair (u, v at uv). */
@@ -655,7 +656,7 @@ extern int d3_MirrorObject;                    /* 0x63344c, the object the frame
 extern unsigned char d3_Unkfb9928;          /* 0xfb9928 */
 #endif
 extern int d3_TextureSwitches;                /* 0xfe75b4 */
-extern int d3_Unkfc2dc0;                /* 0xfc2dc0 */
+extern int d3_TextureBytes;                /* 0xfc2dc0 */
 extern int d3_Unk633470;                /* 0x633470, frame statistics */
 extern int d3_Unk633474;                /* 0x633474 */
 extern int d3_Unk633478;                /* 0x633478 */

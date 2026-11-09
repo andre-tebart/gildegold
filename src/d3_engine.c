@@ -60,7 +60,6 @@
 #include "poker.h"
 #include "ch.h"
 #include "bio.h"
-#define d3_SetBlendStateI ((void (*)(int, int, int))d3_SetBlendState)  /* 0x4387b0 (d3_d3d.c: unsigned char x3): this unit passes the three flags as int (d3_DrawSortedD3D, draft; the unsigned char prototype gives 2225 bytes against the original's 2211, the int view 2229: a lead, not settled) */
 #define dd_ClearB ((void (*)(D3RECT *, unsigned char, unsigned char, unsigned char))dd_Clear)  /* 0x41e100 (dd_vesa.h: RECT *, int x3): @original this unit passes the fog colour as bytes, its D3RECT viewport */
 #define d3_MirBeginFrameE ((void (*)(D3OBJECT *, D3OBJECT **))d3_MirBeginFrame)  /* 0x4554b0 (d3_mir.h: D3MIRROR *): this unit passes the mirror as its D3OBJECT ** view */
 #define d3_PointToRefD ((void (*)(D3OBJECT *, D3OBJECT *, D3VECTOR *, D3VECTOR4 *))d3_PointToRef)  /* 0x458b20 (d3_pose.h: XOBJ *, XOBJ *, float *, float *): this unit's D3OBJECT / vector view */
@@ -840,7 +839,23 @@ void d3_SetFog(float start, float end, unsigned long color)
     }
 }
 /* 0x43a7d0, Direct3D rendering: draws the sorted triangles in texture order through the vertex buffer,
-   clipping the ones that cross a frustum plane into fans. */
+   clipping the ones that cross a frustum plane into fans.
+   @deep read the whole function against the original 0x43a7d0..0x43b073 and fixed the meaning: the texture
+   size estimate (D3TEXV.w unsigned: shr and the fild qword of an unsigned product; the factor 0.16666667f,
+   not 1.3333334f), d3_SetBlendState called with its unsigned char prototype (the original's setb al / shr
+   dl,1 byte forms; the int view macro is gone), D3PTRI 0x18/0x1c/0x20 typed as the float zofs/uofs/vofs
+   (no *(float *) casts), D3TEXV.blend, renamed d3_NoTexturesByte / d3_TextureBytes. Every statement lines
+   up (the texture switch, the scroll offsets, the 3 unclipped TLV paths, the clip list, the projection
+   loop, the fan with its winding test, the flush); ours 678 vs 673. Left: allocation - the original keeps
+   the zero constant in edi and pushes esi only at the loop entry ('+ push esi / + jmp 0x43a887 / + mov
+   edi,[ebp-0x18]' at +0xb1, popping it before the last d3d_DrawTriangles), p in ebx with its home
+   [ebp-0x14] (ours ecx / [ebp-0x10]), n in [ebp-0x10] (ours [ebp-0x14]), so 'test eax,eax' vs 'cmp
+   eax,edi', 'push 0' vs 'push edi' and the macro temps' slots differ throughout; the flag OR loads
+   v[2]/v[0]/v[1] where ours loads v[1]/v[0]/v[2] (scheduling of the same OR). (references: M8 at +0x218:
+   ours refers to ts_ScrollV (0xfb9120), the original's field to 0xfb90a0 (ts_ScrollU), explained: the one
+   ref line (ts_ScrollV at +0x218 against the original's ts_ScrollU) is an alignment shift: both sides
+   compute d3_UOfs from ts_ScrollV[uofs] + t->uofs and then d3_VOfs from ts_ScrollU[vofs] + t->vofs, in the
+   same order (asmdiff +0x1d8..+0x22e)) */
 
 void d3_DrawSortedD3D(void)
 {
@@ -867,7 +882,7 @@ void d3_DrawSortedD3D(void)
     wrap = 0;
     oldtext = 0;
     cur = 0;
-    d3_Unkfc2dc0 = 0;
+    d3_TextureBytes = 0;
     d3_TextureSwitches = 0;
     if (d3_MinZ > 0.0f)
         zmin = d3_MinZ;
@@ -890,29 +905,29 @@ void d3_DrawSortedD3D(void)
             p = vb;
             n = 0;
             cur = (D3TEXV *)t->tex;
-            if (!d3_Unk63345d && cur && cur->d3dtex != oldtext) {
+            if (!d3_NoTexturesByte && cur && cur->d3dtex != oldtext) {
                 oldtext = cur->d3dtex;
 #line 1219 "D:\\develop\\Units\\d3\\d3_engine.c"
                 D3DCHECK(d3d_Device->lpVtbl->SetTexture(d3d_Device, 0, oldtext));
                 d3_TextureSwitches++;
                 if (cur->flags & 8)
-                    d3_Unkfc2dc0 += (cur->bytes * cur->w * cur->w) >> 3;
+                    d3_TextureBytes += (cur->bytes * cur->w * cur->w) >> 3;
                 else
-                    d3_Unkfc2dc0 += (int)(cur->bytes * cur->w * cur->w * 1.3333334f);
+                    d3_TextureBytes += (int)(cur->bytes * cur->w * cur->w * 0.16666667f);
             }
             if (cur) {
                 wrap = cur->flags & 1;
-                d3_SetBlendStateI(cur->alpha < 0xff, cur->unk6e & 1, (cur->unk6e >> 1) & 1);
+                d3_SetBlendState(cur->alpha < 0xff, cur->blend & 1, (cur->blend >> 1) & 1);
             }
         }
         if (cur) {
-            d3_UOfs = ts_ScrollV[cur->uofs & 0x1f] + *(float *)&t->unk1c;
-            d3_VOfs = ts_ScrollU[cur->vofs & 0x1f] + *(float *)&t->unk20;
+            d3_UOfs = ts_ScrollV[cur->uofs & 0x1f] + t->uofs;
+            d3_VOfs = ts_ScrollU[cur->vofs & 0x1f] + t->vofs;
         } else {
             d3_VOfs = 0.0f;
             d3_UOfs = 0.0f;
         }
-        d3_ZOfs = *(float *)&t->unk18 - zmin;
+        d3_ZOfs = t->zofs - zmin;
         if (((D3_CV(t->v[0])->flags | D3_CV(t->v[1])->flags | D3_CV(t->v[2])->flags) & 0x3f) + clip->mirror == 0) {
             if (wrap) {
                 D3E_TLV(p++, t->v[0], &D3_CV(t->v[0])->tu);
@@ -2301,10 +2316,10 @@ void d3_InflateObject(D3OBJECT *obj)
                 mat = mem_Alloc(d3_TexCount * 4, "d3:!InflateObject(mat)");
                 D3E_FILL(mat, -1, d3_TexCount * 4);
                 for (k = 0, j = 0, t = (D3PTRI *)s->info.tris; k < s->info.ntris; k++, t++) {
-                    t->unk20 = 0;
+                    t->vofs = 0.0f;
                     ((D3TRIBITS *)&t->drawFlags)->b0 = 0;
-                    t->unk1c = 0;
-                    t->unk18 = 0;
+                    t->uofs = 0.0f;
+                    t->zofs = 0.0f;
                     t->src = p = &src->polys[k];
                     for (m = 0; m < 3; m++) {
                         t->v[m] = &((D3PVERT *)s->info.keys)[((D3SRCPOLY *)t->src)->idx[m]];
@@ -2448,7 +2463,7 @@ void d3_EndFrame(char tick)
     d3s_NumUVs = 0;
     d3s_NumVerts = 0;
 }
-/* 0x43e200, draws the default scene @deep Q2 only (byte already): 12 write-only engine statics (d3_Unk633470/474/478/47c/480/484/488/494/498, d3_MirrorObject, d3_Unkfb9928, d3_Unkfc2dc0) are stored from the named counters (d3_SortCount, d3_TriCount, d3_VertCount, d3_DrawnVerts, d3_TextureSwitches) and never read anywhere in src/ (grep: only d3_engine.c + d3_engine.h; d3_MirrorObject is also written 0/obj in d3_mir.c) - no reader, no data.csv alias, so no name; d3_FogByDistance's canonical alias is d3_FogByDistance (f3init.c, placeholder); d3_MirDrawObject is the unnamed d3_mir.c D3MIRROR callback (own @deep). Evidence exists for three callees but the unit's header cleanup owns them: d3fl_Draw = d3fl_Draw, d3fl_FarDist = d3fl_FarDist (d3_fl.h types D3FLMAP*), d3sky_Draw = d3sky_Draw (char (D3SKY*)); d3_engine.h has void* views of all three and d3_engine.c includes d3_sky.h only. */
+/* 0x43e200, draws the default scene @deep Q2 only (byte already): 12 write-only engine statics (d3_Unk633470/474/478/47c/480/484/488/494/498, d3_MirrorObject, d3_Unkfb9928, d3_TextureBytes) are stored from the named counters (d3_SortCount, d3_TriCount, d3_VertCount, d3_DrawnVerts, d3_TextureSwitches) and never read anywhere in src/ (grep: only d3_engine.c + d3_engine.h; d3_MirrorObject is also written 0/obj in d3_mir.c) - no reader, no data.csv alias, so no name; d3_FogByDistance's canonical alias is d3_FogByDistance (f3init.c, placeholder); d3_MirDrawObject is the unnamed d3_mir.c D3MIRROR callback (own @deep). Evidence exists for three callees but the unit's header cleanup owns them: d3fl_Draw = d3fl_Draw, d3fl_FarDist = d3fl_FarDist (d3_fl.h types D3FLMAP*), d3sky_Draw = d3sky_Draw (char (D3SKY*)); d3_engine.h has void* views of all three and d3_engine.c includes d3_sky.h only. */
 
 void d3_Render(unsigned int mask, char flag)
 {
@@ -2504,7 +2519,7 @@ void d3_Render(unsigned int mask, char flag)
         d3_Unk633484 = d3_VertCount;
         d3_Unk633478 = d3s_Object->info->ntris;
         d3_DrawSorted();
-        d3_Unk633480 = d3_Unkfc2dc0;
+        d3_Unk633480 = d3_TextureBytes;
         d3_Unk63347c = d3_TextureSwitches;
         d3_Busy--;
     }
@@ -2668,7 +2683,7 @@ float d3_Dist2 = 0;  /* 0xfc294c */
 D3VECTOR4 d3_Frustum[5] = {0}; /* 0xfc2960, corner directions of the view, then (0, 0, 1) */
 float d3_FogStart1 = {0}; /* 0xfc29bc */
 unsigned int d3_RadixCount[256] = {0};  /* 0xfc29c0 */
-int d3_Unkfc2dc0 = 0;  /* 0xfc2dc0, texture bytes used this frame */
+int d3_TextureBytes = 0;  /* 0xfc2dc0, texture bytes used this frame */
 int d3_VertCount = 0;  /* 0xfc2dc4 */
 D3SORTENT * d3_SortPtr = 0;  /* 0xfc2dc8 */
 unsigned int d3_SortCount = 0;  /* 0xfc2dcc */
