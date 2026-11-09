@@ -1972,7 +1972,7 @@ exe	0x004b5950	ai_QuitGame	unk_4b39f0	45f65fa6e1f9d0f2	no	byte	control=byte p1=b
 exe	0x004b5970	ai_MissionCompleteDialog	unk_4b39f0	14b330f703abaad4	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x004b5c20	ai_MissionNextDialog	unk_4b39f0	d9ed3b3d1dfc52c4	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004b5ef0	ai_MissionCompleteByMode	unk_4b39f0	f01b22c58eb00589	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x004b5f10	ai_MissionResultDialog	unk_4b39f0	6aa39f5a2bbc6d0a	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x004b5f10	ai_MissionResultDialog	mission	6aa39f5a2bbc6d0a	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x004b6040	ai_MissionPartnerDialog	unk_4b39f0	9b7b58907a339c88	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
 exe	0x004b60f0	ai_MissionResultByMode	unk_4b39f0	72a44a2d5137fe00	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004b6110	ai_MissionCompleteSingle	unk_4b39f0	5dc1b37f0f70a53d	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
