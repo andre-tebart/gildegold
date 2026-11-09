@@ -32,6 +32,7 @@
 #include "sv.h"
 #include "tr.h"
 #include "ch.h"
+#include "gv.h"
 
 /* the SDK calls of hmt_CreateBinaryFile; windows.h is not included (its min/max and the other SDL macros change the
    emitted code of the unit), the two entry points are declared here as the SDK does, __stdcall */
@@ -680,13 +681,15 @@ int hmt_Save(VFSFILE *f)
         return 0;
     return HMT_FW(&hmt_PendingElection, 4, 1, f);
 }
-/* 0x4ad7a0, at the start of a game: counts the members of the three councils (each other character counts 0.33,
-   a new one 0.67 more) and creates new characters (0x4c4650 type 3) until each has two, with age 7, title
-   hmt_Titles[i], money (1 + rand) * 0.5 * 8000000 and the council bits */
+/* 0x4ad7a0, at a round start (main_BeginPlayerRound): counts the members of the three councils (every member of
+   rank 7 or more counts 0.33, one that is not the last counted of the other two councils 0.67 more) and creates
+   new characters (cm_SendCreateCharacter type 3) until each council has two: rank 7, the council's office kind
+   as the previous office (0x167), money (1 + rand) * 0.5 * gv_RankWorth[7] and the council bits (the third
+   council also those of one of the other two) */
 
-void hmt_Unk4ad7a0(void)
+void hmt_FillCouncils(void)
 {
-    int age;
+    int rank;
     int title;
     float cnt[3];
     int last[3];
@@ -722,9 +725,9 @@ void hmt_Unk4ad7a0(void)
     titles[2] = 0x1b;
     for (j = 0; j < 768; j++) {
         p = &ai_CharsT[j];
-        if (HMT_B(p, 0x0d) >= 7
+        if (p->b00d >= 7
             && (p->kind == 6 || p->kind == 7 || p->kind == 5 || p->kind == 4 || p->kind == 3 || p->kind == 2)) {
-            for (i = 2; i >= 0; i--) {
+            for (i = 3; i--; ) {
                 if ((p->flags1cc & hmt_ElectionExcludedBits[i]) == 0 && (hmt_ElectionGroupBits[i] & p->flags1cc) != 0) {
                     if (p->netId != last[(i + 1) % 3] && p->netId != last[(i + 2) % 3]) {
                         last[i] = p->netId;
@@ -740,20 +743,18 @@ void hmt_Unk4ad7a0(void)
     for (i = 0; i < 3; i++) {
         for (n = (int)cnt[i]; n < 2; n++) {
             id = gm_TitleNumber(ids[k++], util_RandomU(3) + 4);
-            h = ((int (*)(int, int, int, int, int, int, int, int))cm_SendCreateCharacter)(3, -1, -1, util_RandomU(8) + 0x19, -1, id, 0, gm_SexForJob(id));
-            if (h != -1) {
-                while (!cm_GetSlotState(h))
-                    sv_PumpNet();
-            }
+            h = ((int (*)(int, int, int, int, int, int, int, int))cm_SendCreateCharacter)(3, -1, -1, util_Random(8) + 0x19, -1, id, 0, gm_SexForJob(id));
+            while (h != -1 && !cm_GetSlotState(h))
+                sv_PumpNet();
             if (cm_GetSlotState(h) != 1)
                 return;
-            age = 7;
-            money = (int)((util_RandomF() + 1.0f) * 0.5f * hmt_Unk5ee114);
+            rank = 7;
+            money = (int)(gv_RankWorth[7] * ((util_RandomF() + 1.0f) * 0.5f));
             title = titles[i];
             p = cm_GetSlotValue(h);
             cm_SendMoveGoods(p->netId, -1, ai_OwnPlayer, money);
             cm_BeginFieldBlock((AIPER *)p, p->netId);
-            cm_AddFieldDelta(1, 1, 0xd, &age);
+            cm_AddFieldDelta(1, 1, 0xd, &rank);
             cm_AddFieldDelta(1, 1, 0x167, &title);
             cm_SendFieldDeltas();
             bits = hmt_ElectionGroupBits[i];
@@ -890,5 +891,4 @@ const int hmt_ElectionObjTypes[3] = { 35, 36, 37 };  /* 0x5edb78, .rdata: object
 const unsigned int hmt_ElectionGroupBits[3] = { 64, 128, 256 };  /* 0x5edb84, .rdata: candidates' group bits */
 const unsigned int hmt_ElectionExcludedBits[3] = { 15872, 15872, 15872 };  /* 0x5edb90, .rdata: excluded group bits */
 const int hmt_ElectionOfficeBits[3] = { 16384, 32768, 65536 };  /* 0x5edb9c, .rdata: the office */
-const int hmt_Unk5ee114 = 8000000;  /* 0x5ee114, 8000000 */
 HMTFILE hmt_File = { -1, -1, 0, 0 };  /* 0x600f60, {-1, -1, 0, 0} */

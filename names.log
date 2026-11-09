@@ -3120,3 +3120,4 @@
 2026-11-08T23:36:22 - ident unk1e4 -> ntexsets by:main why:d3_FindBGF assigns it to m->nsets, the number of texture sets the mesh has
 2026-11-09T10:12:48 0x0144a7a8 data ai_Unk144a7a8 -> ai_AlchemistFirstNames by:main why:ahm_CreateAlchemist strcpy's entry p[6] / p[7] of these text pointer tables into the new alchemist's AICHAR.first (+0x30) / family (+0x40) name
 2026-11-09T10:12:48 0x0144a80c data ai_Unk144a80c -> ai_AlchemistFamilyNames by:main why:ahm_CreateAlchemist strcpy's entry p[6] / p[7] of these text pointer tables into the new alchemist's AICHAR.first (+0x30) / family (+0x40) name
+2026-11-09T10:33:31 0x004ad7a0 func hmt_Unk4ad7a0 -> hmt_FillCouncils by:main why:it counts the members of the three councils (hmt_ElectionGroupBits) and creates new characters with the council bits until each has two; main_BeginPlayerRound calls it

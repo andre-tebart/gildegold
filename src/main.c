@@ -4189,7 +4189,7 @@ void main_BeginPlayerRound(void)
         for (i = 0; i < 0x300; i++)
             cm_SendRelations(-1, ai_CharsT[i].netId, 0, 3);
         cm_SendRelations(-1, -1, 0, 4);
-        hmt_Unk4ad7a0();
+        hmt_FillCouncils();
     }
     for (i = 0; i < 0x300; i++)
         ai_CharsT[i].unk1ec = 0;
