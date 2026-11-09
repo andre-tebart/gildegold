@@ -4212,7 +4212,7 @@ void ai_SendJobOrders(AIINFO *info)
                                 return;
                             break;
                         }
-                        if (me->state > 1 && me->unk10 == -1)
+                        if (me->state > 1 && me->fallId == -1)
                             found = me;
                         k++;
                         me++;

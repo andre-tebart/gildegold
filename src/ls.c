@@ -451,13 +451,15 @@ int ls_WriteObjects(int f)
     } while (off < 0x14f218);
     return 1;
 }
-/* 0x519d20, the buildings: the count of the used ones (0x100 records of 0xa9 bytes at 0x889f74), then each in pieces (the fields +0 .. +0x5c, then the type specific tail: type 0x1e (the 0x600 bytes of 0x18-byte stock records behind +0x71), the types 0x48 .. 0x4a by 0x4f17f0, 0x4b .. 0x4d by 0x4ecf10, the others 0x30 bytes at +0x65), the 0x10 bytes at +0x99; at the end the table of the bounding boxes 0xf812e4 (count 0xf812e0, 0x60 bytes each: name, min, max) */
+/* 0x519d20, the buildings: the count of the used ones (0x100 AIBLD records of 0xa9 bytes, ai_Blds), then each field by field (+0 .. +0x5c, then by type: 0x1e its 64 vegetation records at AIBLD.plants, 0x48 .. 0x4a gv_WriteGraveyard, 0x4b .. 0x4d ahm_WriteRecord, the others the 0x30 bytes at +0x65), the work settings at +0x99; at the end the building sites (ai_NBauplaetze, then ai_Bauplaetze's name, minimum and maximum corner). Returns 1, 0 when a write fails */
 
 
 int ls_WriteBuildings(int f)
 {
-    int n = 0, off = 0, i, j;
-    char *p, c;
+    int n = 0, off, i, j;
+    char *p;
+    AIBLD *b;
+    char c;
 
     p = ai_Blds;
     for (i = 0x100; i != 0; i--) {
@@ -466,53 +468,52 @@ int ls_WriteBuildings(int f)
         p += 0xa9;
     }
     LS_W(&n, 4)
+    off = 0;
     do {
-        p = ai_Blds + off;
+        b = (AIBLD *)(ai_Blds + off);
         if (ai_Blds[off] != 0) {
-            LS_W(p, 1)
-            LS_W(p + 1, 4)
-            LS_W(p + 5, 0x20)
-            LS_W(p + 0x25, 2)
-            LS_W(p + 0x27, 2)
-            LS_W(p + 0x29, 2)
-            LS_W(p + 0x2b, 4)
-            LS_W(p + 0x2f, 1)
-            LS_W(p + 0x34, 1)
-            LS_W(p + 0x35, 4)
-            LS_W(p + 0x39, 4)
-            LS_W(p + 0x3d, 4)
-            LS_W(p + 0x41, 4)
-            LS_W(p + 0x45, 4)
-            LS_W(p + 0x49, 4)
-            LS_W(p + 0x4d, 4)
-            LS_W(p + 0x51, 4)
-            LS_W(p + 0x55, 4)
-            LS_W(p + 0x5a, 2)
-            LS_W(p + 0x5c, 1)
-            c = *p;
+            LS_W(&b->type, 1)
+            LS_W(&b->id, 4)
+            LS_W(b->name, 0x20)
+            LS_W(&b->masterId, 2)
+            LS_W(&b->owner, 2)
+            LS_W(&b->mainRoom, 2)
+            LS_W(&b->saved2b, 4)
+            LS_W(&b->saved2f, 1)
+            LS_W(&b->side, 1)
+            LS_W(&b->saved35, 4)
+            LS_W(&b->budget, 4)
+            LS_W(&b->wageRate, 4)
+            LS_W(&b->workRate, 4)
+            LS_W(&b->saved45, 4)
+            LS_W(&b->priceFactor, 4)
+            LS_W(&b->roundSums[0], 4)
+            LS_W(&b->roundSums[1], 4)
+            LS_W(&b->roundSums[2], 4)
+            LS_W(&b->flags5aw, 2)
+            LS_W(&b->level, 1)
+            c = b->type;
             if (c == 0x1e) {
-                for (j = 0; j < 0x600; j += 0x18) {
-                    char *q = *(char **)(p + 0x71);
-
-                    LS_W(q + j, 4)
-                    LS_W(q + j + 4, 4)
-                    LS_W(q + j + 8, 1)
-                    LS_W(q + j + 9, 1)
-                    LS_W(q + j + 10, 2)
-                    LS_W(q + j + 0x10, 4)
-                    LS_W(q + j + 0xc, 1)
-                    LS_W(q + j + 0xd, 1)
+                for (j = 0; j < 0x40; j++) {
+                    LS_W(&((AIMAPENT *)b->plants)[j].id, 4)
+                    LS_W(&((AIMAPENT *)b->plants)[j].bldId, 4)
+                    LS_W(&((AIMAPENT *)b->plants)[j].x, 1)
+                    LS_W(&((AIMAPENT *)b->plants)[j].z, 1)
+                    LS_W(&((AIMAPENT *)b->plants)[j].type, 2)
+                    LS_W(&((AIMAPENT *)b->plants)[j].fallId, 4)
+                    LS_W(&((AIMAPENT *)b->plants)[j].size, 1)
+                    LS_W(&((AIMAPENT *)b->plants)[j].state, 1)
                 }
             } else if (c == 'H' || c == 'I' || c == 'J') {
-                if (gv_WriteGraveyard(f, p) == 0)
+                if (gv_WriteGraveyard(f, b) == 0)
                     return 0;
             } else if (c == 'K' || c == 'L' || c == 'M') {
-                if (ahm_WriteRecord(f, p) == 0)
+                if (ahm_WriteRecord(f, b) == 0)
                     return 0;
             } else {
-                LS_W(p + 0x65, 0x30)
+                LS_W(b->kindData, 0x30)
             }
-            LS_W(p + 0x99, 0x10)
+            LS_W(b->workSet, 0x10)
         }
         off += 0xa9;
     } while (off < 0xa900);

@@ -16,16 +16,17 @@ typedef struct AIBLD {                  /* 0xa9 bytes, ai_Blds[256] */
     };
     unsigned short owner;               /* 0x27, index into ai_Chars */
     unsigned short mainRoom;            /* 0x29, the room (scene record) the building's panel opens with: sv_UpdatePanel passes it to ai_TechTreeWindow where it passes *sv_PanelShown for a shown room (reasoned) */
-    char pad2b[5];
+    int saved2b;                        /* 0x2b, saved and loaded whole (ls_WriteBuildings); no reader read yet */
+    unsigned char saved2f;              /* 0x2f, saved and loaded (ls_WriteBuildings); no reader read yet */
     int travel30;                       /* 0x30, he_AllocTransport sums it over the start and the goal building into
                                            HETRANSPORT.travel (reasoned guess: a travel weight; no other reader read yet) */
     unsigned char side;                 /* 0x34, of a foreign city (kind 'G') the side of the town map it lies at,
                                            0 .. 7 (lc.c ai_BuildTownMap's direction table: north, then clockwise) */
-    char pad35[4];
+    int saved35;                        /* 0x35, saved and loaded (ls_WriteBuildings); no reader read yet */
     int budget;                         /* 0x39, the money the building may spend this round: main_EndRound spreads its owner's goods value (x 75) over the buildings by AIBTYPE.level (2 / 4 / 8 shares, capped) and copies it to the AICHAR.budget of the local jobs; ai.c buys up to it */
     int wageRate;                       /* 0x3d, the percent of the job wages its workers get (main_SettleRound pays wage * rate / 100; below 100 lowers their opinion of the owner, above raises it) */
     int workRate;                       /* 0x41, a percent setting whose distance from 100 moves the workers' opinion the other way (main_SettleRound; reasoned guess: the working hours) */
-    char pad45[4];
+    int saved45;                        /* 0x45, saved and loaded (ls_WriteBuildings); no reader read yet */
     float priceFactor;                  /* 0x49, the factor on the goods price a trade cart pays when it buys here (he_RunTrade; a
                                            market (AIBTYPE.kind 0xa) asks 1.1 instead) */
     int roundSums[3];                   /* 0x4d, cleared at every round settlement (main_SettleRound); reasoned guess: per-round sums */
@@ -40,50 +41,56 @@ typedef struct AIBLD {                  /* 0xa9 bytes, ai_Blds[256] */
                                            released with gm_RemoveObject) */
     char *object;                       /* 0x61, its 3D object in the scene */
     union {
+        char kindData[0x30];            /* 0x65 .. 0x95, the part the building's kind gives its meaning (ls_WriteBuildings
+                                           saves it whole for the kinds without a writer of their own) */
         struct {
             union {
-                int unk65;                      /* 0x65, moved by +-1 per event towards AIPOS.unk18 (ai.c 0x4836a0) */
-                int victimId;                   /* 0x65, of the kidnapping room: the victim character id (lc.c; -1 none) */
-                int buyOutBase;                 /* 0x65, of a class 2 building: with buyOutExtra what its buy-out pays
-                                                   half of, and set to that payment (lc.c ai_BuildingWindow; reasoned) */
-                int playerSlot;                 /* 0x65, of a kind 0x47 building: its ai_PlayerSlots index (sv_OpenBuildingPanel) */
-                int interest;                   /* 0x65, of a bank: the interest rate its owner sets, 5 .. 0x28 (lc.c ai_CreditReleaseWindow
-                                                   sends it as the field delta 0x65) */
-                unsigned char residents;        /* 0x65, of a home (AIBTYPE.kind 1): the characters whose bld2 it is, below the
-                                                   capacity of its ord kind record (cm_ExSetHome) */
-                struct GVYARD *yard;            /* 0x65, of a kind 0x1d building: its graveyard record (gv.h, gv_AllocGraveyard) */
-                struct AHMREC *ahm;             /* 0x65, of the alchemist's building: its alchemist record (ahm_types.h,
-                                                   ahm.c's ahm_AllocAhmInfo) */
-                int hostage;                    /* 0x65, of a thieves' guild: -1 while it holds no kidnapped character (reasoned:
-                                                   ai_CalcMeisterDiebe posts the kidnap event 0x3c only then, he_AllocEvent3c
-                                                   cancels one otherwise) */
+                struct {
+                    union {
+                        int unk65;                      /* 0x65, moved by +-1 per event towards AIPOS.unk18 (ai.c 0x4836a0) */
+                        int victimId;                   /* 0x65, of the kidnapping room: the victim character id (lc.c; -1 none) */
+                        int buyOutBase;                 /* 0x65, of a class 2 building: with buyOutExtra what its buy-out pays
+                                                           half of, and set to that payment (lc.c ai_BuildingWindow; reasoned) */
+                        int playerSlot;                 /* 0x65, of a kind 0x47 building: its ai_PlayerSlots index (sv_OpenBuildingPanel) */
+                        int interest;                   /* 0x65, of a bank: the interest rate its owner sets, 5 .. 0x28 (lc.c ai_CreditReleaseWindow
+                                                           sends it as the field delta 0x65) */
+                        unsigned char residents;        /* 0x65, of a home (AIBTYPE.kind 1): the characters whose bld2 it is, below the
+                                                           capacity of its ord kind record (cm_ExSetHome) */
+                        struct GVYARD *yard;            /* 0x65, of a kind 0x1d building: its graveyard record (gv.h, gv_AllocGraveyard) */
+                        struct AHMREC *ahm;             /* 0x65, of the alchemist's building: its alchemist record (ahm_types.h,
+                                                           ahm.c's ahm_AllocAhmInfo) */
+                        int hostage;                    /* 0x65, of a thieves' guild: -1 while it holds no kidnapped character (reasoned:
+                                                           ai_CalcMeisterDiebe posts the kidnap event 0x3c only then, he_AllocEvent3c
+                                                           cancels one otherwise) */
+                    };
+                    union {
+                        int daySum;                         /* 0x69, a per-day sum (gv.h ORDBLD.daySum; gm_BuildingBalance adds it to a kind 7 building's income), cleared for the kind 7 buildings at every round start (main_BeginPlayerRound) */
+                        int messengerFee;                   /* 0x69, of a bank: the money messenger's fee in percent, 3 .. 0xf
+                                                               (lc.c ai_ExchangeFeesWindow sends it as the field 0x69) */
+                        int buyOutExtra;                    /* 0x69, of a class 2 building: see buyOutBase (lc.c ai_BuildingWindow) */
+                    };
+                    int exchangeFee;                        /* 0x6d, of a bank: the exchange fee in percent, 3 .. 0xf (lc.c
+                                                               ai_ExchangeWindow takes it of the exchanged value) */
+                };
+                struct {                        /* 0x65, of an inn (kind 5 / 0x16): the round's counters of the inn simulation
+                                                   (he.c 0x54d260 adds to them per sale, he_InnReport reports and resets them) */
+                    int takings;                /* 0x65, what the guests paid this round (the prices of the sales) */
+                    short guests;               /* 0x69, the guests of the round */
+                    short served;               /* 0x6b, the guests who bought (served / guests below 0.5: the bad report) */
+                    int lastTakings;            /* 0x6d, the takings of the last round (he_InnReport copies them) */
+                } inn;
             };
             union {
-                int daySum;                         /* 0x69, a per-day sum (gv.h ORDBLD.daySum; gm_BuildingBalance adds it to a kind 7 building's income), cleared for the kind 7 buildings at every round start (main_BeginPlayerRound) */
-                int messengerFee;                   /* 0x69, of a bank: the money messenger's fee in percent, 3 .. 0xf
-                                                       (lc.c ai_ExchangeFeesWindow sends it as the field 0x69) */
-                int buyOutExtra;                    /* 0x69, of a class 2 building: see buyOutBase (lc.c ai_BuildingWindow) */
+                int plants;                     /* 0x71, the 64 G15PLANT records (0x18 bytes each, rd.h) of the
+                                                   building's vegetation map (rd.c: veg_Fits / veg_FindPlantId) */
+                struct {                        /* 0x71, of a bank: the credit offers kept for the player (ORDCREDIT,
+                                                   gv_types.h / gv.h ORDBLD.credits, 12 bytes each) */
+                    int amount;
+                    int term;
+                    int interest;
+                } credits[3];
             };
-            int exchangeFee;                        /* 0x6d, of a bank: the exchange fee in percent, 3 .. 0xf (lc.c
-                                                       ai_ExchangeWindow takes it of the exchanged value) */
         };
-        struct {                        /* 0x65, of an inn (kind 5 / 0x16): the round's counters of the inn simulation
-                                           (he.c 0x54d260 adds to them per sale, he_InnReport reports and resets them) */
-            int takings;                /* 0x65, what the guests paid this round (the prices of the sales) */
-            short guests;               /* 0x69, the guests of the round */
-            short served;               /* 0x6b, the guests who bought (served / guests below 0.5: the bad report) */
-            int lastTakings;            /* 0x6d, the takings of the last round (he_InnReport copies them) */
-        } inn;
-    };
-    union {
-        int plants;                     /* 0x71, the 64 G15PLANT records (0x18 bytes each, rd.h) of the
-                                           building's vegetation map (rd.c: veg_Fits / veg_FindPlantId) */
-        struct {                        /* 0x71, of a bank: the credit offers kept for the player (ORDCREDIT,
-                                           gv_types.h / gv.h ORDBLD.credits, 12 bytes each) */
-            int amount;
-            int term;
-            int interest;
-        } credits[3];
     };
     int smokeEffect;                    /* 0x95, the id of the running chimney smoke effect (evt_FindById), -1 none (sv.c 0x528490) */
     char workSet[0x10];                 /* 0x99, the work settings a hired worker takes over into AICHAR flags1b4 ..
