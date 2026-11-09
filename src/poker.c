@@ -21,7 +21,6 @@
 #define ai_BldsT (*(AIBLD **)&ai_Blds)  /* 0x889f74, ai_Blds (f3gm.c: char *) as the AIBLD records it points to */
 #define ai_BTypesT (*(AIBTYPE **)&ai_BTypes)  /* 0x7e3f30, ai_BTypes (ahm.c: char *) as the AIBTYPE records it points to */
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
-#define amt_GetOfficeI ((int (*)(int, struct AMTREC *))amt_GetOffice)  /* 0x4e6f30 (amt.h: unsigned char i): @original this unit pushes its int index raw (0x4dab50 / 0x4aad30: push ebp / push edx, no zero-extension) */
 
 #define PARTNER_FLAGS_SEX0 0xf00502  /* the partner-chain flags 0x4a8ad0 asks for a character with sex 0 (reasoned: the other sex; the low byte 2 against 1) */
 #define PARTNER_FLAGS_SEX1 0xf00501  /* ditto for sex != 0 */
@@ -2086,20 +2085,20 @@ int ai_TrustedOfTwo(AIPER *p, AIPER *b, AIPER *c, int *k)
    explained: 146 vs 162: the original's three extra inline 'pop edi; or eax,-1; pop esi; add esp,0x38;
    ret' return -1 copies (15 instructions) and the test edx,edx the dec placement needs) */
 
-int ai_TrustedOfFour(int k, AIPER *p, int *ids, int *out)
+int ai_TrustedOfFour(unsigned char k, AIPER *p, int *ids, int *out)
 {
     float sc[4];
     AIPER *c[4];
-    G10DIST info;
+    AMTREC info;
     float f, best;
     int tie, bi, i, r;
 
     *out = 0;
-    if (amt_GetOfficeI(k, &info) == 0)
+    if (amt_GetOffice(k, &info) == 0)
         return -1;
     for (i = 0; i < 4; i++) {
         c[i] = gm_FindPer(ids[i]);
-        if (c[i] == 0 || amt_GetOfficeRate(c[i], (unsigned char)info.lvl, &f) == 0) {
+        if (c[i] == 0 || amt_GetOfficeRate(c[i], info.kind, &f) == 0) {
             sc[i] = -1000.0f;
         } else {
             sc[i] = gm_Liking(c[i]->id, p->id, 1) + f;

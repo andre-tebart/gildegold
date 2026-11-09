@@ -131,7 +131,7 @@ int aip_ExecPamphlet(struct AIPER *p, int c, struct AIARG *m);                  
 int aip_ExecDrohen(struct AIPER *p, int c, struct AIARG *m);                             /* 0x4aaa10 */
 int aip_ExecAnschwaerzen(struct AIPER *p, int c, struct AIARG *m);                             /* 0x4aaae0 */
 int ai_TrustedOfTwo(AIPER *p, AIPER *b, AIPER *c, int *k);                          /* 0x4aab90 */
-int ai_TrustedOfFour(int k, AIPER *p, int *ids, int *out);                           /* 0x4aad30 */
+int ai_TrustedOfFour(unsigned char k, AIPER *p, int *ids, int *out);                           /* 0x4aad30 */
 int ai_FindDarkCornerTarget(struct AIPER *p, struct AIARG *a, struct AIARG *b);                  /* 0x4aaef0 */
 int ai_ExecMessage74(struct AIPER *p, struct AIARG *a, struct AIARG *b);                          /* 0x4aafb0 */
 int ai_DecideBuyDunkleEcke(struct AIPER *p, struct AIARG *a, struct AIARG *b);                               /* 0x4ab080 */

@@ -1405,181 +1405,174 @@ int amt_GetKindLevel(int k)
     return a.level;
 }
 /* 0x4e7c60, settles the n offices of the list recs (a table of records as AMTREC): the offices in the state 2 (two candidates: the owner and the x14 character) are
-   decided by the votes of the other office holders (0x4aab90 gives 0 / 1 / 2 per voter; opinions change by 0x4c4b00), the offices in the state 3 (applications, the
-   applicants are the characters whose appliedOffice is the office kind) by their votes (0x4aad30), a tie by chance; each result is sent with 0x4e6680 and waited for
-   (0x4c3ae0 / 0x52fe00). The first parameter is not used. The whole original (Ghidra 0x4e7c60 + the disassembly) was read against this draft: the statement sequence
-   is equal (the two passes, the vote loops, the 4-candidate scan ai_Chars .. ai_Chars + 768, the best / tie / random pick, the message sends and the slot waits);
-   what differs is the frame (ours 0x60, the original 0x58: cnt2 / i / cnt3 spill in ours, the original keeps them in registers) and the register roles, i.e.
-   allocation only */
+   decided by the votes of the other office holders (ai_TrustedOfTwo gives 0 / 1 / 2 per voter; opinions change by cm_SendRelations), the offices in the state 3
+   (applications, the applicants are the first up to 4 characters whose appliedOffice is the office kind) by their votes (ai_TrustedOfFour), a tie by chance; each
+   result is sent with amt_SendOfficeMessage and waited for (cm_GetSlotState / sv_PumpNet). The first parameter is not used. */
 
 void amt_ElectOffices(int unused, int n, AMTREC *recs)
 {
-    int cnt2, cnt3, i, j, m, k, r, sel, left;
-    int cnt[4];
+    int cnt2, cnt3, i, j, m, k, r, left;
     char *cand[4];
     int ids[4];
     int votes[6];
     int best, bi, id, v, s;
     int tie;
-    char *o, *x, *c, *ch;
+    char *o, *x, *c;
     AMTREC *p;
     char buf[4];
 
     cnt2 = 0;
-    cnt3 = 0;
     for (i = 0; i < n; i++) {
         if (recs[i].state == 2)
             cnt2++;
     }
-    for (i = 0; i < n; i++) {
+    for (i = 0, p = recs; i < n; i++, p++) {
+        unsigned int tally[3];
+
         if (cnt2 == 0)
             break;
-        cnt[0] = 0;
-        cnt[1] = 0;
-        cnt[2] = 0;
-        if (recs[i].state == 2) {
-            cnt2--;
-            o = gm_FindChar(recs[i].owner);
-            x = gm_FindChar(recs[i].x14);
-            if (o != 0 && x != 0) {
-                for (j = 0; j < n; j++) {
-                    votes[j] = 3;
-                    c = gm_FindChar(recs[j].owner);
-                    if (c != 0 && c[0x166] != 0 && c[0x1b1] == 0) {
-                        s = ai_TrustedOfTwo(c, o, x, buf);
-                        votes[j] = s;
-                        cnt[s]++;
-                    }
-                }
-                if (cnt[1] < cnt[0]) {
-                    for (j = 0; j < n; j++) {
-                        id = recs[j].owner;
-                        if (id != ((AMTCHARVIEW *)o)->netId && id != -1 && (unsigned int)votes[j] < 3) {
-                            if (votes[j] == 0)
-                                cm_SendRelations(id, ((AMTCHARVIEW *)o)->netId, -10, 1);
-                            if (votes[j] == 1)
-                                cm_SendRelations(id, ((AMTCHARVIEW *)o)->netId, 10, 1);
-                            else
-                                cm_SendRelations(id, ((AMTCHARVIEW *)o)->netId, -4, 1);
-                        }
-                    }
-                    r = amt_SendOfficeMessage((char)recs[i].idx, 0, 0, 3, 0xff);
-                } else {
-                    for (j = 0; j < n; j++) {
-                        id = recs[j].owner;
-                        if (id != ((AMTCHARVIEW *)o)->netId && id != -1 && (unsigned int)votes[j] < 3) {
-                            if (votes[j] == 0)
-                                v = -20;
-                            else if (votes[j] == 1)
-                                v = 20;
-                            else
-                                v = 4;
-                            cm_SendRelations(id, ((AMTCHARVIEW *)o)->netId, v, 1);
-                        }
-                    }
-                    r = amt_SendOfficeMessage((char)recs[i].idx, o, 0, 1, 0xff);
-                }
-                if (r != -1) {
-                    while (cm_GetSlotState(r) == 0)
-                        sv_PumpNet();
-                }
+        tally[0] = 0;
+        tally[1] = 0;
+        tally[2] = 0;
+        if (p->state != 2)
+            continue;
+        cnt2--;
+        o = gm_FindChar(p->owner);
+        x = gm_FindChar(p->x14);
+        if (o == 0 || x == 0)
+            continue;
+        for (j = 0; j < n; j++) {
+            votes[j] = 3;
+            c = gm_FindChar(recs[j].owner);
+            if (c != 0 && ((AICHAR *)c)->officeKind != 0 && ((AICHAR *)c)->heldRounds == 0) {
+                s = ai_TrustedOfTwo(c, o, x, buf);
+                votes[j] = s;
+                tally[s]++;
             }
         }
+        if (tally[0] > tally[1]) {
+            for (j = 0; j < n; j++) {
+                id = recs[j].owner;
+                if (id != AMT_NETID(o) && id != -1 && (unsigned int)votes[j] < 3) {
+                    if (votes[j] == 0)
+                        cm_SendRelations(id, AMT_NETID(o), -10, 1);
+                    if (votes[j] == 1)
+                        cm_SendRelations(recs[j].owner, AMT_NETID(o), 10, 1);
+                    else
+                        cm_SendRelations(recs[j].owner, AMT_NETID(o), -4, 1);
+                }
+            }
+            r = amt_SendOfficeMessage(p->idx, 0, 0, 3, 0xff);
+            while (r != -1 && cm_GetSlotState(r) == 0)
+                sv_PumpNet();
+        } else {
+            for (j = 0; j < n; j++) {
+                id = recs[j].owner;
+                if (id != AMT_NETID(o) && id != -1 && (unsigned int)votes[j] < 3) {
+                    if (votes[j] == 0)
+                        cm_SendRelations(id, AMT_NETID(o), -20, 1);
+                    else if (votes[j] == 1)
+                        cm_SendRelations(id, AMT_NETID(o), 20, 1);
+                    else
+                        cm_SendRelations(id, AMT_NETID(o), 4, 1);
+                }
+            }
+            r = amt_SendOfficeMessage(p->idx, o, 0, 1, 0xff);
+            while (r != -1 && cm_GetSlotState(r) == 0)
+                sv_PumpNet();
+        }
     }
+    cnt3 = 0;
     for (i = 0; i < n; i++) {
         if (recs[i].state == 3)
             cnt3++;
     }
-    p = recs;
-    for (i = 0; i < n; i++, p++) {
+    for (i = 0; i < n; i++) {
+        int cnt[4];
+
         if (cnt3 == 0)
             return;
         cnt[0] = 0;
         cnt[1] = 0;
         cnt[2] = 0;
         cnt[3] = 0;
-        for (j = 0; j < 6; j++)
+        votes[0] = -1;
+        votes[1] = -1;
+        votes[2] = -1;
+        votes[3] = -1;
+        votes[4] = -1;
+        votes[5] = -1;
+        if (recs[i].state != 3 || recs[i].cnt == 0)
+            continue;
+        cnt3--;
+        k = 0;
+        for (j = 0; j < 768; j++) {
+            if (k >= recs[i].cnt || k >= 4)
+                break;
+            if (ai_CharsT[j].appliedOffice == recs[i].kind) {
+                cand[k] = (char *)&ai_CharsT[j];
+                ids[k] = ai_CharsT[j].netId;
+                k++;
+            }
+        }
+        if (k == 0)
+            continue;
+        if (k == 1) {
+            r = amt_SendOfficeMessage(recs[i].idx, cand[0], 0, 1, 0xff);
+            while (r != -1 && cm_GetSlotState(r) == 0)
+                sv_PumpNet();
+            continue;
+        }
+        for (m = k; m < 4; m++) {
+            cand[m] = 0;
+            ids[m] = -1;
+        }
+        for (j = 0; j < n; j++) {
             votes[j] = -1;
-        if (p->state == 3 && p->cnt != 0) {
-            cnt3--;
-            k = 0;
-            ch = (char *)ai_CharInts - 4;
-            do {
-                if (p->cnt <= k || k > 3)
-                    break;
-                if (ch[0x168] == (char)p->kind) {
-                    ids[k] = ((AMTCHARVIEW *)ch)->netId;
-                    cand[k] = ch;
-                    k++;
-                }
-                ch += 0x21c;
-            } while ((int)ch < (unsigned)((unsigned)ai_CharInts + 0x653fc));
-            if (k != 0) {
-                if (k == 1) {
-                    r = amt_SendOfficeMessage((char)p->idx, cand[0], 0, 1, 0xff);
-                    if (r != -1) {
-                        while (cm_GetSlotState(r) == 0)
-                            sv_PumpNet();
-                    }
-                } else {
-                    for (m = k; m < 4; m++) {
-                        ids[m] = -1;
-                        cand[m] = 0;
-                    }
-                    for (j = 0; j < n; j++) {
-                        votes[j] = -1;
-                        c = gm_FindChar(recs[j].owner);
-                        if (c != 0 && amt_CanTakeOffice(c, p->kind) != 0 && c[0x1b1] == 0)
-                            votes[j] = ai_TrustedOfFour((char)p->idx, c, ids, buf);
-                    }
-                    for (j = 0; j < n; j++) {
-                        v = votes[j];
-                        if (v != -1) {
-                            for (m = 0; m < k; m++) {
-                                if (((AMTCHARVIEW *)cand[m])->netId == v)
-                                    cnt[m]++;
-                            }
-                        }
-                    }
-                    m = 0;
-                    best = -1;
-                    bi = -1;
-                    tie = 1;
-                    do {
-                        if (best < cnt[m]) {
-                            tie = 0;
-                            bi = m;
-                            best = cnt[m];
-                        } else if (cnt[m] == best)
-                            tie = 1;
-                        m++;
-                    } while (m < k);
-                    if (!tie) {
-                        r = amt_SendOfficeMessage((char)p->idx, cand[bi], 0, 1, 0xff);
-                        if (r != -1) {
-                            while (cm_GetSlotState(r) == 0)
-                                sv_PumpNet();
-                        }
-                        continue;
-                    }
-                    m = util_RandomU(k) & 0xffff;
-                    left = k;
-                    do {
-                        sel = m;
-                        if (cnt[m] == best)
-                            break;
-                        left--;
-                        m = (m + 1) % k;
-                        sel = bi;
-                    } while (left != 0);
-                    r = amt_SendOfficeMessage((char)p->idx, cand[sel], 0, 1, 0xff);
-                    if (r != -1) {
-                        while (cm_GetSlotState(r) == 0)
-                            sv_PumpNet();
-                    }
+            c = gm_FindChar(recs[j].owner);
+            if (c != 0 && amt_CanTakeOffice(c, recs[i].kind) != 0 && !(((AICHAR *)c)->heldRounds > 0))
+                votes[j] = ai_TrustedOfFour(recs[i].idx, c, ids, buf);
+        }
+        for (j = 0; j < n; j++) {
+            v = votes[j];
+            if (v != -1) {
+                for (m = 0; m < k; m++) {
+                    if (AMT_NETID(cand[m]) == v)
+                        cnt[m]++;
                 }
             }
         }
+        m = 0;
+        best = -1;
+        bi = -1;
+        tie = 1;
+        for (; m < k; m++) {
+            if (cnt[m] > best) {
+                tie = 0;
+                best = cnt[m];
+                bi = m;
+            } else if (cnt[m] == best)
+                tie = 1;
+        }
+        if (!tie) {
+            r = amt_SendOfficeMessage(recs[i].idx, cand[bi], 0, 1, 0xff);
+            while (r != -1 && cm_GetSlotState(r) == 0)
+                sv_PumpNet();
+            continue;
+        }
+        m = util_RandomU(k);
+        left = k;
+        do {
+            if (cnt[m] == best) {
+                bi = m;
+                break;
+            }
+            left--;
+            m = (m + 1) % k;
+        } while (left != 0);
+        r = amt_SendOfficeMessage(recs[i].idx, cand[bi], 0, 1, 0xff);
+        while (r != -1 && cm_GetSlotState(r) == 0)
+            sv_PumpNet();
     }
 }
 /* 0x4e8160, checks the six office columns 6 .. 1 (amt_GetColumnOffices): per column, bit 1 (occupied) is set when an office with two candidates has two living

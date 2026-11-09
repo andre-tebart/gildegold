@@ -925,7 +925,7 @@ extern int d2_ClickedId;  /* 0xf8a668 */
 int d2_GetWinObj();  /* 0x475b80 */
 int cm_DialogTimer(int dlg, int a, int c);  /* 0x4e53e0 */
 int ai_TrustedOfTwo();  /* 0x4aab90 */
-int ai_TrustedOfFour();  /* 0x4aad30 */
+struct AIPER; int ai_TrustedOfFour(unsigned char k, struct AIPER *p, int *ids, int *out);  /* 0x4aad30, poker.c */
 int amt_GetOffice(unsigned char i, struct AMTREC *out);  /* 0x4e6f30, amt.c (this unit calls it through amt_GetOfficeI) */
 int amt_GetKind(int k, struct AMTKIND *out);  /* 0x4e6f80 */
 int amt_GetOfficeApplicants();  /* 0x4e76b0 */

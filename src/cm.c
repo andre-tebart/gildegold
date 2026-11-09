@@ -210,7 +210,7 @@ typedef struct CMBOMB {             /* 8 bytes, one of the 32 bombs of cm_Bombs 
 #define cm_FightersT (*(AICHAR (*)[32])&cm_Fighters)  /* 0x930600, cm_Fighters (char[], with the 0x1000 bytes after the 32 records) as its AICHAR records */
 #define ai_SceneCharsT (*(AICHAR *(*)[32])&ai_SceneChars)  /* 0x7603a0, ai_SceneChars (f3init.h: int[32]) as the AICHAR pointers it holds */
 #define cm_FlagObjectsT (*(D3OBJECT *(*)[32])&cm_FlagObjects)  /* 0x935980, cm_FlagObjects (cm.h: char *[]) as the D3OBJECTs it holds */
-#define ai_TrustedOfFourB ((int (*)(unsigned char, AICHAR *, int *, int *))ai_TrustedOfFour)  /* 0x4aad30 (poker.h: int k): @original cm_AskElectVote (0x4dab50, byte) pushes its unsigned char office raw (push ebp), cm_SessionAskAI (0x4dae90) a byte (mov al / push eax) */
+#define ai_TrustedOfFourB ((int (*)(unsigned char, AICHAR *, int *, int *))ai_TrustedOfFour)  /* 0x4aad30 (poker.h: unsigned char k, AIPER *p; cm.h declares it without a prototype): the prototype these calls need (cm_AskElectVote 0x4dab50 pushes its unsigned char office raw, cm_SessionAskAI 0x4dae90 a byte: mov al / push eax) */
 #define d2_LastWindowPtrT (*(struct D2WIN **)&d2_LastWindowPtr)  /* 0x6ed980, d2_LastWindowPtr (d2.c: D2WIN *) as the window record */
 typedef struct CMAMOUNTROW {        /* 0x38 bytes, one row of the special-amount list (ai_AmountRowStatus / ai_AmountRow read it
                                        as ints; menu.c GYPSYROW) */
