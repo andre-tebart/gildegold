@@ -5405,7 +5405,14 @@ int ai_MeisterTrade(AICHAR *ch, AIOBJ *b)
    the flags1b4 bit 0x200 gate, then handles the building's carts: a cart below a third full gets the reload
    message 0x10 (10 seconds ahead); a full one without a running job 11 is unloaded against the market - the stall
    goods are sold to the market stalls (cm_SendExSellObject) and the buys collected into one message 11, sent
-   unless the ai_TradeMsgOff gate is set. */
+   unless the ai_TradeMsgOff gate is set.
+   @deep Read against the original: every call, constant and branch agrees (hunks: slots 332, regs 16,
+   order 4, code 28). Fixed: the margin test reads ai_FloatOne as the original (M10 open closed), the
+   cart's building id as AIOBJ.bldId. Left: allocation - the float f's home ([esp+0x1c] ours vs
+   [esp+0x14]), the spilled search pointer / store-amount pointer in the stB sell loop (ours keeps the
+   amount pointer at [esp+0x18] and reloads it, the original keeps it in edx: code hunks 0x48c94f 'mov
+   dword ptr [esp + 0x2c], eax / mov eax, dword ptr [esp + 0x20]' vs 'mov edx, dword ptr [esp + 0x24] / mov
+   dword ptr [esp + 0x1c], eax', 0x48c98d, 0x48ca27, 0x48ca51 the same pushes in another register order). */
 
 int ai_MeisterTradeAllgemein(AICHAR *ch, AIOBJ *b)
 {
@@ -5433,7 +5440,7 @@ int ai_MeisterTradeAllgemein(AICHAR *ch, AIOBJ *b)
                     && (!(ai_Entries[i].flags & 8) || ai_Entries[i].amount > gm_ListStock(b, ai_Entries[i].item) / 3)) {
                     f = gm_ItemPrice(ai_Entries[i].item, 100);
                     f = f / gm_GoodsPrice(ai_Entries[i].item, ai_OwnPlayer);
-                    if (f < 1.0f && f <= util_RandomF() * 1.25f) {
+                    if (f < ai_FloatOne && f <= util_RandomF() * 1.25f) {
                         ai_Entries[i].sellAmount = ai_Entries[i].amount;
                         if (ch == ai_LoggedMaster)
                             sprintf(buf, "Verkauf wegen guter Gewinnspanne von %li Einheiten %s",
@@ -5476,7 +5483,7 @@ int ai_MeisterTradeAllgemein(AICHAR *ch, AIOBJ *b)
     gm_BuildingGoodsList(ch->bld, &stA, 0);
     for (car = gm_Query(ch->bld->objList, 3, 6, 4, 0x1d, 3, ch->bld->owner); car;
          car = gm_QueryNext()) {
-        if (car->unk1c == ch->bld->id) {
+        if (car->bldId == ch->bld->id) {
             if (car->fill < 0x21) {
                 memset(&msg, 0, sizeof(msg));
                 msg.type = 0x10;
