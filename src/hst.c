@@ -1077,8 +1077,7 @@ int ai_CommandFire(void)
     return 1;
 }
 /* 0x4b0050, the WIRBELSTURM text command (callback 0x601b50[4], name 0x601070[4]), the same as ai_CommandFire:
-   message 0x50 (value 1000, flags 2), today 16:00
-   @deep byte already (the event value at 0x9c via the G12EVENTMSG view, as ai_CommandFire). Q4 settled: the clock is copied as msg.time = ai_Time (AITIME, no view). Q1 has evidence (callback 0x601b50[4], name 0x601070[4] WIRBELSTURM), Q2/Q3/Q5/Q6/Q7 pass. */
+   message 0x50 (value 1000, flags 2), today 16:00 */
 
 int ai_CommandTornado(void)
 {
@@ -1086,7 +1085,7 @@ int ai_CommandTornado(void)
 
     memset(&msg, 0, sizeof(msg));
     msg.type = 0x50;
-    msg.to = *(int *)((char *)ai_PlayerChar + 4);
+    msg.to = ((AICHAR *)ai_PlayerChar)->netId;
     msg.fromId = -1;
     msg.car = -1;
     msg.flags = 2;
