@@ -1563,11 +1563,25 @@ void init_StockMarketStalls(void)
    a kind 0x25 good opens the recipe list: its object list (gm_Query kind 5) is walked while the good's
    prototype name starts with '%'; the four (weight, recipe) pairs at +0x26 / +0x2e of that prototype give the
    cost sum - the price of each recipe (gm_ItemPrice 0x5087f0) times its weight, truncated - and the amount is
-   16000 / sum (a float division for the prototype kind 0x15, an integer one otherwise), at least 1. Each
+   24000 / sum as a float division for the prototype kind 0x15, 16000 / sum
+   as an integer one otherwise, at least 1. Each
    recipe is then sent into the stall (the object kind 4) in the amount times its weight, capped at the
    stall's stock (gm_ListStock 0x50ab50); 0xffff recipe slots are skipped, a 0 slot ends the list.
    The error text fires when the sum is zero.
-   @deep B3 draft, 177/177 instructions, 38 differing: the rest is the sum / i register swap (ours sum=ebx i=ebp, the original sum=ebp i=ebx - spell.py's only menu entry, 50f6a6 regs ebp->ebx ebx->ebp) plus the error tail's block placement (the original's 'costs are zero' tail sits at the function end 0x50f73a behind a je, ours right after the test) and the add/lea fold of the recipe base (50f616 / 50f61a). All hunks read against 0x50f570..0x50f74e: no meaning error left - the two meaning errors found are fixed (the sum weights the price by rw[-4] through fimul, the stall clamp is if (amount < stock) n = amount; else n = stock) and took 152 -> 38 differing instructions. Tried, no change: the local declaration order, the (short*)+0x17 scaled recipe base, the while/for spelling of the recipe walk, -1 vs 0xffff (the latter fixed cmp ax,0xffff). Readability done: Q1 init_Betrieb (the error string 'init_Betrieb(): costs are zero', 0x622fe0, is the function's own), Q2 (gm_BuildingClass -> gm_BuildingClass project-wide, err_Message call gone, gm_ListStock prototype), Q4 (INIT_BLD parameter, INIT_OBJ objId / list), Q6. */
+   @stuck earlier: read whole against 0x50f570..0x50f74e, the two meaning errors fixed (fimul weight, stall
+   clamp). deep session 2: a third meaning error fixed - the float amount is 24000.0f / sum (0x5ee970), the
+   integer one 16000 / sum (ours had 16000.0f for both); the first recipe loop is for (...; i++, rw++) (the
+   original increments i before rw: the skip of a 0xffff slot jumps to inc ebx); the zero-cost error is the
+   else of if (sum != 0) (the original keeps its tail-call block at the function end 0x50f73a; with the
+   early return VC6 placed it inline): 37/353 -> 21/247 ins/bytes differing. Tried without any change: the
+   recipe base as (AIGOOD *)ai_Goods)[st->proto].in (kept: same code, typed), &[...+0x2e], +0x2e first,
+   parenthesised, a cls/int temp for proto*0x41, a char *g temp, rw = rw0 = ... (rw0 = rw = ... worse), sum
+   declared first/last, sum merged into n, v merged into sum, cls merged into i, a j counter for the first
+   loop, sum = 0 after rw0. Left, 2 hunks: 0x50f61a the original computes the base as add ecx,edx; xor
+   ebx,ebx; lea edi,[ecx+0x2e] where ours folds lea edi,[ecx+edx+0x2e] (1 byte, size 477 vs 478); the sum /
+   i registers swapped through the first loop and the idiv (the original sum=ebp i=ebx, ours sum=ebx i=ebp:
+   0x50f60a, 0x50f653, 0x50f68a). The prover stops at the tail jmp to err_Message (+0x1c9 vs +0x1ca, the
+   1-byte shift). (tiebreak: not measured (dcp headers sample init_Betrieb)) */
 
 
 void init_Betrieb(INIT_BLD *b)
@@ -1592,41 +1606,39 @@ void init_Betrieb(INIT_BLD *b)
     if (st == 0)
         return;
     sum = 0;
-    i = 0;
-    rw0 = (unsigned short *)(ai_Goods + st->proto * 0x41 + 0x2e);
+    rw0 = ((AIGOOD *)ai_Goods)[st->proto].in;
     rw = rw0;
-    for (i = 0; i < 4; i++) {
+    for (i = 0; i < 4; i++, rw++) {
         if (*rw == 0)
             break;
         if (*rw != 0xffff)
             sum += (int)(gm_ItemPrice(*rw, 100) * rw[-4]);
-        rw++;
     }
-    if (sum == 0) {
-        err_Message("init_Betrieb(): costs are zero");
-        return;
-    }
-    if (*p == 0x15)
-        n = (int)(16000.0f / sum);
-    else
-        n = 16000 / sum;
-    if (n <= 1)
-        n = 1;
-    st = (INIT_OBJ *)gm_Query((void *)b->objList, 1, 4, 5);
-    if (st == 0)
-        return;
-    for (i = 0; i < 4; i++) {
-        if (*rw0 == 0)
+    if (sum != 0) {
+        if (*p == 0x15)
+            n = (int)(24000.0f / sum);
+        else
+            n = 16000 / sum;
+        if (n <= 1)
+            n = 1;
+        st = (INIT_OBJ *)gm_Query((void *)b->objList, 1, 4, 5);
+        if (st == 0)
             return;
-        if (*rw0 != 0xffff) {
-            v = rw0[-4] * n;
-            if (v < gm_ListStock((short *)st, *rw0))
-                n = v;
-            else
-                n = gm_ListStock((short *)st, *rw0);
-            cm_SendExSellObject(st->objId, -1, *rw0, n, ai_OwnPlayer, 0);
+        for (i = 0; i < 4; i++) {
+            if (*rw0 == 0)
+                return;
+            if (*rw0 != 0xffff) {
+                v = rw0[-4] * n;
+                if (v < gm_ListStock((short *)st, *rw0))
+                    n = v;
+                else
+                    n = gm_ListStock((short *)st, *rw0);
+                cm_SendExSellObject(st->objId, -1, *rw0, n, ai_OwnPlayer, 0);
+            }
+            rw0++;
         }
-        rw0++;
+    } else {
+        err_Message("init_Betrieb(): costs are zero");
     }
 }
 /* 0x50f750, the opening of a new building b (gm_BuildingClass): its owner pays in the kind 0x136 good
