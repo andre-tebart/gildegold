@@ -607,7 +607,20 @@ void lobby_ShowChat(void)
    and faith button rows and the eight coats of arms (the ones other lobby players hold are disabled), then
    steps through them (state 0 .. 5: Enter takes a name, a click a button, the coat ends it; escape, a right
    click or the exit button go one step back or leave); writes the profile back and returns 1 when the player
-   was chosen @deep Reconstructed whole against the original 0x58af50..0x58b87b (profile load, form, sex/faith rows, 8 coats, lobby_List coat locking, the state machine 0..5, profile write back); 667 vs 671 instructions; the rest is slots (stack-slot order of the locals) plus one hunk: in state 5 the original evaluates 'cmp ai_MissionMode, 0xff; je; mov eax, [esp+0x1ac] (b)' and then overwrites eax with 1 (ret = sv_PopRequest = 1) - a dead load of the second parameter; tried 'if (ai_MissionMode != -1) ret = b; ret = 1', the ?: forms, else branches, ret=1 before, sv_PopRequest = ret: VC6 drops all of them, so which source keeps this dead load is a variant question (asmdiff: '+ mov al, byte ptr [X] / cmp al, 0xff / je X / mov eax, dword ptr [esp + 0x1ac]'). */
+   was chosen
+   @stuck deep pass: draft -> shape. Fixed the state-5 dead load: 'if (ai_MissionMode == -1 || b) ret = 1;
+   else ret = 1;' reproduces 'cmp al,0xff / je / mov eax,[esp+0x1ac] / mov eax,1' exactly; the button ids
+   are four scalars male/female/faith0/faith1 (the original's faith0/faith1 slots are not adjacent, so no
+   arrays). Left (asmdiff): 1) slots: the original puts both sv_ButtonRow arrays at one slot (frame+0x44:
+   '+ lea ecx,[esp+0x6c]' for the sex row and '[esp+0x50]' for the faith row at depths 0x28/0xc) yet keeps
+   the frame at 0x194, i.e. an 8-byte hole at +0x4c; ours: sexRow at +0x4c ('- lea ecx,[esp+0x74]', '- mov
+   eax,[esp+0x84] / mov ecx,[esp+0x88]', 3 bytes longer). Tried: one shared row[2] (frame 0x18c, all slots
+   shift), an unused extra int[2] (VC6 drops it), sibling-block-scoped row arrays (frame 0x184, regs/txt
+   order break), only sexRow block-scoped (worse), every declaration position of sexRow (no effect: VC6
+   does not lay out by declaration order). 2) regs at 0x58b41d in the refetch loop: '- mov eax,[eax+esi]'
+   vs '+ mov eax,[esi+eax]' (lobby_List[i]; the first, identical loop matches); tried nested ifs, id =
+   lobby_List[i] temp (no change), id = coats[p->coat] temp (worse), lobby_List assigned after the clear
+   loop (worse). */
 
 int lobby_ChoosePlayer(unsigned mask, int b)
 {
@@ -616,8 +629,10 @@ int lobby_ChoosePlayer(unsigned mask, int b)
     int coats[8];
     int sexRow[2];
     int faithRow[2];
-    int sexBtn[2];
-    int faithBtn[2];
+    int male;
+    int female;
+    int faith0;
+    int faith1;
     int win;
     int firstIn;
     int familyIn;
@@ -653,13 +668,13 @@ int lobby_ChoosePlayer(unsigned mask, int b)
     d2_SetForm(win, 3);
     io_PrintText(0x1ad4);
     sv_ButtonRow(d2_LastWindow, 0x1c, sexRow, 2, txt_Male, txt_Female);
-    sexBtn[0] = sexRow[0];
-    sexBtn[1] = sexRow[1];
+    male = sexRow[0];
+    female = sexRow[1];
     d2_SetForm(win, 4);
     io_PrintText(0x1ad7);
     sv_ButtonRow(d2_LastWindow, 0x1c, faithRow, 2, txt_Faith0, txt_Faith1);
-    faithBtn[0] = faithRow[0];
-    faithBtn[1] = faithRow[1];
+    faith0 = faithRow[0];
+    faith1 = faithRow[1];
     d2_SetForm(win, 5);
     io_PrintText(0x1adb);
     perRow = (d2_Wins[d2_LastWindow].w - 0x20) / 0x30;
@@ -685,9 +700,9 @@ int lobby_ChoosePlayer(unsigned mask, int b)
         }
     d2_SetObjMax(firstIn, 0xc);
     d2_SetObjMax(familyIn, 0xc);
-    sexGroup = d2_CreateRadioGroup(2, sexBtn[0], sexBtn[1]);
+    sexGroup = d2_CreateRadioGroup(2, male, female);
     d2_RadioSelect(sexGroup, init_PlayerProfile.sex);
-    faithGroup = d2_CreateRadioGroup(2, faithBtn[0], faithBtn[1]);
+    faithGroup = d2_CreateRadioGroup(2, faith0, faith1);
     d2_RadioSelect(faithGroup, init_PlayerProfile.faith);
     d2_ClearInput();
     kb_Last = 0;
@@ -766,11 +781,11 @@ int lobby_ChoosePlayer(unsigned mask, int b)
         } else if (state == 2) {
             d2_MenuNavigate(sexGroup);
             if (d2_ClickedId != -1) {
-                if (d2_PointerObj == sexBtn[0]) {
+                if (d2_PointerObj == male) {
                     init_PlayerProfile.sex = 0;
                     state = 3;
                     redraw = 1;
-                } else if (d2_PointerObj == sexBtn[1]) {
+                } else if (d2_PointerObj == female) {
                     init_PlayerProfile.sex = 1;
                     state = 3;
                     redraw = 1;
@@ -779,11 +794,11 @@ int lobby_ChoosePlayer(unsigned mask, int b)
         } else if (state == 3) {
             d2_MenuNavigate(faithGroup);
             if (d2_ClickedId != -1) {
-                if (d2_PointerObj == faithBtn[1]) {
+                if (d2_PointerObj == faith1) {
                     init_PlayerProfile.faith = 1;
                     state = 4;
                     redraw = 1;
-                } else if (d2_PointerObj == faithBtn[0]) {
+                } else if (d2_PointerObj == faith0) {
                     init_PlayerProfile.faith = 0;
                     state = 4;
                     redraw = 1;
@@ -811,9 +826,12 @@ int lobby_ChoosePlayer(unsigned mask, int b)
             init_PlayerProfile.tool2 = 0;
             init_PlayerProfile.status = 0x12;
             init_PlayerProfile.coat = d2_Objs[d2_Radios[coatGroup].objs[d2_Radios[coatGroup].sel]].pic;
-            if (ai_MissionMode != -1)       /* the original keeps this test and the load of b, then sets 1 */
-                ret = b;
-            ret = 1;
+            /* both arms are 1 in the original too: it keeps the test of ai_MissionMode and the load of b
+               and then stores 1 either way */
+            if (ai_MissionMode == -1 || b)
+                ret = 1;
+            else
+                ret = 1;
             sv_PopRequest = 1;
         }
     } while (sv_RunFrame((int)main_ChoosePlayer, mask) != 0);
