@@ -753,14 +753,14 @@ int ai_MsgWorkerHealthLossType1d(G14MSG *m)
     }
     return 0;
 }
-/* 0x4b84b0, message: as 0x4b82c0, the worker chosen from more than 2; 0x4fca40 of p by -(p's 0x1c float + 1) (not
-   with item 0x290) */
+/* 0x4b84b0, message 0x1e: as 0x4b82c0, but only with more than 2 workers there; half the time a text and the worker
+   p loses all its life (gm_AddHealth by -(p->f01c + 1)) (not with item 0x290) */
 
-int ai_Unk4b84b0(G14MSG *m)
+int ai_MsgWorkerKilledType1e(G14MSG *m)
 {
     AICHAR *c, *p;
     AIBLD *b;
-    int n, k, i, s;
+    int n, k, i, s, t;
     void *a[8];
     char buf[0x200];
 
@@ -772,7 +772,7 @@ int ai_Unk4b84b0(G14MSG *m)
     if (ai_InventoryHas(c, 0x290))
         return 0x400;
     for (b = gm_BuildQuery(1, 3, c->id); b != 0 && n < 8; b = gm_BuildNext()) {
-        i = gm_BuildingClass(*(unsigned char *)b);
+        i = gm_BuildingClass(b->type);
         if (i == 1 || i == 2)
             a[n++] = b;
     }
@@ -787,16 +787,16 @@ int ai_Unk4b84b0(G14MSG *m)
     if (k > 2) {
         s = util_RandomU(k);
         p = a[s];
-        while (util_RandomU(k) == s)
-            ;
+        t = util_RandomU(k);
+        while (t == s)
+            t = util_RandomU(k);
     }
     if (b == 0 || p == 0)
         return 0x400;
     if (util_RandomU(2)) {
-        txt_Format(buf, m->type + 0x12e7, b, (((char *)p)[9] ? 0x230 : 0x20d) + (unsigned char)p->title,
-                     p->id, p->id);
+        txt_Format(buf, m->type + 0x12e7, b, (p->sex ? 0x230 : 0x20d) + (unsigned char)p->title, p->id, p->id);
         he_ShowNews(c->netId, c->netId, buf, strlen(buf) > 0x100, 0x603, 0);
-        gm_AddHealthS(p->id, (int)-(*(float *)((char *)p + 0x1c) + 1.0f));
+        gm_AddHealthS(p->id, (int)-(p->f01c + 1.0f));
     }
     return 0;
 }
@@ -1945,7 +1945,7 @@ G14CB ai_MsgCallbacks[0x45] = {                                                 
     ai_MsgPayPct1to4OfficeType10, ai_MsgPayPct1to3BuildingType11, ai_MsgPayPct1to2Type1213, ai_MsgPayPct1to2Type1213,
     ai_MsgPayPct1to3Count2to16Type14, ai_MsgPartnerRelation4to10Type15, ai_MsgPartnerRelation6to14Type16, ai_MsgPartnerRelation6to18Type17,
     ai_MsgBuildingOwnerRelationsType18, ai_MsgOfficeGroupRelationsType19, ai_MsgPartnerRelationMinus6to14Type1a, ai_MsgPartnerRelationMinus10to38Type1b,
-    ai_MsgPartnerRelationMinus4to18Type1c, ai_MsgWorkerHealthLossType1d, ai_Unk4b84b0, ai_MsgWorkerOwnHealthLossType1f,
+    ai_MsgPartnerRelationMinus4to18Type1c, ai_MsgWorkerHealthLossType1d, ai_MsgWorkerKilledType1e, ai_MsgWorkerOwnHealthLossType1f,
     ai_MsgLoseMoney2to4Type20, ai_MsgGainMoney3to5Type21, ai_MsgCartFillDropType22, ai_MsgJobTime,
     ai_MsgJobEndPlayerType24, ai_MsgJobEndPayType25, ai_MsgJobBothEndsType26, ai_MsgJobBothEndsType27,
     ai_MsgUnusedSlot, ai_MsgJobEndDateType29, ai_MsgJobEndValueType2a, ai_MsgWorkerStop,
