@@ -916,7 +916,7 @@ void ch_CheckAniMorph(CHARACTER *ch)
 
     s = ch->slot;
     obj = ch->obj;
-    if (s && (s->flags.b[1] & 0x20) && !(s->flags.b[8] & 8) && !ch->flags.unk1) {
+    if (s && (s->flags.b[1] & 0x20) && !(s->flags.b[8] & 8) && !ch->flags.holdAnim) {
         if (!s->data->relative && (s->flags.b[4] & 3))
             d3anim_ApplyRootMotion(obj, s, 0, s->frame, 3);
         d3_ReleaseTexture(obj->material->animCtl, s->data->name);
@@ -932,74 +932,74 @@ void ch_CheckAniMorph(CHARACTER *ch)
         ch->morph = 0;
         released = 1;
     }
-    if (ch->next && !ch->morph) {
-        if (ch->slot) {
-            s = ch->slot;
-            i = ch->next->first != -1 ? ch->next->first : 0;
-            sprintf(name, "morph_%i", ch);
-            a = ch->slot->data;
-            fr = &a->frames[ch->slot->frame];
-            nf = &ch->next->frames[i];
-            n = nf->time - fr->time;
-            n = (n + a->frames[a->nframes - 1].time) / 2;
-            n = (int)(n + 0.5f);
-            if (obj->info) {
-                if (d3anim_CreateMorphAnim(D3OBJ_ANIM(obj)->mesh, a, fr, ch->next, nf, 0, name, n)) {
-                    f.u.all = 0;
-                    f.b8 = 1;
-                    f.u.c.b1 = 0x18;
-                    f.b = 0;
-                    f.a = 0;
-                    ch->morph = (D3ANIMSLOT *)d3anim_StartAnimCh(obj->material->animCtl, name, f);
-                    if (ch->morph) {
-                        if (!d3t_SceneIndex(ch->scene))
-                            ch->morph->timeout = -1;
-                        else
-                            ch->morph->timeout = ch_MorphTimeout;
-                    }
-                } else
-                    ch->morph = 0;
-            }
-            if (!s->data->relative && (s->flags.b[4] & 3))
-                d3anim_ApplyRootMotion(obj, s, 0, s->frame, 3);
-            d3_ReleaseTexture(obj->material->animCtl, s->data->name);
-            if (D3OBJ_ANIM(obj) && D3OBJ_ANIM(obj)->slots[0].data && D3OBJ_ANIM(obj)->slots[1].data)
-                err_Message("ch_CheckAniMorph(): huston we got a problem...");
-            ch->slot = 0;
-            return;
-        }
-        if (!ch->morph && !ch->slot) {
-            memset(&f, 0, sizeof(f));
-            f.u.all = 0;
-            f.u.c.b0 = 1;
-            f.b8 = 1;
-            loops = ch->nextloops;
-            if (loops >= 1)
-                f.u.c.b0 = loops;
-            f.u.c.b1 = loops != 1 ? 8 : 0x18;
-            ch->next->refs--;
-            f.b = 0;
-            f.a = 0;
-            if (!d3_FindAnim(ch->next->name)) {
-                sprintf(msg, "character/%s/%s.baf", ch->body, ch->next->name, ch->body);
-                d3_LoadAnimStream(msg, ch->next->name, 0);
-            }
-            ch->slot = (D3ANIMSLOT *)d3anim_StartAnimCh(obj->material->animCtl, ch->next->name, f);
-            ch->lastActionFrame = -1;
-            if (ch->slot) {
-                if (!d3t_SceneIndex(ch->scene))
-                    ch->slot->timeout = -1;
-                else
-                    ch->slot->timeout = ch_MotionTimeout;
-                if ((n = ch->next->first) != -1 && released) {
-                    ch->slot->frame = n;
-                    ch->slot->nextFrame = n + 1;
-                    d3anim_PoseBones(ch->obj);
+    if (!ch->next)
+        return;
+    if (!ch->morph && ch->slot) {
+        s = ch->slot;
+        i = ch->next->first != -1 ? ch->next->first : 0;
+        sprintf(name, "morph_%i", ch);
+        a = ch->slot->data;
+        fr = &a->frames[ch->slot->frame];
+        nf = &ch->next->frames[i];
+        n = nf->time - fr->time;
+        n = (n + a->frames[a->nframes - 1].time) / 2;
+        n = (int)(n + 0.5f);
+        if (obj->info) {
+            if (d3anim_CreateMorphAnim(D3OBJ_ANIM(obj)->mesh, a, fr, ch->next, nf, 0, name, n)) {
+                f.u.all = 0;
+                f.b8 = 1;
+                f.u.c.b1 = 0x18;
+                f.b = 0;
+                f.a = 0;
+                ch->morph = (D3ANIMSLOT *)d3anim_StartAnimCh(obj->material->animCtl, name, f);
+                if (ch->morph) {
+                    if (!d3t_SceneIndex(ch->scene))
+                        ch->morph->timeout = -1;
+                    else
+                        ch->morph->timeout = ch_MorphTimeout;
                 }
             } else
-                sprintf(msg, "ch_CheckAniMorph(): Could not attach CurrentAnimStream: %s", ch->next->name);
-            ch->next = 0;
+                ch->morph = 0;
         }
+        if (!s->data->relative && (s->flags.b[4] & 3))
+            d3anim_ApplyRootMotion(obj, s, 0, s->frame, 3);
+        d3_ReleaseTexture(obj->material->animCtl, s->data->name);
+        if (D3OBJ_ANIM(obj) && D3OBJ_ANIM(obj)->slots[0].data && D3OBJ_ANIM(obj)->slots[1].data)
+            err_Message("ch_CheckAniMorph(): huston we got a problem...");
+        ch->slot = 0;
+        return;
+    }
+    if (!ch->morph && !ch->slot) {
+        memset(&f, 0, sizeof(f));
+        f.u.all = 0;
+        f.u.c.b0 = 1;
+        f.b8 = 1;
+        loops = ch->nextloops;
+        if (loops >= 1)
+            f.u.c.b0 = loops;
+        f.u.c.b1 = loops != 1 ? 8 : 0x18;
+        ch->next->refs--;
+        f.b = 0;
+        f.a = 0;
+        if (!d3_FindAnim(ch->next->name)) {
+            sprintf(msg, "character/%s/%s.baf", ch->body, ch->next->name, ch->body);
+            d3_LoadAnimStream(msg, ch->next->name, 0);
+        }
+        ch->slot = (D3ANIMSLOT *)d3anim_StartAnimCh(obj->material->animCtl, ch->next->name, f);
+        ch->lastActionFrame = -1;
+        if (ch->slot) {
+            if (!d3t_SceneIndex(ch->scene))
+                ch->slot->timeout = -1;
+            else
+                ch->slot->timeout = ch_MotionTimeout;
+            if ((n = ch->next->first) != -1 && released) {
+                ch->slot->frame = n;
+                ch->slot->nextFrame = n + 1;
+                d3anim_PoseBones(ch->obj);
+            }
+        } else
+            sprintf(msg, "ch_CheckAniMorph(): Could not attach CurrentAnimStream: %s", ch->next->name);
+        ch->next = 0;
     }
 }
 /* 0x404200, loads the named animations of the character once (and releases them again) */

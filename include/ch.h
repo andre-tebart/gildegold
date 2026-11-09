@@ -51,7 +51,10 @@ typedef struct CHARACTER {         /* 0x244 bytes */
     union {                         /* 0x8c */
         struct {
             unsigned short dirty : 1;   /* position changed */
-            unsigned short unk1 : 1;    /* 0x02 */
+            unsigned short holdAnim : 1;    /* 0x02, an action holds the current animation (ch_ActPlay looping until
+                                               stopped, ch_ActSitDown, ch_ActPlayOnce): ch_CheckAniMorph does not end
+                                               it when it finishes, ch_ActAnim keeps its texture, no idle animation
+                                               is started */
             unsigned short unk2 : 3;
             unsigned short hidden : 1;
             unsigned short fading : 1;
