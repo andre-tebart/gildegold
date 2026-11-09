@@ -3325,7 +3325,7 @@ int sv_AddPanelButton(int x, int y, int text)
     return w;
 }
 /* 0x528860, opens the building info panel (sv_PanelForm, "panel\infopanel_gebaeude") for the building b unless one is open:
-   the title (kind 0x47: text 0x870 and the name of the player slot b->unk65; else the owner's name markup, the kind's
+   the title (kind 0x47: text 0x870 and the name of the player slot b->playerSlot; else the owner's name markup, the kind's
    name text 0x48e + 14 * kind and, when b has a name of its own, "$A>name<"), the building picture 0x427 + kind centred in
    the window (sv_PanelBldPic, interactive; its user record is the owner's character unless that is the player), the
    health bar (sv_PanelHealthBar, the level 0 .. 100; not for the kinds 0x47 / 0x1d / 0x57) and, unless flag 1 of

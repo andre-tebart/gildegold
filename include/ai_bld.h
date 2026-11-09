@@ -55,7 +55,9 @@ typedef struct AIBLD {                  /* 0xa9 bytes, ai_Blds[256] */
             union {
                 struct {
                     union {
-                        int unk65;                      /* 0x65, the word of the kinds without a member of their own (a bank's: interest) */
+                        int earnings;                   /* 0x65, of a guard building (kind 0x13) the rewards are added to it (he.c,
+                                                           field 0x65); of the kinds 0x1e / 0x1f / 0x20 he_PostEvent67 prices the
+                                                           auction message 0x67 from it and daySum (reasoned name: earnings) */
                         int victimId;                   /* 0x65, of the kidnapping room: the victim character id (lc.c; -1 none) */
                         int buyOutBase;                 /* 0x65, of a class 2 building: with buyOutExtra what its buy-out pays
                                                            half of, and set to that payment (lc.c ai_BuildingWindow; reasoned) */

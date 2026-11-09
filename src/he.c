@@ -3052,19 +3052,10 @@ void he_SpawnFounders(void)
 }
 
 
-/* 0x540c90, from the year 8 on, in 1 of 4 calls, when no event 0x67 runs: posts the message 0x67 about one of the
-   player's buildings of the kinds 0x20 / 0x1e / 0x1f (the first of each kind, gm_BuildQuery; one of them at random):
-   arg[0] its id, arg[1] its daySum plus ((5 - the AI decision 7's cur) * 0.1 + 0.7) * 0.5 * (unk65 + daySum), or, when that
-   is not positive, 1 .. 2 times its equipment value
-   @deep byte (rewritten from the original 0x540c90..0x540e3f: no memset of the message, the AI decision
-   7's cur, the amount sum * (x * 0.5), the equipment fallback through an int). Q-only handover, Q2:
-   AIBLD.unk65 / daySum only. Read: their users in every unit (ai.c steers unk65 towards AIPOS.unk18 and
-   sends it as field 0x65; gv.c / f3gm.c read +0x65 as a record pointer; the inn code reads +0x65 / +0x69 /
-   +0x6b as guest counters; main.c zeroes daySum for kind 7 every round; mission reads +0x69 as an
-   AITIME) and the 0x67 run handler he_RunAuctionEvent (arg[1] is the ranking's minimum wealth): the 0x65 .. 0x6c
-   area is a per-kind union, no source names the two ints for the kinds 0x1e / 0x1f / 0x20; a rename or a
-   union in the shared ai_bld.h is a shared-header decision (ai.c notes a union there flipped a byte
-   match). */
+/* 0x540c90, from the year 8 on, in 1 of 4 calls, when no event 0x67 runs: posts the auction message 0x67 about one of
+   the player's buildings of the kinds 0x20 / 0x1e / 0x1f (the first of each kind, gm_BuildQuery; one of them at
+   random): arg[0] its id, arg[1] its daySum plus ((5 - the AI decision 7's cur) * 0.1 + 0.7) * 0.5 * (earnings +
+   daySum), or, when that is not positive, 1 .. 2 times its equipment value */
 void he_PostEvent67(void)
 {
     AIMSG m;
@@ -3088,7 +3079,7 @@ void he_PostEvent67(void)
             pick = util_RandomU(n);
             gv_GetTableRecord(7, (int *)&dec);
             f = cand[pick];
-            amt = (int)((f->unk65 + f->daySum) * (((5 - dec.cur) * 0.1f + 0.7f) * 0.5f));
+            amt = (int)((f->earnings + f->daySum) * (((5 - dec.cur) * 0.1f + 0.7f) * 0.5f));
             m.type = 0x67;
             m.time = ai_Time;
             m.to = he_PlayerCh->netId;
@@ -17267,7 +17258,7 @@ void he_RunBurglary(AIJOB *ev)
             gb = (AIBLD *)gm_BuildQuery(1, 1, x->guardBld);
             if (gb != 0) {
                 cm_BeginFieldBlock((char *)gb, gb->id);
-                cm_AddFieldValues(4, 1, 0x65, &u.reward);  /* 0x65: the counter AIBLD.unk65 */
+                cm_AddFieldValues(4, 1, 0x65, &u.reward);  /* 0x65: AIBLD.earnings */
                 cm_SendFieldDeltas();
             }
         }
@@ -19278,7 +19269,7 @@ void he_RunRobbery(AIJOB *ev)
             gb = (AIBLD *)gm_BuildQuery(1, 1, x->guardBld);
             if (gb != 0) {
                 cm_BeginFieldBlock((char *)gb, gb->id);
-                cm_AddFieldValues(4, 1, 0x65, &reward);  /* 0x65: the counter AIBLD.unk65 */
+                cm_AddFieldValues(4, 1, 0x65, &reward);  /* 0x65: AIBLD.earnings */
                 cm_SendFieldDeltas();
             }
         }
