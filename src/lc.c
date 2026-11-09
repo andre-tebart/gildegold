@@ -2042,7 +2042,6 @@ void ai_LayoutMarketGoodsList(int view, int part, int pointer, int bld)
     }
 }
 #define d2_CreateWinTextS ((int (*)(short, short, char *, int))d2_CreateWinText)  /* @original ai_ShowProdSlot passes 16-bit x / y (mov ax, word ptr / add ax, 0x40; push eax) */
-#define d2_GetObjValue2 ((int (*)(int, int))d2_GetObjValue)  /* @original ai_TransportFromLager's two calls push the dummy 0 (0x5aecf0 / 0x5aefa7: push 0; push eax; call; add esp,8), d2.h's prototype is 1-arg */
 int d2_WinOpenSlider(int x, int y, int len, int p4, int p5, int pic, unsigned int flags, int win);  /* 0x46a960 (d2.h) */
 int d2_RemoveWindow(int win);                                   /* 0x472ce0 (d2.h) */
 
@@ -17709,7 +17708,7 @@ int ai_TransportFromLager(int lagerId, AIOBJ *cart, AIBLD *bld, int priced, char
             sv_SetStatusText(text);
             sb_PlaySample(0, "RollenKurz_s_01", 1, 0x3f, 0x7f, 0, 0);
         }
-        d2_SetObjValue4(slot->check, 0, slot->amount, d2_GetObjValue2(slot->check, 0) - n);
+        d2_SetObjValue(slot->check, 0, slot->amount, d2_GetObjValue(slot->check) - n, 0);
     }
     for (i = 0; i < 16; i++) {
         slot = &ai_ProdGoods[i];
@@ -17762,7 +17761,7 @@ int ai_TransportFromLager(int lagerId, AIOBJ *cart, AIBLD *bld, int priced, char
             sv_SetStatusText(text);
             sb_PlaySample(0, "RollenKurz_s_01", 1, 0x3f, 0x7f, 0, 0);
         }
-        d2_SetObjValue4(slot->check, 0, slot->amount, d2_GetObjValue2(slot->check, 0) - n);
+        d2_SetObjValue(slot->check, 0, slot->amount, d2_GetObjValue(slot->check) - n, 0);
     }
     cm_EndSendGroup();
     while (cm_SendGroupState() == 0)
