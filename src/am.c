@@ -4488,7 +4488,22 @@ int ai_ExecuteApplyForOffice(G5CH *p, AIARG *s1)
         return 0;
     return amt_ApplyForOffice(p, s1->ref) ? 10 : 0;
 }
-/* 0x497660, decide of action 11: whether the good o1 (kind 2) can be made where o2 points (a store object, a building by its type's recipe list, or a character) and its owner can pay gm_GoodsPrice (11, else 0) */
+/* 0x497660, decide of action 11: whether the good o1 (kind 2) can be made where o2 points (a store object, a building by its type's recipe list, or a character) and its owner can pay gm_GoodsPrice (11, else 0)
+   @deep whole asmdiff read against the original: the same tests in the same order (b, o1 kind 2,
+   AIGOODX.noSale / type, the o2 kind 1 / 4 / 7 paths, the two recipe walks with the 16-bit obj->id
+   compare, the a / b slot queries, the owner pick and the price compare), the same callees and arguments.
+   Left: (1) allocation: ours keeps 0 in esi (xor esi,esi; cmp ebp,esi; push esi) where the original uses
+   test / push 0 and keeps o2 in esi, so most hunks are register renames around it; (2) tail merging: the
+   original cross-jumps the object path's last slot query gm_Query(obj->list, 1, 0, k) into the building
+   path's identical call (0x4977ee mov eax,[ebp+0x14]; jmp 0x4978b2: calls gm_Query x5 vs ours x6) and
+   funnels every return 0 into one epilogue at 0x4978ca, ours keeps 5 return copies. A shared goto label
+   for the k query gives the merged call (tried: 118 vs 121 differing) but writes a goto the source shows
+   no sign of; reverted to the straight form. (size: 315 vs 296 instructions, explained: the +19
+   instructions are the duplicated epilogues and the unmerged call: ours repeats 'xor eax,eax; pop edi; pop
+   esi; pop ebp; pop ebx; pop ecx; ret' (7) at three loop-failure exits (0x497767, 0x497798, 0x497882)
+   where the original jumps to its one copy at 0x4978ca (+14..21), and ours keeps the object path's own
+   'and esi,0xffff; push esi; push 0; push 1; push eax; call gm_Query; add esp; test; je' (9) where the
+   original jumps into the building path's copy; minus the original's two reload moves) */
 
 int ai_DecideProduceGood(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
 {
@@ -4499,7 +4514,7 @@ int ai_DecideProduceGood(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
     int i, n, v;
     unsigned short k;
 
-    if (b == 1 && o1->kind == 2 && !AI_GOODX[o1->ref].unk40 && AI_GOODX[o1->ref].type != 2) {
+    if (b == 1 && o1->kind == 2 && !AI_GOODX[o1->ref].noSale && AI_GOODX[o1->ref].type != 2) {
         c = 0;
         bld = 0;
         obj = 0;
