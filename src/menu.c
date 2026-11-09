@@ -326,47 +326,79 @@ int ai_MessageBox(int text, int flags)
     d2_CloseView(win);
     return ret;
 }
-/* 0x5d3a00, writes a save slot (161 B): param_1 unused, param_2 the two slot records (0x220 bytes each),
-   param_3 the slot (-1 -> -1; 0 = AUTOSAVE, 1 = QUICKSAVE, any other value writes without a name
-   check), param_4 the request record (the name at +9). The name must equal the slot's string
-   ("QUICKSAVE" 0x624528 / "AUTOSAVE" 0x62451c, case-insensitive). A free slot (+8 == -1) gets the byte
-   +0 = the slot and the 0x84 dwords of param_4 copied to +0x10. Returns the slot, -1 when taken / the
-   name does not match. */
+/* the two records 0x5d3ab0 builds: the request (a file entry of ai_ListFiles, or an empty slot) and one slot
+   of the save / load window, which ai_RegisterSaveSlot (0x5d3a00) fills with a copy of the request */
+#pragma pack(push, 1)
+typedef struct SAVEREQUEST {                /* 0x210, a save file entry (ai_ListFiles) or an empty slot's request */
+    char pad00[9];
+    char name[0x80];                        /* +0x09, the slot caption (the file name without ".SAV") */
+    char title[0x80];                       /* +0x89, the save's title */
+    char path[0x107];                       /* +0x109, the file path (ai_FillSaveSlots opens it) */
+} SAVEREQUEST;                              /* 0x210 */
+typedef struct SAVESLOTVIEW {               /* 0x220, one slot of the save / load window */
+    unsigned char kind;                     /* +0x00, the slot kind (ls_SaveSlot for a registered save) */
+    char pad01[3];
+    int obj;                                /* +0x04, the slot's caption text object, -1 = none */
+    int win;                                /* +0x08, the slot's child window, -1 = free */
+    unsigned char used;                     /* +0x0c, 1: a filled slot, 0: an empty one */
+    char pad0d[3];
+    union {
+        SAVEREQUEST req;                    /* +0x10, the request ai_RegisterSaveSlot copied */
+        struct {
+            char reqpad[9];
+            char name[0x80];                /* +0x19, the caption (the request's name) */
+            char title[0x80];               /* +0x99, the save's title (the header's +0x9c) */
+        };
+    };
+} SAVESLOTVIEW;                             /* 0x220 */
+#pragma pack(pop)
 
-int ai_RegisterSaveSlot(int param_1, int param_2, int param_3, void *param_4)
+/* 0x5d3a00, puts the save request req into its slot of the save / load window: the request named "QUICKSAVE"
+   takes the slot 1 and "AUTOSAVE" the slot 0 whatever slot says, and the slots 0 / 1 take no other name (a
+   case-insensitive compare); a free slot (win -1) gets the kind byte and a copy of the request. Returns the
+   slot, -1 when it is taken, the name does not fit it or slot is -1. count (0x10) is not read.
+   @deep read whole vs 0x5d3a00..0x5d3aa1: meaning equal (QUICKSAVE / AUTOSAVE force slot 1 / 0, slots 0 /
+   1 take only their own name, -1 returns, a free slot (win -1) gets kind + the 0x210-byte request copy;
+   SAVESLOTVIEW now holds SAVEREQUEST at +0x10). Left: the compared name - ours keeps want in eax (mov eax,
+   X at +0x37 / +0x46 / +0x52, push eax) where the original pushes the literal in each predecessor (push
+   0x624528 at +0x21 / +0x66, push 0x62451c at +0x46) and jumps to the shared push edi / call; the slot==1
+   test block sits after the shared call in the original (+0x61). Tried: a per-branch _strcmpi (tail 28 +
+   branch 3: VC6 keeps two copies), the ?: argument under slot == 0 || slot == 1 (39 ins), switch (27),
+   return slot = -1 (28), goto done forms; the want variable form is the closest (17 ins) */
+
+int ai_RegisterSaveSlot(int count, SAVESLOTVIEW *slots, int slot, SAVEREQUEST *req)
 {
     char *name;
     char *want;
-    char *slot;
-    int i;
+    SAVESLOTVIEW *s;
 
-    (void)param_1;
-    name = (char *)param_4 + 9;
+    name = req->name;
     if (_strcmpi(name, "QUICKSAVE") == 0) {
-        param_3 = 1;
+        slot = 1;
         want = "QUICKSAVE";
     } else if (_strcmpi(name, "AUTOSAVE") == 0) {
-        param_3 = 0;
+        slot = 0;
         want = "AUTOSAVE";
-    } else if (param_3 == 0) {
+    } else if (slot == 0)
         want = "AUTOSAVE";
-    } else if (param_3 == 1) {
+    else if (slot == 1)
         want = "QUICKSAVE";
-    } else if (param_3 == -1) {
-        return -1;
-    } else {
-        goto write;
+    else if (slot == -1)
+        goto done;
+    else
+        goto fill;
+    if (_strcmpi(name, want) != 0) {
+        slot = -1;
+        goto done;
     }
-    if (_strcmpi(name, want) != 0)
+fill:
+    s = &slots[slot];
+    if (s->win != -1)
         return -1;
-write:
-    slot = (char *)(param_2 + param_3 * 0x220);
-    if (*(int *)(slot + 8) != -1)
-        return -1;
-    *slot = (char)param_3;
-    for (i = 0; i < 0x84; i++)
-        ((int *)(slot + 0x10))[i] = ((int *)param_4)[i];
-    return param_3;
+    s->kind = slot;
+    s->req = *req;
+done:
+    return slot;
 }
 
 /* views of d2.h's D2OBJ / D2INPUT (d2.h is not included yet: the unit's own d2_* declarations disagree with
@@ -424,25 +456,7 @@ extern int sv_ViewRectRight;            /* 0x6248ac, sv.c */
 extern int sv_ViewRectBottom;           /* 0x6248b0, sv.c */
 void d2_FocusInput(int obj);                                           /* 0x478320 */
 
-/* the two records 0x5d3ab0 builds: one slot of the save / load window and the request
-   ai_RegisterSaveSlot (0x5d3a00) copies into a free one */
 #pragma pack(push, 1)
-typedef struct SAVESLOTVIEW {               /* 0x220, one slot of the save / load window */
-    unsigned char kind;                     /* +0x00, the slot kind (ls_SaveSlot for a registered save) */
-    char pad01[3];
-    int obj;                                /* +0x04, the slot's caption text object, -1 = none */
-    int win;                                /* +0x08, the slot's child window, -1 = free */
-    unsigned char used;                     /* +0x0c, 1: a filled slot, 0: an empty one */
-    char pad0d[0x0c];
-    char name[0x80];                        /* +0x19, the caption (the request's name) */
-    char title[0x80];                       /* +0x99, the save's title (the header's +0x9c) */
-    char pad119[0x107];
-} SAVESLOTVIEW;                             /* 0x220 */
-typedef struct SAVEREQUEST {                /* 0x210, the request of ai_RegisterSaveSlot */
-    char pad00[9];
-    char name[0x77];                        /* +0x09, the slot caption */
-    char pad80[0x190];
-} SAVEREQUEST;                              /* 0x210 */
 /* the header ls_ReadSaveHeader (0x51cee0) fills, the file layout of the writer 0x5194c0 (ls.c) */
 typedef struct SAVEHEADERVIEW {             /* 0xfc */
     int version;                            /* +0x00, the save version (also ls_Version) */
@@ -573,7 +587,7 @@ void ai_FillSaveSlots(int view, int form, SAVESLOTVIEW *slots, char *files, char
             continue;
         }
         vfs_fclose(file);
-        slot = ai_RegisterSaveSlot(0x10, (int)slots, hdr.slot, rec);
+        slot = ai_RegisterSaveSlot(0x10, slots, hdr.slot, (SAVEREQUEST *)rec);
         if (slot == -1)
             continue;
         d2_SetForm(view, form);
@@ -623,7 +637,7 @@ void ai_FillSaveSlots(int view, int form, SAVESLOTVIEW *slots, char *files, char
             continue;
         memset(&req, 0, 0x210);
         sprintf(req.name, ai_EmptySlotNameFormat, i);
-        slot = ai_RegisterSaveSlot(0x10, (int)slots, i, &req);
+        slot = ai_RegisterSaveSlot(0x10, slots, i, &req);
         if (slot == -1)
             continue;
         d2_SetForm(view, form);
