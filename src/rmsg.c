@@ -1785,7 +1785,7 @@ int ai_MsgLoseSkill6to17Type3b(G14MSG *m)
     he_ShowNews(c->netId, c->netId, buf, strlen(buf) > 0x100, 0x603, 0);
     return 0;
 }
-/* 0x4bb150, message for c with field 0x2c set: c pays 1..4 % of 0x50a640 */
+/* 0x4bb150, message type 0x3c for an ailing character c (its ailment counters v02c not 0): c pays 1..4 % of 0x50a640 */
 
 int ai_MsgPayPct1to4Type3c(G14MSG *m)
 {
@@ -1806,11 +1806,11 @@ int ai_MsgPayPct1to4Type3c(G14MSG *m)
     cm_SendMoveGoodsUnchecked(-1, m->id, ai_OwnPlayer, v);
     return 0;
 }
-/* 0x4bb250, message for c with field 0x2c set: the text 0x4c + the season (gm_Season) of the calendar record
-   gm_ClockToDate makes of the game clock
-   @deep byte reached (the meaning fix: the calendar record is 10 bytes (f3gm.c gm_ClockToDate's out), not an int - the frame was 8 bytes short and the calls wrote past it; gm_ClockToDate(&t, d) with unsigned char d[10], then gm_Season(d)). Q1: no name evidence - the text is 0x4c + the season and the gate is AICHAR+0x2c != 0, a field with no role name anywhere (ai_Unk4bb150 has the same gate), so the message cannot be named. Q2: gm_ClockToDate / gm_Season are f3gm.c's gm_ClockToDate / gm_Season (same addresses) but declared locally in 5 TUs (sv.c and main.c even pass an int clock and a K&R form) - the project-wide rename needs the canonical prototypes in f3gm.h plus those callers fixed (a cross-unit shared-header decision). Q4: AICHAR+0x2c is in pad028[8] with no evidenced role; naming it unk2c would only move the debt. */
+/* 0x4bb250, message type 0x3d for an ailing character c (its ailment counters v02c not 0, as type 0x3c): the
+   text 0x12e7 + type with 0x4c + the season (gm_Season) of the calendar record gm_ClockToDate makes of the game
+   clock; 0x400 when c has no ailment */
 
-int ai_Unk4bb250(G14MSG *m)
+int ai_MsgSeasonAilingType3d(G14MSG *m)
 {
     AICHAR *c;
     AITIME t;
@@ -1820,7 +1820,7 @@ int ai_Unk4bb250(G14MSG *m)
     c = gm_FindChar(m->id);
     if (c == 0)
         return 1;
-    if (*(int *)((char *)c + 0x2c) == 0)
+    if (c->v02c == 0)
         return 0x400;
     t = ai_Time;
     gm_ClockToDate(&t, d);
@@ -1952,7 +1952,7 @@ G14CB ai_MsgCallbacks[0x45] = {                                                 
     ai_MsgWorkerLoseSkillType30, ai_MsgBuildingGetsItemType31, ai_MsgTakeBuildingGoodsPct13to25Type32, ai_MsgTakeBuildingGoodsPct5to19Type33,
     ai_MsgTakeBuildingGoodsPct5to24Type34, ai_MsgUnusedSlot, ai_MsgUnusedSlot, ai_MsgUnusedSlot,
     ai_MsgLoseGood, ai_MsgRewardPct1to3Skill82Type39, ai_MsgAddSkill8to24Type3a, ai_MsgLoseSkill6to17Type3b,
-    ai_MsgPayPct1to4Type3c, ai_Unk4bb250, ai_MsgPayMinorDisease, ai_MsgCatchUpperDisease,
+    ai_MsgPayPct1to4Type3c, ai_MsgSeasonAilingType3d, ai_MsgPayMinorDisease, ai_MsgCatchUpperDisease,
     ai_MsgCureMinorDisease, ai_MsgCureUpperDisease, ai_MsgNewsOnly, ai_MsgNewsOnly,
     ai_MsgNewsOnly
 };

@@ -34,7 +34,7 @@ typedef struct AICHAR {                 /* 0x21c bytes, ai_Chars[768] */
     int v024;                           /* 0x024, a value ai.c decays every frame (sent as message field 0x24), 0 at creation */
     short w028;                         /* 0x028, 0 at creation */
     char pad02a[2];
-    int v02c;                         /* 0x02c, 0 at creation */
+    int v02c;                         /* 0x02c, the ailment counters: the diseases 2 .. 9 as bit fields (f3gm.c gm_CatchDisease), 0 at creation */
     union {
         char name[0x58];                /* 0x030 */
         struct {
