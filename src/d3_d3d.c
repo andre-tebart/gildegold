@@ -569,9 +569,8 @@ void d3d_BuildMipmaps(LPDIRECTDRAWSURFACE4 tex, DDSURFACEDESC2 *ddsd)
    with a block-scoped namebuf (the original's frame keeps both); best 11/14 slots (msg in the if block,
    namebuf+ddscaps2 in the levels block) still has loadddsd -0xa8 / num -0x2c / msg overlapping namebuf.
    Next: find what scope or reference structure puts loadddsd above num/ddscaps2 (perhaps num/ddscaps2 in
-   an inner block of a block that also holds loadddsd uses), then the remaining code hunks: mov [ebp-4],eax
-   (texture = *surf) after the !texture test in the original, levels counted in edx then mov edi,edx after
-   the loop (tiebreak: insensitive under the four probes only, best draft) */
+   an inner block of a block that also holds loadddsd uses), then the remaining code hunk: levels counted in
+   edx then mov edi,edx after the loop (texture = *surf after the !*surf test fixed the [ebp-4] store) (tiebreak: insensitive under the four probes only, best draft) */
 
 void d3d_LoadTexture(char *name, DDPIXELFORMAT *pf, LPDIRECTDRAWSURFACE4 *surf, LPDIRECT3DTEXTURE2 *surftext,
                      unsigned char mips, DWORD w, DWORD h, int bpp)
