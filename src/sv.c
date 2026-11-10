@@ -4648,17 +4648,7 @@ void sv_HoverPick(void)
    click inside the view (or that jump) copies the hover state into the sv_Clicked* state, focuses the camera on a
    zoom target object that is no door / goods / contact (calling its event 2), selects the clicked character when
    the player may command him (0x800) and sets the selected object, item and model; a click on nothing resets the
-   selection
-   @deep read the whole function against 0x52ae70..0x52b29d (297 vs 298 ins): the clicked-state clears, the
-   quick-jump lookups (two blocks, each FindObject / sprintf then sv_PanelFlag = 0), the click test
-   (dm_L.lup, CamMove, view rect, hit window / widget), the nothing-picked reset, the sv_Clicked* copies,
-   the door test (strcmp "tp_TUER" gives the original's mov ecx,8 / repe cmpsb; memcmp gives cmpsd), the
-   camera focus with events[2], the character selection and the selected object / item / model: all match.
-   Left, allocation / scheduling only: (1) at +0x31d the original pushes the snd_PlayWorkerClick argument
-   first (push eax; mov cx,[eax]; mov [sv_SelectedChar],eax) and stores ai_SelectedCount = 1 after the
-   selected byte, ours stores sv_SelectedChar / ai_SelectedCount first and pushes late; (2) the last goods
-   kind test: original mov esi,eax; shl esi,6; add ecx,esi; add eax,ecx; cmp byte [eax],0x1d, ours mov
-   edx,eax; shl edx,6; add ecx,edx; cmp byte [eax+ecx],0x1d (tried the expression direct and through cls) */
+   selection */
 void sv_HandleObjects(void)
 {
     char *subj;
@@ -4729,10 +4719,10 @@ void sv_HandleObjects(void)
                 perms = gm_PermissionBits(ai_PlayerId, 0, 0, ai_PickedChar);
                 sv_ClearSelection();
                 if ((perms & 0x800) != 0 && (((AICHAR *)ai_PickedChar)->title != 0x1c || (((AICHAR *)ai_PickedChar)->flags1b4 & 1) == 0)) {
-                    sv_SelectedChar = ai_PickedChar;
                     ai_CharsT[((AICHAR *)ai_PickedChar)->id].selected = 1;
-                    ai_SelectedCount = 1;
+                    sv_SelectedChar = ai_PickedChar;
                     sv_PanelCartChar = (int)ai_CharsT[((AICHAR *)ai_PickedChar)->id].model;
+                    ai_SelectedCount = 1;
                     snd_PlayWorkerClick((struct G16CHARCLICK *)ai_PickedChar);
                 }
                 sv_PanelCartChar = (int)ai_CharsT[((AICHAR *)ai_PickedChar)->id].model;
@@ -4744,8 +4734,8 @@ void sv_HandleObjects(void)
             if (sv_HoverBuilding != 0)
                 sv_SelectedModel = (int)ai_PickedObject;
             if (sv_HoverItem != 0) {
-                sv_SelectedModel = (int)ai_PickedObject;
                 cls = &ai_GoodsT[((AIOBJ *)sv_HoverItem)->id];
+                sv_SelectedModel = (int)ai_PickedObject;
                 if (cls->type == 0x1d)
                     sv_ClearSelection();
             }

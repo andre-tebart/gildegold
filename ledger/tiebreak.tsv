@@ -3365,7 +3365,7 @@ exe	0x0052a050	sv_UpdatePanel	sv	c136876837bdebe4	no	byte	control=byte p1=byte p
 exe	0x0052a680	sv_HoverPick	sv	3418509c412a019e	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x0052adb0	sv_ResetSelection	sv	fddec04ebf600640	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x0052ae40	sv_ClearSelection	sv	b26aef62c3ba0645	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x0052ae70	sv_HandleObjects	sv	021ddff5bb082add	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x0052ae70	sv_HandleObjects	sv	021ddff5bb082add	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x0052b2a0	sv_CollectGroupCharacters	sv	678815dcb368ec86	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
 exe	0x0052b350	sv_RegisterActivity	sv	aff70fe233b96a83	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0052b3c0	sv_ActivityName	sv	fe9a0c5b609f74bc	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
