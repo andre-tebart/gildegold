@@ -369,7 +369,25 @@ void veg_HidePlants(G15PLANT *p)
     }
 }
 /* 0x4bcc20, lays a road from the building site of object obj (name: 0x58f640) to the next road (marks its cells
-   as ground type "EINFACHER_WEG" on the town map, around each cell before 0x780) @deep read whole against the original: fixed the DDA (|dx| > |dz| branch first, the compare on the double fabs results, dz / fabs(dx)), the map fill (>= 0x780 single cells first, then the 3x3 loops with k before the cell x), the fail block placed before the success part; renamed ai_Unkfd7f78 -> d3_Scene0Flags. Left: our VC6 cross-jumps the three inline 'd3sm_Destroy(rd_Road.grid); return 0;' blocks (ai_BuildingName fail, bk == 0, the first rd_PathToRoad) into the shared fail tail (ours 'push edx; jmp X' at +0x10f/+0x195/+0x24d, the original's own 'call d3sm_Destroy; add esp,4; xor eax,eax; pop x4; add esp,0xc8; ret' each), tried all-inline returns without gotos (worse: 197 ins); the rest is frame 0xc4 vs 0xc8 (one slot), v[1] = bk->y0 copied with mov (ours) vs fld/fstp, the fstp scheduled after vs before 'push eax' at the WorldToCell calls, px/pz loaded in the other order (edx/eax) before the third rd_PathToRoad (size: 495 vs 522 instructions, explained: the 27 missing instructions are exactly the three duplicated 9-instruction fail epilogues the original keeps and our compile merges) */
+   as ground type "EINFACHER_WEG" on the town map, around each cell before 0x780)
+   @stuck match-deep 2026-11-10 (dcp try, nothing kept): float v[4] fixes the frame (0xc4 -> 0xc8) but 101
+   ins (regs 18); the parenthesized v[1] = (bk->y0) copy (the lever that took rd_AllBauplatzToSupermap to
+   byte) gives the fld/fstp copy but 99 / 122 / 150 ins for the first / second / both blocks, with v[4]
+   156. The cross-jump of the three inline fail blocks into the fail: tail did not move with: a ret
+   variable set before each goto (= control), the success path as the if-body with fail: after it (=
+   control), the fail block as the else of the positive test (= control), return FALSE (= control). The
+   M10s (ai_FloatZero / ai_FloatOne at the step ternary) need rd.h declarations; rd_FillQuad is byte with
+   the 1.0f literal, so they are pooled literals. Left: as prior, plus the WorldToCell argument stores
+   (hunks 0x4bcdf7, 0x4bce1b) and the slots at 0x4bd144. (tiebreak: insensitive under the four probes only,
+   best draft) prior: read whole against the original: fixed the DDA (|dx| > |dz| branch first, the compare
+   on the double fabs results, dz / fabs(dx)), the map fill (>= 0x780 single cells first, then the 3x3
+   loops with k before the cell x), the fail block placed before the success part; renamed ai_Unkfd7f78 ->
+   d3_Scene0Flags. Left: our VC6 cross-jumps the three inline 'd3sm_Destroy(rd_Road.grid); return 0;'
+   blocks (ai_BuildingName fail, bk == 0, the first rd_PathToRoad) into the shared fail tail (ours 'push
+   edx; jmp X' at +0x10f/+0x195/+0x24d, the original's own 'call d3sm_Destroy; add esp,4; xor eax,eax; pop
+   x4; add esp,0xc8; ret' each), tried all-inline returns without gotos (worse: 197 ins); the rest is frame
+   0xc4 vs 0xc8 (one slot), v[1] = bk->y0 copied with mov (ours) vs fld/fstp, the fstp scheduled after vs
+   before 'push eax' at the WorldToCell calls, px/pz loaded in the other order (edx/eax) before the ... */
 
 int rd_BuildRoad(char *obj, int name)
 {

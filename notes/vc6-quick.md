@@ -181,6 +181,12 @@ mechanisms, each as a generated round over all positions / subsets:
 - Float literals give DWORD constants, double literals QWORD; `(float)sqrt(a) < b` pops before `fcomp mem`.
 - `1.0f * x` folds away; a constant through a variable (`one = -1.0f`) keeps the multiply.
 - `x * 1.0f` / `x + 0.0f` on a member at offset 0 forces fld/fstp instead of integer moves.
+- **Float member copies through the FPU** (`fld [m]; fstp [local]`, the last store often sunk past the next
+  call's pushes) where ours copies with `mov reg,[m]; mov [local],reg`: parenthesize the source,
+  `v[0] = (bk->x0);` / `v.x = (cam->rotation.x);` (a macro's expansion in the original). Plain copies, casts,
+  `+ 0.0f` at a non-zero offset, comma macros and D3VECTOR / D3VECTOR4 spellings all stay integer moves.
+  rd_AllBauplatzToSupermap and ai_CampaignKey1 byte, he_FindNearestSpying draft -> shape (2026-11-10);
+  sweep script: deep-tools parensweep.py.
 
 ## Types and bytes
 - Byte read-modify-write (`or BYTE PTR [x],2`) = `unsigned char` bitfields; word ops narrowed to a byte =
