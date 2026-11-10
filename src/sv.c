@@ -3700,8 +3700,7 @@ void sv_RefreshPanel(void)
             if (j != 0) {
                 if (j->stage >= 4)
                     prog = (float)j->argc8 / j->workTotal;
-                if (prog < 0.01)
-                    prog = 0.01;
+                prog = max(0.01, prog);
                 if (sv_PanelWidgets[0] == -1) {
                     d2_SetForm(sv_PanelForm, 0);
                     sv_PanelWidgets[0] = d2_WinOpenPic(((d2_Wins[d2_LastWindow].w - 0x30) >> 1) + 0x2f, 0x4c, 0x4ff, d2_LastWindow);
