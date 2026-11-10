@@ -266,14 +266,31 @@ void veg_GrowPlants(G15PLANT *p)
     veg_ShowPlants(p);
 }
 /* 0x4bc940, loads plant q's model ("%svegetation/*pfl_<type>_0<n>[_FALL].ogr"), names it "_ID<id>" and places it
-   on the height map (origin + x * axisx + z * axisz + height * axisy). @deep match-base 2026-10-31: read against the original; 182 vs 180 instructions (was 158), differing 40 (was 162). The placement is pos = origin, then += x * axisx, += z * axisz, += height * axisy component by component through the typed D3TERRAIN (d3_sm.h; origin copied by integer moves, each height re-read per component), and each branch has its own sprintf with the literal format (tail-merged, as the original). Left: register choice in the height part - ours needs a byte register for heights[z * size + x] and spills o (ebx) to [esp+0x20] around it where the original uses ecx with the row base in edx (hunks 0x4bca81, 0x4bcb02, 0x4bcb21, 0x4bcb46); the index spellings heights[size * z + x] / *(heights + z * size + x) / x first compile the same. */
+   on the height map (origin + x * axisx + z * axisz + height * axisy).
+   @stuck match-deep 2026-11-10: headers sample insensitive (32 samples, one codegen). Kept: q->x / q->z
+   read at their uses instead of int locals x, z (40 -> 36 ins; x's fild temp now shares [esp+0x10] as in
+   the original). Left: the height address - the original forms (z*size + heights) and indexes [edx + x] so
+   ecx is free for the zero-extended byte (heights reloaded into ecx, ebp, edi), ours forms z*size + x and
+   indexes [edx + heights], needs bl and spills o (ebx) to [esp+0x20], which also sinks pos[2]'s
+   fmul/fadd/fstp past the call's pushes (hunks 0x4bcb02, 0x4bcb21, 0x4bcb46, 0x4bcb61). All = control:
+   (heights + z*size)[x], *(heights + z*size + x), x first, (int)/(unsigned char *) integer address
+   arithmetic, (unsigned) index or size, int/float casts on the height, axisy first / explicit pos = pos +
+   .. forms, a row pointer or index local assigned per component, pos as D3VECTOR; unsigned/uchar/ushort x,
+   z locals and D3VECTOR4 pos are worse. prior:
+   match-base 2026-10-31: read against the original; 182 vs 180 instructions (was 158), differing 40 (was
+   162). The placement is pos = origin, then += x * axisx, += z * axisz, += height * axisy component by
+   component through the typed D3TERRAIN (d3_sm.h; origin copied by integer moves, each height re-read per
+   component), and each branch has its own sprintf with the literal format (tail-merged, as the original).
+   Left: register choice in the height part - ours needs a byte register for heights[z * size + x] and
+   spills o (ebx) to [esp+0x20] around it where the original uses ecx with the row base in edx (hunks
+   0x4bca81, 0x4bcb02, 0x4bcb21, 0x4bcb46); the index spellings heights[size * z + x] / *(heights + z *
+   size + x) / x first compile the same. */
 
 void veg_LoadModel(G15PLANT *q, int fall)
 {
     G15TREE *t;
     int n;
     char *o;
-    int x, z;
     D3TERRAIN *tr;
     float pos[3];
     char path[0x100];
@@ -306,17 +323,15 @@ void veg_LoadModel(G15PLANT *q, int fall)
         pos[0] = tr->origin.x;
         pos[1] = tr->origin.y;
         pos[2] = tr->origin.z;
-        x = q->x;
-        z = q->z;
-        pos[0] += x * tr->axisx.x;
-        pos[1] += x * tr->axisx.y;
-        pos[2] += x * tr->axisx.z;
-        pos[0] += z * tr->axisz.x;
-        pos[1] += z * tr->axisz.y;
-        pos[2] += z * tr->axisz.z;
-        pos[0] += tr->heights[z * tr->size + x] * tr->axisy.x;
-        pos[1] += tr->heights[z * tr->size + x] * tr->axisy.y;
-        pos[2] += tr->heights[z * tr->size + x] * tr->axisy.z;
+        pos[0] += q->x * tr->axisx.x;
+        pos[1] += q->x * tr->axisx.y;
+        pos[2] += q->x * tr->axisx.z;
+        pos[0] += q->z * tr->axisz.x;
+        pos[1] += q->z * tr->axisz.y;
+        pos[2] += q->z * tr->axisz.z;
+        pos[0] += tr->heights[q->z * tr->size + q->x] * tr->axisy.x;
+        pos[1] += tr->heights[q->z * tr->size + q->x] * tr->axisy.y;
+        pos[2] += tr->heights[q->z * tr->size + q->x] * tr->axisy.z;
         d3_SetObjectPos(o, pos);
     }
     d3_RelightObjects(o);

@@ -2070,7 +2070,7 @@ exe	0x004bc6a0	veg_FindPlantArea	rd	36fea1777b701348	no	byte	control=byte p1=byt
 exe	0x004bc710	veg_Fits	rd	9122494ef233fcdc	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004bc7c0	veg_SetPlant	rd	7e3026c81946f27b	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x004bc8d0	veg_GrowPlants	rd	df98adba514ca219	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x004bc940	veg_LoadModel	rd	d4595c1691ef8b60	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x004bc940	veg_LoadModel	rd	d4595c1691ef8b60	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x004bcb90	veg_ShowPlants	rd	f8e40ac8e49223e4	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004bcbe0	veg_HidePlants	rd	5669428f843db8df	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004bcc20	rd_BuildRoad	rd	6749b4f3e2dadc4a	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
