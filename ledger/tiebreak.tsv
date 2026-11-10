@@ -1808,7 +1808,7 @@ exe	0x004aa800	ai_DecideCharPair	poker	6502ce0dacc3ed6b	no	byte	control=byte p1=
 exe	0x004aa940	aip_ExecPamphlet	poker	e1b6d5e694659b85	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004aaa10	aip_ExecDrohen	poker	0c1abaebde183e3f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004aaae0	aip_ExecAnschwaerzen	poker	34ac6574c2826b56	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x004aab90	ai_TrustedOfTwo	poker	2b0bbc8700171bdb	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x004aab90	ai_TrustedOfTwo	poker	2b0bbc8700171bdb	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x004aad30	ai_TrustedOfFour	poker	fa683421e73ef87d	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x004aaef0	ai_FindDarkCornerTarget	poker	4cddf1a6728575ef	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004aafb0	ai_ExecMessage74	poker	9d7720f790c7de6d	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
