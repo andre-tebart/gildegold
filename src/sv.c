@@ -4180,14 +4180,9 @@ void sv_UpdateCityPanel(unsigned char a, int b)
 unsigned char * gm_BuildQuery(int n, ...);                     /* 0x501190 */
 unsigned short * gm_QueryNext(void);                   /* 0x4ffcc0 */
 
-/* 0x52adb0, resets the selection (item, object, model, sv_SelectedExtra) and clears the bit 2 of the carts (kind 0x1d) of the current building: the player's building, else the fallback one, else the first gm_BuildQuery(1, 0, 0x44) finds
-   @deep read the whole function against the original: stores, the building choice (player's building ->
-   fallback, else gm_BuildQuery(1,0,0x44)), the gm_Query(objList,1,5) cart loop with AIOBJ.flags20 &= ~2
-   all match. Left: the original tests b twice on the ai_PlayerBuilding != 0 path (+0x3c cmp eax,ebx; je
-   ret, then +0x40 cmp eax,ebx; je ret, reached by jmp from the gm_BuildQuery call), ours merges them (one
-   cmp/je, no jmp): 3 ins. Tried: one common test after if/else, return inside each branch, '&&' condition
-   form, b loaded before/after the stores; the flow is equal, only VC6's tail merge of the redundant test
-   differs */
+/* 0x52adb0, resets the selection (item, object, model, sv_SelectedExtra) and clears the bit 2 of the carts (kind 0x1d) of the building ai_FallbackBuilding; without a player building (ai_PlayerBuilding) and without a fallback it
+   takes the first one gm_BuildQuery(1, 0, 0x44) finds. The player-building arm tests the global itself before the
+   common test of b (the original tests the value twice there) */
 void sv_ResetSelection(void)
 {
     AIBLD *b;
@@ -4197,14 +4192,14 @@ void sv_ResetSelection(void)
     sv_SelectedObject = 0;
     sv_SelectedExtra = 0;
     sv_SelectedModel = 0;
-    if (ai_PlayerBuilding != 0) {
-        b = (AIBLD *)ai_FallbackBuilding;
-        if (b == 0)
-            return;
-    } else {
+    if (ai_PlayerBuilding == 0) {
         b = (AIBLD *)ai_FallbackBuilding;
         if (b == 0)
             b = (AIBLD *)gm_BuildQuery(1, 0, 0x44);
+    } else {
+        if (ai_FallbackBuilding == 0)
+            return;
+        b = (AIBLD *)ai_FallbackBuilding;
     }
     if (b == 0)
         return;
