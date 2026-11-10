@@ -2729,7 +2729,7 @@ exe	0x004ed170	gv_AllocAvatar	gv	d6879ba4e15f79a6	no	shape	control=shape p1=shap
 exe	0x004ed1e0	gv_WriteAvatars	gv	75d5b232f909a9fb	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004ed270	gv_ReadAvatars	gv	8669053322d75f56	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
 exe	0x004ed3f0	gv_EffectNotifyOwner	gv	3c01036a661cf5ff	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x004ed480	gv_WriteEffects	gv	a1ff32d4d59fc83c	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x004ed480	gv_WriteEffects	gv	a1ff32d4d59fc83c	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x004ed910	gv_ReadEffects	gv	185aff0c9157996c	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x004eddf0	unk_ResetEffectSlots	gv	d22de811647bdb9a	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004ede70	gv_FreeEffectObjects	gv	826b218c126f9ce1	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte

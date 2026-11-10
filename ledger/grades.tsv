@@ -2729,7 +2729,7 @@ exe	0x004ed170	gv_AllocAvatar	gv	shape	readable
 exe	0x004ed1e0	gv_WriteAvatars	gv	byte	readable		
 exe	0x004ed270	gv_ReadAvatars	gv	shape	readable		
 exe	0x004ed3f0	gv_EffectNotifyOwner	gv	byte	readable		
-exe	0x004ed480	gv_WriteEffects	gv	draft	readable	deep	
+exe	0x004ed480	gv_WriteEffects	gv	byte	readable		
 exe	0x004ed910	gv_ReadEffects	gv	draft	readable	deep	
 exe	0x004eddf0	unk_ResetEffectSlots	gv	byte	readable		
 exe	0x004ede70	gv_FreeEffectObjects	gv	byte	readable		
@@ -2766,7 +2766,7 @@ exe	0x004ef900	gv_LoadGraveyard	gv	byte	readable
 exe	0x004ef930	gv_RandomGrave	gv	byte	readable		
 exe	0x004ef9c0	gv_BuryNewDead	gv	shape	readable	deep	
 exe	0x004efc10	gv_AllocGraveyard	gv	shape	readable	deep	
-exe	0x004eff50	gv_GrowGraveyard	gv	draft	readable	deep	
+exe	0x004eff50	gv_GrowGraveyard	gv	shape	readable	stuck	
 exe	0x004f0180	gv_FreeGraveyard	gv	byte	readable		
 exe	0x004f01d0	gv_OrderBury	gv	shape	readable		
 exe	0x004f0240	gv_BuryCharacter	gv	shape	readable		
@@ -2785,14 +2785,14 @@ exe	0x004f0dd0	gv_AddNewDead	gv	byte	readable
 exe	0x004f0e80	gv_OrderMoveGrave	gv	byte	readable		
 exe	0x004f0ed0	gv_MoveGrave	gv	byte	readable		
 exe	0x004f1170	gv_OrderRaiseDead	gv	byte	readable		
-exe	0x004f1200	gv_RaiseDead	gv	draft	readable	deep	
+exe	0x004f1200	gv_RaiseDead	gv	draft	readable	stuck	
 exe	0x004f15e0	gv_SendGrave	gv	byte	readable		
 exe	0x004f1660	gv_DecayRaisedDead	gv	byte	readable		
 exe	0x004f16f0	gv_PreserveRate	gv	byte	readable		
 exe	0x004f17f0	gv_WriteGraveyard	gv	byte	readable		
 exe	0x004f1aa0	gv_ReadGraveyard	gv	byte	readable		
 exe	0x004f1d50	gv_RoomForRaised	gv	byte	readable		
-exe	0x004f1de0	gv_GraveyardTurn	gv	draft	readable	deep	
+exe	0x004f1de0	gv_GraveyardTurn	gv	byte	readable		
 exe	0x004f22a0	gv_FindWornEntry	gv	byte	readable		
 exe	0x004f2330	gv_LeasePrice	gv	byte	readable		
 exe	0x004f2440	gv_MovePrice	gv	byte	readable		
