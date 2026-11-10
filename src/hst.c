@@ -1301,32 +1301,27 @@ int ai_CommandKillPlayer(G12ARG *args, int k)
    the character args[k] for 10:00 in 24 hours, with the judges ai_JudgeCatholic / ai_JudgeProtestant, the
    living humans (at most 16 members) and a non-player office holder in the second place (the last member when
    there is none); quiet: the aftermath sends no notes
-   @deep read the whole function against the original 0x4b0640..0x4b08da and fixed: the record is cm's
-   G28REC (0x114 bytes: frame 0x16c now equal; was the local 0x100-byte G12XMSG with unk fields), kind 5 /
-   thing -1 / host / flags 0 then 0x22 before gm_AddTime / variant / quiet (G28REC.zero7d renamed quiet:
-   cm_ExecutionAftermath skips its notes when set), the name table in the original's slot order (name[0] =
-   SHAUFEN .. name[3] = KANONE, the copies read 0x601be4 into [esp+0x18]; kinds 3, 0, 2, 4 go with that
-   order), the member loop as an index loop (the original's jl end test) with the id read once, the -1 fill
-   as the loop VC6 turns into 'mov ecx,0x10 / sub ecx,edx / rep stosd' (memset gave the shl/shr/and-3
-   tail). ours 180 vs 181. Left: (1) the loop's induction pointer - the original biases it to the netId
-   word ('+ mov edx,ai_CharInts / + mov esi,[edx] / + mov al,[edx+0x162] / + cmp edx,0x7d5f84'), ours to
-   officeKind ('- mov edx,ai_Chars+0x166 / - mov esi,[edx-0x162] / - cmp byte ptr [edx],0 / - cmp
-   edx,ai_Chars+0x65566'): the same records and fields (tried the id through ai_CharInts[i][0] and the byte
-   through the same view: no change); (2) the scheduling of the 10 literal copies of the name table and of
-   fmt ('- mov ebx,[esp+0x188] / - inc ebx' vs '+ mov eax,[esp+0x188] / + lea ebx,[eax+1]'), and kind/-1
-   stores around the player's netId load (order hunks). (references: M9 at +0x7a: our literal "KOEPFEN"
-   where the original's field refers to "GALGEN" at 0x601bd4 (and 2 more), explained: the M8 refs are the
-   induction pointer's bias (ai_Chars+0x166 vs the original's ai_Chars+4 base, the loop end 0x7d60e6 vs
-   0x7d5f84 = the same 0x300 records), the M9 literal is the copy order of the same four strings into the
-   same slots (asmdiff: ours loads KOEPFEN where the original loads GALGEN on that line, both copies are
-   present on both sides)) */
+   The record is cm's G28REC (0x114 bytes): kind 5 / thing -1 / host / flags 0 then 0x22 before gm_AddTime /
+   variant / quiet (quiet: cm_ExecutionAftermath skips its notes when set); the name table in the original's
+   slot order (name[0] = SHAUFEN .. name[3] = KANONE; kinds 3, 0, 2, 4 go with that order); the -1 fill as the
+   loop VC6 turns into 'mov ecx,0x10 / sub ecx,edx / rep stosd' (memset gave the shl/shr/and-3 tail).
+   @stuck shape, 6 ins / 28 bytes, order 14 only (from draft 59 ins). Moved code: the netId read at each of
+   its three uses (loop base to netId, the original's ai_CharInts/0x7d5f84 refs: 59 -> 54); memcmp(fmt + 1,
+   ..) instead of fmt++ (the original's lea ebx,[eax+1]: 26 -> 8); flags = 0x22 before the time copy (8 ->
+   6); party.variant = kinds[i] directly, no variant local (the name-table M9 crossing went: draft ->
+   shape); the setup stores' order by tryclimb. Left: the setup block's scheduling, '- mov byte ptr
+   [esp+0xe4],dl' right after the -1 store where the original stores list[1]=-1, loads ai_JudgeCatholic,
+   stores kind/flags and only then the variant (dl). No lever: 1500 random orders and all 2602 two-line
+   moves of the 10 setup stores (none below 6 ins); the variant store after flags gives the original's
+   store order but loads kinds[i] late into cl and c early (draft 18 ins); a variant local before or inside
+   the block (draft 18-34); thing = list[1] = -1 chains (draft 34-36). Declaration set insensitive.
+   (tiebreak: insensitive) */
 int ai_CommandExecution(G12ARG *args, int k, char *fmt)
 {
     G28REC party;
     AICHAR *c;
     int kinds[4];
-    int i, n, id;
-    unsigned char variant;
+    int i, n;
 
     c = gm_FindChar(args[k].id);
     if (c == 0 || !ai_IsLivingCharacter(c->id))
@@ -1341,35 +1336,32 @@ int ai_CommandExecution(G12ARG *args, int k, char *fmt)
         kinds[2] = 2;
         if (*fmt != '-')
             return 0;
-        fmt++;
         for (i = 0; i < 4; i++) {
-            if (memcmp(fmt, name[i], strlen(name[i])) == 0)
+            if (memcmp(fmt + 1, name[i], strlen(name[i])) == 0)
                 break;
         }
         if (i >= 4)
             return 0;
     }
-    variant = (unsigned char)kinds[i];
     {
         int list[16];
 
         party.thing = -1;
+        party.host = ai_CharsT[ai_PlayerId].netId;
+        party.variant = (unsigned char)kinds[i];
         list[1] = -1;
         party.kind = 5;
         party.flags = 0;
-        party.variant = variant;
         party.quiet = 1;
-        party.host = ai_CharsT[ai_PlayerId].netId;
         list[0] = c->netId;
         list[2] = ai_JudgeCatholic->netId;
         list[3] = ai_JudgeProtestant->netId;
         for (i = 0; i < 0x300; i++) {
-            id = ai_CharInts[i][0];
-            if (id != c->netId && ai_IsLivingNonPlayer((unsigned short)i)) {
+            if (ai_CharsT[i].netId != c->netId && ai_IsLivingNonPlayer((unsigned short)i)) {
                 if (ai_CharsT[i].officeKind != 0)
-                    list[1] = id;
+                    list[1] = ai_CharsT[i].netId;
             } else if (n < 16 && ai_IsLivingHuman((unsigned short)i)) {
-                list[n++] = id;
+                list[n++] = ai_CharsT[i].netId;
             }
         }
         if (list[1] == -1)
@@ -1380,8 +1372,8 @@ int ai_CommandExecution(G12ARG *args, int k, char *fmt)
     for (i = n; i < 16; i++)
         party.members[i] = -1;
     party.used = (unsigned char)n;
-    party.time = ai_Time;
     party.flags = 0x22;
+    party.time = ai_Time;
     gm_AddTime(&party.time, 0x18, 0, 0);
     party.time.hour = 10;
     cm_SendNewParty(&party);

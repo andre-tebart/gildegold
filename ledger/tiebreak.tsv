@@ -1885,7 +1885,7 @@ exe	0x004b02a0	ai_CommandWealthTax	hst	7bfcd8717a493cc7	no	shape	control=shape p
 exe	0x004b0360	ai_CommandWealth	hst	452f05d2c1f566f6	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004b04a0	ai_CommandOfficeStanding	hst	46ee6a60dbb58608	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004b05e0	ai_CommandKillPlayer	hst	a388fc035bc08e27	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x004b0640	ai_CommandExecution	hst	31c69c8778901729	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x004b0640	ai_CommandExecution	hst	b1d841e076f16d65	no	shape	sample n=32 seed=1 compiled=32 codegens=1 best=shape
 exe	0x004b08e0	ai_CommandPrison	hst	2fa56d9bb499fb83	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004b0950	ai_CommandOfficeInventoryPlus	hst	269b768efcbcaf23	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004b09f0	ai_CommandLaw	hst	50ac5b10d35daf24	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
