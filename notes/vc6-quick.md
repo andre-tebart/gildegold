@@ -396,3 +396,17 @@ mechanisms, each as a generated round over all positions / subsets:
   builds j in its own register at once (`lea ebp,[ecx+1]`) where `for (j = i + 1; ..)` copies it (ai_PokerHighCard).
 - **Copy a 12-byte vector out of a record field by field** to keep the record pointer out of a scratch `lea`: it
   moved `shot` into ebx pushed late, as the original (gv_ExplodeShot, regs 30 -> 14).
+- **Switch cases that each push a string to one shared sprintf tail** (`push str; jmp tail` per case, one
+  `lea ecx,[esp+..]; push ecx; call sprintf`): write the statement after the switch into every case
+  (`sprintf(name, "x"); ctx[0x85] = out->ref; break;`), as the sibling callback does; with it after the switch
+  VC6 schedules the buffer lea into some cases and cross-jumps only part of them (ai_CheckVisitAction, 38 ins
+  -> byte). Varying the case order, `&name[0]` or a `char *s` with one sprintf did not reach it.
+- **A slots-only diff can be a data-flow bug**: ai_TrustedOfTwo was 142 vs 142 instructions with every
+  difference a stack slot, classed allocation; mapping each fstp / fld to its argument slot (after the args
+  went into registers) showed the item bonus added to the other pair of values (the likings, not the
+  skills) and the second abs over other operands. The meaning fix was byte. Map every slot of a float
+  function whose locals live in dead argument slots before calling it allocation.
+- **A byte local in a byte register** (`mov dl,[esi+0xb5]; cmp dl,5`): when ours gives it bl and spills an
+  int that wanted ebx, widening the local to int / unsigned short fixes the frame but not the byte compares;
+  the table pointer (esi in the original, edx in ours) decides which byte register is left (ai_PokerPickStrategies,
+  stuck).
