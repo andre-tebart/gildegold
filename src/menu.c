@@ -4116,7 +4116,7 @@ int ai_ScatterShot(SHOTREC *shot, float sideSpread, D3VECTOR *side, float otherS
     return 1;
 }
 
-/* the sign with the shared 0 / 1 (ai_FloatZero, ai_FloatOne); the drag 0.5 * density * coefficient * area * v^2
+/* ai_StepShot and ai_StepShotSlow: the sign with the shared 0 / 1 (ai_FloatZero, ai_FloatOne); the drag 0.5 * density * coefficient * area * v^2
    signed with v; the products nested as the original multiplies them (VC6 reorders an unnested chain), the
    wind's x / z drag in another order than its y and the flight drags */
 #define SIGN(v) ((v) > ai_FloatZero ? ai_FloatOne : -1.0f)
@@ -4233,26 +4233,20 @@ int ai_StepShot(SHOTREC *shot)
     }
     return 1;
 }
-#undef SIGN
-#undef DRAG
-#undef WINDDRAG
-
-#define SIGN(v) ((v) > 0.0f ? 1.0f : -1.0f)
-#define DRAG(v) (SIGN(v) * shot->area * ai_ShotDrag * ai_AirDensity * (v) * (v) * 0.5f)
 
 /* 0x5dc9d0, moves a cannon ball in slow motion (1318 B; gv.c 0x4edf80 calls it instead of ai_StepShot when the
    effect's +0x14 flag is set): ai_StepShot instruction for instruction with the step ai_ShotHalfStep (1/148 s)
    for ai_ShotStep, in the gravity, the per-mass factor and the position move. @deep Read whole against the original 0x5dc9d0..0x5dcef6: it is ai_StepShot instruction for instruction with ai_ShotHalfStep for ai_ShotStep (the disassemblies differ only in those four operands); same body and the same velocity copy v (348 of 354 instructions). Left, as in ai_StepShot: (1) VC6 reorders the drag product chain - the original multiplies sign*area*drag*density*v*v*0.5 (wind x/z: area*w*w*sign*...), ours sign*drag*density*v*v*area*0.5 for every association tried (6 macro forms, identical code or worse); (2) the temporaries: the original spills dx and the half sums into 0x84/0x68/0x6c and reuses the dead v slots [0x10]/[0x14], frame 0x98 vs ours 0x5c - FPU stack scheduling and spill-slot allocation. */
 int ai_StepShotSlow(SHOTREC *shot)
 {
-    float fall = ai_ShotHalfStep * ai_Gravity;
+    float fall = ai_Gravity * ai_ShotHalfStep;
     float perMass = ai_ShotHalfStep / shot->mass;
     D3SM *map = (D3SM *)init_SceneHeightMaps[0];
     int ticks, i, px, pz, npx, npz;
     float height;
-    float windX, windY, windZ;
-    float dx, dy, dz, ax, ay, az, bx, by, bz;
-    D3VECTOR v, next;
+    D3VECTOR4 v, next, wind, d, a, b, m;
+
+    extern float ai_FloatZero;
 
     if (shot->state != 1)
         return 0;
@@ -4262,50 +4256,68 @@ int ai_StepShotSlow(SHOTREC *shot)
         shot->energy = 0;
         return 0;
     }
-    windX = DRAG(shot->wind.pos[0]);
-    windY = DRAG(shot->wind.pos[1]);
-    windZ = DRAG(shot->wind.pos[2]);
+    wind.x = WINDDRAG(shot->wind.pos[0]);
+    wind.y = DRAG(shot->wind.pos[1]);
+    wind.z = WINDDRAG(shot->wind.pos[2]);
     for (i = 0; i < ticks; i++) {
-        v = shot->vel.v;
-        dx = DRAG(v.x);
-        dy = DRAG(v.y);
-        dz = DRAG(v.z);
-        ax = (dx + windX) * perMass;
-        ay = (dy + windY) * perMass - fall;
-        az = (dz + windZ) * perMass;
-        v.x = ax + v.x;
-        v.y = ay + v.y;
-        v.z = az + v.z;
-        dx = DRAG(v.x);
-        dy = DRAG(v.y);
-        dz = DRAG(v.z);
+        v.x = shot->vel.v.x;
+        v.y = shot->vel.v.y;
+        v.z = shot->vel.v.z;
+        d.x = DRAG(v.x);
+        d.y = DRAG(v.y);
+        d.z = DRAG(v.z);
+        a.x = (d.x + wind.x) * perMass;
+        a.y = (d.y + wind.y) * perMass - fall;
+        a.z = (d.z + wind.z) * perMass;
+        v.x = a.x + v.x;
+        v.y = a.y + v.y;
+        v.z = a.z + v.z;
+        d.x = DRAG(v.x);
+        d.y = DRAG(v.y);
+        d.z = DRAG(v.z);
         next.x = shot->pos.x;
         next.y = shot->pos.y;
         next.z = shot->pos.z;
         shot->time++;
         shot->steps++;
-        bx = (dx + windX) * perMass;
-        by = (dy + windY) * perMass - fall;
-        bz = (dz + windZ) * perMass;
-        shot->vel.v.x += (bx + ax) * 0.5f;
-        shot->vel.v.y += (by + ay) * 0.5f;
-        shot->vel.v.z += (bz + az) * 0.5f;
-        next.x += shot->vel.v.x * ai_InchPerMeter * ai_ShotHalfStep;
-        next.y += shot->vel.v.y * ai_InchPerMeter * ai_ShotHalfStep;
-        next.z += shot->vel.v.z * ai_InchPerMeter * ai_ShotHalfStep;
-        if (ai_ShotHitsGround(map, &shot->pos, &next, px, pz, &npx, &npz) && shot->steps > 50) {
-            shot->pos = next;
+        b.x = d.x + wind.x;
+        b.y = d.y + wind.y;
+        b.z = d.z + wind.z;
+        b.x *= perMass;
+        b.y = b.y * perMass - fall;
+        b.z *= perMass;
+        v.x = (b.x + a.x) * 0.5f;
+        v.y = (b.y + a.y) * 0.5f;
+        v.z = (b.z + a.z) * 0.5f;
+        shot->vel.v.x += v.x;
+        shot->vel.v.y += v.y;
+        shot->vel.v.z += v.z;
+        m.x = shot->vel.v.x * ai_InchPerMeter * ai_ShotHalfStep;
+        m.y = shot->vel.v.y * ai_InchPerMeter * ai_ShotHalfStep;
+        m.z = shot->vel.v.z * ai_InchPerMeter * ai_ShotHalfStep;
+        next.x += m.x;
+        next.y += m.y;
+        next.z += m.z;
+        if (ai_ShotHitsGround(map, &shot->pos, (D3VECTOR *)&next, px, pz, &npx, &npz) && shot->steps > 50) {
+            shot->pos.x = next.x;
+            shot->pos.y = next.y;
+            shot->pos.z = next.z;
             shot->state = 2;
             shot->energy = (shot->vel.v.x * shot->vel.v.x + shot->vel.v.y * shot->vel.v.y
                 + shot->vel.v.z * shot->vel.v.z) * shot->mass * 0.5f;
             return 0;
         }
-        shot->pos = next;
+        shot->pos.x = next.x;
+        shot->pos.y = next.y;
+        shot->pos.z = next.z;
         px = npx;
         pz = npz;
     }
     return 1;
 }
+#undef SIGN
+#undef DRAG
+#undef WINDDRAG
 /* 0x5dcf00, the ground test of a cannon ball's flight step (390 B; ai_StepShot / ai_StepShotSlow): the cell
    of to (d3_GetHeightAt into npx / npz). When it is at most one cell from the cell px / pz of from, the
    step hits when to lies less than ai_ShotHitHeight above the ground there. A longer step is walked from
