@@ -2908,15 +2908,7 @@ int sv_UpdateCamera(void)
 /* 0x527840, moves the camera (animated, d3t_PlaceObjectV) to 600 units back along its view from the building
    b's 3D object, like sv_CameraToObject: the move takes the camera step ai_CameraStep scaled by the distance
    (0.0005 per unit), at least one step and at most three; the stored view sv_ViewPos / sv_ViewRot and the
-   player's camera record get the target position, b becomes sv_SelectedObject
-   @deep read against the original (238 vs 238 ins): no code hunk; frame 0x8c vs the original's 0x9c (16
-   bytes more locals in the original, a slot layout question) and slot hunks at 0x527963 / 0x52798b /
-   0x527ae3..0x527b07: the final sv_ViewPos / sv_ViewRot stores take the same slots in another order
-   (references: M8 at +0x2b0: ours refers to sv_ViewPos+0x4 (0x75fb84), the original's field to 0x75fb80
-   (sv_ViewPos, sv_ViewPosX) (and 3 more), explained: the four M8 lines pair reordered stores crosswise:
-   ours ViewPos+0/+4/+8 <- [esp+0x20/0x24/0x28], ViewRot+0/+4/+8 <- [esp+0x34/0x38/0x3c]; the original
-   stores the same slots to the same fields (ViewPosX/Y/Z, ViewRotY/Z) in another order (recorded as debt
-   at 15bda65)) */
+   player's camera record get the target position, b becomes sv_SelectedObject */
 
 void sv_FlyCameraToObject(int b)
 {
@@ -2926,7 +2918,8 @@ void sv_FlyCameraToObject(int b)
     float back[4];                  /* 600 units back along the view */
     float cen[4];                   /* the object's centre in the world */
     float rot[16];                  /* the camera matrix, transposed (a 4x4 D3MATRIX) */
-    float h;                        /* the camera height above the centre, then the pull-in factor */
+    float up[4];                    /* the camera above the centre (a padded vector, only y used) */
+    float h;                        /* the pull-in factor */
     double t;                       /* the mean terrain height there */
     float step, dx, dy, dz, len;
     char *obj;
@@ -2950,11 +2943,11 @@ void sv_FlyCameraToObject(int b)
     pos[2] = cen[2] + back[2];
     t = d3t_GetMeanHeight((struct D3VECTOR *)pos);
     pos[1] = (sv_CameraHeightFar - sv_CameraHeightNear) * sv_CameraHeightFactor + sv_CameraHeightNear + t;
-    h = pos[1] - cen[1];
+    up[1] = pos[1] - cen[1];
     d3t_GetHeightRange(obj, &lo, &hi);
-    h = back[1] / ((hi - lo) * 0.5f + h);
-    pos[0] = pos[0] - (h * back[0] - back[0] * 1.8);
-    pos[2] = pos[2] - (h * back[2] - back[2] * 1.8);
+    h = back[1] / ((hi - lo) * 0.5f + up[1]);
+    pos[0] = pos[0] - (h * back[0] - back[0] * cm_EffectRadiusScale);
+    pos[2] = pos[2] - (h * back[2] - back[2] * cm_EffectRadiusScale);
     dir[0] = d3_Camera->rotation.x;
     dir[1] = d3_Camera->rotation.y;
     dir[2] = d3_Camera->rotation.z;
@@ -2971,10 +2964,10 @@ void sv_FlyCameraToObject(int b)
     len = (float)sqrt(dz * dz + dy * dy + dx * dx) * step * 0.0005f;   /* the steps for the distance */
     d3t_PlaceObjectV(cam, (struct D3VECTOR *)pos, (struct D3VECTOR *)dir, (int)min(ai_CameraStep * 3, max(step, len)), 0x68);
     sv_ViewRot[0] = dir[0];
-    sv_ViewPos[0] = pos[0];
     sv_ViewRot[1] = dir[1];
-    sv_ViewPos[1] = pos[1];
     sv_ViewRot[2] = dir[2];
+    sv_ViewPos[0] = pos[0];
+    sv_ViewPos[1] = pos[1];
     sv_ViewPos[2] = pos[2];
     rec = (AIFIN *)gm_PlayerRecord(ai_Chars[ai_PlayerId]);
     if (rec != 0) {

@@ -3340,7 +3340,7 @@ exe	0x00525ff0	sv_BorderCameraView	sv	7dea5cd0ef99c5f1	no	byte	control=byte p1=b
 exe	0x005263a0	sv_ScrollCamera	sv	94a672ee412eb0a2	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x00526cf0	sv_MouseCamera	sv	b9012440d15e2794	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x00527640	sv_UpdateCamera	sv	90580d1bbdc88362	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x00527840	sv_FlyCameraToObject	sv	f7d55c3240a3f362	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x00527840	sv_FlyCameraToObject	sv	f7d55c3240a3f362	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x00527bb0	sv_CameraToObject	sv	03e5240b38b88b86	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x00527e90	sv_FlyCameraToModel	sv	acf8ab74be82cd16	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
 exe	0x00528140	sv_MoveCameraToView	sv	403c46e2edbb6602	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
