@@ -4604,7 +4604,7 @@ exe	0x005d33b0	ai_ListFiles	menu	byte	readable
 exe	0x005d34b0	ai_FilePickWindow	menu	shape	readable		
 exe	0x005d3810	ai_MessageBox	menu	shape	readable		
 exe	0x005d3a00	ai_RegisterSaveSlot	menu	shape	readable	stuck	
-exe	0x005d3ab0	ai_FillSaveSlots	menu	draft	readable	deep	
+exe	0x005d3ab0	ai_FillSaveSlots	menu	shape	readable	stuck	
 exe	0x005d4080	ai_LoadGameWindow	menu	byte	readable		
 exe	0x005d42b0	ai_JoinGameWindow	menu	byte	readable		
 exe	0x005d44c0	ai_EditText	menu	shape	readable		
@@ -4642,7 +4642,7 @@ exe	0x005d9a80	ai_GypsyContact	menu	byte	readable
 exe	0x005d9b20	ai_CurseContact	menu	byte	readable		
 exe	0x005d9b90	ai_TheatreContact	menu	byte	readable		
 exe	0x005d9c30	ai_GypsyProductionContact	menu	byte	readable		
-exe	0x005d9de0	ai_OpenPokerWindow	menu	draft	readable	deep	
+exe	0x005d9de0	ai_OpenPokerWindow	menu	byte	readable		
 exe	0x005d9f50	ai_PokerBetControl	menu	byte	readable		
 exe	0x005da010	ai_ClosePokerWindow	menu	byte	readable		
 exe	0x005da030	ai_PokerGame	menu	shape	readable	deep	
@@ -4656,11 +4656,11 @@ exe	0x005dbfc0	ai_SaveWind	menu	byte	readable
 exe	0x005dc0c0	ai_LoadWind	menu	byte	readable		
 exe	0x005dc1a0	ai_SphereVolume	menu	byte	readable		
 exe	0x005dc210	ai_PositionShare	menu	byte	readable		
-exe	0x005dc240	ai_InitShot	menu	draft	readable	deep	
+exe	0x005dc240	ai_InitShot	menu	shape	readable	stuck	
 exe	0x005dc3a0	ai_ScatterShot	menu	byte	readable		
 exe	0x005dc4a0	ai_StepShot	menu	draft	readable	deep	
 exe	0x005dc9d0	ai_StepShotSlow	menu	draft	readable	deep	
-exe	0x005dcf00	ai_ShotHitsGround	menu	draft	readable	deep	
+exe	0x005dcf00	ai_ShotHitsGround	menu	byte	readable		
 exe	0x005dd090	ai_NormalizeEffectScale	menu	byte	readable		
 exe	0x005dd100	ai_SolveCannonAim	menu	shape	readable		
 exe	0x005de460	MSS_auto_cleanup	mss32lib	byte	readable		
