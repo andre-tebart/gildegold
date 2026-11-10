@@ -2026,7 +2026,7 @@ exe	0x004b9f30	ai_MsgWorkerTitleType2c	rmsg	byte	readable
 exe	0x004ba0c0	ai_MsgFreeBuildingObjectType2e	rmsg	byte	readable		
 exe	0x004ba2d0	ai_MsgWorkerAddSkillType2f	rmsg	byte	readable		
 exe	0x004ba470	ai_MsgWorkerLoseSkillType30	rmsg	byte	readable		
-exe	0x004ba630	ai_MsgBuildingGetsItemType31	rmsg	shape	readable		
+exe	0x004ba630	ai_MsgBuildingGetsItemType31	rmsg	draft	readable		shape+readable -> draft+readable at f6140406: dcp's stack-order rule (decompanion ea6723f): the original pushes the call's 2 above a branch whose two arms both reach the call, ours after the join; the same arguments, and the prover stops at rep scasb [waits for: the prover modelling rep scasb, or pushes compared per call across a diamond (decompanion tasks/deep-reports-followups.md 14)]
 exe	0x004ba840	ai_SellBuildingGoodsShare	rmsg	byte	readable		
 exe	0x004ba970	ai_MsgTakeBuildingGoodsPct13to25Type32	rmsg	byte	readable		
 exe	0x004baa80	ai_MsgTakeBuildingGoodsPct5to19Type33	rmsg	byte	readable		
@@ -4282,7 +4282,7 @@ exe	0x005a4130	ai_BurglaryStart	lc	shape	readable
 exe	0x005a41d0	ai_GuildSpyWindow	lc	draft	readable	deep	
 exe	0x005a44e0	ai_EspionageStart	lc	byte	readable		
 exe	0x005a45c0	ai_SpyReportsWindow	lc	byte	readable		
-exe	0x005a48d0	ai_AttackWindow	lc	shape	readable		
+exe	0x005a48d0	ai_AttackWindow	lc	byte	readable		
 exe	0x005a4b30	ai_AttackStart	lc	byte	readable		
 exe	0x005a4b90	ai_PickpocketGangWindow	lc	draft	readable	deep	
 exe	0x005a4d40	ai_ThievesGuildListener	lc	shape	readable		
