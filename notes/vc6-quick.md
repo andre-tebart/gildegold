@@ -249,6 +249,25 @@ mechanisms, each as a generated round over all positions / subsets:
   that merges in ours but not in the original needs another store order there (amt_ApplyForOffice, 51 -> 14).
 - **A capped count returned** (`cmp eax, ecx / jl / mov eax, ecx` with no slot store): `if (cnt >= n) return n;
   return cnt;`, not `cnt = n; return cnt;` (amt_GetOfficeCandidates / ...Full, the last hunk to byte).
+- **A dispatch the original keeps both range compares of, its else part out of line after the return**
+  (`cmp al,0x1b / ja far` then `cmp al,0x1c / jb / cmp al,0x22 / ja` down there): `if (k <= 0x1b) {..} else if
+  (k >= 0x1c && k <= 0x22) {..} else {..}` falling into the shared tail, not `if (k > 0x1b) { if (k > 0x1b && k <
+  0x23) {..; goto done;} ..; goto done; }` (amt_ExecuteOfficeMessage 133 -> 15).
+- **A compare against a value the code just stored, with no reload** (`mov al,[kind] / mov cl,[applied] / cmp
+  cl,al / mov [office],al`): compare with the stored field (`c->officeKind = kind; if (c->applied ==
+  c->officeKind)`); VC6 forwards the store, while `== amt_Table[i].kind` reloads it after the byte store.
+- **A bit set before the mask local in a tail-merged chain** (`or ah,2 / mov edx,0x4000 / jmp store`): write the
+  field first (`c->status |= 0x200; m = 0x4000;`); `f = f | 0x200; m = ..; c->status = f;` emits m first.
+- **A search loop whose hit block is inline after the loop's `jmp`** (`je hit / .. / jl top / jmp after / hit:`)
+  where ours puts the hit block after the following code: the layout follows the register allocation; with a
+  parameter forced to memory (a probe `{ static int *pm; pm = &mode; }`, never kept) the plain `for + if { hit;
+  break; }` gave the original's layout (amt_Rating). Probe this way before trying loop spellings.
+- **A status key test folded into one mask but the 0x200 key still stored** (`test ch,0x3c / jne / and ecx,0x200
+  / neg / sbb / and ecx,0x23 / mov [dead slot],ecx`): write the whole five-way key chain for the second character
+  too, like the first; VC6 folds the tests (amt_Rating).
+- **`abs(a->rank - b->rank)` from two bytes** gives the original's `and edx,0xff / sub / cdq / xor / sub`; a
+  `d = ..; if (d < 0) d = -d;` gives `jns / neg`, and a byte local for one rank goes to a stack slot where the
+  original keeps it in cl (amt_ElectDeputies).
 - **A zero register shared by two variables** (`xor ebx, ebx` stored to `cur`, then `ebx` is `best`): `best = 0`
   in an else arm of the `if` that computes it, not before it; before it VC6 gives the zero to the loop index
   instead (amt_CalcZuenfte).
