@@ -623,7 +623,7 @@ exe	0x0042c3b0	txt_Field	txt	byte	readable
 exe	0x0042c430	txt_SkipSpaces	txt	byte	readable		
 exe	0x0042c480	txt_TrimRight	txt	byte	readable		
 exe	0x0042c4b0	txt_ParseLine	txt	byte	readable		
-exe	0x0042c950	txt_ParseRandomText	txt	draft	readable	deep	
+exe	0x0042c950	txt_ParseRandomText	txt	draft	readable	stuck	
 exe	0x0042c9c0	txt_LoadIncludes	txt	byte	readable		
 exe	0x0042cbc0	txt_OpenText	txt	draft	readable	deep	
 exe	0x0042e2a0	txt_FreeFiles	txt	byte	readable		
@@ -1767,7 +1767,7 @@ exe	0x004a7ac0	ai_PokerPickStrategies	poker	draft	readable	stuck
 exe	0x004a7c20	ai_PokerNpcFold	poker	shape	readable		
 exe	0x004a7e70	ai_PokerOpenCounts	poker	draft	readable	stuck	
 exe	0x004a7f50	ai_PokerRateHand	poker	shape	readable		
-exe	0x004a8190	ai_PokerShowdown	poker	draft	readable	deep	
+exe	0x004a8190	ai_PokerShowdown	poker	draft	readable	stuck	
 exe	0x004a8520	ai_PokerDealThree	poker	byte	readable		
 exe	0x004a8590	ai_PokerDealFourth	poker	byte	readable		
 exe	0x004a85e0	ai_PokerDealFifth	poker	byte	readable		
@@ -1798,9 +1798,9 @@ exe	0x004a95d0	ai_DecideFarChar	poker	byte	readable
 exe	0x004a9660	ai_DecideCloseChar	poker	byte	readable		
 exe	0x004a9700	ai_DecideColumn4Officer	poker	byte	readable		
 exe	0x004a9880	ai_DecideColumn5Officer	poker	byte	readable		
-exe	0x004a9a00	ai_DecideLeisureAction	poker	draft	readable	deep	
+exe	0x004a9a00	ai_DecideLeisureAction	poker	byte	readable		
 exe	0x004a9fa0	ai_CheckLeisureAction	poker	byte	readable		
-exe	0x004aa120	ai_DecideVisitAction	poker	draft	readable	deep	
+exe	0x004aa120	ai_DecideVisitAction	poker	draft	readable	stuck	
 exe	0x004aa430	ai_CheckVisitAction	poker	byte	readable		
 exe	0x004aa580	ai_PickPamphletTarget	poker	byte	readable		
 exe	0x004aa6a0	ai_DecideLittleKnownChar	poker	byte	readable		
