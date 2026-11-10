@@ -712,3 +712,12 @@ mechanisms, each as a generated round over all positions / subsets:
   shared test of the fallback query is a second local (`obj = it; goto found;`, the stub `mov eax,esi; jmp`), and
   `g = &ai_GoodsT[*it]; .. g->name` gave `add eax,ecx; inc eax` where `ai_GoodsT[*it].name` gave one `lea`
   (sv_DrawGateName 81 ins -> byte).
+- **A local kept in its stack slot but copied into a callee-saved register for a loop** (`bar = -1` stored at
+  entry, then `if (timed) esi = slider(); else mov esi,[bar]` before the loop; ours keeps bar in the slot or
+  propagates the -1 as `or esi,-1`): the loop was a plain `while (f()) {..}` with the flag tests written in the
+  body (`if (flags & 0x40)`, `(flags & 0x80) && bar != -1`); VC6 hoists the invariant tests and caches bar in
+  esi for the loop. `if (f()) { q = flags & 0x40; do {..} while (f()); }`, copy locals, `int bar[1]` and
+  `?:` all kept bar in memory or propagated the constant (sv_MessageBox 86 -> 65 ins, shape). The same pattern
+  (a slot variable reloaded into edi at the loop's iteration join) is open in sv_SendSelectedToBuilding.
+- sv_MoveToGroup: one of 19 `ch->` uses re-read from the record (`((SVCHARREC *)ai_Chars[c])->id` in
+  sv_RemoveGroupMember's call) took it 88 -> 74 ins (subsets.py singles + pairs, 190 variants).
