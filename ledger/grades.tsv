@@ -2619,7 +2619,7 @@ exe	0x004e5cd0	amt_InitTable	amt	byte	readable
 exe	0x004e5e50	amt_Rating	amt	draft	readable	deep	
 exe	0x004e6030	amt_FindOffice	amt	shape	readable	deep	
 exe	0x004e60b0	amt_GetOfficeRate	amt	byte	readable		
-exe	0x004e6180	amt_ApplyForOffice	amt	draft	readable	deep	
+exe	0x004e6180	amt_ApplyForOffice	amt	draft	readable	stuck	
 exe	0x004e6360	amt_CheckApplication	amt	byte	readable		
 exe	0x004e6430	amt_AcceptApplication	amt	shape	readable	deep	
 exe	0x004e65e0	amt_SendOfficeFree	amt	byte	readable		
@@ -2641,8 +2641,8 @@ exe	0x004e6f80	amt_GetKind	amt	byte	readable
 exe	0x004e6fc0	amt_GetColumnOffices	amt	byte	readable		
 exe	0x004e7040	amt_GetColumnOfficesOwned	amt	byte	readable		
 exe	0x004e70f0	amt_GetColumn7Offices	amt	byte	readable		
-exe	0x004e7150	amt_GetOfficeCandidates	amt	draft	readable	deep	
-exe	0x004e7320	amt_GetOfficeCandidatesFull	amt	draft	readable	deep	
+exe	0x004e7150	amt_GetOfficeCandidates	amt	byte	readable		
+exe	0x004e7320	amt_GetOfficeCandidatesFull	amt	byte	readable		
 exe	0x004e7510	amt_GetOfficeHolder	amt	byte	readable		
 exe	0x004e7550	amt_GetSuperiorOfficeHolder	amt	byte	readable		
 exe	0x004e75c0	amt_CanTakeOffice	amt	byte	readable		
@@ -2663,7 +2663,7 @@ exe	0x004e8730	amt_SendOfficeNews	amt	byte	readable
 exe	0x004e87e0	amt_SendOfficeLost	amt	byte	readable		
 exe	0x004e88a0	amt_ElectDeputies	amt	draft	readable	deep	
 exe	0x004e8c20	amt_ElectKind22	amt	byte	readable		
-exe	0x004e8dc0	amt_CalcZuenfte	amt	draft	readable	deep	
+exe	0x004e8dc0	amt_CalcZuenfte	amt	draft	readable	stuck	
 exe	0x004e9260	amt_CheckOffices	amt	byte	readable		
 exe	0x004e9400	amt_HasTownObject	amt	byte	readable		
 exe	0x004e94a0	amt_MayorBonusStep	amt	byte	readable		
