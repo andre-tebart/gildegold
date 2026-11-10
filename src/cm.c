@@ -65,8 +65,8 @@ struct D3SKYLAYER; struct D3SKY; struct D3SKYLAYER *d3sky_CreateLayer(struct D3S
 #include "evt.h"
 #include "data_views.h"
 #include "menu_types.h"
-extern OPTIONBYTES ai_GfxFloor;
 extern OPTIONBYTES ai_GfxFog;  /* 0x6f35cc, menu.c: the fog option byte */
+extern unsigned char ai_GfxFloorLod;  /* 0x6f35ca, menu.c: the "floor_lod" option */
 extern char cm_CutInfos[16][0x35c];
 extern char gm_TagTmp[4];  /* 0x60c1ec, f3gm.c: the "tmp" allocation tag (mem_Alloc; f3gm.h is not included here) */
 #define GAPDATA __declspec(align(1)) unsigned char
@@ -17330,7 +17330,6 @@ int cm_FightFixedLight = 0;  /* 0x6f244c */
 int cm_NetFlags = 0;  /* 0x6f2594, flags */
 int cm_RequestedSaveSlot = 0;  /* 0x6f25c8 */
 char cm_RequestedSaveName[72] = {0};  /* 0x6f25d0 */
-/* ai_GfxFloorLod: view of ai_GfxFloor (tools/data_views.py) */
 unsigned int ai_MissionSeed = 0;  /* 0x75e120, the random seed of the missions (as mission.h) */
 int ai_TimeCopy[4] = {0};  /* 0x75e130, the clock copy 0x75e130..0x75e13e (14 bytes, written whole by cm.c / sv.c): [0] the year; ai_Unk75e134 / 75e138 / 75e13c are views */
 char * sv_SelectedObject = 0;  /* 0x75ec60 */

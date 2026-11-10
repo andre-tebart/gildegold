@@ -350,7 +350,7 @@ extern int d2_CutsceneActive;
 extern int snd_RoomBank;
 extern char * ai_BTypes;
 #include "menu_types.h"
-extern OPTIONBYTES ai_GfxFloor;
+extern unsigned char ai_GfxFloorLod;  /* 0x6f35ca, menu.c: the "floor_lod" option */
 extern char ai_Chars[768][0x21c];
 extern unsigned char ai_OwnPlayer;
 extern char ch_EmptyName[1];

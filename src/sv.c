@@ -7508,7 +7508,7 @@ int sv_StatusTime = -1;  /* 0x6237c4, when the status line was set (d3_Time) */
 unsigned sv_SceneEventTime = 0xffffffff;  /* 0x6237c8, d3_Time when sv_RunLocationScripts last fired event 6 of the default scene (every 500 ms; the scene changes of lc.c reset it to 0) */
 int sv_PanelRebuild = 1;  /* 0x6237cc */
 /* 0x6237d0, the camera limits: three settings of (height, angle), first the near view pair and then (+3 pairs)
-   the far one. ai_ApplyGfxOptions (0x5d5c40) copies the pair of the camera_limits option (ai_GfxFloor.byte[1])
+   the far one. ai_ApplyGfxOptions (0x5d5c40) copies the pair of the camera_limits option (ai_GfxCameraLimits)
    into sv_CameraHeightNear .. sv_CameraAngleFar; setting 0 has the same near and far pair (no zoom) */
 float sv_CameraLimits[12] = {
     1200.0f, -0.9f,

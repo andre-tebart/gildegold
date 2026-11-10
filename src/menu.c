@@ -11,8 +11,8 @@
    Open: not included yet (dcp headers conflicts menu HEADER): ch.h cm.h d2.h d3_int_io.h gfx.h; held by
    own declarations that differ from the owner's: d2_StartFade, d2_ReleaseFade, d2_WinOpenPic, d2_ScreenSurf,
    d2_Inputs, d2_LockSurface, d2_UnlockSurface, ch_List, d3io_Lod.
-   Open: data: ai_GfxFloor (0x6f35c8, OPTIONBYTES) - ai_ApplyGfxOptions reads its camera_limits byte as a byte object
-   (mov al, byte ptr [0x6f35c9]) where the union makes VC6 load the dword; the four option bytes may be objects of their own.
+   Data: the four floor option bytes 0x6f35c8 .. 0x6f35cb are objects of their own (ai_GfxFloor, ai_GfxCameraLimits,
+   ai_GfxFloorLod, ai_GfxCharDetail): ai_ApplyGfxOptions reads 0x6f35c9 as a byte (mov al, byte ptr) where a union gives a dword load.
    unit of rea 8cef7d5b (src/game/unk_5d33b0.c); boundaries in decl/text.dcl */
 extern int gm_PlayerRecords[688];
 #include "txt_views.h"
@@ -75,7 +75,7 @@ extern __declspec(align(1)) unsigned char full_rdata_5ebb40[];  /* main.c's rdat
 extern double cm_DoubleOne;  /* 0x5eb8a8, cm.c: the shared double 1.0 (a VC6 pooled literal; cm.h is not included here) */
 #define ai_CharsK ((AICHARKINDVIEW *)((char *)ai_Chars + 2))  /* 0x770b82, the records from their kind byte (ai_HasQuicksavePlayer walks them so) */
 
-extern OPTIONBYTES ai_GfxFloor, ai_GfxSet, ai_GfxFog, ai_GfxResolution, ai_GameSwitches, ai_GamePanel, ai_OptionPanelHelp;
+extern OPTIONBYTES ai_GfxSet, ai_GfxFog, ai_GfxResolution, ai_GameSwitches, ai_GamePanel, ai_OptionPanelHelp;
 /* full rebuild: the symbols whose original addresses the code above spells literally */
 
 extern struct D2OBJ *d2_Objs;              /* 0xf8f080, d2.h: D2OBJ * */
@@ -516,12 +516,16 @@ POKERGAME ai_PokerState = {0};  /* 0x6f3500 .. 0x6f35c0, the poker game state (p
 OPTIONBYTES ai_GfxSet = {0};  /* 0x6f35c0: byte 0 gfx_set */
 /* the option globals the writer 0x5d4c70 (and the reader 0x5d5640) use: each dword holds four option
    bytes, the INI keys name the bytes (see the key order in 0x5d4c70); the four "Gfx" detail bytes are
-   objects of their own (anm.c reads 0x6f35c4 as a byte, 0x4bb884 mov al, byte ptr) */
+   objects of their own (anm.c reads 0x6f35c4 as a byte, 0x4bb884 mov al, byte ptr), as are the four floor bytes
+   (ai_ApplyGfxOptions reads 0x6f35c9 with xor eax, eax / mov al, byte ptr, where a union gives a dword load) */
 unsigned char ai_GfxDetail = 0;  /* 0x6f35c4, the "details" key */
 unsigned char ai_GfxTextureScale = 0;  /* 0x6f35c5, the "texture_scale" key */
 unsigned char ai_GfxLodHandling = 0;  /* 0x6f35c6, the "lod_handling" key */
 unsigned char ai_GfxShadowDetail = 0;  /* 0x6f35c7, the "shadow_detail" key */
-OPTIONBYTES ai_GfxFloor = {0};  /* 0x6f35c8: byte 0 floor_mipmapping, 1 camera_limits, 2 floor_lod, 3 character_detail */
+unsigned char ai_GfxFloor = 0;  /* 0x6f35c8, the "floor_mipmapping" key */
+unsigned char ai_GfxCameraLimits = 0;  /* 0x6f35c9, the "camera_limits" key */
+unsigned char ai_GfxFloorLod = 0;  /* 0x6f35ca, the "floor_lod" key */
+unsigned char ai_GfxCharDetail = 0;  /* 0x6f35cb, the "character_detail" key */
 OPTIONBYTES ai_GfxFog = {0};  /* 0x6f35cc: byte 0 fog_plane */
 float ai_ScreenTuning[0xc] = {0};  /* 0x6f35d0: brightness r, g, b, a, contrast r, g, b, a, gamma
                                                r, g, b, a (0 .. 1, the keys are the value * 100) */
@@ -834,15 +838,15 @@ void ai_SaveOptions(void)
     WritePrivateProfileStringA("Gfx", "lod_handling", buf, ai_OptionsFile);
     _itoa(ai_GfxShadowDetail, buf, 10);
     WritePrivateProfileStringA("Gfx", "shadow_detail", buf, ai_OptionsFile);
-    _itoa(ai_GfxFloor.word & 0xff, buf, 10);
+    _itoa(ai_GfxFloor, buf, 10);
     WritePrivateProfileStringA("Gfx", "floor_mipmapping", buf, ai_OptionsFile);
     _itoa(ai_GfxSet.word & 0xff, buf, 10);
     WritePrivateProfileStringA("Gfx", "gfx_set", buf, ai_OptionsFile);
-    _itoa(ai_GfxFloor.byte[1], buf, 10);
+    _itoa(ai_GfxCameraLimits, buf, 10);
     WritePrivateProfileStringA("Gfx", "camera_limits", buf, ai_OptionsFile);
-    _itoa(ai_GfxFloor.byte[2], buf, 10);
+    _itoa(ai_GfxFloorLod, buf, 10);
     WritePrivateProfileStringA("Gfx", "floor_lod", buf, ai_OptionsFile);
-    _itoa(ai_GfxFloor.byte[3], buf, 10);
+    _itoa(ai_GfxCharDetail, buf, 10);
     WritePrivateProfileStringA("Gfx", "character_detail", buf, ai_OptionsFile);
     _itoa(ai_GfxFog.word & 0xff, buf, 10);
     WritePrivateProfileStringA("Gfx", "fog_plane", buf, ai_OptionsFile);
@@ -955,13 +959,13 @@ void ai_LoadOptions(void)
     v = GetPrivateProfileIntA("Gfx", "shadow_detail", 0, ai_OptionsFile);
     ai_GfxShadowDetail = v;
     v = GetPrivateProfileIntA("Gfx", "floor_mipmapping", 0, ai_OptionsFile);
-    ai_GfxFloor.byte[0] = v;
+    ai_GfxFloor = v;
     v = GetPrivateProfileIntA("Gfx", "camera_limits", 0, ai_OptionsFile);
-    ai_GfxFloor.byte[1] = v;
+    ai_GfxCameraLimits = v;
     v = GetPrivateProfileIntA("Gfx", "floor_lod", 0, ai_OptionsFile);
-    ai_GfxFloor.byte[2] = v;
+    ai_GfxFloorLod = v;
     v = GetPrivateProfileIntA("Gfx", "character_detail", 1, ai_OptionsFile);
-    ai_GfxFloor.byte[3] = v;
+    ai_GfxCharDetail = v;
     v = GetPrivateProfileIntA("Gfx", "fog_plane", 0, ai_OptionsFile);
     ai_GfxFog.byte[0] = v;
     v = GetPrivateProfileIntA("Gfx", "brightness_r", 0, ai_OptionsFile);
@@ -1097,28 +1101,13 @@ extern INIT_LOD d3io_Lod;          /* 0x5fbf78 */
 /* 0x5d5c40, applies the graphics options to the scene: the shadow detail (ai_GfxShadowDetail) picks the
    character shadow flag ch_ShadowEnabled and the shadow texture size (0x20 / 0x40), a changed size resets / frees
    every shadow and updates the scene, the map's detail level is set (init_SetDetailLevel), the LOD handling
-   (byte[2]) selects d3io_Lod.mode and reloads the meshes with the scene deselected, d3_ApplyGraphicsOptions gets
-   the floor mipmapping, the texture scale (2 - byte[1]) and the changed flag, the fog scale follows ai_GfxFog
+   (ai_GfxLodHandling) selects d3io_Lod.mode and reloads the meshes with the scene deselected, d3_ApplyGraphicsOptions gets
+   the floor mipmapping (ai_GfxFloor), the texture scale (2 - ai_GfxTextureScale) and the changed flag, the fog scale follows ai_GfxFog
    while no building is shown, the bodies of the town scene's characters get the shadow bit (+0x211 bit 3),
-   ch_SetLowPoly gets the character detail (ai_GfxFloor.byte[3]), the camera limit pair of the camera_limits byte
-   (ai_GfxFloor.byte[1]) is copied to sv_CameraHeightNear .. sv_CameraAngleFar, the game state re-places the
+   ch_SetLowPoly gets the character detail (ai_GfxCharDetail), the camera limit pair of the camera_limits byte
+   (ai_GfxCameraLimits) is copied to sv_CameraHeightNear .. sv_CameraAngleFar, the game state re-places the
    camera, the mipmaps follow the floor setting and the scene is selected around the build-site check and the
-   red lights
-   @deep read whole vs 0x5d5c40..0x5d5e8b; fixed this session: d3if_SelectScene(0, 1) around
-   ai_CheckBuildSites (was (1, 0)), lod = 0 / the d3s_TexSize copy at the top, the floor option passed as a
-   byte (@original cast d3_ApplyGraphicsOptionsB), the fog byte, the SetRLights branch pushes, the camera
-   pair copied as dwords. Left (codegen of the OPTIONBYTES union ai_GfxFloor): ours loads the dword (mov
-   ecx, dword ptr [ai_GfxFloor]; mov al, ch at +0x1a4) where the original reads the camera_limits byte (xor
-   eax, eax; mov al, byte ptr [0x6f35c9]), and the d3fl_Mips compare reuses that dword (cmp byte ptr
-   [d3fl_Mips], cl) where the original loads al / cl; the camera limit loads come in another register order
-   (the M8 at +0x1cc is that crossing: [i*8+0x18] / [i*8+0x1c] land in edx / eax, the original's in ecx /
-   edx); the level 0 branch stores changed = 0 as an immediate, the original stores al (known 0). Tried a
-   char view at +1 and an 8-bit bitfield view of ai_GfxFloor (same code): the original probably declares
-   the four option bytes otherwise (as menu.c's ai_GfxDetail .. bytes were split), a data question
-   (references: M8 at +0x1cc: ours refers to sv_CameraLimits+0x18 (0x6237e8), the original's field to
-   0x6237ec (sv_CameraLimits+0x1c), explained: the M8 at +0x1cc is the two far camera-limit loads crossing
-   registers (both sides read sv_CameraLimits[i*2+6] and [i*2+7] and store them to sv_CameraHeightFar /
-   sv_CameraAngleFar)) */
+   red lights */
 void ai_ApplyGfxOptions(void)
 {
     unsigned char level, changed;
@@ -1163,7 +1152,7 @@ void ai_ApplyGfxOptions(void)
         d3_ReloadMeshes(0x40, 3, 0);
         d3if_SelectScene(scene, 0);
     }
-    d3_ApplyGraphicsOptionsB(ai_GfxFloor.byte[0], 0, 2 - ai_GfxTextureScale, changed, 0);
+    d3_ApplyGraphicsOptionsB(ai_GfxFloor, 0, 2 - ai_GfxTextureScale, changed, 0);
     if (ai_PlayerBuildingB == 0 && ai_FallbackBuildingB == 0)
         d3o_FogScale = cm_DoubleOne - ai_GfxFog.byte[0] * 0.01;
     for (i = 0; i < 0x300; i++) {
@@ -1171,15 +1160,15 @@ void ai_ApplyGfxOptions(void)
         if (c != 0 && c->scene == d3_Scenes)
             c->obj->objectFlags = ((ch_ShadowEnabled << 3 ^ c->obj->objectFlags) & 8) ^ c->obj->objectFlags;
     }
-    ch_SetLowPoly(ai_GfxFloor.byte[3]);
-    sv_CameraHeightNear = sv_CameraLimits[ai_GfxFloor.byte[1] * 2];
-    sv_CameraAngleNear = sv_CameraLimits[ai_GfxFloor.byte[1] * 2 + 1];
-    sv_CameraHeightFar = sv_CameraLimits[ai_GfxFloor.byte[1] * 2 + 6];
-    sv_CameraAngleFar = sv_CameraLimits[ai_GfxFloor.byte[1] * 2 + 7];
+    ch_SetLowPoly(ai_GfxCharDetail);
+    sv_CameraHeightNear = sv_CameraLimits[ai_GfxCameraLimits * 2];
+    sv_CameraAngleNear = sv_CameraLimits[ai_GfxCameraLimits * 2 + 1];
+    sv_CameraHeightFar = sv_CameraLimits[ai_GfxCameraLimits * 2 + 6];
+    sv_CameraAngleFar = sv_CameraLimits[ai_GfxCameraLimits * 2 + 7];
     if (ai_GameState != 0)
         sv_PlaceCamera(sv_CameraAngleFactor);
-    if (d3fl_Mips != (char)ai_GfxFloor.byte[0])
-        d3fl_SetMips(ai_GfxFloor.byte[0]);
+    if (d3fl_Mips != (char)ai_GfxFloor)
+        d3fl_SetMips(ai_GfxFloor);
     scene = d3_CurrentScene;
     d3if_SelectScene(0, 1);
     ai_CheckBuildSites();
@@ -1970,11 +1959,11 @@ void ai_OptionsGfxScreen(void)
     d2_SetSliderFlags(obj2, 0x82);
     d2_SetLabel(obj2, txt_Ptrs[0x1c69]);
     d2_SetList(obj2, 3, txt_Ptrs[0x1c70], txt_Ptrs[0x1c71], txt_Ptrs[0x1c72]);
-    d2_SetObjValue4(obj3, 0, 2, ai_GfxFloor.byte[2]);
+    d2_SetObjValue4(obj3, 0, 2, ai_GfxFloorLod);
     d2_SetSliderFlags(obj3, 0x82);
     d2_SetLabel(obj3, txt_Ptrs[0x1c6a]);
     d2_SetList(obj3, 3, txt_Ptrs[0x1c70], txt_Ptrs[0x1c71], txt_Ptrs[0x1c72]);
-    d2_SetObjValue4(obj4, 0, 1, ai_GfxFloor.word & 0xff);
+    d2_SetObjValue4(obj4, 0, 1, ai_GfxFloor);
     d2_SetSliderFlags(obj4, 0x82);
     d2_SetLabel(obj4, txt_Ptrs[0x1c6b]);
     d2_SetList(obj4, 2, txt_Ptrs[0x1c7b], txt_Ptrs[0x1c7c]);
@@ -1989,7 +1978,7 @@ void ai_OptionsGfxScreen(void)
     d2_SetObjValue4(obj7, 0x32, 100, 100 - (ai_GfxFog.word & 0xff));
     d2_SetSliderFlags(obj7, 0x882);
     d2_SetLabel(obj7, txt_Ptrs[0x1c6e]);
-    d2_SetObjValue4(obj8, 0, 2, ai_GfxFloor.byte[1]);
+    d2_SetObjValue4(obj8, 0, 2, ai_GfxCameraLimits);
     d2_SetSliderFlags(obj8, 0x82);
     d2_SetLabel(obj8, txt_Ptrs[0x1c6f]);
     d2_SetList(obj8, 3, txt_Ptrs[0x1c70], txt_Ptrs[0x1c71], txt_Ptrs[0x1c72]);
@@ -2015,9 +2004,9 @@ void ai_OptionsGfxScreen(void)
         ai_GfxTextureScale = d2_GetObjValue(obj2);
         ai_GfxLodHandling = d2_GetObjValue(obj5);
         ai_GfxShadowDetail = d2_GetObjValue(obj6);
-        ai_GfxFloor.byte[0] = d2_GetObjValue(obj4);
-        ai_GfxFloor.byte[1] = d2_GetObjValue(obj8);
-        ai_GfxFloor.byte[2] = d2_GetObjValue(obj3);
+        ai_GfxFloor = d2_GetObjValue(obj4);
+        ai_GfxCameraLimits = d2_GetObjValue(obj8);
+        ai_GfxFloorLod = d2_GetObjValue(obj3);
         ai_GfxFog.byte[0] = 100 - d2_GetObjValue(obj7);
         ai_SaveOptions();
         ai_ApplyGfxOptions();

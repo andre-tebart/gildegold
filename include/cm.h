@@ -1083,9 +1083,6 @@ char d3_LoadScene(char *name, void *f, void (*progress)(int a, int i, int n));  
 void d3fl_SetDetail();  /* 0x43f8a0 */
 void d3fl_SetShift(struct D3FLMAP *map, unsigned char shift, char light);  /* 0x446dc0, d3_fl.c */
 void d3if_Prerender(char map);  /* 0x447860 */
-#ifndef DATA_VIEWS_H
-extern char ai_GfxFloorLod;  /* 0x6f35ca */
-#endif
 
 extern int cm_PartyTurn;  /* 0x6f0d78 */
 extern char cm_TextNewline[];  /* 0x60c6c0 */

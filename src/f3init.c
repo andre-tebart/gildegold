@@ -396,7 +396,7 @@ extern unsigned short *_pctype;         /* 0x62e194, the CRT ctype table */
 #include "menu_types.h"
 #include "ch.h"
 #include "f3gm.h"
-extern OPTIONBYTES ai_GfxFloor;        /* 0x6f35c8 */
+extern unsigned char ai_GfxFloorLod;   /* 0x6f35ca, menu.c: the "floor_lod" option */
 extern int snd_SfxEnabled;              /* 0x6f257c, sound on */
 struct SBSAMPLE; struct SBBANK;
 int _isctype(int c, int mask);
@@ -3647,7 +3647,7 @@ void init_FinishBuildingScene(unsigned char *b, unsigned short *o)
    keeps size in ebx (dead at 'cmp edx, ebx', then 'mov bl, f' reuses it) and oldlvl in ebp - in ours the f
    load is scheduled above the size compare, so size and f interfere. 60 -> 15 ins (code 15, order 6, regs
    2) by writing the level choice as one if / else-if chain per branch (s->size == 0x40 || ai_MapSize >=
-   0x780 -> low; set 0 high / 1 mid / 2 low; scene: set 2 low / else mid) with ai_GfxFloor.byte[2] read at
+   0x780 -> low; set 0 high / 1 mid / 2 low; scene: set 2 low / else mid) with ai_GfxFloorLod read at
    each test (no set local, the original reloads it). Tried (all = control or worse): oldlvl / size order
    (swap 17 ins), size unsigned, oldlvl unsigned, declaration order, int a = 0 initializers, lvl = 0 / a =
    0 order (17), init after the s test (19), size written into the test (18), size != a / s->lod != oldlvl
@@ -3679,23 +3679,23 @@ void init_SetDetailLevel(D3FLMAP *s, char f)
             a = 0x40;
             s->lod = 1;
             init_Detail = 1;
-        } else if (ai_GfxFloor.byte[2] == 0) {
+        } else if (ai_GfxFloorLod == 0) {
             lvl = 4;
             a = 0x80;
             s->lod = 4;
             init_Detail = 4;
-        } else if (ai_GfxFloor.byte[2] == 1) {
+        } else if (ai_GfxFloorLod == 1) {
             lvl = 2;
             a = 0x40;
             s->lod = 2;
             init_Detail = 2;
-        } else if (ai_GfxFloor.byte[2] == 2) {
+        } else if (ai_GfxFloorLod == 2) {
             lvl = 1;
             a = 0x40;
             s->lod = 1;
             init_Detail = 1;
         }
-    } else if (ai_GfxFloor.byte[2] == 2) {
+    } else if (ai_GfxFloorLod == 2) {
         lvl = 1;
         a = 0x40;
         s->lod = 1;
