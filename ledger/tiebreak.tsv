@@ -1914,7 +1914,7 @@ exe	0x004b2530	hst_ParseCommandline_2nd_Pass	hst	17b740cee10cffdf	no	draft	contr
 exe	0x004b28d0	hst_ParseText_Fake_2nd_Pass	hst	3583c89a41842ead	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x004b2c90	hst_ParseEventText	hst	9ac7294834c34487	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004b2ce0	hst_ParseText_Real	hst	9e0d519b71e5d524	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x004b2ed0	hst_ParseDate	hst	56ac655355335203	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x004b2ed0	hst_ParseDate	hst	56ac655355335203	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x004b3280	hst_NextEvent	hst	a2ba0b09b1ab25c1	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
 exe	0x004b3350	hst_LastYearDialog	hst	260fd5f7d5b9bf20	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004b35e0	hst_NextEventCmd	hst	acf4bcc9e3d4772b	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
