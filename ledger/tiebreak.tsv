@@ -2711,7 +2711,7 @@ exe	0x004ec2f0	ahm_ClearStep	ahm	80c6dad58b2a5077	no	byte	control=byte p1=byte p
 exe	0x004ec320	ahm_StepValue	ahm	d0a20e414f12b891	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x004ec3d0	ahm_ObjectValue	ahm	b7ede3374b954109	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004ec490	ahm_SendCreateAlchemist	ahm	72c86cc12c238833	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x004ec500	ahm_CreateAlchemist	ahm	67cf84135d1152e7	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x004ec500	ahm_CreateAlchemist	ahm	9dea3ce2a2794ba9	no	shape	sample n=32 seed=1 compiled=32 codegens=1 best=shape
 exe	0x004ec940	ahm_SendSetShare	ahm	5196492fb1373840	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
 exe	0x004eca00	ahm_SetShare	ahm	c7c17ac7b576a953	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004ecaa0	ahm_SendAddPlace	ahm	02c73c19b403e0e0	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte

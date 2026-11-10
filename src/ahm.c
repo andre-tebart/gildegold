@@ -788,22 +788,29 @@ int ahm_SendCreateAlchemist(unsigned char *o, AHMSTEP *s)
    of ai_Chars (or one of kind 0xf), its start values, the age and the four skills of the player prototype, the names m->x / m->y, the relations
    to all others random -0x20 .. 0x1f; the building's record ("ahm_AllocAhmInfo") gets the character, the shares and the first place with its
    value, and the building's place object (kind 6) is emptied and gets the place's good. Returns the character id or 0xffff.
-   @deep whole asmdiff read; typed it (AICHAR via ai_CharsT, AIBLD, AHMREC, AIOBJ, AHMCREATEMSG), the
-   return type is int (mov eax,0xffff and the final xor eax,eax; mov ax,[esi]), the netId / relatives
-   stores go through ai_CharsT[n] (the original addresses them off n*0x21c, [edx+ai_Chars+4] / lea
-   [edx+ai_Chars+0x5c]). Left is allocation only: the original keeps 0 in ebx for the whole function (xor
-   ebx,ebx at +0x10; push ebx / cmp eax,ebx / mov [esi+2],bl ...) where ours uses immediates and test, so o
-   goes to ebx in ours but is reloaded from its slot [esp+0x10] in the original, and the relations loop
-   counter j lives in [esp+0x14] (shared with the fild temp) in the original but in ebx in ours; the id =
-   0xffff / bld / ai_NextObjectId stores are scheduled differently around the rep stosd. ours=318
-   original=324, no differs/ref lines */
+   @stuck draft -> shape (104 -> 3 ins): the relations loop is a plain j loop over [j][id] / [id][j] (same
+   code); util_Random((int)(f01c * 0.2f)) inline without the k local (13 ins: k's register freed ebx for
+   the constant 0); f018 = f01c after the f010 line (5); ai_NextObjectId++ after mask = 1 (3); the 0xffff
+   id store via ai_CharsT[n] (kept, as the original). Left: the relatives memset address, ours lea
+   edi,[edx+ai_Chars+0x5c], the original lea edx,[edx+0x770bdc]; mov edi,edx (the same in gv_RaiseDead and
+   gm_CreateCharacter, so likely one shared spelling/macro). Tried: c-> / ai_CharsT[n] / &..[0] / raw char
+   offset / (void *) / -1 fill / sizes / a pointer local / all 359 orders of kind-check, c=, memset, netId,
+   id, relatives: none (= control or worse). headers sample: insensitive. (tiebreak: insensitive) prior:
+   whole asmdiff read; typed it (AICHAR via ai_CharsT, AIBLD, AHMREC, AIOBJ, AHMCREATEMSG), the return type
+   is int (mov eax,0xffff and the final xor eax,eax; mov ax,[esi]), the netId / relatives stores go through
+   ai_CharsT[n] (the original addresses them off n*0x21c, [edx+ai_Chars+4] / lea [edx+ai_Chars+0x5c]). Left
+   is allocation only: the original keeps 0 in ebx for the whole function (xor ebx,ebx at +0x10; push ebx /
+   cmp eax,ebx / mov [esi+2],bl ...) where ours uses immediates and test, so o goes to ebx in ours but is
+   reloaded from its slot [esp+0x10] in the original, and the relations loop counter j lives in [esp+0x14]
+   (shared with the fild temp) in the original but in ebx in ours; the id = 0xffff / bld / ai_NextObjectId
+   stores are scheduled differently around the rep stosd. ours=318 original=324, no differs/ref lines */
 int ahm_CreateAlchemist(AHMCREATEMSG *m)
 {
     AIBLD *o;
     AICHAR *c;
     AIOBJ *g;
     AIOBJ *place;
-    int n, i, j, k;
+    int n, i, j;
     float v;
 
     gm_FindById((int *)&o, 0, 0, m->building);
@@ -826,14 +833,13 @@ int ahm_CreateAlchemist(AHMCREATEMSG *m)
     c = &ai_CharsT[n];
     memset(c, 0, sizeof(AICHAR));
     ai_CharsT[n].netId = -1;
-    c->id = 0xffff;
+    ai_CharsT[n].id = 0xffff;
     memset(ai_CharsT[n].relatives, 0xff, sizeof(c->relatives));
     c->bld2 = o;
     c->bld = o;
     ai_CharCount++;
     c->id = (unsigned short)n;
     c->netId = ai_NextObjectId;
-    ai_NextObjectId++;
     c->kind = 0;
     c->v1f0 = 0;
     c->partner = -1;
@@ -841,6 +847,7 @@ int ahm_CreateAlchemist(AHMCREATEMSG *m)
     c->b216 = 0;
     c->b217 = 0;
     c->mask = 1;
+    ai_NextObjectId++;
     c->mood3Rate = 1.0f;
     c->health = 100;
     c->w00a = m->proto.plr.attr[4];
@@ -863,16 +870,13 @@ int ahm_CreateAlchemist(AHMCREATEMSG *m)
     v = util_RandomSq();
     c->f020 = 12.0f;
     c->f014 = v * 7.0f + 30.0f - 2.0f;
-    k = (int)(c->f01c * 0.2f);
+    c->f010 = c->f01c * 0.33f + (float)util_Random((int)(c->f01c * 0.2f)) - c->f01c * 0.1f;
     c->f018 = c->f01c;
-    c->f010 = c->f01c * 0.33f + (float)util_Random(k) - c->f01c * 0.1f;
-    j = 0;
-    for (i = 0; i < 0x90000; i += 0x300) {
-        ai_Relations[0][c->id + i] = (signed char)util_Random(0x40) - 0x20;
-        ai_RelationMemory[0][c->id + i] = 0;
+    for (j = 0; j < 0x300; j++) {
+        ai_Relations[j][c->id] = (signed char)util_Random(0x40) - 0x20;
+        ai_RelationMemory[j][c->id] = 0;
         ai_Relations[c->id][j] = (signed char)util_Random(0x40) - 0x20;
         ai_RelationMemory[c->id][j] = 0;
-        j++;
     }
     g = (AIOBJ *)gm_Query((void *)o->objList, 1, 0, 0x24b);
     gm_PlaceOnStage(c->netId, o->id, g != 0 ? g->objId : -1, 0, 0);
