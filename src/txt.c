@@ -276,7 +276,23 @@ int txt_LoadIncludes(char *file)
     return 1;
 }
 /* 0x42cbc0, compiles the text files named in a definition file into <outputpath>\<name>.res files
-   and optionally writes a C header with one #define per group. @deep match-base 2026-10-31: read the whole function against the original; the 106 calls, every block and the switch tables are in the original order. What is left is the home of i: the original keeps i in memory at [esp+0x10] (cached in edx, stored at every definition, reloaded after the char store txt_Ptrs[i][k] = 0, final values 0x80 / 0x4800 stored after the two init loops), ours enregisters it per loop. With i forced into memory (experiment, &i used once, not committed): ours 1773 vs 1774, switch tables equal, 12 ret epilogues on both sides (the extra Could-not-open-TextFile tail is the zero register: ours push ebx / mov [txt_Buffer],ebx cross-jumps into the HeaderFile tail, the original uses immediates there), hunks left regs 13 / slots 19 / order 2 / code 32 (MessageBoxA in ebp vs ebp = 0, lineno in ebx vs memory). No natural source form found that exposes i without code: q = (char *)&i, *&i, an __inline helper taking &i all fold away before allocation; an out-of-line empty helper adds a call. Remaining besides: the dead memset(txt_Random,0) (VC6 drops it before the 0xff fill unless the two use different symbols: shown with a second name for one of them (io_text's old ai_Unk114fe60), the same object, rejected: one object one name) and the empty if (txt_Count == 0x71b) as cmp/jne +0 (tried i = i, end = i, col = col, p = p, txt_GroupFirst[ngroups] = txt_Count (kept as a second store), memset(&i,0,0) (emits xor ecx/eax)). (size: 1729 vs 1774 instructions, explained: i is memory-homed in the original: its loads / stores at [esp+0x10] (mov [esp+0x10],edx after each i++, mov edx,[esp+0x10] after calls and after the byte store) and the two final-value stores are the 45 instructions: forcing i into memory gives ours 1773 vs the original 1774 with the same 12 epilogues and equal tables.) */
+   and optionally writes a C header with one #define per group.
+   @stuck match-deep 2026-11-10: i is memory-homed in the original because the .res count is written
+   through &i (now so: 1085 -> 424 ins). Then: declaration moves of i, lineno, comment, needsemi, ndefs
+   over the whole decl block: = control; tie-break sample insensitive; txt_Buffer + txt_Count * 0x1000
+   operand order / indexing at all 5 sites: = control. The empty if (txt_Count == 0x71b): 30+ bodies tried
+   (self-assignments of i, k, n, col, end, p, q, lineno, ngroups, txt_Count, __asm {}): all dropped by VC6
+   (= control); any body that survives (txt_GroupFirst[ngroups] = txt_Count again, needsemi = 0, txt_Count
+   = 0x71b) keeps the compare and gives 342 ins, but adds a store the original has not (not kept). Left
+   (424 ins): regs 260 (ebx/ebp swapped over most of the line loop: ours caches ndefs in ebx and lineno in
+   ebp, the original lineno in ebx), slots 166 (comment 0x24 vs 0x20, ndefs/needsemi 0x44/0x48 swapped,
+   f/name 0x20/0x28 vs 0x28/0x24), tail 22 (two String too long sites cross-jump into the first; the Memory
+   could not be allocated tail into the HeaderFile one: the original has an epilogue per site with a
+   different zero register), code 206 mostly follow-ons of those. (tiebreak: insensitive) prior: match-base
+   2026-10-31: the 106 calls, every block and the switch tables are in the original order. Open besides
+   allocation: the dead memset(txt_Random, 0) before the 0xff fill (VC6 drops it unless the two use
+   different symbols: one object one name, rejected) and the empty if (txt_Count == 0x71b) the original
+   keeps as cmp/jne +0. */
 
 int txt_OpenText(char *file, int header)
 {
