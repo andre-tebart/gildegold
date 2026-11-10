@@ -1085,9 +1085,12 @@ void txt_Format(char *out, int id0, ...)
         while (buf[pos] == '%' || buf[pos] == '$' || buf[pos] == '{') {
             pos++;
             dig = buf[pos] - '0';
-            if (dig >= 0 && dig <= 9)
-                pos++;
-            else
+            if (dig >= 0) {
+                if (dig <= 9)
+                    pos++;
+                else
+                    dig = -1;
+            } else
                 dig = -1;
             code = buf[pos];
             switch (code) {
