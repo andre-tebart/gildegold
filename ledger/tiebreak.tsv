@@ -2736,7 +2736,7 @@ exe	0x004ede70	gv_FreeEffectObjects	gv	826b218c126f9ce1	no	byte	control=byte p1=
 exe	0x004eded0	gv_FindEffect	gv	353032446ba178fc	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004edf10	gv_ReleaseEffect	gv	8748455a5769ddc0	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004edf80	gv_UpdateEffects	gv	1b4359e8711dddc7	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
-exe	0x004ee360	gv_ExplodeShot	gv	b23ad0a40c4c6865	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x004ee360	gv_ExplodeShot	gv	79bc5442031a88cd	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x004eea70	gv_RequestEffectLoad	gv	6e66638cac19071b	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004eeaa0	gv_ReserveEffect	gv	2fe62119414e7659	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004eeb00	gv_StopEffect	gv	bb098511d0e34a24	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
