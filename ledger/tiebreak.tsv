@@ -730,7 +730,7 @@ exe	0x00438c60	d3_TypeInMask	d3_engine	710d5793cf1145ad	no	byte	control=byte p1=
 exe	0x00438d40	d3_ForEachObject	d3_engine	11175a24cd816660	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00438e60	d3_ForEachObject2	d3_engine	805b0f16c2d0b235	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00438f60	d3_ProjectMesh	d3_engine	52cc6972a792cd1c	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
-exe	0x004391d0	d3_SetupFrustum	d3_engine	d860847c1bac9a51	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x004391d0	d3_SetupFrustum	d3_engine	d860847c1bac9a51	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x00439650	d3_ClipBox	d3_engine	9a1bc9ae153d8646	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00439870	d3_UpdateWorldMatrix	d3_engine	d778b32a834b040b	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004399e0	d3_ClipObject	d3_engine	09279b8da5ea88eb	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
