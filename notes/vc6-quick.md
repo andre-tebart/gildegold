@@ -636,3 +636,17 @@ mechanisms, each as a generated round over all positions / subsets:
   `lv[10]`, `money[10]`): the frame put ids at the original's slot and the code lost 28 ins
   (init_CreateStartCharacters). Local names never break ties of the frame's references-per-byte order
   (deep-tools frameorder.py).
+- **A null test of an array element's address** (`lea eax,[edx-4]; test eax,eax; je` inside a loop over
+  `&T[i]`): VC6 folds `s != 0` when s is the pointer the other operands go through (`s = &T[i]; if (s->obj != -1
+  && s != 0 && .. s->obj ..)`, also as pointer walk / casts); it keeps the test when the other operands index the
+  table directly (`s = &T[i]; if (T[i].obj != -1 && s != 0 && .. T[i].obj ..)`), with an @original comment
+  (sv_HandleRightClick, 3 ins -> byte).
+- **A global carried in a register into a later arm** (ours reloads `mov ecx,[depth]` on one edge of a join so the
+  pop arm can use ecx; the original loads it inside the arm into eax): the join's arms were written another way.
+  `if (top == cb) r = 1; else if (pop != 0) r = 0; else { r = 1; for (..) if (..) { err(..); r = 0; break; } if (r)
+  {push; goto l64;} }` instead of one else with `goto l21` for both r = 0 paths (sv_RunFrame, 10 ins -> byte).
+- **Unsolved, `mov ecx,[eax+0x1cc]; test ecx,ecx; .. mov eax,ecx; mov ecx,8; mov eax,[eax]`** (info kept apart
+  from the walking pointer v = info->keys, sv_UpdateBand and sv_UpdateBandLed alike): every loop form, index form,
+  info/v merge, test placement and an __inline helper gave the control; and `mov ecx,eax; add ecx,ebp; mov
+  cl,[ecx]` for `ai_GoodsT[id].type` (sv_UpdateGroundplan / sv_LoadGroundplan) never comes from the load's spelling
+  (toy files in deep-tools toyasm.py runs always give `[eax+ebp]`).
