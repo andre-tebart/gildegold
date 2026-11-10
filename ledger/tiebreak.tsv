@@ -1798,7 +1798,7 @@ exe	0x004a95d0	ai_DecideFarChar	poker	0112ecbf361ffebe	no	byte	control=byte p1=b
 exe	0x004a9660	ai_DecideCloseChar	poker	5b6303c8e4636a7c	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004a9700	ai_DecideColumn4Officer	poker	04984e198fa78efa	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004a9880	ai_DecideColumn5Officer	poker	8926d7a51df38f70	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x004a9a00	ai_DecideLeisureAction	poker	e4752962195a68c7	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x004a9a00	ai_DecideLeisureAction	poker	e4752962195a68c7	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x004a9fa0	ai_CheckLeisureAction	poker	f75d781ab6c4fad3	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004aa120	ai_DecideVisitAction	poker	b663dfb347132302	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x004aa430	ai_CheckVisitAction	poker	0bd04e763f5498dc	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft

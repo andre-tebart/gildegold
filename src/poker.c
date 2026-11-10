@@ -1555,25 +1555,15 @@ int ai_DecideColumn5Officer(int a, AICHAR *p, int *ctx, int d, AIARG *m)
 
 /* 0x4a9a00, decide callback of the leisure actions: picks one of the actions of the table 0x600e10 that p (ctx 1)
    or p with its partner (ctx 2, from the job list 0x45) may do, unless in already names one (kind 0x10), and asks
-   that action's callback
-   @deep read whole against the original and reconciled: branch order (in->kind==0 first), the two index
-   loops (jl), the side choice (int side gives the and eax,0xffff), direct returns per case. Left is
-   allocation: n1 lives in [esp+0x10] and n2 in ebx where the original has n1 in ebx, n2 in [esp+0x10]
-   (asmdiff: '- mov dword ptr [esp + eax*4 + 0x234], edx / inc eax / mov [esp+0x10],eax' vs '+ mov [esp +
-   ebx*4 + 0x234], edx / inc ebx'; '- xor ebx, ebx' vs '+ mov dword ptr [esp + 0x10], 0'); our side is
-   stored into the dead slot (- mov dword ptr [esp + 0x10], eax) where the original tests eax; the switch
-   index is lea eax,[edi-0x12] where the original does add edi,-0x12 with xor eax,eax hoisted for the
-   default return. Tried: init order, int casts on the random, a ternary side, r variable in the switch
-   (worse) */
+   that action's callback */
 int ai_DecideLeisureAction(int a, AIPER *p, int c, AIARG *in, AIARG *m)
 {
     int ctx[0x88];
     int l1[19], l2[19];
-    int n1, n2, i, k, kind, side;
+    int n1, n2, i, k, kind, side, r;
     AIJOB *j;
 
     memset(ctx, 0, sizeof(ctx));
-    n1 = 0;
     n2 = 0;
     ctx[0x87] = 0;
     if ((p->flags1c8 & 0x100) != 0) {
@@ -1585,6 +1575,7 @@ int ai_DecideLeisureAction(int a, AIPER *p, int c, AIARG *in, AIARG *m)
         }
     }
     if (in->kind == 0) {
+        n1 = 0;
         ctx[0] = 1;
         for (i = 0; i < 19; i++) {
             if ((ord_DispatchOrder(ai_LeisureActions[i], p, ctx) & 2) != 0)
@@ -1598,14 +1589,15 @@ int ai_DecideLeisureAction(int a, AIPER *p, int c, AIARG *in, AIARG *m)
                     l2[n2++] = ai_LeisureActions[i];
             }
         }
-        if (n1 == 0) {
+        if (n1 != 0) {
+            if (n2 != 0)
+                side = util_RandomU(2);
+            else
+                side = 0;
+        } else {
             if (n2 == 0)
                 return 0;
             side = 1;
-        } else if (n2 == 0) {
-            side = 0;
-        } else {
-            side = util_RandomU(2);
         }
         if (side == 0) {
             ctx[0] = 1;
@@ -1614,8 +1606,6 @@ int ai_DecideLeisureAction(int a, AIPER *p, int c, AIARG *in, AIARG *m)
             if ((ord_DispatchOrder(k, p, ctx) & 2) == 0)
                 return 0;
         } else {
-            if (n2 == 0)
-                return 0;
             ctx[0] = 2;
             k = l2[util_RandomU(n2)];
             kind = 4;
@@ -1625,9 +1615,7 @@ int ai_DecideLeisureAction(int a, AIPER *p, int c, AIARG *in, AIARG *m)
         in->kind = 0x10;
         in->ref = k;
         in->arg = kind;
-    } else {
-        if (in->kind != 0x10)
-            return 0;
+    } else if (in->kind == 0x10) {
         k = in->ref;
         ctx[0] = 1;
         if ((ord_DispatchOrder(k, p, ctx) & 2) != 0) {
@@ -1638,47 +1626,68 @@ int ai_DecideLeisureAction(int a, AIPER *p, int c, AIARG *in, AIARG *m)
                 return 0;
             in->arg = 4;
         }
+    } else {
+        return 0;
     }
+    r = 0;
     switch (k) {
     case 0x12:
-        return G10_CB(ai_DecideOfficePartner)(a, p, ctx, in, m);
+        r = G10_CB(ai_DecideOfficePartner)(a, p, ctx, in, m);
+        break;
     case 0x13:
     case 0x14:
-        return G10_CB(ai_DecideTableValue)(a, p, ctx, in, m);
+        r = G10_CB(ai_DecideTableValue)(a, p, ctx, in, m);
+        break;
     case 0x1c:
-        return G10_CB(ai_DecidePartnerOtherSex)(a, p, ctx, in, m);
+        r = G10_CB(ai_DecidePartnerOtherSex)(a, p, ctx, in, m);
+        break;
     case 0x1d:
-        return G10_CB(ai_EvalOneInFour)(a, p, ctx, in, m);
+        r = G10_CB(ai_EvalOneInFour)(a, p, ctx, in, m);
+        break;
     case 0x21:
-        return G10_CB(ai_AlwaysTrue)(a, p, ctx, in, m);
+        r = G10_CB(ai_AlwaysTrue)(a, p, ctx, in, m);
+        break;
     case 0x24:
-        return G10_CB(ai_EvalOwnTimeSlot)(a, p, ctx, in, m);
+        r = G10_CB(ai_EvalOwnTimeSlot)(a, p, ctx, in, m);
+        break;
     case 0x25:
-        return G10_CB(ai_DecideTwoNearChars)(a, p, ctx, in, m);
+        r = G10_CB(ai_DecideTwoNearChars)(a, p, ctx, in, m);
+        break;
     case 0x27:
-        return G10_CB(ai_DecideNearChar)(a, p, ctx, in, m);
+        r = G10_CB(ai_DecideNearChar)(a, p, ctx, in, m);
+        break;
     case 0x28:
-        return G10_CB(ai_DecideBuildingResident)(a, p, ctx, in, m);
+        r = G10_CB(ai_DecideBuildingResident)(a, p, ctx, in, m);
+        break;
     case 0x29:
-        return G10_CB(ai_EvalTitleGroup7)(a, p, ctx, in, m);
+        r = G10_CB(ai_EvalTitleGroup7)(a, p, ctx, in, m);
+        break;
     case 0x2a:
-        return G10_CB(ai_DecideUnfriendlyPair)(a, p, ctx, in, m);
+        r = G10_CB(ai_DecideUnfriendlyPair)(a, p, ctx, in, m);
+        break;
     case 0x2b:
-        return G10_CB(ai_EvalGraveCount)(a, p, ctx, in, m);
+        r = G10_CB(ai_EvalGraveCount)(a, p, ctx, in, m);
+        break;
     case 0x2c:
-        return G10_CB(ai_DecideAcquaintance)(a, p, ctx, in, m);
+        r = G10_CB(ai_DecideAcquaintance)(a, p, ctx, in, m);
+        break;
     case 0x2d:
-        return G10_CB(ai_EvalOwnYearTurn)(a, p, ctx, in, m);
+        r = G10_CB(ai_EvalOwnYearTurn)(a, p, ctx, in, m);
+        break;
     case 0x31:
-        return G10_CB(ai_DecideFarChar)(a, p, ctx, in, m);
+        r = G10_CB(ai_DecideFarChar)(a, p, ctx, in, m);
+        break;
     case 0x32:
-        return G10_CB(ai_DecideCloseChar)(a, p, ctx, in, m);
+        r = G10_CB(ai_DecideCloseChar)(a, p, ctx, in, m);
+        break;
     case 0x35:
-        return G10_CB(ai_DecideColumn4Officer)(a, p, ctx, in, m);
+        r = G10_CB(ai_DecideColumn4Officer)(a, p, ctx, in, m);
+        break;
     case 0x37:
-        return G10_CB(ai_DecideColumn5Officer)(a, p, ctx, in, m);
+        r = G10_CB(ai_DecideColumn5Officer)(a, p, ctx, in, m);
+        break;
     }
-    return 0;
+    return r;
 }
 /* 0x4a9fa0, check callback of the leisure actions: whether p may still do the action in (kind 0x10) with the
    targets of out (0x4f81c0 without flags 0x60) */
