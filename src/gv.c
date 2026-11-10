@@ -236,20 +236,13 @@ int gv_EffectNotifyOwner(GVEFFARG *a)
 }
 /* 0x4ed480, writes the game state of the effect slots to the save file f: gv_LastTime field by field, the cannon scene state
    gv_Cannon*, then per slot of gv_Effects its saved fields (id, the three floats, the three parts without their v3 / time,
-   the tail); 1 when all was written
-   @deep Read in full against 0x4ed480..0x4ed904: all 43 writes match in order, size and target (globals,
-   then per slot 5 + 3x9 + 1 fields of GVEFFECT), the jbe/ja tests come from the unsigned vfs_fwrite result
-   <= 0, the loop is the index loop (jl against the end). 427 vs 427 instructions; the only difference is
-   the strength-reduced slot pointer's bias: ours edi = slot + 0xc (- lea eax,[edi-0xc] / push edi for +0xc
-   ...), the original's edi = slot + 0x38 (+ lea eax,[edi-0x38] ... push edi for parts[0].v2), every lea
-   displacement shifted by 0x2c and the first five writes scheduled around it. Tried the pointer loop (int
-   compare), the char offsets and the typed GVEFFECT members: same bias. The gv_ReadEffects loop has the
-   same +0x38 bias, so it is the compiler's induction choice: allocation. */
+   the tail); 1 when all was written */
 
 int gv_WriteEffects(void *f)
 {
     int i;
     GVEFFECT *e;
+    GVEFFPART *p;
 
     if (vfs_fwrite(&gv_LastTime.year, 4, 1, (struct VFSFILE *)f) <= 0)
         return 0;
@@ -283,59 +276,62 @@ int gv_WriteEffects(void *f)
             return 0;
         if (vfs_fwrite(&e->f14, 4, 1, (struct VFSFILE *)f) <= 0)
             return 0;
-        if (vfs_fwrite(e->parts[0].v0, 16, 1, (struct VFSFILE *)f) <= 0)
+        p = &e->parts[0];
+        if (vfs_fwrite(p->v0, 16, 1, (struct VFSFILE *)f) <= 0)
             return 0;
-        if (vfs_fwrite(e->parts[0].v1, 16, 1, (struct VFSFILE *)f) <= 0)
+        if (vfs_fwrite(p->v1, 16, 1, (struct VFSFILE *)f) <= 0)
             return 0;
-        if (vfs_fwrite(e->parts[0].v2, 16, 1, (struct VFSFILE *)f) <= 0)
+        if (vfs_fwrite(p->v2, 16, 1, (struct VFSFILE *)f) <= 0)
             return 0;
-        if (vfs_fwrite(e->parts[0].v4, 16, 1, (struct VFSFILE *)f) <= 0)
+        if (vfs_fwrite(p->v4, 16, 1, (struct VFSFILE *)f) <= 0)
             return 0;
-        if (vfs_fwrite(&e->parts[0].a, 4, 1, (struct VFSFILE *)f) <= 0)
+        if (vfs_fwrite(&p->a, 4, 1, (struct VFSFILE *)f) <= 0)
             return 0;
-        if (vfs_fwrite(&e->parts[0].b, 4, 1, (struct VFSFILE *)f) <= 0)
+        if (vfs_fwrite(&p->b, 4, 1, (struct VFSFILE *)f) <= 0)
             return 0;
-        if (vfs_fwrite(&e->parts[0].c, 4, 1, (struct VFSFILE *)f) <= 0)
+        if (vfs_fwrite(&p->c, 4, 1, (struct VFSFILE *)f) <= 0)
             return 0;
-        if (vfs_fwrite(&e->parts[0].state, 4, 1, (struct VFSFILE *)f) <= 0)
+        if (vfs_fwrite(&p->state, 4, 1, (struct VFSFILE *)f) <= 0)
             return 0;
-        if (vfs_fwrite(&e->parts[0].steps, 4, 1, (struct VFSFILE *)f) <= 0)
+        if (vfs_fwrite(&p->steps, 4, 1, (struct VFSFILE *)f) <= 0)
             return 0;
-        if (vfs_fwrite(e->parts[1].v0, 16, 1, (struct VFSFILE *)f) <= 0)
+        p = &e->parts[1];
+        if (vfs_fwrite(p->v0, 16, 1, (struct VFSFILE *)f) <= 0)
             return 0;
-        if (vfs_fwrite(e->parts[1].v1, 16, 1, (struct VFSFILE *)f) <= 0)
+        if (vfs_fwrite(p->v1, 16, 1, (struct VFSFILE *)f) <= 0)
             return 0;
-        if (vfs_fwrite(e->parts[1].v2, 16, 1, (struct VFSFILE *)f) <= 0)
+        if (vfs_fwrite(p->v2, 16, 1, (struct VFSFILE *)f) <= 0)
             return 0;
-        if (vfs_fwrite(e->parts[1].v4, 16, 1, (struct VFSFILE *)f) <= 0)
+        if (vfs_fwrite(p->v4, 16, 1, (struct VFSFILE *)f) <= 0)
             return 0;
-        if (vfs_fwrite(&e->parts[1].a, 4, 1, (struct VFSFILE *)f) <= 0)
+        if (vfs_fwrite(&p->a, 4, 1, (struct VFSFILE *)f) <= 0)
             return 0;
-        if (vfs_fwrite(&e->parts[1].b, 4, 1, (struct VFSFILE *)f) <= 0)
+        if (vfs_fwrite(&p->b, 4, 1, (struct VFSFILE *)f) <= 0)
             return 0;
-        if (vfs_fwrite(&e->parts[1].c, 4, 1, (struct VFSFILE *)f) <= 0)
+        if (vfs_fwrite(&p->c, 4, 1, (struct VFSFILE *)f) <= 0)
             return 0;
-        if (vfs_fwrite(&e->parts[1].state, 4, 1, (struct VFSFILE *)f) <= 0)
+        if (vfs_fwrite(&p->state, 4, 1, (struct VFSFILE *)f) <= 0)
             return 0;
-        if (vfs_fwrite(&e->parts[1].steps, 4, 1, (struct VFSFILE *)f) <= 0)
+        if (vfs_fwrite(&p->steps, 4, 1, (struct VFSFILE *)f) <= 0)
             return 0;
-        if (vfs_fwrite(e->parts[2].v0, 16, 1, (struct VFSFILE *)f) <= 0)
+        p = &e->parts[2];
+        if (vfs_fwrite(p->v0, 16, 1, (struct VFSFILE *)f) <= 0)
             return 0;
-        if (vfs_fwrite(e->parts[2].v1, 16, 1, (struct VFSFILE *)f) <= 0)
+        if (vfs_fwrite(p->v1, 16, 1, (struct VFSFILE *)f) <= 0)
             return 0;
-        if (vfs_fwrite(e->parts[2].v2, 16, 1, (struct VFSFILE *)f) <= 0)
+        if (vfs_fwrite(p->v2, 16, 1, (struct VFSFILE *)f) <= 0)
             return 0;
-        if (vfs_fwrite(e->parts[2].v4, 16, 1, (struct VFSFILE *)f) <= 0)
+        if (vfs_fwrite(p->v4, 16, 1, (struct VFSFILE *)f) <= 0)
             return 0;
-        if (vfs_fwrite(&e->parts[2].a, 4, 1, (struct VFSFILE *)f) <= 0)
+        if (vfs_fwrite(&p->a, 4, 1, (struct VFSFILE *)f) <= 0)
             return 0;
-        if (vfs_fwrite(&e->parts[2].b, 4, 1, (struct VFSFILE *)f) <= 0)
+        if (vfs_fwrite(&p->b, 4, 1, (struct VFSFILE *)f) <= 0)
             return 0;
-        if (vfs_fwrite(&e->parts[2].c, 4, 1, (struct VFSFILE *)f) <= 0)
+        if (vfs_fwrite(&p->c, 4, 1, (struct VFSFILE *)f) <= 0)
             return 0;
-        if (vfs_fwrite(&e->parts[2].state, 4, 1, (struct VFSFILE *)f) <= 0)
+        if (vfs_fwrite(&p->state, 4, 1, (struct VFSFILE *)f) <= 0)
             return 0;
-        if (vfs_fwrite(&e->parts[2].steps, 4, 1, (struct VFSFILE *)f) <= 0)
+        if (vfs_fwrite(&p->steps, 4, 1, (struct VFSFILE *)f) <= 0)
             return 0;
         if (vfs_fwrite(e->tail, 12, 1, (struct VFSFILE *)f) <= 0)
             return 0;
