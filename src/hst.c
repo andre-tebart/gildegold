@@ -37,6 +37,26 @@ typedef unsigned int SOCKET;            /* <winsock.h>, for net.h (as ai.c) */
 #define ai_BTypesT (*(AIBTYPE **)&ai_BTypes)  /* 0x7e3f30, ai_BTypes (ahm.c: char *) as the AIBTYPE records it points to */
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
 #define gm_AddHealthS ((float (*)(unsigned short, int))gm_AddHealth)  /* 0x4fca40 (f3gm.c: unsigned id): @original this unit pushes the id as 16 bits (byte-matched ai_CommandKillPlayer / ai_MsgWorkerOwnHealthLossType1f) */
+/* AI_ZERO_AT with the destination local assigned inside: @original the token callbacks store the size temp
+   (0x200) before n1 = buf and read both slots into edi / ebx (ai_TokenRandomChurchProfession, byte) */
+#define AI_ZERO_BUF(var, dst, size) {                               \
+    int _zn = (size);                                               \
+    var = (int)(dst);                                               \
+    __asm mov edi, var                                              \
+    __asm mov ebx, _zn                                              \
+    __asm xor eax, eax                                              \
+    __asm lea ecx, [edi+edi*2]                                      \
+    __asm and ecx, 3                                                \
+    __asm sub ebx, ecx                                              \
+    __asm jle AI_ZERO_LABEL(__LINE__)                               \
+    __asm rep stosb                                                 \
+    __asm mov ecx, ebx                                              \
+    __asm and ebx, 3                                                \
+    __asm shr ecx, 2                                                \
+    __asm rep stosd                                                 \
+    __asm AI_ZERO_LABEL(__LINE__): add ecx, ebx                     \
+    __asm rep stosb                                                 \
+}
 /* a list reference's mode ("_SET" / "_USE") is its four characters, which the parser compares as one dword */
 typedef union HST_MODE {
     char text[4];                       /* the characters, without the terminator */
@@ -657,20 +677,7 @@ int ai_TokenCityTreasury(int mode, G12ARG *args, int k, char *fmt, char *out)
 
 /* 0x4af3f0, text token for a living character holding a church office (job 13 .. 18) and in none of the lists of
    0x4adfb0: fmt "...-n", n 0 any character, 1 (the default) a non-player, 2 a non-player first, else a human taking
-   precedence; mode 1 formats args[k]'s character, mode 0 also stores the pick's net id there
-   @deep read the whole function against the original 0x4af3f0..0x4af6b6 and fixed: AI_ZERO_AT(n1, 0x200)
-   (frame 0x208 now equal, edi read from n1's slot like the original), the church-job test as jobId >= 13
-   && <= 18 (the original's jb 0xd / ja 0x12; G12_CHURCHJOB through AICHAR.jobId, was the misnamed G12_AGED
-   byte view), health <= 0 (unsigned: ja), description written. All three selection loops, the mode 1/0
-   arms and the format call line up (ours 253 vs 256). Left: the found/exhausted exits - the original's sel
-   0 / sel 1 loops end 'dec edi; test edi,edi; jne' and their found paths share one block ('+ lea
-   eax,[edx*4+ai_Chars] / + jmp 0x4af672', 0x4af518) straight into the c test, where ours re-tests n after
-   the break ('- test edi,edi / - jne 0x4af64a' + its own return 0, 0x4af585); in sel 2 the original keeps
-   pick in the dead fmt slot [ebp+0x14] and n in ebx, ours the reverse ('- dec dword ptr [ebp+0x14]' vs '+
-   dec ebx / test ebx,ebx'), and its exit tests the break's &ai_Chars[i] then reloads pick ('+ test eax,eax
-   / jne / mov eax,[ebp+0x14] / test eax,eax'). Tried: c = 0 with c set at each break, 'if (--n == 0)
-   return 0' loop bottoms and 'if (c == 0) c = pick' in the sel 2 arm (VC6 then folds c and pick into ebx,
-   same distance); the same return-tail fold as ai_TokenRandomGuildMaster's @deep reason. */
+   precedence; mode 1 formats args[k]'s character, mode 0 also stores the pick's net id there */
 int ai_TokenRandomChurchProfession(int mode, G12ARG *args, int k, char *fmt, char *out)
 {
     char buf[512];
@@ -679,8 +686,7 @@ int ai_TokenRandomChurchProfession(int mode, G12ARG *args, int k, char *fmt, cha
     int i, n;
     AICHAR *c, *pick;
 
-    n1 = (int)buf;
-    AI_ZERO_AT(n1, 0x200);
+    AI_ZERO_BUF(n1, buf, 0x200);
     ai_SplitTokenFormat(fmt, buf, &n1, &n2);
     if (n2 != 1 || (sel = atoi(fmt + n1)) < 0 || sel > 2)
         sel = 1;
@@ -689,42 +695,48 @@ int ai_TokenRandomChurchProfession(int mode, G12ARG *args, int k, char *fmt, cha
         if (c == 0 || c->health <= 0)
             return 0;
     } else {
+        c = 0;
         if (sel == 0) {
             i = util_RandomU(0x300);
-            for (n = 0x300; n != 0; n--) {
-                if (ai_IsLivingCharacter((unsigned short)i) && G12_CHURCHJOB(i) && ai_NotInLists(ai_CharsT[i].netId))
+            n = 0x300;
+            while (n != 0) {
+                if (ai_IsLivingCharacter((unsigned short)i) && G12_CHURCHJOB(i) && ai_NotInLists(ai_CharsT[i].netId)) {
+                    c = &ai_CharsT[i];
                     break;
+                }
+                n--;
                 i = (i + 1) % 0x300;
             }
-            if (n == 0)
-                return 0;
-            pick = &ai_CharsT[i];
         } else if (sel == 1) {
             i = util_RandomU(0x300);
-            for (n = 0x300; n != 0; n--) {
-                if (ai_IsLivingNonPlayer((unsigned short)i) && G12_CHURCHJOB(i) && ai_NotInLists(ai_CharsT[i].netId))
+            n = 0x300;
+            while (n != 0) {
+                if (ai_IsLivingNonPlayer((unsigned short)i) && G12_CHURCHJOB(i) && ai_NotInLists(ai_CharsT[i].netId)) {
+                    c = &ai_CharsT[i];
                     break;
+                }
+                n--;
                 i = (i + 1) % 0x300;
             }
-            if (n == 0)
-                return 0;
-            pick = &ai_CharsT[i];
         } else {
             pick = 0;
             i = util_RandomU(0x300);
-            for (n = 0x300; n != 0; n--) {
+            n = 0x300;
+            while (n != 0) {
                 if (pick == 0 && ai_IsLivingNonPlayer((unsigned short)i) && G12_CHURCHJOB(i)) {
                     if (ai_NotInLists(ai_CharsT[i].netId))
                         pick = &ai_CharsT[i];
                 } else if (ai_IsLivingHuman((unsigned short)i) && G12_CHURCHJOB(i)
                            && ai_NotInLists(ai_CharsT[i].netId)) {
-                    pick = &ai_CharsT[i];
+                    c = &ai_CharsT[i];
                     break;
                 }
+                n--;
                 i = (i + 1) % 0x300;
             }
+            if (c == 0)
+                c = pick;
         }
-        c = pick;
         if (c == 0)
             return 0;
         if (mode == 0)
