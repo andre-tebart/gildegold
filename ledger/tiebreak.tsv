@@ -3184,7 +3184,7 @@ exe	0x0050d550	init_AllocSceneBuilding	f3init	37c98d833d42385d	no	draft	sample n
 exe	0x0050d6a0	init_InheritOwner	f3init	773b94032f4762b9	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
 exe	0x0050d6d0	init_LoadTownScene	f3init	75a0ebb553315c2a	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0050d730	init_AdjustSceneLights	f3init	3b763734256b6eec	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
-exe	0x0050d7f0	init_LoadObjectScene	f3init	1ffd7c3685732180	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x0050d7f0	init_LoadObjectScene	f3init	1ffd7c3685732180	no	draft	sample n=32 seed=1 compiled=31 codegens=1 best=draft
 exe	0x0050dba0	init_BuildingKindName	f3init	c1c89ab30265dfba	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x0050dc30	init_LoadBuildingScene	f3init	8726c8a952c5d765	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x0050e0d0	init_StartNewGame	f3init	79a4d06ba2a7e143	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
