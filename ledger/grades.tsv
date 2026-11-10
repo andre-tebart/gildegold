@@ -4612,7 +4612,7 @@ exe	0x005d45d0	ai_SaveOptionWindow	menu	byte	readable
 exe	0x005d4920	ai_SaveNameWindow	menu	byte	readable		
 exe	0x005d4c70	ai_SaveOptions	menu	byte	readable		
 exe	0x005d5640	ai_LoadOptions	menu	byte	readable		
-exe	0x005d5c40	ai_ApplyGfxOptions	menu	draft	readable	deep	
+exe	0x005d5c40	ai_ApplyGfxOptions	menu	byte	readable		
 exe	0x005d5e90	ai_ApplyOptions	menu	byte	readable		
 exe	0x005d5f10	ai_ApplyVolumes	menu	byte	readable		
 exe	0x005d5fd0	ai_OptionsGfxScreen	menu	byte	readable		
@@ -4623,19 +4623,19 @@ exe	0x005d6fa0	ai_LeaveGameScreen	menu	byte	readable
 exe	0x005d7080	ai_ResumeGameScreen	menu	byte	readable		
 exe	0x005d7160	ai_Screenshot	menu	shape	readable		
 exe	0x005d7320	ai_LoadScreenImage	menu	byte	readable		
-exe	0x005d73e0	ai_HasQuicksavePlayer	menu	draft	readable	deep	
+exe	0x005d73e0	ai_HasQuicksavePlayer	menu	byte	readable		
 exe	0x005d7430	ai_Quicksave	menu	byte	readable		
 exe	0x005d7530	ai_SaveNetworkGame	menu	byte	readable		
 exe	0x005d7770	ai_OptionsMenu	menu	byte	readable		
 exe	0x005d7ba0	ai_CreditsScreen	menu	byte	readable		
 exe	0x005d7e90	ai_PauseGame	menu	byte	readable		
-exe	0x005d7f10	ai_MessageFilterScreen	menu	draft	readable	deep	
+exe	0x005d7f10	ai_MessageFilterScreen	menu	byte	readable		
 exe	0x005d8080	ai_TailorChatWindow	menu	byte	readable		
 exe	0x005d8360	ai_TailorContact	menu	byte	readable		
 exe	0x005d8420	ai_ProductionContact	menu	shape	readable		
 exe	0x005d85e0	ai_BloodRevengeWindow	menu	draft	readable	deep	
 exe	0x005d8c90	ai_CurseWindow	menu	shape	readable		
-exe	0x005d90e0	ai_CurseTargetWindow	menu	draft	readable	deep	
+exe	0x005d90e0	ai_CurseTargetWindow	menu	byte	readable		
 exe	0x005d95a0	ai_HomageWindow	menu	shape	readable	deep	
 exe	0x005d9890	ai_GypsyBeggingWindow	menu	byte	readable		
 exe	0x005d9a80	ai_GypsyContact	menu	byte	readable		
