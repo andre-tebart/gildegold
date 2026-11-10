@@ -657,7 +657,7 @@ D3OBJINFO *d3_SelectSurf(D3OBJECT *obj)
    original's field to 0x633450 (d3_Hardware), explained: the M8 at +0x428 is a load-order crossing in the
    culled shadow test: both sides AND the same bytes (obj+0x213 >> 1 | dirty, obj+0x211 >> 2,
    d3_ShadowMode, d3_Hardware) in the same order; ours loads d3_Hardware first into dl, the original into
-   cl and d3_ShadowMode later into al) */
+   cl and d3_ShadowMode later into al). match-deep 2026-11-10: parenthesized member copies (the FPU-copy lever) ins 168 -> 122. */
 
 char d3_DrawObjectCB(D3OBJECT *obj)
 {
@@ -678,14 +678,14 @@ char d3_DrawObjectCB(D3OBJECT *obj)
         d3_TriCount += s->info.ntris;
         d3_VertCount += s->info.nkeys;
         obj->bits.b4 = 0;
-        dirty = obj->bits.dirty;
+        dirty = (obj->bits.dirty);
         obj->bits.drawDirty = dirty;
         obj->bits.dirty = 0;
         if (m->frameStamp == d3_FrameCount)
             m->flags |= 0x40;
         else if (dirty || obj->bits.reclip)
             m->flags = d3_ClipObject(obj, &s->info, d3_Camera);
-        clip.raw = m->flags;
+        clip.raw = (m->flags);
         if (!(clip.raw & 0x40)) {
             d3_DrawnVerts += s->info.nkeys;
             d3_ObjectsDrawn++;
@@ -699,9 +699,9 @@ char d3_DrawObjectCB(D3OBJECT *obj)
                 obj->bits.reclip = 0;
             } else if (!obj->bits.dirty) {
                 if (!(m->zMin > d3_MinZ))
-                    d3_MinZ = m->zMin;
+                    d3_MinZ = (m->zMin);
                 if (!(m->zMax < d3_MaxZ))
-                    d3_MaxZ = m->zMax;
+                    d3_MaxZ = (m->zMax);
             }
             if (obj->objectFlags >> 2 & d3_Hardware & d3_ShadowMode.mode & 1) {
                 d3s_Count = 0;
@@ -730,7 +730,7 @@ char d3_DrawObjectCB(D3OBJECT *obj)
             if (d3_Hardware) {
                 for (; n > 0; n--, t++) {
                     if (t->flags & 0x80) {
-                        tex = t->tex;
+                        tex = (t->tex);
                         d3_SortPtr->item = t;
                         if (tex) {
                             d3_SortPtr->key = (tex - (D3TEXTURE *)d3_Textures) + base;
@@ -746,11 +746,11 @@ char d3_DrawObjectCB(D3OBJECT *obj)
                 for (; n > 0; n--, t++) {
                     if (t->flags & 0x80) {
                         d3_SortPtr->item = t;
-                        z = t->v[0]->z;
+                        z = (t->v[0]->z);
                         if (z < t->v[1]->z)
-                            z = t->v[1]->z;
+                            z = (t->v[1]->z);
                         if (z < t->v[2]->z)
-                            z = t->v[2]->z;
+                            z = (t->v[2]->z);
                         d3_FtoI((int *)&d3_SortPtr->key, (d3_InvZFar * 16777216.0f) * z * 3.0f);
                         if (t->tex)
                             t->tex->stamp = d3_FrameCount;

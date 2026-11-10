@@ -22852,7 +22852,7 @@ AIJOB *he_FindNearestSpying(AICHAR *per, AICHAR *agent, int skip)
    up here) or without the spy's scene character; while the spy is at least 1850 from the agent, the agent walks
    on to the spied building (when it changed, "Spy Killer") and 0; near, the spy is caught when the spy's
    employer's skill 2 + (days + 1) * 0.5 is below the victim's skill 2 + (strength + 1) * 0.5: the spying event
-   ends, both are told (texts 0x4028 / 0x4029, the news "_NACHRICHTEN_DOMIZIL_10") and 1; else -1 */
+   ends, both are told (texts 0x4028 / 0x4029, the news "_NACHRICHTEN_DOMIZIL_10") and 1; else -1. match-deep 2026-11-10: parenthesized member copies (the FPU-copy lever) ins 16 -> 8. */
 int he_SecretRoomCatchSpy(AICHAR *agent, int ev, AIJOB *spy)
 {
     char text[0x400];
@@ -22870,12 +22870,12 @@ int he_SecretRoomCatchSpy(AICHAR *agent, int ev, AIJOB *spy)
     spyChr = (AICHAR *)gm_FindChar(sp->spy);
     if (spyChr == 0 || spyChr->scene == 0)
         return -1;
-    d.x = agent->scene->obj->pos.x;
-    d.y = agent->scene->obj->pos.y;
-    d.z = agent->scene->obj->pos.z;
-    there.x = spyChr->scene->obj->pos.x;
-    there.y = spyChr->scene->obj->pos.y;
-    there.z = spyChr->scene->obj->pos.z;
+    d.x = (agent->scene->obj->pos.x);
+    d.y = (agent->scene->obj->pos.y);
+    d.z = (agent->scene->obj->pos.z);
+    there.x = (spyChr->scene->obj->pos.x);
+    there.y = (spyChr->scene->obj->pos.y);
+    there.z = (spyChr->scene->obj->pos.z);
     d.x -= there.x;
     d.y -= there.y;
     d.z -= there.z;
@@ -24145,7 +24145,7 @@ int he_CatchMeetingDisease(AICHAR *ch, float chance, int kind, float *health)
    and keeps at.x / at.y on the FPU stack, storing only at.z) where ours copies with integer moves ('- mov
    ecx, dword ptr [eax + 0x4c] ... mov dword ptr [esp + 0x24], ecx'), and the register choice that follows
    (regs 60). Tried: field-wise and struct copies, D3VECTOR / D3VECTOR4 / separate floats, * 1.0f /
-   (float)(double) spellings - VC6 kept the integer copy */
+   (float)(double) spellings - VC6 kept the integer copy. match-deep 2026-11-10: parenthesized member copies (the FPU-copy lever) ins 77 -> 17. */
 void he_SpreadMeetingDisease(AIBLD *b, int radiusKind, int kind, int group)
 {
     char text[0x800];
@@ -24167,9 +24167,9 @@ void he_SpreadMeetingDisease(AIBLD *b, int radiusKind, int kind, int group)
     else
         lim = 400.0f;
     o = (D3OBJECT *)b->object;
-    pos.x = o->pos.x;
-    pos.y = o->pos.y;
-    pos.z = o->pos.z;
+    pos.x = (o->pos.x);
+    pos.y = (o->pos.y);
+    pos.z = (o->pos.z);
     for (n = 0; n < 0x100; n++) {
         rec = &ai_BldsT[n];
         lo = 0;
@@ -24186,9 +24186,9 @@ void he_SpreadMeetingDisease(AIBLD *b, int radiusKind, int kind, int group)
         if ((lo & MEETING_KINDS_LO) == 0 && (hi & MEETING_KINDS_HI) == 0)
             continue;
         o = (D3OBJECT *)rec->object;
-        at.x = o->pos.x;
-        at.y = o->pos.y;
-        at.z = o->pos.z;
+        at.x = (o->pos.x);
+        at.y = (o->pos.y);
+        at.z = (o->pos.z);
         d.x = pos.x - at.x;
         d.y = pos.y - at.y;
         d.z = pos.z - at.z;

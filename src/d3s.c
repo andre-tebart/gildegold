@@ -898,7 +898,7 @@ char d3s_MeshFromMap(int *rect, int stride, unsigned char *map, float *origin, f
     }
     return 1;
 }
-/* 0x45b8d0, adds the shadow of slot to the shadow object @deep match-base 2026-10-31: read the whole function against the original and rebuilt it (296 -> 327 vs 327 instructions): one if (d3s_Enabled && map && size && !simple) / else quad, range check on the slot fields first and the stores after, v0 = 0.0f first (kept on the FPU), du / dv / u0 / v0 divided by (float)(x1 - x0) / (z1 - z0) (no reciprocal CSE), nested size ifs falling into the final return ok (ok is a memory char), uv[4] / rect[4] copies, grid->bs signed division, both mesh calls store ok, the quad walks p++ / v++ / pos += 6 with pos computed before the poly stores, light colour / power through D3LOBJ. Left: register rotation ecx/edi and ebx/edi over the whole mesh part (regs / slots hunks; the h*2*w product starts from the other register), the size-fail return ok block (fstp st(0)) is placed at the end instead of after the call epilogues, ok = 1 is scheduled early, and the quad copies the slot floats with mov where the original uses fld/fstp (no free integer register in the original). Tried + 0.0f / * 1.0f / (float) on the copies (folded, no change), early return ok instead of nested ifs (ok folds to xor al,al, worse), fw/fh float locals (reciprocal CSE, worse). */
+/* 0x45b8d0, adds the shadow of slot to the shadow object @deep match-base 2026-10-31: read the whole function against the original and rebuilt it (296 -> 327 vs 327 instructions): one if (d3s_Enabled && map && size && !simple) / else quad, range check on the slot fields first and the stores after, v0 = 0.0f first (kept on the FPU), du / dv / u0 / v0 divided by (float)(x1 - x0) / (z1 - z0) (no reciprocal CSE), nested size ifs falling into the final return ok (ok is a memory char), uv[4] / rect[4] copies, grid->bs signed division, both mesh calls store ok, the quad walks p++ / v++ / pos += 6 with pos computed before the poly stores, light colour / power through D3LOBJ. Left: register rotation ecx/edi and ebx/edi over the whole mesh part (regs / slots hunks; the h*2*w product starts from the other register), the size-fail return ok block (fstp st(0)) is placed at the end instead of after the call epilogues, ok = 1 is scheduled early, and the quad copies the slot floats with mov where the original uses fld/fstp (no free integer register in the original). Tried + 0.0f / * 1.0f / (float) on the copies (folded, no change), early return ok instead of nested ifs (ok folds to xor al,al, worse), fw/fh float locals (reciprocal CSE, worse). match-deep 2026-11-10: parenthesized member copies (the FPU-copy lever) ins 154 -> 124. */
 
 char d3s_AddShadow(D3SSLOT *slot, D3STERR *grid)
 {
@@ -915,7 +915,7 @@ char d3s_AddShadow(D3SSLOT *slot, D3STERR *grid)
     D3TEXHANDLE *tex;
 
     buf = (D3SBUF *)&D3_MESH(d3s_Object)->surf[0].info;
-    tex = slot->tex;
+    tex = (slot->tex);
     col.c.r = (unsigned char)D3_L(slot->light)->color.x;
     col.c.g = (unsigned char)D3_L(slot->light)->color.y;
     col.c.b = (unsigned char)D3_L(slot->light)->color.z;
@@ -924,10 +924,10 @@ char d3s_AddShadow(D3SSLOT *slot, D3STERR *grid)
         if (slot->ix0 >= slot->size || slot->ix1 < 0 || slot->iz0 >= slot->size || slot->iz1 < 0
             || slot->ix1 - slot->ix0 <= 0 || slot->iz1 - slot->iz0 <= 0)
             return 0;
-        x0 = slot->ix0;
-        x1 = slot->ix1;
-        z0 = slot->iz0;
-        z1 = slot->iz1;
+        x0 = (slot->ix0);
+        x1 = (slot->ix1);
+        z0 = (slot->iz0);
+        z1 = (slot->iz1);
         v0 = 0.0f;
         du = 1.0f / (x1 - x0);
         u0 = 0.0f;
@@ -983,33 +983,33 @@ char d3s_AddShadow(D3SSLOT *slot, D3STERR *grid)
         p->tex = tex;
         buf->npolys += 2;
         v->pos = pos;
-        pos[0] = slot->x0;
-        pos[1] = slot->y;
-        pos[2] = slot->z1;
+        pos[0] = (slot->x0);
+        pos[1] = (slot->y);
+        pos[2] = (slot->z1);
         v->c0 = col.d;
         v->c1 = col.d;
         v++;
         pos += 6;
         v->pos = pos;
-        pos[0] = slot->x1;
-        pos[1] = slot->y;
-        pos[2] = slot->z1;
+        pos[0] = (slot->x1);
+        pos[1] = (slot->y);
+        pos[2] = (slot->z1);
         v->c0 = col.d;
         v->c1 = col.d;
         v++;
         pos += 6;
         v->pos = pos;
-        pos[0] = slot->x0;
-        pos[1] = slot->y;
-        pos[2] = slot->z0;
+        pos[0] = (slot->x0);
+        pos[1] = (slot->y);
+        pos[2] = (slot->z0);
         v->c0 = col.d;
         v->c1 = col.d;
         v++;
         pos += 6;
         v->pos = pos;
-        pos[0] = slot->x1;
-        pos[1] = slot->y;
-        pos[2] = slot->z0;
+        pos[0] = (slot->x1);
+        pos[1] = (slot->y);
+        pos[2] = (slot->z0);
         v->c0 = col.d;
         v->c1 = col.d;
         buf->nverts += 4;

@@ -2446,7 +2446,7 @@ void sv_BorderCameraView(void)
    d3_DefaultScene loaded into ecx vs eax. Tried (no effect or worse): dst statement orders (1,0,2 /
    0,2,1), camera field first in the sums, !d3_VecEqual, casts / &dst[0] on the call, D3VECTOR4 structs for
    dst / v / fwd (identical code), double sn/cs/a, a 3-term sqrt, the other orders of ScrollTime / my / f.
-   (tiebreak: not measured (dcp headers sample sv_ScrollCamera)) */
+   (tiebreak: not measured (dcp headers sample sv_ScrollCamera)). match-deep 2026-11-10: parenthesized member copies (the FPU-copy lever) ins 30 -> 16; only dst[1] = (d3_Camera->pos.y), which now copies through the FPU where the original moves it with ecx, but aligns the rest. */
 
 int sv_ScrollCamera(void)
 {
@@ -2601,7 +2601,7 @@ int sv_ScrollCamera(void)
         dst[0] = v[0];
         fwd[1] = 0.0f;
         dst[0] = fwd[0] + d3_Camera->pos.x;
-        dst[1] = d3_Camera->pos.y;
+        dst[1] = (d3_Camera->pos.y);
         dst[2] = fwd[2] + d3_Camera->pos.z;
         if (d3_VecEqual(sv_ScrollLastMove, dst, 0.1f) == 0) {
             hm = (D3SM *)d3_DefaultScene->hmap;
