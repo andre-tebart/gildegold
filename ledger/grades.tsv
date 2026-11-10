@@ -3187,11 +3187,11 @@ exe	0x0050d6d0	init_LoadTownScene	f3init	byte	readable
 exe	0x0050d730	init_AdjustSceneLights	f3init	byte	readable		
 exe	0x0050d7f0	init_LoadObjectScene	f3init	byte	readable		
 exe	0x0050dba0	init_BuildingKindName	f3init	byte	readable		
-exe	0x0050dc30	init_LoadBuildingScene	f3init	draft	readable	deep	
+exe	0x0050dc30	init_LoadBuildingScene	f3init	byte	readable		
 exe	0x0050e0d0	init_StartNewGame	f3init	byte	readable		
 exe	0x0050e330	init_CreateOpponents	f3init	shape	readable		
 exe	0x0050e5a0	init_PlaceOffices	f3init	shape	readable	deep	
-exe	0x0050e690	init_CreateStartCharacters	f3init	draft	readable	deep	
+exe	0x0050e690	init_CreateStartCharacters	f3init	draft	readable	stuck	
 exe	0x0050f0b0	init_CreateOpeningObjects	f3init	byte	readable		
 exe	0x0050f340	init_StockMarketStalls	f3init	shape	readable	deep	
 exe	0x0050f570	init_Betrieb	f3init	shape	readable	stuck	
@@ -3217,7 +3217,7 @@ exe	0x00511bc0	init_FillMarkets	f3init	byte	readable
 exe	0x00511c70	init_GiveFirstPlayerBuildings	f3init	shape	readable		
 exe	0x00511dc0	init_ObjectSceneUniverse	f3init	byte	readable		
 exe	0x00511e60	init_BuildingSceneUniverse	f3init	byte	readable		
-exe	0x00511f20	init_SyncSceneObjects	f3init	draft	readable	deep	
+exe	0x00511f20	init_SyncSceneObjects	f3init	draft	readable	stuck	
 exe	0x005124d0	init_LoadTypeBScene	f3init	byte	readable		
 exe	0x005124f0	init_LoadShopScript	f3init	byte	readable		
 exe	0x005126a0	init_SoundObjectHook	f3init	shape	readable	deep	
@@ -3364,7 +3364,7 @@ exe	0x00529fb0	sv_ClosePanel	sv	byte	readable
 exe	0x0052a040	sv_ReturnZero	sv	byte	readable		
 exe	0x0052a050	sv_UpdatePanel	sv	byte	readable		
 exe	0x0052a680	sv_HoverPick	sv	byte	readable		
-exe	0x0052adb0	sv_ResetSelection	sv	draft	readable	deep	
+exe	0x0052adb0	sv_ResetSelection	sv	byte	readable		
 exe	0x0052ae40	sv_ClearSelection	sv	byte	readable		
 exe	0x0052ae70	sv_HandleObjects	sv	draft	readable	deep	
 exe	0x0052b2a0	sv_CollectGroupCharacters	sv	shape	readable		
