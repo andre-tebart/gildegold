@@ -5190,15 +5190,7 @@ void sv_ReleaseBubble(int o)
 }
 /* 0x52c4e0, shows a speech bubble over the character ch (only one of the current scene, and one bubble per character): the text id
    text, or the own text name, goes into a free sv_Bubbles record, else into the last one stamped before now; ch's delete
-   callback becomes sv_ReleaseBubble
-   @deep read whole against the original: the three loops (own entry, free entry with the cmp 0x40 after
-   the break, last entry stamped before d3_Time), the stores time/ch/text, onDelete, strcpy/empty name
-   all match; SVBUBBLE typed. Left: VC6 keeps d3_Time in esi from inside loop 2 (0x52c524 mov
-   esi,[d3_Time]) through the time store (mov [eax+4],esi), saving esi in the prologue; the original
-   loads it in the expiry block only (push esi; mov esi,[d3_Time] at 0x52c53c .. pop esi 0x52c562) and
-   reloads it for the store (0x52c572 mov ecx,[d3_Time]). Tried: a local now, indexed stores without b,
-   goto found, i == 0x40: all equal or worse. The branch-target hunks follow from the 5 byte
-   prologue/epilogue size. */
+   callback becomes sv_ReleaseBubble */
 
 void sv_ShowBubble(CHARACTER *ch, int text, char *name)
 {
@@ -5216,9 +5208,11 @@ void sv_ShowBubble(CHARACTER *ch, int text, char *name)
             break;
     }
     if (i >= 0x40) {
+        int now = d3_Time;
+
         i = -1;
         for (j = 0; j < 0x40; j++) {
-            if (sv_Bubbles[j].time < (int)d3_Time)
+            if (sv_Bubbles[j].time < now)
                 i = j;
         }
         if (i == -1)
