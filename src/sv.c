@@ -5250,14 +5250,7 @@ void sv_ShowBubble(CHARACTER *ch, int text, char *name)
    member of a job says a line on the job (txt_Format by the job kind, with the character or building it names), the
    others one of four topics 0x11e9 + kind * 15 (a title group 0xb / 0xc never topic 3) graded by a rating of the
    statistics record or ord_BuildingCapacityRatio (5 grades of 3 lines); with an active history key event (0x52) every
-   second time one of the lines of the history entry before hst_KeyNext
-   @deep reconstructed and read whole against the original (the pick checks, the job-kind switch in the
-   original's case order with txt_Format varargs, the topic grading 3.0*(x*5.0)+id, the history key lines,
-   the bubble calls); instruction count equal (633), switch tables equal. Left is block placement only: the
-   plain-topic block 'kind = util_RandomU(4) + 1' of a character without a title group 0xb/0xc lies in the
-   original out of line after the job switch dispatch (0x52c77c push 4 .. jmp 0x52c73f), ours inline before
-   the 0xb/0xc block (0x52c71f .. jmp 0x52c755); plus an order hunk at 0x52c6d8 (the id store vs stosw).
-   Tried: inverted condition, goto into the else, a switch on v: same or worse. */
+   second time one of the lines of the history entry before hst_KeyNext */
 
 void sv_SpeakPicked(void)
 {
@@ -5297,11 +5290,11 @@ void sv_SpeakPicked(void)
     if (b != 0 && (cls->kind != 0x16 || *sv_PanelShown != 0x120) && cls->kind != 0x0f)
         return;
     util_Random(4);
+    id = -1;
     {
         char text[0x200] = "";
         float st[10];
 
-        id = -1;
         if (ai_PickedChar != 0) {
             c = (AICHAR *)ai_PickedChar;
             plain = 1;
@@ -5310,13 +5303,14 @@ void sv_SpeakPicked(void)
                 v = gm_TitleGroup(c->jobId);
             else if (c->title != 0)
                 v = gm_TitleJobGroup((unsigned char)c->title);
-            if (v == 0xb || v == 0xc) {
+            if (v == 0xb || v == 0xc)
                 plain = 0;
+            if (plain) {
+                kind = util_RandomU(4) + 1;
+            } else {
                 kind = util_RandomU(4) + 1;
                 if (kind == 3)
                     kind = 4;
-            } else {
-                kind = util_RandomU(4) + 1;
             }
             c = (AICHAR *)ai_PickedChar;
             job = c->job;
