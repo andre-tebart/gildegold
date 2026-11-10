@@ -2761,3 +2761,27 @@ differing instructions. The same shape made the character loop of 0x512f30 pick 
 - **The zero constant shared with a return variable** (mov_Open: `id = 0`, every literal 0 and the final
   `mov eax, esi` in one callee-saved register; ours spills id to the frame): no declaration order, init
   placement, early-return form or id spelling made VC6 coalesce them. Not solved.
+
+## match-deep 2026-11-10 (ahm_AddValue, ahm_FillSteps, ahm_StepValue, ahm_LoadIni)
+
+- **Float clamp `fcom 0 / and 0x4100 / jne; fcom 1 / test ah,5 / jp; fcom 0 again`** (the 0 test repeated after
+  the 1 test, the stores 0 / 1 / f in three tails): `f = min(max(f, 0.0f), 1.0f);` on a named local. With the
+  sum inside the macro VC6 copies it (`fld st(0); fcomp 1.0`); `max(0.0f, f)` or `max(min())` reorders the tests;
+  two `if (!(f > 0)) f = 0; if (!(f < 1)) f = 1;` statements give jnp at a join (ahm_AddValue, draft -> byte).
+  The `ai_FloatZero` / `ai_FloatOne` M10s are the pooled literals: writing the objects was worse.
+- **Strength-reduced loop base**: the pointer base VC6 picks for `ai_WalkSteps[k].field` follows the order of
+  the stores after a struct copy: `grid = ...; on = 1; y = ..; x = ..` put the base at the record start
+  (`mov ecx, ai_WalkSteps`, `lea edx,[ecx+4]` for the grid), `grid; y; x; on` put it at `.y`. A pointer loop
+  (`s->`) never reached it; an index loop with the struct assignment `ai_WalkSteps[k].grid = tbl[idx++ % n]`
+  (not three word copies) did. Permute the stores with the index loop (ahm_FillSteps, 30 ins -> byte).
+- **Squares folded into the sum one by one** (`fld st(0); fmul st,st(1); faddp st(2),st; fstp st(0)` per
+  term): one temporary reused, `x = ..; sum = x * x; x = ..; sum += x * x; ...`. Four locals a..d (any
+  statement order or association) keep all four values on the FPU and square them at the end.
+- **`v * 500 + sum * 500` factored to `(v + sum) * 500`** by VC6; the original's two fmuls come from
+  `v = v * 500.0f; return (int)(v + sum * 500.0f) << 5;` (ahm_StepValue, 42 ins -> byte).
+- **A failure cleanup in the middle of the function** (the free-both-tables block right after the last
+  alloc test, before the last loop, the other failures jumping into it): the source had the cleanup inside
+  `if (alloc == 0) { fail: ...; fail2: ...; return 0; }` with `goto fail` from the earlier tests. A cleanup
+  written after the nested ifs is always placed last (ahm_LoadIni, 48 ins -> 4). Its `if (n > 0x12) {if (n
+  >= 0x1e) ..} else n = 0x12` clamp with the else-arm out of line after the cleanup is
+  `min(max(n, 0x12), 0x1e)` (4 -> byte).
