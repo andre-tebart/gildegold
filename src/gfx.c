@@ -1062,7 +1062,27 @@ void d2_Convert16ToRgb(int a, int b, unsigned int w, unsigned int h, unsigned sh
 
 /* 0x478cc0, creates a surface of the description desc (0x40 bytes); flags 1: depth of the screen, 2: a DirectDraw
    surface, 4: wraps an existing one, 8: system memory
-   @deep B3 3 hunk areas / 54 differing instructions (393/752 bytes), all codegen; meaning read against 0x478cc0..0x478fb1 (mem_Alloc(0x40), *s=*desc, flags&4 -> external, flags&1 -> dd_BitPlanes, own-bit alloc, wrap description, flags&2 CreateSurface path with the format switch, D3DCHECK, SetColorKey, second GetSurfaceDesc, clip/pitch tail): no meaning error. (1) the ddsCaps expression in both branches: original emits movsx eax,bl; and eax,8; shl eax,8; or al,0x40 (sign-extends the low flags byte BEFORE the mask), ours folds the cast into and ebx,8 / shl ebx,8 / or ebx,0x40; (2) the else branch's OR wants 0x40 materialised in ecx (or eax,ecx), ours or ebx,0x40; (3) tail order: original stores pitch then left/top=0 after the idiv and pops edi/esi after the last desc->h store, ours hoists top=0 before the pitch store and pops early. Tried, one build each, all reverted (identical code or worse): signed char flags parameter (frame 0x108 vs 0x104, byte reload, REGRESSED d2_CopySurface), unsigned int flags (identical), char local f=(char)flags used as (f&8) (identical - VC6 propagates the cast), f=flags implicit (identical). The old d2q note recorded the same movsx and the char/signed char/unsigned char param + int local + shift cast attempts. Making VC6 keep the char conversion needs variant rounds. Readability done: Q2 unk38 -> D2SURF.external (flags&4 sets it, it skips the bit alloc and the free; the screen surface is passed flags 4). */
+   @stuck headers sample: insensitive. Tail store order was a lever (permute of the 5 tail stores, 120
+   orders): left, pitch, right, top, bottom gives the original's late top=0 store and late pops (34 -> 16
+   ins). ddsCaps: (char)flags * 0x100 & 0x800 | 0x40 is the only spelling (of ~60) that keeps the
+   original's movsx eax,bl (34 -> 8 ins left); it gives movsx; shl 8; and 0x800 where the original has
+   movsx; and 8; shl 8 (in both arms). Folded to and ebx,8 without movsx (= old control):
+   (char)/signed/unsigned casts at every place, ternaries ? 0x800 : 0 / ? 0x840 : 0x40, << written as *
+   0x100, 8u / DWORD / long masks, no-op wrappers (+0, |0, *1, >>0), (char)(char), an __inline helper with
+   a char parameter, shl-then-mask with <<. Changed but worse: a char/signed char/unsigned char local f
+   used for every flags test, or a char/short parameter (frame 0x108 vs 0x104), sar 3 & 1 forms, / 8 *
+   0x800. Left: the two 3-instruction hunks movsx/and/shl order at +0x131 and +0x160. (tiebreak: insensitive,
+   32 samples, measured before the tail reorder) prior: B3 3 hunk areas / 54 differing instructions
+   (393/752 bytes), all codegen; meaning read against 0x478cc0..0x478fb1 (mem_Alloc(0x40), *s=*desc,
+   flags&4 -> external, flags&1 -> dd_BitPlanes, own-bit alloc, wrap description, flags&2 CreateSurface
+   path with the format switch, D3DCHECK, SetColorKey, second GetSurfaceDesc, clip/pitch tail): no meaning
+   error. (1) the ddsCaps expression in both branches: original emits movsx eax,bl; and eax,8; shl eax,8;
+   or al,0x40 (sign-extends the low flags byte BEFORE the mask), ours folds the cast into and ebx,8 / shl
+   ebx,8 / or ebx,0x40; (2) the else branch's OR wants 0x40 materialised in ecx (or eax,ecx), ours or
+   ebx,0x40; (3) tail order: original stores pitch then left/top=0 after the idiv and pops edi/esi after
+   the last desc->h store, ours hoists top=0 before the pitch store and pops early. Tried, one build each,
+   all reverted (identical code or worse): signed char flags parameter (frame 0x108 vs 0x104, byte reload,
+   regressed d2_CopySurface), unsigned int flags (identical), char local f=(char)flags (identical). */
 D2SURF *d2_MakeSurface(D2SURF *desc, int flags)
 {
     LPDIRECTDRAWSURFACE4 dd_DDSOne;
@@ -1104,12 +1124,12 @@ D2SURF *d2_MakeSurface(D2SURF *desc, int flags)
         if (flags & 1) {
             dd_BackBuffer->lpVtbl->GetSurfaceDesc(dd_BackBuffer, &ddsd);
             ddsd.dwFlags = 0x1007;
-            ddsd.ddsCaps.dwCaps = ((char)flags & 8) << 8 | 0x40;
+            ddsd.ddsCaps.dwCaps = (char)flags * 0x100 & 0x800 | 0x40;
             ddsd.dwHeight = s->h;
             ddsd.dwWidth = s->w;
         } else {
             ddsd.dwFlags = 0x1007;
-            ddsd.ddsCaps.dwCaps = ((char)flags & 8) << 8 | 0x40;
+            ddsd.ddsCaps.dwCaps = (char)flags * 0x100 & 0x800 | 0x40;
             ddsd.dwHeight = s->h;
             ddsd.dwWidth = s->w;
             ddsd.ddpfPixelFormat.dwSize = 0x20;
@@ -1152,8 +1172,8 @@ D2SURF *d2_MakeSurface(D2SURF *desc, int flags)
     }
     s->left = 0;
     s->pitch = s->rowbytes / (s->bpp >> 3);
-    s->top = 0;
     s->right = desc->w;
+    s->top = 0;
     s->bottom = desc->h;
     return s;
 }
