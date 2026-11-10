@@ -3300,7 +3300,7 @@ exe	0x00520f90	sv_CheckMoney	sv	byte	readable
 exe	0x00520fe0	sv_CheckCharacterFlag	sv	byte	readable		
 exe	0x00521040	sv_CheckGoodAmount	sv	byte	readable		
 exe	0x005210a0	sv_CheckStock	sv	byte	readable		
-exe	0x00521150	sv_MessageBox	sv	draft	readable	deep	
+exe	0x00521150	sv_MessageBox	sv	shape	readable	stuck	
 exe	0x00521410	sv_MessageBoxGreen	sv	shape	readable		
 exe	0x005216a0	sv_MessageBoxYesNo	sv	byte	readable		
 exe	0x00521900	sv_OpenMessageBox	sv	byte	readable		
@@ -3321,7 +3321,7 @@ exe	0x00524100	sv_AddGroupMember	sv	byte	readable
 exe	0x00524160	sv_RemoveGroupMember	sv	shape	readable	deep	
 exe	0x005241b0	sv_UsedGroupSlots	sv	byte	readable		
 exe	0x005241d0	sv_CountGroupMembers	sv	byte	readable		
-exe	0x00524260	sv_MoveToGroup	sv	draft	readable	deep	
+exe	0x00524260	sv_MoveToGroup	sv	shape	readable	stuck	
 exe	0x00524770	sv_IsAtDoor	sv	byte	readable		
 exe	0x00524810	sv_IsCartAtDoor	sv	byte	readable		
 exe	0x00524900	sv_CharStateIcons	sv	byte	readable		
@@ -3373,14 +3373,14 @@ exe	0x0052b3c0	sv_ActivityName	sv	byte	readable
 exe	0x0052b490	sv_StartPoseScript	sv	byte	readable		
 exe	0x0052b500	sv_RunLocationScripts	sv	byte	readable		
 exe	0x0052bb70	sv_RunFramesUntilStopped	sv	byte	readable		
-exe	0x0052bbc0	sv_SendSelectedToBuilding	sv	draft	readable	deep	
+exe	0x0052bbc0	sv_SendSelectedToBuilding	sv	draft	readable	stuck	
 exe	0x0052bec0	sv_HandleSelectionMouse	sv	draft	readable	deep	
 exe	0x0052c420	sv_MarkMasterCarts	sv	byte	readable		
 exe	0x0052c4a0	sv_ReleaseBubble	sv	byte	readable		
 exe	0x0052c4e0	sv_ShowBubble	sv	byte	readable		
 exe	0x0052c5c0	sv_SpeakPicked	sv	byte	readable		
 exe	0x0052cef0	sv_DrawBubbles	sv	byte	readable		
-exe	0x0052d010	sv_DrawGateName	sv	draft	readable	deep	
+exe	0x0052d010	sv_DrawGateName	sv	byte	readable		
 exe	0x0052d1e0	sv_DrawNamePlates	sv	byte	readable		
 exe	0x0052d2a0	sv_DrawItemNames	sv	byte	readable		
 exe	0x0052d480	sv_DrawBorderArrows	sv	byte	readable		
