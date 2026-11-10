@@ -102,6 +102,25 @@ mechanisms, each as a generated round over all positions / subsets:
 - **Two zero inits before a loop** (`n = 0; for (i = 0; ..)` gives `xor ebp,ebp; xor edi,edi` in n, i order):
   the original's i-first order is `for (i = 0, n = 0; ..)` (ai_BlackmailBuildingListener). Two initialized
   declarations store in declaration order (`AIBLD *nearest = 0; float best = 1e8f;`, he_RunFire).
+- **Four zero stores to a struct local** (`h.a = 0; h.b = 0; ..`) keep the zero in a callee-saved register for the
+  whole function (`cmp eax,ebx` tests, ebx pushed at entry); `memset(&h, 0, sizeof(h))` gives the original's
+  `xor eax,eax` + stores and frees the register. With it, failures after the early count checks written as
+  `goto fail;` (allocations and the final call `!= 0`) to one cleanup tail before the success return gave the
+  original's layout: own epilogues for the early `return -1`s, the success block last (hmt_CreateBinaryFile, byte).
+- **A not-found `return 0` after a search loop that leaves with `goto add`**: the original's `xor eax,eax` after the
+  pops came from an always-true `if (i >= N) return 0;` after the loop (`break` + `if (i == N)` leaves a compare,
+  `>=` another shape). A function whose whole body sits in `q = 0; if (p) {..} return q;` shares eax = 0 with the
+  loop counter only as `if (p == 0) return 0;` up front (veg_SetPlant, byte).
+- **A pointer walk `for (i = n; i > 0; i--) { ..*pts..; pts++; }`** where the original counts down in a dead
+  parameter's slot (frame 4 smaller): write the index loop `for (i = 0; i < n; i++) .. pts[i]`. A fallback
+  `if (!f(..)) { x = px; z = pz; } g(x, z);` whose original pushes px/pz straight into the call is
+  `if (f(..)) g(x, z); else g(px, pz);` (rd_PointsNear, byte).
+- **Insertion into a sorted top-N array**: `for (k = 4; k > j + 1; k--) best[k - 1] = best[k - 2];` (struct copy,
+  guard `cmp j+1, 4; jge`, pointer at best[3]); the stop test `if (!(s > best[j - 1].score)) break;`. Table loads
+  `T1[m - 1] .. T4[m - 1]; f(m - 1)` whose original decrements before the last load: one index local `e = m - 1`.
+  `(b ? 0x28 : 0) + 0x253 + type` folds into one `lea`; the original's `add ecx,0x253; add ecx,ebx` is
+  `(b ? 0x27b : 0x253) + type`. A `char text[260]` got an 8-aligned slot with a hole (frame 8 larger); `[256]`
+  gave the original's frame (hmt_Election, draft 95 ins -> byte).
 
 ## Control flow and returns
 - **Empty case labels**: VC6 drops `case X: break;` (also `return;`, dead stores, `goto` to the join)
