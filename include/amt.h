@@ -125,8 +125,13 @@ typedef struct AMTRANGE {               /* 0x1c bytes, the ranges of 0x4e78f0 */
 } AMTRANGE;
 #pragma pack(push, 1)
 typedef struct AMTRANGEW {               /* an AMTRANGE's first pair read as the two overlapping dwords amt_CreateApplicant (0x4e7aa0) rolls its age from */
-    int word0;                           /* 0x0, s0 | s1 << 16 */
-    int word1;                           /* 0x2, s1 | (the low half of i2) << 16 */
+    union {
+        int word0;                       /* 0x0, s0 | s1 << 16 */
+        struct {
+            short pad0;
+            int word1;                   /* 0x2, s1 | (the low half of i2) << 16 */
+        };
+    };
 } AMTRANGEW;
 #pragma pack(pop)
 extern char ch_EmptyName[];             /* 0x631090 */
