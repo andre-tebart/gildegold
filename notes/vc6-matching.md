@@ -2824,3 +2824,22 @@ differing instructions. The same shape made the character loop of 0x512f30 pick 
   extra references to f, but did when one branch's use of t got its own local (snd_UpdateRain: `tm` in the
   0x95 branch), 80 -> 33 ins. When reference counts do not move a slot pair, try splitting a variable whose
   uses are in disjoint branches.
+- **A pointer that the original keeps in its own register after `e = d->entries = mem_Alloc(..)`** (ours
+  e in eax, the original `mov ecx, eax` and every store through ecx): store the allocation to the field
+  first and derive the others from the field, `d->entries = mem_Alloc(..); s = (char *)(d->entries + 1);
+  e = d->entries;` (e assigned last). Splitting the chain the other way (`e = ..; d->entries = e;`) was
+  = control. vfs_AddFile 29 ins -> byte.
+- **Callee-saved set without ebx** (ours: the walk pointer `dir` in ebx, a copy pointer in esi, edi pushed
+  and popped locally around a strlen; the original: dir esi, copy pointer edi, ebx never used): a second
+  copy of the parameter into the local at the loop (`VFSDIR *dir = d; ... for (dir = d; (p = ..) && dir; )`)
+  gives the parameter's own candidate the ebx that never materialises. Using `d` itself (no local) got the
+  registers but loaded d late (per path); moving the single init around changed nothing. vfs_FindDir
+  38 ins -> byte (an `@original` note keeps the redundant copy).
+- **Flag locals initialized by statements, not initializers**: `read = 1; z = 1; detect = 1;` (read first)
+  gave the original's `mov byte [read], 1` immediate where `unsigned char read = 1` shared z's `mov bl, 1`.
+  A gzip detect `if (size <= 10 || m0 || m1) z = 0; else z = 1;` laid out as the original (the z = 0 path
+  in the fall-through, merged with the later if (z)'s else, and the z / read slots swapped back) only as
+  `if (size <= 10) z = 0; else if (m0 || m1) z = 0; else z = 1;` (&&, ?:, z = cond, reversed forms all
+  = control). vfs_MemOpen 37 -> 2 ins. Left: an early `return 0` whose `xor eax, eax` the original hoists
+  to the entry and joins past the final `mov eax, esi` (not reached by ret locals, f = 0 placement, or
+  flat / nested / duplicated failure returns).
