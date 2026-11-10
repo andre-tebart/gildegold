@@ -2622,7 +2622,26 @@ int ch_CellToCell(D3SM *h, int x, int z, D3SM *to, int *px, int *pz)
 }
 /* 0x407790, the character's cells in ch_PathMap (transport, body, the next path cells), then a corner
    cell for each diagonal step
-   @deep behaviour: close, 10 differing instructions. Two hunks: (1) 4077d7 slots - the address-taken x and z locals of ch_PosToCell are swapped (ours z,x at 0x1c/0x20; original x,z) and the same pair again at 0x2c/0x30; earlier attempts (declaration order, inner block, int xz[2], reusing i/n, (void)z;, if(0) z=0;, all 6 store orders); (2) 40783c moved - original mov ebp,ecx; add ebp,edi for n = i + (ch->transport ? 2 : 1), ours add ecx,edi; mov ebp,ecx; spell moved prescriptions tried this session: split the init into two statements before the loop (byte-identical) and swapped the operand order (byte-identical). Statements read against 407790..4078a0: same bounds and calls. Readability done this session: u.walk.unk0f0 -> pathLen (cell count, indexes *2 into path) and u.walk.unk154 -> retryAt (ch_Time of the last failed path search + 200/225 ms wait, -1: none), Q2 clean. */
+   @stuck match-deep 2026-11-10: headers sample insensitive (32, one codegen). Frame read: x and z live in
+   dead parameter slots (original z in ch's slot [esp+0x1c], x in out's slot [esp+0x20]; ours swapped);
+   start = out is the push-ecx slot in both. Slot hunk: out->z = z; out->x = x (store order) puts the slots
+   right but swaps the loads (order 8, code 4); a dead z = 0; before ch_PosToCell also puts them right but
+   adds the store (3 ins: the store + the n hunk), so the tie-break is z's reference weight; no-code extra
+   references tried: ch_PosToCell in both arms of the transport if (47), both stores in both arms of an if
+   (16), i = x / n = z temporaries (= control). n hunk (original mov ebp,ecx; add ebp,edi, ours add
+   ecx,edi; mov ebp,ecx): n = k; n += i (in the for or before it), n = cur + k before the loop, i = cur; n
+   = k + i (all = control); (t != 0) + 1 in any operand order (16); t ? 1 : 0 + 1 forms (16); if/else n = i
+   + 2 / i + 1 (40); n = i + 1; if (t) n++ (91); bound inlined in the loop test (66). Left: the two slot
+   swaps at 4077d7 / 4077f1 and the n computation at 40783c. (tiebreak: insensitive) prior: behaviour:
+   close, 10 differing instructions. Two hunks: (1) 4077d7 slots - the address-taken x and z locals of
+   ch_PosToCell are swapped (ours z,x at 0x1c/0x20; original x,z) and the same pair again at 0x2c/0x30;
+   earlier attempts (declaration order, inner block, int xz[2], reusing i/n, (void)z;, if(0) z=0;, all 6
+   store orders); (2) 40783c moved - original mov ebp,ecx; add ebp,edi for n = i + (ch->transport ? 2 : 1),
+   ours add ecx,edi; mov ebp,ecx; spell moved prescriptions tried this session: split the init into two
+   statements before the loop (byte-identical) and swapped the operand order (byte-identical). Statements
+   read against 407790..4078a0: same bounds and calls. Readability done this session: u.walk.unk0f0 ->
+   pathLen (cell count, indexes *2 into path) and u.walk.unk154 -> retryAt (ch_Time of the last failed path
+   search + 200/225 ms wait, -1: none), Q2 clean. */
 
 int ch_GetWaypoints(D3SM *h, CHARACTER *ch, CHWAYPT *out)
 {
