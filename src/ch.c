@@ -453,20 +453,7 @@ void ch_SetLowPoly(unsigned char mode)
     ch_LowPoly = 2 - mode;
     d3if_SelectScene(cur, 1);
 }
-/* 0x402ba0, ch_Updatelowpoly: shows the body or the low-poly body and keeps the latter in sync
-   @deep Read in full against 0x402ba0..0x403066. Meaning fix: in the scene branch the low-poly body is
-   hidden only on the near path (the original's 0x402dd8 sits in the near block, after
-   d3if_Show/d3_RelightObject of the body; the far path goes from d3_SetObjectRot straight to the animation
-   part); D3OBJ_UNK200 replaced by D3OBJECT.owner. All statements line up (ours 361 vs 368). Left: block
-   placement and load CSE - the original lays the near block (0x402db8..0x402dee) after the far block and
-   reaches it with 'jnp' from the fcomp, ours inlines it after 'jp far' (the condition written either way,
-   as || of negations or && with near first, and with or without the (float) cast compiles the same or
-   worse); in the animation tail the original re-reads anim->slots[0].data for each of the three ifs ('+
-   mov esi,[eax+0x84]' / '+ mov edx,[eax+0x84]' and re-tests the slot, 0x402f72..0x402fa3) where ours keeps
-   the first load; the frame and every call/argument are the same. (references: M8 at +0x250: ours refers
-   to d3_SetObjectRot (0x43b860), the original's field to 0x4471b0 (d3if_Show), explained: the M8 at +0x250
-   (d3_SetObjectRot | d3if_Show) is the misalignment of the near block: both sides call d3_SetObjectRot at
-   the end of the far block and d3if_Show(lowPolyBody, 0) at the end of the near block (asmdiff --symbols)) */
+/* 0x402ba0, ch_Updatelowpoly: shows the body or the low-poly body and keeps the latter in sync */
 
 void ch_UpdateLowPoly(CHARACTER *ch)
 {
@@ -474,6 +461,7 @@ void ch_UpdateLowPoly(CHARACTER *ch)
     D3ANIMCTL *anim;
     D3ANIMSLOT *s;
     CHANIMFLAGS f;
+    int lowPoly;
     char name[0x100];
     char path[0x100];
     char msg[0x200];
@@ -493,11 +481,15 @@ void ch_UpdateLowPoly(CHARACTER *ch)
             return;
         }
         if (ch->scene == &d3_Scenes[0]) {
-            if (ch_LowPoly != 1 || !d3_Camera
-                || (dx = d3_Camera->pos.x - ch->obj->pos.x,
-                    dy = d3_Camera->pos.y - ch->obj->pos.y,
-                    dz = d3_Camera->pos.z - ch->obj->pos.z,
-                    !((float)sqrt(dx * dx + dy * dy + dz * dz) < 1500.0f))) {
+            lowPoly = 1;
+            if (ch_LowPoly == 1 && d3_Camera) {
+                dx = d3_Camera->pos.x - ch->obj->pos.x;
+                dy = d3_Camera->pos.y - ch->obj->pos.y;
+                dz = d3_Camera->pos.z - ch->obj->pos.z;
+                if ((float)sqrt(dx * dx + dy * dy + dz * dz) < 1500.0f)
+                    lowPoly = 0;
+            }
+            if (lowPoly) {
                 if (ch->obj->type != 1)
                     d3if_Show(ch->obj, 0);
                 if ((ch->group == ch_CurrentGroup && ch->scriptGroup == ch_CurrentScriptGroup) || !ch->scriptGroup) {
@@ -549,12 +541,12 @@ void ch_UpdateLowPoly(CHARACTER *ch)
                 s->timeout = -1;
                 return;
             }
-            if (!s && anim->slots[0].data) {
+            if (!ch->slot && anim->slots[0].data) {
                 d3t_ReleaseObjectTextures(ch->lowPolyBody);
                 return;
             }
-            if (s && anim->slots[0].data)
-                anim->slots[0].speed = s->speed;
+            if (ch->slot && anim->slots[0].data)
+                anim->slots[0].speed = ch->slot->speed;
             return;
         }
         if ((ch->group == ch_CurrentGroup && ch->scriptGroup == ch_CurrentScriptGroup) || !ch->scriptGroup) {
