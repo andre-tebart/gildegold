@@ -1067,7 +1067,7 @@ int amt_GetOfficeCandidates(char *c, int n, AMTCAND *out)
 }
 /* 0x4e7320, the same candidate list as amt_GetOfficeCandidates, with the full offices counted: a rated office with 4 applicants is skipped for the list and sets
    *full to 1 (when full is not 0). Returns the number of candidates, capped at n; the town hall window 0x5a0590 uses *full to tell "all offices full" from "no
-   office open" @deep Read whole against the original and fixed as its sibling amt_GetOfficeCandidates: the duplicate search with a found flag (i >= 0 && !found), the place search with the stop flag, the re-check of out[0] after a run to -1 and the insert only on a stop, the cap cnt >= n. The statements, constants, field offsets and the walk (index loop, &amt_Table[j].kind as the base, signed jl) now agree; left is allocation only: our walk pointer lives in edi and its slot [ebp-0xc] where the original reloads it from [ebp-4] into eax / edx (+0x4e739d cmp byte ptr [eax+8],3 vs ours [edi+8]; +0x4e73c4 mov edx,[ebp-4] / cmp [edx+4],4), cnt and the out copy swap slots ([ebp-4] / [ebp-0xc] / [ebp-8]), ours zeroes through eax where the original uses edx, reloads out into edi on other paths (+0x4e73e0, +0x4e7416, +0x4e747c), and keeps the capped cnt in a slot (mov [ebp-4],esi / mov eax,[ebp-4] vs mov eax,esi). */
+   office open" */
 
 int amt_GetOfficeCandidatesFull(char *c, int n, AMTCAND *out, int *full)
 {
@@ -1078,7 +1078,7 @@ int amt_GetOfficeCandidatesFull(char *c, int n, AMTCAND *out, int *full)
     f = 0;
     if (n <= 0)
         return 0;
-    AI_ZERO(out, n * 4);
+    AI_ZERO_AT(out, n * 4);
     for (i = n - 1; i >= 0; i--) {
         out[i].rate = -100.0f;
         out[i].kind = 0;
@@ -1130,7 +1130,7 @@ int amt_GetOfficeCandidatesFull(char *c, int n, AMTCAND *out, int *full)
     if (full != 0)
         *full = f;
     if (cnt >= n)
-        cnt = n;
+        return n;
     return cnt;
 }
 /* 0x4e7510, the character who holds the first office of the kind k (the AI decision 0x490e00 asks for the kind 0x11 holder); 0 when no record has the kind or the
