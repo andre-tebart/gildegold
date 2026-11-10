@@ -2117,16 +2117,16 @@ exe	0x004c0230	snd_AddToQueue	f3snd	byte	readable
 exe	0x004c02e0	snd_UpdateQueue	f3snd	draft	readable	deep	
 exe	0x004c0470	snd_UpdateRain	f3snd	draft	readable	deep	
 exe	0x004c0e60	snd_UpdateAnimals	f3snd	shape	readable		
-exe	0x004c18a0	snd_EnterBuilding	f3snd	draft	readable	deep	
+exe	0x004c18a0	snd_EnterBuilding	f3snd	byte	readable		
 exe	0x004c1bd0	snd_PlayOutdoorTrack	f3snd	byte	readable		
 exe	0x004c1f90	snd_FindActiveTrack	f3snd	byte	readable		
-exe	0x004c1fc0	snd_FindTrackKind	f3snd	draft	readable	deep	
+exe	0x004c1fc0	snd_FindTrackKind	f3snd	byte	readable		
 exe	0x004c2000	snd_UpdateMusic	f3snd	shape	readable		
 exe	0x004c23f0	snd_PlaySpecialTrack	f3snd	byte	readable		
 exe	0x004c2480	snd_EndSpecialTrack	f3snd	byte	readable		
 exe	0x004c24c0	snd_FadeMusic	f3snd	byte	readable		
 exe	0x004c24e0	snd_VoiceVariant	f3snd	byte	readable		
-exe	0x004c2510	snd_FindVoiceSample	f3snd	draft	readable	deep	
+exe	0x004c2510	snd_FindVoiceSample	f3snd	draft	readable	stuck	
 exe	0x004c2760	snd_PlayVoice	f3snd	byte	readable		
 exe	0x004c27d0	snd_QueueVoice	f3snd	byte	readable		
 exe	0x004c2830	snd_LoadVoiceBank	f3snd	byte	readable		
@@ -2711,7 +2711,7 @@ exe	0x004ec2f0	ahm_ClearStep	ahm	byte	readable
 exe	0x004ec320	ahm_StepValue	ahm	byte	readable		
 exe	0x004ec3d0	ahm_ObjectValue	ahm	byte	readable		
 exe	0x004ec490	ahm_SendCreateAlchemist	ahm	byte	readable		
-exe	0x004ec500	ahm_CreateAlchemist	ahm	draft	readable	deep	
+exe	0x004ec500	ahm_CreateAlchemist	ahm	shape	readable	stuck	
 exe	0x004ec940	ahm_SendSetShare	ahm	shape	readable		
 exe	0x004eca00	ahm_SetShare	ahm	byte	readable		
 exe	0x004ecaa0	ahm_SendAddPlace	ahm	byte	readable		
