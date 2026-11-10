@@ -3380,15 +3380,7 @@ int sv_AddPanelButton(int x, int y, int text)
    health bar (sv_PanelHealthBar, the level 0 .. 100; not for the kinds 0x47 / 0x1d / 0x57) and, unless flag 1 of
    b->flags5a is set or for those kinds, the action button 0x8c (sv_PanelActionBtn: txt_PanelBtnOwn for the player's own
    or permitted building, else txt_PanelBtnForeign) and for the goods carrying classes the "Transport" button
-   (sv_PanelTransportBtn, not with a fallback building); the unused widget ids are set to -1
-   @deep read whole against 0x528860..0x528b74 and rewritten typed (AIBLD / AIBTYPE / D2WIN.w / D2OBJ
-   interactive+user, d2_OpenFormS 16-bit x, title branch order != 0x47 first, the label as one ?:
-   argument): every statement matches, 244 vs 247 instructions. Left is the constant -1: the original keeps
-   it in ebp for the whole function and re-materialises it after ebp served as the AIBTYPE pointer (or
-   ebp,-1 at 0x528b28 / 0x528b3b, then mov [sv_PanelWidgets], ebp and the else-path stores via ebp), ours
-   stores immediates / eax (mov dword ptr [X], 0xffffffff; or eax,-1; mov [X], eax) and lays the three
-   tails out in another order. Tried: the tail as if/else without returns and with a shared widget store
-   (both 39 ins / 140 bytes, unchanged) */
+   (sv_PanelTransportBtn, not with a fallback building); the unused widget ids are set to -1 */
 void sv_OpenBuildingPanel(AIBLD *b)
 {
     int level, cls;
@@ -3425,21 +3417,20 @@ void sv_OpenBuildingPanel(AIBLD *b)
         cls = gm_BuildingClass(b->type);
         bt = &ai_BTypesT[b->type];
         perm = gm_PermissionBits(ai_PlayerId, (unsigned char *)b, 0, 0);
-        sv_PanelActionBtn = sv_AddPanelButton(0, 0x8c, b->owner != ai_PlayerId && b->masterId != ai_PlayerId && (perm & 0x10) == 0
-                                                       ? txt_PanelBtnForeign : txt_PanelBtnOwn);
+        if (b->owner != ai_PlayerId && b->masterId != ai_PlayerId && (perm & 0x10) == 0)
+            sv_PanelActionBtn = sv_AddPanelButton(0, 0x8c, txt_PanelBtnForeign);
+        else
+            sv_PanelActionBtn = sv_AddPanelButton(0, 0x8c, txt_PanelBtnOwn);
         if ((cls == 1 || cls == 2 || cls == 4 || cls == 7 || cls == 8 || bt->kind == 0x10 || bt->kind == 0x1e || bt->kind == 0x1f
              || bt->kind == 0x1d) && bt->kind != 5) {
             if (ai_FallbackBuilding == 0)
                 sv_PanelTransportBtn = sv_AddPanelButton(0, 0xa6, (int)"Transport");
-            sv_PanelWidgets[0] = -1;
-            return;
-        }
-        sv_PanelWidgets[0] = -1;
+        } else
+            sv_PanelTransportBtn = -1;
+    } else {
+        sv_PanelActionBtn = -1;
         sv_PanelTransportBtn = -1;
-        return;
     }
-    sv_PanelActionBtn = -1;
-    sv_PanelTransportBtn = -1;
     sv_PanelWidgets[0] = -1;
 }
 /* 0x528b80, opens the info panel (sv_PanelForm, "panel\infopanel_gebaeude") for the item object p unless one is open or p

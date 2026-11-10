@@ -3353,7 +3353,7 @@ exe	0x00528660	sv_CollectBannerCB	sv	a1ab09564ded8b3a	no	byte	control=byte p1=by
 exe	0x005286a0	sv_RemoveBanners	sv	e2ed33dfa2a2f6be	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00528770	sv_RefreshBanners	sv	b4e56b24cdd2973f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00528800	sv_AddPanelButton	sv	349284be20f2b7d8	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x00528860	sv_OpenBuildingPanel	sv	1fdbddfe8abbf7fb	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x00528860	sv_OpenBuildingPanel	sv	1fdbddfe8abbf7fb	no	draft	sample n=32 seed=1 compiled=31 codegens=1 best=draft
 exe	0x00528b80	sv_OpenItemPanel	sv	1394afb1bb3ee768	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00528d90	sv_OpenCartPanel	sv	38c7c11fe6f40430	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00528ee0	sv_OpenDefaultPanel	sv	d70bb8472378d4b1	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
