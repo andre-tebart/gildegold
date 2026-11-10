@@ -3253,7 +3253,7 @@ exe	0x00519aa0	ls_IdsToRefs	ls	3211380d6f3e4fae	no	byte	control=byte p1=byte p2=
 exe	0x00519b50	ls_RelinkScene	ls	16535092489e2713	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
 exe	0x00519bf0	ls_WriteObjects	ls	9ba5cc97f8b5b9a5	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
 exe	0x00519d20	ls_WriteBuildings	ls	57a0d93b839c4d88	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x0051a1a0	ls_WritePlayerRecords	ls	f014d902c9b891ee	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x0051a1a0	ls_WritePlayerRecords	ls	f014d902c9b891ee	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x0051a4b0	ls_WriteCharacters	ls	b8e4b5aef44066b8	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
 exe	0x0051ad30	ls_ActionIndex	ls	981eb2bc4d7efd42	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0051ad60	ls_ActionAt	ls	b60a5059d5c7126c	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
