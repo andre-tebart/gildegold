@@ -973,23 +973,7 @@ int ai_TokenRandomPlayer(int mode, G12ARG *args, int k, char *fmt, char *out)
     return 1;
 }
 /* 0x4afdd0, the FEST text command (callback 0x601b50[0], name 0x601070[0]) "-n" (n > 0): sends message 0x53
-   for the character ai_PlayerChar, today 12:00
-   @deep read whole against the original: 44 = 44 instructions, the guard, atoi(fmt + 1) and the msg fields
-   are all there, and the call, the argument and the constants match. Left is the compiler's store/load
-   scheduling of the AIMSG fill: the original hoists ai_Time's first dword above the memset (mov
-   edx,ds:0x770ae0 at 0x4afdf6, before push edi / rep stos) and stores the clock copy a,c,b,d (+0 0x4afe17,
-   +8 0x4afe2b, +4 0x4afe2f via ai_TimeHourW, word 0x4afe52) interleaved with the netId load, while ours
-   keeps source order and stores the copy ascending (0x4afe17..0x4afe3c); diffclass code 38 in two hunks
-   (0x4afdf6 and 0x4afe09). Q4 settled here: the original's byte store of 0 at msg+0x58 (0x4afe4e) is
-   msg.car = 0 now (typed, a dword store; the memset already zeroes the rest). Tried and reverted: the
-   clock copy before msg.to (worse), car as a byte store. The same blocked pattern as ai_CommandRiot
-   0x4b0fd0 (its comment: one vargen store-order pass should settle both). (references: M8 at +0x50: ours
-   refers to ai_Time+0x8 (0x770ae8), the original's field to 0x770ae4 (ai_TimeHourW), explained: the M8 at
-   +0x50 is the aligner pairing crossed loads of the same 14-byte ai_Time copy: ours mov ecx,[ai_Time+0x8]
-   (0x4afe20) lines up with the original's mov ecx,[ai_TimeHourW = ai_Time+4] (0x4afe25), while our
-   [ai_Time+4] load (0x4afe17) lines up with the original's [ai_Time+0x8] (0x4afe1b); both sides do the
-   same four loads of 0x770ae0 / 0x770ae4 / 0x770ae8 / 0x770aec into time +0 / +4 / +8 / +0xc, only the
-   load order differs, and no other object is referenced) */
+   for the character ai_PlayerChar, today 12:00 */
 
 int ai_CommandFest(int a, int b, char *fmt)
 {
@@ -1001,10 +985,10 @@ int ai_CommandFest(int a, int b, char *fmt)
         memset(&msg, 0, sizeof(msg));
         msg.type = 0x53;
         msg.to = ((AICHAR *)ai_PlayerChar)->netId;
-        msg.time = ai_Time;
         msg.fromId = -1;
         msg.flags = 1;
-        msg.car = 0;
+        msg.thiefClass = 0;     /* @original a byte store at 0x58 (the field's name is the thief message's) */
+        msg.time = ai_Time;
         msg.time.hour = 12;
         msg.time.min = 0;
         cm_SendLongMessage(&msg);
