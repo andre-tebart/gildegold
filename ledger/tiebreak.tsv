@@ -4632,7 +4632,7 @@ exe	0x005d7f10	ai_MessageFilterScreen	menu	781e33127759747f	no	draft	sample n=32
 exe	0x005d8080	ai_TailorChatWindow	unk_5d33b0	3b422d7c8150dbaa	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x005d8360	ai_TailorContact	unk_5d33b0	218b4159db02f941	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x005d8420	ai_ProductionContact	unk_5d33b0	b3d6644bdad4e60e	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
-exe	0x005d85e0	ai_BloodRevengeWindow	unk_5d33b0	ae0d751cd2cd6d24	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x005d85e0	ai_BloodRevengeWindow	menu	ae0d751cd2cd6d24	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x005d8c90	ai_CurseWindow	unk_5d33b0	15b149ee2be51701	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
 exe	0x005d90e0	ai_CurseTargetWindow	menu	b15addc3ec7d9556	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x005d95a0	ai_HomageWindow	unk_5d33b0	bf54f867f712107c	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
