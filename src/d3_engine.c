@@ -859,22 +859,25 @@ void d3_SetFog(float start, float end, unsigned long color)
 }
 /* 0x43a7d0, Direct3D rendering: draws the sorted triangles in texture order through the vertex buffer,
    clipping the ones that cross a frustum plane into fans.
-   @deep read the whole function against the original 0x43a7d0..0x43b073 and fixed the meaning: the texture
-   size estimate (D3TEXV.w unsigned: shr and the fild qword of an unsigned product; the factor 0.16666667f,
-   not 1.3333334f), d3_SetBlendState called with its unsigned char prototype (the original's setb al / shr
-   dl,1 byte forms; the int view macro is gone), D3PTRI 0x18/0x1c/0x20 typed as the float zofs/uofs/vofs
-   (no *(float *) casts), D3TEXV.blend, renamed d3_NoTexturesByte / d3_TextureBytes. Every statement lines
-   up (the texture switch, the scroll offsets, the 3 unclipped TLV paths, the clip list, the projection
-   loop, the fan with its winding test, the flush); ours 678 vs 673. Left: allocation - the original keeps
-   the zero constant in edi and pushes esi only at the loop entry ('+ push esi / + jmp 0x43a887 / + mov
-   edi,[ebp-0x18]' at +0xb1, popping it before the last d3d_DrawTriangles), p in ebx with its home
-   [ebp-0x14] (ours ecx / [ebp-0x10]), n in [ebp-0x10] (ours [ebp-0x14]), so 'test eax,eax' vs 'cmp
-   eax,edi', 'push 0' vs 'push edi' and the macro temps' slots differ throughout; the flag OR loads
-   v[2]/v[0]/v[1] where ours loads v[1]/v[0]/v[2] (scheduling of the same OR). (references: M8 at +0x218:
-   ours refers to ts_ScrollV (0xfb9120), the original's field to 0xfb90a0 (ts_ScrollU), explained: the one
-   ref line (ts_ScrollV at +0x218 against the original's ts_ScrollU) is an alignment shift: both sides
-   compute d3_UOfs from ts_ScrollV[uofs] + t->uofs and then d3_VOfs from ts_ScrollU[vofs] + t->vofs, in the
-   same order (asmdiff +0x1d8..+0x22e)) */
+   @stuck match-deep (dcp try, nothing kept; tiebreak sample: insensitive, 32 samples one codegen). Read:
+   the original keeps the constant 0 in edi inside the texture-switch block (n = 0, the cur tests, push edi
+   for SetTexture's stage, the fild high dword: cmp eax,edi where ours test eax,eax / push 0) and edi = cur
+   at the loop top (mov edi,[ebp-0x18]; cmp edi,ecx), t in esi with esi pushed only around the loop (push
+   esi after the d3_SortCount > 0 test, pop before the last d3d_DrawTriangles: VC6 shrink-wraps esi because
+   nothing outside the loop uses it), p in ebx with home [ebp-0x14]; ours puts the zero in esi before the
+   loop (so esi is pushed in the prologue), t in ebx, p in ecx / [ebp-0x10]. The texture size estimate in
+   the original loads cur->bytes and cur->w before the flags & 8 test and multiplies in each arm. Not
+   moved: cur != t->tex operand order, the init order of wrap / oldtext / cur, n before p, the five other
+   orders of the flag OR (all = control); unsigned SortCount compare 505, the bytes estimate as a ternary
+   507 or with the negated test 509. Left: allocation throughout (code 484, slots 82, regs 22, fpu 15),
+   ours 678 vs 673 instructions, the 4-byte body shift from the late push esi. (tiebreak: insensitive)
+   prior: read the whole function against the original 0x43a7d0..0x43b073 and fixed the meaning: the
+   texture size estimate (D3TEXV.w unsigned: shr and the fild qword of an unsigned product; the factor
+   0.16666667f, not 1.3333334f), d3_SetBlendState called with its unsigned char prototype (the original's
+   setb al / shr dl,1 byte forms; the int view macro is gone), D3PTRI 0x18/0x1c/0x20 typed as the float
+   zofs/uofs/vofs (no *(float *) casts), D3TEXV.blend, renamed d3_NoTexturesByte / d3_TextureBytes. Every
+   statement lines up (the texture switch, the scroll offsets, the 3 unclipped TLV paths, the clip list,
+   the projection loop, the fan with its winding test, the flush); ours 678 vs 673. */
 
 void d3_DrawSortedD3D(void)
 {
