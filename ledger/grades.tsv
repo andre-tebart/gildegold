@@ -1862,22 +1862,22 @@ exe	0x004ae0d0	ai_IsLivingHuman	hst	byte	readable
 exe	0x004ae120	ai_IsLivingInhabitant	hst	byte	readable		
 exe	0x004ae160	ai_TokenMayor	hst	shape	readable	deep	
 exe	0x004ae280	ai_TokenBishop	hst	byte	readable		
-exe	0x004ae3a0	ai_TokenRandomGuildMaster	hst	draft	readable	deep	
-exe	0x004ae600	ai_TokenRandomOfficeHolderFemale	hst	draft	readable	deep	
-exe	0x004ae900	ai_TokenRandomOfficeHolder	hst	draft	readable	deep	
-exe	0x004aec00	ai_TokenRandomOfficePerson	hst	draft	readable	deep	
+exe	0x004ae3a0	ai_TokenRandomGuildMaster	hst	byte	readable		
+exe	0x004ae600	ai_TokenRandomOfficeHolderFemale	hst	byte	readable		
+exe	0x004ae900	ai_TokenRandomOfficeHolder	hst	byte	readable		
+exe	0x004aec00	ai_TokenRandomOfficePerson	hst	byte	readable		
 exe	0x004aef10	ai_TokenRichestInhabitant	hst	draft	readable	deep	
 exe	0x004af090	ai_TokenBestInn	hst	byte	readable		
 exe	0x004af1b0	ai_TokenMoney	hst	byte	readable		
 exe	0x004af2c0	ai_TokenCityTreasury	hst	byte	readable		
-exe	0x004af3f0	ai_TokenRandomChurchProfession	hst	draft	readable	deep	
-exe	0x004af6c0	ai_TokenRandomRich	hst	draft	readable	deep	
+exe	0x004af3f0	ai_TokenRandomChurchProfession	hst	byte	readable		
+exe	0x004af6c0	ai_TokenRandomRich	hst	shape	readable	stuck	
 exe	0x004af8d0	ai_TokenRandomNpcInhabitant	hst	shape	readable		
-exe	0x004afa20	ai_TokenRandomMerchant	hst	draft	readable	deep	
+exe	0x004afa20	ai_TokenRandomMerchant	hst	byte	readable		
 exe	0x004afc30	ai_TokenRandomPlayer	hst	byte	readable		
 exe	0x004afdd0	ai_CommandFest	hst	byte	readable		
 exe	0x004afe80	ai_CommandSiegeStart	hst	byte	readable		
-exe	0x004aff30	ai_CommandUprising	hst	shape	readable		
+exe	0x004aff30	ai_CommandUprising	hst	byte	readable		
 exe	0x004affc0	ai_CommandFire	hst	byte	readable		
 exe	0x004b0050	ai_CommandTornado	hst	byte	readable		
 exe	0x004b00e0	ai_CommandCityTreasury	hst	shape	readable		
