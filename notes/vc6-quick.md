@@ -742,3 +742,21 @@ mechanisms, each as a generated round over all positions / subsets:
   (a slot variable reloaded into edi at the loop's iteration join) is open in sv_SendSelectedToBuilding.
 - sv_MoveToGroup: one of 19 `ch->` uses re-read from the record (`((SVCHARREC *)ai_Chars[c])->id` in
   sv_RemoveGroupMember's call) took it 88 -> 74 ins (subsets.py singles + pairs, 190 variants).
+- **A global byte reread for a table index right after its store** (`mov [g],al; .. mov eax,[g]; and eax,0xff;
+  shl eax,3; mov ecx,[eax+T]`, ours `and eax,0xff` on the call result and `[eax*8+T]`): index by the global, not the
+  local (`T[g.byte[0]].w`); the same change also fixed the store scheduling of the following
+  GetPrivateProfileIntA reads (ai_LoadOptions 14 ins -> byte; a stray order hunk was two stores of one record
+  swapped in the source).
+- **A default kept in eax across the flag test** (`mov al,[flag]; test al,al; mov eax,1; jne`, ours the flag in cl
+  and an earlier result store delayed): `if (flag) mode = 1; else mode = dflt;` (or the ternary), not
+  `mode = 1; if (!flag) mode = dflt;` (ai_OptionsGfxScreen byte).
+- **fmul / fadd operand order in a product or sum VC6 reassociates** (the original `fmul [field]; fmul [arg]`,
+  `fld a; fadd [field]; fadd b`): the plain left-to-right spellings all compile alike; nesting moves it.
+  `k = spread * (speed * (2r - 1))` gave the field first, `y = dside.y + (dother.y + v.y)` the original's sum
+  order (ai_ScatterShot 8 ins -> byte; 25-variant sweep, deep-tools-style generator in the session scratch).
+- **Two compare arms with one shared `push edi; call _strcmpi` tail** (the arms push only the literal): write
+  each arm as `if (_strcmpi(name, LIT) == 0) goto fill;` and let the chain fall into one shared `slot = -1;`;
+  per-arm `return -1` / `slot = -1; goto done` duplicate the epilogue and nothing cross-jumps. VC6 then keeps the
+  later arm's copy; keeping the first arm's (the original's ai_RegisterSaveSlot) is open (stuck, 14 ins).
+- The `1.0f` of an M10 `open:` line naming ai_FloatOne is worth trying first: reading the datum changes the
+  scheduling around it (ai_ScatterShot 18 -> 8 ins with the copy moved).
