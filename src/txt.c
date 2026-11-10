@@ -703,8 +703,8 @@ int txt_OpenText(char *file, int header)
             return 0;
         }
         fseek(f, 0, SEEK_SET);
-        lineno = txt_Count - first;
-        fwrite(&lineno, 4, 1, f);
+        i = txt_Count - first;
+        fwrite(&i, 4, 1, f);
         fwrite(&txt_Files[fi].first, 4, 1, f);
         fwrite(&txt_Files[fi].last, 4, 1, f);
         for (i = first; i < txt_Count; i++) {

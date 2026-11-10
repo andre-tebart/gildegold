@@ -625,7 +625,7 @@ exe	0x0042c480	txt_TrimRight	txt	9d872fe6d4433e5c	no	byte	control=byte p1=byte p
 exe	0x0042c4b0	txt_ParseLine	txt	a07efb55d9123578	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0042c950	txt_ParseRandomText	txt	576218a50b9ed10b	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x0042c9c0	txt_LoadIncludes	txt	f39523c37bb703ad	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x0042cbc0	txt_OpenText	txt	953ced54082bc726	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x0042cbc0	txt_OpenText	txt	2294c676eab67a95	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x0042e2a0	txt_FreeFiles	txt	2a1c3a16fcb6f899	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0042e2e0	txt_FindFile	txt	ee18b536158b49b0	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0042e320	txt_FreeFile	txt	53bd943d95fec541	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
