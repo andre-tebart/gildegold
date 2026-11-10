@@ -6,16 +6,11 @@
 # cflags=... --why "..."`, `dcp libs declare ARCHIVE... --why "..."`, `dcp analyzer declare ... --why "..."`.
 # The declarations land here with their reasons (reason.<key> = "...").
 
-# The binaries built from this codebase; the first is the default target (`--target NAME` selects another,
-# `dcp target add NAME PATH` adds one). Each target has its own store, build/<name>.sqlite, and its own
-# toolchain declaration (compiler, linker, cflags, archives). name, path, sha256, image and isa are computed
-# from the file.
-[[target]]
+# The binary built from this codebase: its path and sha256, its toolchain declaration and library archives.
+[target]
 name = "exe"
 path = "{game}/GildeGold.exe"
 sha256 = "d6f20fda136cd7ced612b96094e527a137f129543753f0fec0e357f6aecb3074"
-image = "pe32"
-isa = "x86"
 compiler = "cl 12.00.9044"
 linker = "link 6.00.8447"
 cflags = ["/O2", "/Gy"]
@@ -38,11 +33,9 @@ easy_max_dist = 48
 easy_read_max_bytes = 2048
 
 [analyzer]
-# The third-party analyzer `dcp setup` runs for a draft of every function (src/decompanion/analyzers/): "ghidra"
-# (headless; root, java_home, timeout = seconds per function), "rea" (file = saved batch_decompile results),
-# "none" (dcp draft writes @rough skeletons from the disassembly). Its function starts are declarations.
+# Ghidra, which `dcp setup` runs headless for a draft of every function (root, java_home, timeout = seconds per
+# function). Its function starts are declarations.
 # Written by `dcp init` from what this machine has; an obligation until `dcp analyzer declare` confirms it.
-plugin = "ghidra"
 root = "{ghidra}"
 java_home = "{java}"
 reason = "Ghidra 12.1.4 headless drafts for the functions rea left without a source; rea's own sources stay ahead of the drafts"
