@@ -5047,7 +5047,7 @@ void sv_HandleSelectionMouse(void)
             i = 0;
             for (j = 0; j < 768; j++) {
                 c = &ai_CharsT[j];
-                if (c->selected != 0 && c->health != 0 && (gm_PermissionBits(ai_PlayerId, 0, 0, (int)c) & 0x800) != 0
+                if (ai_CharsT[j].selected != 0 && c->health != 0 && (gm_PermissionBits(ai_PlayerId, 0, 0, (int)c) & 0x800) != 0
                     && c->model != 0) {
                     int off[9][2] = { {0, 0}, {-1, 0}, {-1, -1}, {0, -1}, {1, -1}, {1, 0}, {1, 1}, {0, 1}, {-1, 1} };
                     int cell = 0;
@@ -5065,11 +5065,11 @@ void sv_HandleSelectionMouse(void)
                                 break;
                             }
                         } while (ix < 0 || ix >= size || iy < 0 || iy >= size || cell == 0 || cell == 0xd);
-                        if (c->bld != 0)
-                            sv_MoveToGroup((unsigned char *)c->bld, 0, c->id, 0);
-                        if (c->model->scriptId != -1 && (t = (int)evt_FindById(c->model->scriptId)) != 0)
+                        if (ai_CharsT[j].bld != 0)
+                            sv_MoveToGroup((unsigned char *)ai_CharsT[j].bld, 0, ai_CharsT[j].id, 0);
+                        if (ai_CharsT[j].model->scriptId != -1 && (t = (int)evt_FindById(ai_CharsT[j].model->scriptId)) != 0)
                             evt_Stop((EVTSCRIPT *)t);
-                        cm_SendChrWalkTo(c->netId, ix, iy, d3_CurrentScene);
+                        cm_SendChrWalkTo(ai_CharsT[j].netId, ix, iy, d3_CurrentScene);
                     }
                 }
             }
@@ -5088,7 +5088,13 @@ void sv_HandleSelectionMouse(void)
                     cm_SendChrStop(c->netId);
                     if (c->bld != 0)
                         sv_MoveToGroup((unsigned char *)c->bld, 0, c->id, 0);
-                    if (((AIOBJ *)sv_ClickedContact)->id == 0xfd) {
+                    if (((AIOBJ *)sv_ClickedContact)->id != 0xfd) {
+                        t = init_ObjectSceneUniverse((unsigned short *)sv_ClickedContact);
+                        if (ai_FallbackBuilding != 0)
+                            b = (AIBLD *)ai_FallbackBuilding;
+                        else if (ai_PlayerBuilding != 0)
+                            b = (AIBLD *)ai_PlayerBuilding;
+                    } else {
                         if (ai_FallbackBuilding != 0) {
                             t = init_BuildingSceneUniverse((unsigned char *)ai_FallbackBuilding);
                             if (ai_FallbackBuilding != 0)
@@ -5102,12 +5108,6 @@ void sv_HandleSelectionMouse(void)
                             else if (ai_PlayerBuilding != 0)
                                 b = (AIBLD *)ai_PlayerBuilding;
                         }
-                    } else {
-                        t = init_ObjectSceneUniverse((unsigned short *)sv_ClickedContact);
-                        if (ai_FallbackBuilding != 0)
-                            b = (AIBLD *)ai_FallbackBuilding;
-                        else if (ai_PlayerBuilding != 0)
-                            b = (AIBLD *)ai_PlayerBuilding;
                     }
                     if (t >= 0)
                         cm_SendChrUseGates(c->netId, b->id, ((AIOBJ *)sv_ClickedContact)->objId);
