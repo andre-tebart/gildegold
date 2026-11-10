@@ -2708,9 +2708,9 @@ void ai_BloodRevengeWindow(int building)
     GYPSYROW *row;
     int n, i, k, r;
 
+    refresh = 1;
     memset(rows, 0, sizeof(rows));
     memset(sel, 0xff, 5 * sizeof(int));
-    refresh = 1;
     total = 0;
     tick = 0;
     if (((AICHARVIEW *)(ai_CharsC + ai_PlayerId * 0x21c))->flags1cc & 8) {
