@@ -4181,9 +4181,6 @@ int ai_StepShot(SHOTREC *shot)
         v.x = shot->vel.v.x;
         v.y = shot->vel.v.y;
         v.z = shot->vel.v.z;
-        next.x = shot->pos.x;
-        next.y = shot->pos.y;
-        next.z = shot->pos.z;
         d.x = DRAG(v.x);
         d.y = DRAG(v.y);
         d.z = DRAG(v.z);
@@ -4191,13 +4188,17 @@ int ai_StepShot(SHOTREC *shot)
         a.y = d.y + wind.y;
         a.z = d.z + wind.z;
         a.x *= perMass;
-        a.y = a.y * perMass - fall;
+        a.y *= perMass;
         a.z *= perMass;
+        a.y -= fall;
         v.x = a.x + v.x;
         v.y = a.y + v.y;
         v.z = a.z + v.z;
         d.x = DRAG(v.x);
         d.y = DRAG(v.y);
+        next.x = shot->pos.x;
+        next.y = shot->pos.y;
+        next.z = shot->pos.z;
         d.z = DRAG(v.z);
         shot->time++;
         shot->steps++;
@@ -4205,8 +4206,9 @@ int ai_StepShot(SHOTREC *shot)
         b.y = d.y + wind.y;
         b.z = d.z + wind.z;
         b.x *= perMass;
-        b.y = b.y * perMass - fall;
+        b.y *= perMass;
         b.z *= perMass;
+        b.y -= fall;
         v.x = b.x + a.x;
         v.y = b.y + a.y;
         v.z = b.z + a.z;
@@ -4224,9 +4226,9 @@ int ai_StepShot(SHOTREC *shot)
         next.z += m.z;
         if (ai_ShotHitsGround(map, &shot->pos, (D3VECTOR *)&next, px, pz, &npx, &npz) && shot->steps > 50) {
             shot->pos.x = next.x;
+            shot->state = 2;
             shot->pos.y = next.y;
             shot->pos.z = next.z;
-            shot->state = 2;
             shot->energy = (shot->vel.v.x * shot->vel.v.x + shot->vel.v.y * shot->vel.v.y
                 + shot->vel.v.z * shot->vel.v.z) * shot->mass * 0.5f;
             return 0;
