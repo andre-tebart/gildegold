@@ -3358,7 +3358,7 @@ exe	0x00528b80	sv_OpenItemPanel	sv	1394afb1bb3ee768	no	byte	control=byte p1=byte
 exe	0x00528d90	sv_OpenCartPanel	sv	38c7c11fe6f40430	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00528ee0	sv_OpenDefaultPanel	sv	d70bb8472378d4b1	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x005290f0	sv_OpenPersonPanel	sv	970bd0e4bc326615	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x00529380	sv_RefreshPanel	sv	6adfcd23725a334d	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x00529380	sv_RefreshPanel	sv	1bc7fc50d5427022	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x00529fb0	sv_ClosePanel	sv	a938c526ac944bcb	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0052a040	sv_ReturnZero	sv	779f48c3405c7822	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0052a050	sv_UpdatePanel	sv	c136876837bdebe4	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
