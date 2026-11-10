@@ -7226,15 +7226,7 @@ void sv_UpdateClock(void);
 /* 0x5309a0, "MASTER": one frame of the game screen loop, called by every screen with its own callback (the top of the callback stack 0x75f780, 8 bytes per entry, depth 0x6f229c; 0 = nothing to register) and the
    mask of the parts to run (param_2: 1 input, 4 resize, 0x10 objects, 0x20 speech, 0x40 world, 0x100 left click, 0x1000 names, 0x2000 main buttons, 0x4000 weather, 0x10000 paused, 0x100000 modal, ..); returns 1
    while the caller's screen is the top screen, 0 when it must end. The Esc key (mask 0x2000) opens the options menu with the music / sfx volumes lowered to a third
-   and restores them after it.
-   @deep Read in full against the original 0x5309a0..0x5315bc; all statements reconciled (frame stack
-   push/pop, the unsigned clock compares, the mask & 0x80 tests, the band / name-plate / scroll-arrow
-   branch orders, the Esc volume block master*1/127 with the 1/3 terms, the save-name clear, name buffer
-   0x104, frame 0x214 now equal, 830 vs 830 instructions). One hunk left: ours CSEs sv_FrameDepth across
-   the merge into the pop arm (- 0x530b21 mov ecx,[sv_FrameDepth] on the err/PopRequest edge, then test ecx
-   / [ecx*8+sv_Frames] / dec ecx), the original reloads it inside the arm (+ 0x530b36 mov
-   eax,[sv_FrameDepth], test eax / [eax*8+sv_Frames] / dec eax). Tried: sv_Frames[sv_FrameDepth--].cb = 0,
-   sv_Frames[++sv_FrameDepth].cb = cb - same. A load placement / register choice: allocation. */
+   and restores them after it. */
 int sv_RunFrame(int cb, unsigned mask)
 {
     int r, i;
@@ -7267,21 +7259,22 @@ int sv_RunFrame(int cb, unsigned mask)
     if (cb != 0) {
         if (sv_Frames[sv_FrameDepth].cb == cb) {
             r = 1;
+        } else if (sv_PopRequest != 0) {
+            r = 0;
         } else {
-            if (sv_PopRequest == 0) {
-                r = 1;
-                for (i = 0; i < 0x80; i++) {
-                    if (sv_Frames[i].cb == cb) {
-                        err_Message("MASTER(): Function already registrated!");
-                        goto l21;
-                    }
+            r = 1;
+            for (i = 0; i < 0x80; i++) {
+                if (sv_Frames[i].cb == cb) {
+                    err_Message("MASTER(): Function already registrated!");
+                    r = 0;
+                    break;
                 }
+            }
+            if (r != 0) {
                 sv_FrameDepth++;
                 sv_Frames[sv_FrameDepth].cb = cb;
                 goto l64;
             }
-l21:
-            r = 0;
         }
         if (sv_PopRequest != 0 && r != 0) {
             sv_PopRequest--;
