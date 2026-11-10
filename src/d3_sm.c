@@ -228,15 +228,26 @@ void d3sm_Replace(D3SM *h, int from, int to)
     }
 }
 /* 0x45e620, (re)builds the map from the terrain and the objects of the default scene
-   @deep whole asmdiff read and fixed: top/bot are int (signed jg/jl, fild dword), D3TERRAIN.size is int
-   (fild dword), mn/mx D3VECTOR, base x0/y0/z0 locals copied into corner[0], min/max operand order (and
-   0x4100 vs test ah,5 senses), the edge-pick test is A < B (it was >=), the camera pos/rot copied field by
-   field, entries init walks a pointer, d3s_ShadowTriangle flags is unsigned char (no xor before mov cl),
-   nrm scoped in the sort loop (frame now 0x108 = original). Left: only stack-slot assignment and one
-   scheduling place: the locals land in other slots (uv at ebp-0x30 vs -0x38, mn -0x3c vs -0x6c, pos/rot
-   swapped -0x7c/-0x88, bot in [ebp-8] vs the dead t slot [ebp+0xc], the D3_ZERO temp frame+0x44 vs +0x58),
-   and the original computes top - bot into [ebp-8] right after the block loop ('sub edx, dword ptr [ebp +
-   0xc]' at 0x45e7b9) where ours sinks it to the fild; ours=687 original=685, no differs/ref lines */
+   @stuck re-read the frame with dcp frame / framemap: the code matches apart from slots (both keep mx.z on
+   the FPU and store only mx.x/y, both pack bot or the outer block counter into t's dead slot [ebp+0xc] but
+   swapped: the original bot, ours the counter i; the original packs i with ax at [ebp-4], ours gives ax
+   its own slot at -0x60). Array order from ebp, the original: mx/nrm -0x20 (shared), uv -0x38, j -0x3c,
+   box -0x5c, mn -0x6c, rot -0x78, pos -0x88, corner -0x108; ours: uv -0x30, mn -0x3c, box -0x5c, ax -0x60,
+   nrm/mx -0x70, pos -0x7c, rot -0x88, corner. Tried: top -= bot right after the block loop (= control: the
+   early sub is not a source lever), D3VECTOR rot, pos order (= control), every subset of hoisting the
+   t-block locals (corner, mn/mx, ax..z0) and the sort-loop locals (nrm, dx/dz/lim) to function scope (31
+   variants: all = control except nrm hoisted: frame 0x114, worse). Next: the mn/mx reference counts (the
+   original packs mx with nrm densest, mn below box: something references mx more or mn less than our
+   min/max macros do) (tiebreak: insensitive) prior: whole asmdiff read and fixed: top/bot are int (signed
+   jg/jl, fild dword), D3TERRAIN.size is int (fild dword), mn/mx D3VECTOR, base x0/y0/z0 locals copied into
+   corner[0], min/max operand order (and 0x4100 vs test ah,5 senses), the edge-pick test is A < B (it was
+   >=), the camera pos/rot copied field by field, entries init walks a pointer, d3s_ShadowTriangle flags is
+   unsigned char (no xor before mov cl), nrm scoped in the sort loop (frame now 0x108 = original). Left:
+   only stack-slot assignment and one scheduling place: the locals land in other slots (uv at ebp-0x30 vs
+   -0x38, mn -0x3c vs -0x6c, pos/rot swapped -0x7c/-0x88, bot in [ebp-8] vs the dead t slot [ebp+0xc], the
+   D3_ZERO temp frame+0x44 vs +0x58), and the original computes top - bot into [ebp-8] right after the
+   block loop ('sub edx, dword ptr [ebp + 0xc]' at 0x45e7b9) where ours sinks it to the fild; ours=687
+   original=685, no differs/ref lines */
 
 void d3sm_Build(D3SM *h, D3TERRAIN *t)
 {
