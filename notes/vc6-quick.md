@@ -495,3 +495,19 @@ mechanisms, each as a generated round over all positions / subsets:
 - **`add esp, 4` after every call and a value pushed before the next call** (`and eax,0xffff; add eax,esi; push
   eax; push 0xc; call`): the calls were nested in an argument list (`f(g(12) + 1, g(n) + base)`), not separate
   statements; an unmasked `add eax, esi` after a 16-bit roll is the int-returning callee (amt_CreateApplicant byte).
+- **An inline-asm clear whose `mov edi` / `mov ebx` read two locals' slots directly** (no `_zp` / `_zn` temp slot,
+  the 0x200 stored once into the size local, the frame 4 bytes smaller): write the asm block with both locals named
+  (`mov edi, n2` / `mov ebx, n1`); AI_ZERO / AI_ZERO_AT keep a temp for one of them (ai_TokenMoney byte).
+- **A message fill whose original hoists the clock's first dword above the memset and stores the copy a,c,b,d**:
+  the struct copy `msg.time = ai_Time` came after the scalar fields (type, to, fromId, flags, arg), not after `to`;
+  a 720-order `permute.py` sweep found it in seconds (ai_CommandFest, ai_CommandRiot byte). A byte store where we
+  write a dword is a byte field of the union (the order alone did not match with the dword).
+- **lea operand order `[esi+edi]` vs ours `[edi+esi]` for `i = (step + i) % N`** does not follow the operand order
+  in the text; it follows which variable was defined first in the loop body (toy: `i = ..; step = ..` flips it). In
+  ai_TokenRandomPlayer the original's outer loop was `for (i = 0; i < 0x300; i++)` around a search that reassigns i
+  (the dead `i = 0` vanishes, `inc edi; cmp; jl` stays): that matched byte where `do .. while (i + 1 < 0x300)`
+  compiled the same except the lea.
+- **A tail that reloads a pointer from its slot (`mov eax, [ebp-4]` before a cross-jumped shared tail) and an entry
+  store `[ebp-4] = 0`**: one variable for both arms (`AICHAR *c = 0;` searched into in one arm, `gm_FindChar` in the
+  other), not `pick` + `c = pick` (the same family's ai_TokenRandomNpcInhabitant has this form). `while (n != 0)
+  { ..; n--; i = ..; }` gives the `dec; test; mov; jne` bottom test, `for (..; n != 0; n--)` drops the test.
