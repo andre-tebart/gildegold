@@ -7052,17 +7052,7 @@ void sv_UpdateWeather(void)
 }
 /* 0x530670, the weather of a frame (sv_RunFrame): draws the rain / snow emitters; in a stormy hour (sv_Weather.storm) a thunder now and then (1 in 300 frames, at storm 3
    another 1 in 100: sv_Weather.thunderStart / thunderLen and the sample "DonnerMittel_s"); in the town (d3_CurrentScene 0), when the clouds clear in an hour from 11 to 17
-   o'clock past its 30th minute, the sun rays (3 in 8) and their hour sv_SunRaysHour; past the 30th minute of a later hour they fade out
-   @deep Read whole against 0x530670..0x5307eb and rewritten: rain/snow draw, the thunder roll (storm[h],
-   1/300 or storm 3 and 1/100, thunderStart/thunderLen, sb_PlaySample with the 7 arguments the original
-   pushes, volume init_SoundVolume*127.0f), the sun rays when clouds[h-1] != 0 and clouds[h] == 0 between
-   11 and 17 past minute 30 (ai_Time.min), sv_SunRaysHour int (the signed jle). Every statement matches;
-   diffclass: regs 8/4/20 (eax<->ecx: the original keeps ai_Time.hour in ecx and zero-extends into eax, ours
-   the reverse) and one code hunk at 0x530734 that is the same cascade: the reload of ai_Time.hour before
-   d3_CurrentScene (+ mov ecx,[ai_Time.hour] / mov eax,[d3_CurrentScene] vs ours mov eax,[ai_Time+4] / mov
-   ecx,[d3_CurrentScene]) and the clouds[h-1]/clouds[h] addressing (+ shl eax,2 / mov
-   edx,[eax+sv_Weather-4] / mov edx,[eax+sv_Weather] vs ours lea ecx,[edx*4+sv_Weather] / cmp [ecx],0).
-   Tried (&clouds[-1])[h] and clouds[(int)h-1]: same 47. Left: allocation / addressing selection. */
+   o'clock past its 30th minute, the sun rays (3 in 8) and their hour sv_SunRaysHour; past the 30th minute of a later hour they fade out */
 
 void sv_WeatherFrame(void)
 {
@@ -7076,10 +7066,17 @@ void sv_WeatherFrame(void)
         sb_PlaySample(snd_ThunderBank, "DonnerMittel_s", 1, 0x3f, (int)(init_SoundVolume * 127.0f), 0, 0);
     }
     if (d3_CurrentScene == 0) {
-        if (ai_Time.hour >= 11 && ai_Time.hour <= 17 && sv_Weather.clouds[ai_Time.hour - 1] != 0 && sv_Weather.clouds[ai_Time.hour] == 0 && ai_Time.min > 30) {
-            if (util_RandomU(0x80) > 0x60 && d3t_SunRays == 0)
+        /* @original the previous hour's clouds (sv_Weather.clouds[hour - 1]) are read from the int before
+           sv_Weather, indexed by the hour: the original shares hour * 4 between two bases (shl eax,2 and
+           [eax+0x760484] / [eax+0x760488]); clouds[hour - 1] gives one address CSE'd (lea) instead */
+        if (ai_Time.hour >= 11 && ai_Time.hour <= 17 && ((unsigned *)&sv_SeasonClimate)[ai_Time.hour] != 0 && sv_Weather.clouds[ai_Time.hour] == 0 && ai_Time.min > 30) {
+            /* the hour store in both arms (tail-merged) gives the original's registers: the hour in ecx,
+               sv_SunRaysHour in eax */
+            if (util_RandomU(0x80) > 0x60 && d3t_SunRays == 0) {
                 d3t_CreateSunRays();
-            sv_SunRaysHour = ai_Time.hour;
+                sv_SunRaysHour = ai_Time.hour;
+            } else
+                sv_SunRaysHour = ai_Time.hour;
         }
         if (sv_SunRaysHour != -1 && ai_Time.hour > sv_SunRaysHour && ai_Time.min > 30) {
             if (d3t_SunRays != 0)
