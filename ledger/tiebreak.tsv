@@ -902,7 +902,7 @@ exe	0x0044cd40	d3iot_DeleteStockObject	d3_io_t	22561682f6cfdb7a	no	byte	control=
 exe	0x0044ce40	d3iot_CalcBounds	d3_io_t	f1fb820618037f0a	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
 exe	0x0044d1c0	d3iot_Finish	d3_io_t	3a86c26ee742fda7	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0044d1f0	d3iot_LoadTexSet	d3_io_t	63e163bbe0742793	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x0044d330	d3iot_LoadBGF	d3_io_t	77f69eaf9f5c45c5	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x0044d330	d3iot_LoadBGF	d3_io_t	573ef0374652e002	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x0044df20	d3iot_GetRadius	d3_io_t	fad99114fa1471f6	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0044df40	d3io_LoadObjectFile	d3_io_t	e311e1c59cef1652	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0044e080	d3io_LoadObject	d3_io_t	71b59d768540fe3c	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte

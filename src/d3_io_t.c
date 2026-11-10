@@ -188,15 +188,28 @@ void d3iot_LoadTexSet(char *name, char **out, int *w, int *h)
 extern float cm_Pi;  /* 0x5eb7dc, the shared pi (cm.c) the rotation is added to */
 
 /* 0x44d330, loads a BGF mesh (or finds it among the loaded ones)
-   @deep read the whole function against the original: the same call set (no dcp diffclass call difference)
-   and no global store difference (no differs line), 940 vs 936 instructions, 3047 vs 3054 bytes, frames
-   equal. Q2 settled: the parameter is ntexsets (d3_FindBGF assigns it to m->nsets); the M10 is cleared by
-   loading cm_Pi (the shared pi, cm.c 0x5eb7dc) in the two sin/cos arguments instead of the literal. What
-   is left is allocation: the vertex-weld loop keeps i in ebx in the original and reloads j from a slot,
-   while ours spills i to the [ebp+0xc] argument slot and reloads it for the i == j compare and the poly
-   index rewrite (the 272 code / 136 slots / 96 regs / 48 fpu hunks are this frame-slot and register
-   permutation, the frame itself equal). Tried: the ntexsets rename, cm_Pi, the loop-variable spelling;
-   none moves the register assignment. */
+   @stuck tiebreak: insensitive (headers sample, 32 samples one codegen). Kept: the RemoveDoubleMaterials
+   loop 0-based with j = i + 1 (398 -> 311 ins) and ntexsets <= 0 (-> 309, the original's cmp edi,ebx/jle
+   with 0 in ebx). Tried, no lever (= control): if/else swap and while form of the weld j-loop, &desc.pts[]
+   spelling, !flag01, *(used + i - 1), cm_Pi + rot order, bv.y/av.y for t1/t2. Worse: the poly-index if
+   order (402), memmove before npts-- (552), mi = i - 1 temp (417), 1-based i <= nmat (369 alone), bv.z
+   after u negation (385 but frame 0x2c0). Lead: the uv loop (0x44dab7..0x44db8a) matches the original
+   almost exactly when written with desc.mats[mi].f at every use instead of the mt pointer (code 177 -> 118
+   hunks) but the 9 extra desc references move desc above av/bv in the ebp frame (desc.mats [ebp-0x1a0] vs
+   the original's [ebp-0x1c0]) and turn rot + cm_Pi into fld cm_Pi; fadd rot: the original has more av/bv
+   references or fewer desc ones elsewhere (field refs whose stores VC6 drops do not count: bv.y for t2 =
+   control). Left: weld loop allocation (original i in ebx with [ebp+8], m in edi reloaded from [ebp-0xc];
+   ours m in ebx, i in the [ebp+0xc] slot), vertex rotate loop (original materializes py/pz in edx/ecx,
+   computes u before bv.z), the texture loop's [ebp+0x18] -> [ebp+0xc] parameter-slot reuse. (tiebreak:
+   insensitive, sampled) prior: read the whole function against the original: the
+   same call set (no dcp diffclass call difference) and no global store difference (no differs line), 940
+   vs 936 instructions, 3047 vs 3054 bytes, frames equal. Q2 settled: the parameter is ntexsets (d3_FindBGF
+   assigns it to m->nsets); the M10 is cleared by loading cm_Pi (the shared pi, cm.c 0x5eb7dc) in the two
+   sin/cos arguments instead of the literal. What is left is allocation: the vertex-weld loop keeps i in
+   ebx in the original and reloads j from a slot, while ours spills i to the [ebp+0xc] argument slot and
+   reloads it for the i == j compare and the poly index rewrite (the 272 code / 136 slots / 96 regs / 48
+   fpu hunks are this frame-slot and register permutation, the frame itself equal). Tried: the ntexsets
+   rename, cm_Pi, the loop-variable spelling; none moves the register assignment. */
 
 D3BGF *d3iot_LoadBGF(char *path, char *name, char *texnames, int ntexsets, int ntex)
 {
@@ -276,14 +289,14 @@ D3BGF *d3iot_LoadBGF(char *path, char *name, char *texnames, int ntexsets, int n
                 if (desc.nmat > 0) {
                     used = mem_Alloc(desc.nmat, "d3_io:RemoveDoubleMaterials");
                     n = desc.nmat;
-                    for (i = 1; i - 1 < desc.nmat; i++) {
-                        if (!used[i - 1]) {
-                            used[i - 1] = 1;
-                            for (j = i; j < desc.nmat; j++) {
-                                if (!memcmp(&desc.mats[i - 1], &desc.mats[j], 0xe0)) {
+                    for (i = 0; i < desc.nmat; i++) {
+                        if (!used[i]) {
+                            used[i] = 1;
+                            for (j = i + 1; j < desc.nmat; j++) {
+                                if (!memcmp(&desc.mats[i], &desc.mats[j], 0xe0)) {
                                     for (k = 0; k < desc.npoly; k++)
                                         if (desc.polys[k].mat == j)
-                                            desc.polys[k].mat = i - 1;
+                                            desc.polys[k].mat = i;
                                     used[j] = 1;
                                 }
                             }
@@ -346,7 +359,7 @@ D3BGF *d3iot_LoadBGF(char *path, char *name, char *texnames, int ntexsets, int n
                         }
                     }
                 }
-                if (!texnames || ntexsets < 1 || ntex != desc.nmat) {
+                if (!texnames || ntexsets <= 0 || ntex != desc.nmat) {
                     m->ntex = desc.nmat;
                     m->nsets = 1;
                     m->texnames = mem_Alloc(desc.nmat << 6, "d3_io:LoadAGF(texset)");
