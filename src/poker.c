@@ -411,16 +411,30 @@ void ai_PokerPayStakes(void)
 }
 /* 0x4a7ac0, picks each NPC's strategy (seat->strategy) from its hand: 3 nothing yet, 2 go for the rank, 1 pairs,
    0 random
-   @deep Read whole against the original and rewritten: both counting loops in the original's index form
-   (deck[k+i] by suits, deck[i+j] by ranks: the strength-reduced jl loop ends now equal), int counters
-   (signed jle), cnt[g++], the strategy chain with pairs <= 1 / dealt - maxr <= 1 as the original's
-   constants, the column check over deck[j*4+first]. The two counting loops are instruction-equal up to
-   registers. Remaining is allocation: the original keeps s in ebp and dealt in dl for the whole body
-   (frame 0x28), ours gives s ebx and spills it to [esp+0x18] and dealt to [esp+0x24] (frame 0x30), so ours
-   reloads them (asmdiff: -mov ebp,[esp+0x18] / -cmp edi,ebp vs +cmp [eax-4],ebp; -mov byte ptr
-   [esp+0x24],bl vs +mov dl,[esi+0xb5]; -mov esi,[esp+0x18] / -inc esi / -mov [esp+0x18],esi vs +inc ebp),
-   and pairs / maxn swap register and slot in the first loop (-inc edi / -cmp ecx,[esp+0x14] vs +inc
-   [esp+0x14] / +cmp ecx,edi). */
+   @stuck byte-register class of dealt. Meaning re-read against the original (loops, deck[k+i] / deck[i+j]
+   owner at +8, shown at +0xc, seat[s].strategy at +0x30 + s*0x34, the strategy chain): equal. The original
+   keeps the unsigned char dealt in dl (cmp dl,5 / mov eax,edx; and eax,0xff) and ai_PokerTable in esi, s
+   in ebp, maxr ebx, maxn edi in the first loop (stored to [esp+0x18] after it), pairs at [esp+0x14] (inc
+   dword ptr), frame 0x28. Ours puts the table in edx, so dealt takes bl and evicts s (spilled to
+   [esp+0x18], dealt to [esp+0x24], frame 0x30). Levers (dcp try, uchar unless said): init order of
+   pairs/maxn/maxr/g, 23 orders: 79 ins each, four codegens (pairs, maxn, maxr, g gives the original's
+   first-loop roles only with a wider dealt); dealt as int: 33-37 ins, unsigned short + that init order: 24
+   ins (frame 0x28 and the loops equal, dealt in esi via movzx si and the table in edx: the table/dealt
+   roles stay swapped; not kept, the original's byte compares need a char local); char: 73; dealt read
+   through ai_PokerTable at each use: 70; G10GAME *t / G10SEAT *seat locals (first or last declared): =
+   control; dealt declared in the loop body or a tail block: = init-order variant; operand-order and &&
+   order masks on the four dealt tests (15 variants): 79-92; local declaration orders (5): = control. Left:
+   frame 0x30 vs 0x28, s/maxr ebx<->ebp, maxn/pairs edi<->[esp+0x14], table edx vs esi, dealt bl+spill vs
+   dl. (tiebreak: insensitive) prior: Read whole against the original and rewritten: both counting loops in
+   the original's index form (deck[k+i] by suits, deck[i+j] by ranks: the strength-reduced jl loop ends now
+   equal), int counters (signed jle), cnt[g++], the strategy chain with pairs <= 1 / dealt - maxr <= 1 as
+   the original's constants, the column check over deck[j*4+first]. The two counting loops are
+   instruction-equal up to registers. Remaining is allocation: the original keeps s in ebp and dealt in dl
+   for the whole body (frame 0x28), ours gives s ebx and spills it to [esp+0x18] and dealt to [esp+0x24]
+   (frame 0x30), so ours reloads them (asmdiff: -mov ebp,[esp+0x18] / -cmp edi,ebp vs +cmp [eax-4],ebp;
+   -mov byte ptr [esp+0x24],bl vs +mov dl,[esi+0xb5]; -mov esi,[esp+0x18] / -inc esi / -mov [esp+0x18],esi
+   vs +inc ebp), and pairs / maxn swap register and slot in the first loop (-inc edi / -cmp ecx,[esp+0x14]
+   vs +inc [esp+0x14] / +cmp ecx,edi). */
 
 void ai_PokerPickStrategies(void)
 {
