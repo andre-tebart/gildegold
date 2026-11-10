@@ -510,15 +510,26 @@ void d2_DragInput(void)
     }
 }
 /* 0x477ba0, mouse and keys on the focused slider object
-   @deep Read whole function against the original: fixed the 0.5 literal to cm_DoubleHalf (pooled), the
-   wheel branch order (fl & 2 first); the wheel/key part is now instruction-equal. Remaining: allocation
-   only - the original keeps mx (u.s.max, +0x84) in ebx with a home slot [esp+0x1c] (reloaded after _ftol:
-   'mov ebx, dword ptr [esp + 0x1c]' x2) and mn in ebp; ours keeps mx only in a slot ([esp+0x2c]), so ebx
-   is free and the vertical test reuses edi for o->y where the original reloads it ('movsx eax, word ptr
-   [esi + 0x12]'), and the clamp reads mx from the slot ('mov ecx, dword ptr [esp + 0x28]; cmp eax, ecx;
-   jg' vs 'cmp eax, ebx; jle; mov eax, ebx'). Tried: local declaration orders (no change), separate lo/hi
-   locals for the wheel part (no change), the clamp duplicated in both branches (worse), o->h + o->y
-   spelling (no change). */
+   @stuck headers sample: insensitive (32). Frame slots read with dcp frame: original mn [esp+0x10] (home
+   of ebp), fl 0x14, py 0x18, mx 0x1c (home of ebx), f0/a 0x20 (shared), d 0x24, len 0x28, v2 0x2c; ours
+   the same variables, mx only in a slot at 0x2c, so every remaining hunk (vertical test using edi for py
+   and reloading o->y, the +4 slot shift, the clamp's cmp eax,ebx tail) follows from mx not getting ebx. No
+   meaning difference (fl / v2 read uninitialized on the ldown==0 path in both). Tried with dcp try: all
+   1679 orders of the 7 field-load lines (fl, mx, mn, len, v2, d, DragSlider; d after mx/mn): best p0623145
+   43 ins but frame 0x1c vs 0x20 and mx rematerialized from [esi+0x84] (worse in kind, not kept); 23
+   spellings of the vertical tests and a (all = control, VC6 canonicalizes them); d inline at both uses
+   (105 ins, frame smaller); block-scoped hi/d (= control); d = mx; d -= mn and d = -mn + mx (= control);
+   clamp as one ternary, nested ifs, else v = v (= control); mx < v (70 ins). Untried: anything that adds
+   blocks referencing mx (the clamp in both arms was worse per prior). (tiebreak: insensitive) prior: Read
+   whole function against the original: fixed the 0.5 literal to cm_DoubleHalf (pooled), the wheel branch
+   order (fl & 2 first); the wheel/key part is now instruction-equal. Remaining: allocation only - the
+   original keeps mx (u.s.max, +0x84) in ebx with a home slot [esp+0x1c] (reloaded after _ftol: 'mov ebx,
+   dword ptr [esp + 0x1c]' x2) and mn in ebp; ours keeps mx only in a slot ([esp+0x2c]), so ebx is free and
+   the vertical test reuses edi for o->y where the original reloads it ('movsx eax, word ptr [esi +
+   0x12]'), and the clamp reads mx from the slot ('mov ecx, dword ptr [esp + 0x28]; cmp eax, ecx; jg' vs
+   'cmp eax, ebx; jle; mov eax, ebx'). Tried: local declaration orders (no change), separate lo/hi locals
+   for the wheel part (no change), the clamp duplicated in both branches (worse), o->h + o->y spelling (no
+   change). */
 
 void d2_SliderInput(void)
 {

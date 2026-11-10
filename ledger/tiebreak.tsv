@@ -1371,7 +1371,7 @@ exe	0x004774a0	d2_DragInputValue	gfx	329e543cc366e2d3	no	byte	control=byte p1=by
 exe	0x00477530	d2_EndInputEdit	gfx	fae021bdbcb6698d	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00477590	d2_InputKey	gfx	afab0ad5615a53eb	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00477a70	d2_DragInput	gfx	09f1f57ee80ca0ed	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x00477ba0	d2_SliderInput	gfx	12f8f0878e4f1b7a	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x00477ba0	d2_SliderInput	gfx	83550addb67677d4	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x00477ed0	d2_UpdateInput	gfx	691b7792c55e8d8d	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00478320	d2_FocusInput	gfx	c8fd9a6abf41bd48	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004784c0	d2_MouseUpdate	gfx	c702a13d41710ec5	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
