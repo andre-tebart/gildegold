@@ -5024,11 +5024,10 @@ void sv_HandleSelectionMouse(void)
     D3SM *map;
     AIBLD *b;
     AICHAR *c;
-    int cx, cy, i, j, ix, iy, size, cell, t;
+    int cx, cy, i, j, ix, iy, size, t;
 
     cx = -1;
     cy = -1;
-    cell = 0;
     map = (D3SM *)d3_DefaultScene->hmap;
     b = 0;
     if (ai_PlayerBuilding != 0)
@@ -5051,6 +5050,7 @@ void sv_HandleSelectionMouse(void)
                 if (c->selected != 0 && c->health != 0 && (gm_PermissionBits(ai_PlayerId, 0, 0, (int)c) & 0x800) != 0
                     && c->model != 0) {
                     int off[9][2] = { {0, 0}, {-1, 0}, {-1, -1}, {0, -1}, {1, -1}, {1, 0}, {1, 1}, {0, 1}, {-1, 1} };
+                    int cell = 0;
 
                     if (d3sm_Pick(map, dm_L.x, dm_L.y, &cx, &cy) != 0) {
                         size = map->size;
