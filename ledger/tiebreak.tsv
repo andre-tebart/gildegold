@@ -4657,7 +4657,7 @@ exe	0x005dc1a0	ai_SphereVolume	unk_5d33b0	d20d3a1e05807289	no	byte	control=byte 
 exe	0x005dc210	ai_PositionShare	unk_5d33b0	17008b189d4228ad	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x005dc240	ai_InitShot	menu	41f04014f1b85ea1	no	shape	sample n=32 seed=1 compiled=32 codegens=1 best=shape
 exe	0x005dc3a0	ai_ScatterShot	menu	33c9e2b3744cb515	no	byte	sample n=32 seed=1 compiled=32 codegens=1 best=byte
-exe	0x005dc4a0	ai_StepShot	unk_5d33b0	bf0170a8bc53408d	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x005dc4a0	ai_StepShot	menu	bf0170a8bc53408d	no	draft	sample n=32 seed=1 compiled=31 codegens=1 best=draft
 exe	0x005dc9d0	ai_StepShotSlow	unk_5d33b0	e50bca34ae144922	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x005dcf00	ai_ShotHitsGround	menu	d5ee153d3ba42fac	no	shape	sample n=32 seed=1 compiled=32 codegens=1 best=shape
 exe	0x005dd090	ai_NormalizeEffectScale	unk_5d33b0	f4fb3ee3506f24fa	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
