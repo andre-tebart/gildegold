@@ -690,9 +690,12 @@ mechanisms, each as a generated round over all positions / subsets:
   webs (sv_WeatherFrame 47 -> 11 ins). The same store after the if, or the -1 store in both arms of the other
   if, kept the control.
 - **`shl eax,2` shared by two loads `[eax+A-4]` / `[eax+A]`** where ours CSEs the address `lea r,[e*4+A]` and
-  reads `[e*4+A-4]`: the two reads had different symbol bases. `T.a[h - 1]` came from the global defined just
-  before T, `((unsigned *)&prev)[h]` (every spelling of `a[h - 1]` on T's own base = control; @original comment).
-  sv_WeatherFrame 11 ins -> byte.
+  reads `[e*4+A-4]`: a negative displacement off the symbol. The object before T (at A-4) and T were one record
+  in the original: declare it (`SVCLIMATE { int seasonClimate; SVWEATHER weather; } sv_Climate`, the old names as
+  field macros in the header) and the plain `T.a[h - 1]` matches (every spelling on T's own base = control).
+  Do not read the neighbour through a cast of the other global: our link pads separate objects (the 0x188-byte
+  record went to +8), dcp session wrap flags it as M.layout. sv_WeatherFrame 11 ins -> byte; the header change
+  also took sv_t's ai_TutorialInitChapter3 to byte (tie-break).
 - **A top-tested outer loop after a null test** (`cmp y,[surf+8]; jge` at the head, `jmp head` at the bottom,
   the cached zero re-zeroed at the exit): `for (y = 0; surf != 0 && y < surf->h; y++)`, the loop-invariant test
   in the condition (vc6-matching.md line ~317); `y = 0; if (surf) while (y < h)` is rotated (sv_LoadGroundplan
