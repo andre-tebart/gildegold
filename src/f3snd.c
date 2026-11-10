@@ -481,14 +481,14 @@ void snd_UpdateAnimals(void)
 }
 /* 0x4c18a0, the music when the player enters a building: the current track loses 30 (20 without a building of
    its kinds); the building's kind gets its track (resumed, or a random one of the matching snd_BuildingTracks
-   entry: kind, room (0: any), season (-1: any), up to six names) and gains 30 (20), started with msx_Play @deep Read all of it against the original: the two location-track tails are separate (Resuming / Starting, with the hyphenated strings 'location-track'), every access indexes snd_LocationTracks[i] (no pointer), 0x2694 test inverted as the original's je, the snd_BuildingTracks search is a for loop with goto found. 257 vs 259 instructions. Left: the search loop: the original walks a second pointer (ecx) and copies it to e (mov ecx, edi / mov edi, ecx; cmp dword ptr [edi], ebp on the first pass), ours coalesces both into edi and reuses the table[0].kind load (cmp eax, ebp) - tried a separate loop pointer (e = p, coalesced the same) and e = p with p = e + 1 (worse, 72 ins); plus edx/ebx for the room / season temps and eax/ecx for the gm_BuildQuery kind (4 bytes, 804 vs 808). */
+   entry: kind, room (0: any), season (-1: any), up to six names) and gains 30 (20), started with msx_Play */
 
 void snd_EnterBuilding(void)
 {
     unsigned char *b;
     unsigned int kind;
     int season;
-    int i, k, j;
+    int i, k, j, n;
     G16TRACKS *e;
 
     b = ai_PlayerBuildingB;
@@ -530,7 +530,8 @@ void snd_EnterBuilding(void)
         sprintf(snd_DebugText, "Resuming location-track %s", snd_LocationTracks[i].track);
         return;
     }
-    for (e = snd_BuildingTracks; e->kind != 0; e++) {
+    for (n = 0; snd_BuildingTracks[n].kind != 0; n++) {
+        e = &snd_BuildingTracks[n];
         if (e->kind == kind && (e->room == 0 || e->room == (unsigned int)*sv_PanelShown)
             && (season == e->season || e->season == -1))
             goto found;
@@ -552,8 +553,8 @@ found:
     }
     if (snd_LocationTracks[i].kinds[k] == 0)
         snd_LocationTracks[i].prio += 0x14;
-    snd_TrackHandles.current = msx_Play(snd_LocationTracks[i].track, 0);
-    snd_TrackHandles.copy = snd_TrackHandles.current;
+    snd_TrackHandles.copy = msx_Play(snd_LocationTracks[i].track, 0);
+    snd_TrackHandles.current = snd_TrackHandles.copy;
     sprintf(snd_DebugText, "Starting location-track %s", snd_LocationTracks[i].track);
 }
 /* 0x4c1bd0, the music when the player leaves a building: the outdoor track (kind 0x2694), resumed or a new random
