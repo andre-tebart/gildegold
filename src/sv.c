@@ -642,7 +642,7 @@ void sv_SelectPanelObject(unsigned char *o, int b, char *c)
             sv_PanelFlag = 0;
             ai_FrameWait = 0;
             w = init_ObjectSceneUniverse(sv_PanelRecord);
-            if (init_SceneDirty[w * 0x3e0] != 0)
+            if (d3_Scenes[w].dirty != 0)
                 init_LoadObjectScene(*sv_PanelRecord);
             sv_PanelShown = old;
             sv_PanelFlag = 1;
