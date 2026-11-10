@@ -2616,7 +2616,7 @@ exe	0x004e5af0	ai_DumpPersonMoney	cm	byte	readable
 exe	0x004e5b50	ai_DumpPersonRelatives	cm	byte	readable		
 exe	0x004e5bf0	ai_DebugDumpPerson	cm	byte	readable		
 exe	0x004e5cd0	amt_InitTable	amt	byte	readable		
-exe	0x004e5e50	amt_Rating	amt	draft	readable	deep	
+exe	0x004e5e50	amt_Rating	amt	draft	readable	stuck	
 exe	0x004e6030	amt_FindOffice	amt	shape	readable	deep	
 exe	0x004e60b0	amt_GetOfficeRate	amt	byte	readable		
 exe	0x004e6180	amt_ApplyForOffice	amt	draft	readable	stuck	
@@ -2627,7 +2627,7 @@ exe	0x004e6600	amt_SendOfficeCandidates	amt	byte	readable
 exe	0x004e6650	amt_SendOfficeOwner	amt	byte	readable		
 exe	0x004e6680	amt_SendOfficeMessage	amt	byte	readable		
 exe	0x004e6710	amt_CheckOfficeMessage	amt	byte	readable		
-exe	0x004e67a0	amt_ExecuteOfficeMessage	amt	draft	readable	deep	
+exe	0x004e67a0	amt_ExecuteOfficeMessage	amt	byte	readable		
 exe	0x004e6b40	amt_SetEventOwner	amt	byte	readable		
 exe	0x004e6b70	amt_SetPersonOwner	amt	byte	readable		
 exe	0x004e6ba0	amt_SendOfficeSwap	amt	byte	readable		
@@ -2661,7 +2661,7 @@ exe	0x004e85d0	amt_UpdateOffices	amt	shape	readable
 exe	0x004e86e0	amt_HasColumn7Holder	amt	shape	readable		
 exe	0x004e8730	amt_SendOfficeNews	amt	byte	readable		
 exe	0x004e87e0	amt_SendOfficeLost	amt	byte	readable		
-exe	0x004e88a0	amt_ElectDeputies	amt	draft	readable	deep	
+exe	0x004e88a0	amt_ElectDeputies	amt	draft	readable	stuck	
 exe	0x004e8c20	amt_ElectKind22	amt	byte	readable		
 exe	0x004e8dc0	amt_CalcZuenfte	amt	draft	readable	stuck	
 exe	0x004e9260	amt_CheckOffices	amt	byte	readable		
@@ -2671,7 +2671,7 @@ exe	0x004e94e0	amt_CanUseMayorPower2	amt	byte	readable
 exe	0x004e95a0	amt_CanUseMayorPower3	amt	byte	readable		
 exe	0x004e9660	amt_ExecutePriceMessage	amt	shape	readable		
 exe	0x004e9a00	amt_ExecuteShareMessage	amt	byte	readable		
-exe	0x004e9ce0	amt_ExecuteMayorPowerMessage	amt	draft	readable	deep	
+exe	0x004e9ce0	amt_ExecuteMayorPowerMessage	amt	draft	readable	stuck	
 exe	0x004ea550	amt_ChangeDistrictOpinion	amt	byte	readable		
 exe	0x004ea5c0	amt_GetDistrictLiking	amt	byte	readable		
 exe	0x004ea690	amt_SaveAemter	amt	byte	readable		
