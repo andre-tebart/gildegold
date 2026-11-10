@@ -2709,11 +2709,7 @@ void ai_BloodRevengeWindow(int building)
     int n, i, k, r;
 
     memset(rows, 0, sizeof(rows));
-    sel[0] = -1;
-    sel[1] = -1;
-    sel[2] = -1;
-    sel[3] = -1;
-    sel[4] = -1;
+    memset(sel, 0xff, 5 * sizeof(int));
     refresh = 1;
     total = 0;
     tick = 0;
@@ -2780,17 +2776,8 @@ void ai_BloodRevengeWindow(int building)
         }
         if (dm_L.rup != 0) {
             sv_PopRequest = 1;
-        } else if (d2_ClickedId == -1) {
-            if (d3_Time > (unsigned)(tick + 0x8c)) {
-                for (i = 0; i < 5; i++) {
-                    if (rows[i].rec != 0 && (rows[i].rec->id == 0xffff || rows[i].rec->netId != (unsigned)sel[i])) {
-                        rows[i].rec = 0;
-                        sel[i] = -1;
-                    }
-                }
-                refresh = 1;
-            }
-        } else if (d2_PointerObj == ids[0]) {
+        } else if (d2_ClickedId != -1) {
+          if (d2_PointerObj == ids[0]) {
             if (sv_CheckMoney(ai_CharsC + ai_PlayerId * 0x21c, total) == 1) {
                 txt_Format(msg, 0x41bf, rows[0].rec->id);
                 k = 0;
@@ -2837,6 +2824,15 @@ void ai_BloodRevengeWindow(int building)
                     sel[i] = -1;
                 refresh = 1;
             }
+          }
+        } else if (d3_Time > (unsigned)(tick + 0x8c)) {
+            for (i = 0; i < 5; i++) {
+                if (rows[i].rec != 0 && (rows[i].rec->id == 0xffff || rows[i].rec->netId != (unsigned)sel[i])) {
+                    rows[i].rec = 0;
+                    sel[i] = -1;
+                }
+            }
+            refresh = 1;
         }
     } while (sv_RunFrame((int)ai_BloodRevengeWindow, 0x677c7) != 0);
     d2_CloseView(form);
