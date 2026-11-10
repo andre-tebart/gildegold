@@ -1704,8 +1704,8 @@ int ord_GetGridCell(char *p, int *x, int *y)
    8 (14 ins), row pointer plus i counter (9), cell pointer (50), clear before memset (18), unsigned
    counters (9), x or y (address-taken) as a counter (17 / 15, stores 8 into the slots), while (j--) (7).
    The two-IV loop is VC6 failing to merge row and cursor: maybe a different ai_Grid declaration in the
-   original unit (flat or unsized) - not tried. (tiebreak: insensitive, sampled) (tiebreak: not measured
-   (dcp headers sample ord_CountGridObjects)) prior: behaviour draft, allocation only: the count-clear
+   original unit (flat or unsized) - not tried. (tiebreak: insensitive, sampled)
+   prior: behaviour draft, allocation only: the count-clear
    loop's induction variable. The original keeps the row base in edx and copies it to the cursor (mov
    edx,0x91ae64 hoisted above the prologue pushes, mov eax,edx in the loop head, mov edx,eax after the
    inner loop, cmp eax,0x91b464); ours lets VC6 collapse the nested 8x8 clear into one pointer induction
