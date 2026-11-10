@@ -47,7 +47,7 @@ extern int hmt_Event;                                                           
 extern int hmt_PendingElection;                                                  /* 0x6f0720, the election to decide (0..2), -1 for none */
 int hmt_CreateBinaryFile(void);                                                  /* 0x4ac440 */
 int hmt_WriteBinaryFile(HMTFILE *h);                                            /* 0x4ac8a0 */
-void hmt_Init(void);                                                             /* 0x4aca90 */
+int hmt_Init(void);                                                              /* 0x4aca90 */
 int hmt_ReadBinaryFile(HMTFILE *h);                                              /* 0x4acae0 */
 void hmt_Reset(void);                                                            /* 0x4acdc0 */
 int hmt_Exit(void);                                                              /* 0x4acde0 */
