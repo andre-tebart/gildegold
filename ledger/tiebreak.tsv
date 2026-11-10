@@ -2914,7 +2914,7 @@ exe	0x004f8ed0	ord_UpdateStatistics	ord	9ca7ab89765b5c81	no	draft	control=draft 
 exe	0x004f9020	ord_LoadStatistics	ord	87aa7337b20b0443	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x004f9170	ord_GetMessageRecord	ord	054b55d878dc4919	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004f9190	ord_InitMessageRecord	ord	afd702685b9b62f6	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x004f9220	ord_UpdateMessageEvent	ord	98810afd5702648d	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x004f9220	ord_UpdateMessageEvent	ord	98810afd5702648d	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x004f9710	ord_HandleMessageRecord	ord	3bb46c9385a83c46	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004f97a0	ord_GetRatingByte	ord	3de27bf0069e79d6	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004f97c0	ord_BuildingCapacityRatio	ord	b66ae9c553e20373	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte

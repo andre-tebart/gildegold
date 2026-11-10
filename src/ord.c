@@ -2243,7 +2243,7 @@ typedef struct ORDLONGMSG {             /* 0xf8 bytes, the long message of cm_Se
    picks the next phase from a 16-entry table chosen by the stage (stage 0 goes straight to phase 3, stage 4 resets
    the stage), sends the long message 0x59 / 0x4e / 0x50 to the player (character ai_PlayerChar, gm_AddTime later)
    and finally the whole record (message 0x4c5e80, tag 'set '); running, it returns while he_FindEvent (1, 0, the
-   phase's event) exists, else clears the phase and the accumulator. @deep Read all of it against the original and rebuilt: typed ORDMSGREC record (ord_MessageRecord), the running branch tests the global's phase with one he_FindEvent call per phase (cross-jumped as the original's push 0x59/0x4e/0x50), the stage tables are three 16-int initializers (the original's hoisted common stores tbl[0,1,7,8,14,15] then the five-store runs match instruction for instruction), the long message is an ORDLONGMSG (kind 0x04, netId 0x08, target 0x0c, clock 0x28, mode 0x36, value 0x58, limit 0x9c, the int at 0x2e cleared in phases 1/2), the hour tests read ai_Time's hour word (cmp ax, 0x17), phases 2/3 test hour >= 0x17 first as the original. 350 vs 338 instructions, the 12 are VC6 cross-jumping: the original merges the four gm_AddTime calls of phases 1 and 3 into one (phase 1's plain path: lea ecx,[ebp-0x140]; push eax; push ecx; jmp 0x4f968e, its +7 path jmp 0x4f9686), ours keeps phase 1's two calls and the push &msg / cm_SendLongMessage tails apart; that follows from the per-phase store schedule and register choice (phase 3: hour in eax / -1 in ecx in the original, ours hour in ecx / -1 in eax; phase 2: the -1 stores before the netId store), which reordering the phase-1 statements did not change. */
+   phase's event) exists, else clears the phase and the accumulator. */
 void ord_UpdateMessageEvent(void)
 {
     ORDMSGREC r;
@@ -2307,9 +2307,9 @@ void ord_UpdateMessageEvent(void)
             msg.netId = ORD_CHAR(ai_PlayerChar)->netId;
             msg.target = -1;
             msg.value = -1;
-            msg.time = ai_Time;
             msg.mode = 1;
             msg.limit = 1000;
+            msg.time = ai_Time;
             msg.time.min = 0;
             if (ai_Time.hour >= 0x17)
                 gm_AddTime((struct AITIME *)&msg.time, util_RandomU(4) + 7, util_RandomU(2) * 0x1e, 0);
@@ -2319,8 +2319,8 @@ void ord_UpdateMessageEvent(void)
         } else if (r.phase == 3) {
             msg.kind = 0x50;
             msg.netId = ORD_CHAR(ai_PlayerChar)->netId;
-            msg.time = ai_Time;
             msg.target = -1;
+            msg.time = ai_Time;
             msg.mode = 2;
             msg.value = -1;
             msg.limit = 1000;
