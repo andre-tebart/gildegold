@@ -2456,11 +2456,12 @@ void he_PostPlayerEvents86a2(void)
    message's fromId: the building) and an owner (ahm_OwnerChar), to that owner */
 void he_PostWorkshopEvents98(void)
 {
-    AIMSG m;
     AIBLD *b;
     AICHAR *o;
 
     for (b = (AIBLD *)gm_BuildQuery(1, 5, 0x1e); b != 0; b = (AIBLD *)gm_BuildNext()) {
+        AIMSG m;
+
         if (he_FindEvent(2, 0, 0x98, 3, b->id) == 0 && (o = (AICHAR *)ahm_OwnerChar(b)) != 0) {
             memset(&m, 0, sizeof(m));
             m.type = 0x98;
@@ -15434,7 +15435,6 @@ void he_RunHarvest(int ev)
     GMGOOD *g;
     struct CHARACTER *ch;
     struct VFSDIR *dir;
-    AIMSG m;
     int i;
     char spot[0x40];
     char path[0x80];
@@ -15457,6 +15457,8 @@ void he_RunHarvest(int ev)
     ch = c->scene;
     t = veg_FindType(pl->type);
     switch (e->stage) {
+        AIMSG m;
+
     case 0:
         if (cm_GetSlotState(e->harvestSlot) == 0)
             return;
@@ -18127,30 +18129,15 @@ typedef struct HEBURN {                 /* the burning event 0x4f's words over A
    scene positions (d3_PointToWorld, at most 1e8 away) as the new center (none: -1); stage 2 (no center: on to 3)
    sets the center's entry in blds[] to -1 and sends the explosion message 0x4f for it (to the event's character,
    the building, 25, the flag 1 and this event's id), back to stage 1 in 10 minutes; stage 3 waits (10 minutes) while
-   a burning event 0x4f of this fire runs, then plays "Brand_Ende" and frees the record; stages -2 / -1 free it
-   @deep Reconstructed whole from the skeleton (it was read as an alloc handler) against
-   0x5644e0..0x56485c, switch tables equal: stage 0 'Brand_Beginn' (snd_QueueVoice(-8, 0, .., -1, 100)),
-   stage 1 the nearest of blds[] to the center by d3_PointToWorld distance (best from 1e8, nearest 0 / -1),
-   stage 2 the explosion message 0x4f (type, to, fromId, time, flags 2, arg[0] the building, arg[1] 25,
-   extraFlag 1, AIMSG.srcEvent this event) for the center's entry, back to stage 1 in 10 minutes, the
-   no-center step to stage 3 out of line as the original, stage 3 the wait on the burning events 0x4f of
-   this fire (HEBURN.fire) and 'Brand_Ende'. Tried: the center test as if (center != -1) {..} with the loop
-   for (k = 0; c != 0 && k < 16; k++) (matched the block order and the k = 0 store). Left: the original
-   keeps 0 in edi from the entry (xor edi, edi: nearest = edi, push edi for the 0 arguments, cmp eax, edi;
-   +0x11, +0x40, +0x2cf .. +0x326), ours uses immediates and test; the message field stores scheduled in
-   another order (+0x1e4, 49 lines, the same stores) (references: M8 at +0x1f9: ours refers to ai_Time
-   (0x770ae0), the original's field to 0x770ae4 (ai_TimeHourW), explained: the M8 line is the m.time =
-   ai_Time struct copy (+0x1f9): the same four words copied into the message, loaded in another register
-   order) */
+   a burning event 0x4f of this fire runs, then plays "Brand_Ende" and frees the record; stages -2 / -1 free it */
 void he_RunFire(AIJOB *ev)
 {
     HEFIRE *x = (HEFIRE *)ev;
     AIBLD *c, *b;
     AIJOB *e;
-    AIMSG m;
     D3VECTOR4 p1, p2;
-    float best = 100000000.0f;
     AIBLD *nearest = 0;
+    float best = 100000000.0f;
     float dx, dy, dz, d;
     int k;
 
@@ -18187,6 +18174,8 @@ void he_RunFire(AIJOB *ev)
         if (x->center != -1) {
             c = (AIBLD *)gm_BuildQuery(1, 1, x->center);
             for (k = 0; c != 0 && k < 16; k++) {
+                AIMSG m;
+
                 if (x->blds[k] == c->id) {
                     x->blds[k] = -1;
                     m.type = 0x4f;
@@ -24490,7 +24479,6 @@ void he_RunGraveyardWorkers(int ev)
 {
     AIJOB *e = (AIJOB *)ev;
     AICHAR *chars[0x20];
-    AIMSG msg;
     AIBLD *bld;
     AICHAR *ch, *master;
     float r, chance;
@@ -24508,6 +24496,8 @@ void he_RunGraveyardWorkers(int ev)
                         chars[n++] = ch;
                 }
                 if (n > 0) {
+                    AIMSG msg;
+
                     chance += 0.75f;
                     for (i = 0; i < n; i++) {
                         r = util_RandomF();

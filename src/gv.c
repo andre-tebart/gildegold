@@ -4244,7 +4244,6 @@ void gv_GraveyardTurn(char *o)
     GVENTRY *e;
     GVGRAVE *g;
     GVYARD *yard;
-    AIMSG m;
     int h, rounds, nrel, paid, sum;
     int k, t, size, price, share;
     float f;
@@ -4284,6 +4283,8 @@ void gv_GraveyardTurn(char *o)
             }
             h = gv_OrderSetGraveHolder(0, o, size, gv_EntryIndex((char *)bld->yard, (int *)e));
         } else {
+            AIMSG m;
+
             f = (util_RandomF() + 1.0f) * 0.5f;
             size = e->size;
             t = (int)(f * ((float)e->b0c / 255.0f * gv_GraveWear[size]));

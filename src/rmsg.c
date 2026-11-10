@@ -1398,7 +1398,6 @@ int ai_MsgFreeBuildingObjectType2e(G14MSG *m)
     AIOBJ *e;
     int n, k, i, r;
     void *a[8];
-    AIMSG msg;
 
     n = 0;
     c = gm_FindChar(m->id);
@@ -1424,6 +1423,8 @@ int ai_MsgFreeBuildingObjectType2e(G14MSG *m)
         }
     }
     if (k >= 2) {
+        AIMSG msg;
+
         e = gm_BuildingMainObject(b);
         memset(&msg, 0, sizeof(msg));
         msg.type = 0x4a;

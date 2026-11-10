@@ -2377,7 +2377,6 @@ void ai_CalcMeisterFernhaendler(AICHAR *ch)
 
 void ai_StartBuildingWork(AICHAR *ch)
 {
-    AIMSG msg;
     AICHAR *f;
     GVENTRY *p;
     int c;
@@ -2391,6 +2390,8 @@ void ai_StartBuildingWork(AICHAR *ch)
         if (!he_FindEvent(2, 0, 0x8d, 3, ch->bld->id)) {
             p = gv_FindWornEntry(ch->bld, (char)util_RandomU(0x40) - 0x80);
             if (p) {
+                AIMSG msg;
+
                 f = 0;
                 for (c = 0; !f; c++) {
                     if (c >= 768) {
@@ -4949,12 +4950,13 @@ void ai_MeisterCollectTrans(AICHAR *ch)
 void ai_UnloadCarts(AICHAR *ch)
 {
     AIOBJ *car;
-    AIMSG msg;
     int id, fill;
 
     if (ai_IsLocalJob(ch) && (ch->flags1b4 & 1)) {
         for (car = gm_Query(ch->bld->objList, 3, 6, 4, 0x1d, 3, ch->bld->owner); car;
              car = gm_QueryNext()) {
+            AIMSG msg;
+
             if (car->fill < util_RandomU(0x20) + 0x28) {
                 memset(&msg, 0, sizeof(msg));
                 msg.type = 0x10;

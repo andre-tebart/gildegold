@@ -6553,7 +6553,6 @@ int ai_AmountMenu(); int amt_GetKindLevel(int k); int sv_CheckMoney(); void cm_S
    leaves too */
 void ai_CabinetSpyOnCharacter(AIBLD *rec)
 {
-    AIMSG msg;
     AMOUNTCFG q;
     int amt[3];
     int win;
@@ -6605,6 +6604,8 @@ void ai_CabinetSpyOnCharacter(AIBLD *rec)
     btnLeave = d2_GetWinObj(win, 3, k + 1);
     d2_ClickedId = -1;
     do {
+        AIMSG msg;
+
         i = d2_GetObjValue(slider);
         d2_SetForm(win, 1);
         io_PrintText("$C");
@@ -6674,7 +6675,6 @@ void ai_CabinetSpyOnCharacter(AIBLD *rec)
    button leaves too */
 void ai_CabinetSpyByMoney(AIBLD *rec)
 {
-    AIMSG msg;
     AMOUNTCFG q;
     int amt[3];
     AICHAR *p;
@@ -6721,6 +6721,8 @@ void ai_CabinetSpyByMoney(AIBLD *rec)
     btnLeave = d2_GetWinObj(win, 3, k + 1);
     d2_ClickedId = -1;
     do {
+        AIMSG msg;
+
         i = d2_GetObjValue(slider);
         d2_SetForm(win, 1);
         io_PrintText("$C");
@@ -6791,10 +6793,9 @@ void txt_Format(char *out, int id0, ...); int sv_MessageBox();
    equal, no branch-target difference. Left: the scheduling of the message stores after the memset: the
    original hoists p->netId (mov edx,[esi+4]) and the time words before the type / flags stores and places
    add esp,0x18 earlier (0x582049, 22 ins), and loads bld2 before zeroing ecx for arg[5] (0x5820af).
-   Sixteen orders of the ten stores tried (the best kept: arg[5] last, 22 ins). */
+   Sixteen orders of the ten stores tried (the best kept: arg[5] last, 22 ins). Match-deep 2026-11-10: msg block-scoped in the do loop took it to shape, 4 ins: only the p->netId store goes after the constant arg stores where the original stores it before them (moving the arg[2] line to any earlier place: draft). */
 void ai_CabinetIntrigueWindow(AIBLD *rec)
 {
-    AIMSG msg;
     AMOUNTCFG q;
     char text[0x400];
     AICHAR *p;
@@ -6836,6 +6837,8 @@ void ai_CabinetIntrigueWindow(AIBLD *rec)
     btnLeave = d2_GetWinObj(win, 2, k + 1);
     d2_ClickedId = -1;
     do {
+        AIMSG msg;
+
         if (dm_L.rup != 0) {
             sv_PopRequest = 1;
         } else if (d2_ClickedId != -1) {
@@ -9255,7 +9258,6 @@ void ai_GraveHauntContact(AIBLD *rec)
    the second button leaves; then the player bar and the selection close and the camera follows again */
 void ai_GraveAgeContact(AIBLD *rec)
 {
-    AIMSG msg;
     AMOUNTCFG q;
     char line[0x200];
     AICHAR *p;
@@ -9293,6 +9295,8 @@ void ai_GraveAgeContact(AIBLD *rec)
     btnLeave = d2_GetWinObj(win, 2, k + 1);
     d2_ClickedId = -1;
     do {
+        AIMSG msg;
+
         if (dm_L.rup != 0) {
             sv_PopRequest = 1;
         } else if (d2_ClickedId != -1) {

@@ -19129,7 +19129,6 @@ void ai_StorageWindow(AIBLD *bld, int list)
     int slot;
     int lim1, lim2;
     int level, level2;
-    AIMSG msg1;
     AIMSG msg2;
     AIMSG msg3;
     char text[0x400];
@@ -19164,6 +19163,8 @@ void ai_StorageWindow(AIBLD *bld, int list)
     ai_InitProductionTables();
     d2_SetPointerSprite(0, 0);
     do {
+        AIMSG msg1;
+
         for (ev = (AIJOB *)he_FindEvent(2, 0, 0x12, 3, bld->id); ev != 0 && ev->slotOrder1c == 0;
              ev = (AIJOB *)he_NextEvent())
             ;
@@ -28419,7 +28420,6 @@ int ai_CourtshipWindow(AICHARREC *ch, LCORDMSG *m)
     int btns[9];               /* the gift buttons and the close button in [0 .. 3]; the original's frame holds nine */
     AIJOB *ev;
     AICHARREC *p;
-    AIMSG msg;
     char answer[0x200];
     char closing[0x200];
     int i;
@@ -28446,6 +28446,8 @@ int ai_CourtshipWindow(AICHARREC *ch, LCORDMSG *m)
             return 0x20;
         p = (AICHARREC *)gm_FindChar(m->target);
         if (p != 0 && p->health != 0) {
+            AIMSG msg;
+
             memset(&msg, 0, sizeof(msg));
             msg.type = 0x41;
             msg.to = ch->netId;
@@ -29450,7 +29452,6 @@ int ai_BlackmailBuildingListener(AICHARREC *me, LCORDMSG *m)
     AICHARREC *ch;
     AICHARREC *victim;
     AITIME due;
-    AIMSG msg;
     int total[0x20];
     char text[0x40];
     int open[0x20];
@@ -29464,6 +29465,8 @@ int ai_BlackmailBuildingListener(AICHARREC *me, LCORDMSG *m)
             return 0x60;
         open[0] = gv_HeldCrimeIdsOf(victim->netId, ids, me->id);  /* the count in open[0]: the original's slot */
         if (open[0] >= (int)(util_Random(8) & 0xffff)) {
+            AIMSG msg;
+
             due = ai_Time;
             gm_AddTime(&due, 0x60, 0, 0);
             memset(&msg, 0, sizeof(msg));
@@ -29489,8 +29492,7 @@ int ai_BlackmailBuildingListener(AICHARREC *me, LCORDMSG *m)
     d2_SetForm(win, 3);
     d2_CreateScrollButtons(-1, -1, d2_LastWindow, list, 0x767);
     count = gv_RankCulpritsAll(ids, open, total, me->id);
-    n = 0;
-    for (i = 0; i < count; i++) {
+    for (i = 0, n = 0; i < count; i++) {
         ch = (AICHARREC *)gm_FindChar(ids[i]);
         if (ch != 0) {
             rows[n].rec = ch;
