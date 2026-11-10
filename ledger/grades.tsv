@@ -1383,16 +1383,16 @@ exe	0x00478960	d2_SetColour	gfx	byte	readable
 exe	0x00478980	d2_GetBmpSize	gfx	byte	readable		
 exe	0x00478a00	d2_ReadBmpPixels	gfx	draft	readable	deep	
 exe	0x00478b50	d2_LoadBmpSurface	gfx	byte	readable		
-exe	0x00478bd0	d2_ConvertRgbTo16	gfx	shape	readable	deep	
-exe	0x00478c50	d2_Convert16ToRgb	gfx	draft	readable	deep	
+exe	0x00478bd0	d2_ConvertRgbTo16	gfx	byte	readable		
+exe	0x00478c50	d2_Convert16ToRgb	gfx	byte	readable		
 exe	0x00478cc0	d2_MakeSurface	gfx	draft	readable	deep	
 exe	0x00478fc0	d2_FreeSurface	gfx	byte	readable		
 exe	0x00479020	d2_LockSurface	gfx	byte	readable		
 exe	0x004790e0	d2_UnlockSurface	gfx	byte	readable		
 exe	0x00479120	d2_GetSurfaceDesc	gfx	byte	readable		
-exe	0x00479150	d2_BlitPartMode	gfx	draft	readable	deep	
+exe	0x00479150	d2_BlitPartMode	gfx	shape	readable	stuck	
 exe	0x00479480	d2_BlitPart	gfx	byte	readable		
-exe	0x004794c0	d2_BlitPartToDD	gfx	draft	readable	deep	
+exe	0x004794c0	d2_BlitPartToDD	gfx	byte	readable		
 exe	0x00479610	d2_BlitPartFromDD	gfx	byte	readable		
 exe	0x004796c0	d2_ClearSurface	gfx	byte	readable		
 exe	0x00479780	d2_CopySurface	gfx	byte	readable		
