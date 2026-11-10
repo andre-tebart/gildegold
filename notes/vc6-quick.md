@@ -136,6 +136,20 @@ mechanisms, each as a generated round over all positions / subsets:
 - **`movsx eax, bl; and eax, 8; shl eax, 8` from an int flags**: every `(char)flags & 8` spelling folds the
   movsx away; only a multiply before the mask (`(char)flags * 0x100 & 0x800`) keeps it, as `shl; and 0x800`
   (d2_MakeSurface, unsolved: the and-before-shift order is open).
+- **A long run of independent `global = rec.field;` stores scheduled in another order** (crossed M8 lines, `dcp try`
+  showing `0 ins` but still draft): the list scheduler follows the source order, but not 1:1, and single swaps
+  stall. Score orders against the original's listing with addresses resolved (deep-tools storeorder_hc.py) and
+  climb from several starts (the natural/save order too). d3if_SelectScene reached byte with the natural order
+  except one line; the earlier "emitted order" source was 28 lines worse.
+- **A `(&a->x * b->y ...)` sum of products whose operands load in another order** (`fld b.gx; fmul c.gz` vs
+  `fld c.gz; fmul b.gx`): VC6 canonicalizes the factor order (all 2^n swaps = control) and reassociates the sum
+  (any grouping = one code); only the term order and code earlier in the function move it (d3sm_ShadowCB, open).
+- **Local copies of array elements (`a = d[i]; b = d[j]; .. (a + b)`) where the original reloads some of them after
+  a store**: the source read the elements in place; VC6 CSEs the reads up to the first store and reloads after it.
+  d3sm_Sample 340 -> 194 ins. A halving loop `for (; step > 1; step = half)` vs `step >>= 1`: different IVs (-34).
+- **Two bitfields of one byte set in both arms** (`solid = 1; cast = 1;` / `solid = 0; cast = x;`) where the
+  original does `and 0x3f; xor` (one RMW for both) and one shared store: assign cast before solid in the else arm
+  (d3sm_ShadowCB, -28 ins). A struct local used only in a loop body declared there shares a dead array's slot.
 
 ## Control flow and returns
 - **Empty case labels**: VC6 drops `case X: break;` (also `return;`, dead stores, `goto` to the join)
