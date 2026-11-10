@@ -388,6 +388,13 @@ mechanisms, each as a generated round over all positions / subsets:
   that returns): a separate block-scoped buffer, not the function's other buffer (amt_CalcZuenfte: `gb[64]`).
 
 ## Floating point
+- **An int quotient whose dividend the original fild's only after the divisor's call** (`mov [a],eax; call g;
+  fild [a]; mov [b],eax; fidiv [b]`, two int homes, no float temp), where ours converts at once (`fild; fstp
+  float temp` before the second call, then `fdivr`): the quotient sat in the windows.h `min` macro, `min((float)a /
+  b, ai_FloatOne)` with int locals a = f(), b = g(); the macro's two copies of `a / b` keep a and b live as ints.
+  Every one-copy spelling (one expression, int locals, casts, double, ratio /=) gave the early conversion; an
+  `if (r > 1) r = 1` clamp also gave `fld 1; fld 100; fmul st,st(1)` where min gives `fld 1; fmul [100]`
+  (ai_CurseTargetWindow draft 28 ins -> byte).
 - Commutative operand order is rank-based, not source order: textual swaps rarely change anything. Ranks move
   with parentheses (`(p->x)` is not neutral), a dead store, a named local, or a `(float)` cast of a subterm.
 - Chains: `r = A + B; r += C;` split statements fix association; `x = sqrt(..); x = x * k;` fixes scheduling.

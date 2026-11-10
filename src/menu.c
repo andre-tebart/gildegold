@@ -70,6 +70,8 @@ const volatile unsigned __int64 gypsyFilter = 0x1a7fdfbb6;  /* 0x5eed68 (volatil
 #define ai_FallbackBuildingB (*(unsigned char **)&ai_FallbackBuilding)  /* 0x6f230c, ai_FallbackBuilding (sv.c: char *) read bytewise, as this unit does */
 #define ai_PlayerBuildingB (*(unsigned char **)&ai_PlayerBuilding)  /* 0x6f2308, ai_PlayerBuilding (sv.c: char *) read bytewise, as this unit does */
 #define ai_CharsC (*(char (*)[768 * 0x21c])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) read flat, as this unit does */
+extern __declspec(align(1)) unsigned char full_rdata_5ebb40[];  /* main.c's rdata gap block */
+#define ai_FloatHundred (*(float *)&full_rdata_5ebb40)  /* 0x5ebb40, VC6's pooled 100.0f (main.c's rdata gap block; cm.c, he.c and lc.c read it too) */
 #define ai_CharsK ((AICHARKINDVIEW *)((char *)ai_Chars + 2))  /* 0x770b82, the records from their kind byte (ai_HasQuicksavePlayer walks them so) */
 
 extern OPTIONBYTES ai_GfxFloor, ai_GfxSet, ai_GfxFog, ai_GfxResolution, ai_GameSwitches, ai_GamePanel, ai_OptionPanelHelp;
@@ -2956,7 +2958,7 @@ void ai_CurseWindow(int building)
    0x41fb + its id) or 0x41f9 (done) is shown. The buttons are enabled and the victim slider is used only without a running
    curse, the share bar only with one. The right mouse button and the second button leave; the first button pays the class
    (sv_CheckMoney, gm_SendMoneyDelta) and sends the message 0xa0 (the building id, the game time, arg 0 = the strength,
-   flags 2) with cm_SendLongMessage. The pump ends with d2_CloseView and the camera follow. @deep body reconstructed and read whole against the disassembly: 363 vs 365 instructions, the clock (AITIME, memcpy of ai_Time + gm_AddTime, hour 21 + random, minute 0), the two sliders, the 0x8c ms / value-change rebuild with the running-curse (ai_FindCurseEvent) and the new-curse branches in the original order, the buttons, the pay + 0xa0 message and the tail jump all match. The diff has 7 slot hunks (a 4 byte shift of the ids / tick locals: ours keeps a float local for the share ratio, the original has none) and ONE code hunk of 28 instructions at 0x5d92c7, the share ratio: the original stores the first gm_MinutesBetween result as an int ([esp+0x44]) and later does fild first; fidiv second (the second result also in memory), then fcom 1.0 / fnstsw / test ah,5 / jnp; ours converts the first result at once (fild; fstp float temp before the second call), then fild second; fdivr temp. Tried: one expression (float)f() / g() (this), named int locals total / elapsed (same early fild), the clamp as a ternary with > and >= (changes the compare to and eax,0x4100 / 0x100 and does not remove the early conversion), swapping the if / else order (fixed three other hunks). Allocation / scheduling of the FPU expression only. */
+   flags 2) with cm_SendLongMessage. The pump ends with d2_CloseView and the camera follow. */
 
 void ai_CurseTargetWindow(int building)
 {
@@ -2967,7 +2969,7 @@ void ai_CurseTargetWindow(int building)
     int value, cls;
     unsigned tick;
     CURSEEVENT *ev;
-    float ratio;
+    int elapsed, total;
 
     tick = 0;
     cls = 2;
@@ -2997,11 +2999,9 @@ void ai_CurseTargetWindow(int building)
             if (ev != 0) {
                 when = ev->due;
                 when.hour += ev->done ? 0 : 2;
-                ratio = (float)gm_MinutesBetween((struct AITIME *)&ev->from, (struct AITIME *)&ai_Time)
-                        / gm_MinutesBetween((struct AITIME *)&ev->from, (struct AITIME *)&when);
-                if (ratio > 1.0f)
-                    ratio = 1.0f;
-                d2_SetObjValue4(share, 0, 100, (int)(ratio * 100.0f));
+                elapsed = gm_MinutesBetween((struct AITIME *)&ev->from, (struct AITIME *)&ai_Time);
+                total = gm_MinutesBetween((struct AITIME *)&ev->from, (struct AITIME *)&when);
+                d2_SetObjValue4(share, 0, 100, (int)(min((float)elapsed / total, ai_FloatOne) * ai_FloatHundred));
             } else {
                 memcpy(&when, &ai_Time, sizeof(AITIME));
                 gm_AddTime((struct AITIME *)&when, 0x18, 0, 0);
