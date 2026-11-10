@@ -4603,7 +4603,7 @@ exe	0x005d3270	ai_UseGoodDistrust	lc	draft	readable	deep
 exe	0x005d33b0	ai_ListFiles	menu	byte	readable		
 exe	0x005d34b0	ai_FilePickWindow	menu	shape	readable		
 exe	0x005d3810	ai_MessageBox	menu	shape	readable		
-exe	0x005d3a00	ai_RegisterSaveSlot	menu	draft	readable	deep	
+exe	0x005d3a00	ai_RegisterSaveSlot	menu	shape	readable	stuck	
 exe	0x005d3ab0	ai_FillSaveSlots	menu	draft	readable	deep	
 exe	0x005d4080	ai_LoadGameWindow	menu	byte	readable		
 exe	0x005d42b0	ai_JoinGameWindow	menu	byte	readable		
@@ -4611,11 +4611,11 @@ exe	0x005d44c0	ai_EditText	menu	shape	readable
 exe	0x005d45d0	ai_SaveOptionWindow	menu	byte	readable		
 exe	0x005d4920	ai_SaveNameWindow	menu	byte	readable		
 exe	0x005d4c70	ai_SaveOptions	menu	byte	readable		
-exe	0x005d5640	ai_LoadOptions	menu	draft	readable	deep	
+exe	0x005d5640	ai_LoadOptions	menu	byte	readable		
 exe	0x005d5c40	ai_ApplyGfxOptions	menu	draft	readable	deep	
 exe	0x005d5e90	ai_ApplyOptions	menu	byte	readable		
 exe	0x005d5f10	ai_ApplyVolumes	menu	byte	readable		
-exe	0x005d5fd0	ai_OptionsGfxScreen	menu	draft	readable	deep	
+exe	0x005d5fd0	ai_OptionsGfxScreen	menu	byte	readable		
 exe	0x005d6580	ai_OptionsSfxScreen	menu	byte	readable		
 exe	0x005d6950	ai_OptionsGameScreen	menu	shape	readable		
 exe	0x005d6f40	ai_MenuButton	menu	byte	readable		
@@ -4657,7 +4657,7 @@ exe	0x005dc0c0	ai_LoadWind	menu	byte	readable
 exe	0x005dc1a0	ai_SphereVolume	menu	byte	readable		
 exe	0x005dc210	ai_PositionShare	menu	byte	readable		
 exe	0x005dc240	ai_InitShot	menu	draft	readable	deep	
-exe	0x005dc3a0	ai_ScatterShot	menu	draft	readable	deep	
+exe	0x005dc3a0	ai_ScatterShot	menu	byte	readable		
 exe	0x005dc4a0	ai_StepShot	menu	draft	readable	deep	
 exe	0x005dc9d0	ai_StepShotSlow	menu	draft	readable	deep	
 exe	0x005dcf00	ai_ShotHitsGround	menu	draft	readable	deep	
