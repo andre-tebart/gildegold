@@ -4212,20 +4212,7 @@ unreported:
    for the owner, offered to a player (message 0x92, AIMSG.lease), paid by a character with enough money (0.44 of
    gm_CharCurrency above gv_LeasePrice), else the entry is freed. At the end the graveyard gets 1 .. 2 new dead while
    fewer than 4 graves are in use (gv_OrderNewDead), and a player owner is told the paid leases (ai_TellGravesPaid)
-   and the angered holders (ai_TellGraveNeglect)
-   @deep read the whole function against the original 0x4f1de0..0x4f229b (the wait block, the gone-holder
-   search with gv_OrderSetGraveHolder / wear, the held-entry wear, the relations check, the lease end with
-   gv_LeasePrice / gv_OrderExtendGrave / the 0x92 offer (AIMSG.lease) / gm_CharCurrency * 0.44 / release,
-   the tail with gv_GravesInUse / gv_OrderNewDead / the two reports): every statement, callee, argument,
-   field and constant matches (fixed this pass: the sum += share of paid leases, the 0.44 money test, the
-   message layout +4 type / +8 to / +0xc from / +0x28 time / +0x36 flags 9 / +0x58.. the lease, the
-   0x5ee044 wear table, gv_LeasePrice's byte care argument, the c != 0 path's cached yard). Left
-   (diffclass: order 114, code 6): the original keeps the wait loop unrotated ('+ jmp 0x4f1e67' back to the
-   cm_GetSlotState test) where ours duplicates the test at the bottom ('- push edi / - call cm_GetSlotState
-   / - test eax,eax / - je'); tried while (== 0), while (!..), for(;;) with break, the reset inside the
-   break block and a goto loop: all rotate. The float wear product is scheduled b0c * (1/255) * table in
-   the original, ours b0c * table * f * (1/255) (VC6 moves the literal; written as / 255.0f and *
-   0.003921569f, grouped both ways: same) */
+   and the angered holders (ai_TellGraveNeglect) */
 
 void gv_GraveyardTurn(char *o)
 {
@@ -4264,10 +4251,11 @@ void gv_GraveyardTurn(char *o)
         c = (AICHAR *)gm_FindChar(e->id);
         if (c == 0) {
             size = e->size;
-            for (k = 0, g = e->grave; k < gv_EntryCounts[size]; k++, g++) {
+            for (k = 0; k < gv_EntryCounts[size]; k++) {
+                g = &e->grave[k];
                 if (g->id != -1) {
                     f = (util_RandomF() + ai_FloatOne) * 0.5f;
-                    t = (int)(f * ((float)e->b0c / 255.0f * gv_GraveWear[e->size]));
+                    t = (int)(f * (gv_GraveWear[e->size] * ((float)e->b0c / 255.0f)));
                     if (t <= 0 || ((gv_EntryIndex((char *)bld->yard, (int *)e) ^ ai_Time.year) & 1) != 0)
                         goto next;
                     h = gv_OrderAdjustEntry(o, e->size, gv_EntryIndex((char *)bld->yard, (int *)e), -t);
@@ -4280,14 +4268,14 @@ void gv_GraveyardTurn(char *o)
 
             f = (util_RandomF() + ai_FloatOne) * 0.5f;
             size = e->size;
-            t = (int)(f * ((float)e->b0c / 255.0f * gv_GraveWear[size]));
+            t = (int)(f * (gv_GraveWear[size] * ((float)e->b0c / 255.0f)));
             if (t > 0 && ((gv_EntryIndex((char *)(yard = bld->yard), (int *)e) ^ ai_Time.year) & 1) == 0) {
                 h = gv_OrderAdjustEntry(o, size, gv_EntryIndex((char *)yard, (int *)e), -t);
                 rounds++;
             }
             if (pl == 0)
                 goto next;
-            if (c != pl && ai_Time.year % 4 == (int)(c->netId & 3)
+            if (c != pl && ai_Time.year % 4 == (c->netId & 3)
                 && (float)e->b0c / 255.0f < 0.66f) {
                 h = cm_SendRelations(pl->netId, c->netId, -5 - util_RandomU(0x10), 1);
                 rounds++;
