@@ -48,6 +48,7 @@ extern unsigned short * d3s_Dst16;
 extern int d3s_SpanLen;
 extern int d3s_Fill;
 extern float ai_FloatZero;  /* 0x5eb788, the shared 0.0f (cm.c) */
+extern const float ai_FloatOne;  /* 0x5eb780, the shared 1.0f (bio.c) */
 extern int dd_PitchPixels;                      /* 0x14661a0 */
 extern int dd_Pitch;                       /* 0x1463588 */
 extern void *dd_Surface;                 /* 0x1463590 */
@@ -840,10 +841,11 @@ char d3s_MeshFromMap(int *rect, int stride, unsigned char *map, float *origin, f
     nx = rect[1] - x0;
     z0 = rect[2];
     nz = rect[3] - z0;
+    p = &buf->polys[buf->npolys];
     row = &buf->verts[buf->nverts];
     pos = &d3s_Verts[d3s_NumVerts * 6];
     t = &d3s_UVs[d3s_NumUVs * 6];
-    add = d3d_ZEnabled ? 2.0f : 1.0f;
+    add = d3d_ZEnabled ? 2.0f : ai_FloatOne;
     xs = x0 * cell[0] + origin[0];
     ys = add + origin[1];
     z = z0 * cell[2] + origin[2];
@@ -864,7 +866,6 @@ char d3s_MeshFromMap(int *rect, int stride, unsigned char *map, float *origin, f
         z += cell[2];
     }
     w = uv[2];
-    p = &buf->polys[buf->npolys];
     for (k = nz; k > 0; k--, row += nx + 1) {
         u = uv[0];
         for (i = 0; i < nx; i++) {
@@ -913,7 +914,6 @@ char d3s_MeshFromMap(int *rect, int stride, unsigned char *map, float *origin, f
     }
     return 1;
 }
-extern const float ai_FloatOne;  /* 0x5eb780, the shared 1.0f (bio.c) */
 
 /* 0x45b8d0, adds the shadow of slot to the shadow object. The slot copies are parenthesized: VC6 then copies the
    floats through the FPU as the original does (likely a macro's parentheses); v0, du and dv start from the shared
