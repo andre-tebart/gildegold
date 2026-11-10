@@ -2142,16 +2142,7 @@ void sv_UpdateSkyColors(void)
     }
 }
 /* 0x525a00, fills the day phases sv_DayPhases (hour, minute, second of the day) from the start minutes of the season of the
-   clock t (sv_PhaseMinutes)
-   @deep Read against the original 0x525a00..0x525a6f: the statement set matches (gm_ClockSeason, the
-   6-phase index loop over sv_DayPhases with hour = minutes / 60, min = (char)minutes - hour * 60, sec =
-   (min + hour * 60) * 60; the jl index loop and the stride-10 pointer at the min field are the
-   original's). Only allocation is left: the original saves ebx and keeps the walk pointer in ecx, the
-   season row pointer in esi, the minute value in edi and the 0x3c multiplier / minute byte in bl; ours
-   keeps the walk pointer in esi, the row in edi, the value in ecx and the byte ops in cl, so it saves no
-   ebx (asmdiff --regs esi=ecx,edi=esi,ecx=edi,cl=bl leaves only push ebx / pop ebx and the value register
-   edi vs ebx: '+ push ebx', '+ mov edi, dword ptr [esi]', '+ imul edi'). Tried: a walking const int *q,
-   swapped declaration orders of h / m and season / i, h * 60 + m: all the same 40 vs 42 instructions. */
+   clock t (sv_PhaseMinutes) */
 
 void sv_FillDayPhases(struct AITIME *t)
 {
@@ -2162,9 +2153,9 @@ void sv_FillDayPhases(struct AITIME *t)
     for (i = 0; i < 6; i++) {
         h = (char)(sv_PhaseMinutes[season * 6 + i] / 60);
         sv_DayPhases[i].hour = h;
-        m = (char)sv_PhaseMinutes[season * 6 + i] - h * 60;
+        m = (char)sv_PhaseMinutes[season * 6 + i] - sv_DayPhases[i].hour * 60;
         sv_DayPhases[i].min = m;
-        sv_DayPhases[i].sec = (m + h * 60) * 60;
+        sv_DayPhases[i].sec = (m + sv_DayPhases[i].hour * 60) * 60;
     }
 }
 /* 0x525a80, a d3_ForEachObject callback (the object o, the flag f): sets the brightness ramp of the object's light

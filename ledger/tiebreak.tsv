@@ -3331,7 +3331,7 @@ exe	0x00525480	sv_ClockSeason	sv	bead8ddd56d01019	no	byte	control=byte p1=byte p
 exe	0x00525490	sv_SetSkyLightColors	sv	3c6201aa47f0add2	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00525510	sv_SetupWeather	sv	8fdb012b870c4534	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00525940	sv_UpdateSkyColors	sv	3a0f4780c4041b55	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x00525a00	sv_FillDayPhases	sv	ed206efa69f24940	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x00525a00	sv_FillDayPhases	sv	ed206efa69f24940	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x00525a80	sv_SetLampRamp	sv	012c5dbd8cd1d8c7	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00525ad0	sv_UpdateSkyPhase	sv	c498097b4c26e999	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
 exe	0x00525dd0	sv_PlaceCamera	sv	a1fbf041c3ebb203	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
