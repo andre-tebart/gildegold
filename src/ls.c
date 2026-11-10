@@ -1456,20 +1456,7 @@ int ls_ReadSaveHeader(int f, int *h)
 }
 /* 0x51d2d0, after a load: builds the scene (0x44be60 with the loader 0x537b60) and its height map (d3sm_Create,
    size 0x100, or 0x80 when the terrain's side is 0x40), sets the terrain's detail bits (D3FLMAP.lod, from
-   init_Detail) and registers the two scene callbacks 0x51d4f0 (0x1c0) / 0x51d530 (0xc0) with 0x438e60. Returns 1
-   @deep read whole against the original and rewrote it typed (d3_Scenes[0].hmap = (struct D3HMAP
-   *)d3sm_Create(...) with the D3HMAP cast the other callers use, D3FLMAP.lod = init_Detail for the +0x1c70
-   bits - the xor/and/xor is VC6's bitfield store, and the two d3_ForEachObject2 callbacks). Q gates
-   settled (Q2 ai_Unkfd7c50 -> the d3_Scenes[0].hmap field, Q4's two raw accesses gone). 71 vs 73
-   instructions, 28 differing, all scheduling: (1) the size argument of d3sm_Create - the original
-   duplicates the argument pushes per branch (push 2 / push 0x80, jmp, push 2 / push 0x100) at 0x51d323,
-   ours materialises the ternary in eax (mov eax,0x80 / je / mov eax,0x100) at 0x51d321 and pushes it once;
-   (2) the esi save sits before that call in ours (0x51d32d) and after it in the original (0x51d341), and
-   the hmap store follows the esi save instead of the call; (3) the terrain pointer in the detail block is
-   eax in ours, ecx in the original (diffclass regs 6 + 4 at 0x51d35d / 0x51d370), which is also where the
-   prover stops (a 1-byte store shift). Tried one build each: with and without a D3FLMAP *m local, the size
-   computed in an int local first, and the declaration order - identical or unchanged. Same callees,
-   arguments, constants, branches and stores on both sides. */
+   init_Detail) and registers the two scene callbacks 0x51d4f0 (0x1c0) / 0x51d530 (0xc0) with 0x438e60. Returns 1 */
 
 
 int ls_LoadScene(int f)
@@ -1482,8 +1469,10 @@ int ls_LoadScene(int f)
     d3_LoadScene(0, f, (void *)(unsigned)&main_LoadProgressCallback);
     d3if_SelectScene(1, 0);
     d3if_SelectScene(0, 0);
-    d3_Scenes[0].hmap = (struct D3HMAP *)d3sm_Create((struct D3TERRAIN *)d3_Terrain,
-                                (((D3FLMAP *)d3_Terrain)->size == 0x80 || ((D3FLMAP *)d3_Terrain)->size != 0x40) ? 0x100 : 0x80, 2);
+    if (((D3FLMAP *)d3_Terrain)->size == 0x80 || ((D3FLMAP *)d3_Terrain)->size != 0x40)
+        d3_Scenes[0].hmap = (struct D3HMAP *)d3sm_Create((struct D3TERRAIN *)d3_Terrain, 0x100, 2);
+    else
+        d3_Scenes[0].hmap = (struct D3HMAP *)d3sm_Create((struct D3TERRAIN *)d3_Terrain, 0x80, 2);
     saved = d3_CurrentScene;
     d3if_SelectScene(0, 0);
     if (d3_Terrain != 0) {
