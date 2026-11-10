@@ -3299,7 +3299,7 @@ exe	0x00520f90	sv_CheckMoney	sv	369040c9dfc9252a	no	byte	control=byte p1=byte p2
 exe	0x00520fe0	sv_CheckCharacterFlag	sv	93c99582899a64e1	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00521040	sv_CheckGoodAmount	sv	d34de32db6b5807c	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x005210a0	sv_CheckStock	sv	0cb3eeebc05b007a	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x00521150	sv_MessageBox	sv	3c65ebf0ce6c97c4	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x00521150	sv_MessageBox	sv	d5b8540d4f1fa420	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x00521410	sv_MessageBoxGreen	sv	9d4b30e86a38f598	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x005216a0	sv_MessageBoxYesNo	sv	3d4d2ede6e33122c	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x00521900	sv_OpenMessageBox	sv	5d6702f5abe829e5	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
