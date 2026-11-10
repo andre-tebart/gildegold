@@ -1153,13 +1153,23 @@ loaded:
    building (or the n-th offered object) and of the fallback building: on a left click one the player may use
    (ai_ScriptQuery 0x19, gm_PermissionBits 0x4000) is entered (ai_SwitchRoom) or selected for the panel
    (sv_SelectPanelObject), otherwise its caption is shown; clears sv_ScreenDirty
-   @deep reconstructed whole against the original (city-arms branch, the pointer-cell lookup, both building
-   parts with the script / permission checks, sv_ScreenDirty cleared on every path); 407 vs 411 ins. Left
-   only the goods-kind load in the two slot loops: 0x522c86 / 0x522db4 ours mov cl,[eax+ebp] where the
-   original materializes the address (mov ecx,eax; add ecx,ebp; mov cl,[ecx]) of ai_GoodsT[id].type; tried
-   a pointer local (AIGOOD *good), a char* index (ai_Goods[id * 0x41]), id as int / unsigned / unsigned
-   short (the last breaks the frame): all the same or worse, so it is instruction selection, not the
-   source. sv_LoadGroundplan has the same pair */
+   @stuck declaration set insensitive (32 samples, one codegen). Left: the goods-kind load in both slot
+   loops, ours 'mov cl,[eax+ebp]', the original 'mov ecx,eax; add ecx,ebp; mov cl,[ecx]' (code 8). All =
+   control: the table read as ((AIGOOD *)ai_Goods)[id].type, ai_Goods[id * sizeof(AIGOOD)], (AIGOOD
+   *)ai_Goods + id, *(ai_Goods + id * 0x41), *(char *)&ai_GoodsT[id], *&..type, (char)((unsigned char
+   *)ai_Goods)[..], (&ai_GoodsT[0] + id)->type; no kind local (the load written in both compares, also as
+   (char) and char* index); the index as bt->slot[slot] & 0x7fff, the kind load before id's assignment;
+   kind unsigned char. kind as int: movsx [eax+ebp] (16 ins). Toy (deep-tools toyasm.py, w49/toy*.c: macro
+   view, AIGOOD *, char* forms, unsigned short id, switch, id &= in place, assignment in the test) always
+   gives the SIB load, so the original's form likely comes from register pressure elsewhere in the
+   function, not the load's spelling (tiebreak: insensitive under the four probes only, best draft) prior:
+   reconstructed whole against the original (city-arms branch, the pointer-cell lookup, both building parts
+   with the script / permission checks, sv_ScreenDirty cleared on every path); 407 vs 411 ins. Left only
+   the goods-kind load in the two slot loops: 0x522c86 / 0x522db4 ours mov cl,[eax+ebp] where the original
+   materializes the address (mov ecx,eax; add ecx,ebp; mov cl,[ecx]) of ai_GoodsT[id].type; tried a pointer
+   local (AIGOOD *good), a char* index (ai_Goods[id * 0x41]), id as int / unsigned / unsigned short (the
+   last breaks the frame): all the same or worse, so it is instruction selection, not the source.
+   sv_LoadGroundplan has the same pair */
 void sv_UpdateGroundplan(unsigned flags)
 {
     int i, x, y, cnt, slot, pic;
