@@ -4138,6 +4138,12 @@ int ai_StepShot(SHOTREC *shot)
     float dx, dy, dz, ax, ay, az, bx, by, bz;
     D3VECTOR v, next;
 
+    extern float ai_FloatZero;
+#undef SIGN
+#define SIGN(v) ((v) > ai_FloatZero ? ai_FloatOne : -1.0f)
+#undef DRAG
+#define DRAG(v) ((((((SIGN(v) * shot->area) * ai_ShotDrag) * ai_AirDensity) * (v)) * (v)) * 0.5f)
+
     if (shot->state != 1)
         return 0;
     ticks = d3_Time - shot->time;
@@ -4146,9 +4152,9 @@ int ai_StepShot(SHOTREC *shot)
         shot->energy = 0;
         return 0;
     }
-    windX = DRAG(shot->wind.pos[0]);
+    windX = (((((shot->area * shot->wind.pos[0]) * shot->wind.pos[0]) * SIGN(shot->wind.pos[0])) * ai_ShotDrag) * ai_AirDensity) * 0.5f;
     windY = DRAG(shot->wind.pos[1]);
-    windZ = DRAG(shot->wind.pos[2]);
+    windZ = (((((shot->area * shot->wind.pos[2]) * shot->wind.pos[2]) * SIGN(shot->wind.pos[2])) * ai_ShotDrag) * ai_AirDensity) * 0.5f;
     for (i = 0; i < ticks; i++) {
         v = shot->vel.v;
         dx = DRAG(v.x);
