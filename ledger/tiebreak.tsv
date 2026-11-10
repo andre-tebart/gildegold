@@ -4659,7 +4659,7 @@ exe	0x005dc240	ai_InitShot	unk_5d33b0	f73cc2d248112a1e	no	draft	control=draft p1
 exe	0x005dc3a0	ai_ScatterShot	menu	33c9e2b3744cb515	no	byte	sample n=32 seed=1 compiled=32 codegens=1 best=byte
 exe	0x005dc4a0	ai_StepShot	unk_5d33b0	bf0170a8bc53408d	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x005dc9d0	ai_StepShotSlow	unk_5d33b0	e50bca34ae144922	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
-exe	0x005dcf00	ai_ShotHitsGround	unk_5d33b0	447786dbb8581286	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x005dcf00	ai_ShotHitsGround	menu	d5ee153d3ba42fac	no	shape	sample n=32 seed=1 compiled=32 codegens=1 best=shape
 exe	0x005dd090	ai_NormalizeEffectScale	unk_5d33b0	f4fb3ee3506f24fa	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x005dd100	ai_SolveCannonAim	unk_5d33b0	5d741542f6552084	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
 exe	0x005de460	MSS_auto_cleanup	mss32lib	c42d3dca4fab99e2	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte

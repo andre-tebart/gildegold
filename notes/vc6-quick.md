@@ -413,6 +413,10 @@ mechanisms, each as a generated round over all positions / subsets:
   (ai_CurseTargetWindow draft 28 ins -> byte).
 - Commutative operand order is rank-based, not source order: textual swaps rarely change anything. Ranks move
   with parentheses (`(p->x)` is not neutral), a dead store, a named local, or a `(float)` cast of a subterm.
+  For `a += b` / `a = a + b` of two locals the **statement order of their initializations** decides it: the
+  local assigned last before the loop is loaded first (`fld a; fadd b` needs a's init after b's). Swapping
+  `p = from` after `d = to - from` and `t = 0` after `step = ..` fixed four fadds of ai_ShotHitsGround (12 ins
+  -> byte); `+=` vs `a = b + a` vs declaration order were all `= control`.
 - Chains: `r = A + B; r += C;` split statements fix association; `x = sqrt(..); x = x * k;` fixes scheduling.
 - min()/max() macros (windows.h) keep the ternary's operand order and give fld/fstp copies; a plain `if` copies
   with integer moves. `max(0, x)` vs `max(x, 0)` give different compares: try both.
