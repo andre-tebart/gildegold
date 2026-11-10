@@ -4174,9 +4174,12 @@ int ai_StepShot(SHOTREC *shot)
         next.z = shot->pos.z;
         shot->time++;
         shot->steps++;
-        b.x = (d.x + wind.x) * perMass;
-        b.y = (d.y + wind.y) * perMass - fall;
-        b.z = (d.z + wind.z) * perMass;
+        b.x = d.x + wind.x;
+        b.y = d.y + wind.y;
+        b.z = d.z + wind.z;
+        b.x *= perMass;
+        b.y = b.y * perMass - fall;
+        b.z *= perMass;
         v.x = (b.x + a.x) * 0.5f;
         v.y = (b.y + a.y) * 0.5f;
         v.z = (b.z + a.z) * 0.5f;
