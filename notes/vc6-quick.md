@@ -538,3 +538,20 @@ mechanisms, each as a generated round over all positions / subsets:
 - **Every failure as an early `return 0`** (ai_TokenRichestInhabitant) let the mode-1 path's success jump into the
   shared format tail past the `mode == 0` store, as the original's `ja` does; nested `if (n2 == 1) { if (sel ..) {`
   kept its own copy.
+- **Two adjacent byte locals right next to a big array, with unused slots after them** (`[ebp-0x28]`/`[ebp-0x27]`,
+  a 12-byte gap): one record, not two chars. hst_ParseDate's day/month were a GMDATE (`char day, month; short
+  year`: the year's `movsx` showed the short); framesearch.py with `struct {..} dt` hypotheses found the slot in
+  seconds, then byte with `mode` as an int (which dead parameter slot a later macro temp takes).
+- **An inline-asm macro temp loaded from a parameter and stored back** (`mov ecx,[name]; mov [name],ecx`) where the
+  original has `mov edi,[ebp+0x14]`: the asm read the variable itself (`__asm mov edi, dst`), no `void *_cp = dst`;
+  for a global, `__asm mov edi, OFFSET dst` (hst.c G12_COPY2_V / G12_COPY2_G).
+- **A spilled float `fstp g; fld e.demand; fmul g` where the original keeps it (`fst g; fmul e.demand`)**: no named
+  g - write `f + 1.0f` at both uses; VC6's CSE temp gets the original's slot (ai_CommandDemand). Likewise an int
+  CSE temp (`w - x0` at both uses) instead of a `lim` local (d3s_DrawSpans).
+- **A hoisted `neg w` and an extra incremented frame slot in a count-down loop**: the original tested
+  `row - j + y0 > 0` and indexed `j * w` directly; VC6 made both induction variables itself. Separate `e` / `i`
+  locals with their own `++` / `-= w` give other code (d3s_DrawSpans, byte).
+- **`lea edx,[edi+edi]; imul edx,ecx` vs ours `imul; lea [eax+edx*2]`**: every `h * 2 * w` spelling folds to the
+  same code; `(h << 1) * w` gives the original's (d3s_AddShadow).
+- **Pooled literals**: all three `1.0f`s of d3s_AddShadow were the shared ai_FloatOne, but the M10 named only the
+  first two until those were written as the object; check the whole function after each M10 fix.
