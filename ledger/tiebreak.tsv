@@ -427,7 +427,7 @@ exe	0x00420db0	qnt_MakePalette	qnt	7499a73ad8274110	no	byte	control=byte p1=byte
 exe	0x00420e70	qnt_Map	qnt	e63283a98442ac63	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x00421410	qnt_Nearest	qnt	192a1cc7028d9e9b	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
 exe	0x004214a0	err_Write	err	6aee64c4492f3fd3	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x004215c0	err_ExceptionFilter	err	0125bfa6e26fefb8	yes	draft	control=draft p1=draft* p2=draft p3=draft p4=draft*
+exe	0x004215c0	err_ExceptionFilter	err	41d04ea1fa5de49d	yes	draft	sample n=32 seed=1 compiled=32 codegens=2 best=draft
 exe	0x00421d50	err_WriteSymbol	err	68550df7264d3917	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00421ed0	err_GetString	err	4e6a2348a8a2d929	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00421f00	err_IsCodeProtect	err	7ad554df9910f400	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
