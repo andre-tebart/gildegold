@@ -3768,18 +3768,18 @@ void sv_RefreshPanel(void)
             kind = j->kind;
         if (kind == 0x8f) {
             total = (float)gm_MinutesBetween(&j->start, &j->end8f);
-            if (total != 0.0f)
+            if (total != ai_FloatZero)
                 prog = (float)gm_MinutesBetween(&j->start, &ai_Time) / total;
         } else if (kind == 0x16) {
             total = (float)gm_MinutesBetween(&j->start, &j->end8f);
-            if (total != 0.0f)
+            if (total != ai_FloatZero)
                 prog = (float)gm_MinutesBetween(&j->start, &ai_Time) / total;
         } else if (kind == 0x40) {
             if (j->stage < 2)
                 prog = 0.01f;
             else if (j->stage == 2) {
                 total = (float)gm_MinutesBetween(&j->start, &j->end);
-                if (total != 0.0f)
+                if (total != ai_FloatZero)
                     prog = (float)gm_MinutesBetween(&j->start, &ai_Time) / total;
             }
         } else if (kind == 0x61) {
@@ -3787,14 +3787,14 @@ void sv_RefreshPanel(void)
             t = *from;
             gm_AddTime((struct AITIME *)&t, 8, 0, 0);
             total = (float)gm_MinutesBetween(from, &t);
-            if (total != 0.0f)
+            if (total != ai_FloatZero)
                 prog = (float)gm_MinutesBetween(from, &ai_Time) / total;
         } else if (kind == 0x43) {
             from = &j->start;
             t = *from;
             gm_AddTime((struct AITIME *)&t, 0x18, 0, 0);
             total = (float)gm_MinutesBetween(from, &t);
-            if (total != 0.0f)
+            if (total != ai_FloatZero)
                 prog = (float)gm_MinutesBetween(from, &ai_Time) / total;
         } else if (kind == 0x62) {
             if (j->stage < 4)
@@ -3804,7 +3804,7 @@ void sv_RefreshPanel(void)
                 t = *from;
                 gm_AddTime((struct AITIME *)&t, 0x60, 0, 0);
                 total = (float)gm_MinutesBetween(from, &t);
-                if (total != 0.0f)
+                if (total != ai_FloatZero)
                     prog = (float)gm_MinutesBetween(from, &ai_Time) / total;
             }
         } else if (kind == 0x65) {
@@ -3815,7 +3815,7 @@ void sv_RefreshPanel(void)
                 t = *from;
                 gm_AddTime((struct AITIME *)&t, 0x18, 0, 0);
                 total = (float)gm_MinutesBetween(from, &t);
-                if (total != 0.0f)
+                if (total != ai_FloatZero)
                     prog = (float)gm_MinutesBetween(from, &ai_Time) / total;
             }
         } else if (kind == 0x48) {
@@ -3823,12 +3823,12 @@ void sv_RefreshPanel(void)
                 prog = 0.01f;
             else if (j->stage == 1) {
                 total = (float)gm_MinutesBetween(&j->start, &j->end48);
-                if (total != 0.0f)
+                if (total != ai_FloatZero)
                     prog = (float)gm_MinutesBetween(&j->start, &ai_Time) / total;
             }
         } else if (kind == 0x6c) {
             total = (float)gm_MinutesBetween(&j->start, &j->end6c);
-            if (total != 0.0f)
+            if (total != ai_FloatZero)
                 prog = (float)gm_MinutesBetween(&j->start, &ai_Time) / total;
         }
             ((D2OBJ *)d2_Objs)[sv_PanelPortrait].fillFraction = prog;
