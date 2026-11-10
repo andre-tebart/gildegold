@@ -2660,7 +2660,7 @@ exe	0x004e85d0	amt_UpdateOffices	amt	69693520b65894e9	no	shape	control=shape p1=
 exe	0x004e86e0	amt_HasColumn7Holder	amt	557491ffe6f69a1f	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
 exe	0x004e8730	amt_SendOfficeNews	amt	b8382ceaf9954bfa	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004e87e0	amt_SendOfficeLost	amt	a380f51b4ca194d9	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x004e88a0	amt_ElectDeputies	amt	d54b542ceb312f8b	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x004e88a0	amt_ElectDeputies	amt	84dc0bde86868045	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x004e8c20	amt_ElectKind22	amt	1267653b69a8ff43	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004e8dc0	amt_CalcZuenfte	amt	b38f7a30030ae190	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x004e9260	amt_CheckOffices	amt	ac8fe60747b4e067	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
