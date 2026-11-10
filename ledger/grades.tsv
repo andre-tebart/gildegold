@@ -487,10 +487,10 @@ exe	0x00424c30	net_Close	net	byte	readable
 exe	0x00424c80	net_Recv	net	byte	readable		
 exe	0x00424e70	net_Send	net	byte	readable		
 exe	0x00424f30	path_Find	path	byte	readable		
-exe	0x004250a0	path_Search2	path	draft	readable	deep	
-exe	0x00425470	path_Search1	path	draft	readable	deep	
-exe	0x00425780	path_Expand	path	draft	readable	deep	
-exe	0x00425af0	path_Reverse	path	draft	readable	deep	
+exe	0x004250a0	path_Search2	path	draft	readable	stuck	
+exe	0x00425470	path_Search1	path	draft	readable	stuck	
+exe	0x00425780	path_Expand	path	draft	readable	stuck	
+exe	0x00425af0	path_Reverse	path	byte	readable		
 exe	0x00425bc0	sb_Init	sblib	byte	readable		
 exe	0x00425ce0	sb_Exit	sblib	byte	readable		
 exe	0x00425d20	sb_Update	sblib	byte	readable		
