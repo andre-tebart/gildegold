@@ -22,21 +22,13 @@
 extern float ai_FloatZero;  /* 0x5eb788, the shared 0.0f (cm.c) */
 
 /* 0x450860, loads a mesh from its fast chunk file (the cache the BGF loader looks in first); returns 0 when
-   there is none
-   @deep whole asmdiff read; typed the polygon / vertex / attachment reads (D3BGFPOLY.v / uv / n / tex /
-   mat, D3BGFVERT, D3BGF.nattach), the attachment loop is one for (the extra test eax,eax; jle gone). Left
-   (ours=425 original=425, 26 differing): two register / scheduling hunks only. 1) fl.s.c1 = mt.c2 & 1 is
-   the same add/xor/and 2/xor bit insert, the original in bl (0x450b97 mov bl,al; add bl,bl; xor bl,cl; and
-   bl,2; xor cl,bl) before it loads mt.name[2][0] into bl, ours in dl; 2) both D3BGF_TEXLOAD calls push the
-   same four arguments (flags byte, kind byte, fl, texnames + off2) with the loads of fl ([esp+0x14]) and
-   m->texnames + off2 in other registers / order (0x450c2a / 0x450c34, 0x450c96 / 0x450ca8). The prover
-   stops at a 1-byte shift (+0x351 / +0x32c), the same bitfield shr. */
+   there is none */
 D3BGF *d3_FindBGF(char *path, char *name, char *texnames, int ntexsets, int ntex)
 {
     int a = 0;
     int b;
     D3BGF *m = 0;
-    volatile char kept = 0;
+    char kept = 0;
     void *f;
     int *pn;
     int cnt, off2, idx, j, c;
@@ -115,8 +107,8 @@ D3BGF *d3_FindBGF(char *path, char *name, char *texnames, int ntexsets, int ntex
                     if (mt.kind == 2)
                         fl.s.c0 |= 1;
                 }
-                fl.s.c1 = mt.c2 & 1;
                 mt.c5 = ((unsigned char)mt.c2 >> 1) & 1;
+                fl.s.c1 = mt.c2 & 1;
                 mt.c6 = ((unsigned char)mt.c2 >> 2) & 0xf;
                 mt.c3 = ((unsigned char)mt.c2 >> 6) & 1;
                 if (mt.name[2][0]) {
