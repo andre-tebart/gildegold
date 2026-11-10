@@ -857,7 +857,7 @@ exe	0x004473f0	d3if_Reset	d3_interface	byte	readable
 exe	0x004475f0	d3if_InitScene	d3_interface	byte	readable		
 exe	0x00447800	d3if_PrecacheCB	d3_interface	byte	readable		
 exe	0x00447860	d3if_Prerender	d3_interface	byte	readable		
-exe	0x004478e0	d3if_SelectScene	d3_interface	draft	readable	deep	shape+draft -> draft+draft at 7a3ed50: dcp's reference check (decompanion ef0c0b3) pairs reordered loads / stores of equal text crosswise and reads them as other targets; the effects are the same, the prover cannot show it yet [waits for: decompanion normalized-alignment / prover-coverage]
+exe	0x004478e0	d3if_SelectScene	d3_interface	byte	readable		
 exe	0x00447e60	d3if_ClearScene	d3_interface	byte	readable		
 exe	0x00447f70	d3if_MoveCB	d3_interface	byte	readable		
 exe	0x00447fd0	d3if_MoveObject	d3_interface	byte	readable		
@@ -1095,11 +1095,11 @@ exe	0x0045daa0	d3sky_Destroy	d3_sky	byte	readable
 exe	0x0045dae0	d3sky_InitColors	d3_sky	byte	readable		
 exe	0x0045db20	d3sky_Free	d3_sky	byte	readable		
 exe	0x0045db40	d3sm_GetGround	d3_sm	byte	readable		
-exe	0x0045dc00	d3sm_Sample	d3_sm	draft	readable	deep	
+exe	0x0045dc00	d3sm_Sample	d3_sm	draft	readable	stuck	
 exe	0x0045e180	d3sm_BoundsCB	d3_sm	byte	readable		
-exe	0x0045e210	d3sm_ShadowCB	d3_sm	draft	readable	deep	
+exe	0x0045e210	d3sm_ShadowCB	d3_sm	shape	readable	stuck	
 exe	0x0045e560	d3sm_Replace	d3_sm	shape	readable	deep	
-exe	0x0045e620	d3sm_Build	d3_sm	draft	readable	deep	
+exe	0x0045e620	d3sm_Build	d3_sm	draft	readable	stuck	
 exe	0x0045eeb0	d3sm_Create	d3_sm	byte	readable		
 exe	0x0045ef60	d3sm_Destroy	d3_sm	byte	readable		
 exe	0x0045efc0	d3sm_FindGround	d3_sm	byte	readable		
