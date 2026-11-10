@@ -4078,7 +4078,8 @@ int ai_InitShot(SHOTREC *shot, D3VECTOR *pos, D3VECTOR *dir, float charge, float
    sideSpread along side (am.c passes the vector the balls are set apart along) and ((2 r - 1) * speed *
    otherSpread + 1) along other (a second vector of the planned shot); the result is also the current
    velocity. Returns 1. r is util_RandomF each time. Reasoned: the spread names follow the formulas,
-   am.c passes the same spread value for both deviations. @deep body complete, same 79 instructions as 0x5dc3a0..0x5dc49e and every operand accounted for (steps check, speed scale (1.5r-1)*spread+1 on v and speed, side deviation (2r-1)*speed*sideSpread, other deviation (2r-1)*speed*otherSpread+1, vel.speed copy, the three sums kept as x / y / z with z through the dead arg slot [esp+0x20] like the original, vel = sums). Left 18 ins, all operand order / register choice: (1) both deviations: the original does fmul [esi+0xc] (speed) then fmul [esp+0x24|0x2c] (spread), ours the other way round for either source order of the factors; (2) the vel.speed copy: original mov ecx,[esi+0xc] inside the second deviation and stores it after dother, ours mov eax at the start of it; (3) y / z sums: original fld dother; fadd v; fadd dside, ours fadd dside before v (x matches). Tried: speed*spread and spread*speed, the copy before / after the second deviation, chained assigns with ghidra's 0 / 2 / 1 store order (worse: z leaves the slot) */
+   am.c passes the same spread value for both deviations. The 1.0s are the shared ai_FloatOne the original
+   loads. */
 
 int ai_ScatterShot(SHOTREC *shot, float sideSpread, D3VECTOR *side, float otherSpread, D3VECTOR *other,
                    float speedSpread)
@@ -4093,19 +4094,19 @@ int ai_ScatterShot(SHOTREC *shot, float sideSpread, D3VECTOR *side, float otherS
     shot->velStart.v.y = k * shot->velStart.v.y;
     shot->velStart.v.z = k * shot->velStart.v.z;
     shot->velStart.speed = k * shot->velStart.speed;
-    k = (util_RandomF() * 2.0f - ai_FloatOne) * shot->velStart.speed * sideSpread;
+    k = sideSpread * (shot->velStart.speed * (util_RandomF() * 2.0f - ai_FloatOne));
     dside.x = k * side->x;
     dside.y = k * side->y;
     dside.z = k * side->z;
-    k = (util_RandomF() * 2.0f - ai_FloatOne) * shot->velStart.speed * otherSpread + ai_FloatOne;
+    k = otherSpread * (shot->velStart.speed * (util_RandomF() * 2.0f - ai_FloatOne)) + ai_FloatOne;
     dother.x = k * other->x;
     dother.y = k * other->y;
     dother.z = k * other->z;
     x = dother.x + shot->velStart.v.x + dside.x;
     shot->velStart.v.x = x;
-    y = dother.y + shot->velStart.v.y + dside.y;
+    y = dside.y + (dother.y + shot->velStart.v.y);
     shot->velStart.v.y = y;
-    z = dother.z + shot->velStart.v.z + dside.z;
+    z = dside.z + (dother.z + shot->velStart.v.z);
     shot->velStart.v.z = z;
     shot->vel.v.x = x;
     shot->vel.v.y = y;
