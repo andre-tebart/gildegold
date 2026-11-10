@@ -4011,7 +4011,26 @@ void ai_PositionShare(float a, float b, SPHEREVOLUME *rec, float *out)
    of iron) gives the speed charge / mass * 0.1; the start velocity is the barrel direction dir times it (also
    the current velocity), the start and the current position are pos, the wind is ai_DefaultEffect with
    its scale clamped to 0 .. 60 (ai_WindGain) and the vector scaled by it; the surface and the mass, state 1
-   (in flight), the clock d3_Time (ms) and 0 steps complete the record. Returns 1. @deep body complete and read against 0x5dc240..0x5dc395 (all 113 ins accounted for: GetDefaultEffect, SphereVolume(density, size), dir copy, speed = charge / reach * 0.1, vel scale, vel copy, wind copy + clamp 0..60 (MAX(MIN)) + scale, posStart / pos, area / mass, state 1, d3_Time, steps 0, return 1). Left is VC6 placement: (1) our compiler sinks the call ai_GetDefaultEffect (same TU, known side-effect free) to the wind copy at +0x79 where the original calls it first and keeps the pointer in edx across ai_SphereVolume (interprocedural regs); this shifts the whole +0x09..+0xe8 block (76 ins); (2) the vel scale: the original reloads the speed (fld [ecx+0xc]) after each store, ours keeps it on the FPU (fld st(0)); (3) the last hunk loads surface / reach into swapped registers. Tried: the wind pointer initialised at its declaration, compound *=, D3VECTOR-typed velocity (the dir copy as a struct assign), none moved the call */
+   (in flight), the clock d3_Time (ms) and 0 steps complete the record. Returns 1.
+   @stuck match-deep 57: draft 80 -> shape 4 ins. Kept: ai_GetDefaultEffect through a function pointer (the
+   only spelling that stops VC6 sinking the call past ai_SphereVolume: plain / cast-call / (*f)() / block
+   extern int f() all = the sunk code, 72 ins), ai_FloatZero (block extern) for the clamp (M10), mass
+   before area (area2: the last hunk). headers sample: insensitive (32 samples, one codegen). Left fpu 12 /
+   4 ins: the velocity scale, the original fst [ecx+0xc]; fmul [ecx]; fstp [ecx]; fld [ecx+0xc]; fmul
+   [ecx+4] .. (speed reloaded after each store) where ours keeps it with fld st(0) (size 339 vs 341).
+   Tried, all = control: *=, v * speed, D3VECTOR* / float* / SHOTVEL* views of velStart, chained speed
+   assignment in the x multiply (3 forms), (float) and parenthesised speed, 0.1f * (charge / reach),
+   (float)(...) around the speed; (double) speed casts and a double 0.1 change the code but are worse (fpu
+   13-16); the scale reading dir->x worse (46 ins). (tiebreak: insensitive) prior: body complete and read
+   against 0x5dc240..0x5dc395 (all 113 ins accounted for: GetDefaultEffect, SphereVolume(density, size),
+   dir copy, speed = charge / reach * 0.1, vel scale, vel copy, wind copy + clamp 0..60 (MAX(MIN)) + scale,
+   posStart / pos, area / mass, state 1, d3_Time, steps 0, return 1). Left is VC6 placement: (1) our
+   compiler sinks the call ai_GetDefaultEffect (same TU, known side-effect free) to the wind copy at +0x79
+   where the original calls it first and keeps the pointer in edx across ai_SphereVolume (interprocedural
+   regs); this shifts the whole +0x09..+0xe8 block (76 ins); (2) the vel scale: the original reloads the
+   speed (fld [ecx+0xc]) after each store, ours keeps it on the FPU (fld st(0)); (3) the last hunk loads
+   surface / reach into swapped registers. Tried: the wind pointer initialised at its declaration, compound
+   *=, D3VECTOR-typed velocity (the dir copy as a struct as... */
 int ai_InitShot(SHOTREC *shot, D3VECTOR *pos, D3VECTOR *dir, float charge, float size, float density)
 {
     extern float ai_FloatZero;
