@@ -2,3 +2,4 @@
 .dcp/
 __pycache__/
 .venv/
+decompanion.local.toml
