@@ -623,3 +623,16 @@ mechanisms, each as a generated round over all positions / subsets:
   spelling gives `mov al,[..]; cmp al,2` (or `cmp byte [..],2`): casts, `>> 24` on int / unsigned, bitfields,
   static const / enum / local constants, int and char locals, `?:` and flag forms all narrow; only arithmetic
   (`k - 2`, `k ^ 2`, `switch`) keeps the int, with sub / xor instead of cmp (init_AllocSceneBuilding).
+- **A pointer tested twice on one path** (`cmp eax,ebx; je ret` and right after it the common `cmp eax,ebx; je ret`,
+  the other paths threaded past one or both): the first test read the global the pointer was loaded from
+  (`if (ai_FallbackBuilding == 0) return; b = (AIBLD *)ai_FallbackBuilding;`), so VC6 does not see the two tests as
+  one; an arm laid out after the else arm was written second (`if (ai_PlayerBuilding == 0) {..} else {..}`)
+  (sv_ResetSelection, 3 ins -> byte). The same `b == 0` test in both places is always merged.
+- **Exits of a two-branch loader** (init_LoadBuildingScene, 123 ins -> byte, the init_LoadObjectScene pattern): a
+  failed load's `d3if_SelectScene(save, 0)` written in its own `if (load == 0)` arm of each branch, and the early
+  exits (new-slot success, clean slot) with their own copy of the clock tail + `return;`: the pops then land after
+  the shared tail and the cross-jumps (push 0 hoisted above the je) come out as the original's.
+- **A constant table of 50 ints indexed `t[lvl + 0x1e]` / `t[lvl + 0x28]`** was three arrays (`t[30]` ages,
+  `lv[10]`, `money[10]`): the frame put ids at the original's slot and the code lost 28 ins
+  (init_CreateStartCharacters). Local names never break ties of the frame's references-per-byte order
+  (deep-tools frameorder.py).
