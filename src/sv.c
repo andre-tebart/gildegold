@@ -5494,13 +5494,7 @@ void sv_DrawBubbles(void)
 }
 /* 0x52d1e0, draws the text of every name plate (sv_NamePlates) above the screen box of its object (one with mesh data
    or of type 0), then the names of the contact gates of the current scene (sv_DrawGateName)
-   @deep read whole against the original: font 0x54, the 32 plates (object with mesh data or of type 0,
-   screen box), the text box and dirty rect, then d3_ForEachObject2(d3_DefaultScene, 0, 0x20,
-   sv_DrawGateName); 65 vs 66 instructions. Left is the loop's induction pointer: ours walks
-   sv_NamePlates+0x48 (the text, mov ebx,sv_NamePlates+0x48 / mov eax,[ebx-0x48] / push ebx), the original
-   sv_NamePlates (the object, mov ebx,sv_NamePlates / lea edx,[ebx+0x48]), as in sv_DrawBubbles; plus the
-   register rotation of x / y / TextDrawnW,H (regs 18) and the pushed ebx. d2_AddDirty is K&R in sv's head
-   (Open: d2.h unsettled), M7 stays open. */
+   (the null test reads the plate's obj again, not the local: VC6 then walks the plates by obj, as the original) */
 
 void sv_DrawNamePlates(void)
 {
@@ -5511,7 +5505,7 @@ void sv_DrawNamePlates(void)
     d2_SetFont(0x54);
     for (i = 0; i < 0x20; i++) {
         o = (D3OBJECT *)sv_NamePlates[i].obj;
-        if (o != 0 && (o->info != 0 || o->type == 0) && d3if_ScreenBox(o, &box) != 0) {
+        if (sv_NamePlates[i].obj != 0 && (o->info != 0 || o->type == 0) && d3if_ScreenBox(o, &box) != 0) {
             y = box.top;
             x = (box.right - box.left) / 2 - 0x50 + box.left;
             d2_DrawTextBox(x, y, 0xa0, 0x60, d2_ScreenSurf, sv_NamePlates[i].text, 0x28);
