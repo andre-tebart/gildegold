@@ -360,3 +360,14 @@ mechanisms, each as a generated round over all positions / subsets:
   the float and reloads it for each use: the value was a `double` local (`ta = atan2(..); g = a = (float)ta;
   sin(ta) ..; na = -ta;`); a float local is reloaded from its slot whatever the spelling (d3_SetupFrustum,
   108 -> 98 ins, still stuck on a float `s` the original keeps in memory).
+- **A strength-reduced loop pointer based on a field** (`mov esi, arr+0x25; mov eax,[esi]; mov ecx,[esi-0x25]`)
+  where ours bases it on the element (`[esi+0x25]`, `[esi]`): VC6 bases it on the most-referenced field. Reading
+  `arr[i].state` at each of its three uses instead of through a local (3 references against the id's 2) gave the
+  original's base (gv_SendCrimes byte).
+- **A loop pointer that should take a dead register**: `t = s->tris;` once before an `if (hw) for (..) else for (..)`
+  kept t in a fresh register; `for (t = s->tris; ..)` in each loop's init let VC6 give t the dead surf register
+  as the original does (d3_DrawObjectCB 122 ins -> byte, the M8 load-order crossing went with it).
+- **Inline failure blocks cross-jumped into the shared fail tail** (`d3sm_Destroy(g); return 0;` x3): a success
+  flag for the last tests (`ok = 0; if (a) { if (b) ok = 1; } if (!ok) { fail: ..; return 0; }`) gave two of the
+  three blocks their own epilogue (rd_BuildRoad 97 -> 68 ins); a second copy of the success return (the
+  ls_SaveGame lever) compiled to the same code there.
