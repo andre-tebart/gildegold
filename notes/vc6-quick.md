@@ -374,7 +374,7 @@ mechanisms, each as a generated round over all positions / subsets:
 - **Loop pointer bias from a sub-record pointer**: a slot loop writing every field through `e->` got VC6's bias on
   the second field it references (`edi = slot+0xc`; probes dropping the first k writes moved it to the next field
   each time), the original's on `parts[0].v2` (+0x38). A pointer per sub-record (`p = &e->parts[k];` then
-  `p->v0 ..`) gave the original's bias with no other change (gv_WriteEffects and gv_ReadEffects: byte). Spellings
+  `p->v0 ..`) gave the original's bias with no other change (gv_WriteEffects byte; dcp try shows gv_ReadEffects byte the same way). Spellings
   of the same address (`(e + i)->`, `&a[0]`, casts, struct-typed vectors, loop forms) never move it.
 - **A small count array the original kept in the frame**: `int n[4]` with constant indices (VC6 keeps n[0], n[1] in
   registers, n[2] in its slot, n[3] unused) gave the original's 0x10 frame with holes where three scalars gave
