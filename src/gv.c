@@ -2466,19 +2466,22 @@ int gv_RoomForRaised(unsigned char *o, int *n)
    this dead person's, it passes to the first other dead of the entry (none: the entry is freed). Returns the new
    character's id, 0xffff (no such entry or grave, no free slot) or a negative reason as gv_BuryCharacter (-6 another
    kind, -1 no owner or the player's own building, -2 not a graveyard, -3 no GVYARD, -4 the size not open)
-   @deep read the whole function against the original (checks, entry/grave search, slot search, character
-   init, name copies, start values, relation loop, place/icon, entry handover, grave clear): every
-   statement, field offset, constant and callee matches; fixed this pass: byte jobId/officeKind stores (not
-   a short at 0x164), the id = 0xffff store written through gv_CharsT[slot] (the original keeps it, a store
-   through c is dropped as dead), the relation loop as ai_Relations[j][id] / [id][j] (now equal), store
-   order of 0x18c/0x20c/title, f01c after util_RandomF. Left: allocation/IV choice only - the name copies:
-   the original merges the two pointers into one IV with the d - s offset ('+ mov ecx,esi / + sub ecx,eax /
-   + mov byte ptr [edx+eax],cl'), ours keeps two ('- lea edx,[esi+0x30] / - inc edx'), tried
-   for/(c->first[j]=q->first[j]), do-while with ch, do-while with re-read: none gives the merged IV; the
-   traits loop reloads q from [esp+0x10] in the original (ours keeps it in ecx); the ai_CharCount++ /
-   ai_NextObjectId schedule ('+ mov ecx,[ai_CharCount] / + inc ecx' before the netId load, ours interleaved
-   in edi) and the relatives memset pointer via edx ('+ lea edx,[edx+0x770bdc] / + mov edi,edx' vs '- lea
-   edi,[edx+ai_Chars+0x5c]') */
+   @stuck this pass: name copies are strcpy (VC6's inline copy, sub ecx,eax / mov [edx+eax],cl; 51 -> 21
+   ins), store order by tryclimb (ownName[0] first, title before picture/partyId; 21 -> 9 ins). Left (code
+   19, order 4): (1) the grave search loads e->grave before m->grave ('- mov eax,[eax+0x10]' first; tried
+   for(;;) with break, q++ only, m->grave == q->id, g/i swap: all worse); (2) the relatives memset pointer:
+   the original stores netId=-1 first and computes it in edx ('+ lea edx,[edx+X] / + mov edi,edx'), ours
+   'lea edi' before the store; tried c->relatives, &..[0], 0x20, a char * cast, -1 fill, memset
+   before/between the id stores: same or worse; (3) mov dl,1 scheduled before the rep stosd in ours, after
+   inc CharCount in the original; (4) ownName[0]=0 must come after the title store but every later position
+   worsens the rest (25 positions tried). ai_NextObjectId++ next to netId (or netId = ai_NextObjectId++):
+   worse (39 ins). c->netId = -1 through c: drops the store (meaning). (tiebreak: insensitive) prior: read
+   the whole function against the original (checks, entry/grave search, slot search, character init, name
+   copies, start values, relation loop, place/icon, entry handover, grave clear): every statement, field
+   offset, constant and callee matches; fixed this pass: byte jobId/officeKind stores (not a short at
+   0x164), the id = 0xffff store written through gv_CharsT[slot] (the original keeps it, a store through c
+   is dropped as dead), the relation loop as ai_Relations[j][id] / [id][j] (now equal), store order of
+   0x18c/0x20c/title, f01c after util_RandomF. */
 
 unsigned gv_RaiseDead(GVRAISE *m)
 {
@@ -2487,7 +2490,6 @@ unsigned gv_RaiseDead(GVRAISE *m)
     GVGRAVE *g, *q, *z;
     AICHAR *c;
     int size, i, j, n, slot;
-    char ch;
     float r;
 
     if (m->kind != 0x1b && m->kind != 0x1c)
@@ -2533,6 +2535,7 @@ unsigned gv_RaiseDead(GVRAISE *m)
             gv_CharsT[slot].netId = -1;
             gv_CharsT[slot].id = 0xffff;
             memset(gv_CharsT[slot].relatives, 0xff, sizeof(gv_CharsT[slot].relatives));
+            c->ownName[0] = 0;
             ai_CharCount++;
             c->netId = ai_NextObjectId;
             c->id = (unsigned short)slot;
@@ -2551,10 +2554,9 @@ unsigned gv_RaiseDead(GVRAISE *m)
             c->w00a = 0x10;
             c->jobId = 0;
             c->officeKind = 0;
+            c->title = (char)m->kind;
             c->picture = -1;
             c->partyId = -1;
-            c->title = (char)m->kind;
-            c->ownName[0] = 0;
             c->v190 = 4;
             c->money = 0;
             c->b00d = 1;
@@ -2562,18 +2564,8 @@ unsigned gv_RaiseDead(GVRAISE *m)
             for (j = 0; j < 5; j++)
                 c->skills[j] = q->traits[j] >> 1;
             c->sex = (unsigned char)q->sex;
-            j = 0;
-            do {
-                ch = q->first[j];
-                c->first[j] = ch;
-                j++;
-            } while (ch != 0);
-            j = 0;
-            do {
-                ch = q->family[j];
-                c->family[j] = ch;
-                j++;
-            } while (ch != 0);
+            strcpy(c->first, q->first);
+            strcpy(c->family, q->family);
             c->f010 = 0;
             r = util_RandomF();
             c->f018 = 0;

@@ -2785,7 +2785,7 @@ exe	0x004f0dd0	gv_AddNewDead	gv	4c7a7687ce6ee441	no	byte	control=byte p1=byte p2
 exe	0x004f0e80	gv_OrderMoveGrave	gv	f6227fafc39dec62	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004f0ed0	gv_MoveGrave	gv	c28d4c09fbda45c2	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004f1170	gv_OrderRaiseDead	gv	96409c059dd76c82	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x004f1200	gv_RaiseDead	gv	f997dbf0e1314ad8	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x004f1200	gv_RaiseDead	gv	5f4099a639ab6d44	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x004f15e0	gv_SendGrave	gv	fdf5c9764366baf2	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004f1660	gv_DecayRaisedDead	gv	2681da77e0fe8a23	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004f16f0	gv_PreserveRate	gv	c1c7fb245f620f60	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
