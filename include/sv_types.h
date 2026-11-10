@@ -15,6 +15,13 @@ typedef struct SVWEATHER {              /* 0x188 bytes at 0x760488: the day's we
     float windY[24];                    /* +0x128, cos of the angle */
 } SVWEATHER;
 
+typedef struct SVCLIMATE {              /* 0x18c bytes at 0x760484: the season's climate and the day's weather as one object
+                                           (sv_WeatherFrame reads the previous hour's clouds through one base with the
+                                           hour's: the original keeps the weather 4 bytes after the climate) */
+    int seasonClimate;                  /* +0x000, sv_SeasonClimate: ai_SeasonClimate of the own player and the season */
+    SVWEATHER weather;                  /* +0x004, sv_Weather */
+} SVCLIMATE;
+
 typedef struct SVBAND {                 /* 0x10 bytes at 0x760444: the rubber band selection (sv_StartBand / sv_UpdateBand) */
     int x0, y0;                         /* +0x00, the corner where the band started (the mouse at the start, clamped to d3_Viewport) */
     int x1, y1;                         /* +0x08, the corner at the mouse (not ordered against x0 / y0) */

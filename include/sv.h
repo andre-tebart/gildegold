@@ -347,8 +347,9 @@ extern int sv_ClickedItem;                                   /* 0x76045c */
 extern int sv_ClickedChar;                                   /* 0x760460 */
 extern int sv_SkyPhase;                                    /* 0x760464 */
 extern int sv_CloudChance;                                    /* 0x760480 */
-extern int sv_SeasonClimate;                                    /* 0x760484 */
-extern SVWEATHER sv_Weather;                                /* 0x760488 */
+extern SVCLIMATE sv_Climate;                                /* 0x760484 */
+#define sv_SeasonClimate (sv_Climate.seasonClimate)           /* 0x760484 */
+#define sv_Weather (sv_Climate.weather)                       /* 0x760488 */
 extern int sv_WinterWeather;                                    /* 0x760610 */
 extern int sv_WeatherHour;                                    /* 0x760614 */
 extern int sv_CharsOn;                                    /* 0x623eac */

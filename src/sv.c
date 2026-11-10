@@ -1870,7 +1870,6 @@ void sv_UpdateMemberList(unsigned char *g)
 extern OPTIONBYTES ai_GfxResolution;        /* 0x6f2f94, the player bar variant */
 extern int sv_WinterWeather;  /* 0x760610 */
 extern int sv_CloudChance;  /* 0x760480 */
-extern int sv_SeasonClimate;  /* 0x760484 */
 extern int sv_WeatherHour;  /* 0x760614 */
 extern int * d3t_Rain;  /* 0x760618 */
 extern int d3t_Snow;  /* 0x76061c */
@@ -7070,10 +7069,7 @@ void sv_WeatherFrame(void)
         sb_PlaySample(snd_ThunderBank, "DonnerMittel_s", 1, 0x3f, (int)(init_SoundVolume * 127.0f), 0, 0);
     }
     if (d3_CurrentScene == 0) {
-        /* @original the previous hour's clouds (sv_Weather.clouds[hour - 1]) are read from the int before
-           sv_Weather, indexed by the hour: the original shares hour * 4 between two bases (shl eax,2 and
-           [eax+0x760484] / [eax+0x760488]); clouds[hour - 1] gives one address CSE'd (lea) instead */
-        if (ai_Time.hour >= 11 && ai_Time.hour <= 17 && ((unsigned *)&sv_SeasonClimate)[ai_Time.hour] != 0 && sv_Weather.clouds[ai_Time.hour] == 0 && ai_Time.min > 30) {
+        if (ai_Time.hour >= 11 && ai_Time.hour <= 17 && sv_Weather.clouds[ai_Time.hour - 1] != 0 && sv_Weather.clouds[ai_Time.hour] == 0 && ai_Time.min > 30) {
             /* the hour store in both arms (tail-merged) gives the original's registers: the hour in ecx,
                sv_SunRaysHour in eax */
             if (util_RandomU(0x80) > 0x60 && d3t_SunRays == 0) {
@@ -7476,7 +7472,6 @@ extern float sv_SkyScale;
 extern int sv_BandActive;
 extern int sv_SkyPhase;
 extern int sv_CloudChance;
-extern int sv_SeasonClimate;
 extern int sv_WinterWeather;
 extern int sv_WeatherHour;
 extern int d3t_Snow;
@@ -7706,8 +7701,7 @@ int sv_ClickedItem = 0;  /* 0x76045c, sv_HoverItem at the last click */
 int sv_ClickedChar = 0;  /* 0x760460, ai_PickedChar at the last click */
 int sv_SkyPhase = 0;  /* 0x760464 */
 int sv_CloudChance = 0;  /* 0x760480 */
-int sv_SeasonClimate = 0;  /* 0x760484 */
-SVWEATHER sv_Weather = {0};  /* 0x760488 */
+SVCLIMATE sv_Climate = {0};  /* 0x760484, sv_SeasonClimate and sv_Weather (0x760488) */
 int sv_WinterWeather = 0;  /* 0x760610 */
 int sv_WeatherHour = 0;  /* 0x760614 */
 int d3t_Snow = 0;  /* 0x76061c */
