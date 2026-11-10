@@ -3453,7 +3453,8 @@ typedef struct SVFRAME {                /* 8 bytes, an entry of the frame stack 
    other screen runs on top (the frame stack's entry is ai_GameFrame) and the camera exists, the tutorial
    event 0x16 runs and the camera is levelled: its rotation (x, 0, z) is compared with 0.1 and, when it still
    pitches, 0x411860 places the camera there. @original the parenthesized rotation copies give VC6's fld/fstp
-   copy (a plain member copy moves through a GPR) */
+   copy (a plain member copy moves through a GPR). Read against the original: kb_Last is a byte, the frame stack
+   is read through the typed SVFRAME view (Q2/Q4), d3_VecEqual takes v first and the camera rotation second. */
 
 void ai_CampaignKey1(void)
 {
