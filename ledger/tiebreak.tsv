@@ -2686,7 +2686,7 @@ exe	0x004eab20	ahm_Share	ahm	0298c1c2b561bed0	no	byte	control=byte p1=byte p2=by
 exe	0x004eabd0	ahm_SlotOf	ahm	1abce0dcd45bb966	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004eabe0	ahm_FindSlot	ahm	0c60defee6aba8ef	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004eac20	ahm_HasFreeSlot	ahm	d821a2097289027c	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x004eac60	ahm_FillSteps	ahm	8997ad21b6dda491	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x004eac60	ahm_FillSteps	ahm	0f4c1b14ce6b4442	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x004ead20	ahm_ShufflePlayers	ahm	e36b4cf6490a61aa	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004eadc0	ahm_ShuffleTable	ahm	6740072716dbb414	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004eae60	ahm_FindRecipe	ahm	6cd28aef5b1cc20f	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
