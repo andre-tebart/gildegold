@@ -687,7 +687,7 @@ char d3s_TerrainShadowMesh(D3STERR *g, int *rect, float *uv, D3SBUF *buf, D3TEXH
                 p.x = (float)x * cx + o.x;
                 poly = buf->polys + buf->npolys;
                 pos = d3s_Verts + d3s_NumVerts * 6;
-                p.y = o.y + 1.0f;
+                p.y = o.y + ai_FloatOne;
                 vert = buf->verts + buf->nverts;
                 uvp = d3s_UVs + d3s_NumUVs * 6;
                 p.z = (float)z * cz + o.z;
