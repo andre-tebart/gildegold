@@ -3210,7 +3210,7 @@ exe	0x00511700	init_TownBuildingHook	f3init	6e71687c11381644	no	draft	control=dr
 exe	0x00511790	init_PrepareTownScene	f3init	e1e5bf3ea7a858af	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00511810	init_FlagTreeObject	f3init	a6a1c9aff66e2bdb	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00511840	init_RecreateQuadTree	f3init	72bb43f037580d38	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x00511890	init_NameBuildings	f3init	ff8e36c728f9ea8b	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x00511890	init_NameBuildings	f3init	ff8e36c728f9ea8b	no	draft	sample n=32 seed=1 compiled=30 codegens=1 best=draft
 exe	0x00511ad0	init_LocalData	f3init	2682915d2b64866e	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x00511bc0	init_FillMarkets	f3init	bc4900bc23434a7c	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00511c70	init_GiveFirstPlayerBuildings	f3init	0ae0b9c5fa1f3378	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape

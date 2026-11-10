@@ -2669,15 +2669,28 @@ void init_RecreateQuadTree(void)
     d3_ForEachObject2(d3_DefaultScene, 0, 0x40, init_FlagTreeObject);
     d3_QuadTree = (int)d3q_Create(0, 0x40, 8, 7);
 }
-/* 0x511890, gives every building of the class 6 (not the type 0x1c) a name: the names of its kind (the 0xc names at 0x143b400 + 0x38 per kind) that no building uses yet, up to 0x20 characters ("Building name too long: %s" is the error text), one picked at random into the building's name field (+5) @deep behaviour: 178 code hunks / 404 of 544 bytes, meaning read whole against the original 0x511890..0x511ad0 (both gm_BuildQuery(1,6) walks, the 0xc x 0xe name table walk, the 0x100 x 0xa9 ai_Blds compare, the 0x20 length check, the random pick, the two error formats) - no meaning difference left; the frame now matches 0x810 exactly. Frame finding of this session: the original has TWO 0x200-byte error buffers, one per "Building name too long" format (0x120..0x320 for the arm that calls err_Message, 0x620..0x810 for the arm that drops the text); our single err[0x200] left the frame 0x610 and every buffer 0x200 too low. After adding the second (char text[0x200]) the anchors match: one at 0x20, names at 0x320, the sprintf/err_Message pair at 0x124/0x12c, the dead format at 0x620. Left (allocation only): the original pushes ebx/ebp/edi mid-function (at 0x5118ee, the second walk) where ours pushes them in the prologue, the first walk keeps cnt/zero in esi vs the original's [esp+0xc] + test eax, and the register assignment of the strcpy/strlen blocks (109 +/- lines, every one read). Also tried and reverted: util_Random((unsigned char)cnt) - the original zero-extends the count with xor dx,dx / mov dl,al (a char parameter in its TU), our cast gives and eax,0xff and 179 code hunks, plain cnt gives 178. */
+/* 0x511890, gives every building of the class 6 (not the type 0x1c) a name: the names of its kind (the 0xc names at 0x143b400 + 0x38 per kind) that no building uses yet, up to 0x20 characters ("Building name too long: %s" is the error text), one picked at random into the building's name field (+5). The original returns nothing (no eax at the end; init_LocalData ignores it)
+   @stuck behaviour + readable, read whole against 0x511890..0x511ac1; layout, frame and every block match;
+   53 differing instructions left, all from ONE register choice: VC6 gives ebx to b and keeps i in memory,
+   the original gives ebx to i and keeps b in memory (reloaded per i iteration), which also makes it
+   recompute the name table entry for the copy offset (sub edx,[T+idx*4]) where ours reuses src. Found this
+   session (100 -> 53 ins): names[cnt++] (strength-reduced names pointer, two-pointer copy),
+   util_Random((unsigned char)cnt) (xor dx,dx / mov dl,al), a void function (no eax at the end; f3init.h
+   changed, init_LocalData ignored it), the for walk (shrink-wrapped pushes after the first test). Tried
+   for the b/i choice (dcp try, all = one code): declaration order of every local (--move-line),
+   block-scoped i / j / cnt, a separate first-walk variable, the name field via nm / b[5] / ->name, the
+   table entry written in both the test and the copy (strcpy, explicit offset copy, char ** / int views:
+   two-pointer copy, worse), the walk as while / if-do. A non-rotated while (1) { if (b == 0) break; .. }
+   puts b in memory and i in ebx (40 ins) but loses the rotation and the shrink-wrap. (tiebreak: not
+   measured (dcp headers sample init_NameBuildings)) */
 
 
-int init_NameBuildings(void)
+void init_NameBuildings(void)
 {
     unsigned char *b;
     char names[0xc][0x40];
-    int cnt, i, j, k;
-    char *src, *u;
+    int cnt, i, j;
+    char *u, *src;
     char one[0x100];
     char err[0x200];            /* the "Building name too long" text handed to err_Message */
     char text[0x200];           /* the same text of the first (dead) check: the original formats it and drops it */
@@ -2690,15 +2703,12 @@ int init_NameBuildings(void)
             b[5] = ch_EmptyName[0];
         b = (unsigned char *)gm_BuildNext();
     }
-    b = (unsigned char *)gm_BuildQuery(1, 6);
-    while (1) {
-        if (b == 0)
-            return 0;
+    for (b = (unsigned char *)gm_BuildQuery(1, 6); b != 0; b = (unsigned char *)gm_BuildNext()) {
         if (ai_BTypes[*b * 0x24d] != 0x1c) {
             cnt = 0;
-            b[5] = ch_EmptyName[0];
+            ((INIT_BLD *)b)->name[0] = ch_EmptyName[0];
             for (i = 0; i < 0xc; i++) {
-                src = ai_BuildingNames[i + *b * 0xe];
+                src = (char *)ai_BuildingNames[i + *b * 0xe];
                 if (*src != 0) {
                     strcpy(one, src);
                     bl = ai_Blds;
@@ -2708,15 +2718,14 @@ int init_NameBuildings(void)
                     }
                     if (j < 0x100)
                         continue;
-                    if (strlen(one) < 0x20) {
-                        strcpy(names[cnt], one);
-                        cnt++;
-                    } else
+                    if (strlen(one) < 0x20)
+                        strcpy(names[cnt++], one);
+                    else
                         sprintf(text, "Building name too long: %s", one);
                 }
             }
             if (cnt != 0) {
-                r = util_RandomU(cnt);
+                r = util_Random((unsigned char)cnt);
                 u = names[r & 0xffff];
                 if (strlen(u) < 0x20)
                     strcpy(((INIT_BLD *)b)->name, u);
@@ -2726,7 +2735,6 @@ int init_NameBuildings(void)
                 }
             }
         }
-        b = (unsigned char *)gm_BuildNext();
     }
 }
 /* 0x511ad0, "init_LocalData": selects the town universe, makes the player records (0x4feb30 / 0x4feb60) unless the flag 0x40 is set, finds the two judges (the characters of the kind 0xc, from the second record on, with the faith 0 / 1: the "Richter Katholisch" / "Richter Evangelisch", stored in 0x6f1bfc / 0x6f1c00) and the list of the characters of the kind 0xb (0x6f1c04); a missing judge is an error; names the buildings (0x511890) unless the flags 0x44 are set; then 0x50cc60 */
