@@ -2059,7 +2059,7 @@ exe	0x004bbf00	anm_CreateAnimal	anm	ce067060e067b2bf	no	byte	control=byte p1=byt
 exe	0x004bc030	anm_UpdateCat	anm	c1794bd7e0af2d6d	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004bc1a0	anm_UpdateSheep	anm	88fdb02ff6c328cf	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004bc2e0	rd_DoorPos	rd	5cf7162e35b9302a	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x004bc390	rd_PointsNear	rd	62b5dd983e1e23a7	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x004bc390	rd_PointsNear	rd	62b5dd983e1e23a7	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x004bc4b0	rd_CollectNamed	rd	29f58e9542218b71	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004bc520	rd_RandomNamedObject	rd	fd6c5edba05b60eb	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004bc5a0	veg_FindType	rd	682b7fd1f6ed5d01	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
