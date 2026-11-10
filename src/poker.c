@@ -242,15 +242,7 @@ int ai_PokerFindPair(int *hand, int shown, int skip, int *out)
     }
     return 0;
 }
-/* 0x4a76d0, the highest card of a hand (group, then rank): of cards 0..4, or 2..4 if high
-   @deep Read whole against the original: high selects start 2/0, -1 when that card is missing, early
-   return when the next is missing, then the j-loop keeps the best suit then rank, reloading deck[best]
-   after best = hand[j] (the hand[j] spelling defeats copy propagation exactly as the original). Body from
-   the loop on is instruction-equal (23 equal). Remaining hunk is allocation only: ours keeps hand in esi
-   (push esi first, mov esi,[esp+8]) and j in edx then mov ebp,edx; the original keeps hand in edx, pushes
-   ebp first and builds j directly as lea ebp,[ecx+1] (asmdiff: -push esi/-mov esi,[esp+8] vs +mov
-   edx,[esp+4]/+push ebp; -lea edx,[ecx+1] ... -mov ebp,edx vs +lea ebp,[ecx+1]). Tried: i++ loop, separate
-   j, nested if vs early return, k temp, pointer temp, compare against deck[best]. */
+/* 0x4a76d0, the highest card of a hand (group, then rank): of cards 0..4, or 2..4 if high */
 
 int ai_PokerHighCard(int *hand, int high)
 {
@@ -260,11 +252,12 @@ int ai_PokerHighCard(int *hand, int high)
     best = hand[i];
     if (best < 0)
         return -1;
-    if (hand[i + 1] < 0)
+    j = i + 1;
+    if (hand[j] < 0)
         return best;
     g = ai_PokerDeck[best].suit;
     r = ai_PokerDeck[best].rank;
-    for (j = i + 1; j < 5; j++) {
+    for (; j < 5; j++) {
         if (hand[j] < 0)
             break;
         if (ai_PokerDeck[hand[j]].suit > g) {

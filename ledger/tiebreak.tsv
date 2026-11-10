@@ -1758,7 +1758,7 @@ exe	0x004a7140	ai_PokerStart	poker	2ddeae9d65bd3cae	no	byte	control=byte p1=byte
 exe	0x004a7430	ai_PokerDealRound	poker	d351ea74dabe6730	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004a74e0	ai_PokerStep	poker	4c165c5b0bf6f445	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004a7650	ai_PokerFindPair	poker	d18d0ebb50f5dc8f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x004a76d0	ai_PokerHighCard	poker	694e2927080efd86	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x004a76d0	ai_PokerHighCard	poker	694e2927080efd86	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x004a7760	ai_PokerDrawCard	poker	6abd9c64c9ed562b	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004a77e0	ai_PokerNpcExchange	poker	ef1f34e7ff30590e	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
 exe	0x004a79d0	ai_PokerSwapCard	poker	e53d3bd5b212b49b	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
