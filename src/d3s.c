@@ -403,35 +403,44 @@ void d3s_FillRows(int n)
     }
 }
 /* 0x45a880, draws one polygon of the shadow mesh into the shadow texture (bpp bits per pixel, its low byte)
-   @deep Read whole against the original; fixed bpp<=8 (setbe), the ternary with +0xffff in both arms, bpp
-   as int param (whole slot is the first top index; d3s_Project calls via @original char cast macro).
-   Prover: every store/call/branch equal, only eax at the void return differs. Left: allocation - original
-   keeps lim in [esp+0x10] and the min y in ebp with lim-1 hoisted to edx before the bounds loop (ours lim
-   in ebp, lea edx,[ebp-1] in the loop, reload of [esp+0x20] at +0x13e); shl of size scheduled first; imul
+   @stuck draft -> shape this session: the running min y is a local (ymin) and the bound is the shifted
+   size parameter (size <<= 16; ymin = size): VC6 then hoists size - 1 out of the bounds loop as the
+   original does (dec edx before it) and keeps ymin in ebp after the loops; poly->v[i] written at each use
+   (no v0/v1/v2 locals; v2 loaded before v1 as the original). headers sample: insensitive. Left: (1) slots:
+   the original keeps the min in the parameter's slot [esp+0x20] and the bound in the local [esp+0x10]
+   (ours the other way), and reloads the min from memory each reversed-loop iteration (mov ebp,[esp+0x20];
+   ours keeps ebp); the roles min=parameter / bound=local in every init spelling (lim = size << 16; size =
+   lim / size <<= 16; lim = size / chained) gave draft 135-149 ins with lim in ebx; (2) top/min in ebx/ebp
+   swapped vs ours from the first loop on; (3) the size << 16 computed in eax first (mov eax,[esp+0x10];
+   shl) before the pushes; (4) second-pass tails: the original computes the FillRows count into esi and
+   pops the edge call's args (add esp,8) before the sub, then add esp,4; ours merges add esp,0xc. Dead
+   levers (= control): product operand orders (8), compare side swap (worse), count via n/a/i/y local per
+   arm, dd_Pitch * y operand order (tiebreak: not measured (dcp headers sample d3s_ShadowPoly)) prior: Read
+   whole against the original; fixed bpp<=8 (setbe), the ternary with +0xffff in both arms, bpp as int
+   param (whole slot is the first top index; d3s_Project calls via @original char cast macro). Prover:
+   every store/call/branch equal, only eax at the void return differs. Left: allocation - original keeps
+   lim in [esp+0x10] and the min y in ebp with lim-1 hoisted to edx before the bounds loop (ours lim in
+   ebp, lea edx,[ebp-1] in the loop, reload of [esp+0x20] at +0x13e); shl of size scheduled first; imul
    eax,[dd_Pitch] memory-operand forms at +0x1dc/+0x1fe; the two FillRows tails pop add esp,8 then add
    esp,4 where ours merges add esp,0xc. */
 
 void d3s_ShadowPoly(D3SPOLY *poly, int bpp, int size)
 {
-    D3SVERT *v0, *v1, *v2;
-    int i, top, lim;
+    int i, top, ymin;
     int a, b, c, y, n;
     int left;
 
-    lim = size << 16;
-    v0 = poly->v[0];
-    v1 = poly->v[1];
-    v2 = poly->v[2];
-    size = lim;
-    if ((v0->tu - v1->tu) * (v0->tv - v2->tv) < (v0->tu - v2->tu) * (v0->tv - v1->tv)) {
+    size <<= 16;
+    ymin = size;
+    if ((poly->v[0]->tu - poly->v[1]->tu) * (poly->v[0]->tv - poly->v[2]->tv) < (poly->v[0]->tu - poly->v[2]->tu) * (poly->v[0]->tv - poly->v[1]->tv)) {
         if (!(poly->flags & 4))
             return;
         top = bpp;
         for (i = 0; i < 3; i++) {
             d3s_EdgeX[i] = (int)(poly->v[2 - i]->tu * 65536.0f);
             d3s_EdgeY[i] = (int)(poly->v[2 - i]->tv * 65536.0f);
-            if (d3s_EdgeY[i] <= size) {
-                size = d3s_EdgeY[i];
+            if (d3s_EdgeY[i] <= ymin) {
+                ymin = d3s_EdgeY[i];
                 top = i;
             }
         }
@@ -440,25 +449,25 @@ void d3s_ShadowPoly(D3SPOLY *poly, int bpp, int size)
         for (i = 0; i < 3; i++) {
             d3s_EdgeX[i] = (int)(poly->v[i]->tu * 65536.0f);
             d3s_EdgeY[i] = (int)(poly->v[i]->tv * 65536.0f);
-            if (d3s_EdgeY[i] <= size) {
-                size = d3s_EdgeY[i];
+            if (d3s_EdgeY[i] <= ymin) {
+                ymin = d3s_EdgeY[i];
                 top = i;
             }
         }
     }
     for (i = 0; i < 3; i++) {
-        if (d3s_EdgeX[i] < 0 || d3s_EdgeX[i] > lim - 1 || d3s_EdgeY[i] < 0 || d3s_EdgeY[i] > lim - 1)
+        if (d3s_EdgeX[i] < 0 || d3s_EdgeX[i] > size - 1 || d3s_EdgeY[i] < 0 || d3s_EdgeY[i] > size - 1)
             return;
     }
     a = d3_TriEdge[top][0];
-    if (d3s_EdgeY[a] == size) {
+    if (d3s_EdgeY[a] == ymin) {
         b = d3_TriEdge[top][1];
         c = top;
         top = a;
         a = d3_TriEdge[top][0];
     } else {
         c = d3_TriEdge[top][1];
-        if (d3s_EdgeY[c] == size) {
+        if (d3s_EdgeY[c] == ymin) {
             b = d3_TriEdge[c][1];
         } else {
             b = c;
@@ -470,7 +479,7 @@ void d3s_ShadowPoly(D3SPOLY *poly, int bpp, int size)
         if (d3s_EdgeY[a] - d3s_EdgeY[top] > 0) {
             d3s_RightEdge(top, a);
             d3s_Byte = (unsigned char)bpp <= 8;
-            y = size + 0xffff >> 16;
+            y = ymin + 0xffff >> 16;
             if (d3s_Byte) {
                 d3s_Dst = (unsigned char *)dd_Surface + y * dd_Pitch;
                 d3s_Fill = 1;

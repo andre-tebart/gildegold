@@ -1060,7 +1060,7 @@ exe	0x00459fb0	d3s_DrawSpans	d3s	38c08aaf9cf6fec1	no	draft	sample n=32 seed=1 co
 exe	0x0045a2e0	d3s_ShadowTriangle	d3s	11fcf259f9974d2c	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x0045a670	d3s_LeftEdge	d3s	fc92824afe0573f7	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0045a740	d3s_FillRows	d3s	94d4e65177c4e1a6	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x0045a880	d3s_ShadowPoly	d3s	3919aff664265bfd	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x0045a880	d3s_ShadowPoly	d3s	f25410965c73e501	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x0045ab60	d3s_CacheInit	d3s	e06851e32bea69e4	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0045ab90	d3s_CacheFree	d3s	9a2aafe30392d8d5	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0045abc0	d3s_CacheBind	d3s	543b0f8fa5dca937	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
