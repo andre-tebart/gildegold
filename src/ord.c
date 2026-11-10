@@ -1592,23 +1592,27 @@ int ord_Flag400Order(char *c, int *m)
         txt_Format(m + 5, "%s", 0x1e21);
     return 2;
 }
-/* 0x4f8140, an order handler (c, m; kinds 1 / 3) for the jobs 1 .. 0x1b (+0x166): kind 3 of a player runs 0x5ce7f0, kind 1 writes the text 0x1e23 (m + 0x14); else 2 (1 for other jobs and kinds) @deep meaning settled and readable; the remaining 85 code bytes are allocation only: the original keeps m[0] in ecx and the constant 2 in eax (hoisted to the prologue, re-materialised after the txt_Format call) and pushes ebx+esi (job in bl), ours uses eax/ecx+edx and pushes esi only - the same statements in the same order (tools/disasm.py 0x4f8140 vs asmdiff). Tried and reverted: r = 2 as a separate assignment and as an initialiser with if/else-if and one final return r, the return-2/return-1 form, single-return with r = 1 in both else branches (that one pushes edi and is worse). Needs match-deep's register-allocation toolbox */
+/* 0x4f8140, an order handler (c, m; kinds 1 / 3) for the jobs 1 .. 0x1b (+0x166): kind 3 of a player runs 0x5ce7f0, kind 1 writes the text 0x1e23 (m + 0x14); else 2 (1 for other jobs and kinds) */
 
 int ord_DismissWorkerOrder(char *c, int *m)
 {
     unsigned char j;
+    int r = 2;
 
     if (m[0] == 3 || m[0] == 1) {
         j = ORD_CHAR(c)->job;
         if (j != 0 && j <= 0x1b) {
             if (m[0] == 3 && ORD_CHAR(c)->kind == 6)
                 return ai_WorkerDismissalWindow(c, m);
-            if (m[0] == 1 && ORD_CHAR(c)->kind == 6)
+            if (m[0] == 1 && ORD_CHAR(c)->kind == 6) {
                 txt_Format(ORD_MSG(m)->text, "%s", 0x1e23);
-            return 2;
-        }
-    }
-    return 1;
+                return 2;
+            }
+        } else
+            r = 1;
+    } else
+        r = 1;
+    return r;
 }
 /* 0x4f81c0, the order dispatcher: the handler number id (below 0x3a, else 0x40) of the table 0x611768 (0x4f4e20 .. 0x4f8140, one per order) runs on the character c (0x40 without one, 1 for a character whose kind +2 is 10 or more) and the message m */
 

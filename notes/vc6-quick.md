@@ -145,6 +145,11 @@ mechanisms, each as a generated round over all positions / subsets:
   ours both in the prologue): a `return 2;` inside the first of two `if (m == 3 ..) {..}` / `if (m == 1 ..)`
   blocks with the same `return 2;` after them. `if {..} else if (..) ..; return 2;` (one shared return) put the
   push where the original has it: ord_WageReportOrder byte. Wrapping the rest in an `else {}` did nothing.
+- **A result constant hoisted into eax in the prologue** (`mov eax,2` before the first test, the failure paths
+  `mov eax,1` before the shared pops, `mov eax,2` again after a call on one path): `int r = 2;` with `else r = 1;`
+  on each failing if, `return r;` at the end, and the path with the call returning its constant itself
+  (`{ f(..); return 2; }`). Without that explicit return, r lives across the call in a callee-saved register;
+  `r = 1` initial + `r = 2` at the join hoists the 1 instead (ord_DismissWorkerOrder draft 36 ins -> byte).
 - **A result local that the original reloads from a stack home at a failure return** (`mov ebp,[esp+N]; mov
   eax,ebp`) where ours returns `xor eax,eax` from its own epilogue: VC6 folded `return f;` to `return 0` because
   only `f = 0` reaches that return. The original's failure path fell through to the final `return f;` (nested

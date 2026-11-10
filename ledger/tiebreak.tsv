@@ -2896,7 +2896,7 @@ exe	0x004f7e40	ord_InterrogationOrder2	ord	2f24909657d83f11	no	byte	control=byte
 exe	0x004f7ef0	ord_Flag200Order	ord	01dca6c1c255c711	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004f7fc0	ord_InterrogationOrder3	ord	751f3987febfb156	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004f8070	ord_Flag400Order	ord	d6d36692cd6643e6	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x004f8140	ord_DismissWorkerOrder	ord	77fc74f6eb8e7630	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x004f8140	ord_DismissWorkerOrder	ord	77fc74f6eb8e7630	no	draft	sample n=32 seed=1 compiled=31 codegens=1 best=draft
 exe	0x004f81c0	ord_DispatchOrder	ord	818b9c01d67df507	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004f8200	ord_PrivilegeDialog	ord	cff58b7110f3ce67	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004f82a0	ord_ResetStatistics	ord	4ec08221403e27c5	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
