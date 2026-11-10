@@ -41,6 +41,7 @@ struct VFSDIR;
 #include "evt.h"
 #include "data_views.h"
 #include "sv.h"
+#include "sv_quickjump.h"
 #define ALIGN1 __declspec(align(1))   /* a 1-aligned container: the original packs the block at an odd address */
 #define GAPDATA __declspec(align(1)) unsigned char
 
@@ -588,12 +589,11 @@ int sv_OpenMessageBox(int text, unsigned char flags)
     sv_RunFrame(0, sv_FrameMask);
     return form;
 }
-/* 0x521960, selects the object o (of the player or a pause object) for the info panel: stores it in sv_PanelObject, its
-   scene record of the id b in sv_PanelRecord (gm_Query of the object id +0x5d; the kind 0x47 uses the record 0xfd), copies
-   the text c into sv_PanelText and raises sv_PanelFlag. When the record is the one shown (sv_PanelShown) the redraw counter
+/* 0x521960, selects the object o (of the player or a pause object) for the info panel: stores it in sv_QuickJump.object, its
+   scene record of the id b in sv_QuickJump.record (gm_Query of the object id +0x5d; the kind 0x47 uses the record 0xfd), copies
+   the text c into sv_QuickJump.contactName and raises sv_PanelFlag. When the record is the one shown (sv_PanelShown) the redraw counter
    sv_PopRequest is set to the frame difference (sv_FrameDepth - sv_FrameBase), else the record is taken over and shown
-   (init_LoadObjectScene for a scene universe that is still dirty); finally sv_PopTo(0x591520)
-   @deep behaviour draft after the base rewrites (256 -> 202 code hunks), readable done (Q1..Q7 pass). The statement set is complete; the reading matches the original instruction for instruction. Gains kept: (1) sv_PanelRecord is not copied into a local - the original reloads the global at every use (this alone 256 -> 202); (2) 'cur = 0; if (b) cur = b; else if (f) cur = f;' reproduces the original's shared conditional assign (cmp eax,ebp / jne / mov eax,[ai_FallbackBuilding] / cmp / je / mov edi,eax); (3) *sv_PanelRecord read unsigned (the original's xor edx,edx / mov dx into init_LoadObjectScene); (4) the record views SVOBJREC/SVCHARREC cost no hunk (202 with and without). What is left is one allocation cascade over four saved registers: the original pushes ebx/ebp/esi/edi with o=esi, cur=edi, the constant 0=ebp and the constant 1=ebx (mov ebx,0x1 before the first gm_Query, kept across both calls and both sv_PanelFlag = 1 stores); ours pushes ebp/esi/edi only, folds cur into ebp (so the one xor serves both cur = 0 and the zero constant), tests instead of cmp-with-zero and uses immediates for 1. Tried, same 202: cur as a declaration initializer, the nested if/else polarity swap, the inline ((SVOBJREC *)o)-> cast instead of the bld local. spell.py: 521965 reload (the original reloads the o parameter from its stack slot at one use; the bld local is not the cause - dropping it changes nothing), 5219db / 521b5a dup-tail (the cur tail and the sv_PopTo tail: both spellings give 202), 5219a1 code (the ai_BTypes address: the original lea's it into eax, ours folds it into the mov's SIB - sib/add-lea, no source form found). Remaining leads for deep: the constant-register CSE (0 in ebp, 1 in ebx) and cur in edi vs ebp, the ai_BTypes temp ebx vs edi, the lea vs SIB load - allocation, i.e. vargen territory. */
+   (init_LoadObjectScene for a scene universe that is still dirty); finally sv_PopTo(0x591520) */
 
 void sv_SelectPanelObject(unsigned char *o, int b, char *c)
 {
@@ -613,20 +613,20 @@ void sv_SelectPanelObject(unsigned char *o, int b, char *c)
         cur = (unsigned char *)ai_PlayerBuilding;
     else if (ai_FallbackBuilding != 0)
         cur = (unsigned char *)ai_FallbackBuilding;
-    sv_PanelObject = (char *)o;
-    sv_PanelRecord = (unsigned short *)gm_Query(bld->objList, 1, 1, b);
+    sv_QuickJump.object = (char *)o;
+    sv_QuickJump.record = (unsigned short *)gm_Query(bld->objList, 1, 1, b);
     if (bld->kind == 0x47)
-        sv_PanelRecord = (unsigned short *)gm_Query(bld->objList, 1, 0, 0xfd);
-    strcpy(sv_PanelText, c);
+        sv_QuickJump.record = (unsigned short *)gm_Query(bld->objList, 1, 0, 0xfd);
+    strcpy(sv_QuickJump.contactName, c);
     sv_PanelFlag = 1;
-    if (sv_PanelRecord == 0 || *sv_PanelRecord == 0) {
+    if (sv_QuickJump.record == 0 || *sv_QuickJump.record == 0) {
         if (cur == o && ai_FallbackBuilding == 0) {
             sv_PanelFlag = 0;
             return;
         }
-    } else if (sv_PanelRecord != sv_PanelShown) {
+    } else if (sv_QuickJump.record != sv_PanelShown) {
         if (o == cur && gm_IsHomeType(cur) != 0) {
-            bld->sceneRec = *sv_PanelRecord;
+            bld->sceneRec = *sv_QuickJump.record;
             if (sv_PanelShown != 0) {
                 sv_PopRequest = (sv_FrameDepth - sv_FrameBase) + 1;
                 return;
@@ -636,14 +636,14 @@ void sv_SelectPanelObject(unsigned char *o, int b, char *c)
         }
         old = sv_PanelShown;
         oldv = ai_FrameWait;
-        bld->sceneRec = *sv_PanelRecord;
+        bld->sceneRec = *sv_QuickJump.record;
         if (gm_IsHomeType(o) == 0 && gm_IsType10(o) == 0) {
-            sv_PanelShown = sv_PanelRecord;
+            sv_PanelShown = sv_QuickJump.record;
             sv_PanelFlag = 0;
             ai_FrameWait = 0;
-            w = init_ObjectSceneUniverse(sv_PanelRecord);
+            w = init_ObjectSceneUniverse(sv_QuickJump.record);
             if (d3_Scenes[w].dirty != 0)
-                init_LoadObjectScene(*sv_PanelRecord);
+                init_LoadObjectScene(*sv_QuickJump.record);
             sv_PanelShown = old;
             sv_PanelFlag = 1;
             ai_FrameWait = oldv;
@@ -4635,7 +4635,7 @@ void sv_HoverPick(void)
     }
 }
 /* 0x52ae70, "sv_HandleObjects": turns a click into the selection. A pending quick jump (sv_PanelFlag) looks up its
-   contact name (sv_PanelText) as an object when the panel shows the current building's remembered room; a left
+   contact name (sv_QuickJump.contactName) as an object when the panel shows the current building's remembered room; a left
    click inside the view (or that jump) copies the hover state into the sv_Clicked* state, focuses the camera on a
    zoom target object that is no door / goods / contact (calling its event 2), selects the clicked character when
    the player may command him (0x800) and sets the selected object, item and model; a click on nothing resets the
@@ -4660,27 +4660,27 @@ void sv_HandleObjects(void)
         sv_SelectedChar = 0;
     if (sv_PanelFlag != 0) {
         subj = ai_PlayerBuilding != 0 ? ai_PlayerBuilding : ai_FallbackBuilding;
-        if (subj == sv_PanelObject
-            && (sv_PanelShown == sv_PanelRecord
-                || (ai_FallbackBuilding != 0 && sv_PanelShown == 0 && sv_PanelRecord != 0 && *sv_PanelRecord == 0xfd))) {
-            if (sv_PanelText[0] != 0) {
-                o = d3_FindObject(0, 0x60, 0, sv_PanelText);
+        if (subj == sv_QuickJump.object
+            && (sv_PanelShown == sv_QuickJump.record
+                || (ai_FallbackBuilding != 0 && sv_PanelShown == 0 && sv_QuickJump.record != 0 && *sv_QuickJump.record == 0xfd))) {
+            if (sv_QuickJump.contactName[0] != 0) {
+                o = d3_FindObject(0, 0x60, 0, sv_QuickJump.contactName);
                 if (o != 0) {
                     ai_PickedObject = (char *)o;
                     found = 1;
                 } else
-                    sprintf(msg, "sv_HandleObjects(): Could not find QuickJump.ContactName: %s", sv_PanelText);
+                    sprintf(msg, "sv_HandleObjects(): Could not find QuickJump.ContactName: %s", sv_QuickJump.contactName);
             }
             sv_PanelFlag = 0;
         }
-        if (subj == sv_PanelObject && (sv_PanelRecord == 0 || *sv_PanelRecord == 0xfd)) {
-            if (sv_PanelText[0] != 0) {
-                o = d3_FindObject(0, 0x60, 0, sv_PanelText);
+        if (subj == sv_QuickJump.object && (sv_QuickJump.record == 0 || *sv_QuickJump.record == 0xfd)) {
+            if (sv_QuickJump.contactName[0] != 0) {
+                o = d3_FindObject(0, 0x60, 0, sv_QuickJump.contactName);
                 if (o != 0) {
                     ai_PickedObject = (char *)o;
                     found = 1;
                 } else
-                    sprintf(msg, "sv_HandleObjects(): Could not find QuickJump.ContactName: %s", sv_PanelText);
+                    sprintf(msg, "sv_HandleObjects(): Could not find QuickJump.ContactName: %s", sv_QuickJump.contactName);
             }
             sv_PanelFlag = 0;
         }
@@ -7699,9 +7699,7 @@ unsigned char main_GameEnded = 0;  /* 0x6f25ad, nonzero when the player has reac
 unsigned char sv_MenuOpen = 0;  /* 0x6f25ae, 1 while a menu screen runs */
 int ai_OptionScrollSpeed = 0;  /* 0x6f3614 */
 int sv_PanelFlag = 0;  /* 0x75e8c0, 1 when the panel is up (an int; cm.h / f3init.c) */
-char * sv_PanelObject = 0;  /* 0x75e8c4, the object the info panel shows */
-unsigned short * sv_PanelRecord = 0;  /* 0x75e8c8, its scene record */
-char sv_PanelText[76] = {0};  /* 0x75e8d4, the panel text */
+SVQUICKJUMP sv_QuickJump = {0};  /* 0x75e8c4, the info panel's pending quick jump (sv.h) */
 int sv_SelectionFlags[0xc0] = {0};  /* 0x75e920, the mirror of the character selection flags (byte i per character) */
 int sv_SkyScene = 0;  /* 0x75ec20 */
 MSG sv_Message = {0};  /* 0x75ec40, the window message sv_PumpMessages reads (PeekMessageA / GetMessageA) */

@@ -433,6 +433,15 @@ mechanisms, each as a generated round over all positions / subsets:
 - unk_575860's ai_TutorialInitChapter2 / 3 flip their register tie-break on the unit's declaration set alone: a
   struct of a new name may cost Chapter2 its byte (keep the container's symbol); the build clears Chapter3's
   @deep note whenever it comes out byte (put it back from git when it falls).
+  (2026-11-10) Seen again: a struct body in sv.h, any field layout / name / position, and member access
+  `sv_QuickJump.active` in sv_t's ai_TutorialTick cost Chapter2 / 3 their byte. What kept both: sv.h holds only
+  `typedef struct SVQUICKJUMP SVQUICKJUMP; extern SVQUICKJUMP sv_QuickJump;`, the body in its own header
+  (sv_quickjump.h) that only the units reading its fields include; a bare `extern struct X v;` still lost Chapter3.
+- **A global the original reloads after an inline `strcpy` into another global** (ours keeps the value in eax and
+  the copy loop takes other registers; then a whole callee-saved cascade, constants 0 / 1 not in registers): the
+  two globals are one object; VC6 forgets every field of the object the copied bytes land in. Probe it with
+  `strcpy((char *)&rec + off, src)` in `dcp try` (byte at once for sv_SelectPanelObject, 86 ins -> 0), then declare
+  the record (sv_QuickJump: object, record, two unread ints, contactName).
 - **A success flag the original keeps in a callee-saved register** (`xor bl,bl` at entry, every failure exit
   `mov al,bl`, success `mov al,1`) where ours folds the failures to `xor al,al`: the failures were not early
   `return`s but nested `if (info && info->mesh) { .. if (box) { ..; ok = 1; } }` with the out-parameter stores

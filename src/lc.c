@@ -1011,6 +1011,7 @@ typedef struct G8USEVIEW {              /* a local view of am.h's G8USE (am.h ca
 #include "ahm.h"
 #include "menu.h"
 #include "sv.h"
+#include "sv_quickjump.h"
 #define ai_GfxDetailI (*(int *)&ai_GfxDetail)  /* 0x6f35c4 (menu.c: unsigned char): @original ai_ShowVgObjects reads the detail as a dword and takes its low byte (0x58f9d7 mov ecx, dword ptr [0x6f35c4] / and edx, 0xff); the byte object compiles to mov cl, byte ptr */
 #define d2_CreatePicObjS ((int (*)(short, short, int))d2_CreatePicObj)  /* 0x46cd80 (d2.h: int x, y): @original the town map update adds the window position to the mark pixel in 16 bits (0x5a8052 mov dx, word ptr [eax + 4] / add dx, di / push edx), as d2.c's callers */
 #define d2_SetObjValue2 ((void (*)(int, int))d2_SetObjValue)  /* 0x475cb0 (d2.h: five parameters): @original the checkbox / route-box calls push only the object and the value (0x5c81ab ai_CityStatsPanel: push esi; push edi; 0x5b0a1b ai_TransportWindow: push 0; push esi) */
@@ -3419,16 +3420,16 @@ void ai_TradeContactChecks(void)
             sv_FrameBase = sv_FrameDepth;
         }
     }
-    if (sv_PanelFlag != 0 && sv_PanelRecord != 0 && sv_PanelObject == ai_FallbackBuilding) {
+    if (sv_PanelFlag != 0 && sv_QuickJump.record != 0 && sv_QuickJump.object == ai_FallbackBuilding) {
         room = (unsigned short *)gm_Query((void *)((AIBLD *)ai_FallbackBuilding)->objList, 2, 6, 0, 0xfd);
-        if (sv_PanelRecord != room) {
-            ai_RunObjectRoom((AIOBJ *)sv_PanelRecord);
+        if (sv_QuickJump.record != room) {
+            ai_RunObjectRoom((AIOBJ *)sv_QuickJump.record);
             init_ShowBuildingScene((unsigned char *)ai_FallbackBuilding, 0xfd);
             init_FinishBuildingScene((unsigned char *)ai_FallbackBuilding, room);
         } else {
             sv_PanelFlag = 0;
-            sv_PanelRecord = 0;
-            sv_PanelObject = 0;
+            sv_QuickJump.record = 0;
+            sv_QuickJump.object = 0;
         }
     }
     if (sv_ClickedContact != 0 && ai_SelectedCount == 0) {
@@ -3589,9 +3590,9 @@ void ai_GameFrame(void)
             ai_MarketStandListener(ai_MarketBuilding);
         if (sv_PanelFlag != 0) {
             /* the building the info panel picked */
-            b = (AIBLD *)sv_PanelObject;
-            if (sv_PanelRecord != 0) {
-                b->mainRoom = *sv_PanelRecord;
+            b = (AIBLD *)sv_QuickJump.object;
+            if (sv_QuickJump.record != 0) {
+                b->mainRoom = *sv_QuickJump.record;
                 if ((b->flags5a & 1) != 0) {
                     sv_PanelFlag = 0;
                 } else {
