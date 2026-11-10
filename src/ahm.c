@@ -26,6 +26,8 @@ table of 8 ints, then the strings "RCPID" .. "alchemy_data.ini"). Starts at 0x4e
 
 #define vfs_freadU ((unsigned (*)(void *, int, int, VFSFILE *))vfs_fread)  /* 0x430bd0, vfs.h int: @original this unit compares the count as unsigned (ahm_LoadDfn 0x4ebabd test eax,eax; jbe for `<= 0`) */
 
+extern char ch_EmptyName[];  /* 0x631090, the shared empty string "" (ch.c) */
+
 unsigned short util_Random(unsigned short n);  /* 0x42ec00, @original: the function masks its argument to 16 bits (0x42ec00: test si,si; and esi,0xffff) and the shuffler passes the count through mov cx,WORD PTR ds:0x6f0e28 (0x4eadd8), so this TU's callers were compiled against the 16-bit parameter and result (ai.h's view is int) */
 
 /* 0x4eaa50, the character the alchemist object p (building kind 0x1e) belongs to: the character with the id of the record at +0x65; 0 when p is another kind or has no record */
@@ -391,85 +393,78 @@ static __inline double ahm_ClampShare(char *s)
    NUM_OF_RECIPES_PROTOTYPES, then [RCP_%li] ATTR0 / ATTR1 (percent, 0 .. 1 floats +4 / +8) and RCPID (an object name, int +0) into 0x6f0e34; 1 when all was read,
    else the tables are freed and 0. The clamps: ahm_ClampAttr keeps 1 .. 0xfb and caps at 0xfc, ATTR4 is 0x12 .. 0x1e; ahm_ClampShare is min(max(atof / 100, 0), 1)
    in double, re-evaluating atof (0x4eb8d7 .. is four atof calls per check).
-   @deep B3 draft: two hunks left, both the cleanup (fail) block's place: ours sits at the end of the function, the original's right after the
-   recipe-alloc check / before the recipe loop (0x4eb83b, with its ATTR4 tail at 0x4eb883), so the ATTR4 0x12 tail and the two dup-tails differ
-   in position only; the block itself is the same 18 instructions. Leads tried: the ATTR4 clamp as <= 0x12 / >= 0x1e and as the swapped
-   if/else (0x4eb75e, gained, kept), the goto fail vs fallthrough shapes (source order puts the label last), the union views (AHMGRID
-   plr/rcp/w) that removed the frame temp and made the stores direct. Q1..Q7 pass. */
+   @original the cleanup sits inside the recipe-alloc test, before the recipe loop (0x4eb83b), and every failure jumps into it (fail: frees both tables,
+   fail2: the player alloc failed, only the recipe table); the gotos reproduce that block order, a cleanup after the loops is placed last by VC6. */
 int ahm_LoadIni(void)
 {
     char ini[260], buf[256], sec[256], *p;
-    int i;
+    int i, n;
 
     GetModuleFileNameA((HMODULE)main_Instance, ini, 0x104);
     p = strrchr(ini, '\\');
     p[1] = 0;
     strcat(ini, "alchemy_data.ini");
-    GetPrivateProfileStringA("MAIN_PLAYER_SPECS", "NUM_OF_PLAYER_PROTOTYPES", "", buf, 0x100, ini);
+    GetPrivateProfileStringA("MAIN_PLAYER_SPECS", "NUM_OF_PLAYER_PROTOTYPES", ch_EmptyName, buf, 0x100, ini);
     ai_PlayerPrototypeCount = atoi(buf);
-    if (ai_PlayerPrototypeCount > 0) {
-        if (ai_PlayerPrototypes != 0) {
-            mem_Free(ai_PlayerPrototypes);
-            ai_PlayerPrototypes = 0;
-        }
-        ai_PlayerPrototypes = mem_Alloc(ai_PlayerPrototypeCount * 12, "ahm_AllocPlayerPrototypes");
-        if (ai_PlayerPrototypes == 0)
-            goto fail;
-        for (i = 0; i < ai_PlayerPrototypeCount; i++) {
-            sprintf(sec, "PLR_%li", i);
-            GetPrivateProfileStringA(sec, "ATTR0", "42", buf, 0x100, ini);
-            ai_PlayerPrototypes[i].plr.attr[0] = ahm_ClampAttr(buf);
-            GetPrivateProfileStringA(sec, "ATTR1", "42", buf, 0x100, ini);
-            ai_PlayerPrototypes[i].plr.attr[1] = ahm_ClampAttr(buf);
-            GetPrivateProfileStringA(sec, "ATTR2", "42", buf, 0x100, ini);
-            ai_PlayerPrototypes[i].plr.attr[2] = ahm_ClampAttr(buf);
-            GetPrivateProfileStringA(sec, "ATTR3", "42", buf, 0x100, ini);
-            ai_PlayerPrototypes[i].plr.attr[3] = ahm_ClampAttr(buf);
-            GetPrivateProfileStringA(sec, "ATTR4", "20", buf, 0x100, ini);
-            p = (char *)(long)atoi(buf);
-            if ((int)p > 0x12) {
-                if ((int)p >= 0x1e)
-                    p = (char *)0x1e;
-            } else
-                p = (char *)0x12;
-            ai_PlayerPrototypes[i].plr.attr[4] = (unsigned char)(int)p;
-            GetPrivateProfileStringA(sec, "ATTR5", "ob_NULL", buf, 0x100, ini);
-            ai_PlayerPrototypes[i].plr.id = ahm_ObjectId(buf);
-        }
-        GetPrivateProfileStringA("MAIN_RECIPES_SPECS", "NUM_OF_RECIPES_PROTOTYPES", "", buf, 0x100, ini);
-        ai_RecipePrototypeCount = atoi(buf);
-        if (ai_RecipePrototypeCount > 0) {
-            if (ai_RecipePrototypes != 0) {
-                mem_Free(ai_RecipePrototypes);
-                ai_RecipePrototypes = 0;
-            }
-            ai_RecipePrototypes = mem_Alloc(ai_RecipePrototypeCount * 12, "ahm_AllocRecipePrototypes");
-            if (ai_RecipePrototypes != 0) {
-                for (i = 0; i < ai_RecipePrototypeCount; i++) {
-                    sprintf(sec, "RCP_%li", i);
-                    GetPrivateProfileStringA(sec, "ATTR0", "50", buf, 0x100, ini);
-                    ai_RecipePrototypes[i].rcp.a = ahm_ClampShare(buf);
-                    GetPrivateProfileStringA(sec, "ATTR1", "25", buf, 0x100, ini);
-                    ai_RecipePrototypes[i].rcp.b = ahm_ClampShare(buf);
-                    GetPrivateProfileStringA(sec, "RCPID", "ob_NULL", buf, 0x100, ini);
-                    ai_RecipePrototypes[i].rcp.id = ahm_ObjectId(buf);
-                }
-                return 1;
-            }
-        }
-    }
+    if (ai_PlayerPrototypeCount <= 0)
+        goto fail;
     if (ai_PlayerPrototypes != 0) {
         mem_Free(ai_PlayerPrototypes);
         ai_PlayerPrototypes = 0;
     }
-fail:
+    ai_PlayerPrototypes = mem_Alloc(ai_PlayerPrototypeCount * 12, "ahm_AllocPlayerPrototypes");
+    if (ai_PlayerPrototypes == 0)
+        goto fail2;
+    for (i = 0; i < ai_PlayerPrototypeCount; i++) {
+        sprintf(sec, "PLR_%li", i);
+        GetPrivateProfileStringA(sec, "ATTR0", "42", buf, 0x100, ini);
+        ai_PlayerPrototypes[i].plr.attr[0] = ahm_ClampAttr(buf);
+        GetPrivateProfileStringA(sec, "ATTR1", "42", buf, 0x100, ini);
+        ai_PlayerPrototypes[i].plr.attr[1] = ahm_ClampAttr(buf);
+        GetPrivateProfileStringA(sec, "ATTR2", "42", buf, 0x100, ini);
+        ai_PlayerPrototypes[i].plr.attr[2] = ahm_ClampAttr(buf);
+        GetPrivateProfileStringA(sec, "ATTR3", "42", buf, 0x100, ini);
+        ai_PlayerPrototypes[i].plr.attr[3] = ahm_ClampAttr(buf);
+        GetPrivateProfileStringA(sec, "ATTR4", "20", buf, 0x100, ini);
+        n = atoi(buf);
+        ai_PlayerPrototypes[i].plr.attr[4] = (unsigned char)min(max(n, 0x12), 0x1e);
+        GetPrivateProfileStringA(sec, "ATTR5", "ob_NULL", buf, 0x100, ini);
+        ai_PlayerPrototypes[i].plr.id = ahm_ObjectId(buf);
+    }
+    GetPrivateProfileStringA("MAIN_RECIPES_SPECS", "NUM_OF_RECIPES_PROTOTYPES", ch_EmptyName, buf, 0x100, ini);
+    ai_RecipePrototypeCount = atoi(buf);
+    if (ai_RecipePrototypeCount <= 0)
+        goto fail;
     if (ai_RecipePrototypes != 0) {
         mem_Free(ai_RecipePrototypes);
         ai_RecipePrototypes = 0;
     }
-    ai_RecipePrototypeCount = 0;
-    ai_PlayerPrototypeCount = 0;
-    return 0;
+    ai_RecipePrototypes = mem_Alloc(ai_RecipePrototypeCount * 12, "ahm_AllocRecipePrototypes");
+    if (ai_RecipePrototypes == 0) {
+fail:
+        if (ai_PlayerPrototypes != 0) {
+            mem_Free(ai_PlayerPrototypes);
+            ai_PlayerPrototypes = 0;
+        }
+fail2:
+        if (ai_RecipePrototypes != 0) {
+            mem_Free(ai_RecipePrototypes);
+            ai_RecipePrototypes = 0;
+        }
+        ai_RecipePrototypeCount = 0;
+        ai_PlayerPrototypeCount = 0;
+        return 0;
+    }
+    for (i = 0; i < ai_RecipePrototypeCount; i++) {
+        sprintf(sec, "RCP_%li", i);
+        GetPrivateProfileStringA(sec, "ATTR0", "50", buf, 0x100, ini);
+        ai_RecipePrototypes[i].rcp.a = ahm_ClampShare(buf);
+        GetPrivateProfileStringA(sec, "ATTR1", "25", buf, 0x100, ini);
+        ai_RecipePrototypes[i].rcp.b = ahm_ClampShare(buf);
+        GetPrivateProfileStringA(sec, "RCPID", "ob_NULL", buf, 0x100, ini);
+        ai_RecipePrototypes[i].rcp.id = ahm_ObjectId(buf);
+    }
+    return 1;
 }
 /* 0x4eba80, reads the prototypes from "/gamedata/ai/alchemy.dfn" (the magic 0x61486d52, the counts 1 .. 100, the player entries (5 bytes + the id) and the recipe
    entries (3 ints)); 1 when all was read, else the tables are freed and 0 */
