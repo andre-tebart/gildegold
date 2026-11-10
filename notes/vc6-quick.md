@@ -180,6 +180,13 @@ mechanisms, each as a generated round over all positions / subsets:
   above two D3VECTOR4s): count the references before trading a pointer local for repeated field access.
 - Pointer vs index loops pick different bases / induction variables: try `p[i].f`, `p++`, `i++, p++` vs
   `p++, i++`, and a local for a repeated pointer load (`k = info->keys`).
+- **A row pointer at `buf + 1` with `p - 1, p, p + 1` operands** (rgb triples, `lea esi,[eax+1]`): the source
+  was the plain index `&buf[(y * w + x) * 3 + i]` in two `for` loops; VC6 picks the middle element as the
+  induction pointer itself. Hand-written `rp = buf + 1; p = rp; p - 1 ..` gets rebased (`dec esi`) and lands
+  in another dead parameter slot (d2_Convert16ToRgb / d2_ConvertRgbTo16, both byte).
+- **RECT fills before a Blt**: `left, top` stored first let VC6 add `sx += w` in place (`add esi, edi`); later
+  stores give `lea edx,[esi+edi]`. A 720-order permute of the last six stores found the exact order
+  (d2_BlitPartToDD: left, top, bottom, right / left, top, right, bottom), after a note had called order no lever.
 - Inline-asm macro temps (D3_ZERO, copy macros): their declaration order decides stores and slots; asm forces an
   ebp frame. Fixed-point helpers are `__inline` functions with `__asm` bodies.
 - **A frame one slot smaller, a local in a dead parameter's slot** where the original gives it its own slot (and
