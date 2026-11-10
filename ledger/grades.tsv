@@ -3312,7 +3312,7 @@ exe	0x00522040	sv_PanelImage	sv	byte	readable
 exe	0x00522100	sv_SetPanelEnabled	sv	byte	readable		
 exe	0x00522280	sv_ClosePanelWidgets	sv	byte	readable		
 exe	0x005223c0	sv_DestroyScreen	sv	byte	readable		
-exe	0x005224a0	sv_LoadGroundplan	sv	draft	readable	deep	
+exe	0x005224a0	sv_LoadGroundplan	sv	draft	readable	stuck	
 exe	0x005229b0	sv_UpdateGroundplan	sv	draft	readable	stuck	
 exe	0x00522ec0	sv_SetResearchClass	sv	byte	readable		
 exe	0x00522f10	sv_UpdateCityPanel	sv	byte	readable		
@@ -3332,7 +3332,7 @@ exe	0x00525480	sv_ClockSeason	sv	byte	readable
 exe	0x00525490	sv_SetSkyLightColors	sv	byte	readable		
 exe	0x00525510	sv_SetupWeather	sv	byte	readable		
 exe	0x00525940	sv_UpdateSkyColors	sv	byte	readable		
-exe	0x00525a00	sv_FillDayPhases	sv	draft	readable	deep	
+exe	0x00525a00	sv_FillDayPhases	sv	byte	readable		
 exe	0x00525a80	sv_SetLampRamp	sv	byte	readable		
 exe	0x00525ad0	sv_UpdateSkyPhase	sv	shape	readable		
 exe	0x00525dd0	sv_PlaceCamera	sv	byte	readable		
@@ -3342,7 +3342,7 @@ exe	0x005263a0	sv_ScrollCamera	sv	draft	readable	stuck
 exe	0x00526cf0	sv_MouseCamera	sv	draft	readable	stuck	
 exe	0x00527640	sv_UpdateCamera	sv	byte	readable		
 exe	0x00527840	sv_FlyCameraToObject	sv	byte	readable		
-exe	0x00527bb0	sv_CameraToObject	sv	draft	readable	deep	shape+readable -> draft+readable at 7a3ed50: dcp's reference check (decompanion ef0c0b3) pairs reordered loads / stores of equal text crosswise and reads them as other targets; the effects are the same, the prover cannot show it yet [waits for: decompanion normalized-alignment / prover-coverage]
+exe	0x00527bb0	sv_CameraToObject	sv	byte	readable		
 exe	0x00527e90	sv_FlyCameraToModel	sv	shape	readable	deep	
 exe	0x00528140	sv_MoveCameraToView	sv	byte	readable		
 exe	0x00528180	sv_CreateBannerCB	sv	byte	readable		
@@ -3424,7 +3424,7 @@ exe	0x0052fe00	sv_PumpNet	sv	byte	readable
 exe	0x0052fe10	sv_ChatConsole	sv	byte	readable		
 exe	0x00530100	sv_UpdateQuickChat	sv	shape	readable		
 exe	0x005301a0	sv_UpdateWeather	sv	shape	readable		
-exe	0x00530670	sv_WeatherFrame	sv	draft	readable	deep	
+exe	0x00530670	sv_WeatherFrame	sv	byte	readable		
 exe	0x005307f0	sv_AdvanceGame	sv	shape	readable		
 exe	0x00530900	sv_SetScreenCenter	sv	byte	readable		
 exe	0x005309a0	sv_RunFrame	sv	byte	readable		
@@ -4004,7 +4004,7 @@ exe	0x00578440	ai_TutorialFreeRuns	sv_t	byte	readable
 exe	0x005784a0	ai_TutorialInitMainIntro	sv_t	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	sv_t	byte	readable		
 exe	0x00578e40	ai_TutorialInitChapter2	sv_t	byte	readable		
-exe	0x00579570	ai_TutorialInitChapter3	sv_t	draft	readable		
+exe	0x00579570	ai_TutorialInitChapter3	sv_t	byte	readable		
 exe	0x0057aa80	ai_TutorialInitChapter4	sv_t	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	sv_t	byte	readable		
 exe	0x0057b750	ai_TutorialInitMainOutro	sv_t	byte	readable		
