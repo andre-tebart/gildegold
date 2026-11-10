@@ -312,6 +312,13 @@ mechanisms, each as a generated round over all positions / subsets:
   instead (amt_CalcZuenfte).
 
 ## Registers, stack slots, locals
+- **A byte of a global `union { int word; unsigned char byte[4]; }` loaded as the dword** (`mov ecx, dword [U];
+  xor eax,eax; mov al, ch`, a later `cmp byte [g], cl` reusing it) where the original does `xor eax,eax; mov al,
+  byte ptr [U+1]`: the bytes were separate globals. Char-pointer views, casts and bitfields of the union give the
+  same dword load; only a distinct object fixes it (probe: `extern unsigned char probe;` inside the function in a
+  `dcp try`). An aligned unsigned char global can still load as `mov ecx, dword; and ecx, 0xff` (ai_SaveOptions'
+  `_itoa(b, ..)`), so a `.word & 0xff` spelling elsewhere is no evidence for the union. ai_ApplyGfxOptions byte
+  (the ai_GfxFloor split). New externs in menu.h moved sv_t's tutorial chapters off byte: declare in the users.
 - **A local memory-homed in the whole original** (stored at every definition, dead final loop values stored,
   reloaded after byte stores through pointers) is address-taken: find the one small-frame `lea` in the original
   and pass that local there (txt_OpenText: `i = txt_Count - first; fwrite(&i, 4, 1, f)`, not `&lineno`: 1085 -> 424).
