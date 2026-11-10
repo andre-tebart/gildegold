@@ -2574,17 +2574,20 @@ int amt_ExecuteShareMessage(short *c, int *m)
    Every power takes 8 money of c (cm_SendMoneyDelta), sets the power bit 0x10000000 of +0x1c8 and tells the news (texts
    0x166e .. 0x1685, the channels 0x5fb / 0x5fd / 0x5fe) to the other characters and, when the kind of c is 6, to c itself.
    Returns -1 when the damage roll is <= 0.3 and 1 otherwise, 0 when the message does not fit the office kind.
-   @deep read against the original in full and rewritten: ret as if/else in a register, the tell loops
-   inline (re-reading t/c netId, no -2 compare in the 0x20 case), gm_SendMoneyDelta (the thunk the original
-   calls), GetColumnOffices in both rf branches, no n!=1 guard, duplicated branch tails with their own
-   returns; message/loop/return layout now equal. Left: allocation - c sits in ebx (original esi) and t in
-   esi (original ebx), so the 0x20 dmg loop puts dmg in esi and reloads c from [esp+0x8f0] (asmdiff
-   0x4ea04a: ours mov ecx,[esp+0x8f0]/mov ecx,[ecx+4], original mov ecx,[esi+4]; 0x4ea07a ours reloads c
-   into ebx before gm_SendMoneyDelta), m kept in ebp in the 0x1f/0x20 heads (original eax, reloaded into
-   ebx later), rf slot 0x14 vs 0x10; declaration order tried, no change (size: 660 vs 646 instructions,
-   explained: ours=660 original=646: the 14 extra are the reloads of c and m from the stack (mov
-   ebx,[esp+0x8f0], mov edx,[esp+0x8f0] in the dmg loops, mov ebp,[esp+0x8f4]) the other register
-   assignment costs) */
+   @stuck Re-read whole against the original: meaning equal (the denounce / pair-damage / one-sided arms,
+   texts and channels, dmg sign per arm, the found-in-list test, the 2.55f double constant). Kept:
+   util_RandomF() + ai_FloatOne (the pooled 1.0f; clears the M10, same counts). Left as before,
+   whole-function allocation per region: original c=esi / t=ebx / ret=ebp in the 0x1e arm, c=ebp / n=esi in
+   the 0x1f arm, c=esi / dmg=ebp / n=edi in the 0x20 arm, m reloaded into ebx for each txt_Format; ours
+   c=ebx and m in ebp, so the dmg loops reload c from [esp+0x8f0] and the 0x20 tail does not hoist the
+   common push m[1]+0x1663 / lea msg above the rf test; rf at [esp+0x14] vs [esp+0x10] (f / rf slots
+   swapped). Tried, = control: float f, rf order, t declared first, t block-scoped in the 0x1e arm, the
+   0x1e test as nested ifs, c[0x169] read in each compare instead of kind, kind via the secondOffice field,
+   ret as a ternary; t != c before t[0x166] (worse, other order). Headers sample: insensitive. (tiebreak:
+   insensitive) prior: read against the original in full and rewritten (ret as if/else in a
+   register, the tell loops inline, gm_SendMoneyDelta, GetColumnOffices in both rf branches, no n!=1
+   guard, duplicated branch tails with their own returns); message / loop / return layout equal; the 14
+   extra instructions are the reloads of c and m the other register assignment costs. */
 int amt_ExecuteMayorPowerMessage(char *c, int *m)
 {
     float rf, f;
@@ -2651,7 +2654,7 @@ int amt_ExecuteMayorPowerMessage(char *c, int *m)
             if (rf > 0.3f) {
                 n = amt_GetColumnOffices(m[1], 6, list);
                 f = gm_GetSkill(c, 4);
-                f = (util_RandomF() + 1.0f) * f * 15.0f;
+                f = (util_RandomF() + ai_FloatOne) * f * 15.0f;
                 dmg = (int)((f + 5.0) * 2.55f);
                 for (i = 0; i < n - 1; i++) {
                     id = list[i].owner;
@@ -2719,7 +2722,7 @@ int amt_ExecuteMayorPowerMessage(char *c, int *m)
         if (rf > 0.3f) {
             n = amt_GetColumnOffices(m[1], 6, list);
             f = gm_GetSkill(c, 4);
-            f = (util_RandomF() + 1.0f) * f * 15.0f;
+            f = (util_RandomF() + ai_FloatOne) * f * 15.0f;
             dmg = (int)((f + 5.0) * 2.55f);
             for (i = 0; i < n; i++) {
                 id = list[i].owner;

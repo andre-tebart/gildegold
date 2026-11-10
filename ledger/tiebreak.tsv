@@ -2670,7 +2670,7 @@ exe	0x004e94e0	amt_CanUseMayorPower2	amt	4756fafcbfda5d2e	no	byte	control=byte p
 exe	0x004e95a0	amt_CanUseMayorPower3	amt	2ed752126975378c	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004e9660	amt_ExecutePriceMessage	amt	97882925d3121769	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
 exe	0x004e9a00	amt_ExecuteShareMessage	amt	108f39ad54574256	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x004e9ce0	amt_ExecuteMayorPowerMessage	amt	fc6d5937fc3be673	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x004e9ce0	amt_ExecuteMayorPowerMessage	amt	36ad07941337ce79	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x004ea550	amt_ChangeDistrictOpinion	amt	a5594964a9a2f067	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004ea5c0	amt_GetDistrictLiking	amt	b6bd411cdf859b20	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004ea690	amt_SaveAemter	amt	1a19e8cbcf0f7ba3	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
