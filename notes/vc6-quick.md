@@ -511,3 +511,16 @@ mechanisms, each as a generated round over all positions / subsets:
   store `[ebp-4] = 0`**: one variable for both arms (`AICHAR *c = 0;` searched into in one arm, `gm_FindChar` in the
   other), not `pick` + `c = pick` (the same family's ai_TokenRandomNpcInhabitant has this form). `while (n != 0)
   { ..; n--; i = ..; }` gives the `dec; test; mov; jne` bottom test, `for (..; n != 0; n--)` drops the test.
+- **Two pointers merging at a search's exit (`lea eax,&a[i]; test eax,eax; jne` from the break, `mov eax,[pick]; test
+  eax,eax` from the exhausted loop, sel 0/1 breaks jumping into that same test)**: `c = 0;` at the top of the search
+  arm, every break sets `c`, the two-pass loop keeps its first candidate in `pick` and ends `if (c == 0) c = pick;`;
+  VC6 threads each exhausted loop (c known 0) to a plain `return 0` and the human break into the test. Writing `c = 0`
+  at the declaration gave c a callee-saved register for the whole function instead. Six ai_Token* siblings byte.
+- **The clear's size slot stored before the destination slot (`mov [ebp-8], 0x200` then `mov [ebp-4], eax`)**: assign
+  the destination inside the clear's block after the size temp (hst.c `AI_ZERO_BUF(n1, buf, 0x200)`); `n1 = buf;
+  AI_ZERO_AT(n1, ..)` stores n1 first.
+- **`test cl,cl; jbe` on an unsigned byte field** is `x <= 0` / `x > 0` in the source, `je`/`jne` is `== 0` / `!= 0`
+  (same meaning; also inside a shared macro: G12_TITLED's `officeKind > 0`).
+- **Strength-reduced loop base on a byte field read through a local `g = rec[i].job`**: the original read the field
+  at each of its 8 tests (a macro): the base moved from netId (+4) to the job byte (+0x164) and the function matched
+  (ai_TokenRandomMerchant).
