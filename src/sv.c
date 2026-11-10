@@ -6472,10 +6472,19 @@ void sv_UpdateBand(void)
 }
 /* 0x52f0d0, sv_UpdateBand for the 0x8000 mode of sv_RunFrame: the same band and projection, but a character is
    selectable when ai_LedSelectBits gives 0x800 (led by the player's character) instead of gm_PermissionBits.
-   @deep read whole against the original: it is sv_UpdateBand with ai_LedSelectBits(ai_PlayerId, c) in
-   place of gm_PermissionBits; reconstructed the same way (min/max clamp, D3VECTOR4 centre, frame matches).
-   The one remaining hunk is the same allocation as sv_UpdateBand's: ours 'mov eax, [eax+0x1cc]; test eax,
-   eax ... mov ecx, 8', the original's 'mov ecx, [eax+0x1cc]; test ecx, ecx ... mov eax, ecx; mov ecx, 8'. */
+   @stuck the same single copy as sv_UpdateBand (see its stuck reason for the full list, all = control
+   there): the original 'mov ecx,[eax+0x1cc]; test ecx,ecx ... mov eax,ecx; mov ecx,8; mov eax,[eax]', ours
+   info in eax (code 5, regs 4). Applied ai_FloatZero / cm_DoubleOne (M10 cleared, same ins). Tried here as
+   well: a static __inline helper for the 8-vertex sum (info as its parameter) and one returning info->keys
+   (no change in dist), the tests as separate ifs / one nested && block / !info (= control), the scene
+   compare swapped (11 ins), info reused as a char walk (= control), index loops through info->keys + n (=
+   control) and v[n] with v set inside the loop (19). The two functions share the hunk, so the cause is
+   likely a construct common to both (a macro or helper of the original), not this function's text
+   (tiebreak: not measured (dcp headers sample sv_UpdateBandLed)) prior: read whole against the original:
+   it is sv_UpdateBand with ai_LedSelectBits(ai_PlayerId, c) in place of gm_PermissionBits; reconstructed
+   the same way (min/max clamp, D3VECTOR4 centre, frame matches). The one remaining hunk is the same
+   allocation as sv_UpdateBand's: ours 'mov eax, [eax+0x1cc]; test eax, eax ... mov ecx, 8', the original's
+   'mov ecx, [eax+0x1cc]; test ecx, ecx ... mov eax, ecx; mov ecx, 8'. */
 
 void sv_UpdateBandLed(void)
 {
@@ -6502,9 +6511,9 @@ void sv_UpdateBandLed(void)
         c->selected = 0;
         if ((bits & 0x800) == 0 || c->model == 0 || c->model->scene != d3_DefaultScene || (info = c->model->body->info) == 0)
             continue;
-        p.x = 0.0f;
-        p.y = 0.0f;
-        p.z = 0.0f;
+        p.x = ai_FloatZero;
+        p.y = ai_FloatZero;
+        p.z = ai_FloatZero;
         v = (D3PVERT *)info->keys;
         for (n = 8; n != 0; n--, v++) {
             p.x += v->x;
@@ -6514,7 +6523,7 @@ void sv_UpdateBandLed(void)
         p.x *= 0.125;
         p.y *= 0.125;
         p.z *= 0.125;
-        iz = (int)(1.0 / p.z);
+        iz = (int)(cm_DoubleOne / p.z);
         sx = (int)(d3_ScaleX * iz * p.x + d3_CenterX);
         sy = (int)(d3_ScaleY * iz * p.y + d3_CenterY);
         if (sx >= left && sx <= right && sy >= top && sy <= bottom)
