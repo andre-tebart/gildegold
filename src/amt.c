@@ -223,7 +223,29 @@ int amt_GetOfficeRate(char *c, int x, float *out)
    pointer induction, hence the do-while: a while is rotated and peels the first test); the two-person kinds then repeat it for the second
    office (f1: the first office took it, f2/f1 together: an office was open) and send the second office's index as m.o2. The final checks
    repeat the open test of the plain kind.
-   @deep B3 61 differing instructions of 165: the whole original 0x4e6180..0x4e635f was read against the source and the statements match (guard c[0x168]; kind search over 30 records; kind record copy; the two-person second search with f1/f2; the three send paths; the plain-path open checks) - the rest is register allocation and basic-block order (the original keeps c in ecx and re-reads [esp+0x34] before m.id, re-reads [edx+0x4] / [eax+0x4] at the send sites, hoists the bracket push above the m stores and merges the argument cleanup into one add esp,0xc; the two 0xff stores go through cl) and those were tried one edit one build each: kind-pointer and record-pointer search loops (do-while(1) avoids the first-test peel, 100 -> 61 asm lines), i >= 30 and cnt >= 4 spellings, m.o2 = m.o1 / m.o1 = m.o2 / chained 0xff stores, if (f2) arm polarity, goto-found layout, bracket call before the stores (worse, reverted); spell.py: reload [esp+0x34] / [edx+0x4] / [eax+0x4] and dup-tail, no local holds those values (the CSE is of the parameter and the netId expression). Readability Q1-Q7 pass (the three cm callees named cm_BeginGroup / cm_EndGroup / cm_SendApplication, the latter now int). */
+   @stuck 51 -> 14 ins: the three send sites are written out in full (Begin; Send; End; return) instead of goto
+   send - the original has three cm_BeginGroup calls and VC6 cross-jumps only from the cm_SendApplication call
+   (the lea of &m differs in register per site); if (f2) o2 else send arm; m.id before m.o1 in the first-office
+   block and the !f2 arm. Left: the plain path (owner/state/cnt checks then the send) stores o1 then id (ours:
+   mov edx,c; mov cl,idx; push; o1; eax=[edx+4]; id) where the original loads c into eax, push, edx=[eax+4],
+   al=idx, stores id then o1; and the f1 send's lea eax vs the original's lea edx. Writing the plain path id-
+   first (any spelling: AMT_NETID, *(int*)(c+4), (int) cast, (unsigned char) idx, && form, || early return) makes
+   VC6 merge the !f2 arm into it (32 ins) or, with the !f2 arm o1-first, cross-jump the !f2 arm into the plain
+   path's Begin (14 ins, branch 1). Tried: all 24 orders of the first-office block x both !f2 orders (control
+   best), goto send on each site (worse, 32-66 ins), result variable f1/f2 per site (= control), (AMTAPP *)&m.id
+   argument (= control). headers sample: insensitive (32 samples, one codegen). (tiebreak: insensitive, 32
+   samples) prior: B3 61 differing instructions of 165: the whole original 0x4e6180..0x4e635f was read against
+   the source and the statements match (guard c[0x168]; kind search over 30 records; kind record copy; the two-
+   person second search with f1/f2; the three send paths; the plain-path open checks) - the rest is register
+   allocation and basic-block order (the original keeps c in ecx and re-reads [esp+0x34] before m.id, re-reads
+   [edx+0x4] / [eax+0x4] at the send sites, hoists the bracket push above the m stores and merges the argument
+   cleanup into one add esp,0xc; the two 0xff stores go through cl) and those were tried one edit one build each:
+   kind-pointer and record-pointer search loops (do-while(1) avoids the first-test peel, 100 -> 61 asm lines), i
+   >= 30 and cnt >= 4 spellings, m.o2 = m.o1 / m.o1 = m.o2 / chained 0xff stores, if (f2) arm polarity, goto-
+   found layout, bracket call before the stores (worse, reverted); spell.py: reload [esp+0x34] / [edx+0x4] /
+   [eax+0x4] and dup-tail, no local holds those values (the CSE is of the parameter and the netId expression).
+   Readability Q1-Q7 pass (the three cm callees named cm_BeginGroup / cm_EndGroup / cm_SendApplication, the
+   latter now int). */
 
 int amt_ApplyForOffice(char *c, unsigned int kind)
 {
@@ -254,9 +276,9 @@ int amt_ApplyForOffice(char *c, unsigned int kind)
         f2 = 0;
         f1 = 0;
         if (amt_Table[i].owner == -1 && amt_Table[i].state == 3 && amt_Table[i].cnt < 4) {
-            m.o1 = amt_Table[i].idx;
-            f2 = 1;
             m.id = ((AMTCHARVIEW *)c)->netId;
+            f2 = 1;
+            m.o1 = amt_Table[i].idx;
             f1 = 1;
         }
         i++;
@@ -264,13 +286,16 @@ int amt_ApplyForOffice(char *c, unsigned int kind)
             do {
                 if (amt_Table[i].kind == kind) {
                     if (i < 30 && amt_Table[i].owner == -1 && amt_Table[i].state == 3 && amt_Table[i].cnt < 4) {
-                        if (!f2) {
-                            m.o1 = amt_Table[i].idx;
+                        if (f2) {
+                            m.o2 = amt_Table[i].idx;
+                        } else {
                             m.id = ((AMTCHARVIEW *)c)->netId;
+                            m.o1 = amt_Table[i].idx;
                             cm_BeginGroup("Amtsbewerbung");
-                            goto send;
+                            i = cm_SendApplication(&m);
+                            cm_EndGroup("Amtsbewerbung");
+                            return i;
                         }
-                        m.o2 = amt_Table[i].idx;
                     }
                     break;
                 }
@@ -279,7 +304,9 @@ int amt_ApplyForOffice(char *c, unsigned int kind)
         }
         if (f1) {
             cm_BeginGroup("Amtsbewerbung");
-            goto send;
+            i = cm_SendApplication(&m);
+            cm_EndGroup("Amtsbewerbung");
+            return i;
         }
     }
     if (amt_Table[i].owner != -1)
@@ -291,7 +318,6 @@ int amt_ApplyForOffice(char *c, unsigned int kind)
     m.o1 = amt_Table[i].idx;
     m.id = ((AMTCHARVIEW *)c)->netId;
     cm_BeginGroup("Amtsbewerbung");
-send:
     i = cm_SendApplication(&m);
     cm_EndGroup("Amtsbewerbung");
     return i;
