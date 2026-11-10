@@ -148,6 +148,6 @@ void rd_AllBauplatzToSupermap(G15ROAD *r, char *name);
 char rd_FindSiteCB(char *obj, G15BKFIND *f);
 G15BK *rd_GetBKSize(char *name);
 void rd_WorldToCell(float *x, float *z, float *v, char *obj, G15ROAD *r);
-void rd_FillQuad(G15ROAD *r, float *c, char v, int t);
+void rd_FillQuad(G15ROAD *r, float *c, unsigned char v, int t);
 
 #endif

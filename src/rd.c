@@ -568,12 +568,14 @@ void rd_AddBauplaetze(G15ROAD *r)
         }
     }
 }
-/* 0x4bd500, marks the area of building site name (its four corners, 0x4bd760) @deep behaviour: far draft, 160 code hunks - frame 0x6c vs 0x70 and the corner positions copied through the FPU in the original (fld/fstp) where our float array copies are integer moves, plus scheduling of the four rd_WorldToCell calls and the rd_FillQuad call; the four corners and the call sequence were read and match in meaning */
+/* 0x4bd500, marks the area of building site name (its four corners, 0x4bd760). @original the parenthesized
+   corner copies (likely a macro's expansion) are what makes VC6 copy them through the FPU (fld/fstp, the last
+   store sunk past the call's pushes); plain `v[0] = bk->x0` copies with integer moves. */
 
 void rd_AllBauplatzToSupermap(G15ROAD *r, char *name)
 {
     G15BK *bk;
-    float v[3];
+    float v[4];
     float c[8];
     char buf[0x40];
 
@@ -582,23 +584,23 @@ void rd_AllBauplatzToSupermap(G15ROAD *r, char *name)
         sprintf(buf, "rd_AllBauplatzToSupermap(): Unbekannter Bauplatz '%s'", name);
         return;
     }
-    v[0] = bk->x0;
-    v[1] = bk->y0;
-    v[2] = bk->z0;
+    v[0] = (bk->x0);
+    v[1] = (bk->y0);
+    v[2] = (bk->z0);
     rd_WorldToCell(&c[0], &c[1], v, name, r);
-    v[0] = bk->x1;
-    v[1] = bk->y0;
-    v[2] = bk->z0;
+    v[0] = (bk->x1);
+    v[1] = (bk->y0);
+    v[2] = (bk->z0);
     rd_WorldToCell(&c[2], &c[3], v, name, r);
-    v[0] = bk->x1;
-    v[1] = bk->y0;
-    v[2] = bk->z1;
+    v[0] = (bk->x1);
+    v[1] = (bk->y0);
+    v[2] = (bk->z1);
     rd_WorldToCell(&c[4], &c[5], v, name, r);
-    v[0] = bk->x0;
-    v[1] = bk->y0;
-    v[2] = bk->z1;
+    v[0] = (bk->x0);
+    v[1] = (bk->y0);
+    v[2] = (bk->z1);
     rd_WorldToCell(&c[6], &c[7], v, name, r);
-    rd_FillQuad(r, c, -1, 0);
+    rd_FillQuad(r, c, 0xff, 0);
 }
 /* 0x4bd610, d3_ForEachObject callback: the object named f->name (or with one leading character more) within 100
    of f->pos; stops there */
@@ -640,10 +642,10 @@ void rd_WorldToCell(float *x, float *z, float *v, char *obj, G15ROAD *r)
     *x = (w[0] - r->map->x0) / r->map->cw;
     *z = (w[2] - r->map->z0) / r->map->ch;
 }
-/* 0x4bd760, fills the quad c (four cells x / z) on the town map with ground type v (-1: not) and on the grid with
+/* 0x4bd760, fills the quad c (four cells x / z) on the town map with ground type v (0xff: not) and on the grid with
    type t (0xff: not), two steps per cell */
 
-void rd_FillQuad(G15ROAD *r, float *c, char v, int t)
+void rd_FillQuad(G15ROAD *r, float *c, unsigned char v, int t)
 {
     float dx, dz, ex, ez;
     float a, b;
@@ -679,7 +681,7 @@ void rd_FillQuad(G15ROAD *r, float *c, char v, int t)
         fx /= m;
         fz /= m;
         for (; m > 0; m--) {
-            if (v != -1)
+            if (v != 0xff)
                 r->map->cells[(int)z * r->map->w + (int)x] = v;
             if (t != 0xff)
                 r->grid->cells[(r->map->w * (int)z + (int)x) * 7] = t;
