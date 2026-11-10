@@ -2896,14 +2896,14 @@ exe	0x004f7e40	ord_InterrogationOrder2	ord	byte	readable
 exe	0x004f7ef0	ord_Flag200Order	ord	byte	readable		
 exe	0x004f7fc0	ord_InterrogationOrder3	ord	byte	readable		
 exe	0x004f8070	ord_Flag400Order	ord	byte	readable		
-exe	0x004f8140	ord_DismissWorkerOrder	ord	draft	readable	deep	
+exe	0x004f8140	ord_DismissWorkerOrder	ord	byte	readable		
 exe	0x004f81c0	ord_DispatchOrder	ord	byte	readable		
 exe	0x004f8200	ord_PrivilegeDialog	ord	byte	readable		
 exe	0x004f82a0	ord_ResetStatistics	ord	byte	readable		
 exe	0x004f8300	ord_GetGridCell	ord	byte	readable		
 exe	0x004f8360	ord_CountGridObjects	ord	shape	readable	stuck	
-exe	0x004f8460	ord_AddGridAmount	ord	draft	readable	deep	
-exe	0x004f8590	ord_SubGridAmount	ord	draft	readable	deep	
+exe	0x004f8460	ord_AddGridAmount	ord	byte	readable		
+exe	0x004f8590	ord_SubGridAmount	ord	byte	readable		
 exe	0x004f86a0	ord_RandomCellPoint	ord	byte	readable		
 exe	0x004f8700	ord_RandomObjectId	ord	shape	readable		
 exe	0x004f8890	ord_GetKindRecord	ord	byte	readable		
@@ -2911,7 +2911,7 @@ exe	0x004f88c0	ord_AppendStatisticsRound	ord	byte	readable
 exe	0x004f8920	ord_RebuildGridSums	ord	byte	readable		
 exe	0x004f8ae0	ord_ComputeStatistics	ord	shape	readable	deep	
 exe	0x004f8ed0	ord_UpdateStatistics	ord	shape	readable		
-exe	0x004f9020	ord_LoadStatistics	ord	draft	readable	deep	
+exe	0x004f9020	ord_LoadStatistics	ord	draft	readable	stuck	
 exe	0x004f9170	ord_GetMessageRecord	ord	byte	readable		
 exe	0x004f9190	ord_InitMessageRecord	ord	byte	readable		
 exe	0x004f9220	ord_UpdateMessageEvent	ord	byte	readable		
@@ -2921,7 +2921,7 @@ exe	0x004f97c0	ord_BuildingCapacityRatio	ord	byte	readable
 exe	0x004f9850	ord_ReportStatistics	ord	shape	readable		
 exe	0x004f9c00	ord_AdvanceRatingBase	ord	byte	readable		
 exe	0x004f9ce0	ord_StatisticsRating	ord	byte	readable		
-exe	0x004f9d40	ord_WeightedRecordSum	ord	draft	readable	deep	
+exe	0x004f9d40	ord_WeightedRecordSum	ord	shape	readable	stuck	
 exe	0x004f9e00	ord_GetStatistics	ord	byte	readable		
 exe	0x004f9e30	gm_StatisticsScreen	f3gm	byte	readable		
 exe	0x004f9ec0	gm_IncomeRating	f3gm	byte	readable		
