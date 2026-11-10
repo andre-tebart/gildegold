@@ -1866,7 +1866,7 @@ exe	0x004ae3a0	ai_TokenRandomGuildMaster	hst	byte	readable
 exe	0x004ae600	ai_TokenRandomOfficeHolderFemale	hst	byte	readable		
 exe	0x004ae900	ai_TokenRandomOfficeHolder	hst	byte	readable		
 exe	0x004aec00	ai_TokenRandomOfficePerson	hst	byte	readable		
-exe	0x004aef10	ai_TokenRichestInhabitant	hst	draft	readable	deep	
+exe	0x004aef10	ai_TokenRichestInhabitant	hst	shape	readable	stuck	
 exe	0x004af090	ai_TokenBestInn	hst	byte	readable		
 exe	0x004af1b0	ai_TokenMoney	hst	byte	readable		
 exe	0x004af2c0	ai_TokenCityTreasury	hst	byte	readable		
@@ -1885,7 +1885,7 @@ exe	0x004b02a0	ai_CommandWealthTax	hst	shape	readable	deep
 exe	0x004b0360	ai_CommandWealth	hst	byte	readable		
 exe	0x004b04a0	ai_CommandOfficeStanding	hst	byte	readable		
 exe	0x004b05e0	ai_CommandKillPlayer	hst	byte	readable		
-exe	0x004b0640	ai_CommandExecution	hst	draft	readable	deep	
+exe	0x004b0640	ai_CommandExecution	hst	shape	readable	stuck	
 exe	0x004b08e0	ai_CommandPrison	hst	byte	readable		
 exe	0x004b0950	ai_CommandOfficeInventoryPlus	hst	byte	readable		
 exe	0x004b09f0	ai_CommandLaw	hst	byte	readable		
@@ -1908,10 +1908,10 @@ exe	0x004b1ee0	hst_ResetList	hst	byte	readable
 exe	0x004b1f30	hst_ResetLists	hst	byte	readable		
 exe	0x004b1f90	hst_SetTextsOn	hst	byte	readable		
 exe	0x004b1fa0	hst_ParseText_Fake_1st_Pass	hst	byte	readable		
-exe	0x004b21c0	hst_ParseContext	hst	draft	readable	deep	
+exe	0x004b21c0	hst_ParseContext	hst	byte	readable		
 exe	0x004b2380	hst_ParseCommandline_1st_Pass	hst	byte	readable		
 exe	0x004b2530	hst_ParseCommandline_2nd_Pass	hst	shape	readable		
-exe	0x004b28d0	hst_ParseText_Fake_2nd_Pass	hst	draft	readable	deep	
+exe	0x004b28d0	hst_ParseText_Fake_2nd_Pass	hst	byte	readable		
 exe	0x004b2c90	hst_ParseEventText	hst	byte	readable		
 exe	0x004b2ce0	hst_ParseText_Real	hst	byte	readable		
 exe	0x004b2ed0	hst_ParseDate	hst	draft	readable	deep	
