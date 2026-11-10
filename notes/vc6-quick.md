@@ -418,6 +418,9 @@ mechanisms, each as a generated round over all positions / subsets:
   `p = from` after `d = to - from` and `t = 0` after `step = ..` fixed four fadds of ai_ShotHitsGround (12 ins
   -> byte); `+=` vs `a = b + a` vs declaration order were all `= control`.
 - Chains: `r = A + B; r += C;` split statements fix association; `x = sqrt(..); x = x * k;` fixes scheduling.
+- **A byte global clamped as `mov byte [g],2; jb L; mov [g],al; L: mov eax,[g]; and eax,0xff`** (the low value
+  stored first, the reload as a dword): `g = max(2, g);` (or `g < 2 ? 2 : g`; `max(g, 2)` and `if` differ) and the
+  later read through the dword view (`ai_NumPlayersW & 0xff`): main_PlayerCountDialog 10 ins -> byte.
 - min()/max() macros (windows.h) keep the ternary's operand order and give fld/fstp copies; a plain `if` copies
   with integer moves. `max(0, x)` vs `max(x, 0)` give different compares: try both.
 - Float literals give DWORD constants, double literals QWORD; `(float)sqrt(a) < b` pops before `fcomp mem`.
