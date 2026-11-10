@@ -3372,7 +3372,7 @@ exe	0x0052b3c0	sv_ActivityName	sv	fe9a0c5b609f74bc	no	byte	control=byte p1=byte 
 exe	0x0052b490	sv_StartPoseScript	sv	c5a459c1ff0aa325	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0052b500	sv_RunLocationScripts	sv	77f6aaec3357aab1	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0052bb70	sv_RunFramesUntilStopped	sv	1f7313733c101605	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x0052bbc0	sv_SendSelectedToBuilding	sv	898605bb93595dc7	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x0052bbc0	sv_SendSelectedToBuilding	sv	898605bb93595dc7	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x0052bec0	sv_HandleSelectionMouse	sv	7bdda73bcec71485	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x0052c420	sv_MarkMasterCarts	sv	5d86094c06c8d502	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0052c4a0	sv_ReleaseBubble	sv	7f5d8ff5381fbec0	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
