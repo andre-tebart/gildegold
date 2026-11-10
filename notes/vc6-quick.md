@@ -410,3 +410,16 @@ mechanisms, each as a generated round over all positions / subsets:
   int that wanted ebx, widening the local to int / unsigned short fixes the frame but not the byte compares;
   the table pointer (esi in the original, edx in ours) decides which byte register is left (ai_PokerPickStrategies,
   stuck).
+- **`xor eax,eax` hoisted before a switch's dispatch** (the default's return 0 preloaded, the index register
+  modified in place: `add edi,-0x12; xor eax,eax; cmp edi,0x25; ja <after the xor of a shared return-0 block>`):
+  the cases assigned a result, `r = 0; switch (k) { case X: r = f(..); break; .. } return r;` (VC6 still gives each
+  case its own epilogue). Several failure `return 0`s that jump into one shared return-0 block came from an
+  `if (kind == 0) {..} else if (kind == 0x10) {..} else return 0;` chain (not `else { if (kind != 0x10) return 0; ..}`).
+  A coin flip whose arms are threaded (`test n1; je; test n2; je side0; random; jne side1`) is
+  `if (n1 != 0) { if (n2 != 0) side = RandomU(2); else side = 0; } else { if (n2 == 0) return 0; side = 1; }`, and a
+  count initialised inside the block that uses it (`n1 = 0` in the kind==0 arm) took the const-0 register as the
+  original. ai_DecideLeisureAction 288 ins -> byte; its 5-case sibling ai_DecideVisitAction stays 115 (n2 vs in).
+- **Identical `store; return 2` tails merged into one block** where the original keeps an epilogue per site: VC6
+  cross-jumps equal statement pairs (also in break-form cases); writing some sites as `w = 2; x = kind[w]; return w`
+  keeps them apart, but the copies then reload kind[2] instead of the register-cached value (ai_PokerShowdown
+  230 -> 195, stuck).
