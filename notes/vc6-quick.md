@@ -385,3 +385,14 @@ mechanisms, each as a generated round over all positions / subsets:
   `f * (b / 255.0f * table[k])` emits `fmul table` first (gv_GraveyardTurn).
 - **Unrotated wait loop**: `while (1) { if (cm_GetSlotState(h) != 0) break; pump(); }` keeps the test at the top
   (`jmp` back); `while (!..)` and `for (;;)` rotate it. The earlier tag had tried `for (;;)`, not `while (1)`.
+- **A 64-bit constant the original keeps in two callee-saved registers** (`mov esi,0x807d4190; mov edi,1` at entry,
+  `push edi; push esi` at both calls) where ours pushes immediates: a local `__int64`, two int locals, a struct of
+  two halves and every constant spelling are propagated; a union set by halves (`union { __int64 all; struct {
+  unsigned lo; int hi; } h; } mask; mask.h.lo = ..; mask.h.hi = ..;`, calls pass `mask.all`) gives the registers
+  (ai_DecideBuildingResident byte; he.c's 0xa7f4c3a0 stuck item may be the same).
+- **The scan's "found" taken inside the loop**: `o = 0; while (n) { if (match) { o = &a[i]; break; } ..} if (o == 0)
+  return 0;` drops the second `test n` / return-0 block that `break` + `if (n == 0) return 0;` leaves.
+- **A loop index set before an early-return test**: `j = i + 1; if (hand[j] < 0) return best; for (; j < 5; j++)`
+  builds j in its own register at once (`lea ebp,[ecx+1]`) where `for (j = i + 1; ..)` copies it (ai_PokerHighCard).
+- **Copy a 12-byte vector out of a record field by field** to keep the record pointer out of a scratch `lea`: it
+  moved `shot` into ebx pushed late, as the original (gv_ExplodeShot, regs 30 -> 14).
