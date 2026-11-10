@@ -582,7 +582,8 @@ void hmt_ClearOffices(void)
 }
 /* 0x4ad580, decides election hmt_PendingElection: the best scored (0x4ad3e0, relation counted twice) of up to four
    candidates gets the office object, the human players get message 0xa5; without a holder the candidates lose
-   the office bit */
+   the office bit
+   Q1/Q2 also open (placeholder name, cm_SendLongMessage and the 0x5176d0/0x53dda0 rename block) */
 
 void hmt_DecideElection(void)
 {
