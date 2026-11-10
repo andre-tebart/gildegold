@@ -4129,7 +4129,7 @@ int ai_ScatterShot(SHOTREC *shot, float sideSpread, D3VECTOR *side, float otherS
    0.5 * mass * v^2, returns 0. Returns 1 while it flies. @deep Read whole against the original 0x5dc4a0..0x5dc9c6: statement set and meaning match (state test, d3_GetHeightAt out-of-map exit, the three wind drags, the per-ms loop with Heun's average, next = pos copy, time/steps ++, ai_ShotHitsGround with px/pz, the landing energy). The velocity is now copied whole into a D3VECTOR v each step (the original copies shot->vel by dwords to [esp+0x10..0x18] and reloads v.x/v.y/v.z from memory for the drags; 311 -> 332 differing but 339 -> 348 of 354 instructions). Left: (1) VC6 reorders the drag product chain - the original multiplies sign*area*drag*density*v*v*0.5 (wind x/z: area*w*w*sign*...), ours sign*drag*density*v*v*area*0.5 for every association tried (6 macro forms give identical code or worse); (2) the temporaries: the original spills dx and the half sums into 0x84/0x68/0x6c and reuses the dead v slots [0x10]/[0x14] for (bx+ax)*0.5 / (by+ay)*0.5, frame 0x98 vs ours 0x5c - FPU stack scheduling and spill-slot allocation. */
 int ai_StepShot(SHOTREC *shot)
 {
-    float fall = ai_ShotStep * ai_Gravity;
+    float fall = ai_Gravity * ai_ShotStep;
     float perMass = ai_ShotStep / shot->mass;
     D3SM *map = (D3SM *)init_SceneHeightMaps[0];
     int ticks, i, px, pz, npx, npz;
