@@ -2806,3 +2806,21 @@ differing instructions. The same shape made the character loop of 0x512f30 pick 
 - **Char array frame gaps**: VC6 rounds char[0x11..0x14] up to an 8-byte multiple in the frame (sfx[0x14]
   left a 4-byte hole and moved num/buf); the original's packing came from sfx[0x10] (snd_FindVoiceSample,
   measured with deep-tools framesearch.py over sizes in a few seconds).
+- **One merged return block vs a test-then-return path** (`mov [eax+8],1` immediate on one path, `mov esi,1`
+  only after the call on the other; `test ecx,ecx` re-testing a cached field after the first `if` fails):
+  the first `if` is a combined `if (a == 0 && b < c) { ...; return; }` followed by `if (a != 0 && ...)`, and
+  the constant store sits in both arms of the inner `if` (`{ play; x->playing = 1; } else x->playing = 1;`).
+  snd_UpdateQueue 47 ins -> byte.
+- **Independent bit-field unpack statements reorder the byte registers**: `mt.c5 = c2 >> 1 & 1;` before
+  `fl.s.c1 = c2 & 1;` moved the bit insert into bl and fixed the later argument scheduling of two calls
+  (d3_FindBGF 26 ins -> byte, with deep-tools permute.py over the four lines; 1 of 24 orders).
+- **Init order of scalar locals** (`women = men = 0; w = m = 0xffff; f = 0`) steers which register copy
+  (`mov edi, ebx`) VC6 schedules between the zero stores: permute the init block (snd_PlayFavourComment).
+- **A fallback speaker written as `m = -5; f = 1;` falling into the shared `if (f == 0) .. else if (f == 1)`
+  chain** gives the original's `mov edi, -5; push edi` and the per-branch reload of the bank global (a
+  literal `snd_PlayVoice(-5, ...)` call keeps the global CSE'd in edx across the tail). snd_PlayFavourComment
+  41 -> 10 ins.
+- **Two float locals' frame order** (f / t swapped between [esp+0x10] and [esp+0x14]) did not move with 16
+  extra references to f, but did when one branch's use of t got its own local (snd_UpdateRain: `tm` in the
+  0x95 branch), 80 -> 33 ins. When reference counts do not move a slot pair, try splitting a variable whose
+  uses are in disjoint branches.
