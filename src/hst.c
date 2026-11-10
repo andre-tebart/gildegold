@@ -905,9 +905,16 @@ int ai_TokenRandomNpcInhabitant(int mode, G12ARG *args, int k, char *fmt, char *
     }
     return 0;
 }
-/* 0x4afa20, one of the five richest characters (0x50a640) passing 0x4adff0 whose byte 0x164 is
-   19..69 but not 31..33, 40..45, 52..57
-   @deep behaviour: far draft, 82 code hunks (the RND_HANDELSHERR token, callback 0x601b10[13] = 0x4afa20, name 0x601730[13]): the selection reads (richness of the merchants) but the frame/slot layout and the folded return tails remain as in ai_TokenRandomGuildMaster's @deep reason; the -10000000 start values are HST_NO_WORTH now (Q3) */
+/* jobs 19 .. 69 without 31 .. 33, 40 .. 45 and 52 .. 57: the merchant trades (the token's name, RND_HANDELSHERR);
+   @original the job byte is read at each test (a local gives another strength-reduced base) */
+#define G12_MERCHANTJOB(i) (ai_CharsT[i].jobId >= 19 && ai_CharsT[i].jobId <= 69                         \
+                            && (ai_CharsT[i].jobId < 31 || ai_CharsT[i].jobId > 33)                    \
+                            && (ai_CharsT[i].jobId < 40 || ai_CharsT[i].jobId > 45)                    \
+                            && (ai_CharsT[i].jobId < 52 || ai_CharsT[i].jobId > 57))
+
+/* 0x4afa20, one of the five richest characters (0x50a640) passing 0x4adff0 with a merchant job
+   (G12_MERCHANTJOB)
+   name: callback 0x601b10[13] = 0x4afa20, token name 0x601730[13] RND_HANDELSHERR */
 
 int ai_TokenRandomMerchant(int mode, G12ARG *args, int k, char *fmt, char *out)
 {
@@ -916,7 +923,6 @@ int ai_TokenRandomMerchant(int mode, G12ARG *args, int k, char *fmt, char *out)
     int score[5];
     int found;
     unsigned short ids[5];
-    unsigned char g;
     int i, j, v, t;
     unsigned short u;
     AICHAR *c;
@@ -934,28 +940,27 @@ int ai_TokenRandomMerchant(int mode, G12ARG *args, int k, char *fmt, char *out)
     ids[4] = 0xffff;
     if (mode == 2)
         return 0;
-    n1 = (int)buf;
-    AI_ZERO((char *)n1, 0x200);
+    AI_ZERO_BUF(n1, buf, 0x200);
     ai_SplitTokenFormat(fmt, buf, &n1, &n2);
     if (mode == 1) {
         c = gm_FindChar(args[k].id);
-        if (c == 0 || c->health == 0)
+        if (c == 0 || c->health <= 0)
             return 0;
     } else {
         for (i = 0; i < 0x300; i++) {
-            g = G12_B(i, 0x164);
-            if (g > 18 && g < 70 && (g < 31 || g > 33) && (g < 40 || g > 45) && (g < 52 || g > 57)
+            if (G12_MERCHANTJOB(i)
                 && ai_IsLivingCharacter((unsigned short)i) && (v = gm_GetWorth((unsigned short)i)) > score[4]
                 && ai_NotInLists(ai_CharsT[i].netId)) {
                 score[4] = v;
                 found |= 1;
                 ids[4] = ai_CharsT[i].id;
                 for (j = 3; j >= 0; j--) {
-                    t = score[j];
-                    if (t < score[j + 1]) {
+                    t = score[j + 1];
+                    v = score[j];
+                    if (t > v) {
                         u = ids[j];
-                        score[j] = score[j + 1];
-                        score[j + 1] = t;
+                        score[j] = t;
+                        score[j + 1] = v;
                         ids[j] = ids[j + 1];
                         ids[j + 1] = u;
                     }
@@ -964,10 +969,9 @@ int ai_TokenRandomMerchant(int mode, G12ARG *args, int k, char *fmt, char *out)
         }
         if (found == 0)
             return 0;
-        i = (unsigned short)util_RandomU(5);
-        c = &ai_CharsT[ids[i]];
+        c = &ai_CharsT[ids[util_RandomU(5)]];
         if (mode == 0)
-            args[k].id = ai_CharsT[ids[i]].netId;
+            args[k].id = c->netId;
     }
     txt_FormatString(out, buf, c->id);
     return 1;
