@@ -1830,7 +1830,7 @@ exe	0x004ac1a0	hmt_RecordTextId	hmt	shape	readable	deep
 exe	0x004ac1e0	hmt_GetRecord	hmt	byte	readable		
 exe	0x004ac200	hmt_GetPrice	hmt	byte	readable		
 exe	0x004ac2f0	hmt_ApplyRecord	hmt	byte	readable		
-exe	0x004ac440	hmt_CreateBinaryFile	hmt	draft	readable	deep	
+exe	0x004ac440	hmt_CreateBinaryFile	hmt	byte	readable		
 exe	0x004ac8a0	hmt_WriteBinaryFile	hmt	byte	readable		
 exe	0x004aca90	hmt_Init	hmt	byte	readable		
 exe	0x004acae0	hmt_ReadBinaryFile	hmt	byte	readable		
@@ -1841,7 +1841,7 @@ exe	0x004ad010	hmt_Find	hmt	byte	readable
 exe	0x004ad0a0	hmt_Begin	hmt	byte	readable		
 exe	0x004ad190	hmt_GetElectionObjType	hmt	byte	readable		
 exe	0x004ad1b0	hmt_SetPendingElection	hmt	byte	readable		
-exe	0x004ad1c0	hmt_Election	hmt	draft	readable	deep	
+exe	0x004ad1c0	hmt_Election	hmt	byte	readable		
 exe	0x004ad3b0	hmt_SendElectionMessage	hmt	byte	readable		
 exe	0x004ad3e0	hmt_Score	hmt	shape	readable		
 exe	0x004ad510	hmt_ClearOffices	hmt	shape	readable	deep	
@@ -2059,7 +2059,7 @@ exe	0x004bbf00	anm_CreateAnimal	anm	byte	readable
 exe	0x004bc030	anm_UpdateCat	anm	byte	readable		
 exe	0x004bc1a0	anm_UpdateSheep	anm	byte	readable		
 exe	0x004bc2e0	rd_DoorPos	rd	byte	readable		
-exe	0x004bc390	rd_PointsNear	rd	draft	readable	deep	
+exe	0x004bc390	rd_PointsNear	rd	byte	readable		
 exe	0x004bc4b0	rd_CollectNamed	rd	byte	readable		
 exe	0x004bc520	rd_RandomNamedObject	rd	byte	readable		
 exe	0x004bc5a0	veg_FindType	rd	byte	readable		
@@ -2068,7 +2068,7 @@ exe	0x004bc640	veg_FindPlantObject	rd	byte	readable
 exe	0x004bc670	veg_FindPlantId	rd	byte	readable		
 exe	0x004bc6a0	veg_FindPlantArea	rd	byte	readable		
 exe	0x004bc710	veg_Fits	rd	byte	readable		
-exe	0x004bc7c0	veg_SetPlant	rd	draft	readable	deep	
+exe	0x004bc7c0	veg_SetPlant	rd	byte	readable		
 exe	0x004bc8d0	veg_GrowPlants	rd	byte	readable		
 exe	0x004bc940	veg_LoadModel	rd	draft	readable	deep	
 exe	0x004bcb90	veg_ShowPlants	rd	byte	readable		
