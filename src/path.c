@@ -129,7 +129,19 @@ unsigned short path_Search2(PMAP *map, int sx, int sy, short ex, int ey, int typ
 }
 /* 0x425470, one-directional A*: expands from the start node alone until it reaches the goal;
    the start node index, or 0xffff when no path exists. Sets the path_ globals like path_Search2.
-   @deep behaviour only: size 784 = original, remaining code hunks are register allocation and the same double-compare idiom (and eax,0x100 vs test ah,0x5/jnp, loop and eax,0x4100) as path_Search2; readable met */
+   @stuck kept: loop stores Target, SetFlag, TestFlag (original order), b = path_Goal before the Start
+   test, top tests !(c < 0.0) (gives test ah,5/jnp) and loop test c > 0.0 (gives and eax,0x4100): 188 ->
+   175 ins. Left: the original keeps a and b as memory locals in dead param slots (a: word store to map's
+   slot [esp+0x14], read back dword & 0xffff, pushed from there, edi only in the Expand loop with a spill
+   store after each call; b: word store to sy's slot), zero in edi, ex then Stamp in ebx, 0xffff in ebp and
+   returns mov ax,bp; ours keeps a in edx, b in a register, zero in ebx, Stamp in bp (reloads 0xffff).
+   Tried: unsigned short a (+38 ins), int ex, return 0xffff, no b, (unsigned short)a != 0xffff (= control),
+   119 orders of Count/a/Start/Goal/Stamp (valid ones 173 at best, slots 20, no memory a). headers sample
+   insensitive. Next: what makes VC6 refuse a register for a/b (address taken? a second variable sharing
+   the home?), and check path_Search2 which has the same prologue (tiebreak: insensitive, dcp headers
+   sample path_Search1: 32 samples, one codegen) prior: behaviour only: size 784 = original, remaining code hunks are register
+   allocation and the same double-compare idiom (and eax,0x100 vs test ah,0x5/jnp, loop and eax,0x4100) as
+   path_Search2; readable met */
 
 unsigned short path_Search1(PMAP *map, int sx, int sy, short ex, int ey, int type)
 {
@@ -155,16 +167,16 @@ unsigned short path_Search1(PMAP *map, int sx, int sy, short ex, int ey, int typ
     path_Goal = (short)(ey << path_Shift) + ex;
     path_Stamp++;
     PATH_INITNODE(&map->nodes[(unsigned short)a], 5);
-    if (path_Start != path_Goal) {
-        b = path_Goal;
+    b = path_Goal;
+    if (path_Start != b) {
         PATH_INITNODE(&map->nodes[b], 9);
         path_Tab1Sel = path_Tab1[type];
         path_Tab2Sel = path_Tab2[type];
         path_Costs = path_Terrain[type];
-        if (path_Costs[map->nodes[(unsigned short)a].type] >= 0.0 && path_Costs[map->nodes[b].type] >= 0.0) {
+        if (!(path_Costs[map->nodes[(unsigned short)a].type] < 0.0) && !(path_Costs[map->nodes[b].type] < 0.0)) {
             path_Weight = 0.0f;
             for (k = 1; k < 15; k++)
-                if (path_Costs[k] >= 0.0)
+                if (path_Costs[k] > 0.0)
                     path_Weight += path_Costs[k];
             path_Weight = 7.0f;
             path_Target = path_Goal;
@@ -182,9 +194,9 @@ unsigned short path_Search1(PMAP *map, int sx, int sy, short ex, int ey, int typ
                     return path_Start;
                 }
                 path_Count++;
+                path_Target = path_Goal;
                 path_SetFlag = 4;
                 path_TestFlag = 8;
-                path_Target = path_Goal;
                 a = path_Expand(map, a);
             }
         }
