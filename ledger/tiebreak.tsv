@@ -857,7 +857,7 @@ exe	0x004473f0	d3if_Reset	d3_interface	21fcf9204d608ebc	no	byte	control=byte p1=
 exe	0x004475f0	d3if_InitScene	d3_interface	75c9510f65c93332	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00447800	d3if_PrecacheCB	d3_interface	d7ba163f392367e2	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00447860	d3if_Prerender	d3_interface	da20983c6150bf5c	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x004478e0	d3if_SelectScene	d3_interface	f43e1bf17471f750	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x004478e0	d3if_SelectScene	d3_interface	9bc0694da3a2de5e	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x00447e60	d3if_ClearScene	d3_interface	74cefac99dcf1d5a	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00447f70	d3if_MoveCB	d3_interface	7fb16b728463c9a4	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00447fd0	d3if_MoveObject	d3_interface	6fbdc656b3fef9b0	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte

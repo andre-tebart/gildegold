@@ -423,26 +423,7 @@ void d3if_Prerender(char map)
     d3d_Device->lpVtbl->EndScene(d3d_Device);
 }
 /* 0x4478e0, makes scene `index` the current one: saves the engine's global state into the old scene and
-   loads the new scene's; with `keep` the objects, sky and map of the old state stay as they are
-   @deep read the whole function against the original: 353 vs 353 instructions, 1400 vs 1400 bytes, the
-   same call set. Q2 settled: the two write-only scene dwords are d3if_SceneState0 / d3if_SceneState1
-   (D3IFSCENE.state0 / state1, a reasoned guess documented on both), d3if_SceneSwitches counts the scene
-   switches and d3if_LastMegaCam keeps the camera of the scene being left. What is left is the order in
-   which the scene-to-global restore block is emitted: ours stores TopLast = scene.last and state1 =
-   scene.state1 two statements earlier than the original, which emits ParHead = scene.par1, TopLast, Sky,
-   TopFirst, SceneFlags, Terrain, state1, ...; the instruction pair at 0x447bd6 and 0x447c2e moves by one
-   slot and the four fpu hunks are the 0.3 / 0.59 / 0.11 constants (the original pools them at 0x5ebb30 /
-   0x5eb99c / 0x5ebb34, ours are literals of our own). Tried: reordering the restore statements into the
-   original's emitted order (worse: 8 -> 28 differing), the two-loop-variable and negation spellings; the
-   source order is not the driver, the scheduler is. (references: M8 at +0x296: ours refers to
-   d3_Scenes+0x84 (0xfd7c24), the original's field to 0xfd7c44 (d3_Scenes+0xa4) (and 15 more), explained:
-   the 16 ref lines are the same scene-to-global pairs emitted in another order: every one of them is the
-   same assignment on both sides (TopLast = scene+0x84, ParHead = scene+0xa4, Sky = scene+0xb8, TopFirst =
-   scene+0x80, SceneFlags = scene+0x3d8, Terrain = scene+0xac, state0 = scene+0x3cc, state1 = scene+0x3d0,
-   ParTail = scene+0xa8, AmbientColor.x/y/z = scene+0xbc/0xc0/0xc4, SunColor.x = scene+0xc8), the aligner
-   pairs each store with the next because our two leading stores move up two slots; the prover's first
-   difference is exactly that pair (ours store4 [0xfc28f4] = scene+0x84 against the original's store4
-   [0xfb98f4] = scene+0xa4, both present on both sides later)) */
+   loads the new scene's; with `keep` the objects, sky and map of the old state stay as they are */
 
 char d3if_SelectScene(int index, char keep)  /* @original: the definition returns char and takes a char keep (byte-matched); the headers declare void (int, int) */
 {
@@ -498,20 +479,20 @@ char d3if_SelectScene(int index, char keep)  /* @original: the definition return
         }
         if (!D3IF_SCENE(index).first)
             d3if_InitScene(&D3IF_SCENE(index));
-        d3_ParHead = D3IF_SCENE(index).par1;
-        d3_Sky = D3IF_SCENE(index).sky;
-        d3_TopLast = D3IF_SCENE(index).last;
-        d3_SceneFlags = D3IF_SCENE(index).sceneFlags;
-        d3_Terrain = D3IF_SCENE(index).map;
-        d3if_SceneState1 = D3IF_SCENE(index).state1;
         d3_TopFirst = D3IF_SCENE(index).first;
-        d3_AmbientColor.y = D3IF_SCENE(index).amb.y;
+        d3_Camera = 0;
+        d3_TopLast = D3IF_SCENE(index).last;
+        d3_ParHead = D3IF_SCENE(index).par1;
         d3_ParTail = D3IF_SCENE(index).par2;
-        d3_AmbientColor.x = D3IF_SCENE(index).amb.x;
+        d3_Terrain = D3IF_SCENE(index).map;
+        d3_Sky = D3IF_SCENE(index).sky;
         d3if_SceneState0 = D3IF_SCENE(index).state0;
+        d3if_SceneState1 = D3IF_SCENE(index).state1;
+        d3_SceneFlags = D3IF_SCENE(index).sceneFlags;
+        d3_AmbientColor.x = D3IF_SCENE(index).amb.x;
+        d3_AmbientColor.y = D3IF_SCENE(index).amb.y;
         d3_AmbientColor.z = D3IF_SCENE(index).amb.z;
         d3_SunColor.x = D3IF_SCENE(index).sun.x;
-        d3_Camera = 0;
         d3_SunColor.y = D3IF_SCENE(index).sun.y;
         d3_SunColor.z = D3IF_SCENE(index).sun.z;
         d3if_Gray = d3_AmbientColor.x * 0.3f + d3_AmbientColor.y * 0.59f + d3_AmbientColor.z * 0.11f;
