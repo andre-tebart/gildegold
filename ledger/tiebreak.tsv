@@ -3379,7 +3379,7 @@ exe	0x0052c4a0	sv_ReleaseBubble	sv	7f5d8ff5381fbec0	no	byte	control=byte p1=byte
 exe	0x0052c4e0	sv_ShowBubble	sv	44b5e6fe853cf156	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x0052c5c0	sv_SpeakPicked	sv	8091bcdd0d55b2e2	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x0052cef0	sv_DrawBubbles	sv	444ff4e5c1a837f1	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
-exe	0x0052d010	sv_DrawGateName	sv	c0a4d866c3ba9821	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x0052d010	sv_DrawGateName	sv	c0a4d866c3ba9821	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x0052d1e0	sv_DrawNamePlates	sv	a624380b5d3f7f8c	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x0052d2a0	sv_DrawItemNames	sv	a887de759cfe6534	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0052d480	sv_DrawBorderArrows	sv	4ef40ccf319b7e2b	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
