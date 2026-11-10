@@ -530,7 +530,20 @@ fail:
         d3fl_MakeDivide(rd_Road.map);
     return 1;
 }
-/* 0x4bd340, path_Find from cell x / z to tx / tz (both < 0: the nearest road cell, type 6 / 0xb); 1 if found @deep behaviour: far draft, 234 code hunks - the same operations in another allocation (ebx vs edi for the zero, the parameters read at different frame slots, 0x18 vs 0xc locals) and reordered compares; the nearest-road cell scan and the path_Find call were read and match in meaning */
+/* 0x4bd340, path_Find from cell x / z to tx / tz (both < 0: the nearest road cell, type 6 / 0xb); 1 if found
+   @stuck match-deep 2026-11-10: headers sample insensitive (32 samples, one codegen). Kept: no separate
+   'if (n < 1) return 0' (the original's n <= 0 test jumps straight to the return-0 epilogue, the tx/tz
+   test threaded) and the grid in a local g (136 -> 132 ins). Left: the loop allocation - the original
+   keeps i in ebx (coalesced with the zero it compares tx against at entry, 'xor ebx,ebx; cmp esi,ebx'), i
+   - z in ebp (spilled per row), j in esi, j - x in ecx (x re-read and negated per row), the cell pointer
+   in edx re-formed per row from g->cells (reloaded) + row (a frame slot); ours strength-reduces cells +
+   row into one slot, keeps -x in a slot, i in memory, and holds -1 in edi from entry (prologue loads
+   before sub esp). = control: dz / dx locals, the three found stores in all 6 orders; worse or no closer:
+   tx >= 0 && tz >= 0 (135, though 272 bytes), index form g->cells[(i * n + j) * 7] (132, regs), a row
+   pointer g->cells + i * n * 7, row + j * 7 inside the loop, the row step in the for header (134).
+   (tiebreak: insensitive) prior: behaviour: far draft, 234 code hunks - the same operations in another
+   allocation (ebx vs edi for the zero, the parameters read at different frame slots, 0x18 vs 0xc locals)
+   and reordered compares; the nearest-road cell scan and the path_Find call were read and match in meaning */
 
 int rd_PathToRoad(G15ROAD *r, int x, int z, int tx, int tz)
 {
@@ -539,17 +552,17 @@ int rd_PathToRoad(G15ROAD *r, int x, int z, int tx, int tz)
     int *c;
     float d, best;
     int row;
+    G15GRID *g;
 
     if (tx < 0 || tz < 0) {
-        n = r->grid->size;
+        g = r->grid;
+        n = g->size;
         best = (float)(n * n * 2);
         tx = -1;
         tz = -1;
-        if (n < 1)
-            return 0;
         row = 0;
         for (i = 0; i < n; i++) {
-            c = (int *)((char *)r->grid->cells + row);
+            c = (int *)((char *)g->cells + row);
             for (j = 0; j < n; j++) {
                 if ((*c == 6 || *c == 0xb)
                     && (d = (float)((i - z) * (i - z) + (j - x) * (j - x))) < best) {
