@@ -4610,7 +4610,7 @@ exe	0x005d44c0	ai_EditText	unk_5d33b0	87d5a6e21fc95cd1	no	shape	control=shape p1
 exe	0x005d45d0	ai_SaveOptionWindow	unk_5d33b0	67e2806e103e14b3	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x005d4920	ai_SaveNameWindow	unk_5d33b0	e4176eade204497c	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x005d4c70	ai_SaveOptions	unk_5d33b0	37fb02262ab07338	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x005d5640	ai_LoadOptions	unk_5d33b0	4d464036935760ea	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x005d5640	ai_LoadOptions	menu	688a10a4320ba2d2	no	byte	sample n=32 seed=1 compiled=32 codegens=1 best=byte
 exe	0x005d5c40	ai_ApplyGfxOptions	unk_5d33b0	0a4684ab07d10fb8	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x005d5e90	ai_ApplyOptions	unk_5d33b0	3de8421175942934	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x005d5f10	ai_ApplyVolumes	unk_5d33b0	028776b2af3ffcda	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
