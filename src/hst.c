@@ -2413,10 +2413,11 @@ int hst_ParseCommandline_2nd_Pass(int k)
     __asm rep movsb                                                 \
 }
 
-/* 0x4b28d0, leaked name (its message): replaces in s (in place) every word "_NAME-...-n" (two dashes, then
-   digits) by its replacement (hst_ParseContext), with the list of the "[_SET_n" / "[_USE_n" prefix of text k
-   @deep only allocation / scheduling left (347/343 instructions, 266 differing: 304 code + 14 regs + 6 fill hunks; no Q rules fail). Every hunk read against the disassembly: the frame is equal (both 'mov eax,0x1de0; call __chkstk'), the two AI_ZERO clears (buf 0x17d0, word 0x100), the G12_COPY_P copy of s into buf, row = hst_ParseCommandline_1st_Pass(k), the word loop ('_' opens a word with word[0] = *p and w = word + 1, a space inside a word is the syntax error, '-' stores and increments dashes with > 2 the error, dashes < 2 stores, the digits branch isdigit + the digit copy + AI_ZERO(rep) + *w = 0 + hst_ParseContext + the rep copy + *s++ = *p), the two tails (in && dashes < 2 error, in == 1 && dashes == 2 replacement) and *s = 0 are all present with the same constants, string formats and callees. The diff is the register rotation eax/ecx/edx (diffclass: regs 14, the rest code because the rotation is not consistent inside a hunk) plus the source-pointer spill (the original keeps s in [ebp+0x8] with a reload, ours holds it in a register across the loop) - vargen ren / named-local work. */
-int hst_ParseText_Fake_2nd_Pass(char *s, int k)
+/* 0x4b28d0, leaked name (its message): replaces in src (in place) every word "_NAME-...-n" (two dashes, then
+   digits) by its replacement (hst_ParseContext), with the list of the "[_SET_n" / "[_USE_n" prefix of text k. s, the output
+   pointer, is a local copy of src that lives in the dead parameter slot (the original's reload and store of
+   [ebp+8] before the loop), as in hst_ParseContext */
+int hst_ParseText_Fake_2nd_Pass(char *src, int k)
 {
     char buf[0x17d0];
     char err[0x400];
@@ -2425,13 +2426,15 @@ int hst_ParseText_Fake_2nd_Pass(char *s, int k)
     G12ROW *row;
     int in, dashes;
     char *p, *w, *q;
+    char *s;
 
     in = 0;
     dashes = 0;
     AI_ZERO(buf, 0x17d0);
-    G12_COPY_P(buf, s, strlen(s));
+    G12_COPY_P(buf, src, strlen(src));
     row = hst_ParseCommandline_1st_Pass(k);
     p = buf;
+    s = src;
     while (*p != 0) {
         if (!in) {
             if (*p == '_') {
@@ -2447,9 +2450,10 @@ int hst_ParseText_Fake_2nd_Pass(char *s, int k)
                     k - hst_TextFirst - 1, word);
             return 0;
         } else if (*p == '-') {
+            dashes++;
             *w++ = '-';
             p++;
-            if (++dashes > 2) {
+            if (dashes > 2) {
                 sprintf(err, "hst_ParseText_Fake_2nd_Pass() failed: Syntax Error in Label %i < %s >",
                         k - hst_TextFirst - 1, word);
                 return 0;
