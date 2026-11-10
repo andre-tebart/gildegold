@@ -2070,13 +2070,13 @@ exe	0x004bc6a0	veg_FindPlantArea	rd	byte	readable
 exe	0x004bc710	veg_Fits	rd	byte	readable		
 exe	0x004bc7c0	veg_SetPlant	rd	byte	readable		
 exe	0x004bc8d0	veg_GrowPlants	rd	byte	readable		
-exe	0x004bc940	veg_LoadModel	rd	draft	readable	deep	
+exe	0x004bc940	veg_LoadModel	rd	draft	readable	stuck	
 exe	0x004bcb90	veg_ShowPlants	rd	byte	readable		
 exe	0x004bcbe0	veg_HidePlants	rd	byte	readable		
-exe	0x004bcc20	rd_BuildRoad	rd	draft	readable	deep	
-exe	0x004bd340	rd_PathToRoad	rd	draft	readable	deep	
+exe	0x004bcc20	rd_BuildRoad	rd	draft	readable	stuck	
+exe	0x004bd340	rd_PathToRoad	rd	draft	readable	stuck	
 exe	0x004bd4a0	rd_AddBauplaetze	rd	byte	readable		
-exe	0x004bd500	rd_AllBauplatzToSupermap	rd	draft	readable	deep	
+exe	0x004bd500	rd_AllBauplatzToSupermap	rd	byte	readable		
 exe	0x004bd610	rd_FindSiteCB	rd	byte	readable		
 exe	0x004bd6a0	rd_GetBKSize	rd	byte	readable		
 exe	0x004bd710	rd_WorldToCell	rd	byte	readable		
@@ -3856,7 +3856,7 @@ exe	0x0056f2e0	he_SecretRoomAttack	he	byte	readable
 exe	0x0056f360	he_NoEvent9aFor	he	byte	readable		
 exe	0x0056f3b0	he_NoEvent9bFor	he	byte	readable		
 exe	0x0056f3f0	he_SecretRoomDomizil	he	shape	readable		
-exe	0x0056f600	he_FindNearestSpying	he	draft	readable	deep	
+exe	0x0056f600	he_FindNearestSpying	he	shape	readable	deep	
 exe	0x0056f740	he_SecretRoomCatchSpy	he	shape	readable		
 exe	0x0056f980	he_RegisterEventTypes88	he	byte	readable		
 exe	0x0056fbc0	he_SetLifeByAge	he	shape	readable		
@@ -4149,7 +4149,7 @@ exe	0x0058ff00	lc_GebaeudeAusrichten	lc	draft	readable	deep
 exe	0x005909a0	ai_ConstructionWindow	lc	draft	readable	deep	
 exe	0x00591170	ai_HandleMapKey	lc	byte	readable		
 exe	0x005912c0	ai_TradeContactChecks	lc	shape	readable		
-exe	0x00591480	ai_CampaignKey1	lc	draft	readable	deep	
+exe	0x00591480	ai_CampaignKey1	lc	byte	readable		
 exe	0x00591520	ai_GameFrame	lc	byte	readable		
 exe	0x00591ad0	lc_PlayerInJail	lc	byte	readable		
 exe	0x00591bf0	ai_TechTreeWindow	lc	draft	readable	deep	
