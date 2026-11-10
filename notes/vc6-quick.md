@@ -181,7 +181,26 @@ mechanisms, each as a generated round over all positions / subsets:
 - **An address-taken local reused for a later value** (`w1` passed as `&w1` in a loop, later a send slot kept
   across calls): the reuse forces the later value into memory; give the address-taken use its own local
   (init_StartNewGame: the judge slots went back to esi / edi, the mid-function `push edi` appeared; byte).
-  A `(unsigned)&X + N` bound macro gives `jb`; the original's `jl` is a signed `(int)` bound.
+  A `(unsigned)&X + N` bound macro gives `jb`; the original's `jl` is a signed `(int)` bound. The same in init_OpenTown: `&n`
+  of two field deltas in a block-scoped `int v` brought the frame from 0x408 to the original's 0x404.
+- **Two calls of one empty function in an if/else that VC6 merges into one** (the original calls the same address
+  in both arms, ours once after the join; every order / polarity / goto keeps them merged): the original called
+  two different empty functions that LINK folded (/OPT:ICF). Give one arm its own unlinked stub (`/* unlinked: ..
+  folded into X */ void init_RoomNoOp(void) {}`, defined below the caller) (init_ShowBuildingScene byte).
+- **The pops before the final `if` tail** (ours `mov al,[flags]; pop edi; pop esi; test al,8; ..`, the original
+  `test byte [flags],8` with every pop after the tail): VC6 sinks the restores of registers the tail does not use
+  unless the tail was written on two paths; give one branch its own copy of the tail and a `return;` (VC6
+  cross-jumps the copies into one block, toy-proven with deep-tools toyasm.py) (init_LoadObjectScene byte).
+- **A product CSE'd from an if test into the loop below** (ours keeps `uni * 0x3e0` in ebx, the original keeps uni
+  and recomputes it in the loop): test the table entry again in an else-if, `} else if (d3_Scenes[T[n]].dirty) {
+  uni = T[n]; ..` (not `uni = T[n]; if (d3_Scenes[uni].dirty)`).
+- `(x != 1) * 4 + 4` gives `setne cl; lea edx,[ecx*4+4]` (a new register); `x != 1 ? 8 : 4` or an if / else gives
+  the original's `lea ecx,[ecx*4+4]` in place. `d3if_ShowTree(d, g != 0)` (setne) against the original's
+  `jne; push 0; jmp; push 1`: the call in both arms, `if (g == 0) f(d, 0); else f(d, 1);`.
+- `xor dx,dx; mov dl,al; push edx` into util_Random(unsigned short) is `util_Random((unsigned char)cnt)` with the
+  declared prototype (a cast to an int-parameter pointer gives `and eax,0xff`). A names-table pointer the
+  original keeps in a slot and bumps by the row size beside the count is `strcpy(names[cnt++], one)` (VC6's
+  strength-reduced IV; `strcpy(names[cnt], one); cnt++;` gives an offset copy instead) (init_NameBuildings).
 
 ## Control flow and returns
 - **Empty case labels**: VC6 drops `case X: break;` (also `return;`, dead stores, `goto` to the join)
