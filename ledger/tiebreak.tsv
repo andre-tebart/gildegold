@@ -4655,7 +4655,7 @@ exe	0x005dbfc0	ai_SaveWind	unk_5d33b0	39ed11cddcd6b6fd	no	byte	control=byte p1=b
 exe	0x005dc0c0	ai_LoadWind	unk_5d33b0	22bea48042420f0f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x005dc1a0	ai_SphereVolume	unk_5d33b0	d20d3a1e05807289	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x005dc210	ai_PositionShare	unk_5d33b0	17008b189d4228ad	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x005dc240	ai_InitShot	unk_5d33b0	f73cc2d248112a1e	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x005dc240	ai_InitShot	menu	f73cc2d248112a1e	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x005dc3a0	ai_ScatterShot	menu	33c9e2b3744cb515	no	byte	sample n=32 seed=1 compiled=32 codegens=1 best=byte
 exe	0x005dc4a0	ai_StepShot	unk_5d33b0	bf0170a8bc53408d	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x005dc9d0	ai_StepShotSlow	unk_5d33b0	e50bca34ae144922	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
