@@ -191,6 +191,20 @@ mechanisms, each as a generated round over all positions / subsets:
   jne` (hmt_DecideElection).
 
 ## Registers, stack slots, locals
+- **A parameter loaded twice from its slot** (`mov esi,[arg]; and esi,0xffff` at entry, later `mov edi,[arg]` unmasked):
+  two variables. The masked one is the parameter itself (`last &= 0xffff;`) or a walker copied from it, the second an
+  uninitialized local that VC6 homes in the dead parameter slot, assigned on every path that reaches its use. A
+  word compare (`cmp ax,0xffff`) on a loaded field is a comparison of the field itself, with no 32-bit local in
+  between. path_Reverse: `last &= 0xffff; cur = last; while (cur ..) { if (nodes[cur].parent != 0xffff) {..; head =
+  nodes[cur].parent; } cur = nodes[cur].parent; } n = head; while (n ..)` went from 62 ins to byte.
+- **A local kept in a parameter's slot while the parameter's value lives in a stack copy** (`mov ebx,[arg]; mov
+  [esp+N],ebx`, the slot later written with another value and returned with `mov ax,[slot]`): the parameter was
+  reused as that other variable (path_Expand: `self = head; cur = &nodes[head]; head = cur->next; .. return head;`).
+  It also brought the frame from 0x14 to 0x10. Return type follows the epilogue (`mov ax,[slot]` without `and` is an
+  unsigned short return).
+- **An `if (s == x) { if (g >= y) continue; if (s != x || ..) goto calc; ..}`** where the original compares s
+  again after the float test: write two separate tests, `if (s == x && !(g < y)) continue; if (s == x && (f & 1))
+  {..} else {calc}` (path_Expand, together with the reused parameter: 222 -> 64 ins).
 - Declaration order of locals almost never matters; slot order follows first use / reference counts after
   optimisation. Tie-breaks: a dead early store (`z = 0;`), a real extra use, block scope, a split variable.
 - Locals land in dead parameter slots; an uninitialized local read on one path looks like an extra argument.
