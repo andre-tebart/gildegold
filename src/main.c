@@ -336,7 +336,7 @@ void main_FreeSoundBanks(void);         /* 0x537db0 */
 #include "d3_fl.h"
 #define ai_GoodsT (*(AIGOOD **)&ai_Goods)  /* 0x91aaf0, ai_Goods (f3gm.c: char *) as the AIGOOD records it points to */
 #define ai_BldsT (*(AIBLD **)&ai_Blds)  /* 0x889f74, ai_Blds (f3gm.c: char *) as the AIBLD records it points to */
-#define ai_NumPlayersW (*(int *)&ai_NumPlayers)  /* 0x62489c, ai_NumPlayers as the dword around it: @original main_ChooseCity reads the count as mov ecx,[0x62489c]; and ecx,0xff (0x537319) */
+#define ai_NumPlayersW (*(int *)&ai_NumPlayers)  /* 0x62489c, ai_NumPlayers as the dword around it: @original main_ChooseCity reads the count as mov ecx,[0x62489c]; and ecx,0xff (0x537319), main_PlayerCountDialog the same after its clamp (0x53281b) */
 #define ai_NetLibName (ai_DataPath + 0x100)  /* 0x75dda0, the network plug-in DLL (0x104 bytes inside ai_DataPath's block: game.INI [Network] Server, "Server\Server.dll") */
 #define ls_SavePortW (*(int *)((char *)&ls_SavePath + 0x84))  /* 0x75e6c4, ls_SavePath.cur as the whole dword: @original main_GameLoop passes it so (0x53bce5 mov edx,[0x75e6c4]; push edx) */
 #define net_ConnectI ((unsigned int (*)(char *, int))net_Connect)  /* 0x424990 (net.h: unsigned short port): @original main_GameLoop pushes the port as a dword */
@@ -893,7 +893,7 @@ void main_StartCityGame(char *name, int net)
 int sv_RunFrame(int cb, unsigned mask);
 
 /* 0x5327e0, the player count dialog (the form "Menu\CHOOSE_PLAYERCOUNT"): a count slider (at least 2, started from ai_NumPlayers), the heading text 0x1ab5 and the "%s$A%s" texts 0x7d / 0x7e; runs the
-   frame loop 0x5309a0 until a button is pressed (button 0 = ok: stores the slider value in ai_NumPlayers and returns 1, right mouse button / button 1 = cancel); returns 1 for ok, 0 for cancel @deep body complete, 87 = 87 instructions, readable (d2 / dm_L / sv_PopRequest typed, slider / form names, the 4-argument d2_SetObjValue4 call, the right mouse button dm_L.rup cancels). One hunk left (14 ins at 0x53280d): the original clamps the player count as 'mov al,[ai_NumPlayers]; cmp al,2; mov byte [ai_NumPlayers],2; jb L; mov [ai_NumPlayers],al; L: mov eax,[ai_NumPlayers]; and eax,0xff; push eax' (immediate pre-store, then a reload of the global as dword + mask for the d2_SetObjValue argument); ours keeps the value in al / cl ('jae; mov al,2; mov [x],al; xor ecx,ecx; mov cl,al'). Tried: if (n < 2) n = 2; the ternary assignment; cnt local copy with ai_NumPlayers = 2 stored first and re-stored when cnt >= 2 (89 ins, worse); a char bitfield view of ai_NumPlayers (the dword + and 0xff read does not appear); & 0xff on the argument */
+   frame loop 0x5309a0 until a button is pressed (button 0 = ok: stores the slider value in ai_NumPlayers and returns 1, right mouse button / button 1 = cancel); returns 1 for ok, 0 for cancel */
 int main_PlayerCountDialog(void)
 {
     int ok, form, slider, run;
@@ -902,9 +902,8 @@ int main_PlayerCountDialog(void)
     form = d2_OpenForm(0, 0, "Menu\\CHOOSE_PLAYERCOUNT");
     d2_CentreViewWindows(form);
     slider = d2_GetWinObj(form, 0, 0);
-    if (ai_NumPlayers < 2)
-        ai_NumPlayers = 2;
-    d2_SetObjValue4(slider, 2, 8, ai_NumPlayers);
+    ai_NumPlayers = max(2, ai_NumPlayers);
+    d2_SetObjValue4(slider, 2, 8, ai_NumPlayersW & 0xff);
     d2_SetPointerSprite(0, 0);
     d2_SetForm(form, 1);
     io_PrintText(0x1ab5);
