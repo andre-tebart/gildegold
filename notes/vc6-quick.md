@@ -662,6 +662,19 @@ mechanisms, each as a generated round over all positions / subsets:
   `T+8` (ch)): VC6 strength-reduces on a field the loop references often. Reading the record field again in the
   tests instead of the local copy (`ch = T[i].ch; if (ch == 0 || ((C *)T[i].ch)->obj->scene ..`, three of five
   uses; a 31-mask generator found the subset) moved the base to ch: sv_DrawBubbles 13 ins -> byte.
+  Same lever, session 51: sv_DrawNamePlates (any one of four uses of the plate's obj re-read: 19 ins -> byte) and
+  sv_UpdateChimneySmoke (no record pointer local at all, `ai_CharsT[i].f` in every test: 21 ins -> byte; it also
+  freed the 0xffff register and gave the original's `mov bl,0xa`). Try it first on any walk biased by a field offset.
+- **An else block the original places out of line after a later switch dispatch** (`if (v == 0xb || v == 0xc) {
+  plain = 0; k = R(); if (k == 3) k = 4; } else k = R();`, the plain arm sitting between the `jmp [table]` and the
+  first case): the flag was set first and tested in its own if/else, `if (v == 0xb || v == 0xc) plain = 0; if
+  (plain) k = R(); else { k = R(); if (k == 3) k = 4; }` (VC6 threads the known flag and moves the copy). One
+  merged `k = R(); if (!plain && k == 3)` does not thread. An `id = -1;` scheduled before a block-scope
+  `char buf[N] = ""` fill's last stosb was written before the block's `{`, not after its declarations
+  (sv_SpeakPicked 18 ins -> byte).
+- **A signed `cmp [rec],reg / jge` against the unsigned d3_Time**: the original compared an int copy, `int now =
+  d3_Time;` declared in the block (`(int)d3_Time` in the test fixes the jump but hoists the load and keeps a
+  register for the field; the block-scoped local gives the original's load inside the block, sv_ShowBubble byte).
 - **The same -1 stored in several tails, the original rematerializing it (`or ebp,-1`) after ebp served as a
   pointer, with one store as an immediate**: one shared `W = -1;` after if/else arms without returns (`if (..) {
   .. if (c) {if (!fb) T = f();} else T = -1; } else { A = -1; T = -1; } W = -1;`): VC6 copies the shared tail into
