@@ -977,7 +977,7 @@ exe	0x00450860	d3_FindBGF	d3_io_fl	e20b968cd3360d26	no	draft	sample n=32 seed=1 
 exe	0x00450dc0	d3_CalcNormals	d3_io_fl	7dcf70905be6dda3	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00450ec0	d3_CalcBounds	d3_io_fl	802cdd0f12d3d40d	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x00451180	d3_FLChunkSize	d3_io_fl	c6c17d5587424c73	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x00451250	d3_AddFLChunk	d3_io_fl	150d88b2988459d1	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x00451250	d3_AddFLChunk	d3_io_fl	e1dc20940280833a	yes	draft	sample n=32 seed=1 compiled=32 codegens=2 best=draft
 exe	0x00451e80	d3_LightResetVertexColors	d3_light	f8a72eda90561646	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00451f10	d3_LightFlicker	d3_light	663a796ebae9b3ad	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004522b0	d3_LightApply	d3_light	a333cb10a1ecb5c2	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte

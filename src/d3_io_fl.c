@@ -20,6 +20,7 @@
 #include "vfs.h"
 
 extern float ai_FloatZero;  /* 0x5eb788, the shared 0.0f (cm.c) */
+extern float cm_Pi;  /* 0x5eb7dc, the shared pi (cm.c) the uv rotation is added to */
 
 /* 0x450860, loads a mesh from its fast chunk file (the cache the BGF loader looks in first); returns 0 when
    there is none */
@@ -301,23 +302,22 @@ int d3_FLChunkSize(D3BGF *m, D3BGFDESC *d)
 
 /* 0x451250, loads the BGF file path, cleans it up as d3iot_LoadBGF does and appends the converted mesh to
    the file as a fast-load chunk (0x2d ... 0x2f)
-   @deep whole asmdiff read; fixed: the material de-dup loop is 0-based with j = i + 1 (VC6's induction
-   variable i+1 in [ebp+0xc], used[i] as [eax+edx-1], mat = i as lea [esi-1] now match), the uv rows are
-   written from float fields, bio_wr_c takes unsigned char (push 0xff, as the original), the radius is
-   written through D3BGF.radiusBits. Left: (1) allocation: the original keeps m in its slot [ebp-0x10] and
-   0 in ebx through the weld loops, ours m in ebx (+ a copy in [ebp-0x20]); (2) the vertex rotation
-   (0x451494..0x451517): the same products and sums, the original holds py / pz in edx / ecx (lea
+   @stuck tie-break sensitive: dcp headers sample gives 2 codegens in 32 samples, none better than built
+   (draft): the declaration set decides allocation, park for the unit's declaration pass. Done: the uv
+   rotation now adds cm_Pi (the shared pi the original loads, as d3iot_LoadBGF does; M10 cleared; 254 ->
+   258 ins, same grade). Left as before: m in ebx vs the original's [ebp-0x10] slot through the weld loops,
+   vertex rotation FPU order, uv row int copies, and the empty-BGF vfs_fclose return block that the
+   original places after the ntex > 0xfe arm's jmp (0x451c0b) in the polygon write loop. (tiebreak:
+   sensitive) prior: whole asmdiff read; fixed: the material de-dup loop is 0-based with j = i + 1 (VC6's
+   induction variable i+1 in [ebp+0xc], used[i] as [eax+edx-1], mat = i as lea [esi-1] now match), the uv
+   rows are written from float fields, bio_wr_c takes unsigned char (push 0xff, as the original), the
+   radius is written through D3BGF.radiusBits. Left: (1) allocation: the original keeps m in its slot
+   [ebp-0x10] and 0 in ebx through the weld loops, ours m in ebx (+ a copy in [ebp-0x20]); (2) the vertex
+   rotation (0x451494..0x451517): the same products and sums, the original holds py / pz in edx / ecx (lea
    [eax+ecx+4] / [eax+ecx+8]) and evaluates s1*py before c1*pz and u before bv.z, ours folds them into
    [eax+ecx-0x14] and orders the FPU operands otherwise; (3) the uv row copies (0x451b9d..0x451bd5): the
    original copies the three floats with integer moves off one &m->polys[i] (add eax,ebx), ours fld/fstp
-   with m->polys reloaded after each store (tried an array v and int copies: no change / worse); (4) block
-   layout: the original places the early return of an empty BGF (vfs_fclose; its own epilogue) inside the
-   polygon write loop at 0x451c0b, ours after the main epilogue, which also shifts the add esp merges
-   around 0x451a56..0x451b04. (references: M8 at +0xc2b: ours refers to vfs_fclose (0x430aa0), the
-   original's field to 0x422620 (mem_Free), explained: the ref line (ours vfs_fclose at +0xc2b, the
-   original's mem_Free) is the alignment pairing our early-return block (vfs_fclose) at the end with the
-   original's final mem_Free(m): the original has the same vfs_fclose call at 0x451c0c, placed
-   mid-function; both sides call vfs_fclose and mem_Free the same number of times) */
+   wit... */
 void d3_AddFLChunk(char *path, char weld)
 {
     char buf[256];
@@ -442,7 +442,7 @@ void d3_AddFLChunk(char *path, char weld)
                     a = (m->polys[i].uv[n][0] * desc.mats[mi].su + 0.5f) - desc.mats[mi].su * 0.5f;
                     b = (m->polys[i].uv[n][1] * desc.mats[mi].sv + 0.5f) - desc.mats[mi].sv * 0.5f;
                     m->polys[i].uv[n][0] = (float)cos(desc.mats[mi].rot) * a - (float)sin(desc.mats[mi].rot) * b + desc.mats[mi].ou;
-                    m->polys[i].uv[n][1] = (float)sin(desc.mats[mi].rot + 3.1415927f) * a + (float)cos(desc.mats[mi].rot + 3.1415927f) * b + desc.mats[mi].ov;
+                    m->polys[i].uv[n][1] = (float)sin(desc.mats[mi].rot + cm_Pi) * a + (float)cos(desc.mats[mi].rot + cm_Pi) * b + desc.mats[mi].ov;
                 }
             }
         }
