@@ -1126,10 +1126,10 @@ void ai_ApplyGfxOptions(void)
     int lod, scene, i;
     CHARACTER *c;
 
-    level = ai_GfxShadowDetail;
-    size = d3s_TexSize;
     lod = 0;
+    level = ai_GfxShadowDetail;
     changed = 0;
+    size = d3s_TexSize;
     if (level == 0) {
         changed = 0;
         ch_ShadowEnabled = 1;
