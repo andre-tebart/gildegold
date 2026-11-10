@@ -2691,11 +2691,11 @@ extern struct D2PIC *d2_Pics;              /* 0x6ed918, d2.h: D2PIC * */
    an empty one). The price of the revenge is the sum over the rows of the level of the record's office / 3 + 2 (row 0 and
    empty rows cost nothing), shown through the texts "$C" and 0x41b6. Every 0x8c ms the rows are refreshed: a record that is no
    longer in use or whose net id changed is dropped. The first button of the row (ids[0]) confirms when the player can pay
-   (sv_CheckMoney): the avenger's text 0x41bf, the relation of every target to the avenger drops by 50 - the mix of the two
-   (cm_SendRelations), the price is paid (gm_SendMoneyDelta), the power bit 8 of +0x1cc is set (cm_SendSetField) and the
+   (sv_CheckMoney): the avenger's text 0x41bf, the relation of every target to the avenger drops by 50 + 50 * the mix of
+   the two (gm_Mix, cm_SendRelations), the price is paid (gm_SendMoneyDelta), the power bit 8 of +0x1cc is set (cm_SendSetField) and the
    delivery text for the chosen targets is made (ai_GypsyDeliveryText) and shown (0x41b9 with 0x41b2); the second button and
-   the right mouse button leave. The pump ends with d2_CloseView and the camera follow. Returns the result of the green box
-   when the window is refused. @deep body reconstructed from the disassembly (the pentagon layout, the five-row refresh with the amount-row callees, the 0x8c ms record check, the confirm branch with relations / money / power bit / delivery text, the row click building the 0x14-dword amount menu config, the pump and the tail call to the camera follow); 492 vs 496 instructions, meaning read whole, locals in the original slot order (msg, rows, cfg, sel, ids, tick, refresh, form, total). What is left is register allocation and constant hoisting: the original keeps the constants 1 / 0 in ebx / esi for the whole body (mov ebx,1 / xor esi,esi, the loop is entered past the xor esi,esi, sel[] = -1 stored through eax, form in edi with a spill at [esp+0x10], the row count in ebp, refresh at [esp+0x14]) while ours hoists -1 into ebp and keeps form in ebx, so every later store / compare differs (asmdiff: 250 instructions in 4 big code hunks, 14 order, 4 slots). Also left: the filter constant cfg[2..3] = 0xa7fdfbb6 / 1 is loaded by the original as an 8-byte copy from .rdata 0x5eed68 (mov eax,[0x5eed68]; mov ecx,[0x5eed6c]) - ours stores two immediates (tried *(__int64 *)&cfg[2] = 0x1a7fdfbb6: same code, Q4 worse, reverted). Tried: local declaration orders (slots now right), -(0x32 - x) via a temp so the neg stays (fixed that hunk), 0x5da picture index. */
+   the right mouse button leave. The pump ends with d2_CloseView and the camera follow; a refused window
+   returns right after the green box. */
 void ai_BloodRevengeWindow(int building)
 {
     char msg[0x800];
@@ -2777,52 +2777,51 @@ void ai_BloodRevengeWindow(int building)
         if (dm_L.rup != 0) {
             sv_PopRequest = 1;
         } else if (d2_ClickedId != -1) {
-          if (d2_PointerObj == ids[0]) {
-            if (sv_CheckMoney(ai_CharsC + ai_PlayerId * 0x21c, total) == 1) {
-                AICHARVIEW *av = rows[0].rec;
+            if (d2_PointerObj == ids[0]) {
+                if (sv_CheckMoney(ai_CharsC + ai_PlayerId * 0x21c, total) == 1) {
+                    AICHARVIEW *av = rows[0].rec;
 
-                txt_Format(msg, 0x41bf, av->id);
-                k = 0;
-                for (i = 1; i < 5; i++) {
-                    if (rows[i].rec != 0) {
-                        r = 0x32 - (int)(gm_Mix((int)(ai_CharsC + ai_PlayerId * 0x21c), (int)rows[i].rec, 4) * -50.0f);
-                        cm_SendRelations(rows[0].rec->id, rows[i].rec->id, -r, 1);
-                        sel[5 + k] = (int)rows[i].rec;
-                        k++;
+                    txt_Format(msg, 0x41bf, av->id);
+                    k = 0;
+                    for (i = 1; i < 5; i++) {
+                        if (rows[i].rec != 0) {
+                            r = 0x32 - (int)(gm_Mix((int)(ai_CharsC + ai_PlayerId * 0x21c), (int)rows[i].rec, 4) * -50.0f);
+                            cm_SendRelations(rows[0].rec->id, rows[i].rec->id, -r, 1);
+                            sel[5 + k] = (int)rows[i].rec;
+                            k++;
+                        }
                     }
+                    gm_SendMoneyDelta(((AICHARVIEW *)(ai_CharsC + ai_PlayerId * 0x21c))->netId, -total);
+                    cm_SendSetField(((AICHARVIEW *)(ai_CharsC + ai_PlayerId * 0x21c))->netId, 0x1cc, 4, 8, 0);
+                    ai_GypsyDeliveryText((struct AIPER *)av, k, (struct AIPER **)&sel[5]);
+                    txt_Format(msg, 0x41b9, 0x41b2);
+                    sv_MessageBox((int)msg, 0);
+                    sv_PopRequest = 1;
                 }
-                gm_SendMoneyDelta(((AICHARVIEW *)(ai_CharsC + ai_PlayerId * 0x21c))->netId, -total);
-                cm_SendSetField(((AICHARVIEW *)(ai_CharsC + ai_PlayerId * 0x21c))->netId, 0x1cc, 4, 8, 0);
-                ai_GypsyDeliveryText((struct AIPER *)av, k, (struct AIPER **)&sel[5]);
-                txt_Format(msg, 0x41b9, 0x41b2);
-                sv_MessageBox((int)msg, 0);
+            } else if (d2_PointerObj == ids[1]) {
                 sv_PopRequest = 1;
-            }
-        } else if (d2_PointerObj == ids[1]) {
-            sv_PopRequest = 1;
-        } else {
-            for (i = 0; i < 5; i++) {
-              if (d2_PointerObj == rows[i].ctl) {
-                memset(&cfg, 0, sizeof(cfg));
-                idp = cfg.ids;
-                for (k = 0; k < 5; k++) {
-                    if (k != i) {
-                        *idp = rows[k].rec != 0 ? rows[k].rec->id : 0xffff;
-                        idp++;
+            } else {
+                for (i = 0; i < 5; i++) {
+                    if (d2_PointerObj == rows[i].ctl) {
+                        memset(&cfg, 0, sizeof(cfg));
+                        for (k = 0, idp = cfg.ids; k < 5; k++) {
+                            if (k != i) {
+                                *idp = rows[k].rec != 0 ? rows[k].rec->id : 0xffff;
+                                idp++;
+                            }
+                        }
+                        cfg.filter = gypsyFilter;
+                        cfg.option14 = 2;
+                        cfg.flags = 1;
+                        cfg.mode = 0x400;
+                        cfg.kind = 6;
+                        rows[i].rec = (AICHARVIEW *)ai_AmountMenu((int)&cfg, (int)txt_Ptrs[0x41b4 + (i != 0)], 0, 0);
+                        sel[i] = rows[i].rec != 0 ? rows[i].rec->netId : -1;
+                        refresh = 1;
+                        break;
                     }
                 }
-                cfg.filter = gypsyFilter;
-                cfg.option14 = 2;
-                cfg.flags = 1;
-                cfg.mode = 0x400;
-                cfg.kind = 6;
-                rows[i].rec = (AICHARVIEW *)ai_AmountMenu((int)&cfg, (int)txt_Ptrs[0x41b4 + (i != 0)], 0, 0);
-                sel[i] = rows[i].rec != 0 ? rows[i].rec->netId : -1;
-                refresh = 1;
-                break;
-              }
             }
-          }
         } else if (d3_Time > (unsigned)(tick + 0x8c)) {
             for (i = 0; i < 5; i++) {
                 if (rows[i].rec != 0 && (rows[i].rec->id == 0xffff || rows[i].rec->netId != (unsigned)sel[i])) {
