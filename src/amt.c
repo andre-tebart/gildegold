@@ -105,7 +105,7 @@ void amt_InitTable(void)
     amt_Table[41].kind = 39;
 }
 /* 0x4e5e50, the rating of the character a (+0x164 / +0x166 the office rank and party bytes) as seen by b: the float tables 0x5edc90 (15 rows of 10: an int id, 9
-   columns) and 0x5edef0 (5 rows, an int status key, 9 columns) by the rank (amt_KindColumn, 1 .. 6) and the status bits +0x1cc (0x400 .. 0x2000, 0x200 give the keys
+   columns) and 0x5edef0 (5 rows, an int status key, 9 columns) by the rank (amt_KindColumn, 1 .. 6: b's for 0x5edc90, a's for 0x5edef0) and the status bits +0x1cc (0x400 .. 0x2000, 0x200 give the keys
    0x24 .. 0x27, 0x23); mode (>= 2: plus the absolute value of the entry, >= 3: plus 10.0); with flag the friendship value of amt_GetKind / 0x4f2720 is taken off
    (a = b's party: added, mode 2: times 0.75)
    @deep Read whole against the original and fixed: the table ids are compared as ints (mov ecx,[esi] / cmp
@@ -163,7 +163,7 @@ float amt_Rating(char *a, char *b, int mode, int flag)
             if (akey == 0) {
                 for (n = 0; n < 5; n++) {
                     if (AMT_BITS(&amt_TabB[n * 10]) == key) {
-                        r = r + amt_TabB[n * 10 + amt_KindColumn((unsigned char)b[0x166]) + 1];
+                        r = r + amt_TabB[n * 10 + amt_KindColumn((unsigned char)a[0x166]) + 1];
                         break;
                     }
                 }
