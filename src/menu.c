@@ -4116,8 +4116,12 @@ int ai_ScatterShot(SHOTREC *shot, float sideSpread, D3VECTOR *side, float otherS
     return 1;
 }
 
-#define SIGN(v) ((v) > 0.0f ? 1.0f : -1.0f)
-#define DRAG(v) (SIGN(v) * shot->area * ai_ShotDrag * ai_AirDensity * (v) * (v) * 0.5f)
+/* the sign with the shared 0 / 1 (ai_FloatZero, ai_FloatOne); the drag 0.5 * density * coefficient * area * v^2
+   signed with v; the products nested as the original multiplies them (VC6 reorders an unnested chain), the
+   wind's x / z drag in another order than its y and the flight drags */
+#define SIGN(v) ((v) > ai_FloatZero ? ai_FloatOne : -1.0f)
+#define DRAG(v) ((((((SIGN(v) * shot->area) * ai_ShotDrag) * ai_AirDensity) * (v)) * (v)) * 0.5f)
+#define WINDDRAG(v) (((((shot->area * v) * v) * SIGN(v)) * ai_ShotDrag) * ai_AirDensity) * 0.5f
 
 /* 0x5dc4a0, moves a cannon ball (1318 B; gv.c 0x4edf80 calls it every frame): 0 unless the ball is in flight
    (state 1). Off the height map (d3_GetHeightAt fails) the state becomes 3 and the energy 0. Otherwise one
@@ -4137,10 +4141,6 @@ int ai_StepShot(SHOTREC *shot)
     D3VECTOR4 v, next, wind, d, a, b, m;
 
     extern float ai_FloatZero;
-#undef SIGN
-#define SIGN(v) ((v) > ai_FloatZero ? ai_FloatOne : -1.0f)
-#undef DRAG
-#define DRAG(v) ((((((SIGN(v) * shot->area) * ai_ShotDrag) * ai_AirDensity) * (v)) * (v)) * 0.5f)
 
     if (shot->state != 1)
         return 0;
@@ -4150,9 +4150,9 @@ int ai_StepShot(SHOTREC *shot)
         shot->energy = 0;
         return 0;
     }
-    wind.x = (((((shot->area * shot->wind.pos[0]) * shot->wind.pos[0]) * SIGN(shot->wind.pos[0])) * ai_ShotDrag) * ai_AirDensity) * 0.5f;
+    wind.x = WINDDRAG(shot->wind.pos[0]);
     wind.y = DRAG(shot->wind.pos[1]);
-    wind.z = (((((shot->area * shot->wind.pos[2]) * shot->wind.pos[2]) * SIGN(shot->wind.pos[2])) * ai_ShotDrag) * ai_AirDensity) * 0.5f;
+    wind.z = WINDDRAG(shot->wind.pos[2]);
     for (i = 0; i < ticks; i++) {
         v.x = shot->vel.v.x;
         v.y = shot->vel.v.y;
@@ -4209,6 +4209,9 @@ int ai_StepShot(SHOTREC *shot)
     }
     return 1;
 }
+#undef SIGN
+#undef DRAG
+#undef WINDDRAG
 
 #define SIGN(v) ((v) > 0.0f ? 1.0f : -1.0f)
 #define DRAG(v) (SIGN(v) * shot->area * ai_ShotDrag * ai_AirDensity * (v) * (v) * 0.5f)
