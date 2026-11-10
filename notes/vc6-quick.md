@@ -189,6 +189,16 @@ mechanisms, each as a generated round over all positions / subsets:
 - `n > 3` and `n >= 4` compile differently (`cmp 3; jg` / `cmp 4; jge`): VC6 keeps the literal. `best <
   x` against `x > best` decides the fld / fcomp operand order and `test ah,5; jp` against `and eax,0x4100;
   jne` (hmt_DecideElection).
+- **Two failure returns: separate `xor eax,eax` vs one shared** after the pops: one result variable set to 0
+  before the outer `if`, assigned inside, one final `return type;` (no early `return type;` / `return 0;`) gave
+  the original's two xors (ch_PlaceOnGround byte).
+- **`xor ecx,ecx; mov cl,[m]; mov eax,ecx; shr eax,5; and eax,1`** (a zero-extended byte bit test returned)
+  where every `b >> 5 & 1` spelling gives the trimmed `mov al,[m]`: write `if (b & 0x20) return 1; return 0;`.
+  VC6 turns the if/return pair into the shift form with the zero extension (ch_AnimDone byte).
+- **A redundant re-test kept by the original** (`test [m],0x20; jne call; cmp eax,ebx; jne skip; call:`, the
+  third term of `!s || s->f || !s` that a condition threads away): write the if / else-if pair with the call in
+  both arms, `if (s && s->f) { call } else if (!s) { call }`; VC6 merges the calls and keeps the test
+  (ch_ActWalk byte; ch_ActWalkCells has the same test but a 40-line arm, not tried by duplication).
 
 ## Registers, stack slots, locals
 - **A parameter loaded twice from its slot** (`mov esi,[arg]; and esi,0xffff` at entry, later `mov edi,[arg]` unmasked):
