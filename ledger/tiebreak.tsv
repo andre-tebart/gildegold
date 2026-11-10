@@ -3384,7 +3384,7 @@ exe	0x0052d1e0	sv_DrawNamePlates	sv	a624380b5d3f7f8c	no	draft	control=draft p1=d
 exe	0x0052d2a0	sv_DrawItemNames	sv	a887de759cfe6534	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0052d480	sv_DrawBorderArrows	sv	4ef40ccf319b7e2b	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0052d7a0	sv_CameraFollow	sv	01421ce10b27495d	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x0052d940	sv_HandleRightClick	sv	8da56be255391d52	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x0052d940	sv_HandleRightClick	sv	8da56be255391d52	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x0052e050	sv_DrawHint	sv	7409700d08d14fd5	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0052e0c0	sv_DrawStatusText	sv	6987652e7ad5cf24	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0052e170	sv_ClearNamePlates	sv	5f820273789fcd34	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
