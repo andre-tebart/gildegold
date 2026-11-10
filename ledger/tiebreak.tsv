@@ -3216,7 +3216,7 @@ exe	0x00511bc0	init_FillMarkets	f3init	bc4900bc23434a7c	no	byte	control=byte p1=
 exe	0x00511c70	init_GiveFirstPlayerBuildings	f3init	0ae0b9c5fa1f3378	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
 exe	0x00511dc0	init_ObjectSceneUniverse	f3init	5729bddca670beb8	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00511e60	init_BuildingSceneUniverse	f3init	cf7cabf54ca9cf06	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
-exe	0x00511f20	init_SyncSceneObjects	f3init	4fc13f33140c5262	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x00511f20	init_SyncSceneObjects	f3init	4fc13f33140c5262	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x005124d0	init_LoadTypeBScene	f3init	f2bea42ef9eb4fe4	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x005124f0	init_LoadShopScript	f3init	fb19895e0a23b147	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x005126a0	init_SoundObjectHook	f3init	b44babc93dd6424f	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
