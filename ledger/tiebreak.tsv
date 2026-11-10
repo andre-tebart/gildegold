@@ -669,7 +669,7 @@ exe	0x0042fce0	vfs_AddDir	vfs	237780b545957afd	no	byte	control=byte p1=byte p2=b
 exe	0x00430130	vfs_AddZip	vfs	b277515c690b7d4f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00430260	vfs_FreeDir	vfs	7a0b72d14dd980c5	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004302e0	vfs_MakeDirs	vfs	e704b53665ef506b	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x00430470	vfs_Tfopen	vfs	637b299c2a925f22	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x00430470	vfs_Tfopen	vfs	637b299c2a925f22	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x00430aa0	vfs_fclose	vfs	9fe394e80cbccef4	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00430bd0	vfs_fread	vfs	ca3caa553478eb96	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00430d90	vfs_fgetc	vfs	804a85611e928bd8	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
