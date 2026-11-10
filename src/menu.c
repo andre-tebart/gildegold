@@ -4131,8 +4131,18 @@ int ai_ScatterShot(SHOTREC *shot, float sideSpread, D3VECTOR *side, float otherS
    the position moves by velocity * step in inches. When ai_ShotHitsGround finds the move from the old to the
    new position hits the ground and the ball made more than 50 steps, it lands there: state 2, the energy
    0.5 * mass * v^2, returns 0. Returns 1 while it flies.
-   @stuck match-deep 58: 308 -> 174 ins, frame now 0x98 as the original. Levers that moved code: the sign
-   through the shared ai_FloatZero / ai_FloatOne (M10 gone); the drag product nested
+   @stuck match-deep 58: 308 -> 28 ins, shape (the same body as ai_StepShot, which got the same). Levers:
+   shared ai_FloatZero / ai_FloatOne in the sign; the drag chains fully nested in the original's load order
+   (DRAG / WINDDRAG macros); fall = ai_Gravity * step; D3VECTOR4 locals v, next, wind, d, a, b, m (frame
+   0x98); a and b built in place (a = d + wind; a *= perMass per field; a.y -= fall); the half sum v = b +
+   a; v *= 0.5f; vel copied to v and next / landing copied field by field; next copied between the y and z
+   drags; the landing stores state = 2 after pos.x. Left (code 22, order 16, fpu 2): the original's next
+   copy (3 int mov pairs) is scheduled inside the z drag (after its sign select), ours inside the y drag;
+   copying next after d.z (alone, in a block, after time++ / steps++, struct copy through a cast) changes
+   VC6's frame to 0x94 (175+ ins); all 5040 orders of d.y / next.x / next.y / next.z / d.z / time++ /
+   steps++ give 28 ins or worse; with it the px push sinks one fmul late. No meaning difference. (tiebreak:
+   insensitive) prior: match-deep 58: 308 -> 174 ins, frame now 0x98 as the original. Levers that moved
+   code: the sign through the shared ai_FloatZero / ai_FloatOne (M10 gone); the drag product nested
    (((((S*area)*drag)*density)*v)*v)*0.5 for wind y and the flight drags and
    (((((area*v)*v)*S)*drag)*density)*0.5 for wind x / z (an unnested chain is reordered by VC6, all 360
    orders = one code; a (v)-parenthesized operand in WINDDRAG costs 8 ins); fall = ai_Gravity * ai_ShotStep
@@ -4140,21 +4150,7 @@ int ai_ScatterShot(SHOTREC *shot, float sideSpread, D3VECTOR *side, float otherS
    D3VECTOR4 locals v, next, wind, d, a, b, m (the original's frame holes are the w slots; 224 -> 185,
    frame equal); b built in place (b = d + wind; b *= perMass; b.y = b.y * perMass - fall). No lever: v.x
    += a.x (= control), a built in place (+22), v = b + a then *= 0.5 (+frame), copy order of v (+14), next
-   copied at the loop top (+8), SHOTVEL v with a struct copy (+50), double constants. Left: the original
-   copies vel.x into v.x through eax and reads it from memory (ours fld [esi+0x10] and keeps v.x on the
-   FPU: fcom / fmul st,st(1)); the original stores d.x to memory ([0x84]) and the sums d.y+wind.y /
-   d.z+wind.z to a.y / a.z before multiplying, ours keeps them on the FPU (fpu 46 at +0x6c1); slots of wind
-   / fall shifted by 0x10 (ours wind at 0x50, the original 0x40). Next: the same steps for ai_StepShotSlow
-   (its twin) should give the same 308 -> ~174. (tiebreak: insensitive) prior: Read whole against the
-   original 0x5dc4a0..0x5dc9c6: statement set and meaning match (state test, d3_GetHeightAt out-of-map
-   exit, the three wind drags, the per-ms loop with Heun's average, next = pos copy, time/steps ++,
-   ai_ShotHitsGround with px/pz, the landing energy). The velocity is now copied whole into a D3VECTOR v
-   each step (the original copies shot->vel by dwords to [esp+0x10..0x18] and reloads v.x/v.y/v.z from
-   memory for the drags; 311 -> 332 differing but 339 -> 348 of 354 instructions). Left: (1) VC6 reorders
-   the drag product chain - the original multiplies sign*area*drag*density*v*v*0.5 (wind x/z:
-   area*w*w*sign*...), ours sign*drag*density*v*v*area*0.5 for every association tried (6 macro forms give
-   identical code or worse); (2) the temporaries: the original spills dx and the half sums into
-   0x84/0x68/0x6c and reuses the dead v slots [0x10]/[0x14] for (bx+ax)*0.5 / (by+ay)*0.5,... */
+   copied at the loop top (+8), SHOTVEL v... */
 int ai_StepShot(SHOTREC *shot)
 {
     float fall = ai_Gravity * ai_ShotStep;
@@ -4244,7 +4240,25 @@ int ai_StepShot(SHOTREC *shot)
 
 /* 0x5dc9d0, moves a cannon ball in slow motion (1318 B; gv.c 0x4edf80 calls it instead of ai_StepShot when the
    effect's +0x14 flag is set): ai_StepShot instruction for instruction with the step ai_ShotHalfStep (1/148 s)
-   for ai_ShotStep, in the gravity, the per-mass factor and the position move. @deep Read whole against the original 0x5dc9d0..0x5dcef6: it is ai_StepShot instruction for instruction with ai_ShotHalfStep for ai_ShotStep (the disassemblies differ only in those four operands); same body and the same velocity copy v (348 of 354 instructions). Left, as in ai_StepShot: (1) VC6 reorders the drag product chain - the original multiplies sign*area*drag*density*v*v*0.5 (wind x/z: area*w*w*sign*...), ours sign*drag*density*v*v*area*0.5 for every association tried (6 macro forms, identical code or worse); (2) the temporaries: the original spills dx and the half sums into 0x84/0x68/0x6c and reuses the dead v slots [0x10]/[0x14], frame 0x98 vs ours 0x5c - FPU stack scheduling and spill-slot allocation. */
+   for ai_ShotStep, in the gravity, the per-mass factor and the position move.
+   @stuck match-deep 58: 308 -> 28 ins, shape (the same body as ai_StepShot, which got the same). Levers:
+   shared ai_FloatZero / ai_FloatOne in the sign; the drag chains fully nested in the original's load order
+   (DRAG / WINDDRAG macros); fall = ai_Gravity * step; D3VECTOR4 locals v, next, wind, d, a, b, m (frame
+   0x98); a and b built in place (a = d + wind; a *= perMass per field; a.y -= fall); the half sum v = b +
+   a; v *= 0.5f; vel copied to v and next / landing copied field by field; next copied between the y and z
+   drags; the landing stores state = 2 after pos.x. Left (code 22, order 16, fpu 2): the original's next
+   copy (3 int mov pairs) is scheduled inside the z drag (after its sign select), ours inside the y drag;
+   copying next after d.z (alone, in a block, after time++ / steps++, struct copy through a cast) changes
+   VC6's frame to 0x94 (175+ ins); all 5040 orders of d.y / next.x / next.y / next.z / d.z / time++ /
+   steps++ give 28 ins or worse; with it the px push sinks one fmul late. No meaning difference. (tiebreak:
+   insensitive) prior: Read whole against the original 0x5dc9d0..0x5dcef6: it is ai_StepShot instruction
+   for instruction with ai_ShotHalfStep for ai_ShotStep (the disassemblies differ only in those four
+   operands); same body and the same velocity copy v (348 of 354 instructions). Left, as in ai_StepShot:
+   (1) VC6 reorders the drag product chain - the original multiplies sign*area*drag*density*v*v*0.5 (wind
+   x/z: area*w*w*sign*...), ours sign*drag*density*v*v*area*0.5 for every association tried (6 macro forms,
+   identical code or worse); (2) the temporaries: the original spills dx and the half sums into
+   0x84/0x68/0x6c and reuses the dead v slots [0x10]/[0x14], frame 0x98 vs ours 0x5c - FPU stack scheduling
+   and spill-slot allocation. */
 int ai_StepShotSlow(SHOTREC *shot)
 {
     float fall = ai_Gravity * ai_ShotHalfStep;
