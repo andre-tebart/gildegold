@@ -1866,7 +1866,7 @@ exe	0x004ae3a0	ai_TokenRandomGuildMaster	hst	cc48869e24597569	no	draft	control=d
 exe	0x004ae600	ai_TokenRandomOfficeHolderFemale	hst	ee8ec0c84a55d531	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x004ae900	ai_TokenRandomOfficeHolder	hst	905d0c02dc633387	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x004aec00	ai_TokenRandomOfficePerson	hst	54e28a6cce55a98a	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
-exe	0x004aef10	ai_TokenRichestInhabitant	hst	170ca3f72b976c7f	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x004aef10	ai_TokenRichestInhabitant	hst	bc1ed852e9cd74b3	no	shape	sample n=32 seed=1 compiled=32 codegens=1 best=shape
 exe	0x004af090	ai_TokenBestInn	hst	2a0e91a02bc1ce41	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004af1b0	ai_TokenMoney	hst	efff28f69c6262f1	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x004af2c0	ai_TokenCityTreasury	hst	dd593745b80000bd	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
