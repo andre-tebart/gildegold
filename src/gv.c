@@ -4240,18 +4240,20 @@ void gv_GraveyardTurn(char *o)
     float f;
 
     bld = (AIBLD *)o;
-    h = -1;
     pl = 0;
     rounds = 0;
     nrel = 0;
     paid = 0;
     sum = 0;
+    h = -1;
     if (bld->owner != 0xffff && bld->owner != *ai_PlayerChar)
         pl = &gv_CharsT[bld->owner];
     e = (GVENTRY *)gv_FindEntry(0, (unsigned char *)bld, 0, gv_EntryIsUsed, 0xff);
     while (e != 0) {
         if (rounds >= 0x40 && h != -1) {
-            while (cm_GetSlotState(h) == 0) {
+            while (1) {
+                if (cm_GetSlotState(h) != 0)
+                    break;
                 cm_FlushSendQueue();
                 cm_ReceiveMessages();
                 cm_ExecCommands();
@@ -4264,7 +4266,7 @@ void gv_GraveyardTurn(char *o)
             size = e->size;
             for (k = 0, g = e->grave; k < gv_EntryCounts[size]; k++, g++) {
                 if (g->id != -1) {
-                    f = (util_RandomF() + 1.0f) * 0.5f;
+                    f = (util_RandomF() + ai_FloatOne) * 0.5f;
                     t = (int)(f * ((float)e->b0c / 255.0f * gv_GraveWear[e->size]));
                     if (t <= 0 || ((gv_EntryIndex((char *)bld->yard, (int *)e) ^ ai_Time.year) & 1) != 0)
                         goto next;
@@ -4276,7 +4278,7 @@ void gv_GraveyardTurn(char *o)
         } else {
             AIMSG m;
 
-            f = (util_RandomF() + 1.0f) * 0.5f;
+            f = (util_RandomF() + ai_FloatOne) * 0.5f;
             size = e->size;
             t = (int)(f * ((float)e->b0c / 255.0f * gv_GraveWear[size]));
             if (t > 0 && ((gv_EntryIndex((char *)(yard = bld->yard), (int *)e) ^ ai_Time.year) & 1) == 0) {
@@ -4300,8 +4302,8 @@ void gv_GraveyardTurn(char *o)
                 memset(&m, 0, sizeof(m));
                 m.to = c->netId;
                 m.fromId = bld->id;
-                m.time = ai_Time;
                 m.type = 0x92;
+                m.time = ai_Time;
                 m.flags = 9;
                 m.lease.bld = bld->id;
                 m.lease.size = e->size;

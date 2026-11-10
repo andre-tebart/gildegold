@@ -2792,7 +2792,7 @@ exe	0x004f16f0	gv_PreserveRate	gv	c1c7fb245f620f60	no	byte	control=byte p1=byte 
 exe	0x004f17f0	gv_WriteGraveyard	gv	508fbbf017a494d2	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004f1aa0	gv_ReadGraveyard	gv	dc3fd8c81a653f6a	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004f1d50	gv_RoomForRaised	gv	a2620a711a60d08a	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x004f1de0	gv_GraveyardTurn	gv	30d09df5ebfb7969	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x004f1de0	gv_GraveyardTurn	gv	44633eca5a979e88	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x004f22a0	gv_FindWornEntry	gv	9c123dde9658c7f0	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004f2330	gv_LeasePrice	gv	5ac645fdab0dece7	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004f2440	gv_MovePrice	gv	4689238f8f0b2a7b	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
