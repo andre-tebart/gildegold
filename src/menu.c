@@ -1459,35 +1459,25 @@ void ai_LoadScreenImage(char *path)
 /* 0x5d73e0, is there a character that can be quicksaved (78 B): 0 -> no game (ai_GameState 0x6f25ac
    == 0); otherwise walks the character records (ai_Chars + 2, stride 0x21c) for a living player (kind
    6 / 7) that belongs to a scene party (partyId != -1); 0 if found, 1 when the walk passes
-   gm_PlayerRecordBytes 0x7d5f82
-   @deep read the whole function against the original 0x5d73e0..0x5d7421 and rebuilt it: the walk over the
-   character records, typed as the AICHARKINDVIEW view at ai_Chars + 2 (kind +0 = record +2, health +6 =
-   record +8, partyId +0x20a = record +0x20c, the base and the gm_PlayerRecordBytes bound 0x7d5f82 the
-   original uses), the do-while, the living-player test (health > 0, kind 6 / 7, partyId != -1). Q4 clear
-   (no raw access), description written, readability readable. Tried the source shapes: if (ai_GameState !=
-   0) { ...; return 1; } return 0;, the natural early return with return 1 last, a ret = 1 variable
-   returned last, and the do-while vs the byte walk; the natural early-return form is kept (dist 25
-   instructions). Left: ours 22 vs the original 21 instructions, differing 25: the original drops
-   ai_GameState into cl with eax preset to 1 ('mov cl, [ai_GameState] / mov eax, 1 / test cl, cl / je ->
-   xor eax, eax; ret'), keeps our p in ecx and compares 'cmp dword ptr [ecx + 0x20a], -1'; ours loads into
-   al, keeps p in eax, hoists the -1 into edx ('or edx, -1' ... 'cmp dword ptr [eax + 0x20a], edx') and
-   sets 'mov eax, 1' just before the loop-exit ret. Same instructions, one pruned (ours 22), the difference
-   is the register for p and where the return value 1 is materialised - allocation and the exit-block
-   layout, nothing in the C's meaning. */
+   gm_PlayerRecordBytes 0x7d5f82 */
 
 int ai_HasQuicksavePlayer(void)
 {
     AICHARKINDVIEW *p;
+    int r;
 
+    r = 1;
     if (ai_GameState == 0)
-        return 0;
-    p = ai_CharsK;
-    do {
-        if (p->health > 0 && (p->kind == 6 || p->kind == 7) && p->partyId != -1)
-            return 0;
-        p++;
-    } while ((int)p < (int)gm_PlayerRecordBytes);
-    return 1;
+        r = 0;
+    else {
+        p = ai_CharsK;
+        do {
+            if (p->health > 0 && (p->kind == 6 || p->kind == 7) && p->partyId != -1)
+                return 0;
+            p++;
+        } while ((int)p < (int)gm_PlayerRecordBytes);
+    }
+    return r;
 }
 /* 0x5d7430, the quicksave: in a normal game (ai_GameFlags bit 2 clear, bit 7 clear) it shows the
    "Quicksave" status text (sv_SetStatusText 0x52e330), pumps one frame (sv_RunFrame 0x5309a0 (0,

@@ -239,6 +239,9 @@ mechanisms, each as a generated round over all positions / subsets:
   on each failing if, `return r;` at the end, and the path with the call returning its constant itself
   (`{ f(..); return 2; }`). Without that explicit return, r lives across the call in a callee-saved register;
   `r = 1` initial + `r = 2` at the join hoists the 1 instead (ord_DismissWorkerOrder draft 36 ins -> byte).
+  Same for a guard + search loop (`mov eax,1` before the guard's test, guard and hit sharing one `xor eax,eax; ret`):
+  `r = 1; if (g == 0) r = 0; else { do { if (hit) return 0; .. } while (..); } return r;` (ai_HasQuicksavePlayer
+  29 ins -> byte; `if (g == 0) return 0; .. return 1;` and `r = 1` with early returns kept the late `mov eax,1`).
 - **A result local that the original reloads from a stack home at a failure return** (`mov ebp,[esp+N]; mov
   eax,ebp`) where ours returns `xor eax,eax` from its own epilogue: VC6 folded `return f;` to `return 0` because
   only `f = 0` reaches that return. The original's failure path fell through to the final `return f;` (nested

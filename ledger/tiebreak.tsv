@@ -4622,7 +4622,7 @@ exe	0x005d6fa0	ai_LeaveGameScreen	unk_5d33b0	18cdf14298fa4bf5	no	byte	control=by
 exe	0x005d7080	ai_ResumeGameScreen	unk_5d33b0	49b3e213fbdc56de	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x005d7160	ai_Screenshot	unk_5d33b0	fbde04fbc30b6cec	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
 exe	0x005d7320	ai_LoadScreenImage	unk_5d33b0	bd8bc7ca059306b7	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x005d73e0	ai_HasQuicksavePlayer	unk_5d33b0	8a6d053a1f57e499	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x005d73e0	ai_HasQuicksavePlayer	menu	0fcae823ee024b9d	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x005d7430	ai_Quicksave	unk_5d33b0	0545e9006f17e3ec	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x005d7530	ai_SaveNetworkGame	menu	ce7dc1e962e5b183	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x005d7770	ai_OptionsMenu	unk_5d33b0	c1ba44c83778d0d1	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
