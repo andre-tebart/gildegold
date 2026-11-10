@@ -1057,10 +1057,10 @@ exe	0x00459d80	d3s_RightEdge	d3s	byte	readable
 exe	0x00459e50	d3s_LeftEdgeColor	d3s	byte	readable		
 exe	0x00459f90	d3s_MarkSpan	d3s	byte	readable		
 exe	0x00459fb0	d3s_DrawSpans	d3s	byte	readable		
-exe	0x0045a2e0	d3s_ShadowTriangle	d3s	draft	readable	deep	
+exe	0x0045a2e0	d3s_ShadowTriangle	d3s	draft	readable	stuck	
 exe	0x0045a670	d3s_LeftEdge	d3s	byte	readable		
 exe	0x0045a740	d3s_FillRows	d3s	byte	readable		
-exe	0x0045a880	d3s_ShadowPoly	d3s	draft	readable	deep	
+exe	0x0045a880	d3s_ShadowPoly	d3s	shape	readable	stuck	
 exe	0x0045ab60	d3s_CacheInit	d3s	byte	readable		
 exe	0x0045ab90	d3s_CacheFree	d3s	byte	readable		
 exe	0x0045abc0	d3s_CacheBind	d3s	byte	readable		
@@ -1068,10 +1068,10 @@ exe	0x0045ac60	d3s_CacheTexture	d3s	byte	readable
 exe	0x0045ad80	d3_InitShadows	d3s	byte	readable		
 exe	0x0045aee0	d3_ExitShadows	d3s	byte	readable		
 exe	0x0045af50	d3s_TerrainShadowMesh	d3s	draft	readable	deep	
-exe	0x0045b510	d3s_MeshFromMap	d3s	draft	readable	deep	
+exe	0x0045b510	d3s_MeshFromMap	d3s	draft	readable	stuck	
 exe	0x0045b8d0	d3s_AddShadow	d3s	byte	readable		
 exe	0x0045bcd0	d3s_GetGround	d3s	byte	readable		
-exe	0x0045be10	d3s_Project	d3s	draft	readable	deep	
+exe	0x0045be10	d3s_Project	d3s	draft	readable	stuck	
 exe	0x0045c620	d3s_Update	d3s	shape	readable		
 exe	0x0045c9c0	d3s_LightCB	d3s	byte	readable		
 exe	0x0045c9f0	d3s_CollectLights	d3s	byte	readable		
