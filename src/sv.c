@@ -4900,16 +4900,26 @@ void sv_RunFramesUntilStopped(int id)
    a goto message to the building's room object 0x146), the others (up to four) are collected into one 'C' message to
    the player with the clicked and the owning building's ids; each leaves the job's member slots and the selection.
    The job is announced (cm_SendExSetHE) afterwards
-   @deep read the whole function against 0x52bbc0..0x52beb5 (218 vs 217 ins): the selected-character loop
-   (signed i < 768, the done test first), the first member fixing the group job and its kind 'C', the
-   not-in-the-building branch first (the 'C' AIMSG: type, flags 2, to = the player's netId, arg[0] / arg[1]
-   the building ids, the ids from arg[6] with the -1 fill as rep stosd), the in-the-building branch
-   (gm_Query room 0x146, member slot cleared, sv_MoveToGroup, cm_SendChrStop, cm_SendChrGotoBuilding, cur
-   reloaded), the second-member branch with done after four, the selected flag cleared, cm_SendExSetHE /
-   cm_SendLongMessage: all equal. Left, allocation only (asmdiff --regs ebx=ebp,edx=ebx,ebp=edx leaves only
-   these): the original keeps cur in ebx and the job in ebp (ours edx / ebx, so ours zeroes ebx for
-   msg.type), keeps out in edi across the loop (ours reloads [esp+0x14] in the second-member branch) and
-   loads the job's kind into dl before the 0x43 store; the netId register (edx vs ebx / edi) */
+   @stuck match-deep s53: tried, none closer (91 ins): job's uses re-read as c->job (every subset of up to
+   three of ten uses, 129 variants: best 91 ins / 595 bytes), kind = 'C' after job = c->job (= control),
+   job->kind into a temp before the kind store (595 bytes), c->bld tested before c->job (87 ins but the
+   original tests c->job first: wrong order), cur / job initialisation moved to every position (= control
+   or 589 bytes), the done test in the for condition (= control), a netId local in the second-member branch
+   (= control), the -1 fill indexed msg.arg[6 + k] (worse), owner != cur (worse). Read: the original keeps
+   cur in ebx although it never lives across a call (reloaded from sv_ClickedBuilding after each), so edx
+   is free for netId in both branches (ours: cur edx, netId ebp / edi); out lives in its slot and is cached
+   in edi, reloaded at the iteration join (mov edi,[esp+0x14] at 0x52be66), as sv_MessageBox's bar: the
+   original's loop or out spelling that gives this memory-variable-in-register caching is the open lead.
+   (tiebreak: insensitive) prior: read the whole function against 0x52bbc0..0x52beb5 (218 vs 217 ins): the
+   selected-character loop (signed i < 768, the done test first), the first member fixing the group job and
+   its kind 'C', the not-in-the-building branch first (the 'C' AIMSG: type, flags 2, to = the player's
+   netId, arg[0] / arg[1] the building ids, the ids from arg[6] with the -1 fill as rep stosd), the
+   in-the-building branch (gm_Query room 0x146, member slot cleared, sv_MoveToGroup, cm_SendChrStop,
+   cm_SendChrGotoBuilding, cur reloaded), the second-member branch with done after four, the selected flag
+   cleared, cm_SendExSetHE / cm_SendLongMessage: all equal. Left, allocation only (asmdiff --regs
+   ebx=ebp,edx=ebx,ebp=edx leaves only these): the original keeps cur in ebx and the job in ebp (ours edx /
+   ebx, so ours zeroes ebx for msg.type), keeps out in edi across the loop (ours reloads [esp+0x14] in the
+   second-member branc... */
 void sv_SendSelectedToBuilding(void)
 {
     AIJOB *job;
