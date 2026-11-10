@@ -2901,7 +2901,7 @@ exe	0x004f81c0	ord_DispatchOrder	ord	818b9c01d67df507	no	byte	control=byte p1=by
 exe	0x004f8200	ord_PrivilegeDialog	ord	cff58b7110f3ce67	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004f82a0	ord_ResetStatistics	ord	4ec08221403e27c5	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004f8300	ord_GetGridCell	ord	16e57dbe1b787629	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x004f8360	ord_CountGridObjects	ord	f578fa625e527536	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x004f8360	ord_CountGridObjects	ord	f578fa625e527536	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x004f8460	ord_AddGridAmount	ord	d07b30d499f82e7f	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x004f8590	ord_SubGridAmount	ord	85d5b634f645fe8f	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x004f86a0	ord_RandomCellPoint	ord	1eb0695657deb1c9	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
