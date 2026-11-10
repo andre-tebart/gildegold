@@ -1783,7 +1783,7 @@ exe	0x004a8c10	ai_AlwaysTrue	poker	fa0a467f01a0c788	no	byte	control=byte p1=byte
 exe	0x004a8c20	ai_EvalOwnTimeSlot	poker	6468cb048618aab8	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004a8c80	ai_DecideTwoNearChars	poker	b1148219140b9b7e	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004a8d20	ai_DecideNearChar	poker	ba28b17275b0e328	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x004a8db0	ai_DecideBuildingResident	poker	c912ba4b2f92a0b7	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x004a8db0	ai_DecideBuildingResident	poker	c912ba4b2f92a0b7	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x004a8ee0	ai_EvalTitleGroup7	poker	a3dae06bb2315785	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004a8f20	ai_DecideUnfriendlyPair	poker	cfa4dfa6cc585588	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004a9030	ai_EvalGraveCount	poker	45a354b13b26e1c5	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
