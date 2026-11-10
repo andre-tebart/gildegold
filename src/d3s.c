@@ -1081,15 +1081,30 @@ float d3s_GetGround(D3OBJECT *obj, D3OBJINFO *info, D3OBJECT *light)
     return y;
 }
 /* 0x45be10, projects the mesh along the light onto the ground and renders the shadow texture
-   @deep Read whole against the original and rebuilt: branch order (simple first, directional light first,
-   terrain before d3sm_Shadow), 1/-ldir->y hoisted via inv = -ldir->y, one D3VECTOR for the position and
-   the light vector (stored like the original), clamped cells into locals before the divisions by the new
-   D3TERRAIN.bs, iz0 from z1 and iz1 from z0 as the original does, sx/sz scale hoisted,
-   D3_OPS(mesh)->Transform, typed d3sm_Shadow (D3SM) and D3SVERT tu/tv. ours=609 original=609 instructions.
-   Left: allocation - the original keeps obj in ebp, mesh in ebx, ldir in edi and 0 in ebp for the compares
-   (cmp edi, ebp at +0x27c), y at [esp+0x10] in its own frame (frame 0x1c vs ours 0x18, ours puts it in a
-   param slot), so the five slot->x0..y stores at +0x6d3 load in another order; mh in ebp at +0x3f6 where
-   ours keeps [esp+0x4c]; the head schedule (d3s_Count++ before the dir copy). */
+   @stuck 282 -> 127 ins this session: slot->dir copied per field (x, y, z: the original's interleaved
+   loads/stores and the right frame, 0x1c) and the final slot stores in field order x0, x1, z0, z1, y
+   (permute.py, 120 orders). headers sample: insensitive. M10s are not source: VC6 itself turns (v->y - y)
+   * (1.0f / inv) and x / inv into a reciprocal of its pooled 1.0f, and the + 1.0 of the cell rounding is
+   the pooled double - in the original these pooled literals sit at the addresses the project names
+   ai_FloatOne (0x5eb780) and cm_DoubleOne (0x5eb8a8); writing ai_FloatOne / inv makes VC6 emit both the
+   literal reciprocal and an extra fmul (worse), inv = ai_FloatOne / -ldir->y spills inv (396 ins). Left:
+   (1) homes of the terrain-cell temps: the original keeps slot->iz1 in t's slot [esp+0x3c], iz0 in light's
+   [0x48], mh in slot's [0x4c] via xor ebp,ebp, cx0 [0x34], cx1 [0x40], cz0 [0x30]; ours iz1 in an own slot
+   [0x18] (so the u64 fild temp moves and tex/pos shift 4: tex [0x14] vs [0x18], pos [0x20] vs [0x1c]); (2)
+   light->objectFlags & 0x10: the original loads light into ecx and the byte into dl then test al,dl, ours
+   test byte [edx+0x211],al (!= 0 and operand order = control); (3) mh - 1 as dec/mov (original) vs lea
+   twice. Tried: clamp-line orders (120; p12304 73 ins but frame back to 0x18 vs 0x1c), d3s_Count++ after
+   the dir copy (280 before the field copy), tex assigned late (= control), obj->state after v (worse)
+   (tiebreak: not measured (dcp headers sample d3s_Project)) prior: Read whole against the original and
+   rebuilt: branch order (simple first, directional light first, terrain before d3sm_Shadow), 1/-ldir->y
+   hoisted via inv = -ldir->y, one D3VECTOR for the position and the light vector (stored like the
+   original), clamped cells into locals before the divisions by the new D3TERRAIN.bs, iz0 from z1 and iz1
+   from z0 as the original does, sx/sz scale hoisted, D3_OPS(mesh)->Transform, typed d3sm_Shadow (D3SM) and
+   D3SVERT tu/tv. ours=609 original=609 instructions. Left: allocation - the original keeps obj in ebp,
+   mesh in ebx, ldir in edi and 0 in ebp for the compares (cmp edi, ebp at +0x27c), y at [esp+0x10] in its
+   own frame (frame 0x1c vs ours 0x18, ours puts it in a param slot), so the five slot->x0..y stores at
+   +0x6d3 load in another order; mh in ebp at +0x3f6 where ours keeps [esp+0x4c]; the head schedule
+   (d3s_Count++ before the dir copy). */
 
 void d3s_Project(D3OBJECT *obj, D3OBJINFO *info, D3OBJINFO *mesh, D3TERRAIN *t, D3VECTOR *ldir,
                  D3VECTOR *lpos, D3OBJECT *light, D3SSLOT *slot)
@@ -1103,7 +1118,9 @@ void d3s_Project(D3OBJECT *obj, D3OBJINFO *info, D3OBJINFO *mesh, D3TERRAIN *t, 
     int cx0, cx1, cz0, cz1;
 
     d3s_Count++;
-    slot->dir = *ldir;
+    slot->dir.x = ldir->x;
+    slot->dir.y = ldir->y;
+    slot->dir.z = ldir->z;
     y = d3s_GetGround(obj, info, light);
     z0 = 1e10f;
     x0 = 1e10f;
@@ -1218,9 +1235,9 @@ void d3s_Project(D3OBJECT *obj, D3OBJINFO *info, D3OBJINFO *mesh, D3TERRAIN *t, 
             }
         }
     }
-    slot->z0 = z0;
     slot->x0 = x0;
     slot->x1 = x1;
+    slot->z0 = z0;
     slot->z1 = z1;
     slot->y = y;
     if (!slot->simple) {

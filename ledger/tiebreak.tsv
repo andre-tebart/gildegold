@@ -1071,7 +1071,7 @@ exe	0x0045af50	d3s_TerrainShadowMesh	d3s	6d12dd0cf30e32df	no	draft	control=draft
 exe	0x0045b510	d3s_MeshFromMap	d3s	fcd2ba02700c2fa8	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x0045b8d0	d3s_AddShadow	d3s	340d3df19ff2423f	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x0045bcd0	d3s_GetGround	d3s	9227cb0efb1e5a80	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x0045be10	d3s_Project	d3s	2bfe849da9287252	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x0045be10	d3s_Project	d3s	f02f822af9eee343	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x0045c620	d3s_Update	d3s	f314136cda4a8fef	yes	draft	control=draft p1=draft p2=draft* p3=draft p4=draft
 exe	0x0045c9c0	d3s_LightCB	d3s	71392ca59204c3d9	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0045c9f0	d3s_CollectLights	d3s	4a43e6cc419ddd58	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
