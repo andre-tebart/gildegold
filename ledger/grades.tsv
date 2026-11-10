@@ -47,7 +47,7 @@ exe	0x004034e0	ch_AttachTransport	ch	byte	readable
 exe	0x004035f0	ch_DetachTransport	ch	byte	readable		
 exe	0x00403620	ch_PlaceTransport	ch	byte	readable		
 exe	0x00403950	ch_AttachMotion	ch	byte	readable		
-exe	0x00403ab0	ch_AnimDone	ch	draft	readable	deep	
+exe	0x00403ab0	ch_AnimDone	ch	byte	readable		
 exe	0x00403b00	ch_SetNextAnim	ch	byte	readable		
 exe	0x00403c10	ch_StopAnim	ch	byte	readable		
 exe	0x00403d60	ch_ReleaseMorph	ch	byte	readable		
@@ -61,7 +61,7 @@ exe	0x004047a0	ch_RemoveAction	ch	shape	readable
 exe	0x00404810	ch_ClearActions	ch	byte	readable		
 exe	0x00404860	ch_CheckQueue	ch	byte	readable		
 exe	0x004048b0	ch_InsertAction	ch	byte	readable		
-exe	0x00404a80	ch_PlaceOnGround	ch	draft	readable	deep	
+exe	0x00404a80	ch_PlaceOnGround	ch	byte	readable		
 exe	0x00404b90	ch_UpdateAction	ch	byte	readable		
 exe	0x00404c20	ch_PauseAnim	ch	byte	readable		
 exe	0x00404c80	ch_GetCamera	ch	byte	readable		
@@ -109,7 +109,7 @@ exe	0x004076b0	ch_MapFree	ch	byte	readable
 exe	0x004076c0	ch_CopyVec	ch	byte	readable		
 exe	0x004076e0	ch_PosToCell	ch	byte	readable		
 exe	0x00407740	ch_CellToCell	ch	byte	readable		
-exe	0x00407790	ch_GetWaypoints	ch	draft	readable	deep	
+exe	0x00407790	ch_GetWaypoints	ch	draft	readable	stuck	
 exe	0x004079b0	ch_GetNewPath	ch	draft	readable	deep	
 exe	0x00408490	ch_PathToTarget	ch	shape	readable		
 exe	0x00408690	ch_InitWalk	ch	shape	readable		
@@ -117,7 +117,7 @@ exe	0x00408ab0	ch_WalkSound	ch	byte	readable
 exe	0x00408cb0	ch_StartWalkAnim	ch	byte	readable		
 exe	0x00408e60	ch_NextWaypoint	ch	byte	readable		
 exe	0x004093d0	ch_WalkRotate	ch	byte	readable		
-exe	0x004097d0	ch_ActWalk	ch	draft	readable	deep	
+exe	0x004097d0	ch_ActWalk	ch	byte	readable		
 exe	0x00409bd0	ch_ActWalkCells	ch	draft	readable	deep	
 exe	0x0040a900	ch_WalkToObject	ch	byte	readable		
 exe	0x0040a9c0	ch_ActWalk2RndDummy	ch	byte	readable		
