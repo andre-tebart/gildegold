@@ -2627,7 +2627,7 @@ exe	0x004e6600	amt_SendOfficeCandidates	amt	5f5743aaf2fe6ff3	no	byte	control=byt
 exe	0x004e6650	amt_SendOfficeOwner	amt	01d06b2969c69400	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004e6680	amt_SendOfficeMessage	amt	3eaf963a476011fb	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004e6710	amt_CheckOfficeMessage	amt	ce0e9877e5ae802d	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x004e67a0	amt_ExecuteOfficeMessage	amt	b6b912c6bf4757ff	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x004e67a0	amt_ExecuteOfficeMessage	amt	b6b912c6bf4757ff	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x004e6b40	amt_SetEventOwner	amt	a7c246cabb8a6bbe	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004e6b70	amt_SetPersonOwner	amt	3d3ff1267cee51f4	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004e6ba0	amt_SendOfficeSwap	amt	fb2cee46914a0df1	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
