@@ -1845,7 +1845,7 @@ exe	0x004ad1c0	hmt_Election	hmt	ec968fdc6e9a0527	no	draft	control=draft p1=draft
 exe	0x004ad3b0	hmt_SendElectionMessage	hmt	2e2dea2fdef5a552	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004ad3e0	hmt_Score	hmt	5e676a3df38d4c7a	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x004ad510	hmt_ClearOffices	hmt	091e00e0086b82d8	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
-exe	0x004ad580	hmt_DecideElection	hmt	d481be54a808f940	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x004ad580	hmt_DecideElection	hmt	332aaac1cf08a67f	no	shape	sample n=32 seed=1 compiled=32 codegens=1 best=shape
 exe	0x004ad7a0	hmt_Unk4ad7a0	hmt	6d48fc23cbf605aa	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x004ada80	hmt_Load	hmt	50bb3d64a7e98c08	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
 exe	0x004adb20	hmt_Save	hmt	daf902b9ba4c71a8	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
