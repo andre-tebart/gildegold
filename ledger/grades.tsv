@@ -1763,9 +1763,9 @@ exe	0x004a7760	ai_PokerDrawCard	poker	byte	readable
 exe	0x004a77e0	ai_PokerNpcExchange	poker	shape	readable		
 exe	0x004a79d0	ai_PokerSwapCard	poker	byte	readable		
 exe	0x004a7a20	ai_PokerPayStakes	poker	byte	readable		
-exe	0x004a7ac0	ai_PokerPickStrategies	poker	draft	readable	deep	
+exe	0x004a7ac0	ai_PokerPickStrategies	poker	draft	readable	stuck	
 exe	0x004a7c20	ai_PokerNpcFold	poker	shape	readable		
-exe	0x004a7e70	ai_PokerOpenCounts	poker	draft	readable	deep	
+exe	0x004a7e70	ai_PokerOpenCounts	poker	draft	readable	stuck	
 exe	0x004a7f50	ai_PokerRateHand	poker	shape	readable		
 exe	0x004a8190	ai_PokerShowdown	poker	draft	readable	deep	
 exe	0x004a8520	ai_PokerDealThree	poker	byte	readable		
@@ -1801,14 +1801,14 @@ exe	0x004a9880	ai_DecideColumn5Officer	poker	byte	readable
 exe	0x004a9a00	ai_DecideLeisureAction	poker	draft	readable	deep	
 exe	0x004a9fa0	ai_CheckLeisureAction	poker	byte	readable		
 exe	0x004aa120	ai_DecideVisitAction	poker	draft	readable	deep	
-exe	0x004aa430	ai_CheckVisitAction	poker	draft	readable	deep	
+exe	0x004aa430	ai_CheckVisitAction	poker	byte	readable		
 exe	0x004aa580	ai_PickPamphletTarget	poker	byte	readable		
 exe	0x004aa6a0	ai_DecideLittleKnownChar	poker	byte	readable		
 exe	0x004aa800	ai_DecideCharPair	poker	byte	readable		
 exe	0x004aa940	aip_ExecPamphlet	poker	byte	readable		
 exe	0x004aaa10	aip_ExecDrohen	poker	byte	readable		
 exe	0x004aaae0	aip_ExecAnschwaerzen	poker	byte	readable		
-exe	0x004aab90	ai_TrustedOfTwo	poker	draft	readable	deep	
+exe	0x004aab90	ai_TrustedOfTwo	poker	byte	readable		
 exe	0x004aad30	ai_TrustedOfFour	poker	shape	readable	deep	
 exe	0x004aaef0	ai_FindDarkCornerTarget	poker	byte	readable		
 exe	0x004aafb0	ai_ExecMessage74	poker	byte	readable		
