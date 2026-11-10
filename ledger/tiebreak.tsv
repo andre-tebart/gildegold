@@ -3195,7 +3195,7 @@ exe	0x0050f0b0	init_CreateOpeningObjects	f3init	91c7cb5cfc37c4c6	no	byte	control
 exe	0x0050f340	init_StockMarketStalls	f3init	4300f931b43b6466	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
 exe	0x0050f570	init_Betrieb	f3init	5cc30ab99ef50cda	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x0050f750	init_OpenBuilding	f3init	35b1554abb743765	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
-exe	0x0050f910	init_OpenTown	f3init	38671704e42d81e1	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x0050f910	init_OpenTown	f3init	374667a1c0e8397e	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x00510730	init_CollectSiteObject	f3init	85f1adfd854ea640	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00510770	init_LoadSiteScene	f3init	930a7413d0db3bf8	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
 exe	0x00510ad0	init_InitTown	f3init	60ee6a17f1d4029d	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape

@@ -1746,18 +1746,27 @@ extern char ai_MissionMode;        /* 0x624580 */
    persons, 2 / 3 = special), the start characters (0x50e690) and the opening goods (0x4f8ed0) are made, a message
    0x1b goes to every building (types E / D / F skipped) and the mission-mode message 0x4c out, and finally the
    characters of the kinds 2 .. 7 greet each other (0x4c4b00 both ways).
-   @deep read against the whole original 0x50f910..0x51072a and rewritten: the house choice as kind != 5 &&
-   != 4 first and q != 0 first (both loops), the ncl bound without the n copy, the building-type record
-   re-read from ai_BTypes where the original re-reads it (INIT_BTYPE) and kept in cl where it keeps it,
-   gm_PlayerFactor / gm_BuildingKindValue inline in cm_SendMoveGoods, w and the class index as ints, nch =
-   0 inside the AiTown branch, the missing cm_SendOwnership of the 0x1b message loop, the 4-argument
-   cm_SendRelations of the greetings, the kind-pointer loops with the original's signed ends (ours walked
-   one record past the table), the h != -1 wait of the build branch; 745 -> 145 differing, 1157 vs 1150
-   instructions. Left: the frame is 0x408 vs 0x404 - one more spill slot, which shifts cls / cnt / pl / ch2
-   / list200 by 4 (cmp byte [esp+eax+0x20] vs [esp+eax+0x1c], lea [esp+eax*4+0x80] vs +0x7c) and swaps ncl
-   / k between [esp+0x10]/[esp+0x14]/[esp+0x18]; in the greetings the original keeps i at [esp+0x10] and
-   tests i+1 < 0x300 with the inner loop ended by the pointer, ours keeps a down-counter 0x300-j (tried the
-   pointer do-while with the i+1 guard: VC6 then starts i at 1, 178 differing, reverted to the for form) */
+   @stuck 115 -> 57 ins, frame now 0x404 like the original and every array at the original's offset. Levers
+   that worked: the address-taken &n of the 0x65/0x69 field deltas as its own block-scoped int v (n kept
+   its spill slot, frame 0x408 -> 0x404); the greeting loops as index loops (outer c = ai_Chars[i], inner
+   ai_Chars[j]: pointer IVs with the original's signed ends, i in [esp+0x10]); !ok && k < 0xa900 (kb3: 89
+   -> 57). Left: (1) the two packed scalar slots are swapped - ours [esp+0x10] = ncl/m/v and [esp+0x14] =
+   i/nch, the original the other way round (all 120 declaration orders of ncl/i/k/nch/m = one code); (2)
+   the house loop: the original tests ok at the entry and k < 0xa900 at the bottom with k reloaded into ebp
+   (b = k + ai_Blds in place), ours tests k at the entry and ok at the bottom (k < 0xa900 && !ok keeps the
+   entry ok test but reloads k: 89 ins; ok = 0 / k = 0 in the for-init, a while with k += 0xa9 at the end:
+   65 ins, slots 84); (3) ncl kept in esi after the first loop for the second loop's bound (ours re-reads
+   [esp+0x10]); (4) a vecA of 12 bytes gives the right frame without the v split but 190 ins (16 is right).
+   (tiebreak: insensitive, 32 samples one codegen) prior: read against the whole original
+   0x50f910..0x51072a and rewritten: the house choice as kind != 5 && != 4 first and q != 0 first (both
+   loops), the ncl bound without the n copy, the building-type record re-read from ai_BTypes where the
+   original re-reads it (INIT_BTYPE) and kept in cl where it keeps it, gm_PlayerFactor /
+   gm_BuildingKindValue inline in cm_SendMoveGoods, w and the class index as ints, nch = 0 inside the
+   AiTown branch, the missing cm_SendOwnership of the 0x1b message loop, the 4-argument cm_SendRelations of
+   the greetings, the kind-pointer loops with the original's signed ends (ours walked one record past the
+   table), the h != -1 wait of the build branch; 745 -> 145 differing, 1157 vs 1150 instructions. Left: the
+   frame is 0x408 vs 0x404 - one more spill slot, which shifts cls / cnt / pl / ch2 / list200 by 4 (cmp
+   byte [esp+eax+0x20] vs [esp+eax+0x1c], lea [esp+eax*4+0x80] vs +0x7c... */
 void init_OpenTown(void)
 {
     char cls[0x22] = {0, 0, 3, 0, 1, 1, 0, 1, 1, 1, 0, 2, 2, 2, 1, 0, 2, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 3, 3, 1, 0, 1, 1, 0};
@@ -1791,7 +1800,7 @@ void init_OpenTown(void)
         if (c == 0 || !(((INIT_CHAR *)c)->kind == 6 || ((INIT_CHAR *)c)->kind == 7 || ((INIT_CHAR *)c)->kind == 5))
             continue;
         ok = 0;
-        for (k = 0; k < 0xa900 && !ok; k += 0xa9) {
+        for (k = 0; !ok && k < 0xa900; k += 0xa9) {
             b = ai_Blds + k;
             if (((INIT_BLD *)b)->type != 0 && ((INIT_BLD *)b)->owner == 0xffff) {
                 cl = INIT_BTYPE(b);
@@ -1869,11 +1878,13 @@ void init_OpenTown(void)
     for (i = 0xb; i <= 0xd; i++) {
         b = (char *)gm_BuildQuery(2, 4, 0xffff, 5, i);
         if (b != 0) {
-            n = gm_EquipmentValue(b, 100);
+            int v;
+
+            v = gm_EquipmentValue(b, 100);
             cm_BeginFieldBlock(b, ((INIT_BLD *)b)->id);
-            cm_AddFieldDelta(4, 1, 0x65, &n);
-            n = n * 2;
-            cm_AddFieldDelta(4, 1, 0x69, &n);
+            cm_AddFieldDelta(4, 1, 0x65, &v);
+            v = v * 2;
+            cm_AddFieldDelta(4, 1, 0x69, &v);
             cm_SendFieldDeltas();
             cl = INIT_BTYPE(b);
             cm_SendOwnership(((INIT_BLD *)b)->id, ((INIT_CHAR *)ai_PlayerCharC)->netId, ((INIT_CHAR *)ai_PlayerCharC)->netId);
@@ -2047,16 +2058,14 @@ void init_OpenTown(void)
     he_PostEvent6b();
     he_PostEvent7a();
     he_PostEvent2b();
-    p = (char *)&((INIT_CHAR *)ai_Chars)->kind;
-    for (i = 0; i < 0x2ff; i++, p += 0x21c) {
-        if (*p == 6 || *p == 7 || *p == 5 || *p == 3 || *p == 4 || *p == 2) {
-            char *p2;
-
+    for (i = 0; i < 0x2ff; i++) {
+        c = ai_Chars[i];
+        if (((INIT_CHAR *)c)->kind == 6 || ((INIT_CHAR *)c)->kind == 7 || ((INIT_CHAR *)c)->kind == 5 || ((INIT_CHAR *)c)->kind == 3 || ((INIT_CHAR *)c)->kind == 4 || ((INIT_CHAR *)c)->kind == 2) {
             m = 0;
-            for (j = i + 1, p2 = p + 0x21c; j < 0x300; j++, p2 += 0x21c) {
-                if (*p2 == 6 || *p2 == 7 || *p2 == 5 || *p2 == 3 || *p2 == 4 || *p2 == 2) {
-                    ((int (*)(int, int, int, int))cm_SendRelations)(((INIT_CHAR *)(p - 2))->netId, ((INIT_CHAR *)(p2 - 2))->netId, (util_RandomU(0x40) & 0xffff) - 0x20, 0);
-                    h = ((int (*)(int, int, int, int))cm_SendRelations)(((INIT_CHAR *)(p2 - 2))->netId, ((INIT_CHAR *)(p - 2))->netId, (util_RandomU(0x40) & 0xffff) - 0x20, 0);
+            for (j = i + 1; j < 0x300; j++) {
+                if (((INIT_CHAR *)ai_Chars[j])->kind == 6 || ((INIT_CHAR *)ai_Chars[j])->kind == 7 || ((INIT_CHAR *)ai_Chars[j])->kind == 5 || ((INIT_CHAR *)ai_Chars[j])->kind == 3 || ((INIT_CHAR *)ai_Chars[j])->kind == 4 || ((INIT_CHAR *)ai_Chars[j])->kind == 2) {
+                    ((int (*)(int, int, int, int))cm_SendRelations)(((INIT_CHAR *)c)->netId, ((INIT_CHAR *)ai_Chars[j])->netId, (util_RandomU(0x40) & 0xffff) - 0x20, 0);
+                    h = ((int (*)(int, int, int, int))cm_SendRelations)(((INIT_CHAR *)ai_Chars[j])->netId, ((INIT_CHAR *)c)->netId, (util_RandomU(0x40) & 0xffff) - 0x20, 0);
                     m += 2;
                     while (h != -1 && m % 10 == 0 && cm_GetSlotState(h) == 0)
                         sv_PumpNet();
