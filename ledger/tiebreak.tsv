@@ -3232,7 +3232,7 @@ exe	0x00512e80	init_BuildingTextureSetHook	f3init	afbe4b5e18f9a934	no	byte	contr
 exe	0x00512f30	init_SetCharacterAnimations	f3init	f71ab85b23d04943	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
 exe	0x00513050	init_ShowBuildingScene	f3init	2d4631b5b4bb4474	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x00513400	init_FinishBuildingScene	f3init	1c089c4d8332f6c1	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x00513590	init_SetDetailLevel	f3init	e32dd7320154f57e	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x00513590	init_SetDetailLevel	f3init	e32dd7320154f57e	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x005136b0	init_LeaveTownScene	f3init	ea7fdf99efa304dc	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00513740	init_AfterTownLoad	f3init	8a59e75f2a36ae71	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00513970	init_ParseNumberList	f3init	fceee1088a45f08b	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte

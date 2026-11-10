@@ -3600,51 +3600,68 @@ void init_FinishBuildingScene(unsigned char *b, unsigned short *o)
     d3if_Prerender(0);
     sv_UpdateSkyColors();
 }
-/* 0x513590, sets the detail level of the scene s (its D3FLMAP.lod bitfield: 4 = high, 2 = middle, 1 = low) from the setting byte 0x6f35c8 + 2 and the frame limits, and tells the renderer (0x43f8a0 the size 0x80 / 0x40, 0x446dc0 the level); the flag f forces the update @deep behaviour + readable, meaning read whole against 0x513590..0x5136a2 and fixed: init_Detail is an unsigned char (the original stores mov BYTE ds:0x61adf8,4/2/1 - the draft's int gave a dword store; ls.c 0x51d2d0 also loads it as a byte, so its extern is unsigned char now), the size is d3fl_DetailScale << d3fl_DetailSizeShift with no & 0x1f (the original shl ebx,cl has no and), and the final test compares the old level read once (oldlvl = s->lod) with the new s->lod as the original's cmp ebp,edx - the draft recomputed it and VC6 emitted an xor/test. Q2 via the d3fl_ aliases, Q7 via the canonical void d3fl_SetShift(D3FLMAP *, unsigned char, char) in cm.h/cm.c. Left: 4 hunks / 60 differing instructions, all register allocation: ours spills oldlvl to [esp+0x14] and keeps lvl in ebp, size in edi, a in ebx where the original keeps lvl=edi, oldlvl=ebp, size=ebx, a=edx (and the set byte in cl vs dl). Tried: declaration orders (lvl/a/size/oldlvl), oldlvl computed after size, oldlvl as unsigned char, the byte at +0x1c70 by hand (masks) - all identical or worse. */
+/* 0x513590, sets the detail level of the scene s (its D3FLMAP.lod bitfield: 4 = high, 2 = middle, 1 = low) from the setting byte 0x6f35c8 + 2 and the frame limits, and tells the renderer (0x43f8a0 the size 0x80 / 0x40, 0x446dc0 the level); the flag f forces the update
+   @stuck oldlvl spilled: ours keeps size in ebp and spills oldlvl to [esp+0x14] (f in bl); the original
+   keeps size in ebx (dead at 'cmp edx, ebx', then 'mov bl, f' reuses it) and oldlvl in ebp - in ours the f
+   load is scheduled above the size compare, so size and f interfere. 60 -> 15 ins (code 15, order 6, regs
+   2) by writing the level choice as one if / else-if chain per branch (s->size == 0x40 || ai_MapSize >=
+   0x780 -> low; set 0 high / 1 mid / 2 low; scene: set 2 low / else mid) with ai_GfxFloor.byte[2] read at
+   each test (no set local, the original reloads it). Tried (all = control or worse): oldlvl / size order
+   (swap 17 ins), size unsigned, oldlvl unsigned, declaration order, int a = 0 initializers, lvl = 0 / a =
+   0 order (17), init after the s test (19), size written into the test (18), size != a / s->lod != oldlvl
+   operand orders (same ins, other code), f copied into a char / int local, || -> nested return /
+   empty-then forms, if (s != 0) { } wrapper, lvl >>= 1 before the call (17), the 24 orders of the high
+   block's four stores (best = control). (tiebreak: not measured (dcp headers sample init_SetDetailLevel))
+   prior: behaviour + readable, meaning read whole against 0x513590..0x5136a2 and fixed: init_Detail is an
+   unsigned char (the original stores mov BYTE ds:0x61adf8,4/2/1 - the draft's int gave a dword store; ls.c
+   0x51d2d0 also loads it as a byte, so its extern is unsigned char now), the size is d3fl_DetailScale <<
+   d3fl_DetailSizeShift with no & 0x1f (the original shl ebx,cl has no and), and the final test compares
+   the old level read once (oldlvl = s->lod) with the new s->lod as the original's cmp ebp,edx - the draft
+   recomputed it and VC6 emitted an xor/test. Q2 via the d3fl_ aliases, Q7 via the canonical void
+   d3fl_SetShift(D3FLMAP *, unsigned char, char) in cm.h/cm.c. */
 
 
 void init_SetDetailLevel(D3FLMAP *s, char f)
 {
     int a, lvl, size, oldlvl;
-    unsigned char set;
 
     a = 0;
     lvl = 0;
     if (s == 0)
         return;
     oldlvl = s->lod;
-    set = ai_GfxFloor.byte[2];
     size = d3fl_DetailScale << d3fl_DetailSizeShift;
     if (d3_CurrentScene == 0) {
-        if (s->size != 0x40 && ai_MapSize < 0x780) {
-            if (set == 0) {
-                lvl = 4;
-                a = 0x80;
-                s->lod = 4;
-                init_Detail = 4;
-                goto upd;
-            }
-            if (set == 1) {
-                s->lod = 2;
-                init_Detail = 2;
-                goto mid;
-            }
-            if (set != 2)
-                goto upd;
+        if (s->size == 0x40 || ai_MapSize >= 0x780) {
+            lvl = 1;
+            a = 0x40;
+            s->lod = 1;
+            init_Detail = 1;
+        } else if (ai_GfxFloor.byte[2] == 0) {
+            lvl = 4;
+            a = 0x80;
+            s->lod = 4;
+            init_Detail = 4;
+        } else if (ai_GfxFloor.byte[2] == 1) {
+            lvl = 2;
+            a = 0x40;
+            s->lod = 2;
+            init_Detail = 2;
+        } else if (ai_GfxFloor.byte[2] == 2) {
+            lvl = 1;
+            a = 0x40;
+            s->lod = 1;
+            init_Detail = 1;
         }
+    } else if (ai_GfxFloor.byte[2] == 2) {
         lvl = 1;
-        s->lod = 1;
-        init_Detail = 1;
-    } else if (set == 2) {
-        lvl = 1;
+        a = 0x40;
         s->lod = 1;
     } else {
-        s->lod = 2;
-mid:
         lvl = 2;
+        a = 0x40;
+        s->lod = 2;
     }
-    a = 0x40;
-upd:
     if (a != size || f != 0)
         d3fl_SetDetail(a);
     if (oldlvl != s->lod || f != 0)
