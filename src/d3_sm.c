@@ -51,14 +51,31 @@ int d3sm_GetGround(unsigned int x, unsigned int z, D3TERRAIN *t)
     }
     return d3sm_Ground[t->types[idx]];
 }
-/* 0x45dc00, samples the heights and ground types of the terrain into the map @deep behaviour: 544 code hunks, but all of them are the same operations with other register / stack-slot names or in another order (a full read of the asmdiff: 170 ours vs 181 original instructions, no statement missing); the instruction multiset differs only by 2 add / 2 xor / 4 mov / 2 lea, the same x*step+step masks and xor-zeroing strength-reduced differently, plus 5 fill nops; the C's loops (heights by __ftol, count[15] ground-type vote, step-halving midpoint fill) are the same as the Ghidra pseudocode, readability already readable; restoring the original's allocation is byte work */
+/* 0x45dc00, samples the heights and ground types of the terrain into the map
+   @stuck draft 340 ins -> 160 this session. Read against the original: the midpoint fill re-reads h->data
+   for the second average after the first store (the source had no a/b/c/d locals: the four corner bytes
+   are read in place, VC6 CSEs them into the sum and the first average and reloads data[A] / data[C] for
+   the second), the average is int (cdq/sar) and the /5 unsigned (mul 0xcccccccd): kept in the unsigned
+   sum; the halving loop is for (; step > 1; step >>= 1) (step = half was 34 ins worse). The step == 0
+   branch now matches. Left: the init loop's heights / data address order (order 6 + regs 18 at 0x45de8a:
+   ours loads t->heights before the index, the original after) and the midpoint loop's strength-reduction
+   temps (slots and the IV update order at its end, code 61 at 0x45df90, 54 at 0x45e10d). Tried: 19
+   spellings of the init loop's heights / data index (t->heights[x + z * ts], pointer forms, step * (..)):
+   all = control; half = step / 2, while forms (= control or = the for form), (x + 1) * step instead of x *
+   step + step (= control), all 720 orders of the three data stores and three type copies (the current
+   order is best; p012354 166 ins) (tiebreak: insensitive, 32 samples) prior (its "allocation only" was wrong for the a/b/c/d locals):
+   behaviour: 544 code hunks, but all of them are the same operations with other register / stack-slot
+   names or in another order (a full read of the asmdiff: 170 ours vs 181 original instructions, no
+   statement missing); the instruction multiset differs only by 2 add / 2 xor / 4 mov / 2 lea, the same
+   x*step+step masks and xor-zeroing strength-reduced differently, plus 5 fill nops; the C's loops (heights
+   by __ftol, count[15] ground-type vote, step-halving midpoint fill) are the same as the Ghidra
+   pseudocode, readability already readable; restoring the original's allocation is byte work */
 
 void d3sm_Sample(D3TERRAIN *t, D3SM *h)
 {
     unsigned int count[15];
     unsigned int n, ts, step, half, f, x, z, xx, zz, k, best, max, sum;
-    unsigned int a, b, c, d;
-    int avg;
+
     float inv;
 
     n = h->size;
@@ -102,18 +119,16 @@ void d3sm_Sample(D3TERRAIN *t, D3SM *h)
             h->entries[(z * n + x) * step].type = d3sm_GetGround(x, z, t);
         }
     }
-    for (; step > 1; step = half) {
+    for (; step > 1; step >>= 1) {
         half = step >> 1;
         for (z = 0; z < n / step; z++) {
             for (x = 0; x < n / step; x++) {
-                a = h->data[z * step * n + x * step];
-                b = h->data[z * step * n + (x * step + step & n - 1)];
-                c = h->data[(z * step + step & n - 1) * n + x * step];
-                d = h->data[(z * step + step & n - 1) * n + (x * step + step & n - 1)];
-                avg = (int)(a + b + c + d) / 4;
-                h->data[z * step * n + x * step + half] = (avg + (a + b) * 2) / 5;
-                h->data[(z * step + half) * n + x * step] = (avg + (a + c) * 2) / 5;
-                h->data[(z * step + half) * n + x * step + half] = avg;
+                sum = (h->data[z * step * n + x * step] + h->data[z * step * n + (x * step + step & n - 1)]
+                       + h->data[(z * step + step & n - 1) * n + x * step]
+                       + h->data[(z * step + step & n - 1) * n + (x * step + step & n - 1)]) / 4;
+                h->data[z * step * n + x * step + half] = (sum + (h->data[z * step * n + x * step] + h->data[z * step * n + (x * step + step & n - 1)]) * 2) / 5;
+                h->data[(z * step + half) * n + x * step] = (sum + (h->data[z * step * n + x * step] + h->data[(z * step + step & n - 1) * n + x * step]) * 2) / 5;
+                h->data[(z * step + half) * n + x * step + half] = sum;
                 h->entries[z * step * n + x * step + half].type = h->entries[z * step * n + x * step].type;
                 h->entries[(z * step + half) * n + x * step].type = h->entries[z * step * n + x * step].type;
                 h->entries[(z * step + half) * n + x * step + half].type = h->entries[z * step * n + x * step].type;
