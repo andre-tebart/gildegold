@@ -47,7 +47,7 @@ exe	0x004034e0	ch_AttachTransport	ch	c9bf2e4d11eed683	no	byte	control=byte p1=by
 exe	0x004035f0	ch_DetachTransport	ch	5cdb20b92ce98513	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00403620	ch_PlaceTransport	ch	436069e8abf0f61e	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00403950	ch_AttachMotion	ch	352846c46732ce90	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x00403ab0	ch_AnimDone	ch	33f15cbf88e34e55	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x00403ab0	ch_AnimDone	ch	33f15cbf88e34e55	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x00403b00	ch_SetNextAnim	ch	ef570c5d13f0fae2	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00403c10	ch_StopAnim	ch	1c91598d2b704a02	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00403d60	ch_ReleaseMorph	ch	0cf5ce63093cae90	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
