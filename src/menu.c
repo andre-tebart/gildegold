@@ -1940,7 +1940,7 @@ int ai_SaveNameWindow(int image)
    game for a restart (ai_LeaveGame 0, ai_GameOver 1, main_ScreenRestart 1) and reloads the options (ai_LoadOptions). Void; opened by the
    options menu 0x5d7770 and main.c.
    Text slots (txt_Ptrs 0x1c67 ..): the labels of the nine controls 0x1c67 .. 0x1c6f, the item lists 0x1c70 .. 0x1c75 and
-   0x1c7c / 0x1c7d, the two buttons 0x1ca2 / 0x1ca3 (read off the original's loads, not named by the text files).
+   0x1c7b / 0x1c7c, the two buttons 0x1ca2 / 0x1ca3 (read off the original's loads, not named by the text files).
    The resolution default reads ids[1] before sv_ButtonRow has filled it (the original does the same). @deep body reconstructed from the disassembly (nine controls of view 1, ids[2] row, ok/cancel copies, apply read-back in the original order, resolution change path); 449 = 449 instructions, ONE hunk of 6 differing instructions left at 0x5d60c5: the original stores the obj8 d2_GetWinObj result at once (mov [esp+0x50],eax) and reads the dd_Has1024x768 flag into al (mov al,[flag]; add esp,0x30; test al,al; mov eax,1), ours keeps eax live, reads the flag into cl and stores obj8 after the cleanup (mov [esp+0x20],eax). Tried: declaration order of obj7/obj8, ids[2] vs ids[4] (ids[4] fixes the frame 0x30 -> 0x38), mode from a separate uninit local vs ids[1] (the original reads the uninitialised slot of the second id), 'if (flag == 0)' forms. Allocation / scheduling only. */
 
 void ai_OptionsGfxScreen(void)
@@ -1997,7 +1997,7 @@ void ai_OptionsGfxScreen(void)
     d2_SetObjValue4(obj4, 0, 1, ai_GfxFloor.word & 0xff);
     d2_SetSliderFlags(obj4, 0x82);
     d2_SetLabel(obj4, txt_Ptrs[0x1c6b]);
-    d2_SetList(obj4, 2, txt_Ptrs[0x1c7c], txt_Ptrs[0x1c7d]);
+    d2_SetList(obj4, 2, txt_Ptrs[0x1c7b], txt_Ptrs[0x1c7c]);
     d2_SetObjValue4(obj5, 0, 1, ai_GfxLodHandling);
     d2_SetSliderFlags(obj5, 0x82);
     d2_SetLabel(obj5, txt_Ptrs[0x1c6c]);
