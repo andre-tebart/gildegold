@@ -36,6 +36,17 @@ extern int gm_PlayerRecords[688];
 #define ai_BTypesT (*(AIBTYPE **)&ai_BTypes)  /* 0x7e3f30, ai_BTypes (ahm.c: char *) as the AIBTYPE records it points to */
 #define amt_PlayerAiChar (*(AICHAR **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) as the AICHAR it points to */
 #define util_RandomU ((unsigned short (*)(int))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original this unit's callers read the 16-bit result (byte-matched ch_RandomNear 0x405160, ai_CalcMeisterBank 0x4836a0, cm_FightLoop 0x4d88c0 move it as a word / movzx) */
+#pragma pack(push, 1)
+typedef struct AMTRANGEW {               /* an AMTRANGE's first pair read as the two overlapping dwords amt_CreateApplicant (0x4e7aa0) rolls its age from */
+    union {
+        int word0;                       /* 0x0, s0 | s1 << 16 */
+        struct {
+            short pad0;
+            int word1;                   /* 0x2, s1 | (the low half of i2) << 16 */
+        };
+    };
+} AMTRANGEW;
+#pragma pack(pop)
 
 /* 0x4e5cd0, clears the office table (42 records of 0x18 bytes at 0x925120) and numbers them: +0 the index, +4 and +0x14 -1, +8 the kind of the office
    (0 .. 1 the first two, then 2, 3, 4, 4, 5, 6, 7, 7, and i - 2 for the records 10 .. 41); the table loader 0x4ea7a0 calls it first */
