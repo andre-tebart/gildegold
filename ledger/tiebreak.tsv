@@ -2921,7 +2921,7 @@ exe	0x004f97c0	ord_BuildingCapacityRatio	ord	b66ae9c553e20373	no	byte	control=by
 exe	0x004f9850	ord_ReportStatistics	ord	e2968a7e7f41e2e7	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
 exe	0x004f9c00	ord_AdvanceRatingBase	ord	eed1d455ff80f40e	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004f9ce0	ord_StatisticsRating	ord	4bd176c63ded1ba2	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x004f9d40	ord_WeightedRecordSum	ord	46acf87a2505be13	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x004f9d40	ord_WeightedRecordSum	ord	46acf87a2505be13	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x004f9e00	ord_GetStatistics	ord	fbdb21d8caeac598	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004f9e30	gm_StatisticsScreen	f3gm	af8d429d7fdf1e22	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004f9ec0	gm_IncomeRating	f3gm	889350befa9deff3	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
