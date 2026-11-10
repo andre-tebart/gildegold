@@ -4134,9 +4134,7 @@ int ai_StepShot(SHOTREC *shot)
     D3SM *map = (D3SM *)init_SceneHeightMaps[0];
     int ticks, i, px, pz, npx, npz;
     float height;
-    float windX, windY, windZ;
-    float dx, dy, dz, ax, ay, az, bx, by, bz;
-    D3VECTOR v, next;
+    D3VECTOR4 v, next, wind, d, a, b, m;
 
     extern float ai_FloatZero;
 #undef SIGN
@@ -4152,41 +4150,49 @@ int ai_StepShot(SHOTREC *shot)
         shot->energy = 0;
         return 0;
     }
-    windX = (((((shot->area * shot->wind.pos[0]) * shot->wind.pos[0]) * SIGN(shot->wind.pos[0])) * ai_ShotDrag) * ai_AirDensity) * 0.5f;
-    windY = DRAG(shot->wind.pos[1]);
-    windZ = (((((shot->area * shot->wind.pos[2]) * shot->wind.pos[2]) * SIGN(shot->wind.pos[2])) * ai_ShotDrag) * ai_AirDensity) * 0.5f;
+    wind.x = (((((shot->area * shot->wind.pos[0]) * shot->wind.pos[0]) * SIGN(shot->wind.pos[0])) * ai_ShotDrag) * ai_AirDensity) * 0.5f;
+    wind.y = DRAG(shot->wind.pos[1]);
+    wind.z = (((((shot->area * shot->wind.pos[2]) * shot->wind.pos[2]) * SIGN(shot->wind.pos[2])) * ai_ShotDrag) * ai_AirDensity) * 0.5f;
     for (i = 0; i < ticks; i++) {
         v.x = shot->vel.v.x;
         v.y = shot->vel.v.y;
         v.z = shot->vel.v.z;
-        dx = DRAG(v.x);
-        dy = DRAG(v.y);
-        dz = DRAG(v.z);
-        ax = (dx + windX) * perMass;
-        ay = (dy + windY) * perMass - fall;
-        az = (dz + windZ) * perMass;
-        v.x = ax + v.x;
-        v.y = ay + v.y;
-        v.z = az + v.z;
-        dx = DRAG(v.x);
-        dy = DRAG(v.y);
-        dz = DRAG(v.z);
+        d.x = DRAG(v.x);
+        d.y = DRAG(v.y);
+        d.z = DRAG(v.z);
+        a.x = (d.x + wind.x) * perMass;
+        a.y = (d.y + wind.y) * perMass - fall;
+        a.z = (d.z + wind.z) * perMass;
+        v.x = a.x + v.x;
+        v.y = a.y + v.y;
+        v.z = a.z + v.z;
+        d.x = DRAG(v.x);
+        d.y = DRAG(v.y);
+        d.z = DRAG(v.z);
         next.x = shot->pos.x;
         next.y = shot->pos.y;
         next.z = shot->pos.z;
         shot->time++;
         shot->steps++;
-        bx = (dx + windX) * perMass;
-        by = (dy + windY) * perMass - fall;
-        bz = (dz + windZ) * perMass;
-        shot->vel.v.x += (bx + ax) * 0.5f;
-        shot->vel.v.y += (by + ay) * 0.5f;
-        shot->vel.v.z += (bz + az) * 0.5f;
-        next.x += shot->vel.v.x * ai_InchPerMeter * ai_ShotStep;
-        next.y += shot->vel.v.y * ai_InchPerMeter * ai_ShotStep;
-        next.z += shot->vel.v.z * ai_InchPerMeter * ai_ShotStep;
-        if (ai_ShotHitsGround(map, &shot->pos, &next, px, pz, &npx, &npz) && shot->steps > 50) {
-            shot->pos = next;
+        b.x = (d.x + wind.x) * perMass;
+        b.y = (d.y + wind.y) * perMass - fall;
+        b.z = (d.z + wind.z) * perMass;
+        v.x = (b.x + a.x) * 0.5f;
+        v.y = (b.y + a.y) * 0.5f;
+        v.z = (b.z + a.z) * 0.5f;
+        shot->vel.v.x += v.x;
+        shot->vel.v.y += v.y;
+        shot->vel.v.z += v.z;
+        m.x = shot->vel.v.x * ai_InchPerMeter * ai_ShotStep;
+        m.y = shot->vel.v.y * ai_InchPerMeter * ai_ShotStep;
+        m.z = shot->vel.v.z * ai_InchPerMeter * ai_ShotStep;
+        next.x += m.x;
+        next.y += m.y;
+        next.z += m.z;
+        if (ai_ShotHitsGround(map, &shot->pos, (D3VECTOR *)&next, px, pz, &npx, &npz) && shot->steps > 50) {
+            shot->pos.x = next.x;
+            shot->pos.y = next.y;
+            shot->pos.z = next.z;
             shot->state = 2;
             shot->energy = (shot->vel.v.x * shot->vel.v.x + shot->vel.v.y * shot->vel.v.y
                 + shot->vel.v.z * shot->vel.v.z) * shot->mass * 0.5f;
