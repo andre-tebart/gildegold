@@ -429,6 +429,17 @@ mechanisms, each as a generated round over all positions / subsets:
   `+ 0.0f` at a non-zero offset, comma macros and D3VECTOR / D3VECTOR4 spellings all stay integer moves.
   rd_AllBauplatzToSupermap and ai_CampaignKey1 byte, he_FindNearestSpying draft -> shape (2026-11-10);
   sweep script: deep-tools parensweep.py.
+- **A product chain loaded in an order no unnested spelling gives** (every one of 360 orders of
+  `S * area * drag * dens * v * v * 0.5f` = one code): write the chain fully nested in the original's load order,
+  `(((((S * area) * drag) * dens) * v) * v) * 0.5f`; VC6 keeps a nested chain as written. A ternary factor
+  (`v > 0 ? 1 : -1`) is evaluated first and multiplied in with `fmul st,st(1)` where it sits (`((area * v) * v)
+  * S` gives `fld S; fld area; fmul v; fmul v; fmul st,st(1)`). A `(v)`-parenthesized operand inside the chain
+  is not neutral (8 ins in ai_StepShot); the `0.0` / `1.0` of the sign were the shared ai_FloatZero / ai_FloatOne.
+- **A float frame much larger than ours with 4-byte holes after groups of three slots**: the vectors were
+  D3VECTOR4 locals (the w slot never touched), also for temporaries (drag, the two changes, the step move);
+  VC6 keeps some fields of a split struct on the FPU and others in their slot. With them, built in place
+  (`a.x = d.x + w.x; .. a.x *= k; a.y *= k; a.z *= k; a.y -= fall;`, `v = b + a; v *= 0.5f`) and field-by-field
+  copies of the velocity and position, ai_StepShot / ai_StepShotSlow went 308 -> 28 ins (frame 0x5c -> 0x98).
 
 ## Types and bytes
 - Byte read-modify-write (`or BYTE PTR [x],2`) = `unsigned char` bitfields; word ops narrowed to a byte =
@@ -445,6 +456,16 @@ mechanisms, each as a generated round over all positions / subsets:
   in edx across another known call): VC6 knows the callee, so plain, cast and `(*f)()` calls all sink; only a
   call through a local function pointer stays put (ai_InitShot 80 -> 12 ins; needs an @original comment).
 - `memset(&s, 0, n)` vs separate `= 0` stores: separate stores keep a zero register live for the whole function.
+- **Constants 1 / 0 the original keeps in ebx / esi for a whole window pump** (`mov ebx,1` rematerialised after
+  blocks that reuse ebx, `cmp eax,ebx`, `push ebx`) where ours pushes immediates: the order of the function's
+  first stores decides it. `refresh = 1;` before `memset(rows..); memset(sel, 0xff, ..); total = 0; tick = 0;`
+  took ai_BloodRevengeWindow 123 -> 20 ins (one of 120 orders; dcp try + deep-tools permute.py). In the same
+  function: an `else if (clicked == -1) {timer}` chain whose original tests `!= -1` first and puts the timer
+  block last was `else if (clicked != -1) { buttons } else if (timer) ..`; a value the original keeps in ebp
+  across calls (`mov ebp,eax` after reading rows[0].rec) was a block local `AICHARVIEW *av = rows[0].rec;`
+  (-90 ins); a search loop + `if (i < 5) {..}` whose original jumps straight into the body was the body inside
+  the loop with `break`; `for (k = 0, idp = cfg.ids; ..)` put `xor edx,edx` before the `rep stosd` (byte).
+  Struct field stores x before y per row (`rows[i].x = ..; rows[i].y = 0x7d;`) gave the late constant stores.
 - **`mov eax, edi` (a copy of a constant register) then `mov [g], eax` runs** is an inline memset: VC6 expands a
   small constant `memset(a, 0xff, 20)` into dword stores of eax (copied from the register that already holds -1)
   and interleaves the neighbouring field stores. Five `slot[i] = -1` stores through the hoisted register were 74
