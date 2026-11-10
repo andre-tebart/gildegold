@@ -1771,13 +1771,12 @@ int ord_GetKindRecord(int i, int *out)
     out[1] = ORD_KINDS[i].flags;
     return 1;
 }
-/* 0x4f8460, adds a random amount (0x42ec00 (8)) to the sums (+2, a short) of the cells of the 8 x 8 grid 0x91ae60 around the position of an object (0x4fea50 gives the object of who; 0x4f8300 the cell x, y of its +0x61 record's +0x4c): the 3 x 3 neighbourhood, clamped to the grid; the record kind of 0x4f2720 is read first (unused); the cell x, y go to *px / *py @deep behaviour draft, allocation / register-save placement only (109 code hunks, every statement equal). Read against tools/disasm.py 0x4f8460 0x130 and asmdiff: gv_GetTableRecord(kind, rec), gm_FindById(&b, 0, 0, who), amount = util_Random(8), y = util_Random(8), the o / o->object guard, ord_GetGridCell((char *)&b->object->pos, &x, &y), the +2 sum add (add WORD PTR [eax*8+0x91ae62],bx), the xhi / yhi clamps (mov [esp+0x3c],8 + cmp/jg), the xlo / ylo setl-dec-and clamps and the 3x3 add loop with the index edx + esi*8 all match. Diff: the original does NOT save ebx / esi / edi in the prologue - it saves them inside the if (0x4f84c6) and ebp inside the outer loop (0x4f8532) - and spills amount to [esp+0x20] until ebx is free (the add then uses bx); ours pushes edi in the prologue and keeps amount in edi, so the x / y slots and the register roles swap (ours amount=edi, y=ebx; original amount=ebx, y=edi). Tried: int amount (kept), unsigned short amount / y (the original's add uses bx and a 32-bit slot store, so they are ints), the ORDBLD typed view (kept, byte-neutral), gm_FindById prototyped in gv.h (Q7). Q1 ord_AddGridAmount, Q4 through ORDBLD + AIGRID, Q7 through gv.h. Needs match-deep's register-allocation / deferred-callee-save toolbox. */
+/* 0x4f8460, adds the guilt weight (+0x0c, AIDEC.guilt) of the decision record kind (gv_GetTableRecord) to the sums (+2, a short) of the cell of the 8 x 8 grid 0x91ae60 at the position of an object (gm_FindById gives the object of who; ord_GetGridCell the cell x, y of its +0x61 record's +0x4c), and to the +0 sums of its 3 x 3 neighbourhood, clamped to the grid; x, y start as random cells (util_Random(8)) for when ord_GetGridCell fails; the cell x, y go to *px / *py */
 
 void ord_AddGridAmount(int who, unsigned char kind, int *px, int *py)
 {
-    int rec[9];
+    AIDEC rec;
     ORDBLD *b;
-    int amount;
     int x;
     int y;
     int xhi;
@@ -1787,32 +1786,31 @@ void ord_AddGridAmount(int who, unsigned char kind, int *px, int *py)
     int i;
     int j;
 
-    gv_GetTableRecord(kind, rec);
+    gv_GetTableRecord(kind, (int *)&rec);
     gm_FindById((int *)&b, 0, 0, who);
-    amount = util_RandomU(8);
+    x = util_RandomU(8);
     y = util_RandomU(8);
     if (b != 0 && b->object != 0) {
         ord_GetGridCell((char *)&b->object->pos, &x, &y);
-        ORD_CELLS[y + x * 8].b += amount;
+        ORD_CELLS[y + x * 8].b += rec.guilt;
         xhi = x + 1 > 8 ? 8 : x + 1;
         yhi = y + 1 > 8 ? 8 : y + 1;
         xlo = x - 1 < 0 ? 0 : x - 1;
         for (i = xlo; i <= xhi; i++) {
             ylo = y - 1 < 0 ? 0 : y - 1;
             for (j = ylo; j <= yhi; j++)
-                ORD_CELLS[j + i * 8].a += amount;
+                ORD_CELLS[j + i * 8].a += rec.guilt;
         }
         *px = x;
         *py = y;
     }
 }
-/* 0x4f8590, the counterpart of 0x4f8460: subtracts the random amount from the cells (+2 of the cell of the object, +0 of its 3 x 3 neighbourhood); no outputs @deep behaviour draft, the same allocation / register-save placement as its sibling ord_AddGridAmount (0x4f8460, escalated in this session with the full reading). Read against tools/disasm.py 0x4f8590: the identical statements with the two subtracts (sub WORD PTR [eax*8+0x91ae62],bx for the cell's +2 sum and the 3x3 loop's +0 sum) and no px / py outputs - no missing or extra statement, constant or offset. Diff: the original saves ebx / esi / edi inside the if and ebp inside the outer loop, spills amount to a stack slot until ebx is free, and keeps y in edi; ours saves edi in the prologue and keeps amount in edi. Tried: unsigned short amount / y (the original's 32-bit slot store and bx add say int), the ORDBLD typed view (kept). Q1 ord_SubGridAmount, Q4 through ORDBLD + AIGRID, Q7 through gv.h. Needs match-deep's register-allocation / deferred-callee-save toolbox. */
+/* 0x4f8590, the counterpart of ord_AddGridAmount: subtracts the guilt weight (AIDEC.guilt) of the decision record kind from the cell of the object (+2) and its 3 x 3 neighbourhood (+0); no outputs */
 
 void ord_SubGridAmount(int who, unsigned char kind)
 {
-    int rec[9];
+    AIDEC rec;
     ORDBLD *b;
-    int amount;
     int x;
     int y;
     int xhi;
@@ -1822,20 +1820,20 @@ void ord_SubGridAmount(int who, unsigned char kind)
     int i;
     int j;
 
-    gv_GetTableRecord(kind, rec);
+    gv_GetTableRecord(kind, (int *)&rec);
     gm_FindById((int *)&b, 0, 0, who);
-    amount = util_RandomU(8);
+    x = util_RandomU(8);
     y = util_RandomU(8);
     if (b != 0 && b->object != 0) {
         ord_GetGridCell((char *)&b->object->pos, &x, &y);
-        ORD_CELLS[y + x * 8].b -= amount;
+        ORD_CELLS[y + x * 8].b -= rec.guilt;
         xhi = x + 1 > 8 ? 8 : x + 1;
         yhi = y + 1 > 8 ? 8 : y + 1;
         xlo = x - 1 < 0 ? 0 : x - 1;
         for (i = xlo; i <= xhi; i++) {
             ylo = y - 1 < 0 ? 0 : y - 1;
             for (j = ylo; j <= yhi; j++)
-                ORD_CELLS[j + i * 8].a -= amount;
+                ORD_CELLS[j + i * 8].a -= rec.guilt;
         }
     }
 }
