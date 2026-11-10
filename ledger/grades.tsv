@@ -3349,7 +3349,7 @@ exe	0x00528180	sv_CreateBannerCB	sv	byte	readable
 exe	0x00528290	sv_ColourBannerCB	sv	byte	readable		
 exe	0x005282f0	sv_CreateBanners	sv	byte	readable		
 exe	0x00528390	sv_ColourBanners	sv	byte	readable		
-exe	0x00528490	sv_UpdateChimneySmoke	sv	draft	readable	deep	
+exe	0x00528490	sv_UpdateChimneySmoke	sv	byte	readable		
 exe	0x00528660	sv_CollectBannerCB	sv	byte	readable		
 exe	0x005286a0	sv_RemoveBanners	sv	byte	readable		
 exe	0x00528770	sv_RefreshBanners	sv	byte	readable		
@@ -3377,11 +3377,11 @@ exe	0x0052bbc0	sv_SendSelectedToBuilding	sv	draft	readable	deep
 exe	0x0052bec0	sv_HandleSelectionMouse	sv	draft	readable	deep	
 exe	0x0052c420	sv_MarkMasterCarts	sv	byte	readable		
 exe	0x0052c4a0	sv_ReleaseBubble	sv	byte	readable		
-exe	0x0052c4e0	sv_ShowBubble	sv	draft	readable	deep	
-exe	0x0052c5c0	sv_SpeakPicked	sv	draft	readable	deep	
+exe	0x0052c4e0	sv_ShowBubble	sv	byte	readable		
+exe	0x0052c5c0	sv_SpeakPicked	sv	byte	readable		
 exe	0x0052cef0	sv_DrawBubbles	sv	byte	readable		
 exe	0x0052d010	sv_DrawGateName	sv	draft	readable	deep	
-exe	0x0052d1e0	sv_DrawNamePlates	sv	draft	readable	deep	
+exe	0x0052d1e0	sv_DrawNamePlates	sv	byte	readable		
 exe	0x0052d2a0	sv_DrawItemNames	sv	byte	readable		
 exe	0x0052d480	sv_DrawBorderArrows	sv	byte	readable		
 exe	0x0052d7a0	sv_CameraFollow	sv	byte	readable		
