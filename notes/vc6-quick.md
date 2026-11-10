@@ -444,3 +444,17 @@ mechanisms, each as a generated round over all positions / subsets:
   flat, `if (a && a->h > 0 && b && b->h > 0) .. else if (a && a->h != 0) ..`; the second test's `je` (not `jbe`)
   is the `!= 0` spelling. Wait loops `while (r != -1 && cm_GetSlotState(r) == 0) sv_PumpNet();` stay unrotated
   (amt_CheckOfficeColumns 16 ins -> byte).
+- **Strength-reduced table-loop base on a field (`mov ecx, tbl+0x14`, `[ecx-0x10]` = owner)**: VC6 bases the IV on a
+  field by the ORDER of the references in the body, not only their count. Writing the shared `x14 = -1` first in each
+  arm (`if (owner == id) { x14 = -1; owner = -1; ...} else if (x14 == id) { x14 = -1; state = 1; }`) moved the base
+  from owner to x14 and VC6 still tail-merged the store after the arms (amt_ClearOffices, amt_ClearOfficesIfAll:
+  byte). Test such rules on a toy loop first (deep-tools/toyasm.py, 0.2 s): the toy reproduced both bases.
+  A save loop `for (p = tbl; (int)p < (int)&tbl[N]; p++)` based on kind (+8) where the index loop
+  `tbl[i].field` gives the original's owner (+4) base (amt_SaveAemter byte): retry the index form even when a tag
+  says it was tried (it was tried before the early-return shape was fixed).
+- **A global read once before a loop (`mov si, word [g]` before the loop, `cmp si, 0xb` inside)** with a local
+  `d = g;` gave a dword load (`mov esi, dword [g]`); reading `g` at its use lets VC6 hoist it itself, as a word.
+  An unused-after-hoist local also cost an extra register (amt_ClearOffices).
+- **`add esp, 4` after every call and a value pushed before the next call** (`and eax,0xffff; add eax,esi; push
+  eax; push 0xc; call`): the calls were nested in an argument list (`f(g(12) + 1, g(n) + base)`), not separate
+  statements; an unmasked `add eax, esi` after a 16-bit roll is the int-returning callee (amt_CreateApplicant byte).
