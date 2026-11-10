@@ -739,7 +739,7 @@ exe	0x00439c90	d3_ClipPoly	d3_engine	12bd5273536c2033	no	shape	control=shape p1=
 exe	0x0043a000	d3_SelectSurf	d3_engine	c707499252b3b3f9	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0043a160	d3_DrawObjectCB	d3_engine	2d74fff909bde8f5	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x0043a610	d3_SetFogRange	d3_engine	f4263bdaf20a30d4	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x0043a6f0	d3_SetFog	d3_engine	4499e35c99a1ac03	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x0043a6f0	d3_SetFog	d3_engine	4499e35c99a1ac03	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x0043a7d0	d3_DrawSortedD3D	d3_engine	eaaf1fee25ee2547	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x0043b080	d3_DrawSortedSW	d3_engine	239a800e6523bff8	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0043b300	d3_RadixSort	d3_engine	7e1b5c7b5662cbc6	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte

@@ -802,23 +802,34 @@ void d3_SetFogRange(float start, float end)
     }
 }
 /* 0x43a6f0, turns the fog on (start < end: sets the range through d3_SetFogRange) or off (start >= end:
-   restores the viewport when the fog was on), then stores the fog range, the on flag and the colour
-   @deep read the whole function against the original 0x43a6f0..0x43a7c6: the same tests, the same
+   restores the viewport when the fog was on), then stores the fog range, the on flag and the colour @stuck
+   headers sample: insensitive (32 samples, one codegen). Left: the original duplicates the 4-store tail
+   (FogOn=bl, FogStart1, FogEnd2, fog_color, pop ebx, ret) into the start<end arm before scheduling (loads
+   above add esp,8, stores End/On/Start/color); ours jumps to the merged tail, and the else arm's eax/ecx/edx
+   rotation follows. Probed the threshold: VC6 duplicates this tail with 2 stores left (On, Start) but not
+   with 3 or 4, so the original's tail is cheaper to VC6 than ours in some way not found. dcp try (this
+   session): all 23 orders of the tail stores: no duplication (best 18 ins is a store-order artefact, not
+   kept); early return guard = control; else if + char on = 0: 30 ins; int on: 26; on = start < end + if (on)
+   / ternary / if (!on): = control or block-reorder only; tail written in both arms (24 orders, with on =
+   start < end): 31-33 ins (const 1 store); same with return: 33; comma-joined stores (1 or 2 statements) =
+   control; *(unsigned long *)&d3_fog_color = control; int-cast float copies 34. Open: why VC6 duplicates the
+   original's 4-store tail (a type of FogOn/fog globals, a different outer-if form, or code above in the
+   unit). prior: read the whole function against the original 0x43a6f0..0x43a7c6: the same tests, the same
    d3_SetFogRange / d3_SetViewport calls with the same arguments, the same four stores (FogOn=bl,
    FogStart1=start, FogEnd2=end, fog_color=color) on both paths, bl=1 / bl=0 per arm. Left: VC6 tail
    duplication only - the original keeps a copy of the store tail inline in the start<end arm (+0x2b 'mov
    eax,[esp+0x14] / mov edx,[esp+0x10] / add esp,8 / mov [d3_FogEnd2],eax / mov eax,[esp+0x10] / mov
-   [d3_FogOn],bl / mov [d3_FogStart1],edx / mov [d3_fog_color],eax / pop ebx / ret') where ours has 'add
-   esp,8 / jmp' to the merged tail; the copy uses bl (not the constant 1), so it is made after allocation,
-   not by the source. The M8 lines are the one-instruction alignment shift of the d3_SetViewport pushes
-   under an eax/ecx/edx rotation and of the tail's stores. Tried (this and an earlier session): shared tail
-   in either order, duplicated stores per arm with return (gives 'mov [d3_FogOn],1' constants, wrong), on =
-   start < end, early return, on=1 inside the outer if, inverted condition. A variant round over the
-   statement form is what is left. (references: M8 at +0x4b: ours refers to d3_ScreenH (0xfc2df0), the
-   original's field to 0xfc2df4 (d3_ScreenW) (and 9 more), explained: the original's store4 [d3_FogEnd2] at
-   +0x2a is the first store of the duplicated tail copy in the start<end arm; ours does the same four
-   stores on that path through the jmp to the merged tail; the M8 refs are alignment shifts of identical
-   push/store sequences (asmdiff --symbols shows the same objects on both sides, offset by one line)) */
+   [d3_FogOn],bl / mov [d3_FogStart1],edx / mov [d3_fog_color],eax / pop ebx / ret') where ours has 'add esp,8
+   / jmp' to the merged tail; the copy uses bl (not the constant 1), so it is made after allocation, not by
+   the source. The M8 lines are the one-instruction alignment shift of the d3_SetViewport pushes under an
+   eax/ecx/edx rotation and of the tail's stores. Tried (this and an earlier session): shared tail in either
+   order, duplicated stores per arm with return (gives 'mov [d3_FogOn],1' constants, wrong), on = start < end,
+   early return, on=1 inside the outer if, inverted condition. A variant round over the statement form is what
+   is left. (references: M8 at +0x4b: ours refers to d3_ScreenH (0xfc2df0), the original's field to 0xfc2df4
+   (d3_ScreenW) (and 9 more), explained: the original's store4 [d3_FogEnd2] at +0x2a is the first store of the
+   duplicated tail copy in the start<end arm; ours does the same four stores on that path through the jmp to
+   the merged tail; the M8 refs are alignment shifts of identical push/store sequences (asmdiff --symbols
+   shows the same objects on both sides, offset by one line)) */
 
 void d3_SetFog(float start, float end, unsigned long color)
 {
