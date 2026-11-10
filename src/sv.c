@@ -5798,17 +5798,7 @@ typedef struct SVFRAME {                /* 8 bytes, an entry of the frame stack 
    main room), a running camera placement, a nested frame, the room (back to the main room 0xf2 or out of the
    building), and puts the camera back on the stored view. Mask 0x100: the panel update; mask 8: the border
    camera of an own (or 0x1000-permitted) building. The building permissions are recomputed when the building or
-   room changed (sv_PermsBuilding / sv_PermsRoom) or ai_PermsDirty is set
-   @deep Rewritten whole against the original 0x52d940..0x52e049 (every block read and reconciled: the
-   event-window close, the event bar loop, the 0x800 right-click cascade, the camera / frame / room exit,
-   the 0x100 / 8 tails and the permission refresh); 353 -> 3 differing instructions, ours 503 vs the
-   original's 506. The one hunk left: the original tests the slot address inside the event bar loop, 'lea
-   eax,[edx-4]; test eax,eax; je' at 0x52da38 (edx = &he_EventSlots[i].obj, the null test of
-   &he_EventSlots[i]); our source has the test (s != 0) but VC6 folds it in every spelling tried: s =
-   &he_EventSlots[i], a pointer walk s++ with an unsigned and a signed (int) end compare, (int)s != 0, char
-   * / unsigned address arithmetic, &s->ev != 0, &s->obj - 1, s != he_ActiveSlot (0 there), s != the zero
-   local bld, he.h's array without its size. A variant round has to find the spelling (an inline helper,
-   another declaration of the table) that keeps the test. */
+   room changed (sv_PermsBuilding / sv_PermsRoom) or ai_PermsDirty is set */
 
 void sv_HandleRightClick(unsigned fl)
 {
@@ -5840,8 +5830,10 @@ void sv_HandleRightClick(unsigned fl)
     }
     if (dm_L.rup != 0 && d2_PointerObj != -1) {
         for (i = 0; i < 16; i++) {
+            /* @original the slot's address is tested for null (a test VC6 keeps only when s
+               is not the expression the other operands use) */
             s = &he_EventSlots[i];
-            if (s->obj != -1 && s != 0 && d2_PointerObj == ((D2OBJ *)d2_Objs)[s->obj].id) {
+            if (he_EventSlots[i].obj != -1 && s != 0 && d2_PointerObj == ((D2OBJ *)d2_Objs)[he_EventSlots[i].obj].id) {
                 he_EventSlots[i].ev->stage = -1;
                 he_SlotConfirmed = 0;
                 di_ClearButtons();
