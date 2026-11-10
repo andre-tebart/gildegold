@@ -54,7 +54,7 @@ extern int path_Mode;                       /* 0x633184, 1 = one-directional sea
 unsigned short path_Find(PATHOUT *out, PMAP *map, int sx, int sy, int ex, int ey, int type); /* 0x424f30 */
 unsigned short path_Search2(PMAP *map, int sx, int sy, short ex, int ey, int type);       /* 0x4250a0, bidirectional */
 unsigned short path_Search1(PMAP *map, int sx, int sy, short ex, int ey, int type);       /* 0x425470 */
-unsigned int path_Expand(PMAP *map, unsigned short n);                                    /* 0x425780 */
+unsigned short path_Expand(PMAP *map, unsigned short n);                                    /* 0x425780 */
 void path_Reverse(PMAP *map, unsigned int n);                                           /* 0x425af0 */
 
 #endif

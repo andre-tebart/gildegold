@@ -204,55 +204,67 @@ unsigned short path_Search1(PMAP *map, int sx, int sy, short ex, int ey, int typ
     }
     return a;
 }
-/* 0x425780, expands node n of map: flags it closed, tests its 8 neighbours against the other
+/* 0x425780, expands node n (the parameter, kept as self while the parameter becomes the head) of map: flags it closed, tests its 8 neighbours against the other
    search (path_TestFlag), relaxes their g/f and keeps the open list sorted by f; returns the open
    list head, or (unsigned short)n when it met the other search (path_Meet is set).
-   @deep behaviour only: after the double 0.0 and counting-for fixes the remaining hunks are register allocation and stack slot layout (our frame sub esp,0x14 vs original sub esp,0x10, slots 16); readable met */
+   @stuck kept (222 -> 64 ins, frame now 0x10 = original): the parameter is reused as the open-list head
+   (the original keeps head in n's slot, returns it with mov ax,[slot]: unsigned short return, header
+   changed) with a copy self = head made first, k and q unsigned short, the stamp tests split into
+   'stamp == Stamp && !(g < nb->g) continue' and 'stamp == Stamp && (flags & 1)' (the original re-compares
+   cx,bx), the unlink written prev != 0xffff first. Left: path_Target loaded as and ebx,0xffff (original
+   xor ebx,ebx; mov bx), nb->parent through ax (original cx), and the insert loop: the original compares
+   p->next in memory, keeps &p->next in ecx (lea ecx,[edi+0x16]) and reloads q = [ecx] after the f test,
+   with p in edi and q in edx; ours CSEs p->next into cx and swaps edi/edx. Tried = control: q = head
+   before the head test, for(;;) with break, (unsigned short) shift, abs() splits/inline h, tail test
+   through q without casts; worse: loop over map->nodes[q].next (+114), p->f > f (+6), tail test through p
+   (+115), q = map->nodes[q].next (+114). (tiebreak: insensitive, dcp headers
+   sample path_Expand: 32 samples, one codegen) prior: behaviour only: after the double 0.0 and counting-for fixes the remaining
+   hunks are register allocation and stack slot layout (our frame sub esp,0x14 vs original sub esp,0x10,
+   slots 16); readable met */
 
-unsigned int path_Expand(PMAP *map, unsigned short n)
+unsigned short path_Expand(PMAP *map, unsigned short head)
 {
     PNODE *cur, *nb, *p;
-    unsigned int head, k, q;
+    unsigned short self;
+    unsigned short k, q;
     int dir;
     int dx, dy;
     float g, h, f;
 
-    cur = &map->nodes[(unsigned short)n];
+    self = head;
+    cur = &map->nodes[head];
     head = cur->next;
     cur->flags = cur->flags & 0xfe | 2;
     if (head != 0xffff)
         map->nodes[head].prev = cur->prev;
     for (dir = 0; dir < 8; dir++) {
-        k = (unsigned short)(path_DY[dir & 7] + path_DX[dir & 7] + n);
+        k = (unsigned short)(path_DX[dir & 7] + path_DY[dir & 7] + self);
         nb = &map->nodes[k];
         if (nb->stamp == path_Stamp && (nb->flags & path_TestFlag)) {
             nb->flags |= path_SetFlag;
             cur->flags |= path_TestFlag;
             path_Meet = k;
-            return (unsigned short)n;
+            return self;
         }
         g = path_Step[dir] * path_Costs[nb->type] + cur->g;
         if (path_Costs[nb->type] >= 0.0) {
-            if (nb->stamp == path_Stamp) {
-                if (nb->g <= g)
-                    continue;
-                if (nb->stamp != path_Stamp || !(nb->flags & 1))
-                    goto calc;
+            if (nb->stamp == path_Stamp && !(g < nb->g))
+                continue;
+            if (nb->stamp == path_Stamp && (nb->flags & 1)) {
                 h = nb->h;
-                if (nb->prev == 0xffff)
-                    head = nb->next;
-                else
+                if (nb->prev != 0xffff)
                     map->nodes[nb->prev].next = nb->next;
+                else
+                    head = nb->next;
                 if (nb->next != 0xffff)
                     map->nodes[nb->next].prev = nb->prev;
             } else {
-calc:
                 dx = (path_Target >> path_Shift) - (k >> path_Shift);
                 dy = (path_Target & path_Mask) - (k & path_Mask);
                 h = (float)(abs(dx) + abs(dy)) * path_Weight;
             }
             f = h + g;
-            nb->parent = (unsigned short)n;
+            nb->parent = self;
             nb->g = g;
             nb->f = f;
             nb->h = h;
@@ -261,35 +273,35 @@ calc:
                 nb->flags &= ~2;
                 nb->flags = nb->flags & ~path_TestFlag | 1;
                 nb->flags |= path_SetFlag;
-                if ((short)head == -1) {
+                if (head == 0xffff) {
                     nb->prev = 0xffff;
                     nb->next = 0xffff;
                     head = k;
                 } else {
                     q = head;
-                    p = &map->nodes[(unsigned short)head];
+                    p = &map->nodes[head];
                     while (p->next != 0xffff) {
                         if (f < p->f) {
                             nb->next = q;
                             nb->prev = p->prev;
                             if (p->prev != 0xffff)
-                                map->nodes[p->prev].next = (unsigned short)k;
+                                map->nodes[p->prev].next = k;
                             else
                                 head = k;
-                            p->prev = (unsigned short)k;
+                            p->prev = k;
                             break;
                         }
                         q = p->next;
                         p = &map->nodes[q];
                     }
-                    if (map->nodes[(unsigned short)q].next == 0xffff) {
+                    if (map->nodes[q].next == 0xffff) {
                         nb->prev = q;
                         nb->next = 0xffff;
-                        map->nodes[(unsigned short)q].next = (unsigned short)k;
+                        map->nodes[q].next = k;
                     }
                 }
             }
-            if ((unsigned short)k == path_Target)
+            if (k == path_Target)
                 return head;
         }
     }
