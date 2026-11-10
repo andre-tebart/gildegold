@@ -368,28 +368,25 @@ typedef struct SAVESLOTVIEW {               /* 0x220, one slot of the save / loa
 int ai_RegisterSaveSlot(int count, SAVESLOTVIEW *slots, int slot, SAVEREQUEST *req)
 {
     char *name;
-    char *want;
     SAVESLOTVIEW *s;
 
     name = req->name;
-    if (_strcmpi(name, "QUICKSAVE") == 0) {
+    if (_strcmpi(name, "QUICKSAVE") == 0)
         slot = 1;
-        want = "QUICKSAVE";
-    } else if (_strcmpi(name, "AUTOSAVE") == 0) {
+    else if (_strcmpi(name, "AUTOSAVE") == 0)
         slot = 0;
-        want = "AUTOSAVE";
-    } else if (slot == 0)
-        want = "AUTOSAVE";
-    else if (slot == 1)
-        want = "QUICKSAVE";
-    else if (slot == -1)
+    if (slot == 0) {
+        if (_strcmpi(name, "AUTOSAVE") == 0)
+            goto fill;
+    } else if (slot == 1) {
+        if (_strcmpi(name, "QUICKSAVE") == 0)
+            goto fill;
+    } else if (slot == -1)
         goto done;
     else
         goto fill;
-    if (_strcmpi(name, want) != 0) {
-        slot = -1;
-        goto done;
-    }
+    slot = -1;
+    goto done;
 fill:
     s = &slots[slot];
     if (s->win != -1)
