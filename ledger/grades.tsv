@@ -2632,8 +2632,8 @@ exe	0x004e6b40	amt_SetEventOwner	amt	byte	readable
 exe	0x004e6b70	amt_SetPersonOwner	amt	byte	readable		
 exe	0x004e6ba0	amt_SendOfficeSwap	amt	byte	readable		
 exe	0x004e6c50	amt_ExecuteSwapMessage	amt	byte	readable		
-exe	0x004e6d80	amt_ClearOffices	amt	draft	readable	deep	
-exe	0x004e6e20	amt_ClearOfficesIfAll	amt	draft	readable	deep	
+exe	0x004e6d80	amt_ClearOffices	amt	byte	readable		
+exe	0x004e6e20	amt_ClearOfficesIfAll	amt	byte	readable		
 exe	0x004e6ec0	amt_GetFirstOffice	amt	byte	readable		
 exe	0x004e6f10	amt_KindColumn	amt	byte	readable		
 exe	0x004e6f30	amt_GetOffice	amt	byte	readable		
@@ -2650,7 +2650,7 @@ exe	0x004e76b0	amt_GetOfficeApplicants	amt	byte	readable
 exe	0x004e7770	amt_GetEligibleOffices	amt	byte	readable		
 exe	0x004e78a0	amt_GetOpenOffice	amt	byte	readable		
 exe	0x004e78f0	amt_GetCreateRanges	amt	byte	readable		
-exe	0x004e7aa0	amt_CreateApplicant	amt	draft	readable	deep	
+exe	0x004e7aa0	amt_CreateApplicant	amt	byte	readable		
 exe	0x004e7b60	amt_InitApplicant	amt	byte	readable		
 exe	0x004e7c40	amt_GetKindLevel	amt	byte	readable		
 exe	0x004e7c60	amt_ElectOffices	amt	shape	readable		
@@ -2674,7 +2674,7 @@ exe	0x004e9a00	amt_ExecuteShareMessage	amt	byte	readable
 exe	0x004e9ce0	amt_ExecuteMayorPowerMessage	amt	draft	readable	deep	
 exe	0x004ea550	amt_ChangeDistrictOpinion	amt	byte	readable		
 exe	0x004ea5c0	amt_GetDistrictLiking	amt	byte	readable		
-exe	0x004ea690	amt_SaveAemter	amt	draft	readable	deep	
+exe	0x004ea690	amt_SaveAemter	amt	byte	readable		
 exe	0x004ea7a0	amt_LoadAemter	amt	byte	readable		
 exe	0x004ea8e0	amt_TellOpenOffices	amt	byte	readable		
 exe	0x004ea990	amt_GetOwnedOfficePay	amt	byte	readable		
