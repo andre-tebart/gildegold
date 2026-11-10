@@ -590,3 +590,17 @@ mechanisms, each as a generated round over all positions / subsets:
 - **Read pointer-indexed loads against the IV base**: in a strength-reduced loop the original's `[eax-0x50]`
   with eax = &row[i + 1].pos is row[i].pos, not row[i + nx + 1]; d3s_MeshFromMap had the wrong vertex in a
   height read (a meaning bug that an earlier "allocation only" reading missed).
+- **Still check line 211 first on f3init-style drafts**: three of four f3init deep items (session 46) were decompiled
+  pointer walks (`(int)p < (int)END`, `p[-10]` / `*p` against a base `T[0] + 0x228`); the index loop took
+  init_LocalData and init_LoadShopScript to byte and init_AllocSceneBuilding 41 -> 4 ins. Rebase the fields on the
+  IV: `T[0] + 0x228` with a record of 0x21c is record 1 + 0xc, so the loop starts at i = 1 and reads the byte +0xc
+  (the faith), not +0x228.
+- **Two copies of a call's argument pushes, one jumping into the other's call** (`inc eax; push eax; push eax; ..;
+  jmp call` and a second `inc eax; lea ecx,[buf]; push ..` falling into it): the source had two calls, one per arm.
+  With a local initialised 0 at the top and read from its frame slot on one path (`mov eax,[esp+0x10]`), write
+  `goods = 0; if (home) name = rec; else goods = ..; if (goods == 0) f(name..); else f(goods..);` - the arm that
+  does not assign name keeps name out of a register and frees one for the parameter (init_LoadShopScript, byte).
+- **Unsolved: `movsx ecx, byte [o+0x4b]` scheduled before an unrelated `and`, then `cmp ecx, 2`** where every char
+  spelling gives `mov al,[..]; cmp al,2` (or `cmp byte [..],2`): casts, `>> 24` on int / unsigned, bitfields,
+  static const / enum / local constants, int and char locals, `?:` and flag forms all narrow; only arithmetic
+  (`k - 2`, `k ^ 2`, `switch`) keeps the int, with sub / xor instead of cmp (init_AllocSceneBuilding).
