@@ -3070,22 +3070,12 @@ void init_LoadTypeBScene(void)
    belongs to o's group (+0x30): "%slocations\%s\Einkauf_%s.esc" in the script folder evt_Path with the name of b's
    type for a home, else of o's prototype. When the file exists, an earlier script of the character's model (+0x28)
    is stopped, the new one runs with the model and ai_FavourComment, the script records the model and its id goes to
-   the model and to init_ShopScript (-1 when the script does not load).
-   @deep read against the whole original 0x5124f0..0x5126a0 and rewritten: the window walk as a for loop
-   with the break at its head (no goto), the later reads through c (the last candidate, esi) as the
-   original does, the home-type record first, name initialised 0 and taken from the goods record only when
-   that is nonzero, the old script id read once; Q2 (ai_SceneChars, ai_FavourComment), Q4 (INIT_CHAR.health
-   / model, SCENEOBJ.script / scriptGroup, INIT_OBJ, EVTSCRIPT.id / character), Q5, Q7
-   (gm_FindCharacterByMaster in f3gm.h) cleared. 99 -> 95 differing, 132 vs 139 instructions. Left:
-   allocation - the original keeps b in ebp and name in a frame slot ([esp+0x10], frame 0x13c vs 0x138) and
-   so duplicates the sprintf tail for the goods path (0x5125be) with the null path reading the slot (mov
-   eax,[esp+0x10]); ours keeps name in ebp, reloads b from its argument slot and joins the paths before one
-   sprintf (lea eax,[ebp+1]); the rest are the follow-on register choices (eax/ecx/edx around
-   evt_RunScriptArgs and the id stores) */
+   the model and to init_ShopScript (-1 when the script does not load). */
 void init_LoadShopScript(unsigned char *b, unsigned short *o)
 {
     INIT_CHAR *c, *w, *m;
-    INIT_CHAR **q;
+    int i;
+    char *goods;           /* the prototype name of o (null-checked, the home type wins) */
     EVTSCRIPT *h, *old;
     char *name;
     int id;
@@ -3096,19 +3086,23 @@ void init_LoadShopScript(unsigned char *b, unsigned short *o)
     w = 0;
     c = 0;
     m = (INIT_CHAR *)gm_FindCharacterByMaster((int)b);
-    for (q = (INIT_CHAR **)ai_SceneChars; (int)q < (int)INIT_WINDOWS_END; q++) {
+    for (i = 0; i < 0x20; i++) {
         if (w != 0)
             break;
-        c = *q;
+        c = (INIT_CHAR *)ai_SceneChars[i];
         if (c != 0 && c == m)
             w = c;
     }
     if (w != 0 && w->health > 1 && (o == 0 || w->model->scriptGroup == ((INIT_OBJ *)o)->objId)) {
+        goods = 0;
         if (gm_IsHomeType(b) != 0)
             name = (char *)INIT_BTYPE(b);
-        else if (ai_Goods + ((INIT_OBJ *)o)->proto * 0x41 != 0)
-            name = ai_Goods + ((INIT_OBJ *)o)->proto * 0x41;
-        sprintf(buf, "%slocations\\%s\\Einkauf_%s.esc", evt_Path, name + 1, name + 1);
+        else
+            goods = ai_Goods + ((INIT_OBJ *)o)->proto * 0x41;
+        if (goods == 0)
+            sprintf(buf, "%slocations\\%s\\Einkauf_%s.esc", evt_Path, name + 1, name + 1);
+        else
+            sprintf(buf, "%slocations\\%s\\Einkauf_%s.esc", evt_Path, goods + 1, goods + 1);
         if (vfs_FindFile(buf, vfs_Root, s1) != 0) {
             sprintf(s2, "sp_%i", c->netId);
             h = evt_LoadScript(buf);
