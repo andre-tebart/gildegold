@@ -2134,7 +2134,7 @@ exe	0x004c28a0	snd_LoadBuildingVoices	f3snd	cbdf567a36310b28	no	byte	control=byt
 exe	0x004c2c00	snd_UnloadBuildingVoices	f3snd	3148f00668d3a8e8	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004c2c70	snd_PlayWorkerClick	f3snd	64120e7f5f88c45a	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004c2ce0	snd_PlaySelectedClick	f3snd	9c61e4c0d3737f73	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x004c2d20	snd_PlayFavourComment	f3snd	695ed216cd335e92	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x004c2d20	snd_PlayFavourComment	f3snd	308bc6a4bcf3d300	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x004c2f30	ai_FavourComment	f3snd	9546e2818ed217c5	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
 exe	0x004c30e0	snd_StartMarketAmbience	f3snd	bf4b8b08e7e21a19	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004c3140	snd_StopMarketAmbience	f3snd	70a34c289feb9e32	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
