@@ -632,10 +632,10 @@ void ai_FillSaveSlots(int view, int form, SAVESLOTVIEW *slots, char *files, char
         sprintf(timebuf, "%i%c", hdr.money, 0x11);
         io_PrintText(0x1cc5, hdr.player, hdr.year + 0x578, hdr.hour, hdr.minute % 0x3c);
         io_PrintText(0x1cc6,
-                     (hdr.compactTexts ? 10 : 0) + 0x114 + hdr.traitTextOffset,
+                     (hdr.compactTexts ? 0x11e : 0x114) + hdr.traitTextOffset,
                      hdr.scenario,
-                     (hdr.compactTexts ? 0x5f : 0) + 0x130 + hdr.nameTextOffset,
-                     (hdr.compactTexts ? 0x28 : 0) + 0x253 + hdr.officeTextOffset,
+                     (hdr.compactTexts ? 0x18f : 0x130) + hdr.nameTextOffset,
+                     (hdr.compactTexts ? 0x27b : 0x253) + hdr.officeTextOffset,
                      timebuf,
                      ai_DifficultyTexts[hdr.difficulty]);
     }
