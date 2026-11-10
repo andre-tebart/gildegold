@@ -1801,15 +1801,7 @@ int ai_DecideVisitAction(int a, AIPER *p, int c, AIARG *in, AIARG *m)
     return 0;
 }
 /* 0x4aa430, check callback of the visit actions (0x4aa120): as 0x4a9fa0; prints the action name into a debug text
-   that nobody reads
-   @deep read whole against the original: typed AIARG in/out, AICHAR p (name at 0x30), each case is
-   sprintf(name, prva_...) (the original pushes the string per case with one shared lea/push/call sprintf
-   tail, then add esp, 8 at the join); the rest equal. Left is VC6 cross-jumping/scheduling of the case
-   tails: ours computes the buffer address before the string in cases 0 and 4 (- lea ecx, [esp + 8] / push
-   prva_WERBUNG / push ecx / jmp) where the original pushes the string and jumps to one tail (+ push
-   prva_WERBUNG / jmp 0x4aa4f2 ... + lea ecx, [esp + 0xc] / push ecx / call sprintf), 97 vs 91 instructions
-   from the unmerged tails. Tried: char *s with one sprintf (mov eax, str / push eax instead of push str,
-   no tail join), default case last (no change) */
+   that nobody reads */
 
 int ai_CheckVisitAction(AICHAR *p, AIARG *in, AIARG *out)
 {
@@ -1835,23 +1827,27 @@ found:
         switch (in->ref) {
         case 0:
             sprintf(name, "prva_WERBUNG");
+            ctx[0x85] = out->ref;
             break;
         case 3:
             sprintf(name, "prva_ANKLAGE_ERHEBEN");
+            ctx[0x85] = out->ref;
             break;
         case 4:
             sprintf(name, "prva_ERPRESSUNG");
+            ctx[0x85] = out->ref;
             break;
         case 7:
             sprintf(name, "prva_FURCHT_EINFLOESSEN");
+            ctx[0x85] = out->ref;
             break;
         case 8:
             sprintf(name, "prva_BELEIDIGUNG");
+            ctx[0x85] = out->ref;
             break;
         default:
             return 0;
         }
-        ctx[0x85] = out->ref;
         sprintf(text, "NPC %s <%i> w\xe4hlt %s", p->name, p->id, name);
         return (ord_DispatchOrder(in->ref, (char *)p, ctx) & 0x60) == 0;
     }
