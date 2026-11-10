@@ -1645,21 +1645,25 @@ GVYARD *gv_AllocGraveyard(unsigned char *o)
    is below 3): allocates the larger record (gv_AllocGraveyard), copies the graves of the old sizes and the entries' state
    (all but their grave pointers) over, takes the open flags and frees the old record (gv_FreeGraveyard); returns the new
    record, or 0 (the old one stays) when o does not qualify or there is no memory
-   @deep Read in full against the original (all 188 instructions reconciled): the qualification test, the
-   alloc / restore, the per-level counts and grave memcpys (rep movsd 0x88 / 0xcc / 0xcc / 0x88), the three
-   field-by-field entry copy loops, the open flags and the free match statement for statement. Remaining:
-   the frame (original sub esp,0x10 with n2 at [esp+0x18]; ours push ecx with n2 at [esp+0x10]), the o /
-   zero pair in ebp / edi swapped (ours edi / ebp), the old->lists[0]->grave load the original hoists above
-   the level test while ours loads nw->lists[0] first, and the base/index order in the sib stores of the
-   first copy loop ([edx+esi+4] vs [esi+edx+4]). Tried separate loop indices per list (no change) and s/d
-   grave pointers set before the level test (worse: 146 code). Frame, allocation and scheduling only. */
+   @stuck this pass: the counts as one int n[4] (the original's 0x10-byte frame with n[2] at +8; VC6 keeps
+   n[0], n[1] in registers) and set in index order n[0], n[1], n[2] before the memcpys (60 -> 8 ins, shape).
+   Left (sib 26): the four disp stores of the first copy loop address [base + esi + d] in the original ('+ mov
+   dword ptr [edx+esi+4],ecx'), ours [esi + base + d]; the loops over lists[1] / lists[2] agree. Tried for
+   loop 0 only: (p + i)->f, (*nw->lists)[i], &p[i], i[p], *(p + i), a (GVENTRY *) cast, char * arithmetic, on
+   nw, old or both; old->lists[0] without != 0, n[0] > i, ++i, a block-local bound: all = control; n[3] as the
+   index (45 ins), unsigned i (14 ins); every declaration order (= control). (tiebreak: insensitive) prior:
+   Read in full against the original (all 188 instructions reconciled): the qualification test, the alloc /
+   restore, the per-level counts and grave memcpys (rep movsd 0x88 / 0xcc / 0xcc / 0x88), the three
+   field-by-field entry copy loops, the open flags and the free match statement for statement. Tried separate
+   loop indices per list (no change) and s/d grave pointers set before the level test (worse: 146 code).
+   Frame, allocation and scheduling only. */
 
 GVYARD *gv_GrowGraveyard(unsigned char *o)
 {
     AIBLD *bld = (AIBLD *)o;
     AIBTYPE *bt;
     GVYARD *old, *nw;
-    int n0, n1, n2, i;
+    int n[4], i;                            /* the entry count of each size (as lists[4]; [3] unused) */
 
     old = bld->yard;
     bt = (AIBTYPE *)(ai_BTypes + bld->type + bld->type * 0x24c);
@@ -1671,21 +1675,21 @@ GVYARD *gv_GrowGraveyard(unsigned char *o)
             return 0;
         }
         if (bt->cap247 == 2) {                  /* from level 1: 8 graves of size 0, 4 of size 1 */
-            n2 = 0;
-            n0 = 8;
-            n1 = 4;
+            n[0] = 8;
+            n[1] = 4;
+            n[2] = 0;
             memcpy(nw->lists[0]->grave, old->lists[0]->grave, 8 * sizeof(GVGRAVE));
             memcpy(nw->lists[1]->grave, old->lists[1]->grave, 4 * 2 * sizeof(GVGRAVE));
         } else {                                /* from level 2: 12 / 6 / 2 graves of the sizes 0 .. 2 */
-            n2 = 2;
-            n0 = 12;
-            n1 = 6;
+            n[0] = 12;
+            n[1] = 6;
+            n[2] = 2;
             memcpy(nw->lists[0]->grave, old->lists[0]->grave, 12 * sizeof(GVGRAVE));
             memcpy(nw->lists[1]->grave, old->lists[1]->grave, 6 * 2 * sizeof(GVGRAVE));
             memcpy(nw->lists[2]->grave, old->lists[2]->grave, 2 * 4 * sizeof(GVGRAVE));
         }
         if (old->lists[0] != 0) {
-            for (i = 0; i < n0; i++) {
+            for (i = 0; i < n[0]; i++) {
                 nw->lists[0][i].size = old->lists[0][i].size;
                 nw->lists[0][i].id = old->lists[0][i].id;
                 nw->lists[0][i].w08 = old->lists[0][i].w08;
@@ -1694,7 +1698,7 @@ GVYARD *gv_GrowGraveyard(unsigned char *o)
             }
         }
         if (old->lists[1] != 0) {
-            for (i = 0; i < n1; i++) {
+            for (i = 0; i < n[1]; i++) {
                 nw->lists[1][i].size = old->lists[1][i].size;
                 nw->lists[1][i].id = old->lists[1][i].id;
                 nw->lists[1][i].w08 = old->lists[1][i].w08;
@@ -1703,7 +1707,7 @@ GVYARD *gv_GrowGraveyard(unsigned char *o)
             }
         }
         if (old->lists[2] != 0) {
-            for (i = 0; i < n2; i++) {
+            for (i = 0; i < n[2]; i++) {
                 nw->lists[2][i].size = old->lists[2][i].size;
                 nw->lists[2][i].id = old->lists[2][i].id;
                 nw->lists[2][i].w08 = old->lists[2][i].w08;

@@ -2766,7 +2766,7 @@ exe	0x004ef900	gv_LoadGraveyard	gv	7679c4b8b8c617cd	no	byte	control=byte p1=byte
 exe	0x004ef930	gv_RandomGrave	gv	eadf6d3530738cf0	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004ef9c0	gv_BuryNewDead	gv	835d77ab86c3ed45	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
 exe	0x004efc10	gv_AllocGraveyard	gv	4a58d0d9af9b6917	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
-exe	0x004eff50	gv_GrowGraveyard	gv	7f1f90dd5a225e24	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x004eff50	gv_GrowGraveyard	gv	efb42d25c7bbda2a	no	shape	sample n=32 seed=1 compiled=32 codegens=1 best=shape
 exe	0x004f0180	gv_FreeGraveyard	gv	eab36f0085a34cf3	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004f01d0	gv_OrderBury	gv	1b99eabbdeccfdb3	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
 exe	0x004f0240	gv_BuryCharacter	gv	2dcdd137b356af83	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
