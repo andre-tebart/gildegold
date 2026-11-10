@@ -39,7 +39,7 @@ exe	0x00402a30	ch_AllocAt	ch	byte	readable
 exe	0x00402a70	ch_FindByName	ch	byte	readable		
 exe	0x00402ac0	ch_FindByObject	ch	byte	readable		
 exe	0x00402af0	ch_SetLowPoly	ch	byte	readable		
-exe	0x00402ba0	ch_UpdateLowPoly	ch	draft	readable	deep	
+exe	0x00402ba0	ch_UpdateLowPoly	ch	byte	readable		
 exe	0x00403070	ch_CreateMesh	ch	byte	readable		
 exe	0x00403390	ch_Create	ch	byte	readable		
 exe	0x004033c0	ch_MoveToScene	ch	byte	readable		
@@ -101,7 +101,7 @@ exe	0x00406a70	ch_FollowGround	ch	byte	readable
 exe	0x00406bc0	ch_ThinPath	ch	byte	readable		
 exe	0x00406c60	ch_SetHandObject	ch	byte	readable		
 exe	0x00406e40	ch_ActAnimOnce	ch	byte	readable		
-exe	0x00406e60	ch_ActTurn	ch	draft	readable	deep	
+exe	0x00406e60	ch_ActTurn	ch	draft	readable	stuck	
 exe	0x00407200	ch_FindNear300	ch	byte	readable		
 exe	0x004072a0	ch_FindFreeCell	ch	shape	readable	stuck	
 exe	0x00407690	ch_MapAlloc	ch	byte	readable		
@@ -110,7 +110,7 @@ exe	0x004076c0	ch_CopyVec	ch	byte	readable
 exe	0x004076e0	ch_PosToCell	ch	byte	readable		
 exe	0x00407740	ch_CellToCell	ch	byte	readable		
 exe	0x00407790	ch_GetWaypoints	ch	draft	readable	stuck	
-exe	0x004079b0	ch_GetNewPath	ch	draft	readable	deep	
+exe	0x004079b0	ch_GetNewPath	ch	draft	readable	stuck	
 exe	0x00408490	ch_PathToTarget	ch	shape	readable		
 exe	0x00408690	ch_InitWalk	ch	shape	readable		
 exe	0x00408ab0	ch_WalkSound	ch	byte	readable		
@@ -3270,7 +3270,7 @@ exe	0x0051c560	ls_WriteMessageQueues	ls	shape	readable
 exe	0x0051c870	ls_WriteEnvironment	ls	draft	readable	deep	
 exe	0x0051c920	ls_Read	ls	byte	readable		
 exe	0x0051c950	ls_LoadGame	ls	byte	readable		
-exe	0x0051cee0	ls_ReadSaveHeader	ls	draft	readable	deep	
+exe	0x0051cee0	ls_ReadSaveHeader	ls	byte	readable		
 exe	0x0051d2d0	ls_LoadScene	ls	draft	readable	deep	
 exe	0x0051d3d0	ls_ReadObjects	ls	byte	readable		
 exe	0x0051d4f0	ls_HookBuildingCB	ls	byte	readable		
