@@ -999,15 +999,23 @@ int gm_ResearchClass(int k, int *out);         /* 0x50b090, f3gm.c, the research
    then reads the cell map <name>_C.bmp: a white pixel marks a cell, the pixel right of it one of the 15
    sv_GroundplanColours, the n-th colour the n-th good of the building's type (kinds 2 / 6, its slot list) or
    the n-th offered object (type kind 2); one picture button per cell into sv_GroundplanButtons
-   @deep read whole against the original and reconstructed (strings, per-branch sprintf, class/kind chains,
-   char-parameter PutPixelRGB, short CreatePicObj x, strcat _C.bmp, kind-2 query branch first, slot loop);
-   411 vs 412 ins. Left: the cell map's y loop is top-tested in the original (0x5227d1 cmp ebx,[eax+8]; jge
-   0x522974 ... 0x522913 jmp 0x5227d1, exit block xor ebp,ebp re-zeroing the cached 0) where ours is
-   rotated (cmp [eax+8],ebp; jle / bottom mov ecx,[eax+8]; inc ebx; cmp ebx,ecx; jl) and our epilogue
-   follows the loop; for / while / for(;;)+break / goto loop all compile identically, so the form is the
-   optimizer's (the 0-register ebp reused as i in the loop), not the source. Also 0x5228c4 mov cl,[eax+ebx]
-   vs mov ecx,eax; add ecx,ebx; mov cl,[ecx] (addressing choice of ai_GoodsT[id].type, same with a char*
-   index) */
+   @stuck 49 -> 4 ins: the cell map's y loop written for (y = 0; sv_GroundplanSurf != 0 && y <
+   sv_GroundplanSurf->h; y++) (loop-invariant test in the condition) is top-tested as the original (while
+   (1) + break / goto out give the same code). Left: 0x5228c4, the original materializes the goods record
+   address (mov ecx,eax; add ecx,ebx; mov cl,[ecx]) where ours folds it (mov cl,[eax+ebx]) for kind =
+   ai_GoodsT[id].type. Tried (all = control): char* / int / (ai_GoodsT + id) / (id << 6) + id spellings, an
+   AIGOOD * or char * block local, no kind local (type tested twice), the id expression inline, id / kind
+   types (unsigned short / short / int worse), continue / nested / if-block forms of the slot tests.
+   sv_UpdateGroundplan has the same load and the same y loop: try the loop lever there. (tiebreak: not
+   measured here: dcp headers sample 32 samples, one codegen, insensitive) prior: read whole against the original and
+   reconstructed (strings, per-branch sprintf, class/kind chains, char-parameter PutPixelRGB, short
+   CreatePicObj x, strcat _C.bmp, kind-2 query branch first, slot loop); 411 vs 412 ins. Left: the cell
+   map's y loop is top-tested in the original (0x5227d1 cmp ebx,[eax+8]; jge 0x522974 ... 0x522913 jmp
+   0x5227d1, exit block xor ebp,ebp re-zeroing the cached 0) where ours is rotated (cmp [eax+8],ebp; jle /
+   bottom mov ecx,[eax+8]; inc ebx; cmp ebx,ecx; jl) and our epilogue follows the loop; for / while /
+   for(;;)+break / goto loop all compile identically, so the form is the optimizer's (the 0-register ebp
+   reused as i in the loop), not the source. Also 0x5228c4 mov cl,[eax+ebx] vs mov ecx,eax; add ecx,ebx;
+   mov cl,[ecx] (addressing choice of ai_GoodsT[id].type, same with a char* index) */
 void sv_LoadGroundplan(void)
 {
     AIBLD *b;
@@ -1096,49 +1104,45 @@ loaded:
     sv_GroundplanSurf = d2_LoadBmpSurface(name);
     n = 0;
     d2_LockSurface(sv_GroundplanSurf);
-    y = 0;
-    if (sv_GroundplanSurf != 0) {
-        while (y < sv_GroundplanSurf->h) {
-            for (x = 0; x < sv_GroundplanSurf->w; x++) {
-                d2_GetPixelColour(x, y, sv_GroundplanSurf, rgb);
-                if (d2_CompareColour(rgb, white) != 0)
-                    continue;
-                d2_GetPixelColour(x + 1, y, sv_GroundplanSurf, rgb);
-                for (i = 0; i < 15; i++)
-                    if (d2_CompareColour(rgb, sv_GroundplanColours + i * 3) == 0)
-                        break;
-                if (i >= 15)
-                    continue;
-                cnt = 0;
-                if (bt->kind == 2) {
-                    for (obj = (unsigned short *)gm_Query((void *)b->objList, 1, 4, 2); obj != 0; obj = gm_QueryNext())
-                        if (*obj != 0xfd) {
-                            if (cnt == i)
-                                break;
-                            cnt++;
+    for (y = 0; sv_GroundplanSurf != 0 && y < sv_GroundplanSurf->h; y++) {
+        for (x = 0; x < sv_GroundplanSurf->w; x++) {
+            d2_GetPixelColour(x, y, sv_GroundplanSurf, rgb);
+            if (d2_CompareColour(rgb, white) != 0)
+                continue;
+            d2_GetPixelColour(x + 1, y, sv_GroundplanSurf, rgb);
+            for (i = 0; i < 15; i++)
+                if (d2_CompareColour(rgb, sv_GroundplanColours + i * 3) == 0)
+                    break;
+            if (i >= 15)
+                continue;
+            cnt = 0;
+            if (bt->kind == 2) {
+                for (obj = (unsigned short *)gm_Query((void *)b->objList, 1, 4, 2); obj != 0; obj = gm_QueryNext())
+                    if (*obj != 0xfd) {
+                        if (cnt == i)
+                            break;
+                        cnt++;
+                    }
+            } else {
+                obj = 0;
+                for (slot = 0; slot < 0x40; slot++) {
+                    if (bt->slot[slot] == 0xffff)
+                        continue;
+                    id = bt->slot[slot] & 0x7fff;
+                    kind = ai_GoodsT[id].type;
+                    if ((kind == 2 || kind == 6) && id != 0xfd) {
+                        if (cnt == i) {
+                            obj = (unsigned short *)gm_Query((void *)b->objList, 1, 0, id);
+                            break;
                         }
-                } else {
-                    obj = 0;
-                    for (slot = 0; slot < 0x40; slot++) {
-                        if (bt->slot[slot] == 0xffff)
-                            continue;
-                        id = bt->slot[slot] & 0x7fff;
-                        kind = ai_GoodsT[id].type;
-                        if ((kind == 2 || kind == 6) && id != 0xfd) {
-                            if (cnt == i) {
-                                obj = (unsigned short *)gm_Query((void *)b->objList, 1, 0, id);
-                                break;
-                            }
-                            cnt++;
-                        }
+                        cnt++;
                     }
                 }
-                if (obj != 0 && (pic = gm_GoodPicture(obj)) != -1) {
-                    sv_GroundplanButtons[n] = d2_CreatePicObjS(d2_ScreenW + x - 0x7e, y + 0x4c, pic);
-                    n++;
-                }
             }
-            y++;
+            if (obj != 0 && (pic = gm_GoodPicture(obj)) != -1) {
+                sv_GroundplanButtons[n] = d2_CreatePicObjS(d2_ScreenW + x - 0x7e, y + 0x4c, pic);
+                n++;
+            }
         }
     }
     if (sv_GroundplanView != 0)
