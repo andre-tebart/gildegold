@@ -187,7 +187,8 @@ typedef struct INIT_CHAR {
     unsigned char health;           /* 0x008, ai.h AICHAR.health (100 at creation, > 0 = alive) */
     unsigned char female;           /* 0x009, 0 male / 1 female (poker.h's female, he.c's title texts by +9) */
     unsigned short age;             /* 0x00a, the age in years (am.c: "grown up (0x0a + 4 >= 0x20)") */
-    char pad00c[0x20];              /* 0x00c .. 0x02b */
+    unsigned char faith;            /* 0x00c, the faith: 0 catholic, 1 protestant (am.h's faith; the judges, init_LocalData) */
+    char pad00d[0x1f];              /* 0x00d .. 0x02b */
     int group;                      /* 0x02c, the id of the building the character belongs to (-1 = none, sv.c 0x52b2a0) */
     char name[0x2c];                /* 0x030, the start of ai.h's AICHAR.name (0x58 bytes; this view stops at
                                        the partner view below) */
@@ -2727,68 +2728,43 @@ int init_NameBuildings(void)
         b = (unsigned char *)gm_BuildNext();
     }
 }
-/* 0x511ad0, "init_LocalData": selects the town universe, makes the player records (0x4feb30 / 0x4feb60) unless the flag 0x40 is set, finds the two judges (the characters of the kind 0xc with the byte 0 / 1 at +0x228: the "Richter Katholisch" / "Richter Evangelisch", stored in 0x6f1bfc / 0x6f1c00) and the list of the characters of the kind 0xb (0x6f1c04); a missing judge is an error; names the buildings (0x511890) unless the flags 0x44 are set; then 0x50cc60 @deep behaviour: 102 code hunks / 124 of 256 bytes, meaning read whole against 0x511ad0..0x511bc0 (the scene select, the player-record loop over the slot table, the two kind 0xc judge scans with the +0x228 byte 0 / 1, the kind 0xb collector walk, the two error texts, the name pass, the final call) - no meaning error left. Fixed this session: Q3 (0x7e4b10 -> INIT_PLAYER_SLOTS_END, 0x7d5f8c -> INIT_CHARACTERS_END + 0xc, 0x7d5f80 -> INIT_CHARACTERS_END) and Q7 with the real void gm_ResetStock(void) prototype, which is also the behaviour fix of the tail: the original ends in a tail jump (jmp 0x50cc60 at 0x511bb6), which VC6 only emits with the prototype (the implicit int declaration gave call + ret). Left (allocation / codegen): the judge scan's registers - the original loads only ai_JudgeProtestant into edi before the loop and keeps n in edx (test edx,edx / dec edx), ours keeps n in ebp (push ebp/pop ebp) and both snapshots inside the loop (mov ecx,ds:X / mov edx,esi), and the original tests p[-10] in memory (cmp BYTE [eax-0xa],0xc) where ours loads it into dl first; the kind 0xb walk's collector pointer: the original keeps q in ecx with the kind 0xb in dl, ours uses esi; the pop edi / pop esi placement before the two judge tests. 82 +/- lines in the diff, every one read - all register or slot, same instructions. */
+/* 0x511ad0, "init_LocalData": selects the town universe, makes the player records (0x4feb30 / 0x4feb60) unless the flag 0x40 is set, finds the two judges (the characters of the kind 0xc, from the second record on, with the faith 0 / 1: the "Richter Katholisch" / "Richter Evangelisch", stored in 0x6f1bfc / 0x6f1c00) and the list of the characters of the kind 0xb (0x6f1c04); a missing judge is an error; names the buildings (0x511890) unless the flags 0x44 are set; then 0x50cc60 */
 
 
 void init_LocalData(void)
 {
-    char *p;
-    struct AICHAR *j1, *j2;
-    int n, i;
-    char **q;
-    char *c;
+    int i, n;
 
     d3if_SelectScene(0, 0);
     if ((ai_GameFlags & 0x40) == 0) {
         gm_UpdatePlayers();
-        i = 0;
-        p = ai_PlayerSlots[0];
-        do {
-            if (*p == 0)
+        for (i = 0; i < 4; i++) {
+            if (ai_PlayerSlots[i][0] == 0)
                 break;
             gm_InitPlayerRecord(i);
-            p += 0x2f4;
-            i++;
-        } while ((int)p < INIT_PLAYER_SLOTS_END);
+        }
     }
     n = 2;
-    p = ai_Chars[0] + 0x228;
-    do {
-        j1 = ai_JudgeCatholic;
-        j2 = ai_JudgeProtestant;
+    for (i = 1; i < 0x300; i++) {
         if (n == 0)
             break;
-        if (p[-10] == 0xc) {
-            if (*p == 0)
-                ai_JudgeCatholic = (struct AICHAR *)(p - 0xc);
-            else {
-                if (*p != 1)
-                    goto next;
-                ai_JudgeProtestant = (struct AICHAR *)(p - 0xc);
-            }
+        if (ai_Chars[i][2] == 0xc) {
+            if (((INIT_CHAR *)ai_Chars[i])->faith == 0)
+                ai_JudgeCatholic = (struct AICHAR *)ai_Chars[i];
+            else if (((INIT_CHAR *)ai_Chars[i])->faith == 1)
+                ai_JudgeProtestant = (struct AICHAR *)ai_Chars[i];
+            else
+                continue;
             n--;
         }
-    next:
-        p += 0x21c;
-        j1 = ai_JudgeCatholic;
-        j2 = ai_JudgeProtestant;
-    } while ((int)p < INIT_CHARACTERS_END + 0xc);
-    q = ai_KindBChars;
-    c = ai_Chars[0];
-    ai_JudgeCatholic = j1;
-    ai_JudgeProtestant = j2;
-    do {
-        if (c[2] == 0xb) {
-            *q = c;
-            q++;
-        }
-        c += 0x21c;
-    } while ((int)c < INIT_CHARACTERS_END);
-    if (j1 == 0) {
-        err_Message("init_LocalData(): gm_RichterKatholisch==NULL");
-        j2 = ai_JudgeProtestant;
     }
-    if (j2 == 0)
+    n = 0;
+    for (i = 0; i < 0x300; i++)
+        if (ai_Chars[i][2] == 0xb)
+            ai_KindBChars[n++] = ai_Chars[i];
+    if (ai_JudgeCatholic == 0)
+        err_Message("init_LocalData(): gm_RichterKatholisch==NULL");
+    if (ai_JudgeProtestant == 0)
         err_Message("init_LocalData(): gm_RichterEvangelisch==NULL");
     if ((ai_GameFlags & 0x44) == 0)
         init_NameBuildings();
