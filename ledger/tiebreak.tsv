@@ -54,7 +54,7 @@ exe	0x00403d60	ch_ReleaseMorph	ch	0cf5ce63093cae90	no	byte	control=byte p1=byte 
 exe	0x00403dc0	ch_CheckAniMorph	ch	4f15276d517be10d	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x00404200	ch_PreloadAnims	ch	0260a44a309e64eb	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00404360	ch_LoadLowAnims	ch	62f5fd5c1db8a972	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
-exe	0x004044a0	ch_AttachAni	ch	c0bd75a51bb90cb4	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x004044a0	ch_AttachAni	ch	c0bd75a51bb90cb4	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x00404640	ch_ActAnim	ch	2355b29c067af56c	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00404760	ch_GetFreeQueueEntry	ch	c8026a27c506db1b	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004047a0	ch_RemoveAction	ch	61316cf14efe4703	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
