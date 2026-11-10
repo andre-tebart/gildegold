@@ -238,8 +238,18 @@ mechanisms, each as a generated round over all positions / subsets:
 - **A macro shaped `if (call == 0) return 0;` (LS_R) as the then-arm of an if/else** takes the else for its own
   if: the else ran after every successful read (ls_ReadSaveHeader, a meaning bug; asmdiff showed it as one
   `branch` hunk and a few `order`/`regs` hunks). Braces around the macro arm; grep for macro + `else`.
+- **Callee-saved pushes after the early-exit guards in the original** (`push ebx` at entry, ebp/esi/edi only
+  before the loop, `return 0` with only `pop ebx`, the loop test `dec; push..; test; jl` unfused): give the loop
+  bound its own local (`top = 30 / 42; for (i = top - 1; i >= 0; i--)`) and leave the loop by `break` to the one
+  `return n` (amt_GetColumnOffices 12 ins -> byte; `for (i--; ..)`, `goto none`, else-chains were no lever).
 
 ## Registers, stack slots, locals
+- **A local memory-homed in the whole original** (stored at every definition, dead final loop values stored,
+  reloaded after byte stores through pointers) is address-taken: find the one small-frame `lea` in the original
+  and pass that local there (txt_OpenText: `i = txt_Count - first; fwrite(&i, 4, 1, f)`, not `&lineno`: 1085 -> 424).
+- **A range test `x >= 0 && x <= 9` splitting x into a memory home** (`mov [esp+N],edi / mov edi,[esp+N]` at the
+  test, the original keeps x in one register): nested ifs, each with its own `x = -1` else arm (txt_Format
+  703 -> 391; no lever in io_PrintText's identical parse).
 - **A parameter loaded twice from its slot** (`mov esi,[arg]; and esi,0xffff` at entry, later `mov edi,[arg]` unmasked):
   two variables. The masked one is the parameter itself (`last &= 0xffff;`) or a walker copied from it, the second an
   uninitialized local that VC6 homes in the dead parameter slot, assigned on every path that reaches its use. A
