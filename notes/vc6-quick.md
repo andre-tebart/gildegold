@@ -704,3 +704,11 @@ mechanisms, each as a generated round over all positions / subsets:
 - **The sv_FlyCameraToObject `up[4]` lever transfers**: sv_CameraToObject (frame 0xc short) took the same
   padded `up[1]` for the height above the centre, the datum cm_EffectRadiusScale for its M10 literal 1.8, and
   the view stores in rot 0,1,2 / pos 0,2,1 order (720-order permute): 40 ins -> byte.
+- **A fallback choice whose value stays in eax through both tests and moves to a callee-saved register only at
+  the next call** (`mov eax,[A]; test; jne L; mov eax,[B]; test; je ret; L: .. mov edi,eax` before the call):
+  `if (A) b = A; else if (B) b = B; else return;` (or a both-zero test up front: VC6 CSEs the global loads).
+  `b = A; if (!b) { b = B; if (!b) return; }`, `if (A) b = A; else b = B; if (!b) return;` and every copy
+  through a second local load edi directly. In the same function a search loop's hit left by `goto found` onto a
+  shared test of the fallback query is a second local (`obj = it; goto found;`, the stub `mov eax,esi; jmp`), and
+  `g = &ai_GoodsT[*it]; .. g->name` gave `add eax,ecx; inc eax` where `ai_GoodsT[*it].name` gave one `lea`
+  (sv_DrawGateName 81 ins -> byte).

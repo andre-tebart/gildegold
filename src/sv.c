@@ -5535,33 +5535,24 @@ void sv_DrawItemNames(void)
    building (ai_FallbackBuilding, else ai_PlayerBuilding) finds the item named by the part's name from +0x10
    ("contact_gate_<item>") among the building's objects (kind 6 in a fallback building, else 2), else the room
    object 0xfd of a fallback building, and draws its name above the part's screen box: the item's name with
-   txt_GateItemSuffix, for the room object the shown room's or the building kind's name with txt_GatePlaceSuffix
-   @deep read whole against the original: the building choice, strstr "gate", the item search over gm_Query
-   kind 6 / 2 with goto found onto the it == 0 test, the room object 0xfd of a fallback building, the three
-   cross-jumped sprintf "%s %s" (txt_ObjectNames / ai_BuildingNames[type*14-2] with txt_GatePlaceSuffix /
-   txt_GateItemSuffix), the screen box text (buf 0x100, frame equal 0x170); 148 vs 151 instructions. Left
-   is allocation: the building pointer stays in eax until after strstr in the original (mov edi,eax at
-   0x52d03c), ours loads edi directly; after the found label 'it' lives in eax in the original (stub
-   0x52d11f mov eax,esi; jmp 0x52d0e2), in esi in ours (no stub), which moves the three sprintf blocks (eax
-   vs esi / ecx vs edx); the goods name address lea edx,[eax+ecx+1] vs add eax,ecx; inc eax; the y /
-   d2_ScreenSurf / buf loads around DrawTextBox in other registers. d2_AddDirty is K&R in sv's head (Open:
-   d2.h unsettled), M7 stays open. */
+   txt_GateItemSuffix, for the room object the shown room's or the building kind's name with txt_GatePlaceSuffix */
 
 void sv_DrawGateName(D3OBJECT *part)
 {
     AIBLD *b;
-    unsigned short *it;
+    unsigned short *it, *obj;
     char name[0x60];
     char buf[0x100];
     D3RECT box;
     int x, y;
+    AIGOOD *g;
 
-    b = (AIBLD *)ai_FallbackBuilding;
-    if (b == 0) {
+    if (ai_FallbackBuilding != 0)
+        b = (AIBLD *)ai_FallbackBuilding;
+    else if (ai_PlayerBuilding != 0)
         b = (AIBLD *)ai_PlayerBuilding;
-        if (b == 0)
-            return;
-    }
+    else
+        return;
     if (strstr(part->name, "gate") == 0)
         return;
     strcpy(name, part->name + 0x10);
@@ -5570,22 +5561,25 @@ void sv_DrawGateName(D3OBJECT *part)
     else
         it = (unsigned short *)gm_Query((void *)b->objList, 1, 4, 2);
     for (; it != 0; it = gm_QueryNext()) {
-        if (_strcmpi(name, ai_GoodsT[*it].name) == 0)
+        g = &ai_GoodsT[*it];
+        if (_strcmpi(name, g->name) == 0) {
+            obj = it;
             goto found;
+        }
     }
     if (ai_FallbackBuilding == 0)
         return;
-    it = (unsigned short *)gm_Query((void *)b->objList, 1, 0, 0xfd);
+    obj = (unsigned short *)gm_Query((void *)b->objList, 1, 0, 0xfd);
 found:
-    if (it == 0)
+    if (obj == 0)
         return;
-    if (*it == 0xfd) {
+    if (*obj == 0xfd) {
         if (sv_PanelShown != 0)
             sprintf(buf, "%s %s", (char *)txt_ObjectNames[*sv_PanelShown][0], txt_GatePlaceSuffix);
         else
             sprintf(buf, "%s %s", (char *)ai_BuildingNames[b->type * 0xe - 2], txt_GatePlaceSuffix);
     } else {
-        sprintf(buf, "%s %s", (char *)txt_ObjectNames[*it][0], txt_GateItemSuffix);
+        sprintf(buf, "%s %s", (char *)txt_ObjectNames[*obj][0], txt_GateItemSuffix);
     }
     if (d3if_ScreenBox(part, &box) != 0) {
         y = box.top;
