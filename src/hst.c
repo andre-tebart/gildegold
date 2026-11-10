@@ -781,7 +781,7 @@ int ai_TokenRandomChurchProfession(int mode, G12ARG *args, int k, char *fmt, cha
    insensitive) prior: behaviour: far draft, 173 code hunks (the RND_REICH token, callback 0x601b10[11] =
    0x4af6c0, name 0x601730[11]): the reading matches (the top-5 worth lists of the unit note) but the
    frame/slot layout, the loop form and the c = pick return-tail fold remain - the same three issues as
-   ai_TokenRandomGuildMaster's @deep reason; the -10000000 list start values are HST_NO_WORTH now (Q3) */
+   ai_TokenRandomGuildMaster's old deep reason; the -10000000 list start values are HST_NO_WORTH now (Q3) */
 
 int ai_TokenRandomRich(int mode, G12ARG *args, int k, char *fmt, char *out)
 {
