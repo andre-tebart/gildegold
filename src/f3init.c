@@ -1207,12 +1207,26 @@ unsigned short init_PlaceOffices(int n, int *out, int *ids)
    gm_Shuffle, each plus a random 0 .. 2), the characters already there (the first 12 who ai_WorksForMaster and
    are not kind 5) into f0, the free slots filled through cm_SendCreateCharacter (kind 3, up to three of the kind
    0x10 beyond the 13th), then for each character its age (t[k], through gm_AgeCharacter), job and money (the
-   office of ids[k]: amt_GetOffice -> amt_GetKind, the age / money tables t[0x1e..0x27] / t[0x28..0x31]:
+   office of ids[k]: amt_GetOffice -> amt_GetKind, the age / money tables lv[] / money[]:
    1 3 3 4 4 5 6 7 7 7 and 1000 10000 10000 20000 20000 40000 50000 60000 80000 100000, the money through
    gm_PlayerFactor), the office flags (field 0x1cc) and the first office of the kinds 0x23 .. 0x25, then the
    spouses of the unmarried (cm_SendRelations both ways, a child of kind 8 when the age gap is above 5), and
    eight extra pairs of the kind 3 characters. Sends the field blocks / characters over the network; returns 1.
-   @deep read against the whole original 0x50e690..0x50f0a1 and corrected: signed level /3 and int money
+   @stuck match-deep 48: kept: ai_FloatOne for the 1.0f of fl (resolves the open M10: the original refers
+   to the pooled datum) and the age table t[30] split from lv[10] / money[10] (the frame now puts ids at
+   the original's 0x138; 219 -> 191 ins). headers sample insensitive. Tried with no change (= control):
+   msg0 with (unsigned short) / & 0xffff on util_RandomU(2), (float) cast in the msg4 product, (unsigned
+   char) level index; frameorder.py probes: local names never move the frame (ties of references per byte
+   are not broken by name), one ids reference fewer moves ids above all office structs. t stores grouped by
+   value: 213 vs 219 (before the split). Left: frame order of kind / ob1 / ob3 / ob2 / rec (original 0xf0
+   kind, 0x108 ob1, 0x120 ob3, 0x1b0 ob2, 0x1c8 rec; ours ob1 0xf0, ob2 0x108, ob3 0x120, rec 0x1b0, kind
+   0x1c8: the original's reference density differs), the t[] init constant registers (original eax=0x12
+   first, ebp=0 late), the t add loop i*4 vs the original's byte offset (add esi,4 / cmp 0x78), msg0 = 2 in
+   ebx across the office loop (push ebx for util_RandomU(2)) where ours stores the immediate, the level
+   reloaded from kind+8 after util_RandomU(2) (ours keeps it in esi from the msg5 expression), the money
+   product order ((r+1)*fl)*(msg3*0.01) vs ours (r+1)*(msg3*0.01)*fl, the spouse loop's u/v/k registers
+   (ebx/edx/ecx vs ebx/ecx/edx) (tiebreak: not measured (dcp headers sample init_CreateStartCharacters))
+   prior: read against the whole original 0x50e690..0x50f0a1 and corrected: signed level /3 and int money
    (msg3), loop bounds n>=30/n>=12 and the signed table end, wait loops as while (j != -1 &&
    cm_GetSlotState(j) == 0) (the byte-matched amt_CheckOffices shape), one shared SetField wait (else j =
    -1), the spouse loop as do .. while (u && v) with the job ternary u-first, the 8-pair loop's create
@@ -1221,16 +1235,16 @@ unsigned short init_PlaceOffices(int n, int *out, int *ids)
    short); 458 -> 217 differing, 758 vs 761 instructions, frame equal. Left: allocation and scheduling -
    the constants of the t[] init in other registers (ours ebp=0x10/ecx=0x18/edx=0x19, original ebx/edx/ecx)
    and cnt in ebx vs ebp; the t[] add loop indexed i*4 (inc esi, [esp+esi*4]) where the original keeps a
-   byte offset (add esi,4; cmp esi,0x78) - tried a separate loop variable, no change; ids / rec / ob slots
-   placed 0x30 apart (lea [esp+0x108] vs [esp+0x138]) - tried the declaration order of the original's
-   frame, no change; the office kind level kept in esi across the calls (ours) vs reloaded from [esp+0x110]
-   (original); the money bonus product ordered r*(msg3*0.01)*fl (ours) vs (r*fl)*(msg3*0.01) - tried fl
-   left and inline, no match; the msg4 = 2 store scheduled before the pushes */
+   byt... */
 
 
 int init_CreateStartCharacters(void)
 {
-    int t[50];
+    int t[30] = {0x10, 0x12, 0x14, 0x18, 0x10, 0x12, 0x14, 0x18, 0x10, 0x12, 0x14, 0x18,
+                 0x16, 0x18, 0x19, 0x1b, 0x1d, 0x1d, 0x16, 0x18, 0x19, 0x1b, 0x1d, 0x1d,
+                 0x19, 0x1b, 0x1d, 0x20, 0x22, 0x25};  /* the start ages, in shuffled groups of 4 / 6 */
+    int lv[10];                         /* the base of field 0xd per office level (plus rand(2)) */
+    int money[10];                      /* the start money per office level */
     int ids[30];
     int out[30];
     INIT_CHAR *f0[30];
@@ -1244,12 +1258,6 @@ int init_CreateStartCharacters(void)
     char c;
     float fl;
 
-    t[0] = 0x10; t[1] = 0x12; t[2] = 0x14; t[3] = 0x18;
-    t[4] = 0x10; t[5] = 0x12; t[6] = 0x14; t[7] = 0x18;
-    t[8] = 0x10; t[9] = 0x12; t[10] = 0x14; t[11] = 0x18;
-    t[12] = 0x16; t[13] = 0x18; t[14] = 0x19; t[15] = 0x1b; t[16] = 0x1d; t[17] = 0x1d;
-    t[18] = 0x16; t[19] = 0x18; t[20] = 0x19; t[21] = 0x1b; t[22] = 0x1d; t[23] = 0x1d;
-    t[24] = 0x19; t[25] = 0x1b; t[26] = 0x1d; t[27] = 0x20; t[28] = 0x22; t[29] = 0x25;
     cnt = 0;
     gm_Shuffle(4, t);
     gm_Shuffle(4, t + 4);
@@ -1298,10 +1306,10 @@ int init_CreateStartCharacters(void)
         }
         f0[i] = (INIT_CHAR *)cm_GetSlotValue(h);
     }
-    t[0x1e] = 1; t[0x1f] = 3; t[0x20] = 3; t[0x21] = 4; t[0x22] = 4; t[0x23] = 5;
-    t[0x24] = 6; t[0x25] = 7; t[0x26] = 7; t[0x27] = 7;
-    t[0x28] = 1000; t[0x29] = 10000; t[0x2a] = 10000; t[0x2b] = 20000; t[0x2c] = 20000;
-    t[0x2d] = 40000; t[0x2e] = 50000; t[0x2f] = 60000; t[0x30] = 80000; t[0x31] = 100000;
+    lv[0] = 1; lv[1] = 3; lv[2] = 3; lv[3] = 4; lv[4] = 4; lv[5] = 5;
+    lv[6] = 6; lv[7] = 7; lv[8] = 7; lv[9] = 7;
+    money[0] = 1000; money[1] = 10000; money[2] = 10000; money[3] = 20000; money[4] = 20000;
+    money[5] = 40000; money[6] = 50000; money[7] = 60000; money[8] = 80000; money[9] = 100000;
     for (k = 0; k < 30; k++) {
         unsigned short age;
 
@@ -1310,8 +1318,8 @@ int init_CreateStartCharacters(void)
         amt_GetKind(rec.kindWord & 0xff, &kind);
         age = (unsigned short)t[k];
         msg5 = (char)((util_RandomU(0x2a) & 0xffff) + ((int)(kind.levelWord & 0xff) / 3 + 1) * 21.0f);
-        msg0 = util_RandomU(2) + t[(kind.levelWord & 0xff) + 0x1e];
-        w = t[(kind.levelWord & 0xff) + 0x28];
+        msg0 = util_RandomU(2) + lv[kind.levelWord & 0xff];
+        w = money[kind.levelWord & 0xff];
         msg3 = gm_PlayerFactor(w - (int)(util_RandomF() * w * -0.5f), ai_OwnPlayer);
         ch = f0[k];
         cm_SendMoveGoods(ch->netId, -1, ai_OwnPlayer, msg3);
@@ -1320,7 +1328,7 @@ int init_CreateStartCharacters(void)
         if (ch->kind == 3) {
             cm_AddFieldDelta(1, 1, 0x84, &msg5);
             if (util_RandomU(2) != 0) {
-                fl = util_RandomF() + 1.0f;
+                fl = util_RandomF() + ai_FloatOne;
                 msg4 = (unsigned)(((util_RandomU(8) & 0xffff) + 1) * fl * (msg3 * 0.01f));
                 cm_AddFieldDelta(4, 1, 0x1ac, &msg4);
             }
