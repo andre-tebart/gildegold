@@ -2638,7 +2638,7 @@ exe	0x004e6ec0	amt_GetFirstOffice	amt	ca1a812170cae242	no	shape	control=shape p1
 exe	0x004e6f10	amt_KindColumn	amt	36c05826e2aa1e8a	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004e6f30	amt_GetOffice	amt	dce34824b2902bc9	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
 exe	0x004e6f80	amt_GetKind	amt	8028bb6e9a12404c	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x004e6fc0	amt_GetColumnOffices	amt	cf8f0e7ab72f5d96	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x004e6fc0	amt_GetColumnOffices	amt	cf8f0e7ab72f5d96	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x004e7040	amt_GetColumnOfficesOwned	amt	a6107a85db0d07ef	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x004e70f0	amt_GetColumn7Offices	amt	3f8f00ef3cf89064	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004e7150	amt_GetOfficeCandidates	amt	57a20b772988e752	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
