@@ -542,7 +542,7 @@ typedef struct SCREENMODE {                 /* 8 bytes, a screen mode of the tab
 /* ai_ContactTextCardGame: view of txt_Ptrs (build/mk_txt_views.py) */
 int ai_CameraStep = 50;  /* 0x623814, the camera move step, 100 - camera speed; sv.c converts it
                                        with fild at the float uses (the original loads an int) */
-SCREENMODE ai_ScreenModes[3] = { { 800, 600 }, { 1024, 768 }, { 1152, 864 } };  /* 0x62d7b8, the 640 / 800 / 1024 modes */
+SCREENMODE ai_ScreenModes[3] = { { 800, 600 }, { 1024, 768 }, { 1152, 864 } };  /* 0x62d7b8, the 800x600 / 1024x768 / 1152x864 modes */
 int ai_ScreenModeW = 800;  /* 0x62d7d0, the width of the mode ai_GfxResolution picks */
 int ai_ScreenModeH = 600;  /* 0x62d7d4, its height */
 char *_itoa(int value, char *buf, int base); /* 0x5e56c4, the library's integer to text (base 10 here) */
@@ -934,27 +934,12 @@ void ai_SaveOptions(void)
    (it also picks the screen mode record: ai_ScreenModeW / H), the sound volumes and msx_freq, the
    speed keys (invert_mouse is forced to 0), the town name ("Augsburg" when the key is missing), the
    historic / mission numbers, the panel options and the seven opponents (default 2).
-   @deep the body is transcribed from build/ghidra/5d5640.c and the disassembly (every
-   GetPrivateProfileIntA key, its default and its target byte/word, the 12 tuning floats * 0.01f, the town
-   string, invert_mouse forced to 0, the mode table); the opponent_e / opponent_f reads fixed to
-   ai_Opponents[4] / [5] (the draft read opponent_f twice and dropped one store); readable, 14 code + 32
-   order hunks left. Two roots: (1) the cur_res mode table: the original digits i = (v & 0xff) * 8 as an
-   integer and loads [eax+0x62d7b8] / [eax+0x62d7bc], i.e. a char-offset index into the table; a typed
-   SCREENMODE index compiles to [eax*8+base] instead, and the char-offset spelling needs a dereferenced
-   pointer cast (Q4) - a shared-header view decision. Tried: SCREENMODE ai_ScreenModes[i] (this), an int *
-   view with i*2. (2) the rest: the store of each GetPrivateProfileIntA result is scheduled before / after
-   the call's stack cleanup (mov ds:X,eax|al), ours consistently after. Tried: v = call; target = v (this)
-   vs target = call inlined (more hunks, reverted). spell.py: no menu rule; the writer ai_SaveOptions (the
-   twin) is byte (references: M9 at +0x3d2: our literal "Game" where the original's field refers to
-   "camera_speed" at 0x62d970, explained: the M9 at +0x3d2 pairs our push of 'Game' with the original's
-   push of 'camera_speed' inside an order hunk: both sides push the same three arguments for the
-   camera_speed read (0x62d970, 0x62916c 'Game'), only in another order around the previous store) */
+   The mode record is picked by the stored byte (ai_GfxResolution reread after the store, as the original does). */
 
 
 void ai_LoadOptions(void)
 {
     unsigned v;
-    int i;
 
     v = GetPrivateProfileIntA("Gfx", "texture_scale", 0, ai_OptionsFile);
     ai_GfxTextureScale = v;
@@ -1002,9 +987,8 @@ void ai_LoadOptions(void)
     ai_GfxSet.byte[0] = v;
     v = GetPrivateProfileIntA("Gfx", "cur_res", 0, ai_OptionsFile);
     ai_GfxResolution.byte[0] = v;
-    i = v & 0xff;
-    ai_ScreenModeW = ai_ScreenModes[i].w;
-    ai_ScreenModeH = ai_ScreenModes[i].h;
+    ai_ScreenModeW = ai_ScreenModes[ai_GfxResolution.byte[0]].w;
+    ai_ScreenModeH = ai_ScreenModes[ai_GfxResolution.byte[0]].h;
     v = GetPrivateProfileIntA("Sound", "master_vol", 0, ai_OptionsFile);
     ai_SoundOptions.masterVolume = v;
     v = GetPrivateProfileIntA("Sound", "sfx_vol", 0, ai_OptionsFile);
@@ -1030,8 +1014,8 @@ void ai_LoadOptions(void)
     v = GetPrivateProfileIntA("Game", "show_cursor_txt", 1, ai_OptionsFile);
     ai_GameSwitches.byte[2] = v;
     v = GetPrivateProfileIntA("Game", "show_geb_info", 1, ai_OptionsFile);
-    ai_GameSwitches.byte[0] = 0;
     ai_GameSwitches.byte[3] = v;
+    ai_GameSwitches.byte[0] = 0;
     GetPrivateProfileStringA("Game", "stadt", "Augsburg", ai_TownName, 0x40, ai_OptionsFile);
     v = GetPrivateProfileIntA("Game", "historie", 0, ai_OptionsFile);
     ai_OptionHistorie = v;
