@@ -1874,7 +1874,7 @@ exe	0x004af3f0	ai_TokenRandomChurchProfession	hst	69f26dce4825996b	no	draft	cont
 exe	0x004af6c0	ai_TokenRandomRich	hst	689381c04ce8f402	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x004af8d0	ai_TokenRandomNpcInhabitant	hst	27002ebc80706004	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
 exe	0x004afa20	ai_TokenRandomMerchant	hst	f6f9360bc4c2e99d	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
-exe	0x004afc30	ai_TokenRandomPlayer	hst	b3181c6fce8707f4	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x004afc30	ai_TokenRandomPlayer	hst	894cb72325f3200e	no	shape	sample n=32 seed=1 compiled=32 codegens=1 best=shape
 exe	0x004afdd0	ai_CommandFest	hst	eeaebaa3a3285ce8	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x004afe80	ai_CommandSiegeStart	hst	9e2f58b827cd6196	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004aff30	ai_CommandUprising	hst	0685106b1d1e7f9f	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
