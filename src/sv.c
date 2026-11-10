@@ -620,10 +620,10 @@ void sv_SelectPanelObject(unsigned char *o, int b, char *c)
     strcpy(sv_PanelText, c);
     sv_PanelFlag = 1;
     if (sv_PanelRecord == 0 || *sv_PanelRecord == 0) {
-            if (cur == o && ai_FallbackBuilding == 0) {
-                sv_PanelFlag = 0;
-                return;
-            }
+        if (cur == o && ai_FallbackBuilding == 0) {
+            sv_PanelFlag = 0;
+            return;
+        }
     } else if (sv_PanelRecord != sv_PanelShown) {
         if (o == cur && gm_IsHomeType(cur) != 0) {
             bld->sceneRec = *sv_PanelRecord;
@@ -649,11 +649,11 @@ void sv_SelectPanelObject(unsigned char *o, int b, char *c)
             ai_FrameWait = oldv;
         }
     } else {
-        if (sv_FrameDepth <= sv_FrameBase) {
-            sv_PanelFlag = 0;
+        if (sv_FrameDepth > sv_FrameBase) {
+            sv_PopRequest = sv_FrameDepth - sv_FrameBase;
             return;
         }
-        sv_PopRequest = sv_FrameDepth - sv_FrameBase;
+        sv_PanelFlag = 0;
         return;
     }
     sv_PopTo(ai_GameFrame);
