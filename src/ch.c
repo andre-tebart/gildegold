@@ -2521,14 +2521,32 @@ int ch_FindNear300(CHARACTER *ch, CHARACTER **out)
 }
 /* 0x4072a0, finds a walkable cell (type not 0 or 0xd) near x/z, searching rings of growing radius up to max;
    flags & 1 or 0x10: the one with the shortest way from -> cell -> to (0x10: x/z itself if walkable)
-   @deep behaviour: no meaning difference left; the 54 code instructions and 24 fpu are the stack-slot permutation of the three D3VECTOR4 locals (ours dst,v,src at 0x18/0x28/0x38; original src,dst,v at 0x18/0x28/0x38) plus the loop temporaries living in the dead parameter slots; the fpu hunks are the same subtractions with the swapped slots (checked: fld src/fsub v both sides, 40759d). Earlier attempts: declaration order, renaming, struct copies, 12-byte src, scalar sx/sy/sz, dead init, swapped loop order. This session re-read 4072a0..407690 statement by statement: bounds min(1,z-r)/min(h->size-1,..) and the type tests are identical. Needs slotmap/vargen. Readability already clean (grade readable). */
+   @stuck headers sample: insensitive (31). Frame order: VC6 sorts the three 16-byte locals by references
+   (framesearch: declaration order, names, block scope, struct copies, pointer views, inline distances = no
+   move; two extra real src reads, in or out of the loop, give the original's src 0x18 / dst 0x28 / v 0x38,
+   one does not). One array D3VECTOR4 p[3] (from, to, cell) gives that order with the same code: draft 88
+   -> shape 50 (kept). Left: (1) order 20 at 407362, the from -> p[0] copy: the original loads y, x, z
+   first and stores after (src not address-taken), ours interleaves load/store (the array is
+   address-taken); the 24 orders of the three copies and the *px/*pz stores, and a 12-byte struct copy (64
+   ins), are no closer; D3VECTOR4 src, p[2] scalar-replaces src (frame 0x2c). (2) slots 90: VC6's loop
+   temps in the dead parameter slots rotate, ours z-r / size-1 / z-zi in to / from / flags, the original in
+   flags / to / from (all code equal). Open: a src that stays a separate non-address-taken local but
+   outweighs dst and v (the original has two more src references somewhere code-neutral). (tiebreak:
+   insensitive) prior: behaviour: no meaning difference left; the 54 code
+   instructions and 24 fpu are the stack-slot permutation of the three D3VECTOR4 locals (ours dst,v,src at
+   0x18/0x28/0x38; original src,dst,v at 0x18/0x28/0x38) plus the loop temporaries living in the dead
+   parameter slots; the fpu hunks are the same subtractions with the swapped slots (checked: fld src/fsub v
+   both sides, 40759d). Earlier attempts: declaration order, renaming, struct copies, 12-byte src, scalar
+   sx/sy/sz, dead init, swapped loop order. This session re-read 4072a0..407690 statement by statement:
+   bounds min(1,z-r)/min(h->size-1,..) and the type tests are identical. Needs slotmap/vargen. Readability
+   already clean (grade readable). */
 
 
 char ch_FindFreeCell(D3SM *h, D3VECTOR *from, D3VECTOR *to, int x, int z, int *px, int *pz, int max, int flags)
 {
     int r = 0;
     float best = 1e11f;
-    D3VECTOR4 src, dst, v;
+    D3VECTOR4 p[3];                 /* from, to (or the vertex of x/z), the candidate cell's vertex */
     int t, d, zi, xi, zmax, xmax;
     float dist, dx, dy, dz;
 
@@ -2540,14 +2558,14 @@ char ch_FindFreeCell(D3SM *h, D3VECTOR *from, D3VECTOR *to, int x, int z, int *p
                 *pz = z;
                 return 1;
             }
-            dst.x = to->x;
-            dst.y = to->y;
-            dst.z = to->z;
+            p[1].x = to->x;
+            p[1].y = to->y;
+            p[1].z = to->z;
         } else
-            d3sm_GetVertex(h, x, z, (D3VECTOR *)&dst);
-        src.x = from->x;
-        src.y = from->y;
-        src.z = from->z;
+            d3sm_GetVertex(h, x, z, (D3VECTOR *)&p[1]);
+        p[0].x = from->x;
+        p[0].y = from->y;
+        p[0].z = from->z;
         *px = -1;
         *pz = -1;
         if (!(flags & 1) && !(flags & 0x10)) {
@@ -2579,14 +2597,14 @@ char ch_FindFreeCell(D3SM *h, D3VECTOR *from, D3VECTOR *to, int x, int z, int *p
                     for (xi = max(0, x - d); xi <= xmax; xi++) {
                         if (zi >= 0 && zi < h->size && xi >= 0 && xi < h->size
                             && (t = h->entries[h->size * zi + xi].type) && t != 0xd
-                            && d3sm_GetVertex(h, xi, zi, (D3VECTOR *)&v)) {
-                            dx = src.x - v.x;
-                            dy = src.y - v.y;
-                            dz = src.z - v.z;
+                            && d3sm_GetVertex(h, xi, zi, (D3VECTOR *)&p[2])) {
+                            dx = p[0].x - p[2].x;
+                            dy = p[0].y - p[2].y;
+                            dz = p[0].z - p[2].z;
                             dist = (float)sqrt(dx * dx + dy * dy + dz * dz);
-                            dx = dst.x - v.x;
-                            dy = dst.y - v.y;
-                            dz = dst.z - v.z;
+                            dx = p[1].x - p[2].x;
+                            dy = p[1].y - p[2].y;
+                            dz = p[1].z - p[2].z;
                             dist += (float)sqrt(dx * dx + dy * dy + dz * dz);
                             if (dist < best) {
                                 best = dist;
