@@ -2616,7 +2616,7 @@ exe	0x004e5af0	ai_Unk4e5af0	cm	5ca9fdc36eb7353d	no	byte	control=byte p1=byte p2=
 exe	0x004e5b50	ai_Unk4e5b50	cm	c214eed8bdd6ecea	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004e5bf0	ai_DebugDumpPerson	cm	fab77fd3c2e0cbeb	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004e5cd0	amt_InitTable	amt	d8f9efb0c4e8db5f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x004e5e50	amt_Rating	amt	0100e2bf853dedba	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x004e5e50	amt_Rating	amt	6ac6623b72f5983d	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x004e6030	amt_FindOffice	amt	c395e1ba23510d09	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
 exe	0x004e60b0	amt_GetOfficeRate	amt	2bbc0436242d1a4d	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004e6180	amt_ApplyForOffice	amt	f770efad92d43956	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
@@ -2625,12 +2625,12 @@ exe	0x004e6430	amt_AcceptApplication	amt	b5613c6209392fc8	no	shape	control=shape
 exe	0x004e65e0	amt_SendOfficeFree	amt	415667983aaa1e85	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004e6600	amt_SendOfficeCandidates	amt	5f5743aaf2fe6ff3	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004e6650	amt_SendOfficeOwner	amt	01d06b2969c69400	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x004e6680	amt_SendOfficeMessage	amt	2d7faa4443a5a460	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
+exe	0x004e6680	amt_SendOfficeMessage	amt	3eaf963a476011fb	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004e6710	amt_CheckOfficeMessage	amt	ce0e9877e5ae802d	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x004e67a0	amt_ExecuteOfficeMessage	amt	019b42758361b6a3	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x004e67a0	amt_ExecuteOfficeMessage	amt	b6b912c6bf4757ff	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x004e6b40	amt_SetEventOwner	amt	a7c246cabb8a6bbe	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004e6b70	amt_SetPersonOwner	amt	3d3ff1267cee51f4	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x004e6ba0	amt_SendOfficeSwap	amt	abcd21cb2c867b96	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
+exe	0x004e6ba0	amt_SendOfficeSwap	amt	fb2cee46914a0df1	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004e6c50	amt_ExecuteSwapMessage	amt	2fd800e8dda889ff	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004e6d80	amt_ClearOffices	amt	23b3ca327a1aab5d	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x004e6e20	amt_ClearOfficesIfAll	amt	c11f1bbeb8140df6	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
@@ -2638,8 +2638,7 @@ exe	0x004e6ec0	amt_GetFirstOffice	amt	ca1a812170cae242	no	shape	control=shape p1
 exe	0x004e6f10	amt_KindColumn	amt	36c05826e2aa1e8a	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004e6f30	amt_GetOffice	amt	dce34824b2902bc9	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
 exe	0x004e6f80	amt_GetKind	amt	8028bb6e9a12404c	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x004e6fc0	amt_GetColumnOffices	amt	cf8f0e7ab72f5d96	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
-exe	0x004e7040	amt_GetColumnOfficesOwned	amt	a6107a85db0d07ef	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x004e6fc0	amt_GetColumnOffices	amt	91809023952167ba	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
 exe	0x004e70f0	amt_GetColumn7Offices	amt	3f8f00ef3cf89064	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004e7150	amt_GetOfficeCandidates	amt	57a20b772988e752	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x004e7320	amt_GetOfficeCandidatesFull	amt	140cd94d605ed3a9	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
@@ -2653,8 +2652,8 @@ exe	0x004e78f0	amt_GetCreateRanges	amt	3aff8b3ca851a3d3	no	byte	control=byte p1=
 exe	0x004e7aa0	amt_CreateApplicant	amt	318915fcca389be7	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x004e7b60	amt_InitApplicant	amt	90636dd2ef77ecc9	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004e7c40	amt_GetKindLevel	amt	4333ff5e99c26710	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x004e7c60	amt_ElectOffices	amt	80f2dc50105155a1	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
-exe	0x004e8160	amt_CheckOfficeColumns	amt	16150dc4a1b9d32e	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x004e7c60	amt_ElectOffices	amt	2d77a49fb21511dc	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
+exe	0x004e8160	amt_CheckOfficeColumns	amt	1c2d25372a1a6419	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004e83b0	amt_IsColumnDecided	amt	6a1edb577d01fe64	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
 exe	0x004e8530	amt_HasDeposalVote	amt	c3a361ada467586b	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004e85d0	amt_UpdateOffices	amt	69693520b65894e9	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
@@ -2663,7 +2662,7 @@ exe	0x004e8730	amt_SendOfficeNews	amt	b8382ceaf9954bfa	no	byte	control=byte p1=b
 exe	0x004e87e0	amt_SendOfficeLost	amt	a380f51b4ca194d9	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004e88a0	amt_ElectDeputies	amt	d54b542ceb312f8b	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x004e8c20	amt_ElectKind22	amt	1267653b69a8ff43	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x004e8dc0	amt_CalcZuenfte	amt	1a4714b4ef2c3ec4	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x004e8dc0	amt_CalcZuenfte	amt	ebe3ca330e074613	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x004e9260	amt_CheckOffices	amt	ac8fe60747b4e067	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004e9400	amt_HasTownObject	amt	486d1d53dd11c053	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004e94a0	amt_MayorBonusStep	amt	8be58104bb258831	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
