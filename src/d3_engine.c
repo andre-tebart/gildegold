@@ -665,20 +665,7 @@ D3OBJINFO *d3_SelectSurf(D3OBJECT *obj)
    transformed (through its stock driver or d3_TransformVerts), clipped and projected when it changed, has a
    shadow or is always drawn, is relit within the visible key budget, opens the mirror pass, and puts its visible
    triangles into the sort buffer: keyed by texture with Direct3D (alpha / shadow / flagged surfs after the
-   opaque ones), by the far depth in software. Returns 1.
-   @deep read whole vs 0x43a160..0x43a60c, same size (1197 B). Fixed this session: D3OBJECT.state gets its
-   bitfield view as the union member bits (d3.h: dirty / drawDirty / reclip ..; the original's bit ops on
-   0x210 merge into one store, which needs one lvalue type), the culled / visible paths as if / else under
-   if (s), d3s_Count unsigned (ja), the z range tests as !(zMin > MinZ) / !(zMax < MaxZ), the sort key
-   factor (d3_InvZFar * 16777216.0f) * z * 3.0f (unfolded constant), the texture kept in tex,
-   D3TEXTURE.stamp (0x54), d3_ObjectsTested / d3_ObjectsDrawn, D3SURF.alwaysDraw. Left: the d3_MinZ /
-   d3_MaxZ stores at +0x165 / +0x184 (ours mov ecx/edx, the original fld / fstp the float; the compare
-   forms match), and register allocation in the sort loops (regs 242: the triangle pointer in ecx vs edi,
-   the counter edx vs ecx) (references: M8 at +0x428: ours refers to d3d_Config+0x1 (0xfe7671), the
-   original's field to 0x633450 (d3_Hardware), explained: the M8 at +0x428 is a load-order crossing in the
-   culled shadow test: both sides AND the same bytes (obj+0x213 >> 1 | dirty, obj+0x211 >> 2,
-   d3_ShadowMode, d3_Hardware) in the same order; ours loads d3_Hardware first into dl, the original into
-   cl and d3_ShadowMode later into al). match-deep 2026-11-10: parenthesized member copies (the FPU-copy lever) ins 168 -> 122. */
+   opaque ones), by the far depth in software. Returns 1. */
 
 char d3_DrawObjectCB(D3OBJECT *obj)
 {
@@ -747,9 +734,8 @@ char d3_DrawObjectCB(D3OBJECT *obj)
             if (obj == d3s_Object || s->flags.f.b[0] < 0xff || (s->flags.f.b[2] & 1))
                 base = 0x4000;
             n = min(s->info.ntris, d3_SortMax - (int)d3_SortCount);
-            t = (D3PTRI *)s->info.tris;
             if (d3_Hardware) {
-                for (; n > 0; n--, t++) {
+                for (t = (D3PTRI *)s->info.tris; n > 0; n--, t++) {
                     if (t->flags & 0x80) {
                         tex = (t->tex);
                         d3_SortPtr->item = t;
@@ -764,7 +750,7 @@ char d3_DrawObjectCB(D3OBJECT *obj)
                     }
                 }
             } else {
-                for (; n > 0; n--, t++) {
+                for (t = (D3PTRI *)s->info.tris; n > 0; n--, t++) {
                     if (t->flags & 0x80) {
                         d3_SortPtr->item = t;
                         z = (t->v[0]->z);
