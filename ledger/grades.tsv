@@ -730,7 +730,7 @@ exe	0x00438c60	d3_TypeInMask	d3_engine	byte	readable
 exe	0x00438d40	d3_ForEachObject	d3_engine	byte	readable		
 exe	0x00438e60	d3_ForEachObject2	d3_engine	byte	readable		
 exe	0x00438f60	d3_ProjectMesh	d3_engine	shape	readable		
-exe	0x004391d0	d3_SetupFrustum	d3_engine	draft	readable	deep	
+exe	0x004391d0	d3_SetupFrustum	d3_engine	draft	readable	stuck	
 exe	0x00439650	d3_ClipBox	d3_engine	byte	readable		
 exe	0x00439870	d3_UpdateWorldMatrix	d3_engine	byte	readable		
 exe	0x004399e0	d3_ClipObject	d3_engine	byte	readable		
@@ -739,7 +739,7 @@ exe	0x00439c90	d3_ClipPoly	d3_engine	shape	readable
 exe	0x0043a000	d3_SelectSurf	d3_engine	byte	readable		
 exe	0x0043a160	d3_DrawObjectCB	d3_engine	draft	readable	deep	
 exe	0x0043a610	d3_SetFogRange	d3_engine	byte	readable		
-exe	0x0043a6f0	d3_SetFog	d3_engine	draft	readable	deep	
+exe	0x0043a6f0	d3_SetFog	d3_engine	draft	readable	stuck	
 exe	0x0043a7d0	d3_DrawSortedD3D	d3_engine	draft	readable	deep	
 exe	0x0043b080	d3_DrawSortedSW	d3_engine	byte	readable		
 exe	0x0043b300	d3_RadixSort	d3_engine	byte	readable		
@@ -779,10 +779,10 @@ exe	0x0043d690	d3_SetAlpha	d3_engine	byte	readable
 exe	0x0043d6c0	d3_AttachToBone	d3_engine	byte	readable		
 exe	0x0043d7c0	d3_TransformSurf	d3_engine	byte	readable		
 exe	0x0043d840	d3_TransformMeshes	d3_engine	byte	readable		
-exe	0x0043d860	d3_GetBounds	d3_engine	draft	readable	deep	
+exe	0x0043d860	d3_GetBounds	d3_engine	byte	readable		
 exe	0x0043da00	d3_DeflateObject	d3_engine	byte	readable		
 exe	0x0043db30	d3_DeflateScene	d3_engine	byte	readable		
-exe	0x0043dbc0	d3_InflateObject	d3_engine	draft	readable	deep	
+exe	0x0043dbc0	d3_InflateObject	d3_engine	draft	readable	stuck	
 exe	0x0043deb0	d3_InflateScene	d3_engine	byte	readable		
 exe	0x0043df60	d3_ReloadMeshCB	d3_engine	byte	readable		
 exe	0x0043e090	d3_ReloadMeshes	d3_engine	byte	readable		
