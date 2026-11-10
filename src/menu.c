@@ -4156,7 +4156,9 @@ int ai_StepShot(SHOTREC *shot)
     windY = DRAG(shot->wind.pos[1]);
     windZ = (((((shot->area * shot->wind.pos[2]) * shot->wind.pos[2]) * SIGN(shot->wind.pos[2])) * ai_ShotDrag) * ai_AirDensity) * 0.5f;
     for (i = 0; i < ticks; i++) {
-        v = shot->vel.v;
+        v.x = shot->vel.v.x;
+        v.y = shot->vel.v.y;
+        v.z = shot->vel.v.z;
         dx = DRAG(v.x);
         dy = DRAG(v.y);
         dz = DRAG(v.z);
@@ -4190,7 +4192,9 @@ int ai_StepShot(SHOTREC *shot)
                 + shot->vel.v.z * shot->vel.v.z) * shot->mass * 0.5f;
             return 0;
         }
-        shot->pos = next;
+        shot->pos.x = next.x;
+        shot->pos.y = next.y;
+        shot->pos.z = next.z;
         px = npx;
         pz = npz;
     }
