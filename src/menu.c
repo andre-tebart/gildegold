@@ -4258,13 +4258,13 @@ int ai_ShotHitsGround(D3SM *map, D3VECTOR *from, D3VECTOR *to, int px, int pz, i
         return 0;
     }
     t = 0;
-    step = 1.0f / (float)sqrt((float)(dz * dz) + (float)(dx * dx));
+    step = ai_FloatOne / (float)sqrt((float)(dz * dz) + (float)(dx * dx));
     p.x = from->x;
     p.y = from->y;
-    p.z = from->z;
     d.x = to->x - from->x;
     d.y = to->y - from->y;
     d.z = to->z - from->z;
+    p.z = from->z;
     d.x *= step;
     d.y *= step;
     d.z *= step;
@@ -4280,7 +4280,7 @@ int ai_ShotHitsGround(D3SM *map, D3VECTOR *from, D3VECTOR *to, int px, int pz, i
             return 1;
         }
         t += step;
-    } while (t < 1.0f);
+    } while (t < ai_FloatOne);
     return 0;
 }
 /* 0x5dd090, the 0 .. ai_WindGain (60) clamp divided by ai_WindGain (69 B): 0 when <= 0, 1 when >= 60,
