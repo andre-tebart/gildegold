@@ -2723,16 +2723,16 @@ void ai_BloodRevengeWindow(int building)
     d2_SetForm(form, 0);
     sv_FitForm(d2_LastWindow);
     d2_SetForm(form, 1);
-    rows[0].y = 0x1e;
     rows[0].x = (d2_Wins[d2_LastWindow].w - d2_Pics[0x5da].w) / 2;
-    rows[1].y = 0x7d;
+    rows[0].y = 0x1e;
     rows[1].x = (d2_Wins[d2_LastWindow].w - d2_Pics[0x5da].w) / 3 - 10;
-    rows[2].y = 0x7d;
+    rows[1].y = 0x7d;
     rows[2].x = (d2_Wins[d2_LastWindow].w - d2_Pics[0x5da].w) * 2 / 3 + 10;
-    rows[3].y = 0xdc;
+    rows[2].y = 0x7d;
     rows[3].x = (d2_Wins[d2_LastWindow].w - d2_Pics[0x5da].w) / 3 - 100;
-    rows[4].y = 0xdc;
+    rows[3].y = 0xdc;
     rows[4].x = (d2_Wins[d2_LastWindow].w - d2_Pics[0x5da].w) * 2 / 3 + 100;
+    rows[4].y = 0xdc;
     d2_SetForm(form, 3);
     sv_ButtonRow(d2_LastWindow, 0, ids, 2, txt_Ptrs[0x41b7], txt_Ptrs[0x41b8]);
     do {
@@ -2812,10 +2812,10 @@ void ai_BloodRevengeWindow(int building)
                     }
                 }
                 cfg.filter = gypsyFilter;
+                cfg.option14 = 2;
                 cfg.flags = 1;
                 cfg.mode = 0x400;
                 cfg.kind = 6;
-                cfg.option14 = 2;
                 rows[i].rec = (AICHARVIEW *)ai_AmountMenu((int)&cfg, (int)txt_Ptrs[0x41b4 + (i != 0)], 0, 0);
                 sel[i] = rows[i].rec != 0 ? rows[i].rec->netId : -1;
                 refresh = 1;
