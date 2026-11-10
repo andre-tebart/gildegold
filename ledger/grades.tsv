@@ -1758,7 +1758,7 @@ exe	0x004a7140	ai_PokerStart	poker	byte	readable
 exe	0x004a7430	ai_PokerDealRound	poker	byte	readable		
 exe	0x004a74e0	ai_PokerStep	poker	byte	readable		
 exe	0x004a7650	ai_PokerFindPair	poker	byte	readable		
-exe	0x004a76d0	ai_PokerHighCard	poker	draft	readable	deep	
+exe	0x004a76d0	ai_PokerHighCard	poker	byte	readable		
 exe	0x004a7760	ai_PokerDrawCard	poker	byte	readable		
 exe	0x004a77e0	ai_PokerNpcExchange	poker	shape	readable		
 exe	0x004a79d0	ai_PokerSwapCard	poker	byte	readable		
@@ -1783,7 +1783,7 @@ exe	0x004a8c10	ai_AlwaysTrue	poker	byte	readable
 exe	0x004a8c20	ai_EvalOwnTimeSlot	poker	byte	readable		
 exe	0x004a8c80	ai_DecideTwoNearChars	poker	byte	readable		
 exe	0x004a8d20	ai_DecideNearChar	poker	byte	readable		
-exe	0x004a8db0	ai_DecideBuildingResident	poker	draft	readable	deep	
+exe	0x004a8db0	ai_DecideBuildingResident	poker	byte	readable		
 exe	0x004a8ee0	ai_EvalTitleGroup7	poker	byte	readable		
 exe	0x004a8f20	ai_DecideUnfriendlyPair	poker	byte	readable		
 exe	0x004a9030	ai_EvalGraveCount	poker	byte	readable		
@@ -2730,13 +2730,13 @@ exe	0x004ed1e0	gv_WriteAvatars	gv	byte	readable
 exe	0x004ed270	gv_ReadAvatars	gv	shape	readable		
 exe	0x004ed3f0	gv_EffectNotifyOwner	gv	byte	readable		
 exe	0x004ed480	gv_WriteEffects	gv	byte	readable		
-exe	0x004ed910	gv_ReadEffects	gv	draft	readable	deep	
+exe	0x004ed910	gv_ReadEffects	gv	byte	readable		
 exe	0x004eddf0	unk_ResetEffectSlots	gv	byte	readable		
 exe	0x004ede70	gv_FreeEffectObjects	gv	byte	readable		
 exe	0x004eded0	gv_FindEffect	gv	byte	readable		
 exe	0x004edf10	gv_ReleaseEffect	gv	byte	readable		
 exe	0x004edf80	gv_UpdateEffects	gv	byte	readable		
-exe	0x004ee360	gv_ExplodeShot	gv	draft	readable	deep	
+exe	0x004ee360	gv_ExplodeShot	gv	draft	readable	stuck	
 exe	0x004eea70	gv_RequestEffectLoad	gv	byte	readable		
 exe	0x004eeaa0	gv_ReserveEffect	gv	byte	readable		
 exe	0x004eeb00	gv_StopEffect	gv	byte	readable		
