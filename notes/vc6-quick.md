@@ -243,6 +243,16 @@ mechanisms, each as a generated round over all positions / subsets:
   bound its own local (`top = 30 / 42; for (i = top - 1; i >= 0; i--)`) and leave the loop by `break` to the one
   `return n` (amt_GetColumnOffices 12 ins -> byte; `for (i--; ..)`, `goto none`, else-chains were no lever).
 
+- **Several send sites that the original does not share** (three `Begin; r = Send(&m); End; return r;` with only
+  the call tail merged): write each site out in full, not `goto send` - VC6 cross-jumps identical instruction tails
+  after register allocation, so the per-site store order (`m.id` / `m.o1` first) decides which sites merge; a site
+  that merges in ours but not in the original needs another store order there (amt_ApplyForOffice, 51 -> 14).
+- **A capped count returned** (`cmp eax, ecx / jl / mov eax, ecx` with no slot store): `if (cnt >= n) return n;
+  return cnt;`, not `cnt = n; return cnt;` (amt_GetOfficeCandidates / ...Full, the last hunk to byte).
+- **A zero register shared by two variables** (`xor ebx, ebx` stored to `cur`, then `ebx` is `best`): `best = 0`
+  in an else arm of the `if` that computes it, not before it; before it VC6 gives the zero to the loop index
+  instead (amt_CalcZuenfte).
+
 ## Registers, stack slots, locals
 - **A local memory-homed in the whole original** (stored at every definition, dead final loop values stored,
   reloaded after byte stores through pointers) is address-taken: find the one small-frame `lea` in the original
@@ -313,6 +323,14 @@ mechanisms, each as a generated round over all positions / subsets:
 - **A frame one slot larger where an address-taken out-param (`&sx`) shares the original's slot with a loop
   temp** (dcp frame: `shared in the original`): declaring it in the block that uses it gives the shared slot,
   but VC6 may reorder other equal-count slots then (ch_GetNewPath, open).
+
+- **AI_ZERO through a slot** (`mov ecx, [ebp+0x10] / mov [ebp-0xc], ecx / mov edi, [ebp-0xc]` where the original
+  loads edi straight from the parameter): `AI_ZERO_AT(param, size)` - AI_ZERO's `void *_zp = (dst)` copy takes a
+  frame slot and shifts the others (amt_GetOfficeCandidates / ...Full).
+- **A record walk based on the wrong field** (`[eax-4]` for kind from a cnt base): index `amt_Table[j].f` at
+  every use instead of a record pointer local `p = &amt_Table[j]` (amt_GetOfficeCandidates).
+- **A buffer at a dead array's slot** (the original's string target sits in `cand`'s bytes inside a block
+  that returns): a separate block-scoped buffer, not the function's other buffer (amt_CalcZuenfte: `gb[64]`).
 
 ## Floating point
 - Commutative operand order is rank-based, not source order: textual swaps rarely change anything. Ranks move
