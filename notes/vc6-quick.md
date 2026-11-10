@@ -555,3 +555,21 @@ mechanisms, each as a generated round over all positions / subsets:
   same code; `(h << 1) * w` gives the original's (d3s_AddShadow).
 - **Pooled literals**: all three `1.0f`s of d3s_AddShadow were the shared ai_FloatOne, but the M10 named only the
   first two until those were written as the object; check the whole function after each M10 fix.
+- **VC6's own reciprocal is not a source literal**: for a loop-invariant divisor VC6 turns `x / inv` (and
+  `x * (1.0f / inv)`) into `fdivr [1.0f]` hoisted plus a multiply; in this binary the pooled `1.0f` / `1.0` sit
+  at the addresses named ai_FloatOne (0x5eb780) / cm_DoubleOne (0x5eb8a8), so the M10 on such a site (and on
+  a `+ 1.0` double rounding) has no source spelling: writing `ai_FloatOne / inv` adds an fmul, a hoisted
+  `inv = ai_FloatOne / -y` local spills (d3s_Project). Leave these M10s and say so in the tag.
+- **Struct assignment vs field copies**: `slot->dir = *ldir;` compiled to a pointer temp and a different
+  frame; `slot->dir.x = ldir->x; ...` per field gave the original's interleaved loads and frame size and
+  halved d3s_Project's diff (282 -> 139 ins). Try it on any `a = *b` of a small struct.
+- **Running min in a local, bound in the parameter**: `size <<= 16; ymin = size;` (the min loop on the
+  local, the bounds check `> size - 1` on the parameter) made VC6 hoist `size - 1` out of the bounds loop and
+  keep the min in a register as the original does (d3s_ShadowPoly draft -> shape); the reverse roles kept the
+  bound in a register.
+- **Record pointers advance per record**: `p->uv = t; ... t[0..5]; p++; t += 6;` for each of two polygons, not
+  `p->uv = t + 6; t[6..11]; ... t += 12;` (the original's `add ecx, 0x18` per polygon; d3s_MeshFromMap 247 ->
+  181 ins).
+- **Read pointer-indexed loads against the IV base**: in a strength-reduced loop the original's `[eax-0x50]`
+  with eax = &row[i + 1].pos is row[i].pos, not row[i + nx + 1]; d3s_MeshFromMap had the wrong vertex in a
+  height read (a meaning bug that an earlier "allocation only" reading missed).
