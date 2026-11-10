@@ -1830,7 +1830,7 @@ exe	0x004ac1a0	hmt_RecordTextId	hmt	7fe631da0c196267	no	shape	control=shape p1=s
 exe	0x004ac1e0	hmt_GetRecord	hmt	bf567faa6fd935a9	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004ac200	hmt_GetPrice	hmt	fddd8617acb14f4c	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004ac2f0	hmt_ApplyRecord	hmt	01fef64eb1782653	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x004ac440	hmt_CreateBinaryFile	hmt	8e2704e23c3d9aa4	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x004ac440	hmt_CreateBinaryFile	hmt	8e2704e23c3d9aa4	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x004ac8a0	hmt_WriteBinaryFile	hmt	ff67b35397731cc7	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004aca90	hmt_Init	hmt	f706cba68e5f77dc	no	draft	sample n=32 seed=1 compiled=31 codegens=1 best=draft
 exe	0x004acae0	hmt_ReadBinaryFile	hmt	3ef509123f357d31	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
