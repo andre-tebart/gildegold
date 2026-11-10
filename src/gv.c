@@ -340,20 +340,14 @@ int gv_WriteEffects(void *f)
 }
 /* 0x4ed910, reads what gv_WriteEffects wrote from the save file f (version v: the saves before 0x10055 have no fields
    f0c / f10, they are 1.0); sets each slot's callback to gv_EffectNotifyOwner with its gv_EffectArgs record and the
-   parts' time to d3_Time; 1 when all was read
-   @deep Read in full against 0x4ed910..0x4ede42: the 10 global reads, per slot the 5 + 3x9 + 1 reads of
-   GVEFFECT in order, the v >= 0x10055 branch (else f0c = f10 = 1.0), the three parts' time = d3_Time
-   and the arg / cb stores with q stepping through gv_EffectArgs all match (445 vs 446). The rest is the
-   slot pointer's bias, as in gv_WriteEffects: ours esi = slot + 0xc (- lea eax,[esi-0xc] ...), the
-   original's esi = slot + 0x38 (+ lea eax,[esi-0x38] ...), every displacement shifted by 0x2c; with its
-   bias the original loads 1.0 into eax once for the two stores (+ mov eax,0x3f800000 / mov [esi-0x2c],eax
-   / mov [esi-0x28],eax) where ours stores immediates. Induction choice: allocation. */
+   parts' time to d3_Time; 1 when all was read */
 
 int gv_ReadEffects(void *f, int v)
 {
     int i;
     GVEFFECT *e;
     GVEFFARG *q;
+    GVEFFPART *p;
 
     if (ls_Read(&gv_LastTime.year, 4, 1, (int)f) == 0)
         return 0;
@@ -393,63 +387,66 @@ int gv_ReadEffects(void *f, int v)
         }
         if (ls_Read(&e->f14, 4, 1, (int)f) == 0)
             return 0;
-        if (ls_Read(e->parts[0].v0, 16, 1, (int)f) == 0)
+        p = &e->parts[0];
+        if (ls_Read(p->v0, 16, 1, (int)f) == 0)
             return 0;
-        if (ls_Read(e->parts[0].v1, 16, 1, (int)f) == 0)
+        if (ls_Read(p->v1, 16, 1, (int)f) == 0)
             return 0;
-        if (ls_Read(e->parts[0].v2, 16, 1, (int)f) == 0)
+        if (ls_Read(p->v2, 16, 1, (int)f) == 0)
             return 0;
-        if (ls_Read(e->parts[0].v4, 16, 1, (int)f) == 0)
+        if (ls_Read(p->v4, 16, 1, (int)f) == 0)
             return 0;
-        if (ls_Read(&e->parts[0].a, 4, 1, (int)f) == 0)
+        if (ls_Read(&p->a, 4, 1, (int)f) == 0)
             return 0;
-        if (ls_Read(&e->parts[0].b, 4, 1, (int)f) == 0)
+        if (ls_Read(&p->b, 4, 1, (int)f) == 0)
             return 0;
-        if (ls_Read(&e->parts[0].c, 4, 1, (int)f) == 0)
+        if (ls_Read(&p->c, 4, 1, (int)f) == 0)
             return 0;
-        if (ls_Read(&e->parts[0].state, 4, 1, (int)f) == 0)
+        if (ls_Read(&p->state, 4, 1, (int)f) == 0)
             return 0;
-        if (ls_Read(&e->parts[0].steps, 4, 1, (int)f) == 0)
+        if (ls_Read(&p->steps, 4, 1, (int)f) == 0)
             return 0;
-        e->parts[0].time = d3_Time;
-        if (ls_Read(e->parts[1].v0, 16, 1, (int)f) == 0)
+        p->time = d3_Time;
+        p = &e->parts[1];
+        if (ls_Read(p->v0, 16, 1, (int)f) == 0)
             return 0;
-        if (ls_Read(e->parts[1].v1, 16, 1, (int)f) == 0)
+        if (ls_Read(p->v1, 16, 1, (int)f) == 0)
             return 0;
-        if (ls_Read(e->parts[1].v2, 16, 1, (int)f) == 0)
+        if (ls_Read(p->v2, 16, 1, (int)f) == 0)
             return 0;
-        if (ls_Read(e->parts[1].v4, 16, 1, (int)f) == 0)
+        if (ls_Read(p->v4, 16, 1, (int)f) == 0)
             return 0;
-        if (ls_Read(&e->parts[1].a, 4, 1, (int)f) == 0)
+        if (ls_Read(&p->a, 4, 1, (int)f) == 0)
             return 0;
-        if (ls_Read(&e->parts[1].b, 4, 1, (int)f) == 0)
+        if (ls_Read(&p->b, 4, 1, (int)f) == 0)
             return 0;
-        if (ls_Read(&e->parts[1].c, 4, 1, (int)f) == 0)
+        if (ls_Read(&p->c, 4, 1, (int)f) == 0)
             return 0;
-        if (ls_Read(&e->parts[1].state, 4, 1, (int)f) == 0)
+        if (ls_Read(&p->state, 4, 1, (int)f) == 0)
             return 0;
-        if (ls_Read(&e->parts[1].steps, 4, 1, (int)f) == 0)
+        if (ls_Read(&p->steps, 4, 1, (int)f) == 0)
             return 0;
-        e->parts[1].time = d3_Time;
-        if (ls_Read(e->parts[2].v0, 16, 1, (int)f) == 0)
+        p->time = d3_Time;
+        p = &e->parts[2];
+        if (ls_Read(p->v0, 16, 1, (int)f) == 0)
             return 0;
-        if (ls_Read(e->parts[2].v1, 16, 1, (int)f) == 0)
+        if (ls_Read(p->v1, 16, 1, (int)f) == 0)
             return 0;
-        if (ls_Read(e->parts[2].v2, 16, 1, (int)f) == 0)
+        if (ls_Read(p->v2, 16, 1, (int)f) == 0)
             return 0;
-        if (ls_Read(e->parts[2].v4, 16, 1, (int)f) == 0)
+        if (ls_Read(p->v4, 16, 1, (int)f) == 0)
             return 0;
-        if (ls_Read(&e->parts[2].a, 4, 1, (int)f) == 0)
+        if (ls_Read(&p->a, 4, 1, (int)f) == 0)
             return 0;
-        if (ls_Read(&e->parts[2].b, 4, 1, (int)f) == 0)
+        if (ls_Read(&p->b, 4, 1, (int)f) == 0)
             return 0;
-        if (ls_Read(&e->parts[2].c, 4, 1, (int)f) == 0)
+        if (ls_Read(&p->c, 4, 1, (int)f) == 0)
             return 0;
-        if (ls_Read(&e->parts[2].state, 4, 1, (int)f) == 0)
+        if (ls_Read(&p->state, 4, 1, (int)f) == 0)
             return 0;
-        if (ls_Read(&e->parts[2].steps, 4, 1, (int)f) == 0)
+        if (ls_Read(&p->steps, 4, 1, (int)f) == 0)
             return 0;
-        e->parts[2].time = d3_Time;
+        p->time = d3_Time;
         if (ls_Read(e->tail, 12, 1, (int)f) == 0)
             return 0;
         e->arg = q;
