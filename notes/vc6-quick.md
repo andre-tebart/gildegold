@@ -437,6 +437,14 @@ mechanisms, each as a generated round over all positions / subsets:
   `sv_QuickJump.active` in sv_t's ai_TutorialTick cost Chapter2 / 3 their byte. What kept both: sv.h holds only
   `typedef struct SVQUICKJUMP SVQUICKJUMP; extern SVQUICKJUMP sv_QuickJump;`, the body in its own header
   (sv_quickjump.h) that only the units reading its fields include; a bare `extern struct X v;` still lost Chapter3.
+- **A float kept in st(0) through a floor and spilled around calls** (`fld 0.05f` / `fld st(0); fcomp 0.01q; jp;
+  fstp st(0); fld 0.01q` / `fst [slot]`, ours `mov [slot],imm` stores and a reload): the floor was the windows.h
+  macro `prog = max(0.01, prog);`; `if (prog < 0.01) prog = 0.01;`, the ternary, a separate float / double and
+  `max(prog, 0.01)` all stay in memory (sv_RefreshPanel 118 -> 78 ins).
+- **Cross-jumped identical arm tails kept in the wrong copy** (the original keeps the last arm's tail and the first
+  arm jumps forward into it, ours the reverse): the arms of the if / else-if chain ended without `return;` and one
+  `return;` followed the chain. Any nesting of the arms is the same code; only the per-arm returns matter
+  (sv_RefreshPanel 78 -> byte).
 - **A global the original reloads after an inline `strcpy` into another global** (ours keeps the value in eax and
   the copy loop takes other registers; then a whole callee-saved cascade, constants 0 / 1 not in registers): the
   two globals are one object; VC6 forgets every field of the object the copied bytes land in. Probe it with

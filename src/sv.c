@@ -3633,21 +3633,7 @@ void sv_OpenPersonPanel(AICHAR *c)
    hours from 0xc4), 0x43 (a day), 0x62 (stage 4: four days), 0x65 (from stage 2: a day), 0x48 (stage 1:
    start .. 0xcc), 0x6c (start .. 0xb4); 0.01 before the timed stage. For the selected cart (goods kind
    0x1d, its panel window open): the route button opens rt_EditCartRoute, the fill bar, the name of the
-   building of its job and one picture with its amount per goods of its load, at most four
-   @deep Reconstructed whole from 0x529380..0x529fa8 (941 -> 3140 bytes; 927 vs 919 instructions): building
-   title / level / job progress for the flags5a bits 4/1/0x40/0x80, the character name+health, state icons
-   and the job-kind progress chain (0x8f,0x16,0x40,0x61,0x43,0x62,0x65,0x48,0x6c, read case by case incl.
-   the AITIME copies and gm_AddTime hours), and the cart branch (route button, fill bar, job building name,
-   goods pictures/amounts loop); every statement compared with the original, the char and cart paths align
-   except regs/order/sib. Left are two code-generation decisions, no meaning: (1) the flags5a&1 path: the
-   original keeps prog in st(0) (fld 0.05f at 0x52951c, fld st(0)/fcomp, fst [esp+0x14] before the widget
-   calls, fld after) and cross-jumps its store into the portrait store at 0x529cc1; ours keeps prog in its
-   slot (mov [esp+0x14],0x3d4ccccd / 0x3c23d70a immediates, fld at the end) with its own store+epilogue.
-   (2) tail merging: the original's flags5a&4 path jumps into the 0x80 path at its fdiv (jmp 0x52969b) and
-   the 0x40 path into the shared d2_SetForm call (jmp 0x5296d7); ours emits the 4 path's fdiv/store/widget
-   tail in full (0x529501..0x529582). Tried: a separate float for the &1 path, a single exit (if/else chain
-   without returns), the widget check shared vs per branch (934 -> 929 -> 927), the j==0 block as else (now
-   placed at the end like the original). */
+   building of its job and one picture with its amount per goods of its load, at most four */
 void sv_RefreshPanel(void)
 {
     AICHAR *c;
@@ -3693,7 +3679,6 @@ void sv_RefreshPanel(void)
                 d2_SetForm(sv_PanelForm, 0);
                 sv_PanelWidgets[0] = d2_WinOpenPic(((d2_Wins[d2_LastWindow].w - 0x30) >> 1) + 0x2f, 0x4c, 0x4ff, d2_LastWindow);
             }
-            return;
         } else if ((fl & 1) != 0) {
             j = (AIJOB *)he_FindEvent(2, 0, 0xd, 3, SV_SELBLD->id);
             prog = 0.05f;
@@ -3707,7 +3692,6 @@ void sv_RefreshPanel(void)
                 }
             }
             ((D2OBJ *)d2_Objs)[sv_PanelBldPic].fillFraction = prog;
-            return;
         } else if ((fl & 0x40) != 0) {
             j = (AIJOB *)he_FindEvent(2, 0, 0x1e, 3, SV_SELBLD->id);
             if (j == 0)
@@ -3718,7 +3702,6 @@ void sv_RefreshPanel(void)
                 d2_SetForm(sv_PanelForm, 0);
                 sv_PanelWidgets[0] = d2_WinOpenPic(((d2_Wins[d2_LastWindow].w - 0x30) >> 1) + 0x2f, 0x4c, 0x4ff, d2_LastWindow);
             }
-            return;
         } else if ((fl & 0x80) != 0) {
             j = (AIJOB *)he_FindEvent(2, 0, 0x1f, 3, SV_SELBLD->id);
             if (j == 0)
@@ -3729,14 +3712,13 @@ void sv_RefreshPanel(void)
                 d2_SetForm(sv_PanelForm, 0);
                 sv_PanelWidgets[0] = d2_WinOpenPic(((d2_Wins[d2_LastWindow].w - 0x30) >> 1) + 0x2f, 0x4c, 0x4ff, d2_LastWindow);
             }
-            return;
         } else {
             if (sv_PanelWidgets[0] != -1) {
                 d2_RemoveObj(sv_PanelWidgets[0]);
                 sv_PanelWidgets[0] = -1;
             }
-            return;
         }
+        return;
     }
     if (sv_SelectedChar != 0) {
         c = (AICHAR *)sv_SelectedChar;
