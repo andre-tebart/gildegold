@@ -151,6 +151,21 @@ mechanisms, each as a generated round over all positions / subsets:
   original does `and 0x3f; xor` (one RMW for both) and one shared store: assign cast before solid in the else arm
   (d3sm_ShadowCB, -28 ins). A struct local used only in a loop body declared there shares a dead array's slot.
 
+- **Byte bit-or built from a parameter** (`mov al,[loop]; and al,1; shl al,3; or al,0x10` then a plain byte store)
+  where `(loop & 1) << 3 | 0x10` (any spelling) becomes `((loop & 1) | 2) << 3` and an RMW of the byte: the byte was
+  two bitfields (`f.u.bits.f08 = loop; f.u.bits.f10 = 1;`). With the other field stores permuted (720 orders,
+  dcp try) ch_AttachAni reached byte. Adding that bitfield view to ch.h's CHANIMFLAGS moved sv_t's
+  ai_TutorialInitChapter2 off byte (declaration-set tie-break): put such a view in the unit (CHANIMFLAGSB in ch.c).
+- **A search loop whose bound min(N, n + 32) the original recomputes per iteration** with n in a scratch register
+  (ours hoists n + 32 and spills n, frame 4 larger): test the first cell through the array (`!pts[n].x && ..`) and
+  start the walking pointer in the for-init, `for (i = n, pt = &pts[n]; i < min(0x100, n + 32); i++, pt++)`
+  (ch_ActWalkCells: frame 0x1ac -> 0x1a8, 54 -> 4 ins). A zero-fill of two-byte records indexes the record type
+  (`((CHPATHPT *)p)[i].x = 0; ..z = 0;`, i < 0x100), not bytes `[i]`, `[i + 1]` with `i += 2` (index/base order).
+- **Three 16-byte locals in another frame order** with equal code (ch_FindFreeCell): framesearch showed declaration
+  order, names, block scope, pointer views and struct copies never move them, two extra real reads of one do. One
+  array `D3VECTOR4 p[3]` gives ascending order with the same code (draft 88 -> shape 50), but the array is
+  address-taken, which reorders a copy's loads into it (open).
+
 ## Control flow and returns
 - **Empty case labels**: VC6 drops `case X: break;` (also `return;`, dead stores, `goto` to the join)
   before switch lowering, so those labels cannot affect the dispatch tree. A folded `if (0) { }` body
@@ -198,7 +213,11 @@ mechanisms, each as a generated round over all positions / subsets:
 - **A redundant re-test kept by the original** (`test [m],0x20; jne call; cmp eax,ebx; jne skip; call:`, the
   third term of `!s || s->f || !s` that a condition threads away): write the if / else-if pair with the call in
   both arms, `if (s && s->f) { call } else if (!s) { call }`; VC6 merges the calls and keeps the test
-  (ch_ActWalk byte; ch_ActWalkCells has the same test but a 40-line arm, not tried by duplication).
+  (ch_ActWalk byte). With a long arm VC6 does not merge the two copies (ch_ActWalkCells: 531 ins); a flag
+  `r = 0; if (s && s->f) r = 1; else if (!s) r = 1; if (r) {arm}` (or a goto into the arm) keeps the re-test (byte).
+- **A field the original reloads at a call where ours forwards the entry local** (`push edi` vs `mov ecx,[esi+0x14];
+  push ecx`, ch_ActDroppingObject): any join before it with a call on the other path kills VC6's CSE of the load
+  (proved with a shared test after the count==0 block), but no shape found that also keeps the original's tests.
 
 ## Registers, stack slots, locals
 - **A parameter loaded twice from its slot** (`mov esi,[arg]; and esi,0xffff` at entry, later `mov edi,[arg]` unmasked):
