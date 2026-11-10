@@ -101,7 +101,3 @@ dxsdk6 = "C:/Tools/DXSDK61"                                 # DirectX 6.1 SDK
 dxsdk8 = "C:/Tools/DXSDK8"                                  # DirectX 8.0 SDK
 ghidra = "C:/Tools/ghidra_12.1.4_PUBLIC"                    # optional: drafts (dcp setup)
 java = "C:/Program Files/Eclipse Adoptium/jdk-21.0.12.101-hotspot"  # optional: Ghidra's JDK 21
-
-[export]
-# `dcp export`: the build as data for a build without dcp (export/exe.json, export/exe/); paths outside the project
-# are spelled with the names of [paths].
