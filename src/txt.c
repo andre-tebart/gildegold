@@ -187,7 +187,18 @@ int txt_ParseLine(char *line, int group)
 }
 /* 0x42c950, reads a "{rN}" random-text escape from p: the chosen variant (N + 9) is queued in
    txt_Random; on a syntax error it reports and queues the pointer itself.
-   @deep behaviour only - grade.py code 18, fill 8; unitdiff 25 B / 18 asm lines (2026-10-26): the four stores and the branch structure are identical, the hunks differ in that the original reloads p from its home slot ([esp+0xc]/[esp+8]) where ours keeps it in esi, i.e. register allocation; readable met; reversed if polarity (2026-10-26, the store-p arm first) is 52 B / 24 lines, WORSE */
+   @stuck meaning matches (four stores, both branches, the err path). Left: the original keeps p in esi
+   only for strncmp / p[2] and stores (int)p from the argument slot ([esp+8] / [esp+0xc] after the err
+   push) in both p-store paths; ours stores esi. Tried (dcp try): headers sample insensitive; a char *s
+   copy for the tests (function scope, block scope, s = p inside the call): = control; *(int *)&p stores: =
+   control; strncmp == 0, n = p[2]; n -= '1', if/else in place of return, the n<0||n>9 error arm first: =
+   control; one shared store after the if (8 ins / 33 B but ours still stores esi and drops the third
+   epilogue, not kept); the test inverted with early return (16 ins); n spelled out (21 ins) (tiebreak:
+   insensitive) prior: behaviour only - grade.py code 18, fill 8; unitdiff 25 B / 18 asm lines
+   (2026-10-26): the four stores and the branch structure are identical, the hunks differ in that the
+   original reloads p from its home slot ([esp+0xc]/[esp+8]) where ours keeps it in esi, i.e. register
+   allocation; readable met; reversed if polarity (2026-10-26, the store-p arm first) is 52 B / 24 lines,
+   WORSE */
 
 void txt_ParseRandomText(char *p)
 {
