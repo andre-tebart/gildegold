@@ -4088,17 +4088,16 @@ int ai_ScatterShot(SHOTREC *shot, float sideSpread, D3VECTOR *side, float otherS
 
     if (shot->steps != 0)
         return 0;
-    k = (util_RandomF() * 1.5f - 1.0f) * speedSpread + 1.0f;
+    k = (util_RandomF() * 1.5f - ai_FloatOne) * speedSpread + ai_FloatOne;
     shot->velStart.v.x = k * shot->velStart.v.x;
     shot->velStart.v.y = k * shot->velStart.v.y;
     shot->velStart.v.z = k * shot->velStart.v.z;
     shot->velStart.speed = k * shot->velStart.speed;
-    k = (util_RandomF() * 2.0f - 1.0f) * shot->velStart.speed * sideSpread;
+    k = (util_RandomF() * 2.0f - ai_FloatOne) * shot->velStart.speed * sideSpread;
     dside.x = k * side->x;
     dside.y = k * side->y;
     dside.z = k * side->z;
-    k = (util_RandomF() * 2.0f - 1.0f) * shot->velStart.speed * otherSpread + 1.0f;
-    shot->vel.speed = shot->velStart.speed;
+    k = (util_RandomF() * 2.0f - ai_FloatOne) * shot->velStart.speed * otherSpread + ai_FloatOne;
     dother.x = k * other->x;
     dother.y = k * other->y;
     dother.z = k * other->z;
@@ -4111,6 +4110,7 @@ int ai_ScatterShot(SHOTREC *shot, float sideSpread, D3VECTOR *side, float otherS
     shot->vel.v.x = x;
     shot->vel.v.y = y;
     shot->vel.v.z = z;
+    shot->vel.speed = shot->velStart.speed;
     return 1;
 }
 
