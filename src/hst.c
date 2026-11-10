@@ -578,7 +578,7 @@ int ai_TokenBestInn(int mode, G12ARG *args, int k, char *fmt, char *out)
 }
 /* 0x4af1b0, text token (mode 2 only): fmt "...-n" gives n percent of the wealth (0x50a640) of the character
    args[k], as a money text (0x5085b0)
-   @deep behaviour: 49 code hunks. Read: the guard (mode == 2, args != 0, k != 8, gm_FindChar, ai_IsLivingCharacter) matches the original branch for branch, and so does v = gm_GetWorth(c->id). The differences are (1) the frame 0x204 vs 0x200 - ours spills c to [ebp-4], the original keeps it in eax; (2) the ai_SplitTokenFormat prologue slots: the original keeps n1 = 0x200 in the mode parameter slot [ebp+8], n2 = (int)buf in the args slot [ebp+0xc], v in the k slot [ebp+0x10], and AI_ZERO's _zp reads the n2 slot directly - ours allocates [_zn]/[ebp-4] and writes 0x200 twice; (3) the money tail is the nested call txt_Format (out, buf, gm_ConvertMoney (v * (n1 * 0.01f), ai_OwnPlayer), ai_OwnPlayer) and matches. Q2 fixed this session: gm_ConvertMoney/gm_ConvertMoney -> gm_ConvertMoney (project-wide, 60 references, no byte change); Q1 name has evidence (callback 0x601b10[8] = 0x4af1b0, name 0x601730[8] GELD) */
+   name: callback 0x601b10[8] = 0x4af1b0, token name 0x601730[8] GELD */
 
 int ai_TokenMoney(int mode, G12ARG *args, int k, char *fmt, char *out)
 {
@@ -592,7 +592,25 @@ int ai_TokenMoney(int mode, G12ARG *args, int k, char *fmt, char *out)
         v = gm_GetWorth(c->id);
         n1 = 0x200;
         n2 = (int)buf;
-        AI_ZERO(buf, n1);
+        /* @original the engine's clear (AI_ZERO) with both operands named in the asm: the original reads
+           edi and ebx straight from the n2 / n1 slots, no _zp / _zn temporaries */
+        __asm {
+            mov edi, n2
+            mov ebx, n1
+            xor eax, eax
+            lea ecx, [edi+edi*2]
+            and ecx, 3
+            sub ebx, ecx
+            jle tail
+            rep stosb
+            mov ecx, ebx
+            and ebx, 3
+            shr ecx, 2
+            rep stosd
+        tail:
+            add ecx, ebx
+            rep stosb
+        }
         ai_SplitTokenFormat(fmt, buf, &n1, &n2);
         n1 = atoi(fmt + n1);
         txt_FormatString(out, buf, gm_ConvertMoney((int)(v * (n1 * 0.01f)), ai_OwnPlayer), ai_OwnPlayer);
