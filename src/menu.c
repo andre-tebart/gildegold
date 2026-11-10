@@ -4130,7 +4130,31 @@ int ai_ScatterShot(SHOTREC *shot, float sideSpread, D3VECTOR *side, float otherS
    gravity pulls y; the velocity takes Heun's average of the change at the old and the predicted velocity,
    the position moves by velocity * step in inches. When ai_ShotHitsGround finds the move from the old to the
    new position hits the ground and the ball made more than 50 steps, it lands there: state 2, the energy
-   0.5 * mass * v^2, returns 0. Returns 1 while it flies. @deep Read whole against the original 0x5dc4a0..0x5dc9c6: statement set and meaning match (state test, d3_GetHeightAt out-of-map exit, the three wind drags, the per-ms loop with Heun's average, next = pos copy, time/steps ++, ai_ShotHitsGround with px/pz, the landing energy). The velocity is now copied whole into a D3VECTOR v each step (the original copies shot->vel by dwords to [esp+0x10..0x18] and reloads v.x/v.y/v.z from memory for the drags; 311 -> 332 differing but 339 -> 348 of 354 instructions). Left: (1) VC6 reorders the drag product chain - the original multiplies sign*area*drag*density*v*v*0.5 (wind x/z: area*w*w*sign*...), ours sign*drag*density*v*v*area*0.5 for every association tried (6 macro forms give identical code or worse); (2) the temporaries: the original spills dx and the half sums into 0x84/0x68/0x6c and reuses the dead v slots [0x10]/[0x14] for (bx+ax)*0.5 / (by+ay)*0.5, frame 0x98 vs ours 0x5c - FPU stack scheduling and spill-slot allocation. */
+   0.5 * mass * v^2, returns 0. Returns 1 while it flies.
+   @stuck match-deep 58: 308 -> 174 ins, frame now 0x98 as the original. Levers that moved code: the sign
+   through the shared ai_FloatZero / ai_FloatOne (M10 gone); the drag product nested
+   (((((S*area)*drag)*density)*v)*v)*0.5 for wind y and the flight drags and
+   (((((area*v)*v)*S)*drag)*density)*0.5 for wind x / z (an unnested chain is reordered by VC6, all 360
+   orders = one code; a (v)-parenthesized operand in WINDDRAG costs 8 ins); fall = ai_Gravity * ai_ShotStep
+   (M8 gone); v copied field by field and the landing / step copies of next by fields (270 -> 224);
+   D3VECTOR4 locals v, next, wind, d, a, b, m (the original's frame holes are the w slots; 224 -> 185,
+   frame equal); b built in place (b = d + wind; b *= perMass; b.y = b.y * perMass - fall). No lever: v.x
+   += a.x (= control), a built in place (+22), v = b + a then *= 0.5 (+frame), copy order of v (+14), next
+   copied at the loop top (+8), SHOTVEL v with a struct copy (+50), double constants. Left: the original
+   copies vel.x into v.x through eax and reads it from memory (ours fld [esi+0x10] and keeps v.x on the
+   FPU: fcom / fmul st,st(1)); the original stores d.x to memory ([0x84]) and the sums d.y+wind.y /
+   d.z+wind.z to a.y / a.z before multiplying, ours keeps them on the FPU (fpu 46 at +0x6c1); slots of wind
+   / fall shifted by 0x10 (ours wind at 0x50, the original 0x40). Next: the same steps for ai_StepShotSlow
+   (its twin) should give the same 308 -> ~174. (tiebreak: insensitive) prior: Read whole against the
+   original 0x5dc4a0..0x5dc9c6: statement set and meaning match (state test, d3_GetHeightAt out-of-map
+   exit, the three wind drags, the per-ms loop with Heun's average, next = pos copy, time/steps ++,
+   ai_ShotHitsGround with px/pz, the landing energy). The velocity is now copied whole into a D3VECTOR v
+   each step (the original copies shot->vel by dwords to [esp+0x10..0x18] and reloads v.x/v.y/v.z from
+   memory for the drags; 311 -> 332 differing but 339 -> 348 of 354 instructions). Left: (1) VC6 reorders
+   the drag product chain - the original multiplies sign*area*drag*density*v*v*0.5 (wind x/z:
+   area*w*w*sign*...), ours sign*drag*density*v*v*area*0.5 for every association tried (6 macro forms give
+   identical code or worse); (2) the temporaries: the original spills dx and the half sums into
+   0x84/0x68/0x6c and reuses the dead v slots [0x10]/[0x14] for (bx+ax)*0.5 / (by+ay)*0.5,... */
 int ai_StepShot(SHOTREC *shot)
 {
     float fall = ai_Gravity * ai_ShotStep;
