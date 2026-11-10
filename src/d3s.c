@@ -630,7 +630,24 @@ void d3_ExitShadows(void)
         d3sm_Shadow = 0;
     }
 }
-/* 0x45af50, the shadow mesh over the part rect of a terrain with 8x8 blocks, each block sampled at its own lod @deep B code hunks 738 with the frame 0xa4 here vs 0xa0: the prologue and loops read out as the same loads / FP maths on other stack slots (every local of the original's 0xa0 slot map in another home, the hoisted fstep*uv / fstep*cx / fstep*cz products and fx0 / oy+1.0 in other slots); no missing statement or call found in the hunks read; the original's slot map (rect in ebp, buf in ebx, uv reloaded from memory, the hoisted products in float slots) is what a deep round needs */
+/* 0x45af50, the shadow mesh over the part rect of a terrain with 8x8 blocks, each block sampled at its own lod
+   @stuck match-deep 45: ai_FloatOne fixed (M10). headers sample: insensitive. Read: the original's edi
+   holds bz in the loops, is reused inside the block first for the lod value (and eax,0xff; mov edi,eax;
+   div edi; step stored to [0x14] = ul's slot) and then for the vertex walker vp (add edi,0x50); buf lives
+   in ebx (reloaded after the vertex loop, rowptr takes ebx there). Ours: bz in edi, step in edi for the
+   whole block, vp in memory, lod with its own byte slot (the extra 4 bytes of frame 0xa4 vs 0xa0). Tried
+   (dcp try): step=lod in the if test vs field read twice (cse-noLod: lod slot gone, step in the bz
+   register as the original, but bz/buf swap to ebx/edi and vp stays in memory, 420 ins vs 376, frame still
+   0xa4); lod as unsigned int (424); lod as temp for rowskip/fstep/mip (uchar: frame 0xa0 but fild dword
+   and the regs swap, 472; uint: = cse); step=lod position (5 spots: = cse); nz/bz increment order, bz/bx
+   test order, poly/vert init order, nverts/npolys counter order (all 420-428); no br local (= control);
+   vert as walker (444); countdown r (370, 1073 B). Left: bz/buf ebx-edi swap and vp's register; everything
+   else reads as the same statements. (tiebreak: not measured (dcp headers sample d3s_TerrainShadowMesh))
+   prior: B code hunks 738 with the frame 0xa4 here vs 0xa0: the prologue and loops read out as the same
+   loads / FP maths on other stack slots (every local of the original's 0xa0 slot map in another home, the
+   hoisted fstep*uv / fstep*cx / fstep*cz products and fx0 / oy+1.0 in other slots); no missing statement
+   or call found in the hunks read; the original's slot map (rect in ebp, buf in ebx, uv reloaded from
+   memory, the hoisted products in float slots) is what a deep round needs */
 
 char d3s_TerrainShadowMesh(D3STERR *g, int *rect, float *uv, D3SBUF *buf, D3TEXHANDLE *tex, unsigned long color)
 {
