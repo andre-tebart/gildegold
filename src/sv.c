@@ -5006,19 +5006,31 @@ void sv_SendSelectedToBuilding(void)
    contact's room); with a clicked building through sv_SendSelectedToBuilding. Then it rebuilds the selection
    state: the grey look of the characters whose flag changed, sv_SelectedChar, ai_SelectedCount and the pointer
    items of those in their own building; a right release drops the selection
-   @deep read the whole function against 0x52bec0..0x52c413 (396 vs 391 ins): the band end / start (lhold,
-   rdown, sv_BandActive, di_Absolute, the own building), the four clicked-state tests with the original's
-   threading (contact -> group, object / item -> building test, building -> send), the map-cell send over
-   ai_CharsT (selected, alive, permission 0x800, model; the off[9][2] initializer per character, the spiral
-   index i kept across characters and cell set once, the 50.0 / cell size scaling, the fallback to the
-   picked cell after 8, sv_MoveToGroup, the script stop, cm_SendChrWalkTo), the contact send over
-   ai_SceneChars (the dummy_ name, the 0xfd room via init_BuildingSceneUniverse, the building choice,
-   cm_SendChrUseGates), sv_SendSelectedToBuilding, and the rebuild loop (the grey look by the CHARACTER
-   fading bit, sv_SelectedChar, the pointer items, the byte flags): all equal. Left, allocation: the
-   original holds the constants 0 / -1 / 1 in ebx / edi / ebp all through (cmp [mem],ebx; rematerialized
-   after each send) and keeps map in [esp+0x14], cell in ebx; ours holds 0 in edi, map in ebx and cell in a
-   slot (frame 0x98 vs 0x94), so the spiral loop stores cell and jumps once more and the character pointer
-   is biased by 8 */
+   @stuck match-deep 54: draft 305 -> 159 ins (frame now 0x94 as the original). Kept: cell as an
+   initialized block local of the per-character send (int cell = 0 next to off[]: 305 -> 212, the original
+   zeroes ebx per character and shares it with the constant 0), the send's character fields read through
+   ai_CharsT[j] except health / model / (int)c in the test (subsets m505 of 9 uses: 212 -> 170; a second
+   1023-subset run over c / ai_CharsT[j] / (int)c found nothing better), the contact's 0xfd case as the
+   else arm (170 -> 159). No lever (= control): (AICHAR *)ai_Chars[j] row cast, c / sc and b / gb split for
+   the contact loop, b = 0 inside the if (219, worse), declaration initializers for cx / cy, cx = cy = -1,
+   if (c->selected) spelling; worse: pointer loop for (c = ai_CharsT; ..) 229, the t chain as one if /
+   else-if t = .. plus one building chain 198 / 218, SetGrey arms swapped 161. Left (tiebreak insensitive,
+   32 samples): the constants -1 / 1 in ebp / edi where the original has edi / ebp (every off[] store, the
+   d2_HitWindow compares, the rematerialization after each send), the first loop's strength-reduced pointer
+   biased to +0x184 (model; the original's base is the record itself, end 0x7d5f80), in the contact loop
+   pointer / character / building in ebx / edi / esi against the original's edi / esi / ebx (b = 0 shares
+   the zero register there), d3_FindObject's push 0 vs push ebx, the AddPointerItem / SetGrey 1 as
+   immediates, the else-if PlayerBuilding test of the non-0xfd building chain laid out of line (tiebreak:
+   insensitive) prior: read the whole function against 0x52bec0..0x52c413 (396 vs 391 ins): the band end /
+   start (lhold, rdown, sv_BandActive, di_Absolute, the own building), the four clicked-state tests with
+   the original's threading (contact -> group, object / item -> building test, building -> send), the
+   map-cell send over ai_CharsT (selected, alive, permission 0x800, model; the off[9][2] initializer per
+   character, the spiral index i kept across characters and cell set once, the 50.0 / cell size scaling,
+   the fallback to the picked cell after 8, sv_MoveToGroup, the script stop, cm_SendChrWalkTo), the contact
+   send over ai_SceneChars (the dummy_ name, the 0xfd room via init_BuildingSceneUniverse, the building
+   choice, cm_SendChrUseGates), sv_SendSelectedToBuilding, and the rebuild loop (the grey look by the
+   CHARACTER fading bit, sv_SelectedChar, the pointer items, the byte flags): all equal. Left, allocation:
+   th... */
 void sv_HandleSelectionMouse(void)
 {
     D3SM *map;
