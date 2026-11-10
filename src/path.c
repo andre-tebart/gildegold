@@ -284,28 +284,27 @@ calc:
     return head;
 }
 /* 0x425af0, turns the parent chain that ends at node `last` into a forward next chain: the chain
-   nodes get parent = next from `last` back to the root.
-   @deep behaviour only: the parameter mask, the parent-chain walk and the next-chain walk are the same instructions, the remaining hunks are register allocation (esi/edi/ecx) and the 0xffff constant register; readable met */
+   nodes get parent = next from `last` back to the root. */
 
 void path_Reverse(PMAP *map, unsigned int last)
 {
-    unsigned int cur, p;
+    unsigned int cur, head, n;
 
-    cur = last & 0xffff;
-    if (map->nodes[cur].parent != 0xffff) {
-        map->nodes[cur].next = 0xffff;
+    last &= 0xffff;
+    if (map->nodes[last].parent != 0xffff) {
+        map->nodes[last].next = 0xffff;
+        cur = last;
         while (cur != 0xffff) {
-            p = map->nodes[cur].parent;
-            if (p != 0xffff) {
-                map->nodes[p].next = cur;
-                p = map->nodes[cur].parent;
-                last = p;
+            if (map->nodes[cur].parent != 0xffff) {
+                map->nodes[map->nodes[cur].parent].next = cur;
+                head = map->nodes[cur].parent;
             }
-            cur = p;
+            cur = map->nodes[cur].parent;
         }
-        while (last != 0xffff) {
-            map->nodes[last].parent = map->nodes[last].next;
-            last = map->nodes[last].next;
+        n = head;
+        while (n != 0xffff) {
+            map->nodes[n].parent = map->nodes[n].next;
+            n = map->nodes[n].next;
         }
     }
 }

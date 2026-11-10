@@ -490,7 +490,7 @@ exe	0x00424f30	path_Find	path	207580bdd3468c8c	no	byte	control=byte p1=byte p2=b
 exe	0x004250a0	path_Search2	path	9005d1e92d8be9e5	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x00425470	path_Search1	path	96ec31ff8a22684e	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x00425780	path_Expand	path	f9de476fa67aa421	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
-exe	0x00425af0	path_Reverse	path	255b9377726e4d68	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x00425af0	path_Reverse	path	78bf677b9be94851	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x00425bc0	sb_Init	sblib	9f944bbee63ef10a	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00425ce0	sb_Exit	sblib	c60129e2206556e8	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00425d20	sb_Update	sblib	c1a50a981fb694b6	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
