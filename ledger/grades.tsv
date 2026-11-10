@@ -2686,7 +2686,7 @@ exe	0x004eab20	ahm_Share	ahm	byte	readable
 exe	0x004eabd0	ahm_SlotOf	ahm	byte	readable		
 exe	0x004eabe0	ahm_FindSlot	ahm	byte	readable		
 exe	0x004eac20	ahm_HasFreeSlot	ahm	byte	readable		
-exe	0x004eac60	ahm_FillSteps	ahm	draft	readable	deep	
+exe	0x004eac60	ahm_FillSteps	ahm	byte	readable		
 exe	0x004ead20	ahm_ShufflePlayers	ahm	byte	readable		
 exe	0x004eadc0	ahm_ShuffleTable	ahm	byte	readable		
 exe	0x004eae60	ahm_FindRecipe	ahm	shape	readable		
@@ -2699,7 +2699,7 @@ exe	0x004eb130	ahm_PlaceFactor	ahm	byte	readable
 exe	0x004eb180	ahm_ResearchState	ahm	byte	readable		
 exe	0x004eb410	ahm_RescheduleResearch	ahm	byte	readable		
 exe	0x004eb480	ahm_LoadPrototypes	ahm	byte	readable		
-exe	0x004eb4c0	ahm_LoadIni	ahm	draft	readable	deep	
+exe	0x004eb4c0	ahm_LoadIni	ahm	byte	readable		
 exe	0x004eba80	ahm_LoadDfn	ahm	byte	readable		
 exe	0x004ebd60	ahm_SaveDfn	ahm	byte	readable		
 exe	0x004ebf50	ahm_ObjectId	ahm	byte	readable		
@@ -2708,7 +2708,7 @@ exe	0x004ebfb0	ahm_SaveWalk	ahm	byte	readable
 exe	0x004ec140	ahm_LoadWalk	ahm	byte	readable		
 exe	0x004ec2d0	ahm_WalkStep	ahm	byte	readable		
 exe	0x004ec2f0	ahm_ClearStep	ahm	byte	readable		
-exe	0x004ec320	ahm_StepValue	ahm	draft	readable	deep	
+exe	0x004ec320	ahm_StepValue	ahm	byte	readable		
 exe	0x004ec3d0	ahm_ObjectValue	ahm	byte	readable		
 exe	0x004ec490	ahm_SendCreateAlchemist	ahm	byte	readable		
 exe	0x004ec500	ahm_CreateAlchemist	ahm	draft	readable	deep	
@@ -2720,7 +2720,7 @@ exe	0x004ecbc0	ahm_RemovePlace	ahm	byte	readable
 exe	0x004ecc30	ahm_SendSetPlaceValue	ahm	shape	readable		
 exe	0x004ecd10	ahm_SetPlaceValue	ahm	byte	readable		
 exe	0x004ecd50	ahm_SendAddValue	ahm	byte	readable		
-exe	0x004ecdb0	ahm_AddValue	ahm	draft	readable	deep	
+exe	0x004ecdb0	ahm_AddValue	ahm	byte	readable		
 exe	0x004ece10	ahm_SendDelete	ahm	byte	readable		
 exe	0x004ece60	ahm_DeleteAlchemist	ahm	byte	readable		
 exe	0x004ecf10	ahm_WriteRecord	ahm	byte	readable		
