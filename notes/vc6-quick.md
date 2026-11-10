@@ -219,6 +219,17 @@ mechanisms, each as a generated round over all positions / subsets:
   push ecx`, ch_ActDroppingObject): any join before it with a call on the other path kills VC6's CSE of the load
   (proved with a shared test after the count==0 block), but no shape found that also keeps the original's tests.
 
+- **An if/else whose else block the original lays out of line no matter how the condition is written** (every
+  spelling of `if (!A || !B || !(d < c)) far else near`, && with near first, `>=`, reversed operands: one code,
+  near inline): the source chose through a flag, `lowPoly = 1; if (A && B) { ..; if (d < c) lowPoly = 0; }
+  if (lowPoly) far else near`; VC6 threads the flag away and keeps the far block first (ch_UpdateLowPoly byte).
+- **Later tests that the original re-evaluates unthreaded** (`if (s && !x) {..return;} if (!s && x) ..; if (s &&
+  x) ..` with the original re-testing s and reloading x per if, ours jumping straight through): write the later
+  tests on the field (`ch->slot`) instead of the local copy s (ch_UpdateLowPoly 91 -> 78 ins).
+- **A macro shaped `if (call == 0) return 0;` (LS_R) as the then-arm of an if/else** takes the else for its own
+  if: the else ran after every successful read (ls_ReadSaveHeader, a meaning bug; asmdiff showed it as one
+  `branch` hunk and a few `order`/`regs` hunks). Braces around the macro arm; grep for macro + `else`.
+
 ## Registers, stack slots, locals
 - **A parameter loaded twice from its slot** (`mov esi,[arg]; and esi,0xffff` at entry, later `mov edi,[arg]` unmasked):
   two variables. The masked one is the parameter itself (`last &= 0xffff;`) or a walker copied from it, the second an
@@ -274,6 +285,15 @@ mechanisms, each as a generated round over all positions / subsets:
 - **A frame one small buffer larger than the original's**: look where the original's buffer addresses point.
   err_ExceptionFilter's 7-byte code window (`lea ebx,[text]`, `err_CheckCall(text + 7, ..)`) is the dead
   `text[]` buffer, not a `char win[7]`: dropping the extra array gave the original's frame 0x280.
+
+- **Two `|=` on one byte folded into one or** (`b1 |= 0x14; b1 |= 8;` -> `or 0x1c`, any bitfield view the
+  same) where the original does `or 0x14 .. or 8`: a store to another byte of the same struct between them
+  (`f.w.c.b8 = 1;`) keeps them apart. A `memset(&f, ..)` plus a redundant `f.mid = 0;` stores the dword the
+  original never stores (drop the field store: ch_ActTurn 108 -> 88). Long store blocks: deep-tools
+  tryclimb.py (dcp try hill climb) matched ch_ActTurn's 17-store else block in 3 rounds.
+- **A frame one slot larger where an address-taken out-param (`&sx`) shares the original's slot with a loop
+  temp** (dcp frame: `shared in the original`): declaring it in the block that uses it gives the shared slot,
+  but VC6 may reorder other equal-count slots then (ch_GetNewPath, open).
 
 ## Floating point
 - Commutative operand order is rank-based, not source order: textual swaps rarely change anything. Ranks move
