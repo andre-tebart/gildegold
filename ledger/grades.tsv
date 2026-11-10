@@ -3304,7 +3304,7 @@ exe	0x00521150	sv_MessageBox	sv	shape	readable	stuck
 exe	0x00521410	sv_MessageBoxGreen	sv	shape	readable		
 exe	0x005216a0	sv_MessageBoxYesNo	sv	byte	readable		
 exe	0x00521900	sv_OpenMessageBox	sv	byte	readable		
-exe	0x00521960	sv_SelectPanelObject	sv	draft	readable	deep	
+exe	0x00521960	sv_SelectPanelObject	sv	byte	readable		
 exe	0x00521ba0	sv_DrawPanelPointer	sv	shape	readable	deep	
 exe	0x00521c10	sv_SceneLoadProgress	sv	byte	readable		
 exe	0x00521e70	sv_BuildScreenLayout	sv	byte	readable		
@@ -3359,7 +3359,7 @@ exe	0x00528b80	sv_OpenItemPanel	sv	byte	readable
 exe	0x00528d90	sv_OpenCartPanel	sv	byte	readable		
 exe	0x00528ee0	sv_OpenDefaultPanel	sv	byte	readable		
 exe	0x005290f0	sv_OpenPersonPanel	sv	byte	readable		
-exe	0x00529380	sv_RefreshPanel	sv	draft	readable	deep	
+exe	0x00529380	sv_RefreshPanel	sv	byte	readable		
 exe	0x00529fb0	sv_ClosePanel	sv	byte	readable		
 exe	0x0052a040	sv_ReturnZero	sv	byte	readable		
 exe	0x0052a050	sv_UpdatePanel	sv	byte	readable		
@@ -3374,7 +3374,7 @@ exe	0x0052b490	sv_StartPoseScript	sv	byte	readable
 exe	0x0052b500	sv_RunLocationScripts	sv	byte	readable		
 exe	0x0052bb70	sv_RunFramesUntilStopped	sv	byte	readable		
 exe	0x0052bbc0	sv_SendSelectedToBuilding	sv	draft	readable	stuck	
-exe	0x0052bec0	sv_HandleSelectionMouse	sv	draft	readable	deep	
+exe	0x0052bec0	sv_HandleSelectionMouse	sv	draft	readable	stuck	
 exe	0x0052c420	sv_MarkMasterCarts	sv	byte	readable		
 exe	0x0052c4a0	sv_ReleaseBubble	sv	byte	readable		
 exe	0x0052c4e0	sv_ShowBubble	sv	byte	readable		
@@ -4625,7 +4625,7 @@ exe	0x005d7160	ai_Screenshot	menu	shape	readable
 exe	0x005d7320	ai_LoadScreenImage	menu	byte	readable		
 exe	0x005d73e0	ai_HasQuicksavePlayer	menu	draft	readable	deep	
 exe	0x005d7430	ai_Quicksave	menu	byte	readable		
-exe	0x005d7530	ai_SaveNetworkGame	menu	draft	readable	deep	
+exe	0x005d7530	ai_SaveNetworkGame	menu	byte	readable		
 exe	0x005d7770	ai_OptionsMenu	menu	byte	readable		
 exe	0x005d7ba0	ai_CreditsScreen	menu	byte	readable		
 exe	0x005d7e90	ai_PauseGame	menu	byte	readable		
