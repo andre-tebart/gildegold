@@ -3443,7 +3443,7 @@ exe	0x00531c50	main_OpenScreen	main	draft	readable	deep
 exe	0x00532160	main_OpenEngine	main	byte	readable		
 exe	0x005324f0	main_CreateWindow	main	draft	readable	deep	
 exe	0x00532700	main_StartCityGame	main	byte	readable		
-exe	0x005327e0	main_PlayerCountDialog	main	draft	readable	deep	
+exe	0x005327e0	main_PlayerCountDialog	main	byte	readable		
 exe	0x005328f0	main_HostNetworkGame	main	byte	readable		
 exe	0x00532a70	main_JoinNetworkGame	main	draft	readable	deep	
 exe	0x00532c30	main_EnterHostAddress	main	byte	readable		
@@ -4633,7 +4633,7 @@ exe	0x005d7f10	ai_MessageFilterScreen	menu	byte	readable
 exe	0x005d8080	ai_TailorChatWindow	menu	byte	readable		
 exe	0x005d8360	ai_TailorContact	menu	byte	readable		
 exe	0x005d8420	ai_ProductionContact	menu	shape	readable		
-exe	0x005d85e0	ai_BloodRevengeWindow	menu	draft	readable	deep	
+exe	0x005d85e0	ai_BloodRevengeWindow	menu	byte	readable		
 exe	0x005d8c90	ai_CurseWindow	menu	shape	readable		
 exe	0x005d90e0	ai_CurseTargetWindow	menu	byte	readable		
 exe	0x005d95a0	ai_HomageWindow	menu	shape	readable	deep	
@@ -4658,8 +4658,8 @@ exe	0x005dc1a0	ai_SphereVolume	menu	byte	readable
 exe	0x005dc210	ai_PositionShare	menu	byte	readable		
 exe	0x005dc240	ai_InitShot	menu	shape	readable	stuck	
 exe	0x005dc3a0	ai_ScatterShot	menu	byte	readable		
-exe	0x005dc4a0	ai_StepShot	menu	draft	readable	deep	
-exe	0x005dc9d0	ai_StepShotSlow	menu	draft	readable	deep	
+exe	0x005dc4a0	ai_StepShot	menu	shape	readable	stuck	
+exe	0x005dc9d0	ai_StepShotSlow	menu	shape	readable	stuck	
 exe	0x005dcf00	ai_ShotHitsGround	menu	byte	readable		
 exe	0x005dd090	ai_NormalizeEffectScale	menu	byte	readable		
 exe	0x005dd100	ai_SolveCannonAim	menu	shape	readable		
