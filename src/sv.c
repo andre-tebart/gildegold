@@ -1006,8 +1006,8 @@ int gm_ResearchClass(int k, int *out);         /* 0x50b090, f3gm.c, the research
    ai_GoodsT[id].type. Tried (all = control): char* / int / (ai_GoodsT + id) / (id << 6) + id spellings, an
    AIGOOD * or char * block local, no kind local (type tested twice), the id expression inline, id / kind
    types (unsigned short / short / int worse), continue / nested / if-block forms of the slot tests.
-   sv_UpdateGroundplan has the same load and the same y loop: try the loop lever there. (tiebreak: not
-   measured here: dcp headers sample 32 samples, one codegen, insensitive) prior: read whole against the original and
+   sv_UpdateGroundplan has the same load and the same y loop: try the loop lever there. (tiebreak:
+   dcp headers sample, 32 samples, one codegen, insensitive) prior: read whole against the original and
    reconstructed (strings, per-branch sprintf, class/kind chains, char-parameter PutPixelRGB, short
    CreatePicObj x, strcat _C.bmp, kind-2 query branch first, slot loop); 411 vs 412 ins. Left: the cell
    map's y loop is top-tested in the original (0x5227d1 cmp ebx,[eax+8]; jge 0x522974 ... 0x522913 jmp
