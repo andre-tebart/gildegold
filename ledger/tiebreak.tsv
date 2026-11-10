@@ -2817,7 +2817,7 @@ exe	0x004f3610	gv_FindCrimesByState	gv	2172977d82cdfccf	no	byte	control=byte p1=
 exe	0x004f3640	gv_AddEvidence	gv	b0e4cb1d788dcc91	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004f36b0	gv_FreeCrimeSlot	gv	25b627a8932d29b0	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004f36e0	gv_FindCrime	gv	184f09f285ddd325	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x004f3700	gv_SendCrimes	gv	2f3eaefc1b11aeac	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x004f3700	gv_SendCrimes	gv	2f3eaefc1b11aeac	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x004f3780	gv_EvidenceSlot	gv	1bd43d33eac354f0	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004f37e0	gv_RetireCrime	gv	0afca1515ab00a18	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004f3910	gv_HandOverCrimes	gv	62a4cbdd85493f1d	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte

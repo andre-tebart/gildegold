@@ -3570,28 +3570,19 @@ int gv_EvidencePrice(int id, AICHAR *seller, int *price, short *culprit, unsigne
 }
 /* 0x4f3700, sends every crime record with message 0x23 (cm_SendRetireCrime (id, flag)): an open one (state 1) with flag 0, a
    handed-over one (state above 1: a job id) whose job he_FindEvent (1, 1, state) no longer finds with flag 1; after 32
-   sends it pumps the net until the last send's slot is done (cm_GetSlotState).
-   @deep read in full against the original (states, he_FindEvent check, cm_SendRetireCrime calls, the
-   32-send wait loop as while (slot != -1 && cm_GetSlotState(slot) == 0)): every instruction pairs; the
-   only remaining difference is the strength-reduced base of the index loop over gv_CrimesT: ours walks
-   &gv_CrimesT[i] (mov esi, ai_Crimes; mov eax, [esi + 0x25]; mov ecx, [esi]; cmp esi, ai_Crimes+0x5a00),
-   the original &gv_CrimesT[i].state (mov esi, 0x91f725; mov eax, [esi]; mov ecx, [esi - 0x25]; cmp esi,
-   0x925125). Tried: state read in the condition, for(;;) wait loop. An induction-variable choice, not
-   meaning. */
+   sends it pumps the net until the last send's slot is done (cm_GetSlotState). */
 
 void gv_SendCrimes(void)
 {
     int slot, sent, i;
-    unsigned state;
 
     slot = -1;
     sent = 0;
     for (i = 0; i < 0x200; i++) {
-        state = gv_CrimesT[i].state;
-        if (state == 1) {
+        if (gv_CrimesT[i].state == 1) {
             slot = cm_SendRetireCrime(gv_CrimesT[i].id, 0);
             sent++;
-        } else if (state > 1 && he_FindEvent(1, 1, state) == 0) {
+        } else if (gv_CrimesT[i].state > 1 && he_FindEvent(1, 1, gv_CrimesT[i].state) == 0) {
             slot = cm_SendRetireCrime(gv_CrimesT[i].id, 1);
             sent++;
         }
