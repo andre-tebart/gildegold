@@ -271,7 +271,7 @@ typedef struct INIT_TORCHLIST {
 #define INIT_SLOT_CURRENCY_END ((unsigned)&init_SlotCurrency + 0x8dc)  /* one past the currency words of the player slots 1 .. 3: the original's `cmp esi, 0x7e4b64` (0x510cf0) = init_SlotCurrency (0x7e4288) + 3 * 0x2f4, not &gm_Offers + 0x44 (that equals it only while gm_Offers follows the slot table at 0x7e4b20) */
 #define INIT_SCENE_HEIGHTMAP_END ((unsigned)init_SceneHeightMaps + 0x40 * 0x3e0) /* one past the height map of the last scene: 0xfd7c50 + 0x40 * 0x3e0 (init_FreeScenes); anchored on the array, not on d3anim_Tail + 0x10 (their linked distance differs from the original's) */
 #define INIT_CHARACTER_COUNT 0x300      /* ch.h's CH_MAX: the slots of the character list ch_List (0x1468ae0) */
-#define INIT_START_CHARACTERS_END ((unsigned)&ai_Unk770d8c + 0x1fb4) /* one past the 16th character record: 0x770b80 + 16 * 0x21c (init_StartNewGame) */
+#define INIT_START_CHARACTERS_END ((int)ai_Chars[16]) /* one past the 16th character record, compared signed (init_StartNewGame) */
 #define INIT_CHARACTERS_END ((unsigned)ai_Chars + 0x300 * 0x21c)  /* one past the character table ai_Chars (0x770b80 + 0x300 * 0x21c = 0x7d5f80; the original's gm_PlayerRecords follows it there, not in our link) */
 #define INIT_LAST_CHARACTER ((unsigned)&ai_Unk770d8c + 0x64fd8)  /* the last character record of ai_Chars (INIT_CHARACTERS_END - 0x21c; the greeting loop walks up to its +2) */
 #define INIT_BTYPE(b) ((unsigned char *)ai_BTypes + ((INIT_BLD *)(b))->type * 0x24d)  /* the ai_BTypes record (0x24d bytes) of the building b's type; the original reads ai_BTypes anew at each use but where it keeps the record (cl) */
@@ -975,7 +975,7 @@ done:
    argument 0x13, each one also announced as a trade message from object -2) in a fourth; every group is
    waited for by pumping the queue. The message senders leave their send slot in eax where cm.h's prototypes
    say void, so the calls are made through 8-argument int function pointers. No caller in the exe.
-   @deep behaviour draft, 27 code hunks, every hunk read against tools/disasm.py 0x50e0d0 0x160: no missing / extra statement, constant or callee (the 16-record purse loop, the two 8-argument sender calls, the four send groups, the judge religion fields 0 / 1) - the meaning is equal. Left is allocation / scheduling: the original keeps the two judge send slots in esi / edi across the wait group (push edi at 0x50e143, a mid-function live range), ours spills the first to [esp+0x44] and keeps the second in esi. spell.py: 50e10e slots (w1 / w2 frame slots) and 50e1a0 reload - the values are already int locals kept across the calls, no source spelling moved them; 50e143 / 50e16c / 50e1db / 50e244 / 50e32d have no menu rule. Caller: 0x511400 at 0x511423 (the new-game setup). Readability done: Q1 init_StartNewGame, Q2 cleared, Q3 INIT_START_CHARACTERS_END, Q4 INIT_CHAR view, Q5 marker removed, Q6 described. */
+   The purse goes through its own address-taken local (money), so the two judge send slots stay in registers. Caller: 0x511400 at 0x511423 (the new-game setup). Readability done: Q1 init_StartNewGame, Q2 cleared, Q3 INIT_START_CHARACTERS_END, Q4 INIT_CHAR view, Q5 marker removed, Q6 described. */
 
 
 void init_StartNewGame(void)
@@ -984,15 +984,16 @@ void init_StartNewGame(void)
     int i;
     int rec[16];                /* the send slots of the created characters (never read) */
     int m;
+    int money;
     int w1, w2;
 
     rand();                     /* the first random value of the game is dropped */
     c = (INIT_CHAR *)ai_Chars[0];
     do {
         if (c->id != 0xffff && c->kind < 5) {
-            w1 = gm_PlayerFactor((util_RandomU(0x122) & 0xffff) + 10, ai_OwnPlayer);
+            money = gm_PlayerFactor((util_RandomU(0x122) & 0xffff) + 10, ai_OwnPlayer);
             cm_BeginFieldBlock((char *)c, c->netId);
-            cm_AddFieldValues(4, 1, INIT_FIELD_MONEY, &w1);
+            cm_AddFieldValues(4, 1, INIT_FIELD_MONEY, &money);
             cm_SendFieldDeltas();
         }
         c++;
