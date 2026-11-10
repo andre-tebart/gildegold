@@ -680,3 +680,24 @@ mechanisms, each as a generated round over all positions / subsets:
   .. if (c) {if (!fb) T = f();} else T = -1; } else { A = -1; T = -1; } W = -1;`): VC6 copies the shared tail into
   each path. Returns per path and every store order (72 variants) and chained `a = b = -1` kept the control. A ?:
   text argument whose original pushes per arm is two calls (sv_OpenBuildingPanel, 17 ins -> byte).
+- **The record-field re-read also works in arithmetic, not only in tests**: `h = (char)(v / 60); T[i].hour = h;
+  m = (char)v - T[i].hour * 60; T[i].sec = (m + T[i].hour * 60) * 60;` (two of three uses of h re-read from the
+  field just stored, deep-tools subsets.py) moved the minute value to edi and m to bl as the original, with ebx
+  saved (sv_FillDayPhases 40 ins -> byte).
+- **Two global webs in swapped scratch registers** (the hour in eax and sv_SunRaysHour in ecx where the original
+  has the reverse, through every block of the function): write the global's store in both arms of the preceding
+  if/else (`if (..) { f(); G = H; } else G = H;`, tail-merged into one store): the extra reference re-ranks the
+  webs (sv_WeatherFrame 47 -> 11 ins). The same store after the if, or the -1 store in both arms of the other
+  if, kept the control.
+- **`shl eax,2` shared by two loads `[eax+A-4]` / `[eax+A]`** where ours CSEs the address `lea r,[e*4+A]` and
+  reads `[e*4+A-4]`: the two reads had different symbol bases. `T.a[h - 1]` came from the global defined just
+  before T, `((unsigned *)&prev)[h]` (every spelling of `a[h - 1]` on T's own base = control; @original comment).
+  sv_WeatherFrame 11 ins -> byte.
+- **A top-tested outer loop after a null test** (`cmp y,[surf+8]; jge` at the head, `jmp head` at the bottom,
+  the cached zero re-zeroed at the exit): `for (y = 0; surf != 0 && y < surf->h; y++)`, the loop-invariant test
+  in the condition (vc6-matching.md line ~317); `y = 0; if (surf) while (y < h)` is rotated (sv_LoadGroundplan
+  49 -> 4 ins). `mov ecx,eax; add ecx,ebx; mov cl,[ecx]` for `ai_GoodsT[id].type` (ours `mov cl,[eax+ebx]`)
+  is still open: no spelling, local, type or test form moves it.
+- **The sv_FlyCameraToObject `up[4]` lever transfers**: sv_CameraToObject (frame 0xc short) took the same
+  padded `up[1]` for the height above the centre, the datum cm_EffectRadiusScale for its M10 literal 1.8, and
+  the view stores in rot 0,1,2 / pos 0,2,1 order (720-order permute): 40 ins -> byte.
