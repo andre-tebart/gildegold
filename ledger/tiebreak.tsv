@@ -4641,7 +4641,7 @@ exe	0x005d9a80	ai_GypsyContact	unk_5d33b0	09676102a6f428d0	no	byte	control=byte 
 exe	0x005d9b20	ai_CurseContact	unk_5d33b0	0ffd5d3246d4cefc	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x005d9b90	ai_TheatreContact	unk_5d33b0	520002340c869822	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x005d9c30	ai_GypsyProductionContact	unk_5d33b0	a4690738396df2b9	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x005d9de0	ai_OpenPokerWindow	unk_5d33b0	929148ad9dff22f0	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x005d9de0	ai_OpenPokerWindow	menu	929148ad9dff22f0	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x005d9f50	ai_PokerBetControl	unk_5d33b0	4920b537cbcb48ee	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x005da010	ai_ClosePokerWindow	unk_5d33b0	3d397e7350bd5199	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x005da030	ai_PokerGame	unk_5d33b0	08a067eb8df358af	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape

@@ -439,6 +439,10 @@ mechanisms, each as a generated round over all positions / subsets:
   `unsigned int` (with `unsigned char` VC6 adds `and eax,0xff`).
 - Copy vectors field by field (loads first, then stores); a struct assignment gives pointer copies.
 - `memset(&s, 0, n)` vs separate `= 0` stores: separate stores keep a zero register live for the whole function.
+- **`mov eax, edi` (a copy of a constant register) then `mov [g], eax` runs** is an inline memset: VC6 expands a
+  small constant `memset(a, 0xff, 20)` into dword stores of eax (copied from the register that already holds -1)
+  and interleaves the neighbouring field stores. Five `slot[i] = -1` stores through the hoisted register were 74
+  ins; `memset(p.slot, 0xff, sizeof(p.slot))` per panel gave ai_OpenPokerWindow byte.
 - Inlined `strcmp("lit", buf)` is `repz cmpsb`; operand order matters.
 - `movsx r,BYTE [m]; and r,imm; shr r,n` is `if ((char)x & imm) v = 1; else v = 0;` (every expression form
   narrows to a byte op). Functions defined earlier in the same file change register allocation of later callers.
