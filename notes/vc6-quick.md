@@ -355,3 +355,8 @@ mechanisms, each as a generated round over all positions / subsets:
   `return`s but nested `if (info && info->mesh) { .. if (box) { ..; ok = 1; } }` with the out-parameter stores
   under `if (ok) {..}` and one `return ok;` (a `goto done` to that return gives the same code). d3_GetBounds
   15 ins -> byte; early `return 0` / `return ok` forms all fold.
+- **An atan2 / sin result the original keeps on the FPU stack while also storing the float** (`fld st(0); fst a;
+  fstp global; fld st(0); fsin; fld st(1); fcos`, later `fchs` of the same register value) where ours stores
+  the float and reloads it for each use: the value was a `double` local (`ta = atan2(..); g = a = (float)ta;
+  sin(ta) ..; na = -ta;`); a float local is reloaded from its slot whatever the spelling (d3_SetupFrustum,
+  108 -> 98 ins, still stuck on a float `s` the original keeps in memory).
