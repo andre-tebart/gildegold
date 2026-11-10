@@ -524,3 +524,17 @@ mechanisms, each as a generated round over all positions / subsets:
 - **Strength-reduced loop base on a byte field read through a local `g = rec[i].job`**: the original read the field
   at each of its 8 tests (a macro): the base moved from netId (+4) to the job byte (+0x164) and the function matched
   (ai_TokenRandomMerchant).
+- **A pointer parameter reloaded from and stored back to its own slot (`mov edx,[ebp+8] .. mov [ebp+8],edx`) before
+  a loop**: the original wrote through a local copy (`s = src;`) that VC6 packed into the dead parameter slot; where
+  the copy is assigned matters (after `p = buf;`, not at the top). hst_ParseText_Fake_2nd_Pass 120 -> 10 ins, then
+  byte with `dashes++;` before the `*w++ = '-'` store (hst_ParseContext has the same copy).
+- **A search loop whose found path skips the "not found" test (`je` straight to the strlen) while the exhausted loop
+  falls into the error push**: the found work (strlen, the store) sat inside the loop before its `break`, and one
+  shared `if (k >= 15) error` followed (VC6 threads the exhausted loop, k known 15): hst_ParseContext byte.
+- **`lea ebx,[eax+1]` where ours has `inc ebx` on a pointer parameter**: `memcmp(fmt + 1, ..)` rather than `fmt++`
+  (ai_CommandExecution).
+- **The loop base on netId with three uses**: reading `ai_CharsT[i].netId` at each use (test and both stores)
+  rather than through `id` moved the base from officeKind to netId (VC6 still keeps one register copy).
+- **Every failure as an early `return 0`** (ai_TokenRichestInhabitant) let the mode-1 path's success jump into the
+  shared format tail past the `mode == 0` store, as the original's `ja` does; nested `if (n2 == 1) { if (sel ..) {`
+  kept its own copy.
