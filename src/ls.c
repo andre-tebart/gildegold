@@ -1389,7 +1389,7 @@ close:
 }
 /* 0x51cee0, reads the header of a save game into h (an LSHEADER), each field from the version it came in
    with (the version itself goes to ls_Version); the 160 x 120 screen shot (24 bit, 0xe100 bytes) is converted
-   into ai_ScreenImage. Returns 1, 0 when a read fails or the version is below 0x10025 @deep read whole against 0x51cee0..0x51d2c0 (433 vs 434 instructions): every read with its version gate, the early return 0 below 0x10025 (it keeps the 23 failed reads' inline returns apart), the reads-first branch order of 0x1002b / 0x10038 / 0x10039, the 120 x 160 shot through shot[k * 3 ..] match. Left: allocation - ours keeps &hd->difficulty in esi for the read and the default store (lea esi,[ebx+0x98] / mov [esi],2), the original recomputes it (lea edx,[ebx+0x98] / mov [ebx+0x98],2) and orders the 0x10039 test before add ebx,0x9c; the strcpy of 'Savegame' reads the original's merged literal tail 'game' (0x62366c) */
+   into ai_ScreenImage. Returns 1, 0 when a read fails or the version is below 0x10025 */
 
 
 int ls_ReadSaveHeader(int f, int *h)
@@ -1444,13 +1444,13 @@ int ls_ReadSaveHeader(int f, int *h)
         mem_Free(shot);
     if (ls_Version < 0x10025)
         return 0;
-    if (ls_Version >= 0x10038)
+    if (ls_Version >= 0x10038) {
         LS_R(&hd->difficulty, 4)
-    else
+    } else
         hd->difficulty = 2;
-    if (ls_Version >= 0x10039)
+    if (ls_Version >= 0x10039) {
         LS_R(hd->title, 0x60)
-    else
+    } else
         strcpy(hd->title, "Savegame");
     return 1;
 }

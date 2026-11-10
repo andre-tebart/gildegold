@@ -3270,7 +3270,7 @@ exe	0x0051c560	ls_WriteMessageQueues	ls	0457b3163773ef41	no	shape	control=shape 
 exe	0x0051c870	ls_WriteEnvironment	ls	63c4efa67a135244	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x0051c920	ls_Read	ls	8ef6952a1392156e	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0051c950	ls_LoadGame	ls	030406fe05f8afb1	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
-exe	0x0051cee0	ls_ReadSaveHeader	ls	099667196d75bf2b	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x0051cee0	ls_ReadSaveHeader	ls	099667196d75bf2b	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x0051d2d0	ls_LoadScene	ls	d58d4d236ca0bdc7	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x0051d3d0	ls_ReadObjects	ls	48fdc5f9f398cd1e	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0051d4f0	ls_HookBuildingCB	ls	65a09280779a847f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
