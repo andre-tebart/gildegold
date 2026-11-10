@@ -371,3 +371,17 @@ mechanisms, each as a generated round over all positions / subsets:
   flag for the last tests (`ok = 0; if (a) { if (b) ok = 1; } if (!ok) { fail: ..; return 0; }`) gave two of the
   three blocks their own epilogue (rd_BuildRoad 97 -> 68 ins); a second copy of the success return (the
   ls_SaveGame lever) compiled to the same code there.
+- **Loop pointer bias from a sub-record pointer**: a slot loop writing every field through `e->` got VC6's bias on
+  the second field it references (`edi = slot+0xc`; probes dropping the first k writes moved it to the next field
+  each time), the original's on `parts[0].v2` (+0x38). A pointer per sub-record (`p = &e->parts[k];` then
+  `p->v0 ..`) gave the original's bias with no other change (gv_WriteEffects and gv_ReadEffects: byte). Spellings
+  of the same address (`(e + i)->`, `&a[0]`, casts, struct-typed vectors, loop forms) never move it.
+- **A small count array the original kept in the frame**: `int n[4]` with constant indices (VC6 keeps n[0], n[1] in
+  registers, n[2] in its slot, n[3] unused) gave the original's 0x10 frame with holes where three scalars gave
+  `push ecx` (gv_GrowGraveyard 60 -> 8 ins).
+- **A cast on one side of a compare reorders its operands' loads**: `year % 4 == (int)(c->netId & 3)` loaded netId
+  first; without the cast VC6 evaluated `year % 4` first like the original (gv_GraveyardTurn, the last hunk).
+- **Float product order**: the original's `fild b; fmul 1/255; fmul table` came from `f * (table[k] * (b / 255.0f))`;
+  `f * (b / 255.0f * table[k])` emits `fmul table` first (gv_GraveyardTurn).
+- **Unrotated wait loop**: `while (1) { if (cm_GetSlotState(h) != 0) break; pump(); }` keeps the test at the top
+  (`jmp` back); `while (!..)` and `for (;;)` rotate it. The earlier tag had tried `for (;;)`, not `while (1)`.
