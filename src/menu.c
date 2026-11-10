@@ -4314,9 +4314,9 @@ int ai_StepShotSlow(SHOTREC *shot)
         next.z += m.z;
         if (ai_ShotHitsGround(map, &shot->pos, (D3VECTOR *)&next, px, pz, &npx, &npz) && shot->steps > 50) {
             shot->pos.x = next.x;
+            shot->state = 2;
             shot->pos.y = next.y;
             shot->pos.z = next.z;
-            shot->state = 2;
             shot->energy = (shot->vel.v.x * shot->vel.v.x + shot->vel.v.y * shot->vel.v.y
                 + shot->vel.v.z * shot->vel.v.z) * shot->mass * 0.5f;
             return 0;
