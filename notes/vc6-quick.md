@@ -166,6 +166,23 @@ mechanisms, each as a generated round over all positions / subsets:
   array `D3VECTOR4 p[3]` gives ascending order with the same code (draft 88 -> shape 50), but the array is
   address-taken, which reorders a copy's loads into it (open).
 
+- **A string copy `inc eax; sub edx,eax; mov cl,[eax]; mov [edx+eax],cl; inc eax; test cl,cl`** (one running
+  source pointer, the destination as an offset from it) is not strcpy (strcpy and `*d++ = *s++` give the
+  two-pointer `inc ecx / inc edx` loop, an index loop `out[i] = s[i]` walks the destination):
+  `s = src; off = out - s; do { c = *s; s[off] = c; s++; } while (c);` (init_BuildingKindName byte).
+- **A test that the original lays out with the else arm inline whatever the condition's spelling**
+  (`if (A != 2 || (p = ..) == 0) {X} else {Y}`, &&, nested, early returns: one code): the pointer was assigned
+  on both paths first (`if (A == 2) p = ..; else p = 0; if (p == 0) {X} ..`); VC6 threads the `p = 0` path to
+  X and keeps X inline after the p test (init_TownBuildingHook byte).
+- **A value stored to a table and returned at once** (`t[k] = uni; ..; return t[k];`, ours `movsx eax,al`, the
+  original re-reads `movsx eax,BYTE [esi+t]` with k kept in esi): the store's path joined the other path before
+  the one final `return t[k];` (no return inside the if); VC6 then cannot forward the stored value
+  (init_BuildingSceneUniverse byte).
+- **An address-taken local reused for a later value** (`w1` passed as `&w1` in a loop, later a send slot kept
+  across calls): the reuse forces the later value into memory; give the address-taken use its own local
+  (init_StartNewGame: the judge slots went back to esi / edi, the mid-function `push edi` appeared; byte).
+  A `(unsigned)&X + N` bound macro gives `jb`; the original's `jl` is a signed `(int)` bound.
+
 ## Control flow and returns
 - **Empty case labels**: VC6 drops `case X: break;` (also `return;`, dead stores, `goto` to the join)
   before switch lowering, so those labels cannot affect the dispatch tree. A folded `if (0) { }` body
