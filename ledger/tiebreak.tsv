@@ -3348,7 +3348,7 @@ exe	0x00528180	sv_CreateBannerCB	sv	eda6145652f9b68b	no	byte	control=byte p1=byt
 exe	0x00528290	sv_ColourBannerCB	sv	2befc100aa9edf53	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x005282f0	sv_CreateBanners	sv	001c153fb6c66357	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00528390	sv_ColourBanners	sv	1a4722c9ef98c72d	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x00528490	sv_UpdateChimneySmoke	sv	bf3404a9eeccf021	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x00528490	sv_UpdateChimneySmoke	sv	e2b52df08483d4f2	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x00528660	sv_CollectBannerCB	sv	a1ab09564ded8b3a	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x005286a0	sv_RemoveBanners	sv	e2ed33dfa2a2f6be	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00528770	sv_RefreshBanners	sv	b4e56b24cdd2973f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte

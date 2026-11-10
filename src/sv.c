@@ -3231,21 +3231,10 @@ void sv_ColourBanners(int c)
    of job kind 4 in b, not of kind 10) has no job or a job without argc8, and the hour lies inside the season's day hours
    (gm_DayStartHours .. gm_DayEndHours), the smoke effect "effekte\Schornstein_dunkel.esc" is started at the model's
    "dummy_RAUCH_0" dummy (in scene 0) unless one runs; its id is kept in b->smokeEffect and its group cleared. Otherwise a
-   running smoke effect is stopped and b->smokeEffect set to -1
-   @deep read whole against 0x528490..0x52865c and rewritten typed (AIBLD.smokeEffect 0x95, AIJOB.argc8,
-   AICHAR walk, EVTSCRIPT id/group): the type-7 / model test, the worker scan with the index i reused for
-   ai_Chars[i].job, the smokeEffect / day-hour window (one fcom/fcomp: hour >= start && hour < end, fixed
-   from two returns), the effect start in scene 0 and the stop branch all match (143 vs 144 instructions).
-   Left is allocation in the scan loop: ours keeps the constant 0xffff in esi (cmp word ptr [eax-2], si;
-   reused for the hour mask: and ecx, esi) and the walking pointer biased to +2 (cmp byte ptr [eax], 0xa)
-   with health loaded into bl (mov bl,[eax+6]; test bl,bl), the original keeps 0xa in bl (mov bl, 0xa; cmp
-   byte ptr [eax+2], bl), compares cmp byte ptr [eax+8], 0 / cmp word ptr [eax], 0xffff directly and masks
-   with the immediate; season in edi vs esi. Tried: pointer loop with (int) compare, pointer-first, index
-   loop, health != 0, (short)id != -1 (all equal or worse) */
+   running smoke effect is stopped and b->smokeEffect set to -1 */
 void sv_UpdateChimneySmoke(AIBLD *b)
 {
     int season, i, scene;
-    AICHAR *ch;
     AIJOB *job;
     D3OBJECT *d;
     EVTSCRIPT *e;
@@ -3254,8 +3243,8 @@ void sv_UpdateChimneySmoke(AIBLD *b)
     season = gm_ClockSeason(&ai_Time);
     if (ai_BTypesT[b->type].kind != 7 && b->object != 0) {
         for (i = 0; i < 0x300; i++) {
-            ch = &ai_CharsT[i];
-            if (ch->health > 0 && ch->id != 0xffff && ch->kind != 10 && ch->bld == b && ch->jobKind == 4) {
+            if (ai_CharsT[i].health > 0 && ai_CharsT[i].id != 0xffff && ai_CharsT[i].kind != 10
+                && ai_CharsT[i].bld == b && ai_CharsT[i].jobKind == 4) {
                 job = ai_CharsT[i].job;
                 if (job == 0 || job->argc8 == 0) {
                     if (b->smokeEffect != -1)
