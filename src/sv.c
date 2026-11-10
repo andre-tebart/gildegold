@@ -338,23 +338,34 @@ show:
 }
 /* 0x521150, a modal message box (the form "misc\\Messagebox" in the sizes by the flags 2 Autosize / 0x10 BIG / 0x20 VERY_BIG, 0x100 the pergament "NONE_PERGA", 8 all messages): shows the text, loops
    sv_RunFrame until a button, waits at most 500 ms with flag 4, a countdown bar with flag 0x80 and returns the button + 1 (0 for none / cancel). Not reentrant (sv_MessageBoxOpen, 0x6f2350)
-   @deep Read whole against the original; typed D2WIN (nobjs/objs/w/h) and d2_Radios[idx].sel; the radio
-   loop reloads d2_LastWindowPtr only after d2_RadioAdd as the original (its skip jumps straight to movsx
-   ecx,[edx+0x1c]). ours=211 original=211. Left: allocation - the original keeps 0 in esi from i = 0 and
-   pushes esi for the zero arguments (ours push 0), then bar in esi (else branch mov esi,[esp+0x1c] at
-   +0x177) where ours keeps bar in a slot, quick = flags & 0x40 in the flags slot [esp+0x2c] (ours in esi),
-   scene in the text slot; frame 0x18 vs ours 0x10 (two more slots in the original). */
+   @stuck match-deep s53: 86 -> 65 ins (draft -> shape). Levers that moved: the frame loop as a plain while
+   (sv_RunFrame) with flags & 0x40 / 0x80 / 4 tested in the body (VC6 hoists them, and promotes bar from
+   its -1 slot to esi for the loop as the original: else arm mov esi,[bar]); i = 0 before ret = 0. Tried,
+   no gain: a copy local for the slider (n = timed ? slider : bar: -1 propagated, or esi,-1), int bar[1],
+   the slider into i, bar then copy (bar all memory), flags &= 4 for n, ret's position in the declaration
+   list (all = control), ret = 0 late before the loop (worse), the two ret = 0 arms joined by goto (ret
+   goes to memory as the original but form takes ebp: 75 ins). Left: ours keeps ret in ebp (xor ebp,ebp;
+   mov eax,ebp at the end) where the original keeps it in a slot and has no ebp, pushing esi (i = 0) for
+   the zero arguments of d2_OpenForm / d2_CreateRadioGroup; form sits in the flags argument slot in ours,
+   in its own slot in the original (frame 0x10 vs 0x18); d2_Objs in ebp vs ebx in the radio loop.
+   (tiebreak: insensitive, 32 samples) prior: Read whole against the original;
+   typed D2WIN (nobjs/objs/w/h) and d2_Radios[idx].sel; the radio loop reloads d2_LastWindowPtr only after
+   d2_RadioAdd as the original (its skip jumps straight to movsx ecx,[edx+0x1c]). ours=211 original=211.
+   Left: allocation - the original keeps 0 in esi from i = 0 and pushes esi for the zero arguments (ours
+   push 0), then bar in esi (else branch mov esi,[esp+0x1c] at +0x177) where ours keeps bar in a slot,
+   quick = flags & 0x40 in the flags slot [esp+0x2c] (ours in esi), scene in the text slot; frame 0x18 vs
+   ours 0x10 (two more slots in the original). */
 
 int sv_MessageBox(int text, unsigned flags)
 {
-    int ret, form, bar, idx, i, k, scene, timed, quick, n;
+    int ret, form, bar, idx, i, k, scene, timed;
     unsigned mask;
     D2WIN *win;
     unsigned t0;
 
     t0 = d3_Time;
-    ret = 0;
     i = 0;
+    ret = 0;
     bar = -1;
     if (sv_MessageBoxOpen != 0)
         return 0;
@@ -393,32 +404,28 @@ int sv_MessageBox(int text, unsigned flags)
     timed = flags & 0x80;
     if (timed != 0)
         bar = d2_WinOpenSlider(0x1c, d2_LastWindowPtr->h - 0x18, d2_LastWindowPtr->w - 0x40, 0, 500, 0x83, 0x42, d2_LastWindow);
-    if (sv_RunFrame(sv_MessageBox, mask) != 0) {
-        quick = flags & 0x40;
-        n = flags & 4;
-        do {
-            d2_MenuNavigate(idx);
-            if (quick != 0)
-                d2_RaiseViewWindows(form);
-            if (d2_ClickedId == 0) {
-                if (d2_HitWindow == scene) {
-                    ret = d2_Radios[idx].sel + 1;
-                    sv_PopRequest = 1;
-                } else if (kb_Last == 1) {
-                    ret = 0;
-                    sv_PopRequest = 1;
-                }
-            } else if ((d2_ClickedId == 1 && d2_HitWindow == scene) || kb_Last == 1) {
+    while (sv_RunFrame(sv_MessageBox, mask) != 0) {
+        d2_MenuNavigate(idx);
+        if (flags & 0x40)
+            d2_RaiseViewWindows(form);
+        if (d2_ClickedId == 0) {
+            if (d2_HitWindow == scene) {
+                ret = d2_Radios[idx].sel + 1;
+                sv_PopRequest = 1;
+            } else if (kb_Last == 1) {
                 ret = 0;
                 sv_PopRequest = 1;
             }
-            if (dm_L.rup != 0)
-                sv_PopRequest = 1;
-            if (timed != 0 && bar != -1)
-                d2_SetObjValue4(bar, 0, 500, d3_Time - t0);
-            if (n != 0 && d3_Time > t0 + 500)
-                sv_PopRequest = 1;
-        } while (sv_RunFrame(sv_MessageBox, mask) != 0);
+        } else if ((d2_ClickedId == 1 && d2_HitWindow == scene) || kb_Last == 1) {
+            ret = 0;
+            sv_PopRequest = 1;
+        }
+        if (dm_L.rup != 0)
+            sv_PopRequest = 1;
+        if ((flags & 0x80) && bar != -1)
+            d2_SetObjValue4(bar, 0, 500, d3_Time - t0);
+        if ((flags & 4) && d3_Time > t0 + 500)
+            sv_PopRequest = 1;
     }
     sv_MessageBoxOpen = 0;
     d2_RadioClear(idx);
