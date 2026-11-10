@@ -1081,10 +1081,10 @@ int ai_CommandUprising(void)
     memset(&msg, 0, sizeof(msg));
     msg.type = 0x7d;
     msg.to = ((AICHAR *)ai_PlayerChar)->netId;
-    msg.time = ai_Time;
     msg.fromId = -1;
     msg.flags = 1;
     msg.car = 1;
+    msg.time = ai_Time;
     msg.time.hour = 8;
     msg.time.min = 0;
     cm_SendLongMessage(&msg);
