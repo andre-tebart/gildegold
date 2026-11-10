@@ -155,7 +155,6 @@ typedef struct CHANIMFLAGS {
     union {
         int all;
         struct { unsigned char b0, b1, b2, b3; } c;     /* b1: 0x10 loop, 0x08 (D3ANIMFLAGS.b[1]) */
-        struct { unsigned char p0; unsigned char p8 : 3, f08 : 1, f10 : 1, p13 : 3; } bits; /* b1 bit-wise (ch_AttachAni: f08 = loop) */
     } u;
     unsigned int a : 1, b : 1, r : 30;                  /* 0x04 */
     unsigned char a8 : 1, b8 : 1, r8 : 6;               /* 0x08, b8 = D3ANIMSLOT.play */

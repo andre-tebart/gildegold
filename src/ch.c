@@ -19,6 +19,18 @@
 #include "path.h"
 #include "ch.h"
 #define d3anim_StartAnimCh ((int (*)(void *, char *, CHANIMFLAGS))d3anim_StartAnim)  /* 0x435550 (d3.h: D3ANIMFLAGS f): @original this unit passes its field-wise CHANIMFLAGS, 12 bytes like D3ANIMFLAGS, as the original TU did */
+/* CHANIMFLAGS with byte 1 bit-wise (ch_AttachAni: f08 = the loop argument, f10 always set); a type of this
+   unit only: a member added to ch.h's CHANIMFLAGS moves sv_t's ai_TutorialInitChapter2 off byte */
+typedef struct CHANIMFLAGSB {
+    union {
+        int all;
+        struct { unsigned char b0, b1, b2, b3; } c;
+        struct { unsigned char p0; unsigned char p8 : 3, f08 : 1, f10 : 1, p13 : 3; } bits;
+    } u;
+    unsigned int a : 1, b : 1, r : 30;
+    unsigned char a8 : 1, b8 : 1, r8 : 6;
+} CHANIMFLAGSB;
+#define d3anim_StartAnimB ((int (*)(void *, char *, CHANIMFLAGSB))d3anim_StartAnim)  /* 0x435550, CHANIMFLAGSB f */
 #include "data_views.h"
 #include "d3_engine.h"
 #include "d3_fl.h"
@@ -1083,7 +1095,7 @@ int ch_AttachAni(CHARACTER *ch, char *name, unsigned char loop)
     char msg[512];
     char file[272];
     char buf[272];
-    CHANIMFLAGS f;
+    CHANIMFLAGSB f;
     D3ANIMSLOT *s;
 
     vfs_ToSlashes(name);
@@ -1105,7 +1117,7 @@ int ch_AttachAni(CHARACTER *ch, char *name, unsigned char loop)
             else
                 d3_LoadAnimFile(file, buf, 1);
         }
-        s = (D3ANIMSLOT *)d3anim_StartAnimCh(ch->obj->material->animCtl, buf, f);
+        s = (D3ANIMSLOT *)d3anim_StartAnimB(ch->obj->material->animCtl, buf, f);
         if (!s) {
             sprintf(msg, "ch_AttachAni(): Could not attach ani: %s", name);
             return 0;
