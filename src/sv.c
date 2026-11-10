@@ -3017,14 +3017,7 @@ char sv_CreateBannerCB(D3OBJECT *part, AIBLD *b)
 /* 0x527bb0, puts the camera directly 600 units back along its view from the building b's 3D object (its centre,
    the terrain's mean height plus the zoom height, pulled in by the object's height range): the stored view
    sv_ViewPos / sv_ViewRot and the player's camera record get the new position, b becomes sv_SelectedObject;
-   sv_FlyCameraToObject does the same with an animated move
-   @deep read against the original (188 vs 188 ins): no code hunk; frame 0x88 vs the original's 0x94 and 19
-   slot hunks (locals laid out 4 bytes apart, temporaries at 0xb4 / 0xc4 in the original), the final
-   sv_ViewPos / sv_ViewRot stores load the same slots in another order (0x527d86..0x527db7) (references: M8
-   at +0x1ed: ours refers to sv_ViewPos (0x75fb80), the original's field to 0x75fb98 (sv_ViewRotZ) (and 2
-   more), explained: the three M8 lines pair reordered stores crosswise: ours ViewPos <- [esp+0x40],
-   ViewRot+4 <- [esp+0x54], ViewRot+8 <- [esp+0x58]; the original ViewPosX <- [esp+0x40], ViewRotY <-
-   [esp+0x54], ViewRotZ <- [esp+0x58]: the same values to the same fields (recorded as debt at 15bda65)) */
+   sv_FlyCameraToObject does the same with an animated move */
 void sv_CameraToObject(int b)
 {
     float pos[4];                   /* the new camera position (a padded vector) */
@@ -3033,7 +3026,8 @@ void sv_CameraToObject(int b)
     float back[4];                  /* 600 units back along the view */
     float cen[4];                   /* the object's centre in the world */
     float rot[16];                  /* the camera matrix, transposed (a 4x4 D3MATRIX) */
-    float h;                        /* the camera height above the centre, then the pull-in factor */
+    float up[4];                    /* the camera above the centre (a padded vector, only y used) */
+    float h;                        /* the pull-in factor */
     double t;                       /* the mean terrain height there */
     char *obj;
     AIFIN *rec;
@@ -3055,11 +3049,11 @@ void sv_CameraToObject(int b)
     pos[2] = cen[2] + back[2];
     t = d3t_GetMeanHeight((struct D3VECTOR *)pos);
     pos[1] = (sv_CameraHeightFar - sv_CameraHeightNear) * sv_CameraHeightFactor + sv_CameraHeightNear + t;
-    h = pos[1] - cen[1];
+    up[1] = pos[1] - cen[1];
     d3t_GetHeightRange(obj, &lo, &hi);
-    h = back[1] / ((hi - lo) * 0.5f + h);
-    pos[0] = pos[0] - (h * back[0] - back[0] * 1.8);
-    pos[2] = pos[2] - (h * back[2] - back[2] * 1.8);
+    h = back[1] / ((hi - lo) * 0.5f + up[1]);
+    pos[0] = pos[0] - (h * back[0] - back[0] * cm_EffectRadiusScale);
+    pos[2] = pos[2] - (h * back[2] - back[2] * cm_EffectRadiusScale);
     dir[0] = d3_Camera->rotation.x;
     dir[1] = d3_Camera->rotation.y;
     dir[2] = d3_Camera->rotation.z;
@@ -3069,9 +3063,9 @@ void sv_CameraToObject(int b)
     t = d3t_GetMeanHeight((struct D3VECTOR *)pos);
     pos[1] = (sv_CameraHeightFar - sv_CameraHeightNear) * sv_CameraHeightFactor + sv_CameraHeightNear + t;
     sv_ViewRot[0] = dir[0];
+    sv_ViewRot[1] = dir[1];
     sv_ViewRot[2] = dir[2];
     sv_ViewPos[0] = pos[0];
-    sv_ViewRot[1] = dir[1];
     sv_ViewPos[2] = pos[2];
     sv_ViewPos[1] = pos[1];
     d3_SetObjectPos(d3_Camera, pos);
