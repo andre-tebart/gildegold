@@ -473,13 +473,13 @@ typedef struct SAVEHEADERVIEW {             /* 0xfc */
     char pad3c[4];
     char scenario[0x10];                    /* +0x40, the character's scenario record */
     char character[0x0c];                   /* +0x50, the character's saved bytes */
-    unsigned char nameTextOffset;           /* +0x5c, added to the text id 0x253 of the character line */
-    char pad5d[4];
-    unsigned char officeTextOffset;         /* +0x61, added to the text id 0x130 of the character line */
-    unsigned char traitTextOffset;          /* +0x62, added to the text id 0x114 of the character line */
+    char pad5c[4];
+    unsigned char nameTextOffset;           /* +0x60, added to the text id 0x130 (0x18f compact) of the character line */
+    unsigned char officeTextOffset;         /* +0x61, added to the text id 0x253 (0x27b compact) of the character line */
+    unsigned char traitTextOffset;          /* +0x62, added to the text id 0x114 (0x11e compact) of the character line */
     char pad63[5];
     int money;                              /* +0x68, the character's money ("%i%c") */
-    unsigned char compactTexts;             /* +0x6c, nonzero: the three text ids shift by -10 / -0x5f / -0x28 */
+    unsigned char compactTexts;             /* +0x6c, nonzero: the three text ids shift by +10 / +0x5f / +0x28 */
     unsigned char slot;                     /* +0x6d, ls_SaveSlot of the save */
     short pad6e;
     int playerBuilding;                     /* +0x70, the player's building id, -1 = none */
