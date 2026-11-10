@@ -3243,7 +3243,7 @@ exe	0x00514360	io_TrailingDigits	io_text	ba71417bdfec03f7	no	byte	control=byte p
 exe	0x005143d0	io_CharacterName	io_text	a06c3ad6ebf96ab8	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
 exe	0x00514e90	io_CharacterNameMarkup	io_text	8d21aea58f6a8244	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
 exe	0x00515960	io_PrintText	io_text	fac42e805cd16f08	no	draft	sample n=32 seed=1 compiled=31 codegens=1 best=draft
-exe	0x005176d0	txt_Format	io_text	b02786e697ff003a	no	draft	sample n=32 seed=1 compiled=31 codegens=1 best=draft
+exe	0x005176d0	txt_Format	io_text	38065f94fa412b96	no	draft	sample n=32 seed=1 compiled=31 codegens=1 best=draft
 exe	0x00519010	ls_LanguageOf	ls	73993bffcdb1144a	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x005190a0	ls_GetLanguage	ls	517f35151cd9fe36	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x005190b0	ls_SaveGame	ls	60b97d924835d6b9	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
