@@ -54,7 +54,7 @@ exe	0x00403d60	ch_ReleaseMorph	ch	byte	readable
 exe	0x00403dc0	ch_CheckAniMorph	ch	shape	readable		
 exe	0x00404200	ch_PreloadAnims	ch	byte	readable		
 exe	0x00404360	ch_LoadLowAnims	ch	shape	readable	deep	
-exe	0x004044a0	ch_AttachAni	ch	draft	readable	deep	
+exe	0x004044a0	ch_AttachAni	ch	byte	readable		
 exe	0x00404640	ch_ActAnim	ch	byte	readable		
 exe	0x00404760	ch_GetFreeQueueEntry	ch	byte	readable		
 exe	0x004047a0	ch_RemoveAction	ch	shape	readable		
@@ -89,7 +89,7 @@ exe	0x00405cb0	ch_UseGate	ch	byte	readable
 exe	0x00405d40	ch_ActTakingObject	ch	byte	readable		
 exe	0x00405e70	ch_TakeObject	ch	byte	readable		
 exe	0x00405f10	ch_TakeObject1	ch	byte	readable		
-exe	0x00405fb0	ch_ActDroppingObject	ch	draft	readable	deep	
+exe	0x00405fb0	ch_ActDroppingObject	ch	draft	readable	stuck	
 exe	0x004060d0	ch_DropObject	ch	byte	readable		
 exe	0x00406170	ch_DropObject1	ch	byte	readable		
 exe	0x00406210	ch_ActTurnTo	ch	byte	readable		
@@ -103,7 +103,7 @@ exe	0x00406c60	ch_SetHandObject	ch	byte	readable
 exe	0x00406e40	ch_ActAnimOnce	ch	byte	readable		
 exe	0x00406e60	ch_ActTurn	ch	draft	readable	deep	
 exe	0x00407200	ch_FindNear300	ch	byte	readable		
-exe	0x004072a0	ch_FindFreeCell	ch	draft	readable	deep	
+exe	0x004072a0	ch_FindFreeCell	ch	shape	readable	stuck	
 exe	0x00407690	ch_MapAlloc	ch	byte	readable		
 exe	0x004076b0	ch_MapFree	ch	byte	readable		
 exe	0x004076c0	ch_CopyVec	ch	byte	readable		
@@ -118,7 +118,7 @@ exe	0x00408cb0	ch_StartWalkAnim	ch	byte	readable
 exe	0x00408e60	ch_NextWaypoint	ch	byte	readable		
 exe	0x004093d0	ch_WalkRotate	ch	byte	readable		
 exe	0x004097d0	ch_ActWalk	ch	byte	readable		
-exe	0x00409bd0	ch_ActWalkCells	ch	draft	readable	deep	
+exe	0x00409bd0	ch_ActWalkCells	ch	byte	readable		
 exe	0x0040a900	ch_WalkToObject	ch	byte	readable		
 exe	0x0040a9c0	ch_ActWalk2RndDummy	ch	byte	readable		
 exe	0x0040aaf0	ch_WalkToObjectTurn	ch	byte	readable		
