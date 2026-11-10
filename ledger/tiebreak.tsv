@@ -110,7 +110,7 @@ exe	0x004076c0	ch_CopyVec	ch	ee54c896b801bb76	no	byte	control=byte p1=byte p2=by
 exe	0x004076e0	ch_PosToCell	ch	c1e37bfa1dff80e6	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00407740	ch_CellToCell	ch	c3d32bb49966197d	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00407790	ch_GetWaypoints	ch	ac0aee75a1be08a4	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
-exe	0x004079b0	ch_GetNewPath	ch	db419eec9756a293	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x004079b0	ch_GetNewPath	ch	d737d5bd4329f293	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x00408490	ch_PathToTarget	ch	f57acf34d2dd2e67	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
 exe	0x00408690	ch_InitWalk	ch	27607ae0126e756b	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
 exe	0x00408ab0	ch_WalkSound	ch	1d2c5fd3dee4d9b6	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
