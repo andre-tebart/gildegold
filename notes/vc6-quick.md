@@ -445,6 +445,10 @@ mechanisms, each as a generated round over all positions / subsets:
   arm jumps forward into it, ours the reverse): the arms of the if / else-if chain ended without `return;` and one
   `return;` followed the chain. Any nesting of the arms is the same code; only the per-arm returns matter
   (sv_RefreshPanel 78 -> byte).
+- **A store of 0 to a global before a counting loop that ours drops as dead** (the original `xor dl,dl; mov [g],dl`,
+  the count in dl, `mov [g],dl` again after the loop): the loop counted in the global itself, `g = 0; for (..) if
+  (..) g++;`; VC6 keeps it in a register through the call-free loop and keeps both stores. A local count with
+  `g = count` before and after loses the first store (ai_SaveNetworkGame, byte).
 - **A global the original reloads after an inline `strcpy` into another global** (ours keeps the value in eax and
   the copy loop takes other registers; then a whole callee-saved cascade, constants 0 / 1 not in registers): the
   two globals are one object; VC6 forgets every field of the object the copied bytes land in. Probe it with

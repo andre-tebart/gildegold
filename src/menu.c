@@ -1564,8 +1564,7 @@ void ai_Quicksave(void)
    the 0x7c-byte system message 0x10, which the peers acknowledge by filling cm_SaveAcks; the function
    pumps the network until as many slots are filled as there are players, then writes the .SRV (flag 6)
    and .SAV (flag 5) saves (ls_SaveGame) and clears the status line. Void; outside a network game it only
-   clears the slots.
-   @deep one code hunk, 1 instruction: the original stores ai_NumPlayers = 0 before the record walk (mov BYTE ds:0x62489c,dl with dl=0 at 0x5d7589) and the count again after it; our VC6 removes the first store as dead. Leads tried (one edit + build each): separate init (count = 0; ai_NumPlayers = count;), chained init (ai_NumPlayers = count = 0), for-loop vs do-while record walk, volatile declaration of ai_NumPlayers (keeps the store but turns the wait-loop compare into mov dl/and edx,0xff instead of the original's xor edx,edx/mov dl), wait-loop spellings n < ai_NumPlayers / (int) cast / + 0 / reversed compare / int temp. Read all hunks: the rest is instruction-equal (register renames, and the scheduling of rec[0]/rec[1], which matches with rec[0] written first); only a fill tail (6 nop bytes) remains. Readability done (Q1 name, Q2 named - AICHARVIEW for ai.h's AICHAR because f3snd.h's char ai_Chars[] view blocks ai.h, Q3/Q4/Q5/Q6/Q7 clean). Left is the dead-store codegen: a declaration/view that keeps the store without changing the wait loop, or an inlined-helper form - match-deep's toolbox */
+   clears the slots. */
 
 void ai_SaveNetworkGame(char *saveName, char *name)
 {
@@ -1574,7 +1573,6 @@ void ai_SaveNetworkGame(char *saveName, char *name)
     int rec[0x1f];
     VFSFILE *h;
     unsigned int hash = 0;
-    unsigned char count;
     AICHARVIEW *c;
     int i, n;
 
@@ -1584,16 +1582,12 @@ void ai_SaveNetworkGame(char *saveName, char *name)
     if ((ai_GameFlags & 4) == 0)
         return;
     sv_BroadcastText(sv_FrameMask, ai_SaveWaitText);
-    count = 0;
-    ai_NumPlayers = count;
-    i = 0;
-    do {
+    ai_NumPlayers = 0;
+    for (i = 0; i < 768; i++) {
         c = &((AICHARVIEW *)ai_CharsC)[i];
         if (c->id != 0xffff && (c->kind == 6 || c->kind == 7))
-            count++;
-        i++;
-    } while (i < 768);
-    ai_NumPlayers = count;
+            ai_NumPlayers++;
+    }
     strcpy(ls_SavePath.path, name);
     ls_SaveSlot = cm_RequestedSaveSlot;
     ai_LoadScreenImage("Gamedata/cities/standard.scr");
