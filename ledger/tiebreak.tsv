@@ -2856,7 +2856,7 @@ exe	0x004f5730	ord_Level5UpOrder2	ord	65cd25401031c589	no	byte	control=byte p1=b
 exe	0x004f5800	unk_Unk4f5800	ord	67f4efd4807c17c5	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x004f58e0	ord_Level6UpOrder	ord	acf88406c5702bd2	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004f59b0	ord_Level6UpOrder2	ord	4b1e146919e0b049	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x004f5a80	ord_WageReportOrder	ord	8f85f7e72e104734	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x004f5a80	ord_WageReportOrder	ord	8f85f7e72e104734	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x004f5c30	ord_DismissOfficeOrder	ord	587e31f821aaaf38	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004f5d50	ord_LawOrder	ord	14ed23e36893b739	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004f5f00	ord_LawOrder2	ord	eb9718a40ba782e5	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte

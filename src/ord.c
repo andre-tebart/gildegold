@@ -495,14 +495,7 @@ int ord_Level6UpOrder2(char *c, int *m)
    (+2 = 6) with kind 3 gets the title text 0x1d96 through "$Z%s$N", then one 0x1d97 line per profession and per
    wage record of gm_CharacterWages (0x4fa700; the profession text 0x253 + the job, 0x27b with textVariant set,
    the amount at +4 / +8 / +0xc), shown through ord_PrivilegeDialog (mode 1); kind 1 writes the text 0x1d96 into
-   m + 5; else 2
-   @deep meaning settled and readable; only the callee-saved save placement differs: the original pushes esi at entry, ebx at 0x4f5ada after the two return-1 blocks and edi inside the kind-3 block, ours pushes ebx in the prologue (frame 0x410, 149 instructions and register roles equal); tried: declarations inside the kind-3 block, spell push-pop/order hints, early-return guards -> needs the register-allocation toolbox
-   pushes esi in the entry block, ebx at 0x4f5ada (after the two return-1 blocks) and edi inside the kind-3
-   block, and pops ebx before esi; ours pushes ebx in the prologue. The frame (0x410), the 149 instructions and
-   the register roles (ebx = base, esi = c, edi = buf) are otherwise equal (tools/asmdiff.py). Tried and
-   reverted: o / buf / base declared inside the kind-3 block (no change), spell push-pop / order hints, the
-   early-return guards (the two return-1 blocks are already separate). Needs match-deep's register-allocation
-   toolbox. */
+   m + 5; else 2 */
 
 int ord_WageReportOrder(char *c, int *m)
 {
@@ -526,9 +519,7 @@ int ord_WageReportOrder(char *c, int *m)
         if (o.kind != 0)
             txt_Format(buf + strlen(buf), 0x1d97, o.kind + base, o.amount3);
         ord_PrivilegeDialog(buf, 1, 0x657c7);
-        return 2;
-    }
-    if (m[0] == 1 && ORD_CHAR(c)->kind == 6)
+    } else if (m[0] == 1 && ORD_CHAR(c)->kind == 6)
         txt_Format(m + 5, "%s", 0x1d96);
     return 2;
 }
