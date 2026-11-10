@@ -3313,7 +3313,7 @@ exe	0x00522100	sv_SetPanelEnabled	sv	byte	readable
 exe	0x00522280	sv_ClosePanelWidgets	sv	byte	readable		
 exe	0x005223c0	sv_DestroyScreen	sv	byte	readable		
 exe	0x005224a0	sv_LoadGroundplan	sv	draft	readable	deep	
-exe	0x005229b0	sv_UpdateGroundplan	sv	draft	readable	deep	
+exe	0x005229b0	sv_UpdateGroundplan	sv	draft	readable	stuck	
 exe	0x00522ec0	sv_SetResearchClass	sv	byte	readable		
 exe	0x00522f10	sv_UpdateCityPanel	sv	byte	readable		
 exe	0x00524010	sv_RedrawScreen	sv	byte	readable		
@@ -3385,7 +3385,7 @@ exe	0x0052d1e0	sv_DrawNamePlates	sv	draft	readable	deep
 exe	0x0052d2a0	sv_DrawItemNames	sv	byte	readable		
 exe	0x0052d480	sv_DrawBorderArrows	sv	byte	readable		
 exe	0x0052d7a0	sv_CameraFollow	sv	byte	readable		
-exe	0x0052d940	sv_HandleRightClick	sv	draft	readable	deep	
+exe	0x0052d940	sv_HandleRightClick	sv	byte	readable		
 exe	0x0052e050	sv_DrawHint	sv	byte	readable		
 exe	0x0052e0c0	sv_DrawStatusText	sv	byte	readable		
 exe	0x0052e170	sv_ClearNamePlates	sv	byte	readable		
@@ -3402,8 +3402,8 @@ exe	0x0052eaa0	sv_ValueBar	sv	shape	readable
 exe	0x0052eb50	sv_DrawBalanceBar	sv	byte	readable		
 exe	0x0052ee50	sv_StartBand	sv	byte	readable		
 exe	0x0052eed0	sv_EndBand	sv	byte	readable		
-exe	0x0052eee0	sv_UpdateBand	sv	draft	readable	deep	
-exe	0x0052f0d0	sv_UpdateBandLed	sv	draft	readable	deep	
+exe	0x0052eee0	sv_UpdateBand	sv	draft	readable	stuck	
+exe	0x0052f0d0	sv_UpdateBandLed	sv	draft	readable	stuck	
 exe	0x0052f2c0	sv_DrawRubberBand	sv	byte	readable		
 exe	0x0052f340	sv_BookKeys	sv	byte	readable		
 exe	0x0052f360	sv_OpenBook	sv	byte	readable		
@@ -3427,7 +3427,7 @@ exe	0x005301a0	sv_UpdateWeather	sv	shape	readable
 exe	0x00530670	sv_WeatherFrame	sv	draft	readable	deep	
 exe	0x005307f0	sv_AdvanceGame	sv	shape	readable		
 exe	0x00530900	sv_SetScreenCenter	sv	byte	readable		
-exe	0x005309a0	sv_RunFrame	sv	draft	readable	deep	
+exe	0x005309a0	sv_RunFrame	sv	byte	readable		
 exe	0x005315c0	sv_UpdateClock	sv	byte	readable		
 exe	0x00531670	main_DestroyWindow	main	byte	readable		
 exe	0x00531690	main_ShutdownScreen	main	byte	readable		
