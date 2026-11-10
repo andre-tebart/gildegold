@@ -12777,7 +12777,7 @@ int ai_AttackWindow(int ctx, AIBLD *target)
             continue;
         if (d2_PointerObj == ok) {
             for (ev = (AIJOB *)he_FindEvent(3, 0, 0x49, 2, ((AIBLD *)ai_PlayerBuilding)->owner,
-                                            ((AIBLD *)ai_PlayerBuilding)->id, 3);
+                                            3, ((AIBLD *)ai_PlayerBuilding)->id);
                  ev != 0; ev = (AIJOB *)he_NextEvent())
                 if (ev->bldId == target->id)
                     break;
