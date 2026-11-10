@@ -312,6 +312,12 @@ mechanisms, each as a generated round over all positions / subsets:
   instead (amt_CalcZuenfte).
 
 ## Registers, stack slots, locals
+- **A loop the original does not strength-reduce** (`lea ecx,[i*8]; sub ecx,i; lea edx,[ecx*4+0xa]; push edx` per
+  iteration, ours an IV `add esi,0x1c` in a slot): the argument goes to a `short` parameter. A unit-local
+  prototype with `int` parameters (menu.c's d2_WinOpenPic, "pushes int arguments" - pushes look the same for
+  short) let VC6 strength-reduce `i * 0x1c + 10`; the owner's `short x, short y` gave byte. Loop forms, casts in
+  the argument and `#pragma optimize` never moved it (ai_MessageFilterScreen 44 ins -> byte). Check the callee's
+  real parameter types first when a loop's IVs differ.
 - **A byte of a global `union { int word; unsigned char byte[4]; }` loaded as the dword** (`mov ecx, dword [U];
   xor eax,eax; mov al, ch`, a later `cmp byte [g], cl` reusing it) where the original does `xor eax,eax; mov al,
   byte ptr [U+1]`: the bytes were separate globals. Char-pointer views, casts and bitfields of the union give the
