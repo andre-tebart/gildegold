@@ -2126,7 +2126,7 @@ exe	0x004c23f0	snd_PlaySpecialTrack	f3snd	149a468dfed51d3b	no	byte	control=byte 
 exe	0x004c2480	snd_EndSpecialTrack	f3snd	7760b65c9c173aec	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004c24c0	snd_FadeMusic	f3snd	5a6575628637fcf6	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004c24e0	snd_VoiceVariant	f3snd	c39f6d029671c408	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x004c2510	snd_FindVoiceSample	f3snd	ccdd84b5c44c47c5	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x004c2510	snd_FindVoiceSample	f3snd	2ab131d3fef61cfe	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x004c2760	snd_PlayVoice	f3snd	34879f4128e49704	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004c27d0	snd_QueueVoice	f3snd	bb09f3aa71777dc1	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004c2830	snd_LoadVoiceBank	f3snd	54300e67f0cab8c3	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
