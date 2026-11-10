@@ -1279,8 +1279,7 @@ CHACTION *ch_InsertAction(CHARACTER *ch, CHACTION *before, unsigned int type, ..
     return a;
 }
 /* 0x404a80, puts the character on the ground (force: also when the ground type is 0 or 0xd); returns the ground
-   type (0: none)
-   @deep behaviour: close (5 differing instructions), one code hunk. The original materialises the h==0 return value with a separate xor eax,eax at 404a98 (scheduled before test esi,esi, je to 404b7d past the second xor) and the d3_GetHeightAt==0 return with a second xor eax,eax at 404b7b *before* pop edi/pop esi; ours merges both failure paths into one shared xor placed after pop edi/pop esi, so 404a98 is missing and 404b7b moves. Same statements and returns (checked against 404a80..404b83). Tried this session: baseline nested if (h) {...} + final return 0 (kept), inner return 0 + final return 0, if (!h) return 0 guard (25 differing lines, layout flips cold), if (!d3_GetHeightAt) return 0 guard, else return 0 forms, add-lea/clamp untouched; spell 404b79 push-pop prescriptions both tried (early guard vs one final return; the callee-saved crossing is not expressible in C). Earlier tries: early return before/after obj=ch->obj, else return 0, else type=0; return type;, int ret=0 local. Needs the tail-merge/vargen toolbox. */
+   type (0: none) */
 
 int ch_PlaceOnGround(CHARACTER *ch, int force)
 {
@@ -1293,6 +1292,7 @@ int ch_PlaceOnGround(CHARACTER *ch, int force)
 
     h = (D3SM *)ch_GetHMap(ch);
     obj = ch->obj;
+    type = 0;
     if (h) {
         pos.x = obj->pos.x;
         pos.y = obj->pos.y;
@@ -1308,10 +1308,9 @@ int ch_PlaceOnGround(CHARACTER *ch, int force)
                     pos.y = y;
                 d3_SetObjectPos(obj, (D3VECTOR *)&pos);
             }
-            return type;
         }
     }
-    return 0;
+    return type;
 }
 /* 0x404b90, runs the first action of the queue */
 
