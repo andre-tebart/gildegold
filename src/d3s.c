@@ -891,7 +891,11 @@ char d3s_MeshFromMap(int *rect, int stride, unsigned char *map, float *origin, f
     }
     return 1;
 }
-/* 0x45b8d0, adds the shadow of slot to the shadow object @deep match-base 2026-10-31: read the whole function against the original and rebuilt it (296 -> 327 vs 327 instructions): one if (d3s_Enabled && map && size && !simple) / else quad, range check on the slot fields first and the stores after, v0 = 0.0f first (kept on the FPU), du / dv / u0 / v0 divided by (float)(x1 - x0) / (z1 - z0) (no reciprocal CSE), nested size ifs falling into the final return ok (ok is a memory char), uv[4] / rect[4] copies, grid->bs signed division, both mesh calls store ok, the quad walks p++ / v++ / pos += 6 with pos computed before the poly stores, light colour / power through D3LOBJ. Left: register rotation ecx/edi and ebx/edi over the whole mesh part (regs / slots hunks; the h*2*w product starts from the other register), the size-fail return ok block (fstp st(0)) is placed at the end instead of after the call epilogues, ok = 1 is scheduled early, and the quad copies the slot floats with mov where the original uses fld/fstp (no free integer register in the original). Tried + 0.0f / * 1.0f / (float) on the copies (folded, no change), early return ok instead of nested ifs (ok folds to xor al,al, worse), fw/fh float locals (reciprocal CSE, worse). match-deep 2026-11-10: parenthesized member copies (the FPU-copy lever) ins 154 -> 124. */
+extern const float ai_FloatZero, ai_FloatOne;  /* the shared 0.0f / 1.0f (bio.c) */
+
+/* 0x45b8d0, adds the shadow of slot to the shadow object. The slot copies are parenthesized: VC6 then copies the
+   floats through the FPU as the original does (likely a macro's parentheses); v0, du and dv start from the shared
+   ai_FloatZero / ai_FloatOne objects as in the original */
 
 char d3s_AddShadow(D3SSLOT *slot, D3STERR *grid)
 {
@@ -921,10 +925,10 @@ char d3s_AddShadow(D3SSLOT *slot, D3STERR *grid)
         x1 = (slot->ix1);
         z0 = (slot->iz0);
         z1 = (slot->iz1);
-        v0 = 0.0f;
-        du = 1.0f / (x1 - x0);
+        v0 = ai_FloatZero;
         u0 = 0.0f;
-        dv = 1.0f / (z1 - z0);
+        du = ai_FloatOne / (x1 - x0);
+        dv = ai_FloatOne / (z1 - z0);
         if (x0 < 0) {
             u0 = -x0 / (float)(x1 - x0);
             x0 = 0;
@@ -937,9 +941,9 @@ char d3s_AddShadow(D3SSLOT *slot, D3STERR *grid)
         }
         if (z1 >= slot->size)
             z1 = slot->size - 1;
-        h = z1 - z0;
         w = x1 - x0;
-        if (h * 2 * w + buf->npolys < d3s_MaxPolys * 2) {
+        h = z1 - z0;
+        if ((h << 1) * w + buf->npolys < d3s_MaxPolys * 2) {
             n = (h + 1) * (w + 1);
             if (buf->nverts + n < (d3s_MaxPolys >> 4) * 25) {
                 uv[0] = u0;
@@ -959,6 +963,7 @@ char d3s_AddShadow(D3SSLOT *slot, D3STERR *grid)
                                          tex, col.d);
             }
         }
+        return ok;
     } else if (buf->npolys < d3s_MaxPolys * 2 - 2) {
         p = &buf->polys[buf->npolys];
         v = &buf->verts[buf->nverts];
@@ -966,8 +971,8 @@ char d3s_AddShadow(D3SSLOT *slot, D3STERR *grid)
         p->v[0] = v;
         p->uv = d3s_QuadUV;
         p->v[2] = v + 2;
-        p->v[1] = v + 1;
         p->tex = tex;
+        p->v[1] = v + 1;
         p++;
         p->v[1] = v + 3;
         p->v[2] = v + 2;
@@ -981,24 +986,24 @@ char d3s_AddShadow(D3SSLOT *slot, D3STERR *grid)
         pos[2] = (slot->z1);
         v->c0 = col.d;
         v->c1 = col.d;
-        v++;
         pos += 6;
+        v++;
         v->pos = pos;
         pos[0] = (slot->x1);
         pos[1] = (slot->y);
         pos[2] = (slot->z1);
         v->c0 = col.d;
         v->c1 = col.d;
-        v++;
         pos += 6;
+        v++;
         v->pos = pos;
         pos[0] = (slot->x0);
         pos[1] = (slot->y);
         pos[2] = (slot->z0);
         v->c0 = col.d;
         v->c1 = col.d;
-        v++;
         pos += 6;
+        v++;
         v->pos = pos;
         pos[0] = (slot->x1);
         pos[1] = (slot->y);
