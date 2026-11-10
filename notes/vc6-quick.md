@@ -122,6 +122,21 @@ mechanisms, each as a generated round over all positions / subsets:
   `(b ? 0x27b : 0x253) + type`. A `char text[260]` got an 8-aligned slot with a hole (frame 8 larger); `[256]`
   gave the original's frame (hmt_Election, draft 95 ins -> byte).
 
+- **Call pushes before the branch that picks one argument** (`push f; push size; push 1; test flip; jne` and the
+  arms only computing the row index, then one shared `imul; lea; push; call`): the call was written in both arms
+  of `if (flip == 0) fread(dst + i * w * 3, ..); else fread(dst + (h - i - 1) * w * 3, ..);`. VC6 hoists the equal
+  pushes above the test and merges the tails. A ternary inside the argument is evaluated before every push, with
+  any operand order or placement (d2_ReadBmpPixels 92 -> 12 ins).
+- **`x * 3 & 3` becomes `neg; and 3`** (VC6 folds (3w) & 3 into (-w) & 3 through a local copy, any cast or
+  spelling of the 3 or the 3w); an original that keeps `lea r,[w+w*2]; and r,3` did not use that spelling, and
+  `w3 - (w3 >> 2 << 2)` keeps the lea but not the single and (d2_ReadBmpPixels, unsolved). VC6 also knows a
+  field's value after `if (bi.biBitCount == 0x18)`: `w * (bi.biBitCount >> 3)` compiles as `w * 3`.
+- **A struct-field tail store order** (`s->left = 0; s->pitch = ..; s->top = 0; ..`, the original storing top=0
+  late and popping late): permute the tail stores; d2_MakeSurface wanted left, pitch, right, top, bottom.
+- **`movsx eax, bl; and eax, 8; shl eax, 8` from an int flags**: every `(char)flags & 8` spelling folds the
+  movsx away; only a multiply before the mask (`(char)flags * 0x100 & 0x800`) keeps it, as `shl; and 0x800`
+  (d2_MakeSurface, unsolved: the and-before-shift order is open).
+
 ## Control flow and returns
 - **Empty case labels**: VC6 drops `case X: break;` (also `return;`, dead stores, `goto` to the join)
   before switch lowering, so those labels cannot affect the dispatch tree. A folded `if (0) { }` body

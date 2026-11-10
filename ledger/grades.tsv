@@ -1371,7 +1371,7 @@ exe	0x004774a0	d2_DragInputValue	gfx	byte	readable
 exe	0x00477530	d2_EndInputEdit	gfx	byte	readable		
 exe	0x00477590	d2_InputKey	gfx	byte	readable		
 exe	0x00477a70	d2_DragInput	gfx	byte	readable		
-exe	0x00477ba0	d2_SliderInput	gfx	draft	readable	deep	
+exe	0x00477ba0	d2_SliderInput	gfx	draft	readable	stuck	
 exe	0x00477ed0	d2_UpdateInput	gfx	byte	readable		
 exe	0x00478320	d2_FocusInput	gfx	byte	readable		
 exe	0x004784c0	d2_MouseUpdate	gfx	shape	readable		
@@ -1381,11 +1381,11 @@ exe	0x004788f0	d2_RemoveHitRect	gfx	byte	readable
 exe	0x00478930	d2_CompareColour	gfx	byte	readable		
 exe	0x00478960	d2_SetColour	gfx	byte	readable		
 exe	0x00478980	d2_GetBmpSize	gfx	byte	readable		
-exe	0x00478a00	d2_ReadBmpPixels	gfx	draft	readable	deep	
+exe	0x00478a00	d2_ReadBmpPixels	gfx	draft	readable	stuck	
 exe	0x00478b50	d2_LoadBmpSurface	gfx	byte	readable		
 exe	0x00478bd0	d2_ConvertRgbTo16	gfx	byte	readable		
 exe	0x00478c50	d2_Convert16ToRgb	gfx	byte	readable		
-exe	0x00478cc0	d2_MakeSurface	gfx	draft	readable	deep	
+exe	0x00478cc0	d2_MakeSurface	gfx	draft	readable	stuck	
 exe	0x00478fc0	d2_FreeSurface	gfx	byte	readable		
 exe	0x00479020	d2_LockSurface	gfx	byte	readable		
 exe	0x004790e0	d2_UnlockSurface	gfx	byte	readable		
@@ -1397,7 +1397,7 @@ exe	0x00479610	d2_BlitPartFromDD	gfx	byte	readable
 exe	0x004796c0	d2_ClearSurface	gfx	byte	readable		
 exe	0x00479780	d2_CopySurface	gfx	byte	readable		
 exe	0x004797d0	d2_ClearRect	gfx	byte	readable		
-exe	0x004798f0	d2_GetPixelColour	gfx	draft	readable	deep	
+exe	0x004798f0	d2_GetPixelColour	gfx	draft	readable	stuck	
 exe	0x004799e0	d2_PutPixelRGB	gfx	byte	readable		
 exe	0x00479b60	d2_PutPixel	gfx	byte	readable		
 exe	0x00479b90	d2_PutPixelClipped	gfx	byte	readable		
