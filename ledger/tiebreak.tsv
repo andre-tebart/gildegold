@@ -3180,7 +3180,7 @@ exe	0x0050d350	init_SceneObjectDestroyCB	f3init	d4876e7dc3da81be	no	byte	control
 exe	0x0050d380	init_HookObject	f3init	ea5d8b5dab96062f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0050d460	init_ResetSceneUniverses	f3init	254fd99face5cd17	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0050d490	init_FreeScenes	f3init	d11248ce177aaa0b	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x0050d550	init_AllocSceneBuilding	f3init	a9a8b0cc8e0c5a14	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x0050d550	init_AllocSceneBuilding	f3init	37c98d833d42385d	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x0050d6a0	init_InheritOwner	f3init	773b94032f4762b9	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
 exe	0x0050d6d0	init_LoadTownScene	f3init	75a0ebb553315c2a	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0050d730	init_AdjustSceneLights	f3init	3b763734256b6eec	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
