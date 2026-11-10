@@ -72,6 +72,7 @@ const volatile unsigned __int64 gypsyFilter = 0x1a7fdfbb6;  /* 0x5eed68 (volatil
 #define ai_CharsC (*(char (*)[768 * 0x21c])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) read flat, as this unit does */
 extern __declspec(align(1)) unsigned char full_rdata_5ebb40[];  /* main.c's rdata gap block */
 #define ai_FloatHundred (*(float *)&full_rdata_5ebb40)  /* 0x5ebb40, VC6's pooled 100.0f (main.c's rdata gap block; cm.c, he.c and lc.c read it too) */
+extern double cm_DoubleOne;  /* 0x5eb8a8, cm.c: the shared double 1.0 (a VC6 pooled literal; cm.h is not included here) */
 #define ai_CharsK ((AICHARKINDVIEW *)((char *)ai_Chars + 2))  /* 0x770b82, the records from their kind byte (ai_HasQuicksavePlayer walks them so) */
 
 extern OPTIONBYTES ai_GfxFloor, ai_GfxSet, ai_GfxFog, ai_GfxResolution, ai_GameSwitches, ai_GamePanel, ai_OptionPanelHelp;
@@ -1164,7 +1165,7 @@ void ai_ApplyGfxOptions(void)
     }
     d3_ApplyGraphicsOptionsB(ai_GfxFloor.byte[0], 0, 2 - ai_GfxTextureScale, changed, 0);
     if (ai_PlayerBuildingB == 0 && ai_FallbackBuildingB == 0)
-        d3o_FogScale = 1.0 - ai_GfxFog.byte[0] * 0.01;
+        d3o_FogScale = cm_DoubleOne - ai_GfxFog.byte[0] * 0.01;
     for (i = 0; i < 0x300; i++) {
         c = ch_List[i];
         if (c != 0 && c->scene == d3_Scenes)
