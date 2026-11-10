@@ -101,7 +101,7 @@ exe	0x00406a70	ch_FollowGround	ch	6746e710b9222470	no	byte	control=byte p1=byte 
 exe	0x00406bc0	ch_ThinPath	ch	c3b4f9712f70073a	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00406c60	ch_SetHandObject	ch	3442a0ff3d89f5a0	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00406e40	ch_ActAnimOnce	ch	1de1955a658551c8	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x00406e60	ch_ActTurn	ch	34aebdfeacf26b7c	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x00406e60	ch_ActTurn	ch	34aebdfeacf26b7c	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x00407200	ch_FindNear300	ch	e9af7926725126e1	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004072a0	ch_FindFreeCell	ch	2e1bb55027fcb422	no	draft	sample n=32 seed=1 compiled=31 codegens=1 best=draft
 exe	0x00407690	ch_MapAlloc	ch	60f90278b754107b	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft

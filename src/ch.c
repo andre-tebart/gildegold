@@ -2389,7 +2389,34 @@ void ch_ActAnimOnce(CHACTION *a)
     if (ch_ActAnim(a) == -1)
         ch_RemoveAction(a);
 }
-/* 0x406e60, turn action: args[0] degrees (args[1]: relative to the z axis), plays "dreh_90_*" and turns @deep behaviour: far draft, 125 differing instructions / 586 bytes. Same flow; the code hunks are the two D3ANIMFLAGS/key blocks (the original builds the flags block twice, one per branch of if (ch->slot), as a load/or/or/store after a dword zero store with dword 1 enregistered, and loads turn.z/turn.y/turn.x and key[0].time before the stores) and the key[] stores. Read against 406e60..407200. Last-bytes leads tried this session: the 406f5f branch spell (jp vs and eax,0x100;je) both ways - !(angle<0.2f) with the two attach calls swapped gave 135 asm lines, angle>=0.2f 137 lines, the kept nested if (angle<0.2) form is 125 (baseline) so both reverted; spell reload at 406fbf/407098 and dup-tail at 4071fb need register/slot variants. Earlier attempts: flags b1|=0x14;b1|=8 folded to 0x1c or hoisted, memset stores dword 1, fr=&frames[n-1], keys order. Readability done: ch->slot typed, CHARACTER+0x78 named turnAnim (CH_ANIM078 macro gone), no Q failure left. */
+/* 0x406e60, turn action: args[0] degrees (args[1]: relative to the z axis), plays "dreh_90_*" and turns
+   @stuck Read 0x406e60..0x4071f0 again; no meaning difference (the proof's 'different conditions' at +0xf3
+   was the angle>=0.2 compare spelling). Kept: memset without the redundant f.mid = 0 (the original never
+   stores dword 1: 108 -> 88 ins), outer test as !(angle >= 0.2) (and eax,0x100/je as the original: 88 ->
+   84), and the store orders found by tryclimb.py (deep-tools, dcp try hill climb): the else block
+   (keys[0].time = 8 .. rot.y = angle, with f.w.c.b8 = 1 between the two b1 ors, which stops VC6 folding
+   them into or 0x1c) now matches the original exactly; slot block
+   dir.y/dir.z/time/memset/b1/b1/b8/rot.x/zeros/rot.y/neg/rot.z (84 -> 43 ins). Tried without gain:
+   bitfield views of b1 (f04/f10/f08, mixes with u.c.b1, dword |= 0x1400: = control or worse),
+   f.u.all/f.mid/f.w.all field inits instead of memset (128-179), fr as frames + n - 1 (= control), fr =
+   &frames[n] with fr[-1] (gives the original's add eax,edx but the best order then 44-48 ins: 8580
+   placements of rot.x/rot.y/neg/rot.z into the else block's order, plus climbs), no fr / ch->slot direct
+   (153-236), dir.x temps or a D3VECTOR copy (128-137). Left (slot branch only, 0x406fc1..0x407081): the
+   original addresses the last frame from frames + n*0xc0 (add eax,edx;
+   [eax-0x8c]/[eax-0x90]/[eax-0x94]/[eax-0xc0]) and loads turn.z, turn.y, turn.x, time before any store;
+   ours does lea fr then loads; the original keeps -turn.x and angle - dir.y on the FPU stack until after
+   the arg copy (fxch; fstp rot.x; fstp rot.y), stores dir.z = -dir.z and copies it to rot.z through edx,
+   and does or dl,0x14 / or dl,8 separately where ours folds or 0x1c. (tiebreak: insensitive, dcp headers
+   sample: 32 compiles, one codegen) prior: behaviour: far draft, 125 differing instructions / 586 bytes. Same flow; the
+   code hunks are the two D3ANIMFLAGS/key blocks (the original builds the flags block twice, one per branch
+   of if (ch->slot), as a load/or/or/store after a dword zero store with dword 1 enregistered, and loads
+   turn.z/turn.y/turn.x and key[0].time before the stores) and the key[] stores. Read against
+   406e60..407200. Last-bytes leads tried this session: the 406f5f branch spell (jp vs and eax,0x100;je)
+   both ways - !(angle<0.2f) with the two attach calls swapped gave 135 asm lines, angle>=0.2f 137 lines,
+   the kept nested if (angle<0.2) form is 125 (baseline) so both reverted; spell reload at 406fbf/407098
+   and dup-tail at 4071fb need register/slot variants. Earlier attempts: flags b1|=0x14;b1|=8 folded to
+   0x1c or hoisted, memset stores dword 1, fr=&frames[n-1], keys order. Readability done: ch->slot typed,
+   CHARACTER+0x78 named turnAnim (CH_ANIM078 macro gone), no Q failure left. */
 
 void ch_ActTurn(CHACTION *a)
 {
@@ -2422,7 +2449,7 @@ void ch_ActTurn(CHACTION *a)
             a->rot.y = angle + ch->obj->rotation.y;
             a->rot.z = ch->obj->rotation.z;
         }
-        if (angle < 0.2) {
+        if (!(angle >= 0.2)) {
             if (angle < -0.2)
                 ch->slot = (D3ANIMSLOT *)ch_AttachAni(a->ch, "bewegung/dreh_90_rechts", 1);
         } else
@@ -2431,14 +2458,14 @@ void ch_ActTurn(CHACTION *a)
         if (ch->slot) {
             s = ch->slot;
             fr = &s->data->frames[s->data->nframes - 1];
-            dir.z = fr->turn.z;
             dir.y = fr->turn.y;
+            dir.z = fr->turn.z;
             keys[0].time = fr->time - 30;
             memset(&f, 0, sizeof(f));
             f.u.c.b1 |= 0x14;
             f.u.c.b1 |= 8;
-            f.mid = 0;
             f.w.c.b8 = 1;
+            keys[1].rot.x = -fr->turn.x;
             keys[0].rot.x = 0.0f;
             keys[0].rot.y = 0.0f;
             keys[0].rot.z = 0.0f;
@@ -2448,7 +2475,6 @@ void ch_ActTurn(CHACTION *a)
             keys[1].pos.x = 0.0f;
             keys[1].pos.y = 0.0f;
             keys[1].pos.z = 0.0f;
-            keys[1].rot.x = -fr->turn.x;
             keys[1].rot.y = angle - dir.y;
             dir.z = -dir.z;
             keys[1].rot.z = dir.z;
@@ -2457,21 +2483,20 @@ void ch_ActTurn(CHACTION *a)
             keys[0].time = 8;
             memset(&f, 0, sizeof(f));
             f.u.c.b1 |= 0x14;
-            f.u.c.b1 |= 8;
-            f.mid = 0;
             f.w.c.b8 = 1;
+            f.u.c.b1 |= 8;
             keys[0].rot.x = 0.0f;
             keys[0].rot.y = 0.0f;
             keys[0].rot.z = 0.0f;
             keys[0].pos.x = 0.0f;
             keys[0].pos.y = 0.0f;
             keys[0].pos.z = 0.0f;
+            keys[1].rot.x = 0.0f;
+            keys[1].rot.z = 0.0f;
             keys[1].pos.x = 0.0f;
             keys[1].pos.y = 0.0f;
             keys[1].pos.z = 0.0f;
-            keys[1].rot.x = 0.0f;
             keys[1].rot.y = angle;
-            keys[1].rot.z = 0.0f;
             ch->turnAnim = d3anim_CreatePathK(a->ch->obj, f, 2, keys);
         }
         return;
