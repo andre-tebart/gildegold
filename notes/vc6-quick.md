@@ -182,6 +182,16 @@ mechanisms, each as a generated round over all positions / subsets:
   `p++, i++`, and a local for a repeated pointer load (`k = info->keys`).
 - Inline-asm macro temps (D3_ZERO, copy macros): their declaration order decides stores and slots; asm forces an
   ebp frame. Fixed-point helpers are `__inline` functions with `__asm` bodies.
+- **A frame one slot smaller, a local in a dead parameter's slot** where the original gives it its own slot (and
+  zeroes it early, `xor edi,edi; mov [esp+8],edi` before the first parameter load is done): the local's init was
+  written before the parameter's last use (`n = 0; w = 0;` at the top of the function), so the parameter slot was
+  not dead yet (ord_LoadStatistics frame 0x18 -> 0x1c).
+- **An "allocation only" escalation whose stores land in another local's slot**: read the frame offsets of every
+  store before trying spellings. ord_AddGridAmount / ord_SubGridAmount stored the first util_Random(8) into x's
+  slot (the &x later passed to ord_GetGridCell, a start cell for its failure) and added rec[3] (AIDEC.guilt, read
+  from the record's frame slot), where ours added the random: a meaning bug, both draft -> byte once fixed.
+- A strength-reduced record walk with `cmp ecx, end; jl` (signed) is an index loop `for (j = 0; j < N; j++)
+  ARR[j].f`, not a pointer walk (`jb`).
 - **A frame one small buffer larger than the original's**: look where the original's buffer addresses point.
   err_ExceptionFilter's 7-byte code window (`lea ebx,[text]`, `err_CheckCall(text + 7, ..)`) is the dead
   `text[]` buffer, not a `char win[7]`: dropping the extra array gave the original's frame 0x280.
