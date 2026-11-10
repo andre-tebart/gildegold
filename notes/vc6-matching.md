@@ -2785,3 +2785,24 @@ differing instructions. The same shape made the character loop of 0x512f30 pick 
   written after the nested ifs is always placed last (ahm_LoadIni, 48 ins -> 4). Its `if (n > 0x12) {if (n
   >= 0x1e) ..} else n = 0x12` clamp with the else-arm out of line after the cleanup is
   `min(max(n, 0x12), 0x1e)` (4 -> byte).
+- **A one-use local that takes a callee-saved register from a constant**: `k = (int)(f * 0.2f); ...
+  util_Random(k)` gave k a register web that pushed the original's `xor ebx,ebx` constant 0 out of ebx for the
+  whole function (immediates and `test` instead of `push ebx` / `cmp eax,ebx`, a pointer cached in ebx instead
+  of reloaded); writing the call argument inline took ahm_CreateAlchemist from 104 to 13 ins. Look for such
+  locals first when the original keeps 0 in a register and ours does not.
+- **A global counter's store after unrelated field stores** (`mov [ai_NextObjectId], ecx` after the c->mask
+  store, the load and `inc` before): write the `x++;` statement after those stores (the read `c->netId = x;`
+  stays put). ahm_CreateAlchemist 5 -> 3 ins, gv_RaiseDead 103 -> 51. Moving the read line instead changes
+  the meaning (netId + 1): check what a `--move-line` variant moved before applying it.
+- **A dead store the original keeps** (`mov word [esi], 0xffff` before `c->id = n`): through the record
+  pointer (`c->id = 0xffff`) VC6 drops it as dead, through the array (`ai_CharsT[n].id = 0xffff`) it keeps it.
+- **Table search with two pointers** (an iterator in ecx, `mov edi, ecx` each iteration, `cmp [edi], ebp`
+  reloading the field the loop test already loaded, and the first test on `[table]` before the loop): an index
+  loop with a pointer copy, `for (n = 0; T[n].kind != 0; n++) { e = &T[n]; if (e->kind == ...) goto found; }`.
+  A pointer loop, or `e = p` from a second pointer, coalesces both (snd_EnterBuilding, 38 ins -> byte).
+- **Walk until the terminator, the test after the step**: `i = 0; do { ... } while (T[i++].kinds[0] != 0);`
+  (snd_FindTrackKind, byte); a pointer `(l++)->kinds[0]` or a `k` pointer for the inner walk keep the
+  terminator in a register.
+- **Char array frame gaps**: VC6 rounds char[0x11..0x14] up to an 8-byte multiple in the frame (sfx[0x14]
+  left a 4-byte hole and moved num/buf); the original's packing came from sfx[0x10] (snd_FindVoiceSample,
+  measured with deep-tools framesearch.py over sizes in a few seconds).
