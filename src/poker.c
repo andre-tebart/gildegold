@@ -708,17 +708,28 @@ int ai_PokerRateHand(int owner, int *g1, int *g2, int *r1, int *r2)
 }
 /* 0x4a8190, the showdown: the winning seat (seat 0 against 1, the better of them against 2), its hand into winHand;
    two empty hands against an empty seat 2 compare the high card of the winner with seat 1's (as the original does)
-   @deep Read the whole original 0x4a8190..0x4a84da against the C: rating loop (int seat counter reused as
-   the winner, as the original's esi), the seat-0/1 chain, both 8-case switches (tables 0x4a84dc / 0x4a84fc
-   case by case), the seat-2 comparison and every winHand store / return path correspond; compare operand
-   order fixed. Left: the original keeps ai_PokerTable in edi and the seat offset in ebx (ours swapped:
-   regs), and it gives each 'winHand = kind[2]; return 2' its own epilogue copy (5 copies at 0x4a83ae,
-   0x4a83d3, 0x4a840b, 0x4a843f, 0x4a8460) where VC6 merges ours into one block, plus the first switch's
-   shared tails (case 1/8 and 2/6 r1 compares, case 4 / both-empty high-card call) merged in the other
-   direction. Tried: w = 2 / break with a common tail (252 ins, worse), the high-card if-assign (kept).
-   (size: 276 vs 296 instructions, explained: 276 vs 296: the original duplicates the 8-instruction 'store
-   kind[2]; mov eax,2; epilogue' block four more times than ours (32 instructions), ours keeps two extra
-   r1-compare tails in the first switch) */
+   @stuck meaning re-read against 0x4a8190..0x4a84da (both switches case by case, the both-empty high-card path,
+   every winHand store / return): no difference. The merged 'winHand = kind[2]; return 2' tail: VC6 cross-jumps every
+   copy of that statement pair into one block (also with break-form cases, = control); writing four of the nine sites
+   as 'w = 2; winHand = kind[w]; return w' (a 511-mask sweep, m14a: kind[2]>k, case 1 r1, case 2 r1, case 6/8) keeps
+   separate epilogue copies as the original: 230 -> 195 ins, but those copies reload kind[2] from [esp+0x30] where
+   the original stores ebp (the register-cached kind[2]); 'w = 2; winHand = kind[2]; return w' folds back (=
+   control). Left: the table pointer in ebx and the seat offset in edi (the original: edi / ebx, loaded after the
+   pushes, out[0] stored from the zero offset register), the store-before-pop order that follows from it, and the
+   case 6/8 + 3/5/7 r1 / g1 compares the original shares (jle into one return-2 copy). Tried: headers sample
+   insensitive (32, one codegen); the 720 orders of the six zero inits (two codegens, 230/232, never the register
+   swap); the rating branch inverted (worse), hand store chained / through k, w = 0 hoisted, the seat field through
+   (&seat[w])->: = control (tiebreak: insensitive, 32 samples one codegen) prior: Read the whole original
+   0x4a8190..0x4a84da against the C: rating loop (int seat counter reused as the winner, as the original's esi), the
+   seat-0/1 chain, both 8-case switches (tables 0x4a84dc / 0x4a84fc case by case), the seat-2 comparison and every
+   winHand store / return path correspond; compare operand order fixed. Left: the original keeps ai_PokerTable in edi
+   and the seat offset in ebx (ours swapped: regs), and it gives each 'winHand = kind[2]; return 2' its own epilogue
+   copy (5 copies at 0x4a83ae, 0x4a83d3, 0x4a840b, 0x4a843f, 0x4a8460) where VC6 merges ours into one block, plus the
+   first switch's shared tails (case 1/8 and 2/6 r1 compares, case 4 / both-empty high-card call) merged in the other
+   direction. Tried: w = 2 / break with a common tail (252 ins, worse), the high-card if-assign (kept). (size: 276 vs
+   296 instructions, explained: 276 vs 296: the original duplicates the 8-instruction 'store kind[2]; mov eax,2;
+   epilogue' block four more times than ours (32 instructions), ours keeps two extra r1-compare tails in the first
+   switch) */
 
 int ai_PokerShowdown(void)
 {
@@ -811,8 +822,9 @@ int ai_PokerShowdown(void)
     }
     if (kind[2] != 0 && kind[2] >= k) {
         if (kind[2] > k) {
-            ai_PokerTable->winHand = kind[2];
-            return 2;
+            w = 2;
+            ai_PokerTable->winHand = kind[w];
+            return w;
         }
         switch (k) {
         case 1:
@@ -822,8 +834,9 @@ int ai_PokerShowdown(void)
                     return 2;
                 }
                 if (r1[w] <= r1[2]) {
-                    ai_PokerTable->winHand = kind[2];
-                    return 2;
+                    w = 2;
+                    ai_PokerTable->winHand = kind[w];
+                    return w;
                 }
             }
             break;
@@ -839,8 +852,9 @@ int ai_PokerShowdown(void)
                         return 2;
                     }
                     if (r1[w] <= r1[2]) {
-                        ai_PokerTable->winHand = kind[2];
-                        return 2;
+                        w = 2;
+                        ai_PokerTable->winHand = kind[w];
+                        return w;
                     }
                 }
             }
@@ -861,8 +875,9 @@ int ai_PokerShowdown(void)
         case 6:
         case 8:
             if (r1[w] <= r1[2]) {
-                ai_PokerTable->winHand = kind[2];
-                return 2;
+                w = 2;
+                ai_PokerTable->winHand = kind[w];
+                return w;
             }
             break;
         default:
