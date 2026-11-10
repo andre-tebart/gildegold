@@ -3341,7 +3341,7 @@ exe	0x00525ff0	sv_BorderCameraView	sv	byte	readable
 exe	0x005263a0	sv_ScrollCamera	sv	draft	readable	stuck	
 exe	0x00526cf0	sv_MouseCamera	sv	draft	readable	stuck	
 exe	0x00527640	sv_UpdateCamera	sv	byte	readable		
-exe	0x00527840	sv_FlyCameraToObject	sv	draft	readable	deep	shape+readable -> draft+readable at 7a3ed50: dcp's reference check (decompanion ef0c0b3) pairs reordered loads / stores of equal text crosswise and reads them as other targets; the effects are the same, the prover cannot show it yet [waits for: decompanion normalized-alignment / prover-coverage]
+exe	0x00527840	sv_FlyCameraToObject	sv	byte	readable		
 exe	0x00527bb0	sv_CameraToObject	sv	draft	readable	deep	shape+readable -> draft+readable at 7a3ed50: dcp's reference check (decompanion ef0c0b3) pairs reordered loads / stores of equal text crosswise and reads them as other targets; the effects are the same, the prover cannot show it yet [waits for: decompanion normalized-alignment / prover-coverage]
 exe	0x00527e90	sv_FlyCameraToModel	sv	shape	readable	deep	
 exe	0x00528140	sv_MoveCameraToView	sv	byte	readable		
@@ -3354,7 +3354,7 @@ exe	0x00528660	sv_CollectBannerCB	sv	byte	readable
 exe	0x005286a0	sv_RemoveBanners	sv	byte	readable		
 exe	0x00528770	sv_RefreshBanners	sv	byte	readable		
 exe	0x00528800	sv_AddPanelButton	sv	byte	readable		
-exe	0x00528860	sv_OpenBuildingPanel	sv	draft	readable	deep	
+exe	0x00528860	sv_OpenBuildingPanel	sv	byte	readable		
 exe	0x00528b80	sv_OpenItemPanel	sv	byte	readable		
 exe	0x00528d90	sv_OpenCartPanel	sv	byte	readable		
 exe	0x00528ee0	sv_OpenDefaultPanel	sv	byte	readable		
@@ -3366,7 +3366,7 @@ exe	0x0052a050	sv_UpdatePanel	sv	byte	readable
 exe	0x0052a680	sv_HoverPick	sv	byte	readable		
 exe	0x0052adb0	sv_ResetSelection	sv	byte	readable		
 exe	0x0052ae40	sv_ClearSelection	sv	byte	readable		
-exe	0x0052ae70	sv_HandleObjects	sv	draft	readable	deep	
+exe	0x0052ae70	sv_HandleObjects	sv	byte	readable		
 exe	0x0052b2a0	sv_CollectGroupCharacters	sv	shape	readable		
 exe	0x0052b350	sv_RegisterActivity	sv	byte	readable		
 exe	0x0052b3c0	sv_ActivityName	sv	byte	readable		
@@ -3379,7 +3379,7 @@ exe	0x0052c420	sv_MarkMasterCarts	sv	byte	readable
 exe	0x0052c4a0	sv_ReleaseBubble	sv	byte	readable		
 exe	0x0052c4e0	sv_ShowBubble	sv	draft	readable	deep	
 exe	0x0052c5c0	sv_SpeakPicked	sv	draft	readable	deep	
-exe	0x0052cef0	sv_DrawBubbles	sv	draft	readable	deep	
+exe	0x0052cef0	sv_DrawBubbles	sv	byte	readable		
 exe	0x0052d010	sv_DrawGateName	sv	draft	readable	deep	
 exe	0x0052d1e0	sv_DrawNamePlates	sv	draft	readable	deep	
 exe	0x0052d2a0	sv_DrawItemNames	sv	byte	readable		
