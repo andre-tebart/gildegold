@@ -597,7 +597,7 @@ int sv_OpenMessageBox(int text, unsigned char flags)
 
 void sv_SelectPanelObject(unsigned char *o, int b, char *c)
 {
-    char k;
+    AIBTYPE *bt;
     unsigned char *cur = 0;
     int w;
     unsigned short *old;
@@ -607,7 +607,7 @@ void sv_SelectPanelObject(unsigned char *o, int b, char *c)
     bld = (SVOBJREC *)o;
     if (sv_PanelFlag != 0)
         return;
-    if (!(ai_PlayerId == 0xffff || ai_Chars[ai_PlayerId][0x1b1] == 0 || (k = ai_BTypes[bld->kind * 0x24d]) == 6 || (k == 4 && bld->ownerId == ((SVCHARREC *)ai_Chars[ai_PlayerId])->netId)))
+    if (!(ai_PlayerId == 0xffff || ai_Chars[ai_PlayerId][0x1b1] == 0 || (bt = &((AIBTYPE *)ai_BTypes)[bld->kind])->kind == 6 || (bt->kind == 4 && bld->ownerId == ((SVCHARREC *)ai_Chars[ai_PlayerId])->netId)))
         return;
     if (ai_PlayerBuilding != 0)
         cur = (unsigned char *)ai_PlayerBuilding;
