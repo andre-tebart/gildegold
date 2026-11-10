@@ -571,7 +571,7 @@ void ai_FillSaveSlots(int view, int form, SAVESLOTVIEW *slots, char *files, char
     SAVEHEADERVIEW hdr;
     char timebuf[0x40];
     SAVEREQUEST req;
-    char *rec;
+    SAVEREQUEST *rec;
     int n;
     int i;
     int slot;
@@ -586,8 +586,8 @@ void ai_FillSaveSlots(int view, int form, SAVESLOTVIEW *slots, char *files, char
     n = ai_ListFiles(dir, ".SAV", files);
     if (n > 0x10)
         n = 0x10;
-    for (rec = files; n > 0; rec += 0x210, n--) {
-        file = vfs_Tfopen(rec + 0x109, "rb", vfs_Root);
+    for (rec = (SAVEREQUEST *)files; n > 0; rec++, n--) {
+        file = vfs_Tfopen(rec->path, "rb", vfs_Root);
         if (file == 0)
             continue;
         if (ls_ReadSaveHeader(file, &hdr) == 0 || (hdr.flags & 2) != 0) {
@@ -595,7 +595,7 @@ void ai_FillSaveSlots(int view, int form, SAVESLOTVIEW *slots, char *files, char
             continue;
         }
         vfs_fclose(file);
-        slot = ai_RegisterSaveSlot(0x10, slots, hdr.slot, (SAVEREQUEST *)rec);
+        slot = ai_RegisterSaveSlot(0x10, slots, hdr.slot, rec);
         if (slot == -1)
             continue;
         d2_SetForm(view, form);
