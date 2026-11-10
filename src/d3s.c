@@ -826,7 +826,29 @@ unsigned short * d3s_Dst16 = 0;  /* 0xfe73b0 */
 int d3s_Area = 0;  /* 0xfe73b8 */
 int d3s_Fill = 0;  /* 0xfe75ac */
 
-/* 0x45b510, a shadow mesh over the map cells in rect @deep whole function compared against the original and reconciled: corrected here were the height reads of the second loop (row[i + nx + 1].pos[1], through the vertex's pos pointer, instead of the never-set .y field: 4 reads), the hoisted loop invariants xs = x0 * cell[0] + origin[0] and ys = add + origin[1] (stored to [esp+0x24] / [esp+0x28] in the original, reloaded per row), and steep as an int (xor eax,eax / mov eax,1 instead of the byte forms); instruction count 289 vs 297. Remaining: allocation only - the original keeps the polygon pointer in esi and the uv pointer in ecx (ours the reverse), x0 / z0 / nx / nz in slots [0x10] [0x18] [0x1c] [0x20] against ours [0x14] [0x1c] [0x18] [0x10] (slots hunks 0x45b519..0x45b86e), and a few reloads of rect / cell / origin through the stack (the 66 / 61 / 169 / 87 / 48 'code' hunks are the same statements with these registers) */
+/* 0x45b510, a shadow mesh over the map cells in rect
+   @stuck 328 -> 167 ins this session, plus a meaning fix (first polygon's a read row[i + nx + 1], the
+   original row[i]; committed on its own): p = &buf->polys[buf->npolys] first (the original computes it
+   into esi at the top), 1.0f of the add ternary is ai_FloatOne (M10), the uv pointer advanced per polygon
+   (p++; t += 6 after each; second polygon writes t[0..5]) instead of t + 6 / t += 12, and the second
+   polygon's a read between v[1] and v[2] (permute.py over its 7 lines, 5040 orders). headers sample:
+   insensitive. Left: (1) frame 0x18 vs 0x24: the original's own frame holds k/z0 [0x10], row [0x14], nz
+   [0x18], nx [0x1c], x0 [0x20], xs [0x24], ys [0x28] and two dwords [0x2c] [0x30] no instruction
+   references; ours keeps row in buf's slot and has no k slot (the first loop's k = z0 shares [0x10] in the
+   original, the map row pointer lives in origin's dead slot [0x44], the second loop's count in color's
+   slot [0x58]); (2) the second loop's IV pointers point at .pos of row[i + 1] / row[i + nx + 2] (lea
+   [eax-0x98]) where ours point at row[i + 1] (lea [eax-0x50]); (3) the head loads d3s_Verts before
+   NumVerts and d3s_UVs after NumUVs (M8 crossed). Head-line orders (x0/nx/z0/nz/p/row, 120) gave nothing
+   better than the kept order (tiebreak: not measured (dcp headers sample d3s_MeshFromMap)) prior: whole
+   function compared against the original and reconciled: corrected here were the height reads of the
+   second loop (now row[i] / row[i + 1] / row[i + nx + 1] / row[i + nx + 2] .pos[1], through the vertex's pos pointer, instead of the never-set .y
+   field: 4 reads), the hoisted loop invariants xs = x0 * cell[0] + origin[0] and ys = add + origin[1]
+   (stored to [esp+0x24] / [esp+0x28] in the original, reloaded per row), and steep as an int (xor eax,eax
+   / mov eax,1 instead of the byte forms); instruction count 289 vs 297. Remaining: allocation only - the
+   original keeps the polygon pointer in esi and the uv pointer in ecx (ours the reverse), x0 / z0 / nx /
+   nz in slots [0x10] [0x18] [0x1c] [0x20] against ours [0x14] [0x1c] [0x18] [0x10] (slots hunks
+   0x45b519..0x45b86e), and a few reloads of rect / cell / origin through the stack (the 66 / 61 / 169 / 87
+   / 48 'code' hunks are the same statements with these registers) */
 char d3s_MeshFromMap(int *rect, int stride, unsigned char *map, float *origin, float *cell, float *uv,
                      D3SBUF *buf, D3TEXHANDLE *tex, unsigned long color)
 {
@@ -889,25 +911,26 @@ char d3s_MeshFromMap(int *rect, int stride, unsigned char *map, float *origin, f
             d3s_NumUVs++;
             buf->npolys++;
             p++;
+            t += 6;
             p->v[0] = &row[i + 1];
             p->v[1] = &row[i + nx + 2];
+            a = row[i + nx + 2].pos[1];
             p->v[2] = &row[i + nx + 1];
-            p->uv = t + 6;
+            p->uv = t;
             p->tex = tex;
             p->z = -1.0f;
-            a = row[i + nx + 2].pos[1];
             steep = fabs(a - b) > 25.0f || fabs(a - c) > 25.0f ? 1 : 0;
             p->flags = (steep << 1 ^ p->flags) & 2 ^ p->flags;
-            t[6] = u + uv[1];
-            t[7] = w;
-            t[8] = u + uv[1];
-            t[9] = w + uv[3];
-            t[10] = u;
-            t[11] = w + uv[3];
+            t[0] = u + uv[1];
+            t[1] = w;
+            t[2] = u + uv[1];
+            t[3] = w + uv[3];
+            t[4] = u;
+            t[5] = w + uv[3];
             d3s_NumUVs++;
             buf->npolys++;
             p++;
-            t += 12;
+            t += 6;
             u += uv[1];
         }
         w += uv[3];
