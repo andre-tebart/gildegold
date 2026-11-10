@@ -47,6 +47,7 @@ extern char d3s_Byte;
 extern unsigned short * d3s_Dst16;
 extern int d3s_SpanLen;
 extern int d3s_Fill;
+extern float ai_FloatZero;  /* 0x5eb788, the shared 0.0f (cm.c) */
 extern int dd_PitchPixels;                      /* 0x14661a0 */
 extern int dd_Pitch;                       /* 0x1463588 */
 extern void *dd_Surface;                 /* 0x1463590 */
@@ -243,12 +244,24 @@ void d3s_DrawSpans(int rows, int w, unsigned char flags, char top, int y0)
     }
 }
 /* 0x45a2e0, a shadow triangle: edges from the three points p (x, y pairs), colours c, radius pixels / rows around
-   @deep Read in full against 0x45a2e0..0x45a66a: the orientation test, both edge loops (reversed with the
-   p+4 / p+5 / c+2 walking pointers, forward indexed), the flag masks, the top-vertex edge choice (e / b /
-   d / l over d3_TriEdge), the colour gradient d3s_Area (65536 / area * (dc0 * (p5 - p3) - dc2 * (p1 -
-   p3)), inline FtoI), both span passes with their left / right edges; every statement, call and argument
-   agrees (ours 0x169 ins vs the original's, size 906 vs 905). Left: allocation - in the edge choice the
-   original keeps d in [esp+0x1c], b in ebx, e in esi and l in ecx ('+ mov ebx,[eax*8+TriEdge+4] / mov
+   @stuck area == ai_FloatZero now (M10 fixed: the original compares against the pooled cm.c datum).
+   headers sample: insensitive (one codegen). Left: the edge-choice webs - original b ebx / e esi / d
+   spilled to p's dead slot [esp+0x1c] / l ecx, ours b spilled / d esi / e ebx (VC6 then reloads b into ebp
+   once minY dies); y reuses minY's ebp in the original (add ebp,0xffff; sar) and y+n is an add ebp,edi
+   before the if (left). Tried (dcp try, all draft): arm statement orders 20 combos (b/d/e/l order, d = l =
+   t, l = d = t) = control; t reused as d like d3s_ShadowPoly (b; l = t; t = e; e = TriEdge[t][0]) 148 ins;
+   y as minY = control; y += n before/after 133-141 ins; n ternary forms (+0xffff in both arms, n -= y)
+   139; second pass DrawSpans inline per arm 153+ (frame 0xc); block scope for b/d/e/l/y/n/left and 24
+   declaration orders = control; reference-count probes (if (left) as the compare 141, > vs - > 0 forms
+   130-132, != operands swapped 131, left before ShadowRadius store 127, all combined 121 ins but these
+   respell the original's sub/test shapes, not the spill). Next: find why VC6 ranks d over b (region-based
+   spill?), e.g. with toyasm.py on a reduced edge-choice + two-call tail (tiebreak: insensitive) prior:
+   Read in full against 0x45a2e0..0x45a66a: the orientation test, both edge loops (reversed with the p+4 /
+   p+5 / c+2 walking pointers, forward indexed), the flag masks, the top-vertex edge choice (e / b / d / l
+   over d3_TriEdge), the colour gradient d3s_Area (65536 / area * (dc0 * (p5 - p3) - dc2 * (p1 - p3)),
+   inline FtoI), both span passes with their left / right edges; every statement, call and argument agrees
+   (ours 0x169 ins vs the original's, size 906 vs 905). Left: allocation - in the edge choice the original
+   keeps d in [esp+0x1c], b in ebx, e in esi and l in ecx ('+ mov ebx,[eax*8+TriEdge+4] / mov
    [esp+0x1c],esi / mov esi,[esi*8+TriEdge] / mov ecx,eax'), ours keeps b in the slot and d in esi, which
    renames every later EdgeY index and the d3s_DrawSpans / d3s_RightEdge pushes (+0x15b..+0x37e); the
    orientation pointers in ebx vs ours edx; reordering the declarations does not move it. */
@@ -310,7 +323,7 @@ void d3s_ShadowTriangle(float *p, unsigned char *c, unsigned char *dst, int pitc
                 }
             }
             area = (p[0] - p[2]) * (p[5] - p[3]) - (p[4] - p[2]) * (p[1] - p[3]);
-            if (area == 0.0f)
+            if (area == ai_FloatZero)
                 d3s_Area = 0;
             else
                 d3s_FtoI(&d3s_Area, 65536.0f / area * ((float)(c[0] - c[1]) * (p[5] - p[3]) - (float)(c[2] - c[1]) * (p[1] - p[3])));
@@ -891,7 +904,6 @@ char d3s_MeshFromMap(int *rect, int stride, unsigned char *map, float *origin, f
     }
     return 1;
 }
-extern float ai_FloatZero;  /* 0x5eb788, the shared 0.0f (cm.c) */
 extern const float ai_FloatOne;  /* 0x5eb780, the shared 1.0f (bio.c) */
 
 /* 0x45b8d0, adds the shadow of slot to the shadow object. The slot copies are parenthesized: VC6 then copies the
