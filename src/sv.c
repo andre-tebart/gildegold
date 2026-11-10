@@ -5481,15 +5481,8 @@ void sv_SpeakPicked(void)
 /* 0x52cef0, frees the speech bubbles shown more than 300 ms ago and draws the others as text boxes (font 0x54, 0xa0 x 0x60)
    above the screen box of their character's body (its low-poly body while the body is hidden, type 1), for the
    characters of the current scene; the text is the bubble's own or the d2_Strings line
-   @deep read whole against the original: the expiry loop (time + 300u unsigned against d3_Time), the
-   draw loop with the body / low-poly body screen box (two ScreenBox calls, cross-jumped as in the
-   original), the two DrawTextBox calls (own text / d2_Strings), AddDirty; instruction count 91/92. Left:
-   the draw loop's induction pointer is sv_Bubbles+0xc (name) in ours, +8 (ch) in the original (mov
-   eax,[ebx-4] vs [ebx]; mov al,[ebx] vs mov cl,[ebx+4] / lea eax,[ebx+4]), d3_Time hoisted out of the
-   expiry loop in ours (0x52cef0) and loaded per entry in the original (0x52cf00), d2_ScreenSurf loaded
-   before the text branch in ours. Tried: a SVBUBBLE pointer per entry, a pointer walk (counter loop:
-   worse), a text pointer variable, a ternary condition: same or worse. d2_AddDirty is K&R in sv's head
-   (Open: d2.h unsettled), M7 stays open. */
+   (the body tests read the record's ch again, not the local: VC6 then walks the records by ch, as the
+   original) */
 
 void sv_DrawBubbles(void)
 {
@@ -5505,10 +5498,10 @@ void sv_DrawBubbles(void)
     d2_SetFont(0x54);
     for (i = 0; i < 0x40; i++) {
         ch = (CHARACTER *)sv_Bubbles[i].ch;
-        if (ch == 0 || ch->obj->scene != d3_DefaultScene)
+        if (ch == 0 || ((CHARACTER *)sv_Bubbles[i].ch)->obj->scene != d3_DefaultScene)
             continue;
-        if (ch->obj->type != 1) {
-            if (d3if_ScreenBox(ch->obj, &box) == 0)
+        if (((CHARACTER *)sv_Bubbles[i].ch)->obj->type != 1) {
+            if (d3if_ScreenBox(((CHARACTER *)sv_Bubbles[i].ch)->obj, &box) == 0)
                 continue;
         } else {
             low = ch->lowPolyBody;
