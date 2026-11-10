@@ -433,3 +433,14 @@ mechanisms, each as a generated round over all positions / subsets:
   cross-jumps equal statement pairs (also in break-form cases); writing some sites as `w = 2; x = kind[w]; return w`
   keeps them apart, but the copies then reload kind[2] instead of the register-cached value (ai_PokerShowdown
   230 -> 195, stuck).
+- **Find-then-copy with `cmp i,N; jl <copy>` and a second `xor eax,eax; ret` after the loop's own `return 0`**: the
+  original is `for (i = 0; i < N; i++) if (t[i].k == k) break; if (i >= N) return 0; *out = t[i]; return 1;`.
+  VC6 threads the loop's normal exit to its own return and keeps the recheck on the break path; the in-loop
+  `if (i >= N) break/return 0` forms merge the returns (amt_GetFirstOffice, amt_GetOffice: byte).
+- **An out parameter that the original spills to its home slot at loop entry (`mov eax,[out]; mov [out],eax`) and
+  bumps by the record size after the copy**: write `out[n] = rec; n++;` instead of `*out = rec; out++; n++;`;
+  VC6 strength-reduces the index into the spilled pointer (amt_GetColumnOfficesOwned 28 ins -> byte).
+- **An else-if chain that re-tests a byte (`test cl,cl; je`) with its health in `dl`**: the condition was written
+  flat, `if (a && a->h > 0 && b && b->h > 0) .. else if (a && a->h != 0) ..`; the second test's `je` (not `jbe`)
+  is the `!= 0` spelling. Wait loops `while (r != -1 && cm_GetSlotState(r) == 0) sv_PumpNet();` stay unrotated
+  (amt_CheckOfficeColumns 16 ins -> byte).
