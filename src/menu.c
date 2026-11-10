@@ -565,7 +565,26 @@ char *_itoa(int value, char *buf, int base); /* 0x5e56c4, the library's integer 
    money and difficulty (the texts 0x1cc5 / 0x1cc6, the difficulty name 0x14413f0). A second pass over
    the 16 records gives every still free slot an empty-slot caption ("Slot %i" 0x14414e0), the screen
    image 0x766320 and the text 0x1cc7. Returns nothing.
-   @deep body written from tools/disasm 0x5d3ab0 (the .SAV listing, the ls_ReadSaveHeader header, ai_RegisterSaveSlot, the child window + caption + the texts 0x1cc5 / 0x1cc6 with the difficulty name 0x14413f0, the second pass with the empty-slot name 0x14414e0 and 0x1cc7) and the meaning matches: the 121 differing instructions of 5 regions are regalloc / scheduling only - the loop prologue order (ebp=0x54, cmp/jle, the rec spill), the io_PrintText arg computation (our lea folding vs the original add/add; the select in ecx vs edx), the memset(&req) / format-load order, the d2_SetForm argument registers (eax/ecx vs ecx/edx) and the d2_Wins index / name pointer pair (edx/ecx swapped). Tried this session: the select polarity was a real meaning bug ((compact ? N : 0) + base, fixed), the loop as for/while over the parameter itself (157 hunks, worse, reverted), the strcpy pointer loop (matches); spell.py: order, reload, dup-tail - the reload offsets are the reused locals of the two passes */
+   @stuck match-deep 57: draft 103 -> shape 4 ins. Kept: the text bases as one select each ((compact ?
+   0x27b : 0x253) + offset; the (compact ? 0x28 : 0) + 0x253 + offset spelling folds into one lea: 99 ins
+   of the diff), the meaning fix (the 0x130 offset is hdr+0x60, not +0x5c), the list walked as SAVEREQUEST
+   *rec (same code). headers sample: insensitive. Left order 8 / 4 ins at the file loop's entry: the
+   original xor ebx,ebx; mov ebp,0x54; cmp eax,ebx; jle; mov [esp+0x10],edi (rec spill); mov
+   [esp+0x14],eax, ours spills rec before the cmp (mov [esp+0x10],edi; cmp; mov ebp,0x54; jle). Tried: rec
+   = files before ai_ListFiles / as its argument (14 ins), rec initialised at the declaration (93), the
+   files parameter itself as the cursor (16), an index loop (137), if (n > 0) around a do-while (19-22) or
+   the for (5, code 11), n-- > 0 / 0 < n / n >= 1 / update order / the clamp as min() or >= (6) or in the
+   call's if, --move-line of rec and n over every declaration slot (all = control), (void)reserved dropped
+   (= control). (tiebreak: insensitive) prior: body written from tools/disasm 0x5d3ab0 (the .SAV listing,
+   the ls_ReadSaveHeader header, ai_RegisterSaveSlot, the child window + caption + the texts 0x1cc5 /
+   0x1cc6 with the difficulty name 0x14413f0, the second pass with the empty-slot name 0x14414e0 and
+   0x1cc7) and the meaning matches: the 121 differing instructions of 5 regions are regalloc / scheduling
+   only - the loop prologue order (ebp=0x54, cmp/jle, the rec spill), the io_PrintText arg computation (our
+   lea folding vs the original add/add; the select in ecx vs edx), the memset(&req) / format-load order,
+   the d2_SetForm argument registers (eax/ecx vs ecx/edx) and the d2_Wins index / name pointer pair
+   (edx/ecx swapped). Tried this session: the select polarity was a real meaning bug ((compact ? N : 0) +
+   base, fixed), the loop as for/while over the parameter itself (157 hunks, worse, reverted), the strcpy
+   pointer loop (matches); spell.p... */
 void ai_FillSaveSlots(int view, int form, SAVESLOTVIEW *slots, char *files, char *dir, int reserved)
 {
     SAVEHEADERVIEW hdr;

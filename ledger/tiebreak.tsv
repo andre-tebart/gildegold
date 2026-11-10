@@ -4603,7 +4603,7 @@ exe	0x005d33b0	ai_ListFiles	unk_5d33b0	cba86f8009092a17	no	byte	control=byte p1=
 exe	0x005d34b0	ai_FilePickWindow	unk_5d33b0	0ed2e4727feb6df1	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
 exe	0x005d3810	ai_MessageBox	unk_5d33b0	7bfefcab4731f163	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x005d3a00	ai_RegisterSaveSlot	menu	0830de1f5d9e7dd0	no	shape	sample n=32 seed=1 compiled=32 codegens=1 best=shape
-exe	0x005d3ab0	ai_FillSaveSlots	menu	1495f7a390c81ffa	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
+exe	0x005d3ab0	ai_FillSaveSlots	menu	b7a1bb2c48f4b6e4	no	shape	sample n=32 seed=1 compiled=32 codegens=1 best=shape
 exe	0x005d4080	ai_LoadGameWindow	unk_5d33b0	9c66ec0e64da3a95	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
 exe	0x005d42b0	ai_JoinGameWindow	unk_5d33b0	22f3bba8984d6cab	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
 exe	0x005d44c0	ai_EditText	unk_5d33b0	87d5a6e21fc95cd1	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
