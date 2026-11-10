@@ -5,11 +5,11 @@
    0x62d6bc and the subject changes from the action records of the table 0x62c420 to the screens. End: the
    end of the game code (the last function 0x5dd100 returns at 0x5dd3d6, nop fill to 0x5dd3e0); dinput.lib's
    c_dfDIKeyboard / c_dfDIMouse object tables follow, library data (config/symbols/game_range.toml).
-   Open: d2.h is not included yet: the unit's own declarations of d2_StartFade / d2_ReleaseFade / d2_WinOpenPic /
+   Open: d2.h is not included yet: the unit's own declarations of d2_StartFade / d2_ReleaseFade /
    d2_ScreenSurf / d2_Inputs / d2_LockSurface / d2_UnlockSurface disagree with d2.h's, so the unit reads the d2
    records through local views (D2INPUTVIEW, D2FADEVIEW, D2SURFVIEW ...).
    Open: not included yet (dcp headers conflicts menu HEADER): ch.h cm.h d2.h d3_int_io.h gfx.h; held by
-   own declarations that differ from the owner's: d2_StartFade, d2_ReleaseFade, d2_WinOpenPic, d2_ScreenSurf,
+   own declarations that differ from the owner's: d2_StartFade, d2_ReleaseFade, d2_ScreenSurf,
    d2_Inputs, d2_LockSurface, d2_UnlockSurface, ch_List, d3io_Lod.
    Data: the four floor option bytes 0x6f35c8 .. 0x6f35cb are objects of their own (ai_GfxFloor, ai_GfxCameraLimits,
    ai_GfxFloorLod, ai_GfxCharDetail): ai_ApplyGfxOptions reads 0x6f35c9 as a byte (mov al, byte ptr) where a union gives a dword load.
@@ -494,7 +494,7 @@ extern int ls_Version;                      /* 0x623650, ls.c: the version of th
 int ls_ReadSaveHeader(int f, int *h);      /* 0x51cee0, ls.c: reads a save header into h (no header there) */
 int d2_CreateChildWindow(short x, short y, short w, short h, unsigned int flags, int win); /* 0x472aa0, d2.h */
 int d2_WinOpenRaw(int x, int y, int w, int h, void *src, int win);  /* 0x46c390, d2.h */
-int d2_WinOpenPic(int x, int y, int pic, int win); /* 0x4731d0, d2.h: creates a picture object; @original the original call at 0x5d7f52 pushes the int arguments (push eax / ebx / edx / 8) against the short-parameter definition */
+int d2_WinOpenPic(short x, short y, int pic, int win); /* 0x4731d0, d2.h: creates a picture object */
 /* ai_EmptySlotNameFormat: view of txt_Ptrs (build/mk_txt_views.py) */
 /* ai_DifficultyTexts: view of txt_Ptrs (build/mk_txt_views.py) */
 extern int d2_HitWindow;                    /* 0xf8aad0, the window the pointer hit (gfx.c sets it from
@@ -2348,12 +2348,11 @@ void d2_SetCaption(int obj, char *text);           /* 0x473540, d2.h: sets the c
    0x677c7)) until the pump returns 0; a mouse event / the key 1 closes it (sv_PopRequest 0x6f22a0)
    after every row's checkbox state has been written back into the filter mask
    (he_SetMessageKindFiltered 0x575710, checked = not filtered), and d2_CloseView 0x4758f0 frees the
-   view. Void.
-   @deep meaning matches (read against build/ghidra/5d7f10.c and the disassembly 0x5d7f10..0x5d8098: the nine checkbox rows, the mask get/set, both loops and the close path are the same statements); readable done (Q1-Q7). The 77 code hunks are VC6's induction-variable strength reduction - ours turns 'i * 0x1c + 10' and 'i + 0x605' into incremented IVs (mov ebp,0x605 / mov [esp+0x10],0xa / add esi,0x1c / add ebx,4) where the original recomputes the lea chain per iteration (lea ecx,[ebp*8]; sub ecx,ebp; lea edx,[ecx*4+0xa]) - plus the stack frame (ours 0x2c vs the original 0x44: the original spills wnd at [esp+0x10] and re-reads it before d2_CloseView, ours keeps it in a register; rows[i] at [esp+0x14]). tools/spell.py: no menu rule on the code hunks; the three reload leads read as that same slot allocation (keep the value in a local / drop the local re-read) - register/slot/IV allocation is match-deep's toolbox */
+   view. Void. */
 void ai_MessageFilterScreen(void)
 {
     int wnd, pump, i, id;
-    int rows[9];
+    int rows[16];                       /* the nine checkbox rows (the frame holds 16) */
 
     wnd = d2_OpenForm(0, 0, "menu\\messagefilter");
     d2_CentreViewWindows(wnd);
