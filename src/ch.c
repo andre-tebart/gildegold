@@ -1993,7 +1993,32 @@ int ch_TakeObject1(CHARACTER *ch, char *name, D3OBJECT *obj, int frame)
     }
     return 0;
 }
-/* 0x405fb0, action callback: plays a->u.name and drops the object at frame args[0] @deep behaviour: the only meaning-class hunk left is 406050 (7 instr): the original reloads a->ch ([esi+0x14]) into ecx for the ch_SetHandObject call inside the frame check, ours forwards the entry local ch (edi); the other two ch_SetHandObject sites reload a->ch in both sides. Same statements and call arguments (read against 405fb0..4060d7). Tried this session: source already passes a->ch (spell reload prescription 'drop the local, re-read the source expression'; the local is required for ch->next/ch->slot/ch_AnimDone), an explicit ch = a->ch; before the call (optimised away, byte-identical 85/272), and the spell push-pop/dup-tail hunks at 406083/4060c3 are regs/order consequences of the same load. Previous attempts: shared unk080 re-test, count re-test, raw offsets, inline helper, first flag, slot local, no ch local. Needs vargen/alias forms. Readability advanced: CHARACTER.unk064 named rightHand (0x64, ch_SetHandObject hand 2, ch_SetVisible), CH_SLOT/CH_UNK080 replaced by ch->slot/ch->next, Q4 clean. Q2: CH_ACTOBJ.data[3] is the action's int payload now, its per-action meanings in its comment (gate: scene / group / scriptGroup; take / drop: the animation it started). */
+/* 0x405fb0, action callback: plays a->u.name and drops the object at frame args[0]
+   @stuck headers sample: insensitive (32 samples, one codegen). The one real hunk is 406050: the original
+   reloads a->ch for the frame-check ch_SetHandObject, ours forwards ch (edi); the later regs hunks
+   (406086, 406095) are the scratch-register rotation that one extra temp gives. Proven: any join with a
+   call on one path before the frame check gives the reload (sepcount: count==0 block falls through to a
+   shared ch->next test and a second a->count test: 6 ins, the frame check matches, only the re-test and
+   the lost second ch->next copy differ). No form found that joins without leaving a test: flag set in the
+   count==0 block and tested after the join = control (VC6 threads it before CSE); flag tested after the
+   shared ch->next test = 15 ins (not threaded); int n = a->count local re-test 24 ins (n in ebx, not
+   threaded). = control: (CHARACTER *)*(int *)&a->ch at entry or call, char*+0x14, ch assigned late / in
+   both arms, a->ch->next/slot without local, __inline helpers (InFrame, Busy, Drop), do/while(0), for(;;)
+   break, while for if, !ch->next nesting, buf block scope. a->args[0] <= frame: 25 ins. Open: a source
+   shape where the count==0 path joins the count!=0 path after a call and VC6 later duplicates the ch->next
+   test. (tiebreak: insensitive) prior: behaviour: the only meaning-class hunk left is 406050 (7 instr):
+   the original reloads a->ch ([esi+0x14]) into ecx for the ch_SetHandObject call inside the frame check,
+   ours forwards the entry local ch (edi); the other two ch_SetHandObject sites reload a->ch in both sides.
+   Same statements and call arguments (read against 405fb0..4060d7). Tried this session: source already
+   passes a->ch (spell reload prescription 'drop the local, re-read the source expression'; the local is
+   required for ch->next/ch->slot/ch_AnimDone), an explicit ch = a->ch; before the call (optimised away,
+   byte-identical 85/272), and the spell push-pop/dup-tail hunks at 406083/4060c3 are regs/order
+   consequences of the same load. Previous attempts: shared unk080 re-test, count re-test, raw offsets,
+   inline helper, first flag, slot local, no ch local. Needs vargen/alias forms. Readability advanced:
+   CHARACTER.unk064 named rightHand (0x64, ch_SetHandObject hand 2, ch_SetVisible), CH_SLOT/CH_UNK080
+   replaced by ch->slot/ch->next, Q4 clean. Q2: CH_ACTOBJ.data[3] is the action's int payload now, its
+   per-action meanings in its comment (gate: scene / group / scriptGroup; take / drop: the animation it
+   started). */
 
 void ch_ActDroppingObject(CHACTION *a)
 {

@@ -89,7 +89,7 @@ exe	0x00405cb0	ch_UseGate	ch	ad2768989abd8a95	no	byte	control=byte p1=byte p2=by
 exe	0x00405d40	ch_ActTakingObject	ch	717710b0a067f583	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00405e70	ch_TakeObject	ch	f1fe4d8eef5ce14a	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00405f10	ch_TakeObject1	ch	ed98bcd823d387ae	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x00405fb0	ch_ActDroppingObject	ch	087533fca2f8c157	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x00405fb0	ch_ActDroppingObject	ch	087533fca2f8c157	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x004060d0	ch_DropObject	ch	ef7640da4878888f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00406170	ch_DropObject1	ch	492c266904c2d630	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00406210	ch_ActTurnTo	ch	a03e8327d3517cc5	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
