@@ -1941,7 +1941,8 @@ int ai_SaveNameWindow(int image)
    options menu 0x5d7770 and main.c.
    Text slots (txt_Ptrs 0x1c67 ..): the labels of the nine controls 0x1c67 .. 0x1c6f, the item lists 0x1c70 .. 0x1c75 and
    0x1c7b / 0x1c7c, the two buttons 0x1ca2 / 0x1ca3 (read off the original's loads, not named by the text files).
-   The resolution default reads ids[1] before sv_ButtonRow has filled it (the original does the same). @deep body reconstructed from the disassembly (nine controls of view 1, ids[2] row, ok/cancel copies, apply read-back in the original order, resolution change path); 449 = 449 instructions, ONE hunk of 6 differing instructions left at 0x5d60c5: the original stores the obj8 d2_GetWinObj result at once (mov [esp+0x50],eax) and reads the dd_Has1024x768 flag into al (mov al,[flag]; add esp,0x30; test al,al; mov eax,1), ours keeps eax live, reads the flag into cl and stores obj8 after the cleanup (mov [esp+0x20],eax). Tried: declaration order of obj7/obj8, ids[2] vs ids[4] (ids[4] fixes the frame 0x30 -> 0x38), mode from a separate uninit local vs ids[1] (the original reads the uninitialised slot of the second id), 'if (flag == 0)' forms. Allocation / scheduling only. */
+   @original without the 1024x768 mode the resolution default is dflt, never assigned: the original reads an
+   uninitialised stack slot there. */
 
 void ai_OptionsGfxScreen(void)
 {
@@ -1973,8 +1974,9 @@ void ai_OptionsGfxScreen(void)
     obj6 = d2_GetWinObj(form, 1, 6);
     obj7 = d2_GetWinObj(form, 1, 7);
     obj8 = d2_GetWinObj(form, 1, 8);
-    mode = 1;
-    if (dd_Has1024x768 == 0)
+    if (dd_Has1024x768 != 0)
+        mode = 1;
+    else
         mode = dflt;
     if (dd_Has1152x864 != 0)
         mode = 2;
