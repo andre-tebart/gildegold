@@ -2616,7 +2616,7 @@ exe	0x004e5af0	ai_Unk4e5af0	cm	5ca9fdc36eb7353d	no	byte	control=byte p1=byte p2=
 exe	0x004e5b50	ai_Unk4e5b50	cm	c214eed8bdd6ecea	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004e5bf0	ai_DebugDumpPerson	cm	fab77fd3c2e0cbeb	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004e5cd0	amt_InitTable	amt	d8f9efb0c4e8db5f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x004e5e50	amt_Rating	amt	6ac6623b72f5983d	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
+exe	0x004e5e50	amt_Rating	amt	1282ffa091da850b	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x004e6030	amt_FindOffice	amt	c395e1ba23510d09	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
 exe	0x004e60b0	amt_GetOfficeRate	amt	2bbc0436242d1a4d	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004e6180	amt_ApplyForOffice	amt	b9f0c40b9892fb18	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft

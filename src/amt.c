@@ -108,19 +108,25 @@ void amt_InitTable(void)
    columns) and 0x5edef0 (5 rows, an int status key, 9 columns) by the rank (amt_KindColumn, 1 .. 6: b's for 0x5edc90, a's for 0x5edef0) and the status bits +0x1cc (0x400 .. 0x2000, 0x200 give the keys
    0x24 .. 0x27, 0x23); mode (>= 2: plus the absolute value of the entry, >= 3: plus 10.0); with flag the friendship value of amt_GetKind / 0x4f2720 is taken off
    (a = b's party: added, mode 2: times 0.75)
-   @deep Read whole against the original and fixed: the table ids are compared as ints (mov ecx,[esi] / cmp
-   eax,ecx; the TabA search calls gm_TitleGroup per row and compares it with AMT_BITS), both table searches
-   are for loops with the hit's body inside and a break (a miss leaves r untouched, the old code read the
-   row after the end), a's status test is & 0x3c00 then the 0x200 key (the old 0x3e00 mask came from a
-   merged condition), and the flag block's locals are the original's: the AMTKIND at [esp+0x14] with the
-   AIDEC of record 2 right after it at [esp+0x2c] (the old 0x40-byte buffer took the AIDEC at +0x20, ran 4
-   bytes past its end over the return address and crashed; frame now 0x40 like the original). Left,
-   unchanged by goto / break-then-test / assignment-in-condition variants: VC6 folds our akey (= 0x200 ?
-   0x23 : 0) into the 0x3c00 test (ours test ah,0x3e / jne, the original test ch,0x3c / jne then
-   and/neg/sbb/and 0x23 stored to [esp+0x54], a's dead home slot), places the TabA hit block after the
-   status chain (je at +0x4f: ours to +0x73, the original's to +0x5f), keeps r at [esp+0x10] where the
-   original keeps it in b's home slot [esp+0x58], and holds mode / a in other registers (mode in edi vs
-   reloaded from [esp+0x5c], a reloaded where the original keeps it in edi). */
+   @stuck Fixed first (own commit): the amt_TabB column is a's rank (mov cl,[edi+0x166], edi = a). Then 105
+   -> 14 ins: a's status key written as the full five-way chain like b's (VC6 folds it to test ch,0x3c and
+   keeps the 0x23 store to a's dead slot [esp+0x54], as the original), r = 0 after the amt_KindColumn call
+   (r moves to b's dead slot [esp+0x58]), and the TabA search as break-then-if (i < 15). Left: mode is
+   enregistered in our tail (esi: cmp esi,3 / cmp esi,2 / test esi,esi) where the original reads [esp+0x5c]
+   each time, and the hit edge keeps cmp edi,0xf / jge. Probe: with mode forced to memory (a static pointer
+   to &mode, not kept) the hit-inside-loop form (for + if { hit; break; }) gives exactly the original's
+   layout (hit block inline after jmp, tmp at [esp+0x10]), so the original is that form and only mode's
+   register priority is left. No lever on mode: declaration order (20 permutations, = control), i or k
+   reused for the TabB loop, !mode, else-if, early return on !flag, unsigned casts, the fl ternary / else
+   spellings, do-while / flag / goto / continue loop forms (all = the hit-inside layout with mode in ebx,
+   29 ins). Headers sample: insensitive. (tiebreak: insensitive) prior: Read whole against the original and
+   fixed: the table ids are compared as ints (mov ecx,[esi] / cmp eax,ecx; the TabA search calls
+   gm_TitleGroup per row and compares it with AMT_BITS), both table searches are for loops with the hit's
+   body inside and a break (a miss leaves r untouched, the old code read the row after the end), a's status
+   test is & 0x3c00 then the 0x200 key (the old 0x3e00 mask came from a merged condition), and the flag
+   block's locals are the original's: the AMTKIND at [esp+0x14] with the AIDEC of record 2 right after it
+   at [esp+0x2c] (the old 0x40-byte buffer took the AIDEC at +0x20, ran 4 bytes past its end over the
+   return address and crashed; frame now 0x40 like the original). */
 
 float amt_Rating(char *a, char *b, int mode, int flag)
 {
@@ -132,16 +138,17 @@ float amt_Rating(char *a, char *b, int mode, int flag)
     int k, i, key, akey, n;
     unsigned int f2;
 
-    r = 0.0f;
     k = amt_KindColumn((unsigned char)b[0x166]);
+    r = 0.0f;
     if (k > 0 && k < 7) {
         for (i = 0; i < 15; i++) {
-            if (gm_TitleGroup((unsigned char)a[0x164]) == AMT_BITS(&amt_TabA[i * 10])) {
-                r = amt_TabA[i * 10 + k + 1];
-                if ((unsigned int)mode >= 2)
-                    r = r + (float)abs((int)amt_TabA[i * 10 + k + 1]);
+            if (gm_TitleGroup((unsigned char)a[0x164]) == AMT_BITS(&amt_TabA[i * 10]))
                 break;
-            }
+        }
+        if (i < 15) {
+            r = amt_TabA[i * 10 + k + 1];
+            if ((unsigned int)mode >= 2)
+                r = r + (float)abs((int)amt_TabA[i * 10 + k + 1]);
         }
     }
     f2 = AMT_STATUS(b);
@@ -156,16 +163,23 @@ float amt_Rating(char *a, char *b, int mode, int flag)
     else
         key = (f2 & 0x200) ? 0x23 : 0;
     if (key != 0) {
+        /* a's own status key: only an a without one gets b's entry from amt_TabB */
         f2 = AMT_STATUS(a);
-        if ((f2 & 0x3c00) == 0) {
-            /* a's own status key (only 0x23 is left possible): a without status gets b's from amt_TabB */
+        if (f2 & 0x1000)
+            akey = 0x26;
+        else if (f2 & 0x2000)
+            akey = 0x27;
+        else if (f2 & 0x800)
+            akey = 0x25;
+        else if (f2 & 0x400)
+            akey = 0x24;
+        else
             akey = (f2 & 0x200) ? 0x23 : 0;
-            if (akey == 0) {
-                for (n = 0; n < 5; n++) {
-                    if (AMT_BITS(&amt_TabB[n * 10]) == key) {
-                        r = r + amt_TabB[n * 10 + amt_KindColumn((unsigned char)a[0x166]) + 1];
-                        break;
-                    }
+        if (akey == 0) {
+            for (n = 0; n < 5; n++) {
+                if (AMT_BITS(&amt_TabB[n * 10]) == key) {
+                    r = r + amt_TabB[n * 10 + amt_KindColumn((unsigned char)a[0x166]) + 1];
+                    break;
                 }
             }
         }
