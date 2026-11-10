@@ -438,6 +438,12 @@ mechanisms, each as a generated round over all positions / subsets:
 - `push 0xff` needs an `unsigned char` parameter. A callee returning in al whose result is passed on is
   `unsigned int` (with `unsigned char` VC6 adds `and eax,0xff`).
 - Copy vectors field by field (loads first, then stores); a struct assignment gives pointer copies.
+- **`and edx,0x28; add edx,0x253; add edx,ecx` where ours folds `lea edx,[edx+ecx+0x253]`**: the original
+  selected the base itself, `(c ? 0x27b : 0x253) + off`; `(c ? 0x28 : 0) + 0x253 + off` lets VC6 fold the
+  constant into the lea and reshuffles every register around it (ai_FillSaveSlots 103 -> 6 ins).
+- **A call to a trivial same-unit function sunk to its use** (the original calls it first and keeps the result
+  in edx across another known call): VC6 knows the callee, so plain, cast and `(*f)()` calls all sink; only a
+  call through a local function pointer stays put (ai_InitShot 80 -> 12 ins; needs an @original comment).
 - `memset(&s, 0, n)` vs separate `= 0` stores: separate stores keep a zero register live for the whole function.
 - **`mov eax, edi` (a copy of a constant register) then `mov [g], eax` runs** is an inline memset: VC6 expands a
   small constant `memset(a, 0xff, 20)` into dword stores of eax (copied from the register that already holds -1)
