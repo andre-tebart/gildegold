@@ -131,14 +131,13 @@ VFSENTRY *vfs_FindEntry(char *name, VFSDIR *d, VFSDIR **found, char recurse)
     return 0;
 }
 /* 0x42ef10, adds a file to a directory: to the node list while it is being filled, else into the sorted
-   entries. Of two files with the same name the newer one (or the one with the lower extension index) wins.
-   @deep behaviour: 41 code hunk lines are register roles (the new entry pointer e and the name copy in eax vs ecx, add eax,ecx vs add ecx,eax, the shared tail's store base eax vs ecx) plus 2 nop fill bytes at the end; every store, load and constant pair agrees, no statement is missing or extra (asmdiff; an earlier round found the same one-register difference for e). Register allocation - deep */
+   entries. Of two files with the same name the newer one (or the one with the lower extension index) wins. */
 
 void vfs_AddFile(char *name, VFSDIR *d, VFSDIR *zip, uLong pos, uLong num, unsigned int ext, uLong date)
 {
     char msg[0x400];
     char path[0x400];
-/* */    VFSNODE *prev = 0;
+    VFSNODE *prev = 0;
     VFSNODE *n;
     VFSDIR *dir;
     VFSENTRY *e, *entries, *old, *dst;
@@ -186,8 +185,9 @@ void vfs_AddFile(char *name, VFSDIR *d, VFSDIR *zip, uLong pos, uLong num, unsig
             } else {
                 len = strlen(name) + 1;
                 d->nentries = 0;
-                e = d->entries = mem_Alloc(len + sizeof(VFSENTRY), "vfs:AddFile(sorted, first)");
-                s = (char *)(e + 1);
+                d->entries = mem_Alloc(len + sizeof(VFSENTRY), "vfs:AddFile(sorted, first)");
+                s = (char *)(d->entries + 1);
+                e = d->entries;
             }
             strcpy(s, name);
             e->name = s;

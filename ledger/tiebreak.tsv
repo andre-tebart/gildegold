@@ -655,7 +655,7 @@ exe	0x0042ed70	vfs_IGetSubDir	vfs	fab4249a58e4d62f	no	byte	control=byte p1=byte 
 exe	0x0042ee10	vfs_CmpName	vfs	c71dd43b5e974b50	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0042ee50	vfs_CmpNameI	vfs	4838b494f2c3defe	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0042ee60	vfs_FindEntry	vfs	e4e953fd7164a03c	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x0042ef10	vfs_AddFile	vfs	84d4f65b932d67aa	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x0042ef10	vfs_AddFile	vfs	84d4f65b932d67aa	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x0042f4d0	vfs_AddFilePath	vfs	5ed90652084906a7	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0042f5c0	vfs_CmpEntry	vfs	62cac4a41fc2c11b	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0042f600	vfs_CmpEntryI	vfs	c613620882478695	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
