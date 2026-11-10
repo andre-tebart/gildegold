@@ -1223,7 +1223,25 @@ int d2_GetSurfaceDesc(D2SURF *s, DDSURFACEDESC2 *desc)
     desc->dwSize = 0x7c;
     return s->DDSurface->lpVtbl->GetSurfaceDesc(s->DDSurface, desc) == 0;
 }
-/* 0x479150, copies the part (sx, sy, w, h) of src to (x, y) of dst, clipped to both; mode 1: with the colour key @deep B3 far draft: 223 code hunks (681/816 bytes, 125 differing instructions of 289). Meaning read against 0x479150..0x47947d: the clip chain (y/dst->top, x/dst->left, sy/src->top, sx/src->left, then the four bottom/right clamps), so/d from bpp>>3 and rowbytes, the manual memcpy path when a surface lacks a DirectDraw surface or manualBlit is set, the Blt with DDBLT_WAIT / DDBLT_WAIT|DDBLT_KEYSRC, the 0x80004001 fallback that marks both surfaces manualBlit and memcpies, and the lock restore at the end - no meaning error. What differs is register/slot assignment and scheduling: the original keeps dst in ebx, src in ebp and y in edx, hoists the first sy/top load before the cmp and keeps sy/h in slots 0x3c/0x44; ours swaps those roles, reorders the loads and splits so/d differently. spell.py: cmp-test at 0x479430 tried (branch polarity dstLocked: the original is 'if (dstLocked != 0) Lock else Unlock', source flipped - kept, 225 -> 223 code hunks); the dup-tail entries at 0x479162 / 0x4792c6 / 0x47947a are the load/store scheduling of the clip blocks and of so/d (the source has no shared tail to pull), no concrete source form left. Readability done: Q1 named (blits a clipped part of a surface with optional colour key and manual fallback), Q2 D2SURF.unk3c -> manualBlit (set when the hardware Blt returns 0x80004001, checked to force the memcpy path), Q3 0x1000000/0x1008000 -> DDBLT_WAIT / DDBLT_WAIT|DDBLT_KEYSRC. */
+/* 0x479150, copies the part (sx, sy, w, h) of src to (x, y) of dst, clipped to both; mode 1: with the colour key
+   @stuck draft -> shape, 117 -> 16 ins (match-deep 2026-11-10). Won: RECT fill order rs.top, rs.bottom,
+   rs.left, rs.right, rd.right, rd.bottom, rd.left, rd.top (40320-order permute of the 8 stores, best of
+   5865 codegens); if (h <= 0 || w <= 0) instead of < 1 (test/jle); dstLocked = dst->locked before
+   srcLocked (the src->locked load sits before the d store). Left: the two memcpy loops (8 ins each): the
+   original forms bs as rowbytes*i + bits (mov edx,[ebp+0x1c]; add esi,edx) then + so (add esi,edi), ours
+   rowbytes*i + so then bits through edi (add esi,edi; mov edi,[ebp+0x1c]; add esi,edi). No lever (all =
+   control): 6x6 term orders / parenthesizations of bs and bd, memcpy with the expressions inline, (char *)
+   casts, the 6 orders of len/bs/bd, block-scoped len/bs/bd (and i: worse), so/d unsigned. headers sample:
+   insensitive (32 samples, one codegen). (tiebreak: insensitive) prior: B3 far draft: 223 code hunks
+   (681/816 bytes, 125 differing instructions of 289). Meaning read against 0x479150..0x47947d: the clip
+   chain (y/dst->top, x/dst->left, sy/src->top, sx/src->left, then the four bottom/right clamps), so/d from
+   bpp>>3 and rowbytes, the manual memcpy path when a surface lacks a DirectDraw surface or manualBlit is
+   set, the Blt with DDBLT_WAIT / DDBLT_WAIT|DDBLT_KEYSRC, the 0x80004001 fallback that marks both surfaces
+   manualBlit and memcpies, and the lock restore at the end - no meaning error. What differs is
+   register/slot assignment and scheduling: the original keeps dst in ebx, src in ebp and y in edx, hoists
+   the first sy/top load before the cmp and keeps sy/h in slots 0x3c/0x44; ours swaps those roles, reorders
+   the loads and splits so/d differently. spell.py: cmp-test at 0x479430 tried (branch polarity dstLocked:
+   the original is 'if (dstLocked != 0) Lock else Unl... */
 
 int d2_BlitPartMode(int sx, int sy, int w, int h, D2SURF *src, int x, int y, D2SURF *dst, unsigned char mode)
 {
@@ -1259,12 +1277,12 @@ int d2_BlitPartMode(int sx, int sy, int w, int h, D2SURF *src, int x, int y, D2S
         w = dst->right - x;
     if (w + sx > src->right)
         w = src->right - sx;
-    if (h < 1 || w < 1)
+    if (h <= 0 || w <= 0)
         return 0;
     so = (src->bpp >> 3) * sx + src->rowbytes * sy;
     d = (dst->bpp >> 3) * x + dst->rowbytes * y;
-    srcLocked = src->locked;
     dstLocked = dst->locked;
+    srcLocked = src->locked;
 #ifdef REA_FRAME_DUMP
     if (w > 300)
         REA_DUMP_TRACE((rd_f, "%u BlitPart %dx%d from %d,%d to %d,%d srcbpp=%d dstbpp=%d dd=%d,%d manual=%d,%d mode=%d\n",
@@ -1289,11 +1307,11 @@ int d2_BlitPartMode(int sx, int sy, int w, int h, D2SURF *src, int x, int y, D2S
             d2_UnlockSurface(src);
         rs.top = sy;
         rs.bottom = sy + h;
+        rs.left = sx;
         rs.right = sx + w;
         rd.right = w + x;
         rd.bottom = h + y;
         rd.left = x;
-        rs.left = sx;
         rd.top = y;
         bf = DDBLT_WAIT;
         if (mode & 1)

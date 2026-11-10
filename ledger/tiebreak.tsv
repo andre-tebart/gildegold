@@ -1390,7 +1390,7 @@ exe	0x00478fc0	d2_FreeSurface	gfx	573129a4fa3e08b3	no	byte	control=byte p1=byte 
 exe	0x00479020	d2_LockSurface	gfx	fde1fb21d3dc4560	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004790e0	d2_UnlockSurface	gfx	e667c346a7bd65ed	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00479120	d2_GetSurfaceDesc	gfx	f79d4996c93bc7f3	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x00479150	d2_BlitPartMode	gfx	346da818abd1a926	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x00479150	d2_BlitPartMode	gfx	bc27ed7f28c42fbd	no	shape	sample n=32 seed=1 compiled=32 codegens=1 best=shape
 exe	0x00479480	d2_BlitPart	gfx	e971d73f90246197	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004794c0	d2_BlitPartToDD	gfx	a0154aa4b7af9dad	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x00479610	d2_BlitPartFromDD	gfx	ee6f77a6a80c2561	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
