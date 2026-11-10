@@ -22805,7 +22805,8 @@ int he_SecretRoomDomizil(int bldId, AICHAR *victim)
    original, best > d. Left: the original copies the agent's body position into its locals through the FPU
    (fld/fstp at +0x29..+0x3a) where ours copies the three floats through ecx/edx/eax, and its loop spills
    dx and the loaded z into frame slots (frame 0x24 vs 0x10; the fpu hunks at +0xba / +0xd6); tried floats,
-   a D3VECTOR here / diff, the loads into px/py/pz first: same code. */
+   a D3VECTOR here / diff, the loads into px/py/pz first: same code. match-deep 2026-11-10: the parenthesized
+   copies `here.x = (body->pos.x)` give the FPU copy (draft -> shape, 27 -> 15 ins); the frame / spills are left. */
 AIJOB *he_FindNearestSpying(AICHAR *per, AICHAR *agent, int skip)
 {
     float best = 1.0e7f;
@@ -22819,9 +22820,9 @@ AIJOB *he_FindNearestSpying(AICHAR *per, AICHAR *agent, int skip)
     if (agent->scene == 0)
         return 0;
     body = agent->scene->obj;
-    here.x = body->pos.x;
-    here.y = body->pos.y;
-    here.z = body->pos.z;
+    here.x = (body->pos.x);
+    here.y = (body->pos.y);
+    here.z = (body->pos.z);
     he_FindEvent(1, 0, 0x18);
     for (ev = (AIJOB *)he_FindEvent(1, 0, 0x18); ev != 0; ev = (AIJOB *)he_NextEvent()) {
         if (ev->stage == -1 || ev->stage == -2 || skip == ev->id)
