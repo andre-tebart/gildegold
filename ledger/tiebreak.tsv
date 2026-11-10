@@ -779,7 +779,7 @@ exe	0x0043d690	d3_SetAlpha	d3_engine	5bcfac075a6c5061	no	byte	control=byte p1=by
 exe	0x0043d6c0	d3_AttachToBone	d3_engine	cd237e8ae383ef87	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0043d7c0	d3_TransformSurf	d3_engine	a537142bf58d16f3	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0043d840	d3_TransformMeshes	d3_engine	efa26d289b5d637a	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x0043d860	d3_GetBounds	d3_engine	37a8438ecb677db6	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x0043d860	d3_GetBounds	d3_engine	37a8438ecb677db6	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x0043da00	d3_DeflateObject	d3_engine	cc08888c66ce9239	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0043db30	d3_DeflateScene	d3_engine	2010057ca78e9e7e	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0043dbc0	d3_InflateObject	d3_engine	f5f65435593c4eb9	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft

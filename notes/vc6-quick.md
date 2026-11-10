@@ -350,3 +350,8 @@ mechanisms, each as a generated round over all positions / subsets:
 - unk_575860's ai_TutorialInitChapter2 / 3 flip their register tie-break on the unit's declaration set alone: a
   struct of a new name may cost Chapter2 its byte (keep the container's symbol); the build clears Chapter3's
   @deep note whenever it comes out byte (put it back from git when it falls).
+- **A success flag the original keeps in a callee-saved register** (`xor bl,bl` at entry, every failure exit
+  `mov al,bl`, success `mov al,1`) where ours folds the failures to `xor al,al`: the failures were not early
+  `return`s but nested `if (info && info->mesh) { .. if (box) { ..; ok = 1; } }` with the out-parameter stores
+  under `if (ok) {..}` and one `return ok;` (a `goto done` to that return gives the same code). d3_GetBounds
+  15 ins -> byte; early `return 0` / `return ok` forms all fold.
