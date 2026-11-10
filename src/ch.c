@@ -3416,14 +3416,7 @@ void ch_WalkRotate(CHACTION *a)
         }
     }
 }
-/* 0x4097d0, action callback 0x2d: walks along the path to the cell args[0], args[1] in scene args[2]
-   @deep Read in full against 0x4097d0..0x409bce; all statements and calls line up (ours 319 vs 321),
-   D3OBJ_UNK200 replaced by D3OBJECT.owner. Left: one redundant test the original keeps in the
-   walk-animation start: after 'test byte [eax+0x6d],0x20' fails it re-tests the slot ('+ jne 0x4099d5 /
-   cmp eax,ebx / jne 0x4099e7' where ours has '- je 0x4099e3'), i.e. the third term of !slot ||
-   slot->f6d_20 || !slot is not threaded away in the original; the source keeps the three terms, and the
-   spellings tried (!CH_XSLOT(ch) first or third, slot->flags.b[1] & 0x20, !a->ch->slot: 23 worse) all
-   compile to the threaded form; the rest is the 4-byte shift of every later jump target. */
+/* 0x4097d0, action callback 0x2d: walks along the path to the cell args[0], args[1] in scene args[2] */
 
 void ch_ActWalk(CHACTION *a)
 {
@@ -3484,9 +3477,14 @@ void ch_ActWalk(CHACTION *a)
         else
             a->u.walk.flags &= ~CH_WALK_STOPANIM;
     }
-    if (!a->u.walk.started && (!ch->slot || CH_XSLOT(ch)->f6d_20 || !ch->slot)) {
-        if (!ch_StartWalkAnim(a, h))
-            return;
+    if (!a->u.walk.started) {
+        if (ch->slot && CH_XSLOT(ch)->f6d_20) {
+            if (!ch_StartWalkAnim(a, h))
+                return;
+        } else if (!ch->slot) {
+            if (!ch_StartWalkAnim(a, h))
+                return;
+        }
     }
     if (!a->u.walk.started && !ch->slot) {
         if (ch_MarkWalkErrors)

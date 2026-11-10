@@ -117,7 +117,7 @@ exe	0x00408ab0	ch_WalkSound	ch	1d2c5fd3dee4d9b6	no	byte	control=byte p1=byte p2=
 exe	0x00408cb0	ch_StartWalkAnim	ch	8d90320b4a982588	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00408e60	ch_NextWaypoint	ch	9ea9800cfef1c641	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004093d0	ch_WalkRotate	ch	14e88f54b75926bd	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x004097d0	ch_ActWalk	ch	a29eeedf151610b8	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x004097d0	ch_ActWalk	ch	1885b59a3097152d	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x00409bd0	ch_ActWalkCells	ch	ebd6d22d389f454a	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x0040a900	ch_WalkToObject	ch	1f63197d6b963dea	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0040a9c0	ch_ActWalk2RndDummy	ch	3af48fbbfd685a6b	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
