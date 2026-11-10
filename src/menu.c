@@ -4116,9 +4116,9 @@ int ai_ScatterShot(SHOTREC *shot, float sideSpread, D3VECTOR *side, float otherS
     return 1;
 }
 
-/* ai_StepShot and ai_StepShotSlow: the sign with the shared 0 / 1 (ai_FloatZero, ai_FloatOne); the drag 0.5 * density * coefficient * area * v^2
-   signed with v; the products nested as the original multiplies them (VC6 reorders an unnested chain), the
-   wind's x / z drag in another order than its y and the flight drags */
+/* ai_StepShot and ai_StepShotSlow: the sign with the shared 0 / 1 (ai_FloatZero, ai_FloatOne); the drag
+   0.5 * density * coefficient * area * v^2 signed with v; the products nested as the original multiplies them
+   (VC6 reorders an unnested chain), the wind's x / z drag in another order than its y and the flight drags */
 #define SIGN(v) ((v) > ai_FloatZero ? ai_FloatOne : -1.0f)
 #define DRAG(v) ((((((SIGN(v) * shot->area) * ai_ShotDrag) * ai_AirDensity) * (v)) * (v)) * 0.5f)
 #define WINDDRAG(v) (((((shot->area * v) * v) * SIGN(v)) * ai_ShotDrag) * ai_AirDensity) * 0.5f
