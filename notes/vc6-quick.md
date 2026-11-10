@@ -184,6 +184,15 @@ mechanisms, each as a generated round over all positions / subsets:
 - An inner call as an argument pops its arguments at once; assigned to a local first, the pops merge.
 - Source order of switch cases decides block layout. Empty cases are dropped (unsolved for d3d_Error).
 - Repeated cleanup at each failure site (VC6 tail-merges them) often matches better than `goto fail`.
+- **One failure block + epilogue per step in the original, one cross-jumped tail in ours**: look for a second
+  copy of the success return. ls_SaveGame: `if (full) { ...steps...; close; restore; return 1; } close;
+  restore; return 1;` keeps all 24 `close; restore; xor eax,eax; ret` copies (and the inline `f == 0` return);
+  one shared `return 1` after the `if` lets VC6 merge them. Byte. Else-chains, `!`, `<= 0`, a result local,
+  `__inline` helpers and `#pragma optimize` letters were all no lever.
+- A ternary argument `f(t, c ? K1 : K2, 2)` gives `mov eax,K1; je; mov eax,K2; push eax`; the original's
+  `push 2; push K1; jmp; push 2; push K2; push ecx; call` is the call written in both if/else arms (ls_LoadScene).
+- A pointer loop compared signed (`cmp esi,END; jl`) is an index loop `for (i = 0; i < N; i++)` over arrays
+  VC6 strength-reduced (ls_WriteEnvironment: four SVWEATHER hour arrays), not a pointer walk (that is `jb`).
 - `int ret = 0; if (...) {...} else ret = -1; return ret;` gives a result kept in a callee-saved register.
 - **Callee-saved push after the guards** (`push esi` at entry, `push ebx` only after two `return 1` guards,
   ours both in the prologue): a `return 2;` inside the first of two `if (m == 3 ..) {..}` / `if (m == 1 ..)`
