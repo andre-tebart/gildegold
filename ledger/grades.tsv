@@ -1067,7 +1067,7 @@ exe	0x0045abc0	d3s_CacheBind	d3s	byte	readable
 exe	0x0045ac60	d3s_CacheTexture	d3s	byte	readable		
 exe	0x0045ad80	d3_InitShadows	d3s	byte	readable		
 exe	0x0045aee0	d3_ExitShadows	d3s	byte	readable		
-exe	0x0045af50	d3s_TerrainShadowMesh	d3s	draft	readable	deep	
+exe	0x0045af50	d3s_TerrainShadowMesh	d3s	draft	readable	stuck	
 exe	0x0045b510	d3s_MeshFromMap	d3s	draft	readable	stuck	
 exe	0x0045b8d0	d3s_AddShadow	d3s	byte	readable		
 exe	0x0045bcd0	d3s_GetGround	d3s	byte	readable		
@@ -3186,9 +3186,9 @@ exe	0x0050d6a0	init_InheritOwner	f3init	shape	readable
 exe	0x0050d6d0	init_LoadTownScene	f3init	byte	readable		
 exe	0x0050d730	init_AdjustSceneLights	f3init	byte	readable		
 exe	0x0050d7f0	init_LoadObjectScene	f3init	draft	readable	deep	
-exe	0x0050dba0	init_BuildingKindName	f3init	draft	readable	deep	
+exe	0x0050dba0	init_BuildingKindName	f3init	byte	readable		
 exe	0x0050dc30	init_LoadBuildingScene	f3init	draft	readable	deep	
-exe	0x0050e0d0	init_StartNewGame	f3init	draft	readable	deep	
+exe	0x0050e0d0	init_StartNewGame	f3init	byte	readable		
 exe	0x0050e330	init_CreateOpponents	f3init	shape	readable		
 exe	0x0050e5a0	init_PlaceOffices	f3init	shape	readable	deep	
 exe	0x0050e690	init_CreateStartCharacters	f3init	draft	readable	deep	
@@ -3207,7 +3207,7 @@ exe	0x00511400	init_SetupNewGame	f3init	byte	readable
 exe	0x005115b0	init_CollectTorchObject	f3init	byte	readable		
 exe	0x00511600	init_StripTorches	f3init	byte	readable		
 exe	0x005116b0	init_RebuildQuadTree	f3init	byte	readable		
-exe	0x00511700	init_TownBuildingHook	f3init	draft	readable	deep	
+exe	0x00511700	init_TownBuildingHook	f3init	byte	readable		
 exe	0x00511790	init_PrepareTownScene	f3init	byte	readable		
 exe	0x00511810	init_FlagTreeObject	f3init	byte	readable		
 exe	0x00511840	init_RecreateQuadTree	f3init	byte	readable		
@@ -3216,7 +3216,7 @@ exe	0x00511ad0	init_LocalData	f3init	draft	readable	deep
 exe	0x00511bc0	init_FillMarkets	f3init	byte	readable		
 exe	0x00511c70	init_GiveFirstPlayerBuildings	f3init	shape	readable		
 exe	0x00511dc0	init_ObjectSceneUniverse	f3init	byte	readable		
-exe	0x00511e60	init_BuildingSceneUniverse	f3init	draft	readable	deep	
+exe	0x00511e60	init_BuildingSceneUniverse	f3init	byte	readable		
 exe	0x00511f20	init_SyncSceneObjects	f3init	draft	readable	deep	
 exe	0x005124d0	init_LoadTypeBScene	f3init	byte	readable		
 exe	0x005124f0	init_LoadShopScript	f3init	draft	readable	deep	
