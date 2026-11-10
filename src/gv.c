@@ -2535,7 +2535,6 @@ unsigned gv_RaiseDead(GVRAISE *m)
             memset(gv_CharsT[slot].relatives, 0xff, sizeof(gv_CharsT[slot].relatives));
             ai_CharCount++;
             c->netId = ai_NextObjectId;
-            ai_NextObjectId++;
             c->id = (unsigned short)slot;
             c->kind = 0x14;
             c->bld2 = bld;
@@ -2546,6 +2545,7 @@ unsigned gv_RaiseDead(GVRAISE *m)
             c->b216 = 0;
             c->b217 = 0;
             c->mask = 1;
+            ai_NextObjectId++;
             c->mood3Rate = 1.0f;
             c->health = 100;
             c->w00a = 0x10;
