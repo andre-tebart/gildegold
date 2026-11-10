@@ -3181,7 +3181,7 @@ exe	0x0050d350	init_SceneObjectDestroyCB	f3init	byte	readable
 exe	0x0050d380	init_HookObject	f3init	byte	readable		
 exe	0x0050d460	init_ResetSceneUniverses	f3init	byte	readable		
 exe	0x0050d490	init_FreeScenes	f3init	byte	readable		
-exe	0x0050d550	init_AllocSceneBuilding	f3init	draft	readable	deep	
+exe	0x0050d550	init_AllocSceneBuilding	f3init	draft	readable	stuck	
 exe	0x0050d6a0	init_InheritOwner	f3init	shape	readable		
 exe	0x0050d6d0	init_LoadTownScene	f3init	byte	readable		
 exe	0x0050d730	init_AdjustSceneLights	f3init	byte	readable		
@@ -3212,14 +3212,14 @@ exe	0x00511790	init_PrepareTownScene	f3init	byte	readable
 exe	0x00511810	init_FlagTreeObject	f3init	byte	readable		
 exe	0x00511840	init_RecreateQuadTree	f3init	byte	readable		
 exe	0x00511890	init_NameBuildings	f3init	draft	readable	deep	
-exe	0x00511ad0	init_LocalData	f3init	draft	readable	deep	
+exe	0x00511ad0	init_LocalData	f3init	byte	readable		
 exe	0x00511bc0	init_FillMarkets	f3init	byte	readable		
 exe	0x00511c70	init_GiveFirstPlayerBuildings	f3init	shape	readable		
 exe	0x00511dc0	init_ObjectSceneUniverse	f3init	byte	readable		
 exe	0x00511e60	init_BuildingSceneUniverse	f3init	byte	readable		
 exe	0x00511f20	init_SyncSceneObjects	f3init	draft	readable	deep	
 exe	0x005124d0	init_LoadTypeBScene	f3init	byte	readable		
-exe	0x005124f0	init_LoadShopScript	f3init	draft	readable	deep	
+exe	0x005124f0	init_LoadShopScript	f3init	byte	readable		
 exe	0x005126a0	init_SoundObjectHook	f3init	shape	readable	deep	
 exe	0x00512780	init_GateObjectHook	f3init	byte	readable		
 exe	0x005127c0	init_SoundObjectFreeHook	f3init	byte	readable		
@@ -3233,7 +3233,7 @@ exe	0x00512e80	init_BuildingTextureSetHook	f3init	byte	readable
 exe	0x00512f30	init_SetCharacterAnimations	f3init	shape	readable	deep	
 exe	0x00513050	init_ShowBuildingScene	f3init	draft	readable	deep	
 exe	0x00513400	init_FinishBuildingScene	f3init	byte	readable		
-exe	0x00513590	init_SetDetailLevel	f3init	draft	readable	deep	
+exe	0x00513590	init_SetDetailLevel	f3init	draft	readable	stuck	
 exe	0x005136b0	init_LeaveTownScene	f3init	byte	readable		
 exe	0x00513740	init_AfterTownLoad	f3init	byte	readable		
 exe	0x00513970	init_ParseNumberList	f3init	byte	readable		
