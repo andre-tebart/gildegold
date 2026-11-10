@@ -5218,7 +5218,7 @@ void sv_ShowBubble(CHARACTER *ch, int text, char *name)
     if (i >= 0x40) {
         i = -1;
         for (j = 0; j < 0x40; j++) {
-            if (sv_Bubbles[j].time < d3_Time)
+            if (sv_Bubbles[j].time < (int)d3_Time)
                 i = j;
         }
         if (i == -1)
