@@ -649,4 +649,21 @@ mechanisms, each as a generated round over all positions / subsets:
   from the walking pointer v = info->keys, sv_UpdateBand and sv_UpdateBandLed alike): every loop form, index form,
   info/v merge, test placement and an __inline helper gave the control; and `mov ecx,eax; add ecx,ebp; mov
   cl,[ecx]` for `ai_GoodsT[id].type` (sv_UpdateGroundplan / sv_LoadGroundplan) never comes from the load's spelling
-  (toy files in deep-tools toyasm.py runs always give `[eax+ebp]`).
+  (toy files in deep-tools toyasm.py runs always give `[eax+ebp]`). Lead from sv_HandleObjects: there the
+  materialized `add eax,ecx; cmp byte [eax],0x1d` came from the pointer assigned *before* an unrelated store
+  (`cls = &ai_GoodsT[id]; sv_SelectedModel = ..; if (cls->type == 0x1d)`), not after it; try the statement order
+  around the load before its spelling.
+- **A frame 16 bytes larger with one used dword at +4 of the extra space** (dcp frame: the original's slot above
+  the last array, holes either side, while ours shares that value's slot with another temp): the value was y of
+  its own padded vector, `float up[4]; up[1] = pos[1] - cen[1]; .. + up[1]` (constant-index arrays are split into
+  scalars, the full slot kept). With the view stores in rotation-then-position order (720-order permute)
+  sv_FlyCameraToObject went 12 ins -> byte; the same frame gap is open in sv_CameraToObject.
+- **Base induction pointer on the wrong field of a record loop** (`mov ebx, T+0xc` (name) where the original walks
+  `T+8` (ch)): VC6 strength-reduces on a field the loop references often. Reading the record field again in the
+  tests instead of the local copy (`ch = T[i].ch; if (ch == 0 || ((C *)T[i].ch)->obj->scene ..`, three of five
+  uses; a 31-mask generator found the subset) moved the base to ch: sv_DrawBubbles 13 ins -> byte.
+- **The same -1 stored in several tails, the original rematerializing it (`or ebp,-1`) after ebp served as a
+  pointer, with one store as an immediate**: one shared `W = -1;` after if/else arms without returns (`if (..) {
+  .. if (c) {if (!fb) T = f();} else T = -1; } else { A = -1; T = -1; } W = -1;`): VC6 copies the shared tail into
+  each path. Returns per path and every store order (72 variants) and chained `a = b = -1` kept the control. A ?:
+  text argument whose original pushes per arm is two calls (sv_OpenBuildingPanel, 17 ins -> byte).
