@@ -902,7 +902,7 @@ exe	0x0044cd40	d3iot_DeleteStockObject	d3_io_t	byte	readable
 exe	0x0044ce40	d3iot_CalcBounds	d3_io_t	shape	readable		
 exe	0x0044d1c0	d3iot_Finish	d3_io_t	byte	readable		
 exe	0x0044d1f0	d3iot_LoadTexSet	d3_io_t	byte	readable		
-exe	0x0044d330	d3iot_LoadBGF	d3_io_t	draft	readable	deep	
+exe	0x0044d330	d3iot_LoadBGF	d3_io_t	draft	readable	stuck	
 exe	0x0044df20	d3iot_GetRadius	d3_io_t	byte	readable		
 exe	0x0044df40	d3io_LoadObjectFile	d3_io_t	byte	readable		
 exe	0x0044e080	d3io_LoadObject	d3_io_t	byte	readable		
@@ -2856,7 +2856,7 @@ exe	0x004f5730	ord_Level5UpOrder2	ord	byte	readable
 exe	0x004f5800	ord_DivorceOrder	ord	byte	readable		
 exe	0x004f58e0	ord_Level6UpOrder	ord	byte	readable		
 exe	0x004f59b0	ord_Level6UpOrder2	ord	byte	readable		
-exe	0x004f5a80	ord_WageReportOrder	ord	draft	readable	deep	
+exe	0x004f5a80	ord_WageReportOrder	ord	byte	readable		
 exe	0x004f5c30	ord_DismissOfficeOrder	ord	byte	readable		
 exe	0x004f5d50	ord_LawOrder	ord	byte	readable		
 exe	0x004f5f00	ord_LawOrder2	ord	byte	readable		
@@ -2901,7 +2901,7 @@ exe	0x004f81c0	ord_DispatchOrder	ord	byte	readable
 exe	0x004f8200	ord_PrivilegeDialog	ord	byte	readable		
 exe	0x004f82a0	ord_ResetStatistics	ord	byte	readable		
 exe	0x004f8300	ord_GetGridCell	ord	byte	readable		
-exe	0x004f8360	ord_CountGridObjects	ord	draft	readable	deep	shape+readable -> draft+readable at d5b69507: ai_types.h AIMSG gains the apprenticeship message 0x5e's words (parent 0x58, bldClass 0x5c, price 0x60; am.c fills the same message as G8MSG.bldClass) instead of raw byte offsets in lc's ai_ChooseProfessionWindow: a truer shared type. ord_CountGridObjects uses no AIMSG; under the changed declaration set only its allocation moves (code 4: the row-base register copies of its @deep note, slots 4, regs 2; dcp headers probe ord finds no typedef sensitivity), as the lc lead comment notes for every AIJOB / AIMSG member, so its shape grade was no evidence of the original's source [waits for: match-deep on its induction-variable allocation, or the declaration set of ord.c's includes (gv.h > ai_types.h)]
+exe	0x004f8360	ord_CountGridObjects	ord	shape	readable	stuck	
 exe	0x004f8460	ord_AddGridAmount	ord	draft	readable	deep	
 exe	0x004f8590	ord_SubGridAmount	ord	draft	readable	deep	
 exe	0x004f86a0	ord_RandomCellPoint	ord	byte	readable		
@@ -2914,7 +2914,7 @@ exe	0x004f8ed0	ord_UpdateStatistics	ord	shape	readable
 exe	0x004f9020	ord_LoadStatistics	ord	draft	readable	deep	
 exe	0x004f9170	ord_GetMessageRecord	ord	byte	readable		
 exe	0x004f9190	ord_InitMessageRecord	ord	byte	readable		
-exe	0x004f9220	ord_UpdateMessageEvent	ord	draft	readable	deep	
+exe	0x004f9220	ord_UpdateMessageEvent	ord	byte	readable		
 exe	0x004f9710	ord_HandleMessageRecord	ord	byte	readable		
 exe	0x004f97a0	ord_GetRatingByte	ord	byte	readable		
 exe	0x004f97c0	ord_BuildingCapacityRatio	ord	byte	readable		
