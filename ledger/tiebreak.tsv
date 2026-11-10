@@ -1397,7 +1397,7 @@ exe	0x00479610	d2_BlitPartFromDD	gfx	ee6f77a6a80c2561	no	byte	control=byte p1=by
 exe	0x004796c0	d2_ClearSurface	gfx	e77c6f8749fe6152	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00479780	d2_CopySurface	gfx	5bc708b346226fe2	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004797d0	d2_ClearRect	gfx	bc9f4802637ba376	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x004798f0	d2_GetPixelColour	gfx	9fba026b95a15d0a	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x004798f0	d2_GetPixelColour	gfx	9fba026b95a15d0a	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x004799e0	d2_PutPixelRGB	gfx	b711f2f668f025be	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00479b60	d2_PutPixel	gfx	72b07c82d8f24447	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00479b90	d2_PutPixelClipped	gfx	55133d69c68fb981	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
