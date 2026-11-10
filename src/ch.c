@@ -3576,22 +3576,14 @@ void ch_ActWalk(CHACTION *a)
     }
 }
 /* 0x409bd0, action callback 0x3a: walks along the cells of a->u.walk.path (0x100 cells, filled by the caller;
-   empty cells are skipped) to the cell args[0], args[1] in scene args[2]
-   @deep Read in full against 0x409bd0..0x40a8fa (the retry wait, the first-step setup, the walk-animation
-   start, the morph release, the cell steps with the gap skip, the turn steering of both directions, the
-   missed-threshold check, the play speed). Meaning fix: both turn branches scale by 0.19999999f (the
-   original's 0x5eb860 is 0x3e4ccccc, not 0.2f); D3OBJ_UNK200 replaced by D3OBJECT.owner. All statements
-   line up (ours 963 vs 965). Left: (1) the same redundant slot test as ch_ActWalk after 'test byte
-   [eax+0x6d],0x20' at +0x1df ('+ jne / cmp eax,ebx / jne' vs '- je'); (2) the gap-skip loop (+0x632): the
-   original keeps n in edx and recomputes min(0x100, n + 32) at the loop head each iteration (non-rotated,
-   'jmp 0x40a224'), ours hoists it and spills n to [esp+0x18], hence our frame 0x1ac vs 0x1a8 and i in eax
-   vs edi; a for(;;) with the bound tested by break compiles worse (58 -> 96). */
+   empty cells are skipped) to the cell args[0], args[1] in scene args[2]; both turn branches scale by
+   0.19999999f (the original's constant is 0x3e4ccccc, not 0.2f) */
 
 void ch_ActWalkCells(CHACTION *a)
 {
     D3SM *h = (D3SM *)ch_GetHMap(a->ch);
     CHARACTER *ch = a->ch;
-    int x, z, i, n, ground;
+    int x, z, i, n, ground, restart;
     CHPATHPT *pts, *pt;
     CHSLOT *s;
     D3OBJECT *o;
@@ -3638,59 +3630,68 @@ void ch_ActWalkCells(CHACTION *a)
         a->u.walk.pathLen = 0x100;
         a->u.walk.cur = 0;
         a->u.walk.prevCell = -1;
-        for (i = 0; i < 0x200; i += 2) {
-            ((unsigned char *)a->u.walk.path)[i] = 0;
-            ((unsigned char *)a->u.walk.path)[i + 1] = 0;
+        for (i = 0; i < 0x100; i++) {
+            ((CHPATHPT *)a->u.walk.path)[i].x = 0;
+            ((CHPATHPT *)a->u.walk.path)[i].z = 0;
         }
         d3sm_GetVertex(h, ((unsigned char *)a->u.walk.path)[0], ((unsigned char *)a->u.walk.path)[1], &a->u.walk.end);
         d3sm_GetVertex(h, x, z, &a->u.walk.end);
         a->u.walk.started = 0;
         return;
     }
-    if (!a->u.walk.started && (!ch->slot || CH_XSLOT(ch)->f6d_20 || !ch->slot)) {
-        ch->next = 0;
-        if (ch->morph) {
-            sprintf(name, "morph_%i", ch);
-            d3_ReleaseTexture(ch->obj->material->animCtl, name);
-            ad = (D3ANIMDATA *)d3_FindAnim(name);
-            d3anim_Release(ad, 1);
-            ch->morph = 0;
-        }
-        d3t_ReleaseObjectTextures(ch->obj);
-        if (!ch->obj->info)
-            ch_InflateModel(ch);
-        if (ch->transport)
-            s = (CHSLOT *)ch_AttachAni(ch, "bewegung/karren_ziehen", 1);
-        else
-            s = (CHSLOT *)ch_AttachAni(ch, "bewegung/gehen", 1);
-        if (!(ch->slot = (D3ANIMSLOT *)s)) {
-            if (ch_MarkWalkErrors)
-                a->ch->flags.bytes.lo |= 8;
-            if (a->u.walk.path) {
-                mem_Free(a->u.walk.path);
-                a->u.walk.path = 0;
+    if (!a->u.walk.started) {
+        /* @original tests ch->slot again after the f6d_20 test (`!slot || f6d_20 || !slot`, kept by VC6 only
+           with the flag) */
+        restart = 0;
+        if (ch->slot && CH_XSLOT(ch)->f6d_20)
+            restart = 1;
+        else if (!ch->slot)
+            restart = 1;
+        if (restart) {
+            ch->next = 0;
+            if (ch->morph) {
+                sprintf(name, "morph_%i", ch);
+                d3_ReleaseTexture(ch->obj->material->animCtl, name);
+                ad = (D3ANIMDATA *)d3_FindAnim(name);
+                d3anim_Release(ad, 1);
+                ch->morph = 0;
             }
-            ch_RemoveAction(a);
-            return;
+            d3t_ReleaseObjectTextures(ch->obj);
+            if (!ch->obj->info)
+                ch_InflateModel(ch);
+            if (ch->transport)
+                s = (CHSLOT *)ch_AttachAni(ch, "bewegung/karren_ziehen", 1);
+            else
+                s = (CHSLOT *)ch_AttachAni(ch, "bewegung/gehen", 1);
+            if (!(ch->slot = (D3ANIMSLOT *)s)) {
+                if (ch_MarkWalkErrors)
+                    a->ch->flags.bytes.lo |= 8;
+                if (a->u.walk.path) {
+                    mem_Free(a->u.walk.path);
+                    a->u.walk.path = 0;
+                }
+                ch_RemoveAction(a);
+                return;
+            }
+            s->f6d_10 = 0;
+            s = CH_XSLOT(ch);
+            s->b70 = 0;
+            s->a70 = 1;
+            CH_XSLOT(ch)->pos.x = a->u.walk.end.x;
+            CH_XSLOT(ch)->pos.y = a->u.walk.end.y;
+            CH_XSLOT(ch)->pos.z = a->u.walk.end.z;
+            if (ch->kind & 8)
+                CH_XSLOT(ch)->speed = 30.0f;
+            else if (ch->kind & 0x10)
+                CH_XSLOT(ch)->speed = 60.0f;
+            else
+                CH_XSLOT(ch)->speed = 15.0f;
+            CH_XSLOT(ch)->play = 1;
+            CH_XSLOT(ch)->f74_8 = 0;
+            CH_XSLOT(ch)->f74_4 = 1;
+            CH_XSLOT(ch)->f6d_20 = 0;
+            a->u.walk.started = 1;
         }
-        s->f6d_10 = 0;
-        s = CH_XSLOT(ch);
-        s->b70 = 0;
-        s->a70 = 1;
-        CH_XSLOT(ch)->pos.x = a->u.walk.end.x;
-        CH_XSLOT(ch)->pos.y = a->u.walk.end.y;
-        CH_XSLOT(ch)->pos.z = a->u.walk.end.z;
-        if (ch->kind & 8)
-            CH_XSLOT(ch)->speed = 30.0f;
-        else if (ch->kind & 0x10)
-            CH_XSLOT(ch)->speed = 60.0f;
-        else
-            CH_XSLOT(ch)->speed = 15.0f;
-        CH_XSLOT(ch)->play = 1;
-        CH_XSLOT(ch)->f74_8 = 0;
-        CH_XSLOT(ch)->f74_4 = 1;
-        CH_XSLOT(ch)->f6d_20 = 0;
-        a->u.walk.started = 1;
     }
     if (a->stop) {
         sprintf(name2, "%s_%s", "bewegung/gehen", a->ch->body);
@@ -3753,10 +3754,9 @@ void ch_ActWalkCells(CHACTION *a)
         ch->speedScale += 0.01f;
     if (!a->u.walk.cur || (ch->slot && CH_XSLOT(ch)->f74_8)) {
         pts = (CHPATHPT *)a->u.walk.path;
-        i = a->u.walk.cur + 1;
-        pt = &pts[i];
-        if (!pt->x && !pt->z && i < a->u.walk.pathLen) {
-            for (n = i; i < min(0x100, n + 32); i++, pt++) {
+        n = a->u.walk.cur + 1;
+        if (!pts[n].x && !pts[n].z && n < a->u.walk.pathLen) {
+            for (i = n, pt = &pts[n]; i < min(0x100, n + 32); i++, pt++) {
                 if (pt->x || pt->z) {
                     a->u.walk.cur = i - 1;
                     goto next;
@@ -3892,7 +3892,7 @@ next:
                 ch_SetPos(a->ch, &a->u.walk.end, 0);
             if (ch->slot)
                 CH_XSLOT(ch)->f74_8 = 1;
-            sprintf(name2, "ch_WalkOnPath(): Have missed my treshhold... %s [%f %f]", a->ch->obj,
+            sprintf(name, "ch_WalkOnPath(): Have missed my treshhold... %s [%f %f]", a->ch->obj,
                     a->u.walk.end.x, a->u.walk.end.z);
         }
     }
