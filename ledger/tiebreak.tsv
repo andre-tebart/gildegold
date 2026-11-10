@@ -677,7 +677,7 @@ exe	0x00430dc0	vfs_fgets	vfs	b405e6b78a76ffaf	no	byte	control=byte p1=byte p2=by
 exe	0x00430e30	vfs_fwrite	vfs	8810f082bfae0a02	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00430fa0	vfs_fseek	vfs	dd6c17d3b2682b44	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00431170	vfs_ftell	vfs	fe8d393868c49aec	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x004311d0	vfs_MemOpen	vfs	9ba6a8b05ca5e2e6	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x004311d0	vfs_MemOpen	vfs	9ba6a8b05ca5e2e6	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x00431490	vfs_Init	vfs	b6cdb144fceb1fdf	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00431510	vfs_Exit	vfs	af28d466d0a2b37c	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004315c0	d3anim_ApplyRootMotion	d3_anim	b00daa09b6181919	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
