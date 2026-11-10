@@ -3246,14 +3246,14 @@ exe	0x00515960	io_PrintText	io_text	draft	readable	deep
 exe	0x005176d0	txt_Format	io_text	draft	readable	deep	
 exe	0x00519010	ls_LanguageOf	ls	byte	readable		
 exe	0x005190a0	ls_GetLanguage	ls	byte	readable		
-exe	0x005190b0	ls_SaveGame	ls	draft	readable	deep	
+exe	0x005190b0	ls_SaveGame	ls	byte	readable		
 exe	0x005194c0	ls_WriteSaveHeader	ls	byte	readable		
 exe	0x00519a00	ls_RefsToIds	ls	shape	readable		
 exe	0x00519aa0	ls_IdsToRefs	ls	byte	readable		
 exe	0x00519b50	ls_RelinkScene	ls	shape	readable		
 exe	0x00519bf0	ls_WriteObjects	ls	shape	readable		
 exe	0x00519d20	ls_WriteBuildings	ls	byte	readable		
-exe	0x0051a1a0	ls_WritePlayerRecords	ls	draft	readable	deep	
+exe	0x0051a1a0	ls_WritePlayerRecords	ls	byte	readable		
 exe	0x0051a4b0	ls_WriteCharacters	ls	shape	readable		
 exe	0x0051ad30	ls_ActionIndex	ls	byte	readable		
 exe	0x0051ad60	ls_ActionAt	ls	byte	readable		
@@ -3267,11 +3267,11 @@ exe	0x0051bdc0	ls_WriteEventTables	ls	shape	readable
 exe	0x0051c2f0	ls_WriteParties	ls	byte	readable		
 exe	0x0051c450	ls_WriteHistory	ls	shape	readable		
 exe	0x0051c560	ls_WriteMessageQueues	ls	shape	readable		
-exe	0x0051c870	ls_WriteEnvironment	ls	draft	readable	deep	
+exe	0x0051c870	ls_WriteEnvironment	ls	byte	readable		
 exe	0x0051c920	ls_Read	ls	byte	readable		
 exe	0x0051c950	ls_LoadGame	ls	byte	readable		
 exe	0x0051cee0	ls_ReadSaveHeader	ls	byte	readable		
-exe	0x0051d2d0	ls_LoadScene	ls	draft	readable	deep	
+exe	0x0051d2d0	ls_LoadScene	ls	byte	readable		
 exe	0x0051d3d0	ls_ReadObjects	ls	byte	readable		
 exe	0x0051d4f0	ls_HookBuildingCB	ls	byte	readable		
 exe	0x0051d530	ls_ClearObjectFlag	ls	byte	readable		
