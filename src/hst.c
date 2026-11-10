@@ -3,8 +3,8 @@
    yearly history dialogs. Its .data block starts at 0x601058; the text commands' callbacks are 0x601b50 and their
    names (0x40-byte keys such as "FEST" / "BELAGERUNG_START") 0x601070, which is what the ai_Command* names rest on.
    Names are ours except the hst_* ones.
-   Open: the ai_Token* siblings still take AI_ZERO with its own _zp slot (frame 0x20c vs 0x208); AI_ZERO_AT(n1, ..)
-   fixes the frame (ai_TokenRandomNpcInhabitant, ai_TokenRandomChurchProfession) and is untried in the others.
+   Open: the ai_Token* searches matched with AI_ZERO_BUF (size temp stored before n1 = buf); the functions still on
+   AI_ZERO((char *)n1, ..) keep its _zp slot and may want AI_ZERO_BUF / AI_ZERO_AT.
    Open: G12OBJ repeats hmt.h's HMTOBJ (0x4e6ec0 / 0x4e6680 declared in both files); G12_B reads AICHAR bytes.
    Open: gm_FirstBuilding (0x50b010) returns unsigned char * (am.h, f3gm.c) while the callers here use AIBLD *.
    Open: hst_KeyFirst / hst_KeyLast are only ever set -1 (0x520200 reads hst_KeyFirst for hst_KeyNext = hst_KeyFirst + n),
