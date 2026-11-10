@@ -3303,7 +3303,7 @@ exe	0x00521150	sv_MessageBox	sv	00c9e6d9e633bf3a	no	shape	sample n=32 seed=1 com
 exe	0x00521410	sv_MessageBoxGreen	sv	9d4b30e86a38f598	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x005216a0	sv_MessageBoxYesNo	sv	3d4d2ede6e33122c	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x00521900	sv_OpenMessageBox	sv	5d6702f5abe829e5	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x00521960	sv_SelectPanelObject	sv	420721dd497b89c0	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x00521960	sv_SelectPanelObject	sv	420721dd497b89c0	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x00521ba0	sv_DrawPanelPointer	sv	650ff7e3f79b4d2a	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
 exe	0x00521c10	sv_SceneLoadProgress	sv	7766110aeea27bec	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00521e70	sv_BuildScreenLayout	sv	6ad338583d6edcb7	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
