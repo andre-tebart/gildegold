@@ -870,7 +870,7 @@ char d3s_MeshFromMap(int *rect, int stride, unsigned char *map, float *origin, f
         u = uv[0];
         for (i = 0; i < nx; i++) {
             p->v[0] = &row[i];
-            a = row[i + nx + 1].pos[1];
+            a = row[i].pos[1];
             p->v[1] = &row[i + 1];
             b = row[i + 1].pos[1];
             p->v[2] = &row[i + nx + 1];
