@@ -737,10 +737,10 @@ exe	0x004399e0	d3_ClipObject	d3_engine	byte	readable
 exe	0x00439a60	d3_ClipMesh	d3_engine	byte	readable		
 exe	0x00439c90	d3_ClipPoly	d3_engine	shape	readable		
 exe	0x0043a000	d3_SelectSurf	d3_engine	byte	readable		
-exe	0x0043a160	d3_DrawObjectCB	d3_engine	draft	readable	deep	
+exe	0x0043a160	d3_DrawObjectCB	d3_engine	byte	readable		
 exe	0x0043a610	d3_SetFogRange	d3_engine	byte	readable		
 exe	0x0043a6f0	d3_SetFog	d3_engine	draft	readable	stuck	
-exe	0x0043a7d0	d3_DrawSortedD3D	d3_engine	draft	readable	deep	
+exe	0x0043a7d0	d3_DrawSortedD3D	d3_engine	draft	readable	stuck	
 exe	0x0043b080	d3_DrawSortedSW	d3_engine	byte	readable		
 exe	0x0043b300	d3_RadixSort	d3_engine	byte	readable		
 exe	0x0043b600	d3_DrawSorted	d3_engine	byte	readable		
@@ -2817,7 +2817,7 @@ exe	0x004f3610	gv_FindCrimesByState	gv	byte	readable
 exe	0x004f3640	gv_AddEvidence	gv	byte	readable		
 exe	0x004f36b0	gv_FreeCrimeSlot	gv	byte	readable		
 exe	0x004f36e0	gv_FindCrime	gv	byte	readable		
-exe	0x004f3700	gv_SendCrimes	gv	draft	readable	deep	
+exe	0x004f3700	gv_SendCrimes	gv	byte	readable		
 exe	0x004f3780	gv_EvidenceSlot	gv	byte	readable		
 exe	0x004f37e0	gv_RetireCrime	gv	byte	readable		
 exe	0x004f3910	gv_HandOverCrimes	gv	byte	readable		
