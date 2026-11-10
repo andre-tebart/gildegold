@@ -1102,7 +1102,7 @@ extern INIT_LOD d3io_Lod;          /* 0x5fbf78 */
    ch_SetLowPoly gets the character detail (ai_GfxFloor.byte[3]), the camera limit pair of the camera_limits byte
    (ai_GfxFloor.byte[1]) is copied to sv_CameraHeightNear .. sv_CameraAngleFar, the game state re-places the
    camera, the mipmaps follow the floor setting and the scene is selected around the build-site check and the
-   red lights. Returns 0
+   red lights
    @deep read whole vs 0x5d5c40..0x5d5e8b; fixed this session: d3if_SelectScene(0, 1) around
    ai_CheckBuildSites (was (1, 0)), lod = 0 / the d3s_TexSize copy at the top, the floor option passed as a
    byte (@original cast d3_ApplyGraphicsOptionsB), the fog byte, the SetRLights branch pushes, the camera
@@ -1118,7 +1118,7 @@ extern INIT_LOD d3io_Lod;          /* 0x5fbf78 */
    0x6237ec (sv_CameraLimits+0x1c), explained: the M8 at +0x1cc is the two far camera-limit loads crossing
    registers (both sides read sv_CameraLimits[i*2+6] and [i*2+7] and store them to sv_CameraHeightFar /
    sv_CameraAngleFar)) */
-int ai_ApplyGfxOptions(void)
+void ai_ApplyGfxOptions(void)
 {
     unsigned char level, changed;
     unsigned size;
@@ -1187,7 +1187,6 @@ int ai_ApplyGfxOptions(void)
     else
         d3_SetRLights(1);
     d3if_SelectScene(scene, 1);
-    return 0;
 }
 /* 0x5d5e90, applies the option values to the run time (117 B): the game speed factor cm_SpeedFactor
    from the "speed" option (ai_OptionSpeed * 0.00625 + 0.25; in a network game (ai_GameFlags & 4) from

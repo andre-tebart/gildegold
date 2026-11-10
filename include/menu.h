@@ -179,7 +179,7 @@ typedef struct CMQUICKSAVE {
 
 void ai_ApplyOptions(void);         /* 0x5d5e90, applies the option values to the run time */
 void ai_SaveOptions(void);          /* 0x5d4c70, writes the options to the INI */
-int ai_ApplyGfxOptions(void);     /* 0x5d5c40, applies the graphics options (the shadow setup) */
+void ai_ApplyGfxOptions(void);    /* 0x5d5c40, applies the graphics options (the shadow setup) */
 void ai_LoadOptions(void);          /* 0x5d5640, reads the options from the INI */
 extern int sv_ScreenDirty;          /* 0x6f2358, sv.c: nonzero = rebuild the screen (sv_UpdateGroundplan clears it) */
 void sv_DestroyScreen(void);        /* 0x5223c0, sv.c: destroys the screen's widgets and views */
