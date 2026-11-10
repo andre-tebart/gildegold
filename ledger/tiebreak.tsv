@@ -3442,7 +3442,7 @@ exe	0x00531c50	main_OpenScreen	main	82b3e3966231579e	no	draft	control=draft p1=d
 exe	0x00532160	main_OpenEngine	main	6b1ea5d6d22691b1	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x005324f0	main_CreateWindow	main	e71c7b0efc605d69	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x00532700	main_StartCityGame	main	62d798df77938acd	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x005327e0	main_PlayerCountDialog	main	bac3a47610bebff4	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x005327e0	main_PlayerCountDialog	main	bac3a47610bebff4	no	draft	sample n=32 seed=1 compiled=31 codegens=1 best=draft
 exe	0x005328f0	main_HostNetworkGame	main	80d005b09b099034	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00532a70	main_JoinNetworkGame	main	07ec480448c207ae	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x00532c30	main_EnterHostAddress	main	d79764f086820d42	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
