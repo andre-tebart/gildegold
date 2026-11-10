@@ -2310,17 +2310,29 @@ char d3_DeflateScene(unsigned int flags)
 }
 /* 0x43dbc0, d3_ForEachObject2 callback: builds the drawable points and triangles of all surfaces
    from the loaded mesh data.
-   @deep read the whole function against the original 0x43dbc0..0x43deac: the surface loop, the tris/keys
-   allocations, the point init loop, the mat table, the per-triangle init (vofs, drawFlags b0, uofs, zofs
-   stores in the original's order), the vertex links with rawFlags |= 0x80, the texture lookup and its
-   alpha/blend colour, the wrap bits; all statements line up (ours 254 vs 252). Made readable:
-   D3PVERT/D3CVERT.wrap (0x4d), rawFlags, the D3TEXV view's alpha/blend instead of byte indexing (the typed
-   D3TEXTURE fields in d3.h move he_PostEvent67 and ai_TutorialInitChapter2/3 off byte by the struct text
-   alone: not taken). Left: allocation only - ours holds the constant 0 in ebx across the triangle loop ('-
-   xor ebx,ebx / - mov [eax+0x20],ebx', '- mov byte [eax+0x24],bl', '- mov [eax+0x14],ebx' and the
-   re-zeroing 'xor ebx,ebx' after each inner loop), the original rebuilds it in ecx at the loop head ('+
-   jmp 0x43dd4d / + xor ecx,ecx', 0x43dd49) and uses immediates for flags and tex, so it has ebx free for
-   'mov bl,[edi+0x6e] / test bl,1' and the mat pointer; the inner loops' counters swap ecx/edx accordingly. */
+   @stuck headers sample: insensitive (32 samples, one codegen). Read again: the original's zero is a
+   loop-local candidate in ecx (xor ecx,ecx at the loop head, skipped by a jmp on entry where k = 0 already
+   left ecx zero; vofs/uofs/zofs stored from ecx, flags = 0 and tex = 0 as immediates, the mat tests as test
+   reg,reg), and ebx is a plain temp (bl for the b0 and rawFlags byte updates, the blend test, mat[] base);
+   ours gives the zero ebx for the whole triangle loop (cmp reg,ebx, byte stores from bl, xor ebx,ebx after
+   each inner loop). Same meaning. dcp try (this session): p->mat for the t->src casts 123; m split into a
+   mat-index local and/or a second inner-loop counter = control; flags = 0 moved to each of 9 positions
+   110-160; b0 = 0 first = control, last 106 (no structural gain, not kept); vofs/uofs/zofs chained 108
+   (regs 30, order 10); int 0 for the floats = control; mat test as (m = ..) < 0 = control; j = 0 before the
+   loop = control; t->src = p dropped = control; int made 114; col.l = ~0 at 9 positions or first 110-131.
+   Next: what makes const#0 a whole-loop candidate in ours (c2prio-style count of its references per block).
+   (tiebreak: insensitive) prior: read the whole function against the original 0x43dbc0..0x43deac: the
+   surface loop, the tris/keys allocations, the point init loop, the mat table, the per-triangle init (vofs,
+   drawFlags b0, uofs, zofs stores in the original's order), the vertex links with rawFlags |= 0x80, the
+   texture lookup and its alpha/blend colour, the wrap bits; all statements line up (ours 254 vs 252). Made
+   readable: D3PVERT/D3CVERT.wrap (0x4d), rawFlags, the D3TEXV view's alpha/blend instead of byte indexing
+   (the typed D3TEXTURE fields in d3.h move he_PostEvent67 and ai_TutorialInitChapter2/3 off byte by the
+   struct text alone: not taken). Left: allocation only - ours holds the constant 0 in ebx across the
+   triangle loop ('- xor ebx,ebx / - mov [eax+0x20],ebx', '- mov byte [eax+0x24],bl', '- mov [eax+0x14],ebx'
+   and the re-zeroing 'xor ebx,ebx' after each inner loop), the original rebuilds it in ecx at the loop head
+   ('+ jmp 0x43dd4d / + xor ecx,ecx', 0x43dd49) and uses immediates for flags and tex, so it has ebx free
+   for 'mov bl,[edi+0x6e] / test bl,1' and the mat pointer; the inner loops' counters swap ecx/edx
+   accordingly. */
 
 void d3_InflateObject(D3OBJECT *obj)
 {
