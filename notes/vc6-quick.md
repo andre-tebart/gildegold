@@ -88,6 +88,20 @@ mechanisms, each as a generated round over all positions / subsets:
   takes a callee-saved register and reshapes the constant webs around it (d3d_GetDeviceInfo: 91 -> 25 lines).
 - Signals: identical bytes for a whole family = mechanism does not reach it; a moved difference at a worse count
   = right mechanism, refine it (subsets, positions).
+- **A message struct declared in the block that fills and sends it** (`if (..) { AIMSG msg; memset; fields;
+  cm_SendLongMessage(&msg); }`, not at function scope): VC6 then schedules the fill as the original (a load
+  hoisted above the memset, constant stores sunk past the push, a byte store after the time copy) where no
+  statement order did (5040 orders in hmt_DecideElection; ~250 in ai_MsgWorkerStop). Swept with deep-tools
+  blockscope.py over every below-byte function with a function-scope AIMSG (2026-11-10): 9 byte, 1 draft ->
+  shape, 5 closer. Try it first on any fill-order hunk of a struct local; the declaration in a loop body or
+  at the start of a switch block counts too.
+- **A void-looking init whose last statement tests a call's result** (`if (f(&x) == 0) {..}`) where the
+  original keeps eax untouched to the end and uses ecx / edx for the branch's loads: the function returned
+  the result (`int hmt_Init(void) { ..; ret = f(&x); if (ret == 0) {..} return ret; }`; the caller ignores it).
+  hmt_Init 12 ins -> byte.
+- **Two zero inits before a loop** (`n = 0; for (i = 0; ..)` gives `xor ebp,ebp; xor edi,edi` in n, i order):
+  the original's i-first order is `for (i = 0, n = 0; ..)` (ai_BlackmailBuildingListener). Two initialized
+  declarations store in declaration order (`AIBLD *nearest = 0; float best = 1e8f;`, he_RunFire).
 
 ## Control flow and returns
 - **Empty case labels**: VC6 drops `case X: break;` (also `return;`, dead stores, `goto` to the join)
@@ -108,6 +122,16 @@ mechanisms, each as a generated round over all positions / subsets:
 - Source order of switch cases decides block layout. Empty cases are dropped (unsolved for d3d_Error).
 - Repeated cleanup at each failure site (VC6 tail-merges them) often matches better than `goto fail`.
 - `int ret = 0; if (...) {...} else ret = -1; return ret;` gives a result kept in a callee-saved register.
+- **A result local that the original reloads from a stack home at a failure return** (`mov ebp,[esp+N]; mov
+  eax,ebp`) where ours returns `xor eax,eax` from its own epilogue: VC6 folded `return f;` to `return 0` because
+  only `f = 0` reaches that return. The original's failure path fell through to the final `return f;` (nested
+  `if (e) { if (zip) {..} } else {..}` with one shared not-found statement after them, no `goto notfound;
+  .. return f;`): then f keeps its home and the frame grows to the original's. vfs_Tfopen draft 152 -> shape 44.
+  The success path that must skip the failure statement leaves with `goto done;` (done: before the final
+  return); a missing-entry error is the `else` of `if (e) {..}` so both successes share the final return.
+- `n > 3` and `n >= 4` compile differently (`cmp 3; jg` / `cmp 4; jge`): VC6 keeps the literal. `best <
+  x` against `x > best` decides the fld / fcomp operand order and `test ah,5; jp` against `and eax,0x4100;
+  jne` (hmt_DecideElection).
 
 ## Registers, stack slots, locals
 - Declaration order of locals almost never matters; slot order follows first use / reference counts after
@@ -125,6 +149,9 @@ mechanisms, each as a generated round over all positions / subsets:
   `p++, i++`, and a local for a repeated pointer load (`k = info->keys`).
 - Inline-asm macro temps (D3_ZERO, copy macros): their declaration order decides stores and slots; asm forces an
   ebp frame. Fixed-point helpers are `__inline` functions with `__asm` bodies.
+- **A frame one small buffer larger than the original's**: look where the original's buffer addresses point.
+  err_ExceptionFilter's 7-byte code window (`lea ebx,[text]`, `err_CheckCall(text + 7, ..)`) is the dead
+  `text[]` buffer, not a `char win[7]`: dropping the extra array gave the original's frame 0x280.
 
 ## Floating point
 - Commutative operand order is rank-based, not source order: textual swaps rarely change anything. Ranks move

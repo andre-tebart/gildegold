@@ -2843,3 +2843,34 @@ differing instructions. The same shape made the character loop of 0x512f30 pick 
   = control). vfs_MemOpen 37 -> 2 ins. Left: an early `return 0` whose `xor eax, eax` the original hoists
   to the entry and joins past the final `mov eax, esi` (not reached by ret locals, f = 0 placement, or
   flat / nested / duplicated failure returns).
+
+## match-deep 2026-11-10 (vfs_Tfopen, err_ExceptionFilter, hmt_Init, hmt_DecideElection + AIMSG sweep)
+
+- vfs_Tfopen (draft 152 -> shape 44, stuck): the original's f has a stack home ([esp+0x24], stored at entry
+  and after the zip pool_Alloc, reloaded in the not-found block) because VC6 cannot fold `return f` to 0
+  there. Ours had `notfound: sprintf(..); return f;` reached by gotos from paths where only f = 0 reaches,
+  so VC6 emitted `xor eax,eax` and its own epilogue and f lost its home. Rewritten as nested
+  `if (e) { if (e->zip) {..; if (zip) {..; unzClose(zip);} } else {..; if (fp) {..; opened: ..; goto done;} } }
+  sprintf(not found);` falling through to the final `return f;` (152 -> 106 -> 66), the write path's missing
+  entry as the else of `if (e)` (-> 46, shape), `binary = 1;` before `read = 1;` (-> 44). Left: the cross-jump
+  direction of the identical success tails (binary / compressed / count / return): the original keeps the read
+  path's copy (falling into the epilogue the early argument checks reach) and the write success jumps to it;
+  ours the reverse. Not moved by: read success `return f` (86-150), write success `return f` (53) / `goto
+  done` (= control), the write branch first (352), `goto end` at the old label (239).
+- err_ExceptionFilter (stuck, tie-break sensitive): the frame is 8 bytes larger with a separate `char win[7]`
+  for the stack walk's code window; the original reads it into `text` (lea ebx,[esp+0x90] = text, inc ebx per
+  shorter read; err_CheckCall(text + 7)). The registers then still follow the declaration set (2 codegens in
+  32 samples).
+- hmt_Init byte: returns hmt_ReadBinaryFile's result (eax live to the end gives the original's ecx / edx loads
+  and their order; void + the same statements is hmt_Reset's code).
+- hmt_DecideElection byte: `n >= 4`, `cand[i].score > best`, the AIMSG declared in the send branch, fill
+  order type, to, time, fromId, flags, arg[5], arg[4]. Without the block scope the best of all 5040 fill
+  orders left the `mov byte [msg.type],0xa5` before the time copy (2 ins); block-scoped it lands after it.
+- The block-scope lever swept over 112 below-byte functions with a function-scope AIMSG (deep-tools
+  blockscope.py writes one whole-function variant per inner block; variants whose block does not hold every
+  use fail to compile): byte ai_MsgWorkerStop (stuck since session 3, ~250 orders tried), ai_StartBuildingWork,
+  ai_UnloadCarts, he_PostWorkshopEvents98, ai_MsgFreeBuildingObjectType2e, ai_CabinetSpyOnCharacter,
+  ai_CabinetSpyByMoney, ai_GraveAgeContact; plus he_RunFire and ai_BlackmailBuildingListener with one more
+  lever each; ai_CabinetIntrigueWindow draft -> shape. Closer but below: gv_GraveyardTurn, he_RunHarvest,
+  he_RunGraveyardWorkers, ai_StorageWindow, ai_CourtshipWindow. No gain (block scope = control or worse):
+  the other ~95, e.g. the lc.c window functions' big fills.
