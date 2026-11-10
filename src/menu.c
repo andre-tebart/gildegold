@@ -2779,7 +2779,9 @@ void ai_BloodRevengeWindow(int building)
         } else if (d2_ClickedId != -1) {
           if (d2_PointerObj == ids[0]) {
             if (sv_CheckMoney(ai_CharsC + ai_PlayerId * 0x21c, total) == 1) {
-                txt_Format(msg, 0x41bf, rows[0].rec->id);
+                AICHARVIEW *av = rows[0].rec;
+
+                txt_Format(msg, 0x41bf, av->id);
                 k = 0;
                 for (i = 1; i < 5; i++) {
                     if (rows[i].rec != 0) {
@@ -2791,7 +2793,7 @@ void ai_BloodRevengeWindow(int building)
                 }
                 gm_SendMoneyDelta(((AICHARVIEW *)(ai_CharsC + ai_PlayerId * 0x21c))->netId, -total);
                 cm_SendSetField(((AICHARVIEW *)(ai_CharsC + ai_PlayerId * 0x21c))->netId, 0x1cc, 4, 8, 0);
-                ai_GypsyDeliveryText((struct AIPER *)rows[0].rec, k, (struct AIPER **)&sel[5]);
+                ai_GypsyDeliveryText((struct AIPER *)av, k, (struct AIPER **)&sel[5]);
                 txt_Format(msg, 0x41b9, 0x41b2);
                 sv_MessageBox((int)msg, 0);
                 sv_PopRequest = 1;
@@ -2800,10 +2802,7 @@ void ai_BloodRevengeWindow(int building)
             sv_PopRequest = 1;
         } else {
             for (i = 0; i < 5; i++) {
-                if (d2_PointerObj == rows[i].ctl)
-                    break;
-            }
-            if (i < 5) {
+              if (d2_PointerObj == rows[i].ctl) {
                 memset(&cfg, 0, sizeof(cfg));
                 idp = cfg.ids;
                 for (k = 0; k < 5; k++) {
@@ -2818,11 +2817,10 @@ void ai_BloodRevengeWindow(int building)
                 cfg.kind = 6;
                 cfg.option14 = 2;
                 rows[i].rec = (AICHARVIEW *)ai_AmountMenu((int)&cfg, (int)txt_Ptrs[0x41b4 + (i != 0)], 0, 0);
-                if (rows[i].rec != 0)
-                    sel[i] = rows[i].rec->netId;
-                else
-                    sel[i] = -1;
+                sel[i] = rows[i].rec != 0 ? rows[i].rec->netId : -1;
                 refresh = 1;
+                break;
+              }
             }
           }
         } else if (d3_Time > (unsigned)(tick + 0x8c)) {
