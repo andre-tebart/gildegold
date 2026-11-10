@@ -891,7 +891,8 @@ char d3s_MeshFromMap(int *rect, int stride, unsigned char *map, float *origin, f
     }
     return 1;
 }
-extern const float ai_FloatZero, ai_FloatOne;  /* the shared 0.0f / 1.0f (bio.c) */
+extern float ai_FloatZero;  /* 0x5eb788, the shared 0.0f (cm.c) */
+extern const float ai_FloatOne;  /* 0x5eb780, the shared 1.0f (bio.c) */
 
 /* 0x45b8d0, adds the shadow of slot to the shadow object. The slot copies are parenthesized: VC6 then copies the
    floats through the FPU as the original does (likely a macro's parentheses); v0, du and dv start from the shared
