@@ -1381,7 +1381,7 @@ exe	0x004788f0	d2_RemoveHitRect	gfx	a438f30d8870ebdd	no	byte	control=byte p1=byt
 exe	0x00478930	d2_CompareColour	gfx	90490322c826a8b1	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00478960	d2_SetColour	gfx	a97f697e98ef57a4	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00478980	d2_GetBmpSize	gfx	f9f73b5acea95404	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x00478a00	d2_ReadBmpPixels	gfx	39f042b2ef4def82	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x00478a00	d2_ReadBmpPixels	gfx	10688ea273b9759f	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x00478b50	d2_LoadBmpSurface	gfx	764489b0bd6172e9	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00478bd0	d2_ConvertRgbTo16	gfx	f3b65bb37d51795b	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
 exe	0x00478c50	d2_Convert16ToRgb	gfx	ab42004b42c7ad4b	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
