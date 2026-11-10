@@ -1097,7 +1097,7 @@ exe	0x0045db20	d3sky_Free	d3_sky	c499cbc7cb2972c4	no	byte	control=byte p1=byte p
 exe	0x0045db40	d3sm_GetGround	d3_sm	ac2998e99a171db4	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0045dc00	d3sm_Sample	d3_sm	84a18a5878323dcb	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x0045e180	d3sm_BoundsCB	d3_sm	5e17679c48c759f2	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x0045e210	d3sm_ShadowCB	d3_sm	a2db256780869439	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x0045e210	d3sm_ShadowCB	d3_sm	2195ddd8cefe0062	no	shape	sample n=32 seed=1 compiled=32 codegens=1 best=shape
 exe	0x0045e560	d3sm_Replace	d3_sm	93d5b4ba6bfd254d	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
 exe	0x0045e620	d3sm_Build	d3_sm	704e77df5627cb9e	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x0045eeb0	d3sm_Create	d3_sm	556292c55fe65bfe	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
