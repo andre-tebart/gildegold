@@ -1294,18 +1294,7 @@ int ai_MsgJobEndValueType2a(G14MSG *m)
    when a 0..49 roll beats gm_Liking(c, p, 1) (the worker does not like c, and a building's AIMSG type 0x31
    stops whoever it names) c is told (text 0x12e7 + 0x2b) and p is told to stop working: an AIMSG type 0x31
    (fromId b->id, to c, arg[0] p, the receive side cm.c 0x4c9c10 runs ch_StopActions on "sp_<p>", ch.c's stop of
-   the action). Skipped when c holds the item 0x290. As 0x4b84b0 (which hurts the worker instead).
-   @stuck earlier: the whole body reads the same as the original; hoisting the fromId load into a local
-   before the memset matched that instruction but grew the bytes (reverted); the 16-bit time-word store
-   already agrees in width. Deep session 3: raised draft -> shape by the AIMSG fill order type, flags, to,
-   fromId, time, arg[0] (lc.c's 0x31 fills use the same order; variants.py over ~200 orders: 24 orders of
-   the first four, ~120 with time / arg[0] moved, 120 with a hoisted id local: none byte; shape also for
-   type/to/flag/from, flag/to/type/from, flag/type/to/from, arg/from/time/to/type/flag). Left (order 42,
-   all in the fill after he_ShowNews): the original loads b->id (mov edx,[ebp+1]) before the rep stosd and
-   stores it first, and sinks the constant stores (mov byte [msg.type],0x31; mov byte [msg.flags],1) and
-   the time word (mov word [..],ax) past lea edx,[msg] / push edx; ours keeps them in source order before
-   the push. A list-scheduling difference of the 14-byte time struct copy and the constants; no source
-   order reproduces it. (tiebreak: not measured (dcp headers sample ai_MsgWorkerStop)) */
+   the action). Skipped when c holds the item 0x290. As 0x4b84b0 (which hurts the worker instead). */
 
 int ai_MsgWorkerStop(G14MSG *m)
 {
@@ -1314,7 +1303,6 @@ int ai_MsgWorkerStop(G14MSG *m)
     int n, k, i;
     float f;
     void *a[8];
-    AIMSG msg;
     char buf[0x200];
 
     n = 0;
@@ -1342,6 +1330,8 @@ int ai_MsgWorkerStop(G14MSG *m)
         return 0x400;
     f = gm_Liking(c->id, p->id, 1);
     if (util_RandomU(0x32) > f) {
+        AIMSG msg;
+
         txt_Format(buf, m->type + 0x12e7, (((char *)p)[9] ? 0x230 : 0x20d) + (unsigned char)p->title, p->id, b);
         he_ShowNews(c->netId, c->netId, buf, strlen(buf) > 0x100, 0x603, 0);
         memset(&msg, 0, sizeof(msg));
