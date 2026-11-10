@@ -141,6 +141,10 @@ mechanisms, each as a generated round over all positions / subsets:
 - Source order of switch cases decides block layout. Empty cases are dropped (unsolved for d3d_Error).
 - Repeated cleanup at each failure site (VC6 tail-merges them) often matches better than `goto fail`.
 - `int ret = 0; if (...) {...} else ret = -1; return ret;` gives a result kept in a callee-saved register.
+- **Callee-saved push after the guards** (`push esi` at entry, `push ebx` only after two `return 1` guards,
+  ours both in the prologue): a `return 2;` inside the first of two `if (m == 3 ..) {..}` / `if (m == 1 ..)`
+  blocks with the same `return 2;` after them. `if {..} else if (..) ..; return 2;` (one shared return) put the
+  push where the original has it: ord_WageReportOrder byte. Wrapping the rest in an `else {}` did nothing.
 - **A result local that the original reloads from a stack home at a failure return** (`mov ebp,[esp+N]; mov
   eax,ebp`) where ours returns `xor eax,eax` from its own epilogue: VC6 folded `return f;` to `return 0` because
   only `f = 0` reaches that return. The original's failure path fell through to the final `return f;` (nested
@@ -164,6 +168,11 @@ mechanisms, each as a generated round over all positions / subsets:
 - `volatile` reproduces a value the original re-reads from memory (globals like `d3_Time`, locals, parameters).
 - A global array indexed in every statement (`g[i].x = ..`) is reloaded after each store; a pointer local is not.
 - One variable reused for unrelated loops / branches shares their stack slots: split it.
+- Two address-taken out-parameters (`f(pos, &x, &y)`) in swapped slots: a temp `i = y + x * 8` used twice
+  vs the expression written at both uses changes their reference counts; the inline form gave the original's
+  order (ord_CountGridObjects draft -> shape). A pointer local (`mt = &desc.mats[mi]`) vs `desc.mats[mi].f` at
+  each use also moves a large struct local across others in an ebp frame (d3iot_LoadBGF: +9 desc refs moved desc
+  above two D3VECTOR4s): count the references before trading a pointer local for repeated field access.
 - Pointer vs index loops pick different bases / induction variables: try `p[i].f`, `p++`, `i++, p++` vs
   `p++, i++`, and a local for a repeated pointer load (`k = info->keys`).
 - Inline-asm macro temps (D3_ZERO, copy macros): their declaration order decides stores and slots; asm forces an
