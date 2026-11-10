@@ -1459,7 +1459,15 @@ int cm_SendFieldValues(void);                     /* 0x4c49e0 */
    the time an emptied job was left, he_FreeEvent, the pause script, cm_SendExSetHE for an empty job); without
    an old job a running "Pause" / "pause" script of the model is stopped. Then he joins g (sv_AddGroupMember)
    and the new job kind (field 0x180) is sent and the job set when it changed
-   @deep read against the original and fixed: room (*it != 0xfd) polarity, w >= 0, the action arguments
+   @stuck match-deep s53: 88 -> 74 ins (draft -> shape): sv_RemoveGroupMember's id re-read from the record
+   (((SVCHARREC *)ai_Chars[c])->id, one of 19 ch uses; a 190-variant subset run, singles and pairs). Left:
+   ch and old in swapped registers through the whole function (ours ch esi / old ebx, the original ch ebx /
+   old esi: push ebx before push esi, mov ecx vs mov eax for o = ch->bld). Tried, no gain: a second pass
+   over the 18 remaining ch uses (singles and pairs, 171 variants: none closer), old's uses re-read as
+   ch->group (singles and pairs, 120 variants: none closer), ch / old declaration moved to every position
+   (= control), old read before ch, the final ch->group test as old, ch->group = g in both arms of the last
+   if, newkind's else dropped, ev split / block-scoped / reusing old (= control). (tiebreak: insensitive)
+   prior: read against the original and fixed: room (*it != 0xfd) polarity, w >= 0, the action arguments
    o->id / it->objId, old != 0 first, the case bodies in the original's order (0x28 before 0x14; tables now
    equal), <= 0 slot tests, 'pause' before 'Pause', g != 0 first, newkind = 0 at entry, the job time as an
    AITIME struct copy (memcpy took esi/edi), cm_SendExSetHE(-1) as an int push; typed SVCHARREC / SVGROUP /
@@ -1507,7 +1515,7 @@ void sv_MoveToGroup(unsigned char *o, short *it, int c, char *g)
         }
     }
     if (old != 0) {
-        sv_RemoveGroupMember(ch->id, (char *)old);
+        sv_RemoveGroupMember(((SVCHARREC *)ai_Chars[c])->id, (char *)old);
         switch (old->kind) {
         case 3:
         case 4:
