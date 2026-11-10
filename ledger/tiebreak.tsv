@@ -660,7 +660,7 @@ exe	0x0042f4d0	vfs_AddFilePath	vfs	5ed90652084906a7	no	byte	control=byte p1=byte
 exe	0x0042f5c0	vfs_CmpEntry	vfs	62cac4a41fc2c11b	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0042f600	vfs_CmpEntryI	vfs	c613620882478695	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0042f620	vfs_FinishedFiles	vfs	d7d5e6ac2c159be7	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x0042f7e0	vfs_FindDir	vfs	aa5408d70eb7733d	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x0042f7e0	vfs_FindDir	vfs	aa5408d70eb7733d	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x0042f8f0	vfs_FindFile	vfs	73d96c415040fd75	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0042fa10	vfs_EntryPath	vfs	bb41de82190bb2ad	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
 exe	0x0042fbf0	vfs_DirPath	vfs	35f34d27d54a6f76	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
