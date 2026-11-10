@@ -1676,13 +1676,16 @@ typedef struct G12REC10 {               /* 0x5c bytes, one of the ten records 0x
 void cm_SendGoodsRecord(void *p, unsigned char k);                                /* 0x4c56d0, defined elsewhere */
 
 /* 0x4b11e0, text command "-PLUS_<kind>_n" / "-MINUS_<kind>_n" (kind WAFFEN / BUECHER / ENDPRODUKTE): scales
-   the prices of the player's stock of that kind by 1 +- n% (0x4c56d0)
-   @deep meaning read equal against the disassembly (all 14 hunks), only allocation / scheduling left plus a Q2 block. This session: the stock block stride (0x7d6a70 + player * 0x2a90, gm_StockBlocks[p].goods; was a [][0x55] record view, stride 0x2a80, wrong records for every ai_OwnPlayer > 0) and &e instead of e.unk08 to 0x4c56d0 (that callee memcpy's 0x80 bytes; the original's lea [esp+0x54] with 8 pushed bytes is e+0) are fixed: 332 -> 275 differing instructions, frame 0xbc now equal, every slot equal (sign 0x14, name 0x1c, kind 0x28, e 0x4c). What is left: the register permutation fmt/i/cursor = edx/ebx/ebp here vs ebp/edx/ebx in the original (the original keeps fmt in ebp as ai_CommandLaw does - ours loads it into edx before sub esp and spills i to [esp+0x10] inside the name loop, one extra store), the FPU kept-alive pattern in the three loop tails (original fst g; fmul e.demand, ours fstp g; fld e.demand; fmul g) and the 167-instruction prologue store order (the string copies are verified against .rdata: name MINUS/PLUS at 0x601bc4/0x601bbc, kind WAFFEN/BUECHER/ENDPRODUKTE at 0x601c40/0x601c38/0x601c2c, sign -1/1). Tried and reverted: a per-loop stock record pointer local (336 asm, code 48 bytes smaller) - allocation, not meaning. Q2 block: cm_SendGoodsRecord (0x4c56d0 = message 0x3f, k and 0x80 bytes of p, cm.c; cm_SendGoodsRecord is the evidenced name) and ai_FindWeaponRecord (0x4cd9d0, the record of ten with id, cm.c) - both need their own units' evidence before the rename. */
+   the prices of the player's stock of that kind by 1 +- n% (0x4c56d0). Open: cm_SendGoodsRecord (0x4c56d0, message
+   0x3f, k and 0x80 bytes of p, cm.c) and ai_FindWeaponRecord (0x4cd9d0, the record of ten with id, cm.c) need their
+   own units' evidence before a rename. The 1.0f is ai_FloatOne in the original (the literal spelling is the one that
+   gives VC6's common subexpression for f + 1) */
 int ai_CommandDemand(int a, int b, char *fmt)
 {
     GMSTOCK e;
-    float f, g;
-    int i, j;
+    float f;
+    int i, j, s;
+    GMSTOCK *p;
 
     if (*fmt != '-')
         return 0;
@@ -1698,6 +1701,7 @@ int ai_CommandDemand(int a, int b, char *fmt)
     }
     if (i >= 2)
         return 0;
+    s = sign[i];
     fmt += strlen(name[i]);
     if (*fmt != '_')
         return 0;
@@ -1711,18 +1715,18 @@ int ai_CommandDemand(int a, int b, char *fmt)
     fmt += strlen(kind[j]);
     if (*fmt != '_')
         return 0;
-    f = (float)(atoi(fmt + 1) * sign[i]) * 0.01;
+    f = (float)(atoi(fmt + 1) * s) * 0.01;
     switch (j) {
     case 0:
         for (i = 0; i < 0x55; i++) {
-            if (gm_StockBlocks[ai_OwnPlayer].goods[i].item != 0 && gm_StockBlocks[ai_OwnPlayer].goods[i].amount != 0) {
-                G12REC10 *r = (G12REC10 *)ai_FindWeaponRecord(gm_StockBlocks[ai_OwnPlayer].goods[i].item);
+            p = &gm_StockBlocks[ai_OwnPlayer].goods[i];
+            if (p->item != 0 && p->amount != 0) {
+                G12REC10 *r = (G12REC10 *)ai_FindWeaponRecord(p->item);
 
                 if (r != 0 && r->id != 0) {
-                    g = f + 1.0f;
                     e = gm_StockBlocks[ai_OwnPlayer].goods[i];
-                    e.mean = g * e.demand;
-                    e.price = gm_ItemPrice(gm_StockBlocks[ai_OwnPlayer].goods[i].item, 100) * g;
+                    e.mean = (f + 1.0f) * e.demand;
+                    e.price = gm_ItemPrice(p->item, 100) * (f + 1.0f);
                     cm_SendGoodsRecord(&e, ai_OwnPlayer);
                 }
             }
@@ -1730,24 +1734,24 @@ int ai_CommandDemand(int a, int b, char *fmt)
         break;
     case 1:
         for (i = 0; i < 0x55; i++) {
-            if (gm_StockBlocks[ai_OwnPlayer].goods[i].item != 0 && gm_StockBlocks[ai_OwnPlayer].goods[i].amount != 0
-                && ai_GoodsT[gm_StockBlocks[ai_OwnPlayer].goods[i].item].type == 8) {
-                g = f + 1.0f;
-                e = gm_StockBlocks[ai_OwnPlayer].goods[i];
-                e.mean = g * e.demand;
-                e.price = gm_ItemPrice(gm_StockBlocks[ai_OwnPlayer].goods[i].item, 100) * g;
+            p = &gm_StockBlocks[ai_OwnPlayer].goods[i];
+            if (p->item != 0 && p->amount != 0
+                && ai_GoodsT[p->item].type == 8) {
+                e = *p;
+                e.mean = (f + 1.0f) * e.demand;
+                e.price = gm_ItemPrice(p->item, 100) * (f + 1.0f);
                 cm_SendGoodsRecord(&e, ai_OwnPlayer);
             }
         }
         break;
     case 2:
         for (i = 0; i < 0x55; i++) {
-            if (gm_StockBlocks[ai_OwnPlayer].goods[i].item != 0 && gm_StockBlocks[ai_OwnPlayer].goods[i].amount != 0
-                && ai_GoodsT[gm_StockBlocks[ai_OwnPlayer].goods[i].item].type == 0x20) {
-                g = f + 1.0f;
-                e = gm_StockBlocks[ai_OwnPlayer].goods[i];
-                e.mean = g * e.demand;
-                e.price = gm_ItemPrice(gm_StockBlocks[ai_OwnPlayer].goods[i].item, 100) * g;
+            p = &gm_StockBlocks[ai_OwnPlayer].goods[i];
+            if (p->item != 0 && p->amount != 0
+                && ai_GoodsT[p->item].type == 0x20) {
+                e = *p;
+                e.mean = (f + 1.0f) * e.demand;
+                e.price = gm_ItemPrice(p->item, 100) * (f + 1.0f);
                 cm_SendGoodsRecord(&e, ai_OwnPlayer);
             }
         }

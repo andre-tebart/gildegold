@@ -1893,7 +1893,7 @@ exe	0x004b0b50	ai_CommandLawChange	hst	8a3aae495a45fe26	no	shape	control=shape p
 exe	0x004b0d40	ai_CommandFaithChange	hst	0677d8907f4aaff4	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
 exe	0x004b0fd0	ai_CommandRiot	hst	471d0d7fd6e9fbe5	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x004b1060	ai_CommandBreakGuildSeats	hst	3cf0c2168d04ecca	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
-exe	0x004b11e0	ai_CommandDemand	hst	06409cfaff4aee14	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x004b11e0	ai_CommandDemand	hst	06409cfaff4aee14	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x004b1600	ai_CommandMercenariesPlunder	hst	dcf24b4cb4cdd247	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004b16e0	ai_CommandMercenariesMaraud	hst	fd53a907375adda9	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004b17c0	ai_CommandRemoteTradeRaider	hst	8a710f0c4abd47b4	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
