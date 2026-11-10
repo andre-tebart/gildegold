@@ -450,6 +450,7 @@ int cm_SendMessage10(unsigned char n, int b, void *p, short d);  /* 0x4c45c0, cm
 void gm_AssignBuilding(unsigned char *b, int place, int own);  /* 0x502b60, f3gm.c */  /* @original: f3gm.c defines `unsigned short place, unsigned own`; the caller below zero-extends the word load (xor/mov cx, no and mask) */
 void gm_SyncMarket(unsigned p);         /* 0x4fec10, f3gm.c */
 void ai_MsgNoOp(struct AICHAR *c);                     /* 0x4b70f0 */
+void init_RoomNoOp(void);                                /* unlinked, folded into ai_MsgNoOp (below init_ShowBuildingScene) */
 struct G15PLANT;
 void ai_FavourComment(char *a);
 
@@ -3442,8 +3443,7 @@ void init_SetCharacterAnimations(unsigned char *b)
    registered for home-type buildings (init_PlantTextureSetHook / init_TextureSetHook, mask 0xc0), for the gates
    (init_GateObjectHook, 0x20) and for the scene records (init_SyncSceneObjects, 0x1e0), the objects of the
    building / of its person are shown and the characters near it placed (at most 4, or 8 for the class 0x16;
-   ch_List first, then the models of the ai_Chars records)
-   @deep behaviour + readable, meaning read whole against 0x513050..0x5133f6 and fixed: the room object's proto is read once (an unsigned short local from a plain unsigned short *o; the old char temp made the table byte sign-extend after the merged call), the room record's own id is at +2 not +4 (*(INIT_OBJ *)o)->objId), the ai_Chars model walk re-reads *q before each use, the two loop ends are signed int compares, b is an INIT_BLD (id +1, objList +0x5d, plants +0x71), sv_PanelShown is an INIT_OBJ * (objId), and the 3 loops use SCENEOBJ (group 0x2c / scriptGroup 0x30) + the INIT_PANELCHAR chain view (+0x3b). Left: allocation / scheduler shape - 13 hunks / 94 differing instructions, none a meaning difference: (1) VC6 merges the valid room branch's ai_MsgNoOp() (0x4b70f0, a bare ret) with the invalid branch's, the original calls it twice (tried: statement order, polarity, goto, call before the load - always merged); (2) d3if_ShowTree(d, ai_GfxDetail != 0) - the original materializes the char bool with test/jne + push 0/push 1, ours with setne cl/push ecx (tried ternary, !!, & 1, > 0, a cast, an int parameter - no change); (3) the else arm's redundant t->scene == d3_DefaultScene re-test, which VC6 folds for every cast form tried; (4) register allocation of the d3_ForEachObject2 pair (edx/eax vs ecx/edx) and of the two character walks. */
+   ch_List first, then the models of the ai_Chars records) */
 
 
 void init_ShowBuildingScene(unsigned char *b, int slot)
@@ -3454,7 +3454,7 @@ void init_ShowBuildingScene(unsigned char *b, int slot)
     SCENEOBJ **q;
     INIT_CHAR *c;
     struct D3OBJECT *d;
-    int season, cls, i, uni, limit;
+    int season, cls, i, uni, limit, k;
     unsigned short proto;
     char *p;
 
@@ -3469,17 +3469,21 @@ void init_ShowBuildingScene(unsigned char *b, int slot)
     } else {
         ai_SceneObject = o;
         uni = init_ObjectUniverse[proto];
-        ((int (*)())ai_MsgNoOp)();
+        init_RoomNoOp();
     }
     if (d3_CurrentScene == uni && (ai_PlayerBuilding == 0 || ai_PlayerBuilding == (int)b) && (ai_FallbackBuilding == 0 || ai_FallbackBuilding == (int)b)) {
         d = d3_FindObject(0, 0x180, 0, "ordner_DETAILS");
-        if (d != 0)
-            d3if_ShowTree(d, ai_GfxDetail != 0);
+        if (d != 0) {
+            if (ai_GfxDetail == 0)
+                d3if_ShowTree(d, 0);
+            else
+                d3if_ShowTree(d, 1);
+        }
         ch_CurrentGroup = bd->id;
-        if (sv_PanelShown == 0)
-            evt_NoGroup = bd->id;
-        else
+        if (sv_PanelShown != 0)
             evt_NoGroup = ((INIT_OBJ *)sv_PanelShown)->objId;
+        else
+            evt_NoGroup = bd->id;
         if (season == 1)
             init_TextureSet = 1;
         else if (season == 0)
@@ -3505,11 +3509,12 @@ void init_ShowBuildingScene(unsigned char *b, int slot)
         i = 0;
         if (*p == 0x16)
             limit = 8;
+        else if (*p == 1)
+            limit = 4;
         else
-            limit = (*p != 1) * 4 + 4;
-        q = (SCENEOBJ **)ch_List;
-        do {
-            t = *q;
+            limit = 8;
+        for (k = 0; k < INIT_CHARACTER_COUNT; k++) {
+            t = (SCENEOBJ *)ch_List[k];
             if (t != 0 && d3t_SceneIndex(t->scene) == uni) {
                 if (t->group == bd->id || t->scriptGroup == ((INIT_OBJ *)o)->objId) {
                     ch_SetVisible((struct CHARACTER *)t, 1);
@@ -3517,10 +3522,9 @@ void init_ShowBuildingScene(unsigned char *b, int slot)
                 } else
                     ch_SetVisible((struct CHARACTER *)t, 0);
             }
-            q++;
-        } while ((int)q < (int)(ch_List + INIT_CHARACTER_COUNT));
-        c = (INIT_CHAR *)ai_Chars;
-        do {
+        }
+        for (k = 0; k < INIT_CHARACTER_COUNT; k++) {
+            c = (INIT_CHAR *)ai_Chars[k];
             if (c->model != 0 && d3t_SceneIndex(c->model->scene) == uni) {
                 t = c->model;
                 if ((t->group == bd->id || t->scriptGroup == ((INIT_OBJ *)o)->objId) && i < limit) {
@@ -3532,22 +3536,25 @@ void init_ShowBuildingScene(unsigned char *b, int slot)
                 } else
                     ch_SetVisible((struct CHARACTER *)t, 0);
             }
-            c++;
-        } while ((int)&c->model < (int)&((INIT_CHAR *)ai_Chars)[INIT_CHARACTER_COUNT].model);  /* the original walks and compares the model field's address */
+        }
         t = (SCENEOBJ *)gm_Query(0, 2, 7, 4, 0x1d);
         while (t != 0) {
             t = ((INIT_PANELCHAR *)t)->next;
-            if (t->scene == d3_DefaultScene) {
-                if (t->group == bd->id) {
-                    ch_SetVisible((struct CHARACTER *)t, 1);
-                    ch_PlaceOnGround((struct CHARACTER *)t, 0);
-                    ch_PlaceTransport((struct CHARACTER *)t, 1);
-                } else if ((int)t->scene == (int)d3_DefaultScene)
-                    ch_SetVisible((struct CHARACTER *)t, 0);
-            }
+            if (t->scene == d3_DefaultScene && t->group == bd->id) {
+                ch_SetVisible((struct CHARACTER *)t, 1);
+                ch_PlaceOnGround((struct CHARACTER *)t, 0);
+                ch_PlaceTransport((struct CHARACTER *)t, 1);
+            } else if (t->scene == d3_DefaultScene)
+                ch_SetVisible((struct CHARACTER *)t, 0);
             t = (SCENEOBJ *)gm_QueryNext();
         }
     }
+}
+/* unlinked: an empty no-argument call of the valid-room branch of init_ShowBuildingScene; LINK folds it (/OPT:ICF)
+   into ai_MsgNoOp, 0x4b70f0, where both of the original's calls point. A distinct symbol, as the original keeps the
+   two calls apart (one symbol in both arms is merged into one call) */
+void init_RoomNoOp(void)
+{
 }
 /* 0x513400, finishes the scene of the building b (init_FinishBuildingScene): one of the "contact_EINKAUF*" shop
    counter dummies ("contact_EINKAUF", then _METALL / _SKRIPTE / _HOLZ / _STEIN) is shown for the local player and
