@@ -6409,11 +6409,21 @@ void sv_EndBand(void)
    (gm_PermissionBits 0x800) whose body stands in d3_DefaultScene and has mesh data; its screen position is the
    centre of the body's first 8 transformed vertices (the bounding box corners, camera space) projected with
    d3_ScaleX / d3_ScaleY around d3_CenterX / d3_CenterY (the 1 / z truncated to an int, as the original does).
-   @deep read whole against the original and reconstructed (band clamp via min/max, the per-character
-   permission / scene / info tests, the 8-vertex centre in a padded D3VECTOR4 (frame matches 0x20), the 1/z
-   projection); all hunks equal but the allocation of info vs. the loop counter: ours 'mov eax,
-   [eax+0x1cc]; test eax, eax ... mov ecx, 8', the original's 'mov ecx, [eax+0x1cc]; test ecx, ecx ... mov
-   eax, ecx; mov ecx, 8' (one extra move). Tried: info local, v set before the inits, an indexed loop
+   @stuck one copy left: the original loads info into ecx ('mov ecx,[eax+0x1cc]; test ecx,ecx') and at the
+   loop entry 'mov eax,ecx; mov ecx,8; mov eax,[eax]'; ours loads info into eax and 'mov eax,[eax]; mov
+   ecx,8' (code 5, regs 4). Declaration set insensitive (32 samples, one codegen). Applied ai_FloatZero /
+   cm_DoubleOne for the M10 literals (same ins). Every one = control: info tested in its own if / nested
+   block / not a local (field read twice), v = info then v = *v, v reused for info, for-init with v, do /
+   while(n--) / n > 0 / n up-count walk, n as bits / iz, index loop through info->keys[n] and &keys[n],
+   every declaration position of c / v / info. Worse: v[n] index loop (16 ins), v set before the p inits
+   (9), n = 8 before the inits (9), 1.0f (11), selected = 0 in both arms (11), p inits before the info test
+   (49). Open: what in the original's IR made info a separate value from v (a second use of info, or a
+   different loop the strength reduction turned into this one) (tiebreak: not measured (dcp headers sample
+   sv_UpdateBand)) prior: read whole against the original and reconstructed (band clamp via min/max, the
+   per-character permission / scene / info tests, the 8-vertex centre in a padded D3VECTOR4 (frame matches
+   0x20), the 1/z projection); all hunks equal but the allocation of info vs. the loop counter: ours 'mov
+   eax, [eax+0x1cc]; test eax, eax ... mov ecx, 8', the original's 'mov ecx, [eax+0x1cc]; test ecx, ecx ...
+   mov eax, ecx; mov ecx, 8' (one extra move). Tried: info local, v set before the inits, an indexed loop
    (worse). */
 
 void sv_UpdateBand(void)
@@ -6441,9 +6451,9 @@ void sv_UpdateBand(void)
         c->selected = 0;
         if ((bits & 0x800) == 0 || c->model == 0 || c->model->scene != d3_DefaultScene || (info = c->model->body->info) == 0)
             continue;
-        p.x = 0.0f;
-        p.y = 0.0f;
-        p.z = 0.0f;
+        p.x = ai_FloatZero;
+        p.y = ai_FloatZero;
+        p.z = ai_FloatZero;
         v = (D3PVERT *)info->keys;
         for (n = 8; n != 0; n--, v++) {
             p.x += v->x;
@@ -6453,7 +6463,7 @@ void sv_UpdateBand(void)
         p.x *= 0.125;
         p.y *= 0.125;
         p.z *= 0.125;
-        iz = (int)(1.0 / p.z);
+        iz = (int)(cm_DoubleOne / p.z);
         sx = (int)(d3_ScaleX * iz * p.x + d3_CenterX);
         sy = (int)(d3_ScaleY * iz * p.y + d3_CenterY);
         if (sx >= left && sx <= right && sy >= top && sy <= bottom)
