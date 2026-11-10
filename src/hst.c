@@ -777,7 +777,7 @@ int ai_TokenRandomChurchProfession(int mode, G12ARG *args, int k, char *fmt, cha
    1, found = found || 1 and removing the found test give the original's slots but change the code (the
    original has the load / or al,1 / store of found |= 1); found block-scoped to the search arm moves both
    to -0x4. Header sample: insensitive. Next: a toy (deep-tools/toyasm.py) on VC6's frame order for a
-   read-modify-write local against an address-taken one; or found as another type/record field. (tiebreak:
+   read-modify-write local against an address-taken one; or found as another type/record field. ai_TokenRandomMerchant (byte, the same body without pred) has found at -0x10 / n1 -0x14 in the original too, so the difference sits in Rich's predicate choice / pred in the fmt slot. (tiebreak:
    insensitive) prior: behaviour: far draft, 173 code hunks (the RND_REICH token, callback 0x601b10[11] =
    0x4af6c0, name 0x601730[11]): the reading matches (the top-5 worth lists of the unit note) but the
    frame/slot layout, the loop form and the c = pick return-tail fold remain - the same three issues as
