@@ -605,7 +605,7 @@ void d3sndw_Update(void)
             d3sndw_State[i] = 1;
     } else {
         found[0].type = type;
-        found[0].vol = (int)((d3sndw_Vol[type] - d3sndw_Vol[type] * ai_FloatZero / (d3sndw_Range[type] * d3sndw_Range[type]))
+        found[0].vol = (int)((d3sndw_Vol[type] - (d3sndw_Vol[type] * ai_FloatZero) / (d3sndw_Range[type] * d3sndw_Range[type]))
                              * (2000 - ground) * 0.0005f);
         found[0].pan = 63;
         nfound = 1;
