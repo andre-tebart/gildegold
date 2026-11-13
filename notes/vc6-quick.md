@@ -870,3 +870,13 @@ mechanisms, each as a generated round over all positions / subsets:
   with each patched copy); c2pass.py compiles a unit with chosen calls skipped and diffs one function. No call
   switches the whole scheduler off cleanly; the sites that only reorder d3sndw_Update are 0x1070aead,
   0x1070f5b1, 0x1070f87b, 0x1070fa29, 0x10714f85, 0x1073a0d6.
+- More of the scheduler, from the dumps: a scheduling region ends at a jump, a label or after 81 instructions
+  (FUN_10714d7c), so a long straight block is scheduled in pieces. Memory operands conflict only when they are the
+  same symbol with overlapping [offset, offset+size) (FUN_1070437c): `Snd[0].snd` and `Snd[1].snd` never do.
+  ai_CannonShotResults' store-before-`add esp` is list order, not an edge: the final block's list is `call;
+  mov [ai_ShotDirty],ebx; add esp,8` with the add carrying the call's line (`ln`), because VC6 merged the
+  `add esp,8; pops` tail of the `d2_SetViewEnabled(..); return;` path with this block's tail BEFORE scheduling
+  and copied the short tail back into both; the copy lands after the store. A `ln` on an `add esp` that names
+  another statement's line is the mark of such a merged-and-copied tail. So store-first has two causes: an edge
+  (mem_Alloc, ch_GetWaypoints) or a tail shared with a second path that ends in the same call cleanup and has the
+  same successor (CannonShot). d3sndw_Update's first stop block has neither in any form tried.
