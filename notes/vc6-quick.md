@@ -848,3 +848,25 @@ mechanisms, each as a generated round over all positions / subsets:
   the add comes first (812 : 23 over the image). d3sndw_Update's first stop block is store-first with a label
   right after it: at scheduling time its block went on past that label. 437 structural forms of the two stop
   blocks (copies in both exits, nested copies, gotos) and ~60 local forms never gave store-first: open.
+
+## The back end's scheduler, read from c2.dll (tools/c2dag)
+- `python tools/c2dag/c2dag.py src/UNIT.c FUNC` prints VC6's scheduling graph of every basic block of FUNC: the
+  instructions in their order before scheduling, each with priority, height, flags and dependency edges
+  (`--blocks`: VC6's own block listing, the hidden switch `/d2FAF`: `; Block(n) In(..) Out(..)` in the /FA file).
+  It runs a copy of the compiler whose C2.DLL is a proxy (tools/c2dag/c2proxy.c, built with VC6) that loads the
+  real back end and hooks its priority pass (dag.c, RVA 0x14f6a of C2 13.00.9044).
+- The rule (read from the pass and checked against dumps): per block VC6 builds a dependency graph (register
+  def/use, memory overlap, flags; calls and jumps are barriers) and emits the ready instruction with the highest
+  priority. priority = height * 8192, + 65536 for a memory load; height = longest latency path to the block end.
+  A tie goes to the instruction that comes first before scheduling. So: loads are hoisted; `add esp,N` after a
+  call sits right after the call in the list and wins every tie; an instruction overtakes an earlier one only when
+  something later in the SAME block depends on it. A scheduling hunk therefore means one of: another list order
+  (the expression tree: parentheses, operand order, a temporary), another edge (a later statement in the block
+  that reads / overwrites what this one touches), or another block extent (a label that was not there).
+- d3sndw_Update's open hunk in these terms: block of the first stop code, nodes `add esp,16` (h=2) and
+  `mov [Snd[0].snd],ebx` (h=2), tie, add first. The original has the store first: its store had a successor in
+  that block. No source form found yet that gives it one and leaves no instruction behind.
+- tools/c2dag/c2fuzz.py maps the back end by skipping one call at a time (15353 sites; a probe file is compiled
+  with each patched copy); c2pass.py compiles a unit with chosen calls skipped and diffs one function. No call
+  switches the whole scheduler off cleanly; the sites that only reorder d3sndw_Update are 0x1070aead,
+  0x1070f5b1, 0x1070f87b, 0x1070fa29, 0x10714f85, 0x1073a0d6.
