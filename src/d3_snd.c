@@ -526,21 +526,29 @@ typedef struct D3SNDWHIT {
    under the camera (region water kind 1..3) and probes ahead along the view direction for more water regions
    to pick volume and pan of the sounds; both sounds are stopped (label off) when the scene changed or the
    camera / map / sound system is not ready
-   @stuck shape, 4 ins / 11 bytes left, two scheduling hunks: (1) head vol: the int store mov
-   [esp+0x14],eax of (2000 - ground) before fdivp (original after); (2) off: block 1 add esp,0x10 before
-   mov [d3sndw_Snd[0].snd],ebx (original after; block 2 matches). Draft->shape came from
-   memset(&found[0].vol..) (5 zero stores in their own register), ai_FloatZero for k*k, dir.y after dir.z,
-   pan before nfound. No change (= control): (float)(2000-ground), -ground+2000, ai_FloatZero first, a temp
-   for the volume base, off-block as ->, != NULL, else-form, early return before block 2, sb_SetRestart
-   uncast, head split; worse: Range division grouped, type stored after vol, nfound<2 first in the k loop.
-   headers sample: insensitive (32, one codegen). M10 open at +0x2f6: the k loop's folded first test 1 <
-   Range[1] reads ai_FloatOne in the original, our literal 1.0 (the same literal at the pan site is not
-   flagged) (tiebreak: not measured (dcp headers sample d3sndw_Update)) prior: B: 143 code / 52 order / 36
-   regs / 14 fpu hunks, no meaning error: the sampled code hunks are the same instructions with a different
-   callee-saved register assignment (original keeps the zero in ebx, ground in edi, three zero webs
-   ebx/esi/ebp; ours ebp/esi) and the FPU hunks at 0x418515 and the cmp reg,0 vs test forms follow from it;
-   the earlier 4 rounds read the whole 152-line diff and tried declaration orders and zero-store orders
-   without change. Register allocation / c2prio work is match-deep's */
+   @stuck shape, 4 ins / 11 bytes, the same two scheduling hunks. headers sample: insensitive (32, one
+   code). Round 2 (dcp try, 190 variants; manual cl probes; toys): = control: off block duplicated into
+   both exits / label inside the else-if / inside the first if / second block before the first / goto,
+   else, do-while, while-break shapes; comma forms and the store with the call in its rhs; the if-else arms
+   around the head swapped (&&, !, flag); 2000-ground in an int local (8 locals x 3 positions); neutral
+   edits at the top. Worse: head statements permuted with temps (96 variants, best 6 ins), literal 0.0f for
+   ai_FloatZero and ai_FloatOne at the pan sites (5 of 8 combinations add a reload-order hunk at 0x418b3b,
+   none moves the two hunks), duplicated off blocks (VC6 merges only from call sb_SetRestart: 34..52 ins).
+   Outside the text: 23 flag sets (/G3../G6, /Ox, /Op, /Oa, /Ow, /Oy-, /Zi ..), linkage of d3sndw_Snd /
+   Scene / Vol / Range, const ai_FloatZero, dummy functions before this one: all the same two hunks. Found:
+   store-before-add esp is what VC6 emits when the add is a cross-jumped tail of two paths
+   (d3t_CreateSnowMipmaps, toys; notes), but the original has no second path into 0x418668. Hunk 1 (mov
+   [esp+0x14],eax after fdivp, as the k loop has it in both builds): every spelling of the expression is
+   one code (tiebreak: not measured (dcp headers sample d3sndw_Update)) prior: shape, 4 ins / 11 bytes
+   left, two scheduling hunks: (1) head vol: the int store mov [esp+0x14],eax of (2000 - ground) before
+   fdivp (original after); (2) off: block 1 add esp,0x10 before mov [d3sndw_Snd[0].snd],ebx (original
+   after; block 2 matches). Draft->shape came from memset(&found[0].vol..) (5 zero stores in their own
+   register), ai_FloatZero for k*k, dir.y after dir.z, pan before nfound. No change (= control):
+   (float)(2000-ground), -ground+2000, ai_FloatZero first, a temp for the volume base, off-block as ->, !=
+   NULL, else-form, early return before block 2, sb_SetRestart uncast, head split; worse: Range division
+   grouped, type stored after vol, nfound<2 first in the k loop. headers sample: insensitive (32, one
+   codegen). M10 open at +0x2f6: the k loop's folded first test 1 < Range[1] reads ai_FloatOne in the
+   original, our literal 1.0 (the same literal at the pan site is not flagged) (t... */
 void d3sndw_Update(void)
 {
     D3SCENE *sc;

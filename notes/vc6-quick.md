@@ -821,3 +821,15 @@ mechanisms, each as a generated round over all positions / subsets:
   later arm's copy; keeping the first arm's (the original's ai_RegisterSaveSlot) is open (stuck, 14 ins).
 - The `1.0f` of an M10 `open:` line naming ai_FloatOne is worth trying first: reading the datum changes the
   scheduling around it (ai_ScatterShot 18 -> 8 ins with the copy moved).
+- **A store before the stack cleanup after a call** (`call f; mov [g],ebx; add esp,N`; the usual order is
+  `add esp,N; mov`, 67 : 2 in the first 136k instructions of the image): the `add esp,N` was a tail shared with
+  another path that ends in the same pending cleanup. VC6's cross-jumping sinks the add below the store to merge
+  it (`if (t) {f(t); t = 0;} else g(x);` gives `call f; mov; L: add esp,4` with the other arm jumping to L:
+  d3t_CreateSnowMipmaps' snow_tex release, toy-proven with two-call arms). No spelling of the block itself
+  reaches it (comma forms, the store's rhs holding the call, goto / else / do-while shapes, block order, linkage
+  of the global, 23 flag sets: one code). d3sndw_Update's first stop block has this order with no second path
+  left in the code: open.
+- **Shared float object vs literal moves unrelated tie-breaks**: `ai_FloatZero` / `ai_FloatOne` against `0.0f` /
+  `1.0f` at one site flipped the order of two register reloads at a loop latch 1400 bytes away (d3sndw_Update,
+  8 combinations: 3 keep it, 5 flip it). Try every combination of the function's pooled constants before
+  spending variants on the hunk itself; `dcp try` rows with the same `ins` can still be different hunks.
