@@ -916,3 +916,14 @@ mechanisms, each as a generated round over all positions / subsets:
   first of the copies in the allocator's block order behind the switch code gets ecx / edx, any other eax / ecx.
   Tried: the four entry conditions distributed over inline copies, labelled copies in the else-if and copies
   at the function end (127 arrangements, best 24 ins). Open: an arrangement where both copies get ecx / edx.
+- **d3sndw_Update byte**: the stop code inline in both exits (`if (!ready) { stop both; return; }` and `else if
+  (d3sndw_Scene != d3_DefaultScene) { d3sndw_Scene = d3_DefaultScene; stop both; return; }`) and NO `sc` local
+  for d3_DefaultScene. The copies merge completely only when their reload temps get the same scratch registers.
+  C2 hands those out from one pointer that rotates eax, ecx, edx through the function in code order (three
+  copies in a row get eax/ecx, edx/eax, ecx/edx); `mov ecx,[d3_Camera]` of the third entry condition advances
+  it by one, each copy by two, so the second copy needs one more temp between the copies: reading
+  d3_DefaultScene without the local `sc` is that temp (with `sc` the value is a candidate in eax and does not
+  advance the pointer). Lessons: (1) a store before its `add esp` with a label right behind it = two
+  cross-jumped copies of that code; write the code out at each exit instead of `goto` to one copy. (2) Copies
+  that refuse to merge because one scratch register differs: count the temps between them (a local that got a
+  register is no temp, the direct global read is).

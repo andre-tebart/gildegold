@@ -524,31 +524,11 @@ typedef struct D3SNDWHIT {
 
 /* 0x4183d0, once per frame: the water ambience (up to two looping sounds, d3sndw_Snd[]). Takes the map region
    under the camera (region water kind 1..3) and probes ahead along the view direction for more water regions
-   to pick volume and pan of the sounds; both sounds are stopped (label off) when the scene changed or the
-   camera / map / sound system is not ready
-   @stuck shape, 2 ins / 5 bytes: one scheduling hunk left, the first stop block of off (original: mov
-   [d3sndw_Snd[0].snd],ebx before add esp,0x10; ours after; the second block matches). Round 3 fixed the
-   head volume hunk with the parenthesized product (v * z). For the stop block: flip search, 561 compiling
-   single-statement mutants of the function: none changes the order; ~60 local forms of the block (what is
-   stored, two stores, dead statements after it, comma / rhs forms, inline helper, pointer walk, loop):
-   always add esp first; 437 structural forms (the stop code in both exits, nested copies of the second
-   block, shared tails, gotos): none store-first; 23 flag sets, linkage, code before the function: no
-   change. What the image says (notes): VC6 puts the store first only when a later instruction of the same
-   block depends on it (mem_Alloc, ch_GetWaypoints, ai_CannonShotResults with its inline epilogue), so the
-   original block continued past the label 0x41866b when it was scheduled; no source form found that does
-   this and still merges to one copy (tiebreak: not measured (dcp headers sample d3sndw_Update)) prior:
-   shape, 4 ins / 11 bytes, the same two scheduling hunks. headers sample: insensitive (32, one code).
-   Round 2 (dcp try, 190 variants; manual cl probes; toys): = control: off block duplicated into both exits
-   / label inside the else-if / inside the first if / second block before the first / goto, else, do-while,
-   while-break shapes; comma forms and the store with the call in its rhs; the if-else arms around the head
-   swapped (&&, !, flag); 2000-ground in an int local (8 locals x 3 positions); neutral edits at the top.
-   Worse: head statements permuted with temps (96 variants, best 6 ins), literal 0.0f for ai_FloatZero and
-   ai_FloatOne at the pan sites (5 of 8 combinations add a reload-order hunk at 0x418b3b, none moves the
-   two hunks), duplicated off blocks (VC6 merges only from call sb_SetRestart: 34..52 ins). Outside the
-   text: 23 flag sets (/G3../G6, /Ox, /Op, /Oa, /Ow, /Oy-, /Zi ..), linkage of... */
+   to pick volume and pan of the sounds; both sounds are stopped when the scene changed or the camera / map /
+   sound system is not ready. The stop code is written out in both exits, as the original had it: VC6 merges
+   the two copies (cross-jumping), which is where the first block's store before its add esp comes from */
 void d3sndw_Update(void)
 {
-    D3SCENE *sc;
     float dist;
     int slot;
     int nfound;
@@ -568,14 +548,34 @@ void d3sndw_Update(void)
     unsigned long t;
     D3SOUND *s;
 
-    if (!d3_Terrain || !d3sndw_Sin || !d3_Camera || !snd_AmbientOn)
-        goto off;
-    sc = d3_DefaultScene;
+    if (!d3_Terrain || !d3sndw_Sin || !d3_Camera || !snd_AmbientOn) {
+        if (d3sndw_Snd[0].snd) {
+            sb_Stop(d3sndw_Snd[0].snd, 0);
+            sb_SetRestartC((char *)d3sndw_Snd[0].snd, 0);
+            d3sndw_Snd[0].snd = NULL;
+        }
+        if (d3sndw_Snd[1].snd) {
+            sb_Stop(d3sndw_Snd[1].snd, 0);
+            sb_SetRestartC((char *)d3sndw_Snd[1].snd, 0);
+            d3sndw_Snd[1].snd = NULL;
+        }
+        return;
+    }
     if (!d3sndw_Scene)
-        d3sndw_Scene = sc;
-    else if (d3sndw_Scene != sc) {
-        d3sndw_Scene = sc;
-        goto off;
+        d3sndw_Scene = d3_DefaultScene;
+    else if (d3sndw_Scene != d3_DefaultScene) {
+        d3sndw_Scene = d3_DefaultScene;
+        if (d3sndw_Snd[0].snd) {
+            sb_Stop(d3sndw_Snd[0].snd, 0);
+            sb_SetRestartC((char *)d3sndw_Snd[0].snd, 0);
+            d3sndw_Snd[0].snd = NULL;
+        }
+        if (d3sndw_Snd[1].snd) {
+            sb_Stop(d3sndw_Snd[1].snd, 0);
+            sb_SetRestartC((char *)d3sndw_Snd[1].snd, 0);
+            d3sndw_Snd[1].snd = NULL;
+        }
+        return;
     }
     campos.x = d3_Camera->pos.x;
     campos.y = d3_Camera->pos.y;
@@ -718,15 +718,4 @@ void d3sndw_Update(void)
         }
     }
     return;
-off:
-    if (d3sndw_Snd[0].snd) {
-        sb_Stop(d3sndw_Snd[0].snd, 0);
-        sb_SetRestartC((char *)d3sndw_Snd[0].snd, 0);
-        d3sndw_Snd[0].snd = NULL;
-    }
-    if (d3sndw_Snd[1].snd) {
-        sb_Stop(d3sndw_Snd[1].snd, 0);
-        sb_SetRestartC((char *)d3sndw_Snd[1].snd, 0);
-        d3sndw_Snd[1].snd = NULL;
-    }
 }
