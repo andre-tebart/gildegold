@@ -4,6 +4,13 @@ instructions of each basic block.
     python tools/c2dag/c2dag.py src/d3_snd.c d3sndw_Update            # every block of the function
     python tools/c2dag/c2dag.py src/d3_snd.c d3sndw_Update --ops e,2d  # only blocks with a call and an add
     python tools/c2dag/c2dag.py src/d3_snd.c d3sndw_Update --blocks    # VC6's own block listing (/d2FAF)
+    python tools/c2dag/c2dag.py src/di_input.c di_UpdateButtons --alloc  # the register allocator's priorities
+
+--alloc (what rea's c2prio printed, without Frida): per allocator block its weight `P blk N = count x loop
+weight` and each counted reference (`ref use|def blk N line L candidate cost C`), then the candidates by priority.
+priority = sum(cost * P) over the references - sum(P) over the blocks the candidate lives through unreferenced;
+callee-saved registers go to the highest priorities, a tie to the candidate created later (the larger `tie`).
+Every constant prints as const#0@ID: tell them apart by the @ID.
 
 Per block the nodes are listed in their order BEFORE scheduling:
     idx op class line  prio  height in/out flags -> successor/latency:kind ...  | uses | defs
@@ -84,6 +91,9 @@ def main():
     ap.add_argument("--ops", help="only blocks containing all of these opcode numbers (hex, comma separated)")
     ap.add_argument("--blocks", action="store_true", help="print VC6's block listing of the function instead")
     ap.add_argument("--flags", default="", help="extra cl flags")
+    ap.add_argument("--alloc", action="store_true",
+                    help="the register allocator instead: per block its weight P and the counted references, then "
+                         "every candidate's priority (highest first gets a callee-saved register; ties: created later)")
     a = ap.parse_args()
     dag, asm = run(a.src, a.flags.split(), a.blocks)
     if a.blocks:
@@ -96,6 +106,24 @@ def main():
             elif (on or not a.func) and (l.startswith("; Block(") or re.match(r"\t[a-z]|\$\w+(\$\d+)?:", l)):
                 print(l.rstrip().split("\t;")[0])
         return
+    if a.alloc:
+        on = None
+        cands = []
+        for l in open(dag, encoding="latin-1"):
+            if l.startswith("allocrefs "):
+                on = "refs" if l.split()[1].lstrip("_") == a.func else None
+            elif l.startswith("alloc "):
+                on = "cands" if l.split()[1].lstrip("_") == a.func else None
+            elif on == "refs" and l.startswith((" ref ", " ablock ", " P ")):
+                print(l.rstrip())
+            elif on == "cands" and l.startswith(" cand "):
+                m = re.match(r" cand (\S+) prio (-?\d+) tie (\w+)", l)
+                cands.append((int(m.group(2)), int(m.group(3), 16), m.group(1)))
+            elif on == "cands":
+                on = None
+        for prio, tie, name in sorted(cands, reverse=True):
+            print("  %-32s prio %5d  tie %3x" % (name, prio, tie))
+        return
     want = set(int(x, 16) for x in a.ops.split(",")) if a.ops else None
     cur, keep = [], False
     out = []
@@ -106,7 +134,7 @@ def main():
             if not want or want <= ops:
                 out.extend(cur)
 
-    for l in open(dag):
+    for l in open(dag, encoding="latin-1"):
         if l.startswith("block "):
             flush()
             cur = [l.rstrip()]

@@ -55,6 +55,131 @@ static void opnds(void *o)
     }
 }
 
+static void cname(void *c, char *buf)
+{
+    void *c0 = PTR(c, 0), *s;
+    char *nm = 0;
+    if (IsBadReadPtr(c0, 0x20)) {
+        strcpy(buf, "?");
+        return;
+    }
+    s = PTR(c0, 0);
+    if (!IsBadReadPtr(s, 0x1c))
+        nm = PTR(s, 0x18);
+    if (nm && !IsBadStringPtrA(nm, 96) && (nm[0] == '_' || (nm[0] >= 'A' && nm[0] <= 'z')))
+        sprintf(buf, "%.80s@%lx", nm, (unsigned long)c & 0xffff);
+    else
+        sprintf(buf, "%s#%lx@%lx", U32(c0, 4) == 0x100d ? "const" : U32(c0, 4) == 3 ? "temp" : "k", U32(c0, 0x1c),
+                (unsigned long)c & 0xffff);
+}
+
+/* mid-function hooks of the allocator's priority pass (sites from rea's c2prio): the handler gets the saved
+   registers r[0..8] = eflags, edi, esi, ebp, esp, ebx, edx, ecx, eax */
+static int allocFirst, allocBlk;
+static void __cdecl hBlock(unsigned long *r)
+{
+    void *b, *t, *end;
+    long lo = 0x7fffffff, hi = -1;
+    int g = 0;
+    if (!out || !allocFirst)
+        return;
+    b = *(void **)(r[4] + 0x1c);
+    if (!IsBadReadPtr(b, 0x24)) {
+        end = PTR(b, 0x20);
+        for (t = PTR(b, 0x1c); t && t != end && g < 5000 && !IsBadReadPtr(t, 0x14); t = PTR(t, 0), g++) {
+            long ln = *(short *)((char *)t + 0x10);
+            if (ln > 0 && ln < lo) lo = ln;
+            if (ln > hi) hi = ln;
+        }
+    }
+    fprintf(out, " ablock %d lines %ld-%ld\n", allocBlk++, hi < 0 ? 0 : lo, hi < 0 ? 0 : hi);
+}
+static void __cdecl hUse(unsigned long *r)
+{
+    char nm[128];
+    if (!out || !allocFirst)
+        return;
+    cname((void *)r[2], nm);
+    fprintf(out, " ref use blk %d line %d %s cost %ld\n", allocBlk, (int)*(short *)(r[5] + 0x10), nm, (long)r[1]);
+}
+static void __cdecl hDef(unsigned long *r)
+{
+    char nm[128];
+    if (!out || !allocFirst)
+        return;
+    cname((void *)r[2], nm);
+    fprintf(out, " ref def blk %d line %d %s cost %ld\n", allocBlk, (int)*(short *)(r[1] + 0x10), nm, (long)r[8]);
+}
+static void __cdecl hP(unsigned long *r)
+{
+    if (!out || !allocFirst)
+        return;
+    fprintf(out, " P blk %d = %ld x %ld\n", allocBlk - 1, (long)r[2], *(long *)(r[4] + 0x24));
+}
+static void midhook(unsigned long rva, int len, void (__cdecl *h)(unsigned long *), const unsigned char *expect)
+{
+    unsigned char *fn = (unsigned char *)real + rva, *p, *s;
+    DWORD old;
+    if (memcmp(fn, expect, len))
+        return;
+    s = p = (unsigned char *)VirtualAlloc(0, 64, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+    *p++ = 0x60; *p++ = 0x9c; *p++ = 0x54;            /* pushad; pushfd; push esp */
+    *p++ = 0xe8; *(long *)p = (long)h - (long)(p + 4); p += 4;
+    *p++ = 0x83; *p++ = 0xc4; *p++ = 0x04;            /* add esp,4 */
+    *p++ = 0x9d; *p++ = 0x61;                          /* popfd; popad */
+    if (fn[0] == 0xe8 && len == 5) {                   /* a call rel32: retarget */
+        *p++ = 0xe8; *(long *)p = (long)(fn + 5 + *(long *)(fn + 1)) - (long)(p + 4); p += 4;
+    } else {
+        memcpy(p, fn, len); p += len;
+    }
+    *p++ = 0xe9; *(long *)p = (long)(fn + len) - (long)(p + 4);
+    VirtualProtect(fn, len, PAGE_EXECUTE_READWRITE, &old);
+    fn[0] = 0xe9; *(long *)(fn + 1) = (long)s - (long)(fn + 5);
+    memset(fn + 5, 0x90, len - 5);
+    VirtualProtect(fn, len, old, &old);
+    FlushInstructionCache(GetCurrentProcess(), fn, len);
+}
+
+/* the register allocator's candidates of the current function (layout from rea's c2prio: hash buckets at
+   0xac5b8..0xad5b8, next at +0x2c, priority at +0xc, tie at +0x44, register symbol at +0x10) */
+static void cands(void)
+{
+    static const char *regs[] = { "r0", "r1", "eax", "ecx", "edx", "ebx", "esp", "ebp", "esi", "edi" };
+    unsigned long a;
+    for (a = 0xac5b8; a < 0xad5b8; a += 4) {
+        void *c = *(void **)((char *)real + a);
+        int g = 0;
+        for (; c && !IsBadReadPtr(c, 0x48) && g < 5000; c = PTR(c, 0x2c), g++) {
+            void *c0 = PTR(c, 0), *s;
+            char *nm = 0;
+            unsigned long r = U32(c, 0x10), d;
+            if (IsBadReadPtr(c0, 0x20))
+                continue;
+            s = PTR(c0, 0);
+            if (!IsBadReadPtr(s, 0x1c))
+                nm = PTR(s, 0x18);
+            fprintf(out, " cand ");
+            if (nm && !IsBadStringPtrA(nm, 96) && (nm[0] == '_' || (nm[0] >= 'A' && nm[0] <= 'z')))
+                fprintf(out, "%s", nm);
+            else
+                fprintf(out, "%s#%lx", U32(c0, 4) == 0x100d ? "const" : U32(c0, 4) == 3 ? "temp" : "k", U32(c0, 0x1c));
+            d = r - ((unsigned long)real + 0xc49e8);
+            fprintf(out, "@%lx prio %ld tie %lx reg %s", (unsigned long)c & 0xffff, (long)U32(c, 0xc), U32(c, 0x44),
+                    r && d % 0x58 == 0 && d / 0x58 < 10 ? regs[d / 0x58] : "-");
+            if (getenv("C2DAG_RAW")) {
+                int j;
+                fprintf(out, "  c0:");
+                for (j = 0; j < 0x38; j += 4)
+                    fprintf(out, " %lx", U32(c0, j));
+                fprintf(out, "  c:");
+                for (j = 0; j < 0x48; j += 4)
+                    fprintf(out, " %lx", U32(c, j));
+            }
+            fprintf(out, "\n");
+        }
+    }
+}
+
 static void find(const char *name)
 {
     /* discovery aid: which global of the back end leads to the current function's name */
@@ -101,6 +226,13 @@ static void __cdecl dump(void)
         char *cur = *(char **)((char *)real + 0xad730), *nm = 0;
         if (!IsBadReadPtr(cur, 0x1c))
             nm = *(char **)(cur + 0x18);
+        {
+            static void *lastfn;
+            if (cur != lastfn) {
+                lastfn = cur;
+                fprintf(out, "func %s\n", nm && !IsBadStringPtrA(nm, 128) ? nm : "?");
+            }
+        }
         fprintf(out, "block %d func %s nodes %d\n", blockNo++, nm && !IsBadStringPtrA(nm, 128) ? nm : "?", cnt);
     }
     {
@@ -144,6 +276,56 @@ static void __cdecl dump(void)
         fprintf(out, "\n");
     }
     fflush(out);
+}
+
+/* second hook: the allocator's priority pass (FUN_10707a0b), first return per function */
+static unsigned char *tramp2;
+static void *savedRet2;
+static void __cdecl dump2(void)
+{
+    static void *lastfn;
+    char *cur, *nm = 0;
+    if (!out)
+        return;
+    cur = *(char **)((char *)real + 0xad730);
+    if (cur == lastfn)
+        return;
+    lastfn = cur;
+    allocFirst = 0;
+    if (!IsBadReadPtr(cur, 0x1c))
+        nm = *(char **)(cur + 0x18);
+    fprintf(out, "alloc %s\n", nm && !IsBadStringPtrA(nm, 128) ? nm : "?");
+    cands();
+    fflush(out);
+}
+
+static void __cdecl enter2(void)
+{
+    static void *seen;
+    void *cur = *(void **)((char *)real + 0xad730);
+    allocFirst = cur != seen;
+    seen = cur;
+    allocBlk = 0;
+    if (allocFirst && out) {
+        char *nm = IsBadReadPtr(cur, 0x1c) ? 0 : *(char **)((char *)cur + 0x18);
+        fprintf(out, "allocrefs %s\n", nm && !IsBadStringPtrA(nm, 128) ? nm : "?");
+    }
+}
+
+static __declspec(naked) void stub2(void)
+{
+    __asm {
+        pushad
+        call enter2
+        popad
+        pop eax
+        mov savedRet2, eax
+        call dword ptr [tramp2]
+        pushad
+        call dump2
+        popad
+        jmp dword ptr [savedRet2]
+    }
 }
 
 static __declspec(naked) void stub(void)
@@ -192,6 +374,30 @@ static void install(void)
     *(long *)(fn + 1) = (long)stub - (long)(fn + 5);
     VirtualProtect(fn, 5, old, &old);
     FlushInstructionCache(GetCurrentProcess(), fn, 5);
+    /* FUN_10707a0b: sub esp,28h / push esi / mov esi,ecx (6 bytes) */
+    fn = (unsigned char *)real + 0x7a0b;
+    if (fn[0] == 0x83 && fn[1] == 0xec && fn[2] == 0x28 && fn[3] == 0x56 && fn[4] == 0x8b && fn[5] == 0xf1) {
+        tramp2 = (unsigned char *)VirtualAlloc(0, 16, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+        memcpy(tramp2, fn, 6);
+        tramp2[6] = 0xe9;
+        *(long *)(tramp2 + 7) = (long)(fn + 6) - (long)(tramp2 + 11);
+        VirtualProtect(fn, 6, PAGE_EXECUTE_READWRITE, &old);
+        fn[0] = 0xe9;
+        *(long *)(fn + 1) = (long)stub2 - (long)(fn + 5);
+        fn[5] = 0x90;
+        VirtualProtect(fn, 6, old, &old);
+        FlushInstructionCache(GetCurrentProcess(), fn, 6);
+        {
+            static const unsigned char e1[] = { 0xe8, 0xc9, 0x0b, 0x00, 0x00 };
+            static const unsigned char e2[] = { 0x8b, 0x4e, 0x24, 0x03, 0xd7 };
+            static const unsigned char e3[] = { 0x41, 0x89, 0x4e, 0x24, 0x8b, 0x4e, 0x3c };
+            static const unsigned char e4[] = { 0x0f, 0xaf, 0x74, 0x24, 0x24 };
+            midhook(0x7b6e, 5, hP, e4);
+            midhook(0x7b31, 5, hBlock, e1);
+            midhook(0x7c42, 5, hUse, e2);
+            midhook(0x7ed2, 7, hDef, e3);
+        }
+    }
 }
 
 __declspec(dllexport) int __stdcall InvokeCompilerPass(void *a, void *b, void *c)
