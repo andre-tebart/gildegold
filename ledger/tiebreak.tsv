@@ -283,7 +283,7 @@ exe	0x00410710	di_AcquireMouse	di_input	733765f20621e2f4	no	byte	control=byte p1
 exe	0x00410740	di_AcquireKeyboard	di_input	b7995fa8e83f6d4c	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00410770	di_Init	di_input	6dca0eeae512a1a5	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00410a50	di_Exit	di_input	10349ef543e2eb3f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x00410ac0	di_UpdateButtons	di_input	27890083667aca6c	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x00410ac0	di_UpdateButtons	di_input	27890083667aca6c	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x00410ed0	di_SwapButtons	di_input	319e212a8197abfa	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00410f20	di_PollMouse	di_input	b5fd283ab6262ce7	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004112e0	di_PollKeyboard	di_input	b0fbf36358da61fa	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte

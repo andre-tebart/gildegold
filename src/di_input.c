@@ -382,29 +382,11 @@ void di_Exit(void)
         di_Event = 0;
     }
 }
-/* 0x410ac0: button state machine (press timing, hold, double click) and event queue
-   @stuck earlier: meaning right, read against 410e58..410ec2; Q4 views and Q6 done; one code hunk left at
-   +0x398 (ours mov eax,[dm_Q[31].valid]; test eax,eax; jne; mov eax,0x1f - the original mov ecx,[..]; mov
-   eax,0x1f; test ecx,ecx; jne): the original materialises i = 31 between the load and the test. Tried
-   earlier: for-init 'for (i = 31, q = &dm_Q[31].valid; *q == 0;)', comma forms in the guard and in the &&:
-   each collapses the allocation (const#0 web -55 past _di_PressX -57 in c2prio: zero takes ebp, PressX
-   loses its promotion). This pass: the plain index form 'if (changed) { i = 31; while (dm_Q[i].valid == 0)
-   { i--; if (i < 0) { i = 0; break; } } if (i < 31) { i++; copy } }' reproduces the original's tail
-   exactly (guard with i in eax, ecx/pointer loop with the jl bound, the threaded 'xor eax,eax; jmp inc'
-   miss path, the jge 31 test) - so it is very likely the source - but costs the same whole-function
-   reallocation (151 differing ins: const#0 in ebp, PressX unpromoted). Also tried on that form: !valid,
-   for(;;) form, do-while with guard, goto put, i <= -1, --i < 0, i != 31, for (..; i--) if (i == 0) break:
-   all identical 151. Reading: in the original the zero web (ebx) ends before the mup/mdown section
-   (0x410ce9 reuses ebx: mov ebx,[X]; test ebx,ebx), so the tail compares are immediates; ebp holds
-   di_PressX all through. Next step is priority work: find one more di_PressX reference or one fewer
-   const#0 reference in a high-P block that the original really had (uv run c2prio is not available in this
-   checkout: 'Failed to spawn: c2prio'). Kept the pointer form (6 ins / 69 bytes). (tiebreak: insensitive
-   under the four probes only, best draft) */
+/* 0x410ac0: button state machine (press timing, hold, double click) and event queue */
 
 void di_UpdateButtons(void)
 {
     int i;
-    int *q;      /* walks the valid flags of dm_Q downwards (stride 19 ints = one DIMOUSEST) */
     int now = tb_Calls;
 
     if (di_Disabled)
@@ -419,8 +401,8 @@ void di_UpdateButtons(void)
     if (dm_S.lup == 0 || di_GuiClick == 0) {
         if (dm_S.ldown != 0 && di_LDownTime == 0) {
             di_LDownTime = now;
-            di_PressX = dm_S.vx;
-            di_PressY = dm_S.vy;
+            di_PressX = dm_S.x;
+            di_PressY = dm_S.y;
         }
         if (di_LClickTime != -1 && now - di_LClickTime > 40) {
             di_LDownTime = 0;
@@ -452,8 +434,8 @@ void di_UpdateButtons(void)
     }
     if (dm_S.rdown != 0 && di_RDownTime == 0) {
         di_RDownTime = now;
-        di_PressX = dm_S.vx;
-        di_PressY = dm_S.vy;
+        di_PressX = dm_S.x;
+        di_PressY = dm_S.y;
     }
     if (di_RDownTime != 0) {
         if (dm_S.rhold == 0 && dm_S.rdown != 0) {
@@ -505,20 +487,16 @@ void di_UpdateButtons(void)
          || dm_S.lextra != dm_P.lextra || dm_S.rup != dm_P.rup || dm_S.rdown != dm_P.rdown
          || dm_S.rhold != dm_P.rhold || dm_S.mup != dm_P.mup || dm_S.mdown != dm_P.mdown
          || dm_S.mhold != dm_P.mhold || dm_S.wup != dm_P.wup || dm_S.wdown != dm_P.wdown)
-        && dm_Q[31].valid == 0) {
-        /* find the last used queue slot, append the state behind it */
+        ) {
         i = 31;
-        q = &dm_Q[31].valid;
-        do {
-            q -= 19;
+        while (dm_Q[i].valid == 0) {
             i--;
-            if ((int)q < (int)&dm_Q[0].valid) {   /* signed compare, needed for VC6's code */
+            if (i < 0) {
                 i = 0;
-                goto put;
+                break;
             }
-        } while (*q == 0);
+        }
         if (i < 31) {
-put:
             i++;
             dm_Q[i] = dm_S;
             dm_Q[i].valid = 1;
