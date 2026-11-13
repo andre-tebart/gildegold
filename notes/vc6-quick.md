@@ -880,3 +880,11 @@ mechanisms, each as a generated round over all positions / subsets:
   another statement's line is the mark of such a merged-and-copied tail. So store-first has two causes: an edge
   (mem_Alloc, ch_GetWaypoints) or a tail shared with a second path that ends in the same call cleanup and has the
   same successor (CannonShot). d3sndw_Update's first stop block has neither in any form tried.
+- **A whole-function register reshuffle after the "right" loop form** (di_UpdateButtons: the index loop gave the
+  original's tail but 151 other instructions changed) is a priority race lost by one or two points: read it with
+  `c2dag.py SRC FUNC --alloc` (the two candidates' priorities, and per block P and the references), then run a
+  flip search: mutate every statement, keep the mutants where the right candidate has the register again AND the
+  wanted code shape is there, and measure those with `dcp try`. Here 146 of 680 mutants flipped it and four were
+  byte: the press position read through a `volatile` view an earlier pass had added to force reloads. A volatile
+  read is no reference of the field's web; the plain `dm_S.x` is, and that reference was the missing point. A
+  `volatile` (or any view) added to fix one hunk is a suspect whenever the allocation is off later.
