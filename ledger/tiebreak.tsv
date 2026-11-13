@@ -895,7 +895,7 @@ exe	0x0044c3f0	d3_LoadGroup	d3_int_io	6ea7ce93edf9368b	no	shape	control=shape p1
 exe	0x0044c510	d3io_SetStockDir	d3_int_io	372ea5fbed0b9ebb	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0044c530	d3io_StockFile	d3_int_io	9a92e89277715896	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0044c5d0	d3io_FindStock	d3_int_io	f09dd63cc13f97f8	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x0044c610	d3io_AttachStock	d3_int_io	e7fda18c604f64ba	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x0044c610	d3io_AttachStock	d3_int_io	e7fda18c604f64ba	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x0044c9d0	d3io_LodName	d3_int_io	7e8dfd8a0379b36f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0044cbb0	d3_AttachMesh	d3_int_io	b255ab367895d3f4	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0044cd40	d3iot_DeleteStockObject	d3_io_t	22561682f6cfdb7a	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
