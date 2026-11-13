@@ -888,3 +888,19 @@ mechanisms, each as a generated round over all positions / subsets:
   byte: the press position read through a `volatile` view an earlier pass had added to force reloads. A volatile
   read is no reference of the field's web; the plain `dm_S.x` is, and that reference was the missing point. A
   `volatile` (or any view) added to fix one hunk is a suspect whenever the allocation is off later.
+- **Where `add esp,N` ends up, from the back end's three passes** (C2 13.00.9044, read in Ghidra and checked by
+  skipping each pass with tools/c2dag/c2pass.py):
+  1. Code generation puts the cleanup directly after its call, before the next statement's code (skip
+     0x1070aa67 to see it: `call sb_Stop; add esp,8; ..; call sb_SetRestart; add esp,8; mov [g],ebx`).
+  2. FUN_1070b884 merges stack adjusts along a straight run (it stops at a label or a jump): an earlier
+     `add esp` is deleted and its amount added to the LATER one. So the merged cleanup sits where the last
+     adjust of the run was: after the last call, or after a store only if another adjust follows that store.
+  3. Cross-jumping (FUN_10712437, runs twice; skip 0x1070a91d to switch it off) takes every `jmp L`, and
+     compares up to 30 instructions before the jmp with up to 30 before L (labels do not stop it). It matches
+     from the bottom over a dependency graph, not linearly: any instruction of one side that could legally be
+     last and has an identical one on the other side is moved to the end of both and shared; the jmp then goes
+     to a new label in front of the shared tail. That is the pass that turns `call; add esp,8; mov [g],ebx`
+     into `call; mov [g],ebx; add esp,8` in ai_CannonShotResults (the `d2_SetViewEnabled(..); return;` path
+     shares the add; the short return tail is copied back afterwards, so no jump is left).
+  `c2dag.py` writes the pairs cross-jumping examines into build/c2dag/UNIT.dag (`xjump FUNC jmp@line`, then both
+  regions as opcode@line, last instruction first).

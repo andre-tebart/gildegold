@@ -116,6 +116,44 @@ static void __cdecl hP(unsigned long *r)
         return;
     fprintf(out, " P blk %d = %ld x %ld\n", allocBlk - 1, (long)r[2], *(long *)(r[4] + 0x24));
 }
+/* cross-jumping (fg.c, FUN_10712437): called with a `jmp L` tuple; it compares up to 30 instructions before the
+   jmp with up to 30 before the label L and merges what can be sunk to the end of both. Print both regions. */
+static void xjRegion(void *t, void *other)
+{
+    int g = 0;
+    void *p = t;
+    for (; g < 30; g++) {
+        unsigned cls;
+        p = PTR(p, 0xc);
+        if (!p || IsBadReadPtr(p, 0x24))
+            break;
+        cls = U8(p, 8);
+        if ((cls == 0x16 && U32(p, 4) != 0x2bd) || p == other || cls == 0x17 || cls == 0x19)
+            break;
+        fprintf(out, " %lx@%d", U32(p, 4), (int)*(short *)((char *)p + 0x10));
+    }
+}
+static void __cdecl hXJ(unsigned long *r)
+{
+    void *j = (void *)r[7], *lab = 0, *o;
+    char *cur, *nm = 0;
+    if (!out || IsBadReadPtr(j, 0x24))
+        return;
+    o = PTR(j, 0x1c);
+    if (o && !IsBadReadPtr(o, 0x18) && !IsBadReadPtr(PTR(o, 0x14), 0x34))
+        lab = PTR(PTR(o, 0x14), 0x30);
+    if (!lab || IsBadReadPtr(lab, 0x24))
+        return;
+    cur = *(char **)((char *)real + 0xad730);
+    if (!IsBadReadPtr(cur, 0x1c))
+        nm = *(char **)(cur + 0x18);
+    fprintf(out, "xjump %s jmp@%d\n  before the jmp (last first):", nm && !IsBadStringPtrA(nm, 128) ? nm : "?",
+            (int)*(short *)((char *)j + 0x10));
+    xjRegion(j, lab);
+    fprintf(out, "\n  before the label (last first):");
+    xjRegion(lab, j);
+    fprintf(out, "\n");
+}
 static void midhook(unsigned long rva, int len, void (__cdecl *h)(unsigned long *), const unsigned char *expect)
 {
     unsigned char *fn = (unsigned char *)real + rva, *p, *s;
@@ -392,7 +430,9 @@ static void install(void)
             static const unsigned char e2[] = { 0x8b, 0x4e, 0x24, 0x03, 0xd7 };
             static const unsigned char e3[] = { 0x41, 0x89, 0x4e, 0x24, 0x8b, 0x4e, 0x3c };
             static const unsigned char e4[] = { 0x0f, 0xaf, 0x74, 0x24, 0x24 };
+            static const unsigned char e5[] = { 0x81, 0xec, 0x8c, 0x00, 0x00, 0x00 };
             midhook(0x7b6e, 5, hP, e4);
+            midhook(0x12437, 6, hXJ, e5);
             midhook(0x7b31, 5, hBlock, e1);
             midhook(0x7c42, 5, hUse, e2);
             midhook(0x7ed2, 7, hDef, e3);

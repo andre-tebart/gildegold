@@ -24,7 +24,9 @@ TOKENS = ((r"\b0\b", ["1"]), (r"\b1\b", ["0", "2"]), (r"\b2\b", ["3"]), (r"\b3\b
           (r"&&", ["||"]), (r"\|\|", ["&&"]), (r"\bint\b", ["unsigned", "short", "char"]),
           (r"\bunsigned char\b", ["int"]), (r"\bshort\b", ["int"]), (r"\bfloat\b", ["double"]),
           (r"\+\+", ["--"]), (r" \+ ", [" - "]), (r" - ", [" + "]), (r"\belse\b", ["else if (1)"]),
-          (r"\bvolatile\b", [""]), (r"\(\w[\w ]*\*\)", [""]))
+          (r"\bvolatile\b", [""]), (r"\(\w[\w ]*\*\)", [""]), (r"\bstatic ", ["", "extern "]),
+          (r"\bextern ", ["", "static "]), (r"\bconst ", [""]), (r"\bvoid \*", ["int ", "char *"]), (r" = \{0\}", [""]),
+          (r"\bunsigned ", [""]), (r"\[2\]", ["[3]"]))
 
 
 def env():
@@ -64,6 +66,9 @@ def main():
     ap.add_argument("src"); ap.add_argument("func")
     ap.add_argument("--want", required=True); ap.add_argument("--avoid")
     ap.add_argument("--try", dest="tryfile"); ap.add_argument("--base", nargs=2)
+    ap.add_argument("--scope", choices=("func", "file"), default="func",
+                    help="file: mutate every line of the unit OUTSIDE the function too (declarations, macros, the "
+                         "functions defined above it); --try is then not written")
     a = ap.parse_args()
     os.makedirs(OUT, exist_ok=True)
     text = open(a.src, encoding="latin-1", newline="").read().replace("\r\n", "\n")
@@ -81,14 +86,15 @@ def main():
         s = next(i for i in range(cs, len(lines)) if re.match(r"\w[\w \*]*\b%s\(" % re.escape(a.func), lines[i]))
         e = next(i for i in range(s, len(lines)) if lines[i] == "}")
     muts = []
-    for i in range(s + 2, e):
+    rng = range(s + 2, e) if a.scope == "func" else [i for i in range(len(lines)) if not (cs <= i <= e)]
+    for i in rng:
         l = lines[i]
         if not l.strip() or l.strip().startswith(("/*", "*", "//")) or l.strip().endswith("*/"):
             continue
-        n = i - s
+        n = i - s if a.scope == "func" else i + 1
         muts.append(("del %d: %s" % (n, l.strip()[:56]), lines[:i] + lines[i + 1:]))
         muts.append(("dup %d: %s" % (n, l.strip()[:56]), lines[:i] + [l, l] + lines[i + 1:]))
-        if i + 1 < e and lines[i + 1].strip():
+        if i + 1 < len(lines) and (a.scope == "file" or i + 1 < e) and lines[i + 1].strip():
             muts.append(("swap %d: %s" % (n, l.strip()[:56]), lines[:i] + [lines[i + 1], l] + lines[i + 2:]))
         for pat, reps in TOKENS:
             for k, m in enumerate(re.finditer(pat, l)):
@@ -118,7 +124,7 @@ def main():
     print("compiled %d, flips %d" % (sum(1 for r in res if r), len(hits)))
     for k, n in sorted(hits, key=lambda h: abs(h[1] - len(base))):
         print("  m%-4d n=%-5d %s" % (k, n, muts[k][0]))
-    if a.tryfile:
+    if a.tryfile and a.scope == "func":
         with open(a.tryfile, "w", encoding="utf-8", newline="\n") as f:
             for k, n in hits:
                 ls = muts[k][1]
