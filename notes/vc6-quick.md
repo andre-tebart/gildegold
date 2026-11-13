@@ -833,3 +833,18 @@ mechanisms, each as a generated round over all positions / subsets:
   `1.0f` at one site flipped the order of two register reloads at a loop latch 1400 bytes away (d3sndw_Update,
   8 combinations: 3 keep it, 5 flip it). Try every combination of the function's pooled constants before
   spending variants on the hunk itself; `dcp try` rows with the same `ins` can still be different hunks.
+- **An int temp store scheduled before an `fdivp` where the original has it after** (`sub eax,edi; mov [t],eax;
+  fdivp` vs `sub; fdivp; mov`): parenthesize the product of the dividend, `v - (v * z) / (r * r)`. Every other
+  spelling of the expression (operand orders, casts, temporaries, 2000 - ground in an int local) is one code;
+  the parentheses change the tree VC6 schedules (d3sndw_Update head volume, 4 -> 2 ins). Found with a flip
+  search: compile many spellings and look only at the order of the two instructions, not at the distance.
+- **Store before `add esp` after a call, second reading** (replaces the cross-jump guess above where no second
+  path exists): VC6 emits the store first when a later instruction of the same scheduling block depends on it -
+  it redefines a register the store reads (`mov [ebp+esi-0x18],bl; add esp,0xc; mov esi,..` mem_Alloc; `mov
+  [esi+8],2; add esp,0x18; add esi,0xc` ch_GetWaypoints; `mov [g],ebx; add esp,8; pop edi .. pop ebx` in
+  ai_CannonShotResults, whose final block has its own epilogue copy because the other returns are written out:
+  a flip search over that byte-matched function shows the order falls back to add-first as soon as the
+  `d2_SetViewEnabled(..); return;` path above is removed or changed). With nothing after the store in its block
+  the add comes first (812 : 23 over the image). d3sndw_Update's first stop block is store-first with a label
+  right after it: at scheduling time its block went on past that label. 437 structural forms of the two stop
+  blocks (copies in both exits, nested copies, gotos) and ~60 local forms never gave store-first: open.

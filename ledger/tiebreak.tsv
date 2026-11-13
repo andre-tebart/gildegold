@@ -368,7 +368,7 @@ exe	0x00417e30	d3snd_PlayAt	d3_snd	a0b9cc9981235215	no	byte	control=byte p1=byte
 exe	0x00417ec0	d3sndw_Init	d3_snd	d94917d217aef22f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00418030	d3sndw_Exit	d3_snd	e411c726b6731951	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00418080	d3sndw_GetSound	d3_snd	72702b87be199034	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x004183d0	d3sndw_Update	d3_snd	3a5cbdd2c3884c8d	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x004183d0	d3sndw_Update	d3_snd	ab4c8fef3b73f270	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x00418ce0	d3_InitKeyCodes	dd_vesa	f67fa6f3f427e416	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00418e90	d3d_Error	dd_vesa	31ba3b2400d381f9	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0041bdd0	dd_Restore	dd_vesa	c3e833cea11e2428	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte

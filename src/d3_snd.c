@@ -526,29 +526,26 @@ typedef struct D3SNDWHIT {
    under the camera (region water kind 1..3) and probes ahead along the view direction for more water regions
    to pick volume and pan of the sounds; both sounds are stopped (label off) when the scene changed or the
    camera / map / sound system is not ready
-   @stuck shape, 4 ins / 11 bytes, the same two scheduling hunks. headers sample: insensitive (32, one
-   code). Round 2 (dcp try, 190 variants; manual cl probes; toys): = control: off block duplicated into
-   both exits / label inside the else-if / inside the first if / second block before the first / goto,
-   else, do-while, while-break shapes; comma forms and the store with the call in its rhs; the if-else arms
-   around the head swapped (&&, !, flag); 2000-ground in an int local (8 locals x 3 positions); neutral
-   edits at the top. Worse: head statements permuted with temps (96 variants, best 6 ins), literal 0.0f for
-   ai_FloatZero and ai_FloatOne at the pan sites (5 of 8 combinations add a reload-order hunk at 0x418b3b,
-   none moves the two hunks), duplicated off blocks (VC6 merges only from call sb_SetRestart: 34..52 ins).
-   Outside the text: 23 flag sets (/G3../G6, /Ox, /Op, /Oa, /Ow, /Oy-, /Zi ..), linkage of d3sndw_Snd /
-   Scene / Vol / Range, const ai_FloatZero, dummy functions before this one: all the same two hunks. Found:
-   store-before-add esp is what VC6 emits when the add is a cross-jumped tail of two paths
-   (d3t_CreateSnowMipmaps, toys; notes), but the original has no second path into 0x418668. Hunk 1 (mov
-   [esp+0x14],eax after fdivp, as the k loop has it in both builds): every spelling of the expression is
-   one code (tiebreak: not measured (dcp headers sample d3sndw_Update)) prior: shape, 4 ins / 11 bytes
-   left, two scheduling hunks: (1) head vol: the int store mov [esp+0x14],eax of (2000 - ground) before
-   fdivp (original after); (2) off: block 1 add esp,0x10 before mov [d3sndw_Snd[0].snd],ebx (original
-   after; block 2 matches). Draft->shape came from memset(&found[0].vol..) (5 zero stores in their own
-   register), ai_FloatZero for k*k, dir.y after dir.z, pan before nfound. No change (= control):
-   (float)(2000-ground), -ground+2000, ai_FloatZero first, a temp for the volume base, off-block as ->, !=
-   NULL, else-form, early return before block 2, sb_SetRestart uncast, head split; worse: Range division
-   grouped, type stored after vol, nfound<2 first in the k loop. headers sample: insensitive (32, one
-   codegen). M10 open at +0x2f6: the k loop's folded first test 1 < Range[1] reads ai_FloatOne in the
-   original, our literal 1.0 (the same literal at the pan site is not flagged) (t... */
+   @stuck shape, 2 ins / 5 bytes: one scheduling hunk left, the first stop block of off (original: mov
+   [d3sndw_Snd[0].snd],ebx before add esp,0x10; ours after; the second block matches). Round 3 fixed the
+   head volume hunk with the parenthesized product (v * z). For the stop block: flip search, 561 compiling
+   single-statement mutants of the function: none changes the order; ~60 local forms of the block (what is
+   stored, two stores, dead statements after it, comma / rhs forms, inline helper, pointer walk, loop):
+   always add esp first; 437 structural forms (the stop code in both exits, nested copies of the second
+   block, shared tails, gotos): none store-first; 23 flag sets, linkage, code before the function: no
+   change. What the image says (notes): VC6 puts the store first only when a later instruction of the same
+   block depends on it (mem_Alloc, ch_GetWaypoints, ai_CannonShotResults with its inline epilogue), so the
+   original block continued past the label 0x41866b when it was scheduled; no source form found that does
+   this and still merges to one copy (tiebreak: not measured (dcp headers sample d3sndw_Update)) prior:
+   shape, 4 ins / 11 bytes, the same two scheduling hunks. headers sample: insensitive (32, one code).
+   Round 2 (dcp try, 190 variants; manual cl probes; toys): = control: off block duplicated into both exits
+   / label inside the else-if / inside the first if / second block before the first / goto, else, do-while,
+   while-break shapes; comma forms and the store with the call in its rhs; the if-else arms around the head
+   swapped (&&, !, flag); 2000-ground in an int local (8 locals x 3 positions); neutral edits at the top.
+   Worse: head statements permuted with temps (96 variants, best 6 ins), literal 0.0f for ai_FloatZero and
+   ai_FloatOne at the pan sites (5 of 8 combinations add a reload-order hunk at 0x418b3b, none moves the
+   two hunks), duplicated off blocks (VC6 merges only from call sb_SetRestart: 34..52 ins). Outside the
+   text: 23 flag sets (/G3../G6, /Ox, /Op, /Oa, /Ow, /Oy-, /Zi ..), linkage of... */
 void d3sndw_Update(void)
 {
     D3SCENE *sc;
