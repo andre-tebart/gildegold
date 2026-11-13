@@ -6,7 +6,9 @@ instructions of each basic block.
     python tools/c2dag/c2dag.py src/d3_snd.c d3sndw_Update --blocks    # VC6's own block listing (/d2FAF)
 
 Per block the nodes are listed in their order BEFORE scheduling:
-    idx op class line  prio  height in/out flags -> successor/latency:kind ...
+    idx op class line  prio  height in/out flags -> successor/latency:kind ...  | uses | defs
+An operand is register, m:symbol (memory), k7 (immediate) or kb / ka (a call's memory use / kill), then its two
+flag bytes (second byte: 10 last use). Edges come from these: a def after a use or def of the same thing.
 The scheduler emits the ready node with the highest priority; a tie goes to the earlier node. prio is
 height * 8192 (+ 65536 for a load: flag 04). height is the longest latency path to the block's end, so an
 instruction only overtakes an earlier one when something later in the SAME block depends on it (an edge).
@@ -25,8 +27,9 @@ VC = os.environ.get("C2DAG_VC", r"C:\Tools\MSVC600-SP5PP")
 DX = os.environ.get("C2DAG_DX", r"C:\Tools\DXSDK61\include")
 WORK = os.path.join(ROOT, "build", "c2dag")
 BIN = os.path.join(WORK, "bin")
-OPS = {0x1: "mov", 0xd: "push", 0xe: "call", 0xf: "jcc", 0x2d: "add", 0x2f: "cmp", 0x33: "test", 0x2b0: "(end)",
-       0xffff: "(edge)"}
+# opcode numbers: partly from rea's c2prio (1 mov, d push, e call, f jcc, 10 jmp, 12 lea, 2f cmp, 2a0 return)
+OPS = {0x1: "mov", 0xd: "push", 0xe: "call", 0xf: "jcc", 0x10: "jmp", 0x12: "lea", 0x2d: "add", 0x2f: "cmp",
+       0x33: "test", 0x2a0: "ret", 0x2b0: "(end)", 0xffff: "(edge)"}
 
 
 def env():

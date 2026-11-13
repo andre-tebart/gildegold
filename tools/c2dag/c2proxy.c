@@ -23,6 +23,38 @@ static void *savedP, *savedRet;
 #define U8(p, o) (*(unsigned char *)((char *)(p) + (o)))
 #define PTR(p, o) (*(void **)((char *)(p) + (o)))
 
+/* one operand list of a tuple (uses at +0x1c, defs at +0x20), as tools c2prio reads them: kind byte at +8
+   (1 register / symbol reference via +0x18 -> +8, 2 memory via +0x14 -> +8, 7 immediate, 10 a call's kill set),
+   flag bytes at +0x10 / +0x11 (second byte: 10 last use). A symbol inside the back end's register table
+   (0xc49e8, 0x58 bytes each) prints as the register, any other as its name (+0x18) or #id (+0x1c). */
+static void opnds(void *o)
+{
+    static const char *regs[] = { "r0", "r1", "eax", "ecx", "edx", "ebx", "esp", "ebp", "esi", "edi" };
+    int g = 0;
+    for (; o && g < 64; o = PTR(o, 0), g++) {
+        unsigned kind = U8(o, 8);
+        void *ref = kind == 1 ? PTR(o, 0x18) : kind == 2 ? PTR(o, 0x14) : 0, *sym = 0;
+        fprintf(out, " ");
+        if (ref && !IsBadReadPtr(ref, 12))
+            sym = PTR(ref, 8);
+        if (sym && !IsBadReadPtr(sym, 0x20)) {
+            unsigned long d = (unsigned long)sym - ((unsigned long)real + 0xc49e8);
+            char *nm = PTR(sym, 0x18);
+            if (d < 0x58 * 80 && d % 0x58 == 0) {
+                if (d / 0x58 < 10)
+                    fprintf(out, "%s%s", kind == 2 ? "m:" : "", regs[d / 0x58]);
+                else
+                    fprintf(out, "%sr%lu", kind == 2 ? "m:" : "", d / 0x58);
+            } else if (nm && !IsBadStringPtrA(nm, 96) && nm[0] > 32 && nm[0] < 127)
+                fprintf(out, "%s%s", kind == 2 ? "m:" : "", nm);
+            else
+                fprintf(out, "%s#%lx", kind == 2 ? "m:" : "s", U32(sym, 0x1c));
+        } else
+            fprintf(out, "k%x", kind);
+        fprintf(out, "/%x.%x", U8(o, 0x10), U8(o, 0x11));
+    }
+}
+
 static void find(const char *name)
 {
     /* discovery aid: which global of the back end leads to the current function's name */
@@ -97,6 +129,12 @@ static void __cdecl dump(void)
             for (j = 0; j < cnt && nodes[j] != tg; j++)
                 ;
             fprintf(out, " %d/%u:%lx", j < cnt ? j : -1, U16(e, 0x14), U32(e, 0x10));
+        }
+        if (t) {
+            fprintf(out, "  |");
+            opnds(PTR(t, 0x1c));
+            fprintf(out, " |");
+            opnds(PTR(t, 0x20));
         }
         if (t && getenv("C2DAG_RAW")) {
             fprintf(out, "   raw");
