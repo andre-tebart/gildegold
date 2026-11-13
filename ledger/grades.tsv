@@ -283,7 +283,7 @@ exe	0x00410710	di_AcquireMouse	di_input	byte	readable
 exe	0x00410740	di_AcquireKeyboard	di_input	byte	readable		
 exe	0x00410770	di_Init	di_input	byte	readable		
 exe	0x00410a50	di_Exit	di_input	byte	readable		
-exe	0x00410ac0	di_UpdateButtons	di_input	draft	readable	stuck	
+exe	0x00410ac0	di_UpdateButtons	di_input	byte	readable		
 exe	0x00410ed0	di_SwapButtons	di_input	byte	readable		
 exe	0x00410f20	di_PollMouse	di_input	byte	readable		
 exe	0x004112e0	di_PollKeyboard	di_input	byte	readable		
@@ -368,7 +368,7 @@ exe	0x00417e30	d3snd_PlayAt	d3_snd	byte	readable
 exe	0x00417ec0	d3sndw_Init	d3_snd	byte	readable		
 exe	0x00418030	d3sndw_Exit	d3_snd	byte	readable		
 exe	0x00418080	d3sndw_GetSound	d3_snd	byte	readable		
-exe	0x004183d0	d3sndw_Update	d3_snd	shape	readable	stuck	
+exe	0x004183d0	d3sndw_Update	d3_snd	byte	readable		
 exe	0x00418ce0	d3_InitKeyCodes	dd_vesa	byte	readable		
 exe	0x00418e90	d3d_Error	dd_vesa	byte	readable		
 exe	0x0041bdd0	dd_Restore	dd_vesa	byte	readable		
