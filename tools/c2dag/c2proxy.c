@@ -154,6 +154,18 @@ static void __cdecl hXJ(unsigned long *r)
     xjRegion(lab, j);
     fprintf(out, "\n");
 }
+static void cands(void);
+static void __cdecl hReg(unsigned long *r)
+{
+    char *cur, *nm = 0;
+    if (!out)
+        return;
+    cur = *(char **)((char *)real + 0xad730);
+    if (!IsBadReadPtr(cur, 0x1c))
+        nm = *(char **)(cur + 0x18);
+    fprintf(out, "allocreg %s\n", nm && !IsBadStringPtrA(nm, 128) ? nm : "?");
+    cands();
+}
 static void midhook(unsigned long rva, int len, void (__cdecl *h)(unsigned long *), const unsigned char *expect)
 {
     unsigned char *fn = (unsigned char *)real + rva, *p, *s;
@@ -431,8 +443,10 @@ static void install(void)
             static const unsigned char e3[] = { 0x41, 0x89, 0x4e, 0x24, 0x8b, 0x4e, 0x3c };
             static const unsigned char e4[] = { 0x0f, 0xaf, 0x74, 0x24, 0x24 };
             static const unsigned char e5[] = { 0x81, 0xec, 0x8c, 0x00, 0x00, 0x00 };
+            static const unsigned char e6[] = { 0xe8, 0xd8, 0x1b, 0xfd, 0xff };
             midhook(0x7b6e, 5, hP, e4);
             midhook(0x12437, 6, hXJ, e5);
+            midhook(0x315c3, 5, hReg, e6);
             midhook(0x7b31, 5, hBlock, e1);
             midhook(0x7c42, 5, hUse, e2);
             midhook(0x7ed2, 7, hDef, e3);

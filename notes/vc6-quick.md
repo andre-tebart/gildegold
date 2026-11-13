@@ -904,3 +904,15 @@ mechanisms, each as a generated round over all positions / subsets:
      shares the add; the short return tail is copied back afterwards, so no jump is left).
   `c2dag.py` writes the pairs cross-jumping examines into build/c2dag/UNIT.dag (`xjump FUNC jmp@line`, then both
   regions as opcode@line, last instruction first).
+- **d3sndw_Update's store-before-`add esp` is explained by cross-jumping two copies of the stop code** (found by
+  reading FUN_10712437 and confirmed by experiment): when the whole stop code (`if (Snd[0].snd) {..} if
+  (Snd[1].snd) {..} return;`) is written in more than one exit, VC6 merges the copies bottom-up through the
+  labels. The last block's instructions match in their natural order (`add esp,16; mov [Snd[1].snd],ebx`), but
+  the first block is reached through the label node, whose predecessors are released add first, so the shared
+  tail gets `mov [Snd[0].snd],ebx; add esp,16`: exactly the original's asymmetry between the two blocks
+  (variant `dup-split-first`: first block store-first, second add-first, 30 ins left). What still differs is
+  the scratch register of the two reloads (`mov ecx,[Snd[0].snd]` / `mov edx,[Snd[1].snd]` in the original):
+  the copies only merge completely when both get the same registers, and so far exactly one copy does - the
+  first of the copies in the allocator's block order behind the switch code gets ecx / edx, any other eax / ecx.
+  Tried: the four entry conditions distributed over inline copies, labelled copies in the else-if and copies
+  at the function end (127 arrangements, best 24 ins). Open: an arrangement where both copies get ecx / edx.
