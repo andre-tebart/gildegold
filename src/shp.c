@@ -41,24 +41,21 @@ extern unsigned int d2_HighBitMask32;
 int d2_MakeLightTable(char add)
 {
     int i;
-    int lim;
-    unsigned char r, g, b;
+    unsigned char r = 0, g = 0, b = 0;
 
-    r = g = b = 0;
     d2_ShpLightTable = mem_Alloc(0x20000, "d2:shp:shp_LightTable");
     if (d2_ShpLightTable != 0) {
-        lim = 0xff - add;
         for (i = 0; i < 0x10000; i++) {
             dd_SplitRGB(i, &r, &g, &b);
-            if (b < lim)
+            if (b < 0xff - add)
                 b += add;
             else
                 b = 0xff;
-            if (g < lim)
+            if (g < 0xff - add)
                 g += add;
             else
                 g = 0xff;
-            if (r < lim)
+            if (r < 0xff - add)
                 r += add;
             else
                 r = 0xff;
