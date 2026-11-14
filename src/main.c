@@ -2681,11 +2681,11 @@ int main_ChooseDifficulty(void)
     return r;
 }
 /* 0x537040, the opponent selection ("menu\choose_opponents"): n rows (d2_WinOpenSlider list boxes "<name> <letter>", txt_Ptrs[0x42c6 ..]) with the entries of ai_Opponents, the ok button (text 0x7d); the chosen entries are stored back
-   in 0x75e160; the row height is 10.0f / n * 24.0f @deep read against the original and rebuilt (63 -> 24 ins): the row height (int)(10.0f / n * 24.0f) (was a lost float), for loops with i++, y += h, if / do .. while frame loop, txt_Ptrs[0x42c6 .. 0x42cb] for the labels, ai_Opponents[i]. Left is allocation only: the original loads n into ebp before the first loop, computes y in eax and moves it into ebp after the n test (mov ebp,eax), reloads n from the stack inside the loop and moves it back into ebp after it (mov ebp,eax at +0x148); ours computes y in ebp directly and reloads n into ebx for the second loop (tried: i = 0 before y). Q7: d2.h declares d2_SetObjValue() without parameters */
+   in 0x75e160; the row height is 10.0f / n * 24.0f, the rows centred in the window (row i at top + i * h). Q7: d2.h declares d2_SetObjValue() without parameters */
 
 void main_ChooseOpponents(int n)
 {
-    int f, h, y, i, ok;
+    int f, h, top, i, ok;
     int ids[16];
     char buf[256];
 
@@ -2697,10 +2697,10 @@ void main_ChooseOpponents(int n)
     io_PrintText(0x42c5);
     d2_SetForm(f, 3);
     h = (int)(10.0f / n * 24.0f);
-    y = (d2_LastWindowPtr->h - h * n) / 2 + 0xe;
-    for (i = 0; i < n; i++, y += h) {
+    top = (d2_LastWindowPtr->h - h * n) / 2 + 0xe;
+    for (i = 0; i < n; i++) {
         sprintf(buf, "%s %c", txt_Ptrs[0x42c6], i + 'A');
-        ids[i] = d2_WinOpenSlider(0x80, y, 200, 0, 100, 0x7b, 0x802, d2_LastWindow);
+        ids[i] = d2_WinOpenSlider(0x80, top + i * h, 200, 0, 100, 0x7b, 0x802, d2_LastWindow);
         d2_SetObjValue4(ids[i], 0, 4, ai_Opponents[i]);
         d2_SetSliderFlags(ids[i], 0x82);
         d2_SetLabel(ids[i], buf);
@@ -2708,11 +2708,9 @@ void main_ChooseOpponents(int n)
     }
     d2_SetForm(f, 2);
     ok = d2_GetWinObj(f, 2, io_PrintText(0x7d));
-    if (sv_RunFrame((int)main_ChooseOpponents, 0xc6) != 0) {
-        do {
-            if (dm_L.rup != 0 || kb_Last == 1 || (d2_ClickedId == 0 && d2_PointerObj == ok))
-                sv_PopRequest = 1;
-        } while (sv_RunFrame((int)main_ChooseOpponents, 0xc6) != 0);
+    while (sv_RunFrame((int)main_ChooseOpponents, 0xc6) != 0) {
+        if (dm_L.rup != 0 || kb_Last == 1 || (d2_ClickedId == 0 && d2_PointerObj == ok))
+            sv_PopRequest = 1;
     }
     for (i = 0; i < n; i++)
         ai_Opponents[i] = d2_GetObjValue(ids[i]);
