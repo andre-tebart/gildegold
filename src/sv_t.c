@@ -10533,13 +10533,7 @@ void ai_SelectBookmark(void)
 /* 0x589570, sets the bookmark idx (256 B): the building the player is in (ai_PlayerBuilding, else
    ai_FallbackBuilding with its shown room or the first room gm_Query finds, else the selected object or the
    market) and the room object shown (sv_PanelShown); the status bar line "%s = %G, %s" (the key's text idx +
-   0x205e, the building, the room's text) or, without a room or for the room 0xfd, "%s = %G"
-   @deep read against the original instruction by instruction: every statement, operand and branch target
-   equal (diffclass: one hunk, branch targets equal); the only hunk is a duplicated 'test eax, eax / je' at
-   0x58958a: the original's player-building path tests o and then falls into a second copy of the same test
-   (the join with the gm_Query path), ours threads both paths into one test. Tried: else-if chain,
-   assignment-in-condition for the query, ternary / inverted if for the stores, a dummy re-test in the
-   player branch: all equal or worse. A block-layout / jump-threading difference of VC6, not a statement */
+   0x205e, the building, the room's text) or, without a room or for the room 0xfd, "%s = %G" */
 void ai_SetBookmark(int idx)
 {
     char buf[0x100];
@@ -10548,12 +10542,16 @@ void ai_SetBookmark(int idx)
 
     a = (AIBLD *)ai_PlayerBuilding;
     if (a != 0) {
-        o = (AIOBJ *)sv_PanelShown;
+        if (sv_PanelShown != 0)
+            o = (AIOBJ *)sv_PanelShown;
+        else
+            o = 0;
     } else {
         a = (AIBLD *)ai_FallbackBuilding;
         if (a != 0) {
-            o = (AIOBJ *)sv_PanelShown;
-            if (o == 0)
+            if (sv_PanelShown != 0)
+                o = (AIOBJ *)sv_PanelShown;
+            else
                 o = (AIOBJ *)gm_Query((void *)a->objList, 2, 6, 0, 0xfd);
         } else {
             a = (AIBLD *)sv_SelectedObject;
