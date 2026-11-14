@@ -4662,31 +4662,7 @@ void main_CreateStartCouple(void)
    then the round loop: one player at a time (ai_PlayerId) the day change main_EndRound, the events, the autosave,
    the rest of the day and the report main_RoundReport, the night, the office elections (a kind 1 party) and the
    start of the next round main_BeginPlayerRound, until the game is over (ai_GameOver) or 800 rounds; a network
-   game ends with the network error / player left message
-   @stuck match-deep 2026-11-14: 91 -> 41 ins kept. headers sample: insensitive. dcp frame gives no view
-   here (esp not followed). Plain-form levers that moved: (1) the goto next past the second
-   ai_CurrentPlayer++ removed (both paths increment once; if (!GameOver && !LeaveGame) ai_GameFlags &=
-   ~0x42; then the one ++): 91 -> 69, fixes the jmp branch hunk and the zero-register code hunks around it;
-   (2) the night loop with its own AITIME (the original's two half-hour loops sit at different slots): 69
-   -> 41, frame 0x440 -> 0x450. Tried without gain: CMQUICKSAVE save out of the union (frame becomes 0x4bc
-   = the original's with one clock, 0x4cc with both, but the original's save writes are inside the shared
-   text buffer at +0xb0, so save is in the union: 119 / 59 ins). Left: frame 0x450 vs 0x4bc - 0x6c bytes
-   below the shared buffer (between the clocks and m) that no instruction of the original touches; every
-   offset above is shifted (frame hunks), the original keeps ebx = 0 as a zero register (cmp edx,ebx / push
-   ebx / mov [cm_DayEndRequest],ebx where ours has immediates: code hunks +0x5cd 18, +0x6eb 19) and the
-   party block's store order (0x53c885 order 12); ck (first loop) and clk in the other slot order (ours clk
-   0x2c / ck 0x34, the original ck 0x24 / clk 0x3c). Next idea: what local of ~0x6c bytes the original had
-   below the buffer (a block-scoped array in a branch VC6 compiled away, or a larger record whose tail is
-   the buffer). (tiebreak: not measured (dcp headers sample main_GameLoop)) prior: Read whole against
-   0x53bb20..0x53c9af and rewritten typed: the host path (CD loop, the plug-in DLL ai_NetLibName, its Init
-   on ls_SavePath.net, udp), the joins / loads (LSHEADER startBuilding / startObject through
-   ls_LoadedHeader, AIOBJ), the start money, the viewport, the tutorial message (AIMSG), the round loop
-   with the day change, events, autosave (CMQUICKSAVE request), the half-hour clock steps (AITIME), the
-   office party (G28REC built by an index loop: the original's signed jl end compare), the end messages
-   (the error / left branches in the original's order). Meaning fixes: the player search as ai_PlayerId++
-   on the 16-bit global (the original's inc cx / word store), the party branch before amt_UpdateOffices,
-   the port pushed as the whole dword (ls_SavePortW / net_ConnectI, @original). 993 vs 994 instructions.
-   The night has a clock of its own (the original's two half-hour loops use two ... */
+   game ends with the network error / player left message */
 void main_GameLoop(int ctl)
 {
     int iv, i, n, w, len;
@@ -4699,7 +4675,10 @@ void main_GameLoop(int ctl)
     } m;
     AITIME ck;
     AITIME night;
-    AITIME clk;
+    struct {                        /* the 0x7c bytes of data cm_SendExSysMessage copies: message 3 carries the time */
+        AITIME time;
+        char pad[0x6e];
+    } clk;
     char ap[0x104], ab[0x104];
     G28REC party;
     FILE *sav, *bak;
@@ -4874,9 +4853,9 @@ void main_GameLoop(int ctl)
     if ((ai_GameFlags & 1) != 0) {
         if ((ai_GameFlags & 4) == 0) {
             /* a new single player game: the clock to 6:00, the start money of the players */
-            clk.year = 0;
-            gm_SetTime(&clk, 6, 0, 0);
-            w = cm_SendExSysMessage(3, &clk);
+            clk.time.year = 0;
+            gm_SetTime(&clk.time, 6, 0, 0);
+            w = cm_SendExSysMessage(3, &clk.time);
             iv = cm_GetSlotState(w);
             while (iv == 0) {
                 sv_PumpNet();
@@ -4936,7 +4915,6 @@ void main_GameLoop(int ctl)
     }
     /* the rounds */
     while (ai_GameOver == 0 && (iv = sv_RunFrame((int)main_GameLoop, 0x20007)) != 0 && main_Round < 800) {
-        iv = 0;
         ai_CurrentPlayer = 0;
         if ((ai_GameFlags & 0x42) == 0) {
             ai_PlayerId = 0;
@@ -4945,17 +4923,16 @@ void main_GameLoop(int ctl)
         } else {
             for (i = 0; i < MAIN_PLAYER; i++) {
                 if (ai_CharsT[i].kind == 6)
-                    iv++;
+                    ai_CurrentPlayer++;
             }
-            ai_CurrentPlayer = iv;
         }
         while (ai_PlayerId < 0x300 && ai_GameOver == 0 && ai_CharsT[MAIN_PLAYER].kind != 6)
             ai_PlayerId++;
         if (ai_CharsT[MAIN_PLAYER].kind == 6) {
             if ((ai_GameFlags & 0x46) == 0) {
-                clk = ai_Time;
-                gm_SetTime(&clk, 6, 0, 0);
-                w = cm_SendExSysMessage(3, &clk);
+                clk.time = ai_Time;
+                gm_SetTime(&clk.time, 6, 0, 0);
+                w = cm_SendExSysMessage(3, &clk.time);
                 iv = cm_GetSlotState(w);
                 while (iv == 0) {
                     sv_PumpNet();
@@ -5016,8 +4993,8 @@ void main_GameLoop(int ctl)
                     ls_SaveGame("Gamedata\\Saves\\Autosave.SAV", "Autosave", 1);
                 } else if ((ai_GameFlags & 0x10) != 0) {
                     memset(&m.save, 0, sizeof(m.save));
-                    strcpy(m.save.name, "AUTOSAVE");
                     m.save.slot = 0;
+                    strcpy(m.save.name, "AUTOSAVE");
                     w = cm_SendExSysMessage(0xf, &m.save);
                     iv = cm_GetSlotState(w);
                     while (iv == 0) {
@@ -5080,11 +5057,11 @@ void main_GameLoop(int ctl)
                         }
                     }
                     party.used = (unsigned char)n;
-                    party.time = ai_Time;
                     sv_FrameMask = 0x24087;
                     party.kind = 1;
                     party.flags = 0x61;
                     party.thing = -1;
+                    party.time = ai_Time;
                     w = cm_SendNewParty(&party);
                     iv = cm_GetSlotState(w);
                     while (iv == 0) {

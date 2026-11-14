@@ -1092,3 +1092,18 @@ mechanisms, each as a generated round over all positions / subsets:
   next; } } player++; } next:`) is one plain increment after a plain if: both paths run `player++` once. Removing
   it fixed the jmp branch hunk and the zero-register hunks around it (91 -> 69). Two loops over a clock that sit
   at different stack slots in the original were two locals (`AITIME night` for the second loop: 69 -> 41).
+- **A frame N bytes larger than ours, with N untouched bytes right behind a small local whose address goes to a
+  call** (main_GameLoop: 0x6c bytes behind the clock passed to `cm_SendExSysMessage(3, &clk)`): the local was
+  the callee's full record, not its used head. cm_SendExSysMessage copies 0x7c bytes of its argument, so the
+  clock was a 0x7c-byte message record (`struct { AITIME time; char pad[0x6e]; } clk;`, like CMQUICKSAVE and
+  main_EndRound's sysmsg). Frame 0x450 -> 0x4bc, 41 -> 9 ins, and the slot order of the three clocks fell into
+  place. Reading rule: for an untouched hole, look at what the neighbouring local is passed to and how many
+  bytes that callee reads. A union of the unrelated buffers (text / AIMSG / save) and separate block-scoped
+  locals are the same code - prefer the block locals.
+- **A global counter the original zeroes BEFORE a branch and again in one arm** (`mov [g],edx` ahead of the
+  `jne`, where ours had no store): the other arm counts in the global itself (`for (..) if (..) g++;`), not in a
+  local assigned at the end; VC6 keeps the count in a register either way, but only the direct form keeps the
+  first store alive. A zero field store right after a memset (`memset(&save, 0, ..); save.slot = 0;` before the
+  strcpy) reuses the memset's zero register (`mov [slot],eax`); after the strcpy it is an immediate store. A
+  struct time copy whose last two stores come after the record's other fields was written last
+  (`party.time = ai_Time;` after kind / flags / thing; 720 orders, 5 byte) (main_GameLoop byte).
