@@ -304,39 +304,34 @@ void surf_Up24(DDSURFACEDESC2 *dst, DDSURFACEDESC2 *src)
         }
     }
 }
-/* 0x41fc00 @deep read whole against the original: rewritten to its data flow like surf_Up16 / surf_Up24 - y0 = y1 / x0 = x1 at the loop tops, right before down, all four neighbours' r/g/b up front, under the dy / dx guards ('test esi, esi; jbe', 'cmp edi, edx; jbe') the six row deltas and zeroed accumulators once, the per-row end values and the three column steps once, the 32-bit OR of the three shifted channels stored as a dword; every operation, shift and bound matches (585 -> 540 ins). Left: allocation - the original keeps src on the stack and reloads it before each G / B mask read (R mask cached), the bounds in slots, ours holds src and the masks in registers; frame 0x9c vs 0xb4, e.g. '+ mov ecx, dword ptr [esp + 0x24]; + and eax, ecx' against our register-held mask */
+/* 0x41fc00, 32-bit bilinear growing of src into dst (surf_Up24 with the channels masked and shifted as in
+   surf_Shrink16; the bit counts rb / gb / bb are unused).
+   @original down is lPitch >> 1 pixels, two rows further down for 32-bit pixels (surf_Up16's element count) */
 
 void surf_Up32(DDSURFACEDESC2 *dst, DDSURFACEDESC2 *src)
 {
-    int rs, gs, bs;
-    unsigned int m;
-    unsigned int y, x, y0, y1, x0, x1, dy, dx, yy, xx, down, right;
-    unsigned int p00, p01, p10, p11;
-    unsigned int r00, g00, b00, r01, g01, b01, r10, g10, b10, r11, g11, b11;
-    unsigned int dr0, dg0, db0, dr1, dg1, db1, ar0, ag0, ab0, ar1, ag1, ab1;
-    unsigned int lr, lg, lb, hr, hg, hb, er, eg, eb, sr, sg, sb;
-    unsigned int *srow, *d;
+    DWORD m, x, y, x0, x1, y0, y1, i, j, dx, dy, right, down;
+    DWORD r[4], g[4], b[4], lr, lg, lb, hr, hg, hb;
+    int rs, gs, bs, rb, gb, bb;
+    DWORD *s, *d;
 
-    rs = 0;
-    for (m = src->ddpfPixelFormat.dwRBitMask; !(m & 1); m >>= 1)
+    for (rs = 0, m = src->ddpfPixelFormat.dwRBitMask; !(m & 1); m >>= 1)
         rs++;
-    for (; m; m >>= 1)
-        ;
-    gs = 0;
-    for (m = src->ddpfPixelFormat.dwGBitMask; !(m & 1); m >>= 1)
+    for (rb = 0; m; m >>= 1)
+        rb++;
+    for (gs = 0, m = src->ddpfPixelFormat.dwGBitMask; !(m & 1); m >>= 1)
         gs++;
-    for (; m; m >>= 1)
-        ;
-    bs = 0;
-    for (m = src->ddpfPixelFormat.dwBBitMask; !(m & 1); m >>= 1)
+    for (gb = 0; m; m >>= 1)
+        gb++;
+    for (bs = 0, m = src->ddpfPixelFormat.dwBBitMask; !(m & 1); m >>= 1)
         bs++;
-    for (; m; m >>= 1)
-        ;
+    for (bb = 0; m; m >>= 1)
+        bb++;
     y1 = 0;
     for (y = 0; y < src->dwHeight; y++) {
         y0 = y1;
         y1 = dst->dwHeight * (y + 1) / src->dwHeight;
-        srow = (unsigned int *)((char *)src->lpSurface + src->lPitch * y);
+        s = (DWORD *)((unsigned char *)src->lpSurface + src->lPitch * y);
         x1 = 0;
         for (x = 0; x < src->dwWidth; x++) {
             x0 = x1;
@@ -345,59 +340,28 @@ void surf_Up32(DDSURFACEDESC2 *dst, DDSURFACEDESC2 *src)
             dx = x1 - x0;
             right = x + 1 < src->dwWidth;
             down = y + 1 < src->dwHeight ? src->lPitch >> 1 : 0;
-            p00 = srow[x];
-            r00 = (p00 & src->ddpfPixelFormat.dwRBitMask) >> rs;
-            g00 = (p00 & src->ddpfPixelFormat.dwGBitMask) >> gs;
-            b00 = (p00 & src->ddpfPixelFormat.dwBBitMask) >> bs;
-            p01 = srow[right + x];
-            r01 = (p01 & src->ddpfPixelFormat.dwRBitMask) >> rs;
-            g01 = (p01 & src->ddpfPixelFormat.dwGBitMask) >> gs;
-            b01 = (p01 & src->ddpfPixelFormat.dwBBitMask) >> bs;
-            p10 = srow[down + x];
-            r10 = (p10 & src->ddpfPixelFormat.dwRBitMask) >> rs;
-            g10 = (p10 & src->ddpfPixelFormat.dwGBitMask) >> gs;
-            b10 = (p10 & src->ddpfPixelFormat.dwBBitMask) >> bs;
-            p11 = srow[down + right + x];
-            r11 = (p11 & src->ddpfPixelFormat.dwRBitMask) >> rs;
-            g11 = (p11 & src->ddpfPixelFormat.dwGBitMask) >> gs;
-            b11 = (p11 & src->ddpfPixelFormat.dwBBitMask) >> bs;
-            if (dy > 0) {
-                dr0 = r10 - r00;
-                dg0 = g10 - g00;
-                db0 = b10 - b00;
-                dr1 = r11 - r01;
-                dg1 = g11 - g01;
-                db1 = b11 - b01;
-                ar0 = ag0 = ab0 = ar1 = ag1 = ab1 = 0;
-                yy = 0;
-                do {
-                    lr = ar0 / dy + r00;
-                    lg = ag0 / dy + g00;
-                    lb = ab0 / dy + b00;
-                    hr = ar1 / dy + r01;
-                    hg = ag1 / dy + g01;
-                    hb = ab1 / dy + b01;
-                    d = (unsigned int *)((char *)dst->lpSurface + (yy + y0) * dst->lPitch) + x0;
-                    if (dx > 0) {
-                        er = hr - lr;
-                        eg = hg - lg;
-                        eb = hb - lb;
-                        sr = sg = sb = 0;
-                        xx = dx;
-                        do {
-                            *d++ = (sb / dx + lb) << bs | (sg / dx + lg) << gs | (sr / dx + lr) << rs;
-                            sb += eb;
-                            sg += eg;
-                            sr += er;
-                        } while (--xx);
-                    }
-                    ar0 += dr0;
-                    ag0 += dg0;
-                    ab0 += db0;
-                    ar1 += dr1;
-                    ag1 += dg1;
-                    ab1 += db1;
-                } while (++yy < dy);
+            r[0] = (s[x] & src->ddpfPixelFormat.dwRBitMask) >> rs;
+            g[0] = (s[x] & src->ddpfPixelFormat.dwGBitMask) >> gs;
+            b[0] = (s[x] & src->ddpfPixelFormat.dwBBitMask) >> bs;
+            r[1] = (s[x + right] & src->ddpfPixelFormat.dwRBitMask) >> rs;
+            g[1] = (s[x + right] & src->ddpfPixelFormat.dwGBitMask) >> gs;
+            b[1] = (s[x + right] & src->ddpfPixelFormat.dwBBitMask) >> bs;
+            r[2] = (s[x + down] & src->ddpfPixelFormat.dwRBitMask) >> rs;
+            g[2] = (s[x + down] & src->ddpfPixelFormat.dwGBitMask) >> gs;
+            b[2] = (s[x + down] & src->ddpfPixelFormat.dwBBitMask) >> bs;
+            r[3] = (s[x + right + down] & src->ddpfPixelFormat.dwRBitMask) >> rs;
+            g[3] = (s[x + right + down] & src->ddpfPixelFormat.dwGBitMask) >> gs;
+            b[3] = (s[x + right + down] & src->ddpfPixelFormat.dwBBitMask) >> bs;
+            for (j = 0; j < dy; j++) {
+                lr = r[0] + (r[2] - r[0]) * j / dy;
+                lg = g[0] + (g[2] - g[0]) * j / dy;
+                lb = b[0] + (b[2] - b[0]) * j / dy;
+                hr = r[1] + (r[3] - r[1]) * j / dy;
+                hg = g[1] + (g[3] - g[1]) * j / dy;
+                hb = b[1] + (b[3] - b[1]) * j / dy;
+                d = (DWORD *)((unsigned char *)dst->lpSurface + (y0 + j) * dst->lPitch);
+                for (i = 0; i < dx; i++)
+                    d[x0 + i] = (lr + (hr - lr) * i / dx) << rs | (lg + (hg - lg) * i / dx) << gs | (lb + (hb - lb) * i / dx) << bs;
             }
         }
     }
