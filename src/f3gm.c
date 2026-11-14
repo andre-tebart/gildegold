@@ -3871,18 +3871,27 @@ int gm_FindPlayerBuilding(int p)
     return 0;
 }
 /* 0x501030, the next building of the query gm_BuildQuery (0x501190) started: walks the cursor gm_BQCursor over the used records of ai_Blds and returns the first that matches every set criterion (type, id, master, owner, the class of its type; gm_BQStopFirst takes any); 0 when the table ends (the cursor is cleared) or more than 0x100 records were tested
-   @deep read against the original statement by statement: the two early returns, the first-call /
-   next-record walks of the cursor, the criteria chain (type, id, masterId +0x25, owner +0x27, the class
-   byte of ai_BTypes, sete), the tested counter, the advance and the end / match returns all match (equal
-   compares, operands and loop-invariant loads into edi / bp / bl). Left: the original saves ebx / ebp /
-   edi only before the criteria loop (0x5010a4 push ebx .. push edi; the early returns pop esi only, the
-   first-call walk jumps to the shared end check 0x50109c), ours pushes all four in the prolog and so
-   duplicates every early return with four pops; and the 'm = 0' block (xor cl,cl; jmp) sits after the
-   match return in the original, inline in ours. Tried the criteria as a goto chain, as an if/else with the
-   no label in the else, with the no block after the loop's continue, and as nested ifs with separate m = 0
-   (56 ins, worse): VC6 lays the first three out identically, so the block placement follows from the late
-   register saves, not from the statements (size: 2 of the instruction difference are shared / inline
-   tails) */
+   @stuck match-deep 2026-11-14: 44 -> 8 ins. Fixed: the match loop leaves by break to one final return
+   (not a return in each exit): VC6 then pushes ebx / ebp / edi only before the loop as the original (44 ->
+   10); gm_BQFirstCall = 0 after the first-call walk (10 -> 8: the walk's exit then goes to the shared end
+   check instead of a threaded return copy). Left: (1) the original stores gm_BQFirstCall = 0 before the
+   walk (cmp; mov byte; jae) and still jumps from the walk's bottom to the shared check; with the store
+   first VC6 threads that exit to a return copy; (2) the no block (xor cl,cl; jmp) inline after the owner
+   test in ours, out of line after the returns in the original. Tried (dcp try): every criteria form (goto
+   chain, all four criteria as goto tests, nested if/else with m = 0 per level: 22, the no block after the
+   final return with goto back) = control; first-call walk as for / while with break = control, the if
+   (!first) arm first (26), the loop under if (cursor < end) (27), while (1) = control. flip.py (want the
+   owner test as jne): only the meaning-changing != -> == mutant. (tiebreak: not measured (dcp headers
+   sample gm_BuildNext)) prior: read against the original statement by statement: the two early returns,
+   the first-call / next-record walks of the cursor, the criteria chain (type, id, masterId +0x25, owner
+   +0x27, the class byte of ai_BTypes, sete), the tested counter, the advance and the end / match returns
+   all match (equal compares, operands and loop-invariant loads into edi / bp / bl). Left: the original
+   saves ebx / ebp / edi only before the criteria loop (0x5010a4 push ebx .. push edi; the early returns
+   pop esi only, the first-call walk jumps to the shared end check 0x50109c), ours pushes all four in the
+   prolog and so duplicates every early return with four pops; and the 'm = 0' block (xor cl,cl; jmp) sits
+   after the match return in the original, inline in ours. Tried the criteria as a goto chain, as an
+   if/else with the no label in the else, with the no block after the loop's continue, and as nested ifs
+   with separat... */
 
 unsigned char *gm_BuildNext(void)
 {
@@ -3896,9 +3905,9 @@ unsigned char *gm_BuildNext(void)
     if (gm_BQTested > 0x100)
         return 0;
     if (gm_BQFirstCall) {
-        gm_BQFirstCall = 0;
         while (gm_BQCursor < end && gm_BQCursor->type == 0)
             gm_BQCursor++;
+        gm_BQFirstCall = 0;
     } else {
         do
             gm_BQCursor++;
@@ -3942,11 +3951,12 @@ unsigned char *gm_BuildNext(void)
         if (gm_BQCursor >= end) {
             if (!m)
                 gm_BQCursor = 0;
-            return (unsigned char *)gm_BQCursor;
+            break;
         }
         if (m)
-            return (unsigned char *)gm_BQCursor;
+            break;
     }
+    return (unsigned char *)gm_BQCursor;
 }
 /* 0x501190, starts a building query and returns its first match (gm_BuildNext): resets the criteria, then reads n (kind, value) pairs: 0 the type, 1 the id, 2 a name (copied to gm_BQName, never tested), 3 the master id, 4 the owner, 5 the class of the type, 6 stop at the first (no value); the cursor starts at ai_Blds. Used all over the exe (gm_BuildQuery(1, 5, 10) ..)
    @deep read against the original: the reset of the nine criteria, the (kind, value) walk with a
