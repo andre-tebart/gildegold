@@ -1434,7 +1434,7 @@ exe	0x0047cae0	d2_DrawShapeMode3	shp	2ca5da046c3531a6	no	byte	control=byte p1=by
 exe	0x0047cb40	d2_SetClipRect	shp	fed277e8a42a3745	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0047cb70	d2_GetFrame	shp	fa134ef1c0047618	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0047cb90	d2_StepAnims	shp	3c8c2e0b10fa7e1b	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x0047cd20	d2_StartAnim	shp	de371a66cd4719ea	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x0047cd20	d2_StartAnim	shp	a26460e56b594a72	no	shape	sample n=32 seed=1 compiled=32 codegens=1 best=shape
 exe	0x0047cdb0	d2_DrawAnim	shp	a704bb0ac55f466e	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0047ce30	d2_FreeAnim	shp	4a1668bbd31f665d	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0047ce60	d2_FillRect	shp	839f8a49492cbafd	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
