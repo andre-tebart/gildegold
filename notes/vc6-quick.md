@@ -1351,3 +1351,18 @@ mechanisms, each as a generated round over all positions / subsets:
 - `1.0f / x` against `ai_FloatOne / x`: dcp's M10 says the original reads ai_FloatOne (0x5eb780), but that is the
   address of the pooled literal __real@3f800000 - the literal gives byte, the extern const gives other code
   (d3anim_PoseBones). Write the literal unless the function needs the object (a read the literal would fold).
+- **What "tie-break sensitive" is, mechanically** (read from color.c on d3anim_CreateMorphAnim, the one function
+  of the day that is still open at 16 ins). (1) Reloads at a block edge behind a register-killing region (an
+  inline-asm block, a forced split) are emitted in ascending candidate id of the split pieces. Candidate ids
+  are recycled from a LIFO free list, so two split generations come out in opposite orders. (2) The initial
+  ids of parameters and locals depend on the order in which unreferenced constant candidates are freed, a
+  64-bucket walk keyed by `value & 0x3f` for integers and `(unit symbol ordinal) & 0x3f` for every string
+  literal and global whose address the function uses. That ordinal is the front end's running symbol count,
+  so everything declared before the function shifts it: this is what `dcp headers sample` perturbs, and why a
+  block-scope extern or an unused local in the function moves such a hunk (period 64). (3) So a function is
+  really tie-break sensitive only when it has a forced split with two or more reloads at one edge; anything
+  else that `headers sample` flags has its cause in the source (main_RoundReport). (4) Even then the
+  declaration set may not be the answer: here all 4096 bucket states give one of two orders and the original
+  has a third, i.e. the source still differs in which candidates exist. (5) Base and index of a two-register
+  address are the first and second operand of the IL add, fixed before strength reduction; hash state does not
+  move it, the sharing of loop index variables between the function's loops does.

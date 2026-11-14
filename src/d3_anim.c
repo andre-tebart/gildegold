@@ -1037,17 +1037,32 @@ int d3_FindAnim(char *name)
    bone transforms are matched by name. For a target mesh the packed (byte) positions are rebuilt: the per-vertex
    differences go to a temporary array, their bounding box (mn / mx, D3VECTOR4 as in the original's frame) gives
    base and scale, and each difference is quantised as (v * 255) / extent.
-   @stuck 202 -> 16 ins (draft -> shape) this session: mn / mx / d as D3VECTOR4 (frame 0x34 -> 0x40, the
-   original's 16-byte slots), the quantise loop as plain tmp[i] index loop with a block vector v and (v.x *
-   255.0f) / d.x (VC6 hoists the invariant division as a reciprocal; named sx locals spill, * (1.0f / d.x)
-   reassociates), the bounding loop as tmp[i] with uniform min / max macros, no nverts guard. Left
-   (tie-break sensitive per dcp headers sample: 2 codegens in 32 samples, none better): (1) order: after
-   the mem_Alloc calls of lines 1059 / 1070 (behind the D3ANIM_COPY3 inline asm that clobbers edi / ebx)
-   the reloads come mesh (edi) then dmesh (ebx), the original dmesh first; (2) sib: the dmesh bone-copy
-   loop stores a->frames[1].bone[i] as [eax+ecx+0x114] where the original has [ecx+eax+0x114] (the dst
-   branch's twin loop matches with [eax+ecx]). flip.py --want '[ecx+eax+276]': 6 hits, only m7 (int i ->
-   unsigned, meaning change, 28 ins) near; inner index j, i/k swapped, strcmp args swapped, declaration
-   orders: no lever. (tiebreak: sensitive) */
+   @stuck orchestrator + research pass 2026-11-14, 16 ins left in two hunks, both read from the compiler.
+   (A) reload order of the register parameters mesh (edi) / dmesh (ebx) at three block edges behind the
+   D3ANIM_COPY3 asm blocks: the original has dmesh first at all three (0x434127, 0x43421c, 0x434319), ours
+   mesh first at the two mem_Alloc edges and dmesh first at the third. Cause: the edge loads are emitted in
+   ascending candidate id of the split pieces, ids are recycled from a LIFO free list, so two split
+   generations come out in opposite orders; the initial ids depend on (unit symbol ordinal & 0x3f) of the
+   function's seven string literals and d3anim_Tail. Sweep of all 64 x 64 states plus 1500 random ones
+   through a proxy hook: every state gives mesh-mesh-dmesh or dmesh-dmesh-mesh, never the original's - so
+   no declaration set fixes it for this source; the original's source differs in candidate structure (two
+   candidates fewer in the first split, or another set in the second). Nine block-scope externs (probe
+   only) give the two mem_Alloc sites right and the third wrong. (B) six stores a->frames[1].bone[i].x:
+   ours [eax+ecx+0x114], the original [ecx+eax+0x114]; base / index are the first / second operand of the
+   IL add, fixed before strength reduction; not hash state (0 flips in 2500 states); flips with unsigned i
+   (all compares wrong) or when the dmesh loop and its twin use different index variables (one instruction
+   more: the shared i = 0 splits). No code-neutral lever in 2916 index-variable assignments, 15 spellings
+   of the bone address, 31 block-scope placements, struct assignment. Tools: scratch morphanim\\c2x.py
+   (candidate ids, free list, edge loads). (tiebreak: sensitive) prior: 202 -> 16 ins (draft -> shape) this
+   session: mn / mx / d as D3VECTOR4 (frame 0x34 -> 0x40, the original's 16-byte slots), the quantise loop
+   as plain tmp[i] index loop with a block vector v and (v.x * 255.0f) / d.x (VC6 hoists the invariant
+   division as a reciprocal; named sx locals spill, * (1.0f / d.x) reassociates), the bounding loop as
+   tmp[i] with uniform min / max macros, no nverts guard. Left (tie-break sensitive per dcp headers sample:
+   2 codegens in 32 samples, none better): (1) order: after the mem_Alloc calls of lines 1059 / 1070
+   (behind the D3ANIM_COPY3 inline asm that clobbers edi / ebx) the reloads come mesh (edi) then dmesh
+   (ebx), the original dmesh first; (2) sib: the dmesh bone-copy loop stores a->frames[1].bone[i] as
+   [eax+ecx+0x114] where the original has [ecx+eax+0x114] (the dst branch's twin loop matches with
+   [eax+ecx]). flip.py --want '[ecx+eax+276]': 6 hits, only m7 (in... */
 
 D3ANIMDATA *d3anim_CreateMorphAnim(D3ANIMMESH *mesh, D3ANIMDATA *src, D3ANIMFRAME *frame, D3ANIMDATA *dst,
                                    D3ANIMFRAME *dframe, D3ANIMMESH *dmesh, char *name, int n)
