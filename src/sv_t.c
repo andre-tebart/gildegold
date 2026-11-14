@@ -7240,17 +7240,28 @@ void ai_GraveDeadName(GVGRAVE *e, char *out);
    Section 7: a free grave shows its size's name (txt 0x4100), else the holder (the character's name, or the
    item of that id), the year "AD %i" (until + 1400) and the state in percent (txt 0x4101 .. 0x4103); with flag 1
    a slider (0xbf, txt 0x42f1) 0xb4 wide is added at the bottom. The scroll position is restored
-   @deep reconstructed in full from the original (all 434 instructions read: the item collection, the
-   per-item pictures / texts / trait bars, the detail texts, the slider); what is left is allocation: ours
-   keeps the constant 0 in ebp after the first loop (push ebp / push ebp for sv_CreateScrollButtons' 0, 0
-   at 0x582c76, cmp esi,ebp / mov [esp+0x10],ebp / cmp eax,ebp at 0x582c8d, the re-zero xor ebp,ebp at
-   0x582efa, cmp eax,ebp at 0x582f72, cmp esi,ebp at 0x582f97) where the original uses immediates and test;
-   and ours spills n to [esp+0x1c] before the first loop (0x582b5f) where the original stores it once
-   after, which moves the count<=0 jle target by that one store (same statement, both jump to the n < 8
-   test). Tried: the count hoisted into a local (kept, it gives the original's dec-counter loop), the fill
-   loop through an int pointer (kept, the original's [n*3+0x51] index form), the items pointer dropped
-   (worse), the loop bound read each time (worse); the percent is 100.0f * (care / 255.0f) (the original's
-   two fmuls, other forms fold to one) */
+   @stuck draft 30 -> shape 22 ins. Kept: the M9 labels as the objects ai_FmtLabel / ai_CharNameFmt; the
+   item fill as the plain index loop ((GVWIN *)w)->items[i].grave / id / btn (gives the original's lea
+   [n*3+0x51] form; the int-pointer walk is gone); the collect loop as items[n].f with n++ (the item++
+   walk: 24, a count-free bound in the for: 34). Left: the constant 0 web: the original zeroes ebp at
+   entry, re-zeroes it only on the collect loop's path (xor ebp,ebp before the join) and later pushes
+   immediates / test; ours keeps const#0 in ebp after the main loop (push ebp x2 for
+   sv_CreateScrollButtons, cmp esi,ebp / mov [esp+0x10],ebp, cmp eax,ebp, an extra xor ebp,ebp after the
+   main loop, the n spill before the collect loop moving the jle target). Tried: 6 fill store orders (all
+   worse), saved = 0 in an else (25), n = 0 in the for-init / while fill / init order (= one code), flip.py
+   --want two push 0 (25 mutants, only meaning-changing ones closer: the fill's grave = 0 constant is the
+   reference that decides). Open: M10 100.0f vs ai_FloatHundred (no view of full_rdata_5ebb40 in sv_t).
+   Next: c2trace.py on the const#0 pieces (ids 1/2/3 of 6 webs) to see which web takes ebp. (tiebreak: not
+   measured (dcp headers sample ai_GraveDetail)) prior: reconstructed in full from the original (all 434
+   instructions read: the item collection, the per-item pictures / texts / trait bars, the detail texts,
+   the slider); what is left is allocation: ours keeps the constant 0 in ebp after the first loop (push ebp
+   / push ebp for sv_CreateScrollButtons' 0, 0 at 0x582c76, cmp esi,ebp / mov [esp+0x10],ebp / cmp eax,ebp
+   at 0x582c8d, the re-zero xor ebp,ebp at 0x582efa, cmp eax,ebp at 0x582f72, cmp esi,ebp at 0x582f97)
+   where the original uses immediates and test; and ours spills n to [esp+0x1c] before the first loop
+   (0x582b5f) where the original stores it once after, which moves the count<=0 jle target by that one
+   store (same statement, both jump to the n < 8 test). Tried: the count hoisted into a local (kept, it
+   gives the original's dec-counter loop), the fill loop through an int pointer (kept, the original's
+   [n*3+0x51] index form), the items pointer... */
 void ai_GraveDetail(AIBLD *rec, int *w, int clicked, int flag)
 {
     int i;
@@ -7258,7 +7269,6 @@ void ai_GraveDetail(AIBLD *rec, int *w, int clicked, int flag)
     int saved;
     int n;
     int count;
-    int *p;
     int up;
     int down;
     int bar;
@@ -7273,24 +7283,19 @@ void ai_GraveDetail(AIBLD *rec, int *w, int clicked, int flag)
     n = 0;
     e = ((GVWIN *)w)->rows[w[0x4d]].entry;
     items = ((GVWIN *)w)->items;
-    item = items;
     count = gv_EntryCounts[e->size];
     for (i = 0; i < count; i++) {
         if (e->grave[i].id != -1) {
-            item->grave = &e->grave[i];
-            item->id = e->grave[i].id;
-            item->btn = -1;
+            items[n].grave = &e->grave[i];
+            items[n].id = e->grave[i].id;
+            items[n].btn = -1;
             n++;
-            item++;
         }
     }
-    /* the unused items, walked as ints (the original's index form): p = &items[i].id */
-    p = &w[n * 3 + 0x51];
     for (i = n; i < 8; i++) {
-        p[-1] = 0;              /* grave */
-        p[0] = -1;              /* id */
-        p[-2] = -1;             /* btn */
-        p += 3;
+        ((GVWIN *)w)->items[i].grave = 0;
+        ((GVWIN *)w)->items[i].id = -1;
+        ((GVWIN *)w)->items[i].btn = -1;
     }
     w[0x4e] = -1;
     if (clicked == w[0x4d])
@@ -7327,7 +7332,7 @@ void ai_GraveDetail(AIBLD *rec, int *w, int clicked, int flag)
         d2_SetObjFont(k, 0x54);
         y += 0x12;
         for (k = 0; k < 5; k++) {
-            txt_Format(buf, "%s:", 0x16b7 + k);
+            txt_Format(buf, ai_FmtLabel, 0x16b7 + k);
             x = d2_CreateWinText(0x28, y, buf, w[3]);
             d2_Objs[x].w = 300;
             d2_SetObjFont(x, 0x54);
@@ -7350,7 +7355,7 @@ void ai_GraveDetail(AIBLD *rec, int *w, int clicked, int flag)
         c = gm_FindChar(e->id);
         buf[0] = 0;
         if (c) {
-            txt_Format(buf, "%1N3", (unsigned short)*c);
+            txt_Format(buf, ai_CharNameFmt, (unsigned short)*c);
         } else {
             for (i = 0; i < n; i++) {
                 if (items[i].grave->id == e->id) {
