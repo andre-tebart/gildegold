@@ -8999,19 +8999,13 @@ int gm_FixedWorkMinutesBetween(AITIME *a, AITIME *b)
    from out[0x12]) and its amount (out[0x1a + n], gm_ListAmount); out[0x2d] the stall object. The stall is the
    building's object 0x2a, else 0x116 (the market). kind 0: the goods that are not of the types 0x17 / 0x25, the
    capacity its cap[1] (of a market the larger of both caps); else those goods, the capacity its cap[0], and nothing
-   for a market. Every goods of a market counts. 0 when the building has no object 0xfd or no stall
-   @deep Read whole against the original and rewritten through ORDBLD / ORDOBJ (cap[0] / cap[1]): the
-   clear, the 0xfd / 0x2a / 0x116 queries, the kind != 0 branch first (as the original's fall-through), the
-   market's capacity GM_MAX on ints (jg), the goods filter, the amount / stock / id stores and the count
-   all match (the prologue's push order too); 317 vs 318 bytes. Left: the goods type load at +0xca: ours
-   'mov al,[eax+ecx]', the original 'add eax,ecx; mov al,[eax]' (GM_GOOD(id)->type, the same addressing
-   gm_ListObjectsAfter is deep for). Tried: *(char *)GM_GOOD(id) (no change). */
+   for a market. Every goods of a market counts. 0 when the building has no object 0xfd or no stall */
 
 int gm_BuildingGoodsList(char *b, unsigned *out, int kind)
 {
     ORDBLD *bld;
     ORDOBJ *stall, *o;
-    char type;
+    GMGOOD *g;
     int i, cap;
 
     bld = (ORDBLD *)b;
@@ -9034,8 +9028,8 @@ int gm_BuildingGoodsList(char *b, unsigned *out, int kind)
     }
     o = (ORDOBJ *)gm_Query((void *)stall->list, 1, 5);
     while (o) {
-        type = GM_GOOD(o->type)->type;
-        if (((type == 0x17 || type == 0x25) && kind != 0) || ((type != 0x17 && type != 0x25) && kind == 0)
+        g = GM_GOOD(o->type);
+        if (((g->type == 0x17 || g->type == 0x25) && kind != 0) || ((g->type != 0x17 && g->type != 0x25) && kind == 0)
             || stall->type == 0x116) {
             out[0x1a + out[1]] = gm_ListAmount((short *)stall, (char *)o);
             out[2 + out[1]] = gm_ListStock((short *)stall, o->type);
