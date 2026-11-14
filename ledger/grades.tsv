@@ -687,7 +687,7 @@ exe	0x00431ae0	d3anim_PoseBones	d3_anim	byte	readable
 exe	0x00432190	d3anim_RootPosAt	d3_anim	byte	readable		
 exe	0x004324e0	d3anim_NextFrame	d3_anim	byte	readable		
 exe	0x00432530	d3path_Tangents	d3_anim	byte	readable		
-exe	0x00432750	d3anim_StepObject	d3_anim	draft	readable	deep	
+exe	0x00432750	d3anim_StepObject	d3_anim	draft	readable	stuck	
 exe	0x00433b10	d3anim_FreePath	d3_anim	byte	readable		
 exe	0x00433b50	d3path_Init	d3_anim	shape	readable	deep	
 exe	0x00433d70	d3anim_CreatePath	d3_anim	shape	readable		
@@ -1403,7 +1403,7 @@ exe	0x00479b60	d2_PutPixel	gfx	byte	readable
 exe	0x00479b90	d2_PutPixelClipped	gfx	byte	readable		
 exe	0x00479bf0	d2_DrawRectOutline	gfx	shape	readable	deep	
 exe	0x00479cd0	d2_SetSurfaceClip	gfx	byte	readable		
-exe	0x00479d00	d2_MakeLightTable	shp	draft	readable	deep	
+exe	0x00479d00	d2_MakeLightTable	shp	shape	readable	stuck	
 exe	0x00479df0	d2_SetColourFormat	shp	byte	readable		
 exe	0x00479ee0	d2_FreeLightTable	shp	byte	readable		
 exe	0x00479f10	d2_SetLineTable	shp	byte	readable		
@@ -1413,20 +1413,20 @@ exe	0x0047a7d0	d2_GrabShape16Runs	shp	draft	readable	deep
 exe	0x0047ab30	d2_GrabShape16NoRuns	shp	draft	readable	deep	
 exe	0x0047ad40	d2_GrabShape8Runs	shp	draft	readable	deep	
 exe	0x0047b220	d2_GrabShape	shp	byte	readable		
-exe	0x0047b350	d2_ShpBlit16Scaled	shp	draft	readable	deep	
+exe	0x0047b350	d2_ShpBlit16Scaled	shp	byte	readable		
 exe	0x0047b640	d2_ShpBlit16ScaledLit	shp	draft	readable	deep	
 exe	0x0047b900	d2_ShpBlit16HalfDark	shp	draft	readable	deep	
 exe	0x0047ba60	d2_ShpBlit16Rows	shp	draft	readable	deep	
 exe	0x0047bd70	d2_ShpBlit	shp	byte	readable		
 exe	0x0047bec0	d2_ShpConvert8To16	shp	draft	readable	deep	
-exe	0x0047c0e0	d2_ShpConvert24To16	shp	draft	readable	deep	
+exe	0x0047c0e0	d2_ShpConvert24To16	shp	byte	readable		
 exe	0x0047c3d0	d2_ShpConvertTo16	shp	byte	readable		
 exe	0x0047c410	d2_BankConvertTo16	shp	shape	readable	deep	
 exe	0x0047c5e0	d2_BankSetPalette	shp	byte	readable		
 exe	0x0047c610	d2_BankAppendShape	shp	byte	readable		
 exe	0x0047c6f0	d2_DrawShape	shp	byte	readable		
 exe	0x0047c770	d2_DrawShapeHalfDark	shp	byte	readable		
-exe	0x0047c830	d2_DrawShapeScaled	shp	draft	readable	deep	
+exe	0x0047c830	d2_DrawShapeScaled	shp	byte	readable		
 exe	0x0047c970	d2_DrawShapeMode2	shp	byte	readable		
 exe	0x0047ca10	d2_SetMode5Colour	shp	byte	readable		
 exe	0x0047ca40	d2_DrawShapeMode5	shp	byte	readable		
@@ -1434,7 +1434,7 @@ exe	0x0047cae0	d2_DrawShapeMode3	shp	byte	readable
 exe	0x0047cb40	d2_SetClipRect	shp	byte	readable		
 exe	0x0047cb70	d2_GetFrame	shp	byte	readable		
 exe	0x0047cb90	d2_StepAnims	shp	byte	readable		
-exe	0x0047cd20	d2_StartAnim	shp	draft	readable	deep	
+exe	0x0047cd20	d2_StartAnim	shp	byte	readable		
 exe	0x0047cdb0	d2_DrawAnim	shp	byte	readable		
 exe	0x0047ce30	d2_FreeAnim	shp	byte	readable		
 exe	0x0047ce60	d2_FillRect	shp	byte	readable		
