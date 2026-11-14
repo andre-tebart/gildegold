@@ -7400,7 +7400,18 @@ typedef struct GVPICK {
    selects it (list and detail redrawn), on a dead person (flag 0) or the slider (flag 1) fills out and calls cb
    (or ends the window when out is wanted and there is no cb); 150 ms after the start everything is redrawn every
    frame
-   @deep reconstructed in full from the original (every instruction read: the setup with the seven section
+   @stuck match-deep 2026-11-14 (256 ins kept; headers sample: insensitive, 32 samples one codegen). Read
+   again: the original puts the right-button sv_PopRequest store out of line (cmp [rup],ebp / jne, the
+   store cross-jumped with the flag-1 one): if (dm_L.rup == 0) { if (d2_ClickedId != -1) {..} } else
+   sv_PopRequest = 1; gives that layout (and the && form the same code) but 312 ins: the allocation is the
+   real difference. c2trace on that form: rec is queued at prio 124 and gets ebx, out at 94 is split (its
+   loop piece goes to the stack); in the original rec lives on the stack ([esp+0x1f4] at every use), out in
+   edi, w[0x4d] in ebx, ebp the cached zero that becomes the walking pointer of the three click loops (lea
+   ebp,[esp+0x6c] / +0x80 / +0x18c) and is re-zeroed at the loop latch (xor ebp,ebp behind the entry jmp).
+   Next: find the reference that the original's out had more (or rec fewer) in the loop - the out fill /
+   pick fill blocks and the three redraw calls are the candidates; the redraw-bit / handled flags are as
+   the original (for (..; !handled && i < N; ..) matches the bottom test). (tiebreak: insensitive) prior:
+   reconstructed in full from the original (every instruction read: the setup with the seven section
    windows, the frame loop with the size-button, row, dead-person and slider clicks, the out / callback
    picks, the three redraw bits); the statements and the branch structure match (each hunk's jumps go to
    the same statements). Left is allocation: the original keeps out in edi, w[0x4d] in ebx and ebp as the
@@ -7408,10 +7419,7 @@ typedef struct GVPICK {
    and out on the stack, so every out store, gv_EntryIndex(rec->yard) push and redraw call differs by
    register (the regs / code hunks 0x583247 .. 0x583376, 0x5834ad .. 0x5835f1, 0x583644 .. 0x5836a7); with
    ebp free the original strength-reduces the size-button loop to a walking pointer (lea ebp,[esp+0x6c];
-   add ebp,4) where ours indexes [esp+eax*4+0x6c], keeps the redraw bits in memory across the row loop
-   (ours in ecx), reloads d2_PointerObj after each call (ours at the loop top) and tail-merges the
-   right-button sv_PopRequest store with the flag 1 one (ours: a reload of out sits at that join). Tried:
-   the entry through a temporary vs re-read out->entry (identical) */
+   add ebp,4) where ours indexes [esp+eax*4+0x6c], keeps the redraw bits in memory across ... */
 void ai_GraveWindow(GVPICK *out, AIBLD *rec, char *title, int flag, void (*cb)(AIBLD *rec, GVPICK *pick))
 {
     int redraw;

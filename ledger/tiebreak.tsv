@@ -4047,7 +4047,7 @@ exe	0x005828c0	ai_GraveList	sv_t	bc2708aaec625033	no	byte	control=byte p1=byte p
 exe	0x00582b40	ai_GraveDetail	sv_t	3b9ead3b18f94a39	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x005830f0	ai_GraveDeadName	sv_t	90b86eeb974dfd9f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00583150	ai_GraveDeadDescription	sv_t	9d10751315664db8	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x00583240	ai_GraveWindow	sv_t	b123d9532a7394cf	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x00583240	ai_GraveWindow	sv_t	b123d9532a7394cf	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x00583700	ai_RentGraveDetail	sv_t	e8f593263a591b95	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x00583b70	ai_GraveDetailOpen	sv_t	35f090dae0af6d15	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00583c50	ai_GraveSizeButtonsAt	sv_t	cdad3c8090c0321b	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
