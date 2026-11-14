@@ -1276,3 +1276,23 @@ mechanisms, each as a generated round over all positions / subsets:
   temporary), here an inline expression had to become a named local. Decide by the original: a value that sits
   in ONE callee-saved register through several statements and is updated in place was a variable; a value that
   appears in a leftover register for one expression across one call was a temporary.
+- **surf.c's scaling family, 2026-11-14: three functions byte from the siblings' spelling.** surf_Down32 (199 ins)
+  was surf_Shrink16's text with DWORD pixels: plain `for (j ..) for (i ..)` index loops, `n++` per pixel, the
+  unused bit counts `for (rb = 0; m; m >>= 1) rb++;` (VC6 keeps only the empty shifting loop) - byte in one
+  round; the hand-written `do { .. } while (--xx)` / `sp++` / `n += x1 - x0` form was the local optimum.
+  surf_Up24 (424) / surf_Up32 (512): the bilinear growing is ordinary code, `lr = r00 + (r10 - r00) * j / dy;`
+  per row and `(lr + (hr - lr) * i / dx)` per pixel; VC6 strength-reduces both products into the accumulators
+  and hoists the deltas, which earlier passes had written out by hand (`ar0 += dr0`, `if (dy > 0) do ..`).
+  That gave identical instructions with a frame 0x18 short; the last step was the corner values as one array
+  per channel, `DWORD r[4], g[4], b[4]` (0 here, 1 right, 2 down, 3 down right). Reading rule: the original's
+  frame kept g00 g01 g10 g11 r00 r01 r10 r11 in eight CONSECUTIVE slots and had an 8-byte untouched hole right
+  behind b00 / b01 (b[2] / b[3], whose values VC6 forwarded to registers); twelve scalars are packed with
+  other locals by lifetime instead. Consecutive slots in index order plus a hole = an array. Up32 also needed
+  `s[IDX]` read per channel (a pixel local `p = s[IDX];` gives other code).
+- **A header member to give a struct copy (main_SettleRound, not kept).** `ev[0] = m->flags1b4 | 1; ev[1] = ..`
+  against the original's `test byte ptr [edi+0x1b4],1` followed by three fresh loads: the original copied the
+  four ints as a struct (`ws = m->work; ws.flags |= 1;`, AIWORKSET; a cast view gives the same code). Adding
+  the member to AICHAR (an anonymous union of the struct and the four fields, any order or tag) dropped
+  ai_TutorialInitChapter2 / 3 (sv_t, tie-break sensitive: byte in 17 of 32 headers samples) - so a header
+  change for one function has to be checked against the whole build's byte count, and tie-break sensitive
+  functions elsewhere can veto it.
