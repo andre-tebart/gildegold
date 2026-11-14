@@ -1109,27 +1109,7 @@ void snd_PlaySelectedClick(void)
 /* 0x4c2d20, now and then (40% of the calls) a comment of the selected workers (ai_SceneChars[0x20]) about
    their favour with the player: the average gm_Liking favour over the selected workers selects the text
    ("SCHLECHTE_GUNST" < 0x32, "MITTLERE_GUNST" < 0x4b, "GUTE_GUNST" above), spoken by the more numerous
-   sex (w / m, the last selected woman / man), -5 (a neutral voice) when the preferred one is missing
-   @stuck 41 -> 10 ins. Kept: init order women, men, w, m, f (permute: fixes mov edi,ebx order); the
-   neutral fallback as 'm = -5; f = 1;' falling into one shared f-chain on m (gives the original's mov
-   edi,-5 / push edi and the per-branch reload of snd_VoiceBankOrders instead of our edx CSE) with the
-   women branch written w == 0xffff first. Left (code 10): in the women branch with w and m both missing
-   VC6 inlines its own copy of the neutral MITTLERE call (cmp edi,ebx; jne ret; mov ecx,[bank]; push -1;
-   mov edi,-5; ...call) where the original jumps (je) into the men branch's neutral block at +0x184 and
-   keeps the early return as fall-through. Tried without effect: goto neutral (worse, 47: literal -5 and
-   edx CSE back), m != w / m != 0xffff / w == m, then-block vs return-first, women if/else-if forms, outer
-   if inverted (men >= women, women > men), copy m = w into one chain (39), a separate id variable (45-55),
-   sequential ifs for the f chain. (tiebreak: not measured (dcp headers sample snd_PlayFavourComment))
-   prior: 65 code hunks, same operation / scheduling only: the whole original 0x4c2d20..0x4c2f2f read
-   against the source, every constant and callee corresponds (the 0.4 double gate, snd_LoadVoiceBank of
-   ARBEITER_KOMMENTARE_BEFEHL_HANDWERK.sbf, the 0x20 selected-worker scan at 0x7603a0 with the +0x188
-   selected and +9 sex bytes, men/women counts, the float favour sum truncated per step (fiadd + __ftol), f
-   /= men+women, the 0x32/0x4b thresholds, the w/m choice and the -5 fallback,
-   SCHLECHTE/MITTLERE/GUTE_GUNST). Left: ours CSEs snd_VoiceBankOrders into edx across the tail where the
-   original compares memory (cmp ds:0x6f0cbc,esi) and reloads in every play branch; the original's
-   out-of-line early-return block at 0x4c2e2a; the init store order (mov edi,ebx) and eax/edx choice for
-   the men+women add. Readability debt after this session: Q2 ai_SceneChars (now unsigned short *[0x20]),
-   gm_Liking. */
+   sex (w / m, the last selected woman / man), -5 (a neutral voice) when the preferred one is missing */
 
 void snd_PlayFavourComment(void)
 {
@@ -1172,22 +1152,18 @@ void snd_PlayFavourComment(void)
         f = 1;
     else if (f > 0x4b)
         f = 2;
-    if (men < women) {
-        if (w == 0xffff) {
-            if (m != 0xffff)
-                return;
-            m = -5;
-            f = 1;
-        } else {
-            if (f == 0)
-                snd_PlayVoice(w, snd_VoiceBankOrders, "SCHLECHTE_GUNST", -1);
-            else if (f == 1)
-                snd_PlayVoice(w, snd_VoiceBankOrders, "MITTLERE_GUNST", -1);
-            else if (f >= 2)
-                snd_PlayVoice(w, snd_VoiceBankOrders, "GUTE_GUNST", -1);
+    if (men < women && (w != 0xffff || m != 0xffff)) {
+        if (w == 0xffff)
             return;
-        }
-    } else if (m == 0xffff) {
+        if (f == 0)
+            snd_PlayVoice(w, snd_VoiceBankOrders, "SCHLECHTE_GUNST", -1);
+        else if (f == 1)
+            snd_PlayVoice(w, snd_VoiceBankOrders, "MITTLERE_GUNST", -1);
+        else if (f >= 2)
+            snd_PlayVoice(w, snd_VoiceBankOrders, "GUTE_GUNST", -1);
+        return;
+    }
+    if (m == 0xffff) {
         m = -5;
         f = 1;
     }

@@ -1013,3 +1013,13 @@ mechanisms, each as a generated round over all positions / subsets:
   three offsets of one symbol. Probe before touching the data: `extern unsigned char probePal[3][256];` inside
   the function in a dcp try variant (identical instructions = the lever) (qnt_Nearest 4 ins -> byte; qnt_PalR /
   G / B became qnt_Pal[3][256]).
+- **A branch that jumps INTO the other branch's fallback block, behind its test** (`cmp m,w; je <neutral block of
+  the men branch>` with the early return as fall-through; ours inlined a second copy of the fallback call): the
+  doubly-missing case was excluded in the outer condition, `if (men < women && (w != 0xffff || m != 0xffff)) {
+  if (w == 0xffff) return; ..women.. return; } if (m == 0xffff) { m = -5; f = 1; } ..men..`. The `||` leaves
+  the both-missing path to the code below, VC6 threads its `m == 0xffff` test (just evaluated) past the second
+  one, and the `w == 0xffff` re-test inside is threaded to the return. Setting the fallback values in the
+  women branch and falling into a shared chain duplicates the folded call instead; `!(a && b)` and the
+  inverted if/else are the same code (snd_PlayFavourComment 10 ins -> byte). Reading rule: a jump into the
+  middle of a sibling branch, just behind a test of the same variable, is a threaded re-test - write the
+  condition so that the path really runs through that test.
