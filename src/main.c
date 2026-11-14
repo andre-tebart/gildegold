@@ -3655,22 +3655,29 @@ void main_ReplaceFigure(unsigned p)
    incomes (GMINCOME); then the round parts are rolled into AIFIN.missionMoney and cleared. When the balance goes
    negative (gm_IsBankrupt) a bankruptcy scene party (kind 9) runs and, with main_ReplaceFigureOn set, the
    figure is replaced (main_ReplaceFigure)
-   @deep Read whole against 0x539870..0x53a249 and rewritten typed: AIFIN (gm_PlayerRecord) got its round
-   fields (incomeA/B/C 0x14/0x18/0x20, costA/B 0x4c/0x54 in ai.h, by the texts that print them and the
-   roll-over into missionMoney), the balance is gm_BuildingBalance's 0x15-int summary (the old draft read
-   a[0..2]; the original adds [0x11] income, [3] wage cost, [0x10] costs, [0x14] net - fixed), the loan
-   interest from HELOAN, ORDWAGES / GMINCOME / GMDATE / G28REC records (frame now 0x200 = the original's,
-   the old draft had 0x230), the second d2_ReleaseFade inside the bankruptcy block and the field order of
-   the scene party as the original; gm_CharacterWages / gm_CharacterIncomes take the unmasked dword of
-   ai_PlayerId (main_PlayerIdInt) as the original pushes it. 741 vs 744 instructions. Left: allocation. The
-   original keeps the first page's running balance in edi with income in the slot [esp+0x14] and costs in
-   ebx + [esp+0x10] (reloading ebx on the else paths: +0x23b jmp / mov ebx,[esp+0x10]), ours keeps income
-   in ebx + [esp+0x18] and the zero in edi (code hunks +0x1ab, +0x1eb, +0x200, the one-instruction reloads
-   at +0x256 .. +0x366); the balance sums at +0x428 are the same four adds scheduled around other slots;
-   the incomes loop end stores ebx/ebp at another place (branch target +0x612); the prover stops at the FPU
-   loops. Tried: the wage line as income = wage - spent first (242 differing, worse), the cost line as iv
-   -= x; costs = x (worse), declaration orders of the sums (no change), splitting the page balance from the
-   credit interest variable (no change). */
+   @stuck tie-break sensitive: dcp headers sample gives 2 codegens in 32 samples, none better than the
+   build (draft, 155 ins / 1597 bytes): the declaration set decides the allocation; park for main.c's
+   declaration pass. Tried this session: (1) the first page spelled plainly (income = wage - spent; cash =
+   income before the prints; cash -= / costs += at upgradeSpent like the other cost lines; costs =
+   upgradeSpent; cash = wage - spent with income = cash; costs = 0 moved next to the cost block) in 10
+   variants: all worse (243..458 ins, the control's code stays best); (2) blockscope.py (arrays/records and
+   --scalars): no candidate moved; (3) c2trace: fin 205 (callee-saved), i 190, cash(web 2e) 120 sav 32,
+   costs -19 sav 18, income 34 sav 28, wageCost -218, incomeSum -201: income and costs rank far below cash,
+   so the original's costs-in-ebx with reloads on the else paths needs costs above income, which no
+   spelling tried gave. Hunks left: first page +0x1ab..+0x366 (original: wage in edx, spent loaded into
+   edi, income in [esp+0x14], cash in edi, costs in ebx + [esp+0x10] with jmp/mov ebx,[esp+0x10] reloads at
+   +0x23b; ours: income ebx + [esp+0x18], zero in edi, costs reloaded into ecx per block), the balance sums
+   at +0x428 scheduled around other slots, the incomes loop end stores ebx/ebp (branch target +0x612 vs
+   +0x661). (tiebreak: sensitive) prior: Read whole against 0x539870..0x53a249 and rewritten typed: AIFIN
+   (gm_PlayerRecord) got its round fields (incomeA/B/C 0x14/0x18/0x20, costA/B 0x4c/0x54 in ai.h, by the
+   texts that print them and the roll-over into missionMoney), the balance is gm_BuildingBalance's 0x15-int
+   summary (the old draft read a[0..2]; the original adds [0x11] income, [3] wage cost, [0x10] costs,
+   [0x14] net - fixed), the loan interest from HELOAN, ORDWAGES / GMINCOME / GMDATE / G28REC records (frame
+   now 0x200 = the original's, the old draft had 0x230), the second d2_ReleaseFade inside the bankruptcy
+   block and the field order of the scene party as the original; gm_CharacterWages / gm_CharacterIncomes
+   take the unmasked dword of ai_PlayerId (main_PlayerIdInt) as the original pushes it. 741 vs 744
+   instructions. Left: allocation. The original keeps the first page's running balance in edi with income
+   in the slot [esp+0x14... */
 
 void main_RoundReport(void)
 {
