@@ -7,7 +7,7 @@ import capstone, pefile
 HERE = os.path.dirname(os.path.abspath(__file__))
 VC = r"C:\Tools\MSVC600-SP5PP"
 BIN = VC + r"\VC98\Bin"
-WORK = os.path.join(HERE, "c2fuzz")
+WORK = os.path.normpath(os.path.join(HERE, "..", "..", "build", "c2dag", "c2fuzz"))
 PROBE = os.environ.get("C2FUZZ_PROBE", os.path.join(HERE, "fz.c"))
 ONLY = os.environ.get("C2FUZZ_SITES")
 OUTTSV = os.environ.get("C2FUZZ_OUT", os.path.join(HERE, "c2fuzz.tsv"))

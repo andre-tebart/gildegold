@@ -17,7 +17,7 @@ ENV["PATH"] = VC + r"\Common\MSDev98\Bin;" + ENV["PATH"]
 
 def bindir(skips):
     key = hashlib.md5(",".join("%x" % s for s in sorted(skips)).encode()).hexdigest()[:10] if skips else "plain"
-    d = os.path.join(HERE, "c2pass", key)
+    d = os.path.normpath(os.path.join(HERE, "..", "..", "build", "c2dag", "c2pass", key))  # under /build/ (ignored): compiler copies never land in the tree
     if not os.path.exists(os.path.join(d, "C2.DLL")):
         os.makedirs(d, exist_ok=True)
         for f in os.listdir(BIN):
