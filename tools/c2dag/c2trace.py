@@ -66,7 +66,8 @@ def setup():
 
 
 def function_span(lines, func):
-    s = next(i for i, l in enumerate(lines) if re.match(r"\w[\w \*]*\b%s\(" % re.escape(func), l) and not l.rstrip().endswith(";"))
+    s = next(i for i, l in enumerate(lines) if re.match(r"\w[\w \*]*\b%s\(" % re.escape(func), l) and not l.rstrip().endswith(";")
+             and i + 1 < len(lines) and lines[i + 1].startswith("{"))
     e = next(i for i in range(s, len(lines)) if lines[i] == "}")
     cs = s
     while cs > 0 and not lines[cs - 1].startswith(("}", "#", ";")) and lines[cs - 1].strip():
