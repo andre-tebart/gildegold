@@ -1286,18 +1286,18 @@ exe	0x0046e460	d2_HitTest	d2	byte	readable
 exe	0x0046e710	d2_RemoveObj	d2	byte	readable		
 exe	0x0046e990	d2_ClearScreen	d2	byte	readable		
 exe	0x0046ea10	d2_TextWidth	d2	byte	readable		
-exe	0x0046ead0	d2_DrawTextLine	d2	draft	readable	deep	
+exe	0x0046ead0	d2_DrawTextLine	d2	draft	readable	stuck	
 exe	0x0046f000	d2_DrawText	d2	byte	readable		
 exe	0x0046f180	d2_SetTextColour	d2	byte	readable		
-exe	0x0046f1a0	d2_DrawTextBox	d2	draft	readable	deep	
+exe	0x0046f1a0	d2_DrawTextBox	d2	draft	readable	stuck	
 exe	0x0046f840	d2_ScrollWindow	d2	byte	readable		
 exe	0x0046fad0	d2_LayoutButtons	d2	byte	readable		
-exe	0x0046fba0	d2_DrawWindowText	d2	draft	readable	deep	
+exe	0x0046fba0	d2_DrawWindowText	d2	draft	readable	stuck	
 exe	0x004713c0	d2_DrawWindowBackground	d2	byte	readable		
 exe	0x00471a90	d2_DrawWindow	d2	shape	readable	deep	
 exe	0x004721e0	d2_SetBackgroundTexture	d2	byte	readable		
 exe	0x00472270	d2_CreateScrollButtons	d2	byte	readable		
-exe	0x00472390	d2_CreateWindow	d2	draft	readable	deep	
+exe	0x00472390	d2_CreateWindow	d2	draft	readable	stuck	
 exe	0x00472760	d2_ScrollWindowBy	d2	byte	readable		
 exe	0x00472800	d2_ResizeWindow	d2	draft	readable	stuck	
 exe	0x00472a60	d2_FinishFades	d2	byte	readable		
@@ -1319,7 +1319,7 @@ exe	0x00473980	d2_CreateWinCaption	d2	byte	readable
 exe	0x00473b30	d2_ReplaceInputText	d2	byte	readable		
 exe	0x00473c10	d2_Open	d2	byte	readable		
 exe	0x004741a0	d2_RaiseViewWindows	d2	byte	readable		
-exe	0x004741f0	d2_OpenForm	d2	draft	readable	deep	
+exe	0x004741f0	d2_OpenForm	d2	draft	readable	stuck	
 exe	0x00474b30	d2_LoadView	d2	byte	readable		
 exe	0x00474ca0	d2_SetViewTextures	d2	byte	readable		
 exe	0x00474d10	d2_ClearViewTextures	d2	byte	readable		
@@ -1348,7 +1348,7 @@ exe	0x00476030	d2_SetFont	d2	byte	readable
 exe	0x004760b0	d2_SetObjFont	d2	byte	readable		
 exe	0x00476110	d2_DissolveStep	d2	byte	readable		
 exe	0x00476220	d2_Plot	d2	byte	readable		
-exe	0x004764f0	d2_PlotLine	d2	draft	readable	deep	
+exe	0x004764f0	d2_PlotLine	d2	byte	readable		
 exe	0x00476710	d2_ClearPaintbox	d2	byte	readable		
 exe	0x00476760	d2_FillPaintbox	d2	byte	readable		
 exe	0x004767d0	d2_StartFade	d2	shape	readable	deep	
