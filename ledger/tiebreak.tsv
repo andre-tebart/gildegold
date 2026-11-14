@@ -1289,7 +1289,7 @@ exe	0x0046ea10	d2_TextWidth	d2	619ec5c3b00cdb56	no	byte	control=byte p1=byte p2=
 exe	0x0046ead0	d2_DrawTextLine	d2	a0fe6e1760d50127	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x0046f000	d2_DrawText	d2	1002750f15d46c09	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0046f180	d2_SetTextColour	d2	6bb61006be5302e0	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x0046f1a0	d2_DrawTextBox	d2	54721052b10675a9	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x0046f1a0	d2_DrawTextBox	d2	54721052b10675a9	no	draft	sample n=32 seed=1 compiled=31 codegens=1 best=draft
 exe	0x0046f840	d2_ScrollWindow	d2	40ef67ed31b523e7	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0046fad0	d2_LayoutButtons	d2	9f3d572094c28835	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0046fba0	d2_DrawWindowText	d2	4ba842ff8dd9c5be	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft

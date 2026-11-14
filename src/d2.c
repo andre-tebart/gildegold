@@ -2702,14 +2702,35 @@ void d2_SetTextColour(unsigned char a, unsigned char b, unsigned char c)
 /* 0x46f1a0, draws text word-wrapped into the box x, y, w, h (flags 8: centered, 0x10: right aligned, 4 / 2 / 1:
    shadow and extra passes, 0x40: colored, 0x20 / 0x80: background sprite, 0x80 keeps the box on the screen,
    0x100: box is given); with surf 0 it only measures. Leaves left edge, top and size in d2_TextDrawnW..74
-   @deep far layout draft: 528 vs 522 instructions, 584 differing asm lines. Same statements, another allocation: original frame 0x638, lines[] at [esp+0x48], x/y home slots [esp+0x64c]/[esp+0x650], ebx=y esi=x ebp=0; ours 0x630, lines[] at [esp+0x40], x kept in a register, ebx=x ebp=y esi=0, plus extra spills (mov [esp+0x10],[esp+0x24],[esp+0x28]) and the whole wrap loop scheduled in another order. Read against the original disassembly: prologue (0x46f1a0-46f23d), measure/clip block (0x46f240-46f3c0), sprite blit, word split with the goto fits case, glyph loop and tail - every statement corresponds, no wrong type/signedness/offset/width found. spell.py: rep-stos already satisfied (both sides rep stos 0x180 after lea of lines[]), dup-tail at 46f82b is the shared epilogue (add esp/pops, no source form), cmp-test lead tried: if (ln > 1) -> if (ln >= 2) gives the original cmp reg,2; jl (kept, 586 -> 584). Remaining: VC6 locals layout and spill/register choice (vargen/listing), no meaning-class lead left. Readable Q1..Q7. */
+   @stuck draft 518 -> 441 ins. Kept: the hyphenation search as the plain loop + test the original's layout
+   shows (the exhausted loop threaded past a k >= 0 re-test at 0x46f55d): lw -= wd; for (k = wl; k >= 0;
+   k--) { .. if (TextWidth(word) + lw <= w) break; } if (k >= 0) {..} else if (ln >= 2) {..} else lw += wd;
+   (the original's add ebp,[wd] on the no-fit path puts the word back), each fit path ending lw -=
+   d2_SpaceWidth, no goto fits (-68); i < strlen(word) unsigned (the original's jb, -7); vis = 1 before the
+   flags & 0x100 test (the original shares the 1 for test dl,ah, -2); strcpy(word, text + pos), the index
+   line loop and draw as if / else are the same code as the hand forms (kept as plain code). Left: the
+   frame is 8 bytes short (0x630 vs 0x638; the original has an unpaired dword at [esp+0x38] and lines[] at
+   [esp+0x48]), x in esi / y in ebx / the zero in ebp at entry (ours x elsewhere, push 0 vs push ebp for
+   the measuring call), w held in edi through the box block, and the wrap loop's x kept in its parameter
+   slot [esp+0x64c]; c2frame / dcp frame not worked yet. Next: find the two missing dwords (a split
+   variable or a block-local in the box / glyph code) with dcp frame and tools/c2dag/c2frame.py. (tiebreak:
+   not measured (dcp headers sample d2_DrawTextBox)) prior: far layout draft: 528 vs 522 instructions, 584
+   differing asm lines. Same statements, another allocation: original frame 0x638, lines[] at [esp+0x48],
+   x/y home slots [esp+0x64c]/[esp+0x650], ebx=y esi=x ebp=0; ours 0x630, lines[] at [esp+0x40], x kept in
+   a register, ebx=x ebp=y esi=0, plus extra spills (mov [esp+0x10],[esp+0x24],[esp+0x28]) and the whole
+   wrap loop scheduled in another order. Read against the original disassembly: prologue (0x46f1a0-46f23d),
+   measure/clip block (0x46f240-46f3c0), sprite blit, word split with the goto fits case, glyph loop and
+   tail - every statement corresponds, no wrong type/signedness/offset/width found. spell.py: rep-stos
+   already satisfied (both sides rep stos 0x180 after lea of lines[]), dup-tail at 46f82b is the shared
+   epilogue (add esp/pops, no source form), cmp-test lead tried: if (ln > 1) -> if (ln >= 2) gives the
+   original cmp reg,2; jl (kept, 586 ->... */
 
 void d2_DrawTextBox(int x, int y, int w, int h, void *surf, char *text, unsigned int flags)
 {
     char lines[16][0x60];
     int (*draw)(int, int, void *, void *, unsigned char);
     D2FRAME *g;
-    char *sp, *p, *q, *word;
+    char *sp, *word;
     int right, lw, len, pos, ln, wd, x0, y0, bx, bw, bh, vis, sw, top, yy, k, wl, n, j, i, cx;
     unsigned char c;
     char ch;
@@ -2726,6 +2747,7 @@ void d2_DrawTextBox(int x, int y, int w, int h, void *surf, char *text, unsigned
     d2_FontHeight = d2_FontPic->h;
     memset(lines, 0, sizeof(lines));
     if (surf != 0 && (flags & 0xa0)) {
+        vis = 1;
         if (!(flags & 0x100)) {
             d2_DrawTextBox(x, y, w, h, 0, text, flags);
             bx = d2_TextLeft;
@@ -2751,7 +2773,6 @@ void d2_DrawTextBox(int x, int y, int w, int h, void *surf, char *text, unsigned
                 y0 = y;
             }
         }
-        vis = 1;
         top = d2_ClipTop;
         yy = y;
         if (y + bh < top)
@@ -2775,21 +2796,16 @@ void d2_DrawTextBox(int x, int y, int w, int h, void *surf, char *text, unsigned
     }
     pos = 0;
     ln = 0;
-    draw = d2_DrawShapeMode5;
-    if (!(flags & 0x40))
+    if (flags & 0x40)
+        draw = d2_DrawShapeMode5;
+    else
         draw = d2_DrawShape;
     len = strlen(text);
     right = x + w;
     if (len > 0) {
         do {
             word = lines[ln];
-            p = text + pos;
-            q = word;
-            do {
-                ch = *p;
-                *q++ = ch;
-                p++;
-            } while (ch);
+            strcpy(word, text + pos);
             sp = strchr(word, ' ');
             if (sp)
                 *sp = 0;
@@ -2808,36 +2824,34 @@ void d2_DrawTextBox(int x, int y, int w, int h, void *surf, char *text, unsigned
                 if (lw > w) {
                     word = lines[ln - 1];
                     wl = strlen(word);
+                    lw -= wd;
                     for (k = wl; k >= 0; k--) {
                         ch = word[k];
                         if (ch == '~' || ch == '-') {
                             if (ch == '~')
                                 word[k] = '-';
                             word[k + 1] = 0;
-                            if (d2_TextWidth(word, d2_CurrentFont) + (lw - wd) <= w) {
-                                if (k >= 0) {
-                                    pos += k - wl;
-                                    lw = 0;
-                                    for (j = 0; j < ln; j++)
-                                        lw += d2_TextWidth(lines[j], d2_CurrentFont) + d2_SpaceWidth;
-                                    goto fits;
-                                }
+                            if (d2_TextWidth(word, d2_CurrentFont) + lw <= w)
                                 break;
-                            }
                         }
                     }
-                    if (ln >= 2) {
+                    if (k >= 0) {
+                        pos += k - wl;
+                        lw = 0;
+                        for (j = 0; j < ln; j++)
+                            lw += d2_TextWidth(lines[j], d2_CurrentFont) + d2_SpaceWidth;
+                        lw -= d2_SpaceWidth;
+                    } else if (ln >= 2) {
                         lw = 0;
                         pos += -1 - wl;
                         ln--;
                         for (j = 0; j < ln; j++)
                             lw += d2_TextWidth(lines[j], d2_CurrentFont) + d2_SpaceWidth;
-                        goto fits;
-                    }
-                } else {
-fits:
+                        lw -= d2_SpaceWidth;
+                    } else
+                        lw += wd;
+                } else
                     lw -= d2_SpaceWidth;
-                }
                 if ((flags & 8) && lw <= w)
                     cx = (w - lw) / 2 + x0;
                 else {
@@ -2848,9 +2862,9 @@ fits:
                 yy = y;
                 if (d2_TextLeft >= cx)
                     d2_TextLeft = cx;
-                for (n = ln; n > 0; n--) {
-                    word = lines[ln - n];
-                    for (i = 0; i < (int)strlen(word); i++) {
+                for (n = 0; n < ln; n++) {
+                    word = lines[n];
+                    for (i = 0; i < strlen(word); i++) {
                         c = word[i];
                         if (c != '~') {
                             g = d2_GetFrame(d2_FontPic, c);
