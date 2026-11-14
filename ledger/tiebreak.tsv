@@ -1419,7 +1419,7 @@ exe	0x0047b900	d2_ShpBlit16HalfDark	shp	372cb504589839a1	no	draft	control=draft 
 exe	0x0047ba60	d2_ShpBlit16Rows	shp	0c3f10efe3e7894d	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x0047bd70	d2_ShpBlit	shp	3d7588554c125407	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0047bec0	d2_ShpConvert8To16	shp	3707c6939089225e	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
-exe	0x0047c0e0	d2_ShpConvert24To16	shp	e1fce5697d76ce02	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x0047c0e0	d2_ShpConvert24To16	shp	e1fce5697d76ce02	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x0047c3d0	d2_ShpConvertTo16	shp	a284448a5bf48d1e	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0047c410	d2_BankConvertTo16	shp	5e32fa27f5da1a12	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
 exe	0x0047c5e0	d2_BankSetPalette	shp	ac31b2d0bc80dc7a	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
