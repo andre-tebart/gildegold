@@ -7735,15 +7735,26 @@ void gm_InheritEstate(ORDCHAR *dead, ORDCHAR *heir)
    starts anew: health 100, age 16, v194 3, the sums and counters 0, no relatives, its pregnancy, life values and
    skills reset. The announcement goes into out: 0x1c4f (name, start money), the kept buildings, 0x1c50 and at most
    6 of the buildings lost ("and n more" 0xb6)
-   @deep Read whole against the original (595 vs 595 ins, frame 0xb30 equal): every call, argument, field
-   (the 13 field deltas, 0x800000 flags1c8, the relatives loop, the float deltas, the 5 skill values),
-   string and branch condition matches. Left: block placement of the house-owner branch: the original lays
-   the masked block (gm_EquipmentValue, best/bestv, heirs) inline after 'test [ai_BuildingTypeMasks+0xc],
-   eax; je ELSE' (0x506f07), ours emits 'jne' and puts the same 20 instructions at +0x66b (the 'code' hunks
-   at 0x506f0a / 0x5074cb, ours jle/jmp back into the same targets); plus order hunks in the 0x1b / 0x31
-   message stores and the prologue. Tried: if/else in both orders, (A)==0 && (B)==0, != 0 forms, v <= bestv
-   first, goto-based shared take/hand tails, for loop with h = 0 in the increment, h = 0 at the bottom:
-   none keeps the masked block inline */
+   @stuck match-deep 2026-11-14: 50 -> 38 ins. Fixed: the opening assignments in the order best, own, n,
+   bestv, pl (120-order round: the prologue's stores and pl in ecx as the original), the 0x31 message's
+   flags stored before its time (720-order round), the heirs list printed by a plain loop with break at 6
+   and an if (i < n) 'and n more' after it (the decompiled in-loop i < n re-test, same code), no dead h = 0
+   before the loop. Left: (1) the house-owner block (gm_EquipmentValue, best/bestv, heirs) laid out at the
+   function's end in ours (jne there, jmp back), inline after 'test [mask3],eax; je' in the original; (2)
+   the branch hunk that follows from it at the end loop. Tried: the home arm nested / as else { if }, lo ==
+   4 first (42), own != b (40), h = b before heirs[n++] in one or both arms (38 / 40), the arms inverted (=
+   control), for (b = query; b; b = next) = control, &ai_BTypes[..] = control, lo / hi set per arm (46), hi
+   = 0 first (40). flip.py (want the block inline): only a dead-home-arm mutant (83 ins against the current
+   text). (tiebreak: not measured (dcp headers sample gm_ForfeitEstate)) prior: Read whole against the
+   original (595 vs 595 ins, frame 0xb30 equal): every call, argument, field (the 13 field deltas, 0x800000
+   flags1c8, the relatives loop, the float deltas, the 5 skill values), string and branch condition
+   matches. Left: block placement of the house-owner branch: the original lays the masked block
+   (gm_EquipmentValue, best/bestv, heirs) inline after 'test [ai_BuildingTypeMasks+0xc], eax; je ELSE'
+   (0x506f07), ours emits 'jne' and puts the same 20 instructions at +0x66b (the 'code' hunks at 0x506f0a /
+   0x5074cb, ours jle/jmp back into the same targets); plus order hunks in the 0x1b / 0x31 message stores
+   and the prologue. Tried: if/else in both orders, (A)==0 && (B)==0, != 0 forms, v <= bestv first,
+   goto-based shared take/hand tails, for loop with h = 0 in the increment, h = 0 at the bottom: none keeps
+   the masked block inline */
 void gm_ForfeitEstate(ORDCHAR *c, char *out, int flag)
 {
     ORDBLD *heirs[0x80];
@@ -7755,12 +7766,11 @@ void gm_ForfeitEstate(ORDCHAR *c, char *out, int flag)
     unsigned lo, hi;
     int n, bestv, v, i;
 
-    pl = GM_PLAYERCH;
+    best = 0;
     own = c->bld2;
     n = 0;
-    best = 0;
     bestv = 0;
-    h = 0;
+    pl = GM_PLAYERCH;
     b = (ORDBLD *)gm_BuildQuery(1, 3, c->id);
     while (b != 0) {
         h = 0;
@@ -7807,8 +7817,8 @@ void gm_ForfeitEstate(ORDCHAR *c, char *out, int flag)
                     m.type = 0x31;
                     m.to = GM_PLAYERCH->netId;
                     m.fromId = h->id;
-                    m.time = ai_Time;
                     m.flags = 1;
+                    m.time = ai_Time;
                     m.arg0 = t->netId;
                     cm_SendLongMessage((char *)&m);
                 }
@@ -7892,14 +7902,13 @@ void gm_ForfeitEstate(ORDCHAR *c, char *out, int flag)
         txt_Format(buf, 0x1c50);
         strcat(out, buf);
         for (i = 0; i < n; i++) {
-            if (i >= 6) {
-                if (i < n) {
-                    txt_Format(buf, 0xb6, n - i);
-                    strcat(out, buf);
-                }
+            if (i >= 6)
                 break;
-            }
             txt_Format(buf, "%1G$A", heirs[i]);
+            strcat(out, buf);
+        }
+        if (i < n) {
+            txt_Format(buf, 0xb6, n - i);
             strcat(out, buf);
         }
     }
