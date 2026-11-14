@@ -5546,18 +5546,7 @@ double _CIfmod();
    mouse at the screen edges (5 pixels) give the directions a (vertical) and b (horizontal) in -1 .. 1; each
    speed (pitchSpeed, yawSpeed) falls toward 0 without a direction and otherwise grows by dt * 0.8 (or * 0.25
    when it runs against the direction) up to +-1, the frame deltas are speed * dt * 0.8 (pitch) and * 1.5 (yaw).
-   The pitch is kept within -15 .. 45 degrees (the pitch speed is cleared at a stop), the yaw within 0 .. 2 pi
-   @deep read whole against the original (323 vs 325 ins). Fixed meaning: the speed steps are if/else
-   statements (sc->x += dt * 0.8f / 0.25f, the original tail-merges the fadd/fstp, so the clamp reloads),
-   the speed clamps are x < 1 ? x : 1 / x > -1 ? x : -1, the pitch clamp is MIN_(MAX_(x, lo), hi) with <
-   ternaries. Remaining: +0xb1 tail / +0xf4 code 3: the out-of-range 'dragState = 0; goto clamp' block, the
-   original has it inline (entered at +0xb5 with ebx still 0, +0xb3 xor ebx after the movsx ebx compare),
-   ours places the same 3 instructions after the dragState==0 block (block placement; tried else-if form,
-   same); +0x12b code 14: the drag dx/dy, the same instructions, the dragY load scheduled before the movsx
-   and ecx/edx/eax rotated; +0x438 code 4: the outer pitch compare, ours jump-threads the x < lo path past
-   the hi compare (jnp to the second inner copy), the original evaluates fld lo; jmp and then compares it
-   with hi (tried >= form: worse, 52 differing). The rest is regs (ecx->edx, eax->ecx edx->eax) (size: 3 of
-   the instruction difference are shared / inline tails) */
+   The pitch is kept within -15 .. 45 degrees (the pitch speed is cleared at a stop), the yaw within 0 .. 2 pi */
 void ai_CannonAim(CANNONSCENE *sc, float dt)
 {
     int a = 0;
@@ -5574,94 +5563,87 @@ void ai_CannonAim(CANNONSCENE *sc, float dt)
         sc->zoom = sc->zoom - dt * 1.6f;
     sc->zoom = FMAX(FMIN(sc->zoom, 1.0f), 0.0f);
     y = dm_L.y;
-    if (dm_L.ldown != 0) {
-        if (y < 0x50 || y > d2_ScreenH - 0x50) {
-            sc->dragState = 0;
-            goto clamp;
-        } else if (sc->dragState == 0) {
-            sc->dragX = dm_L.x;
-            sc->dragY = dm_L.y;
-            sc->dragState = 1;
-            sc->pitchDelta = 0;
-            sc->yawDelta = 0;
-            sc->pitchSpeed = 0;
-            sc->yawSpeed = 0;
-            goto clamp;
-        }
-    } else if (sc->dragState == 1) {
+    if (dm_L.ldown != 0 && (y < 0x50 || y > d2_ScreenH - 0x50)) {
         sc->dragState = 0;
-        goto clamp;
-    }
-    if (sc->dragState == 1) {
-        dx = dm_L.x - sc->dragX;
+    } else if (dm_L.ldown != 0 && sc->dragState == 0) {
         sc->dragX = dm_L.x;
+        sc->dragY = dm_L.y;
+        sc->dragState = 1;
+        sc->pitchDelta = 0;
+        sc->yawDelta = 0;
+        sc->pitchSpeed = 0;
+        sc->yawSpeed = 0;
+    } else if (dm_L.ldown == 0 && sc->dragState == 1) {
+        sc->dragState = 0;
+    } else if (sc->dragState == 1) {
+        dx = dm_L.x - sc->dragX;
         dy = y - sc->dragY;
+        sc->dragX = dm_L.x;
         sc->dragY = dm_L.y;
         sc->rot.x = sc->rot.x - dy * 0.008333334f;
         sc->rot.y = sc->rot.y - dx * 0.011111111f;
-        goto clamp;
+    } else {
+        if (kb_Down[0xc8] != 0 || y <= 5)
+            a = 1;
+        if (kb_Down[0xd0] != 0 || y >= d2_ScreenH - 5)
+            a--;
+        if (kb_Down[0xcb] != 0 || dm_L.x <= 5)
+            b = 1;
+        if (kb_Down[0xcd] != 0 || dm_L.x >= d2_ScreenW - 10)
+            b--;
+        if (sc->yawSpeed != 0.0f && b == 0) {
+            if (sc->yawSpeed < 0.0f) {
+                sc->yawSpeed = dt * 0.8f + sc->yawSpeed;
+                sc->yawSpeed = sc->yawSpeed < 0.0f ? sc->yawSpeed : 0.0f;
+            } else {
+                sc->yawSpeed = sc->yawSpeed - dt * 0.8f;
+                sc->yawSpeed = sc->yawSpeed > 0.0f ? sc->yawSpeed : 0.0f;
+            }
+            sc->yawDelta = dt * sc->yawSpeed * 1.5f;
+        } else if (b != 0) {
+            if (b > 0) {
+                if (sc->yawSpeed < 0.0f)
+                    sc->yawSpeed += dt * 0.8f;
+                else
+                    sc->yawSpeed += dt * 0.25f;
+                sc->yawSpeed = sc->yawSpeed < 1.0f ? sc->yawSpeed : 1.0f;
+            } else {
+                if (sc->yawSpeed > 0.0f)
+                    sc->yawSpeed -= dt * 0.8f;
+                else
+                    sc->yawSpeed -= dt * 0.25f;
+                sc->yawSpeed = sc->yawSpeed > -1.0f ? sc->yawSpeed : -1.0f;
+            }
+            sc->yawDelta = dt * sc->yawSpeed * 1.5f;
+        }
+        if (sc->pitchSpeed != 0.0f && a == 0) {
+            if (sc->pitchSpeed < 0.0f) {
+                sc->pitchSpeed = dt * 0.8f + sc->pitchSpeed;
+                sc->pitchSpeed = sc->pitchSpeed < 0.0f ? sc->pitchSpeed : 0.0f;
+            } else {
+                sc->pitchSpeed = sc->pitchSpeed - dt * 0.8f;
+                sc->pitchSpeed = sc->pitchSpeed > 0.0f ? sc->pitchSpeed : 0.0f;
+            }
+            sc->pitchDelta = dt * sc->pitchSpeed * 0.8f;
+        } else if (a != 0) {
+            if (a > 0) {
+                if (sc->pitchSpeed < 0.0f)
+                    sc->pitchSpeed += dt * 0.8f;
+                else
+                    sc->pitchSpeed += dt * 0.25f;
+                sc->pitchSpeed = sc->pitchSpeed < 1.0f ? sc->pitchSpeed : 1.0f;
+            } else {
+                if (sc->pitchSpeed > 0.0f)
+                    sc->pitchSpeed -= dt * 0.8f;
+                else
+                    sc->pitchSpeed -= dt * 0.25f;
+                sc->pitchSpeed = sc->pitchSpeed > -1.0f ? sc->pitchSpeed : -1.0f;
+            }
+            sc->pitchDelta = dt * sc->pitchSpeed * 0.8f;
+        }
+        sc->rot.x = sc->pitchDelta + sc->rot.x;
+        sc->rot.y = sc->yawDelta + sc->rot.y;
     }
-    if (kb_Down[0xc8] != 0 || y <= 5)
-        a = 1;
-    if (kb_Down[0xd0] != 0 || y >= d2_ScreenH - 5)
-        a--;
-    if (kb_Down[0xcb] != 0 || dm_L.x <= 5)
-        b = 1;
-    if (kb_Down[0xcd] != 0 || dm_L.x >= d2_ScreenW - 10)
-        b--;
-    if (sc->yawSpeed != 0.0f && b == 0) {
-        if (sc->yawSpeed < 0.0f) {
-            sc->yawSpeed = dt * 0.8f + sc->yawSpeed;
-            sc->yawSpeed = sc->yawSpeed < 0.0f ? sc->yawSpeed : 0.0f;
-        } else {
-            sc->yawSpeed = sc->yawSpeed - dt * 0.8f;
-            sc->yawSpeed = sc->yawSpeed > 0.0f ? sc->yawSpeed : 0.0f;
-        }
-        sc->yawDelta = dt * sc->yawSpeed * 1.5f;
-    } else if (b != 0) {
-        if (b > 0) {
-            if (sc->yawSpeed < 0.0f)
-                sc->yawSpeed += dt * 0.8f;
-            else
-                sc->yawSpeed += dt * 0.25f;
-            sc->yawSpeed = sc->yawSpeed < 1.0f ? sc->yawSpeed : 1.0f;
-        } else {
-            if (sc->yawSpeed > 0.0f)
-                sc->yawSpeed -= dt * 0.8f;
-            else
-                sc->yawSpeed -= dt * 0.25f;
-            sc->yawSpeed = sc->yawSpeed > -1.0f ? sc->yawSpeed : -1.0f;
-        }
-        sc->yawDelta = dt * sc->yawSpeed * 1.5f;
-    }
-    if (sc->pitchSpeed != 0.0f && a == 0) {
-        if (sc->pitchSpeed < 0.0f) {
-            sc->pitchSpeed = dt * 0.8f + sc->pitchSpeed;
-            sc->pitchSpeed = sc->pitchSpeed < 0.0f ? sc->pitchSpeed : 0.0f;
-        } else {
-            sc->pitchSpeed = sc->pitchSpeed - dt * 0.8f;
-            sc->pitchSpeed = sc->pitchSpeed > 0.0f ? sc->pitchSpeed : 0.0f;
-        }
-        sc->pitchDelta = dt * sc->pitchSpeed * 0.8f;
-    } else if (a != 0) {
-        if (a > 0) {
-            if (sc->pitchSpeed < 0.0f)
-                sc->pitchSpeed += dt * 0.8f;
-            else
-                sc->pitchSpeed += dt * 0.25f;
-            sc->pitchSpeed = sc->pitchSpeed < 1.0f ? sc->pitchSpeed : 1.0f;
-        } else {
-            if (sc->pitchSpeed > 0.0f)
-                sc->pitchSpeed -= dt * 0.8f;
-            else
-                sc->pitchSpeed -= dt * 0.25f;
-            sc->pitchSpeed = sc->pitchSpeed > -1.0f ? sc->pitchSpeed : -1.0f;
-        }
-        sc->pitchDelta = dt * sc->pitchSpeed * 0.8f;
-    }
-    sc->rot.x = sc->pitchDelta + sc->rot.x;
-    sc->rot.y = sc->yawDelta + sc->rot.y;
-clamp:
     if (sc->rot.x < ai_CannonPitchMin || sc->rot.x > ai_CannonPitchMax) {
         sc->rot.x = (sc->rot.x < ai_CannonPitchMin ? ai_CannonPitchMin : sc->rot.x) < ai_CannonPitchMax
                         ? (sc->rot.x < ai_CannonPitchMin ? ai_CannonPitchMin : sc->rot.x) : ai_CannonPitchMax;
