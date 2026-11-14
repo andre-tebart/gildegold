@@ -4583,7 +4583,17 @@ int ahm_ResearchState(); char * ahm_OwnerChar(); AHMGRID * ahm_RandomRecipe();
    ai_AlchemistSendRecipeResearch when ahm_RandomRecipe gives the owner a recipe, else the message 0x41b0. The second is enabled
    while no research runs and calls ai_AlchemistSendResearchStart. The right mouse button closes the window; the camera follows
    again at the end
-   @deep read whole against the original, reconstructed (559 vs 563 instructions, asmdiff --symbols has no
+   @stuck match-deep 2026-11-14 (199 ins kept). Tried: the slot loops as index loops (rec->slots[k],
+   pics[n]): 343..359 ins (the original's [edx] store through a reloaded pic pointer is a hand pointer,
+   *pic = pid; pic++); *pic++ = pid: 237..247; slot index + pic pointer: 197 (frame hunk unchanged). row[2]
+   declared in a block around sv_ButtonRow: frame 0x25c = the original's (sel then shares row's slot as
+   there) and the entry registers come out as the original's (owner edi, rec ebp, form esi), but 223 ins:
+   start / other get registers (the original copies row[0] / row[1] to the slots 0x44 / 0x48) and win2
+   (c2trace prio 1187, 11 refs) keeps ebx where the original stores it to 0x40 right after the
+   SetForm(form, 2) and reloads it in the loops. Next: from the row-block form, make win2 / start / other
+   lose priority (fewer references or a split) - c2trace.py with the arw2 variant sep_ptr_row1 in the
+   session notes' generator. (tiebreak: insensitive under the four probes only, best draft) prior: read
+   whole against the original, reconstructed (559 vs 563 instructions, asmdiff --symbols has no
    symbol/argument/constant difference; no branch-target class remains after inlining the slot loop twice
    with function-level n/pic/slot). Left (dcp diffclass: code 140, slots 122, frame 34, order 20, regs 8),
    all allocation: (1) the original keeps owner in edi and the record in ebp, form in esi, ours form in
@@ -4591,10 +4601,7 @@ int ahm_ResearchState(); char * ahm_OwnerChar(); AHMGRID * ahm_RandomRecipe();
    equal); (2) win2 is spilled by the original to [esp+0x40] right after d2_SetForm(form,2) ('+ mov dword
    ptr [esp + 0x40], ebx' at 0x57c725) and reloaded as mov ebx,[esp+0x64] after each text, ours keeps it in
    ebx; (3) in the slot loop the original holds x in ebp, y in esi, i in edi and the slot/picture pointers
-   in [esp+0x14]/[esp+0x10] with the counter in [esp+0x1c], ours x in esi, y in ebp, counter [esp+0x24] and
-   a different lea schedule (lea eax,[eax+eax*2]; lea esi,[eax+eax*4] vs lea ebp,[eax+eax*2]; ...; lea
-   ebp,[ebp+ebp*4]); tried: the helper as __inline function, the loop written out twice, a picture-id
-   local, declaration order; frame 0x264 vs 0x25c */
+   in [esp+0x14]/[esp+0x10] with the counter in [esp+0x1c], ours x in esi, y in ebp, co... */
 void ai_AlchemistResearchWindow(unsigned char *obj)
 {
     char msg[0x100];
