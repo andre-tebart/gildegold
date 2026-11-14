@@ -156,13 +156,16 @@ typedef struct D3BONEACC {          /* 0xa4 bytes, a bone blended over the runni
 } D3BONEACC;
 
 /* 0x431ae0, poses the child objects (bones) from the skeleton animations of the object's slots, weighted;
-   without a running animation, the bones get the mesh's rest pose.
-   @deep B draft, 1158/1712 bytes: 551 code hunks over the whole body - the frame is 0x35c vs the original's 0x34c and the bone-accumulator stack slots and expression order differ throughout, a deep matching job (D3BONEACC weighting layout plus scheduling), not a base meaning fix. Readability also needs Q1 (evidence for d3anim_PoseBones: poses the child objects from the skeleton animations of the object's slots) and Q2 (d3_Lerp3 lerp, nextFrame/subFrame/animCtl). */
+   without a running animation, the bones get the mesh's rest pose. Per bone the first slot sets the accumulator
+   (base = rest position, pos = base + weight * (lerped pos - base), m = lerped rotation rows), later slots add
+   weight * (lerped pos - pos) and their rows; the rows are averaged before the angles are taken. The weight is
+   written parenthesised, (s->weight) * v.x: VC6 orders the two fmul operands by it (weight loaded first, as in the
+   original - plausibly a macro argument there). The 1.0f of the average is the pooled literal: written as
+   ai_FloatOne (the same address) VC6 orders the code differently. */
 void d3anim_PoseBones(D3OBJECT *obj)
 {
+    D3BONEACC acc[4];
     D3VECTOR4 m1[4], m0[4];
-    D3VECTOR4 v, rot;
-    D3ANIMCTL *ctl;
     D3ANIMSLOT *s;
     D3ANIMDATA *data;
     D3ANIMMESH *mesh;
@@ -174,14 +177,14 @@ void d3anim_PoseBones(D3OBJECT *obj)
     if (obj && obj->material && obj->material->ops) {
         n = 0;
         if (((D3ANIMCTL *)obj->material->animCtl)->active) {
-            D3BONEACC acc[4];
-
             D3_ZERO(acc, sizeof(acc));
             for (k = 0; k < 3; k++) {
                 s = &((D3ANIMCTL *)obj->material->animCtl)->slots[k];
                 if (data = s->data) {
+                    D3VECTOR4 v;
+
                     for (b = 0; b < 4; b++) {
-                        if (s->map[b] != 0xff) {
+                        if (s->map[b] < 0xff) {
                             bone = s->map[b];
                             name = (char *)data + (bone + 1) * 0x40;
                             for (i = 0; i < n; i++)
@@ -189,13 +192,14 @@ void d3anim_PoseBones(D3OBJECT *obj)
                                     break;
                             if (i >= n) {
                                 if (n < 4) {
+                                    D3ANIMMESH *skel = ((D3ANIMCTL *)obj->material->animCtl)->mesh;
+
                                     strcpy(acc[n].name, name);
-                                    mesh = ((D3ANIMCTL *)obj->material->animCtl)->mesh;
-                                    for (i = 0; i < mesh->nbones; i++) {
-                                        if (!strcmp(mesh->bones[i].name, name)) {
-                                            acc[n].base.x = mesh->bones[i].pos.x;
-                                            acc[n].base.y = mesh->bones[i].pos.y;
-                                            acc[n].base.z = mesh->bones[i].pos.z;
+                                    for (i = 0; i < skel->nbones; i++) {
+                                        if (!strcmp(skel->bones[i].name, name)) {
+                                            acc[n].base.x = skel->bones[i].pos.x;
+                                            acc[n].base.y = skel->bones[i].pos.y;
+                                            acc[n].base.z = skel->bones[i].pos.z;
                                             break;
                                         }
                                     }
@@ -205,12 +209,12 @@ void d3anim_PoseBones(D3OBJECT *obj)
                                     v.x -= acc[n].base.x;
                                     v.y -= acc[n].base.y;
                                     v.z -= acc[n].base.z;
-                                    acc[n].pos.x = s->weight * v.x;
-                                    acc[n].pos.y = s->weight * v.y;
-                                    acc[n].pos.z = s->weight * v.z;
-                                    acc[n].pos.x += acc[n].base.x;
-                                    acc[n].pos.y += acc[n].base.y;
-                                    acc[n].pos.z += acc[n].base.z;
+                                    acc[n].pos.x = ((s->weight) * v.x);
+                                    acc[n].pos.y = ((s->weight) * v.y);
+                                    acc[n].pos.z = ((s->weight) * v.z);
+                                    acc[n].pos.x = acc[n].pos.x + acc[n].base.x;
+                                    acc[n].pos.y = acc[n].pos.y + acc[n].base.y;
+                                    acc[n].pos.z = acc[n].pos.z + acc[n].base.z;
                                     d3_MatFromAngles((D3VECTOR4 *)&data->frames[s->frame].bone[bone].rot, (D3MATRIX *)m0);
                                     d3_MatFromAngles((D3VECTOR4 *)&data->frames[s->nextFrame].bone[bone].rot, (D3MATRIX *)m1);
                                     for (r = 0; r < 3; r++)
@@ -225,9 +229,9 @@ void d3anim_PoseBones(D3OBJECT *obj)
                                 v.x -= acc[i].pos.x;
                                 v.y -= acc[i].pos.y;
                                 v.z -= acc[i].pos.z;
-                                acc[i].pos.x += s->weight * v.x;
-                                acc[i].pos.y += s->weight * v.y;
-                                acc[i].pos.z += s->weight * v.z;
+                                acc[i].pos.x += (s->weight) * v.x;
+                                acc[i].pos.y += (s->weight) * v.y;
+                                acc[i].pos.z += (s->weight) * v.z;
                                 d3_MatFromAngles((D3VECTOR4 *)&data->frames[s->frame].bone[bone].rot, (D3MATRIX *)m0);
                                 d3_MatFromAngles((D3VECTOR4 *)&data->frames[s->nextFrame].bone[bone].rot, (D3MATRIX *)m1);
                                 for (r = 0; r < 3; r++) {
@@ -242,34 +246,37 @@ void d3anim_PoseBones(D3OBJECT *obj)
                     }
                 }
             }
-            if (n) {
-                for (i = 0; i < n; i++) {
-                    t = 1.0f / acc[i].n;
-                    for (r = 0; r < 3; r++) {
-                        acc[i].m[r].x *= t;
-                        acc[i].m[r].y *= t;
-                        acc[i].m[r].z *= t;
-                    }
-                    d3_MatToAngles(acc[i].m, &rot);
-                    for (c = obj->child; c; c = c->next) {
-                        if (c->material && !strcmp(acc[i].name, D3_MESH(c)->boneName)) {
-                            d3_SetObjectPos(c, (D3VECTOR *)&acc[i].pos);
-                            d3_SetObjectRot(c, (D3VECTOR *)&rot);
-                        }
+        }
+        if (!n) {
+            mesh = ((D3ANIMCTL *)obj->material->animCtl)->mesh;
+            for (c = obj->child; c; c = c->next) {
+                if (c->material && D3_MESH(c)->boneName[0]) {
+                    for (i = 0; i < mesh->nbones; i++)
+                        if (!strcmp(mesh->bones[i].name, D3_MESH(c)->boneName))
+                            break;
+                    if (i < mesh->nbones) {
+                        d3_SetObjectPos(c, &mesh->bones[i].pos);
+                        d3_SetObjectRot(c, &mesh->bones[i].rot);
                     }
                 }
-                return;
             }
-        }
-        mesh = ((D3ANIMCTL *)obj->material->animCtl)->mesh;
-        for (c = obj->child; c; c = c->next) {
-            if (c->material && *(name = D3_MESH(c)->boneName)) {
-                for (i = 0; i < mesh->nbones; i++)
-                    if (!strcmp(mesh->bones[i].name, name))
-                        break;
-                if (i < mesh->nbones) {
-                    d3_SetObjectPos(c, &mesh->bones[i].pos);
-                    d3_SetObjectRot(c, &mesh->bones[i].rot);
+        } else {
+            float s;
+            D3VECTOR rot;
+
+            for (i = 0; i < n; i++) {
+                s = 1.0f / acc[i].n;
+                for (r = 0; r < 3; r++) {
+                    acc[i].m[r].x *= s;
+                    acc[i].m[r].y *= s;
+                    acc[i].m[r].z *= s;
+                }
+                d3_MatToAngles(acc[i].m, (D3VECTOR4 *)&rot);
+                for (c = obj->child; c; c = c->next) {
+                    if (c->material && !strcmp(acc[i].name, D3_MESH(c)->boneName)) {
+                        d3_SetObjectPos(c, (D3VECTOR *)&acc[i].pos);
+                        d3_SetObjectRot(c, &rot);
+                    }
                 }
             }
         }

@@ -683,7 +683,7 @@ exe	0x00431510	vfs_Exit	vfs	af28d466d0a2b37c	no	byte	control=byte p1=byte p2=byt
 exe	0x004315c0	d3anim_ApplyRootMotion	d3_anim	b00daa09b6181919	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00431750	d3anim_ApplyMotionTo	d3_anim	4bf428479df839c4	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
 exe	0x004319e0	d3anim_MapBones	d3_anim	ef3bbccad7fe0fc9	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
-exe	0x00431ae0	d3anim_PoseBones	d3_anim	84838afe81569446	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x00431ae0	d3anim_PoseBones	d3_anim	57dc6df2d1cf6b6d	no	shape	sample n=32 seed=1 compiled=32 codegens=1 best=shape
 exe	0x00432190	d3anim_RootPosAt	d3_anim	7d5f7a80c8fbbec7	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x004324e0	d3anim_NextFrame	d3_anim	39b5594b8a2292a6	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00432530	d3path_Tangents	d3_anim	ca9915da1c38a901	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte

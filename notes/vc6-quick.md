@@ -1334,3 +1334,20 @@ mechanisms, each as a generated round over all positions / subsets:
   `and eax,0x100` tests); three 12-byte vectors in a frame 0xc short = D3VECTOR4.
 - tools: c2trace.py / vdiff.py / flip.py did not find a definition whose parameter list wraps onto a second line
   (StopIteration); function_span now follows the list to the `{` and flip.py uses it.
+- **d3anim_PoseBones byte (311 ins): six ordinary changes and one paren.** (1) `if (n == 0) { rest pose } else {
+  final loop }` after the active block, not `if (n) { ..; return; }` inside it (the original lays the rest pose
+  first behind `test edx,edx; jne`): 310 -> 168. (2) The frame 0x10 too big: v declared in the slot block and rot
+  in the final block, so the two vectors share one slot. (3) Two different "mesh" locals: the new-bone branch
+  has its own block pointer (`D3ANIMMESH *skel = ..->mesh;` BEFORE the strcpy, the original loads it first),
+  the rest pose another (they sit in different slots in the original): 168 -> 130. (4) The rest pose reads
+  `D3_MESH(c)->boneName` at each use, no `*(name = ..)` (the original keeps that address in a slot of its own):
+  130 -> 30. (5) `float s; D3VECTOR rot;` in the final block (rot 12 bytes; the block scalar moves rot to +4 in
+  the shared slot, the original's [ebp-0x24]): 30 -> 24. (6) `map[b] < 0xff` (jae), not `!= 0xff`.
+  (7) `fld [s->weight]; fmul [v.x]` against ours `fld [v.x]; fmul [s->weight]`: every operand order, cast and
+  temp is one code, but a parenthesised operand is not - `((s->weight) * v.x)` and `acc[i].pos.x += (s->weight)
+  * v.x` give the original's order (dcp headers sample: insensitive; flip.py: 0 hits, it never adds parentheses).
+  VC6's C1 ranks a parenthesised primary differently; a macro argument `(w)` is the likely origin. Rule: an
+  fmul / fadd operand order that no statement order or operand swap moves - try parentheses around one operand.
+- `1.0f / x` against `ai_FloatOne / x`: dcp's M10 says the original reads ai_FloatOne (0x5eb780), but that is the
+  address of the pooled literal __real@3f800000 - the literal gives byte, the extern const gives other code
+  (d3anim_PoseBones). Write the literal unless the function needs the object (a read the literal would fold).
