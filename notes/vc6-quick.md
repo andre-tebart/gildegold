@@ -1067,3 +1067,17 @@ mechanisms, each as a generated round over all positions / subsets:
   esi while it ranks above ret, none once ret ranks above it and holds ebx) - priority order alone does not
   predict the outcome; the choice rule is not read from c2.dll yet. c2dag / c2pass / flip take `WinMain`
   (decorated `_WinMain@16`) by its plain name now.
+- **A whole block of global stores scheduled with other scratch registers after an inline `strcpy` of a literal**
+  (main_JoinNetworkGame: `or al,0x50` against the original's `or ecx,0x50`, a word load hoisted, and a stack load
+  hoisted above a later `rep movsd`; ~36 ins over the whole function): statement order of the block, with the
+  strcpy NOT first. flip.py (want `or ecx, 80`) hit "swap strcpy with the next statement" (36 -> 14); a generated
+  round of all orders of the 8 statements with the strcpy at every position (3359 variants) gave byte for
+  `ai_NumPlayers = hdr.players; strcpy(main_NetHost, "127.0.0.1"); ai_GameFlags |= 0x50; net.players = ..; ..`.
+  The earlier note "store order byte-neutral" had only permuted the stores without moving the strcpy. The
+  scratch-register rotation runs through the whole function, so one early statement fixes hunks 60 instructions
+  later (the char0c/char54 eax/ecx/edx rotation went with it). The hand-written `do { c = s[i]; d[i] = c; i++; }
+  while (c)` copies were plain `strcpy` (one code with VC6 here: stack array or global source, global destination).
+- Frame symbol order for flip.py: the listing's `_x$ = -N` lines sit above PROC and flip.py only collects the
+  instructions, and `_x$[esp+N]` in an instruction does not change when x moves (N is the frame size): a slot
+  question needs a flip copy that also keeps the `_x$ = -N` lines (main_ChooseCity: 0 of 111 mutants moved the
+  two 0x100 arrays; a size probe objName[0xff] did, i.e. equal-size arrays are ordered inside C2 by a tie rule).

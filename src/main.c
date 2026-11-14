@@ -967,60 +967,38 @@ int main_HostNetworkGame(void)
 }
 /* 0x532a70, joins a saved network game: asks for the game (ai_JoinGameWindow), opens "gamedata/network/<name>.SAV" (vfs_Tfopen, "rb"), reads its header (ls_ReadSaveHeader) and fills
    the network game record ls_SavePath.net (its save name and party table) and cm_NetGame from it, the host 127.0.0.1, the network flags 0x50 and the joined character cm_JoinChar
-   (version >= 0x10054: the second text and two more fields); returns 1 on success @deep body read against the original and typed (LSHDR 0xfc + path[260] give the 0x200 frame exactly; NETHDR.save/party, the cm_NetGame.hdr struct copy, the CMJOIN view at 0x9367a0); every call, store and constant matches. Left is scheduling: ours loads ls_SavePath.cur into ax first and stores net.x at once (0x532acc/0x532ade) where the original loads it late into dx and stores it after net.b (0x532b34), so ai_GameFlags is or-ed in eax (or al,0x50) not ecx (or ecx,0x50, 4 bytes longer in all); ours hoists the hdr.char164 load above the first rep movsd (mov edx,[esp+0x6c] at 0x532b6d) where the original loads it after the rep stosd; the char0c/char54 pair is a pure eax->ecx ecx->edx edx->eax rotation. Tried: the original's store order (players before the flag, mode between char164 and char09): byte-neutral. */
+   (version >= 0x10054: the second text and two more fields); returns 1 on success */
 
 int main_JoinNetworkGame(void)
 {
     LSHDR hdr;
     char path[260];
     VFSFILE *f;
-    int i;
-    char c;
 
     if (ai_JoinGameWindow() != 0) {
         sprintf(path, "gamedata/network/%s.SAV", main_NetSaveName);
         f = vfs_Tfopen(path, "rb", (int)vfs_Root);
         if (f != 0) {
             ls_ReadSaveHeader((int)f, (int *)&hdr);
-            strcpy(main_NetHost, "127.0.0.1");
             ai_NumPlayers = hdr.players;
-            ls_SavePath.net.players = hdr.players;
+            strcpy(main_NetHost, "127.0.0.1");
             ai_GameFlags |= 0x50;
+            ls_SavePath.net.players = hdr.players;
             ls_SavePath.net.size = 0x6a;
             ls_SavePath.net.a = 1;
             ls_SavePath.net.b = 4;
             ls_SavePath.net.x = ls_SavePath.cur;
-            i = 0;
-            do {
-                c = hdr.player[i];
-                ls_SavePath.net.name[i] = c;
-                i++;
-            } while (c != 0);
-            i = 0;
-            do {
-                c = main_NetSaveName[i];
-                ls_SavePath.net.save[i] = c;
-                i++;
-            } while (c != 0);
+            strcpy(ls_SavePath.net.name, hdr.player);
+            strcpy(ls_SavePath.net.save, main_NetSaveName);
             memcpy(ls_SavePath.net.party, hdr.party, sizeof(hdr.party));
             memcpy(&cm_NetGame.hdr, &ls_SavePath.net, sizeof(NETHDR));
             memset(&cm_JoinChar, 0, sizeof(CMJOIN));
             cm_JoinChar.char164 = hdr.char164;
             cm_NetGame.mode = 0x7f;
             cm_JoinChar.char09 = hdr.char09;
-            i = 0;
-            do {
-                c = hdr.charText1[i];
-                cm_JoinChar.text1[i] = c;
-                i++;
-            } while (c != 0);
+            strcpy(cm_JoinChar.text1, hdr.charText1);
             if (hdr.version >= 0x10054) {
-                i = 0;
-                do {
-                    c = hdr.charText2[i];
-                    cm_JoinChar.text2[i] = c;
-                    i++;
-                } while (c != 0);
+                strcpy(cm_JoinChar.text2, hdr.charText2);
                 cm_JoinChar.char0c = hdr.char0c;
                 cm_JoinChar.char54 = hdr.char54;
             }
