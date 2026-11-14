@@ -9678,15 +9678,7 @@ int gm_ListStock(short *l, int id)
    (gm_ListStock less the amount it holds) when it holds the goods already; else none when its places are full,
    counting in a stall 0x2a only the goods of the same group (the goods of the type 0x17 / 0x25 against cap[0], the
    others against cap[1]; in a building of the class 2 only the type 0x17 is that group), in another stall all
-   goods against cap[0]; else the stock, at most n
-   @deep Read whole against the original and rewritten (ORDOBJ stall, GMGOOD, the class-2 flag computed
-   before gm_ListStock, the held-goods branch first, the group counts per class, cap[0] / cap[1], the final
-   min): every call, field, constant and branch matches; 363 vs 363 bytes. Left only at +0x59, the
-   held-goods min: ours 'mov ecx,[esp+0x24]; sub ebp,eax; mov eax,ebp; cmp eax,ecx; jle' (room in ebp/eax,
-   n in ecx, returning room on the shared tail), the original 'mov ecx,ebp; sub ecx,eax; mov
-   eax,[esp+0x1c]; cmp ecx,eax; jg' (stock kept in ebp, n in eax, returning n on the shared tail) -
-   allocation and tail choice. Tried: room > n ? n : room, if (room <= n) return room, n < room (worse), an
-   if/else around the whole rest (worse). */
+   goods against cap[0]; else the stock, at most n */
 
 int gm_FreeCapacity(short *l, int id, int n)
 {
@@ -9694,7 +9686,7 @@ int gm_FreeCapacity(short *l, int id, int n)
     unsigned char *b;
     ORDOBJ *o;
     GMGOOD *g;
-    int cls2, stock, room, cnt, grp;
+    int cls2, stock, held, cnt, grp;
 
     b = (unsigned char *)gm_ObjectBuilding((int)l);
     if (b == 0)
@@ -9703,18 +9695,18 @@ int gm_FreeCapacity(short *l, int id, int n)
     stock = gm_ListStock(l, id);
     o = (ORDOBJ *)gm_Query((void *)s->list, 1, 0, id);
     if (o != 0) {
-        room = stock - gm_ListAmount(l, (char *)o);
-        if (room > n)
+        held = gm_ListAmount(l, (char *)o);
+        if (stock - held > n)
             return n;
-        return room;
+        return stock - held;
     }
     g = GM_GOOD(id);
     if (cls2)
         grp = g->type == 0x17;
     else
         grp = g->type == 0x17 || g->type == 0x25;
-    cnt = 0;
     if (s->type == 0x2a) {
+        cnt = 0;
         for (o = (ORDOBJ *)gm_Query((void *)s->list, 1, 5); o != 0; o = (ORDOBJ *)gm_QueryNext()) {
             g = GM_GOOD(o->type);
             if (cls2) {
@@ -9737,6 +9729,7 @@ int gm_FreeCapacity(short *l, int id, int n)
         } else if (cnt >= s->cap[1])
             return 0;
     } else {
+        cnt = 0;
         for (o = (ORDOBJ *)gm_Query((void *)s->list, 1, 5); o != 0; o = (ORDOBJ *)gm_QueryNext())
             cnt++;
         if (cnt >= s->cap[0])
