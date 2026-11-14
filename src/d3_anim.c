@@ -26,6 +26,7 @@ extern D3ANIMDATA d3anim_Head;              /* 0xfc2580, list head; d3anim_Head.
 extern D3ANIMDATA d3anim_Tail;              /* 0xfe7440, list end */
 unsigned int d3anim_CacheMax = 4194304;  /* 0x5f927c, bytes */
 extern int d3_Busy;                     /* 0x633b04 */
+extern const float ai_FloatOne;         /* 0x5eb780, the shared 1.0f (bio.c) */
 
 /* 0x4315c0, applies the root motion between two key frames: adds the frames' move delta (flags bit 0), in
    object space, to the object position, and the turn delta (flags bit 1) to its rotation. No return value */
@@ -274,12 +275,16 @@ void d3anim_PoseBones(D3OBJECT *obj)
         }
     }
 }
-/* 0x432190, the object's position at frame/sub of the slot's animation (root motion, without moving it). @deep match-base 2026-10-31: read against the original; now 251 vs 251 instructions, 836 vs 836 bytes (was 210 / 688). The relative branch reuses d for the transformed vector (d = M * sum, out = d + pos) and the else branch copies f0->move into d, puts the difference in sum and transforms into sum (d = sum * t + d, sum = M * d, out = sum + pos): the two transform blocks name other variables, so VC6 no longer tail-merges them (the frame slot layout matches too). t is computed in both arms of if (key == frame) (the original duplicates the fild after sub -= sub0). Left: register choice only: the prologue loads s / out before sub esp in the original (eax / ecx, zero register ebx) where ours loads out into edx after it (zero register ecx), and the else branch rotates eax/edx/esi (asmdiff --regs: hunks 0x432190 code 68, 0x4323b8 code 54, the rest regs 94). */
+/* 0x432190, the object's position at frame/sub of the slot's animation (root motion, without moving it): relative
+   animations sum the frames' move deltas from the slot's last position (lastFrame / lastSub) up to frame / sub and
+   rotate the sum by the object's matrix, the others interpolate between the slot's frame and nextFrame; posOffset
+   is added to both. The else branch indexes data->frames[s->frame] at each use (no frame pointer locals).
+   @original sum is not set when key >= frame (no else as in d3anim_ApplyMotionTo): for key == frame with another
+   sub the sum reads uninitialised stack. */
 
 void d3anim_RootPosAt(D3OBJECT *obj, D3ANIMSLOT *s, int frame, int sub, D3VECTOR *out)
 {
     D3ANIMDATA *data = s->data;
-    D3ANIMFRAME *f0, *f1;
     D3VECTOR4 d, sum;
     float t;
     int key, sub0, n0, n1, i;
@@ -299,7 +304,7 @@ void d3anim_RootPosAt(D3OBJECT *obj, D3ANIMSLOT *s, int frame, int sub, D3VECTOR
             return;
         }
         if (key < frame) {
-            t = 1.0f - (float)sub0 / n0;
+            t = ai_FloatOne - (float)sub0 / n0;
             d.x = data->frames[key + 1].move.x - data->frames[key].move.x;
             d.y = data->frames[key + 1].move.y - data->frames[key].move.y;
             d.z = data->frames[key + 1].move.z - data->frames[key].move.z;
@@ -336,15 +341,13 @@ void d3anim_RootPosAt(D3OBJECT *obj, D3ANIMSLOT *s, int frame, int sub, D3VECTOR
         out->y = d.y + obj->pos.y;
         out->z = d.z + obj->pos.z;
     } else {
-        f0 = &data->frames[s->frame];
-        f1 = &data->frames[s->nextFrame];
-        d.x = f0->move.x;
-        d.y = f0->move.y;
-        d.z = f0->move.z;
-        sum.x = f1->move.x - d.x;
-        sum.y = f1->move.y - d.y;
-        sum.z = f1->move.z - d.z;
-        t = (float)s->subFrame / f0->count;
+        d.x = data->frames[s->frame].move.x;
+        d.y = data->frames[s->frame].move.y;
+        d.z = data->frames[s->frame].move.z;
+        sum.x = data->frames[s->nextFrame].move.x - d.x;
+        sum.y = data->frames[s->nextFrame].move.y - d.y;
+        sum.z = data->frames[s->nextFrame].move.z - d.z;
+        t = (float)s->subFrame / data->frames[s->frame].count;
         d.x = sum.x * t + d.x;
         d.y = sum.y * t + d.y;
         d.z = sum.z * t + d.z;
@@ -464,7 +467,6 @@ void d3_RelightObjectFrame(D3OBJECT *obj, D3ANIMFRAME *f);                      
 struct D3ANIMSLOT * d3anim_GetMainSlot(struct D3ANIMCTL *ctl);                                         /* 0x435900 */
 
 /* the shared 1.0f both paths' key fractions are subtracted from (the original loads it from memory) */
-extern const float ai_FloatOne;  /* 0x5eb780 */
 
 /* 0x432750, the per-object animation step (d3_ForEachObject callback, ctx = d3_Time, | 0x80000000 in the
    second pass): steps the three vertex animation slots of every active control of the mesh material, then
