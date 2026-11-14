@@ -250,25 +250,16 @@ void surf_Up16(DDSURFACEDESC2 *dst, DDSURFACEDESC2 *src)
         }
     }
 }
-/* 0x41f800, 24-bit bilinear growing of src into dst: per source pixel the four neighbours (right / down clamped
-   at the edge), each row of the box interpolated between them by j / dy, each pixel by i / dx
-   @stuck rewritten as plain bilinear code (r00..b11 loaded, for (j < dy) { lr = r00 + (r10 - r00) * j /
-   dy; .. hb; d = row(y0 + j); for (i < dx) d[(x0 + i) * 3 + k] = (unsigned char)(lr + (hr - lr) * i / dx);
-   }): VC6 strength-reduces the products into the original's accumulators and hoists the deltas, draft 424
-   -> shape 186 ins, identical instructions. Left: frame 0x90 vs 0xa8 (slots 194). c2frame: ours packs r10
-   with a temp, g10 with lg, r11 with lb, g11 with hb + a temp, down / x with temps (counts 2 for r10 / g10
-   / r11 / g11); the original keeps g00 g01 g10 g11 r00 r01 r10 r11 in eight consecutive slots 0x5c..0x78
-   (+ b00 / b01 at 0xa8 / 0xac) and has an untouched 8-byte hole, i.e. r10..g11 live into the j loop or
-   carry one more reference at layout time. Tried: named deltas before the j loop (246, draft), named x
-   steps (340), both (350), a p pointer per neighbour (283), a row pointer d + x0 * 3 (404), operand orders
-   of both interpolations (= control); headers sample insensitive; flip.py for a frame of 0xa0..0xb3: 0 of
-   229 mutants. Open: the source form that keeps the four 10/11 corner values alive across the j loop.
-   (tiebreak: insensitive) */
+/* 0x41f800, 24-bit bilinear growing of src into dst: per source pixel the four neighbours per channel (r[0] the
+   pixel, [1] right, [2] down, [3] down right; right / down clamped at the edge), each row of the box interpolated
+   between them by j / dy, each pixel by i / dx.
+   @original down is lPitch >> 1 bytes, half a row (surf_Up16's element count for 16-bit pixels): the "down"
+   neighbours are read from the middle of the same row */
 
 void surf_Up24(DDSURFACEDESC2 *dst, DDSURFACEDESC2 *src)
 {
     DWORD x, y, x0, x1, y0, y1, i, j, dx, dy, right, down;
-    DWORD r00, g00, b00, r01, g01, b01, r10, g10, b10, r11, g11, b11, lr, lg, lb, hr, hg, hb;
+    DWORD r[4], g[4], b[4], lr, lg, lb, hr, hg, hb;
     unsigned char *s, *d;
 
     y1 = 0;
@@ -284,25 +275,25 @@ void surf_Up24(DDSURFACEDESC2 *dst, DDSURFACEDESC2 *src)
             dx = x1 - x0;
             right = x + 1 < src->dwWidth;
             down = y + 1 < src->dwHeight ? src->lPitch >> 1 : 0;
-            r00 = s[x * 3];
-            g00 = s[x * 3 + 1];
-            b00 = s[x * 3 + 2];
-            r01 = s[(x + right) * 3];
-            g01 = s[(x + right) * 3 + 1];
-            b01 = s[(x + right) * 3 + 2];
-            r10 = s[x * 3 + down];
-            g10 = s[x * 3 + down + 1];
-            b10 = s[x * 3 + down + 2];
-            r11 = s[(x + right) * 3 + down];
-            g11 = s[(x + right) * 3 + down + 1];
-            b11 = s[(x + right) * 3 + down + 2];
+            r[0] = s[x * 3];
+            g[0] = s[x * 3 + 1];
+            b[0] = s[x * 3 + 2];
+            r[1] = s[(x + right) * 3];
+            g[1] = s[(x + right) * 3 + 1];
+            b[1] = s[(x + right) * 3 + 2];
+            r[2] = s[x * 3 + down];
+            g[2] = s[x * 3 + down + 1];
+            b[2] = s[x * 3 + down + 2];
+            r[3] = s[(x + right) * 3 + down];
+            g[3] = s[(x + right) * 3 + down + 1];
+            b[3] = s[(x + right) * 3 + down + 2];
             for (j = 0; j < dy; j++) {
-                lr = r00 + (r10 - r00) * j / dy;
-                lg = g00 + (g10 - g00) * j / dy;
-                lb = b00 + (b10 - b00) * j / dy;
-                hr = r01 + (r11 - r01) * j / dy;
-                hg = g01 + (g11 - g01) * j / dy;
-                hb = b01 + (b11 - b01) * j / dy;
+                lr = r[0] + (r[2] - r[0]) * j / dy;
+                lg = g[0] + (g[2] - g[0]) * j / dy;
+                lb = b[0] + (b[2] - b[0]) * j / dy;
+                hr = r[1] + (r[3] - r[1]) * j / dy;
+                hg = g[1] + (g[3] - g[1]) * j / dy;
+                hb = b[1] + (b[3] - b[1]) * j / dy;
                 d = (unsigned char *)dst->lpSurface + (y0 + j) * dst->lPitch;
                 for (i = 0; i < dx; i++) {
                     d[(x0 + i) * 3] = (unsigned char)(lr + (hr - lr) * i / dx);
