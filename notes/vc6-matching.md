@@ -3174,3 +3174,28 @@ differing instructions. The same shape made the character loop of 0x512f30 pick 
 - ai_GraveWindow (stuck): an inline block that the original puts out of line (`cmp [rup],ebp; jne far`, the
   store cross-jumped with another `sv_PopRequest = 1`) is `if (dm_L.rup == 0) {..} else sv_PopRequest = 1;`;
   the rest there is a priority race (c2trace: rec 124 above out 94).
+
+## match-deep 2026-11-14, fourth sv_t session (+ f3gm)
+- ai_OpenItemTooltip (273 -> 53, stuck): a row y `slot * 0x16 + 0x28` that the original recomputes per call (lea
+  chains, the loop counters left in memory) where ours strength-reduces it: the callee's y is a short.
+  d2_WinOpenPicStyled is declared with int parameters; the cast macro `d2_WinOpenPicStyledS` (as sv.c already
+  had) took -101 ins at once. A pointer walk `for (c = ai_Chars; c < ai_Chars[0x300]; c++)` against the
+  original's `mov edx,0x300 .. dec edx; jne` countdown: the index loop over ai_CharsT (-117). An fxch / fxch pair
+  before an fadd is a float rounding of the product: `(float)(c->sk81 * (1.0 / 1008)) + factor`. Left: a long
+  `==` if / else-if chain whose arms VC6 places after the whole compare chain (switch-like) while the original
+  lays each arm inline behind an inverted last compare; no structure tried moved it.
+- ai_CannonScene (378 -> 36, shape): a view walk over an int address (`v += sizeof(D2VIEW)`, signed jl) is an
+  index loop with a block pointer `vw = &d2_Views[v]` (VC6 bases the IV on vw->enabled itself, -210); a
+  `list[0x2f2]` was list[0x300] (the object count; the 0x1c frame difference); 4-byte holes after the camera
+  copies = D3VECTOR4; a 4-byte hole between a struct and the next array = the struct's last vector padded
+  (CANNONSCENE 0x104); a local vector used in one block declared there shares the earlier temps' slot. After
+  making a vector D3VECTOR4, check every `sizeof(v)` (a memcpy of 16 into a 12-byte field).
+- ai_CannonExplosion (476 -> 460, stuck): six D3VECTOR4s give the original's frame; the x87 allocation is left.
+- gm_BuildingGoodsList, gm_ChangeBuildingState (byte): the ai_HandleItemDrag lever in f3gm too - a goods / building
+  type field tested several times (`GM_GOOD(id)->type == 0x17 || .. == 0x25`) with the address materialized in the
+  original (`add eax,ecx; mov al,[eax]` / `lea eax,[eax+edx*4]; mov al,[eax]`) is a pointer local `g = GM_GOOD(id);`
+  read at every test (a value local `type = ..->type` folds the address). In gm_ChangeBuildingState the same
+  pointer also fixed an unrelated movsx load order; the last hunk (jge vs jae) was GMBTYPE.kind's signedness
+  (unsigned char: no other function moved). gm_ListObjectsAfter has the same note in its tag.
+- gm_CountCharacters (stuck, 5 ins): an address the original materializes before a call to a known same-unit
+  callee (`lea edx,[edx*4+X]` kept across it, VC6 knows the callee leaves edx) did not move with any spelling.

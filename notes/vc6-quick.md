@@ -1434,3 +1434,9 @@ mechanisms, each as a generated round over all positions / subsets:
 - **A block local array declared twice under one name** (one block fills it, another reads its own copy): a
   meaning bug that VC6's slot sharing hides; the compiled size well below the original's is the sign
   (ai_OpenItemTooltip, ai_GypsyHelperWindow): one function-scope array.
+- **A row y recomputed per call (lea chains, loop counters in memory) where ours strength-reduces it**: the callee
+  takes a short y; call through the short cast (`d2_WinOpenPicStyledS`, ai_OpenItemTooltip -101 ins).
+- **A type byte read through a materialized address** (`add eax,ecx; mov al,[eax]`) in f3gm too: a pointer local
+  read at every test (`g = GM_GOOD(id); if (g->type == A || g->type == B ..)`); gm_BuildingGoodsList and
+  gm_ChangeBuildingState byte.
+- After turning a vector into D3VECTOR4, check every `sizeof` of it (memcpy into a 12-byte field).
