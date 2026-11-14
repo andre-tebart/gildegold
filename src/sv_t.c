@@ -10017,6 +10017,7 @@ int ai_OpenItemTooltip(int idx)
     int k;
     int id;
     int amount;
+    int list[32];
 
     w = ai_FindWeaponRecord(idx);
     item = (AIGOOD *)ai_Goods + idx;
@@ -10048,8 +10049,6 @@ int ai_OpenItemTooltip(int idx)
     if (bld == 0) {
         io_PrintText(0x20, item->workTime);
     } else {
-        int list[32];
-
         n = 0;
         gm_BuildingSkill((unsigned char *)bld, 1, 1);
         master = (AICHAR *)gm_FindCharacterByMaster((int)bld);
@@ -10089,8 +10088,6 @@ int ai_OpenItemTooltip(int idx)
     }
     n = 0;
     if (item->type == 0x17 || item->type == 0x25) {
-        int list[32];
-
         if (idx == 0x225 || idx == 0x226 || idx == 0x227 || idx == 0x293 || idx == 0x294 || idx == 0x295) {
             if (idx == 0x225 || idx == 0x226 || idx == 0x227) {
                 list[0] = 0x48;
@@ -10122,8 +10119,6 @@ int ai_OpenItemTooltip(int idx)
         }
     }
     for (k = 0; k < n; k++) {
-        int list[32];
-
         id = list[k];
         d2_WinOpenPicStyled(6, slot * 0x16 + 0x28, id + 0x427, d2_LastWindow, -2);
         io_PrintText("%s$N", id * 0xe + 0x48e);
