@@ -3445,7 +3445,7 @@ exe	0x005324f0	main_CreateWindow	main	draft	readable	deep
 exe	0x00532700	main_StartCityGame	main	byte	readable		
 exe	0x005327e0	main_PlayerCountDialog	main	byte	readable		
 exe	0x005328f0	main_HostNetworkGame	main	byte	readable		
-exe	0x00532a70	main_JoinNetworkGame	main	draft	readable	deep	
+exe	0x00532a70	main_JoinNetworkGame	main	byte	readable		
 exe	0x00532c30	main_EnterHostAddress	main	byte	readable		
 exe	0x00532da0	main_SearchNetworkGame	main	draft	readable	deep	
 exe	0x00533470	main_ChooseNetworkGame	main	byte	readable		
@@ -3463,7 +3463,7 @@ exe	0x00536980	main_ChooseHistory	main	draft	readable	stuck
 exe	0x00536d80	main_CharacterIntro	main	byte	readable		
 exe	0x00536e80	main_ChooseDifficulty	main	byte	readable		
 exe	0x00537040	main_ChooseOpponents	main	byte	readable		
-exe	0x00537230	main_ChooseCity	main	draft	readable	deep	
+exe	0x00537230	main_ChooseCity	main	draft	readable	stuck	
 exe	0x00537930	main_NewSinglePlayerGame	main	byte	readable		
 exe	0x00537980	main_LoadingScreen	main	byte	readable		
 exe	0x00537af0	main_SetLoadProgress	main	byte	readable		
@@ -3474,7 +3474,7 @@ exe	0x00537db0	main_FreeSoundBanks	main	byte	readable
 exe	0x00537de0	main_StartGame	main	byte	readable		
 exe	0x00537f40	main_EndGame	main	byte	readable		
 exe	0x00538140	main_RundenBeginn	main	byte	readable		
-exe	0x005384e0	main_EndRound	main	draft	readable	deep	
+exe	0x005384e0	main_EndRound	main	draft	readable	stuck	
 exe	0x00539620	main_ReplaceFigure	main	shape	readable		
 exe	0x00539870	main_RoundReport	main	draft	readable	deep	
 exe	0x0053a250	main_UpdateFigure	main	shape	readable		
@@ -3483,7 +3483,7 @@ exe	0x0053a520	main_SettleRound	main	draft	readable	deep
 exe	0x0053b2e0	main_BeginPlayerRound	main	shape	readable		
 exe	0x0053b830	main_CheckCD	main	byte	readable		
 exe	0x0053b840	main_CreateStartCouple	main	shape	readable	deep	
-exe	0x0053bb20	main_GameLoop	main	draft	readable	deep	
+exe	0x0053bb20	main_GameLoop	main	draft	readable	stuck	
 exe	0x0053c9b0	main_PlayIntroMovies	main	byte	readable		
 exe	0x0053cb40	main_PlayOutro	main	byte	readable		
 exe	0x0053ccf0	WinMain	main	byte	readable		
