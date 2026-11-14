@@ -5168,18 +5168,7 @@ void main_PlayOutro(void)
         mov_Exit();
 }
 /* 0x53ccf0, the program entry (WinMain: instance, previous, command line, show): reads game.INI (Network / Gfx / Sound / General), parses the command line (STADT=" BERUF=" IP=" PORT=" MO_MONEY FULLSCREEN DIRECTWINDOW), starts the engine
-   (main_CreateWindow / main_Init / main_OpenScreen / main_OpenEngine), then runs the main menu or the direct start (a fixed player profile with the BERUF=" job) and the game loop until the program quits
-   @deep body read against the original and readable (globals typed, LSSAVE.netDir, command line scans r +
-   N with d first, the direct start else-if order, memcpy of the talents). 508 = 508 instructions; left
-   only allocation at 0x53cfc0 (cur_res index): the original zero-extends ai_GfxResolution in ecx (xor
-   ecx,ecx; mov cl,al; mov eax,ecx; shl eax,3) and loads w/h into edx/eax, ours uses edx and loads into
-   ecx/edx; plus regs ecx->eax at 0x53ced5. The 3 M8 lines are that hunk misaligned (crossed: both sides
-   refer to ai_ScreenModes / ai_ScreenModes+4 / W / H). Tried: a local unsigned char res (spilled to a
-   slot), int i with (unsigned char) cast (and eax,0xff), k = ai_GfxResolution, a SCREENMODE pointer, a
-   struct copy view: all worse (references: M8 at +0x2ea: ours refers to ai_ScreenModes+0x4 (0x62d7bc), the
-   original's field to 0x62d7b8 (ai_ScreenModes) (and 2 more), explained: the M8 refs are crossed by the
-   alignment of a register-renamed load pair: both sides load ai_ScreenModes[res].w/.h and store them to
-   ai_ScreenModeW/H in the same order) */
+   (main_CreateWindow / main_Init / main_OpenScreen / main_OpenEngine), then runs the main menu or the direct start (a fixed player profile with the BERUF=" job) and the game loop until the program quits */
 
 int WINAPI WinMain(HINSTANCE hInst, HINSTANCE prev, char *cmd, int show)
 {
@@ -5231,7 +5220,10 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE prev, char *cmd, int show)
     main_WeatherSound = GetPrivateProfileIntA("Sound", "weather", 1, ai_OptionsFile);
     GetPrivateProfileStringA("General", "Bildmodus", "FULLSCREEN", bm, 0x100, ai_OptionsFile);
     _strupr(bm);
-    mode = (strcmp(bm, "DIRECTWINDOW") != 0) * 2 + 1;
+    if (strcmp(bm, "DIRECTWINDOW") == 0)
+        mode = 1;
+    else
+        mode = 3;
     if (strstr(cmd, "DIRECTWINDOW") != 0)
         mode = 1;
     if (strstr(cmd, "FULLSCREEN") != 0)
@@ -5367,13 +5359,11 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE prev, char *cmd, int show)
             main_QuitProgram = 1;
         sv_PopRequest = 0;
         sv_FrameDepth = 0;
-        if (main_QuitProgram != 0) {
-            main_Exit();
-            if (main_ScreenSaverOff != 0)
-                main_SetScreenSaver(1);
-            return 1;
-        }
-    } while (1);
+    } while (main_QuitProgram == 0);
+    main_Exit();
+    if (main_ScreenSaverOff != 0)
+        main_SetScreenSaver(1);
+    return 1;
 }
 
 extern void * main_Instance;
