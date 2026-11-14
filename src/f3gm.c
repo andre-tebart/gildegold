@@ -2394,13 +2394,19 @@ void gm_FreeIconNames(void)
 #define GM_MAX(a, b) ((a) > (b) ? (a) : (b))
 
 /* 0x4fdfd0, fills the character statistics gm_CharacterStatistics: the living persons of kind < 10, per age bucket (gm_CharAge / 10, clamped to 0 .. 7) their count, health in percent of the base health and average base health, and the share under age in percent
-   @deep whole function read against the original 0x4fdfd0 and reconciled (the [0, 7] clamp of
-   gm_CharAge*0.1 as MAX(MIN(..)) with its four calls, the per-age-bucket health / base health sums indexed
-   by the bucket, the averaging loop, the index loop strength-reduced to the original's pointer + jl); the
-   one remaining hunk is the addressing of baseHealth[k]: the original reuses k's dead register, '+ lea
-   edx, [edx*4 + 0x91b548]' before the call then 'fadd/fstp dword ptr [edx]', ours keeps 'fadd/fstp dword
-   ptr [edx*4 + X]' (same memory, 3 bytes). Tried: += vs x = f() + x, a pointer temporary, (&health[k])[8],
-   k unsigned / char (worse) */
+   @stuck headers sample: insensitive. The one hunk (baseHealth[k] address materialized in edx before the
+   call, 'lea edx,[edx*4+X]' then fadd/fstp [edx]) did not move: x = x + f(), both statements so, a float
+   *p temp for one or both, a parenthesized call, the M10 objects ai_FloatZero / ai_FloatOne /
+   ai_FloatHundred in all 7 subsets (block externs: 5 or 7 ins), the 23 orders of the ageCount / underAge /
+   health / baseHealth statements (best = control at 5), st->count++ after k (VC6 knows
+   gm_CharacterBaseHealth leaves edx alone, so both forms are legal) (tiebreak: insensitive under the four
+   probes only, best draft) prior: whole function read against the original 0x4fdfd0 and reconciled (the
+   [0, 7] clamp of gm_CharAge*0.1 as MAX(MIN(..)) with its four calls, the per-age-bucket health / base
+   health sums indexed by the bucket, the averaging loop, the index loop strength-reduced to the original's
+   pointer + jl); the one remaining hunk is the addressing of baseHealth[k]: the original reuses k's dead
+   register, '+ lea edx, [edx*4 + 0x91b548]' before the call then 'fadd/fstp dword ptr [edx]', ours keeps
+   'fadd/fstp dword ptr [edx*4 + X]' (same memory, 3 bytes). Tried: += vs x = f() + x, a pointer temporary,
+   (&health[k])[8], k unsigned / char (worse) */
 
 void gm_CountCharacters(void)
 {
