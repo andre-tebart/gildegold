@@ -2968,7 +2968,7 @@ exe	0x004fdcb0	gm_CharacterHome	f3gm	byte	readable
 exe	0x004fddb0	gm_SpawnCharacter	f3gm	draft	readable	deep	
 exe	0x004fde90	unk_LoadIconNames	f3gm	byte	readable		
 exe	0x004fdfb0	gm_FreeIconNames	f3gm	byte	readable		
-exe	0x004fdfd0	gm_CountCharacters	f3gm	draft	readable	deep	
+exe	0x004fdfd0	gm_CountCharacters	f3gm	draft	readable	stuck	
 exe	0x004fe140	gm_AddTime	f3gm	draft	readable	deep	
 exe	0x004fe1e0	gm_SetTime	f3gm	byte	readable		
 exe	0x004fe210	gm_CompareTime	f3gm	byte	readable		
@@ -3117,7 +3117,7 @@ exe	0x005092e0	gm_BuildingSkill	f3gm	shape	readable
 exe	0x005093a0	gm_BuildingKindSkill	f3gm	byte	readable		
 exe	0x00509400	gm_WorkMinutesBetween	f3gm	draft	readable	deep	
 exe	0x005096a0	gm_FixedWorkMinutesBetween	f3gm	draft	readable	deep	
-exe	0x005098a0	gm_BuildingGoodsList	f3gm	draft	readable	deep	
+exe	0x005098a0	gm_BuildingGoodsList	f3gm	byte	readable		
 exe	0x005099e0	gm_BuildingGoodsList17	f3gm	shape	readable		
 exe	0x00509b10	gm_EquipmentValue	f3gm	byte	readable		
 exe	0x00509c80	gm_OwnerWorth	f3gm	byte	readable		
@@ -3166,7 +3166,7 @@ exe	0x0050c550	gm_Liking	f3gm	byte	readable
 exe	0x0050c980	gm_MeanLiking	f3gm	shape	readable		
 exe	0x0050ca10	gm_ChangeRelationToJobs	f3gm	byte	readable		
 exe	0x0050ca50	gm_ChangeObjektZustand	f3gm	byte	readable		
-exe	0x0050cad0	gm_ChangeBuildingState	f3gm	draft	readable	deep	
+exe	0x0050cad0	gm_ChangeBuildingState	f3gm	byte	readable		
 exe	0x0050cc50	gm_SendMoneyDelta	f3gm	byte	readable		
 exe	0x0050cc60	gm_ResetStock	f3gm	byte	readable		
 exe	0x0050ccd0	gm_Homeless	f3gm	shape	readable		
@@ -4022,7 +4022,7 @@ exe	0x0057dc50	ai_AlchemistTrainShareWindow	sv_t	byte	readable
 exe	0x0057de60	ai_AlchemistFundWindow	sv_t	byte	readable		
 exe	0x0057e0e0	ai_AlchemistRescheduleWindow	sv_t	byte	readable		
 exe	0x0057e230	ai_ShotTableStore	sv_t	byte	readable		
-exe	0x0057e270	ai_CannonScene	sv_t	draft	readable	deep	
+exe	0x0057e270	ai_CannonScene	sv_t	shape	readable	stuck	
 exe	0x0057ec40	ai_CannonAim	sv_t	byte	readable		
 exe	0x0057f0e0	ai_CannonCamera	sv_t	draft	readable	stuck	
 exe	0x0057f5d0	ai_CannonAxes	sv_t	byte	readable		
@@ -4031,7 +4031,7 @@ exe	0x0057f690	ai_CannonShotResults	sv_t	byte	readable
 exe	0x0057f890	ai_CannonPanel	sv_t	byte	readable		
 exe	0x0057fdb0	ai_CannonPitchRatio	sv_t	byte	readable		
 exe	0x0057fdd0	ai_CannonSwitchAnim	sv_t	byte	readable		
-exe	0x00580160	ai_CannonExplosion	sv_t	draft	readable	deep	
+exe	0x00580160	ai_CannonExplosion	sv_t	draft	readable	stuck	
 exe	0x00580a50	ai_ShotTableReset	sv_t	byte	readable		
 exe	0x00580a90	ai_CannonBuildPanel	sv_t	byte	readable		
 exe	0x00580fe0	ai_CanSpyOn	sv_t	byte	readable		
@@ -4091,7 +4091,7 @@ exe	0x00587c90	ai_GraveyardChatter	sv_t	byte	readable
 exe	0x00587de0	ai_ClearTurnTable	sv_t	byte	readable		
 exe	0x00587e00	ai_HandleItemDrag	sv_t	byte	readable		
 exe	0x00588160	ai_OpenBuildingTooltip	sv_t	byte	readable		
-exe	0x00588310	ai_OpenItemTooltip	sv_t	draft	readable	deep	
+exe	0x00588310	ai_OpenItemTooltip	sv_t	draft	readable	stuck	
 exe	0x00588950	ai_OpenUpgradeTooltip	sv_t	shape	readable		
 exe	0x00588bb0	ai_OpenHelpTooltip	sv_t	byte	readable		
 exe	0x00588c60	ai_OpenCharTooltip	sv_t	byte	readable		
