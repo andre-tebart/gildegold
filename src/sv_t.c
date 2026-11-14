@@ -9847,16 +9847,7 @@ void ai_ClearTurnTable(void)
    a building type (ai_BTypes), an object (ai_Objects: its goods item) or a goods item (ai_Goods); without a user
    record the object id itself, 0xdf .. 0x426 a goods item, 0x427 .. 0x47e a building type. The old view is
    closed and the tooltip of the kind opened (items of the types 0x20 / 0x17 / 0x25 / 0x27 the item tooltip,
-   others the upgrade tooltip); while a view is up it is raised and d2_CutsceneActive is kept set
-   @deep read the whole body against 0x587e00..0x58815f: flow, conditions, stores, calls and the tooltip
-   classification match (branch targets equal, 251 vs 253 instructions). Remaining hunks: slots - sel and
-   ch have swapped frame slots ([esp+0x14] / [esp+0x18]; tried four init orders and the declaration order);
-   order 8 - the same cmp/jne of the item||bkind||sel||ch test reordered by that swap; code 8 at 0x588073 -
-   the AIGOOD.type load ai_Goods[item * 0x41]: ours folds item into the address mode (mov al, [edi + ebx]),
-   the original copies it first (mov eax, edi; add eax, ebx; mov al, [eax]) with ebx = ai_Goods + item<<6
-   the same on both sides; tried ((AIGOOD *)ai_Goods)[item].type, pointer form, *(unsigned char *)(ai_Goods
-   + item*0x41), item*0x40 + item, the expression repeated per compare, and char / int kind: unchanged or
-   worse. Allocation / address-mode choice */
+   others the upgrade tooltip); while a view is up it is raised and d2_CutsceneActive is kept set */
 void ai_HandleItemDrag(void)
 {
     int bkind;
@@ -9864,12 +9855,12 @@ void ai_HandleItemDrag(void)
     char *sel;
     AICHAR *ch;
     void *user;
-    unsigned char kind;
+    AIGOOD *g;
 
     item = 0;
     bkind = 0;
-    sel = 0;
     ch = 0;
+    sel = 0;
     if ((d2_RightHeldObj == -1 && ai_DragObj != -1) ||
         (ai_DragPicked != 0 && dm_L.rhold == 0 && ai_DragWindow != -1)) {
         d2_CloseView(ai_DragWindow);
@@ -9877,7 +9868,7 @@ void ai_HandleItemDrag(void)
         ai_DragWindow = -1;
         ai_DragViewWin = -1;
         ai_DragObj = -1;
-        ch = 0;
+        sel = 0;  /* @original: a dead reset, stored to sel's frame slot (still 0 here) */
         di_Absolute = 1;
         di_SetMousePos(d2_MouseX, d2_MouseY);
     }
@@ -9923,8 +9914,8 @@ void ai_HandleItemDrag(void)
             ai_DragViewWin = -1;
         }
         if (item != 0) {
-            kind = ai_Goods[item * 0x41];  /* AIGOOD.type */
-            if (kind == 0x20 || kind == 0x17 || kind == 0x25 || kind == 0x27)
+            g = &((AIGOOD *)ai_Goods)[item];
+            if (g->type == 0x20 || g->type == 0x17 || g->type == 0x25 || g->type == 0x27)
                 ai_DragWindow = ai_OpenItemTooltip(item);
             else
                 ai_DragWindow = ai_OpenUpgradeTooltip(item);
