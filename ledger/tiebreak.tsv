@@ -3482,7 +3482,7 @@ exe	0x0053a520	main_SettleRound	main	27eee999ce62eac8	no	draft	control=draft p1=
 exe	0x0053b2e0	main_BeginPlayerRound	main	caf16e07fda372b7	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x0053b830	main_CheckCD	main	b9dfec10525311c4	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0053b840	main_CreateStartCouple	main	fb780d00ddb038a9	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
-exe	0x0053bb20	main_GameLoop	main	5a8c9db79773424b	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x0053bb20	main_GameLoop	main	bef08d76d3a4c38b	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x0053c9b0	main_PlayIntroMovies	main	667aadf052332b6b	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0053cb40	main_PlayOutro	main	59e481de2d82ccd7	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0053ccf0	WinMain	main	57d52603b401f9d0	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft

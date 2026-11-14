@@ -4663,25 +4663,30 @@ void main_CreateStartCouple(void)
    the rest of the day and the report main_RoundReport, the night, the office elections (a kind 1 party) and the
    start of the next round main_BeginPlayerRound, until the game is over (ai_GameOver) or 800 rounds; a network
    game ends with the network error / player left message
-   @deep Read whole against 0x53bb20..0x53c9af and rewritten typed: the host path (CD loop, the plug-in DLL
-   ai_NetLibName, its Init on ls_SavePath.net, udp), the joins / loads (LSHEADER startBuilding /
-   startObject through ls_LoadedHeader, AIOBJ), the start money, the viewport, the tutorial message
-   (AIMSG), the round loop with the day change, events, autosave (CMQUICKSAVE request), the half-hour clock
-   steps (AITIME), the office party (G28REC built by an index loop: the original's signed jl end compare),
-   the end messages (the error / left branches in the original's order). Meaning fixes: the player search
-   as ai_PlayerId++ on the 16-bit global (the original's inc cx / word store), the party branch before
-   amt_UpdateOffices, the port pushed as the whole dword (ls_SavePortW / net_ConnectI, @original). 993 vs
-   994 instructions. Left: the frame. The original's is 0x4bc, ours 0x440: the original keeps 0x60 bytes
-   between its clock (G+0x34) and the shared text / message buffer (G+0xa4) that no instruction refers to,
-   and 0x1c more at the top; every stack offset after them is shifted (frame / slots hunks), and the zero
-   register (ebp / ebx = 0 in the original, immediates in ours: code hunks +0x6ca, +0x7e3, +0x914, +0xe30).
-   Tried: the text buffer as 0x100 (frame 0x438 -> 0x440), an unused array (VC6 does not allocate it), the
-   player search as the for / us copy (worse). (references: M8 at +0xbcf: ours refers to ai_LeaveGame
-   (0x6f25a0), the original's field to 0x6f23f8 (ai_GameFlags, ai_GameFlagsB), explained: the M8 at +0xbcf
-   is the test ai_GameOver == 0 && ai_LeaveGame == 0 before ai_GameFlags &= ~0x42: the original compares
-   ai_LeaveGame in memory (cmp [0x6f25a0], ebx) and then loads ai_GameFlags, ours loads ai_LeaveGame into
-   eax first, so the aligned loads name the two globals crosswise; both read the same globals in the same
-   order) */
+   @stuck match-deep 2026-11-14: 91 -> 41 ins kept. headers sample: insensitive. dcp frame gives no view
+   here (esp not followed). Plain-form levers that moved: (1) the goto next past the second
+   ai_CurrentPlayer++ removed (both paths increment once; if (!GameOver && !LeaveGame) ai_GameFlags &=
+   ~0x42; then the one ++): 91 -> 69, fixes the jmp branch hunk and the zero-register code hunks around it;
+   (2) the night loop with its own AITIME (the original's two half-hour loops sit at different slots): 69
+   -> 41, frame 0x440 -> 0x450. Tried without gain: CMQUICKSAVE save out of the union (frame becomes 0x4bc
+   = the original's with one clock, 0x4cc with both, but the original's save writes are inside the shared
+   text buffer at +0xb0, so save is in the union: 119 / 59 ins). Left: frame 0x450 vs 0x4bc - 0x6c bytes
+   below the shared buffer (between the clocks and m) that no instruction of the original touches; every
+   offset above is shifted (frame hunks), the original keeps ebx = 0 as a zero register (cmp edx,ebx / push
+   ebx / mov [cm_DayEndRequest],ebx where ours has immediates: code hunks +0x5cd 18, +0x6eb 19) and the
+   party block's store order (0x53c885 order 12); ck (first loop) and clk in the other slot order (ours clk
+   0x2c / ck 0x34, the original ck 0x24 / clk 0x3c). Next idea: what local of ~0x6c bytes the original had
+   below the buffer (a block-scoped array in a branch VC6 compiled away, or a larger record whose tail is
+   the buffer). (tiebreak: not measured (dcp headers sample main_GameLoop)) prior: Read whole against
+   0x53bb20..0x53c9af and rewritten typed: the host path (CD loop, the plug-in DLL ai_NetLibName, its Init
+   on ls_SavePath.net, udp), the joins / loads (LSHEADER startBuilding / startObject through
+   ls_LoadedHeader, AIOBJ), the start money, the viewport, the tutorial message (AIMSG), the round loop
+   with the day change, events, autosave (CMQUICKSAVE request), the half-hour clock steps (AITIME), the
+   office party (G28REC built by an index loop: the original's signed jl end compare), the end messages
+   (the error / left branches in the original's order). Meaning fixes: the player search as ai_PlayerId++
+   on the 16-bit global (the original's inc cx / word store), the party branch before amt_UpdateOffices,
+   the port pushed as the whole dword (ls_SavePortW / net_ConnectI, @original). 993 vs 994 instructions.
+   The night has a clock of its own (the original's two half-hour loops use two ... */
 void main_GameLoop(int ctl)
 {
     int iv, i, n, w, len;
@@ -4693,6 +4698,7 @@ void main_GameLoop(int ctl)
         CMQUICKSAVE save;
     } m;
     AITIME ck;
+    AITIME night;
     AITIME clk;
     char ap[0x104], ab[0x104];
     G28REC party;
@@ -5037,29 +5043,25 @@ void main_GameLoop(int ctl)
                     }
                 }
                 main_RoundReport();
-                if (ai_GameOver == 0 && ai_LeaveGame == 0) {
+                if (ai_GameOver == 0 && ai_LeaveGame == 0)
                     ai_GameFlags &= ~0x42;
-                    ai_CurrentPlayer++;
-                    goto next;
-                }
             }
             ai_CurrentPlayer++;
         }
-next:
         if (ai_GameOver == 0) {
             if (net_Conn.s == -1) {
                 /* alone: the night to 23:00, then the next day 6:00 */
                 tb_SetFunctionOff((unsigned)&sv_UpdateClock, 1);
-                ck = ai_Time;
-                while (ck.hour < 0x17) {
-                    gm_AddTime(&ck, 0, 0x1e, 0);
-                    w = cm_SendTime(&ck);
+                night = ai_Time;
+                while (night.hour < 0x17) {
+                    gm_AddTime(&night, 0, 0x1e, 0);
+                    w = cm_SendTime(&night);
                     while (cm_GetSlotState(w) == 0)
                         sv_PumpNet();
                 }
-                gm_AddTime(&ck, 0x18, 0, 0);
-                gm_SetTime(&ck, 6, 0, 0);
-                cm_SendTime(&ck);
+                gm_AddTime(&night, 0x18, 0, 0);
+                gm_SetTime(&night, 6, 0, 0);
+                cm_SendTime(&night);
                 tb_SetFunctionOff((unsigned)&sv_UpdateClock, 0);
             }
             if ((cm_NetFlags & 8) != 0 || net_Conn.s == -1) {

@@ -1088,3 +1088,7 @@ mechanisms, each as a generated round over all positions / subsets:
   statement-order fix above it (main_EndRound's 0x4c note: msg.time / msg.flags last) had looked like a loss
   (74 -> 140 ins, every scratch register behind it rotated) until this one was fixed too (-> 38). Judge an order
   round's best only after the rotation behind it is in sync; keep the candidate that fixes its own block.
+- **A `goto` past a duplicated increment** (main_GameLoop: `if (!over && !left) { flags &= ~0x42; player++; goto
+  next; } } player++; } next:`) is one plain increment after a plain if: both paths run `player++` once. Removing
+  it fixed the jmp branch hunk and the zero-register hunks around it (91 -> 69). Two loops over a clock that sit
+  at different stack slots in the original were two locals (`AITIME night` for the second loop: 69 -> 41).
