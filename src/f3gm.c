@@ -30,8 +30,6 @@
    gfx.h hmt.h hst.h rt.h d3_pose.h mission.h; held by own declarations that differ from the owner's:
    gm_MinutesBetween, gm_ClockSeason, gm_CompareTime; calls whose argument count differs from the
    definition (read the original's pushes): gm_Liking.
-   Open: data: gm_KindObjCount (0x76fdc4) is defined '= 0' as D5 asks, but gm_BuildKindObjects is byte-identical
-   only with a tentative definition (or none in this TU): its definition form / owner is unsettled.
    Open: gm_AssignBuilding is defined with unsigned short master / unsigned own, but its callers' pushes (f3init's
    init caller, gm_TakeOverCharacter) zero-extend one word for both: int parameters; this unit calls it through the
    cast gm_AssignBuildingI until the definition and headers are settled.
@@ -3817,21 +3815,7 @@ int gm_AddNegative(int id, int proto, int n)
         gm_RemoveObject(list, proto);
     return 1;
 }
-/* 0x500b90, looks the kind of the building b up in gm_BuildingItemGroups (37 records: a kind byte and ten object prototypes) and collects its non-zero prototypes into the list gm_KindObjs (count gm_KindObjCount); 1 when the kind is not there (or no tables), else 0
-   @stuck the short-global word-register data question (as d2_ScreenH, awaiting a decision): an extern
-   probe 'extern unsigned short probeCnt' in place of gm_KindObjCount is byte at once (dcp try), so VC6
-   keeps the count in dx only when the unit does not define the global; the '= 0' definition in f3gm.c that
-   D5 asks for makes it read-modify-write memory. Counting in a local with stores before / after: 9 ins
-   (the zero store and dx sharing differ). Decision needed: the owner / definition form of gm_KindObjCount
-   (0x76fdc4), not this function's text (tiebreak: insensitive under the four probes only, best draft)
-   prior: the statements match the original (the group lookup, the null test and the first 23 instructions
-   are equal); the one remaining hunk at +0x4b is VC6 keeping the global gm_KindObjCount in dx through the
-   copy loop (xor dx,dx / mov [cnt],dx / mov di,dx / inc dx / store at exit) where ours reads and
-   increments it in memory. Verified: with the definition of gm_KindObjCount removed from f3gm.c, or
-   written as a tentative definition 'unsigned short gm_KindObjCount;', the function is byte-identical (0
-   ins / 0 bytes); the initialised definition '= 0' that D5 requires blocks the promotion. So the remaining
-   difference is the global's definition form / owner (D5 vs the bytes), not this function's statements;
-   the branch targets differ only by the shorter loop body. */
+/* 0x500b90, looks the kind of the building b up in gm_BuildingItemGroups (37 records: a kind byte and ten object prototypes) and collects its non-zero prototypes into the list gm_KindObjs (count gm_KindObjCount); 1 when the kind is not there (or no tables), else 0 */
 
 int gm_BuildKindObjects(char *b)
 {
@@ -9791,7 +9775,9 @@ int gm_TakeableCount(char *c, int proto, int n)
 }
 int ai_Difficulty = 0;  /* 0x6f23fc */
 int gm_AllowAll = 0;  /* 0x6f2448 */
-unsigned short gm_KindObjCount = 0;  /* 0x76fdc4 */
+unsigned short gm_KindObjCount;  /* 0x76fdc4, common: tentative as in the original (the common block past LIBC's
+                                    .bss; gm_BuildKindObjects keeps it in a word register only when VC6 does not
+                                    know its place) */
 int gm_TechTreeTime = 0;  /* 0x76fdc8 */
 /* ---- layout 2026-10-23: the standing / family helpers 0x50b010 .. 0x50d0b0 (ROUGH drafts) ---- */
 char gm_TreeNodes[3328] = {0};  /* 0x76fde0, the family records ( */
