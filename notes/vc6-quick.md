@@ -1468,3 +1468,7 @@ mechanisms, each as a generated round over all positions / subsets:
   `return`; write `break` in each exit and one `return` after the loop (gm_BuildNext 44 -> 10). A pointer local for a
   record the original materializes (`bt = GM_BTYPE(..)`) folded into the first load: assign the other init (`n = 0`)
   before it (gm_ListObjectsAfter byte).
+- **Check same-unit callees first**: VC6 keeps values in edx / ecx across calls to functions defined above that
+  leave them alone, so a shape callee with another register set moves its callers' allocation. gm_PlayerRecord to
+  byte took gm_TakeOverCharacter 45 -> 12 ins (then byte). A `short` loop counter gives the original's separate
+  `dec; jne` countdown where an int compares the derived offset.

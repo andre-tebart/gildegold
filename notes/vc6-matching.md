@@ -3324,3 +3324,31 @@ differing instructions. The same shape made the character loop of 0x512f30 pick 
 - Not done: the other ~2000 `= 0` definitions above 0x6f3300 are commons in the original too; converting them is
   codegen-neutral except where a function's code depends on knowing the placement (the short-global widening
   above). Convert one when a stuck function shows that symptom.
+
+## match-deep 2026-11-14, fourth f3gm session (gm_TakeOverCharacter, gm_FindHome, gm_BuildingBalance, gm_ListWorkers, gm_InitBuildingTables, gm_CharNameRecord)
+- **A caller's allocation can be decided by a callee that is not byte yet.** VC6 knows which scratch registers a
+  function defined earlier in the unit leaves alone, and lets a value live in edx / ecx across a call to it.
+  gm_TakeOverCharacter (45 ins after its own levers) had the ca->id temp in edx across gm_PlayerRecord, where the
+  original's gm_PlayerRecord clobbers edx; bringing the callee to byte (its slot chosen through an if / else, `slot
+  = -1` on the other path, and tested at the join: the original's `test eax,eax` after `and eax,0xf`) took the
+  caller 45 -> 12, then a store-order round -> byte. Before working a deep item's registers, `dcp grade` every
+  same-unit callee above it: a shape callee with a different register set is the first lever.
+- **A loop counter compared through the derived offset (`cmp edi,0xa900; jb`) where the original keeps a
+  separate `mov ebx,0x100 .. dec ebx; jne` countdown**: the counter was a `short`; VC6 does no linear-function
+  test replacement through the narrower IV and counts the trip down instead (gm_TakeOverCharacter). int / long /
+  unsigned and every bound spelling give the offset compare.
+- **Ranges `if (lo < n && n < hi) return k - n;`** compiled as `test/jle` + `cmp hi; jge`; the original's `cmp
+  lo+1; jl` + `cmp hi-1; jg` is `n >= lo + 1 && n <= hi - 1` (gm_TitlesLeft, byte in one variant).
+- **A value the original keeps in a register although an earlier call wrote it** (gm_FindHome: the pick's
+  capacity read from the record ord_GetKindRecord filled, kept in ebx across the loop's calls): the source
+  copied it into a scalar (`cap = rec[0]` after the query, `cap = kind[0]` at each pick); the array element
+  itself stays in memory whatever the spelling (struct / short[4] / struct copy = one code). 90 -> 67, stuck on
+  the remaining rotation.
+- **A hand-walked record pointer (`p += 0x24d`, `q` walks, a slots pointer) in a table builder**: index loops over
+  `GM_BTYPE(i)` with one `bt` pointer and kind locals (VC6 makes both IVs and the objs pointer, `lea ebx,[edi+0x23]
+  .. add ebx,2`, itself): gm_InitBuildingTables 119 -> 76; the class run `v = base + cnt * run / len` was `base +=
+  ..` (the original adds into base's register): -> 66.
+- Allocation races left open this session (each with c2trace priorities in its @stuck tag): gm_BuildingBalance
+  (cost spilled into out's parameter slot after the walk), gm_ListWorkers (k outranks p3), gm_InitBuildingTables
+  (len takes ebx), gm_CharNameRecord (an address constant used twice takes ebx before the byte k; int k removes
+  the frame but contradicts the original's byte loads).
