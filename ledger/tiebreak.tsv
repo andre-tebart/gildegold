@@ -3438,7 +3438,7 @@ exe	0x00531b50	main_CreateMutex	main	4443084d8b75a53e	no	byte	control=byte p1=by
 exe	0x00531b80	main_SetScreenSaver	main	cd6f631adeb2d4ac	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00531ba0	main_Init	main	5bd4cc0e73eaacb9	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00531c20	main_ShutdownEngine	main	809548ac7a2a3779	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x00531c50	main_OpenScreen	main	82b3e3966231579e	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x00531c50	main_OpenScreen	main	82b3e3966231579e	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x00532160	main_OpenEngine	main	6b1ea5d6d22691b1	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x005324f0	main_CreateWindow	main	e71c7b0efc605d69	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x00532700	main_StartCityGame	main	62d798df77938acd	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
