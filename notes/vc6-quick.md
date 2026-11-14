@@ -1140,3 +1140,19 @@ mechanisms, each as a generated round over all positions / subsets:
   folded to `xor eax,eax`). The two gotos stay as @original: no goto-free form reached byte.
 - The c2dag proxy's graph dump faulted on a node of that function and took the compiler down (C1001): the dump
   is guarded now and prints `(dump fault: block skipped)`.
+- **main_EndRound byte (38 ins, stuck): three levers, each needed.** (1) NO local for a value that the original
+  keeps in a callee-saved register across the next call as a 16-bit move (`call util_Random; mov bx,ax; push
+  esi; and ebx,0xffff; call gm_BuildingLevel; cmp eax,ebx`): written inline, `if (gm_BuildingLevel(b) <
+  util_RandomU(0x5a))`, the first call's result is an expression temporary. Temporaries are no allocation
+  candidates: they get what the global allocator left over (here ebx), so value and weight take edi / ebp as in
+  the original. Any named local (`lim`, every type and scope) is a candidate of high priority and takes edi.
+  The 16-bit move needs the 16-bit prototype (`util_RandomU`); `(unsigned short)util_Random()` gives `mov
+  ebx,eax`. (2) WHICH of the two calls of one comparison runs first is decided by the operands' weights and, on
+  a tie, by an internal key that follows where a variable is first referenced in the function: `AIBLD *b = 0;`
+  at the declaration (no code) made VC6 call util_Random first; without it gm_BuildingLevel came first.
+  Operand sides and `<` / `>` only swap the cmp. (3) Two stores scheduled around a load in an order no statement
+  order gives (`mov eax,[esi+1]; mov [msg.arg],eax` before `mov edx,[tbl]; mov [msg.to],edx`): every `AIMSG msg`
+  declared in the block that builds it (nine blocks), not once at function scope. The scheduler orders a
+  pointer load after every earlier store to an address-taken local whose address already escaped to a call;
+  a fresh block local has not escaped yet. The frame stays the same (disjoint block locals share the slot).
+  This is the 2026-11-10 block-scope lever again: sweep it (blockscope) whenever a store / load order resists.

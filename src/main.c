@@ -3009,6 +3009,7 @@ int main_PreloadSound(char *f)
         memset(buf, 0, 0x100);
         fgets(buf, 0x100, fp);
         if (strstr(buf, "//") == 0 && (inc = strstr(buf, "#include")) != 0) {
+#define util_RandomU ((unsigned short (*)(int))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original this unit's callers read the 16-bit result (byte-matched ch_RandomNear 0x405160, ai_CalcMeisterBank 0x4836a0, cm_FightLoop 0x4d88c0 move it as a word / movzx) */
             q = strchr(inc, 0x22);
             if (q == 0)
                 return 0;
@@ -3278,33 +3279,7 @@ extern unsigned char main_GameEnded;  /* 0x6f25ad, sv.c */
 
 /* 0x5384e0, the round / day change of the player: fades out (BLACK), advances the clock copy (+1 when networked (ai_GameFlags bit 2) after the first round), queues the announcement messages of the kinds 0x66 / 0x70 / 0x68 / 0x85 / 0x7c / 0x93 / 0x84 /
    0x4c when none is pending (he_FindEvent), shows the balance page of the player (texts 0x1ef9 .. 0x1eff, 0x2051: the AP events of the player with their incomes / costs and the goods of gm_CollectCarried), takes the AP event costs, renovates the run-down
-   buildings of the masters this machine runs (kind 0x1c message "renovieren") and spreads each character's goods value over its buildings as their work load (AIBLD.budget), then beams the figures of the characters home ("Beamed home")
-   @stuck match-deep 2026-11-14: 74 -> 38 ins kept. headers sample: insensitive. Levers that moved: the
-   0x4c note's MAIN_NOTE written out with msg.time / msg.flags last (1260+1259 store-order permutations;
-   best p0235641: type, to, fromId = to, nIds, reserved14, time, flags), and the cart condition as (ch =
-   &ai_CharsT[b->owner]) != 0 && ai_CanAct(ch) (the original computes the address in a temp of its own, lea
-   edx / lea eax,[edx*4+X]; this fixed the scratch rotation of everything behind it: 140 -> 40 together
-   with the note order). Left: (1) callee-saved registers in the k loop: --alloc lists lim prio 128 -> edi,
-   value -304 -> ebp, weight -320 -> ebx (fade -11 ebp, season -53 ebx live only before the loop); the
-   original has lim ebx, value edi, weight ebp, i.e. the handout edi, ebp, ebx in priority order would need
-   value and weight to rank ABOVE lim. lim spellings (unsigned short / short / int / unsigned, block or
-   function scope, (unsigned short (*)(int)) cast call, no local: the no-local form calls gm_BuildingLevel
-   first, the original calls util_Random first and keeps it in bx across the call): none moves it; value /
-   weight scope (block / top): = control; flip.py want 'mov bx, ax' (1111 mutants) and 'and ebx, 65535'
-   (1095): 0 flips. Hunks: 0x538ffd xor ebx / lea ebp vs xor ebp / lea edi and the add ebx,2/4/8 (weight),
-   0x539100 mov edi,eax / and edi vs mov bx,ax / and ebx, 0x539246 and the three building budget splits
-   ebp->edi ebx->ebp. (2) 0x5391ac renovation note: the original stores msg.arg[0] = b->id before msg.to
-   (load order of ai_CharInts vs [esi+1]); 719 permutations of the six msg stores: none. (tiebreak: not
-   measured (dcp headers sample main_EndRound)) prior: Read the whole function against dcp disasm / asmdiff
-   and reconstructed it: the AP event balance lines (HEAPEVENT table 0x758ca0, the income / cost branch
-   structure), the carried goods list at MAINCARRY+4 (was misread at +0x2e), the time-stamped AIMSG notes
-   (to before time), the 0x4c note, the cart visibility pair of calls, the renovation (32.0 > cost, budget
-   * 0.75 > cost), the building budget split with >= caps through one store, unsigned short id compares,
-   the Beamed home strcpy, snd_FadeMusic(1.0f); block-scoped value/cost/budget and x/y/place give the
-   original's 0x3b8 frame. Same instruction count (1226 / 1226). The 0x4c note written out (time and flags
-   last) and the cart owner as a pointer local tested for null (the original tests the address) fixed its
-   hunks (74 -> 38 ins). Left is 0x539101 the util_Random(0x5a) limit in edi (mov edi, eax; and edi,
-   0xffff) where the original keeps ... */
+   buildings of the masters this machine runs (kind 0x1c message "renovieren") and spreads each character's goods value over its buildings as their work load (AIBLD.budget), then beams the figures of the characters home ("Beamed home") */
 void main_EndRound(void)
 {
     MAINCARRY carry;   /* what gm_CollectCarried collects (the original's buffer sits at +0x1a8 of a 0x3b8 frame) */
@@ -3313,13 +3288,12 @@ void main_EndRound(void)
         int tick;
         char pad[0x74];
     } sysmsg;
-    AIMSG msg;
     AICHAR *ch;
     short rid;
     AITIME clk;
     D2FADE *fade;
     AIFIN *fin;
-    AIBLD *b;
+    AIBLD *b = 0;
     AIOBJ *obj;
     CHARACTER *fig;
     CHACTION *act;
@@ -3368,31 +3342,45 @@ void main_EndRound(void)
     tb_SetFunctionOff((int)sv_UpdateClock, 1);
     if ((ai_GameFlags & 0x80) == 0) {
         if (he_FindEvent(1, 0, 0x66) == 0) {
+            AIMSG msg;
+
             MAIN_NOTE(msg, 0x66);
             cm_SendLongMessage((char *)&msg);
         }
         if (he_FindEvent(1, 0, 0x70) == 0) {
+            AIMSG msg;
+
             MAIN_NOTE(msg, 0x70);
             cm_SendLongMessage((char *)&msg);
         }
         if (he_FindEvent(1, 0, 0x68) == 0) {
+            AIMSG msg;
+
             MAIN_NOTE(msg, 0x68);
             cm_SendLongMessage((char *)&msg);
         }
     }
     if (cm_TutorialActive != 0 && he_FindEvent(1, 0, 0x85) == 0) {
+        AIMSG msg;
+
         MAIN_NOTE(msg, 0x85);
         cm_SendLongMessage((char *)&msg);
     }
     if (he_FindEvent(1, 0, 0x7c) == 0) {
+        AIMSG msg;
+
         MAIN_NOTE(msg, 0x7c);
         cm_SendLongMessage((char *)&msg);
     }
     if (he_FindEvent(1, 0, 0x93) == 0) {
+        AIMSG msg;
+
         MAIN_NOTE(msg, 0x93);
         cm_SendLongMessage((char *)&msg);
     }
     if (he_FindEvent(1, 0, 0x84) == 0 && ai_GamePanel.byte[3] != 0) {
+        AIMSG msg;
+
         MAIN_NOTE(msg, 0x84);
         cm_SendLongMessage((char *)&msg);
     }
@@ -3475,6 +3463,8 @@ void main_EndRound(void)
     if (sv_PanelForm != -1)
         d2_SetViewEnabled(sv_PanelForm, 1);
     if (ai_MissionMode != 5 && ai_MissionMode > -1 && he_FindEvent(2, 0, 0x4c, 2, MAIN_PLAYER) == 0) {
+        AIMSG msg;
+
         memset(&msg, 0, sizeof(msg));
         msg.type = 0x4c;
         msg.to = ai_CharsT[MAIN_PLAYER].netId;
@@ -3517,13 +3507,14 @@ void main_EndRound(void)
                         weight += 8;
                 }
                 if (ai_IsLocalMaster(&ai_CharsT[k]) != 0 || ai_CharsT[k].kind == 1) {
-                    unsigned short lim = (unsigned short)util_Random(0x5a);
-                    if (gm_BuildingLevel((char *)b) < lim) {
+                    if (gm_BuildingLevel((char *)b) < util_RandomU(0x5a)) {
                         cost = (float)gm_EquipmentValue((unsigned char *)b, 100) * 0.005f;
                         if (32.0f > cost)
                             cost = 32.0f;
                         budget = (float)value;
                         if (budget * 0.75f > cost) {
+                            AIMSG msg;
+
                             memset(&msg, 0, sizeof(msg));
                             msg.type = 0x1c;
                             msg.fromId = -1;
