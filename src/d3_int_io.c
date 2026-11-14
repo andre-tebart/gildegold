@@ -694,21 +694,7 @@ int d3io_FindStock(char *name)
     return 0;
 }
 /* 0x44c610, builds surf from the stock object `name`: vertices and triangles, vertex colours from the colour
-   key, the texture set; counts the surface (unless it is the shadow surface 3)
-   @stuck earlier: double assignment tri->tex = tex = ... (identical); int ti = tri->src->tex before the
-   test, ti + base, D3TEXTURE * local with casts, &((D3IOTEX *)d3_Textures)[i], tex += i, (int)d3_Textures
-   + (i << 7) / * 0x80 (all identical or worse). Readability done (D3IOCOL union, col40/col44 typed,
-   D3IO_214 -> meshMode). Deep session 3 (variants.py, all identical unless noted): tex in block scope; tex
-   declared first / last; tri->tex = sum then tex = tri->tex (+46 ins); else branch first (if tex < 0
-   tri->tex = 0; else ...: size 949 but adds jge/jmp hunks); &((D3IOTEX *)d3_Textures)[idx]; tex = 0 also
-   in the else; sum before the test (worse); store tri->tex at the end of the block; tri->f24 = 0 moved
-   into the arms (worse); colorkey != 0xff (worse); an unsigned char ck local for tex->colorkey (identical;
-   int ck worse); D3IOVERT *v at function scope; loop as for (i = 0, tri = s->tris ..), tri = &s->tris[i]
-   (worse), tri++ at the body end (worse). Left, the only hunk: 0x44c737 ours 'add ecx, edx / mov dl, 0xff
-   / mov esi, ecx' vs the original 'lea esi, [ecx + edx] / mov dl, 0xff' - VC6 coalesces the sum temp into
-   the dead index register (ecx) and copies it to tex (esi); the original targets esi directly. Pure
-   allocation (coalescing) choice; no source lever found. (tiebreak: insensitive under the four probes
-   only, best draft) */
+   key, the texture set; counts the surface (unless it is the shadow surface 3) */
 
 void d3io_AttachStock(D3OBJECT *obj, D3SURF *surf, char *name)
 {
@@ -752,7 +738,7 @@ void d3io_AttachStock(D3OBJECT *obj, D3SURF *surf, char *name)
             tri->f24 = 0;
             if (tri->src->tex >= 0) {
                 tex = (D3IOTEX *)d3_Textures + tri->src->tex;
-                tri->tex = tex;
+                tri->tex = (D3IOTEX *)d3_Textures + tri->src->tex;
                 if (tex->colorkey < 0xff || (tex->flags & 3)) {
                     col.a = tex->colorkey;
                     if (tex->flags & 1) {

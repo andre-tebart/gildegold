@@ -927,3 +927,12 @@ mechanisms, each as a generated round over all positions / subsets:
   cross-jumped copies of that code; write the code out at each exit instead of `goto` to one copy. (2) Copies
   that refuse to merge because one scratch register differs: count the temps between them (a local that got a
   register is no temp, the direct global read is).
+- **`add r,edx; .. mov esi,r` where the original computes a pointer local with one `lea esi,[ecx+edx]`** (the sum
+  lands in the index temp's register and is copied to the local): the local's value was also stored to a field
+  right after (`tex = base + idx; tri->tex = tex;`), and VC6 forwards the sum to the store through the index
+  temp's web (`c2dag.py --alloc`: the temp has `use def use def use` in the block, the local one def after it).
+  Write the expression out at the store too: `tex = base + idx; tri->tex = base + idx;`. The CSE'd second copy
+  is its own temp and the local gets the lea. The other order (`tri->tex = ..; tex = ..;`), `tri->tex = tex =
+  ..`, `tex = tri->tex` and every spelling of the sum itself were no lever; flip.py's 2363 single-statement
+  mutants (file scope) had no hit either, because it never duplicates an expression into a neighbouring
+  statement (d3io_AttachStock 3 ins -> byte).
