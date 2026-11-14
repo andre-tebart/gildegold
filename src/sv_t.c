@@ -946,20 +946,12 @@ void unk_SetEndGameGate(void)
    run's goal (or the second text window's text2Goal) moves the states 4 / 9 / 0xa on (phase 1: next 5 or back to 4;
    phase 3: 4 -> 9, 9 -> 0xa or back to 4, 0xa -> 0xb); for the other modes the goal event in the states 4 / 0xa
    switches to goalState (c == 0) or 0xb, and a timed goal (3) to goalState once tailTime has passed. Counts the
-   handled events in campaignSteps
-   @deep read in full against the original (0x576040..0x57633a) and rewritten on the typed TUTSTATE /
-   TUTRUN: the mode 2 / other split, the stepHook calls, the timed goal, the phase 1 / phase 3 transitions
-   with the shared 'started' (stepAt = clock) / 'count' tails the original jumps to (0x57631d / 0x576330),
-   the volatile clock reads; 238/238 instructions, the rest regs / order. Left: one allocation hunk in
-   phase 1, c == 0: ours keeps the record pointer in edx and the clock in ecx and reloads the pointer into
-   eax before 'test ebx, ebx' ('- mov edx,[ai_Tutorial]; mov ecx,[clock]; mov [edx+0xc],ecx; mov
-   eax,[ai_Tutorial]'), the original keeps it in eax across the store ('+ mov eax,[ai_Tutorial]; mov
-   edx,[clock]; test ebx,ebx; mov [eax+0xc],edx') and so its b == 0 jump lands on the reload before the
-   shared tail (je +0x1ca vs ours +0x1cf) */
+   handled events in campaignSteps */
 
 void ai_CampaignStep(int a, int b, int c, int d)
 {
     int p[4];
+    int (*hook)(int *);
 
     if (!ai_TutorialOn)
         return;
@@ -972,8 +964,9 @@ void ai_CampaignStep(int a, int b, int c, int d)
     if (ai_Tutorial->run->mode != 2) {
         if (ai_Tutorial->next != 4 && ai_Tutorial->next != 0xa)
             return;
-        if (ai_Tutorial->run->stepHook) {
-            ai_Tutorial->run->stepHook(p);
+        hook = ai_Tutorial->run->stepHook;
+        if (hook) {
+            hook(p);
             ai_Tutorial->campaignSteps++;
             return;
         }
@@ -986,21 +979,22 @@ void ai_CampaignStep(int a, int b, int c, int d)
             }
             return;
         }
-        if (ai_Tutorial->run->goal != a)
-            goto count;
-        if (c == 0) {
-            ai_Tutorial->state = ai_Tutorial->run->goalState;
+        if (ai_Tutorial->run->goal == a) {
+            if (c == 0)
+                ai_Tutorial->state = ai_Tutorial->run->goalState;
+            else
+                ai_Tutorial->state = 0xb;
             ai_Tutorial->next = ai_Tutorial->state;
-        } else {
-            ai_Tutorial->state = 0xb;
-            ai_Tutorial->next = ai_Tutorial->state;
+            ai_Tutorial->stepAt = d3_Time;
         }
-        goto started;
+        ai_Tutorial->campaignSteps++;
+        return;
     }
     if (ai_Tutorial->next != 4 && ai_Tutorial->next != 9 && ai_Tutorial->next != 0xa)
         return;
-    if (ai_Tutorial->run->stepHook) {
-        ai_Tutorial->run->stepHook(p);
+    hook = ai_Tutorial->run->stepHook;
+    if (hook) {
+        hook(p);
         return;
     }
     if (ai_Tutorial->phase == 1) {
@@ -1045,20 +1039,16 @@ void ai_CampaignStep(int a, int b, int c, int d)
             if (ai_Tutorial->run->goal == a && c == 1) {
                 ai_Tutorial->state = 0xb;
                 ai_Tutorial->next = 0xb;
-                goto started;
+                ai_Tutorial->stepAt = d3_Time;
             }
         } else if (ai_Tutorial->next == 4) {
             if (ai_Tutorial->run->goal == a && c == 0) {
                 ai_Tutorial->state = 9;
                 ai_Tutorial->next = 9;
-                goto started;
+                ai_Tutorial->stepAt = d3_Time;
             }
         }
     }
-    goto count;
-started:
-    ai_Tutorial->stepAt = d3_Time;
-count:
     ai_Tutorial->campaignSteps++;
 }
 /* 0x576340, asks the current run record's query callback: hands it the four arguments as an int[4] and returns

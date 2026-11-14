@@ -3933,7 +3933,7 @@ exe	0x00575710	he_SetMessageKindFiltered	he	350d57009bc7af27	no	byte	control=byt
 exe	0x00575860	ai_TutorialTick	sv_t	832379299c247143	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00576020	unk_ClearEndGameGate	sv_t	d20c6f0ee85ebad8	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00576030	unk_SetEndGameGate	sv_t	a8544e27fdac28cb	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x00576040	ai_CampaignStep	sv_t	b331293c1c167028	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x00576040	ai_CampaignStep	sv_t	b331293c1c167028	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x00576340	ai_ScriptQuery	sv_t	7e2e63c6c23531ce	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x005763c0	ai_RunAllows	sv_t	5849de5908aaf9c3	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00576410	ai_RunAllowsContact	sv_t	1dc78e75e0923f9a	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
