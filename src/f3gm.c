@@ -5432,18 +5432,24 @@ int gm_BuildingJob();                     /* 0x5048e0 */
 int gm_TitleGroup(int n);                /* 0x504ad0 */
 
 /* 0x503530, the permission bits of the character p in the building b (or, without a building, for the object o or the character c): what he may do there, by the class byte of the building's type record (a case per class: the master (+0x25) and the owner (+0x27) compared with p, the six job bytes at +0x223 of the type record searched for the job of p in the type (gm_TitleJob); class 0x1d is ai_PermissionBits1d). Bits seen: 0x1 enter, 0x800 led by p (c's building is owned by p), 0x4000 / 0x5000 / 0x2200 granted per object and job; the exact meaning of each bit is open. With gm_AllowAll everything is allowed (-1, -2 for the classes 3 / 0x21); a building without owner (0xffff) allows nothing
-   @deep Read whole against the original 0x503530..0x503bbf and rewritten (ORDBLD / ORDOBJ / ORDCHAR typed;
-   switch on *btype in the original's case order 0x21, 2/0x1e, 9, 4, 5.., 0x17.., 0xb.., 0x10, 1/3/f, 0x13,
-   6, 0x1c->10, 0x1b/0x1d, 7; the job scans as index loops btype[0x223 + i] (the original's lea
-   ecx,[edx+esi] test is VC6's replacement of i); job2 (+0x169) for the 0x17 .. 0x1a classes; the char
-   pointer ch for 1/3/f, 6, 0x1c). Tables equal, ours=491=original's, every instruction matched: the 2
-   remaining hunks are two blocks placed elsewhere, nothing else. (1) the join block 'mov ebx,[esp+0x1c]' +
-   the object test (0x5039ee..0x503a2f, 17 ins) is the allocator's reload of b (ebx is the switch index):
-   VC6 places it after the 0x17 case (ours +0x289) where the original has it after case 10 (+0x4be). (2)
-   the cross-jumped tail 'or ebp,0x2200; jmp' shared by the cases 9/4/0x13/7: the original keeps the copy
-   of 0x13 (+0x427), ours that of case 7 (its last user). Tried: case 7 as a goto block after the join (38 ins,
-   the same two placements move elsewhere), the 0x17 test as an else-if chain (60), cls as a char local
-   (45). */
+   @stuck match-deep 2026-11-14: draft 42 -> shape 38 ins. Fixed: no goto fin (the obj == 0 exits of the
+   cases 0xb.., 1/3/f, 7 and the no-building branch written as obj != 0 conditions; VC6 threads the known
+   obj test, shape, all four needed), the job scans as plain for loops (= the do-while code). Left: the
+   same two placements as before: the split reload of b (mov ebx,[esp+0x1c] + the object test) laid out
+   after case 0x17 (the original: after case 10), and the cross-jumped or ebp,0x2200 tail kept in case 7
+   (the original: case 0x13). Tried: for loops with the zero test in the condition = control, case 0x1c as
+   its own v = 1 body (no fall-through) = control; flip.py (want case 10 falling into the b reload): 0 of
+   804 mutants. headers sample not run (the tie-break line says four probes insensitive). (tiebreak: not
+   measured (dcp headers sample gm_PermissionBits)) prior: Read whole against the original
+   0x503530..0x503bbf and rewritten (ORDBLD / ORDOBJ / ORDCHAR typed; switch on *btype in the original's
+   case order 0x21, 2/0x1e, 9, 4, 5.., 0x17.., 0xb.., 0x10, 1/3/f, 0x13, 6, 0x1c->10, 0x1b/0x1d, 7; the job
+   scans as index loops btype[0x223 + i] (the original's lea ecx,[edx+esi] test is VC6's replacement of i);
+   job2 (+0x169) for the 0x17 .. 0x1a classes; the char pointer ch for 1/3/f, 6, 0x1c). Tables equal,
+   ours=491=original's, every instruction matched: the 2 remaining hunks are two blocks placed elsewhere,
+   nothing else. (1) the join block 'mov ebx,[esp+0x1c]' + the object test (0x5039ee..0x503a2f, 17 ins) is
+   the allocator's reload of b (ebx is the switch index): VC6 places it after the 0x17 case (ours +0x289)
+   where the original has it after case 10 (+0x4be). (2) the cross-jumped tail 'or ebp,0x2200; jmp' shared
+   by the cases 9/4/0x13/7: the original keeps... */
 unsigned gm_PermissionBits(unsigned p, unsigned char *b, unsigned short *o, int c)
 {
     ORDBLD *bld = (ORDBLD *)b;
@@ -5483,16 +5489,14 @@ unsigned gm_PermissionBits(unsigned p, unsigned char *b, unsigned short *o, int 
                 v = 0x403d;
             if (bld->owner == p) {
                 v |= 0x54e1;
-                i = 0;
-                do {
+                for (i = 0; i < 6; i++) {
                     if (btype[0x223 + i] == 0)
                         break;
                     if (job == btype[0x223 + i]) {
                         v |= 0x2200;
                         break;
                     }
-                    i++;
-                } while (i < 6);
+                }
             }
             break;
         case 4:
@@ -5500,16 +5504,14 @@ unsigned gm_PermissionBits(unsigned p, unsigned char *b, unsigned short *o, int 
                 v = 0x50bd;
             if (bld->owner == p) {
                 v |= 0x44e1;
-                i = 0;
-                do {
+                for (i = 0; i < 6; i++) {
                     if (btype[0x223 + i] == 0)
                         break;
                     if (job == btype[0x223 + i]) {
                         v |= 0x2200;
                         break;
                     }
-                    i++;
-                } while (i < 6);
+                }
             }
             break;
         case 5:
@@ -5525,16 +5527,14 @@ unsigned gm_PermissionBits(unsigned p, unsigned char *b, unsigned short *o, int 
                 v = 0x10bd;
             if (bld->owner == p) {
                 v |= 0x460;
-                i = 0;
-                do {
+                for (i = 0; i < 6; i++) {
                     if (btype[0x223 + i] == 0)
                         break;
                     if (job == btype[0x223 + i]) {
                         v |= 0x2200;
                         break;
                     }
-                    i++;
-                } while (i < 6);
+                }
                 v |= 0x4000;
             }
             break;
@@ -5558,24 +5558,20 @@ unsigned gm_PermissionBits(unsigned p, unsigned char *b, unsigned short *o, int 
                 v |= 0x403c;
             if (bld->owner == p)
                 v |= 0x5670;
-            if (obj == 0)
-                goto fin;
-            if (obj->type == 0xfd)
+            if (obj != 0 && obj->type == 0xfd)
                 v |= 0x4001;
             break;
         case 0x10:
             if (bld->owner == p) {
                 v = 0x54e1;
-                i = 0;
-                do {
+                for (i = 0; i < 6; i++) {
                     if (btype[0x223 + i] == 0)
                         break;
                     if (job == btype[0x223 + i]) {
                         v = 0x76e1;
                         break;
                     }
-                    i++;
-                } while (i < 6);
+                }
             }
             if (bld->masterId == p)
                 v |= 0x3c;
@@ -5596,9 +5592,7 @@ unsigned gm_PermissionBits(unsigned p, unsigned char *b, unsigned short *o, int 
                     v |= 0x30;
             } else if (prof == 0xf)
                 v |= 0x30;
-            if (obj == 0)
-                goto fin;
-            if (obj->type == 0x114 && prof == 0)
+            if (obj != 0 && obj->type == 0x114 && prof == 0)
                 v &= 0xffffbffe;
             break;
         case 0x13:
@@ -5606,16 +5600,14 @@ unsigned gm_PermissionBits(unsigned p, unsigned char *b, unsigned short *o, int 
                 v = 0x50bd;
             if (bld->owner == p) {
                 v |= 0x44e1;
-                i = 0;
-                do {
+                for (i = 0; i < 6; i++) {
                     if (btype[0x223 + i] == 0)
                         break;
                     if (job == btype[0x223 + i]) {
                         v |= 0x2200;
                         break;
                     }
-                    i++;
-                } while (i < 6);
+                }
             }
             break;
         case 6:
@@ -5646,30 +5638,22 @@ unsigned gm_PermissionBits(unsigned p, unsigned char *b, unsigned short *o, int 
                 v |= 0x103c;
             if (bld->owner == p) {
                 v |= 0x4460;
-                i = 0;
-                do {
+                for (i = 0; i < 6; i++) {
                     if (btype[0x223 + i] == 0)
                         break;
                     if (job == btype[0x223 + i]) {
                         v |= 0x2200;
                         break;
                     }
-                    i++;
-                } while (i < 6);
-            } else {
-                if (obj == 0)
-                    goto fin;
-                if (obj->type != 0xf3)
-                    v |= 0x5000;
-            }
+                }
+            } else if (obj != 0 && obj->type != 0xf3)
+                v |= 0x5000;
             break;
         }
     } else if (c != 0) {
         if (((ORDCHAR *)c)->bld != 0 && ((ORDCHAR *)c)->bld->owner == p)
             v = 0x800;
-    } else {
-        if (obj == 0)
-            goto fin;
+    } else if (obj != 0) {
         ot = obj->type;
         if (ai_Goods[ot * 0x41] == 6) {
             if (ot >= 0x91 && ot <= 0x97)
@@ -5689,7 +5673,6 @@ unsigned gm_PermissionBits(unsigned p, unsigned char *b, unsigned short *o, int 
         if (ot == 0x12e)
             v |= 0x4000;
     }
-fin:
     if (gm_AllowAll != 0) {
         v = 0xffffffff;
         if (bld != 0 && (*btype == 3 || *btype == 0x21))
