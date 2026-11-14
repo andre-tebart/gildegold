@@ -7,7 +7,7 @@ Every statement line of FUNC is deleted, duplicated, swapped with the next one, 
 (constants, comparison and logic operators, int types); each mutant is compiled with the project's flags and the
 function's listing (one instruction per line, single spaces, as VC6's /FA prints it) is searched for --want (and
 must not contain --avoid). The text starts with the function's frame symbols (`_name$ = -OFFSET` lines), so a frame
-layout can be wanted too: --want "_cityobj.. = -1356". The mutants are NOT meant to be kept: most change the meaning. They show which part
+layout can be wanted too: --want '_cityobj.$ = -1356' (the $ of the symbol escaped or as .). The mutants are NOT meant to be kept: most change the meaning. They show which part
 of the function the wanted code depends on - the lever to respell by hand. --try writes the hits as a `dcp try`
 variants file (labels m0, m1, ..), so their distance to the original can be measured: a hit at `byte` whose
 change keeps the meaning is the answer (di_UpdateButtons: a volatile view against the plain field).
