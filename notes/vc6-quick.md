@@ -1447,3 +1447,10 @@ mechanisms, each as a generated round over all positions / subsets:
   call's result instead and write the difference at both uses (gm_FreeCapacity byte).
 - **A known constant threaded past the next compare** (`t = max(t, 0.25); f = min(t, 5.0)`: ours jumps from the 0.25
   load straight past `fcom 5.0`): the constant was a shared double object (cm_DoubleQuarter), not a literal.
+- **A switch whose case blocks' scratch registers skip a step of the eax/ecx/edx rotation**: the source had more
+  case bodies there (equal to the default, cross-jumped away after allocation); write each listed group as its own
+  body (gm_JobSlots byte). A dead `lea` of an address = a store written twice (flip.py dup hit; gm_EndDayIncomes).
+- **A result pointer pushed at entry, a parameter pushed only inside a later if**: a second `return c;` inside that
+  if (gm_SpawnCharacter byte). A result the original reloads from its slot at a "known 0" return: every arm assigns
+  it and one final `return o;` (gm_BuildingMainObject byte).
+- `x = -1; c = (char)0xff;` share one constant candidate; `(unsigned char)` 0xff keeps them apart (gm_Query).

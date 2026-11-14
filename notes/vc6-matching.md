@@ -3229,3 +3229,37 @@ differing instructions. The same shape made the character loop of 0x512f30 pick 
 - gm_BuildKindObjects (stuck): `extern unsigned short probe;` in place of gm_KindObjCount is byte at once: VC6
   keeps a short global in a word register through a call-free loop only when the unit does not define it (the
   d2_ScreenH question again, a definition / owner decision).
+## match-deep 2026-11-14, second f3gm session (gm_JobSlots, gm_EndDayIncomes, gm_SpawnCharacter, gm_BuildingMainObject, gm_AddTime, gm_Query, gm_GetCreditOffers)
+
+- **gm_JobSlots byte: hidden case bodies shift the scratch-register rotation.** A switch whose case blocks each load
+  two pointer parameters (`mov ecx,[a]; mov edx,[b]`) in a rotation eax/ecx/edx that skips one step at three places
+  in the original: at each skip the source had an extra case body that VC6 cross-jumped away after allocation (the
+  groups 0xe .. 0x10 and 1 / 3 with the default's `*a = 1; *b = 0;`, written as their own bodies in building-type
+  order). Each body consumes its two temps, so later bodies get other registers and no longer merge with each
+  other (job 2 / 5 / 10 kept their own blocks). Reading rule: a register rotation that skips a step between two
+  case blocks = a block that is not in the code any more; equal bodies in the source are not neutral. Return vs
+  break per case was one code.
+- **gm_EndDayIncomes byte: a dead `lea ecx,[ebx+ecx*4]` = an identical store written twice.** flip.py's only hit for
+  the stray lea was the store duplicated; VC6 drops the repeated store late and leaves its address computation.
+  Kept as `@original` (no ordinary spelling found: a second array, a copy through the list entry, other orders
+  give other code). Before that, the level store before the list store and a GMBTYPE pointer took 23 -> 1 ins.
+- **gm_SpawnCharacter byte: callee-saved push at entry vs in a branch.** The original pushes edi (the result
+  pointer c) at entry and esi (bld) only in the flags & 4 block; ours pushed both after the 0xffff check. A second
+  `return (short *)c;` inside the flags & 4 block (`if (flags & 4) { ..place..; return c; } return c;`) gave both
+  at once. `c = 0` web forms put c's push at entry but swapped c / bld (35 ins); c assigned before the id test put
+  the push at entry but the lea before the test (12 ins).
+- **gm_BuildingMainObject byte: one final return keeps a result in its stack slot.** The original reloads o from
+  [esp+N] at both loop ends (not `xor eax,eax`, though o is known 0 on one path) and spills it: every class arm
+  assigned o (`if (cls == 4) o = Q(..); else if (home) o = Q(..); else { loop with return }`) and the function
+  had one `return (int)o;` at the end. Early returns in the first arm let VC6 fold o and give it ebx (29 ins).
+- **gm_Query (stuck, 4 ins): `(char)0xff` and `-1` are one constant to VC6.** gm_QueryOwner = -1 and gm_QueryKind[0] =
+  (char)0xff made one candidate (`or eax,-1`, stores from eax / al) where the original stores immediates; the kind
+  byte written as unsigned 0xff split them (33 -> 10). `va_arg` compiles like the hand-walked `ap` pointer. Two
+  char flags initialized right before their stores (`scan = 0; gm_QueryScanAll = scan;`) stay in their own byte
+  registers; at the top VC6 shares one zero for both. A count-down `for (i = n; i > 0; i--)` moved a pop.
+- **gm_GetCreditOffers (stuck, 7 ins): a flag zeroed after the guards.** `all = 0;` at the top gave cnt esi and
+  all edi (the reverse of the original) in all 12 guard orders; after the guard the registers are right but the
+  original's `xor esi,esi` sits before the first test. The 70 .. 100 % factor whose original negates the random in
+  an int (`neg; fild; fmul 0.01; fadd 1.0`) folds to `fsubr` in every spelling (also with the cm_DoubleOne object).
+- **gm_AddTime (stuck, 32 ins)**: the original keeps 60 in esi for both idivs and uses edi for three read-modify-write
+  temps; no named local for the sums gets edi (copies fold, s / m locals 38 ins).
