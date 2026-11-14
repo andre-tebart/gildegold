@@ -100,6 +100,7 @@ extern int gm_RichestYear;
 extern int gm_RichestWorth;
 extern ORDCHAR *gm_RichestChar;
 extern float ai_FloatZero;  /* 0x5eb788, the shared 0.0f (cm.c) */
+extern double cm_DoubleQuarter;  /* 0x5eb9b0, the shared 0.25 (cm.c): gm_StockPrice's lower clamp reads it */
 /* The five income sums are the last int of the five 17-int rows of gm_IncomeHistory (0x91b580, 0x154
    bytes): the rows start 0x44 apart, so these aliases sit at the end of each row. They are views, not
    separate globals - a separate definition would reserve its own memory here and the 0x154-byte
@@ -3067,15 +3068,23 @@ int gm_FindMarketObject(int id);                     /* 0x500ec0 */
 int gm_FindPlayerBuilding(int p);                   /* 0x501000 */
 
 /* 0x4ffa10, the price of the goods record n of the player p: the base price (gm_ItemPrice, 100) when no market object holds the good (gm_FindMarketObject, for another player the kind 0x1db object of its building, gm_FindPlayerBuilding); else a factor mean / demand, times demand / the market's count of the good (at least 1) when that count is above the demand and the good is not of the kind 0x17, clamped to 0.25 .. 5.0, and the price moves 0.4 of the way from the stored price to the base price times the factor; a record without a stored price (<= 0) gets the base price, at least 512
-   @deep read the whole function against 0x4ffa10..0x4ffbe6 and reconciled every statement (the market
+   @stuck cross-jump of the mk == 0 'return gm_ItemPrice(id, 100)' into the 512 path's second call (ours 2
+   rets, the original 3). Fixed: the 0.25 clamp reads cm_DoubleQuarter (12 -> 10 ins). Tried (dcp try, all
+   = one code at 10 ins): mk test as if/else with r assigned, != with the mk==0 path last, early return;
+   the 512 clamp as ?:, max / min macros (22-28 ins), r assigned per arm, >= and !(>=) spellings (14-28),
+   price > 0 first (14); the id argument as (int)id or the record field at each subset of the four calls (=
+   or worse); ai_FloatOne / cm_DoubleOne / ai_FloatZero objects for the M10s (8 combos, same diff). c2pass
+   with cross-jumping skipped shows ne-c lays the mk==0 block last exactly as the original; so the
+   original's two tails differ in something cross-jumping compares that the code does not show. flip.py
+   (want 3 rets): only meaning-changing hits (tiebreak: not measured (dcp headers sample gm_StockPrice))
+   prior: read the whole function against 0x4ffa10..0x4ffbe6 and reconciled every statement (the market
    lookup, the count, the mean/demand ratio kept in st, the ternary factor with the float-cast division by
    max(count,1), the 0.25 / 5.0 clamps, the (float)f * base - cur step, the 512 floor). Tried: if-clamps,
    nested min(max()) in one expression, the clamp on f itself (all worse), the 512 test as >= (worse), mk
-   == 0 nested or as an early return (same). Two hunks remain, both optimizer layout with equal meaning:
-   (1) ours threads the 0.25 path past the 5.0 compare ('fld 0.25; fstp qword [esp+0x14]; jmp', 0x4ffb3b)
-   where the original runs it through 'fcom 5.0' (0x4ffb3b); (2) ours cross-jumps the two identical 'push
-   0x64; push esi; call gm_ItemPrice; add esp,8; epilogue' tails into one, the original keeps them apart
-   (0x4ffbb8..0x4ffbc8, its third ret): together the 8 missing instructions */
+   == 0 nested or as an early return (same). The 0.25 is the shared double cm_DoubleQuarter (an object, so
+   VC6 cannot thread the 0.25 path past the 5.0 compare as it does with the literal). Left: ours
+   cross-jumps the two identical 'push 0x64; push esi; call gm_ItemPrice; add esp,8; epilogue' tails into
+   one, the original keeps them apart (0x4ffbb8..0x4ffbc8, its third ret) */
 float gm_StockPrice(int p, int n)
 {
     unsigned id;
@@ -3100,7 +3109,7 @@ float gm_StockPrice(int p, int n)
     ratio = GM_BLOCK(p)->goods[n].mean / GM_BLOCK(p)->goods[n].demand;
     cur = GM_BLOCK(p)->goods[n].price;
     t = ratio * (count > GM_BLOCK(p)->goods[n].demand && *good != 0x17 ? (float)(GM_BLOCK(p)->goods[n].demand / (count < 1.0 ? 1.0 : count)) : 1.0f);
-    t = t > 0.25 ? t : 0.25;
+    t = t > cm_DoubleQuarter ? t : cm_DoubleQuarter;
     f = t < 5.0 ? t : 5.0;
     r = ((float)f * gm_ItemPrice(id, 100) - cur) * 0.4f + GM_BLOCK(p)->goods[n].price;
     if (GM_BLOCK(p)->goods[n].price <= 0.0f) {

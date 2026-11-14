@@ -769,7 +769,7 @@ void cm_GiveFightOrders(int side);  /* 0x4d2f80 */
 float util_RandomF();  /* 0x42ec20 */
 double cm_RandomFloat();  /* 0x4e5360 */
 extern const float ai_FloatOne;  /* 0x5eb780, bio.c */
-extern double ai_Unk5eb9b0;  /* 0x5eb9b0 */
+extern double cm_DoubleQuarter;  /* 0x5eb9b0 */
 
 void cm_CarryOutOrder(char *rec, char *c);  /* 0x4d3120 */
 void cm_FallDownAction(char *c);  /* 0x4d3300 */
