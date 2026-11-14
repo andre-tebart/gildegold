@@ -10692,21 +10692,14 @@ void gm_ChangeObjektZustand(int id, int d)
 /* 0x50cad0, changes the state (ORDBLD.level, kept in 0 .. 100) of the building b by d and sends it; when the
    building drops to 0 and its type is not of the kinds 6, 10, 0xf, 0x10, 0x1b, 0x1c or 0x17 and up, every player
    character (kind 6 / 7) gets the news: HS_66 for the owner, HS_67 with the owner's name for the others, and the
-   building is reported gone (cm_SendBuildingDestroyed)
-   @deep Read whole against the original and rewritten (ORDBLD / ORDCHAR / GMBTYPE typed, the HS_67 branch
-   first with txt_Format(buf, 0x1c52, owner, b), the int-index loop over ORD_CHARS that VC6
-   strength-reduces to the signed jl walk from ai_Chars+4); every call, argument, branch and constant
-   equals the original's. Left: an order hunk (movsx of v and of level swapped, eax<->edx) and one
-   instruction-selection hunk at +0x61: ours 'mov al, byte ptr [eax + edx*4]', the original 'lea eax, [eax
-   + edx*4]; mov al, byte ptr [eax]' for GM_BTYPE(type)->kind; tried the kind as ai_BTypes[type*0x24d], as
-   a separate unsigned char, nested vs early-return conditions: no change. A variant round. */
+   building is reported gone (cm_SendBuildingDestroyed) */
 
 void gm_ChangeBuildingState(unsigned char *b, int d)
 {
     ORDBLD *bld = (ORDBLD *)b;
     char k;
     char v;
-    unsigned char kind;
+    GMBTYPE *bt;
     int i;
     ORDCHAR *c;
     char other[0x400], own[0x400];
@@ -10720,8 +10713,8 @@ void gm_ChangeBuildingState(unsigned char *b, int d)
     cm_BeginFieldBlock(b, bld->id);
     cm_AddFieldValues(1, 1, 0x5c, &v);
     cm_SendFieldDeltas();
-    if (bld->type != 0 && v + bld->level <= 0 && (kind = GM_BTYPE(bld->type)->kind) != 0xf && kind != 0x1c
-        && kind != 0x1b && kind != 10 && kind != 6 && kind < 0x17 && kind != 0x10) {
+    if (bld->type != 0 && v + bld->level <= 0 && (bt = GM_BTYPE(bld->type))->kind != 0xf && bt->kind != 0x1c
+        && bt->kind != 0x1b && bt->kind != 10 && bt->kind != 6 && bt->kind < 0x17 && bt->kind != 0x10) {
         for (i = 0; i < 768; i++) {
             c = &ORD_CHARS[i];
             if (c->kind == 6 || c->kind == 7) {
