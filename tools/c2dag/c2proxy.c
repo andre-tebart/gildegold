@@ -15,7 +15,9 @@ static ABORT realAbort;
 static FILE *out;
 static int blockNo;
 static unsigned char *tramp;
-static void *savedP, *savedRet;
+static void *savedP;
+static void *retStack[64], *pStack[64], *retStack2[64];   /* the hooked passes recurse: one return address per level */
+static int retTop, retTop2;
 
 #define RVA_PRIORITY 0x14f6a
 #define U32(p, o) (*(unsigned long *)((char *)(p) + (o)))
@@ -256,10 +258,10 @@ static void find(const char *name)
     }
 }
 
-static void __cdecl dump(void)
+static void dump0(void)
 {
     void *first, *last, *n, *e, *t;
-    void *nodes[4096];
+    static void *nodes[4096];           /* static: the compiler's own stack is deep here */
     int cnt = 0, i, j;
 
     if (!out)
@@ -328,9 +330,21 @@ static void __cdecl dump(void)
     fflush(out);
 }
 
-/* second hook: the allocator's priority pass (FUN_10707a0b), first return per function */
-static unsigned char *tramp2;
-static void *savedRet2;
+/* the dump only reads the back end's structures; a node shape it does not know (seen on a block built from two
+   gotos into one statement) must not take the compiler down with it (C1001) */
+static void __cdecl dump(void)
+{
+    __try {
+        dump0();
+    } __except (1) {
+        if (out) {
+            fprintf(out, " (dump fault: block skipped)\n");
+            fflush(out);
+        }
+    }
+}
+
+/* second hook: the allocator's priority pass (FUN_10707a0b), first return per function */static unsigned char *tramp2;
 static void __cdecl dump2(void)
 {
     static void *lastfn;
@@ -368,27 +382,52 @@ static __declspec(naked) void stub2(void)
         pushad
         call enter2
         popad
-        pop eax
-        mov savedRet2, eax
+        pop eax                         ; the return address goes on a stack of its own: the pass is re-entered
+        push ecx
+        mov ecx, retTop2
+        mov dword ptr retStack2[ecx*4], eax
+        inc ecx
+        mov retTop2, ecx
+        pop ecx
         call dword ptr [tramp2]
+        push eax                        ; slot for the return address
         pushad
+        mov ecx, retTop2
+        dec ecx
+        mov retTop2, ecx
+        mov eax, dword ptr retStack2[ecx*4]
+        mov [esp+32], eax
         call dump2
         popad
-        jmp dword ptr [savedRet2]
+        ret
     }
 }
 
 static __declspec(naked) void stub(void)
 {
     __asm {
-        mov savedP, ecx
+        pop eax                         ; return address and the pass's argument (ecx) per nesting level
+        push ecx
+        mov ecx, retTop
+        mov dword ptr retStack[ecx*4], eax
         pop eax
-        mov savedRet, eax
+        mov dword ptr pStack[ecx*4], eax
+        inc ecx
+        mov retTop, ecx
+        mov ecx, eax
         call dword ptr [tramp]
+        push eax                        ; slot for the return address
         pushad
+        mov ecx, retTop
+        dec ecx
+        mov retTop, ecx
+        mov eax, dword ptr pStack[ecx*4]
+        mov savedP, eax
+        mov eax, dword ptr retStack[ecx*4]
+        mov [esp+32], eax
         call dump
         popad
-        jmp dword ptr [savedRet]
+        ret
     }
 }
 

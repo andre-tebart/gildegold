@@ -1107,3 +1107,36 @@ mechanisms, each as a generated round over all positions / subsets:
   strcpy) reuses the memset's zero register (`mov [slot],eax`); after the strcpy it is an immediate store. A
   struct time copy whose last two stores come after the record's other fields was written last
   (`party.time = ai_Time;` after kind / flags / thing; 720 orders, 5 byte) (main_GameLoop byte).
+
+## The register allocator, read from c2.dll (tools/c2dag/c2trace.py)
+- `python tools/c2dag/c2trace.py SRC FUNC [--variants FILE --label L]` prints the allocator's real sequence: every
+  candidate as it is queued (priority, savings `sav`, flags, the registers still available to it, its
+  preferences) and assigned, and the splits. `c2dag.py --alloc` shows only the first priority pass and the final
+  register; when an outcome looks impossible ("a free register is refused") the reason is in the sequence.
+- The rule (color.c; FUN_1073122d driver, FUN_10708a6e queue, FUN_10708af7 interference / pressure, FUN_10709937
+  choice, FUN_10709bb6 removal): candidates are popped in descending priority (equal: the later-created first).
+  A candidate live across a call can only have ebx / ebp / esi / edi; one referenced by a BYTE-sized operand
+  only eax / ecx / edx / ebx, so across a call only ebx. For each available register a score is summed from the
+  still-waiting interfering candidates: their preference counts, and 100 x savings for a candidate whose only
+  possible register that is; the lowest score wins, ties in the order eax, ecx, edx, esi, edi, ebx, ebp.
+  Consequences: (1) a byte-flagged value that lives across calls (a pooled constant compared with a byte:
+  `kb_Last == 1` flags every use of the constant 1) reserves ebx - higher candidates then avoid ebx and take
+  ebp; (2) when the fourth callee-saved register is taken, everything else live across a call is SPLIT, and the
+  pieces come back with new priorities and can overtake an older candidate (main_ChooseHistory: a piece of the
+  constant zero at -86 took esi ahead of grp at -91); so a candidate must be served before the fourth register
+  goes; (3) savings below 1 = no register; under /O2 a use weighs 1 << loop depth, a constant counts only
+  where the other operand is memory, each load of it costs the weight; (4) a block where the candidate is dead
+  (a definition follows on every path) costs it nothing - a flag reset at the top of each iteration ranks much
+  higher than its reference count suggests; (5) spellings that fold before allocation (`x = y` where y is known
+  to be 1, a named copy of a global) change nothing.
+- main_ChooseHistory byte (26 ins, stuck twice): ret had to be popped first (it then avoids the reserved ebx and
+  takes ebp), grp second (esi, before the fourth register), again third (ebx, still above hist). Got there by
+  (a) the family-choice success written out (`ret = 1; sv_PopRequest = 1;` a second time: one more definition
+  of ret in the loop, VC6 cross-jumps the copies), (b) ONE `again = 1` reached by `goto lagain` from the other
+  site (one definition fewer; VC6 duplicates the short block again after allocation, so the code has both),
+  (c) `ret = 0;` before `again = 0;` at the top (the entry's zero register goes to the later of the two), (d)
+  the single-return tail (`if (ret) f |= 8; else f = 0; return ret;` - VC6 duplicates the return into both arms
+  BEFORE allocation, which is why the zero path keeps `mov eax,ebp`; an explicit `return ret` in the zero arm is
+  folded to `xor eax,eax`). The two gotos stay as @original: no goto-free form reached byte.
+- The c2dag proxy's graph dump faulted on a node of that function and took the compiler down (C1001): the dump
+  is guarded now and prints `(dump fault: block skipped)`.
