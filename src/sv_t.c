@@ -7536,16 +7536,29 @@ void ai_GraveWindow(GVPICK *out, AIBLD *rec, char *title, int flag, void (*cb)(A
    picture 0x6c7 with the dead person's icon (interactive), the name and second line centred in font 0x54 and the
    five traits with their value bars. Section 5: the player's character as the holder, the year "AD %i" (until +
    1400) and the care in percent (txt 0x4101 .. 0x4103); the scroll position is kept
-   @deep reconstructed in full from the original (all 343 instructions read; the skeleton's layout numbers
-   replaced by the d2_Wins / d2_Pics / D2OBJ fields, the item loop as in ai_GraveDetail, the holder
-   ai_CharsT[ai_PlayerId].id); from 0x583780 on everything is equal but order / regs hunks (0x583a4e order,
-   esi->ebx at 0x583a6f / 0x583ae5 / 0x583b10). Left is the constant register in the first two loops: the
-   original keeps -1 in ebp (cmp [edx],ebp / btn = ebp / id = ebp) and so spills the grave count to
-   [esp+0x10] (dec in memory) and walks the item pointer from &w[0xc]; ours keeps 0 in ebp (cmp edx,ebp for
-   count > 0, push ebp / push ebp for sv_CreateScrollButtons' 0, 0 at 0x58380a / 0x583821) and the count in
-   ebp, n in ebx, the pointer from &w[0xa] (hunk 0x583711, 74 lines: the same statements in the same order,
-   the three branch-target shifts are those instructions). Tried: the loop bound re-read each pass instead
-   of the count local (worse, the count local stays) */
+   @stuck draft 70 -> 31 ins. Kept: the collect and fill loops as plain index loops on ((GVDETAILWIN
+   *)w)->items[n] / [i] (the item++ walk and the int-pointer fill walk gone: 70 -> 33, the e / n stores and
+   the IV base on the id field now as the original), the M9 labels as ai_FmtLabel / ai_CharNameFmt, the
+   trait loop's y += 0xd in the for increment (the original's inc before add esp: order 16 -> 12). Left: e
+   and n swap registers (ours e esi / n ebx, the original n esi / e ebx: c2trace has the e piece at prio 76
+   vs n 74, so e is served first), plus the n = 0 home store at entry (mov [esp+0x18],esi before the loop;
+   the original stores n once after it). flip.py --want 'mov ebx, [edi+28]' found 27 hits, all removing a
+   const 0 reference (sv_CreateScrollButtons 0,0 -> 1: 7 ins; the fill's grave = 0 -> 1: 7; the show loop's
+   i = 0: 11) or an e reference (e->grave read through w->entry in the loop: 8; count from w->size: 7, a
+   meaning change) - the same const#0 web as the sibling ai_GraveDetail. No lever: init order n / e / count
+   (3 orders, for-init n = 0, entry field spelling, declaration order: = control), continue / n++ in the
+   index / while fill (= control), a GVGRAVE *g walk (50), id through items[n].grave (55), btn before id
+   (66), the item pointer for-walk in the show loop (45). Open: M10 100.0f vs ai_FloatHundred (no view in
+   sv_t) (tiebreak: not measured (dcp headers sample ai_RentGraveDetail)) prior: reconstructed in full from
+   the original (all 343 instructions read; the skeleton's layout numbers replaced by the d2_Wins / d2_Pics
+   / D2OBJ fields, the item loop as in ai_GraveDetail, the holder ai_CharsT[ai_PlayerId].id); from 0x583780
+   on everything is equal but order / regs hunks (0x583a4e order, esi->ebx at 0x583a6f / 0x583ae5 /
+   0x583b10). Left is the constant register in the first two loops: the original keeps -1 in ebp (cmp
+   [edx],ebp / btn = ebp / id = ebp) and so spills the grave count to [esp+0x10] (dec in memory) and walks
+   the item pointer from &w[0xc]; ours keeps 0 in ebp (cmp edx,ebp for count > 0, push ebp / push ebp for
+   sv_CreateScrollButtons' 0, 0 at 0x58380a / 0x583821) and the count in ebp, n in ebx, the pointer from
+   &w[0xa] (hunk 0x583711, 74 lines: the same statements in the same order, the three branch-target shifts
+   are those instructions). Tried: the loop bound re-read... */
 void ai_RentGraveDetail(int *w)
 {
     GVENTRY *e;
@@ -7553,7 +7566,7 @@ void ai_RentGraveDetail(int *w)
     int count;
     int n;
     int i;
-    int *p;
+
     int saved;
     int up;
     int down;
@@ -7566,24 +7579,19 @@ void ai_RentGraveDetail(int *w)
 
     n = 0;
     e = (GVENTRY *)w[7];
-    item = ((GVDETAILWIN *)w)->items;
     count = gv_EntryCounts[e->size];
     for (i = 0; i < count; i++) {
         if (e->grave[i].id != -1) {
-            item->grave = &e->grave[i];
-            item->id = e->grave[i].id;
-            item->btn = -1;
+            ((GVDETAILWIN *)w)->items[n].grave = &e->grave[i];
+            ((GVDETAILWIN *)w)->items[n].id = e->grave[i].id;
+            ((GVDETAILWIN *)w)->items[n].btn = -1;
             n++;
-            item++;
         }
     }
-    /* the unused items, walked as ints (the original's index form): p = &items[i].id */
-    p = &w[n * 3 + 0xc];
     for (i = n; i < 8; i++) {
-        p[-1] = 0;              /* grave */
-        p[0] = -1;              /* id */
-        p[-2] = -1;             /* btn */
-        p += 3;
+        ((GVDETAILWIN *)w)->items[i].grave = 0;
+        ((GVDETAILWIN *)w)->items[i].id = -1;
+        ((GVDETAILWIN *)w)->items[i].btn = -1;
     }
     saved = d2_Wins[w[2]].scrollY;
     d2_SetForm(w[0], 2);
@@ -7614,19 +7622,18 @@ void ai_RentGraveDetail(int *w)
         d2_Objs[k].w = d2_Wins[w[2]].w;
         d2_SetObjFont(k, 0x54);
         y += 0x12;
-        for (k = 0; k < 5; k++) {
-            txt_Format(buf, "%s:", 0x16b7 + k);
+        for (k = 0; k < 5; k++, y += 0xd) {
+            txt_Format(buf, ai_FmtLabel, 0x16b7 + k);
             x = d2_CreateWinText(0x28, y, buf, w[2]);
             d2_Objs[x].w = 300;
             d2_SetObjFont(x, 0x54);
             sv_ValueBar(0xa0, y, item->grave->traits[k], 0x4df);
-            y += 0xd;
         }
     }
     d2_Wins[w[2]].scrollY = saved;
     d2_SetForm(w[0], 5);
     io_PrintText("$C");
-    txt_Format(buf, "%1N3", ai_CharsT[ai_PlayerId].id);
+    txt_Format(buf, ai_CharNameFmt, ai_CharsT[ai_PlayerId].id);
     io_PrintText("$7<$R%s$0<$4>$L%s$A$0>", 0x4101, buf);
     txt_Format(buf, "AD %i", e->until + 0x578);
     io_PrintText("$7<$R%s$0<$4>$L%s$A$0>", 0x4102, buf);
