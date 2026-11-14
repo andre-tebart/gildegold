@@ -48,11 +48,19 @@ typedef struct D2BANK {             /* a bank of shapes: this 0x845 byte header,
     int offs[0x100];                /* 0x45, offsets of the shapes (at most 0xff, d2_BankAppendShape) */
     unsigned char palette[0x100][4]; /* 0x445, the colours of an 8 bit bank (d2_BankSetPalette: d2_Palette) */
 } D2BANK;
+
+typedef struct D2COLKEY {           /* a colour key: the 3 compared bytes r, g, b (3 bytes, no padding: the shape
+                                       grabbers load gb as one word, mov ax, word [key+1], which VC6 does only
+                                       when the object is no 4-byte container; with a pad byte it loads r + g as
+                                       one dword and b as a byte) */
+    unsigned char r;
+    unsigned short gb;              /* 0x01, g in the low byte, b in the high one */
+} D2COLKEY;                         /* 0x03 */
 #pragma pack(pop)
 
-extern D2KEY d2_TransparentColour;          /* 0x6f0454, f3gm.c */
-extern D2KEY d2_EndMarkerColour;          /* 0x5fed74 */
-extern D2KEY d2_StartMarkerColour;          /* 0x5fed78 */
+extern D2COLKEY d2_TransparentColour;       /* 0x6f0454 */
+extern D2COLKEY d2_EndMarkerColour;         /* 0x5fed74 */
+extern D2COLKEY d2_StartMarkerColour;       /* 0x5fed78 */
 extern unsigned char d2_Palette[256][4];  /* 0xf8a120, palette */
 extern unsigned short *d2_ShpLightTable;    /* 0x6f0460, colour table */
 extern int d2_SurfPitch;            /* 0x5fed84 */

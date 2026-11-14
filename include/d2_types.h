@@ -288,9 +288,13 @@ typedef struct D2OBJ {              /* 0x2ec bytes, d2_Objs has 0x2ff: pictures,
 } D2OBJ;
 
 #pragma pack(push, 1)
-typedef struct D2KEY {              /* a colour key (shp.c): the 3 compared bytes r, g, b, padded to a 4 byte stride */
+typedef struct D2KEY {              /* unused: the colour keys are 3-byte D2COLKEYs (shp.h; with this pad byte VC6
+                                       reads r + g as one dword instead of the original's gb word). Kept because
+                                       sv_t's ai_TutorialInitChapter2 / 3 are tie-break sensitive to this header's
+                                       type set (removing it, a forward typedef or the 3-byte body here each move
+                                       them off byte) */
     unsigned char r;
-    unsigned short gb;              /* 0x01, g in the low byte, b in the high one: the shape grabbers read it as one word */
+    unsigned short gb;              /* 0x01 */
     unsigned char pad;
 } D2KEY;
 #pragma pack(pop)

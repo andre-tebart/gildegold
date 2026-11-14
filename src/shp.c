@@ -35,6 +35,7 @@
 #include "mem.h"
 
 int d2_ColourFormatSet = 0;  /* 0x6f0450 */
+D2COLKEY d2_TransparentColour = {0};  /* 0x6f0454, the colour key of the transparent pixels */
 extern unsigned int d2_HighBitMask32;
 
 /* 0x479d00, makes the light table: every 16 bit colour brightened by add
@@ -127,7 +128,7 @@ void d2_SetLineTable(int *rows, D2SHP *shp)
    transparent colour and takes the box from those, stores every row as skip runs of the transparent colour
    alternating with literal runs, builds the table of row offsets, and returns an exactly sized copy of the
    shape (allocated with mem_Alloc; the scratch shape is freed).
-   @stuck 488 -> 325 ins (draft, 307 with a probe symbol for the D2KEY word): rewritten in the siblings'
+   @stuck 488 -> 307 ins (draft): rewritten in the siblings'
    form - d2_GrabShape24NoRuns' scans (p = pix + ((i + y) * (pitch & 0xffff) + x + j) * 3 inside the inner
    loop) and d2_GrabShape16Runs' run loop (lines[] / line / run / col / t, the skip loop as while (col <
    s->w && d2_CompareColour(pix + (col + t + x) * 3, ..) == 0), the literal loop with the unsigned entry
@@ -139,8 +140,7 @@ void d2_SetLineTable(int *rows, D2SHP *shp)
    spellings of the row-start block (run = line + 1 ..): none moves s above run. run computed inside the w
    guard gives s ebp (216 ins) but VC6 then folds run into [eax+ebp] addressing - not the original's
    pointer. flip.py (want s in ebp): only meaning-changing hits (an extra s reference in the inner loop:
-   dup of s->npix += / s->size +=; one run reference fewer: run[2] = 0). Plus the D2KEY word load at the
-   two d2_SetColour calls (data question) (tiebreak: not measured (dcp headers sample d2_GrabShape24Runs)) */
+   dup of s->npix += / s->size +=; one run reference fewer: run[2] = 0). (tiebreak: not measured (dcp headers sample d2_GrabShape24Runs)) */
 
 D2SHP *d2_GrabShape24Runs(int x, int y, int w, int h, unsigned char *pix, unsigned char flag, unsigned short pitch)
 {
@@ -260,16 +260,7 @@ D2SHP *d2_GrabShape24Runs(int x, int y, int w, int h, unsigned char *pix, unsign
    "shp_t:GrabBit24NoRS:ShapeHeader"): scans the rectangle for the bounding box of the pixels that are not the
    transparent colour, then (when the end marker colour is set) replaces the start / end marker pixels with the
    transparent colour and takes the box from those, copies the plain pixel rows into the shape, and returns an
-   exactly sized copy of it (allocated with mem_Alloc; the scratch shape is freed).
-   @stuck 274 -> 34 ins: the two scans compute p = pix + ((r + y) * pitch + x + c) * 3 inside the inner
-   loop (a row pointer before the loop is strength-reduced over the rows; the original recomputes the imul
-   per row inside the inner guard), the copy loop as for (r ..) { src = pix + ((y + r) * pitch + x) * 3;
-   memcpy; dst += ..; npix += ..; size += ..; }, the reset test as maxx < minx || maxy < miny, the box
-   stores in the order x0, w, y0, h, ax0, ay0, ax1, ay1 (move-one-line climb). Left: only the two
-   d2_SetColour key argument loads (the original reads gb as one word, mov ax, word [key+1], and r as a
-   byte; ours narrows gb into bytes and merges r + g into a dword load) and the eax/ecx/edx rotation of the
-   bx0..by1 stores behind them - the D2KEY word question of d2_GrabShape16NoRuns / d2_GrabShape8Runs
-   (tiebreak: not measured (dcp headers sample d2_GrabShape24NoRuns)) */
+   exactly sized copy of it (allocated with mem_Alloc; the scratch shape is freed). */
 
 D2SHP *d2_GrabShape24NoRuns(int x, int y, int w, int h, unsigned char *pix, unsigned char flag, unsigned short pitch)
 {
@@ -357,16 +348,7 @@ D2SHP *d2_GrabShape24NoRuns(int x, int y, int w, int h, unsigned char *pix, unsi
    "shp_t:GrabBit8:ShapeHeader"): scans the rectangle for the bounding box of the non-zero pixels, then stores
    every row as runs of the transparent colour (skip runs) alternating with literal runs, builds the table of
    row offsets, and returns an exactly sized copy of the shape (allocated with mem_Alloc; the scratch shape is
-   freed).
-   @stuck 334 -> 6 ins: rewritten in d2_GrabShape16NoRuns' / d2_GrabShape8Runs' form (index scan pix[(y +
-   i) * (pitch & 0xffff) + x + j], run loop with lines[] / line / run / col / t, no reused minx / miny as
-   run counters), the skip loop without a pointer (while (pix[t + col + x] == key): VC6's own
-   strength-reduced pointer, set after the test as the original; a p local hoists it above the jne), the
-   literal loop as while (run[1] + col < s->w && ..) (the unsigned entry test), the inits maxx = 0; maxy =
-   0; cnt = 0; and the box reset minx, miny, maxx, maxy (312 orders: one byte with the probe). Left: only
-   the D2KEY word load (mov ax, word [0x6f0455] / mov dl, byte [key]): with a probe symbol for gb (extern
-   unsigned short) the function is byte, so it is the data question of d2_GrabShape16NoRuns, not a spelling
-   (tiebreak: not measured (dcp headers sample d2_GrabShape16Runs)) */
+   freed). */
 
 D2SHP *d2_GrabShape16Runs(int x, int y, int w, int h, unsigned short *pix, unsigned char flag, unsigned short pitch)
 {
@@ -473,20 +455,7 @@ D2SHP *d2_GrabShape16Runs(int x, int y, int w, int h, unsigned short *pix, unsig
 /* 0x47ab30, grabs a rectangle of a 16 bit surface into a shape with plain rows (no run lengths; memory tag
    "shp_t:GrabBit8:ShapeHeader"): scans the rectangle for the bounding box of the non-zero pixels, copies the
    plain pixel rows into the shape and returns an exactly sized copy of it (allocated with mem_Alloc; the
-   scratch shape is freed).
-   @stuck 183 -> 6 ins: the scan tests src[(y + i) * pitch + x + j] (a row pointer set before the inner
-   loop gets strength-reduced over the rows; the original recomputes the imul per row inside the inner
-   guard), the copy loop as for (i ..) { p = src + (y + i) * pitch + x; memcpy; dst += ..; npix += ..; size
-   += ..; } (dst before the counters), the inits as maxy = maxx = 0; minx = w; miny = h; before mem_Alloc.
-   Left: only the dd_RGB key loads - the original reads the D2KEY word gb with one mov ax, word [0x6f0455] and r with mov dl, byte [0x6f0454], ours
-   narrows gb to bytes and merges r+g into mov eax, dword [T] + mov al, byte [T+2]. Every spelling of the access (casts, >> 8, / 256,
-   LOBYTE/HIBYTE, a pointer, a cast word view at +1, a short/int local) is one code; D2KEY's gb as a union
-   {w; {g, b}} under pack(1) in d2_types.h too (and it cost sv_t's ai_TutorialInitChapter3 + 1 more their
-   byte). A probe with gb as its own symbol (block extern unsigned short, or a struct whose word is at
-   offset 0) is byte: VC6 narrows a word that it knows sits at an odd offset. So the original saw gb at an
-   even offset of some symbol: a data question (where the key's object starts, 0x6f0453 or a separate
-   packed object at 0x6f0455) for a gapdata pass, also for d2_GrabShape24NoRuns (same loads) (tiebreak: not
-   measured (dcp headers sample d2_GrabShape16NoRuns)) */
+   scratch shape is freed). */
 
 D2SHP *d2_GrabShape16NoRuns(int x, int y, int w, int h, unsigned short *src, unsigned char mode, unsigned short pitch)
 {
@@ -558,12 +527,9 @@ D2SHP *d2_GrabShape16NoRuns(int x, int y, int w, int h, unsigned short *src, uns
    freed).
    @stuck 203 -> 199 ins: the box bounds as unsigned int with (int)(x & 0xffff) compares and (unsigned
    short) casts at the stores (the original's dword stores / masked loads, as d2_GrabShape16NoRuns), init
-   order minx = w; maxy = 0; maxx = 0; cnt = 0; miny = h. Left, in order of size: (1) every colour-key
-   compare (transparent clear loop, both marker tests): the original loads the palette byte into dl and
-   compares it with the key's r in memory, then reads the key's gb as one word (mov dx, word [key+1]) and
-   compares dl / dh; ours loads the key's r and g as one dword and b as a byte - the D2KEY word narrowing
-   that d2_GrabShape16NoRuns is stuck on (a data / type question, not a spelling: every access form is one
-   code); (2) c in the marker loop is memory-homed in the original (mov byte [slot], dl; mov ecx, dword
+   order minx = w; maxy = 0; maxx = 0; cnt = 0; miny = h. The colour-key compares (gb as one word) match
+   since the keys are 3-byte D2COLKEYs. Left, in order of size: (1) the palette index register of the
+   marker tests (ours edi, the original ecx); (2) c in the marker loop is memory-homed in the original (mov byte [slot], dl; mov ecx, dword
    [slot]; and ecx, 0xff), ours keeps it in edx; (3) the skip-run row: the original keeps pitch & 0xffff in
    its own slot and recomputes j * pitch + x + src per skip run, ours reuses t (row = src + pitch * j + x,
    (j * pitch + x), x + j * pitch and (i + y) * pitch are all = control: VC6 equates them). Frame 0xd9c vs
@@ -2458,6 +2424,6 @@ unsigned int d2_Mode5Colour = 0;  /* 0xf8a638, colour twice, 16 bit */
 unsigned int d2_BlitH = 0;  /* 0xf8a63c */
 unsigned int d2_HighBitMask32 = 0;  /* 0xf8a640 */
 unsigned char d2_BlitN = 0;  /* 0xf8a648 */
-D2KEY d2_EndMarkerColour = { 0, 0xff00 };  /* 0x5fed74, blue (0, 0, 255) */
-D2KEY d2_StartMarkerColour = { 0xff, 0 };  /* 0x5fed78, red (255, 0, 0) */
+D2COLKEY d2_EndMarkerColour = { 0, 0xff00 };  /* 0x5fed74, blue (0, 0, 255) */
+D2COLKEY d2_StartMarkerColour = { 0xff, 0 };  /* 0x5fed78, red (255, 0, 0) */
 int d2_SurfPitch = 800;  /* 0x5fed84 */
