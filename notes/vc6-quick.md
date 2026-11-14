@@ -226,7 +226,8 @@ mechanisms, each as a generated round over all positions / subsets:
   running pointer plus a stride slot): compute the address in the inner loop body (`p = pix + ((r + y) * pitch +
   x + c) * 3;` / `src[(y + i) * pitch + x + j]`); VC6 hoists it to the inner preheader behind the guard and the
   outer loop never strength-reduces it (shp grabbers 183 -> 6, 274 -> 34 ins). A packed struct word at an odd
-  offset (D2KEY.gb) is split into byte loads by VC6 where the original loads the word: open data question.
+  offset (D2KEY.gb) read as r + g in one dword plus b as a byte where the original loads the word: the object
+  was 3 bytes, not 4 (see the colour-key rule below).
 
 - **A dispatch on a byte field written twice** (`mode = s->mode;` then `if (mode == 0) .. else if (mode == 2)` in two
   if / else chains, the original `test edx,edx; mov dl,[s+0xd]; jne` with the zero constant sharing edx): no local,
@@ -524,7 +525,9 @@ mechanisms, each as a generated round over all positions / subsets:
 ## Link conventions (uv run link gate)
 - One name = one address; `/* 0xADDR */` per declaration; reach struct members through the type.
 - Original string / float text and bits; `__FILE__` via the file's first `#line N "D:\\develop\\..."`.
-- .bss statics / globals need `= 0` to keep declaration order; far COMMON globals are tentative `T x;`.
+- .bss statics / globals need `= 0` to keep declaration order; globals in the original's common block (past the
+  last LIBC .bss symbol, gildegold 0x6f3300) are tentative `T x;` - link.exe allocates commons after every .bss
+  contribution, the libraries' included, and dcp's D5 accepts a tentative definition there.
 
 ## Data layout (from the containment checks, M.contain / D7 / D9)
 - A unit's .rdata is its named constants, then the literals it is the first to use (COMDATs, folded across units):
@@ -1403,8 +1406,15 @@ mechanisms, each as a generated round over all positions / subsets:
 - **A short global the original loads as a word where ours loads a dword and widens the arithmetic** (`mov ecx,
   dword [g]; sub ecx,eax` vs `mov cx, word [g]; sub cx,ax`): VC6 widens only when it knows the global is 4-aligned
   (its unit defines it). Probe with `extern short probe;` in a dcp try variant. A tentative `short g;` (COMMON)
-  gives the original's code, but dcp's D5 gate refuses a tentative definition in .bss, and moving the `= 0`
-  definition below the function does not hide it (C2 sees the whole unit): open (d2_ResizeWindow, 4 ins).
+  gives the original's code. Settled: when the global lies in the common block (past LIBC's last .bss symbol)
+  the original's definition WAS tentative - write `short g;` (D5 accepts it there). d2_ResizeWindow,
+  gm_BuildKindObjects byte. Below the common block the original defined it in some unit's .bss: look for the
+  owner whose code does not touch it (an extern in the user unit).
+- **A small struct read as a dword container**: VC6 reads bytes of a 4-byte object through one aligned dword
+  (`mov eax, dword [key]; mov cl, ah`) and splits a word member at an odd offset; with a 3-byte object (pack 1,
+  `{ unsigned char r; unsigned short gb; }`) it loads the word member as a word (`mov ax, word [key+1]`). When the
+  original never touches the last byte and loads a word at an odd offset, drop the pad byte (D2COLKEY: three shape
+  grabbers byte).
 - **A redundant `test r,r; je X` right before the join's identical test, reached from one path only**: that path
   assigned the value through an if/else, `if (g != 0) o = g; else o = 0;` (VC6 threads the `o = 0` arm but not
   the fall-through); `o = g;` or `?:` give one test (ai_SetBookmark byte).

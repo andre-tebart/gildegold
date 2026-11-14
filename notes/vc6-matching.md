@@ -2931,8 +2931,8 @@ differing instructions. The same shape made the character loop of 0x512f30 pick 
   header too (that header change also cost sv_t's ai_TutorialInitChapter3 + 1 more their byte). A dcp try probe
   with gb as its own symbol (`{ extern unsigned short probeGB; .. }` or a struct whose word sits at offset 0)
   gives the original's instructions: VC6 splits a word it knows sits at an ODD offset of its symbol. So the
-  original's declaration had gb at an even offset of some symbol - open, a data question (gapdata) for the five
-  shape grabbers (16NoRuns 6 ins, 24NoRuns 34, 8Runs, 16Runs, 24Runs all read the key this way).
+  original's declaration had gb at an even offset of some symbol - wrong guess, settled in "gapdata 2026-11-14":
+  the key was a 3-byte object (no pad), for the five shape grabbers (16NoRuns 6 ins, 24NoRuns 34, 8Runs, 16Runs, 24Runs all read the key this way).
 - **A run-length blit's grey value passed three times to dd_RGB(unsigned char, ..)** (d2_ShpBlit16HalfDark: the
   original pushes `_ftol`'s eax three times, no store): the grey expression written out in each argument (a macro
   in the original); VC6 CSEs the three copies into one `_ftol`. A named `unsigned char v` goes through a stack
@@ -3003,8 +3003,8 @@ differing instructions. The same shape made the character loop of 0x512f30 pick 
   inside the function in a dcp try variant gives the original's word load, and so does a tentative definition
   (`short d2_ScreenH;`, COMMON: byte, nothing else moved) - but dcp's D5 gate refuses a tentative definition
   at an uninitialised-data address ("write it `= 0`"), so it was reverted. Moving the `= 0` definitions below
-  the function changes nothing (C2 sees the whole unit). Open: how the original's unit hid the alignment
-  (the definition in another unit / a container object), a data question like the D2KEY word.
+  the function changes nothing (C2 sees the whole unit). Settled ("gapdata 2026-11-14"): the globals lie in the
+  original's common block, so their definition was tentative; D5 now accepts that.
 - **d2_ResizeWindow 32 -> 4 ins (stuck on the d2_ScreenH word above; byte with it tentative)**: (1) a record pointer `o = &d2_Objs[*p]` for
   the h / y reads instead of two locals `oh` / `oy` (`o->y + o->h`; 32 -> 18), (2) the object loop as the plain
   `for (i = 0; i < wn->nobjs; i++) .. d2_Objs[wn->objs[i]]` instead of the decompiled `n = wn->nobjs; if (n > 0)
@@ -3228,7 +3228,7 @@ differing instructions. The same shape made the character loop of 0x512f30 pick 
   typed CRIME array probe (not the char-array cast) was = control, so it is no alias question.
 - gm_BuildKindObjects (stuck): `extern unsigned short probe;` in place of gm_KindObjCount is byte at once: VC6
   keeps a short global in a word register through a call-free loop only when the unit does not define it (the
-  d2_ScreenH question again, a definition / owner decision).
+  d2_ScreenH question again; settled: a common, tentative definition - byte).
 ## match-deep 2026-11-14, second f3gm session (gm_JobSlots, gm_EndDayIncomes, gm_SpawnCharacter, gm_BuildingMainObject, gm_AddTime, gm_Query, gm_GetCreditOffers)
 
 - **gm_JobSlots byte: hidden case bodies shift the scratch-register rotation.** A switch whose case blocks each load
@@ -3296,3 +3296,31 @@ differing instructions. The same shape made the character loop of 0x512f30 pick 
   which decides the direction in which the two identical supply tails are cross-jumped.
 - Tooling: a whole-function `dcp try` variant needs the address comment verbatim; a script that cut the comment at the
   first line containing `(` dropped it and the build lost the function's grade (`no graded function`) - cut at `*/`.
+
+## gapdata 2026-11-14 (the D2KEY word and the short globals)
+- **The colour keys were 3-byte objects.** d2_TransparentColour (0x6f0454) and the marker keys (0x5fed74 /
+  0x5fed78): no code of the original touches key+3 (refs to +0..+2 only). With the 4-byte D2KEY (r, gb, pad) VC6
+  treats the object as a dword container and reads r + g with one `mov eax, dword [key]` (`mov cl, ah`) and b as a
+  byte; with `{ unsigned char r; unsigned short gb; }` under pack 1 (3 bytes) it loads gb as the original's `mov ax,
+  word [key+1]` and r as a byte. The earlier reading ("VC6 splits a word at an odd offset of its symbol") was the
+  container effect, not the offset. d2_GrabShape16NoRuns, d2_GrabShape24NoRuns, d2_GrabShape16Runs byte; the key
+  loads of d2_GrabShape8Runs / 24Runs match (their other hunks remain). Owner moved f3gm -> shp (between shp's
+  0x6f0450 and d2's 0x6f0458). The type is D2COLKEY in shp.h: changing D2KEY in d2_types.h (the 3-byte body, a
+  forward typedef, or removing it) moved sv_t's ai_TutorialInitChapter2 / 3 off byte (tie-break on that header's
+  type set), so the old 4-byte D2KEY stays there unused with a comment saying why; f3gm declares the key as an
+  extern of the incomplete `struct D2COLKEY` (it only takes its address).
+- **Where the commons are.** A VC6 link of `int a = 0; int c;` in two objects plus LIBC (scratch experiment, map
+  file): .bss is a.obj's, b.obj's, then LIBC's contributions (crt0dat, nlsdata2, ..), and only then every common
+  symbol as `<common>` (the program's first, in encounter order, then the CRT's __crtheap, __acmdln, ..). In
+  GildeGold LIBC's last .bss symbol ends at 0x6f3300: everything above (0x6f3300..0x14ebe84) is common data, i.e.
+  tentative definitions in the original (the d2_ / d3_ / ts_ names interleaved there follow the first object's
+  header order). Below it the units' `= 0` definitions are right.
+- **The short globals were commons.** d2_ScreenH / d2_ScreenW (0xfb9070 / 0xfb9072) and gm_KindObjCount
+  (0x76fdc4) lie in the common block; the original's code (word registers, `mov cx, word [g]; sub cx, ax`) is what
+  VC6 makes when it does not know the global's place, i.e. a tentative definition. Written `short d2_ScreenH;` /
+  `unsigned short gm_KindObjCount;`: d2_ResizeWindow and gm_BuildKindObjects byte, nothing else moved. dcp's D5
+  (decompanion fedde79) now fires only below the common block (the end of the last crt.data symbol in
+  uninitialised data) and names the block's start in its message.
+- Not done: the other ~2000 `= 0` definitions above 0x6f3300 are commons in the original too; converting them is
+  codegen-neutral except where a function's code depends on knowing the placement (the short-global widening
+  above). Convert one when a stuck function shows that symptom.
