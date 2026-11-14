@@ -14036,8 +14036,10 @@ void ai_BuildTownMap(LCMAPWIN *m)
         m->marks[i].ctrl = -1;
         m->marks[i].bld = 0;
     }
-    memset(m->siteCtrls, 0xff, sizeof(m->siteCtrls));
-    memset(m->controls, 0xff, sizeof(m->controls));
+    for (i = 0; i < 0x80; i++)
+        m->siteCtrls[i] = -1;
+    for (i = 0; i < 0x300; i++)
+        m->controls[i] = -1;
     m->nMarks = 0;
 
     /* the player's buildings */
@@ -14160,7 +14162,8 @@ void ai_BuildTownMap(LCMAPWIN *m)
         d3if_SelectScene(0, 1);
         d2_LastWindow = m->screen;
         d2_LastWindowPtr = &d2_Wins[d2_LastWindow];
-        memset(m->spotCtrls, 0xff, sizeof(m->spotCtrls));
+        for (i = 0; i < 0x10; i++)
+            m->spotCtrls[i] = -1;
         n = 0;
         for (spot = ai_AmbushSpots[0]; (int)spot < (int)ai_AmbushSpots[8]; spot += sizeof(ai_AmbushSpots[0])) {  /* a signed compare (jl) */
             obj = d3_FindObject(0, 0x100, 0, spot);
@@ -16716,7 +16719,8 @@ void ai_MercenaryBook(AIBLD *bld, char *model)
         j++;
         rows[i].icon = -1;
         rows[i].slider = -1;
-        memset(rows[i].ctrl28, 0xff, sizeof(rows[i].ctrl28));
+        for (k = 0; k < 6; k++)
+            rows[i].ctrl28[k] = -1;
     }
     n = i;
     d2_SetPointerSprite(0, 0);
@@ -17127,7 +17131,8 @@ void ai_HelperBook(AIBLD *bld, char *model)
         j++;
         rows[i].icon = -1;
         rows[i].slider = -1;
-        memset(rows[i].ctrl28, 0xff, sizeof(rows[i].ctrl28));
+        for (k = 0; k < 6; k++)
+            rows[i].ctrl28[k] = -1;
     }
     n = i;
     d2_SetForm(book->views[0], 3);

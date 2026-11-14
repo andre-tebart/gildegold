@@ -801,7 +801,8 @@ void hmt_Create(int type, int unk, unsigned short v, AICHAR *c)
     c->w050 = 0x7fff;
     c->f07c = 0.0f;
     c->b058 = 0;
-    memset(c->relatives, 0xff, sizeof c->relatives);
+    for (i = 0; i < 8; i++)
+        c->relatives[i] = -1;
     c->bld2 = 0;
     c->bld = 0;
     c->f01c = 1000.0f;

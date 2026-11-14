@@ -2546,7 +2546,8 @@ unsigned gv_RaiseDead(GVRAISE *m)
             memset(c, 0, sizeof(AICHAR));
             gv_CharsT[slot].netId = -1;
             gv_CharsT[slot].id = 0xffff;
-            memset(gv_CharsT[slot].relatives, 0xff, sizeof(gv_CharsT[slot].relatives));
+            for (i = 0; i < 8; i++)
+                gv_CharsT[slot].relatives[i] = -1;
             c->ownName[0] = 0;
             ai_CharCount++;
             c->netId = ai_NextObjectId;

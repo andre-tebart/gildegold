@@ -5449,7 +5449,8 @@ void he_StartGang(int ev)
         he_FreeEvent((int *)ev);
         return;
     }
-    memset(g->targets, -1, sizeof(g->targets));
+    for (i = 0; i < (int)(sizeof(g->targets) / sizeof(g->targets[0])); i++)
+        g->targets[i] = -1;
     g->next = 0;
     g->start = ai_Time;
     e->end = ai_Time;

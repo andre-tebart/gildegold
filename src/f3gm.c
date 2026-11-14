@@ -8020,7 +8020,8 @@ unsigned short gm_CreateCharacter(int type, int a2, int a3, unsigned short a4, s
     memset(&ORD_CHARS[idx], 0, sizeof(ORDCHAR));
     ORD_CHARS[idx].netId = -1;
     ORD_CHARS[idx].id = 0xffff;
-    memset(ORD_CHARS[idx].relatives, 0xff, sizeof(c->relatives));
+    for (i = 0; i < 8; i++)
+        ORD_CHARS[idx].relatives[i] = -1;
     c->id = (unsigned short)idx;
     c->kind = (unsigned char)type;
     c->bld2 = 0;
@@ -8278,7 +8279,8 @@ unsigned short gm_CreateCharacter(int type, int a2, int a3, unsigned short a4, s
         }
         if (type != 6 && type != 7)
             c->level = gm_JobTalents[c->jobId].rank;
-        memset(c->relatives, 0xff, sizeof(c->relatives));
+        for (i = 0; i < 8; i++)
+            c->relatives[i] = -1;
         c->relatives[2] = a3;
         c->generation = 1;
         if (p2 != 0) {

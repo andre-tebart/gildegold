@@ -2972,7 +2972,8 @@ void ai_UpdateProduction(AICHAR *ch, AIOBJ *a, AIOBJ *b)
     for (it = gm_Query(a->list, 1, 5); it; it = gm_QueryNext()) {
         if (it->count > 1 && ai_NEntries < 32) {
             ai_Entries[ai_NEntries].item = it->id;
-            memset(ai_Entries[ai_NEntries].slot, 0xff, sizeof(ai_Entries[ai_NEntries].slot));
+            for (i = 0; i < 4; i++)
+                ai_Entries[ai_NEntries].slot[i] = -1;
             ai_Entries[ai_NEntries].need1c = 0;
             ai_Entries[ai_NEntries].need20 = 0;
             ai_Entries[ai_NEntries].cost = -1e10f;
