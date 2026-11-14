@@ -1002,7 +1002,25 @@ int d2_WinOpenSlider(int x, int y, int len, int p4, int p5, int pic, unsigned in
     }
     return -1;
 }
-/* 0x46aa00, draws a slider (flags 2: horizontal, 1: vertical): track, filled part, thumb, arrows, value @deep B draft, 8 differing instructions (6 code + order at 0x46b5d5 / 0x46b60c): the member load order and ecx/edx split of w->x + w->w + 4 in the two max-label calls (original: x->ecx, w->edx; ours: w->ecx, x->edx; lea [ecx+edx*1+0x4] symmetric, only the loads differ). spell.py: no menu rule matched either hunk ('escalate with the diffclass verdict'); reading found no meaning error (same values, same order of the y/x/w loads otherwise). Leads tried: 13 source forms in rounds 15-19 (both operand orders, parentheses, casts, temp, dead refs, nested struct, d2_Objs[id]. form) and the ~60-variant member-load-order campaign of d2_DrawInput / d2_DrawButton. Readability done (d2_DrawSlider, d2_DrawText, d2_ListCopyItem, d2_PutPixel/Clipped, d2_TextDrawnW/H, D2CTRL.loaded). */
+/* 0x46aa00, draws a slider (flags 2: horizontal, 1: vertical): track, filled part, thumb, arrows, value
+   @stuck 8 ins, headers sample insensitive. The only hunks: the max-label lines (d2_DrawText / d2_AddDirty
+   of w->x + w->w + 4) load w->w before w->x where the original loads w->x first (lea [ecx+edx+4]
+   operands). Every spelling of the sum is one code (64 operand orders / groupings, casts, (int) / (short)
+   views, parenthesised fields), so is every single respelling of the function's other w->x / (spr3->h -
+   spr1->h) / spr0->w + w->x sums (23 variants), the pooled-constant objects ai_FloatZero / ai_FloatOne /
+   cm_DoubleOne / cm_DoubleHalf at the M10 sites (15 combinations: = or worse) and the t * 0.0f / t * 0.0
+   spellings (30). flip.py (want w->x first, 1197 mutants): the only hits change a (spr3->h - spr1->h) to +
+   at another call or a float constant elsewhere (t * 0.0f -> 1.0f): the canonical operand order of x / w
+   follows some global state of C1 (value numbering), not this statement. Same open hunk as d2_DrawInput's
+   o->x / o->w. The M10s stay open (literals there give the same code) (tiebreak: insensitive) prior: B
+   draft, 8 differing instructions (6 code + order at 0x46b5d5 / 0x46b60c): the member load order and
+   ecx/edx split of w->x + w->w + 4 in the two max-label calls (original: x->ecx, w->edx; ours: w->ecx,
+   x->edx; lea [ecx+edx*1+0x4] symmetric, only the loads differ). spell.py: no menu rule matched either
+   hunk ('escalate with the diffclass verdict'); reading found no meaning error (same values, same order of
+   the y/x/w loads otherwise). Leads tried: 13 source forms in rounds 15-19 (both operand orders,
+   parentheses, casts, temp, dead refs, nested struct, d2_Objs[id]. form) and the ~60-variant
+   member-load-order campaign of d2_DrawInput / d2_DrawButton. Readability done (d2_DrawSlider,
+   d2_DrawText, d2_ListCopyItem, d2_PutPixel/Clipped, d2_TextDrawnW/H, D2CTRL.loaded). */
 
 void d2_DrawSlider(int id, D2SURF *surf)
 {

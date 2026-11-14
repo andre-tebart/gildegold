@@ -1249,7 +1249,7 @@ exe	0x0046a110	d2_OpenInput	d2	cc5183068fef1c4c	no	byte	control=byte p1=byte p2=
 exe	0x0046a360	d2_WinOpenInput	d2	e855dcc6d6a7ae34	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0046a4c0	d2_OpenSlider	d2	0234a1d04464f975	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0046a960	d2_WinOpenSlider	d2	aea43408a5a23615	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x0046aa00	d2_DrawSlider	d2	4ae38b79a7042dcb	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x0046aa00	d2_DrawSlider	d2	4ae38b79a7042dcb	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x0046bc70	d2_SetLabel	d2	16b23309f9f2d4f6	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0046bca0	d2_SetList	d2	c656088f8083caf8	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0046bd30	d2_ListCopyItem	d2	58ab62cad756b1bc	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
