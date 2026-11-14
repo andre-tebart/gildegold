@@ -2967,3 +2967,14 @@ differing instructions. The same shape made the character loop of 0x512f30 pick 
   hoisted above the clipped test is VC6's own hoist of the two chains' first load. (4) The zero inits first,
   then `vis = s->w; h = s->h;` (720 orders, 1 code at 4 ins), and in the clipped mode-3 arm the row latch
   `d += ..` before `p += skipr` (a reload register ebx / ebp): byte.
+- **d2_GrabShape16Runs 334 -> 6 ins (stuck on the D2KEY word only; byte with a probe symbol for gb)**: the
+  draft reused minx / miny / maxx as run counters and a `seg` pointer; written as d2_GrabShape8Runs' run loop
+  (lines[] / line / run / col / t) with d2_GrabShape16NoRuns' scan it was 74 ins at once. Then (1) a skip loop
+  over a hand pointer `p = pix + t + col + x; do {..; p++;} while (*p == key);` that the original strength-
+  reduces itself: write the index, `while (pix[t + col + x] == key)`, no p - VC6 then sets its pointer up after
+  the `jne` like the original, with p it hoists the address above the test (flip.py hit: an unrelated `x - t`
+  in the test broke the CSE and moved it). (2) A literal-run loop whose entry test is unsigned (`cmp; jae`) and
+  whose latch test is unsigned as well: `while (run[1] + col < s->w && pix[..] != key) run[1]++;` with run[1]
+  unsigned (VC6's rotated entry test knows run[1] == 0). (3) maxx / maxy in swapped equal-density slots: the
+  init and reset store orders (312 combinations, one byte: `maxx = 0; maxy = 0; cnt = 0; minx = w; miny = h;`
+  and the reset minx, miny, maxx, maxy).
