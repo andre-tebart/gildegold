@@ -3934,7 +3934,7 @@ exe	0x00575710	he_SetMessageKindFiltered	he	byte	readable
 exe	0x00575860	ai_TutorialTick	sv_t	byte	readable		
 exe	0x00576020	unk_ClearEndGameGate	sv_t	byte	readable		
 exe	0x00576030	unk_SetEndGameGate	sv_t	byte	readable		
-exe	0x00576040	ai_CampaignStep	sv_t	draft	readable	deep	
+exe	0x00576040	ai_CampaignStep	sv_t	byte	readable		
 exe	0x00576340	ai_ScriptQuery	sv_t	byte	readable		
 exe	0x005763c0	ai_RunAllows	sv_t	byte	readable		
 exe	0x00576410	ai_RunAllowsContact	sv_t	byte	readable		
@@ -3993,7 +3993,7 @@ exe	0x00577c60	ai_TutorialHideText2	sv_t	byte	readable
 exe	0x00577cd0	ai_TutorialOpenProgress	sv_t	byte	readable		
 exe	0x00577d60	ai_TutorialCloseProgress	sv_t	byte	readable		
 exe	0x00577d90	ai_TutorialProgressSlider	sv_t	shape	readable	deep	
-exe	0x00577e50	ai_TutorialStepForm	sv_t	draft	readable	deep	
+exe	0x00577e50	ai_TutorialStepForm	sv_t	byte	readable		
 exe	0x005780e0	ai_TutorialStepClicked	sv_t	byte	readable		
 exe	0x00578120	ai_TutorialSetHost	sv_t	byte	readable		
 exe	0x00578150	ai_TutorialClearHost	sv_t	byte	readable		
@@ -4017,7 +4017,7 @@ exe	0x0057c560	ai_AlchemistHire	sv_t	byte	readable
 exe	0x0057c690	ai_AlchemistResearchWindow	sv_t	draft	readable	deep	
 exe	0x0057cde0	ai_AlchemistSendRecipeResearch	sv_t	byte	readable		
 exe	0x0057ced0	ai_AlchemistSendResearchStart	sv_t	byte	readable		
-exe	0x0057cf90	ai_AlchemistWindow	sv_t	draft	readable	deep	
+exe	0x0057cf90	ai_AlchemistWindow	sv_t	shape	readable	stuck	
 exe	0x0057dc50	ai_AlchemistTrainShareWindow	sv_t	byte	readable		
 exe	0x0057de60	ai_AlchemistFundWindow	sv_t	byte	readable		
 exe	0x0057e0e0	ai_AlchemistRescheduleWindow	sv_t	byte	readable		
@@ -4030,7 +4030,7 @@ exe	0x0057f620	ai_CannonFireCheck	sv_t	byte	readable
 exe	0x0057f690	ai_CannonShotResults	sv_t	byte	readable		
 exe	0x0057f890	ai_CannonPanel	sv_t	byte	readable		
 exe	0x0057fdb0	ai_CannonPitchRatio	sv_t	byte	readable		
-exe	0x0057fdd0	ai_CannonSwitchAnim	sv_t	draft	readable	deep	
+exe	0x0057fdd0	ai_CannonSwitchAnim	sv_t	byte	readable		
 exe	0x00580160	ai_CannonExplosion	sv_t	draft	readable	deep	
 exe	0x00580a50	ai_ShotTableReset	sv_t	byte	readable		
 exe	0x00580a90	ai_CannonBuildPanel	sv_t	draft	readable	deep	
@@ -4049,7 +4049,7 @@ exe	0x00582b40	ai_GraveDetail	sv_t	shape	readable	stuck
 exe	0x005830f0	ai_GraveDeadName	sv_t	byte	readable		
 exe	0x00583150	ai_GraveDeadDescription	sv_t	byte	readable		
 exe	0x00583240	ai_GraveWindow	sv_t	draft	readable	deep	
-exe	0x00583700	ai_RentGraveDetail	sv_t	draft	readable	deep	
+exe	0x00583700	ai_RentGraveDetail	sv_t	draft	readable	stuck	
 exe	0x00583b70	ai_GraveDetailOpen	sv_t	byte	readable		
 exe	0x00583c50	ai_GraveSizeButtonsAt	sv_t	byte	readable		
 exe	0x00583de0	ai_GraveFreeConfirm	sv_t	byte	readable		
@@ -4061,7 +4061,7 @@ exe	0x00584520	ai_GraveRentConfirm	sv_t	byte	readable
 exe	0x005847a0	ai_RentGraveSelect	sv_t	byte	readable		
 exe	0x00584900	ai_GraveCare	sv_t	byte	readable		
 exe	0x00584b70	ai_GraveRaiseHelper	sv_t	byte	readable		
-exe	0x00584d70	ai_GypsyHelperWindow	sv_t	draft	readable	deep	
+exe	0x00584d70	ai_GypsyHelperWindow	sv_t	byte	readable		
 exe	0x00585380	ai_GraveFogWindow	sv_t	shape	readable	deep	
 exe	0x00585750	ai_SeanceWindow	sv_t	byte	readable		
 exe	0x005859c0	ai_SeanceRitual	sv_t	shape	readable	deep	
