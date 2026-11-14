@@ -598,28 +598,14 @@ void lobby_ShowChat(void)
    and faith button rows and the eight coats of arms (the ones other lobby players hold are disabled), then
    steps through them (state 0 .. 5: Enter takes a name, a click a button, the coat ends it; escape, a right
    click or the exit button go one step back or leave); writes the profile back and returns 1 when the player
-   was chosen
-   @stuck deep pass: draft -> shape. Fixed the state-5 dead load: 'if (ai_MissionMode == -1 || b) ret = 1;
-   else ret = 1;' reproduces 'cmp al,0xff / je / mov eax,[esp+0x1ac] / mov eax,1' exactly; the button ids
-   are four scalars male/female/faith0/faith1 (the original's faith0/faith1 slots are not adjacent, so no
-   arrays). Left (asmdiff): 1) slots: the original puts both sv_ButtonRow arrays at one slot (frame+0x44:
-   '+ lea ecx,[esp+0x6c]' for the sex row and '[esp+0x50]' for the faith row at depths 0x28/0xc) yet keeps
-   the frame at 0x194, i.e. an 8-byte hole at +0x4c; ours: sexRow at +0x4c ('- lea ecx,[esp+0x74]', '- mov
-   eax,[esp+0x84] / mov ecx,[esp+0x88]', 3 bytes longer). Tried: one shared row[2] (frame 0x18c, all slots
-   shift), an unused extra int[2] (VC6 drops it), sibling-block-scoped row arrays (frame 0x184, regs/txt
-   order break), only sexRow block-scoped (worse), every declaration position of sexRow (no effect: VC6
-   does not lay out by declaration order). 2) regs at 0x58b41d in the refetch loop: '- mov eax,[eax+esi]'
-   vs '+ mov eax,[esi+eax]' (lobby_List[i]; the first, identical loop matches); tried nested ifs, id =
-   lobby_List[i] temp (no change), id = coats[p->coat] temp (worse), lobby_List assigned after the clear
-   loop (worse). */
+   was chosen */
 
 int lobby_ChoosePlayer(unsigned mask, int b)
 {
     char num[48];
     char town[256];
     int coats[8];
-    int sexRow[2];
-    int faithRow[2];
+    int row[4];
     int male;
     int female;
     int faith0;
@@ -658,14 +644,14 @@ int lobby_ChoosePlayer(unsigned mask, int b)
     familyIn = d2_GetWinObj(win, 2, io_PrintText(0x1ad1, 0x1ad3));
     d2_SetForm(win, 3);
     io_PrintText(0x1ad4);
-    sv_ButtonRow(d2_LastWindow, 0x1c, sexRow, 2, txt_Male, txt_Female);
-    male = sexRow[0];
-    female = sexRow[1];
+    sv_ButtonRow(d2_LastWindow, 0x1c, row, 2, txt_Male, txt_Female);
+    male = row[0];
+    female = row[1];
     d2_SetForm(win, 4);
     io_PrintText(0x1ad7);
-    sv_ButtonRow(d2_LastWindow, 0x1c, faithRow, 2, txt_Faith0, txt_Faith1);
-    faith0 = faithRow[0];
-    faith1 = faithRow[1];
+    sv_ButtonRow(d2_LastWindow, 0x1c, row, 2, txt_Faith0, txt_Faith1);
+    faith0 = row[0];
+    faith1 = row[1];
     d2_SetForm(win, 5);
     io_PrintText(0x1adb);
     perRow = (d2_Wins[d2_LastWindow].w - 0x20) / 0x30;
@@ -722,10 +708,10 @@ int lobby_ChoosePlayer(unsigned mask, int b)
             lobby_List = cm_LobbyPlayerList();
             for (i = 0; i < 8; i++)
                 d2_Objs[coats[i]].clickDisabled = 0;
-            for (i = 1; i < 9; i++) {
-                if (lobby_List[i] == 0)
+            for (i = 0; i < 8; i++) {
+                if (lobby_List[i + 1] == 0)
                     continue;
-                p = cm_LobbyFindPlayer(lobby_List[i]);
+                p = cm_LobbyFindPlayer(lobby_List[i + 1]);
                 if (p == 0 || p->id == 0 || p == lobby_Me)
                     continue;
                 d2_Objs[coats[p->coat]].clickDisabled = 1;

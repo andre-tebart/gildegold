@@ -986,3 +986,13 @@ mechanisms, each as a generated round over all positions / subsets:
   fills as char loops), ch_LoadLowAnims 28 -> 9 (`memset(&f, 0, sizeof(f))`), d2_ResizeWindow 32 -> 24
   (`desc`), ai_CalcMeisterWache 100 -> 86 (the second `msg` clear), ai_FillLoversTab 55 -> 45 (`rows`),
   gv_AllocGraveyard 162 -> 116 ins but shape -> draft.
+- **Two small out-arrays that share ONE slot in the original, with a hole behind it** (dcp frame: `shared in the
+  original`, and `holes:` lists bytes right after the shared slot; the frame size is equal): one array reused
+  for both calls, declared larger than what the code reads - `int row[4]` passed to two `sv_ButtonRow(.., row,
+  2, ..)` calls that read row[0] / row[1]. Two `int[2]` give two slots, one shared `int[2]` a frame 8 short;
+  an unused extra array is dropped. Size the shared array as slot + hole (lobby_ChoosePlayer slots 6 -> 0).
+- **`mov eax,[esi+eax]` against ours `[eax+esi]` for `list[i]` in a strength-reduced loop** (esi = i * 4, the
+  global pointer reloaded into eax): the loop ran zero-based and indexed `list[i + 1]` (`for (i = 0; i < 8; i++)
+  if (lobby_List[i + 1] == 0)`), not `for (i = 1; i < 9; i++) .. lobby_List[i]`. Same instructions, the address
+  operands swapped; `*(i + p)`, `*(p + i)`, a local for the element, nested ifs are all the 1-based code. The
+  twin loop above it in the same function is 1-based in the original (lobby_ChoosePlayer byte).
