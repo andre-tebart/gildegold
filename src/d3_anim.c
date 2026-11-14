@@ -505,7 +505,6 @@ char d3anim_StepObject(D3OBJECT *obj, void *ctx)
     D3ANIMFRAME *shown = 0;
     D3PATH *P;
     D3PATHKEY *keys, *k0, *k1;
-    D3VECTOR v, w, out, tin, tout;
     int i, j, n, last, limit, nframes, nk, half;
     char done, over = 0, over2 = 0, released;
     float acc, t, u;
@@ -528,19 +527,19 @@ char d3anim_StepObject(D3OBJECT *obj, void *ctx)
                 if (now - D3_L(obj)->time > (unsigned int)s->timeout)
                     over = 1;
                 last = data->first;
-                nframes = data->nframes;
                 if (s->flags.b[1] & 0x10) {
-                    limit = nframes - 1;
+                    limit = data->nframes - 1;
                     if (!data->relative)
                         s->lastFrame = 0;
                 } else
                     limit = data->last;
+                nframes = data->nframes;
                 s->flags.b[1] &= ~0x20;
                 data->lastuse = d3_FrameCount;
                 d3_UpdateObject(obj, 1);
                 done = 0;
                 if (s->fadeStart != s->fadeEnd) {
-                    if (now >= (unsigned int)s->fadeEnd) {
+                    if ((unsigned int)s->fadeEnd <= now) {
                         s->fadeEnd = 0;
                         s->fadeStart = 0;
                         s->weight = s->fadeTo;
@@ -625,11 +624,12 @@ normalize:
                     }
                 }
                 if (s->flags.b[8] & 4) {
+                    D3VECTOR4 out;
                     n = FRAME_AT(data, s->frame)->count;
                     half = n / 2;
                     if (s->subFrame >= 0 && s->subFrame < n)
                         half = s->subFrame;
-                    d3anim_RootPosAt(obj, s, s->frame, half, &out);
+                    d3anim_RootPosAt(obj, s, s->frame, half, (D3VECTOR *)&out);
                     if (fabs(out.x - s->stopPos.x) < s->stopRadius && fabs(out.z - s->stopPos.z) < s->stopRadius) {
                         s->subFrame = half;
                         s->flags.b[8] |= 8;
@@ -656,6 +656,7 @@ normalize:
                             }
                         } else {
                             D3OBJECT *att = (D3OBJECT *)s->attached;
+                            D3VECTOR4 v, w, out;
 
                             if (!(s->flags.b[8] & 0x40)) {
                                 s->flags.b[8] |= 0x40;
@@ -676,7 +677,7 @@ normalize:
                             out.x += s->attachPos.x;
                             out.y += s->attachPos.y;
                             out.z += s->attachPos.z;
-                            d3_SetObjectPos(att, &out);
+                            d3_SetObjectPos(att, (D3VECTOR *)&out);
                         }
                     }
                 }
@@ -699,6 +700,7 @@ normalize:
     d3anim_PoseBones(obj);
     P = obj->path;
     if (P && (P->flags.b[8] & 2)) {
+        D3VECTOR4 v, w, tin, tout;
         nframes = P->nkeys;
         P->flags.b[1] &= ~0x20;
         if (P->flags.b[1] & 2) {
@@ -718,7 +720,7 @@ normalize:
                 v.x += P->pos.x;
                 v.y += P->pos.y;
                 v.z += P->pos.z;
-                d3_SetObjectPos(obj, &v);
+                d3_SetObjectPos(obj, (D3VECTOR *)&v);
                 if (obj->type < 5) {
                     tin.x = -P->keys[P->next].rotin.x; tin.y = -P->keys[P->next].rotin.y; tin.z = -P->keys[P->next].rotin.z;
                     tout.x = -P->keys[P->next].rotout.x; tout.y = -P->keys[P->next].rotout.y; tout.z = -P->keys[P->next].rotout.z;
@@ -728,7 +730,7 @@ normalize:
                     w.x += P->rot.x;
                     w.y += P->rot.y;
                     w.z += P->rot.z;
-                    d3_SetObjectRot(obj, &w);
+                    d3_SetObjectRot(obj, (D3VECTOR *)&w);
                 }
             } else {
                 v.x = d3_Hermite(P->keys[P->key].pos.x, P->keys[P->next].pos.x, P->keys[P->key].posin.x, P->keys[P->key].posout.x, t);
@@ -737,7 +739,7 @@ normalize:
                 v.x += P->pos.x;
                 v.y += P->pos.y;
                 v.z += P->pos.z;
-                d3_SetObjectPos(obj, &v);
+                d3_SetObjectPos(obj, (D3VECTOR *)&v);
                 if (obj->type < 5) {
                     w.x = d3_Hermite(P->keys[P->key].rot.x, P->keys[P->next].rot.x, P->keys[P->key].rotin.x, P->keys[P->key].rotout.x, t);
                     w.y = d3_Hermite(P->keys[P->key].rot.y, P->keys[P->next].rot.y, P->keys[P->key].rotin.y, P->keys[P->key].rotout.y, t);
@@ -745,7 +747,7 @@ normalize:
                     w.x += P->rot.x;
                     w.y += P->rot.y;
                     w.z += P->rot.z;
-                    d3_SetObjectRot(obj, &w);
+                    d3_SetObjectRot(obj, (D3VECTOR *)&w);
                 }
             }
         } else {
@@ -755,11 +757,11 @@ normalize:
             v.x += t * P->keys[P->next].pos.x;
             v.y += t * P->keys[P->next].pos.y;
             v.z += t * P->keys[P->next].pos.z;
-            if (!d3_VecEqual(&v, &d3_Origin, 0.0f)) {
+            if (!d3_VecEqual((D3VECTOR *)&v, &d3_Origin, 0.0f)) {
                 v.x += P->pos.x;
                 v.y += P->pos.y;
                 v.z += P->pos.z;
-                d3_SetObjectPos(obj, &v);
+                d3_SetObjectPos(obj, (D3VECTOR *)&v);
             }
             if (obj->type < 5) {
                 w.x = u * P->keys[P->key].rot.x;
@@ -771,7 +773,7 @@ normalize:
                 w.x += P->rot.x;
                 w.y += P->rot.y;
                 w.z += P->rot.z;
-                d3_SetObjectRot(obj, &w);
+                d3_SetObjectRot(obj, (D3VECTOR *)&w);
             }
         }
         f1 = P->flags.b[1];
@@ -868,11 +870,11 @@ stepped:
                     v.x = P->keys[P->next].pos.x + P->pos.x;
                     v.y = P->keys[P->next].pos.y + P->pos.y;
                     v.z = P->keys[P->next].pos.z + P->pos.z;
-                    d3_SetObjectPos(obj, &v);
+                    d3_SetObjectPos(obj, (D3VECTOR *)&v);
                     w.x = P->keys[P->next].rot.x + P->rot.x;
                     w.y = P->keys[P->next].rot.y + P->rot.y;
                     w.z = P->keys[P->next].rot.z + P->rot.z;
-                    d3_SetObjectRot(obj, &w);
+                    d3_SetObjectRot(obj, (D3VECTOR *)&w);
                     if (!(P->flags.b[1] & 8))
                         d3anim_FreePath(obj);
                     else {

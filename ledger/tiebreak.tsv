@@ -687,7 +687,7 @@ exe	0x00431ae0	d3anim_PoseBones	d3_anim	57dc6df2d1cf6b6d	no	shape	sample n=32 se
 exe	0x00432190	d3anim_RootPosAt	d3_anim	7d5f7a80c8fbbec7	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x004324e0	d3anim_NextFrame	d3_anim	39b5594b8a2292a6	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00432530	d3path_Tangents	d3_anim	ca9915da1c38a901	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x00432750	d3anim_StepObject	d3_anim	1b8d2fe38daa11da	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x00432750	d3anim_StepObject	d3_anim	683d0b9d11e3c59f	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x00433b10	d3anim_FreePath	d3_anim	6c5eab432df9ec77	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00433b50	d3path_Init	d3_anim	22bf468b16360139	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
 exe	0x00433d70	d3anim_CreatePath	d3_anim	17814c8dd9b20301	yes	shape	control=shape p1=shape* p2=shape* p3=shape* p4=shape*
