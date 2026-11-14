@@ -6,7 +6,8 @@
 Every statement line of FUNC is deleted, duplicated, swapped with the next one, and its tokens are replaced
 (constants, comparison and logic operators, int types); each mutant is compiled with the project's flags and the
 function's listing (one instruction per line, single spaces, as VC6's /FA prints it) is searched for --want (and
-must not contain --avoid). The mutants are NOT meant to be kept: most change the meaning. They show which part
+must not contain --avoid). The text starts with the function's frame symbols (`_name$ = -OFFSET` lines), so a frame
+layout can be wanted too: --want "_cityobj.. = -1356". The mutants are NOT meant to be kept: most change the meaning. They show which part
 of the function the wanted code depends on - the lever to respell by hand. --try writes the hits as a `dcp try`
 variants file (labels m0, m1, ..), so their distance to the original can be measured: a hit at `byte` whose
 change keeps the meaning is the answer (di_UpdateButtons: a volatile view against the plain field).
@@ -45,10 +46,15 @@ def listing(tag, text, fn):
                        env=env(), capture_output=True, text=True, cwd=ROOT)
     out = None
     if r.returncode == 0:
-        out, on = [], False
+        out, on, frame = [], False, []
         for l in open(a, encoding="latin-1"):
-            if re.match(r"[_@]%s(@\d+)?\s+PROC" % re.escape(fn), l):
+            if re.match(r"_\S+\$\S* = -?\d+", l):
+                frame.append(re.sub(r"\s+", " ", l.split(";")[0].strip()))  # a frame symbol: _name$ = offset
+            elif re.match(r"[_@]%s(@\d+)?\s+PROC" % re.escape(fn), l):
                 on = True
+                out = frame  # the function's frame symbols come first, so --want can ask for a layout
+            elif re.match(r"\S+\s+PROC", l):
+                frame = []
             elif re.match(r"[_@]%s(@\d+)?\s+ENDP" % re.escape(fn), l):
                 on = False
             elif on and re.match(r"\t[a-z]", l):
