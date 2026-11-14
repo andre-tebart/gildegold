@@ -4355,17 +4355,25 @@ int gm_FindMarketObject(int id)
     return 0;
 }
 /* 0x500c20, collects the offers of the goods id from the 0x58 buildings into gm_Offers (count gm_NOffers): the market building offers what its market object (gm_FindMarketObject) holds, any other building flags the goods in its store object (0xff) and offers what its stall (0x2a) holds; the supply is the stall's amount (gm_ListAmount) less a quarter of its stock (gm_ListStock) times the goods' +0x1c, not below 0; each offer's price is gm_GoodsPrice(goods, ai_OwnPlayer) times the building's price factor, and the offers are sorted by price, highest first. Returns 0, 1 without the tables
-   @deep read against the original statement by statement: the building walk, the three row clears, the
-   market branch (gm_FindMarketObject, gm_Query of its list), the store-flag branch (0xff), the stall
-   branch (0x2a), the supply (gm_ListAmount - (unsigned)(gm_ListStock * o->v1c[0]) >> 2, clamped by the
-   sets/dec/and pair after a first store), the price loop and the selection sort with the struct swap all
-   match (equal call sequences, operands, constants and field offsets). What is left: VC6 cross-jumps the
-   identical supply tail of the two branches (push edi .. mov [gm_NOffers], edx) into the stall copy in the
-   original (the market copy ends 'push ecx; jmp 0x500d84') but into the market copy in ours (ours 'jmp
-   0x500cdb'); tried a goto into the stall copy, a shared tail after the if/else (both lay the market block
-   out of line: 199 ins) and the branches swapped (78 ins). The other hunks follow from it: the zero
-   register esi rematerialized at the loop end in the original (0x500de3 xor esi,esi) vs a jmp over it at
-   our loop head, stored = 1 as an immediate vs ebx, cmp edx,esi vs test edx,edx */
+   @stuck match-deep 2026-11-14: still 47 ins. Kept: the building walk counts up (for (k = 0; k < 0x58;
+   k++, b++), the same code as the decompiled countdown). Read: the two remaining differences are one
+   allocation fact and its consequence: the original rematerializes the zero register esi in a block of its
+   own at the end of the body (0x500de3 xor esi,esi, the type == 0 skip jumping past it to the latch), ours
+   at the loop head (entry jmp over it, every iteration through it); with that block before the latch the
+   market copy of the supply tail is cross-jumped into the stall copy (push ecx; jmp 0x500d84), ours the
+   other way. Tried (dcp try): index loop b = ai_Blds + k (73), k up with b++ / both in the for = control,
+   the body under if (b->type != 0) instead of continue = control, own locals for the market branch's
+   objects = control, AISTORE tmp declared last = control, the market branch only setting a flag and one
+   shared offer block (122). (tiebreak: not measured (dcp headers sample gm_CollectOffers)) prior: read
+   against the original statement by statement: the building walk, the three row clears, the market branch
+   (gm_FindMarketObject, gm_Query of its list), the store-flag branch (0xff), the stall branch (0x2a), the
+   supply (gm_ListAmount - (unsigned)(gm_ListStock * o->v1c[0]) >> 2, clamped by the sets/dec/and pair
+   after a first store), the price loop and the selection sort with the struct swap all match (equal call
+   sequences, operands, constants and field offsets). What is left: VC6 cross-jumps the identical supply
+   tail of the two branches (push edi .. mov [gm_NOffers], edx) into the stall copy in the original (the
+   market copy ends 'push ecx; jmp 0x500d84') but into the market copy in ours (ours 'jmp 0x500cdb'); tried
+   a goto into the stall copy, a shared tail after the if/else (both lay the market block out of line: 199
+   ins) and the branches swapped (78 ins). The other hunks follow from it:... */
 
 int gm_CollectOffers(int goods)
 {
@@ -4378,7 +4386,7 @@ int gm_CollectOffers(int goods)
         return 1;
     gm_NOffers = 0;
     b = (ORDBLD *)ai_Blds;
-    for (k = 0x58; k != 0; k--, b++) {
+    for (k = 0; k < 0x58; k++, b++) {
         if (b->type == 0)
             continue;
         f = 0;
