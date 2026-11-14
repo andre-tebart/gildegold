@@ -424,8 +424,8 @@ exe	0x00420990	qnt_Build	qnt	byte	readable
 exe	0x00420b90	qnt_Sift	qnt	byte	readable		
 exe	0x00420c90	qnt_Reduce	qnt	byte	readable		
 exe	0x00420db0	qnt_MakePalette	qnt	byte	readable		
-exe	0x00420e70	qnt_Map	qnt	draft	readable	stuck	
-exe	0x00421410	qnt_Nearest	qnt	shape	readable	deep	
+exe	0x00420e70	qnt_Map	qnt	byte	readable		
+exe	0x00421410	qnt_Nearest	qnt	byte	readable		
 exe	0x004214a0	err_Write	err	byte	readable		
 exe	0x004215c0	err_ExceptionFilter	err	draft	readable	stuck	
 exe	0x00421d50	err_WriteSymbol	err	byte	readable		
