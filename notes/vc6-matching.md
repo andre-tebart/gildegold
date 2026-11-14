@@ -2995,3 +2995,25 @@ differing instructions. The same shape made the character loop of 0x512f30 pick 
   is insensitive, but flip.py hits on unrelated expressions elsewhere in the function (another `(a - b)` turned
   into `+`, a float constant changed): C1's canonical operand order depends on function-wide state (value numbers),
   not on the statement. Open.
+
+## match-deep 2026-11-14 (fourth d2 session)
+- **A short global loaded as a dword (`mov ecx, dword [d2_ScreenH]; .. sub ecx,eax; mov [m],cx`) where the original
+  keeps `mov cx, word [..]; sub cx,ax`**: VC6 widens a 16-bit load-op-store chain to 32 bits only when it knows
+  the global is 4-aligned, i.e. when the unit DEFINES it with an initializer (`short d2_ScreenH = 0;`). The
+  original's d2_ScreenH / d2_ScreenW were tentative (`short d2_ScreenH;`, COMMON: the linker places it, the
+  compiler assumes nothing). Probe: `extern short probeH;` inside the function in a dcp try variant gives the
+  original's word load. Make every neighbour that VC6 would then see as aligned tentative too (ScreenW became
+  dword-loaded as soon as ScreenH alone was COMMON). No byte lost elsewhere; the link still resolves.
+- **d2_ResizeWindow byte (32 ins)**: besides the COMMON globals, (1) a record pointer `o = &d2_Objs[*p]` for
+  the h / y reads instead of two locals `oh` / `oy` (`o->y + o->h`; 32 -> 18), (2) the object loop as the plain
+  `for (i = 0; i < wn->nobjs; i++) .. d2_Objs[wn->objs[i]]` instead of the decompiled `n = wn->nobjs; if (n > 0)
+  { p = ..; do { ..; p++; n--; } while (n); }` - VC6 makes the same countdown and pointer in the param slot
+  itself, and the four clip-sum operand-order hunks far below (`wn->w + wn->x` loading x first, every spelling
+  of the sum one code) went with it: the operand order of a commutative sum follows function-wide state, the
+  same as d2_DrawInput / d2_DrawSlider's open hunks. Rule: fix the decompiled loop shapes before an operand
+  order hunk elsewhere.
+- d2_RaiseWindow (stuck): the plain `j = -1; for (..) { if (o) { if (o->id == parent) { j = i; break; } .. } }`
+  gives the original's block layout but a whole-function register permutation (78 ins); flip.py: changing
+  either search loop's start `0x2ff` to another value leaves 6 ins - the constant shared by two loops is an
+  allocation candidate the original did not have. No spelling of it (0x2ffu, casts, 767, sizeof, other loop
+  forms, other variables) separates the two.

@@ -1392,3 +1392,7 @@ mechanisms, each as a generated round over all positions / subsets:
 - **A big draft called "allocation only" can still hold a wrong index**: d3anim_StepObject's tangent clear read
   key / next where the original reads nkeys / key ([esi] vs [esi+4]). Holes of 4 bytes after every 3-float group
   of the original's frame = D3VECTOR4 locals; declare them in their blocks (0x68 -> 0x9c of 0xbc).
+- **A short global the original loads as a word where ours loads a dword and widens the arithmetic** (`mov ecx,
+  dword [g]; sub ecx,eax` vs `mov cx, word [g]; sub cx,ax`): the global was tentative (COMMON, `short g;`, no
+  initializer), so VC6 did not know it was 4-aligned. Probe with `extern short probe;` in a dcp try variant;
+  make the neighbours tentative too (d2_ScreenH / d2_ScreenW, d2_ResizeWindow byte).

@@ -139,8 +139,8 @@ int d2_PointerY = 0;  /* 0xfa5f0c, pointer y */
 char d2_GfxPath[256] = {0};  /* 0xfa5f20 */
 D2INPUT d2_Inputs[0x80] = {0};  /* 0xfa6020 */
 D2VIEW d2_Views[0x30] = {0};  /* 0xfb1020 */
-short d2_ScreenH = 0;  /* 0xfb9070 */
-short d2_ScreenW = 0;  /* 0xfb9072 */
+short d2_ScreenH;  /* 0xfb9070, tentative (COMMON) as in the original: VC6 then does not know it is 4-aligned and keeps word loads (d2_ResizeWindow) */
+short d2_ScreenW;  /* 0xfb9072, tentative (COMMON) like d2_ScreenH */
 /* 0x143a1c0, the text pointer table: 0x4800 slots, the one block the text loader fills;
    d2_Strings (the first 122) and every named text pointer are views of it (txt_views.h) */
 char *txt_Ptrs[0x4800] = {0};
@@ -3935,31 +3935,23 @@ int win;
     }
     D2WOP(o)->scrollRemX += a;
 }
-/* 0x472800, resizes a window (grows in height so that all objects fit) @deep draft, readable (Q1/Q2/Q4 done this session): 438/608 bytes, 29 asm lines, hunks code 40 / order 6 / fill 1 - same instructions, scheduling and operand order only. spell.py: no hunk matched the menu (escalate with the diffclass verdict). Left: 47284c (the delta store moved across the jle), 472877 (the object-loop body loads d2_Objs[].h before wn->h in the original; ours loads wn->h first), 47298a / 472a01 (our o->clipy1 = wn->y + wn->h emits y then h, the original h then y; o->clipx1 similarly), 472a5f alignment fill. Tried: swapping the two clip expressions to wn->h + wn->y / wn->x + wn->w - identical bytes, reverted. Q4 fixed byte-neutrally here: int *p = wn->objs; *p; p++ instead of the int-as-byte-pointer walk win = (int)wn->objs / *(int *)win / win += 4 (438/608 bytes and 29 lines unchanged). Q1/Q2 clean (named d2_ResizeWindow earlier this session, was d2_ResizeWindow): the typed int *p walk replaced the two *(int *)win raw accesses. */
+/* 0x472800, resizes a window (grows in height so that all objects fit) */
 
 void d2_ResizeWindow(short w, short h, int win)
 {
     D2WIN *wn = &d2_Wins[win];
-    int delta, dw, n, i, oh, oy;
+    int delta, dw, i;
     int desc[16];
-    int *p;
     D2OBJ *o;
     void *ns, *old;
 
     if (wn->active) {
         dw = w - wn->w;
         delta = h - wn->h;
-        n = wn->nobjs;
-        if (n > 0) {
-            p = wn->objs;
-            do {
-                oh = d2_Objs[*p].h;
-                oy = d2_Objs[*p].y;
-                if (wn->y + wn->h + delta < oy + oh)
-                    delta = oy - wn->y - wn->h + 8 + oh;
-                p++;
-                n--;
-            } while (n);
+        for (i = 0; i < wn->nobjs; i++) {
+            o = &d2_Objs[wn->objs[i]];
+            if (wn->y + wn->h + delta < o->y + o->h)
+                delta = o->y - wn->y - wn->h + 8 + o->h;
         }
         if (wn->surf0) {
             mem_Free(wn->surf0);
