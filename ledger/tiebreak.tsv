@@ -3018,7 +3018,7 @@ exe	0x005012b0	gm_FindFreeBuilding	f3gm	946257dcb23a7901	no	byte	control=byte p1
 exe	0x005012e0	gm_FreeBuilding	f3gm	85f5f7b665318d0f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00501400	gm_StockBuildingObjects	f3gm	a08f5c1b60e3c077	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x005014b0	gm_SetCapacities	f3gm	96fcaf88c0b16221	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x00501580	gm_CreateBuilding	f3gm	93419e8c42bfe808	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x00501580	gm_CreateBuilding	f3gm	5b8654ff51a5bf37	no	draft	sample n=32 seed=1 compiled=31 codegens=1 best=draft
 exe	0x00501b50	gm_BuildingMainObject	f3gm	566004b7f8637a8d	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x00501ce0	gm_GetGebaeudeHauptraum	f3gm	530470fdbe56e75d	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00501d80	gm_BuildingClass	f3gm	223233e5401806f2	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
