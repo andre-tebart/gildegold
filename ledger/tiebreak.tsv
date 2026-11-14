@@ -2959,7 +2959,7 @@ exe	0x004fd090	gm_IsNoPlayerKin	f3gm	3ed47f420dcb686d	no	byte	control=byte p1=by
 exe	0x004fd120	gm_PopulationStep	f3gm	2c0eccd071c10c86	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
 exe	0x004fd5c0	gm_CreateRandomChild	f3gm	2ad17e6a777d8d8f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004fd7e0	gm_IsUnderAge	f3gm	b4ba174e4cbf7201	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x004fd820	gm_FindHome	f3gm	5391ff0c1b54aadf	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x004fd820	gm_FindHome	f3gm	4eec4a675a23557c	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x004fda10	gm_MoveIntoHome	f3gm	183e67ab444904bb	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004fda70	gm_FindApplicant	f3gm	7fd4359855cd93e2	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004fdc10	gm_HomeObject	f3gm	700c343563f21dd0	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
