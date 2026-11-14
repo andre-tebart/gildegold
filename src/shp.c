@@ -559,12 +559,33 @@ D2SHP *d2_GrabShape16NoRuns(int x, int y, int w, int h, unsigned short *src, uns
    palette pixels of the transparent colour and of the start / end marker colours (the markers move the box),
    then stores every row as skip runs of zero pixels alternating with literal runs, builds the table of row
    offsets, and returns an exactly sized copy of the shape (allocated with mem_Alloc; the scratch shape is
-   freed). @deep match-base 2026-10-31: read against the original (346 vs 353 instructions, was 336; differing 177, was 333). The bounding-box scan re-reads src[(y + i) * pitch + x + j] != 0 in each of the four tests (the original re-tests dl after every store; a char local let VC6 thread them away); the marker scan reads the pixel into c (unsigned char) and stores minx / miny (maxx / maxy) before clearing p[j]; the run loop counts rows with i (int, lines[i] unmasked) and the row coordinate j = y + i, keeps run as unsigned int * computed after every size change, the literal run tests src[run[1] + t + col + x] directly, adds run[1] in both arms of if (run[1] > 0) (the - 1 in one), and the tests are s->h > 0 / s->w > 0 (jbe). Left: w / h in edi / esi swapped against ours and the box variables in other slots (frame 0xda0 vs 0xd9c: the original keeps the masked pitch in a stack temp [esp+0x2c] and recomputes j * pitch for the skip-run row where ours reuses t), scheduling of the stores around mem_Alloc. */
+   freed).
+   @stuck 203 -> 199 ins: the box bounds as unsigned int with (int)(x & 0xffff) compares and (unsigned
+   short) casts at the stores (the original's dword stores / masked loads, as d2_GrabShape16NoRuns), init
+   order minx = w; maxy = 0; maxx = 0; cnt = 0; miny = h. Left, in order of size: (1) every colour-key
+   compare (transparent clear loop, both marker tests): the original loads the palette byte into dl and
+   compares it with the key's r in memory, then reads the key's gb as one word (mov dx, word [key+1]) and
+   compares dl / dh; ours loads the key's r and g as one dword and b as a byte - the D2KEY word narrowing
+   that d2_GrabShape16NoRuns is stuck on (a data / type question, not a spelling: every access form is one
+   code); (2) c in the marker loop is memory-homed in the original (mov byte [slot], dl; mov ecx, dword
+   [slot]; and ecx, 0xff), ours keeps it in edx; (3) the skip-run row: the original keeps pitch & 0xffff in
+   its own slot and recomputes j * pitch + x + src per skip run, ours reuses t (row = src + pitch * j + x,
+   (j * pitch + x), x + j * pitch and (i + y) * pitch are all = control: VC6 equates them). Frame 0xd9c vs
+   0xda0 is that pitch slot. (tiebreak: not measured (dcp headers sample d2_GrabShape8Runs)) prior:
+   match-base 2026-10-31: read against the original (346 vs 353 instructions, was 336; differing 177, was
+   333). The bounding-box scan re-reads src[(y + i) * pitch + x + j] != 0 in each of the four tests (the
+   original re-tests dl after every store; a char local let VC6 thread them away); the marker scan reads
+   the pixel into c (unsigned char) and stores minx / miny (maxx / maxy) before clearing p[j]; the run loop
+   counts rows with i (int, lines[i] unmasked) and the row coordinate j = y + i, keeps run as unsigned int
+   * computed after every size change, the literal run tests src[run[1] + t + col + x] directly, adds
+   run[1] in both arms of if (run[1] > 0) (the - 1 in one), and the tests are s->h > 0 / s->w > 0 (jbe).
+   Left: w / h in edi / esi swapped against ours and the box variables in other slots (frame 0xda0 vs
+   0xd9c: the original keeps the masked pitch in a stack temp [esp+0x2c] and recomputes... */
 
 D2SHP *d2_GrabShape8Runs(int x, int y, int w, int h, unsigned char *src, unsigned char mode, unsigned short pitch)
 {
     int i, j, cnt, runs, col, t;
-    unsigned short minx, miny, maxx, maxy;
+    unsigned int minx, miny, maxx, maxy;
     int lines[864];
     unsigned char *p, *row;
     unsigned char c;
@@ -573,36 +594,36 @@ D2SHP *d2_GrabShape8Runs(int x, int y, int w, int h, unsigned char *src, unsigne
     unsigned int *run;
 
     minx = w;
-    maxx = 0;
     maxy = 0;
+    maxx = 0;
     cnt = 0;
     miny = h;
     s = mem_Alloc((w * 8 + 4) * h + 0x32, "d2:shp:_GrabBit8:ShapeHeader");
     for (i = 0; i < h; i++) {
         for (j = 0; j < w; j++) {
-            if (src[(y + i) * pitch + x + j] != 0 && j > maxx)
+            if (src[(y + i) * pitch + x + j] != 0 && j > (int)(maxx & 0xffff))
                 maxx = j;
-            if (src[(y + i) * pitch + x + j] != 0 && j < minx)
+            if (src[(y + i) * pitch + x + j] != 0 && j < (int)(minx & 0xffff))
                 minx = j;
-            if (src[(y + i) * pitch + x + j] != 0 && i > maxy)
+            if (src[(y + i) * pitch + x + j] != 0 && i > (int)(maxy & 0xffff))
                 maxy = i;
-            if (src[(y + i) * pitch + x + j] != 0 && i < miny)
+            if (src[(y + i) * pitch + x + j] != 0 && i < (int)(miny & 0xffff))
                 miny = i;
         }
     }
-    if (maxx < minx || maxy < miny) {
+    if ((unsigned short)maxx < (unsigned short)minx || (unsigned short)maxy < (unsigned short)miny) {
         maxx = 0;
         minx = 0;
         maxy = 0;
         miny = 0;
     }
-    s->x0 = minx;
-    s->y0 = miny;
+    s->x0 = (unsigned short)minx;
+    s->y0 = (unsigned short)miny;
     s->w = (unsigned short)maxx + 1;
     s->h = (unsigned short)maxy + 1;
     s->ay1 = (unsigned short)maxy + 1;
-    s->ax0 = minx;
-    s->ay0 = miny;
+    s->ax0 = (unsigned short)minx;
+    s->ay0 = (unsigned short)miny;
     s->ax1 = (unsigned short)maxx + 1;
     for (i = 0; i < h; i++) {
         for (j = w; j > 0; j--) {
