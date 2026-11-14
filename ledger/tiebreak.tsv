@@ -3089,7 +3089,7 @@ exe	0x005060d0	gm_DeathDate	f3gm	105055be8b103e61	no	shape	control=shape p1=shap
 exe	0x00506180	gm_RankPlayers	f3gm	0662dd45bed63e8a	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
 exe	0x00506430	gm_PlayerRecord	f3gm	96707c788812cc66	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
 exe	0x00506480	gm_HasAdultRelative	f3gm	4a01a82b285f0652	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x005064d0	gm_TakeOverCharacter	f3gm	82d1a68912aa6ba9	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x005064d0	gm_TakeOverCharacter	f3gm	82d1a68912aa6ba9	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x00506890	gm_InheritEstate	f3gm	60d9bd53368891f8	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
 exe	0x00506e70	gm_ForfeitEstate	f3gm	1437bf6860c64be4	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x005075c0	gm_MayRemoveChar	f3gm	71cce588f934e38e	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte

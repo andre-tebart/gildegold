@@ -6531,35 +6531,35 @@ int gm_TitlesLeft(int n)
     int r;
 
     r = 0;
-    if (0 < n && n < 7)
+    if (n >= 1 && n <= 6)
         return 7 - n;
-    if (6 < n && n < 0xd)
+    if (n >= 7 && n <= 0xc)
         return 0xd - n;
-    if (0x21 < n && n < 0x28)
+    if (n >= 0x22 && n <= 0x27)
         return 0x28 - n;
-    if (0x27 < n && n < 0x2e)
+    if (n >= 0x28 && n <= 0x2d)
         return 0x2e - n;
-    if (0x2d < n && n < 0x34)
+    if (n >= 0x2e && n <= 0x33)
         return 0x34 - n;
-    if (0x39 < n && n < 0x40)
+    if (n >= 0x3a && n <= 0x3f)
         return 0x40 - n;
-    if (0x3f < n && n < 0x46)
+    if (n >= 0x40 && n <= 0x45)
         return 0x46 - n;
-    if (0x45 < n && n < 0x4c)
+    if (n >= 0x46 && n <= 0x4b)
         return 0x4c - n;
-    if (0xc < n && n < 0x13)
+    if (n >= 0xd && n <= 0x12)
         return 0x13 - n;
-    if (0x33 < n && n < 0x3a)
+    if (n >= 0x34 && n <= 0x39)
         return 0x3a - n;
-    if (0x18 < n && n < 0x1f)
+    if (n >= 0x19 && n <= 0x1e)
         return 0x1f - n;
-    if (0x12 < n && n < 0x19)
+    if (n >= 0x13 && n <= 0x18)
         return 0x19 - n;
-    if (0x4b < n && n < 0x52)
+    if (n >= 0x4c && n <= 0x51)
         return 0x52 - n;
-    if (0x58 < n && n < 0x5f)
+    if (n >= 0x59 && n <= 0x5e)
         return 0x5f - n;
-    if (0x52 < n && n < 0x59)
+    if (n >= 0x53 && n <= 0x58)
         r = 0x59 - n;
     return r;
 }
@@ -7421,13 +7421,12 @@ short *gm_PlayerRecord(char *c)
     ORDCHAR *ch = ORD_CHAR(c);
     int slot;
 
-    if (ch->kind == 6 || ch->kind == 7 || ch->kind == 5) {
-        if (ch->w050 & 0x8000) {
-            slot = ch->w050 & 0xf;
-            if (slot >= 0 && slot < 0x10)
-                return (short *)&gm_PlayerRecords[slot * 0x2b];
-        }
-    }
+    if ((ch->kind == 6 || ch->kind == 7 || ch->kind == 5) && (ch->w050 & 0x8000))
+        slot = ch->w050 & 0xf;
+    else
+        slot = -1;
+    if (slot >= 0 && slot < 0x10)
+        return (short *)&gm_PlayerRecords[slot * 0x2b];
     return 0;
 }
 /* 0x506480, counts the character c's five active relatives (relatives[3] .. relatives[7] at +0x68: gm_FindChar
@@ -7459,25 +7458,7 @@ int gm_HasAdultRelative(char *c, int *n)
    gets a's old record under b's id and netId as a kind 9 character. The inventories are re-pointed at the new
    netIds, a and b are swapped in every character's relatives, the kind 9 goods of a's old inventory are added to
    a, a's worth is put into v1a8 and b's slot is removed (gm_KillSpieler). Returns a's slot, -1 / -2 when a / b
-   is unknown
-   @deep Reconstructed and read against the whole original 0x5064d0..0x506889 (282 ins, ours 281): every
-   statement is there in the original's order - gm_FindChar a / -1, ai_RestartMission, the 0x100 buildings
-   of class 2 owned by a handed to *ai_PlayerChar (through gm_AssignBuildingI: the original zero-extends
-   the word once for both int arguments), worth, gm_FindChar b / -2, he_RecheckPersonEvents +
-   he_EndPersonEvents x2, the w050 copy, amt_ClearOffices, newA = *cb with a's kind / netId / id / level /
-   bld2, the title-group branch (gm_TitleGroup, gm_PlayerRecord, gm_TitleJob, the two gm_TitlesLeft,
-   rec[0x74 + group]), the ownName / picture branch (strcpy or gm_NameRecord + heads[0] + 0x639), oldA =
-   *ca with b's netId / id and kind 9, the two record copies, the two inventory re-points, the 0x300 x 8
-   relatives swap, the kind 9 gm_AddObjekt walk over oldA.inventory, v1a8 / v194 / flags1c8 and
-   gm_KillSpieler(oldA.id, 0). Left: (1) the induction form of the building loop and the relatives' outer
-   loop: the original counts down a separate counter (mov ebx, 0x100 ... dec ebx / jne; [esp+0x10] = 0x300
-   ... dec / jne), ours compares the derived offset (cmp edi, 0xa900 / jb; cmp edi, end / jl) - tried int /
-   unsigned i, the array and the byte-offset spelling of the building; (2) the original spills rec
-   (gm_PlayerRecord) to [esp+0x20] and keeps group in edi, ours keeps rec in edi: the 4-byte frame
-   difference 0x448 vs 0x44c (frame 54, slots 8) and the scheduling of the record field loads around the
-   two rep movsd (code hunks at +0xf0 .. +0x120 and +0x232 .. +0x258, the same loads and stores in another
-   order). Tried the store orders of newA / oldA fields (kind, netId, id, level first: 71 -> 61 code hunks)
-   and the branch order of group != 0 (145 -> 121). */
+   is unknown */
 
 unsigned gm_TakeOverCharacter(int a, int b)
 {
@@ -7486,6 +7467,7 @@ unsigned gm_TakeOverCharacter(int a, int b)
     unsigned short sa, sb;
     int worth, group, job, left;
     unsigned i, k;
+    short j;
     unsigned char *rec;
     unsigned *head;
     ORDBLD *bl;
@@ -7495,8 +7477,8 @@ unsigned gm_TakeOverCharacter(int a, int b)
     if (ca == 0)
         return -1;
     ai_RestartMission((struct G13MIS *)ca);
-    for (i = 0; i < 0x100; i++) {
-        bl = &((ORDBLD *)ai_Blds)[i];
+    for (j = 0; j < 0x100; j++) {
+        bl = &((ORDBLD *)ai_Blds)[j];
         if (bl->type != 0 && gm_BuildingClass(bl->type) == 2 && bl->owner == ca->id)
             gm_AssignBuildingI((unsigned char *)bl, *ai_PlayerChar, *ai_PlayerChar);
     }
@@ -7513,16 +7495,16 @@ unsigned gm_TakeOverCharacter(int a, int b)
         cb->w050 = ca->w050;
     amt_ClearOffices((char *)ca);
     newA = *cb;
-    newA.kind = ca->kind;
-    newA.netId = ca->netId;
     newA.id = ca->id;
+    newA.netId = ca->netId;
+    newA.kind = ca->kind;
     newA.level = ca->level;
     newA.bld2 = ca->bld2;
     group = gm_TitleGroup(cb->jobId);
     if (group != 0) {
         rec = (unsigned char *)gm_PlayerRecord((char *)ca);
         if (rec != 0) {
-            job = gm_TitleJob(sa, group);
+            job = gm_TitleJob(ca->id, group);
             if (job != 0) {
                 left = gm_TitlesLeft(cb->jobId);
                 if (gm_TitlesLeft(job) < left)
