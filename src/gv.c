@@ -2477,29 +2477,13 @@ int gv_RoomForRaised(unsigned char *o, int *n)
    all others random -0x20 .. 0x1f; it is placed at the building. The grave record is cleared; when the entry's id was
    this dead person's, it passes to the first other dead of the entry (none: the entry is freed). Returns the new
    character's id, 0xffff (no such entry or grave, no free slot) or a negative reason as gv_BuryCharacter (-6 another
-   kind, -1 no owner or the player's own building, -2 not a graveyard, -3 no GVYARD, -4 the size not open)
-   @stuck this pass: name copies are strcpy (VC6's inline copy, sub ecx,eax / mov [edx+eax],cl; 51 -> 21
-   ins), store order by tryclimb (ownName[0] first, title before picture/partyId; 21 -> 9 ins). Left (code
-   19, order 4): (1) the grave search loads e->grave before m->grave ('- mov eax,[eax+0x10]' first; tried
-   for(;;) with break, q++ only, m->grave == q->id, g/i swap: all worse); (2) the relatives memset pointer:
-   the original stores netId=-1 first and computes it in edx ('+ lea edx,[edx+X] / + mov edi,edx'), ours
-   'lea edi' before the store; tried c->relatives, &..[0], 0x20, a char * cast, -1 fill, memset
-   before/between the id stores: same or worse; (3) mov dl,1 scheduled before the rep stosd in ours, after
-   inc CharCount in the original; (4) ownName[0]=0 must come after the title store but every later position
-   worsens the rest (25 positions tried). ai_NextObjectId++ next to netId (or netId = ai_NextObjectId++):
-   worse (39 ins). c->netId = -1 through c: drops the store (meaning). (tiebreak: insensitive) prior: read
-   the whole function against the original (checks, entry/grave search, slot search, character init, name
-   copies, start values, relation loop, place/icon, entry handover, grave clear): every statement, field
-   offset, constant and callee matches; fixed this pass: byte jobId/officeKind stores (not a short at
-   0x164), the id = 0xffff store written through gv_CharsT[slot] (the original keeps it, a store through c
-   is dropped as dead), the relation loop as ai_Relations[j][id] / [id][j] (now equal), store order of
-   0x18c/0x20c/title, f01c after util_RandomF. */
+   kind, -1 no owner or the player's own building, -2 not a graveyard, -3 no GVYARD, -4 the size not open) */
 
 unsigned gv_RaiseDead(GVRAISE *m)
 {
     AIBLD *bld;
     GVENTRY *e;
-    GVGRAVE *g, *q, *z;
+    GVGRAVE *q, *z;
     AICHAR *c;
     int size, i, j, n, slot;
     float r;
@@ -2521,13 +2505,11 @@ unsigned gv_RaiseDead(GVRAISE *m)
         return 0xffff;
     i = 0;
     if (gv_EntryCounts[size] > 0) {
-        g = e->grave;
         do {
-            q = g;
+            q = &e->grave[i];
             if (q->id == m->grave)
                 break;
             i++;
-            g = q + 1;
         } while (i < gv_EntryCounts[size]);
         if (q->id == m->grave) {
             for (slot = 0; slot < 0x300; slot++)
@@ -2548,7 +2530,6 @@ unsigned gv_RaiseDead(GVRAISE *m)
             gv_CharsT[slot].id = 0xffff;
             for (i = 0; i < 8; i++)
                 gv_CharsT[slot].relatives[i] = -1;
-            c->ownName[0] = 0;
             ai_CharCount++;
             c->netId = ai_NextObjectId;
             c->id = (unsigned short)slot;
@@ -2568,6 +2549,7 @@ unsigned gv_RaiseDead(GVRAISE *m)
             c->jobId = 0;
             c->officeKind = 0;
             c->title = (char)m->kind;
+            c->ownName[0] = 0;
             c->picture = -1;
             c->partyId = -1;
             c->v190 = 4;

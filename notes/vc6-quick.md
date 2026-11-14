@@ -955,3 +955,20 @@ mechanisms, each as a generated round over all positions / subsets:
   flag store the optimizer threads. Probe values per site (all 2^n subsets with `dcp try`) tell which sites
   decide a layout before any respelling.
 - c2pass.py / c2fuzz.py need `pefile`: run them as `uv run --with pefile python tools/c2dag/c2pass.py ..`.
+- **`lea edx,[edx+X]; mov edi,edx; rep stosd` (the fill's address in a scratch temp, copied to edi) where ours has
+  `lea edi,[edx+X]`**: the fill was the plain element loop, `for (i = 0; i < 8; i++) c->relatives[i] = -1;`, not
+  `memset(c->relatives, 0xff, 32)`. VC6 /O2 turns the loop into `rep stosd` as well, but keeps the address as a
+  temp of its own (the loop's base) and schedules the neighbouring stores differently. Every spelling of the
+  memset (casts, `&..[0]`, a pointer local, its result used, 359 statement orders) is one code; flip.py found it:
+  the only mutant with the pattern was the memset DUPLICATED, i.e. the address used twice, and the loop is the
+  form that uses it twice without a second fill (ahm_CreateAlchemist 3 ins -> byte). The index variable's name
+  does not matter unless it is the enclosing loop's neighbour (ai_HelperBook: k fine, j worse).
+  Swept with `python tools/sweep/fillloop.py` (every constant memset of every below-byte function as the loop,
+  measured with dcp try; `--zero` for the zero fills, `--widths int,char` for the element type): 47 functions
+  with a -1 fill, 8 moved - hmt_Create and he_StartGang byte, gv_RaiseDead 9 -> 4, ai_UpdateProduction 33 -> 24
+  (only the first of its four fills), gm_CreateCharacter, ai_BuildTownMap, ai_HelperBook, ai_MercenaryBook a few
+  ins each. Run the sweep again after base work on a unit; the reverse (a loop of ours that the original has as
+  memset: `lea edi` directly) is the same lever read backwards.
+- flip.py reading rule: a hit on a DUPLICATED statement means "this value has two uses in the original" (look
+  for the spelling with two uses: a loop, the expression written out again, a macro's second expansion); a hit
+  on a changed constant at one site means "this block is not shared with its twins in the original".
