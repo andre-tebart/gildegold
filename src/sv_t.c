@@ -5242,7 +5242,7 @@ typedef struct CANNONREC {   /* the tutorial's cannon record (ai_CannonScene's a
 } CANNONREC;
 #pragma pack(pop)
 #define CR ((CANNONREC *)rec)
-typedef struct CANNONSCENE { /* 0xe4 bytes, the scene struct of ai_CannonScene (the other cannon functions still address it by byte offset) */
+typedef struct CANNONSCENE { /* 0x104 bytes (0xe4 cleared), the scene struct of ai_CannonScene (the other cannon functions still address it by byte offset) */
     D3VECTOR pos;            /* +0x00, d3_PointToWorld of the cannon object; pos.y gets the height of its bounds * 0.8 */
     float pad0c;
     D3VECTOR rot;            /* +0x10, rot.x the pitch, rot.y the yaw (the angles are GVCANNON.camTarget at the start) */
@@ -5296,6 +5296,7 @@ typedef struct CANNONSCENE { /* 0xe4 bytes, the scene struct of ai_CannonScene (
     D3VECTOR bmax;           /* +0xe4, not part of the cleared 0xe4 bytes: the bounds of the cannon object (d3t_GetObjectBounds) */
     float padf0;
     D3VECTOR bmin;           /* +0xf4 */
+    float pad100;            /* +0x100, bmin's fourth float: the original's frame keeps 4 bytes behind it */
 } CANNONSCENE;
 char * gv_FindEffect(int id); int gv_RequestEffectLoad(struct AIBLD *bld); int cm_GetSlotState(); void gv_SetEffectCallback();
 struct D2FADE *d2_StartFade(int x, int y, int w, int h, char *name, int dur, unsigned int flags); /* 0x4767d0, d2.h */
@@ -5326,27 +5327,20 @@ TUTSTATE ai_TutorialState = { 0 };  /* 0x6fa060, the tutorial state record ai_Tu
    on the quit control sets sv_PopRequest. The teardown fades out again, closes the three windows, removes the two
    objects, deletes the 3D objects, re-enables the listed objects, restores viewport, clip rectangle, scene, sky and
    camera and releases the callback of the run record
-   @deep read whole against the original (667 = 667 ins). Fixed meaning: the 3D objects and the selection
-   are CANNONSCENE fields (obj8c[3]/obj98/obj9c/selected at +0x8c..+0xa0, the original reloads them from
-   sc+0x98 etc. and does the wimpel stateFlags as 3 RMWs), last/now are sc+0x68/+0x6c (loop end sc.last =
-   sc.now), the teardown removes the pic objects +0xd4/+0xd8 (not +0xb4/+0xb8), the rect save reads Right,
-   Left, Top, Bottom, the view walk is an int-typed address (signed jl). Remaining code hunks, each
-   allocation: +0x336/+0x38c the mask copy in edi (or edi,0x100 hoisted) vs ours in esi; +0x3e3 (113) the
-   view/object loop: the original keeps pb in esi and the zero in edi, so pv and n live in
-   [esp+0x14]/[esp+0x20] and pv-0x1a0 is rebuilt in ecx per object (base &enabled), ours holds pv in esi
-   and n in a slot; +0x4be / +0x77b / +0x7de / +0x800 / +0x817 the zero register (edi vs esi), pb in esi vs
-   our slot [esp+0x64] (push esi vs mov edx,[esp+0x64]; push edx), m starting from the edi that already
-   holds 0 (no xor); +0xa0b / +0xa3f aligner artifacts of the same 3 d2_CloseView + 2 d2_RemoveObj with
-   shifted slots. The 12 differing branch targets are all inside these hunks (+0x17f..+0x217 the view loop,
-   +0x565/+0x585 the m loop, +0x785 the fade wait) and differ by 1..9 bytes from the reg vs slot encodings,
-   the statement structure is the same. Frame 0x734 vs 0x750: the original's extra 0x1c are temp slots
-   (int->float conversions, the qword at 0x14 shared with pv) */
+   @stuck draft 378 -> shape 36 ins, slots only: the view walk as an index loop with a block pointer vw =
+   &d2_Views[v] (-210), list[0x300] (the object count; 0x2f2 was short), cam3 / save3 as D3VECTOR4 and
+   CANNONSCENE 0x104 (bmin's fourth float: the original's frame 0x750), rotv block-local (shares the
+   view-pointer slot), rotv.x = 0 last, list[n++] before the disabled store. Left: two equal-density frame
+   ties (dt slot before n, scene before rect; the original n at +0x20 / dt +0x24, rect +0x38 / scene
+   +0x48). Tried: dt in the loop block, n++ split, the 120 orders of the rect / scene saves, scene read
+   first: no order fix without code changes (c2frame: n 4/4 = dt 4/4, rect 8/16 = scene 2/4) (tiebreak: not
+   measured (dcp headers sample ai_CannonScene)) prior: the frame order of two equal-density pairs is left
+   (n / dt and rect / scene swapped) */
 void ai_CannonScene(char *rec)
 {
     GVEFFECT *run;
     CANNONSCENE sc;
-    D3VECTOR rotv;
-    unsigned short list[0x2f2];
+    unsigned short list[0x300];
     int n;
     int m;
     int rect[4];
@@ -5354,8 +5348,8 @@ void ai_CannonScene(char *rec)
     unsigned mask;
     float dt;
     unsigned char *pb;
-    D3VECTOR cam3;
-    D3VECTOR save3;
+    D3VECTOR4 cam3;
+    D3VECTOR4 save3;
 
     kb_Down[0x2f] = 0;
     memset(&sc, 0, 0xe4);
@@ -5397,14 +5391,16 @@ void ai_CannonScene(char *rec)
     n = 0;
     {
         int i;
-        int v;  /* the view's address, walked as an int (the original's compare is signed) */
+        int v;
+        D2VIEW *vw;
 
-        for (v = (int)d2_Views; v < (int)&d2_Views[0x30]; v += sizeof(D2VIEW)) {
-            if (((D2VIEW *)v)->active != 0 && ((D2VIEW *)v)->enabled != 0) {
+        for (v = 0; v < 0x30; v++) {
+            vw = &d2_Views[v];
+            if (vw->active != 0 && vw->enabled != 0) {
                 for (i = 0; i < 0x300; i++) {
-                    if (d2_Objs[i].type != 0 && (int)d2_Objs[i].buf == v && d2_Objs[i].disabled == 0) {
-                        d2_Objs[i].disabled = 1;
+                    if (d2_Objs[i].type != 0 && (D2VIEW *)d2_Objs[i].buf == vw && d2_Objs[i].disabled == 0) {
                         list[n++] = i;
+                        d2_Objs[i].disabled = 1;
                     }
                 }
             }
@@ -5431,15 +5427,19 @@ void ai_CannonScene(char *rec)
         gv_Cannon.sliderA = 0;
         gv_Cannon.sliderB = 0;
         gv_Cannon.selected = 0;
-        memcpy(gv_Cannon.camTarget, &save3, sizeof(save3));
+        memcpy(gv_Cannon.camTarget, &save3, sizeof(gv_Cannon.camTarget));
     }
     d3_PointToWorld(CR->obj, &CR->obj->pos, &sc.pos);
     memcpy(&sc.rot, gv_Cannon.camTarget, sizeof(sc.rot));
     sc.pos.y = (sc.bmax.y - sc.bmin.y) * 0.8f + sc.pos.y;
-    rotv.x = 0.0f;
-    rotv.y = sc.rot.y;
-    rotv.z = sc.rot.z;
-    sc.obj98 = d3_CreateObject(0, &d3_Origin, &rotv, "KANONE_UNTERBAU_Aa");
+    {
+        D3VECTOR rotv;
+
+        rotv.y = sc.rot.y;
+        rotv.z = sc.rot.z;
+        rotv.x = 0.0f;
+        sc.obj98 = d3_CreateObject(0, &d3_Origin, &rotv, "KANONE_UNTERBAU_Aa");
+    }
     sc.obj8c[0] = d3_CreateObject(sc.obj98, &d3_Origin, (D3VECTOR *)ai_ZeroRot, "KANONE_ROHR_Aa");
     sc.obj8c[1] = d3_CreateObject(sc.obj98, &d3_Origin, (D3VECTOR *)ai_ZeroRot, "KANONE_DOPPEL_ROHR_Aa");
     sc.obj8c[2] = d3_CreateObject(sc.obj98, &d3_Origin, (D3VECTOR *)ai_ZeroRot, "KANONE_DREIFACH_ROHR_Aa");
@@ -5534,7 +5534,7 @@ void ai_CannonScene(char *rec)
     d3if_SelectScene(scene, 0);
     if (d3_Sky)
         d3sky_Init(d3_Sky, 1);
-    d3_SetObjectPos(d3_Camera, &cam3);
+    d3_SetObjectPos(d3_Camera, (D3VECTOR *)&cam3);
     d3_SetObjectRot(d3_Camera, (D3VECTOR *)&save3);
     init_SetDetailLevel(d3_Terrain, 0);
     d3if_Prerender(1);
