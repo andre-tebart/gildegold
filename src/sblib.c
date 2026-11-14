@@ -793,19 +793,7 @@ SBSAMPLE *sb_PlayVariation(SBBANK *bank, char *name, int idx, int loops, int pan
    sample, or a variation item - s->var when the fixed-variation flag is set, else a random one), maps fmt 1
    to ".wav" and 2 to ".mp3", hands data / len to sfx_SetSampleFile and sets volume / pan / loops / delay and
    the restart bookkeeping before sfx_StartSample; return 0, -1 when the bank, the load, the entry type or
-   format or the driver handover fails
-   @stuck earlier: 162 variants (return -1 per site, ret = -1; goto end, end: return ret, if/else) all give
-   the same layout. The statements and operands agree; only block layout differs: the original lays out the
-   shared failure block (or ebp,-1 + its own epilogue copy) inline right after the sfx_SetSampleFile test
-   (jne over it, the bank / type / fmt failures jump into it) and lets the success path fall into the end
-   epilogue (LoadEntry's nonzero ret jumps there); ours puts the failure block after the success path, so
-   the success path gets the duplicated epilogue (mov eax,ebp; pop edi; pop esi; pop ebp; ret at +0x174)
-   and the failure falls into the end one (or ebp,-1 at +0x17a); the far jumps become rel32 (size 387 vs
-   371). Deep session 3: a fail: label inside the sfx test's then-block (with goto end, with else { success
-   }, then/else swapped, return ret in it: worse); ext = NULL default and if (!ext || sfx(..) == -1) {
-   fail: ret = -1; } (identical, also with the else form); d = NULL default with nested fmt test (worse).
-   VC6 places the merged failure block after the success code whatever its textual place; no source lever
-   found. (tiebreak: insensitive under the four probes only, best draft) */
+   format or the driver handover fails. Each step runs only while ret is still 0 */
 
 int sb_Play(SBSAMPLE *s, int fade, int delay)
 {
@@ -822,58 +810,56 @@ int sb_Play(SBSAMPLE *s, int fade, int delay)
     e = s->info;
     if (!e->data) {
         bank = sb_GetBankOf(e);
-        if (!bank) {
-            ret = -1;
-            goto end;
-        }
-        ret = sb_LoadEntry(bank, e);
-        if (ret)
-            goto end;
-    }
-    if (s->info->type == 1)
-        d = s->info->data;
-    else if (s->info->type == 2) {
-        v = s->info->data;
-        if (s->flags & 4)
-            r = s->var;
+        if (bank)
+            ret = sb_LoadEntry(bank, e);
         else
-            r = rand() % v->count;
-        d = &v->items[r];
-    } else {
-        ret = -1;
-        goto end;
+            ret = -1;
     }
-    if (d->fmt == 1)
-        ext = ".wav";
-    else if (d->fmt == 2)
-        ext = ".mp3";
-    else {
-        ret = -1;
-        goto end;
+    if (!ret) {
+        if (s->info->type == 1)
+            d = s->info->data;
+        else if (s->info->type == 2) {
+            v = s->info->data;
+            if (s->flags & 4)
+                r = s->var;
+            else
+                r = rand() % v->count;
+            d = &v->items[r];
+        } else
+            ret = -1;
     }
-    if (sfx_SetSampleFile(s->handle, ext, d->data, d->len) == -1) {
-        ret = -1;
-        goto end;
+    if (!ret) {
+        if (d->fmt == 1)
+            ext = ".wav";
+        else if (d->fmt == 2)
+            ext = ".mp3";
+        else
+            ret = -1;
     }
-    if (fade) {
-        s->fadestart = SB_TIME;
-        s->flags |= 1;
-        sfx_SetSampleVolume(s->handle, 0);
-    } else
-        sfx_SetSampleVolume(s->handle, s->volume);
-    sfx_SetSamplePan(s->handle, s->pan);
-    if (!(s->flags & 4) && delay) {
-        sfx_SetSampleLoopCount(s->handle, 1);
-        s->last = 0;
-        s->delay = delay;
-    } else {
-        sfx_SetSampleLoopCount(s->handle, s->loops);
-        s->delay = 0;
+    if (!ret) {
+        if (sfx_SetSampleFile(s->handle, ext, d->data, d->len) == -1)
+            ret = -1;
     }
-    s->info->used = s->start = SB_TIME;
-    s->flags &= ~8;
-    sfx_StartSample(s->handle);
-end:
+    if (!ret) {
+        if (fade) {
+            s->fadestart = SB_TIME;
+            s->flags |= 1;
+            sfx_SetSampleVolume(s->handle, 0);
+        } else
+            sfx_SetSampleVolume(s->handle, s->volume);
+        sfx_SetSamplePan(s->handle, s->pan);
+        if (!(s->flags & 4) && delay) {
+            sfx_SetSampleLoopCount(s->handle, 1);
+            s->last = 0;
+            s->delay = delay;
+        } else {
+            sfx_SetSampleLoopCount(s->handle, s->loops);
+            s->delay = 0;
+        }
+        s->info->used = s->start = SB_TIME;
+        s->flags &= ~8;
+        sfx_StartSample(s->handle);
+    }
     return ret;
 }
 /* 0x427290, stops sample s: with fade, sets the fade-out flag and the fade start (sb_Update ramps the

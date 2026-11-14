@@ -936,3 +936,22 @@ mechanisms, each as a generated round over all positions / subsets:
   ..`, `tex = tri->tex` and every spelling of the sum itself were no lever; flip.py's 2363 single-statement
   mutants (file scope) had no hit either, because it never duplicates an expression into a neighbouring
   statement (d3io_AttachStock 3 ins -> byte).
+- **A shared failure block (`or ebp,-1` + its own epilogue copy) inline at the LAST failing test, the success path
+  falling into the end epilogue**, where ours puts the failure block after the success code (the success path gets
+  the epilogue copy, the far jumps grow to rel32; a `tail` hunk): the function had no `goto end` at all. Each step
+  sets the result and the next step runs under `if (!ret) {..}`:
+  `if (!e->data) { bank = f(e); if (bank) ret = Load(bank, e); else ret = -1; } if (!ret) { if (type == 1) ..
+  else if (type == 2) .. else ret = -1; } if (!ret) { ..fmt.. else ret = -1; } if (!ret) { if (sfx(..) == -1)
+  ret = -1; } if (!ret) { success } return ret;` (flat or nested `if (!ret)`: one code). VC6 threads the flag
+  tests away, so the instructions are those of the goto form, but the block layout differs. Two details count:
+  the call arm first (`if (bank) ret = Load(..); else ret = -1;`; with `if (!bank) ret = -1; else` 8-10 ins stay),
+  and no `goto end` left for the load failure (8 ins). With gotos every spelling is one code (`ret = -1; goto
+  end` per site, `goto fail` into one block, `!=` tests, else-chains: VC6 normalizes them; switch and `return
+  ret` per site are worse) - 162 + 40 variants (sb_Play 14 ins -> byte).
+  How it was found: flip.py's constant mutants (`ret = -1` -> `-2` at one site) showed the wanted layout whenever
+  the else-arm failure of the type chain was NOT the same block as the others, and c2pass with cross-jumping
+  skipped (`--skip 0x1070a91d`) showed that this else block is laid out after the success code and the other
+  sites are merged into it. A failure block that must merge AND stay inline is then no goto block: it is a
+  flag store the optimizer threads. Probe values per site (all 2^n subsets with `dcp try`) tell which sites
+  decide a layout before any respelling.
+- c2pass.py / c2fuzz.py need `pefile`: run them as `uv run --with pefile python tools/c2dag/c2pass.py ..`.
