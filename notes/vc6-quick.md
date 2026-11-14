@@ -972,3 +972,9 @@ mechanisms, each as a generated round over all positions / subsets:
 - flip.py reading rule: a hit on a DUPLICATED statement means "this value has two uses in the original" (look
   for the spelling with two uses: a loop, the expression written out again, a macro's second expansion); a hit
   on a changed constant at one site means "this block is not shared with its twins in the original".
+- **A search loop's two loop-invariant loads in the other order** (the original `mov edx,[m.grave]; mov eax,[e.grave]`,
+  ours the base first): loads tie in the scheduler and keep their list order, and a walking pointer set up before
+  the loop (`g = e->grave; do { q = g; .. g = q + 1; }`) puts its load first. Index the base in the loop instead
+  (`do { q = &e->grave[i]; if (q->id == m->grave) break; i++; } while (..)`), or read the compared value into a
+  local before the base (`n = m->grave; g = e->grave;`): both byte in gv_RaiseDead; swapping the compare's
+  operands or reading the local after the base are no lever.
