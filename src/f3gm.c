@@ -1862,8 +1862,6 @@ int ai_WorksForMaster(struct AICHAR *c);                     /* 0x47dd70 */
    orders, this is the closest) */
 void gm_PartnerStep(ORDCHAR *c)
 {
-    G28REC party;
-    AITIME clk;
     ORDCHAR *o, *mate, *child;
     int arg, t, kids, n, m, k, h;
     float fv;
@@ -1873,6 +1871,8 @@ void gm_PartnerStep(ORDCHAR *c)
         return;
     o = ORD_CHAR(gm_FindChar(c->partner));
     if (c->pregnancy > 1.0f) {
+        AITIME clk;
+
         cm_SendFloatDelta(c->netId, 0x7c, util_RandomF() * -0.5f - c->pregnancy);
         gm_NetMsgCount++;
         mate = 0;
@@ -1916,6 +1916,8 @@ void gm_PartnerStep(ORDCHAR *c)
             return;
         child = ORD_CHAR(cm_GetSlotValue(h));
         if (mate != 0) {
+            G28REC party;
+
             memset(&party, 0, sizeof(party));
             arg = 0x12;
             party.host = mate->netId;
@@ -4484,8 +4486,6 @@ unsigned char *gm_CreateBuilding(unsigned char k, unsigned short own)
     int *info;
     char dbg[0x100];
     char names[12][0x40];
-    char cand[0x100];
-    char err[0x200];
     int i, j, n, any, id;
     unsigned short *w;
     unsigned short *s;
@@ -4534,6 +4534,9 @@ unsigned char *gm_CreateBuilding(unsigned char k, unsigned short own)
     for (i = 0; i < 0xc; i++) {
         name = (char *)ai_BuildingNames[k * 0xe + i];
         if (*name != 0) {
+            char cand[0x100];
+            char err[0x200];
+
             strcpy(cand, (char *)ai_BuildingNames[k * 0xe + i]);
             for (j = 0; j < 0x100; j++) {
                 if (((ORDBLD *)ai_Blds)[j].type != 0 && strcmp(((ORDBLD *)ai_Blds)[j].name, cand) == 0)
@@ -7737,8 +7740,6 @@ void gm_InheritEstate(ORDCHAR *dead, ORDCHAR *heir)
 void gm_ForfeitEstate(ORDCHAR *c, char *out, int flag)
 {
     ORDBLD *heirs[0x80];
-    char buf[0x800];
-    GMMSG m;
     ORDCHAR *pl;
     ORDBLD *own, *best, *b, *h;
     ORDOBJ *o;
@@ -7782,6 +7783,8 @@ void gm_ForfeitEstate(ORDCHAR *c, char *out, int flag)
             h = b;
         }
         if (h != 0) {
+            GMMSG m;
+
             cm_SendOwnership(h->id, pl->netId, pl->netId);
             m.type = 0x1b;
             m.to = GM_PLAYERCH->netId;
@@ -7865,14 +7868,20 @@ void gm_ForfeitEstate(ORDCHAR *c, char *out, int flag)
     }
     txt_Format(out, 0x1c4f, c->id, gm_PlayerFactor(0x5dc, ai_OwnPlayer));
     if (best != 0) {
+        char buf[0x800];
+
         txt_Format(buf, "%1G$A", best);   /* 0x61ac98: the pooled format literal */
         strcat(out, buf);
     }
     if (own != 0) {
+        char buf[0x800];
+
         txt_Format(buf, "%1G$A", own);
         strcat(out, buf);
     }
     if (n != 0) {
+        char buf[0x800];
+
         txt_Format(buf, 0x1c50);
         strcat(out, buf);
         for (i = 0; i < n; i++) {

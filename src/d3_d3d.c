@@ -575,7 +575,6 @@ void d3d_BuildMipmaps(LPDIRECTDRAWSURFACE4 tex, DDSURFACEDESC2 *ddsd)
 void d3d_LoadTexture(char *name, DDPIXELFORMAT *pf, LPDIRECTDRAWSURFACE4 *surf, LPDIRECT3DTEXTURE2 *surftext,
                      unsigned char mips, DWORD w, DWORD h, int bpp)
 {
-    char msg[512];
     char namebuf[512];
     PALETTEENTRY adw[256];
     BYTE pal[768];
@@ -697,6 +696,8 @@ void d3d_LoadTexture(char *name, DDPIXELFORMAT *pf, LPDIRECTDRAWSURFACE4 *surf, 
 #line 931
     D3DCHECK(dd_DD->lpVtbl->CreateSurface(dd_DD, &ddsd, surf, NULL));
     if (!*surf) {
+        char msg[512];
+
         sprintf(msg, "Could not load create surface for %s", name);
         err_Message(msg);
         return;

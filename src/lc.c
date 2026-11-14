@@ -18909,13 +18909,14 @@ int ai_TransportWindow(AIBLD *bld, unsigned int mode)
 
 void ai_LoadTownMap(void)
 {
-    D2SURF desc;
     char path[0x104];
     D2SURF *bmp;
 
     sprintf(path, "%sbmp\\maps\\%s.bmp", d2_GfxDir, ai_PlayerSlots[ai_OwnPlayer]);
     bmp = d2_LoadBmpSurface(path);
     if (bmp != 0) {
+        D2SURF desc;
+
         memset(&desc, 0, sizeof(desc));
         desc.w = bmp->w;
         desc.h = bmp->h;
@@ -19125,9 +19126,6 @@ void ai_StorageWindow(AIBLD *bld, int list)
     int slot;
     int lim1, lim2;
     int level, level2;
-    AIMSG msg2;
-    AIMSG msg3;
-    char text[0x400];
 
     if (sv_CheckCharacterFlag(bld) != 0)
         return;
@@ -19239,6 +19237,8 @@ void ai_StorageWindow(AIBLD *bld, int list)
                             if (slots2 != 0) {
                                 slots2->slotOrder1d++;
                             } else {
+                                AIMSG msg2;
+
                                 memset(&msg2, 0, sizeof(msg2));
                                 msg2.fromId = bld->id;
                                 msg2.type = 0x12;
@@ -19255,6 +19255,8 @@ void ai_StorageWindow(AIBLD *bld, int list)
                 }
             } else if (d2_PointerObj == btn1 && (ai_GameFlags & 0x80) == 0) {
                 if (sv_CheckGoodAmountB(ai_Chars[ai_PlayerId], 0x3200, ai_OwnPlayer) != 0) {
+                    char text[0x400];
+
                     txt_Format(text, 0x113, 0x3200);
                     if (sv_MessageBox(text, 0x101) != 0) {
                         slot = cm_SendMoveGoods(-1, ((AICHARREC *)ai_Chars)[ai_PlayerId].netId, ai_OwnPlayer, 0x3200);
@@ -19267,6 +19269,8 @@ void ai_StorageWindow(AIBLD *bld, int list)
                             if (upgrade != 0) {
                                 upgrade->capacityOrder++;
                             } else {
+                                AIMSG msg3;
+
                                 memset(&msg3, 0, sizeof(msg3));
                                 msg3.type = 0x13;
                                 msg3.flags = 1;
@@ -28411,7 +28415,6 @@ int ai_CourtshipWindow(AICHARREC *ch, LCORDMSG *m)
     int level;
     int price;
     int left;
-    int prices[3];
     int picks[3];
     int btns[9];               /* the gift buttons and the close button in [0 .. 3]; the original's frame holds nine */
     AIJOB *ev;
@@ -28472,6 +28475,8 @@ int ai_CourtshipWindow(AICHARREC *ch, LCORDMSG *m)
         io_PrintText(0x1ce3);
         io_PrintText(0x1d31, p->id);
     } else if (state == 4) {
+        int prices[3];
+
         p = (AICHARREC *)gm_FindChar(partner);
         prices[0] = ev->pairPrice[0];
         prices[1] = ev->pairPrice[1];
@@ -28495,6 +28500,8 @@ int ai_CourtshipWindow(AICHARREC *ch, LCORDMSG *m)
                     break;
             }
             if (i < 3) {
+                int prices[3];
+
                 price = prices[i];
                 if (sv_CheckGoodAmountB((char *)&lc_CharRecs[ai_PlayerId], price, ai_OwnPlayer)) {
                     rounds = 0;
@@ -32398,14 +32405,13 @@ int ai_UseGoodHeal(AICHARREC *ch, G8USEVIEW *use)
 
 int ai_UseGoodInfectOwner(AICHARREC *ch, G8USEVIEW *use)
 {
-    AIMSG msg;
-    AMOUNTCFG cfg;
-    char text[0x100];
-    char news[0x800];
     AIBLD *bld;
     int *id;
 
     if (ch->kind == 6) {
+        AMOUNTCFG cfg;
+        char text[0x100];
+
         memset(&cfg, 0, sizeof(cfg));
         memset(cfg.ids, 0xff, sizeof(cfg.ids));
         txt_Format(text, 0x9a);
@@ -32415,6 +32421,8 @@ int ai_UseGoodInfectOwner(AICHARREC *ch, G8USEVIEW *use)
         cfg.classMask[0] = 4;
         bld = (AIBLD *)ai_MapPick(1, &cfg, text, 0, 0);
         if (bld != 0 && bld->owner != 0) {
+            AIMSG msg;
+
             id = &bld->id;
             msg.to = ch->netId;
             msg.time = ai_Time;
@@ -32429,6 +32437,8 @@ int ai_UseGoodInfectOwner(AICHARREC *ch, G8USEVIEW *use)
             cm_SendFieldDeltas();
             gm_CatchDisease((struct ORDCHAR *)&lc_CharRecs[bld->owner], 0, 0);
             if (lc_CharRecs[bld->owner].kind == 6 || lc_CharRecs[bld->owner].kind == 7) {
+                char news[0x800];
+
                 txt_Format(news, 0xff1);
                 he_ShowNews(lc_CharRecs[bld->owner].netId, -1, news, 0, 0x5fb, 0);
             }
@@ -32437,6 +32447,8 @@ int ai_UseGoodInfectOwner(AICHARREC *ch, G8USEVIEW *use)
     } else {
         bld = (AIBLD *)gm_BuildQuery(1, 1, use->target);
         if (bld != 0 && bld->owner != 0) {
+            AIMSG msg;
+
             id = &bld->id;
             msg.to = ch->netId;
             msg.time = ai_Time;
@@ -32452,6 +32464,8 @@ int ai_UseGoodInfectOwner(AICHARREC *ch, G8USEVIEW *use)
             if (ai_InventoryHas(&lc_CharRecs[bld->owner], 0x2c4) == 0 || util_RandomF() > 0.75f)
                 gm_CatchDisease((struct ORDCHAR *)&lc_CharRecs[bld->owner], 0, 0);
             if (lc_CharRecs[bld->owner].kind == 6 || lc_CharRecs[bld->owner].kind == 7) {
+                char news[0x800];
+
                 txt_Format(news, 0xff1);
                 he_ShowNews(lc_CharRecs[bld->owner].netId, -1, news, 0, 0x5fb, 0);
             }
@@ -32484,13 +32498,13 @@ int ai_UseGoodInfectOwner(AICHARREC *ch, G8USEVIEW *use)
 int ai_UseGoodSendHome(AICHARREC *ch, G8USEVIEW *use)
 {
     AIMSG msg;
-    AMOUNTCFG cfg;
-    char text[0x100];
-    char news[0x800];
     AIBLD *bld;
     int *id;
 
     if (ch->kind == 6) {
+        AMOUNTCFG cfg;
+        char text[0x100];
+
         memset(&cfg, 0, sizeof(cfg));
         memset(cfg.ids, 0xff, sizeof(cfg.ids));
         txt_Format(text, 0x9b);
@@ -32544,6 +32558,8 @@ int ai_UseGoodSendHome(AICHARREC *ch, G8USEVIEW *use)
     cm_SendFieldDeltas();
     cm_SendSetField(*id, 0x5a, 2, 0x20, 0);
     if (bld->owner != 0xffff && (lc_CharRecs[bld->owner].kind == 6 || lc_CharRecs[bld->owner].kind == 7)) {
+        char news[0x800];
+
         txt_Format(news, 0xff2, bld);
         he_ShowNews(lc_CharRecs[bld->owner].netId, -1, news, 0, 0x5fb, 0);
     }

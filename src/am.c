@@ -9143,10 +9143,6 @@ int ai_EvalUpgradeGuild(float *a, float *b, int i, G5CH *p, int f, AIARG *o1, AI
 
 int ai_DecideUpgradeGuild(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
 {
-    AIARG s1;
-    AIARG s2;
-    AIARG b1;
-    AIARG b2;
     AIBLD *bl;
     AIBTYPE *t;
     AIOBJ *o;
@@ -9173,6 +9169,9 @@ int ai_DecideUpgradeGuild(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     money = gm_SumListAmounts((void *)o->list, ai_OwnPlayer);
     lvl = bl->level;
     if (lvl < util_RandomU(0x10) + 0x32 && !(bl->flags5a & 4)) {
+        AIARG s1;
+        AIARG s2;
+
         s1.kind = 4;
         s1.ref = bl->id;
         s1.arg = 1;
@@ -9210,6 +9209,9 @@ credit:
         }
     }
     if (ai_FindGoodToMake(&f, &a, bl, 0) != 0) {
+        AIARG b1;
+        AIARG b2;
+
         b1.kind = 2;
         b1.ref = f;
         b1.arg = 1;

@@ -4050,7 +4050,6 @@ int sv_MessageBox();
 void main_SettleRound(unsigned short pl)
 {
     AIMSG msg2;     /* 0x1b to a new owner; gm_ListWorkers's worker lists; 0x31 */
-    AIMSG msg1;     /* 0x1b to the master; 0x34 */
     AIMSG msg4;     /* 0x33 */
     int sum[0x15];  /* gm_BuildingBalance's summary (0x15 ints) */
     int ev[4];
@@ -4135,6 +4134,8 @@ void main_SettleRound(unsigned short pl)
                     kind = bt->kind;
                     if (kind != 1 && kind != 3 && kind != 6 && kind != 10 && kind != 11 && kind != 12 && kind != 13 && kind != 15 && kind != 0x1c && kind != 0x1b && kind != 0x1a
                         && kind != 0x19 && kind != 0x18 && kind != 0x17) {
+                    AIMSG msg1;     /* 0x1b to the master; 0x34 */
+
                     msg1.type = 0x1b;
                     msg1.to = MAIN_ME->netId;
                     msg1.fromId = -1;
@@ -4284,6 +4285,8 @@ void main_SettleRound(unsigned short pl)
                                         gm_AddTime((struct AITIME *)&msg4.time, (util_Random(6) & 0xffff) + 4, 0, 0);
                                         cm_SendLongMessage((char *)&msg4);
                                     } else {
+                                        AIMSG msg1;     /* 0x1b to the master; 0x34 */
+
                                         memset(&msg1, 0, sizeof(msg1));
                                         msg1.type = 0x34;
                                         msg1.to = ai_CharsT[pl].netId;

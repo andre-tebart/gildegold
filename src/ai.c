@@ -1074,7 +1074,6 @@ void ai_EvaluateProductionCategory2(AICHAR *ch)
     AIPLANT *plant;
     void *x;
     AIINFO info;
-    AIMSG msg;
     int i, j, k, n, id, found, v71;
     int r, y, idx;
 
@@ -1107,6 +1106,8 @@ void ai_EvaluateProductionCategory2(AICHAR *ch)
     if (!(ch->flags1c8 & 0x10) && ai_BTypesT[ch->bld->type].kind != 11) {
         for (o = gm_Query(a->list, 1, 4, 0x17); o; o = gm_QueryNext()) {
             if (o->count == 1) {
+                AIMSG msg;
+
                 memset(&msg, 0, sizeof(msg));
                 msg.type = 9;
                 msg.to = ai_CharsT[ch->bld->owner].netId;
@@ -4307,7 +4308,6 @@ void ai_FreeJobCharacters(AICHAR *ch, int n)
 
 void ai_SendJobOrders(AIINFO *info)
 {
-    AIMSG msg;
     AIJOB *job;
     AIOBJ *o;
     G15PLANT *map, *pl, *found;
@@ -4333,6 +4333,8 @@ void ai_SendJobOrders(AIINFO *info)
         for (i = 0; info->z2 < total && i < 768; i++) {
             if (ai_CharsT[i].id != 0xffff && ai_CharsT[i].bld == info->ch->bld && ai_CharsT[i].title && !ai_CharsT[i].job
                 && ai_CharsT[i].model && ai_CharsT[i].model->bldId == ai_CharsT[i].bld->id) {
+                AIMSG msg;
+
                 found = 0;
                 pl = map;
                 for (k = 0; !found && k < 64; k++, pl++) {
@@ -4358,6 +4360,8 @@ void ai_SendJobOrders(AIINFO *info)
             }
         }
     } else if (type == 0x14) {
+        AIMSG msg;
+
         n = info->n1;
         if (n <= 1 || info->z1 != 0)
             total = info->n2 / n + info->z2;
@@ -4389,6 +4393,8 @@ void ai_SendJobOrders(AIINFO *info)
             return;
         }
     } else if (type == 0x15) {
+        AIMSG msg;
+
         n = info->n1;
         if (n <= 1 || info->z1 != 0) {
             total = info->n2 / n;
@@ -4432,6 +4438,8 @@ void ai_SendJobOrders(AIINFO *info)
             return;
         }
     } else if (type == 0x8c) {
+        AIMSG msg;
+
         gm_Query(info->ch->bld->objList, 1, 0, 0xfd);
         n = info->n1;
         base = info->z2;
@@ -4464,6 +4472,8 @@ void ai_SendJobOrders(AIINFO *info)
             }
         }
     } else {
+        AIMSG msg;
+
         for (job = he_FindEvent(2, 0, type, 3, info->ch->bld->id); job; job = he_NextEvent()) {
             if ((info->type == 4 && job->u.w.lo == (unsigned int)info->e->item) ||
                 (info->type == 8 && job->u.w.lo == (unsigned int)info->e->item) ||

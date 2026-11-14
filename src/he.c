@@ -2483,7 +2483,6 @@ void he_InnStaffLeave(void)
     AICHAR *o;
     int k;
     int *p;
-    int arg[3];
 
     f = (AIBLD *)gm_BuildQuery(1, 5, 0x16);
     while (f != 0) {
@@ -2492,6 +2491,8 @@ void he_InnStaffLeave(void)
             p = r->seats;
             for (k = 4; k != 0; k--) {
                 if (*p != -1 && ((o = (AICHAR *)gm_FindChar(*p)) == 0 || o->health == 0 || o->kind == 0xf)) {
+                    int arg[3];
+
                     arg[2] = f->id;
                     arg[1] = *p;
                     arg[0] = 0x6c656176;

@@ -899,7 +899,6 @@ void d3_DrawSortedD3D(void)
     unsigned int k;
     float rhw;
     D3TLV *a, *b;
-    D3TLV tmp;
 
     wrap = 0;
     oldtext = 0;
@@ -984,6 +983,8 @@ void d3_DrawSortedD3D(void)
             d3_ClipIn = 3;
             vl = d3_ClipPoly(clip);
             if (d3_ClipOut >= 3) {
+                D3TLV tmp;
+
                 d3_ClipExtraTris += d3_ClipOut - 3;
                 for (k = 0; k < d3_ClipOut; k++) {
                     q = vl[k];

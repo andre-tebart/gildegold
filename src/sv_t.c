@@ -6145,7 +6145,6 @@ void ai_CannonExplosion(CANNONSCENE *sc, char *rec)
     D3VECTOR fwd;
     D3VECTOR side;
     D3VECTOR up;
-    D3VECTOR t;
     D3VECTOR p1;
     D3VECTOR p2;
     D3VECTOR p3;
@@ -6184,6 +6183,8 @@ void ai_CannonExplosion(CANNONSCENE *sc, char *rec)
     up.y = sc->up.y;
     up.z = sc->up.z;
     if (sc->selected == 0) {
+        D3VECTOR t;
+
         t.x = fwd.x * 50.0f;
         t.y = fwd.y * 50.0f;
         t.z = fwd.z * 50.0f;
@@ -6198,6 +6199,8 @@ void ai_CannonExplosion(CANNONSCENE *sc, char *rec)
         z1 = 50;
         n = 1;
     } else if (sc->selected == 1) {
+        D3VECTOR t;
+
         t.x = fwd.x * 40.0f;
         t.y = fwd.y * 40.0f;
         t.z = fwd.z * 40.0f;
@@ -6229,6 +6232,8 @@ void ai_CannonExplosion(CANNONSCENE *sc, char *rec)
         z2 = 40;
         n = 2;
     } else if (sc->selected == 2) {
+        D3VECTOR t;
+
         t.x = fwd.x * 40.0f;
         t.y = fwd.y * 40.0f;
         t.z = fwd.z * 40.0f;
@@ -7262,8 +7267,6 @@ void ai_GraveDetail(AIBLD *rec, int *w, int clicked, int flag)
     int up;
     int down;
     int bar;
-    char buf[0x100];
-    char line2[0x100];
     GVITEM *items;
     GVITEM *item;
     short *c;
@@ -7306,6 +7309,9 @@ void ai_GraveDetail(AIBLD *rec, int *w, int clicked, int flag)
     sv_CreateScrollButtons(0, 0, w[6], w[3], d2_Wins[w[3]].h, &up, &down, &bar);
     d2_SetForm(w[0], 3);
     for (i = 0; i < n; i++) {
+        char buf[0x100];
+        char line2[0x100];
+
         item = &items[i];
         x = (d2_Wins[w[3]].w - d2_Pics[0x6c7].w) / 2;
         item->btn = d2_WinOpenPic(x, d2_Wins[w[3]].h * i + 2, 0x6c7, w[3]);
@@ -7338,10 +7344,14 @@ void ai_GraveDetail(AIBLD *rec, int *w, int clicked, int flag)
     d2_SetForm(w[0], 7);
     io_PrintText("$C");
     if (e->id == -1) {
+        char buf[0x100];
+
         buf[0] = 0;
         txt_Format(buf, 0x4100, ai_GraveNames[e->size]);
         io_PrintText("$Z%s", buf);
     } else {
+        char buf[0x100];
+
         c = gm_FindChar(e->id);
         buf[0] = 0;
         if (c) {
@@ -8282,9 +8292,6 @@ void ai_InitProductionTables(void); int ai_UpdateProdGoodsList(); void ai_Layout
    branch (worse: the name argument is hoisted again), the count tests as > 1 first / a switch (worse) */
 void ai_GypsyHelperWindow(AIBLD *rec)
 {
-    char line[0x100];
-    AIMSG msg;
-    int btns[3];
     AIBTYPE *type;
     AIJOB *job;
     char *res;
@@ -8349,6 +8356,8 @@ void ai_GypsyHelperWindow(AIBLD *rec)
     d2_SetForm(win, 2);
     x = d2_Wins[d2_LastWindow].w / 2 - 0xa8;
     for (i = 0; i < n; i++) {
+        int btns[3];
+
         id = d2_WinOpenPic(x + 0x28, i * 0x50 + 0x19, kinds[i] + 0xdf, d2_LastWindow);
         d2_Objs[id].interactive = 1;
         d2_Objs[id].style = 3;
@@ -8363,6 +8372,8 @@ void ai_GypsyHelperWindow(AIBLD *rec)
     ai_UpdateProdGoodsList(rec, res);
     ai_LayoutProdGoodsList(win, 1, 0, rec);
     while (sv_RunFrame((int)ai_GypsyHelperWindow, 0x677c7)) {
+        int btns[3];
+
         ai_UpdateProdGoodsList(rec, res);
         ai_LayoutProdGoodsList(win, 1, 0, rec);
         counts[0] = 0;
@@ -8379,6 +8390,8 @@ void ai_GypsyHelperWindow(AIBLD *rec)
         }
         d2_SetForm(win, 2);
         for (i = 0; i < n; i++) {
+            char line[0x100];
+
             id = btns[i];
             d2_SetObjEnabled(id, 1);
             c = counts[i];
@@ -8408,6 +8421,8 @@ void ai_GypsyHelperWindow(AIBLD *rec)
                 }
             }
             if (sel != -1) {
+                AIMSG msg;
+
                 memset(&msg, 0, sizeof(msg));
                 msg.type = 0x8c;
                 msg.flags = 1;
@@ -10036,7 +10051,6 @@ int ai_OpenItemTooltip(int idx)
     int view;
     AIGOOD *item;
     float factor;
-    int list[32];
     char *w;
     char *bld;
     AICHAR *c;
@@ -10077,6 +10091,8 @@ int ai_OpenItemTooltip(int idx)
     if (bld == 0) {
         io_PrintText(0x20, item->workTime);
     } else {
+        int list[32];
+
         n = 0;
         gm_BuildingSkill((unsigned char *)bld, 1, 1);
         master = (AICHAR *)gm_FindCharacterByMaster((int)bld);
@@ -10116,6 +10132,8 @@ int ai_OpenItemTooltip(int idx)
     }
     n = 0;
     if (item->type == 0x17 || item->type == 0x25) {
+        int list[32];
+
         if (idx == 0x225 || idx == 0x226 || idx == 0x227 || idx == 0x293 || idx == 0x294 || idx == 0x295) {
             if (idx == 0x225 || idx == 0x226 || idx == 0x227) {
                 list[0] = 0x48;
@@ -10147,6 +10165,8 @@ int ai_OpenItemTooltip(int idx)
         }
     }
     for (k = 0; k < n; k++) {
+        int list[32];
+
         id = list[k];
         d2_WinOpenPicStyled(6, slot * 0x16 + 0x28, id + 0x427, d2_LastWindow, -2);
         io_PrintText("%s$N", id * 0xe + 0x48e);

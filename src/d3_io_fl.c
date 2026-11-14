@@ -321,11 +321,9 @@ int d3_FLChunkSize(D3BGF *m, D3BGFDESC *d)
 void d3_AddFLChunk(char *path, char weld)
 {
     char buf[256];
-    D3VECTOR4 bv;
     D3BGFDESC desc;
     void *f, *out;
     D3BGF *m;
-    D3VECTOR4 v;
     int i, j, k, n, mi, size;
     float s1, c1, s2, c2, t1, t2, u, a, b;
     float *py, *pz;
@@ -335,6 +333,8 @@ void d3_AddFLChunk(char *path, char weld)
     D3_ZERO(&desc, sizeof desc);
     f = vfs_Tfopen(path, "rb", vfs_Root);
     if (f) {
+        D3VECTOR4 v;
+
         d3_ReadBGF(f, &desc);
         if (desc.npoly <= 0 || desc.npts <= 0) {
             vfs_fclose(f);
@@ -368,6 +368,8 @@ void d3_AddFLChunk(char *path, char weld)
         s2 = (float)sin(3.1415927410125732);
         c2 = (float)cos(3.1415927410125732);
         for (k = 0; k < m->nverts; k++) {
+            D3VECTOR4 bv;
+
             v.x = desc.pts[k * 6];
             py = &desc.pts[k * 6 + 1];
             pz = &desc.pts[k * 6 + 2];

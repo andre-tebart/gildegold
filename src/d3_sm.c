@@ -268,8 +268,6 @@ void d3sm_Build(D3SM *h, D3TERRAIN *t)
 {
     D3VECTOR pos, rot;
     D3VECTOR4 box[2];
-    float uv[3][2];
-    unsigned char hs[3];
     float f, lo, hi;
     int top, bot;
     int i, j, k, radius, last;
@@ -378,6 +376,8 @@ void d3sm_Build(D3SM *h, D3TERRAIN *t)
     d3_ForEachObject(d3_DefaultScene, 0, 0x40, (D3OBJECTCB)d3sm_ShadowCB, h);
     d3_RadixSort(d3_SortCount, 0);
     for (k = 0; k < (int)d3_SortCount; k++) {
+        float uv[3][2];
+        unsigned char hs[3];
         D3VECTOR4 nrm;
         float dx, dz, lim;
 

@@ -2856,9 +2856,6 @@ unsigned short ai_PokerStep(); int gm_BuildingSkill(); float ai_NormalizeEffectS
    d2_CloseView and the camera follow. */
 void ai_CurseWindow(int building)
 {
-    char text[0x200];
-    char name[100];
-    CURSEMSG msg;
     AMOUNTCFG cfg;                      /* the config of the amount menu */
     int ids[2];                         /* the two buttons */
     int slider, form;
@@ -2894,6 +2891,8 @@ void ai_CurseWindow(int building)
     d2_SetForm(form, 3);
     sv_ButtonRow(d2_LastWindow, 0, ids, 2, txt_Ptrs[0x41d8], txt_Ptrs[0x41d9]);
     do {
+        char text[0x200];
+
         limit = gm_CurseObjectCount((struct AIBLD *)building) - 1;
         v = d2_GetObjValue(slider);
         if (v >= limit)
@@ -2910,6 +2909,9 @@ void ai_CurseWindow(int building)
         } else if (d2_ClickedId != -1) {
             if (d2_PointerObj == ids[0]) {
                 if (sv_CheckGoodAmountB(ai_CharsC + ai_PlayerId * 0x21c, v, ai_OwnPlayer) != 0) {
+                    char name[100];
+                    CURSEMSG msg;
+
                     cm_SendSetField(((AICHARVIEW *)(ai_CharsC + ai_PlayerId * 0x21c))->netId, 0x1cc, 4, 0x10, 0);
                     if (ai_PlayerId != ((CURSEBLD *)building)->owner)
                         cm_SendMoveGoodsUnchecked(-1, ((AICHARVIEW *)(ai_CharsC + ai_PlayerId * 0x21c))->netId, ai_OwnPlayer,

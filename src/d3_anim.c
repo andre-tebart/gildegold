@@ -159,7 +159,6 @@ typedef struct D3BONEACC {          /* 0xa4 bytes, a bone blended over the runni
    @deep B draft, 1158/1712 bytes: 551 code hunks over the whole body - the frame is 0x35c vs the original's 0x34c and the bone-accumulator stack slots and expression order differ throughout, a deep matching job (D3BONEACC weighting layout plus scheduling), not a base meaning fix. Readability also needs Q1 (evidence for d3anim_PoseBones: poses the child objects from the skeleton animations of the object's slots) and Q2 (d3_Lerp3 lerp, nextFrame/subFrame/animCtl). */
 void d3anim_PoseBones(D3OBJECT *obj)
 {
-    D3BONEACC acc[4];
     D3VECTOR4 m1[4], m0[4];
     D3VECTOR4 v, rot;
     D3ANIMCTL *ctl;
@@ -174,6 +173,8 @@ void d3anim_PoseBones(D3OBJECT *obj)
     if (obj && obj->material && obj->material->ops) {
         n = 0;
         if (((D3ANIMCTL *)obj->material->animCtl)->active) {
+            D3BONEACC acc[4];
+
             D3_ZERO(acc, sizeof(acc));
             for (k = 0; k < 3; k++) {
                 s = &((D3ANIMCTL *)obj->material->animCtl)->slots[k];
