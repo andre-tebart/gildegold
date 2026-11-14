@@ -4168,7 +4168,28 @@ void d2_RaiseObject(int obj)
             first = i + 1;
     }
 }
-/* 0x472fd0, moves the objects of a window (and the window's parent run) to the top of the draw order list @deep B3: two code hunks (0x472fe9, 0x473027), reordered only - same operations both sides. Original hoists j=-1 out of the loop (or esi,-1 before it), keeps i in ecx and j in esi; ours keeps the mov ecx,-1 at the loop bottom and swaps i=esi / j=ecx, so the loop head and exit order differ. Read against tools/disasm.py 472fd0 and the VC6 listing: the loop, the break path (j=i) and the post-loop first=j are semantically right; the j=-1-at-bottom form is what the source needs. spell.py: no menu rule matched. Tried (each one edit + build, reverted): move j=i into the break block and drop j=-1 (211/272 WORSE), and the same with the original redundant !=0 text (211/272 WORSE). Left: register allocation / loop-invariant -1 store hoisting (vargen / scheduling). */
+/* 0x472fd0, moves the objects of a window (and the window's parent run) to the top of the draw order list
+   @stuck The plain form (j = -1 before the loop, `if (o->id == w->parent) { j = i; break; }`, the
+   redundant d2_DrawOrder[i] != 0 test kept) gives the original's control flow exactly (out-of-line break
+   block, mov esi,ecx), but a whole-function register permutation (78 ins: base edx / i esi / first eax / j
+   edi / w ebx against the original's ebp / ecx / edx / esi / edi). flip.py on that form (want mov
+   eax,[ebp+ecx*4]): changing EITHER loop's 0x2ff start to another value (m28, m99) gives 6 ins, only the
+   two `or r,-1` scheduled around the lea left - i.e. the constant 0x2ff shared by the two search loops is
+   an allocation candidate that the original did not have. No spelling of it moved it: 0x2ffu, (short),
+   767, sizeof, 0x300 with --i (one code), i-- > 0 (13 ins, other code), a separate k, reusing j / first
+   for the second / third loop (94), for / do / while / for-condition forms of the second loop, init
+   orders, chained / declaration inits, `first < 0`, n spellings, memmove size spellings (all one code).
+   dcp headers sample: insensitive. Kept the tree's j = i / j = -1 form (23 ins: j=-1 not hoisted, i / j
+   swapped esi / ecx); o->win == w now named. Lead: what in the original makes 0x2ff not one constant web
+   (the second loop may have been another construct, e.g. a helper / macro). (tiebreak: not measured (dcp
+   headers sample d2_RaiseWindow)) prior: B3: two code hunks (0x472fe9, 0x473027), reordered only - same
+   operations both sides. Original hoists j=-1 out of the loop (or esi,-1 before it), keeps i in ecx and j
+   in esi; ours keeps the mov ecx,-1 at the loop bottom and swaps i=esi / j=ecx, so the loop head and exit
+   order differ. Read against tools/disasm.py 472fd0 and the VC6 listing: the loop, the break path (j=i)
+   and the post-loop first=j are semantically right; the j=-1-at-bottom form is what the source needs.
+   spell.py: no menu rule matched. Tried (each one edit + build, reverted): move j=i into the break block
+   and drop j=-1 (211/272 WORSE), and the same with the original redundant !=0 text (211/272 WORSE). Left:
+   register allocation / loop-invariant -1 store hoisting (vargen / scheduling). */
 
 void d2_RaiseWindow(int win)
 {
@@ -4186,7 +4207,7 @@ void d2_RaiseWindow(int win)
             j = i;
             if (o->id == w->parent)
                 break;
-            if (((D2OBJ *)d2_DrawOrder[i]) != 0 && ((int *)o)[0xc] == (int)w && first == -1)
+            if (d2_DrawOrder[i] != 0 && o->win == w && first == -1)
                 first = i;
         }
         i--;

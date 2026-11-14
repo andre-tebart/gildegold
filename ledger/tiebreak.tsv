@@ -1307,7 +1307,7 @@ exe	0x00472ce0	d2_RemoveWindow	d2	a9cf76fbc8a9bde6	no	byte	control=byte p1=byte 
 exe	0x00472d20	d2_RemoveWindowObjects	d2	f4129ad2f9fbb65a	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00472e00	d2_CloseWindow	d2	8da551eba6ce8fff	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00472f50	d2_RaiseObject	d2	d9d39e07eec83c06	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x00472fd0	d2_RaiseWindow	d2	c711f442d592a4bf	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x00472fd0	d2_RaiseWindow	d2	c711f442d592a4bf	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x004730e0	d2_AddToDrawOrder	d2	7008bdf234d5634b	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004731d0	d2_WinOpenPic	d2	584302c433a42884	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00473350	d2_WinOpenPicStyled	d2	651f35a285f5f1b4	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
