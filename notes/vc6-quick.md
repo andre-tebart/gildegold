@@ -1061,3 +1061,9 @@ mechanisms, each as a generated round over all positions / subsets:
 - `strcpy(tok[n++], t)` with a plain counter gives the two-pointer inline copy (`mov edx,esi; mov ecx,eax;
   add esi,0x10; mov al,[ecx]; inc ecx; mov [edx],al; inc edx`); a hand-advanced row pointer (`q = p; p +=
   0x10; strcpy(q, t)`) gives the `sub edx,eax` offset copy (main_BuildVersionString 13 ins -> byte).
+- `c2dag.py SRC FUNC --alloc` prints the register each candidate received as the last column (`-`: none). Read
+  it before a variant round on a register hunk: the question is never "which spelling" but "which candidate
+  must rank above which". Open (main_ChooseHistory): a candidate can be denied a register that looks free (grp:
+  esi while it ranks above ret, none once ret ranks above it and holds ebx) - priority order alone does not
+  predict the outcome; the choice rule is not read from c2.dll yet. c2dag / c2pass / flip take `WinMain`
+  (decorated `_WinMain@16`) by its plain name now.
