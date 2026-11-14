@@ -478,22 +478,26 @@ struct D3ANIMSLOT * d3anim_GetMainSlot(struct D3ANIMCTL *ctl);                  
 /* 0x432750, the per-object animation step (d3_ForEachObject callback, ctx = d3_Time, | 0x80000000 in the
    second pass): steps the three vertex animation slots of every active control of the mesh material, then
    the object's path animation (hermite through the keys).
-   @deep read the whole 1578-instruction function against the original: one call site fewer (the merged
-   NextFrame explained below), the same store and reference set (refs clean), the same 15-entry switch
-   table. The grade is dominated by the frame: ours 0x68 against the original 0xbc, 84 bytes more locals
-   and spills on the original side; the local layouts differ beyond a uniform shift, so the frame alignment
-   cannot mask them and the 1074 code / 492 slots hunks are the same instructions reading other stack slots
-   (e.g. the fade fraction temporaries at [esp+0x3c]/[esp+0x9c], the key pointer at [esp+0x18] vs
-   [esp+0x70], the attach vector at [esp+0x64..] vs [esp+0x30..]). Q4 is settled from the reconstructed
-   body: D3OBJECT+0x44 is D3_L(o)->time (the light view, d3_light.h), the D3ANIMSLOT float slots are the
-   attach position 0x20 and the stop position 0x4c / radius 0x5c, the 2-bit field at 0x70 is the signed
-   turn, and D3PATH+0x3c is a float frameTime; the raw macros are gone and the M10 is cleared by loading
-   ai_FloatOne. What is left is allocation: the two P->next = d3anim_NextFrame(P->flags, P->key, 0, nframes
-   - 1, nframes) sites (the P->time < 0 branch and the else-if tail, both continuing at stepped) have
-   identical arguments, so VC6 merged them into one call site here while the original keeps two, and our
-   compiler emits s->weight = s->fadeTo before the s->fadeEnd = 0 / s->fadeStart = 0 stores while the
-   original emits them before the float compare. Tried: the Q4 field typing, ai_FloatOne, statement
-   reorderings of the fade block, the merged-call spelling; none moves the frame or the local layout. */
+   @stuck match-deep 2026-11-14: frame 0x68 -> 0x9c (the original 0xbc) with every vector a block-local
+   D3VECTOR4 (RootPosAt out, the attach block's v/w/out, the path's v/w/tin/tout; the original's holes
+   after each 3-float group are the w slots); limit = data->nframes - 1 with nframes read after the if;
+   fadeEnd <= now; meaning fix of the end-tangent clear (nkeys, not key/next). 1331 -> 1144 ins. Tried with
+   no gain: late init of over/over2/shown, (ctx >> 31) & 1, tin/tout or the done block's v/w in their own
+   blocks (same or worse). Read the whole path state machine against the original: same meaning. Left: the
+   original reloads P->key / &keys[key] per statement in the linear and hermite path blocks (ours CSEs the
+   address: line 760 region, 30 ins), the original keeps obj in memory (arg slot) and s in esi for the slot
+   loop where ours has obj in ebx, i/j in slots [esp+0x74]/[esp+0x70] with a zero in edi, 0x20 bytes of
+   frame still missing (unpaired original slots [esp+0x8c..0x94], [esp+0x9c], [esp+0xa0], [esp+0xc4]), ours
+   1518 vs 1578 instructions (tiebreak: not measured (dcp headers sample d3anim_StepObject)) prior: read
+   the whole 1578-instruction function against the original: one call site fewer (the merged NextFrame
+   explained below), the same store and reference set (refs clean), the same 15-entry switch table. The
+   grade is dominated by the frame: ours 0x68 against the original 0xbc, 84 bytes more locals and spills on
+   the original side; the local layouts differ beyond a uniform shift, so the frame alignment cannot mask
+   them and the 1074 code / 492 slots hunks are the same instructions reading other stack slots (e.g. the
+   fade fraction temporaries at [esp+0x3c]/[esp+0x9c], the key pointer at [esp+0x18] vs [esp+0x70], the
+   attach vector at [esp+0x64..] vs [esp+0x30..]). Q4 is settled from the reconstructed body: D3OBJECT+0x44
+   is D3_L(o)->time (the light view, d3_light.h), the D3ANIMSLOT float slots are the attach position 0x20
+   and the stop position 0x4c / radius 0x5c, the 2-bit field at 0x70 is the s... */
 char d3anim_StepObject(D3OBJECT *obj, void *ctx)
 {
     unsigned int now = (unsigned int)ctx & 0x7fffffff;
