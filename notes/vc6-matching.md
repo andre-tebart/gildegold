@@ -2984,3 +2984,14 @@ differing instructions. The same shape made the character loop of 0x512f30 pick 
   s (1081) and the whole function's registers permute. Computing run inside the `w > 0` guard flips s to ebp
   but VC6 then folds run away into `[eax+ebp]` addressing. Open: which ordinary s reference the original had
   in the run loop (flip.py: duplicating `s->npix +=` or `s->size +=` flips it).
+- **d2_PlaceWindow byte (15 ins, "CSE / tail-merge scheduling")**: two calls `if (f & 2) d2_MoveObj(x, H - h / 2,
+  w->parent); else d2_MoveObj(x, w->y, w->parent);` against the original's two call sites with `movsx eax, word
+  [w->y]` (an int conversion before a short parameter) and the parent loaded in each arm: the source had ONE call
+  after an int `y` chosen by if / else (`y = ..; else y = w->y; d2_MoveObj(x, y, w->parent);`). VC6 duplicates the
+  short call + epilogue into both arms itself. Reading rule: a widening `movsx` of a field pushed to a short
+  parameter means an int local in between; identical call tails per arm can be VC6's duplication of one call.
+- d2_DrawInput / d2_DrawSlider (stuck, 6 / 8 ins): `o->x - p1->w + o->w` and `w->x + w->w + 4` load the two
+  short fields in the other order than the original; every spelling of the sum is one code and `headers sample`
+  is insensitive, but flip.py hits on unrelated expressions elsewhere in the function (another `(a - b)` turned
+  into `+`, a float constant changed): C1's canonical operand order depends on function-wide state (value numbers),
+  not on the statement. Open.
