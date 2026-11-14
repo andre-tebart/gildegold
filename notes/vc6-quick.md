@@ -1210,3 +1210,11 @@ mechanisms, each as a generated round over all positions / subsets:
   circuit condition followed by a priority chain, not hand-placed labels. The same item had a meaning bug: the
   window's X / Y arguments swapped (abs(height diff) as X) and an extra abs in one branch - read the push order
   against the frame offsets of the RECT fields before trusting an earlier "reasoned" note.
+- **The distance can rise when the source gets right** (main_SearchNetworkGame, 2026-11-14): seven hand-written
+  `do { c = s[k]; d[k] = c; k++; } while (c)` copies as `strcpy` give exactly the original's copy shapes (the
+  offset copy with `name - &recs[0].name` strength-reduced by -0x80 per host, `neg edx` for two destinations of one
+  source, the indexed form between two fixed addresses), and `int btn[4]` for the 4-byte hole behind three button
+  ids gives the original's frame size - yet the distance went 281 -> 348 ins, because every allocation candidate
+  of the function is split and the pieces land in a permutation of the original's registers. Keep the forms that
+  are visibly the original's (copy shapes, frame size) and work the allocation from there; the lower count was a
+  local optimum of the wrong copies.
