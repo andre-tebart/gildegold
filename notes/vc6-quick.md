@@ -1192,3 +1192,11 @@ mechanisms, each as a generated round over all positions / subsets:
   used inside blocks belongs in those blocks. VC6 shares the slots, so the frame size does not tell; the
   scheduler (escaped address) and the frame sort (table position) do. Declare block-used locals in their blocks
   BEFORE any other lever on a store-order or frame-order hunk.
+- **A local assigned at the top "as a default" and overwritten in one arm** (main_CreateWindow: `exs = 0;` before
+  the window class code, `exs = WS_EX_TOPMOST` in the mode-3 arm; ours spilled exs to a 4-byte slot, frame 0xcc vs
+  0xc8, and the zero / work.right / work.bottom took other registers): the default was the else arm's statement
+  (`} else { style = 0x6000000; exs = 0; }`). The value then lives only from the branch to the call and takes
+  ebx, which also serves as the zero constant at the top. Together with the final `if (mode == 3) .. else {..}`
+  written as `if (mode != 3) {..} else ..` (the original lays the long arm first) and `nw` computed before `nh`:
+  105 ins -> byte in one round of 8. A "default at the top, overwritten in one arm" is a lifetime the original
+  probably did not have: try the assignment in the other arm first.
