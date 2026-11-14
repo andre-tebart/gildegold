@@ -3955,41 +3955,21 @@ int sv_MessageBox();
 
 #define MAIN_ME ((AICHAR *)ai_PlayerChar)  /* the player's character (ai_PlayerChar: unsigned short *) */
 
+/* A character as main_SettleRound copies it: the four work-setting fields (AICHAR.flags1b4 .. +0x1c3) are one
+   AIWORKSET there. The member cannot be declared in ai_char.h: any new member moves tie-break-sensitive
+   functions of sv_t off byte (notes/vc6-quick.md), so the view lives in this unit. */
+typedef struct MAINCHARWORK {
+    char pad000[0x1b4];
+    AIWORKSET work;                     /* 0x1b4 */
+} MAINCHARWORK;
+
 /* 0x53a520, settles the round for the player pl: every building of pl loses its round sums and the 0x3800 flags; the kinds 4 / 0x10 / 0x13 (stores) age their objects (+0x37 by the
    rank of the target building, message 0x2b / 0xe), the kind 5 clears its three records and pays the owner level * 16000 below a worth of 160000, the kinds 0xb .. 0xd (the player's) check the
    master (cm_SendMessage3d / flags1b4 bit 0), the kind 0x1d runs the graveyard; a building whose master is the player gets the 0x1b equipment message; buildings of a player that is gone or
    kind 0 / 0xd go to the player (cm_SendOwnership, 0x1b, a 0x31 for every character living there); most kinds wear down (gm_ChangeBuildingState -2 .. -4 with 69 percent). Then every building of pl
    pays its workers (gm_ListWorkers's lists: wage * wageRate / 100, AICHAR.wage), places the ones without a figure on the stage, moves their opinion of pl by wageRate / workRate, lets the
    unhappy ones quit (message 0x33 / 0x34 in 4 .. 9 hours) and lose 10 percent of the skills +0x82 / +0x83 above 42, pays the others of the list, and moves the goods of gm_BuildingBalance's summary.
-   sv_PumpNet and Sleep(20) every 0x20 messages
-   @stuck first difference +0x8: the building pointer c (ours ebp, the original esi) and the zero constant
-   (the original keeps 0 in ebp, re-xored at the loop top: stores mov [esi+0x51],ebp, push ebp, cmp
-   edi,ebp; ours xor eax / test). c2trace: o (store loop, prio 376) is popped before c (370) and takes esi,
-   so c gets ebp and the zero gets nothing; c must rank above o. Levers: msg4 declared in its block 521 ->
-   513 (kept); ev[4] as an AIWORKSET copy of AICHAR+0x1b4 (ws = m->work; ws.flags |= 1) gives the
-   original's test byte [edi+0x1b4],1 + three loads before the stores (497 with the msg4 block) but needs
-   an AIWORKSET member in AICHAR, and every header spelling of that (union work / anonymous struct, both
-   orders, a tag) drops ai_TutorialInitChapter2 / 3 (sv_t, tie-break sensitive per headers sample) from
-   byte - NOT kept; a cast view gives the same code. Loop forms: for (c = ai_BldsT; c < ai_BldsT + 0x100;
-   c++) 294 ins and for (i..) c = &ai_BldsT[i] 310 (c takes esi, prio 467, the first 260 instructions
-   equal) but both are not the original's loop (it has the 0x100 count-down in [esp+0x20] and loads ai_Blds
-   once); for (i; i++, c++), while, do-while with i, the continue form: = control. Flags test spellings (!=
-   0, unsigned, int, bitfield probes): test byte [ebp+0x5b] or and/test cx, never the original's mov
-   ax,[esi+0x5a]; test ah,0x38. flip.py (want mov esi,[ai_Blds], base = ws variant, 99 hits): best m796
-   (delete o = gm_HomeObject) 280, dup of c-using calls (BeginFieldBlock, SendSetField) 318-321: c needs
-   about two more references in the first loop - no ordinary source found. Block-scoped o per use: =
-   control. Left: the whole function's allocation follows from c / zero (code 347, regs 200, slots 120,
-   order 32); the M10 at +0xac2 is the pooled 0.5 (cm_DoubleHalf), the M8 lines are the ai_Time copy order.
-   (tiebreak: not measured (dcp headers sample main_SettleRound)) prior: Read whole against
-   0x53a520..0x53b2d0: the per-building round reset (sums, 0x3800 flags), the store / kind 5 / master /
-   graveyard branches, the equipment and ownership messages, the wear-down, the worker pay loops (two
-   passes of 12 over gm_ListWorkers's lists, the opinion moves by wageRate / workRate, the quit messages
-   0x33 / 0x34, the skill loss), the extra list pay and the balance goods moves all agree statement for
-   statement, 1044 vs 1047 instructions. Fixed: the balance summary is 0x15 ints (sum[0x11] made
-   gm_BuildingBalance write past it; the frame is now 0x378 = the original's), AICHAR.unk1bc named prodAll.
-   Left: allocation and scheduling. The original keeps 0 in ebp for the whole function (stores mov
-   [esi+0x51], ebp, push ebp, cmp edi, ebp) and the building in esi, the kind record in a slot ([esp+0x18],
-   reloaded at +0x137, +0x318, +0x3f3, +0x4ff); ours puts the building in ebp, th... */
+   sv_PumpNet and Sleep(20) every 0x20 messages */
 void main_SettleRound(unsigned short pl)
 {
     int sum[0x15];  /* gm_BuildingBalance's summary (0x15 ints) */
@@ -4060,7 +4040,7 @@ void main_SettleRound(unsigned short pl)
                         } else if ((m->flags1b4 & 1) == 0) {
                             AIWORKSET ws;
 
-                            ws = *(AIWORKSET *)&m->flags1b4;
+                            ws = ((MAINCHARWORK *)m)->work;
                             ws.flags |= 1;
                             cm_BeginFieldBlock((char *)m, m->netId);
                             cm_AddFieldDelta(4, 1, (char *)&m->flags1b4 - cm_FieldObject, &ws);
