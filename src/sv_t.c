@@ -4407,14 +4407,24 @@ void sv_ButtonRow(int f, int y, int *out, int n, ...); int sv_MessageBoxGreen();
    100 pixels apart; the buttons 0x4042 (hire: enabled while a candidate is selected) and 0x4043 (back). Hire
    hands the selected candidate to ai_AlchemistHire and closes the window when that succeeds; back or the right
    mouse button close it. The camera follows again at the end
-   @deep read whole against the original and reconstructed (483 vs 489 instructions; asmdiff --symbols:
-   every call, argument, constant and text id in the original's order, no ! line but the reordered x / y
-   name loads). Left: allocation. The original keeps form in esi, the radio group in ebp then ebx =
-   group*0x23, ok in edi; ours form in ebp and -1 in esi (cmp [d2_Radios+8], esi vs cmp ..., -1). In the
-   candidate loop the original keeps i and a byte offset i*4 in slots (mov ebp,[esp+0x18] at the loop top,
-   [esp+ebp+0x64] / [esp+ebp+0x50], add edx,4 at the end) and computes &d2_Wins[win2].w after the name
-   text, ours keeps i in ebx (scaled [esp+ebx*4+..]) and hoists &d2_Wins[win2].w out of the loop; the
-   original saves edi only after the no-candidate return (push edi at 0x57bfaf); frame 0x55c vs 0x548 */
+   @stuck match-deep 2026-11-14: 260 -> 221 ins with the row position computed from i at the loop top (y =
+   i * 0x64 + 0x31; the running y += 0x64 and y in the for increment = control, every use written as i *
+   0x64 + k = 263). Statement orders of the five entry stores (120) and an else around the rest: no lever.
+   Frame lead: the original stores form / win2 / win3 / group to slots spaced like elements of one int
+   array (form 0x34, win2 0x3c, win3 0x44, group 0x50 by the push depths, win2 written with mov
+   [esp+0x78],edi and reloaded from it in the loop); int w[8] with form w[0], win2 w[2], win3 w[4], group
+   w[7] (or w[3] / w[6]) gives the original's frame 0x55c and 215 ins, but win2 stays in a register in ours
+   and the slot order of n / rec / steps differs. Left beside that: the loop keeps i in memory and its *4
+   offset in ebp ([esp+ebp+0x64]), ours i in a register (scaled index), and &d2_Wins[win2].w hoisted into
+   ebp in ours. (tiebreak: not measured (dcp headers sample ai_AlchemistCandidates)) prior: read whole
+   against the original and reconstructed (483 vs 489 instructions; asmdiff --symbols: every call,
+   argument, constant and text id in the original's order, no ! line but the reordered x / y name loads).
+   Left: allocation. The original keeps form in esi, the radio group in ebp then ebx = group*0x23, ok in
+   edi; ours form in ebp and -1 in esi (cmp [d2_Radios+8], esi vs cmp ..., -1). In the candidate loop the
+   original keeps i and a byte offset i*4 in slots (mov ebp,[esp+0x18] at the loop top, [esp+ebp+0x64] /
+   [esp+ebp+0x50], add edx,4 at the end) and computes &d2_Wins[win2].w after the name text, ours keeps i in
+   ebx (scaled [esp+ebx*4+..]) and hoists &d2_Wins[win2].w out of the loop; the original saves edi only
+   after the no-candidate return (push edi at 0x57bfaf); frame 0x55c vs 0x548 */
 void ai_AlchemistCandidates(unsigned char *obj)
 {
     int t;
@@ -4468,8 +4478,8 @@ void ai_AlchemistCandidates(unsigned char *obj)
     io_PrintText(0x4039);
     d2_SetForm(form, 2);
     group = d2_CreateRadioGroup(0);
-    y = 0x31;
     for (i = 0; i < n; i++) {
+        y = i * 0x64 + 0x31;
         portraits[i] = d2_WinOpenPic(5, y - 0x19, 0x6c7, win2);
         portraits[i] = d2_WinOpenPic(7, y - 0x17, rec[0xd + i % 2] + 0x639, win2);
         d2_Objs[portraits[i]].interactive = 1;
@@ -4509,7 +4519,6 @@ void ai_AlchemistCandidates(unsigned char *obj)
         txt_Format(line, 0x4041, step->grid.plr.id * 2 + 0x9a8);
         t = d2_CreateWinText(0xfa, y - 1, line, win2);
         d2_Objs[t].w = d2_Wins[win2].w - 0xfa;
-        y += 0x64;
     }
     d2_SetForm(form, 3);
     sv_ButtonRow(win3, 0, buttons, 2, txt_Ptrs[0x4042], txt_Ptrs[0x4043]);
