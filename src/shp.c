@@ -37,7 +37,26 @@
 int d2_ColourFormatSet = 0;  /* 0x6f0450 */
 extern unsigned int d2_HighBitMask32;
 
-/* 0x479d00, makes the light table: every 16 bit colour brightened by add @deep 38 code hunks / 22 regs, register allocation only, and the unit note's Open work records this exact case as tried (r=g=b=0, temp pointer, assign-in-if): the original materialises the zero in ebx at entry (xor ebx,ebx), stores the three byte locals as bl, compares the mem_Alloc result with cmp eax,ebx and uses edi for lim / esi for the 0x10000 counter; ours stores immediates, uses test eax,eax and swaps lim / counter (esi / edi). The rest of the body read against the original 0x479d00..0x479def: mem_Alloc(0x20000, 'd2:shp:shp_LightTable'), lim = 0xff - add, the 0x10000 loop with dd_SplitRGB(i,&r,&g,&b), the three b/g/r clamps against lim (add or 0xff), dd_RGB and the 16 bit table store, return 1 / 0 - every constant, callee and condition corresponds. Readability: Q1 only (the mem tag gives the role). */
+/* 0x479d00, makes the light table: every 16 bit colour brightened by add
+   @stuck match-deep 2026-11-14: draft 34 -> shape 20 by two levers: unsigned char r = 0, g = 0, b = 0 at
+   the declaration (gives the original's store order) and no lim local, 0xff - add written at each of the
+   three compares (lim's priority 35 had pushed the zero constant (prio 6, byte-flagged, ebx only) out of
+   ebx; with the CSE temp at 25 the zero gets ebx: xor ebx,ebx at entry, cmp eax,ebx, the bl stores). Left:
+   only i / the 0xff - add temp swapped (ours temp esi, i edi; c2trace: temp#a3 prio 25 vs i 19, the first
+   popped gets esi). Tried with no gain: any mix of lim local / spellings of 0xff - add per compare (216
+   variants, 2 codegens), all 125 per-channel compare directions (<, >=, >, <=, !<), ternaries, while / do
+   / post-increment loops, i initialised early, unsigned i, <= 0xffff, pointer temp for the alloc, early
+   return 0, return-flag. flip.py (want inc esi): deleting the r compare gives the right registers (2 ins),
+   i.e. the temp has one block reference too many or i one too few; no meaning-keeping spelling found
+   (tiebreak: not measured (dcp headers sample d2_MakeLightTable)) prior: 38 code hunks / 22 regs, register
+   allocation only, and the unit note's Open work records this exact case as tried (r=g=b=0, temp pointer,
+   assign-in-if): the original materialises the zero in ebx at entry (xor ebx,ebx), stores the three byte
+   locals as bl, compares the mem_Alloc result with cmp eax,ebx and uses edi for lim / esi for the 0x10000
+   counter; ours stores immediates, uses test eax,eax and swaps lim / counter (esi / edi). The rest of the
+   body read against the original 0x479d00..0x479def: mem_Alloc(0x20000, 'd2:shp:shp_LightTable'), lim =
+   0xff - add, the 0x10000 loop with dd_SplitRGB(i,&r,&g,&b), the three b/g/r clamps against lim (add or
+   0xff), dd_RGB and the 16 bit table store, return 1 / 0 - every constant, callee and condition
+   corresponds. Readability: Q1 only (the mem tag gives the role). */
 int d2_MakeLightTable(char add)
 {
     int i;
