@@ -1393,6 +1393,7 @@ mechanisms, each as a generated round over all positions / subsets:
   key / next where the original reads nkeys / key ([esi] vs [esi+4]). Holes of 4 bytes after every 3-float group
   of the original's frame = D3VECTOR4 locals; declare them in their blocks (0x68 -> 0x9c of 0xbc).
 - **A short global the original loads as a word where ours loads a dword and widens the arithmetic** (`mov ecx,
-  dword [g]; sub ecx,eax` vs `mov cx, word [g]; sub cx,ax`): the global was tentative (COMMON, `short g;`, no
-  initializer), so VC6 did not know it was 4-aligned. Probe with `extern short probe;` in a dcp try variant;
-  make the neighbours tentative too (d2_ScreenH / d2_ScreenW, d2_ResizeWindow byte).
+  dword [g]; sub ecx,eax` vs `mov cx, word [g]; sub cx,ax`): VC6 widens only when it knows the global is 4-aligned
+  (its unit defines it). Probe with `extern short probe;` in a dcp try variant. A tentative `short g;` (COMMON)
+  gives the original's code, but dcp's D5 gate refuses a tentative definition in .bss, and moving the `= 0`
+  definition below the function does not hide it (C2 sees the whole unit): open (d2_ResizeWindow, 4 ins).

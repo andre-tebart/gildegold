@@ -2999,12 +2999,13 @@ differing instructions. The same shape made the character loop of 0x512f30 pick 
 ## match-deep 2026-11-14 (fourth d2 session)
 - **A short global loaded as a dword (`mov ecx, dword [d2_ScreenH]; .. sub ecx,eax; mov [m],cx`) where the original
   keeps `mov cx, word [..]; sub cx,ax`**: VC6 widens a 16-bit load-op-store chain to 32 bits only when it knows
-  the global is 4-aligned, i.e. when the unit DEFINES it with an initializer (`short d2_ScreenH = 0;`). The
-  original's d2_ScreenH / d2_ScreenW were tentative (`short d2_ScreenH;`, COMMON: the linker places it, the
-  compiler assumes nothing). Probe: `extern short probeH;` inside the function in a dcp try variant gives the
-  original's word load. Make every neighbour that VC6 would then see as aligned tentative too (ScreenW became
-  dword-loaded as soon as ScreenH alone was COMMON). No byte lost elsewhere; the link still resolves.
-- **d2_ResizeWindow byte (32 ins)**: besides the COMMON globals, (1) a record pointer `o = &d2_Objs[*p]` for
+  the global is 4-aligned, i.e. when the unit defines it (`short d2_ScreenH = 0;`). Probe: `extern short probeH;`
+  inside the function in a dcp try variant gives the original's word load, and so does a tentative definition
+  (`short d2_ScreenH;`, COMMON: byte, nothing else moved) - but dcp's D5 gate refuses a tentative definition
+  at an uninitialised-data address ("write it `= 0`"), so it was reverted. Moving the `= 0` definitions below
+  the function changes nothing (C2 sees the whole unit). Open: how the original's unit hid the alignment
+  (the definition in another unit / a container object), a data question like the D2KEY word.
+- **d2_ResizeWindow 32 -> 4 ins (stuck on the d2_ScreenH word above; byte with it tentative)**: (1) a record pointer `o = &d2_Objs[*p]` for
   the h / y reads instead of two locals `oh` / `oy` (`o->y + o->h`; 32 -> 18), (2) the object loop as the plain
   `for (i = 0; i < wn->nobjs; i++) .. d2_Objs[wn->objs[i]]` instead of the decompiled `n = wn->nobjs; if (n > 0)
   { p = ..; do { ..; p++; n--; } while (n); }` - VC6 makes the same countdown and pointer in the param slot
