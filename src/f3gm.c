@@ -8970,19 +8970,12 @@ int gm_WorkMinutesBetween(AITIME *a, AITIME *b, unsigned char *bld)
     return (acc - x) + y;
 }
 /* 0x5096a0, the working minutes from the clock a to the clock b as gm_WorkMinutesBetween, with the fixed working
-   day 6:00 .. 23:00 (360 .. 1380 minutes, 1020 a day); 0 when b is before a
-   @deep Read whole against the original: compare-time exit, the clock copy, the first day clamped as
-   MIN(MAX(360.0f, minutes), 1380.0f) on the int minutes (fild, no float store; VC6 folds the constant
-   compares into the original's branch tree exactly), acc = 1380 - x, gm_SetTime(&t, 6, 0, 0), 1020 per
-   whole day, the last day's clamps of b then t all match; same size 497. Left is the same allocation as
-   gm_WorkMinutesBetween: acc and y swap ebp / edi (original mov eax,ebp; sub eax,ecx; add eax,edi; pop edi
-   at +0x1ca / +0x1e5, ours mov eax,edi ... add eax,ebp after pop edi) and the b-minutes temporary sits in
-   [esp+0x28] instead of the original's reuse of acc's spill slot [esp+0x24] (+0x11f / +0x123). Tried:
-   folding the first x into the acc expression (no change). */
+   day 6:00 .. 23:00 (360 .. 1380 minutes, 1020 a day); 0 when b is before a. x and y hold a clock's minutes
+   first and are then clamped into the working day in place */
 
 int gm_FixedWorkMinutesBetween(AITIME *a, AITIME *b)
 {
-    int acc, x, y, day, end, n;
+    int acc, x, y, day, end;
     AITIME t;
 
     if (gm_CompareTime(a, b) > 0)
@@ -8991,23 +8984,21 @@ int gm_FixedWorkMinutesBetween(AITIME *a, AITIME *b)
     day = t.year;
     end = b->year;
     if (day < end) {
-        x = (int)GM_MIN(GM_MAX(360.0f, t.hour * 60 + t.min), 1380.0f);
+        x = t.hour * 60 + t.min;
+        x = (int)GM_MIN(GM_MAX(360.0f, x), 1380.0f);
         acc = (int)(1380.0f - x);
         t.year = day + 1;
         gm_SetTime(&t, 6, 0, 0);
         day = t.year;
     } else
         acc = 0;
-    if (day < end) {
-        n = end - day;
-        do {
-            acc = (int)(acc + 1020.0f);
-            n--;
-        } while (n != 0);
-    }
-    y = (int)GM_MIN(GM_MAX(360.0f, b->hour * 60 + b->min), 1380.0f);
-    x = (int)GM_MIN(GM_MAX(360.0f, t.hour * 60 + t.min), 1380.0f);
-    return (acc - x) + y;
+    for (; day < end; day++)
+        acc += 1020.0f;
+    x = b->hour * 60 + b->min;
+    x = (int)GM_MIN(GM_MAX(360.0f, x), 1380.0f);
+    y = t.hour * 60 + t.min;
+    y = (int)GM_MIN(GM_MAX(360.0f, y), 1380.0f);
+    return (acc - y) + x;
 }
 /* 0x5098a0, the goods list of the building b (ai.h AIRECIPE): out (0x2e ints) is cleared, then gets the capacity
    (out[0]), the number of entries (out[1]), per entry its stock (out[2 + n], gm_ListStock), the goods id (the words
