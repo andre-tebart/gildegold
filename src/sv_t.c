@@ -4771,15 +4771,7 @@ void ai_AlchemistResearchWindow(unsigned char *obj)
 /* 0x57cde0, starts the research of the place slot of the alchemist object obj (record rec) with the message 0x96
    (cm_SendLongMessage; from the building, to the owner character's netId, the game clock, flags 1, arg[0] the
    record's id, arg[1] the place's id, arg[4] a random duration 1000 .. 66535); 0 when a research already runs
-   (ahm_ResearchState), else 1
-   @deep read whole against the original and reconstructed (AIMSG zeroed, fromId = building id, type 0x96,
-   flags 1, to = the owner character's netId, time copied as 3 ints and a short, arg[0] = rec id, arg[1] =
-   slot id, arg[4] = (util_Random(0x5a0) & 0xffff) + 1000; 228 vs 227 instructions; asmdiff --symbols:
-   every load, store, constant and call of the original is present). Left: scheduling only: the original
-   pushes &msg (lea ecx,[esp+0x10]; push ecx) before the flags / to / time stores, interleaves the clock
-   loads with them (ae8 first into [esp+0x40], then to, hour, year, the word at +0x34), ours loads the
-   clock words first and pushes the pointer last; tried a struct copy, a field-wise copy (a,b,c,d) and the
-   original's store order, all give the same schedule */
+   (ahm_ResearchState), else 1 */
 int ai_AlchemistSendRecipeResearch(unsigned char *obj, AHMREC *rec, int slot)
 {
     AIMSG msg;
@@ -4789,13 +4781,13 @@ int ai_AlchemistSendRecipeResearch(unsigned char *obj, AHMREC *rec, int slot)
     if (ahm_ResearchState(obj, &a, &f, 0) != 0)
         return 0;
     memset(&msg, 0, sizeof(msg));
-    msg.fromId = ((AIBLD *)obj)->id;
-    msg.time = ai_Time;
     msg.type = 0x96;
     msg.flags = 1;
     msg.to = ai_CharsT[((AIBLD *)obj)->owner].netId;
-    msg.arg[0] = rec->id;
+    msg.fromId = ((AIBLD *)obj)->id;
+    msg.time = ai_Time;
     msg.arg[1] = rec->slots[slot].id;
+    msg.arg[0] = rec->id;
     msg.arg[4] = (util_Random(0x5a0) & 0xffff) + 1000;
     cm_SendLongMessage((char *)&msg);
     return 1;
