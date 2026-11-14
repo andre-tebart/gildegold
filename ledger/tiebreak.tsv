@@ -3107,7 +3107,7 @@ exe	0x00508a20	gm_HealthFactor	f3gm	7c4bf967df612085	no	byte	control=byte p1=byt
 exe	0x00508a80	gm_FormatAmount	f3gm	36f18a19a7a5509a	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
 exe	0x00508cc0	gm_ListObjectsAfter	f3gm	ea1fab2c70960bad	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x00508d70	gm_BuildingLevel	f3gm	52709faf0cab91a9	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x00508d80	gm_BuildingBalance	f3gm	6ec40f947cb64ecb	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x00508d80	gm_BuildingBalance	f3gm	af452c69ad0d5219	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x00509060	gm_BuildingCarts	f3gm	fcc7a2f87b033575	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x005090b0	gm_BuildingRank	f3gm	c3418727620d28cc	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
 exe	0x00509120	gm_BuildingRankGate	f3gm	716b0f03ba45207e	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
