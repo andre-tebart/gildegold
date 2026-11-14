@@ -1416,7 +1416,7 @@ exe	0x0047b220	d2_GrabShape	shp	16717eb5fb1c17f8	no	byte	control=byte p1=byte p2
 exe	0x0047b350	d2_ShpBlit16Scaled	shp	5e26193b4400cbd1	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x0047b640	d2_ShpBlit16ScaledLit	shp	f88e209473e3d6c3	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x0047b900	d2_ShpBlit16HalfDark	shp	0abb1b9863bb5b84	no	shape	sample n=32 seed=1 compiled=32 codegens=1 best=shape
-exe	0x0047ba60	d2_ShpBlit16Rows	shp	0c3f10efe3e7894d	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x0047ba60	d2_ShpBlit16Rows	shp	5f8aaab327483aaa	no	shape	sample n=32 seed=1 compiled=32 codegens=1 best=shape
 exe	0x0047bd70	d2_ShpBlit	shp	3d7588554c125407	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0047bec0	d2_ShpConvert8To16	shp	3707c6939089225e	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x0047c0e0	d2_ShpConvert24To16	shp	e1fce5697d76ce02	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft

@@ -2954,3 +2954,16 @@ differing instructions. The same shape made the character loop of 0x512f30 pick 
   --apply drops the function from the ledger (`dcp fn: no function`); put the comment back from git. Variant
   files with backticks in a `dcp stuck` text in bash: the shell runs them - quote the reason with single quotes
   or pass it through a file.
+
+## match-deep 2026-11-14 (third shp session)
+- **d2_ShpBlit16Rows byte (332 ins, draft, "codegen / register allocation only")**: four ordinary changes.
+  (1) The goto-shared clip tails (`clip1:` / `clip2:`, a `rows` temp reused for the x clip) as plain if/else with
+  `vis -= skipl; clipped = 1;` written in each arm (VC6 cross-jumps them into the original's shared tail) and the
+  unclipped arms first (`if (clipped == 0) {..} else if ..`): 332 -> 146, but the frame 4 short (rows in a
+  register). (2) No `w` local: `vis = s->w;` and vis in the x clip (`vis + x`, `vis - ClipRight + x`), `s->w *
+  rows` in the clipped arms: the frame matched (vis and rows homed), 159 ins of register rotation left.
+  (3) No `mode` local: `s->mode == 0 / 2 / 3` in both dispatch chains (flip.py: moving `mode = s->mode;` into
+  one arm was the only mutant with the original's `xor edx,edx` zero): 159 -> 8. The original's `mov dl,[s+0xd]`
+  hoisted above the clipped test is VC6's own hoist of the two chains' first load. (4) The zero inits first,
+  then `vis = s->w; h = s->h;` (720 orders, 1 code at 4 ins), and in the clipped mode-3 arm the row latch
+  `d += ..` before `p += skipr` (a reload register ebx / ebp): byte.
