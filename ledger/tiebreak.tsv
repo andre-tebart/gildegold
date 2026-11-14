@@ -2968,7 +2968,7 @@ exe	0x004fddb0	gm_SpawnCharacter	f3gm	b8d210d96399c5ea	no	draft	sample n=32 seed
 exe	0x004fde90	unk_LoadIconNames	f3gm	5bce34983c607812	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004fdfb0	gm_FreeIconNames	f3gm	b4b622ca66beecec	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004fdfd0	gm_CountCharacters	f3gm	fb401a6a640e18a7	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
-exe	0x004fe140	gm_AddTime	f3gm	0705ffa76ffbd55a	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x004fe140	gm_AddTime	f3gm	0705ffa76ffbd55a	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x004fe1e0	gm_SetTime	f3gm	55313c1ed63eaf76	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004fe210	gm_CompareTime	f3gm	402a142eca139fdd	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004fe280	gm_MinutesBetween	f3gm	6576804d16352d87	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte

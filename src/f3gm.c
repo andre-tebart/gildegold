@@ -2459,14 +2459,21 @@ void * mem_Alloc(int size, char *tag);                   /* 0x4223c0 */
 void util_Randomize();                     /* 0x42ec80 */
 
 /* 0x4fe140, adds hours / minutes / seconds (any sign for the hours) to the clock c, carrying into the days (the minutes and seconds only upward)
-   @deep read against the original 0x4fe140 and reconciled: the read-modify-write form of sec / min / hour
-   (the original keeps the intermediate store c->min = min + sec/60, which only the compound form
-   reproduces), h signed with unsigned /24 and h -= d*24 (the mul by 0xaaaaaaab), the negative-hour borrow.
-   Remaining is register allocation only: the original holds the new minute and the day in edi (push edi;
-   '+ mov edi, [ecx+6]; add edi, eax; mov [ecx+6], edi', '+ mov edi, [ecx]; add edi, edx; mov [ecx], edi',
-   pop edi in both returns), ours uses esi then reloads 'mov esi, 0x3c' and does the day updates through
-   eax; ours=55 vs original=57 are the push/pop edi. Tried: separate t temporary, secs += c->sec, %24
-   instead of -= d*24 (worse) */
+   @stuck match-deep 2026-11-14: the original pushes edi and uses it as a leftover register for the three
+   read-modify-write temps (min + sec/60, year += d, year -= d), which keeps the 60 in esi for both idivs;
+   ours puts the min temp in esi and reloads mov esi,0x3c. c2trace: no candidate of ours takes edi, the 60
+   is no allocation candidate (unprofitable const webs only). Tried (dcp try): named s / m locals for the
+   sums in 6 store orders (38-39 ins), a reused t local for the min and year updates (= control: copies
+   fold), inline (sec + secs) / 60 and % 60 (= control), headers sample (insensitive), flip.py want push
+   edi (5 hits: int->short / char of h or d, a duplicated year update; all 35-44 ins). Left: 32 ins, all
+   the edi / esi roles above. (tiebreak: insensitive) prior: read against the original 0x4fe140 and
+   reconciled: the read-modify-write form of sec / min / hour (the original keeps the intermediate store
+   c->min = min + sec/60, which only the compound form reproduces), h signed with unsigned /24 and h -=
+   d*24 (the mul by 0xaaaaaaab), the negative-hour borrow. Remaining is register allocation only: the
+   original holds the new minute and the day in edi (push edi; '+ mov edi, [ecx+6]; add edi, eax; mov
+   [ecx+6], edi', '+ mov edi, [ecx]; add edi, edx; mov [ecx], edi', pop edi in both returns), ours uses esi
+   then reloads 'mov esi, 0x3c' and does the day updates through eax; ours=55 vs original=57 are the
+   push/pop edi. Tried: separate t temporary, secs += c->sec, %24 instead of -= d*24 (worse) */
 void gm_AddTime(AITIME *c, int hours, int mins, int secs)
 {
     int h;
