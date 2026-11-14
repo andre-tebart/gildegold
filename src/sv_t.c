@@ -2216,17 +2216,10 @@ void ai_TutorialProgressSlider(void)
    steps. Past the last step the run's stepShown callback runs and an open step form is closed (stepForm,
    stepControl -1, stepKind 4: none); when none was open, the original goes on to show the step past the end
    (it reads the step record behind the chain). Otherwise the step form of the step's kind (0 left, 1 right, 2 top, 3 bottom; -4 for another
-   kind) is opened unless it is already open, when only its controls 1 / 2 are cleared; control 1 gets the step's
-   text, control 2 the continue text 0x7d whose object becomes stepControl; the step's voice replaces the playing
-   one, and the run's stepShown callback runs
-   @deep read against 0x577e50..0x5780c8 statement by statement: the stepCount==0 early return, the done
-   path that falls into the display when no form is open (577e8e je 0x577ebc), the four form literals
-   (switch tables equal), the $Z%s/0x7d control, the voice re-read and the stepShown calls all match; 199
-   vs 199 instructions, every value reloaded through ai_Tutorial as in the original. Left is register
-   choice and scheduling only: 577f2d (ours mov eax,[ai_Tutorial]; mov [eax+0x44],4; mov eax,[ai_Tutorial];
-   mov ecx,[eax+0x18] vs mov ecx,[ai_Tutorial]; mov [ecx+0x44],4; mov eax,...; mov edx,[eax+0x18]), 577fa5
-   (the add esp,0xc / add esp,8 placed one instruction later in ours around d2_PlaceMainWindow, eax/ecx/edx
-   rotated), and the regs hunks 577f5b/578007/57801c/578025 */
+   kind) is opened unless it is already open, when only its controls 1 / 2 are cleared (an open form of another
+   kind is closed first, with stepControl -1 and stepKind 4; with no form open those two keep their values);
+   control 1 gets the step's text, control 2 the continue text 0x7d whose object becomes stepControl; the
+   step's voice replaces the playing one, and the run's stepShown callback runs */
 
 int ai_TutorialStepForm(void)
 {
@@ -2254,9 +2247,9 @@ int ai_TutorialStepForm(void)
         if (ai_Tutorial->stepForm != -1) {
             d2_CloseView(ai_Tutorial->stepForm);
             ai_Tutorial->stepForm = -1;
+            ai_Tutorial->stepControl = -1;
+            ai_Tutorial->stepKind = 4;
         }
-        ai_Tutorial->stepControl = -1;
-        ai_Tutorial->stepKind = 4;
         if (ai_Tutorial->run->steps[ai_Tutorial->step].kind >= 4)
             return -4;
         switch (ai_Tutorial->run->steps[ai_Tutorial->step].kind) {
