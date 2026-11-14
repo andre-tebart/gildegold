@@ -2134,7 +2134,7 @@ exe	0x004c28a0	snd_LoadBuildingVoices	f3snd	byte	readable
 exe	0x004c2c00	snd_UnloadBuildingVoices	f3snd	byte	readable		
 exe	0x004c2c70	snd_PlayWorkerClick	f3snd	byte	readable		
 exe	0x004c2ce0	snd_PlaySelectedClick	f3snd	byte	readable		
-exe	0x004c2d20	snd_PlayFavourComment	f3snd	draft	readable	stuck	
+exe	0x004c2d20	snd_PlayFavourComment	f3snd	byte	readable		
 exe	0x004c2f30	ai_FavourComment	f3snd	shape	readable		
 exe	0x004c30e0	snd_StartMarketAmbience	f3snd	byte	readable		
 exe	0x004c3140	snd_StopMarketAmbience	f3snd	byte	readable		
