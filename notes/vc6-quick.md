@@ -1241,3 +1241,20 @@ mechanisms, each as a generated round over all positions / subsets:
   register shift (eax / ecx / edx rotation) through a long store block and everything behind it: ONE statement
   at the wrong place (here a read-modify-write of a global byte in the middle of the config stores). Run a
   move-one-statement round first (n^2 variants): 66 -> 6 ins. (5) Plain store order for the rest.
+- **main_RoundReport byte (159 ins, "tie-break sensitive" per headers sample): six ordinary changes.** The big one
+  (159 -> 40): two accumulators that start from the same value were NOT a copy of each other. `cash = wage;
+  income = cash - spent; .. cash = income;` became the expression written out for both, cash first: `cash =
+  c->wage - c->spent; income = c->wage - c->spent; if (c->wage != 0) ..` (the original's `mov ecx,edx; sub
+  ecx,edi; mov edi,ecx; mov [slot],ecx`: one temp fanned out). A copy `b = a` between two long-lived
+  accumulators changes the whole allocation and the frame; named temps for the operands leave 8 ins. Then: `cash
+  -= x; costs = x;` (not `costs = x; cash = income - costs;`); several `acc += arr[k]` lines of a loop body in
+  array-index order (1 of 24 orders is byte: it decides which accumulator gets the free callee-saved
+  register); `(o->interest * 0.01) * o->amount` (int * 0.01 * int unparenthesised gives `fild; fimul; fmul`,
+  the original's `fild; fmul const; fimul` needs the parentheses; a float / double local is no lever); a sum
+  used twice through one temp (`t = a + b; net += t; income += t;`); plain store order.
+  Lessons: (1) `dcp headers sample` saying "sensitive" on a function with dozens of differing instructions
+  says nothing - the cause was in the source; never stop on it. (2) The distance is not monotone while a
+  scratch-register rotation is out of step: judge a block's spelling after the blocks before it are right.
+- `uv run --with capstone python tools/c2dag/vdiff.py SRC FUNC [VARIANTS LABEL]` prints the instruction diff of
+  one dcp try variant against the original without touching the tree (dcp try prints only the distance; three
+  agents had each written their own version of this).

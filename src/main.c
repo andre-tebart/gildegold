@@ -3630,30 +3630,7 @@ void main_ReplaceFigure(unsigned p)
    own loans (HELOAN events, interest * 0.01 * amount, truncated per step), the office wages and the other
    incomes (GMINCOME); then the round parts are rolled into AIFIN.missionMoney and cleared. When the balance goes
    negative (gm_IsBankrupt) a bankruptcy scene party (kind 9) runs and, with main_ReplaceFigureOn set, the
-   figure is replaced (main_ReplaceFigure)
-   @stuck tie-break sensitive: dcp headers sample gives 2 codegens in 32 samples, none better than the
-   build (draft, 155 ins / 1597 bytes): the declaration set decides the allocation; park for main.c's
-   declaration pass. Tried this session: (1) the first page spelled plainly (income = wage - spent; cash =
-   income before the prints; cash -= / costs += at upgradeSpent like the other cost lines; costs =
-   upgradeSpent; cash = wage - spent with income = cash; costs = 0 moved next to the cost block) in 10
-   variants: all worse (243..458 ins, the control's code stays best); (2) blockscope.py (arrays/records and
-   --scalars): no candidate moved; (3) c2trace: fin 205 (callee-saved), i 190, cash(web 2e) 120 sav 32,
-   costs -19 sav 18, income 34 sav 28, wageCost -218, incomeSum -201: income and costs rank far below cash,
-   so the original's costs-in-ebx with reloads on the else paths needs costs above income, which no
-   spelling tried gave. Hunks left: first page +0x1ab..+0x366 (original: wage in edx, spent loaded into
-   edi, income in [esp+0x14], cash in edi, costs in ebx + [esp+0x10] with jmp/mov ebx,[esp+0x10] reloads at
-   +0x23b; ours: income ebx + [esp+0x18], zero in edi, costs reloaded into ecx per block), the balance sums
-   at +0x428 scheduled around other slots, the incomes loop end stores ebx/ebp (branch target +0x612 vs
-   +0x661). (tiebreak: sensitive) prior: Read whole against 0x539870..0x53a249 and rewritten typed: AIFIN
-   (gm_PlayerRecord) got its round fields (incomeA/B/C 0x14/0x18/0x20, costA/B 0x4c/0x54 in ai.h, by the
-   texts that print them and the roll-over into missionMoney), the balance is gm_BuildingBalance's 0x15-int
-   summary (the old draft read a[0..2]; the original adds [0x11] income, [3] wage cost, [0x10] costs,
-   [0x14] net - fixed), the loan interest from HELOAN, ORDWAGES / GMINCOME / GMDATE / G28REC records (frame
-   now 0x200 = the original's, the old draft had 0x230), the second d2_ReleaseFade inside the bankruptcy
-   block and the field order of the scene party as the original; gm_CharacterWages / gm_CharacterIncomes
-   take the unmasked dword of ai_PlayerId (main_PlayerIdInt) as the original pushes it. 741 vs 744
-   instructions. Left: allocation. The original keeps the first page's running balance in edi with income
-   in the slot [esp+0x14... */
+   figure is replaced (main_ReplaceFigure) */
 
 void main_RoundReport(void)
 {
@@ -3703,18 +3680,17 @@ void main_RoundReport(void)
         d2_SetForm(win, 1);
         io_PrintText(0x2007);
         /* the character's own money: wage in, goods bought out */
-        cash = ai_CharsT[MAIN_PID].wage;
-        income = cash - ai_CharsT[MAIN_PID].spent198;
-        if (cash != 0)
-            io_PrintText(0x2008, cash);
+        cash = ai_CharsT[MAIN_PID].wage - ai_CharsT[MAIN_PID].spent198;
+        income = ai_CharsT[MAIN_PID].wage - ai_CharsT[MAIN_PID].spent198;
+        if (ai_CharsT[MAIN_PID].wage != 0)
+            io_PrintText(0x2008, ai_CharsT[MAIN_PID].wage);
         if (ai_CharsT[MAIN_PID].spent198 != 0)
             io_PrintText(0x2009, ai_CharsT[MAIN_PID].spent198);
-        cash = income;
         /* the round's record: the costs, then the incomes */
         if (fin->upgradeSpent != 0) {
             io_PrintText(0x2014, fin->upgradeSpent);
+            cash -= fin->upgradeSpent;
             costs = fin->upgradeSpent;
-            cash = income - costs;
         }
         if (fin->renovationSpent != 0) {
             io_PrintText(0x2016, fin->renovationSpent);
@@ -3782,9 +3758,9 @@ void main_RoundReport(void)
                 t = gm_BuildingClass(b->type);
                 v = gm_BuildingBalance((unsigned char *)b, MAIN_PID, bal);
                 if (v != 0 || (t != 5 && t != 6)) {
-                    income += bal[0x11];
                     wageCost += bal[3];
                     costs += bal[0x10];
+                    income += bal[0x11];
                     net += bal[0x14];
                 }
             }
@@ -3797,9 +3773,9 @@ void main_RoundReport(void)
         if (nrow > 0) {
             do {
                 o = loans[j];
-                income = (int)(income + o->interest * 0.01 * o->amount);
-                v = (int)(v + o->interest * 0.01 * o->amount);
-                net = (int)(net + o->interest * 0.01 * o->amount);
+                income = (int)(income + (o->interest * 0.01) * o->amount);
+                v = (int)(v + (o->interest * 0.01) * o->amount);
+                net = (int)(net + (o->interest * 0.01) * o->amount);
                 j++;
             } while (j < nrow);
             if (v != 0)
@@ -3813,8 +3789,9 @@ void main_RoundReport(void)
                 io_PrintText(0x2049, ai_CharsT[MAIN_PID].officeKind + t, wages.amount);
             if (ai_CharsT[MAIN_PID].secondOffice != 0)
                 io_PrintText(0x2049, ai_CharsT[MAIN_PID].secondOffice + t, wages.amount2);
-            net += wages.amount + wages.amount2;
-            income += wages.amount + wages.amount2;
+            t = wages.amount + wages.amount2;
+            net += t;
+            income += t;
         }
         /* the character's other incomes */
         if (gm_CharacterIncomes(main_PlayerIdInt, &inc, 0) != 0) {
@@ -3839,9 +3816,9 @@ void main_RoundReport(void)
         if (0 < j) {
             do {
                 o = loans[k];
-                costs = (int)(costs + o->interest * 0.01 * o->amount);
-                iv = (int)(iv + o->interest * 0.01 * o->amount);
-                net = (int)(net - o->interest * 0.01 * o->amount);
+                costs = (int)(costs + (o->interest * 0.01) * o->amount);
+                iv = (int)(iv + (o->interest * 0.01) * o->amount);
+                net = (int)(net - (o->interest * 0.01) * o->amount);
                 k++;
             } while (k < j);
         }
@@ -3858,11 +3835,11 @@ void main_RoundReport(void)
         he_ShowEventBar(0xffff);
         d2_ClearSurface(d2_ScreenSurf);
         d2_ShowPicture(0x79d);
-        d2_DirtyRectLeft[0] = d2_ScreenW;
-        d2_DirtyRectBottom = d2_ScreenH;
         main_NoRoundFade = 1;
         d2_DirtyRectRight = 0;
+        d2_DirtyRectLeft[0] = d2_ScreenW;
         d2_DirtyRectTop = 0;
+        d2_DirtyRectBottom = d2_ScreenH;
         d2_SetForm(win, 1);
         t = d2_LastWindow;
         d2_SetForm(win, 2);
