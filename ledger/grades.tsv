@@ -2955,7 +2955,7 @@ exe	0x004fc890	gm_CharacterBaseHealth	f3gm	byte	readable
 exe	0x004fc8e0	gm_HealthRatio	f3gm	byte	readable		
 exe	0x004fc920	gm_DailyCharacters	f3gm	byte	readable		
 exe	0x004fca40	gm_AddHealth	f3gm	byte	readable		
-exe	0x004fccc0	gm_PartnerStep	f3gm	draft	readable	deep	
+exe	0x004fccc0	gm_PartnerStep	f3gm	shape	readable	deep	
 exe	0x004fd090	gm_IsNoPlayerKin	f3gm	byte	readable		
 exe	0x004fd120	gm_PopulationStep	f3gm	shape	readable		
 exe	0x004fd5c0	gm_CreateRandomChild	f3gm	byte	readable		
@@ -3439,7 +3439,7 @@ exe	0x00531b50	main_CreateMutex	main	byte	readable
 exe	0x00531b80	main_SetScreenSaver	main	byte	readable		
 exe	0x00531ba0	main_Init	main	byte	readable		
 exe	0x00531c20	main_ShutdownEngine	main	byte	readable		
-exe	0x00531c50	main_OpenScreen	main	draft	readable	stuck	
+exe	0x00531c50	main_OpenScreen	main	byte	readable		
 exe	0x00532160	main_OpenEngine	main	byte	readable		
 exe	0x005324f0	main_CreateWindow	main	byte	readable		
 exe	0x00532700	main_StartCityGame	main	byte	readable		
@@ -3447,7 +3447,7 @@ exe	0x005327e0	main_PlayerCountDialog	main	byte	readable
 exe	0x005328f0	main_HostNetworkGame	main	byte	readable		
 exe	0x00532a70	main_JoinNetworkGame	main	byte	readable		
 exe	0x00532c30	main_EnterHostAddress	main	byte	readable		
-exe	0x00532da0	main_SearchNetworkGame	main	draft	readable	stuck	
+exe	0x00532da0	main_SearchNetworkGame	main	byte	readable		
 exe	0x00533470	main_ChooseNetworkGame	main	byte	readable		
 exe	0x005335b0	main_NetworkMenu	main	byte	readable		
 exe	0x00533740	main_MoneyDialog	main	byte	readable		
@@ -3476,7 +3476,7 @@ exe	0x00537f40	main_EndGame	main	byte	readable
 exe	0x00538140	main_RundenBeginn	main	byte	readable		
 exe	0x005384e0	main_EndRound	main	byte	readable		
 exe	0x00539620	main_ReplaceFigure	main	shape	readable		
-exe	0x00539870	main_RoundReport	main	draft	readable	stuck	
+exe	0x00539870	main_RoundReport	main	byte	readable		
 exe	0x0053a250	main_UpdateFigure	main	shape	readable		
 exe	0x0053a450	main_UpdateFigures	main	byte	readable		
 exe	0x0053a520	main_SettleRound	main	draft	readable	deep	
@@ -3532,7 +3532,7 @@ exe	0x0053f100	he_PostEvent7a	he	byte	readable
 exe	0x0053f190	he_PostEvent2b	he	byte	readable		
 exe	0x0053f270	he_PostPlayerEvents86a2	he	byte	readable		
 exe	0x0053f370	he_PostWorkshopEvents98	he	byte	readable		
-exe	0x0053f430	he_InnStaffLeave	he	shape	readable		
+exe	0x0053f430	he_InnStaffLeave	he	byte	readable		
 exe	0x0053f500	he_ClearInnDarkCorner	he	shape	readable		
 exe	0x0053f5b0	he_TopUpCharMoney	he	byte	readable		
 exe	0x0053f6b0	he_SpawnFounders	he	draft	readable	deep	
@@ -4391,7 +4391,7 @@ exe	0x005af1a0	ai_OpenTransport	lc	byte	readable
 exe	0x005af1b0	ai_OpenTransportSell	lc	byte	readable		
 exe	0x005af1c0	ai_OpenTransportBuy	lc	byte	readable		
 exe	0x005af1d0	ai_TransportWindow	lc	draft	readable	deep	
-exe	0x005b2090	ai_LoadTownMap	lc	shape	readable		
+exe	0x005b2090	ai_LoadTownMap	lc	byte	readable		
 exe	0x005b2180	ai_MapPick	lc	byte	readable		
 exe	0x005b2530	ai_NewStorageSlotWindow	lc	shape	readable		
 exe	0x005b26b0	ai_StorageWindow	lc	draft	readable	deep	
@@ -4564,7 +4564,7 @@ exe	0x005cf820	ai_UseObjPanel	lc	byte	readable
 exe	0x005cf8a0	ai_UseGood	lc	draft	readable	deep	
 exe	0x005cfb60	ai_UseGoodAddMoney	lc	byte	readable		
 exe	0x005cfb80	ai_UseGoodHeal	lc	byte	readable		
-exe	0x005cfc00	ai_UseGoodInfectOwner	lc	shape	readable		
+exe	0x005cfc00	ai_UseGoodInfectOwner	lc	byte	readable		
 exe	0x005cff70	ai_UseGoodSendHome	lc	draft	readable	deep	
 exe	0x005d0320	ai_UseGoodWeakenSkills	lc	shape	readable		
 exe	0x005d0530	ai_UseGoodWeakenSkills2	lc	shape	readable		
@@ -4634,7 +4634,7 @@ exe	0x005d8080	ai_TailorChatWindow	menu	byte	readable
 exe	0x005d8360	ai_TailorContact	menu	byte	readable		
 exe	0x005d8420	ai_ProductionContact	menu	shape	readable		
 exe	0x005d85e0	ai_BloodRevengeWindow	menu	byte	readable		
-exe	0x005d8c90	ai_CurseWindow	menu	shape	readable		
+exe	0x005d8c90	ai_CurseWindow	menu	byte	readable		
 exe	0x005d90e0	ai_CurseTargetWindow	menu	byte	readable		
 exe	0x005d95a0	ai_HomageWindow	menu	shape	readable	deep	
 exe	0x005d9890	ai_GypsyBeggingWindow	menu	byte	readable		
