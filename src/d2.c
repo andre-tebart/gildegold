@@ -3004,23 +3004,28 @@ void d2_LayoutButtons(int win)
    digit n: A (new line, n lines high), N / Y (paragraph, half line), < > (right / left margin n "M"s),
    T (tab), B Z R L (spread, centered, right, left), F (font n, FF: color n), C (clear), M, [ ], i (picture
    or button), l, m / mt (inputs), t (text of an input); the arguments of i, l, m, t come from w->args
-   @deep Read the whole 0x46fba0..0x4713a4 against the C (the word loop, every command arm of the 21-entry
-   switch: tables equal, the wrap / hyphen split, the object avoidance loop, the fit-the-text resize, the
-   scroll marker). Fixed: the FF colour arm (pos++ on both arms shared after the if, the colour table built
-   in the else block), the hyphen split's pos += t + wl - 1 and cm_PickCellX before cm_PickCellZ, the
-   margin sum order; size now equal (6004). Left is allocation in the ebp frame: 434 slots lines (the
-   locals permuted: e.g. ours [ebp-0x10]/[ebp-0x28]/[ebp-0x60] for the original's
+   @stuck 538 -> 534 ins: the 'i' arm's t = cm_PickCellX copy dropped (xx = cm_PickCellX; nothing changes
+   cm_PickCellX in between). The instructions are nearly all equal; what is left is the ebp frame's slot
+   order (c2frame.py, the density sort). The original's order from ebp-4: pos, left, argi, id, right,
+   nlines/o, align, t + _zn (-0x20), wl + _zp (-0x24), extra (-0x28), width (-0x2c), col, top, w, len,
+   pctflag .. maxw, hasinputs, bottom, c0..c3; ours: pos, id (24 refs), argi (23), left (23), .., width +
+   _zp (11), wl + _zn (10), extra (8), t (8). So two questions: (1) left must outrank argi and id (one or
+   two more counted references of left, or fewer of id); the hyphen index as k instead of id is the same
+   code (register), as i 532 ins with other hunks; (2) the D3_ZERO temps must pack with t and wl, i.e. t
+   must be lifetime-compatible with the two D3_ZERO blocks (buf512 caption arm, buf128 input arm) in the
+   original; in ours the packer keeps t and extra apart from them, so _zp joins width. wl at function scope
+   instead of block scope: same code. Not tried yet: where t is live across the switch in ours (a path that
+   reads t before setting it), and the c0..c3 clip saves order. (tiebreak: not measured (dcp headers sample
+   d2_DrawWindowText)) prior: Read the whole 0x46fba0..0x4713a4 against the C (the word loop, every command
+   arm of the 21-entry switch: tables equal, the wrap / hyphen split, the object avoidance loop, the
+   fit-the-text resize, the scroll marker). Fixed: the FF colour arm (pos++ on both arms shared after the
+   if, the colour table built in the else block), the hyphen split's pos += t + wl - 1 and cm_PickCellX
+   before cm_PickCellZ, the margin sum order; size now equal (6004). Left is allocation in the ebp frame:
+   434 slots lines (the locals permuted: e.g. ours [ebp-0x10]/[ebp-0x28]/[ebp-0x60] for the original's
    [ebp-8]/[ebp-0x20]/[ebp-0x40]), 102 regs, and code hunks that are those permutations plus argument-load
    scheduling (+0x3a9 'i' arm picture placement, +0x46d.. WinOpenInput args, +0x7d2.. the 'C'/'m' arms,
    +0x163d the fit-the-text MoveObj). One type-level lead: the original reads d2_ScreenH as a word (mov ax,
-   word ptr [d2_ScreenH]; movsx) where ours widens to a dword load, as VC6 does for a short defined in the
-   same unit: the original's d2_ScreenH may be defined in another unit (a data owner question, +0x1609 /
-   +0x163d hunks). (references: M8 at +0x876: ours refers to d2_FontHeight (0xf8f084), the original's field
-   to 0xfa5f04 (cm_PickCellZ) (and 1 more), explained: the two M8s are load scheduling of a commutative sum
-   / call arguments, not other objects: at +0x876 both sides load cm_PickCellZ and d2_FontHeight for
-   d2_WinOpenInput(xx - w->x, cm_PickCellZ - w->y, 0x10, d2_FontHeight, 0x82, win) in another order; at
-   +0x144d both compute d2_FontHeight + cm_PickCellZ <= o->y, the original loading d2_FontHeight first
-   (rewriting the sum's order gives the same code)) */
+   word pt... */
 
 void d2_DrawWindowText(void *surf, int win)
 {
@@ -3173,7 +3178,6 @@ void d2_DrawWindowText(void *surf, int win)
                             arg = w->args[argi];
                             if (arg != -1) {
                                 yy = w->scrollY + cm_PickCellZ;
-                                t = cm_PickCellX;
                                 if (arg == 0 || arg == d2_MiscPic || arg == d2_MiscPic + 1)
                                     yy += 2;
                                 pw = d2_Pics[arg].w;
@@ -3181,7 +3185,7 @@ void d2_DrawWindowText(void *surf, int win)
                                     xx = left;
                                     yy += d2_FontHeight;
                                 } else
-                                    xx = t;
+                                    xx = cm_PickCellX;
                                 if (pw > w->w) {
                                     pos++;
                                     break;
