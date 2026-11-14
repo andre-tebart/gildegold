@@ -5593,47 +5593,30 @@ void d2_Plot(int x, int y, unsigned char r, unsigned char g, unsigned char b)
     }
     d2_UnlockSurface(w->paint);
 }
-/* 0x4764f0, line on the paintbox (Bresenham) @deep Read whole function against original: axis-parallel cases, sign/delta setup, and both Bresenham loops now mirror it (increments straight/diagonal precomputed before the loop, if (e >= 0) step+diagonal else straight; instruction count 226 = 226). Remaining hunks are allocation: the second vertical loop keeps its counter in the y1 parameter slot (ours: dec eax; mov [esp+0x28], eax) where the original copies it to edi; the original keeps straight/diagonal in eax/ecx at loop top and stores them at [esp+0x20]/[esp+0x1c] (ours [esp+0x1c]/[esp+0x10], loading one inside the branch); x0/dx in ebx/ebp swapped. y0+=sy before/after e+= flips VC6 into tail-merging the add (code 192 -> 156 with e first). */
-
+/* 0x4764f0, line on the paintbox (Bresenham) */
 void d2_PlotLine(int x0, int y0, int x1, int y1, unsigned char r, unsigned char g, unsigned char b)
 {
-    int e, straight, diagonal, sx, sy, dx, dy;
+    int i, n, e, straight, diagonal, sx, sy, dx, dy;
 
     if (y0 == y1) {
         if (x1 < x0) {
-            x0 = x0 - x1;
-            if (0 < x0) {
-                do {
-                    d2_Plot(x1++, y0, r, g, b);
-                } while (--x0 != 0);
-                return;
-            }
+            n = x0 - x1;
+            for (i = 0; i < n; i++)
+                d2_Plot(x1++, y0, r, g, b);
         } else {
-            x1 = x1 - x0;
-            if (0 < x1) {
-                do {
-                    d2_Plot(x0++, y0, r, g, b);
-                } while (--x1 != 0);
-                return;
-            }
+            n = x1 - x0;
+            for (i = 0; i < n; i++)
+                d2_Plot(x0++, y0, r, g, b);
         }
     } else if (x0 == x1) {
         if (y1 < y0) {
-            y0 = y0 - y1;
-            if (0 < y0) {
-                do {
-                    d2_Plot(x1, y1++, r, g, b);
-                } while (--y0 != 0);
-                return;
-            }
+            n = y0 - y1;
+            for (i = 0; i < n; i++)
+                d2_Plot(x1, y1++, r, g, b);
         } else {
-            y1 = y1 - y0;
-            if (0 < y1) {
-                do {
-                    d2_Plot(x1, y0++, r, g, b);
-                } while (--y1 != 0);
-                return;
-            }
+            n = y1 - y0;
+            for (i = 0; i < n; i++)
+                d2_Plot(x1, y0++, r, g, b);
         }
     } else {
         if (x0 < x1) {
@@ -5652,34 +5635,34 @@ void d2_PlotLine(int x0, int y0, int x1, int y1, unsigned char r, unsigned char 
         }
         d2_Plot(x0, y0, r, g, b);
         if (dx > dy) {
-            straight = dy * 2;
             diagonal = (dy - dx) * 2;
+            straight = dy * 2;
             e = straight - dx;
             do {
                 x0 += sx;
                 if (e >= 0) {
-                    e += diagonal;
                     y0 += sy;
+                    e += diagonal;
                 } else {
                     e += straight;
                 }
                 d2_Plot(x0, y0, r, g, b);
             } while (x0 != x1);
-            return;
+        } else {
+            diagonal = (dx - dy) * 2;
+            straight = dx * 2;
+            e = straight - dy;
+            do {
+                y0 += sy;
+                if (e >= 0) {
+                    x0 += sx;
+                    e += diagonal;
+                } else {
+                    e += straight;
+                }
+                d2_Plot(x0, y0, r, g, b);
+            } while (y0 != y1);
         }
-        straight = dx * 2;
-        diagonal = (dx - dy) * 2;
-        e = straight - dy;
-        do {
-            y0 += sy;
-            if (e >= 0) {
-                e += diagonal;
-                x0 += sx;
-            } else {
-                e += straight;
-            }
-            d2_Plot(x0, y0, r, g, b);
-        } while (y0 != y1);
     }
 }
 /* 0x476710, clears the paintbox of the current window */

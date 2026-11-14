@@ -1348,7 +1348,7 @@ exe	0x00476030	d2_SetFont	d2	5109342bf9e4e088	no	byte	control=byte p1=byte p2=by
 exe	0x004760b0	d2_SetObjFont	d2	8670d5f51b648d82	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00476110	d2_DissolveStep	d2	f465b8e8a3c7592d	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00476220	d2_Plot	d2	fd7d06fdf3f23844	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x004764f0	d2_PlotLine	d2	27a5233e49b7162d	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x004764f0	d2_PlotLine	d2	27a5233e49b7162d	no	draft	sample n=32 seed=1 compiled=31 codegens=1 best=draft
 exe	0x00476710	d2_ClearPaintbox	d2	5d6a4d96ca4b6b12	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00476760	d2_FillPaintbox	d2	38dfc6560847cbdd	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004767d0	d2_StartFade	d2	99f33c38fd69c639	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
