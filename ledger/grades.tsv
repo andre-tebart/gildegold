@@ -1474,7 +1474,7 @@ exe	0x00483d30	ai_StartBuildingWork	ai	byte	readable
 exe	0x00483ee0	ai_EndWorkerPose	ai	byte	readable		
 exe	0x00483fc0	ai_EvaluateProductionGraveyard	ai	draft	readable	deep	
 exe	0x00484a60	ai_EvaluateProductionGypsies	ai	draft	readable	deep	
-exe	0x004854f0	ai_UpdateProduction	ai	draft	readable	deep	
+exe	0x004854f0	ai_UpdateProduction	ai	shape	readable	deep	
 exe	0x00486190	ai_FillSlotTable	ai	draft	readable	deep	
 exe	0x004864b0	ai_BuildTradeOffers	ai	draft	readable	deep	
 exe	0x00487040	ai_CalcEntryCost	ai	byte	readable		
@@ -1849,7 +1849,7 @@ exe	0x004ad580	hmt_DecideElection	hmt	byte	readable
 exe	0x004ad7a0	hmt_FillCouncils	hmt	shape	readable		
 exe	0x004ada80	hmt_Load	hmt	shape	readable	deep	
 exe	0x004adb20	hmt_Save	hmt	byte	readable		
-exe	0x004adbb0	hmt_Create	hmt	shape	readable		
+exe	0x004adbb0	hmt_Create	hmt	byte	readable		
 exe	0x004ade60	hmt_NextEvent	hmt	byte	readable		
 exe	0x004adec0	hmt_NextPerson	hmt	byte	readable		
 exe	0x004adf20	hmt_RandomHeadIcon	hmt	byte	readable		
@@ -2711,7 +2711,7 @@ exe	0x004ec2f0	ahm_ClearStep	ahm	byte	readable
 exe	0x004ec320	ahm_StepValue	ahm	byte	readable		
 exe	0x004ec3d0	ahm_ObjectValue	ahm	byte	readable		
 exe	0x004ec490	ahm_SendCreateAlchemist	ahm	byte	readable		
-exe	0x004ec500	ahm_CreateAlchemist	ahm	shape	readable	stuck	
+exe	0x004ec500	ahm_CreateAlchemist	ahm	byte	readable		
 exe	0x004ec940	ahm_SendSetShare	ahm	shape	readable		
 exe	0x004eca00	ahm_SetShare	ahm	byte	readable		
 exe	0x004ecaa0	ahm_SendAddPlace	ahm	byte	readable		
@@ -2785,7 +2785,7 @@ exe	0x004f0dd0	gv_AddNewDead	gv	byte	readable
 exe	0x004f0e80	gv_OrderMoveGrave	gv	byte	readable		
 exe	0x004f0ed0	gv_MoveGrave	gv	byte	readable		
 exe	0x004f1170	gv_OrderRaiseDead	gv	byte	readable		
-exe	0x004f1200	gv_RaiseDead	gv	draft	readable	stuck	
+exe	0x004f1200	gv_RaiseDead	gv	byte	readable		
 exe	0x004f15e0	gv_SendGrave	gv	byte	readable		
 exe	0x004f1660	gv_DecayRaisedDead	gv	byte	readable		
 exe	0x004f16f0	gv_PreserveRate	gv	byte	readable		
@@ -3614,7 +3614,7 @@ exe	0x00549aa0	he_RunTraining	he	draft	readable	deep
 exe	0x00549ce0	he_BeginPlague	he	byte	readable		
 exe	0x00549f70	he_StartPlague	he	byte	readable		
 exe	0x0054a020	he_RunPlague	he	draft	readable	deep	
-exe	0x0054a6f0	he_StartGang	he	shape	readable		
+exe	0x0054a6f0	he_StartGang	he	byte	readable		
 exe	0x0054a7b0	he_RunGang	he	shape	readable		
 exe	0x0054ae20	he_AllocProtectionAsk	he	byte	readable		
 exe	0x0054ae60	he_RunProtectionAsk	he	byte	readable		
