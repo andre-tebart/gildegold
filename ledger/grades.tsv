@@ -2935,7 +2935,7 @@ exe	0x004fa580	gm_CharacterUpkeep	f3gm	shape	readable
 exe	0x004fa700	gm_CharacterWages	f3gm	shape	readable	deep	
 exe	0x004fa9b0	gm_PayAllCharacterWages	f3gm	byte	readable		
 exe	0x004faa00	gm_UpdateWorthMood	f3gm	byte	readable		
-exe	0x004fabe0	gm_EndDayIncomes	f3gm	draft	readable	deep	
+exe	0x004fabe0	gm_EndDayIncomes	f3gm	byte	readable		
 exe	0x004fad60	gm_FindRichest	f3gm	shape	readable	deep	
 exe	0x004fae50	gm_HandOutMoney	f3gm	byte	readable		
 exe	0x004fb0e0	gm_ShiftLoyalty	f3gm	byte	readable		
@@ -2965,11 +2965,11 @@ exe	0x004fda10	gm_MoveIntoHome	f3gm	byte	readable
 exe	0x004fda70	gm_FindApplicant	f3gm	byte	readable		
 exe	0x004fdc10	gm_HomeObject	f3gm	byte	readable		
 exe	0x004fdcb0	gm_CharacterHome	f3gm	byte	readable		
-exe	0x004fddb0	gm_SpawnCharacter	f3gm	draft	readable	deep	
+exe	0x004fddb0	gm_SpawnCharacter	f3gm	byte	readable		
 exe	0x004fde90	unk_LoadIconNames	f3gm	byte	readable		
 exe	0x004fdfb0	gm_FreeIconNames	f3gm	byte	readable		
 exe	0x004fdfd0	gm_CountCharacters	f3gm	draft	readable	stuck	
-exe	0x004fe140	gm_AddTime	f3gm	draft	readable	deep	
+exe	0x004fe140	gm_AddTime	f3gm	draft	readable	stuck	
 exe	0x004fe1e0	gm_SetTime	f3gm	byte	readable		
 exe	0x004fe210	gm_CompareTime	f3gm	byte	readable		
 exe	0x004fe280	gm_MinutesBetween	f3gm	byte	readable		
@@ -2999,7 +2999,7 @@ exe	0x004ffbf0	gm_GoodsValue	f3gm	byte	readable
 exe	0x004ffc40	gm_FindGoods	f3gm	byte	readable		
 exe	0x004ffc90	gm_MapDistance	f3gm	byte	readable		
 exe	0x004ffcc0	gm_QueryNext	f3gm	draft	readable	deep	
-exe	0x004ffe90	gm_Query	f3gm	draft	readable	deep	
+exe	0x004ffe90	gm_Query	f3gm	shape	readable	stuck	
 exe	0x004fffc0	gm_FindFreeObject	f3gm	byte	readable		
 exe	0x004ffff0	gm_RemoveObject	f3gm	byte	readable		
 exe	0x00500080	gm_FreeObjectExtra	f3gm	byte	readable		
@@ -3020,7 +3020,7 @@ exe	0x005012e0	gm_FreeBuilding	f3gm	byte	readable
 exe	0x00501400	gm_StockBuildingObjects	f3gm	byte	readable		
 exe	0x005014b0	gm_SetCapacities	f3gm	byte	readable		
 exe	0x00501580	gm_CreateBuilding	f3gm	draft	readable	deep	
-exe	0x00501b50	gm_BuildingMainObject	f3gm	draft	readable	deep	
+exe	0x00501b50	gm_BuildingMainObject	f3gm	byte	readable		
 exe	0x00501ce0	gm_GetGebaeudeHauptraum	f3gm	byte	readable		
 exe	0x00501d80	gm_BuildingClass	f3gm	byte	readable		
 exe	0x00501e40	gm_NearestBuilding	f3gm	shape	readable		
@@ -3050,7 +3050,7 @@ exe	0x00503f30	gm_SexForJob	f3gm	byte	readable
 exe	0x00503f50	gm_SexForTitle	f3gm	byte	readable		
 exe	0x00503fa0	gm_BuildingTypeOfJob	f3gm	byte	readable		
 exe	0x00504050	gm_JobBuildingType	f3gm	byte	readable		
-exe	0x00504100	gm_JobSlots	f3gm	draft	readable	deep	
+exe	0x00504100	gm_JobSlots	f3gm	byte	readable		
 exe	0x00504290	gm_FirstTitleNumber	f3gm	shape	readable		
 exe	0x00504350	gm_TitleNumberGroup	f3gm	byte	readable		
 exe	0x005043d0	gm_TitleNumber	f3gm	byte	readable		
@@ -3135,7 +3135,7 @@ exe	0x0050a0b0	gm_ObjectOwnerNo	f3gm	byte	readable
 exe	0x0050a0f0	gm_ObjectBuilding	f3gm	byte	readable		
 exe	0x0050a150	gm_CreditEvents	f3gm	byte	readable		
 exe	0x0050a1c0	gm_BuildingEvents	f3gm	byte	readable		
-exe	0x0050a250	gm_GetCreditOffers	f3gm	draft	readable	deep	
+exe	0x0050a250	gm_GetCreditOffers	f3gm	draft	readable	stuck	
 exe	0x0050a640	gm_GetWorth	f3gm	shape	readable		
 exe	0x0050a6c0	gm_IsBankrupt	f3gm	shape	readable		
 exe	0x0050a810	gm_FindCharacterByMaster	f3gm	byte	readable		
