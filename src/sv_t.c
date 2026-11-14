@@ -4802,13 +4802,7 @@ int ai_AlchemistSendRecipeResearch(unsigned char *obj, AHMREC *rec, int slot)
 }
 /* 0x57ced0, starts the alchemist object obj's own research (record rec) with the message 0x95 (cm_SendLongMessage;
    the 0x57cde0 shape without a place: arg[0] and arg[3] the record's id, no random duration); 0 when a research
-   already runs (ahm_ResearchState), else 1
-   @deep read whole against the original and reconstructed (the 0x57cde0 shape: type 0x95, flags 1, arg[0]
-   and arg[3] = rec id, no duration; 190 vs 189 instructions; asmdiff --symbols: every load, store,
-   constant and call is present). Left: scheduling only: the original pushes &msg (lea ecx,[esp+0x10]; push
-   ecx) between the type and flags stores and interleaves the clock loads (ae8 into [esp+0x40] first, year
-   / hour / the word after the to load), ours loads the clock first and pushes the pointer last; a struct
-   copy, a field-wise copy and the original's store order give the same schedule */
+   already runs (ahm_ResearchState), else 1 */
 int ai_AlchemistSendResearchStart(unsigned char *obj, AHMREC *rec)
 {
     AIMSG msg;
@@ -4818,11 +4812,11 @@ int ai_AlchemistSendResearchStart(unsigned char *obj, AHMREC *rec)
     if (ahm_ResearchState(obj, &a, &f, 0) != 0)
         return 0;
     memset(&msg, 0, sizeof(msg));
-    msg.fromId = ((AIBLD *)obj)->id;
-    msg.time = ai_Time;
     msg.type = 0x95;
     msg.flags = 1;
     msg.to = ai_CharsT[((AIBLD *)obj)->owner].netId;
+    msg.fromId = ((AIBLD *)obj)->id;
+    msg.time = ai_Time;
     msg.arg[0] = rec->id;
     msg.arg[3] = rec->id;
     cm_SendLongMessage((char *)&msg);
