@@ -2978,7 +2978,7 @@ exe	0x004fe310	gm_AddTime2	f3gm	byte	readable
 exe	0x004fe330	gm_Season	f3gm	byte	readable		
 exe	0x004fe350	gm_ClockSeason	f3gm	byte	readable		
 exe	0x004fe370	gm_InitBuildingTables	f3gm	draft	readable	deep	
-exe	0x004fe570	gm_LoadTables	f3gm	draft	readable	deep	
+exe	0x004fe570	gm_LoadTables	f3gm	byte	readable		
 exe	0x004fe7f0	gm_ClearBuildings	f3gm	byte	readable		
 exe	0x004fe830	gm_ClearObjects	f3gm	shape	readable	deep	
 exe	0x004fe900	gm_FindObjectProto	f3gm	shape	readable		
@@ -2994,7 +2994,7 @@ exe	0x004ff450	gm_RandomMarketShake	f3gm	shape	readable
 exe	0x004ff550	gm_UpdatePrices	f3gm	draft	readable	deep	
 exe	0x004ff8c0	gm_GoodsDemand	f3gm	byte	readable		
 exe	0x004ff950	gm_GoodsStock	f3gm	byte	readable		
-exe	0x004ffa10	gm_StockPrice	f3gm	draft	readable	deep	
+exe	0x004ffa10	gm_StockPrice	f3gm	draft	readable	stuck	
 exe	0x004ffbf0	gm_GoodsValue	f3gm	byte	readable		
 exe	0x004ffc40	gm_FindGoods	f3gm	byte	readable		
 exe	0x004ffc90	gm_MapDistance	f3gm	byte	readable		
@@ -3009,7 +3009,7 @@ exe	0x00500190	gm_CreateObject	f3gm	draft	readable	deep
 exe	0x00500970	gm_AddObjekt	f3gm	byte	readable		
 exe	0x00500a40	gm_TakeObjekt	f3gm	byte	readable		
 exe	0x00500ae0	gm_AddNegative	f3gm	byte	readable		
-exe	0x00500b90	gm_BuildKindObjects	f3gm	draft	readable	deep	
+exe	0x00500b90	gm_BuildKindObjects	f3gm	draft	readable	stuck	
 exe	0x00500c20	gm_CollectOffers	f3gm	draft	readable	deep	
 exe	0x00500ec0	gm_FindMarketObject	f3gm	shape	readable		
 exe	0x00501000	gm_FindPlayerBuilding	f3gm	byte	readable		
@@ -3043,7 +3043,7 @@ exe	0x00503480	gm_RemoveObjectFromBuilding	f3gm	byte	readable
 exe	0x005034b0	gm_FreeObject	f3gm	byte	readable		
 exe	0x00503530	gm_PermissionBits	f3gm	draft	readable	deep	
 exe	0x00503c20	gm_ReleaseCharacter	f3gm	byte	readable		
-exe	0x00503c60	gm_KillSpieler	f3gm	draft	readable	deep	
+exe	0x00503c60	gm_KillSpieler	f3gm	draft	readable	stuck	
 exe	0x00503e80	gm_ResetCharacters	f3gm	byte	readable		
 exe	0x00503ee0	gm_GetJobTalents	f3gm	byte	readable		
 exe	0x00503f30	gm_SexForJob	f3gm	byte	readable		
@@ -3115,8 +3115,8 @@ exe	0x00509120	gm_BuildingRankGate	f3gm	shape	readable
 exe	0x005091a0	gm_BuildingValues	f3gm	byte	readable		
 exe	0x005092e0	gm_BuildingSkill	f3gm	shape	readable		
 exe	0x005093a0	gm_BuildingKindSkill	f3gm	byte	readable		
-exe	0x00509400	gm_WorkMinutesBetween	f3gm	draft	readable	deep	
-exe	0x005096a0	gm_FixedWorkMinutesBetween	f3gm	draft	readable	deep	
+exe	0x00509400	gm_WorkMinutesBetween	f3gm	byte	readable		
+exe	0x005096a0	gm_FixedWorkMinutesBetween	f3gm	byte	readable		
 exe	0x005098a0	gm_BuildingGoodsList	f3gm	byte	readable		
 exe	0x005099e0	gm_BuildingGoodsList17	f3gm	shape	readable		
 exe	0x00509b10	gm_EquipmentValue	f3gm	byte	readable		
@@ -3145,7 +3145,7 @@ exe	0x0050aa00	gm_StallGoodsList	f3gm	byte	readable
 exe	0x0050aaf0	gm_ListAmount	f3gm	byte	readable		
 exe	0x0050ab20	gm_ListAmountById	f3gm	byte	readable		
 exe	0x0050ab50	gm_ListStock	f3gm	shape	readable		
-exe	0x0050ab80	gm_FreeCapacity	f3gm	draft	readable	deep	
+exe	0x0050ab80	gm_FreeCapacity	f3gm	byte	readable		
 exe	0x0050acf0	gm_FreeStallCapacity	f3gm	shape	readable		
 exe	0x0050ad70	gm_TakeableCount	f3gm	shape	readable		
 exe	0x0050af00	gm_CollectCarried	f3gm	byte	readable		
