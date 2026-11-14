@@ -1069,33 +1069,7 @@ int ls_ReadSaveHeader();
    join button (btn[0], enabled while one is selected) copies the chosen host into main_NetHost (the "Network"
    "Host" option) and its record into cm_NetGame and, for a saved game, the city, the save name and the joined
    character cm_JoinChar from the save's header (as main_JoinNetworkGame); btn[2] opens main_EnterHostAddress.
-   Returns 1 when a game was chosen.
-   @stuck headers sample insensitive (32 samples, one codegen). Made ordinary this session (kept): the 7
-   hand-written do { c = s[k]; d[k] = c; k++; } while (c) copies as strcpy - the original's copies are
-   exactly VC6's strcpy offset form (lea eax,[ebx-0x66]; mov cl,[eax]; mov [eax+ebp],cl with ebp = name -
-   &recs[0].name stepped -0x80; neg edx for the two save names; the indexed form for the joined texts) -
-   and btn[3] -> btn[4] (the original's 4-byte hole behind the button ids: frame 0x98c -> 0x990 = the
-   original's), the fopen success arm first (if (fp != 0) {..} else ok = 0;). Distance 281 -> 348 ins (the
-   hand loops were a local optimum: their 281 had the wrong frame and wrong copy shapes). blockscope.py: no
-   candidate moved. c2trace: list / f / n / ok / ret / redraw / ts are all split (prio -384 / -399 / -320 /
-   -248 / -655 / -224 / -242 before the splits; obj 628, the strcpy temps 508..576, the k loops 200..344
-   take the callee-saved registers first); the pieces get: f 125 (ebp, the original edi), n 42 (edi, the
-   original ebx), list -74 (ebx, the original esi from the button code on), the constant 1 esi (the
-   original ebp). Hunks left: the prologue / form set-up (1 in ebp, f in edi, list -1 in esi stored to
-   [esp+0x1c]), the scan loop (ent row pointer in a slot [esp+0x18] reloaded per use, i in [esp+0x10]
-   shared with redraw, the strcpy offset spilled to [esp+0x1c] = ts's slot), the button part (list reloaded
-   into esi, r in esi for rep movsd). Not tried: a respelling round of the scan loop's pointer forms (ent /
-   recs as row pointers) against c2trace. (tiebreak: not measured (dcp headers sample
-   main_SearchNetworkGame)) prior: body read against the original and typed: UDPSERVER recs[8] (info.game
-   is the NETHDR), LSHDR for both headers, one name[0x80], key[0x80], ent[8][3], two path[260], d2_Objs /
-   d2_Radios / d2_Wins fields, txt_Ptrs[0x1cb1 / 0x1cbd..f]; the call sequence and every constant are
-   identical to the original. The string copies are strcpy (the original's offset copies: name -
-   &recs[i].name stepped by -0x80, main_NetHost / ai_CityName / the two save names, the joined texts), btn
-   is int[4] (the original's 4 untouched bytes behind the three button ids; frame 0x990 now equal), the
-   fopen success arm first. Left is allocation (348 ins): the original keeps the constant 1 in ebp, f in
-   edi, n in ebx, list in esi / [esp+0x14], i in a slot shared with redraw, the ent row pointer in
-   [esp+0x18] and the strcpy offset in ebp spilled to ts's slot; ours permutes them (1 esi, f ebp, n edi,
-   list ebx). */
+   Returns 1 when a game was chosen. */
 int main_SearchNetworkGame(int saved)
 {
     LSHDR joined;                       /* the header of the chosen saved game */
@@ -1106,10 +1080,9 @@ int main_SearchNetworkGame(int saved)
     char path[260];
     char path2[260];
     UDPSERVER recs[8];
-    UDPSERVER *r;
     VFSFILE *fp;
     unsigned ts;
-    int ret, redraw, ok, f, btn[4], h, n, i, k, cnt, list, obj, sel;
+    int ret, redraw, ok, f, btn[4], h, n, i, k, list, obj, sel, y;
     char c;
 
     ret = 0;
@@ -1152,8 +1125,7 @@ int main_SearchNetworkGame(int saved)
                         if (fp != 0) {
                             ok = 1;
                             ls_ReadSaveHeader((int)fp, (int *)&hdr);
-                            cnt = hdr.players;
-                            for (k = 0; k < cnt; k++) {
+                            for (k = 0; k < hdr.players; k++) {
                                 if (recs[i].info.game.party[k] != hdr.party[k]) {
                                     ok = 0;
                                     break;
@@ -1174,14 +1146,15 @@ int main_SearchNetworkGame(int saved)
                     if (h == -1)
                         h = d2_FindPic("_STADTWAPPEN_BERLIN");
                     d2_SetForm(f, 2);
-                    obj = d2_WinOpenPic(8, i << 7, h, d2_LastWindow);
+                    y = i << 7;
+                    obj = d2_WinOpenPic(8, y, h, d2_LastWindow);
                     ent[i][0] = obj;
                     d2_Objs[obj].interactive = 1;
                     if (recs[i].flags == 0x3f && recs[i].info.game.joined >= recs[i].info.game.players)
                         d2_SetObjEnabled(obj, 0);
                     d2_Objs[obj].style = 3;
                     d2_RadioAdd(list, obj);
-                    ent[i][1] = d2_CreateChildWindow(0x88, (i << 7) + 0xc, 0x190, 0x78, 0x10, d2_LastWindow);
+                    ent[i][1] = d2_CreateChildWindow(0x88, y + 0xc, 0x190, 0x78, 0x10, d2_LastWindow);
                     d2_SetObjFont(d2_Wins[d2_LastWindow].parent, 0x53);
                     io_PrintText(0x1cbc, recs[i].ip, recs[i].info.game.name, recs[i].info.game.players);
                 }
@@ -1194,16 +1167,15 @@ int main_SearchNetworkGame(int saved)
                 if (d2_PointerObj == btn[0]) {
                     sel = d2_Radios[list].sel;
                     if (sel != -1) {
-                        r = &recs[sel];
-                        strcpy(main_NetHost, r->ip);
+                        strcpy(main_NetHost, recs[sel].ip);
                         WritePrivateProfileStringA("Network", "Host", main_NetHost, ai_OptionsFile);
                         sv_PopRequest = 1;
                         ret = 1;
-                        memcpy(&cm_NetGame, r, sizeof(CMNETGAME));
-                        if (saved != 0 && r->flags == 0x7f) {
-                            strcpy(ai_CityName, r->info.game.name);
-                            strcpy(main_NetSaveName, r->info.game.save);
-                            strcpy(ls_SavePath.net.save, r->info.game.save);
+                        memcpy(&cm_NetGame, &recs[sel], sizeof(CMNETGAME));
+                        if (saved != 0 && recs[sel].flags == 0x7f) {
+                            strcpy(ai_CityName, recs[sel].info.game.name);
+                            strcpy(main_NetSaveName, recs[sel].info.game.save);
+                            strcpy(ls_SavePath.net.save, recs[sel].info.game.save);
                             ai_GameFlags |= 0x40;
                             sprintf(path2, "Gamedata\\network\\%s.SAV", main_NetSaveName);
                             memset(&joined, 0, sizeof(LSHDR));

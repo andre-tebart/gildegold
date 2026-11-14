@@ -1258,3 +1258,21 @@ mechanisms, each as a generated round over all positions / subsets:
 - `uv run --with capstone python tools/c2dag/vdiff.py SRC FUNC [VARIANTS LABEL]` prints the instruction diff of
   one dcp try variant against the original without touching the tree (dcp try prints only the distance; three
   agents had each written their own version of this).
+- **main_SearchNetworkGame byte (348 ins, "every candidate split and permuted"): one missing local was 330 of
+  them.** (1) A cheap expression that the original keeps in a callee-saved register across calls and later
+  modifies in place (`mov edi,[i]; shl edi,7; push edi` .. four calls .. `add edi,0xc; push edi`) is a NAMED
+  local assigned where the original computes it (`y = i << 7;` after the d2_SetForm call, then `f(8, y, ..)` and
+  `g(0x88, y + 0xc, ..)`). Written inline twice VC6 makes no candidate and recomputes; the register then goes
+  to other values and the whole allocation permutes. The position counts (one statement earlier: 201 ins).
+  Look for this FIRST when "everything is split": a register of the original that holds a value ours never
+  names. (2) `[esp+reg+const]` for several fields of one stack record, the scaled index kept in a callee-saved
+  register: `arr[idx].field` at every use; a `p = &arr[idx]` local gives `[reg+off]`. (3) `xor r,r` before
+  the `and` whose flags feed the loop-entry `jle`: the bound read in the for condition (`k < hdr.players`), or
+  `k = 0` before the bound local's assignment; a bound local assigned first gives `mov r,0` after the `and`.
+  Also: the earlier worker's changes (strcpy for hand loops, btn[4] for the frame hole) had RAISED the distance
+  281 -> 348 and were right; a distance that rises after a provably correct change means one more thing is
+  missing, not that the change was wrong.
+- The mirror of main_EndRound's lever: there a named local had to go (the original used an expression
+  temporary), here an inline expression had to become a named local. Decide by the original: a value that sits
+  in ONE callee-saved register through several statements and is updated in place was a variable; a value that
+  appears in a leftover register for one expression across one call was a temporary.
