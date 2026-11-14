@@ -408,7 +408,7 @@ exe	0x0041ec50	surf_Shrink16	surf	byte	readable
 exe	0x0041ee70	surf_Shrink24	surf	byte	readable		
 exe	0x0041f000	surf_Down32	surf	byte	readable		
 exe	0x0041f220	surf_Up8	surf	byte	readable		
-exe	0x0041f2b0	surf_Up16	surf	draft	readable	deep	
+exe	0x0041f2b0	surf_Up16	surf	byte	readable		
 exe	0x0041f800	surf_Up24	surf	byte	readable		
 exe	0x0041fc00	surf_Up32	surf	byte	readable		
 exe	0x00420140	surf_ScaleBlit	surf	shape	readable		
@@ -683,8 +683,8 @@ exe	0x00431510	vfs_Exit	vfs	byte	readable
 exe	0x004315c0	d3anim_ApplyRootMotion	d3_anim	byte	readable		
 exe	0x00431750	d3anim_ApplyMotionTo	d3_anim	shape	readable		
 exe	0x004319e0	d3anim_MapBones	d3_anim	shape	readable		
-exe	0x00431ae0	d3anim_PoseBones	d3_anim	draft	readable	deep	
-exe	0x00432190	d3anim_RootPosAt	d3_anim	draft	readable	deep	
+exe	0x00431ae0	d3anim_PoseBones	d3_anim	byte	readable		
+exe	0x00432190	d3anim_RootPosAt	d3_anim	byte	readable		
 exe	0x004324e0	d3anim_NextFrame	d3_anim	byte	readable		
 exe	0x00432530	d3path_Tangents	d3_anim	byte	readable		
 exe	0x00432750	d3anim_StepObject	d3_anim	draft	readable	deep	
@@ -692,7 +692,7 @@ exe	0x00433b10	d3anim_FreePath	d3_anim	byte	readable
 exe	0x00433b50	d3path_Init	d3_anim	shape	readable	deep	
 exe	0x00433d70	d3anim_CreatePath	d3_anim	shape	readable		
 exe	0x00433f40	d3_FindAnim	d3_anim	byte	readable		
-exe	0x00433f80	d3anim_CreateMorphAnim	d3_anim	draft	readable	deep	
+exe	0x00433f80	d3anim_CreateMorphAnim	d3_anim	shape	readable	stuck	
 exe	0x00434a80	d3anim_GetSize	d3_anim	byte	readable		
 exe	0x00434af0	d3anim_Purge	d3_anim	byte	readable		
 exe	0x00434b70	d3anim_Release	d3_anim	byte	readable		
