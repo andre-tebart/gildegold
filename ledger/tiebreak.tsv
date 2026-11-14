@@ -1324,7 +1324,7 @@ exe	0x00474b30	d2_LoadView	d2	34ef74d610790df4	no	byte	control=byte p1=byte p2=b
 exe	0x00474ca0	d2_SetViewTextures	d2	9b653fc9f95f0469	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00474d10	d2_ClearViewTextures	d2	9a8b0b1c8b5b3b8f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00474d90	d2_FillViewTextures	d2	576210d7e08df3d5	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x00474e80	d2_RedrawView	d2	f369b5e82c5c69a9	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x00474e80	d2_RedrawView	d2	f369b5e82c5c69a9	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x004754d0	d2_EnableViewObjects	d2	f0f883df7f95a86d	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00475590	d2_SetViewEnabled	d2	570f62b833f17fe0	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00475600	d2_CentreViewWindows	d2	62ef3f6563da8a5a	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte

@@ -4945,7 +4945,7 @@ void d2_EnableViewObjects(int view, int on)
         v->shown = on;
     }
 }
-/* 0x474e80, draws the windows of a view onto its image and copies the image onto the textures @deep B3 far draft, readability now clean (Q1-Q7: this session named d2_NoBackgroundRestore and D2VIEW.viewX/viewY); 568/592 instructions, 114 differing (code 114, regs 36, order 18, fill 8). Every hunk read: 4751e5 (clip-rect loads reordered, original edx/eax/ecx vs ours eax/ecx/edx in the 5/8 caption block), 47529e / 47542a / 4754c8 (case 0x43 text-call h/w load order and the two caption tails), 4753cb (no menu rule: ours hoists the test, original branches first), 475403 (reload: original re-reads [esp+0x24] into esi, ours keeps it). spell.py menu read and its prescriptions (dup-tail x4, reload) are the same statement-order / local-form edits the d2m note tried with no effect (18 permutations of the x/w/y statement order, locals for font/width, reuse of x/y, 5 tw*3 spellings, 3 local sizes for 0x43, 2 declaration orders, int mode; reverted). Remaining: whole-function register allocation and scheduling -> deep toolbox (listing/slotmap/vargen) */
+/* 0x474e80, draws the windows of a view onto its image and copies the image onto the textures */
 
 void d2_RedrawView(int view)
 {
@@ -5026,14 +5026,16 @@ void d2_RedrawView(int view)
                             if (o->rightAligned != 0)
                                 mode |= 0x10;
                             d2_GetObjPicSize(o->id, &tw, &th);
-                            ex = o->captionX;
-                            tx = o->w;
-                            if (ex == -1) {
+                            if (o->captionX != -1) {
+                                ex = o->captionX;
+                                tx = o->w;
+                            } else {
                                 ex = o->x + 6 + tw;
-                                tx = tx + tw * 3;
+                                tx = o->w + tw * 3;
                             }
-                            ey = o->captionY;
-                            if (ey == -1)
+                            if (o->captionY != -1)
+                                ey = o->captionY;
+                            else
                                 ey = o->y - 1;
                             d2_DrawTextBox(ex, ey, tx, o->h, surf, o->u.text, mode);
                         }
@@ -5074,16 +5076,18 @@ void d2_RedrawView(int view)
             }
         }
         d2_UnlockSurface(surf);
-        t = 0;
+        if (v->tex1[0] == 0 && v->tex2[0] == 0)
+            return;
         if (v->tex1[0] != 0) {
             t = (D2TEXX *)tex_Find(v->tex1);
             if (t != 0)
                 d2_BlitPartToDD(0, 0, t->size, t->size, (void *)v->viewSurf, 0, 0, t->surf);
-        } else if (v->tex2[0] == 0)
-            return;
+        }
         if (v->tex2[0] != 0) {
             D2TEXX *t2 = (D2TEXX *)tex_Find(v->tex2);
 
+            /* @original reads t->size even when tex1 is empty or not found: t is then
+               uninitialized / 0 (the original reloads t's stale stack slot) */
             if (t2 != 0)
                 d2_BlitPartToDD(0, t->size, t2->size, ((D2SURF *)v->viewSurf)->h - t->size, (void *)v->viewSurf, 0, 0,
                              t2->surf);

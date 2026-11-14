@@ -3026,3 +3026,11 @@ differing instructions. The same shape made the character loop of 0x512f30 pick 
   address was written out a second time in the compare, `in = &d2_Inputs[k]; if (d2_FocusedInput ==
   &d2_Inputs[k])` (the d3io_AttachStock lever). Also plain `o = &d2_Objs[obj]` / `memset(&d2_Objs[obj], ..);
   d2_Objs[obj].id = obj;` for the decompiled `off` byte offset (same code, readable).
+- **d2_RedrawView byte (84 ins, "whole-function allocation")**: two ordinary changes. (1) A texture tail whose
+  original tests `tex1[0]` twice (`jne find; test tex2; je ret; test tex1; je ..`) and reloads t from its
+  never-written slot on the tex1-empty path: `if (!tex1[0] && !tex2[0]) return; if (tex1[0]) {..}` and NO `t = 0`
+  (the original reads an uninitialized t there, an @original quirk; 84 -> 62). (2) A one-register shift of the
+  eax / ecx / edx rotation through every later switch arm: the caption position was an if / else assigning both
+  values per arm, `if (o->captionX != -1) { ex = o->captionX; tx = o->w; } else { ex = o->x + 6 + tw; tx = o->w
+  + tw * 3; }`, not `ex = o->captionX; tx = o->w; if (ex == -1) {..}` (VC6 then keeps `tw * 3` as its own lea).
+  60 spellings of tw * 3 / statement orders inside the default-then-override form were one code.
