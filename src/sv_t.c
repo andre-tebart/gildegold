@@ -8236,22 +8236,7 @@ void ai_InitProductionTables(void); int ai_UpdateProdGoodsList(); void ai_Layout
    kind 0x1f, 0x4129 / 0x412a for the others, the name alone without one). A click on a button sends the helper
    job message 0x8c (flags 1, to the owner, the game time, the kind, the first four selected characters) and
    waits for it; with no character selected the message txt 0x4093; the selection is cleared. A right click
-   ends the window
-   @deep reconstructed in full from the original (all 449 instructions read: the kinds / limit setup, both
-   helper-job counts over AIJOB.helpers, the window and button setup, the per-frame caption texts, the
-   click -> message 0x8c with the selected characters, the closing); 448 vs 449 instructions, the
-   statements and branches match (the one branch-target shift, je at +0xd8, is the 2-byte xor ebx,ebx
-   before the d2_OpenForm it jumps to). Left is the constant register: the original caches 2 in ebx (push
-   ebx for gm_Query / he_FindEvent's 2, cmp al,bl for the level test, n stored from it) and 0x227 in esi,
-   and so saves ebx in the prologue; ours caches 0 in ebx (push ebx for every 0 argument and the counts
-   zeroing, xor ebx,ebx again before d2_OpenForm) and saves it after the sv_CheckCharacterFlag return,
-   which shifts every stack slot by 4 (the slots hunks, inc [esp+edx+0x24] vs 0x20) and turns the second
-   count zeroing into esi vs edx (hunks 0x584d81, 0x584e24, 0x584e86, 0x58503c, 0x58505a, 0x5850a6). Also
-   the button loop's pushes are the same instructions in another register order (0x584f4d, regs eax<->edx
-   at 0x584f0b / 0x584f72), and in the caption loop the kind test is cmp byte [ecx],0x1f (ours, counts[i]
-   already in eax) vs mov al,[ecx] / cmp al / mov eax,counts[i] (0x5850cf). Tried: the statement order of n
-   / kinds[2] / gm_Query (this one best), chained counts zeroing (identical), the count local inside each
-   branch (worse: the name argument is hoisted again), the count tests as > 1 first / a switch (worse) */
+   ends the window */
 void ai_GypsyHelperWindow(AIBLD *rec)
 {
     AIBTYPE *type;
@@ -8259,24 +8244,24 @@ void ai_GypsyHelperWindow(AIBLD *rec)
     char *res;
     int win;
     int counts[3];
+    int btns[3];
     int kinds[3];
     int n;
     int i;
     int j;
     int k;
     int sel;
-    int c;
     int id;
     int h;
     int x;
 
-    n = 2;
     kinds[2] = 0x227;
     res = gm_Query((void *)rec->objList, 2, 6, 0, 0x2a);
     type = &((AIBTYPE *)ai_BTypes)[rec->type];
     if (type->kind == 0x1f) {
         kinds[0] = 0x293;
         kinds[1] = 0x294;
+        n = 2;
         if (type->cap247 >= 2) {
             kinds[2] = 0x295;
             n = 3;
@@ -8284,6 +8269,7 @@ void ai_GypsyHelperWindow(AIBLD *rec)
     } else {
         kinds[0] = 0x225;
         kinds[1] = 0x226;
+        n = 2;
         if (type->cap247 >= 2) {
             kinds[2] = 0x227;
             n = 3;
@@ -8291,9 +8277,7 @@ void ai_GypsyHelperWindow(AIBLD *rec)
     }
     if (sv_CheckCharacterFlag((char *)rec) != 0)
         return;
-    counts[0] = 0;
-    counts[1] = 0;
-    counts[2] = 0;
+    memset(counts, 0, sizeof(counts));
     for (job = (AIJOB *)he_FindEvent(2, 0, 0x8c, 3, rec->id); job != 0; job = (AIJOB *)he_NextEvent()) {
         for (i = 0; i < 3; i++) {
             if (job->u.w.lo == kinds[i]) {
@@ -8318,8 +8302,6 @@ void ai_GypsyHelperWindow(AIBLD *rec)
     d2_SetForm(win, 2);
     x = d2_Wins[d2_LastWindow].w / 2 - 0xa8;
     for (i = 0; i < n; i++) {
-        int btns[3];
-
         id = d2_WinOpenPic(x + 0x28, i * 0x50 + 0x19, kinds[i] + 0xdf, d2_LastWindow);
         d2_Objs[id].interactive = 1;
         d2_Objs[id].style = 3;
@@ -8334,13 +8316,9 @@ void ai_GypsyHelperWindow(AIBLD *rec)
     ai_UpdateProdGoodsList(rec, res);
     ai_LayoutProdGoodsList(win, 1, 0, rec);
     while (sv_RunFrame((int)ai_GypsyHelperWindow, 0x677c7)) {
-        int btns[3];
-
         ai_UpdateProdGoodsList(rec, res);
         ai_LayoutProdGoodsList(win, 1, 0, rec);
-        counts[0] = 0;
-        counts[1] = 0;
-        counts[2] = 0;
+        memset(counts, 0, sizeof(counts));
         for (job = (AIJOB *)he_FindEvent(2, 0, 0x8c, 3, rec->id); job != 0; job = (AIJOB *)he_NextEvent()) {
             for (i = 0; i < 3; i++) {
                 if (job->u.w.lo == kinds[i]) {
@@ -8356,19 +8334,18 @@ void ai_GypsyHelperWindow(AIBLD *rec)
 
             id = btns[i];
             d2_SetObjEnabled(id, 1);
-            c = counts[i];
             if (type->kind == 0x1f) {
-                if (c == 1)
+                if (counts[i] == 1)
                     txt_Format(line, 0x421f, 0x22d, kinds[i] * 2 + 0x9a8);
-                else if (c > 1)
-                    txt_Format(line, 0x4220, c, 0x22d, kinds[i] * 2 + 0x9a8);
+                else if (counts[i] > 1)
+                    txt_Format(line, 0x4220, counts[i], 0x22d, kinds[i] * 2 + 0x9a8);
                 else
                     txt_Format(line, "%s", kinds[i] * 2 + 0x9a8);
             } else {
-                if (c == 1)
+                if (counts[i] == 1)
                     txt_Format(line, 0x4129, 0x228, kinds[i] * 2 + 0x9a8);
-                else if (c > 1)
-                    txt_Format(line, 0x412a, c, 0x228, kinds[i] * 2 + 0x9a8);
+                else if (counts[i] > 1)
+                    txt_Format(line, 0x412a, counts[i], 0x228, kinds[i] * 2 + 0x9a8);
                 else
                     txt_Format(line, "%s", kinds[i] * 2 + 0x9a8);
             }

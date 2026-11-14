@@ -4060,7 +4060,7 @@ exe	0x00584520	ai_GraveRentConfirm	sv_t	5a6405a76afc5611	no	byte	control=byte p1
 exe	0x005847a0	ai_RentGraveSelect	sv_t	50f012bdcd2cd8b0	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00584900	ai_GraveCare	sv_t	0c429d2b8e244a36	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00584b70	ai_GraveRaiseHelper	sv_t	cc478ae35062e209	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x00584d70	ai_GypsyHelperWindow	sv_t	48055c40a9faf13c	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x00584d70	ai_GypsyHelperWindow	sv_t	34ba63d0abb98c3c	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x00585380	ai_GraveFogWindow	sv_t	35fefb45365521bd	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
 exe	0x00585750	ai_SeanceWindow	sv_t	d9a497324bb2a1d3	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x005859c0	ai_SeanceRitual	sv_t	b4bf43c41922a1a5	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
