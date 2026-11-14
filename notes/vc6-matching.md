@@ -3034,3 +3034,10 @@ differing instructions. The same shape made the character loop of 0x512f30 pick 
   values per arm, `if (o->captionX != -1) { ex = o->captionX; tx = o->w; } else { ex = o->x + 6 + tw; tx = o->w
   + tw * 3; }`, not `ex = o->captionX; tx = o->w; if (ex == -1) {..}` (VC6 then keeps `tw * 3` as its own lea).
   60 spellings of tw * 3 / statement orders inside the default-then-override form were one code.
+- d2_DrawObjCaption (stuck, 85 -> 62): one call after `if (o->style & 4) { x = o->x; y = o->y + o->h; }` gives
+  the original's allocation of the whole head (flags in the dead o slot, 0x20 in ebx, x / y in ebp / edi), the
+  two-call form the original's two call sites; no form found that has both (VC6 does not duplicate the call +
+  epilogue here as it did in d2_PlaceWindow). tools/c2dag (flip / vdiff / c2trace) cannot find a K&R definition
+  (`void f(o) T *o; {`): write it ANSI first, VC6 compiles both alike for pointer parameters.
+- d2_DrawObjects (stuck): a text arm's mode / x register race; flip.py's hits all sit in the window clip walk
+  above it (the four clamps), not in the arm.
