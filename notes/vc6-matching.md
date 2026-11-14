@@ -3199,3 +3199,33 @@ differing instructions. The same shape made the character loop of 0x512f30 pick 
   (unsigned char: no other function moved). gm_ListObjectsAfter has the same note in its tag.
 - gm_CountCharacters (stuck, 5 ins): an address the original materializes before a call to a known same-unit
   callee (`lea edx,[edx*4+X]` kept across it, VC6 knows the callee leaves edx) did not move with any spelling.
+
+## match-deep 2026-11-14, f3gm session
+- gm_StockPrice (12 -> 10, stuck): a `max(t, 0.25)` whose 0.25 path the original runs through the following
+  `fcom 5.0` (ours threads it: `fld 0.25; fstp; jmp` past the 5.0 compare) read the shared double at 0x5eb9b0 as an
+  object (now cm_DoubleQuarter): VC6 cannot fold the known constant through a non-const global. The pooled literal
+  M10s (cm_DoubleOne / ai_FloatOne / ai_FloatZero) changed no hunk. Left: two identical `push 0x64; push esi; call
+  gm_ItemPrice; add esp,8; ret` tails that the original keeps apart and ours cross-jumps; with cross-jumping skipped
+  (c2pass --skip 0x1070a91d) the layout is already the original's, and no return structure (30 variants) changes
+  the merge.
+- gm_FixedWorkMinutesBetween / gm_WorkMinutesBetween (12 / 68 ins -> byte): the "acc / y swap ebp / edi" and the
+  int->float temp in the wrong parameter slot were the clamps written as `x = h * 60 + m; x = clamp(x);` (the
+  minutes assigned to the variable first, then clamped in place) and the final two clamps in x (b) / y (t) roles.
+  The decompiled countdown `n = end - day; do .. while (--n)` is a plain `for (; day < end; day++) acc += ..`
+  (same code). Reading rule: an fild temp that the original puts in the home of a variable (here a dead
+  parameter's slot shared with acc) is the variable itself stored for the fild, not an expression temp.
+- gm_FreeCapacity (12 -> byte): `room = stock - amount; if (room > n) return n; return room;` with room kept in
+  stock's register vs the original's fresh temp: the local was the call's result, `held = gm_ListAmount(..); if
+  (stock - held > n) return n; return stock - held;`. A shared `cnt = 0;` before an if/else whose arms each loop
+  (the original zeroes it after the hoisted common pushes) is one `cnt = 0;` per arm.
+- gm_LoadTables (20 -> byte): two decompiled pointer walks (the stock blocks by int pointers with a +8 IV bias, the
+  building types by `i += 0x24d` and `w++`) as plain index loops (`gm_StockBlocks[i].f`, `GM_BTYPE(i)->objs[n]`)
+  plus the `g = GM_GOOD(id)` pointer local for the type tests. Naming GMBTYPE's byte +0x21 (AIBTYPE.extensions)
+  in f3gm_types.h dropped sv_t's ai_TutorialInitChapter3 (f3gm_types.h reaches sv_t through ai_bld.h): kept as a
+  unit macro in f3gm.c.
+- gm_KillSpieler (stuck, insensitive): the original hoists ch->netId out of the crime loop into ebx, which pushes the
+  evidence loop's peer->netId into ebp and splits c * 0x21c into a frame slot (the 4-byte frame difference). A
+  typed CRIME array probe (not the char-array cast) was = control, so it is no alias question.
+- gm_BuildKindObjects (stuck): `extern unsigned short probe;` in place of gm_KindObjCount is byte at once: VC6
+  keeps a short global in a word register through a call-free loop only when the unit does not define it (the
+  d2_ScreenH question again, a definition / owner decision).

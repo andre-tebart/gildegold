@@ -1440,3 +1440,10 @@ mechanisms, each as a generated round over all positions / subsets:
   read at every test (`g = GM_GOOD(id); if (g->type == A || g->type == B ..)`); gm_BuildingGoodsList and
   gm_ChangeBuildingState byte.
 - After turning a vector into D3VECTOR4, check every `sizeof` of it (memcpy into a 12-byte field).
+
+- **A clamp `x = (int)MIN(MAX(lo, h * 60 + m), hi)` whose int->float temp sits in the wrong slot and whose result
+  takes the wrong callee-saved register**: assign the minutes first, `x = h * 60 + m; x = (int)MIN(MAX(lo, x), hi);`
+  (gm_WorkMinutesBetween 68 ins -> byte). A min whose local is `stock - call()` kept in stock's register: name the
+  call's result instead and write the difference at both uses (gm_FreeCapacity byte).
+- **A known constant threaded past the next compare** (`t = max(t, 0.25); f = min(t, 5.0)`: ours jumps from the 0.25
+  load straight past `fcom 5.0`): the constant was a shared double object (cm_DoubleQuarter), not a literal.
