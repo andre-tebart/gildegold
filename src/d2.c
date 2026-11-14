@@ -553,7 +553,24 @@ void d2_DrawFrame(D2INPUT *dlg, void *arg)
         d2_DrawTextBox(d2_PointerX, d2_PointerY, f3->w, f3->h, arg, buf, 8);
     }
 }
-/* 0x4694c0, draws an input field (and the slider-like frame around it) @deep B draft: 3 code hunks (6 instructions) at 0x4697a3/0x4697d6/0x4697e9 in the number-input frame block (in->w = p0->w + in->ndigits * 0xe + p1->w; o->w = in->w; bw = in->w - p0->w - p1->w; d2_DrawShape(o->x - p1->w + o->w, ...)): the original loads the WORD o->w ([edi+0x14]) where ours reuses the int in->w ([esi+0x10]) and reads o->x/o->w in the other order - same values, different loads; bw = o->w - p0->w - p1->w tried, 6 code hunks became 165 (whole-function allocation), reverted; Q2 needs 12 names (d2_DrawText, d2_DrawShapeMode2, d2_PointerObj/14, d2_ButtonPulldownPic, d2_PendingCaptionWin/9bc, D2OBJ.textShadow/greyed/picW/picH/1e4) */
+/* 0x4694c0, draws an input field (and the slider-like frame around it)
+   @stuck 6 ins, headers sample insensitive (32 samples, one codegen). The original computes bw from the
+   WORD o->w (movsx ebx, word [edi+0x14], p0->w taken from ebx before it is overwritten) and reads o->x
+   before o->w in the second d2_DrawShape. bw = o->w - p0->w - p1->w gives exactly the original's
+   instructions for that block, but p0 then gets one slot reference more (c2frame: count 4 instead of 3)
+   and is packed with a temp into the i / p1 neighbour slot - 135 ins of frame and register shift (any
+   operand order / grouping of bw and of the DrawShape x: one code). Orders of the four statements in->w /
+   o->w / o->x / bw with three in->w spellings (36 variants): best 53, none below the control. The volatile
+   hv (ClipBottom saved in ebp and in p0's slot, reloaded from the slot for the restoring d2_SetClipRect)
+   has no ordinary replacement found: a plain hi / min() / > forms keep it in ebp (60 ins). Open: which
+   source makes p0's last use a register use with bw read from o->w (tiebreak: insensitive) prior: B draft:
+   3 code hunks (6 instructions) at 0x4697a3/0x4697d6/0x4697e9 in the number-input frame block (in->w =
+   p0->w + in->ndigits * 0xe + p1->w; o->w = in->w; bw = in->w - p0->w - p1->w; d2_DrawShape(o->x - p1->w +
+   o->w, ...)): the original loads the WORD o->w ([edi+0x14]) where ours reuses the int in->w ([esi+0x10])
+   and reads o->x/o->w in the other order - same values, different loads; bw = o->w - p0->w - p1->w tried,
+   6 code hunks became 165 (whole-function allocation), reverted; Q2 needs 12 names (d2_DrawText,
+   d2_DrawShapeMode2, d2_PointerObj/14, d2_ButtonPulldownPic, d2_PendingCaptionWin/9bc,
+   D2OBJ.textShadow/greyed/picW/picH/1e4) */
 
 void d2_DrawInput(int idx, void *surf)
 {

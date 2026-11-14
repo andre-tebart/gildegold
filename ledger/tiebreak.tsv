@@ -1241,7 +1241,7 @@ exe	0x004690b0	d2_GetPic	d2	a97d9e970ddb1349	no	byte	control=byte p1=byte p2=byt
 exe	0x00469180	d2_GetPicEx	d2	d1f4c7340af1e6ec	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00469250	d2_SetObjPic	d2	1018d8dedeb611e0	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00469310	d2_DrawFrame	d2	5e10ba1537e17d03	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x004694c0	d2_DrawInput	d2	d3cf3f8747ef560e	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x004694c0	d2_DrawInput	d2	d3cf3f8747ef560e	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x00469ca0	d2_OpenInputIcon	d2	4acf91f40ed7255f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00469ee0	d2_WinOpenInputIcon	d2	2543002532f7fa04	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00469fe0	d2_InputSetString	d2	5b8c509ea5f4920b	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
