@@ -3184,58 +3184,51 @@ unsigned short *gm_QueryNext(void)
     return (unsigned short *)res;
 }
 /* 0x4ffe90, starts an object query over the list (or, with the flag 7, over the whole instance table) and returns the first match (gm_QueryNext): n criteria follow as (kind, value) pairs: kind 0 = prototype, 1 = owner id, 3 = the owner's character number (gm_ObjectOwnerNo), 4 = the prototype kind (each with a value), 5 = stop at the first match, 6 = descend into the children, 7 = scan the whole table (without value). Not set criteria match everything; 0 without the goods table or a list, and for 6 together with 7. Used as gm_Query (list, 2, 6, 0, 0x115) .. all over the exe
-   @deep read the whole function against 0x4ffe90..0x4fff9b and reconciled every statement: the reset of
-   the query state in the original's store order, the argument walk (ap = &n, pre-incremented, switch on
-   the low byte as unsigned char: the 8-entry jump table is equal), the per-kind value reads (word / dword
-   / word / byte), the flags, the scan-all exit (0 with 6 and 7 together, else the instance table) and the
-   list start, both as tail calls of gm_QueryNext. Tried: the ai_Goods test as an early return or wrapping
-   the body, the list test both ways, scan / kids as char or unsigned char: the object is the same. Left is
-   allocation: ours takes esi as the zero register (push esi at entry, 'xor esi,esi; cmp eax,esi', the
-   stores of 0 from esi) and keeps -1 in eax ('or eax,-1', gm_QueryOwner and gm_QueryKind[0] from eax /
-   al), the original uses eax as the zero register and immediates for the -1 stores, and pushes esi only
-   inside the n > 0 block (0x4ffef7 / 0x4fff6d): that is the 3 extra instructions and the 1-byte shift
-   diffclass reports for the three jumps to the return-0 block (+0x108 vs +0x107); the zero stores of the
-   flags come from bl / dl / al by the same choice (diffclass: regs, slots) */
-
+   @stuck match-deep 2026-11-14: draft 33 -> shape 4 ins. Rewritten with va_list / va_arg (same code as the
+   hand-walked ap), the kind byte stored as the unsigned 0xff (a char -1 shared the owner's -1 register: 33
+   -> 10), scan = 0 / kids = 0 written right before their stores (48 placements, 10 -> 6: dl / bl kept
+   apart), a count-down loop i = n .. 1 (6 -> 4: pop esi after the flag stores). Left: the scan tail loads
+   ai_Objects into edx where the original uses eax (scratch rotation one step off). Tried: va_end placement
+   / none, flag store order (worse), the both-flags test as one &&, list reused for the scan cursor (eax
+   right but the two tails cross-jump, branch 1), a goto to one shared call, a kind local, switch on an int
+   & 0xff (worse), flip.py want mov eax ai_Objects (7 hits, all meaning changes, 58-88 ins). (tiebreak: not
+   measured (dcp headers sample gm_Query)) */
 char *gm_Query(void *list, int n, ...)
 {
-    int *ap;
+    va_list ap;
     char scan, kids;
     int i;
 
-    if (ai_Goods != 0) {
-    scan = 0;
-    kids = 0;
+    if (ai_Goods == 0)
+        return 0;
     gm_QueryType = 0x7fff;
     gm_QueryOwner = -1;
     gm_QueryOwnerNo = 0xffff;
-    gm_QueryKind[0] = (char)0xff;
+    ((unsigned char *)gm_QueryKind)[0] = 0xff;   /* the kind byte as unsigned (gm_QueryNext compares it with 0xff): a char -1
+                                                   would share the owner's -1 register, the original stores immediates */
     gm_QueryStopFirst = 0;
+    scan = 0;
     gm_QueryScanAll = scan;
+    kids = 0;
     gm_QueryChildren = kids;
     gm_QueryFirst = 1;
     gm_QueryScanned = 0;
     gm_QueryDepth = 0;
     if (n > 0) {
-        ap = &n;
-        for (i = n; i != 0; i--) {
-            ap++;
-            switch ((unsigned char)*ap) {
+        va_start(ap, n);
+        for (i = n; i > 0; i--) {
+            switch ((unsigned char)va_arg(ap, int)) {
             case 0:
-                ap++;
-                gm_QueryType = (unsigned short)*ap;
+                gm_QueryType = (unsigned short)va_arg(ap, int);
                 break;
             case 1:
-                gm_QueryOwner = ap[1];
-                ap++;
+                gm_QueryOwner = va_arg(ap, int);
                 break;
             case 3:
-                gm_QueryOwnerNo = (unsigned short)ap[1];
-                ap++;
+                gm_QueryOwnerNo = (unsigned short)va_arg(ap, int);
                 break;
             case 4:
-                gm_QueryKind[0] = (char)ap[1];
-                ap++;
+                gm_QueryKind[0] = (char)va_arg(ap, int);
                 break;
             case 5:
                 gm_QueryStopFirst = 1;
@@ -3248,6 +3241,7 @@ char *gm_Query(void *list, int n, ...)
                 break;
             }
         }
+        va_end(ap);
         gm_QueryScanAll = scan;
         gm_QueryChildren = kids;
         if (scan != 0) {
@@ -3260,7 +3254,6 @@ char *gm_Query(void *list, int n, ...)
     if (list != 0) {
         gm_QueryCursor = (ORDOBJ *)list;
         return (char *)gm_QueryNext();
-    }
     }
     return 0;
 }
