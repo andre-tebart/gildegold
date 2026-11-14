@@ -121,20 +121,38 @@ void d2_SetLineTable(int *rows, D2SHP *shp)
 {
     memcpy((char *)shp + shp->lineoff, rows, shp->h * 4);
 }
-/* 0x479f40, makes a run length shape from 24 bit pixels @deep 679 code hunks, the unit note's Open work records this function as unsolved (0x479f40 / 0x47a460 / 0x47a7d0: the original computes the row pointer from scratch every row, ours strength-reduces it into a running pointer plus a [pitch*3] slot); the byte numbers are unchanged since that round (1159/1328). Read against the original 0x479f40..0x47a45f: the 24 bit pixel walk, the bounds scan (minx/maxx/miny/maxy), the key compare, the segment runs and the d2_SetLineTable upload correspond; what differs is the per-row pointer computation / register webs and the r/g/b local homes. Readability: Q1 name, Q2 d2_CompareColour / d2_SetColour / d2_EndMarkerColour / d2_StartMarkerColour / d2_TransparentColour. */
+/* 0x479f40, grabs a rectangle of a 24 bit surface into a run length coded shape (memory tag
+   "shp_t:GrabBit24:ShapeHeader"): scans the rectangle for the bounding box of the pixels that are not the
+   transparent colour, then (when the end marker colour is set) replaces the start / end marker pixels with the
+   transparent colour and takes the box from those, stores every row as skip runs of the transparent colour
+   alternating with literal runs, builds the table of row offsets, and returns an exactly sized copy of the
+   shape (allocated with mem_Alloc; the scratch shape is freed).
+   @stuck 488 -> 325 ins (draft, 307 with a probe symbol for the D2KEY word): rewritten in the siblings'
+   form - d2_GrabShape24NoRuns' scans (p = pix + ((i + y) * (pitch & 0xffff) + x + j) * 3 inside the inner
+   loop) and d2_GrabShape16Runs' run loop (lines[] / line / run / col / t, the skip loop as while (col <
+   s->w && d2_CompareColour(pix + (col + t + x) * 3, ..) == 0), the literal loop with the unsigned entry
+   test, col += run[1] - 1 unconditional as the original's lea eax,[eax+ecx-1]). Now the code shape is the
+   original's; left is a whole-function register permutation: run (prio 1086, c2trace) is popped before s
+   (1081) and takes ebp, s gets ebx (the original: s ebp, run ebx, h ebx at entry), and every slot /
+   scratch register behind it. Tried: the skip loop with a p pointer (+15), for / while / if-break forms of
+   both loops (= or worse), the zero stores of run[0] / run[1] (chained, swapped, memset), 450 orders /
+   spellings of the row-start block (run = line + 1 ..): none moves s above run. run computed inside the w
+   guard gives s ebp (216 ins) but VC6 then folds run into [eax+ebp] addressing - not the original's
+   pointer. flip.py (want s in ebp): only meaning-changing hits (an extra s reference in the inner loop:
+   dup of s->npix += / s->size +=; one run reference fewer: run[2] = 0). Plus the D2KEY word load at the
+   two d2_SetColour calls (data question) (tiebreak: not measured (dcp headers sample d2_GrabShape24Runs)) */
 
 D2SHP *d2_GrabShape24Runs(int x, int y, int w, int h, unsigned char *pix, unsigned char flag, unsigned short pitch)
 {
-    D2SHP *shp, *ns;
+    D2SHP *s, *r;
     unsigned int minx, maxx, miny, maxy;
     unsigned char key[3];
-    int tab[864];
-    int r, c, nseg;
+    int lines[864];
+    int i, j, cnt, runs, col, t;
     unsigned char *p;
-    int *seg, *rowp;
-    int base, base2;
+    int *line;
+    unsigned int *run;
 
-    r = 0;
     key[0] = 0;
     key[1] = 0;
     key[2] = 0;
@@ -142,113 +160,101 @@ D2SHP *d2_GrabShape24Runs(int x, int y, int w, int h, unsigned char *pix, unsign
     minx = w;
     maxy = 0;
     miny = h;
-    nseg = 0;
-    shp = mem_Alloc((w * 0xc + 4) * h + 0x32, "shp_t:GrabBit24:ShapeHeader");
-    for (r = 0; r < h; r++) {
-        p = pix + ((r + y) * (pitch & 0xffff) + x) * 3;
-        for (c = 0; c < w; c++) {
-            if (d2_CompareColour(p, (unsigned char *)&d2_TransparentColour) != 0 && c > (int)(maxx & 0xffff))
-                maxx = c;
-            if (d2_CompareColour(p, (unsigned char *)&d2_TransparentColour) != 0 && c < (int)(minx & 0xffff))
-                minx = c;
-            if (d2_CompareColour(p, (unsigned char *)&d2_TransparentColour) != 0 && r > (int)(maxy & 0xffff))
-                maxy = r;
-            if (d2_CompareColour(p, (unsigned char *)&d2_TransparentColour) != 0 && r < (int)(miny & 0xffff))
-                miny = r;
-            p += 3;
+    cnt = 0;
+    s = mem_Alloc((w * 0xc + 4) * h + 0x32, "shp_t:GrabBit24:ShapeHeader");
+    for (i = 0; i < h; i++) {
+        for (j = 0; j < w; j++) {
+            p = pix + ((i + y) * (pitch & 0xffff) + x + j) * 3;
+            if (d2_CompareColour(p, (unsigned char *)&d2_TransparentColour) != 0 && j > (int)(maxx & 0xffff))
+                maxx = j;
+            if (d2_CompareColour(p, (unsigned char *)&d2_TransparentColour) != 0 && j < (int)(minx & 0xffff))
+                minx = j;
+            if (d2_CompareColour(p, (unsigned char *)&d2_TransparentColour) != 0 && i > (int)(maxy & 0xffff))
+                maxy = i;
+            if (d2_CompareColour(p, (unsigned char *)&d2_TransparentColour) != 0 && i < (int)(miny & 0xffff))
+                miny = i;
         }
     }
-    if ((unsigned short)minx > (unsigned short)maxx || (unsigned short)miny > (unsigned short)maxy) {
+    if ((unsigned short)maxx < (unsigned short)minx || (unsigned short)maxy < (unsigned short)miny) {
         maxx = 0;
         minx = 0;
         maxy = 0;
         miny = 0;
     }
-    shp->x0 = (unsigned short)minx;
-    shp->ax0 = (unsigned short)minx;
-    shp->w = (unsigned short)maxx + 1;
-    shp->y0 = (unsigned short)miny;
-    shp->h = (unsigned short)maxy + 1;
-    shp->ay0 = (unsigned short)miny;
-    shp->ax1 = (unsigned short)maxx + 1;
-    shp->ay1 = (unsigned short)maxy + 1;
+    s->x0 = (unsigned short)minx;
+    s->ax0 = (unsigned short)minx;
+    s->w = (unsigned short)maxx + 1;
+    s->y0 = (unsigned short)miny;
+    s->h = (unsigned short)maxy + 1;
+    s->ay0 = (unsigned short)miny;
+    s->ax1 = (unsigned short)maxx + 1;
+    s->ay1 = (unsigned short)maxy + 1;
     if (d2_CompareColour((unsigned char *)&d2_EndMarkerColour, key) != 0) {
-        for (r = 0; r < h; r++) {
-            p = pix + ((y + r) * (pitch & 0xffff) + x) * 3;
-            for (c = 0; c < w; c++) {
+        for (i = 0; i < h; i++) {
+            for (j = 0; j < w; j++) {
+                p = pix + ((y + i) * (pitch & 0xffff) + x + j) * 3;
                 if (d2_CompareColour((unsigned char *)&d2_StartMarkerColour, key) != 0 && d2_CompareColour(p, (unsigned char *)&d2_StartMarkerColour) == 0) {
+                    minx = j;
+                    miny = i;
                     d2_SetColour(p, d2_TransparentColour.r, (unsigned char)d2_TransparentColour.gb, (unsigned char)(d2_TransparentColour.gb >> 8));
-                    minx = c;
-                    miny = r;
                 }
                 if (d2_CompareColour(p, (unsigned char *)&d2_EndMarkerColour) == 0) {
+                    maxx = j;
+                    maxy = i;
                     d2_SetColour(p, d2_TransparentColour.r, (unsigned char)d2_TransparentColour.gb, (unsigned char)(d2_TransparentColour.gb >> 8));
-                    maxy = r;
-                    maxx = c;
                 }
-                p += 3;
             }
         }
     }
-    shp->by0 = (unsigned short)miny;
-    shp->bx0 = (unsigned short)minx;
-    shp->bx1 = (unsigned short)maxx;
-    shp->by1 = (unsigned short)maxy;
-    shp->size = 0x32;
-    miny = 0;
-    if (shp->h != 0) {
+    s->by0 = (unsigned short)miny;
+    s->bx0 = (unsigned short)minx;
+    s->bx1 = (unsigned short)maxx;
+    s->by1 = (unsigned short)maxy;
+    s->size = 0x32;
+    i = 0;
+    if (s->h > 0) {
         do {
-            maxx = 0;
-            rowp = (int *)((char *)shp + shp->size);
-            shp->size += 4;
-            tab[miny] = (char *)rowp - (char *)shp;
-            minx = 0;
-            if (shp->w != 0) {
-                base = (miny + y) * (pitch & 0xffff);
-                base2 = x + base;
+            runs = 0;
+            line = (int *)((char *)s + s->size);
+            s->size += 4;
+            run = (unsigned int *)((char *)s + s->size);
+            lines[i] = (char *)line - (char *)s;
+            col = 0;
+            if (s->w > 0) {
+                t = (i + y) * (pitch & 0xffff);
                 do {
-                    seg = (int *)((char *)shp + shp->size);
-                    seg[0] = 0;
-                    seg[1] = 0;
-                    if ((int)minx < shp->w) {
-                        p = pix + (minx + base + x) * 3;
-                        do {
-                            if (d2_CompareColour(p, (unsigned char *)&d2_TransparentColour) != 0)
-                                break;
-                            minx++;
-                            p += 3;
-                            seg[0]++;
-                        } while ((int)minx < shp->w);
+                    run[0] = 0;
+                    run[1] = 0;
+                    while (col < s->w && d2_CompareColour(pix + (col + t + x) * 3, (unsigned char *)&d2_TransparentColour) == 0) {
+                        col++;
+                        run[0]++;
                     }
-                    seg[0] *= 3;
-                    if (seg[1] + minx < shp->w) {
-                        do {
-                            if (d2_CompareColour(pix + (minx + base + x + seg[1]) * 3, (unsigned char *)&d2_TransparentColour) == 0)
-                                break;
-                            seg[1]++;
-                        } while (seg[1] + minx < shp->w);
-                    }
-                    memcpy(seg + 2, pix + (base2 + minx) * 3, seg[1] * 3);
-                    shp->npix += seg[1];
-                    minx += seg[1];
-                    shp->size = shp->size + seg[1] * 3 + 8;
-                    nseg++;
-                    maxx++;
-                } while ((int)minx < shp->w);
+                    run[0] *= 3;
+                    while (run[1] + col < s->w && d2_CompareColour(pix + (col + t + x + run[1]) * 3, (unsigned char *)&d2_TransparentColour) != 0)
+                        run[1]++;
+                    memcpy(run + 2, pix + (x + t + col) * 3, run[1] * 3);
+                    s->npix += run[1];
+                    col += run[1] - 1;
+                    s->size += run[1] * 3 + 8;
+                    run = (unsigned int *)((char *)s + s->size);
+                    cnt++;
+                    runs++;
+                    col++;
+                } while (col < s->w);
             }
-            miny++;
-            *rowp = maxx;
-        } while ((int)miny < shp->h);
+            *line = runs;
+            i++;
+        } while (i < s->h);
     }
-    shp->lineoff = shp->size;
-    shp->size += shp->h * 4;
-    d2_SetLineTable(tab, shp);
-    shp->mode = flag;
-    shp->nruns = nseg;
-    ns = mem_Alloc(shp->size, "shp_t:ShapeHeader");
-    memcpy(ns, shp, shp->size);
-    mem_Free(shp);
-    return ns;
+    s->lineoff = s->size;
+    s->size += s->h * 4;
+    d2_SetLineTable(lines, s);
+    s->mode = flag;
+    s->nruns = cnt;
+    r = mem_Alloc(s->size, "shp_t:ShapeHeader");
+    memcpy(r, s, s->size);
+    mem_Free(s);
+    return r;
 }
 /* 0x47a460, grabs a rectangle of a 24 bit surface into a shape without run lengths (memory tag
    "shp_t:GrabBit24NoRS:ShapeHeader"): scans the rectangle for the bounding box of the pixels that are not the

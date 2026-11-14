@@ -2978,3 +2978,9 @@ differing instructions. The same shape made the character loop of 0x512f30 pick 
   unsigned (VC6's rotated entry test knows run[1] == 0). (3) maxx / maxy in swapped equal-density slots: the
   init and reset store orders (312 combinations, one byte: `maxx = 0; maxy = 0; cnt = 0; minx = w; miny = h;`
   and the reset minx, miny, maxx, maxy).
+- d2_GrabShape24Runs (488 -> 325 ins, stuck): the 16Runs form transfers (scans from 24NoRuns, the run loop from
+  16Runs with `d2_CompareColour(pix + (col + t + x) * 3, ..)` in the loop conditions and `col += run[1] - 1`
+  unconditional) and gives the original's code shape, but the run pointer (c2trace prio 1086) is popped before
+  s (1081) and the whole function's registers permute. Computing run inside the `w > 0` guard flips s to ebp
+  but VC6 then folds run away into `[eax+ebp]` addressing. Open: which ordinary s reference the original had
+  in the run loop (flip.py: duplicating `s->npix +=` or `s->size +=` flips it).
