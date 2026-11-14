@@ -2308,14 +2308,7 @@ char *gm_CharacterHome(char *c, int *out2, int *out3)
     }
     return 0;
 }
-/* 0x4fddb0, creates a character: flags bit 0 = gm_CreateRandomChild(age), else gm_CreateCharacter(type, -1, -1, age, 0, job, title, 2); bit 1 (random child only): sets its jobId / title; bit 2: places it on the stage of the building bld at its gm_HomeObject. Returns the character or 0
-   @deep statements read against the original 0x4fddb0 and reconciled (random-child / gm_CreateCharacter
-   branches, the 0xffff checks, title then jobId stores, the flags&4 home-object placement); every
-   remaining asmdiff line is callee-saved register placement: the original pushes edi in the prologue (+0x8
-   'push edi', 'pop edi' before the shared return 0) and esi only inside the flags&4 branch (+0x50 'push
-   esi' / +0x7e 'pop esi'), ours pushes esi+edi together after the 0xffff check (+0x3c/+0x3d); the [esp+N]
-   differences are the shift that follows. Tried: combined vs nested flags&4 condition, unsigned short id,
-   local declaration orders, no c temporary (worse) */
+/* 0x4fddb0, creates a character: flags bit 0 = gm_CreateRandomChild(age), else gm_CreateCharacter(type, -1, -1, age, 0, job, title, 2); bit 1 (random child only): sets its jobId / title; bit 2: places it on the stage of the building bld at its gm_HomeObject. Returns the character or 0 */
 
 short *gm_SpawnCharacter(unsigned char flags, int type, int age, unsigned char job, unsigned char title, char *bld)
 {
@@ -2337,8 +2330,11 @@ short *gm_SpawnCharacter(unsigned char flags, int type, int age, unsigned char j
     if (id == 0xffff)
         return 0;
     c = &ORD_CHARS[id];
-    if ((flags & 4) && bld != 0 && (o = (ORDOBJ *)gm_HomeObject((unsigned char *)bld)) != 0)
-        gm_PlaceOnStage(c->netId, ((ORDBLD *)bld)->id, o->objId, 0, 0);
+    if (flags & 4) {
+        if (bld != 0 && (o = (ORDOBJ *)gm_HomeObject((unsigned char *)bld)) != 0)
+            gm_PlaceOnStage(c->netId, ((ORDBLD *)bld)->id, o->objId, 0, 0);
+        return (short *)c;
+    }
     return (short *)c;
 }
 /* 0x4fde90, loads the icon names: counts the 0x80-byte records of "<root>Character_Names.dat" (0x6f1b90 of them), allocates 0x30 bytes per name (0x6f1b94) and copies each name; resets the three flag bytes at 0x6f0454 */
