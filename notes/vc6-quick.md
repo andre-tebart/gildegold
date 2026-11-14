@@ -1181,3 +1181,14 @@ mechanisms, each as a generated round over all positions / subsets:
 - flip.py had mutated the wrong lines for every function whose prototype line carries a comment after the `;`
   (it took the prototype for the definition): fixed 2026-11-14. Flip results on main.c functions from before
   that date (0 flips on main_EndRound / main_ChooseCity) say nothing.
+- **main_ChooseCity byte: the block-scope lever a third time.** `char key[0x100]` declared in each of the two
+  blocks that use it (not once at function scope) put cityobj before objName in the frame. No count changed:
+  the two block locals have 3 references each and share one slot (block locals with disjoint scopes merge even
+  when their addresses go to calls; function-scope arrays never do), so the slot keeps its weight but enters
+  the table at the position of a count-3 symbol, behind objName and cityobj - and the unstable sort then
+  resolves their tie the other way. So a frame-order hunk between two equal-density slots has a third cause
+  besides a count one higher or lower: a slot at another table position. Rule for the whole project, three
+  matches in one day (AIMSG msg in main_EndRound, pos / rot and key here): a buffer or record that is only
+  used inside blocks belongs in those blocks. VC6 shares the slots, so the frame size does not tell; the
+  scheduler (escaped address) and the frame sort (table position) do. Declare block-used locals in their blocks
+  BEFORE any other lever on a store-order or frame-order hunk.

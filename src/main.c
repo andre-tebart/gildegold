@@ -2689,33 +2689,7 @@ void main_ChooseOpponents(int n)
    creates the name object of the city (0x59a2c0 "stadt_<name>", the text plate 0x52e1c0 from the table 0x143a1c0 by the key "_STADTAUSWAHL_<NAME>_INFO+0" (0x42e770)), puts the city tower "sp_STADTTURM" (0x446e10,
    "sonstiges\wimpel_STADTTURM.baf") over the picked city (the pick object 0x448630 with a name starting with "stadt_" selects: sel; the default is the object of the 5th city) and shows its description
    ("_STADTAUSWAHL_<NAME>_BESCHR+0"); the buttons: ok (or enter / 0x1c) goes on to main_ChooseDifficulty and main_ChooseHistory (host: ends at once), the second button opens the opponent
-   selection main_ChooseOpponents (diff of the picked city); returns 1 when a game was set up (the second parameter is the host flag, the first unused)
-   @stuck orchestrator pass 2026-11-14: 26 -> 16 ins / 8 bytes kept. Solved: the tower position stores (pos
-   and rot as block locals in the tower block and in the selection block - the scheduler then hoists the
-   three loads; and pos.z stored last: x, y, w, rot, z; 419 orders on that base, 9 byte-equal for the
-   hunk). Left: ONLY the frame order of two 0x100 arrays (the original key, cityobj, objName, diff; ours
-   key, objName, cityobj, diff; 16 displacement lines). The rule is known (tools/c2dag/c2frame.py): slots
-   sort by weight * 1000 / size, the count taken before the late merge passes; ours objName 4, cityobj 4
-   (tie, objName first). Simulation of the sort over all single and double count changes: only objName 3 or
-   cityobj 5 give the original order. So the original had one more cityobj reference that tail merging or
-   the late store-to-load peephole removes, or one objName reference fewer at layout. Tried, frame right
-   but code off: a store through a pointer + reload (121 combinations of pointer position / store / reload
-   / test / body variable: best 2 ins, 1 byte: the store takes eax where the original has esi), cityobj[i]
-   = 0 before the call (one extra store), the store in both arms of the if (two stores stay). Same code as
-   control (count unchanged): every index re-read (cityobj[i] / cityobj[4] at any place), objName through a
-   pointer local, hand-written copy loops, declaration order / type / union of objName. flip.py on the
-   frame symbol (732 mutants, after fixing its prototype bug): 21 flips, all meaning-changing (the out[]
-   size, deleting an objName use, the else-if of the show loop). (tiebreak: not measured (dcp headers
-   sample main_ChooseCity)) prior: match-deep 2026-11-14: frame layout of the two 0x100 arrays (cityobj /
-   objName swapped: original cityobj at esp+0x294, objName at 0x394) plus the tower-position store order.
-   headers sample: insensitive (32 samples, one codegen). Plain-form variants: cityobj[i] =
-   ai_CreateCityPoint(..) without h (= control), with h kept for the strcpy (51 ins),
-   sv_RegisterNamePlate(h->name..) (105), inner-loop if (sel != 0) (28), objName / name+objName / loop-body
-   block scope (= control), decl order objName first (= control); statement orders of the if (h) block
-   BACD/BCAD/ABDC (47-153). flip.py (copy that also matches the _x$ = N frame symbol lines, want _objName$
-   = -34304): 111 single-statement mutants, 0 flips - no single statement deletion/dup/swap/token moves the
-   layout. Size probes (key / objName 0xfd..0x100, name 0x3d..0x40, 64 variants): the layout reacts only to
-   objName < key (objName then goes ab... */
+   selection main_ChooseOpponents (diff of the picked city); returns 1 when a game was set up (the second parameter is the host flag, the first unused) */
 
 int main_ChooseCity(int unused, int host)
 {
@@ -2723,7 +2697,7 @@ int main_ChooseCity(int unused, int host)
     D3OBJECT *tower, *last, *sel, *h;
     D3OBJECT *cityobj[64];
     int diff[64];
-    char recs[64][0x210], key[0x100], name[0x40], objName[0x100];
+    char recs[64][0x210], name[0x40], objName[0x100];
     LSHEADER hdr;
     char *s, *d;
     char c;
@@ -2755,6 +2729,8 @@ int main_ChooseCity(int unused, int host)
         h = ai_CreateCityPoint(hdr.name);
         cityobj[i] = h;
         if (h != 0) {
+            char key[0x100];
+
             sprintf(key, "_STADTAUSWAHL_%s_INFO+0", hdr.name);
             _strupr(key);
             k = txt_FindKey(key);
@@ -2836,6 +2812,8 @@ int main_ChooseCity(int unused, int host)
                 for (i = 0; i < n; i++) {
                     if (sel == cityobj[i]) {
                         if (cityobj[i] != 0) {
+                            char key[0x100];
+
                             strcpy(ai_CityName, sel->name + 6);
                             sprintf(key, "_STADTAUSWAHL_%s_BESCHR+0", ai_CityName);
                             _strupr(key);
