@@ -4012,9 +4012,9 @@ exe	0x0057b810	ai_TutorialBezier	sv_t	shape	readable
 exe	0x0057b8a0	ai_TutorialMarkerUpdate	sv_t	shape	readable		
 exe	0x0057bc30	ai_SetupTutorialPlayer	sv_t	shape	readable		
 exe	0x0057bce0	ai_TutorialWindow	sv_t	shape	readable	deep	
-exe	0x0057bf00	ai_AlchemistCandidates	sv_t	draft	readable	deep	
+exe	0x0057bf00	ai_AlchemistCandidates	sv_t	draft	readable	stuck	
 exe	0x0057c560	ai_AlchemistHire	sv_t	byte	readable		
-exe	0x0057c690	ai_AlchemistResearchWindow	sv_t	draft	readable	deep	
+exe	0x0057c690	ai_AlchemistResearchWindow	sv_t	draft	readable	stuck	
 exe	0x0057cde0	ai_AlchemistSendRecipeResearch	sv_t	byte	readable		
 exe	0x0057ced0	ai_AlchemistSendResearchStart	sv_t	byte	readable		
 exe	0x0057cf90	ai_AlchemistWindow	sv_t	shape	readable	stuck	
@@ -4024,7 +4024,7 @@ exe	0x0057e0e0	ai_AlchemistRescheduleWindow	sv_t	byte	readable
 exe	0x0057e230	ai_ShotTableStore	sv_t	byte	readable		
 exe	0x0057e270	ai_CannonScene	sv_t	draft	readable	deep	
 exe	0x0057ec40	ai_CannonAim	sv_t	byte	readable		
-exe	0x0057f0e0	ai_CannonCamera	sv_t	draft	readable	deep	
+exe	0x0057f0e0	ai_CannonCamera	sv_t	draft	readable	stuck	
 exe	0x0057f5d0	ai_CannonAxes	sv_t	byte	readable		
 exe	0x0057f620	ai_CannonFireCheck	sv_t	byte	readable		
 exe	0x0057f690	ai_CannonShotResults	sv_t	byte	readable		
@@ -4033,7 +4033,7 @@ exe	0x0057fdb0	ai_CannonPitchRatio	sv_t	byte	readable
 exe	0x0057fdd0	ai_CannonSwitchAnim	sv_t	byte	readable		
 exe	0x00580160	ai_CannonExplosion	sv_t	draft	readable	deep	
 exe	0x00580a50	ai_ShotTableReset	sv_t	byte	readable		
-exe	0x00580a90	ai_CannonBuildPanel	sv_t	draft	readable	deep	
+exe	0x00580a90	ai_CannonBuildPanel	sv_t	byte	readable		
 exe	0x00580fe0	ai_CanSpyOn	sv_t	byte	readable		
 exe	0x00581020	ai_CabinetSpyWindow	sv_t	shape	readable		
 exe	0x00581400	ai_CabinetSpyOnCharacter	sv_t	byte	readable		
@@ -4048,7 +4048,7 @@ exe	0x005828c0	ai_GraveList	sv_t	byte	readable
 exe	0x00582b40	ai_GraveDetail	sv_t	shape	readable	stuck	
 exe	0x005830f0	ai_GraveDeadName	sv_t	byte	readable		
 exe	0x00583150	ai_GraveDeadDescription	sv_t	byte	readable		
-exe	0x00583240	ai_GraveWindow	sv_t	draft	readable	deep	
+exe	0x00583240	ai_GraveWindow	sv_t	draft	readable	stuck	
 exe	0x00583700	ai_RentGraveDetail	sv_t	draft	readable	stuck	
 exe	0x00583b70	ai_GraveDetailOpen	sv_t	byte	readable		
 exe	0x00583c50	ai_GraveSizeButtonsAt	sv_t	byte	readable		
