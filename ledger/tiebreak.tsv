@@ -4090,7 +4090,7 @@ exe	0x00587c90	ai_GraveyardChatter	sv_t	09a730e102e9bdb1	no	byte	control=byte p1
 exe	0x00587de0	ai_ClearTurnTable	sv_t	5ee801eeb1a8f560	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00587e00	ai_HandleItemDrag	sv_t	efa272b114588d87	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x00588160	ai_OpenBuildingTooltip	sv_t	aeb7f9ad31930e05	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x00588310	ai_OpenItemTooltip	sv_t	fab26b14311bbd6a	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x00588310	ai_OpenItemTooltip	sv_t	ec68579372749dc7	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x00588950	ai_OpenUpgradeTooltip	sv_t	74910ee1df658629	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
 exe	0x00588bb0	ai_OpenHelpTooltip	sv_t	b38d33aa2d8b7ef0	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00588c60	ai_OpenCharTooltip	sv_t	9855bb038712efd9	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte

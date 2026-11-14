@@ -9976,6 +9976,8 @@ int ai_OpenHelpTooltip(char *s)
 
 float gm_GoodsPrice(unsigned id, unsigned char p);
 
+#define d2_WinOpenPicStyledS ((int (*)(short, short, int, int, int))d2_WinOpenPicStyled)  /* @original ai_OpenItemTooltip recomputes each row y (slot * 0x16 + 0x28) per call instead of strength-reducing it: a short y, as d2_WinOpenPic's (sv.c has the same cast) */
+
 /* 0x588310, opens the item tooltip view of the goods item idx: the form "ToolTip\ToolTip_Objekte_Waffen" when
    the item has a weapon record (ai_FindWeaponRecord) with a nonzero id, else "ToolTip\ToolTip_Objekte_Handelsgut",
    centred and kept left of the screen's right edge; section 2 the item's picture (object id idx + 0xdf) and
@@ -9986,21 +9988,18 @@ float gm_GoodsPrice(unsigned id, unsigned char p);
    then the list: the goods it is made of with their amounts (section 4, text 0x25), the guild-house buildings
    that make it (gm_BuildingItemGroups, section 3, text 0x26), for the item types 0x17 / 0x25 the buildings that use the
    item idx and the extra slot 0x444 (text 0x624); "$C" when the list stayed empty; returns the view
-   @deep reconstructed in full from 0x588310..0x58894b (453 vs 449 instructions): form choice, window
-   clamp, sections 1..4, the price texts 0x21 / 0x1f (io_PrintText's third word is (int)gm_ItemPrice,
-   gm_GoodsPrice takes two), the staff loop (ai_Chars bld == building, not the master, netIds) with
-   gm_StaffFactor and the work time / (master skill / 1008 + factor), the ingredient loop (AIGOOD in/need),
-   the gm_BuildingItemGroups rows, the building lists by item type 0x17/0x25 and the extra slot 0x444, every call
-   and constant compared. What remains needs a variant round: (1) the 0x225..0x295 / 0x1c1.. if-else chain:
-   the original lays the blocks inline after each test (0x5886df 0x48..0x4a, 0x588720 0x4e..0x50, 0x58875d
-   0x18/0x19) and re-tests 0x226/0x227 at 0x5886cf, our VC6 threads every test to blocks placed after the
-   chain (0x58881f, 0x5887e9) - tried no outer test, two ifs, ranges, rotated inner order, plain else:
-   worse or equal; this placement moves all later branch targets (the 12 differing targets are this shift
-   and the loop heads below); (2) slot * 0x16 + 0x28 is recomputed per call in the original (lea chains on
-   edi / esi), ours strength-reduces it into ebx / edi, which moves the loop counters into registers (the
-   original keeps them at [esp+0x10]); (3) fxch fxch at 0x58854a in the work-time division (tried operand
-   orders and casts: unchanged); (4) the prologue pushes ebx/ebp at entry vs after the form call (follows
-   from (2)) */
+   @stuck 273 -> 53 ins: d2_WinOpenPicStyled called with a short y (cast macro d2_WinOpenPicStyledS, as
+   sv.c; the row y is recomputed per call, loop counters in memory: -101), the staff loop as an index loop
+   over ai_CharsT (countdown edx 0x300: -117), (float)(c->sk81 * (1.0 / 1008)) + factor (the fxch pair).
+   Left: only the type 0x17/0x25 chain layout (all 49 code ins, 0x58869f..0x588843): the original puts each
+   arm inline after an inverted last compare, A/B/1c1 with their own n store and the n = 1 arms
+   cross-jumped into one tail; ours places A, B, 1c1 after the chain (switch-like) and threads 0x293.. into
+   the inner test at 0x227. Tried: inner order (6 perms, all worse), flat chain without the outer test
+   (162), else-B, B first, sequential ifs, idx <= 0x227 range, n = 0 inside, outer test negated with
+   swapped arms, 1c1 condition spellings: none moved the layout (tiebreak: not measured (dcp headers sample
+   ai_OpenItemTooltip)) prior: the 0x225..0x295 / 0x1c1.. if-else chain: the original lays each arm inline
+   after its test and re-tests 0x226/0x227 at 0x5886cf; our VC6 threads the tests to arms placed after the
+   chain */
 int ai_OpenItemTooltip(int idx)
 {
     int n;
@@ -10052,15 +10051,15 @@ int ai_OpenItemTooltip(int idx)
         n = 0;
         gm_BuildingSkill((unsigned char *)bld, 1, 1);
         master = (AICHAR *)gm_FindCharacterByMaster((int)bld);
-        for (c = (AICHAR *)ai_Chars; c < (AICHAR *)ai_Chars[0x300]; c++) {
-            if ((char *)c->bld == bld && c != master)
-                list[n++] = c->netId;
+        for (i = 0; i < 0x300; i++) {
+            if ((char *)ai_CharsT[i].bld == bld && &ai_CharsT[i] != master)
+                list[n++] = ai_CharsT[i].netId;
         }
         factor = gm_StaffFactor((unsigned char *)bld, n, list);
         c = (AICHAR *)gm_FindCharacterByMaster((int)bld);
         if (c == 0)
             c = (AICHAR *)ai_Chars[((AIBLD *)bld)->owner];
-        io_PrintText(0x22, (int)(item->workTime / (c->sk81 * (1.0 / 1008) + factor)), item->workTime);
+        io_PrintText(0x22, (int)(item->workTime / ((float)(c->sk81 * (1.0 / 1008)) + factor)), item->workTime);
     }
     d2_SetForm(0, 4);
     io_PrintText(0x25);
@@ -10069,7 +10068,7 @@ int ai_OpenItemTooltip(int idx)
         id = item->in[k];
         amount = item->need[k];
         if (id != 0) {
-            d2_WinOpenPicStyled(0, slot * 0x16 + 0x28, id + 0xdf, d2_LastWindow, -2);
+            d2_WinOpenPicStyledS(0, slot * 0x16 + 0x28, id + 0xdf, d2_LastWindow, -2);
             io_PrintText("%i %s$N", amount, id * 2 + 0x9a8);
             slot++;
         }
@@ -10080,7 +10079,7 @@ int ai_OpenItemTooltip(int idx)
     for (i = 0; i < 37; i++) {
         for (k = 0; k < 10; k++) {
             if (gm_BuildingItemGroups[i].items[k] == idx && idx != 0x1cd) {
-                d2_WinOpenPicStyled(6, slot * 0x16 + 0x28, gm_BuildingItemGroups[i].key + 0x427, d2_LastWindow, -2);
+                d2_WinOpenPicStyledS(6, slot * 0x16 + 0x28, gm_BuildingItemGroups[i].key + 0x427, d2_LastWindow, -2);
                 io_PrintText("%s$N", gm_BuildingItemGroups[i].key * 0xe + 0x48e);
                 slot++;
             }
@@ -10120,7 +10119,7 @@ int ai_OpenItemTooltip(int idx)
     }
     for (k = 0; k < n; k++) {
         id = list[k];
-        d2_WinOpenPicStyled(6, slot * 0x16 + 0x28, id + 0x427, d2_LastWindow, -2);
+        d2_WinOpenPicStyledS(6, slot * 0x16 + 0x28, id + 0x427, d2_LastWindow, -2);
         io_PrintText("%s$N", id * 0xe + 0x48e);
         slot++;
     }
@@ -10128,7 +10127,7 @@ int ai_OpenItemTooltip(int idx)
           (idx != 0x1c7 && (idx == 0x1c4 || idx == 0x1c5 || idx == 0x1c6 || idx == 0x2af || idx == 0x2b0))) ||
         idx == 0x1c7) {
         if (item->type == 0x17 || item->type == 0x25) {
-            d2_WinOpenPicStyled(6, slot * 0x16 + 0x28, 0x444, d2_LastWindow, -2);
+            d2_WinOpenPicStyledS(6, slot * 0x16 + 0x28, 0x444, d2_LastWindow, -2);
             io_PrintText("%s$N", 0x624);
             slot++;
         }
