@@ -4679,7 +4679,28 @@ void d2_RaiseViewWindows(int v)
 
 /* 0x4741f0, loads the form file x (forms\x.form) as a view: one window per record, the items (pictures, texts,
    inputs, sliders) become objects; the view is moved to (x, y) unless one of them is 0 and kept inside the screen;
-   returns the number of the view, or -1 @deep read whole against the original: fixed the view-scan bound (the signed jge against &d2_Views[0x30].nwins = 0xfb91e4, the array end, not a d3s_Lights address), r = &d2_Forms2[i].h first and &d2_Forms0[i].h for version 0 (the original's default for other versions), the child-window branches first (parent != 0), the alpha test as (flags & 1) && alpha == 0.0f -> 0x3f266666; the k loop (pictures, 0x43 texts, 0x41 inputs, 0x45 sliders), the key text, the version-0 margins / font / picture, the view flags and the move to (x, y) were compared and match. Left: allocation and placement - our VC6 caches the constant 1 in edi ('- push edi' against '+ push 1' at every vfs_fread), the original strength-reduces the records to stepped slots (d2_Forms0 entry [esp+0x34], d2_Forms2 entry + 0xed0 [esp+0x28], wins pointer [esp+0x10]) where ours steps d2_Forms0 + 6 in ebp; the original does not thread its second 'parent' test in version 0 (pw / pww computed, then 'test eax, eax; je' before the two calls at 0x474579), ours does; the two -1 returns of the view scan share one epilogue in the original; frame 0x244 vs 0x248 */
+   returns the number of the view, or -1
+   @stuck tie-break sensitive per dcp headers sample (3 codegens in 32 samples, none closer than the
+   build), 630 ins. Kept: the view scan as the plain for (view = 1; d2_Views[view].nwins != 0; view++) if
+   (view >= 0x30) return -1; plus the re-test after it (same distance as the hand pointer walk, which it
+   replaces; the original's signed jge against the array end is VC6's strength-reduced form of this loop).
+   Tried: a found-index scan (j = -1 / break: 619 ins but the original's loop shape is lost: its first test
+   loads d2_Views[1].nwins directly and the exhausted loop returns from inside), break + one test (632),
+   while forms (628-630), dropping the dead k = 0 (= one code). Left: the frame is 4 bytes short (0x244 vs
+   0x248: buf at [esp+0x58] in the original), our VC6 caches the constant 1 in edi (push edi at every
+   vfs_fread, mov eax,edi for view = 1) where the original pushes 1 and loads mov eax,1 in the scan; the
+   record strength reduction (the original steps d2_Forms0 / d2_Forms2 entries in stack slots) and the
+   version-0 parent test (see prior). Next: find the missing dword first (dcp frame, c2frame.py), then the
+   constant-1 web with c2trace.py. (tiebreak: not measured (dcp headers sample d2_OpenForm)) prior: read
+   whole against the original: fixed the view-scan bound (the signed jge against &d2_Views[0x30].nwins =
+   0xfb91e4, the array end, not a d3s_Lights address), r = &d2_Forms2[i].h first and &d2_Forms0[i].h for
+   version 0 (the original's default for other versions), the child-window branches first (parent != 0),
+   the alpha test as (flags & 1) && alpha == 0.0f -> 0x3f266666; the k loop (pictures, 0x43 texts, 0x41
+   inputs, 0x45 sliders), the key text, the version-0 margins / font / picture, the view flags and the move
+   to (x, y) were compared and match. Left: allocation and placement - our VC6 caches the constant 1 in edi
+   ('- push edi' against '+ push 1' at every vfs_fread), the original strength-reduces the records to
+   stepped slots (d2_Forms0 entry [esp+0x34], d2_Forms2 entry + 0xed0 [esp+0x28], wins pointer [esp+0x10])
+   where ours steps d2_Forms0 + 6 in ebp; the original does not thread its sec... */
 int d2_OpenForm(int x, int y, char *name)
 {
     char buf[0x100] = "";
@@ -4690,7 +4711,6 @@ int d2_OpenForm(int x, int y, char *name)
     int n, ver, view, i, k, win, pw, o, pic, idx, parent;
     D2WINF *ww, *pww;
     D2FORMH *r;
-    int *pn;
 
     strcpy(buf, name);
     if (d2_FullFormPath == 0) {
@@ -4716,18 +4736,11 @@ int d2_OpenForm(int x, int y, char *name)
         vfs_fread(d2_Forms0, 0xed4, n, f);
     }
     vfs_fclose(f);
-    view = 1;
-    if (d2_Views[1].nwins != 0) {
-        pn = &d2_Views[1].nwins;
-        do {
-            if ((int)pn >= (int)&d2_Views[0x30].nwins)  /* 0xfb91e4: the end of the 0x30 views, a signed compare (jge) */
-                return -1;
-            pn += 0xab;
-            view++;
-        } while (*pn != 0);
+    for (view = 1; d2_Views[view].nwins != 0; view++)
         if (view >= 0x30)
             return -1;
-    }
+    if (view >= 0x30)
+        return -1;
     d2_Views[view].firstObj = d2_HighestObj - 1;
     for (i = 0; i < n; i++) {
         r = &d2_Forms2[i].h;

@@ -1319,7 +1319,7 @@ exe	0x00473980	d2_CreateWinCaption	d2	0441e9168371c4c5	no	byte	control=byte p1=b
 exe	0x00473b30	d2_ReplaceInputText	d2	fcb06378f1bee0fb	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00473c10	d2_Open	d2	2522997100000ce1	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004741a0	d2_RaiseViewWindows	d2	433d2d78aa51d4b5	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x004741f0	d2_OpenForm	d2	6bb63b21d7eded4e	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x004741f0	d2_OpenForm	d2	6bb63b21d7eded4e	yes	draft	sample n=32 seed=1 compiled=32 codegens=3 best=draft
 exe	0x00474b30	d2_LoadView	d2	34ef74d610790df4	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00474ca0	d2_SetViewTextures	d2	9b653fc9f95f0469	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00474d10	d2_ClearViewTextures	d2	9a8b0b1c8b5b3b8f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
