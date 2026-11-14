@@ -2923,7 +2923,7 @@ void ai_CurseWindow(int building)
                     msg.arg[0] = v;
                     msg.to = ((AICHARVIEW *)(ai_CharsC + ai_PlayerId * 0x21c))->netId;
                     memcpy(&msg.time, &ai_Time, sizeof(AITIME));
-                    msg.arg[2] = target->netId;
+                    msg.arg[1] = target->netId;
                     cm_SendLongMessage((char *)&msg);
                     txt_Format(text, 0x41da, 0x41c1);
                     sprintf(name, "_WAHRSAGERIN_FLUCH_0%d", v);

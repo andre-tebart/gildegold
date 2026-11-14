@@ -1218,3 +1218,13 @@ mechanisms, each as a generated round over all positions / subsets:
   of the function is split and the pieces land in a permutation of the original's registers. Keep the forms that
   are visibly the original's (copy shapes, frame size) and work the allocation from there; the lower count was a
   local optimum of the wrong copies.
+- **Block-scope sweep, 2026-11-14** (`python tools/sweep/blockscope.py`, every below-byte function): 23 functions
+  closer (ai_SendJobOrders 130 -> 87, ai_UseGoodSendHome 134 -> 90, d3sm_Build 220 -> 176, ai_CannonExplosion
+  514 -> 476 ..), none byte by itself, but four were then one small step from byte: he_InnStaffLeave (the three
+  `arg[]` stores as [0], [2], [1]: 6 orders), ai_UseGoodInfectOwner (`msg.time = ai_Time` after `msg.fromId`: 7
+  positions), ai_LoadTownMap (`if (size >= 0x780) scale = 7.5f; else scale = 5.33f;` - the default-then-override
+  form `scale = 7.5f; if (size < 0x780) scale = 5.33f;` gives the same instructions with the restore `pop edi`
+  on the other side of the default store), ai_CurseWindow (a meaning bug that had looked like a slot hunk:
+  `[esp+0xd4]` against `[esp+0xd0]` in one store was msg.arg[2] where the original writes msg.arg[1]). Rule: a
+  one-instruction "slots" hunk inside a record fill is a wrong field index until proven otherwise. Run the sweep
+  again after base work; `fillloop.py` and `blockscope.py` take a few minutes over the whole queue.

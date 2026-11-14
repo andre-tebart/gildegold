@@ -18925,8 +18925,9 @@ void ai_LoadTownMap(void)
         d2_ConvertRgbTo16(0, 0, bmp->w, bmp->h, (unsigned char *)bmp->bits, 0, 0, rt_MapSurface);
         ai_MapSize = bmp->w;
         ai_MapHeight = bmp->h;
-        ai_MapCellScale = 7.5f;
-        if (ai_MapSize < 0x780)
+        if (ai_MapSize >= 0x780)
+            ai_MapCellScale = 7.5f;
+        else
             ai_MapCellScale = 5.33f;
         d2_UnlockSurface(rt_MapSurface);
         d2_FreeSurface(bmp);
@@ -32425,9 +32426,9 @@ int ai_UseGoodInfectOwner(AICHARREC *ch, G8USEVIEW *use)
 
             id = &bld->id;
             msg.to = ch->netId;
-            msg.time = ai_Time;
             msg.type = 0x76;
             msg.fromId = -1;
+            msg.time = ai_Time;
             msg.flags = 10;
             msg.effect.target = *id;
             msg.effect.good = 0x177;
@@ -32451,9 +32452,9 @@ int ai_UseGoodInfectOwner(AICHARREC *ch, G8USEVIEW *use)
 
             id = &bld->id;
             msg.to = ch->netId;
-            msg.time = ai_Time;
             msg.type = 0x76;
             msg.fromId = -1;
+            msg.time = ai_Time;
             msg.flags = 10;
             msg.effect.target = *id;
             msg.effect.good = 0x177;

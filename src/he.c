@@ -2493,9 +2493,9 @@ void he_InnStaffLeave(void)
                 if (*p != -1 && ((o = (AICHAR *)gm_FindChar(*p)) == 0 || o->health == 0 || o->kind == 0xf)) {
                     int arg[3];
 
+                    arg[0] = 0x6c656176;
                     arg[2] = f->id;
                     arg[1] = *p;
-                    arg[0] = 0x6c656176;
                     cm_BeginGroup("stammtisch supervisor");
                     cm_SendTableRequest((G17TABLEMSG *)arg);
                     cm_EndGroup("stammtisch supervisor");
