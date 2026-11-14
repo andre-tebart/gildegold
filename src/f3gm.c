@@ -682,22 +682,13 @@ void gm_UpdateWorthMood(void)
    place and clears the current sums; settles every character's incomes (gm_CharacterIncomes) and clears its
    v198 / wage; with flag 1 also shifts the loyalties (gm_ShiftLoyalty) and lists up to 8 owned buildings of the
    query (1, 5, 7) with their type levels (the list is not used further); then clears every building's roundSum
-   and, for the kinds 11 .. 13, its daySum.
-   @deep Read whole against the original: the five memmoves, the sum clears, the character loop (i < 0x300
-   strength-reduced to the +0x198 pointer), the twin flags&1 tests (esi = flags & 1 reused), the 8-entry
-   owned-building list sharing the incomes buffer (union, frame equal), the building loop (11..13 unsigned)
-   all equal. One hunk left at 0x4facdf: the type-level load: the original keeps the BTypes base in ebx
-   (xor edx,edx; mov ebx,[ai_BTypes]; mov dl,[eax]; add ebx,edx; lea ecx,[edx+edx*2] .. mov
-   dl,[ebx+ecx*4+0x247]) plus a dead lea ecx,[ebx+ecx*4]; ours uses eax/ecx/edx for the same ops (mov
-   cl,[eax]; lea eax,[ecx+ecx*2] ... mov cl,[eax+edx*4+0x247]). Tried: a temp pointer t before/after the
-   list store, levels[n++], a struct-typed index (same code): register choice and the materialised dead
-   address only. */
+   and, for the kinds 11 .. 13, its daySum. */
 
 void gm_EndDayIncomes(unsigned flags)
 {
     ORDBLD *b;
     int i, n;
-    char *t;
+    GMBTYPE *bt;
     unsigned levels[8];
     union {                     /* one buffer: the original's frame holds the list where the incomes were */
         GMINCOME inc;
@@ -731,9 +722,13 @@ void gm_EndDayIncomes(unsigned flags)
         n = 0;
         while (b != 0 && n < 8) {
             if (b->owner != 0xffff) {
-                t = ai_BTypes + b->type * 0x24d;
+                bt = GM_BTYPE(b->type);
+                levels[n] = bt->level;
+                /* @original the level is stored twice: VC6 drops the repeated store after allocation and
+                   leaves its address (a dead lea ecx,[ebx+ecx*4]) behind, as the original has it */
+                levels[n] = bt->level;
                 u.list[n] = b;
-                levels[n++] = (unsigned char)t[0x247];
+                n++;
             }
             b = (ORDBLD *)gm_BuildNext();
         }
