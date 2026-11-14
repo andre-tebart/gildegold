@@ -482,8 +482,8 @@ D2SHP *d2_GrabShape16Runs(int x, int y, int w, int h, unsigned short *pix, unsig
    loop gets strength-reduced over the rows; the original recomputes the imul per row inside the inner
    guard), the copy loop as for (i ..) { p = src + (y + i) * pitch + x; memcpy; dst += ..; npix += ..; size
    += ..; } (dst before the counters), the inits as maxy = maxx = 0; minx = w; miny = h; before mem_Alloc.
-   Left: only the dd_RGB key loads - the original reads the D2KEY word gb with one and r with , ours
-   narrows gb to bytes and merges r+g into + . Every spelling of the access (casts, >> 8, / 256,
+   Left: only the dd_RGB key loads - the original reads the D2KEY word gb with one mov ax, word [0x6f0455] and r with mov dl, byte [0x6f0454], ours
+   narrows gb to bytes and merges r+g into mov eax, dword [T] + mov al, byte [T+2]. Every spelling of the access (casts, >> 8, / 256,
    LOBYTE/HIBYTE, a pointer, a cast word view at +1, a short/int local) is one code; D2KEY's gb as a union
    {w; {g, b}} under pack(1) in d2_types.h too (and it cost sv_t's ai_TutorialInitChapter3 + 1 more their
    byte). A probe with gb as its own symbol (block extern unsigned short, or a struct whose word is at
