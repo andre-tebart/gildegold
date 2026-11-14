@@ -5249,17 +5249,24 @@ void gm_ShowBuildingObjects(unsigned char *b)
     }
 }
 /* 0x502eb0, lists the characters working in the building b (their building, bld, is b) into out and returns their number (also out[0]): out[1 ..] (0xc) those with the title of the kind's first job rank (+0x22f), out[0xd ..] (0xc) of the second (+0x230), out[0x19 ..] (0xc) the others, out[0x25] the one whose job is one of the kind's two jobs (+0x223 / +0x224, both set); the lists are filled with 0xffff
-   @deep Read whole against the original and rewritten (ORDCHAR walk, c->bld at +0x16c - the draft compared
-   bld2 +0x170, a meaning fix; the three 0xffff-filled lists, the special job test): the statement
-   structure and every operand match, block order equal (bld test, rank 1 -> p1, rank 2 -> p2, the
-   0x223/0x224 job test -> out[0x25], else p3, n++). What is left is the allocation of the six live values:
-   the original keeps p3 in ebp, out in edx and n in out's dead argument slot ([esp+0x24], inc dword ptr),
-   k / p1 / p2 in slots ([esp+0x18] / [esp+0x10] / [esp+0x14]); ours keeps k in ebp, out in esi, p1 in ebx
-   with a slot copy (mov [esp+0x18], ebx / mov ebx, [esp+0x18]: the 3 extra instructions), n / p3 in slots
-   and p2 in the argument slot. The c->bld compare (cmp [ecx+7], edx vs mov eax, [esi+7]; cmp eax, ecx) and
-   the rank loads (mov al, [ebp+0x22f]; cmp al, dl vs cmp [ecx+0x22f], al) follow from that choice. Tried:
-   pointer loop (worse, jb), index loop (kept), declaration orders, unsigned list pointers, n kept in
-   out[0], the p3 branch written twice (worse) */
+   @stuck 98 -> 74 ins: the 0xffff fills as plain out[1 + j] / out[0x19 + j] loops with the list pointers
+   set after them and the kind pointer first (out then takes edx as in the original). headers sample:
+   insensitive. Read: the original keeps the title IV in esi, i in edi, p3 in ebp (sharing the second
+   fill's lea), byte temps in ebx, out in edx, and k / p1 / p2 in slots with n in out's argument slot (inc
+   dword ptr); ours still gives k ebp (c2trace: k prio 27 above p3's -9, k lives through every arm
+   unreferenced but still outranks the pointers). Tried: index counters out[1 + n1++] (same 74), pointer
+   fills p1[j] / p3[j] with k first (840 orders of the init statements: best 95), the arm stores split into
+   *p = id; p++ / p[0] = id; p += 1 (one code), p / n init orders and k after them (48 variants, best =
+   74). Left: k must lose its register to p3 (a priority question), the slot pairing that follows from it
+   (tiebreak: insensitive) prior: Read whole against the original and rewritten (ORDCHAR walk, c->bld at
+   +0x16c - the draft compared bld2 +0x170, a meaning fix; the three 0xffff-filled lists, the special job
+   test): the statement structure and every operand match, block order equal (bld test, rank 1 -> p1, rank
+   2 -> p2, the 0x223/0x224 job test -> out[0x25], else p3, n++). What is left is the allocation of the six
+   live values: the original keeps p3 in ebp, out in edx and n in out's dead argument slot ([esp+0x24], inc
+   dword ptr), k / p1 / p2 in slots ([esp+0x18] / [esp+0x10] / [esp+0x14]); ours keeps k in ebp, out in
+   esi, p1 in ebx with a slot copy (mov [esp+0x18], ebx / mov ebx, [esp+0x18]: the 3 extra instructions), n
+   / p3 in slots and p2 in the argument slot. The c->bld compare (cmp [ecx+7], edx vs mov eax, [esi+7]; cmp
+   eax, ecx) and the rank loads (mov al, [ebp+0x22f]; cmp al, dl vs cmp [ecx+0x22f], al) follow from tha... */
 int gm_ListWorkers(unsigned char *b, int *out)
 {
     int i, n, j;
@@ -5268,15 +5275,15 @@ int gm_ListWorkers(unsigned char *b, int *out)
     int *p1, *p2, *p3;
 
     k = (unsigned char *)ai_BTypes + *b * 0x24d;
-    p1 = out + 1;
     out[0] = 0;
     for (j = 0; j < 0x18; j++)
-        p1[j] = 0xffff;
-    p3 = out + 0x19;
+        out[1 + j] = 0xffff;
     for (j = 0; j < 0xc; j++)
-        p3[j] = 0xffff;
+        out[0x19 + j] = 0xffff;
     out[0x25] = 0xffff;
+    p1 = out + 1;
     p2 = out + 0xd;
+    p3 = out + 0x19;
     n = 0;
     for (i = 0; i < 0x300; i++) {
         c = &ORD_CHARS[i];

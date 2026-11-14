@@ -3035,7 +3035,7 @@ exe	0x005029f0	gm_CollectSlotObject	f3gm	7a8b49f5dbd15a1f	no	byte	control=byte p
 exe	0x00502a60	gm_ShowSlotObjects	f3gm	0a5d242854ad03ea	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00502b60	gm_AssignBuilding	f3gm	860f06c46f71aae1	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00502e30	gm_ShowBuildingObjects	f3gm	bcd0a086fff3468f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x00502eb0	gm_ListWorkers	f3gm	44697473265d0610	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x00502eb0	gm_ListWorkers	f3gm	311a41d8cfbe25e4	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x00502fd0	gm_SellBuilding	f3gm	a8b9e7fc79d1f965	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x005031b0	gm_AllocRaum	f3gm	3b901f4a4526d55e	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00503480	gm_RemoveObjectFromBuilding	f3gm	4907533e25a8f849	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
