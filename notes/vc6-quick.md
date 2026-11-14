@@ -1228,3 +1228,16 @@ mechanisms, each as a generated round over all positions / subsets:
   `[esp+0xd4]` against `[esp+0xd0]` in one store was msg.arg[2] where the original writes msg.arg[1]). Rule: a
   one-instruction "slots" hunk inside a record fill is a wrong field index until proven otherwise. Run the sweep
   again after base work; `fillloop.py` and `blockscope.py` take a few minutes over the whole queue.
+- **main_OpenScreen byte (158 ins, stuck): five ordinary changes.** (1) A value the original reloads from ONE
+  stack slot for two variables on a failure path (`mov ecx,[slot]; mov edx,[slot]`) was read as "both get that
+  value" (`w = h = ex;`); they are two locals left unset on that path, which the frame packer merged into the
+  third local's slot. Deleting the assignment gave the original's spill of ex and `call ebp` twice. Try deleting
+  a "default" assignment before reasoning about what it means. (2) A call result the original stores to a slot
+  and pushes after the next call: both calls assigned to named locals in call order (`ex = GetWindowLongA(..);
+  style = GetWindowLongA(..); if (AdjustWindowRectEx(&rc, style, 0, ex))`); the second call inline in the
+  argument list pushes the first result at once. (3) An `||` of `(a && b)` terms whose one arm is `jne out; jmp
+  body` where ours has `je body; jmp out`: a flag set by separate ifs (`bad = 0; if (res == 0 && !has800) bad =
+  1; if (..) bad = 1; .. if (bad) {..}`); VC6 threads the flag away and keeps that layout. (4) A scratch
+  register shift (eax / ecx / edx rotation) through a long store block and everything behind it: ONE statement
+  at the wrong place (here a read-modify-write of a global byte in the middle of the config stores). Run a
+  move-one-statement round first (n^2 variants): 66 -> 6 ins. (5) Plain store order for the rest.

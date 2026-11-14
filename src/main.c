@@ -559,41 +559,16 @@ int sv_PumpMessages();
 /* 0x531c50, opens the 3D / 2D screen for the display mode m (3 and 4 = full screen windows, topmost): picks a supported resolution (0 = 800x600, 1 = 1024x768, 2 = 1152x864: the chosen one is
    kept when its mode exists, else the first of the others that does), sizes and centres the window on the work area, fills the video record (the DXT1 texture format 0x31545844, the screen size,
    the Gfx/TextureDivider key, the view scale 512 / (640 / width)) for d3_Init, starts the input (full screen mode 3: exclusive keyboard), sets the directories ("animations/", "objects/",
-   "groups/", "scripts/", "forms\\") and opens the 2D layer with "gilde_add_on_<language>.gfx"; returns 1 on success. Reasoned: when AdjustWindowRectEx fails the original takes the window
-   exstyle for both the width and the height
-   @stuck after the meaning fix (SetWindowPos X/Y, commit before this) 158 ins / 541 bytes, headers sample
-   insensitive (32 samples, one codegen). Left: (1) the original spills ex (GetWindowLongA(GWL_EXSTYLE)) to
-   [esp+0x10] (reloaded for AdjustWindowRectEx and twice as w = h on failure) and keeps the import pointer
-   GetWindowLongA in ebp (call ebp twice); ours gives ex a callee-saved register and calls through memory.
-   c2trace: ex prio 44 (sav 8, 4 refs; 80 when w/h are assigned before the if), import pointer 32..40 (2
-   refs), x / y 58..73, w / h 53..67: the import must be served before ex, i.e. ex below ~32 or no
-   candidate. Tried (dcp try): style as its own statement after ex (es) / before ex (se, 83 ins but the
-   calls in the wrong order: meaning), if/else with w = ex; h = ex in the else, w = h = ex / h = w = ex in
-   the else, !AdjustWindowRectEx first, an ok flag, w = ex; h = ex before the if, y before x: all 145..254
-   ins (the else forms also shift the frame 8 bytes: the 64-bit fild temp of the scale shares the ex slot
-   in the original). flip.py (want 'call ebp', base else_es_0, 524 mutants): 7 hits, all deleting x / y, x
-   = right + left, or swapping / duplicating the two GetWindowLongA calls - no meaning-keeping form. (2)
-   res == 1 arm: original cmp dl,bl; jne sized; jmp L800, ours je/jmp (operand / parenthesis spellings =
-   one code, reordering the || terms 166). (3) the scratch rotation behind d3_Init (main_Window /
-   main_Instance loads, the strcpy literal word order, di_MaxX / di_MaxY store order) - follows (1).
-   blockscope / fillloop: no candidates moved. (tiebreak: not measured (dcp headers sample
-   main_OpenScreen)) prior: resolution choice as one condition (the chosen mode missing -> the first of 800
-   / 1024 / 1152 that exists, then the mode size; the earlier goto chain had the original's blocks in
-   another order); the window is centred with abs(work width - w) / 2, abs(work height - h) / 2 in both
-   branches (fixed: the draft passed the height difference as X, the width difference as Y and an extra abs
-   in the topmost branch). Left (158 ins): the original keeps ex (the exstyle) in a stack slot (reloaded
-   for the AdjustWindowRectEx argument and twice on failure) and GetWindowLongA's import in ebp (call ebp
-   twice); ours gives ex a register (c2trace: ex 44..80 above the import pointer 32..40, x / y 58..73), so
-   the import is called through memory and the rotation after it differs; style as its own statement after
-   ex, if/else, w = h = ex in the else, !Adjust..: all worse (slots shift: the 64-bit fild temp of the
-   sc... */
+   "groups/", "scripts/", "forms\\") and opens the 2D layer with "gilde_add_on_<language>.gfx"; returns 1 on success.
+   @original w and h are only set when AdjustWindowRectEx succeeds; on its failure the original reads them unset (VC6 packed both into
+   ex's stack slot, so the code loads the window exstyle twice there) */
 int main_OpenScreen(int m)
 {
     char path[260];
     RECT work;
     D3INITCFG cfg;
     RECT rc;
-    int w, h, x, y, ex;
+    int w, h, x, y, ex, style, bad;
 
     cfg.w = 0;
     cfg.h = 0;
@@ -624,8 +599,14 @@ int main_OpenScreen(int m)
         return 0;
     if (dd_Has800x600 == 0 && dd_Has1024x768 == 0 && dd_Has1152x864 == 0)
         return 0;
-    if ((ai_GfxResolution == 0 && dd_Has800x600 == 0) || (ai_GfxResolution == 1 && dd_Has1024x768 == 0)
-        || (ai_GfxResolution == 2 && dd_Has1152x864 == 0)) {
+    bad = 0;
+    if (ai_GfxResolution == 0 && dd_Has800x600 == 0)
+        bad = 1;
+    if (ai_GfxResolution == 1 && dd_Has1024x768 == 0)
+        bad = 1;
+    if (ai_GfxResolution == 2 && dd_Has1152x864 == 0)
+        bad = 1;
+    if (bad) {
         if (dd_Has800x600 != 0)
             ai_GfxResolution = 0;
         else if (dd_Has1024x768 != 0)
@@ -647,8 +628,8 @@ int main_OpenScreen(int m)
     rc.right = ai_ScreenModeW;
     rc.bottom = ai_ScreenModeH;
     ex = GetWindowLongA(main_Window, GWL_EXSTYLE);
-    w = h = ex;
-    if (AdjustWindowRectEx(&rc, GetWindowLongA(main_Window, GWL_STYLE), 0, ex)) {
+    style = GetWindowLongA(main_Window, GWL_STYLE);
+    if (AdjustWindowRectEx(&rc, style, 0, ex)) {
         w = rc.right - rc.left;
         h = rc.bottom - rc.top;
     }
@@ -661,9 +642,8 @@ int main_OpenScreen(int m)
     cfg.h = ai_ScreenModeH;
     cfg.viewW = (float)ai_ScreenModeW;
     cfg.viewH = (float)ai_ScreenModeH;
-    cfg.zbpp = 0x20;
     cfg.shadowSize = 0x20;
-    d3_DefaultD3DConfig[1] = (d3_DefaultD3DConfig[1] & 0xf9) | 1;
+    cfg.zbpp = 0x20;
     cfg.texShift = main_TextureDivider;
     cfg.bpp = 0x10;
     cfg.mode = m;
@@ -683,6 +663,7 @@ int main_OpenScreen(int m)
     cfg.zf = 12000.0f;
     d3io_Lod.all = 2;
     cfg.scale = (float)(512.0 / (640.0 / (double)cfg.w));
+    d3_DefaultD3DConfig[1] = (d3_DefaultD3DConfig[1] & 0xf9) | 1;
     if (d3_Init(&cfg, main_Window, (int)main_Instance) != 0) {
         d3if_CreateCameras();
         while (ShowCursor(0) > 0)
@@ -702,9 +683,9 @@ int main_OpenScreen(int m)
         ai_ApplyGfxOptions();
         sprintf(path, "gilde_add_on_%s.gfx", txt_Language);
         if (d2_Open((int)main_Window, ai_ScreenModeW, ai_ScreenModeH, main_GamePath, path) != 0) {
-            di_MaxY = d2_ScreenH;
-            di_MaxX = d2_ScreenW - 8;
             d2_MainWindow = (int)main_Window;
+            di_MaxX = d2_ScreenW - 8;
+            di_MaxY = d2_ScreenH;
             d2_CreateItemListSurfaces();
             sv_PumpMessages();
             return 1;
