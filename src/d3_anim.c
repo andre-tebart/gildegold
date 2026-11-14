@@ -1027,17 +1027,29 @@ int d3_FindAnim(char *name)
     return 0;
 }
 /* 0x433f80, creates a two-frame morph animation from frame (of mesh) to dframe, or to the shape of dmesh;
-   bone transforms are matched by name.
-   @deep B draft: 306 code hunks + 18 fpu + 16 order, frame 0x34 vs the original's 0x40, the stack-slot layout, the FPU comparison chains and the inline-asm tail all differ - a deep reconstruction, not a base meaning fix. Readability also needs Q2 (unk00). */
+   bone transforms are matched by name. For a target mesh the packed (byte) positions are rebuilt: the per-vertex
+   differences go to a temporary array, their bounding box (mn / mx, D3VECTOR4 as in the original's frame) gives
+   base and scale, and each difference is quantised as (v * 255) / extent.
+   @stuck 202 -> 16 ins (draft -> shape) this session: mn / mx / d as D3VECTOR4 (frame 0x34 -> 0x40, the
+   original's 16-byte slots), the quantise loop as plain tmp[i] index loop with a block vector v and (v.x *
+   255.0f) / d.x (VC6 hoists the invariant division as a reciprocal; named sx locals spill, * (1.0f / d.x)
+   reassociates), the bounding loop as tmp[i] with uniform min / max macros, no nverts guard. Left
+   (tie-break sensitive per dcp headers sample: 2 codegens in 32 samples, none better): (1) order: after
+   the mem_Alloc calls of lines 1059 / 1070 (behind the D3ANIM_COPY3 inline asm that clobbers edi / ebx)
+   the reloads come mesh (edi) then dmesh (ebx), the original dmesh first; (2) sib: the dmesh bone-copy
+   loop stores a->frames[1].bone[i] as [eax+ecx+0x114] where the original has [ecx+eax+0x114] (the dst
+   branch's twin loop matches with [eax+ecx]). flip.py --want '[ecx+eax+276]': 6 hits, only m7 (int i ->
+   unsigned, meaning change, 28 ins) near; inner index j, i/k swapped, strcmp args swapped, declaration
+   orders: no lever. (tiebreak: sensitive) */
 
 D3ANIMDATA *d3anim_CreateMorphAnim(D3ANIMMESH *mesh, D3ANIMDATA *src, D3ANIMFRAME *frame, D3ANIMDATA *dst,
                                    D3ANIMFRAME *dframe, D3ANIMMESH *dmesh, char *name, int n)
 {
     D3ANIMDATA *a = 0;
     int i, k, count;
-    D3VECTOR4 *tmp, *t;
-    D3VECTOR mn, mx, d;
-    float sx, sy, sz, z;
+    D3VECTOR4 *tmp;
+    D3VECTOR4 mn, mx, d, v;
+    float z;
 
     if (frame && mesh && (dmesh || (dst && dframe)) && n > 1) {
         a = mem_Alloc(sizeof(D3ANIMDATA), "d3_anim:CreateMorphAnim");
@@ -1116,16 +1128,15 @@ D3ANIMDATA *d3anim_CreateMorphAnim(D3ANIMMESH *mesh, D3ANIMDATA *src, D3ANIMFRAM
                 mn.z = 1e10f;
                 mx.x = -1e10f;
                 mx.y = -1e10f;
-                for (i = 0, t = tmp; i < a->nverts; i++, t++) {
-                    t->x = dmesh->verts[i].pos.x - mesh->verts[i].pos.x;
-                    t->y = dmesh->verts[i].pos.y - mesh->verts[i].pos.y;
-                    t->z = (z = dmesh->verts[i].pos.z - mesh->verts[i].pos.z);
-                    mn.x = mn.x >= t->x ? t->x : mn.x;
-                    mn.y = min(mn.y, t->y);
-                    if (mn.z >= z)
-                        mn.z = z;
-                    mx.x = max(t->x, mx.x);
-                    mx.y = max(t->y, mx.y);
+                for (i = 0; i < a->nverts; i++) {
+                    tmp[i].x = dmesh->verts[i].pos.x - mesh->verts[i].pos.x;
+                    tmp[i].y = dmesh->verts[i].pos.y - mesh->verts[i].pos.y;
+                    tmp[i].z = (z = dmesh->verts[i].pos.z - mesh->verts[i].pos.z);
+                    mn.x = min(mn.x, tmp[i].x);
+                    mn.y = min(mn.y, tmp[i].y);
+                    mn.z = min(mn.z, z);
+                    mx.x = max(mx.x, tmp[i].x);
+                    mx.y = max(mx.y, tmp[i].y);
                     mx.z = max(mx.z, z);
                 }
                 d.x = mx.x - mn.x;
@@ -1137,15 +1148,13 @@ D3ANIMDATA *d3anim_CreateMorphAnim(D3ANIMMESH *mesh, D3ANIMDATA *src, D3ANIMFRAM
                 a->frames[1].scale.x = d.x * (1.0f / 255.0f);
                 a->frames[1].scale.y = d.y * (1.0f / 255.0f);
                 a->frames[1].scale.z = d.z * (1.0f / 255.0f);
-                if (a->nverts > 0) {
-                    sx = 1.0f / d.x;
-                    sy = 1.0f / d.y;
-                    sz = 1.0f / d.z;
-                    for (i = 0, t = tmp; i < a->nverts; i++, t++) {
-                        a->frames[1].packed[i * 3] = (unsigned char)((t->x - mn.x) * 255.0f * sx);
-                        a->frames[1].packed[i * 3 + 1] = (unsigned char)((t->y - mn.y) * 255.0f * sy);
-                        a->frames[1].packed[i * 3 + 2] = (unsigned char)((t->z - mn.z) * 255.0f * sz);
-                    }
+                for (i = 0; i < a->nverts; i++) {
+                    v.x = tmp[i].x - mn.x;
+                    v.y = tmp[i].y - mn.y;
+                    v.z = tmp[i].z - mn.z;
+                    a->frames[1].packed[i * 3] = (unsigned char)((v.x * 255.0f) / d.x);
+                    a->frames[1].packed[i * 3 + 1] = (unsigned char)((v.y * 255.0f) / d.y);
+                    a->frames[1].packed[i * 3 + 2] = (unsigned char)((v.z * 255.0f) / d.z);
                 }
                 mem_Free(tmp);
             }

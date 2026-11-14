@@ -66,8 +66,16 @@ def setup():
 
 
 def function_span(lines, func):
+    def opens_body(i):
+        # the definition's parameter list may wrap over several lines before the "{"
+        j = i
+        while j < len(lines) and not lines[j].rstrip().endswith(")"):
+            if lines[j].rstrip().endswith(";"):
+                return False
+            j += 1
+        return j + 1 < len(lines) and lines[j + 1].startswith("{")
     s = next(i for i, l in enumerate(lines) if re.match(r"\w[\w \*]*\b%s\(" % re.escape(func), l) and not l.rstrip().endswith(";")
-             and i + 1 < len(lines) and lines[i + 1].startswith("{"))
+             and opens_body(i))
     e = next(i for i in range(s, len(lines)) if lines[i] == "}")
     cs = s
     while cs > 0 and not lines[cs - 1].startswith(("}", "#", ";")) and lines[cs - 1].strip():

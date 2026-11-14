@@ -1314,3 +1314,23 @@ mechanisms, each as a generated round over all positions / subsets:
   block), not an escape question. The frame's density sort is the CRT qsort (middle element as pivot,
   selection sort for 8 or fewer); a tie hunk can be simulated from the B rows of c2frame.py. When only slot
   swaps between equal-density slots are left, remove named locals for values VC6 would keep as temporaries.
+- **surf_Up16 byte (573 ins) in one variant: surf_Up32's text with WORD pixels.** The sibling family rule again: the
+  @deep comment had a hand-derived data flow (row deltas hoisted, accumulators, one OR expression); the sibling's
+  plain loops and `r[4] / g[4] / b[4]` corner arrays were the original. Copy the byte sibling FIRST.
+- **d3anim_RootPosAt byte (144 ins): two pointer locals too many.** `f0 = &data->frames[s->frame]; f1 = ..;` in the
+  else branch were allocation candidates of high priority (144 / 126) that took eax / ecx and pushed the
+  parameters s / out into esi / edx for the whole function (the original: s eax, out ecx, loaded before `sub
+  esp`). Written as `data->frames[s->frame].move.x` at each use (CSE'd temps, no candidates): byte. Reading rule:
+  when parameters sit in callee-saved registers in ours but in scratch registers in the original and no call
+  needs that, look for named pointer locals the original did not have.
+- **A loop-invariant division is hoisted as a reciprocal on the FPU stack** (d3anim_CreateMorphAnim: `fld [1.0];
+  fdiv [d.x]` x3 before the loop, `fld [v.y]; fmul [255.0]; fmul st,st(2)` inside): the source was `(v.x *
+  255.0f) / d.x` with the parentheses. VC6 /O2 turns the invariant division into a multiply by a hoisted
+  reciprocal temp (the 1.0 is the pooled literal, the address dcp names ai_FloatOne). Named `sx = 1.0f / d.x`
+  locals spill to stack slots (never FPU-resident), `v.x * 255.0f / d.x` unparenthesised and `v.x * (1.0f /
+  d.x)` reassociate to `R * v * 255` (fld st(N) copy first), `ai_FloatOne / d.x` written out is folded oddly.
+  The same function: bounding-box min / max as uniform `min(mn.x, tmp[i].x)` / `max(mx.x, ..)` macros over a
+  plain index loop (a hand-advanced `t++` pointer and mixed ternary / if spellings gave int-mov stores and
+  `and eax,0x100` tests); three 12-byte vectors in a frame 0xc short = D3VECTOR4.
+- tools: c2trace.py / vdiff.py / flip.py did not find a definition whose parameter list wraps onto a second line
+  (StopIteration); function_span now follows the list to the `{` and flip.py uses it.

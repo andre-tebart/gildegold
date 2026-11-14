@@ -79,12 +79,9 @@ def main():
     os.makedirs(OUT, exist_ok=True)
     text = open(a.src, encoding="latin-1", newline="").read().replace("\r\n", "\n")
     lines = text.split("\n")
-    s = next(i for i, l in enumerate(lines) if re.match(r"\w[\w \*]*\b%s\(" % re.escape(a.func), l) and not l.rstrip().endswith(";")
-             and i + 1 < len(lines) and lines[i + 1].startswith("{"))  # the definition, not a prototype or a use
-    e = next(i for i in range(s, len(lines)) if lines[i] == "}")
-    cs = s
-    while cs > 0 and not lines[cs - 1].startswith(("}", "#", ";")) and lines[cs - 1].strip():
-        cs -= 1  # the address comment above the definition belongs to the function's text
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    from c2trace import function_span  # the definition (its parameter list may wrap), not a prototype or a use
+    cs, s, e = function_span(lines, a.func)  # cs: the address comment above the definition belongs to the text
     if a.base:
         vt = open(a.base[0], encoding="utf-8").read().replace("\r\n", "\n")
         m = re.search(r"^### %s\n(.*?)(?=^### |\Z)" % re.escape(a.base[1]), vt, re.S | re.M)
@@ -93,7 +90,8 @@ def main():
         s = next(i for i in range(cs, len(lines)) if re.match(r"\w[\w \*]*\b%s\(" % re.escape(a.func), lines[i]))
         e = next(i for i in range(s, len(lines)) if lines[i] == "}")
     muts = []
-    rng = range(s + 2, e) if a.scope == "func" else [i for i in range(len(lines)) if not (cs <= i <= e)]
+    body = next(i for i in range(s, e) if lines[i].startswith("{")) + 1  # the first line after the "{"
+    rng = range(body, e) if a.scope == "func" else [i for i in range(len(lines)) if not (cs <= i <= e)]
     for i in rng:
         l = lines[i]
         if not l.strip() or l.strip().startswith(("/*", "*", "//")) or l.strip().endswith("*/"):

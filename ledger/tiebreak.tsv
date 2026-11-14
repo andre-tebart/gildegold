@@ -692,7 +692,7 @@ exe	0x00433b10	d3anim_FreePath	d3_anim	6c5eab432df9ec77	no	byte	control=byte p1=
 exe	0x00433b50	d3path_Init	d3_anim	22bf468b16360139	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
 exe	0x00433d70	d3anim_CreatePath	d3_anim	17814c8dd9b20301	yes	shape	control=shape p1=shape* p2=shape* p3=shape* p4=shape*
 exe	0x00433f40	d3_FindAnim	d3_anim	56fda47470114d16	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x00433f80	d3anim_CreateMorphAnim	d3_anim	9bfc59a280d06dec	yes	draft	control=draft p1=draft p2=draft* p3=draft* p4=draft
+exe	0x00433f80	d3anim_CreateMorphAnim	d3_anim	c27fa5e29595ceda	yes	shape	sample n=32 seed=1 compiled=32 codegens=2 best=shape
 exe	0x00434a80	d3anim_GetSize	d3_anim	96cc3ad290254d6c	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00434af0	d3anim_Purge	d3_anim	79078f9dff9dd60d	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00434b70	d3anim_Release	d3_anim	b291415acbc17257	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
