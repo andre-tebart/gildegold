@@ -1296,3 +1296,21 @@ mechanisms, each as a generated round over all positions / subsets:
   ai_TutorialInitChapter2 / 3 (sv_t, tie-break sensitive: byte in 17 of 32 headers samples) - so a header
   change for one function has to be checked against the whole build's byte count, and tie-break sensitive
   functions elsewhere can veto it.
+- **main_SettleRound byte (513 ins, the first difference at +0x8): nine ordinary changes.** The one that decided
+  the allocation (513 -> 397): three bits of one word tested as an `||` of separate tests, `if ((c->flags &
+  0x800) || (c->flags & 0x1000) || (c->flags & 0x2000))`, not `(c->flags & 0x3800) != 0`. VC6 merges them into
+  the original's `mov ax,[esi+0x5a]; test ah,0x38`, but takes the reference counts from the `||` form - the
+  loop pointer then gets esi and the zero ebp. flip.py had said "the pointer is short of about two
+  references". Then: four fields copied and modified as ONE struct, block-local (`AIWORKSET ws; ws = m->work;
+  ws.flags |= 1;`, not `int ev[4]` filled field by field); `d = (rnd & 0xffff) + 2; f(c, -d);` for `add eax,2;
+  neg eax` (inline gives `mov r,-2; sub`); hand-advanced `pn` / `sub` do-while loops as plain `for (pass..)
+  for (j..) workers[1 + pass * 12 + j]`; a worker list and a message as block locals sharing one slot (locals
+  of different sizes do share); message store orders (`type, to, fromId, ..`, 120 permutations each); two
+  pointer locals where the original keeps `&ai_CharsT[w]` in a register; NO local for a value used once
+  (`skill`: the instructions were already equal, it only flipped two equal-density slots).
+- More compiler facts from it: a two-level strength-reduced index loop reloads its pointer slot at the outer
+  latch (`mov eax,[slot]`) and stores it back at the head - a hand-advanced pointer has no reload. A load
+  sitting above a `rep stosd` is the eax / ecx / edx rotation one step off (a statement-order fix in that
+  block), not an escape question. The frame's density sort is the CRT qsort (middle element as pivot,
+  selection sort for 8 or fewer); a tie hunk can be simulated from the B rows of c2frame.py. When only slot
+  swaps between equal-density slots are left, remove named locals for values VC6 would keep as temporaries.
