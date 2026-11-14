@@ -3103,3 +3103,42 @@ differing instructions. The same shape made the character loop of 0x512f30 pick 
 - ai_GraveDetail (stuck, draft 30 -> shape 22): the hand-written `int *p = &w[n * 3 + 0x51]` fill walk is the
   plain `for (i = n; i < 8; i++) ((GVWIN *)w)->items[i].f = ..` (gives the original's `lea [n*3+0x51]`); with an
   `items` local in the loop VC6 folds the bias into the store (`[edi+eax*4+0x144]`). Left: the constant-0 web.
+
+## match-deep 2026-11-14 (second sv_t session: campaign step, step form, rent grave, alchemist window, cannon switch, gypsy helpers)
+- **Goto labels are symbols, and symbols decide sv_t's tie-breaks.** ai_CampaignStep byte (54 ins) by writing the
+  `goto started` / `goto count` tails out (`if (goal == a) { state by c; next = state; stepAt = clock; }
+  campaignSteps++; return;` and `stepAt = clock;` in each phase-3 arm). The two removed labels moved the unit's
+  running symbol count by 2 and ai_TutorialInitChapter3 (0x579570, after it) fell to draft; two unused locals put
+  it back (probe), and so did ONE code-neutral named local in ai_CampaignStep: the stepHook read through `int
+  (*hook)(int *); hook = ai_Tutorial->run->stepHook; if (hook) hook(p);` (= control there). Odd detail: the same
+  local declared `int (*hook)(int *args)` did NOT restore it (the prototype-scope name moves the count again), a
+  true prototype `snd_LoadVoiceBank(char *name, int a)` above the chapters cost Chapter2 too. Rule: after any change
+  that adds or removes declarations / labels in sv_t above 0x578e40, re-grade Chapter2 / 3 and compensate with an
+  ordinary local in the function you changed, not with probes.
+- ai_TutorialStepForm (draft 66 ins, "allocation only") was a meaning bug: the original's `stepForm == -1` test
+  jumps PAST the `stepControl = -1; stepKind = 4;` stores (je at +0xc1 to the kind >= 4 test); ours reset them on
+  every kind change. With the two stores inside the close block: byte. dcp grade's `branch targets differ` line
+  named it; read where such a jump lands before calling it allocation.
+- ai_AlchemistWindow (stuck, draft 88 -> shape 6): a `rep stosd` of 9 dwords over an array whose code uses 4, and
+  locals spilled "right after they are set" (`mov [esp+0x1c],esi` after `win2 = d2_LastWindow`, the extra button
+  id to [esp+0x48]): the nine ids were ONE record (form, win2, slider, back, extra, bars[4]), filled with -1.
+  Map the stosd range [base, base + 4 * ecx) onto the original's later stores to name each member (84 -> 12;
+  memset and the loop over the record are one code). The research slider was its own local (frame 0x23c ->
+  0x240), d2_SetForm(form, 2) belongs in both arms of the owner test (the first io_PrintText's `add esp` sits
+  before it). Left: `[base+index]` vs ours `[index+base]` in the first of two identical panel copies only.
+- ai_CannonSwitchAnim byte (90 ins): frame 8 short = `D3VECTOR4 v, w` (64); `f = t / ms; f = 1.0f - f;` where the
+  original keeps t on the FPU (`fld 1.0; fsub st,st(1); fstp f; fstp st(0)`; `f = 1.0f - t / ms` gives `fsubr`); a
+  second scale `dist * f` that the original keeps with `fst [slot]; fmul st,st(2)` is its own float local k (writing
+  it back into f pops it); f computed BEFORE the vector copies (v.x, v.z, v.y order: the elapsed-time `sub` is the
+  first scratch register); and the scale parenthesised, `(dist * f) * v.x` - unparenthesised `dist * f * v.x` is
+  CSE'd differently once f is assigned first (fpu 82 -> byte).
+- ai_GypsyHelperWindow byte (101 ins, "the constant register"): (1) a meaning slip first: `int btns[3]` declared
+  in two blocks, the frame loop reading its own uninitialized copy (VC6 happened to share the slot): one array.
+  (2) Three `counts[k] = 0` stores kept 0 in ebx for the whole function; `memset(counts, 0, sizeof(counts))` (both
+  clears) gives the original's `xor ecx,ecx` + stores (119 -> 71). (3) The original's `mov ebx,2` / `cmp al,bl` /
+  `push ebx` (the constant 2 cached, byte-flagged): `n = 2;` in each kind branch instead of once at the top
+  (flip.py --want 'cmp al, bl' pointed at the n stores; 71 -> 39). (4) `mov al,[type]; cmp al,0x1f; mov eax,
+  counts[i]` where ours loaded the count first: no `c = counts[i]` copy, the tests read counts[i] (39 -> byte).
+- ai_RentGraveDetail (stuck, 70 -> 31): the ai_GraveDetail forms (index collect / fill loops, label objects)
+  plus `for (k = 0; k < 5; k++, y += 0xd)` (the original's `inc` before the call cleanup). Left: e / n swap
+  registers; flip.py: every hit removes a const-0 or an e reference (the sibling's const#0 web).

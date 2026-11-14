@@ -1414,3 +1414,14 @@ mechanisms, each as a generated round over all positions / subsets:
 - **AIMSG fills in sv_t**: `type, flags, to, fromId, time, args` (a 720 / 5040 permutation finds it in a minute;
   three alchemist functions byte). `goto clamp` exits of a state chain = one plain else-if chain with the rest
   in the last else (ai_CannonAim byte).
+- **Labels and locals are symbols**: removing two goto labels in ai_CampaignStep (byte) shifted sv_t's symbol
+  count and dropped ai_TutorialInitChapter3; one code-neutral named local in the changed function restored it.
+  Re-grade Chapter2 / 3 after any declaration or label change above them.
+- **A `rep stosd` longer than the array the code uses, plus locals stored "right after they are set"**: one record
+  of ids filled -1; the stosd range names its members (ai_AlchemistWindow 88 -> 6 ins).
+- **A constant cached in a callee-saved register (`mov ebx,2`, `cmp al,bl`)**: the constant assigned in each
+  branch (`n = 2;` per arm) gives it the references; three `a[k] = 0` stores keep 0 in a register where
+  `memset(a, 0, sizeof(a))` uses a scratch xor; a copy `c = a[i]` before a test loads it too early - read a[i]
+  at each use (ai_GypsyHelperWindow byte).
+- `f = t / k; f = 1.0f - f;` keeps t on the FPU (`fld 1; fsub st,st(1); fstp f; fstp st(0)`), `1.0f - t / k` gives
+  fsubr; a scale kept with `fst [slot]` is its own local, not written back into f (ai_CannonSwitchAnim byte).
