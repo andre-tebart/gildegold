@@ -3815,7 +3815,13 @@ int gm_AddNegative(int id, int proto, int n)
     return 1;
 }
 /* 0x500b90, looks the kind of the building b up in gm_BuildingItemGroups (37 records: a kind byte and ten object prototypes) and collects its non-zero prototypes into the list gm_KindObjs (count gm_KindObjCount); 1 when the kind is not there (or no tables), else 0
-   @deep the statements match the original (the group lookup, the null test and the first 23 instructions
+   @stuck the short-global word-register data question (as d2_ScreenH, awaiting a decision): an extern
+   probe 'extern unsigned short probeCnt' in place of gm_KindObjCount is byte at once (dcp try), so VC6
+   keeps the count in dx only when the unit does not define the global; the '= 0' definition in f3gm.c that
+   D5 asks for makes it read-modify-write memory. Counting in a local with stores before / after: 9 ins
+   (the zero store and dx sharing differ). Decision needed: the owner / definition form of gm_KindObjCount
+   (0x76fdc4), not this function's text (tiebreak: insensitive under the four probes only, best draft)
+   prior: the statements match the original (the group lookup, the null test and the first 23 instructions
    are equal); the one remaining hunk at +0x4b is VC6 keeping the global gm_KindObjCount in dx through the
    copy loop (xor dx,dx / mov [cnt],dx / mov di,dx / inc dx / store at exit) where ours reads and
    increments it in memory. Verified: with the definition of gm_KindObjCount removed from f3gm.c, or
