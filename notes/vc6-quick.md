@@ -1200,3 +1200,13 @@ mechanisms, each as a generated round over all positions / subsets:
   written as `if (mode != 3) {..} else ..` (the original lays the long arm first) and `nw` computed before `nh`:
   105 ins -> byte in one round of 8. A "default at the top, overwritten in one arm" is a lifetime the original
   probably did not have: try the assignment in the other arm first.
+- **A fallback chain written with gotos between the arms** (main_OpenScreen: `if (res == 0) { if (has800) goto
+  sized; pick1024: .. } else if (res == 1) { .. goto try800; } else if (res == 2) { .. try800: if (!has800) goto
+  pick1024; res = 0; } else goto sized; <set mode size> sized:`): the original was one condition and one plain
+  else-if chain, `if ((res == 0 && !has800) || (res == 1 && !has1024) || (res == 2 && !has1152)) { if (has800) res
+  = 0; else if (has1024) res = 1; else if (has1152) res = 2; <set mode size> }`. VC6 threads the known tests
+  into exactly the original's cross-jumps (`res == 1 && !has1024` lands on the `has800` test, `res == 0` skips it).
+  170 -> 159 ins alone. Reading rule: jumps from one arm into the middle of another arm's test chain = a short-
+  circuit condition followed by a priority chain, not hand-placed labels. The same item had a meaning bug: the
+  window's X / Y arguments swapped (abs(height diff) as X) and an extra abs in one branch - read the push order
+  against the frame offsets of the RECT fields before trusting an earlier "reasoned" note.

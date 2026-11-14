@@ -560,7 +560,7 @@ int sv_PumpMessages();
    kept when its mode exists, else the first of the others that does), sizes and centres the window on the work area, fills the video record (the DXT1 texture format 0x31545844, the screen size,
    the Gfx/TextureDivider key, the view scale 512 / (640 / width)) for d3_Init, starts the input (full screen mode 3: exclusive keyboard), sets the directories ("animations/", "objects/",
    "groups/", "scripts/", "forms\\") and opens the 2D layer with "gilde_add_on_<language>.gfx"; returns 1 on success. Reasoned: when AdjustWindowRectEx fails the original takes the window
-   exstyle for both the width and the height @deep body reconstructed and readable (video record = d3_engine.h's D3INITCFG, its byte-read fields dwords, resolution fallback chain 800 -> 1024 -> 1152, window sizing with the original's failure path w = h = GetWindowLong(EXSTYLE), view scale 512 / (640 / (double)(unsigned)w), directories, d2_Open); 337 = 337 instructions. Left (asmdiff, 226 ins in 10 hunks, allocation / block layout): (1) the original keeps the exstyle in a stack slot [esp+0x10] (reloaded for the AdjustWindowRectEx argument and for both w and h on failure) and caches GetWindowLongA's import in ebp (call ebp twice), work.right-left / bottom-top in esi / edi, all four loaded right after SystemParametersInfoA; ours keeps ex in esi, loads the work fields in another order and calls through the thunk twice; (2) x / y = work - w / h computed late (first form) gives the original's shape but moves the video record 8 bytes (the 64-bit fild temp of the scale shares the ex slot in the original), computed early (current form) keeps the frame but not the schedule; (3) the resolution chain: the original lays out 'res==0 && 800 ok -> done; 1024 ? al=1 : 1152 ? al=2' inline right after the first test and a shared 'xor al,al' tail for the 800 fallback, ours (gotos pick1024 / try800) emits the blocks in another order (hunks at 0x531d4e / 0x531d70); (4) after d3_Init the three-register rotation of the input / path set-up (regs eax->edx ecx->eax edx->ecx, 20 ins). Data fixes made: ai_DataPath / d3_AnimDir / d2_FormsDir typed as char[], ai_ScreenModes as {w,h}[], full_data_6f242c -> main_TextureDivider, full_data_624690 -> main_GamePath, the 'groups/' literal views removed */
+   exstyle for both the width and the height @deep resolution choice as one condition (the chosen mode missing -> the first of 800 / 1024 / 1152 that exists, then the mode size; the earlier goto chain had the original's blocks in another order); the window is centred with abs(work width - w) / 2, abs(work height - h) / 2 in both branches (fixed: the draft passed the height difference as X, the width difference as Y and an extra abs in the topmost branch). Left (158 ins): the original keeps ex (the exstyle) in a stack slot (reloaded for the AdjustWindowRectEx argument and twice on failure) and GetWindowLongA's import in ebp (call ebp twice); ours gives ex a register (c2trace: ex 44..80 above the import pointer 32..40, x / y 58..73), so the import is called through memory and the rotation after it differs; style as its own statement after ex, if/else, w = h = ex in the else, !Adjust..: all worse (slots shift: the 64-bit fild temp of the scale shares the ex slot in the original). One branch hunk: res == 1 tests jne/jmp vs ours je/jmp. */
 int main_OpenScreen(int m)
 {
     char path[260];
@@ -598,31 +598,17 @@ int main_OpenScreen(int m)
         return 0;
     if (dd_Has800x600 == 0 && dd_Has1024x768 == 0 && dd_Has1152x864 == 0)
         return 0;
-    if (ai_GfxResolution == 0) {
+    if ((ai_GfxResolution == 0 && dd_Has800x600 == 0) || (ai_GfxResolution == 1 && dd_Has1024x768 == 0)
+        || (ai_GfxResolution == 2 && dd_Has1152x864 == 0)) {
         if (dd_Has800x600 != 0)
-            goto sized;
-pick1024:
-        if (dd_Has1024x768 == 0) {
-            if (dd_Has1152x864 != 0)
-                ai_GfxResolution = 2;
-        } else
+            ai_GfxResolution = 0;
+        else if (dd_Has1024x768 != 0)
             ai_GfxResolution = 1;
-    } else if (ai_GfxResolution == 1) {
-        if (dd_Has1024x768 != 0)
-            goto sized;
-        goto try800;
-    } else if (ai_GfxResolution == 2) {
-        if (dd_Has1152x864 != 0)
-            goto sized;
-try800:
-        if (dd_Has800x600 == 0)
-            goto pick1024;
-        ai_GfxResolution = 0;
-    } else
-        goto sized;
-    ai_ScreenModeW = ai_ScreenModes[ai_GfxResolution].w;
-    ai_ScreenModeH = ai_ScreenModes[ai_GfxResolution].h;
-sized:
+        else if (dd_Has1152x864 != 0)
+            ai_GfxResolution = 2;
+        ai_ScreenModeW = ai_ScreenModes[ai_GfxResolution].w;
+        ai_ScreenModeH = ai_ScreenModes[ai_GfxResolution].h;
+    }
     sv_ViewRectLeft = 0;
     sv_ViewRectTop = 0;
     sv_ViewRectRight = ai_ScreenModeW - 0x6a;
@@ -640,12 +626,10 @@ sized:
         w = rc.right - rc.left;
         h = rc.bottom - rc.top;
     }
-    x -= w;
-    y -= h;
     if (m == 3 || m == 4)
-        SetWindowPos(main_Window, HWND_TOPMOST, abs(abs(y) / 2), abs(abs(x) / 2), w, h, 0);
+        SetWindowPos(main_Window, HWND_TOPMOST, abs(x - w) / 2, abs(y - h) / 2, w, h, 0);
     else
-        SetWindowPos(main_Window, 0, abs(y) / 2, abs(x) / 2, w, h, 0);
+        SetWindowPos(main_Window, 0, abs(x - w) / 2, abs(y - h) / 2, w, h, 0);
     sv_PumpMessages();
     cfg.w = ai_ScreenModeW;
     cfg.h = ai_ScreenModeH;
