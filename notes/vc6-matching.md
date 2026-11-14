@@ -3352,3 +3352,17 @@ differing instructions. The same shape made the character loop of 0x512f30 pick 
   (cost spilled into out's parameter slot after the walk), gm_ListWorkers (k outranks p3), gm_InitBuildingTables
   (len takes ebx), gm_CharNameRecord (an address constant used twice takes ebx before the byte k; int k removes
   the frame but contradicts the original's byte loads).
+
+## match-deep 2026-11-14, fifth f3gm session (gm_CreateBuilding, gm_QueryNext, gm_CreateObject; stopped early on request)
+- **A pointer from a parameter computed one statement late** (gm_CreateBuilding: `b->type = k; bt = (GMBTYPE *)base +
+  k;` where the original loads k into edx, copies it and adds into edi = base): a `--move-line` round on the pointer's
+  line found `bt = ..` BEFORE `b->type = k` - 141 -> 103 ins, prologue and both early returns equal (base edi, k
+  edx). Run a move-line round on every early statement of a big draft before reading its allocation.
+- **A decompiled "pr = global" copy kept in two places** (gm_CreateObject: `pr = ai_Goods;` at the top and again inside
+  `if (list != 0) {..}`, then `pr = pr + proto * 0x41`): the original's reload of ai_Goods after the calls is VC6's
+  own global-load handling. Plain `pr = (char *)GM_GOOD(proto);` after the block: 194 -> 145 ins.
+- **A `goto no` chain into an `else { no: m = 0; }`** (gm_QueryNext): four sequential tests with an `ok` flag (`if (ok
+  && ..)`, `if (!ok) m = 0;`) give the same code as the goto-only sequence and end a cross-jumped tail (tail 66 -> 0).
+- Open, recorded in the stuck reasons: a flag (`any` / `m`) the original keeps in a register only inside a loop
+  while ours gives the register to a loop temp or the objs[i] IV (c2trace: the flag's loop piece prio 6 / 12 below
+  the temps); moving the flag's init next to the loop wins the register but drops the original's top store.
