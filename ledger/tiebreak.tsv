@@ -2990,7 +2990,7 @@ exe	0x004feb60	gm_InitPlayerRecord	f3gm	9fae68b98adba9d5	no	byte	control=byte p1
 exe	0x004fec10	gm_SyncMarket	f3gm	f5eb0107a7bd3dfd	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
 exe	0x004ff190	gm_RefreshGoodsLists	f3gm	61b072533ac67f74	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
 exe	0x004ff450	gm_RandomMarketShake	f3gm	6404493593e4e5da	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
-exe	0x004ff550	gm_UpdatePrices	f3gm	8a0f8e32742ee6b9	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x004ff550	gm_UpdatePrices	f3gm	82930e8957198603	no	shape	sample n=32 seed=1 compiled=32 codegens=1 best=shape
 exe	0x004ff8c0	gm_GoodsDemand	f3gm	747d1674d7782fc0	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004ff950	gm_GoodsStock	f3gm	a3d1bd1cdfdb2f2b	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004ffa10	gm_StockPrice	f3gm	bdda2bd260f12106	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
