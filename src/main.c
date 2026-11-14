@@ -2690,30 +2690,32 @@ void main_ChooseOpponents(int n)
    "sonstiges\wimpel_STADTTURM.baf") over the picked city (the pick object 0x448630 with a name starting with "stadt_" selects: sel; the default is the object of the 5th city) and shows its description
    ("_STADTAUSWAHL_<NAME>_BESCHR+0"); the buttons: ok (or enter / 0x1c) goes on to main_ChooseDifficulty and main_ChooseHistory (host: ends at once), the second button opens the opponent
    selection main_ChooseOpponents (diff of the picked city); returns 1 when a game was set up (the second parameter is the host flag, the first unused)
-   @stuck match-deep 2026-11-14: frame layout of the two 0x100 arrays (cityobj / objName swapped: original
-   cityobj at esp+0x294, objName at 0x394) plus the tower-position store order. headers sample: insensitive
-   (32 samples, one codegen). Plain-form variants: cityobj[i] = ai_CreateCityPoint(..) without h (=
-   control), with h kept for the strcpy (51 ins), sv_RegisterNamePlate(h->name..) (105), inner-loop if (sel
-   != 0) (28), objName / name+objName / loop-body block scope (= control), decl order objName first (=
-   control); statement orders of the if (h) block BACD/BCAD/ABDC (47-153). flip.py (copy that also matches
-   the _x$ = N frame symbol lines, want _objName$ = -34304): 111 single-statement mutants, 0 flips - no
-   single statement deletion/dup/swap/token moves the layout. Size probes (key / objName 0xfd..0x100, name
-   0x3d..0x40, 64 variants): the layout reacts only to objName < key (objName then goes above cityobj, but
-   key and hdr swap: 34 ins), so the order is a size/tie sort inside C2, not the text. Tower stores:
-   original order pos.x, pos.y, pushes, pos.w, rot.x/y/z, pos.z last; 419 permutations of the 7 stores:
-   best p0312456 (x,w,y,z) 24 ins but slots unchanged; source order x,y,w,rot,z gives 34. Hunks left:
-   [esp+edi*4+0x394] vs 0x294 (cityobj store / two loop reads), objName leas 0x294/0x2a0/0x298 vs 0x394..,
-   mov esi,[esp+0x3a4] vs 0x2a4 (cityobj[4]), and the pos.z store before the zeros. Open: the rule C2 uses
-   to order equal-size local arrays. (tiebreak: insensitive) prior: Read whole against 0x537230..0x537924:
-   the city file list (.CTY / .NET), the header reads, diff = limit - players (the original reads
-   ai_NumPlayers as dword & 0xff: kept as the ai_NumPlayersW view), the city points (ai_CreateCityPoint now
-   returns D3OBJECT *), the tower, the pick loop, the description texts (cm_TextNewline as the original
-   pushes it), the opponent / ok buttons and the cleanup all agree, 513/513 instructions. Left: the frame
-   layout. The original puts cityobj[64] at esp+0x294 and the 0x100 plate name buffer (objName) at
-   esp+0x394; ours has the two 0x100-byte arrays the other way round, so the three indexed cityobj accesses
-   differ only in the displacement (code hunks +0x11e mov [esp+edi*4+0x394] vs 0x294, +0x4f2, +0x6d6) and
-   the objName leas are slots hunks; plus one order hunk at +0x1f4 (the tower position stores scheduled
-   around the push of "sp_STADTTURM"). Tried: declarati... */
+   @stuck orchestrator pass 2026-11-14: 26 -> 16 ins / 8 bytes kept. Solved: the tower position stores (pos
+   and rot as block locals in the tower block and in the selection block - the scheduler then hoists the
+   three loads; and pos.z stored last: x, y, w, rot, z; 419 orders on that base, 9 byte-equal for the
+   hunk). Left: ONLY the frame order of two 0x100 arrays (the original key, cityobj, objName, diff; ours
+   key, objName, cityobj, diff; 16 displacement lines). The rule is known (tools/c2dag/c2frame.py): slots
+   sort by weight * 1000 / size, the count taken before the late merge passes; ours objName 4, cityobj 4
+   (tie, objName first). Simulation of the sort over all single and double count changes: only objName 3 or
+   cityobj 5 give the original order. So the original had one more cityobj reference that tail merging or
+   the late store-to-load peephole removes, or one objName reference fewer at layout. Tried, frame right
+   but code off: a store through a pointer + reload (121 combinations of pointer position / store / reload
+   / test / body variable: best 2 ins, 1 byte: the store takes eax where the original has esi), cityobj[i]
+   = 0 before the call (one extra store), the store in both arms of the if (two stores stay). Same code as
+   control (count unchanged): every index re-read (cityobj[i] / cityobj[4] at any place), objName through a
+   pointer local, hand-written copy loops, declaration order / type / union of objName. flip.py on the
+   frame symbol (732 mutants, after fixing its prototype bug): 21 flips, all meaning-changing (the out[]
+   size, deleting an objName use, the else-if of the show loop). (tiebreak: not measured (dcp headers
+   sample main_ChooseCity)) prior: match-deep 2026-11-14: frame layout of the two 0x100 arrays (cityobj /
+   objName swapped: original cityobj at esp+0x294, objName at 0x394) plus the tower-position store order.
+   headers sample: insensitive (32 samples, one codegen). Plain-form variants: cityobj[i] =
+   ai_CreateCityPoint(..) without h (= control), with h kept for the strcpy (51 ins),
+   sv_RegisterNamePlate(h->name..) (105), inner-loop if (sel != 0) (28), objName / name+objName / loop-body
+   block scope (= control), decl order objName first (= control); statement orders of the if (h) block
+   BACD/BCAD/ABDC (47-153). flip.py (copy that also matches the _x$ = N frame symbol lines, want _objName$
+   = -34304): 111 single-statement mutants, 0 flips - no single statement deletion/dup/swap/token moves the
+   layout. Size probes (key / objName 0xfd..0x100, name 0x3d..0x40, 64 variants): the layout reacts only to
+   objName < key (objName then goes ab... */
 
 int main_ChooseCity(int unused, int host)
 {
@@ -2723,8 +2725,6 @@ int main_ChooseCity(int unused, int host)
     int diff[64];
     char recs[64][0x210], key[0x100], name[0x40], objName[0x100];
     LSHEADER hdr;
-    D3VECTOR4 pos;
-    D3VECTOR rot;
     char *s, *d;
     char c;
 
@@ -2769,13 +2769,16 @@ int main_ChooseCity(int unused, int host)
     }
     sel = cityobj[4];
     if (sel != 0) {
+        D3VECTOR4 pos;
+        D3VECTOR rot;
+
         pos.x = sel->pos.x;
         pos.y = sel->pos.y;
-        pos.z = sel->pos.z;
         pos.w = 0;
         rot.x = 0;
         rot.y = 0;
         rot.z = 0;
+        pos.z = sel->pos.z;
         tower = d3_CreateObject(0, (D3VECTOR *)&pos, &rot, "sp_STADTTURM");
         tower->objectFlags |= 4;
         tower->stateFlags = (tower->stateFlags & 0xf7) | 4;
@@ -2814,6 +2817,9 @@ int main_ChooseCity(int unused, int host)
             if (ai_ClickedObject != 0 && strncmp((char *)ai_ClickedObject, "stadt_", 6) == 0)
                 sel = (D3OBJECT *)ai_ClickedObject;
             if (sel != last) {
+                D3VECTOR4 pos;
+                D3VECTOR rot;
+
                 pos.x = 0;
                 pos.y = 0;
                 pos.z = 0;

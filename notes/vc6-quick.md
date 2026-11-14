@@ -1156,3 +1156,28 @@ mechanisms, each as a generated round over all positions / subsets:
   pointer load after every earlier store to an address-taken local whose address already escaped to a call;
   a fresh block local has not escaped yet. The frame stays the same (disjoint block locals share the slot).
   This is the 2026-11-10 block-scope lever again: sweep it (blockscope) whenever a store / load order resists.
+
+## The stack frame, read from c2.dll (tools/c2dag/c2frame.py)
+- `python tools/c2dag/c2frame.py SRC FUNC [--refs] [--variants FILE --label L]` prints what the packer decided:
+  every local's size and reference count at layout time (L rows), the slot table before and after the sort (B /
+  A rows; A index 0 is nearest esp), with --refs each counted reference in walk order.
+- The rule: count = one per operand naming the local, all blocks, no loop weight, taken after register
+  allocation and instruction selection but BEFORE the late passes - a statement written in both arms of an if
+  (tail-merged later) counts twice, a reload the late peephole removes counts, so the listing's count can be
+  lower. The locals are listed by size ascending, then count descending (tie: who reached the count first in
+  the walk); each joins the first lifetime-compatible slot or opens one; frames above 0x80 bytes are sorted by
+  weight * 1000 / size, descending, with an unstable quicksort; the densest slot is nearest esp. Declaration
+  order, type and scope never enter (main_ChooseCity: 5 such variants = one code).
+- So a frame-order hunk is a COUNT question: read the counts, work out which local needs one more or one fewer
+  (simulate: scratch qsim.py pattern - the sort is 12 lines), then find the ordinary source that has that
+  reference at layout time. main_ChooseCity is the open case: objName 4 / cityobj 4 where the original needs 3 /
+  4 or 4 / 5.
+- **Loads of a vector copy interleaved with its stores** (ours `mov ecx,[src.x]; mov [pos.x],ecx; mov edx,..`,
+  the original all three loads first) and a later store order no permutation fixes: the destination was a
+  block local (`D3VECTOR4 pos; D3VECTOR rot;` declared in the block that fills and passes them, in each block
+  that does). With the function-scope pair the scheduler orders every pointer load after the earlier stores to
+  the address-taken local. Same lever as main_EndRound's `AIMSG msg` and the 2026-11-10 block-scope sweep
+  (main_ChooseCity: tower hunk gone, together with `pos.z` assigned last).
+- flip.py had mutated the wrong lines for every function whose prototype line carries a comment after the `;`
+  (it took the prototype for the definition): fixed 2026-11-14. Flip results on main.c functions from before
+  that date (0 flips on main_EndRound / main_ChooseCity) say nothing.
