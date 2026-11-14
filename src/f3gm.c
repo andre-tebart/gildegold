@@ -4658,61 +4658,51 @@ unsigned char *gm_CreateBuilding(unsigned char k, unsigned short own)
     gm_StockBuildingObjects((char *)b);
     return (unsigned char *)b;
 }
-/* 0x501b50, the main object of the building b, chosen by its building class (gm_BuildingClass): the classes 1 / 7 / 8 look by kind for the object 0x205 (kind 0x1d), 0x12e (0x16), 0x54 (4) or 0xfd (0x1f); class 4 takes the object 0xf7, a home (gm_IsHomeType) the 0xfd; otherwise (or when that object is missing) the first room of the kind's prototype list (an object of goods class 2 other than 0xfd). Returns the object, 0 when there is none
-   @deep Read whole against the original 0x501b50..0x501cdd and rewritten on ORDBLD: the two prototype-list
-   loops are two loops in the original too (one shared loop tried: 280 vs 397 bytes, reverted), the kind
-   chain 0x1d / 0x16 / 4 / 0x1f is an if-chain in source order, and the 1/7/8 path loops only when o == 0.
-   What is left is where o lives: the original keeps o in the stack slot [esp+0x10] (push ecx; mov
-   [esp+0x10],0; mov [esp+0x10],eax after the shared query; mov eax,[esp+0x10] at both loop ends), ours
-   keeps it in ebx (xor ebx,ebx reused as the push 0 of the 0xf7 query, mov ebx,eax / test ebx,ebx, mov
-   eax,ebx and xor eax,eax at the loop ends); with ebx taken, ours reloads ai_Goods into ebp inside the
-   second loop (mov ebp,[ai_Goods] at +0x133) where the original hoists it into edi (+0x137) and uses ebx
-   for id*0x40. The three differing branch targets are those same epilogues: the original's if (o != 0)
-   return o jumps to the query-tail epilogue (eax is o there), ours to the ebx epilogue; offsets shift by
-   the 4-byte prologue. Declaration order and int vs pointer tried, unchanged at 29. */
-
+/* 0x501b50, the main object of the building b, chosen by its building class (gm_BuildingClass): the classes 1 / 7 / 8 look by kind for the object 0x205 (kind 0x1d), 0x12e (0x16), 0x54 (4) or 0xfd (0x1f); class 4 takes the object 0xf7, a home (gm_IsHomeType) the 0xfd; otherwise (or when that object is missing) the first room of the kind's prototype list (an object of goods class 2 other than 0xfd). Returns the object, 0 when there is none */
 int gm_BuildingMainObject(unsigned char *p)
 {
     ORDBLD *b = (ORDBLD *)p;
-    int cls, i;
+    GMBTYPE *bt;
+    GMGOOD *g;
     char *o;
-    unsigned char *k;
-    unsigned short *w;
+    int cls, i;
     unsigned id;
 
     o = 0;
     cls = gm_BuildingClass(b->type);
-    k = (unsigned char *)ai_BTypes + b->type * 0x24d;
+    bt = GM_BTYPE(b->type);
     if (cls != 1 && cls != 7 && cls != 8) {
         if (cls == 4)
-            return (int)gm_Query((void *)b->objList, 1, 0, 0xf7);
-        if (gm_IsHomeType((unsigned char *)b) != 0)
-            return (int)gm_Query((void *)b->objList, 1, 0, 0xfd);
-        w = ((GMBTYPE *)k)->objs;
-        for (i = 0; i < 0x40; i++, w++) {
-            if (*w != 0xffff) {
-                id = *w & 0x7fff;
-                if (ai_Goods[id * 0x41] == 2 && id != 0xfd)
-                    return (int)gm_Query((void *)b->objList, 1, 0, id);
+            o = gm_Query((void *)b->objList, 1, 0, 0xf7);
+        else if (gm_IsHomeType((unsigned char *)b) != 0)
+            o = gm_Query((void *)b->objList, 1, 0, 0xfd);
+        else {
+            for (i = 0; i < 0x40; i++) {
+                if (bt->objs[i] != 0xffff) {
+                    id = bt->objs[i] & 0x7fff;
+                    g = GM_GOOD(id);
+                    if (g->type == 2 && id != 0xfd)
+                        return (int)gm_Query((void *)b->objList, 1, 0, id);
+                }
             }
         }
-        return (int)o;
-    }
-    if (*k == 0x1d)
-        o = gm_Query((void *)b->objList, 1, 0, 0x205);
-    else if (*k == 0x16)
-        o = gm_Query((void *)b->objList, 1, 0, 0x12e);
-    else if (*k == 4)
-        o = gm_Query((void *)b->objList, 1, 0, 0x54);
-    else if (*k == 0x1f)
-        o = gm_Query((void *)b->objList, 1, 0, 0xfd);
-    if (o == 0) {
-        w = ((GMBTYPE *)k)->objs;
-        for (i = 0; i < 0x40; i++, w++) {
-            if (*w != 0xffff) {
-                id = *w & 0x7fff;
-                if (ai_Goods[id * 0x41] == 2 && id != 0xfd)
-                    return (int)gm_Query((void *)b->objList, 1, 0, id);
+    } else {
+        if (bt->kind == 0x1d)
+            o = gm_Query((void *)b->objList, 1, 0, 0x205);
+        else if (bt->kind == 0x16)
+            o = gm_Query((void *)b->objList, 1, 0, 0x12e);
+        else if (bt->kind == 4)
+            o = gm_Query((void *)b->objList, 1, 0, 0x54);
+        else if (bt->kind == 0x1f)
+            o = gm_Query((void *)b->objList, 1, 0, 0xfd);
+        if (o == 0) {
+            for (i = 0; i < 0x40; i++) {
+                if (bt->objs[i] != 0xffff) {
+                    id = bt->objs[i] & 0x7fff;
+                    g = GM_GOOD(id);
+                    if (g->type == 2 && id != 0xfd)
+                        return (int)gm_Query((void *)b->objList, 1, 0, id);
+                }
             }
         }
     }
