@@ -228,6 +228,16 @@ mechanisms, each as a generated round over all positions / subsets:
   outer loop never strength-reduces it (shp grabbers 183 -> 6, 274 -> 34 ins). A packed struct word at an odd
   offset (D2KEY.gb) is split into byte loads by VC6 where the original loads the word: open data question.
 
+- **A dispatch on a byte field written twice** (`mode = s->mode;` then `if (mode == 0) .. else if (mode == 2)` in two
+  if / else chains, the original `test edx,edx; mov dl,[s+0xd]; jne` with the zero constant sharing edx): no local,
+  `s->mode == 0` in both chains (d2_ShpBlit16Rows 159 -> 8 ins). A `w` local copied into `vis` lost the original's
+  frame: read `s->w` where w is needed once, use `vis` in the clip code.
+- **A skip loop over a hand pointer** (`p = pix + t + col + x; do { ..; p++; } while (*p == key);`) whose original
+  sets its pointer up after the entry `jne`: the index form `while (pix[t + col + x] == key)`, VC6 makes the pointer
+  itself (d2_GrabShape16Runs 68 -> 18 ins).
+- **`movsx` of a short field pushed to a short parameter, the call in both arms**: one call after an int local
+  chosen by if / else (`y = ..; else y = w->y; f(x, y, ..);`); VC6 duplicates the call tail (d2_PlaceWindow byte).
+
 ## Control flow and returns
 - **Empty case labels**: VC6 drops `case X: break;` (also `return;`, dead stores, `goto` to the join)
   before switch lowering, so those labels cannot affect the dispatch tree. A folded `if (0) { }` body
