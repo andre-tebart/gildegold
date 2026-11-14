@@ -2730,17 +2730,30 @@ void main_ChooseOpponents(int n)
    "sonstiges\wimpel_STADTTURM.baf") over the picked city (the pick object 0x448630 with a name starting with "stadt_" selects: sel; the default is the object of the 5th city) and shows its description
    ("_STADTAUSWAHL_<NAME>_BESCHR+0"); the buttons: ok (or enter / 0x1c) goes on to main_ChooseDifficulty and main_ChooseHistory (host: ends at once), the second button opens the opponent
    selection main_ChooseOpponents (diff of the picked city); returns 1 when a game was set up (the second parameter is the host flag, the first unused)
-   @deep Read whole against 0x537230..0x537924: the city file list (.CTY / .NET), the header reads, diff =
-   limit - players (the original reads ai_NumPlayers as dword & 0xff: kept as the ai_NumPlayersW view), the
-   city points (ai_CreateCityPoint now returns D3OBJECT *), the tower, the pick loop, the description texts
-   (cm_TextNewline as the original pushes it), the opponent / ok buttons and the cleanup all agree, 513/513
-   instructions. Left: the frame layout. The original puts cityobj[64] at esp+0x294 and the 0x100 plate
-   name buffer (objName) at esp+0x394; ours has the two 0x100-byte arrays the other way round, so the three
-   indexed cityobj accesses differ only in the displacement (code hunks +0x11e mov [esp+edi*4+0x394] vs
-   0x294, +0x4f2, +0x6d6) and the objName leas are slots hunks; plus one order hunk at +0x1f4 (the tower
-   position stores scheduled around the push of "sp_STADTTURM"). Tried: declaration order of cityobj / diff
-   / the char arrays (three placements), renaming the buffer, cityobj as int[] or D3OBJECT *[]: the layout
-   does not move. */
+   @stuck match-deep 2026-11-14: frame layout of the two 0x100 arrays (cityobj / objName swapped: original
+   cityobj at esp+0x294, objName at 0x394) plus the tower-position store order. headers sample: insensitive
+   (32 samples, one codegen). Plain-form variants: cityobj[i] = ai_CreateCityPoint(..) without h (=
+   control), with h kept for the strcpy (51 ins), sv_RegisterNamePlate(h->name..) (105), inner-loop if (sel
+   != 0) (28), objName / name+objName / loop-body block scope (= control), decl order objName first (=
+   control); statement orders of the if (h) block BACD/BCAD/ABDC (47-153). flip.py (copy that also matches
+   the _x$ = N frame symbol lines, want _objName$ = -34304): 111 single-statement mutants, 0 flips - no
+   single statement deletion/dup/swap/token moves the layout. Size probes (key / objName 0xfd..0x100, name
+   0x3d..0x40, 64 variants): the layout reacts only to objName < key (objName then goes above cityobj, but
+   key and hdr swap: 34 ins), so the order is a size/tie sort inside C2, not the text. Tower stores:
+   original order pos.x, pos.y, pushes, pos.w, rot.x/y/z, pos.z last; 419 permutations of the 7 stores:
+   best p0312456 (x,w,y,z) 24 ins but slots unchanged; source order x,y,w,rot,z gives 34. Hunks left:
+   [esp+edi*4+0x394] vs 0x294 (cityobj store / two loop reads), objName leas 0x294/0x2a0/0x298 vs 0x394..,
+   mov esi,[esp+0x3a4] vs 0x2a4 (cityobj[4]), and the pos.z store before the zeros. Open: the rule C2 uses
+   to order equal-size local arrays. (tiebreak: insensitive) prior: Read whole against 0x537230..0x537924:
+   the city file list (.CTY / .NET), the header reads, diff = limit - players (the original reads
+   ai_NumPlayers as dword & 0xff: kept as the ai_NumPlayersW view), the city points (ai_CreateCityPoint now
+   returns D3OBJECT *), the tower, the pick loop, the description texts (cm_TextNewline as the original
+   pushes it), the opponent / ok buttons and the cleanup all agree, 513/513 instructions. Left: the frame
+   layout. The original puts cityobj[64] at esp+0x294 and the 0x100 plate name buffer (objName) at
+   esp+0x394; ours has the two 0x100-byte arrays the other way round, so the three indexed cityobj accesses
+   differ only in the displacement (code hunks +0x11e mov [esp+edi*4+0x394] vs 0x294, +0x4f2, +0x6d6) and
+   the objName leas are slots hunks; plus one order hunk at +0x1f4 (the tower position stores scheduled
+   around the push of "sp_STADTTURM"). Tried: declarati... */
 
 int main_ChooseCity(int unused, int host)
 {
