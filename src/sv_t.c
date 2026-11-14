@@ -6303,18 +6303,7 @@ void ai_ShotTableReset(void)
    "Locations\domizil\cannon_top" (sc->win_c0) 0x4b left of the line with the three bars (0 .. 100): the default
    effect scale, the pitch bar (also from the effect scale) and the run's charge of the selected barrel (txt 0x405e
    .. 0x4060); the form "Locations\domizil\cannon_res" (sc->win74) placed with 3 and disabled; sc->resultClock =
-   the clock. The buttons are interactive with the style 3
-   @deep Rewritten from the whole original 0x580a90..0x580fdd (typed: CANNONSCENE / GVEFFECT run, d2_Wins /
-   d2_Objs / d2_Pics fields, txt_Ptrs 0x405e..0x4067, the third bar run->charge[sc->selected] * 100, the
-   5-argument SetObjValue, the short y of d2_CreatePicObj); 388 vs 388 instructions, every call, argument
-   and constant equal. Left: the address selection of d2_MoveObj(d2_Wins[d2_LastWindow].x, ..,
-   d2_Wins[d2_LastWindow].parent): ours shl eax,2 / mov ecx,[eax+X] / mov dx,[eax+X], the original mov
-   edx,[ecx*4+0xf8f38c] / lea eax,[ecx*4+d2_Wins] / mov ax,[eax+4] (0x580b62, 0x580e44); the same C gives
-   the same difference in sv_UpdateCityPanel (0x523eb8, 0x523f26), (&d2_Wins[i])->x and a sized
-   d2_Wins[0x60] tried without change; the hunks after it are the register rotation it starts (ecx->eax,
-   eax->ecx, ecx->edx) and the push/load order around the bar SetObjValue calls (0x580ebe: push eax before
-   / after mov reg,[esi+0xa8], swapped between bar 1 and 2), and the push ebp placement of the second
-   button (0x580c45). */
+   the clock. The buttons are interactive with the style 3 */
 void ai_CannonBuildPanel(CANNONSCENE *sc, GVEFFECT *run)
 {
     int h;
@@ -6322,6 +6311,7 @@ void ai_CannonBuildPanel(CANNONSCENE *sc, GVEFFECT *run)
     int pic;
     int base;
     int id;
+    D2WIN *w;
 
     h = d2_ScreenH;
     mid = (h - (d2_ScreenW >> 4) * 9) >> 1;
@@ -6341,7 +6331,8 @@ void ai_CannonBuildPanel(CANNONSCENE *sc, GVEFFECT *run)
     sc->win_a4 = d2_OpenForm(0, 0, "Locations\\domizil\\cannon_bottom");
     d2_PlaceMainWindowF(sc->win_a4, 1);
     d2_SetForm(sc->win_a4, 0);
-    d2_MoveObj(d2_Wins[d2_LastWindow].x, h - 0x19, d2_Wins[d2_LastWindow].parent);
+    w = &d2_Wins[d2_LastWindow];
+    d2_MoveObj(w->x, h - 0x19, w->parent);
     d2_SetForm(sc->win_a4, 2);
     id = d2_WinOpenPic(0x59, 0xf, 0x7d5, d2_LastWindow);
     sc->fireBtn = id;
@@ -6374,7 +6365,8 @@ void ai_CannonBuildPanel(CANNONSCENE *sc, GVEFFECT *run)
     sc->win_c0 = d2_OpenForm(0, 0, "Locations\\domizil\\cannon_top");
     d2_PlaceMainWindowF(sc->win_c0, 1);
     d2_SetForm(sc->win_c0, 0);
-    d2_MoveObj(d2_Wins[d2_LastWindow].x, mid - 0x4b, d2_Wins[d2_LastWindow].parent);
+    w = &d2_Wins[d2_LastWindow];
+    d2_MoveObj(w->x, mid - 0x4b, w->parent);
     d2_SetForm(sc->win_c0, 1);
     sc->scaleBar = d2_WinOpenSlider(0x96, 0xb, 200, 0, 100, 0x75, 0x4c2, d2_LastWindow);
     d2_SetObjValue(sc->scaleBar, 0, 100, (int)(ai_GetDefaultEffectScale() * 100.0f), 1);
