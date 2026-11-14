@@ -3458,7 +3458,7 @@ exe	0x00534610	main_ChooseTalents	main	ee8550a5930897dd	no	shape	control=shape p
 exe	0x00534b30	main_ChooseModel	main	4e4f7acf7ac97193	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x005359f0	main_ChooseFamily	main	efcd8d3980fd31c7	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x005361d0	main_ChoosePlayer	main	0652607d5e967f47	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
-exe	0x00536980	main_ChooseHistory	main	515c03401294d20c	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x00536980	main_ChooseHistory	main	15810c213b97e360	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x00536d80	main_CharacterIntro	main	989f9641bf2e8704	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00536e80	main_ChooseDifficulty	main	b88b1c6fdf0127ef	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00537040	main_ChooseOpponents	main	c3980e99e1021c3c	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft

@@ -2469,16 +2469,30 @@ int main_CharacterIntro(int unused);
    non-zero when the character was created, sets the mode flag ai_GameFlags |= 8 then (else clears it). The quick start copies the
    talents of the job's record: gm_GetJobTalents returns a 6-byte record by value in the original (hidden pointer, eax), the call here
    passes the buffer by hand
-   @deep Read whole against 0x536980..0x536d77: the form and radio group (3 or 4 buttons by language), the
-   history / mission choice, the start menu pages, the character intro outcomes (1 family choice, 0 quick
-   start with gm_GetJobTalents copied by memcpy 5 = the original's dword + byte move, -1 back) and the game
-   flag tail all agree, same instruction count 321/321. Left: allocation only. The original keeps back in
-   ebx and ret in ebp, ours the reverse (regs hunks ebp<->ebx at +0x197, +0x24a, +0x29d, +0x2c3, +0x364,
-   +0x37d, +0x3c9, +0x3db); and in the ret == 0 tail the original returns mov eax, ebp where ours has xor
-   eax, eax (VC6 propagated ret == 0 from the branch; the prover: only eax at the return differs, and it is
-   0 on both sides there). Tried: the declaration order (ret / back swapped), back = 0 before ret = 0
-   (worse, order hunks), the tail as if / else (frame grows to 0x28, much worse), as ?: (same), as if (ret
-   == 0) first (worse). */
+   @stuck allocation race, ret/again in ebp/ebx swapped (orig ret=ebp, again=ebx) plus the ret==0 tail
+   (orig mov eax,ebp, ours xor eax,eax). Kept: the click test as '&& !again && !back' without goto lback
+   (same code). headers sample: insensitive. Tried (dcp try): goto-free rewrites (fam goto lok/lback2
+   written out, if/else tail, single return, while vs do, &&-form vs continue-form, 24 variants): all spill
+   grp out of esi, frame 0x24 -> 0x28, 94-131 ins; tail alone as if/else, == 0 first, ?: : frame 0x28
+   (123-131 ins); tail as if/else with two returns = control; ret==0 first 36 ins. Probes: the RadioSelect
+   chains as switch (8 variants) 106-127 ins. flip.py want 'call _main_ChoosePlayer\nmov ebp, eax' on
+   control: 6 hits (again = 0 deleted/moved, kb_Last == 1 constant, sv_PopRequest dup), best m167 22 ins/17
+   bytes but meaning-changing; flip on the goto-free version for grp in esi: hits only on
+   duplicating/deleting the in-loop RadioSelect chain (grp reference count), m450/m349 meaning-changing.
+   c2dag --alloc: again -65, grp -91, ret -93, back -113 (callee-saved race between again/grp/ret). Left:
+   regs ebp<->ebx at +0x197 +0x24a +0x29d +0x2c3 +0x364 +0x37d +0x3c9 +0x3db, and the tail 'mov eax,ebp' vs
+   'xor eax,eax' (+0x3e3). Lead: the original single-return tail plus some other plain form that keeps grp
+   in esi (the flip says the number of grp references decides). (tiebreak: not measured (dcp headers sample
+   main_ChooseHistory)) prior: Read whole against 0x536980..0x536d77: the form and radio group (3 or 4
+   buttons by language), the history / mission choice, the start menu pages, the character intro outcomes
+   (1 family choice, 0 quick start with gm_GetJobTalents copied by memcpy 5 = the original's dword + byte
+   move, -1 back) and the game flag tail all agree, same instruction count 321/321. Left: allocation only.
+   The original keeps back in ebx and ret in ebp, ours the reverse (regs hunks ebp<->ebx at +0x197, +0x24a,
+   +0x29d, +0x2c3, +0x364, +0x37d, +0x3c9, +0x3db); and in the ret == 0 tail the original returns mov eax,
+   ebp where ours has xor eax, eax (VC6 propagated ret == 0 from the branch; the prover: only eax at the
+   return differs, and it is 0 on both sides there). Tried: the declaration order (ret / back swapped),
+   back = 0 before ret = 0 (worse, order hunks), the tail as if / else (frame grows to 0x28, much worse),
+   as ... */
 int main_ChooseHistory(void)
 {
     int again, back, ret, f, b0, b1, b2, grp, hist, h, r;
@@ -2515,9 +2529,7 @@ int main_ChooseHistory(void)
             d2_MenuNavigate(grp);
             if (dm_L.rup != 0 || kb_Last == 1)
                 sv_PopRequest = 1;
-            if (d2_ClickedId != 0 && kb_Last != 0x1c && !again) {
-                if (back)
-                    goto lback;
+            if (d2_ClickedId != 0 && kb_Last != 0x1c && !again && !back) {
                 if (d2_ClickedId == 1)
                     sv_PopRequest = d2_ClickedId;
                 continue;
@@ -2540,7 +2552,6 @@ int main_ChooseHistory(void)
                 hist = ai_ChooseMission();
                 d2_SetViewEnabled(f, 1);
             }
-lback:
             d2_SetViewEnabled(f, 0);
             again = 0;
             if (hist != 0xff || back) {
