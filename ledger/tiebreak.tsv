@@ -409,7 +409,7 @@ exe	0x0041ee70	surf_Shrink24	surf	4bd2b48ba2c81fe1	no	byte	control=byte p1=byte 
 exe	0x0041f000	surf_Down32	surf	38b03ef0629492f4	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x0041f220	surf_Up8	surf	24b2cf23d0985a0d	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0041f2b0	surf_Up16	surf	f47915c9d431d1b3	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
-exe	0x0041f800	surf_Up24	surf	10ea0200e661213e	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x0041f800	surf_Up24	surf	aada87f04ff5c7b4	no	shape	sample n=32 seed=1 compiled=32 codegens=1 best=shape
 exe	0x0041fc00	surf_Up32	surf	3ab9dce9c30df82d	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x00420140	surf_ScaleBlit	surf	ca36fd1e061fb0a7	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
 exe	0x004202d0	surf_Pal8To16	surf	c303a15c087a4596	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
