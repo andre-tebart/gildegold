@@ -116,6 +116,9 @@ def main():
             continue
         best = min((r for r in rows.items() if r[0] != "control"), key=lambda r: (r[1][0] != "byte", r[1][1], r[1][2]),
                    default=None)
+        if ctl[0] == "byte":  # matched since the queue was read
+            os.unlink(path)
+            continue
         if best and (best[1][0] == "byte" or best[1][1] < ctl[1]):
             moved += 1
             print("%-34s %s %d ins -> %s: %s %d ins   (dcp try %s %s --apply %s)" % (

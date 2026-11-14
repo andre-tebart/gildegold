@@ -978,3 +978,11 @@ mechanisms, each as a generated round over all positions / subsets:
   (`do { q = &e->grave[i]; if (q->id == m->grave) break; i++; } while (..)`), or read the compared value into a
   local before the base (`n = m->grave; g = e->grave;`): both byte in gv_RaiseDead; swapping the compare's
   operands or reading the local after the base are no lever.
+- fillloop.py `--zero --widths int,char` (2026-11-14, 222 functions with a fill, 7 moved; NOT applied - the probe
+  spelling, an int loop over a struct or char buffer, is no source to keep; each is a lead that the fill there
+  was not a memset call of that shape: an initializer, a field-by-field clear, a loop over the real element):
+  io_CharacterNameMarkup 2 ins -> byte with the `tmp` clear as a loop (its only hunk is a `[eax+edx]` /
+  `[edx+eax]` tie-break in a strcpy 75 lines below: the fill form moves it), io_CharacterName 8 -> 4 (all four
+  fills as char loops), ch_LoadLowAnims 28 -> 9 (`memset(&f, 0, sizeof(f))`), d2_ResizeWindow 32 -> 24
+  (`desc`), ai_CalcMeisterWache 100 -> 86 (the second `msg` clear), ai_FillLoversTab 55 -> 45 (`rows`),
+  gv_AllocGraveyard 162 -> 116 ins but shape -> draft.
