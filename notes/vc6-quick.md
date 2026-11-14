@@ -1366,3 +1366,13 @@ mechanisms, each as a generated round over all positions / subsets:
   has a third, i.e. the source still differs in which candidates exist. (5) Base and index of a two-register
   address are the first and second operand of the IL add, fixed before strength reduction; hash state does not
   move it, the sharing of loop index variables between the function's loops does.
+- **Two arms that start with the same call, the original loading its operands above the branch** (`mov edi,[npix];
+  cmp ..; mov eax,[size]; push str; je`, only the `sub` in each arm): VC6 hoists identical leading instructions of
+  both arms after register allocation, so the arms must get the same registers. A named argument in each arm
+  (`n = s->size - s->npix; r = mem_Alloc(n, ..);`) did it (d2_ShpConvert24To16, byte).
+- **`mov eax,1` right after the prologue, one path returning it untouched**: a result local whose calls assign it
+  (`r = 1; .. if (mode < 0) { if (on) r = f(); else r = g(); } return r;`); `return f(..)` per call folds r
+  (d2_DrawShapeScaled 66 ins -> byte).
+- **A big draft called "allocation only" can still hold a wrong index**: d3anim_StepObject's tangent clear read
+  key / next where the original reads nkeys / key ([esi] vs [esi+4]). Holes of 4 bytes after every 3-float group
+  of the original's frame = D3VECTOR4 locals; declare them in their blocks (0x68 -> 0x9c of 0xbc).

@@ -2874,3 +2874,39 @@ differing instructions. The same shape made the character loop of 0x512f30 pick 
   lever each; ai_CabinetIntrigueWindow draft -> shape. Closer but below: gv_GraveyardTurn, he_RunHarvest,
   he_RunGraveyardWorkers, ai_StorageWindow, ai_CourtshipWindow. No gain (block scope = control or worse):
   the other ~95, e.g. the lc.c window functions' big fills.
+
+## match-deep 2026-11-14 (d3anim_StepObject, d2_StartAnim, d2_ShpBlit16Scaled, d2_MakeLightTable, d2_ShpConvert24To16, d2_DrawShapeScaled)
+- d3anim_StepObject (1578 ins, draft, stuck): frame 0x68 vs the original's 0xbc. Every 3-float group in the
+  original's frame is followed by a 4-byte hole: all vectors were D3VECTOR4, declared in the blocks that use them
+  (RootPosAt's out, the attach block's three, the path's v / w / tin / tout); 0x68 -> 0x9c, 1331 -> 1184 ins.
+  A meaning bug hid among the 1074 "code" hunks: the end-tangent clear tested `P->next < P->key - 1` and
+  zeroed keys[key - 1] / keys[key - 2], the original reads [esi] / [esi+4], i.e. `P->key < P->nkeys - 1` and
+  keys[nkeys - 1] / keys[nkeys - 2] (-> 1144). The @deep note had called the function "allocation only":
+  on a big draft, check the field offset of every load that feeds an index before believing that.
+- d2_StartAnim byte: a hand pointer walk `for (i = 0, a = T; (int)a < (int)T + 0x110; i++, a++) if (!a->bank)
+  { if (i >= 16) return -1; ..fill..; return i; }` was `for (i = 0; i < 16; i++) if (T[i].bank == 0) break;
+  if (i >= 16) return -1; ..` (the amt_GetFirstOffice rule), then one of 120 store orders (bank before x).
+- d2_ShpBlit16Scaled byte (24 ins, "allocation only"): `d = line;` BEFORE `first = row % n == 0;` at the row
+  loop head. With first computed first, a split piece of the row counter got ebp (its own `xor ebp,ebp`, reloaded
+  at the latch); swapped, row stays in memory and the remainder of the idiv takes ebp, as in the original.
+  c2trace: the clipped loop's row piece had savings 4, prio 56 - a marginal candidate that one statement order
+  flips. Both loops written the same way (the unclipped one compiles identically either way).
+- d2_MakeLightTable (stuck at shape, 20 ins): a byte-flagged constant 0 that lives across a call can only get
+  ebx, and so can a byte parameter (`add`) used in the loop. The zero (r = g = b = 0 stores, cmp eax,ebx after
+  mem_Alloc) had prio 6 against add's 9, and lost ebx while a `lim` local (prio 35) existed; with `0xff - add`
+  written at each compare (a CSE temp, prio 25) the zero gets ebx and add takes it after (bl). `unsigned char r
+  = 0, g = 0, b = 0;` at the declaration gives the original's store order. Open: i (19) against the temp (25)
+  for esi; flip.py says the temp has one compare too many.
+- d2_ShpConvert24To16 byte (38 ins): (1) both arms begin with `r = mem_Alloc(s->size - s->npix, ..)`; the
+  original loads npix and size BEFORE the branch (`mov edi,[npix]; cmp; mov eax,[size]; push str; je`) and
+  subtracts in each arm. That is VC6 hoisting identical leading instructions of the two arms after allocation:
+  they hoist only when both arms got the same registers. `n = s->size - s->npix; r = mem_Alloc(n, ..);` in each
+  arm did it (locals for size / npix before the if were far worse). (2) a 3-byte pixel walk the original reads as
+  [esi-1] / [esi] / [esi+1] with esi = run + 9: `for (k = 0; k < src->n; k++) .. pix[k * 3], pix[k * 3 + 1],
+  pix[k * 3 + 2]` (VC6's middle-element IV, see d2_Convert16ToRgb), not a do-while with `pix += 3`. (3) the
+  unrunned arm's `pix = base + (w * i + j) * 3; pix[0..2]` -> `pix = base; pix[(w * i + j) * 3 + 0..2]` gives the
+  original's `lea ecx,[ebp+eax*2+0x32]; add eax,ecx`. (4) statement orders of the pointer init and the row latch.
+- d2_DrawShapeScaled byte (66 ins, "pure allocation"): the original's `mov eax,1` right after the prologue (the
+  mode >= 0 path returns it untouched, edi pushed for `old`): `int r = 1; .. case 1: if (mode < 0) { if (on)
+  r = Lit(..); else r = Blit(..); } return r;`. Returning the calls directly (`return Lit(..)`) folds r away
+  whatever the other returns say (8 combinations = one code).
