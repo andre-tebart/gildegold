@@ -5040,17 +5040,10 @@ void ai_AlchemistWindow(unsigned char *obj)
    and the share is not the fourth, the question 0x4046; the first answer posts the message 0x97 (cm_SendLongMessage:
    from the building, to the owner character, the game clock, arg[0] the record's id, arg[1] the share, arg[4] a
    random duration 1000 .. 66535) and closes the window; the second answer and the right mouse button close it.
-   Answers 1
-   @deep read whole against the original and reconstructed typed (AIMSG, AHMREC, the form name as a
-   literal); asmdiff --symbols: every call, argument, constant and branch in the original's order, 520 vs
-   520 bytes (the same 94 leading instructions equal). Left: scheduling of the message block only (the
-   0x57cde0 family): the original loads the owner's netId (lea/lea/lea, mov ecx,[ai_CharInts]) and the
-   clock words (ai_Time.year, ai_Time.hour, 0x770ae8, the word 0x770aec) interleaved with the fromId and arg stores,
-   ours copies the clock first (ai_Time, ai_Time+0xc) and the owner after; struct copy, field-wise copy in
-   several orders give the same schedule */
+   Answers 1 */
 int ai_AlchemistTrainShareWindow(unsigned char *obj, AHMREC *rec, int idx)
 {
-    AIMSG msg;
+
     int win;
     int a;
     float b;
@@ -5084,15 +5077,17 @@ int ai_AlchemistTrainShareWindow(unsigned char *obj, AHMREC *rec, int idx)
             sv_PopRequest = 1;
         } else if (d2_ClickedId != -1) {
             if (d2_PointerObj == t1) {
+                AIMSG msg;
+
                 memset(&msg, 0, sizeof(msg));
                 msg.type = 0x97;
                 msg.flags = 1;
-                msg.fromId = ((AIBLD *)obj)->id;
                 msg.to = ai_CharsT[((AIBLD *)obj)->owner].netId;
+                msg.fromId = ((AIBLD *)obj)->id;
                 msg.time = ai_Time;
                 msg.arg[0] = rec->id;
-                msg.arg[1] = idx;
                 msg.arg[4] = (util_Random(0x5a0) & 0xffff) + 1000;
+                msg.arg[1] = idx;
                 cm_SendLongMessage((char *)&msg);
                 sv_PopRequest = 1;
             } else if (d2_PointerObj == t2) {
