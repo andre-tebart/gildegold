@@ -1081,3 +1081,10 @@ mechanisms, each as a generated round over all positions / subsets:
   instructions, and `_x$[esp+N]` in an instruction does not change when x moves (N is the frame size): a slot
   question needs a flip copy that also keeps the `_x$ = -N` lines (main_ChooseCity: 0 of 111 mutants moved the
   two 0x100 arrays; a size probe objName[0xff] did, i.e. equal-size arrays are ordered inside C2 by a tie rule).
+- **`lea edx,[eax+eax*8]; lea eax,[edx*4+X]; test eax,eax` (an array element's address in a temp of its own, then
+  tested for null) where ours folds it into `lea eax,[eax+eax*8]; lea eax,[eax*4+X]`**: the address was a pointer
+  local assigned in the condition, `(ch = &ai_CharsT[b->owner]) != 0 && ai_CanAct(ch)`, not the address written
+  out twice. One temp more there moves VC6's eax/ecx/edx rotation for the whole rest of the function: a
+  statement-order fix above it (main_EndRound's 0x4c note: msg.time / msg.flags last) had looked like a loss
+  (74 -> 140 ins, every scratch register behind it rotated) until this one was fixed too (-> 38). Judge an order
+  round's best only after the rotation behind it is in sync; keep the candidate that fixes its own block.

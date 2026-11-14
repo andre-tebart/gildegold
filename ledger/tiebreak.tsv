@@ -3473,7 +3473,7 @@ exe	0x00537db0	main_FreeSoundBanks	main	30e7343386f774ff	no	byte	control=byte p1
 exe	0x00537de0	main_StartGame	main	0b0b0c404d4919a4	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00537f40	main_EndGame	main	68671b89ac5fb237	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00538140	main_RundenBeginn	main	503e9d8c2106fe24	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x005384e0	main_EndRound	main	41300526e62311e6	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x005384e0	main_EndRound	main	41300526e62311e6	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x00539620	main_ReplaceFigure	main	6ad5586e91377ecf	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x00539870	main_RoundReport	main	2b6b790e9b71c79f	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x0053a250	main_UpdateFigure	main	7dc04722a68086f7	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft

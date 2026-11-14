@@ -3297,21 +3297,32 @@ extern unsigned char main_GameEnded;  /* 0x6f25ad, sv.c */
 /* 0x5384e0, the round / day change of the player: fades out (BLACK), advances the clock copy (+1 when networked (ai_GameFlags bit 2) after the first round), queues the announcement messages of the kinds 0x66 / 0x70 / 0x68 / 0x85 / 0x7c / 0x93 / 0x84 /
    0x4c when none is pending (he_FindEvent), shows the balance page of the player (texts 0x1ef9 .. 0x1eff, 0x2051: the AP events of the player with their incomes / costs and the goods of gm_CollectCarried), takes the AP event costs, renovates the run-down
    buildings of the masters this machine runs (kind 0x1c message "renovieren") and spreads each character's goods value over its buildings as their work load (AIBLD.budget), then beams the figures of the characters home ("Beamed home")
-   @deep Read the whole function against dcp disasm / asmdiff and reconstructed it: the AP event balance
-   lines (HEAPEVENT table 0x758ca0, the income / cost branch structure), the carried goods list at
-   MAINCARRY+4 (was misread at +0x2e), the time-stamped AIMSG notes (to before time), the 0x4c note, the
-   cart visibility pair of calls, the renovation (32.0 > cost, budget * 0.75 > cost), the building budget
-   split with >= caps through one store, unsigned short id compares, the Beamed home strcpy,
-   snd_FadeMusic(1.0f); block-scoped value/cost/budget and x/y/place give the original's 0x3b8 frame. Same
-   instruction count (1226 / 1226), 74 differing. Left is allocation / scheduling only: 0x538ed0 the 0x4c
-   note's time copy stores scheduled around the push of &msg (ours stores hour / unk8 / unkc before the
-   push, the original hour / year before and unk8 after it); 0x538f4c gm_Query argument and the cart bldId
-   in ecx / edx where the original reuses eax / ecx; 0x538f85 the &ai_Chars[owner] address in eax vs edx;
-   0x539101 the util_Random(0x5a) limit in edi (mov edi, eax; and edi, 0xffff) where the original keeps it
-   in bx (mov bx, ax; and ebx, 0xffff) because its weight sum sits in ebp and ours in ebx; plus 56 regs / 8
-   order hunks of the same ebx / ebp / edi rotation in the building loops. Tried: five MAIN_NOTE store
-   orders, four 0x4c orders (time first gives 4402 bytes but rotates every register of the building loops),
-   the query inline, three renovation store orders. */
+   @stuck match-deep 2026-11-14: 74 -> 38 ins kept. headers sample: insensitive. Levers that moved: the
+   0x4c note's MAIN_NOTE written out with msg.time / msg.flags last (1260+1259 store-order permutations;
+   best p0235641: type, to, fromId = to, nIds, reserved14, time, flags), and the cart condition as (ch =
+   &ai_CharsT[b->owner]) != 0 && ai_CanAct(ch) (the original computes the address in a temp of its own, lea
+   edx / lea eax,[edx*4+X]; this fixed the scratch rotation of everything behind it: 140 -> 40 together
+   with the note order). Left: (1) callee-saved registers in the k loop: --alloc lists lim prio 128 -> edi,
+   value -304 -> ebp, weight -320 -> ebx (fade -11 ebp, season -53 ebx live only before the loop); the
+   original has lim ebx, value edi, weight ebp, i.e. the handout edi, ebp, ebx in priority order would need
+   value and weight to rank ABOVE lim. lim spellings (unsigned short / short / int / unsigned, block or
+   function scope, (unsigned short (*)(int)) cast call, no local: the no-local form calls gm_BuildingLevel
+   first, the original calls util_Random first and keeps it in bx across the call): none moves it; value /
+   weight scope (block / top): = control; flip.py want 'mov bx, ax' (1111 mutants) and 'and ebx, 65535'
+   (1095): 0 flips. Hunks: 0x538ffd xor ebx / lea ebp vs xor ebp / lea edi and the add ebx,2/4/8 (weight),
+   0x539100 mov edi,eax / and edi vs mov bx,ax / and ebx, 0x539246 and the three building budget splits
+   ebp->edi ebx->ebp. (2) 0x5391ac renovation note: the original stores msg.arg[0] = b->id before msg.to
+   (load order of ai_CharInts vs [esi+1]); 719 permutations of the six msg stores: none. (tiebreak: not
+   measured (dcp headers sample main_EndRound)) prior: Read the whole function against dcp disasm / asmdiff
+   and reconstructed it: the AP event balance lines (HEAPEVENT table 0x758ca0, the income / cost branch
+   structure), the carried goods list at MAINCARRY+4 (was misread at +0x2e), the time-stamped AIMSG notes
+   (to before time), the 0x4c note, the cart visibility pair of calls, the renovation (32.0 > cost, budget
+   * 0.75 > cost), the building budget split with >= caps through one store, unsigned short id compares,
+   the Beamed home strcpy, snd_FadeMusic(1.0f); block-scoped value/cost/budget and x/y/place give the
+   original's 0x3b8 frame. Same instruction count (1226 / 1226). The 0x4c note written out (time and flags
+   last) and the cart owner as a pointer local tested for null (the original tests the address) fixed its
+   hunks (74 -> 38 ins). Left is 0x539101 the util_Random(0x5a) limit in edi (mov edi, eax; and edi,
+   0xffff) where the original keeps ... */
 void main_EndRound(void)
 {
     MAINCARRY carry;   /* what gm_CollectCarried collects (the original's buffer sits at +0x1a8 of a 0x3b8 frame) */
@@ -3321,6 +3332,7 @@ void main_EndRound(void)
         char pad[0x74];
     } sysmsg;
     AIMSG msg;
+    AICHAR *ch;
     short rid;
     AITIME clk;
     D2FADE *fade;
@@ -3481,10 +3493,14 @@ void main_EndRound(void)
     if (sv_PanelForm != -1)
         d2_SetViewEnabled(sv_PanelForm, 1);
     if (ai_MissionMode != 5 && ai_MissionMode > -1 && he_FindEvent(2, 0, 0x4c, 2, MAIN_PLAYER) == 0) {
-        MAIN_NOTE(msg, 0x4c);
+        memset(&msg, 0, sizeof(msg));
+        msg.type = 0x4c;
+        msg.to = ai_CharsT[MAIN_PLAYER].netId;
         msg.fromId = msg.to;
         msg.nIds = 0;
         msg.reserved14 = 0;
+        msg.time = ai_Time;
+        msg.flags = 1;
         cm_SendLongMessage((char *)&msg);
     }
     if ((ai_GameFlags & 8) != 0) {
@@ -3493,7 +3509,7 @@ void main_EndRound(void)
         while (obj != 0) {
             scene = (CHARACTER *)obj->sceneObj;
             b = (AIBLD *)gm_BuildQuery(1, 1, obj->bldId);
-            if (b != 0 && &ai_CharsT[b->owner] != 0 && ai_CanAct(&ai_CharsT[b->owner]) != 0)
+            if (b != 0 && (ch = &ai_CharsT[b->owner]) != 0 && ai_CanAct(ch) != 0)
                 ch_SetVisible(scene, 1);
             else
                 ch_SetVisible(scene, 0);
