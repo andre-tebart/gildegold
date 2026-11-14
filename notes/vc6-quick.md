@@ -4,6 +4,26 @@ The rules that paid off most often, condensed from notes/vc6-matching.md (rounds
 details and per-function attempts: search it by keyword (`grep -n "D3VECTOR4\|dead parameter" notes/vc6-matching.md`)
 when a function resists, instead of reading it whole.
 
+## First rule: the original was ordinary code
+The stuck functions solved on 2026-11-14 all had the same history: an earlier pass had reached its best
+distance with an unusual construct, and the byte match was plainer code than that. Before trying more variants
+of a stuck function, list what in it a 2001 game programmer would not have typed, and replace that first:
+- `ret = -1; goto end;` at every failure -> each step under `if (!ret)`, one `return ret` (sb_Play).
+- `goto off` to one shared stop block -> the block written out at both exits (d3sndw_Update).
+- a `volatile` view added to force a reload -> the plain field (di_UpdateButtons).
+- `memset(a, 0xff, n)` of an id array -> `for (i = 0; i < 8; i++) a[i] = -1;` (ahm_CreateAlchemist + 3 more).
+- two arrays and a fallback assigned in the "wrong" branch -> one array reused; the case excluded in the `if`
+  condition (lobby_ChoosePlayer, snd_PlayFavourComment).
+- a hand-advanced byte offset `off += sizeof(T)`, `cl[k - 256]`, error locals stepped mid-loop -> the plain
+  index and the library's own statement order (qnt_Map, DL1).
+- three globals where the algorithm has one table -> `pal[3][256]` (qnt_Nearest).
+Why it goes wrong: a trick usually fixes the hunk it was aimed at (the distance drops, so it is kept), but it
+changes what VC6 sees elsewhere - another block layout, one reference fewer in the allocator, another operand
+rank - and the remaining hunks then look like "pure allocation, no source lever". A small remaining distance
+behind an odd construct is a local optimum, not a near miss. The one counter-example so far is mild:
+d3io_AttachStock needed the same expression written out twice.
+In the deep queue (1016 functions) 91 contain a `goto`, 7 a `volatile`, 16 raw `(char *)p + n` arithmetic.
+
 ## Workflow
 - `uv run ledger check` does not rebuild: run `uv run build` first.
 - Undeclared calls compile silently (C4013) and change the caller's code: grep build logs for C4013.
