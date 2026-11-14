@@ -5977,25 +5977,16 @@ float ai_CannonPitchRatio(CANNONSCENE *sc)
    (ai_CannonPanel); past the half's time sv_PopRequest ends it. The cannon object sinks back along the level aim
    direction by ai_CannonSwitchDist * f and the wimpel moves from ai_WimpelPos along d3_ZAxis by as much, f going
    0 -> 1 in the first half and 1 -> 0 in the second; between them the barrels are switched (only sel shown) and
-   sc->selected = sel; at the end sc->now = the clock
-   @deep read whole against the original (241 vs 247 ins). Fixed meaning: the two halves were written with
-   the wrong offsets; now the scene's fields (dirX / dirZ, pos, obj98 / obj9c, obj8c, selected, maxSel,
-   now), the half's time and the sink distance are the const data ai_CannonSwitchMs / ai_CannonSwitchDist
-   (0x5eec94 / 98: the original divides by it, a literal would be a multiply), the clock is read through
-   d3_Time (the original reloads it for the compare and for f), past the time sv_PopRequest, v =
-   dist * f * v then pos - v, the wimpel ai_WimpelPos + (dist * f) * d3_ZAxis. Remaining, each allocation:
-   +0x98 / +0x253 code 22 / 25: the same sub / mov / fild of the elapsed time with eax/ecx/edx rotated and
-   the dirX / dirZ copies scheduled around the fild; the frame 0x28 vs 0x30: the original keeps the
-   compare's and f's qword temps apart (0x10 and 0x18), ours shares one; +0x14c / +0x30e fpu 12: the wimpel
-   products, the original keeps dist * f on the FPU stack after fst f (fmul st, st(2) and a reload) where
-   ours pops it and multiplies from memory (the 3 instructions per half: the count difference); tried the
-   folded w = W + f * axis form: worse (106) */
+   sc->selected = sel; at the end sc->now = the clock. The half's time and the sink distance are the const data
+   ai_CannonSwitchMs / ai_CannonSwitchDist (the original divides by the time: a literal would be a multiply);
+   v and w are padded D3VECTOR4s (the original's frame) */
 void ai_CannonSwitchAnim(char *rec, CANNONSCENE *sc, GVEFFECT *run, int sel, int mask)
 {
-    D3VECTOR v;
-    D3VECTOR w;
+    D3VECTOR4 v;
+    D3VECTOR4 w;
     unsigned start;
     float f;
+    float k;
     int i;
 
     start = d3_Time;
@@ -6006,14 +5997,14 @@ void ai_CannonSwitchAnim(char *rec, CANNONSCENE *sc, GVEFFECT *run, int sel, int
         if ((float)(d3_Time - start) > ai_CannonSwitchMs) {
             sv_PopRequest = 1;
         } else {
-            v.x = sc->dirX;
-            v.y = 0;
-            v.z = sc->dirZ;
             f = (float)(d3_Time - start) / ai_CannonSwitchMs;
+            v.x = sc->dirX;
+            v.z = sc->dirZ;
+            v.y = 0;
             d3_Normalize((char *)&v);
-            v.x = ai_CannonSwitchDist * f * v.x;
-            v.y = ai_CannonSwitchDist * f * v.y;
-            v.z = ai_CannonSwitchDist * f * v.z;
+            v.x = (ai_CannonSwitchDist * f) * v.x;
+            v.y = (ai_CannonSwitchDist * f) * v.y;
+            v.z = (ai_CannonSwitchDist * f) * v.z;
             v.x = sc->pos.x - v.x;
             v.y = sc->pos.y - v.y;
             v.z = sc->pos.z - v.z;
@@ -6021,10 +6012,10 @@ void ai_CannonSwitchAnim(char *rec, CANNONSCENE *sc, GVEFFECT *run, int sel, int
             w.x = d3_ZAxis.x;
             w.y = d3_ZAxis.y;
             w.z = d3_ZAxis.z;
-            f = ai_CannonSwitchDist * f;
-            w.x = f * w.x;
-            w.y = f * w.y;
-            w.z = f * w.z;
+            k = ai_CannonSwitchDist * f;
+            w.x = k * w.x;
+            w.y = k * w.y;
+            w.z = k * w.z;
             w.x = ai_WimpelPos.x + w.x;
             w.y = ai_WimpelPos.y + w.y;
             w.z = ai_WimpelPos.z + w.z;
@@ -6041,14 +6032,15 @@ void ai_CannonSwitchAnim(char *rec, CANNONSCENE *sc, GVEFFECT *run, int sel, int
         if ((float)(d3_Time - start) > ai_CannonSwitchMs) {
             sv_PopRequest = 1;
         } else {
+            f = (float)(d3_Time - start) / ai_CannonSwitchMs;
             v.x = sc->dirX;
-            v.y = 0;
             v.z = sc->dirZ;
-            f = 1.0f - (float)(d3_Time - start) / ai_CannonSwitchMs;
+            v.y = 0;
+            f = 1.0f - f;
             d3_Normalize((char *)&v);
-            v.x = ai_CannonSwitchDist * f * v.x;
-            v.y = ai_CannonSwitchDist * f * v.y;
-            v.z = ai_CannonSwitchDist * f * v.z;
+            v.x = (ai_CannonSwitchDist * f) * v.x;
+            v.y = (ai_CannonSwitchDist * f) * v.y;
+            v.z = (ai_CannonSwitchDist * f) * v.z;
             v.x = sc->pos.x - v.x;
             v.y = sc->pos.y - v.y;
             v.z = sc->pos.z - v.z;
@@ -6056,10 +6048,10 @@ void ai_CannonSwitchAnim(char *rec, CANNONSCENE *sc, GVEFFECT *run, int sel, int
             w.x = d3_ZAxis.x;
             w.y = d3_ZAxis.y;
             w.z = d3_ZAxis.z;
-            f = ai_CannonSwitchDist * f;
-            w.x = f * w.x;
-            w.y = f * w.y;
-            w.z = f * w.z;
+            k = ai_CannonSwitchDist * f;
+            w.x = k * w.x;
+            w.y = k * w.y;
+            w.z = k * w.z;
             w.x = ai_WimpelPos.x + w.x;
             w.y = ai_WimpelPos.y + w.y;
             w.z = ai_WimpelPos.z + w.z;
