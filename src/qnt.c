@@ -224,39 +224,26 @@ void qnt_MakePalette(int idx, int lvl)
     }
 }
 /* 0x420e70, maps the image to palette indices: without dither through a lookup table over the 5-bit
-   colors (qnt_Nearest per entry), with dither by error diffusion (err0 / err1 rows, cache)
-   @stuck earlier: register / addressing / reload spellings only, no meaning error; 216+ clamp / palette
-   spellings tried (the 6 clamp store orders, (lim + 256)[x] forms, the cur / prev flip order). 2026-11-09:
-   40 more variants, all worse (87 ins / 318 B is the best): the 18 clamp store orders over
-   cl[k]/cl[k-256]/cl[k+256], clamp[k]/clamp[k+512], clamp[k+256] spellings; cl = clamp + 0x100 placed
-   after the mallocs / inside if (clamp) / after the memset; lim + 256 as a local lm (loops 2/3 and the
-   three error lookups: lim parts then match the original's [edi+eax+0x100] but the frame grows, 134 ins);
-   lim[256 + x], lim[x + 256 - pal], (lim + 256)[x]; prev before cur in either flip arm (+70 ins each); cur
-   += -3. Remaining hunks: clamp in ebp / cl in esi (the original esi / ebp), the clamp loop's IV
-   clamp+0x200 (the original cl, stores k / 0 / 0xff at [eax] / [edx+eax] / [edi+eax]), loop 3 via the
-   CSE'd lim+0x100 (the original [edi+eax+0x100], lim kept in edi to the frees), the flip arm computing
-   prev before cur, sub esi,6 vs add esi,-6, the error lookups [ebx+edx+0x100] x3 vs the original's
-   [ebx+eax+0x100] then lea edx,[eax+0x100] / [ecx+edx] / [ebx+edx], the rgb/out step reload order, and
-   [ecx+eax+0xc] vs [eax+ecx+0xc] in the lut loop. Every local change reshuffles the whole allocation: a
-   whole-function allocator question (tiebreak: insensitive under the four probes only, best draft) */
+   colors (qnt_Nearest per entry), with dither by error diffusion (err0 / err1 rows, cache). The statements
+   follow the public DL1 quantizer's quantize_image (clamp / cl its range table, lim / dm its dither limit) */
 
 int qnt_Map(unsigned char *rgb, unsigned char *out, int w, int h, int dither)
 {
     int e2;
     int cnt;
     unsigned char *lut;
-    unsigned int i, n, off;
+    unsigned int i, n;
     unsigned char *clamp, *cl;
     short *cache, *err0, *err1, *cur, *prev;
-    signed char *lim;
-    int flip, y, x, dir, k, r, g, b, er, eg, eb, c;
+    signed char *lim, *dm;
+    int flip, y, x, dir, k, r, g, b;
 
     if (!dither) {
         n = w * h;
         lut = malloc(0x8000);
         if (lut) {
-            for (i = 0, off = 0; off < 0x8000 * sizeof(QNODE); off += sizeof(QNODE), i++)
-                if (((QNODE *)(off + (char *)qnt_Level[5]))->count)
+            for (i = 0; i < 0x8000; i++)
+                if (qnt_Level[5][i].count)
                     lut[i] = qnt_Nearest((unsigned char)(i >> 7) & 0x80 | (unsigned char)((i & 4) << 1)
                                              | (unsigned char)(i >> 1) & 0x10 | (unsigned char)(i >> 3) & 0x20
                                              | (unsigned char)(i >> 5) & 0x40,
@@ -286,74 +273,72 @@ int qnt_Map(unsigned char *rgb, unsigned char *out, int w, int h, int dither)
                 for (k = 0; k < cnt; k++)
                     err0[k] = 0;
                 memset(cache, 0xff, 0x10000);
-                /* cl[k - 256] is clamp[k]: this spelling and order of the three stores give VC6's code */
+                dm = lim + 256;
                 for (k = 0; k < 256; k++) {
-                    cl[k] = k;
+                    clamp[k] = 0;
+                    clamp[k + 256] = k;
                     clamp[k + 512] = 255;
-                    cl[k - 256] = 0;
                 }
                 for (k = 0; k < 256; k++) {
                     lim[k] = -20;
                     lim[k + 256] = 20;
                 }
                 for (k = -20; k <= 20; k++)
-                    lim[k + 256] = k;
+                    dm[k] = k;
                 for (y = 0; y < h; y++) {
                     if (flip) {
                         dir = -1;
                         rgb += w * 3 - 3;
                         out += w - 1;
-                        cur = err0 + w * 3;
                         prev = err1 + 3;
+                        cur = err0 + w * 3;
                     } else {
                         dir = 1;
-                        cur = err1 + w * 3;
                         prev = err0 + 3;
+                        cur = err1 + w * 3;
                     }
                     cur[2] = 0;
                     cur[1] = 0;
                     cur[0] = 0;
-                    for (x = w; x > 0; x--) {
+                    for (x = 0; x < w; x++) {
                         r = cl[rgb[0] + (prev[0] + 8 >> 4)];
                         g = cl[rgb[1] + (prev[1] + 8 >> 4)];
                         b = cl[rgb[2] + (prev[2] + 8 >> 4)];
                         k = ((r & 0xf8) << 5 | g & 0xf8) << 2 | b >> 3;
                         if (cache[k] < 0)
                             cache[k] = qnt_Nearest(r, g, b);
+                        *out = (unsigned char)cache[k];
+                        r = dm[r - qnt_PalR[cache[k]]];
+                        g = dm[g - qnt_PalG[cache[k]]];
+                        b = dm[b - qnt_PalB[cache[k]]];
+                        /* r, g, b are the clamped errors now; each goes to the neighbours with the weights 3, 5, 7
+                           (of 16) through the running sums e + 2e, + 2e, + 2e */
+                        cur[-3] = r;
+                        e2 = r + r;
+                        r += e2;
+                        cur[3] += r;
+                        r += e2;
+                        cur[0] += r;
+                        e2 += r;
+                        prev[3] += e2;
+                        cur[-2] = g;
+                        e2 = g + g;
+                        g += e2;
+                        cur[4] += g;
+                        g += e2;
+                        cur[1] += g;
+                        e2 += g;
+                        prev[4] += e2;
+                        cur[-1] = b;
+                        e2 = b + b;
+                        b += e2;
+                        cur[5] += b;
+                        b += e2;
+                        cur[2] += b;
+                        e2 += b;
+                        prev[5] += e2;
                         prev += 3;
                         cur -= 3;
-                        *out = (unsigned char)cache[k];
-                        c = cache[k];
-                        er = lim[r - qnt_PalR[c] + 256];
-                        eg = lim[g - qnt_PalG[c] + 256];
-                        eb = lim[b - qnt_PalB[c] + 256];
-                        cur[0] = er;
-                        /* error diffusion: the error goes to the neighbours with weights 3, 5, 7 (of 16) through the
-                           running sums er + 2er, + 2er, + 2er (VC6 builds the multiples as this add chain; the
-                           products er * 3 / 5 / 7 compile differently) */
-                        e2 = er + er;
-                        er += e2;
-                        cur[6] += er;
-                        er += e2;
-                        cur[3] += er;
-                        e2 += er;
-                        prev[0] += e2;
-                        cur[1] = eg;
-                        e2 = eg + eg;
-                        eg += e2;
-                        cur[7] += eg;
-                        eg += e2;
-                        cur[4] += eg;
-                        e2 += eg;
-                        prev[1] += e2;
-                        cur[2] = eb;
-                        e2 = eb + eb;
-                        eb += e2;
-                        cur[8] += eb;
-                        eb += e2;
-                        cur[5] += eb;
-                        e2 += eb;
-                        prev[2] += e2;
                         rgb += dir * 3;
                         out += dir;
                     }
