@@ -3017,3 +3017,12 @@ differing instructions. The same shape made the character loop of 0x512f30 pick 
   either search loop's start `0x2ff` to another value leaves 6 ins - the constant shared by two loops is an
   allocation candidate the original did not have. No spelling of it (0x2ffu, casts, 767, sizeof, other loop
   forms, other variables) separates the two.
+- **d2_RemoveObj byte (75 ins, "constant-0 register race")**: (1) a search loop the original keeps top-tested
+  and unstrength-reduced (`cmp i,n; jge` at the head, `mov edx,[w+0x18]; inc eax; mov edx,[edx+eax*4-4]; cmp; jne
+  head`): the condition held both tests, `while (i < n && w->objs[i++] != obj) ;` - the decompiled `for (i = 0; i <
+  n;) if (w->objs[i++] == obj) break;` is rotated and strength-reduced, and its extra candidates had moved the
+  constant 0 from edi to ebp for the whole function (75 -> 14). (2) A pointer computed through a temp (`lea eax,..;
+  shl eax,5; lea edi,[eax+T]`, ours straight into edi; one scratch register late in every later block): the
+  address was written out a second time in the compare, `in = &d2_Inputs[k]; if (d2_FocusedInput ==
+  &d2_Inputs[k])` (the d3io_AttachStock lever). Also plain `o = &d2_Objs[obj]` / `memset(&d2_Objs[obj], ..);
+  d2_Objs[obj].id = obj;` for the decompiled `off` byte offset (same code, readable).

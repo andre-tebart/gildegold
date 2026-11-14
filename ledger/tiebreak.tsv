@@ -1283,7 +1283,7 @@ exe	0x0046e150	d2_DrawAll	d2	ddf3aa353f890cef	no	byte	control=byte p1=byte p2=by
 exe	0x0046e190	d2_FindWindowAt	d2	53b3a233e133ae4f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0046e260	d2_HitTestViews	d2	09f7983d24e477cd	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0046e460	d2_HitTest	d2	d941276932388bd7	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x0046e710	d2_RemoveObj	d2	9e8f7a6af8fcbd08	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x0046e710	d2_RemoveObj	d2	9e8f7a6af8fcbd08	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x0046e990	d2_ClearScreen	d2	1de3713f4386b72a	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0046ea10	d2_TextWidth	d2	619ec5c3b00cdb56	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0046ead0	d2_DrawTextLine	d2	a0fe6e1760d50127	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
