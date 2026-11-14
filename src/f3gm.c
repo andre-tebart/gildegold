@@ -3132,27 +3132,33 @@ float gm_StockPrice(int p, int n)
     return r;
 }
 /* 0x4ffcc0, the next match of the object query gm_Query set up: from the cursor record it walks the whole instance table (gm_QueryScanAll, skipping empty records, counting them in gm_QueryScanned) or the next pointers of the list (with gm_QueryChildren the child lists go on gm_QueryStack and are walked when a list ends), tests each record against the set criteria (prototype, owner id, the owner's character number gm_ObjectOwnerNo, the prototype kind) and returns the last record that matched before the first match ends the walk (or, with gm_QueryStopFirst, the first record looked at); 0 when none
-   @deep read the whole function against 0x4ffcc0..0x4ffe83 and reconciled every statement: the first-step
-   push of the cursor's child list, the scanned < count loop with the cursor / match break, the
-   empty-record skip, the four criteria in the original's order (prototype, objId at +2, the owner number
-   as an unsigned short against 0xffff: the imm16 'cmp bp, 0xffff' now matches, the prototype kind byte
-   with sete), the scan-all step and the list step with the child stack (gm_QueryDepth is the global the
-   original caches in edi and reloads after the call). Tried: the criteria as a goto chain, as an if/else
-   with the no: label, as nested ifs with three else m = 0 (worse, 473 bytes), the no: block placed after a
-   continue (identical object: VC6 normalizes it), the null check before the res / m init (worse). What
-   remains: (1) the original's mismatch block 'xor cl,cl; jmp 0x4ffddb' sits out of line at 0x4ffe02 (the
-   jne at +0xb2 / +0xc4 and the jmp at +0x141 that diffclass reports as branch targets), ours keeps it
-   inline after the kind test: a block placement VC6 picks the same for every source order tried; (2) ours
-   keeps the zeroed m register (xor edx,edx) as a constant 0 and compares with it ('cmp eax, edx', 'cmp cl,
-   dl', 'mov byte [gm_QueryFirst], dl'), the original zeroes m in cl alone and uses test / an immediate 0
-   (0x4ffcc5..0x4ffcf4); (3) the rest is the register rotation res ebx/ebp, m cl/dl, the stack depth
-   edi/esi, the goods base esi/ebx (diffclass: regs 58) (size: 2 of the instruction difference are shared /
-   inline tails) */
+   @stuck 155 -> 153 ins: the criteria as four plain tests with an ok flag (if (ok && ..), if (!ok) m = 0)
+   instead of the goto no chain - same code as the goto-only sequence, and it ends the cross-jumped
+   stack-push tail (tail 66 -> 0). Left: the register rotation, all from m: c2trace gives m prio 12 (avail
+   edx ebx), below the cursor->list temps temp#e5 (prio 16 / 28 / 40, the first push and the two list
+   steps, where m is live for the loop-top test) which take ecx first, so m gets dl and the constant 0
+   shares edx (cmp cl,dl / mov [gm_QueryFirst],dl); the original has m in cl, the list temps in edx / esi,
+   res ebx, gm_QueryOwnerNo bp, depth edi. With that, the mismatch block (xor cl,cl; jmp) still sits inline
+   before the scan-all test where the original puts it after the scan-all arm (branch 1). Tried (= code): m
+   unsigned / declaration order / init order / init after the test / the cursor returned / m set before the
+   loop; while condition with && !m; m != 0; the first push in two statements; GM_GOOD for the kind; nested
+   if-else form (125 ins but code 105, other shape). Insensitive (four probes). (tiebreak: not measured
+   (dcp headers sample gm_QueryNext)) prior: read the whole function against 0x4ffcc0..0x4ffe83 and
+   reconciled every statement: the first-step push of the cursor's child list, the scanned < count loop
+   with the cursor / match break, the empty-record skip, the four criteria in the original's order
+   (prototype, objId at +2, the owner number as an unsigned short against 0xffff: the imm16 'cmp bp,
+   0xffff' now matches, the prototype kind byte with sete), the scan-all step and the list step with the
+   child stack (gm_QueryDepth is the global the original caches in edi and reloads after the call). Tried:
+   the criteria as a goto chain, as an if/else with the no: label, as nested ifs with three else m = 0
+   (worse, 473 bytes), the no: block placed after a continue (identical object: VC6 normalizes it), the
+   null check before the res / m init (worse). What remains: (1) the original's mismatch block 'xor cl,cl;
+   jmp 0x4ffddb' sits out of line at 0x4ff... */
 
 unsigned short *gm_QueryNext(void)
 {
     ORDOBJ *res;
     char m;
+    char ok;
 
     res = 0;
     m = 0;
@@ -3170,25 +3176,29 @@ unsigned short *gm_QueryNext(void)
             gm_QueryCursor++;
         if (gm_QueryStopFirst != 0)
             m = 1;
-        if (gm_QueryType == 0x7fff || gm_QueryCursor->type == gm_QueryType) {
-            if (gm_QueryType != 0x7fff)
+        ok = 1;
+        if (gm_QueryType != 0x7fff) {
+            if (gm_QueryCursor->type != gm_QueryType)
+                ok = 0;
+            else
                 m = 1;
-            if (gm_QueryOwner != -1) {
-                if (gm_QueryCursor->objId != gm_QueryOwner)
-                    goto no;
-                m = 1;
-            }
-            if (gm_QueryOwnerNo != 0xffff) {
-                if (gm_ObjectOwnerNo((unsigned short *)gm_QueryCursor) != gm_QueryOwnerNo)
-                    goto no;
-                m = 1;
-            }
-            if (gm_QueryKind[0] != -1)
-                m = ai_Goods[gm_QueryCursor->type * 0x41] == gm_QueryKind[0];
-        } else {
-        no:
-            m = 0;
         }
+        if (ok && gm_QueryOwner != -1) {
+            if (gm_QueryCursor->objId != gm_QueryOwner)
+                ok = 0;
+            else
+                m = 1;
+        }
+        if (ok && gm_QueryOwnerNo != 0xffff) {
+            if (gm_ObjectOwnerNo((unsigned short *)gm_QueryCursor) != gm_QueryOwnerNo)
+                ok = 0;
+            else
+                m = 1;
+        }
+        if (ok && gm_QueryKind[0] != -1)
+            m = ai_Goods[gm_QueryCursor->type * 0x41] == gm_QueryKind[0];
+        if (!ok)
+            m = 0;
         if (gm_QueryScanAll != 0) {
             if (m)
                 res = gm_QueryCursor;
