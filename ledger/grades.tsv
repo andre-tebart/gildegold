@@ -895,7 +895,7 @@ exe	0x0044c3f0	d3_LoadGroup	d3_int_io	shape	readable
 exe	0x0044c510	d3io_SetStockDir	d3_int_io	byte	readable		
 exe	0x0044c530	d3io_StockFile	d3_int_io	byte	readable		
 exe	0x0044c5d0	d3io_FindStock	d3_int_io	byte	readable		
-exe	0x0044c610	d3io_AttachStock	d3_int_io	draft	readable	stuck	
+exe	0x0044c610	d3io_AttachStock	d3_int_io	byte	readable		
 exe	0x0044c9d0	d3io_LodName	d3_int_io	byte	readable		
 exe	0x0044cbb0	d3_AttachMesh	d3_int_io	byte	readable		
 exe	0x0044cd40	d3iot_DeleteStockObject	d3_io_t	byte	readable		
