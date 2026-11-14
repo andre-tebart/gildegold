@@ -3433,7 +3433,7 @@ exe	0x00531690	main_ShutdownScreen	main	048bb4e5857b9c6b	no	byte	control=byte p1
 exe	0x005316d0	main_ShutdownModules	main	309b3dbc2b71eb66	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00531750	main_Exit	main	f728c0a0c6c9c702	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00531780	main_WindowProc	main	2be1e2f70ce7a7be	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
-exe	0x00531a00	main_BuildVersionString	main	b4b8de786392bae8	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x00531a00	main_BuildVersionString	main	b4b8de786392bae8	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x00531b50	main_CreateMutex	main	4443084d8b75a53e	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00531b80	main_SetScreenSaver	main	cd6f631adeb2d4ac	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00531ba0	main_Init	main	5bd4cc0e73eaacb9	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
