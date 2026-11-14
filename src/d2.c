@@ -1906,17 +1906,26 @@ D2OBJ *o;
     }
 }
 /* 0x46d3d0, draws all objects in drawing order, each clipped to its windows
-   @deep Read the whole 0x46d3d0..0x46e0d2 against the C (the clip walk over the windows with the frame
-   insets, the pending caption, all twelve switch arms; switch tables equal): the statements correspond.
-   Left is allocation: in the text arm of case 1 the original keeps mode in ebp and reloads x from its slot
-   after d2_DrawTextBox (mov ebp,[esp+0x30]) where ours keeps x in ebp and mode in edi, so o->w is loaded
-   early into edx and [esi+0x1d0] goes to edi (hunk at +0x80d, 24 lines); the caption test loads d2_Objs
-   after the index arithmetic (+0x83d, 16 lines); the AddDirty(x, y, d2_ShpW(+8), d2_ShpH(+8)) of case 1
-   uses edx=W / ecx=H / eax=y in the original, edx=H / eax=W / ecx=y in ours (+0x886, 30 lines). Tried the
-   caption coordinates as inline ternaries (worse) and as if/else (same). (references: M8 at +0x88a: ours
-   refers to d2_ShpH (0x6f044e), the original's field to 0x6f044c (d2_ShpW), explained: the M8 at +0x88a
-   (d2_ShpH vs d2_ShpW) is the register permutation of that AddDirty: both sides push ShpH(+8), ShpW(+8),
-   y, x in that order; the aligner pairs our movsx edx,[d2_ShpH] with the original's movsx edx,[d2_ShpW]) */
+   @stuck dcp headers sample: insensitive. The hunks are one register race in the case 5/8 text arm (lines
+   2080-2114): the original gives mode ebp and spills x for the arm (mov ebp,[x slot] after
+   d2_DrawTextBox), ours keeps x's web (c2trace prio 50, ebp) and gives mode (prio 26) edi; the AddDirty /
+   0x40 hunks after it are the same permutation. Tried: mode / tx / ty as block locals (= control), mode as
+   else-0 chain / ternary (86 ins), nested (65, other code), greyed-then-highlighted (70), mode computed
+   after GetObjPicSize or just before the call (83 / 71), the pooled ai_FloatZero / ai_FloatOne /
+   cm_DoubleOne objects at the three M10 sites (7 combinations: same instructions). flip.py (want the
+   original's lea edi,[esi+0x7c]): 20 of 849 mutants flip it, all in the window clip walk (x0/x1/y0/y1
+   clamps deleted / swapped / duplicated) or deleting a mode = 0, none closer than 74 ins. Lead: the clip
+   walk's four clamps as the original wrote them (the flips cluster there) - a form that keeps their own
+   code and changes x's weight. (tiebreak: insensitive) prior: Read the whole 0x46d3d0..0x46e0d2 against
+   the C (the clip walk over the windows with the frame insets, the pending caption, all twelve switch
+   arms; switch tables equal): the statements correspond. Left is allocation: in the text arm of case 1 the
+   original keeps mode in ebp and reloads x from its slot after d2_DrawTextBox (mov ebp,[esp+0x30]) where
+   ours keeps x in ebp and mode in edi, so o->w is loaded early into edx and [esi+0x1d0] goes to edi (hunk
+   at +0x80d, 24 lines); the caption test loads d2_Objs after the index arithmetic (+0x83d, 16 lines); the
+   AddDirty(x, y, d2_ShpW(+8), d2_ShpH(+8)) of case 1 uses edx=W / ecx=H / eax=y in the original, edx=H /
+   eax=W / ecx=y in ours (+0x886, 30 lines). Tried the caption coordinates as inline ternaries (worse) and
+   as if/else (same). (references: M8 at +0x88a: ours refers to d2_ShpH (0x6f044e), the original's field to
+   0x6f044c (d2_ShpW), explained:... */
 
 void d2_DrawObjects(void)
 {
