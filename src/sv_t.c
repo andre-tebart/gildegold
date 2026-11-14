@@ -5649,6 +5649,11 @@ void ai_CannonAim(CANNONSCENE *sc, float dt)
 
 void d3_MatTranspose(); float d3_VecAngle2(); int ai_GetDefaultEffect();
 
+typedef struct CANNONROT {  /* ai_CannonCamera's rotation / position vector: three floats and a word cleared as an int */
+    float x, y, z;
+    int w;
+} CANNONROT;
+
 
 /* 0x57f0e0, the cannon camera update (1254 B): sc = the scene struct. The cannon object (sc->obj98) and the
    three barrels (sc->obj8c) get their rotation reset, the wimpel (sc->obj9c) is turned from the aim axis
@@ -5661,26 +5666,32 @@ void d3_MatTranspose(); float d3_VecAngle2(); int ai_GetDefaultEffect();
    ms during the first 4, then (1 - (elapsed - 4) * 0.0125)^2) times 50 pushes the cannon object back along the
    level aim direction and the wimpel out from ai_WimpelPos; after it the wimpel is set back and the cannon object placed at
    the scene position
-   @deep read whole against the original (334 = 334 ins, frame 0x78 = 0x78). Fixed meaning: the wimpel turn
-   goes to pos.y (not z), the pitch ratios are (x - min) / (max - min) over the const data ai_CameraPitch*
-   / ai_CannonPitch* (loaded, divided at run time), 1450 is ai_CannonZoomRange, the camera rotation reuses
-   v (= sc->rot, the camera direction is a copied d scaled by fade), the 30-unit back step and the recoil
-   step scale first and subtract after (v = fade * v; v = sc->pos - v, SetObjectPos(obj98, &v)), the wimpel
-   offset is fade * axis + ai_WimpelPos, the fired / recoil branches as the original lays them out (reset
-   inline, recoil returns). Remaining, each allocation: +0x70 / +0xce code 9 / 11: the original holds 0 in
-   ebx from the zero block on (pos.w, pos.x, pos.z stored from ebx), ours stores immediates and zeroes edi
-   after the call (edi->ebx everywhere else); +0x235 code 29 and the fpu hunks at +0x27e..+0x2f1: the
-   camera block, the original keeps d.x / d.y in FPU registers (fld sc->dirX / dirY forwarded, only d.z
-   copied to its slot) and spills fade * dirX to the dead ratio slot 0x14, ours keeps d.y / d.z copies in
-   slots and d.x forwarded (tried 8 placements of the copy and the uncopied form: 142 is the best, the
-   uncopied form is 196 and a smaller frame); +0x431 / +0x4bc fpu: the same store order with v at 0x1c vs
-   0x24 (our slots 8 lower, ratio2 at 0x84 needs disp32: the 15 bytes size difference); the slots / order
-   hunks are the stack layout */
+   @stuck match-deep 2026-11-14: draft 142 -> 50 ins. Levers that moved: pos.w stored as an int 0
+   (CANNONROT, 99 -> the zero web in ebx from the zero block on, as the original); d as a 16-byte D3VECTOR4
+   (its slot packs with ratio and the qword temps at the original's 0x14); the d copies after the v.x
+   statement (xy9: fpu 55 -> 23). No lever: ai_FloatOne / ai_FloatZero objects (= same distance), recoil
+   x,z,y order, wimpel add order. Left: (1) frame 0x74 vs 0x78: the original has v at 0x24 as a 16-byte
+   slot (hole at 0x30) before pos at 0x34; v as D3VECTOR4 gives 0x78 but pos (count 36) then opens its slot
+   before v (27), every shift 162+ ins; splitting pos into rot / w locals (function or block scope) does
+   not share slots. (2) the dirZ copy: the original copies sc->dirZ to its slot (0x1c) after the
+   d2_GetObjValue call and forwards dirX / dirY; ours forwards all three in the 50-ins form, the copy only
+   survives placed before the call (z3..z5 = 99 / 113 ins with the frame right). Next: find the count /
+   scope that puts v before pos with v padded, then redo the copy placement round (gen script: all d.z /
+   d.xy positions). (tiebreak: not measured (dcp headers sample ai_CannonCamera)) prior: read whole against
+   the original (334 = 334 ins, frame 0x78 = 0x78). Fixed meaning: the wimpel turn goes to pos.y (not z),
+   the pitch ratios are (x - min) / (max - min) over the const data ai_CameraPitch* / ai_CannonPitch*
+   (loaded, divided at run time), 1450 is ai_CannonZoomRange, the camera rotation reuses v (= sc->rot, the
+   camera direction is a copied d scaled by fade), the 30-unit back step and the recoil step scale first
+   and subtract after (v = fade * v; v = sc->pos - v, SetObjectPos(obj98, &v)), the wimpel offset is fade *
+   axis + ai_WimpelPos, the fired / recoil branches as the original lays them out (reset inline, recoil
+   returns). pos.w is cleared as an int (CANNONROT): that store starts the original's zero register (ebx),
+   from which the later float zeros and the fired tests take it. d is a 16-byte vector (its slot packs with
+   ratio and the recoil's qword temps, the original's 0x14..0... */
 void ai_CannonCamera(CANNONSCENE *sc)
 {
-    D3VECTOR4 pos;    /* the rotations, then the camera position */
+    CANNONROT pos;    /* the rotations, then the camera position */
     D3VECTOR v;       /* the aim direction, then the camera rotation */
-    D3VECTOR d;       /* the camera's direction (sc->dirX ..) */
+    D3VECTOR4 d;      /* the camera's direction (sc->dirX ..) */
     D3MATRIX t;       /* the transpose of sc->obj98->matrix */
     float ratio;      /* the pitch within the camera's range */
     float ratio2;     /* the pitch within the cannon's range */
@@ -5728,12 +5739,12 @@ void ai_CannonCamera(CANNONSCENE *sc)
     ratio = (v.x - ai_CameraPitchMin) / (ai_CameraPitchMax - ai_CameraPitchMin);
     ratio2 = (v.x - ai_CannonPitchMin) / (ai_CannonPitchMax - ai_CannonPitchMin);
     speed = (float)d2_GetObjValue(sc->speedSlider) * 0.01f;
+    pos.y = ((0.5f - 0.25f * speed) * ratio2 * sc->zoom + ratio) * 30.0f + pos.y;
+    v.x = (speed * sc->zoom * 0.5f + ((ai_FloatOne - sc->zoom) * 0.7f + (float)sqrt(ai_FloatOne - sc->zoom) * 0.3f))
+          * (ai_CameraPitchZero - ai_CameraPitchMin) * ratio2 + ai_CameraPitchMin;
+    d.z = sc->dirZ;
     d.x = sc->dirX;
     d.y = sc->dirY;
-    d.z = sc->dirZ;
-    pos.y = ((0.5f - 0.25f * speed) * ratio2 * sc->zoom + ratio) * 30.0f + pos.y;
-    v.x = (speed * sc->zoom * 0.5f + ((1.0f - sc->zoom) * 0.7f + (float)sqrt(1.0f - sc->zoom) * 0.3f))
-          * (ai_CameraPitchZero - ai_CameraPitchMin) * ratio2 + ai_CameraPitchMin;
     fade = ((speed * ratio2 * 0.5f + 1.0f) * ai_CannonZoomRange * ratio2 + 50.0f) * sc->zoom;
     d.x = fade * d.x;
     d.y = fade * d.y;
@@ -5754,16 +5765,16 @@ void ai_CannonCamera(CANNONSCENE *sc)
             if (sc->recoilStart + 4 > sc->now)
                 fade = (float)(sc->now - sc->recoilStart) * 0.25f;
             else {
-                fade = 1.0f - (float)(sc->now - sc->recoilStart - 4) * 0.0125f;
+                fade = ai_FloatOne - (float)(sc->now - sc->recoilStart - 4) * 0.0125f;
                 fade = fade * fade;
             }
             v.x = sc->dirX;
             v.y = 0;
             v.z = sc->dirZ;
             d3_Normalize((char *)&v);
-            k = 1.0f;
-            if (sc->rot.x > 0.0f)
-                k = 1.0f - sc->rot.x / ai_CameraPitchMax;
+            k = ai_FloatOne;
+            if (sc->rot.x > ai_FloatZero)
+                k = ai_FloatOne - sc->rot.x / ai_CameraPitchMax;
             fade = k * fade * 50.0f;
             v.x = fade * v.x;
             v.y = fade * v.y;

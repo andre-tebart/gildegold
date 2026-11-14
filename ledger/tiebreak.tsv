@@ -4023,7 +4023,7 @@ exe	0x0057e0e0	ai_AlchemistRescheduleWindow	sv_t	f8a060bac0d9cb96	no	byte	contro
 exe	0x0057e230	ai_ShotTableStore	sv_t	2ad4f6bcf8a79313	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0057e270	ai_CannonScene	sv_t	fd37a4ac528b82ae	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x0057ec40	ai_CannonAim	sv_t	253577d9d4076218	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
-exe	0x0057f0e0	ai_CannonCamera	sv_t	81384ade34b6f617	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x0057f0e0	ai_CannonCamera	sv_t	81384ade34b6f617	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x0057f5d0	ai_CannonAxes	sv_t	46cdfc303cdab16e	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0057f620	ai_CannonFireCheck	sv_t	c332fead05024e6f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0057f690	ai_CannonShotResults	sv_t	f28ba0321ce133ac	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
