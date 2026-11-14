@@ -6101,30 +6101,25 @@ int ai_ScatterShot(struct SHOTREC *shot, float sideSpread, struct D3VECTOR *side
    gv_SalvoCharge) and its slot awaited (pump 0x20007). Then one LOCATIONS\DOMIZIL\KANONE1.esc script per ball
    runs at the barrel's object (sc->obj8c[sel]) with its offset (x, y, z) and the "Explosion" sound plays (the
    variation 3 for one ball, 2 for two, 1 for three)
-   @deep Read against the whole original 0x580160..0x580a4d and reconciled: the wait loop corrected to
-   while (h != -1 && cm_GetSlotState(h) == 0) (one call, top test; the calls now equal); every call,
-   argument, constant and the statement order of the three barrel cases match (t = v*k, p += t per
-   component, the same order up*5/up*-3/side*5/side*-5, the same shots to InitShot/ScatterShot/FireShots,
-   the same tail). What is left is x87 stack allocation and frame packing: the original spills one base
-   component per case to a dead int slot (x2 0x2c / y3 0x60) and int-copies it (mov edx,[esp+0x60]; mov
-   [esp+0x38],edx), keeps base.x duplicated on the FPU stack (fld st(0)/fld st(3)) where ours re-reads
-   memory, so its frame is 0x18 larger (0x1cc vs 0x1b4, all slots shifted), the a*12 index lands in ecx
-   after the call instead of edi before it (0x5801fd hunk), and the push/load orders around
-   InitShot/ScatterShot/SalvoCharge differ (0x5802a9, 0x58045a, 0x5804ba hunks). Tried: a base vector with
-   struct copies p1 = p2 = base (dist 514 -> 475 but 656 vs 645 instructions, all three components
-   int-copied where the original copies one), p2 = p1 (487), a ball pointer for ai_CannonBalls[a] (no
-   change); kept the chain assignments. ours 635 vs original 645. */
+   @stuck 476 -> 460 ins: the six vectors fwd / side / up / p1 / p2 / p3 as D3VECTOR4 (the original's frame
+   0x1cc with a 4-byte hole behind each; the frame now equal), copy order fwd x,z,y / up z,x,y (2591 copy
+   orders: best 460). Left (code 276, fpu 166): the x87 stack allocation of the t / p chains (the original
+   keeps a base component with fld st(0) / fst and int-copies one per case), and the ball index a * 12 the
+   original computes after gv_CannonItemFactor (ours before the call into edi). Tried: ball pointer local
+   (500 / 488), size first, 8 spellings of the charge expression (one code), any D3VECTOR4 subset (64; all
+   six best for the frame) (tiebreak: not measured (dcp headers sample ai_CannonExplosion)) prior: x87
+   stack allocation and the a * 12 ball index (the original computes it after gv_CannonItemFactor) are left */
 void ai_CannonExplosion(CANNONSCENE *sc, char *rec)
 {
     SHOTREC shotA;
     SHOTREC shotB;
     SHOTREC shotC;
-    D3VECTOR fwd;
-    D3VECTOR side;
-    D3VECTOR up;
-    D3VECTOR p1;
-    D3VECTOR p2;
-    D3VECTOR p3;
+    D3VECTOR4 fwd;
+    D3VECTOR4 side;
+    D3VECTOR4 up;
+    D3VECTOR4 p1;
+    D3VECTOR4 p2;
+    D3VECTOR4 p3;
     int a;
     int b;
     int cost;
@@ -6151,14 +6146,14 @@ void ai_CannonExplosion(CANNONSCENE *sc, char *rec)
     size = ai_CannonBalls[a].c;
     ai_ShotTableReset();
     fwd.x = sc->dir.x;
-    fwd.y = sc->dir.y;
     fwd.z = sc->dir.z;
+    fwd.y = sc->dir.y;
     side.x = sc->side.x;
     side.y = sc->side.y;
     side.z = sc->side.z;
+    up.z = sc->up.z;
     up.x = sc->up.x;
     up.y = sc->up.y;
-    up.z = sc->up.z;
     if (sc->selected == 0) {
         D3VECTOR t;
 
