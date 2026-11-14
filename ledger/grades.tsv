@@ -1277,13 +1277,13 @@ exe	0x0046cd80	d2_CreatePicObj	d2	byte	readable
 exe	0x0046cda0	d2_MoveObj	d2	byte	readable		
 exe	0x0046cfd0	d2_ShowPicture	d2	byte	readable		
 exe	0x0046d040	d2_DrawPic	d2	shape	readable	deep	
-exe	0x0046d220	d2_DrawObjCaption	d2	draft	readable	deep	
-exe	0x0046d3d0	d2_DrawObjects	d2	draft	readable	deep	
+exe	0x0046d220	d2_DrawObjCaption	d2	draft	readable	stuck	
+exe	0x0046d3d0	d2_DrawObjects	d2	draft	readable	stuck	
 exe	0x0046e150	d2_DrawAll	d2	byte	readable		
 exe	0x0046e190	d2_FindWindowAt	d2	byte	readable		
 exe	0x0046e260	d2_HitTestViews	d2	byte	readable		
 exe	0x0046e460	d2_HitTest	d2	byte	readable		
-exe	0x0046e710	d2_RemoveObj	d2	draft	readable	deep	
+exe	0x0046e710	d2_RemoveObj	d2	byte	readable		
 exe	0x0046e990	d2_ClearScreen	d2	byte	readable		
 exe	0x0046ea10	d2_TextWidth	d2	byte	readable		
 exe	0x0046ead0	d2_DrawTextLine	d2	draft	readable	deep	
@@ -1299,7 +1299,7 @@ exe	0x004721e0	d2_SetBackgroundTexture	d2	byte	readable
 exe	0x00472270	d2_CreateScrollButtons	d2	byte	readable		
 exe	0x00472390	d2_CreateWindow	d2	draft	readable	deep	
 exe	0x00472760	d2_ScrollWindowBy	d2	byte	readable		
-exe	0x00472800	d2_ResizeWindow	d2	draft	readable	deep	
+exe	0x00472800	d2_ResizeWindow	d2	draft	readable	stuck	
 exe	0x00472a60	d2_FinishFades	d2	byte	readable		
 exe	0x00472aa0	d2_CreateChildWindow	d2	byte	readable		
 exe	0x00472c80	d2_GetFrameSize	d2	byte	readable		
@@ -1307,7 +1307,7 @@ exe	0x00472ce0	d2_RemoveWindow	d2	byte	readable
 exe	0x00472d20	d2_RemoveWindowObjects	d2	byte	readable		
 exe	0x00472e00	d2_CloseWindow	d2	byte	readable		
 exe	0x00472f50	d2_RaiseObject	d2	byte	readable		
-exe	0x00472fd0	d2_RaiseWindow	d2	draft	readable	deep	
+exe	0x00472fd0	d2_RaiseWindow	d2	draft	readable	stuck	
 exe	0x004730e0	d2_AddToDrawOrder	d2	byte	readable		
 exe	0x004731d0	d2_WinOpenPic	d2	byte	readable		
 exe	0x00473350	d2_WinOpenPicStyled	d2	byte	readable		
@@ -1324,7 +1324,7 @@ exe	0x00474b30	d2_LoadView	d2	byte	readable
 exe	0x00474ca0	d2_SetViewTextures	d2	byte	readable		
 exe	0x00474d10	d2_ClearViewTextures	d2	byte	readable		
 exe	0x00474d90	d2_FillViewTextures	d2	byte	readable		
-exe	0x00474e80	d2_RedrawView	d2	draft	readable	deep	
+exe	0x00474e80	d2_RedrawView	d2	byte	readable		
 exe	0x004754d0	d2_EnableViewObjects	d2	byte	readable		
 exe	0x00475590	d2_SetViewEnabled	d2	byte	readable		
 exe	0x00475600	d2_CentreViewWindows	d2	byte	readable		
