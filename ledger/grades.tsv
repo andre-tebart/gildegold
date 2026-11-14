@@ -516,7 +516,7 @@ exe	0x00426f60	sb_IsVariation	sblib	byte	readable
 exe	0x00426fa0	sb_PlaySample	sblib	byte	readable		
 exe	0x00427010	sb_Resume	sblib	byte	readable		
 exe	0x00427050	sb_PlayVariation	sblib	byte	readable		
-exe	0x00427110	sb_Play	sblib	draft	readable	stuck	
+exe	0x00427110	sb_Play	sblib	byte	readable		
 exe	0x00427290	sb_Stop	sblib	byte	readable		
 exe	0x004272f0	sb_SetPan	sblib	byte	readable		
 exe	0x00427330	sb_SetVolume	sblib	byte	readable		
