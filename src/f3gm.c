@@ -8597,53 +8597,32 @@ void gm_FormatAmount(int v, unsigned char k, char *out)
 /* 0x508cc0, the goods a building b (of the type b[0]) lists after the goods *proto in the goods words of its type
    record (+0x23, the low 15 bits; +0x22 of them searched, 0x40 at most): counts the following ones up to a 0 word or
    one of type 2 / 6 (type 0x21 not counted) and stores their ids at out[1 ..] (out may be 0); 0 when *proto is not
-   listed
-   @deep Read whole against the original (72 vs 74 ins): the type record (+0x22 count, +0x23 goods words,
-   low 15 bits), the guarded search loop that leaves to the 'i >= count' test, the following goods up to a
-   0 word or type 2 / 6 (0x21 not counted), out[n] = id when out is set, all calls / fields / branches
-   equal. Left (allocation and scheduling): +0xb..+0x2f the type record's address is formed with a folded
-   '[eax + edx*4 + 0x22]' load before 'lea' (the original forms 'edi = ai_BTypes + type * 0x24d' first and
-   reads [edi + 0x22]), and at 0x508d3e the goods type load '[ecx + ebp]' where the original copies the id
-   ('mov ecx, edx; add ecx, ebp; mov cl, [ecx]'), keeping the id in edx. Tried: index vs pointer walks, for
-   / while / guarded do-while (the guarded do-while matches the loop exits), the count as a variable vs
-   t[0x22], GM_GOOD(id)->type vs *(ai_Goods + id * 0x41) */
-
+   listed */
 int gm_ListObjectsAfter(unsigned char *b, unsigned short *proto, int *out)
 {
-    unsigned char *t;
-    unsigned short *w;
+    GMBTYPE *bt;
+    GMGOOD *g;
     int n, i;
     unsigned id;
-    char k;
 
-    t = (unsigned char *)ai_BTypes + *b * 0x24d;
     n = 0;
-    i = 0;
-    if (i < t[0x22]) {
-        w = ((GMBTYPE *)t)->objs;   /* the goods words */
-        do {
-            if ((unsigned short)(*w & 0x7fff) == *proto)
-                break;
-            w++;
-        } while (++i < t[0x22]);
-    }
-    if (i >= t[0x22])
+    bt = GM_BTYPE(*b);
+    for (i = 0; i < bt->objCount; i++)
+        if ((unsigned short)(bt->objs[i] & 0x7fff) == *proto)
+            break;
+    if (i >= bt->objCount)
         return 0;
-    if (++i < 0x40) {
-        w = ((GMBTYPE *)t)->objs + i;
-        do {
-            if (*w == 0)
-                break;
-            id = *w & 0x7fff;
-            k = GM_GOOD(id)->type;
-            if (k == 2 || k == 6)
-                break;
-            if (k != 0x21)
-                n++;
-            if (out != 0)
-                out[n] = id;
-            w++;
-        } while (++i < 0x40);
+    for (i++; i < 0x40; i++) {
+        if (bt->objs[i] == 0)
+            break;
+        id = bt->objs[i] & 0x7fff;
+        g = GM_GOOD(id);
+        if (g->type == 2 || g->type == 6)
+            break;
+        if (g->type != 0x21)
+            n++;
+        if (out != 0)
+            out[n] = id;
     }
     return n;
 }
