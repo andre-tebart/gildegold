@@ -1405,3 +1405,12 @@ mechanisms, each as a generated round over all positions / subsets:
   (its unit defines it). Probe with `extern short probe;` in a dcp try variant. A tentative `short g;` (COMMON)
   gives the original's code, but dcp's D5 gate refuses a tentative definition in .bss, and moving the `= 0`
   definition below the function does not hide it (C2 sees the whole unit): open (d2_ResizeWindow, 4 ins).
+- **A redundant `test r,r; je X` right before the join's identical test, reached from one path only**: that path
+  assigned the value through an if/else, `if (g != 0) o = g; else o = 0;` (VC6 threads the `o = 0` arm but not
+  the fall-through); `o = g;` or `?:` give one test (ai_SetBookmark byte).
+- **A record address materialized (`mov eax,edi; add eax,ebx; mov al,[eax]`) where ours folds `[edi+ebx]`**: a
+  pointer local used several times (`g = &T[i]; if (g->type == A || g->type == B ..)`); a value local or the
+  element repeated keeps the folded address (ai_HandleItemDrag byte).
+- **AIMSG fills in sv_t**: `type, flags, to, fromId, time, args` (a 720 / 5040 permutation finds it in a minute;
+  three alchemist functions byte). `goto clamp` exits of a state chain = one plain else-if chain with the rest
+  in the last else (ai_CannonAim byte).

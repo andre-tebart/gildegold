@@ -3071,3 +3071,35 @@ differing instructions. The same shape made the character loop of 0x512f30 pick 
 - d2_DrawWindowText (stuck): an ebp frame whose instructions are equal but whose slots are permuted is the
   density sort (c2frame.py B rows). Read the original's slot groups from the D3_ZERO temps: their stores (`mov
   [ebp-0x20],0x80` = _zn, `mov [ebp-0x24],eax` = _zp) tell which named local each temp was packed with.
+
+## match-deep 2026-11-14 (sv_t session: bookmarks, item drag, alchemist messages, grave detail, cannon aim)
+- ai_SetBookmark byte (2 ins, "a jump-threading difference of VC6"): the original's redundant `test eax,eax; je`
+  pair (the player path tests o, then falls into a second copy of the join's `if (o)` test, the gm_Query path
+  jumping to that second copy) came from `if (sv_PanelShown != 0) o = sv_PanelShown; else o = 0;` in the player
+  branch instead of `o = sv_PanelShown;`. VC6 threads the `o = 0` path to the no-object block but does not
+  thread the fall-through path past the join's test. Reading rule: a test of a value directly followed by the same
+  test, the first reached only from one path, is an if/else on that path that assigns the value (`?:` = control).
+- ai_HandleItemDrag byte (18 ins). (1) Two equal-size locals in swapped frame slots: the original's one dead
+  store in the release block went to sel's slot, not ch's (`sel = 0;` where the decompile had `ch = 0;`; a dead
+  store still counts as a reference for the frame sort, c2frame.py: ch 6 / sel 4 -> 5 / 5). Read which slot a
+  dead store hits before deleting or moving it. (2) `mov eax,edi; add eax,ebx; mov al,[eax]` (the record address
+  materialized, ours `mov al,[edi+ebx]`) for `ai_Goods[item * 0x41]` tested against four constants: a pointer
+  local tested four times, `g = &((AIGOOD *)ai_Goods)[item]; if (g->type == 0x20 || g->type == 0x17 || ..)`.
+  A local `kind = ..` or the element written four times is one code with the folded address. This may be the
+  open `mov ecx,eax; add ecx,ebp; mov cl,[ecx]` of sv_UpdateGroundplan / sv_LoadGroundplan: look for a pointer
+  the original used more than once.
+- ai_AlchemistTrainShareWindow, ai_AlchemistSendResearchStart, ai_AlchemistSendRecipeResearch byte (26 / 35 /
+  39 ins, "scheduling only, store orders tried"): one AIMSG store order for the whole family, `type, flags, to,
+  fromId, time, arg[..]` (the message pointer push and the clock words then interleave as in the original); the
+  window function also wanted the block-scope AIMSG and `arg[1] = idx` after the random `arg[4]` (the store sits
+  after the call in the original). A full 720 / 5040 permutation found it where the earlier notes had tried
+  "the original's store order" read off the listing: never infer a source order from the scheduled stores.
+- ai_CannonAim byte (38 ins, a `tail` hunk and a register rotation): three `goto clamp` exits of a drag state
+  chain were one plain else-if chain, `if (ldown && (y < 0x50 || y > H - 0x50)) state = 0; else if (ldown &&
+  state == 0) {..} else if (!ldown && state == 1) state = 0; else if (state == 1) {drag} else {keyboard part}`;
+  VC6 threads the repeated ldown tests and lays the out-of-range block inline as the original (38 -> 30). Then
+  the drag block as `dx = ..; dy = ..; dragX = ..; dragY = ..;` (both differences before the stores) fixed the
+  eax / ecx / edx rotation through the rest of the function (30 -> byte).
+- ai_GraveDetail (stuck, draft 30 -> shape 22): the hand-written `int *p = &w[n * 3 + 0x51]` fill walk is the
+  plain `for (i = n; i < 8; i++) ((GVWIN *)w)->items[i].f = ..` (gives the original's `lea [n*3+0x51]`); with an
+  `items` local in the loop VC6 folds the bias into the store (`[edi+eax*4+0x144]`). Left: the constant-0 web.
