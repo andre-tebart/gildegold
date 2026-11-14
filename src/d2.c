@@ -139,8 +139,9 @@ int d2_PointerY = 0;  /* 0xfa5f0c, pointer y */
 char d2_GfxPath[256] = {0};  /* 0xfa5f20 */
 D2INPUT d2_Inputs[0x80] = {0};  /* 0xfa6020 */
 D2VIEW d2_Views[0x30] = {0};  /* 0xfb1020 */
-short d2_ScreenH = 0;  /* 0xfb9070 */
-short d2_ScreenW = 0;  /* 0xfb9072 */
+short d2_ScreenH;  /* 0xfb9070, common: tentative as in the original (the common block past LIBC's .bss; VC6 keeps
+                     d2_ResizeWindow's arithmetic on it in a word register only when it does not know its place) */
+short d2_ScreenW;  /* 0xfb9072, common */
 /* 0x143a1c0, the text pointer table: 0x4800 slots, the one block the text loader fills;
    d2_Strings (the first 122) and every named text pointer are views of it (txt_views.h) */
 char *txt_Ptrs[0x4800] = {0};
@@ -3985,17 +3986,7 @@ int win;
     }
     D2WOP(o)->scrollRemX += a;
 }
-/* 0x472800, resizes a window (grows in height so that all objects fit)
-   @stuck Only the d2_ScreenH load is left (mov ecx, dword [d2_ScreenH]; sub ecx,eax against the original's
-   mov cx, word; sub cx,ax): VC6 widens the 16-bit chain because d2.c defines d2_ScreenH at a 4-aligned
-   offset. A tentative `short d2_ScreenH; short d2_ScreenW;` (COMMON) gives byte with no other function
-   moved, and an in-function `extern short probeH;` gives the original's code, but dcp's D5 gate refuses a
-   tentative definition in uninitialised data; the `= 0` definitions moved below the function change
-   nothing. Spellings of the clamp (casts, operand orders, a short local, min()) = control or worse (one
-   non-ordinary two-statement form 2 ins). Fixed this session: the object loop as a plain for over
-   wn->objs[i] with a record pointer (32 -> 4 ins). Open: a data / declaration question (where the original
-   defined d2_ScreenH / d2_ScreenW so that VC6 did not know their alignment). (tiebreak: not measured (dcp
-   headers sample d2_ResizeWindow)) */
+/* 0x472800, resizes a window (grows in height so that all objects fit) */
 
 void d2_ResizeWindow(short w, short h, int win)
 {
