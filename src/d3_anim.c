@@ -778,12 +778,20 @@ normalize:
         }
         f1 = P->flags.b[1];
         done = 0;
-        if ((f1 & 4) && (f1 & 0x10) && !(f1 & 1) && !(P->flags.b[8] & 0x20) && P->next < P->key - 1) {
+        if ((f1 & 4) && (f1 & 0x10) && !(f1 & 1) && !(P->flags.b[8] & 0x20) && P->key < P->nkeys - 1) {
             P->flags.b[8] |= 0x20;
-            P->keys[P->key - 1].posin.x = P->keys[P->key - 1].posin.y = P->keys[P->key - 1].posin.z = 0;
-            P->keys[P->key - 2].posout.x = P->keys[P->key - 2].posout.y = P->keys[P->key - 2].posout.z = 0;
-            P->keys[P->key - 1].rotin.x = P->keys[P->key - 1].rotin.y = P->keys[P->key - 1].rotin.z = 0;
-            P->keys[P->key - 2].rotout.x = P->keys[P->key - 2].rotout.y = P->keys[P->key - 2].rotout.z = 0;
+            P->keys[P->nkeys - 1].posin.x = 0;
+            P->keys[P->nkeys - 1].posin.y = 0;
+            P->keys[P->nkeys - 1].posin.z = 0;
+            P->keys[P->nkeys - 2].posout.x = 0;
+            P->keys[P->nkeys - 2].posout.y = 0;
+            P->keys[P->nkeys - 2].posout.z = 0;
+            P->keys[P->nkeys - 1].rotin.x = 0;
+            P->keys[P->nkeys - 1].rotin.y = 0;
+            P->keys[P->nkeys - 1].rotin.z = 0;
+            P->keys[P->nkeys - 2].rotout.x = 0;
+            P->keys[P->nkeys - 2].rotout.y = 0;
+            P->keys[P->nkeys - 2].rotout.z = 0;
         }
         if (now - D3_L(obj)->time > (unsigned int)P->maxStep)
             over2 = 1;
