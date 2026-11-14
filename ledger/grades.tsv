@@ -4116,7 +4116,7 @@ exe	0x0058aa30	lobby_ShowCity	lobby	byte	readable
 exe	0x0058aba0	lobby_ShowMyPlayer	lobby	shape	readable		
 exe	0x0058ad20	lobby_FetchPlayers	lobby	byte	readable		
 exe	0x0058ada0	lobby_ShowPlayers	lobby	byte	readable		
-exe	0x0058af50	lobby_ChoosePlayer	lobby	shape	readable	stuck	
+exe	0x0058af50	lobby_ChoosePlayer	lobby	byte	readable		
 exe	0x0058b880	lobby_ChooseProfession	lobby	byte	readable		
 exe	0x0058ba70	lobby_ShowChat	lobby	shape	readable		
 exe	0x0058bbd0	ai_InitProductionTables	lc	byte	readable		
