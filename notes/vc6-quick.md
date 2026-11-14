@@ -222,6 +222,12 @@ mechanisms, each as a generated round over all positions / subsets:
   original keeps in a slot and bumps by the row size beside the count is `strcpy(names[cnt++], one)` (VC6's
   strength-reduced IV; `strcpy(names[cnt], one); cnt++;` gives an offset copy instead) (init_NameBuildings).
 
+- **A row pointer the original recomputes every row** (an `imul` per row behind the inner loop's guard, ours a
+  running pointer plus a stride slot): compute the address in the inner loop body (`p = pix + ((r + y) * pitch +
+  x + c) * 3;` / `src[(y + i) * pitch + x + j]`); VC6 hoists it to the inner preheader behind the guard and the
+  outer loop never strength-reduces it (shp grabbers 183 -> 6, 274 -> 34 ins). A packed struct word at an odd
+  offset (D2KEY.gb) is split into byte loads by VC6 where the original loads the word: open data question.
+
 ## Control flow and returns
 - **Empty case labels**: VC6 drops `case X: break;` (also `return;`, dead stores, `goto` to the join)
   before switch lowering, so those labels cannot affect the dispatch tree. A folded `if (0) { }` body

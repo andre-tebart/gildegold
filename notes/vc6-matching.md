@@ -2910,3 +2910,47 @@ differing instructions. The same shape made the character loop of 0x512f30 pick 
   mode >= 0 path returns it untouched, edi pushed for `old`): `int r = 1; .. case 1: if (mode < 0) { if (on)
   r = Lit(..); else r = Blit(..); } return r;`. Returning the calls directly (`return Lit(..)`) folds r away
   whatever the other returns say (8 combinations = one code).
+
+## match-deep 2026-11-14 (second shp session): the grabbers' row pointer, the key word, sibling copies
+- **The per-row pixel pointer that the original recomputes every row** (0x47a460 / 0x47ab30 / 0x47ad40: `imul`
+  per row INSIDE the inner loop's `w > 0` guard, our row pointer strength-reduced over the rows into a running
+  pointer + a pitch*n slot): compute the address inside the inner loop body, `for (c = 0; c < w; c++) { p = pix +
+  ((r + y) * pitch + x + c) * 3; ..}` or the plain index `src[(y + i) * pitch + x + j]`. VC6 hoists the invariant
+  row part into the inner loop's preheader, which sits behind the guard, so the outer loop never strength-reduces
+  it (an explicit `if (w > 0)` around the row pointer shows the same mechanism). The row pointer assigned before
+  the inner loop is SR'd whatever its spelling (the "not the source spelling" note above, line ~1637, was this).
+  d2_GrabShape16NoRuns 183 -> 6 ins, d2_GrabShape24NoRuns 274 -> 34 ins.
+- The copy loop of the same functions, whose original DOES strength-reduce (stride in a dead parameter slot,
+  the row pointer computed behind the `s->h != 0` guard): `for (i = 0; i < s->h; i++) { p = src + (y + i) * pitch
+  + x; memcpy(dst, p, s->w * n); dst += ..; s->npix += ..; s->size += ..; }` - not a hand-advanced `p += pitch`
+  in a do-while (that puts the base computation before the guard). `dst +=` first, then the two counters.
+- **A key compared / passed as `r` + the word `gb` (D2KEY, packed, gb at offset 1)**: the original loads gb with
+  one `mov ax, word [key+1]` (al = g, ah = b, `mov cl, ah`) and r as a byte; ours splits gb into byte loads and
+  merges r + g into one dword / word load. Every spelling of the access is one code (casts, `>> 8`, `/ 256`,
+  LOBYTE / HIBYTE, bitfields g:8 b:8, a pointer, a word view at +1, locals), and D2KEY's gb as a union in the
+  header too (that header change also cost sv_t's ai_TutorialInitChapter3 + 1 more their byte). A dcp try probe
+  with gb as its own symbol (`{ extern unsigned short probeGB; .. }` or a struct whose word sits at offset 0)
+  gives the original's instructions: VC6 splits a word it knows sits at an ODD offset of its symbol. So the
+  original's declaration had gb at an even offset of some symbol - open, a data question (gapdata) for the five
+  shape grabbers (16NoRuns 6 ins, 24NoRuns 34, 8Runs, 16Runs, 24Runs all read the key this way).
+- **A run-length blit's grey value passed three times to dd_RGB(unsigned char, ..)** (d2_ShpBlit16HalfDark: the
+  original pushes `_ftol`'s eax three times, no store): the grey expression written out in each argument (a macro
+  in the original); VC6 CSEs the three copies into one `_ftol`. A named `unsigned char v` goes through a stack
+  slot (`mov byte [v],al; mov eax,[v]`), an `int v` changes the allocation of the whole function (128 ins). The
+  out-parameters of dd_SplitRGB were `unsigned char r, g, b` (the original's `mov eax,[r]; and eax,0xff` loads of
+  aligned byte locals), not ints with `& 0xff`. 128 -> 2 ins; the last two are three split-piece reloads at one
+  edge in ascending candidate id (c2trace), no spelling found.
+- **A sibling already byte is the source**: d2_ShpConvert8To16 (224 ins) was d2_ShpConvert24To16's text with the
+  palette lookup - `if (0 < *srccnt) do .. while (m < *srccnt)`, `src[1]` read at each use, the pointer chain
+  `srccnt = src; dst = dstcnt; dstcnt + 1; src + 1` - plus `n = s->npix + s->size; r = mem_Alloc(n, ..)` (the
+  inline sum put the size load into esi instead of edi and rotated every scratch register after it: 30 -> 0).
+  d2_ShpBlit16ScaledLit (251 ins) was d2_ShpBlit16Scaled's text with the light table and only the top / bottom
+  clips (`unsigned char n`, `int y`: the original's `and edi,0xff` / `idiv` / `jl`), cp / run / line in the old
+  order: byte in two rounds; the hand-guarded do-whiles and the `next` pointer of the old text were the optimum
+  of the wrong form.
+- `maxy = maxx = 0;` stores maxx first (the original's order) where every order of two separate statements
+  stored maxy first (d2_GrabShape16NoRuns).
+- dcp try: a whole-function variant that starts at the definition line (no `/* 0xADDR */` comment) applied with
+  --apply drops the function from the ledger (`dcp fn: no function`); put the comment back from git. Variant
+  files with backticks in a `dcp stuck` text in bash: the shell runs them - quote the reason with single quotes
+  or pass it through a file.
