@@ -3263,3 +3263,36 @@ differing instructions. The same shape made the character loop of 0x512f30 pick 
   an int (`neg; fild; fmul 0.01; fadd 1.0`) folds to `fsubr` in every spelling (also with the cm_DoubleOne object).
 - **gm_AddTime (stuck, 32 ins)**: the original keeps 60 in esi for both idivs and uses edi for three read-modify-write
   temps; no named local for the sums gets edi (copies fold, s / m locals 38 ins).
+
+## match-deep 2026-11-14, third f3gm session (gm_UpdatePrices, gm_PermissionBits, gm_BuildNext, gm_CollectOffers, gm_ForfeitEstate, gm_ListObjectsAfter)
+- **gm_ListObjectsAfter byte (50 ins): the plain text and one statement order.** The decompiled guarded do-whiles over a
+  hand-advanced `w` pointer as two index loops through a type pointer (`bt = GM_BTYPE(*b); for (i = 0; i < bt->objCount;
+  i++) if ((unsigned short)(bt->objs[i] & 0x7fff) == *proto) break; if (i >= bt->objCount) return 0; for (i++; i < 0x40;
+  i++) {..}`) and a goods pointer local (`g = GM_GOOD(id); if (g->type == 2 || g->type == 6)`, the original's `mov
+  ecx,edx; add ecx,ebp; mov cl,[ecx]`): 50 -> 26. A `char k = GM_GOOD(id)->type` local instead of g: 42. Then `n = 0;`
+  before `bt = ..` (the original materializes bt in edi before reading +0x22; with bt first VC6 folds the type address
+  into the count load): byte.
+- **gm_BuildNext (stuck, 44 -> 8): a loop that leaves by `break` to one final return moves the callee-saved pushes
+  behind the guards.** `for (;;) { ..; if (end) {..; return cur;} if (m) return cur; }` pushed ebx / ebp / edi in the
+  prologue (every early return got four pops); `break` in both exits and one `return cur;` after the loop gave the
+  original's `push ebx .. push edi` right before the loop (the amt_GetColumnOffices rule again). The flag store
+  `gm_BQFirstCall = 0` after the first-call walk instead of before it: the walk's exit then goes to the shared end check
+  (the original's `jmp`) instead of a threaded return copy (-2).
+- **gm_PermissionBits (stuck, 42 -> 38): `goto fin` exits.** Each `if (obj == 0) goto fin;` (skipping the object tests
+  after the switch) written as an `obj != 0 &&` condition of its own test: VC6 threads the known obj test after the
+  switch itself; all four sites needed (single sites were worse). The do-while job scans as plain for loops: same code.
+- **gm_ForfeitEstate (stuck, 50 -> 38): two order rounds.** The opening assignments (best, own, n, bestv, pl of 120
+  orders) fixed the prologue's stores and pl's register; a memset message's `flags` before its `time` (720 orders)
+  fixed the last store pair. The decompiled `if (i >= 6) { if (i < n) {..} break; }` in the print loop is `if (i >= 6)
+  break;` and one `if (i < n)` after the loop (same code). Open: VC6 lays the house-owner block out at the function's
+  end (jne there, jmp back) where the original keeps it inline after the `||` test's `je`; no arm form moves it.
+- **gm_UpdatePrices (stuck, 40 -> 37)**: the goods-kind pointer local again (`g = GM_GOOD(item); g->type != 0x17 &&
+  g->type != 0x25`) and cm_DoubleHalf. 63 operand / term / factor spellings of the interpolation arms are one code;
+  the open hunk is the original's p*17 hoisted above the arms' test (VC6 hoists it only when every arm starts with
+  it; flip.py: only breaking the CSE of A[k-1].year in the k>0 arm does that).
+- **gm_CollectOffers (stuck, 47)**: the decompiled countdown walk `for (k = 0x58; k != 0; k--, b++)` and `for (k = 0;
+  k < 0x58; k++, b++)` are one code (VC6 makes the `dec; jne` itself); an index form `b = ai_Blds + k` is worse.
+  Open: where VC6 rematerializes the zero register (a block before the latch in the original, the loop head in ours),
+  which decides the direction in which the two identical supply tails are cross-jumped.
+- Tooling: a whole-function `dcp try` variant needs the address comment verbatim; a script that cut the comment at the
+  first line containing `(` dropped it and the build lost the function's grade (`no graded function`) - cut at `*/`.

@@ -1454,3 +1454,7 @@ mechanisms, each as a generated round over all positions / subsets:
   if (gm_SpawnCharacter byte). A result the original reloads from its slot at a "known 0" return: every arm assigns
   it and one final `return o;` (gm_BuildingMainObject byte).
 - `x = -1; c = (char)0xff;` share one constant candidate; `(unsigned char)` 0xff keeps them apart (gm_Query).
+- **Callee-saved pushes in the prologue where the original pushes before the loop**: a `for (;;)` whose exits each
+  `return`; write `break` in each exit and one `return` after the loop (gm_BuildNext 44 -> 10). A pointer local for a
+  record the original materializes (`bt = GM_BTYPE(..)`) folded into the first load: assign the other init (`n = 0`)
+  before it (gm_ListObjectsAfter byte).
