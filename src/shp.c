@@ -478,7 +478,19 @@ D2SHP *d2_GrabShape16Runs(int x, int y, int w, int h, unsigned short *pix, unsig
    "shp_t:GrabBit8:ShapeHeader"): scans the rectangle for the bounding box of the non-zero pixels, copies the
    plain pixel rows into the shape and returns an exactly sized copy of it (allocated with mem_Alloc; the
    scratch shape is freed).
-   @deep behaviour draft (319 code hunks, 493/544 bytes): the pixel scan keeps p in a stack slot (load/add/store per pixel, [esp+0x10]) where the original keeps it in edx (one add edx,2), and the bounds homes differ (original maxx/maxy in the slots 0x10/0x14, minx/miny in esi/edi; ours maxx=edi, minx=edx, miny=esi, maxy=slot); frame 0x10 vs 0x8, 544 vs 528 bytes. Read against 47ab30..47ad3f: the bbox conditions and reset, the header store order (x0,w,y0,h,ax0,ay0,ax1,ay1,bx0,by0,bx1,by1), the unused dd_RGB call, the row copy (rep movs, npix/size/p/dst updates), lineoff/mode/nruns and the alloc-copy-free tail all correspond. Tried: unsigned int bounds with (int)(x & 0xffff) compares (the original's dword stores), declaration orders, tail counter on w instead of i - no byte change */
+   @stuck 183 -> 6 ins: the scan tests src[(y + i) * pitch + x + j] (a row pointer set before the inner
+   loop gets strength-reduced over the rows; the original recomputes the imul per row inside the inner
+   guard), the copy loop as for (i ..) { p = src + (y + i) * pitch + x; memcpy; dst += ..; npix += ..; size
+   += ..; } (dst before the counters), the inits as maxy = maxx = 0; minx = w; miny = h; before mem_Alloc.
+   Left: only the dd_RGB key loads - the original reads the D2KEY word gb with one and r with , ours
+   narrows gb to bytes and merges r+g into + . Every spelling of the access (casts, >> 8, / 256,
+   LOBYTE/HIBYTE, a pointer, a cast word view at +1, a short/int local) is one code; D2KEY's gb as a union
+   {w; {g, b}} under pack(1) in d2_types.h too (and it cost sv_t's ai_TutorialInitChapter3 + 1 more their
+   byte). A probe with gb as its own symbol (block extern unsigned short, or a struct whose word is at
+   offset 0) is byte: VC6 narrows a word that it knows sits at an odd offset. So the original saw gb at an
+   even offset of some symbol: a data question (where the key's object starts, 0x6f0453 or a separate
+   packed object at 0x6f0455) for a gapdata pass, also for d2_GrabShape24NoRuns (same loads) (tiebreak: not
+   measured (dcp headers sample d2_GrabShape16NoRuns)) */
 
 D2SHP *d2_GrabShape16NoRuns(int x, int y, int w, int h, unsigned short *src, unsigned char mode, unsigned short pitch)
 {
@@ -488,15 +500,13 @@ D2SHP *d2_GrabShape16NoRuns(int x, int y, int w, int h, unsigned short *src, uns
     D2SHP *s, *r;
     char *dst;
 
-    maxx = 0;
-    maxy = 0;
-    s = mem_Alloc((w * 8 + 4) * h + 0x32, "shp_t:GrabBit8:ShapeHeader");
+    maxy = maxx = 0;
     minx = w;
     miny = h;
+    s = mem_Alloc((w * 8 + 4) * h + 0x32, "shp_t:GrabBit8:ShapeHeader");
     for (i = 0; i < h; i++) {
-        p = src + (y + i) * (pitch & 0xffff) + x;
-        for (j = 0; j < w; j++, p++) {
-            if (*p != 0) {
+        for (j = 0; j < w; j++) {
+            if (src[(y + i) * pitch + x + j] != 0) {
                 if (j > (int)(maxx & 0xffff))
                     maxx = j;
                 if (j < (int)(minx & 0xffff))
@@ -529,17 +539,12 @@ D2SHP *d2_GrabShape16NoRuns(int x, int y, int w, int h, unsigned short *src, uns
     s->size = 0x32;
     dd_RGB(d2_TransparentColour.r, (unsigned char)d2_TransparentColour.gb, (unsigned char)(d2_TransparentColour.gb >> 8));
     dst = (char *)s + s->size;
-    p = src + y * pitch + x;
-    w = 0;
-    if (s->h != 0) {
-        do {
-            memcpy(dst, p, s->w * 2);
-            s->npix += s->w;
-            s->size += s->w * 2;
-            p += pitch;
-            dst += s->w * 2;
-            w++;
-        } while (w < s->h);
+    for (i = 0; i < s->h; i++) {
+        p = src + (y + i) * pitch + x;
+        memcpy(dst, p, s->w * 2);
+        dst += s->w * 2;
+        s->npix += s->w;
+        s->size += s->w * 2;
     }
     s->lineoff = 0;
     s->mode = mode;

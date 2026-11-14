@@ -1410,7 +1410,7 @@ exe	0x00479f10	d2_SetLineTable	shp	af7f91e23ab4804e	no	byte	control=byte p1=byte
 exe	0x00479f40	d2_GrabShape24Runs	shp	2dd66c38cdef02ac	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x0047a460	d2_GrabShape24NoRuns	shp	1ae9969c9646d5ef	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x0047a7d0	d2_GrabShape16Runs	shp	7e86923a1c5f1346	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
-exe	0x0047ab30	d2_GrabShape16NoRuns	shp	3a837b554ffa2740	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x0047ab30	d2_GrabShape16NoRuns	shp	3a837b554ffa2740	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x0047ad40	d2_GrabShape8Runs	shp	7a055e3e4c8911aa	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x0047b220	d2_GrabShape	shp	16717eb5fb1c17f8	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0047b350	d2_ShpBlit16Scaled	shp	5e26193b4400cbd1	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
@@ -3433,59 +3433,59 @@ exe	0x00531690	main_ShutdownScreen	main	048bb4e5857b9c6b	no	byte	control=byte p1
 exe	0x005316d0	main_ShutdownModules	main	309b3dbc2b71eb66	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00531750	main_Exit	main	f728c0a0c6c9c702	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00531780	main_WindowProc	main	2be1e2f70ce7a7be	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
-exe	0x00531a00	main_BuildVersionString	main	b4b8de786392bae8	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
+exe	0x00531a00	main_BuildVersionString	main	9f81cd0a28c816cb	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00531b50	main_CreateMutex	main	4443084d8b75a53e	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00531b80	main_SetScreenSaver	main	cd6f631adeb2d4ac	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00531ba0	main_Init	main	5bd4cc0e73eaacb9	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00531c20	main_ShutdownEngine	main	809548ac7a2a3779	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x00531c50	main_OpenScreen	main	82b3e3966231579e	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
+exe	0x00531c50	main_OpenScreen	main	5f70021019c4ca6e	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00532160	main_OpenEngine	main	6b1ea5d6d22691b1	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x005324f0	main_CreateWindow	main	e71c7b0efc605d69	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x005324f0	main_CreateWindow	main	c5316bb6b98c5afa	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00532700	main_StartCityGame	main	62d798df77938acd	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x005327e0	main_PlayerCountDialog	main	bac3a47610bebff4	no	draft	sample n=32 seed=1 compiled=31 codegens=1 best=draft
-exe	0x005328f0	main_HostNetworkGame	main	80d005b09b099034	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x00532a70	main_JoinNetworkGame	main	07ec480448c207ae	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
+exe	0x005327e0	main_PlayerCountDialog	main	48523357adc8fd93	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
+exe	0x005328f0	main_HostNetworkGame	main	541fd40477ec5354	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
+exe	0x00532a70	main_JoinNetworkGame	main	17b7315ef9ce65d7	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00532c30	main_EnterHostAddress	main	d79764f086820d42	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x00532da0	main_SearchNetworkGame	main	3033bb0e46f9bc8d	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
+exe	0x00532da0	main_SearchNetworkGame	main	9f73df0e32a97c0d	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00533470	main_ChooseNetworkGame	main	28ee11445843b350	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x005335b0	main_NetworkMenu	main	c93258d5524ce963	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00533740	main_MoneyDialog	main	cf9f5cdd76bb58f8	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x005337f0	main_MenuButton	main	839cefad1e947914	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x00533850	main_Menue	main	f3a75eb06191f931	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
+exe	0x00533850	main_Menue	main	f4089098da4561a9	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00534040	main_GiveStartBuildings	main	0f6de19c3c38ea1c	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x005344f0	main_PlaceFamilyModel	main	e3716d58f01b7efb	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
+exe	0x005344f0	main_PlaceFamilyModel	main	d6681c70aec02e4e	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
 exe	0x00534610	main_ChooseTalents	main	ee8550a5930897dd	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
-exe	0x00534b30	main_ChooseModel	main	4e4f7acf7ac97193	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
-exe	0x005359f0	main_ChooseFamily	main	efcd8d3980fd31c7	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
-exe	0x005361d0	main_ChoosePlayer	main	0652607d5e967f47	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
-exe	0x00536980	main_ChooseHistory	main	15810c213b97e360	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
+exe	0x00534b30	main_ChooseModel	main	5138f8502a71fe63	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
+exe	0x005359f0	main_ChooseFamily	main	12f3eb34ca2f3cc8	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
+exe	0x005361d0	main_ChoosePlayer	main	5aa38502bb6ce77a	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
+exe	0x00536980	main_ChooseHistory	main	6c29172f4c3a2d8b	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00536d80	main_CharacterIntro	main	989f9641bf2e8704	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00536e80	main_ChooseDifficulty	main	b88b1c6fdf0127ef	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x00537040	main_ChooseOpponents	main	c3980e99e1021c3c	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
-exe	0x00537230	main_ChooseCity	main	7cf440ca25a4556d	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
+exe	0x00537040	main_ChooseOpponents	main	376c047f56bb8b2b	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
+exe	0x00537230	main_ChooseCity	main	4d33cd5aad900808	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00537930	main_NewSinglePlayerGame	main	faad6e0c57bc3632	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00537980	main_LoadingScreen	main	6f9c38e6a477e40c	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00537af0	main_SetLoadProgress	main	bd11981eb3b9185d	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00537b60	main_LoadProgressCallback	main	882ae497afa4adb7	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00537be0	main_CloseLoadingScreen	main	46fe18b7176fa3fd	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x00537c70	main_PreloadSound	main	1a05ffa099a15e4a	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
+exe	0x00537c70	main_PreloadSound	main	ad619d51925c8946	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00537db0	main_FreeSoundBanks	main	30e7343386f774ff	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00537de0	main_StartGame	main	0b0b0c404d4919a4	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00537f40	main_EndGame	main	68671b89ac5fb237	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00538140	main_RundenBeginn	main	503e9d8c2106fe24	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x005384e0	main_EndRound	main	41300526e62311e6	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
-exe	0x00539620	main_ReplaceFigure	main	6ad5586e91377ecf	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
-exe	0x00539870	main_RoundReport	main	b8b7ba841264f9da	yes	draft	sample n=32 seed=1 compiled=32 codegens=2 best=draft
-exe	0x0053a250	main_UpdateFigure	main	7dc04722a68086f7	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x005384e0	main_EndRound	main	87bb9c64cddb5a00	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
+exe	0x00539620	main_ReplaceFigure	main	c35457202d9f562a	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
+exe	0x00539870	main_RoundReport	main	4454050e6938977e	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
+exe	0x0053a250	main_UpdateFigure	main	ac316cd664468c41	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
 exe	0x0053a450	main_UpdateFigures	main	0adcc8f2a3d2c65f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x0053a520	main_SettleRound	main	27eee999ce62eac8	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
-exe	0x0053b2e0	main_BeginPlayerRound	main	caf16e07fda372b7	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x0053a520	main_SettleRound	main	3a13bbd7e2c68953	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
+exe	0x0053b2e0	main_BeginPlayerRound	main	47b750942f01b65d	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
 exe	0x0053b830	main_CheckCD	main	b9dfec10525311c4	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0053b840	main_CreateStartCouple	main	fb780d00ddb038a9	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
-exe	0x0053bb20	main_GameLoop	main	bef08d76d3a4c38b	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
+exe	0x0053bb20	main_GameLoop	main	9cd3c1b231082ad6	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0053c9b0	main_PlayIntroMovies	main	667aadf052332b6b	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0053cb40	main_PlayOutro	main	59e481de2d82ccd7	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x0053ccf0	WinMain	main	57d52603b401f9d0	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
+exe	0x0053ccf0	WinMain	main	e45e8ddc3b251a52	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0053d430	he_AllocNone	he	313846eb70f97e77	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0053d470	he_RunNone	he	fb429cad4d03eb8e	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0053d4b0	he_InitEvents	he	d40bc4ce3c23866b	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
