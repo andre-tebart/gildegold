@@ -23,9 +23,7 @@ extern void *qnt_UnusedBuffer;                 /* 0x632364 */
 extern unsigned int qnt_HeapCount;          /* 0x632358 */
 extern int qnt_Inited;                      /* 0x63235c */
 extern int qnt_Colors;                      /* 0x631728 */
-extern unsigned char qnt_PalR[256];         /* 0x631428 */
-extern unsigned char qnt_PalG[256];         /* 0x631528 */
-extern unsigned char qnt_PalB[256];         /* 0x631628 */
+extern unsigned char qnt_Pal[3][256];       /* 0x631428, [0] red, [1] green, [2] blue */
 extern unsigned short qnt_R[256];           /* 0x632140, r bits spread to octree index positions */
 extern unsigned short qnt_G[256];           /* 0x631228 */
 extern unsigned short qnt_B[256];           /* 0x631f38 */

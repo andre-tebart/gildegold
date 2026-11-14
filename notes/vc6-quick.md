@@ -996,3 +996,20 @@ mechanisms, each as a generated round over all positions / subsets:
   if (lobby_List[i + 1] == 0)`), not `for (i = 1; i < 9; i++) .. lobby_List[i]`. Same instructions, the address
   operands swapped; `*(i + p)`, `*(p + i)`, a local for the element, nested ifs are all the 1-based code. The
   twin loop above it in the same function is 1-based in the original (lobby_ChoosePlayer byte).
+- **A unit that is public code: get the published source's spelling first.** qnt.c is Dennis Lee's DL1 quantizer
+  (dl1quant: build_table / reduce_table / set_palette / quantize_image / bestcolor). qnt_Map had resisted 250+
+  variants at 87 ins; written the way the published quantize_image spells it, it was byte in four rounds:
+  the row pointers stepped at the END of the pixel loop (`nextrow[0-3] = e; .. nextrow[0+3] += ..; thisrow[0+3]
+  += ..; thisrow += 3; nextrow -= 3;`, ours had stepped them in the middle and used [0] / [6] / [3]): 87 -> 72
+  together with the clamp table filled in index order (0, k, 255) and thisrow set before nextrow; a pointer
+  local for the biased table (`dm = lim + 256;` then `dm[k] = k` and `dm[r - pal]`): 72 -> 2 (VC6 forwards the
+  pointer into the addressing, `[edi+eax+0x100]`, and CSEs it in the loop as `lea edx,[eax+0x100]`; written
+  `lim[x + 256]` it never does); the table loop as `tbl[5][i].count` with the plain index: 2 -> 0 (a
+  hand-strength-reduced `off += sizeof` loop had the address operands swapped). Signs that a unit is library
+  code: a self-contained algorithm, magic numbers (200000, DITHER_MAX 20, 32768), tables biased by 256.
+- **Three terms of a sum evaluated in an order no spelling gives** (`sq[R - r] + sq[B - b] + sq[G - g]`, all 6
+  orders, temps and parentheses one code; M8 lines with crossed references): the three arrays were ONE object,
+  `unsigned char pal[3][256]`. VC6 orders commutative operands by rank, and three symbols rank differently from
+  three offsets of one symbol. Probe before touching the data: `extern unsigned char probePal[3][256];` inside
+  the function in a dcp try variant (identical instructions = the lever) (qnt_Nearest 4 ins -> byte; qnt_PalR /
+  G / B became qnt_Pal[3][256]).

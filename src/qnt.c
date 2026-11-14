@@ -44,9 +44,9 @@ void qnt_GetPalette(unsigned char *pal)
     int i;
 
     for (i = 0; i < 256; i++) {
-        pal[i] = qnt_PalR[i];
-        pal[i + 256] = qnt_PalG[i];
-        pal[i + 512] = qnt_PalB[i];
+        pal[i] = qnt_Pal[0][i];
+        pal[i + 256] = qnt_Pal[1][i];
+        pal[i + 512] = qnt_Pal[2][i];
     }
 }
 /* 0x4207c0, qnt_R / G / B: the 8 bits of a channel spread to their bit positions in the octree node
@@ -218,9 +218,9 @@ void qnt_MakePalette(int idx, int lvl)
         c = qnt_Level[lvl][idx].count;
         g = qnt_Level[lvl][idx].g;
         b = qnt_Level[lvl][idx].b;
-        qnt_PalR[qnt_Colors] = (qnt_Level[lvl][idx].r + (c >> 1)) / c;
-        qnt_PalG[qnt_Colors] = ((c >> 1) + g) / c;
-        qnt_PalB[qnt_Colors++] = ((c >> 1) + b) / c;
+        qnt_Pal[0][qnt_Colors] = (qnt_Level[lvl][idx].r + (c >> 1)) / c;
+        qnt_Pal[1][qnt_Colors] = ((c >> 1) + g) / c;
+        qnt_Pal[2][qnt_Colors++] = ((c >> 1) + b) / c;
     }
 }
 /* 0x420e70, maps the image to palette indices: without dither through a lookup table over the 5-bit
@@ -308,9 +308,9 @@ int qnt_Map(unsigned char *rgb, unsigned char *out, int w, int h, int dither)
                         if (cache[k] < 0)
                             cache[k] = qnt_Nearest(r, g, b);
                         *out = (unsigned char)cache[k];
-                        r = dm[r - qnt_PalR[cache[k]]];
-                        g = dm[g - qnt_PalG[cache[k]]];
-                        b = dm[b - qnt_PalB[cache[k]]];
+                        r = dm[r - qnt_Pal[0][cache[k]]];
+                        g = dm[g - qnt_Pal[1][cache[k]]];
+                        b = dm[b - qnt_Pal[2][cache[k]]];
                         /* r, g, b are the clamped errors now; each goes to the neighbours with the weights 3, 5, 7
                            (of 16) through the running sums e + 2e, + 2e, + 2e */
                         cur[-3] = r;
@@ -368,7 +368,7 @@ int qnt_Map(unsigned char *rgb, unsigned char *out, int w, int h, int dither)
     }
     return 0;
 }
-/* 0x421410, palette index with the smallest squared RGB distance to the 5-bit color (r, g, b) @deep byte work only (behaviour + readable met): 2 B / 4 asm lines, the g / b registers swapped in the two sub ebx of the SqPtr terms (the original subtracts in the PalR, PalB, PalG load order); grade.py diffclass verdict order 12; all 6 term orders, 24 statement perms, per-term temps and parenthesizations tried */
+/* 0x421410, palette index with the smallest squared RGB distance to the 5-bit color (r, g, b) */
 
 int qnt_Nearest(unsigned int r, unsigned int g, unsigned int b)
 {
@@ -380,7 +380,7 @@ int qnt_Nearest(unsigned int r, unsigned int g, unsigned int b)
     b = (b & 0xf8) + 4;
     best = 200000;
     for (i = 0; i < qnt_HeapCount; i++) {
-        d = qnt_SqPtr[qnt_PalR[i] - r] + qnt_SqPtr[qnt_PalB[i] - b] + qnt_SqPtr[qnt_PalG[i] - g];
+        d = qnt_SqPtr[qnt_Pal[0][i] - r] + qnt_SqPtr[qnt_Pal[1][i] - g] + qnt_SqPtr[qnt_Pal[2][i] - b];
         if (d < best) {
             best = d;
             bi = i;
@@ -390,9 +390,7 @@ int qnt_Nearest(unsigned int r, unsigned int g, unsigned int b)
 }
 
 unsigned short qnt_G[256] = {0};  /* 0x631228 */
-unsigned char qnt_PalR[256] = {0};  /* 0x631428 */
-unsigned char qnt_PalG[256] = {0};  /* 0x631528 */
-unsigned char qnt_PalB[256] = {0};  /* 0x631628 */
+unsigned char qnt_Pal[3][256] = {0};  /* 0x631428, the palette built so far: [0] red, [1] green, [2] blue (DL1's palette[3][256]) */
 int qnt_Colors = 0;  /* 0x631728 */
 int qnt_Sq[256] = {0};  /* 0x631b34, i * i for i = -255..255 (indexed around 0) */
 unsigned short qnt_B[256] = {0};  /* 0x631f38 */
