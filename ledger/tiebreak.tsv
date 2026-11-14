@@ -4016,7 +4016,7 @@ exe	0x0057c560	ai_AlchemistHire	sv_t	f6587f2bda0309b9	no	byte	control=byte p1=by
 exe	0x0057c690	ai_AlchemistResearchWindow	sv_t	a017fc4b59ffc961	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x0057cde0	ai_AlchemistSendRecipeResearch	sv_t	1c79a0a2839098b6	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x0057ced0	ai_AlchemistSendResearchStart	sv_t	cb19a286f97393cd	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
-exe	0x0057cf90	ai_AlchemistWindow	sv_t	c82cc1cc7b2d432c	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x0057cf90	ai_AlchemistWindow	sv_t	fdee1a5b34b16084	no	shape	sample n=32 seed=1 compiled=32 codegens=1 best=shape
 exe	0x0057dc50	ai_AlchemistTrainShareWindow	sv_t	4dd344bada7d3fe4	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x0057de60	ai_AlchemistFundWindow	sv_t	2fcea238c0ac3039	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
 exe	0x0057e0e0	ai_AlchemistRescheduleWindow	sv_t	f8a060bac0d9cb96	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
