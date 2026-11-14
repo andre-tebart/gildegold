@@ -8921,21 +8921,12 @@ int gm_BuildingKindSkill(int kind, unsigned k)
 /* 0x509400, the working minutes from the clock a to the clock b for the building bld (0: none): the working day
    runs from the season's start to its end hour (gm_DayStartHours / gm_DayEndHours), so a day's clock is clamped
    into it; the rest of a's day, the whole working days between, and b's day up to its clock. The full minutes
-   (gm_MinutesBetween) with the game flag bit 7 set or for a building of class 0x1d; 0 when b is before a
-   @deep Read whole against the original: the season hours, the flag bit 7 test (ai_GameFlags & 0x80: test
-   al,al; jns), the class 0x1d and compare-time exits, the clock copy, the first day clamped as
-   MIN(MAX(lo*60, (float)minutes), hi*60) (the float cast stored once, lo*60 evaluated first), acc = hi*60
-   - x, gm_SetTime to the next day's start, the whole days (hi*60 - lo*60 per day) and the last day's two
-   clamps (b's minutes, then t's, as ints) all match; same size 671. Left is allocation only: acc and y
-   swap ebp / edi (the original: mov eax,ebp; sub eax,ecx; add eax,edi; pop edi at +0x27a and +0x293, ours
-   mov eax,edi ... add eax,ebp after pop edi), and the temporaries of lo*60 / hi*60 / the float minutes
-   swap the slots [esp+0x2c] / [esp+0x34] (+0xde..+0x138) and [esp+0x2c] / [esp+0x30] (+0x1c3..+0x24b).
-   Tried: the declaration order of acc / x / y (no change); the prover stops at the 4-byte read of the
-   clock's min at +0x1e (a stack access across two cells). */
+   (gm_MinutesBetween) with the game flag bit 7 set or for a building of class 0x1d; 0 when b is before a. x and y
+   hold a clock's minutes first and are then clamped into the working day in place */
 int gm_WorkMinutesBetween(AITIME *a, AITIME *b, unsigned char *bld)
 {
     float lo, hi;
-    int season, acc, x, y, day, end, n;
+    int season, acc, x, y, day, end;
     AITIME t;
 
     season = gm_ClockSeason(a);
@@ -8951,23 +8942,21 @@ int gm_WorkMinutesBetween(AITIME *a, AITIME *b, unsigned char *bld)
     day = t.year;
     end = b->year;
     if (day < end) {
-        x = (int)GM_MIN(GM_MAX(lo * 60.0f, (float)(t.hour * 60 + t.min)), hi * 60.0f);
+        x = t.hour * 60 + t.min;
+        x = (int)GM_MIN(GM_MAX(lo * 60.0f, x), hi * 60.0f);
         acc = (int)(hi * 60.0f - x);
         t.year = day + 1;
         gm_SetTime(&t, (int)lo, 0, 0);
         day = t.year;
     } else
         acc = 0;
-    if (day < end) {
-        n = end - day;
-        do {
-            acc = (int)(acc + (hi * 60.0f - lo * 60.0f));
-            n--;
-        } while (n != 0);
-    }
-    y = (int)GM_MIN(GM_MAX(lo * 60.0f, b->hour * 60 + b->min), hi * 60.0f);
-    x = (int)GM_MIN(GM_MAX(lo * 60.0f, t.hour * 60 + t.min), hi * 60.0f);
-    return (acc - x) + y;
+    for (; day < end; day++)
+        acc += hi * 60.0f - lo * 60.0f;
+    x = b->hour * 60 + b->min;
+    x = (int)GM_MIN(GM_MAX(lo * 60.0f, x), hi * 60.0f);
+    y = t.hour * 60 + t.min;
+    y = (int)GM_MIN(GM_MAX(lo * 60.0f, y), hi * 60.0f);
+    return (acc - y) + x;
 }
 /* 0x5096a0, the working minutes from the clock a to the clock b as gm_WorkMinutesBetween, with the fixed working
    day 6:00 .. 23:00 (360 .. 1380 minutes, 1020 a day); 0 when b is before a. x and y hold a clock's minutes
