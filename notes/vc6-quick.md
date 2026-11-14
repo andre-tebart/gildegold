@@ -1043,3 +1043,21 @@ mechanisms, each as a generated round over all positions / subsets:
   inverted if/else are the same code (snd_PlayFavourComment 10 ins -> byte). Reading rule: a jump into the
   middle of a sibling branch, just behind a test of the same variable, is a threaded re-test - write the
   condition so that the path really runs through that test.
+- **A failure branch inside a loop that jumps to the FIRST of several identical `f(); return 0;` blocks** (ours;
+  the original jumps to the LAST one, right behind the loop's entry test; a short `je` in the original, a rel32
+  in ours, so 245 bytes shift and the shift shows as register hunks elsewhere): VC6 merges an identical return
+  block into the first copy in source order (probe: `return 2` at the earlier copies moves the target to the
+  next equal one), and no spelling of the copies (`!x` / `== 0`, all 31 subsets) is a lever. The loop was
+  written with its exit test in the `while`: `do { .. } while (main_QuitProgram == 0); main_Exit(); ..
+  return 1;` instead of `do { .. if (main_QuitProgram) { main_Exit(); .. return 1; } } while (1);`. A
+  `mode = (strcmp(..) != 0) * 2 + 1;` was an if/else (`setne; lea [eax+eax+1]` either way) (WinMain byte).
+  c2pass.py / flip.py look for `_NAME PROC`: for a __stdcall function pass `WinMain@16` to c2pass; flip.py
+  cannot find the source line then (a copy with `(@\d+)?` in its PROC/ENDP regex worked).
+- **A row position kept in a register that the original only gets after the n test (`mov ebp,eax` after
+  `test ebp,ebp; jle`), n in the same register before and after the loop**: the position was `top + i * h`
+  in the call, not a `y` advanced in the for increment (`for (..; i++, y += h)`). VC6 strength-reduces it to
+  the same `add ebp,ebx` but gives n and the running value the original's webs (main_ChooseOpponents 22 ins ->
+  byte; the frame loop as a plain `while (sv_RunFrame(..))` is the same code as `if (..) do .. while (..)`).
+- `strcpy(tok[n++], t)` with a plain counter gives the two-pointer inline copy (`mov edx,esi; mov ecx,eax;
+  add esi,0x10; mov al,[ecx]; inc ecx; mov [edx],al; inc edx`); a hand-advanced row pointer (`q = p; p +=
+  0x10; strcpy(q, t)`) gives the `sub edx,eax` offset copy (main_BuildVersionString 13 ins -> byte).

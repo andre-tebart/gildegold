@@ -3434,7 +3434,7 @@ exe	0x00531690	main_ShutdownScreen	main	byte	readable
 exe	0x005316d0	main_ShutdownModules	main	byte	readable		
 exe	0x00531750	main_Exit	main	byte	readable		
 exe	0x00531780	main_WindowProc	main	shape	readable		
-exe	0x00531a00	main_BuildVersionString	main	draft	readable	deep	
+exe	0x00531a00	main_BuildVersionString	main	byte	readable		
 exe	0x00531b50	main_CreateMutex	main	byte	readable		
 exe	0x00531b80	main_SetScreenSaver	main	byte	readable		
 exe	0x00531ba0	main_Init	main	byte	readable		
@@ -3459,10 +3459,10 @@ exe	0x00534610	main_ChooseTalents	main	shape	readable
 exe	0x00534b30	main_ChooseModel	main	byte	readable		
 exe	0x005359f0	main_ChooseFamily	main	byte	readable		
 exe	0x005361d0	main_ChoosePlayer	main	shape	readable	stuck	
-exe	0x00536980	main_ChooseHistory	main	draft	readable	deep	
+exe	0x00536980	main_ChooseHistory	main	draft	readable	stuck	
 exe	0x00536d80	main_CharacterIntro	main	byte	readable		
 exe	0x00536e80	main_ChooseDifficulty	main	byte	readable		
-exe	0x00537040	main_ChooseOpponents	main	draft	readable	deep	
+exe	0x00537040	main_ChooseOpponents	main	byte	readable		
 exe	0x00537230	main_ChooseCity	main	draft	readable	deep	
 exe	0x00537930	main_NewSinglePlayerGame	main	byte	readable		
 exe	0x00537980	main_LoadingScreen	main	byte	readable		
@@ -3486,7 +3486,7 @@ exe	0x0053b840	main_CreateStartCouple	main	shape	readable	deep
 exe	0x0053bb20	main_GameLoop	main	draft	readable	deep	
 exe	0x0053c9b0	main_PlayIntroMovies	main	byte	readable		
 exe	0x0053cb40	main_PlayOutro	main	byte	readable		
-exe	0x0053ccf0	WinMain	main	draft	readable	deep	
+exe	0x0053ccf0	WinMain	main	byte	readable		
 exe	0x0053d430	he_AllocNone	he	byte	readable		
 exe	0x0053d470	he_RunNone	he	byte	readable		
 exe	0x0053d4b0	he_InitEvents	he	byte	readable		
