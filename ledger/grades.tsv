@@ -4015,15 +4015,15 @@ exe	0x0057bce0	ai_TutorialWindow	sv_t	shape	readable	deep
 exe	0x0057bf00	ai_AlchemistCandidates	sv_t	draft	readable	deep	
 exe	0x0057c560	ai_AlchemistHire	sv_t	byte	readable		
 exe	0x0057c690	ai_AlchemistResearchWindow	sv_t	draft	readable	deep	
-exe	0x0057cde0	ai_AlchemistSendRecipeResearch	sv_t	draft	readable	deep	
-exe	0x0057ced0	ai_AlchemistSendResearchStart	sv_t	draft	readable	deep	
+exe	0x0057cde0	ai_AlchemistSendRecipeResearch	sv_t	byte	readable		
+exe	0x0057ced0	ai_AlchemistSendResearchStart	sv_t	byte	readable		
 exe	0x0057cf90	ai_AlchemistWindow	sv_t	draft	readable	deep	
-exe	0x0057dc50	ai_AlchemistTrainShareWindow	sv_t	draft	readable	deep	
+exe	0x0057dc50	ai_AlchemistTrainShareWindow	sv_t	byte	readable		
 exe	0x0057de60	ai_AlchemistFundWindow	sv_t	byte	readable		
 exe	0x0057e0e0	ai_AlchemistRescheduleWindow	sv_t	byte	readable		
 exe	0x0057e230	ai_ShotTableStore	sv_t	byte	readable		
 exe	0x0057e270	ai_CannonScene	sv_t	draft	readable	deep	
-exe	0x0057ec40	ai_CannonAim	sv_t	draft	readable	deep	
+exe	0x0057ec40	ai_CannonAim	sv_t	byte	readable		
 exe	0x0057f0e0	ai_CannonCamera	sv_t	draft	readable	deep	
 exe	0x0057f5d0	ai_CannonAxes	sv_t	byte	readable		
 exe	0x0057f620	ai_CannonFireCheck	sv_t	byte	readable		
@@ -4045,7 +4045,7 @@ exe	0x00582560	ai_CannonContact	sv_t	byte	readable
 exe	0x00582600	ai_CabinetContact	sv_t	byte	readable		
 exe	0x00582730	ai_GraveSizeButtons	sv_t	byte	readable		
 exe	0x005828c0	ai_GraveList	sv_t	byte	readable		
-exe	0x00582b40	ai_GraveDetail	sv_t	draft	readable	deep	
+exe	0x00582b40	ai_GraveDetail	sv_t	shape	readable	stuck	
 exe	0x005830f0	ai_GraveDeadName	sv_t	byte	readable		
 exe	0x00583150	ai_GraveDeadDescription	sv_t	byte	readable		
 exe	0x00583240	ai_GraveWindow	sv_t	draft	readable	deep	
@@ -4089,7 +4089,7 @@ exe	0x00587b70	ai_PermissionBits1d	sv_t	shape	readable
 exe	0x00587c40	ai_EndCharExtra	sv_t	byte	readable		
 exe	0x00587c90	ai_GraveyardChatter	sv_t	byte	readable		
 exe	0x00587de0	ai_ClearTurnTable	sv_t	byte	readable		
-exe	0x00587e00	ai_HandleItemDrag	sv_t	draft	readable	deep	
+exe	0x00587e00	ai_HandleItemDrag	sv_t	byte	readable		
 exe	0x00588160	ai_OpenBuildingTooltip	sv_t	byte	readable		
 exe	0x00588310	ai_OpenItemTooltip	sv_t	draft	readable	deep	
 exe	0x00588950	ai_OpenUpgradeTooltip	sv_t	shape	readable		
@@ -4100,7 +4100,7 @@ exe	0x00589400	ai_ClearBookmark	sv_t	byte	readable
 exe	0x00589410	ai_InitBookmarks	sv_t	byte	readable		
 exe	0x00589450	ai_ValidateBookmarks	sv_t	byte	readable		
 exe	0x005894d0	ai_SelectBookmark	sv_t	byte	readable		
-exe	0x00589570	ai_SetBookmark	sv_t	draft	readable	deep	
+exe	0x00589570	ai_SetBookmark	sv_t	byte	readable		
 exe	0x00589670	ai_BookmarkWindow	sv_t	shape	readable		
 exe	0x00589aa0	ai_SaveBookmarks	sv_t	byte	readable		
 exe	0x00589b30	ai_LoadBookmarks	sv_t	byte	readable		
