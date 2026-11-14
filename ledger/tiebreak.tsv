@@ -2939,7 +2939,7 @@ exe	0x004fad60	gm_FindRichest	f3gm	f5b79e401dfed0a5	no	shape	control=shape p1=sh
 exe	0x004fae50	gm_HandOutMoney	f3gm	9cba8b9b907c5e9c	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004fb0e0	gm_ShiftLoyalty	f3gm	69448b459ca509d3	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004fb330	gm_NameRecord	f3gm	7bfd58bf88cbefda	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x004fb390	gm_CharNameRecord	f3gm	509366838639abe3	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x004fb390	gm_CharNameRecord	f3gm	99f67c376730a132	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x004fb5a0	gm_SelectModelVariant	f3gm	9cfae41c459357f8	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
 exe	0x004fb620	gm_ResolveHeadIcons	f3gm	0d4607f11baebed9	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
 exe	0x004fb770	gm_HeadIconNumber	f3gm	0b5ffe2169f0e73f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
