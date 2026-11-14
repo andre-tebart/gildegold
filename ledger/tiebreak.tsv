@@ -1426,7 +1426,7 @@ exe	0x0047c5e0	d2_BankSetPalette	shp	ac31b2d0bc80dc7a	no	byte	control=byte p1=by
 exe	0x0047c610	d2_BankAppendShape	shp	c8f0383f40acf84d	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0047c6f0	d2_DrawShape	shp	c5a8a1905208efd1	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0047c770	d2_DrawShapeHalfDark	shp	e383174de7847e72	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x0047c830	d2_DrawShapeScaled	shp	398bf34d199cce99	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x0047c830	d2_DrawShapeScaled	shp	398bf34d199cce99	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x0047c970	d2_DrawShapeMode2	shp	57233b38baea56ea	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0047ca10	d2_SetMode5Colour	shp	8a50f31bd41d3a79	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0047ca40	d2_DrawShapeMode5	shp	1a813f31e8e63933	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
