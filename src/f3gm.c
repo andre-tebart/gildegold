@@ -5732,16 +5732,25 @@ void gm_ReleaseCharacter(ORDCHAR *c)
    the class 1 loses an inhabitant, the two building links are cleared. mode 0 keeps the record ("holding data");
    otherwise the record is removed for good: the count of the living (ai_CharCount) drops, its netId is cleared in
    every relative list, the record zeroed and freed (id 0xffff, netId -1, no relatives); mode 1 logs "permanently"
-   @deep Read whole against the original 0x503c60..0x503e7b and rewritten (ORDCHAR / CRIME typed, the crime
-   and relative scans as index loops: the original's signed jl ends; mode != 0 first, the 'holding data'
-   log as the else). Structure equal, ours=165 original=166; the remaining hunks are allocation: (1) the
-   original spills ebp (c * 0x21c) to [esp+0x18] (frame 0x20c vs ours 0x208: the one extra instruction, mov
-   [esp+0x18],ebp, and its reload mov ebp,[esp+0x18] in the evidence loop) because it uses ebp for
-   peer->netId (mov ebp,[edi+4]; cmp ebp,[eax]) where ours takes ebx; (2) the original keeps ch->netId in
-   ebx across the crime loop (mov ebx,[esi+4]; cmp [ecx],ebx) where ours reloads it per record (mov
-   eax,[esi+4]; mov edx,[ecx]; cmp edx,eax); (3) cmp ebx,edi (edi = 0 cached) vs test ebx,ebx for mode; (4)
-   mov word [esi],0xffff scheduled after the second lea/mov ecx,8. Tried: ch->netId in a local before the
-   loop (VC6 propagates it back, 15 ins), netId (the stack local) as the compare (19). */
+   @stuck headers sample: insensitive (one codegen in 32). The hunks are one allocation chain: the original
+   hoists ch->netId out of the crime loop into ebx (mov ebx,[esi+4] before the loop), so the evidence
+   loop's peer->netId temp takes ebp and splits c * 0x21c into [esp+0x18] (the frame's extra 4 bytes, the
+   reload after the test); ours reloads ch->netId per record and gives peer->netId ebx. Tried (dcp try, all
+   15 ins or worse): the culprit compare as ORD_CHARS[c].netId / reversed operands (15), relatives compare
+   on ORD_CHARS[c].netId too (27), a typed CRIME array probe instead of the char-array cast (15, so not an
+   alias question), a CRIME pointer per record (21), the evidence compare reversed / peer && (15-19), all 6
+   orders of id / netId / relatives after the memset x cnt / peer init order (71 variants, none below 15).
+   Left: the ebx / ebp / spill chain above, cmp ebx,edi vs test ebx,ebx for mode, and the id store
+   scheduled before the relatives lea (tiebreak: insensitive) prior: Read whole against the original
+   0x503c60..0x503e7b and rewritten (ORDCHAR / CRIME typed, the crime and relative scans as index loops:
+   the original's signed jl ends; mode != 0 first, the 'holding data' log as the else). Structure equal,
+   ours=165 original=166; the remaining hunks are allocation: (1) the original spills ebp (c * 0x21c) to
+   [esp+0x18] (frame 0x20c vs ours 0x208: the one extra instruction, mov [esp+0x18],ebp, and its reload mov
+   ebp,[esp+0x18] in the evidence loop) because it uses ebp for peer->netId (mov ebp,[edi+4]; cmp
+   ebp,[eax]) where ours takes ebx; (2) the original keeps ch->netId in ebx across the crime loop (mov
+   ebx,[esi+4]; cmp [ecx],ebx) where ours reloads it per record (mov eax,[esi+4]; mov edx,[ecx]; cmp
+   edx,eax); (3) cmp ebx,edi (edi = 0 cached) vs test ebx,ebx for mode; (4) mov word [esi],0xffff scheduled
+   after the second lea/mov ecx,8. Tried: ch->netId in a local... */
 void gm_KillSpieler(int c, int mode)
 {
     char buf[0x200];

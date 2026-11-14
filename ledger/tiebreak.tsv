@@ -3042,7 +3042,7 @@ exe	0x00503480	gm_RemoveObjectFromBuilding	f3gm	4907533e25a8f849	no	byte	control
 exe	0x005034b0	gm_FreeObject	f3gm	d57befa7d1ff8081	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00503530	gm_PermissionBits	f3gm	2a5d76d6abed9662	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x00503c20	gm_ReleaseCharacter	f3gm	68f6992261634f9d	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x00503c60	gm_KillSpieler	f3gm	af062d7af287c2bb	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x00503c60	gm_KillSpieler	f3gm	12b4ff61419ffa5a	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x00503e80	gm_ResetCharacters	f3gm	d21a0804f78a3dc8	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00503ee0	gm_GetJobTalents	f3gm	f32e037d5cbe92ad	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00503f30	gm_SexForJob	f3gm	8f1e783d88183748	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
