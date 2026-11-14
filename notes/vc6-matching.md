@@ -3042,3 +3042,32 @@ differing instructions. The same shape made the character loop of 0x512f30 pick 
   (`void f(o) T *o; {`): write it ANSI first, VC6 compiles both alike for pointer parameters.
 - d2_DrawObjects (stuck): a text arm's mode / x register race; flip.py's hits all sit in the window clip walk
   above it (the four clamps), not in the arm.
+
+## match-deep 2026-11-14 (fifth d2 session: d2_PlotLine, d2_CreateWindow, the text layout functions, d2_OpenForm)
+- d2_PlotLine byte (94 ins): the decompiled axis cases reused a parameter as a countdown (`x0 = x0 - x1; if (0 <
+  x0) do {..} while (--x0 != 0); return;`); the original is `n = x0 - x1; for (i = 0; i < n; i++) d2_Plot(x1++, ..);`
+  (VC6 makes the `dec edi; jne` countdown itself, the copy into edi included): the four axis loops byte at once
+  (94 -> 78). The Bresenham part then was one statement-order round: `diagonal = (dy - dx) * 2;` BEFORE `straight
+  = dy * 2;` (the original's `mov eax,edi; lea ecx,[edi+edi]; sub eax,ebp` computes the difference first), `e =
+  straight - dx` (not `dy * 2 - dx`: +100 ins), and the step before the error (`y0 += sy; e += diagonal;`). 1 of
+  24 variants byte; the earlier note had judged the step order alone and found it worse.
+- d2_CreateWindow (stuck, 119 -> 46): a free-slot walk `p += 0xf1; if ((int)p >= (int)&T[N].f) return -1;` is
+  `j = -1; for (i = 0; i < N; i++) if (!T[i].active) { j = i; break; } if (j == -1) return j;` - VC6 threads the
+  exhausted loop (j known -1) to its own `or eax,-1` return and keeps the `cmp eax,-1` on the break path, exactly
+  the original's two returns. Reading aid: `or eax, ebp` / `or eax, eax` in an epilogue is VC6 copying a value it
+  knows is -1 (no `mov`), so the source register tells where the variable lives on that path. An `__inline`
+  helper returning the index, `win = &T[j]` vs `i = j`, and every name split compile to one code (VC6 coalesces
+  the copies).
+- d2_DrawTextLine (stuck, 436 -> 133): plain code again did most of it. A loop the original leaves UNROTATED (test
+  at the top, `jmp` back from the bottom: the push-past-objects `while (cond) x = ..;`) is `while (1) { if
+  (!(cond)) break; x = ..; }` (-150 together with the glyph block first: `if (glyph != -1) {..} else {..}` where
+  the original lays the glyph block inline). `cmp ebx,ecx; jb` after `repne scasb` is `i < strlen(s)` without
+  the `(int)` cast; `(int)strlen` gives `jl` and other code around it.
+- d2_DrawTextBox (stuck, 518 -> 441): a search loop followed by a redundant re-test on the break path only
+  (`dec esi; jns top; jmp out` / `test esi,esi; jge fit`) is `for (k = wl; k >= 0; k--) { .. if (fits) break; }
+  if (k >= 0) {fit} else if (ln >= 2) {..}`; the decompiled `if (k >= 0) goto fits; break;` inside the loop gave
+  other code. A loop-invariant `sub ebp,[wd]` before the loop with an `add ebp,[wd]` on the no-fit path is the
+  source's own `lw -= wd; .. else lw += wd;` (VC6 does not undo an expression by adding it back).
+- d2_DrawWindowText (stuck): an ebp frame whose instructions are equal but whose slots are permuted is the
+  density sort (c2frame.py B rows). Read the original's slot groups from the D3_ZERO temps: their stores (`mov
+  [ebp-0x20],0x80` = _zn, `mov [ebp-0x24],eax` = _zp) tell which named local each temp was packed with.

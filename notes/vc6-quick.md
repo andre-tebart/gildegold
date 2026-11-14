@@ -238,6 +238,14 @@ mechanisms, each as a generated round over all positions / subsets:
 - **`movsx` of a short field pushed to a short parameter, the call in both arms**: one call after an int local
   chosen by if / else (`y = ..; else y = w->y; f(x, y, ..);`); VC6 duplicates the call tail (d2_PlaceWindow byte).
 
+- **A parameter used as a countdown** (`x0 = x0 - x1; if (0 < x0) do {..} while (--x0 != 0);`, decompiled) is `n =
+  x0 - x1; for (i = 0; i < n; i++) f(x1++, ..);`; VC6 makes the `dec; jne` countdown itself (d2_PlotLine byte,
+  with `diagonal` computed before `straight` - the original's first `sub` names the order).
+- **A loop the original leaves unrotated** (test at the top, `jmp` back): `while (1) { if (!(cond)) break; .. }`;
+  **a re-test after a search loop on the break path only** (`dec; jns top` / `test esi,esi; jge`): `for (..) if
+  (hit) break; if (k >= 0) {..}` (d2_DrawTextLine, d2_DrawTextBox). `or eax, reg` in an epilogue is VC6 copying a
+  value it knows is -1.
+
 ## Control flow and returns
 - **Empty case labels**: VC6 drops `case X: break;` (also `return;`, dead stores, `goto` to the join)
   before switch lowering, so those labels cannot affect the dispatch tree. A folded `if (0) { }` body
