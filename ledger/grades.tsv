@@ -2998,14 +2998,14 @@ exe	0x004ffa10	gm_StockPrice	f3gm	draft	readable	stuck
 exe	0x004ffbf0	gm_GoodsValue	f3gm	byte	readable		
 exe	0x004ffc40	gm_FindGoods	f3gm	byte	readable		
 exe	0x004ffc90	gm_MapDistance	f3gm	byte	readable		
-exe	0x004ffcc0	gm_QueryNext	f3gm	draft	readable	deep	
+exe	0x004ffcc0	gm_QueryNext	f3gm	draft	readable	stuck	
 exe	0x004ffe90	gm_Query	f3gm	shape	readable	stuck	
 exe	0x004fffc0	gm_FindFreeObject	f3gm	byte	readable		
 exe	0x004ffff0	gm_RemoveObject	f3gm	byte	readable		
 exe	0x00500080	gm_FreeObjectExtra	f3gm	byte	readable		
 exe	0x005000c0	gm_RemoveOwned	f3gm	shape	readable		
 exe	0x00500140	gm_FreeList	f3gm	byte	readable		
-exe	0x00500190	gm_CreateObject	f3gm	draft	readable	deep	
+exe	0x00500190	gm_CreateObject	f3gm	draft	readable	stuck	
 exe	0x00500970	gm_AddObjekt	f3gm	byte	readable		
 exe	0x00500a40	gm_TakeObjekt	f3gm	byte	readable		
 exe	0x00500ae0	gm_AddNegative	f3gm	byte	readable		
@@ -3019,7 +3019,7 @@ exe	0x005012b0	gm_FindFreeBuilding	f3gm	byte	readable
 exe	0x005012e0	gm_FreeBuilding	f3gm	byte	readable		
 exe	0x00501400	gm_StockBuildingObjects	f3gm	byte	readable		
 exe	0x005014b0	gm_SetCapacities	f3gm	byte	readable		
-exe	0x00501580	gm_CreateBuilding	f3gm	draft	readable	deep	
+exe	0x00501580	gm_CreateBuilding	f3gm	draft	readable	stuck	
 exe	0x00501b50	gm_BuildingMainObject	f3gm	byte	readable		
 exe	0x00501ce0	gm_GetGebaeudeHauptraum	f3gm	byte	readable		
 exe	0x00501d80	gm_BuildingClass	f3gm	byte	readable		
