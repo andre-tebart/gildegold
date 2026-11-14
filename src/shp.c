@@ -840,16 +840,15 @@ int d2_ShpBlit16Scaled(int x, int y, D2SURF *surf, D2SHP *s, unsigned char n)
     }
     return 1;
 }
-/* 0x47b640, the light-table variant of d2_ShpBlit16Scaled: the same 1/n scaled, clipped draw of a 16 bit
-   run-length shape, but every destination pixel goes through d2_ShpLightTable (used when the shape was grabbed
-   with a palette); returns 0 when completely clipped, else 1.
-   @deep behaviour draft (332 code hunks, 619/720 bytes): the light-table twin of 0x47b350 - every meaning read against 47b640..47b8ff and corresponds (the acc arithmetic made explicit: acc++; acc = (run->skip >> acc) % n, byte-neutral; the two clipped branches, d += ((*run>>1)+acc)/n, first = row%n==0, the literal run through d2_ShpLightTable[*px] every nth source pixel, the acc remainder, the run chain, line += pitch on first, early-outs vs ClipTop/ClipRight/ClipLeft/ClipBottom). The remaining hunks are the same codegen-only register/slot homes as 0x47b350 (line/acc/row spilled into parameter slots here, other homes in the original); no source meaning fix found */
+/* 0x47b640, the light-table variant of d2_ShpBlit16Scaled: the same 1/n scaled draw of a 16 bit run-length
+   shape, clipped to d2_ClipTop / d2_ClipBottom only, every destination pixel going through d2_ShpLightTable
+   (used when the shape was grabbed with a palette); returns 0 when the shape is above d2_ClipTop, else 1. */
 
-int d2_ShpBlit16ScaledLit(int x, unsigned int y, D2SURF *surf, D2SHP *s, unsigned int n)
+int d2_ShpBlit16ScaledLit(int x, int y, D2SURF *surf, D2SHP *s, unsigned char n)
 {
     int h, row, first;
     unsigned int acc, k, m;
-    unsigned int *cp, *next;
+    unsigned int *cp;
     D2RUN *run;
     unsigned short *line, *d, *px;
 
@@ -857,84 +856,64 @@ int d2_ShpBlit16ScaledLit(int x, unsigned int y, D2SURF *surf, D2SHP *s, unsigne
     if (s->w > 300)
         REA_DUMP_TRACE((rd_f, "%u ShpBlit16%s %dx%d at %d,%d mode=%d bpp=%d\n", GetTickCount(), "ScaledLit", s->w, s->h, x, y, s->mode, surf->bpp));
 #endif
-
     cp = (unsigned int *)(s + 1);
     run = (D2RUN *)((unsigned int *)(s + 1) + 1);
     line = surf->bits + (surf->pitch * y + x);
-    h = s->h;
-    if ((int)(h + y) < d2_ClipTop)
+    if (s->h + y < d2_ClipTop)
         return 0;
-    if ((int)(h / n + y) > d2_ClipBottom)
+    if (s->h / n + y > d2_ClipBottom)
         h = (d2_ClipBottom - y) * n;
+    else
+        h = s->h;
     acc = 0;
-    if ((int)y < d2_ClipTop) {
+    if (y >= d2_ClipTop) {
         for (row = 0; row < h; row++) {
-            first = row % n == 0;
             d = line;
-            next = (unsigned int *)run;
-            if (*cp != 0) {
-                k = 0;
-                do {
-                    d += ((run->skip >> 1) + acc) / n;
-                    acc++;
-                    acc = (run->skip >> acc) % n;
-                    if (first) {
-                        px = (unsigned short *)(run + 1);
-                        m = 0;
-                        if ((run->n + acc) / n != 0) {
-                            do {
-                                if (d2_ClipTop <= row / n + (int)y)
-                                    *d = d2_ShpLightTable[*px];
-                                px += n;
-                                d++;
-                                m++;
-                            } while (m < (run->n + acc) / n);
-                        }
-                        acc = (run->n + acc) % n;
+            first = row % n == 0;
+            for (k = 0; k < *cp; k++) {
+                d += ((run->skip >> 1) + acc) / n;
+                acc++;
+                acc = (run->skip >> acc) % n;
+                if (first) {
+                    px = (unsigned short *)(run + 1);
+                    for (m = 0; m < (run->n + acc) / n; m++) {
+                        *d = d2_ShpLightTable[*px];
+                        px += n;
+                        d++;
                     }
-                    k++;
-                    run = (D2RUN *)((unsigned short *)(run + 1) + run->n);
-                    next = (unsigned int *)run;
-                } while (k < *cp);
+                    acc = (run->n + acc) % n;
+                }
+                run = (D2RUN *)((unsigned short *)(run + 1) + run->n);
             }
             if (first)
                 line += surf->pitch;
-            run = (D2RUN *)(next + 1);
-            cp = next;
+            cp = (unsigned int *)run;
+            run = (D2RUN *)(cp + 1);
         }
     } else {
         for (row = 0; row < h; row++) {
-            first = row % n == 0;
             d = line;
-            next = (unsigned int *)run;
-            if (*cp != 0) {
-                k = 0;
-                do {
-                    d += ((run->skip >> 1) + acc) / n;
-                    acc++;
-                    acc = (run->skip >> acc) % n;
-                    if (first) {
-                        px = (unsigned short *)(run + 1);
-                        m = 0;
-                        if ((run->n + acc) / n != 0) {
-                            do {
-                                *d = d2_ShpLightTable[*px];
-                                px += n;
-                                d++;
-                                m++;
-                            } while (m < (run->n + acc) / n);
-                        }
-                        acc = (run->n + acc) % n;
+            first = row % n == 0;
+            for (k = 0; k < *cp; k++) {
+                d += ((run->skip >> 1) + acc) / n;
+                acc++;
+                acc = (run->skip >> acc) % n;
+                if (first) {
+                    px = (unsigned short *)(run + 1);
+                    for (m = 0; m < (run->n + acc) / n; m++) {
+                        if (row / n + y >= d2_ClipTop)
+                            *d = d2_ShpLightTable[*px];
+                        px += n;
+                        d++;
                     }
-                    k++;
-                    run = (D2RUN *)((unsigned short *)(run + 1) + run->n);
-                    next = (unsigned int *)run;
-                } while (k < *cp);
+                    acc = (run->n + acc) % n;
+                }
+                run = (D2RUN *)((unsigned short *)(run + 1) + run->n);
             }
             if (first)
                 line += surf->pitch;
-            run = (D2RUN *)(next + 1);
-            cp = next;
+            cp = (unsigned int *)run;
+            run = (D2RUN *)(cp + 1);
         }
     }
     return 1;
