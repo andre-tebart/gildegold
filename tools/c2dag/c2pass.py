@@ -45,9 +45,9 @@ def listing(src, fn, skips, blocks=False, flags=()):
         raise SystemExit("compile failed: " + "\n".join(l for l in r.stdout.splitlines() if "error" in l)[:400])
     out, on = [], False
     for l in open(asm, encoding="latin-1"):
-        if re.match(r"_%s\s+PROC" % fn, l):
+        if re.match(r"[_@]%s(@\d+)?\s+PROC" % re.escape(fn), l):
             on = True
-        elif re.match(r"_%s\s+ENDP" % fn, l):
+        elif re.match(r"[_@]%s(@\d+)?\s+ENDP" % re.escape(fn), l):
             on = False
         elif on:
             if re.match(r"\t[a-z]|\$\w+(\$\d+)?:", l):

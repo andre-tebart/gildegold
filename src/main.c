@@ -2469,30 +2469,27 @@ int main_CharacterIntro(int unused);
    non-zero when the character was created, sets the mode flag ai_GameFlags |= 8 then (else clears it). The quick start copies the
    talents of the job's record: gm_GetJobTalents returns a 6-byte record by value in the original (hidden pointer, eax), the call here
    passes the buffer by hand
-   @stuck allocation race, ret/again in ebp/ebx swapped (orig ret=ebp, again=ebx) plus the ret==0 tail
-   (orig mov eax,ebp, ours xor eax,eax). Kept: the click test as '&& !again && !back' without goto lback
-   (same code). headers sample: insensitive. Tried (dcp try): goto-free rewrites (fam goto lok/lback2
-   written out, if/else tail, single return, while vs do, &&-form vs continue-form, 24 variants): all spill
-   grp out of esi, frame 0x24 -> 0x28, 94-131 ins; tail alone as if/else, == 0 first, ?: : frame 0x28
-   (123-131 ins); tail as if/else with two returns = control; ret==0 first 36 ins. Probes: the RadioSelect
-   chains as switch (8 variants) 106-127 ins. flip.py want 'call _main_ChoosePlayer\nmov ebp, eax' on
-   control: 6 hits (again = 0 deleted/moved, kb_Last == 1 constant, sv_PopRequest dup), best m167 22 ins/17
-   bytes but meaning-changing; flip on the goto-free version for grp in esi: hits only on
-   duplicating/deleting the in-loop RadioSelect chain (grp reference count), m450/m349 meaning-changing.
-   c2dag --alloc: again -65, grp -91, ret -93, back -113 (callee-saved race between again/grp/ret). Left:
-   regs ebp<->ebx at +0x197 +0x24a +0x29d +0x2c3 +0x364 +0x37d +0x3c9 +0x3db, and the tail 'mov eax,ebp' vs
-   'xor eax,eax' (+0x3e3). Lead: the original single-return tail plus some other plain form that keeps grp
-   in esi (the flip says the number of grp references decides). (tiebreak: not measured (dcp headers sample
-   main_ChooseHistory)) prior: Read whole against 0x536980..0x536d77: the form and radio group (3 or 4
-   buttons by language), the history / mission choice, the start menu pages, the character intro outcomes
-   (1 family choice, 0 quick start with gm_GetJobTalents copied by memcpy 5 = the original's dword + byte
-   move, -1 back) and the game flag tail all agree, same instruction count 321/321. Left: allocation only.
-   The original keeps back in ebx and ret in ebp, ours the reverse (regs hunks ebp<->ebx at +0x197, +0x24a,
-   +0x29d, +0x2c3, +0x364, +0x37d, +0x3c9, +0x3db); and in the ret == 0 tail the original returns mov eax,
-   ebp where ours has xor eax, eax (VC6 propagated ret == 0 from the branch; the prover: only eax at the
-   return differs, and it is 0 on both sides there). Tried: the declaration order (ret / back swapped),
-   back = 0 before ret = 0 (worse, order hunks), the tail as if / else (frame grows to 0x28, much worse),
-   as ... */
+   @stuck orchestrator pass 2026-11-14 (kept, same code: sv_PopRequest = 1 / d2_CutsceneActive = 1 as
+   literals, the frame loop as a plain while). The tail must be the single-return 'if (ret) flags |= 8;
+   else flags = 0; return ret;' (the original's mov eax,ebp on both paths), but with it c2dag --alloc gives
+   again -65 ebp, ret -89 ebx, grp -91 NO register (control: again ebp, grp -91 esi, ret -93 ebx): grp gets
+   esi only while it ranks above ret. The original has ret ebp, again ebx, grp esi. No lever: all 120
+   orders of the five initial stores x both tails (best = control); the family-choice gotos written out x
+   both tails (94-123 ins, grp spilled); 31 combinations of plain rewrites (literal 1s, while, tail, gotos
+   out): control or >= 94; again = 0 moved to each position (26+). flip on the single-return base (want ret
+   in ebp, frame 0x24): only meaning-changing hits (top again = 0 deleted: again -42, b0 takes ebx; in-loop
+   again = 0 deleted or moved into the hist block: regs right, 33-42 ins). Open question for the tools: why
+   C2 denies grp the free esi once ret holds ebx - the allocator's register choice has to be read from
+   c2.dll before more variants. (tiebreak: not measured (dcp headers sample main_ChooseHistory)) prior:
+   allocation race, ret/again in ebp/ebx swapped (orig ret=ebp, again=ebx) plus the ret==0 tail (orig mov
+   eax,ebp, ours xor eax,eax). Kept: the click test as '&& !again && !back' without goto lback (same code).
+   headers sample: insensitive. Tried (dcp try): goto-free rewrites (fam goto lok/lback2 written out,
+   if/else tail, single return, while vs do, &&-form vs continue-form, 24 variants): all spill grp out of
+   esi, frame 0x24 -> 0x28, 94-131 ins; tail alone as if/else, == 0 first, ?: : frame 0x28 (123-131 ins);
+   tail as if/else with two returns = control; ret==0 first 36 ins. Probes: the RadioSelect chains as
+   switch (8 variants) 106-127 ins. flip.py want 'call _main_ChoosePlayer\nmov ebp, eax' on control: 6 hits
+   (again = 0 deleted/moved, kb_Last == 1 constant, sv_PopRequest dup), best m167 22 ins/17 bytes but
+   meaning-changing; flip on the goto-free version for grp in esi: hits only on duplica... */
 int main_ChooseHistory(void)
 {
     int again, back, ret, f, b0, b1, b2, grp, hist, h, r;
@@ -2524,14 +2521,14 @@ int main_ChooseHistory(void)
         d2_RadioSelect(grp, 0);
     else if (ai_OptionHistorie == 2)
         d2_RadioSelect(grp, 1);
-    if (sv_RunFrame((int)main_ChooseHistory, 0xc6) != 0) {
-        do {
+    {
+        while (sv_RunFrame((int)main_ChooseHistory, 0xc6) != 0) {
             d2_MenuNavigate(grp);
             if (dm_L.rup != 0 || kb_Last == 1)
                 sv_PopRequest = 1;
             if (d2_ClickedId != 0 && kb_Last != 0x1c && !again && !back) {
                 if (d2_ClickedId == 1)
-                    sv_PopRequest = d2_ClickedId;
+                    sv_PopRequest = 1;
                 continue;
             }
             if (!back) {
@@ -2569,7 +2566,7 @@ int main_ChooseHistory(void)
                 } else {
                     r = main_CharacterIntro(0);
                     if (r == 1) {
-                        d2_CutsceneActive = r;
+                        d2_CutsceneActive = 1;
                         main_MessageBox = sv_OpenMessageBox((int)txt_Ptrs[0x1af9], 0);
                         if (main_ChooseFamily(0) == 0) {
                             d3if_SelectScene(0, 0);
@@ -2597,7 +2594,7 @@ lback2:
                 }
             }
             d2_SetViewEnabled(f, 1);
-        } while (sv_RunFrame((int)main_ChooseHistory, 0xc6) != 0);
+        }
     }
     d2_RadioClear(grp);
     d2_CloseView(f);

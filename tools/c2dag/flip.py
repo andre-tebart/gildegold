@@ -47,9 +47,9 @@ def listing(tag, text, fn):
     if r.returncode == 0:
         out, on = [], False
         for l in open(a, encoding="latin-1"):
-            if re.match(r"_%s\s+PROC" % re.escape(fn), l):
+            if re.match(r"[_@]%s(@\d+)?\s+PROC" % re.escape(fn), l):
                 on = True
-            elif re.match(r"_%s\s+ENDP" % re.escape(fn), l):
+            elif re.match(r"[_@]%s(@\d+)?\s+ENDP" % re.escape(fn), l):
                 on = False
             elif on and re.match(r"\t[a-z]", l):
                 out.append(re.sub(r"\s+", " ", l.split(";")[0].strip()))

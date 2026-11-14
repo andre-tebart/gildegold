@@ -99,9 +99,9 @@ def main():
     if a.blocks:
         on = False
         for l in open(asm, encoding="latin-1"):
-            if a.func and re.match(r"_%s\s+PROC" % re.escape(a.func), l):
+            if a.func and re.match(r"[_@]%s(@\d+)?\s+PROC" % re.escape(a.func), l):
                 on = True
-            elif a.func and re.match(r"_%s\s+ENDP" % re.escape(a.func), l):
+            elif a.func and re.match(r"[_@]%s(@\d+)?\s+ENDP" % re.escape(a.func), l):
                 on = False
             elif (on or not a.func) and (l.startswith("; Block(") or re.match(r"\t[a-z]|\$\w+(\$\d+)?:", l)):
                 print(l.rstrip().split("\t;")[0])
@@ -109,20 +109,28 @@ def main():
     if a.alloc:
         on = None
         cands = []
+        regs = {}
         for l in open(dag, encoding="latin-1"):
             if l.startswith("allocrefs "):
-                on = "refs" if l.split()[1].lstrip("_") == a.func else None
+                on = "refs" if re.sub(r"@\d+$", "", l.split()[1].lstrip("_@")) == a.func else None
             elif l.startswith("alloc "):
-                on = "cands" if l.split()[1].lstrip("_") == a.func else None
+                on = "cands" if re.sub(r"@\d+$", "", l.split()[1].lstrip("_@")) == a.func else None
             elif on == "refs" and l.startswith((" ref ", " ablock ", " P ")):
                 print(l.rstrip())
             elif on == "cands" and l.startswith(" cand "):
                 m = re.match(r" cand (\S+) prio (-?\d+) tie (\w+)", l)
                 cands.append((int(m.group(2)), int(m.group(3), 16), m.group(1)))
-            elif on == "cands":
+            elif l.startswith("allocreg "):
+                on = "regs" if re.sub(r"@\d+$", "", l.split()[1].lstrip("_@")) == a.func else None
+            elif on == "regs" and l.startswith(" cand "):
+                m = re.match(r" cand (\S+) .* reg (\S+)", l)
+                if m:
+                    regs[m.group(1)] = m.group(2)
+            elif on in ("cands", "regs"):
                 on = None
+        # the register each candidate got (none: it stays in memory / is rematerialised)
         for prio, tie, name in sorted(cands, reverse=True):
-            print("  %-32s prio %5d  tie %3x" % (name, prio, tie))
+            print("  %-32s prio %5d  tie %3x  %s" % (name, prio, tie, regs.get(name, "-")))
         return
     want = set(int(x, 16) for x in a.ops.split(",")) if a.ops else None
     cur, keep = [], False
@@ -138,7 +146,7 @@ def main():
         if l.startswith("block "):
             flush()
             cur = [l.rstrip()]
-            keep = not a.func or (" func _%s " % a.func) in l or (" func %s " % a.func) in l
+            keep = not a.func or re.search(r" func [_@]?%s(@\d+)? " % re.escape(a.func), l) is not None
         else:
             m = re.search(r"op=(\w+)", l)
             name = OPS.get(int(m.group(1), 16), "") if m else ""
