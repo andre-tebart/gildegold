@@ -104,6 +104,7 @@ extern int gm_RichestWorth;
 extern ORDCHAR *gm_RichestChar;
 extern float ai_FloatZero;  /* 0x5eb788, the shared 0.0f (cm.c) */
 extern double cm_DoubleQuarter;  /* 0x5eb9b0, the shared 0.25 (cm.c): gm_StockPrice's lower clamp reads it */
+extern double cm_DoubleHalf;  /* 0x5eb7e8, the shared 0.5 (cm.c) */
 /* The five income sums are the last int of the five 17-int rows of gm_IncomeHistory (0x91b580, 0x154
    bytes): the rows start 0x44 apart, so these aliases sit at the end of each row. They are views, not
    separate globals - a separate definition would reserve its own memory here and the 0x154-byte
@@ -9375,34 +9376,29 @@ int gm_BuildingEvents(unsigned owner, int b, int c, int *out)
     return n;
 }
 /* 0x50a250, the credit offers of the bank b to the person p: up to cnt offers (amount, term 2 .. 7, interest) written to out; returns 3, or 0 when b has no owner, p or cnt is 0 or the bank already has 9 credits running (gm_BuildingEvents). A player (kind 6) gets the bank's kept offers (ORDBLD.credits) while one of them is taken (-1) or within the bank's money (gm_SumSlotAmounts); before day 6 a bank of a computer owner tops its money up to 0.2 of the player's worth (at most 64000, cm_SendMoveGoods). New offers: at most worth (gm_GetWorth) x 0.3 (0.6 / 0.45 for the orders 0xf / 0xb of ord_DispatchOrder) and half the bank's money, each 70 .. 100 % of it (the first 1/4, the second 1/2); the interest lies between 0.7 and 1.5 of the bank's v65 by the term, less (liking - 50) / 20 (gm_Liking) for a player or a computer player at a computer bank; a player's offers are kept
-   @deep Reconstructed in full against the original (0x50a250..0x50a63b): every call, argument, constant
-   (0.2, 64000f, 0.3f x2 / x1.5 = the original's 0x3ee66667, 0.5, 0.01, 1.0, 0.25, 0.7, 1.5, 1/6, 50f, 5f),
-   field (ORDBLD.credits +0x71, v65, owner, objList, id), branch and store order match; frame 0x250 equal.
-   Left (diffclass): regs 46 / order 8 = cnt in esi (ours) vs edi (the original) and the edi/esi swap of
-   all; code 12: (1) 0x50a3e1 'lea ecx,[edi+edi*2]; mov edi,[out]' vs ours the reverse order with cnt in
-   esi, (2) 0x50a492 the loop guard: the original reloads cnt ('mov eax,[esp+0x26c]; test eax,eax'), ours
-   tests esi (the same register choice), (3) 0x50a4b7 + fpu 0x50a4c5: the original negates the random
-   number in an int ('neg eax; fild; fmul 0.01; fadd 1.0'), VC6 folds every spelling tried into 'fild; fmul
-   0.01; fsubr 1.0' (-r*0.01+1.0, a separate int amount = -r, /100.0, (float)-r, (float)(..)): the same
-   value, a fold variant. Tried: index vs pointer copy loop (index form matched), rate/lim variables vs one
-   reused float (slots 52, worse), maxAmount as float var vs int cast in the loop (the cast matched the
-   preheader). */
+   @stuck match-deep 2026-11-14: 38 -> 7 ins. Fixed: both 0.5 factors read cm_DoubleHalf (M10), all = 0
+   after the guard (all in esi, cnt in edi as the original: 38 -> 9), the liking term without the f copy (9
+   -> 7), the offers copied back by an index loop. Left: (1) the original zeroes esi (all) right after push
+   esi, before the first guard test; all = 0 at the top in any of 12 guard orders swaps esi / edi again
+   (36-46 ins), flip.py want 'push esi / xor esi,esi': 0 of 279 mutants; (2) the 70 .. 100 % factor: the
+   original negates the random in an int (neg eax; fild; fmul 0.01; fadd 1.0), every spelling folds to
+   fsubr: 1.0 - r * 0.01, -(int)r, (float) / (double) casts, an int amount = -r first, the cm_DoubleOne
+   object (8 forms, = control). (tiebreak: not measured (dcp headers sample gm_GetCreditOffers)) */
 
 int gm_GetCreditOffers(int b, unsigned short *p, unsigned cnt, int *out)
 {
     ORDBLD *bank = (ORDBLD *)b;
     ORDCHAR *ch = (ORDCHAR *)p;
     ORDCREDIT *offers = (ORDCREDIT *)out;
-    ORDCREDIT *src, *dst;
     int budget, worth, maxAmount, i, all, amount, term, interest;
     unsigned k;
     float f, add, rate, lim;
     int events[9];
     int orders[0x88];
 
-    all = 0;
     if (p == 0 || b == 0 || bank->owner == 0xffff || cnt == 0)
         return 0;
+    all = 0;
     budget = gm_SumSlotAmounts(bank->objList, ai_OwnPlayer);
     if (ch->kind == 6) {
         if (ai_Time.year < 6 && ORD_CHARS[bank->owner].kind != 6 && ORD_CHARS[bank->owner].kind != 7) {
@@ -9444,31 +9440,25 @@ int gm_GetCreditOffers(int b, unsigned short *p, unsigned cnt, int *out)
     else if (ord_DispatchOrder(0xb, p, orders) & 2)
         rate *= 1.5f;
     lim = worth * rate;
-    maxAmount = (int)GM_MIN(lim, budget * 0.5);
+    maxAmount = (int)GM_MIN(lim, budget * cm_DoubleHalf);
     for (k = 0; k < cnt; k++) {
         amount = (int)((-util_RandomU(0x1e) * 0.01 + 1.0) * (float)maxAmount);   /* 70 .. 100 % */
         if (k == 0)
-            amount = (int)(amount * 0.25);
+            amount = (int)(amount * cm_DoubleQuarter);
         else if (k == 1)
-            amount = (int)(amount * 0.5);
+            amount = (int)(amount * cm_DoubleHalf);
         term = util_RandomU(6) + 2;
         interest = (int)(bank->v65 * 0.7 + (bank->v65 * 1.5 - bank->v65 * 0.7) * (term / 6.0f));
         if (ORD_CHARS[bank->owner].kind != 6 && ORD_CHARS[bank->owner].kind != 7 && (ch->kind == 6 || ch->kind == 7)) {
-            f = (float)interest;
-            interest = (int)(f - (float)((gm_Liking(*p, bank->owner, 1) - 50.0f) * 0.01) * 5.0f);
+            interest = (int)((float)interest - (float)((gm_Liking(*p, bank->owner, 1) - 50.0f) * 0.01) * 5.0f);
         }
         offers[k].interest = interest;
         offers[k].amount = amount;
         offers[k].term = term;
     }
     if (ch->kind == 6) {
-        src = offers;
-        dst = bank->credits;
-        for (i = 3; i != 0; i--) {
-            *dst = *src;
-            src++;
-            dst++;
-        }
+        for (i = 0; i < 3; i++)
+            bank->credits[i] = offers[i];
     }
     return 3;
 }
