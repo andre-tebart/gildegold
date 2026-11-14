@@ -73,6 +73,9 @@ extern char ai_Crimes[];
 #define GM_BLOCK(p) ((GMBLOCK *)gm_StockBlocks + (p))  /* the stock block of the player p */
 #define GM_TABLE_A(p) ((GMPOINT *)(ai_PlayerSlots[p] + 0x64))  /* the player slot's first yearly table */
 #define GM_TABLE_B(p) ((GMPOINT *)(ai_PlayerSlots[p] + 0xb4))  /* its second yearly table */
+/* the building type i's byte +0x21 (ai.h AIBTYPE.extensions, the room upgrades it takes): GMBTYPE keeps it in its pad,
+   because naming the field in f3gm_types.h moves sv_t's ai_TutorialInitChapter3 off byte (declaration-set tie-break) */
+#define GM_BTYPE_EXTENSIONS(i) (((unsigned char *)GM_BTYPE(i))[0x21])
 #define GM_OBJ_PROTO_MASK 0xffffff  /* the prototype reference's index bits of a scene object's pickId (D3OBJECT +0x48) */
 
 #include "am_types.h"
@@ -2630,39 +2633,24 @@ void gm_InitBuildingTables(void)
             gm_GoodBuilding[i] = gm_ClassBuilding[(unsigned char)ai_Goods[i * 0x41 + 0x21]];
     }
 }
-/* 0x4fe570, loads the building and object tables of the data path root: resets the player records at 0x7d6a64 (stride 0xaa4 ints, each gets the 0xaa0 ints 0x6178c8), allocates the building prototypes (0xca78 = 0x58 * 0x24d, "f3_gm:lpGebaeudePROT") and instances (0xa900, "..INST"), reads "<root>A_Geb.dat" (0x58 records of 0x24d bytes), the object prototypes (0xb9dc = 0x2dc * 0x41, "..PROT"), instances (0x14f218) and "<root>A_Obj.dat"; builds the lookup tables (0x4fe370, 0x503e80) and adds the count of the flagged (bit 15) objects of the kinds 2 / 6 (except 0xfd) to each building's byte +0x21. Returns 0, or -1 .. -6 for the failed step.
-   @deep read whole against the original: stock-block init loop, allocations, both file reads, the
-   per-building count loop (now id = u & 0x7fff kept, bit 15 as (u & 0x8000): test dh,dh matches). Left:
-   (1) the stock-block loop's induction pointer is biased +8 in ours (mov eax, 0x7d6a68; stores
-   [eax-8],[eax-4],[eax],[eax+4]; lea edi,[eax+8]) vs +4 in the original (0x7d6a64; [eax-4]..[eax+8]; lea
-   edi,[eax+0xc]) - same stores, same order, only the IV bias; tried blk at +0 / +4, an index loop over i,
-   &blk[4]: same bias. (2) k = ai_Goods[id*0x41]: ours folds mov cl,[eax+ebx], the original mov ecx,eax;
-   add ecx,ebx; mov cl,[ecx] (same address); tried (ai_Goods+id*0x40)[id], (ai_Goods+id)[id*0x40], an int
-   cast: unchanged. Rest is sib swap and a 2-reg rotation. */
+/* 0x4fe570, loads the building and object tables of the data path root: resets the player records at 0x7d6a64 (stride 0xaa4 ints, each gets the 0xaa0 ints 0x6178c8), allocates the building prototypes (0xca78 = 0x58 * 0x24d, "f3_gm:lpGebaeudePROT") and instances (0xa900, "..INST"), reads "<root>A_Geb.dat" (0x58 records of 0x24d bytes), the object prototypes (0xb9dc = 0x2dc * 0x41, "..PROT"), instances (0x14f218) and "<root>A_Obj.dat"; builds the lookup tables (0x4fe370, 0x503e80) and adds the count of the flagged (bit 15) objects of the kinds 2 / 6 (except 0xfd) to each building type's extensions. Returns 0, or -1 .. -6 for the failed step. */
 
 int gm_LoadTables(char *root)
 {
     char path[512];
     FILE *f;
     int i, n, cnt, id;
-    unsigned short *w;
     unsigned short u;
-    char k;
-    int *slot;
-    int *blk;
+    GMGOOD *g;
 
     /* every stock block: its header from the player slot (+0x68, +0xb8) and the factors 1000, its records from the template */
-    slot = (int *)(ai_PlayerSlots[0] + 0xb8);
-    blk = (int *)gm_StockBlocks;
-    do {
-        blk[0] = slot[-0x14];
-        blk[1] = 1000;
-        blk[2] = slot[0];
-        blk[3] = 1000;
-        memcpy(blk + 4, gm_DefaultStock, 0xaa0 * 4);
-        slot += 0x2f4 / 4;
-        blk += 0x2a90 / 4;
-    } while ((int)slot < (int)(ai_PlayerSlots[0] + 0xb8 + 5 * 0x2f4));
+    for (i = 0; i < 5; i++) {
+        gm_StockBlocks[i].demandIndex = GM_TABLE_A(i)[0].value;
+        gm_StockBlocks[i].demandFactor = 1000;
+        gm_StockBlocks[i].indexB = GM_TABLE_B(i)[0].value;
+        gm_StockBlocks[i].factorB = 1000;
+        memcpy(gm_StockBlocks[i].goods, gm_DefaultStock, sizeof(gm_StockBlocks[i].goods));
+    }
     ai_BTypes = (char *)mem_Alloc(0xca78, gm_TagGebaeudePROT);
     if (ai_BTypes == 0)
         return -1;
@@ -2691,19 +2679,18 @@ int gm_LoadTables(char *root)
     fclose(f);
     gm_InitBuildingTables();
     gm_ResetCharacters();
-    for (i = 0; i < 0xca78; i += 0x24d) {
+    for (i = 0; i < 0x58; i++) {
         cnt = 0;
-        w = (unsigned short *)(ai_BTypes + i + 0x23);
-        for (n = 0x40; n != 0; n--, w++) {
-            u = *w;
+        for (n = 0; n < 0x40; n++) {
+            u = GM_BTYPE(i)->objs[n];
             if (u != 0xffff) {
                 id = u & 0x7fff;
-                k = ai_Goods[id * 0x41];
-                if ((k == 2 || k == 6) && id != 0xfd && (u & 0x8000) != 0)
+                g = GM_GOOD(id);
+                if ((g->type == 2 || g->type == 6) && id != 0xfd && (u & 0x8000) != 0)
                     cnt++;
             }
         }
-        ai_BTypes[i + 0x21] += (char)cnt;
+        GM_BTYPE_EXTENSIONS(i) += cnt;
     }
     util_Randomize();
     return 0;
