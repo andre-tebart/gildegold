@@ -1425,3 +1425,12 @@ mechanisms, each as a generated round over all positions / subsets:
   at each use (ai_GypsyHelperWindow byte).
 - `f = t / k; f = 1.0f - f;` keeps t on the FPU (`fld 1; fsub st,st(1); fstp f; fstp st(0)`), `1.0f - t / k` gives
   fsubr; a scale kept with `fst [slot]` is its own local, not written back into f (ai_CannonSwitchAnim byte).
+- **Two fields of one `d2_Wins[idx]` pushed to a call** (`lea eax,[ecx*4+d2_Wins]; mov ax,[eax+4]` beside
+  `mov edx,[ecx*4+d2_Wins+0x26c]`, ours one `shl eax,2` temp for both): a pointer local used for both fields,
+  `w = &d2_Wins[d2_LastWindow]; f(w->x, y, w->parent);` (ai_CannonBuildPanel byte).
+- **A zero register that starts at a vector's fourth store** (`xor ebx,ebx` then three immediate zero stores
+  and `mov [w],ebx`): that word was an int (`{ float x, y, z; int w; }`): float zero stores are no allocation
+  candidates, an int 0 is (ai_CannonCamera 142 -> 50).
+- **A block local array declared twice under one name** (one block fills it, another reads its own copy): a
+  meaning bug that VC6's slot sharing hides; the compiled size well below the original's is the sign
+  (ai_OpenItemTooltip, ai_GypsyHelperWindow): one function-scope array.

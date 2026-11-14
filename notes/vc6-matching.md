@@ -3142,3 +3142,35 @@ differing instructions. The same shape made the character loop of 0x512f30 pick 
 - ai_RentGraveDetail (stuck, 70 -> 31): the ai_GraveDetail forms (index collect / fill loops, label objects)
   plus `for (k = 0; k < 5; k++, y += 0xd)` (the original's `inc` before the call cleanup). Left: e / n swap
   registers; flip.py: every hit removes a const-0 or an e reference (the sibling's const#0 web).
+
+## match-deep 2026-11-14 (third sv_t session: cannon camera / panel, alchemist research / candidates, grave window, item tooltip)
+- ai_CannonBuildPanel byte (156 ins, "address selection, also in sv_UpdateCityPanel"): `d2_MoveObj(d2_Wins[d2_LastWindow].x,
+  y, d2_Wins[d2_LastWindow].parent)` gives `shl eax,2` and both loads through one scaled temp; the original's
+  `mov edx,[ecx*4+X+0x26c]` / `lea eax,[ecx*4+d2_Wins]; mov ax,[eax+4]` is a pointer local used for BOTH fields,
+  `w = &d2_Wins[d2_LastWindow]; d2_MoveObj(w->x, y, w->parent);`. The pointer used for x only, `(&d2_Wins[..])->x`
+  inline, an index local, a short local for x, a local for parent: all = control. (sv_UpdateCityPanel was byte
+  by then.)
+- ai_OpenItemTooltip fix: three block-scoped `int list[32]` (staff ids, the type chain's building ids, the final
+  loop) - the final loop read its own never-written copy. The original has ONE array at [esp+0x24] for all three
+  uses. The block form had compiled 104 bytes SHORT of the original (VC6 dropped the dead stores), the one array
+  gives 1600 vs 1596. Second time in sv_t (ai_GypsyHelperWindow's btns[3]): grep a function for a block local
+  declared twice with one name before any variant work; a size well below the original's is the sign.
+- ai_CannonCamera (stuck, 142 -> 50): (1) the original's zero register (ebx, `xor ebx,ebx` before the four
+  zero stores of the rotation vector, then `mov [w],ebx` and later float zeros / `cmp fired,ebx` from it) starts
+  at an INTEGER zero store: the vector's fourth word cleared as an int (`CANNONROT { float x, y, z; int w; }`,
+  `pos.w = 0`). Float `= 0` stores are immediates and no allocation candidate; once the int const#0 web has a
+  register, the late pass writes the later float zero stores from it too (99 ins from 142 at once). (2) A copy
+  `d.z = sc->dirZ` placed before a call is kept in its slot; after the call VC6 forwards it into the fld (the
+  original: dirZ copied, dirX / dirY forwarded). (3) A 16-byte local whose lifetime avoids another local's packs
+  into that local's slot (D3VECTOR4 d with ratio and the recoil's qword temps: one 16-byte slot at the original's
+  0x14). Open: two 16-byte locals in the order of the original when the less-referenced one must be nearer esp.
+- ai_AlchemistCandidates (stuck, 260 -> 221): a row position advanced in the loop (`y = 0x31; .. y += 0x64`, or
+  in the for increment) against the original's `y = i * 0x64 + 0x31;` at the top of the body (VC6 still makes
+  the running `add esi,0x64`, but the webs differ); every use written as `i * 0x64 + k` was worse (263). Frame
+  lead: window ids stored to slots spaced like the elements of one `int w[8]` (form / win2 / win3 / group at
+  w[0] / w[2] / w[4] / w[7]) give the original's frame exactly; constant-index array elements keep their slots.
+- ai_AlchemistResearchWindow (stuck): `int row[2]` for sv_ButtonRow declared in a block gives the original's
+  frame (sel then shares the row slot - function-scope arrays never share) and the entry registers.
+- ai_GraveWindow (stuck): an inline block that the original puts out of line (`cmp [rup],ebp; jne far`, the
+  store cross-jumped with another `sv_PopRequest = 1`) is `if (dm_L.rup == 0) {..} else sv_PopRequest = 1;`;
+  the rest there is a priority race (c2trace: rec 124 above out 94).
