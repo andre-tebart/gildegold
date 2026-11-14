@@ -2976,7 +2976,7 @@ exe	0x004fe2c0	gm_ClockToDate	f3gm	3d42744239dfbbfa	no	byte	control=byte p1=byte
 exe	0x004fe310	gm_AddTime2	f3gm	302e62682352d7c8	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004fe330	gm_Season	f3gm	522a55c6c171b0d0	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004fe350	gm_ClockSeason	f3gm	22c2705949299ef4	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x004fe370	gm_InitBuildingTables	f3gm	60e3640d0e930f24	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x004fe370	gm_InitBuildingTables	f3gm	eee7f5ac2af7dd13	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x004fe570	gm_LoadTables	f3gm	2988019c61096275	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x004fe7f0	gm_ClearBuildings	f3gm	7e2bac79f2ea17a4	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004fe830	gm_ClearObjects	f3gm	96d51f74357b14b1	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape

@@ -2577,28 +2577,38 @@ int gm_ClockSeason(AITIME *c)
     return c->year % 4;
 }
 /* 0x4fe370, builds the building lookup tables: gm_ClassBuilding (the first building type of the goods classes 6 .. 16, fixed numbers) and gm_GoodBuilding (for every good in a building type's slot list: the first building type of its class plus the class run length * the position of this building type in its run of equal kinds / that run's length, the smallest such); goods in no slot list get the first building type of their class
-   @deep read against the original 0x4fe370 and reconciled: the two fills, the fixed class entries, cur as
-   an int starting at 0x58, the kind runs (kind != cur first, run++ in the else), the slot loop with the
-   goods class lookup, the class run count and the min store, the final pointer loop (equal). The
-   frame-shifted branch targets are the same statements at moved offsets. What remains is allocation: the
-   original keeps 0 in edx for the run / len / k stores (ours edi), holds p in edi and i in ebp with stack
-   copies [esp+0x18] / [esp+0x24] (the extra 4-byte frame slot, frame 0x1c vs 0x18), and strength-reduces
-   the slot index to a pointer in ebx ('+ lea ebx, [edi + 0x23]' / '+ add ebx, 2'; ours 'mov ax, [ebx +
-   eax*2 + 0x23]'), which also moves the base + cnt*run/len sum to ecx. Tried: a slot pointer stepped in
-   the for (worse, 137 differing), the index form (119) */
+   @stuck 119 -> 66 ins, frame now equal: the decompiled pointer walks (p += 0x24d, q walks, the slots
+   pointer) as plain index loops over GM_BTYPE(i) with a GMBTYPE pointer bt and kind / kind2 locals (VC6
+   makes the bt IV and the objs pointer itself: 119 -> 76), the init order memset, len, cur, fill, class
+   entries, run (360 orders: 76 -> 74), the class run as base += cnt * run / len (the original adds into
+   base's register: 74 -> 66). headers sample: insensitive. Read: the original keeps the zero in edx (run /
+   len / k stores, re-zeroed after the slot loop), i in ebp and bt in edi with slot copies, the objs
+   pointer in ebx, and run / len / cur / k / kind2 in slots; ours gives len ebx (c2trace: len prio -61
+   takes the last free register) and keeps i and the objs pointer in memory. Tried: q pointers in either
+   inner loop (84-109), an id local for the slot value (74 / = control), a slots pointer local (104), bt
+   after kind (= control), the expression written twice (= base +=). Left: the zero / len / i /
+   objs-pointer allocation (tiebreak: insensitive) prior: read against the original 0x4fe370 and
+   reconciled: the two fills, the fixed class entries, cur as an int starting at 0x58, the kind runs (kind
+   != cur first, run++ in the else), the slot loop with the goods class lookup, the class run count and the
+   min store, the final pointer loop (equal). The frame-shifted branch targets are the same statements at
+   moved offsets. What remains is allocation: the original keeps 0 in edx for the run / len / k stores
+   (ours edi), holds p in edi and i in ebp with stack copies [esp+0x18] / [esp+0x24] (the extra 4-byte
+   frame slot, frame 0x1c vs 0x18), and strength-reduces the slot index to a pointer in ebx ('+ lea ebx,
+   [edi + 0x23]' / '+ add ebx, 2'; ours 'mov ax, [ebx + eax*2 + 0x23]'), which also moves the base +
+   cnt*run/len sum to ecx. Tried: a slot pointer stepped in the for (worse, 137 differing), the index form
+   (119) */
 
 void gm_InitBuildingTables(void)
 {
-    int run, len, i, j, k, u, base, cnt, v;
+    int run, len, i, j, k, u, base, cnt;
     int cur, kind, kind2;
-    unsigned char *p, *q;
-    unsigned short *slots;
+    GMBTYPE *bt;
 
     memset(gm_ClassBuilding, 0, 0x64);
+    len = 0;
+    cur = 0x58;
     for (i = 0; i < 0x2dc; i++)
         gm_GoodBuilding[i] = 0x58;
-    run = 0;
-    len = 0;
     gm_ClassBuilding[8] = 0x2f;
     gm_ClassBuilding[7] = 0x32;
     gm_ClassBuilding[6] = 0x29;
@@ -2609,32 +2619,30 @@ void gm_InitBuildingTables(void)
     gm_ClassBuilding[11] = 0x17;
     gm_ClassBuilding[12] = 0x35;
     gm_ClassBuilding[9] = 0x14;
-    cur = 0x58;
-    p = (unsigned char *)ai_BTypes;
-    for (i = 0; i < 0x58; i++, p += 0x24d) {
-        kind = *p;
+    run = 0;
+    for (i = 0; i < 0x58; i++) {
+        bt = GM_BTYPE(i);
+        kind = bt->kind;
         if (kind != cur) {
             run = 0;
             cur = kind;
             len = 0;
-            for (j = i, q = p; j < 0x58 && *q == kind; j++, q += 0x24d)
+            for (j = i; j < 0x58 && GM_BTYPE(j)->kind == kind; j++)
                 len++;
         } else {
             run++;
         }
-        slots = ((GMBTYPE *)p)->objs;
-        for (k = 0; k < p[0x22]; k++) {
-            if (slots[k] != 0xffff) {
-                u = slots[k] & 0x7fff;
+        for (k = 0; k < bt->objCount; k++) {
+            if (bt->objs[k] != 0xffff) {
+                u = bt->objs[k] & 0x7fff;
                 base = gm_ClassBuilding[(unsigned char)ai_Goods[u * 0x41 + 0x21]];
-                q = (unsigned char *)ai_BTypes + base * 0x24d;
-                kind2 = *q;
+                kind2 = GM_BTYPE(base)->kind;
                 cnt = 0;
-                for (j = base; j < 0x58 && *q == kind2; j++, q += 0x24d)
+                for (j = base; j < 0x58 && GM_BTYPE(j)->kind == kind2; j++)
                     cnt++;
-                v = base + cnt * run / len;
-                if (v < gm_GoodBuilding[u])
-                    gm_GoodBuilding[u] = v;
+                base += cnt * run / len;
+                if (base < gm_GoodBuilding[u])
+                    gm_GoodBuilding[u] = base;
             }
         }
     }
