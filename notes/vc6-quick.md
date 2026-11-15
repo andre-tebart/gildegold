@@ -186,6 +186,9 @@ Section names are those of `notes/vc6-matching.md`.
   round 1 left at 2-8 instructions. `--base FILE:LABEL` starts from one of your `dcp try` variants.
   `python tools/search/sweep.py` runs it over every function below byte (results: `sweep.py --report`).
 - Generators are script files (`python gen.py > v.txt`); `python -` with a PowerShell here-string hangs.
+- An odd instruction form of the original (`[esp+esi+0x90]` with `add esi,4`): grep the whole original for it
+  and read the byte functions that have it (`dcp disasm 0x401000 ..END --no-bytes > all.asm`; it stops at the
+  first bytes that do not decode, so restart past them). Their source names the construct.
 - Sweeps over one function or the whole queue: `tools/sweep/blockscope.py` (function-scope records into their
   blocks), `tools/sweep/fillloop.py` (constant memsets as element loops, `--zero` for zero fills),
   `tools/sweep/twin.py --tagged` (every function with a `@deep` note that has a byte twin).
