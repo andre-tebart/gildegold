@@ -8022,21 +8022,33 @@ int sprintf(char *buf, const char *fmt, ...);                     /* 0x5de652 */
    0x2a more of a random one of the skills 2 .. 4
    @deep Session 2: kept (all meaning-equal): the life step as '{ float d = life / l; l = l - life + d; }'
    (the original divides first, fxch, fsub on l: fpu hunks of both life loops gone; every one-expression
-   spelling = control or no fxch); the avatar arm's life loop with its own block local 'float life' (the
-   original keeps two lives: avatar in the slot of the p2-p1 diff temp, final with p1); '(float)(1.0 - f)'
-   in the mood and the skill mix (fld 1.0; fsub st,st(1); fmul mem / fimul: fpu hunks gone; operand orders,
-   1.0f, (1 - f), double casts = control or worse). 256 -> 224 ins. Merging the two child-place ifs with ||
-   drops one store copy the original has: not kept. No lever: block-local r / l / n in the avatar arm (=
-   control; block-local a is worse), ai_CharCount++ at every position 8053..8090 (best 222, the load still
-   after the memset when moved below it), picture = partyId = -1 chains, memset/stores through c. flip.py:
-   no single mutation puts ai_CharCount in a register (want 'mov ebx, DWORD PTR _ai_CharCount': 0 of 144).
-   Frame (c2frame: a local joins the first compatible slot searching from the LAST slot backward): orig
-   0x10 = f + skill fild temps + rr temp + the esi spill (ours: f alone, the rest with the avatar r), 0x14
-   = p2 + avatar r, 0x18 = a + mood counter, 0x1c = p1 + final life (ok), 0x20 fild temps, 0x24 = p2-p1
-   diff temp + avatar life (ours: diff + a; life with mx1), 0x28 idx, 0x2c mx2, 0x30 mx1, 0x34 fimul temp.
-   Left besides: init block (orig: ai_CharCount web in ebx loaded before the memset, stored after id =
-   0xffff; the -1 constant no candidate: v210 immediate, picture/partyId via 'or eax,-1'; ours -1 in edi
-   across sprintf), p2 reload order in the p2 child loop. */
+   spelling = control or no fxch); the avatar arm's life loop with its own block local 'float life';
+   '(float)(1.0 - f)' in the mood and the skill mix (fld 1.0; fsub st,st(1); fmul mem / fimul: fpu hunks
+   gone; operand orders, 1.0f, (1 - f), double casts = control or worse). 256 -> 224 ins. FRAME (dcp frame
+   pairing, c2frame walk names): orig 0x10 = {f, mx2-arm and mx1-arm fild temps, avatar r, rr fild temp,
+   p1-p2 esi spill of the best-skill loop}; 0x14 = {p2}; 0x18 = {a (both arms), mood-loop down counter,
+   c-p1 temp of the skill loop}; 0x1c = {p1, final life, avatar f010 / w00a fild temps} (= ours); 0x20 =
+   {-0x80-p1 temp, f010 fild temps} (= ours); 0x24 = {p2-p1 diff temp, avatar life}; 0x28 idx; 0x2c mx2;
+   0x30 mx1; 0x34 fimul temps. A hand simulation of the packer (list order, each local joins the newest
+   lifetime-compatible slot) reproduces OURS exactly and reproduces the ORIGINAL with the list order p2,
+   idx, diff, life_av, counter, c-p1, a, mx2, mx1, f, p1, life_fin, (count-2 temps as now): i.e. in the
+   original life_av / counter / c-p1 / a are listed before mx1 / mx2 and f after them, which the counts as
+   they are now (mx 4, a 4, life_av / counter / c-p1 / f 3) cannot give: some of these counts differ in the
+   original (find which statement adds or drops a reference). Float locals are packed by symbol: the
+   partition {a both arms}, {life avatar}, {life final}, {f} is the original's (27 partitions tried, cc16,
+   only trade slots for regs); int renamings (r / mx1 / mx2 to other ints) = control unless the target has
+   its own memory piece. No lever: || merge of the child-place ifs (drops a store copy the original has),
+   block-local r / l / n, ai_CharCount++ at every position (the load stays after the memset when moved
+   below it; memset(c) / int loop fill = memset), ++ / += forms, c = &ORD_CHARS[idx] at every position,
+   picture = partyId = -1 chains and unsigned spellings, a named int local for p->relatives[k] (= control),
+   mx1 = mx2 = 0 at every position before the best-skill loop (before the mood13 lines moves the stores
+   above the call: wrong). flip.py: 0 hits for 'mov ebx, DWORD PTR _ai_CharCount', '_a$ = -1056', '_f$ =
+   -1064'. climb.py: its best rows all change the frame size (0x424, 'stack offsets aligned') or the
+   meaning (short / unsigned locals, relatives[1] into the else arm): none usable. Left besides the frame:
+   init block (orig: ai_CharCount web in ebx loaded before the memset, stored after id = 0xffff; c2trace:
+   ours UNPROFITABLE sav -4 refs 4; the -1 constant no candidate in the original: v210 immediate,
+   picture/partyId via 'or eax,-1'; ours -1 in edi across sprintf), p2 reload placement in the p2 child
+   loop, mx1 compared from memory in the skill loop. */
 unsigned short gm_CreateCharacter(int type, int a2, int a3, unsigned short a4, struct ORDBLD *a5, unsigned a6, int a7, int a8)
 {
     int idx, i, k, w, r, n, mx1, mx2, v;
