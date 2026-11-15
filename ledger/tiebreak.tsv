@@ -469,7 +469,7 @@ exe	0x00423a90	msx_Play	msx	d76ac2e6714c0a9a	no	byte	control=byte p1=byte p2=byt
 exe	0x00423b30	msx_Start	msx	5558e85a3cc8b43b	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00423df0	msx_Stop	msx	41fcd1c173cadc83	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00423e70	msx_SetFadeTime	msx	13863d342b314aeb	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x00423e80	msx_Update	msx	26d2e40ad05b86d8	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x00423e80	msx_Update	msx	716f18fa307e70d4	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
 exe	0x004241a0	msx_FadeMaster	msx	56022d114822219c	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00424250	msx_Find	msx	ae50c32af4268a6c	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004242c0	msx_GetPlaying	msx	c744737f916e244b	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte

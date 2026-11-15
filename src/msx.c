@@ -21,6 +21,7 @@ extern volatile unsigned long d3_Time;      /* 0x6333cc, see d3.h */
 #define MSX_TIME ((d3_Time << 3) + (d3_Time << 2) + d3_Time)
 
 extern LARGE_INTEGER msx_Last;
+extern float ai_FloatZero;                  /* 0x5eb788, the shared 0.0f (cm.c) */
 
 /* 0x423770, the render thread's loop: updates the scene at about 20 Hz until msx_Quit, then deletes the lock */
 void msx_Thread(void)
@@ -248,18 +249,36 @@ void msx_SetFadeTime(int ms)
 /* 0x423e80, body of the update thread (called with msx_Lock held about every 50 ms): for every playing
    track it follows the stream position, retires a finished stream and starts the queued track, ramps the
    fade-in / fade-out volume, then advances the master fade; no return value
-   @stuck earlier: every code hunk is the loop IV base offset (ours esi = &t->fadepos, msx_Tracks+0x110;
-   the original &t->volume, msx_Tracks+0x118; all field displacements shift by 8, the loop end cmp esi,
-   msx_Tracks+0xca0 vs +0xca8: the two M8 ref lines), the same operations; 582 operand-order variants,
-   pointer / for / do-while loop forms, dead volume loads at 6 positions, volume read first in both fade
-   blocks: base unchanged. Deep session 3 (probes, not kept): an extra read of t->length, t->fadevol,
-   t->curvol, t->stream, t->pos, t->name[0], t->name[0x80] or t[1].length after sfx_GetStreamPos leaves the
-   base at +0x110 - VC6's IV base here does not follow which fields the loop references (not first access,
-   not most used, not the middle of the referenced range). Also open: M10 at +0x283 our 0.0f literal vs the
-   original's ai_FloatZero (0x5eb788), probably a pooled literal named as a datum (not checked). Next lead:
-   the declaration of msx_Tracks / MSXTRACK itself (an outer struct or a different element type the
-   original indexes), or the IV coming from another expression than &msx_Tracks[i]. (tiebreak: insensitive
-   under the four probes only, best draft) */
+   @stuck the only code hunks are the strength-reduced loop pointer's base field: the original keeps esi =
+   &msx_Tracks[i].volume (+0x118), ours &.fadepos (+0x110); every displacement shifts by 8 and the end
+   compare follows. VC6 picks the base from the post-CSE field references of the loop (toy loops: highest
+   count, ties by reference order; the 2nd distinct field when all are single) - the source spelling of a
+   statement never moves it (all fold to the same IL). Done: M10 fixed (msx_FadeTo >= ai_FloatZero, the
+   object; the open line is gone, count unchanged); headers sample insensitive (32 samples, one codegen);
+   twin.py: no twin; same-unit callees byte; no goto/volatile/hand walk in the loop; no returns (void); no
+   records/buffers to block-scope. Rounds: t-> against msx_Tracks[i]. at every use: = control; curvol
+   spellings (8: operand orders, volume*.. first): = control; fade-in as one or-chain (v6): base unchanged,
+   105 ins; fade-in curvol then one abs test: 155; ABS macro: 116; stop blocks 64 products
+   (SetStreamVolume(..,t->curvol), fademode/curvol order, stream/playing order): 104, base unchanged;
+   continue against nested if for the 3 skips (8 x ai_FloatZero): = control; fade-out dur written out at
+   each of 4 uses (16 subsets): 106..195, base unchanged; dur as ternary = control, default-first 109,
+   negated test 110, clamp operands swapped 108 - base 0x110 in all. flip.py (want any other base, 394
+   mutants): only meaning-changing mutants move it, all in the fade-out block: deleting the else-arm's
+   curvol computation -> +0x118 (the original's), moving it into the then-arm -> +0x118, computing dur
+   after its test -> +0x10c (pos); removing t->volume from that expression -> +0x118, removing t->pos ->
+   +0x10c, removing t->fadepos or adding t->volume -> stays +0x110. So the original's fade-out block has a
+   different set of field references (one fewer volume/pos read or its curvol computed elsewhere) with the
+   same machine code; not found. Left: every [esi+X] of the loop 8 off (asmdiff), mov esi,msx_Tracks+0x110
+   vs +0x118, cmp esi,msx_Tracks+0xca0 vs +0xca8. (tiebreak: insensitive) prior: earlier: every code hunk
+   is the loop IV base offset (ours esi = &t->fadepos, msx_Tracks+0x110; the original &t->volume,
+   msx_Tracks+0x118; all field displacements shift by 8, the loop end cmp esi, msx_Tracks+0xca0 vs +0xca8:
+   the two M8 ref lines), the same operations; 582 operand-order variants, pointer / for / do-while loop
+   forms, dead volume loads at 6 positions, volume read first in both fade blocks: base unchanged. Deep
+   session 3 (probes, not kept): an extra read of t->length, t->fadevol, t->curvol, t->stream, t->pos,
+   t->name[0], t->name[0x80] or t[1].length after sfx_GetStreamPos leaves the base at +0x110 - VC6's IV
+   base here does not follow which fields the loop references (not first access, not most used, not the
+   middle of the referenced range). Also open: M10 at +0x283 our 0.0f literal vs the original's
+   ai_FloatZero (0x5eb788), probably a pooled literal named as a datum (not check... */
 
 void msx_Update(void)
 {
@@ -355,7 +374,7 @@ void msx_Update(void)
                 }
             }
         }
-        if (msx_FadeTo >= 0.0f) {
+        if (msx_FadeTo >= ai_FloatZero) {
             elapsed = MSX_TIME;
             elapsed -= msx_FadeStart;
             if (elapsed < msx_FadeDuration)
