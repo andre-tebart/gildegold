@@ -199,10 +199,10 @@ int ai_FilePickWindow(unsigned mask, int flags, char *caption, char *dir, char *
     int direct;
     int ret;
 
-    ret = 0;
     input = -1;
     count = -1;
     okBtn = -1;
+    ret = 0;
     win = d2_OpenForm(0, 0, "menu\\fileselector");
     d2_CentreViewWindows(win);
     d2_SetPointerSprite(0, 0);

@@ -24526,8 +24526,8 @@ int ai_SpecialAmountList(G8CHARREC *ch, char *text)
     (void)ch;
     memset(&cfg, 0, sizeof(cfg));
     cfg.mode = 0x204;
-    cfg.filter = gypsyFilter;
     cfg.kind = 6;
+    cfg.filter = gypsyFilter;
     return ai_SpecialAmountWindow((unsigned int *)&cfg, text, 0, 0);
 }
 /* 0x5bea50, the special-amount list window "special\amt2" (1655 B): the caption (the kind's name 0x12b2 + kind, or

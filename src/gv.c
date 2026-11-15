@@ -1758,8 +1758,8 @@ int gv_OrderBury(int *g, char *o, int v, int b)
 
     if (g != 0 && o != 0 && b != -1) {
         m.chr = ch->netId;
-        m.bld = bld->id;
         m.type = 0;
+        m.bld = bld->id;
         m.entry = (unsigned char)b;
         m.size = v;
         m.years = 0;

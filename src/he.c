@@ -3188,8 +3188,8 @@ void he_PostEvent73(void)
     m.type = 0x73;
     m.to = he_PlayerCh->netId;
     m.fromId = -1;
-    m.time = ai_Time;
     m.flags = 1;
+    m.time = ai_Time;
     cm_SendLongMessage((char *)&m);
 }
 /* 0x541170, posts the message 0xa6 (now, from -1, flag 1) to the player's character, after freeing a running event 0xa6 */
@@ -24996,9 +24996,9 @@ void he_GypsySwapSkills(AICHAR *pl, AICHAR *per)
     char text[0x400];
     int hi, lo, hiIdx, loIdx, i, fmt;
 
+    lo = 0xff;
     hi = -1;
     hiIdx = -1;
-    lo = 0xff;
     loIdx = -1;
     for (i = 0; i < 5; i++) {
         if (per->skills[i] > hi) {
