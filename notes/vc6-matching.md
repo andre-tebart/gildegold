@@ -1395,6 +1395,13 @@ Frame size, slot order, holes, shared slots, dead parameter slots, block-scoped 
 
 ### Frame bigger or smaller: buffers, records, temps
 
+- **Unreferenced 4-byte holes behind pairs of scalars (`cntA, cntB, hole, recA, recB, hole`)**: each pair was a
+  3-element array indexed by a type - base (`int cnt[3]; AIBLD *best[3];`, [2] for the skipped type), read with
+  constant indices so the code keeps its branches; the same goes for one-based tables sized by their data
+  (`int own[17]` for a 0x11-byte `jobByGroup`). Then two AIARG fills that only the loop and the tail use were
+  block locals: `AIARG s1, s2;` inside the loop's `if` and again in a `{ }` around the tail - that put o in the
+  dead parameter slot, money in a local, and the `s1.kind` store behind the compare (ai_DecideMasterBuilder,
+  ai_DecideChangeProfession byte).
 - **A far draft's frame size off by 4**: one missing local shifts every slot (d2_OpenForm 0x4741f0: `sub
   esp,0x244` vs 0x248, 988 hunks; Ghidra's local_248 gives the size, not the variable). Fix the size first.
 - **N untouched bytes right behind a small local whose address goes to a call**: the local is the callee's full
