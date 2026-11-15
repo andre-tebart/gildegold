@@ -1,7 +1,7 @@
 """Twins: for a below-byte function, the byte functions whose source is nearly the same, with the lines that differ.
 
     python tools/sweep/twin.py NAME [NAME ..]     # the twins of these functions
-    python tools/sweep/twin.py --stuck            # every @stuck / @deep function that has a byte twin
+    python tools/sweep/twin.py --tagged           # every function with a @deep note that has a byte twin
     python tools/sweep/twin.py NAME --min 0.4     # a lower similarity bound (default 0.5)
     python tools/sweep/twin.py NAME --all         # twins of any grade, not only byte ones
 
@@ -115,7 +115,7 @@ def normal(body):
 def main():
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("names", nargs="*")
-    ap.add_argument("--stuck", action="store_true", help="every @stuck / @deep function")
+    ap.add_argument("--tagged", "--stuck", dest="stuck", action="store_true", help="every function with a @deep note")
     ap.add_argument("--min", type=float, default=0.5)
     ap.add_argument("--all", action="store_true", help="twins of any grade")
     ap.add_argument("--brief", action="store_true", help="no diff, one line per twin")

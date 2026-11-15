@@ -8,7 +8,7 @@ of your hunk class, or search by instruction or construct (`grep -n "fst \|rep s
 note says otherwise: `dcp fn NAME` shows the source that matched.
 
 ## 1. The premise: the original was ordinary code
-Every function that was marked stuck and matched later had the same history: an earlier pass reached its best
+Every function that an earlier pass had given up on and that matched later had the same history: an earlier pass reached its best
 distance with an unusual construct, and the byte match was plainer code. The remaining hunks then looked like
 "allocation only, no source lever", and never were. So:
 - **List what a game programmer of 2001 would not have typed, and replace that first**: a `goto` (to a shared
@@ -38,11 +38,18 @@ distance with an unusual construct, and the byte match was plainer code. The rem
 4. Meaning before allocation. A one-instruction slot hunk inside a record fill is a wrong field index until
    proven otherwise; a store into "another local's slot" is another variable; a redundant test, a reload, a
    second load of a parameter are statements of the original. Section "It was a meaning bug" in the reference.
-5. `dcp headers sample NAME` when the tie-break is not measured. "Sensitive" on a function with dozens of
-   differing instructions says nothing: the cause is in the source (main_RoundReport: 159 ins, "sensitive", six
-   ordinary changes to byte). A function is truly tie-break bound only when it has a forced register split with
-   two or more reloads at one block edge (an inline-asm block, the fourth callee-saved register taken); then the
-   declaration set decides the reload order, and even then usually the source still differs.
+5. The declaration set is dcp's business, not yours. VC6 breaks some register ties by how many symbols were
+   declared before the function (period 64), so headers can move a function's code. dcp sweeps that by itself
+   (in `dcp try` on a close row, in `dcp grade`, in `dcp build` for a function that fell) and prints one of two
+   lines: "this text is byte under a declaration set: done (proven)" - the item is finished - or "no declaration
+   set makes this text byte: the difference is in the text, go on". There is no third case and nothing to
+   interpret. A function another function's or header's change moved, with its own text unchanged, is no fall.
+6. Read the function's `@deep` note (`dcp fn NAME`): what earlier sessions found and which rounds they ran.
+   Do not repeat those rounds. `attempts=N` in `dcp next --deep` says how many sessions did not finish it.
+7. `python tools/search/climb.py NAME --rounds 1`: every single ordinary mutation of the function (a statement
+   moved, a named local for a value read twice, a local written out, an assignment moved into its expression, a
+   statement in both arms, operand order ..), each measured. About a minute; it found msx_Update's byte and took
+   dd_SetMode 68 -> 28 where two sessions had not. Read its best rows before thinking of variants yourself.
 
 ## 3. How VC6 decides (read from c2.dll; these predict which lever can work)
 **Registers.** Allocation candidates are named locals, parameters, CSE temporaries, a scalar global between its
@@ -138,7 +145,7 @@ Section names are those of `notes/vc6-matching.md`.
 | arguments pushed before the test that picks one; a call "sunk" or doubled | the call written in both arms; the callee's prototype (char / short / unsigned char parameters); two calls assigned to named locals in call order | Calls |
 | `movsx` / `and 0xff` / byte RMW differences, `lea` against `add; add` | the real type of the field, parameter or return; bitfields for byte RMW; `(c ? A : B) + x` against `(c ? d : 0) + A + x` | Types |
 | `rep stosd` / inline copy shaped differently | the element loop against `memset`; `strcpy` against the hand loop; one array reused; struct assignment against field copies | Copies |
-| nothing in the function's text moves it; `dcp headers sample` sensitive | callees above; a struct or extern in a shared header (put views in the unit); then section 2.5 | Declaration set |
+| nothing in the function's text moves it | callees above; a struct or extern in a shared header (put views in the unit); a macro body or type the function uses; `climb.py` with more rounds | Declaration set |
 
 ## 5. Tools
 - `dcp try NAME FILE`: one row per variant. Read the `ins` column yourself: `best:` says "none closer" when a
@@ -159,9 +166,19 @@ Section names are those of `notes/vc6-matching.md`.
   changed constant at one site = that block is not shared with its twins in the original.
 - `uv run --with pefile python tools/c2dag/c2pass.py ..`: compile with one back-end pass skipped (cross-jumping
   off: `--skip 0x1070a91d`) to see which pass makes a layout.
+- `python tools/search/climb.py NAME [--rounds N --beam K --width W --ops a,b]`: a beam search over source
+  mutations, each mutant measured with `dcp try`; round 1 is exhaustive (every single mutation), later rounds
+  mutate the best texts again. It prints the best text's diff against the tree and writes nothing into the
+  sources. A mutant that is BYTE has the original's meaning; a mutant that is only closer may have changed the
+  meaning (a statement moved past one it depends on, a call moved into a braceless `if`): check a lead against
+  the original (`dcp disasm`) before applying it, and apply it as the plain code it suggests.
+  `python tools/search/sweep.py` runs it over every function below byte (results: `sweep.py --report`).
 - Sweeps over one function or the whole queue: `tools/sweep/blockscope.py` (function-scope records into their
   blocks), `tools/sweep/fillloop.py` (constant memsets as element loops, `--zero` for zero fills),
-  `tools/sweep/twin.py --stuck` (tagged functions with a byte twin).
+  `tools/sweep/twin.py --tagged` (every function with a `@deep` note that has a byte twin).
+- `dcp note NAME "text"`: the function's `@deep` note, rewritten (the note of before this session stays as
+  `prior:`). Write it after every round that taught something: what the original does at the hunks left, the
+  mechanism, the round with its best row. A session can end at any moment; the note is what the next one has.
 - A probe that is never kept answers "does this decide it": `extern T probe;` inside the function for "is this
   one object or three", a changed constant at one site for "is this block shared", `{ static int *pm; pm = &x; }`
   for "does x live in memory in the original".
@@ -183,17 +200,29 @@ Write a small script that emits the variants file; do not hand-edit orders.
 Signals: identical code for a whole family = the mechanism does not reach the hunk, drop it; the difference
 moved at a worse count = the right mechanism, refine it (positions, subsets).
 
-## 7. Before `dcp stuck`
-Stuck is for a function whose remaining hunk you can name mechanically (which candidate, which slot count, which
-pass) and for which the rounds above are done. Check off, and say in the reason which were done:
-1. twin.py run; callees above are byte.
-2. Every `goto`, `volatile`, hand pointer walk, hand copy loop and renaming local of the function replaced by
-   the plain form, or kept with the variant row that shows the plain form is worse AND why (vdiff).
+## 7. When the ideas run out
+There is no way to give an item up: it ends byte, or with a meaning bug fixed. When no round moves the code any
+more, the function is not finished and neither are you. Go through this list; each point has matched functions
+that had been called "allocation only, no source lever", which was never true.
+1. twin.py run; the callees defined above are byte (if not, match them first: that is this item's work).
+2. Every `goto`, `volatile`, hand pointer walk, hand copy loop and renaming local replaced by the plain form, or
+   kept with the variant row that shows the plain form is worse AND a vdiff that says why.
 3. Returns counted; `p = 0` + `if (p)` tried for each cleanup `return 0`; the join position swept.
 4. Block scope tried for every record, array and buffer; one array for two.
-5. For register hunks: c2trace read, the candidate that must exist or must rank higher named in the reason.
-6. For slot hunks: c2frame counts read, the local whose count is off named.
-7. For order hunks: the fill permuted; assignment-in-expression tried; a move-one-statement round run.
+5. Register hunks: c2trace read; you can name the candidate that must exist or must rank higher.
+6. Slot hunks: c2frame counts read; you can name the local whose count or table position is off.
+7. Order hunks: the fill permuted; assignment-in-expression tried; a move-one-statement round run.
 8. The far variants with the right layout read with vdiff, not dropped by count.
-The reason then says: what the original does at the hunk, the mechanism that decides it, each round with its
-best row, the exact lines left. "Allocation only, no source lever" is not a reason.
+9. `climb.py NAME --rounds 6` (and again with another `--seed`, or `--ops` narrowed to the operators that moved
+   something): combinations of two or three ordinary changes.
+10. The cause outside the function's text: the body of a macro it uses (its temps and their order count as
+    references), the type of a struct member or global, a callee's prototype, an inline helper, the unit's
+    place in a family of copies. Change it in a `dcp try` of the unit, not by guessing.
+11. Read the original again from the top, block by block, against ours (`dcp asmdiff NAME --all --lines`) as if
+    the source were unknown: which variables does the ORIGINAL have, where does each live, where is each set?
+    The decided tests of section 3 hide statements; a difference in what exists is found by reading, not by
+    variants.
+12. Probes that change the meaning on purpose (flip.py, a constant changed at one site, a statement deleted):
+    which part of the function does the hunk depend on? Then look for the ordinary form with that effect.
+After each of these, `dcp note NAME ".."` with what it showed. Then start the list again with what you know now:
+a lever found for one hunk changes what the others mean.

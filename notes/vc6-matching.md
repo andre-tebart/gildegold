@@ -2,7 +2,7 @@
 
 The cases behind `notes/vc6-quick.md` (read that first). One bullet per rule: **what the original shows where
 ours differs**: the source form that gives it. `No lever:` what changes nothing. (the functions it was found on).
-A function named without a remark is byte: `dcp fn NAME` prints the source that matched; `open` / `stuck` means
+A function named without a remark is byte: `dcp fn NAME` prints the source that matched; `open` (in old notes also `stuck`) means
 the rule moved it but it is not byte. Go to the section of your hunk, pick the sub-heading, or search by
 instruction or construct (`grep -n "rep stosd\|fst \|dead parameter" notes/vc6-matching.md`). `conflicting notes,
 measure` marks two observations that disagree: try both. Some notes name scripts that no longer exist
@@ -12,7 +12,7 @@ measure` marks two observations that disagree: try both. Some notes name scripts
 - **Returns, epilogues, callee-saved pushes** (87 rules): Pushes on the wrong side of an early exit; A result in a
   register, a hoisted constant, a reload from its slot; Shared against separate failure blocks; Where a return block
   is laid out; Which copy of a cross-jumped tail survives, the join position; Search loops and their exits; Return
-  type and small return forms; Before marking an exit hunk stuck
+  type and small return forms; When an exit hunk resists
 - **Branch layout, conditions, switches** (68 rules): Which arm is inline and which is out of line; Redundant tests
   the original keeps, threading; Jumps into another arm, goto chains, shared tails; setcc, defaults, conditional
   assignments; Compare operand order and the constant written; Unsigned, signed and float jcc; min / max and clamps;
@@ -57,7 +57,7 @@ measure` marks two observations that disagree: try both. Some notes name scripts
   variable; Locals, arrays and frame size; Conditions and jump targets; Types, constants, strings and arguments;
   Reading Ghidra's output and the original
 - **Method and tools** (48 rules): dcp commands: what they do and do not do; Big diffs and function boundaries; The
-  c2dag tools; Sweeps and twins; Stuck functions that were not allocation problems; A byte sibling, twin or
+  c2dag tools; Sweeps and twins; Functions given up on that were not allocation problems; A byte sibling, twin or
   published source is the source; Variant rounds; Base pass
 - **This code base** (7 rules)
 - **Open cases and rounds without result** (35 rules): A constant or flag in the wrong register; Register races
@@ -305,7 +305,7 @@ Where the pushes and pops sit, how many epilogue copies there are, shared agains
 - **`setne; lea [eax+eax+1]`**: `mode = (strcmp(..) != 0) * 2 + 1;` = if/else (WinMain).
 - **`add [mem],reg`**: another access form than the loads (index vs byte-offset macro) (d2_Unk472760).
 
-### Before marking an exit hunk stuck
+### When an exit hunk resists
 
 - **The lever is a statement elsewhere**: run twin.py, count returns, try the assignment inside the expression, `p =
   0` + `if (p)` for every `return 0` after a cleanup. A reload `mov reg,[slot]` before a "must be 0" return is a
@@ -2967,7 +2967,7 @@ How to work: variant rounds, the c2 tools, sweeps, what the tools' output means,
 - **Whole-function `dcp try` variants**: keep the `/* 0xADDR */` comment verbatim (cut at `*/`); without it the
   build loses the grade (`no graded function`) and `--apply` drops it from the ledger (`dcp fn: no function`):
   restore the comment from git.
-- **Backticks in a `dcp stuck` text in bash**: the shell runs them; single-quote the reason or pass a file.
+- **Backticks in a `dcp note` text in bash**: the shell runs them; single-quote the reason or pass a file.
 - **A tail `code` hunk, nops on our side, instructions on the original's**: sections pad to 16 and `dcp build`
   compares `len(mine)` bytes, so 225 .. 239 bytes compare against the next function; make it one instruction
   shorter. (ahm_ResearchProgress 0x4eafd0: 49 -> 9 bytes / `order` at 224)
@@ -3036,7 +3036,7 @@ How to work: variant rounds, the c2 tools, sweeps, what the tools' output means,
   gv_GraveyardTurn, he_RunHarvest, he_RunGraveyardWorkers, ai_StorageWindow, ai_CourtshipWindow,
   ai_CabinetIntrigueWindow; no gain on lc.c's big fills. Rerun it and `fillloop.py` after base work (minutes).
 
-### Stuck functions that were not allocation problems
+### Functions given up on that were not allocation problems
 
 - **"Allocation only, no source lever" after a long lever list**: none of the five reviewed (main_ChoosePlayer,
   snd_FindVoiceSample, snd_UpdateRain, vfs_MemOpen, vfs_Tfopen) was allocation; each lacked one check.
@@ -3154,7 +3154,7 @@ Unsolved hunks and what was tried on them. Read before repeating a round on the 
 
 ### Register races between named values
 
-- **Races in @stuck tags**: gm_BuildingBalance (cost spilled to out's slot), gm_ListWorkers (k outranks p3),
+- **Races named in @deep notes**: gm_BuildingBalance (cost spilled to out's slot), gm_ListWorkers (k outranks p3),
   gm_InitBuildingTables (len takes ebx), gm_CharNameRecord (an address constant takes ebx; int k contradicts).
 - **gm_AddTime (32 ins)**: 60 in esi for both idivs, edi for three RMW temps; no named sum local gets edi (38).
 - **gm_KillSpieler (insensitive)**: ch->netId hoisted into ebx pushes peer->netId to ebp and c * 0x21c to a slot;
