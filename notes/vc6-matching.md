@@ -1462,6 +1462,9 @@ Frame size, slot order, holes, shared slots, dead parameter slots, block-scoped 
 
 ### Dead parameter slots
 
+- **Frame 4 short, our memory local packed into a parameter's dead slot**: the local's first assignment stands
+  before the parameter's last read in the original. ai_PickActionBuilding: `win = 0;` moved above `q[4] = a;`
+  gave the original's own slot (frame 0x54 -> 0x58); moving the read `q[4] = a` later did not.
 - **A parameter slot read as an extra argument**: an uninitialized local (set on one path, read on another: a
   NULL path `mov edi,[esp+0x20]`, a switch default, a flags struct, a returned `|= 0x40`, an `__asm int 3`
   branch). Check the writes before reading `[esp+arg]` as the parameter.

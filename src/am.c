@@ -11063,15 +11063,7 @@ unsigned int ai_PickPartnerChainLevel(AIPER *p, unsigned int a, unsigned int fl,
    accepts with the kind mask (bit 63 forced: no dead or homeless buildings) and, when [lo, hi] is narrower than
    0..100, whose owner's liking (gm_Liking) equals the filter record's liking minimum (+0x44, as ai_PassesPartnerFilter
    reads it): the original compares both bounds against that float, which it never sets (lo and hi only switch the
-   test on); its id into *out (-1 for none), returns 1 when found
-   @deep read in full against the original: lo/hi are float parameters (prototypes changed from int c,
-   float f in am.h, he.c, sv_t.c, lc.c; callers pass 0 either way), double window constants,
-   the filter record q[0x14] (frame 0x58 = win, step, q) whose float +0x44 the original compares both
-   liking bounds against, the unsigned hi mask word, the found/break exit, int j. 118/118 instructions.
-   Left: allocation only: ours packs win into the dead parameter slot of a ('- mov dword ptr [esp + 0x6c],
-   ebx' / '+ mov dword ptr [esp + 0x10], ebx'; frame 0x54 vs 0x58) and schedules the mask high word into
-   eax ('- or eax, 0x80000000' vs '+ or edx, 0x80000000'); declaration order and moving q[4] = a do not
-   change it */
+   test on); its id into *out (-1 for none), returns 1 when found */
 
 int ai_PickActionBuilding(AIPER *p, int a, __int64 mask, float lo, float hi, int *out)
 {
@@ -11081,12 +11073,12 @@ int ai_PickActionBuilding(AIPER *p, int a, __int64 mask, float lo, float hi, int
     float r;
 
     step = ai_RandomStrides[util_RandomU(0x10)];
-    q[2] = (unsigned int)mask;
-    q[4] = a;
-    found = 0;
-    q[3] = (unsigned int)((unsigned __int64)mask >> 32) | 0x80000000;
     win = 0;
+    q[2] = (unsigned int)mask;
+    found = 0;
     q[5] = 0;
+    q[3] = (unsigned int)((unsigned __int64)mask >> 32) | 0x80000000;
+    q[4] = a;
     *out = -1;
     if ((lo > 0.0 || hi < 100.0) && lo < hi)
         win = 1;
