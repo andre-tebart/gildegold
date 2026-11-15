@@ -31,8 +31,10 @@ Hard rules
    older reasons as `prior:`) or `why=untagged` (below byte in a unit whose base work is done: nobody has tried it,
    there are no notes). `risk=` orders the queue: `concrete` items first (a concrete difference is still named),
    then `draft`, `shape`, `proved`.
-3. Read the project's matching notes if it has them (gildegold: `notes/vc6-quick.md`, the short list, and
-   `notes/vc6-matching.md`, searchable by the construct you face).
+3. Read the project's matching guide whole if it has one (e.g. `notes/vc6-quick.md`): it is the method for this
+   compiler. Where it says what to do before the first variant and before `dcp stuck`, that is binding here. Its
+   reference (e.g. `notes/vc6-matching.md`, grouped by the symptom seen in the diff) is searched by the hunk class
+   and the construct you face.
 
 ## 2. Work loop: one item at a time, always the first
 
@@ -50,8 +52,11 @@ When `tiebreak:` says `not measured` or `under the four probes only`, run `dcp h
 else (32 compiles, a few seconds):
 - **sensitive, best byte**: a declaration set gives the original's bytes from your text: proven byte. Commit
   `ledger/tiebreak.tsv` (`<unit>: <name> proven byte (tiebreak sample)`); next item.
-- **sensitive, best below byte**: VC6's tie-breaks follow the declaration set, not your text. Do not spend the
-  item on spellings: `dcp stuck NAME "tie-break sensitive: ..."` with the hunks left; next item.
+- **sensitive, best below byte**: the declaration set moves this function's code, and that alone says nothing
+  about where the difference comes from. While more than a few instructions differ the cause is in the text:
+  work it (2.3) like an insensitive one. It is tie-break bound only when all that is left is the order of reloads
+  at one block edge behind a forced register split (an inline-asm block, the last callee-saved register taken)
+  and no variant of the text moves it; only then `dcp stuck NAME "tie-break bound: ..."` with those hunks.
 - **insensitive**: what is left is in the function's text. Work it (2.3).
 
 ### 2.3 Variants (`dcp try`)
@@ -82,7 +87,16 @@ A..B` moves file line N (a declaration) before each line of A..B. Keep a variant
 LABEL`, then `dcp build`, `dcp grade NAME`.
 
 Work in rounds: one lever per round (declaration order, loop form, operand order, if/else order, a temporary
-introduced or removed, a narrower or wider type), many variants per round, keep the best (`best:`), repeat.
+introduced or removed, a narrower or wider type), many variants per round, keep the best, repeat. Generate the
+variants file with a small script when a round has more than a handful (all orders of a run of statements, every
+position of one statement, the product of two or three choices).
+
+Choose between variants by WHERE they differ from the original, not by the count alone: `best:` and the `ins`
+column rank by distance, but a variant with the original's block layout at a larger count can be one step from
+byte, and a small count behind an unusual construct (a `goto`, a `volatile`, a hand-advanced pointer) is usually
+a local optimum. Read a variant's instruction diff before keeping or dropping it when it changes the layout (the
+project's variant-diff tool if it has one; else apply it, build, `dcp asmdiff`, revert). The lever is often not in
+the hunk's own statement: another `return`, a declaration's scope, a statement far above.
 
 ### 2.4 Stack slots (`dcp frame NAME`)
 When `slots` / `frame` hunks are left, `dcp frame NAME` lists both frames: each of our slots as `[esp+X]` after the
@@ -90,16 +104,23 @@ prologue (`[ebp-X]` in an ebp frame) with the variable VC6 put there (from its l
 `a/b` for locals VC6 packed into one slot), its size and use (`array`, `rN wN`), the original's slots the alignment
 pairs it with (`<- moved`, `<- several`), the original's slots no slot of ours pairs with, `shared in the
 original:` (one slot of the original for two locals of ours, named: their lifetimes do not overlap there, so VC6
-packed them), and the holes. The
-locals' order and sizes decide the layout: reorder declarations (`--move-line`), merge or split locals, change an
-array's size or element type until the frames agree.
+packed them), and the holes. The locals' sizes, how often each is referenced and their scopes decide the layout
+(VC6 does not follow the declaration order): merge or split locals, change an array's size or element type,
+declare a local that is only used inside a block in that block, add or remove a reference, until the frames agree.
 
 ### 2.5 Done or stuck
 - **Byte + readable**: commit `<unit>: <name> byte (match-deep)`. The build clears the tag.
-- **Time is up (about 45-60 minutes) without byte**: keep the best variant if it builds and nothing got worse,
-  else revert. `dcp stuck NAME "why"`: what you read, each lever you tried with its result (`dcp try` rows:
-  "index loop: shape, 9 ins; for-init: = control"), and the exact hunks left (`asmdiff` lines). The earlier
-  reason stays as `prior:` by itself; do not repeat it. Build, commit `<unit>: <name> -> stuck (match-deep)`.
+- **Not byte**: stuck is for a function whose remaining hunk you can name mechanically (which value must get
+  which register, which local's slot, which block order, and what in the compiler decides it) AND for which the
+  project guide's checklist before `dcp stuck` is done. The 45-60 minutes are the budget for variant rounds after
+  that checklist, not a reason by themselves: an item whose checklist has open points is not stuck, do those
+  points first. "Allocation only, no source lever" is not a reason; nearly every function recorded that way was
+  matched later with an ordinary source change somewhere else in it.
+  Then keep the best variant if it builds and nothing got worse, else revert. `dcp stuck NAME "why"`: what the
+  original does at the hunk and the mechanism that decides it, which checklist points were done, each round with
+  its result (`dcp try` rows: "index loop: shape, 9 ins; for-init: = control"), and the exact hunks left
+  (`asmdiff` lines). The earlier reason stays as `prior:` by itself; do not repeat it. Build, commit `<unit>:
+  <name> -> stuck (match-deep)`.
 
 ## 3. A meaning difference is a bug: fix it first
 Deep items were escalated as allocation-only, but the reading may have been wrong. When `dcp grade NAME` or
@@ -118,12 +139,13 @@ evidence in the message. It counts as the item.
   does.
 - Two constants of one expression are folded into one literal (`0.1f * (1/60.f)`): when the original loads both,
   they sat in separate statements. An operand in `.rdata` only this unit uses is often a `static const`.
-- Register allocation follows the order of the candidates' references and the declaration set (tie-breaks): when
-  `dcp headers sample` says sensitive, respelling the function is a lottery.
+- Register allocation follows which values are allocation candidates (named locals, repeated constants, common
+  subexpressions) and how often each is referenced; the declaration set only breaks ties. `dcp headers sample`
+  saying sensitive does not make the text's levers pointless (2.2).
 
 ## 5. When to stop
-A session is **4 items** (byte, fixed or stuck: one commit each), then the wrap-up. Never stop early because an
-item is hard: mark it stuck and take the next.
+A session is **4 items** (byte, fixed or stuck: one commit each), then the wrap-up. Never end the session early
+because an item is hard; an item ends byte, fixed, or stuck under 2.5's conditions, then take the next.
 
 ## 6. Wrap up
 1. `dcp build` exits 0; the tree holds only committed work.
