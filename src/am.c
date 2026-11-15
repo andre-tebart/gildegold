@@ -4671,22 +4671,26 @@ int ai_ExecuteRepairBuilding(AIPER *p, AIARG *s1, AIARG *s2)
     return 15;
 }
 /* 0x497fa0, decide of action 16: buy an offered building (event 0x1b, kinds 4..7 as its orders allow, o1 kind 0 or kind 5 naming the kind) when two thirds of the money cover the price (o1 kind 4, 16), else a credit for the difference (ai_DecideTakeCredit) when the price is low against the equipment value
-   @deep read against 0x497fa0..0x49846f: same statements, calls, arguments, constants and conditions
-   (owner / type-mask search, four ord_DispatchOrder answers, bld2's level clearing ok[], the kind 0 and
-   kind 5 walks over the 0x1b offers, the credit test, return 16 / 0 tails). Kept: bt = &ai_BTypesT[..]
-   between lo = 0 and hi = 0 (climb swap@27: 109 -> 63 ins / 401 bytes). Left: the size (ours 1309 vs
-   1232): the original's kind 5 credit tail jumps into the kind 0 copy at its fmul -0.5 (cross-jumping, jmp
-   0x4982c7); for that the kind 0 credit tail must fall into the epilogue in VC6's block order before the
-   return blocks are copied (in the original the kind 0 credit call is directly followed by pop edi ..
-   ret). Block orders tried (whole function): kind 5 block first / else-if / guard forms: 253 ins (much
-   worse, one code); kind 0 else-if kind 5, kind 5 as guard + body last: = control. Also left: the lim slot
-   ([esp+0x18] vs [esp+0x24]) and v / r slot rotation in the credit quotients, found-loop scheduling.
-   prior: read against 0x497fa0..0x49846f: same statements, calls, arguments, constants and conditions (the
-   owner / type-mask search, the four ord_DispatchOrder answers, bld2's level clearing ok[], the kind 0 and
-   kind 5 walks over the 0x1b offers with u.id / price, the credit test, the return 16 / 0 tails). Tried:
-   one shared return 16 at the end (113 ins but 1027 bytes, reverted). Left: the unmerged credit tail
-   (size), the found-loop's lea/mov scheduling (lea edx,[eax+eax*2] / mov cl,[eax+edx*4] vs add ecx,edi /
-   lea / mov cl,[eax]), the lim slot ([esp+0x18] vs [esp+0x24]) and the v / r slot rotation in both credit
+   @deep read against 0x497fa0..0x49846f: same statements, calls, arguments, constants and conditions.
+   Kept: bt = &ai_BTypesT[..] between lo = 0 and hi = 0 (climb swap@27: 109 -> 63 ins / 401 bytes). Main
+   hunk left: the size (ours 432 vs 409 instructions): the original's kind 5 credit tail jumps into the
+   kind 0 copy at its fmul -0.5 (jmp 0x4982c7: cross-jumped from fmul through the ai_DecideTakeCredit
+   call); ours has both tails instruction-identical from fmul on but unmerged. Mechanism (c2dag xjump in
+   build/c2dag/am.dag, line numbers relative to the 'int ai_DecideBuyBuilding' line): both credit returns
+   jmp to the epilogue, whose IL predecessor ends with the jmp of the search loop's not-found 'return 0'
+   (the goto found block moved last) and then the kind 5 tail returns, so neither tail can match; in the
+   original the kind 0 credit tail must directly precede the label the kind 5 tail jumps to. Tried, all
+   unmerged: kind 5 block first / else-if / guard forms (253 ins); break + 'if (i >= 0x100) return 0'
+   instead of goto found (434 ins); return 16 / 0 tails as ternary, swapped, r flag (421-427); inverted
+   'lim >= v' found arm, negated credit test, inner loop break + if (j) (= control); one shared 'credit:'
+   label at the end (421 ins: the call shared, the quotient compare not). Also left: the lim slot
+   ([esp+0x18] vs [esp+0x24]), v / r slot rotation in the quotients, found-loop scheduling. prior: read
+   against 0x497fa0..0x49846f: same statements, calls, arguments, constants and conditions (the owner /
+   type-mask search, the four ord_DispatchOrder answers, bld2's level clearing ok[], the kind 0 and kind 5
+   walks over the 0x1b offers with u.id / price, the credit test, the return 16 / 0 tails). Tried: one
+   shared return 16 at the end (113 ins but 1027 bytes, reverted). Left: the unmerged credit tail (size),
+   the found-loop's lea/mov scheduling (lea edx,[eax+eax*2] / mov cl,[eax+edx*4] vs add ecx,edi / lea / mov
+   cl,[eax]), the lim slot ([esp+0x18] vs [esp+0x24]) and the v / r slot rotation in both credit
    computations. Q2: AIBTX.level / AIBTX.maxLevel are ai.h AIBTYPE.level / maxLevel (the type's level count
    and the top of its line). (size: 432 vs 409 instructions, explained: ours 432 vs 409: the 23
    instructions are our second copy of the credit tail (fmul -0.5 / fadd 0.25 / fcompp / fnst... */
