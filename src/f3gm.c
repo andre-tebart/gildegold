@@ -8020,21 +8020,23 @@ int sprintf(char *buf, const char *fmt, ...);                     /* 0x5de652 */
    family name. Then a random first name by sex, the life values (f014 by chance or from the parents, f01c 1000 aged
    down to its age), the head (gm_ChooseHeadIcon), the job reset (ai_ResetJob) and, for the kinds 2 / 3 / 4 / 0x13,
    0x2a more of a random one of the skills 2 .. 4
-   @deep Reconstructed and read whole against the original (1103 vs 1102 ins, frame 0x428 equal): all paths
-   (slot search, record init, avatar kind 0x10, hmt kinds 0x15/0x16, home/workplace, sex, both-parents
-   inheritance with mood mix / best-skill halving / child places / relations, the no-parent path with b217
-   ternaries, mood ranges, title vs job talents (gm_TitleTalents), player numbers and the v054 search,
-   names, life ageing) match call for call, field for field, string for string; the rest is slots (184).
-   Left code hunks: (1) +0x88..+0x13a the init stores: ai_CharCount loaded before the memset's rep stosd
-   and stored after, 'mov [ebp+0x210], -1' as an immediate and the a6/a4/a7 loads after 'inc
-   [ai_NextObjectId]' (ours keep -1 in edi, load the params earlier); (2) fpu operand order of the mood /
-   skill mixes ('fld 1.0; fsub st,st(1); fmul [p2]' and 'fimul [tmp]' vs ours 'fld [p2]; fsubr 1.0; fmulp'
-   / 'fild; fmulp') at 0x507c47 / 0x507d59..0x507d89; (3) the two child-place stores of the p2 loop laid
-   out in the other order (0x507e63) and the parent's w050/generation/v054 copy in other registers
-   (0x507e8f); (4) order at 0x507f11. Tried: ai_CharCount++ before / after the memset, memset through
-   ORD_CHARS[idx], netId++ split, x float / direct stores / continue for the skill cases, both operand
-   orders of the mixes, float vs int vs unsigned short random terms (the inline call form fixed the f010
-   fild) */
+   @deep Session 2: kept (all meaning-equal): the life step as '{ float d = life / l; l = l - life + d; }'
+   (the original divides first, fxch, fsub on l: fpu hunks of both life loops gone; every one-expression
+   spelling = control or no fxch); the avatar arm's life loop with its own block local 'float life' (the
+   original keeps two lives: avatar in the slot of the p2-p1 diff temp, final with p1); '(float)(1.0 - f)'
+   in the mood and the skill mix (fld 1.0; fsub st,st(1); fmul mem / fimul: fpu hunks gone; operand orders,
+   1.0f, (1 - f), double casts = control or worse). 256 -> 224 ins. Merging the two child-place ifs with ||
+   drops one store copy the original has: not kept. No lever: block-local r / l / n in the avatar arm (=
+   control; block-local a is worse), ai_CharCount++ at every position 8053..8090 (best 222, the load still
+   after the memset when moved below it), picture = partyId = -1 chains, memset/stores through c. flip.py:
+   no single mutation puts ai_CharCount in a register (want 'mov ebx, DWORD PTR _ai_CharCount': 0 of 144).
+   Frame (c2frame: a local joins the first compatible slot searching from the LAST slot backward): orig
+   0x10 = f + skill fild temps + rr temp + the esi spill (ours: f alone, the rest with the avatar r), 0x14
+   = p2 + avatar r, 0x18 = a + mood counter, 0x1c = p1 + final life (ok), 0x20 fild temps, 0x24 = p2-p1
+   diff temp + avatar life (ours: diff + a; life with mx1), 0x28 idx, 0x2c mx2, 0x30 mx1, 0x34 fimul temp.
+   Left besides: init block (orig: ai_CharCount web in ebx loaded before the memset, stored after id =
+   0xffff; the -1 constant no candidate: v210 immediate, picture/partyId via 'or eax,-1'; ours -1 in edi
+   across sprintf), p2 reload order in the p2 child loop. */
 unsigned short gm_CreateCharacter(int type, int a2, int a3, unsigned short a4, struct ORDBLD *a5, unsigned a6, int a7, int a8)
 {
     int idx, i, k, w, r, n, mx1, mx2, v;
@@ -8122,15 +8124,18 @@ unsigned short gm_CreateCharacter(int type, int a2, int a3, unsigned short a4, s
             else if (r < 4)
                 c->b217 = 0x5c;
             c->b217 = r < 6 ? 0xc2 : 0x3c;     /* as the original: overrides the two above */
-            a = (float)c->w00a;
-            if (a > c->f020) {
-                l = c->f01c;
-                life = c->f014;
-                for (n = (int)(a - c->f020); n > 0; n--)
-                    l = life / l + (l - life);
-                if (!(l > 1.0f))
-                    l = 1.0f;
-                c->f01c = l;
+            {
+                float life;
+                a = (float)c->w00a;
+                if (a > c->f020) {
+                    l = c->f01c;
+                    life = c->f014;
+                    for (n = (int)(a - c->f020); n > 0; n--)
+                        { float d = life / l; l = l - life + d; }
+                    if (!(l > 1.0f))
+                        l = 1.0f;
+                    c->f01c = l;
+                }
             }
             return c->id;
         }
@@ -8190,7 +8195,7 @@ unsigned short gm_CreateCharacter(int type, int a2, int a3, unsigned short a4, s
         }
         for (i = 0; i < 14; i++) {
             f = util_RandomF();
-            c->mood[i][0] = (1.0 - f) * p2->mood[i][0] + f * p1->mood[i][0];
+            c->mood[i][0] = (float)(1.0 - f) * p2->mood[i][0] + f * p1->mood[i][0];
             rr = util_RandomU(10);
             c->mood[i][2] = rr + 900.0;
             c->mood[i][1] = c->mood[i][0] * 0.001;
@@ -8214,7 +8219,7 @@ unsigned short gm_CreateCharacter(int type, int a2, int a3, unsigned short a4, s
                 c->skills[i] = (unsigned char)(p1->skills[i] * 0.5f);
                 continue;
             } else
-                x = (1.0 - f) * p2->skills[i] + p1->skills[i] * f;
+                x = (float)(1.0 - f) * p2->skills[i] + p1->skills[i] * f;
             c->skills[i] = (unsigned char)(x * 0.5f);
         }
         c->relatives[1] = a2;
@@ -8383,7 +8388,7 @@ unsigned short gm_CreateCharacter(int type, int a2, int a3, unsigned short a4, s
         l = c->f01c;
         life = c->f014;
         for (n = (int)(a - c->f020); n > 0; n--)
-            l = life / l + (l - life);
+            { float d = life / l; l = l - life + d; }
         if (!(l > 1.0f))
             l = 1.0f;
         c->f01c = l;
