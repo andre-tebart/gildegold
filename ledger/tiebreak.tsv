@@ -1752,7 +1752,7 @@ exe	0x004a61d0	ai_PickPartnerChainLevel	am	b9e9d91bcbdcd20c	no	byte	control=byte
 exe	0x004a63f0	ai_PickActionBuilding	am	b529a08980ffd60d	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x004a6570	ai_PickActionBuildings	am	dd06184b96ae6f79	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x004a66f0	ai_BuildingAimPoints	am	f104feeac2bab047	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x004a67a0	ai_AimCannon	am	ec77c9d849c4aaee	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
+exe	0x004a67a0	ai_AimCannon	am	ec77c9d849c4aaee	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	63edee95cebf7d39
 exe	0x004a6ae0	ai_FireCannon	am	a5a30fe19a402299	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x004a7140	ai_PokerStart	poker	2ddeae9d65bd3cae	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004a7430	ai_PokerDealRound	poker	d351ea74dabe6730	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
