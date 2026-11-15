@@ -830,10 +830,10 @@ unsigned int dd_ColorBitMaskDword = 0;  /* 0x1464fb8, dd_ColorBitMask in both 16
 unsigned char dd_BShift = 0;  /* 0x1464fbc */
 unsigned char dd_BBits = {0}; /* 0x1464fbd */
 int dd_SurfaceFlags = 0;  /* 0x1464fc0, cleared with the surfaces on every mode set (own object: dd_BBits is one byte; a reasoned guess, the matched code never reads it) */
-unsigned char dd_BLoss = 0;  /* 0x1464fc4 */
+unsigned char dd_BLoss;  /* 0x1464fc4, common (tentative in the original: read as a byte) */
 char dd_KeyCodes[0x100] = {0};  /* 0x1464fe0, character -> key code table (d3_InitKeyCodes) */
 HBITMAP dd_Bitmap = {0};  /* 0x14650e0 */
-unsigned char dd_RLoss = 0;  /* 0x14650e4 */
+unsigned char dd_RLoss;  /* 0x14650e4, common (tentative in the original: read as a byte) */
 DDDEVICE dd_Devices[8] = {0};  /* 0x1465100 */
 int dd_PitchPixels = {0}; /* 0x14661a0 */
 long d3d_hr = 0;  /* 0x14661a4, result of the last checked D3D call */
@@ -1379,26 +1379,24 @@ __inline char dd_CpuHasMMX(void)
 #define DD_RMASK888 0xff0000u
 
 /* 0x41d2e0, sets up the display: mode DD_GDI..DD_FULLMEM, xres x yres at bpp bits
-   @stuck match-deep: headers sample insensitive (32, one codegen). Levers with no change (= control code):
-   loop forms i=bpp..>0, for(;bpp>0;bpp--), while(bpp-->0), a second counter j, declaration moves of r/g/b
-   and rb/gb/bb (dcp try --move-line, 12 positions), rgb unsigned int, bits char, the bpp>8 && dd_Mode test
-   in 5 spellings (the xor ebx,ebx / mov eax,8 order hunk at +0x40d stays). Moved but not closer in kind:
-   masks stored first and r/g/b read back (dd_RMask = ddpf..; r = dd_RMask; or r = dd_RMask = ddpf..): 134
-   -> 126 ins, both loops then spill like the original (counter in bpp's slot [ebp+0x10], r in [ebp+0x20],
-   g edi, b esi) but the three mask loads are no longer funneled through eax (original: mov eax,[mask]; mov
-   ecx,eax; mov [dd_RMask],eax per mask, i.e. the chain dd_RMask = r = ddpf..) and the loop registers are
-   renamed (ours RShift cl / rb cl gb al bb bl, original dl / bl dl cl); kept the chain. int r,g,b, int
-   rb..: worse. Left: the loop allocation (bpp in esi from before the mask stores, g spilled to [ebp+0x14])
-   and the pixel-format / ColorBitMask schedule after it (tiebreak: insensitive) prior: read the whole
-   function against the original: 853 vs 855 instructions, 2753 vs 2742 bytes, the same call set
-   (EnumDisplayModes, SetCooperativeLevel, SetDisplayMode, CreateSurface, GetAttachedSurface,
-   CreateClipper, SetHWnd, SetClipper, GetPixelFormat, GetDC, CreateDIBSection, ReleaseDC, dd_Exit,
-   dd_Restore, dd_Clear, dd_SetClipRect, dd_SetSurfaceName) and the same store set. The meaning differences
-   are fixed: the BShift/GShift/RShift reset is one chained assignment, the loop tail stores the same six
-   values, and the bpp guard is bpp > 8 (the original's mov eax,8 / cmp / jle). What is left is register
-   allocation and schedule in the two bit-scan loops: the original keeps r,g,b in ecx/edi/esi and spills
-   the loop counters to the dead parameter slots [ebp+0x20] and [ebp+0x10]; this source keeps r=edx, g=ecx,
-   b=edi and the loop-2 counter in esi, so the eight 8-RLoss/GBits stores come in another... */
+   @stuck earlier reasons (deep sessions before): loop forms, declaration moves, rgb/bits types and the bpp
+   > 8 test spellings were = control; the bit-scan loops' allocation was the open point. This session (134
+   -> 73 ins): the six Bits/Loss stores after the scan loops as RLoss, GLoss, BLoss, GBits, BBits, RBits
+   (720-permutation round, run twice: the store order decided the loop-2 registers, 116 -> 39 ins);
+   dd_RLoss / dd_BLoss as tentative definitions (common block above 0x6f3300, notes vc6-data: the original
+   reads them as xor r,r / mov r8,[x], ours mov r,[x] / and r,0xff because the unit defined them = 0) - the
+   loads now match, the distance rose to 75 because the scratch registers behind them rotate; the mask
+   chains dd_X = x = ddpf.. (27 forms x 6 init orders of rb/gb/bb, run twice: AAA best again after the data
+   change, 73). Checklist: twin none; no goto/volatile/hand copy; returns are the original's guards;
+   ddsd/ddpf/bmi need no block scope (slots equal); c2trace read (r/g/b equal candidates prio -3, rb/gb/bb
+   byte candidates); store orders permuted; PixelFormat spelled 17 ways (888 - (..), (8 - X) * 100 + ..,
+   split into 2-4 statements, a temp for one term, casts, 100 * x): all = control. Left (vdiff):
+   dd_PixelFormat: ours folds R*100 + G*10 into (R*10 + G)*10 (lea [edx+edx*4]; lea [edi+ecx*2]; lea
+   [ecx+ecx*4]; add ecx,ecx) with mov esi,0x378 first, the original computes -G*10 (mov esi,edi; neg; shl
+   2; sub esi,edi; add esi,esi), R*100 (lea/lea/shl 2) and adds 0x378 last, with the dd_Pitch /
+   dd_PitchPixels stores after it; behind it the GDI arm's constant 8 in ecx instead of eax (mov ecx,8 /
+   mov [x],cl x6) and xor ebx,ebx / mov eax,8 at the switch join (one jmp more at our end). (tiebreak: not
+   measured (dcp headers sample dd_SetMode)) */
 char dd_SetMode(int xres, int yres, int bpp, int mode, HWND wnd, int notused, char triple)
 {
     DDSURFACEDESC2 ddsd;
@@ -1649,12 +1647,12 @@ char dd_SetMode(int xres, int yres, int bpp, int mode, HWND wnd, int notused, ch
                 bb++;
             }
         }
-        dd_RBits = rb;
-        dd_GBits = gb;
         dd_RLoss = 8 - rb;
-        dd_BBits = bb;
         dd_GLoss = 8 - gb;
         dd_BLoss = 8 - bb;
+        dd_GBits = gb;
+        dd_BBits = bb;
+        dd_RBits = rb;
     }
     dd_PixelFormat = 888 - dd_RLoss * 100 - dd_GLoss * 10 - dd_BLoss;
     dd_Pitch = 0;
