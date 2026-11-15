@@ -1741,7 +1741,7 @@ exe	0x004a4e30	ai_RepairCost	am	ecadb570b8a90d27	no	byte	control=byte p1=byte p2
 exe	0x004a4e70	ai_PickBuildSite	am	9e4b376a49ba88b5	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
 exe	0x004a5140	ai_CanBuildType	am	17b175b2485d3fca	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004a5320	ai_ExecBuildBuilding	am	02468578ba703696	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
-exe	0x004a5540	ai_FindGoodToMake	am	1e07662410e7413f	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
+exe	0x004a5540	ai_FindGoodToMake	am	5aac1d9a5ea06332	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	e2c01e303ffa02ff
 exe	0x004a5760	ai_FindWantedItems	am	3d1c2972793923f1	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004a58d0	ai_PickPartnerChain	am	b9819201e0ecb43d	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
 exe	0x004a5a30	ai_PickPartnerInRange	am	e1f10624bd03f870	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	

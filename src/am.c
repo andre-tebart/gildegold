@@ -10639,42 +10639,30 @@ int ai_ExecBuildBuilding(AIPER *p, AIARG *s1, AIARG *s2)
 }
 /* 0x4a5540: the first good of building type b->type that b's store does not hold yet while it holds both of its
    two ingredients (slot 0x40 + 2i, 0x41 + 2i); goods of kind 2 / 6 need a free cart (list 4) or one carrying it.
-   *item gets the good, *obj the cart's id (-1 for none)
-   @deep read against the original: the slot loop (for over nslots, unsigned short ingredients
-   in[-1]/in[0], the '!' skip), the two cart queries (kinds 2 and 6, count of non-0xfd carts against the
-   type's cart cap at +0x21), the found -> list/cart, the three store queries and the *item/*obj results
-   all match; fixed the slot loop form (jbe), unsigned ingredients, o->list / cart->objId. Left: order hunk
-   at +0x35 (prologue stores), the goods kind load 'mov al,[eax+ebx]' vs the original's 'add eax,ebx; mov
-   al,[eax]' (same address, tried the char-pointer spelling: identical code), and the kind-6 cart loop
-   which the original leaves unrotated (jmp back to test eax,eax at +0xf8) where ours rotates (test/jne at
-   +0x10e); tried while, for(;;)-break, goto, combined-condition forms: VC6 gives the same code for all */
+   *item gets the good, *obj the cart's id (-1 for none) */
 
 int ai_FindGoodToMake(int *item, int *obj, AIBLD *b, int f)
 {
     AIBTYPE *t;
-    unsigned short *s;
-    unsigned short *in;
     AIOBJ *o, *cart;
     int list, n, i, found;
-    char k;
+    AIGOOD *g;
 
     list = b->objList;
     t = &ai_BTypesT[b->type];
     cart = 0;
-    in = &t->slot[0x41];
-    s = t->slot;
-    for (i = 0; i < t->nslots; i++, s++, in += 2) {
-        k = ai_GoodsT[*s & 0x7fff].type;
-        if (k == '!')
+    for (i = 0; i < t->nslots; i++) {
+        g = &ai_GoodsT[t->slot[i] & 0x7fff];
+        if (g->type == '!')
             continue;
-        if (k == 2 || k == 6) {
-            n = 0;
+        if (g->type == 2 || g->type == 6) {
             found = 0;
+            n = 0;
             cart = 0;
             for (o = gm_Query(b->objList, 1, 4, 2); o != 0; o = gm_QueryNext()) {
                 if (o->id != 0xfd)
                     n++;
-                if (o->id == (*s & 0x7fff)) {
+                if (o->id == (t->slot[i] & 0x7fff)) {
                     list = o->list;
                     found = 1;
                     cart = o;
@@ -10683,20 +10671,24 @@ int ai_FindGoodToMake(int *item, int *obj, AIBLD *b, int f)
             }
             if (n >= (unsigned char)t->name[0x20] || found)
                 continue;
-            for (o = gm_Query(b->objList, 1, 4, 6); o != 0; o = gm_QueryNext()) {
-                if (o->id == (*s & 0x7fff)) {
+            o = gm_Query(b->objList, 1, 4, 6);
+            while (1) {
+                if (!o)
+                    break;
+                if (o->id == (t->slot[i] & 0x7fff)) {
                     list = o->list;
                     found = 1;
                     cart = o;
                     break;
                 }
+                o = gm_QueryNext();
             }
             if (n >= (unsigned char)t->name[0x20] || found)
                 continue;
         }
-        if (gm_Query(list, 1, 0, *s & 0x7fff) == 0
-            && (in[-1] == 0 || gm_Query(list, 1, 0, in[-1]) != 0)
-            && (in[0] == 0 || gm_Query(list, 1, 0, in[0]) != 0)) {
+        if (gm_Query(list, 1, 0, t->slot[i] & 0x7fff) == 0
+            && (t->slot[0x40 + 2 * i] == 0 || gm_Query(list, 1, 0, t->slot[0x40 + 2 * i]) != 0)
+            && (t->slot[0x41 + 2 * i] == 0 || gm_Query(list, 1, 0, t->slot[0x41 + 2 * i]) != 0)) {
             *item = t->slot[i] & 0x7fff;
             if (cart != 0) {
                 *obj = cart->objId;

@@ -722,6 +722,9 @@ Rotation, test position, countdown, induction variables and strength reduction, 
 - **Test at the top, `jmp` back**: `while (1) { if (!(cond)) break; .. }`; `while (!cond)` and `for (;;)` rotate
   (the head duplicated). (`while (1) { if (cm_GetSlotState(h) != 0) break; pump(); }`; d2_DrawTextLine, stuck 436
   -> 133: the push-past-objects loop, -150 with the glyph block first `if (glyph != -1) {..} else {..}`)
+  The trace: after the call, `jmp` back to `test eax,eax; je` (no `test; jne body; jmp exit` at the bottom).
+  ai_FindGoodToMake: `o = gm_Query(..); while (1) { if (!o) break; if (match) {..; break;} o = gm_QueryNext(); }`
+  byte, where for / while (o) / for (;;) { if (!o) break; } / a goto loop all gave the rotated code.
 - **`&&`-guarded while stays top-tested**: `while (r != -1 && cm_GetSlotState(r) == 0) sv_PumpNet();` gives test /
   jne out / body / `jmp` back; `if (r != -1) { while (..) .. }` and `for (;;) { if (..) break; .. }` rotate (+29
   bytes) (amt_CheckOffices byte, amt_UpdateOffices). A loop-invariant test in the condition does the same,
@@ -880,7 +883,9 @@ Rotation, test position, countdown, induction variables and strength reduction, 
   d3io_AttachStock lever); plain `o = &d2_Objs[obj]` / `memset(&d2_Objs[obj], ..); d2_Objs[obj].id = obj;` for
   the decompiled `off` (d2_RemoveObj byte).
 - **`mov ecx,eax; add ecx,ebx; mov cl,[ecx]` for `ai_GoodsT[id].type` (ours `mov cl,[eax+ebx]`)**: a goods pointer
-  local `g = GM_GOOD(id); if (g->type == ..)` (gm_ListObjectsAfter, gm_LoadTables byte). No lever in
+  local `g = GM_GOOD(id); if (g->type == ..)` (gm_ListObjectsAfter, gm_LoadTables byte). The pointer only works
+  without a char `k = g->type` copy: every test reads `g->type` (ai_FindGoodToMake: `k = g->type` = control,
+  `g->type == '!'` / `== 2 || == 6` byte). No lever in
   sv_LoadGroundplan (open): spelling, local, type, test form.
 - A forwarding wrapper (`if (flag) return 0; return f(a, b);`) compiles to one `jmp f` (also with a changed
   argument written into the incoming slot); a function ending without `return` keeps eax from the last call /
