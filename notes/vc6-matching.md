@@ -352,6 +352,10 @@ Which arm is inline, jumps into another arm, threaded and redundant tests, `&&` 
 
 ### How VC6 orders blocks and merges tails (c2.dll)
 
+- **The shared return 0 in the middle, the rate / success code last (ours the reverse, with `goto rate`)**:
+  guard returns all the way, `if (b != 1 || ..) return 0;`, each failing step `if (..) return 0;`, the kind chain
+  ending `else return 0;`, the success code after it: no goto (ai_DecideProduceGood 34 ins -> byte).
+
 Read from C2 13.00.9044 and checked on toys with `tools/c2dag/c2tail.py` (merges, tries, `--il` dumps) and
 `c2pass.py --skip` (`c2pass.py --list` names the sites). A `return` is `eax = ..; jmp Lexit`; the epilogue is
 copied back into short predecessors only after all of this.
@@ -424,6 +428,9 @@ copied back into short predecessors only after all of this.
 
 ### Redundant tests the original keeps, threading
 
+- **A flags word loaded once (`mov cx,[edx+0x5a]`) and tested again in each later arm**: the first test on the
+  field, the later ones on a copy, `fl = rec->flags5aw; if (rec->flags5aw & 0x45) continue; .. if (!(fl & 0x45))`;
+  all on the field or all on fl threads them away (ai_DecideMayor byte).
 - **A test directly followed by the same test, the first reached from one path only** (`test eax,eax; je` before
   the join's `if (o)`): that path assigns through an if/else, `if (sv_PanelShown != 0) o = sv_PanelShown; else o
   = 0;`. No lever: `o = g;`, `?:` (ai_SetBookmark byte).
@@ -840,6 +847,9 @@ Rotation, test position, countdown, induction variables and strength reduction, 
 
 ### Search loops: hit path and re-tests
 
+- **The exhausted loop not threaded to the return (`jl top` falls into `cmp i,n; jge ret0`, ours a return copy
+  behind the loop)**: the bound read from the struct in both places, `for (i = 0; i < t->n; i++) ..; if (i >= t->n)
+  return 0;`, not a local `n = t->n` (with the local VC6 knows i >= n and threads) (ai_DecideProduceGood 119 -> 41).
 - **Found path inline after the loop's `jmp` (`je hit / .. / jl top / jmp after / hit:`), ours after the following
   code**: the layout follows the register allocation; with a parameter forced to memory (probe `{ static int *pm;
   pm = &mode; }`, never kept) the plain `for + if { hit; break; }` gave it. Probe this way before loop spellings
@@ -1658,6 +1668,10 @@ Frame size, slot order, holes, shared slots, dead parameter slots, block-scoped 
 
 ### Shared slots
 
+- **Four scalars inside two AIARG records' slots (recA / recB at s1+0 / +4, cntA / cntB at s2+0 / +4)**: a local
+  joins a slot at most twice its size, so a 4-byte scalar never shares a 24-byte record's slot; two 12-byte
+  arrays can: `AIBLD *spare[3]; int count[3];` indexed by type - 1, with the records block-scoped (ai_DecideMayor
+  frame 0x6c -> 0x58).
 - **A `fild` temp, an out-parameter of one arm and the -1 of the release tail all in one slot, ours a
   function-scope `id` in another**: an address-taken function-scope local conflicts with everything; give each
   arm its own block local (`unsigned short id` in the sel-10 arm, `int target = -1` in a block of the tail) and

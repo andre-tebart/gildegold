@@ -4372,22 +4372,7 @@ int ai_ExecuteApplyForOffice(G5CH *p, AIARG *s1)
         return 0;
     return amt_ApplyForOffice(p, s1->ref) ? 10 : 0;
 }
-/* 0x497660, decide of action 11: whether the good o1 (kind 2) can be made where o2 points (a store object, a building by its type's recipe list, or a character) and its owner can pay gm_GoodsPrice (11, else 0)
-   @deep whole asmdiff read against the original: the same tests in the same order (b, o1 kind 2,
-   AIGOODX.noSale / type, the o2 kind 1 / 4 / 7 paths, the two recipe walks with the 16-bit obj->id
-   compare, the a / b slot queries, the owner pick and the price compare), the same callees and arguments.
-   Left: (1) allocation: ours keeps 0 in esi (xor esi,esi; cmp ebp,esi; push esi) where the original uses
-   test / push 0 and keeps o2 in esi, so most hunks are register renames around it; (2) tail merging: the
-   original cross-jumps the object path's last slot query gm_Query(obj->list, 1, 0, k) into the building
-   path's identical call (0x4977ee mov eax,[ebp+0x14]; jmp 0x4978b2: calls gm_Query x5 vs ours x6) and
-   funnels every return 0 into one epilogue at 0x4978ca, ours keeps 5 return copies. A shared goto label
-   for the k query gives the merged call (tried: 118 vs 121 differing) but writes a goto the source shows
-   no sign of; reverted to the straight form. (size: 315 vs 296 instructions, explained: the +19
-   instructions are the duplicated epilogues and the unmerged call: ours repeats 'xor eax,eax; pop edi; pop
-   esi; pop ebp; pop ebx; pop ecx; ret' (7) at three loop-failure exits (0x497767, 0x497798, 0x497882)
-   where the original jumps to its one copy at 0x4978ca (+14..21), and ours keeps the object path's own
-   'and esi,0xffff; push esi; push 0; push 1; push eax; call gm_Query; add esp; test; je' (9) where the
-   original jumps into the building path's copy; minus the original's two reload moves) */
+/* 0x497660, decide of action 11: whether the good o1 (kind 2) can be made where o2 points (a store object, a building by its type's recipe list, or a character) and its owner can pay gm_GoodsPrice (11, else 0) */
 
 int ai_DecideProduceGood(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
 {
@@ -4395,59 +4380,66 @@ int ai_DecideProduceGood(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
     AIBLD *bld;
     AIPER *c, *owner;
     AIBTX *t;
-    int i, n, v;
+    int i, v;
     unsigned short k;
+    AIGOODX *g;
 
-    if (b == 1 && o1->kind == 2 && !AI_GOODX[o1->ref].noSale && AI_GOODX[o1->ref].type != 2) {
-        c = 0;
-        bld = 0;
-        obj = 0;
-        if (o2->kind == 1) {
-            obj = (AIOBJ *)gm_FindObjectInst(o2->ref);
-            if (!obj)
+    if (b != 1 || o1->kind != 2 || AI_GOODX[o1->ref].noSale || AI_GOODX[o1->ref].type == 2)
+        return 0;
+    obj = 0;
+    bld = 0;
+    c = 0;
+    if (o2->kind == 1) {
+        obj = (AIOBJ *)gm_FindObjectInst(o2->ref);
+        if (!obj)
+            return 0;
+        g = &AI_GOODX[obj->id];
+        if (g->type == 2 || g->type == 6) {
+            if (gm_Query(obj->list, 1, 0, o1->ref))
                 return 0;
-            if (AI_GOODX[obj->id].type != 2 && AI_GOODX[obj->id].type != 6)
-                goto rate;
-            if (!gm_Query(obj->list, 1, 0, o1->ref) && (bld = gm_FindBuildingById(obj->ownerId)) != 0) {
-                t = &AI_BTX[bld->type];
-                n = t->n;
-                for (i = 0; i < n; i++)
-                    if ((t->k[i] & 0x7fff) == obj->id)
-                        break;
-                if (i < n) {
-                    for (i++; i < n; i++)
-                        if ((t->k[i] & 0x7fff) == o1->ref)
-                            break;
-                    if (i < n && (!t->p[i].a || gm_Query(obj->list, 1, 0, t->p[i].a))) {
-                        k = t->p[i].b;
-                        if (!k || gm_Query(obj->list, 1, 0, k))
-                            goto rate;
-                    }
-                }
-            }
-        } else if (o2->kind == 4) {
-            bld = gm_FindBuildingById(o2->ref);
-            if (bld && !gm_Query(bld->objList, 1, 0, o1->ref)) {
-                t = &AI_BTX[bld->type];
-                n = t->n;
-                for (i = 0; i < n; i++)
-                    if ((t->k[i] & 0x7fff) == o1->ref)
-                        break;
-                if (i < n && (!t->p[i].a || gm_Query(bld->objList, 1, 0, t->p[i].a))) {
-                    k = t->p[i].b;
-                    if (!k || gm_Query(bld->objList, 1, 0, k))
-                        goto rate;
-                }
-            }
-        } else if (o2->kind == 7) {
-            c = gm_FindPer(o2->ref);
-            if (!c)
+            bld = gm_FindBuildingById(obj->ownerId);
+            if (!bld)
                 return 0;
-            goto rate;
+            t = &AI_BTX[bld->type];
+            for (i = 0; i < t->n; i++)
+                if ((t->k[i] & 0x7fff) == obj->id)
+                    break;
+            if (i >= t->n)
+                return 0;
+            for (i++; i < t->n; i++)
+                if ((t->k[i] & 0x7fff) == o1->ref)
+                    break;
+            if (i >= t->n)
+                return 0;
+            if (t->p[i].a && !gm_Query(obj->list, 1, 0, t->p[i].a))
+                return 0;
+            k = t->p[i].b;
+            if (k && !gm_Query(obj->list, 1, 0, k))
+                return 0;
         }
-    }
-    return 0;
-rate:
+    } else if (o2->kind == 4) {
+        bld = gm_FindBuildingById(o2->ref);
+        if (!bld)
+            return 0;
+        if (gm_Query(bld->objList, 1, 0, o1->ref))
+            return 0;
+        t = &AI_BTX[bld->type];
+        for (i = 0; i < t->n; i++)
+            if ((t->k[i] & 0x7fff) == o1->ref)
+                break;
+        if (i >= t->n)
+            return 0;
+        if (t->p[i].a && !gm_Query(bld->objList, 1, 0, t->p[i].a))
+            return 0;
+        k = t->p[i].b;
+        if (k && !gm_Query(bld->objList, 1, 0, k))
+            return 0;
+    } else if (o2->kind == 7) {
+        c = gm_FindPer(o2->ref);
+        if (!c)
+            return 0;
+    } else
+        return 0;
     if (a != 0x39) {
         if (obj)
             owner = gm_ObjectOwnerChar(obj);
@@ -4455,8 +4447,10 @@ rate:
             if (bld->owner == 0xffff)
                 return 0;
             owner = (AIPER *)&ai_CharsT[bld->owner];
-        } else
+        } else if (c)
             owner = c;
+        else
+            return 0;
         if (!owner)
             return 0;
         v = gm_CharCurrency(owner, ai_OwnPlayer);
@@ -4465,7 +4459,7 @@ rate:
         v = o2->arg2;
         o1->arg2 = 0x39;
     }
-    if (o1->fvalue > 0.0f && o1->fvalue < 1.0f)
+    if (o1->fvalue > ai_FloatZero && o1->fvalue < ai_FloatOne)
         v = (int)(v * o1->fvalue);
     return v < (int)gm_GoodsPrice(o1->ref, ai_OwnPlayer) ? 0 : 11;
 }
