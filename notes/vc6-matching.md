@@ -244,6 +244,12 @@ Where the pushes and pops sit, how many epilogue copies there are, shared agains
 
 ### Which copy of a cross-jumped tail survives, the join position
 
+- **Two `o1->arg = ..; o1->kind = 0x12; return ai_DecideTakeCredit(..)` tails, the original one call (`jmp` into the
+  first copy's middle, the second's difference in ecx: `mov ecx,edi / sub ecx,eax`), ours two full copies with
+  the stores after the pushes**: the difference was written out (`(float)(cost - lim) / cost`, `o1->arg = cost -
+  lim`), no `need` local: a CSE temp, kept apart from cost, the stores move before the pushes and VC6
+  cross-jumps the tails. A goto to a shared label was far worse (100 ins). (ai_DecideBuildDomizil, byte; same
+  pattern open in ai_DecideBuildSculpture with `d`)
 - **The original keeps the last arm's tail (ours the first)**: chain arms without `return;`, one `return;` after;
   nesting is no lever (sv_RefreshPanel 78 -> byte).
 - **Pops before the final `if` tail (ours `mov al,[flags]; pop edi; pop esi; test al,8`)**: VC6 sinks restores
@@ -984,6 +990,10 @@ Which value gets which callee-saved register, the eax / ecx / edx rotation, cons
 
 ### Callee-saved registers swapped: a priority race lost by a point or two
 
+- **A copy `n = cnt` placed after the call that uses cnt** (`cnt = f(); if (cnt == 0) return 0; i =
+  util_RandomU(cnt); n = cnt;`): the block of `i = ..` then holds one candidate more (P 4 instead of 3), i's
+  priority rises 6 and it outranks q; the copy before the test or `n = f(); cnt = n;` left i one point short
+  (c2dag --alloc on a scratch copy of the unit: per-block P compared). (ai_ChooseObjectTarget, byte)
 - **Callee-saved registers swapped (ebx <-> edi / esi) and no respelling reaches it**: count P (c2prio) and add
   references where they are short. A join statement written in both arms (`s->layers = l;` after the if and in
   the else, tail-merged into the same code) adds references in P=2 blocks (d3sky_CreateLayer: s 10 -> 14, ties
@@ -1051,6 +1061,11 @@ Which value gets which callee-saved register, the eax / ecx / edx rotation, cons
 
 ### A constant or zero kept in a register
 
+- **`or ebx,-1` + a dword store from ebx and a byte store from bl (`mov [v],bl`)**: one pooled -1 used as int and
+  as byte; ours had `unsigned char v` with `v = 0xff` (another constant): `char v; .. v = -1;`
+  (ai_ChooseObjectTarget, byte). **Zero in ebx through a record fill where ours has edx**: another scratch
+  temp occupies edx in the original: the memcpy size clamp written inside the call (`memcpy(&q[7], ids, len >
+  0x20 ? 0x20 : len)`: len in eax, copies in ecx / edx) (ai_PickPartnerRandomWalk, byte).
 - **A zero register live through the whole function from `= 0` stores** (`cmp eax,ebx`, ebx pushed at entry):
   several `= 0` stores to a struct, array or members keep 0 in a callee-saved register; `memset(&h, 0,
   sizeof(h))` gives the original's `xor eax,eax` + stores at the site and frees it; `memset(arr, 0, 16); count
@@ -1513,6 +1528,10 @@ Frame size, slot order, holes, shared slots, dead parameter slots, block-scoped 
 
 ### Shared slots
 
+- **A `fild` temp, an out-parameter of one arm and the -1 of the release tail all in one slot, ours a
+  function-scope `id` in another**: an address-taken function-scope local conflicts with everything; give each
+  arm its own block local (`unsigned short id` in the sel-10 arm, `int target = -1` in a block of the tail) and
+  write the random draw inline (ai_ChooseObjectTarget, byte).
 - **One variable reused for unrelated loops / branches / roles shares their slots**: split it (one counter or a
   tx/ty pair: ~3000 B of slot differences; a counter of two loops: one slot plus seven others fixed). A loop in
   both arms of an if/else in the asm was written twice. One array reused for unrelated values also leaves gaps.

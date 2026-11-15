@@ -163,6 +163,9 @@ Section names are those of `notes/vc6-matching.md`.
   slot table. `--names` names every temporary by the first source line that uses it (`tmp@8208`), lists each
   slot member's lifetime conflicts (X: never share a slot) and replays the packing (P: each local joins or opens
   a slot, with the conflict that made it pass each newer one): no hand simulation of the packer.
+  `c2dag.py` takes no `--variants`: write the variant's unit to the scratch dir with
+  `c2trace.variant_text(text, func, vfile, label, src=src)` and run `c2dag.py COPY FUNC --alloc` on it (includes
+  resolve through /I src); diff two variants' `P blk` lines to see which block moved a priority.
 - `python tools/c2dag/flip.py SRC FUNC --want REGEX [--try OUT.txt]`: mutates every statement (delete,
   duplicate, swap, change a constant) and reports the mutants whose listing has the wanted instruction. The
   mutants are not kept; they name the place the wanted code depends on. A hit on a DUPLICATED statement = that
