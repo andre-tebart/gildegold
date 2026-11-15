@@ -1081,6 +1081,11 @@ Which value gets which callee-saved register, the eax / ecx / edx rotation, cons
 
 ### Callee-saved registers swapped: a priority race lost by a point or two
 
+- **Two out-pointer parameters swapped with the index (a in ebx, i in edi; the original i in ebx, a in edi, a
+  `mov bl,[esi+0x130]; cmp al,bl` in the loop where ours has `cmp al,[mem]`)**: the accumulation written in both
+  arms (`if (k == sel) *a += X * 0.02f; else *a += X * 0.01f;`) counts *a's loop references twice; one statement
+  `*a += k == sel ? X * 0.02f : X * 0.01f;` (the arms' fadd / fstp are one copy in the original anyway). Found by
+  flip.py `--want 'mov edi, DWORD PTR _a\$'` hitting a duplicated `if` line (ai_EvalLeastLikedOfEvent 84 -> byte).
 - **Two out-pointer sums `*a`, `*b` in one loop: the original keeps a in ebx and reloads b, ours the reverse (or
   act / a swapped)**: the product written in each arm of the ternary, `*a = (k == sel ? w / d1 * m : w / d2 * m) +
   *a;` (same for b), not `(k == sel ? w / d1 : w / d2) * m + *a`; the code is the same shape, only the reference

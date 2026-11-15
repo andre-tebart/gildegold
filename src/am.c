@@ -4069,17 +4069,7 @@ int ai_ExecuteTrainJobSkill(AIPER *p, AIARG *s1, AIARG *s2)
     cm_SendLongMessage((AIMSG *)&m);
     return 5;
 }
-/* 0x496b10, evaluate: without an office application, the least liked (gm_Liking) of the three characters +0xb4 / +0xb8 / +0xbc of the character's event 0x2c (no judge at +0xb4) becomes the target (o1 kind 7) and the action's weights count against the moods; no such event or office kind 0xd: the guilt or mood weights
-   @deep whole asmdiff read: the same calls with the same arguments in the same order (gm_Liking(p->id,
-   c->id, 1) x3, the gv_GetTableRecord / ai_EvalGuiltWeights / ai_EvalMoodWeights fallbacks, the w1 / w2
-   weight loop); the fields are named now (AIJOBX.partner / guests[3] of the offer event 0x2c,
-   HEOFFER.who). Left is allocation and block placement only: the original keeps a in edi, i in ebx and the
-   Protestant judge's id in ebp (or ebp,-1) where ours has a in ebx, i in edi and y in the param slot
-   [esp+0x60]; so the original reloads a / b into edi / ebp before the fallback (0x496bd9) and i into ebx
-   on the bi == -1 path (0x496e0d mov ebx,[esp+0x5c]; jmp 0x496be1), loads p->sel into bl for the weight
-   compares (0x496d65 mov bl,[esi+0x130]; cmp al,bl) and places the ai_EvalMoodWeights return after the
-   main return (0x496e16), ours inside the weight loop's code. Restructuring the fallback as nested ifs
-   (now) or gotos gives identical code. */
+/* 0x496b10, evaluate: without an office application, the least liked (gm_Liking) of the three characters +0xb4 / +0xb8 / +0xbc of the character's event 0x2c (no judge at +0xb4) becomes the target (o1 kind 7) and the action's weights count against the moods; no such event or office kind 0xd: the guilt or mood weights */
 
 int ai_EvalLeastLikedOfEvent(float *a, float *b, int i, AIPER *p, int f, AIARG *o1, AIARG *o2)
 {
@@ -4098,63 +4088,59 @@ int ai_EvalLeastLikedOfEvent(float *a, float *b, int i, AIPER *p, int f, AIARG *
     act = &ai_Actions[i];
     *a = 0.0f;
     *b = 0.0f;
-    if (!p->appliedOffice) {
-        if (p->officeKind != 0xd) {
-            x = ai_JudgeCatholic ? ai_JudgeCatholic->netId : -1;
-            y = ai_JudgeProtestant ? ai_JudgeProtestant->netId : -1;
-            for (job = AI_53E400_3(1, 0, 0x2c); job; job = (AIJOBX *)he_NextEvent())
-                if (job->partner == p->netId)
-                    break;
-            if (job && job->guests[0] != x && job->guests[0] != y) {
-                dist[0] = 100.0f;
-                dist[1] = 100.0f;
-                dist[2] = 100.0f;
-                best = 100.0f;
-                bi = -1;
-                c[0] = gm_FindPer(job->guests[0]);
-                c[1] = gm_FindPer(job->guests[1]);
-                c[2] = gm_FindPer(job->guests[2]);
-                if (c[0] && c[0] != AI_PARTNER)
-                    dist[0] = gm_Liking(p->id, c[0]->id, 1);
-                if (c[1] && c[1] != AI_PARTNER)
-                    dist[1] = gm_Liking(p->id, c[1]->id, 1);
-                if (c[2] && c[2] != AI_PARTNER)
-                    dist[2] = gm_Liking(p->id, c[2]->id, 1);
-                for (j = 0; j < 3; j++) {
-                    if (dist[j] < best) {
-                        bi = j;
-                        best = dist[j];
-                    }
-                }
-                if (bi != -1) {
-                    o1->kind = 7;
-                    o1->ref = c[bi]->netId;
-                    o1->arg = 1;
-                    goto weigh;
-                }
-            }
+    /* @original the gotos: as guards with one shared fallback the original places the ai_EvalMoodWeights
+       return in front of the epilogue and keeps i in ebx; the nested if / flag forms do not */
+    if (p->appliedOffice)
+        goto weigh;
+    if (p->officeKind == 0xd)
+        goto fallback;
+    x = ai_JudgeCatholic ? ai_JudgeCatholic->netId : -1;
+    y = ai_JudgeProtestant ? ai_JudgeProtestant->netId : -1;
+    for (job = AI_53E400_3(1, 0, 0x2c); job; job = (AIJOBX *)he_NextEvent())
+        if (job->partner == p->netId)
+            break;
+    if (!job || job->guests[0] == x || job->guests[0] == y)
+        goto fallback;
+    dist[0] = 100.0f;
+    dist[1] = 100.0f;
+    dist[2] = 100.0f;
+    best = 100.0f;
+    bi = -1;
+    c[0] = gm_FindPer(job->guests[0]);
+    c[1] = gm_FindPer(job->guests[1]);
+    c[2] = gm_FindPer(job->guests[2]);
+    if (c[0] && c[0] != AI_PARTNER)
+        dist[0] = gm_Liking(p->id, c[0]->id, 1);
+    if (c[1] && c[1] != AI_PARTNER)
+        dist[1] = gm_Liking(p->id, c[1]->id, 1);
+    if (c[2] && c[2] != AI_PARTNER)
+        dist[2] = gm_Liking(p->id, c[2]->id, 1);
+    for (j = 0; j < 3; j++) {
+        if (dist[j] < best) {
+            bi = j;
+            best = dist[j];
         }
-        gv_GetTableRecord(16, &d);
-        if (d.cur)
-            return ai_EvalGuiltWeights(a, b, i, p, &d);
-        return ai_EvalMoodWeights(a, b, i, p, 0, o1, o2);
     }
+    if (bi == -1)
+        goto fallback;
+    o1->kind = 7;
+    o1->ref = c[bi]->netId;
+    o1->arg = 1;
 weigh:
     for (j = 0; j < 4; j++) {
-        if (act->w1[j].w > 0.0f) {
-            if (act->w1[j].k == p->sel)
-                *a += p->mood[act->w1[j].k][2] * act->w1[j].w * 0.02f;
-            else
-                *a += p->mood[act->w1[j].k][2] * act->w1[j].w * 0.01f;
+        if (act->w1[j].w > ai_FloatZero) {
+            *a += act->w1[j].k == p->sel ? p->mood[act->w1[j].k][2] * act->w1[j].w * 0.02f : p->mood[act->w1[j].k][2] * act->w1[j].w * 0.01f;
         }
-        if (act->w2[j].w > 0.0f) {
-            if (act->w2[j].k == p->sel)
-                *b += p->mood[act->w2[j].k][2] * act->w2[j].w * 0.02f;
-            else
-                *b += p->mood[act->w2[j].k][2] * act->w2[j].w * 0.01f;
+        if (act->w2[j].w > ai_FloatZero) {
+            *b += act->w2[j].k == p->sel ? p->mood[act->w2[j].k][2] * act->w2[j].w * 0.02f : p->mood[act->w2[j].k][2] * act->w2[j].w * 0.01f;
         }
     }
     return 1;
+fallback:
+    gv_GetTableRecord(16, &d);
+    if (d.cur)
+        return ai_EvalGuiltWeights(a, b, i, p, &d);
+    return ai_EvalMoodWeights(a, b, i, p, 0, o1, o2);
 }
 /* 0x496e40, decide: talk a companion into money (action 9) */
 
