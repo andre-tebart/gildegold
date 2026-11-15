@@ -193,8 +193,11 @@ Section names are those of `notes/vc6-matching.md`.
   function, so a change far up (a named pointer local, a duplicated statement as a probe) can decide which tails
   cross-jump at the end.
 - An odd instruction form of the original (`[esp+esi+0x90]` with `add esi,4`): grep the whole original for it
-  and read the byte functions that have it (`dcp disasm 0x401000 ..END --no-bytes > all.asm`; it stops at the
-  first bytes that do not decode, so restart past them). Their source names the construct.
+  and read the byte functions that have it: `python tools/search/grep_orig.py 'add esi,4' --grade byte`
+  (patterns compact: `[esp+esi*4+0x90]`; `--multi` for a regex over a whole function; the first run caches the
+  image's disassembly, about 5 minutes). Their source names the construct.
+- `asmdiff` says "identical instructions" while bytes differ: a jump is short in one and near in the other, i.e.
+  it targets another cross-jump copy; compare the jump targets (`dcp disasm NAME` / `--ours NAME`).
 - Sweeps over one function or the whole queue: `tools/sweep/blockscope.py` (function-scope records into their
   blocks), `tools/sweep/fillloop.py` (constant memsets as element loops, `--zero` for zero fills),
   `tools/sweep/twin.py --tagged` (every function with a `@deep` note that has a byte twin).
