@@ -2146,6 +2146,12 @@ How arguments are pushed, a call written in both arms, parameter and return type
 - **Constants pushed through registers** (`xor ecx,ecx` / `mov ebp,1` / `mov eax,imm; push eax`) or ecx:eax
   across two calls: an __int64 built in a union / LARGE_INTEGER (`m.LowPart = k; m.HighPart = 1; f(p, 6,
   m.QuadPart, ...)`); an `__int64` constant is two immediates (0x49dd90, 0x48f010).
+- **A float constant stored through the FPU (`fld [const]; fst s1.f` before a branch, `fstp s2.f` after the
+  join) and a constant 1 kept in ebx (`mov ecx,ebx`, `mov [..],bl`, `push ebx`) where ours writes immediates**:
+  the record's fields after the branch were written in BOTH arms (`s2.fvalue = 0.44f; s2.arg = 1;` at the end of
+  each arm): cross-jumping merges the arm tails, and the doubled references make the 1 a register candidate.
+  Chained / copied / local spellings of the constant all propagate (ai_DecideUpgradeBusiness 65 ins -> byte, one
+  64-variant round over which fill statements sit in both arms).
 - **4-byte colour pushed before the other arguments' FPU work**: by-value 4-byte struct, not `*(unsigned long
   *)&col`.
 - **Grey value pushed three times from one `_ftol` eax into dd_RGB(unsigned char, ..)**: the expression written in
