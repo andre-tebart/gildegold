@@ -1143,6 +1143,12 @@ Which value gets which callee-saved register, the eax / ecx / edx rotation, cons
   arms give the pointer the references it needs to rank above its twin but below the flags; three arms (or the
   inner if/else written out) rank it above everything and rotate ebx/ebp/edi (ai_EvalGuiltWeights byte; the
   ranking between the two equal-reference pointers follows which sum stands first in the loop body).
+- **A byte parameter's widened value in a callee-saved register, the loop counter in a dead parameter slot**
+  (`mov ebp,[esp+arg]; and ebp,0xff` before the loop, `cmp ebx,ebp` at its bottom, the countdown k as
+  `mov ecx,[slot]; dec ecx; mov [slot],ecx`; ours the other way round): an int local `max = n;` right before
+  the loop, `while (cnt < max && k != 0)`. `(int)n` in the condition is no lever (the same CSE temp), and the
+  position of `max = n` matters (only directly before the loop). ai_PickActionBuildings byte (plus the twin's
+  fill order, from climb `--ops move,swap`).
 - **Decide by the original**: a value that sits in ONE callee-saved register through several statements and is
   updated in place was a variable; a value in a leftover register for one expression across one call was a
   temporary.
