@@ -10398,19 +10398,12 @@ int ai_EvalCurrentNeed(float *a, float *b, int i, AIPER *p)
     }
     return found;
 }
-/* 0x4a4c10, eval callback with the character's rank and the decision's value
-   @deep read in full against the original and reconciled: rank = (n + v) * (mood[11][0] - 2) before the
-   outputs are zeroed, the flags branch first (40/50, found=1), k >= 4 bounds, the w > 0 test first with
-   mood * w / (d + rank), else (sel ? w / d1 : w / d2) * mood. Left is allocation only: the original keeps
-   a in ebx and b in ecx (0x4a4c46: + mov ebx,[esp+0x18]; mov ecx,[esp+0x1c]), ours the other way round
-   (regs ebx<->ecx, the zeroing stores reordered), so the *a sum goes through ebx in the original and
-   through [esp+0x14] in ours (0x4a4d90: + fadd [ebx]; fstp [ebx] / - mov eax,[esp+0x14]; fadd [eax]; fstp
-   [eax]) and *b the reverse (0x4a4e04); writing *b = 0 first only swaps which side carries the reload */
+/* 0x4a4c10, eval callback with the character's rank and the decision's value */
 
 int ai_EvalGuiltWeights(float *a, float *b, int i, AIPER *p, AIDEC *dec)
 {
     G5ACT *act;
-    float v, rank, d1, d2, t;
+    float v, rank, d1, d2;
     int n, k, found;
 
     if (dec == 0)
@@ -10444,24 +10437,14 @@ int ai_EvalGuiltWeights(float *a, float *b, int i, AIPER *p, AIDEC *dec)
             found = 1;
     }
     for (k = 0; k < 4; k++) {
-        if (act->w1[k].w > 0.0f) {
-            if (act->w1[k].k == p->sel)
-                t = p->mood[act->w1[k].k][2] * act->w1[k].w / (d1 + rank);
-            else
-                t = p->mood[act->w1[k].k][2] * act->w1[k].w / (d2 + rank);
-        } else {
-            t = (act->w1[k].k == p->sel ? act->w1[k].w / d1 : act->w1[k].w / d2) * p->mood[act->w1[k].k][2];
-        }
-        *a = t + *a;
-        if (act->w2[k].w > 0.0f) {
-            if (act->w2[k].k == p->sel)
-                t = p->mood[act->w2[k].k][2] * act->w2[k].w / (d1 + rank);
-            else
-                t = p->mood[act->w2[k].k][2] * act->w2[k].w / (d2 + rank);
-        } else {
-            t = (act->w2[k].k == p->sel ? act->w2[k].w / d1 : act->w2[k].w / d2) * p->mood[act->w2[k].k][2];
-        }
-        *b = t + *b;
+        if (act->w1[k].w > 0.0f)
+            *a = (act->w1[k].k == p->sel ? p->mood[act->w1[k].k][2] * act->w1[k].w / (d1 + rank) : p->mood[act->w1[k].k][2] * act->w1[k].w / (d2 + rank)) + *a;
+        else
+            *a = (act->w1[k].k == p->sel ? act->w1[k].w / d1 : act->w1[k].w / d2) * p->mood[act->w1[k].k][2] + *a;
+        if (act->w2[k].w > 0.0f)
+            *b = (act->w2[k].k == p->sel ? p->mood[act->w2[k].k][2] * act->w2[k].w / (d1 + rank) : p->mood[act->w2[k].k][2] * act->w2[k].w / (d2 + rank)) + *b;
+        else
+            *b = (act->w2[k].k == p->sel ? act->w2[k].w / d1 : act->w2[k].w / d2) * p->mood[act->w2[k].k][2] + *b;
     }
     return found;
 }

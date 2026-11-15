@@ -388,6 +388,9 @@ Which arm is inline, jumps into another arm, threaded and redundant tests, `&&` 
 
 ### Jumps into another arm, goto chains, shared tails
 
+- **A jump to a shared tail's second instruction, its first (`mov eax,[esp+o1]`) hoisted above the jcc**: the
+  arm wrote the tail out itself (`o1->kind = 0; o1->ref = -1; o1->arg = 'noop'; return 0x35;`), no `goto noop`;
+  cross-jumping merges all but the load, which the jcc's block already did (ai_DecideStammtisch byte).
 - **A jump into a sibling branch just behind a test of the same variable** (`cmp m,w; je <neutral block of the men
   branch>`): a threaded re-test; route the path through that test, `if (men < women && (w != 0xffff || m !=
   0xffff)) { if (w == 0xffff) return; ..women.. return; } if (m == 0xffff) { m = -5; f = 1; } ..men..`. No lever:
@@ -1092,6 +1095,12 @@ Which value gets which callee-saved register, the eax / ecx / edx rotation, cons
 
 ### Named local or expression: a candidate too many or too few
 
+- **Two out-pointer accumulators, the one summed first kept in memory instead of a register** (`*a` reloaded
+  `mov eax,[esp+N]; fadd [eax]`, `*b` in ebx, the original the other way round): the sum written in each arm
+  (`if (w > 0) *a = (sel ? x : y) + *a; else *a = z + *a;`), not `t = ..` per arm plus one `*a = t + *a;`. Two
+  arms give the pointer the references it needs to rank above its twin but below the flags; three arms (or the
+  inner if/else written out) rank it above everything and rotate ebx/ebp/edi (ai_EvalGuiltWeights byte; the
+  ranking between the two equal-reference pointers follows which sum stands first in the loop body).
 - **Decide by the original**: a value that sits in ONE callee-saved register through several statements and is
   updated in place was a variable; a value in a leftover register for one expression across one call was a
   temporary.

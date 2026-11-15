@@ -1736,7 +1736,7 @@ exe	0x004a4680	ai_GroupPrices	am	492f4102efc10ffd	no	byte	control=byte p1=byte p
 exe	0x004a47c0	ai_GetDesireByName	am	f0eed3ed2bdecd12	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004a49a0	ai_EvalMoodWeights	am	edc920f019d59a3d	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x004a4ae0	ai_EvalCurrentNeed	am	1346869e70d1058e	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x004a4c10	ai_EvalGuiltWeights	am	120d5560bfafa329	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
+exe	0x004a4c10	ai_EvalGuiltWeights	am	120d5560bfafa329	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	b80f1eebdec5b648
 exe	0x004a4e30	ai_RepairCost	am	ecadb570b8a90d27	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004a4e70	ai_PickBuildSite	am	9e4b376a49ba88b5	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
 exe	0x004a5140	ai_CanBuildType	am	17b175b2485d3fca	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
