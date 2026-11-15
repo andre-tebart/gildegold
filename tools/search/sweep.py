@@ -15,7 +15,9 @@ is kept) and listed in build/climb/applied.txt; `dcp build` and the commit are y
 can need: a local the search introduced is called t / v / k (name it), a local it wrote out leaves an unused
 declaration (remove it), parentheses it added around a written-out expression may be droppable. Only byte hits
 are applied: a hit that is only closer may have changed the meaning. A function already in the results is skipped
-unless its distance in the tree changed since.
+unless its distance in the tree changed since. climb.py never lets a mutant win by changing the frame size (see
+there); a function whose tree text already has another frame size than the original's is flagged `frame` in the
+results.
 """
 import argparse, json, os, re, subprocess, sys, time
 
@@ -66,7 +68,7 @@ def main():
     res = results()
     if a.report:
         hits = [r for r in res.values() if r["best"][:2] == [0, 0]]
-        gains = sorted([r for r in res.values() if r["best"][:2] != [0, 0] and r["best"][0] < r["start"][0]], key=lambda r: r["best"][0] - r["start"][0])
+        gains = sorted([r for r in res.values() if r["best"][:2] != [0, 0] and r["best"][0] < r["start"][0] and not r.get("frame")], key=lambda r: r["best"][0] - r["start"][0])
         print("%d functions swept, %d byte, %d closer" % (len(res), len(hits), len(gains)))
         for r in hits:
             print("  BYTE  %-34s %-10s %4d -> 0    %s" % (r["name"], r["unit"], r["start"][0], " > ".join(r["path"])))
@@ -92,6 +94,9 @@ def main():
             continue
         rec = dict(name=name, unit=unit, start=[int(s.group(1)), int(s.group(2))], best=[int(m.group(1)), int(m.group(2))],
                    path=[] if m.group(3).strip() == "(start)" else m.group(3).strip().split(" > "), rounds=a.rounds)
+        f = re.search(r"frame (\S+ vs \S+)", m.group(0))
+        if f:
+            rec["frame"] = f.group(1)                     # the best text's frame size is not the original's
         with open(LOG, "a", encoding="utf-8") as f:
             f.write(json.dumps(rec) + "\n")
         if a.apply and rec["best"] == [0, 0] and rec["path"]:
@@ -106,7 +111,7 @@ def main():
             tidy = [p.split("@")[0] for p in rec["path"] if p.startswith(("local:", "inline:"))]
             with open(os.path.join(OUT, "applied.txt"), "a", encoding="utf-8") as f:
                 f.write("%s\t%s\t%s\t%s\n" % (name, unit, "applied" if ok else "NOT applied", ("tidy: " + ", ".join(tidy)) if tidy else ""))
-        flag = "BYTE" if rec["best"] == [0, 0] else ("closer" if rec["best"][0] < rec["start"][0] else "")
+        flag = "BYTE" if rec["best"] == [0, 0] else "frame" if rec.get("frame") else ("closer" if rec["best"][0] < rec["start"][0] else "")
         print("%4d/%d %-34s %4d -> %-4d %-6s %s" % (n, len(todo), name, rec["start"][0], rec["best"][0], flag, " > ".join(rec["path"])))
         sys.stdout.flush()
 

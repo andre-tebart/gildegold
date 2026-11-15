@@ -12,6 +12,12 @@ change shows a gain. This tool mutates the function's text, measures every mutan
 differing instructions, then bytes), keeps the best few and mutates those again, for as many rounds as it is
 given.
 
+The frame size counts: when a mutant's frame differs in size from the original's, dcp try aligns the stack
+offsets before counting (its row says `frame 0x428 vs 0x424 (stack offsets aligned)`), so the distance looks far
+smaller than it is. From a start whose frame has the original's size such mutants are dropped (each round prints
+how many); from a start with another size they rank after every mutant that reaches the original's size, and a
+best text that still has another size is marked `frame OURS vs ORIGINAL (offsets aligned: not comparable)`.
+
 It is sound for one reason: a mutant that compiles to the original's bytes HAS the original's meaning. The
 mutations on the way need not keep the meaning, and many do not (a statement moved past one it depends on); they
 only have to lead somewhere. So nothing here is applied to the tree. The result is a text (build/climb/NAME.best.c)
@@ -327,8 +333,15 @@ def mutants(lines, ops, rng, width):
 ROW = re.compile(r"^\s+(\S+)\s+(byte|shape|draft|far)\s+(\d+)\s+(\d+)\s+([0-9a-f]{8})\s")
 
 
+# dcp try's note on a row whose frame size differs from the original's: the distance is then counted with the stack
+# offsets aligned (every [esp+X] shifted), so it is far smaller than the real difference and not comparable
+FRAME = re.compile(r"; frame (-?0x[0-9a-f]+) vs (-?0x[0-9a-f]+) \(stack offsets aligned\)")
+
+
 def measure(name, comment, variants):
-    """[(label, lines)] -> {label: (ins, bytes, code)}; a variant that does not compile is left out"""
+    """[(label, lines)] -> {label: (ins, bytes, code, frame)}; frame is "" when the variant's frame has the
+    original's size, else "OURS vs ORIGINAL"; a variant that does not compile is left out. A `= label` row (the
+    same code as another row) carries no note: it takes the note of that code's row."""
     out = {}
     for at in range(0, len(variants), 400):
         chunk = variants[at:at + 400]
@@ -341,13 +354,18 @@ def measure(name, comment, variants):
         if "variants=" not in text:
             sys.stderr.write(text[:2000] + "\n")
             raise SystemExit("dcp try failed")
-        for l in text.split("\n"):
-            m = ROW.match(l)
-            if m and m.group(1) != "control":
-                out[m.group(1)] = (int(m.group(3)), int(m.group(4)), m.group(5))
-            elif m:
-                out["control"] = (int(m.group(3)), int(m.group(4)), m.group(5))
+        rows = [(ROW.match(l), FRAME.search(l)) for l in text.split("\n")]
+        bycode = {m.group(5): "%s vs %s" % f.groups() for m, f in rows if m and f}   # one code, one frame
+        for m, f in rows:
+            if m:
+                out[m.group(1)] = (int(m.group(3)), int(m.group(4)), m.group(5), bycode.get(m.group(5), ""))
     return out
+
+
+def key(b):
+    """the rank of a text: a frame of another size than the original's last (its distance does not count the
+    shifted stack offsets), then instructions, bytes, the path's length"""
+    return (1 if b["score"][3] else 0, b["score"][0], b["score"][1], len(b["path"]))
 
 
 def main():
@@ -378,14 +396,25 @@ def main():
     seen_text = set()
     if a.resume and os.path.exists(state):
         beam = json.load(open(state))["beam"]
-    base = measure(a.name, comment, [("b0", start)])
+    # a resumed beam is measured again (its scores may predate the frame column)
+    base = measure(a.name, comment, [("b0", start)] + [("k%d" % i, b["lines"]) for i, b in enumerate(beam) if b["score"] is not None])
     if "b0" not in base:
         raise SystemExit("the start text does not compile")
-    for b in beam:
-        if b["score"] is None:
-            b["score"] = list(base["b0"])
-    print("%s: start %d ins / %d bytes (the tree: %s), ops %s" % (a.name, base["b0"][0], base["b0"][1], base.get("control"), ",".join(ops)))
-    best = min(beam, key=lambda b: b["score"][:2])
+    kept = []
+    for i, b in enumerate(beam):
+        if b["score"] is None or "k%d" % i in base:
+            b["score"] = list(base["b0"] if b["score"] is None else base["k%d" % i])
+            kept.append(b)
+    beam = kept
+    # a start whose frame has the original's size keeps it: a mutant with another frame size is dropped (its
+    # aligned distance looks closer than it is); from a start with another size such mutants rank after every
+    # mutant that reaches the original's size (key)
+    keep_frame = not base["b0"][3]
+    print("%s: start %d ins / %d bytes%s (the tree: %s), ops %s" % (a.name, base["b0"][0], base["b0"][1],
+          "" if keep_frame else ", frame %s (offsets aligned: not comparable)" % base["b0"][3],
+          "%d ins / %d bytes" % base["control"][:2] if "control" in base else "?", ",".join(ops)))
+    beam = [b for b in beam if not (keep_frame and b["score"][3])] or [dict(lines=start, path=[], score=list(base["b0"]))]
+    best = min(beam, key=key)
     for rnd in range(1, a.rounds + 1):
         if best["score"][0] == 0 and best["score"][1] == 0:
             break
@@ -402,8 +431,11 @@ def main():
             break
         res = measure(a.name, comment, [(l, t) for l, t, _ in cand])
         scored = [dict(lines=t, path=p, score=list(res[l])) for l, t, p in cand if l in res]
+        framed = sum(1 for b in scored if b["score"][3])
+        if keep_frame:
+            scored = [b for b in scored if not b["score"][3]]
         pool = beam + scored
-        pool.sort(key=lambda b: (b["score"][0], b["score"][1], len(b["path"])))
+        pool.sort(key=key)
         # one text per compiled code, the best first; a few of the rest for breadth
         new, codes = [], set()
         for b in pool:
@@ -416,12 +448,15 @@ def main():
         rng.shuffle(rest)
         beam = keep + rest[:a.beam - len(keep)]
         best = beam[0]
-        print("round %d: %d mutants, %d compiled, %d codes; best %d ins / %d bytes via %s" % (
-            rnd, len(cand), len(scored), len(codes), best["score"][0], best["score"][1], " > ".join(best["path"][-4:]) or "(start)"))
+        print("round %d: %d mutants, %d compiled, %d codes, %d with another frame size%s; best %d ins / %d bytes%s via %s" % (
+            rnd, len(cand), len([l for l, _, _ in cand if l in res]), len(codes), framed, " (dropped)" if keep_frame else "",
+            best["score"][0], best["score"][1], " frame " + best["score"][3] if best["score"][3] else "",
+            " > ".join(best["path"][-4:]) or "(start)"))
         sys.stdout.flush()
         json.dump(dict(beam=beam), open(state, "w"))
         open(os.path.join(OUT, a.name + ".best.c"), "w", encoding="latin-1", newline="\n").write("\n".join(best["lines"]) + "\n")
-    print("\nbest: %d ins / %d bytes%s, path: %s" % (best["score"][0], best["score"][1], "  BYTE" if best["score"][:2] == [0, 0] else "", " > ".join(best["path"]) or "(start)"))
+    print("\nbest: %d ins / %d bytes%s%s, path: %s" % (best["score"][0], best["score"][1], "  BYTE" if best["score"][:2] == [0, 0] else "",
+          "  frame %s (offsets aligned: not comparable)" % best["score"][3] if best["score"][3] else "", " > ".join(best["path"]) or "(start)"))
     print("text: %s" % os.path.relpath(os.path.join(OUT, a.name + ".best.c"), ROOT))
     for l in difflib.unified_diff(tree, best["lines"], "tree", "best", lineterm="", n=1):
         print(l)

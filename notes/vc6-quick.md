@@ -173,7 +173,9 @@ Section names are those of `notes/vc6-matching.md`.
   mutate the best texts again. It prints the best text's diff against the tree and writes nothing into the
   sources. A mutant that is BYTE has the original's meaning; a mutant that is only closer may have changed the
   meaning (a statement moved past one it depends on, a call moved into a braceless `if`): check a lead against
-  the original (`dcp disasm`) before applying it, and apply it as the plain code it suggests.
+  the original (`dcp disasm`) before applying it, and apply it as the plain code it suggests. A mutant whose
+  frame size differs from the original's (`frame X vs Y (stack offsets aligned)`: its distance is not
+  comparable) never wins: dropped when the start's frame size is right, ranked last otherwise.
   `python tools/search/sweep.py` runs it over every function below byte (results: `sweep.py --report`).
 - Sweeps over one function or the whole queue: `tools/sweep/blockscope.py` (function-scope records into their
   blocks), `tools/sweep/fillloop.py` (constant memsets as element loops, `--zero` for zero fills),
