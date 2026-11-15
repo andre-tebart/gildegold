@@ -3556,13 +3556,7 @@ int ai_ActionOnStack(int k)
     }
     return 0;
 }
-/* 0x4957d0, chooses the next action of character i: the best short-term and the best long-term rating
-   @deep read the whole function against the original: index loop over the 0x49 actions (jl), p->mask &
-   act->flags, the >= rating tests and the id1-first final choice (best1 != 0 && best1 >= best2) now match
-   instruction for instruction (same count, 168). Left is allocation: the strength-reduced action pointer
-   is based at &act->decide (0xf83ee8, ebp-0x28 for id) in the original, at &act->eval in ours (ebp-0x24),
-   shifting every [ebp+x] by 4 (0x495831..0x495969); and the original keeps 0 in esi (cmp eax,esi at
-   0x4958a3) where ours tests eax,eax. Tried act pointer vs G5_ACTS[k] direct access: no change. */
+/* 0x4957d0, chooses the next action of character i: the best short-term and the best long-term rating */
 
 int ai_ChooseAction(int i)
 {
@@ -3574,6 +3568,7 @@ int ai_ChooseAction(int i)
     G5ACT *act;
     G5CH *p;
 
+    p = &G5_CHARS[i];
     best1 = -1e30f;
     best2 = -1e30f;
     id1 = 0;
@@ -3584,7 +3579,6 @@ int ai_ChooseAction(int i)
     b2s1.kind = 0;
     b1s2.kind = 0;
     b2s2.kind = 0;
-    p = &G5_CHARS[i];
     for (k = 0; k < 0x49; k++) {
         act = &G5_ACTS[k];
         if (act->id != 0 && act->id != p->act && (p->mask & act->flags) != 0) {
@@ -3594,8 +3588,14 @@ int ai_ChooseAction(int i)
             s2.kind = 0;
             s2.ref = 0;
             s2.arg = 0;
-            if (act->eval != 0 && act->eval(&a, &b, k, p, 0, &s1, &s2) != 0 && (a >= best1 || b >= best2) &&
-                act->decide != 0 && (r = act->decide(0, p, 0, &s1, &s2)) != 0) {
+            r = act->eval != 0 ? act->eval(&a, &b, k, p, 0, &s1, &s2) : 0;
+            /* @original: decide is tested twice; VC6 drops the repeated test, but the third reference bases
+               the action pointer on &act->decide as in the original */
+            if (r != 0 && (a >= best1 || b >= best2) && act->decide != 0)
+                r = act->decide != 0 ? act->decide(0, p, 0, &s1, &s2) : 0;
+            else
+                r = 0;
+            if (r != 0) {
                 if (a >= best1) {
                     b1s1 = s1;
                     best1 = a;
@@ -3613,7 +3613,7 @@ int ai_ChooseAction(int i)
             }
         }
     }
-    if (best1 != 0.0f && best1 >= best2) {
+    if (best1 != ai_FloatZero && best1 >= best2) {
         p->prev = (unsigned char)id1;
         p->arg1 = b1s1;
         p->act = (unsigned char)r1;

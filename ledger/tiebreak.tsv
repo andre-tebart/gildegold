@@ -1595,8 +1595,8 @@ exe	0x00495520	am_RegisterMethod	am	0a56501b5370a5c7	no	byte	control=byte p1=byt
 exe	0x00495770	ai_PushAction	am	954c634e074f46de	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00495790	ai_PopAction	am	6b9ff1250db3c1f7	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004957a0	ai_ActionOnStack	am	d4b94d7f1f0192f7	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x004957d0	ai_ChooseAction	am	6b0b9dbe5027c1b0	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
-exe	0x00495a50	ai_ChooseSubAction	am	030515d2105328ee	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
+exe	0x004957d0	ai_ChooseAction	am	d47cc1eec8f77c85	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	660802959fec4ebe
+exe	0x00495a50	ai_ChooseSubAction	am	030515d2105328ee	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	a486fdab10f93e45
 exe	0x00495ce0	ai_ExecuteAction	am	83b14ffd0a3d49d6	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
 exe	0x00495ee0	ai_Unk495ee0	am	4b4bc431ded4ddd9	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00495fa0	ai_DecideDummyRighteousness	am	32857fe4098cb68e	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
@@ -4003,7 +4003,7 @@ exe	0x00578440	ai_TutorialFreeRuns	sv_t	7db4c5d18c22886f	no	byte	control=byte p1
 exe	0x005784a0	ai_TutorialInitMainIntro	sv_t	798c8d26cb8bedf5	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00578570	ai_TutorialInitChapter1	sv_t	1104bf614d4657fb	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00578e40	ai_TutorialInitChapter2	sv_t	1997337a7073c8ff	yes	byte	control=shape p1=byte* p2=byte* p3=byte* p4=byte*	
-exe	0x00579570	ai_TutorialInitChapter3	sv_t	7a7c849570dd38d6	yes	shape	control=draft p1=shape* p2=draft* p3=draft* p4=shape*	
+exe	0x00579570	ai_TutorialInitChapter3	sv_t	7a7c849570dd38d6	yes	byte	sweep control=shape best=byte by 1 unused typedef before ai_TutorialInitChapter3; codegens=8 compiled=12 (stopped at the goal)	3fd240b056dec72a
 exe	0x0057aa80	ai_TutorialInitChapter4	sv_t	6084c4a654a21837	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0057aeb0	ai_TutorialInitChapter5	sv_t	8774329fa9d901d6	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0057b750	ai_TutorialInitMainOutro	sv_t	fa030cb776dbd933	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	

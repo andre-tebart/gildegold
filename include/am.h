@@ -693,8 +693,7 @@ typedef struct G5ACT {                  /* 0x94 bytes, am.h's AIACT with the thi
     AIACTW w1[4];                       /* 0x30, short-term needs */
     AIACTW w3[4];                       /* 0x50, a copy of w1 */
     AIACTW w2[4];                       /* 0x70, long-term needs */
-    unsigned char flags;                /* 0x90, the action's groups */
-    char pad91[3];
+    unsigned int flags;                 /* 0x90, the action's groups (an int as in AIACT: ai_ChooseAction's mask test reads it so) */
 } G5ACT;
 #pragma pack(pop)
 
