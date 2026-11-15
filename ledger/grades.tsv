@@ -1510,7 +1510,7 @@ exe	0x0048e9f0	ai_DecideSecretRoom3	am	byte	readable
 exe	0x0048eab0	ai_ExecSecretRoom	am	byte	readable		
 exe	0x0048eb50	ai_ExecSecretRoom0	am	draft	readable	deep	
 exe	0x0048ec90	ai_ExecSecretRoom1	am	draft	readable	deep	
-exe	0x0048edc0	ai_ExecSecretRoom2	am	draft	readable	deep	
+exe	0x0048edc0	ai_ExecSecretRoom2	am	byte	readable		
 exe	0x0048ef10	ai_ExecSecretRoom3	am	draft	readable	deep	
 exe	0x0048f010	ai_DecideCannonTower	am	byte	readable		
 exe	0x0048f1e0	ai_ExecCannonTower	am	byte	readable		
@@ -1710,7 +1710,7 @@ exe	0x0049f370	ai_ExecuteTakeCredit	am	byte	readable
 exe	0x0049f4f0	ai_EvalChangeProfession	am	byte	readable		
 exe	0x0049f5c0	ai_DecideChangeProfession	am	draft	readable	deep	
 exe	0x0049f7f0	ai_ExecuteChangeProfession	am	byte	readable		
-exe	0x0049f850	ai_DecideStammtisch	am	draft	readable	deep	
+exe	0x0049f850	ai_DecideStammtisch	am	byte	readable		
 exe	0x0049fb80	ai_ExecuteStammtisch	am	byte	readable		
 exe	0x0049fc90	ai_DecidePriceManipulation	am	draft	readable	deep	
 exe	0x004a0040	ai_ExecutePriceManipulation	am	byte	readable		
@@ -1736,7 +1736,7 @@ exe	0x004a4680	ai_GroupPrices	am	byte	readable
 exe	0x004a47c0	ai_GetDesireByName	am	byte	readable		
 exe	0x004a49a0	ai_EvalMoodWeights	am	draft	readable	deep	
 exe	0x004a4ae0	ai_EvalCurrentNeed	am	byte	readable		
-exe	0x004a4c10	ai_EvalGuiltWeights	am	draft	readable	deep	
+exe	0x004a4c10	ai_EvalGuiltWeights	am	byte	readable		
 exe	0x004a4e30	ai_RepairCost	am	byte	readable		
 exe	0x004a4e70	ai_PickBuildSite	am	shape	readable	deep	
 exe	0x004a5140	ai_CanBuildType	am	byte	readable		
@@ -1752,7 +1752,7 @@ exe	0x004a61d0	ai_PickPartnerChainLevel	am	byte	readable
 exe	0x004a63f0	ai_PickActionBuilding	am	draft	readable	deep	
 exe	0x004a6570	ai_PickActionBuildings	am	draft	readable	deep	
 exe	0x004a66f0	ai_BuildingAimPoints	am	byte	readable		
-exe	0x004a67a0	ai_AimCannon	am	draft	readable	deep	shape+readable -> draft+readable at 7a3ed50: dcp's reference check (decompanion ef0c0b3) pairs reordered loads / stores of equal text crosswise and reads them as other targets; the effects are the same, the prover cannot show it yet [waits for: decompanion normalized-alignment / prover-coverage]
+exe	0x004a67a0	ai_AimCannon	am	byte	readable		
 exe	0x004a6ae0	ai_FireCannon	am	draft	readable	deep	
 exe	0x004a7140	ai_PokerStart	poker	byte	readable		
 exe	0x004a7430	ai_PokerDealRound	poker	byte	readable		
