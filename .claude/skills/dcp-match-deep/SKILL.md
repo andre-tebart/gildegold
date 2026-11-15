@@ -1,6 +1,6 @@
 ---
 name: dcp-match-deep
-description: Run one match-deep session of a decompanion project - take functions from the deep queue (dcp next --deep) one at a time and bring each to byte by trying source variants (dcp try), reading the frames (dcp frame) and measuring the declaration set (dcp headers sample), or mark it stuck with what was tried (dcp stuck). A session is 4 items, each within about 45-60 minutes. Use when the user says "match-deep", "/match-deep", "dcp-match-deep", "deep pass" or "work the deep queue".
+description: Run one match-deep session of a decompanion project - take functions from the deep queue (dcp next --deep) one at a time and bring each to byte by trying source variants (dcp try), reading the frames (dcp frame) and measuring the declaration set (dcp headers sample), or mark it stuck with what was tried (dcp stuck). A session is 4 items; an item has no time limit. Use when the user says "match-deep", "/match-deep", "dcp-match-deep", "deep pass" or "work the deep queue".
 argument-hint: "[items=4]"
 ---
 
@@ -38,7 +38,7 @@ Hard rules
 
 ## 2. Work loop: one item at a time, always the first
 
-### 2.1 Read where it stands (5 minutes)
+### 2.1 Read where it stands
 - `dcp grade NAME`: the gates, `dist`, the `tiebreak:` line, `census:` / M8 / M10 lines.
 - `dcp asmdiff NAME --changed` (`--regs auto` when only a register renaming is left), `dcp diffclass NAME` (the
   hunk classes and `proof:`).
@@ -112,9 +112,11 @@ declare a local that is only used inside a block in that block, add or remove a 
 - **Byte + readable**: commit `<unit>: <name> byte (match-deep)`. The build clears the tag.
 - **Not byte**: stuck is for a function whose remaining hunk you can name mechanically (which value must get
   which register, which local's slot, which block order, and what in the compiler decides it) AND for which the
-  project guide's checklist before `dcp stuck` is done. The 45-60 minutes are the budget for variant rounds after
-  that checklist, not a reason by themselves: an item whose checklist has open points is not stuck, do those
-  points first. "Allocation only, no source lever" is not a reason; nearly every function recorded that way was
+  project guide's checklist before `dcp stuck` is done, every point of it. There is no time limit on an item:
+  the time spent is never a reason, and neither is the number of rounds already run. An item whose checklist has
+  open points is not stuck: do those points. When the checklist is done and a round still moves the code, go on
+  with the next round; stuck is where every round you can think of leaves the code unchanged or worse and you
+  can say why. "Allocation only, no source lever" is not a reason; nearly every function recorded that way was
   matched later with an ordinary source change somewhere else in it.
   Then keep the best variant if it builds and nothing got worse, else revert. `dcp stuck NAME "why"`: what the
   original does at the hunk and the mechanism that decides it, which checklist points were done, each round with
@@ -144,7 +146,8 @@ evidence in the message. It counts as the item.
   saying sensitive does not make the text's levers pointless (2.2).
 
 ## 5. When to stop
-A session is **4 items** (byte, fixed or stuck: one commit each), then the wrap-up. Never end the session early
+A session is **4 items** (byte, fixed or stuck: one commit each), then the wrap-up, however long the items take.
+Do not hurry an item to get to the next one or to finish the session. Never end the session early
 because an item is hard; an item ends byte, fixed, or stuck under 2.5's conditions, then take the next.
 
 ## 6. Wrap up
