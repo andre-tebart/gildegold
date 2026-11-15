@@ -1413,6 +1413,12 @@ Frame size, slot order, holes, shared slots, dead parameter slots, block-scoped 
   (before an overwrite, at the end, before a return) is removed before counting, one before a call is kept as
   code. No lever: dead stores, re-tests, `(void)x`, `x = x`, the asm macros' temp declaration order or names
   (d3d_LoadTexture: texture / loadt 34 / 34, open).
+- **Two equal records (AIARG s1 / s2) swapped, equal counts, the walk ending in `*o1 = s1; *o2 = s2;`**: a
+  function-scope pair always puts the first-copied record nearest esp (it reaches the count first). The original
+  had one block-scoped pair per path (`{ AIARG s1, s2; ... }` in the sub-action-2 arm and in the usable-good
+  arm): the merged slots enter the table differently (ai_DecideUseSafetyObject 59 -> 22, then byte with the
+  Dynasty tail `if (r != 0) { *o1 = s1; *o2 = s2; } return r;` at both call sites, which also moved the final
+  `xor eax,eax` before the pops). Declaration order, names, goto vs flat tails were no lever.
 
 ### Frame bigger or smaller: vectors and padded arrays
 

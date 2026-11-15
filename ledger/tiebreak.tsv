@@ -1648,19 +1648,19 @@ exe	0x0049a290	ai_DecideSaveAps	am	bd4c3983cdb84b08	no	byte	control=byte p1=byte
 exe	0x0049a380	ai_ExecuteSaveAps	am	4e058cfe44712ab7	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0049a390	ai_DecideUseMilitaryObject	am	82fe4549630396ac	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
 exe	0x0049a5b0	ai_ExecuteUseMilitaryObject	am	aa8fb22a5bf24d83	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
-exe	0x0049a690	ai_DecideUseReputationObject	am	ee819be5a4750987	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
+exe	0x0049a690	ai_DecideUseReputationObject	am	ee819be5a4750987	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	35479e98a0a0bc8c
 exe	0x0049aa80	ai_ExecuteUseReputationObject	am	e42019d0ad3669e5	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
-exe	0x0049ab60	ai_DecideUseApsObject	am	86b2773717ab282b	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
+exe	0x0049ab60	ai_DecideUseApsObject	am	86b2773717ab282b	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	35479e98a0a0bc8c
 exe	0x0049ad80	ai_ExecuteUseApsObject	am	51198dcf597765e8	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
-exe	0x0049ae50	ai_DecideUseEducationObject	am	216588109e8cd81b	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
+exe	0x0049ae50	ai_DecideUseEducationObject	am	216588109e8cd81b	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	35479e98a0a0bc8c
 exe	0x0049b050	ai_ExecuteUseEducationObject	am	5c900b4b02fb1ca0	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
-exe	0x0049b120	ai_DecideUseHealthObject	am	e6490de5c383b087	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
+exe	0x0049b120	ai_DecideUseHealthObject	am	e6490de5c383b087	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	35479e98a0a0bc8c
 exe	0x0049b2b0	ai_ExecuteUseHealthObject	am	b1a624d09f504dc1	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
 exe	0x0049b380	ai_DecideUseDynastyObject	am	3f93e923c88bd8d7	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	671a4f7760e8742d
 exe	0x0049b6f0	ai_ExecuteUseDynastyObject	am	ae0daf1ec21bd1fb	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
 exe	0x0049b7c0	ai_DecideUseMeanObject	am	20f3ce28917dc811	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x0049bc50	ai_ExecuteUseMeanObject	am	618c49755474a4f4	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
-exe	0x0049bd90	ai_DecideUseSafetyObject	am	cbf42fe96965ebed	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
+exe	0x0049bd90	ai_DecideUseSafetyObject	am	bad6029e1a0f4c8b	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	dc1d95219a1b9956
 exe	0x0049c000	ai_ExecuteUseSafetyObject	am	444fef731fd9ed3e	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
 exe	0x0049c0d0	ai_EvalUsePerfume	am	359fca3c7e0d72bf	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0049c170	ai_DecideUsePerfume	am	11f03dd49273a5d4	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
