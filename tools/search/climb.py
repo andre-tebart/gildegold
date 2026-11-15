@@ -491,7 +491,7 @@ def main():
             " > ".join(best["path"][-4:]) or "(start)"))
         sys.stdout.flush()
         json.dump(dict(beam=beam), open(state, "w"))
-        open(os.path.join(OUT, a.name + ".best.c"), "w", encoding="latin-1", newline="\n").write("\n".join(best["lines"]) + "\n")
+        open(os.path.join(OUT, a.name + ".best.c"), "w", encoding="latin-1", newline="\n").write("\n".join(comment + best["lines"]) + "\n")   # with the comment: usable as a whole-function variant
     print("\nbest: %d ins / %d bytes%s%s, path: %s" % (best["score"][0], best["score"][1], "  BYTE" if best["score"][:2] == [0, 0] else "",
           "  frame %s (offsets aligned: not comparable)" % best["score"][3] if best["score"][3] else "", " > ".join(best["path"]) or "(start)"))
     print("text: %s" % os.path.relpath(os.path.join(OUT, a.name + ".best.c"), ROOT))

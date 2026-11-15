@@ -100,11 +100,9 @@ def main():
         with open(LOG, "a", encoding="utf-8") as f:
             f.write(json.dumps(rec) + "\n")
         if a.apply and rec["best"] == [0, 0] and rec["path"]:
-            head = dcp("fn", name).split("\n")[0]
-            ad = re.search(r"fn=(0x[0-9a-f]+)", head)
-            body = open(os.path.join(OUT, name + ".best.c"), encoding="latin-1").read()
+            body = open(os.path.join(OUT, name + ".best.c"), encoding="latin-1").read()   # starts with its comment
             vf = os.path.join(OUT, name + ".apply.txt")
-            open(vf, "w", encoding="latin-1", newline="\n").write("### best\n/* 0x%x, x */\n%s" % (int(ad.group(1), 16), body.lstrip("\n")))
+            open(vf, "w", encoding="latin-1", newline="\n").write("### best\n%s" % body.lstrip("\n"))
             done = dcp("try", name, vf, "--apply", "best")
             os.unlink(vf)
             ok = "replaced by variant" in done
