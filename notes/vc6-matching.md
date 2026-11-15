@@ -1573,6 +1573,13 @@ Frame size, slot order, holes, shared slots, dead parameter slots, block-scoped 
   edi,edi; mov [esp+8],edi`): init it before the parameter's last use (ord_LoadStatistics `n = 0; w = 0;` at the
   top, 0x18 -> 0x1c; `i = 0;` for 0x5d44c0 / 0x5d33b0, 0x24 vs 0x28, with `if (i < n) { out = ...; do { ...;
   i++; } while (i < n); }`).
+- **A parameter reloaded from its home in one arm (`mov ebp,[esp+0x14]; mov edi,[esp+0x14]`) while its
+  candidate sits in esi**, or a value read from a dead slot on a fall-through (`mov al,[esp+0x14]`): no
+  assignment there in the original. An if / else-if with no else leaves t / n undefined on that path and VC6
+  loads their (shared) stack homes; a loop that sets w and breaks, with one store after it, reads w's home on the
+  not-found path and copies the store tail into each clamp outcome (ai_DuelThrow 12 -> byte; earlier levers: an
+  own float for a second group of RandomF rolls fixed the slot packing, a ternary arm split into two arms gave
+  neg/sbb/inc, `__min(6, x)` gave jle, `for (..; i++, extra--)`, the face loop on i not j for the lea order).
 - **A parameter loaded twice** (`mov esi,[arg]; and esi,0xffff`, later `mov edi,[arg]` unmasked): the masked
   parameter (`last &= 0xffff;`) plus an uninitialized local in the dead slot, assigned on every path to its use;
   `cmp ax,0xffff` compares the field itself (path_Reverse byte: `last &= 0xffff; cur = last; while (cur ..) { if
