@@ -2194,30 +2194,12 @@ lskip:
    Familienname, Wappen (+ 0x59a), Geschlecht, Glauben), then six stages (stage): 0 first name edit, 1 family name edit (enter = next), 2 sex (two buttons, byte 0x75e5a8), 3 faith (two buttons, byte 0x75e5a9), 4 the coat
    of arms (eight objects 0x59a .. 0x5a1 in a list; click = next), 5 done (0x75e5a4 = the chosen coat object id, 0x75e5a2 = 0x12); the character record 0x75e5a0 holds the names at +0xa (0x75e5aa) / +0x2a (0x75e5ca).
    Writes the values back to the INI file on leaving; returns 1 when finished. The two button rows are copied into four variables
-   (male / female, faith0 / faith1); redraw is a char
-   @stuck deep pass: draft -> shape (184 -> 36 ins). Earlier: read against the original and reconstructed
-   (310 -> 184 ins: both button rows copied into four variables, redraw a char, back/escape stage--,
-   EnableObject via if/else, do..while sv_RunFrame, typed records); tried for the stage-5 dead load if (..)
-   ret = flag / ret = ..?flag:1 (removed by VC6). This pass: the stage-5 dead load is the lobby twin's 'if
-   (ai_MissionMode == -1 || flag) ret = 1; else ret = 1;' (also fixed the -1 in ebp / 1 in ecx allocation),
-   strcpy for the two name copies (the original's mov cl,[eax]/inc eax order), init order redraw, ret,
-   stage (xor ebx after). Left: slots only, the male/female/faith0/faith1/gsel/fsel cluster. Relative to
-   the sex sv_ButtonRow lea: the original male +0x5c, female +0x60, faith1 +0x64, sexb +0x68 with faith0
-   packed into sexb[1] (+0x6c), faithb +0x80; ours male +0x50, female +0x54, faith0 +0x64, sexb +0x70 with
-   faith1 packed into sexb[1]. Hunks: '- lea ecx,[esp+0x70] / + lea ecx,[esp+0x68]' (sexb), '- mov
-   [esp+0x68],eax / mov [esp+0x6c],ecx + mov [esp+0x74],eax / mov [esp+0x78],ecx' (male/female), '- mov
-   [esp+0x48],eax / mov [esp+0x58],ecx + [esp+0x50] / [esp+0x48]' (faith0/faith1), and their later loads
-   (0x536515, 0x53653d, 0x536550 gsel store, 0x5366be..0x53673e compares, 0x53688e). Tried this pass (no
-   effect or worse): declaration order (split, reversed, 6 random: no effect at all), faith1 copied before
-   faith0 (worse, 46 slot lines), male/female swapped copy (no effect), one shared row[2] for both rows
-   (frame 0x184 vs 0x190), block-scoped row arrays (draft, frame 0x180). The lobby twin
-   (lobby_ChoosePlayer, stuck) has the same slot problem. (tiebreak: not measured (dcp headers sample
-   main_ChoosePlayer)) */
+   (male / female, faith0 / faith1); redraw is a char */
 
 int main_ChoosePlayer(int mask, int flag)
 {
     int stage, ret, f, e1, e2, ok, list, gsel, fsel, i, cols, e;
-    int sexb[2], faithb[2], male, female, faith0, faith1;
+    int row[4], male, female, faith0, faith1;
     int ent[8];
     char buf[0x30], txt[0x100], redraw;
 
@@ -2239,14 +2221,14 @@ int main_ChoosePlayer(int mask, int flag)
     e2 = d2_GetWinObj(f, 2, io_PrintText(0x1ad1, 0x1ad3));
     d2_SetForm(f, 3);
     io_PrintText(0x1ad4);
-    sv_ButtonRow(d2_LastWindow, 0x1c, sexb, 2, txt_Ptrs[0x1ad5], txt_Ptrs[0x1ad6]);
-    male = sexb[0];
-    female = sexb[1];
+    sv_ButtonRow(d2_LastWindow, 0x1c, row, 2, txt_Ptrs[0x1ad5], txt_Ptrs[0x1ad6]);
+    male = row[0];
+    female = row[1];
     d2_SetForm(f, 4);
     io_PrintText(0x1ad7);
-    sv_ButtonRow(d2_LastWindow, 0x1c, faithb, 2, txt_Ptrs[0x1ad8], txt_Ptrs[0x1ad9]);
-    faith0 = faithb[0];
-    faith1 = faithb[1];
+    sv_ButtonRow(d2_LastWindow, 0x1c, row, 2, txt_Ptrs[0x1ad8], txt_Ptrs[0x1ad9]);
+    faith0 = row[0];
+    faith1 = row[1];
     d2_SetForm(f, 5);
     io_PrintText(0x1adb);
     cols = (d2_Wins[d2_LastWindow].w - 0x20) / 0x30;
