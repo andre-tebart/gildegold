@@ -651,20 +651,13 @@ int ai_FindOwnBuilding(AIPX *p, AIBLD **out)
     }
     return 0;
 }
-/* 0x48f2b0, decide of action 0x43 "BuildSculpture": upgrades the own building (type + 1, level below 3) or builds type 0x54 on a plot; short of money (below half the inventory) by less than a quarter, it takes a credit (ai_DecideTakeCredit)
-   @deep read the whole function against the original; fixed the else branch's meaning (type 0x54 goes in
-   the first argument of ai_CanBuildType, the plot comes back in the second, as the original's slots show).
-   Left: the original cross-jumps the second 'o1->kind = 0x12; return ai_DecideTakeCredit(...)' tail into
-   the first branch's copy (0x48f4c0 jmp 0x48f3f4) with d in ecx (mov ecx,edi; sub ecx,eax) and the arg
-   store before the pushes; ours keeps d in edi (sub edi,eax), schedules the store between the pushes and
-   so does not merge the tail (13 instructions: 193 vs 181). Tried a separate variable for the second d (50
-   ins, worse) and a goto to one shared tail (102 ins, worse); both reverted. */
+/* 0x48f2b0, decide of action 0x43 "BuildSculpture": upgrades the own building (type + 1, level below 3) or builds type 0x54 on a plot; short of money (below half the inventory) by less than a quarter, it takes a credit (ai_DecideTakeCredit) */
 
 int ai_DecideBuildSculpture(int a, AIPX *p, int b, AIARG *o1, AIARG *o2)
 {
     struct { AIARG s1, s2; } L;
     AIBLD *bl;
-    int v, lim, d, t;
+    int v, lim, t;
 
     if (!ai_FindOwnBuilding(p, &bl) || b)
         return 0;
@@ -686,12 +679,12 @@ int ai_DecideBuildSculpture(int a, AIPX *p, int b, AIARG *o1, AIARG *o2)
             return 0;
         lim = (int)(gm_SumListAmounts(p->inventory, ai_OwnPlayer) * 0.5f);
         if (lim < v) {
-            d = v - lim;
-            if (!((float)d / v < 0.25f))
-                return 0;
-            o1->arg = d;
-            o1->kind = 0x12;
-            return ai_DecideTakeCredit(0x43, p, 0, o1, o2);
+            if ((float)(v - lim) / v < 0.25f) {
+                o1->arg = v - lim;
+                o1->kind = 0x12;
+                return ai_DecideTakeCredit(0x43, p, 0, o1, o2);
+            }
+            return 0;
         }
         *o1 = L.s2;
         *o2 = L.s1;
@@ -704,12 +697,12 @@ int ai_DecideBuildSculpture(int a, AIPX *p, int b, AIARG *o1, AIARG *o2)
         v = gm_BuildingKindCost(p, L.s1.ref);
         lim = (int)(gm_SumListAmounts(p->inventory, ai_OwnPlayer) * 0.5f);
         if (lim < v) {
-            d = v - lim;
-            if (!((float)d / v < 0.25f))
-                return 0;
-            o1->arg = d;
-            o1->kind = 0x12;
-            return ai_DecideTakeCredit(0x43, p, 0, o1, o2);
+            if ((float)(v - lim) / v < 0.25f) {
+                o1->arg = v - lim;
+                o1->kind = 0x12;
+                return ai_DecideTakeCredit(0x43, p, 0, o1, o2);
+            }
+            return 0;
         }
         *o1 = L.s1;
         *o2 = L.s2;
