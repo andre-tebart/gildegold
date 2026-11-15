@@ -1610,7 +1610,7 @@ exe	0x00496050	ai_DecideDummyJob	am	byte	readable
 exe	0x00496070	ai_ExecuteDummyJob	am	byte	readable		
 exe	0x00496080	ai_DecideDummyPleasure	am	byte	readable		
 exe	0x004960a0	ai_ExecuteDummyPleasure	am	byte	readable		
-exe	0x004960b0	ai_DecideTrainSkill	am	draft	readable	deep	
+exe	0x004960b0	ai_DecideTrainSkill	am	byte	readable		
 exe	0x004965b0	ai_ExecuteTrainSkill	am	byte	readable		
 exe	0x00496610	ai_DecideTrainJobSkill	am	draft	readable	deep	
 exe	0x00496ab0	ai_ExecuteTrainJobSkill	am	byte	readable		
