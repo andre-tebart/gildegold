@@ -2473,26 +2473,28 @@ int ai_DuelSetAction(AGDUEL *d, AGCH *c, int k)
     return 1;
 }
 /* 0x493420, a throw of the side c in the duel d: k != 0 throws three dice (faces from the ag_Chance row of skill 2, then a skill bonus of 0..3 pips added to one, the lowest or each die by a random way, unless all three are equal); k == 0 adds one die, its face from the row plus -1..1 by skill 0 and the sum so far, kept in 1..6
-   @deep Levers that moved it (106 -> 18 ins, all kept): a separate float (roll) for the three k != 0 dice
-   rolls, so r of the k == 0 path no longer conflicts with f (frame now the original's: lvl/a in d's slot,
-   f/roll in c's, h/r in k's, no push ecx); the third skill bonus written as two arms (else if (f >
-   0.3333f) { sv = util_RandomU(4); extra = sv ? 0 : 1; } else { sv = util_RandomU(8); extra = ...; }:
-   cross-jumped, gives neg/sbb/inc instead of sete); the three bonus clamps as __min(6, t[x] + n) (jle, the
-   load temp apart from the sum: lea). Left (18 ins): the else arm of the side selection loads c twice from
-   its slot (mov ebp,[esp+0x14] / mov edi,[esp+0x14]) where ours copies esi; in the h == 0 loop inc eax
-   after the store and before dec edi (ours: dec edi first); the sum loop's xor ecx after mov dl,[edi]; the
-   final fall-through store t[*n] = w with the index in ecx (ours edx); lea eax,[edx+ecx+1] operand order
-   for best + j + 1 (j + best + 1, best + (j + 1): = control). No lever: t = n = c chained or swapped, sum
-   init in the for, extra-- before the store (much worse). prior: read whole against the original and
-   rebuilt its meaning: the side selection as if / else if / else, the skill bonus as sv ? 2 : 3 / sv ? 1 :
-   2 / sv ? 0 : 1 with the 4 / 8 die as two calls, the lowest-die search (m > t[i], best <= -1) before the
-   random-die way, the k == 0 die chooser by f > 0.66 / 0.44 first, the face loop holding the store and the
-   __max(__min(best + j + 1, 6), 1) clamp. All calls, constants and stores agree. Left (328/320
-   instructions, all allocation): ours has a 4-byte frame (push ecx and 6 pop ecx: lvl in its own local)
-   where the original keeps lvl and a in d's dead slot [esp+0x10], f in c's, h and r in k's, so every
-   [esp+N] differs by 4 (slots); the third bonus picks 'test ax, ax; sete cl; mov edi, ecx' where the
-   original has 'mov di, ax; neg di; sbb edi, edi; inc edi' (sv ? 0 : 1, 1 - (sv != 0), !sv tried); the h
-   == 0 loop and the sum loop have i and the temporary in... */
+   @deep Levers kept (106 -> 12 ins): a separate float roll for the three k != 0 dice (frame = the
+   original's: lvl/a in d's slot, f/roll in c's, h/r in k's); the third bonus as two arms (else if (f >
+   0.3333f) {sv = util_RandomU(4); extra = sv ? 0 : 1;} else {..(8)..}: cross-jumped, neg/sbb/inc); the
+   bonus clamps as __min(6, t[x] + n); the h == 0 loop as for (..; i++, extra--) (inc before dec); i = 0;
+   sum = 0; for (; i < *n; i++) (xor order). Left (12 ins, regs): (1) the else arm of the side selection
+   loads c twice from its home (mov ebp,[esp+0x14] / mov edi,[esp+0x14]) where ours copies esi (c's
+   candidate); (2) the k == 0 fall-through t[*n] = w indexes with ecx (j's dead register) where ours uses
+   edx (best's); (3) lea eax,[edx+ecx+1] for best + j + 1 (ours [ecx+edx+1]). No lever for (1): t = n = c,
+   n then t, (void *) / (int) casts, *(unsigned char **)&c, defaults at the top (not sunk), nested !=
+   chain, ternaries, d->side1 == c; flip.py --want 'mov ebp, DWORD PTR _c$': no single mutation. No lever
+   for (2)/(3): t[(*n)++], *n += 1, j + 1 + best, best + 1 + j, __max(1, __min(6, ..)). c2trace: ours
+   counts the else arm as one use of c (n = t copy-propagated); the original apparently has no register
+   piece of c in that block (split?). prior: read whole against the original and rebuilt its meaning: the
+   side selection as if / else if / else, the skill bonus as sv ? 2 : 3 / sv ? 1 : 2 / sv ? 0 : 1 with the
+   4 / 8 die as two calls, the lowest-die search (m > t[i], best <= -1) before the random-die way, the k ==
+   0 die chooser by f > 0.66 / 0.44 first, the face loop holding the store and the __max(__min(best + j +
+   1, 6), 1) clamp. All calls, constants and stores agree. Left (328/320 instructions, all allocation):
+   ours has a 4-byte frame (push ecx and 6 pop ecx: lvl in its own local) where the original keeps lvl and
+   a in d's dead slot [esp+0x10], f in c's, h and r in k's, so every [esp+N] differs by 4 (slots); the
+   third bonus picks 'test ax, ax; sete cl; mov edi, ecx' where the original has 'mov di, ax; neg di; sbb
+   edi, edi; inc edi' (sv ? 0 : 1, 1 - (sv != 0), !sv tried); the h == 0 loop and the sum loop have i and
+   the temporary in... */
 
 void ai_DuelThrow(AGDUEL *d, AGCH *c, int k)
 {
@@ -2560,11 +2562,10 @@ void ai_DuelThrow(AGDUEL *d, AGCH *c, int k)
         if (extra == 0)
             return;
         if (h == 0) {
-            for (i = 0; i < 3; i++) {
+            for (i = 0; i < 3; i++, extra--) {
                 if (extra == 0)
                     return;
                 t[i] = (unsigned char)__min(6, t[i] + 1);
-                extra--;
             }
             return;
         }
@@ -2588,8 +2589,9 @@ void ai_DuelThrow(AGDUEL *d, AGCH *c, int k)
     }
     f = gm_GetSkill(c, 0);
     r = util_RandomF();
+    i = 0;
     sum = 0;
-    for (i = 0; i < *n; i++)
+    for (; i < *n; i++)
         sum += t[i];
     if (f > 0.66) {
         if (sum > 12)
