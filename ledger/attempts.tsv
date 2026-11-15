@@ -91,6 +91,7 @@ exe	0x00502eb0	gm_ListWorkers	1
 exe	0x00503530	gm_PermissionBits	1
 exe	0x00503c60	gm_KillSpieler	1
 exe	0x00506e70	gm_ForfeitEstate	1
+exe	0x00507690	gm_CreateCharacter	1
 exe	0x00508d80	gm_BuildingBalance	1
 exe	0x0050a250	gm_GetCreditOffers	1
 exe	0x0050d550	init_AllocSceneBuilding	1
