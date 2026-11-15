@@ -8579,16 +8579,7 @@ int ai_ExecuteStammtisch(G5CH *p, AIARG *s1, AIARG *s2)
 /* 0x49fc90, decide callback of "Zunft Preismanipulation" (0x36): a mayor whose bonus step is 1 counts, per job
    group 1..7, the workshop levels (AI_WORKSHOP_KINDS, cap247) of all owners and its own, and the best type; scores
    each group by its prices (ai_GroupPrices) and its share, then pushes the prices of the lowest-scored group
-   (o1->ref = group, o1->arg2 = -1 down / +1 up)
-   @deep read in full against the original and reconciled: the AI_ZERO inline-asm clears, the 64-bit kind
-   mask (lo32 / hi32 with the masks in locals so hi32 stays a store), the min(...,15) clamps, the score
-   expression order, lo = 1 (sic) and both if/else-if chains; 301 vs 303 instructions. Left: slots and
-   block layout only: hi32 lives in the f parameter slot [ebp+0x10] where the original gives it a local
-   [ebp-0x58] (frame 0x55c vs 0x564, so score[] sits at -0x70 vs -0x78 and m[] at -0x55c vs -0x564: the fpu
-   / 'code' hunks at 0x49fe75, 0x49fee3, 0x49ff50 are those offsets), and the original lays the lo path
-   (m[lo].avg > 1 / own[lo] == 0 / d = 1) before the util_RandomU block where ours places it after
-   (0x49ffd2 'jge' vs 'jl' and the moved 10-instruction block); tried if/else, negated condition, goto set
-   and goto none forms: all compile to the same layout */
+   (o1->ref = group, o1->arg2 = -1 down / +1 up) */
 
 int ai_DecidePriceManipulation(int a, G5CH *p, int f, AIARG *o1)
 {
@@ -8599,8 +8590,7 @@ int ai_DecidePriceManipulation(int a, G5CH *p, int f, AIARG *o1)
     int own[7];
     AIBLD *b;
     AIBTYPE *bt;
-    unsigned int lo32;
-    unsigned int hi32;
+    LARGE_INTEGER k;
     unsigned int mlo, mhi;
     unsigned char hit;
     int j, g, i, lo, hi, d;
@@ -8616,13 +8606,13 @@ int ai_DecidePriceManipulation(int a, G5CH *p, int f, AIARG *o1)
             b = &ai_BldsT[j];
             if (b->type != 0 && b->owner != 0xffff) {
                 bt = &ai_BTypesT[b->type];
-                lo32 = 0;
-                hi32 = 0;
+                k.LowPart = 0;
+                k.HighPart = 0;
                 if ((unsigned char)bt->kind > 0x1f)
-                    hi32 = 1 << ((unsigned char)bt->kind - 0x20);
+                    k.HighPart = 1 << ((unsigned char)bt->kind - 0x20);
                 else
-                    lo32 = 1 << (unsigned char)bt->kind;
-                hit = (lo32 & mlo) != 0 || (hi32 & mhi) != 0;
+                    k.LowPart = 1 << (unsigned char)bt->kind;
+                hit = (k.LowPart & mlo) != 0 || (k.HighPart & mhi) != 0;
                 if (hit && (g = gm_BuildingJob((unsigned char)bt->kind)) != 0 && g <= 7) {
                     g--;
                     if (b->owner == p->id)
@@ -8644,7 +8634,7 @@ int ai_DecidePriceManipulation(int a, G5CH *p, int f, AIARG *o1)
             all[i] = all[i] < 15 ? all[i] : 15;
             own[i] = own[i] < 15 ? own[i] : 15;
             if (all[i] > 0 && ai_GroupPrices(&m[i]) != 0) {
-                v = ((float)all[i] + 1.0f - (float)own[i]) / (float)all[i]
+                v = ((float)all[i] + ai_FloatOne - (float)own[i]) / (float)all[i]
                     * ((16.0f - (float)own[i]) * 0.06666667f) * m[i].avg;
                 score[i] = v;
                 if (lo == -1)
@@ -8659,24 +8649,22 @@ int ai_DecidePriceManipulation(int a, G5CH *p, int f, AIARG *o1)
         }
         if (lo != -1 && hi != -1 && lo != hi) {
             d = 0;
-            if (m[lo].avg > 1.0f || own[lo] == 0) {
-                if (m[hi].avg < 1.0f)
+            if (m[lo].avg > ai_FloatOne || own[lo] == 0) {
+                if (m[hi].avg < ai_FloatOne)
                     return 0;
                 if (own[hi] * 2 + 1 >= all[hi])
                     return 0;
                 d = -1;
             }
-            if (m[hi].avg < 1.0f || own[hi] * 2 + 1 >= all[hi]) {
-                if (m[lo].avg > 1.0f || own[lo] == 0)
+            if (m[hi].avg < ai_FloatOne || own[hi] * 2 + 1 >= all[hi]) {
+                if (m[lo].avg > ai_FloatOne || own[lo] == 0)
                     return 0;
                 d = 1;
-                goto set;
             }
             if (d == 0)
                 d = util_RandomU(4) - 1;
             if (d != -1 && d != 1)
                 return 0;
-set:
             o1->kind = 0x15;
             o1->ref = lo + 1;
             o1->arg2 = d;

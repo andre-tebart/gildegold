@@ -1712,7 +1712,7 @@ exe	0x0049f5c0	ai_DecideChangeProfession	am	ab3ddd5392b05ba2	no	draft	sweep cont
 exe	0x0049f7f0	ai_ExecuteChangeProfession	am	d72324ac84595122	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0049f850	ai_DecideStammtisch	am	6148355be2b54872	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	ff0e2839c2114dee
 exe	0x0049fb80	ai_ExecuteStammtisch	am	1a545bd63d9f6968	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x0049fc90	ai_DecidePriceManipulation	am	395e2508b0bbe556	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
+exe	0x0049fc90	ai_DecidePriceManipulation	am	51502f440ffa1497	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	d2b3a9e8fa9fd0e3
 exe	0x004a0040	ai_ExecutePriceManipulation	am	2273e4baa499994e	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004a0090	ai_DecideGuildRiot	am	4518f295067d0ee8	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004a01f0	ai_ExecuteGuildRiot	am	9a26ad12c292d8c3	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	

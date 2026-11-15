@@ -1429,6 +1429,11 @@ Frame size, slot order, holes, shared slots, dead parameter slots, block-scoped 
 
 ### Frame bigger or smaller: buffers, records, temps
 
+- **Frame 8 short, the high half of a 64-bit kind bit (`1 << (kind - 0x20)`) stored to its own slot and never
+  read, the low half in a register; ours packs `hi32` into a dead parameter slot**: one `LARGE_INTEGER k`
+  (LowPart / HighPart) instead of two unsigned locals: VC6 keeps the 8-byte local in the frame, promotes LowPart
+  and stores HighPart (ai_DecidePriceManipulation byte, with the `goto set` dropped: the d = 1 arm plain inside
+  its if, the `d != -1 && d != 1` test after it decided on that path).
 - **Unreferenced 4-byte holes behind pairs of scalars (`cntA, cntB, hole, recA, recB, hole`)**: each pair was a
   3-element array indexed by a type - base (`int cnt[3]; AIBLD *best[3];`, [2] for the skipped type), read with
   constant indices so the code keeps its branches; the same goes for one-based tables sized by their data
