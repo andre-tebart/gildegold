@@ -1708,7 +1708,7 @@ exe	0x0049ee20	ai_ExecuteDarkCorner	am	e1313f2dfddc70c3	no	byte	control=byte p1=
 exe	0x0049eec0	ai_DecideTakeCredit	am	7d06c5f8e9572212	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0049f370	ai_ExecuteTakeCredit	am	7a5cc6e28cc86fb1	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0049f4f0	ai_EvalChangeProfession	am	f0c7d6200c05b907	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x0049f5c0	ai_DecideChangeProfession	am	c70fc4a5b02f4290	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
+exe	0x0049f5c0	ai_DecideChangeProfession	am	ab3ddd5392b05ba2	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	261dcb7b05e2c024
 exe	0x0049f7f0	ai_ExecuteChangeProfession	am	d72324ac84595122	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0049f850	ai_DecideStammtisch	am	6148355be2b54872	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	ff0e2839c2114dee
 exe	0x0049fb80	ai_ExecuteStammtisch	am	1a545bd63d9f6968	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
@@ -1809,7 +1809,7 @@ exe	0x004aa940	aip_ExecPamphlet	poker	e1b6d5e694659b85	no	byte	control=byte p1=b
 exe	0x004aaa10	aip_ExecDrohen	poker	0c1abaebde183e3f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004aaae0	aip_ExecAnschwaerzen	poker	34ac6574c2826b56	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004aab90	ai_TrustedOfTwo	poker	2b0bbc8700171bdb	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft	
-exe	0x004aad30	ai_TrustedOfFour	poker	fa683421e73ef87d	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
+exe	0x004aad30	ai_TrustedOfFour	poker	ef0623afcef65efe	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	202ee2820d3be8ea
 exe	0x004aaef0	ai_FindDarkCornerTarget	poker	4cddf1a6728575ef	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004aafb0	ai_ExecMessage74	poker	9d7720f790c7de6d	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004ab080	ai_DecideBuyDunkleEcke	poker	f4d2a02d6f6624d4	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
@@ -2516,7 +2516,7 @@ exe	0x004dada0	cm_SessionAskPlayer	cm	79bdc1af10e655a5	no	shape	control=shape p1
 exe	0x004dae90	cm_SessionAskAI	cm	f04f1b0eeed25f0b	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
 exe	0x004daf80	cm_CheckTrial	cm	e0f2725840e6616e	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004db700	cm_RunTrial	cm	ba6f972507d6a377	yes	draft	control=draft p1=draft* p2=draft* p3=draft* p4=draft*	
-exe	0x004dd960	cm_TrialAskPlayer	cm	dac1dafd3e9de77a	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
+exe	0x004dd960	cm_TrialAskPlayer	cm	8349ae7fe093e13b	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	1d9ff8b020ac481f
 exe	0x004de340	cm_TrialAskAI	cm	e5ae2e956bb372ce	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004de4b0	cm_SinkDownAction	cm	ea79c124d891d56d	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
 exe	0x004de530	cm_DuelSinkDown	cm	964048c9348f33c0	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
@@ -2543,7 +2543,7 @@ exe	0x004e1220	cm_DeathSceneCheck	cm	6950a8e8be5376d1	no	byte	control=byte p1=by
 exe	0x004e1250	cm_RunDeath	cm	036d0c5a42913a85	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x004e1700	cm_RunBankruptcy	cm	0f2c36eca175f7b8	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004e19a0	cm_CheckAuction	cm	986dd5c5f1d45001	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x004e1a80	cm_RunAuction	cm	f110b8593f3402c0	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
+exe	0x004e1a80	cm_RunAuction	cm	0bd1e20caf0b9f0e	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	1d9ff8b020ac481f
 exe	0x004e24c0	cm_AuctionAskPlayer	cm	0380ddc712963293	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004e26d0	cm_AuctionAskAI	cm	db6373660c7503ab	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
 exe	0x004e2860	cm_RunSale	cm	5cb92b6a18d82fc2	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	

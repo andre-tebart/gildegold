@@ -1888,6 +1888,14 @@ Store order in a fill, hoisted loads and sunk stores, statement order effects, `
 - **Two induction variables the original keeps apart**: `p += 0x80; sent += 0x80;` gave the two adds, `sent +=
   0x80; p += 0x80;` folded p into buf+sent (183 -> 8 bytes). A halving loop `for (; step > 1; step = half)` vs
   `step >>= 1`: different IVs (-34).
+- **A byte-offset IV on a stack array (`mov [esp+esi+0x90],eax / add esi,4 / cmp esi,0x3c`) plus a separate
+  source pointer, ours `[esp+esi*4+N]` with the source folded to `[esi+ebp+0x75]`, and a `rep stosd` of the
+  same count right before the loop**: the loop also zeroed a second int array, `for (k = 1; k < 16; k++) {
+  cnt[k] = 0; own[k] = f(q->x[k]); }`. VC6 lifts the zero stores out into the `rep stosd` and the second array
+  use makes it strength-reduce k to the byte offset (two int arrays per index: the same `add esi,4` form in
+  gm_EndDayIncomes, cm_TrialAskPlayer). Find it by `rg "esp \+ e.. \+ 0x"` over the original's disassembly; a
+  `flip.py` probe adding the store matched it (ai_DecideChangeProfession byte). No lever: pointer walks of
+  either array, `*++l` / `*l++`, short / char counters, a memset before the loop.
 
 ### Stores VC6 merges, drops or keeps
 

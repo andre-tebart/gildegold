@@ -8388,28 +8388,20 @@ int ai_EvalChangeProfession(float *a, float *b, int i, G5CH *p, int f, AIARG *o1
 /* 0x49f5c0, decide callback of "Change Profession" (0x34): a kind-5 character (money field >= 4, currency / 32
    >= 5000, no event 0x24 for it) picks a random title class r (1..15) of which its player record (+0x75) has
    no titles left and fewer than 1..4 buildings run that job, and builds the first building of that class's
-   title (gm_TitleNumber / gm_FirstTitleNumber) when it can pay for it; o1->arg2 is the title
-   @deep read whole against the original: guards (kind 5, money >= 4, currency / 32 >= 5000, event 0x24
-   netId), the count of buildings per job (indexed loop over ai_BldsT, unsigned kind), the random class
-   walk (loop exit returns 0, break path tests r == -1), the build and the copy-out all match; 175 vs 176
-   instructions. Left: the induction variables of the own[] loop - the original keeps l = q + 0x75 in ebp
-   and own's byte offset in esi ('+ lea ebp, [esi + 0x75] / mov al, [ebp] / mov [esp + esi + 0x90], eax /
-   add esi, 4 / inc ebp / cmp esi, 0x3c'), ours folds l into k ('- mov al, [esi + ebp + 0x75] / mov [esp +
-   esi*4 + 0x80], eax / inc esi / cmp esi, 0xf'); *l++ and k, l++ forms give the same; plus a zero register
-   edi set before that loop, and a frame of 0xbc vs our 0xac (4-byte holes around cnt / own; own[16] tried,
-   no change). */
+   title (gm_TitleNumber / gm_FirstTitleNumber) when it can pay for it; o1->arg2 is the title */
 
 int ai_DecideChangeProfession(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
 {
     AIARG s1;
     AIARG s2;
-    int cnt[15];
-    int own[15];
-    unsigned char *q, *l;
+    int cnt[17];
+    int own[17];
+    AIFINX *q;
     AIJOB *j;
+    AIBTYPE *bt;
     int money, k, n, r, c, x, y;
 
-    q = (unsigned char *)gm_PlayerRecord((AICHAR *)p);
+    q = (AIFINX *)gm_PlayerRecord((AICHAR *)p);
     if (p->kind != 5 || p->money < 4 || q == 0)
         return 0;
     money = gm_CharCurrency((AIPER *)p, ai_OwnPlayer);
@@ -8420,18 +8412,20 @@ int ai_DecideChangeProfession(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
             return 0;
     }
     gm_TitlesLeft(((unsigned char *)p)[0x164]);
-    memset(cnt, 0, sizeof(cnt));
-    l = q + 0x75;
-    for (k = 0; k < 15; k++)
-        own[k] = gm_TitlesLeft(*l++);
+    for (k = 1; k < 16; k++) {
+        cnt[k] = 0;
+        own[k] = gm_TitlesLeft(q->jobByGroup[k]);
+    }
     for (k = 0; k < 0x100; k++) {
-        if (ai_BldsT[k].type != 0)
-            cnt[gm_BuildingJob((unsigned char)ai_BTypesT[ai_BldsT[k].type].kind) - 1]++;
+        if (ai_BldsT[k].type != 0) {
+            bt = &ai_BTypesT[ai_BldsT[k].type];
+            cnt[gm_BuildingJob((unsigned char)bt->kind)]++;
+        }
     }
     n = util_RandomU(4) + 1;
     r = util_RandomU(0x10);
     for (c = 0x10;; ) {
-        if (r != 0 && own[r - 1] == 0 && cnt[r - 1] < n)
+        if (r != 0 && own[r] == 0 && cnt[r] < n)
             break;
         r = (r + 1) % 0x10;
         if (--c == 0)
