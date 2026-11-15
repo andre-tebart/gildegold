@@ -10070,34 +10070,11 @@ extern int gm_TreeRanks;
 unsigned short gm_TreeRankStart[64] = {0};  /* 0x770b00 */
 unsigned gm_TreeNodeRank();                /* 0x50b2f0 */
 
-/* 0x50b3a0, lays out the goods tree of the building bld's type from the item *item on (the entries of its objs list that follow it, up to one of goods type 2 / 6) in the w x h area: the nodes go into gm_TreeNodes (id, the two parents, rank = gm_TreeNodeRank) sorted by rank, the first node of each rank into gm_TreeRankStart; the first rank is spread evenly, each further one under the mean x of its parents (equal x spread apart, neighbours 0x50 apart), the whole scaled back into the width when it leaves it, and the ranks spread over the height (0x60 apart at most). 1 when there is nothing to lay out, else 0
-   @deep Session 2026-11 (match-deep): 289 -> 42 ins (shape). Kept: (1) no s/e locals in the lv loop: every
-   s/e written gm_TreeRankStart[lv] / gm_TreeRankStart[lv + 1] (the original's count-down trip counters of
-   the x-sort and 0x50 outer loops and the neighbour loop's re-done entry test came from this: 289 -> 163);
-   (2) GMGOOD *g = GM_GOOD(..) named for the 2/6 type test (the original's ebp address candidate; inline
-   twice or kind: = control); (3) NODES[i].x != NODES[j].x operand order in the equal-x scan (cmp
-   edx,[eax]); (4) no u local: GM_GOOD(bt->objs[n] & 0x7fff) and .id = bt->objs[n] & 0x7fff written out (u
-   ranked above n and took ecx: 177 -> 105); (5) parent test as if (id == p1) {sum += x; num++;} else if
-   (id == p2) {same} (the body in both arms counts num twice: num to ebx, j pointer based at .x: 105 ->
-   42). No lever (= control): n++ forms, sum/num init order, div as if/else, num++/sum order (worse), num >
-   0 (worse), p1 == id order (worse), spread: own n for num, k init forms, step for d, d in two statements,
-   k = k + d, x = x + .. . Worse: j - i > 1 (frame), u from i to j. Left (42 ins): x-sort inner tail
-   reloads esi=[esp+0x1c] before ecx=[esp+0x64] (original ecx first); spread block j/num in edi and d in
-   esi where the original has j/num esi, d edi, k=0 (xor ebx,ebx) just before the inner loop and the inner
-   loop as mov eax,ebx; add ecx,0x34; cdq; idiv esi; mov edx,[ecx-0x34]; add ebx,edi. prior: Read the whole
-   function against the original (527 ins) and rebuilt it section by section: the objs search, the node
-   fill (indexed by gm_TreeNodeCount, written per node), the rank sort, the rank starts, the first rank as
-   (2i+1)*step-0x18, per rank the parent mean, the x sort, the equal-x spread (k/(num-1) - (d>>1)), the
-   0x50 neighbour push, the bounds with lo>=x / hi<=x, the float rescale (w/(hi-lo+0x78),
-   off=(int)-(m*scale)) and the y spread; every store, compare, call and constant now pairs with the
-   original's. What is left is loop shape and allocation: the original keeps bt and the objs pointer in
-   stack slots (mov eax,[esp+0x1c] / [esp+0x64] reloads at +0x7d, +0x116), runs the x-sort and the 0x50
-   neighbour outer loops as count-down trip counters in [esp+0x18] / [esp+0x68] (sub eax,esi; mov
-   [esp+0x18],eax ... dec eax; jne) where ours keeps i+1 in a register (lea eax,[ecx-1]; cmp eax,ebp... */
+/* 0x50b3a0, lays out the goods tree of the building bld's type from the item *item on (the entries of its objs list that follow it, up to one of goods type 2 / 6) in the w x h area: the nodes go into gm_TreeNodes (id, the two parents, rank = gm_TreeNodeRank) sorted by rank, the first node of each rank into gm_TreeRankStart; the first rank is spread evenly, each further one under the mean x of its parents (equal x spread apart, neighbours 0x50 apart), the whole scaled back into the width when it leaves it, and the ranks spread over the height (0x60 apart at most). 1 when there is nothing to lay out, else 0 */
 int gm_LayoutTree(unsigned char *bld, unsigned short *item, int w, int h)
 {
     GMBTYPE *bt;
-    int n, cnt, i, j, k, u, lv, rmax, again;
+    int n, cnt, i, j, u, lv, rmax, again;
     int first, step, sum, num, lo, hi, d, m, off;
     float scale;
     GMGOOD *g;
@@ -10202,12 +10179,10 @@ int gm_LayoutTree(unsigned char *bld, unsigned short *item, int w, int h)
                 if (NODES[i].x != NODES[j].x)
                     break;
             if (j > i + 1) {
-                num = j - i;
-                d = (w / first >> (lv - 1)) - (num * 3 + 3) * 8;
-                for (u = 0, k = 0; u < num; u++) {
-                    NODES[i + u].x += k / (num - 1) - (d >> 1);
-                    k += d;
-                }
+                j -= i;
+                d = (w / first >> (lv - 1)) - (j * 3 + 3) * 8;
+                for (u = 0; u < j; u++)
+                    NODES[i + u].x += u * d / (j - 1) - (d >> 1);
             }
         }
         /* neighbours at least 0x50 apart */
