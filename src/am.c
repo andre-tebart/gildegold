@@ -184,29 +184,24 @@ int ai_DecideBuildDomizil(int a, AIPX *p, int b, AIARGX *o1, AIARGX *o2)
 ok:
     return 0x40;
 }
-/* 0x48e370, execute of action 0x40 "Build Domizil": on a building (kind 4) pays 0.3 of its value for the upgrade with message 0x1e, else builds (ai_ExecBuildBuilding)
-   @deep read the whole function against the original: equal instruction count (66/66), same statements,
-   calls, arguments and branch layout; the remaining hunks are allocation only: the original keeps p in esi
-   and s2 in edx (loaded before sub esp, reused in the else branch push edx, reloaded from [esp+0x110] for
-   gm_BuildingKindValue), ours keeps s2 in esi and p in edi; the ai_Time copy is scheduled ecx/edx/ecx/dx
-   vs ours ecx/edx/eax/cx. Tried the early-return form (if kind != 4 return ...): 56 ins worse, reverted. */
+/* 0x48e370, execute of action 0x40 "Build Domizil": on a building (kind 4) pays 0.3 of the value of the building kind s1->ref for the upgrade with message 0x1e, else builds (ai_ExecBuildBuilding) */
 
 int ai_ExecBuildDomizil(AIPX *p, AIARGX *s1, AIARGX *s2)
 {
     AIMSG msg;
-    int cost;
+    int v;
 
     if (s2->kind == 4) {
         memset(&msg, 0, sizeof(msg));
-        msg.to = p->netId;
-        msg.time = ai_Time;
         msg.type = 0x1e;
+        msg.to = p->netId;
         msg.fromId = s2->ref;
         msg.flags = 1;
+        msg.time = ai_Time;
         msg.car = s2->ref;
         cm_BeginGroup("building_upgrade");
-        cost = (int)(gm_BuildingKindValue(s2->ref) * 0.3f);
-        cm_SendMoveGoods(-1, p->netId, ai_OwnPlayer, cost);
+        v = gm_BuildingKindValue(s1->ref);
+        cm_SendMoveGoods(-1, p->netId, ai_OwnPlayer, (int)(v * 0.3f));
         cm_SendLongMessage(&msg);
         cm_EndGroup("building_upgrade");
         return 0x40;
