@@ -677,7 +677,7 @@ exe	0x00430dc0	vfs_fgets	vfs	byte	readable
 exe	0x00430e30	vfs_fwrite	vfs	byte	readable		
 exe	0x00430fa0	vfs_fseek	vfs	byte	readable		
 exe	0x00431170	vfs_ftell	vfs	byte	readable		
-exe	0x004311d0	vfs_MemOpen	vfs	draft	readable	stuck	
+exe	0x004311d0	vfs_MemOpen	vfs	byte	readable		
 exe	0x00431490	vfs_Init	vfs	byte	readable		
 exe	0x00431510	vfs_Exit	vfs	byte	readable		
 exe	0x004315c0	d3anim_ApplyRootMotion	d3_anim	byte	readable		
@@ -2115,7 +2115,7 @@ exe	0x004c01b0	snd_ClearQueue	f3snd	byte	readable
 exe	0x004c0210	snd_QueueTail	f3snd	byte	readable		
 exe	0x004c0230	snd_AddToQueue	f3snd	byte	readable		
 exe	0x004c02e0	snd_UpdateQueue	f3snd	byte	readable		
-exe	0x004c0470	snd_UpdateRain	f3snd	draft	readable	stuck	
+exe	0x004c0470	snd_UpdateRain	f3snd	byte	readable		
 exe	0x004c0e60	snd_UpdateAnimals	f3snd	shape	readable		
 exe	0x004c18a0	snd_EnterBuilding	f3snd	byte	readable		
 exe	0x004c1bd0	snd_PlayOutdoorTrack	f3snd	byte	readable		
@@ -2126,7 +2126,7 @@ exe	0x004c23f0	snd_PlaySpecialTrack	f3snd	byte	readable
 exe	0x004c2480	snd_EndSpecialTrack	f3snd	byte	readable		
 exe	0x004c24c0	snd_FadeMusic	f3snd	byte	readable		
 exe	0x004c24e0	snd_VoiceVariant	f3snd	byte	readable		
-exe	0x004c2510	snd_FindVoiceSample	f3snd	draft	readable	stuck	
+exe	0x004c2510	snd_FindVoiceSample	f3snd	byte	readable		
 exe	0x004c2760	snd_PlayVoice	f3snd	byte	readable		
 exe	0x004c27d0	snd_QueueVoice	f3snd	byte	readable		
 exe	0x004c2830	snd_LoadVoiceBank	f3snd	byte	readable		
@@ -3458,7 +3458,7 @@ exe	0x005344f0	main_PlaceFamilyModel	main	shape	readable
 exe	0x00534610	main_ChooseTalents	main	shape	readable		
 exe	0x00534b30	main_ChooseModel	main	byte	readable		
 exe	0x005359f0	main_ChooseFamily	main	byte	readable		
-exe	0x005361d0	main_ChoosePlayer	main	shape	readable	stuck	
+exe	0x005361d0	main_ChoosePlayer	main	byte	readable		
 exe	0x00536980	main_ChooseHistory	main	byte	readable		
 exe	0x00536d80	main_CharacterIntro	main	byte	readable		
 exe	0x00536e80	main_ChooseDifficulty	main	byte	readable		

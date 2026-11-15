@@ -655,12 +655,12 @@ exe	0x0042ed70	vfs_IGetSubDir	vfs	fab4249a58e4d62f	no	byte	control=byte p1=byte 
 exe	0x0042ee10	vfs_CmpName	vfs	c71dd43b5e974b50	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0042ee50	vfs_CmpNameI	vfs	4838b494f2c3defe	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0042ee60	vfs_FindEntry	vfs	e4e953fd7164a03c	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x0042ef10	vfs_AddFile	vfs	84d4f65b932d67aa	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
+exe	0x0042ef10	vfs_AddFile	vfs	3a645156f3756d54	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0042f4d0	vfs_AddFilePath	vfs	5ed90652084906a7	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0042f5c0	vfs_CmpEntry	vfs	62cac4a41fc2c11b	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0042f600	vfs_CmpEntryI	vfs	c613620882478695	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0042f620	vfs_FinishedFiles	vfs	d7d5e6ac2c159be7	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x0042f7e0	vfs_FindDir	vfs	aa5408d70eb7733d	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
+exe	0x0042f7e0	vfs_FindDir	vfs	440255275661b3dc	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0042f8f0	vfs_FindFile	vfs	73d96c415040fd75	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0042fa10	vfs_EntryPath	vfs	bb41de82190bb2ad	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
 exe	0x0042fbf0	vfs_DirPath	vfs	35f34d27d54a6f76	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
@@ -669,7 +669,7 @@ exe	0x0042fce0	vfs_AddDir	vfs	237780b545957afd	no	byte	control=byte p1=byte p2=b
 exe	0x00430130	vfs_AddZip	vfs	b277515c690b7d4f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00430260	vfs_FreeDir	vfs	7a0b72d14dd980c5	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004302e0	vfs_MakeDirs	vfs	e704b53665ef506b	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x00430470	vfs_Tfopen	vfs	637b299c2a925f22	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
+exe	0x00430470	vfs_Tfopen	vfs	1e6cc456e8ca8e1c	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x00430aa0	vfs_fclose	vfs	9fe394e80cbccef4	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00430bd0	vfs_fread	vfs	ca3caa553478eb96	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00430d90	vfs_fgetc	vfs	804a85611e928bd8	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
@@ -677,7 +677,7 @@ exe	0x00430dc0	vfs_fgets	vfs	b405e6b78a76ffaf	no	byte	control=byte p1=byte p2=by
 exe	0x00430e30	vfs_fwrite	vfs	8810f082bfae0a02	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00430fa0	vfs_fseek	vfs	dd6c17d3b2682b44	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00431170	vfs_ftell	vfs	fe8d393868c49aec	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x004311d0	vfs_MemOpen	vfs	9ba6a8b05ca5e2e6	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft
+exe	0x004311d0	vfs_MemOpen	vfs	881a7d644c04507d	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00431490	vfs_Init	vfs	b6cdb144fceb1fdf	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00431510	vfs_Exit	vfs	af28d466d0a2b37c	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004315c0	d3anim_ApplyRootMotion	d3_anim	b00daa09b6181919	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
