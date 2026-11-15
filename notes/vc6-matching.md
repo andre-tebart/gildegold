@@ -302,6 +302,11 @@ Where the pushes and pops sit, how many epilogue copies there are, shared agains
 
 ### Return type and small return forms
 
+- **The shared `return 0` epilogue starts with `xor eax,eax` and one `je` after a call jumps past it (ours: the
+  xor scheduled among the pops, every exit through it)**: that exit returned the call's result, `r = f(..); if
+  (r != 0) { *o1 = s2; *o2 = s1; } return r;`, not `if (r == 0) return 0;` - written out at both call sites, no
+  `goto` to a shared copy. A `p` reload into another variable's register on one branch (`mov ebp,[esp+0x84]`)
+  was no `w = p` there: drop the dead assignment, VC6 reloads the split p itself (ai_DecideUseDynastyObject).
 - **No `xor eax, eax` before the ret**: `void` (0x5da010; 0x5d9a80 / 0x5d9b20 / 0x5d9b90 void too). A void tail
   call: `jmp vfs_fclose` (0x5d7320), failure a bare `pop esi; add esp,0x7c; ret` (0x5d7430).
 - **`mov al,1` / `mov al,dl`**: `char` return.

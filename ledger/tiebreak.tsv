@@ -1656,7 +1656,7 @@ exe	0x0049ae50	ai_DecideUseEducationObject	am	216588109e8cd81b	no	shape	control=
 exe	0x0049b050	ai_ExecuteUseEducationObject	am	5c900b4b02fb1ca0	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
 exe	0x0049b120	ai_DecideUseHealthObject	am	e6490de5c383b087	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
 exe	0x0049b2b0	ai_ExecuteUseHealthObject	am	b1a624d09f504dc1	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
-exe	0x0049b380	ai_DecideUseDynastyObject	am	5ee831f8d32fd763	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
+exe	0x0049b380	ai_DecideUseDynastyObject	am	3f93e923c88bd8d7	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	671a4f7760e8742d
 exe	0x0049b6f0	ai_ExecuteUseDynastyObject	am	ae0daf1ec21bd1fb	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
 exe	0x0049b7c0	ai_DecideUseMeanObject	am	20f3ce28917dc811	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x0049bc50	ai_ExecuteUseMeanObject	am	618c49755474a4f4	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	

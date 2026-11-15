@@ -6339,16 +6339,7 @@ int ai_ExecuteUseHealthObject(G5CH *p, AIARG *s1, AIARG *s2)
    than 40, else, with no relatives[0], the good 0x167 for the partner of the character's pair event 0x41 or the
    wedding ring 0x170; with fewer than six goods and none usable, the sub-action 2 to get a random missing one
    (weight 0.05; o2 the character itself), else the action 0x20 with a random usable one (o1 kind 1, its inventory
-   entry) for the relative / the partner (o2 kind 7), the ring through the sub-action 3
-   @deep read the whole function against the original: the relative loops (twice, c spilled to f's slot as
-   the original), the pair event 0x41 search, the else path's w = p (the original loads p into w's ebp
-   there), the shared ChooseSubAction call (goto done), the switch (tables equal, the ref-first case bodies
-   merge as the original's) and the 0x170 sub-action branch order all reconciled. Left is allocation: p and
-   w swap registers (diffclass regs ebp<->edi at +0xd2,+0xf3,+0x128,+0x19f,+0x280), so p is loaded before
-   the memset (ours mov ebp,[esp+0x84] at +0x8f vs the original's mov edi,[esp+0x84] after rep stosd), and
-   with it the cross-jump of the 0x167 / 0x170 recs tails differs (ours jumps the 0x167 path to the else's
-   stores, the original keeps its own stores and esi=1 and joins after mov ebp,[esp+0x84]); 247 vs 249
-   instructions. Tried: decl order of c / w, the recs tail written in each branch, ref-first case bodies */
+   entry) for the relative / the partner (o2 kind 7), the ring through the sub-action 3 */
 
 int ai_DecideUseDynastyObject(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
 {
@@ -6397,11 +6388,10 @@ int ai_DecideUseDynastyObject(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
                 recs[2].item = 0;
                 n = 1;
             } else {
-                recs[0].item = 0x170;
+                recs[0].item = 0x170;       /* w stays unset: only the 0x167 case reads it */
                 recs[1].item = 0;
                 recs[2].item = 0;
                 n = 1;
-                w = (AIPER *)p;             /* the ring is the character's own (the original sets it, unused) */
             }
         }
         ai_FindWantedItems(p, n, recs, st);
@@ -6419,7 +6409,11 @@ int ai_DecideUseDynastyObject(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
                     s1.kind = 7;
                     s1.arg = 1;
                     r = ai_ChooseSubAction(k, p->id, 2, &s2, &s1);
-                    goto done;
+                    if (r != 0) {
+                        *o1 = s2;
+                        *o2 = s1;
+                    }
+                    return r;
                 }
             } else if (st[2] == 0) {
                 return 0;
@@ -6455,11 +6449,10 @@ int ai_DecideUseDynastyObject(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
             s1.arg2 = 0x20;
             if (recs[i].item == 0x170) {
                 r = ai_ChooseSubAction(k, p->id, 3, &s2, &s1);
-done:
-                if (r == 0)
-                    return 0;
-                *o1 = s2;
-                *o2 = s1;
+                if (r != 0) {
+                    *o1 = s2;
+                    *o2 = s1;
+                }
                 return r;
             }
             *o1 = s2;
