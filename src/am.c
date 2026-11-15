@@ -3715,29 +3715,7 @@ int ai_ExecuteDummyPleasure(AIPER *p, AIARG *s1, AIARG *s2)
 {
     return 3;
 }
-/* 0x4960b0, decide of action 4: a random affordable skill below 252 to train (o1 kind 0xe, ref the skill, arg2 the price), else first the building it needs
-   @deep Meaning fixed this session: both '? -1.0f : 0.0f' read ai_FloatZero in the original (fld
-   [ai_FloatZero] at 0x4961d8 and 0x496319). Left (148 ins): the original's 5-skill loop has NO i register:
-   VC6 strength-reduced it into ebp = &p->skills[i] (inc ebp) and esi = i * 4 for every int array, i
-   rebuilt as [esp+0x14] + ebp for ord_GetRatingByte (loop end 'add eax,ebp; cmp eax,5; jb'), and p is
-   reloaded each iteration (mov ebx,[p]; c in bl). Ours: c2trace serves _i first (prio 161, refs 16, esi),
-   p gets ebp for the whole function, the constant 1 a function-wide ebx (prio -86, refs 10), so c goes
-   through a byte slot. In the k-branch the original has p in ebx ('mov bl,[esi+ebx+0x80]'). Also in the
-   loop the original keeps f on the FPU (fild qword n; fadd st,st(1) .. fstp st(0)) and c on the FPU for
-   the 252 test and the divide (fcom, not fcomp; fdivr st,st(1)). Rounds without result: i as int /
-   (unsigned)i < 5 (= control or +2); climb round 1 best 141 via moving 'c = p->skills[i]' above
-   ord_GetRatingByte (not kept). Next: find the source form that lets VC6 strength-reduce i (a candidate
-   fewer: p not live in a register through the loop - e.g. the head's p->bld2 / p->kind tests and the
-   ChooseSubAction blocks reading p differently, or a pointer local for the skills) - flip.py --want 'inc
-   ebp' on the loop. prior: read against 0x4960b0..0x4965a6: same statements, calls, arguments, constants
-   and branch conditions (v < money signed / n[i] > money unsigned, 252.0f compares, building ids
-   0x15/0x17/0x14, the two ChooseSubAction blocks). Remaining is allocation only: ours keeps a
-   function-wide ebx=1 and p in ebp, so the skill byte c spills to [esp+0x14] (mov byte ptr [esp+0x14], al
-   / mov edx,[esp+0x14]; and edx,0xff); the original keeps p in ebx, c in bl, loads 1 locally (mov edi,1 /
-   mov eax,1 / mov ebp,1) and strength-reduces the 5-skill loop to a pointer ebp=&p->skills[0] plus esi=i*4
-   (i rebuilt as edx+ebp for ord_GetRatingByte, loop end cmp eax,5 jb) where ours indexes [esi+ebp+0x80] /
-   [esp+esi*4+..]; the 60-byte size difference and the 12 branch-target shifts are those encodings. Needs
-   allocation-driven variant rounds. */
+/* 0x4960b0, decide of action 4: a random affordable skill below 252 to train (o1 kind 0xe, ref the skill, arg2 the price), else first the building it needs */
 
 int ai_DecideTrainSkill(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
 {
@@ -3748,7 +3726,6 @@ int ai_DecideTrainSkill(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
     float f, fb;
     unsigned int i;
     int count, k, v, id, r;
-    unsigned char c;
 
     count = 5;
     ids[0] = 0x3a;
@@ -3778,27 +3755,26 @@ int ai_DecideTrainSkill(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
     if (he_FindEvent(2, 2, p->id, 0, 0x60))
         return 0;
     if (o1->kind == 0xe) {
-        k = o1->ref;
         memset(q, 0, sizeof(q));
+        k = o1->ref;
         q[0] = 1;
         f = (ord_DispatchOrder(ids[k], p, q) & 2) ? -1.0f : ai_FloatZero;
-        c = p->skills[k];
-        if (c < 42)
+        if (p->skills[k] < 42)
             v = 1;
-        else if (c < 84)
+        else if (p->skills[k] < 84)
             v = 2;
-        else if (c < 126)
+        else if (p->skills[k] < 126)
             v = 4;
-        else if (c < 168)
+        else if (p->skills[k] < 168)
             v = 6;
-        else if (c < 210)
+        else if (p->skills[k] < 210)
             v = 9;
         else
             v = 12;
         v = (int)(v + f);
         if (v < p->money)
             return 0;
-        if (c == 252.0f)
+        if (p->skills[k] == 252.0f)
             return 0;
         o1->arg2 = v;
         return 4;
@@ -3811,16 +3787,15 @@ int ai_DecideTrainSkill(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
         if (!cnt[i])
             cnt[i] = 252;
         f = (ord_DispatchOrder(ids[i], p, q) & 2) ? -1.0f : ai_FloatZero;
-        c = p->skills[i];
-        if (c < 42)
+        if (p->skills[i] < 42)
             n[i] = 1;
-        else if (c < 84)
+        else if (p->skills[i] < 84)
             n[i] = 2;
-        else if (c < 126)
+        else if (p->skills[i] < 126)
             n[i] = 4;
-        else if (c < 168)
+        else if (p->skills[i] < 168)
             n[i] = 6;
-        else if (c < 210)
+        else if (p->skills[i] < 210)
             n[i] = 9;
         else
             n[i] = 12;
@@ -3829,7 +3804,7 @@ int ai_DecideTrainSkill(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
             valid[i] = 0;
             count--;
         } else {
-            fb = c;
+            fb = p->skills[i];
             if (fb == 252.0f) {
                 valid[i] = 0;
                 count--;

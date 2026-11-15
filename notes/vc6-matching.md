@@ -2054,6 +2054,15 @@ Store order in a fill, hoisted loads and sunk stores, statement order effects, `
   gm_EndDayIncomes, cm_TrialAskPlayer). Find it by `rg "esp \+ e.. \+ 0x"` over the original's disassembly; a
   `flip.py` probe adding the store matched it (ai_DecideChangeProfession byte). No lever: pointer walks of
   either array, `*++l` / `*l++`, short / char counters, a memset before the loop.
+- **Index eliminated in the original (`mov edx,-0x80; lea ebp,[p+0x80]; sub edx,p; mov [slot],edx` before the
+  loop, `mov edx,[slot]; add edx,ebp; push edx` for `f(i)`, loop end `inc ebp; add eax,ebp; add esi,4; cmp
+  eax,5; jb`), ours keeps i in esi with `[esi+ebp+0x80]` / `[esp+esi*4+N]`**: the original had no named local
+  for the element: `p->skills[i]` written at each use (`if (p->skills[i] < 42) .. else if (p->skills[i] < 84)
+  .. fb = p->skills[i]`, CSE'd into one byte register). A named `c = p->skills[i]` keeps i as the basic IV
+  whenever i is also passed plainly to a call (`g(i)`); `g(i + 1)` or no call would strength-reduce. Probes
+  that only fold (no lever): `i + 0`, `(i*4)/4`, a second IV `j`, a pointer IV `s = p->skills`, casts on the
+  argument, int / unsigned i, a zero-loop for the memset, register pressure. ai_DecideTrainSkill 148 -> byte
+  (with the named local dropped in the sibling arm too, then one `memset` / `k = o1->ref` swap from climb).
 
 ### Stores VC6 merges, drops or keeps
 
