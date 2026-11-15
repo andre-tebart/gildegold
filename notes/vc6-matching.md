@@ -1280,6 +1280,12 @@ Which value gets which callee-saved register, the eax / ecx / edx rotation, cons
   away after allocation (groups 0xe .. 0x10 and 1 / 3 with the default's `*a = 1; *b = 0;`, own bodies in
   building-type order); equal bodies are not neutral. Return vs break per case: one code (gm_JobSlots byte).
 - **A dead `lea` of an address**: a store written twice (flip.py dup hit; gm_EndDayIncomes).
+- **The rotation two steps behind after an index chain, so two cross-jumped call tails merge in ours** (the
+  original's next block starts at eax, ours at ecx; its `xor edx,edx; mov dx,[esi]` id push differs from the
+  other arm's eax copy and stays apart): the record pointer was a named local, `c = (AIPER *)&ai_CharsT[i];
+  g = gm_Mix(p, c, 4);` not the address inline (same code at the chain, two silent rotation steps after it).
+  Found by flip.py `--want` with a `[\s\S]*` pattern spanning two calls: the hit was a DUPLICATED gm_Mix line
+  (ai_DecideThreaten byte; also the sibling form `r = call; if (r) {copy} return r;` per arm instead of `goto`).
 - **A global carried in a register into a later arm** (ours reloads `mov ecx,[depth]` on one edge of a join;
   the original loads it inside the arm into eax): `if (top == cb) r = 1; else if (pop != 0) r = 0; else { r =
   1; for (..) if (..) { err(..); r = 0; break; } if (r) {push; goto l64;} }` instead of one else with `goto
