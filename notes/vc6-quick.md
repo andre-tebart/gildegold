@@ -1,9 +1,9 @@
 # VC6 SP5+PP /O2: the deep worker's guide
 
-Read this file whole before the first item; it is the method. The cases behind it (about 1300 notes, each "what
-the diff showed -> what the source was", with the function it was found on) are in `notes/vc6-matching.md`,
-grouped by the symptom you see in the diff: go to the section of your hunk class and search it by instruction or
-construct (`grep -n "fst \|rep stosd\|shrink" notes/vc6-matching.md`). Data, link and layout rules are in
+Read this file whole before the first item; it is the method. The cases behind it (about 1000 rules, each "what
+the diff shows -> what the source was", with the functions it was found on) are in `notes/vc6-matching.md`,
+grouped by the symptom you see in the diff, with a contents list of sub-symptoms at its top: go to the section
+of your hunk class, or search by instruction or construct (`grep -n "fst \|rep stosd\|shrink" notes/vc6-matching.md`). Data, link and layout rules are in
 `notes/vc6-data.md` (not needed for matching a function's code). A function named in a note is byte unless the
 note says otherwise: `dcp fn NAME` shows the source that matched.
 
