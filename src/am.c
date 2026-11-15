@@ -10876,15 +10876,7 @@ int ai_FindPartnersRandomWalk(AIPER *p, unsigned int a, int *flags, float lo, fl
     return 1;
 }
 /* 0x4a5d30: as ai_PickPartnerInRange, but the partner comes from a random walk over all 768 characters (as
-   ai_FindPartnersRandomWalk)
-   @deep read against the original: the step pick, the filter record (zeroed, the chain ids copied up to
-   0x20 bytes, kind 2), the ai_Partner try, the rating window (double 0.0 / 100.0), the walk over 0x300
-   characters with the !(r < lo) && !(r > hi) test and the found/return flow all match (fixed: double
-   constants, NaN-tolerant window test, the !found return 0 / break exit). Left: allocation only: the
-   original keeps the constant 0 in ebx (xor ebx,ebx at +0x26, then win / q[16] stores and push ebx for the
-   filter's 4th argument) where ours uses edx and pushes it earlier, and the len = n*2 copy count lives in
-   eax/edx (lea eax,[ecx+ecx]; mov ecx,eax; mov edx,ecx) where ours uses ecx/eax; tried moving win = 0
-   before the memset: no change */
+   ai_FindPartnersRandomWalk) */
 
 int ai_PickPartnerRandomWalk(AIPER *p, unsigned int fl, int n, unsigned short *ids, float lo, float hi, unsigned short *id)
 {
@@ -10897,9 +10889,7 @@ int ai_PickPartnerRandomWalk(AIPER *p, unsigned int fl, int n, unsigned short *i
     memset(q, 0, sizeof(q));
     win = 0;
     len = n * 2;
-    if (len > 0x20)
-        len = 0x20;
-    memcpy(&q[7], ids, len);
+    memcpy(&q[7], ids, len > 0x20 ? 0x20 : len);
     q[5] = 2;
     if (ai_Partner != 0) {
         q[16] = 0;
@@ -10912,8 +10902,8 @@ int ai_PickPartnerRandomWalk(AIPER *p, unsigned int fl, int n, unsigned short *i
     q[1] = fl;
     if ((lo > 0.0 || hi < 100.0) && lo < hi)
         win = 1;
-    k = 0x300;
     found = 0;
+    k = 0x300;
     c = util_RandomU(0x300);
     while (!found) {
         if (k == 0) {
