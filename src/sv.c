@@ -7120,9 +7120,9 @@ void sv_AdvanceGame(void)
             if (kb_Last != 0 || dm_L.lup != 0 || dm_L.rup != 0)
                 sv_PopRequest = 1;
         }
-        sv_Advancing = 0;
         cm_SpeedFactor = (float)(sp * 0.00625f + 0.25);
         ai_OptionSpeed = sp;
+        sv_Advancing = 0;
         d2_CloseView(f);
         ai_CampaignStep(0xb, 0, 1, 0);
     }

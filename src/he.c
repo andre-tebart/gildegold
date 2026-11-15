@@ -6638,8 +6638,10 @@ int he_FindGuestInn(int rec, HEINN *tab, int *out)
    inn's owner gets the price, and the inn's fields +0x65 (the takings) / +0x6b (3 .. 6 guests) count it; a guest
    counts at +0x69 too, so does one who could afford the first drink of an inn without the second. After the last
    character the round is over (due the next day at 22:30), else due in 15 minutes */
+
 void he_RunInnSim(int ev)
 {
+    unsigned int first;
     AIJOB *e = (AIJOB *)ev;
     HESIM *s = (HESIM *)ev;
     HEINN inns[16];
@@ -6664,8 +6666,9 @@ void he_RunInnSim(int ev)
     }
     if (e->stage != 0)
         return;
-    end = s->cursor + 0x180;
-    for (i = s->cursor; i < end; i++) {
+    first = s->cursor;
+    end = first + 0x180;
+    for (i = first; i < end; i++) {
         if (he_FindGuestInn((int)&ai_CharsT[i], inns, &idx) == 0)
             continue;
         price1 = (int)(gm_GoodsPrice(0x179, ai_OwnPlayer) * 1.5);

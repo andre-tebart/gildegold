@@ -3332,7 +3332,8 @@ typedef struct PLAYERRECVIEW {          /* f3gm.h's player record (gm_PlayerReco
    exchange (the objects' checked flag, ai_Unk4a8630), phase 7 shows the two opponents' texts (0x425c when the seat put a card away in the exchange, else 0x425d: seat dropped),
    phase 10 shows the result (the winner's names and the hand text 0x4266 + the rank), phase 11 waits for the fourth button.
    Reasoned: the button roles and the phase meanings follow from the texts and the mask bits; the text ids are not read
-   from the text files. @deep Body reconstructed whole from the disassembly (prelude with the record / worth / chance gate, the Misc\Messagebox refusal loop, the pump with the mask-driven buttons and the 11-phase switch, ai_PokerState as a POKERGAME at 0x6f3500 with 25 of 991 instructions differing). After the build asmdiff has 2 hunks left: (1) regs 2 at 0x5da290, the byte-copy store of the texts [edx+eax] vs the original's [eax+edx] (s[d] / d[s] compile the same); (2) code 23 at 0x5dadbd, which is not code: the 11-entry jump table of the switch plus its 3-byte alignment fill (lea ecx,[ecx]) that our object keeps inside the function symbol (size 3515 vs 3469) while the original's walker ends the function at 0x5dadbc and files the fill and the table at 0x5dadc0 apart (dump: func@0x5da030..0x5dadbd fill@0x5dadbd jumptable@0x5dadc0); B1 compares 1 of 3520 bytes (the sib byte). Tried: print inside / after the branches (fixed two hunks), branch polarity of the opponent texts (fixed), s[d] vs d[s]. Nothing in the C is left to change: the table range needs a tool decision (exclude our trailing jump table from the code hunks when the original's range stops before its own fill). */
+   from the text files. */
+
 int ai_PokerGame(void)
 {
     char msg[0x100];
@@ -3389,8 +3390,7 @@ int ai_PokerGame(void)
                 }
                 d2_SetForm(ai_PokerUi.window, 4);
                 if (ai_PokerState.actor == 0) {
-                    s = txt_Ptrs[0x4250];
-                    d = text - s;
+                    d = text - (s = txt_Ptrs[0x4250]);
                     do {
                         c = *s;
                         s[d] = c;

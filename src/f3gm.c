@@ -10602,7 +10602,6 @@ float gm_Liking(unsigned a, unsigned b, int c)
 }
 /* 0x50c980, the mean opinion (0x50c550 for the persons of the list ids[0 .. n - 1] about the character c) * 0.01; 0.5 without any */
 
-
 float gm_MeanLiking(int c, int n, int *ids)
 {
     int cnt, i, id;
@@ -10610,8 +10609,8 @@ float gm_MeanLiking(int c, int n, int *ids)
     unsigned short *p;
 
     cnt = 0;
-    i = 0;
     s = 0.0f;
+    i = 0;
     if (0 < n) {
         do {
             id = ids[i];

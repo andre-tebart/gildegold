@@ -188,9 +188,9 @@ int gv_ReadAvatars(void *f)
 
             name[3] = (char)id;
             name[2] = (char)(id >> 8);
+            name[4] = 0;
             name[1] = (char)(id >> 16);
             name[0] = (char)(id >> 24);
-            name[4] = 0;
             sprintf(buf, "Avatar >%s< not found in savegame, initializing to >unused<", name);
         }
     next:

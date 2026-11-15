@@ -779,12 +779,11 @@ int cm_AddFieldDelta(unsigned char size, unsigned char n, unsigned short field, 
 int cm_AddFieldValues(unsigned char size, unsigned char n, unsigned short field, void *v)
 {
     union { unsigned char *b; unsigned short *w; } p;    /* the entry: size, n (bytes), field (a word) */
-    unsigned int k, len;
+    unsigned int len;
 
     if (size != 1 && size != 2 && size != 4)
         return 1;
-    k = size * n;
-    len = k + 4 + cm_FieldBlockLen;
+    len = size * n + 4 + cm_FieldBlockLen;
     if (len >= 0x77)
         return 1;
     p.b = &cm_FieldBlock.buf[cm_FieldBlockLen];
@@ -793,7 +792,7 @@ int cm_AddFieldValues(unsigned char size, unsigned char n, unsigned short field,
     *p.b++ = size;
     *p.b++ = n;
     *p.w = field;
-    memcpy(p.b + 2, v, k);
+    memcpy(p.b + 2, v, size * n);
     return 0;
 }
 /* 0x4c3d90, as 0x4c3d00, value by value */

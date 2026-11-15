@@ -4575,8 +4575,8 @@ void ai_KontorContact(AIBLD *bld)
     int ziel;
 
     metall = 0;
-    transport = 0;
     lager = 0;
+    transport = 0;
     gelage = 0;
     stroh = 0;
     ziel = 0;
@@ -15837,8 +15837,8 @@ void ai_CreatePersonnelRow(int x, int y, G9DOMIZILROW *row)
     row->slider = -1;
     row->ch = 0;
     row->title = 0;
-    row->x = x;
     row->view = d2_CurrentView;
+    row->x = x;
     row->y = y;
     for (i = 0; i < 6; i++) {
         row->ctrl28[i] = -1;
@@ -27107,17 +27107,11 @@ int ai_PassesBuildingFilter(AICHARREC *me, AMOUNTCFG *cfg, AIBLD *bld)
    building or character none, a filter without class bits and owner test all. A building of the classes
    ai_BuildingTypeMasks[4..5] fails under classMask[1] bit 30, one that cannot be entered (flags5a bit 0) under
    bit 63. The class must be one of classMask's bits (or classMask empty); the owner test cfg->kind and the ids of
-   option14 bit 0 as in ai_PassesBuildingFilter
-   @deep read in full against the original; every instruction matches but one: the original's dead 'lea
-   eax, [edx + eax*4]' at +0x65 (the AIBTYPE pointer of bld->type, computed after its buildingClass load
-   and overwritten at +0xb1 unread). Tried: the pointer in a local (as now), the class read straight
-   through the cast, the pointer assigned inside the read expression, the zeroing of lo / hi before / after
-   it (85 instructions apart). A declaration / scheduling artifact for a variant round. */
+   option14 bit 0 as in ai_PassesBuildingFilter */
 
 int ai_PassesMapPickFilter(AICHARREC *me, AMOUNTCFG *cfg, AIBLD *bld)
 {
     AIBTYPE *type;
-    unsigned char cls;
     unsigned int lo;
     unsigned int hi;
     int match;
@@ -27132,13 +27126,12 @@ int ai_PassesMapPickFilter(AICHARREC *me, AMOUNTCFG *cfg, AIBLD *bld)
     if (cfg->classMask[0] == 0 && cfg->kind == 0)
         return 1;
     type = &((AIBTYPE *)ai_BTypes)[bld->type];
-    cls = type->kind;
     lo = 0;
     hi = 0;
-    if (cls > 0x1f)
-        hi = 1 << (cls - 0x20);
+    if (type->kind > 0x1f)
+        hi = 1 << (type->kind - 0x20);
     else
-        lo = 1 << cls;
+        lo = 1 << type->kind;
     if (((ai_BuildingTypeMasks[4] & lo) || (ai_BuildingTypeMasks[5] & hi)) && (cfg->classMask[1] & 0x40000000))
         return 0;
     ownerOk = 0;
