@@ -1567,7 +1567,7 @@ exe	0x00492fd0	ai_MakeDuelOpponent	am	byte	readable
 exe	0x00493200	ai_DuelStart	am	byte	readable		
 exe	0x00493390	ai_DuelAcceptAction	am	byte	readable		
 exe	0x004933d0	ai_DuelSetAction	am	byte	readable		
-exe	0x00493420	ai_DuelThrow	am	draft	readable	deep	
+exe	0x00493420	ai_DuelThrow	am	byte	readable		
 exe	0x004937a0	ai_DuelAct	am	byte	readable		
 exe	0x00493890	ai_DuelOpponentAction	am	byte	readable		
 exe	0x00493a40	ai_DuelNextPhase	am	byte	readable		
@@ -1633,7 +1633,7 @@ exe	0x00498a80	ai_ExecuteBuildResidence	am	shape	readable
 exe	0x00498b80	ai_DecideUpgradeResidence	am	byte	readable		
 exe	0x00498c70	ai_DecideBuildBusiness	am	shape	readable		byte+readable -> shape+readable at 79dd397d: the byte match was on a wrong constant: the mask was written (unsigned)&txt_Keys + 0x181c0, a relocation that dcp compared as equal to the original's 0xffffff; the correct AI_CHF_BUILT leaves a 4-instruction register tie (add eax,edx / add edx,eax) [waits for: decompanion's by-value comparison of relocated operands (improvement-reports/symbol-arithmetic-constants.md), then re-match]
 exe	0x00499290	ai_ExecuteBuildBusiness	am	byte	readable		
-exe	0x00499400	ai_DecideUpgradeBusiness	am	draft	readable	deep	
+exe	0x00499400	ai_DecideUpgradeBusiness	am	byte	readable		
 exe	0x00499520	ai_DecideVisitMedicus	am	byte	readable		
 exe	0x00499580	ai_ExecuteVisitMedicus	am	byte	readable		
 exe	0x004995d0	ai_EvalSabotage	am	byte	readable		
@@ -1740,7 +1740,7 @@ exe	0x004a4c10	ai_EvalGuiltWeights	am	byte	readable
 exe	0x004a4e30	ai_RepairCost	am	byte	readable		
 exe	0x004a4e70	ai_PickBuildSite	am	shape	readable	deep	
 exe	0x004a5140	ai_CanBuildType	am	byte	readable		
-exe	0x004a5320	ai_ExecBuildBuilding	am	draft	readable	deep	
+exe	0x004a5320	ai_ExecBuildBuilding	am	byte	readable		
 exe	0x004a5540	ai_FindGoodToMake	am	byte	readable		
 exe	0x004a5760	ai_FindWantedItems	am	byte	readable		
 exe	0x004a58d0	ai_PickPartnerChain	am	shape	readable		
