@@ -1093,25 +1093,18 @@ int ai_ExecGraveyardOwner1(AIPX *p, AIBLD *b, int unused, AIARG *o)
     cm_SendLongMessage(&msg);
     return 0x3d;
 }
-/* 0x490350, way 2 of the "Graveyard Owner" decide (ai_DecideGraveyardOwner): with a 0x204 object in the graveyard and no event 0x89 of it pending, picks one of its characters and a partner chain for message 0x89 and a building of the partner (else one of the player's, mask 0x7b4c4a0)
-   @deep read whole against the original and fixed the meaning (partner flags 0xf00500 for the stray
-   cm_SendRing+0x4973c0 address, the bld2/bld/player-pick tail as in way 0 with the __int64 mask);
-   instruction counts equal (131/131), all calls, constants and branches agree. Left is stack-slot
-   allocation only: ours 'sub esp, 8' (flags in o1's slot, id and the fild temp in two locals) where the
-   original has 'push ecx' / 'pop ecx' (flags in the one local, id in b's dead slot [esp+0x14], the fild
-   temp and x in o1's slot [esp+0x18]); every other hunk is the shifted [esp+N] offsets and 'add esp, 8' vs
-   'pop ecx' at the returns. Declaration order variants tried without effect. */
+/* 0x490350, way 2 of the "Graveyard Owner" decide (ai_DecideGraveyardOwner): with a 0x204 object in the graveyard and no event 0x89 of it pending, picks one of its characters and a partner chain for message 0x89 and a building of the partner (else one of the player's, mask 0x7b4c4a0) */
 
 int ai_DecideGraveyardOwner2(AIPX *p, AIBLD *b, AIARG *o1, AIARG *o2)
 {
     union { struct { unsigned int lo, hi; } s; __int64 q; } m;
     AIPX *c, *q;
-    int flags, x;
+    int flags;
     unsigned short id;
 
+    flags = 0;
     o1->arg2 = 2;
     o1->ref2 = b->id;
-    flags = 0;
     if (!gm_Query(b->objList, 2, 0, 0x204, 6))
         return 0;
     c = ai_PickRandomBuildingChar(b);
@@ -1131,6 +1124,8 @@ int ai_DecideGraveyardOwner2(AIPX *p, AIBLD *b, AIARG *o1, AIARG *o2)
     else if (q->bld)
         o2->arg = q->bld->id;
     else {
+        int x;
+
         x = -1;
         m.s.lo = 0x7b4c4a0;
         m.s.hi = 0;

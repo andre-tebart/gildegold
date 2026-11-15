@@ -1573,6 +1573,9 @@ Frame size, slot order, holes, shared slots, dead parameter slots, block-scoped 
   function-scope `id` in another**: an address-taken function-scope local conflicts with everything; give each
   arm its own block local (`unsigned short id` in the sel-10 arm, `int target = -1` in a block of the tail) and
   write the random draw inline (ai_ChooseObjectTarget, byte).
+  ai_DecideGraveyardOwner2 (byte): `int x` into the else block that sets it (x and the `fild` temp share o1's
+  dead slot) AND `flags = 0;` above the `o1->` stores (flags then conflicts with o1 and keeps its own slot, id
+  goes to b's): each alone did nothing or worse, both together byte. c2frame `--names` X lines show it.
 - **One variable reused for unrelated loops / branches / roles shares their slots**: split it (one counter or a
   tx/ty pair: ~3000 B of slot differences; a counter of two loops: one slot plus seven others fixed). A loop in
   both arms of an if/else in the asm was written twice. One array reused for unrelated values also leaves gaps.
