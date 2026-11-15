@@ -1693,7 +1693,7 @@ exe	0x0049d730	ai_ExecuteBlackmail	am	07d4c9f42f87bf84	no	byte	control=byte p1=b
 exe	0x0049d750	ai_DecideUsePrivileges	am	740482a2b99ecba9	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0049d7d0	ai_ExecuteUsePrivileges	am	b55965259b78e206	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0049d7f0	ai_EvalMayor	am	ca7cdc793b3f81e9	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
-exe	0x0049d8d0	ai_DecideMayor	am	b1a3683a378c105c	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
+exe	0x0049d8d0	ai_DecideMayor	am	d97373c0d9ee8cd3	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	e664ff0bc7c206f5
 exe	0x0049dc10	ai_ExecuteMayor	am	f97a237a1d04a4c7	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0049dd90	ai_DecideMayorUpgrade	am	eec3bbf9014615ff	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0049def0	ai_DecideMayorTownHall	am	fd23b1c39a64ecf8	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	

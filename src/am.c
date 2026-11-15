@@ -7437,37 +7437,28 @@ int ai_EvalMayor(float *a, float *b, int i, G5CH *p, int f, AIARG *o1, AIARG *o2
 }
 /* 0x49d8d0, decide callback 0x2e "Buergermeister" (only for the holder of office 0xf), with the money of the
    list in object 0x115 of the first building of kind 1: when statistic 3 of ord_GetStatistics is above
-   (mood[10][0] - 2) * 0.4, act on a free building of type 2 or 3 of building kind 1 (o1 kind 4, ref 2 / 3),
+   (mood[10][0] - 2) * 0.4, upgrade a free building of type 1 to type 2 or of type 2 to type 3 (o1 kind 4,
+   ref 2 / 3, o2 the building),
    else build type 1 (ai_CanBuildType); otherwise renovate the lowest-level building of kind 1 (level < 0x50,
-   sub-action 0xf)
-   @deep read whole against the original (conditions, the 0x100-building loop, the type 2 / 3 /
-   build-type-1 branches with their money checks, the renovation sub-action with its 0x32/30/10 arg2, every
-   o1/o2/s1/s2 store): the meaning matches. Left: (1) the loop's inner '!(fl & 0x45)' tests: the original
-   loads 'mov cx, word ptr [edx+0x5a]' once and re-tests 'test cl, 0x45' in both count branches, VC6 drops
-   them on ours (tried fl local as *(unsigned short*), rec->flags5aw, the field read three times: same
-   object); with it the type k spills to a byte slot ('- mov byte ptr [esp+0x20], bl / mov eax, [esp+0x20]'
-   vs '+ mov eax, ebx'); (2) frame 0x6c vs 0x58: the original packs recA/recB/cntA/cntB into the s1/s2
-   slots (scope packing), ours keeps them apart; (3) the type 2 / 3 branches: the original converts each
-   gm_BuildingKindValue result (fild) before the shared money compare, ours shares the call ('- mov edi,
-   eax / mov [esp+0x90], eax' vs '+ mov [esp+0x7c], eax / fild'); (4) d[3] > x is 'fld [d3]; fcompp' on
-   ours, 'fcomp dword [d3]' on the original (fpu). 252 vs 258 instructions. */
+   sub-action 0xf) */
 
 int ai_DecideMayor(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
 {
-    AIBLD *best, *recA, *recB, *r, *b, *rec;
+    AIBLD *best, *rec, *b;
+    AIBLD *spare[3];     /* per building type 1..3 (index type - 1): the last one not flagged 0x45 */
     AIOBJ *o;
     unsigned char k;
+    unsigned short fl;
     char lvl;
-    int cntA, cntB, n, money, v;
-    AIARG s1;
-    AIARG s2;
+    int count[3];        /* per building type 1..3: how many */
+    int n, money, v;
     float d[10];
 
     best = 0;
-    recA = 0;
-    recB = 0;
-    cntA = 0;
-    cntB = 0;
+    spare[0] = 0;
+    spare[1] = 0;
+    count[0] = 0;
+    count[1] = 0;
     if (a != 0 || f != 0 || p->officeKind != 0xf)
         return 0;
     b = gm_FirstBuilding(1);
@@ -7479,8 +7470,9 @@ int ai_DecideMayor(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     rec = ai_BldsT;
     for (n = 0x100; n != 0; n--, rec++) {
         k = rec->type;
-        if (k == 0 || ai_BTypesT[k].kind != 1)
+        if (k == 0 || ai_BTypesT[rec->type].kind != 1)
             continue;
+        fl = rec->flags5aw;     /* the original tests fl again below (no threading of the first test) */
         if (rec->flags5aw & 0x45)
             continue;
         lvl = rec->level;
@@ -7489,31 +7481,45 @@ int ai_DecideMayor(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         if (k == 3)
             continue;
         if (k == 2) {
-            cntB++;
-            if (!(rec->flags5aw & 0x45))
-                recB = rec;
+            count[1]++;
+            if (!(fl & 0x45))
+                spare[1] = rec;
         } else {
-            cntA++;
-            if (!(rec->flags5aw & 0x45))
-                recA = rec;
+            count[0]++;
+            if (!(fl & 0x45))
+                spare[0] = rec;
         }
     }
-    if (d[3] > (p->mood[10][0] - 2.0) * 0.4f) {
-        if (cntA != 0 && recA != 0) {
-            r = recA;
+    if (d[3] > (float)((p->mood[10][0] - 2.0) * 0.4f)) {
+        if (count[0] != 0 && spare[0] != 0) {
             o1->kind = 4;
             o1->ref = 2;
-            v = gm_BuildingKindValue(2);
-        } else if (cntB != 0 && recB != 0) {
-            r = recB;
+            if (gm_BuildingKindValue(2) * 0.4f > money)
+                return 0;
+            o1->arg = 1;
+            o2->kind = 4;
+            o2->ref = spare[0]->id;
+            o2->arg = 1;
+            return 0x2e;
+        }
+        if (count[1] != 0 && spare[1] != 0) {
             o1->kind = 4;
             o1->ref = 3;
-            v = gm_BuildingKindValue(3);
-        } else {
+            if (gm_BuildingKindValue(3) * 0.4f > money)
+                return 0;
+            o1->arg = 1;
+            o2->kind = 4;
+            o2->ref = spare[1]->id;
+            o2->arg = 1;
+            return 0x2e;
+        }
+        {
+        AIARG s1;
+        AIARG s2;
+
             s1.kind = 5;
             s1.ref = 1;
-            v = gm_BuildingKindValue(1);
-            if (v * 1.2f > money)
+            if (gm_BuildingKindValue(1) * 1.2f > money)
                 return 0;
             s1.arg = 1;
             s2.kind = 0;
@@ -7525,16 +7531,13 @@ int ai_DecideMayor(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
             *o2 = s2;
             return 0x2e;
         }
-        if (v * 0.4f > money)
-            return 0;
-        o1->arg = 1;
-        o2->kind = 4;
-        o2->ref = r->id;
-        o2->arg = 1;
-        return 0x2e;
     }
     if (best == 0)
         return 0;
+    {
+        AIARG s1;
+        AIARG s2;
+
     lvl = best->level;
     if (lvl - util_RandomU(0x20) >= 0x42)
         return 0;
@@ -7544,7 +7547,7 @@ int ai_DecideMayor(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     if (lvl < 0x21)
         s1.arg2 = 0x32;
     else
-        s1.arg2 = lvl >= 0x42 ? 10 : 30;
+        s1.arg2 = lvl < 0x42 ? 30 : 10;
     s2.ref = o->objId;
     s2.arg = money;
     s2.arg2 = 1;
@@ -7555,6 +7558,7 @@ int ai_DecideMayor(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     *o1 = s1;
     *o2 = s2;
     return v;
+    }
 }
 /* 0x49dc10, execute callback 0x2e: upgrades ("upgr_arbeiter_unterk", s2->kind 4) or builds
    ("bau_arbeiter_unterk") the workers' lodging, paid to 0x504a80(1) */
