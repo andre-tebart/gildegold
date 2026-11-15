@@ -2312,20 +2312,13 @@ G6CURSOR *const ai_NearRingCursor = &ai_NearRingCursorState;  /* 0x5ed1b0, the c
 const G9BALL ai_CannonBalls[3] = { { 2000.0f, 3000.0f, 0.0599999987f }, { 2450.0f, 3850.0f, 0.0649999976f }, { 3600.0f, 5950.0f, 0.075000003f } };  /* 0x5edfe0 */
 const float ai_IronDensity = 7874.0f;  /* 0x5eee08, 7874 */
 
-/* 0x492fd0, makes the random duel opponent ai_DuelOpponent for the duel kind k (1, 2, 4): draws a class 1..5 from the cumulative table row of k and a second class from a row near it, gives the opponent a random sex and first name and five stats in the range of the first class; returns (second class << 8) | first class
-   @deep read whole against the original: fixed the second-row draw (util_RandomU(2) called in each branch,
-   v = r or idx - r, as the original's two zero-extensions show) and the switch default (base = k only).
-   Calls, constants, tables (switch tables equal) and branches agree, 150/151 instructions. Left is
-   register allocation of k: ours keeps k in ebx (mov ebx, [esp+0x54]; cmp ebx, 1; mov ebx, ecx; mov ebp,
-   ebx; lea eax, [ebx-1]) where the original keeps it in its parameter slot (cmp eax, 1 / mov ebp,
-   [esp+0x54] / mov eax, [esp+0x60]; dec eax) and loads only its low byte in the default (mov bl, byte ptr
-   [esp+0x54]), and idx in edi/esi rotated; tried a char base and a ushort temporary, both worse. */
+/* 0x492fd0, makes the random duel opponent ai_DuelOpponent for the duel kind k (1, 2, 4): draws a class 1..5 from the cumulative table row of k and a second class from a row near it, gives the opponent a random sex and first name and five stats in the range of the first class; returns (second class << 8) | first class */
 unsigned int ai_MakeDuelOpponent(unsigned int k)
 {
     float t[15] = {0.2f, 0.55f, 0.85f, 0.95f, 1.0f, 0.1f, 0.4f, 0.7f, 0.9f, 1.0f, 0.05f, 0.25f, 0.55f, 0.8f, 1.0f};
     float r;
     int idx, i, base, mul;
-    unsigned int v, ret;
+    unsigned int v, ret, cls;
     char c;
 
     r = util_RandomF();
@@ -2333,9 +2326,11 @@ unsigned int ai_MakeDuelOpponent(unsigned int k)
         idx = 0;
     else
         idx = (k != 2) + 1;
+    /* @original: cls and ret (and base / mul in the switch) are set only on a hit; every row ends at 1.0f,
+       so the draws always hit. VC6 packs them into the dead k slot */
     for (i = 0; i < 5; i++) {
         if (r <= t[idx * 5 + i]) {
-            k = i + 1;
+            cls = i + 1;
             break;
         }
     }
@@ -2348,7 +2343,6 @@ unsigned int ai_MakeDuelOpponent(unsigned int k)
             v = idx - util_RandomU(2);
     }
     r = util_RandomF();
-    ret = k;
     for (i = 0; i < 5; i++) {
         if (r <= t[v * 5 + i]) {
             ret = (i + 1) * 0x100;
@@ -2361,7 +2355,7 @@ unsigned int ai_MakeDuelOpponent(unsigned int k)
         strncpy(ai_DuelOpponent.name, txt_MaleFirstNames[util_RandomU(0xbf)], 15);
     else
         strncpy(ai_DuelOpponent.name, txt_FemaleFirstNames[util_RandomU(0x70)], 15);
-    switch (k) {
+    switch (cls) {
     case 1:
         base = 0x15;
         mul = 0x2a;
@@ -2382,15 +2376,13 @@ unsigned int ai_MakeDuelOpponent(unsigned int k)
         base = 0xa8;
         mul = 0x54;
         break;
-    default:
-        base = k;
     }
     for (i = 0; i < 5; i++) {
         c = (char)util_RandomU(mul);
         ai_DuelOpponent.stat[i] = c + (char)base + 1;
     }
     ai_DuelOpponent.kind = 10;
-    return ret | k;
+    return ret | cls;
 }
 /* 0x493200, starts a duel between p and a fresh opponent of kind k (1, 2 or 4): the opponent
    (ai_MakeDuelOpponent), the stake and its raise from p's worth (gm_PlayerFactor), the starting side
