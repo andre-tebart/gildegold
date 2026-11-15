@@ -1379,7 +1379,7 @@ __inline char dd_CpuHasMMX(void)
 #define DD_RMASK888 0xff0000u
 
 /* 0x41d2e0, sets up the display: mode DD_GDI..DD_FULLMEM, xres x yres at bpp bits
-   @stuck 73 -> 68 ins this session: the GDI arm's bpp tests as switch (bpp) { case 24: case 32: .. case
+   @deep 73 -> 68 ins this session: the GDI arm's bpp tests as switch (bpp) { case 24: case 32: .. case
    16: .. } (the branch hunk and the cross-jump stub gone; if/else forms 84..88, case orders all one code)
    and ddsd.dwHeight stored before the #ifdef'd dwFlags in the window arm (order hunk). Left, two
    mechanisms: (1) dd_PixelFormat: ours folds R*100 + G*10 into (R*10 + G)*10 (lea chain, mov esi,0x378

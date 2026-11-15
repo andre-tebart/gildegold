@@ -956,7 +956,7 @@ unsigned *gm_NameRecord(int kind, int id)
    head numbers = the picture - 0x639); a spy (kind 0x11) one of the three spy heads; else the record of its job,
    or of its title, in the table of its sex (resolving its head icons), the table's first record when the title is
    not listed.
-   @stuck 129 ins, unchanged; the q walks are plain p[i] index loops now (same code). headers sample:
+   @deep 129 ins, unchanged; the q walks are plain p[i] index loops now (same code). headers sample:
    insensitive. Read: the original has no frame: p in ebp (0 at entry), i in edx (0 at entry, shared by
    both loops), k in bl (unsigned char: test bl,bl and the per-compare mov ecx,ebx / and ecx,0xff), the
    ownName address in esi and the picture in edi (add edi,-0x639), the child path returns gm_BoyHead in eax
@@ -2144,7 +2144,7 @@ int gm_IsUnderAge(unsigned short id)
    nearest to o when o and the building both have a scene object, else the least full one (people / capacity);
    none: a random one of the first 16 of the query (1, 5, 0x16) with the flag clear. The first parameter is
    not read
-   @stuck draft 90 -> 67 ins. Read: the original keeps the pick's capacity in ebx (loaded from the first
+   @deep draft 90 -> 67 ins. Read: the original keeps the pick's capacity in ebx (loaded from the first
    record after the query test) and kind[0] in edi across the d3_PointToWorld calls, stores only the
    record's second int at a pick, and shares the int-to-float temp with the first record's first int (frame
    0x74, the 8-byte record slot shared with a 4-byte temp, which no variant reproduces: c2frame gives the
@@ -2408,7 +2408,7 @@ void gm_FreeIconNames(void)
 #define GM_MAX(a, b) ((a) > (b) ? (a) : (b))
 
 /* 0x4fdfd0, fills the character statistics gm_CharacterStatistics: the living persons of kind < 10, per age bucket (gm_CharAge / 10, clamped to 0 .. 7) their count, health in percent of the base health and average base health, and the share under age in percent
-   @stuck headers sample: insensitive. The one hunk (baseHealth[k] address materialized in edx before the
+   @deep headers sample: insensitive. The one hunk (baseHealth[k] address materialized in edx before the
    call, 'lea edx,[edx*4+X]' then fadd/fstp [edx]) did not move: x = x + f(), both statements so, a float
    *p temp for one or both, a parenthesized call, the M10 objects ai_FloatZero / ai_FloatOne /
    ai_FloatHundred in all 7 subsets (block externs: 5 or 7 ins), the 23 orders of the ageCount / underAge /
@@ -2478,7 +2478,7 @@ void * mem_Alloc(int size, char *tag);                   /* 0x4223c0 */
 void util_Randomize();                     /* 0x42ec80 */
 
 /* 0x4fe140, adds hours / minutes / seconds (any sign for the hours) to the clock c, carrying into the days (the minutes and seconds only upward)
-   @stuck match-deep 2026-11-14: the original pushes edi and uses it as a leftover register for the three
+   @deep match-deep 2026-11-14: the original pushes edi and uses it as a leftover register for the three
    read-modify-write temps (min + sec/60, year += d, year -= d), which keeps the 60 in esi for both idivs;
    ours puts the min temp in esi and reloads mov esi,0x3c. c2trace: no candidate of ours takes edi, the 60
    is no allocation candidate (unprofitable const webs only). Tried (dcp try): named s / m locals for the
@@ -2584,7 +2584,7 @@ int gm_ClockSeason(AITIME *c)
     return c->year % 4;
 }
 /* 0x4fe370, builds the building lookup tables: gm_ClassBuilding (the first building type of the goods classes 6 .. 16, fixed numbers) and gm_GoodBuilding (for every good in a building type's slot list: the first building type of its class plus the class run length * the position of this building type in its run of equal kinds / that run's length, the smallest such); goods in no slot list get the first building type of their class
-   @stuck 119 -> 66 ins, frame now equal: the decompiled pointer walks (p += 0x24d, q walks, the slots
+   @deep 119 -> 66 ins, frame now equal: the decompiled pointer walks (p += 0x24d, q walks, the slots
    pointer) as plain index loops over GM_BTYPE(i) with a GMBTYPE pointer bt and kind / kind2 locals (VC6
    makes the bt IV and the objs pointer itself: 119 -> 76), the init order memset, len, cur, fill, class
    entries, run (360 orders: 76 -> 74), the class run as base += cnt * run / len (the original adds into
@@ -3080,7 +3080,7 @@ int gm_FindMarketObject(int id);                     /* 0x500ec0 */
 int gm_FindPlayerBuilding(int p);                   /* 0x501000 */
 
 /* 0x4ffa10, the price of the goods record n of the player p: the base price (gm_ItemPrice, 100) when no market object holds the good (gm_FindMarketObject, for another player the kind 0x1db object of its building, gm_FindPlayerBuilding); else a factor mean / demand, times demand / the market's count of the good (at least 1) when that count is above the demand and the good is not of the kind 0x17, clamped to 0.25 .. 5.0, and the price moves 0.4 of the way from the stored price to the base price times the factor; a record without a stored price (<= 0) gets the base price, at least 512
-   @stuck cross-jump of the mk == 0 'return gm_ItemPrice(id, 100)' into the 512 path's second call (ours 2
+   @deep cross-jump of the mk == 0 'return gm_ItemPrice(id, 100)' into the 512 path's second call (ours 2
    rets, the original 3). Fixed: the 0.25 clamp reads cm_DoubleQuarter (12 -> 10 ins). Tried (dcp try, all
    = one code at 10 ins): mk test as if/else with r assigned, != with the mk==0 path last, early return;
    the 512 clamp as ?:, max / min macros (22-28 ins), r assigned per arm, >= and !(>=) spellings (14-28),
@@ -3132,7 +3132,7 @@ float gm_StockPrice(int p, int n)
     return r;
 }
 /* 0x4ffcc0, the next match of the object query gm_Query set up: from the cursor record it walks the whole instance table (gm_QueryScanAll, skipping empty records, counting them in gm_QueryScanned) or the next pointers of the list (with gm_QueryChildren the child lists go on gm_QueryStack and are walked when a list ends), tests each record against the set criteria (prototype, owner id, the owner's character number gm_ObjectOwnerNo, the prototype kind) and returns the last record that matched before the first match ends the walk (or, with gm_QueryStopFirst, the first record looked at); 0 when none
-   @stuck 155 -> 153 ins: the criteria as four plain tests with an ok flag (if (ok && ..), if (!ok) m = 0)
+   @deep 155 -> 153 ins: the criteria as four plain tests with an ok flag (if (ok && ..), if (!ok) m = 0)
    instead of the goto no chain - same code as the goto-only sequence, and it ends the cross-jumped
    stack-push tail (tail 66 -> 0). Left: the register rotation, all from m: c2trace gives m prio 12 (avail
    edx ebx), below the cursor->list temps temp#e5 (prio 16 / 28 / 40, the first push and the two list
@@ -3221,7 +3221,7 @@ unsigned short *gm_QueryNext(void)
     return (unsigned short *)res;
 }
 /* 0x4ffe90, starts an object query over the list (or, with the flag 7, over the whole instance table) and returns the first match (gm_QueryNext): n criteria follow as (kind, value) pairs: kind 0 = prototype, 1 = owner id, 3 = the owner's character number (gm_ObjectOwnerNo), 4 = the prototype kind (each with a value), 5 = stop at the first match, 6 = descend into the children, 7 = scan the whole table (without value). Not set criteria match everything; 0 without the goods table or a list, and for 6 together with 7. Used as gm_Query (list, 2, 6, 0, 0x115) .. all over the exe
-   @stuck match-deep 2026-11-14: draft 33 -> shape 4 ins. Rewritten with va_list / va_arg (same code as the
+   @deep match-deep 2026-11-14: draft 33 -> shape 4 ins. Rewritten with va_list / va_arg (same code as the
    hand-walked ap), the kind byte stored as the unsigned 0xff (a char -1 shared the owner's -1 register: 33
    -> 10), scan = 0 / kids = 0 written right before their stores (48 placements, 10 -> 6: dl / bl kept
    apart), a count-down loop i = n .. 1 (6 -> 4: pop esi after the flag stores). Left: the scan tail loads
@@ -3433,7 +3433,7 @@ int gm_GoodsDemand(int p, int i);
 int gm_GoodsStock(int p, int i);
 
 /* 0x4ff550, the daily price update of the player p at the clock t: the date's year and month are interpolated in the player slot's two yearly tables (GMPOINT, at +0x64 and +0xb4) into the block's two indices, each scaled by its factor / 1000; then for the 0x55 goods records the demand moves halfway to gm_GoodsDemand (not for the kinds 0x17 / 0x25), the stock is gm_GoodsStock for the own player and the base stock for the others, the price is gm_StockPrice, a record with the byte +0x40 set takes its stock as demand, and the four counters +0x10 .. +0x1c are cleared; without a network game the market syncs (gm_SyncMarket) and shakes (gm_RandomMarketShake)
-   @stuck match-deep 2026-11-14: draft 40 -> shape 37 ins. Fixed: the goods kind through a pointer local (g
+   @deep match-deep 2026-11-14: draft 40 -> shape 37 ins. Fixed: the goods kind through a pointer local (g
    = GM_GOOD(item); g->type tested twice: the original's add eax,edx; mov al,[eax]) and cm_DoubleHalf for
    the 0.5 (M10). Table B matches the original exactly; what is left is table A's three inner arms: the
    original hoists p*17 (mov eax,ebp; shl eax,4; add eax,ebp) above 'cmp ebx,edi' for all three arms and
@@ -3893,7 +3893,7 @@ int gm_FindPlayerBuilding(int p)
     return 0;
 }
 /* 0x501030, the next building of the query gm_BuildQuery (0x501190) started: walks the cursor gm_BQCursor over the used records of ai_Blds and returns the first that matches every set criterion (type, id, master, owner, the class of its type; gm_BQStopFirst takes any); 0 when the table ends (the cursor is cleared) or more than 0x100 records were tested
-   @stuck match-deep 2026-11-14: 44 -> 8 ins. Fixed: the match loop leaves by break to one final return
+   @deep match-deep 2026-11-14: 44 -> 8 ins. Fixed: the match loop leaves by break to one final return
    (not a return in each exit): VC6 then pushes ebx / ebp / edi only before the loop as the original (44 ->
    10); gm_BQFirstCall = 0 after the first-call walk (10 -> 8: the walk's exit then goes to the shared end
    check instead of a threaded return copy). Left: (1) the original stores gm_BQFirstCall = 0 before the
@@ -4112,7 +4112,7 @@ int gm_IsHomeType();                     /* 0x502520 */
 int init_BuildingSceneUniverse();                     /* 0x511e60 */
 
 /* 0x500190, creates an object instance of the prototype proto with the amount n in the list of the holder id (a building, an object or a character, gm_FindById): takes a free record (gm_FindFreeObject) and appends it to the holder's list (ORDBLD.objList, ORDOBJ.list or the character's list at +0x178), fills it (the prototype, a new object id ai_NextObjectId, the holder id, the holder's own id, the amount, fill 100) and counts it (f3gm_ObjectCount); a few prototypes get their own start values (0xb8, 300, 0x12d, 0x15e / 0x160, 0x174 / 0x176, 0x24b / 0x256 / 0x266), the goods kinds 0x17 / 0x20 / 0x25 clear +0x1c, and the three carts 0x134 / 0x135 / 0x136 get the id of their building, a load object (prototype 0x1dd), a model (a cart man or the horse, ch_Create at the building's "dummy_TRANSPORTER") pulling the cart object ob_KARREN_klein / _mittel / _GROSS (textured by the owner character's v054). Returns the instance, 0 on failure
-   @stuck 194 -> 145 ins: no pr = ai_Goods copies (the top one and the one inside if (list != 0)): plain pr
+   @deep 194 -> 145 ins: no pr = ai_Goods copies (the top one and the one inside if (list != 0)): plain pr
    = (char *)GM_GOOD(proto) after the list block; VC6 itself loads ai_Goods into edi for the null test and
    reloads it after the gm_FindFreeObject calls, as the original. The M9 literal line is alignment only (0
    arbeiter, 1 holzfaeller, else handwerker: the original's order, read at 0x50054b). Left: the original
@@ -4376,7 +4376,7 @@ int gm_FindMarketObject(int id)
     return 0;
 }
 /* 0x500c20, collects the offers of the goods id from the 0x58 buildings into gm_Offers (count gm_NOffers): the market building offers what its market object (gm_FindMarketObject) holds, any other building flags the goods in its store object (0xff) and offers what its stall (0x2a) holds; the supply is the stall's amount (gm_ListAmount) less a quarter of its stock (gm_ListStock) times the goods' +0x1c, not below 0; each offer's price is gm_GoodsPrice(goods, ai_OwnPlayer) times the building's price factor, and the offers are sorted by price, highest first. Returns 0, 1 without the tables
-   @stuck match-deep 2026-11-14: still 47 ins. Kept: the building walk counts up (for (k = 0; k < 0x58;
+   @deep match-deep 2026-11-14: still 47 ins. Kept: the building walk counts up (for (k = 0; k < 0x58;
    k++, b++), the same code as the decompiled countdown). Read: the two remaining differences are one
    allocation fact and its consequence: the original rematerializes the zero register esi in a block of its
    own at the end of the body (0x500de3 xor esi,esi, the type == 0 skip jumping past it to the latch), ours
@@ -4514,7 +4514,7 @@ void * mem_Alloc(int size, char *tag);                   /* 0x4223c0 */
 unsigned short * gm_AllocRaum(unsigned char *b, unsigned n);
 
 /* 0x501580, creates a building of the kind k for the owner own (a character slot, 0xffff none) in the next free instance (gm_FindFreeBuilding): a new id (ai_NextObjectId), the owner and master words, the start values (budget 0x7d00, wage rate 100, level 100, price factor 1.0, no smoke effect), a player's production setting (ai_ProdSetting), a name picked at random from the up to 12 names of its kind that no building has yet (the kind's own name when none is free; "Building name too long: %s" is the unused error text), the objects of its prototype (the rooms of the kinds 2 / 6 by gm_AllocRaum, the others while no room came before), its main room and the per-kind extras: the creation time and the owner's netId for the kinds 4 .. 7, -1 for 0xb .. 0xd, 10 / 3 / 5 for 0xe .. 0x10, the object 0x1b5 for 0x14 .. 0x16, the "f3_gm:PlantMap" of 0x1e, the price factor 0.8 of 0x1e .. 0x20, the graveyard of 0x48 .. 0x4a, the "AHM_INFO" block of 0x4b .. 0x4d; then the capacities and the kind's stock (gm_SetCapacities, gm_StockBuildingObjects). Returns the building, 0 when there are no tables or no free instance
-   @stuck 145 -> 103 ins (bytes 1147 -> 552): bt = (GMBTYPE *)base + k computed BEFORE b->type = k (the
+   @deep 145 -> 103 ins (bytes 1147 -> 552): bt = (GMBTYPE *)base + k computed BEFORE b->type = k (the
    move-line round: base now in edi, k in edx, the whole prologue and early returns equal), g = GM_GOOD(id)
    read at both type tests (the materialized address), u = bt->objs[i] index loop. Left: (1) the objs loop:
    the original keeps any in edi (loaded from its top slot before the loop) and the objs[i] IV in the slot
@@ -5281,7 +5281,7 @@ void gm_ShowBuildingObjects(unsigned char *b)
     }
 }
 /* 0x502eb0, lists the characters working in the building b (their building, bld, is b) into out and returns their number (also out[0]): out[1 ..] (0xc) those with the title of the kind's first job rank (+0x22f), out[0xd ..] (0xc) of the second (+0x230), out[0x19 ..] (0xc) the others, out[0x25] the one whose job is one of the kind's two jobs (+0x223 / +0x224, both set); the lists are filled with 0xffff
-   @stuck 98 -> 74 ins: the 0xffff fills as plain out[1 + j] / out[0x19 + j] loops with the list pointers
+   @deep 98 -> 74 ins: the 0xffff fills as plain out[1 + j] / out[0x19 + j] loops with the list pointers
    set after them and the kind pointer first (out then takes edx as in the original). headers sample:
    insensitive. Read: the original keeps the title IV in esi, i in edi, p3 in ebp (sharing the second
    fill's lea), byte temps in ebx, out in edx, and k / p1 / p2 in slots with n in out's argument slot (inc
@@ -5486,7 +5486,7 @@ int gm_BuildingJob();                     /* 0x5048e0 */
 int gm_TitleGroup(int n);                /* 0x504ad0 */
 
 /* 0x503530, the permission bits of the character p in the building b (or, without a building, for the object o or the character c): what he may do there, by the class byte of the building's type record (a case per class: the master (+0x25) and the owner (+0x27) compared with p, the six job bytes at +0x223 of the type record searched for the job of p in the type (gm_TitleJob); class 0x1d is ai_PermissionBits1d). Bits seen: 0x1 enter, 0x800 led by p (c's building is owned by p), 0x4000 / 0x5000 / 0x2200 granted per object and job; the exact meaning of each bit is open. With gm_AllowAll everything is allowed (-1, -2 for the classes 3 / 0x21); a building without owner (0xffff) allows nothing
-   @stuck match-deep 2026-11-14: draft 42 -> shape 38 ins. Fixed: no goto fin (the obj == 0 exits of the
+   @deep match-deep 2026-11-14: draft 42 -> shape 38 ins. Fixed: no goto fin (the obj == 0 exits of the
    cases 0xb.., 1/3/f, 7 and the no-building branch written as obj != 0 conditions; VC6 threads the known
    obj test, shape, all four needed), the job scans as plain for loops (= the do-while code). Left: the
    same two placements as before: the split reload of b (mov ebx,[esp+0x1c] + the object test) laid out
@@ -5755,7 +5755,7 @@ void gm_ReleaseCharacter(ORDCHAR *c)
    the class 1 loses an inhabitant, the two building links are cleared. mode 0 keeps the record ("holding data");
    otherwise the record is removed for good: the count of the living (ai_CharCount) drops, its netId is cleared in
    every relative list, the record zeroed and freed (id 0xffff, netId -1, no relatives); mode 1 logs "permanently"
-   @stuck headers sample: insensitive (one codegen in 32). The hunks are one allocation chain: the original
+   @deep headers sample: insensitive (one codegen in 32). The hunks are one allocation chain: the original
    hoists ch->netId out of the crime loop into ebx (mov ebx,[esi+4] before the loop), so the evidence
    loop's peer->netId temp takes ebp and splits c * 0x21c into [esp+0x18] (the frame's extra 4 bytes, the
    reload after the test); ours reloads ch->netId per record and gives peer->netId ebx. Tried (dcp try, all
@@ -7753,7 +7753,7 @@ void gm_InheritEstate(ORDCHAR *dead, ORDCHAR *heir)
    starts anew: health 100, age 16, v194 3, the sums and counters 0, no relatives, its pregnancy, life values and
    skills reset. The announcement goes into out: 0x1c4f (name, start money), the kept buildings, 0x1c50 and at most
    6 of the buildings lost ("and n more" 0xb6)
-   @stuck match-deep 2026-11-14: 50 -> 38 ins. Fixed: the opening assignments in the order best, own, n,
+   @deep match-deep 2026-11-14: 50 -> 38 ins. Fixed: the opening assignments in the order best, own, n,
    bestv, pl (120-order round: the prologue's stores and pl in ecx as the original), the 0x31 message's
    flags stored before its time (720-order round), the heirs list printed by a plain loop with break at 6
    and an if (i < n) 'and n more' after it (the decompiled in-loop i < n re-test, same code), no dead h = 0
@@ -8657,7 +8657,7 @@ int gm_BuildingLevel(char *c)
    of the kinds 5 (out[10]), 7 (the goods of the queries 0xe8 / 0xf0 for the own player, out[0xc] / out[0xf], and
    out[0xd] / out[0xe]) and 0x16 (out[0x13]), out[0x11] the income, out[0x14] income - costs; nothing but zeros
    when id is not the owner. Returns 0 when costs and income are both zero, else 1
-   @stuck 97 -> 95 ins: the wage slots as plain out[6 + j] / out[4 + j] index loops (VC6 builds the slot
+   @deep 97 -> 95 ins: the wage slots as plain out[6 + j] / out[4 + j] index loops (VC6 builds the slot
    pointer in out's register itself, as the original). Read: the frame is 8 bytes (income at [esp+0x10],
    the kind pointer at [esp+0x14]); the original spills cost into the out parameter's slot after the
    character walk (out reloaded into ebp), keeps income memory-homed and only loads it into edi around the
@@ -9398,7 +9398,7 @@ int gm_BuildingEvents(unsigned owner, int b, int c, int *out)
     return n;
 }
 /* 0x50a250, the credit offers of the bank b to the person p: up to cnt offers (amount, term 2 .. 7, interest) written to out; returns 3, or 0 when b has no owner, p or cnt is 0 or the bank already has 9 credits running (gm_BuildingEvents). A player (kind 6) gets the bank's kept offers (ORDBLD.credits) while one of them is taken (-1) or within the bank's money (gm_SumSlotAmounts); before day 6 a bank of a computer owner tops its money up to 0.2 of the player's worth (at most 64000, cm_SendMoveGoods). New offers: at most worth (gm_GetWorth) x 0.3 (0.6 / 0.45 for the orders 0xf / 0xb of ord_DispatchOrder) and half the bank's money, each 70 .. 100 % of it (the first 1/4, the second 1/2); the interest lies between 0.7 and 1.5 of the bank's v65 by the term, less (liking - 50) / 20 (gm_Liking) for a player or a computer player at a computer bank; a player's offers are kept
-   @stuck match-deep 2026-11-14: 38 -> 7 ins. Fixed: both 0.5 factors read cm_DoubleHalf (M10), all = 0
+   @deep match-deep 2026-11-14: 38 -> 7 ins. Fixed: both 0.5 factors read cm_DoubleHalf (M10), all = 0
    after the guard (all in esi, cnt in edi as the original: 38 -> 9), the liking term without the f copy (9
    -> 7), the offers copied back by an index loop. Left: (1) the original zeroes esi (all) right after push
    esi, before the first guard test; all = 0 at the top in any of 12 guard orders swaps esi / edi again

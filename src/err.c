@@ -101,7 +101,7 @@ write:
     }
 }
 /* 0x4215c0, unhandled exception filter: writes <exe>.dbg-symbolized crash info to _crashdump.log
-   @stuck tie-break sensitive (dcp headers sample: 2 codegens in 32 samples, none better than built): 317
+   @deep tie-break sensitive (dcp headers sample: 2 codegens in 32 samples, none better than built): 317
    ins / 1084 bytes left, frame now equal (0x280, text as the code window). Left: register rotation
    ebx/esi/ebp/edi across the whole function, handled at +0x12 vs +0x16 and the crlf/sp slots, the crlf
    init order (byte NUL first vs word first), the ERR_EXC crlf WriteFile tail merged elsewhere (je at

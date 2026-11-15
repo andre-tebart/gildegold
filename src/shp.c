@@ -39,7 +39,7 @@ D2COLKEY d2_TransparentColour = {0};  /* 0x6f0454, the colour key of the transpa
 extern unsigned int d2_HighBitMask32;
 
 /* 0x479d00, makes the light table: every 16 bit colour brightened by add
-   @stuck match-deep 2026-11-14: draft 34 -> shape 20 by two levers: unsigned char r = 0, g = 0, b = 0 at
+   @deep match-deep 2026-11-14: draft 34 -> shape 20 by two levers: unsigned char r = 0, g = 0, b = 0 at
    the declaration (gives the original's store order) and no lim local, 0xff - add written at each of the
    three compares (lim's priority 35 had pushed the zero constant (prio 6, byte-flagged, ebx only) out of
    ebx; with the CSE temp at 25 the zero gets ebx: xor ebx,ebx at entry, cmp eax,ebx, the bl stores). Left:
@@ -128,7 +128,7 @@ void d2_SetLineTable(int *rows, D2SHP *shp)
    transparent colour and takes the box from those, stores every row as skip runs of the transparent colour
    alternating with literal runs, builds the table of row offsets, and returns an exactly sized copy of the
    shape (allocated with mem_Alloc; the scratch shape is freed).
-   @stuck 488 -> 307 ins (draft): rewritten in the siblings'
+   @deep 488 -> 307 ins (draft): rewritten in the siblings'
    form - d2_GrabShape24NoRuns' scans (p = pix + ((i + y) * (pitch & 0xffff) + x + j) * 3 inside the inner
    loop) and d2_GrabShape16Runs' run loop (lines[] / line / run / col / t, the skip loop as while (col <
    s->w && d2_CompareColour(pix + (col + t + x) * 3, ..) == 0), the literal loop with the unsigned entry
@@ -525,7 +525,7 @@ D2SHP *d2_GrabShape16NoRuns(int x, int y, int w, int h, unsigned short *src, uns
    then stores every row as skip runs of zero pixels alternating with literal runs, builds the table of row
    offsets, and returns an exactly sized copy of the shape (allocated with mem_Alloc; the scratch shape is
    freed).
-   @stuck 203 -> 199 ins: the box bounds as unsigned int with (int)(x & 0xffff) compares and (unsigned
+   @deep 203 -> 199 ins: the box bounds as unsigned int with (int)(x & 0xffff) compares and (unsigned
    short) casts at the stores (the original's dword stores / masked loads, as d2_GrabShape16NoRuns), init
    order minx = w; maxy = 0; maxx = 0; cnt = 0; miny = h. The colour-key compares (gb as one word) match
    since the keys are 3-byte D2COLKEYs. Left, in order of size: (1) the palette index register of the
@@ -887,7 +887,7 @@ int d2_ShpBlit16ScaledLit(int x, int y, D2SURF *surf, D2SHP *s, unsigned char n)
 
 /* 0x47b900, draws a 16 bit run-length shape half dark: every pixel of the literal runs is replaced by its grey
    (r + b) * 0.2f + g * 0.59f through dd_RGB, the skip runs are stepped over.
-   @stuck 128 -> 2 ins (draft -> shape): r, g, b are unsigned char (dd_SplitRGB's out types), the grey
+   @deep 128 -> 2 ins (draft -> shape): r, g, b are unsigned char (dd_SplitRGB's out types), the grey
    written out in each dd_RGB argument (a named unsigned char goes through a slot, an int one reallocates
    everything), k / m locals as the sibling, run / cp / line init order and line += pitch before cp = run
    (frame order line, cp, i). Left: the three reloads at the run loop's exit edge, ours mov ecx,[s]; mov

@@ -1001,7 +1001,7 @@ char d3_CornerCB(D3OBJECT *obj, D3CORNERCTX *c)
    four vertices nearest to the screen corners (d3_CornerCB), picks three of them by their (normalized) uv and
    intersects the view ray through (sx, sy) with the plane of the triangle, once for each of the two triangles
    of the quad; returns 1 and the uv when the ray hits one
-   @stuck deep pass: fixed the M10 (1e-07f: the original compares fabs(den) with the double of the float
+   @deep deep pass: fixed the M10 (1e-07f: the original compares fabs(den) with the double of the float
    1e-7) and rebuilt the locals as the original's frame shows them: the edge, ray, hit, corner and t*d
    vectors are D3VECTOR4 (a, b at +0x1c/+0x2c, h +0x3c, d +0x60, p +0x70, td +0x80, 16 bytes each: the
    frame is now 0x108 like the original's), best[3] as an array (+0x10), the second triangle written with

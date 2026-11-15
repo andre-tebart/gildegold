@@ -359,7 +359,7 @@ typedef struct SAVESLOTVIEW {               /* 0x220, one slot of the save / loa
    takes the slot 1 and "AUTOSAVE" the slot 0 whatever slot says, and the slots 0 / 1 take no other name (a
    case-insensitive compare); a free slot (win -1) gets the kind byte and a copy of the request. Returns the
    slot, -1 when it is taken, the name does not fit it or slot is -1. count (0x10) is not read.
-   @stuck insensitive (32 samples). Meaning equal. Now shape 14 ins (was draft 17): the arms 'if (slot ==
+   @deep insensitive (32 samples). Meaning equal. Now shape 14 ins (was draft 17): the arms 'if (slot ==
    0) { if (_strcmpi(name, AUTOSAVE) == 0) goto fill; } else if (slot == 1) {.. QUICKSAVE ..} else if (slot
    == -1) goto done; else goto fill; slot = -1; goto done;' make VC6 cross-jump the two compare tails into
    one push edi / call _strcmpi / or ebx,-1 block as the original does, but VC6 keeps the slot==1 arm's
@@ -565,7 +565,7 @@ char *_itoa(int value, char *buf, int base); /* 0x5e56c4, the library's integer 
    money and difficulty (the texts 0x1cc5 / 0x1cc6, the difficulty name 0x14413f0). A second pass over
    the 16 records gives every still free slot an empty-slot caption ("Slot %i" 0x14414e0), the screen
    image 0x766320 and the text 0x1cc7. Returns nothing.
-   @stuck match-deep 57: draft 103 -> shape 4 ins. Kept: the text bases as one select each ((compact ?
+   @deep match-deep 57: draft 103 -> shape 4 ins. Kept: the text bases as one select each ((compact ?
    0x27b : 0x253) + offset; the (compact ? 0x28 : 0) + 0x253 + offset spelling folds into one lea: 99 ins
    of the diff), the meaning fix (the 0x130 offset is hdr+0x60, not +0x5c), the list walked as SAVEREQUEST
    *rec (same code). headers sample: insensitive. Left order 8 / 4 ins at the file loop's entry: the
@@ -4026,7 +4026,7 @@ void ai_PositionShare(float a, float b, SPHEREVOLUME *rec, float *out)
    the current velocity), the start and the current position are pos, the wind is ai_DefaultEffect with
    its scale clamped to 0 .. 60 (ai_WindGain) and the vector scaled by it; the surface and the mass, state 1
    (in flight), the clock d3_Time (ms) and 0 steps complete the record. Returns 1.
-   @stuck match-deep 57: draft 80 -> shape 4 ins. Kept: ai_GetDefaultEffect through a function pointer (the
+   @deep match-deep 57: draft 80 -> shape 4 ins. Kept: ai_GetDefaultEffect through a function pointer (the
    only spelling that stops VC6 sinking the call past ai_SphereVolume: plain / cast-call / (*f)() / block
    extern int f() all = the sunk code, 72 ins), ai_FloatZero (block extern) for the clamp (M10), mass
    before area (area2: the last hunk). headers sample: insensitive (32 samples, one codegen). Left fpu 12 /
@@ -4133,7 +4133,7 @@ int ai_ScatterShot(SHOTREC *shot, float sideSpread, D3VECTOR *side, float otherS
    the position moves by velocity * step in inches. When ai_ShotHitsGround finds the move from the old to the
    new position hits the ground and the ball made more than 50 steps, it lands there: state 2, the energy
    0.5 * mass * v^2, returns 0. Returns 1 while it flies.
-   @stuck match-deep 58: 308 -> 28 ins, shape (the same body as ai_StepShot, which got the same). Levers:
+   @deep match-deep 58: 308 -> 28 ins, shape (the same body as ai_StepShot, which got the same). Levers:
    shared ai_FloatZero / ai_FloatOne in the sign; the drag chains fully nested in the original's load order
    (DRAG / WINDDRAG macros); fall = ai_Gravity * step; D3VECTOR4 locals v, next, wind, d, a, b, m (frame
    0x98); a and b built in place (a = d + wind; a *= perMass per field; a.y -= fall); the half sum v = b +
@@ -4243,7 +4243,7 @@ int ai_StepShot(SHOTREC *shot)
 /* 0x5dc9d0, moves a cannon ball in slow motion (1318 B; gv.c 0x4edf80 calls it instead of ai_StepShot when the
    effect's +0x14 flag is set): ai_StepShot instruction for instruction with the step ai_ShotHalfStep (1/148 s)
    for ai_ShotStep, in the gravity, the per-mass factor and the position move.
-   @stuck match-deep 58: 308 -> 28 ins, shape (the same body as ai_StepShot, which got the same). Levers:
+   @deep match-deep 58: 308 -> 28 ins, shape (the same body as ai_StepShot, which got the same). Levers:
    shared ai_FloatZero / ai_FloatOne in the sign; the drag chains fully nested in the original's load order
    (DRAG / WINDDRAG macros); fall = ai_Gravity * step; D3VECTOR4 locals v, next, wind, d, a, b, m (frame
    0x98); a and b built in place (a = d + wind; a *= perMass per field; a.y -= fall); the half sum v = b +

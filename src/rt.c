@@ -553,7 +553,7 @@ void rt_InitControls(int *out)
 /* 0x4be940, the dialog "misc/routing_edit_point" for route point p of the list rt_EditRoute: the goods to load
    (loadSlots) and to unload (unloadSlots), up to three each (by the cart type), with their amounts; a button deletes the
    point and rebuilds the marks on window win
-   @stuck tie-break sensitive: dcp headers sample gives 2 codegens in 32 samples, none better than built
+   @deep tie-break sensitive: dcp headers sample gives 2 codegens in 32 samples, none better than built
    (draft 35 ins). One round of spellings for the two -1 webs (original: objs1 stores from 'or edx,-1',
    objs2 from 'or eax,-1'; ours one 'or eax,-1'): objs1/objs2 interleaved (35 ins, slots 2), objs2 first
    (35), chained a=b=c=-1 (37) / reversed chain (= control), objs2[k] = objs1[k] (= control), gm_ListStock
@@ -1194,7 +1194,7 @@ int rt_SaveRoutes(void *f)
 /* 0x4c0040, "rt_load": reads the route points of a saved game from f (a count, then per point its cartId,
    buildingId, loadSlots, unloadSlots) and rebuilds each cart's route from the consecutive points with its id;
    returns 0 on a read error
-   @stuck insensitive (headers sample: 1 codegen). Rewrote the rebuild loop with buf[i] fields and r =
+   @deep insensitive (headers sample: 1 codegen). Rewrote the rebuild loop with buf[i] fields and r =
    &buf[i] only for the r != 0 test: frame 0xc -> 0x8 (matches), 327 -> 286 bytes. Left: the original
    pushes ebp in the prologue and keeps i in ebp in both loops, buf in ebx (kept in ebx into the second
    loop: 'jmp' past 'mov ebx,[buf]' on first entry), c spilled to [esp+0x10] and reloaded per inner

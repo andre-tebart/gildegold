@@ -69,7 +69,7 @@ void mov_Exit(void)
     CoUninitialize();
 }
 /* 0x422dc0
-   @stuck the zero constant and id: in the original id = 0 and every literal 0 (fopen/hwnd/m tests, the
+   @deep the zero constant and id: in the original id = 0 and every literal 0 (fopen/hwnd/m tests, the
    NULL pushes) share esi (return paths mov eax, esi; later id = mov_NextId++ lands in esi), file is ebx, m
    ebp, hwnd edi; ours keeps the zero in ebx/ebp, spills id to [esp+0x28] (the extra slot pushes wc and the
    later slots 4 down) and swaps file/m (asmdiff --regs ebp=ebx,ebx=ebp leaves the zero/id hunks, the wc

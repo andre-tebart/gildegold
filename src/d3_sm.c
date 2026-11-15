@@ -52,7 +52,7 @@ int d3sm_GetGround(unsigned int x, unsigned int z, D3TERRAIN *t)
     return d3sm_Ground[t->types[idx]];
 }
 /* 0x45dc00, samples the heights and ground types of the terrain into the map
-   @stuck draft 340 ins -> 160 this session. Read against the original: the midpoint fill re-reads h->data
+   @deep draft 340 ins -> 160 this session. Read against the original: the midpoint fill re-reads h->data
    for the second average after the first store (the source had no a/b/c/d locals: the four corner bytes
    are read in place, VC6 CSEs them into the sum and the first average and reloads data[A] / data[C] for
    the second), the average is int (cdq/sar) and the /5 unsigned (mul 0xcccccccd): kept in the unsigned
@@ -156,7 +156,7 @@ char d3sm_BoundsCB(D3OBJECT *obj, D3VECTOR4 *box)
 }
 /* 0x45e210, d3_ForEachObject callback: maps the object's vertices into the height map and queues its
    shadow casting triangles
-   @stuck draft 123 ins -> shape 12 ins this session (meaning-neutral respellings read off the original: no
+   @deep draft 123 ins -> shape 12 ins this session (meaning-neutral respellings read off the original: no
    mesh local before the vertex loop, the loop bound re-reads obj->info's nkeys; h->size compared in place
    (VC6's CSE temp is the original's [esp+0x10]); nrm scoped to the triangle loop body (shares inv's slot,
    frame 0x24 -> 0x18); one final return (callee-saved pushes at entry); tri->cast stored before tri->solid
@@ -243,7 +243,7 @@ void d3sm_Replace(D3SM *h, int from, int to)
     }
 }
 /* 0x45e620, (re)builds the map from the terrain and the objects of the default scene
-   @stuck re-read the frame with dcp frame / framemap: the code matches apart from slots (both keep mx.z on
+   @deep re-read the frame with dcp frame / framemap: the code matches apart from slots (both keep mx.z on
    the FPU and store only mx.x/y, both pack bot or the outer block counter into t's dead slot [ebp+0xc] but
    swapped: the original bot, ours the counter i; the original packs i with ax at [ebp-4], ours gives ax
    its own slot at -0x60). Array order from ebp, the original: mx/nrm -0x20 (shared), uv -0x38, j -0x3c,

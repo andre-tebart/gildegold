@@ -1008,7 +1008,7 @@ int d3t_MoveCameraPath(int time, int n, ...)
     return 1;
 }
 /* 0x413960, moves obj along the n objects in path (null entries are skipped) within time
-   @stuck i/k register swap (ours i=ecx k=edx, original i=edx k=ecx; the original reloads k, step, i right
+   @deep i/k register swap (ours i=ecx k=edx, original i=edx k=ecx; the original reloads k, step, i right
    after d3_PointToWorld and keeps k in ecx to the end, ours reloads i after storing k and reloads k into
    edx after the loop). headers sample: insensitive (32, one codegen). dcp try: decl order k,i / for
    (k=1,i=0;..) / k=1 before keys[0].time / o=path[i] separate / path[i] twice / continue form / k=k+1 /
@@ -2258,7 +2258,7 @@ DDSURFACEDESC2 d3t_SnowMip32[9] = {0};      /* 0x1466f00 */
    NONMATCHING: ~140 asm lines. Control flow and frame match; left: the D3_ZERO slots, height stored
    via the ddpf pointer in the mip loops, mul/store order of the 16/32-bit pitch, and in the dither
    loop the slots of n/up/row/down and n being kept in a register (the original reloads it).
-   @stuck tie-break sensitive: dcp headers sample gives 3 codegens in 32 samples, none better than the
+   @deep tie-break sensitive: dcp headers sample gives 3 codegens in 32 samples, none better than the
    build (draft, 129 ins / 413 bytes, size 1978 vs 1986); the declaration set decides its allocation, park
    it for the unit's declaration pass. Left: code 147 / slots 56 / regs 6 hunks (D3_ZERO slots, the ddpf
    height stores, the 16/32-bit pitch mul/store order, the dither loop's n/up/row/down slots and n kept in

@@ -339,7 +339,7 @@ show:
 }
 /* 0x521150, a modal message box (the form "misc\\Messagebox" in the sizes by the flags 2 Autosize / 0x10 BIG / 0x20 VERY_BIG, 0x100 the pergament "NONE_PERGA", 8 all messages): shows the text, loops
    sv_RunFrame until a button, waits at most 500 ms with flag 4, a countdown bar with flag 0x80 and returns the button + 1 (0 for none / cancel). Not reentrant (sv_MessageBoxOpen, 0x6f2350)
-   @stuck match-deep s53: 86 -> 65 ins (draft -> shape). Levers that moved: the frame loop as a plain while
+   @deep match-deep s53: 86 -> 65 ins (draft -> shape). Levers that moved: the frame loop as a plain while
    (sv_RunFrame) with flags & 0x40 / 0x80 / 4 tested in the body (VC6 hoists them, and promotes bar from
    its -1 slot to esi for the loop as the original: else arm mov esi,[bar]); i = 0 before ret = 0. Tried,
    no gain: a copy local for the slider (n = timed ? slider : bar: -1 propagated, or esi,-1), int bar[1],
@@ -1005,7 +1005,7 @@ int gm_ResearchClass(int k, int *out);         /* 0x50b090, f3gm.c, the research
    then reads the cell map <name>_C.bmp: a white pixel marks a cell, the pixel right of it one of the 15
    sv_GroundplanColours, the n-th colour the n-th good of the building's type (kinds 2 / 6, its slot list) or
    the n-th offered object (type kind 2); one picture button per cell into sv_GroundplanButtons
-   @stuck 49 -> 4 ins: the cell map's y loop written for (y = 0; sv_GroundplanSurf != 0 && y <
+   @deep 49 -> 4 ins: the cell map's y loop written for (y = 0; sv_GroundplanSurf != 0 && y <
    sv_GroundplanSurf->h; y++) (loop-invariant test in the condition) is top-tested as the original (while
    (1) + break / goto out give the same code). Left: 0x5228c4, the original materializes the goods record
    address (mov ecx,eax; add ecx,ebx; mov cl,[ecx]) where ours folds it (mov cl,[eax+ebx]) for kind =
@@ -1163,7 +1163,7 @@ loaded:
    building (or the n-th offered object) and of the fallback building: on a left click one the player may use
    (ai_ScriptQuery 0x19, gm_PermissionBits 0x4000) is entered (ai_SwitchRoom) or selected for the panel
    (sv_SelectPanelObject), otherwise its caption is shown; clears sv_ScreenDirty
-   @stuck declaration set insensitive (32 samples, one codegen). Left: the goods-kind load in both slot
+   @deep declaration set insensitive (32 samples, one codegen). Left: the goods-kind load in both slot
    loops, ours 'mov cl,[eax+ebp]', the original 'mov ecx,eax; add ecx,ebp; mov cl,[ecx]' (code 8). All =
    control: the table read as ((AIGOOD *)ai_Goods)[id].type, ai_Goods[id * sizeof(AIGOOD)], (AIGOOD
    *)ai_Goods + id, *(ai_Goods + id * 0x41), *(char *)&ai_GoodsT[id], *&..type, (char)((unsigned char
@@ -1458,7 +1458,7 @@ int cm_SendFieldValues(void);                     /* 0x4c49e0 */
    the time an emptied job was left, he_FreeEvent, the pause script, cm_SendExSetHE for an empty job); without
    an old job a running "Pause" / "pause" script of the model is stopped. Then he joins g (sv_AddGroupMember)
    and the new job kind (field 0x180) is sent and the job set when it changed
-   @stuck match-deep s53: 88 -> 74 ins (draft -> shape): sv_RemoveGroupMember's id re-read from the record
+   @deep match-deep s53: 88 -> 74 ins (draft -> shape): sv_RemoveGroupMember's id re-read from the record
    (((SVCHARREC *)ai_Chars[c])->id, one of 19 ch uses; a 190-variant subset run, singles and pairs). Left:
    ch and old in swapped registers through the whole function (ours ch esi / old ebx, the original ch ebx /
    old esi: push ebx before push esi, mov ecx vs mov eax for o = ch->bld). Tried, no gain: a second pass
@@ -2447,7 +2447,7 @@ void sv_BorderCameraView(void)
    the corners). The camera moves by the velocities rotated into the view (by the view's heading, or by the
    matrix rows when it looks straight down), slower inside a building, clamped to the height map 20 cells in,
    unless the move equals the last one (sv_ScrollLastMove). Returns 1 when the camera moved
-   @stuck deep pass: 146 -> 30 ins (1630 -> 252 bytes), frame now 0x80 like the original. Earlier: read
+   @deep deep pass: 146 -> 30 ins (1630 -> 252 bytes), frame now 0x80 like the original. Earlier: read
    whole and reconstructed (look test, dt, ramps, decays, slow-down, AxisPair rows, dead dst stores,
    clamp); tried keeping a / fwd[2] / 0.1 / block layout without success. This pass: the move flags are two
    (xmoved / ymoved, the corners set both, the decays are 'if (!xmoved)' / 'if (!ymoved)' after one flat
@@ -2686,7 +2686,7 @@ static const float sv_ZoomPixelsPerUnit = -666.6667f;  /* 0x5eeb78, .rdata: -1 /
    alone drags the map by the mouse delta scaled by the scroll speed option, rotated into the view and clamped to
    the height map 20 cells in. The wheel alone zooms by 0.1 a notch. Each change goes into the player's camera
    record. Returns the activity: sv_MouseCamActive - wheel down + wheel up + sv_ZoomTurnOn
-   @stuck deep pass: 458 -> 182 ins. Earlier: read whole and reconstructed (free-mouse start, zoom/turn
+   @deep deep pass: 458 -> 182 ins. Earlier: read whole and reconstructed (free-mouse start, zoom/turn
    start and y range, release, both-button zoom/turn, wheel, drag with dead dst stores and the clamp, the
    return); left were allocation, frame 0x7c vs 0x90 and the -666.6667 constant. This pass (the
    sv_ScrollCamera lessons): -666.6667 is a static const float of the unit (sv_ZoomPixelsPerUnit, 0x5eeb78,
@@ -4880,7 +4880,7 @@ void sv_RunFramesUntilStopped(int id)
    a goto message to the building's room object 0x146), the others (up to four) are collected into one 'C' message to
    the player with the clicked and the owning building's ids; each leaves the job's member slots and the selection.
    The job is announced (cm_SendExSetHE) afterwards
-   @stuck match-deep s53: tried, none closer (91 ins): job's uses re-read as c->job (every subset of up to
+   @deep match-deep s53: tried, none closer (91 ins): job's uses re-read as c->job (every subset of up to
    three of ten uses, 129 variants: best 91 ins / 595 bytes), kind = 'C' after job = c->job (= control),
    job->kind into a temp before the kind store (595 bytes), c->bld tested before c->job (87 ins but the
    original tests c->job first: wrong order), cur / job initialisation moved to every position (= control
@@ -5006,7 +5006,7 @@ void sv_SendSelectedToBuilding(void)
    contact's room); with a clicked building through sv_SendSelectedToBuilding. Then it rebuilds the selection
    state: the grey look of the characters whose flag changed, sv_SelectedChar, ai_SelectedCount and the pointer
    items of those in their own building; a right release drops the selection
-   @stuck match-deep 54: draft 305 -> 159 ins (frame now 0x94 as the original). Kept: cell as an
+   @deep match-deep 54: draft 305 -> 159 ins (frame now 0x94 as the original). Kept: cell as an
    initialized block local of the per-character send (int cell = 0 next to off[]: 305 -> 212, the original
    zeroes ebx per character and shares it with the constant 0), the send's character fields read through
    ai_CharsT[j] except health / model / (int)c in the test (subsets m505 of 9 uses: 212 -> 170; a second
@@ -6356,7 +6356,7 @@ void sv_EndBand(void)
    (gm_PermissionBits 0x800) whose body stands in d3_DefaultScene and has mesh data; its screen position is the
    centre of the body's first 8 transformed vertices (the bounding box corners, camera space) projected with
    d3_ScaleX / d3_ScaleY around d3_CenterX / d3_CenterY (the 1 / z truncated to an int, as the original does).
-   @stuck one copy left: the original loads info into ecx ('mov ecx,[eax+0x1cc]; test ecx,ecx') and at the
+   @deep one copy left: the original loads info into ecx ('mov ecx,[eax+0x1cc]; test ecx,ecx') and at the
    loop entry 'mov eax,ecx; mov ecx,8; mov eax,[eax]'; ours loads info into eax and 'mov eax,[eax]; mov
    ecx,8' (code 5, regs 4). Declaration set insensitive (32 samples, one codegen). Applied ai_FloatZero /
    cm_DoubleOne for the M10 literals (same ins). Every one = control: info tested in its own if / nested
@@ -6419,7 +6419,7 @@ void sv_UpdateBand(void)
 }
 /* 0x52f0d0, sv_UpdateBand for the 0x8000 mode of sv_RunFrame: the same band and projection, but a character is
    selectable when ai_LedSelectBits gives 0x800 (led by the player's character) instead of gm_PermissionBits.
-   @stuck the same single copy as sv_UpdateBand (see its stuck reason for the full list, all = control
+   @deep the same single copy as sv_UpdateBand (see its stuck reason for the full list, all = control
    there): the original 'mov ecx,[eax+0x1cc]; test ecx,ecx ... mov eax,ecx; mov ecx,8; mov eax,[eax]', ours
    info in eax (code 5, regs 4). Applied ai_FloatZero / cm_DoubleOne (M10 cleared, same ins). Tried here as
    well: a static __inline helper for the 8-vertex sum (info as its parameter) and one returning info->keys

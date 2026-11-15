@@ -159,7 +159,7 @@ extern float ai_FloatZero;  /* 0x5eb788, the shared 0.0f (cm.c) the weight is co
 /* 0x459300, transforms the animated mesh's vertices: per active slot it blends the two key frames' base and
    scale by the blend weights and adds the result into info->keys, then applies the object matrix (tracking the
    z range in d3_MinZ / d3_MaxZ when the vertex normal bit is set)
-   @stuck insensitive (headers sample: 1 codegen). The original's weight block reads like D3VECTOR4 locals
+   @deep insensitive (headers sample: 1 codegen). The original's weight block reads like D3VECTOR4 locals
    filled field by field and scaled by sl->weight (x, y loaded on the FPU and popped dead after the
    products, z by integer mov): that spelling without any volatile (D3VECTOR4 s1, b1, s2, b2, q1, q2; s1.x
    = f1->scale.x ... s1.x *= sl->weight) gives frame 0x74 = the original's but 211 ins / 1232 bytes (the

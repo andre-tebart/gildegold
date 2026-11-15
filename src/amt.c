@@ -108,7 +108,7 @@ void amt_InitTable(void)
    columns) and 0x5edef0 (5 rows, an int status key, 9 columns) by the rank (amt_KindColumn, 1 .. 6: b's for 0x5edc90, a's for 0x5edef0) and the status bits +0x1cc (0x400 .. 0x2000, 0x200 give the keys
    0x24 .. 0x27, 0x23); mode (>= 2: plus the absolute value of the entry, >= 3: plus 10.0); with flag the friendship value of amt_GetKind / 0x4f2720 is taken off
    (a = b's party: added, mode 2: times 0.75)
-   @stuck Fixed first (own commit): the amt_TabB column is a's rank (mov cl,[edi+0x166], edi = a). Then 105
+   @deep Fixed first (own commit): the amt_TabB column is a's rank (mov cl,[edi+0x166], edi = a). Then 105
    -> 14 ins: a's status key written as the full five-way chain like b's (VC6 folds it to test ch,0x3c and
    keeps the 0x23 store to a's dead slot [esp+0x54], as the original), r = 0 after the amt_KindColumn call
    (r moves to b's dead slot [esp+0x58]), and the TabA search as break-then-if (i < 15). Left: mode is
@@ -237,7 +237,7 @@ int amt_GetOfficeRate(char *c, int x, float *out)
    pointer induction, hence the do-while: a while is rotated and peels the first test); the two-person kinds then repeat it for the second
    office (f1: the first office took it, f2/f1 together: an office was open) and send the second office's index as m.o2. The final checks
    repeat the open test of the plain kind.
-   @stuck 51 -> 14 ins: the three send sites are written out in full (Begin; Send; End; return) instead of goto
+   @deep 51 -> 14 ins: the three send sites are written out in full (Begin; Send; End; return) instead of goto
    send - the original has three cm_BeginGroup calls and VC6 cross-jumps only from the cm_SendApplication call
    (the lea of &m differs in register per site); if (f2) o2 else send arm; m.id before m.o1 in the first-office
    block and the !f2 arm. Left: the plain path (owner/state/cnt checks then the send) stores o1 then id (ours:
@@ -1847,7 +1847,7 @@ void amt_SendOfficeLost(unsigned short *p, int v)
    at least 3 were seen, the richest (gm_GetWorth 0x50a640) replaces the holder of the 0x1c office (its rank 1 .. 6) or, when the rank distance to the
    holder is above 5, gets the 0x1d office; a free office of the two is filled directly. The old holder gets the lost-office news (amt_SendOfficeLost)
    and the new one the office news (amt_SendOfficeNews). No return value, messages only.
-   @stuck Read whole again: meaning equal; 183 -> 51 ins (left: one register swap and two scratch picks).
+   @deep Read whole again: meaning equal; 183 -> 51 ins (left: one register swap and two scratch picks).
    Kept: the send arms in the original's order (abs(cur rank - pick rank) < 6 first with Lost/News then the
    1..6 test; else the 1..6 test b-pick/a-0 0x1c first; the M8 crossed calls are gone), the rank distance
    as abs() of the two rank bytes with no rank local (VC6 keeps pick's rank in cl across the jge; a byte
@@ -2082,7 +2082,7 @@ void amt_ElectKind22(void)
    happens. When the town's building (kind 0x17 .. 0x1a) does not exist yet it is built for the player: the building type 0x38 / 0x3b / 0x3e / 0x41 goes on a
    free plot (ai_FindBauplaetze, a random one, else the first; none: "amt_calc_zuenfte(): could not find a free place...") with the build message 0xd
    (cm_SendLongMessage). The name is the function's own error string at 0x60f11c.
-   @stuck 84 -> 28 ins: the file name 'gb_<NAME>' goes to its own block buffer gb[64] (the original's lea
+   @deep 84 -> 28 ins: the file name 'gb_<NAME>' goes to its own block buffer gb[64] (the original's lea
    [esp+0x40] strcpy/strcat/_strupr/sprintf target is cand's slot, buf stays at 0x178 for ai_BuildingName /
    ai_FindBauplaetze) - that moved m to 0x80 and cand to 0x40 as in the original; best = 0 in an else arm (VC6
    then keeps best in the zero register ebx with cur's 0 and zeroes j in ebp, as the original; best = 0 before
@@ -2574,7 +2574,7 @@ int amt_ExecuteShareMessage(short *c, int *m)
    Every power takes 8 money of c (cm_SendMoneyDelta), sets the power bit 0x10000000 of +0x1c8 and tells the news (texts
    0x166e .. 0x1685, the channels 0x5fb / 0x5fd / 0x5fe) to the other characters and, when the kind of c is 6, to c itself.
    Returns -1 when the damage roll is <= 0.3 and 1 otherwise, 0 when the message does not fit the office kind.
-   @stuck Re-read whole against the original: meaning equal (the denounce / pair-damage / one-sided arms,
+   @deep Re-read whole against the original: meaning equal (the denounce / pair-damage / one-sided arms,
    texts and channels, dmg sign per arm, the found-in-list test, the 2.55f double constant). Kept:
    util_RandomF() + ai_FloatOne (the pooled 1.0f; clears the M10, same counts). Left as before,
    whole-function allocation per region: original c=esi / t=ebx / ret=ebp in the 0x1e arm, c=ebp / n=esi in

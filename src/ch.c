@@ -1997,7 +1997,7 @@ int ch_TakeObject1(CHARACTER *ch, char *name, D3OBJECT *obj, int frame)
     return 0;
 }
 /* 0x405fb0, action callback: plays a->u.name and drops the object at frame args[0]
-   @stuck headers sample: insensitive (32 samples, one codegen). The one real hunk is 406050: the original
+   @deep headers sample: insensitive (32 samples, one codegen). The one real hunk is 406050: the original
    reloads a->ch for the frame-check ch_SetHandObject, ours forwards ch (edi); the later regs hunks
    (406086, 406095) are the scratch-register rotation that one extra temp gives. Proven: any join with a
    call on one path before the frame check gives the reload (sepcount: count==0 block falls through to a
@@ -2390,7 +2390,7 @@ void ch_ActAnimOnce(CHACTION *a)
         ch_RemoveAction(a);
 }
 /* 0x406e60, turn action: args[0] degrees (args[1]: relative to the z axis), plays "dreh_90_*" and turns
-   @stuck Read 0x406e60..0x4071f0 again; no meaning difference (the proof's 'different conditions' at +0xf3
+   @deep Read 0x406e60..0x4071f0 again; no meaning difference (the proof's 'different conditions' at +0xf3
    was the angle>=0.2 compare spelling). Kept: memset without the redundant f.mid = 0 (the original never
    stores dword 1: 108 -> 88 ins), outer test as !(angle >= 0.2) (and eax,0x100/je as the original: 88 ->
    84), and the store orders found by tryclimb.py (deep-tools, dcp try hill climb): the else block
@@ -2538,7 +2538,7 @@ int ch_FindNear300(CHARACTER *ch, CHARACTER **out)
 }
 /* 0x4072a0, finds a walkable cell (type not 0 or 0xd) near x/z, searching rings of growing radius up to max;
    flags & 1 or 0x10: the one with the shortest way from -> cell -> to (0x10: x/z itself if walkable)
-   @stuck headers sample: insensitive (31). Frame order: VC6 sorts the three 16-byte locals by references
+   @deep headers sample: insensitive (31). Frame order: VC6 sorts the three 16-byte locals by references
    (framesearch: declaration order, names, block scope, struct copies, pointer views, inline distances = no
    move; two extra real src reads, in or out of the loop, give the original's src 0x18 / dst 0x28 / v 0x38,
    one does not). One array D3VECTOR4 p[3] (from, to, cell) gives that order with the same code: draft 88
@@ -2693,7 +2693,7 @@ int ch_CellToCell(D3SM *h, int x, int z, D3SM *to, int *px, int *pz)
 }
 /* 0x407790, the character's cells in ch_PathMap (transport, body, the next path cells), then a corner
    cell for each diagonal step
-   @stuck match-deep 2026-11-10: headers sample insensitive (32, one codegen). Frame read: x and z live in
+   @deep match-deep 2026-11-10: headers sample insensitive (32, one codegen). Frame read: x and z live in
    dead parameter slots (original z in ch's slot [esp+0x1c], x in out's slot [esp+0x20]; ours swapped);
    start = out is the push-ecx slot in both. Slot hunk: out->z = z; out->x = x (store order) puts the slots
    right but swaps the loads (order 8, code 4); a dead z = 0; before ch_PosToCell also puts them right but
@@ -2788,7 +2788,7 @@ int ch_GetWaypoints(D3SM *h, CHARACTER *ch, CHWAYPT *out)
 /* 0x4079b0, walk actions: checks the next path cells against the nearby characters others[0..n-1] and,
    if one blocks the way, marks them in the ground map and searches a new path around them ("ch:GetNewPath"
    is the mem_Alloc tag). Returns the new path length, 0 nothing to do, -1 failed, -2 no way around.
-   @stuck Read the frame again (dcp frame): ours has one 4-byte slot more because the original packs sx with
+   @deep Read the frame again (dcp frame): ours has one 4-byte slot more because the original packs sx with
    the others-pointer temp of the blocker scan ([esp+0x1c]); ours keeps them apart. sx declared in the if (res
    & 1) block (or if (res)) gives the original's frame 0x9b8 and the shared slot, but reorders gx/gz, steps/cx
    and leaves tz/bz swapped (184 -> 250 ins, reverted); sx in a block around the tail (296), gx/gz in the res

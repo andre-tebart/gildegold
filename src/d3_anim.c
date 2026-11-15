@@ -478,7 +478,7 @@ struct D3ANIMSLOT * d3anim_GetMainSlot(struct D3ANIMCTL *ctl);                  
 /* 0x432750, the per-object animation step (d3_ForEachObject callback, ctx = d3_Time, | 0x80000000 in the
    second pass): steps the three vertex animation slots of every active control of the mesh material, then
    the object's path animation (hermite through the keys).
-   @stuck match-deep 2026-11-14: frame 0x68 -> 0x9c (the original 0xbc) with every vector a block-local
+   @deep match-deep 2026-11-14: frame 0x68 -> 0x9c (the original 0xbc) with every vector a block-local
    D3VECTOR4 (RootPosAt out, the attach block's v/w/out, the path's v/w/tin/tout; the original's holes
    after each 3-float group are the w slots); limit = data->nframes - 1 with nframes read after the if;
    fadeEnd <= now; meaning fix of the end-tangent clear (nkeys, not key/next). 1331 -> 1144 ins. Tried with
@@ -1051,7 +1051,7 @@ int d3_FindAnim(char *name)
    bone transforms are matched by name. For a target mesh the packed (byte) positions are rebuilt: the per-vertex
    differences go to a temporary array, their bounding box (mn / mx, D3VECTOR4 as in the original's frame) gives
    base and scale, and each difference is quantised as (v * 255) / extent.
-   @stuck orchestrator + research pass 2026-11-14, 16 ins left in two hunks, both read from the compiler.
+   @deep orchestrator + research pass 2026-11-14, 16 ins left in two hunks, both read from the compiler.
    (A) reload order of the register parameters mesh (edi) / dmesh (ebx) at three block edges behind the
    D3ANIM_COPY3 asm blocks: the original has dmesh first at all three (0x434127, 0x43421c, 0x434319), ours
    mesh first at the two mem_Alloc edges and dmesh first at the third. Cause: the edge loads are emitted in

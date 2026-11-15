@@ -555,7 +555,7 @@ void d2_DrawFrame(D2INPUT *dlg, void *arg)
     }
 }
 /* 0x4694c0, draws an input field (and the slider-like frame around it)
-   @stuck 6 ins, headers sample insensitive (32 samples, one codegen). The original computes bw from the
+   @deep 6 ins, headers sample insensitive (32 samples, one codegen). The original computes bw from the
    WORD o->w (movsx ebx, word [edi+0x14], p0->w taken from ebx before it is overwritten) and reads o->x
    before o->w in the second d2_DrawShape. bw = o->w - p0->w - p1->w gives exactly the original's
    instructions for that block, but p0 then gets one slot reference more (c2frame: count 4 instead of 3)
@@ -1004,7 +1004,7 @@ int d2_WinOpenSlider(int x, int y, int len, int p4, int p5, int pic, unsigned in
     return -1;
 }
 /* 0x46aa00, draws a slider (flags 2: horizontal, 1: vertical): track, filled part, thumb, arrows, value
-   @stuck 8 ins, headers sample insensitive. The only hunks: the max-label lines (d2_DrawText / d2_AddDirty
+   @deep 8 ins, headers sample insensitive. The only hunks: the max-label lines (d2_DrawText / d2_AddDirty
    of w->x + w->w + 4) load w->w before w->x where the original loads w->x first (lea [ecx+edx+4]
    operands). Every spelling of the sum is one code (64 operand orders / groupings, casts, (int) / (short)
    views, parenthesised fields), so is every single respelling of the function's other w->x / (spr3->h -
@@ -1865,7 +1865,7 @@ void *surf;
     d2_UnlockSurface(surf);
 }
 /* 0x46d220, draws the caption of an object (style bit 4: below it, bit 0x20: with a sprite behind)
-   @stuck dcp headers sample: insensitive. The two-call form (control, 85 ins) gives the original's two
+   @deep dcp headers sample: insensitive. The two-call form (control, 85 ins) gives the original's two
    DrawTextBox sites but the wrong allocation (flags in ebp, x in the dead o slot); one call after `if
    (o->style & 4) { x = o->x; y = o->y + o->h; }` (kept, 62 ins) gives the original's allocation for the
    whole head (flags in the dead o slot, 0x20 in ebx, x / y in ebp / edi) but VC6 does not duplicate the
@@ -1925,7 +1925,7 @@ void d2_DrawObjCaption(D2OBJ *o)
     }
 }
 /* 0x46d3d0, draws all objects in drawing order, each clipped to its windows
-   @stuck dcp headers sample: insensitive. The hunks are one register race in the case 5/8 text arm (lines
+   @deep dcp headers sample: insensitive. The hunks are one register race in the case 5/8 text arm (lines
    2080-2114): the original gives mode ebp and spills x for the arm (mov ebp,[x slot] after
    d2_DrawTextBox), ours keeps x's web (c2trace prio 50, ebp) and gives mode (prio 26) edi; the AddDirty /
    0x40 hunks after it are the same permutation. Tried: mode / tx / ty as block locals (= control), mode as
@@ -2517,7 +2517,7 @@ int d2_TextWidth(char *text, int font)
    ending at right: justified by the window's flags (0x80: spread, 0x40: right, 0x100: centered), pieces move
    right past the objects of the window; "$T" jumps to a position, "$H" draws with a second pass, "$[" "$]" draw
    glyph 0
-   @stuck draft 436 -> 133 ins with plain code: the two hand pointer walks (pobj++, n-- do-while) as for (k
+   @deep draft 436 -> 133 ins with plain code: the two hand pointer walks (pobj++, n-- do-while) as for (k
    = start; k < w->nobjs; k++) over w->objs[k] (-33); the justification as one else-if chain (0x80 / 0x40 /
    0x100) using gap, as the original's imul with the gap slot shows; hl an int, hl = 0 after both glyph
    loops; i < strlen(..) unsigned (the original's jb; (int)strlen gave +10); the glyph != -1 block first
@@ -2703,7 +2703,7 @@ void d2_SetTextColour(unsigned char a, unsigned char b, unsigned char c)
 /* 0x46f1a0, draws text word-wrapped into the box x, y, w, h (flags 8: centered, 0x10: right aligned, 4 / 2 / 1:
    shadow and extra passes, 0x40: colored, 0x20 / 0x80: background sprite, 0x80 keeps the box on the screen,
    0x100: box is given); with surf 0 it only measures. Leaves left edge, top and size in d2_TextDrawnW..74
-   @stuck draft 518 -> 441 ins. Kept: the hyphenation search as the plain loop + test the original's layout
+   @deep draft 518 -> 441 ins. Kept: the hyphenation search as the plain loop + test the original's layout
    shows (the exhausted loop threaded past a k >= 0 re-test at 0x46f55d): lw -= wd; for (k = wl; k >= 0;
    k--) { .. if (TextWidth(word) + lw <= w) break; } if (k >= 0) {..} else if (ln >= 2) {..} else lw += wd;
    (the original's add ebp,[wd] on the no-fit path puts the word back), each fit path ending lw -=
@@ -3005,7 +3005,7 @@ void d2_LayoutButtons(int win)
    digit n: A (new line, n lines high), N / Y (paragraph, half line), < > (right / left margin n "M"s),
    T (tab), B Z R L (spread, centered, right, left), F (font n, FF: color n), C (clear), M, [ ], i (picture
    or button), l, m / mt (inputs), t (text of an input); the arguments of i, l, m, t come from w->args
-   @stuck 538 -> 534 ins: the 'i' arm's t = cm_PickCellX copy dropped (xx = cm_PickCellX; nothing changes
+   @deep 538 -> 534 ins: the 'i' arm's t = cm_PickCellX copy dropped (xx = cm_PickCellX; nothing changes
    cm_PickCellX in between). The instructions are nearly all equal; what is left is the ebp frame's slot
    order (c2frame.py, the density sort). The original's order from ebp-4: pos, left, argi, id, right,
    nlines/o, align, t + _zn (-0x20), wl + _zp (-0x24), extra (-0x28), width (-0x2c), col, top, w, len,
@@ -3822,7 +3822,7 @@ int pic;
     d2_Wins[obj].visible = 0x30;
 }
 /* 0x472390, creates a window; returns its index, -1 if there is no free one, 0 if a surface could not be made
-   @stuck 119 -> 46 ins. The hand pointer walk (p += 0xf1, (int)p bound) became the plain index scan j =
+   @deep 119 -> 46 ins. The hand pointer walk (p += 0xf1, (int)p bound) became the plain index scan j =
    -1; for (i ..) if (!d2_Wins[i].active) { j = i; break; } if (j == -1) return j; (VC6 threads the
    exhausted loop to its own or eax,-1 return as the original); the five parameter stores x, y, w, h, flags
    (1 of 120 orders, -10). Tried: return in the loop / goto found / while / jm1 (j >= 0x60 -> -1) forms
@@ -4212,7 +4212,7 @@ void d2_RaiseObject(int obj)
     }
 }
 /* 0x472fd0, moves the objects of a window (and the window's parent run) to the top of the draw order list
-   @stuck The plain form (j = -1 before the loop, `if (o->id == w->parent) { j = i; break; }`, the
+   @deep The plain form (j = -1 before the loop, `if (o->id == w->parent) { j = i; break; }`, the
    redundant d2_DrawOrder[i] != 0 test kept) gives the original's control flow exactly (out-of-line break
    block, mov esi,ecx), but a whole-function register permutation (78 ins: base edx / i esi / first eax / j
    edi / w ebx against the original's ebp / ecx / edx / esi / edi). flip.py on that form (want mov
@@ -4671,7 +4671,7 @@ void d2_RaiseViewWindows(int v)
 /* 0x4741f0, loads the form file x (forms\x.form) as a view: one window per record, the items (pictures, texts,
    inputs, sliders) become objects; the view is moved to (x, y) unless one of them is 0 and kept inside the screen;
    returns the number of the view, or -1
-   @stuck tie-break sensitive per dcp headers sample (3 codegens in 32 samples, none closer than the
+   @deep tie-break sensitive per dcp headers sample (3 codegens in 32 samples, none closer than the
    build), 630 ins. Kept: the view scan as the plain for (view = 1; d2_Views[view].nwins != 0; view++) if
    (view >= 0x30) return -1; plus the re-test after it (same distance as the hand pointer walk, which it
    replaces; the original's signed jge against the array end is VC6's strength-reduced form of this loop).

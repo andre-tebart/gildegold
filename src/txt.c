@@ -187,7 +187,7 @@ int txt_ParseLine(char *line, int group)
 }
 /* 0x42c950, reads a "{rN}" random-text escape from p: the chosen variant (N + 9) is queued in
    txt_Random; on a syntax error it reports and queues the pointer itself.
-   @stuck meaning matches (four stores, both branches, the err path). Left: the original keeps p in esi
+   @deep meaning matches (four stores, both branches, the err path). Left: the original keeps p in esi
    only for strncmp / p[2] and stores (int)p from the argument slot ([esp+8] / [esp+0xc] after the err
    push) in both p-store paths; ours stores esi. Tried (dcp try): headers sample insensitive; a char *s
    copy for the tests (function scope, block scope, s = p inside the call): = control; *(int *)&p stores: =
@@ -277,7 +277,7 @@ int txt_LoadIncludes(char *file)
 }
 /* 0x42cbc0, compiles the text files named in a definition file into <outputpath>\<name>.res files
    and optionally writes a C header with one #define per group.
-   @stuck match-deep 2026-11-10: i is memory-homed in the original because the .res count is written
+   @deep match-deep 2026-11-10: i is memory-homed in the original because the .res count is written
    through &i (now so: 1085 -> 424 ins). Then: declaration moves of i, lineno, comment, needsemi, ndefs
    over the whole decl block: = control; tie-break sample insensitive; txt_Buffer + txt_Count * 0x1000
    operand order / indexing at all 5 sites: = control. The empty if (txt_Count == 0x71b): 30+ bodies tried

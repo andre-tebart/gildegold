@@ -1842,7 +1842,7 @@ struct CHARACTER *ls_ReadCharacter(int f)
    queue head ("invalid stockptr" without one), '3' actions get their scene universe, walks are reset; an action
    with a broken link ("invalid next or prev-action pointer") is unlinked and cleared. Returns 1, 0 when a read
    fails.
-   @stuck earlier: read whole against 0x51e900..0x51f07b and rewritten on the typed records, statement by
+   @deep earlier: read whole against 0x51e900..0x51f07b and rewritten on the typed records, statement by
    statement (count 0x300 / 0x500 / 2000 by version). deep session 2: fixed the truncated stockptr string (the original's 0x6236d8 reads '(character
    perhaps created by script!)', ours had '(character per...)': a meaning bug, M.census gone) and gave the
    link pass its own register byte 'kind' (the original reads the type into the stack byte at [esp+0x1b]

@@ -510,7 +510,7 @@ void d2_DragInput(void)
     }
 }
 /* 0x477ba0, mouse and keys on the focused slider object
-   @stuck headers sample: insensitive (32). Frame slots read with dcp frame: original mn [esp+0x10] (home
+   @deep headers sample: insensitive (32). Frame slots read with dcp frame: original mn [esp+0x10] (home
    of ebp), fl 0x14, py 0x18, mx 0x1c (home of ebx), f0/a 0x20 (shared), d 0x24, len 0x28, v2 0x2c; ours
    the same variables, mx only in a slot at 0x2c, so every remaining hunk (vertical test using edi for py
    and reloading o->y, the +4 slot shift, the clamp's cmp eax,ebx tail) follows from mx not getting ebx. No
@@ -968,7 +968,7 @@ unsigned int d2_GetBmpSize(char *name)
     return 0xffffffff;
 }
 /* 0x478a00, reads the pixels of a 24 bit bmp (bottom-up files flipped, bgr turned to rgb) to dst
-   @stuck headers sample: insensitive (32). Restructured from the original's push / branch order, 92 -> 12
+   @deep headers sample: insensitive (32). Restructured from the original's push / branch order, 92 -> 12
    ins: (1) the pushes of f, w*3, 1 sit before the flip test in the original: the fread was written in both
    arms of if (flip == 0) .. else .. (VC6 hoists the equal pushes and merges the tails; a ternary inside
    the argument, with any operand order, is evaluated before the pushes, 73 ins); (2) no return 1 inside
@@ -1262,7 +1262,7 @@ int d2_GetSurfaceDesc(D2SURF *s, DDSURFACEDESC2 *desc)
     return s->DDSurface->lpVtbl->GetSurfaceDesc(s->DDSurface, desc) == 0;
 }
 /* 0x479150, copies the part (sx, sy, w, h) of src to (x, y) of dst, clipped to both; mode 1: with the colour key
-   @stuck draft -> shape, 117 -> 16 ins (match-deep 2026-11-10). Won: RECT fill order rs.top, rs.bottom,
+   @deep draft -> shape, 117 -> 16 ins (match-deep 2026-11-10). Won: RECT fill order rs.top, rs.bottom,
    rs.left, rs.right, rd.right, rd.bottom, rd.left, rd.top (40320-order permute of the 8 stores, best of
    5865 codegens); if (h <= 0 || w <= 0) instead of < 1 (test/jle); dstLocked = dst->locked before
    srcLocked (the src->locked load sits before the d store). Left: the two memcpy loops (8 ins each): the
@@ -1576,7 +1576,7 @@ int d2_ClearRect(int x, int y, int w, int h, D2SURF *surf)
 /* 0x4798f0, reads the colour of the pixel (x, y) of surf into rgb[0..2] (r, g, b): a 15 / 16 bpp pixel through
    dd_SplitRGB, the 3 bytes for 24 bpp, one dword for 32 bpp (r / g / b from the dword's bytes 0 / 4 / 8, the
    original's odd offsets); any other depth leaves rgb untouched by the switch (it gets the caller's stack bytes)
-   @stuck headers sample: insensitive (32). Meaning re-read: same field offsets (bpp +0x14, pitch +0x10,
+   @deep headers sample: insensitive (32). Meaning re-read: same field offsets (bpp +0x14, pitch +0x10,
    bits +0x1c), same arms and stores. What is left is one rotation of the scratch registers from the first
    instruction on (original surf eax, bpp edx, bytes ecx, switch index edx, x in esi in the 15/16 arm; ours
    surf ecx, bpp eax, bytes edx) plus the bits-load placement that follows from it. dcp try rows: bytes

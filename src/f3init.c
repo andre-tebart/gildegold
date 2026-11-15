@@ -610,7 +610,7 @@ void init_FreeScenes(void)
     } while ((int)p < (int)INIT_SCENE_HEIGHTMAP_END);
 }
 /* 0x50d550, the scene object callback (a function start Ghidra missed) that allocates the building for a "gb_NAME" scene object o (0x50d100 resolved the name to the building type, bits 0x2000000 in +0x48): a new instance of the type without an owner (0x501580), for the KONTOR (type 0x47) the office of the player slot whose name is the part after the last '_' of the object name (the slot number goes to +0x65, its name to +5); the object and the building are linked (+0x61 / +0x200) and "f3_init:Gebaeude des Typs %s allokiert" is the (unused) log text. An object without a state of its own takes its parent's record.
-   @stuck kind byte compare: the original loads the proto top byte as an int (movsx ecx, byte ptr
+   @deep kind byte compare: the original loads the proto top byte as an int (movsx ecx, byte ptr
    [ebp+0x4b] scheduled before 'and eax, 0xffffff', then cmp ecx, 2); ours mov al, [ebp+0x4b] / cmp al, 2
    after the and (4 ins, 2 hunks). Got 41 -> 4 ins with i < 4 for the slot walk and a nested if (proto !=
    -1) { id = ..; if (kind == 2 && type) }. Tried for the compare (all = control or worse): (int)proto >>
@@ -1212,7 +1212,7 @@ unsigned short init_PlaceOffices(int n, int *out, int *ids)
    gm_PlayerFactor), the office flags (field 0x1cc) and the first office of the kinds 0x23 .. 0x25, then the
    spouses of the unmarried (cm_SendRelations both ways, a child of kind 8 when the age gap is above 5), and
    eight extra pairs of the kind 3 characters. Sends the field blocks / characters over the network; returns 1.
-   @stuck match-deep 48: kept: ai_FloatOne for the 1.0f of fl (resolves the open M10: the original refers
+   @deep match-deep 48: kept: ai_FloatOne for the 1.0f of fl (resolves the open M10: the original refers
    to the pooled datum) and the age table t[30] split from lv[10] / money[10] (the frame now puts ids at
    the original's 0x138; 219 -> 191 ins). headers sample insensitive. Tried with no change (= control):
    msg0 with (unsigned short) / & 0xffff on util_RandomU(2), (float) cast in the msg4 product, (unsigned
@@ -1605,7 +1605,7 @@ void init_StockMarketStalls(void)
    recipe is then sent into the stall (the object kind 4) in the amount times its weight, capped at the
    stall's stock (gm_ListStock 0x50ab50); 0xffff recipe slots are skipped, a 0 slot ends the list.
    The error text fires when the sum is zero.
-   @stuck earlier: read whole against 0x50f570..0x50f74e, the two meaning errors fixed (fimul weight, stall
+   @deep earlier: read whole against 0x50f570..0x50f74e, the two meaning errors fixed (fimul weight, stall
    clamp). deep session 2: a third meaning error fixed - the float amount is 24000.0f / sum (0x5ee970), the
    integer one 16000 / sum (ours had 16000.0f for both); the first recipe loop is for (...; i++, rw++) (the
    original increments i before rw: the skip of a 0xffff slot jumps to inc ebx); the zero-cost error is the
@@ -1763,7 +1763,7 @@ extern char ai_MissionMode;        /* 0x624580 */
    persons, 2 / 3 = special), the start characters (0x50e690) and the opening goods (0x4f8ed0) are made, a message
    0x1b goes to every building (types E / D / F skipped) and the mission-mode message 0x4c out, and finally the
    characters of the kinds 2 .. 7 greet each other (0x4c4b00 both ways).
-   @stuck 115 -> 57 ins, frame now 0x404 like the original and every array at the original's offset. Levers
+   @deep 115 -> 57 ins, frame now 0x404 like the original and every array at the original's offset. Levers
    that worked: the address-taken &n of the 0x65/0x69 field deltas as its own block-scoped int v (n kept
    its spill slot, frame 0x408 -> 0x404); the greeting loops as index loops (outer c = ai_Chars[i], inner
    ai_Chars[j]: pointer IVs with the original's signed ends, i in [esp+0x10]); !ok && k < 0xa900 (kb3: 89
@@ -2698,7 +2698,7 @@ void init_RecreateQuadTree(void)
     d3_QuadTree = (int)d3q_Create(0, 0x40, 8, 7);
 }
 /* 0x511890, gives every building of the class 6 (not the type 0x1c) a name: the names of its kind (the 0xc names at 0x143b400 + 0x38 per kind) that no building uses yet, up to 0x20 characters ("Building name too long: %s" is the error text), one picked at random into the building's name field (+5). The original returns nothing (no eax at the end; init_LocalData ignores it)
-   @stuck behaviour + readable, read whole against 0x511890..0x511ac1; layout, frame and every block match;
+   @deep behaviour + readable, read whole against 0x511890..0x511ac1; layout, frame and every block match;
    53 differing instructions left, all from ONE register choice: VC6 gives ebx to b and keeps i in memory,
    the original gives ebx to i and keeps b in memory (reloaded per i iteration), which also makes it
    recompute the name table entry for the copy offset (sub edx,[T+idx*4]) where ours reuses src. Found this
@@ -2932,7 +2932,7 @@ extern unsigned char init_TextureSet;      /* 0x6f1c24 */
    An instance flagged 0xa0 (+0x13) gets the effect "Effekte/upgrade2.esc" at its bounding sphere once (the flags are
    cleared). The objects named "no_*" are hidden when the prototype after the prefix has an instance, "pfl_*" /
    "vg_*" select the texture set init_TextureSet.
-   @stuck match-deep 48: headers sample insensitive (32 samples, one codegen). Allocation-heavy: the
+   @deep match-deep 48: headers sample insensitive (32 samples, one codegen). Allocation-heavy: the
    original keeps rec in a register copy (mov esi,eax after the [esp+0x10] store) through the parent branch
    up to the part loop, where esi becomes ia; ours keeps rec in edi / reloads. Part loop: the original
    reloads a into ebx from [esp+0x18] on the back edge (jmp into the loop body), and cx,0x7fff 16-bit and;
@@ -3643,7 +3643,7 @@ void init_FinishBuildingScene(unsigned char *b, unsigned short *o)
     sv_UpdateSkyColors();
 }
 /* 0x513590, sets the detail level of the scene s (its D3FLMAP.lod bitfield: 4 = high, 2 = middle, 1 = low) from the setting byte 0x6f35c8 + 2 and the frame limits, and tells the renderer (0x43f8a0 the size 0x80 / 0x40, 0x446dc0 the level); the flag f forces the update
-   @stuck oldlvl spilled: ours keeps size in ebp and spills oldlvl to [esp+0x14] (f in bl); the original
+   @deep oldlvl spilled: ours keeps size in ebp and spills oldlvl to [esp+0x14] (f in bl); the original
    keeps size in ebx (dead at 'cmp edx, ebx', then 'mov bl, f' reuses it) and oldlvl in ebp - in ours the f
    load is scheduled above the size compare, so size and f interfere. 60 -> 15 ins (code 15, order 6, regs
    2) by writing the level choice as one if / else-if chain per branch (s->size == 0x40 || ai_MapSize >=

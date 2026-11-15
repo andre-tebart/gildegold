@@ -245,7 +245,7 @@ void d3s_DrawSpans(int rows, int w, unsigned char flags, char top, int y0)
     }
 }
 /* 0x45a2e0, a shadow triangle: edges from the three points p (x, y pairs), colours c, radius pixels / rows around
-   @stuck area == ai_FloatZero now (M10 fixed: the original compares against the pooled cm.c datum).
+   @deep area == ai_FloatZero now (M10 fixed: the original compares against the pooled cm.c datum).
    headers sample: insensitive (one codegen). Left: the edge-choice webs - original b ebx / e esi / d
    spilled to p's dead slot [esp+0x1c] / l ecx, ours b spilled / d esi / e ebx (VC6 then reloads b into ebp
    once minY dies); y reuses minY's ebp in the original (add ebp,0xffff; sar) and y+n is an add ebp,edi
@@ -404,7 +404,7 @@ void d3s_FillRows(int n)
     }
 }
 /* 0x45a880, draws one polygon of the shadow mesh into the shadow texture (bpp bits per pixel, its low byte)
-   @stuck draft -> shape this session: the running min y is a local (ymin) and the bound is the shifted
+   @deep draft -> shape this session: the running min y is a local (ymin) and the bound is the shifted
    size parameter (size <<= 16; ymin = size): VC6 then hoists size - 1 out of the bounds loop as the
    original does (dec edx before it) and keeps ymin in ebp after the loops; poly->v[i] written at each use
    (no v0/v1/v2 locals; v2 loaded before v1 as the original). headers sample: insensitive. Left: (1) slots:
@@ -631,7 +631,7 @@ void d3_ExitShadows(void)
     }
 }
 /* 0x45af50, the shadow mesh over the part rect of a terrain with 8x8 blocks, each block sampled at its own lod
-   @stuck match-deep 45: ai_FloatOne fixed (M10). headers sample: insensitive. Read: the original's edi
+   @deep match-deep 45: ai_FloatOne fixed (M10). headers sample: insensitive. Read: the original's edi
    holds bz in the loops, is reused inside the block first for the lod value (and eax,0xff; mov edi,eax;
    div edi; step stored to [0x14] = ul's slot) and then for the vertex walker vp (add edi,0x50); buf lives
    in ebx (reloaded after the vertex loop, rowptr takes ebx there). Ours: bz in edi, step in edi for the
@@ -844,7 +844,7 @@ int d3s_Area = 0;  /* 0xfe73b8 */
 int d3s_Fill = 0;  /* 0xfe75ac */
 
 /* 0x45b510, a shadow mesh over the map cells in rect
-   @stuck 328 -> 167 ins this session, plus a meaning fix (first polygon's a read row[i + nx + 1], the
+   @deep 328 -> 167 ins this session, plus a meaning fix (first polygon's a read row[i + nx + 1], the
    original row[i]; committed on its own): p = &buf->polys[buf->npolys] first (the original computes it
    into esi at the top), 1.0f of the add ternary is ai_FloatOne (M10), the uv pointer advanced per polygon
    (p++; t += 6 after each; second polygon writes t[0..5]) instead of t + 6 / t += 12, and the second
@@ -1121,7 +1121,7 @@ float d3s_GetGround(D3OBJECT *obj, D3OBJINFO *info, D3OBJECT *light)
     return y;
 }
 /* 0x45be10, projects the mesh along the light onto the ground and renders the shadow texture
-   @stuck 282 -> 127 ins this session: slot->dir copied per field (x, y, z: the original's interleaved
+   @deep 282 -> 127 ins this session: slot->dir copied per field (x, y, z: the original's interleaved
    loads/stores and the right frame, 0x1c) and the final slot stores in field order x0, x1, z0, z1, y
    (permute.py, 120 orders). headers sample: insensitive. M10s are not source: VC6 itself turns (v->y - y)
    * (1.0f / inv) and x / inv into a reciprocal of its pooled 1.0f, and the + 1.0 of the cell rounding is

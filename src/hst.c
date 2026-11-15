@@ -535,7 +535,7 @@ int ai_TokenRandomOfficePerson(int mode, G12ARG *args, int k, char *fmt, char *o
    richest character (0x50a640) who passes 0x4adff0 / 0x4adfb0; fmt "...-n" selects 0 = anybody, 1 = men
    (byte 9 == 0 .. sic: byte 9 == (n != 1)), 2 = the other sex
    The -10000000 start value is HST_NO_WORTH.
-   @stuck shape, slots 24 only (from draft 80 ins / frame 0x214). Moved code: AI_ZERO_BUF(n1, buf, 0x200)
+   @deep shape, slots 24 only (from draft 80 ins / frame 0x214). Moved code: AI_ZERO_BUF(n1, buf, 0x200)
    (frame 0x210: 80 -> 64); filt = 1 then 'if (sel == 0) filt = 0; else sex = ..' and sel > 2 (the
    original's mov [ebp-4],edi / jg); the mode 1 path joining the shared format tail (its ja into the tail
    past the mode == 0 store) with early returns for every failure (draft -> shape, 24 ins). Left: the four
@@ -775,7 +775,7 @@ int ai_TokenRandomChurchProfession(int mode, G12ARG *args, int k, char *fmt, cha
 }
 /* 0x4af6c0, text token for one of the five richest characters (0x50a640) passing a predicate: fmt "...-n"
    0 = 0x4adff0, 2 = 0x4ae0d0, else 0x4ae080
-   @stuck shape, 16 ins, all 'slots': n1 and found trade slots (ours n1 -0x14 / found -0x10, the original
+   @deep shape, 16 ins, all 'slots': n1 and found trade slots (ours n1 -0x14 / found -0x10, the original
    n1 -0x10 / found -0x14); everything else is identical. Applied: AI_ZERO_BUF, the sel-style predicate
    choice (v = 1 default, if/else-if/else on v: the original threads the failed tests into the NonPlayer
    arm), health <= 0, the bubble step as t = score[j+1]; v = score[j]; if (t > v), c =
@@ -1313,7 +1313,7 @@ int ai_CommandKillPlayer(G12ARG *args, int k)
    variant / quiet (quiet: cm_ExecutionAftermath skips its notes when set); the name table in the original's
    slot order (name[0] = SHAUFEN .. name[3] = KANONE; kinds 3, 0, 2, 4 go with that order); the -1 fill as the
    loop VC6 turns into 'mov ecx,0x10 / sub ecx,edx / rep stosd' (memset gave the shl/shr/and-3 tail).
-   @stuck shape, 6 ins / 28 bytes, order 14 only (from draft 59 ins). Moved code: the netId read at each of
+   @deep shape, 6 ins / 28 bytes, order 14 only (from draft 59 ins). Moved code: the netId read at each of
    its three uses (loop base to netId, the original's ai_CharInts/0x7d5f84 refs: 59 -> 54); memcmp(fmt + 1,
    ..) instead of fmt++ (the original's lea ebx,[eax+1]: 26 -> 8); flags = 0x22 before the time copy (8 ->
    6); party.variant = kinds[i] directly, no variant local (the name-table M9 crossing went: draft ->

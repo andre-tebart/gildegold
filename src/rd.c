@@ -267,7 +267,7 @@ void veg_GrowPlants(G15PLANT *p)
 }
 /* 0x4bc940, loads plant q's model ("%svegetation/*pfl_<type>_0<n>[_FALL].ogr"), names it "_ID<id>" and places it
    on the height map (origin + x * axisx + z * axisz + height * axisy).
-   @stuck match-deep 2026-11-10: headers sample insensitive (32 samples, one codegen). Kept: q->x / q->z
+   @deep match-deep 2026-11-10: headers sample insensitive (32 samples, one codegen). Kept: q->x / q->z
    read at their uses instead of int locals x, z (40 -> 36 ins; x's fild temp now shares [esp+0x10] as in
    the original). Left: the height address - the original forms (z*size + heights) and indexes [edx + x] so
    ecx is free for the zero-extended byte (heights reloaded into ecx, ebp, edi), ours forms z*size + x and
@@ -370,7 +370,7 @@ void veg_HidePlants(G15PLANT *p)
 }
 /* 0x4bcc20, lays a road from the building site of object obj (name: 0x58f640) to the next road (marks its cells
    as ground type "EINFACHER_WEG" on the town map, around each cell before 0x780)
-   @stuck match-deep (dcp try): kept the success flag for the last two tests (ok = 0; if (GetHeightAt) { if
+   @deep match-deep (dcp try): kept the success flag for the last two tests (ok = 0; if (GetHeightAt) { if
    (PathToRoad) ok = 1; } if (!ok) { fail: destroy; return 0; }): 97 -> 68 ins, it gives the
    ai_BuildingName and bk == 0 failure blocks their own epilogues and places the fail tail before the
    success part as the original does; float v[4] on top fixes the frame (0xc4 -> 0xc8, 70 ins, kept). Not
@@ -540,7 +540,7 @@ fail:
     return 1;
 }
 /* 0x4bd340, path_Find from cell x / z to tx / tz (both < 0: the nearest road cell, type 6 / 0xb); 1 if found
-   @stuck match-deep 2026-11-10: headers sample insensitive (32 samples, one codegen). Kept: no separate
+   @deep match-deep 2026-11-10: headers sample insensitive (32 samples, one codegen). Kept: no separate
    'if (n < 1) return 0' (the original's n <= 0 test jumps straight to the return-0 epilogue, the tx/tz
    test threaded) and the grid in a local g (136 -> 132 ins). Left: the loop allocation - the original
    keeps i in ebx (coalesced with the zero it compares tx against at entry, 'xor ebx,ebx; cmp esi,ebx'), i

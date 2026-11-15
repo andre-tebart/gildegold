@@ -52,7 +52,7 @@ unsigned short path_Find(PATHOUT *out, PMAP *map, int sx, int sy, int ex, int ey
 /* 0x4250a0, bidirectional A*: grows the search alternately from the start and the goal node until
    one search reaches the other (path_Meet) and returns the chain to the caller; the start node
    index, or 0xffff when no path exists. Sets the path_ globals for the running search.
-   @stuck kept: top tests !(c < 0.0), weight loop c > 0.0 (the original's test ah,5/jnp and and
+   @deep kept: top tests !(c < 0.0), weight loop c > 0.0 (the original's test ah,5/jnp and and
    eax,0x4100), b-step stores Target, SetFlag, TestFlag: 262 -> 250 ins, size 962 = original. Left (the
    same as path_Search1): the original gives a and b no register outside the Expand loop: a is word-stored
    to map's dead slot [esp+0x14] and read back at once (and ecx,ebp), pushed from there for the first call,
@@ -140,7 +140,7 @@ unsigned short path_Search2(PMAP *map, int sx, int sy, short ex, int ey, int typ
 }
 /* 0x425470, one-directional A*: expands from the start node alone until it reaches the goal;
    the start node index, or 0xffff when no path exists. Sets the path_ globals like path_Search2.
-   @stuck kept: loop stores Target, SetFlag, TestFlag (original order), b = path_Goal before the Start
+   @deep kept: loop stores Target, SetFlag, TestFlag (original order), b = path_Goal before the Start
    test, top tests !(c < 0.0) (gives test ah,5/jnp) and loop test c > 0.0 (gives and eax,0x4100): 188 ->
    175 ins. Left: the original keeps a and b as memory locals in dead param slots (a: word store to map's
    slot [esp+0x14], read back dword & 0xffff, pushed from there, edi only in the Expand loop with a spill
@@ -218,7 +218,7 @@ unsigned short path_Search1(PMAP *map, int sx, int sy, short ex, int ey, int typ
 /* 0x425780, expands node n (the parameter, kept as self while the parameter becomes the head) of map: flags it closed, tests its 8 neighbours against the other
    search (path_TestFlag), relaxes their g/f and keeps the open list sorted by f; returns the open
    list head, or (unsigned short)n when it met the other search (path_Meet is set).
-   @stuck kept (222 -> 64 ins, frame now 0x10 = original): the parameter is reused as the open-list head
+   @deep kept (222 -> 64 ins, frame now 0x10 = original): the parameter is reused as the open-list head
    (the original keeps head in n's slot, returns it with mov ax,[slot]: unsigned short return, header
    changed) with a copy self = head made first, k and q unsigned short, the stamp tests split into
    'stamp == Stamp && !(g < nb->g) continue' and 'stamp == Stamp && (flags & 1)' (the original re-compares

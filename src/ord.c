@@ -1690,7 +1690,7 @@ int ord_GetGridCell(char *p, int *x, int *y)
    counts the objects of kind 6 (0x501190 / 0x501030 iteration; +0x61 a pointer, its +0x4c the position through
    0x4f8300 -> x, y) per cell with the value 0x509b10 (o, o[0x5c]) summed up in a local float table, then cell +8
    = sum / count (0 for empty cells). No result.
-   @stuck draft -> shape: the cell index written at both uses (f[y + x * 8], ORD_CELLS[y + x * 8]) instead
+   @deep draft -> shape: the cell index written at both uses (f[y + x * 8], ORD_CELLS[y + x * 8]) instead
    of i = y + x * 8 swaps the x/y frame slots to the original's (x at esp+0x14). Left: 4 code instructions
    of the used-clear loop (the original hoists mov edx,0x91ae64 above the prologue pushes, copies it to the
    cursor with mov eax,edx per row and back with mov edx,eax after the inner loop; ours folds both into one
@@ -2130,7 +2130,7 @@ void ord_UpdateStatistics(void)
    columns, ai_Rating / ai_RatingBase, the three values, the rate and the clock stamp; then rebuilds the rating
    bytes 0x91b460[0..4] from the characters' skill bytes +0x80..+0x84 (kind below 10, health above 0) and [5] from
    the weighted level +0xd, and runs ord_ReportStatistics. The inverse of ord_UpdateStatistics (0x4f8ed0).
-   @stuck headers sample: insensitive (32, one codegen). Kept (47 ins/160 B -> 8 ins): the character walk
+   @deep headers sample: insensitive (32, one codegen). Kept (47 ins/160 B -> 8 ins): the character walk
    as an index loop over ORD_CHARS[j] / ORD_CHARKINDS[j] (the original's jl pointer compare and the kind+2
    base), and n = 0; w = 0 at the top of the function (the original zeroes n's own slot first: frame 0x18
    -> 0x1c, n no longer packed into the dead parameter slot). Left: one hunk in the counted body, ours 'xor
@@ -2493,7 +2493,7 @@ float ord_StatisticsRating(void)
     return (float)(4 - ra[6]) * 0.25f * 0.75 + (1 - rb[6]) * 0.25;
 }
 /* 0x4f9d40, the weighted sum of the +0x18 ints (rec[6]) of the twelve table records 0x11 .. 0x1c of gv_GetTableRecord (0x4f2720) with the weights 0.06 0.05 0.08 0.04 0.13 0.1 0.13 0.12 0.14 0.15 and two zeros (the array is twelve long like the record range); the ints themselves are stored to out[0 .. 11]
-   @stuck headers sample: insensitive (32 samples, one codegen). Kept: fv = (float)rec[6] before the out
+   @deep headers sample: insensitive (32 samples, one codegen). Kept: fv = (float)rec[6] before the out
    store (fild right after the call as in the original): draft 18 ins/45 B -> shape 16 ins/11 B. Left: i in
    esi and the w pointer IV in edi where the original has i in edi and the pointer in esi, and inc i
    scheduled before the fmul (original: fmul [esi]; add esi,4; inc edi; cmp edi,0x1d). Tried (dcp try):

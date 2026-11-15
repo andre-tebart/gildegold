@@ -264,7 +264,7 @@ void d3_ProjectMesh(D3OBJECT *obj)
 }
 /* 0x4391d0, sets up the view frustum planes (d3_Planes), the corner directions (d3_Frustum) and the
    plane lists of the 64 clip codes (d3_ClipInfo).
-   @stuck headers sample: insensitive (32 samples, one codegen). Kept: the atan2 results as double locals
+   @deep headers sample: insensitive (32 samples, one codegen). Kept: the atan2 results as double locals
    ta/tb (d3_FovX = a = (float)ta, sin/cos/negation of ta): VC6 now keeps them on the FPU stack through
    sin/cos and the -b/-a of rot as the original does (fld st(0) / fst a / fstp d3_FovX / fld st(0) / fsin
    ...), 108 -> 98 ins; c = cos(..) chained into the P0 store. Left (asmdiff): (1) the original keeps s in a
@@ -809,7 +809,7 @@ void d3_SetFogRange(float start, float end)
     }
 }
 /* 0x43a6f0, turns the fog on (start < end: sets the range through d3_SetFogRange) or off (start >= end:
-   restores the viewport when the fog was on), then stores the fog range, the on flag and the colour @stuck
+   restores the viewport when the fog was on), then stores the fog range, the on flag and the colour @deep
    headers sample: insensitive (32 samples, one codegen). Left: the original duplicates the 4-store tail
    (FogOn=bl, FogStart1, FogEnd2, fog_color, pop ebx, ret) into the start<end arm before scheduling (loads
    above add esp,8, stores End/On/Start/color); ours jumps to the merged tail, and the else arm's eax/ecx/edx
@@ -859,7 +859,7 @@ void d3_SetFog(float start, float end, unsigned long color)
 }
 /* 0x43a7d0, Direct3D rendering: draws the sorted triangles in texture order through the vertex buffer,
    clipping the ones that cross a frustum plane into fans.
-   @stuck match-deep (dcp try, nothing kept; tiebreak sample: insensitive, 32 samples one codegen). Read:
+   @deep match-deep (dcp try, nothing kept; tiebreak sample: insensitive, 32 samples one codegen). Read:
    the original keeps the constant 0 in edi inside the texture-switch block (n = 0, the cur tests, push edi
    for SetTexture's stage, the fild high dword: cmp eax,edi where ours test eax,eax / push 0) and edi = cur
    at the loop top (mov edi,[ebp-0x18]; cmp edi,ecx), t in esi with esi pushed only around the loop (push
@@ -2300,7 +2300,7 @@ char d3_DeflateScene(unsigned int flags)
 }
 /* 0x43dbc0, d3_ForEachObject2 callback: builds the drawable points and triangles of all surfaces
    from the loaded mesh data.
-   @stuck headers sample: insensitive (32 samples, one codegen). Read again: the original's zero is a
+   @deep headers sample: insensitive (32 samples, one codegen). Read again: the original's zero is a
    loop-local candidate in ecx (xor ecx,ecx at the loop head, skipped by a jmp on entry where k = 0 already
    left ecx zero; vofs/uofs/zofs stored from ecx, flags = 0 and tex = 0 as immediates, the mat tests as test
    reg,reg), and ebx is a plain temp (bl for the b0 and rawFlags byte updates, the blend test, mat[] base);

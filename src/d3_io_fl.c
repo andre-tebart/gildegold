@@ -302,7 +302,7 @@ int d3_FLChunkSize(D3BGF *m, D3BGFDESC *d)
 
 /* 0x451250, loads the BGF file path, cleans it up as d3iot_LoadBGF does and appends the converted mesh to
    the file as a fast-load chunk (0x2d ... 0x2f)
-   @stuck tie-break sensitive: dcp headers sample gives 2 codegens in 32 samples, none better than built
+   @deep tie-break sensitive: dcp headers sample gives 2 codegens in 32 samples, none better than built
    (draft): the declaration set decides allocation, park for the unit's declaration pass. Done: the uv
    rotation now adds cm_Pi (the shared pi the original loads, as d3iot_LoadBGF does; M10 cleared; 254 ->
    258 ins, same grade). Left as before: m in ebx vs the original's [ebp-0x10] slot through the weld loops,

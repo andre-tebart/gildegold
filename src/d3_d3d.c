@@ -557,7 +557,7 @@ void d3d_BuildMipmaps(LPDIRECTDRAWSURFACE4 tex, DDSURFACEDESC2 *ddsd)
    (each asm block counts as a reference to every escaped local in scope) while msg, in its own block
    inside, keeps a slot apart from namebuf; num is 10 bytes (its slot rank). The #line 847 in the body keeps
    the D3_ZERO labels (__LINE__) apart whatever this comment's length.
-   @stuck the frame tie loadt/texture ([ebp-4] / [ebp-8], 34 bytes) is decided, and no code-identical
+   @deep the frame tie loadt/texture ([ebp-4] / [ebp-8], 34 bytes) is decided, and no code-identical
    source reaches the original's side. Mechanism (simulated and checked): the >0x80 frame sort is K&R
    quicksort (middle element swapped to the left end, Lomuto partition on dens > pivot) over the table
    after the parameter slots - it reproduces B->A of all 75 sorted frames sampled from 13 units. Here it

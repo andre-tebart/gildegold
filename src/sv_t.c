@@ -4407,7 +4407,7 @@ void sv_ButtonRow(int f, int y, int *out, int n, ...); int sv_MessageBoxGreen();
    100 pixels apart; the buttons 0x4042 (hire: enabled while a candidate is selected) and 0x4043 (back). Hire
    hands the selected candidate to ai_AlchemistHire and closes the window when that succeeds; back or the right
    mouse button close it. The camera follows again at the end
-   @stuck match-deep 2026-11-14: 260 -> 221 ins with the row position computed from i at the loop top (y =
+   @deep match-deep 2026-11-14: 260 -> 221 ins with the row position computed from i at the loop top (y =
    i * 0x64 + 0x31; the running y += 0x64 and y in the for increment = control, every use written as i *
    0x64 + k = 263). Statement orders of the five entry stores (120) and an else around the rest: no lever.
    Frame lead: the original stores form / win2 / win3 / group to slots spaced like elements of one int
@@ -4592,7 +4592,7 @@ int ahm_ResearchState(); char * ahm_OwnerChar(); AHMGRID * ahm_RandomRecipe();
    ai_AlchemistSendRecipeResearch when ahm_RandomRecipe gives the owner a recipe, else the message 0x41b0. The second is enabled
    while no research runs and calls ai_AlchemistSendResearchStart. The right mouse button closes the window; the camera follows
    again at the end
-   @stuck match-deep 2026-11-14 (199 ins kept). Tried: the slot loops as index loops (rec->slots[k],
+   @deep match-deep 2026-11-14 (199 ins kept). Tried: the slot loops as index loops (rec->slots[k],
    pics[n]): 343..359 ins (the original's [edx] store through a reloaded pic pointer is a hand pointer,
    *pic = pid; pic++); *pic++ = pid: 237..247; slot index + pic pointer: 197 (frame hunk unchanged). row[2]
    declared in a block around sv_ButtonRow: frame 0x25c = the original's (sel then shares row's slot as
@@ -4821,7 +4821,7 @@ int ai_AlchemistSendResearchStart(unsigned char *obj, AHMREC *rec)
    bars opens the skill window ai_AlchemistTrainShareWindow (obj, record, the bar), the extra button ai_AlchemistFundWindow and the button
    with the text 0x4049 ai_AlchemistRescheduleWindow (whose answer closes the window); the form is disabled meanwhile. The right
    mouse button closes the window; the camera follows again at the end
-   @stuck draft 88 -> shape 6 ins (frame 0x240 = the original's). Kept: the nine -1 ids as ONE record
+   @deep draft 88 -> shape 6 ins (frame 0x240 = the original's). Kept: the nine -1 ids as ONE record
    (form, win2, slider, back, extra, bars[4]; the original's rep stosd covers exactly those slots, base
    +0x18..+0x38, and spills win2 / slider / extra into them as they are set: 84 -> 12), cleared with memset
    (the loop over the record = one code); d2_SetForm(form, 2) written in both arms of the owner test (the
@@ -5327,7 +5327,7 @@ TUTSTATE ai_TutorialState = { 0 };  /* 0x6fa060, the tutorial state record ai_Tu
    on the quit control sets sv_PopRequest. The teardown fades out again, closes the three windows, removes the two
    objects, deletes the 3D objects, re-enables the listed objects, restores viewport, clip rectangle, scene, sky and
    camera and releases the callback of the run record
-   @stuck draft 378 -> shape 36 ins, slots only: the view walk as an index loop with a block pointer vw =
+   @deep draft 378 -> shape 36 ins, slots only: the view walk as an index loop with a block pointer vw =
    &d2_Views[v] (-210), list[0x300] (the object count; 0x2f2 was short), cam3 / save3 as D3VECTOR4 and
    CANNONSCENE 0x104 (bmin's fourth float: the original's frame 0x750), rotv block-local (shares the
    view-pointer slot), rotv.x = 0 last, list[n++] before the disabled store. Left: two equal-density frame
@@ -5682,7 +5682,7 @@ typedef struct CANNONROT {  /* ai_CannonCamera's rotation / position vector: thr
    ms during the first 4, then (1 - (elapsed - 4) * 0.0125)^2) times 50 pushes the cannon object back along the
    level aim direction and the wimpel out from ai_WimpelPos; after it the wimpel is set back and the cannon object placed at
    the scene position
-   @stuck match-deep 2026-11-14: draft 142 -> 50 ins. Levers that moved: pos.w stored as an int 0
+   @deep match-deep 2026-11-14: draft 142 -> 50 ins. Levers that moved: pos.w stored as an int 0
    (CANNONROT, 99 -> the zero web in ebx from the zero block on, as the original); d as a 16-byte D3VECTOR4
    (its slot packs with ratio and the qword temps at the original's 0x14); the d copies after the v.x
    statement (xy9: fpu 55 -> 23). No lever: ai_FloatOne / ai_FloatZero objects (= same distance), recoil
@@ -6101,7 +6101,7 @@ int ai_ScatterShot(struct SHOTREC *shot, float sideSpread, struct D3VECTOR *side
    gv_SalvoCharge) and its slot awaited (pump 0x20007). Then one LOCATIONS\DOMIZIL\KANONE1.esc script per ball
    runs at the barrel's object (sc->obj8c[sel]) with its offset (x, y, z) and the "Explosion" sound plays (the
    variation 3 for one ball, 2 for two, 1 for three)
-   @stuck 476 -> 460 ins: the six vectors fwd / side / up / p1 / p2 / p3 as D3VECTOR4 (the original's frame
+   @deep 476 -> 460 ins: the six vectors fwd / side / up / p1 / p2 / p3 as D3VECTOR4 (the original's frame
    0x1cc with a 4-byte hole behind each; the frame now equal), copy order fwd x,z,y / up z,x,y (2591 copy
    orders: best 460). Left (code 276, fpu 166): the x87 stack allocation of the t / p chains (the original
    keeps a base component with fld st(0) / fst and int-copies one per case), and the ball index a * 12 the
@@ -7209,7 +7209,7 @@ void ai_GraveDeadName(GVGRAVE *e, char *out);
    Section 7: a free grave shows its size's name (txt 0x4100), else the holder (the character's name, or the
    item of that id), the year "AD %i" (until + 1400) and the state in percent (txt 0x4101 .. 0x4103); with flag 1
    a slider (0xbf, txt 0x42f1) 0xb4 wide is added at the bottom. The scroll position is restored
-   @stuck draft 30 -> shape 22 ins. Kept: the M9 labels as the objects ai_FmtLabel / ai_CharNameFmt; the
+   @deep draft 30 -> shape 22 ins. Kept: the M9 labels as the objects ai_FmtLabel / ai_CharNameFmt; the
    item fill as the plain index loop ((GVWIN *)w)->items[i].grave / id / btn (gives the original's lea
    [n*3+0x51] form; the int-pointer walk is gone); the collect loop as items[n].f with n++ (the item++
    walk: 24, a count-free bound in the for: 34). Left: the constant 0 web: the original zeroes ebp at
@@ -7404,7 +7404,7 @@ typedef struct GVPICK {
    selects it (list and detail redrawn), on a dead person (flag 0) or the slider (flag 1) fills out and calls cb
    (or ends the window when out is wanted and there is no cb); 150 ms after the start everything is redrawn every
    frame
-   @stuck match-deep 2026-11-14 (256 ins kept; headers sample: insensitive, 32 samples one codegen). Read
+   @deep match-deep 2026-11-14 (256 ins kept; headers sample: insensitive, 32 samples one codegen). Read
    again: the original puts the right-button sv_PopRequest store out of line (cmp [rup],ebp / jne, the
    store cross-jumped with the flag-1 one): if (dm_L.rup == 0) { if (d2_ClickedId != -1) {..} } else
    sv_PopRequest = 1; gives that layout (and the && form the same code) but 312 ins: the allocation is the
@@ -7562,7 +7562,7 @@ void ai_GraveWindow(GVPICK *out, AIBLD *rec, char *title, int flag, void (*cb)(A
    picture 0x6c7 with the dead person's icon (interactive), the name and second line centred in font 0x54 and the
    five traits with their value bars. Section 5: the player's character as the holder, the year "AD %i" (until +
    1400) and the care in percent (txt 0x4101 .. 0x4103); the scroll position is kept
-   @stuck draft 70 -> 31 ins. Kept: the collect and fill loops as plain index loops on ((GVDETAILWIN
+   @deep draft 70 -> 31 ins. Kept: the collect and fill loops as plain index loops on ((GVDETAILWIN
    *)w)->items[n] / [i] (the item++ walk and the int-pointer fill walk gone: 70 -> 33, the e / n stores and
    the IV base on the id field now as the original), the M9 labels as ai_FmtLabel / ai_CharNameFmt, the
    trait loop's y += 0xd in the for increment (the original's inc before add esp: order 16 -> 12). Left: e
@@ -9983,7 +9983,7 @@ float gm_GoodsPrice(unsigned id, unsigned char p);
    then the list: the goods it is made of with their amounts (section 4, text 0x25), the guild-house buildings
    that make it (gm_BuildingItemGroups, section 3, text 0x26), for the item types 0x17 / 0x25 the buildings that use the
    item idx and the extra slot 0x444 (text 0x624); "$C" when the list stayed empty; returns the view
-   @stuck 273 -> 53 ins: d2_WinOpenPicStyled called with a short y (cast macro d2_WinOpenPicStyledS, as
+   @deep 273 -> 53 ins: d2_WinOpenPicStyled called with a short y (cast macro d2_WinOpenPicStyledS, as
    sv.c; the row y is recomputed per call, loop counters in memory: -101), the staff loop as an index loop
    over ai_CharsT (countdown edx 0x300: -117), (float)(c->sk81 * (1.0 / 1008)) + factor (the fxch pair).
    Left: only the type 0x17/0x25 chain layout (all 49 code ins, 0x58869f..0x588843): the original puts each

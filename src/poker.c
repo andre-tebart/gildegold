@@ -411,7 +411,7 @@ void ai_PokerPayStakes(void)
 }
 /* 0x4a7ac0, picks each NPC's strategy (seat->strategy) from its hand: 3 nothing yet, 2 go for the rank, 1 pairs,
    0 random
-   @stuck byte-register class of dealt. Meaning re-read against the original (loops, deck[k+i] / deck[i+j]
+   @deep byte-register class of dealt. Meaning re-read against the original (loops, deck[k+i] / deck[i+j]
    owner at +8, shown at +0xc, seat[s].strategy at +0x30 + s*0x34, the strategy chain): equal. The original
    keeps the unsigned char dealt in dl (cmp dl,5 / mov eax,edx; and eax,0xff) and ai_PokerTable in esi, s
    in ebp, maxr ebx, maxn edi in the first loop (stored to [esp+0x18] after it), pairs at [esp+0x14] (inc
@@ -551,7 +551,7 @@ void ai_PokerNpcFold(void)
 }
 /* 0x4a7e70, counts the open cards (2 .. dealt-1) of seat s per suit and rank: the most common suit (count n, suit g)
    and rank (count m, rank r)
-   @stuck constant-0 web, not text order. The original keeps 0 in no callee-saved register: cnt[1..4]
+   @deep constant-0 web, not text order. The original keeps 0 in no callee-saved register: cnt[1..4]
    stored from eax (the xor eax,eax that also zero-extends dealt), cnt[5..9] from ecx, cnt[0] and *g / *r
    as immediates (mov dword ptr [esi], 0), frame 0x28 + push ebx/esi; ours makes one zero web over the
    init, *g = 0 and *r = 0 and gives it edi for the whole function (push edi / xor edi,edi / mov
@@ -708,7 +708,7 @@ int ai_PokerRateHand(int owner, int *g1, int *g2, int *r1, int *r2)
 }
 /* 0x4a8190, the showdown: the winning seat (seat 0 against 1, the better of them against 2), its hand into winHand;
    two empty hands against an empty seat 2 compare the high card of the winner with seat 1's (as the original does)
-   @stuck meaning re-read against 0x4a8190..0x4a84da (both switches case by case, the both-empty high-card path,
+   @deep meaning re-read against 0x4a8190..0x4a84da (both switches case by case, the both-empty high-card path,
    every winHand store / return): no difference. The merged 'winHand = kind[2]; return 2' tail: VC6 cross-jumps every
    copy of that statement pair into one block (also with break-form cases, = control); writing four of the nine sites
    as 'w = 2; winHand = kind[w]; return w' (a 511-mask sweep, m14a: kind[2]>k, case 1 r1, case 2 r1, case 6/8) keeps
@@ -1757,7 +1757,7 @@ found:
 /* 0x4aa120, decide callback of the visit actions: as 0x4a9a00 with the actions of the table 0x600e5c that p (ctx 1)
    or p with its partner (ctx 2, from the job list 0x45) may do, unless in already names one (kind 0x10), and asks
    that action's callback
-   @stuck (2nd pass, after ai_DecideLeisureAction reached byte with the same text: the case results through r with r
+   @deep (2nd pass, after ai_DecideLeisureAction reached byte with the same text: the case results through r with r
    = 0 before the switch, else-if kind 0x10 with a trailing return 0; here 116 -> 115 ins, n2 still in ebx and in
    reloaded; 'r = 0' at the top in place of 'n2 = 0' (n2 then unset without a partner) spills n2 into the shared slot
    but moves n1/n2 registers, not kept) side choice rewritten as the original's branches (if n1 { side = n2 ?

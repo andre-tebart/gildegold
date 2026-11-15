@@ -188,7 +188,7 @@ void d3iot_LoadTexSet(char *name, char **out, int *w, int *h)
 extern float cm_Pi;  /* 0x5eb7dc, the shared pi (cm.c) the rotation is added to */
 
 /* 0x44d330, loads a BGF mesh (or finds it among the loaded ones)
-   @stuck tiebreak: insensitive (headers sample, 32 samples one codegen). Kept: the RemoveDoubleMaterials
+   @deep tiebreak: insensitive (headers sample, 32 samples one codegen). Kept: the RemoveDoubleMaterials
    loop 0-based with j = i + 1 (398 -> 311 ins) and ntexsets <= 0 (-> 309, the original's cmp edi,ebx/jle
    with 0 in ebx). Tried, no lever (= control): if/else swap and while form of the weld j-loop, &desc.pts[]
    spelling, !flag01, *(used + i - 1), cm_Pi + rot order, bv.y/av.y for t1/t2. Worse: the poly-index if

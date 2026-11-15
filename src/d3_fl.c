@@ -329,7 +329,7 @@ void d3fl_FreeCache(void)
 }
 /* 0x43f300, 256 texture triangles: 4 fixed ones covering the inner square (f..1-f), then 63 x 4 randomly
    placed, scaled (0.9..1.23) and rotated copies of the same four triangles
-   @stuck earlier: read whole against 0x43f300..0x43f895; loop turns corners c01/c10/c11 by m into r,
+   @deep earlier: read whole against 0x43f300..0x43f895; loop turns corners c01/c10/c11 by m into r,
    writes r * s + o (x87 order: both summed, then scaled; m * 0.0 terms kept), rot.z before rot.x/rot.y;
    tried for the head g + f / f + g. This pass: rot.z = (rand() * D3FL_2PI) / (float)RAND_MAX gives the
    original's fmul 2pi + fmul 1/RAND_MAX (was one folded constant, a real M10); r as D3VECTOR4 (frame 0x78

@@ -549,7 +549,7 @@ found:
    (the strength / 100, up to 100); starts the smoke, earth and explosion particles at the ball (bigger when a building was hit) and
    the sound "Explosion" at the nearest building; with damage set the owners of the hit buildings get message 0x4f with the strength
    (mode 1), or the building's level (field 0x5c) falls by it (mode 2)
-   @stuck kept: c copied field by field (shot in ebx pushed after the init loop, as the original), fd
+   @deep kept: c copied field by field (shot in ebx pushed after the init loop, as the original), fd
    through dx (dx = sqrt(...); fd = dx: the original's fstp st(3)), fv = w * energy in each arm, pos / lo
    as D3VECTOR4 (the original's frame strides its vectors by 16): 383 -> 300 ins, frame 0x1a8 -> 0x1b0 of
    0x1b4. Every other vector subset as D3VECTOR4 tried (63 rows): worse. No change (= control): mode = 0
@@ -1653,7 +1653,7 @@ GVYARD *gv_AllocGraveyard(unsigned char *o)
    is below 3): allocates the larger record (gv_AllocGraveyard), copies the graves of the old sizes and the entries' state
    (all but their grave pointers) over, takes the open flags and frees the old record (gv_FreeGraveyard); returns the new
    record, or 0 (the old one stays) when o does not qualify or there is no memory
-   @stuck this pass: the counts as one int n[4] (the original's 0x10-byte frame with n[2] at +8; VC6 keeps
+   @deep this pass: the counts as one int n[4] (the original's 0x10-byte frame with n[2] at +8; VC6 keeps
    n[0], n[1] in registers) and set in index order n[0], n[1], n[2] before the memcpys (60 -> 8 ins, shape).
    Left (sib 26): the four disp stores of the first copy loop address [base + esi + d] in the original ('+ mov
    dword ptr [edx+esi+4],ecx'), ours [esi + base + d]; the loops over lists[1] / lists[2] agree. Tried for
