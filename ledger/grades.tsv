@@ -1515,7 +1515,7 @@ exe	0x0048ef10	ai_ExecSecretRoom3	am	byte	readable
 exe	0x0048f010	ai_DecideCannonTower	am	byte	readable		
 exe	0x0048f1e0	ai_ExecCannonTower	am	byte	readable		
 exe	0x0048f250	ai_FindOwnBuilding	am	byte	readable		
-exe	0x0048f2b0	ai_DecideBuildSculpture	am	draft	readable	deep	
+exe	0x0048f2b0	ai_DecideBuildSculpture	am	byte	readable		
 exe	0x0048f500	ai_ExecBuildSculpture	am	byte	readable		
 exe	0x0048f600	ai_DecideUseAlchemyItems	am	draft	readable	deep	
 exe	0x0048f990	ai_ExecUseAlchemyItems	am	byte	readable		
@@ -1563,7 +1563,7 @@ exe	0x00492a40	ai_DecideLaw26	am	byte	readable
 exe	0x00492b80	ai_DecideLaw8	am	byte	readable		
 exe	0x00492d50	ai_DecideLaw27	am	byte	readable		
 exe	0x00492e90	ai_DecideLaw28	am	byte	readable		
-exe	0x00492fd0	ai_MakeDuelOpponent	am	draft	readable	deep	
+exe	0x00492fd0	ai_MakeDuelOpponent	am	byte	readable		
 exe	0x00493200	ai_DuelStart	am	byte	readable		
 exe	0x00493390	ai_DuelAcceptAction	am	byte	readable		
 exe	0x004933d0	ai_DuelSetAction	am	byte	readable		
@@ -1595,7 +1595,7 @@ exe	0x00495520	am_RegisterMethod	am	byte	readable
 exe	0x00495770	ai_PushAction	am	byte	readable		
 exe	0x00495790	ai_PopAction	am	byte	readable		
 exe	0x004957a0	ai_ActionOnStack	am	byte	readable		
-exe	0x004957d0	ai_ChooseAction	am	draft	readable	deep	
+exe	0x004957d0	ai_ChooseAction	am	byte	readable		
 exe	0x00495a50	ai_ChooseSubAction	am	shape	readable		
 exe	0x00495ce0	ai_ExecuteAction	am	shape	readable	deep	
 exe	0x00495ee0	ai_RollCharFlags	am	byte	readable		
@@ -3155,7 +3155,7 @@ exe	0x0050b170	gm_DonationRank	f3gm	byte	readable
 exe	0x0050b1e0	gm_DonationTop5	f3gm	byte	readable		
 exe	0x0050b290	gm_LikingChance	f3gm	shape	readable		
 exe	0x0050b2f0	gm_TreeNodeRank	f3gm	shape	readable		
-exe	0x0050b3a0	gm_LayoutTree	f3gm	draft	readable	deep	
+exe	0x0050b3a0	gm_LayoutTree	f3gm	byte	readable		
 exe	0x0050b9f0	gm_UpdateTechTree	f3gm	shape	readable		
 exe	0x0050c310	gm_TreeLine	f3gm	byte	readable		
 exe	0x0050c340	gm_TechTreeWindow	f3gm	shape	readable		
@@ -4004,7 +4004,7 @@ exe	0x00578440	ai_TutorialFreeRuns	sv_t	byte	readable
 exe	0x005784a0	ai_TutorialInitMainIntro	sv_t	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	sv_t	byte	readable		
 exe	0x00578e40	ai_TutorialInitChapter2	sv_t	byte	readable		
-exe	0x00579570	ai_TutorialInitChapter3	sv_t	byte	readable		
+exe	0x00579570	ai_TutorialInitChapter3	sv_t	shape	readable		
 exe	0x0057aa80	ai_TutorialInitChapter4	sv_t	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	sv_t	byte	readable		
 exe	0x0057b750	ai_TutorialInitMainOutro	sv_t	byte	readable		
