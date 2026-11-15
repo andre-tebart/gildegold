@@ -2698,24 +2698,18 @@ int ai_DuelOpponentAction(AGDUEL *d, AGCH *c)
     }
     return 0;
 }
-/* 0x493a40, advances the duel to its next phase: phase 2 compares the sides' triples, phases 3 and 4 the dice sums (over 17 or kind 4 ends the side's turn)
-   @deep read the whole function against the original: control flow, conditions (sum > 17 / kind 4 -> phase
-   6 / 5), the triple compare and both sum loops match instruction for instruction. Left is allocation
-   only: the original spills sum1 to a push-ecx frame slot ([esp+0x10], reloaded at
-   0x493b14/0x493b4c/0x493ba8) and keeps s1 in ebp; ours keeps sum1 in edx and spills s1 to the argument
-   slot [esp+0x14] (mov edi,[esp+0x14] + jmp at +0x98), which also shifts the 'jg/je -> phase 6' targets.
-   Tried reordering the initializers/declarations: no change to the spill choice. */
+/* 0x493a40, advances the duel to its next phase: phase 2 compares the sides' triples, phases 3 and 4 the dice sums (over 17 or kind 4 ends the side's turn) */
 
 void ai_DuelNextPhase(AGDUEL *d)
 {
-    int ph = d->phase;
-    int i = 0;
+    int ph;
+    int i;
     int s1 = 0;
     int s2 = 0;
     int sum1 = 0;
     int sum2 = 0;
-    int n;
 
+    ph = d->phase;
     if (ph == 1) {
         d->phase = 2;
         return;
@@ -2725,34 +2719,25 @@ void ai_DuelNextPhase(AGDUEL *d)
             s1 = d->t1[2] + d->t1[1] + d->t1[0];
         if (d->t2[0] == d->t2[1] && d->t2[0] == d->t2[2])
             s2 = d->t2[2] + d->t2[1] + d->t2[0];
-        if (s1 <= s2) {
-            if (s2 > 0) {
-                d->phase = 6;
-                return;
-            }
-            if (d->kind1 == 4) {
-                d->phase = 6;
-                return;
-            }
-            d->phase = (d->kind2 == 4) * 2 + 3;
+        if (s1 > s2) {
+            d->phase = 5;
             return;
         }
+        if (s2 > 0) {
+            d->phase = 6;
+            return;
+        }
+        if (d->kind1 == 4) {
+            d->phase = 6;
+            return;
+        }
+        d->phase = d->kind2 == 4 ? 5 : 3;
+        return;
     } else {
-        n = d->n1;
-        if (n > 0) {
-            do {
-                sum1 += d->t1[i];
-                i++;
-            } while (i < n);
-        }
-        i = 0;
-        n = d->n2;
-        if (n > 0) {
-            do {
-                sum2 += d->t2[i];
-                i++;
-            } while (i < n);
-        }
+        for (i = 0; i < d->n1; i++)
+            sum1 += d->t1[i];
+        for (i = 0; i < d->n2; i++)
+            sum2 += d->t2[i];
         if (ph == 3) {
             if (sum1 > 17 || d->kind1 == 4) {
                 d->phase = 6;
@@ -2765,18 +2750,19 @@ void ai_DuelNextPhase(AGDUEL *d)
             d->phase = 4;
             return;
         }
-        if (ph != 4)
-            return;
-        if (sum2 <= 17 && d->kind2 != 4) {
+        if (ph == 4) {
+            if (sum2 > 17 || d->kind2 == 4) {
+                d->phase = 5;
+                return;
+            }
             if (d->kind1 == 3 && d->kind2 == 3) {
                 d->phase = (sum1 <= sum2) + 5;
                 return;
             }
             d->phase = 3;
-            return;
         }
+        return;
     }
-    d->phase = 5;
 }
 /* 0x493be0, sets object o's target (field 0x1e) for its owner p: an office holder (sel 7) picks a colleague of his office column he dislikes, sel 10 a partner from the random walk; without one the target is cleared to -1 (always for sel 3 / 4, else two times in three) */
 

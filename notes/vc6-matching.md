@@ -189,6 +189,12 @@ Where the pushes and pops sit, how many epilogue copies there are, shared agains
   xor after `test eax,eax; jne`)**: one `return 0` too many in an if / else-if chain that ends in a test: `else
   return 0;` before `if (id == -1) return 0;` is `else id = -1;` (VC6 threads that arm into the id test's copy).
   (ai_ExecuteProduceGood 43 -> byte)
+- **A later exit cross-jumps into the wrong one of two identical `x = 6; return` copies (short jcc against the
+  original's near jcc to the first copy)**: no shared fall-through store at the end: write each `d->phase = 5;
+  return;` at its own site (`if (s1 > s2) { d->phase = 5; return; }`, `if (sum2 > 17 || k == 4) { d->phase = 5;
+  return; }`) instead of nesting the other cases and falling into one final `d->phase = 5;`. Also there: a
+  local initialised at its declaration from a field (`int ph = d->phase;`) against `ph = d->phase;` after the
+  declarations decides whether a sum is spilled to its own push-ecx slot. (ai_DuelNextPhase 58 -> byte)
 - **Tails twice in the original**: written twice; a shared tail (LeaveCriticalSection) is duplicated into if/else
   branches, not with an early return (msx_Stop).
 - **Fail block inline**: an `||` test split into two ifs, each with cleanup + goto fail.

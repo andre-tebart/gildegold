@@ -1570,7 +1570,7 @@ exe	0x004933d0	ai_DuelSetAction	am	4ee96c0a77d0a787	no	byte	control=byte p1=byte
 exe	0x00493420	ai_DuelThrow	am	f043b34ac40684f9	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x004937a0	ai_DuelAct	am	6a0cd36093d8ced8	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00493890	ai_DuelOpponentAction	am	5bf2e72c569088f8	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x00493a40	ai_DuelNextPhase	am	97fced63f8eef512	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
+exe	0x00493a40	ai_DuelNextPhase	am	bc8eeaa14c147e28	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	be3297427c0ea85e
 exe	0x00493be0	ai_ChooseObjectTarget	am	1749ed4082f8abc7	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x00493ea0	ai_FindSuccessor	am	a17c0f90593c8b9e	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00494020	ai_PlanWorth	am	76563c14b45c13af	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
