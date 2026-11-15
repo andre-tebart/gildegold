@@ -99,7 +99,7 @@ def main():
             ad = re.search(r"fn=(0x[0-9a-f]+)", head)
             body = open(os.path.join(OUT, name + ".best.c"), encoding="latin-1").read()
             vf = os.path.join(OUT, name + ".apply.txt")
-            open(vf, "w", encoding="latin-1", newline="\n").write("### best\n/* 0x%x, x */\n\n%s" % (int(ad.group(1), 16), body))
+            open(vf, "w", encoding="latin-1", newline="\n").write("### best\n/* 0x%x, x */\n%s" % (int(ad.group(1), 16), body.lstrip("\n")))
             done = dcp("try", name, vf, "--apply", "best")
             os.unlink(vf)
             ok = "replaced by variant" in done
