@@ -2473,22 +2473,31 @@ int ai_DuelSetAction(AGDUEL *d, AGCH *c, int k)
     return 1;
 }
 /* 0x493420, a throw of the side c in the duel d: k != 0 throws three dice (faces from the ag_Chance row of skill 2, then a skill bonus of 0..3 pips added to one, the lowest or each die by a random way, unless all three are equal); k == 0 adds one die, its face from the row plus -1..1 by skill 0 and the sum so far, kept in 1..6
-   @deep read whole against the original and rebuilt its meaning: the side selection as if / else if /
-   else, the skill bonus as sv ? 2 : 3 / sv ? 1 : 2 / sv ? 0 : 1 with the 4 / 8 die as two calls, the
-   lowest-die search (m > t[i], best <= -1) before the random-die way, the k == 0 die chooser by f > 0.66 /
-   0.44 first, the face loop holding the store and the __max(__min(best + j + 1, 6), 1) clamp. All calls,
-   constants and stores agree. Left (328/320 instructions, all allocation): ours has a 4-byte frame (push
-   ecx and 6 pop ecx: lvl in its own local) where the original keeps lvl and a in d's dead slot [esp+0x10],
-   f in c's, h and r in k's, so every [esp+N] differs by 4 (slots); the third bonus picks 'test ax, ax;
-   sete cl; mov edi, ecx' where the original has 'mov di, ax; neg di; sbb edi, edi; inc edi' (sv ? 0 : 1, 1
-   - (sv != 0), !sv tried); the h == 0 loop and the sum loop have i and the temporary in eax/ecx swapped,
-   the 'lea eax, [ecx + edi]' adds are 'add', and the early returns jump to another of the merged
-   epilogues. */
+   @deep Levers that moved it (106 -> 18 ins, all kept): a separate float (roll) for the three k != 0 dice
+   rolls, so r of the k == 0 path no longer conflicts with f (frame now the original's: lvl/a in d's slot,
+   f/roll in c's, h/r in k's, no push ecx); the third skill bonus written as two arms (else if (f >
+   0.3333f) { sv = util_RandomU(4); extra = sv ? 0 : 1; } else { sv = util_RandomU(8); extra = ...; }:
+   cross-jumped, gives neg/sbb/inc instead of sete); the three bonus clamps as __min(6, t[x] + n) (jle, the
+   load temp apart from the sum: lea). Left (18 ins): the else arm of the side selection loads c twice from
+   its slot (mov ebp,[esp+0x14] / mov edi,[esp+0x14]) where ours copies esi; in the h == 0 loop inc eax
+   after the store and before dec edi (ours: dec edi first); the sum loop's xor ecx after mov dl,[edi]; the
+   final fall-through store t[*n] = w with the index in ecx (ours edx); lea eax,[edx+ecx+1] operand order
+   for best + j + 1 (j + best + 1, best + (j + 1): = control). No lever: t = n = c chained or swapped, sum
+   init in the for, extra-- before the store (much worse). prior: read whole against the original and
+   rebuilt its meaning: the side selection as if / else if / else, the skill bonus as sv ? 2 : 3 / sv ? 1 :
+   2 / sv ? 0 : 1 with the 4 / 8 die as two calls, the lowest-die search (m > t[i], best <= -1) before the
+   random-die way, the k == 0 die chooser by f > 0.66 / 0.44 first, the face loop holding the store and the
+   __max(__min(best + j + 1, 6), 1) clamp. All calls, constants and stores agree. Left (328/320
+   instructions, all allocation): ours has a 4-byte frame (push ecx and 6 pop ecx: lvl in its own local)
+   where the original keeps lvl and a in d's dead slot [esp+0x10], f in c's, h and r in k's, so every
+   [esp+N] differs by 4 (slots); the third bonus picks 'test ax, ax; sete cl; mov edi, ecx' where the
+   original has 'mov di, ax; neg di; sbb edi, edi; inc edi' (sv ? 0 : 1, 1 - (sv != 0), !sv tried); the h
+   == 0 loop and the sum loop have i and the temporary in... */
 
 void ai_DuelThrow(AGDUEL *d, AGCH *c, int k)
 {
     unsigned char *t, *n, lvl;
-    float f, r;
+    float f, r, roll;
     int i, j, sum, w, m, best, a, b, g, extra, h;
     short sv;
 
@@ -2515,30 +2524,30 @@ void ai_DuelThrow(AGDUEL *d, AGCH *c, int k)
         } else if (f > 0.5555f) {
             sv = util_RandomU(0x10);
             extra = sv ? 1 : 2;
+        } else if (f > 0.3333f) {
+            sv = util_RandomU(4);
+            extra = sv ? 0 : 1;
         } else {
-            if (f > 0.3333f)
-                sv = util_RandomU(4);
-            else
-                sv = util_RandomU(8);
+            sv = util_RandomU(8);
             extra = sv ? 0 : 1;
         }
-        r = util_RandomF();
+        roll = util_RandomF();
         for (i = 0; i < 6; i++) {
-            if (r <= ag_Chance[lvl][i]) {
+            if (roll <= ag_Chance[lvl][i]) {
                 a = i + 1;
                 break;
             }
         }
-        r = util_RandomF();
+        roll = util_RandomF();
         for (i = 0; i < 6; i++) {
-            if (r <= ag_Chance[lvl][i]) {
+            if (roll <= ag_Chance[lvl][i]) {
                 b = i + 1;
                 break;
             }
         }
-        r = util_RandomF();
+        roll = util_RandomF();
         for (i = 0; i < 6; i++) {
-            if (r <= ag_Chance[lvl][i]) {
+            if (roll <= ag_Chance[lvl][i]) {
                 g = i + 1;
                 break;
             }
@@ -2554,10 +2563,7 @@ void ai_DuelThrow(AGDUEL *d, AGCH *c, int k)
             for (i = 0; i < 3; i++) {
                 if (extra == 0)
                     return;
-                w = t[i] + 1;
-                if (w > 6)
-                    w = 6;
-                t[i] = (unsigned char)w;
+                t[i] = (unsigned char)__min(6, t[i] + 1);
                 extra--;
             }
             return;
@@ -2573,17 +2579,11 @@ void ai_DuelThrow(AGDUEL *d, AGCH *c, int k)
             }
             if (best <= -1)
                 return;
-            w = t[best] + extra;
-            if (w > 6)
-                w = 6;
-            t[best] = (unsigned char)w;
+            t[best] = (unsigned char)__min(6, t[best] + extra);
             return;
         }
         j = util_RandomU(3);
-        w = t[j] + extra;
-        if (w > 6)
-            w = 6;
-        t[j] = (unsigned char)w;
+        t[j] = (unsigned char)__min(6, t[j] + extra);
         return;
     }
     f = gm_GetSkill(c, 0);
