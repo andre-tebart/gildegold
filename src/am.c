@@ -7969,27 +7969,39 @@ int ai_ExecuteMayorPrison(G5CH *p, AIARG *s1, AIARG *s2)
 /* 0x49e7a0, decide callback of "Baumeister" (0x2f, characters with +0x166 == 0xa, from year 4 on, when the
    object 0x115 of building 1 holds (rand(3000) + 1000) * 32): raise the level of a building of kind 3; else
    (1 in 8) upgrade a free building of kind 3 to type 9, one of type 9 to type 10, or build type 8
-   @deep read whole against the original: conditions, ternary (lvl < 0x42 ? 30 : 10), the kind lookup
-   through rec->type (no spilled local) and all stores match; same instruction count (236/236). Left is
-   slot allocation: the original keeps o (gm_Query result) in the dead parameter a's slot ([esp+0x60]) and
-   money in a local ([esp+0x10]), ours the reverse (mov ecx,[esp+0x58] / mov edx,[esp+0x20] vs mov
-   ecx,[esp+0x60] / mov eax,[esp+0x10]), which reorders the s2 setup before ai_ChooseSubAction; and the
-   original's frame is 0x4c with two unused 4-byte holes (0x1c, 0x28) vs our 0x44. Declaration order tried,
-   no change. */
+   @deep frame fixed: the counters and the found buildings are int cnt[3] / AIBLD *best[3] indexed by type
+   - 8 ([0] type 8, [1] type 9, [2] for type 10 unused: the original's two holes), frame 0x4c, 32 -> 16
+   ins. Left: o (gm_Query result) and money swap homes - the original puts o into the dead parameter a's
+   slot and money into [esp+0x10]; ours the reverse. Packer rule (c2frame): o and money both count 2, the
+   tie goes to the one that reaches count 2 first in the walk, i.e. whose reference comes first in the s2
+   fill. s2.ref = o->objId before s2.arg = money fixes the slots (6 ins) but then money is stored after the
+   push (the original: s2.arg store first, then objId); plus the s1.kind store sits after 'cmp bl,0x21' in
+   the original. Rounds: s2 fill 24 orders x o/money decl order (best 1023: 6 ins), climb move/swap 4
+   rounds (6 ins / 32 bytes, s1.ref before s1.kind + s2.ref before s2.arg), o assigned inside the money
+   call / b reused as o / o test / thresh local / cmp swapped: = control or worse; s2 fill in both arms of
+   the lvl < 0x21 test: 123; ternary for arg2: = control. Next: find a reference to o that counts before
+   money's (or a third o reference) with the original's store order. prior: read whole against the
+   original: conditions, ternary (lvl < 0x42 ? 30 : 10), the kind lookup through rec->type (no spilled
+   local) and all stores match; same instruction count (236/236). Left is slot allocation: the original
+   keeps o (gm_Query result) in the dead parameter a's slot ([esp+0x60]) and money in a local ([esp+0x10]),
+   ours the reverse (mov ecx,[esp+0x58] / mov edx,[esp+0x20] vs mov ecx,[esp+0x60] / mov eax,[esp+0x10]),
+   which reorders the s2 setup before ai_ChooseSubAction; and the original's frame is 0x4c with two unused
+   4-byte holes (0x1c, 0x28) vs our 0x44. Declaration order tried, no change. */
 
 int ai_DecideMasterBuilder(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
 {
-    AIBLD *recA, *recB, *b, *rec;
+    AIBLD *best[3], *b, *rec;
     AIOBJ *o;
     char lvl;
-    int cntA, cntB, i, money, r;
+    int cnt[3];
+    int i, money, r;
     AIARG s1;
     AIARG s2;
 
-    recA = 0;
-    recB = 0;
-    cntA = 0;
-    cntB = 0;
+    best[0] = 0;
+    best[1] = 0;
+    cnt[0] = 0;
+    cnt[1] = 0;
     if (ai_Time.year < 4 || f != 0 || ((unsigned char *)p)[0x166] != 0xa || a != 0)
         return 0;
     b = gm_FirstBuilding(1);
@@ -8026,32 +8038,32 @@ int ai_DecideMasterBuilder(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         if (rec->type == 0xa)
             continue;
         if (rec->type == 9) {
-            cntB++;
+            cnt[1]++;
             if (!(rec->flags5a & 0x41))
-                recB = rec;
+                best[1] = rec;
         } else {
-            cntA++;
+            cnt[0]++;
             if (!(rec->flags5a & 0x41))
-                recA = rec;
+                best[0] = rec;
         }
     }
     if (util_RandomU(8) != 0)
         return 0;
-    if (cntA != 0 && recA != 0) {
+    if (cnt[0] != 0 && best[0] != 0) {
         o1->kind = 4;
         o1->ref = 9;
         o1->arg = 1;
         o2->kind = 4;
-        o2->ref = recA->id;
+        o2->ref = best[0]->id;
         o2->arg = 1;
         return 0x2f;
     }
-    if (cntB != 0 && recB != 0) {
+    if (cnt[1] != 0 && best[1] != 0) {
         o1->kind = 4;
         o1->ref = 0xa;
         o1->arg = 1;
         o2->kind = 4;
-        o2->ref = recB->id;
+        o2->ref = best[1]->id;
         o2->arg = 1;
         return 0x2f;
     }

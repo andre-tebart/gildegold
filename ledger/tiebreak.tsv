@@ -1700,7 +1700,7 @@ exe	0x0049def0	ai_DecideMayorTownHall	am	fd23b1c39a64ecf8	no	byte	control=byte p
 exe	0x0049e230	ai_ExecuteMayorTownHall	am	abc5267a0acb03b3	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0049e350	ai_DecideMayorPrison	am	88907b2addcacdb4	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0049e680	ai_ExecuteMayorPrison	am	ddb15e804415b555	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x0049e7a0	ai_DecideMasterBuilder	am	179bc0aaaad85490	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
+exe	0x0049e7a0	ai_DecideMasterBuilder	am	ea81dc3c4f7c4afa	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	ee1e298b0301c8ef
 exe	0x0049ea90	ai_ExecuteMasterBuilder	am	2b15b998de048ecb	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
 exe	0x0049ec10	ai_EvalDarkCorner	am	3c5b17d7129a7213	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0049ed10	ai_DecideDarkCorner	am	54d0553eaf117683	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
