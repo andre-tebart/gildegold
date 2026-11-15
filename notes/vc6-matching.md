@@ -13,7 +13,8 @@ measure` marks two observations that disagree: try both. Some notes name scripts
   register, a hoisted constant, a reload from its slot; Shared against separate failure blocks; Where a return block
   is laid out; Which copy of a cross-jumped tail survives, the join position; Search loops and their exits; Return
   type and small return forms; When an exit hunk resists
-- **Branch layout, conditions, switches** (68 rules): Which arm is inline and which is out of line; Redundant tests
+- **Branch layout, conditions, switches** (68 rules): How VC6 orders blocks and merges tails (c2.dll); Which arm is
+  inline and which is out of line; Redundant tests
   the original keeps, threading; Jumps into another arm, goto chains, shared tails; setcc, defaults, conditional
   assignments; Compare operand order and the constant written; Unsigned, signed and float jcc; min / max and clamps;
   Switch dispatch, case order, empty cases; Caught only by dcp link (dcp build masks these); Functions brought to
@@ -348,6 +349,46 @@ Where the pushes and pops sit, how many epilogue copies there are, shared agains
 
 ## Branch layout, conditions, switches
 Which arm is inline, jumps into another arm, threaded and redundant tests, `&&` / `||` forms, compare operand order and jcc, `setne` against a branch, ternaries, switch dispatch and case order.
+
+### How VC6 orders blocks and merges tails (c2.dll)
+
+Read from C2 13.00.9044 and checked on toys with `tools/c2dag/c2tail.py` (merges, tries, `--il` dumps) and
+`c2pass.py --skip` (`c2pass.py --list` names the sites). A `return` is `eax = ..; jmp Lexit`; the epilogue is
+copied back into short predecessors only after all of this.
+- **Block order (before allocation, FUN_1073cc0d; skip 0x10703443 = C1's order)**: the blocks are relinked in
+  reverse postorder of a depth-first walk from the entry (FUN_10702fb0) that follows each test's JUMP edge
+  before its fall-through; the exit block last. C1 emits `if (c) goto L;` as `jncc skip; jmp L` and `if (c)
+  {..}` as `jncc after`, so the walk first follows the code after a goto test, after an if body, after a loop
+  (its entry test jumps there), and into the then-part of an `||` (`jcc then`). The return block it finishes
+  first is laid out directly in front of the exit label and falls into it; a block first reached late lands
+  right behind its test. Text order, label positions, `goto` against nesting and `!`/`!=` spellings of the
+  same flow graph give the same code; only the graph and which edge is the jump count. Example: `if (b) goto
+  fail; if (a != 0x48 && a != 0) goto fail; .. if (r == 7 && m < 3) goto fail; o2->arg2 = 0x48; return 0x48;
+  fail: return 0;` puts the default last (`jge default; fail: xor ..; default:`); `if (b || (a != 0x48 && a
+  != 0)) goto fail;` reaches fail through the `||` jump first, so the default stays in front of fail and the
+  test reads `jne default; jl fail` (ai_DecideUseAlchemyItems byte).
+- **The mergers (after allocation, before scheduling)**: the flow pass FUN_1070a5fe, up to 17 rounds, called
+  with merging on from FUN_1070ec81; every merge ends in FUN_1071355b(deleted copy, kept copy).
+  - `xjump` (FUN_10712437, skip 0x1070a91d): each `jmp L` against the code that falls into L, up to 30
+    instructions back per side, a conditional jump ends the region (labels and jmps do not). Matched as a
+    dependency graph: an instruction that can be last on both sides and is equal is sunk; the copy before the
+    jmp is deleted, the jmp goes to a new label in front of the kept copy. No size limit. Each round can take
+    one more step back (an equal jcc included), so a tail merged into the block before the epilogue grows.
+    Hence: whichever return block falls into Lexit absorbs the equal endings of every other return (the
+    alchemy default took the `o2->arg2 = 0x48; return 0x48;` of two arms and was then laid out behind the
+    first).
+  - `pair` (FUN_10711fe6 -> FUN_1074633c, skip 0x1070a6da): two `jmp L` of one label, linear match back from
+    both jmps (same opcode, flags, operands; a jcc equal when its target is). Deleted: the jmp later in L's
+    reference list (newest first: usually the earlier jmp in the source; a retargeted jmp moves to the front),
+    unless that copy is entered by fall-through and the other is a whole block behind a jmp / ret. Both
+    entered by fall-through: merged only when the equal run measures more than 22 (FUN_10710628: a 7-ins mov /
+    call tail 23, a 20-ins x87 / call tail 20 -> never merged).
+  - `move` (FUN_107120b9 -> FUN_107711fb, skip 0x1070a6e9): the same for a label nothing falls into (behind a
+    jmp / ret), no size limit; the first reference's copy is deleted and the kept copy moved in front of L.
+- **Reading a tail hunk**: `c2tail.py SRC FUNC --tries` lists what was compared and merged with source lines;
+  `--il merge` shows which block falls into the exit label; `C2DAG_TRYDUMP=1` prints a pair's equal count and
+  size. A tail merged in ours and not in the original (or the reverse) is almost always another block in
+  front of the exit label: find the flow-graph change that lets the walk finish another return first.
 
 ### Which arm is inline and which is out of line
 
@@ -1697,8 +1738,9 @@ Store order in a fill, hoisted loads and sunk stores, statement order effects, `
   2. FUN_1070b884 merges stack adjusts along a straight run (it stops at a label or a jump): an earlier
      `add esp` is deleted and its amount added to the LATER one. So the merged cleanup sits where the last
      adjust of the run was: after the last call, or after a store only if another adjust follows that store.
-  3. Cross-jumping (FUN_10712437, runs twice; skip 0x1070a91d to switch it off) takes every `jmp L`, and
-     compares up to 30 instructions before the jmp with up to 30 before L (labels do not stop it). It matches
+  3. Cross-jumping (FUN_10712437, every round of the merging flow pass; skip 0x1070a91d to switch it off; "How
+     VC6 orders blocks and merges tails") takes every `jmp L`, and compares up to 30 instructions before the
+     jmp with up to 30 before L (labels do not stop it, a conditional jump does). It matches
      from the bottom over a dependency graph, not linearly: any instruction of one side that could legally be
      last and has an identical one on the other side is moved to the end of both and shared; the jmp then goes
      to a new label in front of the shared tail. That is the pass that turns `call; add esp,8; mov [g],ebx`
@@ -3151,6 +3193,10 @@ How to work: variant rounds, the c2 tools, sweeps, what the tools' output means,
 - **`python tools/c2dag/c2frame.py SRC FUNC [--refs] [--variants FILE --label L]`**: the packer: each local's size
   and refs at layout (L rows), slot table before / after the sort (B / A; A index 0 nearest esp); `--refs` each
   reference in walk order.
+- **`python tools/c2dag/c2tail.py SRC FUNC [--tries] [--il pre|merge|post|all] [--asm] [--variants FILE --label
+  L]`**: the tails VC6 merged (by xjump / pair / move, deleted and kept copy with source lines), what it
+  compared, and the IL around the merging pass (which block falls into the exit label). Rules: "How VC6 orders
+  blocks and merges tails". `c2pass.py --list` names the call sites that switch block order and each merger off.
 - **`uv run --with capstone python tools/c2dag/vdiff.py SRC FUNC [VARIANTS LABEL]`**: one dcp try variant's
   instruction diff against the original, tree untouched.
 - **flip.py reading rule**: a hit on a DUPLICATED statement = the value has two uses in the original (a loop, the

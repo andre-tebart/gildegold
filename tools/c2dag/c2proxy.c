@@ -156,6 +156,157 @@ static void __cdecl hXJ(unsigned long *r)
     xjRegion(lab, j);
     fprintf(out, "\n");
 }
+/* tail merging after allocation (fg.c, the flow pass FUN_1070a5fe run with merging on from FUN_1070ec81): every
+   merge ends in FUN_1071355b(first, last of the copy that is deleted, first, last of the copy that is kept); its
+   return address names the merger. `tmerge FUNC by WHO` then both runs as opcode@line, first to last.
+     xjump  FUN_10712437  a `jmp L` against the code falling into L (graph match, up to 30 instructions)
+     pair   FUN_1074633c  two `jmp L` of one label L (linear match from the jmps backwards; the later reference
+                          of L's list against an earlier one)
+     move   FUN_107711fb  two `jmp L` when nothing falls into L: the kept copy is moved in front of L
+     ret    FUN_1072a413  return-value merging (only when [c2+0xc45a0] == 0, i.e. not under /O2)
+   `ttry FUNC pair|move jmp@A jmp@B` is one attempt of the two linear mergers (A = the copy deleted by default). */
+static void runText(void *a, void *b)
+{
+    int g = 0;
+    void *p = a;
+    for (; p && g < 64 && !IsBadReadPtr(p, 0x24); p = PTR(p, 0), g++) {
+        fprintf(out, " %lx@%d", U32(p, 4), (int)*(short *)((char *)p + 0x10));
+        if (p == b)
+            return;
+    }
+    fprintf(out, " ..");
+}
+static const char *curName(void)
+{
+    char *cur = *(char **)((char *)real + 0xad730), *nm = 0;
+    if (!IsBadReadPtr(cur, 0x1c))
+        nm = *(char **)(cur + 0x18);
+    return nm && !IsBadStringPtrA(nm, 128) ? nm : "?";
+}
+static void __cdecl hMerge(unsigned long *r)
+{
+    unsigned long *sp = (unsigned long *)r[4], ra;
+    const char *who;
+    if (!out || IsBadReadPtr(sp, 0x10))
+        return;
+    ra = sp[0] - (unsigned long)real;
+    who = ra == 0x126b2 ? "xjump" : ra == 0x4660d ? "pair" : ra == 0x712ff ? "move" : ra == 0x76887 ? "ret" : "?";
+    fprintf(out, "tmerge %s by %s o2=%lu\n  deleted:", curName(), who, U32(real, 0xc45a0));
+    runText((void *)r[7], (void *)r[6]);
+    fprintf(out, "\n  kept:   ");
+    runText((void *)sp[1], (void *)sp[2]);
+    fprintf(out, "\n");
+}
+static void __cdecl hTry(unsigned long *r, const char *who)
+{
+    void *a = (void *)r[7], *b = (void *)r[6], *o, *lab = 0;
+    if (!out || IsBadReadPtr(a, 0x24) || IsBadReadPtr(b, 0x24))
+        return;
+    o = PTR(a, 0x1c);
+    if (o && !IsBadReadPtr(o, 0x18) && U8(o, 8) == 4 && !IsBadReadPtr(PTR(o, 0x14), 0x34))
+        lab = PTR(PTR(o, 0x14), 0x30);
+    fprintf(out, "ttry %s %s jmp@%d jmp@%d L%04lx\n", curName(), who, (int)*(short *)((char *)a + 0x10),
+            (int)*(short *)((char *)b + 0x10), (unsigned long)lab & 0xffff);
+    if (getenv("C2DAG_TRYDUMP")) {
+        void *s[2];
+        int k, g;
+        s[0] = a; s[1] = b;
+        for (k = 0; k < 2; k++) {
+            void *p = s[k];
+            for (g = 0; g < 6; g++) {
+                p = PTR(p, 0xc);
+                if (!p || IsBadReadPtr(p, 0x28))
+                    break;
+                fprintf(out, "   %c %lx %x %d x24 %lx x28 %lx fl %x |", "AB"[k], U32(p, 4), U8(p, 8), (int)*(short *)((char *)p + 0x10), U32(p, 0x24), U32(p, 0x28),
+                        U16(p, 0xa));
+                if (U8(p, 9) & 1) {
+                    __try {
+                        opnds(PTR(p, 0x1c));
+                        fprintf(out, " |");
+                        opnds(PTR(p, 0x20));
+                    } __except (1) {
+                        fprintf(out, " (fault)");
+                    }
+                }
+                fprintf(out, "\n");
+            }
+        }
+    }
+}
+/* the IL of the function named by C2DAG_IL (plain name) at three points: `pre` before the first flow pass after
+   allocation (FUN_1070ea02), `merge` before the merging flow pass (FUN_1070ec81), `post` after it. One line per
+   label (`Lxxxx:` and its number of references) and per instruction (opcode class line, a jump's target label). */
+static int ilWanted(void)
+{
+    const char *w = getenv("C2DAG_IL"), *nm = curName();
+    size_t n;
+    if (!w || !*w)
+        return 0;
+    if (*nm == '_' || *nm == '@')
+        nm++;
+    n = strlen(w);
+    return !strncmp(nm, w, n) && (nm[n] == 0 || nm[n] == '@');
+}
+static void ilDump(unsigned long fn, const char *stage)
+{
+    void *x, *t, *end;
+    int g = 0;
+    if (!out || !ilWanted() || IsBadReadPtr((void *)fn, 0x10))
+        return;
+    x = PTR(fn, 8);
+    if (IsBadReadPtr(x, 8) || IsBadReadPtr(PTR(x, 0), 0x20) || IsBadReadPtr(PTR(x, 4), 0x24))
+        return;
+    t = PTR(PTR(x, 0), 0x1c);
+    end = PTR(PTR(x, 4), 0x20);
+    if (IsBadReadPtr(t, 4))
+        return;
+    fprintf(out, "til %s %s\n", curName(), stage);
+    for (t = PTR(t, 0); t && t != end && g < 20000 && !IsBadReadPtr(t, 0x28); t = PTR(t, 0), g++) {
+        unsigned cls = U8(t, 8);
+        if (cls == 0x1a) {
+            int n = 0;
+            void *r = PTR(t, 0x1c);
+            for (; r && n < 1000 && !IsBadReadPtr(r, 4); r = PTR(r, 0))
+                n++;
+            fprintf(out, " L%04lx: refs %d\n", (unsigned long)t & 0xffff, n);
+        } else if (U8(t, 9) & 1) {
+            void *o = PTR(t, 0x1c), *lab = 0;
+            fprintf(out, "   %lx %x %d", U32(t, 4), cls, (int)*(short *)((char *)t + 0x10));
+            if (cls == 0x11 && o && !IsBadReadPtr(o, 0x18) && U8(o, 8) == 4 && !IsBadReadPtr(PTR(o, 0x14), 0x34))
+                lab = PTR(PTR(o, 0x14), 0x30);
+            if (lab)
+                fprintf(out, " -> L%04lx%s", (unsigned long)lab & 0xffff, U32(t, 0x24) ? " cond" : "");
+            else {
+                fprintf(out, " |");
+                opnds(PTR(t, 0x1c));
+                fprintf(out, " |");
+                opnds(PTR(t, 0x20));
+            }
+            fprintf(out, "\n");
+        }
+    }
+}
+static void __cdecl hIlPre(unsigned long *r) { ilDump(r[2], "pre"); }
+static void __cdecl hIlMerge(unsigned long *r) { ilDump(r[2], "merge"); }
+static void __cdecl hIlPost(unsigned long *r) { ilDump(r[2], "post"); }
+static void __cdecl hTryPair(unsigned long *r) { hTry(r, "pair"); }
+/* FUN_1074633c after its compare loop: the number of equal instructions and the first unequal pair */
+static void __cdecl hPairCount(unsigned long *r)
+{
+    void *a = (void *)r[2], *b = (void *)r[5];
+    if (!out || !getenv("C2DAG_TRYDUMP") || IsBadReadPtr(a, 0x28) || IsBadReadPtr(b, 0x28))
+        return;
+    fprintf(out, "  pair equal %lu, stop at %lx@%d / %lx@%d\n", *(unsigned long *)(r[4] + 0x20), U32(a, 4),
+            (int)*(short *)((char *)a + 0x10), U32(b, 4), (int)*(short *)((char *)b + 0x10));
+}
+static void __cdecl hTryMove(unsigned long *r) { hTry(r, "move"); }
+/* FUN_1074633c's size test: the bytes of the equal run (counted up to 22; merged only above 22, or 2 when
+   [c2+0xc45a0] is 0) */
+static void __cdecl hPairSize(unsigned long *r)
+{
+    if (out && getenv("C2DAG_TRYDUMP"))
+        fprintf(out, "  pair bytes %lu\n", r[3]);
+}
 static void cands(void);
 static void __cdecl hReg(unsigned long *r)
 {
@@ -489,6 +640,28 @@ static void install(void)
             midhook(0x7b31, 5, hBlock, e1);
             midhook(0x7c42, 5, hUse, e2);
             midhook(0x7ed2, 7, hDef, e3);
+        }
+        {
+            static const unsigned char m1[] = { 0x83, 0xec, 0x08, 0x85, 0xd2 };   /* FUN_1071355b */
+            static const unsigned char m2[] = { 0x83, 0xec, 0x28, 0x53, 0x55 };   /* FUN_1074633c */
+            static const unsigned char m3[] = { 0x83, 0xec, 0x14, 0x53, 0x55 };   /* FUN_107711fb */
+            midhook(0x1355b, 5, hMerge, m1);
+            midhook(0x4633c, 5, hTryPair, m2);
+            midhook(0x711fb, 5, hTryMove, m3);
+            {
+                static const unsigned char m4[] = { 0x8b, 0x44, 0x24, 0x20, 0x85, 0xc0 };   /* 107464fb */
+                static const unsigned char m5[] = { 0x8b, 0x4c, 0x24, 0x10, 0x8b, 0x7c, 0x24, 0x18 };   /* 10746586 */
+                midhook(0x464fb, 6, hPairCount, m4);
+                midhook(0x46586, 8, hPairSize, m5);
+            }
+            if (getenv("C2DAG_IL")) {
+                static const unsigned char i1[] = { 0xe8, 0x64, 0x27, 0xff, 0xff };   /* 1070ea0f call */
+                static const unsigned char i2[] = { 0xba, 0x01, 0x00, 0x00, 0x00 };   /* 1070ec8a mov edx,1 */
+                static const unsigned char i3[] = { 0xe8, 0xd4, 0x24, 0xff, 0xff };   /* 1070ec9f call */
+                midhook(0xea0f, 5, hIlPre, i1);
+                midhook(0xec8a, 5, hIlMerge, i2);
+                midhook(0xec9f, 5, hIlPost, i3);
+            }
         }
     }
 }

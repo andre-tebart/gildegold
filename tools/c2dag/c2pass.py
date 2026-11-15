@@ -2,6 +2,7 @@
 (or a unified diff against the unpatched back end).
 
   c2pass.py SRC FUNC [--skip 0xVA[,0xVA..]] [--diff] [--blocks] [--flags "/I.. .."]
+  c2pass.py --list         the call sites known to switch one back-end step off
 """
 import os, re, shutil, subprocess, sys, difflib, argparse, hashlib
 import pefile
@@ -13,6 +14,18 @@ ROOT = r"C:\Users\andre\Documents\gildegold"
 ENV = dict(os.environ)
 ENV["INCLUDE"] = VC + r"\VC98\Include"
 ENV["PATH"] = VC + r"\Common\MSDev98\Bin;" + ENV["PATH"]
+
+
+# call sites of C2 13.00.9044 whose skip leaves a valid listing without one step (address: what is switched off)
+PASSES = [
+    (0x10703443, "block order: FUN_1073cc0d relinks the blocks in reverse postorder of a depth-first walk from the "
+                 "entry (jump target before fall-through), exit last (before allocation); skipped = C1's source order"),
+    (0x1070aa67, "stack-adjust merging FUN_1070b884: each call's add esp stays behind its call"),
+    (0x1070a6da, "tail merging `pair` FUN_10711fe6 -> FUN_1074633c: two jmps to one label, linear match from the jmps"),
+    (0x1070a6e9, "tail merging `move` FUN_107120b9 -> FUN_107711fb: the same for a label nothing falls into"),
+    (0x1070a91d, "cross-jumping `xjump` FUN_10712437: a jmp against the code falling into its label"),
+    (0x1070a928, "FUN_107128e8, tried on a jmp when cross-jumping found nothing"),
+]
 
 
 def bindir(skips):
@@ -59,12 +72,17 @@ def listing(src, fn, skips, blocks=False, flags=()):
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
-    ap.add_argument("src"); ap.add_argument("func")
+    ap.add_argument("src", nargs="?"); ap.add_argument("func", nargs="?")
+    ap.add_argument("--list", action="store_true", help="the known pass call sites")
     ap.add_argument("--skip", default="")
     ap.add_argument("--diff", action="store_true")
     ap.add_argument("--blocks", action="store_true")
     ap.add_argument("--flags", default="")
     a = ap.parse_args()
+    if a.list or not a.func:
+        for va, what in PASSES:
+            print("0x%x  %s" % (va, what))
+        raise SystemExit(0)
     skips = [int(x, 16) for x in a.skip.split(",") if x]
     fl = a.flags.split()
     new = listing(a.src, a.func, skips, a.blocks, fl)

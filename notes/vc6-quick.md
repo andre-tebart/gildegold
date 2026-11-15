@@ -115,6 +115,11 @@ target, bottom-up), and merges `add esp` along a straight run into the last one.
   follows the per-site register and store order.
 - One failure block inline at the last failing test, the success path falling into the end = no `goto` at all:
   each step sets the result and the next runs under `if (!ret)` (sb_Play).
+- The return block in front of the epilogue label is the first one a depth-first walk finishes that follows each
+  test's jump edge first (the code after a goto test / if body / loop, the then-part of an `||`); it absorbs
+  the equal endings of the other returns (cross-jumping, no size limit). Two copies both reached by
+  fall-through merge only above ~22 bytes. Only the flow graph moves this, never text order or labels:
+  `c2tail.py SRC FUNC --tries --il merge` (vc6-matching "How VC6 orders blocks and merges tails").
 
 **Tests that leave no code.** VC6 decides a test whose outcome is known on every path (`if (f)` after f was
 dereferenced or just set to 0, a flag set by constants) and emits nothing for it, but the block layout and the
@@ -135,6 +140,7 @@ Section names are those of `notes/vc6-matching.md`.
 | The diff shows | First levers | Section |
 |---|---|---|
 | pushes / pops of ebx, esi, edi on the wrong side of an early exit; an epilogue copy more or fewer; `xor eax,eax` placed elsewhere | count the returns; guards + one final return; `ret = x` per step under `if (!ret)`; `p = 0` + `if (p)` for each `return 0` after a cleanup; the code written out at each exit instead of `goto` | Returns |
+| a return's ending merged into another exit (or two copies where the original jumps into one); the default / not-found block in front of the epilogue | `c2tail.py --tries --il merge`: which block falls into the exit label; change the flow graph so the walk finishes the original's block first (`\|\|` guard, goto test, nesting); text order and label moves are no lever | Branch layout (How VC6 orders blocks and merges tails) |
 | an arm out of line whatever the condition; a jump into another arm; a redundant re-test; `setne` against a branch | a flag set by separate ifs; the excluded case in the outer condition; if / else-if with the call in both arms; a ternary against if / else; swap the arms | Branch layout |
 | the same instructions with callee-saved registers swapped, or every scratch register shifted from one point on | c2trace; named local against inline expression; an expression written out twice; statement written in both arms; the init order at the top; one early statement moved (n^2 round) | Register allocation |
 | `[esp+N]` offsets differ, frame size equal or not | dcp frame; block-scope the block-used locals; one array for two; the callee's full record; D3VECTOR4; reference counts (c2frame) | Stack frame |
@@ -172,7 +178,10 @@ Section names are those of `notes/vc6-matching.md`.
   value has two uses in the original (a loop, the expression written again, a macro expanded twice); a hit on a
   changed constant at one site = that block is not shared with its twins in the original.
 - `uv run --with pefile python tools/c2dag/c2pass.py ..`: compile with one back-end pass skipped (cross-jumping
-  off: `--skip 0x1070a91d`) to see which pass makes a layout.
+  off: `--skip 0x1070a91d`) to see which pass makes a layout; `--list` names the known sites (block order,
+  the three tail mergers, add esp merging).
+- `python tools/c2dag/c2tail.py SRC FUNC [--tries] [--il merge] [--variants FILE --label L]`: which tails were
+  merged into which copy (with source lines), what was compared, the IL with the block in front of the exit.
 - `python tools/search/climb.py NAME [--rounds N --beam K --width W --ops a,b]`: a beam search over source
   mutations, each mutant measured with `dcp try`; round 1 is exhaustive (every single mutation), later rounds
   mutate the best texts again. It prints the best text's diff against the start (kept in build/climb/NAME.diff)

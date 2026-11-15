@@ -36,7 +36,7 @@ WORK = os.path.join(ROOT, "build", "c2dag")
 BIN = os.path.join(WORK, "bin")
 # opcode numbers: partly from rea's c2prio (1 mov, d push, e call, f jcc, 10 jmp, 12 lea, 2f cmp, 2a0 return)
 OPS = {0x1: "mov", 0xd: "push", 0xe: "call", 0xf: "jcc", 0x10: "jmp", 0x12: "lea", 0x2d: "add", 0x2f: "cmp",
-       0x33: "test", 0x2a0: "ret", 0x2b0: "(end)", 0xffff: "(edge)"}
+       0x33: "test", 0x34: "xor", 0x1a0: "exit", 0x2a0: "ret", 0x2b0: "(end)", 0xffff: "(edge)"}
 
 
 def env():
