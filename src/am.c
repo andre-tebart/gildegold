@@ -8944,9 +8944,21 @@ int ai_EvalUpgradeGuild(float *a, float *b, int i, G5CH *p, int f, AIARG *o1, AI
    (ai_FindGoodToMake, sub-action 0x39), else build the next type of its line; when the treasury (object 0x142)
    cannot pay, a credit to it (o1 kind 1, o2 kind 0x12) from the character's money above 80000 (a quarter, half
    for the new type)
-   @deep read in full against the original and reconciled: four AIARG locals (repair s1/s2, good b1/b2:
-   frame 0x64 holds all four), the need ternary, c left unset on the good path (its register holds 1
-   there), AIOBJ objId/list, AIBTYPE.maxLevel, G5CH.secondOffice; 312 vs 306 instructions, the 6 extra are
+   @deep Session 2. Kept (108 ins, frame 0x64 ok): literal 1 for o1->arg2 (no c), 'amt + 0x20' written
+   twice in both credit blocks (the original's 0.5 credit has amt in [esp+0x10] and amt+0x20 in esi: a CSE,
+   not amt += 0x20; the frame then drops the money / n spill slots and money gets edi). Left: block layout.
+   The original has the 0.25 credit inline after the repair test and the good path's 'jl' back into it: by
+   the DFS block order that needs TWO credit copies in the source (a goto from the good path makes the
+   credit finish inside the good-path walk = ours), cross-jumped after allocation. But two copies (variants
+   two_fs/two_blk x cse) give o1 refs 16 -> o1 prio 69 takes edi, money splits (the original: bl esi, o
+   ebp, money edi, ebx lvl/need/const 1/n, o1 reloaded); block-scoped AIARGs pack the copies' frames to
+   0x34, function-scope AIARGs keep 0x64. No lever (= control or worse): goto good / credit in the good
+   path (frame packs), if (amt >= money) {..} goto credit, AIARG *volatile o1 probe (credit inline but
+   merges partial). Next: a natural spelling of the two-copy form with o1 below money (fewer o1 refs or
+   more money refs), or flip.py --base on two_fs_cse_c2 for 'mov edi, eax' after gm_SumListAmounts. prior:
+   read in full against the original and reconciled: four AIARG locals (repair s1/s2, good b1/b2: frame
+   0x64 holds all four), the need ternary, c left unset on the good path (its register holds 1 there),
+   AIOBJ objId/list, AIBTYPE.maxLevel, G5CH.secondOffice; 312 vs 306 instructions, the 6 extra are
    allocation: money spilled to [esp+0x10] in the repair path (orig. edi), amt in ebx and n in a slot in
    the new-type path (orig. n in ebx, amt in [esp+0x10] sharing the BuildingKindValue slot), each spill /
    reload a mov. Left: that allocation plus block layout: the original places the credit block (0.25) right
@@ -8961,7 +8973,7 @@ int ai_DecideUpgradeGuild(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     AIOBJ *o;
     unsigned char k;
     char lvl;
-    int money, need, amt, n, m, c;
+    int money, need, amt, n, m;
 
     if (f != 0 || o1->kind != 0 || a != 0)
         return 0;
@@ -9005,18 +9017,16 @@ int ai_DecideUpgradeGuild(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         }
         amt = ai_RepairCost(bl, need);
         if (amt > money) {
-            c = 1;
 credit:
             m = gm_CharCurrency((AIPER *)p, ai_OwnPlayer);
             if (m < 80000)
                 return 0;
-            amt += 0x20;
-            if ((int)((m - 80000) * 0.25f) < amt)
+            if ((int)((m - 80000) * 0.25f) < amt + 0x20)
                 return 0;
             o1->kind = 1;
             o1->ref = o->objId;
-            o1->arg2 = c;
-            o2->arg = amt;
+            o1->arg2 = 1;
+            o2->arg = amt + 0x20;
             o2->kind = 0x12;
             return 0x39;
         }
@@ -9042,7 +9052,7 @@ credit:
         b2.fvalue = 0.0f;
         amt = (int)gm_GoodsPrice(f, ai_OwnPlayer);
         if (amt < money)
-            goto credit;        /* c is not set on this path in the original either (its register holds 1 here) */
+            goto credit;
         n = ai_ChooseSubAction(0x39, p->id, 1, &b1, &b2);
         if (n == 0)
             return 0;
@@ -9070,13 +9080,12 @@ credit:
     m = gm_CharCurrency((AIPER *)p, ai_OwnPlayer);
     if (m < 80000)
         return 0;
-    amt += 0x20;
-    if ((int)((m - 80000) * 0.5f) < amt)
+    if ((int)((m - 80000) * 0.5f) < amt + 0x20)
         return 0;
     o1->kind = 1;
     o1->ref = o->objId;
     o1->arg2 = 1;
-    o2->arg = amt;
+    o2->arg = amt + 0x20;
     o2->kind = 0x12;
     return 0x39;
 }
