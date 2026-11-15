@@ -34,7 +34,9 @@ OUT = os.path.join(ROOT, "build", "climb")
 KEYWORD = re.compile(r"^\s*(if|else|for|while|do|switch|case|default|return|goto|break|continue|\}|\{|#)")
 MEMBER = re.compile(r"(?<![\w\.>\]])([A-Za-z_]\w*(?:(?:->|\.)[A-Za-z_]\w*|\[[A-Za-z_0-9]\w*(?: [+\-] \d+)?\])+)(?!\s*\()")
 IDENT = re.compile(r"[A-Za-z_]\w*")
-TYPES = ("int", "float", "unsigned int", "unsigned char", "short", "char *")
+# a local's type: int and float keep the meaning of nearly every member read; narrower or unsigned types change
+# comparisons and truncate, so they are only tried with --types (and a hit then needs reading against the original)
+TYPES = ["int", "float"]
 
 
 def dcp(*args, timeout=3600):
@@ -357,8 +359,11 @@ def main():
     ap.add_argument("--ops", default=",".join(OPS))
     ap.add_argument("--base", help="a file with the whole function's text (without its comment) to start from")
     ap.add_argument("--seed", type=int, default=1)
+    ap.add_argument("--types", help="the local operator's types, comma separated (default int,float; e.g. int,float,unsigned int,short,char *)")
     ap.add_argument("--resume", action="store_true")
     a = ap.parse_args()
+    if a.types:
+        TYPES[:] = [t.strip() for t in a.types.split(",") if t.strip()]
     os.makedirs(OUT, exist_ok=True)
     rng = random.Random(a.seed)
     ops = [o for o in a.ops.split(",") if o in OPS]
