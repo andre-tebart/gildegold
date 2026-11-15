@@ -523,14 +523,7 @@ int ai_ExecSecretRoom1(AIPX *p, AIARGX *s1, AIARGX *s2)
     cm_SendLongMessage(&msg);
     return 1;
 }
-/* 0x48edc0, execute of "UseSecretRoom" (0x41), way 2: pays the goods amount of s2 and the money of s1, message 0x99 to the character of s1
-   @deep read the whole function against the original: 99/99 instructions, same statements, calls,
-   arguments and branch layout after putting the message fields in the original's store order (to, time,
-   type, fromId, flags, ch, n = s1->ref2, dst[0..2]). The one remaining hunk (0x48ee1e, 14 differing lines)
-   is the 14-byte ai_Time copy only: the original loads time+0 after lea edi and copies the words in order
-   0,4,c,8 through edx/ecx/cx/edx, ours loads time+0 before mov ecx,0x3e and copies 0,4,8,c through
-   edx/eax/ecx/dx: scheduling and allocation of the same four loads and stores, mixed so diffclass reads it
-   as code. */
+/* 0x48edc0, execute of "UseSecretRoom" (0x41), way 2: pays the goods amount of s2 and the money of s1, message 0x99 to the character of s1 */
 
 int ai_ExecSecretRoom2(AIPX *p, AIARGX *s1, AIARGX *s2)
 {
@@ -546,9 +539,9 @@ int ai_ExecSecretRoom2(AIPX *p, AIARGX *s1, AIARGX *s2)
     gm_SendMoneyDelta(p->netId, -(int)s1->arg);
     memset(&msg, 0, sizeof(msg));
     msg.to = p->netId;
-    msg.time = ai_Time;
     msg.type = 0x99;
     msg.fromId = s1->ref2;
+    msg.time = ai_Time;
     msg.flags = 2;
     msg.ch = c->netId;
     msg.n = s1->ref2;

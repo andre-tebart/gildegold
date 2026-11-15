@@ -1510,7 +1510,7 @@ exe	0x0048e9f0	ai_DecideSecretRoom3	am	107a03c564fa9551	no	byte	control=byte p1=
 exe	0x0048eab0	ai_ExecSecretRoom	am	e264ae459f779f0c	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0048eb50	ai_ExecSecretRoom0	am	301b8f0bdb9acb06	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x0048ec90	ai_ExecSecretRoom1	am	748d0ded640061d7	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
-exe	0x0048edc0	ai_ExecSecretRoom2	am	6dcbebea355b974b	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
+exe	0x0048edc0	ai_ExecSecretRoom2	am	6dcbebea355b974b	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	409c2f5b7937e7a1
 exe	0x0048ef10	ai_ExecSecretRoom3	am	526b250bfb4cbefe	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x0048f010	ai_DecideCannonTower	am	4734dfbf60e2c9fe	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0048f1e0	ai_ExecCannonTower	am	918bee9c915c7e8f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
