@@ -185,6 +185,10 @@ Where the pushes and pops sit, how many epilogue copies there are, shared agains
   1;` per site it decides which restore block survives and the register ranking. `tex_Release(snow_tex); snow_tex =
   0;` in each failure branch, then `if (!snow_tex) {..}` (goto: 80 lines worse); `#line` gives the D3DCHECK order
   (Lock 3749, GetPalette 3758, Unlock 3762, GetEntries 3768). (d3t_DropObject, d3t_CreateSnowMipmaps)
+- **Every `return 0` merged into one `pop..; xor eax,eax; ret` block, the original keeps a copy per null test (no
+  xor after `test eax,eax; jne`)**: one `return 0` too many in an if / else-if chain that ends in a test: `else
+  return 0;` before `if (id == -1) return 0;` is `else id = -1;` (VC6 threads that arm into the id test's copy).
+  (ai_ExecuteProduceGood 43 -> byte)
 - **Tails twice in the original**: written twice; a shared tail (LeaveCriticalSection) is duplicated into if/else
   branches, not with an early return (msx_Stop).
 - **Fail block inline**: an `||` test split into two ifs, each with cleanup + goto fail.
