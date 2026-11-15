@@ -10071,27 +10071,34 @@ unsigned short gm_TreeRankStart[64] = {0};  /* 0x770b00 */
 unsigned gm_TreeNodeRank();                /* 0x50b2f0 */
 
 /* 0x50b3a0, lays out the goods tree of the building bld's type from the item *item on (the entries of its objs list that follow it, up to one of goods type 2 / 6) in the w x h area: the nodes go into gm_TreeNodes (id, the two parents, rank = gm_TreeNodeRank) sorted by rank, the first node of each rank into gm_TreeRankStart; the first rank is spread evenly, each further one under the mean x of its parents (equal x spread apart, neighbours 0x50 apart), the whole scaled back into the width when it leaves it, and the ranks spread over the height (0x60 apart at most). 1 when there is nothing to lay out, else 0
-   @deep Read the whole function against the original (527 ins) and rebuilt it section by section: the objs
-   search, the node fill (indexed by gm_TreeNodeCount, written per node), the rank sort, the rank starts,
-   the first rank as (2i+1)*step-0x18, per rank the parent mean, the x sort, the equal-x spread (k/(num-1)
-   - (d>>1)), the 0x50 neighbour push, the bounds with lo>=x / hi<=x, the float rescale (w/(hi-lo+0x78),
-   off=(int)-(m*scale)) and the y spread; every store, compare, call and constant now pairs with the
-   original's. What is left is loop shape and allocation: the original keeps bt and the objs pointer in
-   stack slots (mov eax,[esp+0x1c] / [esp+0x64] reloads at +0x7d, +0x116), runs the x-sort and the 0x50
-   neighbour outer loops as count-down trip counters in [esp+0x18] / [esp+0x68] (sub eax,esi; mov
-   [esp+0x18],eax ... dec eax; jne) where ours keeps i+1 in a register (lea eax,[ecx-1]; cmp eax,ebp; jl),
-   and recomputes &NODES[s].x for the neighbour loop where ours reuses it ([esp+0x28]); tried: compare
-   operand order in the x sort (worse) (size: 504 vs 527 instructions, explained: 23 instructions fewer:
-   the original's two count-down trip counters (sub/mov/dec/mov per outer loop, ~10), its reloads of the
-   spilled bt / objs pointer / s / e (~8) and the recomputed &NODES[s].x (4) where ours keeps them in
-   registers) */
+   @deep Session 2026-11 (match-deep): 289 -> 105 ins. Kept: (1) no s/e locals in the lv loop: every s/e
+   written gm_TreeRankStart[lv] / gm_TreeRankStart[lv + 1] (the original's count-down trip counters of the
+   x-sort and 0x50 outer loops and the neighbour loop's re-done entry test came from this: 289 -> 163;
+   s-only or e-only: 274/163); (2) GMGOOD *g = GM_GOOD(u) named for the 2/6 type test (the original's ebp
+   address candidate; written twice inline or kind: = control); (3) NODES[i].x != NODES[j].x operand order
+   in the equal-x scan (cmp edx,[eax]); (4) no u local: GM_GOOD(bt->objs[n] & 0x7fff) and .id = bt->objs[n]
+   & 0x7fff written out (u ranked above n and took ecx: 177 -> 105). Tried, no lever: n++ forms, kind kept,
+   u unsigned short / unsigned (worse), separate i for search/fill (worse). Left: from the lv loop on
+   (+0x29b): parent-mean loop (original: NODES[i] pointer ebp, num ebx, inner trip in [esp+0x68], j pointer
+   based at .x (gm_TreeNodes+0x10, [ecx-0x10] for id); ours ptr ebx, num [esp+0x68], trip ebp, j ptr at
+   .id), e in ecx vs edx through the x-sort, the spread block (original num=esi, d=edi, k=ebx set late;
+   ours num=edi, d=esi), and the tail regs. prior: Read the whole function against the original (527 ins)
+   and rebuilt it section by section: the objs search, the node fill (indexed by gm_TreeNodeCount, written
+   per node), the rank sort, the rank starts, the first rank as (2i+1)*step-0x18, per rank the parent mean,
+   the x sort, the equal-x spread (k/(num-1) - (d>>1)), the 0x50 neighbour push, the bounds with lo>=x /
+   hi<=x, the float rescale (w/(hi-lo+0x78), off=(int)-(m*scale)) and the y spread; every store, compare,
+   call and constant now pairs with the original's. What is left is loop shape and allocation: the original
+   keeps bt and the objs pointer in stack slots (mov eax,[esp+0x1c] / [esp+0x64] reloads at +0x7d, +0x116),
+   runs the x-sort and the 0x50 neighbour outer loops as count-down trip counters in [esp+0x18] /
+   [esp+0x68] (sub eax,esi; mov [esp+0x18],eax ... dec eax; jne) where ours keeps i+1 in a register (lea
+   eax,[ecx-1]; cmp eax,ebp... */
 int gm_LayoutTree(unsigned char *bld, unsigned short *item, int w, int h)
 {
     GMBTYPE *bt;
     int n, cnt, i, j, k, u, lv, rmax, again;
-    int first, step, s, e, sum, num, lo, hi, d, m, off;
+    int first, step, sum, num, lo, hi, d, m, off;
     float scale;
-    char kind;
+    GMGOOD *g;
     RTNODE tmp;
 
     bt = GM_BTYPE(*bld);
@@ -10102,11 +10109,10 @@ int gm_LayoutTree(unsigned char *bld, unsigned short *item, int w, int h)
         return 1;
     gm_TreeNodeCount = 0;
     for (n++; n < bt->objCount; n++) {
-        u = bt->objs[n] & 0x7fff;
-        kind = GM_GOOD(u)->type;
-        if (kind == 2 || kind == 6)
+        g = GM_GOOD(bt->objs[n] & 0x7fff);
+        if (g->type == 2 || g->type == 6)
             break;
-        NODES[gm_TreeNodeCount].id = u;
+        NODES[gm_TreeNodeCount].id = bt->objs[n] & 0x7fff;
         NODES[gm_TreeNodeCount].p1 = bt->parents[n][0];
         NODES[gm_TreeNodeCount].p2 = bt->parents[n][1];
         NODES[gm_TreeNodeCount].rank = 0xffff;
@@ -10161,12 +10167,10 @@ int gm_LayoutTree(unsigned char *bld, unsigned short *item, int w, int h)
 
     /* each further rank under the mean of its parents */
     for (lv = 1; lv < gm_TreeRanks; lv++) {
-        s = gm_TreeRankStart[lv];
-        e = gm_TreeRankStart[lv + 1];
-        for (i = s; i < e; i++) {
+        for (i = gm_TreeRankStart[lv]; i < gm_TreeRankStart[lv + 1]; i++) {
             sum = 0;
             num = 0;
-            for (j = 0; j < s; j++) {
+            for (j = 0; j < gm_TreeRankStart[lv]; j++) {
                 if (NODES[j].id == NODES[i].p1 || NODES[j].id == NODES[i].p2) {
                     sum += NODES[j].x;
                     num++;
@@ -10178,8 +10182,8 @@ int gm_LayoutTree(unsigned char *bld, unsigned short *item, int w, int h)
         }
         do {
             again = 0;
-            for (i = s; i < e; i++)
-                for (j = i + 1; j < e; j++)
+            for (i = gm_TreeRankStart[lv]; i < gm_TreeRankStart[lv + 1]; i++)
+                for (j = i + 1; j < gm_TreeRankStart[lv + 1]; j++)
                     if (NODES[j].x < NODES[i].x) {
                         tmp = NODES[i];
                         NODES[i] = NODES[j];
@@ -10188,9 +10192,9 @@ int gm_LayoutTree(unsigned char *bld, unsigned short *item, int w, int h)
                     }
         } while (again);
         /* nodes on one x are spread around it */
-        for (i = s; i < e; i++) {
-            for (j = i; j < e; j++)
-                if (NODES[j].x != NODES[i].x)
+        for (i = gm_TreeRankStart[lv]; i < gm_TreeRankStart[lv + 1]; i++) {
+            for (j = i; j < gm_TreeRankStart[lv + 1]; j++)
+                if (NODES[i].x != NODES[j].x)
                     break;
             if (j > i + 1) {
                 num = j - i;
@@ -10202,8 +10206,8 @@ int gm_LayoutTree(unsigned char *bld, unsigned short *item, int w, int h)
             }
         }
         /* neighbours at least 0x50 apart */
-        for (i = s; i < e; i++)
-            for (j = i + 1; j < e; j++) {
+        for (i = gm_TreeRankStart[lv]; i < gm_TreeRankStart[lv + 1]; i++)
+            for (j = i + 1; j < gm_TreeRankStart[lv + 1]; j++) {
                 lo = NODES[i].x;
                 hi = NODES[j].x;
                 if (hi - lo < 0x50) {
