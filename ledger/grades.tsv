@@ -1501,7 +1501,7 @@ exe	0x0048d010	ai_MeisterTradeFernEinkauf	ai	draft	readable	deep
 exe	0x0048d810	ai_MeisterTradeFernEinkauf2	ai	draft	readable	deep	
 exe	0x0048e070	ai_FindMasterBuilding	am	byte	readable		
 exe	0x0048e120	ai_DecideBuildDomizil	am	byte	readable		
-exe	0x0048e370	ai_ExecBuildDomizil	am	draft	readable	deep	
+exe	0x0048e370	ai_ExecBuildDomizil	am	byte	readable		
 exe	0x0048e470	ai_DecideSecretRoom	am	byte	readable		
 exe	0x0048e620	ai_DecideSecretRoom0	am	byte	readable		
 exe	0x0048e730	ai_DecideSecretRoom1	am	byte	readable		
@@ -1570,7 +1570,7 @@ exe	0x004933d0	ai_DuelSetAction	am	byte	readable
 exe	0x00493420	ai_DuelThrow	am	draft	readable	deep	
 exe	0x004937a0	ai_DuelAct	am	byte	readable		
 exe	0x00493890	ai_DuelOpponentAction	am	byte	readable		
-exe	0x00493a40	ai_DuelNextPhase	am	draft	readable	deep	
+exe	0x00493a40	ai_DuelNextPhase	am	byte	readable		
 exe	0x00493be0	ai_ChooseObjectTarget	am	byte	readable		
 exe	0x00493ea0	ai_FindSuccessor	am	byte	readable		
 exe	0x00494020	ai_PlanWorth	am	byte	readable		
@@ -1621,7 +1621,7 @@ exe	0x004973f0	ai_EvalApplyForOffice	am	byte	readable
 exe	0x00497490	ai_DecideApplyForOffice	am	shape	readable		
 exe	0x00497630	ai_ExecuteApplyForOffice	am	byte	readable		
 exe	0x00497660	ai_DecideProduceGood	am	draft	readable	deep	
-exe	0x004979d0	ai_ExecuteProduceGood	am	draft	readable	deep	
+exe	0x004979d0	ai_ExecuteProduceGood	am	byte	readable		
 exe	0x00497af0	ai_DecideBuyRoom	am	byte	readable		
 exe	0x00497c80	ai_ExecuteBuyRoom	am	byte	readable		
 exe	0x00497cf0	ai_DecideRepairBuilding	am	byte	readable		
@@ -1734,7 +1734,7 @@ exe	0x004a3a90	ai_NextNearRingEntry	am	byte	readable
 exe	0x004a3af0	ai_FillNearRing	am	draft	readable	deep	
 exe	0x004a4680	ai_GroupPrices	am	byte	readable		
 exe	0x004a47c0	ai_GetDesireByName	am	byte	readable		
-exe	0x004a49a0	ai_EvalMoodWeights	am	draft	readable	deep	
+exe	0x004a49a0	ai_EvalMoodWeights	am	byte	readable		
 exe	0x004a4ae0	ai_EvalCurrentNeed	am	byte	readable		
 exe	0x004a4c10	ai_EvalGuiltWeights	am	byte	readable		
 exe	0x004a4e30	ai_RepairCost	am	byte	readable		
