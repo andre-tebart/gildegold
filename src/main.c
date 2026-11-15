@@ -3939,7 +3939,7 @@ int sv_MessageBox();
 
 /* A character as main_SettleRound copies it: the four work-setting fields (AICHAR.flags1b4 .. +0x1c3) are one
    AIWORKSET there. The member cannot be declared in ai_char.h: any new member moves tie-break-sensitive
-   functions of sv_t off byte (notes/vc6-quick.md), so the view lives in this unit. */
+   functions of sv_t off byte (notes/vc6-matching.md), so the view lives in this unit. */
 typedef struct MAINCHARWORK {
     char pad000[0x1b4];
     AIWORKSET work;                     /* 0x1b4 */
