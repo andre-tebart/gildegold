@@ -666,6 +666,13 @@ Rotation, test position, countdown, induction variables and strength reduction, 
 - **`mov eax,[esi+eax]` against ours `[eax+esi]` for `list[i]`** (esi = i * 4, the global reloaded into eax): the
   loop ran zero-based, `for (i = 0; i < 8; i++) if (lobby_List[i + 1] == 0)`; the twin loop above it is 1-based
   (lobby_ChoosePlayer byte). No lever: `*(i + p)`, `*(p + i)`, an element local, nested ifs.
+- **The IV base 8 bytes off in a long record loop, every spelling = control** (msx_Update: ours `&t->fadepos`,
+  the original `&t->volume`): the base follows the loop's field references after CSE, not their spelling; probes
+  (never kept) in one block move it: removing one `t->volume` read from the fade-out arm's expression gives the
+  original's base, removing `t->pos` gives pos, adding `t->volume` or removing `t->fadepos` changes nothing. Use
+  `flip.py --want "mov esi, OFFSET FLAT:_arr\+\d+" --avoid <ours>` to find the block, then a probe per field.
+  No lever: `arr[i].f` at every use against `t = &arr[i]`, operand orders, continue against nested ifs, the
+  duration written out at each use, if/else against or-chains in the fade arms. (open)
 
 ### Row and pixel pointers
 
@@ -816,6 +823,10 @@ Rotation, test position, countdown, induction variables and strength reduction, 
 - Two loops over one grid may use separate column counters. Loop-invariant values sit in the preheader after the
   `count > 0` guard: a value the original computes there (alpha, a size factor on the FPU stack) was written in
   the body.
+- **A count loop with the counter loaded into edx, `inc edx`, stored to its slot, and `mov edi,edx` after the
+  loop** (ours counts in edi directly): the increment in the for header with an empty body, `for (m = max(..),
+  levels = 0; m >= min; m >>= 1, levels++) ;` (not `levels++;` as the body, not a while loop) (d3d_LoadTexture
+  77 -> 70 ins).
 
 ### Signed jl against unsigned jb, bounds and guards
 
@@ -1385,6 +1396,14 @@ Frame size, slot order, holes, shared slots, dead parameter slots, block-scoped 
   (d2_DrawWindowText, stuck). Block locals take the slots nearest ebp and share the D3_ZERO temps.
 - **Inline-asm helper spill slots**: `(float f, int *dst)` gave the original's, `(int *, float)` swapped two.
   Declaration order of macro temps decides store order.
+- **Big arrays and records far from their original slots in a frame with D3_ZERO / D3_COPY3 blocks (num and
+  ddscaps2 nearest ebp, namebuf above pal and adw)**: every inline-asm block counts 2 references for every
+  escaped local IN SCOPE at that block (c2frame `R` rows), so a function-scope array gets +16 from 8 macros
+  whatever its own use. A block `{ char namebuf[512]; char num[10]; DDSCAPS2 ddscaps2; ... }` that opens after
+  the last asm block but one takes those counts away; an error block's `char msg[512]` nested INSIDE that block
+  keeps its own slot (two disjoint blocks share one); an array's declared size sets its density (`num[10]` not
+  `[12]`: 4 refs / 10 between the neighbours). No lever: declaration order, block scope of the other records.
+  (d3d_LoadTexture 127 -> 77 ins, then a 34/34 reference tie left between two pointer locals)
 
 ### Slot order swapped, frame size equal
 
@@ -1753,6 +1772,10 @@ Store order in a fill, hoisted loads and sunk stores, statement order effects, `
   `if (i >= 6) { if (i < n) {..} break; }` is `if (i >= 6) break;` plus one `if (i < n)` after the loop. Open:
   VC6 lays the house-owner block out at the function's end (jne there, jmp back), the original inline after the
   `||` test's `je`; no arm form moves it.
+- **The registers of a loop above a store run are off (counter in a register where the original spills it,
+  byte counters rotated)**: the order of the stores AFTER the loop decides them; run the n! round on the tail
+  stores even when the hunk is in the loop (dd_SetMode: the six Bits / Loss stores as RLoss, GLoss, BLoss, GBits,
+  BBits, RBits, 116 -> 39 ins; run it again after any other change upstream, the best order moved once).
 
 ### Init and zero-store order
 
@@ -2337,6 +2360,11 @@ Operand order on the FPU stack, `fst` / `fstp`, float compares, constants, `_fto
   from the byte (`mask = color.a;`), not a direct use.
 - **A byte shifted after `bio_rd_c`** must be `unsigned char` (cast plain-char struct fields).
 - **A byte local compared with an int global spilled**: read the byte twice through the struct pointer.
+- **`movsx eax,bl; and eax,8; shl eax,8; or al,0x40` from an int flags (the and BEFORE the shift)**: an if/else
+  on the cast byte, `if ((char)flags & 8) caps = 0x840; else caps = 0x40;` (VC6 turns it into the
+  branch-free and/shl and keeps the movsx, as for the 0 / 1 bit tests above). No lever: every expression form
+  (`(char)flags * 0x100 & 0x800` keeps the movsx but shifts first), a ternary of either kind, `caps = 0x40; if
+  (..) caps |= 0x800;`, split `&=` / `<<=` statements. (d2_MakeSurface byte; the bullet above that says open)
 
 ### Bitfields and byte read-modify-write
 
@@ -2559,6 +2587,9 @@ Operand order on the FPU stack, `fst` / `fstp`, float compares, constants, `_fto
 - **`strcat(buf, tmp)` in a loop**: the pointer increment after the strcat schedules like the original (before it,
   it moves between the scas pairs).
 - **Inline strcpy / strcat**: strcpy is a byte loop, strcat `repnz scasb`.
+- **A byte copy loop `mov cl,[eax]; mov [eax+esi],cl; inc eax; test cl,cl; jne` (esi = dst - src, ours
+  `[esi+eax]`)**: `strcpy(dst, src)`, not a hand `(*d++ = *s++) != 0` loop (every hand form gives `[esi+eax]` or
+  another shape) (d3d_LoadTexture).
 - **Three loads at function start**: `char tag[] = "SHAPBANK"; memcpy(bank, tag, 8)`. Also: a tick difference
   compared with 1 matches only with the previous-tick variable unsigned; `util_Random` result kept in an `int`;
   `(uint + ushort) % 3` is `xor edx,edx; div`.
