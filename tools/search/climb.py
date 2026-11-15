@@ -368,6 +368,43 @@ def key(b):
     return (1 if b["score"][3] else 0, b["score"][0], b["score"][1], len(b["path"]))
 
 
+def base_text(spec, tree):
+    """--base FILE or FILE:LABEL -> the start lines. FILE is either the whole function's text or a dcp try variants
+    file: then LABEL (default: its only variant) is taken, its <<< old === new >>> blocks applied to the tree's text,
+    or its body used as the whole function. A leading comment line of a whole-function body is dropped."""
+    path, label = spec, None
+    if not os.path.exists(path) and ":" in spec[2:]:
+        path, label = spec.rsplit(":", 1)
+    text = open(path, encoding="latin-1").read().replace("\r\n", "\n")
+    if not text.strip():
+        raise SystemExit("--base %s is empty" % path)
+    if re.search(r"^### ", text, re.M):
+        parts = re.split(r"^### +(\S+)[^\n]*\n", text, flags=re.M)[1:]
+        found = dict(zip(parts[0::2], parts[1::2]))
+        if label is None:
+            if len(found) != 1:
+                raise SystemExit("--base %s has %d variants (%s): name one as FILE:LABEL" % (path, len(found), ", ".join(found)))
+            label = next(iter(found))
+        if label not in found:
+            raise SystemExit("--base: no variant %r in %s (%s)" % (label, path, ", ".join(found)))
+        text = found[label]
+        blocks = re.findall(r"^\s*<<<\s*\n(.*?)\n\s*===\s*\n(.*?)\n?\s*>>>\s*$", text, re.M | re.S)
+        if blocks:
+            body = "\n".join(tree)
+            for old, new in blocks:
+                n = body.count(old)
+                if n != 1:
+                    raise SystemExit("--base: the old text of a block of %r occurs %d times in the function" % (label, n))
+                body = body.replace(old, new)
+            return body.split("\n")
+    lines = [l.rstrip("\r") for l in text.strip("\n").split("\n")]
+    if lines and lines[0].lstrip().startswith("/*") and lines[0].rstrip().endswith("*/"):
+        lines = lines[1:]
+    if not any(l.strip() for l in lines):
+        raise SystemExit("--base %s gives an empty text" % spec)
+    return lines
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("name")
@@ -375,7 +412,7 @@ def main():
     ap.add_argument("--beam", type=int, default=8, help="texts kept per round")
     ap.add_argument("--width", type=int, default=120, help="mutants per kept text and round")
     ap.add_argument("--ops", default=",".join(OPS))
-    ap.add_argument("--base", help="a file with the whole function's text (without its comment) to start from")
+    ap.add_argument("--base", help="the start text: a file with the whole function, or a dcp try variants file as FILE:LABEL (blocks applied to the tree)")
     ap.add_argument("--seed", type=int, default=1)
     ap.add_argument("--types", help="the local operator's types, comma separated (default int,float; e.g. int,float,unsigned int,short,char *)")
     ap.add_argument("--resume", action="store_true")
@@ -390,7 +427,7 @@ def main():
         tree.pop(0)
     start = tree
     if a.base:
-        start = [l.rstrip("\r") for l in open(a.base, encoding="latin-1").read().rstrip("\n").split("\n")]
+        start = base_text(a.base, tree)
     state = os.path.join(OUT, a.name + ".json")
     beam = [dict(lines=start, path=[], score=None)]
     seen_text = set()
