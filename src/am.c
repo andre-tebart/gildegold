@@ -10206,14 +10206,7 @@ int ai_GetDesireByName(char *s)
     sprintf(buf, "amt_GetDesireByName(): Unbekanntes Bed\xfc" "rfnis: %s", s);
     return -1;
 }
-/* 0x4a49a0, eval callback: the action's weights against the moods
-   @deep read in full against the original and reconciled: if (flags & mask) branch first (40/50, found=1),
-   k >= 4 bounds, *a/*b zeroed before act, the conditional divisions (w / d1 : w / d2) in the sum loop.
-   Left is allocation: the original keeps a in ebx and reloads b from [esp+0x18], ours keeps act in ebx and
-   b in ebp (0x4a49a5 code 16: + mov ebx,[esp+8]; mov [ebx],0; mov [eax],0 / - mov ebp,[esp+0x10]; mov
-   [eax],0; mov [ebp],0), so p->sel is compared from memory in the original and through bl in ours
-   (0x4a4a78, 0x4a4aa4: + cmp al,[edx+0x130] / - mov bl,[edx+0x130]; cmp al,bl) and the sums go through ebx
-   / [esp+0x18] (0x4a4a99, 0x4a4ac9); the rest is the rotation ebp->ebx ebx->edi edi->ebp */
+/* 0x4a49a0, eval callback: the action's weights against the moods */
 
 int ai_EvalMoodWeights(float *a, float *b, int i, AIPER *p, int f, void *x, void *y)
 {
@@ -10236,18 +10229,18 @@ int ai_EvalMoodWeights(float *a, float *b, int i, AIPER *p, int f, void *x, void
     for (k = 0; !found; k++) {
         if (k >= 4)
             break;
-        if (act->w1[k].k == p->sel && act->w1[k].w > 0.0f)
+        if (act->w1[k].k == p->sel && act->w1[k].w > ai_FloatZero)
             found = 1;
     }
     for (k = 0; !found; k++) {
         if (k >= 4)
             break;
-        if (act->w2[k].k == p->sel && act->w2[k].w > 0.0f)
+        if (act->w2[k].k == p->sel && act->w2[k].w > ai_FloatZero)
             found = 1;
     }
     for (k = 0; k < 4; k++) {
-        *a = (act->w1[k].k == p->sel ? act->w1[k].w / d1 : act->w1[k].w / d2) * p->mood[act->w1[k].k][2] + *a;
-        *b = (act->w2[k].k == p->sel ? act->w2[k].w / d1 : act->w2[k].w / d2) * p->mood[act->w2[k].k][2] + *b;
+        *a = (act->w1[k].k == p->sel ? act->w1[k].w / d1 * p->mood[act->w1[k].k][2] : act->w1[k].w / d2 * p->mood[act->w1[k].k][2]) + *a;
+        *b = (act->w2[k].k == p->sel ? act->w2[k].w / d1 * p->mood[act->w2[k].k][2] : act->w2[k].w / d2 * p->mood[act->w2[k].k][2]) + *b;
     }
     return found;
 }

@@ -1016,6 +1016,12 @@ Which value gets which callee-saved register, the eax / ecx / edx rotation, cons
 
 ### Callee-saved registers swapped: a priority race lost by a point or two
 
+- **Two out-pointer sums `*a`, `*b` in one loop: the original keeps a in ebx and reloads b, ours the reverse (or
+  act / a swapped)**: the product written in each arm of the ternary, `*a = (k == sel ? w / d1 * m : w / d2 * m) +
+  *a;` (same for b), not `(k == sel ? w / d1 : w / d2) * m + *a`; the code is the same shape, only the reference
+  counts move. Generate the product of the per-sum forms (ternary of factors / of products / whole if-else /
+  ternary of whole sums) x init order: one round of 32. (ai_EvalMoodWeights 54 -> byte; ai_EvalGuiltWeights is
+  the w > 0 variant)
 - **A copy `n = cnt` placed after the call that uses cnt** (`cnt = f(); if (cnt == 0) return 0; i =
   util_RandomU(cnt); n = cnt;`): the block of `i = ..` then holds one candidate more (P 4 instead of 3), i's
   priority rises 6 and it outranks q; the copy before the test or `n = f(); cnt = n;` left i one point short
