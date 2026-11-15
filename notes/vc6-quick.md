@@ -186,6 +186,12 @@ Section names are those of `notes/vc6-matching.md`.
   round 1 left at 2-8 instructions. `--base FILE:LABEL` starts from one of your `dcp try` variants.
   `python tools/search/sweep.py` runs it over every function below byte (results: `sweep.py --report`).
 - Generators are script files (`python gen.py > v.txt`); `python -` with a PowerShell here-string hangs.
+  `dcp try` takes about 1 s per 17 variants (5040 variants: 5 minutes) and holds the daemon meanwhile: other
+  dcp calls wait; split big rounds or narrow them first.
+- `flip.py --want` with a regex spanning two calls (`call A[\s\S]*call B`) finds what decides the code between
+  them when a single wanted instruction is already in the base. The scratch registers rotate through the whole
+  function, so a change far up (a named pointer local, a duplicated statement as a probe) can decide which tails
+  cross-jump at the end.
 - An odd instruction form of the original (`[esp+esi+0x90]` with `add esi,4`): grep the whole original for it
   and read the byte functions that have it (`dcp disasm 0x401000 ..END --no-bytes > all.asm`; it stops at the
   first bytes that do not decode, so restart past them). Their source names the construct.

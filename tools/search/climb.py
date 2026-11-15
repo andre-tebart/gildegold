@@ -372,6 +372,9 @@ def base_text(spec, tree):
     """--base FILE or FILE:LABEL -> the start lines. FILE is either the whole function's text or a dcp try variants
     file: then LABEL (default: its only variant) is taken, its <<< old === new >>> blocks applied to the tree's text,
     or its body used as the whole function. A leading comment line of a whole-function body is dropped."""
+    m = re.match(r"^/([a-zA-Z])/", spec)                      # a Git-Bash path /c/... for Windows Python
+    if m:
+        spec = m.group(1) + ":/" + spec[3:]
     path, label = spec, None
     if not os.path.exists(path) and ":" in spec[2:]:
         path, label = spec.rsplit(":", 1)
