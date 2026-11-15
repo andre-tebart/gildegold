@@ -1500,7 +1500,7 @@ exe	0x0048bc80	ai_MeisterTradeAllgemein	ai	draft	readable	deep
 exe	0x0048d010	ai_MeisterTradeFernEinkauf	ai	draft	readable	deep	
 exe	0x0048d810	ai_MeisterTradeFernEinkauf2	ai	draft	readable	deep	
 exe	0x0048e070	ai_FindMasterBuilding	am	byte	readable		
-exe	0x0048e120	ai_DecideBuildDomizil	am	draft	readable	deep	
+exe	0x0048e120	ai_DecideBuildDomizil	am	byte	readable		
 exe	0x0048e370	ai_ExecBuildDomizil	am	draft	readable	deep	
 exe	0x0048e470	ai_DecideSecretRoom	am	byte	readable		
 exe	0x0048e620	ai_DecideSecretRoom0	am	byte	readable		
@@ -1508,7 +1508,7 @@ exe	0x0048e730	ai_DecideSecretRoom1	am	byte	readable
 exe	0x0048e830	ai_DecideSecretRoom2	am	byte	readable		
 exe	0x0048e9f0	ai_DecideSecretRoom3	am	byte	readable		
 exe	0x0048eab0	ai_ExecSecretRoom	am	byte	readable		
-exe	0x0048eb50	ai_ExecSecretRoom0	am	draft	readable	deep	
+exe	0x0048eb50	ai_ExecSecretRoom0	am	byte	readable		
 exe	0x0048ec90	ai_ExecSecretRoom1	am	draft	readable	deep	
 exe	0x0048edc0	ai_ExecSecretRoom2	am	byte	readable		
 exe	0x0048ef10	ai_ExecSecretRoom3	am	byte	readable		
@@ -1571,7 +1571,7 @@ exe	0x00493420	ai_DuelThrow	am	draft	readable	deep
 exe	0x004937a0	ai_DuelAct	am	byte	readable		
 exe	0x00493890	ai_DuelOpponentAction	am	byte	readable		
 exe	0x00493a40	ai_DuelNextPhase	am	draft	readable	deep	
-exe	0x00493be0	ai_ChooseObjectTarget	am	draft	readable	deep	
+exe	0x00493be0	ai_ChooseObjectTarget	am	byte	readable		
 exe	0x00493ea0	ai_FindSuccessor	am	byte	readable		
 exe	0x00494020	ai_PlanWorth	am	byte	readable		
 exe	0x004941b0	ai_DecideTorture	am	byte	readable		
@@ -1746,7 +1746,7 @@ exe	0x004a5760	ai_FindWantedItems	am	byte	readable
 exe	0x004a58d0	ai_PickPartnerChain	am	shape	readable		
 exe	0x004a5a30	ai_PickPartnerInRange	am	byte	readable		
 exe	0x004a5b50	ai_FindPartnersRandomWalk	am	byte	readable		
-exe	0x004a5d30	ai_PickPartnerRandomWalk	am	draft	readable	deep	
+exe	0x004a5d30	ai_PickPartnerRandomWalk	am	byte	readable		
 exe	0x004a5ef0	ai_FindCandidates	am	shape	readable	deep	
 exe	0x004a61d0	ai_PickPartnerChainLevel	am	byte	readable		
 exe	0x004a63f0	ai_PickActionBuilding	am	byte	readable		
