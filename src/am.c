@@ -459,13 +459,7 @@ int ai_ExecSecretRoom0(AIPX *p, AIARGX *s1, AIARGX *s2)
     cm_SendLongMessage(&msg);
     return 1;
 }
-/* 0x48ec90, execute of "UseSecretRoom" (0x41), way 1: pays the amount of s1 in money, message 0x99 to the character of s1
-   @deep read the whole function against the original: same statements, calls and arguments; put the
-   message fields in the original's store order (to, time, type, fromId, flags, ch, n = s1->ref2,
-   dst[0..2]). Left: allocation and scheduling: the ai_Time copy goes ecx/edx/ecx/dx where ours goes
-   edx/ecx/eax/cx, s2 is loaded into edx before msg.flags (ours eax after), and our compiler tail-merges
-   one building-id store (bld170 branch: mov eax,[eax+1]; jmp to the shared store) where the original
-   stores in each of the three branches (je at +0xc8: ours to +0xcf, the original's to +0xd4). */
+/* 0x48ec90, execute of "UseSecretRoom" (0x41), way 1: pays the amount of s1 in money, message 0x99 to the character of s1 */
 
 int ai_ExecSecretRoom1(AIPX *p, AIARGX *s1, AIARGX *s2)
 {
@@ -480,9 +474,9 @@ int ai_ExecSecretRoom1(AIPX *p, AIARGX *s1, AIARGX *s2)
     gm_SendMoneyDelta(p->netId, -(int)s1->arg);
     memset(&msg, 0, sizeof(msg));
     msg.to = p->netId;
-    msg.time = ai_Time;
     msg.type = 0x99;
     msg.fromId = s1->ref2;
+    msg.time = ai_Time;
     msg.flags = 2;
     msg.ch = c->netId;
     msg.n = s1->ref2;
