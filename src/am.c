@@ -728,33 +728,7 @@ int ai_ExecBuildSculpture(AIPX *p, AIARG *s1, AIARG *s2)
     }
     return ai_ExecBuildBuilding(p, s1, s2) ? 0x43 : 0;
 }
-/* 0x48f600, decide of action 0x48 "UseAlchemistryItems": of the 15 alchemy items 0x2b8..0x2c6 the character holds, uses a random usable one (on a partner chain for the first six, on a building for the seventh), or wants a random missing one bought (year 20+, rank above 4, one year in eight)
-   @deep Registers SOLVED with the twin ai_DecideGraveyardOwner1's mask: LARGE_INTEGER mask; mask.LowPart =
-   0xa0744380; mask.HighPart = 1; (before out = -1) passed as mask.QuadPart (61 -> 28). Year test unsigned
-   as ai_DecideBuildBusiness: ai_Time.year % 8 != (unsigned int)p->netId % 8 (18 -> 14). Kept: r == 6 tail
-   ref, arg, kind, arg2 (14 ins, tail 10). The original's arms are surely in natural order (kind, ref, arg,
-   arg2 in both: the arg store after the AIC load needs ref first). Mechanism of the last hunks (c2dag +
-   probes): the default's block [o2->arg2 = 0x48; return 0x48] is a whole block (label after the r == 7
-   test); VC6 replaces an identical suffix of an earlier arm by a jump to it, places that block after the
-   first such arm (r < 6 falls into it: its pops are not scheduled with its stores, pop edi late) and the
-   default test turns into jge into it. PROOF: a default whose return is IL-different (probe return
-   o1->arg2 + 0x45) leaves r < 6 and r == 6 exactly the original's (natural orders, early pop edi, own
-   epilogues; r < 6 and r == 6 do NOT merge with each other). So the original's default differs from the
-   arms in its IL while compiling to mov eax,0x48 / store / pops: find that spelling. No lever (all =
-   merged): return o2->arg2 (CSE'd first), return o2->arg2 = 0x48, (unsigned)/int-array/char spellings of
-   the store or return, r = 0x48 / dead r = 0 / extra o2->arg = -1 before the store, fail label placements,
-   if/else-if chain with one shared tail, switch forms, r >= 6 arm first (layout follows source: far
-   worse), positive / == 0 / return 0 forms of the partner test, all gotos as return 0 (each gets its own
-   epilogue). prior: read the whole function against the original: every statement, constant, callee and
-   field offset equal; fixed the partner flags (a plain 0xf00500, not a relocated cm_SendRing address; the
-   original's immediate has no relocation). Left: allocation and tail merging: the original keeps p in edi
-   and -1 in ebp (ours p in ebp, -1 in edi), holds the mask 0x1a0744380's low word in edi for both
-   ai_PickActionBuilding calls (reloading p from [esp+0x128]), and gives the r < 6, r == 6 and r == 7
-   returns their own epilogues (0x48f8a8..0x48f8bf, 0x48f935..0x48f954, 0x48f962..0x48f974) where ours
-   cross-jumps them into one shared tail (jmp at 0x48f934, jge at 0x48f948). A __int64 mask local compiles
-   the same (kept: the real prototype instead of the cast macro). (size: 227 vs 246 instructions,
-   explained: the 19 extra instructions of the original are its two more epilogues (pop edi / pop esi / pop
-   ebp / pop... */
+/* 0x48f600, decide of action 0x48 "UseAlchemistryItems": of the 15 alchemy items 0x2b8..0x2c6 the character holds, uses a random usable one (on a partner chain for the first six, on a building for the seventh), or wants a random missing one bought (year 20+, rank above 4, one year in eight) */
 
 int ai_DecideUseAlchemyItems(int a, AIPX *p, int b, AIARG *o1, AIARG *o2)
 {
@@ -762,9 +736,7 @@ int ai_DecideUseAlchemyItems(int a, AIPX *p, int b, AIARG *o1, AIARG *o2)
     int st[3];
     int r;
 
-    if (b)
-        goto fail;
-    if (a != 0x48 && a != 0)
+    if (b || (a != 0x48 && a != 0))
         goto fail;
     memset(rec, 0, sizeof(rec));
     rec[0].item = 0x2b8;
@@ -849,9 +821,9 @@ int ai_DecideUseAlchemyItems(int a, AIPX *p, int b, AIARG *o1, AIARG *o2)
         if (!ai_PickActionBuilding((AIPER *)p, 6, mask.QuadPart, 0, util_RandomU(0x20) + 16.0f, &out))
             goto fail;
     done:
+        o2->kind = 4;
         o2->ref = out;
         o2->arg = -1;
-        o2->kind = 4;
         o2->arg2 = 0x48;
         return 0x48;
     }
