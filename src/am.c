@@ -8526,13 +8526,7 @@ int ai_ExecuteChangeProfession(G5CH *p, AIARG *s1, AIARG *s2)
 /* 0x49f850, decide callback of "Stammtisch" (0x35), the regulars' table: finds up to four kind-0x37 buildings
    of other owners with a table object 0x12d (G5STAMM). A member of one ('leav' it): alone there 1 in 4, else
    when its mean liking of the others / 100 is above 0.666 and a random + 1/6 stays below it; not a member:
-   'join' a table with a free seat 1 in 4 (o2 = its owner); 'noop' (kind 0) otherwise
-   @deep read in full against the original: every statement, constant (0.33, 0.666, 1/6, 0.75) and branch
-   sense reconciled; ours=original=285 instructions, 812 bytes; only scheduling left: the original hoists
-   'mov eax, [esp+0x58]' (o1) above 'jp' at 0x49fa92 so the leav path's jp lands at noop+4 (0x49fb5e)
-   instead of 0x49fb5a, plus order hunks at 0x49f859 (found=-1 store vs call), 0x49fa8e (leav stores),
-   0x49fb60 (noop pops). Tried: leav store order kind/ref/arg (merges both leav tails, worse), negated goto
-   form (same) */
+   'join' a table with a free seat 1 in 4 (o2 = its owner); 'noop' (kind 0) otherwise */
 
 int ai_DecideStammtisch(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
 {
@@ -8545,8 +8539,8 @@ int ai_DecideStammtisch(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     int found, step, i, j, n, k, m, v;
     float sum;
 
-    found = -1;
     step = ai_RandomStrides[util_RandomU(0x10)];
+    found = -1;
     if (p->flags1c8 & AI_CHF_STAMMTISCH)
         return 0;
     if (a != 0)
@@ -8571,7 +8565,7 @@ int ai_DecideStammtisch(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     }
     if (n == 0) {
         if (util_RandomF() > 0.33f)
-            goto noop;
+            goto noop; /* @original one noop tail shared with the join path; written out here it is scheduled apart */
         return 0;
     }
     for (k = 0; k < n; k++) {
@@ -8603,11 +8597,14 @@ int ai_DecideStammtisch(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         if (sum > 0.666f) {
             if (util_RandomF() + 0.166667f < sum) {
                 o1->kind = 4;
-                o1->arg = 'leav';
                 o1->ref = bl[found]->id;
+                o1->arg = 'leav';
                 return 0x35;
             }
-            goto noop;
+            o1->kind = 0;
+            o1->ref = -1;
+            o1->arg = 'noop';
+            return 0x35;
         }
         return 0;
     }
