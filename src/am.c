@@ -123,21 +123,13 @@ int ai_FindMasterBuilding(AIPX *p, int *out)
     }
     return 0;
 }
-/* 0x48e120, decide of "Build Domizil" (0x40): the master's building needs an upgrade he can nearly pay
-   @deep read in full against the original 0x48e120..0x48e368: every statement, callee, constant (0.3f,
-   0.95f, 0.25f) and field matches (93 + 47 + 20 equal instructions). Left: the original cross-jumps the
-   two 'borrow' tails: the else branch (gm_BuildingKindCost cost) computes need in ecx (mov ecx, edi / sub ecx,
-   eax), stores o1->arg and jumps (jmp 0x48e264) into the first branch's tail (mov ecx, [esp+0x50] / mov
-   byte [eax], 0x12 / push .. / call ai_DecideTakeCredit); ours keeps both tails inline with the o1 stores after
-   the pushes ('- mov dword ptr [eax + 8], edi / - mov byte ptr [eax], 0x12' after 'push 0x40'). Tried:
-   kind before arg (no change), a shared goto label for kind + call (100 ins differ), for arg + kind + call
-   (62 ins differ, both tails fully merged): reverted. Block layout / tail merging, not meaning. */
+/* 0x48e120, decide of "Build Domizil" (0x40): the master's building needs an upgrade he can nearly pay */
 
 int ai_DecideBuildDomizil(int a, AIPX *p, int b, AIARGX *o1, AIARGX *o2)
 {
     AIARGX s1, s2;
     AIBLD *bld;
-    int cost, lim, m, need, t;
+    int cost, lim, m, t;
 
     if (ai_FindMasterBuilding(p, (int *)&bld) && !b && (a == 0x40 || a == 0) && !he_FindEvent(2, 0, 0xd, 2, p->id)) {
         if (bld) {
@@ -157,9 +149,8 @@ int ai_DecideBuildDomizil(int a, AIPX *p, int b, AIARGX *o1, AIARGX *o2)
             m = gm_SumListAmounts(p->inventory, ai_OwnPlayer);
             lim = (int)(m * 0.95f);
             if (lim < cost) {
-                need = cost - lim;
-                if ((float)need / cost < 0.25f) {
-                    o1->arg = need;
+                if ((float)(cost - lim) / cost < 0.25f) {
+                    o1->arg = cost - lim;
                     o1->kind = 0x12;
                     return ai_DecideTakeCredit(0x40, p, 0, o1, o2);
                 }
@@ -178,9 +169,8 @@ int ai_DecideBuildDomizil(int a, AIPX *p, int b, AIARGX *o1, AIARGX *o2)
         m = gm_SumListAmounts(p->inventory, ai_OwnPlayer);
         lim = (int)(m * 0.95f);
         if (lim < cost) {
-            need = cost - lim;
-            if ((float)need / cost < 0.25f) {
-                o1->arg = need;
+            if ((float)(cost - lim) / cost < 0.25f) {
+                o1->arg = cost - lim;
                 o1->kind = 0x12;
                 return ai_DecideTakeCredit(0x40, p, 0, o1, o2);
             }
