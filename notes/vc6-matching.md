@@ -242,6 +242,14 @@ Where the pushes and pops sit, how many epilogue copies there are, shared agains
   else ret = -1; } .. if (!ret) { success } return ret;`. The call arm first (`if (!bank) ret = -1; else` leaves
   8-10 ins). No lever: any goto form, `!=`, else-chains (one code); switch, per-site `return ret` worse. (sb_Play 14
   -> byte)
+- **A search loop whose found / not-found exits each have their own epilogue while ours shares the not-found
+  `return 0` with the guards, and a call's `add esp` at the start of the success code left unmerged (scheduled
+  into the following stores, the later calls' cleanup smaller)**: a found flag. `ok = 0; for (;;) { ..; if
+  (found) { sprintf(m.buildPath, ..); ok = 1; break; } if (alt) break; alt = 1; } if (!ok) { error; return 0; }
+  fill; return 1;` - the decided `if (!ok)` leaves the label that stops the merge and keeps the failure block
+  last with its own epilogue. Every loop form without the flag (break, continue, fill after the loop, nested or
+  `||` guards: one code), and a `goto retry` / `continue` form (own epilogues, failure block first) were not it.
+  Then the fill order (5040 permutations, a few byte) (ai_ExecBuildBuilding 65 ins -> byte).
 - **A loop's failure jumping to the FIRST of identical `f(); return 0;` blocks, the original the LAST (rel32 vs
   short `je`)**: VC6 merges into the first in source order; the exit test belongs in the `while`: `do { .. } while
   (main_QuitProgram == 0); main_Exit(); .. return 1;`. No lever: `!x` / `== 0` (31 subsets). (WinMain byte)
