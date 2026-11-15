@@ -54,7 +54,7 @@ def main():
     ap.add_argument("--refresh", action="store_true")
     a = ap.parse_args()
     os.makedirs(CACHE, exist_ok=True)
-    pat = re.compile(compact(a.regex), re.S if a.multi else 0)   # `mov bl, byte ptr [esi + 0x130]` works as well
+    pat = re.compile(compact(re.sub(r" *(\\[+*]) *", r"\1", a.regex)), re.S if a.multi else 0)   # `mov bl, byte ptr [esi + 0x130]` works as well
     todo = [r for r in rows() if (not a.grade or r["code"] == a.grade) and (not a.unit or r["unit"] == a.unit)]
     missing = sum(1 for r in todo if a.refresh or not os.path.exists(os.path.join(CACHE, r["name"] + ".asm")))
     if missing > 50:
