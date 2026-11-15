@@ -1472,3 +1472,55 @@ mechanisms, each as a generated round over all positions / subsets:
   leave them alone, so a shape callee with another register set moves its callers' allocation. gm_PlayerRecord to
   byte took gm_TakeOverCharacter 45 -> 12 ins (then byte). A `short` loop counter gives the original's separate
   `dec; jne` countdown where an int compares the derived offset.
+
+## Stuck review 2026-11-15: what was missing for five stuck functions (4 byte, 1 at 6 ins)
+Each of the five had a long list of tried levers and "allocation only, no source lever" as the reason. None was
+an allocation problem. What was missing, per function, and the check that would have found it:
+- **main_ChoosePlayer (36 slot ins -> byte): the byte twin was never read.** lobby_ChoosePlayer had been matched
+  with ONE `int row[4]` for both button rows (the 8-byte hole behind the shared 8-byte slot in `dcp frame` was the
+  array's other half); the stuck note here still said "the lobby twin has the same slot problem". Missing
+  tooling: nothing carried a twin's fix back. Now: `python tools/sweep/twin.py NAME` (the byte functions with
+  nearly the same statements, and the lines that differ; `--stuck` lists every tagged function with a byte twin).
+  Run it before the first variant of every deep item, and after matching a function run it with `--all` on that
+  function to find the copies that are still below byte. Reading rule: "shared in the original" for two arrays
+  plus a hole of their size = one array of twice the size, used for both.
+- **snd_FindVoiceSample (21 ins -> byte): a `return s;` inside a branch.** The pushes of ebx / esi / edi stood
+  before the early `return 0` test; the notes already say "early return 0 plus ONE final return shrink-wraps, any
+  return inside a branch puts the pushes back at entry" (quick: Control flow). The stuck worker varied the early
+  test (five forms) and never the other return. Byte: the variation / plain lookup as `if (isvar != 0 && var >=
+  0) {..} else {..}` after the name is built, `isvar = 0` at the top, one `return s`. The duplicate-the-block form
+  (GetSample written in both arms) was worse (46). Rule: when the pushes sit on the wrong side of an early exit,
+  count the `return`s first; each one beyond "guards + one final" is the suspect, not the guard.
+- **snd_UpdateRain (33 ins -> byte): assignments inside expressions, and a local per branch.** (1) A handle
+  loaded into a callee-saved register BEFORE the float expression of the volume (`mov edi,[handle]` between `fsub`
+  and `fmul`, `cmp edi,ebx` after `_ftol`): the volume was assigned in the macro argument, `SND_SET(h, name, v =
+  SND_RAINVOL(..), 0, 0)`, not in a statement before it (33 -> 12; all four sites needed it, one alone was 27).
+  (2) `fst slot; fmul t` where ours had `fstp slot; fld slot; fmul`: the same thing one level down, `(depth =
+  2600.0f - f) * t` (12 -> 4). (3) An operand order `fld depth; fmul tm` no commuting changed, in ONE branch: that
+  branch has its own depth local too (`dm`), as it already had its own fraction (`tm`). Rule: a value the
+  original keeps or loads "too early" relative to a statement boundary means there was no statement boundary -
+  try `x = expr` inside the consuming expression before any allocation lever; and when one branch needed its own
+  copy of one local, give it its own copy of the others it uses.
+- **vfs_MemOpen (2 ins -> byte): the failure sites were `f = 0`, not `return 0`.** `xor eax,eax` at the entry
+  and the early exit joining behind the final `mov eax,esi` = the result variable is zero-initialised and there
+  is ONE return. Byte: `if (init fails) { pool_Free(..); f = 0; }`, the bookkeeping tail under `if (f) {..}`,
+  `return f`. VC6 decides `if (f)` on every path (f was dereferenced, or was just set to 0) and leaves no test:
+  **an `if (p)` / `if (!p)` that costs no instruction is invisible in the original and must be tried
+  deliberately.** The stuck worker tried `ret` locals and return spellings, all inside the "failure returns 0"
+  frame. A generated product of exit forms (early test x init x failure form: 60 variants, one `dcp try`) found
+  it in one round; the goto form it found (`f = 0; goto out;`) then translated to the plain one.
+- **vfs_Tfopen (44 -> 6 ins, still stuck): the same lever, half way.** The read success left by `goto done`;
+  without it, falling out of the nested ifs to `if (!f) sprintf(not found)`, the success tail stays in the read
+  path and the write success jumps into it as in the original. (The reload `mov ebp,[f slot]` before a return
+  that "must be 0" is the trace of such a decided test.) Left: the original's labelled final epilogue follows
+  the read tail and Could-write has the private copy; ours the reverse. The rewrite without `found` / `opened`
+  (every zip step under `if (f)`) is further away (146): f's reference count moves it to the first slot.
+Tooling gaps met: (1) `dcp try` shows only rows; to read a variant's asmdiff it must be applied, built and
+reverted. A `dcp try NAME FILE --diff LABEL` would save that. (2) `dcp try` rows are not sorted and `best:` says
+"none closer" when a variant has fewer instructions but a lower grade (shape -> draft at 6 -> 2 ins): read the
+`ins` column yourself. (3) No generator for exit forms: the per-function scripts of this session (products of
+early test / init / failure form / where each arm returns) should become `tools/sweep/exits.py`.
+General: all five stuck notes listed many variants of the hunk's own statement. The lever was each time a
+statement somewhere else (another return, a declaration, an assignment's position). Before marking stuck: twin.py,
+count the returns, try the assignment inside the expression, try `p = 0` + `if (p)` for every `return 0` after a
+cleanup.
