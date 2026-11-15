@@ -3154,7 +3154,7 @@ exe	0x0050b170	gm_DonationRank	f3gm	619c9e50301652e0	no	byte	control=byte p1=byt
 exe	0x0050b1e0	gm_DonationTop5	f3gm	02154535051da6c7	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0050b290	gm_LikingChance	f3gm	b57ce350a7907c20	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
 exe	0x0050b2f0	gm_TreeNodeRank	f3gm	d69d727c8c701b2d	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
-exe	0x0050b3a0	gm_LayoutTree	f3gm	4a9f6770591fbf57	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
+exe	0x0050b3a0	gm_LayoutTree	f3gm	9fffec7f2591a2d9	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	9e7092911818ab97
 exe	0x0050b9f0	gm_UpdateTechTree	f3gm	014c54fb9fb2e8e4	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
 exe	0x0050c310	gm_TreeLine	f3gm	cc18a68c6060a3ba	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0050c340	gm_TechTreeWindow	f3gm	01ad04d71911bad0	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
