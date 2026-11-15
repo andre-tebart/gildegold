@@ -22,13 +22,13 @@ bodies first, then those only reached through view macros; `scope=all` adds the 
 `unit=NAME` keeps only the blocks with a user in `src/NAME.c`; both options may be given).
 
 Hard rules
-- Every tool is `dcp ...` from the project root (`--target NAME` for a target other than the first). Every
+- Every tool is `dcp ...` from the project root. Every
   `dcp` of the project runs in the project's daemon, which the first command starts. `dcp <command> -h`
   explains each one; output is one record per line, `key=value`, addresses `0x%08x`.
 - Files stay UTF-8 without BOM with LF line endings. Change C text only with a file-editing tool, never with
   shell heredocs, `sed` or quoted script strings (they eat backslashes). Never edit `build/` or
   `ledger/grades.tsv` (only `dcp session wrap` / `dcp promote` / `dcp debt add` write it); commit
-  `ledger/tiebreak.tsv` when a probe writes it.
+  `ledger/tiebreak.tsv` when a build's sweep writes it.
 - The sources are the state: the address comment on every data definition, the declarations in
   `include/<unit>.h`, and the unit's lead comment (its `Open: data:` lines, rewritten, never appended to). No
   notes files, no session log.
@@ -151,7 +151,7 @@ Decide which side is wrong:
 One group, one commit: `<unit>: data <name> from the gap block (typing)` - the owner unit, the datum or struct,
 and in the body the extents moved, the declarations dropped and the sites typed when they are not obvious.
 A group that fixed accesses is prefixed `data bug:` and lists each fixed access in the body, one line each:
-`main_RoundReport 0x538a10: read main_GfxOn as a byte -> an int (the original's mov eax, dword ptr
+`main_Report 0x538a10: read main_Flag as a byte -> an int (the original's mov eax, dword ptr
 [0x624560] at the same site)`. `git log --grep "data bug"` is how the user finds them: never fix an access
 without saying so. A message of more than one line goes through a file (`git commit -F <file>`); `git status`
 clean before the next group.
@@ -164,13 +164,11 @@ group, however long. A boundary group does not count.
 
 ## 5. Tie-breaks
 VC6 /O2 can change a function's bytes by the declaration set alone (a moved data definition, a new declaration,
-a typedef nothing uses). `dcp build` probes the unit of such a fall (`dcp headers probe UNIT` by hand; recorded
-in `ledger/tiebreak.tsv`: commit it). A function whose own text did not change and whose bytes move under the
-probe is no fall: M1 prints `tie-break: N functions moved (UNIT)`, and promote takes it. Keep the change. Any
-other M1 is a wrong owner, size or access: fix it or undo the move; never `dcp debt add` for it in this session.
-
-`dcp headers sample NAME` measures one function more widely than the unit probe (random unused declarations
-and layout-preserving member changes inside the include chain); use it when a fall is not explained by the probe.
+a typedef nothing uses). `dcp build` sweeps every fallen function by itself (its text compiled under every
+declaration-set shift; recorded in `ledger/tiebreak.tsv`: commit it). A function whose own text did not change and
+whose text still reaches its old grade under one of those declaration sets is no fall: M1 prints `tie-break: N
+functions moved (UNIT)`, and promote takes it. Keep the change. Any M1 left after the build is a wrong owner, size
+or access: fix it or undo the move; never `dcp debt add` for it in this session.
 
 ## 6. Wrap up
 1. Keep the group in progress only if it builds and checks clean; else revert it.

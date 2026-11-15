@@ -18,10 +18,10 @@ session is `dcp next --tier easy` / `--tier hard`, and you take only that tier's
 the queue as it comes.
 
 Hard rules
-- Every tool is `dcp ...` from the project root (`--target NAME` for a target other than the first).
+- Every tool is `dcp ...` from the project root.
   Every `dcp` of the project runs in the project's daemon, which the first command starts (and a new dcp
   build restarts: `dcp: the daemon restarts ...` once, then the command runs). `dcp serve --status` shows it,
-  `dcp serve --stop` stops it (before deleting build/). A worktree has a daemon of its own.
+  `dcp serve --stop` stops it (before deleting build/).
   `dcp <command> -h` explains each one; output is one record per line, `key=value`, addresses `0x%08x`.
 - Files stay UTF-8 without BOM with LF line endings; any editing tool will do. Never edit `build/` (derived
   state, the store) or `ledger/grades.tsv` (only `dcp session wrap` / `dcp promote` / `dcp debt add` write it).
@@ -125,7 +125,7 @@ experiment is shape or byte, only readability is missing. `gates=` names the fai
   pairs with, shared slots, holes. `dcp asmdiff NAME --lines`: our lines with their source lines.
 - `dcp draft 0xADDR --show` - the analyzer's pseudocode, unchanged: a second reading, not the truth.
 - `dcp why 0xADDR|NAME` - everything the ledger knows about an address or a function / data name, by question (section,
-  owner, start, unit, ref, toolchain): the answer first, the claims stacked under it; then φ there (the objects of H
+  owner, start, unit, ref, toolchain): the answer first, the claims stacked under it; then φ there (the our objects
   at the address: `dcp phi NAME|0xADDR` for one, `dcp phi --many` for the addresses with several), the findings.
 - `dcp lint` - clang over the units: cross-unit conflicts (M5), calls without a prototype (M7: the consistency
   convention, a contradiction; `dcp grade NAME` lists them on the function's experiment).
@@ -165,7 +165,7 @@ work, however long.
   "ab" at 0x...` (M10 for a constant: a missing prefix, `1e-7` where the original has `1e-7f`, a wrong value). A
   byte match with such a difference is also an M8 / M9 / M10 error of `dcp check`: equal bytes at this layout only.
   `M.contain` (ill-formed, an error even on a byte match; asmdiff's `contain:` line): `&sym + N` outside sym's
-  declared size is no address of sym. Usually a constant written as an address (`&cm_SendRing + 0x4973c0` is the
+  declared size is no address of sym. Usually a constant written as an address (`&g_Ring + 0x4973c0` is the
   mask 0xf00500): write the number; else name the object the address belongs to.
   Named references that only cross (two independent stores in the other order) stay shape when the prover shows the
   effects the same. Not checked, listed as `open:` (`dcp grade NAME`, asmdiff, diffclass): a symbol without an
@@ -191,7 +191,7 @@ work, however long.
   holds the original TU order: never move a function within or between units to make a diff go away.
 
 ### 2.3 Readability (`gates=Q...`)
-- Q1 / Q2 placeholder names (`ai_Unk4a13e0`, `param_1`, `iVar2`, `DAT_...`): name what you understood.
+- Q1 / Q2 placeholder names (`net_Unk4a13e0`, `param_1`, `iVar2`, `DAT_...`): name what you understood.
   Functions and data: `dcp rename OLD NEW --why "the evidence"` (project-wide, whole words, names.log;
   `dcp refs` first; OLD may be `0xADDR` / `exe:0xADDR` for the ledger's name). Several names at once:
   `dcp rename OLD1 NEW1 OLD2 NEW2 ... --why "..."` or `--from FILE` (one `OLD NEW [why]` per line): one
@@ -201,7 +201,7 @@ work, however long.
   quotes with single backslashes, or in a `--from FILE` line. Rename first, then edit: the rename writes the new name everywhere and logs it (a name already written by hand in some places is
   completed by the rename, not refused). It prints every changed file with its replacements; a refusal is an
   `error=` record with exit 1 and nothing written: read it, never assume the rename happened. A view
-  (`ai_Unk7603a0B`) keeps its name when its datum is renamed (the note lists it): rename it on its own.
+  (`net_Unk7603a0B`) keeps its name when its datum is renamed (the note lists it): rename it on its own.
   Locals and parameters: edit the function.
 - Q3 address literals and Q4 raw access (`*(T *)(p + 0x1c)`, macros built on such casts, and the same access in
   two steps: an offset pointer `T *x = (T *)((char *)e + 0xc2)`, `(T *)(ev + 4)`, `(char *)obj + 8`): a typed
@@ -291,12 +291,13 @@ call, made on this criterion: the fall is acceptable when the change brings the 
 the original (truer types, fewer views, casts and duplicated records, headers the units can include) **and**
 the match it costs is no evidence of the original's source. A VC6 declaration-set tie-break is not yours to
 accept: the match flips on declaration changes unrelated to the function (an empty include, an extra typedef,
-a prototype nothing calls). `dcp build` probes the unit of such a fall (`dcp headers probe UNIT` does it by
-hand: unused typedefs before the unit's text, recorded in `ledger/tiebreak.tsv`; commit it). A function
-whose bytes move under the probe and whose own text did not change is no fall: M1 prints one `tie-break: N
-functions moved (HEADER)` line, needs no debt, and promote takes it. Keep the truer type; do not dodge it
-with a worse spelling and do not revert it. Its best grade under the probes is its proven grade (the queues'),
-and `G.tiebreak` on the unit says its declaration set is not yet the original's. A fall from a
+a prototype nothing calls). `dcp build` settles such a fall by itself: it sweeps the fallen function's text over
+every declaration-set shift (unused typedefs at the unit's start and before the function, recorded in
+`ledger/tiebreak.tsv`; commit it). A function whose own text did not change and whose text still reaches its old
+grade under one of those declaration sets is no fall: M1 prints one `tie-break: N functions moved (HEADER)` line,
+needs no debt, and promote takes it. Keep the truer type; do not dodge it with a worse spelling and do not revert
+it. Its best grade over the declaration sets is its proven grade (the queues'), and `G.tiebreak` on the unit says
+its declaration set is not yet the original's. A fall that remains after the build's sweep is a real fall. A fall from a
 wrong change is not acceptable (a signature, a type or a spelling the original's bytes contradict): fix the
 change, or keep the original's spelling (2.3). When you are not sure which it is, find out (`dcp asmdiff`,
 `dcp diffclass`, try the change without its unrelated parts) before deciding.
@@ -350,15 +351,14 @@ escalate is not optional (the user requires every Q gate to be solved by base wo
 not read C for meaning).
 
 When only allocation or scheduling is left (`regs`, `slots`, `order` hunks the classes do not explain away, or
-the code is shape and only byte identity is missing), measure first whether the declaration set decides it:
-`dcp headers sample NAME` (32 compiles of the unit with unused declarations and layout-preserving member changes,
-a few seconds; `--n 128` for more). `dcp grade NAME` then shows a `tiebreak:` line:
-- **sensitive, best byte**: a declaration set gives the original's bytes from your text. The function is proven
-  byte and leaves the queues; commit `ledger/tiebreak.tsv` and move on.
-- **sensitive, best below byte**: its allocation follows the declaration set; respelling it is a lottery. Escalate
-  now (the reason gets `(tiebreak: sensitive)` by itself); it waits for its unit's declaration pass.
-- **insensitive**: what is left is in the function's text. Try the spellings you have; then escalate (the reason
-  gets `(tiebreak: insensitive)`) with what you tried.
+the code is shape and only byte identity is missing), you do not measure the declaration set yourself: `dcp
+build`, `dcp grade NAME` and `dcp try` sweep a close function's text over every declaration-set shift by
+themselves, and `dcp grade NAME` shows the answer on its `declaration set:` line, one of two:
+- **byte under a declaration set (named): done (proven byte)**: your text is right; the function leaves the queues.
+  Commit `ledger/tiebreak.tsv` with it and move on.
+- **no declaration set makes this text byte: the difference is in the text, go on**: what is left is in the
+  function's text, however much the declaration set moves its code. Try the spellings you have; then escalate
+  with what you tried.
 
 Then, or when a generated variant round would be needed:
 `dcp escalate NAME "why"`, build, commit `<unit>: <name> -> deep (match-base)`. The reason lists what was
@@ -367,7 +367,7 @@ missing statements, and one that admits a part not read against the original yet
 compared / verified, hard to judge): reconstruction and reading the whole function are base work. It also
 refuses while our instruction count differs from the original's by more than max(12, 1/100 of the original's)
 (the `asmdiff` head: `ours=` / `original=`): allocation, slots and frames move a few instructions (no shape
-function on gildegold differs by more than 7), a larger difference is missing or wrong statements. When
+function measured differs by more than 7), a larger difference is missing or wrong statements. When
 allocation really causes it (extra saved registers, spills you have read in the asmdiff), say how:
 `--size-explained "why"` (kept in the reason); a function whose behaviour the prover shows the same (`proof:
 equal` in `dcp diffclass NAME`) is not held to the size. It refuses too on a concrete difference: a call or a
@@ -378,7 +378,7 @@ proof), or a census line (`census:` in `dcp grade NAME`: an object or a literal 
 never does). The refusal lists them all. That is a meaning difference (a missing call or
 assignment, a wrong type converted, a wrong object, index or literal); fix it. Only when you have read that it is none (the call reached
 another way), say why: `--divergence-explained "why"` (kept in the reason). A function you raise to shape + readable that still carries a
-stale `@deep` / `@stuck` tag: `dcp escalate NAME --clear`, build again.
+stale `@deep` tag: `dcp escalate NAME --clear`, build again.
 
 ## 3a. Handing up to a stronger worker (`@hard`)
 In an easy-tier session (`tier=easy`), take an item you cannot raise to shape + readable as base work that is too

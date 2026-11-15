@@ -19,7 +19,7 @@ Scope: `$ARGUMENTS` (`unit=NAME` restricts the session to `src/NAME.c`; nothing 
 unit with the most M7 lines first).
 
 Hard rules
-- Every tool is `dcp ...` from the project root (`--target NAME` for a target other than the first).
+- Every tool is `dcp ...` from the project root.
   Every `dcp` of the project runs in the project's daemon, which the first command starts. `dcp <command> -h`
   explains each one; output is one record per line, `key=value`, addresses `0x%08x`.
 - Files stay UTF-8 without BOM with LF line endings. Change C text only with a file-editing tool, never with
@@ -104,14 +104,14 @@ moved (build's summary, `dcp check`'s M1 lines, the trial's `fn=` lines) is a ca
   - **The original's pushes disagree with the definition's prototype, consistently across this unit's
     byte-matched callers**: the original TU was compiled against another declaration. Keep the header as it is;
     add a cast macro in the unit's head next to the include, with the evidence:
-    `#define cm_SendExSetHEI ((int (*)(int, char *))cm_SendExSetHE)  /* @original: the callers here push the key
-    as an int and read the return (byte-matched ai_TransportOrderDue) */`, and use it at those calls (the suffix
+    `#define net_SendKeyI ((int (*)(int, char *))net_SendKey)  /* @original: the callers here push the key
+    as an int and read the return (byte-matched net_QueueOrder) */`, and use it at those calls (the suffix
     names the difference: `I` int, `S` short, `K` K&R, `H` handle / result kept). Never a second prototype,
     never in a shared header.
   - **The header is the guess** (the definition was drafted from the header, the original's definition reads
     its parameters otherwise: `dcp disasm` of the callee): fix the definition and the header together, and read
     every caller in every unit (`dcp refs NAME`).
-- Stale `@original` comments that the new header made untrue (`against cm.h's void view` when cm.h now says
+- Stale `@original` comments that the new header made untrue (`against net.h's void view` when net.h now says
   `int`): correct them while you are there.
 
 ### 3.4 Gate before the commit
@@ -122,10 +122,10 @@ moved (build's summary, `dcp check`'s M1 lines, the trial's `fn=` lines) is a ca
 
 ### 3.5 Commit
 One group, one commit. The message names the unit, the header or callee and the count, in the project's style:
-- `m7: he includes f3gm.h (gm_AddTime, gm_CompareTime, gm_TitleNumber: 412 calls prototyped; 6 duplicates dropped)`
+- `m7: ui includes time.h (tm_AddTime, tm_CompareTime, tm_Title: 412 calls prototyped; 6 duplicates dropped)`
 - A group that fixed calls: prefix `m7 bug:` and list each fixed call in the body, one line each:
-  `he_RunTip 0x567c00: gm_AddTime(&end, r + 8) passed 2 of 4 args (mins / secs read from stale stack); now
-  gm_AddTime(&end, util_RandomU(4) + 8, 0, 0) per the original's pushes 0x567c92..0x567ccd`.
+  `ui_ShowTip 0x567c00: tm_AddTime(&end, r + 8) passed 2 of 4 args (mins / secs read from stale stack); now
+  tm_AddTime(&end, util_RandomU(4) + 8, 0, 0) per the original's pushes 0x567c92..0x567ccd`.
   `git log --grep "m7 bug"` is how the user finds them: never fix a call without saying so.
 A message of more than one line goes through a file (`git commit -F <file>`). `git status` clean before the next
 group.
@@ -137,12 +137,10 @@ group is big: a large header include into a big unit is one group, however long.
 
 ## 5. Tie-breaks
 VC6 /O2 can change a function's bytes by the declaration set alone (an include, a typedef nothing uses). `dcp
-build` probes the unit of a fall (`dcp headers probe UNIT` by hand, recorded in `ledger/tiebreak.tsv`: commit it).
-A function whose own text did not change and whose bytes move under the probe is no fall: M1 prints `tie-break: N
-functions moved (HEADER)`, and promote takes it. Keep the include. Any other fall is yours to fix.
-
-`dcp headers sample NAME` measures one function more widely than the unit probe (random unused declarations
-and layout-preserving member changes inside the include chain); use it when a fall is not explained by the probe.
+build` sweeps every fallen function by itself (its text compiled under every declaration-set shift, recorded in
+`ledger/tiebreak.tsv`: commit it). A function whose own text did not change and whose text still reaches its old
+grade under one of those declaration sets is no fall: M1 prints `tie-break: N functions moved (HEADER)`, and promote
+takes it. Keep the include. A fall that remains after the build is real: yours to fix.
 
 ## 6. Wrap up
 1. Keep the group in progress only if it builds, lints and checks clean; else revert it.
