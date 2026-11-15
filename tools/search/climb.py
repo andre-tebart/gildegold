@@ -498,8 +498,14 @@ def main():
     print("\nbest: %d ins / %d bytes%s%s, path: %s" % (best["score"][0], best["score"][1], "  BYTE" if best["score"][:2] == [0, 0] else "",
           "  frame %s (offsets aligned: not comparable)" % best["score"][3] if best["score"][3] else "", " > ".join(best["path"]) or "(start)"))
     print("text: %s" % os.path.relpath(os.path.join(OUT, a.name + ".best.c"), ROOT))
-    for l in difflib.unified_diff(tree, best["lines"], "tree", "best", lineterm="", n=1):
-        print(l)
+    # the diff against the start text (the --base variant, else the tree): printed when short, always in NAME.diff
+    diff = list(difflib.unified_diff(start, best["lines"], "base" if a.base else "tree", "best", lineterm="", n=1))
+    dpath = os.path.join(OUT, a.name + ".diff")
+    open(dpath, "w", encoding="latin-1", newline="\n").write("\n".join(diff) + "\n")
+    if len(diff) <= 40:
+        print("\n".join(diff))
+    else:
+        print("diff: %d lines against the %s in %s" % (len(diff), "base" if a.base else "tree", os.path.relpath(dpath, ROOT)))
 
 
 if __name__ == "__main__":
