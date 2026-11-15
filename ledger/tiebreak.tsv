@@ -719,7 +719,7 @@ exe	0x00437060	d3d_SetWBuffer	d3_d3d	800461a5c2510305	no	byte	control=byte p1=by
 exe	0x004370d0	d3d_Restore	d3_d3d	beffb0a88ca929ea	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004370e0	d3d_Exit	d3_d3d	57e232ad00ddce50	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004371d0	d3d_BuildMipmaps	d3_d3d	c165dbdda49059d4	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x00437390	d3d_LoadTexture	d3_d3d	9607cc85bea17610	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x00437390	d3d_LoadTexture	d3_d3d	5ca1dcd31b14e01a	no	shape	sample n=32 seed=1 compiled=32 codegens=1 best=shape
 exe	0x00438180	d3d_SetSurfacePalette	d3_d3d	d2919004a508b54b	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004383d0	d3d_CreateTexture	d3_d3d	050368d3cd5c08af	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004385a0	d3_BeginScene	d3_d3d	0dcf5cbe3a3fa35c	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte

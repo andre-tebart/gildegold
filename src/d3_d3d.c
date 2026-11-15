@@ -552,37 +552,36 @@ void d3d_BuildMipmaps(LPDIRECTDRAWSURFACE4 tex, DDSURFACEDESC2 *ddsd)
 /* 0x437390, loads an image file into a texture surface of format pf (scaled to the card's limits),
    with mip levels; palettized formats get the image's palette, others a color key from color 0.
    bpp (the file's bits per pixel, which ts_texture passes) is not read.
-   @stuck earlier: every code hunk is shape - the loadddsd/pal/adw stack-slot assignment (loadddsd at
-   [ebp-0xb8] vs [ebp-0x9c]) and the dead-parameter slot reuse (stretcht/tempt in the w/h slots, [+0x1c] vs
-   [+0x20]), operand order [esi+eax]/[eax+esi] in the name copy, moved stores, tail nops; control flow and
-   the w != ddsd.dwHeight quirk follow the original; readability met. 2026-11-09: the frame is the whole
-   problem; the original's layout (ebp offsets) is loadddsd -0x9c, num -0xa8, ddscaps2 -0xb8, ddsd -0x134,
-   dest -0x1b0, tempddsd -0x22c, pal -0x52c, adw -0x92c, namebuf -0xb2c, msg -0xd2c; ours num -0x2c,
-   ddscaps2 -0x3c, loadddsd -0xb8, (ddsd/dest/tempddsd equal), namebuf -0x42c, msg -0x62c, pal -0x92c, adw
-   -0xd2c (deep-tools framemap.py prints VC6's own frame symbols per variant in ~1 s, framesearch.py scores
-   variants against these targets). Measured: declaration order and local names change nothing; VC6 sorts
-   the frame by references per byte (element accesses count, loop depth does not; in this ebp frame more
-   references go nearer ebp); extra calibration references show num/ddscaps2 stay above loadddsd even at
-   +16 loadddsd refs, and pal/adw need ~+24 refs each to pass namebuf/msg - no honest spelling gives that.
-   Block scopes (96 combos of msg in if(!texture), namebuf/num/tempddsd in if(levels>1) or the mip loop,
-   ddscaps2 in if(levels>1)): msg in its block lands at -0xd2c as in the original but then shares its slot
-   with a block-scoped namebuf (the original's frame keeps both); best 11/14 slots (msg in the if block,
-   namebuf+ddscaps2 in the levels block) still has loadddsd -0xa8 / num -0x2c / msg overlapping namebuf.
-   Next: find what scope or reference structure puts loadddsd above num/ddscaps2 (perhaps num/ddscaps2 in
-   an inner block of a block that also holds loadddsd uses), then the remaining code hunk: levels counted in
-   edx then mov edi,edx after the loop (texture = *surf after the !*surf test fixed the [ebp-4] store) (tiebreak: insensitive under the four probes only, best draft) */
-
+   The second half (from unlocking the loaded image) is a block of its own holding namebuf, num and
+   ddscaps2: the original's frame needs them out of the scope of the seven copy/zero asm blocks above
+   (each asm block counts as a reference to every escaped local in scope) while msg, in its own block
+   inside, keeps a slot apart from namebuf; num is 10 bytes (its slot rank).
+   @stuck only a frame tie is left: loadt and texture swapped ([ebp-4] / [ebp-8], every access of the two;
+   34 bytes). Both have 34 references (c2frame), density 8500, and the unstable quicksort of the >0x80
+   frame puts loadt first here, the original texture first; a probe with one more texture reference (or one
+   more loadt reference: then loadt) decides it, so the original has one reference more on texture (or one
+   fewer on loadt) that costs no code. This session: found the frame mechanism - each of the 8
+   D3_ZERO/D3_COPY3 inline-asm blocks counts 2 references for every escaped local in scope; namebuf, num,
+   ddscaps2 in one block from the #line 913 Unlock to the end (msg's if block nested inside, so msg keeps
+   its own slot), num[10] (density 400 between loadddsd 427 and ddscaps2 375): every slot but the tie as
+   the original (127 ins -> 77); the levels count as for (...; m >>= 1, levels++) ; (edx then mov edi,edx:
+   70 ins, shape); strcpy for the hand copy loop (the [eax+esi] order: 68 ins). Checklist: twin none;
+   headers sample insensitive; hand loop replaced (strcpy); returns: one early return in the msg block, as
+   the original; block scope tried for namebuf/num/ddscaps2/tempddsd/msg (scope rounds: 54 + 36 + 3);
+   c2frame counts read (the local off: texture or loadt by one). Tie rounds: Palette = 0 / tempt = 0
+   removed, ddk init order, loadt = 0 first (24 combos): worse or same tie; texture = *surf before the test
+   / in the condition: code 2 more; dd_SetSurfaceName(*surf..) = control; tempddsd in the outer block /
+   levels block / loop = control. flip.py (want _texture$ = -4): only meaning changes (delete a loadt call,
+   duplicate a texture call). Left: every [ebp-4] / [ebp-8] access swapped (loadt <-> texture). (tiebreak:
+   insensitive) */
 void d3d_LoadTexture(char *name, DDPIXELFORMAT *pf, LPDIRECTDRAWSURFACE4 *surf, LPDIRECT3DTEXTURE2 *surftext,
                      unsigned char mips, DWORD w, DWORD h, int bpp)
 {
-    char namebuf[512];
     PALETTEENTRY adw[256];
     BYTE pal[768];
     DDSURFACEDESC2 tempddsd;
     DDSURFACEDESC2 dest;
     DDSURFACEDESC2 ddsd;
-    DDSCAPS2 ddscaps2;
-    char num[12];
     DDSURFACEDESC2 loadddsd;
     DDCOLORKEY ddk;
     LPDIRECTDRAWPALETTE Palette;
@@ -593,7 +592,6 @@ void d3d_LoadTexture(char *name, DDPIXELFORMAT *pf, LPDIRECTDRAWSURFACE4 *surf, 
     int levels;
     int m;
     int i;
-    char *s, *d;
 
     ddk.dwColorSpaceLowValue = 0;
     ddk.dwColorSpaceHighValue = 0;
@@ -680,137 +678,141 @@ void d3d_LoadTexture(char *name, DDPIXELFORMAT *pf, LPDIRECTDRAWSURFACE4 *surf, 
         loadt = stretcht;
         D3_COPY3(&loadddsd, &dest, sizeof(loadddsd));
     }
+    {
+        char namebuf[512];
+        char num[10];
+        DDSCAPS2 ddscaps2;
 #line 913
-    D3DCHECK(loadt->lpVtbl->Unlock(loadt, NULL));
-    if ((max(ddsd.dwHeight, ddsd.dwWidth) >> mips) >= d3d_MinMipSize)
-        levels = mips + 1;
-    else
-        for (m = max(ddsd.dwHeight, ddsd.dwWidth), levels = 0; m >= d3d_MinMipSize; m >>= 1)
-            levels++;
-    if (levels > 1) {
-        ddsd.ddsCaps.dwCaps |= DDSCAPS_MIPMAP | DDSCAPS_COMPLEX;
-        ddsd.dwFlags |= DDSD_MIPMAPCOUNT;
-        ddsd.dwMipMapCount = levels;
-    }
-    ddsd.ddsCaps.dwCaps2 = DDSCAPS2_TEXTUREMANAGE;
-#line 931
-    D3DCHECK(dd_DD->lpVtbl->CreateSurface(dd_DD, &ddsd, surf, NULL));
-    if (!*surf) {
-        char msg[512];
-
-        sprintf(msg, "Could not load create surface for %s", name);
-        err_Message(msg);
-        return;
-    }
-    texture = *surf;
-    dd_SetSurfaceName(texture, name, 0);
-#line 944
-    D3DCHECK(texture->lpVtbl->QueryInterface(texture, &IID_IDirect3DTexture2, (LPVOID *)surftext));
-    for (i = 0; i < 256; i++) {
-        adw[i].peFlags = 0xff;
-        adw[i].peRed = pal[i * 3];
-        adw[i].peGreen = pal[i * 3 + 1];
-        adw[i].peBlue = pal[i * 3 + 2];
-    }
-    adw[0].peFlags = 0;
-    if (pf->dwRGBBitCount <= 8 && (pf->dwFlags & DDPF_PALETTEINDEXED8)) {
-        Palette = 0;
-#line 957
-        D3DCHECK(dd_DD->lpVtbl->CreatePalette(dd_DD, DDPCAPS_8BIT | DDPCAPS_ALLOW256 | DDPCAPS_ALPHA, adw, &Palette, NULL));
-        D3DCHECK(texture->lpVtbl->SetPalette(texture, Palette));
-        dd_Ref = Palette->lpVtbl->Release(Palette);
-        Palette = 0;
-    } else
-        ddk.dwColorSpaceHighValue = ddk.dwColorSpaceLowValue = RGB_MAKE(pal[0], pal[1], pal[2]);
-#line 967
-    D3DCHECK(loadt->lpVtbl->SetColorKey(loadt, DDCKEY_SRCBLT, &ddk));
-    if (pf->dwFlags & DDPF_FOURCC) {
-#line 970
-        D3DCHECK(texture->lpVtbl->Blt(texture, NULL, loadt, NULL, DDBLT_WAIT, NULL));
-    } else {
-#line 973
-        D3DCHECK(texture->lpVtbl->SetColorKey(texture, DDCKEY_SRCBLT, &ddk));
-        D3DCHECK(loadt->lpVtbl->Lock(loadt, NULL, &loadddsd, DDLOCK_WAIT | DDLOCK_NOSYSLOCK | DDLOCK_READONLY, NULL));
-        if (!d3d_hr) {
-#line 977
-            D3DCHECK(texture->lpVtbl->Lock(texture, NULL, &ddsd, DDLOCK_WAIT | DDLOCK_NOSYSLOCK | DDLOCK_WRITEONLY, NULL));
-            if (!d3d_hr) {
-                surf_Blit(&ddsd, 0, &loadddsd, adw);
-#line 981
-                D3DCHECK(texture->lpVtbl->Unlock(texture, NULL));
-            }
-#line 983
-            D3DCHECK(loadt->lpVtbl->Unlock(loadt, NULL));
-        }
-    }
-    if (levels > 1) {
-        ddscaps2.dwCaps = DDSCAPS_TEXTURE | DDSCAPS_MIPMAP;
-#line 992
-        D3DCHECK(texture->lpVtbl->GetAttachedSurface(texture, &ddscaps2, &texture));
-        if (!d3d_hr)
-            texture->lpVtbl->Release(texture);
-        for (i = 1; i < levels; i++) {
-            LPDIRECTDRAWSURFACE4 tempt;
-
-            _itoa(i, num, 10);
-            for (s = name, d = namebuf; (*d++ = *s++) != 0; )
+        D3DCHECK(loadt->lpVtbl->Unlock(loadt, NULL));
+        if ((max(ddsd.dwHeight, ddsd.dwWidth) >> mips) >= d3d_MinMipSize)
+            levels = mips + 1;
+        else
+            for (m = max(ddsd.dwHeight, ddsd.dwWidth), levels = 0; m >= d3d_MinMipSize; m >>= 1, levels++)
                 ;
-            strcat(namebuf, "_");
-            strcat(namebuf, num);
-            dd_SetSurfaceName(texture, namebuf, 0);
-            D3_COPY3(&tempddsd, &dest, sizeof(tempddsd));
-            tempddsd.dwWidth = loadddsd.dwWidth >> i;
-            tempddsd.dwHeight = loadddsd.dwHeight >> i;
-            tempddsd.ddsCaps.dwCaps = DDSCAPS_SYSTEMMEMORY | DDSCAPS_OFFSCREENPLAIN;
-#line 1013
-            D3DCHECK(dd_DD->lpVtbl->CreateSurface(dd_DD, &tempddsd, &tempt, NULL));
-            dd_SetSurfaceName(tempt, "tempt(mipmap)", 0);
-#line 1016
+        if (levels > 1) {
+            ddsd.ddsCaps.dwCaps |= DDSCAPS_MIPMAP | DDSCAPS_COMPLEX;
+            ddsd.dwFlags |= DDSD_MIPMAPCOUNT;
+            ddsd.dwMipMapCount = levels;
+        }
+        ddsd.ddsCaps.dwCaps2 = DDSCAPS2_TEXTUREMANAGE;
+#line 931
+        D3DCHECK(dd_DD->lpVtbl->CreateSurface(dd_DD, &ddsd, surf, NULL));
+        if (!*surf) {
+            char msg[512];
+
+            sprintf(msg, "Could not load create surface for %s", name);
+            err_Message(msg);
+            return;
+        }
+        texture = *surf;
+        dd_SetSurfaceName(texture, name, 0);
+#line 944
+        D3DCHECK(texture->lpVtbl->QueryInterface(texture, &IID_IDirect3DTexture2, (LPVOID *)surftext));
+        for (i = 0; i < 256; i++) {
+            adw[i].peFlags = 0xff;
+            adw[i].peRed = pal[i * 3];
+            adw[i].peGreen = pal[i * 3 + 1];
+            adw[i].peBlue = pal[i * 3 + 2];
+        }
+        adw[0].peFlags = 0;
+        if (pf->dwRGBBitCount <= 8 && (pf->dwFlags & DDPF_PALETTEINDEXED8)) {
+            Palette = 0;
+#line 957
+            D3DCHECK(dd_DD->lpVtbl->CreatePalette(dd_DD, DDPCAPS_8BIT | DDPCAPS_ALLOW256 | DDPCAPS_ALPHA, adw, &Palette, NULL));
+            D3DCHECK(texture->lpVtbl->SetPalette(texture, Palette));
+            dd_Ref = Palette->lpVtbl->Release(Palette);
+            Palette = 0;
+        } else
+            ddk.dwColorSpaceHighValue = ddk.dwColorSpaceLowValue = RGB_MAKE(pal[0], pal[1], pal[2]);
+#line 967
+        D3DCHECK(loadt->lpVtbl->SetColorKey(loadt, DDCKEY_SRCBLT, &ddk));
+        if (pf->dwFlags & DDPF_FOURCC) {
+#line 970
+            D3DCHECK(texture->lpVtbl->Blt(texture, NULL, loadt, NULL, DDBLT_WAIT, NULL));
+        } else {
+#line 973
+            D3DCHECK(texture->lpVtbl->SetColorKey(texture, DDCKEY_SRCBLT, &ddk));
             D3DCHECK(loadt->lpVtbl->Lock(loadt, NULL, &loadddsd, DDLOCK_WAIT | DDLOCK_NOSYSLOCK | DDLOCK_READONLY, NULL));
             if (!d3d_hr) {
-#line 1019
-                D3DCHECK(tempt->lpVtbl->Lock(tempt, NULL, &tempddsd, DDLOCK_WAIT | DDLOCK_NOSYSLOCK | DDLOCK_WRITEONLY, NULL));
-                if (!d3d_hr) {
-                    surf_ScaleBlit(&tempddsd, &loadddsd);
-#line 1023
-                    D3DCHECK(tempt->lpVtbl->Unlock(tempt, NULL));
-                }
-#line 1025
-                D3DCHECK(loadt->lpVtbl->Unlock(loadt, NULL));
-            }
-#line 1027
-            D3DCHECK(tempt->lpVtbl->SetColorKey(tempt, DDCKEY_SRCBLT, &ddk));
-            if (ddsd.ddpfPixelFormat.dwFourCC) {
-#line 1029
-                D3DCHECK(texture->lpVtbl->Blt(texture, NULL, tempt, NULL, DDBLT_WAIT, NULL));
-            } else {
-#line 1032
-                D3DCHECK(texture->lpVtbl->SetColorKey(texture, DDCKEY_SRCBLT, &ddk));
+#line 977
                 D3DCHECK(texture->lpVtbl->Lock(texture, NULL, &ddsd, DDLOCK_WAIT | DDLOCK_NOSYSLOCK | DDLOCK_WRITEONLY, NULL));
                 if (!d3d_hr) {
-#line 1036
-                    D3DCHECK(tempt->lpVtbl->Lock(tempt, NULL, &tempddsd, DDLOCK_WAIT | DDLOCK_NOSYSLOCK | DDLOCK_READONLY, NULL));
-                    if (!d3d_hr) {
-                        surf_Blit(&ddsd, 0, &tempddsd, adw);
-#line 1040
-                        D3DCHECK(tempt->lpVtbl->Unlock(tempt, NULL));
-                    }
-#line 1042
+                    surf_Blit(&ddsd, 0, &loadddsd, adw);
+#line 981
                     D3DCHECK(texture->lpVtbl->Unlock(texture, NULL));
                 }
-            }
-            dd_Ref = tempt->lpVtbl->Release(tempt);
-            tempt = 0;
-            if (i < levels - 1) {
-                ddscaps2.dwCaps = DDSCAPS_TEXTURE | DDSCAPS_MIPMAP;
-#line 1054
-                D3DCHECK(texture->lpVtbl->GetAttachedSurface(texture, &ddscaps2, &texture));
-                if (!d3d_hr)
-                    texture->lpVtbl->Release(texture);
+#line 983
+                D3DCHECK(loadt->lpVtbl->Unlock(loadt, NULL));
             }
         }
+        if (levels > 1) {
+            ddscaps2.dwCaps = DDSCAPS_TEXTURE | DDSCAPS_MIPMAP;
+#line 992
+            D3DCHECK(texture->lpVtbl->GetAttachedSurface(texture, &ddscaps2, &texture));
+            if (!d3d_hr)
+                texture->lpVtbl->Release(texture);
+            for (i = 1; i < levels; i++) {
+                LPDIRECTDRAWSURFACE4 tempt;
+
+                _itoa(i, num, 10);
+                strcpy(namebuf, name);
+                strcat(namebuf, "_");
+                strcat(namebuf, num);
+                dd_SetSurfaceName(texture, namebuf, 0);
+                D3_COPY3(&tempddsd, &dest, sizeof(tempddsd));
+                tempddsd.dwWidth = loadddsd.dwWidth >> i;
+                tempddsd.dwHeight = loadddsd.dwHeight >> i;
+                tempddsd.ddsCaps.dwCaps = DDSCAPS_SYSTEMMEMORY | DDSCAPS_OFFSCREENPLAIN;
+#line 1013
+                D3DCHECK(dd_DD->lpVtbl->CreateSurface(dd_DD, &tempddsd, &tempt, NULL));
+                dd_SetSurfaceName(tempt, "tempt(mipmap)", 0);
+#line 1016
+                D3DCHECK(loadt->lpVtbl->Lock(loadt, NULL, &loadddsd, DDLOCK_WAIT | DDLOCK_NOSYSLOCK | DDLOCK_READONLY, NULL));
+                if (!d3d_hr) {
+#line 1019
+                    D3DCHECK(tempt->lpVtbl->Lock(tempt, NULL, &tempddsd, DDLOCK_WAIT | DDLOCK_NOSYSLOCK | DDLOCK_WRITEONLY, NULL));
+                    if (!d3d_hr) {
+                        surf_ScaleBlit(&tempddsd, &loadddsd);
+#line 1023
+                        D3DCHECK(tempt->lpVtbl->Unlock(tempt, NULL));
+                    }
+#line 1025
+                    D3DCHECK(loadt->lpVtbl->Unlock(loadt, NULL));
+                }
+#line 1027
+                D3DCHECK(tempt->lpVtbl->SetColorKey(tempt, DDCKEY_SRCBLT, &ddk));
+                if (ddsd.ddpfPixelFormat.dwFourCC) {
+#line 1029
+                    D3DCHECK(texture->lpVtbl->Blt(texture, NULL, tempt, NULL, DDBLT_WAIT, NULL));
+                } else {
+#line 1032
+                    D3DCHECK(texture->lpVtbl->SetColorKey(texture, DDCKEY_SRCBLT, &ddk));
+                    D3DCHECK(texture->lpVtbl->Lock(texture, NULL, &ddsd, DDLOCK_WAIT | DDLOCK_NOSYSLOCK | DDLOCK_WRITEONLY, NULL));
+                    if (!d3d_hr) {
+#line 1036
+                        D3DCHECK(tempt->lpVtbl->Lock(tempt, NULL, &tempddsd, DDLOCK_WAIT | DDLOCK_NOSYSLOCK | DDLOCK_READONLY, NULL));
+                        if (!d3d_hr) {
+                            surf_Blit(&ddsd, 0, &tempddsd, adw);
+#line 1040
+                            D3DCHECK(tempt->lpVtbl->Unlock(tempt, NULL));
+                        }
+#line 1042
+                        D3DCHECK(texture->lpVtbl->Unlock(texture, NULL));
+                    }
+                }
+                dd_Ref = tempt->lpVtbl->Release(tempt);
+                tempt = 0;
+                if (i < levels - 1) {
+                    ddscaps2.dwCaps = DDSCAPS_TEXTURE | DDSCAPS_MIPMAP;
+#line 1054
+                    D3DCHECK(texture->lpVtbl->GetAttachedSurface(texture, &ddscaps2, &texture));
+                    if (!d3d_hr)
+                        texture->lpVtbl->Release(texture);
+                }
+            }
+        }
+        dd_Ref = loadt->lpVtbl->Release(loadt);
     }
-    dd_Ref = loadt->lpVtbl->Release(loadt);
 }
 /* 0x438180, gives a palettized surface and its mip levels the palette and the color key. */
 
