@@ -1517,7 +1517,7 @@ exe	0x0048f1e0	ai_ExecCannonTower	am	byte	readable
 exe	0x0048f250	ai_FindOwnBuilding	am	byte	readable		
 exe	0x0048f2b0	ai_DecideBuildSculpture	am	byte	readable		
 exe	0x0048f500	ai_ExecBuildSculpture	am	byte	readable		
-exe	0x0048f600	ai_DecideUseAlchemyItems	am	draft	readable	deep	
+exe	0x0048f600	ai_DecideUseAlchemyItems	am	shape	readable	deep	
 exe	0x0048f990	ai_ExecUseAlchemyItems	am	byte	readable		
 exe	0x0048fb70	ai_RegisterBuildingActions	am	byte	readable		
 exe	0x0048feb0	ai_PickRandomBuildingChar	am	byte	readable		
@@ -1660,7 +1660,7 @@ exe	0x0049b380	ai_DecideUseDynastyObject	am	byte	readable
 exe	0x0049b6f0	ai_ExecuteUseDynastyObject	am	shape	readable		
 exe	0x0049b7c0	ai_DecideUseMeanObject	am	draft	readable	deep	
 exe	0x0049bc50	ai_ExecuteUseMeanObject	am	shape	readable		
-exe	0x0049bd90	ai_DecideUseSafetyObject	am	draft	readable	deep	
+exe	0x0049bd90	ai_DecideUseSafetyObject	am	byte	readable		
 exe	0x0049c000	ai_ExecuteUseSafetyObject	am	shape	readable		
 exe	0x0049c0d0	ai_EvalUsePerfume	am	byte	readable		
 exe	0x0049c170	ai_DecideUsePerfume	am	byte	readable		
