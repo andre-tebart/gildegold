@@ -469,7 +469,7 @@ exe	0x00423a90	msx_Play	msx	byte	readable
 exe	0x00423b30	msx_Start	msx	byte	readable		
 exe	0x00423df0	msx_Stop	msx	byte	readable		
 exe	0x00423e70	msx_SetFadeTime	msx	byte	readable		
-exe	0x00423e80	msx_Update	msx	draft	readable	stuck	
+exe	0x00423e80	msx_Update	msx	byte	readable		
 exe	0x004241a0	msx_FadeMaster	msx	byte	readable		
 exe	0x00424250	msx_Find	msx	byte	readable		
 exe	0x004242c0	msx_GetPlaying	msx	byte	readable		

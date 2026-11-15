@@ -506,6 +506,10 @@ Which arm is inline, jumps into another arm, threaded and redundant tests, `&&` 
   order, `&name[0]`, `char *s` (ai_CheckVisitAction byte). Different call constants: the call and `return 1` per
   case (g3, 0x4937a0).
 - **A one-instruction `jmp X` function**: `return f(args);`.
+- **`cmp eax,16; je; cmp eax,24; je; cmp eax,32; jne` with ours in the wrong registers, a stub `mov ecx,8; jmp`
+  at the end and a branch hunk**: `switch (bpp) { case 24: case 32: ..; break; case 16: ..; break; }`, not
+  `if (bpp != 16) { if (bpp == 24 || bpp == 32) .. } else ..` (if / else-if forms 84..88 ins; case orders one
+  code). No lever: chained or split Loss/Bits stores in the cases (dd_SetMode 73 -> 68, open).
 
 ### Caught only by dcp link (dcp build masks these)
 
@@ -673,6 +677,11 @@ Rotation, test position, countdown, induction variables and strength reduction, 
   `flip.py --want "mov esi, OFFSET FLAT:_arr\+\d+" --avoid <ours>` to find the block, then a probe per field.
   No lever: `arr[i].f` at every use against `t = &arr[i]`, operand orders, continue against nested ifs, the
   duration written out at each use, if/else against or-chains in the fade arms. (open)
+- **The IV base on the field a CSE'd value is read from (`mov esi, arr+0x110` vs `+0x118`)**: a value read twice
+  in one block (`t->volume` in `dur = t->fadevol * k / t->volume` and again in the curvol product) was a named
+  local, `vol = t->volume; dur = .. / vol; t->curvol = .. * vol / dur;` - the same machine code (the CSE temp
+  and the local both sit in ebp), but the base moves. Try a named local for every field value used twice before
+  any field-reference probe. No lever: everything in the entry above (msx_Update 104 ins -> byte).
 
 ### Row and pixel pointers
 
@@ -1315,6 +1324,16 @@ Frame size, slot order, holes, shared slots, dead parameter slots, block-scoped 
   msg; pos / rot).
 - **Not allocated**: an unused local, a dead local assigned in the code (any type), a dead store to a dummy array
   or a separate `float y`. A slot-only difference needs a real reference or a different object size (bmp_Load).
+- **Two slots of equal density swapped in a frame above 0x80 bytes**: the sort is K&R quicksort (the middle
+  element swapped to the left end, Lomuto partition on `dens > pivot`, recursing on both halves) over the table
+  after the leading parameter slots; it reproduces c2frame's B -> A of all 75 sorted frames sampled from 13
+  units (a CRT qsort, Hoare and plain Lomuto do not). So simulate the tie: the table order before the sort
+  (list order: size, count, then who REACHED the count first in the walk - moving the last reference of one
+  local flips it) or one count more or less decides it. Every inline-asm block counts 2 references for every
+  escaped local in scope; a load hoisted out of both arms of an if/else counts twice; a truly dead store
+  (before an overwrite, at the end, before a return) is removed before counting, one before a call is kept as
+  code. No lever: dead stores, re-tests, `(void)x`, `x = x`, the asm macros' temp declaration order or names
+  (d3d_LoadTexture: texture / loadt 34 / 34, open).
 
 ### Frame bigger or smaller: vectors and padded arrays
 
@@ -2482,6 +2501,13 @@ Operand order on the FPU stack, `fst` / `fstp`, float compares, constants, `_fto
   local copy) also makes VC6 reload the pointer after the store. Read each loop's increment separately
   (ai_CreditsScreen 0x5d7ba0 byte).
 - **`ret = global = -1;`** gives `or eax,eax` after the store.
+- **`888 - R*100 - G*10 - B` as `(R*10 + G)*10` (lea chain, `mov esi,888` first) where the original has `G*-10`
+  (`mov esi,edi; neg esi; shl esi,2; sub esi,edi; add esi,esi`), `R*100` alone and `add esi,888` last**: VC6
+  merges two constant products of one sum whatever the spelling (term order, parentheses, `(8 - X) * k`, unary
+  minus, splits into statements, int/unsigned/short/char operands and casts: all one code, toys and dd_SetMode);
+  the neg form appears only when one product is opaque to the merge - a narrowing cast `(short)(R * 100)`,
+  `& 0xffff`, a float multiply, `R` written as shifts - each with an extra instruction. No lever found
+  (dd_SetMode, open).
 
 ### Globals: width, type, unions, volatile
 
