@@ -176,7 +176,9 @@ Section names are those of `notes/vc6-matching.md`.
   duplicate, swap, change a constant) and reports the mutants whose listing has the wanted instruction. The
   mutants are not kept; they name the place the wanted code depends on. A hit on a DUPLICATED statement = that
   value has two uses in the original (a loop, the expression written again, a macro expanded twice); a hit on a
-  changed constant at one site = that block is not shared with its twins in the original.
+  changed constant at one site = that block is not shared with its twins in the original. REGEX is matched
+  against VC6's /FA listing (tabs, upper-case `DWORD PTR`, frame symbols): `--want 'mov\s+edi, DWORD PTR _a\$'`
+  asks "what puts parameter a in edi", the quickest way to a callee-saved register swap.
 - `uv run --with pefile python tools/c2dag/c2pass.py ..`: compile with one back-end pass skipped (cross-jumping
   off: `--skip 0x1070a91d`) to see which pass makes a layout; `--list` names the known sites (block order,
   the three tail mergers, add esp merging).
