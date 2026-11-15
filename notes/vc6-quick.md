@@ -154,11 +154,13 @@ Section names are those of `notes/vc6-matching.md`.
   `--move-line N --to A..B` generates declaration moves.
 - `uv run --with capstone python tools/c2dag/vdiff.py SRC FUNC VARIANTS LABEL`: the instruction diff of ONE
   variant against the original without touching the tree. Use it on every variant that changes the layout,
-  whatever its count.
+  whatever its count. vdiff, c2trace and c2frame read a variants file exactly as `dcp try` does.
 - `python tools/c2dag/c2trace.py SRC FUNC [--variants FILE --label L]`: the allocator's sequence.
   `python tools/c2dag/c2dag.py SRC FUNC [--alloc]`: the scheduler's graph per block; the candidates with
   priority and final register. `python tools/c2dag/c2frame.py SRC FUNC [--refs]`: the frame packer's counts and
-  slot table.
+  slot table. `--names` names every temporary by the first source line that uses it (`tmp@8208`), lists each
+  slot member's lifetime conflicts (X: never share a slot) and replays the packing (P: each local joins or opens
+  a slot, with the conflict that made it pass each newer one): no hand simulation of the packer.
 - `python tools/c2dag/flip.py SRC FUNC --want REGEX [--try OUT.txt]`: mutates every statement (delete,
   duplicate, swap, change a constant) and reports the mutants whose listing has the wanted instruction. The
   mutants are not kept; they name the place the wanted code depends on. A hit on a DUPLICATED statement = that

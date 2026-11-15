@@ -2,27 +2,34 @@
    Output file: env C2FRM_OUT. Lines:
    R name            one operand reference counted (FUN_10713312), in walk order (only if C2FRM_REFS set)
    L idx name size count kind   the symbol list at entry of the packer FUN_1074764f (ascending size, then count)
-   B/A i size weight dens align : members    slot table before / after the density sort */
+   B/A i size weight dens align : members    slot table before / after the density sort
+   X name : names    the lifetime conflicts of each listed local (the interference set the packer tests, at
+                     g_conf[idx]; a local never joins a slot holding one of them)
+   T  op .. line N   (C2FRM_TUP) every tuple of the walk with its operands and source line (tuple +0x10)
+   C2FRM_IDS set: every name gets @<symbol address> (temporaries t<address>), unique within one compile */
 #include <windows.h>
 #include <stdio.h>
 typedef int (__stdcall *INVOKE)(void *, void *, void *);
 typedef int (__stdcall *ABORT)(void *);
-static HMODULE real; static INVOKE realInvoke; static ABORT realAbort; static FILE *out; static int refs;
+static HMODULE real; static INVOKE realInvoke; static ABORT realAbort; static FILE *out; static int refs, ids;
 #define U32(p, o) (*(unsigned long *)((char *)(p) + (o)))
 #define U8(p, o) (*(unsigned char *)((char *)(p) + (o)))
 #define PTR(p, o) (*(void **)((char *)(p) + (o)))
 #define G(rva) (*(unsigned long *)((char *)real + (rva)))
 static const char *sname(void *sym)
 {
-    static char b[64]; void *fe; char *nm;
+    static char b[4][160]; static int k; void *fe; char *nm, *o = b[k++ & 3];
     if (!sym || IsBadReadPtr(sym, 0x58)) return "?";
     fe = PTR(sym, 0);
     if (fe && !IsBadReadPtr(fe, 0x20)) {
         nm = PTR(fe, 0x18);
-        if (nm && !IsBadStringPtrA(nm, 96) && nm[0] > 32 && nm[0] < 127) return nm;
-        sprintf(b, "#%lx", U32(fe, 0x1c)); return b;
+        if (nm && !IsBadStringPtrA(nm, 96) && nm[0] > 32 && nm[0] < 127) {
+            if (!ids) return nm;
+            sprintf(o, "%.96s@%lx", nm, (unsigned long)sym); return o;
+        }
+        sprintf(o, ids ? "#%lx@%lx" : "#%lx", U32(fe, 0x1c), (unsigned long)sym); return o;
     }
-    sprintf(b, "t%lx", (unsigned long)sym & 0xffff); return b;
+    sprintf(o, "t%lx", ids ? (unsigned long)sym : (unsigned long)sym & 0xffff); return o;
 }
 static void __cdecl hRef(unsigned long *r)
 {
@@ -53,7 +60,25 @@ static void slots(const char *tag)
     }
     fflush(out);
 }
-static void __cdecl hBefore(unsigned long *r) { if (out) fprintf(out, "total %lu\n", U32(r[4], 0x10)); slots("B"); }
+/* each listed local's interference set: g_conf (0xb15ec) indexed by the symbol's idx (+0x38), a bit set (a node
+   list: [0] first bit, [1] next, [2] 32 bits) over the idx table (0xb15f0) */
+static void conflicts(void)
+{
+    void *s; void **idx = (void **)G(0xb15f0); void **conf = (void **)G(0xb15ec);
+    if (!out || !conf || !idx) return;
+    for (s = (void *)G(0xb15fc); s; s = PTR(s, 0x2c)) {
+        void *set = conf[U32(s, 0x38)]; unsigned long *node; int g = 0;
+        fprintf(out, "X %s :", sname(s));
+        if (set && !IsBadReadPtr(set, 4))
+            for (node = *(unsigned long **)set; node && g < 4096 && !IsBadReadPtr(node, 12); node = (unsigned long *)node[1], g++) {
+                int b;
+                for (b = 0; b < 32; b++) if (node[2] >> b & 1) fprintf(out, " %s", sname(idx[node[0] + b]));
+            }
+        fprintf(out, "\n");
+    }
+    fflush(out);
+}
+static void __cdecl hBefore(unsigned long *r) { if (out) fprintf(out, "total %lu\n", U32(r[4], 0x10)); slots("B"); conflicts(); }
 static void __cdecl hAfter(unsigned long *r) { slots("A"); }
 
 static int tups;
@@ -82,7 +107,7 @@ static void __cdecl hWalk(unsigned long *r)
             if (!(U8(t, 9) & 1)) continue;
             fprintf(out, "T  op %lx k%u", U32(t, 4), U8(t, 8));
             oplist("u", PTR(t, 0x1c)); oplist("d", PTR(t, 0x20));
-            fprintf(out, "\n");
+            fprintf(out, " line %d\n", (int)*(short *)((char *)t + 0x10));
         }
     }
     fflush(out);
@@ -120,6 +145,7 @@ static void install(void)
     o = getenv("C2FRM_OUT");
     if (o && *o) out = fopen(o, "w");
     refs = getenv("C2FRM_REFS") != 0;
+    ids = getenv("C2FRM_IDS") != 0;
     { static const unsigned char e5[] = { 0x8b, 0x41 }; tups = getenv("C2FRM_TUP") != 0; midhook(0xddc7, 6, hWalk, e5); }
     midhook(0x13312, 5, hRef, e1);
     midhook(0x4764f, 5, hEntry, e2);

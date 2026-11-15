@@ -4,6 +4,10 @@
     python tools/c2dag/c2trace.py src/main.c main_ChooseHistory --raw       # every trace line
     python tools/c2dag/c2trace.py src/main.c FUNC --variants FILE [--label L]  # dcp try variants (whole text or blocks)
 
+The variants file is read exactly as dcp try reads it (parse_variants / variant_text, also used by c2frame.py and
+vdiff.py): `<<<` old `===` new `>>>` blocks, markers indented or not, replace text inside the function only (each
+old text once in it); a body without blocks is the function's whole new text.
+
 `c2dag.py --alloc` prints the candidates after the FIRST priority pass and the register each one ended with. That
 is not enough to predict an outcome: assigning a register can split other candidates, and the pieces re-enter the
 queue with new priorities. This tool prints the order in which the allocator really pops candidates, each with
@@ -65,43 +69,126 @@ def setup():
     shutil.copy2(os.path.join(WORK, "c2.dll"), dll)
 
 
+def code(l):
+    """a line without its comments (a prototype's trailing `/* 0x507690 */` must not hide its `;`)"""
+    return re.sub(r"/\*.*?\*/|//.*$", "", l).rstrip()
+
+
 def function_span(lines, func):
+    """(the first line of the address comment above the definition, the definition's first line, its closing `}`)"""
     def opens_body(i):
         # the definition's parameter list may wrap over several lines before the "{"
         j = i
-        while j < len(lines) and not lines[j].rstrip().endswith(")"):
-            if lines[j].rstrip().endswith(";"):
+        while j < len(lines) and not code(lines[j]).endswith(")"):
+            if code(lines[j]).endswith((";", "{", "}")):
                 return False
             j += 1
         return j + 1 < len(lines) and lines[j + 1].startswith("{")
-    s = next(i for i, l in enumerate(lines) if re.match(r"\w[\w \*]*\b%s\(" % re.escape(func), l) and not l.rstrip().endswith(";")
+    s = next(i for i, l in enumerate(lines) if re.match(r"\w[\w \*]*\b%s\(" % re.escape(func), l) and not code(l).endswith(";")
              and opens_body(i))
-    e = next(i for i in range(s, len(lines)) if lines[i] == "}")
+    e = next(i for i in range(s, len(lines)) if lines[i].rstrip() == "}")
     cs = s
     while cs > 0 and not lines[cs - 1].startswith(("}", "#", ";")) and lines[cs - 1].strip():
         cs -= 1
     return cs, s, e
 
 
-def variant_text(text, func, vfile, label):
+def parse_variants(vt):
+    """a dcp try variants file read as dcp try reads it (decompanion src/variants.rs): {label: edit}, in file order.
+    A variant starts with `### label`; its body (blank lines around it dropped) is either the function's whole new
+    text or, when its first line is `<<<` (white space around any marker is ignored), `<<<` old `===` new `>>>`
+    blocks: each old text must occur exactly once in the function's text. edit = ("whole", text) or ("pairs",
+    [(old, new)])."""
+    out, cur = {}, None
+    def finish():
+        if cur is None:
+            return
+        label, body = cur
+        while body and not body[-1].strip():
+            body.pop()
+        while body and not body[0].strip():
+            body.pop(0)
+        if not body:
+            raise SystemExit("variant %r is empty" % label)
+        if label in out:
+            raise SystemExit("a second variant %r" % label)
+        if body[0].strip() != "<<<":
+            out[label] = ("whole", "\n".join(body))
+            return
+        pairs, k = [], 0
+        while k < len(body):
+            if not body[k].strip():
+                k += 1
+                continue
+            if body[k].strip() != "<<<":
+                raise SystemExit("variant %r: %r outside a <<< === >>> block" % (label, body[k]))
+            mid = next((i for i in range(k, len(body)) if body[i].strip() == "==="), None)
+            if mid is None:
+                raise SystemExit("variant %r: <<< without ===" % label)
+            end = next((i for i in range(mid, len(body)) if body[i].strip() == ">>>"), None)
+            if end is None:
+                raise SystemExit("variant %r: === without >>>" % label)
+            old = "\n".join(body[k + 1:mid])
+            if not old.strip():
+                raise SystemExit("variant %r: an empty old text" % label)
+            pairs.append((old, "\n".join(body[mid + 1:end])))
+            k = end + 1
+        out[label] = ("pairs", pairs)
+    for l in vt.replace("\r\n", "\n").split("\n"):
+        if l.startswith("###"):
+            finish()
+            cur = (l[3:].strip(), [])
+        elif cur is not None:
+            cur[1].append(l)
+        elif l.strip():
+            raise SystemExit("text before the first ### label: %r" % l)
+    finish()
+    return out
+
+
+def dcp_span(src, func):
+    """(comment start, end) of the function in src as dcp itself delimits it (`dcp fn`: at=FILE:A-B, 1-based), or
+    None when dcp does not know the function in this file (a scratch copy)"""
+    try:
+        r = subprocess.run(["dcp", "fn", func], cwd=ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=300)
+    except (OSError, subprocess.SubprocessError):
+        return None
+    m = re.search(r"\bat=(\S+):(\d+)-(\d+)", r.stdout)
+    if not m or not os.path.exists(os.path.join(ROOT, m.group(1))) or not os.path.exists(src) \
+            or not os.path.samefile(os.path.join(ROOT, m.group(1)), src):
+        return None
+    return int(m.group(2)) - 1, int(m.group(3)) - 1
+
+
+def variant_text(text, func, vfile, label, src=None):
+    """the unit's text with one variant of a dcp try file applied, and the variant's label (default: the first).
+    As in dcp try, blocks replace text inside the function only and a body without blocks is the function's whole
+    new text (address comment to closing brace). src: the file the text was read from; when it is the tree's file
+    the function is delimited by `dcp fn`, else by function_span."""
     lines = text.split("\n")
-    cs, s, e = function_span(lines, func)
-    vt = open(vfile, encoding="latin-1").read().replace("\r\n", "\n")
-    labels = re.findall(r"^### (.+)$", vt, re.M)
-    label = label or labels[0]
-    m = re.search(r"^### %s\n(.*?)(?=^### |\Z)" % re.escape(label), vt, re.S | re.M)
-    if not m:
-        raise SystemExit("no variant %r (have: %s)" % (label, ", ".join(labels)))
-    body = m.group(1)
-    fn = "\n".join(lines[cs:e + 1])
-    if "<<<" in body:
-        for b in re.finditer(r"<<<\n(.*?)\n?===\n(.*?)\n?>>>", body, re.S):
-            if fn.count(b.group(1)) != 1:
-                raise SystemExit("old text occurs %d times: %r" % (fn.count(b.group(1)), b.group(1)[:60]))
-            fn = fn.replace(b.group(1), b.group(2))
+    span = dcp_span(src, func) if src else None
+    if span:
+        cs, e = span
     else:
-        fn = body.strip("\n")
-    return "\n".join(lines[:cs]) + "\n" + fn + "\n" + "\n".join(lines[e + 1:]), label
+        cs, _, e = function_span(lines, func)
+    vs = parse_variants(open(vfile, encoding="latin-1").read())
+    if not vs:
+        raise SystemExit("no variants in %s" % vfile)
+    label = label or next(iter(vs))
+    if label not in vs:
+        raise SystemExit("no variant %r (have: %s)" % (label, ", ".join(vs)))
+    kind, edit = vs[label]
+    fn = "\n".join(lines[cs:e + 1])
+    if kind == "pairs":
+        for old, new in edit:
+            n = fn.count(old)
+            if n != 1:
+                raise SystemExit("variant %r: the old text %r.. occurs %d times in the function (once needed)" % (
+                    label, next((l.strip() for l in old.split("\n") if l.strip()), "")[:60], n))
+            fn = fn.replace(old, new, 1)
+    else:
+        fn = edit
+    return "\n".join(lines[:cs] + [fn] + lines[e + 1:]), label
 
 
 def main():
@@ -116,7 +203,7 @@ def main():
     text = open(a.src, encoding="latin-1", newline="").read().replace("\r\n", "\n")
     tag = os.path.splitext(os.path.basename(a.src))[0]
     if a.variants:
-        text, lab = variant_text(text, a.func, a.variants, a.label)
+        text, lab = variant_text(text, a.func, a.variants, a.label, src=a.src)
         tag += "_" + re.sub(r"\W", "_", lab)
     c = os.path.join(WORK, tag + ".c")
     dag = os.path.join(WORK, tag + ".dag")

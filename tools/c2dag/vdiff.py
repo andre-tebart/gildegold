@@ -6,7 +6,8 @@
 Compiles the unit with the variant applied (a scratch copy under build/c2dag/vdiff, nothing in the tree is
 written), disassembles the function from the object file and diffs it against `dcp asmdiff --side original`
 with addresses and relocated operands normalised: '-' ours, '+' the original (with its address). Use it to read
-what a variant still gets wrong without applying it, building and reverting.
+what a variant still gets wrong without applying it, building and reverting. VARIANTS is read exactly as dcp try
+reads it (c2trace.variant_text: indented or plain <<< === >>> blocks inside the function, or the whole function).
 """
 import sys, os, re, struct, subprocess, difflib
 HERE0 = os.path.dirname(os.path.abspath(__file__))
@@ -20,7 +21,7 @@ SRC = FN = None
 def build(vfile, label):
     text = open(SRC, encoding="latin-1", newline="").read().replace("\r\n", "\n")
     if vfile:
-        text, _ = c2trace.variant_text(text, FN, vfile, label)
+        text, _ = c2trace.variant_text(text, FN, vfile, label, src=SRC)
     tag = re.sub(r"\W", "_", FN + "_" + (label or "control"))
     c = os.path.join(HERE, "w_" + tag + ".c"); o = c[:-2] + ".obj"
     open(c, "w", encoding="latin-1", newline="\n").write(text)
