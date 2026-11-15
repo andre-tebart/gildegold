@@ -1643,7 +1643,7 @@ exe	0x00499b80	ai_EvalBeatUp	am	63ed7b90c3dee365	no	byte	control=byte p1=byte p2
 exe	0x00499c10	ai_DecideBeatUp	am	d6b05558958fa679	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
 exe	0x00499f20	ai_ExecuteBeatUp	am	a901a85d1309578f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0049a020	ai_DecideCitizenship	am	902b4be9a65acf47	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x0049a0a0	ai_ExecuteCitizenship	am	724cc86462a03507	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
+exe	0x0049a0a0	ai_ExecuteCitizenship	am	7ecda435b1c306ff	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	d2f023716b0e5c28
 exe	0x0049a290	ai_DecideSaveAps	am	bd4c3983cdb84b08	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0049a380	ai_ExecuteSaveAps	am	4e058cfe44712ab7	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0049a390	ai_DecideUseMilitaryObject	am	82fe4549630396ac	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	

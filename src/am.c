@@ -5759,16 +5759,7 @@ int ai_DecideCitizenship(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
 }
 /* 0x49a0a0, execute callback of "Buergerrecht" (0x19): pays 16000 to the object 0x115 of the building of kind 0xf,
    raises the character to rank 2 (field 0xd) with flag 0x4000, and a character of kind 5 tells every councillor
-   (kind 6 / 7) about it with a rank message 0x69 dated 1..4 hours (and 0..49 minutes) ahead
-   @deep read whole against the original and rewritten: the building of kind 0xf and its object 0x115
-   (o->objId), the 16000 payment, rank field 0xd = 2 and flag 0x4000, the time + 1..4 h, the councillor
-   loop as an int index over ai_CharsT (jl against the end address, was a pointer loop with jb), the rank
-   message 0x69 as AIMSG (to, fromId -1, flags 9, rankUp.rank 2, rankUp.ch). Left: the callee-saved pushes:
-   the original shrink-wraps them (push ebx / esi / edi at 0x49a0e8 after the two early returns, which exit
-   with mov esp,ebp / pop ebp / ret only), ours pushes in the prologue and pops on both early exits (the
-   only code hunks: 0x49a0a9 push x3, 0x49a0c5 / 0x49a0e7 pop x3); plus the m.time word store scheduled
-   after the flags (order). Tried: the early exits as goto none to one return 0 (21 differing), the body
-   nested in if (b != 0) / if (o != 0) (29); the AI_ZERO inline asm (ebx / edi) forces the saves. */
+   (kind 6 / 7) about it with a rank message 0x69 dated 1..4 hours (and 0..49 minutes) ahead */
 
 int ai_ExecuteCitizenship(G5CH *p)
 {
@@ -5797,14 +5788,14 @@ int ai_ExecuteCitizenship(G5CH *p)
         n = 0;
         for (i = 0; i < 768; i++) {
             if (n >= (int)ai_NumPlayers)
-                return 0x19;
+                break;
             if (ai_CharsT[i].kind == 6 || ai_CharsT[i].kind == 7) {
                 AI_ZERO(&m, 0xf8);
                 m.to = ai_CharsT[i].netId;
                 m.type = 0x69;
-                m.time = t;
                 m.fromId = -1;
                 m.flags = 9;
+                m.time = t;
                 m.rankUp.rank = 2;
                 m.rankUp.ch = p->netId;
                 cm_SendLongMessage(&m);
