@@ -669,7 +669,7 @@ exe	0x0042fce0	vfs_AddDir	vfs	byte	readable
 exe	0x00430130	vfs_AddZip	vfs	byte	readable		
 exe	0x00430260	vfs_FreeDir	vfs	byte	readable		
 exe	0x004302e0	vfs_MakeDirs	vfs	byte	readable		
-exe	0x00430470	vfs_Tfopen	vfs	shape	readable	stuck	
+exe	0x00430470	vfs_Tfopen	vfs	byte	readable		
 exe	0x00430aa0	vfs_fclose	vfs	byte	readable		
 exe	0x00430bd0	vfs_fread	vfs	byte	readable		
 exe	0x00430d90	vfs_fgetc	vfs	byte	readable		
