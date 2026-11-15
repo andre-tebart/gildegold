@@ -1614,9 +1614,9 @@ char dd_SetMode(int xres, int yres, int bpp, int mode, HWND wnd, int notused, ch
             dd_BMask = 0xff;
             break;
         case 16:
-            dd_BShift = 0;
             dd_RShift = 10;
             dd_GShift = 5;
+            dd_BShift = 0;
             dd_RLoss = 3;
             dd_GLoss = 3;
             dd_BLoss = 3;
