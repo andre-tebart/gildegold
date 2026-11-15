@@ -1517,7 +1517,7 @@ exe	0x0048f1e0	ai_ExecCannonTower	am	918bee9c915c7e8f	no	byte	control=byte p1=by
 exe	0x0048f250	ai_FindOwnBuilding	am	7c6a66609e064bda	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0048f2b0	ai_DecideBuildSculpture	am	a221cea3dd0bd303	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x0048f500	ai_ExecBuildSculpture	am	01cfa5aac610c050	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x0048f600	ai_DecideUseAlchemyItems	am	ed7fd4969b428d4f	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
+exe	0x0048f600	ai_DecideUseAlchemyItems	am	8adafe33adadfc41	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	bcb363d059c854c7
 exe	0x0048f990	ai_ExecUseAlchemyItems	am	b68c132fced07cf3	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0048fb70	ai_RegisterBuildingActions	am	d3e00397b5495127	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0048feb0	ai_PickRandomBuildingChar	am	2c020ac12dac1d74	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
