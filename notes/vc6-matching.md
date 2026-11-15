@@ -691,6 +691,14 @@ Rotation, test position, countdown, induction variables and strength reduction, 
   `flip.py --want "mov esi, OFFSET FLAT:_arr\+\d+" --avoid <ours>` to find the block, then a probe per field.
   No lever: `arr[i].f` at every use against `t = &arr[i]`, operand orders, continue against nested ifs, the
   duration written out at each use, if/else against or-chains in the fade arms. (open)
+- **The IV base one field off and no single statement change moves it (flip.py: no hit)**: count the
+  references per field, including tests VC6 decides and drops. ai_ChooseAction (base &.eval, the original
+  &.decide): a probe with one more `act->decide` reference moved the base; the byte source tests decide
+  twice (`&& act->decide != 0` then `act->decide != 0 ? act->decide(..) : 0`): the repeated test leaves no
+  code but counts. Named locals for eval / decide (base -> +0), operand orders, nested ifs: no lever.
+- **A value the original compares with the 0 held in a register (`cmp eax,esi`) where ours has `test
+  eax,eax`**: the call result went into a variable first (`r = f != 0 ? f(..) : 0; if (r != 0 ..`), as the
+  other callback's result in the same function (ai_ChooseAction).
 - **The IV base on the field a CSE'd value is read from (`mov esi, arr+0x110` vs `+0x118`)**: a value read twice
   in one block (`t->volume` in `dur = t->fadevol * k / t->volume` and again in the curvol product) was a named
   local, `vol = t->volume; dur = .. / vol; t->curvol = .. * vol / dur;` - the same machine code (the CSE temp
@@ -809,6 +817,15 @@ Rotation, test position, countdown, induction variables and strength reduction, 
 
 ### Counters, countdowns and increment order
 
+- **The original's outer loops are count-down trip counters (`sub eax,esi; mov [esp+x],eax .. dec; jne`),
+  ours `lea eax,[ecx-1]; cmp eax,ebp; jl`, and a following loop over the same range re-tests its entry**:
+  the bounds were not locals; `for (i = start[lv]; i < start[lv + 1]; i++)` read in place in every loop
+  (gm_LayoutTree 289 -> 163: `s = start[lv]; e = start[lv + 1];` locals give LFTR on i + 1 and thread the
+  second entry test away).
+- **`k = 0` set after the loop guard, `add ebx,edi` scheduled after the idiv**: `k` was not a variable;
+  the original wrote `u * d / (n - 1)` and VC6 strength-reduced the product into the k IV (its 0 lands in the
+  guarded preheader). `for (.., k = 0; ..; u++, k += d)` and `k += d` in the body are each a step off
+  (gm_LayoutTree 4 -> byte).
 - **A parameter used as a countdown** (`x0 = x0 - x1; if (0 < x0) do {..} while (--x0 != 0); return;`): `n = x0 -
   x1; for (i = 0; i < n; i++) d2_Plot(x1++, ..);`, VC6 makes the `dec edi; jne` (94 -> 78). Then `diagonal = (dy -
   dx) * 2;` before `straight = dy * 2;` (the first `mov eax,edi; lea ecx,[edi+edi]; sub eax,ebp`), `e = straight -
@@ -1495,6 +1512,12 @@ Frame size, slot order, holes, shared slots, dead parameter slots, block-scoped 
 - **A parameter slot read as an extra argument**: an uninitialized local (set on one path, read on another: a
   NULL path `mov edi,[esp+0x20]`, a switch default, a flags struct, a returned `|= 0x40`, an `__asm int 3`
   branch). Check the writes before reading `[esp+arg]` as the parameter.
+- **A parameter the original never registers, `mov reg,[esp+arg]` at each read, an uninitialized-looking load
+  from its slot on a never-taken path**: the values set only on a hit (a draw from cumulative rows that all end
+  at 1.0f) are separate locals without a fallback, `cls = i + 1` / `ret = (i + 1) << 8` with no `ret = k`
+  before the loop and no `default:` in the switch; VC6 packs them into the dead parameter slot and the
+  parameter stops being a candidate (ai_MakeDuelOpponent 21 ins -> byte; `k = i + 1` into the parameter, a
+  `ret = k` init or `default: base = k` each keep k in ebx). Mark it `@original`.
 - **What takes a dead slot**: a loop counter (0x47a460: w; 0x47b350/0x47b640: acc in x, m in y), `{ int t;
   f(&t); }`, `int neg = -1`, a variable whose address a callee gets, address-passed locals (`unsigned char r, g,
   b`; `f(w, &x, &win)`), a one-block char. Block-scope locals are memory-resident: `sent` in its `if` spilled
@@ -1879,6 +1902,11 @@ Store order in a fill, hoisted loads and sunk stores, statement order effects, `
 
 ### Operand order in sums, compares and addresses
 
+- **`mov cl,[a]; mov al,[b]; test al,cl` with the loads swapped, every operand order = control**: the two
+  operands have different types in the original. ai_ChooseAction `p->mask & act->flags`: the action struct's
+  `flags` is an `unsigned int` (AIACT), our view had `unsigned char`; VC6 still loads one byte, but the load
+  order and the test operands follow the int (byte). A `(char)` cast on one side moves the loads but not the
+  test operands; try the wider field type (view or probe `*(unsigned int *)&x`) first.
 - **Commutative operands are ordered by rank** (the rank of the variables' first occurrence): a dead store
   (`mark = 0; a = 0;`) at the top fixed 2 of 4 swapped `[ebx+edi]` / `[edi+ebx]` (d3_MirCreateOutline); an
   unrelated earlier loop's index name changed `[iv+light]` vs `[light+iv]`. For a sum of globals the source order
