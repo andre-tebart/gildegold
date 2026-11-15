@@ -1517,7 +1517,7 @@ exe	0x0048f1e0	ai_ExecCannonTower	am	byte	readable
 exe	0x0048f250	ai_FindOwnBuilding	am	byte	readable		
 exe	0x0048f2b0	ai_DecideBuildSculpture	am	byte	readable		
 exe	0x0048f500	ai_ExecBuildSculpture	am	byte	readable		
-exe	0x0048f600	ai_DecideUseAlchemyItems	am	shape	readable	deep	
+exe	0x0048f600	ai_DecideUseAlchemyItems	am	byte	readable		
 exe	0x0048f990	ai_ExecUseAlchemyItems	am	byte	readable		
 exe	0x0048fb70	ai_RegisterBuildingActions	am	byte	readable		
 exe	0x0048feb0	ai_PickRandomBuildingChar	am	byte	readable		
@@ -1614,13 +1614,13 @@ exe	0x004960b0	ai_DecideTrainSkill	am	draft	readable	deep
 exe	0x004965b0	ai_ExecuteTrainSkill	am	byte	readable		
 exe	0x00496610	ai_DecideTrainJobSkill	am	draft	readable	deep	
 exe	0x00496ab0	ai_ExecuteTrainJobSkill	am	byte	readable		
-exe	0x00496b10	ai_EvalLeastLikedOfEvent	am	draft	readable	deep	
+exe	0x00496b10	ai_EvalLeastLikedOfEvent	am	byte	readable		
 exe	0x00496e40	ai_DecideBribe	am	byte	readable		
 exe	0x004972d0	ai_ExecuteBribe	am	byte	readable		
 exe	0x004973f0	ai_EvalApplyForOffice	am	byte	readable		
 exe	0x00497490	ai_DecideApplyForOffice	am	shape	readable		
 exe	0x00497630	ai_ExecuteApplyForOffice	am	byte	readable		
-exe	0x00497660	ai_DecideProduceGood	am	draft	readable	deep	
+exe	0x00497660	ai_DecideProduceGood	am	byte	readable		
 exe	0x004979d0	ai_ExecuteProduceGood	am	byte	readable		
 exe	0x00497af0	ai_DecideBuyRoom	am	byte	readable		
 exe	0x00497c80	ai_ExecuteBuyRoom	am	byte	readable		
@@ -1693,7 +1693,7 @@ exe	0x0049d730	ai_ExecuteBlackmail	am	byte	readable
 exe	0x0049d750	ai_DecideUsePrivileges	am	byte	readable		
 exe	0x0049d7d0	ai_ExecuteUsePrivileges	am	byte	readable		
 exe	0x0049d7f0	ai_EvalMayor	am	shape	readable		
-exe	0x0049d8d0	ai_DecideMayor	am	draft	readable	deep	
+exe	0x0049d8d0	ai_DecideMayor	am	byte	readable		
 exe	0x0049dc10	ai_ExecuteMayor	am	byte	readable		
 exe	0x0049dd90	ai_DecideMayorUpgrade	am	byte	readable		
 exe	0x0049def0	ai_DecideMayorTownHall	am	byte	readable		
