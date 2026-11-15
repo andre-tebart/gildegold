@@ -1379,24 +1379,44 @@ __inline char dd_CpuHasMMX(void)
 #define DD_RMASK888 0xff0000u
 
 /* 0x41d2e0, sets up the display: mode DD_GDI..DD_FULLMEM, xres x yres at bpp bits
-   @stuck earlier reasons (deep sessions before): loop forms, declaration moves, rgb/bits types and the bpp
-   > 8 test spellings were = control; the bit-scan loops' allocation was the open point. This session (134
-   -> 73 ins): the six Bits/Loss stores after the scan loops as RLoss, GLoss, BLoss, GBits, BBits, RBits
-   (720-permutation round, run twice: the store order decided the loop-2 registers, 116 -> 39 ins);
-   dd_RLoss / dd_BLoss as tentative definitions (common block above 0x6f3300, notes vc6-data: the original
-   reads them as xor r,r / mov r8,[x], ours mov r,[x] / and r,0xff because the unit defined them = 0) - the
-   loads now match, the distance rose to 75 because the scratch registers behind them rotate; the mask
-   chains dd_X = x = ddpf.. (27 forms x 6 init orders of rb/gb/bb, run twice: AAA best again after the data
-   change, 73). Checklist: twin none; no goto/volatile/hand copy; returns are the original's guards;
-   ddsd/ddpf/bmi need no block scope (slots equal); c2trace read (r/g/b equal candidates prio -3, rb/gb/bb
-   byte candidates); store orders permuted; PixelFormat spelled 17 ways (888 - (..), (8 - X) * 100 + ..,
-   split into 2-4 statements, a temp for one term, casts, 100 * x): all = control. Left (vdiff):
-   dd_PixelFormat: ours folds R*100 + G*10 into (R*10 + G)*10 (lea [edx+edx*4]; lea [edi+ecx*2]; lea
-   [ecx+ecx*4]; add ecx,ecx) with mov esi,0x378 first, the original computes -G*10 (mov esi,edi; neg; shl
-   2; sub esi,edi; add esi,esi), R*100 (lea/lea/shl 2) and adds 0x378 last, with the dd_Pitch /
-   dd_PitchPixels stores after it; behind it the GDI arm's constant 8 in ecx instead of eax (mov ecx,8 /
-   mov [x],cl x6) and xor ebx,ebx / mov eax,8 at the switch join (one jmp more at our end). (tiebreak: not
-   measured (dcp headers sample dd_SetMode)) */
+   @stuck 73 -> 68 ins this session: the GDI arm's bpp tests as switch (bpp) { case 24: case 32: .. case
+   16: .. } (the branch hunk and the cross-jump stub gone; if/else forms 84..88, case orders all one code)
+   and ddsd.dwHeight stored before the #ifdef'd dwFlags in the window arm (order hunk). Left, two
+   mechanisms: (1) dd_PixelFormat: ours folds R*100 + G*10 into (R*10 + G)*10 (lea chain, mov esi,0x378
+   first); the original computes G*-10 (mov esi,edi; neg; shl 2; sub; add esi,esi), R*100 alone
+   (lea/lea/shl 2), subtracts R and B and adds 0x378 last - VC6's code when the R*100 term is opaque to the
+   multiply-add merge. Toys (VC6 /O2, 300+ forms): every spelling, term order, parenthesisation, split into
+   statements (global or local), unsigned/short/char/int types of all three, casts on R/G/B and on the
+   whole merge; only a narrowing cast on R*100 ((short), (unsigned short), & 0xffff), a float multiply or R
+   as shifts give the neg form, each with extra instructions. flip.py want neg esi: 0 of 824 in-function
+   mutants, 0 of 4554 outside it (declarations), 0 on the new base. In the function: 42 forms (6 term
+   orders x const first/last/negated/(8 - X)) and 30 statement splits = control; extern / tentative /
+   defined / static RLoss/GLoss/BLoss and their declaration order: R defined or static fixes (2) but loads
+   R as dword (35 ins, not the original's byte load), the rest = control. (2) the constant 8 (refs 8, byte)
+   is unprofitable on the first allocator pass in ours (sav 0: the stores of 8 to the
+   RLoss/GLoss/BLoss/GShift candidates and the bpp compare do not count as memory uses), is assigned late
+   to ecx and pushes the 0 into eax: every eax/ecx of the GDI arm, the switch operand and the join's mov
+   eax,8 swapped (c2trace: in the R-defined probe the RLoss candidate is gone, 8 gets sav 1 and eax first).
+   flip.py want the join's mov eax,8 (base): only order changes (BShift = 0 before GShift = 8: 52 ins with
+   the stores out of order) and meaning changes. Rounds this session: PF term orders x shapes (42),
+   statement splits (30), types/casts (99), probes (6), GDI chained Loss/Bits stores (19), store forms of
+   the scan end (26: 8 - x / 8; -= x / via Bits), MemBottom ternary / NULL / negated (6), switch / if-forms
+   (8), dwHeight order (2). Checklist: twin none; callees byte (dd_CpuHasMMX is an __inline asm helper); no
+   goto/volatile/hand copy (the round-up loop and D3_ZERO are the original's code); returns are the
+   original's guards; block scope done earlier (slots equal); c2trace read (const 8 must be profitable on
+   the first pass; R*100 must be opaque); store orders permuted earlier; vdiff read for the switch, m600,
+   m607 and R-defined variants. Left: dd_PixelFormat (+0x58a..+0x5f0) and every eax/ecx of the GDI arm from
+   biHeight > 0 to the 888 case (+0x9c4..+0xa2c) plus the join's mov eax,8 (+0x40f) (tiebreak: not measured
+   (dcp headers sample dd_SetMode)) prior: earlier reasons (deep sessions before): loop forms, declaration
+   moves, rgb/bits types and the bpp > 8 test spellings were = control; the bit-scan loops' allocation was
+   the open point. This session (134 -> 73 ins): the six Bits/Loss stores after the scan loops as RLoss,
+   GLoss, BLoss, GBits, BBits, RBits (720-permutation round, run twice: the store order decided the loop-2
+   registers, 116 -> 39 ins); dd_RLoss / dd_BLoss as tentative definitions (common block above 0x6f3300,
+   notes vc6-data: the original reads them as xor r,r / mov r8,[x], ours mov r,[x] / and r,0xff because the
+   unit defined them = 0) - the loads now match, the distance rose to 75 because the scratch registers
+   behind them rotate; the mask chains dd_X = x = ddpf.. (27 forms x 6 init orders of rb/gb/bb, run twice:
+   AAA best again after the data change, 73). Checklist: twin none; no goto/volatile/hand copy; returns are
+   the origin... */
 char dd_SetMode(int xres, int yres, int bpp, int mode, HWND wnd, int notused, char triple)
 {
     DDSURFACEDESC2 ddsd;
@@ -1528,6 +1548,7 @@ char dd_SetMode(int xres, int yres, int bpp, int mode, HWND wnd, int notused, ch
         ddsd.dwSize = sizeof(ddsd);
         ddsd.ddsCaps.dwCaps = DDSCAPS_OFFSCREENPLAIN | DDSCAPS_3DDEVICE;
         ddsd.dwWidth = xres;
+        ddsd.dwHeight = yres;
 #ifdef REA_FIX_16BPP
         /* REA_FIX_16BPP=1 (tools/build.py): request a 16 bit back buffer, the format the 2D
            blitters draw, instead of the desktop's 32 bit format that an offscreen surface without
@@ -1542,7 +1563,6 @@ char dd_SetMode(int xres, int yres, int bpp, int mode, HWND wnd, int notused, ch
 #else
         ddsd.dwFlags = DDSD_CAPS | DDSD_HEIGHT | DDSD_WIDTH;
 #endif
-        ddsd.dwHeight = yres;
 #line 1392
         D3DCHECK(dd_DD->lpVtbl->CreateSurface(dd_DD, &ddsd, &dd_BackBuffer, NULL));
         if (d3d_hr) {
@@ -1577,22 +1597,23 @@ char dd_SetMode(int xres, int yres, int bpp, int mode, HWND wnd, int notused, ch
             dd_MemBottom = (unsigned char *)dd_MemBuff + (yres - 1) * dd_MemPitch;
         else
             dd_MemBottom = NULL;
-        if (bpp != 16) {
-            if (bpp == 24 || bpp == 32) {
-                dd_RShift = 16;
-                dd_GShift = 8;
-                dd_BShift = 0;
-                dd_RLoss = 8;
-                dd_GLoss = 8;
-                dd_BLoss = 8;
-                dd_BBits = 8;
-                dd_GBits = 8;
-                dd_RBits = 8;
-                dd_RMask = DD_RMASK888;
-                dd_GMask = 0xff00;
-                dd_BMask = 0xff;
-            }
-        } else {
+        switch (bpp) {
+        case 24:
+        case 32:
+            dd_RShift = 16;
+            dd_GShift = 8;
+            dd_BShift = 0;
+            dd_RLoss = 8;
+            dd_GLoss = 8;
+            dd_BLoss = 8;
+            dd_BBits = 8;
+            dd_GBits = 8;
+            dd_RBits = 8;
+            dd_RMask = DD_RMASK888;
+            dd_GMask = 0xff00;
+            dd_BMask = 0xff;
+            break;
+        case 16:
             dd_BShift = 0;
             dd_RShift = 10;
             dd_GShift = 5;
@@ -1605,6 +1626,7 @@ char dd_SetMode(int xres, int yres, int bpp, int mode, HWND wnd, int notused, ch
             dd_RMask = 0x7c00;
             dd_GMask = 0x3e0;
             dd_BMask = 0x1f;
+            break;
         }
         break;
     }
