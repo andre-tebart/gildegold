@@ -3104,7 +3104,7 @@ exe	0x00508740	gm_JobWage	f3gm	c90d43d89fc39b68	no	shape	control=shape p1=shape 
 exe	0x005087f0	gm_ItemPrice	f3gm	f331c749edc985bd	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005089c0	gm_GoodsPrice	f3gm	93bf8d69375689f2	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00508a20	gm_HealthFactor	f3gm	7c4bf967df612085	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x00508a80	gm_FormatAmount	f3gm	36f18a19a7a5509a	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
+exe	0x00508a80	gm_FormatAmount	f3gm	36f18a19a7a5509a	yes	shape	sweep control=shape best=shape by the build's declarations; codegens=2 compiled=12 (stopped at the goal)	a0ee0387d0b3a075
 exe	0x00508cc0	gm_ListObjectsAfter	f3gm	ea1fab2c70960bad	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x00508d70	gm_BuildingLevel	f3gm	52709faf0cab91a9	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00508d80	gm_BuildingBalance	f3gm	af452c69ad0d5219	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft	
