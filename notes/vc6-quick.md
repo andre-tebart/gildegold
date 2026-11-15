@@ -151,7 +151,9 @@ Section names are those of `notes/vc6-matching.md`.
 - `dcp try NAME FILE`: one row per variant. Read the `ins` column yourself: `best:` says "none closer" when a
   variant has fewer instructions at a lower grade. `= control` means that source change is no lever for VC6.
   An empty replacement (`===` directly followed by `>>>`) swallows the next block: put a comment in.
-  `--move-line N --to A..B` generates declaration moves.
+  `--move-line N --to A..B` generates declaration moves. A whole-function variant starts with the function's
+  comment (at least the `/* 0xADDR, ... */` line): without it `--apply` drops the comment and the `@deep` note
+  and the function leaves the grades ("neither a unit nor a graded function").
 - `uv run --with capstone python tools/c2dag/vdiff.py SRC FUNC VARIANTS LABEL`: the instruction diff of ONE
   variant against the original without touching the tree. Use it on every variant that changes the layout,
   whatever its count. vdiff, c2trace and c2frame read a variants file exactly as `dcp try` does.
@@ -176,7 +178,11 @@ Section names are those of `notes/vc6-matching.md`.
   the original (`dcp disasm`) before applying it, and apply it as the plain code it suggests. A mutant whose
   frame size differs from the original's (`frame X vs Y (stack offsets aligned)`: its distance is not
   comparable) never wins: dropped when the start's frame size is right, ranked last otherwise.
+  A short run of stores (a message or record fill, the inits at the top) left at a few instructions:
+  `--ops move,swap --rounds 4` (the move-one-statement round, repeated); it matched several record fills that
+  round 1 left at 2-8 instructions. `--base FILE:LABEL` starts from one of your `dcp try` variants.
   `python tools/search/sweep.py` runs it over every function below byte (results: `sweep.py --report`).
+- Generators are script files (`python gen.py > v.txt`); `python -` with a PowerShell here-string hangs.
 - Sweeps over one function or the whole queue: `tools/sweep/blockscope.py` (function-scope records into their
   blocks), `tools/sweep/fillloop.py` (constant memsets as element loops, `--zero` for zero fills),
   `tools/sweep/twin.py --tagged` (every function with a `@deep` note that has a byte twin).
