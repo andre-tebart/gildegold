@@ -555,25 +555,45 @@ void d3d_BuildMipmaps(LPDIRECTDRAWSURFACE4 tex, DDSURFACEDESC2 *ddsd)
    The second half (from unlocking the loaded image) is a block of its own holding namebuf, num and
    ddscaps2: the original's frame needs them out of the scope of the seven copy/zero asm blocks above
    (each asm block counts as a reference to every escaped local in scope) while msg, in its own block
-   inside, keeps a slot apart from namebuf; num is 10 bytes (its slot rank).
-   @stuck only a frame tie is left: loadt and texture swapped ([ebp-4] / [ebp-8], every access of the two;
-   34 bytes). Both have 34 references (c2frame), density 8500, and the unstable quicksort of the >0x80
-   frame puts loadt first here, the original texture first; a probe with one more texture reference (or one
-   more loadt reference: then loadt) decides it, so the original has one reference more on texture (or one
-   fewer on loadt) that costs no code. This session: found the frame mechanism - each of the 8
-   D3_ZERO/D3_COPY3 inline-asm blocks counts 2 references for every escaped local in scope; namebuf, num,
-   ddscaps2 in one block from the #line 913 Unlock to the end (msg's if block nested inside, so msg keeps
-   its own slot), num[10] (density 400 between loadddsd 427 and ddscaps2 375): every slot but the tie as
-   the original (127 ins -> 77); the levels count as for (...; m >>= 1, levels++) ; (edx then mov edi,edx:
-   70 ins, shape); strcpy for the hand copy loop (the [eax+esi] order: 68 ins). Checklist: twin none;
-   headers sample insensitive; hand loop replaced (strcpy); returns: one early return in the msg block, as
-   the original; block scope tried for namebuf/num/ddscaps2/tempddsd/msg (scope rounds: 54 + 36 + 3);
-   c2frame counts read (the local off: texture or loadt by one). Tie rounds: Palette = 0 / tempt = 0
-   removed, ddk init order, loadt = 0 first (24 combos): worse or same tie; texture = *surf before the test
-   / in the condition: code 2 more; dd_SetSurfaceName(*surf..) = control; tempddsd in the outer block /
-   levels block / loop = control. flip.py (want _texture$ = -4): only meaning changes (delete a loadt call,
-   duplicate a texture call). Left: every [ebp-4] / [ebp-8] access swapped (loadt <-> texture). (tiebreak:
-   insensitive) */
+   inside, keeps a slot apart from namebuf; num is 10 bytes (its slot rank). The #line 847 in the body keeps
+   the D3_ZERO labels (__LINE__) apart whatever this comment's length.
+   @stuck the frame tie loadt/texture ([ebp-4] / [ebp-8], 34 bytes) is decided, and no code-identical
+   source reaches the original's side. Mechanism (simulated and checked): the >0x80 frame sort is K&R
+   quicksort (middle element swapped to the left end, Lomuto partition on dens > pivot) over the table
+   after the parameter slots - it reproduces B->A of all 75 sorted frames sampled from 13 units. Here it
+   turns B [texture, loadt, ..] (equal 8500) into A [loadt, texture]; the original's A needs texture with
+   one reference more, loadt with one fewer, loadt reaching 34 before texture in the walk (probe: the final
+   Release(loadt) moved above the mip block flips it), or the asm temp slots created in another order
+   ([zp-slot, zn-slot, cd-slot]). None is reachable with the original's code: loadt's 18 tuples are all 18
+   code references (none merged); texture's 18 tuples are 16 code references plus the two hoisted arm loads
+   of the FOURCC if/else pairs (counted before the late hoist), and no other if/else has a texture
+   statement at its head or behind its join; both are in scope of all 8 asm blocks (2 each, symmetric); the
+   final Release(loadt) is the last reference in the walk; the asm temps' list order follows their stores
+   (code). Checklist: twin none; callees in other units (5 byte, surf_ScaleBlit shape); no
+   goto/volatile/hand loop; one early return (the original's); block scope done by the prior session;
+   c2frame counts read, the local off named (texture +1 or loadt -1); no register/order hunks. Rounds:
+   end/top stores (loadt = 0 / texture = 0 after the final release, both, texture = 0 at the top, after the
+   loop, if (loadt) release): end stores = control (removed before counting), top/loop texture = 0: frame
+   right, +1 store (1 ins); texture/test forms (texture = *surf before the test, in the condition, else
+   arm, SetSurfaceName(*surf), QueryInterface on *surf): = control or 68 ins code 2..10; D3_ZERO/D3_COPY3
+   temp init order (12): only the current = control, others 76..136; temp declaration order apart from init
+   order + 7 name sets (19): all = control; free references ((void)texture, texture = texture, if (texture)
+   re-tests, *surf = texture): = control or code 20; flip.py want _texture$ = -4: 35 flips of 777 mutants,
+   all meaning changes (delete loadt = stretcht, delete a loadt call, duplicate a texture call, swap the
+   stretch Release); flip.py --scope file (2565 mutants outside the function): 0 flips; dead texture = 0
+   stores (7 places: before the assignment, the test, CreateSurface, the block, in the msg block, texture =
+   texture before GetAttachedSurface / at the loop end): the truly dead ones = control (removed before
+   counting), the others keep their store (1 ins, the frame right). Left: every [ebp-4]
+   / [ebp-8] access swapped (loadt <-> texture, 34 bytes) (tiebreak: insensitive) prior: only a frame tie
+   is left: loadt and texture swapped ([ebp-4] / [ebp-8], every access of the two; 34 bytes). Both have 34
+   references (c2frame), density 8500, and the unstable quicksort of the >0x80 frame puts loadt first here,
+   the original texture first; a probe with one more texture reference (or one more loadt reference: then
+   loadt) decides it, so the original has one reference more on texture (or one fewer on loadt) that costs
+   no code. This session: found the frame mechanism - each of the 8 D3_ZERO/D3_COPY3 inline-asm blocks
+   counts 2 references for every escaped local in scope; namebuf, num, ddscaps2 in one block from the #line
+   913 Unlock to the end (msg's if block nested inside, so msg keeps its own slot), num[10] (density 400
+   between loadddsd 427 and ddscaps2 375): every slot but the tie as the original (127 ins -> 77); the
+   levels count as for (...; m >>= 1, levels++) ; (edx then mov... */
 void d3d_LoadTexture(char *name, DDPIXELFORMAT *pf, LPDIRECTDRAWSURFACE4 *surf, LPDIRECT3DTEXTURE2 *surftext,
                      unsigned char mips, DWORD w, DWORD h, int bpp)
 {
@@ -593,6 +613,7 @@ void d3d_LoadTexture(char *name, DDPIXELFORMAT *pf, LPDIRECTDRAWSURFACE4 *surf, 
     int m;
     int i;
 
+#line 847
     ddk.dwColorSpaceLowValue = 0;
     ddk.dwColorSpaceHighValue = 0;
     loadt = 0;
