@@ -1473,7 +1473,7 @@ mechanisms, each as a generated round over all positions / subsets:
   byte took gm_TakeOverCharacter 45 -> 12 ins (then byte). A `short` loop counter gives the original's separate
   `dec; jne` countdown where an int compares the derived offset.
 
-## Stuck review 2026-11-15: what was missing for five stuck functions (4 byte, 1 at 6 ins)
+## Stuck review 2026-11-15: what was missing for five stuck functions (all byte)
 Each of the five had a long list of tried levers and "allocation only, no source lever" as the reason. None was
 an allocation problem. What was missing, per function, and the check that would have found it:
 - **main_ChoosePlayer (36 slot ins -> byte): the byte twin was never read.** lobby_ChoosePlayer had been matched
@@ -1509,12 +1509,20 @@ an allocation problem. What was missing, per function, and the check that would 
   deliberately.** The stuck worker tried `ret` locals and return spellings, all inside the "failure returns 0"
   frame. A generated product of exit forms (early test x init x failure form: 60 variants, one `dcp try`) found
   it in one round; the goto form it found (`f = 0; goto out;`) then translated to the plain one.
-- **vfs_Tfopen (44 -> 6 ins, still stuck): the same lever, half way.** The read success left by `goto done`;
-  without it, falling out of the nested ifs to `if (!f) sprintf(not found)`, the success tail stays in the read
-  path and the write success jumps into it as in the original. (The reload `mov ebp,[f slot]` before a return
-  that "must be 0" is the trace of such a decided test.) Left: the original's labelled final epilogue follows
-  the read tail and Could-write has the private copy; ours the reverse. The rewrite without `found` / `opened`
-  (every zip step under `if (f)`) is further away (146): f's reference count moves it to the first slot.
+- **vfs_Tfopen (44 ins -> byte, called "cross-jump direction, no lever"): the same lever three times.** (1) The
+  read success left by `goto done`; without it, falling out of the nested ifs to `if (!f) sprintf(not found)`,
+  the success tail stays in the read path (44 -> 6). (2) The last 6 (which exit owns the final epilogue) fell
+  when ONLY `vfs_OpenCount++` moved behind both arms as `if (f) vfs_OpenCount++;`, the flag stores staying in
+  each arm. The whole tail there was 98 ins, the count alone inside the read arm 44 - both had been tried and
+  dropped by their count. What gave it away was READING the 98-ins variant's asmdiff: block layout and epilogues
+  were all the original's, the difference was a flag store / reload at the join and a scratch-register rotation,
+  i.e. the join sat a few statements too early. (3) `goto opened` from the zip arm into the plain arm =
+  `if (f) { strcpy(f->name, name); .. }` behind both (same code). One goto is left (`found`, @original).
+  Rules: a reload `mov reg,[slot]` before a return that "must be 0" is the trace of a decided `if (!p)`; when a
+  shared-tail variant is far by count, look at WHERE it differs before dropping it - a right layout with a wrong
+  join position is one move from byte, a low count with the wrong layout is a local optimum; sweep the join
+  position (how many trailing statements are shared: 0, 1, 2, ..) as its own round.
+  The first pass at this item stopped at 6 ins and marked it stuck again after ~60 variants chosen by count.
 Tooling gaps met: (1) `dcp try` shows only rows; to read a variant's asmdiff it must be applied, built and
 reverted. A `dcp try NAME FILE --diff LABEL` would save that. (2) `dcp try` rows are not sorted and `best:` says
 "none closer" when a variant has fewer instructions but a lower grade (shape -> draft at 6 -> 2 ins): read the

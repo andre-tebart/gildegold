@@ -661,35 +661,12 @@ char vfs_MakeDirs(char *name, int unk)
     return 1;
 }
 /* 0x430470, opens a file of the directory tree. mode: R read (default), W write, B binary (default), T text,
-   Z gzip (default), N plain. Files inside zip archives can only be read, and only in binary mode. The read path is nested ifs; a failure leaves f at 0 and falls
-   through to the not-found message under if (!f) (VC6 decides that test on every path, so no code is left of
-   it; the reload mov ebp,[esp+0x30] before the not-found return is its trace). found / opened are the zip
-   arm's two jumps into shared code.
-   @stuck 44 -> 6 ins: the read success no longer leaves by goto done; it falls out of the nested ifs and
-   the not-found sprintf stands under if (!f) (VC6 threads the test away; the success tail is then kept in
-   the read path and the write success jumps into it, as in the original). Left: which exit owns the
-   function's final epilogue. The original: the early argument checks and the write fopen failure jump to
-   the epilogue behind the read tail (pop edi / mov eax,ebp / pop esi at 0x430898, unscheduled because it
-   carries the label) and Could-write has a private copy (add esp,0x10 / mov eax,ebp / pop edi); ours the
-   reverse (the read tail's copy is private, its pops scheduled into the flag code: '- pop edi' after mov
-   cl,[esp+0x14], '- pop esi' after add cl,cl; the labelled one follows Could-write). Tried on this base:
-   return f after Could-write (2 ins, but f folds: xor eax,eax where the original has mov eax,ebp, so the
-   original's return there is the shared final one), return f at the end of the write arm (44, the tail
-   moves back), at the end of the read arm (= control), flat argument checks with return f / return 0 (17),
-   products of those (26 variants, none closer), the write arm first (352), if (!e) Could-write first (64),
-   the tail after the not-found test as if / else (105), only the count there (44), the tail once under if
-   (f) behind both arms (98), if (!fp) return f (14), a fully goto-free rewrite with the zip success under
-   if (f) (146: f gets more references and moves to the first slot, unzOpenCurrentFile twice) (tiebreak:
-   not measured (dcp headers sample vfs_Tfopen)) prior: 44 ins / 386 bytes left (from draft 152 / 1257).
-   VC6 cross-jumps the identical success tails (binary/compressed bits, vfs_OpenCount++, return f) in the
-   wrong direction: ours keeps the copy in the write path and the read success jumps to it (jmp at +0x3ff);
-   the original keeps it at the end of the read path, falling into the epilogue the early argument checks
-   also reach (0x430870..0x4308a4), and the write success does jmp 0x430870, with Could-write placed last
-   falling into a second epilogue. Levers that moved code: nested ifs + one fall-through sprintf for
-   not-found (152->106, gave f its stack home), read success goto done (->66), if (e) {...} else {Could
-   write} (->46 shape), binary=1 before read=1 (->44, first hunk). Tried without gain: read success return
-   f (86-150), write success return f (53) or goto done (= control), the write branch first (if (!read)
-   ..., 352), goto end at the old no... */
+   Z gzip (default), N plain. Files inside zip archives can only be read, and only in binary mode. Every step that can fail
+   leaves f at 0 and what follows stands under if (f) / if (!f): the name and flags of an opened file, the
+   not-found message, the open count behind both arms. VC6 decides those tests on every path, so they leave
+   no code (the reload mov ebp,[esp+0x30] before the not-found return is their only trace).
+   @original the scan of a zip without a stored position joins the positioned arm's unzOpenCurrentFile by
+   goto found: written out in the loop the call exists twice (the original has one) */
 
 VFSFILE *vfs_Tfopen(char *name, char *mode, int unk)
 {
@@ -762,7 +739,6 @@ found:
                                     f->zip = zip;
                                     f->flags.checkgz = 1;
                                     f->flags.inzip = 1;
-                                    goto opened;
                                 }
                             }
                         } else {
@@ -775,7 +751,8 @@ found:
                                 }
                             } while (unzGoToNextFile(zip) == 0);
                         }
-                        unzClose(zip);
+                        if (!f)
+                            unzClose(zip);
                     }
                 } else {
                     modes[0] = "rt";
@@ -790,14 +767,14 @@ found:
                         f = pool_Alloc(&vfs_FilePool, sizeof(VFSFILE), 16);
                         f->fp = fp;
                         f->flags.inzip = 0;
-opened:
-                        strcpy(f->name, name);
-                        f->flags.memory = 0;
-                        f->flags.read = 1;
-                        f->flags.binary = binary;
-                        f->flags.compressed = z;
-                        vfs_OpenCount++;
                     }
+                }
+                if (f) {
+                    strcpy(f->name, name);
+                    f->flags.memory = 0;
+                    f->flags.read = 1;
+                    f->flags.binary = binary;
+                    f->flags.compressed = z;
                 }
             }
             if (!f)
@@ -838,13 +815,14 @@ opened:
                     f->flags.read = 0;
                     f->flags.binary = binary;
                     f->flags.compressed = z;
-                    vfs_OpenCount++;
                 }
             } else {
                 sprintf(buf, "vfs_Tfopen: Could write to \"%s\"!!", name);
                 err_Message(buf);
             }
         }
+        if (f)
+            vfs_OpenCount++;
     }
     return f;
 }
