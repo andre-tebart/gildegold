@@ -193,33 +193,13 @@ void snd_UpdateQueue(void)
 
 /* 0x4c0470, the rain sounds by the rain level *d3t_Rain (near / far loops louder the lower / higher the camera
    is above the ground, drops "Tropfen_s"), then now and then a gust ("Boehe_*", chance and interval by season from
-   the table 0x602ba8); everything stops without a scene, with sound off or when the season changed
-   @stuck 80 -> 33 ins, size now 2542 = 2542. Kept: the 0x95 (medium) branch's fraction as its own
-   function-scope local tm (t in the 499 / light branches): VC6 then gives f the deeper slot ([esp+0x10])
-   as the original, which fixed the f/t slot swap everywhere (dcp frame cannot read this frame: the
-   prologue sub esp follows a load; read with framemap.py). Same code when the 499 branch gets the own
-   local instead; block-scoped t in one branch the same; in 2-3 branches worse (39). Left: (1) every near
-   loop (4 places: 999, 499, 0x95, light): the original loads the handle into a callee-saved register
-   before the volume's fmul/_ftol and keeps it for the compare and sb_SetVolume (mov
-   edi,[snd_RainHeavyNear] .. call _ftol; cmp edi,ebx; mov esi,eax), ours loads after into eax (mov
-   esi,eax; mov eax,[X]; cmp eax,ebx; push eax); (2) the 0x95 branch: original fst depth; fmul tm, ours
-   fstp depth; fld tm; fmul depth, and the light-near product's operand order swapped (fld depth; fmul tm).
-   Tried without effect: unsigned v, comma v = ... in the condition, SND_SET's arms inverted (worse 43), w
-   = n*8 moved (worse), dropping depth (= control), commuting depth * tm (= control), +16 dummy f
-   references (frame unchanged: reference count is not what orders these two slots). (tiebreak: not
-   measured (dcp headers sample snd_UpdateRain)) prior: Read all of it against the original: the 499 / 0x95
-   branches keep a float fraction t = n - base (then t = 500 / 350 - t, was 499 - k / 350 - k) and depth =
-   2600 - f, the 0x95 drops start at depth's full volume, volumes multiply by 88.9 and 1/d separately
-   (SND_RAINVOL), the gust compares written as the original's (>= interval, w > 0x28a); 748 = 748
-   instructions. Left: f and t swap slots ([esp+0x10]/[esp+0x14]) and the four near loops: the original
-   loads the handle into edi/esi before the volume's ftol and keeps it for sb_SetVolume (mov edi,
-   [snd_RainHeavyNear] ... cmp edi, ebx), ours reloads it into eax after (mov esi, eax; mov eax, [X]; cmp
-   eax, ebx), 1 byte each (2538 vs 2542). */
+   the table 0x602ba8); everything stops without a scene, with sound off or when the season changed */
 void snd_UpdateRain(void)
 {
     float f;
     float t;
-    float tm;                           /* the medium branch's fraction (t elsewhere) */
+    float tm;                           /* the medium branch's own fraction and depth (t / depth elsewhere) */
+    float dm;
     float depth;                        /* 2600 - the camera height above the ground */
     int n;
     int w;
@@ -252,8 +232,7 @@ void snd_UpdateRain(void)
         w = n * 8;
         if (n >= 999) {
             /* heavy only */
-            v = SND_RAINVOL(2600.0f - f, 2600.0f);
-            SND_SET(snd_RainHeavyNear, "StarkNah_l_01", v, 0, 0);
+            SND_SET(snd_RainHeavyNear, "StarkNah_l_01", v = SND_RAINVOL(2600.0f - f, 2600.0f), 0, 0);
             SND_SET(snd_RainHeavyFar, "StarkFern_l_01", SND_RAINVOL(f, 2600.0f), 0, 0);
             if (snd_RainDrops == 0)
                 snd_RainDrops = sb_PlaySampleI(snd_Bank, "Tropfen_s", 0, 0x3f, v, 0, 1000);
@@ -266,9 +245,7 @@ void snd_UpdateRain(void)
         } else if (n >= 499) {
             /* heavy fading in over medium: t of 500 */
             t = (float)(n - 499);
-            depth = 2600.0f - f;
-            v = SND_RAINVOL(depth * t, 1300000.0f);
-            SND_SET(snd_RainHeavyNear, "StarkNah_l_01", v, 0, 0);
+            SND_SET(snd_RainHeavyNear, "StarkNah_l_01", v = SND_RAINVOL((depth = 2600.0f - f) * t, 1300000.0f), 0, 0);
             SND_SET(snd_RainHeavyFar, "StarkFern_l_01", SND_RAINVOL(t * f, 1300000.0f), 0, 0);
             t = 500.0f - t;
             SND_SET(snd_RainMediumNear, "MittelNah_l_01", SND_RAINVOL(depth * t, 1300000.0f), 0, 0);
@@ -284,15 +261,13 @@ void snd_UpdateRain(void)
         } else if (n >= 0x95) {
             /* medium fading in over light: tm of 350 */
             tm = (float)(n - 0x95);
-            depth = 2600.0f - f;
-            v = SND_RAINVOL(depth * tm, 910000.0f);
-            SND_SET(snd_RainMediumNear, "MittelNah_l_01", v, 0, 0);
+            SND_SET(snd_RainMediumNear, "MittelNah_l_01", v = SND_RAINVOL((dm = 2600.0f - f) * tm, 910000.0f), 0, 0);
             SND_SET(snd_RainMediumFar, "MittelFern_l_01", SND_RAINVOL(tm * f, 910000.0f), 0, 0);
             tm = 350.0f - tm;
-            SND_SET(snd_RainLightNear, "LeichtNah_l_01", SND_RAINVOL(depth * tm, 910000.0f), 0, 0);
+            SND_SET(snd_RainLightNear, "LeichtNah_l_01", SND_RAINVOL(dm * tm, 910000.0f), 0, 0);
             SND_SET(snd_RainLightFar, "LeichtFern_l_01", SND_RAINVOL(tm * f, 910000.0f), 0, 0);
             if (snd_RainDrops == 0)
-                snd_RainDrops = sb_PlaySampleI(snd_Bank, "Tropfen_s", 1, 0x3f, SND_RAINVOL(depth, 2600.0f), 0, 3000);
+                snd_RainDrops = sb_PlaySampleI(snd_Bank, "Tropfen_s", 1, 0x3f, SND_RAINVOL(dm, 2600.0f), 0, 3000);
             else {
                 ((G16SMP *)snd_RainDrops)->delay = 3000;
                 sb_SetVolumeI(snd_RainDrops, v);
@@ -302,8 +277,7 @@ void snd_UpdateRain(void)
         } else {
             /* light only: t of 149 */
             t = (float)n;
-            v = SND_RAINVOL((2600.0f - f) * t, 387400.0f);
-            SND_SET(snd_RainLightNear, "LeichtNah_l_01", v, 0, 0);
+            SND_SET(snd_RainLightNear, "LeichtNah_l_01", v = SND_RAINVOL((2600.0f - f) * t, 387400.0f), 0, 0);
             SND_SET(snd_RainLightFar, "LeichtFern_l_01", SND_RAINVOL(t * f, 387400.0f), 0, 0);
             if (snd_RainDrops == 0)
                 snd_RainDrops = sb_PlaySampleI(snd_Bank, "Tropfen_s", 0, 0x3f, v, 0, 4000);
