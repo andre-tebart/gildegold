@@ -860,26 +860,7 @@ int snd_VoiceVariant(unsigned int voice, int woman)
     return voice % 3 - 5;
 }
 /* 0x4c2510, the voice sample text of speaker id (a character: "_M%i" / "_W%i" by sex, -1.. -6: "_W2", "_W1", "_M1",
-   "_M2", "_M3", "_HS"; -7: text itself, -8: none) in bank, variation var if >= 0 ("%02i" appended)
-   @stuck frame fixed: sfx is char[0x10] (framemap: [0x11..0x14] round to 0x18 and leave the 4-byte gap;
-   0x10 gives the original's sfx -0x128 / num -0x114 / buf -0x104, frame 0x128); hunks frame 38 + slots 18
-   gone, 21 code ins left. Left: (1) ebx/esi/edi pushed in the entry block before the snd_SfxEnabled jne
-   (ours pops them on the early return), the original pushes them after it; (2) the sb_GetVariation call
-   loads bank/buf into eax/edx (the original edx/ecx, then eax for the failure sprintf). Tried:
-   !snd_SfxEnabled, else-if chain, the whole body inside if (snd_SfxEnabled != 0) with return 0 / with s =
-   0 and one return (pushes then move, but the early return merges: 22-25 ins), s = 0 before the test,
-   direct sb_GetVariation / sb_IsVariation calls without the int casts (= control), nested if / isvar &&
-   var >= 0 / !(var < 0 || isvar) (= control), the two variation tests in other orders (47 ins), no c
-   pointer (39), id >= 0 && id < 0x300 (25). headers sample: insensitive. (tiebreak: insensitive) prior:
-   Read whole function against the original: fixed the branch order (id != -7 first, sprintf(buf, text) in
-   the else), the character fields through ai_CharsT / AICHAR (sex 0x09, netId 0x04 via a record pointer),
-   the variation fail path (sprintf then return s). Every statement corresponds now. Remaining: frame
-   layout only - ours 0x12c with num[] 8-aligned at local 0x18 and buf[] at 0x28 (one 4-byte gap after
-   sfx[0x14]), the original 0x128 with num at 0x14 and buf at 0x24; with the larger frame VC6 pushes
-   ebx/esi/edi before the snd_SfxEnabled early return (ours +0x1d..+0x26 'push ebx; push esi; push edi;
-   jne; pop edi; pop esi'), the original after it, and the sb_GetVariation call loads bank/buf into eax/edx
-   instead of edx/ecx. Tried: all 6 declaration orders of sfx/num/buf, sizes sfx 0x11/0x13/0x14 and num
-   0xc/0xd/0xf/0x10, num block-scoped in the strcat branch, separate isvar / s locals: the ... */
+   "_M2", "_M3", "_HS"; -7: text itself, -8: none) in bank, variation var if >= 0 ("%02i" appended) */
 
 int snd_FindVoiceSample(int id, int bank, char *text, int var)
 {
@@ -892,6 +873,7 @@ int snd_FindVoiceSample(int id, int bank, char *text, int var)
 
     if (snd_SfxEnabled == 0)
         return 0;
+    isvar = 0;
     if (id != -7) {
         if (id < 0x300 && id >= 0) {
             c = &ai_CharsT[id];
@@ -920,18 +902,18 @@ int snd_FindVoiceSample(int id, int bank, char *text, int var)
             strcat(sfx, num);
         }
         sprintf(buf, "%s%s", text, sfx);
-        if (isvar != 0 && var >= 0) {
-            s = sb_GetVariationI(bank, buf, var);
-            if (s == 0)
-                sprintf(buf, "Voicesample not found in variation:\n%s %i", text, var);
-            return s;
-        }
     } else {
         sprintf(buf, text);
     }
-    s = sb_GetSample(bank, buf);
-    if (s == 0)
-        sprintf(buf, "Voicesample not found:\n%s", text);
+    if (isvar != 0 && var >= 0) {
+        s = sb_GetVariationI(bank, buf, var);
+        if (s == 0)
+            sprintf(buf, "Voicesample not found in variation:\n%s %i", text, var);
+    } else {
+        s = sb_GetSample(bank, buf);
+        if (s == 0)
+            sprintf(buf, "Voicesample not found:\n%s", text);
+    }
     return s;
 }
 /* 0x4c2760, plays the voice sample of speaker id in bank now (snd_FindVoiceSample) at the voice volume,
