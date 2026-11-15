@@ -2829,22 +2829,14 @@ void ai_DuelNextPhase(AGDUEL *d)
     }
     d->phase = 5;
 }
-/* 0x493be0, sets object o's target (field 0x1e) for its owner p: an office holder (sel 7) picks a colleague of his office column he dislikes, sel 10 a partner from the random walk; without one the target is cleared to -1 (always for sel 3 / 4, else two times in three)
-   @deep read the whole function against the original and rewrote it: the goto to the release tail for
-   officeKind 0 / no partner / other sel, q reset after a failed liking test, AMTKIND/AMTREC records,
-   amt_GetKind widening, id reused for the random draw (frame now equal 0xbc). Left is allocation only:
-   after the office loop ours reloads ebx=r before esi=o (order, idiv [esp+0x1c] vs [esp+0x14]: cnt/liking
-   slots swapped), and the release tail: the original keeps -1 in ebx (or ebx,-1; mov [esp+0x1c],ebx; later
-   mov [esp+0x3b],bl for v=0xff) where ours stores the immediates (mov [esp+0x14],-1 / mov
-   [esp+0x3b],0xff). Tried v=-1, v=(unsigned char)id, statement orders, declaration orders: no better. */
-
+/* 0x493be0, sets object o's target (field 0x1e) for its owner p: an office holder (sel 7) picks a colleague of his office column he dislikes, sel 10 a partner from the random walk; without one the target is cleared to -1 (always for sel 3 / 4, else two times in three) */
 int ai_ChooseObjectTarget(AGCH *p, AIOBJ *o)
 {
     AMTREC offices[6];
     AMTKIND kind;
     AGCH *q;
-    int r, n, cnt, i, id;  /* id also holds the liking threshold's random draw (the original's slot) */
-    unsigned char v;
+    int r, n, cnt, i;
+    char v;
 
     q = 0;
     r = util_RandomU(3);
@@ -2857,16 +2849,15 @@ int ai_ChooseObjectTarget(AGCH *p, AIOBJ *o)
             goto release;
         if (amt_GetKind(p->officeKind, &kind) == 0)
             return 0;
-        n = amt_GetColumnOffices(kind.col, 6, offices);
-        cnt = n;
-        if (n == 0)
+        cnt = amt_GetColumnOffices(kind.col, 6, offices);
+        if (cnt == 0)
             return 0;
-        i = util_RandomU(n);
+        i = util_RandomU(cnt);
+        n = cnt;
         do {
             if (p->netId != offices[i].owner && (q = AG_CH(offices[i].owner)) != 0) {
                 liking = gm_Liking(p->id, q->id, 1);
-                id = util_RandomU(30);
-                if (liking < id + 40.0f)
+                if (liking < util_RandomU(30) + 40.0f)
                     break;
                 q = 0;
             }
@@ -2875,11 +2866,12 @@ int ai_ChooseObjectTarget(AGCH *p, AIOBJ *o)
         } while (n != 0);
     } else if (p->sel == 10) {
         int flags;
+        unsigned short id;
 
         flags = 0xc00;
-        if (ai_FindPartnersRandomWalk((AIPER *)p, 1, &flags, 0.0f, util_RandomU(30) + 40.0f, (unsigned short *)&id) == 0)
+        if (ai_FindPartnersRandomWalk((AIPER *)p, 1, &flags, 0.0f, util_RandomU(30) + 40.0f, &id) == 0)
             goto release;
-        q = (AGCH *)&ai_CharsT[id & 0xffff];
+        q = (AGCH *)&ai_CharsT[id];
     } else
         goto release;
     if (q != 0) {
@@ -2887,9 +2879,9 @@ int ai_ChooseObjectTarget(AGCH *p, AIOBJ *o)
         cm_BeginFieldBlock(o, o->objId);
         cm_AddFieldDelta(4, 1, 0x1e, &q->netId);
         cm_AddFieldDelta(1, 1, 0x22, &v);
-        v = (unsigned char)util_RandomU(8);
+        v = (char)util_RandomU(8);
         cm_AddFieldDelta(1, 1, 0x1c, &v);
-        v = (unsigned char)util_RandomU(8);
+        v = (char)util_RandomU(8);
         cm_AddFieldDelta(1, 1, 0x1d, &v);
         cm_SendFieldDeltas();
         return 1;
@@ -2897,15 +2889,19 @@ int ai_ChooseObjectTarget(AGCH *p, AIOBJ *o)
 release:
     if (p->sel != 3 && p->sel != 4 && r == 0)
         return 0;
-    id = -1;
-    v = 1;
-    cm_BeginFieldBlock(o, o->objId);
-    cm_AddFieldDelta(4, 1, 0x1e, &id);
-    cm_AddFieldDelta(1, 1, 0x22, &v);
-    v = 0xff;
-    cm_AddFieldDelta(1, 1, 0x1c, &v);
-    cm_AddFieldDelta(1, 1, 0x1d, &v);
-    cm_SendFieldDeltas();
+    {
+        int target;
+
+        v = 1;
+        target = -1;  /* no target */
+        cm_BeginFieldBlock(o, o->objId);
+        cm_AddFieldDelta(4, 1, 0x1e, &target);
+        cm_AddFieldDelta(1, 1, 0x22, &v);
+        v = -1;
+        cm_AddFieldDelta(1, 1, 0x1c, &v);
+        cm_AddFieldDelta(1, 1, 0x1d, &v);
+        cm_SendFieldDeltas();
+    }
     return 1;
 }
 /* 0x493ea0, the successor of p for the kill-player event (he_RunKillPlayer): an alive adult (above 11) child of
