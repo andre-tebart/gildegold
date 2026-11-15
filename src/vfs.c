@@ -1100,18 +1100,7 @@ long vfs_ftell(VFSFILE *f)
     return r;
 }
 /* 0x4311d0, opens a memory buffer as a file. mode: R read (default), W write, Z deflated, N not deflated;
-   without Z or N a read buffer is deflated if it starts with the gzip magic.
-   @stuck 2 ins / 3 bytes left (from 37 / 549): the early exit's null result. The original hoists xor
-   eax,eax to the entry and jumps past the final mov eax,esi; ours keeps f = 0 in esi and jumps to the mov
-   (f's two defs share one web). Levers that moved: body nested under if (buf && size > 0) with f = 0 and
-   each failure site its own pool_Free + return 0 (37 -> 34 ins); read = 1; z = 1; detect = 1 as statements
-   in that order (read's immediate store, 34 -> 36 ins / 517 -> 76 bytes); the detect test split into if
-   (size <= 10) z = 0; else if (magic mismatch) z = 0; else z = 1 (layout + z/read slots, -> 2 ins). No
-   lever for the last hunk: a separate ret local (ret = 0 / ret = f, coalesced: = control), f = 0 at each
-   of the 4 init positions (permute: best = control), else f = 0 / if (!buf || ..) f = 0 else (11 ins),
-   return f inside + return 0 after (merged with the failure returns, 28 ins), the flat early return 0 with
-   goto fail or duplicated failures (7 / 28 ins: the early exit then jumps into the failure epilogue),
-   return NULL / return f spellings (= control). (tiebreak: not measured (dcp headers sample vfs_MemOpen)) */
+   without Z or N a read buffer is deflated if it starts with the gzip magic. */
 
 VFSFILE *vfs_MemOpen(unsigned char *buf, unsigned int size, char *mode)
 {
@@ -1166,7 +1155,7 @@ VFSFILE *vfs_MemOpen(unsigned char *buf, unsigned int size, char *mode)
                 f->zs.zfree = 0;
                 if (inflateInit2(&f->zs, -MAX_WBITS) != Z_OK) {
                     pool_Free(&vfs_FilePool, f);
-                    return 0;
+                    f = 0;
                 }
             } else {
                 f->zs.next_in = buf;
@@ -1176,34 +1165,37 @@ VFSFILE *vfs_MemOpen(unsigned char *buf, unsigned int size, char *mode)
         } else if (z) {
             if (size < 18) {
                 pool_Free(&vfs_FilePool, f);
-                return 0;
+                f = 0;
+            } else {
+                buf[0] = gz_magic[0];
+                buf[1] = gz_magic[1];
+                buf[2] = Z_DEFLATED;
+                buf[3] = buf[4] = buf[5] = buf[6] = buf[7] = buf[8] = 0;
+                buf[9] = 0x0b;
+                f->zs.next_in = 0;
+                f->zs.avail_in = 0;
+                f->zs.next_out = buf + 10;
+                f->zs.avail_out = size - 10;
+                f->zs.zalloc = 0;
+                f->zs.zfree = 0;
+                f->crc = crc32(0, 0, 0);
+                if (deflateInit2(&f->zs, Z_DEFAULT_COMPRESSION, Z_DEFLATED, -MAX_WBITS, 8, Z_DEFAULT_STRATEGY) != Z_OK) {
+                    pool_Free(&vfs_FilePool, f);
+                    f = 0;
+                } else
+                    f->zs.total_out = 10;
             }
-            buf[0] = gz_magic[0];
-            buf[1] = gz_magic[1];
-            buf[2] = Z_DEFLATED;
-            buf[3] = buf[4] = buf[5] = buf[6] = buf[7] = buf[8] = 0;
-            buf[9] = 0x0b;
-            f->zs.next_in = 0;
-            f->zs.avail_in = 0;
-            f->zs.next_out = buf + 10;
-            f->zs.avail_out = size - 10;
-            f->zs.zalloc = 0;
-            f->zs.zfree = 0;
-            f->crc = crc32(0, 0, 0);
-            if (deflateInit2(&f->zs, Z_DEFAULT_COMPRESSION, Z_DEFLATED, -MAX_WBITS, 8, Z_DEFAULT_STRATEGY) != Z_OK) {
-                pool_Free(&vfs_FilePool, f);
-                return 0;
-            }
-            f->zs.total_out = 10;
         } else {
             f->zs.next_out = buf;
             f->zs.avail_out = size;
             f->zs.total_out = 0;
         }
-        vfs_OpenCount++;
-        f->flags.read = read;
-        f->flags.compressed = z;
-        sprintf(f->name, "0x%08X -> length: %u, read: %u compressed: %u", buf, size, read, z);
+        if (f) {
+            vfs_OpenCount++;
+            f->flags.read = read;
+            f->flags.compressed = z;
+            sprintf(f->name, "0x%08X -> length: %u, read: %u compressed: %u", buf, size, read, z);
+        }
     }
     return f;
 }
