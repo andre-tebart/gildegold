@@ -175,9 +175,11 @@ Section names are those of `notes/vc6-matching.md`.
   off: `--skip 0x1070a91d`) to see which pass makes a layout.
 - `python tools/search/climb.py NAME [--rounds N --beam K --width W --ops a,b]`: a beam search over source
   mutations, each mutant measured with `dcp try`; round 1 is exhaustive (every single mutation), later rounds
-  mutate the best texts again. It prints the best text's diff against the tree and writes nothing into the
-  sources. A mutant that is BYTE has the original's meaning; a mutant that is only closer may have changed the
-  meaning (a statement moved past one it depends on, a call moved into a braceless `if`): check a lead against
+  mutate the best texts again. It prints the best text's diff against the start (kept in build/climb/NAME.diff)
+  and writes nothing into the sources. move and swap never cross an exit, a label, a statement sharing a written
+  access path, a call against a call or a store through memory, nor land in a braceless `if` (`--unsafe` drops
+  the check). Other operators can still change the meaning, and a pointer alias the check cannot see can too:
+  check a lead against
   the original (`dcp disasm`) before applying it, and apply it as the plain code it suggests. A mutant whose
   frame size differs from the original's (`frame X vs Y (stack offsets aligned)`: its distance is not
   comparable) never wins: dropped when the start's frame size is right, ranked last otherwise.

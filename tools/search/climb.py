@@ -89,12 +89,74 @@ def body_start(lines):
     return first, k
 
 
+UNSAFE = False                                            # --unsafe: moves and swaps without the check below
+WORD = re.compile(r"\b[A-Za-z_]\w*")
+EXIT = re.compile(r"\b(return|break|continue|goto|case|default)\b|^\s*[A-Za-z_]\w*:\s*$")
+TARGET = re.compile(r"(\*?\s*[A-Za-z_][\w\.]*(?:->[\w\.]+|\[[^\]=]*\])*)\s*(?:[-+*/|&^%]|<<|>>)?=(?!=)")
+
+
+def _targets(l):
+    """what a statement writes, as access paths: `m.time`, `*o2`, `p->x`; an element write is its array (`q[`), a
+    ++ / -- operand its name"""
+    out = set()
+    for m in TARGET.finditer(l):
+        t = re.sub(r"\s+", "", m.group(1))
+        out.add(re.sub(r"\[.*", "[", t))
+    for m in re.finditer(r"(?:\+\+|--)\s*([A-Za-z_][\w\.]*(?:->[\w\.]+)*)|([A-Za-z_][\w\.]*(?:->[\w\.]+)*)\s*(?:\+\+|--)", l):
+        out.add(m.group(1) or m.group(2))
+    return out
+
+
+def _touches(t, l):
+    """does line l read or write what target t names (or the whole of which t is a part)"""
+    base = WORD.search(t).group(0)
+    if t == base or t.startswith("*"):
+        return re.search(r"\b%s\b" % re.escape(base), l) is not None
+    if t.endswith("["):
+        return t in re.sub(r"\s+", "", l)
+    flat = re.sub(r"\s+", "", l)
+    if t in flat:
+        return True
+    # the whole object used or written as such (`m = s`, `&m`, `f(m)`): the name not followed by a member access
+    return re.search(r"\b%s\b(?!\s*(\.|->|\[))" % re.escape(base), l) is not None
+
+
+def _call(l):
+    l = re.sub(r"\b(if|while|for|switch|return|sizeof)\s*\(", "(", l)
+    return re.search(r"\b[A-Za-z_]\w*\s*\(", l) is not None
+
+
+def _memory(l):
+    """a store through a pointer, an element, a field or a global-looking name (what a call may read or write)"""
+    return any(("->" in t or "[" in t or "." in t or t.startswith("*") or "_" in t) for t in _targets(l))
+
+
+def independent(a, crossed):
+    """can statement a move over the crossed lines without changing the meaning: no exit or label among them, no
+    access path one writes and the other uses, no two calls, no call against a store through memory"""
+    if UNSAFE:
+        return True
+    ta, ca, ma = _targets(a), _call(a), _memory(a)
+    for c in crossed:
+        s = c.strip()
+        if not s or s.startswith(("/*", "//", "{", "}")):
+            continue
+        if EXIT.search(c):
+            return False
+        tc, cc = _targets(c), _call(c)
+        if any(_touches(t, c) for t in ta) or any(_touches(t, a) for t in tc):
+            return False
+        if (ca and (cc or _memory(c))) or (cc and ma):
+            return False
+    return True
+
+
 # --- the operators: each yields (label, new lines) for the sites it finds -------------------------------------
 
 def op_swap(lines, rng):
     for i in range(len(lines) - 1):
         a, b = lines[i], lines[i + 1]
-        if simple(a) and simple(b) and indent(a) == indent(b) and not is_decl(a) and not is_decl(b):
+        if simple(a) and simple(b) and indent(a) == indent(b) and not is_decl(a) and not is_decl(b) and independent(a, [b]):
             yield "swap@%d" % i, lines[:i] + [b, a] + lines[i + 2:]
 
 
@@ -109,8 +171,12 @@ def op_move(lines, rng):
             lo, hi = min(i, j), max(i, j)
             if any(indent(lines[k]) < indent(a) and lines[k].strip() for k in range(lo, hi + 1)):
                 continue                                  # do not leave the block
+            if not independent(a, [lines[k] for k in range(lo, hi + 1) if k != i]):
+                continue                                  # the move would change the meaning
             rest = lines[:i] + lines[i + 1:]
             at = j if d < 0 else j
+            if not UNSAFE and at > 0 and KEYWORD.match(rest[at - 1]) and not rest[at - 1].rstrip().endswith((";", "{", "}")):
+                continue                                  # would become the body of a braceless if / else / loop
             if is_decl(rest[min(at, len(rest) - 1)]) and d < 0:
                 continue
             yield "move@%d%+d" % (i, d), rest[:at] + [a] + rest[at:]
@@ -417,9 +483,12 @@ def main():
     ap.add_argument("--ops", default=",".join(OPS))
     ap.add_argument("--base", help="the start text: a file with the whole function, or a dcp try variants file as FILE:LABEL (blocks applied to the tree)")
     ap.add_argument("--seed", type=int, default=1)
+    ap.add_argument("--unsafe", action="store_true", help="move and swap without the meaning check (a statement may then cross a call, an exit or a statement it depends on)")
     ap.add_argument("--types", help="the local operator's types, comma separated (default int,float; e.g. int,float,unsigned int,short,char *)")
     ap.add_argument("--resume", action="store_true")
     a = ap.parse_args()
+    global UNSAFE
+    UNSAFE = a.unsafe
     if a.types:
         TYPES[:] = [t.strip() for t in a.types.split(",") if t.strip()]
     os.makedirs(OUT, exist_ok=True)
