@@ -562,13 +562,7 @@ int ai_ExecSecretRoom2(AIPX *p, AIARGX *s1, AIARGX *s2)
     cm_SendLongMessage(&msg);
     return 1;
 }
-/* 0x48ef10, execute of "UseSecretRoom" (0x41), way 3: pays the goods amount of s2, message 0x99 to no character (ch -1), building by ai_PickActionBuilding
-   @deep read the whole function against the original: same statements, calls and arguments, the 30
-   instructions after the message fill equal. The one remaining hunk (0x48ef3d, 26 lines) is the scheduling
-   of the message fill: the original loads time+0 into edx before the memset and interleaves the ai_Time
-   words (0,4,8,c) with the s1->ref2 / s2->arg2 loads through ecx/edx, ours loads time+4 first and stores
-   in another order. Tried the field order of ai_ExecSecretRoom1/2 (type, fromId, flags, ch, n, dst): worse
-   (22 ins), reverted. */
+/* 0x48ef10, execute of "UseSecretRoom" (0x41), way 3: pays the goods amount of s2, message 0x99 to no character (ch -1), building by ai_PickActionBuilding */
 
 int ai_ExecSecretRoom3(AIPX *p, AIARGX *s1, AIARGX *s2)
 {
@@ -579,8 +573,8 @@ int ai_ExecSecretRoom3(AIPX *p, AIARGX *s1, AIARGX *s2)
     cm_SendMoveGoodsUnchecked(-1, p->netId, ai_OwnPlayer, s2->arg);
     memset(&msg, 0, sizeof(msg));
     msg.to = p->netId;
-    msg.time = ai_Time;
     msg.fromId = s1->ref2;
+    msg.time = ai_Time;
     msg.dst[2] = s2->arg2;
     msg.type = 0x99;
     msg.flags = 2;
