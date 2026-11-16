@@ -795,7 +795,7 @@ void d2_MouseUpdate(void)
     D2CTRL *c;
     D2HIT *h;
     D2WIN *w;
-    int i, j, m, found, win, n, line;
+    int i, j, m, found, win, line;
     short mx, my;
 
     d2_HoverObj = d2_HitTest(d2_MouseX, d2_MouseY);
@@ -881,12 +881,11 @@ void d2_MouseUpdate(void)
         w = &d2_Wins[win];
         if (dm_L.ldown != 0 && (w->flags & 0x20) != 0 && mx > w->w + w->x - 0xc &&
             my > w->y + 10 && my < w->h + w->y - 10) {
-            n = ((my - w->y - 0xc) * w->contentHeight) / (w->h - 0x18) + 4;
-            w->scrollY = n;
-            line = n / d2_FontHeight;
+            w->scrollY = ((my - w->y - 0xc) * w->contentHeight) / (w->h - 0x18) + 4;
+            line = w->scrollY / d2_FontHeight;
             w->firstline = line;
             w->textPos = w->linePos[line];
-            if (n != w->appliedScrollY)
+            if (w->scrollY != w->appliedScrollY)
                 d3io_NoopCallback(win);
         }
     }
