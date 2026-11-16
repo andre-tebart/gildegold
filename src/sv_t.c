@@ -6423,18 +6423,14 @@ void cm_SendMoveGoodsUnchecked(int a, int b, unsigned char c, int d); int ai_Pic
    view is closed and the camera follows again */
 void ai_CabinetSpyWindow(AIBLD *rec)
 {
-    AIMSG msg;
     int v[3];
     int worth;
     int win;
     int slider;
     int i;
-    int amount;
     int id;
     int btnPay;
     int btnLeave;
-    int pick;
-    LARGE_INTEGER mask;
 
     worth = gm_GetWorth(ai_PlayerId);
     v[0] = (int)(worth * 0.01f);
@@ -6459,6 +6455,8 @@ void ai_CabinetSpyWindow(AIBLD *rec)
     btnLeave = d2_GetWinObj(win, 3, i + 1);
     d2_ClickedId = -1;
     do {
+        int amount;
+
         i = d2_GetObjValue(slider);
         d2_SetForm(win, 1);
         io_PrintText("$C");
@@ -6470,6 +6468,9 @@ void ai_CabinetSpyWindow(AIBLD *rec)
         } else if (d2_ClickedId != -1) {
             if (d2_PointerObj == btnPay) {
                 if (sv_CheckGoodAmountB(ai_Chars[ai_PlayerId], amount, ai_OwnPlayer) != 0 && ai_CanSpyOn(rec) != 0) {
+                    AIMSG msg;
+                    int pick;
+                    LARGE_INTEGER mask;
                     AIFIN *fin = (AIFIN *)gm_PlayerRecord(ai_Chars[ai_PlayerId]);
 
                     if (fin != 0)

@@ -762,8 +762,6 @@ void rt_CartSettingsDialog(AIOBJ *c, char *win)
     int renew;
     int toggle;
     int btns[10];     /* three used; the size is computed from the original's frame (0x34) */
-    unsigned char v;
-    int i;
 
     w = d2_OpenForm(0, 0, "misc\\routing_settings");
     d2_CentreViewWindows(w);
@@ -789,6 +787,8 @@ void rt_CartSettingsDialog(AIOBJ *c, char *win)
         d2_SetCaption(toggle, txt_PatrolToggle[c->patrolOn]);
         if (d2_ClickedId != -1) {
             if (d2_PointerObj == renew) {
+                int i;
+
                 if (rt_EditRoute != 0)
                     rt_FreePoints(rt_EditRoute);
                 for (i = 0; i < 8; i++) {
@@ -805,6 +805,8 @@ void rt_CartSettingsDialog(AIOBJ *c, char *win)
                 sv_PopRequest = 2;
             }
             if (d2_ClickedId != -1 && d2_PointerObj == toggle) {
+                unsigned char v;
+
                 v = c->patrolOn == 0;
                 cm_BeginFieldBlock((char *)c, c->objId);
                 cm_AddFieldValue(1, 1, (char *)c - cm_FieldObject + 0x33, &v);
@@ -813,6 +815,8 @@ void rt_CartSettingsDialog(AIOBJ *c, char *win)
         }
     }
     if ((unsigned int)d2_GetObjValue(sl) != c->patrolLevel) {
+        unsigned char v;
+
         v = (unsigned char)d2_GetObjValue(sl);
         cm_BeginFieldBlock((char *)c, c->objId);
         cm_AddFieldValue(1, 1, (char *)c - cm_FieldObject + 0x31, &v);
