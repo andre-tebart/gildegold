@@ -10021,29 +10021,34 @@ int he_StepWalkSlot(HEWALKSLOT *s)
     if (s->chr == -1)
         return 0;
     c = (AICHAR *)gm_FindChar(s->chr);
-    if (c != 0) {
-        gm_FindById(&bld, 0, 0, s->target);
-        if (bld == 0) {
-            if (c->model != 0) {
-                cm_SendChrDelete(s->chr);
-                cm_SendSetField(c->netId, 0x1c8, 4, 0, 0x40000000);
-            }
-        } else {
-            if (sv_IsAtDoor((char *)c, (char *)bld) == 0 && ai_Time.hour < 0x16)
-                return 2;
-            if (c->model != 0) {
-                cm_SendChrStop(c->netId);
-                cm_SendChrDelete(s->chr);
-            }
-            s->chr = -1;
-            s->target = -1;
-            s->stage = 0;
-            s->state = 0;
-            s->step = 0;
-            s->bldIndex = 0;
+    if (c == 0) {
+        s->chr = -1;
+        s->target = -1;
+        s->stage = 0;
+        s->state = 0;
+        s->step = 0;
+        s->bldIndex = 0;
+        return 0;
+    }
+    gm_FindById(&bld, 0, 0, s->target);
+    if (bld == 0) {
+        if (c->model != 0) {
+            cm_SendChrDelete(s->chr);
             cm_SendSetField(c->netId, 0x1c8, 4, 0, 0x40000000);
-            return 0;
         }
+        s->chr = -1;
+        s->target = -1;
+        s->stage = 0;
+        s->state = 0;
+        s->step = 0;
+        s->bldIndex = 0;
+        return 0;
+    }
+    if (sv_IsAtDoor((char *)c, (char *)bld) == 0 && ai_Time.hour < 0x16)
+        return 2;
+    if (c->model != 0) {
+        cm_SendChrStop(c->netId);
+        cm_SendChrDelete(s->chr);
     }
     s->chr = -1;
     s->target = -1;
@@ -10051,6 +10056,7 @@ int he_StepWalkSlot(HEWALKSLOT *s)
     s->state = 0;
     s->step = 0;
     s->bldIndex = 0;
+    cm_SendSetField(c->netId, 0x1c8, 4, 0, 0x40000000);
     return 0;
 }
 
