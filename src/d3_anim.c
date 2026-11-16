@@ -62,8 +62,8 @@ void d3anim_ApplyMotionTo(D3OBJECT *obj, D3ANIMSLOT *s, int sub, int frame, int 
 {
     D3ANIMDATA *data = s->data;
     int key = s->lastFrame;
-    int sub0 = s->lastSub;
     int n1 = data->frames[frame].count;
+    int sub0 = s->lastSub;
     int n0 = data->frames[key].count;
     D3VECTOR4 d, sum;
     float f;
