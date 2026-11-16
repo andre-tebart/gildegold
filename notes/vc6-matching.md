@@ -1163,6 +1163,14 @@ Which value gets which callee-saved register, the eax / ecx / edx rotation, cons
   [msg.to],edx`): every `AIMSG msg` declared in the block that builds it (nine blocks), not once at function
   scope; the frame stays the same (disjoint block locals share the slot). Sweep the block-scope lever
   (blockscope) whenever a store / load order resists (main_EndRound).
+- **Inside a loop the loop body is not fresh enough**: the escape survives the back edge, so `D3VECTOR rot`
+  declared at the top of the loop body kept `fstp [rot.y]` before the next call's pointer loads (the same code
+  as function scope); a `{ D3VECTOR rot; rot.x = ..; ..; d3_SetObjectRot(.., &rot); }` block around just the
+  statements that use it matched (cm_PlaceFighters byte). blockscope.py places a local at the top of the outermost
+  block, so try the innermost enclosing block by hand.
+- **A computed argument as its own statement before the call** (`r = (int)(500.0f / s); f(c, x, y, r, &x, &y);`)
+  puts `call __ftol` before the address pushes; the original computed it in the argument list and the ftol comes
+  after the `lea`/`push` of the later arguments (cm_CarryOutOrder byte).
 
 ### Live range splitting, regions and the priority terms (c2.dll)
 

@@ -9023,7 +9023,6 @@ void cm_PlaceFighters(int *ids, char *side)
 {
     int melee, ranged, i;
     int z, cz, cx, x;
-    D3VECTOR rot;
     float h;
     D3VECTOR4 pos;                  /* d3_PointToWorld writes past the vector */
     D3VECTOR dir;
@@ -9056,12 +9055,16 @@ void cm_PlaceFighters(int *ids, char *side)
         ch_FindFreeCell(sc, &c->scene->obj->pos, &c->scene->obj->pos, x, z, &cx, &cz, 2, 0);
         d3sm_GetVertex(sc, cx, cz, (D3VECTOR *)&pos);
         ch_SetPos(c->scene, (D3VECTOR *)&pos, 1);
-        rot.x = 0;
-        rot.y = 0;
-        rot.z = 0;
-        d3_DirToWorld((struct XOBJ *)o, (float *)&d3_ZAxis, (float *)&dir);
-        rot.y = d3_VecAngle((D3VECTOR *)&d3_ZAxis, &dir);
-        d3_SetObjectRot(c->scene->obj, &rot);
+        {
+            D3VECTOR rot;
+
+            rot.x = 0;
+            rot.y = 0;
+            rot.z = 0;
+            d3_DirToWorld((struct XOBJ *)o, (float *)&d3_ZAxis, (float *)&dir);
+            rot.y = d3_VecAngle((D3VECTOR *)&d3_ZAxis, &dir);
+            d3_SetObjectRot(c->scene->obj, &rot);
+        }
     }
 }
 /* 0x4d1e00, the intro of the fight: a random fight track (when the music is on) and the cutscene "Kampf_Intro_Fluege" */
