@@ -2291,7 +2291,9 @@ Store order in a fill, hoisted loads and sunk stores, statement order effects, `
 - **Commutative operands are ordered by rank** (the rank of the variables' first occurrence): a dead store
   (`mark = 0; a = 0;`) at the top fixed 2 of 4 swapped `[ebx+edi]` / `[edi+ebx]` (d3_MirCreateOutline); an
   unrelated earlier loop's index name changed `[iv+light]` vs `[light+iv]`. For a sum of globals the source order
-  is the load order.
+  is the load order. Initialised declarations count as occurrences: `D3BASTREAM *stream = 0;` moved above `int
+  nuvfix = -1;` swapped two `[base+idx]` stores to the original's `[idx+base]` (d3_LoadBinaryAnimStream byte;
+  `flip.py --want` with both forms in one regex found the swap).
 - **Three terms of a sum in an order no spelling gives** (`sq[R - r] + sq[B - b] + sq[G - g]`; 6 orders, temps,
   parentheses one code; crossed M8 lines): the arrays were ONE object, `unsigned char pal[3][256]` (three symbols
   rank differently from three offsets of one symbol). Probe: `extern unsigned char probePal[3][256];` inside the
