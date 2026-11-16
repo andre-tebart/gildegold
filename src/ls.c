@@ -2465,7 +2465,8 @@ int ls_ReadMessageQueues(int f)
     cm_LastCharId = 0;
     LS_R(&cm_LastCharId, 4)
     LS_R(&cm_LastBuildingId, 4)
-    return ls_Read((int)&cm_LastObjectId, 4, 1, f) != 0;
+    LS_R(&cm_LastObjectId, 4)
+    return 1;
 }
 /* 0x5205f0, the reader of the weather environment ls_WriteEnvironment writes: the winter-weather flag
    sv_WinterWeather and the 24 hours' clouds, storm, windX and windY of sv_Weather; from version 0x10050 also the
