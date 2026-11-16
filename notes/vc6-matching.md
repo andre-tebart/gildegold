@@ -1945,6 +1945,12 @@ Store order in a fill, hoisted loads and sunk stores, statement order effects, `
 
 ### Loads hoisted early or kept late
 
+- **A pointer loaded before a test, its field loaded only behind it** (`mov edi,[ecx+0x10]; je; mov edi,[edi+0x1e4]`,
+  ours both loads before the `je`): a named pointer local assigned before the `if` and read twice inside
+  (`ops = surf->info.mesh; if (..) { if ((int)ops->nsets <= 4) v = id % ops->nsets; ..}`). A count local `n =
+  ops->nsets` before the if puts both loads in front; with one read inside, VC6 sinks the whole chain into the
+  branch (gm_SelectModelVariant byte).
+
 - **Store kept late while its load is hoisted early** (one store after an unrelated later store, e.g. byte flags
   after a float fstp): read the value into a local early, write the other store through a pointer local (`sz =
   &p->size; *sz = ..;`), store the local last. The pointer alone keeps the order but stops load hoisting.

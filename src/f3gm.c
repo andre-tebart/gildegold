@@ -1045,17 +1045,18 @@ unsigned *gm_CharNameRecord(int id)
 
 void gm_SelectModelVariant(char *o)
 {
-    unsigned v, n;
+    unsigned v;
     CHARACTER *m;
     D3SURF *surf;
+    D3OPS *ops;
 
     v = 0;
     if (o != 0 && (m = ORD_CHAR(o)->model) != 0) {
         surf = (D3SURF *)m->obj->material->animCtl;
-        n = ((D3OPS *)surf->info.mesh)->nsets;
+        ops = (D3OPS *)surf->info.mesh;
         if (m->scene != d3_Scenes) {
-            if ((int)n <= 4)
-                v = ORD_CHAR(o)->netId % n;
+            if ((int)ops->nsets <= 4)
+                v = ORD_CHAR(o)->netId % ops->nsets;
             else
                 v = ORD_CHAR(o)->netId & 3;
             m->texSet = (unsigned char)v;
