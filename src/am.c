@@ -6064,10 +6064,10 @@ int ai_DecideUseEducationObject(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
                     s1.fvalue = 0.05f;
                     s2.kind = 7;
                     r = ai_ChooseSubAction(k, p->id, 2, &s1, &s2);
-                    if (r == 0)
-                        return 0;
-                    *o1 = s1;
-                    *o2 = s2;
+                    if (r != 0) {
+                        *o1 = s1;
+                        *o2 = s2;
+                    }
                     return r;
                 }
             } else if (st[2] == 0) {
