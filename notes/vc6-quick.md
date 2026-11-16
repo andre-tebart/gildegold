@@ -244,6 +244,10 @@ Section names are those of `notes/vc6-matching.md`.
   round 1 left at 2-8 instructions. `--base FILE:LABEL` starts from one of your `dcp try` variants.
   `python tools/search/sweep.py` runs it over every function below byte (results: `sweep.py --report`).
 - Generators are script files (`python gen.py > v.txt`); `python -` with a PowerShell here-string hangs.
+- Store / clear / init orders: `python tools/search/permute.py NAME A B` writes every order of file lines A..B
+  (whole-function variants, up to 5040; `--sample S` beyond), then `dcp try NAME FILE`. It does not check
+  dependences: read the run first. Up to ~7 statements a full round; more: climb `--ops move,swap` from the
+  sibling's order.
   `dcp try` takes about 1 s per 17 variants (5040 variants: 5 minutes) and holds the daemon meanwhile: other
   dcp calls wait; split big rounds or narrow them first.
 - `flip.py --want` with a regex spanning two calls (`call A[\s\S]*call B`) finds what decides the code between
