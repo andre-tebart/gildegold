@@ -6754,15 +6754,7 @@ void txt_Format(char *out, int id0, ...); int sv_MessageBox();
    the player record's spyPaid and moved away (cm_SendMoveGoodsUnchecked), 0x10 taken off (gm_SendMoneyDelta), the
    message 0x99 goes to the building's owner (flags 2, the game time, the target's netId, 4, the target's own
    building / building, else ai_PickActionBuilding's pick), its slot is waited for, the voice "KOMMENTARE" plays
-   (variation -1) and the window leaves; the right button or the second button leaves too
-   @deep Rewritten from the whole original 0x581db0..0x5821c7 (AMOUNTCFG, AICHAR target, the
-   he_NoEvent9bFor refusal with txt_Format 0x4030 into a 0x400 text buffer, the price (worth + target's
-   worth) * 0.02 plus 0x10 money, AIMSG kind 4, LARGE_INTEGER mask, the block-scoped pick that shares its
-   slot with the spilled slot handle as in the original's frame 0x558); 290 vs 290 instructions, frame
-   equal, no branch-target difference. Left: the scheduling of the message stores after the memset: the
-   original hoists p->netId (mov edx,[esi+4]) and the time words before the type / flags stores and places
-   add esp,0x18 earlier (0x582049, 22 ins), and loads bld2 before zeroing ecx for arg[5] (0x5820af).
-   Sixteen orders of the ten stores tried (the best kept: arg[5] last, 22 ins). Match-deep 2026-11-10: msg block-scoped in the do loop took it to shape, 4 ins: only the p->netId store goes after the constant arg stores where the original stores it before them (moving the arg[2] line to any earlier place: draft). */
+   (variation -1) and the window leaves; the right button or the second button leaves too */
 void ai_CabinetIntrigueWindow(AIBLD *rec)
 {
     AMOUNTCFG q;
@@ -6823,13 +6815,13 @@ void ai_CabinetIntrigueWindow(AIBLD *rec)
                     memset(&msg, 0, sizeof(msg));
                     msg.type = 0x99;
                     msg.flags = 2;
-                    msg.arg[3] = -1;
-                    msg.arg[4] = 4;
                     msg.to = ((AICHAR *)ai_Chars[rec->owner])->netId;
                     msg.fromId = rec->id;
                     msg.time = ai_Time;
-                    msg.arg[2] = p->netId;
                     msg.arg[1] = rec->id;
+                    msg.arg[2] = p->netId;
+                    msg.arg[3] = -1;
+                    msg.arg[4] = 4;
                     msg.arg[5] = 0;
                     if (p->bld2 != 0)
                         msg.arg[0] = p->bld2->id;

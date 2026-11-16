@@ -2187,6 +2187,12 @@ Store order in a fill, hoisted loads and sunk stores, statement order effects, `
 
 ### Store order in fills, records and rects
 
+- **Constant stores emitted as fillers during a `lea` chain's stall (`lea*5; type; flags; X; lea*9`), the wrong
+  filler third**: equal-priority stores fill the stall slots in list order, while a store's list position also
+  decides its value's scratch register (the rotation). Keep the loaded value's statement where its register is
+  right and move the constant stores BEHIND it: AIMSG fill `type, flags, to, fromId, time, arg[1], arg[2],
+  arg[3], arg[4], arg[5]` (ascending args) matched, where the sibling's order `.., arg[3], arg[4], to, .., arg[2]`
+  and any order with arg[2] above `time` did not (ai_CabinetIntrigueWindow byte; 2000 sampled orders reached 4).
 - **The last load of a 3-int copy scheduled behind the `lea` of the next call's buffer**: the element loop
   `for (i = 0; i < 3; i++) m.rot[i] = rot[i];` (or a 12-byte struct copy), not three field stores
   (cm_RequestCreateGeb). No lever: the 720 orders of the fill.
