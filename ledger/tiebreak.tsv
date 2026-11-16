@@ -4494,7 +4494,7 @@ exe	0x005c2410	ai_LawBookInfoWindow	lc	980cc77144fa3c54	no	byte	control=byte p1=
 exe	0x005c2490	ai_ShowWorkSettingsPage	lc	527a385f0fde0a1f	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
 exe	0x005c26a0	ai_MasterLetterNoticeWindow	lc	882ab66010b0bb01	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005c2730	ai_MasterLetterKindWindow	lc	b96922d120b44cea	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x005c27b0	ai_MasterHireWindow	lc	36c69bfdd74f82f2	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
+exe	0x005c27b0	ai_MasterHireWindow	lc	36c69bfdd74f82f2	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	4404f9ca1b648b10
 exe	0x005c2a10	ai_ShowSettingGoods	lc	d8114348687eb5ce	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
 exe	0x005c2b90	ai_MasterLetterSettings	lc	d88621a20dc76c5e	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
 exe	0x005c3200	ai_MasterLetterWindow	lc	2400265006fee361	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	

@@ -26565,10 +26565,10 @@ void ai_MasterHireWindow(AIBLD *bld, int mode)
                     memset(&msg, 0, sizeof(msg));
                     msg.type = 7;
                     msg.flags = 1;
-                    msg.hireMaster = 1;
                     msg.to = ai_CharInts[ai_PlayerId][0];
                     msg.fromId = bld->id;
                     msg.time = ai_Time;
+                    msg.hireMaster = 1;
                     if (gm_IsHomeType(bld) != 0)
                         msg.hireMasterRoom = -1;
                     else
