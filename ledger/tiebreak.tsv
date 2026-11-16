@@ -4241,7 +4241,7 @@ exe	0x0059e170	ai_IsBuildingOpen	lc	5d0319b50b34a18b	no	byte	control=byte p1=byt
 exe	0x0059e210	ai_MayEnterBuilding	lc	07cf211a443dfa97	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0059e420	ai_EnterBuilding	lc	62e14bae05ed3758	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	d458d135baf18067
 exe	0x0059ee40	ai_EnterOwnBuilding	lc	ddad1e045095abaa	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	d458d135baf18067
-exe	0x0059f410	ai_RunObjectRoom	lc	01d9c665cc9490d6	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=190	092c2c5a4f463028
+exe	0x0059f410	ai_RunObjectRoom	lc	01d9c665cc9490d6	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	e61bb51faa13af4d
 exe	0x0059f9a0	ai_BuyBuildingWindow	lc	93403e6d992f45e1	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0059fbf0	ai_GuildCashWindow	lc	0c3d3fb7be9fe610	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0059fca0	ai_TownCashContact	lc	4ce2c6666e2170ca	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	

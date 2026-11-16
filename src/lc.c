@@ -10251,13 +10251,13 @@ void ai_RunObjectRoom(AIOBJ *room)
     evt_NoGroup = room->objId;
     ch_CurrentScriptGroup = room->objId;
     sv_FrameBase = sv_FrameDepth + 1;
+    sv_SceneEventTime = 0;
     view.pos.x = sv_ViewPos[0];
     view.pos.y = sv_ViewPos[1];
     view.pos.z = sv_ViewPos[2];
     view.rot.x = sv_ViewRot[0];
     view.rot.y = sv_ViewRot[1];
     view.rot.z = sv_ViewRot[2];
-    sv_SceneEventTime = 0;
     sv_ResetSelection();
     sv_ClearSelection();
     universe = init_ObjectUniverse[room->type];
