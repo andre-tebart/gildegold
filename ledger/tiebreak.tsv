@@ -3175,7 +3175,7 @@ exe	0x0050cf60	gm_BathObjectCount	f3gm	fad39ced6ed4ae45	no	byte	control=byte p1=
 exe	0x0050cfd0	gm_CurseObjectCount	f3gm	d4e7fa3b9f2b90a6	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0050d060	gm_Unk50d060	f3gm	afa239cc4ec19ff5	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0050d0b0	gm_CurseTargetCount	f3gm	e5c5bbc07c5d4caf	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x0050d100	init_SceneNameToPrototype	f3init	cb5921b978cdca37	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	3371284ff47bad88
+exe	0x0050d100	init_SceneNameToPrototype	f3init	cb5921b978cdca37	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	4133274ad1112113
 exe	0x0050d350	init_SceneObjectDestroyCB	f3init	d4876e7dc3da81be	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0050d380	init_HookObject	f3init	ea5d8b5dab96062f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0050d460	init_ResetSceneUniverses	f3init	254fd99face5cd17	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	

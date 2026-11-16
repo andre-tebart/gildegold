@@ -135,7 +135,8 @@ typedef struct INIT_OBJ {
 /* the building type record (ai.h's AIBTYPE, 0x24d bytes, ai_BTypes) as the part order reads it */
 typedef struct INIT_BTYPEREC {
     unsigned char kind;             /* 0x000, the class (init_OpenTown's cls[] index) */
-    char pad001[0x21];              /* 0x001 .. 0x021 */
+    char name[0x20];                /* 0x001, the type's name (the "gb_<NAME>" scene objects) */
+    char pad021;                    /* 0x021 */
     unsigned char nParts;           /* 0x022, how many of parts[] are used */
     unsigned short parts[0x40];     /* 0x023, the object prototypes of the building's parts in build order (bit 15 a flag;
                                        0x40 of them: f3gm.h GMBTYPE.objs, the gm_ walks stop at 0x40) */
@@ -471,7 +472,6 @@ int init_SceneNameToPrototype(char *o)
     SCENEOBJ *obj = (SCENEOBJ *)o;
     char head[0x100], rest[0x100], tail[0x80];
     char *u, *t;
-    unsigned n;
     int i;
 
     strcpy(head, o);
@@ -488,25 +488,21 @@ int init_SceneNameToPrototype(char *o)
             *t = 0;
     }
     if (_strcmpi(head, "ob") == 0 || _strcmpi(head + 1, "ob") == 0) {
-        n = 0;
-        for (i = 0; i < 0xb9dc; i += 0x41) {
-            if (_strcmpi(rest, ai_Goods + i + 1) == 0) {
-                obj->proto = n | INIT_PROTO_OBJECT;
+        for (i = 0; i < 0xb9dc / 0x41; i++) {
+            if (_strcmpi(rest, ((AIGOOD *)ai_Goods)[i].name) == 0) {
+                obj->proto = i | INIT_PROTO_OBJECT;
                 return 1;
             }
-            n++;
         }
         return 0;
     }
     if (_strcmpi(head, "gb") != 0)
         return 0;
-    n = 0;
-    for (i = 0; i < 0xca78; i += 0x24d) {
-        if (_strcmpi(rest, ai_BTypes + i + 1) == 0) {
-            obj->proto = n | INIT_PROTO_BUILDING;
+    for (i = 0; i < 0xca78 / 0x24d; i++) {
+        if (_strcmpi(rest, ((INIT_BTYPEREC *)ai_BTypes)[i].name) == 0) {
+            obj->proto = i | INIT_PROTO_BUILDING;
             return 1;
         }
-        n++;
     }
     if (strstr(rest, "KONTOR") != 0) {
         obj->proto = INIT_PROTO_BUILDING | INIT_KONTOR_BUILDING;   /* the Kontor building, 0x2000000 | 0x47 */
