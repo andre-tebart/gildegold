@@ -106,20 +106,14 @@ char *gv_AllocAvatar(void)
     unsigned i;
     int n;
     int j;
-    float *f;
 
     i = util_RandomU(0x20) & 0xffff;
     n = 0x20;
     do {
-        if (unk_Avatars[i][0xf2] == 0) {
-            j = 0xe;
-            f = (float *)&unk_Avatars[i][0x30];
-            do {
-                *f = f[-1] * 0.001;
-                f += 3;
-                j--;
-            } while (j != 0);
-            unk_Avatars[i][0xf2] = 1;
+        if (gv_AvatarsT[i].used == 0) {
+            for (j = 0; j < 0xe; j++)
+                gv_AvatarsT[i].mood[j][1] = (float)(gv_AvatarsT[i].mood[j][0] * 0.001);
+            gv_AvatarsT[i].used = 1;
             return unk_Avatars[i];
         }
         n--;
