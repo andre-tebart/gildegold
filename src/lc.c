@@ -9777,6 +9777,13 @@ int ai_MayEnterBuilding(AIBLD *b)
     sv_MessageBoxGreen(title, msg, 4);
     return 0;
 }
+/* the camera view a building visit saves and restores: sv_ViewPos / sv_ViewRot copied field by field (the
+   position padded to 16 bytes like the globals, the rotation not: the frames of the three visits) */
+typedef struct SVSAVEDVIEW {
+    D3VECTOR4 pos;
+    D3VECTOR rot;
+} SVSAVEDVIEW;
+
 /* 0x59e420, enters the building b at its room mainRoom (0: from the town): when ai_MayEnterBuilding refuses, nothing
    happens; else the town view is saved, the entry sound played ("EigenesGebaeudeBetreten_s" at the player's own
    building, "FremdesGeschaeftBetreten_s" at another's) and the building's voices loaded; then per frame the
@@ -9790,8 +9797,7 @@ int ai_MayEnterBuilding(AIBLD *b)
 void ai_EnterBuilding(AIBLD *b, int mainRoom)
 {
     int scene;
-    float pos[3];
-    float rot[3];
+    SVSAVEDVIEW view;
     int lastEvent;
     AIOBJ *room;
     signed char universe;
@@ -9811,12 +9817,12 @@ void ai_EnterBuilding(AIBLD *b, int mainRoom)
     scene = d3_CurrentScene;
     sv_LastRoom = 0;
     b->mainRoom = (unsigned short)mainRoom;
-    pos[0] = sv_ViewPos[0];
-    pos[1] = sv_ViewPos[1];
-    pos[2] = sv_ViewPos[2];
-    rot[0] = sv_ViewRot[0];
-    rot[1] = sv_ViewRot[1];
-    rot[2] = sv_ViewRot[2];
+    view.pos.x = sv_ViewPos[0];
+    view.pos.y = sv_ViewPos[1];
+    view.pos.z = sv_ViewPos[2];
+    view.rot.x = sv_ViewRot[0];
+    view.rot.y = sv_ViewRot[1];
+    view.rot.z = sv_ViewRot[2];
     if (mainRoom == 0)
         ai_PlayerBuilding = 0;
     if (b->owner == ai_PlayerId)
@@ -10041,12 +10047,12 @@ void ai_EnterBuilding(AIBLD *b, int mainRoom)
     ai_PlayerBuilding = 0;
     sv_PanelShown = 0;
     init_AfterTownLoad();
-    sv_ViewPos[0] = pos[0];
-    sv_ViewPos[1] = pos[1];
-    sv_ViewPos[2] = pos[2];
-    sv_ViewRot[0] = rot[0];
-    sv_ViewRot[1] = rot[1];
-    sv_ViewRot[2] = rot[2];
+    sv_ViewPos[0] = view.pos.x;
+    sv_ViewPos[1] = view.pos.y;
+    sv_ViewPos[2] = view.pos.z;
+    sv_ViewRot[0] = view.rot.x;
+    sv_ViewRot[1] = view.rot.y;
+    sv_ViewRot[2] = view.rot.z;
     sb_PlaySample(snd_RoomBank, "GebaeudeVerlassen_s", 1, 0x3f, 0x7f, 0, 0);
 }
 
@@ -10066,8 +10072,7 @@ void ai_GraveyardTradeContact(char *rec);
 void ai_EnterOwnBuilding(AIBLD *b)
 {
     int lastEvent;
-    float pos[3];
-    float rot[3];
+    SVSAVEDVIEW view;
     int scene;
     int universe;
     AIOBJ *room;
@@ -10085,12 +10090,12 @@ void ai_EnterOwnBuilding(AIBLD *b)
     sv_SceneEventTime = 0;
     sv_ResetSelection();
     sv_ClearSelection();
-    pos[0] = sv_ViewPos[0];
-    pos[1] = sv_ViewPos[1];
-    pos[2] = sv_ViewPos[2];
-    rot[0] = sv_ViewRot[0];
-    rot[1] = sv_ViewRot[1];
-    rot[2] = sv_ViewRot[2];
+    view.pos.x = sv_ViewPos[0];
+    view.pos.y = sv_ViewPos[1];
+    view.pos.z = sv_ViewPos[2];
+    view.rot.x = sv_ViewRot[0];
+    view.rot.y = sv_ViewRot[1];
+    view.rot.z = sv_ViewRot[2];
     strcpy(ch_StepSample, "normal_s");
     universe = init_BuildingSceneUniverse((unsigned char *)b);
     D3IF_SCENE(universe).sky = D3IF_SCENE(0).sky;
@@ -10216,12 +10221,12 @@ void ai_EnterOwnBuilding(AIBLD *b)
     ch_CurrentGroup = -1;
     ch_CurrentScriptGroup = -1;
     init_AfterTownLoad();
-    sv_ViewPos[0] = pos[0];
-    sv_ViewPos[1] = pos[1];
-    sv_ViewPos[2] = pos[2];
-    sv_ViewRot[0] = rot[0];
-    sv_ViewRot[1] = rot[1];
-    sv_ViewRot[2] = rot[2];
+    sv_ViewPos[0] = view.pos.x;
+    sv_ViewPos[1] = view.pos.y;
+    sv_ViewPos[2] = view.pos.z;
+    sv_ViewRot[0] = view.rot.x;
+    sv_ViewRot[1] = view.rot.y;
+    sv_ViewRot[2] = view.rot.z;
 }
 /* 0x59f410, runs the room object room of the building the player is in (ai_FallbackBuilding, entered through
    ai_EnterOwnBuilding): the town view and the border scroll are saved; a room with a universe of its own is loaded
@@ -10233,8 +10238,7 @@ void ai_EnterOwnBuilding(AIBLD *b)
 void ai_RunObjectRoom(AIOBJ *room)
 {
     int scene;
-    float pos[3];
-    float rot[3];
+    SVSAVEDVIEW view;
     int lastEvent;
     signed char universe;
     int borderX;
@@ -10248,12 +10252,12 @@ void ai_RunObjectRoom(AIOBJ *room)
     evt_NoGroup = room->objId;
     ch_CurrentScriptGroup = room->objId;
     sv_FrameBase = sv_FrameDepth + 1;
-    pos[0] = sv_ViewPos[0];
-    pos[1] = sv_ViewPos[1];
-    pos[2] = sv_ViewPos[2];
-    rot[0] = sv_ViewRot[0];
-    rot[1] = sv_ViewRot[1];
-    rot[2] = sv_ViewRot[2];
+    view.pos.x = sv_ViewPos[0];
+    view.pos.y = sv_ViewPos[1];
+    view.pos.z = sv_ViewPos[2];
+    view.rot.x = sv_ViewRot[0];
+    view.rot.y = sv_ViewRot[1];
+    view.rot.z = sv_ViewRot[2];
     sv_SceneEventTime = 0;
     sv_ResetSelection();
     sv_ClearSelection();
@@ -10353,13 +10357,13 @@ void ai_RunObjectRoom(AIOBJ *room)
     ch_CurrentScriptGroup = home->objId;
     sv_FrameBase = sv_FrameDepth;
     sv_BorderViewY = borderY;
-    sv_ViewPos[0] = pos[0];
-    sv_ViewPos[1] = pos[1];
-    sv_ViewPos[2] = pos[2];
+    sv_ViewPos[0] = view.pos.x;
+    sv_ViewPos[1] = view.pos.y;
+    sv_ViewPos[2] = view.pos.z;
     sv_BorderViewX = borderX;
-    sv_ViewRot[0] = rot[0];
-    sv_ViewRot[1] = rot[1];
-    sv_ViewRot[2] = rot[2];
+    sv_ViewRot[0] = view.rot.x;
+    sv_ViewRot[1] = view.rot.y;
+    sv_ViewRot[2] = view.rot.z;
 }
 typedef struct LCSALEROW {          /* a row of ai_BuyBuildingWindow's list: a building offered for sale */
     int control;                    /* 0x0, the row's text control (d2_GetWinObj) */

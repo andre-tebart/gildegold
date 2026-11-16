@@ -4239,9 +4239,9 @@ exe	0x0059df80	ai_MoneyLenderContact	lc	b974810b35ebcfd7	no	byte	control=byte p1
 exe	0x0059e0a0	ai_SwitchRoom	lc	a441be9fc47afa97	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
 exe	0x0059e170	ai_IsBuildingOpen	lc	5d0319b50b34a18b	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0059e210	ai_MayEnterBuilding	lc	07cf211a443dfa97	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x0059e420	ai_EnterBuilding	lc	62e14bae05ed3758	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
-exe	0x0059ee40	ai_EnterOwnBuilding	lc	ddad1e045095abaa	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
-exe	0x0059f410	ai_RunObjectRoom	lc	042655b6c6279b35	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
+exe	0x0059e420	ai_EnterBuilding	lc	62e14bae05ed3758	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	d458d135baf18067
+exe	0x0059ee40	ai_EnterOwnBuilding	lc	ddad1e045095abaa	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	d458d135baf18067
+exe	0x0059f410	ai_RunObjectRoom	lc	01d9c665cc9490d6	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=190	092c2c5a4f463028
 exe	0x0059f9a0	ai_BuyBuildingWindow	lc	93403e6d992f45e1	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0059fbf0	ai_GuildCashWindow	lc	0c3d3fb7be9fe610	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0059fca0	ai_TownCashContact	lc	4ce2c6666e2170ca	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
@@ -4444,7 +4444,7 @@ exe	0x005bc0f0	ai_FreePicture	lc	13d9fef523489ccd	no	byte	control=byte p1=byte p
 exe	0x005bc110	ai_ChooseCoatOfArms	lc	5646dbf681dac72d	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005bc420	ai_OpenMoneyInfoPage	lc	75051ac3b789ade6	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005bc6d0	ai_OpenBuildingListPage	lc	0534a6d8ba1a0978	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x005bc790	ai_BuildingDetailWindow	lc	407510a17ce4f3d8	yes	byte	control=shape p1=byte* p2=shape p3=byte* p4=byte*	
+exe	0x005bc790	ai_BuildingDetailWindow	lc	407510a17ce4f3d8	yes	byte	sweep control=shape best=byte by 1 unused typedef at the unit's start; codegens=2 compiled=190	092c2c5a4f463028
 exe	0x005bc9c0	ai_OpenMasterListPage	lc	407c1f5ba117ec26	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
 exe	0x005bcc70	ai_PlayerStatsPanel	lc	88c4f97440fe560b	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
 exe	0x005bd060	ai_AmountLimit	lc	37c5d642560eb0b9	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
