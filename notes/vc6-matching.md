@@ -1535,6 +1535,11 @@ a stack slot is a split piece, and the piece's extent is decided by the rules be
   l21` for both r = 0 paths (sv_RunFrame 10 -> byte).
 - **The argument-load registers decided by the store order of two record fields**: `type` before `owner` in
   BOTH copies of the three statements (mode-5 block and free-slot loop) (ai_NewMission 0x4b3ca0, 10 -> 0).
+- **A message's `lea eax,[m]` push one rotation step "behind" (original eax, ours edx) after two field stores
+  from a global and a parameter, frame equal**: the two fields were a small local struct copied whole (`struct
+  G17LOBBYSTATE s; s.id = ..; s.value = v; m.lobby.state = s;`): VC6 splits the 8-byte struct into two
+  candidates that do not advance the rotation and adds no slot. Give an anonymous union member a tag to name it
+  (cm_LobbySetReady byte; the twin cm_LobbySendChat had the same form with a 0x48-byte struct).
 - **A rotation over ~1 KB**: two field reads from call results through one pointer local (`part = f(p, 4); fy =
   part->h;`) (d2_Unk46d3d0). A three-register rotation: repeated `int i = 0;` + `for (i = 0; ...)`; `for (;
   ...)` did not.

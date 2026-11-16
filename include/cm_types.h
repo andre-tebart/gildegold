@@ -582,7 +582,7 @@ typedef struct G17LOBBYMSG {            /* 0x5b bytes, the data of message 0x5f 
     int kind;                           /* 0x00, 0 the player list, 1 ready, 2 join, 3 leave, 4 a changed player, 5 (0x4cd820), 6 chat */
     union {
         unsigned int list[9];           /* 0x04, kind 0: the count, then the eight player ids (cm_LobbyList) */
-        struct {
+        struct G17LOBBYSTATE {
             int id;                     /* 0x04, the player */
             int value;                  /* 0x08, kind 1: the ready flag (CMLOBBYPLAYER.ready); kind 3: 1 sets cm_LobbyClosed */
         } state;                        /* 0x04, kinds 1 and 3: copied whole over the player's record head */

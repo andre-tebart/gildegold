@@ -2391,7 +2391,7 @@ exe	0x004cd5e0	cm_LobbyFindPlayer	cm	cca664414177010e	no	byte	control=byte p1=by
 exe	0x004cd5f0	cm_LobbyMyPlayer	cm	8f4e361a1e1e0bbf	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004cd600	cm_LobbyState	cm	501758d82779a30f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004cd610	cm_LobbyRequestList	cm	f4fd53fbe32fc74f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x004cd650	cm_LobbySetReady	cm	b4e1590689aa3e98	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	becf1bbdf99775c9
+exe	0x004cd650	cm_LobbySetReady	cm	b4e1590689aa3e98	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	314b91473c88cb49
 exe	0x004cd6a0	cm_LobbyLeave	cm	aa0e7f0bf3b9e351	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004cd6e0	cm_LobbySendChat	cm	c34548f37ee548ff	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	55593c6824cdd1eb
 exe	0x004cd760	cm_LobbyJoin	cm	c3d3e7aab00ee6ad	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
@@ -3104,7 +3104,7 @@ exe	0x00508740	gm_JobWage	f3gm	c90d43d89fc39b68	no	shape	sweep control=shape bes
 exe	0x005087f0	gm_ItemPrice	f3gm	f331c749edc985bd	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005089c0	gm_GoodsPrice	f3gm	93bf8d69375689f2	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00508a20	gm_HealthFactor	f3gm	7c4bf967df612085	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x00508a80	gm_FormatAmount	f3gm	36f18a19a7a5509a	yes	shape	sweep control=draft best=shape by 1 unused typedef at the unit's start; codegens=2 compiled=12 (stopped at the goal)	b73829d653480ee1
+exe	0x00508a80	gm_FormatAmount	f3gm	36f18a19a7a5509a	yes	shape	sweep control=shape best=shape by the build's declarations; codegens=2 compiled=127	fc48e2dfd9dc69f0
 exe	0x00508cc0	gm_ListObjectsAfter	f3gm	ea1fab2c70960bad	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x00508d70	gm_BuildingLevel	f3gm	52709faf0cab91a9	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00508d80	gm_BuildingBalance	f3gm	af452c69ad0d5219	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft	
