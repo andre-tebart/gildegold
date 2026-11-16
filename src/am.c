@@ -11192,13 +11192,13 @@ int ai_ChooseSubAction(int kind, int id, int c, AIARG *o1, AIARG *o2)
 
     best1 = -1e30f;
     best2 = -1e30f;
+    p = &G5_CHARS[id];
     r1 = 0;
     r2 = 0;
     b1s1.kind = 0;
     b2s1.kind = 0;
     b1s2.kind = 0;
     b2s2.kind = 0;
-    p = &G5_CHARS[id];
     if (ai_ActionOnStack(kind) != 0)
         return 0;
     if (p->mask == 0)
@@ -11217,8 +11217,8 @@ int ai_ChooseSubAction(int kind, int id, int c, AIARG *o1, AIARG *o2)
                     if (a >= best1) {
                         b1s1 = s1;
                         best1 = a;
-                        b1s2 = s2;
                         r1 = r;
+                        b1s2 = s2;
                     }
                     if (b >= best2) {
                         best2 = b;
