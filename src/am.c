@@ -8648,13 +8648,7 @@ int ai_ExecuteGuildRiot(G5CH *p, AIARG *s1, AIARG *s2)
 }
 /* 0x4a0240, the character p likes least among its rivals: without an office the holders of an office whose
    kind (of p's previous office) has level <= 1; with one the other applicants for its applied office (kept
-   only when the liking stays <= 8 * applicants + 52); else a partner-chain pick (0xc00, 25.0)
-   @deep read in full against the original and reconciled: AMTKIND / AMTREC buffers (kind.level <= 1, not
-   an uninitialised byte), amt_GetKind widened, the index loop (jl), list[i] re-read so the two gm_Liking
-   calls stay apart, the 8 * n + 52 test; ours=original=159 instructions. Left: stack slots only: the
-   original keeps flags (0xc00) and bd in p's parameter slot [esp+0x5c] and id in n's slot [esp+0x10]
-   (frame 0x48), ours gives them own slots (frame 0x50), so list[] sits at +0x1c vs +0x14 (the two 'code'
-   lines 0x4a0336 / 0x4a037f are that offset) and &flags / &id differ at 0x4a03b9 / 0x4a03c9 */
+   only when the liking stays <= 8 * applicants + 52); else a partner-chain pick (0xc00, 25.0) */
 
 G5CH *ai_PickLeastLikedRival(G5CH *p)
 {
@@ -8665,8 +8659,6 @@ G5CH *ai_PickLeastLikedRival(G5CH *p)
     AIPER *list[5];
     AMTKIND kind;
     AMTREC office;
-    unsigned short id;
-    int flags;
 
     if (p->officeKind == 0) {
         amt_GetKind(p->prevOffice, &kind);
@@ -8708,9 +8700,13 @@ G5CH *ai_PickLeastLikedRival(G5CH *p)
             best = 0;
         }
     }
-    flags = 0xc00;
-    if (ai_PickPartnerChain((AIPER *)p, 1, &flags, 0, 25.0f, &id) != 0)
-        return &G5_CHARS[id];
+    {
+        int flags = 0xc00;
+        unsigned short id;
+
+        if (ai_PickPartnerChain((AIPER *)p, 1, &flags, 0, 25.0f, &id) != 0)
+            return &G5_CHARS[id];
+    }
     return best;
 }
 /* 0x4a0410, an office column (1..6) whose three or more holders p likes on average below 66, else 0: the order
