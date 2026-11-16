@@ -1363,7 +1363,7 @@ void d3fl_MakeLight(D3FLMAP *map)
                 drow = map->divide[iv];
                 for (y = 0; y < size - 1; y++) {
                     p = drow + y * size;
-                    for (x = 0; x < size - 1; x++, p++) {
+                    for (x = 0; x < size - 1; p++, x++) {
                         int k = (map->size * y + x) * s;
 
                         a = map->light[k] >> 7;
