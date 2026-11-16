@@ -22876,21 +22876,15 @@ void ai_InventoryPanel(void)
 }
 
 /* 0x5bae10, the init of the equip window's row table (64 B): every row of ai_EquipRows is freed (the character 0,
-   the objects -1, the six slots -1 / 0), so that ai_UpdateEquipRows finds no row in use
-   @deep read whole against 0x5bae10 to 0x5bae4b: every statement matches - the four header fields 0 and
-   -1, the 6-count slot loop with -1 and 0, the 32-row walk; 20 vs 19 instructions, the only hunk is the
-   outer loop bound: ours lea eax, ecx-8; cmp eax, ai_EquipRows+0x800; jl, the original cmp ecx,
-   ai_EquipRows+0x808; jl. The original keeps the row plus 8 field as the induction variable base, ours
-   normalises the row pointer. Tried: a count loop (mov ebx,0x20, dec ebx, jne), a pointer end variable
-   (jb), an int pointer walk from the table plus 8 (matched the cmp but folded the bound to the literal
-   address, rejected). Allocation of the induction variable base offset */
+   the objects -1, the six slots -1 / 0), so that ai_UpdateEquipRows finds no row in use */
 
 void ai_EquipRowsInit(AIBLD *bld)  /* bld: the equip window passes its building; the table is the same for all */
 {
-    int k;
+    int i, k;
     AIEQUIPROW *row;
 
-    for (row = (AIEQUIPROW *)ai_EquipRows; (int)row < (int)((AIEQUIPROW *)ai_EquipRows + 0x20); row++) {
+    for (i = 0; i < 0x20; i++) {
+        row = &ai_EquipRows[i];
         row->ch = 0;
         row->portrait = -1;
         row->frame = -1;
