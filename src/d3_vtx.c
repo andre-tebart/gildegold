@@ -19,13 +19,26 @@
 #include "d3_vec.h"
 #include "cm.h"
 
-/* 0x458e70, environment map coordinates of the vertices of a part that has a reflecting texture */
+/* 0x458e70, environment map coordinates of the vertices of a part that has a reflecting texture
+   @deep Hunk (first loop, the normals path): the original reloads fr (spilled into part's parameter slot)
+   right after the fadd of v->u = (b.x + 1.0f) * 0.5f, BEFORE the d3_Normalize call's add esp,4 (mov
+   eax,[esp+0x7c]); ours after the fmul (mov eax,[esp+0x78]). Everything else equal. flip.py --want 'mov
+   eax, _fr before add esp': only meaning changes flip it (swap d3_Normalize with v->u; delete or duplicate
+   any of b.x / b.y / b.z / nv.x / nv.y / d earlier in the body): the count of IL before the reload decides
+   (a scheduling region cut?), not the statement itself. Rounds (session s12): volatile on nv.z = control
+   (dropped, kept plain); d without volatile: +28 ins (d * nv.z operand order flips in both loops and the
+   second loop's nv sums reorder; b.z = d * nv.z = same code); d as double, d as nv.w / b.w, D3VECTOR4 nv:
+   worse; v->u forms (0.5f * (..), 1.0f + b.x), (float)(int) / (unsigned) casts of the normals, k += 3
+   index, for-init v, v++ in the body, else instead of return, slot != 0: = control or worse; climb 2
+   rounds: nothing. Left: the volatile d (no @original comment yet) reproduces the original's fst/reload of
+   d; find the plain form of d (or of nv) that gives the same FPU code, then the reload order may follow.
+   c2dag.py shows another function's graph here (unusable). */
 void d3_EnvMapCoords(XOBJ *obj, XPART *part)
 {
     D3MATRIX m;
     D3VECTOR4 b;
-    struct { float x, y; volatile float z; float w; } nv;
-    volatile float d;
+    D3VECTOR4 nv;
+    volatile float d;  /* @original the original stores d (fst) and reloads it for each of its three uses */
     int n, i, k;
     D3ANIMSLOT *slot;
     D3ANIMFRAME *fr;
