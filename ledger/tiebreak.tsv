@@ -3453,7 +3453,7 @@ exe	0x00533740	main_MoneyDialog	main	cf9f5cdd76bb58f8	no	byte	control=byte p1=by
 exe	0x005337f0	main_MenuButton	main	839cefad1e947914	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00533850	main_Menue	main	f4089098da4561a9	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00534040	main_GiveStartBuildings	main	0f6de19c3c38ea1c	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x005344f0	main_PlaceFamilyModel	main	d6681c70aec02e4e	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
+exe	0x005344f0	main_PlaceFamilyModel	main	d6681c70aec02e4e	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	1eabd7340eadb42f
 exe	0x00534610	main_ChooseTalents	main	ee8550a5930897dd	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
 exe	0x00534b30	main_ChooseModel	main	5138f8502a71fe63	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005359f0	main_ChooseFamily	main	12f3eb34ca2f3cc8	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	

@@ -1622,7 +1622,7 @@ CHARACTER *main_PlaceFamilyModel(char *dummy, char *model, int k)
 {
     D3OBJECT *o;
     CHARACTER *ch;
-    float dir[3], pos[4], loc[3];
+    float pos[4];
 
     o = d3_FindObject(0, 0x100, 0, dummy);
     if (o == 0)
@@ -1630,6 +1630,7 @@ CHARACTER *main_PlaceFamilyModel(char *dummy, char *model, int k)
     d3_PointToWorld(o, &o->pos, (D3VECTOR *)pos);
     ch = ch_Create(model, (D3VECTOR *)pos);
     if (ch != 0) {
+        float dir[3], loc[3];
         dir[0] = 0;
         dir[1] = 0.0f;
         dir[2] = 0;
