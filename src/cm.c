@@ -39,7 +39,9 @@
    Open: types: CMFIGHTREC (this file) is G28REC's raid view (cm_types.h: defenders 0x80, attackers 0xc0, carts 0x100,
    home 0x10c; escort 0x110 is G28REC's pad110), two declarations of one party record.
    Open: layout: the fight code 0x4cf670.. may be a TU of its own (cm_UpdatePointer reloads ai_PickedObject after
-   calls of ai_LedSelectBits, a leaf defined above in this unit, as if it were external).
+   calls of ai_LedSelectBits, a leaf defined above in this unit, as if it were external). cm_FightFrame (0x4d6970)
+   orders its loads as if cm_SendCutEntry (0x4c5c40) were external (any unknown callee gives its bytes), while
+   cm_OrderWait (0x4d0520) still sees it defined: a boundary between 0x4d0570 and 0x4d6970 is likely.
    Open: data: 0x60d38c / 0x60d3a0 (cm_RunAuction's "handwerker3_MANN" / "buerger2_MANN") are the original's
    string literals in cm's data block: the code inline-copies from them, and naming them as arrays makes VC6
    copy byte-wise (cm_RunAuction shape -> draft), so they stay gap bytes.
@@ -11098,21 +11100,15 @@ void cm_FightResult(char *r)
    the redraws 0x525ff0 .. 0x4ce830, and the click on the button cm_FightButton (while 0x6f0d88 / 0x6f0cf4 are clear) sends
    message 0x50 with the cut entry of the player's character (0x4cdf00) in state 5, else the dialog is closed (0x6f22a0)
    @deep Hunk: the original runs rep movsd (memcpy into sl) BEFORE the loads of cm_CutChar->netId and
-   r->playerId; ours hoists both loads above it: in the original sl counts as escaped at the copy, in ours
-   not. Mechanism (probes, never kept): VC6 exempts a local whose address goes to ONE real call (intrinsic
-   memcpy / memset / struct copies do not count, a call removed as dead does not count; cm_OrderWait shows
-   the exempt order in the original too). A second call taking &sl ANYWHERE (before the slot call, after
-   the send, in the else arm, in an if at the function end) or another local's address to a call before
-   gives exactly the original's order (only the probe's own lines differ). So the original had a second
-   address-taking call that is not in its code, or the exemption depends on something else (the callee?
-   cm_SendCutEntry is defined above; it was shape and is byte now - no change here). No lever (= control):
-   sl = *q, nested call in memcpy/struct copy, sizeof(sl), sl block-scoped / sl[1] / char buffer, p = &sl
-   before or after the slot call, p = memcpy(..), dead q = &sl, &sl.charId to the send, memset before the
-   copy (eliminated), if (q != 0) send else send (decided), local c for cm_CutChar, *(int *)(cm_CutChar +
-   4), climb 2 rounds, flip --want (0 flips). Worse: state before charId (6 ins), memmove (draft), a static
-   __inline helper (c in ebp, draft 21). Callees cm_FightMouse / cm_UpdateSceneChars / cm_UpdateBombs /
-   cm_UpdateGrenades / cm_UpdatePointer / cm_UpdatePortraits are draft. Next: read c2.dll's escape test
-   (which counts address-taking calls) or find the ordinary construct with two such calls. */
+   r->playerId; ours hoists both loads. FOUND: the cause is outside the text. VC6 exempts sl from escape
+   when its address goes to one call of a function defined above in the unit whose body it knows
+   (cm_SendCutEntry); the same text calling any external function instead (probe: ai_FillSaveSlots(..,
+   &sl)) compiles to the original's instructions exactly (only the call target differs), and a second
+   address-taking call anywhere does too. So in the original cm_SendCutEntry was not known here:
+   cm_FightFrame sits in another TU than cm_SendCutEntry (cm_OrderWait 0x4d0520 still shows the exempt
+   order, so the boundary lies between 0x4d0570 and 0x4d6970; see the unit's Open: layout line). Byte needs
+   the unit split (layout work), not a variant. No lever in the text (= control): struct copy forms, block
+   / array / char-buffer sl, p = &sl forms, memset, decided second send, local c, climb 2 rounds, flip. */
 
 void cm_FightFrame(char *r)
 {
