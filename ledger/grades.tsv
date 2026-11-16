@@ -681,7 +681,7 @@ exe	0x004311d0	vfs_MemOpen	vfs	byte	readable
 exe	0x00431490	vfs_Init	vfs	byte	readable		
 exe	0x00431510	vfs_Exit	vfs	byte	readable		
 exe	0x004315c0	d3anim_ApplyRootMotion	d3_anim	byte	readable		
-exe	0x00431750	d3anim_ApplyMotionTo	d3_anim	shape	readable		
+exe	0x00431750	d3anim_ApplyMotionTo	d3_anim	byte	readable		
 exe	0x004319e0	d3anim_MapBones	d3_anim	shape	readable		
 exe	0x00431ae0	d3anim_PoseBones	d3_anim	byte	readable		
 exe	0x00432190	d3anim_RootPosAt	d3_anim	byte	readable		
@@ -3241,7 +3241,7 @@ exe	0x00513a20	init_LoadCityINI	f3init	byte	readable
 exe	0x005142e0	io_TownDisplayName	io_text	byte	readable		
 exe	0x00514360	io_TrailingDigits	io_text	byte	readable		
 exe	0x005143d0	io_CharacterName	io_text	shape	readable		
-exe	0x00514e90	io_CharacterNameMarkup	io_text	shape	readable		
+exe	0x00514e90	io_CharacterNameMarkup	io_text	byte	readable		
 exe	0x00515960	io_PrintText	io_text	draft	readable	deep	
 exe	0x005176d0	txt_Format	io_text	draft	readable	deep	
 exe	0x00519010	ls_LanguageOf	ls	byte	readable		
@@ -3266,7 +3266,7 @@ exe	0x0051bdb0	ls_WriteAvatars	ls	byte	readable
 exe	0x0051bdc0	ls_WriteEventTables	ls	shape	readable		
 exe	0x0051c2f0	ls_WriteParties	ls	byte	readable		
 exe	0x0051c450	ls_WriteHistory	ls	shape	readable		
-exe	0x0051c560	ls_WriteMessageQueues	ls	shape	readable		
+exe	0x0051c560	ls_WriteMessageQueues	ls	byte	readable		
 exe	0x0051c870	ls_WriteEnvironment	ls	byte	readable		
 exe	0x0051c920	ls_Read	ls	byte	readable		
 exe	0x0051c950	ls_LoadGame	ls	byte	readable		
@@ -4085,7 +4085,7 @@ exe	0x005876a0	ai_GraveyardSeanceContact	sv_t	byte	readable
 exe	0x00587700	ai_UpgradeWorkerSend	sv_t	byte	readable		
 exe	0x00587810	ai_UpgradeWorkerWindow	sv_t	byte	readable		
 exe	0x00587ad0	ai_GraveyardFogContact	sv_t	byte	readable		
-exe	0x00587b70	ai_PermissionBits1d	sv_t	shape	readable		
+exe	0x00587b70	ai_PermissionBits1d	sv_t	byte	readable		
 exe	0x00587c40	ai_EndCharExtra	sv_t	byte	readable		
 exe	0x00587c90	ai_GraveyardChatter	sv_t	byte	readable		
 exe	0x00587de0	ai_ClearTurnTable	sv_t	byte	readable		
