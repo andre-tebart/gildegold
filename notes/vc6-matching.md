@@ -371,6 +371,11 @@ Where the pushes and pops sit, how many epilogue copies there are, shared agains
 ## Branch layout, conditions, switches
 Which arm is inline, jumps into another arm, threaded and redundant tests, `&&` / `||` forms, compare operand order and jcc, `setne` against a branch, ternaries, switch dispatch and case order.
 
+- **A decompiled `if (x != A && x == B) {..B arm..; return} ..default..` with only the scratch registers of the
+  two arms swapped**: `if (x == A) .. else if (x == B) .. else ..` with the default written twice (VC6 merges the
+  copies; the A arm is laid out last but rotates the registers first). The `||` inversion is = control
+  (init_InitTown byte).
+
 ### How VC6 orders blocks and merges tails (c2.dll)
 
 - **A failure tail with its constant scheduled among the pops (`pop edi; pop esi; pop ebp; or eax,-1; pop
