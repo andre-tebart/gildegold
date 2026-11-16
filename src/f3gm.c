@@ -9044,7 +9044,7 @@ int gm_BuildingGoodsList17(char *b, unsigned *out, int kind)
 {
     ORDBLD *bld;
     ORDOBJ *stall, *o;
-    char type;
+    GMGOOD *g;
     int i, cap;
 
     bld = (ORDBLD *)b;
@@ -9067,8 +9067,8 @@ int gm_BuildingGoodsList17(char *b, unsigned *out, int kind)
     }
     o = (ORDOBJ *)gm_Query((void *)stall->list, 1, 5);
     while (o) {
-        type = GM_GOOD(o->type)->type;
-        if ((type == 0x17 && kind != 0) || (type != 0x17 && kind == 0)) {
+        g = GM_GOOD(o->type);
+        if ((g->type == 0x17 && kind != 0) || (g->type != 0x17 && kind == 0)) {
             out[0x1a + out[1]] = gm_ListAmount((short *)stall, (char *)o);
             out[2 + out[1]] = gm_ListStock((short *)stall, o->type);
             ((AIRECIPE *)out)->item[out[1]] = o->type;

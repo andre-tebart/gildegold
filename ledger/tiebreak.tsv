@@ -3117,7 +3117,7 @@ exe	0x005093a0	gm_BuildingKindSkill	f3gm	ab1adaccf3a48ded	no	byte	control=byte p
 exe	0x00509400	gm_WorkMinutesBetween	f3gm	1a5bda2d30d29af7	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x005096a0	gm_FixedWorkMinutesBetween	f3gm	27abc2d4230feb26	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x005098a0	gm_BuildingGoodsList	f3gm	1b088dcb6c220fec	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
-exe	0x005099e0	gm_BuildingGoodsList17	f3gm	09109eb9eb1a03ba	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	e0b1e84025becc72
+exe	0x005099e0	gm_BuildingGoodsList17	f3gm	09109eb9eb1a03ba	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	3fb69c02f9854d29
 exe	0x00509b10	gm_EquipmentValue	f3gm	80f14a90fbd5659d	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00509c80	gm_OwnerWorth	f3gm	b0c4261377d30b9b	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00509d30	gm_BuildingKindValue	f3gm	177c048824719b0c	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
