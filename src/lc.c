@@ -8035,8 +8035,8 @@ void ai_MapTableScreen(void)
 void ai_MapTableContact(AIBLD *bld, int room)
 {
     D3OBJECT *obj;
-    D3OBJECT *transport = 0;
     D3OBJECT *lager = 0;
+    D3OBJECT *transport = 0;
     D3OBJECT *meister = 0;
     D3OBJECT *kartentisch = 0;
 
