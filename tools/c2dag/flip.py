@@ -12,6 +12,7 @@ of the function the wanted code depends on - the lever to respell by hand. --try
 variants file (labels m0, m1, ..), so their distance to the original can be measured: a hit at `byte` whose
 change keeps the meaning is the answer (di_UpdateButtons: a volatile view against the plain field).
 --base applies one variant of a `dcp try` file (whole-function text) first and mutates that.
+Each hit names FILE:LINE (the line in the tree's file, or in the --base text) and the source line it changed.
 """
 import argparse, os, re, subprocess, sys
 from concurrent.futures import ThreadPoolExecutor
@@ -96,15 +97,18 @@ def main():
         l = lines[i]
         if not l.strip() or l.strip().startswith(("/*", "*", "//")) or l.strip().endswith("*/"):
             continue
-        n = i - s if a.scope == "func" else i + 1
-        muts.append(("del %d: %s" % (n, l.strip()[:56]), lines[:i] + lines[i + 1:]))
-        muts.append(("dup %d: %s" % (n, l.strip()[:56]), lines[:i] + [l, l] + lines[i + 1:]))
+        # the place: FILE:LINE of the tree's text (with --base: the line in the base text) and the source line
+        n = "%s:%d" % (os.path.basename(a.src), i + 1)
+        txt = l.strip()[:90]
+        muts.append(("del %s  %s" % (n, txt), lines[:i] + lines[i + 1:]))
+        muts.append(("dup %s  %s" % (n, txt), lines[:i] + [l, l] + lines[i + 1:]))
         if i + 1 < len(lines) and (a.scope == "file" or i + 1 < e) and lines[i + 1].strip():
-            muts.append(("swap %d: %s" % (n, l.strip()[:56]), lines[:i] + [lines[i + 1], l] + lines[i + 2:]))
+            muts.append(("swap %s  %s  <->  %s" % (n, txt[:60], lines[i + 1].strip()[:40]),
+                         lines[:i] + [lines[i + 1], l] + lines[i + 2:]))
         for pat, reps in TOKENS:
             for k, m in enumerate(re.finditer(pat, l)):
                 for rep in reps:
-                    muts.append(("tok %d#%d %s->%s: %s" % (n, k, m.group(0), rep, l.strip()[:48]),
+                    muts.append(("tok %s#%d %s->%s  %s" % (n, k, m.group(0), rep, txt),
                                  lines[:i] + [l[:m.start()] + rep + l[m.end():]] + lines[i + 1:]))
     want = re.compile(a.want)
     avoid = re.compile(a.avoid) if a.avoid else None

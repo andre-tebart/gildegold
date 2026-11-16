@@ -78,6 +78,7 @@ static void cname(void *c, char *buf)
 static int allocFirst, allocBlk;
 static int trOn(void);
 static void cname(void *c, char *buf);
+static void scanPrio(int blk);
 static struct { void *c; long sav; } savTab[4096];
 static int savN;
 static char savPrev[200] = "start";
@@ -117,6 +118,7 @@ static void __cdecl hBlock(unsigned long *r)
             if (ln > hi) hi = ln;
         }
     }
+    scanPrio(allocBlk - 1);
     fprintf(out, " ablock %d lines %ld-%ld\n", allocBlk++, hi < 0 ? 0 : lo, hi < 0 ? 0 : hi);
 }
 static void __cdecl hUse(unsigned long *r)
@@ -269,6 +271,123 @@ static void __cdecl hIns(unsigned long *r) { if (!trOn()) return; fprintf(out, "
 static void __cdecl hFwd(unsigned long *r) { if (!trOn()) return; fprintf(out, "T   EMPTIED->TRYFWD"); pc((void *)r[7]); fprintf(out, "\n"); fflush(out); }
 static void __cdecl hFe32(unsigned long *r) { if (!trOn()) return; fprintf(out, "T FE32"); pc((void *)r[7]); fprintf(out, "\n"); fflush(out); }
 static void __cdecl hAf7(unsigned long *r) { if (!trOn()) return; fprintf(out, "T AF7 nregs %ld", *(long *)(r[4] + 20)); pc((void *)r[6]); fprintf(out, "\n"); fflush(out); }
+/* the source lines of a basic block (instructions +0x1c .. +0x20, line at +0x10) */
+static void blines(void *b, long *lo, long *hi)
+{
+    void *t, *end; int g = 0;
+    *lo = 0x7fffffff; *hi = -1;
+    if (!b || IsBadReadPtr(b, 0x24)) return;
+    end = PTR(b, 0x20);
+    for (t = PTR(b, 0x1c); t && t != end && g < 5000 && !IsBadReadPtr(t, 0x14); t = PTR(t, 0), g++) {
+        long ln = *(short *)((char *)t + 0x10);
+        if (ln > 0 && ln < *lo) *lo = ln;
+        if (ln > *hi) *hi = ln;
+    }
+    if (*hi < 0) *lo = *hi = 0;
+}
+/* live range splitting (color.c, FUN_107453f8 -> FUN_10745670, Chow-Hennessy style): a piece starts at the first
+   block of the range not yet in a piece (seed 1) and grows into successor blocks where the value is live (seed 0)
+   while the registers free over the whole piece (avail, the running set) stay non-empty; references of
+   registers given to other candidates, a call (callee-saved only), and the definition of an assigned candidate
+   take registers out of it. Where it runs empty a split mark is inserted (CUT) and that block starts a piece. */
+static void __cdecl hGrow(unsigned long *r)
+{
+    void *c = (void *)r[7], *b = (void *)r[6], *av = *(void **)(r[4] + 4);
+    long lo, hi; char nb[160];
+    if (!trOn()) return;
+    blines(b, &lo, &hi);
+    cname(c, nb);
+    fprintf(out, "T GROW %s id %lx piece %ld %s blk@%lx lines %ld-%ld", nb, U32(c, 0x1c), (long)U32(b, 0x38),
+            *(long *)(r[4] + 8) ? "seed" : "succ", (unsigned long)b & 0xffff, lo, hi);
+    pset("avail-in", av, 1);
+    fprintf(out, "\n"); fflush(out);
+}
+static void __cdecl hCut(unsigned long *r)
+{
+    void *t = (void *)r[7]; void *c = candById(r[6]); char nb[160];
+    if (!trOn()) return;
+    if (c) cname(c, nb); else sprintf(nb, "id%lx", r[6]);
+    fprintf(out, "T   CUT %s before op %lx line %d\n", nb, IsBadReadPtr(t, 0x24) ? 0 : U32(t, 4),
+            IsBadReadPtr(t, 0x24) ? 0 : (int)*(short *)((char *)t + 0x10));
+    fflush(out);
+}
+/* the bulk split (FUN_10743bda, used when 3+ candidates are split at once and the function has 100+ candidates):
+   the blocks are walked in layout order; each block where one of them is live gets free = regs - block[0x54]
+   (registers of assigned candidates in the block); it joins the region of its FIRST predecessor (then
+   successor) whose region still shares a free register with it (the region keeps the intersection), else opens
+   a region; region boundaries get split marks for every candidate of the set (SPLITMARK). 0x10743d24: a block
+   is considered, 0x10743d0e: its region is decided. */
+static void blkdesc(void *b)
+{
+    long lo, hi;
+    blines(b, &lo, &hi);
+    fprintf(out, "blk@%lx[%ld-%ld r%ld]", (unsigned long)b & 0xffff, lo, hi, IsBadReadPtr(b, 0x58) ? -1L : (long)U32(b, 0x38));
+}
+static void __cdecl hRegionAt(unsigned long *r)
+{
+    void *b = (void *)r[1], *n; int g = 0;
+    if (!trOn()) return;
+    fprintf(out, "T REGION? "); blkdesc(b);
+    pset("used", PTR(b, 0x54), 1);
+    fprintf(out, " preds");
+    for (n = PTR(b, 8); n && !IsBadReadPtr(n, 12) && g < 50; n = PTR(n, 4), g++) { fprintf(out, " "); blkdesc(PTR(n, 8)); }
+    fprintf(out, " succs");
+    for (g = 0, n = PTR(b, 0xc); n && !IsBadReadPtr(n, 16) && g < 50; n = PTR(n, 0), g++) { fprintf(out, " "); blkdesc(PTR(n, 0xc)); }
+    if (getenv("C2TRACE_OPS")) {
+        void *t, *end = PTR(b, 0x20);
+        fprintf(out, " ops");
+        for (g = 0, t = PTR(b, 0x1c); t && t != end && g < 60 && !IsBadReadPtr(t, 0x24); t = PTR(t, 0), g++)
+            fprintf(out, " %lx@%d", U32(t, 4), (int)*(short *)((char *)t + 0x10));
+    }
+    fprintf(out, "\n"); fflush(out);
+}
+static void __cdecl hRegionSet(unsigned long *r)
+{
+    void *b = (void *)r[1], *lst = *(void **)(r[4] + 0x18); long cnt = *(long *)(r[4] + 0x1c), reg, i;
+    if (!trOn()) return;
+    reg = IsBadReadPtr(b, 0x58) ? 0 : (long)U32(b, 0x38);
+    fprintf(out, "T REGION= "); blkdesc(b);
+    for (i = cnt; lst && i > reg && !IsBadReadPtr(lst, 8); i--) lst = PTR(lst, 0);
+    if (lst && reg > 0) pset("region-used", PTR(lst, 4), 1);
+    fprintf(out, "\n"); fflush(out);
+}
+/* AF7 (FUN_10708af7, the interference / pressure walk before the choice) at 0x107097cd: avail &= [0x107c9624]
+   at a call the candidate is live across, or where the byte-register pressure leaves one register for a live
+   byte value: this is the avail drop between AF7 and ASSIGN */
+static void __cdecl hRestrict(unsigned long *r)
+{
+    void *c = *(void **)(r[4] + 0x28), *t = (void *)r[5];
+    if (!trOn()) return;
+    fprintf(out, "T   RESTRICT at op %lx line %d %s:", IsBadReadPtr(t, 0x24) ? 0 : U32(t, 4),
+            IsBadReadPtr(t, 0x24) ? 0 : (int)*(short *)((char *)t + 0x10),
+            !IsBadReadPtr(t, 0x24) && (U8(t, 0x12) & 2) ? "call" : "byte pressure");
+    pc(c);
+    pset("keep", *(void **)((char *)real + 0xc9624), 1);
+    fprintf(out, "\n"); fflush(out);
+}
+/* the priority pass's per-block change of every candidate's priority (+0xc): +refcost*P*w where it is referenced,
+   -P*w where it lives through unreferenced (FUN_10707a0b's block end) */
+static struct { void *c; long pr; } prTab[4096];
+static int prN;
+static void scanPrio(int blk)
+{
+    unsigned long a; int i;
+    if (!trOn() || !getenv("C2TRACE_PRIO")) return;
+    if (blk < -1) prN = 0;
+    for (a = 0xac5b8; a < 0xad5b8; a += 4) {
+        void *c = *(void **)((char *)real + a); int g = 0;
+        for (; c && !IsBadReadPtr(c, 0x48) && g < 5000; c = PTR(c, 0x2c), g++) {
+            long v = (long)U32(c, 0xc);
+            for (i = 0; i < prN; i++) if (prTab[i].c == c) break;
+            if (i == prN) { if (prN >= 4096) continue; prTab[prN].c = c; prTab[prN].pr = 0; prN++; }
+            if (prTab[i].pr != v) {
+                char nb[160]; cname(c, nb);
+                fprintf(out, "T PRI %s id %lx blk %d %+ld = %ld\n", nb, U32(c, 0x1c), blk, v - prTab[i].pr, v);
+                prTab[i].pr = v;
+            }
+        }
+    }
+}
 static void cands(void);
 static void __cdecl hReg(unsigned long *r)
 {
@@ -452,7 +571,7 @@ static void __cdecl dump2(void)
     char *cur, *nm = 0;
     if (!out)
         return;
-    if (allocFirst) scanSav("end");
+    if (allocFirst) { scanSav("end"); scanPrio(allocBlk - 1); }
     cur = *(char **)((char *)real + 0xad730);
     if (cur == lastfn)
         return;
@@ -473,7 +592,7 @@ static void __cdecl enter2(void)
     if (allocFirst && cur == seen && out) fputs("allocpass\n", out);
     seen = cur;
     allocBlk = 0;
-    if (allocFirst) savN = 0;
+    if (allocFirst) { savN = 0; scanPrio(-2); }
     if (allocFirst && out) {
         char *nm = IsBadReadPtr(cur, 0x1c) ? 0 : *(char **)((char *)cur + 0x18);
         fprintf(out, "allocrefs %s\n", nm && !IsBadStringPtrA(nm, 128) ? nm : "?");
@@ -592,6 +711,20 @@ static void install(void)
                     if (!getenv("C2TRACE_LITE")) midhook(0x7496c, 6, hFwd, t8);
                     if (!getenv("C2TRACE_LITE")) midhook(0x6fe32, 5, hFe32, t9);
                     if (!getenv("C2TRACE_LITE")) midhook(0x8af7, 5, hAf7, t10);
+                    {
+                        static const unsigned char g1[] = { 0x83, 0xec, 0x08, 0x53, 0x55 };
+                        static const unsigned char g2[] = { 0x53, 0x56, 0x8b, 0xd9, 0x57 };
+                        static const unsigned char g3[] = { 0x8b, 0x15, 0x24, 0x96, 0x7c, 0x10 };
+                        if (!getenv("C2TRACE_LITE")) midhook(0x45670, 5, hGrow, g1);
+                        if (!getenv("C2TRACE_LITE")) midhook(0x4527d, 5, hCut, g2);
+                        if (!getenv("C2TRACE_LITE")) midhook(0x97cd, 6, hRestrict, g3);
+                        {
+                            static const unsigned char g4[] = { 0x8b, 0x54, 0x24, 0x10, 0x8b, 0x4f, 0x50 };
+                            static const unsigned char g5[] = { 0x8b, 0x5c, 0x24, 0x2c, 0x8b, 0x74, 0x24, 0x20 };
+                            if (!getenv("C2TRACE_LITE")) midhook(0x43d24, 7, hRegionAt, g4);
+                            if (!getenv("C2TRACE_LITE")) midhook(0x43d0e, 8, hRegionSet, g5);
+                        }
+                    }
                 }
             }
         }
