@@ -6908,22 +6908,16 @@ char gm_RandomAge(unsigned char n)
     n += r;
     return n;
 }
-/* 0x505df0, the character with the id (int +4) in the character table, 0 when none */
+/* 0x505df0, the character in use whose netId is id, 0 when none */
 
 short *gm_FindChar(int id)
 {
-    int *p;
     int i;
 
-    i = 0;
-    p = (int *)(ai_Chars[0] + 4);
-    while ((short)p[-1] == -1 || *p != id) {
-        p += 0x87;
-        i++;
-        if ((int)p >= (int)((unsigned)&ai_Chars + 0x65404))
-            return 0;
-    }
-    return (short *)ai_Chars[i];
+    for (i = 0; i < 768; i++)
+        if (ORD_CHARS[i].id != 0xffff && ORD_CHARS[i].netId == id)
+            return (short *)ai_Chars[i];
+    return 0;
 }
 /* 0x505e30, the age (its w00a word) of the character with the number id as a float */
 
