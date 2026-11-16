@@ -60,8 +60,9 @@ def main():
         for p in orders:
             body = func[:lo] + [run[i] for i in p] + func[hi + 1:]
             f.write("### p%s\n%s\n\n" % ("-".join(map(str, p)), "\n".join(body)))
-    print("%d variants (%d lines) -> %s" % (len(orders), n, os.path.relpath(out, ROOT)))
-    print("then: dcp try %s %s" % (a.name, out.replace("\\", "/")))
+    # messages go to stderr: `permute.py ... > FILE` must not mix them into a variants file
+    sys.stderr.write("%d variants (%d lines) -> %s\n" % (len(orders), n, os.path.relpath(out, ROOT)))
+    sys.stderr.write("then: dcp try %s %s\n" % (a.name, out.replace("\\", "/")))
 
 
 if __name__ == "__main__":
