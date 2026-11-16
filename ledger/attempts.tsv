@@ -14,6 +14,7 @@ exe	0x00425470	path_Search1	1
 exe	0x00425780	path_Expand	1
 exe	0x0042c950	txt_ParseRandomText	1
 exe	0x0042cbc0	txt_OpenText	1
+exe	0x004319e0	d3anim_MapBones	1
 exe	0x00432750	d3anim_StepObject	1
 exe	0x00433f80	d3anim_CreateMorphAnim	1
 exe	0x00437390	d3d_LoadTexture	1
