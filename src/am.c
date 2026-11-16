@@ -10576,48 +10576,46 @@ int ai_PickPartnerChain(AIPER *p, int a, int *flags, float b, float f, unsigned 
     unsigned int q[0x14];
     G6RING *e;
     unsigned int i, n;
-    int found, ret;
+    int found;
 
-    ret = 0;
-    if ((unsigned int)a <= 3) {
-        memset(q, 0, sizeof(q));
-        memset(&q[7], 0xff, 8 * 4);
-        q[5] = 2;
-        i = 0;
-        if (ai_Partner != 0 && !(q[1] & 0x10000000)) {
-            q[16] = 0;
-            q[1] = flags[0];
-            if (ai_PassesPartnerFilter(p->id, AI_PARTNER->id, q, 0) != 0) {
-                i = 1;
-                id[0] = AI_PARTNER->id;
-            }
+    if ((unsigned int)a > 3)
+        return 0;
+    memset(q, 0, sizeof(q));
+    memset(&q[7], 0xff, 8 * 4);
+    q[5] = 2;
+    i = 0;
+    if (ai_Partner != 0 && !(q[1] & 0x10000000)) {
+        q[16] = 0;
+        q[1] = flags[0];
+        if (ai_PassesPartnerFilter(p->id, AI_PARTNER->id, q, 0) != 0) {
+            i = 1;
+            id[0] = AI_PARTNER->id;
         }
-        for (; i < (unsigned int)a; i++) {
-            q[1] = flags[i];
-            if (i != 0)
-                ((unsigned short *)&q[7])[i] = id[i - 1];
-            else
-                ((unsigned short *)&q[7])[0] = p->id;
-            found = 0;
-            n = ai_NearRingCount;
-            for (e = ai_NextNearRingEntry(); !found; n--, e = ai_NextNearRingEntry()) {
-                if (n == 0) {
-                    if (!found)
-                        return 0;
-                    break;
-                }
-                if (e->who == 0)
-                    return 0;
-                if (!(e->dist < b) && !(e->dist > f)
-                    && ai_PassesPartnerFilter(p->id, e->who->id, q, 0) != 0) {
-                    found = 1;
-                    id[i] = e->who->id;
-                }
-            }
-        }
-        ret = 1;
     }
-    return ret;
+    for (; i < (unsigned int)a; i++) {
+        q[1] = flags[i];
+        if (i != 0)
+            ((unsigned short *)&q[7])[i] = id[i - 1];
+        else
+            ((unsigned short *)&q[7])[0] = p->id;
+        found = 0;
+        n = ai_NearRingCount;
+        for (e = ai_NextNearRingEntry(); !found; n--, e = ai_NextNearRingEntry()) {
+            if (n == 0) {
+                if (!found)
+                    return 0;
+                break;
+            }
+            if (e->who == 0)
+                return 0;
+            if (!(e->dist < b) && !(e->dist > f)
+                && ai_PassesPartnerFilter(p->id, e->who->id, q, 0) != 0) {
+                found = 1;
+                id[i] = e->who->id;
+            }
+        }
+    }
+    return 1;
 }
 /* 0x4a5a30: one partner for an action with the flags fl and the chain ids[n]: the leader ai_Partner when
    ai_PassesPartnerFilter accepts it, else the first near-ring entry rated in [lo, hi] that it accepts; into *id */
