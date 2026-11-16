@@ -997,7 +997,7 @@ exe	0x00453990	d3_ShadeReset	d3_vec	byte	readable
 exe	0x004539b0	d3_Lerp3	d3_vec	byte	readable		
 exe	0x004539f0	d3_VecAngle	d3_vec	byte	readable		
 exe	0x00453b40	d3_VecAngle2	d3_vec	byte	readable		
-exe	0x00453b70	d3_MakeBasis	d3_vec	shape	readable		
+exe	0x00453b70	d3_MakeBasis	d3_vec	byte	readable		
 exe	0x00453d60	d3_UnwrapAngles	d3_vec	byte	readable		
 exe	0x00453e20	d3_Hermite	d3_vec	byte	readable		
 exe	0x00453e80	d3_VecEqual	d3_vec	byte	readable		
@@ -1631,7 +1631,7 @@ exe	0x00498470	ai_ExecuteBuyBuilding	am	shape	readable	deep
 exe	0x004984d0	ai_DecideBuildResidence	am	byte	readable		
 exe	0x00498a80	ai_ExecuteBuildResidence	am	shape	readable		
 exe	0x00498b80	ai_DecideUpgradeResidence	am	byte	readable		
-exe	0x00498c70	ai_DecideBuildBusiness	am	shape	readable		byte+readable -> shape+readable at 79dd397d: the byte match was on a wrong constant: the mask was written (unsigned)&txt_Keys + 0x181c0, a relocation that dcp compared as equal to the original's 0xffffff; the correct AI_CHF_BUILT leaves a 4-instruction register tie (add eax,edx / add edx,eax) [waits for: decompanion's by-value comparison of relocated operands (improvement-reports/symbol-arithmetic-constants.md), then re-match]
+exe	0x00498c70	ai_DecideBuildBusiness	am	byte	readable		
 exe	0x00499290	ai_ExecuteBuildBusiness	am	byte	readable		
 exe	0x00499400	ai_DecideUpgradeBusiness	am	byte	readable		
 exe	0x00499520	ai_DecideVisitMedicus	am	byte	readable		
@@ -2980,7 +2980,7 @@ exe	0x004fe350	gm_ClockSeason	f3gm	byte	readable
 exe	0x004fe370	gm_InitBuildingTables	f3gm	draft	readable	deep	
 exe	0x004fe570	gm_LoadTables	f3gm	shape	readable		
 exe	0x004fe7f0	gm_ClearBuildings	f3gm	byte	readable		
-exe	0x004fe830	gm_ClearObjects	f3gm	shape	readable	deep	
+exe	0x004fe830	gm_ClearObjects	f3gm	byte	readable		
 exe	0x004fe900	gm_FindObjectProto	f3gm	byte	readable		
 exe	0x004fe940	gm_IsBuildingKind	f3gm	byte	readable		
 exe	0x004fe980	gm_FindObjectInst	f3gm	byte	readable		
@@ -3176,7 +3176,7 @@ exe	0x0050cf60	gm_BathObjectCount	f3gm	byte	readable
 exe	0x0050cfd0	gm_CurseObjectCount	f3gm	byte	readable		
 exe	0x0050d060	gm_TrialBuildingKind	f3gm	byte	readable		
 exe	0x0050d0b0	gm_CurseTargetCount	f3gm	byte	readable		
-exe	0x0050d100	init_SceneNameToPrototype	f3init	shape	readable		
+exe	0x0050d100	init_SceneNameToPrototype	f3init	byte	readable		
 exe	0x0050d350	init_SceneObjectDestroyCB	f3init	byte	readable		
 exe	0x0050d380	init_HookObject	f3init	byte	readable		
 exe	0x0050d460	init_ResetSceneUniverses	f3init	byte	readable		
@@ -3199,7 +3199,7 @@ exe	0x0050f750	init_OpenBuilding	f3init	byte	readable
 exe	0x0050f910	init_OpenTown	f3init	draft	readable	deep	
 exe	0x00510730	init_CollectSiteObject	f3init	byte	readable		
 exe	0x00510770	init_LoadSiteScene	f3init	shape	readable		
-exe	0x00510ad0	init_InitTown	f3init	shape	readable		
+exe	0x00510ad0	init_InitTown	f3init	byte	readable		
 exe	0x00510e20	init_ShowStatus	f3init	byte	readable		
 exe	0x00510e50	init_StartNetworkGame	f3init	byte	readable		
 exe	0x005112d0	init_JoinNetworkGame	f3init	byte	readable		
@@ -3226,7 +3226,7 @@ exe	0x005127c0	init_SoundObjectFreeHook	f3init	byte	readable
 exe	0x005127f0	init_PlayTownSound	f3init	byte	readable		
 exe	0x00512840	init_PlayGraveyardSound	f3init	byte	readable		
 exe	0x00512890	init_StopTownSounds	f3init	byte	readable		
-exe	0x005128d0	init_SetSeasonTextures	f3init	shape	readable		
+exe	0x005128d0	init_SetSeasonTextures	f3init	byte	readable		
 exe	0x00512de0	init_PlantTextureSetHook	f3init	byte	readable		
 exe	0x00512e40	init_TextureSetHook	f3init	byte	readable		
 exe	0x00512e80	init_BuildingTextureSetHook	f3init	byte	readable		
@@ -3248,10 +3248,10 @@ exe	0x00519010	ls_LanguageOf	ls	byte	readable
 exe	0x005190a0	ls_GetLanguage	ls	byte	readable		
 exe	0x005190b0	ls_SaveGame	ls	byte	readable		
 exe	0x005194c0	ls_WriteSaveHeader	ls	byte	readable		
-exe	0x00519a00	ls_RefsToIds	ls	shape	readable		
+exe	0x00519a00	ls_RefsToIds	ls	byte	readable		
 exe	0x00519aa0	ls_IdsToRefs	ls	byte	readable		
-exe	0x00519b50	ls_RelinkScene	ls	shape	readable		
-exe	0x00519bf0	ls_WriteObjects	ls	shape	readable		
+exe	0x00519b50	ls_RelinkScene	ls	byte	readable		
+exe	0x00519bf0	ls_WriteObjects	ls	byte	readable		
 exe	0x00519d20	ls_WriteBuildings	ls	byte	readable		
 exe	0x0051a1a0	ls_WritePlayerRecords	ls	byte	readable		
 exe	0x0051a4b0	ls_WriteCharacters	ls	shape	readable		
@@ -3260,7 +3260,7 @@ exe	0x0051ad60	ls_ActionAt	ls	byte	readable
 exe	0x0051ad80	ls_WriteSceneCharacter	ls	byte	readable		
 exe	0x0051aff0	ls_WriteSceneRecords	ls	byte	readable		
 exe	0x0051b340	ls_WritePlayerSlots	ls	shape	readable	deep	
-exe	0x0051b890	ls_WriteRelations	ls	shape	readable		
+exe	0x0051b890	ls_WriteRelations	ls	byte	readable		
 exe	0x0051b910	ls_WriteStatistics	ls	byte	readable		
 exe	0x0051bdb0	ls_WriteAvatars	ls	byte	readable		
 exe	0x0051bdc0	ls_WriteEventTables	ls	shape	readable		
@@ -3278,10 +3278,10 @@ exe	0x0051d530	ls_ClearObjectFlag	ls	byte	readable
 exe	0x0051d550	ls_ReadBuildings	ls	byte	readable		
 exe	0x0051db00	ls_ReadPlayerRecords	ls	byte	readable		
 exe	0x0051de70	ls_ReadCharacters	ls	byte	readable		
-exe	0x0051e750	ls_ReadCharacter	ls	shape	readable		
+exe	0x0051e750	ls_ReadCharacter	ls	byte	readable		
 exe	0x0051e900	ls_ReadSceneRecords	ls	draft	readable	deep	
 exe	0x0051f080	ls_ReadPlayerSlots	ls	shape	readable	deep	
-exe	0x0051f650	ls_ReadRelations	ls	shape	readable		
+exe	0x0051f650	ls_ReadRelations	ls	byte	readable		
 exe	0x0051f720	ls_ReadStatistics	ls	byte	readable		
 exe	0x0051fb80	ls_ReadAvatars	ls	byte	readable		
 exe	0x0051fb90	ls_ReadEventTables	ls	shape	readable		
@@ -3289,7 +3289,7 @@ exe	0x00520000	ls_ReadParties	ls	byte	readable
 exe	0x00520200	ls_ReadHistory	ls	byte	readable		
 exe	0x00520310	ls_ReadMessageQueues	ls	byte	readable		
 exe	0x005205f0	ls_ReadEnvironment	ls	byte	readable		
-exe	0x005206b0	ls_FixupAfterLoad	ls	shape	readable		
+exe	0x005206b0	ls_FixupAfterLoad	ls	byte	readable		
 exe	0x00520a30	ls_SendGame	ls	byte	readable		
 exe	0x00520b80	ls_ReceiveGame	ls	byte	readable		
 exe	0x00520ec0	sv_UpdateFramesPerTick	sv	byte	readable		
@@ -4617,7 +4617,7 @@ exe	0x005d5e90	ai_ApplyOptions	menu	byte	readable
 exe	0x005d5f10	ai_ApplyVolumes	menu	byte	readable		
 exe	0x005d5fd0	ai_OptionsGfxScreen	menu	byte	readable		
 exe	0x005d6580	ai_OptionsSfxScreen	menu	byte	readable		
-exe	0x005d6950	ai_OptionsGameScreen	menu	shape	readable		
+exe	0x005d6950	ai_OptionsGameScreen	menu	byte	readable		
 exe	0x005d6f40	ai_MenuButton	menu	byte	readable		
 exe	0x005d6fa0	ai_LeaveGameScreen	menu	byte	readable		
 exe	0x005d7080	ai_ResumeGameScreen	menu	byte	readable		
