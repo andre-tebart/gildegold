@@ -166,6 +166,7 @@ int gm_IsUnderAge(unsigned short id);         /* 0x4fd7e0 */
 void *ai_ProdSetting(int param_1);  /* 0x5a8560 */
 #define ai_ProdSettingK ((int (*)(void *))ai_ProdSetting)  /* 0x5a8560 (lc.c: void *ai_ProdSetting(int bld)): @original this unit's callers pass the building pointer (gm_CreateBuilding 0x501676 pushes the record, as lc.c's own callers cast it); the result is unused */
 #define util_RandomU ((unsigned short (*)(int))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original this unit's callers read the 16-bit result (byte-matched ch_RandomNear 0x405160, ai_CalcMeisterBank 0x4836a0, cm_FightLoop 0x4d88c0 move it as a word / movzx) */
+#define util_RandomS ((unsigned short (*)(unsigned short))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original gm_Shuffled reads the 16-bit result of the 16-bit parameter's call (movzx bp,dl push, mov si,ax / and 0xffff), as anm.c's callers */
 #define gm_AssignBuildingI ((void (*)(unsigned char *, int, int))gm_AssignBuilding)  /* @original 0x502b60 called with int place / own: gm_TakeOverCharacter zero-extends the word load once for both (as f3init's byte-matched init caller does, see its prototype) */
 extern struct D2COLKEY d2_TransparentColour;  /* 0x6f0454, shp.c (the type in shp.h) */
 #define d2_TransparentBytes ((unsigned char *)&d2_TransparentColour)  /* 0x6f0454, @original: unk_LoadIconNames stores the key byte by byte (mov byte [0x6f0455], 0xff; [0x6f0454] and [0x6f0456] = bl), not through the D2COLKEY word gb */
@@ -6855,8 +6856,8 @@ void gm_Shuffled(unsigned char n, int *out)
     if (n >= 2) {
         cnt = n / 2 + (n / 4 > 1 ? n / 4 : 1);
         for (swaps = 0; swaps < cnt; ) {
-            a = (unsigned short)util_Random(n);
-            b = (unsigned short)util_Random(n);
+            a = util_RandomS(n);
+            b = util_RandomS(n);
             if (a != b) {
                 t = out[a];
                 out[a] = out[b];
