@@ -2241,7 +2241,7 @@ exe	0x004c5aa0	cm_SendChat	cm	e54019b061eb4353	no	byte	control=byte p1=byte p2=b
 exe	0x004c5ae0	cm_RequestCreateGeb	cm	b016c06055821b2f	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	becf1bbdf99775c9
 exe	0x004c5b90	cm_SendCharHalt	cm	ed07e710161643ae	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004c5bc0	cm_SendObjCell	cm	9e85960cd85083ca	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x004c5c40	cm_SendCutEntry	cm	27e3e49c36ff279d	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	becf1bbdf99775c9
+exe	0x004c5c40	cm_SendCutEntry	cm	27e3e49c36ff279d	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	8e80b148d2954303
 exe	0x004c5ca0	cm_SendCutEntryUpdate	cm	6278c1017326357b	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	becf1bbdf99775c9
 exe	0x004c5d00	cm_SendDamage	cm	854e9b73f9d09a0d	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004c5d40	cm_SendScriptMessage	cm	60994190e001b1ad	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
@@ -2490,7 +2490,7 @@ exe	0x004d4d70	cm_FightEndDialog	cm	20139f63fbe2d006	no	draft	control=draft p1=d
 exe	0x004d60b0	cm_CheckFight	cm	0af4322fb366aa0d	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x004d63e0	cm_RunFight	cm	c9cbf40840b07b95	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	becf1bbdf99775c9
 exe	0x004d6930	cm_FightResult	cm	33c238c4414c4fe7	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x004d6970	cm_FightFrame	cm	5156c99d23ae6d94	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	becf1bbdf99775c9
+exe	0x004d6970	cm_FightFrame	cm	5156c99d23ae6d94	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	32d7e33278e3f9e2
 exe	0x004d6a50	cm_BuildFightUI	cm	01bdc544b2ba3123	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004d6b70	cm_CloseFightUI	cm	310ace0fe391a44b	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004d6ba0	cm_FighterAct	cm	df04c871ed1ddc9f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	

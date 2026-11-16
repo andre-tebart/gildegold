@@ -2082,10 +2082,10 @@ int cm_SendCutEntry(int a, void *p)
 
     m.type = 0x50;
     m.cutEntry.playerId = a;
-    if (cm_CurrentFight == 0)
-        m.cutEntry.fightId = -1;
-    else
+    if (cm_CurrentFight != 0)
         m.cutEntry.fightId = *cm_CurrentFight;
+    else
+        m.cutEntry.fightId = -1;
     memcpy(&m.cutEntry.entry, p, sizeof(m.cutEntry.entry));
     return cm_QueueSend(&m);
 }
@@ -2097,10 +2097,10 @@ int cm_SendCutEntryUpdate(int a, void *p)
 
     m.type = 0x51;
     m.cutEntry.playerId = a;
-    if (cm_CurrentFight == 0)
-        m.cutEntry.fightId = -1;
-    else
+    if (cm_CurrentFight != 0)
         m.cutEntry.fightId = *cm_CurrentFight;
+    else
+        m.cutEntry.fightId = -1;
     memcpy(&m.cutEntry.entry, p, sizeof(m.cutEntry.entry));
     return cm_QueueSend(&m);
 }
@@ -11096,7 +11096,20 @@ void cm_FightResult(char *r)
 }
 /* 0x4d6970, one frame of the fight UI (r: the fight record): the countdown bar cm_FightTimeBar sized to the fight area,
    the redraws 0x525ff0 .. 0x4ce830, and the click on the button cm_FightButton (while 0x6f0d88 / 0x6f0cf4 are clear) sends
-   message 0x50 with the cut entry of the player's character (0x4cdf00) in state 5, else the dialog is closed (0x6f22a0) */
+   message 0x50 with the cut entry of the player's character (0x4cdf00) in state 5, else the dialog is closed (0x6f22a0)
+   @deep Hunk: the original runs rep movsd (memcpy into sl) BEFORE the loads of cm_CutChar->netId and
+   r->playerId; ours hoists both loads above it: in the original sl counts as escaped at the copy, in ours
+   not. Mechanism (probes, never kept): VC6 exempts a local whose address goes to ONE real call (intrinsic
+   memcpy / memset / struct copies do not count; cm_OrderWait shows the exempt order in the original); a
+   second call taking &sl anywhere (before the slot call, after the send, even in the else arm) or any
+   other local's address to a call before gives exactly the original's order (only the probe's own lines
+   differ). So the original had a second address-taking call of some local that left no code, or something
+   else that marks escape. No lever (= control): sl = *q, nested call in memcpy/struct copy, sizeof(sl), sl
+   block-scoped / sl[1] / char buffer, p = &sl before or after the slot call, p = memcpy(..), dead q = &sl,
+   &sl.charId to the send, memset before the copy (eliminated), local c for cm_CutChar, *(int *)(cm_CutChar
+   + 4), climb 2 rounds, flip --want (0 flips). Worse: state before charId (6 ins), memmove (draft), a
+   static __inline helper (c in ebp, draft 21). Next: find an ordinary construct that makes a second escape
+   without code (decided branch, ?: argument pushed per arm = two calls merged). */
 
 void cm_FightFrame(char *r)
 {
