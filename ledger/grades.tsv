@@ -834,15 +834,15 @@ exe	0x00441f50	d3fl_InitMap	d3_fl	byte	readable
 exe	0x00442080	d3fl_LoadTexture	d3_fl	byte	readable		
 exe	0x00442210	d3fl_ReplaceTexture	d3_fl	byte	readable		
 exe	0x00442280	d3fl_ReloadTextures	d3_fl	byte	readable		
-exe	0x00442390	d3fl_LoadMap	d3_fl	draft	readable	deep	
+exe	0x00442390	d3fl_LoadMap	d3_fl	byte	readable		
 exe	0x00442ac0	d3fl_TileBox	d3_fl	shape	readable		
 exe	0x00442ed0	d3fl_UpdateWater	d3_fl	shape	readable		
 exe	0x004430c0	d3fl_DrawWater	d3_fl	draft	readable	deep	
-exe	0x004437f0	d3fl_UpdateTiles	d3_fl	draft	readable	deep	
+exe	0x004437f0	d3fl_UpdateTiles	d3_fl	byte	readable		
 exe	0x004439e0	d3fl_Draw	d3_fl	draft	readable	deep	
 exe	0x00446180	d3fl_Prerender	d3_fl	shape	readable		
-exe	0x004463b0	map_Pick	d3_fl	draft	readable	deep	
-exe	0x00446750	map_PickScreen	d3_fl	draft	readable	deep	
+exe	0x004463b0	map_Pick	d3_fl	byte	readable		
+exe	0x00446750	map_PickScreen	d3_fl	byte	readable		
 exe	0x00446910	map_Region	d3_fl	byte	readable		
 exe	0x00446990	d3fl_FarDist	d3_fl	shape	readable		
 exe	0x00446dc0	d3fl_SetShift	d3_fl	byte	readable		
@@ -1731,7 +1731,7 @@ exe	0x004a13e0	ai_DecideStudy	am	shape	readable
 exe	0x004a1640	ai_ExecuteStudy	am	byte	readable		
 exe	0x004a16f0	ai_RegisterBaseActions	am	byte	readable		
 exe	0x004a3a90	ai_NextNearRingEntry	am	byte	readable		
-exe	0x004a3af0	ai_FillNearRing	am	draft	readable	deep	
+exe	0x004a3af0	ai_FillNearRing	am	byte	readable		
 exe	0x004a4680	ai_GroupPrices	am	byte	readable		
 exe	0x004a47c0	ai_GetDesireByName	am	byte	readable		
 exe	0x004a49a0	ai_EvalMoodWeights	am	byte	readable		
