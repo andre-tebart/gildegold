@@ -4616,7 +4616,7 @@ exe	0x005d5e90	ai_ApplyOptions	unk_5d33b0	3de8421175942934	no	byte	control=byte 
 exe	0x005d5f10	ai_ApplyVolumes	unk_5d33b0	028776b2af3ffcda	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005d5fd0	ai_OptionsGfxScreen	menu	0f836941baa59c18	no	byte	sample n=32 seed=1 compiled=32 codegens=1 best=byte	
 exe	0x005d6580	ai_OptionsSfxScreen	unk_5d33b0	8407aafd4b751210	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x005d6950	ai_OptionsGameScreen	unk_5d33b0	cbee51c98fee97e6	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
+exe	0x005d6950	ai_OptionsGameScreen	menu	cbee51c98fee97e6	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	9191ccaad2618e29
 exe	0x005d6f40	ai_MenuButton	unk_5d33b0	efbb96e14eb310ab	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005d6fa0	ai_LeaveGameScreen	unk_5d33b0	18cdf14298fa4bf5	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005d7080	ai_ResumeGameScreen	unk_5d33b0	49b3e213fbdc56de	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	

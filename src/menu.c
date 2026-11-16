@@ -2162,8 +2162,8 @@ void ai_OptionsGameScreen(void)
     sw3 = d2_GetWinObj(form, 1, 6);
     panel = d2_GetWinObj(form, 1, 9);
     panel1 = d2_GetWinObj(form, 1, 10);
-    help = d2_GetWinObj(form, 1, 11);
-    panel3 = d2_GetWinObj(form, 1, 12);
+    panel3 = d2_GetWinObj(form, 1, 11);
+    help = d2_GetWinObj(form, 1, 12);
     d2_SetObjValue4(speed, 0, 0xa0, ai_OptionSpeed);
     d2_SetSliderFlags(speed, 0x882);
     d2_SetLabel(speed, txt_Ptrs[0x1c96]);
