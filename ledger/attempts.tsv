@@ -22,6 +22,7 @@ exe	0x0043a6f0	d3_SetFog	1
 exe	0x0043a7d0	d3_DrawSortedD3D	1
 exe	0x0043dbc0	d3_InflateObject	1
 exe	0x0043f300	d3fl_MakeJitter	1
+exe	0x00441300	d3fl_MakeDivide	1
 exe	0x00441860	d3fl_MakeLight	1
 exe	0x004430c0	d3fl_DrawWater	1
 exe	0x00448e60	d3_ScreenToUV	1
