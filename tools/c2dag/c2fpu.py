@@ -399,6 +399,9 @@ def main():
     c = os.path.join(WORK, tag + ".c")
     out = os.path.join(WORK, tag + ".fpu")
     asm = os.path.join(WORK, tag + ".asm")
+    # `#line N "D:\..."` (the original's file names, kept for __FILE__ / __LINE__) makes /FAs open a file that does
+    # not exist; blanked, the copy's line numbers are the file's own
+    text = re.sub(r'(?m)^[ \t]*#[ \t]*line\b[^\n]*$', "", text)
     with open(c, "w", encoding="latin-1", newline="\n") as f:
         f.write(text)
     if os.path.exists(out):
