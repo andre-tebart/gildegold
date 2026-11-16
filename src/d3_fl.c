@@ -1665,8 +1665,7 @@ char d3fl_UpdateTiles(D3FLMAP *map)
     return changed;
 }
 /* 0x442390, creates a terrain map from a description: height, water and texture maps either from memory or from
-   "boden/<name>.bmp", "boden/<name>_w.bmp" and "boden/<texname>.bmp"
-   @deep B: 6 code hunks, each the same operations in another spelling, read against the original disassembly (0x442390..0x442ac0), Ghidra output and the source: (1) 0x442582 idxMask/mask: same size*size-1|size-1, the original reuses eax and lea where ours reloads map->size for mask and uses dec; (2) 0x4425c4 water mem_Alloc+D3FL_COPY: same size*size computation and desc->water copy, scheduled on the other side of the push/call (ecx vs edx); (3) 0x442944 transform: same map->n=size/8 division and (float)-size*scale*0.5f, integer division and FPU multiplies interleaved differently, map->size loaded twice vs once+copy; (4) 0x44299b and (5) 0x4429d3: the same scale/hscale field copies, mov vs fld/fstp on the opposite statement each; (6) 0x442a13 typenames loop: mov al vs mov cl, a register rename only; tail = fill nops. No missing statement, constant, callee, condition or field; readability fixed (Q2 idxMask) */
+   "boden/<name>.bmp", "boden/<name>_w.bmp" and "boden/<texname>.bmp" */
 
 D3FLMAP *d3fl_LoadMap(D3FLDESC *desc)
 {
@@ -1676,7 +1675,6 @@ D3FLMAP *d3fl_LoadMap(D3FLDESC *desc)
     D3FLMAP *map;
     char *p;
     int w, h;
-    D3MATRIX *m;
     int i, n, mn, mx, v;
 
     map = mem_Alloc(sizeof(D3FLMAP), "d3_fl:Floor");
@@ -1701,8 +1699,10 @@ D3FLMAP *d3fl_LoadMap(D3FLDESC *desc)
             bmp_Load(path, map->height, 0, 5);
         }
     }
-    map->idxMask = map->size * map->size - 1 | map->size - 1;
-    map->mask = map->size - 1;
+    /* @original: size read anew (sizeFresh) for mask and the transform, no reuse of an earlier load */
+    n = map->sizeFresh;
+    map->idxMask = n * n - 1 | n - 1;
+    map->mask = map->sizeFresh - 1;
     if (desc->nregions > 0 && desc->regions) {
         if (desc->water && desc->size > 0) {
             map->water = mem_Alloc(map->size * map->size, "d3_fl:Water(height)");
@@ -1741,20 +1741,19 @@ D3FLMAP *d3fl_LoadMap(D3FLDESC *desc)
         D3FL_COPY(map->lightofs, desc->lightofs, map->size * map->size * 4);
     }
     if (map->types && map->height) {
-        map->n = map->size / 8;
-        m = (D3MATRIX *)&map->orgx;
-        m->_11 = (float)-map->size * desc->scale * 0.5f;
-        m->_12 = desc->hscale * -64.0f;
-        m->_13 = (float)map->size * desc->scale * 0.5f;
-        m->_21 = desc->scale;
-        m->_22 = 0.0f;
-        m->_23 = 0.0f;
-        m->_31 = 0.0f;
-        m->_32 = 0.0f;
-        m->_33 = -desc->scale;
-        m->_41 = 0.0f;
-        m->_42 = desc->hscale;
-        m->_43 = 0.0f;
+        map->orgx = (float)-map->sizeFresh * desc->scale * 0.5f;
+        map->orgy = desc->hscale * -64.0f;
+        map->orgz = (float)map->size * desc->scale * 0.5f;
+        map->scale = (desc->scale);
+        map->xAxisY = 0.0f;
+        map->xAxisZ = 0.0f;
+        map->zAxisX = 0.0f;
+        map->zAxisY = 0.0f;
+        map->negScale = -desc->scale;
+        map->yAxisX = 0.0f;
+        map->hscale = (desc->hscale);
+        map->yAxisZ = 0.0f;
+        map->n = map->sizeFresh / 8;
         map->lodDist2 = 20.0f;
         map->lodDist4 = 40.0f;
         map->nolight = 0;

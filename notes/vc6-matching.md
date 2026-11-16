@@ -1925,6 +1925,14 @@ Store order in a fill, hoisted loads and sunk stores, statement order effects, `
 - **A product CSE'd from an if test into the loop below** (ours keeps `uni * 0x3e0` in ebx, the original
   recomputes): test the entry again in an else-if, `} else if (d3_Scenes[T[n]].dirty) { uni = T[n]; ..`, not
   `uni = T[n]; if (d3_Scenes[uni].dirty)`.
+- **The same field loaded twice back to back (`mov eax,[ebx]; mov edx,[ebx]`) and a hoisted load whose store comes
+  late** (unique in the image: d3fl_LoadMap 0x442580 / 0x442949): VC6 CSEs a field load across stores to other
+  fields of the same base (offset-exact; no store, label, empty if, cast view, overlay struct or pointer copy kills
+  it), so the original read that field anew: a `volatile` view of the field (`union { int size; volatile int
+  sizeFresh; }`, @original) at those reads matched. A store through a separate pointer local (`m = (D3MATRIX
+  *)&map->orgx; m->_11 = ..`) does kill the CSE but also gets scheduler edges to every later `map->` load, so the
+  later load is not hoisted; direct field stores keep the hoisting. (flip.py and climb found nothing: probe
+  each read with `*(volatile int *)&p->f` to see which reads are separate.)
 - **Local copies of array elements where the original reloads some after a store** (`a = d[i]; b = d[j]; ..
   (a + b)`): read the elements in place; VC6 CSEs up to the first store and reloads after it (d3sm_Sample
   340 -> 194 ins).

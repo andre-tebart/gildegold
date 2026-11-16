@@ -141,7 +141,11 @@ typedef struct D3FLREGION {         /* 0x158 bytes, a water region */
 } D3FLREGION;
 
 typedef struct D3FLMAP {
-    int size;                       /* 0x00, height map side */
+    union {
+        int size;                   /* 0x00, height map side */
+        volatile int sizeFresh;     /* 0x00, size read anew: d3fl_LoadMap reloads it where VC6 would reuse the load
+                                       (@original, two adjacent loads of [map] at 0x442580 / 0x442949) */
+    };
     int n;                          /* 0x04, points per tile side */
     int idxMask;                    /* 0x08, mask of a flat map index: size*size - 1 | size - 1 */
     unsigned int mask;              /* 0x0c, size - 1 */
@@ -152,8 +156,8 @@ typedef struct D3FLMAP {
     void *lightofs;                 /* 0x20, "d3_fl:LightOffset", 4 bytes per map point */
     unsigned char *divide[3];       /* 0x24 */
     D3FLSRC src[3];                 /* 0x30 */
-    /* 0x90..0xcc: the map transform, three axis vectors + origin (D3MATRIX rows; LoadMap writes it through
-       a D3MATRIX pointer): xAxis = map x in world space, zAxis = map y, yAxis = height */
+    /* 0x90..0xcc: the map transform, three axis vectors + origin (D3MATRIX rows; LoadMap writes the fields
+       one by one): xAxis = map x in world space, zAxis = map y, yAxis = height */
     float orgx, orgy, orgz;         /* 0x90, world position of map point (0, 0), height 0 */
     char pad9c[0x4];
     float scale;                    /* 0xa0, world x per map x (xAxis.x) */
