@@ -4565,8 +4565,8 @@ exe	0x005cfb60	ai_UseGoodAddMoney	lc	880c8769d5cbb0d1	no	byte	control=byte p1=by
 exe	0x005cfb80	ai_UseGoodHeal	lc	2584a89487bf1132	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005cfc00	ai_UseGoodInfectOwner	lc	dbd476e65ef15b7a	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
 exe	0x005cff70	ai_UseGoodSendHome	lc	e8bbdc061d5472e5	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
-exe	0x005d0320	ai_UseGoodWeakenSkills	lc	70ec67397ad64dfa	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
-exe	0x005d0530	ai_UseGoodWeakenSkills2	lc	793a355ba9849df0	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
+exe	0x005d0320	ai_UseGoodWeakenSkills	lc	70ec67397ad64dfa	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	a8a81ae8260ddcfe
+exe	0x005d0530	ai_UseGoodWeakenSkills2	lc	793a355ba9849df0	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	a8a81ae8260ddcfe
 exe	0x005d06e0	ai_UseGoodCureAilment	lc	71d85b2a537c683c	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005d0780	ai_UseGoodHalveWorkerValue	lc	9ca748862de6b853	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x005d08c0	ai_ApplyTrialStep	lc	29c07fdcca2444b7	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
@@ -4590,7 +4590,7 @@ exe	0x005d22e0	ai_UsePayGood	lc	56879d4bba69b9ba	no	byte	control=byte p1=byte p2
 exe	0x005d2320	ai_UseGoodDrainActionPoints8	lc	e3e1fe8b9ccc2975	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005d2440	ai_UseGoodHoldRound	lc	d26e65c4bc3147bb	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005d2580	ai_UseGoodCharmPartner	lc	b2bba090927edef8	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
-exe	0x005d2720	ai_UseGoodWeakenSkills3	lc	38ca21aa7f9620ca	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
+exe	0x005d2720	ai_UseGoodWeakenSkills3	lc	38ca21aa7f9620ca	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	a8a81ae8260ddcfe
 exe	0x005d2960	ai_UseGoodFrameChar	lc	99be8752c2ac4d88	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
 exe	0x005d2bc0	ai_UseGoodFrameChar2	lc	c7bd9d6f715eba43	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005d2e80	ai_UseGoodHeatBuilding	lc	59c638fe9044181f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	

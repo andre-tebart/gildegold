@@ -32625,7 +32625,6 @@ int ai_UseGoodWeakenSkills(AICHARREC *ch, G8USEVIEW *use)
 int ai_UseGoodWeakenSkills2(AICHARREC *ch, G8USEVIEW *use)
 {
     AMOUNTCFG cfg;
-    AIMSG msg;
     char text[0x100];
     char news[0x800];
     AICHARREC *target;
@@ -32640,8 +32639,9 @@ int ai_UseGoodWeakenSkills2(AICHARREC *ch, G8USEVIEW *use)
         cfg.filter = gypsyFilter;
         target = (AICHARREC *)ai_AmountMenu(&cfg, text, 0, 0);
         if (target != 0) {
-            msg.to = target->netId;
+            AIMSG msg;
             msg.type = 0x82;
+            msg.to = target->netId;
             msg.fromId = -1;
             msg.flags = 2;
             msg.skillBonus.skill1 = 0;
