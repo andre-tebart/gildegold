@@ -3249,6 +3249,10 @@ the stack at every instruction.
 
 ### Zero stores and clears
 
+- **`mov ecx,N; xor eax,eax; rep stosd` where ours has `xor eax,eax; mov ecx,N`** (memset + `return 1` at two exits):
+  the original had ONE `memset(..); return 1;` after an if / else (VC6 duplicates the short tail into both arms and
+  the copies keep the tail's order); a memset + return written out in each arm schedules xor first
+  (ch_RemoveAction byte).
 - **`mov [slot],0` right after `rep stosd` where ours stores the memset's `eax`**: the `= 0` stood before the memset
   (`canTrain = 0; memset(arg, 0, sizeof(arg));`), a move-line round finds it (ai_TalentWindow byte).
 
