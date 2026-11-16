@@ -27,6 +27,7 @@ exe	0x00441300	d3fl_MakeDivide	1
 exe	0x00441860	d3fl_MakeLight	1
 exe	0x004430c0	d3fl_DrawWater	1
 exe	0x00448e60	d3_ScreenToUV	1
+exe	0x0044ce40	d3iot_CalcBounds	1
 exe	0x0044d330	d3iot_LoadBGF	1
 exe	0x00451250	d3_AddFLChunk	1
 exe	0x00458e70	d3_EnvMapCoords	1

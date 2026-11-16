@@ -899,7 +899,7 @@ exe	0x0044c610	d3io_AttachStock	d3_int_io	byte	readable
 exe	0x0044c9d0	d3io_LodName	d3_int_io	byte	readable		
 exe	0x0044cbb0	d3_AttachMesh	d3_int_io	byte	readable		
 exe	0x0044cd40	d3iot_DeleteStockObject	d3_io_t	byte	readable		
-exe	0x0044ce40	d3iot_CalcBounds	d3_io_t	shape	readable		
+exe	0x0044ce40	d3iot_CalcBounds	d3_io_t	shape	readable	deep	
 exe	0x0044d1c0	d3iot_Finish	d3_io_t	byte	readable		
 exe	0x0044d1f0	d3iot_LoadTexSet	d3_io_t	byte	readable		
 exe	0x0044d330	d3iot_LoadBGF	d3_io_t	draft	readable	deep	
@@ -1374,7 +1374,7 @@ exe	0x00477a70	d2_DragInput	gfx	byte	readable
 exe	0x00477ba0	d2_SliderInput	gfx	draft	readable	deep	
 exe	0x00477ed0	d2_UpdateInput	gfx	byte	readable		
 exe	0x00478320	d2_FocusInput	gfx	byte	readable		
-exe	0x004784c0	d2_MouseUpdate	gfx	shape	readable		
+exe	0x004784c0	d2_MouseUpdate	gfx	byte	readable		
 exe	0x00478870	d2_CopyCaption	gfx	byte	readable		
 exe	0x00478890	d2_AddHitRect	gfx	byte	readable		
 exe	0x004788f0	d2_RemoveHitRect	gfx	byte	readable		
@@ -2482,7 +2482,7 @@ exe	0x004d3ae0	cm_PickUpAction	cm	byte	readable
 exe	0x004d3b30	cm_CheckFightWinner	cm	byte	readable		
 exe	0x004d3d10	cm_LootStock	cm	byte	readable		
 exe	0x004d3ea0	cm_LootCarts	cm	byte	readable		
-exe	0x004d4050	cm_FightRole	cm	shape	readable		
+exe	0x004d4050	cm_FightRole	cm	byte	readable		
 exe	0x004d4090	cm_LootList	cm	byte	readable		
 exe	0x004d4340	cm_FightPortraits	cm	byte	readable		
 exe	0x004d4540	cm_FightStartDialog	cm	draft	readable	deep	
@@ -3156,7 +3156,7 @@ exe	0x0050b1e0	gm_DonationTop5	f3gm	byte	readable
 exe	0x0050b290	gm_LikingChance	f3gm	shape	readable		
 exe	0x0050b2f0	gm_TreeNodeRank	f3gm	byte	readable		
 exe	0x0050b3a0	gm_LayoutTree	f3gm	byte	readable		
-exe	0x0050b9f0	gm_UpdateTechTree	f3gm	shape	readable		
+exe	0x0050b9f0	gm_UpdateTechTree	f3gm	byte	readable		
 exe	0x0050c310	gm_TreeLine	f3gm	byte	readable		
 exe	0x0050c340	gm_TechTreeWindow	f3gm	shape	readable		
 exe	0x0050c4d0	gm_CloseTechTree	f3gm	byte	readable		
@@ -3195,7 +3195,7 @@ exe	0x0050e690	init_CreateStartCharacters	f3init	draft	readable	deep
 exe	0x0050f0b0	init_CreateOpeningObjects	f3init	byte	readable		
 exe	0x0050f340	init_StockMarketStalls	f3init	shape	readable	deep	
 exe	0x0050f570	init_Betrieb	f3init	shape	readable	deep	
-exe	0x0050f750	init_OpenBuilding	f3init	shape	readable	deep	
+exe	0x0050f750	init_OpenBuilding	f3init	byte	readable		
 exe	0x0050f910	init_OpenTown	f3init	draft	readable	deep	
 exe	0x00510730	init_CollectSiteObject	f3init	byte	readable		
 exe	0x00510770	init_LoadSiteScene	f3init	shape	readable		
@@ -3228,7 +3228,7 @@ exe	0x00512840	init_PlayGraveyardSound	f3init	byte	readable
 exe	0x00512890	init_StopTownSounds	f3init	byte	readable		
 exe	0x005128d0	init_SetSeasonTextures	f3init	shape	readable		
 exe	0x00512de0	init_PlantTextureSetHook	f3init	byte	readable		
-exe	0x00512e40	init_TextureSetHook	f3init	shape	readable	deep	
+exe	0x00512e40	init_TextureSetHook	f3init	byte	readable		
 exe	0x00512e80	init_BuildingTextureSetHook	f3init	byte	readable		
 exe	0x00512f30	init_SetCharacterAnimations	f3init	shape	readable	deep	
 exe	0x00513050	init_ShowBuildingScene	f3init	byte	readable		
@@ -3318,7 +3318,7 @@ exe	0x00522ec0	sv_SetResearchClass	sv	byte	readable
 exe	0x00522f10	sv_UpdateCityPanel	sv	byte	readable		
 exe	0x00524010	sv_RedrawScreen	sv	byte	readable		
 exe	0x00524100	sv_AddGroupMember	sv	byte	readable		
-exe	0x00524160	sv_RemoveGroupMember	sv	shape	readable	deep	
+exe	0x00524160	sv_RemoveGroupMember	sv	byte	readable		
 exe	0x005241b0	sv_UsedGroupSlots	sv	byte	readable		
 exe	0x005241d0	sv_CountGroupMembers	sv	byte	readable		
 exe	0x00524260	sv_MoveToGroup	sv	shape	readable	deep	
