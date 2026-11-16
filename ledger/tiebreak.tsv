@@ -1975,7 +1975,7 @@ exe	0x004b5ef0	ai_MissionCompleteByMode	unk_4b39f0	f01b22c58eb00589	no	byte	cont
 exe	0x004b5f10	ai_MissionResultDialog	mission	6aa39f5a2bbc6d0a	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft	
 exe	0x004b6040	ai_MissionPartnerDialog	unk_4b39f0	9b7b58907a339c88	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
 exe	0x004b60f0	ai_MissionResultByMode	unk_4b39f0	72a44a2d5137fe00	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x004b6110	ai_MissionCompleteSingle	mission	5dc1b37f0f70a53d	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	2ee4808477803262
+exe	0x004b6110	ai_MissionCompleteSingle	mission	5dc1b37f0f70a53d	no	shape	sample n=32 seed=1 compiled=32 codegens=1 best=shape	a0cf5601463a8b09
 exe	0x004b62a0	ai_MissionCompleteSequence	unk_4b39f0	5d4f96b0fee895d1	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004b62e0	ai_SaveMissions	unk_4b39f0	7591bc05606c67c9	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004b63b0	ai_Unk4b63b0	unk_4b39f0	10a717477bbe15f9	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	

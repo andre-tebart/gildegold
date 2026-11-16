@@ -1406,24 +1406,23 @@ void ai_MissionCompleteSingle(int id)
         h = ((int (*)(int, int))cm_SendExSysMessage)(0x0a, msg);
         while (!cm_GetSlotState(h))
             sv_PumpNet();
-        return;
-    }
-    if (r == 0xff) {
+    } else if (r == 0xff) {
         ai_MissionMode = -1;
         msg[0] = c->netId;
         msg[4] = 1;
         h = ((int (*)(int, int))cm_SendExSysMessage)(0x0a, msg);
         while (!cm_GetSlotState(h))
             sv_PumpNet();
-        ai_QuitGame(id);
-        return;
+    } else {
+        ai_NewMission(c->netId, r, 1);
+        msg[0] = c->netId;
+        msg[4] = 0;
+        h = ((int (*)(int, int))cm_SendExSysMessage)(0x0a, msg);
+        while (!cm_GetSlotState(h))
+            sv_PumpNet();
     }
-    ai_NewMission(c->netId, r, 1);
-    msg[0] = c->netId;
-    msg[4] = 0;
-    h = ((int (*)(int, int))cm_SendExSysMessage)(0x0a, msg);
-    while (!cm_GetSlotState(h))
-        sv_PumpNet();
+    if (r == 0xff)
+        ai_QuitGame(id);
 }
 /* 0x4b62a0, the mission complete sequence: single player 0x4b6110; network: 0x4b5ef0 for the player who did
    it (ai_MissionPartner), 0x4b60f0 for the others */
