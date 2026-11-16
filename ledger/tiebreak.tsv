@@ -3789,7 +3789,7 @@ exe	0x00565940	he_RunNewWorker	he	4badbc0600ab46f1	no	byte	control=byte p1=byte 
 exe	0x00565b00	he_AllocDiePlayer	he	993085ca7dca93a7	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00565b60	he_RunDiePlayer	he	77317a84a46c70ee	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00565d10	he_AllocKillPlayer	he	91acf4f40b2baad6	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x00565db0	he_RunKillPlayer	he	6f1ec98e440b63a7	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
+exe	0x00565db0	he_RunKillPlayer	he	6f1ec98e440b63a7	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	73487e1e271ee495
 exe	0x005662d0	he_AllocNightWatch	he	13bf338452c19224	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00566370	he_RunNightWatch	he	f0c3d619440cfc9d	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
 exe	0x00566830	he_RunRobbery	he	8f3cc0be8525bf7d	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	

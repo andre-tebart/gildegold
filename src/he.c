@@ -18865,6 +18865,7 @@ void he_RunKillPlayer(AIJOB *ev)
     G28REC m;
     char text[0x400];
     int r;
+    int id;
 
     if (ev->stage == -1) {
         he_FreeEvent((int *)ev);
@@ -18931,10 +18932,11 @@ void he_RunKillPlayer(AIJOB *ev)
         m.flags = 0xa0;
         m.time = ai_Time;
         gm_AddTime(&m.time, 0, 0x1e, 0);
-        m.host = p->netId;
+        id = p->netId;
         m.thing = -1;
         m.used = 1;
-        m.members[0] = m.host;
+        m.host = id;
+        m.members[0] = id;
         x->slot = cm_SendNewParty(&m);
         gm_AddTime(&ev->end, 0, 1, 0);
         ev->stage = 6;
