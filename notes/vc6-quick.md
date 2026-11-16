@@ -75,12 +75,12 @@ temporaries are no candidates: they get what is left.
     both arms of an if (VC6 merges the code, the references count twice), an extra definition of a flag;
   - spellings that fold before allocation (`x = y` with y known, a named copy of a global, casts, a `const`
     local, a single-use local) change nothing.
-  `python tools/c2dag/c2trace.py SRC FUNC` prints the real sequence (queue, priorities, splits, assignment).
+  `python tools/c2dag/c2trace.py SRC FUNC` prints every candidate piece with its priority, savings and outcome.
 - Priority per block: `+ refcost * P * w` where referenced, `- P * w` where it lives through unreferenced, P = the
   distinct values referenced in that block: a reference in a crowded block weighs more, a value live over many
   blocks pays each one (`c2trace --prio REGEX`).
-- A value spilled to its slot but held in a callee-saved register over a few blocks is a split piece: in big
-  functions the blocks form regions (each joins its FIRST predecessor's region if a register stays free for both)
+- A value spilled to its slot but held in a callee-saved register over a few blocks is a split piece: in functions
+  of 100+ basic blocks, when one assignment leaves 3+ candidates without a register, the blocks form regions (each joins its FIRST predecessor's region if a register stays free for both)
   and a piece lives from its first to its last reference in its region. The predecessor order follows the source:
   an extra empty block behind a loop (label, `do { } while (0)`, a goto target) puts the loop's guard edge first
   (ai_FillNearRing; `c2trace --split REGEX`; vc6-matching "Live range splitting, regions and the priority
@@ -173,10 +173,17 @@ Section names are those of `notes/vc6-matching.md`.
   and the function leaves the grades ("neither a unit nor a graded function").
 - `uv run --with capstone python tools/c2dag/vdiff.py SRC FUNC VARIANTS LABEL`: the instruction diff of ONE
   variant against the original without touching the tree. Use it on every variant that changes the layout,
-  whatever its count. vdiff, c2trace and c2frame read a variants file exactly as `dcp try` does.
-- `python tools/c2dag/c2trace.py SRC FUNC [--variants FILE --label L]`: the allocator's sequence. `--prio REGEX`:
-  each block's priority term with its source line (why a candidate ranks above another); `--split REGEX`: cuts,
-  AF7 restrictions with their reason, the bulk split's region per block with its predecessors in list order.
+  whatever its count. x87 register forms, `-1` and `rep movsd` are compared in one spelling: a `-`/`+` pair is a
+  real difference. vdiff, c2trace and c2frame read a variants file exactly as `dcp try` does.
+- `python tools/c2dag/c2trace.py SRC FUNC [--variants FILE --label L]`: per source name (temporaries with their
+  first line) each candidate piece `NAME#N` with its pass, reference lines, prio / sav / avail and its outcome
+  (register, memory, cut by pressure where X took R, split alone / in regions), the final registers, and whether
+  the bulk split ran (regions need 3+ candidates at once and 100+ basic blocks). `NAME#N` is the same in every
+  mode of one text. `--prio REGEX`: each block's priority term with its source line (why a candidate ranks above
+  another); `--split REGEX`: cuts, AF7 restrictions with their reason, the bulk split's calls and region per block
+  with its predecessors in list order. REGEX takes `map`, `^_map$`, `t|npoints|map`, `map#2` (whole names first,
+  then a search; no match: an error listing the names). `--seq`: the events in order; `--raw`: the proxy's lines.
+  Line numbers are file lines of the traced text.
   `python tools/c2dag/c2dag.py SRC FUNC [--alloc]`: the scheduler's graph per block; the candidates with
   priority and final register. `python tools/c2dag/c2frame.py SRC FUNC [--refs]`: the frame packer's counts and
   slot table. `--names` names every temporary by the first source line that uses it (`tmp@8208`), lists each

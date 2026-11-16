@@ -77,6 +77,7 @@ static void cname(void *c, char *buf)
    registers r[0..8] = eflags, edi, esi, ebp, esp, ebx, edx, ecx, eax */
 static int allocFirst, allocBlk;
 static int trOn(void);
+static long nblocks(void);
 static void cname(void *c, char *buf);
 static void scanPrio(int blk);
 static struct { void *c; long sav; } savTab[4096];
@@ -191,7 +192,13 @@ static int trOn(void)
     char *cur = *(char **)((char *)real + 0xad730), *nm = 0, *want = getenv("C2TRACE_FUNC");
     if (!out || !want) return 0;
     if (!IsBadReadPtr(cur, 0x1c)) nm = *(char **)(cur + 0x18);
-    return nm && !IsBadStringPtrA(nm, 128) && strstr(nm, want) != 0;
+    if (!nm || IsBadStringPtrA(nm, 128)) return 0;
+    /* the decorated name (_name, _name@N, @name@N) equals the wanted one: d3fl_Draw must not trace d3fl_DrawWater */
+    if (*nm == '_' || *nm == '@') nm++;
+    {
+        size_t n = strlen(want);
+        return !strncmp(nm, want, n) && (nm[n] == 0 || nm[n] == '@');
+    }
 }
 static void *candById(unsigned long id)
 {
@@ -322,6 +329,30 @@ static void blkdesc(void *b)
     long lo, hi;
     blines(b, &lo, &hi);
     fprintf(out, "blk@%lx[%ld-%ld r%ld]", (unsigned long)b & 0xffff, lo, hi, IsBadReadPtr(b, 0x58) ? -1L : (long)U32(b, 0x38));
+}
+/* the bulk split's entry (FUN_10743bda(fn, set = edx, avail)): the set of candidates an assignment left without a
+   register; it splits them in regions only when the set has 3+ members and the function 100+ basic blocks (the
+   count at 0x107ad5b8, made by FUN_10731d1d over the block list at the allocator's start), else one by one
+   (FUN_107453f8 each, SPLIT / GROW / CUT) */
+static long nblocks(void) { return *(long *)((char *)real + 0xad5b8); }
+static int setcount(void *set)
+{
+    void *ch; int g = 0, b, n = 0;
+    if (set && !IsBadReadPtr(set, 4))
+        for (ch = PTR(set, 0); ch && !IsBadReadPtr(ch, 12) && g < 200; ch = PTR(ch, 4), g++)
+            for (b = 0; b < 32; b++)
+                if (U32(ch, 8) & (1ul << b)) n++;
+    return n;
+}
+static void __cdecl hBulk(unsigned long *r)
+{
+    void *set = (void *)r[6];
+    int n;
+    if (!trOn()) return;
+    n = setcount(set);
+    fprintf(out, "T BULK n %d blocks %ld -> %s", n, nblocks(), n >= 3 && nblocks() >= 100 ? "regions" : "one-by-one");
+    pset("set", set, 0);
+    fprintf(out, "\n"); fflush(out);
 }
 static void __cdecl hRegionAt(unsigned long *r)
 {
@@ -590,6 +621,7 @@ static void __cdecl enter2(void)
     void *cur = *(void **)((char *)real + 0xad730);
     allocFirst = cur != seen || (getenv("C2TRACE_ALLPASS") && trOn());
     if (allocFirst && cur == seen && out) fputs("allocpass\n", out);
+    if (trOn() && out) fprintf(out, "T BLOCKS %ld\n", nblocks());
     seen = cur;
     allocBlk = 0;
     if (allocFirst) { savN = 0; scanPrio(-2); }
@@ -721,8 +753,10 @@ static void install(void)
                         {
                             static const unsigned char g4[] = { 0x8b, 0x54, 0x24, 0x10, 0x8b, 0x4f, 0x50 };
                             static const unsigned char g5[] = { 0x8b, 0x5c, 0x24, 0x2c, 0x8b, 0x74, 0x24, 0x20 };
+                            static const unsigned char g6[] = { 0x83, 0xec, 0x18, 0x55, 0x56 };
                             if (!getenv("C2TRACE_LITE")) midhook(0x43d24, 7, hRegionAt, g4);
                             if (!getenv("C2TRACE_LITE")) midhook(0x43d0e, 8, hRegionSet, g5);
+                            midhook(0x43bda, 5, hBulk, g6);
                         }
                     }
                 }

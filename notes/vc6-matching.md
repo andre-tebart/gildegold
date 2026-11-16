@@ -1104,10 +1104,14 @@ a stack slot is a split piece, and the piece's extent is decided by the rules be
   piece and grows into successors where the value is live while one register stays free over the whole piece
   (registers of assigned candidates referenced there, a call: callee-saved only); where none is left it is cut
   (FUN_1074527d, `CUT` in --split).
-- **Bulk split (FUN_10743bda)**: 3+ candidates split at once once the candidate counter (0x107ad5b8) is 100+. Blocks in layout
-  order, each with used = registers of assigned candidates in it; a block joins the region of its FIRST
-  predecessor (in the predecessor list's order), then successor, whose region still leaves a register free for
-  both; else it opens a region. Region boundaries cut every candidate of the set. A piece then lives from its
+- **Bulk split (FUN_10743bda)**: the assignment (FUN_10709bb6) hands it the neighbours it left without a register.
+  It splits in regions only when they are 3+ AND the function has 100+ basic blocks: 0x107ad5b8 counts the basic
+  blocks (FUN_10731d1d walks the block list once at the allocator's start; it does not count candidates). Else
+  each is split alone (FUN_107453f8). So a function under 100 blocks never gets regions (the count is the IL's
+  blocks, `T BLOCKS` in --raw; d3fl_DrawWater 78, map_PickScreen 31: one by one; ai_FillNearRing 184: regions).
+  c2trace's summary line and `--split` say whether it ran and why (not). Blocks in layout order, each with
+  used = registers of assigned candidates in it; a block joins the region of its FIRST predecessor (in the
+  predecessor list's order), then successor, whose region still leaves a register free for both; else it opens a region. Region boundaries cut every candidate of the set. A piece then lives from its
   first to its last reference inside the region, so it spans the region's calls (and needs a callee-saved
   register) only when it is referenced on both sides of them. `--split REGEX` prints each block's predecessors in
   list order and the region it joined.
