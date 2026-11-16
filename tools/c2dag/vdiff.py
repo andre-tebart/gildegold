@@ -5,7 +5,9 @@
 
 Compiles the unit with the variant applied (a scratch copy under build/c2dag/vdiff, nothing in the tree is
 written), disassembles the function from the object file and diffs it against `dcp asmdiff --side original`
-with addresses and relocated operands normalised: '-' ours, '+' the original (with its address). Use it to read
+with addresses and relocated operands normalised, and the two disassemblers' spellings made one (x87 register
+forms `fmul st(1)` = `fmul st, st(1)`, `faddp st(1)` = `faddp`, `fcomp st(1)` = `fcomp`; `0xffffffff` = `-1`;
+`rep movsd` with or without operands): '-' ours, '+' the original (with its address). Use it to read
 what a variant still gets wrong without applying it, building and reverting. VARIANTS is read exactly as dcp try
 reads it (c2trace.variant_text: indented or plain <<< === >>> blocks inside the function, or the whole function).
 """
@@ -59,14 +61,33 @@ def func(o):
         if ins.mnemonic in ("call",) or ins.mnemonic.startswith("j"):
             s = ins.mnemonic + " X"
         elif hasrel:
-            s = re.sub(r"0x[0-9a-f]+|\b\d+\b(?!\])", "X", s) if False else s
-            # replace the displacement / immediate carrying the reloc: any number not a small scale
-            s = re.sub(r"(?<![\w*])(0x[0-9a-f]+|0)(?![\w])", "X", s)
-            s = re.sub(r"\[(.*?) [+-] X\]", r"[\1 + X]", s)
-        s = re.sub(r"^(fadd|fsub|fmul) st\((\d)\)", r" st, st()", s)
+            # the displacement / immediate carrying the reloc (written as 0x12345678 above), not the other number
+            # of the instruction (`cmp byte ptr [edx + X], 0xf`)
+            s = s.replace("0x12345678", "X")
         s = s.replace("rep stosd dword ptr es:[edi], eax", "rep stosd")
         if s.strip() != "nop": out.append(s.strip())
     return out
+X87_ARITH = {"fadd", "fmul", "fsub", "fsubr", "fdiv", "fdivr"}
+X87_POP = {"faddp", "fmulp", "fsubp", "fsubrp", "fdivp", "fdivrp"}
+X87_ONE = {"fcom", "fcomp", "fucom", "fucomp", "fxch"}
+def x87(s):
+    """one spelling of an x87 register form for both sides: capstone writes `fmul st(1)`, `faddp st(1)`,
+    `fcomp st(1)`, dcp's disassembler `fmul st, st(1)`, `faddp`, `fcomp`: every operand explicit, st as st(0)"""
+    m = re.match(r"(f\w+)(?:\s+(.*))?$", s)
+    if not m:
+        return s
+    op, args = m.group(1), (m.group(2) or "").strip()
+    a = [x.strip() for x in args.split(",")] if args else []
+    a = ["st(0)" if x == "st" else x for x in a]
+    if not all(re.fullmatch(r"st\(\d\)", x) for x in a):
+        return s
+    if op in X87_ARITH and len(a) == 1:
+        a = ["st(0)", a[0]]
+    elif op in X87_POP and len(a) <= 1:
+        a = [a[0] if a else "st(1)", "st(0)"]
+    elif op in X87_ONE and not a:
+        a = ["st(1)"]
+    return op + (" " + ", ".join(a) if a else "")
 def orig():
     r = subprocess.run(["dcp", "asmdiff", FN, "--side", "original"], capture_output=True, text=True, cwd=ROOT)
     out = []
@@ -86,6 +107,10 @@ if __name__ == "__main__":
     ours = func(build(vfile, label))
     og = orig()
     def norm(s):
+        s = x87(s)
+        # capstone: `or eax, 0xffffffff`, `rep movsd dword ptr es:[edi], dword ptr [esi]`; dcp: `-1`, `rep movsd`
+        s = re.sub(r"\b0x(f[0-9a-f]{7})\b", lambda m: str(int(m.group(1), 16) - (1 << 32)), s)
+        s = re.sub(r"^(rep \w+) .*", r"\1", s)
         s = re.sub(r"0x[0-9a-f]{5,}", "X", s)
         if s.startswith("push X"): s = "push X"
         s = re.sub(r"\[(.*?) [+-] X\]", r"[\1 + X]", s)
