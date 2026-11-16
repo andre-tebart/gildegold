@@ -157,8 +157,13 @@ def unknown_variants(text, fn):
 
 
 if __name__ == "__main__":
+    if len(sys.argv) < 3 or sys.argv[1] in ("-h", "--help"):
+        print(__doc__ or "usage: unitprobe.py UNIT (base | FILE | --unknown FUNC ...)")
+        sys.exit(0 if len(sys.argv) > 1 else 2)
     UNIT = sys.argv[1]
     args = sys.argv[2:]
+    if not os.path.exists(os.path.join(ROOT, "src", UNIT + ".c")):
+        sys.exit("unitprobe: no unit src/%s.c" % UNIT)
     base_text = open(os.path.join(ROOT, "src", UNIT + ".c"), encoding="latin-1", newline="").read()
     bp = os.path.join(W, "base_%s.pkl" % UNIT)
     if args[0] == "base" or not os.path.exists(bp):
