@@ -4903,35 +4903,27 @@ char *gm_FindBuildingById(int id)
 
 int gm_FindBuildingKind(char *name)
 {
-    int n, i;
+    int n;
 
-    n = 0;
-    i = 0;
-    do {
-        if (_stricmp(name, (char *)(i + 1 + (int)ai_BTypes)) == 0)
+    for (n = 0; n < 0x58; n++) {
+        if (_stricmp(name, GM_BTYPE(n)->name) == 0)
             return n;
-        i += 0x24d;
-        n++;
-    } while (i < 0xca78);
+    }
     return 0;
 }
 /* 0x5020a0, writes the numbers of all building kinds with the type byte t into out and returns their count */
 
 int gm_ListBuildingsOfType(unsigned t, int *out)
 {
-    int i, k, n;
+    int k, n;
 
     n = 0;
-    k = 0;
-    i = 0;
-    do {
-        if ((unsigned char)ai_BTypes[i] == t) {
+    for (k = 0; k < 0x58; k++) {
+        if (GM_BTYPE(k)->kind == t) {
             out[n] = k;
             n++;
         }
-        i += 0x24d;
-        k++;
-    } while (i < 0xca78);
+    }
     return n;
 }
 

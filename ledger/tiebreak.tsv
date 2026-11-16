@@ -4002,7 +4002,7 @@ exe	0x00578370	ai_TutorialStop	sv_t	9d1db8f5a93c7021	no	byte	control=byte p1=byt
 exe	0x00578440	ai_TutorialFreeRuns	sv_t	7db4c5d18c22886f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005784a0	ai_TutorialInitMainIntro	sv_t	798c8d26cb8bedf5	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00578570	ai_TutorialInitChapter1	sv_t	1104bf614d4657fb	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x00578e40	ai_TutorialInitChapter2	sv_t	1997337a7073c8ff	yes	byte	sweep control=shape best=byte by 5 unused typedefs before ai_TutorialInitChapter2; codegens=2 compiled=12 (stopped at the goal)	4df05e84ac1dcc22
+exe	0x00578e40	ai_TutorialInitChapter2	sv_t	1997337a7073c8ff	yes	byte	sweep control=shape best=byte by 5 unused typedefs before ai_TutorialInitChapter2; codegens=2 compiled=12 (stopped at the goal)	a792c823123d4ef3
 exe	0x00579570	ai_TutorialInitChapter3	sv_t	7a7c849570dd38d6	yes	byte	sweep control=shape best=byte by 1 unused typedef before ai_TutorialInitChapter3; codegens=8 compiled=12 (stopped at the goal)	3fd240b056dec72a
 exe	0x0057aa80	ai_TutorialInitChapter4	sv_t	6084c4a654a21837	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0057aeb0	ai_TutorialInitChapter5	sv_t	8774329fa9d901d6	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
