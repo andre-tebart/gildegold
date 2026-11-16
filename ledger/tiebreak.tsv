@@ -1731,7 +1731,7 @@ exe	0x004a13e0	ai_DecideStudy	am	cfa6b044cc9b9497	no	shape	sweep control=shape b
 exe	0x004a1640	ai_ExecuteStudy	am	71cdeb3e6ab656c9	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004a16f0	ai_RegisterBaseActions	am	b44f23dc191e29c2	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004a3a90	ai_NextNearRingEntry	am	94b6cd8401815eb5	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x004a3af0	ai_FillNearRing	am	938e30e36d559084	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
+exe	0x004a3af0	ai_FillNearRing	am	4c5bb46e3a43d55f	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	90660974c26829dc
 exe	0x004a4680	ai_GroupPrices	am	492f4102efc10ffd	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004a47c0	ai_GetDesireByName	am	f0eed3ed2bdecd12	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004a49a0	ai_EvalMoodWeights	am	edc920f019d59a3d	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	

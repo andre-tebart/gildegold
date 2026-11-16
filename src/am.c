@@ -9903,15 +9903,14 @@ G6RING *ai_NextNearRingEntry(void)
    office p applies for (2), the other applicants (4) and, for a kind 5 character, the characters of kind 5..7 (1);
    kind 6 / 7 entries get (4 - difficulty) * 5 added to their liking; then sets the cursor to a random entry with
    a random stride from ai_RingStrides below the count, changed by one when it divides the count
-   @deep frame solved (526 -> 304): the neighbour / upper columns are int side[2], up[2] (scalars
-   side1..up2 had 3-5 refs each, so the frame packer placed them before the G7 loop pointer temps and split
-   those over 4 slots; as 8-byte arrays they sort after the temps and the original's one temp slot
-   [esp+0x10] forms), the 768 pass is an index loop for (j = 0; j < 768; j++) { o = &G5_CHARS[j]; with
-   o->kind read three times (no k local: the IV sits at &kind, o = walker-2, f gets edx), p == o, o ==
-   ai_NearRing[i].who; the applicant count is its own block local nrivals (in the temp slot). Left: the
-   constant 3 in ecx in the setup (orig mov ecx,3; mov [side+4],ecx; cmp esi,ecx with edi=1 edx=2; ours
-   edi=1 ecx=2, immediates for 3), scratch rotation in the column loops behind it (eax/ecx/edx shifted),
-   code hunks at 0x4a3e7d (56), 0x4a438a (67), down[2] slot [0x38]->[0x34] at 0x4a42f5. prior: read in full
+   @deep 13 ins left. Levers found this session: side[2]/up[2] arrays (frame), 768 pass as index loop for
+   (j..) { o = &G5_CHARS[j]; with o->kind read three times (no k), p == o, o == ai_NearRing[i].who;
+   applicant count its own local nrivals; the column 1..3 arm as three arms (col==1 {2,3} / col==2 {1,3} /
+   else {1,2}): that gives the constant 3 a third reference so it gets ecx and the scratch rotation of all
+   column loops falls in place; (G5CH *)rivals[j] == ai_NearRing[i].who. Left: g held in edi around the up
+   block in the original (mov edi,[g]; cmp edi,3; cmp edi,6 / after the up[0] loop mov edi,[g] at 0x4a408b
+   / mov edi,[g]; cmp edi,4; cmp edi,7, the skip edges jump past the reloads), ours reloads g into eax at
+   each test. No-ops: else-if for the down test (worse), operand order of the g tests. prior: read in full
    against the original (all 11 column loops, the applicants and the 768-character pass, the difficulty
    bias, the cursor setup) and reconciled: AMTREC/AMTKIND buffers, ai_NearRing[cnt] stores, unbounded
    no-office loops, abs(level-g) <= 1, if (cnt > 3) order, int count (idiv). Left is allocation: o held in
@@ -9954,13 +9953,15 @@ void ai_FillNearRing(AICHAR *c)
         g = amt_GetKindLevel(p->officeKind);
         amt_GetKind(p->officeKind, &kind);
         if (kind.col > 0 && kind.col < 4) {
-            side[1] = 3;
             if (kind.col == 1) {
                 side[0] = 2;
+                side[1] = 3;
+            } else if (kind.col == 2) {
+                side[0] = 1;
+                side[1] = 3;
             } else {
                 side[0] = 1;
-                if (kind.col != 2)
-                    side[1] = 2;
+                side[1] = 2;
             }
             if (g == 3) {
                 up[0] = 4;
@@ -10001,7 +10002,7 @@ void ai_FillNearRing(AICHAR *c)
             if ((G5CH *)rivals[j] == p)
                 continue;
             for (i = 0; i < cnt; i++) {
-                if (ai_NearRing[i].who == (G5CH *)rivals[j]) {
+                if ((G5CH *)rivals[j] == ai_NearRing[i].who) {
                     ai_NearRing[i].flags |= 2;
                     break;
                 }
