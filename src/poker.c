@@ -2652,8 +2652,8 @@ int ai_DecideEhrerbietung(int a, AIPER *p, int c, AIARG *m)
             n = util_RandomU(p->money < 8 ? p->money : 8);
             if (n <= 2)
                 n = 2;
-            m->arg2 = n;
             m->ref = o->netId;
+            m->arg2 = n;
             m->ref2 = 0;
             m->kind = 7;
             return 0x45;
