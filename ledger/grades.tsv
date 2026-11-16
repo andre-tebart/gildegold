@@ -1760,13 +1760,13 @@ exe	0x004a74e0	ai_PokerStep	poker	byte	readable
 exe	0x004a7650	ai_PokerFindPair	poker	byte	readable		
 exe	0x004a76d0	ai_PokerHighCard	poker	byte	readable		
 exe	0x004a7760	ai_PokerDrawCard	poker	byte	readable		
-exe	0x004a77e0	ai_PokerNpcExchange	poker	shape	readable		
+exe	0x004a77e0	ai_PokerNpcExchange	poker	byte	readable		
 exe	0x004a79d0	ai_PokerSwapCard	poker	byte	readable		
 exe	0x004a7a20	ai_PokerPayStakes	poker	byte	readable		
 exe	0x004a7ac0	ai_PokerPickStrategies	poker	draft	readable	deep	
 exe	0x004a7c20	ai_PokerNpcFold	poker	shape	readable		
 exe	0x004a7e70	ai_PokerOpenCounts	poker	draft	readable	deep	
-exe	0x004a7f50	ai_PokerRateHand	poker	shape	readable		
+exe	0x004a7f50	ai_PokerRateHand	poker	byte	readable		
 exe	0x004a8190	ai_PokerShowdown	poker	draft	readable	deep	
 exe	0x004a8520	ai_PokerDealThree	poker	byte	readable		
 exe	0x004a8590	ai_PokerDealFourth	poker	byte	readable		
@@ -1820,7 +1820,7 @@ exe	0x004ab7f0	ai_DecideVerfluchen	poker	byte	readable
 exe	0x004ab9f0	ai_ExecVerfluchen	poker	byte	readable		
 exe	0x004abac0	ai_DecideTheater	poker	byte	readable		
 exe	0x004abc60	ai_ExecTheater	poker	byte	readable		
-exe	0x004abd00	ai_DecideEhrerbietung	poker	shape	readable		
+exe	0x004abd00	ai_DecideEhrerbietung	poker	byte	readable		
 exe	0x004abe60	ai_ExecEhrerbietung	poker	byte	readable		
 exe	0x004abed0	ai_RegisterSocialActions	poker	byte	readable		
 exe	0x004ac140	hmt_RecordCount	hmt	byte	readable		
@@ -2208,7 +2208,7 @@ exe	0x004c4fa0	cm_SendNewParty	cm	byte	readable
 exe	0x004c4fd0	cm_SendLeaveParty	cm	byte	readable		
 exe	0x004c5010	cm_SendMoveObject	cm	byte	readable		
 exe	0x004c5050	cm_SetPlant	cm	byte	readable		
-exe	0x004c50b0	cm_SendObject1b5	cm	shape	readable		
+exe	0x004c50b0	cm_SendObject1b5	cm	byte	readable		
 exe	0x004c5100	cm_SendChrWalkTo	cm	byte	readable		
 exe	0x004c5150	cm_RequestChrMove	cm	byte	readable		
 exe	0x004c51b0	cm_RequestChrMoveToUniverse	cm	byte	readable		
@@ -2391,7 +2391,7 @@ exe	0x004cd5e0	cm_LobbyFindPlayer	cm	byte	readable
 exe	0x004cd5f0	cm_LobbyMyPlayer	cm	byte	readable		
 exe	0x004cd600	cm_LobbyState	cm	byte	readable		
 exe	0x004cd610	cm_LobbyRequestList	cm	byte	readable		
-exe	0x004cd650	cm_LobbySetReady	cm	shape	readable	deep	
+exe	0x004cd650	cm_LobbySetReady	cm	byte	readable		
 exe	0x004cd6a0	cm_LobbyLeave	cm	byte	readable		
 exe	0x004cd6e0	cm_LobbySendChat	cm	byte	readable		
 exe	0x004cd760	cm_LobbyJoin	cm	byte	readable		
@@ -2658,7 +2658,7 @@ exe	0x004e8160	amt_CheckOfficeColumns	amt	byte	readable
 exe	0x004e83b0	amt_IsColumnDecided	amt	shape	readable		
 exe	0x004e8530	amt_HasDeposalVote	amt	byte	readable		
 exe	0x004e85d0	amt_UpdateOffices	amt	byte	readable		
-exe	0x004e86e0	amt_HasColumn7Holder	amt	shape	readable		
+exe	0x004e86e0	amt_HasColumn7Holder	amt	byte	readable		
 exe	0x004e8730	amt_SendOfficeNews	amt	byte	readable		
 exe	0x004e87e0	amt_SendOfficeLost	amt	byte	readable		
 exe	0x004e88a0	amt_ElectDeputies	amt	draft	readable	deep	
@@ -2693,7 +2693,7 @@ exe	0x004eae60	ahm_FindRecipe	ahm	shape	readable
 exe	0x004eaea0	ahm_RandomRecipe	ahm	byte	readable		
 exe	0x004eaf50	ahm_ResearchTime	ahm	byte	readable		
 exe	0x004eafa0	ahm_ResearchMinutes	ahm	byte	readable		
-exe	0x004eafd0	ahm_ResearchProgress	ahm	shape	readable		
+exe	0x004eafd0	ahm_ResearchProgress	ahm	byte	readable		
 exe	0x004eb0b0	ahm_ShareProgress	ahm	byte	readable		
 exe	0x004eb130	ahm_PlaceFactor	ahm	byte	readable		
 exe	0x004eb180	ahm_ResearchState	ahm	byte	readable		
@@ -3105,7 +3105,7 @@ exe	0x00508740	gm_JobWage	f3gm	shape	readable
 exe	0x005087f0	gm_ItemPrice	f3gm	byte	readable		
 exe	0x005089c0	gm_GoodsPrice	f3gm	byte	readable		
 exe	0x00508a20	gm_HealthFactor	f3gm	byte	readable		
-exe	0x00508a80	gm_FormatAmount	f3gm	shape	readable		
+exe	0x00508a80	gm_FormatAmount	f3gm	draft	readable		
 exe	0x00508cc0	gm_ListObjectsAfter	f3gm	byte	readable		
 exe	0x00508d70	gm_BuildingLevel	f3gm	byte	readable		
 exe	0x00508d80	gm_BuildingBalance	f3gm	draft	readable	deep	
@@ -3265,7 +3265,7 @@ exe	0x0051b910	ls_WriteStatistics	ls	byte	readable
 exe	0x0051bdb0	ls_WriteAvatars	ls	byte	readable		
 exe	0x0051bdc0	ls_WriteEventTables	ls	shape	readable		
 exe	0x0051c2f0	ls_WriteParties	ls	byte	readable		
-exe	0x0051c450	ls_WriteHistory	ls	shape	readable		
+exe	0x0051c450	ls_WriteHistory	ls	byte	readable		
 exe	0x0051c560	ls_WriteMessageQueues	ls	byte	readable		
 exe	0x0051c870	ls_WriteEnvironment	ls	byte	readable		
 exe	0x0051c920	ls_Read	ls	byte	readable		
