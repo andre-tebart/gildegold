@@ -18,7 +18,7 @@ of that child's uses) that uses it; a local with a use directly in the function 
 local and one with all of them, measured with `dcp try`. Hits are printed with the command that applies them;
 check the result reads well (the script inserts the declaration and a blank line after the block's brace).
 """
-import argparse, os, re, subprocess, sys, tempfile
+import argparse, os, re, subprocess, sys
 
 ROOT = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
 DECL = re.compile(r"^    ((?:struct |union |unsigned |signed |const )*[A-Za-z_]\w*(?: \*+| +\*+|\s+))(\w+)((?:\[[^\]]*\])*);[ \t]*(/\*.*\*/)?[ \t]*$")
@@ -148,10 +148,13 @@ def apply(lines, plans):
 
 
 def run(name, vs):
-    with tempfile.NamedTemporaryFile("w", suffix=".txt", delete=False, encoding="latin-1", newline="\n") as f:
+    # one file per function under build/ (ignored), overwritten on the next run: nothing piles up in %TEMP%
+    d = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "build", "blockscope")
+    os.makedirs(d, exist_ok=True)
+    path = os.path.join(d, name + ".txt")
+    with open(path, "w", encoding="latin-1", newline="\n") as f:
         for label, t in vs.items():
             f.write("### %s\n%s\n\n" % (label, t))
-        path = f.name
     rows = {}
     for line in dcp("try", name, path).splitlines():
         m = re.match(r"\s+(\S+)\s+(byte|shape|draft|proved)\s+(\d+)\s+(\d+)\s+(\S+)", line)
