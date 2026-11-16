@@ -2540,7 +2540,7 @@ exe	0x004e0770	cm_RunWedding	cm	183b9a33eccf93c9	no	shape	sweep control=shape be
 exe	0x004e0e90	cm_CheckBirth	cm	f8da5e2f6ad9bcd5	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004e0f70	cm_RunBirth	cm	34ce41202e1a5c19	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x004e1220	cm_DeathSceneCheck	cm	6950a8e8be5376d1	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x004e1250	cm_RunDeath	cm	036d0c5a42913a85	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	becf1bbdf99775c9
+exe	0x004e1250	cm_RunDeath	cm	2504cbd4bfb0e42e	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	fd0807caccc0cd5c
 exe	0x004e1700	cm_RunBankruptcy	cm	0f2c36eca175f7b8	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004e19a0	cm_CheckAuction	cm	986dd5c5f1d45001	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004e1a80	cm_RunAuction	cm	0bd1e20caf0b9f0e	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	becf1bbdf99775c9

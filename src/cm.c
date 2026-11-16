@@ -14865,15 +14865,7 @@ int cm_DeathSceneCheck(G28REC *m)
    play on is asked (text 0x40fb): yes revives the person (f01c 100, v024 0, the flag 2), no (or another person) opens the
    family tree with txt_DeathTreeCaption; without one such a person is told (0x40fc) and revived all the same; else in a
    game of the flag 8 the game is over (text 0x1ab4 with relatives, 0x1ab3 without, back to main_GameLoop); else the
-   estate is forfeited (gm_ForfeitEstate) and its text shown
-   @deep read whole against the original 0x4e1250..0x4e16f3 and rebuilt: void, the voices _TOD_HS 0, 2..6
-   with the bank and their delays, the fog fade (sv_RunFrame's result ignored, the click ends it,
-   min(t*1/825, ai_FloatOne)), the light scale 1.0f, the bells, the revive branch as revive =
-   cm_MessageBox(..) with one family-tree call, the field slots, a 0x1fb8 estate buffer from the frame. One
-   instruction differs: +0xf0 '- test eax, eax' vs '+ cmp eax, ebx' (the test of the first
-   cm_RunSceneTicksOrClick result; the original compares with ebx, its cached 0). Tried rc = ..; if (rc ==
-   0), if ((rc = ..) == 0), rc = 0 / == rc, and a goto: the same test eax,eax. Only VC6's choice of the
-   zero register at this compare is left */
+   estate is forfeited (gm_ForfeitEstate) and its text shown */
 
 void cm_RunDeath(G28REC *m)
 {
@@ -14909,17 +14901,17 @@ void cm_RunDeath(G28REC *m)
         cm_QueueVoice(-8, bank, "_TOD_HS", 5, 0xfa0);
         cm_QueueVoice(-8, bank, "_TOD_HS", 6, 0x1f4);
         rc = cm_RunSceneTicksOrClick(0x2af8, 0, 0);
-        if (rc == 0) {
-            t0 = d3_Time;
-            while (d3_Time < t0 + 0x339 && rc == 0) {
-                sv_RunFrame(0, cm_DialogFrameFlags);
-                if (dm_L.rup != 0)
-                    rc = 1;
-                d3_SetFogSet(0, 1, (float)(d3_Time - t0) * (1.0f / 0x339) < 1.0f ? (float)(d3_Time - t0) * (1.0f / 0x339) : 1.0f);
-            }
-            d3_SetFogSet(0, 1, 1.0f);
-            cm_RunSceneTicksOrClick(0x2cec, 0, 0);
+    }
+    if (rc == 0) {
+        t0 = d3_Time;
+        while (d3_Time < t0 + 0x339 && rc == 0) {
+            sv_RunFrame(0, cm_DialogFrameFlags);
+            if (dm_L.rup != 0)
+                rc = 1;
+            d3_SetFogSet(0, 1, (float)(d3_Time - t0) * (1.0f / 0x339) < 1.0f ? (float)(d3_Time - t0) * (1.0f / 0x339) : 1.0f);
         }
+        d3_SetFogSet(0, 1, 1.0f);
+        cm_RunSceneTicksOrClick(0x2cec, 0, 0);
     }
     sb_PlaySample(0, "GLOCKEN_r", 1, 0x3f, 0x7f, 0, 0);
     d2_CutsceneActive = 0;
