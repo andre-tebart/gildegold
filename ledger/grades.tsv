@@ -2910,7 +2910,7 @@ exe	0x004f8890	ord_GetKindRecord	ord	byte	readable
 exe	0x004f88c0	ord_AppendStatisticsRound	ord	byte	readable		
 exe	0x004f8920	ord_RebuildGridSums	ord	byte	readable		
 exe	0x004f8ae0	ord_ComputeStatistics	ord	shape	readable	deep	
-exe	0x004f8ed0	ord_UpdateStatistics	ord	shape	readable		
+exe	0x004f8ed0	ord_UpdateStatistics	ord	byte	readable		
 exe	0x004f9020	ord_LoadStatistics	ord	draft	readable	deep	
 exe	0x004f9170	ord_GetMessageRecord	ord	byte	readable		
 exe	0x004f9190	ord_InitMessageRecord	ord	byte	readable		
@@ -3136,7 +3136,7 @@ exe	0x0050a0f0	gm_ObjectBuilding	f3gm	byte	readable
 exe	0x0050a150	gm_CreditEvents	f3gm	byte	readable		
 exe	0x0050a1c0	gm_BuildingEvents	f3gm	byte	readable		
 exe	0x0050a250	gm_GetCreditOffers	f3gm	draft	readable	deep	
-exe	0x0050a640	gm_GetWorth	f3gm	shape	readable		
+exe	0x0050a640	gm_GetWorth	f3gm	byte	readable		
 exe	0x0050a6c0	gm_IsBankrupt	f3gm	shape	readable		
 exe	0x0050a810	gm_FindCharacterByMaster	f3gm	byte	readable		
 exe	0x0050a880	gm_SortCharsByName	f3gm	byte	readable		
@@ -3189,7 +3189,7 @@ exe	0x0050d7f0	init_LoadObjectScene	f3init	byte	readable
 exe	0x0050dba0	init_BuildingKindName	f3init	byte	readable		
 exe	0x0050dc30	init_LoadBuildingScene	f3init	byte	readable		
 exe	0x0050e0d0	init_StartNewGame	f3init	byte	readable		
-exe	0x0050e330	init_CreateOpponents	f3init	shape	readable		
+exe	0x0050e330	init_CreateOpponents	f3init	byte	readable		
 exe	0x0050e5a0	init_PlaceOffices	f3init	byte	readable		
 exe	0x0050e690	init_CreateStartCharacters	f3init	draft	readable	deep	
 exe	0x0050f0b0	init_CreateOpeningObjects	f3init	byte	readable		
@@ -3877,7 +3877,7 @@ exe	0x00571640	he_RunGraveCare	he	byte	readable
 exe	0x00571990	he_AllocDeathDue	he	byte	readable		
 exe	0x005719e0	he_RunDeathDue	he	shape	readable		
 exe	0x00571ac0	he_AllocGraveTraining	he	shape	readable		
-exe	0x00571c30	he_RunGraveTraining	he	shape	readable	deep	
+exe	0x00571c30	he_RunGraveTraining	he	byte	readable		
 exe	0x00571f60	he_AllocMeeting	he	shape	readable		
 exe	0x005720f0	he_CatchMeetingDisease	he	draft	readable	deep	
 exe	0x00572310	he_SpreadMeetingDisease	he	draft	readable	deep	
@@ -4010,7 +4010,7 @@ exe	0x0057aeb0	ai_TutorialInitChapter5	sv_t	byte	readable
 exe	0x0057b750	ai_TutorialInitMainOutro	sv_t	byte	readable		
 exe	0x0057b810	ai_TutorialBezier	sv_t	shape	readable		
 exe	0x0057b8a0	ai_TutorialMarkerUpdate	sv_t	shape	readable		
-exe	0x0057bc30	ai_SetupTutorialPlayer	sv_t	shape	readable		
+exe	0x0057bc30	ai_SetupTutorialPlayer	sv_t	byte	readable		
 exe	0x0057bce0	ai_TutorialWindow	sv_t	shape	readable	deep	
 exe	0x0057bf00	ai_AlchemistCandidates	sv_t	draft	readable	deep	
 exe	0x0057c560	ai_AlchemistHire	sv_t	byte	readable		
@@ -4161,8 +4161,8 @@ exe	0x00592b90	ai_ExtractResourceWindow	lc	byte	readable
 exe	0x00593150	ai_ProductionGoodsWindow	lc	draft	readable	deep	
 exe	0x005938c0	ai_MiningContact	lc	byte	readable		
 exe	0x00593960	ai_KontorContact	lc	byte	readable		
-exe	0x00593b00	ai_WoodKontorContact	lc	shape	readable		
-exe	0x00593ca0	ai_StoneKontorContact	lc	shape	readable		
+exe	0x00593b00	ai_WoodKontorContact	lc	byte	readable		
+exe	0x00593ca0	ai_StoneKontorContact	lc	byte	readable		
 exe	0x00593e80	ai_InformationContact	lc	byte	readable		
 exe	0x00593f40	ai_BreakInCallback	lc	byte	readable		
 exe	0x00594180	ai_BreakInWindow	lc	byte	readable		
@@ -4174,17 +4174,17 @@ exe	0x00594810	ai_BriberyWindow	lc	byte	readable
 exe	0x00594b10	ai_OpenSpying	lc	byte	readable		
 exe	0x00594bb0	ai_RaidWindow	lc	byte	readable		
 exe	0x00594db0	ai_OpenRaid	lc	byte	readable		
-exe	0x00594e50	ai_CriminalContact	lc	shape	readable		
+exe	0x00594e50	ai_CriminalContact	lc	byte	readable		
 exe	0x005950e0	ai_FarTradeContact	lc	byte	readable		
-exe	0x00595170	ai_SmithyContact	lc	shape	readable		
-exe	0x00595330	ai_CarpenterContact	lc	shape	readable		
+exe	0x00595170	ai_SmithyContact	lc	byte	readable		
+exe	0x00595330	ai_CarpenterContact	lc	byte	readable		
 exe	0x00595480	ai_TradeSearchWindow	lc	draft	readable	deep	
 exe	0x00595a00	ai_AquariumSearchWindow	lc	draft	readable	deep	
-exe	0x00595ed0	ai_PerfumeryContact	lc	shape	readable		
+exe	0x00595ed0	ai_PerfumeryContact	lc	byte	readable		
 exe	0x00596060	ai_IdleContact	lc	byte	readable		
 exe	0x00596080	ai_AquariumContact	lc	byte	readable		
-exe	0x00596120	ai_MixingContact	lc	shape	readable		
-exe	0x005962b0	ai_StonecutterContact	lc	shape	readable		
+exe	0x00596120	ai_MixingContact	lc	byte	readable		
+exe	0x005962b0	ai_StonecutterContact	lc	byte	readable		
 exe	0x00596400	ai_RobberContact	lc	byte	readable		
 exe	0x005965f0	ai_RhetoricContact	lc	byte	readable		
 exe	0x005966f0	ai_FeastContact	lc	byte	readable		
@@ -4197,7 +4197,7 @@ exe	0x005973f0	ai_SuicideWindow	lc	shape	readable
 exe	0x00597500	ai_StudyContact	lc	byte	readable		
 exe	0x005976a0	ai_TavernRulesWindow	lc	byte	readable		
 exe	0x00597780	ai_DrawDice	lc	byte	readable		
-exe	0x00597810	ai_DrawDuelDice	lc	shape	readable	deep	
+exe	0x00597810	ai_DrawDuelDice	lc	byte	readable		
 exe	0x00597920	ai_DrawDuelThrow	lc	byte	readable		
 exe	0x00597a10	ai_DuelDiceAnimation	lc	draft	readable	deep	
 exe	0x00597e70	ai_DrawDuelEnd	lc	byte	readable		
@@ -4209,7 +4209,7 @@ exe	0x005992c0	ai_DarkCornerMenu	lc	draft	readable	deep
 exe	0x005996b0	ai_DarkCornerBuy	lc	draft	readable	deep	
 exe	0x00599aa0	ai_DarkCornerTable	lc	byte	readable		
 exe	0x00599af0	ai_TavernContact	lc	byte	readable		
-exe	0x00599cb0	ai_BreweryContact	lc	shape	readable		
+exe	0x00599cb0	ai_BreweryContact	lc	byte	readable		
 exe	0x00599e00	ai_DrawGoodsCell	lc	byte	readable		
 exe	0x00599ef0	ai_CityInfoWindow	lc	byte	readable		
 exe	0x0059a2c0	ai_CreateCityPoint	lc	byte	readable		
@@ -4269,7 +4269,7 @@ exe	0x005a28f0	ai_Top5Window	lc	shape	readable
 exe	0x005a2b60	ai_ConfessionWindow	lc	byte	readable		
 exe	0x005a2de0	ai_ConfessionListener	lc	byte	readable		
 exe	0x005a2e60	ai_SermonWindow	lc	draft	readable	deep	
-exe	0x005a36c0	ai_ProductionWriteContact	lc	shape	readable		
+exe	0x005a36c0	ai_ProductionWriteContact	lc	byte	readable		
 exe	0x005a3810	ai_ChurchListener	lc	shape	readable		
 exe	0x005a39b0	ai_ChurchContact	lc	byte	readable		
 exe	0x005a3a40	ai_DungeonPlanWindow	lc	shape	readable		
@@ -4287,7 +4287,7 @@ exe	0x005a4b30	ai_AttackStart	lc	byte	readable
 exe	0x005a4b90	ai_PickpocketGangWindow	lc	draft	readable	deep	
 exe	0x005a4d40	ai_ThievesGuildListener	lc	byte	readable		
 exe	0x005a4f50	ai_ThievesGuildEmptyListener	lc	byte	readable		
-exe	0x005a4f70	ai_StorageContact	lc	shape	readable		
+exe	0x005a4f70	ai_StorageContact	lc	byte	readable		
 exe	0x005a5080	ai_TrainingContact	lc	byte	readable		
 exe	0x005a5120	ai_KidnapWindow	lc	draft	readable	deep	
 exe	0x005a53e0	ai_KidnapStart	lc	draft	readable	deep	
@@ -4495,7 +4495,7 @@ exe	0x005c2410	ai_LawBookInfoWindow	lc	byte	readable
 exe	0x005c2490	ai_ShowWorkSettingsPage	lc	shape	readable		
 exe	0x005c26a0	ai_MasterLetterNoticeWindow	lc	byte	readable		
 exe	0x005c2730	ai_MasterLetterKindWindow	lc	byte	readable		
-exe	0x005c27b0	ai_MasterHireWindow	lc	shape	readable		
+exe	0x005c27b0	ai_MasterHireWindow	lc	byte	readable		
 exe	0x005c2a10	ai_ShowSettingGoods	lc	shape	readable		
 exe	0x005c2b90	ai_MasterLetterSettings	lc	shape	readable		
 exe	0x005c3200	ai_MasterLetterWindow	lc	draft	readable	deep	
@@ -4632,7 +4632,7 @@ exe	0x005d7e90	ai_PauseGame	menu	byte	readable
 exe	0x005d7f10	ai_MessageFilterScreen	menu	byte	readable		
 exe	0x005d8080	ai_TailorChatWindow	menu	byte	readable		
 exe	0x005d8360	ai_TailorContact	menu	byte	readable		
-exe	0x005d8420	ai_ProductionContact	menu	shape	readable		
+exe	0x005d8420	ai_ProductionContact	menu	byte	readable		
 exe	0x005d85e0	ai_BloodRevengeWindow	menu	byte	readable		
 exe	0x005d8c90	ai_CurseWindow	menu	byte	readable		
 exe	0x005d90e0	ai_CurseTargetWindow	menu	byte	readable		
