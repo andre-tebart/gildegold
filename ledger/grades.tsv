@@ -3190,7 +3190,7 @@ exe	0x0050dba0	init_BuildingKindName	f3init	byte	readable
 exe	0x0050dc30	init_LoadBuildingScene	f3init	byte	readable		
 exe	0x0050e0d0	init_StartNewGame	f3init	byte	readable		
 exe	0x0050e330	init_CreateOpponents	f3init	shape	readable		
-exe	0x0050e5a0	init_PlaceOffices	f3init	shape	readable	deep	
+exe	0x0050e5a0	init_PlaceOffices	f3init	byte	readable		
 exe	0x0050e690	init_CreateStartCharacters	f3init	draft	readable	deep	
 exe	0x0050f0b0	init_CreateOpeningObjects	f3init	byte	readable		
 exe	0x0050f340	init_StockMarketStalls	f3init	shape	readable	deep	
@@ -3287,7 +3287,7 @@ exe	0x0051fb80	ls_ReadAvatars	ls	byte	readable
 exe	0x0051fb90	ls_ReadEventTables	ls	shape	readable		
 exe	0x00520000	ls_ReadParties	ls	byte	readable		
 exe	0x00520200	ls_ReadHistory	ls	byte	readable		
-exe	0x00520310	ls_ReadMessageQueues	ls	shape	readable		
+exe	0x00520310	ls_ReadMessageQueues	ls	byte	readable		
 exe	0x005205f0	ls_ReadEnvironment	ls	byte	readable		
 exe	0x005206b0	ls_FixupAfterLoad	ls	shape	readable		
 exe	0x00520a30	ls_SendGame	ls	byte	readable		
@@ -3536,7 +3536,7 @@ exe	0x0053f430	he_InnStaffLeave	he	byte	readable
 exe	0x0053f500	he_ClearInnDarkCorner	he	byte	readable		
 exe	0x0053f5b0	he_TopUpCharMoney	he	byte	readable		
 exe	0x0053f6b0	he_SpawnFounders	he	draft	readable	deep	
-exe	0x00540c90	he_PostEvent67	he	shape	readable		
+exe	0x00540c90	he_PostEvent67	he	byte	readable		
 exe	0x00540e40	he_InnReport	he	byte	readable		
 exe	0x00540fe0	he_DailyEventChecks	he	byte	readable		
 exe	0x00541010	he_PostEvent3a	he	byte	readable		
@@ -3661,7 +3661,7 @@ exe	0x00550b60	he_RunReaper	he	byte	readable
 exe	0x00550ea0	he_StartRanking	he	byte	readable		
 exe	0x00550ee0	he_RunRanking	he	byte	readable		
 exe	0x005512c0	he_StartWalk	he	byte	readable		
-exe	0x00551340	he_StepWalkSlot	he	shape	readable		
+exe	0x00551340	he_StepWalkSlot	he	byte	readable		
 exe	0x00551440	he_FillWalkSlot	he	draft	readable	deep	
 exe	0x005516a0	he_PlayGestures	he	byte	readable		
 exe	0x00551780	he_StepWalk	he	draft	readable	deep	
@@ -3704,7 +3704,7 @@ exe	0x00555690	he_TransportToHome	he	byte	readable
 exe	0x00555b60	he_TransportStadtStadt	he	shape	readable		
 exe	0x00556080	he_TransportHomeHome	he	byte	readable		
 exe	0x00556600	he_RunTransport	he	draft	readable	deep	
-exe	0x00556dc0	he_AllocCartRepair	he	shape	readable		
+exe	0x00556dc0	he_AllocCartRepair	he	byte	readable		
 exe	0x00556ed0	he_RunCartRepair	he	byte	readable		
 exe	0x00557160	he_AllocMessageBox	he	byte	readable		
 exe	0x00557190	he_RunMessageBox	he	draft	readable	deep	
@@ -4343,9 +4343,9 @@ exe	0x005a8f90	ai_ShowFeudNews	lc	shape	readable
 exe	0x005a9050	ai_ShowPartnerNews	lc	shape	readable		
 exe	0x005a9110	ai_ShowCharacterNews	lc	byte	readable		
 exe	0x005a9170	ai_NotifyPlayerOfChar	lc	byte	readable		
-exe	0x005a91c0	ai_PlagueNews	lc	shape	readable		
+exe	0x005a91c0	ai_PlagueNews	lc	byte	readable		
 exe	0x005a9240	ai_PlagueMessage	lc	draft	readable	deep	
-exe	0x005a92b0	ai_PlagueMessageAll	lc	shape	readable		
+exe	0x005a92b0	ai_PlagueMessageAll	lc	byte	readable		
 exe	0x005a9330	ai_SendSwapText	lc	byte	readable		
 exe	0x005a9430	ai_ShowEvidenceVoidNews	lc	byte	readable		
 exe	0x005a9470	ai_GypsyDeliveryText	lc	byte	readable		
@@ -4395,7 +4395,7 @@ exe	0x005b2090	ai_LoadTownMap	lc	byte	readable
 exe	0x005b2180	ai_MapPick	lc	byte	readable		
 exe	0x005b2530	ai_NewStorageSlotWindow	lc	shape	readable		
 exe	0x005b26b0	ai_StorageWindow	lc	draft	readable	deep	
-exe	0x005b3130	ai_TalentWindow	lc	shape	readable		
+exe	0x005b3130	ai_TalentWindow	lc	byte	readable		
 exe	0x005b3630	ai_SabotageCallback	lc	byte	readable		
 exe	0x005b3ad0	ai_EspionageAmountCB	lc	byte	readable		
 exe	0x005b3f30	ai_BeatingCallback	lc	byte	readable		
@@ -4435,7 +4435,7 @@ exe	0x005ba700	ai_BuildingHasItem	lc	byte	readable
 exe	0x005ba750	lc_UpdateGoodsReserves	lc	draft	readable	deep	
 exe	0x005ba980	ai_UseGoodWindow	lc	byte	readable		
 exe	0x005bac10	ai_InventoryPanel	lc	byte	readable		
-exe	0x005bae10	ai_EquipRowsInit	lc	draft	readable	deep	
+exe	0x005bae10	ai_EquipRowsInit	lc	byte	readable		
 exe	0x005bae50	ai_UpdateEquipRows	lc	shape	readable		
 exe	0x005bb2d0	ai_GoodFitsBuilding	lc	byte	readable		
 exe	0x005bb350	ai_EquipWindow	lc	byte	readable		
@@ -4570,10 +4570,10 @@ exe	0x005d0320	ai_UseGoodWeakenSkills	lc	byte	readable
 exe	0x005d0530	ai_UseGoodWeakenSkills2	lc	byte	readable		
 exe	0x005d06e0	ai_UseGoodCureAilment	lc	byte	readable		
 exe	0x005d0780	ai_UseGoodHalveWorkerValue	lc	draft	readable	deep	
-exe	0x005d08c0	ai_ApplyTrialStep	lc	shape	readable		
-exe	0x005d09d0	ai_TrialStep1	lc	shape	readable		
-exe	0x005d0a40	ai_TrialStep3	lc	shape	readable		
-exe	0x005d0ab0	ai_TrialStep4	lc	shape	readable		
+exe	0x005d08c0	ai_ApplyTrialStep	lc	byte	readable		
+exe	0x005d09d0	ai_TrialStep1	lc	byte	readable		
+exe	0x005d0a40	ai_TrialStep3	lc	byte	readable		
+exe	0x005d0ab0	ai_TrialStep4	lc	byte	readable		
 exe	0x005d0b20	ai_UseGoodRaiseRelation	lc	draft	readable	deep	
 exe	0x005d0c70	ai_QuarrelCallback	lc	draft	readable	deep	
 exe	0x005d0e60	ai_UseGoodTrialStep	lc	byte	readable		
