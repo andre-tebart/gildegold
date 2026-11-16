@@ -11100,16 +11100,19 @@ void cm_FightResult(char *r)
    @deep Hunk: the original runs rep movsd (memcpy into sl) BEFORE the loads of cm_CutChar->netId and
    r->playerId; ours hoists both loads above it: in the original sl counts as escaped at the copy, in ours
    not. Mechanism (probes, never kept): VC6 exempts a local whose address goes to ONE real call (intrinsic
-   memcpy / memset / struct copies do not count; cm_OrderWait shows the exempt order in the original); a
-   second call taking &sl anywhere (before the slot call, after the send, even in the else arm) or any
-   other local's address to a call before gives exactly the original's order (only the probe's own lines
-   differ). So the original had a second address-taking call of some local that left no code, or something
-   else that marks escape. No lever (= control): sl = *q, nested call in memcpy/struct copy, sizeof(sl), sl
-   block-scoped / sl[1] / char buffer, p = &sl before or after the slot call, p = memcpy(..), dead q = &sl,
-   &sl.charId to the send, memset before the copy (eliminated), local c for cm_CutChar, *(int *)(cm_CutChar
-   + 4), climb 2 rounds, flip --want (0 flips). Worse: state before charId (6 ins), memmove (draft), a
-   static __inline helper (c in ebp, draft 21). Next: find an ordinary construct that makes a second escape
-   without code (decided branch, ?: argument pushed per arm = two calls merged). */
+   memcpy / memset / struct copies do not count, a call removed as dead does not count; cm_OrderWait shows
+   the exempt order in the original too). A second call taking &sl ANYWHERE (before the slot call, after
+   the send, in the else arm, in an if at the function end) or another local's address to a call before
+   gives exactly the original's order (only the probe's own lines differ). So the original had a second
+   address-taking call that is not in its code, or the exemption depends on something else (the callee?
+   cm_SendCutEntry is defined above; it was shape and is byte now - no change here). No lever (= control):
+   sl = *q, nested call in memcpy/struct copy, sizeof(sl), sl block-scoped / sl[1] / char buffer, p = &sl
+   before or after the slot call, p = memcpy(..), dead q = &sl, &sl.charId to the send, memset before the
+   copy (eliminated), if (q != 0) send else send (decided), local c for cm_CutChar, *(int *)(cm_CutChar +
+   4), climb 2 rounds, flip --want (0 flips). Worse: state before charId (6 ins), memmove (draft), a static
+   __inline helper (c in ebp, draft 21). Callees cm_FightMouse / cm_UpdateSceneChars / cm_UpdateBombs /
+   cm_UpdateGrenades / cm_UpdatePointer / cm_UpdatePortraits are draft. Next: read c2.dll's escape test
+   (which counts address-taking calls) or find the ordinary construct with two such calls. */
 
 void cm_FightFrame(char *r)
 {
