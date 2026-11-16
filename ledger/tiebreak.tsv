@@ -3421,7 +3421,7 @@ exe	0x0052fcf0	sv_BroadcastText	sv	db0c76390c53acec	no	byte	control=byte p1=byte
 exe	0x0052fd80	sv_SyncText	sv	fb7841d1995d0df9	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0052fe00	sv_PumpNet	sv	130adec5c73ea739	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0052fe10	sv_ChatConsole	sv	6378e2194f5a3fe4	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x00530100	sv_UpdateQuickChat	sv	c19c2aadec8a2022	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
+exe	0x00530100	sv_UpdateQuickChat	sv	c19c2aadec8a2022	no	shape	sample n=32 seed=1 compiled=32 codegens=1 best=shape	01b55990284afb4a
 exe	0x005301a0	sv_UpdateWeather	sv	789e109c369639b9	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
 exe	0x00530670	sv_WeatherFrame	sv	167e63b1bc83af02	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x005307f0	sv_AdvanceGame	sv	31c3736fa5177ed2	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	

@@ -6941,18 +6941,16 @@ void sv_ChatConsole(void)
 
 void sv_UpdateQuickChat(void)
 {
-    if (sv_Frames[sv_FrameDepth].cb == (int)sv_ChatConsole || sv_ChatTime <= d3_Time - 0x23a || sv_ChatTime == 0xffffffff) {
-        if (sv_QuickChatForm != -1) {
-            d2_CloseView(sv_QuickChatForm);
-            sv_QuickChatForm = -1;
-        }
-    } else {
+    if (sv_Frames[sv_FrameDepth].cb != (int)sv_ChatConsole && sv_ChatTime > d3_Time - 0x23a && sv_ChatTime != 0xffffffff) {
         if (sv_QuickChatForm == -1) {
             sv_QuickChatForm = d2_OpenForm(0, 0, "misc\\quickchat");
             d2_PlaceMainWindowF(sv_QuickChatForm, 3);
-            if (sv_QuickChatForm == -1)
-                return;
         }
+    } else if (sv_QuickChatForm != -1) {
+        d2_CloseView(sv_QuickChatForm);
+        sv_QuickChatForm = -1;
+    }
+    if (sv_QuickChatForm != -1) {
         d2_SetForm(sv_QuickChatForm, 0);
         io_PrintText("$C");
         io_PrintText(cm_ChatLog);

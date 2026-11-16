@@ -356,6 +356,14 @@ Which arm is inline, jumps into another arm, threaded and redundant tests, `&&` 
 - **The shared return 0 in the middle, the rate / success code last (ours the reverse, with `goto rate`)**:
   guard returns all the way, `if (b != 1 || ..) return 0;`, each failing step `if (..) return 0;`, the kind chain
   ending `else return 0;`, the success code after it: no goto (ai_DecideProduceGood 34 ins -> byte).
+- **A void function whose skips jump to a `ret` in the middle, a later block ending in its own `ret`** (only
+  jump targets differ, `0 ins / 2 bytes`): the work after the if/else was a test at the join, decided on most
+  paths: `if (show) { if (h == -1) h = Open(); } else if (h != -1) { Close(h); h = -1; } if (h != -1) {
+  print }`. No return / goto / nesting / flag / loop / swapped-arm spelling of `if (..) hide else { open; if (h
+  == -1) return; print }` moved it (sv_UpdateQuickChat byte). A text in `<<< === >>>` with `"a\\b"` may not
+  apply / loses the backslash: give such a function whole from a generator.
+- **Each arm of a switch case ending in its own `return 0`** where the original's skip tests jump to another
+  case's `return 0` block: one more `return` per arm (main_WindowProc WM_ACTIVATEAPP byte).
 
 Read from C2 13.00.9044 and checked on toys with `tools/c2dag/c2tail.py` (merges, tries, `--il` dumps) and
 `c2pass.py --skip` (`c2pass.py --list` names the sites). A `return` is `eax = ..; jmp Lexit`; the epilogue is
