@@ -4342,9 +4342,9 @@ exe	0x005a8f90	ai_ShowFeudNews	lc	0bd1d2e9c014bf96	no	shape	control=shape p1=sha
 exe	0x005a9050	ai_ShowPartnerNews	lc	57a2815695248962	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
 exe	0x005a9110	ai_ShowCharacterNews	lc	08d7e76e70e9a4db	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005a9170	ai_NotifyPlayerOfChar	lc	2b7876153bbf4da0	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x005a91c0	ai_PlagueNews	lc	99e1cc2295e9e1ee	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
+exe	0x005a91c0	ai_PlagueNews	lc	99e1cc2295e9e1ee	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	f7d41e6f0b56efc7
 exe	0x005a9240	ai_PlagueMessage	lc	2a45302ba83297e7	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
-exe	0x005a92b0	ai_PlagueMessageAll	lc	f6b1e9a18230cdec	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
+exe	0x005a92b0	ai_PlagueMessageAll	lc	f6b1e9a18230cdec	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	f7d41e6f0b56efc7
 exe	0x005a9330	ai_SendSwapText	lc	5cf6657aa11cbfbc	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005a9430	ai_ShowEvidenceVoidNews	lc	e134746d803c17b4	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005a9470	ai_GypsyDeliveryText	lc	103806e458036f68	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	

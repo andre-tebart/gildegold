@@ -101,7 +101,8 @@
 
 #define sv_ReturnZeroV ((int (*)(int))sv_ReturnZero)  /* @original 0x5c4100 passes the research class as an argument (sv.h declares the function void) */
 #define ai_MapPickCb(cb) ((void (*)(void *, void *))(cb))  /* @original: ai_MapPick's cb is void (*)() (lc.h, its callbacks take differing pointer types); both indirect calls push two dwords and read no result (0x5b22f6/0x5b22f7 push ebp twice; 0x5b248f/0x5b2490 push the picked building and picked) */
-/* lc.c -- the production / trade windows and the tavern / location / money lender / Rathaus windows
+#define util_RandomS ((unsigned short (*)(unsigned short))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original the plague messages (ai_PlagueNews, ai_PlagueMessageAll) read the 16-bit result (mov si,ax / and esi,0xffff), as f3gm.c's gm_Shuffled */
+/* lc.c --the production / trade windows and the tavern / location / money lender / Rathaus windows
    (0x58bbd0 .. 0x5d33b0): the
    "Handel\Handel_PRODUKTION" screen of a building (0x58bd60) and its helpers (the table init 0x58bbd0, the
    goods columns 0x58c680 ..), then the building purchase / construction screens (0x58f510 .. 0x593960: the
@@ -15204,10 +15205,10 @@ void ai_PlagueNews(void)
 {
     char local[256];
     G8CHARREC *c;
-    unsigned short v;
+    int v;
 
-    v = (unsigned short)util_Random(3);
-    sprintf(local, "_KATASTROPHE_PEST_HS_0%i", (unsigned int)v);
+    v = util_RandomS(3);
+    sprintf(local, "_KATASTROPHE_PEST_HS_0%i", v);
     txt_Format(ai_NewsText, v + 0x20c7);
     c = (G8CHARREC *)ai_Chars;
     do {
@@ -15252,10 +15253,10 @@ void ai_PlagueMessage(G8CHARREC *c)
 void ai_PlagueMessageAll(void)
 {
     char local[64];
-    unsigned short v;
+    int v;
     int i;
 
-    v = util_Random(2);
+    v = util_RandomS(2);
     sprintf(local, "_KATASTROPHE_PEST_HS_%i", v + 0x12);
     txt_Format(ai_NewsText, v + 0x20cd);
     for (i = 0; i < 0x300; i++) {
