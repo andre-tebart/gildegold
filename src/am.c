@@ -9881,18 +9881,22 @@ G6RING *ai_NextNearRingEntry(void)
 }
 
 /* the office holders of column col into the ring: each holder (not p) that passes cond, listed with flags f;
-   G7_ADD_ANY fills without a bound (at most 3 * 6 entries), G7_ADD stops when the ring is full */
-#define G7_ADD_BODY(col, f, cond, guard)                                            \
-    n = amt_GetColumnOfficesOwned((col), 6, list);                                  \
-    for (j = 0; j < n; j++) {                                                       \
-        guard                                                                       \
-        if ((cond) && (o = (G5CH *)gm_FindChar(list[j].owner)) != 0 && o != p) {   \
-            ai_NearRing[cnt].flags = (f);                                           \
-            ai_NearRing[cnt].dist = gm_Liking(o->id, p->id, 1);                     \
-            ai_NearRing[cnt].who = o;                                               \
-            cnt++;                                                                  \
-        }                                                                           \
-    }
+   G7_ADD_ANY fills without a bound (at most 3 * 6 entries), G7_ADD stops when the ring is full. A statement
+   (do .. while (0)): its exit block orders the predecessors of the g test behind it, which keeps g in edi from
+   the up test to the down test (vc6-matching "Live range splitting") */
+#define G7_ADD_BODY(col, f, cond, guard)                                             \
+    do {                                                                             \
+        n = amt_GetColumnOfficesOwned((col), 6, list);                               \
+        for (j = 0; j < n; j++) {                                                    \
+            guard                                                                    \
+            if ((cond) && (o = (G5CH *)gm_FindChar(list[j].owner)) != 0 && o != p) { \
+                ai_NearRing[cnt].flags = (f);                                        \
+                ai_NearRing[cnt].dist = gm_Liking(o->id, p->id, 1);                  \
+                ai_NearRing[cnt].who = o;                                            \
+                cnt++;                                                               \
+            }                                                                        \
+        }                                                                            \
+    } while (0)
 #define G7_ADD_ANY(col, f, cond) G7_ADD_BODY(col, f, cond, ;)
 #define G7_ADD(col, f, cond) G7_ADD_BODY(col, f, cond, if (cnt >= 32) break;)
 #define G7_LEVEL_NEAR (abs(amt_GetKindLevel(list[j].kind) - g) <= 1)
@@ -9902,34 +9906,7 @@ G6RING *ai_NextNearRingEntry(void)
    columns (1), of the columns one level up or down (0x40 / 0x80, level within 1); then the applicants for the
    office p applies for (2), the other applicants (4) and, for a kind 5 character, the characters of kind 5..7 (1);
    kind 6 / 7 entries get (4 - difficulty) * 5 added to their liking; then sets the cursor to a random entry with
-   a random stride from ai_RingStrides below the count, changed by one when it divides the count
-   @deep 13 ins left, all one mechanism. Levers found this session: side[2]/up[2] arrays (frame), 768 pass
-   as index loop for (j..) { o = &G5_CHARS[j]; with o->kind read three times (no k), p == o, o ==
-   ai_NearRing[i].who; applicant count its own local nrivals; the column 1..3 arm as three arms (col==1
-   {2,3} / col==2 {1,3} / else {1,2}: the constant 3 gets a third reference, takes ecx, the scratch
-   rotation of all column loops falls in place); (G5CH *)rivals[j] == ai_NearRing[i].who. Left: the
-   original loads g once into edi for the up test (0x4a3fb1 cmp edi,3/6) and keeps it to the down test (cmp
-   edi,4/7), reloading edi at each up-loop exit (0x4a408b after up[0], 0x4a4157 after up[1]; the n<=0 skip
-   edges and the test1-false edge jump past the reloads): a load of g that lives across the up block's
-   calls in a callee-saved register. Ours loads g into eax at each test. The c2trace pieces of g (82/83,
-   eax) do not change even in a probe that gives test1 edi (a store of g after the up[0] loop): the edi
-   value is a cross-block reuse of the g load, not those pieces; a use of g at depth 0 between the up loops
-   makes it span. Tried, = control: g block-local in the else, switch (g) {case 3: case 6:}, extra braces,
-   1 >= abs(..), declaration order / unsigned g; worse: else-if or g != 3 && g != 6 && .. for the down
-   test, two ifs for up[0]/up[1], if (g == 3) around up[1], down block first, abs(g - level), < 2. flip.py
-   --want 'mov edi, _g' hits only meaning-changing deletions in the applicants block. climb --rounds 4
-   --beam 6 (seed 7) and --rounds 2: nothing below 13. Next: find what makes VC6 reuse the test's g load
-   across the up block (c2trace of the probe variant: which candidate/temp holds edi there), or a code-free
-   g reference between the up loops. prior: read in full against the original (all 11 column loops, the
-   applicants and the 768-character pass, the difficulty bias, the cursor setup) and reconciled:
-   AMTREC/AMTKIND buffers, ai_NearRing[cnt] stores, unbounded no-office loops, abs(level-g) <= 1, if (cnt >
-   3) order, int count (idiv). Left is allocation: o held in a stack slot instead of esi at 0x4a3b33 (- mov
-   esi,[esp+0x30] / + mov [esp+0x10],eax; mov esi,[esp+0x10]) and 0x4a3bbb (+ jmp; mov esi,[esp+0x10]); the
-   constant 3 in ecx at 0x4a3d58/0x4a3d72 (+ mov ecx,3; cmp esi,ecx / - cmp esi,3); in the 768 pass the
-   original walks &o->kind in [esp+0x10] and keeps f in edx (0x4a4495..0x4a4567: + cmp word ptr
-   [edi],0xffff; mov edx,1 / - mov dx,[edi]; cmp dx,0xffff; mov [esp+0x10],1); 0x4a3f18 (-58) and 0x4a4393
-   (+65) are one loop copy the aligner pairs one copy off (the 11 loops are identical up to slots); 12
-   branch targets differ by these si... */
+   a random stride from ai_RingStrides below the count, changed by one when it divides the count */
 void ai_FillNearRing(AICHAR *c)
 {
     G5CH *p = (G5CH *)c;
@@ -9945,9 +9922,9 @@ void ai_FillNearRing(AICHAR *c)
     ai_NearRingCount = 0;
     memset(ai_NearRing, 0, 32 * sizeof(G6RING));
     if (p->officeKind == 0) {
-        G7_ADD_ANY(1, 0x40, amt_GetKindLevel(list[j].kind) < 3)
-        G7_ADD_ANY(2, 0x40, amt_GetKindLevel(list[j].kind) < 3)
-        G7_ADD_ANY(3, 0x40, amt_GetKindLevel(list[j].kind) < 3)
+        G7_ADD_ANY(1, 0x40, amt_GetKindLevel(list[j].kind) < 3);
+        G7_ADD_ANY(2, 0x40, amt_GetKindLevel(list[j].kind) < 3);
+        G7_ADD_ANY(3, 0x40, amt_GetKindLevel(list[j].kind) < 3);
     } else {
         int side[2];
         int up[2];
@@ -9990,17 +9967,17 @@ void ai_FillNearRing(AICHAR *c)
             down[0] = 4;
             down[1] = 5;
         }
-        G7_ADD(kind.col, 0x10, 1)
-        G7_ADD(side[0], 1, 1)
-        G7_ADD(side[1], 1, 1)
+        G7_ADD(kind.col, 0x10, 1);
+        G7_ADD(side[0], 1, 1);
+        G7_ADD(side[1], 1, 1);
         if (g == 3 || g == 6) {
-            G7_ADD(up[0], 0x40, G7_LEVEL_NEAR)
-            G7_ADD(up[1], 0x40, G7_LEVEL_NEAR)
+            G7_ADD(up[0], 0x40, G7_LEVEL_NEAR);
+            G7_ADD(up[1], 0x40, G7_LEVEL_NEAR);
         }
         if (g == 4 || g == 7) {
-            G7_ADD(down[0], 0x80, G7_LEVEL_NEAR)
-            G7_ADD(down[1], 0x80, G7_LEVEL_NEAR)
-            G7_ADD(down[2], 0x80, G7_LEVEL_NEAR)
+            G7_ADD(down[0], 0x80, G7_LEVEL_NEAR);
+            G7_ADD(down[1], 0x80, G7_LEVEL_NEAR);
+            G7_ADD(down[2], 0x80, G7_LEVEL_NEAR);
         }
     }
     if (p->appliedOffice != 0) {
