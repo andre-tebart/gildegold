@@ -2094,7 +2094,8 @@ void ord_ComputeStatistics(float *out)
 /* 0x4f8ed0, recomputes the statistics (ord_ComputeStatistics) into ord_Statistics, smooths the rating out[5] into
    ai_Rating (the first time ai_RatingBase starts at 0.95 of it), sets the change rate ord_RatingRate from the gap
    between the two, stamps ord_StatisticsClock and sends the record as message 0x41 (the ORDSAVE ord_LoadStatistics
-   restores) */
+   restores). The copy into ord_Statistics stands in both arms (VC6 hoists it in front of the branch, in the
+   original's edi / esi / ecx order). */
 
 void ord_UpdateStatistics(void)
 {
@@ -2102,12 +2103,14 @@ void ord_UpdateStatistics(void)
     ORDSAVE m;
 
     ord_ComputeStatistics(st);
-    memcpy(&ord_Statistics, st, sizeof ord_Statistics);
     if (ai_RatingBase == 0.0f) {
+        memcpy(&ord_Statistics, st, sizeof ord_Statistics);
         ai_Rating = st[5];
         ai_RatingBase = st[5] * 0.95;
-    } else
+    } else {
+        memcpy(&ord_Statistics, st, sizeof ord_Statistics);
         ai_Rating = (st[5] - ai_Rating) * 0.5f + ai_Rating;
+    }
     ord_Statistics.rating = ai_Rating;
     ord_Statistics.base = ai_RatingBase;
     ord_RatingRate = (ai_Rating - ai_RatingBase) * 0.0007336182331406322;

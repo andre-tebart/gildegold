@@ -2281,6 +2281,9 @@ Store order in a fill, hoisted loads and sunk stores, statement order effects, `
   8-12: ai_StorageContact, ai_CriminalContact, ai_StoneKontorContact ..). The order is near, not equal to, the
   click chain's. A chained `a = b = .. = 0;` evaluates from the right: separate statements (ai_ProductionContact).
   Generator: scratch `gen_init.py` / `gen_hc.py` style, one `dcp try` per function.
+- **`mov edi, global / lea esi / mov ecx, n / rep movsd` (the inline copy's setup reversed)**: the copy stood
+  at the top of both arms of the following if; VC6 hoists it in front of the branch in that order
+  (ord_UpdateStatistics). Loop, struct assignment and memcpy spellings at function level all give `mov ecx` first.
 - **A byte (or other) local used only inside a loop or branch belongs in that block**: function scope makes an
   address-taken byte live through the whole function, so the fild / compare int temp cannot share its slot
   (init_CreateOpponents `unsigned char b` in the skill loop, he_RunGraveTraining `gain` in the training branch).
