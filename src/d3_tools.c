@@ -2070,8 +2070,8 @@ static char d3t_SmokeCB(D3PARTSYS *ps, unsigned long time)
     }
     return dead < ps->count;
 }
-/* 0x416340. NONMATCHING: 21 bytes, scheduling in the p->time line (the original loads now after
-   adding rand() & 7 and the delay, and increments i later); no operand order or type changes it.
+/* 0x416340, a smoke particle system: the particles start at start (height y) spread by a random
+   vector, each colour channel color + (rand() & color.a), the time staggered by i * delay.
    mask is an int local: color.a is loaded as a zero-extended dword before par_SetPos. */
 
 D3PARTSYS *d3t_CreateSmoke(void *parent, D3VECTOR *pos, int count, float size, float unused, float height,
@@ -2125,6 +2125,10 @@ D3PARTSYS *d3t_CreateSmoke(void *parent, D3VECTOR *pos, int count, float size, f
             p->r = (rand() & mask) + color.r;
             p->g = (rand() & mask) + color.g;
             p->b = (rand() & mask) + color.b;
+            /* @original three label nodes in this block: VC6 schedules a straight block in pieces of 81 nodes, and
+               the original's cut falls three nodes before ours (now loaded after rand() & 7 and the delay, i
+               incremented before the delay store); no ordinary spelling of the body moves it */
+        lbl_r: lbl_g: lbl_b:
             p->time = (rand() & 7) + i * delay + now;
         }
     }

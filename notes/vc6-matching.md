@@ -1953,6 +1953,7 @@ Store order in a fill, hoisted loads and sunk stores, statement order effects, `
 - **Scheduling regions and memory conflicts**: a region ends at a jump, a label or after 81 instructions
   (FUN_10714d7c), so a long straight block is scheduled in pieces. Memory operands conflict only when they are
   the same symbol with overlapping [offset, offset+size) (FUN_1070437c): `Snd[0].snd` and `Snd[1].snd` never do.
+  The 81 counts every node of the block in list order, pseudo nodes included: a user label (`l: ;`, also a `goto` target whose jump VC6 removed) is one node and does NOT end the region; labels of decided `if`s, empty loops, `do { } while (0)`, inline helpers and block scopes leave none. A hunk in the last statements of a long loop body where the original loads a value later / increments later = the original's cut falls N nodes earlier; read the cut with `c2dag.py` (the block holding the rest starts at the cut) and test N labels as a probe. d3t_CreateSmoke needed exactly 3 (kept with an @original comment after every ordinary spelling, inline helper, block scope and type round left the code unchanged).
 - **Stores to an address-taken local order later loads**: with a function-scope struct whose address is taken,
   the scheduler orders every pointer load after the earlier stores to that local; declared in the block that
   fills and passes it, the loads move free (main_ChooseCity, main_EndRound, the block-scope sweep below). A store
