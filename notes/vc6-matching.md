@@ -1262,6 +1262,10 @@ a stack slot is a split piece, and the piece's extent is decided by the rules be
   result is a variable two paths reach, not a forward-substituted temp: the nested ifs were flat, `rc = f(); if
   (rc == 0) { ..; rc = g(); } if (rc == 0) { .. }` (the second test is decided on the first's failure path and
   jumps straight on) (cm_RunDeath, byte).
+- **Two strength-reduced pointers initialised in the other order in a loop preheader** (`mov edi,&out; mov esi,&tab[0].f`
+  against ours esi first): a named element pointer `c = &tab[i];` used for the test, the store and the call
+  argument instead of `tab[i].f` written at each use; flip showed the lever as a duplicated `out[n++] = ..`
+  (more weight on the out pointer) (sv_CollectGroupCharacters, byte).
 - **A zero register that starts at a vector's fourth store** (`xor ebx,ebx`, three immediate zero stores, `mov
   [w],ebx`, later float zeros / `cmp fired,ebx` from it): that word was an int (`CANNONROT { float x, y, z; int
   w; }`, `pos.w = 0`); once the int const#0 web has a register, the later float zero stores use it too

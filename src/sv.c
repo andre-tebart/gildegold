@@ -4198,6 +4198,7 @@ void sv_ClearSelection(void)
 void sv_CollectGroupCharacters(char *b)
 {
     int n, i;
+    AICHAR *c;
 
     memset(ai_SceneChars, 0, sizeof(ai_SceneChars));
     if (b != 0) {
@@ -4205,10 +4206,11 @@ void sv_CollectGroupCharacters(char *b)
         for (i = 0; i < 768; i++) {
             if (n >= 31)
                 return;
-            if (ai_CharsT[i].model != 0 && ai_CharsT[i].model->bldId == ((AIBLD *)b)->id) {
-                ai_SceneChars[n++] = (int)&ai_CharsT[i];
+            c = &ai_CharsT[i];
+            if (c->model != 0 && c->model->bldId == ((AIBLD *)b)->id) {
+                ai_SceneChars[n++] = (int)c;
                 if (n > 8)
-                    ch_SetVisible((CHARACTER *)ai_CharsT[i].model, 0);
+                    ch_SetVisible((CHARACTER *)c->model, 0);
             }
         }
     } else {
