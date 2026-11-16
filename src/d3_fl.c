@@ -1169,7 +1169,24 @@ char d3fl_SameType(D3FLMAP *map, int x, int y, int n)
 }
 /* 0x441300, the divide maps: per map quad, which diagonal splits it (bit 7) and whether all its
    corners have the same tile type (bit 6); then the height range of each tile
-   @deep B: code 497 / regs 2 / fill 1 - semantics verified in round 4 (level loops 0/1/2, d3fl_PrepareWater, tile height range; readable): the remaining code hunks are register allocation (map in ebp in the original, edi in ours), the stack slots, and the (abs <= abs) * 2 | SameType << 6 expression, where the original builds 2*x in a byte (add al,al) and shifts once after the OR while ours distributes the shift (shl al,7 / shl,6) - the same value. Tried byte/int temp, d |= ...; d <<= 6, * 64, +, ? 2 : 0, (x << 1 | f) << 6, casts (round-4 note): all same operation other spelling, needs vargen */
+   @deep S1 (kept): the divide byte as ((abs <= abs) << 1 | SameType) << 6 in both loops gives the
+   original's setle/add al,al/or/shl 6 (with * 2 VC6 distributes the shift: shl 7 / shl 6); 331 -> 323 ins.
+   Left: (a) map in ebp in the original (edi in ours); level 0 keeps x1 in a slot (stored, reloaded for
+   h[y*size+x1]) where ours has it in ebp; level loops: original s esi / h ebp (map split there, reloaded
+   from the arg slot), ours s ebp / h esi. (b) tile loop: the original hoists n*i and n*j (imul at the
+   i-loop top into [esp+0x3c]/[esp+0x40], the y loop entered by jmp past their reloads) and keeps mn's 0xff
+   through the byte slot [esp+0x48]; ours computes both products at every y (the body reuses the y test's
+   map->n load). No lever for (b): index spellings, init orders (mx/mn), hmin/hmax order, y < map->n + 1 /
+   map->n >= y loop forms, n = map->n local (top / per i, in index / everywhere), named x0/y0 locals (hoist
+   right but the x loop loses its strength reduction: x0 reloaded per x). flip: only all-unsigned loop vars
+   hoist (but unsigned compares; wrong). (c) y*s*size spellings all canonicalised (= control). climb
+   commute leads (264/254) change the meaning, ignore. prior: B: code 497 / regs 2 / fill 1 - semantics
+   verified in round 4 (level loops 0/1/2, d3fl_PrepareWater, tile height range; readable): the remaining
+   code hunks are register allocation (map in ebp in the original, edi in ours), the stack slots, and the
+   (abs <= abs) * 2 | SameType << 6 expression, where the original builds 2*x in a byte (add al,al) and
+   shifts once after the OR while ours distributes the shift (shl al,7 / shl,6) - the same value. Tried
+   byte/int temp, d |= ...; d <<= 6, * 64, +, ? 2 : 0, (x << 1 | f) << 6, casts (round-4 note): all same
+   operation other spelling, needs vargen */
 
 void d3fl_MakeDivide(D3FLMAP *map)
 {
@@ -1187,7 +1204,7 @@ void d3fl_MakeDivide(D3FLMAP *map)
         for (x = 0; x < size; x++) {
             h = map->height;
             x1 = (x + 1) & mask;
-            map->divide[0][y * size + x] = ((abs(h[y * size + x] - h[y1 * size + x1]) <= abs(h[y * size + x1] - h[y1 * size + x])) * 2
+            map->divide[0][y * size + x] = ((abs(h[y * size + x] - h[y1 * size + x1]) <= abs(h[y * size + x1] - h[y1 * size + x])) << 1
                                             | d3fl_SameType(map, x, y, 1)) << 6;
         }
     }
@@ -1200,7 +1217,7 @@ void d3fl_MakeDivide(D3FLMAP *map)
                 size = map->size;
                 x1 = (x * s + s) & mask;
                 h = map->height;
-                map->divide[l][y * n + x] = ((abs(h[(y * size + x) * s] - h[y1 * size + x1]) <= abs(h[y * s * size + x1] - h[y1 * size + x * s])) * 2
+                map->divide[l][y * n + x] = ((abs(h[(y * size + x) * s] - h[y1 * size + x1]) <= abs(h[y * s * size + x1] - h[y1 * size + x * s])) << 1
                                              | d3fl_SameType(map, x * s, y * s, s)) << 6;
             }
         }
