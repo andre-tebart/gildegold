@@ -3928,7 +3928,7 @@ exe	0x00575540	he_EventGoodMoney	he	5cdaf29047aa9f1b	no	byte	control=byte p1=byt
 exe	0x00575570	he_EventGoodRefund	he	98d34ec85451306e	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005755c0	he_LoadMessageFilter	he	6adec84c92e6c78a	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00575600	he_SaveMessageFilter	he	bd8f4f70b8c50025	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x00575640	he_IsMessageKindFiltered	he	56c1d06899c3f2ac	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
+exe	0x00575640	he_IsMessageKindFiltered	he	56c1d06899c3f2ac	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	825673d29b762042
 exe	0x00575710	he_SetMessageKindFiltered	he	350d57009bc7af27	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00575860	ai_TutorialTick	sv_t	832379299c247143	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00576020	unk_ClearEndGameGate	sv_t	d20c6f0ee85ebad8	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	

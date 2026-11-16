@@ -2775,7 +2775,8 @@ Operand order on the FPU stack, `fst` / `fstp`, float compares, constants, `_fto
   return 0;` (VC6 turns the if/else into and/shr after the sign extension; also on an int flag slot). No lever:
   casts, shifts, ternaries, bitfields, volatile, inline functions all narrow to a byte op; `(f & 2) != 0` and
   `(f & 2) >> 1` give shr/and. A dword load then `movsx r,al` means the flags sit in an int local first.
-  (amt_IsColumnDecided)
+  (amt_IsColumnDecided; he_IsMessageKindFiltered: one switch case `if (mask & 0x40) return 1; return 0;` on an
+  int global, no cast, where its sibling cases `break` to the shared `return 0` and keep `test byte ptr`)
 - **`xor ecx,ecx; mov cl,[m]; mov eax,ecx; shr eax,5; and eax,1`** (zero-extended byte bit returned) where ours has
   `mov al,[m]`: `if (b & 0x20) return 1; return 0;` (likewise `x & 0x10`: `xor edx,edx; mov dl,[m]; shr; and`).
   No lever: `b >> 5 & 1`, `>>`/`&`, bitfields, `!= 0`, ternary, inline helper. (ch_AnimDone byte)

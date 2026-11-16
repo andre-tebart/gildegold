@@ -25811,13 +25811,7 @@ void he_SaveMessageFilter(void)
     WritePrivateProfileStringA("Game", "message_filter_mask", buf, he_OptionsPath);
 }
 /* 0x575640, 1 when the message filter mask 0x6f263c has the bit of the message kind id (0x605 the bit 1, 0x606 2, 0x607 4, 0x608 8,
-   0x609 0x10, 0x60a 0x20, 0x60b 0x40, 0x60c 0x80, 0x60d 0x100); else 0
-   @deep read the whole switch against the original: 8 of 9 cases (if (mask & bit) return 1; break) and the
-   jump table are equal; case 0x60b reads the bit with movsx/and 0x40/shr 6, written
-   (unsigned)((char)he_MessageFilterMask & 0x40) >> 6. Remaining hunk at +0x72: ours 'mov al, byte ptr
-   [he_MessageFilterMask]', the original 'movsx eax, byte ptr [...]' (same value after and eax,0x40). Tried
-   15 spellings (int/unsigned/char casts, /0x40, >>6&1, shifts, a short cast): each gives mov al or mov
-   eax,dword + sar/and. A load-width choice for a variant round. */
+   0x609 0x10, 0x60a 0x20, 0x60b 0x40, 0x60c 0x80, 0x60d 0x100); else 0 */
 
 int he_IsMessageKindFiltered(int id)
 {
@@ -25847,7 +25841,9 @@ int he_IsMessageKindFiltered(int id)
             return 1;
         break;
     case 0x60b:
-        return (unsigned)((char)he_MessageFilterMask & 0x40) >> 6;
+        if (he_MessageFilterMask & 0x40)
+            return 1;
+        return 0;
     case 0x60c:
         if (he_MessageFilterMask & 0x80)
             return 1;
