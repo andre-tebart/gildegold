@@ -1641,6 +1641,12 @@ Frame size, slot order, holes, shared slots, dead parameter slots, block-scoped 
   `[12]`: 4 refs / 10 between the neighbours). No lever: declaration order, block scope of the other records.
   (d3d_LoadTexture 127 -> 77 ins, then a 34/34 reference tie left between two pointer locals)
 
+- **A loop counter in a slot shared with an `&iv` FtoI target, `[base+edi*4+off]` indexing with no strength-reduced
+  pointer**: the counter IS the escaped local (`for (iv = 0; iv < sizeof(step) / sizeof(step[0]); iv++)`, the
+  unsigned compare `jb` from sizeof); a plain `l` gets the array pointer strength-reduced. Declared in a block that
+  opens after D3_ZERO so its asm does not add 2 refs (d3fl_MakeLight). Also there: row bases `up`/`down`/`row`
+  were no locals (`h[((y + 1) & (size - 1)) * size + x]`, `lp[y * size + x]`; VC6 hoists / strength-reduces them).
+
 ### Slot order swapped, frame size equal
 
 - **Two equal-size locals swapped**: add a reference with no code - a statement in both arms of a tail-merged
