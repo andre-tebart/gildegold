@@ -1529,7 +1529,7 @@ int ai_CommandLawChange(int s, int b, char *fmt)
    d1-before-d2 declaration order, the two zero stores as memset of a 4-byte buffer, and msg.time = ai_Time
    (byte-identical to msg.time = ai_Time) are the fixes; 165 -> 6 differing
    instructions. Q1 has evidence, Q2..Q7 pass.
-@deep Clock word hunk fixed: msg.time = ai_Time after msg.n (type, to, ch, fromId, flags, car, n, time; the ai_CommandBreakGuildSeats lever), 6 -> 4 ins (3360-order round, time late: best 4). Left: the two for-init xor ecx,ecx of the digit loops (orig before inc edx at 4b0e05 / 4b0e4d, ours after the d1/d2 stores and after the *fmt test). prior: only scheduling left: 3 order hunks of 226 instructions (6 differing) - the for-init i = 0 of both digit loops sits after fmt++ (4b0e0e) / after the *fmt == 0 test (4b0e52) in ours and before them in the original (4b0e05, 4b0e4d), and the clock word store (msg.ids[0], [esp+0x7c]) is kept until after fromId/flags/car/n in the original (4b0fa9) but emitted right after the clock copy's dwords in ours (4b0f82). Meaning read equal against the disassembly: the name array is {KATHOLISCH, EVANGELISCH} (ds:0x601c20 into [esp+0x14]), the product is float (fild + fimul p), the d1/d2 slot pair and the msg fields match. Store-order / hoist work: vargen perm rounds or a source shape that keeps the word store late. */
+   */
 
 int ai_CommandFaithChange(int a, int b, char *fmt)
 {
@@ -1556,10 +1556,11 @@ int ai_CommandFaithChange(int a, int b, char *fmt)
     fmt += strlen(name[i]);
     if (*fmt != '_')
         return 0;
+    i = 0;
     fmt++;
     memset(d1, 0, sizeof(d1));
     memset(d2, 0, sizeof(d2));
-    for (i = 0; ; i++, fmt++) {
+    for (; ; i++, fmt++) {
         if (*fmt == 0)
             return 0;
         if (*fmt == '_' || i >= 3)
@@ -1570,10 +1571,11 @@ int ai_CommandFaithChange(int a, int b, char *fmt)
     }
     if (*fmt == 0 || i == 0)
         return 0;
+    i = 0;
     fmt++;
     if (*fmt == 0)
         return 0;
-    for (i = 0; *fmt != 0 && i < 3; i++, fmt++) {
+    for (; *fmt != 0 && i < 3; i++, fmt++) {
         if (*fmt < '0' || *fmt > '9')
             return 0;
         d2[i] = *fmt;

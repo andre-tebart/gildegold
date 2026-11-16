@@ -2276,8 +2276,9 @@ Store order in a fill, hoisted loads and sunk stores, statement order effects, `
   BBits, RBits, 116 -> 39 ins; run it again after any other change upstream, the best order moved once).
 
 ### Init and zero-store order
-- **A flag store before / after a `rep movsd` or a loop's `xor edi,edi`**: the store's source position decides it; `again = 1;` above `r = 0; memset(..); fam = main_Family;` puts it before the copy's `rep movsd`, and `for (i = 0, again = 1; ..)` puts `xor edi,edi` first (main_ChooseTalents byte; climb.py `move` found the first).
 
+- **A loop's `xor ecx,ecx` (i = 0) above the `inc edx` (fmt++) and the stores / test before the loop**: `i = 0;` written above `fmt++; ..` with `for (; ..)`, the style the function already used for its first loop (ai_CommandFaithChange byte, both digit loops needed it; one alone stays at 2 ins).
+- **A flag store before / after a `rep movsd` or a loop's `xor edi,edi`**: the store's source position decides it; `again = 1;` above `r = 0; memset(..); fam = main_Family;` puts it before the copy's `rep movsd`, and `for (i = 0, again = 1; ..)` puts `xor edi,edi` first (main_ChooseTalents byte; climb.py `move` found the first).
 - **A zero store or a flag `= 0` scheduled first in a store run where ours puts it last** (after pushes or record
   fields): move the statement up one at a time (`dcp try NAME --move-line N --to A..B`): `done = 0;` before the
   `memset(&cfg, ..)` of the menu record (ai_PeaceWindow; its twin ai_HatredWindow draft -> shape),
