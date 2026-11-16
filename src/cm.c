@@ -10200,14 +10200,13 @@ int cm_LootCarts(CMFIGHTREC *a, AIBLD *b, AICHAR *d, int unused, float f)
 
 int cm_FightRole(unsigned char *b)
 {
-    char *r = ai_BTypes + *b * 0x24d;
-    char k = *r;
+    AIBTYPE *t = &ai_BTypesT[*b];
 
-    if (k == 0x13)
+    if (t->kind == 0x13)
         return 0;
-    if (k == 0x10)
+    if (t->kind == 0x10)
         return 1;
-    return k == 4 ? 2 : 0;
+    return t->kind == 4 ? 2 : 0;
 }
 /* 0x4d4090, the loot list of a won fight: for each of the 3 cart ids at +0x100 of cm_FightRecord the goods (mode 0 all,
    1 only those of the player, 2 only the others) get a cell of 5 per row (120 x 96 pixels from x, y): their picture
