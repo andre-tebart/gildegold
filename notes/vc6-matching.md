@@ -1399,6 +1399,10 @@ a stack slot is a split piece, and the piece's extent is decided by the rules be
 
 ### Pointer locals and addresses
 
+- **A dead `lea eax,[edi+eax*4]` right after a load `[edi+eax*4+0x22f]` (eax overwritten by the next call)**: a
+  named record pointer `t = &ai_BTypesT[b->type]; f(.., t->title, ..)`: VC6 folds t into the load and still
+  materialises it (he_AllocGeselle; the plain field access or a typed cast leaves no lea).
+
 - **A record address materialised (`mov eax,edi; add eax,ebx; mov al,[eax]` / `lea eax,[eax+edx*4]; mov
   al,[eax]`) where ours folds `[edi+ebx]`**: a pointer local read at every test (`g = &T[i]; if (g->type == A ||
   g->type == B ..)`, `g = GM_GOOD(id);`); a value local `type = ..->type` or the element repeated folds the
@@ -1528,6 +1532,15 @@ a stack slot is a split piece, and the piece's extent is decided by the rules be
 Frame size, slot order, holes, shared slots, dead parameter slots, block-scoped and address-taken locals.
 
 ### How the frame is laid out
+
+- **The original's frame larger by 4 / 12 bytes with an untouched hole behind the used fields (`frame 0x8 vs
+  0x14`, `dcp frame` holes)**: the local is the callee's whole record, only partly filled (`int req[5]` for the
+  20-byte request of amt_ExecuteMayorPowerMessage: ai_GuildLevel3RequestCB and its two twins). A 4-byte hole
+  BETWEEN two 12-byte copies with a frame that two 16-byte vectors overshoot by 4 = ONE local of 28 bytes (`struct
+  { D3VECTOR4 pos; D3VECTOR rot; }`): two separate arrays sort the 12-byte one first and a 16 + 16 pair adds the
+  trailing pad (ai_EnterOwnBuilding / ai_EnterBuilding, SVSAVEDVIEW). One local of ours paired with two original
+  slots (`<- several`) in two blocks of address-taken out-parameters = two function-scope locals (cm_CheckSellObject:
+  the buyer's building `bb` apart from the seller's `b`).
 
 - **Reference count of a local (read from c2.dll)**: one per operand naming the local, all blocks, no loop weight,
   taken after register allocation and instruction selection but BEFORE the late passes - a statement written in

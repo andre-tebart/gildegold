@@ -4181,11 +4181,13 @@ void he_AllocGeselle(int ev)
     AIJOB *e = (AIJOB *)ev;
     HEGESELLE *g = (HEGESELLE *)ev;
     AIBLD *b = 0;
+    AIBTYPE *t;
 
     gm_FindById((int *)&b, 0, 0, g->bldId);
     if (b == 0)
         he_FreeEvent((int *)ev);
-    g->slot = cm_SendMessage3d((char *)b, 0, ((unsigned char *)ai_BTypes)[b->type * 0x24d + 0x22f], 0);
+    t = &ai_BTypesT[b->type];
+    g->slot = cm_SendMessage3d((char *)b, 0, t->title, 0);
     e->end = ai_Time;
     gm_AddTime(&e->end, 0, 6, 0);
 }

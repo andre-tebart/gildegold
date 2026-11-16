@@ -3580,7 +3580,7 @@ exe	0x005472d0	he_DuelDeclined	he	aa8fe10312d6482b	no	shape	control=shape p1=sha
 exe	0x00547430	he_RunDuelChallenge	he	b8bfc59ce6b67314	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00547750	he_AllocInsult	he	a0e61b7b6818bce0	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=505	16d55ba700d46f39
 exe	0x00547ba0	he_RunInsult	he	a3682248de3bb1ba	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
-exe	0x00547ee0	he_AllocGeselle	he	ba9e3babfd50e9a3	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
+exe	0x00547ee0	he_AllocGeselle	he	ba9e3babfd50e9a3	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	16d55ba700d46f39
 exe	0x00547f90	he_RunGeselle	he	b7c56e73b83dd250	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
 exe	0x00548110	he_AllocInsultNews	he	a4155d9d77adea8c	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00548230	he_RunInsultNews	he	3599b454f16deb75	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
