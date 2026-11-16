@@ -4254,9 +4254,9 @@ exe	0x005a0950	ai_GuildCashPayWindow	lc	073f3b41f2c06479	no	shape	control=shape 
 exe	0x005a0ca0	ai_GuildGiftCallback	lc	0e3e20650c68899d	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005a0f10	ai_GuildGiftEntry	lc	bf0b467f55d73fbc	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005a1000	ai_GuildLevel1Window	lc	e56aa632d5069a51	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x005a13f0	ai_GuildLevel3RequestCB	lc	c435737849684ae2	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
+exe	0x005a13f0	ai_GuildLevel3RequestCB	lc	c435737849684ae2	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	0fe2d0f225319350
 exe	0x005a1530	ai_GuildLevel2RequestCB	lc	b77fed2d13c833f7	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
-exe	0x005a1670	ai_GuildLevel3PowerCB	lc	a93256eb8de7309f	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
+exe	0x005a1670	ai_GuildLevel3PowerCB	lc	a93256eb8de7309f	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	0fe2d0f225319350
 exe	0x005a17b0	ai_GuildLevel3Entry	lc	7c6f5e0c0cd1ebf7	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005a18d0	ai_GuildLevel2Listener	lc	c69c5c5bafb99431	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005a1960	ai_GuildLevel3Listener	lc	316ebb5aa199cc98	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	

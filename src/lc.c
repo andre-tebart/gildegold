@@ -11133,7 +11133,7 @@ typedef struct AMTPICK {           /* the row record the special-amount list han
    0xf8a668 == 1 only raises 0x6f22a0; 0x4758f0 at the end, returns whether the request went through */
 int ai_GuildLevel3RequestCB(AMTPICK *pick)
 {
-    int req[2];
+    int req[5];                 /* the request record of amt_ExecuteMayorPowerMessage (am.h G8REQ, 20 bytes): kind, id */
     int win;
     int id;
     int ok = 0;
@@ -11178,7 +11178,7 @@ int ai_GuildLevel3RequestCB(AMTPICK *pick)
 
 void ai_GuildLevel2RequestCB(int column)
 {
-    int req[2];
+    int req[5];                 /* the request record of amt_ExecuteMayorPowerMessage (am.h G8REQ, 20 bytes): kind, id */
     int win;
     int id;
 
@@ -11221,7 +11221,7 @@ void ai_GuildLevel2RequestCB(int column)
 
 void ai_GuildLevel3PowerCB(int column)
 {
-    int req[2];
+    int req[5];                 /* the request record of amt_ExecuteMayorPowerMessage (am.h G8REQ, 20 bytes): kind, id */
     int win;
     int id;
 
