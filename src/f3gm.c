@@ -9976,11 +9976,9 @@ void gm_DonationTop5(unsigned *ids, int *sc)
 int gm_LikingChance(int a, int b, int c, int d)
 {
     float share;
-    double limit;
 
     share = gm_Liking(a, b, 1) * 0.01f;
-    limit = c * share / d;
-    if (util_RandomF() + 0.15 < limit)
+    if (c * share / d > util_RandomF() + 0.15)
         return 1;
     return 0;
 }
