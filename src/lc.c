@@ -5277,18 +5277,18 @@ void ai_CriminalContact(AIBLD *bld)
     int gelage;
     int transport;
 
-    ausruesten = 0;
-    lauer = 0;
-    angriff = 0;
-    schutzgeld = 0;
-    spionieren = 0;
-    raub = 0;
-    regen = 0;
-    stroh = 0;
-    ziel = 0;
+    transport = 0;
     lager = 0;
     gelage = 0;
-    transport = 0;
+    ausruesten = 0;
+    ziel = 0;
+    stroh = 0;
+    schutzgeld = 0;
+    lauer = 0;
+    angriff = 0;
+    regen = 0;
+    spionieren = 0;
+    raub = 0;
     sv_ReleaseNamePlates();
     r = sv_RunFrame(ai_CriminalContact, 0x67fff);
     while (r != 0) {
