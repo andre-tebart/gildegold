@@ -2047,6 +2047,7 @@ int cm_RequestCreateGeb(int owner, int kind, D3VECTOR4 *pos, int *rot)
 {
     G17MSG m;
     char buf[0x100];
+    int i;
 
     m.type = 0x4c;
     if (kind == 0)
@@ -2054,9 +2055,8 @@ int cm_RequestCreateGeb(int owner, int kind, D3VECTOR4 *pos, int *rot)
     m.geb.owner = owner;
     m.geb.kind = (unsigned char)kind;
     m.geb.pos = *pos;
-    m.geb.rot[0] = rot[0];
-    m.geb.rot[1] = rot[1];
-    m.geb.rot[2] = rot[2];
+    for (i = 0; i < 3; i++)
+        m.geb.rot[i] = rot[i];
     sprintf(buf, "cm_RequestCreateGeb(): pos %f   %f   %f", pos->x, pos->y, pos->z);
     return cm_QueueSend(&m);
 }
