@@ -1650,11 +1650,11 @@ exe	0x0049a390	ai_DecideUseMilitaryObject	am	shape	readable
 exe	0x0049a5b0	ai_ExecuteUseMilitaryObject	am	shape	readable		
 exe	0x0049a690	ai_DecideUseReputationObject	am	shape	readable	deep	
 exe	0x0049aa80	ai_ExecuteUseReputationObject	am	shape	readable		
-exe	0x0049ab60	ai_DecideUseApsObject	am	shape	readable		
+exe	0x0049ab60	ai_DecideUseApsObject	am	byte	readable		
 exe	0x0049ad80	ai_ExecuteUseApsObject	am	shape	readable		
 exe	0x0049ae50	ai_DecideUseEducationObject	am	byte	readable		
 exe	0x0049b050	ai_ExecuteUseEducationObject	am	shape	readable		
-exe	0x0049b120	ai_DecideUseHealthObject	am	shape	readable		
+exe	0x0049b120	ai_DecideUseHealthObject	am	byte	readable		
 exe	0x0049b2b0	ai_ExecuteUseHealthObject	am	shape	readable		
 exe	0x0049b380	ai_DecideUseDynastyObject	am	byte	readable		
 exe	0x0049b6f0	ai_ExecuteUseDynastyObject	am	shape	readable		
@@ -2657,7 +2657,7 @@ exe	0x004e7c60	amt_ElectOffices	amt	shape	readable
 exe	0x004e8160	amt_CheckOfficeColumns	amt	byte	readable		
 exe	0x004e83b0	amt_IsColumnDecided	amt	shape	readable		
 exe	0x004e8530	amt_HasDeposalVote	amt	byte	readable		
-exe	0x004e85d0	amt_UpdateOffices	amt	shape	readable		
+exe	0x004e85d0	amt_UpdateOffices	amt	byte	readable		
 exe	0x004e86e0	amt_HasColumn7Holder	amt	shape	readable		
 exe	0x004e8730	amt_SendOfficeNews	amt	byte	readable		
 exe	0x004e87e0	amt_SendOfficeLost	amt	byte	readable		
@@ -2927,7 +2927,7 @@ exe	0x004f9e30	gm_StatisticsScreen	f3gm	byte	readable
 exe	0x004f9ec0	gm_IncomeRating	f3gm	byte	readable		
 exe	0x004f9f60	gm_IncomeKind1	f3gm	shape	readable		
 exe	0x004fa060	gm_IncomeKind2	f3gm	shape	readable		
-exe	0x004fa160	gm_IncomeKind3	f3gm	shape	readable		
+exe	0x004fa160	gm_IncomeKind3	f3gm	byte	readable		
 exe	0x004fa2a0	gm_IncomeKind4	f3gm	byte	readable		
 exe	0x004fa3d0	gm_IncomeKind5	f3gm	shape	readable		
 exe	0x004fa4b0	gm_CharacterIncomes	f3gm	shape	readable	deep	
@@ -2978,7 +2978,7 @@ exe	0x004fe310	gm_AddTime2	f3gm	byte	readable
 exe	0x004fe330	gm_Season	f3gm	byte	readable		
 exe	0x004fe350	gm_ClockSeason	f3gm	byte	readable		
 exe	0x004fe370	gm_InitBuildingTables	f3gm	draft	readable	deep	
-exe	0x004fe570	gm_LoadTables	f3gm	byte	readable		
+exe	0x004fe570	gm_LoadTables	f3gm	shape	readable		
 exe	0x004fe7f0	gm_ClearBuildings	f3gm	byte	readable		
 exe	0x004fe830	gm_ClearObjects	f3gm	shape	readable	deep	
 exe	0x004fe900	gm_FindObjectProto	f3gm	byte	readable		
@@ -4213,7 +4213,7 @@ exe	0x00599cb0	ai_BreweryContact	lc	shape	readable
 exe	0x00599e00	ai_DrawGoodsCell	lc	byte	readable		
 exe	0x00599ef0	ai_CityInfoWindow	lc	byte	readable		
 exe	0x0059a2c0	ai_CreateCityPoint	lc	byte	readable		
-exe	0x0059a3c0	ai_MapTableScreen	lc	shape	readable		
+exe	0x0059a3c0	ai_MapTableScreen	lc	byte	readable		
 exe	0x0059a560	ai_MapTableContact	lc	byte	readable		
 exe	0x0059a710	ai_MarketStandWindow	lc	byte	readable		
 exe	0x0059a800	ai_MarketStandListener	lc	byte	readable		
@@ -4285,7 +4285,7 @@ exe	0x005a45c0	ai_SpyReportsWindow	lc	byte	readable
 exe	0x005a48d0	ai_AttackWindow	lc	byte	readable		
 exe	0x005a4b30	ai_AttackStart	lc	byte	readable		
 exe	0x005a4b90	ai_PickpocketGangWindow	lc	draft	readable	deep	
-exe	0x005a4d40	ai_ThievesGuildListener	lc	shape	readable		
+exe	0x005a4d40	ai_ThievesGuildListener	lc	byte	readable		
 exe	0x005a4f50	ai_ThievesGuildEmptyListener	lc	byte	readable		
 exe	0x005a4f70	ai_StorageContact	lc	shape	readable		
 exe	0x005a5080	ai_TrainingContact	lc	byte	readable		
@@ -4303,7 +4303,7 @@ exe	0x005a6480	ai_WatchPlanStart	lc	byte	readable
 exe	0x005a64d0	ai_ArrestWindow	lc	byte	readable		
 exe	0x005a6720	ai_ArrestStart	lc	byte	readable		
 exe	0x005a67a0	ai_CityWatchListener	lc	shape	readable		
-exe	0x005a6920	ai_GuildHallListener	lc	shape	readable		
+exe	0x005a6920	ai_GuildHallListener	lc	byte	readable		
 exe	0x005a6a90	ai_TrainingRoomListener	lc	byte	readable		
 exe	0x005a6b50	ai_FormatCityName	lc	byte	readable		
 exe	0x005a6b70	ai_MapCellToScreen	lc	shape	readable		
