@@ -32789,12 +32789,16 @@ int ai_TrialStep3(G8CHARREC *ch, G8USEVIEW *use)
     if (ch->kind == 6) {
         txt_Format(text, (char *)0x9d);
         target = (G8CHARREC *)ai_SpecialAmountList((int)ch, text);
+        if (target != 0) {
+            ai_ApplyTrialStep((int)target, 3);
+            return 1;
+        }
     } else {
         target = (G8CHARREC *)gm_FindChar(use->target);
-    }
-    if (target != 0) {
-        ai_ApplyTrialStep((int)target, 3);
-        return 1;
+        if (target != 0) {
+            ai_ApplyTrialStep((int)target, 3);
+            return 1;
+        }
     }
     return 0;
 }
@@ -32810,12 +32814,16 @@ int ai_TrialStep4(G8CHARREC *ch, G8USEVIEW *use)
     if (ch->kind == 6) {
         txt_Format(text, (char *)0x9d);
         target = (G8CHARREC *)ai_SpecialAmountList((int)ch, text);
+        if (target != 0) {
+            ai_ApplyTrialStep((int)target, 4);
+            return 1;
+        }
     } else {
         target = (G8CHARREC *)gm_FindChar(use->target);
-    }
-    if (target != 0) {
-        ai_ApplyTrialStep((int)target, 4);
-        return 1;
+        if (target != 0) {
+            ai_ApplyTrialStep((int)target, 4);
+            return 1;
+        }
     }
     return 0;
 }
