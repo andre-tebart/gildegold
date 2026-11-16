@@ -23936,10 +23936,7 @@ free_ev:
    at work is told (the text 0x1bc8 at the object, else at the building's main room; the voice
    "_NACHRICHTEN_HS_81"), the trainee leaves the group and the event is freed. The gain's spelling
    S * ((minutes / 30.0) * 8.0) gives the original's fmul order (the parentheses keep 1/30 and 8.0 apart and
-   unfolded, the building factor first; he_RunStudy byte with it).
-   @deep fpu hunk gone with S * ((minutes / 30.0) * 8.0) (he_RunStudy's byte spelling). Left: slots 4, the
-   int temp of the skill byte compare (line 'c->skills[..] < 252') at [esp+0x10] in ours, [esp+0x18] in the
-   original; not worked yet. */
+   unfolded, the building factor first; he_RunStudy byte with it). */
 void he_RunGraveTraining(int ev)
 {
     AIJOB *e = (AIJOB *)ev;
@@ -23947,7 +23944,6 @@ void he_RunGraveTraining(int ev)
     char text[0x200];
     int minutes;
     float bskill;
-    unsigned char gain;
     unsigned char *skill;
     AICHAR *ch, *master;
     AIBLD *bld;
@@ -23963,6 +23959,8 @@ void he_RunGraveTraining(int ev)
         return;
     ch = (AICHAR *)gm_FindChar(t->trainee);
     if (ch != 0 && (float)ch->skills[t->skill] < 252.0f && gm_CompareTime(&ai_Time, &t->until) < 0) {
+        unsigned char gain;
+
         bld = (AIBLD *)gm_BuildQuery(1, 1, e->from);
         if (bld == 0) {
             he_FreeEvent((int *)ev);
