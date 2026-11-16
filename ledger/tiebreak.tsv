@@ -4569,10 +4569,10 @@ exe	0x005d0320	ai_UseGoodWeakenSkills	lc	70ec67397ad64dfa	no	shape	sweep control
 exe	0x005d0530	ai_UseGoodWeakenSkills2	lc	793a355ba9849df0	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	a8a81ae8260ddcfe
 exe	0x005d06e0	ai_UseGoodCureAilment	lc	71d85b2a537c683c	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005d0780	ai_UseGoodHalveWorkerValue	lc	9ca748862de6b853	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
-exe	0x005d08c0	ai_ApplyTrialStep	lc	29c07fdcca2444b7	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
-exe	0x005d09d0	ai_TrialStep1	lc	31cd393d6f746c77	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
-exe	0x005d0a40	ai_TrialStep3	lc	aec7f0685ab8a93b	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
-exe	0x005d0ab0	ai_TrialStep4	lc	0f1da53d6f2991a4	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
+exe	0x005d08c0	ai_ApplyTrialStep	lc	248f1fb460b6f153	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	671dc6dd62af1a83
+exe	0x005d09d0	ai_TrialStep1	lc	31cd393d6f746c77	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	2b38fd3794636db6
+exe	0x005d0a40	ai_TrialStep3	lc	aec7f0685ab8a93b	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	2b38fd3794636db6
+exe	0x005d0ab0	ai_TrialStep4	lc	0f1da53d6f2991a4	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	2b38fd3794636db6
 exe	0x005d0b20	ai_UseGoodRaiseRelation	lc	6ba23c5c2ef2754a	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x005d0c70	ai_QuarrelCallback	lc	2d9b3ae4a05aa7d2	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x005d0e60	ai_UseGoodTrialStep	lc	56972afc10b951d3	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	

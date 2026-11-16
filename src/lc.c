@@ -32740,9 +32740,7 @@ int ai_ApplyTrialStep(AICHARREC *ch, int skill)
     float y;
     unsigned char amount;
 
-    if (skill >= 5)
-        return 0;
-    if (!((float)ch->skills[skill] >= 252.0f)) {
+    if (skill < 5 && !((float)ch->skills[skill] >= 252.0f)) {
         x = (252.0f - ch->skills[skill]) * (1.0f / 252.0f);
         y = x * 0.6f + 0.2f;
         amount = (unsigned char)(int)(x * (((1.0f - y) + util_RandomF() * y) * 42.0f) + 1.0f);
