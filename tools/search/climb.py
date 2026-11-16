@@ -171,7 +171,10 @@ def op_move(lines, rng):
             lo, hi = min(i, j), max(i, j)
             if any(indent(lines[k]) < indent(a) and lines[k].strip() for k in range(lo, hi + 1)):
                 continue                                  # do not leave the block
-            if not independent(a, [lines[k] for k in range(lo, hi + 1) if k != i]):
+            crossed = [lines[k] for k in range(lo, hi + 1) if k != i]
+            if not UNSAFE and sum(l.count("{") - l.count("}") for l in crossed) != 0:
+                continue                                  # would land inside a block (a loop body runs it again)
+            if not independent(a, crossed):
                 continue                                  # the move would change the meaning
             rest = lines[:i] + lines[i + 1:]
             at = j if d < 0 else j
