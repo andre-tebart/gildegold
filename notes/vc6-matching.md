@@ -1449,6 +1449,12 @@ a stack slot is a split piece, and the piece's extent is decided by the rules be
 
 ### Pointer locals and addresses
 
+- **`add eax,ecx; mov al,[eax]` / `cmp byte ptr [eax],K` (ours `[eax+ecx]`) on a table record's byte tested
+  twice**: a record pointer local tested at each use (`g = GM_GOOD(o->type); if (g->type == 0x17 ..`), not a
+  `char` copy of the field (gm_BuildingGoodsList17, ai_TradeContactChecks byte).
+- **The field of a copied struct in a callee-saved register, the copy's store of it missing**: compute in the
+  field itself (`clk = ai_Time; if (..) clk.year = ..; clk.year -= ..;`), not in an int local stored into it
+  afterwards (gm_BirthDate byte).
 - **`lea ebx,[edi-0x1a0]` (a row pointer) after the row's tests, ours before them**: test the element in place
   and set the pointer inside the if: `if (d2_Views[k].active && d2_Views[k].enabled) { v = &d2_Views[k]; ..`
   (sv_DisableVisibleWidgets).
