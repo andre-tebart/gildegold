@@ -3225,7 +3225,7 @@ exe	0x005127c0	init_SoundObjectFreeHook	f3init	1fd3b55410e5c232	no	byte	control=
 exe	0x005127f0	init_PlayTownSound	f3init	ab8bafc2633ed021	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00512840	init_PlayGraveyardSound	f3init	69a9e6e62b5577c6	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00512890	init_StopTownSounds	f3init	47752196bdd1107a	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x005128d0	init_SetSeasonTextures	f3init	4fbe1a9679b29513	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	3371284ff47bad88
+exe	0x005128d0	init_SetSeasonTextures	f3init	4fbe1a9679b29513	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	5ba51bceab2b8546
 exe	0x00512de0	init_PlantTextureSetHook	f3init	ee5e3a847a32805c	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00512e40	init_TextureSetHook	f3init	b1a40685b0ffee85	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	3371284ff47bad88
 exe	0x00512e80	init_BuildingTextureSetHook	f3init	afbe4b5e18f9a934	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
