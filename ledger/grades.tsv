@@ -303,7 +303,7 @@ exe	0x00411be0	d3t_SceneIndex	d3_tools	byte	readable
 exe	0x00411c10	d3t_UpdateCamera	d3_tools	byte	readable		
 exe	0x00411c70	d3t_GetHeightRange	d3_tools	byte	readable		
 exe	0x00411d10	d3t_GetFootprint	d3_tools	byte	readable		
-exe	0x00411eb0	d3t_GetBoundingSphere	d3_tools	shape	readable		
+exe	0x00411eb0	d3t_GetBoundingSphere	d3_tools	byte	readable		
 exe	0x00412000	d3t_GetRowRange	d3_tools	byte	readable		
 exe	0x00412090	d3t_GetTriRange	d3_tools	byte	readable		
 exe	0x00412480	d3t_GetQuadRange	d3_tools	byte	readable		
@@ -2430,7 +2430,7 @@ exe	0x004cef80	cm_InitDamagePops	cm	byte	readable
 exe	0x004cefa0	cm_ClearDamagePops	cm	byte	readable		
 exe	0x004cefe0	cm_CloseFightView	cm	byte	readable		
 exe	0x004cf000	cm_UpdateSceneChars	cm	draft	readable	deep	
-exe	0x004cf370	cm_DrawScrollArrows	cm	shape	readable		
+exe	0x004cf370	cm_DrawScrollArrows	cm	byte	readable		
 exe	0x004cf670	cm_UpdatePointer	cm	draft	readable	deep	
 exe	0x004cf9c0	cm_UpdatePortraits	cm	draft	readable	deep	
 exe	0x004cfc10	cm_BuildPortraits	cm	shape	readable		
@@ -3026,8 +3026,8 @@ exe	0x00501d80	gm_BuildingClass	f3gm	byte	readable
 exe	0x00501e40	gm_NearestBuilding	f3gm	shape	readable		
 exe	0x00501f60	gm_NearestFreeBuilding	f3gm	byte	readable		
 exe	0x00502020	gm_FindBuildingById	f3gm	byte	readable		
-exe	0x00502060	gm_FindBuildingKind	f3gm	shape	readable		
-exe	0x005020a0	gm_ListBuildingsOfType	f3gm	shape	readable		
+exe	0x00502060	gm_FindBuildingKind	f3gm	byte	readable		
+exe	0x005020a0	gm_ListBuildingsOfType	f3gm	byte	readable		
 exe	0x005020e0	gm_MayTakeJob	f3gm	shape	readable		
 exe	0x005024f0	gm_IsType10	f3gm	byte	readable		
 exe	0x00502520	gm_IsHomeType	f3gm	byte	readable		
@@ -3270,7 +3270,7 @@ exe	0x0051c560	ls_WriteMessageQueues	ls	byte	readable
 exe	0x0051c870	ls_WriteEnvironment	ls	byte	readable		
 exe	0x0051c920	ls_Read	ls	byte	readable		
 exe	0x0051c950	ls_LoadGame	ls	byte	readable		
-exe	0x0051cee0	ls_ReadSaveHeader	ls	shape	readable		
+exe	0x0051cee0	ls_ReadSaveHeader	ls	byte	readable		
 exe	0x0051d2d0	ls_LoadScene	ls	byte	readable		
 exe	0x0051d3d0	ls_ReadObjects	ls	byte	readable		
 exe	0x0051d4f0	ls_HookBuildingCB	ls	byte	readable		
@@ -3423,7 +3423,7 @@ exe	0x0052fd80	sv_SyncText	sv	byte	readable
 exe	0x0052fe00	sv_PumpNet	sv	byte	readable		
 exe	0x0052fe10	sv_ChatConsole	sv	byte	readable		
 exe	0x00530100	sv_UpdateQuickChat	sv	byte	readable		
-exe	0x005301a0	sv_UpdateWeather	sv	shape	readable		
+exe	0x005301a0	sv_UpdateWeather	sv	byte	readable		
 exe	0x00530670	sv_WeatherFrame	sv	byte	readable		
 exe	0x005307f0	sv_AdvanceGame	sv	byte	readable		
 exe	0x00530900	sv_SetScreenCenter	sv	byte	readable		
@@ -3536,7 +3536,7 @@ exe	0x0053f430	he_InnStaffLeave	he	byte	readable
 exe	0x0053f500	he_ClearInnDarkCorner	he	shape	readable		
 exe	0x0053f5b0	he_TopUpCharMoney	he	byte	readable		
 exe	0x0053f6b0	he_SpawnFounders	he	draft	readable	deep	
-exe	0x00540c90	he_PostEvent67	he	byte	readable		
+exe	0x00540c90	he_PostEvent67	he	shape	readable		
 exe	0x00540e40	he_InnReport	he	byte	readable		
 exe	0x00540fe0	he_DailyEventChecks	he	byte	readable		
 exe	0x00541010	he_PostEvent3a	he	byte	readable		
@@ -3689,7 +3689,7 @@ exe	0x00553ae0	he_DetectAttack	he	byte	readable
 exe	0x00553cc0	he_NoProtectionEvent	he	byte	readable		
 exe	0x00553d10	he_NoEvent2ePair	he	byte	readable		
 exe	0x00553d60	he_NoEvent4bPair	he	byte	readable		
-exe	0x00553db0	he_NoEvent35Pair	he	shape	readable		
+exe	0x00553db0	he_NoEvent35Pair	he	byte	readable		
 exe	0x00553e10	he_AllocSale	he	byte	readable		
 exe	0x00553e90	he_RunSale	he	byte	readable		
 exe	0x00554320	he_RunCustomers	he	draft	readable	deep	
@@ -4003,7 +4003,7 @@ exe	0x00578370	ai_TutorialStop	sv_t	byte	readable
 exe	0x00578440	ai_TutorialFreeRuns	sv_t	byte	readable		
 exe	0x005784a0	ai_TutorialInitMainIntro	sv_t	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	sv_t	byte	readable		
-exe	0x00578e40	ai_TutorialInitChapter2	sv_t	byte	readable		
+exe	0x00578e40	ai_TutorialInitChapter2	sv_t	shape	readable		
 exe	0x00579570	ai_TutorialInitChapter3	sv_t	shape	readable		
 exe	0x0057aa80	ai_TutorialInitChapter4	sv_t	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	sv_t	byte	readable		
@@ -4214,7 +4214,7 @@ exe	0x00599e00	ai_DrawGoodsCell	lc	byte	readable
 exe	0x00599ef0	ai_CityInfoWindow	lc	byte	readable		
 exe	0x0059a2c0	ai_CreateCityPoint	lc	byte	readable		
 exe	0x0059a3c0	ai_MapTableScreen	lc	shape	readable		
-exe	0x0059a560	ai_MapTableContact	lc	shape	readable		
+exe	0x0059a560	ai_MapTableContact	lc	byte	readable		
 exe	0x0059a710	ai_MarketStandWindow	lc	byte	readable		
 exe	0x0059a800	ai_MarketStandListener	lc	byte	readable		
 exe	0x0059aae0	ai_WineCellarWindow	lc	byte	readable		
@@ -4445,7 +4445,7 @@ exe	0x005bc0f0	ai_FreePicture	lc	byte	readable
 exe	0x005bc110	ai_ChooseCoatOfArms	lc	byte	readable		
 exe	0x005bc420	ai_OpenMoneyInfoPage	lc	byte	readable		
 exe	0x005bc6d0	ai_OpenBuildingListPage	lc	byte	readable		
-exe	0x005bc790	ai_BuildingDetailWindow	lc	shape	readable		
+exe	0x005bc790	ai_BuildingDetailWindow	lc	byte	readable		
 exe	0x005bc9c0	ai_OpenMasterListPage	lc	shape	readable	deep	
 exe	0x005bcc70	ai_PlayerStatsPanel	lc	shape	readable		
 exe	0x005bd060	ai_AmountLimit	lc	byte	readable		
