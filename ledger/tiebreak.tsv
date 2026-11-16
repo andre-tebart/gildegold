@@ -835,10 +835,10 @@ exe	0x00442080	d3fl_LoadTexture	d3_fl	f00023705a783bdb	no	byte	control=byte p1=b
 exe	0x00442210	d3fl_ReplaceTexture	d3_fl	a48b2eab45de8fa2	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00442280	d3fl_ReloadTextures	d3_fl	afd8594b6590eda8	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00442390	d3fl_LoadMap	d3_fl	dca24737d25d6f0b	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
-exe	0x00442ac0	d3fl_TileBox	d3_fl	93dd52566c4f8b8e	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	e33501afa1742fa5
+exe	0x00442ac0	d3fl_TileBox	d3_fl	93dd52566c4f8b8e	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	aa77188b78309324
 exe	0x00442ed0	d3fl_UpdateWater	d3_fl	fed26643eeaef8e8	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	e33501afa1742fa5
 exe	0x004430c0	d3fl_DrawWater	d3_fl	8a027b3ef686a5c8	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
-exe	0x004437f0	d3fl_UpdateTiles	d3_fl	ba9802a78c696c69	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
+exe	0x004437f0	d3fl_UpdateTiles	d3_fl	23d97fd044ae6973	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	e4f04bcbabe1c256
 exe	0x004439e0	d3fl_Draw	d3_fl	c85bfbeec420ee9e	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x00446180	d3fl_Prerender	d3_fl	b9bdb858f36796d3	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	e33501afa1742fa5
 exe	0x004463b0	map_Pick	d3_fl	55473037550506e1	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
