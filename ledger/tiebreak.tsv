@@ -2393,7 +2393,7 @@ exe	0x004cd600	cm_LobbyState	cm	501758d82779a30f	no	byte	control=byte p1=byte p2
 exe	0x004cd610	cm_LobbyRequestList	cm	f4fd53fbe32fc74f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004cd650	cm_LobbySetReady	cm	b4e1590689aa3e98	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	becf1bbdf99775c9
 exe	0x004cd6a0	cm_LobbyLeave	cm	aa0e7f0bf3b9e351	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x004cd6e0	cm_LobbySendChat	cm	c34548f37ee548ff	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	becf1bbdf99775c9
+exe	0x004cd6e0	cm_LobbySendChat	cm	c34548f37ee548ff	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	55593c6824cdd1eb
 exe	0x004cd760	cm_LobbyJoin	cm	c3d3e7aab00ee6ad	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004cd7c0	cm_LobbyUpdatePlayer	cm	22a3075246db1bc4	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004cd820	cm_LobbyRequestPlayer	cm	bdef96c861020c71	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	

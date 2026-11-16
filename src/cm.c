@@ -6812,10 +6812,10 @@ int cm_LobbySendChat(int to, char *text)
     G17LOBBYCHAT t;
 
     memset(m.data, 0, 0x80);
+    m.type = 0x5f;
     t.from = cm_LobbyPlayerId;
     t.to = to;
     strncpy(t.text, text, 0x3f);
-    m.type = 0x5f;
     t.text[0x3f] = 0;
     m.lobby.kind = 6;
     m.lobby.chat = t;
