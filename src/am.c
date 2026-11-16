@@ -7202,6 +7202,11 @@ int ai_DecideDenounce(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
             s2.ref = 0;
             s2.arg = 0;
             r = ai_ChooseSubAction(0x28, p->id, 1, &s1, &s2);
+            if (r != 0) {
+                *o1 = s1;
+                *o2 = s2;
+            }
+            return r;
         } else {
             if (p->kind == 3) {
                 /* kind 3 only with flag 4 */
@@ -7217,7 +7222,11 @@ int ai_DecideDenounce(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
                 s2.ref = p->bld2->id;
                 s2.arg = 1;
                 r = ai_ChooseSubAction(0x28, p->id, 1, &s1, &s2);
-                goto done;
+                if (r != 0) {
+                    *o1 = s1;
+                    *o2 = s2;
+                }
+                return r;
             }
             memset(&s1, 0, sizeof(s1));
             memset(&s2, 0, sizeof(s2));
@@ -7226,12 +7235,6 @@ int ai_DecideDenounce(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
             *o1 = s1;
             *o2 = s2;
             return 0x2a;
-        }
-done:
-        if (r != 0) {
-            *o1 = s1;
-            *o2 = s2;
-            return r;
         }
     }
     return 0;
