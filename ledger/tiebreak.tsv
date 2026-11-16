@@ -3264,7 +3264,7 @@ exe	0x0051b910	ls_WriteStatistics	ls	54c454e8f79f3ff5	no	byte	control=byte p1=by
 exe	0x0051bdb0	ls_WriteAvatars	ls	af12136255eca38f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0051bdc0	ls_WriteEventTables	ls	223a7691b078e54e	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	41b5d4fb7350ddfa
 exe	0x0051c2f0	ls_WriteParties	ls	17a14d251d92d975	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x0051c450	ls_WriteHistory	ls	22c1f8c7f8846bb7	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	41b5d4fb7350ddfa
+exe	0x0051c450	ls_WriteHistory	ls	22c1f8c7f8846bb7	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	5b2fc9e87ece4f81
 exe	0x0051c560	ls_WriteMessageQueues	ls	0457b3163773ef41	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	f7a33d310567b162
 exe	0x0051c870	ls_WriteEnvironment	ls	d984ce088d952031	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0051c920	ls_Read	ls	8ef6952a1392156e	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	

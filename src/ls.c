@@ -1141,10 +1141,7 @@ int ls_WriteParties(int f)
 
 int ls_WriteHistory(int f)
 {
-  int n;
-  int i;
-  int *list;
-  int *entry;
+  int n, i, j;
 
   LS_W(&hst_TextsOn, 1)
   n = hst_TextCurrent - hst_TextFirst;
@@ -1154,15 +1151,11 @@ int ls_WriteHistory(int f)
   for (i = 0; i < 0x10; i++) {
     LS_W(hst_Key + i, 1)
   }
-  /* list walks the lists by their e[0].v word (the word at +8 of each 0x44-byte record): list - 2 is the used
-     flag, list - 1 and list are the id and value of each of the eight entries */
-  for (list = &hst_Lists[0].e[0].v; (int)list < (int)&hst_Lists[4].e[0].v; list = list + 0x11) {
-    LS_W(list - 2, 4)
-    entry = list;
-    for (i = 0; i < 8; i++) {
-      LS_W(entry - 1, 4)
-      LS_W(entry, 4)
-      entry = entry + 2;
+  for (i = 0; i < 4; i++) {
+    LS_W(&hst_Lists[i].inUse, 4)
+    for (j = 0; j < 8; j++) {
+      LS_W(&hst_Lists[i].e[j].id, 4)
+      LS_W(&hst_Lists[i].e[j].v, 4)
     }
   }
   return 1;
