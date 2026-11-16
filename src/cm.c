@@ -7789,7 +7789,7 @@ turn:
 
 void cm_DrawScrollArrows()
 {
-    int e = 0, up = 0, a = 0, b = 0;
+    int up = 0, e = 0, a = 0, b = 0;
     int t;
 
     t = d2_GetPic(0x52c);
