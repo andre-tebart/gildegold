@@ -9903,15 +9903,24 @@ G6RING *ai_NextNearRingEntry(void)
    office p applies for (2), the other applicants (4) and, for a kind 5 character, the characters of kind 5..7 (1);
    kind 6 / 7 entries get (4 - difficulty) * 5 added to their liking; then sets the cursor to a random entry with
    a random stride from ai_RingStrides below the count, changed by one when it divides the count
-   @deep read in full against the original (all 11 column loops, the applicants and the 768-character pass,
-   the difficulty bias, the cursor setup) and reconciled: AMTREC/AMTKIND buffers, ai_NearRing[cnt] stores,
-   unbounded no-office loops, abs(level-g) <= 1, if (cnt > 3) order, int count (idiv). Left is allocation:
-   o held in a stack slot instead of esi at 0x4a3b33 (- mov esi,[esp+0x30] / + mov [esp+0x10],eax; mov
+   @deep frame solved (526 -> 304): the neighbour / upper columns are int side[2], up[2] (scalars
+   side1..up2 had 3-5 refs each, so the frame packer placed them before the G7 loop pointer temps and split
+   those over 4 slots; as 8-byte arrays they sort after the temps and the original's one temp slot
+   [esp+0x10] forms), the 768 pass is an index loop for (j = 0; j < 768; j++) { o = &G5_CHARS[j]; with
+   o->kind read three times (no k local: the IV sits at &kind, o = walker-2, f gets edx), p == o, o ==
+   ai_NearRing[i].who; the applicant count is its own block local nrivals (in the temp slot). Left: the
+   constant 3 in ecx in the setup (orig mov ecx,3; mov [side+4],ecx; cmp esi,ecx with edi=1 edx=2; ours
+   edi=1 ecx=2, immediates for 3), scratch rotation in the column loops behind it (eax/ecx/edx shifted),
+   code hunks at 0x4a3e7d (56), 0x4a438a (67), down[2] slot [0x38]->[0x34] at 0x4a42f5. prior: read in full
+   against the original (all 11 column loops, the applicants and the 768-character pass, the difficulty
+   bias, the cursor setup) and reconciled: AMTREC/AMTKIND buffers, ai_NearRing[cnt] stores, unbounded
+   no-office loops, abs(level-g) <= 1, if (cnt > 3) order, int count (idiv). Left is allocation: o held in
+   a stack slot instead of esi at 0x4a3b33 (- mov esi,[esp+0x30] / + mov [esp+0x10],eax; mov
    esi,[esp+0x10]) and 0x4a3bbb (+ jmp; mov esi,[esp+0x10]); the constant 3 in ecx at 0x4a3d58/0x4a3d72 (+
    mov ecx,3; cmp esi,ecx / - cmp esi,3); in the 768 pass the original walks &o->kind in [esp+0x10] and
    keeps f in edx (0x4a4495..0x4a4567: + cmp word ptr [edi],0xffff; mov edx,1 / - mov dx,[edi]; cmp
    dx,0xffff; mov [esp+0x10],1); 0x4a3f18 (-58) and 0x4a4393 (+65) are one loop copy the aligner pairs one
-   copy off (the 11 loops are identical up to slots); 12 branch targets differ by these size shifts */
+   copy off (the 11 loops are identical up to slots); 12 branch targets differ by these si... */
 void ai_FillNearRing(AICHAR *c)
 {
     G5CH *p = (G5CH *)c;
@@ -9931,36 +9940,36 @@ void ai_FillNearRing(AICHAR *c)
         G7_ADD_ANY(2, 0x40, amt_GetKindLevel(list[j].kind) < 3)
         G7_ADD_ANY(3, 0x40, amt_GetKindLevel(list[j].kind) < 3)
     } else {
-        int side1, side2;               /* the neighbour columns */
-        int up1, up2;                   /* the columns of the level above (levels 3 and 6) */
-        int down[3];                    /* the columns of the level below (levels 4 and 7) */
+        int side[2];
+        int up[2];
+        int down[3];
 
-        side1 = 0;
-        side2 = 0;
-        up1 = 0;
-        up2 = 0;
+        side[0] = 0;
+        side[1] = 0;
+        up[0] = 0;
+        up[1] = 0;
         down[0] = 0;
         down[1] = 0;
         down[2] = 0;
         g = amt_GetKindLevel(p->officeKind);
         amt_GetKind(p->officeKind, &kind);
         if (kind.col > 0 && kind.col < 4) {
-            side2 = 3;
+            side[1] = 3;
             if (kind.col == 1) {
-                side1 = 2;
+                side[0] = 2;
             } else {
-                side1 = 1;
+                side[0] = 1;
                 if (kind.col != 2)
-                    side2 = 2;
+                    side[1] = 2;
             }
             if (g == 3) {
-                up1 = 4;
-                up2 = 5;
+                up[0] = 4;
+                up[1] = 5;
             }
         } else if (kind.col > 3 && kind.col < 6) {
-            side1 = (kind.col == 4) + 4;
+            side[0] = (kind.col == 4) + 4;
             if (g == 6) {
-                up1 = 6;
+                up[0] = 6;
             } else if (g == 4) {
                 down[0] = 1;
                 down[1] = 2;
@@ -9971,11 +9980,11 @@ void ai_FillNearRing(AICHAR *c)
             down[1] = 5;
         }
         G7_ADD(kind.col, 0x10, 1)
-        G7_ADD(side1, 1, 1)
-        G7_ADD(side2, 1, 1)
+        G7_ADD(side[0], 1, 1)
+        G7_ADD(side[1], 1, 1)
         if (g == 3 || g == 6) {
-            G7_ADD(up1, 0x40, G7_LEVEL_NEAR)
-            G7_ADD(up2, 0x40, G7_LEVEL_NEAR)
+            G7_ADD(up[0], 0x40, G7_LEVEL_NEAR)
+            G7_ADD(up[1], 0x40, G7_LEVEL_NEAR)
         }
         if (g == 4 || g == 7) {
             G7_ADD(down[0], 0x80, G7_LEVEL_NEAR)
@@ -9985,9 +9994,10 @@ void ai_FillNearRing(AICHAR *c)
     }
     if (p->appliedOffice != 0) {
         char *rivals[6];
+        int nrivals;
 
-        n = amt_GetOfficeApplicants(p->appliedOffice, 6, rivals);
-        for (j = 0; j < n; j++) {
+        nrivals = amt_GetOfficeApplicants(p->appliedOffice, 6, rivals);
+        for (j = 0; j < nrivals; j++) {
             if ((G5CH *)rivals[j] == p)
                 continue;
             for (i = 0; i < cnt; i++) {
@@ -10008,19 +10018,19 @@ void ai_FillNearRing(AICHAR *c)
         }
     }
     if (p->appliedOffice != 0 || p->kind == 5) {
-        for (o = G5_CHARS; o < G5_CHARS + 768; o++) {
+        for (j = 0; j < 768; j++) {
+            o = &G5_CHARS[j];
             f = 0;
-            if (o == p || o->id == 0xffff)
+            if (p == o || o->id == 0xffff)
                 continue;
-            k = o->kind;
-            if ((k == 6 || k == 7 || k == 5) && p->kind == 5)
+            if ((o->kind == 6 || o->kind == 7 || o->kind == 5) && p->kind == 5)
                 f = 1;
             if (o->appliedOffice == p->appliedOffice)
                 f |= 4;
             if (f == 0)
                 continue;
             for (i = 0; i < cnt; i++) {
-                if (ai_NearRing[i].who == o) {
+                if (o == ai_NearRing[i].who) {
                     ai_NearRing[i].flags |= f;
                     break;
                 }
