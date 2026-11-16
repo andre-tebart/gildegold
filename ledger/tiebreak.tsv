@@ -1612,7 +1612,7 @@ exe	0x00496080	ai_DecideDummyPleasure	am	d9626a146f2a9d97	no	byte	control=byte p
 exe	0x004960a0	ai_ExecuteDummyPleasure	am	2fb74e10241de167	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004960b0	ai_DecideTrainSkill	am	afa17d727d232df7	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	afaa2f41628dafe4
 exe	0x004965b0	ai_ExecuteTrainSkill	am	72ec23eb8fd60230	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x00496610	ai_DecideTrainJobSkill	am	dd513468b83f3765	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
+exe	0x00496610	ai_DecideTrainJobSkill	am	0652422923ca3b44	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	69130b02498fb537
 exe	0x00496ab0	ai_ExecuteTrainJobSkill	am	0676b4dd9cc5549f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00496b10	ai_EvalLeastLikedOfEvent	am	bc18baeaa80d9e62	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x00496e40	ai_DecideBribe	am	797528d52131beb2	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
