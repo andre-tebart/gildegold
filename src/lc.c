@@ -6650,11 +6650,7 @@ typedef struct LCDUELSIDE {             /* one side of a dice duel: am.h AGDUEL'
 /* 0x597810, draws one side of a dice duel into the last window: the window's objects are removed, the caption
    printed ("$C$Z%s"), then the side's dice in rows of eight from (0x1c, 0x1d), 0x3a apart (the second row at
    y 0x46): the thrown values (the pictures 0x75b .. 0x760) for the player's character (kind 6), the hidden die
-   0x761 for an opponent; then, in each branch, one more random die cell 0x75b + util_Random(6)
-   @deep Shape (order only): y = 0x1d is set in each branch (VC6 hoists it, as in the byte-matched
-   ai_DrawDuelThrow), the random cell sits in each branch. Left: the original schedules 'mov edx,[edi]'
-   before 'mov ebp,0x1c' (x), ours 'mov ebp,0x1c' first. Tried x in the branches too (draft), x before i,
-   both in the branches (the same order hunk) */
+   0x761 for an opponent; then, in each branch, one more random die cell 0x75b + util_Random(6) */
 
 void ai_DrawDuelDice(char *caption, LCDUELSIDE *side)
 {
@@ -6665,8 +6661,8 @@ void ai_DrawDuelDice(char *caption, LCDUELSIDE *side)
     d2_RemoveWindowObjects(d2_LastWindow, 1);
     io_PrintText("$C$Z%s", caption);
     i = 0;
-    x = 0x1c;
     if (side->ch->kind == 6) {
+        x = 0x1c;
         y = 0x1d;
         while (i < side->n) {
             d2_WinOpenPic(x, y, side->t[i] + 0x75a, d2_LastWindow);
@@ -6679,6 +6675,7 @@ void ai_DrawDuelDice(char *caption, LCDUELSIDE *side)
         }
         d2_WinOpenPic(x, y, (util_Random(6) & 0xffff) + 0x75b, d2_LastWindow);
     } else {
+        x = 0x1c;
         y = 0x1d;
         while (i < side->n) {
             d2_WinOpenPic(x, y, 0x761, d2_LastWindow);

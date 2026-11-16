@@ -4196,7 +4196,7 @@ exe	0x005973f0	ai_SuicideWindow	lc	60647621411d1cfc	no	shape	control=shape p1=sh
 exe	0x00597500	ai_StudyContact	lc	5453664d507edd96	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005976a0	ai_TavernRulesWindow	lc	008a4482d56f2692	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00597780	ai_DrawDice	lc	8446a5b81cead52e	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x00597810	ai_DrawDuelDice	lc	ed0ab8e185f6ff2f	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
+exe	0x00597810	ai_DrawDuelDice	lc	ed0ab8e185f6ff2f	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	c29063c314a13f5c
 exe	0x00597920	ai_DrawDuelThrow	lc	11952694c95ebe18	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00597a10	ai_DuelDiceAnimation	lc	6543db15f512e0e5	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x00597e70	ai_DrawDuelEnd	lc	c000fc4ba0bfbff3	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
