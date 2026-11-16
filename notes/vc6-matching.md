@@ -40,10 +40,10 @@ measure` marks two observations that disagree: try both. Some notes name scripts
   Parameter width: what the caller's push shows; Return types of callees; Argument count different from the
   definition (K&R victims, Q7); Evaluation order, nested calls, stack cleanup; Float, 64-bit and struct arguments;
   Varargs, inline, intrinsics, asm; Other call-site shapes
-- **Floating point** (82 rules): Operand order of commutative ops (ranks); Product and sum chains: association,
-  factoring, folding; Values kept on the FPU vs stored and reloaded; Float copies: fld / fstp vs integer moves;
-  Compare idioms and flag tests; min / max macros and clamps; Constants: float vs double, pooled literals,
-  reciprocals; Int / float conversions, division, _ftol
+- **Floating point** (82 rules): How c2.dll allocates the x87 stack; Operand order of commutative ops (ranks);
+  Product and sum chains: association, factoring, folding; Values kept on the FPU vs stored and reloaded; Float
+  copies: fld / fstp vs integer moves; Compare idioms and flag tests; min / max macros and clamps; Constants: float
+  vs double, pooled literals, reciprocals; Int / float conversions, division, _ftol
 - **Types, widths, bitfields** (84 rules): A byte bit test turned into 0 / 1; Sign tests and signedness of compares;
   movsx kept or folded on narrowed values; Bitfields and byte read-modify-write; 16-bit values, 0xffff and -1;
   Multiply, constants, add / sub, division; Globals: width, type, unions, volatile; Struct layout, offsets and
@@ -1197,7 +1197,8 @@ a stack slot is a split piece, and the piece's extent is decided by the rules be
   and a piece of g restricted at `side[0] = (kind.col == 4) + 4`, the sete cl).
 - **Rematerialisation (FUN_107705ea, read, not verified)**: a spilled candidate whose single definition has at
   most one unassigned register operand is recomputed at its uses (the definition copied) instead of reloaded.
-- **Not reached**: the x87 keep-vs-spill rule (ai_FireCannon's extra 4-byte temp).
+- **x87 keep vs spill**: its own allocator (Floating point, "How c2.dll allocates the x87 stack"); ai_FireCannon's
+  extra 4-byte temp was a CSE temp that did not nest.
 
 ### Callee-saved registers swapped: a priority race lost by a point or two
 - **A result kept in esi through a loop nest (split piece, reloaded after a block that borrows esi) where ours
@@ -2551,6 +2552,40 @@ How arguments are pushed, a call written in both arms, parameter and return type
 ## Floating point
 Operand order on the FPU stack, `fst` / `fstp`, float compares, constants, `_ftol`, copies through the FPU against integer moves, min / max.
 
+### How c2.dll allocates the x87 stack
+Read from C2 13.00.9044 (addresses at 0x10700000), confirmed with `c2fpu.py` and probes. Until allocation every
+float value goes to memory between statements; FUN_1072e2f0 -> FUN_1073122d -> FUN_1076697d (register class 1)
+then lifts some into FPU stack slots. `python tools/c2dag/c2fpu.py SRC FUNC` prints each candidate's outcome and
+the stack at every instruction.
+- **Candidates** (FUN_1071be2a renames them per definition web): scalar float / double locals, each FIELD of a
+  local struct or array (`v1+4`, even when the array is passed by address later: written back at its death),
+  CSE / expression temporaries (`temp#N`), globals and constants (a load at entry, never profitable).
+- **Savings / priority** (FUN_10766d7b; /O2 costs FUN_10767291 def, FUN_10767c36 use, FUN_10767c6c dying fld),
+  times w = 1 << loop depth: a 4-byte float: definition +2, use 0, a dying `fld` +1; an 8-byte double: +4 / +1
+  / +2; -w per CFG edge it is live across out of a block. Savings <= 0: memory (FUN_10767401). So a float set
+  before a loop and read in it stays in memory (`fld s` / `fmul s` each pass, sav 0), a double gets the stack
+  (sav 4): a `double` local is the lever for "kept on the FPU across the loop" (d3_SetupFrustum).
+- **Order and fit** (FUN_10767ca5): priority descending, equal: the larger tie (+0x44) first. A candidate gets a
+  slot only if its live range NESTS with every placed one (born later => dies no later; stack depth <= 8);
+  otherwise it is split (FUN_10744286) and the pieces retry. Two values born x, y, z and dying x, y, z cannot
+  both stay: of three CSE sums only x / y got the stack, z its own 4-byte home (`fst [L50]`, copied with `mov`)
+  (ai_FireCannon: `v3[i] = v1[i] + a[i]; v2[i] = v1[i] + a[i];` made that temp and the original's frame).
+- **Pop point**: a value dies at its last use moved forward to the end of the statement's expression (no
+  expression temporary left on the stack). There the stackifier pops it (`fstp st(0)`, after the statement's
+  store) or, when the statement's result goes into a stack candidate, stores the result over the dying slot
+  (`fstp st(k)`). The /O2 peephole FUN_10765f00 (called at 0x1070b551) turns `op st, st(k) .. fstp st(k)` into
+  the popping `opp st(k), st` when nothing between uses st(k) and the stack never drops below the op's result;
+  FUN_10766172 (0x1070b564) folds `fld m; opp` into `op m` (tables 0x107bb3d0 / 0x107bb3e8 map op -> popping op).
+  Example (d3iot_CalcBounds byte): `m->diagonal = sqrt(dz*dz + ..)` gives `fld st(0); fmul st,st(1) .. fstp
+  [m]; fstp st(0)`; `d = sqrt(dz*dz + ..); m->diagonal = d;` gives `fld st(0); fmulp .. fstp [m]` (d's slot
+  takes dz's: `fstp st(1)`, folded). The dying value's square must come first in the sum: a popping op on the
+  result's position before the store (`faddp` right after it) blocks the fold. Probe: patching FUN_10765f00 to
+  `mov eax,[ecx]; ret` removes every such `fmulp`.
+- **fxch**: the stackifier only copies (`fld st(k)`) and pops; the peephole pass FUN_1070eb58 -> FUN_1070aa47
+  turns a copy whose original dies at that use into `fxch st(k)` (its later pop goes away; t_cm: `fld st(2); fsub
+  st,st(1)` -> `fxch st(2); fsub st,st(2)`). Not FUN_10765f00 / FUN_10766172 / FUN_107663a8 (each patched out:
+  the fxch stays). An `fxch` hunk is a slot-order (nesting / priority) question first.
+
 ### Operand order of commutative ops (ranks)
 
 - **`fld a; fadd b` / `fmul` in the other order, no textual swap moves it**: order is an internal rank and follows
@@ -2665,7 +2700,8 @@ Operand order on the FPU stack, `fst` / `fstp`, float compares, constants, `_fto
 - **Squares folded in one by one** (`fld st(0); fmul st,st(1); faddp st(2),st` per term): one reused temp, `x =
   ..; sum = x * x; x = ..; sum += x * x;`; four locals square all at the end.
 - **Cross product dotted with a memory vector, differences on the FPU**: `float c[3]`.
-- **Pop points**: named locals pop at block end, temps / parameters at last use (`fmulp`). A once-used scaled
+- **Pop points** (mechanism: "How c2.dll allocates the x87 stack"): a dying value pops after its statement's
+  store; `fmulp` at its last use only when the result goes to a stack local. A once-used scaled
   parameter folds into its use; `size * sx` at every use (or an aggregate initializer) gives the early multiply.
   A scale for the last `fmul [mem]` is a float declared in the if block.
 - **Unsigned ints into a macro using them three times**: pass straight; a float local spills (~1000 asm lines,

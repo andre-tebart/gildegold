@@ -151,6 +151,15 @@ which exit owns the final epilogue (vfs_MemOpen, vfs_Tfopen).
 - When a shared tail is right in layout but off in detail, sweep the join position: how many trailing
   statements are shared (0, 1, 2, ..) is its own round (vfs_Tfopen: only the counter was shared).
 
+**x87 stack.** Float values live in memory between statements unless the FP allocator (class 1, FUN_1076697d)
+lifts them onto the FPU stack; candidates are float / double locals, each field of a local struct or array, CSE
+temporaries. Savings per reference times `1 << loop depth`: a float definition +2, a use 0, a dying `fld` +1 (a
+double: +4 / +1 / +2), -w per block edge it is live across; <= 0: memory. Highest priority first, a slot only if
+its live range nests with the placed ones (born later => dies no later). A dying value pops after its statement's
+store; the op pops it (`fld st(0); fmulp`) only when the statement's result goes to a stack local (`d = sqrt(dz*dz
+..); m->x = d;`), via the /O2 peephole FUN_10765f00. `python tools/c2dag/c2fpu.py SRC FUNC` (vc6-matching "How
+c2.dll allocates the x87 stack").
+
 ## 4. Symptom -> what to try first
 Section names are those of `notes/vc6-matching.md`.
 
@@ -166,6 +175,7 @@ Section names are those of `notes/vc6-matching.md`.
 | a loop with another induction variable, a pointer walk against an index, `dec; jne` against a compare | the plain index loop over the real element type; the callee's real parameter types (a `short` parameter stops strength reduction); the bound in the `for` condition; `break` + one return | Loops |
 | a handle or value loaded "too early", kept across the float code | no statement boundary there: `v = expr` inside the consuming expression or macro argument | Order, Floating point |
 | `fld a; fmul b` against `fld b; fmul a`, `fst` against `fstp; fld` | init order of the two locals; a fully nested chain; assignment inside the product; an own local per branch; parenthesised member copy (`v.x = (p->x);`) | Floating point |
+| `fmul st,st(1)` + `fstp st(0)` after the store against `fmulp`; a value in memory the original keeps on the FPU (or the reverse); an extra 4-byte float temp slot copied with `mov` | c2fpu.py: which candidate got no slot and why (savings, nesting); the result into a float local before the store; a `double` local for a value kept across a loop; the copy written as the same expression (a CSE temp) instead of a copy of the stored vector | Floating point (How c2.dll allocates the x87 stack) |
 | arguments pushed before the test that picks one; a call "sunk" or doubled | the call written in both arms; the callee's prototype (char / short / unsigned char parameters); two calls assigned to named locals in call order | Calls |
 | `movsx` / `and 0xff` / byte RMW differences, `lea` against `add; add` | the real type of the field, parameter or return; bitfields for byte RMW; `(c ? A : B) + x` against `(c ? d : 0) + A + x` | Types |
 | `rep stosd` / inline copy shaped differently | the element loop against `memset`; `strcpy` against the hand loop; one array reused; struct assignment against field copies | Copies |
@@ -182,6 +192,11 @@ Section names are those of `notes/vc6-matching.md`.
   variant against the original without touching the tree. Use it on every variant that changes the layout,
   whatever its count. x87 register forms, `-1` and `rep movsd` are compared in one spelling: a `-`/`+` pair is a
   real difference. vdiff, c2trace and c2frame read a variants file exactly as `dcp try` does.
+- `python tools/c2dag/c2fpu.py SRC FUNC [--variants FILE --label L] [--cands | --code] [--lines A-B]`: the x87
+  allocator's candidates (float locals, struct / array fields per definition web, CSE temps) with their def / death
+  lines, prio / savings and outcome (stack, memory: savings <= 0, memory: no fit with the pieces it does not nest
+  with), then each x87 instruction under its own source line with the simulated stack (st0 first) and its pops
+  (`pop`, `dead pop` = `fstp st(0)`, `into st(k)`).
 - `python tools/c2dag/c2trace.py SRC FUNC [--variants FILE --label L]`: per source name (temporaries with their
   first line) each candidate piece `NAME#N` with its pass, reference lines, prio / sav / avail and its outcome
   (register, memory, cut by pressure where X took R, split alone / in regions), the final registers, and whether
