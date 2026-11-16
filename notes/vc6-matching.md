@@ -71,6 +71,8 @@ Where the pushes and pops sit, how many epilogue copies there are, shared agains
 
 ### Pushes on the wrong side of an early exit
 
+- **An early `je` straight to the final `pop esi; ret`, ours its own epilogue copy**: one final return; the loop
+  under `if (first != end)`, the in-loop `return 0` as `ret = 0; break;` (cm_SendGroupState).
 - **Pushes at entry in ours, after a guard in the original**: count the `return`s first. Guards (`if (!p) return
   1;`, early `return 0`, `if (!a || !b || !c) return 1;`, an if/else-if strcmp chain) plus ONE final return
   shrink-wrap the pushes; any `return` inside a branch puts them back at entry. Each return beyond "guards + one
@@ -632,6 +634,8 @@ copied back into short predecessors only after all of this.
 
 ### Switch dispatch, case order, empty cases
 
+- **A `xor eax,eax; ret` block laid out between two case bodies**: the case was written there (`case 1: ..; break;
+  case 6: case 7: return 0; case 2: ..`); the table entries alone do not show it (gm_FirstBuilding).
 - **Empty case labels missing from the tree / table**: a folded `if (0) { }` body keeps the label and emits no
   code; `case 7: if (0) {} break;` (or `val = val;`) keeps a table entry. No lever: `case X: break;`, `return;`,
   `(void)0;`, dead stores, `goto` to the join. `dcp try` calls table changes "= control": apply and build.
@@ -1710,6 +1714,8 @@ Frame size, slot order, holes, shared slots, dead parameter slots, block-scoped 
 
 ### Frame bigger or smaller: buffers, records, temps
 
+- **Frame 8 bigger in ours with a filled pointer array and no hole**: the array is smaller (`AIBLDX *list[8]`,
+  not [10]) (ai_DecideBuyIndulgence).
 - **Frame 4 bigger in the original with an untouched hole above a filled `int arg[4]`**: the callee copies
   one word more (cm_SendScriptMessage copies 0x14): `int arg[5]`, the last word unset (he_ClearInnDarkCorner).
 - **Frame 8 short, the high half of a 64-bit kind bit (`1 << (kind - 0x20)`) stored to its own slot and never
@@ -1876,6 +1882,10 @@ Frame size, slot order, holes, shared slots, dead parameter slots, block-scoped 
 
 ### Shared slots
 
+- **Out-argument locals of the last call in their own slots, the original packs them into dead slots (a parameter's,
+  a counter's; frame 8 smaller)**: declare them in a block around that call (`{ int flags = 0xc00; unsigned short
+  id; if (f(.., &flags, .., &id)) return ..; }`): function-scope address-taken locals live through the whole
+  function and never share (ai_PickLeastLikedRival; ai_GiftWindow: `flags` inside its `if` shares the min temp).
 - **A call result stored into a slot nobody reads (`mov [esp+N],eax` after the call, ours keeps it in eax)**: the
   slot is a local whose address goes to a call in another arm, used for this value too: one `AIOBJ *o;` for
   `o = cm_GetSlotValue(..); r->objId = o->objId;` and `gm_FindById(0, (int *)&o, ..)` instead of a `g` plus a
@@ -1991,6 +2001,10 @@ Store order in a fill, hoisted loads and sunk stores, statement order effects, `
 
 ### Store or push placement around calls and `add esp`
 
+- **An `fstp [temp]` / `fimul [local]` before the argument `lea` / the call's `add esp` in ours, after it in the
+  original**: a redundant `(float)( .. )` around the float sub-product (`(float)(gm_GetWorth(..) * 0.05f)` inside
+  `min`, `(float)((200.0f - liking) * 0.01f) * guilt * worth`): the cast node lowers the store's priority
+  (ai_GiftWindow, ai_DecideBuyIndulgence; other spellings, operand orders, `/ 100.0f`: = control).
 - **A global store at the head of a join block, before the next call's argument load** (original `mov
   [he_ActiveSlot],esi; mov eax,[esi+8]; push 1; push eax`, ours sinks the store to just before the call): the
   store was written in BOTH arms of the preceding if (`{ ..; g = p; } else g = p;`) and the next call reads the
@@ -2730,6 +2744,10 @@ the stack at every instruction.
 
 ### Values kept on the FPU vs stored and reloaded
 
+- **`fild n; fmul st,st(1); fidiv d; fstp qword [tmp]; fstp st(0); call ..; fadd; fcomp [tmp]`**: the product is
+  the LEFT operand of a compare against a call: `if (c * share / d > util_RandomF() + 0.15)` (evaluated first,
+  spilled as a double over the call, share kept on the FPU). A `double limit` local, casts, both orders of the
+  product: = control (gm_LikingChance).
 - **A value loaded or kept "too early" across a statement boundary**: there was none; try `x = expr` inside the
   consuming expression before any allocation lever (snd_UpdateRain 33 ins -> byte, next three bullets).
 - **`mov edi,[handle]` between `fsub` and `fmul`, `cmp edi,ebx` after `_ftol`**: the volume assigned in the macro
