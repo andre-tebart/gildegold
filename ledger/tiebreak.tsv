@@ -1680,7 +1680,7 @@ exe	0x0049cdd0	ai_EvalThreaten	am	2a4b0e79c3543a8d	no	byte	control=byte p1=byte 
 exe	0x0049ce50	ai_DecideThreaten	am	e75f05564701f46b	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x0049d030	ai_ExecuteThreaten	am	f7087715f07e257a	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0049d050	ai_EvalPamphlets	am	6995e492a1fe1386	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x0049d0f0	ai_DecidePamphlets	am	aa36f3c1e394502e	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	1670200eeadad7dc
+exe	0x0049d0f0	ai_DecidePamphlets	am	aa36f3c1e394502e	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	8147333833dceacc
 exe	0x0049d280	ai_ExecutePamphlets	am	6963ba4e3ad98675	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0049d2d0	ai_DecideDenounce	am	776ab57af4643d55	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	1670200eeadad7dc
 exe	0x0049d460	ai_ExecuteDenounce	am	e4b65c4f3c133e88	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
