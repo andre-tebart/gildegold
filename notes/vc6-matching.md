@@ -23,7 +23,8 @@ measure` marks two observations that disagree: try both. Some notes name scripts
   on the wrong field; Row and pixel pointers; Rotated against top-tested loops; Search loops: hit path and re-tests;
   Counters, countdowns and increment order; Signed jl against unsigned jb, bounds and guards; Other shapes found on
   loop functions
-- **Register allocation** (92 rules): How the allocator decides; Callee-saved registers swapped: a priority race
+- **Register allocation** (99 rules): How the allocator decides; Live range splitting, regions and the priority
+  terms (c2.dll); Callee-saved registers swapped: a priority race
   lost by a point or two; A constant or zero kept in a register; Named local or expression: a candidate too many or
   too few; Pointer locals and addresses; The eax / ecx / edx rotation out of step; Loops: counters, running values,
   loop pointers; Frames and stack slots
@@ -1078,6 +1079,55 @@ Which value gets which callee-saved register, the eax / ecx / edx rotation, cons
   [msg.to],edx`): every `AIMSG msg` declared in the block that builds it (nine blocks), not once at function
   scope; the frame stays the same (disjoint block locals share the slot). Sweep the block-scope lever
   (blockscope) whenever a store / load order resists (main_EndRound).
+
+### Live range splitting, regions and the priority terms (c2.dll)
+
+Read from color.c of C2 13.00.9044 (addresses at image base 0x10700000), confirmed with `c2trace --prio` /
+`--split`. No later pass renames registers: a value in a callee-saved register over a few blocks while its home is
+a stack slot is a split piece, and the piece's extent is decided by the rules below.
+
+- **Driver (FUN_1073122d)**: per register class, pops the queue (descending priority, equal: the later-created
+  first): savings < 1 -> FUN_10743332 (no register); avail empty -> FUN_107739f7 (split it); else AF7
+  (FUN_10708af7, interference and pressure), choice (FUN_10709937), assignment (FUN_10709bb6, which removes the
+  register from the neighbours and splits those left without one). After a pressure split the priority pass
+  (FUN_10707a0b) runs again and the pieces are re-queued (FUN_107452f4).
+- **Priority (FUN_10707a0b)**, per basic block b in layout order, for a candidate live into b or referenced in b:
+  referenced: `prio += (sum of its reference costs in b) * P(b) * w(b)`; live through b unreferenced:
+  `prio -= P(b) * w(b)`; dead in b: 0. P(b) = distinct allocatable values referenced in b, w = 1 << loop depth, a
+  reference costs 2 (FUN_107083c2). Savings (`sav`) sum cost * w only, hence "not linear in savings": a reference in
+  a block with many values weighs more, a long-lived parameter pays every block it crosses.
+  `c2trace.py SRC FUNC --prio REGEX` prints the term per block with the source line.
+  Example ai_DecideUpgradeGuild: o1 +36 for three stores in the credit block (P 6), +56 in the new-type block
+  (P 7), -65 over blocks 2..27 (a parameter live from the first test); a second credit copy adds +30: 43 -> 69,
+  above money 47 (open).
+- **Splitting one candidate (FUN_107453f8 -> FUN_10745670)**: a piece starts at the first live block not yet in a
+  piece and grows into successors where the value is live while one register stays free over the whole piece
+  (registers of assigned candidates referenced there, a call: callee-saved only); where none is left it is cut
+  (FUN_1074527d, `CUT` in --split).
+- **Bulk split (FUN_10743bda)**: 3+ candidates split at once once the candidate counter (0x107ad5b8) is 100+. Blocks in layout
+  order, each with used = registers of assigned candidates in it; a block joins the region of its FIRST
+  predecessor (in the predecessor list's order), then successor, whose region still leaves a register free for
+  both; else it opens a region. Region boundaries cut every candidate of the set. A piece then lives from its
+  first to its last reference inside the region, so it spans the region's calls (and needs a callee-saved
+  register) only when it is referenced on both sides of them. `--split REGEX` prints each block's predecessors in
+  list order and the region it joined.
+- **The predecessor order is a source lever**: a test right behind a loop with `break` has the predecessors
+  [break, guard skip, latch]; an extra empty exit block in front of the test (a label, the end of a
+  `do { .. } while (0)`, a `goto` target) re-links them as [guard skip, break, latch]. The guard skip comes from the
+  loop's call block (scratch registers used, edi free), so the test joins that region instead of the loop exit's.
+  Example ai_FillNearRing (13 -> byte): g (home [esp+0x18]) in eax at each of `if (g == 3 || g == 6)` and
+  `if (g == 4 || g == 7)`; the original loads edi once and keeps it over the up block (reloads at the loop exits).
+  G7_ADD as a `do { .. } while (0)` statement macro put both tests into the call-block region (free: edi) and one
+  piece of refs 4 spans them. Lever when a value sits in a scratch register at a test after a loop and the
+  original holds it in a callee-saved register up to a later test: the statement after the loop as a
+  do-while(0) / labelled statement, or the loop's `break` as a `goto` to a label behind it.
+- **AF7 avail drop (0x107097cd)**: while a byte-flagged value is live, at a call the candidate lives across, or at
+  an instruction where only one byte-capable register is left, `avail &= { ebp esi edi }` (the register set at
+  0x107c9624). `RESTRICT` in --split shows the instruction and its source line (ai_FillNearRing: the constants
+  and a piece of g restricted at `side[0] = (kind.col == 4) + 4`, the sete cl).
+- **Rematerialisation (FUN_107705ea, read, not verified)**: a spilled candidate whose single definition has at
+  most one unassigned register operand is recomputed at its uses (the definition copied) instead of reloaded.
+- **Not reached**: the x87 keep-vs-spill rule (ai_FireCannon's extra 4-byte temp).
 
 ### Callee-saved registers swapped: a priority race lost by a point or two
 
@@ -3217,7 +3267,10 @@ How to work: variant rounds, the c2 tools, sweeps, what the tools' output means,
   open)
 - **`python tools/c2dag/c2trace.py SRC FUNC [--variants FILE --label L]`**: the allocator's real sequence (each
   candidate queued with priority, savings `sav`, flags, registers available, preferences; assigned; splits); "a
-  free register is refused" is explained there.
+  free register is refused" is explained there. `--prio REGEX`: each block's priority term (refs * P * w, -P * w)
+  with its source line; `--split REGEX`: the cuts, the AF7 restrictions (RESTRICT, with the reason) and the bulk
+  split's region per block with its predecessors in list order ("Live range splitting, regions and the priority
+  terms").
 - **`python tools/c2dag/c2frame.py SRC FUNC [--refs] [--variants FILE --label L]`**: the packer: each local's size
   and refs at layout (L rows), slot table before / after the sort (B / A; A index 0 nearest esp); `--refs` each
   reference in walk order.
@@ -3227,6 +3280,7 @@ How to work: variant rounds, the c2 tools, sweeps, what the tools' output means,
   blocks and merges tails". `c2pass.py --list` names the call sites that switch block order and each merger off.
 - **`uv run --with capstone python tools/c2dag/vdiff.py SRC FUNC [VARIANTS LABEL]`**: one dcp try variant's
   instruction diff against the original, tree untouched.
+- **flip.py** names each hit by FILE:LINE and the changed source line.
 - **flip.py reading rule**: a hit on a DUPLICATED statement = the value has two uses in the original (a loop, the
   expression again, a macro's second expansion); a changed constant at one site = this block is not shared with
   its twins.

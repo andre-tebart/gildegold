@@ -76,6 +76,15 @@ temporaries are no candidates: they get what is left.
   - spellings that fold before allocation (`x = y` with y known, a named copy of a global, casts, a `const`
     local, a single-use local) change nothing.
   `python tools/c2dag/c2trace.py SRC FUNC` prints the real sequence (queue, priorities, splits, assignment).
+- Priority per block: `+ refcost * P * w` where referenced, `- P * w` where it lives through unreferenced, P = the
+  distinct values referenced in that block: a reference in a crowded block weighs more, a value live over many
+  blocks pays each one (`c2trace --prio REGEX`).
+- A value spilled to its slot but held in a callee-saved register over a few blocks is a split piece: in big
+  functions the blocks form regions (each joins its FIRST predecessor's region if a register stays free for both)
+  and a piece lives from its first to its last reference in its region. The predecessor order follows the source:
+  an extra empty block behind a loop (label, `do { } while (0)`, a goto target) puts the loop's guard edge first
+  (ai_FillNearRing; `c2trace --split REGEX`; vc6-matching "Live range splitting, regions and the priority
+  terms").
 
 **Stack frame.** After allocation every local in memory is listed by size ascending, then reference count
 descending (one per operand naming it, all blocks, no loop weight, counted BEFORE the late passes: a statement in
@@ -144,6 +153,7 @@ Section names are those of `notes/vc6-matching.md`.
 | a return's ending merged into another exit (or two copies where the original jumps into one); the default / not-found block in front of the epilogue | `c2tail.py --tries --il merge`: which block falls into the exit label; change the flow graph so the walk finishes the original's block first (`\|\|` guard, goto test, nesting); text order and label moves are no lever | Branch layout (How VC6 orders blocks and merges tails) |
 | an arm out of line whatever the condition; a jump into another arm; a redundant re-test; `setne` against a branch | a flag set by separate ifs; the excluded case in the outer condition; if / else-if with the call in both arms; a ternary against if / else; swap the arms | Branch layout |
 | the same instructions with callee-saved registers swapped, or every scratch register shifted from one point on | c2trace; named local against inline expression; an expression written out twice; statement written in both arms; the init order at the top; one early statement moved (n^2 round) | Register allocation |
+| a value reloaded into a scratch register at each test where the original keeps it in one callee-saved register over a block (reloads at the loop exits) | `c2trace --split NAME`: which region each test joined; a label / `do { } while (0)` / goto target behind the loop in front of the test | Register allocation (Live range splitting) |
 | `[esp+N]` offsets differ, frame size equal or not | dcp frame; block-scope the block-used locals; one array for two; the callee's full record; D3VECTOR4; reference counts (c2frame) | Stack frame |
 | stores / loads in another order inside a block | block-scope the filled record; permute the fill (720 / 5040 orders in one `dcp try`); assignment inside the expression; a read into a local before the other store | Order |
 | a loop with another induction variable, a pointer walk against an index, `dec; jne` against a compare | the plain index loop over the real element type; the callee's real parameter types (a `short` parameter stops strength reduction); the bound in the `for` condition; `break` + one return | Loops |
@@ -164,7 +174,9 @@ Section names are those of `notes/vc6-matching.md`.
 - `uv run --with capstone python tools/c2dag/vdiff.py SRC FUNC VARIANTS LABEL`: the instruction diff of ONE
   variant against the original without touching the tree. Use it on every variant that changes the layout,
   whatever its count. vdiff, c2trace and c2frame read a variants file exactly as `dcp try` does.
-- `python tools/c2dag/c2trace.py SRC FUNC [--variants FILE --label L]`: the allocator's sequence.
+- `python tools/c2dag/c2trace.py SRC FUNC [--variants FILE --label L]`: the allocator's sequence. `--prio REGEX`:
+  each block's priority term with its source line (why a candidate ranks above another); `--split REGEX`: cuts,
+  AF7 restrictions with their reason, the bulk split's region per block with its predecessors in list order.
   `python tools/c2dag/c2dag.py SRC FUNC [--alloc]`: the scheduler's graph per block; the candidates with
   priority and final register. `python tools/c2dag/c2frame.py SRC FUNC [--refs]`: the frame packer's counts and
   slot table. `--names` names every temporary by the first source line that uses it (`tmp@8208`), lists each
@@ -177,7 +189,8 @@ Section names are those of `notes/vc6-matching.md`.
   `c2trace.variant_text(text, func, vfile, label, src=src)` and run `c2dag.py COPY FUNC --alloc` on it (includes
   resolve through /I src); diff two variants' `P blk` lines to see which block moved a priority.
 - `python tools/c2dag/flip.py SRC FUNC --want REGEX [--try OUT.txt]`: mutates every statement (delete,
-  duplicate, swap, change a constant) and reports the mutants whose listing has the wanted instruction. The
+  duplicate, swap, change a constant) and reports the mutants whose listing has the wanted instruction, each by
+  FILE:LINE and the changed source line. The
   mutants are not kept; they name the place the wanted code depends on. A hit on a DUPLICATED statement = that
   value has two uses in the original (a loop, the expression written again, a macro expanded twice); a hit on a
   changed constant at one site = that block is not shared with its twins in the original. REGEX is matched
