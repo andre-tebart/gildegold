@@ -2238,7 +2238,7 @@ exe	0x004c59b0	cm_SendSetJob	cm	byte	readable
 exe	0x004c59f0	cm_SendSpawnCharacter	cm	shape	readable		
 exe	0x004c5a70	cm_SendFreeObject	cm	byte	readable		
 exe	0x004c5aa0	cm_SendChat	cm	byte	readable		
-exe	0x004c5ae0	cm_RequestCreateGeb	cm	shape	readable		
+exe	0x004c5ae0	cm_RequestCreateGeb	cm	byte	readable		
 exe	0x004c5b90	cm_SendCharHalt	cm	byte	readable		
 exe	0x004c5bc0	cm_SendObjCell	cm	byte	readable		
 exe	0x004c5c40	cm_SendCutEntry	cm	byte	readable		
@@ -2598,7 +2598,7 @@ exe	0x004e50e0	cm_CutInfoById	cm	byte	readable
 exe	0x004e5120	cm_FreePartySlot	cm	byte	readable		
 exe	0x004e5150	cm_AllocParty	cm	byte	readable		
 exe	0x004e5180	cm_ClearParty	cm	byte	readable		
-exe	0x004e51b0	cm_AddPartyMember	cm	shape	readable		
+exe	0x004e51b0	cm_AddPartyMember	cm	byte	readable		
 exe	0x004e5210	cm_RemovePartyMember	cm	shape	readable		
 exe	0x004e52a0	cut_RandSeed	cm	byte	readable		
 exe	0x004e52c0	cut_GetRandSeed	cm	byte	readable		
@@ -2725,7 +2725,7 @@ exe	0x004ece10	ahm_SendDelete	ahm	byte	readable
 exe	0x004ece60	ahm_DeleteAlchemist	ahm	byte	readable		
 exe	0x004ecf10	ahm_WriteRecord	ahm	byte	readable		
 exe	0x004ed040	ahm_ReadRecord	ahm	byte	readable		
-exe	0x004ed170	gv_AllocAvatar	gv	shape	readable		
+exe	0x004ed170	gv_AllocAvatar	gv	byte	readable		
 exe	0x004ed1e0	gv_WriteAvatars	gv	byte	readable		
 exe	0x004ed270	gv_ReadAvatars	gv	byte	readable		
 exe	0x004ed3f0	gv_EffectNotifyOwner	gv	byte	readable		
@@ -3394,7 +3394,7 @@ exe	0x0052e1c0	sv_RegisterNamePlate	sv	byte	readable
 exe	0x0052e330	sv_SetStatusText	sv	byte	readable		
 exe	0x0052e350	sv_ButtonRow	sv	shape	readable	deep	
 exe	0x0052e4b0	sv_TabButtonRow	sv	shape	readable	deep	
-exe	0x0052e600	sv_DisableVisibleWidgets	sv	shape	readable		
+exe	0x0052e600	sv_DisableVisibleWidgets	sv	byte	readable		
 exe	0x0052e6d0	sv_OpenWindowFrame	sv	byte	readable		
 exe	0x0052e860	sv_CreateScrollButtons	sv	byte	readable		
 exe	0x0052ea30	sv_FitForm	sv	byte	readable		
@@ -4132,7 +4132,7 @@ exe	0x0058ee30	ai_UpdateStoreGoods	lc	byte	readable
 exe	0x0058f290	ai_LayoutStoreGoods	lc	byte	readable		
 exe	0x0058f510	ai_MarketContact	lc	byte	readable		
 exe	0x0058f620	ai_PumpFrames	lc	byte	readable		
-exe	0x0058f640	ai_BuildingName	lc	shape	readable	deep	
+exe	0x0058f640	ai_BuildingName	lc	byte	readable		
 exe	0x0058f6a0	ai_BauplatzFilter	lc	draft	readable	deep	
 exe	0x0058f7a0	ai_FindBauplaetze	lc	byte	readable		
 exe	0x0058f920	ai_VgFilter	lc	byte	readable		
@@ -4242,7 +4242,7 @@ exe	0x0059e170	ai_IsBuildingOpen	lc	byte	readable
 exe	0x0059e210	ai_MayEnterBuilding	lc	byte	readable		
 exe	0x0059e420	ai_EnterBuilding	lc	byte	readable		
 exe	0x0059ee40	ai_EnterOwnBuilding	lc	byte	readable		
-exe	0x0059f410	ai_RunObjectRoom	lc	shape	readable		
+exe	0x0059f410	ai_RunObjectRoom	lc	byte	readable		
 exe	0x0059f9a0	ai_BuyBuildingWindow	lc	byte	readable		
 exe	0x0059fbf0	ai_GuildCashWindow	lc	byte	readable		
 exe	0x0059fca0	ai_TownCashContact	lc	byte	readable		
@@ -4482,7 +4482,7 @@ exe	0x005c0650	ai_ShowCandidacyTab	lc	byte	readable
 exe	0x005c0790	ai_ShowOfficeTab	lc	byte	readable		
 exe	0x005c08b0	ai_ClearAmountTabs	lc	byte	readable		
 exe	0x005c08d0	ai_AmountLikingRows	lc	byte	readable		
-exe	0x005c0970	ai_SpecialAmountWindow	lc	shape	readable		
+exe	0x005c0970	ai_SpecialAmountWindow	lc	byte	readable		
 exe	0x005c1130	ai_AmountMenu	lc	draft	readable	deep	
 exe	0x005c1500	ai_AmountListWindow	lc	byte	readable		
 exe	0x005c1a80	ai_AmountInfoWindow	lc	byte	readable		
@@ -4538,10 +4538,10 @@ exe	0x005cacd0	ai_BewitchOrder	lc	shape	readable
 exe	0x005cae00	ai_CounterEspionage	lc	byte	readable		
 exe	0x005cb1e0	ai_SwapSeats	lc	byte	readable		
 exe	0x005cb250	ai_SeatSwapWindow	lc	byte	readable		
-exe	0x005cb4f0	ai_HatredWindow	lc	draft	readable	deep	
+exe	0x005cb4f0	ai_HatredWindow	lc	shape	readable	deep	
 exe	0x005cba90	ai_HearingWindow	lc	byte	readable		
 exe	0x005cbe00	ai_ExpelWorkerWindow	lc	draft	readable	deep	
-exe	0x005cc2b0	ai_PeaceWindow	lc	shape	readable		
+exe	0x005cc2b0	ai_PeaceWindow	lc	byte	readable		
 exe	0x005cc700	ai_ConvertWindow	lc	draft	readable	deep	
 exe	0x005cca40	ai_PenanceWindow	lc	byte	readable		
 exe	0x005ccc10	ai_Miracle	lc	draft	readable	deep	
