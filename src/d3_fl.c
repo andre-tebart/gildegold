@@ -1278,25 +1278,30 @@ char d3fl_LightCB(D3OBJECT *obj, void *ctx)
 }
 /* 0x441860, the light map: bit 7 = lit by a point light (d3fl_LightCB), bits 0..6 = sun shade by the
    terrain normal; then bit 7 of the divide maps follows the light edges
-   @deep this session 255 -> 85 ins (frame and slots right). Found: up/down/row were no locals (h[((y + 1)
-   & (size - 1)) * size + x], h[y * size + ..], lp[y * size + x]: VC6 makes the row bases itself); dir in
+   @deep this session 255 -> 60 ins, frame and slots right. Found: up/down/row were no locals (h[((y + 1) &
+   (size - 1)) * size + x], h[y * size + ..], lp[y * size + x]: VC6 builds the row bases itself); dir in
    the if (ctx.light) block (shares with step); D3VECTOR4 n; min(0x7f, (unsigned int)iv); d3fl_FtoI2(f,
-   &iv); (map->negScale) in kx/ky; the step loop counter is iv itself (escaped: in [ebp-0xc], no strength
-   reduction of map->divide[l]); iv must NOT be in scope at D3_ZERO (its asm block counts 2 refs for every
-   escaped local in scope; with them iv outranks p in the slot list): kept as a block { int iv; ... }
-   around everything after D3_ZERO (ugly, look for the natural form); edge decision as 4 statements: g1
-   set, g2 (all five) clear, g3 terms 1+2 set, g3 term 3 set (read from the original's blocks: set sites
-   ba5 / bdf / c48, one clear site); p = drow + y * size per row (drow only advanced by .. nothing: drow =
-   map->divide[iv] once) puts iv in edi. No lever: k inline (290), plain l counter (167), p =
-   map->divide[iv] + y*size (131), splitting g2 (fixes slots wrongly), kx/ky swaps, lp/h statement orders
-   (120), lp or h inlined. Left: light head (orig loads size before map->light, stores lp after the cmp),
-   divide x in eax (orig edi, [ebp-0x20]), the p loads at the edge sites in ecx (orig eax) and the edge
-   block layout that follows. prior: B: code 357 / fpu 26 / slots 20 - the function was read (same
-   size,frame 0x60 vs 0x68, the light part only differs in slot offsets / FPU operand order (the original
-   loads map->negScale * hscale in the other order), the inlined d3fl_FtoI scheduling, and the divide-edge
-   decision, where 288 + 144 group/order permutations were tried and none was closer than the kept
-   five-group form (set {0111,1000}, clear {1101,1011,0100,0010,1001}, set {0001,1110,0110}, merged tails);
-   no missing statement, wrong constant or field - needs vargen / listing */
+   &iv); (map->negScale) in kx/ky; the step loop counter is iv itself (escaped: [ebp-0xc], no strength
+   reduction of map->divide[l]; a plain l counter: 167); iv must not be in scope at D3_ZERO (its asm block
+   counts 2 refs per escaped local in scope, then iv outranks p in the slot list): block { int iv; ... }
+   after D3_ZERO, as d3d_LoadTexture; p = drow + y * size per row (puts iv in edi); for (..; p++, x++).
+   Edge decision read from the original's blocks: set sites ba5 {0111,1000} / bdf {0001,1110} / c48 {0110,
+   placed after the epilogue}, one clear site b91: so 4 statements g1 set, g2 clear, g3a (0001||1110) set,
+   g3b (0110) set; the term order inside the groups moves the threading: g2 as
+   (a&&!b&&c&&e)||(!a&&!b&&c&&!e)||(a&&!b&&!c&&e)||(a&&b&&!c&&e)||(!a&&b&&!c&&!e) is best (60; 479 orders
+   tried; a literal-order hill climb gives 58 only with odd literal orders, not kept). No lever: k inline
+   (290), splitting g2/g3 further (fixes nothing), independent ifs instead of else-if (147+), y + 1 < size
+   / x + 1 < size, lp/h inline or moved, kx/ky swaps, lp/h statement orders. Left: (1) light head: the
+   original loads size into eax before map->light (ecx) and stores lp after the cmp, ours lp through eax
+   first (a scratch rotation one step off); (2) divide x in eax, the original edi (c2trace: x piece prio
+   344 is served before p's 320; the original serves p first: p eax, x edi); (3) the edge test layout (2 of
+   3 set sites, c40 block out of line in the original), likely follows (2). prior: B: code 357 / fpu 26 /
+   slots 20 - the function was read (same size,frame 0x60 vs 0x68, the light part only differs in slot
+   offsets / FPU operand order (the original loads map->negScale * hscale in the other order), the inlined
+   d3fl_FtoI scheduling, and the divide-edge decision, where 288 + 144 group/order permutations were tried
+   and none was closer than the kept five-group form (set {0111,1000}, clear {1101,1011,0100,0010,1001},
+   set {0001,1110,0110}, merged tails); no missing statement, wrong constant or field - needs vargen /
+   listing */
 
 void d3fl_MakeLight(D3FLMAP *map)
 {
@@ -1372,7 +1377,7 @@ void d3fl_MakeLight(D3FLMAP *map)
                         e = map->light[k + (map->size + 1) * s] >> 7;
                         if ((!a && b && c && e) || (a && !b && !c && !e))
                             *p |= 0x80;
-                        else if ((a && b && !c && e) || (a && !b && c && e) || (!a && b && !c && !e) || (!a && !b && c && !e) || (a && !b && !c && e))
+                        else if ((a && !b && c && e) || (!a && !b && c && !e) || (a && !b && !c && e) || (a && b && !c && e) || (!a && b && !c && !e))
                             *p &= 0x7f;
                         else if ((!a && !b && !c && e) || (a && b && c && !e))
                             *p |= 0x80;
