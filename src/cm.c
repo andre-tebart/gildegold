@@ -1620,8 +1620,8 @@ int cm_SendObject1b5(int owner, G17B7 value)
 {
     G17MSG m;
 
-    m.obj.value = value;
     m.type = 0x2d;
+    m.obj.value = value;
     m.obj.owner = owner;
     return cm_QueueSend(&m);
 }
