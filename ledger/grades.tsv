@@ -1725,7 +1725,7 @@ exe	0x004a0990	ai_EvalUpgradeGuild	am	byte	readable
 exe	0x004a0a70	ai_DecideUpgradeGuild	am	draft	readable	deep	
 exe	0x004a0e60	ai_ExecuteUpgradeGuild	am	byte	readable		
 exe	0x004a1000	ai_EvalApprenticeship	am	byte	readable		
-exe	0x004a1170	ai_DecideApprenticeship	am	shape	readable		
+exe	0x004a1170	ai_DecideApprenticeship	am	byte	readable		
 exe	0x004a1360	ai_ExecuteApprenticeship	am	byte	readable		
 exe	0x004a13e0	ai_DecideStudy	am	shape	readable		
 exe	0x004a1640	ai_ExecuteStudy	am	byte	readable		
@@ -2267,7 +2267,7 @@ exe	0x004c6260	cm_SendShots	cm	byte	readable
 exe	0x004c62a0	cm_SendSetRoute	cm	shape	readable		
 exe	0x004c6320	cm_SendClearRoute	cm	byte	readable		
 exe	0x004c6350	cm_CheckMoveGoods	cm	byte	readable		
-exe	0x004c63e0	cm_CheckSellObject	cm	shape	readable		
+exe	0x004c63e0	cm_CheckSellObject	cm	byte	readable		
 exe	0x004c65b0	cm_CheckFieldDeltas	cm	shape	readable		
 exe	0x004c66c0	cm_CheckSetField	cm	shape	readable		
 exe	0x004c6750	cm_CheckOwnership	cm	byte	readable		
@@ -2981,7 +2981,7 @@ exe	0x004fe370	gm_InitBuildingTables	f3gm	draft	readable	deep
 exe	0x004fe570	gm_LoadTables	f3gm	byte	readable		
 exe	0x004fe7f0	gm_ClearBuildings	f3gm	byte	readable		
 exe	0x004fe830	gm_ClearObjects	f3gm	shape	readable	deep	
-exe	0x004fe900	gm_FindObjectProto	f3gm	shape	readable		
+exe	0x004fe900	gm_FindObjectProto	f3gm	byte	readable		
 exe	0x004fe940	gm_IsBuildingKind	f3gm	byte	readable		
 exe	0x004fe980	gm_FindObjectInst	f3gm	byte	readable		
 exe	0x004fe9c0	gm_Free	f3gm	byte	readable		
@@ -3581,7 +3581,7 @@ exe	0x005472d0	he_DuelDeclined	he	shape	readable
 exe	0x00547430	he_RunDuelChallenge	he	byte	readable		
 exe	0x00547750	he_AllocInsult	he	draft	readable	deep	
 exe	0x00547ba0	he_RunInsult	he	draft	readable	deep	
-exe	0x00547ee0	he_AllocGeselle	he	shape	readable		
+exe	0x00547ee0	he_AllocGeselle	he	byte	readable		
 exe	0x00547f90	he_RunGeselle	he	shape	readable		
 exe	0x00548110	he_AllocInsultNews	he	byte	readable		
 exe	0x00548230	he_RunInsultNews	he	byte	readable		
@@ -4240,8 +4240,8 @@ exe	0x0059df80	ai_MoneyLenderContact	lc	byte	readable
 exe	0x0059e0a0	ai_SwitchRoom	lc	shape	readable		
 exe	0x0059e170	ai_IsBuildingOpen	lc	byte	readable		
 exe	0x0059e210	ai_MayEnterBuilding	lc	byte	readable		
-exe	0x0059e420	ai_EnterBuilding	lc	shape	readable		
-exe	0x0059ee40	ai_EnterOwnBuilding	lc	shape	readable		
+exe	0x0059e420	ai_EnterBuilding	lc	byte	readable		
+exe	0x0059ee40	ai_EnterOwnBuilding	lc	byte	readable		
 exe	0x0059f410	ai_RunObjectRoom	lc	shape	readable		
 exe	0x0059f9a0	ai_BuyBuildingWindow	lc	byte	readable		
 exe	0x0059fbf0	ai_GuildCashWindow	lc	byte	readable		
@@ -4255,9 +4255,9 @@ exe	0x005a0950	ai_GuildCashPayWindow	lc	shape	readable
 exe	0x005a0ca0	ai_GuildGiftCallback	lc	byte	readable		
 exe	0x005a0f10	ai_GuildGiftEntry	lc	byte	readable		
 exe	0x005a1000	ai_GuildLevel1Window	lc	byte	readable		
-exe	0x005a13f0	ai_GuildLevel3RequestCB	lc	shape	readable		
-exe	0x005a1530	ai_GuildLevel2RequestCB	lc	shape	readable		
-exe	0x005a1670	ai_GuildLevel3PowerCB	lc	shape	readable		
+exe	0x005a13f0	ai_GuildLevel3RequestCB	lc	byte	readable		
+exe	0x005a1530	ai_GuildLevel2RequestCB	lc	byte	readable		
+exe	0x005a1670	ai_GuildLevel3PowerCB	lc	byte	readable		
 exe	0x005a17b0	ai_GuildLevel3Entry	lc	byte	readable		
 exe	0x005a18d0	ai_GuildLevel2Listener	lc	byte	readable		
 exe	0x005a1960	ai_GuildLevel3Listener	lc	byte	readable		
@@ -4445,7 +4445,7 @@ exe	0x005bc0f0	ai_FreePicture	lc	byte	readable
 exe	0x005bc110	ai_ChooseCoatOfArms	lc	byte	readable		
 exe	0x005bc420	ai_OpenMoneyInfoPage	lc	byte	readable		
 exe	0x005bc6d0	ai_OpenBuildingListPage	lc	byte	readable		
-exe	0x005bc790	ai_BuildingDetailWindow	lc	byte	readable		
+exe	0x005bc790	ai_BuildingDetailWindow	lc	shape	readable		
 exe	0x005bc9c0	ai_OpenMasterListPage	lc	shape	readable	deep	
 exe	0x005bcc70	ai_PlayerStatsPanel	lc	shape	readable		
 exe	0x005bd060	ai_AmountLimit	lc	byte	readable		
