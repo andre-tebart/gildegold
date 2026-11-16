@@ -3562,7 +3562,7 @@ exe	0x005436a0	he_AllocFeast	he	b66a669f1abe07c8	no	byte	control=byte p1=byte p2
 exe	0x005437c0	he_RunFeast	he	54f11ddfa73733c3	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x00543ac0	he_RunFeastExam	he	7af923e60dd454ec	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x00544070	he_AllocTribute	he	ab791732ebd24965	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x00544330	he_RunTribute	he	9c60689a77e21f38	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
+exe	0x00544330	he_RunTribute	he	9c60689a77e21f38	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	f111e71d622b1b2b
 exe	0x00544550	he_DrawPairPicks	he	d5d5704bcddae019	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00544630	he_AllocCourtship	he	bc32926fde974612	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
 exe	0x00544840	he_RunCourtship	he	03d3194d2089eea5	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	

@@ -3494,7 +3494,7 @@ void he_RunTribute(int ev)
 {
     AIJOB *e = (AIJOB *)ev;
     AICHAR *coll, *owner;
-    int mul, left, next, i;
+    int mul, left, next, i, delta;
     float f;
 
     coll = (AICHAR *)gm_FindChar(e->idbc);
@@ -3520,7 +3520,8 @@ void he_RunTribute(int ev)
         if (ai_CharsT[next].id != 0xffff && ai_CharsT[next].netId != e->idbc && ai_CharsT[next].kind < 10
             && ai_CharsT[next].health > 0) {
             f = -gm_Mix2(e->tributeSkill, gm_GetSkill((char *)&ai_CharsT[next], 4));
-            cm_SendRelations(e->idbc, ai_CharsT[next].netId, (int)(f * 10.0f + 1.0f) * mul, 1);
+            delta = (int)(f * 10.0f + 1.0f) * mul;
+            cm_SendRelations(e->idbc, ai_CharsT[next].netId, delta, 1);
         }
     }
     e->tributeNext = next;
