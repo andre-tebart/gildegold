@@ -7977,7 +7977,6 @@ D3OBJECT *ai_CreateCityPoint(char *city)
 void ai_MapTableScreen(void)
 {
     D3OBJECT *objs[4];
-    GMPLAYERSLOT *slot;
     int i;
     AIBLD *rec;
     D3OBJECT *r;
@@ -7986,17 +7985,17 @@ void ai_MapTableScreen(void)
     objs[1] = 0;
     objs[2] = 0;
     objs[3] = 0;
-    for (slot = (GMPLAYERSLOT *)ai_PlayerSlots + 1, i = 0; (int)slot < (int)((GMPLAYERSLOT *)ai_PlayerSlots + 4); slot++, i++) {
-        objs[i] = ai_CreateCityPoint(slot->name);
-        sprintf(objs[i]->name, "stadt_%s", slot->name);
-        sv_RegisterNamePlate(objs[i]->name, slot->name, 0);
+    for (i = 0; i < 3; i++) {
+        objs[i] = ai_CreateCityPoint(ai_PlayerSlots[i + 1]);
+        sprintf(objs[i]->name, "stadt_%s", ai_PlayerSlots[i + 1]);
+        sv_RegisterNamePlate(objs[i]->name, ai_PlayerSlots[i + 1], 0);
     }
     d2_SetPointerSprite(0, 0);
     sv_ReleaseNamePlates();
     while (sv_RunFrame(ai_MapTableScreen, 0x677d7) != 0) {
         ai_ClickedObject = 0;
-        for (slot = (GMPLAYERSLOT *)ai_PlayerSlots + 1, i = 0; (int)slot < (int)((GMPLAYERSLOT *)ai_PlayerSlots + 4); slot++, i++)
-            sv_RegisterNamePlate(objs[i]->name, slot->name, 0);
+        for (i = 0; i < 3; i++)
+            sv_RegisterNamePlate(objs[i]->name, ai_PlayerSlots[i + 1], 0);
         r = d3if_Pick((float)dm_L.x, (float)dm_L.y, 0x60, 1);
         ai_PickedObject = (char *)r;
         if (dm_L.lup == 0 || r == 0) {
