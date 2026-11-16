@@ -1783,10 +1783,10 @@ int main_ChooseTalents(void)
     int btn[14];                        /* per talent the down and the up arrow (@original 14: the frame is 0x7c) */
     int pts, sel, f, again, r, i, w, row, id, v;
 
+    again = 1;
     r = 0;
     memset(main_Family.talent, 0, 6 * sizeof(int));  /* @original six ints: one past the five talents */
     fam = main_Family;
-    again = 1;
     pts = 0x7e;
     sel = -1;
     for (i = 4; i < 6; i++) {
@@ -1875,8 +1875,7 @@ int main_ChooseTalents(void)
                     sv_PopRequest = 1;
                 }
                 if (id == 0x519 || id == 0x51a) {
-                    again = 1;
-                    for (i = 0; i < 12; i++) {
+                    for (i = 0, again = 1; i < 12; i++) {
                         if (d2_PointerObj == btn[i]) {
                             row = i / 2;
                             if (i % 2 != 0) {
