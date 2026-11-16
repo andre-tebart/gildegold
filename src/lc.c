@@ -12917,10 +12917,10 @@ void ai_ThievesGuildListener(int building, int room)
     int burglary = 0;
     int espionage = 0;
     int angriff = 0;
+    int meister = 0;
     int taschen = 0;
     int personal = 0;
     int pergament = 0;
-    int meister = 0;
     int obj;
     int click;
     AIBLD *bld;
