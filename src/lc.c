@@ -3390,12 +3390,12 @@ void ai_TradeContactChecks(void)
     unsigned short *room;
     AIBLD *b;
     AIBTYPE *type;
-    char kind;
+    AIGOOD *g;
 
     item = (unsigned short *)sv_ClickedItem;
     if (item != 0) {
-        kind = ((AIGOOD *)ai_Goods)[*item].type;
-        if ((kind == 6 || kind == 2) &&
+        g = (AIGOOD *)ai_Goods + *item;
+        if ((g->type == 6 || g->type == 2) &&
             (gm_PermissionBits(ai_PlayerId, (unsigned char *)ai_FallbackBuilding, item, 0) &
              0x4000) != 0) {
             room = (unsigned short *)gm_Query((void *)((AIBLD *)ai_FallbackBuilding)->objList, 2, 6, 0, 0xfd);

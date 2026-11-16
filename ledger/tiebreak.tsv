@@ -4147,7 +4147,7 @@ exe	0x0058feb0	ai_DropObjectAt	lc	47b414236081b5de	no	byte	control=byte p1=byte 
 exe	0x0058ff00	lc_GebaeudeAusrichten	lc	235cf4bebc745180	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x005909a0	ai_ConstructionWindow	lc	8e15ee27c500f916	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x00591170	ai_HandleMapKey	lc	1a5b26711de846ea	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x005912c0	ai_TradeContactChecks	lc	bdec6ebc5df7ce0e	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
+exe	0x005912c0	ai_TradeContactChecks	lc	4f7c372f959fefbf	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	34089eb3891287bb
 exe	0x00591480	ai_CampaignKey1	lc	40d255afea32d863	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x00591520	ai_GameFrame	lc	978b1d6b344e2cd8	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00591ad0	lc_PlayerInJail	lc	e503689d4fb15146	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
