@@ -1692,7 +1692,7 @@ exe	0x0049d6a0	ai_DecideBlackmail	am	761668f110fe7a80	no	byte	control=byte p1=by
 exe	0x0049d730	ai_ExecuteBlackmail	am	07d4c9f42f87bf84	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0049d750	ai_DecideUsePrivileges	am	740482a2b99ecba9	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0049d7d0	ai_ExecuteUsePrivileges	am	b55965259b78e206	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x0049d7f0	ai_EvalMayor	am	ca7cdc793b3f81e9	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	1670200eeadad7dc
+exe	0x0049d7f0	ai_EvalMayor	am	ca7cdc793b3f81e9	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	1ab28842892e4e34
 exe	0x0049d8d0	ai_DecideMayor	am	d97373c0d9ee8cd3	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	e664ff0bc7c206f5
 exe	0x0049dc10	ai_ExecuteMayor	am	f97a237a1d04a4c7	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0049dd90	ai_DecideMayorUpgrade	am	eec3bbf9014615ff	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
@@ -3402,7 +3402,7 @@ exe	0x0052eb50	sv_DrawBalanceBar	sv	701d646de4aa6655	no	byte	control=byte p1=byt
 exe	0x0052ee50	sv_StartBand	sv	98f7817056050b5b	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0052eed0	sv_EndBand	sv	a6a7b5162105eff9	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0052eee0	sv_UpdateBand	sv	b6fdd6d8d359ca70	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	951a32915bcf2269
-exe	0x0052f0d0	sv_UpdateBandLed	sv	1f9c56c9902ea74f	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	951a32915bcf2269
+exe	0x0052f0d0	sv_UpdateBandLed	sv	e5e6f7485922152a	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	f15cf9de166b1da3
 exe	0x0052f2c0	sv_DrawRubberBand	sv	d2a37d1d11b8ba39	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0052f340	sv_BookKeys	sv	25225f5f8b527195	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0052f360	sv_OpenBook	sv	b95f85dc7d69a6fa	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	

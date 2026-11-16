@@ -7382,7 +7382,7 @@ int ai_EvalMayor(float *a, float *b, int i, G5CH *p, int f, AIARG *o1, AIARG *o2
     *a = 0.0f;
     *b = 0.0f;
     ord_GetStatistics(d);
-    if (d[3] > (p->mood[10][0] - 2.0) * 0.4f) {
+    if (d[3] > (float)((p->mood[10][0] - 2.0) * 0.4f)) {
         AI_EvalCurrentNeed7(a, b, i, p, f, o1, o2);
         *a *= 3.0f;
         *b *= 3.0f;
