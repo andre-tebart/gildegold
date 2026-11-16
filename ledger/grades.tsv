@@ -1648,11 +1648,11 @@ exe	0x0049a290	ai_DecideSaveAps	am	byte	readable
 exe	0x0049a380	ai_ExecuteSaveAps	am	byte	readable		
 exe	0x0049a390	ai_DecideUseMilitaryObject	am	shape	readable		
 exe	0x0049a5b0	ai_ExecuteUseMilitaryObject	am	shape	readable		
-exe	0x0049a690	ai_DecideUseReputationObject	am	shape	readable		
+exe	0x0049a690	ai_DecideUseReputationObject	am	shape	readable	deep	
 exe	0x0049aa80	ai_ExecuteUseReputationObject	am	shape	readable		
 exe	0x0049ab60	ai_DecideUseApsObject	am	shape	readable		
 exe	0x0049ad80	ai_ExecuteUseApsObject	am	shape	readable		
-exe	0x0049ae50	ai_DecideUseEducationObject	am	shape	readable		
+exe	0x0049ae50	ai_DecideUseEducationObject	am	byte	readable		
 exe	0x0049b050	ai_ExecuteUseEducationObject	am	shape	readable		
 exe	0x0049b120	ai_DecideUseHealthObject	am	shape	readable		
 exe	0x0049b2b0	ai_ExecuteUseHealthObject	am	shape	readable		
@@ -1680,9 +1680,9 @@ exe	0x0049cdd0	ai_EvalThreaten	am	byte	readable
 exe	0x0049ce50	ai_DecideThreaten	am	byte	readable		
 exe	0x0049d030	ai_ExecuteThreaten	am	byte	readable		
 exe	0x0049d050	ai_EvalPamphlets	am	byte	readable		
-exe	0x0049d0f0	ai_DecidePamphlets	am	shape	readable		
+exe	0x0049d0f0	ai_DecidePamphlets	am	byte	readable		
 exe	0x0049d280	ai_ExecutePamphlets	am	byte	readable		
-exe	0x0049d2d0	ai_DecideDenounce	am	shape	readable		
+exe	0x0049d2d0	ai_DecideDenounce	am	byte	readable		
 exe	0x0049d460	ai_ExecuteDenounce	am	byte	readable		
 exe	0x0049d4b0	ai_EvalInsult	am	byte	readable		
 exe	0x0049d550	ai_DecideInsult	am	byte	readable		
@@ -2095,7 +2095,7 @@ exe	0x004bdc90	rt_MarkValue	rt	byte	readable
 exe	0x004bdca0	rt_ReadMarkValues	rt	byte	readable		
 exe	0x004bdcd0	rt_ChooseGoodsDialog	rt	shape	readable		
 exe	0x004be180	rt_ChooseRouteGood	rt	shape	readable		
-exe	0x004be3b0	rt_ChooseTabGood	rt	shape	readable		
+exe	0x004be3b0	rt_ChooseTabGood	rt	byte	readable		
 exe	0x004be790	rt_OpenSlotControls	rt	byte	readable		
 exe	0x004be8e0	rt_RemoveControls	rt	byte	readable		
 exe	0x004be930	rt_InitControls	rt	byte	readable		
@@ -3536,7 +3536,7 @@ exe	0x0053f430	he_InnStaffLeave	he	byte	readable
 exe	0x0053f500	he_ClearInnDarkCorner	he	shape	readable		
 exe	0x0053f5b0	he_TopUpCharMoney	he	byte	readable		
 exe	0x0053f6b0	he_SpawnFounders	he	draft	readable	deep	
-exe	0x00540c90	he_PostEvent67	he	shape	readable		
+exe	0x00540c90	he_PostEvent67	he	byte	readable		
 exe	0x00540e40	he_InnReport	he	byte	readable		
 exe	0x00540fe0	he_DailyEventChecks	he	byte	readable		
 exe	0x00541010	he_PostEvent3a	he	byte	readable		
@@ -3716,7 +3716,7 @@ exe	0x00557e20	he_RunHerbGathering	he	draft	readable	deep
 exe	0x005584d0	he_AllocAnimalHunt	he	byte	readable		
 exe	0x00558550	he_RunAnimalHunt	he	byte	readable		
 exe	0x005588c0	he_AllocStudy	he	byte	readable		
-exe	0x00558a40	he_RunStudy	he	shape	readable		
+exe	0x00558a40	he_RunStudy	he	byte	readable		
 exe	0x00558de0	he_AllocEvent17	he	byte	readable		
 exe	0x00558e10	he_RunEvent17	he	byte	readable		
 exe	0x00558e70	he_AllocSabotage	he	byte	readable		
@@ -3877,7 +3877,7 @@ exe	0x00571640	he_RunGraveCare	he	byte	readable
 exe	0x00571990	he_AllocDeathDue	he	byte	readable		
 exe	0x005719e0	he_RunDeathDue	he	shape	readable		
 exe	0x00571ac0	he_AllocGraveTraining	he	shape	readable		
-exe	0x00571c30	he_RunGraveTraining	he	shape	readable		
+exe	0x00571c30	he_RunGraveTraining	he	shape	readable	deep	
 exe	0x00571f60	he_AllocMeeting	he	shape	readable		
 exe	0x005720f0	he_CatchMeetingDisease	he	draft	readable	deep	
 exe	0x00572310	he_SpreadMeetingDisease	he	draft	readable	deep	
@@ -4607,7 +4607,7 @@ exe	0x005d3a00	ai_RegisterSaveSlot	menu	shape	readable	deep
 exe	0x005d3ab0	ai_FillSaveSlots	menu	shape	readable	deep	
 exe	0x005d4080	ai_LoadGameWindow	menu	byte	readable		
 exe	0x005d42b0	ai_JoinGameWindow	menu	byte	readable		
-exe	0x005d44c0	ai_EditText	menu	shape	readable		
+exe	0x005d44c0	ai_EditText	menu	byte	readable		
 exe	0x005d45d0	ai_SaveOptionWindow	menu	byte	readable		
 exe	0x005d4920	ai_SaveNameWindow	menu	byte	readable		
 exe	0x005d4c70	ai_SaveOptions	menu	byte	readable		
