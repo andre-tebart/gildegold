@@ -10539,11 +10539,11 @@ void he_RunExamOffer(int ev)
     }
     if (e->stage == 0) {
         memset(&m, 0, sizeof(m));
+        m.msg.type = 0x7e;
+        m.msg.fromId = -1;
         m.msg.time = ai_Time;
         m.msg.to = ((HEEXAMOFFER *)e)->chr;
         m.q.chr = ((HEEXAMOFFER *)e)->chr;
-        m.msg.type = 0x7e;
-        m.msg.fromId = -1;
         m.msg.flags = 9;
         m.q.examId = e->id;
         m.q.due = ai_Time;
