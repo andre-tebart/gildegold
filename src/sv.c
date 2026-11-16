@@ -6983,6 +6983,8 @@ void sv_UpdateWeather(void)
     float wx, wy, w;
     int c, k;
     SVSKYREC *sky;
+    struct D3TRAIN *rain = (struct D3TRAIN *)d3t_Rain;  /* @original: unused; naming d3t_Rain before sv_WeatherHour
+                                                           makes VC6 reload it first after the rain call (esi before ecx) */
 
     sv_WeatherHour = ai_Time.hour;
     if (d3t_Snow != 0)

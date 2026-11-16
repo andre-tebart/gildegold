@@ -1975,6 +1975,15 @@ Store order in a fill, hoisted loads and sunk stores, statement order effects, `
 
 ### Reloads the original keeps (and CSEs it does not)
 
+- **Two globals reloaded after a call in the other order** (`mov ecx,[hour]; mov esi,[rain]` against the
+  original's `mov esi,[rain]; mov ecx,[hour]`, both register candidates killed by the call, equal scheduler
+  priority): the reload tuples follow the globals' memory-symbol numbers (`m:#N` in c2dag), given in the order
+  each global is first NAMED in the function's text (an assignment's left side before its right side; extern
+  declarations and the unit's order do not count). The original named the first-reloaded global earlier: in
+  sv_UpdateWeather only an unused `struct D3TRAIN *rain = (struct D3TRAIN *)d3t_Rain;` above
+  `sv_WeatherHour = ...` did it (a dead mention `if (0) d3t_Rain = 0;` probes the same; after the hour statement
+  it does nothing). flip.py did not find it (no mutation adds a mention); probe with a dead mention first.
+
 - **A value the original recomputes inside an if block** (reloads a field / recomputes an index the test already
   computed; keeps only the loaded globals): no local; write the expression again, especially one with a call:
   `if (util_RandomF() > X / (d3_Time - X))`, not `t = X; r = &a[i]; if (util_RandomF() > t / (d3_Time - t))`
