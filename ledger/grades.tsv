@@ -2264,7 +2264,7 @@ exe	0x004c61b0	cm_SendCommand	cm	byte	readable
 exe	0x004c61f0	cm_SendMasterChange	cm	byte	readable		
 exe	0x004c6230	cm_SendEffectLoad	cm	byte	readable		
 exe	0x004c6260	cm_SendShots	cm	byte	readable		
-exe	0x004c62a0	cm_SendSetRoute	cm	shape	readable		
+exe	0x004c62a0	cm_SendSetRoute	cm	byte	readable		
 exe	0x004c6320	cm_SendClearRoute	cm	byte	readable		
 exe	0x004c6350	cm_CheckMoveGoods	cm	byte	readable		
 exe	0x004c63e0	cm_CheckSellObject	cm	byte	readable		
@@ -2412,7 +2412,7 @@ exe	0x004cdfe0	cm_CellUsable	cm	byte	readable
 exe	0x004ce040	cm_FindNearCell	cm	shape	readable		
 exe	0x004ce130	cm_FindFighter	cm	byte	readable		
 exe	0x004ce170	ai_LedSelectBits	cm	byte	readable		
-exe	0x004ce1b0	cm_CharObjDistXZ	cm	shape	readable		
+exe	0x004ce1b0	cm_CharObjDistXZ	cm	byte	readable		
 exe	0x004ce200	cm_CharCellDistXZ	cm	byte	readable		
 exe	0x004ce270	cm_OtherBuilding	cm	byte	readable		
 exe	0x004ce290	cm_LayBomb	cm	byte	readable		
@@ -2490,7 +2490,7 @@ exe	0x004d4d70	cm_FightEndDialog	cm	draft	readable	deep
 exe	0x004d60b0	cm_CheckFight	cm	draft	readable	deep	
 exe	0x004d63e0	cm_RunFight	cm	shape	readable		
 exe	0x004d6930	cm_FightResult	cm	byte	readable		
-exe	0x004d6970	cm_FightFrame	cm	shape	readable	deep	
+exe	0x004d6970	cm_FightFrame	cm	byte	readable		
 exe	0x004d6a50	cm_BuildFightUI	cm	byte	readable		
 exe	0x004d6b70	cm_CloseFightUI	cm	byte	readable		
 exe	0x004d6ba0	cm_FighterAct	cm	byte	readable		
@@ -3214,7 +3214,7 @@ exe	0x00511840	init_RecreateQuadTree	f3init	byte	readable
 exe	0x00511890	init_NameBuildings	f3init	draft	readable	deep	
 exe	0x00511ad0	init_LocalData	f3init	byte	readable		
 exe	0x00511bc0	init_FillMarkets	f3init	byte	readable		
-exe	0x00511c70	init_GiveFirstPlayerBuildings	f3init	shape	readable		
+exe	0x00511c70	init_GiveFirstPlayerBuildings	f3init	byte	readable		
 exe	0x00511dc0	init_ObjectSceneUniverse	f3init	byte	readable		
 exe	0x00511e60	init_BuildingSceneUniverse	f3init	byte	readable		
 exe	0x00511f20	init_SyncSceneObjects	f3init	draft	readable	deep	
@@ -3285,7 +3285,7 @@ exe	0x0051f650	ls_ReadRelations	ls	shape	readable
 exe	0x0051f720	ls_ReadStatistics	ls	byte	readable		
 exe	0x0051fb80	ls_ReadAvatars	ls	byte	readable		
 exe	0x0051fb90	ls_ReadEventTables	ls	shape	readable		
-exe	0x00520000	ls_ReadParties	ls	shape	readable		
+exe	0x00520000	ls_ReadParties	ls	byte	readable		
 exe	0x00520200	ls_ReadHistory	ls	byte	readable		
 exe	0x00520310	ls_ReadMessageQueues	ls	shape	readable		
 exe	0x005205f0	ls_ReadEnvironment	ls	byte	readable		
@@ -3454,7 +3454,7 @@ exe	0x00533740	main_MoneyDialog	main	byte	readable
 exe	0x005337f0	main_MenuButton	main	byte	readable		
 exe	0x00533850	main_Menue	main	byte	readable		
 exe	0x00534040	main_GiveStartBuildings	main	byte	readable		
-exe	0x005344f0	main_PlaceFamilyModel	main	shape	readable		
+exe	0x005344f0	main_PlaceFamilyModel	main	byte	readable		
 exe	0x00534610	main_ChooseTalents	main	shape	readable		
 exe	0x00534b30	main_ChooseModel	main	byte	readable		
 exe	0x005359f0	main_ChooseFamily	main	byte	readable		
@@ -3533,7 +3533,7 @@ exe	0x0053f190	he_PostEvent2b	he	byte	readable
 exe	0x0053f270	he_PostPlayerEvents86a2	he	byte	readable		
 exe	0x0053f370	he_PostWorkshopEvents98	he	byte	readable		
 exe	0x0053f430	he_InnStaffLeave	he	byte	readable		
-exe	0x0053f500	he_ClearInnDarkCorner	he	shape	readable		
+exe	0x0053f500	he_ClearInnDarkCorner	he	byte	readable		
 exe	0x0053f5b0	he_TopUpCharMoney	he	byte	readable		
 exe	0x0053f6b0	he_SpawnFounders	he	draft	readable	deep	
 exe	0x00540c90	he_PostEvent67	he	byte	readable		
@@ -3563,7 +3563,7 @@ exe	0x005436a0	he_AllocFeast	he	byte	readable
 exe	0x005437c0	he_RunFeast	he	draft	readable	deep	
 exe	0x00543ac0	he_RunFeastExam	he	draft	readable	deep	
 exe	0x00544070	he_AllocTribute	he	byte	readable		
-exe	0x00544330	he_RunTribute	he	shape	readable		
+exe	0x00544330	he_RunTribute	he	byte	readable		
 exe	0x00544550	he_DrawPairPicks	he	byte	readable		
 exe	0x00544630	he_AllocCourtship	he	shape	readable		
 exe	0x00544840	he_RunCourtship	he	draft	readable	deep	
@@ -3790,7 +3790,7 @@ exe	0x00565940	he_RunNewWorker	he	byte	readable
 exe	0x00565b00	he_AllocDiePlayer	he	byte	readable		
 exe	0x00565b60	he_RunDiePlayer	he	byte	readable		
 exe	0x00565d10	he_AllocKillPlayer	he	byte	readable		
-exe	0x00565db0	he_RunKillPlayer	he	shape	readable		
+exe	0x00565db0	he_RunKillPlayer	he	byte	readable		
 exe	0x005662d0	he_AllocNightWatch	he	byte	readable		
 exe	0x00566370	he_RunNightWatch	he	byte	readable		
 exe	0x00566830	he_RunRobbery	he	draft	readable	deep	
@@ -4530,7 +4530,7 @@ exe	0x005c9990	ai_BlackmailContactWindow	lc	byte	readable
 exe	0x005c9c50	ai_BlackmailContact	lc	shape	readable		
 exe	0x005c9df0	ai_IntimidateWindow	lc	byte	readable		
 exe	0x005c9ff0	ai_IntimidateContact	lc	shape	readable		
-exe	0x005ca150	ai_LawPrivilegeWindow	lc	shape	readable		
+exe	0x005ca150	ai_LawPrivilegeWindow	lc	byte	readable		
 exe	0x005ca560	ai_DismissOfficeAsk	lc	shape	readable		
 exe	0x005ca860	ai_MisappropriationWindow	lc	byte	readable		
 exe	0x005caab0	ai_BewitchWindow	lc	byte	readable		
