@@ -32,8 +32,6 @@ extern char ai_PlayerSlots[4][0x2f4];
 extern int gm_PlayerRecords[688];
 #include "ai_types.h"
 extern AISTORE gm_Offers[];            /* 0x7e4b20 */
-extern const float ai_FloatOne;         /* 0x5eb780, bio.c: the shared 1.0f the original loads rather than folding it */
-extern float ai_FloatZero;              /* 0x5eb788, cm.c: the shared 0.0f the original loads rather than folding it */
 
 /* the scene object view of this unit: a CHARACTER (ch.h, 0x244 bytes, the list 0x1468ae0); the unit cannot
    include ch.h (gv.h's d3sm_GetVertex is a K&R declaration), so the fields this unit reads are declared here
@@ -717,13 +715,13 @@ void init_AdjustSceneLights(D3OBJECT *o)
 
     if (o->type == 6) {
         for (i = 0; i < 7; i++) {
-            if (D3_L(o)->light->keys[i].rgb[2] == ai_FloatZero) {
+            if (D3_L(o)->light->keys[i].rgb[2] == 0.0f) {
                 D3_L(o)->light->keys[i].rgb[2] = (D3_L(o)->light->keys[i].rgb[1] + D3_L(o)->light->keys[i].rgb[0]) * 0.05f;
                 D3_L(o)->light->keys[i].rgb[1] *= 0.8f;
                 D3_L(o)->light->keys[i].val *= 0.5f;
             }
         }
-        if (o->lightColor.z == ai_FloatZero) {
+        if (o->lightColor.z == 0.0f) {
             o->lightColor.z = (o->lightColor.x + o->lightColor.y) * 0.05f;
             o->lightColor.y *= 0.8f;
             o->lightParams.y *= 0.5f;
@@ -1328,7 +1326,7 @@ int init_CreateStartCharacters(void)
         if (ch->kind == 3) {
             cm_AddFieldDelta(1, 1, 0x84, &msg5);
             if (util_RandomU(2) != 0) {
-                fl = util_RandomF() + ai_FloatOne;
+                fl = util_RandomF() + 1.0f;
                 msg4 = (unsigned)(((util_RandomU(8) & 0xffff) + 1) * fl * (msg3 * 0.01f));
                 cm_AddFieldDelta(4, 1, 0x1ac, &msg4);
             }
@@ -3792,7 +3790,7 @@ void init_AfterTownLoad(void)
         init_SetDetailLevel(d3_Terrain, 0);
         d3_FogByDistance = 1;
         evt_NoGroup = 0;
-        d3o_FogScale = ai_FloatOne - (float)(ai_GfxFog.word & 0xff) * 0.01f;
+        d3o_FogScale = 1.0f - (float)(ai_GfxFog.word & 0xff) * 0.01f;
         sv_UpdateSkyPhase(&ai_Time);
         if (d3if_TexturesEvicted != 0) {
             d3if_Prerender(0);

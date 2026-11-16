@@ -21,7 +21,6 @@ extern volatile unsigned long d3_Time;      /* 0x6333cc, see d3.h */
 #define MSX_TIME ((d3_Time << 3) + (d3_Time << 2) + d3_Time)
 
 extern LARGE_INTEGER msx_Last;
-extern float ai_FloatZero;                  /* 0x5eb788, the shared 0.0f (cm.c) */
 
 /* 0x423770, the render thread's loop: updates the scene at about 20 Hz until msx_Quit, then deletes the lock */
 void msx_Thread(void)
@@ -346,7 +345,7 @@ void msx_Update(void)
                 }
             }
         }
-        if (msx_FadeTo >= ai_FloatZero) {
+        if (msx_FadeTo >= 0.0f) {
             elapsed = MSX_TIME;
             elapsed -= msx_FadeStart;
             if (elapsed < msx_FadeDuration)

@@ -347,7 +347,7 @@ void snd_UpdateAnimals(void)
             n = *d3t_Rain;
         if (t - snd_Animals[snd_AnimalSeason][0].last > rand() % 2000 + snd_Animals[snd_AnimalSeason][0].interval && n < 0x15e) {
             snd_Animals[snd_AnimalSeason][0].last = t;
-            if (rand() * 3.0518509e-05f + snd_Animals[snd_AnimalSeason][0].chance > ai_FloatOne)
+            if (rand() * 3.0518509e-05f + snd_Animals[snd_AnimalSeason][0].chance > 1.0f)
                 sb_PlaySampleI(0, "Voegel_s", rand() % snd_Animals[snd_AnimalSeason][0].count + 1, 0x3f,
                     (int)(snd_Animals[snd_AnimalSeason][0].vol * 127.0f), 0, 0);
             if (rand() % 10 > 6)
@@ -356,7 +356,7 @@ void snd_UpdateAnimals(void)
         }
         if (t - snd_Animals[snd_AnimalSeason][1].last > rand() % 2000 + snd_Animals[snd_AnimalSeason][1].interval && n < 100) {
             snd_Animals[snd_AnimalSeason][1].last = t;
-            if (rand() * 3.0518509e-05f + snd_Animals[snd_AnimalSeason][1].chance > ai_FloatOne &&
+            if (rand() * 3.0518509e-05f + snd_Animals[snd_AnimalSeason][1].chance > 1.0f &&
                 (snd_Locusts == 0 || snd_Locusts->loops <= 2)) {
                 sprintf(snd_LocustLog, "About to trigger hpLocusts ! Handlevalue before triggering is %x, loopCount is %d.",
                     snd_Locusts, snd_Locusts != 0 ? snd_Locusts->loops : 0);
@@ -391,12 +391,12 @@ void snd_UpdateAnimals(void)
         }
         if (t - snd_Animals[snd_AnimalSeason][4].last > rand() % 2000 + snd_Animals[snd_AnimalSeason][4].interval) {
             snd_Animals[snd_AnimalSeason][4].last = t;
-            if (rand() * 3.0518509e-05f + snd_Animals[snd_AnimalSeason][0].chance > ai_FloatOne)
+            if (rand() * 3.0518509e-05f + snd_Animals[snd_AnimalSeason][0].chance > 1.0f)
                 sb_PlaySampleI(0, "Bellt_s", 1, 0x3f, (int)(h * snd_Animals[snd_AnimalSeason][4].vol * 127.0f), 0, 0);
         }
         if (t - snd_Animals[snd_AnimalSeason][3].last > rand() % 2000 + snd_Animals[snd_AnimalSeason][3].interval) {
             snd_Animals[snd_AnimalSeason][3].last = t;
-            if (rand() * 3.0518509e-05f + snd_Animals[snd_AnimalSeason][3].chance > ai_FloatOne) {
+            if (rand() * 3.0518509e-05f + snd_Animals[snd_AnimalSeason][3].chance > 1.0f) {
                 if (rand() % 10 < 5)
                     name = "Wiehern_s";
                 else
@@ -406,7 +406,7 @@ void snd_UpdateAnimals(void)
         }
         if (t - snd_Animals[snd_AnimalSeason][2].last > rand() % 2000 + snd_Animals[snd_AnimalSeason][2].interval) {
             snd_Animals[snd_AnimalSeason][2].last = t;
-            if (rand() * 3.0518509e-05f + snd_Animals[snd_AnimalSeason][2].chance > ai_FloatOne)
+            if (rand() * 3.0518509e-05f + snd_Animals[snd_AnimalSeason][2].chance > 1.0f)
                 sb_PlaySampleI(0, "Gackern_s", rand() % snd_Animals[snd_AnimalSeason][2].count + 1, 0x3f,
                     (int)(h * snd_Animals[snd_AnimalSeason][2].vol * 127.0f), 0, 0);
         }
@@ -689,7 +689,7 @@ void snd_UpdateMusic(void)
     int k;
 
     t = F3SND_TIME;
-    if (ai_GameState == 0 || !(snd_MusicVolume > ai_FloatZero))
+    if (ai_GameState == 0 || !(snd_MusicVolume > 0.0f))
         return;
     if (snd_MusicSeason != gm_ClockSeason(&ai_Time)) {
         if (snd_MusicSeason != 0) {
@@ -730,7 +730,7 @@ void snd_UpdateMusic(void)
             strcpy(snd_LastTrack, trk->name);
             snd_TrackHandles.current = 0;
             snd_PauseStart = t;
-            snd_PauseLength = (int)((ai_FloatOne - snd_MusicVolume) * 240000.0f);
+            snd_PauseLength = (int)((1.0f - snd_MusicVolume) * 240000.0f);
             sprintf(snd_MusicLog, "Pause starting at %d, pauseLength is %d ", t, snd_PauseLength);
             return;
         }

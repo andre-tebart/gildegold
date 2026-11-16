@@ -47,8 +47,6 @@ extern char d3s_Byte;
 extern unsigned short * d3s_Dst16;
 extern int d3s_SpanLen;
 extern int d3s_Fill;
-extern float ai_FloatZero;  /* 0x5eb788, the shared 0.0f (cm.c) */
-extern const float ai_FloatOne;  /* 0x5eb780, the shared 1.0f (bio.c) */
 extern int dd_PitchPixels;                      /* 0x14661a0 */
 extern int dd_Pitch;                       /* 0x1463588 */
 extern void *dd_Surface;                 /* 0x1463590 */
@@ -324,7 +322,7 @@ void d3s_ShadowTriangle(float *p, unsigned char *c, unsigned char *dst, int pitc
                 }
             }
             area = (p[0] - p[2]) * (p[5] - p[3]) - (p[4] - p[2]) * (p[1] - p[3]);
-            if (area == ai_FloatZero)
+            if (area == 0.0f)
                 d3s_Area = 0;
             else
                 d3s_FtoI(&d3s_Area, 65536.0f / area * ((float)(c[0] - c[1]) * (p[5] - p[3]) - (float)(c[2] - c[1]) * (p[1] - p[3])));
@@ -704,7 +702,7 @@ char d3s_TerrainShadowMesh(D3STERR *g, int *rect, float *uv, D3SBUF *buf, D3TEXH
                 p.x = (float)x * cx + o.x;
                 poly = buf->polys + buf->npolys;
                 pos = d3s_Verts + d3s_NumVerts * 6;
-                p.y = o.y + ai_FloatOne;
+                p.y = o.y + 1.0f;
                 vert = buf->verts + buf->nverts;
                 uvp = d3s_UVs + d3s_NumUVs * 6;
                 p.z = (float)z * cz + o.z;
@@ -884,7 +882,7 @@ char d3s_MeshFromMap(int *rect, int stride, unsigned char *map, float *origin, f
     row = &buf->verts[buf->nverts];
     pos = &d3s_Verts[d3s_NumVerts * 6];
     t = &d3s_UVs[d3s_NumUVs * 6];
-    add = d3d_ZEnabled ? 2.0f : ai_FloatOne;
+    add = d3d_ZEnabled ? 2.0f : 1.0f;
     xs = x0 * cell[0] + origin[0];
     ys = add + origin[1];
     z = z0 * cell[2] + origin[2];
@@ -987,10 +985,10 @@ char d3s_AddShadow(D3SSLOT *slot, D3STERR *grid)
         x1 = (slot->ix1);
         z0 = (slot->iz0);
         z1 = (slot->iz1);
-        v0 = ai_FloatZero;
+        v0 = 0.0f;
         u0 = 0.0f;
-        du = ai_FloatOne / (x1 - x0);
-        dv = ai_FloatOne / (z1 - z0);
+        du = 1.0f / (x1 - x0);
+        dv = 1.0f / (z1 - z0);
         if (x0 < 0) {
             u0 = -x0 / (float)(x1 - x0);
             x0 = 0;

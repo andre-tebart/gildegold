@@ -5055,7 +5055,7 @@ int ai_MeisterTrade(AICHAR *ch, AIOBJ *b)
                     } else {
                         g = gm_ItemPrice(ai_Entries[i].item, 100);
                         f = g / gm_GoodsPrice(ai_Entries[i].item, ai_OwnPlayer);
-                        if (f < ai_FloatOne && util_RandomF() * 1.25f + 0.25 >= f) {
+                        if (f < 1.0f && util_RandomF() * 1.25f + 0.25 >= f) {
                             ai_Entries[i].sellAmount = ai_Entries[i].amount;
                             if (ch == ai_LoggedMaster)
                                 sprintf(buf, "Verkauf wegen guter Gewinnspanne von %li Einheiten %s",
@@ -5458,7 +5458,7 @@ int ai_MeisterTradeAllgemein(AICHAR *ch, AIOBJ *b)
                     && (!(ai_Entries[i].flags & 8) || ai_Entries[i].amount > gm_ListStock(b, ai_Entries[i].item) / 3)) {
                     f = gm_ItemPrice(ai_Entries[i].item, 100);
                     f = f / gm_GoodsPrice(ai_Entries[i].item, ai_OwnPlayer);
-                    if (f < ai_FloatOne && f <= util_RandomF() * 1.25f) {
+                    if (f < 1.0f && f <= util_RandomF() * 1.25f) {
                         ai_Entries[i].sellAmount = ai_Entries[i].amount;
                         if (ch == ai_LoggedMaster)
                             sprintf(buf, "Verkauf wegen guter Gewinnspanne von %li Einheiten %s",
@@ -5786,7 +5786,7 @@ int ai_MeisterTradeFernEinkauf(AICHAR *ch, AIOBJ *b)
 
     nA = 0;
     nB = 0;
-    if (ai_Slots[0].saving <= ai_FloatZero || ai_Slots[0].buyAmount == 0)
+    if (ai_Slots[0].saving <= 0.0f || ai_Slots[0].buyAmount == 0)
         return 0;
     gm_BuildingGoodsList(ch->bld, &stA, 0);
     for (k = 0; k < ai_NumCarts; k++) {
@@ -5856,7 +5856,7 @@ int ai_MeisterTradeFernEinkauf(AICHAR *ch, AIOBJ *b)
                 nB = 1;
                 i = 1;
             }
-            for (; nB < 3 && i < ai_NSlots && ai_Slots[i].saving <= ai_FloatZero; i++) {
+            for (; nB < 3 && i < ai_NSlots && ai_Slots[i].saving <= 0.0f; i++) {
                 if (msg.dst[3] == ai_Slots[i].bld->id && ai_Slots[i].buyAmount) {
                     amt = gm_ListStock(market, ai_Slots[i].item);
                     bl = ai_Slots[i].bld;
@@ -5887,7 +5887,7 @@ int ai_MeisterTradeFernEinkauf(AICHAR *ch, AIOBJ *b)
                     cm_EndGroup("Fernh\xe4ndler");
                 }
             }
-            for (i = 0; nA < 3 && i < ai_NEntries && ai_Entries[i].margin <= ai_FloatZero; i++) {
+            for (i = 0; nA < 3 && i < ai_NEntries && ai_Entries[i].margin <= 0.0f; i++) {
                 if (msg.dst[3] == ai_Entries[i].bld->id && ai_Entries[i].buyAmount) {
                     amt = gm_ListStock(market, ai_Entries[i].item);
                     for (m = 0; m < rec.n; m++) {
@@ -5953,7 +5953,7 @@ int ai_MeisterTradeFernEinkauf2(AICHAR *ch, AIOBJ *b)
 
     nA = 0;
     nB = 0;
-    if (ai_Entries[0].margin <= ai_FloatZero || ai_Entries[0].buyAmount == 0)
+    if (ai_Entries[0].margin <= 0.0f || ai_Entries[0].buyAmount == 0)
         return 0;
     gm_BuildingGoodsList(ch->bld, &stA, 0);
     for (k = 0; k < ai_NumCarts; k++) {
@@ -6020,7 +6020,7 @@ int ai_MeisterTradeFernEinkauf2(AICHAR *ch, AIOBJ *b)
             i = 1;
             if (nA < 3) {
                 do {
-                    if (i >= ai_NEntries || !(ai_Entries[i].margin <= ai_FloatZero))
+                    if (i >= ai_NEntries || !(ai_Entries[i].margin <= 0.0f))
                         break;
                     if (msg.dst[3] == ai_Entries[i].bld->id && ai_Entries[i].buyAmount) {
                         amt = gm_ListStock(market, ai_Entries[i].item);
@@ -6052,7 +6052,7 @@ int ai_MeisterTradeFernEinkauf2(AICHAR *ch, AIOBJ *b)
             if (nB < 3) {
                 sl = ai_Slots;
                 do {
-                    if (i >= ai_NSlots || !(sl->saving <= ai_FloatZero))
+                    if (i >= ai_NSlots || !(sl->saving <= 0.0f))
                         break;
                     if (msg.dst[0] == sl->bld->id && sl->buyAmount) {
                         amt = gm_ListStock(market, sl->item);

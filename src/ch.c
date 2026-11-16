@@ -69,8 +69,6 @@ extern CHACTDEF ch_ActDefs[64];
 extern int ch_Ground0[65536];
 extern int ch_Ground1[65536];
 extern CHFADE ch_Fades[16];
-extern float ai_FloatZero;  /* 0x5eb788, the shared 0.0f (cm.c) */
-extern const float ai_FloatOne;  /* 0x5eb780, the shared 1.0f (bio.c) */
 CHACTION * ch_Queue = 0;  /* 0x631050 */
 int ch_Time = 0;  /* 0x631054 */
 char ch_MarkWalkErrors = 0;  /* 0x631058, when set, a failed walk animation marks the character's
@@ -675,9 +673,9 @@ CHTRANSPORT *ch_AttachTransport(CHARACTER *ch, D3OBJECT *obj)
     CHTRANSPORT *t = mem_Alloc(sizeof(CHTRANSPORT), "ch:ch_AttachTransport");
     D3VECTOR4 pos;
 
-    pos.x = ai_FloatZero * ch->obj->matrix._11 + ai_FloatZero * ch->obj->matrix._21 - 70.0f * ch->obj->matrix._31 + ch->obj->matrix._41;
-    pos.y = ai_FloatZero * ch->obj->matrix._12 + ai_FloatZero * ch->obj->matrix._22 - 70.0f * ch->obj->matrix._32 + ch->obj->matrix._42;
-    pos.z = ai_FloatZero * ch->obj->matrix._13 + ai_FloatZero * ch->obj->matrix._23 - 70.0f * ch->obj->matrix._33 + ch->obj->matrix._43;
+    pos.x = 0.0f * ch->obj->matrix._11 + 0.0f * ch->obj->matrix._21 - 70.0f * ch->obj->matrix._31 + ch->obj->matrix._41;
+    pos.y = 0.0f * ch->obj->matrix._12 + 0.0f * ch->obj->matrix._22 - 70.0f * ch->obj->matrix._32 + ch->obj->matrix._42;
+    pos.z = 0.0f * ch->obj->matrix._13 + 0.0f * ch->obj->matrix._23 - 70.0f * ch->obj->matrix._33 + ch->obj->matrix._43;
     d3_SetObjectPos(obj, (D3VECTOR *)&pos);
     d3_SetObjectRot(obj, &ch->obj->rotation);
     obj->flags &= ~4;
@@ -4105,10 +4103,10 @@ void ch_ActFade(CHACTION *a)
         CHACT_FSTART(a) = (float)(ch_Time - 1);
         ch->flags.all = ch->flags.all & ~CH_NOFADE | 0x40;
     }
-    t = a->args[0] ? ((float)ch_Time - CHACT_FSTART(a)) * 0.02f : ai_FloatOne - ((float)ch_Time - CHACT_FSTART(a)) * 0.02f;
-    if (!(t > ai_FloatZero))
+    t = a->args[0] ? ((float)ch_Time - CHACT_FSTART(a)) * 0.02f : 1.0f - ((float)ch_Time - CHACT_FSTART(a)) * 0.02f;
+    if (!(t > 0.0f))
         t = 0.0f;
-    else if (!(t < ai_FloatOne))
+    else if (!(t < 1.0f))
         t = 1.0f;
     if (ch->scene == d3_DefaultScene && a->args[0] && !(ch->flags.all & CH_NOFADE) && t < 0.1
         && ch_FindNear(ch, others, 30.0f)) {
@@ -4121,14 +4119,14 @@ void ch_ActFade(CHACTION *a)
     memset(&f, 0, sizeof(f));
     f.b[2] &= 0xfe;
     f.b[0] = (unsigned char)t;
-    if (t != 255.0f && t != ai_FloatZero) {
+    if (t != 255.0f && t != 0.0f) {
         d3_SetObjectAlpha(ch->obj, ch->obj->info, f);
         if (ch->transport)
             d3_SetObjectAlpha(*ch->transport, (*ch->transport)->info, f);
         if (ch->lowPolyBody)
             d3_SetObjectAlpha(ch->lowPolyBody, ch->lowPolyBody->info, f);
     }
-    if (t == ai_FloatZero || t == 255.0f) {
+    if (t == 0.0f || t == 255.0f) {
         ch->flags.fading = 0;
         f.b[2] &= 0xfe;
         f.b[0] = 0xff;
@@ -4137,7 +4135,7 @@ void ch_ActFade(CHACTION *a)
             d3_SetObjectAlpha(*ch->transport, (*ch->transport)->info, f);
         if (ch->lowPolyBody)
             d3_SetObjectAlpha(ch->lowPolyBody, ch->lowPolyBody->info, f);
-        if (t == ai_FloatZero)
+        if (t == 0.0f)
             ch_SetVisible(ch, 0);
         else if (t == 255.0f)
             ch_SetVisible(ch, 1);

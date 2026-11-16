@@ -426,7 +426,6 @@ void gm_RefreshGoodsLists(unsigned p);  /* 0x4ff190 */
 void gm_AssignBuilding(unsigned char *b, unsigned short place, unsigned own);  /* 0x502b60 */
 void ai_DropObjectAt(struct D3OBJECT *obj, struct D3VECTOR *target);  /* 0x58feb0 */
 extern const struct D3VECTOR d3_ZAxis;  /* 0x5ebb74, (0, 0, 1), d3_vec.c */
-extern const double cm_EffectRadiusScale;  /* 0x5edc28 */
 extern struct VFSDIR *vfs_Root;  /* 0x6333fc */
 extern char ai_DataPath[];  /* 0x75dca0 */
 
@@ -606,10 +605,7 @@ void cm_DrawScrollArrows();  /* 0x4cf370 */
 void * d2_GetPic();  /* 0x4690b0 */
 int d2_DrawShape(int x, int y, void *surf, void *pic, unsigned char i);  /* 0x47c6f0 */
 void d2_SetClipRect(int x0, int y0, int x1, int y1);  /* 0x47cb40 */
-extern float cm_Float75;  /* 0x5eb7fc */
-extern float ai_Unk5eb81c;  /* 0x5eb81c */
 extern const struct D3VECTOR d3_Origin;  /* 0x5ebba4, (0, 0, 0), d3_vec.c */
-extern const float ai_Unk5edc50;  /* 0x5edc50 */
 extern float d2_ScreenScale;  /* 0x5fe708 */
 extern void *d2_ScreenSurf;  /* 0x6ed924, the screen surface (d2.c defines it) */
 extern short d2_ScreenH;  /* 0xfb9070 */
@@ -619,7 +615,6 @@ struct D3OBJECT * d3if_Pick(float x, float y, int mask, int one);  /* 0x448630 *
 struct D3SM; char d3sm_Pick(struct D3SM *h, int sx, int sy, int *px, int *pz);  /* 0x45f2b0 */
 char d3if_Show(struct D3OBJECT *obj, char show);  /* 0x4471b0 */
 void cm_UpdatePointer();  /* 0x4cf670 */
-extern float ai_Unk5ebb68;  /* 0x5ebb68 */
 extern int cm_SelectedCount;  /* 0x6f0d08 */
 extern char *cm_HoverObject;  /* 0x6f0ce0 */
 extern char *cm_PickMarker;  /* 0x6f0cf0 */
@@ -673,7 +668,6 @@ extern int cm_DefenderOrderVoices;  /* 0x6f0d38 */
 void cm_ClearMarks();  /* 0x4d08c0 */
 char *cm_AddFighter(int id, char *dummy);  /* 0x4d0920 */
 int gm_CreateCharModel();  /* 0x4fbb80 */
-extern const double cm_WeaponSpeedScale;  /* 0x5eb9b8 */
 
 void cm_CollectSceneChars();  /* 0x4d0a30 */
 char cm_CreateDummyFlag(char *o);  /* 0x4d0a80 */
@@ -715,9 +709,6 @@ extern int cm_DefenderRole;  /* 0x6f0d54 */
 extern int cm_BootsObject;  /* 0x6f0d5c */
 extern float cm_FightCellScale;  /* 0x935d00 */
 extern float cm_DefenseFactor;  /* 0x60cb58 */
-extern const double ai_Unk5edc58;  /* 0x5edc58 */
-extern double ai_Unk5eb8b8;  /* 0x5eb8b8 */
-extern float ai_Unk5eb878;  /* 0x5eb878 */
 
 void cm_EndFightScene(struct CMFIGHTREC *rec);  /* 0x4d1a10, ends the fight scene of a fight record (cm_SetupFightScene its counterpart) */
 void cm_PlaceFighters(int *ids, char *side);  /* 0x4d1c20, places the fighters of one side of the fight at their dummies */
@@ -737,7 +728,6 @@ extern int sv_FrameMask;  /* 0x760638 */
 extern int cm_FightAmbient;  /* 0x6f0d4c */
 
 float cm_ThreatAt(struct AICHAR *c, int a, int b, float limit);  /* 0x4d2010, the threat at a height map vertex for the fighter c */
-extern const double ai_Unk5edc60;  /* 0x5edc60 */
 
 int cm_MostThreatenedCellNear(char *c, int cx, int cy, int r, int *ox, int *oy);  /* 0x4d22d0 */
 char cm_CollectEscapeObject(char *o, int *list);  /* 0x4d2450 */
@@ -748,49 +738,23 @@ char cm_CollectConquerPoint(char *o);  /* 0x4d2650 */
 struct D3OBJECT *cm_NearestConquerPoint(struct AICHAR *c);  /* 0x4d2680 */
 extern int cm_PointCount;  /* 0x6f0d60 */
 extern char *cm_PointList[];  /* 0x930380 */
-extern float ai_FloatZero;  /* 0x5eb788 */
-extern float ai_Unk5eb988;  /* 0x5eb988 */
-extern double ai_Unk5eb990;  /* 0x5eb990 */
-extern double ai_Unk5eb7b0;  /* 0x5eb7b0 */
-extern double cm_DoubleOne;  /* 0x5eb8a8, the shared double 1.0 (a VC6 pooled literal) */
-extern double ai_Unk5ebbe8;  /* 0x5ebbe8 */
 
 void cm_InitOrderChances();  /* 0x4d27a0 */
 extern float cm_OrderChances[0xb4];  /* 0x9300a0 */
-extern double ai_Unk5ece60;  /* 0x5ece60 */
 
 float *cm_OrderChancesFor(int side);  /* 0x4d2c00 */
-extern float ai_Unk5ebc1c;  /* 0x5ebc1c */
-extern const float ai_Unk5ecebc;  /* 0x5ecebc */
-extern float ai_Unk5eb94c;  /* 0x5eb94c */
 
 float cm_OrderRating(struct AICHAR *c, int order);  /* 0x4d2e30 */
 void cm_GiveFightOrders(int side);  /* 0x4d2f80 */
 float util_RandomF();  /* 0x42ec20 */
 double cm_RandomFloat();  /* 0x4e5360 */
-extern const float ai_FloatOne;  /* 0x5eb780, bio.c */
-extern double cm_DoubleQuarter;  /* 0x5eb9b0 */
 
 void cm_CarryOutOrder(char *rec, char *c);  /* 0x4d3120 */
 void cm_FallDownAction(char *c);  /* 0x4d3300 */
-extern float cm_Pi;  /* 0x5eb7dc */
-extern float cm_DegToRad;  /* 0x5eb7e0, the pooled degrees-to-radians factor */
-extern double cm_DoubleHalf;  /* 0x5eb7e8, the shared double 0.5 (a VC6 pooled literal) */
-extern float ai_Unk5eb87c;  /* 0x5eb87c */
-extern double ai_Unk5eb880;  /* 0x5eb880 */
-extern double ai_Unk5eb888;  /* 0x5eb888 */
-extern float ai_Unk5eb890;  /* 0x5eb890 */
-extern float ai_Unk5eb894;  /* 0x5eb894 */
-extern float ai_Unk5eb898;  /* 0x5eb898 */
-extern float ai_Unk5eb89c;  /* 0x5eb89c */
-extern float ai_Unk5eb8a0;  /* 0x5eb8a0 */
-extern const double cm_Inv180;  /* 0x5edc68 */
 
 int cm_CheckDeath(struct AICHAR *c);  /* 0x4d3390 */
 struct CHACTION * ch_AddActionCB(struct CHARACTER *ch, int (*func2)(struct CHACTION *), unsigned char frame, unsigned int type, ...); /* 0x40b400, ch.h (CHACTFUNC func2; cm.c calls it through ch_AddActionCBK) */
 void d3_SetWorldPosRot();  /* 0x449920 */
-extern double ai_Unk5edbd0;  /* 0x5edbd0 */
-extern double ai_Unk5eb8e0;  /* 0x5eb8e0 */
 
 void cm_HitAction(struct CHACTION *a);  /* 0x4d3550 */
 void cm_LayBombAction(char *ev);  /* 0x4d3980 */

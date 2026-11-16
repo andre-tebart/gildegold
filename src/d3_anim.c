@@ -26,7 +26,6 @@ extern D3ANIMDATA d3anim_Head;              /* 0xfc2580, list head; d3anim_Head.
 extern D3ANIMDATA d3anim_Tail;              /* 0xfe7440, list end */
 unsigned int d3anim_CacheMax = 4194304;  /* 0x5f927c, bytes */
 extern int d3_Busy;                     /* 0x633b04 */
-extern const float ai_FloatOne;         /* 0x5eb780, the shared 1.0f (bio.c) */
 
 /* 0x4315c0, applies the root motion between two key frames: adds the frames' move delta (flags bit 0), in
    object space, to the object position, and the turn delta (flags bit 1) to its rotation. No return value */
@@ -311,7 +310,7 @@ void d3anim_RootPosAt(D3OBJECT *obj, D3ANIMSLOT *s, int frame, int sub, D3VECTOR
             return;
         }
         if (key < frame) {
-            t = ai_FloatOne - (float)sub0 / n0;
+            t = 1.0f - (float)sub0 / n0;
             d.x = data->frames[key + 1].move.x - data->frames[key].move.x;
             d.y = data->frames[key + 1].move.y - data->frames[key].move.y;
             d.z = data->frames[key + 1].move.z - data->frames[key].move.z;
@@ -709,10 +708,10 @@ normalize:
         P->flags.b[1] &= ~0x20;
         if (P->flags.b[1] & 2) {
             u = (float)P->time / P->keys[P->next].time;
-            t = ai_FloatOne - u;
+            t = 1.0f - u;
         } else {
             t = (float)P->time / P->keys[P->key].time;
-            u = ai_FloatOne - t;
+            u = 1.0f - t;
         }
         if (P->flags.b[1] & 4) {
             if (P->flags.b[1] & 2) {

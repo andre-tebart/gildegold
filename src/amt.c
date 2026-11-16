@@ -2654,7 +2654,7 @@ int amt_ExecuteMayorPowerMessage(char *c, int *m)
             if (rf > 0.3f) {
                 n = amt_GetColumnOffices(m[1], 6, list);
                 f = gm_GetSkill(c, 4);
-                f = (util_RandomF() + ai_FloatOne) * f * 15.0f;
+                f = (util_RandomF() + 1.0f) * f * 15.0f;
                 dmg = (int)((f + 5.0) * 2.55f);
                 for (i = 0; i < n - 1; i++) {
                     id = list[i].owner;
@@ -2722,7 +2722,7 @@ int amt_ExecuteMayorPowerMessage(char *c, int *m)
         if (rf > 0.3f) {
             n = amt_GetColumnOffices(m[1], 6, list);
             f = gm_GetSkill(c, 4);
-            f = (util_RandomF() + ai_FloatOne) * f * 15.0f;
+            f = (util_RandomF() + 1.0f) * f * 15.0f;
             dmg = (int)((f + 5.0) * 2.55f);
             for (i = 0; i < n; i++) {
                 id = list[i].owner;

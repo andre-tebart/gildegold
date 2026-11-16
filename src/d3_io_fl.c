@@ -19,8 +19,6 @@
 #include "ts_texture.h"
 #include "vfs.h"
 
-extern float ai_FloatZero;  /* 0x5eb788, the shared 0.0f (cm.c) */
-extern float cm_Pi;  /* 0x5eb7dc, the shared pi (cm.c) the uv rotation is added to */
 
 /* 0x450860, loads a mesh from its fast chunk file (the cache the BGF loader looks in first); returns 0 when
    there is none */
@@ -190,7 +188,7 @@ void d3_CalcBounds(D3BGF *m)
     float b[6];
     float z1;
 
-    r = ai_FloatZero;
+    r = 0.0f;
     n = m->nverts;
     if (n > 0) {
         v = m->verts;
@@ -444,7 +442,7 @@ void d3_AddFLChunk(char *path, char weld)
                     a = (m->polys[i].uv[n][0] * desc.mats[mi].su + 0.5f) - desc.mats[mi].su * 0.5f;
                     b = (m->polys[i].uv[n][1] * desc.mats[mi].sv + 0.5f) - desc.mats[mi].sv * 0.5f;
                     m->polys[i].uv[n][0] = (float)cos(desc.mats[mi].rot) * a - (float)sin(desc.mats[mi].rot) * b + desc.mats[mi].ou;
-                    m->polys[i].uv[n][1] = (float)sin(desc.mats[mi].rot + cm_Pi) * a + (float)cos(desc.mats[mi].rot + cm_Pi) * b + desc.mats[mi].ov;
+                    m->polys[i].uv[n][1] = (float)sin(desc.mats[mi].rot + 3.14159274f) * a + (float)cos(desc.mats[mi].rot + 3.14159274f) * b + desc.mats[mi].ov;
                 }
             }
         }

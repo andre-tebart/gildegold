@@ -5756,7 +5756,7 @@ void ai_CannonCamera(CANNONSCENE *sc)
     ratio2 = (v.x - ai_CannonPitchMin) / (ai_CannonPitchMax - ai_CannonPitchMin);
     speed = (float)d2_GetObjValue(sc->speedSlider) * 0.01f;
     pos.y = ((0.5f - 0.25f * speed) * ratio2 * sc->zoom + ratio) * 30.0f + pos.y;
-    v.x = (speed * sc->zoom * 0.5f + ((ai_FloatOne - sc->zoom) * 0.7f + (float)sqrt(ai_FloatOne - sc->zoom) * 0.3f))
+    v.x = (speed * sc->zoom * 0.5f + ((1.0f - sc->zoom) * 0.7f + (float)sqrt(1.0f - sc->zoom) * 0.3f))
           * (ai_CameraPitchZero - ai_CameraPitchMin) * ratio2 + ai_CameraPitchMin;
     d.z = sc->dirZ;
     d.x = sc->dirX;
@@ -5781,16 +5781,16 @@ void ai_CannonCamera(CANNONSCENE *sc)
             if (sc->recoilStart + 4 > sc->now)
                 fade = (float)(sc->now - sc->recoilStart) * 0.25f;
             else {
-                fade = ai_FloatOne - (float)(sc->now - sc->recoilStart - 4) * 0.0125f;
+                fade = 1.0f - (float)(sc->now - sc->recoilStart - 4) * 0.0125f;
                 fade = fade * fade;
             }
             v.x = sc->dirX;
             v.y = 0;
             v.z = sc->dirZ;
             d3_Normalize((char *)&v);
-            k = ai_FloatOne;
-            if (sc->rot.x > ai_FloatZero)
-                k = ai_FloatOne - sc->rot.x / ai_CameraPitchMax;
+            k = 1.0f;
+            if (sc->rot.x > 0.0f)
+                k = 1.0f - sc->rot.x / ai_CameraPitchMax;
             fade = k * fade * 50.0f;
             v.x = fade * v.x;
             v.y = fade * v.y;

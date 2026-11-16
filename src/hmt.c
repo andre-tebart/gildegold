@@ -559,7 +559,7 @@ float hmt_Score(AICHAR *c, AICHAR *obj, int type, int twice)
     t1 = 0;
     if (c->officeKind)
         t1 = amt_GetDistrictLiking(c, amt_KindColumn(c->officeKind));
-    t2 = ai_FloatZero;
+    t2 = 0.0f;
     if (c->prevOffice)
         t2 = amt_GetDistrictLiking(c, amt_KindColumn(c->prevOffice));
     return t1 * w1 + t2 * w2 + (age + age) + rel;

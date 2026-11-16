@@ -2500,9 +2500,9 @@ Operand order on the FPU stack, `fst` / `fstp`, float compares, constants, `_fto
   0x5eb948 = 0.33333334f and QWORD 1.0 (0x5eb8a8) only for `r + s <= 1.0` and `1.0 - (...)`; f suffixes on the
   rest (1472 -> 1451 bytes).
 - **`fadd QWORD` before `_ftol`** (ours `call _ftol; inc eax`): `(int)((x1 - origin) / axis + 1.0)` (d3s_Project).
-- **VC6's own hoisted `fdivr [1.0f]` + multiply** for `x / inv` with an invariant divisor: no source literal; the
-  M10 on ai_FloatOne (0x5eb780) / cm_DoubleOne (0x5eb8a8) (also a `+ 1.0` rounding): leave it, say so in the tag.
-  No lever: `ai_FloatOne / inv`, hoisted `inv = ai_FloatOne / -y` (d3s_Project).
+- **VC6's own hoisted `fdivr [1.0f]` + multiply** for `x / inv` with an invariant divisor: no source literal; it
+  reads the pooled 1.0f (0x5eb780) / 1.0 (0x5eb8a8) (also a `+ 1.0` rounding). No lever: a float object for the
+  1.0f (the old stand-in ai_FloatOne), hoisted `inv = 1.0f / -y` (d3s_Project).
 - **`fld [1.0]; fdiv [d.x]` hoisted, `fmul st,st(2)` in the loop**: `(v.x * 255.0f) / d.x`. No lever: `sx = 1.0f /
   d.x` (spills), unparenthesised, `v.x * (1.0f / d.x)`, `ai_FloatOne / d.x` (d3anim_CreateMorphAnim).
 - **`x / 60.0f` as `fmul`** only for a double divisor `/ 60.0` (0x5dd090).

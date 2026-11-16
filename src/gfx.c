@@ -574,10 +574,10 @@ void d2_SliderInput(void)
         if ((fl & 0x48) == 0) {
             if ((fl & 2) && px > f6->w + o->x && px < o->w - f6->w + o->x) {
                 a = px - f0->w - o->x;
-                v = (int)(a * ((double)d / len) + mn + cm_DoubleHalf);
+                v = (int)(a * ((double)d / len) + mn + 0.5);
             } else if ((fl & 1) && py > f6->h + o->y && py < o->y + o->h - f6->h) {
                 a = o->y + o->h - f0->h - py;
-                v = (int)(a * ((double)d / len) + mn + cm_DoubleHalf);
+                v = (int)(a * ((double)d / len) + mn + 0.5);
             } else {
                 goto wheel;
             }

@@ -78,7 +78,6 @@ extern GAPDATA full_data_602568[];
 extern GAPDATA full_data_60d5a4[];
 extern GAPDATA full_data_60d5b4[];
 extern GAPDATA full_data_92bcb8[];
-extern GAPDATA full_rdata_5ebb40[];
 
 
 #define G17_I(m, o) (*(int *)&(m).data[o])
@@ -146,7 +145,6 @@ extern GAPDATA full_rdata_5ebb40[];
 #define d2_PlaceMainWindowF ((void (*)(int, int))d2_PlaceMainWindow)  /* 0x475850 (d2.h: int view): @original the callers push the placement flags too, which the original's tail jump leaves on the stack for d2_PlaceWindowScaled */
 #define ai_GoodsT (*(AIGOOD **)&ai_Goods)  /* 0x91aaf0, ai_Goods (cm.h: char *) as the AIGOOD records it points to */
 #define cm_CutInfosT (*(CMCUTINFO (*)[16])&cm_CutInfos)  /* 0x92cae0, cm_CutInfos (char[16][0x35c]) as the cutscene records */
-#define ai_FloatHundred (*(float *)&full_rdata_5ebb40)  /* 0x5ebb40, VC6's pooled 100.0f (main.c's rdata gap block) */
 #define cm_LongMsgCut (*(CMCUTINFO *)&cm_LongMsg)  /* 0xa68d40, cm_LongMsg (cm.h: unsigned char[]) as the cutscene record message 0x26 joins */
 #define ai_BTypesT (*(AIBTYPE **)&ai_BTypes)  /* 0x7e3f30, ai_BTypes (cm.h: char *) as the AIBTYPE records it points to */
 #define ai_TimeCopyT (*(AITIME *)&ai_TimeCopy)  /* 0x75e130, ai_TimeCopy (cm.h: int[4]) as the AITIME copy it holds */
@@ -5034,7 +5032,7 @@ int cm_ExGebUpgrade(G17MSG *m, G17STAT *s)
                     d3_InflateObject(o);
                 if (o->material != 0) {
                     if (d3t_GetBoundingSphere(o, d3_Camera, &v, &radius) != 0) {
-                        size = (int)(radius * cm_EffectRadiusScale);
+                        size = (int)(radius * 1.8);
                         sc = evt_Load("Effekte/geb_upgrade.esc");
                         if (sc != 0) {
                             evt_RunScriptArgs(sc, 6, (int)v.x, (int)v.y, (int)v.z, (int)radius, size, o);
@@ -7836,9 +7834,9 @@ void cm_DrawScrollArrows()
     else if (up == 1)
         d2_DrawShape(d2_ScreenW - 0x28, d2_ScreenH / 2 + 0x14, d2_ScreenSurf, t, 5);
     if (b == 2)
-        d2_DrawShape(d2_ScreenW / 2 - 0x14, (int)(d2_ScreenScale * cm_Float75), d2_ScreenSurf, t, 6);
+        d2_DrawShape(d2_ScreenW / 2 - 0x14, (int)(d2_ScreenScale * 75.0f), d2_ScreenSurf, t, 6);
     else if (b == 1)
-        d2_DrawShape(d2_ScreenW / 2 - 0x14, (int)(d2_ScreenScale * cm_Float75), d2_ScreenSurf, t, 7);
+        d2_DrawShape(d2_ScreenW / 2 - 0x14, (int)(d2_ScreenScale * 75.0f), d2_ScreenSurf, t, 7);
 }
 /* 0x4cf670, the mouse pick: the object under the cursor (ai_PickedObject; with characters selected and nothing picked,
    the ground cell under the cursor is looked up, else the pick marker is hidden) and the cursor look d2_PointerLook:
@@ -8506,7 +8504,7 @@ char *cm_AddFighter(int id, char *dummy)
             cm_FightersT[i].scene->flags.bytes.hi |= 0x80;
             cm_UpdateHandObject((char *)&cm_FightersT[i]);
             w = (AIWEAPON *)cm_CharWeapon((char *)c);
-            cm_FightersT[i].scene->walkSpeed = w->speed * cm_WeaponSpeedScale;
+            cm_FightersT[i].scene->walkSpeed = w->speed * 0.2857142857142857;
             sprintf(cm_FightersT[i].scene->obj->name, "cmb_%i", cm_FightersT[i].netId);
             item = (AIOBJ *)cm_CharWeaponItem((char *)c);
             if (item != 0) {
@@ -9822,7 +9820,7 @@ void cm_FallDownAction(char *c)
     rot.x = 0;
     rot.y = 0;
     rot.z = 0;
-    rot.y = (float)(cm_Random(0x168) * cm_Pi * cm_Inv180);
+    rot.y = (float)(cm_Random(0x168) * 3.14159274f * 0.005555555555555556);
     sb_PlaySampleI(0, "Koerperfaellt", 1, 0x3f, 0x7f, 0, 0);
     b = d3_CreateObject(0, &((CHACTION *)c)->ch->obj->pos, &rot, "ub_Blutlache");
     d3t_PlayAnim(b, "sonstiges\\ub_Blutlache.baf", 0x12);
@@ -10147,8 +10145,8 @@ int cm_LootCarts(CMFIGHTREC *a, AIBLD *b, AICHAR *d, int unused, float f)
                 for (q = (AIOBJ *)gm_Query(p->list, 1, 5); q != 0; q = (AIOBJ *)gm_QueryNext()) {
                     gm_ObjectBuildingOwner((unsigned short *)q);
                     x = (float)q->count * f;
-                    if (ai_FloatOne > x)
-                        x = ai_FloatOne;
+                    if (1.0f > x)
+                        x = 1.0f;
                     cnt = (int)x;
                     if (ob != 0)
                         G19_4C4880U(ob->objId, q->ownerId, q->id, cnt, ai_OwnPlayer, 0);
@@ -10787,7 +10785,7 @@ void cm_FightEndDialog(CMFIGHTREC *a)
                 sv_ValueBar(px, py + 0x3c, c->sk83, 0x4eb);
                 h = 0;
                 if (c->health == 0) {
-                    v = (int)(c->sk83 * 0.023809524f + ai_FloatOne);
+                    v = (int)(c->sk83 * 0.023809524f + 1.0f);
                     d2_WinOpenPic(px + 6, py + 6, 0x3b, d2_LastWindow);
                     h = gm_PlayerFactor(v * 40, ai_OwnPlayer);
                 }
@@ -13780,7 +13778,7 @@ void cm_SinkDownAction(CHACTION *a)
     rot.x = 0;
     rot.y = 0;
     rot.z = 0;
-    rot.y = (float)(cm_Random(0x168) * cm_Pi * cm_Inv180);
+    rot.y = (float)(cm_Random(0x168) * 3.14159274f * 0.005555555555555556);
     b = d3_CreateObject(0, &a->ch->obj->pos, &rot, "ub_Blutlache");
     d3t_PlayAnim(b, "sonstiges\\ub_Blutlache.baf", 0x12);
 }
@@ -14295,13 +14293,13 @@ int cm_DuelAftermath(G28REC *m)
     if (a == 0 || b == 0)
         return 0;
     if (b->heldRounds == 0 && a->heldRounds == 0) {
-        if (gm_HealthRatio((short *)a) <= ai_FloatZero) {
+        if (gm_HealthRatio((short *)a) <= 0.0f) {
             if (b->kind != 6 && b->kind != 7)
                 return 0;
             he_ShowNews(ai_CharsT[b->id].netId, -1, txt_DuelDeathNews, 0, 0x5ec, 0);
             return 0;
         }
-        if (gm_HealthRatio((short *)b) <= ai_FloatZero) {
+        if (gm_HealthRatio((short *)b) <= 0.0f) {
             if (a->kind != 6 && a->kind != 7)
                 return 0;
             he_ShowNews(ai_CharsT[a->id].netId, -1, txt_DuelDeathNews, 0, 0x5ec, 0);
@@ -14855,7 +14853,7 @@ void cm_RunBirth(G28REC *m)
 
 int cm_DeathSceneCheck(G28REC *m)
 {
-    if (gm_CharacterHealth(gm_FindChar(m->members[0])) > ai_FloatZero)
+    if (gm_CharacterHealth(gm_FindChar(m->members[0])) > 0.0f)
         return 0;
     return 1;
 }
@@ -14917,7 +14915,7 @@ void cm_RunDeath(G28REC *m)
                 sv_RunFrame(0, cm_DialogFrameFlags);
                 if (dm_L.rup != 0)
                     rc = 1;
-                d3_SetFogSet(0, 1, (float)(d3_Time - t0) * (1.0f / 0x339) < ai_FloatOne ? (float)(d3_Time - t0) * (1.0f / 0x339) : 1.0f);
+                d3_SetFogSet(0, 1, (float)(d3_Time - t0) * (1.0f / 0x339) < 1.0f ? (float)(d3_Time - t0) * (1.0f / 0x339) : 1.0f);
             }
             d3_SetFogSet(0, 1, 1.0f);
             cm_RunSceneTicksOrClick(0x2cec, 0, 0);
@@ -16332,12 +16330,12 @@ void cm_ExecCutscene(char *m)
         if (party->flags & 0x20) {
             /* the cinemascope letterbox: 75 (scaled) lines off the top and the bottom */
             cm_DialogFrameFlags &= ~0x100;
-            d3_SetViewport((float)d2_ScreenW, d2_ScreenH - d2_ScreenScale * 150.0f, 0, cm_Float75 * d2_ScreenScale,
+            d3_SetViewport((float)d2_ScreenW, d2_ScreenH - d2_ScreenScale * 150.0f, 0, 75.0f * d2_ScreenScale,
                            d3_ZNear, d3_ZFar, d3_ScaleX, d2_ScreenW, d2_ScreenH);
             d2_DirtyRectRight = 0;
             d2_DirtyRectLeft[0] = d2_ScreenW;
-            d2_DirtyRectTop = (int)(d2_ScreenScale * cm_Float75);
-            d2_DirtyRectBottom = (int)(d2_ScreenH - d2_ScreenScale * cm_Float75);
+            d2_DirtyRectTop = (int)(d2_ScreenScale * 75.0f);
+            d2_DirtyRectBottom = (int)(d2_ScreenH - d2_ScreenScale * 75.0f);
             if (sv_PanelEnabled != 0) {
                 sv_SetPanelEnabled(0);
                 panel = 1;
@@ -16859,7 +16857,7 @@ int cm_DialogTimer(int dlg, int a, int c)
         cm_DialogLength = a;
         d2_SetObjEnabled(dlg, 0);
     } else {
-        v = (int)((ai_FloatOne - (float)(unsigned int)(d3_Time - cm_DialogStart) / cm_DialogLength) * ai_FloatHundred);
+        v = (int)((1.0f - (float)(unsigned int)(d3_Time - cm_DialogStart) / cm_DialogLength) * 100.0f);
         v = v > 0 ? v : 0;
     }
     d2_SetObjValue4(dlg, 0, 100, v);
@@ -17175,45 +17173,7 @@ extern int cm_PickCellZ;
 /* txt_DeathTreeCaption: view of txt_Ptrs (build/mk_txt_views.py) */
 /* txt_SpeedNames: view of txt_Ptrs (build/mk_txt_views.py) */
 /* txt_ScenePartySync: view of txt_Ptrs (build/mk_txt_views.py) */
-float ai_FloatZero = 0.0f;  /* 0x5eb788 */
-/* 0x5eb798 / 0x5eb79c are the pooled floats 70.0f / 0.25f (0x428c0000 / 0x3e800000), not a
-   double: a 8-byte definition here claims two literals another unit owns. */
-/* 0x5eb7ac is the pooled float 0.5f (0x3f000000): use the literal at the call sites. */
-double ai_Unk5eb7b0 = 15.0;  /* 0x5eb7b0 */
-float cm_Pi = 3.14159274f;  /* 0x5eb7dc */
-float cm_DegToRad = 0.017453292f;  /* 0x5eb7e0, pi / 180: the pooled degrees-to-radians factor (10 users, ch_ActTurn 0x406ea7 first) */
-double cm_DoubleHalf = 0.5;  /* 0x5eb7e8, the shared double 0.5 VC6 pooled here: 56 sites across the units add it before a conversion to int (`fadd qword ptr [0x5eb7e8]`, e.g. main_SettleRound 0x53afeb) or compare against it; the call sites read the literal, as 0x5eb7ac's 0.5f does */
-float cm_Float75 = 75.0f;  /* 0x5eb7fc */
-float ai_Unk5eb81c = 30.0f;  /* 0x5eb81c */
-float ai_Unk5eb878 = 1.39999998f;  /* 0x5eb878 */
-float ai_Unk5eb87c = 0.9090909f;  /* 0x5eb87c, the pooled 10 / 11 (4 users) */
-double ai_Unk5eb880 = -0.04;  /* 0x5eb880, the pooled -0.04 (5 users) */
-double ai_Unk5eb888 = 0.04;  /* 0x5eb888, the pooled +0.04 (4 users) */
-float ai_Unk5eb890 = 2.5f;  /* 0x5eb890, the pooled 2.5f (9 users) */
-float ai_Unk5eb894 = 2.2f;  /* 0x5eb894, the pooled 2.2f (4 users) */
-float ai_Unk5eb898 = 1.9f;  /* 0x5eb898, the pooled 1.9f (4 users) */
-float ai_Unk5eb89c = 1.7f;  /* 0x5eb89c, the pooled 1.7f (2 users) */
-float ai_Unk5eb8a0 = 0.7f;  /* 0x5eb8a0, the pooled 0.7f (6 users) */
-double cm_DoubleOne = 1.0;  /* 0x5eb8a8, the shared double 1.0 VC6 pooled here: 58 sites across the units compare a float against it (`fcomp qword ptr [0x5eb8a8]`, e.g. main_UpdateFigure 0x53a358, ch_ActWalk 0x409a1f); the call sites read the literal, as 0x5eb8b0's 0.2f does */
-/* 0x5eb8b0 is the pooled float 0.2f (0x3e4ccccd): use the literal at the call sites. */
-double ai_Unk5eb8b8 = 1.2;  /* 0x5eb8b8 */
-double ai_Unk5eb8e0 = 20.0;  /* 0x5eb8e0 */
-float ai_Unk5eb94c = 0.75f;  /* 0x5eb94c */
-float ai_Unk5eb988 = 5.0f;  /* 0x5eb988 */
-double ai_Unk5eb990 = 10.0;  /* 0x5eb990 */
-double cm_DoubleQuarter = 0.25;  /* 0x5eb9b0 */
-const double cm_WeaponSpeedScale = 0.2857142857142857;  /* 0x5eb9b8 */
-double ai_Unk5ebbe8 = 25.0;  /* 0x5ebbe8 */
-float ai_Unk5ebc1c = 1.75f;  /* 0x5ebc1c */
-double ai_Unk5ece60 = 0.01;  /* 0x5ece60 */
-const float ai_Unk5ecebc = 1.25f;  /* 0x5ecebc */
-double ai_Unk5edbd0 = 0.050000000000000003;  /* 0x5edbd0 */
 const int cm_SpeedTicks[] = { 1155, 937, 770, 577, 385, 0 };  /* 0x5edc10 */
-const double cm_EffectRadiusScale = 1.8;  /* 0x5edc28 */
-const float ai_Unk5edc50 = 525.0f;  /* 0x5edc50 */
-const double ai_Unk5edc58 = 1.1000000000000001;  /* 0x5edc58, read-only: the original keeps it in .rdata */
-const double ai_Unk5edc60 = 6.5012084524677184e-315;  /* 0x5edc60 */
-const double cm_Inv180 = 0.0055555555555555558;  /* 0x5edc68 */
 int evt_LastId = -1;  /* 0x5f8438 */
 int ai_Unk5f8b10 = 6251111;  /* 0x5f8b10 */
 float d2_ScreenScale = 1.0f;  /* 0x5fe708 */

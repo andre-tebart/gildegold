@@ -1074,7 +1074,7 @@ int ai_MsgJobEndPayType25(G14MSG *m)
     }
     if (n == 0)
         return 0x400;
-    k = (util_RandomU(2) + ai_FloatOne) * 0.01f;
+    k = (util_RandomU(2) + 1.0f) * 0.01f;
     v = (int)(gm_GetWorth(c->id) * k);
     cm_SendMoveGoodsUnchecked(-1, m->id, ai_OwnPlayer, v);
     n = util_RandomU(n);

@@ -2954,8 +2954,8 @@ void sv_FlyCameraToObject(int b)
     up[1] = pos[1] - cen[1];
     d3t_GetHeightRange(obj, &lo, &hi);
     h = back[1] / ((hi - lo) * 0.5f + up[1]);
-    pos[0] = pos[0] - (h * back[0] - back[0] * cm_EffectRadiusScale);
-    pos[2] = pos[2] - (h * back[2] - back[2] * cm_EffectRadiusScale);
+    pos[0] = pos[0] - (h * back[0] - back[0] * 1.8);
+    pos[2] = pos[2] - (h * back[2] - back[2] * 1.8);
     dir[0] = d3_Camera->rotation.x;
     dir[1] = d3_Camera->rotation.y;
     dir[2] = d3_Camera->rotation.z;
@@ -3069,8 +3069,8 @@ void sv_CameraToObject(int b)
     up[1] = pos[1] - cen[1];
     d3t_GetHeightRange(obj, &lo, &hi);
     h = back[1] / ((hi - lo) * 0.5f + up[1]);
-    pos[0] = pos[0] - (h * back[0] - back[0] * cm_EffectRadiusScale);
-    pos[2] = pos[2] - (h * back[2] - back[2] * cm_EffectRadiusScale);
+    pos[0] = pos[0] - (h * back[0] - back[0] * 1.8);
+    pos[2] = pos[2] - (h * back[2] - back[2] * 1.8);
     dir[0] = d3_Camera->rotation.x;
     dir[1] = d3_Camera->rotation.y;
     dir[2] = d3_Camera->rotation.z;
@@ -3750,18 +3750,18 @@ void sv_RefreshPanel(void)
             kind = j->kind;
         if (kind == 0x8f) {
             total = (float)gm_MinutesBetween(&j->start, &j->end8f);
-            if (total != ai_FloatZero)
+            if (total != 0.0f)
                 prog = (float)gm_MinutesBetween(&j->start, &ai_Time) / total;
         } else if (kind == 0x16) {
             total = (float)gm_MinutesBetween(&j->start, &j->end8f);
-            if (total != ai_FloatZero)
+            if (total != 0.0f)
                 prog = (float)gm_MinutesBetween(&j->start, &ai_Time) / total;
         } else if (kind == 0x40) {
             if (j->stage < 2)
                 prog = 0.01f;
             else if (j->stage == 2) {
                 total = (float)gm_MinutesBetween(&j->start, &j->end);
-                if (total != ai_FloatZero)
+                if (total != 0.0f)
                     prog = (float)gm_MinutesBetween(&j->start, &ai_Time) / total;
             }
         } else if (kind == 0x61) {
@@ -3769,14 +3769,14 @@ void sv_RefreshPanel(void)
             t = *from;
             gm_AddTime((struct AITIME *)&t, 8, 0, 0);
             total = (float)gm_MinutesBetween(from, &t);
-            if (total != ai_FloatZero)
+            if (total != 0.0f)
                 prog = (float)gm_MinutesBetween(from, &ai_Time) / total;
         } else if (kind == 0x43) {
             from = &j->start;
             t = *from;
             gm_AddTime((struct AITIME *)&t, 0x18, 0, 0);
             total = (float)gm_MinutesBetween(from, &t);
-            if (total != ai_FloatZero)
+            if (total != 0.0f)
                 prog = (float)gm_MinutesBetween(from, &ai_Time) / total;
         } else if (kind == 0x62) {
             if (j->stage < 4)
@@ -3786,7 +3786,7 @@ void sv_RefreshPanel(void)
                 t = *from;
                 gm_AddTime((struct AITIME *)&t, 0x60, 0, 0);
                 total = (float)gm_MinutesBetween(from, &t);
-                if (total != ai_FloatZero)
+                if (total != 0.0f)
                     prog = (float)gm_MinutesBetween(from, &ai_Time) / total;
             }
         } else if (kind == 0x65) {
@@ -3797,7 +3797,7 @@ void sv_RefreshPanel(void)
                 t = *from;
                 gm_AddTime((struct AITIME *)&t, 0x18, 0, 0);
                 total = (float)gm_MinutesBetween(from, &t);
-                if (total != ai_FloatZero)
+                if (total != 0.0f)
                     prog = (float)gm_MinutesBetween(from, &ai_Time) / total;
             }
         } else if (kind == 0x48) {
@@ -3805,12 +3805,12 @@ void sv_RefreshPanel(void)
                 prog = 0.01f;
             else if (j->stage == 1) {
                 total = (float)gm_MinutesBetween(&j->start, &j->end48);
-                if (total != ai_FloatZero)
+                if (total != 0.0f)
                     prog = (float)gm_MinutesBetween(&j->start, &ai_Time) / total;
             }
         } else if (kind == 0x6c) {
             total = (float)gm_MinutesBetween(&j->start, &j->end6c);
-            if (total != ai_FloatZero)
+            if (total != 0.0f)
                 prog = (float)gm_MinutesBetween(&j->start, &ai_Time) / total;
         }
             ((D2OBJ *)d2_Objs)[sv_PanelPortrait].fillFraction = prog;
@@ -6398,9 +6398,9 @@ void sv_UpdateBand(void)
         c->selected = 0;
         if ((bits & 0x800) == 0 || c->model == 0 || c->model->scene != d3_DefaultScene || (info = c->model->body->info) == 0)
             continue;
-        p.x = ai_FloatZero;
-        p.y = ai_FloatZero;
-        p.z = ai_FloatZero;
+        p.x = 0.0f;
+        p.y = 0.0f;
+        p.z = 0.0f;
         v = (D3PVERT *)info->keys;
         for (n = 8; n != 0; n--, v++) {
             p.x += v->x;
@@ -6410,7 +6410,7 @@ void sv_UpdateBand(void)
         p.x *= 0.125;
         p.y *= 0.125;
         p.z *= 0.125;
-        iz = (int)(cm_DoubleOne / p.z);
+        iz = (int)(1.0 / p.z);
         sx = (int)(d3_ScaleX * iz * p.x + d3_CenterX);
         sy = (int)(d3_ScaleY * iz * p.y + d3_CenterY);
         if (sx >= left && sx <= right && sy >= top && sy <= bottom)
@@ -6458,9 +6458,9 @@ void sv_UpdateBandLed(void)
         c->selected = 0;
         if ((bits & 0x800) == 0 || c->model == 0 || c->model->scene != d3_DefaultScene || (info = c->model->body->info) == 0)
             continue;
-        p.x = ai_FloatZero;
-        p.y = ai_FloatZero;
-        p.z = ai_FloatZero;
+        p.x = 0.0f;
+        p.y = 0.0f;
+        p.z = 0.0f;
         v = (D3PVERT *)info->keys;
         for (n = 8; n != 0; n--, v++) {
             p.x += v->x;
@@ -6470,7 +6470,7 @@ void sv_UpdateBandLed(void)
         p.x *= 0.125;
         p.y *= 0.125;
         p.z *= 0.125;
-        iz = (int)(cm_DoubleOne / p.z);
+        iz = (int)(1.0 / p.z);
         sx = (int)(d3_ScaleX * iz * p.x + d3_CenterX);
         sy = (int)(d3_ScaleY * iz * p.y + d3_CenterY);
         if (sx >= left && sx <= right && sy >= top && sy <= bottom)

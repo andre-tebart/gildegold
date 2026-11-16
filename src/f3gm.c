@@ -100,9 +100,6 @@ extern int gm_NetMsgCount;
 extern int gm_RichestYear;
 extern int gm_RichestWorth;
 extern ORDCHAR *gm_RichestChar;
-extern float ai_FloatZero;  /* 0x5eb788, the shared 0.0f (cm.c) */
-extern double cm_DoubleQuarter;  /* 0x5eb9b0, the shared 0.25 (cm.c): gm_StockPrice's lower clamp reads it */
-extern double cm_DoubleHalf;  /* 0x5eb7e8, the shared 0.5 (cm.c) */
 /* The five income sums are the last int of the five 17-int rows of gm_IncomeHistory (0x91b580, 0x154
    bytes): the rows start 0x44 apart, so these aliases sit at the end of each row. They are views, not
    separate globals - a separate definition would reserve its own memory here and the 0x154-byte
@@ -241,8 +238,8 @@ int gm_IncomeKind1(unsigned id, GMINCOME *out, unsigned char flags)
             cnt = ORD_CHARS[(unsigned short)id].wage;
             x = (float)(rec[6] * 0.01f);
             x = (float)(x * cnt);
-            if (!(x > ai_FloatZero))
-                x = ai_FloatZero;
+            if (!(x > 0.0f))
+                x = 0.0f;
             n = (int)x;
             if (cnt > 0) {
                 out->kind[k] = 1;
@@ -280,8 +277,8 @@ int gm_IncomeKind2(unsigned id, GMINCOME *out, unsigned char flags)
             cnt = ORD_CHARS[(unsigned short)id].wage;
             x = (float)(rec[6] * 0.01f);
             x = (float)(x * cnt);
-            if (!(x > ai_FloatZero))
-                x = ai_FloatZero;
+            if (!(x > 0.0f))
+                x = 0.0f;
             n = (int)x;
             if (cnt > 0) {
                 out->kind[k] = 2;
@@ -413,8 +410,8 @@ int gm_IncomeKind5(unsigned id, GMINCOME *out, unsigned char flags)
             cnt = ORD_CHARS[(unsigned short)id].wage;
             x = (float)(rec[6] * 0.01f);
             x = (float)(x * cnt);
-            if (!(x > ai_FloatZero))
-                x = ai_FloatZero;
+            if (!(x > 0.0f))
+                x = 0.0f;
             n = (int)x;
             if (cnt > 0) {
                 out->kind[k] = 5;
@@ -3121,7 +3118,7 @@ float gm_StockPrice(int p, int n)
     ratio = GM_BLOCK(p)->goods[n].mean / GM_BLOCK(p)->goods[n].demand;
     cur = GM_BLOCK(p)->goods[n].price;
     t = ratio * (count > GM_BLOCK(p)->goods[n].demand && *good != 0x17 ? (float)(GM_BLOCK(p)->goods[n].demand / (count < 1.0 ? 1.0 : count)) : 1.0f);
-    t = t > cm_DoubleQuarter ? t : cm_DoubleQuarter;
+    t = t > 0.25 ? t : 0.25;
     f = t < 5.0 ? t : 5.0;
     r = ((float)f * gm_ItemPrice(id, 100) - cur) * 0.4f + GM_BLOCK(p)->goods[n].price;
     if (GM_BLOCK(p)->goods[n].price <= 0.0f) {
@@ -3504,7 +3501,7 @@ void gm_UpdatePrices(unsigned p, void *t)
         g = GM_GOOD(GM_BLOCK(p)->goods[i].item);
         if (g->type != 0x17 && g->type != 0x25) {
             a = gm_GoodsDemand(p, i);
-            GM_BLOCK(p)->goods[i].demand = (float)(((float)a - GM_BLOCK(p)->goods[i].demand) * cm_DoubleHalf + GM_BLOCK(p)->goods[i].demand);
+            GM_BLOCK(p)->goods[i].demand = (float)(((float)a - GM_BLOCK(p)->goods[i].demand) * 0.5 + GM_BLOCK(p)->goods[i].demand);
         }
         if (p == ai_OwnPlayer)
             GM_BLOCK(p)->goods[i].stock = gm_GoodsStock(p, i);
@@ -3689,7 +3686,7 @@ int gm_GoodsStock(int p, int i)
         }
     }
     sum = (int)(sum * 0.5);
-    if (g->mean != ai_FloatZero)
+    if (g->mean != 0.0f)
         sum = (int)(g->mean / g->demand * sum);
     return sum;
 }
@@ -9479,13 +9476,13 @@ int gm_GetCreditOffers(int b, unsigned short *p, unsigned cnt, int *out)
     else if (ord_DispatchOrder(0xb, p, orders) & 2)
         rate *= 1.5f;
     lim = worth * rate;
-    maxAmount = (int)GM_MIN(lim, budget * cm_DoubleHalf);
+    maxAmount = (int)GM_MIN(lim, budget * 0.5);
     for (k = 0; k < cnt; k++) {
         amount = (int)((-util_RandomU(0x1e) * 0.01 + 1.0) * (float)maxAmount);   /* 70 .. 100 % */
         if (k == 0)
-            amount = (int)(amount * cm_DoubleQuarter);
+            amount = (int)(amount * 0.25);
         else if (k == 1)
-            amount = (int)(amount * cm_DoubleHalf);
+            amount = (int)(amount * 0.5);
         term = util_RandomU(6) + 2;
         interest = (int)(bank->v65 * 0.7 + (bank->v65 * 1.5 - bank->v65 * 0.7) * (term / 6.0f));
         if (ORD_CHARS[bank->owner].kind != 6 && ORD_CHARS[bank->owner].kind != 7 && (ch->kind == 6 || ch->kind == 7)) {

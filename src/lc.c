@@ -546,7 +546,6 @@ extern D2VIEW d2_Views[];
 extern GAPDATA gm_SpecialItemGroups[];
 extern GAPDATA full_rdata_5eedd3[];
 extern GAPDATA full_data_62c284[];
-extern GAPDATA full_rdata_5ebb40[];
 extern GAPDATA full_data_62c298[];
 extern char ch_EmptyName[1];
 extern GAPDATA full_data_62c2c0[];
@@ -663,7 +662,6 @@ extern GAPDATA full_data_62d1f4[];
 extern GAPDATA full_data_62d1fc[];
 extern GAPDATA full_data_62d204[];
 extern int gm_PlayerRecords[688];
-extern float ai_FloatZero;
 extern GAPDATA full_rdata_5ed0fc[];
 extern GAPDATA full_data_602568[];
 extern GAPDATA full_data_62d214[];
@@ -724,8 +722,6 @@ extern GAPDATA full_data_62d424[];
 extern unsigned gm_OwnNameHeads[136];
 #include "gv_types.h"
 #include "ai_bld.h"                /* AIBLD, AIBTYPE */
-extern float ai_Unk5eb81c;
-extern float ai_Unk5eb988;
 extern GAPDATA full_data_5fe7d0[];
 extern GAPDATA full_data_62d43c[];
 extern char ai_PlayerSlots[4][0x2f4];
@@ -795,7 +791,6 @@ extern GAPDATA full_data_62d6bc[];
 extern char ai_UseObjForm[];
 extern unsigned char ai_OwnPlayer;
 extern char * cm_FieldObject;
-extern float ai_Unk5eb94c;
 extern signed char ai_Relations[768][768];
 
 int sprintf(char *buf, const char *fmt, ...); /* 0x5de652, the CRT's sprintf */
@@ -2806,7 +2801,6 @@ char d3sm_GetVertex();  /* 0x45f100: this caller tests the char result (al) */
 char d3sm_Pick();  /* 0x45f2b0, d3_sm.h: the cell under a screen point, 0 = none */
 void sv_SetStatusText(char *s);  /* 0x52e330, sv.h */
 extern char ai_DataPath[];  /* 0x75dca0, the data path (am.h) */
-extern float cm_Pi;  /* 0x5eb7dc (cm.h) */
 
 /* 0x58ff00, lets the player place a building of the kind kind (2709 B; the name of its own error strings): a
    kind of class 2 the player already owns (build query 2, 4, the player, 5, 2) asks first (text 0x17f2 with the
@@ -3087,7 +3081,7 @@ int lc_GebaeudeAusrichten(int kind, char *out)
                     v.x = model->rotation.x;
                     v.y = model->rotation.y;
                     v.z = model->rotation.z;
-                    v.y += cm_Pi;
+                    v.y += 3.14159274f;
                     d3_MatFromAngles((D3VECTOR4 *)&v, &mat);
                 }
                 if (dm_L.lup != 0 && ok) {
@@ -13905,11 +13899,11 @@ void ai_MapCellToScreen(LCMAPMARK *m, int originX, int originY)
     y = (m->cellZ - half) * ai_MapCellScale;
     edgeX = fabs(x) / (ai_MapSize * 0.5f);
     edgeY = fabs(y) / (ai_MapHeight * 0.5f);
-    if (x < ai_FloatZero)
+    if (x < 0.0f)
         edgeX = x - edgeX * 51.0f;
     else
         edgeX = edgeX * 51.0f + x;
-    if (y < ai_FloatZero)
+    if (y < 0.0f)
         edgeY = y - edgeY * 51.0f;
     else
         edgeY = edgeY * 51.0f + y;
@@ -14457,11 +14451,11 @@ void ai_UpdateTownMap(LCMAPWIN *m)
             y = ((pos.z - hm->origin.z) / hm->cell.z - half) * ai_MapCellScale;
             edgeX = fabs(x) / (ai_MapSize * 0.5f);
             edgeY = fabs(y) / (ai_MapHeight * 0.5f);
-            if (x < ai_FloatZero)
+            if (x < 0.0f)
                 edgeX = x - edgeX * 51.0f;
             else
                 edgeX = edgeX * 51.0f + x;
-            if (y < ai_FloatZero)
+            if (y < 0.0f)
                 edgeY = y - edgeY * 51.0f;
             else
                 edgeY = edgeY * 51.0f + y;
@@ -14549,7 +14543,6 @@ typedef struct G8BLD {                  /* a local view of gv.h's ORDBLD (gv.h c
     int id;                             /* +0x01, the building's id (the production settings chain's key) */
 } G8BLD;
 #pragma pack(pop)
-#define ai_FloatHundred (*(float *)&full_rdata_5ebb40)  /* 0x5ebb40, the float 100.0f */
 
 /* 0x5a8340, the record's random in [0, 1) (68 B): the LCG at +4 (0x41c64e6d, 0x3039) advanced, then its high
    word modulo 0x7fff scaled by 1 / 0x7fff (0x5eb8f8) */
@@ -14848,7 +14841,7 @@ int ai_DrawSettingGood(int bld)
     rec = (G8SETTING *)ai_FindSetting(b->id);
     if (rec == 0)
         return 0;
-    draw = (int)((float)ai_SettingRandom(rec) * ai_FloatHundred);
+    draw = (int)((float)ai_SettingRandom(rec) * 100.0f);
     sum = 0;
     pick = 0;
     i = 0;
@@ -14866,7 +14859,6 @@ int ai_DrawSettingGood(int bld)
     } while (i < 7);
     return pick;
 }
-extern const float ai_FloatOne;  /* 0x5eb780, the shared 1.0f (bio.c) */
 
 /* 0x5a88e0, the factor of a building's production setting (31 B): the +0x38 of the slot table ai_FindSettingSlots
    returns (= the record's +0x44), else the shared 1.0f (ai_FloatOne, 0x5eb780) */
@@ -14880,7 +14872,7 @@ float ai_SettingFactor(int bld)
     t = (G8SETTAIL *)ai_FindSettingSlots(b->id);
     if (t != 0)
         return t->factor;
-    return ai_FloatOne;
+    return 1.0f;
 }
 /* 0x5a8900, the factor of a building's production setting set (28 B): the +0x44 of the record ai_FindSetting
    returns, when the building has a setting */
@@ -17669,7 +17661,7 @@ int ai_TransportFromLager(int lagerId, AIOBJ *cart, AIBLD *bld, int priced, char
             price = 0.0f;
         }
         total = n * price;
-        inv = ai_FloatOne / factor;
+        inv = 1.0f / factor;
         if (sv_CheckGoodAmountB(ai_Chars[ai_PlayerId], (int)(inv * total), player) == 0)
             continue;
         if (slot->amount < 0)
@@ -17699,7 +17691,7 @@ int ai_TransportFromLager(int lagerId, AIOBJ *cart, AIBLD *bld, int priced, char
             }
         }
         cm_SendExSellObject(lagerId, cart->objId, slot->good, n, player, (int)(price / factor));
-        if (price != ai_FloatZero && factor != 1.0) {
+        if (price != 0.0f && factor != 1.0) {
             txt_Format(text, 0xec, (int)(total * factor - total));
             sv_SetStatusText(text);
             sb_PlaySample(0, "RollenKurz_s_01", 1, 0x3f, 0x7f, 0, 0);
@@ -17722,7 +17714,7 @@ int ai_TransportFromLager(int lagerId, AIOBJ *cart, AIBLD *bld, int priced, char
         else
             price = 0.0f;
         total = n * price;
-        inv = ai_FloatOne / factor;
+        inv = 1.0f / factor;
         if (sv_CheckGoodAmountB(ai_Chars[ai_PlayerId], (int)(inv * total), player) == 0)
             continue;
         if (slot->amount < 0)
@@ -17752,7 +17744,7 @@ int ai_TransportFromLager(int lagerId, AIOBJ *cart, AIBLD *bld, int priced, char
             }
         }
         cm_SendExSellObject(lagerId, cart->objId, slot->good, n, player, (int)(price / factor));
-        if (price != ai_FloatZero && factor != 1.0) {
+        if (price != 0.0f && factor != 1.0) {
             txt_Format(text, 0xec, (int)(total * factor - total));
             sv_SetStatusText(text);
             sb_PlaySample(0, "RollenKurz_s_01", 1, 0x3f, 0x7f, 0, 0);
@@ -24404,7 +24396,7 @@ int ai_AmountRowStatus(LCAMOUNTROW *row)
     }
     if (row->icons[3] == 0) {
         health = gm_CharacterHealth(row->rec);
-        if (health < ai_FloatHundred)
+        if (health < 100.0f)
             row->icons[3] = 0x6d2;
         else if (health < 350.0f)
             row->icons[3] = 0x6d1;
@@ -24664,7 +24656,7 @@ int ai_SpecialAmountListWindow(int kind, unsigned int *filter, char *caption, ch
                 }
                 if (rows[i].icons[3] == 0) {
                     health = gm_CharacterHealth(rows[i].rec);
-                    if (health < ai_FloatHundred)
+                    if (health < 100.0f)
                         rows[i].icons[3] = 0x6d2;
                     else if (health < 350.0f)
                         rows[i].icons[3] = 0x6d1;
@@ -26019,7 +26011,7 @@ void ai_AmountListWindow(int kind)
                 }
                 if (rows[i].icons[3] == 0) {
                     health = gm_CharacterHealth(rows[i].rec);
-                    if (health < ai_FloatHundred)
+                    if (health < 100.0f)
                         rows[i].icons[3] = 0x6d2;
                     else if (health < 350.0f)
                         rows[i].icons[3] = 0x6d1;
@@ -26497,7 +26489,7 @@ void ai_ShowWorkSettingsPage(int win, int *budgetCtrl, int *budget, int *checks,
         io_PrintText(0x42c2);
         ctrl = d2_WinOpenSlider(100, 300, 200, 0x32, 0x96, 0x7b, 0x1002, d2_LastWindow);
         *factorCtrl = ctrl;
-        d2_SetObjValue4(ctrl, 0x32, 0x96, (int)(setting->factor * ai_FloatHundred));
+        d2_SetObjValue4(ctrl, 0x32, 0x96, (int)(setting->factor * 100.0f));
         return;
     }
     *factorCtrl = -1;
@@ -32773,7 +32765,7 @@ int ai_ApplyTrialStep(AICHARREC *ch, int skill)
     if (!((float)ch->skills[skill] >= 252.0f)) {
         x = (252.0f - ch->skills[skill]) * (1.0f / 252.0f);
         y = x * 0.6f + 0.2f;
-        amount = (unsigned char)(int)(x * (((ai_FloatOne - y) + util_RandomF() * y) * 42.0f) + ai_FloatOne);
+        amount = (unsigned char)(int)(x * (((1.0f - y) + util_RandomF() * y) * 42.0f) + 1.0f);
         if ((float)(ch->skills[skill] + amount) > 252.0f)
             amount = (unsigned char)(int)(252.0f - ch->skills[skill]);
         if (amount != 0)

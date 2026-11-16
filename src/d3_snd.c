@@ -506,7 +506,6 @@ char map_Pick(struct D3FLMAP *map, struct D3VECTOR *pos, char lod, int *x, int *
 int map_Region(D3MAP *map, int x, int y);                                              /* 0x446910, index into regions or < 0 */
 
 extern unsigned char snd_AmbientOn;     /* 0x6f0b60, 1: ambient sounds on */
-extern float ai_FloatZero;              /* 0x5eb788, the shared 0.0f (cm.c): the k * k of the camera's own region */
 float d3sndw_Range[] = { 0.0f, 30.0f, 25.0f, 20.0f, 15.0f, 10.0f };  /* 0x5f38a4, per water type, in meters */
 unsigned int d3sndw_Vol[] = { 0, 70, 70, 70, 70, 60, 0 };  /* 0x5f38bc, per water type */
 extern char d3sndw_Names[6][25];  /* 0x5f38d8, defined below (declaration order = section order) */
@@ -529,6 +528,10 @@ typedef struct D3SNDWHIT {
    the two copies (cross-jumping), which is where the first block's store before its add esp comes from */
 void d3sndw_Update(void)
 {
+    /* the k * k of the camera's own region (k = 0): the original's fmul reads VC6's pooled 0.0f
+       (0x5eb788), a literal; written as the literal VC6 swaps two reloads at the probe loop's latch (4 ins, the
+       declaration set does not move it), any float object in memory gives byte. Ours is this static. */
+    static const float zero = 0.0f;
     float dist;
     int slot;
     int nfound;
@@ -602,7 +605,7 @@ void d3sndw_Update(void)
             d3sndw_State[i] = 1;
     } else {
         found[0].type = type;
-        found[0].vol = (int)((d3sndw_Vol[type] - (d3sndw_Vol[type] * ai_FloatZero) / (d3sndw_Range[type] * d3sndw_Range[type]))
+        found[0].vol = (int)((d3sndw_Vol[type] - (d3sndw_Vol[type] * zero) / (d3sndw_Range[type] * d3sndw_Range[type]))
                              * (2000 - ground) * 0.0005f);
         found[0].pan = 63;
         nfound = 1;

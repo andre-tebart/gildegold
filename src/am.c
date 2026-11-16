@@ -29,7 +29,6 @@
    0xffffff / 0xff0000) and must not be written as symbol arithmetic: `&txt_Keys + 0x181c0` spells
    it only while txt_Keys keeps its original address 0xfe7e40; our link puts it at 0x6d0448, so the
    sum was 0x6e8608 and the test read an unrelated bit. */
-extern const float ai_FloatOne;  /* 0x5eb780, the shared 1.0f (bio.c) the original loads in ai_DecideLawSeverity */
 
 #define gm_TitleJobI ((int (*)(int, int))gm_TitleJob)  /* 0x5044b0 (f3gm.h: unsigned char), @original: the byte-matched callers (ai_DecideDarkCorner, ai_DecideBuildBusiness) read the result without the unsigned char mask (no `and eax,0xff` after the call) */
 #define AI_REPAIR_KINDS 0x7c43b4  /* the building kinds ai_DecideRepairBuilding repairs (one bit per AIBTYPE.kind) */
@@ -1380,7 +1379,7 @@ int ai_DecideLawSeverity(AIPER *p, int a, int *out)
     t = gm_TitleGroup(p->jobId);
     f = gm_GetSkill(p, 4);
     n = ord_GetRatingByte(4);
-    x = (f - (n + ai_FloatOne) / 252.0f) / 42.0f;
+    x = (f - (n + 1.0f) / 252.0f) / 42.0f;
     u = (p->mood[9][0] - 2.0) * p->mood[9][2];
     v = (p->mood[10][0] - 2.0) * p->mood[10][2];
     w = (p->mood[11][0] - 2.0) * p->mood[11][2];
@@ -1393,7 +1392,7 @@ int ai_DecideLawSeverity(AIPER *p, int a, int *out)
         x += 4.0f;
     x = r / x;
     gv_GetTableRecord(0, &d);
-    if (x > ai_FloatOne) {
+    if (x > 1.0f) {
         if (w > u && d.cur < 2) {
             *out = util_RandomU(2) + d.cur + 1;
             return 1;
@@ -1420,7 +1419,7 @@ int ai_DecideLaw1(AIPER *p, int a, int *out)
     t = gm_TitleGroup(p->jobId);
     f = gm_GetSkill(p, 4);
     n = ord_GetRatingByte(4);
-    x = (f - (n + ai_FloatOne) / 252.0f) / 42.0f;
+    x = (f - (n + 1.0f) / 252.0f) / 42.0f;
     u = (p->mood[9][0] - 2.0) * p->mood[9][2];
     v = (p->mood[10][0] - 2.0) * p->mood[10][2];
     w = (p->mood[11][0] - 2.0) * p->mood[11][2];
@@ -1434,7 +1433,7 @@ int ai_DecideLaw1(AIPER *p, int a, int *out)
     n = 40 - p->age;
     x = r / (n * 0.1f + x);
     gv_GetTableRecord(1, &d);
-    if (x > ai_FloatOne && d.cur == 0) {
+    if (x > 1.0f && d.cur == 0) {
         if (x > 1.4f || w > u) {
             *out = 1;
             return 1;
@@ -1498,7 +1497,7 @@ int ai_DecideLaw3(AIPER *p, int a, int *out)
     t = gm_TitleGroup(p->jobId);
     f = gm_GetSkill(p, 4);
     n = ord_GetRatingByte(4);
-    x = (f - (n + ai_FloatOne) / 252.0f) / 42.0f;
+    x = (f - (n + 1.0f) / 252.0f) / 42.0f;
     u = (p->mood[9][0] - 2.0) * p->mood[9][2];
     v = (p->mood[10][0] - 2.0) * p->mood[10][2];
     w = (p->mood[11][0] - 2.0) * p->mood[11][2];
@@ -1507,7 +1506,7 @@ int ai_DecideLaw3(AIPER *p, int a, int *out)
     else if (t == 0xb || t == 0xc)
         x *= 0.9f;
     gv_GetTableRecord(3, &d);
-    if (x < ai_FloatOne && d.cur == 0) {
+    if (x < 1.0f && d.cur == 0) {
         if (w > u) {
             *out = 1;
             return 1;
@@ -1535,7 +1534,7 @@ int ai_DecideLaw4(AIPER *p, int a, int *out)
     w = (p->mood[11][0] - 2.0) * p->mood[11][2];
     x *= 1.1f;
     gv_GetTableRecord(4, &d);
-    if (x < ai_FloatOne && d.cur == 0) {
+    if (x < 1.0f && d.cur == 0) {
         if (w > u) {
             *out = 1;
             return 1;
@@ -3190,7 +3189,7 @@ int ai_MasterExamPassed(AIC4 *a, AIC4 *b)
     y = gm_CharLevelS(b->id, 0);
     t = (float)(y - x) * 2.5f;
     s = gm_Liking(a->id, b->id, 1) + t;
-    if (s < util_RandomF() * cm_Float75)
+    if (s < util_RandomF() * 75.0f)
         return 0;
     return 1;
 }
@@ -3287,7 +3286,7 @@ int ai_BrawlWin(AIC4 *attacker, AIC4 *defender, int *out)
     }
     if (out)
         *out = appliedOrder;
-    if (sum + modifier > ai_FloatOne)
+    if (sum + modifier > 1.0f)
         return 1;
     return 0;
 }
@@ -3539,7 +3538,7 @@ int ai_ChooseAction(int i)
             }
         }
     }
-    if (best1 != ai_FloatZero && best1 >= best2) {
+    if (best1 != 0.0f && best1 >= best2) {
         p->prev = (unsigned char)id1;
         p->arg1 = b1s1;
         p->act = (unsigned char)r1;
@@ -3758,7 +3757,7 @@ int ai_DecideTrainSkill(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
         memset(q, 0, sizeof(q));
         k = o1->ref;
         q[0] = 1;
-        f = (ord_DispatchOrder(ids[k], p, q) & 2) ? -1.0f : ai_FloatZero;
+        f = (ord_DispatchOrder(ids[k], p, q) & 2) ? -1.0f : 0.0f;
         if (p->skills[k] < 42)
             v = 1;
         else if (p->skills[k] < 84)
@@ -3786,7 +3785,7 @@ int ai_DecideTrainSkill(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
         cnt[i] = ord_GetRatingByte(i);
         if (!cnt[i])
             cnt[i] = 252;
-        f = (ord_DispatchOrder(ids[i], p, q) & 2) ? -1.0f : ai_FloatZero;
+        f = (ord_DispatchOrder(ids[i], p, q) & 2) ? -1.0f : 0.0f;
         if (p->skills[i] < 42)
             n[i] = 1;
         else if (p->skills[i] < 84)
@@ -4116,10 +4115,10 @@ int ai_EvalLeastLikedOfEvent(float *a, float *b, int i, AIPER *p, int f, AIARG *
     o1->arg = 1;
 weigh:
     for (j = 0; j < 4; j++) {
-        if (act->w1[j].w > ai_FloatZero) {
+        if (act->w1[j].w > 0.0f) {
             *a += act->w1[j].k == p->sel ? p->mood[act->w1[j].k][2] * act->w1[j].w * 0.02f : p->mood[act->w1[j].k][2] * act->w1[j].w * 0.01f;
         }
-        if (act->w2[j].w > ai_FloatZero) {
+        if (act->w2[j].w > 0.0f) {
             *b += act->w2[j].k == p->sel ? p->mood[act->w2[j].k][2] * act->w2[j].w * 0.02f : p->mood[act->w2[j].k][2] * act->w2[j].w * 0.01f;
         }
     }
@@ -4433,7 +4432,7 @@ int ai_DecideProduceGood(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
         v = o2->arg2;
         o1->arg2 = 0x39;
     }
-    if (o1->fvalue > ai_FloatZero && o1->fvalue < ai_FloatOne)
+    if (o1->fvalue > 0.0f && o1->fvalue < 1.0f)
         v = (int)(v * o1->fvalue);
     return v < (int)gm_GoodsPrice(o1->ref, ai_OwnPlayer) ? 0 : 11;
 }
@@ -4505,7 +4504,7 @@ int ai_DecideBuyRoom(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
         return 0;
     c = (AIPER *)&ai_CharsT[bld->owner];
     v = gm_CharCurrency(c, ai_OwnPlayer);
-    if (o1->fvalue > ai_FloatZero && o1->fvalue < ai_FloatOne)
+    if (o1->fvalue > 0.0f && o1->fvalue < 1.0f)
         v = (int)(v * o1->fvalue);
     if (v < (int)gm_GoodsPrice(o1->ref, ai_OwnPlayer))
         return 0;
@@ -4558,7 +4557,7 @@ int ai_DecideRepairBuilding(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
         lim = gm_CharCurrency(p, ai_OwnPlayer) * 0.95f;
         v = d < 0x32 ? 50 : 30;
         f = ai_RepairCost(best, v);
-        if (f == ai_FloatZero || f > lim)
+        if (f == 0.0f || f > lim)
             return 0;
         o1->kind = 4;
         o1->ref = best->id;
@@ -4578,7 +4577,7 @@ int ai_DecideRepairBuilding(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
                 if (bl->flags5a & 5)
                     return 0;
                 f = ai_RepairCost(bl, o1->arg2);
-                if (f == ai_FloatZero || f > o2->arg)
+                if (f == 0.0f || f > o2->arg)
                     return 0;
                 o1->fvalue = f;
                 return 15;
@@ -6876,7 +6875,7 @@ int ai_DecideBuyMarketObject(int a, G5CH *p, int f, AIARG *s1, AIARG *o)
             obj = gm_Query(bld->list, 1, 0, s1->ref);
             if (obj != 0 && gm_ListAmount((short *)bld, (char *)obj) >= 1) {
                 money = gm_CharCurrency((AIPER *)p, ai_OwnPlayer);
-                if (s1->fvalue > ai_FloatZero && s1->fvalue < ai_FloatOne)
+                if (s1->fvalue > 0.0f && s1->fvalue < 1.0f)
                     money = (int)(money * s1->fvalue);
                 if (money >= (int)gm_GoodsPrice(s1->ref, ai_OwnPlayer)) {
                     o->kind = 1;
@@ -7091,7 +7090,7 @@ int ai_DecideThreaten(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
             return 0;
         c = (AIPER *)&ai_CharsT[s2.arg2];
         g = gm_Mix((AIPER *)p, c, 4);
-        if (!(util_RandomF() + g >= ai_FloatOne)) {
+        if (!(util_RandomF() + g >= 1.0f)) {
             s1.kind = 4;
             s1.ref = 3;
             s1.arg = 1;
@@ -8553,7 +8552,7 @@ int ai_DecidePriceManipulation(int a, G5CH *p, int f, AIARG *o1)
             all[i] = all[i] < 15 ? all[i] : 15;
             own[i] = own[i] < 15 ? own[i] : 15;
             if (all[i] > 0 && ai_GroupPrices(&m[i]) != 0) {
-                v = ((float)all[i] + ai_FloatOne - (float)own[i]) / (float)all[i]
+                v = ((float)all[i] + 1.0f - (float)own[i]) / (float)all[i]
                     * ((16.0f - (float)own[i]) * 0.06666667f) * m[i].avg;
                 score[i] = v;
                 if (lo == -1)
@@ -8568,15 +8567,15 @@ int ai_DecidePriceManipulation(int a, G5CH *p, int f, AIARG *o1)
         }
         if (lo != -1 && hi != -1 && lo != hi) {
             d = 0;
-            if (m[lo].avg > ai_FloatOne || own[lo] == 0) {
-                if (m[hi].avg < ai_FloatOne)
+            if (m[lo].avg > 1.0f || own[lo] == 0) {
+                if (m[hi].avg < 1.0f)
                     return 0;
                 if (own[hi] * 2 + 1 >= all[hi])
                     return 0;
                 d = -1;
             }
-            if (m[hi].avg < ai_FloatOne || own[hi] * 2 + 1 >= all[hi]) {
-                if (m[lo].avg > ai_FloatOne || own[lo] == 0)
+            if (m[hi].avg < 1.0f || own[hi] * 2 + 1 >= all[hi]) {
+                if (m[lo].avg > 1.0f || own[lo] == 0)
                     return 0;
                 d = 1;
             }
@@ -9293,8 +9292,8 @@ int ai_DecideStudy(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     ai_RollStudyOffers((AIC4 *)p, (int *)rec);
     x = gm_GetJobTalents(best->jobId);
     for (n = 0; n < 3; n++) {
-        va = max((float)x.skills[rec[n].b], ai_FloatOne);
-        vb = max((float)x.skills[rec[n].c], ai_FloatOne);
+        va = max((float)x.skills[rec[n].b], 1.0f);
+        vb = max((float)x.skills[rec[n].c], 1.0f);
         s[n] = best->skills[rec[n].c] / vb + best->skills[rec[n].b] / va;
     }
     if (util_RandomU(2) != 0) {
@@ -10176,13 +10175,13 @@ int ai_EvalMoodWeights(float *a, float *b, int i, AIPER *p, int f, void *x, void
     for (k = 0; !found; k++) {
         if (k >= 4)
             break;
-        if (act->w1[k].k == p->sel && act->w1[k].w > ai_FloatZero)
+        if (act->w1[k].k == p->sel && act->w1[k].w > 0.0f)
             found = 1;
     }
     for (k = 0; !found; k++) {
         if (k >= 4)
             break;
-        if (act->w2[k].k == p->sel && act->w2[k].w > ai_FloatZero)
+        if (act->w2[k].k == p->sel && act->w2[k].w > 0.0f)
             found = 1;
     }
     for (k = 0; k < 4; k++) {

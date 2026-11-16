@@ -5,7 +5,8 @@ the diff shows -> what the source was", with the functions it was found on) are 
 grouped by the symptom you see in the diff, with a contents list of sub-symptoms at its top: go to the section
 of your hunk class, or search by instruction or construct (`grep -n "fst \|rep stosd\|shrink" notes/vc6-matching.md`). Data, link and layout rules are in
 `notes/vc6-data.md` (not needed for matching a function's code). A function named in a note is byte unless the
-note says otherwise: `dcp fn NAME` shows the source that matched.
+note says otherwise: `dcp fn NAME` shows the source that matched. Float constants read from 0x5eb780.. (and other
+`__real@` runs) are VC6's pooled literals: write `1.0f` / `0.0f` / `0.5`, never an object (vc6-data.md).
 
 ## 1. The premise: the original was ordinary code
 Every function that an earlier pass had given up on and that matched later had the same history: an earlier pass reached its best

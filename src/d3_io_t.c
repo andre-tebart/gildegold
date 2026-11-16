@@ -185,7 +185,6 @@ void d3iot_LoadTexSet(char *name, char **out, int *w, int *h)
         }
     }
 }
-extern float cm_Pi;  /* 0x5eb7dc, the shared pi (cm.c) the rotation is added to */
 
 /* 0x44d330, loads a BGF mesh (or finds it among the loaded ones)
    @deep tiebreak: insensitive (headers sample, 32 samples one codegen). Kept: the RemoveDoubleMaterials
@@ -355,7 +354,7 @@ D3BGF *d3iot_LoadBGF(char *path, char *name, char *texnames, int ntexsets, int n
                             a = (m->polys[k].uv[n][0] * mt->su + 0.5f) - mt->su * 0.5f;
                             b = (m->polys[k].uv[n][1] * mt->sv + 0.5f) - mt->sv * 0.5f;
                             m->polys[k].uv[n][0] = (float)cos(mt->rot) * a - (float)sin(mt->rot) * b + mt->ou;
-                            m->polys[k].uv[n][1] = (float)sin(mt->rot + cm_Pi) * a + (float)cos(mt->rot + cm_Pi) * b + mt->ov;
+                            m->polys[k].uv[n][1] = (float)sin(mt->rot + 3.14159274f) * a + (float)cos(mt->rot + 3.14159274f) * b + mt->ov;
                         }
                     }
                 }

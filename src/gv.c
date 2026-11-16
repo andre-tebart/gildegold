@@ -753,9 +753,9 @@ void gv_UpdateEffects(void)
         gv_EffectsT[i].f08 += step;
         gv_EffectsT[i].f0c += step;
         gv_EffectsT[i].f10 += step;
-        gv_EffectsT[i].f08 = gv_EffectsT[i].f08 < ai_FloatOne ? gv_EffectsT[i].f08 : ai_FloatOne;
-        gv_EffectsT[i].f0c = gv_EffectsT[i].f0c < ai_FloatOne ? gv_EffectsT[i].f0c : ai_FloatOne;
-        gv_EffectsT[i].f10 = gv_EffectsT[i].f10 < ai_FloatOne ? gv_EffectsT[i].f10 : ai_FloatOne;
+        gv_EffectsT[i].f08 = gv_EffectsT[i].f08 < 1.0f ? gv_EffectsT[i].f08 : 1.0f;
+        gv_EffectsT[i].f0c = gv_EffectsT[i].f0c < 1.0f ? gv_EffectsT[i].f0c : 1.0f;
+        gv_EffectsT[i].f10 = gv_EffectsT[i].f10 < 1.0f ? gv_EffectsT[i].f10 : 1.0f;
         if ((gv_EffectsT[i].flags & 2) == 0) {
             if (gv_EffectsT[i].flags & 4)
                 gv_ReleaseEffect(gv_EffectsT[i].id);
@@ -4241,7 +4241,7 @@ void gv_GraveyardTurn(char *o)
             for (k = 0; k < gv_EntryCounts[size]; k++) {
                 g = &e->grave[k];
                 if (g->id != -1) {
-                    f = (util_RandomF() + ai_FloatOne) * 0.5f;
+                    f = (util_RandomF() + 1.0f) * 0.5f;
                     t = (int)(f * (gv_GraveWear[e->size] * ((float)e->b0c / 255.0f)));
                     if (t <= 0 || ((gv_EntryIndex((char *)bld->yard, (int *)e) ^ ai_Time.year) & 1) != 0)
                         goto next;
@@ -4253,7 +4253,7 @@ void gv_GraveyardTurn(char *o)
         } else {
             AIMSG m;
 
-            f = (util_RandomF() + ai_FloatOne) * 0.5f;
+            f = (util_RandomF() + 1.0f) * 0.5f;
             size = e->size;
             t = (int)(f * (gv_GraveWear[size] * ((float)e->b0c / 255.0f)));
             if (t > 0 && ((gv_EntryIndex((char *)(yard = bld->yard), (int *)e) ^ ai_Time.year) & 1) == 0) {

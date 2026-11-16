@@ -62,9 +62,14 @@ a unit boundary looks like. Not needed to match a function's code (that is `note
 - **Strings and floats**: original text and bits (D3DCHECK text); `__FILE__` via the file's first
   `#line N "D:\\develop\\..."`.
 - **Bytes right after a unit's last constant**: its literals. A unit's .rdata is its named constants, then the
-  literals it is the first to use (COMDATs, folded across units). bio, first in link order, holds the shared ones
-  (255.0f after ai_FloatOne). A constant the code loads from memory is another unit's `const` read through an
-  extern (ai_CardBack in unk_4a7140), not a header `static const volatile`.
+  `__real@` COMDATs it is the first in link order to use (the linker keeps the first copy). ch, the first unit with
+  float code, holds the shared pool 0x5eb780..0x5eb8dc (1.0f, 255.0f, 0.0f, ...); every unit's `1.0f` reads 0x5eb780
+  (the only 4-byte 1.0f outside the tables). Order inside a unit: per function in source order, the literals it is
+  the first to use, in reverse order of first use in its code (VC6 prepends; a cl test reproduces it). Simulating
+  that over ch's original code predicts the pool except 3 literals that sit earlier (1.0f 0x5eb780, 3.0f 0x5eb790,
+  0.4f 0x5eb7b8): functions of ch the linker removed (/OPT:REF) used them first. Ours places ch's pool in that
+  order without them. A constant the code loads from memory is another unit's `const` read through an extern
+  (ai_CardBack in unk_4a7140), not a header `static const volatile`.
 - **A strcpy hunk at the inlined copy, or `link --nonmatching` reporting a `??_C@...` symbol as a data
   conflict**: an invalid escape drops the backslash and shortens the literal. `"misc\Messagebox"` is
   `"miscMessagebox"`; `"\game.INI"` is the 9-byte `"game.INI"` (dword + dword + byte) where `"\\game.INI"` copies
@@ -72,18 +77,17 @@ a unit boundary looks like. Not needed to match a function's code (that is `note
   differs. Write `\\` in the C source.
 - **`__LINE__` pushed as an immediate (not masked)**: pin it with `#line N` before the statement. Recovered line
   numbers tell where code sat in the original file (d3_tools.c: 2343, 2348).
-- **Pooled float objects vs literals** (conflicting notes, check): M10 naming ai_FloatOne / ai_FloatZero means
-  write the object even where the value is the same; check the whole function after each M10 fix (all three
-  `1.0f`s of d3s_AddShadow were ai_FloatOne, M10 named only the first two until those were written as the object);
-  the `1.0f` of an M10 `open:` line naming ai_FloatOne is worth trying first, reading the datum changes the
-  scheduling around it (ai_ScatterShot 18 -> 8 ins with the copy moved). Against that: for `1.0f / x` vs
-  `ai_FloatOne / x` M10 says the original reads ai_FloatOne (0x5eb780), but that is the address of the pooled
-  literal __real@3f800000 - the literal gives byte, the extern const gives other code (d3anim_PoseBones); write the
-  literal unless the function needs the object (a read the literal would fold).
-- **Object vs literal moves unrelated tie-breaks**: `ai_FloatZero` / `ai_FloatOne` against `0.0f` / `1.0f` at one
-  site flipped the order of two register reloads at a loop latch 1400 bytes away (d3sndw_Update, 8 combinations:
-  3 keep it, 5 flip it). Try every combination of the function's pooled constants before spending variants on the
-  hunk; `dcp try` rows with the same `ins` can still be different hunks.
+- **Pooled float constants are literals**: 0x5eb780.. (ch's pool) and the other units' `__real@` runs are VC6's
+  literals, not objects: write `1.0f`, `0.0f`, `0.5`, `1.0`, `100.0f` .. A stand-in object at a pool address
+  (the former ai_FloatOne / ai_FloatZero / cm_DoubleHalf / cm_DoubleOne / ai_FloatHundred ..) makes M10 report
+  every literal reading it. Turning all 264 uses back into literals: 4664 functions, one fell for good
+  (d3sndw_Update), two moved by the declaration set only (ls_ReadSaveHeader, main_RoundReport, G.tiebreak), one rose
+  (he_RunNightWatch). A literal the code keeps where a constant would fold (x * 1.0f) is the text's shape, not an
+  object: he_AllocBurn's `f = 1.0f` joined with the distance is a float local (fld dword [1.0f]), not ai_FloatOne.
+- **Object vs literal at an equal instruction**: an object operand and the literal differ in C2 beyond the bytes:
+  d3sndw_Update's `vol * 0.0f` swaps two reloads at the probe loop latch (4 ins; insensitive to the declaration
+  set, 32 samples) where any float in memory (extern, static, static const) gives byte. Kept as a commented static
+  local; the original's fmul still reads the pooled 0.0f, so its text differs elsewhere (open).
 
 ### .bss, common block and tentative definitions
 

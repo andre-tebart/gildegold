@@ -2103,7 +2103,7 @@ void ord_UpdateStatistics(void)
 
     ord_ComputeStatistics(st);
     memcpy(&ord_Statistics, st, sizeof ord_Statistics);
-    if (ai_RatingBase == ai_FloatZero) {
+    if (ai_RatingBase == 0.0f) {
         ai_Rating = st[5];
         ai_RatingBase = st[5] * 0.95;
     } else
@@ -2535,7 +2535,7 @@ float ord_WeightedRecordSum(int *out)
 float ord_GetStatistics(int *o)
 {
     if (o == 0)
-        return ai_FloatZero;
+        return 0.0f;
     memcpy(o, &ord_Statistics, 0x28);
     o[6] = ORD_RATINGBASE_BITS;
     return ((ORDSTATS *)o)->score;

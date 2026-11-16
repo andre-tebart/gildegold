@@ -150,8 +150,6 @@ extern int ai_PermsDirty;
 extern unsigned char ai_GameState;
 extern int snd_SystemBank;
 extern const int sv_PhaseMinutes[24];
-extern GAPDATA full_rdata_5ebb44[];
-extern GAPDATA full_rdata_5ebb40[];
 extern GAPDATA full_rdata_5ee020[];
 #include "sv_types.h"
 extern char gm_TagGebaeudePROT[24];
@@ -215,7 +213,6 @@ typedef void (*HEALLOC)(AIJOB *ev);     /* an event type's alloc handler (regist
 #define AI_4A63F0_7(p, a, fl, b, c, f, o) ((int (*)(void *, int, unsigned int, int, int, float, int *))ai_PickActionBuilding)(p, a, fl, b, c, f, o)
 #define ai_PickActionBuildingI ((int (*)(struct AIPER *, int, __int64, int, float, int *))ai_PickActionBuilding)  /* 0x4a63f0 with lo an int: @original he_AllocBrawl passes its (null) home building there, the register as it is (push edi; a float parameter would convert it) */
 
-#define ai_FloatHundred (*(float *)&full_rdata_5ebb40)  /* 0x5ebb40, VC6's pooled 100.0f */
 #define AICHAR_FLAGS1C8 0x71  /* the ai_CharInts index of AICHAR.flags1c8 (ai.h, +0x1c8; ai_CharInts starts at +4) */
 #define SLOT(i) ((int *)((unsigned)&he_EventSlots + (i) * 12))
 
@@ -4055,7 +4052,7 @@ void he_AllocInsult(int ev)
         return;
     }
     liking = gm_Mix(b, a, 3);
-    if (util_RandomF() + liking >= ai_FloatOne) {
+    if (util_RandomF() + liking >= 1.0f) {
         cm_SendSetField(a->netId, 0x1c8, 4, 0x400, 0);
         cm_SendSetField(b->netId, 0x1c8, 4, 0x400, 0);
         e->end = ai_Time;
@@ -5053,7 +5050,7 @@ void he_StartTraining(int ev)
             found = (AIJOB *)he_NextEvent();
         } while (found != 0);
     }
-    t->range = (unsigned char)((int)(ai_CharsT[e->chr].skills[t->skill] * (1.0f / 42.0f) + ai_FloatOne) + 2) * 2;
+    t->range = (unsigned char)((int)(ai_CharsT[e->chr].skills[t->skill] * (1.0f / 42.0f) + 1.0f) + 2) * 2;
     t->base = 0x15;
     e->stage = 0;
     e->end = ai_Time;
@@ -5362,10 +5359,10 @@ void he_RunPlague(int ev)
             if (cnt != 0) {
                 a = util_RandomF2();
                 if (a > 0.8f)
-                    a = ai_FloatOne;
+                    a = 1.0f;
                 a = a * cnt;
-                if (!(a > ai_FloatOne))
-                    a = ai_FloatOne;
+                if (!(a > 1.0f))
+                    a = 1.0f;
                 m = (int)a;
                 for (i = 0; i < m; i++) {
                     any = 1;
@@ -5527,7 +5524,7 @@ void he_RunGang(int ev)
         pick[4] = 0xf;
         kind = pick[(unsigned short)util_Random(5)];
         if (b != 0) {
-            lvl = (int)(member->skills[2] * (1.0f / 42.0f) + ai_FloatOne);
+            lvl = (int)(member->skills[2] * (1.0f / 42.0f) + 1.0f);
             loot = ((unsigned short)util_Random((lvl + 1) * lvl) + lvl * 2) * 2;
             v = gm_PlayerFactor(loot, ai_OwnPlayer);
             if (g->members != 0) {
@@ -5590,7 +5587,7 @@ void he_RunGang(int ev)
             for (i = 6; i != 0; i--) {
                 c = (AICHAR *)gm_FindChar(*id);
                 if (c != 0) {
-                    lvl = (int)(c->skills[2] * (1.0f / 42.0f) + ai_FloatOne);
+                    lvl = (int)(c->skills[2] * (1.0f / 42.0f) + 1.0f);
                     for (k = (unsigned short)util_Random(4) + 3; k > 0; k--)
                         sum += ((unsigned short)util_Random((lvl + 1) * lvl) + lvl * 2) * 2;
                     cm_SendChrStop(c->netId);
@@ -5600,7 +5597,7 @@ void he_RunGang(int ev)
                 id++;
             }
             v = gm_PlayerFactor(sum, ai_OwnPlayer);
-            amt = (int)((gm_BuildingSkill(s, 1, 1) * 0.01f + ai_FloatOne) * v);
+            amt = (int)((gm_BuildingSkill(s, 1, 1) * 0.01f + 1.0f) * v);
             cm_SendMoveGoodsUnchecked(leader->netId, -1, ai_OwnPlayer, amt);
             s->roundSums[0] += amt;
             if (leader->kind == 6) {
@@ -6259,7 +6256,7 @@ void he_RunAccidentSim(int ev)
             skill = gm_BuildingSkill((unsigned char *)ai_CharsT[cur].bld, 2, 1);
             if (25.0f - 20.0f * (skill * 0.0125f) > roll) {
                 lim = MIN(MAX(2.0f - skill * 0.0125f, 0.0f), 2.0f);
-                health = gm_AddHealth(cur, -50 - (unsigned short)util_Random((int)(lim * 255.0f + ai_FloatOne)));
+                health = gm_AddHealth(cur, -50 - (unsigned short)util_Random((int)(lim * 255.0f + 1.0f)));
                 b = ai_CharsT[cur].bld;
                 he_CharAccident(e, &ai_CharsT[cur], &ai_CharsT[b->owner], b, health, 0);
             }
@@ -9033,7 +9030,7 @@ void he_RunPatrol(int ev)
                 continue;
             c = (AICHAR *)gm_FindChar(e->patrolGuards[i]);
             if (c != 0 && c->scene != 0) {
-                v = (int)((float)c->sk82 * 0.023809524f + ai_FloatOne);
+                v = (int)((float)c->sk82 * 0.023809524f + 1.0f);
                 for (k = (unsigned short)util_Random(4) + 3; k > 0; k--)
                     sum += (unsigned short)util_Random((v + 1) * v) + v * 2;
                 paid++;
@@ -10551,7 +10548,7 @@ void he_RunExamOffer(int ev)
             else
                 skill = 0.1f;
             worth = gm_GetWorth(c->id);
-            gm_AddHealth(c->id, -(int)((int)gm_CharacterHealth(c) * ((ai_FloatOne - skill) * 0.5f)));
+            gm_AddHealth(c->id, -(int)((int)gm_CharacterHealth(c) * ((1.0f - skill) * 0.5f)));
             pay = (int)(worth * skill * 0.06f);
             cm_SendMoveGoodsUnchecked(((HEEXAMOFFER *)e)->chr, -1, ai_OwnPlayer, pay);
             txt_Format(text, 0x10ba, pay);
@@ -13655,7 +13652,7 @@ void he_RunSabotage(int ev)
         owner = &ai_CharsT[b->owner];
         me = &ai_CharsT[e->chr];
         chance = gm_Mix((int)me, (int)owner, 2);
-        if (util_RandomF() + chance >= ai_FloatOne && ai_InventoryHas(owner, 0x2c0) == 0) {
+        if (util_RandomF() + chance >= 1.0f && ai_InventoryHas(owner, 0x2c0) == 0) {
             txt_Format(text, 0x1735, owner->id, b);
             he_MessageBoxQuickjump(me->netId, -1, text, 0, 0x5f0, b->id, -1, 0, 0);
             if (b->owner != 0xffff) {
@@ -16132,7 +16129,7 @@ int he_PickNearBuilding(AICHAR *c, int n, AIBLD **blds, int *bldId, int *objId)
         }
     }
     for (i = 0; i < n; i++) {
-        score[i] = (float)(gm_BuildingSkill((unsigned char *)blds[i], 9, 1) * 0.0125 + (ai_FloatOne - score[i] / maxDist));
+        score[i] = (float)(gm_BuildingSkill((unsigned char *)blds[i], 9, 1) * 0.0125 + (1.0f - score[i] / maxDist));
         if (best < score[i]) {
             best = score[i];
             pick = i;
@@ -16210,7 +16207,7 @@ void he_RunRoutine(AIJOB *ev)
                                  d3_PointToWorld((D3OBJECT *)b->object, &((D3OBJECT *)b->object)->pos, &to),
                                  dx = from.x - to.x, dy = from.y - to.y, dz = from.z - to.z,
                                  (float)sqrt(dx * dx + dy * dy + dz * dz) < 7000.0f))
-                            && (float)ai_Time.hour < gm_DayStartHours[season] - ai_FloatOne) {
+                            && (float)ai_Time.hour < gm_DayStartHours[season] - 1.0f) {
                             cm_SendCharHalt(c->netId);
                             cm_SendChrGotoBuilding(c->netId, bld, contact, 0, 0, "Go to work");
                             c->flags1c8 |= 0x1000;
@@ -16437,7 +16434,7 @@ void he_RunMarketSupervisor(AIJOB *ev)
         util_Random(10);
         f = (float)(s.stock * (1.0f / 14) * (minutes * (1.0 / 60)));
         f = ((unsigned short)util_Random(100) + 80.0f) * f * 0.01f;
-        if (f != ai_FloatZero && ai_FloatOne > f)
+        if (f != 0.0f && 1.0f > f)
             f = 1.0f;
         if (inStore < s.stock * 0.5) {
             s.daily[0] = (int)(s.daily[0] + f);
@@ -16448,9 +16445,9 @@ void he_RunMarketSupervisor(AIJOB *ev)
             f = (float)(s.stock * (1.0f / 14) * (minutes * (1.0 / 60)));
             s.mean = s.mean - f * 0.6f;
             s.mean = (float)(s.mean > s.demand * 0.25 ? s.mean : s.demand * 0.25);
-            if (ai_FloatOne > s.mean)
+            if (1.0f > s.mean)
                 s.mean = 1.0f;
-            if (ai_FloatOne > f)
+            if (1.0f > f)
                 f = 1.0f;
             cm_SendExSellObject(-1, o->objId, s.item, (int)f, ai_OwnPlayer, 0);
             s.daily[1] = (int)(s.daily[1] + f);
@@ -16485,9 +16482,9 @@ void he_RunMarketSupervisor(AIJOB *ev)
             amount = 0;
         util_Random(10);
         g = (float)(minutes * (1.0 / 60) * (s.demand * (1.0f / 14)));
-        if (g != ai_FloatZero)
+        if (g != 0.0f)
             s.f2c += g;
-        if (s.f2c >= ai_FloatOne) {
+        if (s.f2c >= 1.0f) {
             n = (int)s.f2c;
             s.f2c = s.f2c - n;
         } else {
@@ -16548,7 +16545,7 @@ void he_RunMarketSupervisor(AIJOB *ev)
             have = gm_ListAmount(st, q);
             g = (float)(minutes * (1.0 / 60) * (s.demand * (1.0f / 14)));
             s.f2c += g;
-            if (s.f2c >= ai_FloatOne) {
+            if (s.f2c >= 1.0f) {
                 n = (int)s.f2c;
                 s.f2c = s.f2c - n;
             } else {
@@ -16569,7 +16566,7 @@ void he_RunMarketSupervisor(AIJOB *ev)
             } else {
                 s.mean = (float)(s.mean - g * 0.5);
                 s.mean = (float)(s.mean > s.demand * 0.25 ? s.mean : s.demand * 0.25);
-                if (ai_FloatOne > s.mean)
+                if (1.0f > s.mean)
                     s.mean = 1.0f;
             }
             if (s.demand * 2.5f < s.mean) {
@@ -16597,7 +16594,7 @@ void he_RunMarketSupervisor(AIJOB *ev)
                 continue;
             g = (float)(minutes * (1.0 / 60) * (s2.demand * (1.0f / 14)));
             f = (unsigned short)util_Random(3) + g;
-            fv = (float)gm_FreeCapacity((short *)st, s2.item, (int)(ai_FloatOne > f ? ai_FloatOne : f));
+            fv = (float)gm_FreeCapacity((short *)st, s2.item, (int)(1.0f > f ? 1.0f : f));
             have = gm_ListAmount(st, q);
             if (have < s2.demand * 0.5) {
                 cm_SendExSellObject(st->objId, -1, s2.item, (int)fv, ai_OwnPlayer, 0);
@@ -16606,7 +16603,7 @@ void he_RunMarketSupervisor(AIJOB *ev)
             } else {
                 s2.mean = (float)(s2.mean - g * 0.1);
                 s2.mean = (float)(s2.mean > s2.demand * 0.25 ? s2.mean : s2.demand * 0.25);
-                if (ai_FloatOne > s2.mean)
+                if (1.0f > s2.mean)
                     s2.mean = 1.0f;
             }
             if ((unsigned short)util_Random(100) > 75)
@@ -16748,7 +16745,7 @@ void he_RunKidnap(AIJOB *ev)
                 sum += ((AICHAR *)gm_FindChar(ev->ids[k]))->skills[3];
             }
         }
-        ratio = (float)((gm_BuildingSkill((unsigned char *)b, 0xf, 1) * 0.01f + 1.0) * ((n * 0.1f + ai_FloatOne) * (sum / n))
+        ratio = (float)((gm_BuildingSkill((unsigned char *)b, 0xf, 1) * 0.01f + 1.0) * ((n * 0.1f + 1.0f) * (sum / n))
                 / victim->skills[3]);
         if (util_RandomF() + 0.5f < ratio)
             ok = 1;
@@ -17341,7 +17338,7 @@ void he_RunBurglary(AIJOB *ev)
             gm_BuildingValues(b, vals);
             money = vals[0];
             money = (int)(((unsigned short)util_Random(50) * 0.001f + 1.0) * money);
-            money = (int)((gm_BuildingSkill(g, 1, 1) * 0.0025f + ai_FloatOne) * money);
+            money = (int)((gm_BuildingSkill(g, 1, 1) * 0.0025f + 1.0f) * money);
             money = money < 0 ? 0 : money;
             txt_Format(line, "$Z%T$A", money);
             strcat(loot, line);
@@ -18230,6 +18227,7 @@ void he_AllocBurn(AIJOB *ev)
     D3VECTOR4 p1, p2;
     float dx, dy, dz;
     double f;
+    float scale;  /* a float: the original keeps the 1.0f a load (fld dword [1.0f]) joined with the distance */
 
     memset(x->helpers, -1, sizeof x->helpers);
     ev->end = ai_Time;
@@ -18247,10 +18245,11 @@ void he_AllocBurn(AIJOB *ev)
         dx = p1.x - p2.x;
         dy = p1.y - p2.y;
         dz = p1.z - p2.z;
-        f = sqrt(dx * dx + dy * dy + dz * dz) * 0.001;
+        scale = sqrt(dx * dx + dy * dy + dz * dz) * 0.001;
     } else {
-        f = ai_FloatOne;
+        scale = 1.0f;
     }
+    f = scale;
     if (f > 1.5)
         f = 1.5;
     ev->exSlot = -1;
@@ -18621,7 +18620,7 @@ void he_RunHealing(AIJOB *ev)
         d = gm_MinutesBetween(&ev->clock60, &ai_Time);
         step = 5.0f * ((float)d * 0.1f);
         v = gm_HealthRatio((short *)c) * 100.0;
-        if (x->amount > 0 && step + v < ai_FloatHundred) {
+        if (x->amount > 0 && step + v < 100.0f) {
             gm_AddHealth(c->id, (int)step);
             x->amount = (int)((double)x->amount - step);
             ev->end = ai_Time;
@@ -19030,7 +19029,7 @@ void he_RunNightWatch(AIJOB *ev)
     season = gm_ClockSeason(&ai_Time);
     switch (ev->stage) {
     case 0:
-        if (!(ai_Time.hour >= gm_DayStartHours[season] && ai_Time.hour < gm_DayStartHours[season] + ai_FloatOne)) {
+        if (!(ai_Time.hour >= gm_DayStartHours[season] && ai_Time.hour < gm_DayStartHours[season] + 1.0f)) {
             ev->end = ai_Time;
             break;
         }
@@ -19058,7 +19057,7 @@ void he_RunNightWatch(AIJOB *ev)
         ev->stage++;
         return;
     case 1:
-        if (!(ai_Time.hour >= gm_DayEndHours[season] && ai_Time.hour < gm_DayEndHours[season] + ai_FloatOne)) {
+        if (!(ai_Time.hour >= gm_DayEndHours[season] && ai_Time.hour < gm_DayEndHours[season] + 1.0f)) {
             ev->end = ai_Time;
             break;
         }
@@ -21597,7 +21596,7 @@ void he_RunConstruction(int ev)
             d3_InflateObject((D3OBJECT *)bld->object);
         if (((D3OBJECT *)bld->object)->material != 0
             && d3t_GetBoundingSphere((D3OBJECT *)bld->object, d3_Camera, &v, &best) != 0) {
-            size = (int)(best * cm_EffectRadiusScale);
+            size = (int)(best * 1.8);
             sc = evt_Load("Effekte/geb_bauen.esc");
             if (sc != 0) {
                 evt_RunScriptArgs(sc, 6, (int)v.x, (int)v.y, (int)v.z, (int)best, size, bld->object);
@@ -21921,7 +21920,7 @@ void he_AllocResearchRecipe(int ev)
     if (p == 0)
         goto done;
     r->progress = ahm_ResearchProgress((char *)c, p, &r->start);
-    if (r->progress <= ai_FloatZero)
+    if (r->progress <= 0.0f)
         goto done;
     r->amount = r->start;
     r->clock = ai_Time;
@@ -22010,7 +22009,7 @@ void he_AllocTrainShare(int ev)
     if (c == 0)
         goto done;
     r->progress = ahm_ShareProgress((char *)c, r->id, &r->start);
-    if (r->progress <= ai_FloatZero)
+    if (r->progress <= 0.0f)
         goto done;
     r->amount = r->start;
     r->clock = ai_Time;
@@ -22044,7 +22043,7 @@ void he_RunTrainShare(int ev)
     season = gm_ClockSeason(&ai_Time);
     share = 0;
     c = (AICHAR *)gm_FindChar(r->chr);
-    if (c == 0 || ahm_HasRecord((char *)c) == 0 || (share = ahm_Share((char *)c, r->id)) <= ai_FloatZero)
+    if (c == 0 || ahm_HasRecord((char *)c) == 0 || (share = ahm_Share((char *)c, r->id)) <= 0.0f)
         e->stage = -2;
     if (e->stage == -2 || e->stage == -1) {
         he_FreeEvent((int *)ev);
@@ -22153,20 +22152,20 @@ void he_RunAlchemistDay(int ev)
     e->end.hour = util_RandomU((int)(gm_DayEndHours[season] - gm_DayStartHours[season])) + (int)gm_DayStartHours[season];
     e->end.min = util_RandomU(4) * 15;
     if (d->bonus != 0) {
-        ahm_SendAddValue((char *)c, (util_RandomF() + ai_FloatOne) * 0.25f);
+        ahm_SendAddValue((char *)c, (util_RandomF() + 1.0f) * 0.25f);
         d->bonus = 0;
         cm_SendExSetHEI(0, ev);
         return;
     }
     state = ahm_ResearchState(c->bld, &id, &done, 1);
-    if ((util_RandomF() + ai_FloatOne) * 0.25f > rec->value) {
+    if ((util_RandomF() + 1.0f) * 0.25f > rec->value) {
         he_LabIncident(c, ev, c->bld, state);
         cm_SendExSetHEI(0, ev);
         return;
     }
     switch (state) {
     case 1:
-        delta = -((util_RandomF() + ai_FloatOne) * 0.1f);
+        delta = -((util_RandomF() + 1.0f) * 0.1f);
         break;
     case 2:
         delta = -(util_RandomF() * 0.15f + 0.1f);
@@ -22673,7 +22672,7 @@ int he_SecretRoomAccuse(AICHAR *a, AICHAR *b, int c)
     if (slot >= 0) {
         fa = gm_GetSkill((char *)a, 4);
         fb = gm_GetSkill((char *)b, 4);
-        if (fa - fb * 0.5f + util_RandomF() >= ai_FloatOne) {
+        if (fa - fb * 0.5f + util_RandomF() >= 1.0f) {
             if (b->bld2 != 0)
                 id = b->bld2->id;
             else if (b->bld != 0)
@@ -23296,7 +23295,7 @@ void he_RunDecay(int ev)
         agent = (AICHAR *)gm_FindChar(d->agent);
         if (victim != 0 && per != 0 && agent != 0) {
             if (d->aged != 0) {
-                chance = ai_FloatOne - gm_GetSkill((char *)agent, 1);
+                chance = 1.0f - gm_GetSkill((char *)agent, 1);
                 if (!(util_RandomF() + chance > 1.0))
                     told = 1;
                 else
@@ -23619,7 +23618,7 @@ void he_AllocMasterWork(int ev)
    master who is not at work of it (he_MessageBoxQuickjump: the texts 0x4222 / 0x4223 / 0x4224 at a gypsy camp,
    0x412c / 0x412d / 0x412e else; a full store 0x4225 / 0x412f; the voices "_NACHRICHTEN_ZIGEUNER_03" /
    "_NACHRICHTEN_FRIEDHOF_01"); then the workers leave the group and the event is freed. The 1.0f is a literal
-   (pooled with bio.c's ai_FloatOne at 0x5eb780): spelled as ai_FloatOne VC6 loads it first and keeps the rate on
+   (VC6's pooled 1.0f, 0x5eb780): spelled as an object VC6 loads it first and keeps the rate on
    the FPU stack (fld / fadd st, st(1)), which the original's fadd [0x5eb780] does not. */
 void he_RunMasterWork(int ev)
 {
@@ -24213,7 +24212,7 @@ void he_SpreadMeetingDisease(AIBLD *b, int radiusKind, int kind, int group)
                 mode = 1;
             else
                 continue;
-            v = he_CatchMeetingDisease(ch, (ai_FloatOne - dist / lim) * 0.5f + 0.25f, kind, &f);
+            v = he_CatchMeetingDisease(ch, (1.0f - dist / lim) * 0.5f + 0.25f, kind, &f);
             if (v != 0) {
                 if (mode == 3)
                     he_CharIllness(0, ch, owner, rec, v, f);
@@ -25627,12 +25626,12 @@ void he_CircusShowIncome(int ev, int n)
     gm_FindById(&bld, 0, 0, e->from);
     if (bld == 0)
         return;
-    rate = gm_BuildingSkill(bld, 0x1d, 1) * 0.0166666675f + ai_FloatOne;
+    rate = gm_BuildingSkill(bld, 0x1d, 1) * 0.0166666675f + 1.0f;
     skill = gm_GetSkill((char *)per, 2);
     base = skill * skill;
     for (i = n; i > 0; i--)
         m->income += (int)(((util_RandomF() + base) * 75.0 + 25.0) * rate) * 0x20;
-    if (util_RandomF() + ai_FloatOne < rate) {
+    if (util_RandomF() + 1.0f < rate) {
         for (i = 0; i < 4; i++) {
             if (m->objs[i] == 0) {
                 if (util_RandomF() > 0.4)
@@ -25780,7 +25779,7 @@ void he_EventGoodRefund(AICHAR *per)
 
     f = gm_GoodsPrice(0x2b7, ai_OwnPlayer);
     cm_SendMoveGoodsUnchecked(per->netId, -1, ai_OwnPlayer,
-                              (int)((util_RandomF() * 2.0f + ai_FloatOne) * f));
+                              (int)((util_RandomF() * 2.0f + 1.0f) * f));
 }
 /* 0x5755c0, copies the INI path `s` to 0x6fa0e0 and loads "Game" / "message_filter_mask" from it (GetPrivateProfileIntA) into 0x6f263c */
 

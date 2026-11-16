@@ -70,9 +70,6 @@ const volatile unsigned __int64 gypsyFilter = 0x1a7fdfbb6;  /* 0x5eed68 (volatil
 #define ai_FallbackBuildingB (*(unsigned char **)&ai_FallbackBuilding)  /* 0x6f230c, ai_FallbackBuilding (sv.c: char *) read bytewise, as this unit does */
 #define ai_PlayerBuildingB (*(unsigned char **)&ai_PlayerBuilding)  /* 0x6f2308, ai_PlayerBuilding (sv.c: char *) read bytewise, as this unit does */
 #define ai_CharsC (*(char (*)[768 * 0x21c])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) read flat, as this unit does */
-extern __declspec(align(1)) unsigned char full_rdata_5ebb40[];  /* main.c's rdata gap block */
-#define ai_FloatHundred (*(float *)&full_rdata_5ebb40)  /* 0x5ebb40, VC6's pooled 100.0f (main.c's rdata gap block; cm.c, he.c and lc.c read it too) */
-extern double cm_DoubleOne;  /* 0x5eb8a8, cm.c: the shared double 1.0 (a VC6 pooled literal; cm.h is not included here) */
 #define ai_CharsK ((AICHARKINDVIEW *)((char *)ai_Chars + 2))  /* 0x770b82, the records from their kind byte (ai_HasQuicksavePlayer walks them so) */
 
 extern OPTIONBYTES ai_GfxSet, ai_GfxFog, ai_GfxResolution, ai_GameSwitches, ai_GamePanel, ai_OptionPanelHelp;
@@ -1173,7 +1170,7 @@ void ai_ApplyGfxOptions(void)
     }
     d3_ApplyGraphicsOptionsB(ai_GfxFloor, 0, 2 - ai_GfxTextureScale, changed, 0);
     if (ai_PlayerBuildingB == 0 && ai_FallbackBuildingB == 0)
-        d3o_FogScale = cm_DoubleOne - ai_GfxFog.byte[0] * 0.01;
+        d3o_FogScale = 1.0 - ai_GfxFog.byte[0] * 0.01;
     for (i = 0; i < 0x300; i++) {
         c = ch_List[i];
         if (c != 0 && c->scene == d3_Scenes)
@@ -2993,7 +2990,7 @@ void ai_CurseTargetWindow(int building)
                 when.hour += ev->done ? 0 : 2;
                 elapsed = gm_MinutesBetween((struct AITIME *)&ev->from, (struct AITIME *)&ai_Time);
                 total = gm_MinutesBetween((struct AITIME *)&ev->from, (struct AITIME *)&when);
-                d2_SetObjValue4(share, 0, 100, (int)(min((float)elapsed / total, ai_FloatOne) * ai_FloatHundred));
+                d2_SetObjValue4(share, 0, 100, (int)(min((float)elapsed / total, 1.0f) * 100.0f));
             } else {
                 memcpy(&when, &ai_Time, sizeof(AITIME));
                 gm_AddTime((struct AITIME *)&when, 0x18, 0, 0);
@@ -4047,7 +4044,6 @@ void ai_PositionShare(float a, float b, SPHEREVOLUME *rec, float *out)
    *=, D3VECTOR-typed velocity (the dir copy as a struct as... */
 int ai_InitShot(SHOTREC *shot, D3VECTOR *pos, D3VECTOR *dir, float charge, float size, float density)
 {
-    extern float ai_FloatZero;
     /* @original the call goes through a pointer: the original calls ai_GetDefaultEffect first and keeps the
        record in edx across ai_SphereVolume; a direct call VC6 sinks to the wind copy (it knows the callee) */
     EFFECTREC *(*get)(void) = (EFFECTREC *(*)(void))ai_GetDefaultEffect;
@@ -4062,7 +4058,7 @@ int ai_InitShot(SHOTREC *shot, D3VECTOR *pos, D3VECTOR *dir, float charge, float
     shot->velStart.v.z = shot->velStart.speed * shot->velStart.v.z;
     shot->vel = shot->velStart;
     shot->wind = *wind;
-    shot->wind.scale = MAX(MIN(shot->wind.scale, ai_WindGain), ai_FloatZero);
+    shot->wind.scale = MAX(MIN(shot->wind.scale, ai_WindGain), 0.0f);
     shot->wind.pos[0] = shot->wind.scale * shot->wind.pos[0];
     shot->wind.pos[1] = shot->wind.scale * shot->wind.pos[1];
     shot->wind.pos[2] = shot->wind.scale * shot->wind.pos[2];
@@ -4092,16 +4088,16 @@ int ai_ScatterShot(SHOTREC *shot, float sideSpread, D3VECTOR *side, float otherS
 
     if (shot->steps != 0)
         return 0;
-    k = (util_RandomF() * 1.5f - ai_FloatOne) * speedSpread + ai_FloatOne;
+    k = (util_RandomF() * 1.5f - 1.0f) * speedSpread + 1.0f;
     shot->velStart.v.x = k * shot->velStart.v.x;
     shot->velStart.v.y = k * shot->velStart.v.y;
     shot->velStart.v.z = k * shot->velStart.v.z;
     shot->velStart.speed = k * shot->velStart.speed;
-    k = sideSpread * (shot->velStart.speed * (util_RandomF() * 2.0f - ai_FloatOne));
+    k = sideSpread * (shot->velStart.speed * (util_RandomF() * 2.0f - 1.0f));
     dside.x = k * side->x;
     dside.y = k * side->y;
     dside.z = k * side->z;
-    k = otherSpread * (shot->velStart.speed * (util_RandomF() * 2.0f - ai_FloatOne)) + ai_FloatOne;
+    k = otherSpread * (shot->velStart.speed * (util_RandomF() * 2.0f - 1.0f)) + 1.0f;
     dother.x = k * other->x;
     dother.y = k * other->y;
     dother.z = k * other->z;
@@ -4121,7 +4117,7 @@ int ai_ScatterShot(SHOTREC *shot, float sideSpread, D3VECTOR *side, float otherS
 /* ai_StepShot and ai_StepShotSlow: the sign with the shared 0 / 1 (ai_FloatZero, ai_FloatOne); the drag
    0.5 * density * coefficient * area * v^2 signed with v; the products nested as the original multiplies them
    (VC6 reorders an unnested chain), the wind's x / z drag in another order than its y and the flight drags */
-#define SIGN(v) ((v) > ai_FloatZero ? ai_FloatOne : -1.0f)
+#define SIGN(v) ((v) > 0.0f ? 1.0f : -1.0f)
 #define DRAG(v) ((((((SIGN(v) * shot->area) * ai_ShotDrag) * ai_AirDensity) * (v)) * (v)) * 0.5f)
 #define WINDDRAG(v) (((((shot->area * v) * v) * SIGN(v)) * ai_ShotDrag) * ai_AirDensity) * 0.5f
 
@@ -4162,7 +4158,6 @@ int ai_StepShot(SHOTREC *shot)
     float height;
     D3VECTOR4 v, next, wind, d, a, b, m;
 
-    extern float ai_FloatZero;
 
     if (shot->state != 1)
         return 0;
@@ -4270,7 +4265,6 @@ int ai_StepShotSlow(SHOTREC *shot)
     float height;
     D3VECTOR4 v, next, wind, d, a, b, m;
 
-    extern float ai_FloatZero;
 
     if (shot->state != 1)
         return 0;
@@ -4370,7 +4364,7 @@ int ai_ShotHitsGround(D3SM *map, D3VECTOR *from, D3VECTOR *to, int px, int pz, i
             return 1;
         return 0;
     }
-    step = ai_FloatOne / (float)sqrt((float)(dz * dz) + (float)(dx * dx));
+    step = 1.0f / (float)sqrt((float)(dz * dz) + (float)(dx * dx));
     t = 0;
     d.x = to->x - from->x;
     d.y = to->y - from->y;
@@ -4393,7 +4387,7 @@ int ai_ShotHitsGround(D3SM *map, D3VECTOR *from, D3VECTOR *to, int px, int pz, i
             return 1;
         }
         t += step;
-    } while (t < ai_FloatOne);
+    } while (t < 1.0f);
     return 0;
 }
 /* 0x5dd090, the 0 .. ai_WindGain (60) clamp divided by ai_WindGain (69 B): 0 when <= 0, 1 when >= 60,
