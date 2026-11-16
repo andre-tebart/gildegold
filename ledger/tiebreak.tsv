@@ -866,7 +866,7 @@ exe	0x00448200	d3if_LoadSprite	d3_interface	d5770ee02d234ee9	no	byte	control=byt
 exe	0x00448270	d3if_DrawSprite	d3_interface	74c0cc71d1c16be1	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00448540	d3if_PickCB	d3_interface	9f6f0663d2d524f3	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00448630	d3if_Pick	d3_interface	0fa66297033dc34f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x004486e0	d3if_ScreenBox	d3_interface	a9d4c4fbdcc7cc2d	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	ac7be0bf90775364
+exe	0x004486e0	d3if_ScreenBox	d3_interface	a9d4c4fbdcc7cc2d	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	8608b94ca020d035
 exe	0x00448910	d3if_CreateCameras	d3_interface	ea8c37187df136f0	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00448a50	d3if_ClearView	d3_interface	d9903c1d453aec0a	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00448ac0	d3_YawTo	d3_interface	46a6b13ec1093be1	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	ac7be0bf90775364

@@ -2704,6 +2704,10 @@ the stack at every instruction.
   store; `fmulp` at its last use only when the result goes to a stack local. A once-used scaled
   parameter folds into its use; `size * sx` at every use (or an aggregate initializer) gives the early multiply.
   A scale for the last `fmul [mem]` is a float declared in the if block.
+  `fmulp; fadd [m]; call _ftol` (ours `fmul st,st(1) .. call _ftol .. fstp st(0)`, the dying factor popped late):
+  the sum went into a float local converted at two uses, `y = .. * f + c; r->top = min(r->top, (int)y); r->bottom
+  = max(r->bottom, (int)y);` (one `_ftol`, the result stored over f's slot); an int local `iy = (int)(..)` and every
+  single-use float local are folded to the control (d3if_ScreenBox byte).
 - **Unsigned ints into a macro using them three times**: pass straight; a float local spills (~1000 asm lines,
   d3fl_Draw).
 - **`if ((g = f()) < best)`** gives `fld st(0); fcomp`, split gives `fcom`. `x = (float)(p->m - 2.0)` stores before

@@ -807,7 +807,7 @@ char d3if_ScreenBox(D3OBJECT *obj, D3RECT *r)
     D3BOXVERT *b;
     D3OBJINFO *info;
     float f, x, y, s;
-    int i, ix, iy;
+    int i;
 
     if (r && obj) {
         if (obj->type == 0) {
@@ -831,12 +831,12 @@ char d3if_ScreenBox(D3OBJECT *obj, D3RECT *r)
             r->right = -0x10000;
             for (i = 0; i < 8; i++) {
                 f = 1.0f / b[i].z;
-                ix = (int)(d3_ScaleX * b[i].x * f + d3_CenterX);
-                r->left = min(r->left, ix);
-                r->right = max(r->right, ix);
-                iy = (int)(d3_ScaleY * b[i].y * f + d3_CenterY);
-                r->top = min(r->top, iy);
-                r->bottom = max(r->bottom, iy);
+                x = d3_ScaleX * b[i].x * f + d3_CenterX;
+                r->left = min(r->left, (int)x);
+                r->right = max(r->right, (int)x);
+                y = d3_ScaleY * b[i].y * f + d3_CenterY;
+                r->top = min(r->top, (int)y);
+                r->bottom = max(r->bottom, (int)y);
             }
             r->left = max(r->left, d3_Viewport.left);
             r->right = min(r->right, d3_Viewport.right - 1);
