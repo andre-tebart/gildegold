@@ -9908,27 +9908,28 @@ G6RING *ai_NextNearRingEntry(void)
    ai_NearRing[i].who; applicant count its own local nrivals; the column 1..3 arm as three arms (col==1
    {2,3} / col==2 {1,3} / else {1,2}: the constant 3 gets a third reference, takes ecx, the scratch
    rotation of all column loops falls in place); (G5CH *)rivals[j] == ai_NearRing[i].who. Left: the
-   original keeps g in edi over the whole up block outside the loop bodies: mov edi,[g] before cmp edi,3/6
-   (0x4a3fb1), again at the up[0] loop exit (0x4a408b, the n<=0 skip edge jumps past it, so edi=g survives
-   the up[0] head's call) and at the up[1] exit before cmp edi,4/7 (0x4a4157). Ours: g (web prio -265, no
-   global register) gets two pieces of refs 2 (one per test, eax), no piece over the between region. c2dag:
-   g refs at the tests and the five level loops only. Tried, no change (= control): g block-local in the
-   else, switch (g) {case 3: case 6:}, extra braces, 1 >= abs(..); worse: else-if for the down test, two
-   ifs for up[0]/up[1], if (g == 3) around up[1], abs(g - level), < 2. Probes: a store of g after the up[0]
-   loop gives test1 edi (the between region needs a g reference or edi free there); flip.py --want 'mov
-   edi, _g' only hits deleting the applicants' if (i < cnt) / o->id read (global pressure, meaning
-   changes). climb --rounds 2 from here: nothing. Next: find what holds edi (or blocks the piece) in the
-   between region (constant-1 piece? ring pointer k# candidates), c2trace SAV/SPLITMARK for _g@ blocks
-   72..93. prior: read in full against the original (all 11 column loops, the applicants and the
-   768-character pass, the difficulty bias, the cursor setup) and reconciled: AMTREC/AMTKIND buffers,
-   ai_NearRing[cnt] stores, unbounded no-office loops, abs(level-g) <= 1, if (cnt > 3) order, int count
-   (idiv). Left is allocation: o held in a stack slot instead of esi at 0x4a3b33 (- mov esi,[esp+0x30] / +
-   mov [esp+0x10],eax; mov esi,[esp+0x10]) and 0x4a3bbb (+ jmp; mov esi,[esp+0x10]); the constant 3 in ecx
-   at 0x4a3d58/0x4a3d72 (+ mov ecx,3; cmp esi,ecx / - cmp esi,3); in the 768 pass the original walks
-   &o->kind in [esp+0x10] and keeps f in edx (0x4a4495..0x4a4567: + cmp word ptr [edi],0xffff; mov edx,1 /
-   - mov dx,[edi]; cmp dx,0xffff; mov [esp+0x10],1); 0x4a3f18 (-58) and 0x4a4393 (+65) are one loop copy
-   the aligner pairs one copy off (the 11 loops are identical up to slots); 12 branch targets differ by
-   these si... */
+   original loads g once into edi for the up test (0x4a3fb1 cmp edi,3/6) and keeps it to the down test (cmp
+   edi,4/7), reloading edi at each up-loop exit (0x4a408b after up[0], 0x4a4157 after up[1]; the n<=0 skip
+   edges and the test1-false edge jump past the reloads): a load of g that lives across the up block's
+   calls in a callee-saved register. Ours loads g into eax at each test. The c2trace pieces of g (82/83,
+   eax) do not change even in a probe that gives test1 edi (a store of g after the up[0] loop): the edi
+   value is a cross-block reuse of the g load, not those pieces; a use of g at depth 0 between the up loops
+   makes it span. Tried, = control: g block-local in the else, switch (g) {case 3: case 6:}, extra braces,
+   1 >= abs(..), declaration order / unsigned g; worse: else-if or g != 3 && g != 6 && .. for the down
+   test, two ifs for up[0]/up[1], if (g == 3) around up[1], down block first, abs(g - level), < 2. flip.py
+   --want 'mov edi, _g' hits only meaning-changing deletions in the applicants block. climb --rounds 4
+   --beam 6 (seed 7) and --rounds 2: nothing below 13. Next: find what makes VC6 reuse the test's g load
+   across the up block (c2trace of the probe variant: which candidate/temp holds edi there), or a code-free
+   g reference between the up loops. prior: read in full against the original (all 11 column loops, the
+   applicants and the 768-character pass, the difficulty bias, the cursor setup) and reconciled:
+   AMTREC/AMTKIND buffers, ai_NearRing[cnt] stores, unbounded no-office loops, abs(level-g) <= 1, if (cnt >
+   3) order, int count (idiv). Left is allocation: o held in a stack slot instead of esi at 0x4a3b33 (- mov
+   esi,[esp+0x30] / + mov [esp+0x10],eax; mov esi,[esp+0x10]) and 0x4a3bbb (+ jmp; mov esi,[esp+0x10]); the
+   constant 3 in ecx at 0x4a3d58/0x4a3d72 (+ mov ecx,3; cmp esi,ecx / - cmp esi,3); in the 768 pass the
+   original walks &o->kind in [esp+0x10] and keeps f in edx (0x4a4495..0x4a4567: + cmp word ptr
+   [edi],0xffff; mov edx,1 / - mov dx,[edi]; cmp dx,0xffff; mov [esp+0x10],1); 0x4a3f18 (-58) and 0x4a4393
+   (+65) are one loop copy the aligner pairs one copy off (the 11 loops are identical up to slots); 12
+   branch targets differ by these si... */
 void ai_FillNearRing(AICHAR *c)
 {
     G5CH *p = (G5CH *)c;
