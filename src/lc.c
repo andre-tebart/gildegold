@@ -29772,19 +29772,9 @@ int gv_SetTableRecord(struct AICHAR *c, int i, int v);   /* 0x4f2750 */
 
 int ai_LawPrivilegeWindow(AICHARREC *me, LCORDMSG *m)
 {
-    int base;
     int flag;
     AICHARREC *owner;
-    int apply;
     int ret;
-    int win;
-    int word;
-    int t;
-    int ctrl;
-    int ctrl2;
-    int h;
-    int v;
-    int from;
 
     ret = 0;
     if (m->kind == 3) {
@@ -29814,11 +29804,18 @@ int ai_LawPrivilegeWindow(AICHARREC *me, LCORDMSG *m)
         cm_SendSetField(owner->netId, 0x1c8, 4, flag, 0);
     }
     if (me->kind == 6) {
+        int base = 0;
+        int apply = 1;
+        int ctrl2 = -1;
+        int win;
+        int word;
+        int t;
+        int ctrl;
+        int h;
+        int v;
+        int from;
         AIDEC rec = {0};
 
-        base = 0;
-        apply = 1;
-        ctrl2 = -1;
         if (gv_GetTableRecord(m->law, &rec) == 0)
             return 0;
         word = rec.id * 5 + 0x13fd;

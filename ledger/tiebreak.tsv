@@ -4529,7 +4529,7 @@ exe	0x005c9990	ai_BlackmailContactWindow	lc	f102d2542347f2ed	no	byte	control=byt
 exe	0x005c9c50	ai_BlackmailContact	lc	7a58f0b1cf79d645	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
 exe	0x005c9df0	ai_IntimidateWindow	lc	a4fb4b693df3d999	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005c9ff0	ai_IntimidateContact	lc	b1fe30deb28770d7	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
-exe	0x005ca150	ai_LawPrivilegeWindow	lc	ed9f0b9994c8e565	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
+exe	0x005ca150	ai_LawPrivilegeWindow	lc	ed9f0b9994c8e565	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	e8239d145522bd75
 exe	0x005ca560	ai_DismissOfficeAsk	lc	bbf3db204bfdd533	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
 exe	0x005ca860	ai_MisappropriationWindow	lc	d6bd0b1e31736e27	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005caab0	ai_BewitchWindow	lc	b48e7c378437db58	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
