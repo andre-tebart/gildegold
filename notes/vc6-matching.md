@@ -1590,7 +1590,10 @@ Frame size, slot order, holes, shared slots, dead parameter slots, block-scoped 
   had one block-scoped pair per path (`{ AIARG s1, s2; ... }` in the sub-action-2 arm and in the usable-good
   arm): the merged slots enter the table differently (ai_DecideUseSafetyObject 59 -> 22, then byte with the
   Dynasty tail `if (r != 0) { *o1 = s1; *o2 = s2; } return r;` at both call sites, which also moved the final
-  `xor eax,eax` before the pops). Declaration order, names, goto vs flat tails were no lever.
+  `xor eax,eax` before the pops). Declaration order, names, goto vs flat tails were no lever. The same tail
+  written out at each `ai_ChooseSubAction` site (no `goto done`, no `if (r == 0) return 0;`) is the whole lever when
+  the only hunk is `pop edi; xor eax,eax` against the original's `xor eax,eax; pop edi` in the final `return 0`
+  (ai_DecidePamphlets, ai_DecideDenounce, ai_DecideUseEducationObject byte).
 
 ### Frame bigger or smaller: vectors and padded arrays
 
