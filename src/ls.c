@@ -327,8 +327,8 @@ void ls_RefsToIds(void)
     G17STAT *p;
 
     d3if_SelectScene(0, 1);
-    for (k = 0; k < 0xa900; k += 0xa9) {
-        b = (AIBLD *)(ai_Blds + k);
+    for (k = 0; k < 0x100; k++) {
+        b = &((AIBLD *)ai_Blds)[k];
         if (b->type != 0 && b->object != 0)
             ((D3OBJECT *)b->object)->owner = (void *)b->id;
     }
@@ -388,14 +388,14 @@ int ls_RelinkScene(int f)
     AIBLD *b;
 
     d3if_SelectScene(0, 1);
-    for (k = 0; k < 0xa900; k += 0xa9) {
-        b = (AIBLD *)(ai_Blds + k);
+    for (k = 0; k < 0x100; k++) {
+        b = &((AIBLD *)ai_Blds)[k];
         if (b->type != 0 && b->object != 0)
             ((D3OBJECT *)b->object)->owner = (void *)b->id;
     }
     d3_SaveScene(0, f);
-    for (k = 0; k < 0xa900; k += 0xa9) {
-        b = (AIBLD *)(ai_Blds + k);
+    for (k = 0; k < 0x100; k++) {
+        b = &((AIBLD *)ai_Blds)[k];
         if (b->type != 0 && b->object != 0)
             ((D3OBJECT *)b->object)->owner = b;
     }

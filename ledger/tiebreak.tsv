@@ -3247,9 +3247,9 @@ exe	0x00519010	ls_LanguageOf	ls	73993bffcdb1144a	no	byte	control=byte p1=byte p2
 exe	0x005190a0	ls_GetLanguage	ls	517f35151cd9fe36	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005190b0	ls_SaveGame	ls	60b97d924835d6b9	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x005194c0	ls_WriteSaveHeader	ls	447b4574342f9cea	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x00519a00	ls_RefsToIds	ls	ed01be5dc39b9322	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	41b5d4fb7350ddfa
+exe	0x00519a00	ls_RefsToIds	ls	ed01be5dc39b9322	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	082ad48050f51096
 exe	0x00519aa0	ls_IdsToRefs	ls	3211380d6f3e4fae	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x00519b50	ls_RelinkScene	ls	16535092489e2713	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	41b5d4fb7350ddfa
+exe	0x00519b50	ls_RelinkScene	ls	16535092489e2713	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	082ad48050f51096
 exe	0x00519bf0	ls_WriteObjects	ls	c69fa5837e8f86de	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	c3ca37be86a9d0e6
 exe	0x00519d20	ls_WriteBuildings	ls	57a0d93b839c4d88	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0051a1a0	ls_WritePlayerRecords	ls	f014d902c9b891ee	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft	

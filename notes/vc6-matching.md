@@ -674,7 +674,8 @@ Rotation, test position, countdown, induction variables and strength reduction, 
 - **A byte-offset do-while over a global record pointer (`off += 0x43; while (off < 0x14f218)`) with `[off+base]`
   operands where the original has `[base+off]`**: `for (i = 0; i < N; i++) { o = &tab[i]; ..}`; the counting
   loop before it (`mov ecx,N; .. dec ecx; jne`) was an index loop too. No spelling of the offset form moved the
-  operand order (ls_WriteObjects byte).
+  operand order (ls_WriteObjects byte; the same lever: ls_WriteRelations, ls_ReadRelations, ls_RefsToIds,
+  ls_RelinkScene, gm_ClearObjects, init_SceneNameToPrototype - all byte from a byte-offset loop).
 
 - **`lea eax,[ecx-8]; cmp eax,end` at a row loop's end (ours), the original `cmp ecx,end+8`**: the row pointer
   walk with an int-cast bound was `for (i = 0; i < 0x20; i++) { row = &tab[i]; ... }`: VC6 compares its field
