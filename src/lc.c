@@ -4677,10 +4677,10 @@ void ai_StoneKontorContact(AIBLD *bld)
     int ziel;
 
     lager = 0;
-    abbau = 0;
-    stein = 0;
     produktion = 0;
+    stein = 0;
     transport = 0;
+    abbau = 0;
     gelage = 0;
     stroh = 0;
     ziel = 0;
