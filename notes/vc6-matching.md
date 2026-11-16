@@ -361,7 +361,9 @@ Which arm is inline, jumps into another arm, threaded and redundant tests, `&&` 
   paths: `if (show) { if (h == -1) h = Open(); } else if (h != -1) { Close(h); h = -1; } if (h != -1) {
   print }`. No return / goto / nesting / flag / loop / swapped-arm spelling of `if (..) hide else { open; if (h
   == -1) return; print }` moved it (sv_UpdateQuickChat byte). A text in `<<< === >>>` with `"a\\b"` may not
-  apply / loses the backslash: give such a function whole from a generator.
+  apply / loses the backslash: give such a function whole from a generator. Same in d3_LoadGroup: `if (first &&
+  parent) AddChild` moved behind the version if/else (decided false on the bad-version path) put the exit
+  behind it, the bad-version `fclose` out of line.
 - **Each arm of a switch case ending in its own `return 0`** where the original's skip tests jump to another
   case's `return 0` block: one more `return` per arm (main_WindowProc WM_ACTIVATEAPP byte).
 

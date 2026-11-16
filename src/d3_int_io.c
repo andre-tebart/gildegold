@@ -658,10 +658,10 @@ D3OBJECT *d3_LoadGroup(char *name, void *f, D3OBJECT *parent)
                 first = rd_object(in, parent, version, 1);
             if (!f)
                 vfs_fclose(in);
-            if (first && parent)
-                d3_AddChild(parent, first);
         } else if (!f)
             vfs_fclose(in);
+        if (first && parent)
+            d3_AddChild(parent, first);
     }
     return first;
 }
