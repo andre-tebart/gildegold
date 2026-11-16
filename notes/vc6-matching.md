@@ -651,6 +651,9 @@ Rotation, test position, countdown, induction variables and strength reduction, 
 
 ### Decompiled pointer walks that were index loops
 
+- **`lea edx,buf` behind the count test and the pushes (ours before the `jle`)**: a hand-advanced byte pointer
+  `for (d = buf; i > 0; i--) { memcpy(d, p, 0x40); d += 0x40; }` was the index loop over the element type
+  `RTPOINT buf[8]; for (i = 0; i < n; i++) buf[i] = *pts;` (cm_SendSetRoute byte).
 - **A decompiled pointer walk (`(int)p < (int)END`, `p[-10]` / `*p` against `T[0] + 0x228`, `p += 0x24d`, `w++`,
   a hand-walked slots pointer)**: write the plain index loop `for (i = 0; i < n; i++) .. T[i].f`; VC6 makes the
   IVs, the countdown and the pointer in a dead parameter slot itself. Rebase the fields on the IV: `T[0] + 0x228`
@@ -1634,6 +1637,8 @@ Frame size, slot order, holes, shared slots, dead parameter slots, block-scoped 
 
 ### Frame bigger or smaller: buffers, records, temps
 
+- **Frame 4 bigger in the original with an untouched hole above a filled `int arg[4]`**: the callee copies
+  one word more (cm_SendScriptMessage copies 0x14): `int arg[5]`, the last word unset (he_ClearInnDarkCorner).
 - **Frame 8 short, the high half of a 64-bit kind bit (`1 << (kind - 0x20)`) stored to its own slot and never
   read, the low half in a register; ours packs `hi32` into a dead parameter slot**: one `LARGE_INTEGER k`
   (LowPart / HighPart) instead of two unsigned locals: VC6 keeps the 8-byte local in the frame, promotes LowPart
@@ -2113,6 +2118,14 @@ Store order in a fill, hoisted loads and sunk stores, statement order effects, `
 
 ### Store order in fills, records and rects
 
+- **A store held behind independent stores of the same record** (`mov esi,[esi+4]` hoisted, then `thing`,
+  `used`, `host`, `members[0]`): a load through a pointer is ordered after earlier stores to an escaped local, and
+  the other order holds the stores at the load's height; the value read into a named local first, stored twice
+  after the other fields (`id = p->netId; m.thing = -1; m.used = 1; m.host = id; m.members[0] = id;`;
+  he_RunKillPlayer byte).
+- **The trailing `stosb` of `T rec = {0}` after the block's plain stores (ours before)**: the stored locals were
+  initialised declarations of the same block ahead of rec (`int base = 0; int apply = 1; int ctrl2 = -1; ..
+  AIDEC rec = {0};`), so their stores precede the init's tail in list order (ai_LawPrivilegeWindow byte).
 - **Any order hunk in a run of independent stores or a message fill: search it, never infer the source order
   from the scheduled stores** (the list follows source order, not 1:1; single swaps stall). Tools: `dcp try`
   over all 720 / 5040 orders (1-2 min), deep-tools permute.py, a generator script, vargen `move` on 3-6 lines
@@ -2396,6 +2409,8 @@ How arguments are pushed, a call written in both arms, parameter and return type
   (`void f();`) before both (d2_Unk475cb0, d2_Unk472390).
 
 ### Evaluation order, nested calls, stack cleanup
+- **A constant argument pushed after an `_ftol` call (ours pushes it before)**: the converted value was a named
+  int local assigned before the call (`d = (int)(f * 10.0f + 1.0f) * mul; f(a, b, d, 1);`; he_RunTribute byte).
 - **Outer arguments pushed before the inner call**: the calls were nested in the argument list. `add esp,4` after
   each call, `and eax,0xffff; add eax,esi; push eax; push 0xc; call`: `f(g(12) + 1, g(n) + base)`; unmasked `add
   eax,esi` = int-returning callee (amt_CreateApplicant byte). `f(a, -1, g, (util_Random(n) & 0xffff) + k, own,
@@ -3039,6 +3054,10 @@ Operand order on the FPU stack, `fst` / `fstp`, float compares, constants, `_fto
 - **Three loads at function start**: `char tag[] = "SHAPBANK"; memcpy(bank, tag, 8)`. Also: a tick difference
   compared with 1 matches only with the previous-tick variable unsigned; `util_Random` result kept in an `int`;
   `(uint + ushort) % 3` is `xor edx,edx; div`.
+
+- **`mov ecx,0x10; lea esi,src; lea edi,dst; rep movsd` where ours (memcpy) sets edi first**: an element loop
+  `for (k = 0; k < 16; k++) r->members[k] = tmp[k];` over an `int` buffer, which VC6 also turns into rep movsd
+  (ls_ReadParties byte).
 
 ### Constant fills: memset against element loops
 
