@@ -11046,15 +11046,31 @@ int ai_AimCannon(AIPER *p, AIBLD *b, AIBLD *t)
    ball from 50 units along the barrel b; two from 40 units, 5 to either side along d; three from 40 units, one 5
    along c, two 3 back along c and 5 to either side along d. Each ball: ai_InitShot, ai_ScatterShot by the
    cannon's spread (gv_CannonScatter); then gv_FireShots with the charge, 1 when fired
-   @deep read in full against the original (0x4a6ae0..0x4a713d): the ball record pointer, f = (g*b - a) *
-   (k*0.01) + a (fild k; fmul; fmulp), the three charge cases as vector steps through four 4-float locals
-   (v1 0x18, v2 0x28, v3 0x38, v4 0x58 in the original's frame: start = b*40 + a copied to the shot
-   positions, then += c*5 / c*-3 / d*5 / d*-5) with the same InitShot / ScatterShot / FireShots pairing
-   (s3@0x138, s1@0x68, s2@0xd0). 442/437 instructions. Left: x87 scheduling and allocation: the original
-   keeps the first one or two products of each step on the FPU stack and stores only the rest ('+ fld
-   st(0); fld a1; fadd [esp+0x30]; fst [esp+0x40]', '+ fxch st(2); fstp [esp+0x4c]'), ours stores each
-   product ('- fstp [esp+0x30] / [esp+0x34] / [esp+0x38]'); cost spilled to a local (+ mov [esp+0x54], edi)
-   with edi/ebx reused for c and f in cases 2/3, ours keeps a different set (frame 0x18c vs 0x190) */
+   @deep this session (no variant kept, tree as found, 301 ins): the gv_FireShots argument order (x, cost)
+   is right: the original pushes +0x6c (cost) as the 8th argument and +0x70 (x) as the 7th; the M8 at
+   +0x52/+0x58 is only the load order (cost into edi, spilled to [esp+0x54]; x in ebp). Case 1 matches but
+   for slots. Cases 2/3 (original, locals after the 4 pushes): v1 = b*40 keeps x on the FPU (never stored),
+   stores y right after its fmul (fstp [L1c]) before z is loaded, then x + a.x as fadd [a] on that product
+   (ours fld a; fadd st(2), keeping it); the z sum is also stored to an extra 4-byte slot [L50] (fst) and
+   copied as an integer into v3.z (case 2) / v1.z (case 3): that slot is the original's 4 extra frame bytes
+   (0x190 vs 0x18c); in case 2 the d*-5 products x/y stay on the FPU (only z stored), i.e. case 2's product
+   vector is not address-taken there (dead stores dropped) while cases 1/3 pass v1 to ai_InitShot. Rounds,
+   none kept: all 511 operand orders of case 2's adds (= control), D3VECTOR4 locals (= control), D3VECTOR
+   (frame -0x10), struct copies v3 = v2 / v4 = v1 (335..368), block-scoped D3VECTOR4 / float[4] per case
+   (306 / 313: fewer fpu hunks, more others), case 2 own v1 (297, frame 0x19c), chained copies v3[i] =
+   v2[i] = v1[i] + a[i] in case 2 (263 by count, layout not closer: still keeps the product, no [L50]), the
+   same in case 3 (303), climb round 1 (only an int temp). Next: per-case locals with the original's roles
+   (case 2: the product vector not address-taken, positions v2/v3) combined with the chained copies; find
+   what creates the [L50] temp (c2frame --names on a variant). prior: read in full against the original
+   (0x4a6ae0..0x4a713d): the ball record pointer, f = (g*b - a) * (k*0.01) + a (fild k; fmul; fmulp), the
+   three charge cases as vector steps through four 4-float locals (v1 0x18, v2 0x28, v3 0x38, v4 0x58 in
+   the original's frame: start = b*40 + a copied to the shot positions, then += c*5 / c*-3 / d*5 / d*-5)
+   with the same InitShot / ScatterShot / FireShots pairing (s3@0x138, s1@0x68, s2@0xd0). 442/437
+   instructions. Left: x87 scheduling and allocation: the original keeps the first one or two products of
+   each step on the FPU stack and stores only the rest ('+ fld st(0); fld a1; fadd [esp+0x30]; fst
+   [esp+0x40]', '+ fxch st(2); fstp [esp+0x4c]'), ours stores each product ('- fstp [esp+0x30] / [esp+0x34]
+   / [esp+0x38]'); cost spilled to a local (+ mov [esp+0x54], edi) with edi/ebx reused for c and f in cases
+   2/3, ours keeps a different set (frame 0x18c vs 0x190) */
 
 int ai_FireCannon(AIPER *p, AIBLD *b)
 {
