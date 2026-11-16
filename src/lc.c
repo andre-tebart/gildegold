@@ -14898,8 +14898,11 @@ int ai_SaveSettings(void *f)
     int i;
 
     n = 0;
-    for (s = ai_Settings; s != 0; s = s->next)
+    s = ai_Settings;
+    while (s != 0) {
+        s = s->next;
         n++;
+    }
     if (vfs_fwrite(&n, 4, 1, f) == 0)
         return 0;
     for (s = ai_Settings; s != 0; s = s->next) {

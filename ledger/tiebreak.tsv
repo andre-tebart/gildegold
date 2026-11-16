@@ -4327,7 +4327,7 @@ exe	0x005a8870	ai_DrawSettingGood	lc	9828b7a1ada5321d	no	shape	control=shape p1=
 exe	0x005a88e0	ai_SettingFactor	lc	15a664ae5e4d831d	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005a8900	ai_SetSettingFactor	lc	b9da68b3a7a7665a	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005a8920	ai_FreeSettings	lc	489f6898669495d0	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x005a8940	ai_SaveSettings	lc	420375956110d9e2	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
+exe	0x005a8940	ai_SaveSettings	lc	420375956110d9e2	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	2eb1d9662485a4b7
 exe	0x005a8a20	ai_LoadSettings	lc	bc2bac295b36bfab	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005a8b80	ai_ShowIndulgenceNews	lc	e5a35a041f0837bc	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005a8c00	ai_ShowPaymentNews	lc	2c14f4a6ebec7d3e	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
