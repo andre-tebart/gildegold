@@ -1955,8 +1955,13 @@ Store order in a fill, hoisted loads and sunk stores, statement order effects, `
   count the address as escaped when its only call goes to a function defined above in the unit (it knows the
   body); an external callee, or a second address-taking call anywhere in the function, makes the stores to the
   local order later pointer loads. Intrinsics (memcpy, memset, struct copies) and calls removed as dead do not
-  count. A function that needs the external order while a sibling with the same callee does not = a TU boundary
-  between them (cm_FightFrame against cm_OrderWait, open).
+  count. The knowledge is per parameter and transitive: the callee's parameter escapes only when the callee
+  passes it to an unknown function (`free(p)` in the callee flips its callers; a struct copy from it, an alias
+  local, a dead store `q = p`, a K&R definition, passing it on to another known function, a cast at the call
+  do not; the distance between the two definitions does not matter). Before calling it a TU boundary, probe each
+  sibling's callees with a renamed external copy (`int fX(..);` declared in the function, calls renamed, one
+  `dcp try` row per callee): cm_FightFrame wants cm_SendCutEntry unknown, but cm_LayBombAction / cm_FighterAct
+  on both sides of it want cm_AddFieldValues / cm_BestCellNear known, so no split fits (cm_FightFrame, open).
 - **A field load through a returned pointer behind an inline `strcpy` store into a buffer** (`mov [name],edx; mov
   cl,[eax]`, the original loads `b->type` first): the buffer is an address-taken function-scope array; declared
   in a block that opens before the strcpy (`{ char name[MAX_PATH]; strcpy(name, "gb_"); strcat(name, ..); ..

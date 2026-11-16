@@ -38,10 +38,13 @@
    as the fight command's slot, cm_RunCutOrders casts between them); one type for both is unsettled.
    Open: types: CMFIGHTREC (this file) is G28REC's raid view (cm_types.h: defenders 0x80, attackers 0xc0, carts 0x100,
    home 0x10c; escort 0x110 is G28REC's pad110), two declarations of one party record.
-   Open: layout: the fight code 0x4cf670.. may be a TU of its own (cm_UpdatePointer reloads ai_PickedObject after
-   calls of ai_LedSelectBits, a leaf defined above in this unit, as if it were external). cm_FightFrame (0x4d6970)
-   orders its loads as if cm_SendCutEntry (0x4c5c40) were external (any unknown callee gives its bytes), while
-   cm_OrderWait (0x4d0520) still sees it defined: a boundary between 0x4d0570 and 0x4d6970 is likely.
+   Open: layout: one TU at least 0x4c3d00..0x4d6ba0 (cm_LayBombAction needs cm_AddFieldValues known,
+   cm_FighterAct needs cm_BestCellNear known; trial splits at 0x4cd9d0 / 0x4d3ac0 / 0x4d6970 drop byte functions).
+   The .data blocks of initialized globals between string runs (0x60c7c0 ai_WeaponRecordData .. 0x60cb68
+   cm_FightButton; 0x60d360 cm_DialogFrameFlags ..) are therefore no object starts by themselves; a split after
+   0x4d6ba0 (the cutscenes 0x4d8c70..) is untested. cm_FightFrame's hunk is cm_SendCutEntry's parameter escaping
+   (see its @deep note), not a boundary. cm_UpdatePointer reloads ai_PickedObject after calls of ai_LedSelectBits
+   (a leaf defined above) as if it were external: unexplained.
    Open: data: 0x60d38c / 0x60d3a0 (cm_RunAuction's "handwerker3_MANN" / "buerger2_MANN") are the original's
    string literals in cm's data block: the code inline-copies from them, and naming them as arrays makes VC6
    copy byte-wise (cm_RunAuction shape -> draft), so they stay gap bytes.
@@ -11100,15 +11103,31 @@ void cm_FightResult(char *r)
    the redraws 0x525ff0 .. 0x4ce830, and the click on the button cm_FightButton (while 0x6f0d88 / 0x6f0cf4 are clear) sends
    message 0x50 with the cut entry of the player's character (0x4cdf00) in state 5, else the dialog is closed (0x6f22a0)
    @deep Hunk: the original runs rep movsd (memcpy into sl) BEFORE the loads of cm_CutChar->netId and
-   r->playerId; ours hoists both loads. FOUND: the cause is outside the text. VC6 exempts sl from escape
-   when its address goes to one call of a function defined above in the unit whose body it knows
-   (cm_SendCutEntry); the same text calling any external function instead (probe: ai_FillSaveSlots(..,
-   &sl)) compiles to the original's instructions exactly (only the call target differs), and a second
-   address-taking call anywhere does too. So in the original cm_SendCutEntry was not known here:
-   cm_FightFrame sits in another TU than cm_SendCutEntry (cm_OrderWait 0x4d0520 still shows the exempt
-   order, so the boundary lies between 0x4d0570 and 0x4d6970; see the unit's Open: layout line). Byte needs
-   the unit split (layout work), not a variant. No lever in the text (= control): struct copy forms, block
-   / array / char-buffer sl, p = &sl forms, memset, decided second send, local c, climb 2 rounds, flip. */
+   r->playerId; ours hoists both. Mechanism: VC6 treats &sl as not escaped when the known callee
+   cm_SendCutEntry (defined above) does not let its parameter p escape; the analysis is per parameter and
+   transitive through known callees (probes in a scratch copy of cm.c: cm_SendCutEntry with free(p) added
+   -> cm_FightFrame byte, cm_OrderWait stays byte, every other grade of cm unchanged; with free(&m), a
+   struct copy, an alias local, a dead store q = p, a K&R definition, p passed on to cm_QueueSend, a cast
+   at the call: still the hoisted order; moving cm_SendCutEntry next to cm_FightFrame or deleting every
+   function between: no change). NOT a TU boundary (refuted by real splits of cm.c, session s12):
+   cm_LayBombAction 0x4d3980 needs cm_AddFieldValues 0x4c3d00 known (probe: an external copy -> shape) and
+   cm_FighterAct 0x4d6ba0 needs cm_BestCellNear 0x4d2170 known (an external copy -> frame 0x1c vs 0x14), so
+   0x4c3d00..0x4d6ba0 is one TU around cm_FightFrame; splits at 0x4cd9d0 / 0x4d3ac0 / 0x4d6970 each make
+   byte functions fall. So the original's cm_SendCutEntry (and its twin cm_SendCutEntryUpdate) let p escape
+   in a way that leaves their bytes (rep movsd from p, call cm_QueueSend(&m)): find that source form (a
+   call whose code VC6 later drops? memcpy written another way?), or another &sl use in cm_FightFrame that
+   leaves no code. No lever in cm_FightFrame's text (= control): struct copy forms, block / array /
+   char-buffer sl, p = &sl forms, memset, decided second send, local c, casts of the callee, climb 2
+   rounds, flip. prior: Hunk: the original runs rep movsd (memcpy into sl) BEFORE the loads of
+   cm_CutChar->netId and r->playerId; ours hoists both loads. FOUND: the cause is outside the text. VC6
+   exempts sl from escape when its address goes to one call of a function defined above in the unit whose
+   body it knows (cm_SendCutEntry); the same text calling any external function instead (probe:
+   ai_FillSaveSlots(.., &sl)) compiles to the original's instructions exactly (only the call target
+   differs), and a second address-taking call anywhere does too. So in the original cm_SendCutEntry was not
+   known here: cm_FightFrame sits in another TU than cm_SendCutEntry (cm_OrderWait 0x4d0520 still shows the
+   exempt order, so the boundary lies between 0x4d0570 and 0x4d6970; see the unit's Open: layout line).
+   Byte needs the unit split (layout work), not a variant. No lever in the text (= control): struct copy
+   forms, block / array /... */
 
 void cm_FightFrame(char *r)
 {
