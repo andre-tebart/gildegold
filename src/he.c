@@ -3563,7 +3563,6 @@ void he_AllocCourtship(int ev)
     AIJOB *e = (AIJOB *)ev;
     AICHAR *a, *b;
     AIJOB *r;
-    int none;
 
     e->stage = 0;
     if ((e->opts & 2) == 0)
@@ -3577,13 +3576,15 @@ void he_AllocCourtship(int ev)
         return;
     }
     if (a->relatives[0] != -1) {
-        none = -1;
+        int none = -1;
+
         cm_BeginFieldBlock((char *)a, a->netId);
         cm_AddFieldDelta(4, 1, 0x5c, &none);    /* a->relatives[0] = -1 */
         cm_SendFieldDeltas();
     }
     if (b->relatives[0] != -1) {
-        none = -1;
+        int none = -1;
+
         cm_BeginFieldBlock((char *)b, b->netId);
         cm_AddFieldDelta(4, 1, 0x5c, &none);    /* b->relatives[0] = -1 */
         cm_SendFieldDeltas();
