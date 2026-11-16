@@ -891,7 +891,7 @@ exe	0x0044aa10	d3_SaveScene	d3_interface	byte	readable
 exe	0x0044abb0	rd_object	d3_int_io	byte	readable		
 exe	0x0044b920	d3io_ReadFloor	d3_int_io	shape	readable		
 exe	0x0044be60	d3_LoadScene	d3_int_io	byte	readable		
-exe	0x0044c3f0	d3_LoadGroup	d3_int_io	shape	readable		
+exe	0x0044c3f0	d3_LoadGroup	d3_int_io	byte	readable		
 exe	0x0044c510	d3io_SetStockDir	d3_int_io	byte	readable		
 exe	0x0044c530	d3io_StockFile	d3_int_io	byte	readable		
 exe	0x0044c5d0	d3io_FindStock	d3_int_io	byte	readable		
@@ -1975,7 +1975,7 @@ exe	0x004b5ef0	ai_MissionCompleteByMode	mission	byte	readable
 exe	0x004b5f10	ai_MissionResultDialog	mission	byte	readable		
 exe	0x004b6040	ai_MissionPartnerDialog	mission	byte	readable		
 exe	0x004b60f0	ai_MissionResultByMode	mission	byte	readable		
-exe	0x004b6110	ai_MissionCompleteSingle	mission	shape	readable		
+exe	0x004b6110	ai_MissionCompleteSingle	mission	byte	readable		
 exe	0x004b62a0	ai_MissionCompleteSequence	mission	byte	readable		
 exe	0x004b62e0	ai_SaveMissions	mission	byte	readable		
 exe	0x004b63b0	ai_LoadMissions	mission	byte	readable		
@@ -3422,7 +3422,7 @@ exe	0x0052fcf0	sv_BroadcastText	sv	byte	readable
 exe	0x0052fd80	sv_SyncText	sv	byte	readable		
 exe	0x0052fe00	sv_PumpNet	sv	byte	readable		
 exe	0x0052fe10	sv_ChatConsole	sv	byte	readable		
-exe	0x00530100	sv_UpdateQuickChat	sv	shape	readable		
+exe	0x00530100	sv_UpdateQuickChat	sv	byte	readable		
 exe	0x005301a0	sv_UpdateWeather	sv	shape	readable		
 exe	0x00530670	sv_WeatherFrame	sv	byte	readable		
 exe	0x005307f0	sv_AdvanceGame	sv	byte	readable		
@@ -3433,7 +3433,7 @@ exe	0x00531670	main_DestroyWindow	main	byte	readable
 exe	0x00531690	main_ShutdownScreen	main	byte	readable		
 exe	0x005316d0	main_ShutdownModules	main	byte	readable		
 exe	0x00531750	main_Exit	main	byte	readable		
-exe	0x00531780	main_WindowProc	main	shape	readable		
+exe	0x00531780	main_WindowProc	main	byte	readable		
 exe	0x00531a00	main_BuildVersionString	main	byte	readable		
 exe	0x00531b50	main_CreateMutex	main	byte	readable		
 exe	0x00531b80	main_SetScreenSaver	main	byte	readable		
