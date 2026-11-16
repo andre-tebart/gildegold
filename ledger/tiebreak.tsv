@@ -2692,7 +2692,7 @@ exe	0x004eae60	ahm_FindRecipe	ahm	6cd28aef5b1cc20f	no	shape	sweep control=shape 
 exe	0x004eaea0	ahm_RandomRecipe	ahm	18fa81a7e921f9ce	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004eaf50	ahm_ResearchTime	ahm	bab1073cb9c09254	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004eafa0	ahm_ResearchMinutes	ahm	82abf6e7b09a31ef	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x004eafd0	ahm_ResearchProgress	ahm	17b60591e32c4560	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	068a06725a108d81
+exe	0x004eafd0	ahm_ResearchProgress	ahm	17b60591e32c4560	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	d47ede1e8db228ca
 exe	0x004eb0b0	ahm_ShareProgress	ahm	aa59f0144095e054	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004eb130	ahm_PlaceFactor	ahm	9e7362448ba902be	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004eb180	ahm_ResearchState	ahm	83b62df40741515e	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
@@ -3253,7 +3253,7 @@ exe	0x00519b50	ls_RelinkScene	ls	16535092489e2713	no	shape	sweep control=shape b
 exe	0x00519bf0	ls_WriteObjects	ls	c69fa5837e8f86de	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	c3ca37be86a9d0e6
 exe	0x00519d20	ls_WriteBuildings	ls	57a0d93b839c4d88	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0051a1a0	ls_WritePlayerRecords	ls	f014d902c9b891ee	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft	
-exe	0x0051a4b0	ls_WriteCharacters	ls	b8e4b5aef44066b8	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	41b5d4fb7350ddfa
+exe	0x0051a4b0	ls_WriteCharacters	ls	b8e4b5aef44066b8	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	1dec7b5202608565
 exe	0x0051ad30	ls_ActionIndex	ls	981eb2bc4d7efd42	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0051ad60	ls_ActionAt	ls	b60a5059d5c7126c	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0051ad80	ls_WriteSceneCharacter	ls	7f8316d0dc5332d5	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
@@ -3262,7 +3262,7 @@ exe	0x0051b340	ls_WritePlayerSlots	ls	459a6b6099672279	no	shape	sweep control=sh
 exe	0x0051b890	ls_WriteRelations	ls	8f1ad8e97d2d0179	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	41b5d4fb7350ddfa
 exe	0x0051b910	ls_WriteStatistics	ls	54c454e8f79f3ff5	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0051bdb0	ls_WriteAvatars	ls	af12136255eca38f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x0051bdc0	ls_WriteEventTables	ls	223a7691b078e54e	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	41b5d4fb7350ddfa
+exe	0x0051bdc0	ls_WriteEventTables	ls	223a7691b078e54e	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	1dec7b5202608565
 exe	0x0051c2f0	ls_WriteParties	ls	17a14d251d92d975	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0051c450	ls_WriteHistory	ls	22c1f8c7f8846bb7	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	5b2fc9e87ece4f81
 exe	0x0051c560	ls_WriteMessageQueues	ls	0457b3163773ef41	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	f7a33d310567b162
@@ -3283,7 +3283,7 @@ exe	0x0051f080	ls_ReadPlayerSlots	ls	21f833f554715629	no	shape	sweep control=sha
 exe	0x0051f650	ls_ReadRelations	ls	b06756f15da8f4ce	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	d3fde81e7324d0fd
 exe	0x0051f720	ls_ReadStatistics	ls	1dfdc1a11094936a	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0051fb80	ls_ReadAvatars	ls	d0b3bb4e5ed14bbb	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x0051fb90	ls_ReadEventTables	ls	629d1eb706ca5be2	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	41b5d4fb7350ddfa
+exe	0x0051fb90	ls_ReadEventTables	ls	629d1eb706ca5be2	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	1dec7b5202608565
 exe	0x00520000	ls_ReadParties	ls	6b0588933e358a27	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	b0ff75d0d5dc7a19
 exe	0x00520200	ls_ReadHistory	ls	00224d223df4a78d	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00520310	ls_ReadMessageQueues	ls	6f6381c02332f2c2	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	41b5d4fb7350ddfa

@@ -260,7 +260,7 @@ float ahm_ResearchProgress(char *c, AHMGRID *g, int *cap)
         return 0.0f;
     m = n < t ? n : t;
     *cap = m;
-    return (float)m / t * (1.0f - slot->v);
+    return ((float)m / t) * (1.0f - slot->v);
 }
 /* 0x4eb0b0, the progress the character c makes training the share i in *cap minutes (*cap gets the minutes used): 14400 * (1 - share) is the time the rest of the
    share needs; returns (used / time) * (1 - share), 0.0 when the share is not in [0, 1) */
