@@ -2451,7 +2451,6 @@ int ls_ReadEnvironment(int f)
 int ls_FixupAfterLoad(void)
 {
     int i, saved, v;
-    int bld, obj, chr;      /* what gm_FindById finds for an id: a building, an object or a character */
     AICHAR *c;
     AIOBJ *o, *last;
     AIJOB *j;
@@ -2483,6 +2482,8 @@ int ls_FixupAfterLoad(void)
         }
     }
     for (i = 0; i < f3gm_ObjectCount; i++) {
+        int bld, obj, chr;      /* what gm_FindById finds for an id: a building, an object or a character */
+
         o = &ai_Objects[i];
         if (((AIGOOD *)ai_Goods)[o->id].type == 0x1d)
             o->job24 = 0;
@@ -2535,6 +2536,8 @@ int ls_FixupAfterLoad(void)
         if (j->kind == 0xc) {
             /* nothing (the original tests the kind 0xc first and leaves it alone) */
         } else if (j->kind == 0xd) {
+            int bld;      /* the building under construction */
+
             gm_FindById(&bld, 0, 0, j->constructBld);
             if (bld != 0)
                 he_ShowConstruction((int)j);
