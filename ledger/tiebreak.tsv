@@ -4160,8 +4160,8 @@ exe	0x00592b90	ai_ExtractResourceWindow	lc	ecd6e36f2ac68b90	no	byte	control=byte
 exe	0x00593150	ai_ProductionGoodsWindow	lc	988719af2be08c42	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x005938c0	ai_MiningContact	lc	d8f788bf4190d954	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00593960	ai_KontorContact	lc	26db03e08f6faac9	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
-exe	0x00593b00	ai_WoodKontorContact	lc	c4519586f26a3646	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
-exe	0x00593ca0	ai_StoneKontorContact	lc	c119004c5d20dc8c	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
+exe	0x00593b00	ai_WoodKontorContact	lc	c4519586f26a3646	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	363b43c45b83d63b
+exe	0x00593ca0	ai_StoneKontorContact	lc	c119004c5d20dc8c	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	363b43c45b83d63b
 exe	0x00593e80	ai_InformationContact	lc	8325658eaf37b826	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00593f40	ai_BreakInCallback	lc	9044525ce780c57c	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00594180	ai_BreakInWindow	lc	3adc969e3eb1fd2e	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
@@ -4173,17 +4173,17 @@ exe	0x00594810	ai_BriberyWindow	lc	94229dcbc5853d03	no	byte	control=byte p1=byte
 exe	0x00594b10	ai_OpenSpying	lc	2814afffcb45bd45	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00594bb0	ai_RaidWindow	lc	30109bd5ed3e8b61	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00594db0	ai_OpenRaid	lc	5356f6b055f8474f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x00594e50	ai_CriminalContact	lc	6507108db6e7385f	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
+exe	0x00594e50	ai_CriminalContact	lc	6507108db6e7385f	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	363b43c45b83d63b
 exe	0x005950e0	ai_FarTradeContact	lc	2826dc29eca02f9f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x00595170	ai_SmithyContact	lc	7b89b53e9278130f	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
-exe	0x00595330	ai_CarpenterContact	lc	11f0c47ab092a56a	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
+exe	0x00595170	ai_SmithyContact	lc	7b89b53e9278130f	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	363b43c45b83d63b
+exe	0x00595330	ai_CarpenterContact	lc	11f0c47ab092a56a	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	363b43c45b83d63b
 exe	0x00595480	ai_TradeSearchWindow	lc	67daff8d7e96f5b3	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x00595a00	ai_AquariumSearchWindow	lc	a7e9abf439e34b64	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
-exe	0x00595ed0	ai_PerfumeryContact	lc	54f42bb8ba9a40c4	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
+exe	0x00595ed0	ai_PerfumeryContact	lc	54f42bb8ba9a40c4	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	363b43c45b83d63b
 exe	0x00596060	ai_IdleContact	lc	744a0d1f84529fda	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00596080	ai_AquariumContact	lc	acb836a998ef8f69	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x00596120	ai_MixingContact	lc	8333ab256e71c6f1	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
-exe	0x005962b0	ai_StonecutterContact	lc	48a251b7c9c9326c	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
+exe	0x00596120	ai_MixingContact	lc	8333ab256e71c6f1	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	363b43c45b83d63b
+exe	0x005962b0	ai_StonecutterContact	lc	48a251b7c9c9326c	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	363b43c45b83d63b
 exe	0x00596400	ai_RobberContact	lc	6b06516ecd33889d	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005965f0	ai_RhetoricContact	lc	a9a2d143c71d8cfe	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005966f0	ai_FeastContact	lc	55cc66e72abaf972	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
@@ -4208,7 +4208,7 @@ exe	0x005992c0	ai_DarkCornerMenu	lc	db82204b1ad68c9a	no	draft	control=draft p1=d
 exe	0x005996b0	ai_DarkCornerBuy	lc	c436b5779222346c	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x00599aa0	ai_DarkCornerTable	lc	43b2cfbef1c91eb5	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00599af0	ai_TavernContact	lc	a70f2b783c817d8f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x00599cb0	ai_BreweryContact	lc	d9a53acc28837abf	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
+exe	0x00599cb0	ai_BreweryContact	lc	d9a53acc28837abf	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	363b43c45b83d63b
 exe	0x00599e00	ai_DrawGoodsCell	lc	f2f5add8219e553d	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00599ef0	ai_CityInfoWindow	lc	74dca504a628133e	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0059a2c0	ai_CreateCityPoint	lc	6938459a117aa95d	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
@@ -4268,7 +4268,7 @@ exe	0x005a28f0	ai_Top5Window	lc	524b1775664d6ad7	no	shape	control=shape p1=shape
 exe	0x005a2b60	ai_ConfessionWindow	lc	2ea02f6e915fd095	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005a2de0	ai_ConfessionListener	lc	12cd21c83fe6efc6	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005a2e60	ai_SermonWindow	lc	196751a3084e2b10	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
-exe	0x005a36c0	ai_ProductionWriteContact	lc	8920ef7d7dbcbf6c	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
+exe	0x005a36c0	ai_ProductionWriteContact	lc	8920ef7d7dbcbf6c	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	363b43c45b83d63b
 exe	0x005a3810	ai_ChurchListener	lc	cf396a64d619c961	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
 exe	0x005a39b0	ai_ChurchContact	lc	def575cf87a89c6a	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005a3a40	ai_DungeonPlanWindow	lc	c1f6096803a659cf	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
@@ -4631,7 +4631,7 @@ exe	0x005d7e90	ai_PauseGame	unk_5d33b0	0240f736d6e736ce	no	byte	control=byte p1=
 exe	0x005d7f10	ai_MessageFilterScreen	menu	781e33127759747f	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft	
 exe	0x005d8080	ai_TailorChatWindow	unk_5d33b0	3b422d7c8150dbaa	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005d8360	ai_TailorContact	unk_5d33b0	218b4159db02f941	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x005d8420	ai_ProductionContact	unk_5d33b0	b3d6644bdad4e60e	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
+exe	0x005d8420	ai_ProductionContact	menu	b3570a00041d926e	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	5634ecf37a029206
 exe	0x005d85e0	ai_BloodRevengeWindow	menu	ae0d751cd2cd6d24	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft	
 exe	0x005d8c90	ai_CurseWindow	unk_5d33b0	15b149ee2be51701	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
 exe	0x005d90e0	ai_CurseTargetWindow	menu	b15addc3ec7d9556	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft	

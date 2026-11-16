@@ -4617,12 +4617,12 @@ void ai_WoodKontorContact(AIBLD *bld)
     int stroh;
     int plants;
 
+    transport = 0;
     lager = 0;
     holz = 0;
     gelage = 0;
-    transport = 0;
-    ziel = 0;
     stroh = 0;
+    ziel = 0;
     sv_ReleaseNamePlates();
     plants = bld->plants;
     r = sv_RunFrame(ai_WoodKontorContact, 0x67fff);
@@ -4651,7 +4651,7 @@ void ai_WoodKontorContact(AIBLD *bld)
             else if (ai_ClickedObject == stroh)
                 ai_TrainingWindow(bld);
         }
-        if (d2_ClickedId != -1 && sv_PanelPlantBtn == d2_PointerObj)
+        if (d2_ClickedId != -1 && d2_PointerObj == sv_PanelPlantBtn)
             ob_HandleBepflanzung(bld);
         r = sv_RunFrame(ai_WoodKontorContact, 0x67fff);
     }
