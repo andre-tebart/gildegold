@@ -2264,7 +2264,7 @@ exe	0x004c61b0	cm_SendCommand	cm	08b8ec8e32182321	no	byte	control=byte p1=byte p
 exe	0x004c61f0	cm_SendMasterChange	cm	5cc98d55f33f0abd	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004c6230	cm_SendEffectLoad	cm	f6f86a06d6422993	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004c6260	cm_SendShots	cm	91632a55888d1469	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x004c62a0	cm_SendSetRoute	cm	7555969a99dffee9	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	becf1bbdf99775c9
+exe	0x004c62a0	cm_SendSetRoute	cm	7555969a99dffee9	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	3c3eb6d345d9cc62
 exe	0x004c6320	cm_SendClearRoute	cm	727e704caf836b6a	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004c6350	cm_CheckMoveGoods	cm	4755a46e0a393b1f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004c63e0	cm_CheckSellObject	cm	ffa2283fe7720468	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	8531cf169a74a327

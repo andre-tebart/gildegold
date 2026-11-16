@@ -2378,22 +2378,20 @@ int cm_SendShots(void *p)
 void cm_SendSetRoute(AIOBJ *o, RTPOINT *pts)
 {
     G17MSG m;
-    char buf[0x200];
-    char *d;
+    RTPOINT buf[8];
     RTPOINT *next;
-    int i;
+    int i, n;
 
-    i = rt_PointCount(pts);
+    n = rt_PointCount(pts);
     m.type = 0x68;
     m.route.objId = o->objId;
-    m.route.count = i;
-    for (d = buf; i > 0; i--) {
+    m.route.count = n;
+    for (i = 0; i < n; i++) {
         next = pts->next;
-        memcpy(d, pts, sizeof(RTPOINT));
-        d += sizeof(RTPOINT);
+        buf[i] = *pts;
         pts = next;
     }
-    cm_SetLongMsg(m.route.count << 6, buf);
+    cm_SetLongMsg(m.route.count << 6, (char *)buf);
     cm_QueueSend(&m);
 }
 /* 0x4c6320, message 0x69: the cart o's id (its handler 0x4cd2f0 frees its route) */
