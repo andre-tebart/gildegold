@@ -276,6 +276,13 @@ Where the pushes and pops sit, how many epilogue copies there are, shared agains
   unless the tail is on two paths; one branch gets its own tail copy + `return;` (toy-proven, deep-tools toyasm.py).
   Loader: `d3if_SelectScene(save, 0)` in an `if (load == 0)` arm per branch, early exits with their own clock tail +
   `return;`. (init_LoadObjectScene byte, init_LoadBuildingScene 123 -> byte)
+  Same for a `pop esi` between `test eax,eax` and `je` after an if/else join (original: a pop in each exit): the
+  test and its success code written in each arm, `if (t) { step(t); return 1; }`, `return 0;` after (VC6
+  cross-jumps the copies back into one) (ai_TrialStep1/3/4 byte).
+- **A guard's `return 0` jumping to the first reset-and-return copy where the original jumps to the last exit**:
+  plain guards, each exit writing out its own reset (`if (c == 0) { reset; return 0; } .. if (bld == 0) { ..;
+  reset; return 0; } .. reset; SetField; return 0;`) instead of if/else nesting that shares one reset at the
+  end (he_StepWalkSlot byte).
 - **Which exit owns the final epilogue: sweep the join position** (trailing statements shared: 0, 1, 2, ..). A
   far-by-count variant with the original's layout and only a flag store / reload at the join is one move from byte.
   Lever: the read success falling out of the nested ifs to `if (!f) sprintf(not found)` instead of `goto done`
@@ -321,6 +328,13 @@ Where the pushes and pops sit, how many epilogue copies there are, shared agains
 - **A shared `cnt = 0;` zeroed after the hoisted pushes**: one `cnt = 0;` per arm (Gm_FreeCapacity).
 
 ### Return type and small return forms
+
+- **A result only on some paths, the other exit returning a leftover eax (a call's, an idiv's quotient)**:
+  the function is `void` - the "result" was a by-product (`s = (s + 1) % 15` leaves the quotient in eax) and
+  the caller ignores eax (init_PlaceOffices: also gave the original's `mov si,ax` for the start index).
+- **`xor eax,eax` hoisted above a `skill >= 5` guard, shared as its return 0 (original: the guard jumps to the
+  last `return 0`'s exit and the xor stays behind the test)**: one condition `if (skill < 5 && !(v >= 252)) {..
+  return 1; } return 0;` (ai_ApplyTrialStep byte).
 
 - **The shared `return 0` epilogue starts with `xor eax,eax` and one `je` after a call jumps past it (ours: the
   xor scheduled among the pops, every exit through it)**: that exit returned the call's result, `r = f(..); if
@@ -378,7 +392,7 @@ Which arm is inline, jumps into another arm, threaded and redundant tests, `&&` 
 - **A run of `if (write(..) <= 0) return 0;` steps whose loop failures jump to the FIRST step's epilogue copy**
   (ours: to the last step's), `0 ins / N bytes`: the function ended `LS_W(&x, 4) return 1;`, not `return
   write(&x, ..) > 0;`. Same `sbb / neg` code, but the last step's return is then a test whose `return 0` copy
-  changes the pair merger's list (ls_WriteMessageQueues byte).
+  changes the pair merger's list (ls_WriteMessageQueues, ls_ReadMessageQueues byte).
 - **Each arm of a switch case ending in its own `return 0`** where the original's skip tests jump to another
   case's `return 0` block: one more `return` per arm (main_WindowProc WM_ACTIVATEAPP byte).
 
@@ -650,6 +664,10 @@ copied back into short predecessors only after all of this.
 Rotation, test position, countdown, induction variables and strength reduction, pointer walk against index loop, bounds, search loops.
 
 ### Decompiled pointer walks that were index loops
+
+- **`lea eax,[ecx-8]; cmp eax,end` at a row loop's end (ours), the original `cmp ecx,end+8`**: the row pointer
+  walk with an int-cast bound was `for (i = 0; i < 0x20; i++) { row = &tab[i]; ... }`: VC6 compares its field
+  induction pointer against the shifted end (ai_EquipRowsInit byte).
 
 - **`lea edx,buf` behind the count test and the pushes (ours before the `jle`)**: a hand-advanced byte pointer
   `for (d = buf; i > 0; i--) { memcpy(d, p, 0x40); d += 0x40; }` was the index loop over the element type
@@ -2402,7 +2420,8 @@ How arguments are pushed, a call written in both arms, parameter and return type
 ### Return types of callees
 - **`mov si,ax` / `and esi,0xffff` after a call (not `mov esi,eax`)**: the callee's result is a 16-bit type at
   this call site (a unit view `((unsigned short (*)(unsigned short))util_Random)`), not a cast of an int result
-  (gm_Shuffled).
+  (gm_Shuffled). Into an `int` local, not an `unsigned short` one (that gives `mov esi,eax`):
+  `int v; v = util_RandomS(2);` (ai_PlagueMessageAll, ai_PlagueNews byte).
 - **Callee returns in al, result passed straight on**: declare `unsigned int`; `unsigned char` adds `and
   eax,0xff`.
 - **`test al,al` and the `return 0` without `xor al,al`**: the callee returns `char`: local prototype `char
@@ -2428,6 +2447,10 @@ How arguments are pushed, a call written in both arms, parameter and return type
   (`void f();`) before both (d2_Unk475cb0, d2_Unk472390).
 
 ### Evaluation order, nested calls, stack cleanup
+
+- **`lea eax,[ecx+edx]` for a sum then clamped (ours `mov eax,ecx; add eax,edx` into a named n)**: the clamp as one
+  ternary with the sum written twice, `r->target = a + b >= 100 ? 100 : a + b;` (a CSE temporary, not a
+  variable) (he_AllocCartRepair byte).
 - **A constant argument pushed after an `_ftol` call (ours pushes it before)**: the converted value was a named
   int local assigned before the call (`d = (int)(f * 10.0f + 1.0f) * mul; f(a, b, d, 1);`; he_RunTribute byte).
 - **Outer arguments pushed before the inner call**: the calls were nested in the argument list. `add esp,4` after
@@ -3126,6 +3149,9 @@ Operand order on the FPU stack, `fst` / `fstp`, float compares, constants, `_fto
   (ai_AlchemistWindow, stuck at 88 -> 6: `[base+index]` vs ours `[index+base]` in the first of two panel copies).
 
 ### Zero stores and clears
+
+- **`mov [slot],0` right after `rep stosd` where ours stores the memset's `eax`**: the `= 0` stood before the memset
+  (`canTrain = 0; memset(arg, 0, sizeof(arg));`), a move-line round finds it (ai_TalentWindow byte).
 
 - **A 64-bit field's low word stored `mov [m],0` last, where ours reuses the memset's `eax` right after `rep
   stosd`**: the two words written out, high first: `cfg.classMask[1] = hi; cfg.classMask[0] = 0;` (low first =
