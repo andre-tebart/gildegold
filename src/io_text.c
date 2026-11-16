@@ -265,7 +265,7 @@ int io_CharacterNameMarkup(int id, unsigned char c, unsigned char kind, char *ou
     char A[0x100], B[0x100], C[0x100];
     char tmp[0x21c];
     unsigned char *rec;
-    int v;
+    unsigned int v;
 
     A[0] = ch_EmptyName[0];
     memset(A + 1, 0, 0xff);
