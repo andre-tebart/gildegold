@@ -11342,9 +11342,11 @@ int he_NoEvent35Pair(unsigned short *a, int b, int *count)
     AIJOB *e;
     int n = 0;
 
-    for (e = (AIJOB *)he_FindEvent(2, 2, *a, 0, 0x35); e != 0; e = (AIJOB *)he_NextEvent()) {
+    e = (AIJOB *)he_FindEvent(2, 2, *a, 0, 0x35);
+    while (e != 0) {
         if (c->netId == e->idbc)
             return 0;
+        e = (AIJOB *)he_NextEvent();
         n++;
     }
     if (count != 0)

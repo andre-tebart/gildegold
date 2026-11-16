@@ -3535,7 +3535,7 @@ exe	0x0053f430	he_InnStaffLeave	he	5a67a2c4bc8f66dc	no	shape	control=shape p1=sh
 exe	0x0053f500	he_ClearInnDarkCorner	he	1711bc0ea1b03f42	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
 exe	0x0053f5b0	he_TopUpCharMoney	he	fe5a2a673f36d36c	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0053f6b0	he_SpawnFounders	he	deea08cbc2d86af6	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
-exe	0x00540c90	he_PostEvent67	he	0b86ecd7602be4e9	yes	byte	control=shape p1=byte* p2=byte* p3=byte* p4=byte*	
+exe	0x00540c90	he_PostEvent67	he	c9c4ee076839760b	no	byte	sweep control=byte best=byte by the build's declarations; codegens=1 compiled=12 (stopped at the goal)	1026951b5f449caa
 exe	0x00540e40	he_InnReport	he	56eb0aee3478e3b8	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00540fe0	he_DailyEventChecks	he	de1f648336a0000f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00541010	he_PostEvent3a	he	6f63b7be49a1f8ae	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
