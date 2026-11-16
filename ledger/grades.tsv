@@ -338,7 +338,7 @@ exe	0x00415e90	d3t_CreateBlood	d3_tools	byte	readable
 exe	0x00415f30	d3t_ExplosionCB	d3_tools	byte	readable		
 exe	0x00416040	d3t_CreateExplosion	d3_tools	byte	readable		
 exe	0x00416240	d3t_SmokeCB	d3_tools	byte	readable		
-exe	0x00416340	d3t_CreateSmoke	d3_tools	shape	readable		
+exe	0x00416340	d3t_CreateSmoke	d3_tools	byte	readable		
 exe	0x00416550	d3t_EarthCB	d3_tools	shape	readable		
 exe	0x004168e0	d3t_CreateEarth	d3_tools	byte	readable		
 exe	0x00416980	d3t_CreateSnowMipmaps	d3_tools	draft	readable	deep	
@@ -889,7 +889,7 @@ exe	0x0044a770	d3_WriteMap	d3_interface	byte	readable
 exe	0x0044a9e0	d3_SceneVersion	d3_interface	byte	readable		
 exe	0x0044aa10	d3_SaveScene	d3_interface	byte	readable		
 exe	0x0044abb0	rd_object	d3_int_io	byte	readable		
-exe	0x0044b920	d3io_ReadFloor	d3_int_io	shape	readable		
+exe	0x0044b920	d3io_ReadFloor	d3_int_io	byte	readable		
 exe	0x0044be60	d3_LoadScene	d3_int_io	byte	readable		
 exe	0x0044c3f0	d3_LoadGroup	d3_int_io	byte	readable		
 exe	0x0044c510	d3io_SetStockDir	d3_int_io	byte	readable		
@@ -1596,7 +1596,7 @@ exe	0x00495770	ai_PushAction	am	byte	readable
 exe	0x00495790	ai_PopAction	am	byte	readable		
 exe	0x004957a0	ai_ActionOnStack	am	byte	readable		
 exe	0x004957d0	ai_ChooseAction	am	byte	readable		
-exe	0x00495a50	ai_ChooseSubAction	am	shape	readable		
+exe	0x00495a50	ai_ChooseSubAction	am	byte	readable		
 exe	0x00495ce0	ai_ExecuteAction	am	shape	readable	deep	
 exe	0x00495ee0	ai_RollCharFlags	am	byte	readable		
 exe	0x00495fa0	ai_DecideDummyRighteousness	am	byte	readable		
@@ -1629,7 +1629,7 @@ exe	0x00497ee0	ai_ExecuteRepairBuilding	am	byte	readable
 exe	0x00497fa0	ai_DecideBuyBuilding	am	draft	readable	deep	
 exe	0x00498470	ai_ExecuteBuyBuilding	am	shape	readable	deep	
 exe	0x004984d0	ai_DecideBuildResidence	am	byte	readable		
-exe	0x00498a80	ai_ExecuteBuildResidence	am	shape	readable		
+exe	0x00498a80	ai_ExecuteBuildResidence	am	byte	readable		
 exe	0x00498b80	ai_DecideUpgradeResidence	am	byte	readable		
 exe	0x00498c70	ai_DecideBuildBusiness	am	byte	readable		
 exe	0x00499290	ai_ExecuteBuildBusiness	am	byte	readable		
@@ -1890,7 +1890,7 @@ exe	0x004b08e0	ai_CommandPrison	hst	byte	readable
 exe	0x004b0950	ai_CommandOfficeInventoryPlus	hst	byte	readable		
 exe	0x004b09f0	ai_CommandLaw	hst	byte	readable		
 exe	0x004b0b50	ai_CommandLawChange	hst	shape	readable	deep	
-exe	0x004b0d40	ai_CommandFaithChange	hst	shape	readable	deep	
+exe	0x004b0d40	ai_CommandFaithChange	hst	byte	readable		
 exe	0x004b0fd0	ai_CommandRiot	hst	byte	readable		
 exe	0x004b1060	ai_CommandBreakGuildSeats	hst	byte	readable		
 exe	0x004b11e0	ai_CommandDemand	hst	byte	readable		
@@ -2990,7 +2990,7 @@ exe	0x004feb30	gm_UpdatePlayers	f3gm	byte	readable
 exe	0x004feb60	gm_InitPlayerRecord	f3gm	byte	readable		
 exe	0x004fec10	gm_SyncMarket	f3gm	shape	readable		
 exe	0x004ff190	gm_RefreshGoodsLists	f3gm	shape	readable		
-exe	0x004ff450	gm_RandomMarketShake	f3gm	shape	readable		
+exe	0x004ff450	gm_RandomMarketShake	f3gm	byte	readable		
 exe	0x004ff550	gm_UpdatePrices	f3gm	shape	readable	deep	
 exe	0x004ff8c0	gm_GoodsDemand	f3gm	byte	readable		
 exe	0x004ff950	gm_GoodsStock	f3gm	byte	readable		
@@ -3003,7 +3003,7 @@ exe	0x004ffe90	gm_Query	f3gm	shape	readable	deep
 exe	0x004fffc0	gm_FindFreeObject	f3gm	byte	readable		
 exe	0x004ffff0	gm_RemoveObject	f3gm	byte	readable		
 exe	0x00500080	gm_FreeObjectExtra	f3gm	byte	readable		
-exe	0x005000c0	gm_RemoveOwned	f3gm	shape	readable		
+exe	0x005000c0	gm_RemoveOwned	f3gm	byte	readable		
 exe	0x00500140	gm_FreeList	f3gm	byte	readable		
 exe	0x00500190	gm_CreateObject	f3gm	draft	readable	deep	
 exe	0x00500970	gm_AddObjekt	f3gm	byte	readable		
@@ -3105,7 +3105,7 @@ exe	0x00508740	gm_JobWage	f3gm	shape	readable
 exe	0x005087f0	gm_ItemPrice	f3gm	byte	readable		
 exe	0x005089c0	gm_GoodsPrice	f3gm	byte	readable		
 exe	0x00508a20	gm_HealthFactor	f3gm	byte	readable		
-exe	0x00508a80	gm_FormatAmount	f3gm	draft	readable		
+exe	0x00508a80	gm_FormatAmount	f3gm	shape	readable		
 exe	0x00508cc0	gm_ListObjectsAfter	f3gm	byte	readable		
 exe	0x00508d70	gm_BuildingLevel	f3gm	byte	readable		
 exe	0x00508d80	gm_BuildingBalance	f3gm	draft	readable	deep	
@@ -3455,7 +3455,7 @@ exe	0x005337f0	main_MenuButton	main	byte	readable
 exe	0x00533850	main_Menue	main	byte	readable		
 exe	0x00534040	main_GiveStartBuildings	main	byte	readable		
 exe	0x005344f0	main_PlaceFamilyModel	main	byte	readable		
-exe	0x00534610	main_ChooseTalents	main	shape	readable		
+exe	0x00534610	main_ChooseTalents	main	byte	readable		
 exe	0x00534b30	main_ChooseModel	main	byte	readable		
 exe	0x005359f0	main_ChooseFamily	main	byte	readable		
 exe	0x005361d0	main_ChoosePlayer	main	byte	readable		
