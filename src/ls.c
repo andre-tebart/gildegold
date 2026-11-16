@@ -2129,36 +2129,20 @@ int ls_ReadPlayerSlots(int f)
 int ls_ReadRelations(int f)
 {
     int n, i, j;
-    char *p;
 
     if (ls_Version < 0x1003a)
         n = 0x100;
+    else if (ls_Version < 0x10042)
+        n = 0x200;
     else
-        n = ((ls_Version >= 0x10042) - 1 & 0xffffff00) + 0x300;
-    i = 0;
-    if (n > 0) {
-        p = (char *)ai_Relations;
-        do {
-            j = 0;
-            do {
-                LS_R(j + (int)p, 1)
-                j++;
-            } while (j < n);
-            p += 0x300;
-            i++;
-        } while (i < n);
-    }
-    if (ls_Version >= 0x10036 && (i = 0, n > 0)) {
-        p = (char *)ai_RelationMemory;
-        do {
-            j = 0;
-            do {
-                LS_R(j + (int)p, 1)
-                j++;
-            } while (j < n);
-            p += 0x300;
-            i++;
-        } while (i < n);
+        n = 0x300;
+    for (i = 0; i < n; i++)
+        for (j = 0; j < n; j++)
+            LS_R(&ai_Relations[i][j], 1)
+    if (ls_Version >= 0x10036) {
+        for (i = 0; i < n; i++)
+            for (j = 0; j < n; j++)
+                LS_R(&ai_RelationMemory[i][j], 1)
     }
     return 1;
 }

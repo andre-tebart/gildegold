@@ -3280,7 +3280,7 @@ exe	0x0051de70	ls_ReadCharacters	ls	665f542ab572959c	no	byte	control=byte p1=byt
 exe	0x0051e750	ls_ReadCharacter	ls	41486b1c9d33ae00	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	41b5d4fb7350ddfa
 exe	0x0051e900	ls_ReadSceneRecords	ls	d82c4975356d8aa5	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x0051f080	ls_ReadPlayerSlots	ls	21f833f554715629	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	41b5d4fb7350ddfa
-exe	0x0051f650	ls_ReadRelations	ls	b06756f15da8f4ce	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	41b5d4fb7350ddfa
+exe	0x0051f650	ls_ReadRelations	ls	b06756f15da8f4ce	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	d3fde81e7324d0fd
 exe	0x0051f720	ls_ReadStatistics	ls	1dfdc1a11094936a	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0051fb80	ls_ReadAvatars	ls	d0b3bb4e5ed14bbb	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0051fb90	ls_ReadEventTables	ls	629d1eb706ca5be2	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	41b5d4fb7350ddfa
