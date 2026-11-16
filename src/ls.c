@@ -1775,7 +1775,7 @@ int ls_ReadCharacters(int f)
 
 struct CHARACTER *ls_ReadCharacter(int f)
 {
-    int id, v;
+    int id;
     CHARACTER *c;
     char b;
 
@@ -1797,9 +1797,8 @@ struct CHARACTER *ls_ReadCharacter(int f)
         LS_R(c->handObject, 0x40)
     if (ls_Version >= 0x1005a)
         LS_R(c->sitAnim, 0x40)
-    v = id;
+    c->owner = (void *)id;
     c->flags.all &= 0xdffb;
-    c->owner = (void *)v;
     return c;
 }
 /* 0x51e900, reads what ls_WriteSceneRecords writes: two lists of scene characters (ls_ReadCharacter; the owner id of
