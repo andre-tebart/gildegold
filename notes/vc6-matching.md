@@ -218,6 +218,12 @@ Where the pushes and pops sit, how many epilogue copies there are, shared agains
 
 ### Where a return block is laid out
 
+- **A return block copied into one arm with its own `add esp`** (`add esp,0x10; push; call; add esp,4; pop; ret`
+  where ours merges `add esp,0x14`): no `f(); return;` in that arm, let it fall to the one final call; VC6 copies
+  the return block after add-esp merging (init_OpenBuilding byte). A dead `cmp reg,K` in an argument setup = an
+  arm `if (s == K)` with the same call in both arms, merged (init_TextureSetHook). A jump into the middle of
+  a sibling test chain (`cmp al,0x1d; je grave` then a re-test) = the value as one more `||` term of the outer
+  test plus the inner test (init_OpenBuilding).
 - **Return-0 inline at the test vs after the body**: `if (!cond) return 0;` + block inlines it; `if (cond) { body }
   return 0;` puts it after. hst.c text commands use the first (0x4b00e0: 96 -> 3 code hunks), ahm_LoadPrototypes
   (0x4eb480) the second.
@@ -1449,6 +1455,10 @@ a stack slot is a split piece, and the piece's extent is decided by the rules be
   named record pointer `t = &ai_BTypesT[b->type]; f(.., t->title, ..)`: VC6 folds t into the load and still
   materialises it (he_AllocGeselle; the plain field access or a typed cast leaves no lea).
 
+- **A dead `lea ecx,[eax*4+T]` beside a load `[eax*4+T+4]`, the register then reused**: the record pointer local
+  read in the loop test (`ch = &ai_CharsT[c]; for (..) if (m[i] == ch->netId)`), not the id read once into a
+  local (sv_RemoveGroupMember byte, as its sibling sv_AddGroupMember). cm_FightRole: `t = &ai_BTypesT[*b]; if
+  (t->kind == ..)` at each test, not `k = *r`.
 - **A record address materialised (`mov eax,edi; add eax,ebx; mov al,[eax]` / `lea eax,[eax+edx*4]; mov
   al,[eax]`) where ours folds `[edi+ebx]`**: a pointer local read at every test (`g = &T[i]; if (g->type == A ||
   g->type == B ..)`, `g = GM_GOOD(id);`); a value local `type = ..->type` or the element repeated folds the
@@ -2778,6 +2788,7 @@ Operand order on the FPU stack, `fst` / `fstp`, float compares, constants, `_fto
   casts, temporaries, int local. Flip search: compare only the two instructions' order.
 - **`fild a; fild b; fdivp`**: `(double)(a) / (double)(b)` (`(float)a / b` gives `fidiv`); `((a) * 1.0) / (b)`
   moves `fdivp` one or two instructions earlier (d3t_GetTriRange).
+  Also for two int call results: `(double)f(..) / (double)g(..)` (gm_UpdateTechTree byte).
 - **`fidiv` from a stack copy with a dead zero store**: `unsigned int` divisor. `fild; fidiv; fadd dword`:
   `(int)((float)a / b + 0.5f)`.
 - **Unsigned to float `mov [esp+4],0; mov [esp],eax; fild QWORD`**: `unsigned int` (also `(float)(unsigned)x`, an
