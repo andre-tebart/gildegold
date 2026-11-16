@@ -2364,7 +2364,8 @@ int ls_ReadEventTables(int f)
 
 int ls_ReadParties(int f)
 {
-    char tmp[0x1000];
+    int tmp[0x400];
+    int k;
     int n, i;
     G28REC *r;
 
@@ -2382,7 +2383,8 @@ int ls_ReadParties(int f)
         } else {
             if (ls_Read((int)tmp, 0x40, 0x10, f) == 0)
                 return 0;
-            memcpy(r->members, tmp, 0x40);
+            for (k = 0; k < 16; k++)
+                r->members[k] = tmp[k];
         }
         LS_R(&r->offerKind, 1)
         LS_R(&r->eventId, 0x98)

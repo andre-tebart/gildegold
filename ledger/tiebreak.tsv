@@ -3284,7 +3284,7 @@ exe	0x0051f650	ls_ReadRelations	ls	b06756f15da8f4ce	no	shape	sweep control=shape
 exe	0x0051f720	ls_ReadStatistics	ls	1dfdc1a11094936a	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0051fb80	ls_ReadAvatars	ls	d0b3bb4e5ed14bbb	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0051fb90	ls_ReadEventTables	ls	629d1eb706ca5be2	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	41b5d4fb7350ddfa
-exe	0x00520000	ls_ReadParties	ls	6b0588933e358a27	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	41b5d4fb7350ddfa
+exe	0x00520000	ls_ReadParties	ls	6b0588933e358a27	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	b0ff75d0d5dc7a19
 exe	0x00520200	ls_ReadHistory	ls	00224d223df4a78d	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00520310	ls_ReadMessageQueues	ls	6f6381c02332f2c2	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	41b5d4fb7350ddfa
 exe	0x005205f0	ls_ReadEnvironment	ls	fde709cd1e08f756	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
