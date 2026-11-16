@@ -1130,6 +1130,11 @@ a stack slot is a split piece, and the piece's extent is decided by the rules be
 - **Not reached**: the x87 keep-vs-spill rule (ai_FireCannon's extra 4-byte temp).
 
 ### Callee-saved registers swapped: a priority race lost by a point or two
+- **A result kept in esi through a loop nest (split piece, reloaded after a block that borrows esi) where ours
+  keeps it in memory and gives a counter the register**: the two bounds-checked indices were named locals
+  (`k = ..; if (k < size) { j = ..; if (j < size) ret = k << 16 | j; }`); written inline in the tests and in
+  `ret = (..) << 16 | (..)` they become CSEs and the original's allocation follows (map_PickScreen 80 -> byte,
+  found by climb round 2: inline:k > inline:j).
 
 - **Two out-pointer parameters swapped with the index (a in ebx, i in edi; the original i in ebx, a in edi, a
   `mov bl,[esi+0x130]; cmp al,bl` in the loop where ours has `cmp al,[mem]`)**: the accumulation written in both
