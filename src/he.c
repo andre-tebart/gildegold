@@ -20974,23 +20974,12 @@ void init_HookObject(struct D3OBJECT *o, void *p, int kind);
    slot (+0xc8); stage 1 waits for that slot (cm_GetSlotState): an error (2) frees the event, else the objId of
    the object the order made (+0xb8, the reply's AIOBJ.objId) is kept and 0x20 rounds (+0xc0 / +0xc4) are
    counted from now; stage 2 looks the object up each minute (gm_FindById) and at the end of the countdown hooks
-   its scene object into the building (init_HookObject) and frees the event
-   @deep only allocation is left: ours 116 ins vs the original's 117, one hunk at 0x56b493 (+0xa3). The
-   original spills g (cm_GetSlotValue's result) to the ev argument slot reused as a local ([esp+0x14] with
-   the deferred push 0 still on the stack) and schedules that push 0 (gm_AddTime's seconds) before the
-   AIOBJ.objId load; ours keeps g in eax and loads objId first. Read whole against 0x56b3f0..0x56b56c: the
-   meaning is equal - same calls in the same order, same stores, same constants, the switch table equal (5
-   entries) and the block layout equal (case order 0, 1, 2, -2, -1 puts the shared free tail and case 2's
-   copy where the original has them). Tried: int g with a raw *(int *)(g + 2), g declared before bo, the g
-   store before/after the limit and rounds stores, and the AIOBJ* typed form (all identical); the dead slot
-   store does not come from the source form. The store is to a stack slot, not a global; no call or
-   reference differs. */
+   its scene object into the building (init_HookObject) and frees the event */
 void he_RunResearch(int ev)
 {
     AIJOB *e = (AIJOB *)ev;
     HERESEARCH *r = (HERESEARCH *)ev;
-    AIOBJ *bo[1];
-    AIOBJ *g;
+    AIOBJ *o;
 
     switch (e->stage) {
     case 0:
@@ -21004,8 +20993,8 @@ void he_RunResearch(int ev)
             return;
         if (cm_GetSlotState(r->slot) == 2)
             goto done;
-        g = (AIOBJ *)cm_GetSlotValue(r->slot);
-        r->objId = g->objId;
+        o = (AIOBJ *)cm_GetSlotValue(r->slot);
+        r->objId = o->objId;
         r->limit = 0x20;
         r->rounds = 0;
         gm_AddTime(&e->end, 0, 1, 0);
@@ -21015,10 +21004,10 @@ void he_RunResearch(int ev)
         if (gm_CompareTime(&e->end, &ai_Time) >= 0)
             return;
         do {
-            gm_FindById(0, (int *)bo, 0, r->objId);
+            gm_FindById(0, (int *)&o, 0, r->objId);
             gm_AddTime(&e->end, 0, 1, 0);
             if (r->rounds > r->limit) {
-                init_HookObject(bo[0]->obj, bo[0], 1);
+                init_HookObject(o->obj, o, 1);
                 he_FreeEvent(ev);
                 return;
             }

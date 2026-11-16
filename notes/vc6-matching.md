@@ -1839,6 +1839,10 @@ Frame size, slot order, holes, shared slots, dead parameter slots, block-scoped 
 
 ### Shared slots
 
+- **A call result stored into a slot nobody reads (`mov [esp+N],eax` after the call, ours keeps it in eax)**: the
+  slot is a local whose address goes to a call in another arm, used for this value too: one `AIOBJ *o;` for
+  `o = cm_GetSlotValue(..); r->objId = o->objId;` and `gm_FindById(0, (int *)&o, ..)` instead of a `g` plus a
+  `bo[1]` (he_RunResearch byte; the store also schedules the next push first).
 - **Four scalars inside two AIARG records' slots (recA / recB at s1+0 / +4, cntA / cntB at s2+0 / +4)**: a local
   joins a slot at most twice its size, so a 4-byte scalar never shares a 24-byte record's slot; two 12-byte
   arrays can: `AIBLD *spare[3]; int count[3];` indexed by type - 1, with the records block-scoped (ai_DecideMayor
