@@ -444,7 +444,7 @@ exe	0x00422750	mem_Dump	mem	byte	readable
 exe	0x00422910	mem_Exit	mem	byte	readable		
 exe	0x00422a20	pool_Alloc	mem	byte	readable		
 exe	0x00422b30	pool_Free	mem	byte	readable		
-exe	0x00422ba0	pool_Next	mem	shape	readable		
+exe	0x00422ba0	pool_Next	mem	byte	readable		
 exe	0x00422c30	pool_First	mem	byte	readable		
 exe	0x00422c60	pool_Destroy	mem	byte	readable		
 exe	0x00422c90	mov_WndProc	mov	byte	readable		
@@ -866,7 +866,7 @@ exe	0x00448200	d3if_LoadSprite	d3_interface	byte	readable
 exe	0x00448270	d3if_DrawSprite	d3_interface	byte	readable		
 exe	0x00448540	d3if_PickCB	d3_interface	byte	readable		
 exe	0x00448630	d3if_Pick	d3_interface	byte	readable		
-exe	0x004486e0	d3if_ScreenBox	d3_interface	shape	readable		
+exe	0x004486e0	d3if_ScreenBox	d3_interface	byte	readable		
 exe	0x00448910	d3if_CreateCameras	d3_interface	byte	readable		
 exe	0x00448a50	d3if_ClearView	d3_interface	byte	readable		
 exe	0x00448ac0	d3_YawTo	d3_interface	shape	readable		
@@ -899,7 +899,7 @@ exe	0x0044c610	d3io_AttachStock	d3_int_io	byte	readable
 exe	0x0044c9d0	d3io_LodName	d3_int_io	byte	readable		
 exe	0x0044cbb0	d3_AttachMesh	d3_int_io	byte	readable		
 exe	0x0044cd40	d3iot_DeleteStockObject	d3_io_t	byte	readable		
-exe	0x0044ce40	d3iot_CalcBounds	d3_io_t	shape	readable	deep	
+exe	0x0044ce40	d3iot_CalcBounds	d3_io_t	byte	readable		
 exe	0x0044d1c0	d3iot_Finish	d3_io_t	byte	readable		
 exe	0x0044d1f0	d3iot_LoadTexSet	d3_io_t	byte	readable		
 exe	0x0044d330	d3iot_LoadBGF	d3_io_t	draft	readable	deep	
@@ -970,7 +970,7 @@ exe	0x0044f7a0	bgi_Flags	d3_io_b	byte	readable
 exe	0x0044f7d0	bgi_SkipDword	d3_io_b	byte	readable		
 exe	0x0044f7f0	bgi_Attach	d3_io_b	byte	readable		
 exe	0x0044f870	d3_ReadBGF	d3_io_b	byte	readable		
-exe	0x0044f8c0	d3_LoadBinaryAnimStream	d3_io_b	shape	readable		
+exe	0x0044f8c0	d3_LoadBinaryAnimStream	d3_io_b	byte	readable		
 exe	0x004506f0	d3_BGFCanWeld	d3_io_b	byte	readable		
 exe	0x004507a0	d3_OpenFastChunk	d3_io_b	byte	readable		
 exe	0x00450860	d3_FindBGF	d3_io_fl	byte	readable		
@@ -1692,7 +1692,7 @@ exe	0x0049d6a0	ai_DecideBlackmail	am	byte	readable
 exe	0x0049d730	ai_ExecuteBlackmail	am	byte	readable		
 exe	0x0049d750	ai_DecideUsePrivileges	am	byte	readable		
 exe	0x0049d7d0	ai_ExecuteUsePrivileges	am	byte	readable		
-exe	0x0049d7f0	ai_EvalMayor	am	shape	readable		
+exe	0x0049d7f0	ai_EvalMayor	am	byte	readable		
 exe	0x0049d8d0	ai_DecideMayor	am	byte	readable		
 exe	0x0049dc10	ai_ExecuteMayor	am	byte	readable		
 exe	0x0049dd90	ai_DecideMayorUpgrade	am	byte	readable		
@@ -3085,7 +3085,7 @@ exe	0x00505df0	gm_FindChar	f3gm	byte	readable
 exe	0x00505e30	gm_CharAge	f3gm	byte	readable		
 exe	0x00505e60	gm_CharLevel	f3gm	shape	readable		
 exe	0x00505f30	gm_CharPrevLevel	f3gm	shape	readable		
-exe	0x00506000	gm_BirthDate	f3gm	shape	readable		
+exe	0x00506000	gm_BirthDate	f3gm	byte	readable		
 exe	0x005060d0	gm_DeathDate	f3gm	shape	readable		
 exe	0x00506180	gm_RankPlayers	f3gm	shape	readable		
 exe	0x00506430	gm_PlayerRecord	f3gm	byte	readable		
@@ -3118,7 +3118,7 @@ exe	0x005093a0	gm_BuildingKindSkill	f3gm	byte	readable
 exe	0x00509400	gm_WorkMinutesBetween	f3gm	byte	readable		
 exe	0x005096a0	gm_FixedWorkMinutesBetween	f3gm	byte	readable		
 exe	0x005098a0	gm_BuildingGoodsList	f3gm	byte	readable		
-exe	0x005099e0	gm_BuildingGoodsList17	f3gm	shape	readable		
+exe	0x005099e0	gm_BuildingGoodsList17	f3gm	byte	readable		
 exe	0x00509b10	gm_EquipmentValue	f3gm	byte	readable		
 exe	0x00509c80	gm_OwnerWorth	f3gm	byte	readable		
 exe	0x00509d30	gm_BuildingKindValue	f3gm	byte	readable		
@@ -3820,7 +3820,7 @@ exe	0x0056a710	he_RunNewOccurrenceMsg	he	byte	readable
 exe	0x0056a7b0	he_AllocTrade	he	draft	readable	deep	
 exe	0x0056a960	he_RunTrade	he	draft	readable	deep	
 exe	0x0056b380	he_AllocResearch	he	byte	readable		
-exe	0x0056b3f0	he_RunResearch	he	draft	readable	deep	
+exe	0x0056b3f0	he_RunResearch	he	byte	readable		
 exe	0x0056b570	he_AllocGebaeudeBauen	he	byte	readable		
 exe	0x0056b700	he_PlaceGebaeudeObject	he	byte	readable		
 exe	0x0056b750	he_CollectChild	he	byte	readable		
@@ -4148,7 +4148,7 @@ exe	0x0058feb0	ai_DropObjectAt	lc	byte	readable
 exe	0x0058ff00	lc_GebaeudeAusrichten	lc	draft	readable	deep	
 exe	0x005909a0	ai_ConstructionWindow	lc	draft	readable	deep	
 exe	0x00591170	ai_HandleMapKey	lc	byte	readable		
-exe	0x005912c0	ai_TradeContactChecks	lc	shape	readable		
+exe	0x005912c0	ai_TradeContactChecks	lc	byte	readable		
 exe	0x00591480	ai_CampaignKey1	lc	byte	readable		
 exe	0x00591520	ai_GameFrame	lc	byte	readable		
 exe	0x00591ad0	lc_PlayerInJail	lc	byte	readable		
