@@ -482,7 +482,7 @@ exe	0x00424510	net_Error	net	byte	readable
 exe	0x004247e0	net_ClearStats	net	byte	readable		
 exe	0x00424810	net_Count	net	byte	readable		
 exe	0x00424860	net_PrintStats	net	byte	readable		
-exe	0x00424990	net_Connect	net	shape	readable		
+exe	0x00424990	net_Connect	net	byte	readable		
 exe	0x00424c30	net_Close	net	byte	readable		
 exe	0x00424c80	net_Recv	net	byte	readable		
 exe	0x00424e70	net_Send	net	byte	readable		
@@ -1872,7 +1872,7 @@ exe	0x004af1b0	ai_TokenMoney	hst	byte	readable
 exe	0x004af2c0	ai_TokenCityTreasury	hst	byte	readable		
 exe	0x004af3f0	ai_TokenRandomChurchProfession	hst	byte	readable		
 exe	0x004af6c0	ai_TokenRandomRich	hst	shape	readable	deep	
-exe	0x004af8d0	ai_TokenRandomNpcInhabitant	hst	shape	readable		
+exe	0x004af8d0	ai_TokenRandomNpcInhabitant	hst	byte	readable		
 exe	0x004afa20	ai_TokenRandomMerchant	hst	byte	readable		
 exe	0x004afc30	ai_TokenRandomPlayer	hst	byte	readable		
 exe	0x004afdd0	ai_CommandFest	hst	byte	readable		
@@ -2241,8 +2241,8 @@ exe	0x004c5aa0	cm_SendChat	cm	byte	readable
 exe	0x004c5ae0	cm_RequestCreateGeb	cm	shape	readable		
 exe	0x004c5b90	cm_SendCharHalt	cm	byte	readable		
 exe	0x004c5bc0	cm_SendObjCell	cm	byte	readable		
-exe	0x004c5c40	cm_SendCutEntry	cm	shape	readable		
-exe	0x004c5ca0	cm_SendCutEntryUpdate	cm	shape	readable		
+exe	0x004c5c40	cm_SendCutEntry	cm	byte	readable		
+exe	0x004c5ca0	cm_SendCutEntryUpdate	cm	byte	readable		
 exe	0x004c5d00	cm_SendDamage	cm	byte	readable		
 exe	0x004c5d40	cm_SendScriptMessage	cm	byte	readable		
 exe	0x004c5d80	cm_SendTableRequest	cm	byte	readable		
@@ -2347,7 +2347,7 @@ exe	0x004cb9b0	cm_ExSetJob	cm	byte	readable
 exe	0x004cba10	cm_ExSpawnCharacter	cm	byte	readable		
 exe	0x004cbb90	cm_ExFreeObject	cm	byte	readable		
 exe	0x004cbbd0	cm_ExChat	cm	byte	readable		
-exe	0x004cbca0	cm_ExCreateGeb	cm	shape	readable		
+exe	0x004cbca0	cm_ExCreateGeb	cm	byte	readable		
 exe	0x004cbff0	cm_ExCharHalt	cm	byte	readable		
 exe	0x004cc050	cm_ExObjCell	cm	shape	readable		
 exe	0x004cc110	cm_ExWalkPath	cm	shape	readable		
@@ -2490,7 +2490,7 @@ exe	0x004d4d70	cm_FightEndDialog	cm	draft	readable	deep
 exe	0x004d60b0	cm_CheckFight	cm	draft	readable	deep	
 exe	0x004d63e0	cm_RunFight	cm	shape	readable		
 exe	0x004d6930	cm_FightResult	cm	byte	readable		
-exe	0x004d6970	cm_FightFrame	cm	shape	readable		
+exe	0x004d6970	cm_FightFrame	cm	shape	readable	deep	
 exe	0x004d6a50	cm_BuildFightUI	cm	byte	readable		
 exe	0x004d6b70	cm_CloseFightUI	cm	byte	readable		
 exe	0x004d6ba0	cm_FighterAct	cm	byte	readable		
@@ -2941,7 +2941,7 @@ exe	0x004fae50	gm_HandOutMoney	f3gm	byte	readable
 exe	0x004fb0e0	gm_ShiftLoyalty	f3gm	byte	readable		
 exe	0x004fb330	gm_NameRecord	f3gm	byte	readable		
 exe	0x004fb390	gm_CharNameRecord	f3gm	draft	readable	deep	
-exe	0x004fb5a0	gm_SelectModelVariant	f3gm	shape	readable		
+exe	0x004fb5a0	gm_SelectModelVariant	f3gm	byte	readable		
 exe	0x004fb620	gm_ResolveHeadIcons	f3gm	shape	readable		
 exe	0x004fb770	gm_HeadIconNumber	f3gm	byte	readable		
 exe	0x004fb890	gm_ChooseHeadIcon	f3gm	byte	readable		
@@ -3290,7 +3290,7 @@ exe	0x00520200	ls_ReadHistory	ls	byte	readable
 exe	0x00520310	ls_ReadMessageQueues	ls	shape	readable		
 exe	0x005205f0	ls_ReadEnvironment	ls	byte	readable		
 exe	0x005206b0	ls_FixupAfterLoad	ls	shape	readable		
-exe	0x00520a30	ls_SendGame	ls	shape	readable		
+exe	0x00520a30	ls_SendGame	ls	byte	readable		
 exe	0x00520b80	ls_ReceiveGame	ls	byte	readable		
 exe	0x00520ec0	sv_UpdateFramesPerTick	sv	byte	readable		
 exe	0x00520ee0	sv_InitTick	sv	byte	readable		
@@ -4566,8 +4566,8 @@ exe	0x005cfb60	ai_UseGoodAddMoney	lc	byte	readable
 exe	0x005cfb80	ai_UseGoodHeal	lc	byte	readable		
 exe	0x005cfc00	ai_UseGoodInfectOwner	lc	byte	readable		
 exe	0x005cff70	ai_UseGoodSendHome	lc	draft	readable	deep	
-exe	0x005d0320	ai_UseGoodWeakenSkills	lc	shape	readable		
-exe	0x005d0530	ai_UseGoodWeakenSkills2	lc	shape	readable		
+exe	0x005d0320	ai_UseGoodWeakenSkills	lc	byte	readable		
+exe	0x005d0530	ai_UseGoodWeakenSkills2	lc	byte	readable		
 exe	0x005d06e0	ai_UseGoodCureAilment	lc	byte	readable		
 exe	0x005d0780	ai_UseGoodHalveWorkerValue	lc	draft	readable	deep	
 exe	0x005d08c0	ai_ApplyTrialStep	lc	shape	readable		
@@ -4591,7 +4591,7 @@ exe	0x005d22e0	ai_UsePayGood	lc	byte	readable
 exe	0x005d2320	ai_UseGoodDrainActionPoints8	lc	byte	readable		
 exe	0x005d2440	ai_UseGoodHoldRound	lc	byte	readable		
 exe	0x005d2580	ai_UseGoodCharmPartner	lc	draft	readable	deep	
-exe	0x005d2720	ai_UseGoodWeakenSkills3	lc	shape	readable		
+exe	0x005d2720	ai_UseGoodWeakenSkills3	lc	byte	readable		
 exe	0x005d2960	ai_UseGoodFrameChar	lc	shape	readable		
 exe	0x005d2bc0	ai_UseGoodFrameChar2	lc	byte	readable		
 exe	0x005d2e80	ai_UseGoodHeatBuilding	lc	byte	readable		
