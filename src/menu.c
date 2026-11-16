@@ -809,8 +809,6 @@ int ai_EditText(int x, int y, char *text)
 {
     int id;
     int ret;
-    char *src;
-    char *dst;
     int *input;
 
     ret = 0;
@@ -824,10 +822,7 @@ int ai_EditText(int x, int y, char *text)
     d2_SetObjMax(id, 0x1f);
     while (sv_RunFrame((int)ai_EditText, sv_FrameMask) != 0) {
         if (kb_Last == 0x1c) {
-            src = (char *)d2_GetObjValue(id);
-            dst = text;
-            while ((*dst++ = *src++) != '\0')
-                ;
+            strcpy(text, (char *)d2_GetObjValue(id));
             sv_PopRequest = 1;
             ret = 1;
         }
