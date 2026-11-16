@@ -2893,6 +2893,7 @@ the stack at every instruction.
 
 ### Int / float conversions, division, _ftol
 
+- **A float field's `fstp` held behind the next call's pushes** (`fmul [1.5]; xor eax,eax; mov ax,[ebx]; push eax; fstp [rec.mean]; call`): the implicit double -> float conversion `rec.mean = rec.demand * 1.5;`; the explicit `(float)(rec.demand * 1.5)` stores at once (gm_RandomMarketShake byte). No lever: `1.5 * x`.
 - **`fld a; fdiv [r+..]` vs `fld [r+..]; fdivr a`**: `a / r->div` vs `a / (r->div)` or `*(float *)` (0x5dc210).
 - **Int store before `fdivp`, original after**: `v - (v * z) / (r * r)` (d3sndw_Update 4 -> 2). No lever: orders,
   casts, temporaries, int local. Flip search: compare only the two instructions' order.

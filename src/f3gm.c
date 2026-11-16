@@ -3043,11 +3043,11 @@ void gm_RandomMarketShake(int unused)
             if (g->item != 0 && g->amount != 0) {
                 rec = *g;
                 if (util_RandomU(1) != 0) {
-                    rec.mean = (float)(rec.demand * 1.5);
-                    rec.price = (float)(gm_ItemPrice(g->item, 100) * 1.5);
+                    rec.mean = rec.demand * 1.5;
+                    rec.price = gm_ItemPrice(g->item, 100) * 1.5;
                 } else {
-                    rec.mean = (float)(rec.demand * 0.5);
-                    rec.price = (float)(gm_ItemPrice(g->item, 100) * 0.5);
+                    rec.mean = rec.demand * 0.5;
+                    rec.price = gm_ItemPrice(g->item, 100) * 0.5;
                 }
                 cm_SendGoodsDelta(&rec, ai_OwnPlayer);
             }
