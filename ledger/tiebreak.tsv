@@ -3213,7 +3213,7 @@ exe	0x00511840	init_RecreateQuadTree	f3init	72bb43f037580d38	no	byte	control=byt
 exe	0x00511890	init_NameBuildings	f3init	ff8e36c728f9ea8b	no	draft	sample n=32 seed=1 compiled=30 codegens=1 best=draft	
 exe	0x00511ad0	init_LocalData	f3init	2682915d2b64866e	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft	
 exe	0x00511bc0	init_FillMarkets	f3init	bc4900bc23434a7c	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x00511c70	init_GiveFirstPlayerBuildings	f3init	0ae0b9c5fa1f3378	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	3371284ff47bad88
+exe	0x00511c70	init_GiveFirstPlayerBuildings	f3init	0ae0b9c5fa1f3378	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	988525d6b25057b2
 exe	0x00511dc0	init_ObjectSceneUniverse	f3init	5729bddca670beb8	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00511e60	init_BuildingSceneUniverse	f3init	cf7cabf54ca9cf06	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x00511f20	init_SyncSceneObjects	f3init	4fc13f33140c5262	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft	

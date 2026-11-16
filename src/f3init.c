@@ -2842,7 +2842,6 @@ void init_GiveFirstPlayerBuildings(void)
     int i;
     INIT_BLD *b;
     char k;
-    int v;
 
     c = (INIT_CHAR *)ai_Chars[0];
     for (i = 0; i < 0x300; i++) {
@@ -2856,7 +2855,7 @@ void init_GiveFirstPlayerBuildings(void)
             ((gm_BuildingClass(b->type) == 1 || gm_BuildingClass(b->type) == 4 || gm_BuildingClass(b->type) == 2 ||
               ((k = ai_BTypes[b->type * 0x24d]) == 0x13 || k == 4)) || (k == 0x10 || (k == 5 || k == 9))) &&
             ai_BTypes[b->type * 0x24d] != 0xb) {
-            v = 64000;
+            int v = 64000;
             cm_BeginFieldBlock((char *)b, b->id);
             cm_AddFieldDelta(4, 1, (char *)b - cm_FieldObject + 0x39, &v);
             cm_SendFieldDeltas();
