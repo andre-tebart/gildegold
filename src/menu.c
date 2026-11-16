@@ -2543,7 +2543,13 @@ void ai_ProductionContact(int building, int arg)
     int pump;
     int click;
 
-    lager = schn = trans = personal = meister = roh = plausch = 0;
+    lager = 0;
+    schn = 0;
+    trans = 0;
+    personal = 0;
+    meister = 0;
+    roh = 0;
+    plausch = 0;
     sv_ReleaseNamePlates();
     pump = sv_RunFrame(ai_ProductionContact, 0x67fff);
     while (pump != 0) {
