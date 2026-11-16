@@ -1672,7 +1672,7 @@ exe	0x0049c570	ai_DecideSpy	am	3fa00e7d45ac29c7	no	byte	control=byte p1=byte p2=
 exe	0x0049c700	ai_ExecuteSpy	am	a55cbdb192a746cd	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0049c790	ai_DecideBuyMarketObject	am	86289e2169371f7e	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0049c880	ai_ExecuteBuyMarketObject	am	d66de03e0a70dda4	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x0049c8e0	ai_DecideBuyIndulgence	am	c7a12e5d64437b10	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	1670200eeadad7dc
+exe	0x0049c8e0	ai_DecideBuyIndulgence	am	e0fdbcc7a89db57e	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	e02a0889711f5b40
 exe	0x0049cb60	ai_ExecuteBuyIndulgence	am	396411d61bec4552	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	1670200eeadad7dc
 exe	0x0049cd30	ai_DecideUseOffice	am	2aaa3a097020202f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0049cdb0	ai_ExecuteUseOffice	am	01d7bca9fd89e1b3	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	

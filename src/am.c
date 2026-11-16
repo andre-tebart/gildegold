@@ -6889,7 +6889,7 @@ int ai_DecideBuyIndulgence(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     int guilt, graves, i, money, w, c;
     float worth;
     AIBLDX *b;
-    AIBLDX *list[10];
+    AIBLDX *list[8];
 
     if (f == 0 && (p->netId & 3) == ai_Time.year % 4 && (p->netId & 7) == (int)ai_Time.hour % 8) {
         guilt = gv_CulpritGuilt(p->netId);
@@ -6908,7 +6908,7 @@ int ai_DecideBuyIndulgence(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
                         /* the price: the character's worth, its guilt and the owner's liking, clamped */
                         money = gm_CharCurrency((AIPER *)p, ai_OwnPlayer);
                         worth = gm_GetWorth(p->id) * 0.005f;
-                        w = (int)((200.0f - gm_Liking(p->id, b->owner, 1)) * 0.01f * guilt * worth);
+                        w = (int)((float)((200.0f - gm_Liking(p->id, b->owner, 1)) * 0.01f) * guilt * worth);
                         w = (int)min(max(w * 0.01, 3200.0), 320000.0);
                         if (ai_InventoryHas(p, 0x2c6))
                             w /= 2;
