@@ -307,10 +307,10 @@ void ai_PokerNpcExchange(void)
     bestr = 0;
     k = -1;
     for (s = 1; s < 3; s++) {
-        g = 0;
         maxn = 0;
         pairs = 0;
         maxr = 0;
+        g = 0;
         for (c0 = 0; c0 < 24; c0 += 4) {
             n = 0;
             for (i = 0; i < 4; i++) {
