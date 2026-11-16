@@ -158,6 +158,12 @@ def op_swap(lines, rng):
         a, b = lines[i], lines[i + 1]
         if simple(a) and simple(b) and indent(a) == indent(b) and not is_decl(a) and not is_decl(b) and independent(a, [b]):
             yield "swap@%d" % i, lines[:i] + [b, a] + lines[i + 2:]
+        elif is_decl(a) and is_decl(b) and "=" in a and "=" in b and indent(a) == indent(b) \
+                and not any(re.search(r"\b%s\b" % re.escape(n), b) for n in re.findall(r"([A-Za-z_]\w*)\s*(?:\[[^\]]*\])*\s*=", a)) \
+                and not any(re.search(r"\b%s\b" % re.escape(n), a) for n in re.findall(r"([A-Za-z_]\w*)\s*(?:\[[^\]]*\])*\s*=", b)) \
+                and not (_call(a) and _call(b)):
+            # two initialised declarations: their initialisers run in declaration order (d3anim_ApplyMotionTo)
+            yield "swapinit@%d" % i, lines[:i] + [b, a] + lines[i + 2:]
 
 
 def op_move(lines, rng):
