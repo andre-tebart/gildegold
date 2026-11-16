@@ -33,6 +33,11 @@ distance with an unusual construct, and the byte match was plainer code. The rem
 2. Same-unit callees first: VC6 knows which registers a function defined above leaves alone and keeps values
    in ecx / edx across the call. A callee below byte moves its callers (gm_PlayerRecord to byte took its caller
    45 -> 12). Check the callees' grades; match them first.
+   Layout is deep work and comes first: when a hunk only matches with a callee VC6 does not know (a renamed
+   external copy in a scratch unit), first probe what the callee's body tells VC6 (escape per parameter: one
+   `free(p)` in the callee can be the whole difference, cm_FightFrame); only when callers on both sides of an
+   address need different knowledge is it a unit boundary: split the unit yourself (dcp-layout skill), prove no
+   grade falls, commit `layout: ...` as an item.
 3. Read the hunks: `dcp asmdiff NAME --changed --lines`, `dcp diffclass NAME`, `dcp frame NAME` when slots or
    the frame differ. Write down per hunk what the ORIGINAL does (which value sits where, loaded when), not what
    ours does wrong.
