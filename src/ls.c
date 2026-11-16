@@ -408,42 +408,27 @@ int ls_RelinkScene(int f)
 int ls_WriteObjects(int f)
 {
     int n = 0;
-    int i, off;
-    AIOBJ *p = ai_Objects;
-    short *q;
-    char *r;
+    int i;
+    AIOBJ *o;
 
-    for (i = 0x5008; i != 0; i--) {
-        if (p->id != 0)
+    for (i = 0; i < 0x5008; i++) {
+        if (ai_Objects[i].id != 0)
             n++;
-        p++;
     }
-    if (vfs_fwrite(&n, 4, 1, f) <= 0)
-        return 0;
-    off = 0;
-    do {
-        r = (char *)(off + (int)ai_Objects);
-        q = (short *)(off + (int)ai_Objects);
-        if (*q != 0) {
-            if (vfs_fwrite(r, 2, 1, f) <= 0)
-                return 0;
-            if (vfs_fwrite(r + 2, 4, 1, f) <= 0)
-                return 0;
-            if (vfs_fwrite(r + 6, 4, 1, f) <= 0)
-                return 0;
-            if (vfs_fwrite(r + 10, 4, 1, f) <= 0)
-                return 0;
-            if (vfs_fwrite(r + 0xe, 4, 1, f) <= 0)
-                return 0;
-            if (vfs_fwrite(r + 0x12, 1, 1, f) <= 0)
-                return 0;
-            if (vfs_fwrite(r + 0x13, 1, 1, f) <= 0)
-                return 0;
-            if (vfs_fwrite(r + 0x1c, 0x1f, 1, f) <= 0)
-                return 0;
+    LS_W(&n, 4)
+    for (i = 0; i < 0x5008; i++) {
+        o = &ai_Objects[i];
+        if (o->id != 0) {
+            LS_W(&o->id, 2)
+            LS_W(&o->objId, 4)
+            LS_W(&o->ownerId, 4)
+            LS_W(&o->fightSide, 4)
+            LS_W(&o->count, 4)
+            LS_W(&o->fill, 1)
+            LS_W(&o->flags13, 1)
+            LS_W(&o->bldId, 0x1f)               /* 0x1c .. 0x3a, the kind-specific fields */
         }
-        off += 0x43;
-    } while (off < 0x14f218);
+    }
     return 1;
 }
 /* 0x519d20, the buildings: the count of the used ones (0x100 AIBLD records of 0xa9 bytes, ai_Blds), then each field by field (+0 .. +0x5c, then by type: 0x1e its 64 vegetation records at AIBLD.plants, 0x48 .. 0x4a gv_WriteGraveyard, 0x4b .. 0x4d ahm_WriteRecord, the others the 0x30 bytes at +0x65), the work settings at +0x99; at the end the building sites (ai_NBauplaetze, then ai_Bauplaetze's name, minimum and maximum corner). Returns 1, 0 when a write fails */
