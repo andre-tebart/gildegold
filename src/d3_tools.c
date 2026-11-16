@@ -335,21 +335,14 @@ int d3t_GetFootprint(D3OBJECT *obj, float t, D3VECTOR *c0, D3VECTOR *c1, D3VECTO
 typedef struct D3MESHLIST { char pad[0x10]; D3MESHOPS *ops; } D3MESHLIST;
 
 /* 0x411eb0, center and radius of a mesh's 8-corner box as seen from the camera; returns 1 when the
-   box was read. The squared corner distance is stored through a volatile view and read back through
-   a plain one: the original writes it to its slot (fstp) and compares it from memory (fcom [slot]),
-   while a direct spelling keeps the sum on the FPU and compares r itself. Only the fsqrt position
-   still differs (1 order hunk). */
+   box was read (d3_GetBounds' mesh branch: the results stored under one `if (ok)`). */
 char d3t_GetBoundingSphere(D3OBJECT *obj, D3OBJECT *camera, D3VECTOR *center, float *radius)
 {
     char ok = 0;
     D3MESHLIST *list;
     D3BOXVERT *v;
     D3VECTOR4 c;
-    float dx, dy, dz, r;
-    union {
-        volatile float sum;         /* squared distance, stored: the original keeps it in memory */
-        float dist;                 /* the same slot, read by the compare (fcom [slot]) */
-    } d;
+    float dx, dy, dz, r, d;
     D3BOXVERT *w;
     int i;
 
@@ -374,12 +367,15 @@ char d3t_GetBoundingSphere(D3OBJECT *obj, D3OBJECT *camera, D3VECTOR *center, fl
                 dx = c.x - v[i].x;
                 dy = c.y - v[i].y;
                 dz = c.z - v[i].z;
-                d.sum = dx * dx + dy * dy + dz * dz;
-                r = max(r, d.dist);
+                d = dx * dx + dy * dy + dz * dz;
+                r = max(r, d);
             }
+            r = (float)sqrt(r);
             ok = 1;
+        }
+        if (ok) {
             if (radius)
-                *radius = (float)sqrt(r);
+                *radius = r;
             if (center) {
                 center->x = c.x;
                 center->y = c.y;

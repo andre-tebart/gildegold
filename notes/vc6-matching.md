@@ -446,6 +446,12 @@ copied back into short predecessors only after all of this.
 
 ### Redundant tests the original keeps, threading
 
+- **An `fsqrt` (or any result) computed in the block that tests the output pointer (`test ecx,ecx; fsqrt; je`),
+  the else path popping it, and a sum stored to its slot and compared from memory (`fstp [slot]` / `fcom
+  [slot]`)**: the results were stored under a decided `if (ok) { if (radius) *radius = r; if (center) .. }`
+  after the block that sets `r = (float)sqrt(r); ok = 1;` (d3_GetBounds' shape). The decided test leaves no
+  code but keeps sqrt out of the radius arm and the loop's distance in memory: d3t_GetBoundingSphere went byte
+  with a plain `float d` (a volatile union had faked the store).
 - **A flags word loaded once (`mov cx,[edx+0x5a]`) and tested again in each later arm**: the first test on the
   field, the later ones on a copy, `fl = rec->flags5aw; if (rec->flags5aw & 0x45) continue; .. if (!(fl & 0x45))`;
   all on the field or all on fl threads them away (ai_DecideMayor byte).
