@@ -3035,7 +3035,9 @@ the stack at every instruction.
 - **Pointer differences**: `(char *)t - (char *)base >> 7` gives `sub; sar`;
   `(unsigned)((char *)p - (char *)base) / sizeof(T)` the unsigned divide-by-multiply.
 - **A hoisted byte shift count (`mov dl,8; sub dl,cl`)**: `x >> (BYTE)(8 - n)`.
-- **imul operand order**: `(short)w * (short)a` vs the swapped order swaps the operands.
+- **imul operand order**: `(short)w * (short)a` vs the swapped order swaps the operands. Of two int locals the
+  text order of `i * size` is no lever; the one DEFINED later is copied first (`mov esi,i; imul esi,size` needs
+  `i = it->index;` after `size = ..`, inside the loop body: pool_Next byte; flip.py found it by deleting i's init).
 - **`lea ebx,[eax+1]` where ours has `inc ebx` on a pointer parameter**: `memcmp(fmt + 1, ..)`, not `fmt++`
   (ai_CommandExecution).
 - **`inc DWORD PTR [reg+0x248]` vs `mov eax,[..]; inc eax; mov [..],eax`**: `d2_LastWindowPtr->scrollY++` vs

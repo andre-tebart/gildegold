@@ -312,9 +312,9 @@ void *pool_Next(MPOOLITER *it)
     int *slot;
 
     if (it && it->pool) {
-        i = it->index;
         do {
             size = it->pool->size;
+            i = it->index;
             if (it->left == 0)
                 it->left = it->pool->used;
             slot = (int *)((char *)(it->pool + 1) + i * size);
