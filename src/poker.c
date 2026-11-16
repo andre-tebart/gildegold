@@ -630,8 +630,8 @@ int ai_PokerRateHand(int owner, int *g1, int *g2, int *r1, int *r2)
     maxn = 0;
     maxr = 0;
     bestr = 0;
-    kind = 0;
     b = -1;
+    kind = 0;
     a = 0;
     for (g = 0; g < 6; g++) {
         n = 0;
@@ -644,8 +644,8 @@ int ai_PokerRateHand(int owner, int *g1, int *g2, int *r1, int *r2)
             pairs++;
             if (n > maxn) {
                 b = a;
-                a = g;
                 maxn = n;
+                a = g;
             } else if (b < 0) {
                 b = g;
             }
