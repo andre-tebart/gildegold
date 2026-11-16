@@ -925,6 +925,10 @@ Rotation, test position, countdown, induction variables and strength reduction, 
 
 ### Counters, countdowns and increment order
 
+- **The loop pointer's `add esi,0x14` emitted before the body's last running sum (`dec ebx; setns; lea
+  edi,[edi+ecx+0x21]`)**: the sum stood in the for increment behind `i++`: `for (i = 0; i < 8; i++, y += step +
+  (--rest >= 0) + 0x21)` (ai_SpecialAmountWindow; a `while` with `i++;` before the sum is the same code). No lever:
+  operand order or splitting the sum.
 - **The original's outer loops are count-down trip counters (`sub eax,esi; mov [esp+x],eax .. dec; jne`),
   ours `lea eax,[ecx-1]; cmp eax,ebp; jl`, and a following loop over the same range re-tests its entry**:
   the bounds were not locals; `for (i = start[lv]; i < start[lv + 1]; i++)` read in place in every loop
@@ -1420,6 +1424,9 @@ a stack slot is a split piece, and the piece's extent is decided by the rules be
 
 ### Pointer locals and addresses
 
+- **`lea ebx,[edi-0x1a0]` (a row pointer) after the row's tests, ours before them**: test the element in place
+  and set the pointer inside the if: `if (d2_Views[k].active && d2_Views[k].enabled) { v = &d2_Views[k]; ..`
+  (sv_DisableVisibleWidgets).
 - **A dead `lea eax,[edi+eax*4]` right after a load `[edi+eax*4+0x22f]` (eax overwritten by the next call)**: a
   named record pointer `t = &ai_BTypesT[b->type]; f(.., t->title, ..)`: VC6 folds t into the load and still
   materialises it (he_AllocGeselle; the plain field access or a typed cast leaves no lea).
@@ -2118,6 +2125,9 @@ Store order in a fill, hoisted loads and sunk stores, statement order effects, `
 
 ### Store order in fills, records and rects
 
+- **The last load of a 3-int copy scheduled behind the `lea` of the next call's buffer**: the element loop
+  `for (i = 0; i < 3; i++) m.rot[i] = rot[i];` (or a 12-byte struct copy), not three field stores
+  (cm_RequestCreateGeb). No lever: the 720 orders of the fill.
 - **A store held behind independent stores of the same record** (`mov esi,[esi+4]` hoisted, then `thing`,
   `used`, `host`, `members[0]`): a load through a pointer is ordered after earlier stores to an escaped local, and
   the other order holds the stores at the load's height; the value read into a named local first, stored twice
@@ -2190,6 +2200,12 @@ Store order in a fill, hoisted loads and sunk stores, statement order effects, `
 
 ### Init and zero-store order
 
+- **A zero store or a flag `= 0` scheduled first in a store run where ours puts it last** (after pushes or record
+  fields): move the statement up one at a time (`dcp try NAME --move-line N --to A..B`): `done = 0;` before the
+  `memset(&cfg, ..)` of the menu record (ai_PeaceWindow; its twin ai_HatredWindow draft -> shape),
+  `sv_SceneEventTime = 0;` before the six saved-view stores, as in the twins ai_EnterOwnBuilding / ai_EnterBuilding
+  (ai_RunObjectRoom). The same: `i = 0;` inside the guard ahead of `n = r->used;`, then `for (; i < n; ..)`
+  (`xor edx,edx` after the count's load, cm_AddPartyMember).
 - **Two zeroes before a loop** (`xor ebp,ebp; xor edi,edi` in n, i order): the index first is `for (i = 0, n =
   0; ..)`, the other first `n = 0; for (i = 0; ..)` (ai_BlackmailBuildingListener, unk_4b39f0.c 0x4b3c40 /
   0x4b4670). A counter zeroed before an unrelated call: `i = 0;` before the call, then `for (; i < n; ...)`. A
@@ -2709,6 +2725,9 @@ Operand order on the FPU stack, `fst` / `fstp`, float compares, constants, `_fto
 
 ### Constants: float vs double, pooled literals, reciprocals
 
+- **`fstp` of a loop's float store before the pointer `add`, ours after `dec`**: `(float)(x * 0.001)` - the
+  explicit narrowing cast of the double product keeps the store in place (gv_AllocAvatar, now an index loop over
+  GVAVATAR.mood[j][1]). No lever: `/ 1000.0`, `0.001 * x`, `(double)x * 0.001`.
 - **DWORD vs QWORD constant operand**: check the size first, it is a type fix: `0.001` `fmul qword`, `0.001f`
   dword; `< 0.2` / `< -1.0` / `< 100.0` QWORD compares (0x58fe10, 20 -> 4 hunks); `util_Random(n) + 10.0` `fadd
   qword`; `1.0 - (x + 0.2)` QWORD at 0x5eb7d0 / 0x5eb8a8 (amt_ExecutePriceMessage); `x * 0.00625f + 0.25` `fmul
@@ -3023,6 +3042,9 @@ Operand order on the FPU stack, `fst` / `fstp`, float compares, constants, `_fto
 
 ### Inline string copies, compares and lengths
 
+- **Offset copy with `lea eax,[eax+table]` where the hand `s = tbl[g].name; d = out - s; do {..}` gives `add
+  eax,table`**: `strcpy(out, tbl[g].name)` (ai_BuildingName). The opposite held for init_BuildingKindName (byte with
+  the hand loop; strcpy there is 12 ins off): measure both.
 - **Offset copy `inc eax; sub edx,eax; mov cl,[eax]; mov [edx+eax],cl; inc eax; test cl,cl`** (one running source
   pointer): conflicting notes, measure. One note: not strcpy (strcpy and `*d++ = *s++` give the two-pointer
   `inc ecx / inc edx` loop, `out[i] = s[i]` walks the destination); write `s = src; off = out - s; do { c = *s;
