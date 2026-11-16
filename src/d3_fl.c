@@ -1852,7 +1852,7 @@ void d3fl_DrawWater(D3FLMAP *map, D3FLTILE *t)
     D3PVERT *v;
     D3FLPOLY *poly;
     D3CLIPINFO *clip;
-    float *wv;
+    D3FLTEX *tex;
     float k, fx, h, f;
     unsigned int mask;
     int size, row, ym, x, idx, iv, npoints, npolys, i;
@@ -1887,17 +1887,16 @@ void d3fl_DrawWater(D3FLMAP *map, D3FLTILE *t)
             for (x = r->x0; x <= r->x1; x++, v++) {
                 idx = (x & mask) + row;
                 f = water[idx];
-                wv = reg->wave[ym][x & 3];
                 sun.x = d3fl_AxisY.x * f;
                 sun.y = d3fl_AxisY.y * f;
                 sun.z = d3fl_AxisY.z * f;
-                sun.x += wv[0];
-                sun.y += wv[1];
-                sun.z += wv[2];
+                sun.x += reg->wave[ym][x & 3][0];
+                sun.y += reg->wave[ym][x & 3][1];
+                sun.z += reg->wave[ym][x & 3][2];
                 v->x = p.x + sun.x;
                 v->y = p.y + sun.y;
                 v->z = p.z + sun.z;
-                a = (unsigned char)min(255.0f, max(0.0f, h + wv[3]));
+                a = (unsigned char)min(255.0f, max(0.0f, h + reg->wave[ym][x & 3][3]));
                 if (reg->flags.b[2] & 1)
                     v->color = (a << 8 | a) << 8 | a;
                 else {
@@ -1955,13 +1954,14 @@ void d3fl_DrawWater(D3FLMAP *map, D3FLTILE *t)
         for (i = npolys, poly = t->wpolys; i > 0; i--, poly++)
             if (poly->flags & 0x80) {
                 reg = &map->regions[poly->region];
+                tex = reg->tex2;
                 d3_SortPtr->item = poly;
-                if (reg->tex2) {
-                    d3_SortPtr->key = ((D3TEXTURE *)reg->tex2 - (D3TEXTURE *)d3_Textures) + 1;
-                    reg->tex2->stamp = d3_FrameCount;
+                if (tex) {
+                    d3_SortPtr->key = ((D3TEXTURE *)tex - (D3TEXTURE *)d3_Textures) + 1;
+                    tex->stamp = d3_FrameCount;
                 } else
                     d3_SortPtr->key = 0;
-                poly->tex = reg->tex2;
+                poly->tex = tex;
                 poly->clip = clip;
                 poly->uOfs = reg->uOfs;
                 poly->vOfs = reg->vOfs;
