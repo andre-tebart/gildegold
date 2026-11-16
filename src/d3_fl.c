@@ -2671,15 +2671,14 @@ int d3fl_Prerender(D3FLMAP *map)
     return 0;
 }
 /* 0x4463b0, map point under the world position pos (x/z) and, if h is given, the ground height there,
-   interpolated on the triangle of the (lod: current detail level) mesh
-   @deep B: read the whole 111-line asmdiff against 0x4463b0..0x446750 and diffclass: the first 131 instructions are equal, then the bilinear height samples are computed with ebp/edx/esi/edi in other roles (the flat indices and neighbours are the same expressions) and the four fild byte samples are scheduled in another order, 46 instructions equal again, and the second pick block repeats the same register swap; no different constant, callee, condition or field. Register allocation only, needs vargen/try.py */
+   interpolated on the triangle of the (lod: current detail level) mesh */
 
 char map_Pick(D3FLMAP *map, D3VECTOR *pos, char lod, int *px, int *py, float *h)
 {
     D3VECTOR4 d;
     float u, v, h0, du, dv;
     int x, y, k, ix;
-    unsigned int s, x1, y1;
+    unsigned int s;
     unsigned char *div;
 
     if (!map)
@@ -2710,11 +2709,9 @@ char map_Pick(D3FLMAP *map, D3VECTOR *pos, char lod, int *px, int *py, float *h)
         v = (d.z - y) / s;
         if (div && (div[y / s * map->size / s + ix / s] & 0x80)) {
             if (u + v > 1.0f) {
-                x1 = (ix + s) & map->mask;
-                y1 = (y + s) & map->mask;
-                h0 = map->height[y1 * map->size + x1];
-                du = map->height[y1 * map->size + ix] - h0;
-                dv = map->height[y * map->size + x1] - h0;
+                h0 = map->height[((y + s) & map->mask) * map->size + ((ix + s) & map->mask)];
+                du = map->height[((y + s) & map->mask) * map->size + ix] - h0;
+                dv = map->height[y * map->size + ((ix + s) & map->mask)] - h0;
                 u = 1.0f - u;
                 v = 1.0f - v;
             } else {
@@ -2723,17 +2720,13 @@ char map_Pick(D3FLMAP *map, D3VECTOR *pos, char lod, int *px, int *py, float *h)
                 dv = map->height[((y + s) & map->mask) * map->size + ix] - h0;
             }
         } else if (u + (1.0f - v) > 1.0f) {
-            x1 = (ix + s) & map->mask;
-            y1 = (y + s) & map->mask;
-            h0 = map->height[y * map->size + x1];
+            h0 = map->height[y * map->size + ((ix + s) & map->mask)];
             du = map->height[y * map->size + ix] - h0;
-            dv = map->height[y1 * map->size + x1] - h0;
+            dv = map->height[((y + s) & map->mask) * map->size + ((ix + s) & map->mask)] - h0;
             u = 1.0f - u;
         } else {
-            x1 = (ix + s) & map->mask;
-            y1 = (y + s) & map->mask;
-            h0 = map->height[y1 * map->size + ix];
-            du = map->height[y1 * map->size + x1] - h0;
+            h0 = map->height[((y + s) & map->mask) * map->size + ix];
+            du = map->height[((y + s) & map->mask) * map->size + ((ix + s) & map->mask)] - h0;
             dv = map->height[y * map->size + ix] - h0;
             v = 1.0f - v;
         }
