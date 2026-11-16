@@ -55,6 +55,7 @@ exe	0x0047b900	d2_ShpBlit16HalfDark	1
 exe	0x0048f600	ai_DecideUseAlchemyItems	1
 exe	0x00497fa0	ai_DecideBuyBuilding	1
 exe	0x004a0a70	ai_DecideUpgradeGuild	1
+exe	0x004a3af0	ai_FillNearRing	1
 exe	0x004a6ae0	ai_FireCannon	1
 exe	0x004a7ac0	ai_PokerPickStrategies	1
 exe	0x004a7e70	ai_PokerOpenCounts	1
