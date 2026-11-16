@@ -94,7 +94,20 @@ def main():
     ap.add_argument("--alloc", action="store_true",
                     help="the register allocator instead: per block its weight P and the counted references, then "
                          "every candidate's priority (highest first gets a callee-saved register; ties: created later)")
+    ap.add_argument("--variants", help="a dcp try variants file: the graph of one variant (applied to a copy of SRC)")
+    ap.add_argument("--label", help="the variant's label (default: the file's first)")
     a = ap.parse_args()
+    if a.variants:
+        if not a.func:
+            raise SystemExit("--variants needs FUNC")
+        import c2trace
+        text = open(a.src, encoding="latin-1", newline="").read().replace("\r\n", "\n")
+        text, lab = c2trace.variant_text(text, a.func, a.variants, a.label, src=a.src)
+        os.makedirs(WORK, exist_ok=True)
+        copy = os.path.join(WORK, "%s_%s.c" % (os.path.splitext(os.path.basename(a.src))[0], re.sub(r"\W", "_", lab)))
+        with open(copy, "w", encoding="latin-1", newline="\n") as f:
+            f.write(text)
+        a.src = copy
     dag, asm = run(a.src, a.flags.split(), a.blocks)
     if a.blocks:
         on = False
