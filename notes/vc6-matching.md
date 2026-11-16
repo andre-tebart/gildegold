@@ -2613,7 +2613,8 @@ the stack at every instruction.
   parentheses), never on swaps.
 - **`(float)` casts as rank movers**: around the first product of a sum (d3_VecAngle); on the double operand of a
   mixed product (d3_MatFromAngles, 2 casts of 7). Neither, nor the dead store, reaches fields read through a
-  pointer (d3_MakeBasis). Tools: uv run respell rules fcast / deadrank, idiom fpu_rank.
+  pointer; there the subset of parenthesised operands does: `(m->_22) * m->_33 - (m->_32) * m->_23` (one each
+  product; 64 subsets x swaps, one `dcp try`, d3_MakeBasis byte). Tools: uv run respell rules fcast / deadrank, idiom fpu_rank.
 - **Parenthesized member reads get their own rank**: `(drop->pos.w)` alone loads before the local `vel.x`
   (d3t_UpdateRain); `x = (p->x += 2.0)` differs from the bare form; `wz = (snow->windz);` moves an unrelated
   `fstp` two instructions. No lever: integer loads (d3_Viewport).

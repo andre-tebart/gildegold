@@ -997,7 +997,7 @@ exe	0x00453990	d3_ShadeReset	d3_vec	3f5ddb066c3b1b9a	no	byte	control=byte p1=byt
 exe	0x004539b0	d3_Lerp3	d3_vec	579779bdad6c1a7e	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004539f0	d3_VecAngle	d3_vec	4a13f7ee4bedafa5	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00453b40	d3_VecAngle2	d3_vec	678bcda267f5f696	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x00453b70	d3_MakeBasis	d3_vec	e724b5b4b0fe5db6	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	1d636c0a5b47a612
+exe	0x00453b70	d3_MakeBasis	d3_vec	e724b5b4b0fe5db6	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	3831268c035a1b35
 exe	0x00453d60	d3_UnwrapAngles	d3_vec	668087a9cf3484e4	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00453e20	d3_Hermite	d3_vec	93f18a05b87317f8	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00453e80	d3_VecEqual	d3_vec	18964eb6b06c4197	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
