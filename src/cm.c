@@ -6778,7 +6778,16 @@ int cm_LobbyRequestList()
     m.type = 0x5f;
     return cm_QueueSend(&m);
 }
-/* 0x4cd650, kind 1: this player's ready flag v; returns the send slot */
+/* 0x4cd650, kind 1: this player's ready flag v; returns the send slot
+   @deep Original: id load eax, v load ecx, id store, then lea eax,[m] for the push (eax reused); ours
+   gives the lea edx (strict eax/ecx/edx rotation: id, v, &m). No candidates in ours (c2dag --alloc empty).
+   Rounds, all no lever: every order of the four stores x memset position (120; best = control 4 ins);
+   named id / ready locals and a CMLOBBYPLAYER record in all orders (420; idlocal makes id a candidate in
+   eax, store sinks: 8 ins); each store duplicated or a zero store added at every position (960; nothing
+   moves edx); field spellings list[] / player.* / int view / CMLOBBYPLAYER pointer (= control); r = call;
+   return r, G17MSG *pm (= control); flip.py --want lea eax: 0 flips; climb 2 rounds: none. Lead: the
+   original has one more rotation step between v's load and &m (an invisible temp) or id/v are candidates;
+   twin cm_LobbySendChat matched by m.type first after the memset. */
 
 int cm_LobbySetReady(int v)
 {
