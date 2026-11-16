@@ -1908,6 +1908,12 @@ Store order in a fill, hoisted loads and sunk stores, statement order effects, `
 
 ### Store or push placement around calls and `add esp`
 
+- **A global store at the head of a join block, before the next call's argument load** (original `mov
+  [he_ActiveSlot],esi; mov eax,[esi+8]; push 1; push eax`, ours sinks the store to just before the call): the
+  store was written in BOTH arms of the preceding if (`{ ..; g = p; } else g = p;`) and the next call reads the
+  value back through the global (`f(g->win, 1)`, not `f(slots[i].win, 1)`); either change alone does nothing or
+  rebases the loop pointer (he_PickActiveEvent).
+
 - **A store before its `add esp` with a label right behind it** (`mov [Snd[0].snd],ebx; add esp,16`, the next
   block add-first): two cross-jumped copies of that code. Write the code out at each exit instead of `goto` to
   one copy: `if (!ready) { stop both; return; }` and `else if (d3sndw_Scene != d3_DefaultScene) { d3sndw_Scene =

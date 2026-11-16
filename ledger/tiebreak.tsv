@@ -3499,7 +3499,7 @@ exe	0x0053d930	he_CreateEventBar	he	2a57f09046ddf8da	no	byte	control=byte p1=byt
 exe	0x0053d9b0	he_CloseEventSlots	he	b8eeb9c3a0d6e18e	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0053d9f0	he_ShowEventBar	he	d8e2b4ff2f58f169	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0053dad0	he_SetBarEnabled	he	eb72a0a09a49100d	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x0053daf0	he_PickActiveEvent	he	686edd18f1c0efcf	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
+exe	0x0053daf0	he_PickActiveEvent	he	686edd18f1c0efcf	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	d3cf6b7c31f9909a
 exe	0x0053dcb0	he_ActivateSlot	he	0611cbe832fa9c2e	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0053dda0	he_ShowNews	he	f7ab3896fe028ed7	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x0053dee0	he_MessageBoxQuickjump	he	ee16d0a93e8313a2	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	

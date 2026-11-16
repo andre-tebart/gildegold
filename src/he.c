@@ -1553,9 +1553,10 @@ void he_PickActiveEvent(void)
                     }
                     if (HE_PAUSES(he_ActiveSlot->ev))
                         tb_Paused = 0;
-                }
-                he_ActiveSlot = &he_EventSlots[i];
-                d2_SetViewEnabled(he_EventSlots[i].win, 1);
+                    he_ActiveSlot = &he_EventSlots[i];
+                } else
+                    he_ActiveSlot = &he_EventSlots[i];
+                d2_SetViewEnabled(he_ActiveSlot->win, 1);
                 d2_RaiseViewWindows(he_ActiveSlot->win);
                 if (HE_PAUSES(he_ActiveSlot->ev))
                     tb_Paused = 1;
