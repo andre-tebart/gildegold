@@ -2511,15 +2511,16 @@ void he_ClearInnDarkCorner(void)
 {
     AIBLD *f;
     AIOBJ *r;
-    int arg[4];
 
     f = (AIBLD *)gm_BuildQuery(1, 5, 0x16);
     while (f != 0) {
         r = (AIOBJ *)gm_Query((void *)f->objList, 1, 0, 0x120);
         if (r != 0 && (r = (AIOBJ *)gm_Query((void *)r->list, 1, 0, 300)) != 0
                 && ai_Time.year - ((HEJOBTABLE *)r)->year > 1) {
-            arg[2] = f->id;
+            int arg[5];         /* the 0x14-byte record cm_SendScriptMessage copies; arg[4] left unset */
+
             arg[0] = 0x636c6572;
+            arg[2] = f->id;
             arg[1] = -1;
             arg[3] = -1;
             cm_BeginGroup("clear dunkle ecke");

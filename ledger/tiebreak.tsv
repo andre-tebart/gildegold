@@ -3532,7 +3532,7 @@ exe	0x0053f190	he_PostEvent2b	he	bd4df3c6be7aba1c	no	byte	control=byte p1=byte p
 exe	0x0053f270	he_PostPlayerEvents86a2	he	e780aaee8b31d302	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0053f370	he_PostWorkshopEvents98	he	b3dd5aa8457c085f	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
 exe	0x0053f430	he_InnStaffLeave	he	5a67a2c4bc8f66dc	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
-exe	0x0053f500	he_ClearInnDarkCorner	he	1711bc0ea1b03f42	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
+exe	0x0053f500	he_ClearInnDarkCorner	he	1711bc0ea1b03f42	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	d9b78cd5ea78331c
 exe	0x0053f5b0	he_TopUpCharMoney	he	fe5a2a673f36d36c	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0053f6b0	he_SpawnFounders	he	deea08cbc2d86af6	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x00540c90	he_PostEvent67	he	c9c4ee076839760b	no	byte	sweep control=byte best=byte by the build's declarations; codegens=1 compiled=12 (stopped at the goal)	1026951b5f449caa
