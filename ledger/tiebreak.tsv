@@ -1631,7 +1631,7 @@ exe	0x00498470	ai_ExecuteBuyBuilding	am	a6b9be5c7042bed9	no	shape	sweep control=
 exe	0x004984d0	ai_DecideBuildResidence	am	9ecd3b4559a23d5e	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	6d29c81bea3351c4
 exe	0x00498a80	ai_ExecuteBuildResidence	am	3073144360bb3d0d	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	1670200eeadad7dc
 exe	0x00498b80	ai_DecideUpgradeResidence	am	b625e157c488a0cd	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x00498c70	ai_DecideBuildBusiness	am	00db436d6d4373b8	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	1670200eeadad7dc
+exe	0x00498c70	ai_DecideBuildBusiness	am	00db436d6d4373b8	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	fcbfc2e8934a31f3
 exe	0x00499290	ai_ExecuteBuildBusiness	am	5e2cf39cf2b2e8a4	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00499400	ai_DecideUpgradeBusiness	am	da47a8380aea9a1d	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x00499520	ai_DecideVisitMedicus	am	7178f68680f8cf21	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	

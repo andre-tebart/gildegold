@@ -5075,7 +5075,7 @@ int ai_DecideBuildBusiness(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
             return r;
         }
     }
-    if (o1->kind != 0)
+    if (0 != o1->kind)
         return 0;
     for (i = 0; i < 0x100; i++) {
         bl = &AI_BLDX[i];

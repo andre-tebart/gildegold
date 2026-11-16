@@ -2600,6 +2600,12 @@ the stack at every instruction.
 
 ### Operand order of commutative ops (ranks)
 
+- **`add edx,eax` against `add eax,edx` for `n % 2 + n / 2` (one idiv), no spelling of that statement moves it**:
+  the constant-first compare `if (0 != o1->kind) return 0;` 50 lines above did (ai_DecideBuildBusiness, found by
+  climb.py's `commute` op; `if (o1->kind)`, `!(.. == 0)`, the sum's operand order, parentheses: = control).
+  A zero compared constant-first changes the ranks of later integer temporaries: run climb round 1 before
+  generating spellings of the hunk's own statement.
+
 - **`fld a; fadd b` / `fmul` in the other order, no textual swap moves it**: order is an internal rank and follows
   the stack layout (fix layout first). Ranks move with parentheses (`(p->x)` is not neutral), a dead store, a named
   local, a `(float)` cast of a subterm. Of two named locals the one first appearing later (assigned last before
