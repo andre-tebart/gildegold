@@ -3084,7 +3084,7 @@ exe	0x00505df0	gm_FindChar	f3gm	45f94ef36d606cf2	no	shape	sweep control=shape be
 exe	0x00505e30	gm_CharAge	f3gm	4071fd9d8648b8d7	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00505e60	gm_CharLevel	f3gm	cc0ea9a22d912e21	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	e0b1e84025becc72
 exe	0x00505f30	gm_CharPrevLevel	f3gm	7e0f47cf40529e7b	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	e0b1e84025becc72
-exe	0x00506000	gm_BirthDate	f3gm	2a5f5869d8fe8a1e	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	e0b1e84025becc72
+exe	0x00506000	gm_BirthDate	f3gm	2a5f5869d8fe8a1e	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	55dbe17996343dd4
 exe	0x005060d0	gm_DeathDate	f3gm	c911c4339d0ac454	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	e0b1e84025becc72
 exe	0x00506180	gm_RankPlayers	f3gm	0662dd45bed63e8a	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	e0b1e84025becc72
 exe	0x00506430	gm_PlayerRecord	f3gm	96707c788812cc66	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	

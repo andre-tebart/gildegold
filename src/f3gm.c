@@ -6982,18 +6982,15 @@ void gm_BirthDate(ORDCHAR *c, GMDATE *out)
 {
     AITIME clk;
     GMDATE d;
-    int year;
     unsigned x;
 
     clk = ai_Time;
-    year = ai_Time.year;
     if (c->health == 0)
-        year = c->w028;
-    year -= c->w00a;
-    clk.year = year;
+        clk.year = c->w028;
+    clk.year -= c->w00a;
     gm_ClockToDate(&clk, (unsigned char *)&d);
     x = c->nameKey ^ d.year;
-    d.month = (char)(((x >> 3) % 13 + year % 11) % 12) + 1;
+    d.month = (char)(((x >> 3) % 13 + clk.year % 11) % 12) + 1;
     d.day = (unsigned char)((x >> 5) % 28) + 1;
     *out = d;
 }
