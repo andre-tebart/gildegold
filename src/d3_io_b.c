@@ -459,11 +459,11 @@ void d3_ReadBGF(void *f, D3BGFDESC *desc)
    points; then makes everything relative to frame 0 and packs the points into bytes */
 D3BASTREAM *d3_LoadBinaryAnimStream(char *path, char *name, char relative)
 {
+    D3BASTREAM *stream = 0;          /* result, created at the frame count chunk (0x23) */
     int first = -1;
     int last = -1;
     int nvfix = -1;
     int nuvfix = -1;
-    D3BASTREAM *stream = 0;          /* result, created at the frame count chunk (0x23) */
     int nframes = 0;
     int nsub = 1;
     int nlinks = 0;

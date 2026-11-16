@@ -970,7 +970,7 @@ exe	0x0044f7a0	bgi_Flags	d3_io_b	2ab1aa8d00e478c0	no	byte	control=byte p1=byte p
 exe	0x0044f7d0	bgi_SkipDword	d3_io_b	02f834c7e839d6c8	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0044f7f0	bgi_Attach	d3_io_b	97739dc4525d1f62	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0044f870	d3_ReadBGF	d3_io_b	ffbb30faaf8a7b86	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x0044f8c0	d3_LoadBinaryAnimStream	d3_io_b	cb1e32af1b255d7b	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	f1e1d9b79a01b35b
+exe	0x0044f8c0	d3_LoadBinaryAnimStream	d3_io_b	cb1e32af1b255d7b	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	7ab6093846fa8e4e
 exe	0x004506f0	d3_BGFCanWeld	d3_io_b	91e0e1bad8f90ae4	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004507a0	d3_OpenFastChunk	d3_io_b	34cc74605e9c95a9	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00450860	d3_FindBGF	d3_io_fl	e20b968cd3360d26	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft	
