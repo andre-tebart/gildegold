@@ -2619,7 +2619,7 @@ int ls_FixupAfterLoad(void)
 int ls_SendGame(char *name)
 {
     VFSFILE *fh;
-    int len, size, cnt = 0;
+    int len, size, sent, cnt = 0;
     char *buf, *p;
 
     fh = vfs_Tfopen(name, "rbn", (int)vfs_Root);
@@ -2641,19 +2641,16 @@ int ls_SendGame(char *name)
     }
     cm_SendLoadSize(size);
     p = buf;
-    if (size > 0) {
-        int sent = 0;
-
-        do {
-            if (cm_SendLoadBlock(p) != -1) {
-                p += 0x80;
-                sent += 0x80;
-                if (cnt++ % 16 == 0)
-                    Sleep(0xf);
-            }
-            sv_PumpMessages();
-            sv_PumpNet();
-        } while (sent < size);
+    sent = 0;
+    while (sent < size) {
+        if (cm_SendLoadBlock(p) != -1) {
+            p += 0x80;
+            sent += 0x80;
+            if (cnt++ % 16 == 0)
+                Sleep(0xf);
+        }
+        sv_PumpMessages();
+        sv_PumpNet();
     }
     while (cm_SendQueue != 0) {
         sv_PumpMessages();

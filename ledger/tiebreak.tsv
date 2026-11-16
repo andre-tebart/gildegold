@@ -3289,7 +3289,7 @@ exe	0x00520200	ls_ReadHistory	ls	00224d223df4a78d	no	byte	control=byte p1=byte p
 exe	0x00520310	ls_ReadMessageQueues	ls	6f6381c02332f2c2	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	41b5d4fb7350ddfa
 exe	0x005205f0	ls_ReadEnvironment	ls	fde709cd1e08f756	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005206b0	ls_FixupAfterLoad	ls	4f602a98299b5563	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	41b5d4fb7350ddfa
-exe	0x00520a30	ls_SendGame	ls	680b69a475464ee0	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	41b5d4fb7350ddfa
+exe	0x00520a30	ls_SendGame	ls	680b69a475464ee0	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	e4a29c25d9ff35f7
 exe	0x00520b80	ls_ReceiveGame	ls	a699fcfd523a5902	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00520ec0	sv_UpdateFramesPerTick	sv	3a9237d076a7bab7	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00520ee0	sv_InitTick	sv	4fc095d4ba2822d4	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
