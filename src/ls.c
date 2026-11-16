@@ -938,27 +938,15 @@ int ls_WritePlayerSlots(int f)
 
 int ls_WriteRelations(int f)
 {
-  int i;
-  char *p;
-  p = ((char *)ai_Relations);
-  do {
-    i = 0;
-    do {
-      LS_W(p + i, 1)
-      i = i + 1;
-    } while (i < 0x300);
-    p = p + 0x300;
-  } while ((int)p < (int)ai_Relations + 0x300 * 0x300);
-  p = ((char *)ai_RelationMemory);
-  do {
-    i = 0;
-    do {
-      LS_W(p + i, 1)
-      i = i + 1;
-    } while (i < 0x300);
-    p = p + 0x300;
-  } while ((int)p < (int)ai_RelationMemory + 0x300 * 0x300);
-  return 1;
+    int i, j;
+
+    for (i = 0; i < 0x300; i++)
+        for (j = 0; j < 0x300; j++)
+            LS_W(&ai_Relations[i][j], 1)
+    for (i = 0; i < 0x300; i++)
+        for (j = 0; j < 0x300; j++)
+            LS_W(&ai_RelationMemory[i][j], 1)
+    return 1;
 }
 /* 0x51b910, writes the statistics: ord_Statistics field by field, ord_RatingRate, the clock ord_StatisticsClock,
    ai_RatingBase, ai_Rating, the message record ord_MessageRecord, the 16 rounds of ord_StatisticsHistory, the five
