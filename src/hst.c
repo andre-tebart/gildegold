@@ -1657,10 +1657,10 @@ int ai_CommandBreakGuildSeats(int a, int b, char *fmt)
     memset(&msg, 0, sizeof(msg));
     msg.type = 0x80;
     msg.to = ((AICHAR *)ai_PlayerChar)->netId;
-    msg.time = ai_Time;
     msg.fromId = -1;
     msg.flags = 2;
     msg.car = 4;
+    msg.time = ai_Time;
     msg.time.hour = 8;
     msg.time.min = 0;
     cm_SendLongMessage(&msg);
