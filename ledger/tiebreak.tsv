@@ -1725,7 +1725,7 @@ exe	0x004a0990	ai_EvalUpgradeGuild	am	ebe6188831d03a47	no	byte	control=byte p1=b
 exe	0x004a0a70	ai_DecideUpgradeGuild	am	8d6e6c5b27b49ae8	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x004a0e60	ai_ExecuteUpgradeGuild	am	e31554df0372aa00	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004a1000	ai_EvalApprenticeship	am	8f143e9d1f30ffb1	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x004a1170	ai_DecideApprenticeship	am	3f52d30fb15a0529	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	1670200eeadad7dc
+exe	0x004a1170	ai_DecideApprenticeship	am	3f52d30fb15a0529	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	358bab6adfe44d56
 exe	0x004a1360	ai_ExecuteApprenticeship	am	37105ed8d7f98fb6	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004a13e0	ai_DecideStudy	am	cfa6b044cc9b9497	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	cdb7f568cf64f822
 exe	0x004a1640	ai_ExecuteStudy	am	71cdeb3e6ab656c9	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	

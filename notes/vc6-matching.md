@@ -768,6 +768,10 @@ Rotation, test position, countdown, induction variables and strength reduction, 
 - **`mov eax,[esi+eax]` against ours `[eax+esi]` for `list[i]`** (esi = i * 4, the global reloaded into eax): the
   loop ran zero-based, `for (i = 0; i < 8; i++) if (lobby_List[i + 1] == 0)`; the twin loop above it is 1-based
   (lobby_ChoosePlayer byte). No lever: `*(i + p)`, `*(p + i)`, an element local, nested ifs.
+- **`[esi+eax+0x74]` against ours `[eax+esi+0x74]` for `fin->jobByGroup[r]` in a loop, 2 ins / 1 byte, climb and
+  flip find nothing**: the index variable was the earlier loop's index reused (`m` of the relatives loop as the
+  random group), not a variable of its own (ai_DecideApprenticeship byte). No lever: `r[...]`, `*(r + ..)`, raw
+  char offset, a named byte pointer, loop forms.
 - **The IV base 8 bytes off in a long record loop, every spelling = control** (msx_Update: ours `&t->fadepos`,
   the original `&t->volume`): the base follows the loop's field references after CSE, not their spelling; probes
   (never kept) in one block move it: removing one `t->volume` read from the fade-out arm's expression gives the

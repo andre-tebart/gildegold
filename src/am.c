@@ -9155,7 +9155,7 @@ int ai_DecideApprenticeship(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     G5CH *c, *best;
     AIFINX *fin;
     unsigned char k;
-    int m, price, q, r, n;
+    int m, price, q, n;             /* m: the relatives' index, then the random title group */
 
     if (f != 0)
         return 0;
@@ -9188,13 +9188,13 @@ int ai_DecideApprenticeship(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     q = util_RandomU(0xf) + 1;
     if (p->kind == 5) {
         fin = (AIFINX *)gm_PlayerRecord((AICHAR *)p);
-        r = util_RandomU(0x10);
+        m = util_RandomU(0x10);
         for (n = 0x10; n != 0; n--) {
-            if (r != 0 && fin->jobByGroup[r] == 0) {
-                q = r;
+            if (m != 0 && fin->jobByGroup[m] == 0) {
+                q = m;
                 break;
             }
-            r = (r + 1) % 0x10;
+            m = (m + 1) % 0x10;
         }
     } else if (p->jobId != 0) {
         q = gm_TitleGroup(p->jobId);
