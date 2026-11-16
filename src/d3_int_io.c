@@ -355,8 +355,6 @@ D3FLMAP *d3io_ReadFloor(void *f, unsigned int version)
     D3FLDESC desc;
     char buf[0x100];
     D3TEXHANDLE *tex;
-    D3VECTOR4 pos;
-/* */
     int i;
 
     if (version >= 0x3a6c0009) {
@@ -449,6 +447,7 @@ D3FLMAP *d3io_ReadFloor(void *f, unsigned int version)
                 bio_rd_s(f, buf);
         map = d3fl_LoadMap(&desc);
         if (version >= 0x3a6c000e) {
+            D3VECTOR4 pos;
             bio_rd_v3(f, (int *)&pos);
             if (map) {
                 map->orgx = pos.x;

@@ -2033,6 +2033,7 @@ Store order in a fill, hoisted loads and sunk stores, statement order effects, `
 
 ### Loads hoisted early or kept late
 
+- **Loads of a local held behind stores through a pointer** (`mov eax,[pos.x]; mov [edi+0x90],eax; mov ecx,..` where the original loads all three, then stores): the local's address went to a call at function scope; declare it in the block that fills it (`if (..) { D3VECTOR4 pos; bio_rd_v3(f, &pos); if (map) map->orgx = pos.x; .. }`): the block local does not alias the pointer and the loads hoist (d3io_ReadFloor byte; no lever: int casts, float locals, struct cast, element loop).
 - **Loads after a struct copy in the original, before it in ours, one call takes `&local`** (the callee
   summary): for a function defined above in the unit VC6 keeps a summary and uses it at every later call; an
   external callee, a prototype only, or a call through a function pointer variable (even one it resolves to a

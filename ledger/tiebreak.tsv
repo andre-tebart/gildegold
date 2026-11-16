@@ -889,7 +889,7 @@ exe	0x0044a770	d3_WriteMap	d3_interface	7cbf1730699545e6	no	byte	control=byte p1
 exe	0x0044a9e0	d3_SceneVersion	d3_interface	59f9420582ce6e29	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0044aa10	d3_SaveScene	d3_interface	f172d8f92101c8fc	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0044abb0	rd_object	d3_int_io	e543af84746ff471	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x0044b920	d3io_ReadFloor	d3_int_io	5c7630f1f0dc5514	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	330a8d971e799b49
+exe	0x0044b920	d3io_ReadFloor	d3_int_io	5c7630f1f0dc5514	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	efa1452ce9bc7090
 exe	0x0044be60	d3_LoadScene	d3_int_io	d0768c352306b29b	yes	byte	control=shape p1=byte* p2=byte* p3=byte* p4=byte*	
 exe	0x0044c3f0	d3_LoadGroup	d3_int_io	6ea7ce93edf9368b	no	shape	sample n=32 seed=1 compiled=32 codegens=1 best=shape	5933fa73a69c9983
 exe	0x0044c510	d3io_SetStockDir	d3_int_io	372ea5fbed0b9ebb	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
