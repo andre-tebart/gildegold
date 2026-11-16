@@ -800,7 +800,7 @@ exe	0x0043e820	d3e_RegisterSceneEvent	d3_engine	byte	readable
 exe	0x0043e900	d3e_SaveEvents	d3_engine	byte	readable		
 exe	0x0043e970	d3e_LoadEvents	d3_engine	byte	readable		
 exe	0x0043ea10	d3e_LoadSceneEvents	d3_engine	byte	readable		
-exe	0x0043eab0	d3fl_BlendC	d3_fl	draft	readable	deep	
+exe	0x0043eab0	d3fl_BlendC	d3_fl	byte	readable		
 exe	0x0043ed70	d3fl_BlendMMX	d3_fl	byte	readable		
 exe	0x0043eef0	d3fl_Render	d3_fl	byte	readable		
 exe	0x0043f080	d3fl_MakeWeights	d3_fl	byte	readable		
