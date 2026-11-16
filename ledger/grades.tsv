@@ -682,7 +682,7 @@ exe	0x00431490	vfs_Init	vfs	byte	readable
 exe	0x00431510	vfs_Exit	vfs	byte	readable		
 exe	0x004315c0	d3anim_ApplyRootMotion	d3_anim	byte	readable		
 exe	0x00431750	d3anim_ApplyMotionTo	d3_anim	byte	readable		
-exe	0x004319e0	d3anim_MapBones	d3_anim	shape	readable		
+exe	0x004319e0	d3anim_MapBones	d3_anim	shape	readable	deep	
 exe	0x00431ae0	d3anim_PoseBones	d3_anim	byte	readable		
 exe	0x00432190	d3anim_RootPosAt	d3_anim	byte	readable		
 exe	0x004324e0	d3anim_NextFrame	d3_anim	byte	readable		
@@ -2540,7 +2540,7 @@ exe	0x004e0770	cm_RunWedding	cm	shape	readable
 exe	0x004e0e90	cm_CheckBirth	cm	byte	readable		
 exe	0x004e0f70	cm_RunBirth	cm	draft	readable	deep	
 exe	0x004e1220	cm_DeathSceneCheck	cm	byte	readable		
-exe	0x004e1250	cm_RunDeath	cm	draft	readable	deep	
+exe	0x004e1250	cm_RunDeath	cm	byte	readable		
 exe	0x004e1700	cm_RunBankruptcy	cm	byte	readable		
 exe	0x004e19a0	cm_CheckAuction	cm	byte	readable		
 exe	0x004e1a80	cm_RunAuction	cm	shape	readable		
@@ -3367,7 +3367,7 @@ exe	0x0052a680	sv_HoverPick	sv	byte	readable
 exe	0x0052adb0	sv_ResetSelection	sv	byte	readable		
 exe	0x0052ae40	sv_ClearSelection	sv	byte	readable		
 exe	0x0052ae70	sv_HandleObjects	sv	byte	readable		
-exe	0x0052b2a0	sv_CollectGroupCharacters	sv	shape	readable		
+exe	0x0052b2a0	sv_CollectGroupCharacters	sv	byte	readable		
 exe	0x0052b350	sv_RegisterActivity	sv	byte	readable		
 exe	0x0052b3c0	sv_ActivityName	sv	byte	readable		
 exe	0x0052b490	sv_StartPoseScript	sv	byte	readable		
