@@ -3715,7 +3715,7 @@ exe	0x00557e20	he_RunHerbGathering	he	3d0eeb827955e7d4	no	draft	control=draft p1
 exe	0x005584d0	he_AllocAnimalHunt	he	ea1f40da33464758	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00558550	he_RunAnimalHunt	he	d175c3b87d908a93	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005588c0	he_AllocStudy	he	47e7fbf6456ff12e	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x00558a40	he_RunStudy	he	9d5863752edb7928	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
+exe	0x00558a40	he_RunStudy	he	9d5863752edb7928	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	1026951b5f449caa
 exe	0x00558de0	he_AllocEvent17	he	d8574a402148cfb4	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00558e10	he_RunEvent17	he	f85a904a4b43704b	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00558e70	he_AllocSabotage	he	cd93edbba1fa8484	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
@@ -3876,7 +3876,7 @@ exe	0x00571640	he_RunGraveCare	he	d00acab41dfddfc9	no	byte	control=byte p1=byte 
 exe	0x00571990	he_AllocDeathDue	he	99dc9932567e8ae5	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005719e0	he_RunDeathDue	he	32c94ebd3a4cee07	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
 exe	0x00571ac0	he_AllocGraveTraining	he	b4e48bdd30b63c20	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
-exe	0x00571c30	he_RunGraveTraining	he	83adbd67a9b5d29d	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
+exe	0x00571c30	he_RunGraveTraining	he	83adbd67a9b5d29d	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	de7b52b93a2eaf11
 exe	0x00571f60	he_AllocMeeting	he	275b1afc3cc95e90	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
 exe	0x005720f0	he_CatchMeetingDisease	he	5dd406254abf8642	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x00572310	he_SpreadMeetingDisease	he	97391b1f7dfb5ac4	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=505	16d55ba700d46f39

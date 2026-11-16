@@ -13392,7 +13392,7 @@ void he_RunStudy(int ev)
                 mins = (float)gm_WorkMinutesBetween(&e->clock60, &s->until, b);
                 e->stage = 1;
             }
-            gain = (unsigned char)((float)(mins / 30.0) * 8.0 * (gm_BuildingSkill((unsigned char *)b, 0xc, 1) * 0.01 + 1.0));
+            gain = (unsigned char)((gm_BuildingSkill((unsigned char *)b, 0xc, 1) * 0.01 + 1.0) * ((mins / 30.0) * 8.0));
             skill = &c->skills[s->skill];
             gain = (unsigned char)(gain / (*skill / 252.0f + 1.0));
             if (gain + *skill > 252.0f)
