@@ -3198,7 +3198,7 @@ exe	0x0050f750	init_OpenBuilding	f3init	35b1554abb743765	no	shape	sweep control=
 exe	0x0050f910	init_OpenTown	f3init	374667a1c0e8397e	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft	
 exe	0x00510730	init_CollectSiteObject	f3init	85f1adfd854ea640	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00510770	init_LoadSiteScene	f3init	930a7413d0db3bf8	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	3371284ff47bad88
-exe	0x00510ad0	init_InitTown	f3init	60ee6a17f1d4029d	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	3371284ff47bad88
+exe	0x00510ad0	init_InitTown	f3init	60ee6a17f1d4029d	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	ba6e0a54166a795e
 exe	0x00510e20	init_ShowStatus	f3init	9757fbd7df608d1e	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00510e50	init_StartNetworkGame	f3init	cc1e40b2282504df	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x005112d0	init_JoinNetworkGame	f3init	c4c939de6d04f58e	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
