@@ -16775,8 +16775,8 @@ int cm_AddPartyMember(int id, int who)
     int i, n;
 
     r = (G28REC *)cm_PartyById(id);
-    i = 0;
     if (r != 0) {
+        i = 0;
         n = r->used;
         for (; i < n; i++) {
             if (r->members[i] == who)
