@@ -13821,9 +13821,9 @@ void ai_GuildHallListener(AIBLD *bld, int room)
     int lager = 0;
     int ausruesten = 0;
     int razzia = 0;
+    int transport = 0;
     int ausspionieren = 0;
     int pergament = 0;
-    int transport = 0;
     int r;
 
     sv_ReleaseNamePlates();
