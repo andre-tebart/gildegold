@@ -9480,12 +9480,14 @@ int gm_GetWorth(unsigned short id)
 {
     int v;
     unsigned char *bl;
+    ORDCHAR *c;
 
     if (id >= 0x300)
         return -1;
-    if (ORD_CHARS[id].id == 0xffff)
+    c = &ORD_CHARS[id];
+    if (c->id == 0xffff)
         return -1;
-    v = gm_GetGoodsValue((char *)&ORD_CHARS[id]);
+    v = gm_GetGoodsValue((char *)c);
     for (bl = gm_BuildQuery(1, 3, id); bl != 0; bl = gm_BuildNext()) {
         v += gm_EquipmentValue(bl, (char)bl[0x5c]);
         v += gm_StallValue((char *)bl);
