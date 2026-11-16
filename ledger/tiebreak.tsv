@@ -1628,7 +1628,7 @@ exe	0x00497cf0	ai_DecideRepairBuilding	am	11bb3cfee4ad2aec	no	byte	control=byte 
 exe	0x00497ee0	ai_ExecuteRepairBuilding	am	a170479c05218ab8	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00497fa0	ai_DecideBuyBuilding	am	79d251ca7c5d0b82	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x00498470	ai_ExecuteBuyBuilding	am	a6b9be5c7042bed9	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	1670200eeadad7dc
-exe	0x004984d0	ai_DecideBuildResidence	am	bc76aff17d4779f4	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
+exe	0x004984d0	ai_DecideBuildResidence	am	9ecd3b4559a23d5e	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	6d29c81bea3351c4
 exe	0x00498a80	ai_ExecuteBuildResidence	am	3073144360bb3d0d	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	1670200eeadad7dc
 exe	0x00498b80	ai_DecideUpgradeResidence	am	b625e157c488a0cd	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00498c70	ai_DecideBuildBusiness	am	00db436d6d4373b8	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	1670200eeadad7dc
