@@ -1747,7 +1747,7 @@ int amt_HasDeposalVote(int col, AMTREC *r)
 
 void amt_UpdateOffices(void)
 {
-    int r, v, i;
+    int r, i;
     AMTCHARVIEW *c;
 
     for (i = 0; i < 30; i++) {
@@ -1757,7 +1757,7 @@ void amt_UpdateOffices(void)
             if (amt_Table[i].state != 3)
                 r = amt_SendOfficeFree(amt_Table[i].idx);
             if (c != 0 && c->officeKind != 0) {
-                v = 0;
+                int v = 0;
                 cm_BeginFieldBlock((char *)c, c->netId);
                 cm_AddFieldDelta(1, 1, 0x166, &v);
                 cm_SendFieldDeltas();
@@ -1769,7 +1769,7 @@ void amt_UpdateOffices(void)
     }
     for (c = (AMTCHARVIEW *)ai_Chars; (int)&c->appliedOffice < (int)&((AMTCHARVIEW *)ai_Chars)[768].appliedOffice; c++) {
         if (c->appliedOffice != 0) {
-            v = 0;
+            int v = 0;
             cm_BeginFieldBlock((char *)c, c->netId);
             cm_AddFieldDelta(1, 1, 0x168, &v);
             cm_SendFieldDeltas();
