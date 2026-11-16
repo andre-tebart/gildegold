@@ -19360,8 +19360,8 @@ void ai_TalentWindow(struct AIBLD *bld, int room, int talent)
     pics[3] = 0x270;
     pics[4] = 0x276;
     ev = (AIJOB *)he_FindEvent(2, 2, ai_PlayerId, 0, 0x60);
-    memset(arg, 0, sizeof(arg));
     canTrain = 0;
+    memset(arg, 0, sizeof(arg));
     orders[0] = 0x3a;
     orders[1] = 0x1a;
     orders[2] = 0x17;
