@@ -367,6 +367,10 @@ Which arm is inline, jumps into another arm, threaded and redundant tests, `&&` 
   And ai_MissionCompleteSingle (3 send-and-wait arms, exit behind the cancel arm): `if (r == 0) {..} else if (r ==
   0xff) {..} else {..} if (r == 0xff) ai_QuitGame(id);`, the call that only one arm needs moved behind the
   join. Read the jump target of each loop guard / skip: the arm that falls into the exit owns the join test.
+- **A run of `if (write(..) <= 0) return 0;` steps whose loop failures jump to the FIRST step's epilogue copy**
+  (ours: to the last step's), `0 ins / N bytes`: the function ended `LS_W(&x, 4) return 1;`, not `return
+  write(&x, ..) > 0;`. Same `sbb / neg` code, but the last step's return is then a test whose `return 0` copy
+  changes the pair merger's list (ls_WriteMessageQueues byte).
 - **Each arm of a switch case ending in its own `return 0`** where the original's skip tests jump to another
   case's `return 0` block: one more `return` per arm (main_WindowProc WM_ACTIVATEAPP byte).
 

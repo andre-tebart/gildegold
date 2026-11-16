@@ -1238,7 +1238,8 @@ int ls_WriteMessageQueues(int f)
     LS_W(&cm_GroupEndSeq, 4)
     LS_W(&cm_LastCharId, 4)
     LS_W(&cm_LastBuildingId, 4)
-    return vfs_fwrite(&cm_LastObjectId, 4, 1, f) > 0;
+    LS_W(&cm_LastObjectId, 4)
+    return 1;
 }
 /* 0x51c870, writes the environment: sv_WinterWeather, then the weather of each hour (sv_Weather clouds, storm,
    windX, windY), then the wind option (ai_SaveWind) and the effects (gv_WriteEffects); 0 on a failed write */
