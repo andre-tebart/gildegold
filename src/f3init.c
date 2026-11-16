@@ -1154,15 +1154,13 @@ void init_CreateOpponents(int n, int m, int *list)
 /* 0x50e5a0, lays out the n offices of the list ids (the office indexes, a byte each) in a row: every office x
    is the slot table tab[] (24 39 51 63 69 18 57 6 12 30 75 94 88 81 45, a back-and-forth of the 232-wide row)
    minus half the level of the office's kind (amt_GetOffice -> the AMTREC kind at +8, amt_GetKindLevel), written
-   to out[i]; the slot index starts at a random one and wraps through the table. Returns the number of wraps
-   (the last (s + 1) / 15), i.e. 0 when n <= 15.
-   @deep behaviour draft, 3 differing asm lines (2 code hunks + 1 fill) after the whole original 0x50e5a0..0x50e690 was read: the only real difference is the store of the random slot index - the original does a 16-bit store (mov si,ax) then zero-extends once before the loop (and esi,0xffff), ours does mov esi,eax with the same extension (the compiler knows util_Random's unsigned short return). Tried one edit one build each: r/s both unsigned short (the mov matches but the extension moves into the loop, 39 lines), s = util_Random(0xf) with r assigned only in the loop (mov matches, the extension is not hoisted, 19 lines), r = util_Random(0xf) & 0xffff (no change), the call through a (int (*)(unsigned short)) cast of util_Random (no change). The rest is equal, including the frame (rec[0x18] + tab[15]) and the amt_GetOffice byte argument. Readability done: Q1 init_PlaceOffices, Q2 cleared (amt_GetOffice, amt_GetKindLevel), Q3 none, Q4 cleared by the INIT_OFFICE view, Q5 draft marker removed, Q6 described. */
+   to out[i]; the slot index starts at a random one and wraps through the table. Returns nothing (the
+   one caller ignores eax; the idiv's quotient is a by-product of the % 15). */
 
 
-unsigned short init_PlaceOffices(int n, int *out, int *ids)
+void init_PlaceOffices(int n, int *out, int *ids)
 {
     int tab[15];
-    unsigned short r;
     unsigned s;
     int *q;
     int w;
@@ -1185,8 +1183,7 @@ unsigned short init_PlaceOffices(int n, int *out, int *ids)
     tab[12] = 0x58;
     tab[13] = 0x51;
     tab[14] = 0x2d;
-    r = util_RandomU(0xf);
-    s = r;
+    s = util_RandomU(0xf);
     if (0 < n) {
         q = out;
         do {
@@ -1194,12 +1191,10 @@ unsigned short init_PlaceOffices(int n, int *out, int *ids)
             u = rec.kindWord;
             w = amt_GetKindLevel(u & 0xff);
             *q = tab[s] - w / 2;
-            r = (int)(s + 1) / 0xf;
             s = (int)(s + 1) % 0xf;
             q++;
         } while (--n != 0);
     }
-    return r;
 }
 /* 0x50e690, the start population of a new town: the ages t[0..29] (the six groups of 4 / 6 shuffled by
    gm_Shuffle, each plus a random 0 .. 2), the characters already there (the first 12 who ai_WorksForMaster and

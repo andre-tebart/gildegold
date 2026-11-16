@@ -23,7 +23,7 @@ int init_BuildingKindName(int k, char *out);                            /* 0x50d
 void init_LoadBuildingScene(int k);                                     /* 0x50dc30 */
 void init_StartNewGame(void);                                           /* 0x50e0d0 */
 void init_CreateOpponents(int n, int m, int *list);                     /* 0x50e330 */
-unsigned short init_PlaceOffices(int n, int *out, int *ids);            /* 0x50e5a0 */
+void init_PlaceOffices(int n, int *out, int *ids);            /* 0x50e5a0 */
 int init_CreateStartCharacters(void);                                   /* 0x50e690 */
 void init_CreateOpeningObjects(void);                                   /* 0x50f0b0 */
 void init_StockMarketStalls(void);                                      /* 0x50f340 */
