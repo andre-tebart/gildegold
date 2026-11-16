@@ -1082,7 +1082,6 @@ void init_StartNewGame(void)
 
 void init_CreateOpponents(int n, int m, int *list)
 {
-    unsigned char b;
     int prm;
     int price[5];
     int delta[5];
@@ -1132,6 +1131,7 @@ void init_CreateOpponents(int n, int m, int *list)
         if (ai_Opponents[i] != 2) {
             cm_BeginFieldBlock((char *)pc, pc->netId);
             for (j = 0; j < 5; j++) {
+                unsigned char b;
                 v = pc->skillBytes[j] + delta[ai_Opponents[i]];
                 v = (int)(252.0f < v ? 252.0f : v);
                 b = v < 0 ? 0 : v;
