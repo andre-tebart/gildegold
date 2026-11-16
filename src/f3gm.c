@@ -10345,7 +10345,7 @@ void gm_UpdateTechTree(unsigned char *bld, unsigned short *item)
                         break;
             }
             if (o != 0)
-                D2OBJ_AT(NODES[i].l[2])->fillFraction = (float)gm_MinutesBetween(&o->start, &ai_Time) / (float)gm_MinutesBetween(&o->start, &o->end);
+                D2OBJ_AT(NODES[i].l[2])->fillFraction = (double)gm_MinutesBetween(&o->start, &ai_Time) / (double)gm_MinutesBetween(&o->start, &o->end);
             else
                 D2OBJ_AT(NODES[i].l[2])->fillFraction = 0;
         }
