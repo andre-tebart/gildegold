@@ -2400,6 +2400,9 @@ How arguments are pushed, a call written in both arms, parameter and return type
   (ai_OpenItemTooltip -101 ins, stuck).
 
 ### Return types of callees
+- **`mov si,ax` / `and esi,0xffff` after a call (not `mov esi,eax`)**: the callee's result is a 16-bit type at
+  this call site (a unit view `((unsigned short (*)(unsigned short))util_Random)`), not a cast of an int result
+  (gm_Shuffled).
 - **Callee returns in al, result passed straight on**: declare `unsigned int`; `unsigned char` adds `and
   eax,0xff`.
 - **`test al,al` and the `return 0` without `xor al,al`**: the callee returns `char`: local prototype `char
@@ -3124,6 +3127,9 @@ Operand order on the FPU stack, `fst` / `fstp`, float compares, constants, `_fto
 
 ### Zero stores and clears
 
+- **A 64-bit field's low word stored `mov [m],0` last, where ours reuses the memset's `eax` right after `rep
+  stosd`**: the two words written out, high first: `cfg.classMask[1] = hi; cfg.classMask[0] = 0;` (low first =
+  the 64-bit `(u64)hi << 32` = the CSE'd eax store; `& 0xffffffff00000000` reads both words) (ai_OpenRobberBribe).
 - **Zero stores of a block in their own register (fresh `xor esi,esi`)**: a memset over them:
   `found[0].type = 0; memset(&found[0].vol, 0, sizeof(found) - sizeof(int));`. No lever: six `= 0` lines (one zero
   web, 151 -> 14 only) (d3sndw_Update).
