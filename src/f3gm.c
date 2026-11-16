@@ -236,8 +236,8 @@ int gm_IncomeKind1(unsigned id, GMINCOME *out, unsigned char flags)
             if (k >= 6)
                 return 0;
             cnt = ORD_CHARS[(unsigned short)id].wage;
-            x = (float)(rec[6] * 0.01f);
-            x = (float)(x * cnt);
+            x = rec[6] * 0.01f;
+            x = x * cnt;
             if (!(x > 0.0f))
                 x = 0.0f;
             n = (int)x;
@@ -275,8 +275,8 @@ int gm_IncomeKind2(unsigned id, GMINCOME *out, unsigned char flags)
             if (k >= 6)
                 return 0;
             cnt = ORD_CHARS[(unsigned short)id].wage;
-            x = (float)(rec[6] * 0.01f);
-            x = (float)(x * cnt);
+            x = rec[6] * 0.01f;
+            x = x * cnt;
             if (!(x > 0.0f))
                 x = 0.0f;
             n = (int)x;
@@ -324,8 +324,8 @@ int gm_IncomeKind3(unsigned id, GMINCOME *out, unsigned char flags)
         return 0;
     id &= 0xffff;
     base = ORD_CHARS[id].v1a8;
-    x = (float)(rate * 0.01f);
-    x = (float)(x * base);
+    x = rate * 0.01f;
+    x = x * base;
     if (!(x > 0))
         x = 0;
     n = (int)x;
@@ -408,8 +408,8 @@ int gm_IncomeKind5(unsigned id, GMINCOME *out, unsigned char flags)
             if (k >= 6)
                 return 0;
             cnt = ORD_CHARS[(unsigned short)id].wage;
-            x = (float)(rec[6] * 0.01f);
-            x = (float)(x * cnt);
+            x = rec[6] * 0.01f;
+            x = x * cnt;
             if (!(x > 0.0f))
                 x = 0.0f;
             n = (int)x;

@@ -2924,11 +2924,11 @@ exe	0x004f9d40	ord_WeightedRecordSum	ord	004953e365905ed8	no	shape	sweep control
 exe	0x004f9e00	ord_GetStatistics	ord	fbdb21d8caeac598	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004f9e30	gm_StatisticsScreen	f3gm	af8d429d7fdf1e22	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004f9ec0	gm_IncomeRating	f3gm	889350befa9deff3	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
-exe	0x004f9f60	gm_IncomeKind1	f3gm	64e4f27a3dd292d2	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	291ac9aa57e40bb8
-exe	0x004fa060	gm_IncomeKind2	f3gm	e14c0700bb6686d7	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	291ac9aa57e40bb8
-exe	0x004fa160	gm_IncomeKind3	f3gm	dc49a8faf6470f8c	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	291ac9aa57e40bb8
+exe	0x004f9f60	gm_IncomeKind1	f3gm	4c532d00cfe315e2	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=316	fe1cfd2b759d6fa3
+exe	0x004fa060	gm_IncomeKind2	f3gm	988d27c18b659aa0	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=316	fe1cfd2b759d6fa3
+exe	0x004fa160	gm_IncomeKind3	f3gm	dc49a8faf6470f8c	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	e179daf34268b182
 exe	0x004fa2a0	gm_IncomeKind4	f3gm	0b7b04be85608354	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x004fa3d0	gm_IncomeKind5	f3gm	e6b824b2a9c64a36	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	291ac9aa57e40bb8
+exe	0x004fa3d0	gm_IncomeKind5	f3gm	308f1feb6b8d437a	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=316	fe1cfd2b759d6fa3
 exe	0x004fa4b0	gm_CharacterIncomes	f3gm	2e3fb62bcdcd53f5	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	291ac9aa57e40bb8
 exe	0x004fa580	gm_CharacterUpkeep	f3gm	a0582358d6bba35f	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	291ac9aa57e40bb8
 exe	0x004fa700	gm_CharacterWages	f3gm	0bff7ffbde74f915	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	291ac9aa57e40bb8
@@ -2977,7 +2977,7 @@ exe	0x004fe310	gm_AddTime2	f3gm	302e62682352d7c8	no	byte	control=byte p1=byte p2
 exe	0x004fe330	gm_Season	f3gm	522a55c6c171b0d0	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004fe350	gm_ClockSeason	f3gm	22c2705949299ef4	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004fe370	gm_InitBuildingTables	f3gm	eee7f5ac2af7dd13	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft	
-exe	0x004fe570	gm_LoadTables	f3gm	2988019c61096275	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
+exe	0x004fe570	gm_LoadTables	f3gm	68cea2d1047c10d6	yes	byte	sweep control=shape best=byte by 4 unused typedefs at the unit's start; codegens=2 compiled=316	fe1cfd2b759d6fa3
 exe	0x004fe7f0	gm_ClearBuildings	f3gm	7e2bac79f2ea17a4	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004fe830	gm_ClearObjects	f3gm	96d51f74357b14b1	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	291ac9aa57e40bb8
 exe	0x004fe900	gm_FindObjectProto	f3gm	19342a7c25002b30	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	291ac9aa57e40bb8
