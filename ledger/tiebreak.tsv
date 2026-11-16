@@ -4037,7 +4037,7 @@ exe	0x00580fe0	ai_CanSpyOn	sv_t	44613832e1535117	no	byte	control=byte p1=byte p2
 exe	0x00581020	ai_CabinetSpyWindow	sv_t	94cde6fd4b07453f	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
 exe	0x00581400	ai_CabinetSpyOnCharacter	sv_t	b0d47f7a4b9e889c	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
 exe	0x00581950	ai_CabinetSpyByMoney	sv_t	528f9089c1ca00b4	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
-exe	0x00581db0	ai_CabinetIntrigueWindow	sv_t	751c37484d2b7cd8	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
+exe	0x00581db0	ai_CabinetIntrigueWindow	sv_t	4cbdb080d358157d	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	285c04235ac9f976
 exe	0x005821d0	ai_AlchemistLabContact	sv_t	5531ccd9804bcfec	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005823b0	ai_UnlockRoomWindow	sv_t	468507e9a1e09967	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00582560	ai_CannonContact	sv_t	7ab4fdba4a9ef286	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
@@ -4269,7 +4269,7 @@ exe	0x005a2b60	ai_ConfessionWindow	lc	2ea02f6e915fd095	no	byte	control=byte p1=b
 exe	0x005a2de0	ai_ConfessionListener	lc	12cd21c83fe6efc6	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005a2e60	ai_SermonWindow	lc	196751a3084e2b10	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x005a36c0	ai_ProductionWriteContact	lc	8920ef7d7dbcbf6c	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	363b43c45b83d63b
-exe	0x005a3810	ai_ChurchListener	lc	cf396a64d619c961	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
+exe	0x005a3810	ai_ChurchListener	lc	cf396a64d619c961	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	4404f9ca1b648b10
 exe	0x005a39b0	ai_ChurchContact	lc	def575cf87a89c6a	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005a3a40	ai_DungeonPlanWindow	lc	c1f6096803a659cf	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
 exe	0x005a3b20	ai_DungeonContact	lc	8005362f8e2815b4	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
@@ -4301,11 +4301,11 @@ exe	0x005a6270	ai_WatchPlanWindow	lc	75153ac39325b280	no	byte	control=byte p1=by
 exe	0x005a6480	ai_WatchPlanStart	lc	9b46a86521935662	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005a64d0	ai_ArrestWindow	lc	14eaf346d80d7c3a	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005a6720	ai_ArrestStart	lc	6b973b97548ca822	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x005a67a0	ai_CityWatchListener	lc	2c9d54a927960dc8	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
+exe	0x005a67a0	ai_CityWatchListener	lc	2c9d54a927960dc8	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	4404f9ca1b648b10
 exe	0x005a6920	ai_GuildHallListener	lc	6b81125a81fe6eb1	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
 exe	0x005a6a90	ai_TrainingRoomListener	lc	1589e4e5be595cde	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005a6b50	ai_FormatCityName	lc	1eb7230d7067f753	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x005a6b70	ai_MapCellToScreen	lc	ddbf49848ffa3796	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
+exe	0x005a6b70	ai_MapCellToScreen	lc	b3aa21dd9753abb3	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	4404f9ca1b648b10
 exe	0x005a6c40	ai_PlaceMapControls	lc	4b250049dce5b393	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005a6cb0	ai_BuildTownMap	lc	9033cb73e186a9a1	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x005a78a0	ai_OpenTownMap	lc	30bc1fd419c0218a	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	

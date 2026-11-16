@@ -2276,6 +2276,14 @@ Store order in a fill, hoisted loads and sunk stores, statement order effects, `
 - **Register roles and the register copy between zero stores follow the init order**: permute the init block
   (`women = men = 0; w = m = 0xffff; f = 0`, snd_PlayFavourComment); `obj = 0; best = 1e8f; x = ...; z = ...;` at
   the top gives the original's store order, `x`, `z`, `best` the same instructions reordered (asmdiff `order`).
+  The building contact loops (`lager = 0; transport = 0; ..` then sv_RegisterNamePlate and a click chain): 12
+  matched by permuting the clears (all orders up to 6, a swap / move hill climb from the click chain's order for
+  8-12: ai_StorageContact, ai_CriminalContact, ai_StoneKontorContact ..). The order is near, not equal to, the
+  click chain's. A chained `a = b = .. = 0;` evaluates from the right: separate statements (ai_ProductionContact).
+  Generator: scratch `gen_init.py` / `gen_hc.py` style, one `dcp try` per function.
+- **A byte (or other) local used only inside a loop or branch belongs in that block**: function scope makes an
+  address-taken byte live through the whole function, so the fild / compare int temp cannot share its slot
+  (init_CreateOpponents `unsigned char b` in the skill loop, he_RunGraveTraining `gain` in the training branch).
 - **Zero-macro temps**: their declaration order decides store order (the memory TU wants dst before size). Size
   slot before destination slot (`mov [ebp-8], 0x200` then `mov [ebp-4], eax`): assign the destination inside the
   clear's block after the size temp (hst.c `AI_ZERO_BUF(n1, buf, 0x200)`); `n1 = buf; AI_ZERO_AT(n1, ..)` stores
