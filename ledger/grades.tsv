@@ -1612,7 +1612,7 @@ exe	0x00496080	ai_DecideDummyPleasure	am	byte	readable
 exe	0x004960a0	ai_ExecuteDummyPleasure	am	byte	readable		
 exe	0x004960b0	ai_DecideTrainSkill	am	byte	readable		
 exe	0x004965b0	ai_ExecuteTrainSkill	am	byte	readable		
-exe	0x00496610	ai_DecideTrainJobSkill	am	draft	readable	deep	
+exe	0x00496610	ai_DecideTrainJobSkill	am	byte	readable		
 exe	0x00496ab0	ai_ExecuteTrainJobSkill	am	byte	readable		
 exe	0x00496b10	ai_EvalLeastLikedOfEvent	am	byte	readable		
 exe	0x00496e40	ai_DecideBribe	am	byte	readable		
@@ -1628,7 +1628,7 @@ exe	0x00497cf0	ai_DecideRepairBuilding	am	byte	readable
 exe	0x00497ee0	ai_ExecuteRepairBuilding	am	byte	readable		
 exe	0x00497fa0	ai_DecideBuyBuilding	am	draft	readable	deep	
 exe	0x00498470	ai_ExecuteBuyBuilding	am	shape	readable	deep	
-exe	0x004984d0	ai_DecideBuildResidence	am	draft	readable	deep	
+exe	0x004984d0	ai_DecideBuildResidence	am	byte	readable		
 exe	0x00498a80	ai_ExecuteBuildResidence	am	shape	readable		
 exe	0x00498b80	ai_DecideUpgradeResidence	am	byte	readable		
 exe	0x00498c70	ai_DecideBuildBusiness	am	shape	readable		byte+readable -> shape+readable at 79dd397d: the byte match was on a wrong constant: the mask was written (unsigned)&txt_Keys + 0x181c0, a relocation that dcp compared as equal to the original's 0xffffff; the correct AI_CHF_BUILT leaves a 4-instruction register tie (add eax,edx / add edx,eax) [waits for: decompanion's by-value comparison of relocated operands (improvement-reports/symbol-arithmetic-constants.md), then re-match]
@@ -1658,7 +1658,7 @@ exe	0x0049b120	ai_DecideUseHealthObject	am	shape	readable
 exe	0x0049b2b0	ai_ExecuteUseHealthObject	am	shape	readable		
 exe	0x0049b380	ai_DecideUseDynastyObject	am	byte	readable		
 exe	0x0049b6f0	ai_ExecuteUseDynastyObject	am	shape	readable		
-exe	0x0049b7c0	ai_DecideUseMeanObject	am	draft	readable	deep	
+exe	0x0049b7c0	ai_DecideUseMeanObject	am	byte	readable		
 exe	0x0049bc50	ai_ExecuteUseMeanObject	am	shape	readable		
 exe	0x0049bd90	ai_DecideUseSafetyObject	am	byte	readable		
 exe	0x0049c000	ai_ExecuteUseSafetyObject	am	shape	readable		
@@ -3270,7 +3270,7 @@ exe	0x0051c560	ls_WriteMessageQueues	ls	shape	readable
 exe	0x0051c870	ls_WriteEnvironment	ls	byte	readable		
 exe	0x0051c920	ls_Read	ls	byte	readable		
 exe	0x0051c950	ls_LoadGame	ls	byte	readable		
-exe	0x0051cee0	ls_ReadSaveHeader	ls	byte	readable		
+exe	0x0051cee0	ls_ReadSaveHeader	ls	shape	readable		
 exe	0x0051d2d0	ls_LoadScene	ls	byte	readable		
 exe	0x0051d3d0	ls_ReadObjects	ls	byte	readable		
 exe	0x0051d4f0	ls_HookBuildingCB	ls	byte	readable		
@@ -3476,7 +3476,7 @@ exe	0x00537f40	main_EndGame	main	byte	readable
 exe	0x00538140	main_RundenBeginn	main	byte	readable		
 exe	0x005384e0	main_EndRound	main	byte	readable		
 exe	0x00539620	main_ReplaceFigure	main	shape	readable		
-exe	0x00539870	main_RoundReport	main	byte	readable		
+exe	0x00539870	main_RoundReport	main	shape	readable		
 exe	0x0053a250	main_UpdateFigure	main	shape	readable		
 exe	0x0053a450	main_UpdateFigures	main	byte	readable		
 exe	0x0053a520	main_SettleRound	main	byte	readable		
@@ -3792,7 +3792,7 @@ exe	0x00565b60	he_RunDiePlayer	he	byte	readable
 exe	0x00565d10	he_AllocKillPlayer	he	byte	readable		
 exe	0x00565db0	he_RunKillPlayer	he	shape	readable		
 exe	0x005662d0	he_AllocNightWatch	he	byte	readable		
-exe	0x00566370	he_RunNightWatch	he	shape	readable		
+exe	0x00566370	he_RunNightWatch	he	byte	readable		
 exe	0x00566830	he_RunRobbery	he	draft	readable	deep	
 exe	0x00567620	he_AllocTitleDue	he	byte	readable		
 exe	0x00567660	he_RunTitleDue	he	byte	readable		
