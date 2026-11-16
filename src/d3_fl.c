@@ -1841,7 +1841,32 @@ void d3fl_UpdateWater(unsigned long time, unsigned int n, D3FLREGION *r)
         }
     }
 }
-/* 0x4430c0, transforms, lights and projects the water points of a tile and queues its water polygons @deep read the whole function against the original 0x4430c0..0x4437e1 (setup, the region/point loop with wave, clamp and lighting, d3_ClipMesh, both projection loops, the counters, the sort queue) and fixed: sun = AxisY * f, then sun += wave as two statement groups (the original stores the products and adds the wave after), the clamp min(255.0f, max(0.0f, h + w)) (the original loads the constant first: fld 0 / fcomp st(1), fld 255 / fcompp), the lit colours L * f + SunCol + Ambient (VC6 swaps the last two addends: the original adds Ambient then SunCol), the poly test flags & 0x80 (test / jns). ours 494 vs 500 instructions, the lighting block now equal but for the iv / temp slots. Left: allocation and loop shape: the original walks the strip records through ebp = r + 8 ([ebp-4] y, [ebp] x0, [ebp+8] flag) with a jmp into the rotated loop ('+ lea ebp,[eax+8] / + jmp 0x443195'), ours r in esi; the wave index as lea [x&3 + ym*4] << 4 per point where ours keeps ym*4 in a slot ('- and ecx,3 / - add ecx,ebx' vs '+ lea ecx,[eax+edx*4]'); map / t in ebx / esi swapped (regs ebx->esi); the counters d3_TriCount / d3_VertCount updated in another order and npolys / npoints in other registers; the sort loop keeps d3_SortPtr in edi; the fog distance products in another x87 stack order. */
+/* 0x4430c0, transforms, lights and projects the water points of a tile and queues its water polygons
+   @deep session 2026-11: 330 -> 252 ins (frame 0x64 equal). Kept: (1) reg->wave[ym][x & 3][k] at each use,
+   no wv pointer (the original's lea [x&3 + ym*4] << 4 and reg in ebp: 330 -> 287); (2) tex = reg->tex2
+   local in the sort queue as d3fl_Draw's land loop (no reload after the SortPtr store: 287 -> 266); (3) a
+   named fy = (float)r->y for the row origin (keeps it on the FPU, popped after p.x, and moves the strip IV
+   base to &r->x0 = the original's lea ebp,[eax+8]: 266 -> 260); (4) one float f for (float)r->x0, the
+   water height and the light (the original pops the height after the three AxisY products instead of
+   consuming it: 260 -> 252). Left: t in ebx / npoints in esi (original t esi, npoints ebx spilled to
+   [esp+0x50] over the strips, clip shares that slot); in the strip loop the original keeps the IV in ebp
+   at the loop head (reload block + jmp into the rotated loop, map reloaded from its arg slot for
+   map->regions) where ours keeps IV in esi and map in ebp; hence the slot order (original 0x18 IV, 0x24
+   npolys; ours npolys 0x18) and the counters' store order at the end (TriCount, DrawnVerts, VertCount in
+   source order in the original). No lever: commuted AxisZ * y products (63 variants = control), the r-body
+   statement order (120 permutations, best 278 before fy), counter statement order x 4 min spellings (= or
+   worse; i = min(..) directly drops the npolys store but moves slots), a block-scoped normalize vector /
+   separate wave vector (worse, 308), index loop over t->wregions[i] (frame grows). climb round 2 lead 'n =
+   v->x in the fog loop' is not the original (fld [edi] direct). prior: read the whole function against the
+   original 0x4430c0..0x4437e1 (setup, the region/point loop with wave, clamp and lighting, d3_ClipMesh,
+   both projection loops, the counters, the sort queue) and fixed: sun = AxisY * f, then sun += wave as two
+   statement groups (the original stores the products and adds the wave after), the clamp min(255.0f,
+   max(0.0f, h + w)) (the original loads the constant first: fld 0 / fcomp st(1), fld 255 / fcompp), the
+   lit colours L * f + SunCol + Ambient (VC6 swaps the last two addends: the original adds Ambient then
+   SunCol), the poly test flags & 0x80 (test / jns). ours 494 vs 500 instructions, the lighting block now
+   equal but for the iv / temp slots. Left: allocation and loop shape: the original walks the strip records
+   through ebp = r + 8 ([ebp-4] y, [ebp] x0, [ebp+8] flag) with a jmp into the rotated loop ('+ lea
+   ebp,[eax+8] / + jmp 0x443195'), ours r in esi; the... */
 
 void d3fl_DrawWater(D3FLMAP *map, D3FLTILE *t)
 {
@@ -1853,7 +1878,7 @@ void d3fl_DrawWater(D3FLMAP *map, D3FLTILE *t)
     D3FLPOLY *poly;
     D3CLIPINFO *clip;
     D3FLTEX *tex;
-    float k, fx, h, f;
+    float k, fy, h, f;
     unsigned int mask;
     int size, row, ym, x, idx, iv, npoints, npolys, i;
     unsigned char *water, *light;
@@ -1876,13 +1901,14 @@ void d3fl_DrawWater(D3FLMAP *map, D3FLTILE *t)
             ym = r->y & 3;
             row = (r->y & mask) * size;
             reg = &map->regions[(unsigned char)r->flag];
-            p.x = d3fl_AxisZ.x * r->y + d3fl_Origin.x;
-            p.y = d3fl_AxisZ.y * r->y + d3fl_Origin.y;
-            p.z = d3fl_AxisZ.z * r->y + d3fl_Origin.z;
-            fx = (float)r->x0;
-            p.x = d3fl_AxisX.x * fx + p.x;
-            p.y = d3fl_AxisX.y * fx + p.y;
-            p.z = d3fl_AxisX.z * fx + p.z;
+            fy = (float)r->y;
+            p.x = d3fl_AxisZ.x * fy + d3fl_Origin.x;
+            p.y = d3fl_AxisZ.y * fy + d3fl_Origin.y;
+            p.z = d3fl_AxisZ.z * fy + d3fl_Origin.z;
+            f = (float)r->x0;
+            p.x = d3fl_AxisX.x * f + p.x;
+            p.y = d3fl_AxisX.y * f + p.y;
+            p.z = d3fl_AxisX.z * f + p.z;
             h = k * reg->f14 + reg->flags.b[0];
             for (x = r->x0; x <= r->x1; x++, v++) {
                 idx = (x & mask) + row;
