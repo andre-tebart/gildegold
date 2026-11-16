@@ -3709,10 +3709,10 @@ int gm_RemoveOwned(int *list, int id)
     ORDOBJ *prev, *cur;
     int n;
 
-    n = 0;
     prev = 0;
     if ((ORDOBJ *)*list == 0)
         return -1;
+    n = 0;
     cur = (ORDOBJ *)*list;
     do {
         if (cur->objId == id) {
