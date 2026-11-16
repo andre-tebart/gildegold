@@ -9779,7 +9779,6 @@ void cm_CarryOutOrder(char *rec, char *c)
     char *o;
     int x, y, h;
     float v[4];
-    int r;
 
     if (c != 0 && ((AICHAR *)c)->scene != 0) {
         if (((AICHAR *)c)->health == 0)
@@ -9796,8 +9795,7 @@ void cm_CarryOutOrder(char *rec, char *c)
             sc = (D3SM *)d3_DefaultScene->hmap;
             if ((char)d3_GetHeightAt(sc, &((AICHAR *)c)->scene->obj->pos, &x, &y, &h) == 0)
                 return;
-            r = (int)(500.0f / sc->cell.x);
-            if (cm_MostThreatenedCellNear(c, x, y, r, &x, &y) == 0)
+            if (cm_MostThreatenedCellNear(c, x, y, (int)(500.0f / sc->cell.x), &x, &y) == 0)
                 return;
             cm_OrderAttack(rec, c, 0, x, y);
             return;
