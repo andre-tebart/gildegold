@@ -653,7 +653,12 @@ def main():
         raise SystemExit("compile failed:\n" + "\n".join(l for l in r.stdout.splitlines() if "error" in l))
     T = [l.rstrip() for l in open(dag, encoding="latin-1") if l.startswith("T ")]
     if not T:
-        raise SystemExit("no trace lines: is %s the function's name in the listing?" % a.func)
+        lst = open(os.path.join(WORK, tag + ".asm"), encoding="latin-1").read()
+        if re.search(r"^[_@]%s(@\d+)?\s+PROC" % re.escape(a.func), lst, re.M):
+            print("%s: no register candidates (the allocator had nothing to choose; registers follow the scratch "
+                  "rotation and the scheduler alone)" % a.func)
+            return
+        raise SystemExit("no trace lines: %s is not a function of this unit's listing" % a.func)
     if a.raw:
         print("\n".join(T))
         return

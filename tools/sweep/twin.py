@@ -19,7 +19,7 @@ the twin's real text for the lines only it has.
 import argparse, csv, difflib, glob, os, re, sys
 
 ROOT = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
-START = re.compile(r"^/\* (0x[0-9a-f]+),")
+START = re.compile(r"^/\* (0x[0-9a-f]+)[,:]")
 KEYWORDS = set("if else for while do return break continue switch case default goto sizeof int char short long "
                "unsigned signed float double void struct union const static".split())
 
