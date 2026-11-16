@@ -1743,7 +1743,7 @@ exe	0x004a5140	ai_CanBuildType	am	byte	readable
 exe	0x004a5320	ai_ExecBuildBuilding	am	byte	readable		
 exe	0x004a5540	ai_FindGoodToMake	am	byte	readable		
 exe	0x004a5760	ai_FindWantedItems	am	byte	readable		
-exe	0x004a58d0	ai_PickPartnerChain	am	shape	readable		
+exe	0x004a58d0	ai_PickPartnerChain	am	byte	readable		
 exe	0x004a5a30	ai_PickPartnerInRange	am	byte	readable		
 exe	0x004a5b50	ai_FindPartnersRandomWalk	am	byte	readable		
 exe	0x004a5d30	ai_PickPartnerRandomWalk	am	byte	readable		
@@ -1892,7 +1892,7 @@ exe	0x004b09f0	ai_CommandLaw	hst	byte	readable
 exe	0x004b0b50	ai_CommandLawChange	hst	shape	readable	deep	
 exe	0x004b0d40	ai_CommandFaithChange	hst	shape	readable	deep	
 exe	0x004b0fd0	ai_CommandRiot	hst	byte	readable		
-exe	0x004b1060	ai_CommandBreakGuildSeats	hst	shape	readable		
+exe	0x004b1060	ai_CommandBreakGuildSeats	hst	byte	readable		
 exe	0x004b11e0	ai_CommandDemand	hst	byte	readable		
 exe	0x004b1600	ai_CommandMercenariesPlunder	hst	byte	readable		
 exe	0x004b16e0	ai_CommandMercenariesMaraud	hst	byte	readable		
@@ -2391,9 +2391,9 @@ exe	0x004cd5e0	cm_LobbyFindPlayer	cm	byte	readable
 exe	0x004cd5f0	cm_LobbyMyPlayer	cm	byte	readable		
 exe	0x004cd600	cm_LobbyState	cm	byte	readable		
 exe	0x004cd610	cm_LobbyRequestList	cm	byte	readable		
-exe	0x004cd650	cm_LobbySetReady	cm	shape	readable		
+exe	0x004cd650	cm_LobbySetReady	cm	shape	readable	deep	
 exe	0x004cd6a0	cm_LobbyLeave	cm	byte	readable		
-exe	0x004cd6e0	cm_LobbySendChat	cm	shape	readable		
+exe	0x004cd6e0	cm_LobbySendChat	cm	byte	readable		
 exe	0x004cd760	cm_LobbyJoin	cm	byte	readable		
 exe	0x004cd7c0	cm_LobbyUpdatePlayer	cm	byte	readable		
 exe	0x004cd820	cm_LobbyRequestPlayer	cm	byte	readable		
@@ -3078,10 +3078,10 @@ exe	0x00505840	gm_CureDisease	f3gm	byte	readable
 exe	0x005059d0	gm_CureMinorDisease	f3gm	byte	readable		
 exe	0x00505ad0	gm_CureUpperDisease	f3gm	byte	readable		
 exe	0x00505be0	gm_ShuffledBytes	f3gm	byte	readable		
-exe	0x00505ca0	gm_Shuffled	f3gm	shape	readable		
+exe	0x00505ca0	gm_Shuffled	f3gm	byte	readable		
 exe	0x00505d30	gm_Shuffle	f3gm	byte	readable		
 exe	0x00505da0	gm_RandomAge	f3gm	shape	readable		
-exe	0x00505df0	gm_FindChar	f3gm	shape	readable		
+exe	0x00505df0	gm_FindChar	f3gm	byte	readable		
 exe	0x00505e30	gm_CharAge	f3gm	byte	readable		
 exe	0x00505e60	gm_CharLevel	f3gm	shape	readable		
 exe	0x00505f30	gm_CharPrevLevel	f3gm	shape	readable		
@@ -3154,7 +3154,7 @@ exe	0x0050b090	gm_ResearchClass	f3gm	byte	readable
 exe	0x0050b170	gm_DonationRank	f3gm	byte	readable		
 exe	0x0050b1e0	gm_DonationTop5	f3gm	byte	readable		
 exe	0x0050b290	gm_LikingChance	f3gm	shape	readable		
-exe	0x0050b2f0	gm_TreeNodeRank	f3gm	shape	readable		
+exe	0x0050b2f0	gm_TreeNodeRank	f3gm	byte	readable		
 exe	0x0050b3a0	gm_LayoutTree	f3gm	byte	readable		
 exe	0x0050b9f0	gm_UpdateTechTree	f3gm	shape	readable		
 exe	0x0050c310	gm_TreeLine	f3gm	byte	readable		
@@ -3536,7 +3536,7 @@ exe	0x0053f430	he_InnStaffLeave	he	byte	readable
 exe	0x0053f500	he_ClearInnDarkCorner	he	byte	readable		
 exe	0x0053f5b0	he_TopUpCharMoney	he	byte	readable		
 exe	0x0053f6b0	he_SpawnFounders	he	draft	readable	deep	
-exe	0x00540c90	he_PostEvent67	he	byte	readable		
+exe	0x00540c90	he_PostEvent67	he	shape	readable		
 exe	0x00540e40	he_InnReport	he	byte	readable		
 exe	0x00540fe0	he_DailyEventChecks	he	byte	readable		
 exe	0x00541010	he_PostEvent3a	he	byte	readable		
@@ -3929,7 +3929,7 @@ exe	0x00575540	he_EventGoodMoney	he	byte	readable
 exe	0x00575570	he_EventGoodRefund	he	byte	readable		
 exe	0x005755c0	he_LoadMessageFilter	he	byte	readable		
 exe	0x00575600	he_SaveMessageFilter	he	byte	readable		
-exe	0x00575640	he_IsMessageKindFiltered	he	draft	readable	deep	
+exe	0x00575640	he_IsMessageKindFiltered	he	byte	readable		
 exe	0x00575710	he_SetMessageKindFiltered	he	byte	readable		
 exe	0x00575860	ai_TutorialTick	sv_t	byte	readable		
 exe	0x00576020	unk_ClearEndGameGate	sv_t	byte	readable		
@@ -4402,7 +4402,7 @@ exe	0x005b3f30	ai_BeatingCallback	lc	byte	readable
 exe	0x005b4340	ai_EvidenceDetailsWindow	lc	byte	readable		
 exe	0x005b4590	ai_EvidenceBookWindow	lc	byte	readable		
 exe	0x005b4820	ai_BribeAmountCB	lc	draft	readable	deep	
-exe	0x005b4bf0	ai_OpenRobberBribe	lc	draft	readable	deep	
+exe	0x005b4bf0	ai_OpenRobberBribe	lc	byte	readable		
 exe	0x005b4c60	ai_DrohbriefAmountCB	lc	draft	readable	deep	
 exe	0x005b4fb0	ai_DrohbriefWindow	lc	byte	readable		
 exe	0x005b5010	ai_DenounceWindow	lc	draft	readable	deep	
