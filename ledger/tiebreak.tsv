@@ -899,7 +899,7 @@ exe	0x0044c610	d3io_AttachStock	d3_int_io	e7fda18c604f64ba	no	draft	sample n=32 
 exe	0x0044c9d0	d3io_LodName	d3_int_io	7e8dfd8a0379b36f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0044cbb0	d3_AttachMesh	d3_int_io	b255ab367895d3f4	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0044cd40	d3iot_DeleteStockObject	d3_io_t	22561682f6cfdb7a	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x0044ce40	d3iot_CalcBounds	d3_io_t	f1fb820618037f0a	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	1e4ea4d6b1173885
+exe	0x0044ce40	d3iot_CalcBounds	d3_io_t	d35f891432626449	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	bf5052b3fb5d71f2
 exe	0x0044d1c0	d3iot_Finish	d3_io_t	3a86c26ee742fda7	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0044d1f0	d3iot_LoadTexSet	d3_io_t	63e163bbe0742793	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0044d330	d3iot_LoadBGF	d3_io_t	573ef0374652e002	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft	

@@ -56,7 +56,24 @@ void d3iot_DeleteStockObject(D3BGF *m)
         mem_Free(m);
     }
 }
-/* 0x44ce40, radius and bounding box (8 corners appended to the vertices) of a mesh */
+/* 0x44ce40, radius and bounding box (8 corners appended to the vertices) of a mesh
+   @deep One fpu hunk left (3 ins) at the diagonal: the original squares z1 - mn.z with fld st(0); fmulp
+   (the difference consumed at its use, Z term first), ours fld st(0); fmul st,st(1) and pops the kept copy
+   (fstp st(0)) after fstp [m->diagonal]. The pop choice is already in the IL before scheduling (c2dag:
+   node op=46 non-popping fmul, op=63 fstp r32 at the statement end). z1 lives on the FPU from the max loop
+   through the corner fills (fst) in both; mx.x / mx.y in memory. Byte model of the consumed square:
+   cm_CharObjDistXZ (v.z on the FPU, d.z = v.z - d.z with fsub [mem] in place, fld st(0); fmulp) - its
+   shape copied here (mn.z = mx.z - mn.z, e.z, mx.w) is = control. No lever (= control): z1 as mx.z, the
+   result in mn.z / mx.z / mx.w / a third vector's field, dz inline (CSE), casts, -dz * -dz, dz *= dz,
+   assignment inside sqrt, the sum in its own statement or under (double), every term order and grouping
+   (54 rows, 4 codes), an __inline length helper, register / const dz, dz / z1 scoped in the if or a block,
+   a label / do-while(0) after the sqrt, dead store after, other accumulators for the center loop (slots
+   only), probes deleting the tail / max line / corner stores. Worse: z1 -= mn.z or d / r reused (leaf
+   square last: fld st(1); fmul st,st(2), 5-7), (mn.z - z1)^2 (fsubr), -(mn.z - z1) (6), dz / z1 double,
+   scalar dx / dy (frame 0x24), float b[6] as in the byte sibling d3_CalcBounds (frame 0x18). climb.py
+   --rounds 3 and flip.py --want fmulp: nothing. Next: find what makes VC6 emit a popping fmul for a dying
+   FPU variable defined in place (c2.dll FP codegen), or read the original from the top for a different
+   variable set. */
 
 void d3iot_CalcBounds(D3BGF *m)
 {
