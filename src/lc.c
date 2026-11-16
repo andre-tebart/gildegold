@@ -30756,11 +30756,11 @@ int ai_PeaceWindow(AICHARREC *me, LCORDMSG *m)
         }
         return 0x10;
     }
+    done = 0;
     memset(&cfg, 0, sizeof(cfg));
     cfg.mode = 0x400;
     cfg.kind = 6;
     cfg.filter = gypsyFilter;
-    done = 0;
     txt_Format(text, 0x1de4);
     a = (AICHARREC *)ai_AmountMenu(&cfg, text, 0, 0);
     if (a == 0)
