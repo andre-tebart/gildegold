@@ -1935,10 +1935,10 @@ void ai_HookChapter5Step6(int end)
             party.members[n++] = ai_CharsT[i].netId;
     }
     party.used = n;
-    party.time = ai_Time;
     party.kind = 1;
     party.flags = 0xa0;
     party.thing = -1;
+    party.time = ai_Time;
     cm_SendNewParty(&party);
 }
 
