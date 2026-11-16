@@ -5747,10 +5747,10 @@ int ai_DecideUseMilitaryObject(int a, AIPER *p, int f, AIARG *o1, AIARG *o2)
             s2.kind = 7;
             s2.arg = 1;
             r = ai_ChooseSubAction(k, p->id, 2, &s1, &s2);
-            if (r == 0)
-                return 0;
-            *o1 = s1;
-            *o2 = s2;
+            if (r != 0) {
+                *o1 = s1;
+                *o2 = s2;
+            }
             return r;
         }
     } else if (st[2] == 0) {
@@ -6158,10 +6158,10 @@ int ai_DecideUseHealthObject(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
                     s2.kind = 7;
                     s2.arg = 1;
                     r = ai_ChooseSubAction(k, p->id, 2, &s1, &s2);
-                    if (r == 0)
-                        return 0;
-                    *o1 = s1;
-                    *o2 = s2;
+                    if (r != 0) {
+                        *o1 = s1;
+                        *o2 = s2;
+                    }
                     return r;
                 }
             } else if (st[2] == 0) {
@@ -6175,10 +6175,10 @@ int ai_DecideUseHealthObject(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
             s1.kind = 0;
             s1.arg2 = 0x1f;
             r = ai_ChooseSubAction(k, p->id, 4, &s2, &s1);
-            if (r == 0)
-                return 0;
-            *o1 = s2;
-            *o2 = s1;
+            if (r != 0) {
+                *o1 = s2;
+                *o2 = s1;
+            }
             return r;
         }
     }
