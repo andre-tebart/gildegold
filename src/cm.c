@@ -715,13 +715,15 @@ int cm_SendGroupState(void)
     unsigned int s;
 
     ret = 1;
-    if (cm_GroupFirstSeq == cm_GroupEndSeq)
-        return ret;
-    for (s = cm_GroupFirstSeq; s < cm_GroupEndSeq; s++) {
-        if (cm_SendStates[s & 0x7fff].state == 0)
-            return 0;
-        if (cm_SendStates[s & 0x7fff].state == 2)
-            ret = -1;
+    if (cm_GroupFirstSeq != cm_GroupEndSeq) {
+        for (s = cm_GroupFirstSeq; s < cm_GroupEndSeq; s++) {
+            if (cm_SendStates[s & 0x7fff].state == 0) {
+                ret = 0;
+                break;
+            }
+            if (cm_SendStates[s & 0x7fff].state == 2)
+                ret = -1;
+        }
     }
     return ret;
 }
