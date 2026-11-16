@@ -4972,11 +4972,11 @@ int ai_ExecuteBuildResidence(G5CH *p, AIARG *s1, AIARG *s2)
     if (s2->kind == 4) {
         /* s2 is the house to upgrade (kind 4, its building id), s1 the new type */
         memset(&m, 0, sizeof(m));
+        m.type = 0x1e;
         m.to = p->netId;
         m.fromId = s2->ref;
-        m.time = ai_Time;
-        m.type = 0x1e;
         m.flags = 1;
+        m.time = ai_Time;
         m.arg[0] = s2->ref;
         cm_BeginGroup("building_upgrade");
         cm_SendMoveGoods(-1, p->netId, ai_OwnPlayer, (int)(gm_BuildingKindValue(s1->ref) * 0.3f));
