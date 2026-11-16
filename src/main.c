@@ -452,6 +452,7 @@ LRESULT CALLBACK main_WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpar
                     di_AcquireKeyboard(1);
                 }
                 main_Inactive = 0;
+                return 0;
             }
         }
         else {
@@ -464,6 +465,7 @@ LRESULT CALLBACK main_WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpar
                     tb_Paused = 1;
                 }
                 SetWindowPos(hwnd, HWND_BOTTOM, 0, 0, 0, 0, 3);
+                return 0;
             }
         }
         return 0;
