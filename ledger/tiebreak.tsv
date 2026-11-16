@@ -2657,7 +2657,7 @@ exe	0x004e8160	amt_CheckOfficeColumns	amt	1c2d25372a1a6419	no	byte	control=byte 
 exe	0x004e83b0	amt_IsColumnDecided	amt	6a1edb577d01fe64	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	a36f86aa38c5c713
 exe	0x004e8530	amt_HasDeposalVote	amt	c3a361ada467586b	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004e85d0	amt_UpdateOffices	amt	69693520b65894e9	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	a36f86aa38c5c713
-exe	0x004e86e0	amt_HasColumn7Holder	amt	557491ffe6f69a1f	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	a36f86aa38c5c713
+exe	0x004e86e0	amt_HasColumn7Holder	amt	557491ffe6f69a1f	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	8b3f93f94b1713e3
 exe	0x004e8730	amt_SendOfficeNews	amt	b8382ceaf9954bfa	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004e87e0	amt_SendOfficeLost	amt	a380f51b4ca194d9	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004e88a0	amt_ElectDeputies	amt	84dc0bde86868045	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft	
@@ -2688,7 +2688,7 @@ exe	0x004eac20	ahm_HasFreeSlot	ahm	d821a2097289027c	no	byte	control=byte p1=byte
 exe	0x004eac60	ahm_FillSteps	ahm	0f4c1b14ce6b4442	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft	
 exe	0x004ead20	ahm_ShufflePlayers	ahm	e36b4cf6490a61aa	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004eadc0	ahm_ShuffleTable	ahm	6740072716dbb414	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x004eae60	ahm_FindRecipe	ahm	6cd28aef5b1cc20f	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	068a06725a108d81
+exe	0x004eae60	ahm_FindRecipe	ahm	6cd28aef5b1cc20f	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	aaee80cb2c841d9e
 exe	0x004eaea0	ahm_RandomRecipe	ahm	18fa81a7e921f9ce	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004eaf50	ahm_ResearchTime	ahm	bab1073cb9c09254	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004eafa0	ahm_ResearchMinutes	ahm	82abf6e7b09a31ef	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
@@ -2711,12 +2711,12 @@ exe	0x004ec320	ahm_StepValue	ahm	d0a20e414f12b891	no	draft	control=draft p1=draf
 exe	0x004ec3d0	ahm_ObjectValue	ahm	b7ede3374b954109	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004ec490	ahm_SendCreateAlchemist	ahm	72c86cc12c238833	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004ec500	ahm_CreateAlchemist	ahm	9dea3ce2a2794ba9	no	shape	sample n=32 seed=1 compiled=32 codegens=1 best=shape	
-exe	0x004ec940	ahm_SendSetShare	ahm	5196492fb1373840	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	068a06725a108d81
+exe	0x004ec940	ahm_SendSetShare	ahm	5196492fb1373840	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	aaee80cb2c841d9e
 exe	0x004eca00	ahm_SetShare	ahm	c7c17ac7b576a953	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004ecaa0	ahm_SendAddPlace	ahm	02c73c19b403e0e0	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004ecb30	ahm_AddPlace	ahm	1a121a87d860c576	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004ecbc0	ahm_RemovePlace	ahm	33b7bda3e5409edd	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x004ecc30	ahm_SendSetPlaceValue	ahm	8c9668865e677f83	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	068a06725a108d81
+exe	0x004ecc30	ahm_SendSetPlaceValue	ahm	8c9668865e677f83	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	aaee80cb2c841d9e
 exe	0x004ecd10	ahm_SetPlaceValue	ahm	6ae145cd0fb44031	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004ecd50	ahm_SendAddValue	ahm	19ef6439d2039acb	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004ecdb0	ahm_AddValue	ahm	f204458448ceda66	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	

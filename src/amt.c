@@ -1784,10 +1784,9 @@ int amt_HasColumn7Holder(void)
     int i, n;
 
     n = 7;
-    i = 36;
-    do {
+    for (i = 36; i != 0; i--) {
         if (n == 0)
-            return 0;
+            break;
         if (amt_Kinds[amt_Table[i].kind].col == 7) {
             if (amt_Table[i].owner != -1) {
                 if (gm_FindChar(amt_Table[i].owner) != 0)
@@ -1795,8 +1794,7 @@ int amt_HasColumn7Holder(void)
             } else
                 n--;
         }
-        i--;
-    } while (i != 0);
+    }
     return 0;
 }
 /* 0x4e8730, sends the office news 0x1c19 about the office p (+0 the index as an unsigned short, +2 the kind 5 .. 7, +9 a flag) with the number
