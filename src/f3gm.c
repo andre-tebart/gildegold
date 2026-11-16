@@ -10003,47 +10003,30 @@ typedef struct {
 
 unsigned gm_TreeNodeRank(int p)
 {
-    unsigned a, b, i;
-    int n, j;
-    RTNODE *q;
+    int a, b, i, n;
 
-    n = gm_TreeNodeCount;
     a = 0;
     b = 0;
     if (NODES[p].rank != 0xffff)
         return NODES[p].rank;
-    i = 0;
-    if (NODES[p].p1 != 0) {
-        if (0 < gm_TreeNodeCount) {
-            q = NODES;
-            do {
-                if (NODES[p].p1 == q->id) {
-                    a = gm_TreeNodeRank(i) + 1;
-                    break;
-                }
-                i++;
-                q++;
-            } while ((int)i < gm_TreeNodeCount);
+    if (NODES[p].p1 == 0)
+        return 0;
+    n = gm_TreeNodeCount;
+    for (i = 0; i < n; i++) {
+        if (NODES[p].p1 == NODES[i].id) {
+            a = gm_TreeNodeRank(i) + 1;
+            break;
         }
-        if (NODES[p].p2 == 0)
-            return a;
-        j = 0;
-        if (0 < n) {
-            q = NODES;
-            do {
-                if (NODES[p].p2 == q->id) {
-                    b = gm_TreeNodeRank(j) + 1;
-                    break;
-                }
-                j++;
-                q++;
-            } while (j < n);
-        }
-        i = a;
-        if ((int)a <= (int)b)
-            i = b;
     }
-    return i;
+    if (NODES[p].p2 == 0)
+        return a;
+    for (i = 0; i < n; i++) {
+        if (NODES[p].p2 == NODES[i].id) {
+            b = gm_TreeNodeRank(i) + 1;
+            break;
+        }
+    }
+    return a > b ? a : b;
 }
 
 extern int gm_TreeRanks;
