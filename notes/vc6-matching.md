@@ -353,6 +353,14 @@ Which arm is inline, jumps into another arm, threaded and redundant tests, `&&` 
 
 ### How VC6 orders blocks and merges tails (c2.dll)
 
+- **A failure tail with its constant scheduled among the pops (`pop edi; pop esi; pop ebp; or eax,-1; pop
+  ebx`), an early return jumping to the success return's pops** (ours: `or eax,-1` before the pops, the early
+  exit joining there; `0 ins / N bytes`): the success return falls into the exit label, so the walk must finish
+  it first. A `for` loop's entry test sends the walk to the loop exit (the failure code behind the loop) before
+  the body, and `if (r != 0) { success; return s; }` follows the skip edge first: write `i = 0; do { ..; if (r ==
+  ERR) break; if (r == 0) continue; success; return s; } while (++i < 16);`. Each half alone (do-while with the
+  if body, for with continue, goto forms, loop-exit tests) gave the control's code (net_Connect byte).
+
 - **The shared return 0 in the middle, the rate / success code last (ours the reverse, with `goto rate`)**:
   guard returns all the way, `if (b != 1 || ..) return 0;`, each failing step `if (..) return 0;`, the kind chain
   ending `else return 0;`, the success code after it: no goto (ai_DecideProduceGood 34 ins -> byte).

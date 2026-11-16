@@ -191,23 +191,24 @@ SOCKET net_Connect(char *host, unsigned short port)
     }
     tv.tv_sec = 0;
     tv.tv_usec = 500000;
-    for (i = 0; i < 16; i++) {
+    i = 0;
+    do {
         fds.fd_array[0] = s;
         fds.fd_count = 1;
         r = select(1, NULL, &fds, NULL, &tv);
         if (r == SOCKET_ERROR)
             break;
-        if (r != 0) {
-            len = 4;
-            if (getsockopt(s, SOL_SOCKET, SO_SNDBUF, (char *)&opt, &len) != SOCKET_ERROR)
-                sprintf(buf, "getsockopt SO_SNDBUF: %d", opt);
-            len = 4;
-            if (getsockopt(s, SOL_SOCKET, SO_RCVBUF, (char *)&opt, &len) != SOCKET_ERROR)
-                sprintf(buf, "getsockopt SO_RCVBUF: %d", opt);
-            net_Conn.s = s;
-            return s;
-        }
-    }
+        if (r == 0)
+            continue;
+        len = 4;
+        if (getsockopt(s, SOL_SOCKET, SO_SNDBUF, (char *)&opt, &len) != SOCKET_ERROR)
+            sprintf(buf, "getsockopt SO_SNDBUF: %d", opt);
+        len = 4;
+        if (getsockopt(s, SOL_SOCKET, SO_RCVBUF, (char *)&opt, &len) != SOCKET_ERROR)
+            sprintf(buf, "getsockopt SO_RCVBUF: %d", opt);
+        net_Conn.s = s;
+        return s;
+    } while (++i < 16);
     net_Error(WSAGetLastError());
 fail:
     shutdown(s, SD_BOTH);
