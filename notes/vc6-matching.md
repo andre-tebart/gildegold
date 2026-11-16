@@ -109,6 +109,10 @@ Where the pushes and pops sit, how many epilogue copies there are, shared agains
 
 ### A result in a register, a hoisted constant, a reload from its slot
 
+- **`xor eax,eax` before the first `test esi,esi; je exit` (it serves both the next `mov ax,[esi]` and the
+  return 0), ours `xor eax,eax` after the test and again in the exit**: the first test was a guard `if (o == 0)
+  return 0;`, the rest nested as before (`if (g != 0) {..} return 0;`). Guarding the second test as well breaks
+  the layout (ai_ExecuteUseMilitaryObject and nine ai_ExecuteUse* twins byte).
 - **A void-looking init whose last statement tests a call's result, eax untouched to the end, ecx / edx for the
   branch's loads**: it returns the result (`ret = f(&x); if (ret == 0) {..} return ret;`, the caller ignores it);
   void is hmt_Reset's code. (hmt_Init 12 -> byte, returns hmt_ReadBinaryFile's result)
@@ -960,6 +964,9 @@ Rotation, test position, countdown, induction variables and strength reduction, 
 
 ### Counters, countdowns and increment order
 
+- **A chain count loop with `inc edx; mov [esp],edx` scheduled after the `mov eax,[eax+next]`** (the counter in
+  memory, its address goes to a write): the step stood in the body before the count: `s = head; while (s != 0) {
+  s = s->next; n++; }` (ai_SaveSettings byte; `for (..; s = s->next) n++;` puts the inc first).
 - **The loop pointer's `add esi,0x14` emitted before the body's last running sum (`dec ebx; setns; lea
   edi,[edi+ecx+0x21]`)**: the sum stood in the for increment behind `i++`: `for (i = 0; i < 8; i++, y += step +
   (--rest >= 0) + 0x21)` (ai_SpecialAmountWindow; a `while` with `i++;` before the sum is the same code). No lever:
