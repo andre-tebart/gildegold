@@ -25694,11 +25694,10 @@ int ai_SpecialAmountWindow(unsigned int *filter, char *caption, int tab, int (*p
     step = y / 7;
     rest = y % 7;
     y = 0;
-    for (i = 0; i < 8; i++) {
+    for (i = 0; i < 8; i++, y += step + (--rest >= 0) + 0x21) {
         ai_AmountTabs[i].control = d2_WinCreateSlider((d2_Wins[d2_LastWindow].w - 0xb9) / 2, y, 0xbf,
                                                       txt_Ptrs[0x1688 + ai_AmountTabs[i].id], d2_LastWindow);
         d2_SetObjWidth(ai_AmountTabs[i].control, 0xb9);
-        y += step + (--rest >= 0) + 0x21;
     }
     if (ai_AmountTab < 8) {
         d2_SetForm(win, 2);
