@@ -2778,16 +2778,12 @@ void gm_ClearObjects(void)
 
 int gm_FindObjectProto(char *name)
 {
-    int n, i;
+    int n;
 
-    n = 0;
-    i = 0;
-    do {
-        if (_stricmp(name, &ai_Goods[i + 1]) == 0)
+    for (n = 0; n < 0x2dc; n++) {
+        if (_stricmp(name, GM_GOOD(n)->name) == 0)
             return n;
-        i += 0x41;
-        n++;
-    } while (i < 0xb9dc);
+    }
     return 0;
 }
 /* 0x4fe940, 1 when the object prototype n is a building part of the kinds 1, 3, 4, 0xb, 0x1a, 0x1b, 0x1c */
