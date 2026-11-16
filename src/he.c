@@ -23939,7 +23939,11 @@ free_ev:
    building frees the event. At the end (no trainee, the skill full or the time up) a player whose master is not
    at work is told (the text 0x1bc8 at the object, else at the building's main room; the voice
    "_NACHRICHTEN_HS_81"), the trainee leaves the group and the event is freed. The gain's spelling
-   (minutes * 8.0) * (1.0 / 30) is the one VC6 compiles to the original's fmul order (1/30, then 8.0). */
+   S * ((minutes / 30.0) * 8.0) gives the original's fmul order (the parentheses keep 1/30 and 8.0 apart and
+   unfolded, the building factor first; he_RunStudy byte with it).
+   @deep fpu hunk gone with S * ((minutes / 30.0) * 8.0) (he_RunStudy's byte spelling). Left: slots 4, the
+   int temp of the skill byte compare (line 'c->skills[..] < 252') at [esp+0x10] in ours, [esp+0x18] in the
+   original; not worked yet. */
 void he_RunGraveTraining(int ev)
 {
     AIJOB *e = (AIJOB *)ev;
@@ -23970,7 +23974,7 @@ void he_RunGraveTraining(int ev)
         }
         bskill = (float)gm_BuildingSkill(bld, 0xc, 1);
         minutes = gm_WorkMinutesBetween(&e->clock60, &ai_Time, bld);
-        gain = (unsigned char)((minutes * 8.0) * (1.0 / 30) * (bskill * 0.01 + 1.0));
+        gain = (unsigned char)((bskill * 0.01 + 1.0) * ((minutes / 30.0) * 8.0));
         skill = &ch->skills[t->skill];
         gain = (unsigned char)(gain / (*skill * (1.0f / 252) + 1.0));
         if ((float)(gain + *skill) > 252.0f)
