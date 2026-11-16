@@ -7778,10 +7778,10 @@ void ai_BreweryContact(AIBLD *bld, int room)
     int transport;
 
     brauen = 0;
-    personal = 0;
     lager = 0;
-    meister = 0;
     transport = 0;
+    meister = 0;
+    personal = 0;
     sv_ReleaseNamePlates();
     while (sv_RunFrame(ai_BreweryContact, 0x67fff) != 0) {
         if ((ai_BuildingPerms & 0x200) != 0)
@@ -12081,11 +12081,11 @@ int ai_OpenTransport(); void ai_MasterLetterWindow();
 
 void ai_ProductionWriteContact(int building, int room)
 {
-    int schreiben = 0;
-    int lager = 0;
-    int transport = 0;
-    int personalbuch = 0;
     int meisterbrief = 0;
+    int lager = 0;
+    int schreiben = 0;
+    int personalbuch = 0;
+    int transport = 0;
 
     sv_ReleaseNamePlates();
     while (sv_RunFrame(ai_ProductionWriteContact, 0x67fff) != 0) {
