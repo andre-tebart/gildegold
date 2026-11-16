@@ -30363,15 +30363,17 @@ int ai_SeatSwapWindow(AICHARREC *me, LCORDMSG *m)
    amount menus (texts 0x1dcf, 0x1dd0; none: 0), then the window (0x1dd1: the 4, the price, the two) whose first
    button, when the player has the 4 (sv_CheckMoney) and the price (sv_CheckGoodAmount), does it and tells 0x1dd2;
    either button or a right click close it. Returns 1 once it was done, else 0
-   @deep Rewritten whole from the original 0x5cb4f0..0x5cba80 (the draft was a skeleton): every call,
-   argument, constant and branch read and matched; ours=462 original=462. Left: one hunk at +0x220 (the
-   player branch's AMOUNTCFG set-up): the original loads the high word of gypsyFilter (mov edx,[0x5eed6c])
-   before the rep stosd and stores done=0 as an immediate after the txt_Format pushes; ours loads both
-   words after the memset (lc.c declares gypsyFilter const volatile like menu.c's definition, so VC6 cannot
-   hoist the load; a non-volatile extern in lc.c is an M5 against menu.c:34) and stores done from eax
-   before the rep stosd. Tried done=0 before the memset, after txt_Format (85 bytes off but code 22) and at
-   the top (worse). The rest is slots (o1/o2, price) and regs. A declaration question (the volatile of
-   gypsyFilter), not a statement. */
+   @deep Twin of ai_PeaceWindow (byte): done = 0 before the memset of cfg (the peace window's lever) takes
+   it draft 36/674 -> shape 40/48 (size now equal). Not worked further this session; the rest is slots 30 /
+   order 20 / regs 8 per dcp try. prior: Rewritten whole from the original 0x5cb4f0..0x5cba80 (the draft
+   was a skeleton): every call, argument, constant and branch read and matched; ours=462 original=462.
+   Left: one hunk at +0x220 (the player branch's AMOUNTCFG set-up): the original loads the high word of
+   gypsyFilter (mov edx,[0x5eed6c]) before the rep stosd and stores done=0 as an immediate after the
+   txt_Format pushes; ours loads both words after the memset (lc.c declares gypsyFilter const volatile like
+   menu.c's definition, so VC6 cannot hoist the load; a non-volatile extern in lc.c is an M5 against
+   menu.c:34) and stores done from eax before the rep stosd. Tried done=0 before the memset, after
+   txt_Format (85 bytes off but code 22) and at the top (worse). The rest is slots (o1/o2, price) and regs.
+   A declaration question (the volatile of gypsyFilter), not a statement. */
 
 int ai_HatredWindow(AICHARREC *me, LCORDMSG *m)
 {
@@ -30421,11 +30423,11 @@ int ai_HatredWindow(AICHARREC *me, LCORDMSG *m)
         }
         return 0x10;
     }
+    done = 0;
     memset(&cfg, 0, sizeof(cfg));
     cfg.mode = 0x400;
     cfg.kind = 6;
     cfg.filter = gypsyFilter;
-    done = 0;
     txt_Format(text, 0x1dcf);
     a = (AICHARREC *)ai_AmountMenu(&cfg, text, 0, 0);
     if (a == 0)
