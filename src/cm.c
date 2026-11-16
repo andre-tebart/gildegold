@@ -2427,6 +2427,7 @@ int cm_CheckSellObject(G17MSG *m)
     char *p;
     ORDCHAR *r;
     int *list;
+    ORDBLD *bb;                 /* the buyer's building: its own slot in the original, not b again */
 
     if (m->sell.seller != -1) {
         m->sell.seller = cm_ResolveId((int)m, m->sell.seller);
@@ -2446,11 +2447,11 @@ int cm_CheckSellObject(G17MSG *m)
     }
     if (m->sell.buyer != -1) {
         m->sell.buyer = cm_ResolveId((int)m, m->sell.buyer);
-        if (gm_FindById((int *)&b, (int *)&o, (int *)&c, m->sell.buyer) == 0)
+        if (gm_FindById((int *)&bb, (int *)&o, (int *)&c, m->sell.buyer) == 0)
             return 1;
-        if (b != 0) {
-            if (b->owner != 0xffff)
-                r = (ORDCHAR *)ai_Chars[b->owner];
+        if (bb != 0) {
+            if (bb->owner != 0xffff)
+                r = (ORDCHAR *)ai_Chars[bb->owner];
             else
                 r = 0;
         } else if (o != 0) {
