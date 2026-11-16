@@ -4009,7 +4009,7 @@ exe	0x0057aeb0	ai_TutorialInitChapter5	sv_t	8774329fa9d901d6	no	byte	control=byt
 exe	0x0057b750	ai_TutorialInitMainOutro	sv_t	fa030cb776dbd933	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0057b810	ai_TutorialBezier	sv_t	45ae587d1b67ab6b	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
 exe	0x0057b8a0	ai_TutorialMarkerUpdate	sv_t	f16a2b0b2c744c8d	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
-exe	0x0057bc30	ai_SetupTutorialPlayer	sv_t	34ea4dbdcb183104	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
+exe	0x0057bc30	ai_SetupTutorialPlayer	sv_t	34ea4dbdcb183104	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	849ff5c9862ed237
 exe	0x0057bce0	ai_TutorialWindow	sv_t	3a6f057d64dd3ed7	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
 exe	0x0057bf00	ai_AlchemistCandidates	sv_t	f6f6b9dd94af7c76	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x0057c560	ai_AlchemistHire	sv_t	f6587f2bda0309b9	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	

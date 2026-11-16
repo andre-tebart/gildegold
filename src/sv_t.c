@@ -4297,8 +4297,8 @@ void ai_SetupTutorialPlayer(void)
 
     init_PlayerProfile.tool1 = 0x4b;
     init_PlayerProfile.tool2 = 0x18;
-    init_PlayerProfile.status = 0x10;
     init_PlayerProfile.job = 0x33;
+    init_PlayerProfile.status = 0x10;
     init_PlayerProfile.coat = 0x59a;
     init_PlayerProfile.sex = 0;
     init_PlayerProfile.faith = 0;
