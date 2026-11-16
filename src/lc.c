@@ -28034,7 +28034,6 @@ int ai_GiftWindow(AICHARREC *giver, AICHARREC *chr)
     int least;
     int giveBtn;
     int closeBtn;
-    unsigned int flags;
     int most;
     int win;
     int given;
@@ -28046,7 +28045,7 @@ int ai_GiftWindow(AICHARREC *giver, AICHARREC *chr)
     closeBtn = -1;
     slider = -1;
     least = max(0x640, (int)(gm_GetWorth(lc_CharRecs[ai_PlayerId].id) * 0.005f));
-    most = max(0xc80, (int)min(gm_GetWorth(lc_CharRecs[ai_PlayerId].id) * 0.05f,
+    most = max(0xc80, (int)min((float)(gm_GetWorth(lc_CharRecs[ai_PlayerId].id) * 0.05f),
                                 (float)gm_GetGoodsValue((char *)&lc_CharRecs[ai_PlayerId])));
     if (most <= 0)
         return 0;
@@ -28075,7 +28074,8 @@ int ai_GiftWindow(AICHARREC *giver, AICHARREC *chr)
             if (d2_PointerObj == giveBtn) {
                 amount = gm_PlayerFactor(d2_GetObjValue(slider), ai_OwnPlayer);
                 if (sv_CheckGoodAmountB((char *)&lc_CharRecs[ai_PlayerId], amount, ai_OwnPlayer)) {
-                    flags = giver->powerFlags | 0x20;
+                    unsigned int flags = giver->powerFlags | 0x20;
+
                     cm_BeginGroup("gift");
                     cm_SendMoveGoods(chr->netId, giver->netId, ai_OwnPlayer, amount);
                     cm_BeginFieldBlock(giver, giver->netId);

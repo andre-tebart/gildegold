@@ -4505,7 +4505,7 @@ exe	0x005c3bb0	ai_PickBuildingChar	lc	6686bd2b4375d6dd	no	draft	control=draft p1
 exe	0x005c4100	ai_LawSelectionEntry	lc	e415d6ea4fd0d502	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x005c4150	ai_FamilyTreeWindow	lc	49b0292a16929cb6	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x005c5310	ai_CharInfoPanel	lc	b54c5b02ffd6a614	yes	draft	control=draft p1=draft p2=draft* p3=draft* p4=draft	
-exe	0x005c6050	ai_GiftWindow	lc	7889db07b53cfe3d	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
+exe	0x005c6050	ai_GiftWindow	lc	994c37b0cffb8ec2	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	cdb8650ca52967df
 exe	0x005c64c0	ai_FindCandidateIds	lc	8183ba27ce227d37	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
 exe	0x005c6530	ai_MarriageTest	lc	cdd796f72d1336ff	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005c6620	ai_CourtshipRounds	lc	6ce6c20439e6fa97	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
