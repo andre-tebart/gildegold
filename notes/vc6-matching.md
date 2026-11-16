@@ -2089,6 +2089,11 @@ Store order in a fill, hoisted loads and sunk stores, statement order effects, `
   `flags` is an `unsigned int` (AIACT), our view had `unsigned char`; VC6 still loads one byte, but the load
   order and the test operands follow the int (byte). A `(char)` cast on one side moves the loads but not the
   test operands; try the wider field type (view or probe `*(unsigned int *)&x`) first.
+- **Byte weights of one dword (`mov [esp+X],edx` then `mov esi,[esp+X+1]; and esi,0xff`, the first byte as `and edx,0xff`)**:
+  no named locals `a = wv.b[0]` .. (each one a candidate: 200 -> 28 ins written inline as `s0[2] * wv.b[0] + ..`),
+  and the dword copied as a 4-byte RECORD (`wv = *ww` with `D3FLWEIGHTS *ww`), not a union's `wv.l = *ww`: the
+  union form leaves `and edx` before the `[esp+X+1]` load (a scheduling tie, 4 ins). Neither block scope, a
+  `uchar[4]` with `*(unsigned long *)`, nor `((unsigned char *)&l)[k]` moved it (d3fl_BlendC, byte).
 - **Commutative operands are ordered by rank** (the rank of the variables' first occurrence): a dead store
   (`mark = 0; a = 0;`) at the top fixed 2 of 4 swapped `[ebx+edi]` / `[edi+ebx]` (d3_MirCreateOutline); an
   unrelated earlier loop's index name changed `[iv+light]` vs `[light+iv]`. For a sum of globals the source order

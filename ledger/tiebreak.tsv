@@ -800,7 +800,7 @@ exe	0x0043e820	d3e_RegisterSceneEvent	d3_engine	fa906ded798b3eb6	no	byte	control
 exe	0x0043e900	d3e_SaveEvents	d3_engine	8ff961b5d180250b	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0043e970	d3e_LoadEvents	d3_engine	462135d2f162fec7	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0043ea10	d3e_LoadSceneEvents	d3_engine	cad648744d7da1fc	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x0043eab0	d3fl_BlendC	d3_fl	186e91a4238ea269	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
+exe	0x0043eab0	d3fl_BlendC	d3_fl	1d3e55e4b58def7d	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	f095c24c5892921f
 exe	0x0043ed70	d3fl_BlendMMX	d3_fl	14f555ba6cf16b22	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0043eef0	d3fl_Render	d3_fl	b1156db5eb0c4650	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0043f080	d3fl_MakeWeights	d3_fl	5d14f1d28189be22	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
