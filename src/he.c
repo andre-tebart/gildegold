@@ -12549,7 +12549,6 @@ void he_AllocCartRepair(int ev)
     AIJOB *e = (AIJOB *)ev;
     HECARTREPAIR *r = (HECARTREPAIR *)ev;
     AIOBJ *o = 0;
-    int n;
 
     r->done = e->start;
     gm_AddTime(&r->done, 0, r->per * r->points, 0);
@@ -12564,10 +12563,7 @@ void he_AllocCartRepair(int ev)
         cm_SendSetField(o->objId, 0x13, 1, 0x20, 0);
     }
     e->clock60 = ai_Time;
-    n = o->fill + r->points;
-    if (n >= 100)
-        n = 100;
-    r->target = n;
+    r->target = o->fill + r->points >= 100 ? 100 : o->fill + r->points;
 }
 /* 0x556ed0, the run handler of the event 16 (HECARTREPAIR; allocated by he_AllocCartRepair), by AIJOB.stage:
    0: the cart (gm_Query 2; gone: the event is freed) below its target gets the minutes since the last round /
