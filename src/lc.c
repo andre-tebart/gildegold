@@ -12977,10 +12977,10 @@ void ai_ThievesGuildEmptyListener(int building, int room)
 
 void ai_StorageContact(int building, int room)
 {
-    int ausruesten = 0;
-    int regeneration = 0;
     int lager = 0;
     int transport = 0;
+    int ausruesten = 0;
+    int regeneration = 0;
     int click;
 
     sv_ReleaseNamePlates();
