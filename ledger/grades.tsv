@@ -1672,7 +1672,7 @@ exe	0x0049c570	ai_DecideSpy	am	byte	readable
 exe	0x0049c700	ai_ExecuteSpy	am	byte	readable		
 exe	0x0049c790	ai_DecideBuyMarketObject	am	byte	readable		
 exe	0x0049c880	ai_ExecuteBuyMarketObject	am	byte	readable		
-exe	0x0049c8e0	ai_DecideBuyIndulgence	am	shape	readable		
+exe	0x0049c8e0	ai_DecideBuyIndulgence	am	byte	readable		
 exe	0x0049cb60	ai_ExecuteBuyIndulgence	am	shape	readable		
 exe	0x0049cd30	ai_DecideUseOffice	am	byte	readable		
 exe	0x0049cdb0	ai_ExecuteUseOffice	am	byte	readable		
@@ -1716,7 +1716,7 @@ exe	0x0049fc90	ai_DecidePriceManipulation	am	byte	readable
 exe	0x004a0040	ai_ExecutePriceManipulation	am	byte	readable		
 exe	0x004a0090	ai_DecideGuildRiot	am	byte	readable		
 exe	0x004a01f0	ai_ExecuteGuildRiot	am	byte	readable		
-exe	0x004a0240	ai_PickLeastLikedRival	am	shape	readable	deep	
+exe	0x004a0240	ai_PickLeastLikedRival	am	byte	readable		
 exe	0x004a0410	ai_PickDislikedColumn	am	byte	readable		
 exe	0x004a05e0	ai_PickLikedColumn	am	byte	readable		
 exe	0x004a0890	ai_DecideGuildLevel3	am	byte	readable		
@@ -2152,7 +2152,7 @@ exe	0x004c3ae0	cm_GetSlotState	cm	byte	readable
 exe	0x004c3b10	cm_GetSlotValue	cm	byte	readable		
 exe	0x004c3b30	cm_BeginSendGroup	cm	byte	readable		
 exe	0x004c3b40	cm_EndSendGroup	cm	byte	readable		
-exe	0x004c3b50	cm_SendGroupState	cm	shape	readable		
+exe	0x004c3b50	cm_SendGroupState	cm	byte	readable		
 exe	0x004c3ba0	cm_BeginFieldBlock	cm	byte	readable		
 exe	0x004c3c00	cm_AddFieldDelta	cm	draft	readable	deep	
 exe	0x004c3d00	cm_AddFieldValues	cm	byte	readable		
@@ -3149,11 +3149,11 @@ exe	0x0050ab80	gm_FreeCapacity	f3gm	byte	readable
 exe	0x0050acf0	gm_FreeStallCapacity	f3gm	shape	readable		
 exe	0x0050ad70	gm_TakeableCount	f3gm	shape	readable		
 exe	0x0050af00	gm_CollectCarried	f3gm	byte	readable		
-exe	0x0050b010	gm_FirstBuilding	f3gm	shape	readable		
+exe	0x0050b010	gm_FirstBuilding	f3gm	byte	readable		
 exe	0x0050b090	gm_ResearchClass	f3gm	byte	readable		
 exe	0x0050b170	gm_DonationRank	f3gm	byte	readable		
 exe	0x0050b1e0	gm_DonationTop5	f3gm	byte	readable		
-exe	0x0050b290	gm_LikingChance	f3gm	shape	readable		
+exe	0x0050b290	gm_LikingChance	f3gm	byte	readable		
 exe	0x0050b2f0	gm_TreeNodeRank	f3gm	byte	readable		
 exe	0x0050b3a0	gm_LayoutTree	f3gm	byte	readable		
 exe	0x0050b9f0	gm_UpdateTechTree	f3gm	byte	readable		
@@ -3671,7 +3671,7 @@ exe	0x00551d70	he_RunSixGroupEvent	he	draft	readable	deep
 exe	0x00552040	he_StartExam	he	byte	readable		
 exe	0x00552090	he_RunExamQuestion	he	byte	readable		
 exe	0x00552200	he_StartExamOffer	he	byte	readable		
-exe	0x00552270	he_RunExamOffer	he	shape	readable		
+exe	0x00552270	he_RunExamOffer	he	byte	readable		
 exe	0x005524e0	he_StartDue	he	byte	readable		
 exe	0x00552520	he_RunDelay	he	byte	readable		
 exe	0x005525a0	he_RunConversion	he	draft	readable	deep	
@@ -3980,7 +3980,7 @@ exe	0x005774d0	ai_HookChapter3Intro	sv_t	byte	readable
 exe	0x00577540	ai_HookChapter5Intro	sv_t	byte	readable		
 exe	0x005775c0	ai_HookChapter5Step4	sv_t	byte	readable		
 exe	0x00577610	ai_HookChapter5Step5	sv_t	byte	readable		
-exe	0x00577690	ai_HookChapter5Step6	sv_t	shape	readable		
+exe	0x00577690	ai_HookChapter5Step6	sv_t	byte	readable		
 exe	0x00577740	ai_TutorialOpenIntro	sv_t	byte	readable		
 exe	0x00577820	ai_TutorialCloseIntro	sv_t	byte	readable		
 exe	0x00577850	ai_TutorialClearRunWindow	sv_t	byte	readable		
@@ -4506,7 +4506,7 @@ exe	0x005c3bb0	ai_PickBuildingChar	lc	draft	readable	deep
 exe	0x005c4100	ai_LawSelectionEntry	lc	draft	readable	deep	
 exe	0x005c4150	ai_FamilyTreeWindow	lc	draft	readable	deep	
 exe	0x005c5310	ai_CharInfoPanel	lc	draft	readable	deep	
-exe	0x005c6050	ai_GiftWindow	lc	shape	readable		
+exe	0x005c6050	ai_GiftWindow	lc	byte	readable		
 exe	0x005c64c0	ai_FindCandidateIds	lc	shape	readable		
 exe	0x005c6530	ai_MarriageTest	lc	byte	readable		
 exe	0x005c6620	ai_CourtshipRounds	lc	byte	readable		
