@@ -2741,22 +2741,16 @@ void gm_ClearBuildings(void)
     } while (i < 0xa900);
     memset(ai_Blds, 0, 0xa900);
 }
-/* 0x4fe830, runs through the object instances (0x5008 records of 0x43 bytes: word +0 the prototype, int +6 the owner id): the owner (found by 0x4fea50 as a building / object / character) gets the instance back (0x4ffff0 on its list at +0x5d / +0x14 / +0x178), an instance without a live owner is freed (0x500080); then the table is cleared
-   @deep read whole against the original: the loop is for (i = 0; i < 0x5008*0x43; i += 0x43) (jl
-   0x14f218), the owner list is b+0x5d / o+0x14 / c+0x178 in that order, the id is passed unsigned
-   (ORDOBJ.type, gv.h, now with ownerId +6). Branch structure equal. Left: register allocation only:
-   rotations eax<->esi, edx<->esi (base/index swaps), and the free call's argument: ours add eax, esi; push
-   eax, the original lea ecx, [esi + eax]; push ecx (same value in another register; ecx->edx follows at
-   the reload). Tried i + (char *)ai_Objects, &->type, an int cast: unchanged. */
+/* 0x4fe830, runs through the object instances (0x5008 records of 0x43 bytes: word +0 the prototype, int +6 the owner id): the owner (found by 0x4fea50 as a building / object / character) gets the instance back (0x4ffff0 on its list at +0x5d / +0x14 / +0x178), an instance without a live owner is freed (0x500080); then the table is cleared */
 
 void gm_ClearObjects(void)
 {
     int i, list;
     int b, o, c;
 
-    for (i = 0; i < 0x5008 * 0x43; i += 0x43) {
-        if (((ORDOBJ *)((char *)ai_Objects + i))->type != 0) {
-            gm_FindById(&b, &o, &c, ((ORDOBJ *)((char *)ai_Objects + i))->ownerId);
+    for (i = 0; i < 0x5008; i++) {
+        if (((ORDOBJ *)ai_Objects)[i].type != 0) {
+            gm_FindById(&b, &o, &c, ((ORDOBJ *)ai_Objects)[i].ownerId);
             if (b != 0)
                 list = b + 0x5d;
             else if (o != 0)
@@ -2766,10 +2760,10 @@ void gm_ClearObjects(void)
             else
                 list = 0;
             if (list != 0) {
-                gm_RemoveObject(list, ((ORDOBJ *)((char *)ai_Objects + i))->type);
+                gm_RemoveObject(list, ((ORDOBJ *)ai_Objects)[i].type);
             } else {
-                gm_FreeObjectExtra((unsigned short *)((char *)ai_Objects + i));
-                ((ORDOBJ *)((char *)ai_Objects + i))->type = 0;
+                gm_FreeObjectExtra((unsigned short *)&((ORDOBJ *)ai_Objects)[i]);
+                ((ORDOBJ *)ai_Objects)[i].type = 0;
                 f3gm_ObjectCount--;
             }
         }
