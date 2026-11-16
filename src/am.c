@@ -5801,7 +5801,9 @@ int ai_ExecuteUseMilitaryObject(G5CH *p, AIARG *s1, AIARG *s2)
    than six goods and none of them usable, the sub-action 2 to get one fitting the office level (weight 0.05; o2
    the character itself); else with a usable one the action 0x1c on a random one (o1 kind 1, its inventory entry):
    goods 9 and 10 with a partner of the other / the same sex (ai_PickPartnerChain, o2 kind 7), good 8 through the
-   sub-action 3 */
+   sub-action 3
+   @deep order hunk gone with the sub-action tail if (r != 0) { *o1 = s1; *o2 = s2; } return r;
+   (ai_DecideUseEducationObject byte with it). Left: slots 28 (not worked yet: dcp frame). */
 
 int ai_DecideUseReputationObject(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
 {
@@ -5855,10 +5857,10 @@ int ai_DecideUseReputationObject(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
             s2.kind = 7;
             s2.arg = 1;
             r = ai_ChooseSubAction(k, p->id, 2, &s1, &s2);
-            if (r == 0)
-                return r;
-            *o1 = s1;
-            *o2 = s2;
+            if (r != 0) {
+                *o1 = s1;
+                *o2 = s2;
+            }
             return r;
         }
     } else if (st[2] == 0) {
