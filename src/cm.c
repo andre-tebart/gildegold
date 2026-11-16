@@ -5577,7 +5577,6 @@ int cm_ExChat(G17MSG *m, G17STAT *s)
 
 int cm_ExCreateGeb(G17MSG *m, G17STAT *s)
 {
-    char name[MAX_PATH];
     char tmp[0x80];
     char path[MAX_PATH];
     char text[0x100];
@@ -5599,50 +5598,54 @@ int cm_ExCreateGeb(G17MSG *m, G17STAT *s)
     if (b == 0)
         return 1;
     cm_LastBuildingId = b->id;
-    strcpy(name, "gb_");
-    strcat(name, ai_BTypes + (unsigned)b->type * 0x24d + 1);
-    _strupr(name + 2);
-    for (i = 0; i < 4; i++) {
-        if (i != 0)
-            sprintf(path, "%sgebaeude/*%s_%c.ogr", ai_DataPath, name, (char)(i + 0x40));
-        else
-            sprintf(path, "%sgebaeude/*%s.ogr", ai_DataPath, name);
-        if (vfs_GetPath(path, vfs_Root, vfs_Root, found) != 0) {
-            scene = d3_CurrentScene;
-            d3if_SelectScene(0, 1);
-            pos.x = m->geb.pos.x;
-            pos.y = m->geb.pos.y;
-            pos.z = m->geb.pos.z;
-            o = d3_LoadGroup(path, 0, 0);
-            if (o == 0) {
-                sprintf(name, "cm_ExCreateGeb(): Could not load 3D-Object-Group '%s'...", path);
-            } else {
-                memset(&site, 0, sizeof(site));
-                d3_SetObjectPos(o, (D3VECTOR *)&pos);
-                d3_SetObjectRot(o, m->geb.rot);
-                ai_DropObjectAt(o, (D3VECTOR *)&pos);
-                init_HookObject(o, b, 2);
-                ai_BuildingName(b->type, tmp);
-                strcpy(site.name, tmp);
-                sprintf(name, "cm_ExCreateGeb(): bauplatze name:%s", tmp);
-                if (lc_GetGebaeudeBauplatz(&site, b) != 0) {
-                    memset(&list, 0, sizeof(list));
-                    d3_ForEachObject(d3_DefaultScene, (D3OBJECT *)site.object, 0x2c0,
-                                     (D3OBJECTCB)ai_VgFilter, &list);
-                    for (i = 0; i < list.count; i++) {
-                        if (d3_QuadTree != 0)
-                            d3q_RemoveObject((D3OBJECT *)list.objs[i], (D3QNODE *)d3_QuadTree);
-                        sprintf(text, "cm_ExCreateGeb(): killing objectptr: %s", (char *)list.objs[i]);
-                        sprintf(text, "cm_ExCreateGeb(): killing objectname: %s", (char *)list.objs[i]);
-                        d3if_Delete((D3OBJECT *)list.objs[i]);
-                    }
-                } else
-                    err_Message("cm_ExCreateGeb(): could not lc_GetGebaeudeBauplatz()...");
-                sv_CreateBanners((char *)b);
-                rd_BuildRoad(b->object, b->type);
+    {
+        char name[MAX_PATH];
+
+        strcpy(name, "gb_");
+        strcat(name, ai_BTypesT[b->type].name);
+        _strupr(name + 2);
+        for (i = 0; i < 4; i++) {
+            if (i != 0)
+                sprintf(path, "%sgebaeude/*%s_%c.ogr", ai_DataPath, name, (char)(i + 0x40));
+            else
+                sprintf(path, "%sgebaeude/*%s.ogr", ai_DataPath, name);
+            if (vfs_GetPath(path, vfs_Root, vfs_Root, found) != 0) {
+                scene = d3_CurrentScene;
+                d3if_SelectScene(0, 1);
+                pos.x = m->geb.pos.x;
+                pos.y = m->geb.pos.y;
+                pos.z = m->geb.pos.z;
+                o = d3_LoadGroup(path, 0, 0);
+                if (o == 0) {
+                    sprintf(name, "cm_ExCreateGeb(): Could not load 3D-Object-Group '%s'...", path);
+                } else {
+                    memset(&site, 0, sizeof(site));
+                    d3_SetObjectPos(o, (D3VECTOR *)&pos);
+                    d3_SetObjectRot(o, m->geb.rot);
+                    ai_DropObjectAt(o, (D3VECTOR *)&pos);
+                    init_HookObject(o, b, 2);
+                    ai_BuildingName(b->type, tmp);
+                    strcpy(site.name, tmp);
+                    sprintf(name, "cm_ExCreateGeb(): bauplatze name:%s", tmp);
+                    if (lc_GetGebaeudeBauplatz(&site, b) != 0) {
+                        memset(&list, 0, sizeof(list));
+                        d3_ForEachObject(d3_DefaultScene, (D3OBJECT *)site.object, 0x2c0,
+                                         (D3OBJECTCB)ai_VgFilter, &list);
+                        for (i = 0; i < list.count; i++) {
+                            if (d3_QuadTree != 0)
+                                d3q_RemoveObject((D3OBJECT *)list.objs[i], (D3QNODE *)d3_QuadTree);
+                            sprintf(text, "cm_ExCreateGeb(): killing objectptr: %s", (char *)list.objs[i]);
+                            sprintf(text, "cm_ExCreateGeb(): killing objectname: %s", (char *)list.objs[i]);
+                            d3if_Delete((D3OBJECT *)list.objs[i]);
+                        }
+                    } else
+                        err_Message("cm_ExCreateGeb(): could not lc_GetGebaeudeBauplatz()...");
+                    sv_CreateBanners((char *)b);
+                    rd_BuildRoad(b->object, b->type);
+                }
+                d3if_SelectScene(scene, 1);
+                break;
             }
-            d3if_SelectScene(scene, 1);
-            break;
         }
     }
     if (s != 0) {

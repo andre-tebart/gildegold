@@ -1945,6 +1945,10 @@ Store order in a fill, hoisted loads and sunk stores, statement order effects, `
 
 ### Loads hoisted early or kept late
 
+- **A field load through a returned pointer behind an inline `strcpy` store into a buffer** (`mov [name],edx; mov
+  cl,[eax]`, the original loads `b->type` first): the buffer is an address-taken function-scope array; declared
+  in a block that opens before the strcpy (`{ char name[MAX_PATH]; strcpy(name, "gb_"); strcat(name, ..); ..
+  loop .. }`), the load moves free. Frame unchanged (cm_ExCreateGeb byte).
 - **A pointer loaded before a test, its field loaded only behind it** (`mov edi,[ecx+0x10]; je; mov edi,[edi+0x1e4]`,
   ours both loads before the `je`): a named pointer local assigned before the `if` and read twice inside
   (`ops = surf->info.mesh; if (..) { if ((int)ops->nsets <= 4) v = id % ops->nsets; ..}`). A count local `n =
