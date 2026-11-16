@@ -872,8 +872,7 @@ int ai_TokenRandomNpcInhabitant(int mode, G12ARG *args, int k, char *fmt, char *
     AICHAR *c = 0;
     int *q;
 
-    n1 = (int)buf;
-    AI_ZERO_AT(n1, 0x200);
+    AI_ZERO_BUF(n1, buf, 0x200);
     ai_SplitTokenFormat(fmt, buf, &n1, &n2);
     if (n2 == 1) {
         sel = atoi(fmt + n1);
