@@ -270,8 +270,8 @@ void cm_SendChat(void *p);                                                      
 int cm_RequestCreateGeb(int owner, int kind, D3VECTOR4 *pos, int *rot);                /* 0x4c5ae0, "cm_RequestCreateGeb" */
 void cm_SendCharHalt(int a);                                                        /* 0x4c5b90 */
 int cm_SendObjCell(const char *s, int a, int b, const char *s2);                  /* 0x4c5bc0 */
-int cm_SendCutEntry(int a, void *p);                                               /* 0x4c5c40 */
-int cm_SendCutEntryUpdate(int a, void *p);                                               /* 0x4c5ca0 */
+int cm_SendCutEntry(int a, int p);                                               /* 0x4c5c40 */
+int cm_SendCutEntryUpdate(int a, int p);                                               /* 0x4c5ca0 */
 void cm_SendDamage(int a, int b, int c);                                          /* 0x4c5d00 */
 void cm_SendScriptMessage(void *p);                                                      /* 0x4c5d40 */
 int cm_SendTableRequest(G17TABLEMSG *p);                                               /* 0x4c5d80 */

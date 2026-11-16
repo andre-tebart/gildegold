@@ -2439,10 +2439,10 @@ exe	0x004cfeb0	cm_ClickSceneChar	cm	fadecc4c35a057a9	no	byte	control=byte p1=byt
 exe	0x004cffd0	cm_OrderAttack	cm	d47ef19cf60eb871	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x004d0200	cm_OrderEscape	cm	24056cc57c367bf1	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004d02d0	cm_OrderConquer	cm	1ce0d9b6f491c545	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x004d0380	cm_OrderWare	cm	7920ebc332f1bd1d	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	becf1bbdf99775c9
-exe	0x004d0460	cm_OrderToBestCell	cm	77db64f748cbc02f	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	becf1bbdf99775c9
+exe	0x004d0380	cm_OrderWare	cm	f112da5c8e29016c	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=253	3c3eb6d345d9cc62
+exe	0x004d0460	cm_OrderToBestCell	cm	a511ddce8d85b16d	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=253	3c3eb6d345d9cc62
 exe	0x004d0520	cm_OrderWait	cm	d86138ab11f08c43	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x004d0570	cm_OrderClick	cm	dbfc5c922a45bcc3	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	becf1bbdf99775c9
+exe	0x004d0570	cm_OrderClick	cm	020d14f13b87ac43	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=253	3c3eb6d345d9cc62
 exe	0x004d0740	cm_FightMouse	cm	4cd8291272413d2d	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	794a7ca08925dec0
 exe	0x004d08c0	cm_ClearMarks	cm	3e4fe156a671af4c	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004d0920	cm_AddFighter	cm	675f81bd73e8d863	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	

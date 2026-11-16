@@ -42,9 +42,16 @@
    cm_FighterAct needs cm_BestCellNear known; trial splits at 0x4cd9d0 / 0x4d3ac0 / 0x4d6970 drop byte functions).
    The .data blocks of initialized globals between string runs (0x60c7c0 ai_WeaponRecordData .. 0x60cb68
    cm_FightButton; 0x60d360 cm_DialogFrameFlags ..) are therefore no object starts by themselves; a split after
-   0x4d6ba0 (the cutscenes 0x4d8c70..) is untested. cm_FightFrame's hunk is cm_SendCutEntry's parameter escaping
-   (see its @deep note), not a boundary. cm_UpdatePointer reloads ai_PickedObject after calls of ai_LedSelectBits
-   (a leaf defined above) as if it were external: unexplained.
+   0x4d6ba0 (the cutscenes 0x4d8c70..) is untested. cm_FightFrame's hunk was cm_SendCutEntry's parameter (an
+   integer, so the callers' entry escapes), not a boundary.
+   Open: summary: two leaves defined above their callers count as writing globals in the original, which their
+   texts do not give: ai_LedSelectBits as writing ai_PickedObject (cm_UpdatePointer reloads it after each call; a
+   scratch `if (0) ai_PickedObject = 0;` in the leaf takes it 90 -> 29 differing instructions, an external copy
+   only to 49, a write of another global nothing) and cm_CharObjDistXZ as writing some global but nothing through
+   a pointer (cm_RunCutOrders reloads x->scene->obj after it: any dead global store in the leaf takes it 849 ->
+   275 of 1445; cm_NearestEnemy, byte, keeps ai_SceneChars[i] across it, so no indirect store and no external
+   call). VC6 takes the summary from the text (dead code counts, see notes/vc6-matching.md), so both originals hold
+   a store or a known call that leaves no code; not found.
    Open: data: 0x60d38c / 0x60d3a0 (cm_RunAuction's "handwerker3_MANN" / "buerger2_MANN") are the original's
    string literals in cm's data block: the code inline-copies from them, and naming them as arrays makes VC6
    copy byte-wise (cm_RunAuction shape -> draft), so they stay gap bytes.
@@ -2079,9 +2086,12 @@ int cm_SendObjCell(const char *s, int a, int b, const char *s2)
         m.objCell.name2[0] = 0;
     return cm_QueueSend(&m);
 }
-/* 0x4c5c40, message 0x50 (0x2c bytes of p, the id *cm_CurrentFight) */
+/* 0x4c5c40, message 0x50 (0x2c bytes of p, the id *cm_CurrentFight). p is the entry's address passed as an integer:
+   the callers' entry locals count as escaped in the original (cm_FightFrame copies into its entry before the pointer
+   loads behind it; cm_RunCutOrders orders three stores to m the same way), which a pointer parameter of this body
+   does not give (VC6 knows a function defined above does not let p escape) */
 
-int cm_SendCutEntry(int a, void *p)
+int cm_SendCutEntry(int a, int p)
 {
     G17MSG m;
 
@@ -2091,12 +2101,12 @@ int cm_SendCutEntry(int a, void *p)
         m.cutEntry.fightId = *cm_CurrentFight;
     else
         m.cutEntry.fightId = -1;
-    memcpy(&m.cutEntry.entry, p, sizeof(m.cutEntry.entry));
+    memcpy(&m.cutEntry.entry, (void *)p, sizeof(m.cutEntry.entry));
     return cm_QueueSend(&m);
 }
 /* 0x4c5ca0, message 0x51, as 0x4c5c40 */
 
-int cm_SendCutEntryUpdate(int a, void *p)
+int cm_SendCutEntryUpdate(int a, int p)
 {
     G17MSG m;
 
@@ -2106,7 +2116,7 @@ int cm_SendCutEntryUpdate(int a, void *p)
         m.cutEntry.fightId = *cm_CurrentFight;
     else
         m.cutEntry.fightId = -1;
-    memcpy(&m.cutEntry.entry, p, sizeof(m.cutEntry.entry));
+    memcpy(&m.cutEntry.entry, (void *)p, sizeof(m.cutEntry.entry));
     return cm_QueueSend(&m);
 }
 /* 0x4c5d00, message 0x52 */
@@ -7203,13 +7213,14 @@ int ai_LedSelectBits(int idx, char *c)
 
 float cm_CharObjDistXZ(char *c, char *o)
 {
-    D3VECTOR d, b;
+    D3VECTOR4 v, d;
 
-    d.x = ((D3OBJECT *)o)->pos.x;
-    d.z = ((D3OBJECT *)o)->pos.z;
-    b = ((AICHAR *)c)->scene->obj->pos;
-    d.x -= b.x;
-    d.z -= b.z;
+    v.x = ((D3OBJECT *)o)->pos.x;
+    v.z = ((D3OBJECT *)o)->pos.z;
+    d.x = ((AICHAR *)c)->scene->obj->pos.x;
+    d.z = ((AICHAR *)c)->scene->obj->pos.z;
+    d.x = v.x - d.x;
+    d.z = v.z - d.z;
     return (float)sqrt(d.z * d.z + d.x * d.x);
 }
 /* 0x4ce200, the distance in the x / z plane of the character c's body to the vertex of cell (x, y) (the frame holds two 16-byte vectors) */
@@ -7852,20 +7863,23 @@ void cm_DrawScrollArrows()
    by the weapon of the selected characters cm_CutChar sees (0x160 -> 0x18 .. 0x176 -> 0x25; more than one: 0x23) over
    a character it does not see (or with key 0x36 down), "sp_ESCAPE" 0x1c, "sp_CONQUER" 0x1b, "WARE" 0xe;
    cm_HoverObject keeps the object the look was decided for
-   @deep Read whole against 0x4cf670..0x4cf9c0: the same calls and arguments (d3if_Pick, d3sm_Pick (x, z) /
-   d3sm_GetVertex, v.y += 10.0f into the escaped vector, d3if_Show of cm_PickMarker, the 31-entry
-   ai_SceneChars loop with the weapon if-chain and n, strcmp sp_ESCAPE inline, strncmp sp_CONQUER / WARE,
-   the kind 2 / owner test), the same stores and returns. Left: allocation. Ours keeps ai_PickedObject in a
-   callee-saved register across the calls of ai_LedSelectBits (VC6 sees its definition above in this unit:
-   a leaf that stores nothing) and reuses it for cm_HoverObject; the original reloads it after every call
-   (mov ecx, [ai_PickedObject] at +0x307 / +0x32b) and after the loop (+0x215), so it keeps n in ebx, cur
-   in ebp and the loop pointer in edi, where ours spills n and the loop pointer to the frame (0x1c vs 0x18)
-   and pushes 6 more instructions. Tried a pointer walk (jb instead of the original's jl: the index form is
-   right) and a call through a K&R cast: no change. Hypothesis: the fight code 0x4cf670.. was its own TU in
-   the original (the lead comment's join), so ai_LedSelectBits was external there (references: M8 at
-   +0x32c: ours refers to cm_HoverObject (0x6f0ce0), the original's field to 0x6f22e8 (ai_PickedObject),
-   explained: the M8 at +0x32c is the same store cm_HoverObject = ai_PickedObject: the original's field is
-   the reload of ai_PickedObject that ours replaces by the register it cached, not another object) */
+   @deep Lead (scratch copies of cm.c): not a unit boundary. VC6 takes a callee's write summary from its
+   text; with a dead if (0) ai_PickedObject = 0; in ai_LedSelectBits this function goes from 90 to 29
+   differing instructions (obj bytes against the image), with an external copy of ai_LedSelectBits only to
+   49, with a dead write of another global (cm_LastSeq) nothing moves. So in the original ai_LedSelectBits
+   is known and counts as writing ai_PickedObject; its text here writes nothing. Shifting the symbol count
+   before ai_LedSelectBits (1..130 extern declarations) or naming its local ai_PickedObject changes
+   nothing. Find what in the original's ai_LedSelectBits (or in a known function it calls without code)
+   stores to ai_PickedObject; see the unit's Open: summary line. prior: Read whole against
+   0x4cf670..0x4cf9c0: the same calls and arguments (d3if_Pick, d3sm_Pick (x, z) / d3sm_GetVertex, v.y +=
+   10.0f into the escaped vector, d3if_Show of cm_PickMarker, the 31-entry ai_SceneChars loop with the
+   weapon if-chain and n, strcmp sp_ESCAPE inline, strncmp sp_CONQUER / WARE, the kind 2 / owner test), the
+   same stores and returns. Left: allocation. Ours keeps ai_PickedObject in a callee-saved register across
+   the calls of ai_LedSelectBits (VC6 sees its definition above in this unit: a leaf that stores nothing)
+   and reuses it for cm_HoverObject; the original reloads it after every call (mov ecx, [ai_PickedObject]
+   at +0x307 / +0x32b) and after the loop (+0x215), so it keeps n in ebx, cur in ebp and the loop pointer
+   in edi, where ours spills n and the loop pointer to the frame (0x1c vs 0x18) and pushes 6 more
+   instructions. Tried a pointer walk (jb instead of the original's ... */
 
 void cm_UpdatePointer()
 {
@@ -8224,7 +8238,7 @@ int cm_OrderAttack(char *rec, char *c, char *tgt, int x, int z)
     }
     if (ch->formation == 1 || ch->formation == 2 || ch->formation == 3)
         order.held = 1;
-    cm_SendCutEntry(((CMCUTINFO *)rec)->playerId, &order);
+    cm_SendCutEntry(((CMCUTINFO *)rec)->playerId, (int)&order);
 }
 /* 0x4d0200, orders the character c of the cutscene record rec (CMCUTINFO) to flee to the escape object tgt
    ("sp_ESCAPE"): its entry (cm_CutEntrySlot, b0c cleared there) is copied with state 3 and the ground cell of tgt's
@@ -8255,7 +8269,7 @@ int cm_OrderEscape(char *rec, char *c, char *tgt)
     order.stateArg = x;
     order.state = 3;
     order.x = z;
-    cm_SendCutEntry(((CMCUTINFO *)rec)->playerId, &order);
+    cm_SendCutEntry(((CMCUTINFO *)rec)->playerId, (int)&order);
 }
 /* 0x4d02d0, an order kind 4 (the walk to a named dummy) for the character c with the name of the object tgt
    (CMCUTENTRY.dummy) and its ground cell (cellX, cellZ); returns 1, 0 when the point is not on the ground. */
@@ -8307,7 +8321,7 @@ int cm_OrderWare(char *rec, char *c, char *tgt, unsigned char a)
     strcpy(order.dummy, tgt);
     order.held = a;
     order.turn = ((char *)v)[0];
-    cm_SendCutEntry(((CMCUTINFO *)rec)->playerId, &order);
+    cm_SendCutEntry(((CMCUTINFO *)rec)->playerId, (int)&order);
 }
 /* 0x4d0460, orders the character c of the cutscene record rec (CMCUTINFO) to the best ground cell within 8 rings of
    its own (cm_BestCellNear, formation type 4): its entry (cm_CutEntrySlot, b0c cleared there) is copied with state 7 and
@@ -8334,7 +8348,7 @@ int cm_OrderToBestCell(char *rec, char *c)
     order.stateArg = x;
     order.state = 7;
     order.x = z;
-    cm_SendCutEntry(((CMCUTINFO *)rec)->playerId, &order);
+    cm_SendCutEntry(((CMCUTINFO *)rec)->playerId, (int)&order);
 }
 /* 0x4d0520, the formation type 3's order for the character c: its entry (cm_CutEntrySlot, b0c cleared there) is copied
    with state 8 and no target and sent as message 0x50 (cm_SendCutEntry); case 8 of cm_RunCutOrders then sends fight
@@ -8350,7 +8364,7 @@ void cm_OrderWait(char *rec, char *c)
     memcpy(&order, q, sizeof(order));
     order.charId = ((AICHAR *)c)->netId;
     order.state = 8;
-    cm_SendCutEntry(((CMCUTINFO *)rec)->playerId, &order);
+    cm_SendCutEntry(((CMCUTINFO *)rec)->playerId, (int)&order);
 }
 
 #define cm_OrderWare3 ((int (*)(char *, char *, char *))cm_OrderWare)
@@ -8404,7 +8418,7 @@ char cm_OrderClick(char *rec, char *c)
             order.stateArg = x;
             order.state = 1;
             order.x = z;
-            cm_SendCutEntry(((CMCUTINFO *)rec)->playerId, &order);
+            cm_SendCutEntry(((CMCUTINFO *)rec)->playerId, (int)&order);
             ret = 1;
         } else
             sv_SetStatusText((char *)txt_ClickNoGround);
@@ -10095,7 +10109,7 @@ AICHAR *cm_CheckFightWinner(CMFIGHTREC *rec)
         entry = *slot;
         entry.charId = winner->netId;
         entry.state = 5;
-        cm_SendCutEntry(cm_CutInfosT[i].playerId, &entry);
+        cm_SendCutEntry(cm_CutInfosT[i].playerId, (int)&entry);
     }
     return winner;
 }
@@ -11101,33 +11115,7 @@ void cm_FightResult(char *r)
 }
 /* 0x4d6970, one frame of the fight UI (r: the fight record): the countdown bar cm_FightTimeBar sized to the fight area,
    the redraws 0x525ff0 .. 0x4ce830, and the click on the button cm_FightButton (while 0x6f0d88 / 0x6f0cf4 are clear) sends
-   message 0x50 with the cut entry of the player's character (0x4cdf00) in state 5, else the dialog is closed (0x6f22a0)
-   @deep Hunk: the original runs rep movsd (memcpy into sl) BEFORE the loads of cm_CutChar->netId and
-   r->playerId; ours hoists both. Mechanism: VC6 treats &sl as not escaped when the known callee
-   cm_SendCutEntry (defined above) does not let its parameter p escape; the analysis is per parameter and
-   transitive through known callees (probes in a scratch copy of cm.c: cm_SendCutEntry with free(p) added
-   -> cm_FightFrame byte, cm_OrderWait stays byte, every other grade of cm unchanged; with free(&m), a
-   struct copy, an alias local, a dead store q = p, a K&R definition, p passed on to cm_QueueSend, a cast
-   at the call: still the hoisted order; moving cm_SendCutEntry next to cm_FightFrame or deleting every
-   function between: no change). NOT a TU boundary (refuted by real splits of cm.c, session s12):
-   cm_LayBombAction 0x4d3980 needs cm_AddFieldValues 0x4c3d00 known (probe: an external copy -> shape) and
-   cm_FighterAct 0x4d6ba0 needs cm_BestCellNear 0x4d2170 known (an external copy -> frame 0x1c vs 0x14), so
-   0x4c3d00..0x4d6ba0 is one TU around cm_FightFrame; splits at 0x4cd9d0 / 0x4d3ac0 / 0x4d6970 each make
-   byte functions fall. So the original's cm_SendCutEntry (and its twin cm_SendCutEntryUpdate) let p escape
-   in a way that leaves their bytes (rep movsd from p, call cm_QueueSend(&m)): find that source form (a
-   call whose code VC6 later drops? memcpy written another way?), or another &sl use in cm_FightFrame that
-   leaves no code. No lever in cm_FightFrame's text (= control): struct copy forms, block / array /
-   char-buffer sl, p = &sl forms, memset, decided second send, local c, casts of the callee, climb 2
-   rounds, flip. prior: Hunk: the original runs rep movsd (memcpy into sl) BEFORE the loads of
-   cm_CutChar->netId and r->playerId; ours hoists both loads. FOUND: the cause is outside the text. VC6
-   exempts sl from escape when its address goes to one call of a function defined above in the unit whose
-   body it knows (cm_SendCutEntry); the same text calling any external function instead (probe:
-   ai_FillSaveSlots(.., &sl)) compiles to the original's instructions exactly (only the call target
-   differs), and a second address-taking call anywhere does too. So in the original cm_SendCutEntry was not
-   known here: cm_FightFrame sits in another TU than cm_SendCutEntry (cm_OrderWait 0x4d0520 still shows the
-   exempt order, so the boundary lies between 0x4d0570 and 0x4d6970; see the unit's Open: layout line).
-   Byte needs the unit split (layout work), not a variant. No lever in the text (= control): struct copy
-   forms, block / array /... */
+   message 0x50 with the cut entry of the player's character (0x4cdf00) in state 5, else the dialog is closed (0x6f22a0) */
 
 void cm_FightFrame(char *r)
 {
@@ -11150,7 +11138,7 @@ void cm_FightFrame(char *r)
             memcpy(&sl, q, sizeof(CMCUTENTRY));
             sl.charId = ((AICHAR *)cm_CutChar)->netId;
             sl.state = 5;
-            cm_SendCutEntry(((CMCUTINFO *)r)->playerId, &sl);
+            cm_SendCutEntry(((CMCUTINFO *)r)->playerId, (int)&sl);
         }
     } else
         sv_PopRequest = 1;
@@ -11532,24 +11520,25 @@ int cm_Attack(CMCUTINFO *rec, AICHAR *c, AICHAR *g)
    1) and back (step 2, command 5), 4 follow the owner of a dummy (command 3, or cm_Attack on an enemy in reach),
    8 hold (command 6). A finished order sends the entry back to state 0 (cm_SendCutEntry). A dead fighter with a
    weapon frees its entry and ends the run.
-   @deep Reconstructed against the original in full (0x4d76a0..0x4d88b8, all 8 states): the case order of
-   the source (5, 1, 2, 3, 6, 4, 7, 8), the hit chance times cm_DefenseFactor for the defender's side, the
-   damage without a target 9.0 * n, the AI counter-order with one cm_CharWeaponItem call, the ranged walk
-   with cm_BestCellNear's reach (range / cell size * 0.9), the goods-carry state 6 on the bytes 0x20..0x22
-   (store cell, step) with cm_SendCutEntryUpdate, the four name buffers (0x30 each, frame 0x138 equal), the
-   senders' return values as the order slot (cm_SendCutEntry / cm_SendCutEntryUpdate now return
-   cm_QueueSend's slot). Switch tables equal, ins 1437 vs 1434. Left: allocation and block layout - the
-   loop keeps slot in edx at the top (ours reloads it from [esp+0x68]), the original cross-jumps the
-   identical tails differently (state 2's stop joins state 5's command at 0x4d7789 where ours joins state 5
-   into state 7's tail; the four fcompp of the reach test share one fnstsw/and/jne tail at 0x4d7a34, the
-   cell-distance path and the pot (0x174) block lie out of line after 0x4d7a3f), the damage's fild/fld
-   order in the x != 0 path; the rest regs / slots. (references: M10 at +0x587: our constant 9.0
-   (__real@4022000000000000) where the original's field refers to 0.01 at 0x5ece60 (and 2 more), explained:
-   the M8 / M10 lines are alignment pairings, not other objects: +0x587 pairs our 9.0 multiply of the x ==
-   0 path with the original's 0.01 multiply of the x != 0 path (both paths have both constants, the
-   original lays the 9.0 path out of line at 0x4d7cca); +0x920 / +0x9e8 pair the two pushes of
-   &cm_PickCellZ / &cm_PickCellX of one d3_GetHeightAt call (both sides push Z then X) across a
-   one-instruction shift) */
+   @deep Lead (scratch copies of cm.c, obj bytes against the image): 574 of the differing instructions are
+   one cause. The original reloads x->scene->obj for every cm_CharObjDistXZ call (mov eax,[edi+0x184]; mov
+   ecx,[eax+0x34]; push ecx); ours keeps it in edi across the calls because VC6 knows cm_CharObjDistXZ
+   (defined above) writes no memory. A dead global store in cm_CharObjDistXZ (if (0) cm_LastSeq = 0;) or an
+   external copy of it takes this function from 849 to 275 differing instructions of 1445 with nothing else
+   changed here; cm_NearestEnemy (byte) allows the global store but no indirect store and no external call.
+   So the original cm_CharObjDistXZ's text holds a global store or a call of a known global-writing
+   function that leaves no code (it is byte now, D3VECTOR4 v, d); not found, see the unit's Open: summary
+   line. Done this session: cm_SendCutEntry / cm_SendCutEntryUpdate take the entry's address as an integer,
+   so m counts as escaped (three store orders, 955 -> 953). prior: Reconstructed against the original in
+   full (0x4d76a0..0x4d88b8, all 8 states): the case order of the source (5, 1, 2, 3, 6, 4, 7, 8), the hit
+   chance times cm_DefenseFactor for the defender's side, the damage without a target 9.0 * n, the AI
+   counter-order with one cm_CharWeaponItem call, the ranged walk with cm_BestCellNear's reach (range /
+   cell size * 0.9), the goods-carry state 6 on the bytes 0x20..0x22 (store cell, step) with
+   cm_SendCutEntryUpdate, the four name buffers (0x30 each, frame 0x138 equal), the senders' return values
+   as the order slot (cm_SendCutEntry / cm_SendCutEntryUpdate now return cm_QueueSend's slot). Switch
+   tables equal, ins 1437 vs 1434. Left: allocation and block layout - the loop keeps slot in edx at the
+   top (ours reloads it from [esp+0x68]), the original cross-jumps the identical tails differently (state
+   2's stop joins state 5's command at 0x4d7789 where ours join... */
 void cm_RunCutOrders(CMCUTINFO *rec)
 {
     D3SM *h = (D3SM *)d3_DefaultScene->hmap;
@@ -11598,7 +11587,7 @@ void cm_RunCutOrders(CMCUTINFO *rec)
             m.state = 0;
             m.charId = c->netId;
             cm_SendFightCommand(c, 7, (CMFIGHTSLOT *)&m);
-            res = cm_SendCutEntry(rec->playerId, &m);
+            res = cm_SendCutEntry(rec->playerId, (int)&m);
             goto done;
         case 1:
             if (p->orderSlot != 1 && cm_GetSlotState(p->orderSlot) == 0)
@@ -11619,7 +11608,7 @@ void cm_RunCutOrders(CMCUTINFO *rec)
             m.charId = c->netId;
             m.state = 0;
             cm_SendFightCommand(c, 6, (CMFIGHTSLOT *)&m);
-            res = cm_SendCutEntry(rec->playerId, &m);
+            res = cm_SendCutEntry(rec->playerId, (int)&m);
             goto done;
         case 2:
             if (p->orderSlot != 1 && cm_GetSlotState(p->orderSlot) == 0)
@@ -11630,7 +11619,7 @@ void cm_RunCutOrders(CMCUTINFO *rec)
                 m.state = 0;
                 m.charId = c->netId;
                 cm_SendFightCommand(c, 6, (CMFIGHTSLOT *)&m);
-                res = cm_SendCutEntry(rec->playerId, &m);
+                res = cm_SendCutEntry(rec->playerId, (int)&m);
                 goto done;
             }
             if (k->kind == 1 || k->kind == 2) {
@@ -11638,7 +11627,7 @@ void cm_RunCutOrders(CMCUTINFO *rec)
                 if (item != 0 && item->usesLeft <= 0) {
                     m.charId = c->netId;
                     m.state = 0;
-                    res = cm_SendCutEntry(rec->playerId, &m);
+                    res = cm_SendCutEntry(rec->playerId, (int)&m);
                     goto done;
                 }
             }
@@ -11758,7 +11747,7 @@ void cm_RunCutOrders(CMCUTINFO *rec)
                             break;
                         if (cm_BestCellNear((char *)c, cm_PickCellX, cm_PickCellZ, 0xc, &ix, &iz) != 0)
                             p->orderSlot = cm_SendObjCell(c->scene->obj->name, ix, iz, 0);
-                        p->orderSlot = cm_SendCutEntry(rec->playerId, &m);
+                        p->orderSlot = cm_SendCutEntry(rec->playerId, (int)&m);
                     } else {
                         cm_SendSetField(c->netId, 0x1c8, 4, 0x20000000, 0);
                         p->orderSlot = cm_SendFightCommand(c, 2, (CMFIGHTSLOT *)p);
@@ -11772,7 +11761,7 @@ void cm_RunCutOrders(CMCUTINFO *rec)
                     p->orderSlot = cm_SendObjCell(c->scene->obj->name, ix, iz, 0);
                 m.charId = c->netId;
                 m.state = 0;
-                res = cm_SendCutEntry(rec->playerId, &m);
+                res = cm_SendCutEntry(rec->playerId, (int)&m);
                 goto done;
             }
             break;
@@ -11793,7 +11782,7 @@ void cm_RunCutOrders(CMCUTINFO *rec)
             cm_SendFightCommand(c, 1, (CMFIGHTSLOT *)&m);
             m.state = 0;
             m.charId = c->netId;
-            res = cm_SendCutEntry(rec->playerId, &m);
+            res = cm_SendCutEntry(rec->playerId, (int)&m);
             goto done;
         case 6:
             if (p->orderSlot != 1 && cm_GetSlotState(p->orderSlot) == 0)
@@ -11803,7 +11792,7 @@ void cm_RunCutOrders(CMCUTINFO *rec)
                 cm_SendFightCommand(c, 6, (CMFIGHTSLOT *)&m);
                 m.charId = c->netId;
                 m.state = 0;
-                p->orderSlot = cm_SendCutEntry(rec->playerId, &m);
+                p->orderSlot = cm_SendCutEntry(rec->playerId, (int)&m);
             }
             if (p->storeStep == 0) {
                 if (c->scene->actions == 0) {
@@ -11819,7 +11808,7 @@ void cm_RunCutOrders(CMCUTINFO *rec)
                     break;
                 cm_SendFightCommand(c, 4, (CMFIGHTSLOT *)&m);
                 m.storeStep = 1;
-                res = cm_SendCutEntryUpdate(rec->playerId, &m);
+                res = cm_SendCutEntryUpdate(rec->playerId, (int)&m);
                 goto done;
             } else if (p->storeStep == 1) {
                 if (c->scene->actions != 0)
@@ -11837,7 +11826,7 @@ void cm_RunCutOrders(CMCUTINFO *rec)
                 m.storeX = ix;
                 m.storeZ = iz;
                 m.storeStep = 2;
-                cm_SendCutEntryUpdate(rec->playerId, &m);
+                cm_SendCutEntryUpdate(rec->playerId, (int)&m);
                 res = cm_SendObjCell(c->scene->obj->name, ix, iz, 0);
                 goto done;
             } else if (p->storeStep == 2) {
@@ -11847,7 +11836,7 @@ void cm_RunCutOrders(CMCUTINFO *rec)
                 cm_SendFightCommand(c, 5, (CMFIGHTSLOT *)&m);
                 m.charId = c->netId;
                 m.state = 0;
-                res = cm_SendCutEntry(rec->playerId, &m);
+                res = cm_SendCutEntry(rec->playerId, (int)&m);
                 goto done;
             }
             break;
@@ -11880,7 +11869,7 @@ void cm_RunCutOrders(CMCUTINFO *rec)
                     cm_SendFightCommand(c, 3, (CMFIGHTSLOT *)&m);
                     m.state = 0;
                     m.charId = c->netId;
-                    res = cm_SendCutEntry(rec->playerId, &m);
+                    res = cm_SendCutEntry(rec->playerId, (int)&m);
                     goto done;
                 }
             }
@@ -11894,7 +11883,7 @@ void cm_RunCutOrders(CMCUTINFO *rec)
                 break;
             m.charId = c->netId;
             m.state = 0;
-            res = cm_SendCutEntry(rec->playerId, &m);
+            res = cm_SendCutEntry(rec->playerId, (int)&m);
             goto done;
         case 7:
             if (p->orderSlot != 1 && cm_GetSlotState(p->orderSlot) == 0)
@@ -11915,7 +11904,7 @@ void cm_RunCutOrders(CMCUTINFO *rec)
             m.charId = c->netId;
             m.state = 0;
             cm_SendFightCommand(c, 6, (CMFIGHTSLOT *)&m);
-            res = cm_SendCutEntry(rec->playerId, &m);
+            res = cm_SendCutEntry(rec->playerId, (int)&m);
             goto done;
         case 8:
             if (p->orderSlot != 1 && cm_GetSlotState(p->orderSlot) == 0)

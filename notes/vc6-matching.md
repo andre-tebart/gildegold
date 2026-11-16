@@ -1951,17 +1951,38 @@ Store order in a fill, hoisted loads and sunk stores, statement order effects, `
 
 ### Loads hoisted early or kept late
 
-- **Loads after a struct copy in the original, before it in ours, one call takes `&local`**: VC6 does not
-  count the address as escaped when its only call goes to a function defined above in the unit (it knows the
-  body); an external callee, or a second address-taking call anywhere in the function, makes the stores to the
-  local order later pointer loads. Intrinsics (memcpy, memset, struct copies) and calls removed as dead do not
-  count. The knowledge is per parameter and transitive: the callee's parameter escapes only when the callee
-  passes it to an unknown function (`free(p)` in the callee flips its callers; a struct copy from it, an alias
-  local, a dead store `q = p`, a K&R definition, passing it on to another known function, a cast at the call
-  do not; the distance between the two definitions does not matter). Before calling it a TU boundary, probe each
-  sibling's callees with a renamed external copy (`int fX(..);` declared in the function, calls renamed, one
-  `dcp try` row per callee): cm_FightFrame wants cm_SendCutEntry unknown, but cm_LayBombAction / cm_FighterAct
-  on both sides of it want cm_AddFieldValues / cm_BestCellNear known, so no split fits (cm_FightFrame, open).
+- **Loads after a struct copy in the original, before it in ours, one call takes `&local`** (the callee
+  summary): for a function defined above in the unit VC6 keeps a summary and uses it at every later call; an
+  external callee, a prototype only, or a call through a function pointer variable (even one it resolves to a
+  direct call) has none and counts as doing everything. The summary is taken from the text before any
+  optimization: code under `if (0)`, a store overwritten at once and a call later removed all count. Its parts:
+  - *Escape, per pointer parameter*: the parameter escapes when the callee passes it to an unknown function
+    (`free(p)`), passes it to a known function whose parameter escapes (transitive), stores it to a global or
+    into memory (`*(void **)&m.f = p`, even dead), returns it, or converts it to an integer that is stored /
+    passed / returned (`(int)p`). It does not escape by a read through it, memcpy / a struct copy from it, a
+    write through it, a compare, pointer arithmetic, a pointer local (`q = p`, dead or used), `const` /
+    `volatile` / another pointer type, a K&R definition, a cast folded away (`(void *)(int)p`), or passing it to
+    a known function that keeps it. A caller's local whose address only goes to non-escaping parameters is not
+    escaped: stores to it move freely across pointer loads (the hoisted loads), and when the parameter is not
+    used at all the caller's fill of the local is deleted.
+  - *An integer parameter*: `f(int a, int p)` called with `(int)&local` escapes the local at the call (the
+    conversion, whatever the callee does with it) and leaves the callee's bytes (`memcpy(d, (void *)p, n)`).
+    This is the ordinary source for "the callee is known but the caller's local is escaped": cm_SendCutEntry /
+    cm_SendCutEntryUpdate (cm_FightFrame 2 ins -> byte, cm_RunCutOrders 955 -> 953, the other callers unchanged).
+  - *Writes*: which named globals the callee stores to, whether it stores through a pointer, whether it calls
+    an unknown function; transitive through known callees. Across the call the caller keeps a global in a
+    register unless the callee writes that global, stores through a pointer or calls out; it keeps a value loaded
+    through a pointer (`x->scene->obj`) only when the callee writes no global at all. Stores to the callee's own
+    locals / arrays / parameters (also through `*(float *)&d`) do not count; a store through a pointer local
+    does (`float *p = d; p[0] = ..`).
+  - Not part of it: `static`, the distance between the definitions, the unit's declaration count.
+  Probe: `python tools/c2dag/unitprobe.py UNIT --unknown CALLER` (each same-unit callee as an external copy) and
+  `unitprobe.py UNIT PATCHFILE` (a dead `if (0) g = 0;` / `if (0) free(p);` in the callee) show which knowledge
+  the original's callers saw, without touching the tree. Before calling a hunk a TU boundary, do both: a caller
+  that wants a callee "unknown" usually wants one part of its summary changed (cm_FightFrame; the split trials at
+  0x4cd9d0 / 0x4d3ac0 / 0x4d6970 all dropped byte functions). Open: ai_LedSelectBits and cm_CharObjDistXZ count
+  as writing a global in the original (cm_UpdatePointer, cm_RunCutOrders) with nothing in their text that does
+  (cm.c's `Open: summary` line).
 - **A field load through a returned pointer behind an inline `strcpy` store into a buffer** (`mov [name],edx; mov
   cl,[eax]`, the original loads `b->type` first): the buffer is an address-taken function-scope array; declared
   in a block that opens before the strcpy (`{ char name[MAX_PATH]; strcpy(name, "gb_"); strcat(name, ..); ..
@@ -3419,6 +3440,9 @@ How to work: variant rounds, the c2 tools, sweeps, what the tools' output means,
 - **flip.py on a slot question**: needs a copy keeping the `_x$ = -N` lines above PROC (`_x$[esp+N]` does not move);
   equal-size arrays are ordered by a C2 tie rule (main_ChooseCity: 0 of 111 mutants moved the 0x100 arrays,
   objName[0xff] did).
+- **`python tools/c2dag/unitprobe.py UNIT PATCHFILE | --unknown FUNC`**: whole-unit scratch compiles for callee
+  questions (dcp try grades one function): patches anywhere in the unit, every function whose code changes
+  listed with its distance to the original before -> after. See "the callee summary".
 - **c2fuzz.py / c2pass.py**: c2fuzz skips one back-end call at a time (15353 sites, a probe compiled per copy);
   c2pass compiles a unit with chosen calls skipped and diffs one function: `uv run --with pefile python
   tools/c2dag/c2pass.py ..`. No call switches the scheduler off cleanly; d3sndw_Update's reorder-only sites:
