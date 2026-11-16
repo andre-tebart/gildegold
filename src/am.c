@@ -6383,16 +6383,7 @@ int ai_ExecuteUseDynastyObject(G5CH *p, AIARG *s1, AIARG *s2)
    k is 0x1c, not 0x21, as in the original); else a random usable one (o1 kind 1, its inventory entry) against
    partners (ai_PickPartnerChain): 0x169 / 0x16d two characters (o2 kind 7, both netIds), 0x177 the building of
    one (kind 4), 0x178 a building of the leader or the character (ai_PickActionBuilding, kind 4), the others one
-   character (kind 7); all but the first two goods go through the sub-action 4
-   @deep read the whole function against the original and reconciled: the twelve goods, the sub-action 2
-   path (shared ChooseSubAction call as the original), the partner flags (written per branch with n = 1 in
-   both arms: the if-converted sbb form is gone, the branches match), the 0x178 building pick, the switch
-   (tables equal: 5 entries, 16 index bytes) and the i > 1 sub-action 4. Left is allocation and frame
-   layout: the original keeps p in edi across the partner pick (it reloads mov edi,[esp+0x134] on the 0x178
-   path at +0x2f0 and pushes edi to ai_PickPartnerChain; ours reloads p from its slot at each use), so the
-   pick-fail exit keeps its own epilogue there (original +0x2e5 jne / pop..ret) and the k / flags / rp / s1
-   / s2 slots shift (diffclass slots: k [esp+0xc]->[esp+4], flags 0x3c->0x1c, rp 0x5c->0x44, s1 0x44->0x48,
-   s2 0x20->0x2c); 303 vs 306 instructions. k = 0x1c (not 0x21) is the original's */
+   character (kind 7); all but the first two goods go through the sub-action 4 */
 
 int ai_DecideUseMeanObject(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
 {
@@ -6432,17 +6423,17 @@ int ai_DecideUseMeanObject(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
                     while (recs[i].value != 0)
                         i = (i + 1) % 12;
                     s1.ref = recs[i].item;
-                    s2.ref = p->netId;
                     s1.kind = 2;
                     s1.arg = 1;
                     s1.fvalue = 0.05f;
                     s2.kind = 7;
+                    s2.ref = p->netId;
                     s2.arg = 1;
                     r = ai_ChooseSubAction(k, p->id, 2, &s1, &s2);
-                    if (r == 0)
-                        return 0;
-                    *o1 = s1;
-                    *o2 = s2;
+                    if (r != 0) {
+                        *o1 = s1;
+                        *o2 = s2;
+                    }
                     return r;
                 }
             } else if (st[2] == 0) {
@@ -6454,8 +6445,8 @@ int ai_DecideUseMeanObject(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
             s1.kind = 1;
             s1.arg = 1;
             s1.fvalue = 0.05f;
-            rp = &recs[i];
             s1.ref = recs[i].entryId;
+            rp = &recs[i];
             if (rp->item == 0x169 || rp->item == 0x16d) {
                 flags[0] = AI_CHAIN_MEAN;
                 flags[1] = AI_CHAIN_MEAN;
@@ -6486,6 +6477,11 @@ int ai_DecideUseMeanObject(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
                 s2.arg = ai_CharsT[id[1]].netId;
                 s2.kind = 7;
                 break;
+            case 0x16a:
+                s2.arg = -1;
+                s2.ref = ai_CharsT[id[0]].netId;
+                s2.kind = 7;
+                break;
             case 0x177:
                 s2.kind = 4;
                 s2.ref = ai_CharsT[id[0]].bld2->id;
@@ -6496,7 +6492,6 @@ int ai_DecideUseMeanObject(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
                 s2.ref = v;
                 s2.arg = -1;
                 break;
-            case 0x16a:
             case 0x17b:
             case 0x17d:
             case 0x22b:
@@ -6512,15 +6507,17 @@ int ai_DecideUseMeanObject(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
                 return 0;
             }
             s2.arg2 = 0x21;
-            r = 0x21;
             if (i > 1) {
                 r = ai_ChooseSubAction(k, p->id, 4, &s1, &s2);
-                if (r == 0)
-                    return 0;
+                if (r != 0) {
+                    *o1 = s1;
+                    *o2 = s2;
+                }
+                return r;
             }
             *o1 = s1;
             *o2 = s2;
-            return r;
+            return 0x21;
         }
     }
     return 0;

@@ -1658,7 +1658,7 @@ exe	0x0049b120	ai_DecideUseHealthObject	am	e6490de5c383b087	no	shape	sweep contr
 exe	0x0049b2b0	ai_ExecuteUseHealthObject	am	ce71c0f398f58497	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	1670200eeadad7dc
 exe	0x0049b380	ai_DecideUseDynastyObject	am	3f93e923c88bd8d7	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	671a4f7760e8742d
 exe	0x0049b6f0	ai_ExecuteUseDynastyObject	am	ae0daf1ec21bd1fb	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	1670200eeadad7dc
-exe	0x0049b7c0	ai_DecideUseMeanObject	am	20f3ce28917dc811	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
+exe	0x0049b7c0	ai_DecideUseMeanObject	am	b2752fced23bafc1	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	25c686dc7d11d90a
 exe	0x0049bc50	ai_ExecuteUseMeanObject	am	1dc39a29dfff1d1c	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	1670200eeadad7dc
 exe	0x0049bd90	ai_DecideUseSafetyObject	am	bad6029e1a0f4c8b	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	dc1d95219a1b9956
 exe	0x0049c000	ai_ExecuteUseSafetyObject	am	3681d0dc66557ca8	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	1670200eeadad7dc
