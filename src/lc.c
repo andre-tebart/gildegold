@@ -5382,11 +5382,11 @@ void ai_SmithyContact(AIBLD *bld, int room)
     int transport;
     int personal;
 
-    schmieden = 0;
-    meister = 0;
     lager = 0;
+    schmieden = 0;
     transport = 0;
     personal = 0;
+    meister = 0;
     sv_ReleaseNamePlates();
     r = sv_RunFrame(ai_SmithyContact, 0x67fff);
     while (r != 0) {
@@ -5447,10 +5447,10 @@ void ai_CarpenterContact(AIBLD *bld, int room)
     int meister;
     int personal;
 
-    tischler = 0;
-    lager = 0;
-    transport = 0;
     meister = 0;
+    lager = 0;
+    tischler = 0;
+    transport = 0;
     personal = 0;
     sv_ReleaseNamePlates();
     r = sv_RunFrame(ai_CarpenterContact, 0x67fff);
@@ -5803,11 +5803,11 @@ void ai_PerfumeryContact(int building, int room)
     int meister;
     int personal;
 
-    sammeln = 0;
-    parfum = 0;
     lager = 0;
     transport = 0;
+    parfum = 0;
     meister = 0;
+    sammeln = 0;
     personal = 0;
     sv_ReleaseNamePlates();
     r = sv_RunFrame(ai_PerfumeryContact, 0x67fff);
@@ -5891,12 +5891,12 @@ void ai_MixingContact(AIBLD *bld, int room)
     int lager;
     int transport;
 
-    sammeln = 0;
-    mischen = 0;
     meister = 0;
-    personal = 0;
     lager = 0;
     transport = 0;
+    mischen = 0;
+    sammeln = 0;
+    personal = 0;
     sv_ReleaseNamePlates();
     r = sv_RunFrame(ai_MixingContact, 0x67fff);
     while (r != 0) {
@@ -5947,10 +5947,10 @@ void ai_StonecutterContact(AIBLD *bld, int room)
     int transport;
     int personal;
 
-    steinmetz = 0;
-    meister = 0;
     lager = 0;
     transport = 0;
+    steinmetz = 0;
+    meister = 0;
     personal = 0;
     sv_ReleaseNamePlates();
     r = sv_RunFrame(ai_StonecutterContact, 0x67fff);
