@@ -2095,7 +2095,7 @@ exe	0x004bdc90	rt_MarkValue	rt	1edc8713817db1f2	no	byte	control=byte p1=byte p2=
 exe	0x004bdca0	rt_ReadMarkValues	rt	322d759f4513978c	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004bdcd0	rt_ChooseGoodsDialog	rt	225a29691fde34cf	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	e60787fccaf24ae2
 exe	0x004be180	rt_ChooseRouteGood	rt	d94a85babf6b9b51	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	e60787fccaf24ae2
-exe	0x004be3b0	rt_ChooseTabGood	rt	ebc2e91f70e75ed8	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	e60787fccaf24ae2
+exe	0x004be3b0	rt_ChooseTabGood	rt	ebc2e91f70e75ed8	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	94267ed1578e38d5
 exe	0x004be790	rt_Unk4be790	rt	c8bd5cb0a485e1fd	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x004be8e0	rt_RemoveControls	rt	8ea0d8e150852615	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004be930	rt_InitControls	rt	555f76e1152b87b6	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	

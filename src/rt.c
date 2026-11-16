@@ -459,14 +459,13 @@ unsigned int rt_ChooseTabGood(AIBLD *b, int x, unsigned int def)
             else
                 s = (AIOBJ *)gm_Query((void *)b->objList, 1, 0, 0xff);
             if (s != 0) {
-                for (e = (unsigned short *)gm_Query((void *)s->list, 1, 5); e != 0; e = gm_QueryNext()) {
+                for (e = (unsigned short *)gm_Query((void *)s->list, 1, 5); e != 0; e = gm_QueryNext(), n++) {
                     o = d2_WinOpenPic(n % 4 << 6, n / 4 << 6, *e + 0xdf, d2_LastWindow);
                     objs[n] = o;
                     d2_Objs[o].interactive = 1;
                     d2_Objs[o].style = 3;
                     d2_Objs[o].icon = 0x525;
                     goods[n] = *e;
-                    n++;
                 }
             }
             goods[n] = 0;
