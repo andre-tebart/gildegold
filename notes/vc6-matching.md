@@ -2484,6 +2484,10 @@ Operand order on the FPU stack, `fst` / `fstp`, float compares, constants, `_fto
   unless written `(float)((float)rand() / RAND_MAX)`; `* 0.25f` after `/ RAND_MAX` merges into one `fmul`. `x *
   2.0f` is `fadd st, st`. `(w * 255.0f) / v` keeps fmul first (bare: `255 / v * w`); `(float)(1.0f / x) * s` keeps
   `fdivr 1.0`.
+- **`fmul [const]` scheduled one integer instruction late / early**: a `(float)(..)` cast around an already float
+  product moves its place among the integer address arithmetic of the same block: `x = rate * 0.01f; x = x *
+  base;` matched where `x = (float)(rate * 0.01f); x = (float)(x * base);` left the `fmul` one `lea` early
+  (gm_IncomeKind3; its sibling gm_IncomeKind4 matched WITH the casts, so try both).
 - **`fld x; fmul 1/c; fmul k; fmulp` after a call-carrying factor S (ours `fmulp` then `fmul k`, or a `fxch st(1)`
   pair)**: `S * ((x / 30.0) * 8.0)`: parentheses around the division keep both constants and stop VC6 pulling
   `* 8.0` out past S; a `(float)` cast as the barrier pulls the constant out or adds `fxch` pairs, no parentheses
