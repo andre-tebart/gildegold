@@ -9700,7 +9700,7 @@ int ai_PermissionBits1d(char *ch, char *b, char *x)
         for (i = 0; i < 6; i++) {
             if ((&bldg->jobBytes)[i] == 0)
                 break;
-            if ((&bldg->jobBytes)[i] == v) {
+            if (v == (&bldg->jobBytes)[i]) {
                 f |= 0x2200;
                 break;
             }

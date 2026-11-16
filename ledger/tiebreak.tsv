@@ -4084,7 +4084,7 @@ exe	0x005876a0	ai_GraveyardSeanceContact	sv_t	58011c7e9565f92e	no	byte	control=b
 exe	0x00587700	ai_UpgradeWorkerSend	sv_t	cc4b71bfd6a0ff7a	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00587810	ai_UpgradeWorkerWindow	sv_t	d0ec71eee394d7b4	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00587ad0	ai_GraveyardFogContact	sv_t	4d7bf639341f6a86	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x00587b70	ai_PermissionBits1d	sv_t	214f7d666b467337	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
+exe	0x00587b70	ai_PermissionBits1d	sv_t	214f7d666b467337	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	903476765c18e88e
 exe	0x00587c40	ai_EndCharExtra	sv_t	f6c32614155ca701	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00587c90	ai_GraveyardChatter	sv_t	09a730e102e9bdb1	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00587de0	ai_ClearTurnTable	sv_t	5ee801eeb1a8f560	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
