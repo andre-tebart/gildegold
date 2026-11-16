@@ -1047,7 +1047,7 @@ exe	0x00458b20	d3_PointToRef	d3_pose	byte	readable
 exe	0x00458c10	d3_LocalToWorld	d3_pose	byte	readable		
 exe	0x00458ce0	d3_MatToWorld	d3_pose	byte	readable		
 exe	0x00458da0	d3_WorldMatrix	d3_pose	byte	readable		
-exe	0x00458e70	d3_EnvMapCoords	d3_vtx	shape	readable		
+exe	0x00458e70	d3_EnvMapCoords	d3_vtx	shape	readable	deep	
 exe	0x004591a0	d3_AnimBlendWeights	d3_vtx	byte	readable		
 exe	0x00459300	d3_TransformVerts	d3_vtx	draft	readable	deep	
 exe	0x004598d0	d3_TransformNormals	d3_vtx	byte	readable		
@@ -3500,7 +3500,7 @@ exe	0x0053d930	he_CreateEventBar	he	byte	readable
 exe	0x0053d9b0	he_CloseEventSlots	he	byte	readable		
 exe	0x0053d9f0	he_ShowEventBar	he	byte	readable		
 exe	0x0053dad0	he_SetBarEnabled	he	byte	readable		
-exe	0x0053daf0	he_PickActiveEvent	he	shape	readable		
+exe	0x0053daf0	he_PickActiveEvent	he	byte	readable		
 exe	0x0053dcb0	he_ActivateSlot	he	byte	readable		
 exe	0x0053dda0	he_ShowNews	he	draft	readable	deep	
 exe	0x0053dee0	he_MessageBoxQuickjump	he	byte	readable		
