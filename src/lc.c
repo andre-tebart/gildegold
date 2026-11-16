@@ -19914,16 +19914,8 @@ void ai_EvidenceBookWindow(AIBLD *bld)
 int ai_BribeAmountCB(AICHARREC *ch);
 
 /* 0x5b4bf0, the bribe amount menu of the robbers' room (105 B, ai_RobberContact): the AMOUNTCFG with mode
-   0x40400, the filter 0x100000000 and kind 6, the prompt 0x174f, the menu with the callback ai_BribeAmountCB; the
-   camera follows again
-   @deep whole function rewritten to the original's body (AMOUNTCFG with mode 0x40400, filter = the
-   gypsyFilter high word << 32, kind 6, the prompt 0x174f, ai_AmountMenu with ai_BribeAmountCB, the
-   sv_CameraFollow tail); ours is 26 instructions like the original with 2 differing: the filter's low word
-   store is hoisted right after the memset (mov [esp+0xc],eax with eax=0) where the original stores it last
-   as mov [esp+0x14],0, so the prover sees the store order mode/kind/high/low against low/mode/kind/high;
-   tried the signed shift (adds cdq, 27 ins), the u64 multiply (calls _allmul), gypsyFilter & 0x100000000
-   (reads the low word too, 29 ins); needs a source variant that keeps VC6 from hoisting the constant 0
-   store; no other difference, the same callee and arguments */
+   0x40400, the filter's high word from gypsyFilter (its low word stored 0) and kind 6, the prompt 0x174f, the menu with the callback ai_BribeAmountCB; the
+   camera follows again */
 
 void ai_OpenRobberBribe(int bld)
 {
@@ -19933,7 +19925,8 @@ void ai_OpenRobberBribe(int bld)
     memset(&cfg, 0, sizeof(cfg));
     cfg.mode = 0x40400;
     cfg.kind = 6;
-    cfg.filter = (unsigned __int64)(unsigned)gypsyFilterWords[1] << 32;
+    cfg.classMask[1] = gypsyFilterWords[1];
+    cfg.classMask[0] = 0;
     txt_Format(text, 0x174f);
     ai_AmountMenu(&cfg, text, 0, ai_BribeAmountCB);
     sv_CameraFollow();
