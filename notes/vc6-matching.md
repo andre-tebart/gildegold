@@ -1945,6 +1945,12 @@ Store order in a fill, hoisted loads and sunk stores, statement order effects, `
 
 ### Loads hoisted early or kept late
 
+- **Loads after a struct copy in the original, before it in ours, one call takes `&local`**: VC6 does not
+  count the address as escaped when its only call goes to a function defined above in the unit (it knows the
+  body); an external callee, or a second address-taking call anywhere in the function, makes the stores to the
+  local order later pointer loads. Intrinsics (memcpy, memset, struct copies) and calls removed as dead do not
+  count. A function that needs the external order while a sibling with the same callee does not = a TU boundary
+  between them (cm_FightFrame against cm_OrderWait, open).
 - **A field load through a returned pointer behind an inline `strcpy` store into a buffer** (`mov [name],edx; mov
   cl,[eax]`, the original loads `b->type` first): the buffer is an address-taken function-scope array; declared
   in a block that opens before the strcpy (`{ char name[MAX_PATH]; strcpy(name, "gb_"); strcat(name, ..); ..
