@@ -3664,7 +3664,7 @@ exe	0x00551340	he_StepWalkSlot	he	d80507e56925ef69	no	shape	control=shape p1=sha
 exe	0x00551440	he_FillWalkSlot	he	902bcf270135cf45	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x005516a0	he_PlayGestures	he	57c74e5851846aa5	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00551780	he_StepWalk	he	1c0b63363243ed0b	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
-exe	0x00551b70	he_RunWalk	he	47f8d5abe5dc10b5	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	4cbf06cae45cb11e
+exe	0x00551b70	he_RunWalk	he	e48059c808ef404b	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	469d0b50a61d145c
 exe	0x00551d00	he_InitSixGroupEvent	he	314e8bcc2c2ace90	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00551d70	he_RunSixGroupEvent	he	67dcf5d37672ce73	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x00552040	he_StartExam	he	302d694c1f21e7bf	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	

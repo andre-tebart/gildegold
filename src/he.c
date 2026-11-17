@@ -10236,7 +10236,7 @@ void he_RunWalk(int ev)
     AIJOB *e = (AIJOB *)ev;
     HEWALKS *w = (HEWALKS *)ev;
     int st = e->stage;
-    int n = 0, i, r;
+    int n, i, r;
     HEWALKSLOT *s;
 
     if (st == -1 || st == -2) {
@@ -10250,6 +10250,7 @@ void he_RunWalk(int ev)
     e->end = ai_Time;
     gm_AddTime(&e->end, 0, 5, 0);
     e->exSlot = -1;
+    n = 0;
     if (e->end.hour >= 0x11) {
         s = w->slots;
         for (i = 10; i != 0; i--) {
@@ -10264,27 +10265,22 @@ void he_RunWalk(int ev)
         cm_SendExSetHEI(0, ev);
         return;
     }
-    s = w->slots;
-    for (i = 10; i != 0; i--) {
-        if ((s->state & 4) != 0)
-            he_StepWalkSlot(s);
-        else
-            he_StepWalk(s);
-        if ((s->state & 1) != 0)
-            n++;
-        s++;
-    }
-    s = w->slots;
     for (i = 0; i < 10; i++) {
-        r = he_FillWalkSlot(s, n, 0);
+        if ((w->slots[i].state & 4) != 0)
+            he_StepWalkSlot(&w->slots[i]);
+        else
+            he_StepWalk(&w->slots[i]);
+        if ((w->slots[i].state & 1) != 0)
+            n++;
+    }
+    for (i = 0; i < 10; i++) {
+        r = he_FillWalkSlot(&w->slots[i], n, 0);
         e->exSlot = r;
         if (r != -1) {
             e->end = ai_Time;
             gm_AddTime(&e->end, 0, 1, 0);
-            cm_SendExSetHEI(0, ev);
-            return;
+            break;
         }
-        s++;
     }
     cm_SendExSetHEI(0, ev);
 }
