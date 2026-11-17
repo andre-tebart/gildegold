@@ -267,7 +267,8 @@ Where the pushes and pops sit, how many epilogue copies there are, shared agains
 - **A guard `if (k != 4) return 0;` with its own `xor eax,eax; pop esi; ret` copy, ours jumping to the search
   loop's shared not-found `return 0`**: the hit `break`s out and is handled after the loop (`if (j == 0) return 0;
   f(j); return 0x10;`); the in-loop `return 0x10`, `continue`, while form and `else {}` were one code
-  (ai_ExecuteBuyBuilding byte).
+  (ai_ExecuteBuyBuilding byte). Same for a slot scan whose `if (i >= N) return 0;` test sat inside the found arm
+  of a do/while: `for (..) if (free) break; if (i >= N) return 0; fill` (d2_StartFade byte).
 - **A loop's failure jumping to the FIRST of identical `f(); return 0;` blocks, the original the LAST (rel32 vs
   short `je`)**: VC6 merges into the first in source order; the exit test belongs in the `while`: `do { .. } while
   (main_QuitProgram == 0); main_Exit(); .. return 1;`. No lever: `!x` / `== 0` (31 subsets). (WinMain byte)

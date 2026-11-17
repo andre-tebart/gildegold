@@ -1351,7 +1351,7 @@ exe	0x00476220	d2_Plot	d2	fd7d06fdf3f23844	no	byte	control=byte p1=byte p2=byte 
 exe	0x004764f0	d2_PlotLine	d2	27a5233e49b7162d	no	draft	sample n=32 seed=1 compiled=31 codegens=1 best=draft	
 exe	0x00476710	d2_ClearPaintbox	d2	5d6a4d96ca4b6b12	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00476760	d2_FillPaintbox	d2	38dfc6560847cbdd	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x004767d0	d2_StartFade	d2	99f33c38fd69c639	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	d918c6ec89c5a8a6
+exe	0x004767d0	d2_StartFade	d2	99f33c38fd69c639	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	d4a85d933de65d3a
 exe	0x00476860	d2_ReleaseFade	d2	d71396af9b8f6e9b	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004768a0	d2_DrawFade	d2	bdf8921383362766	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00476b10	d2_DrawFades	d2	4a6871f4a78ec2f2	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
