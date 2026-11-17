@@ -332,6 +332,12 @@ Where the pushes and pops sit, how many epilogue copies there are, shared agains
   and nested ifs choose different duplicated tails.
 - **A threaded return copy, the original `jmp`s to the shared end check**: `gm_BQFirstCall = 0` after the first-call
   walk (gm_BuildNext, open).
+- **A `je` near to a far copy where the original's is short into the next case's copy, and the copy's first load
+  hoisted above the `je` in the original**: the test written failure first (`if (q == 0) { end = ai_Time; Send(-1);
+  return; } end = ai_Time; AddTime; Send(3);`): both arms then begin with the same load, VC6 hoists it and
+  cross-jumps the failure tail into the nearer copy (he_RunSecretRoom draft -> shape, size fixed).
+- **`cmp ecx,5` before `mov eax,ecx` for a clamp (ours `mov eax,ecx; cmp eax,5`)**: the clamp tests the source
+  variable: `rest -= minutes; minutes = rest > 5 ? rest : 5;` (he_RunSecretRoom).
 
 ### Search loops and their exits
 
@@ -1560,6 +1566,13 @@ a stack slot is a split piece, and the piece's extent is decided by the rules be
 - **A short global in several comparisons of one `if` and after a call** (the original loads it into di / bx
   before the first comparison, `movsx`, reloads after di_ClearEvents): the globals written directly give the
   cache for one (bx) only; `short` locals give both early loads but no reload (0x477000, open).
+- **`add eax,ecx; inc eax` for `&tbl[i].name` (name at +1) where ours has one `lea edx,[eax+ecx+1]`**: the record
+  pointer was a named local (`g = &ai_GoodsT[r->id]; .. _strupr(g->name)`), as in the sibling arm (cm_ExChrUseGates
+  byte). Same family: `(c ? 0x27b : 0x253) + off` for `add 0x253; add off` (ai_WorkerDismissalWindow byte).
+- **Two index locals with swapped scratch registers in a loop with a call (d3t_MoveObjectPath, open)**: both are
+  split around the call; the pass-2 pieces race (i#2 43 vs k#2 29, `c2trace --seq`: ASSIGN order and avail); a
+  probe (`extern int p1, p2; p1 = k; p2 = k + 7;` in the tail) that adds two references of k proves the order
+  decides it. Use such a probe to confirm a race before searching for the natural reference.
 
 ### Pointer locals and addresses
 
@@ -2037,6 +2050,9 @@ Frame size, slot order, holes, shared slots, dead parameter slots, block-scoped 
   temp never did); several asm copies in a loop pair up when each sits in its own block with fresh locals, not
   two loop-wide pointers. A "mystery unreferenced slot" can be wrong sharing elsewhere (bmp_Load: rle[6] became
   rle[2]). No lever: names, declaration order, scope.
+- **An address-taken local (`gm_FindById(.., &o, ..)`) packed with function-scope locals in the original, ours in its
+  own slot**: a function-scope `&o` conflicts with every local (c2frame `X o: ..all..`); declared in the block that
+  uses it (`case 1: { AIOBJ *o; .. }`) it shares the slot of locals of other cases (he_RunTransport 36 -> 8 ins).
 
 ### Other findings filed here
 
@@ -2662,6 +2678,10 @@ How arguments are pushed, a call written in both arms, parameter and return type
 - **Return-type-only cast macro, equality tests**: drop it. ahm.c's `#define AHM_FW ((unsigned (*)())vfs_fwrite)`
   / `AHM_FR ((unsigned (*)())ls_Read)` -> direct calls (ahm.h: vfs_fwrite unsigned @original, ls_Read int), same
   bytes (0x4ecf10, 0x4ed040), Q7-clean.
+- **`mov si,ax` / `mov di,ax` then `and esi,0xffff` right after `call util_Random`** (ours `mov esi,eax; and esi,0xffff`
+  later, or the int result in eax): the caller read the 16-bit result: the unit's `util_RandomU` / `util_RandomS`
+  cast, into an `int` local (`int v; v = util_RandomS(2);`, ai_PlagueMessage byte) or inline in the expression
+  (`x / 16000 + util_RandomU(2)`, he_AllocTransport byte). Grep the original for it: several queue functions have it.
 
 ### Argument count different from the definition (K&R victims, Q7)
 - **More pushes than the callee reads** (`ai_FillSaveSlots` from 0x5d4080 / 0x5d42b0 / 0x5d45d0 / 0x5d4920 pushes
@@ -2960,6 +2980,10 @@ the stack at every instruction.
 - **`if ((g = f()) < best)`** gives `fld st(0); fcomp`, split gives `fcom`. `x = (float)(p->m - 2.0)` stores before
   the next call's cleanup. `PAR_RND()` vs `(float)rand() / RAND_MAX` moves a lea / fstp: try per component.
   `mov edx,[d]; mov [d],edx` is a second float local in d's slot.
+- **A float local copied into a global by `mov reg,[s]; mov [g],reg` (an int copy) where ours keeps s on the FPU**: the
+  copy's statement stood after the next `atan2` / a value s does not nest with on the x87 stack, so s went to memory
+  (c2fpu: `no fit (does not nest with tb)`); `P1.z = s` moved after `tb = atan2(..)`, `P3.z = s` after the rot angles
+  (d3_SetupFrustum 98 -> 24 ins, padded size fixed; the frame is then 4 bytes bigger, open).
 
 ### Float copies: fld / fstp vs integer moves
 
