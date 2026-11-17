@@ -526,7 +526,7 @@ exe	0x004273c0	sb_IsInit	sblib	85f73530beb1bb13	no	byte	control=byte p1=byte p2=
 exe	0x004273d0	evt_Error	evt	9edee8ad57be5e56	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00427570	evt_AddGlobal	evt	75b504f2268d8d60	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004276a0	evt_AddLocal	evt	cb9b72717ce86c3d	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x004277c0	evt_DeclareLocal	evt	892ac0543b511dd4	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	2dd56f0bea9b60ca
+exe	0x004277c0	evt_DeclareLocal	evt	892ac0543b511dd4	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	34d49a6684831776
 exe	0x004278d0	evt_FindVar	evt	c1a4535cb32b191d	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00427a20	evt_FindInclude	evt	d8cb05b5968219a6	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00427a90	evt_FindFunc	evt	a2cd3a9fae877809	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	

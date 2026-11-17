@@ -123,39 +123,37 @@ EVTVAR *evt_AddLocal(EVTSCRIPT *sc, int type, int count, char *name)
         evt_Error(sc, sc->pc - 1, "Too many locals!");
     return v;
 }
-/* 0x4277c0 @deep B: hunks code 93, fill 8, slots 4. Read every hunk in asmdiff: original keeps count=1 in ebx and the error return 0 in edi (mov ebx,1; xor edi,edi; mov eax,edi), ours uses edi for count and xor eax,eax; original merges both error exits into one shared evt_Error/evt_Stop tail (add esp,0xc before the pushes). Every constant (2, 0x1b) and every statement is present - only allocation and block layout differ. Nested-if / goto-tail / message-variable variants did not change the layout (best 206 B). Same operations spelled differently. */
+/* 0x4277c0, declares a local of the script: an identifier (or a global's name) with an optional [count];
+   evt_AddLocal's result, 0 after a syntax error (one shared return of r: the error arms join before evt_Stop) */
 
 int evt_DeclareLocal(EVTSCRIPT *sc, int type)
 {
     EVTTOKEN t;
     char name[32];
     int count = 1;
+    int r = 0;
 
     evt_GetToken(sc->pc, &t);
-    if (t.type != EVT_IDENT) {
-        if (t.type == EVT_VAR) {
-            if (((EVTVAR *)t.u.p)->local) {
-                evt_Error(sc, sc->pc, "Syntax error: Propably duplicate symbol...");
-                evt_Stop(sc);
-                return 0;
-            }
-        } else {
+    if (t.type != EVT_IDENT && (t.type != EVT_VAR || ((EVTVAR *)t.u.p)->local)) {
+        if (t.type == EVT_VAR)
+            evt_Error(sc, sc->pc, "Syntax error: Propably duplicate symbol...");
+        else
             evt_Error(sc, sc->pc, "Syntax error: unknown");
-            evt_Stop(sc);
-            return 0;
-        }
-    }
-    if (t.type == EVT_IDENT)
-        strcpy(name, t.u.s);
-    else
-        strcpy(name, ((EVTVAR *)t.u.p)->name);
-    evt_GetToken(sc->pc, &t);
-    if (t.type == EVT_OP && t.u.i == EVT_OP_LBRACKET) {
+        evt_Stop(sc);
+    } else {
+        if (t.type == EVT_IDENT)
+            strcpy(name, t.u.s);
+        else
+            strcpy(name, ((EVTVAR *)t.u.p)->name);
         evt_GetToken(sc->pc, &t);
-        if (t.type == EVT_INT)
-            count = t.u.i;
+        if (t.type == EVT_OP && t.u.i == EVT_OP_LBRACKET) {
+            evt_GetToken(sc->pc, &t);
+            if (t.type == EVT_INT)
+                count = t.u.i;
+        }
+        r = (int)evt_AddLocal(sc, type, count, name);
     }
-    return (int)evt_AddLocal(sc, type, count, name);
+    return r;
 }
 /* 0x4278d0 */
 
