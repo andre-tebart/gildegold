@@ -2698,7 +2698,7 @@ struct XOBJ;
 void d3_LocalToWorld(struct XOBJ *obj, float *in, float *out);  /* 0x458c10 (d3_pose.c) */
 void d3_DirToWorld(struct XOBJ *obj, float *in, float *out);    /* 0x458810 (d3_pose.c) */
 float d3_VecAngle(struct D3VECTOR *a, struct D3VECTOR *b);      /* 0x4539f0 (d3_vec.c) */
-extern const struct D3VECTOR d3_ZAxis;                          /* 0x5ebb74, (0, 0, 1) */
+extern const struct D3VECTOR4 d3_ZAxis;                          /* 0x5ebb74, (0, 0, 1) */
 
 /* 0x58fd40, the world position of a plot record's origin, written to out (79 B): d3if_SelectScene (0, 1) brackets
    the work; the zeroed 0x10-byte vector goes through d3_LocalToWorld (the plot, the vector, out), which applies

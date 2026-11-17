@@ -817,7 +817,7 @@ const float d3s_Dist[2] = { 60.0f, 200.0f };  /* 0x5ebbd8 */
 const unsigned char d3s_Palette[] = { 0, 0, 0, 0xff, 0xff, 0xff, 0, 0 };  /* 0x5ebbe0, palette */
 extern int d3_FrameCount;          /* 0x63343c */
 extern unsigned char d3_Hardware;                    /* 0x633450 */
-extern const D3VECTOR d3_ZAxis;             /* 0x5ebb74 */
+extern const D3VECTOR4 d3_ZAxis;             /* 0x5ebb74 */
 
 float * d3s_Verts = 0;  /* 0xfb9258, 6 floats each */
 int d3s_NumUVs = 0;  /* 0xfb925c */

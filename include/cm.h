@@ -425,7 +425,7 @@ int gm_ClockSeason();  /* 0x4fe350 */
 void gm_RefreshGoodsLists(unsigned p);  /* 0x4ff190 */
 void gm_AssignBuilding(unsigned char *b, unsigned short place, unsigned own);  /* 0x502b60 */
 void ai_DropObjectAt(struct D3OBJECT *obj, struct D3VECTOR *target);  /* 0x58feb0 */
-extern const struct D3VECTOR d3_ZAxis;  /* 0x5ebb74, (0, 0, 1), d3_vec.c */
+extern const struct D3VECTOR4 d3_ZAxis;  /* 0x5ebb74, (0, 0, 1), d3_vec.c */
 extern struct VFSDIR *vfs_Root;  /* 0x6333fc */
 extern char ai_DataPath[];  /* 0x75dca0 */
 
@@ -605,7 +605,7 @@ void cm_DrawScrollArrows();  /* 0x4cf370 */
 void * d2_GetPic();  /* 0x4690b0 */
 int d2_DrawShape(int x, int y, void *surf, void *pic, unsigned char i);  /* 0x47c6f0 */
 void d2_SetClipRect(int x0, int y0, int x1, int y1);  /* 0x47cb40 */
-extern const struct D3VECTOR d3_Origin;  /* 0x5ebba4, (0, 0, 0), d3_vec.c */
+extern const struct D3VECTOR4 d3_Origin;  /* 0x5ebba4, (0, 0, 0), d3_vec.c */
 extern float d2_ScreenScale;  /* 0x5fe708 */
 extern void *d2_ScreenSurf;  /* 0x6ed924, the screen surface (d2.c defines it) */
 extern short d2_ScreenH;  /* 0xfb9070 */

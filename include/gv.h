@@ -338,7 +338,7 @@ int cm_AddFieldValues(unsigned char size, unsigned char n, unsigned short field,
 int cm_SendFieldDeltas(void);                     /* 0x4c49a0 */
 extern char *ai_Blds;                   /* 0x889f74, 256 records of 0xa9 bytes */
 extern unsigned short *ai_PlayerChar;    /* 0x6f1bf8, the player's character (ai.c; this header's units add byte offsets through ai_PlayerCharC) */
-extern const struct D3VECTOR d3_Origin;     /* 0x5ebba4, (0, 0, 0), d3_vec.c */
+extern const struct D3VECTOR4 d3_Origin;     /* 0x5ebba4, (0, 0, 0), d3_vec.c */
 extern const char ai_ZeroRot[];                 /* 0x5ebbb4 */
 
 char *gv_AllocAvatar(void);              /* 0x4ed170 */
