@@ -1666,25 +1666,13 @@ void err_Message(char *text);
    he_EventTop), copies the message into it (the character's index and netId, the new event id ai_NextEventId, the
    words, the time, the flags, the ids and the arguments 0x58.. to 0xac..), lists it in he_QuickList when it is
    shown in the event bar (flags 8, he_QuickTop), calls the alloc handler and counts it (he_EventCount); 0 when it
-   cannot
-   @deep read whole against the original and rewritten on AIMSG / AIJOB (AIJOB gained
-   id/netId/from/words14/text/textSize/exSlot/ids and its 0x14c size): every statement, store and its order
-   matches (the handler checks, the free record search, the he_EventTop / he_QuickTop raises, the
-   character's id / netId or -1 / 0xffff, the quick list, the id, kind, from, the time struct copy, opts,
-   stage/slot/text 0, exSlot -1, the 0xa0-byte argument copy, the alloc handler call, he_EventCount++).
-   Left: the two word-copy loops (12 words +0x10 -> +0x14, 8 ids +0x38 -> +0x8c): the original walks two
-   pointers with a down counter (lea ecx,[ebp+0x14]; lea eax,[ebx+0x10]; mov edx,0xc; mov edi,[eax]; add
-   eax,4; mov [ecx],edi; add ecx,4; dec edx), ours folds them into one pointer plus the difference (mov
-   ecx,ebx; sub ecx,eax; mov edi,[edx+eax]) and the register choice of the time copy / the rep movsd
-   follows; tried pointer for loops, do-while with --k, the index form (gives [ebx+eax*4+0x10] with an up
-   counter): an induction-variable choice of the optimizer */
+   cannot */
 unsigned char *he_CreateEvent(unsigned char *m)
 {
     AIMSG *msg = (AIMSG *)m;
     short *ch = 0;                      /* the AICHAR (ai.h, not included here): id at 0, netId at 4 */
     AIJOB *ev;
     int i, j, k;
-    int *d, *s;
 
     if (msg->type >= 0xa7 || he_AllocHandlers[msg->type] == 0 || he_RunHandlers[msg->type] == 0)
         return 0;
@@ -1715,24 +1703,20 @@ unsigned char *he_CreateEvent(unsigned char *m)
         if (j > he_QuickTop)
             he_QuickTop = j;
     }
-    ev->id = ai_NextEventId;
     ev->kind = msg->type;
+    ev->id = ai_NextEventId;
     ai_NextEventId++;
     ev->from = msg->fromId;
-    d = ev->words14;
-    s = &msg->nIds;
     for (k = 0; k < 0xc; k++)
-        *d++ = *s++;
+        ev->words14[k] = (&msg->nIds)[k];   /* the message words +0x10..+0x3f */
     ev->start = msg->time;
     ev->opts = msg->flags;
     ev->stage = 0;
     ev->slot = 0;
     ev->text = 0;
     ev->exSlot = -1;
-    d = ev->ids;
-    s = msg->ids;
     for (k = 0; k < 8; k++)
-        *d++ = *s++;
+        ev->ids[k] = msg->ids[k];
     memcpy(&ev->u.id, msg->arg, 0xa0);  /* the arguments 0x58..0xf8 */
     he_AllocHandlers[msg->type](ev);
     he_EventCount++;
