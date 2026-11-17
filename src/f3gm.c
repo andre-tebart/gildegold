@@ -9510,7 +9510,7 @@ int gm_IsBankrupt(unsigned short *p, int n)
     money = (float)(gm_GetGoodsValue((char *)c) + n);
     if (money > 0.0f)
         return 0;
-    rest = (float)gm_GetWorth(c->id) + -money;
+    rest = (float)gm_GetWorth(c->id) + (-money);
     if (c->kind != 6 && c->kind != 7) {
         if (abs((int)money) / rest > 0.2)
             return 1;

@@ -2788,6 +2788,8 @@ the stack at every instruction.
   uses, the CSE temp gets the slot (ai_CommandDemand); same for an int `w - x0` instead of `lim` (d3s_DrawSpans).
 - **`fcom; fst [p]` with the value kept and a fresh `fld [p]` next loop** (ours `fst tmp; fstp [p]; fld tmp`):
   `x = p->x = expr; while (x < -1.0) p->x = x += 2.0;` (d3t_UpdateSnow).
+- **`fild a; fld b; fchs; faddp` (ours `fild a; fsub b`)**: `(float)a + (-b)` with the parentheses; `a + -b`
+  without them is folded to a subtraction like `a - b` (gm_IsBankrupt byte; `b = -m; b += a` also byte).
 - **An atan2 result kept on the FPU while stored** (`fld st(0); fst a; fstp global; fld st(0); fsin; ...`, later
   `fchs`): a `double` local, `ta = atan2(..); g = a = (float)ta; sin(ta) ..; na = -ta;`; a float local reloads
   (d3_SetupFrustum 108 -> 98, stuck on a float `s` kept in memory). math.h sin / cos / atan2 compile inline.
