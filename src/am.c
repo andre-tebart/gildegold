@@ -4765,13 +4765,7 @@ found:
     }
     return 0;
 }
-/* 0x498470, execute of action 16 (ai_DecideBuyBuilding): buys the building s1->ref at the price of its offer (event 0x1b) through gm_SellBuilding, 16; 0 without an offer
-   @deep read against 0x498470..0x4984ce: same statements, calls and arguments (he_FindEvent(1, 0, 0x1b) /
-   he_NextEvent walk, u.id == s1->ref, gm_SellBuilding(ref, netId, price, offer, 1), 16). The one code hunk
-   is the s1->kind != 4 return: the original gives it its own epilogue copy (je 0x49847e / xor eax,eax /
-   pop esi / ret at 0x49847a), ours jumps to the shared return-0 tail (jne 0x4984a2), which shifts the rest
-   by 4 bytes. Tried: the kind test as if (s1->kind == 4) { .. } (no change). Same epilogue-duplication
-   case as ai_ExecuteProduceGood 0x4979d0; needs the variant rounds. */
+/* 0x498470, execute of action 16 (ai_DecideBuyBuilding): buys the building s1->ref at the price of its offer (event 0x1b) through gm_SellBuilding, 16; 0 without an offer */
 
 int ai_ExecuteBuyBuilding(G5CH *p, AIARG *s1)
 {
@@ -4780,12 +4774,13 @@ int ai_ExecuteBuyBuilding(G5CH *p, AIARG *s1)
     if (s1->kind != 4)
         return 0;
     for (j = he_FindEvent(1, 0, 0x1b); j != 0; j = he_NextEvent()) {
-        if (j->u.id == s1->ref) {
-            gm_SellBuilding(s1->ref, p->netId, ((AIJOBX *)j)->price, (AIJOBX *)j, 1);
-            return 0x10;
-        }
+        if (j->u.id == s1->ref)
+            break;
     }
-    return 0;
+    if (j == 0)
+        return 0;
+    gm_SellBuilding(s1->ref, p->netId, ((AIJOBX *)j)->price, (AIJOBX *)j, 1);
+    return 0x10;
 }
 /* 0x4984d0, decide callback: buy or upgrade the character's house (a building of kind 2) when it owns a building
    of the house-owner kinds (ai_BuildingTypeMasks[2..3]); short of money below a quarter of the price it decides
