@@ -2761,34 +2761,32 @@ int ch_GetWaypoints(D3SM *h, CHARACTER *ch, CHWAYPT *out)
 /* 0x4079b0, walk actions: checks the next path cells against the nearby characters others[0..n-1] and,
    if one blocks the way, marks them in the ground map and searches a new path around them ("ch:GetNewPath"
    is the mem_Alloc tag). Returns the new path length, 0 nothing to do, -1 failed, -2 no way around.
-   @deep Read the frame again (dcp frame): ours has one 4-byte slot more because the original packs sx with
-   the others-pointer temp of the blocker scan ([esp+0x1c]); ours keeps them apart. sx declared in the if (res
-   & 1) block (or if (res)) gives the original's frame 0x9b8 and the shared slot, but reorders gx/gz, steps/cx
-   and leaves tz/bz swapped (184 -> 250 ins, reverted); sx in a block around the tail (296), gx/gz in the res
-   & 1 block (frame 0x9b0, 312-326), tx/tz/bx/bz in a block around the scan (= control), subsets of
+   @deep size queue: 2758 vs 2774 (16 short, padded needs >= 2769). s2 kept (184 -> 102 ins): k = walk.cur
+   read before the scene-map test, p after it (the original's load order, that hunk now equal); the
+   ground-mark range as if/else into e + for (k = e; k < e + 2 ..) (oa back in esi); the frame: sx and fz
+   (the FindFreeCell second output, was i) block locals of if (res & 1), the ThinPath result in its own
+   block local len: frame 0x9b8 as the original, i no longer escapes (the original never stores i after the
+   ground loops), slots i+fz / tmp+sx / tz+len shared as the original's; nrest++ before q += 2. Frame left:
+   two equal-density ties come out of the K&R sort the other way (ours cz before scene, tz before bz; a K&R
+   simulation says cz one reference fewer, or scene before cz and bz before tz in the table, fixes both).
+   Size left: (1) the transport ternary: the original loads walk.cur in BOTH arms (mov eax,[esi+0xf8]; lea
+   edi,[eax-2]; jmp; mov edi,[esi+0xf8]: +8 bytes), ours hoists the load above the test - ternary, if/else,
+   if (!t), e = cur; if (t) e -= 2 / e = cur - 2, the else arm via CH_ACTIONS(others[i]), cur + -2, -2 +
+   cur, start variable: all hoist (unique pattern in the whole image: grep_orig); (2) the FindFreeCell
+   argument order: the original pushes walk.flags | 1 before computing steps * m (mov ebx,[steps]; imul
+   ebx,eax), ours imul eax,[steps] first (m local or the ternary inline, either operand order: = control);
+   (3) the rest-copy loop: lea ecx,[rest+1] after the guard and add eax,2 / add ecx,2 / inc edi order
+   (rest[nrest*2] index forms: 172-212, for (..; k++, q += 2): = control). Tools: scratch kr.py (K&R slot
+   sort), slotref.py (listing reference counts per slot), vsize.py. prior: Read the frame again (dcp
+   frame): ours has one 4-byte slot more because the original packs sx with the others-pointer temp of the
+   blocker scan ([esp+0x1c]); ours keeps them apart. sx declared in the if (res & 1) block (or if (res))
+   gives the original's frame 0x9b8 and the shared slot, but reorders gx/gz, steps/cx and leaves tz/bz
+   swapped (184 -> 250 ins, reverted); sx in a block around the tail (296), gx/gz in the res & 1 block
+   (frame 0x9b0, 312-326), tx/tz/bx/bz in a block around the scan (= control), subsets of
    last/nrest/cnt/m/q moved with sx into the res & 1 / res / tail blocks (95 variants, 2 codegens),
-   declaration order swaps of gx/gz, tz/bz, steps/cx (= control), steps = min(10, ..) (worse), ThinPath result
-   in r instead of tz (= control), gz/gx assignment order (worse), a dead bz = bz (= control). Kept: p
-   computed before the scene-map test (200 -> 184 ins, 2259 -> 1542 bytes) and the rest copy through q = rest
-   + 1 (q[-1], q[0]: the original's lea [esp+0x1c9] bias, -2 bytes). Left: the frame (above), the scene-map
-   test (the original loads walk.cur, then tests the map with the value in edi, stores 60.0 in the else arm
-   first, and reads walk.path after the if; p before or after the if both differ), register roles in the scan
-   (oa in edi vs esi, cmp operand order at +0x1b2/+0x1ec), the contacts loop's inc/store order, and every
-   stack offset shifted by the extra slot. (tiebreak: insensitive, dcp headers sample: 32 compiles, one
-   codegen) prior: Read in full against 0x4079b0..0x408486: the blocker scan over the waypoints (flags 2 / 1 /
-   8, the contact links, the speed scale), the contacts table, the ground marks of the blockers' paths and
-   positions, the rest of the path kept, the free cells, path_Find, the thinned path and its end. All
-   statements line up (ours 828 vs 832); the contacts store now writes ch then flags through the flags-biased
-   pointer as the original (dist 203 -> 200). Left: allocation and frame - our frame is 0x9bc vs 0x9b8 (one
-   4-byte local more: the escaped cells cx/cz/sx/i/gx share slots otherwise, the prover stops at frame+0x4),
-   the scene-map test loads into edi with walk.cur read first in the original (+0x86), the rest loop biases
-   its pointer to rest+1 in the original ('+ lea ecx,[esp+0x1c9] / mov [ecx-1],bl / mov [ecx],bl', an
-   nrest-indexed loop compiles far worse: 297), 'or al,1' vs 'or ebx,1' on walk.flags | 1 with the
-   FindFreeCell product in eax vs ebx (+0x878), the loop counters i / others pointer in [esp+0x18]/[esp+0x1c]
-   vs ours [esp+0x1c]/[esp+0x2c]. (references: M8 at +0x86: ours refers to d3_DefaultScene (0x5fb5b0), the
-   original's field to 0x63108c (ch_PathMap), explained: the M8 at +0x86 (d3_DefaultScene | ch_PathMap) is the
-   shifted alignment of the scene-map test: both sides read d3_DefaultScene[scene].map and store 60.0 to
-   ch_PathMap->cell.x on both paths (asmdiff --symbols)) */
+   declaration order swaps of gx/gz, tz/bz, steps/cx (= control), steps = min(10, ..) (worse), ThinPath
+   result in r instead of tz (= control), gz/gx assignment order (worse), a dead bz = bz (= control). Kept:
+   p computed before the scene-map test (200 -> 184 ins, 2259 -> 1542 bytes) and ... */
 
 int ch_GetNewPath(CHARACTER *ch, int n, CHARACTER **others)
 {
