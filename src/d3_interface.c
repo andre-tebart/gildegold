@@ -1154,7 +1154,7 @@ char d3_ScreenToUV(float sx, float sy, D3OBJECT *obj, void *tex, float *outu, fl
 }
 /* 0x4495f0, callback of d3_FindObject: sets ctx->found to the first object that matches */
 
-static char d3_FindObjectCB(D3OBJECT *obj, D3FINDCTX *ctx)
+char d3_FindObjectCB(D3OBJECT *obj, D3FINDCTX *ctx)
 {
     char *s = (char *)obj;
     char *t;
@@ -1192,7 +1192,7 @@ D3OBJECT *d3_FindObject(int a, int flags, int c, char *name)
 }
 /* 0x449710, like d3_FindObjectCB but case-insensitive */
 
-static char d3_FindObjectNoCaseCB(D3OBJECT *obj, D3FINDCTX *ctx)
+char d3_FindObjectNoCaseCB(D3OBJECT *obj, D3FINDCTX *ctx)
 {
     char *s = (char *)obj;
     char *t;

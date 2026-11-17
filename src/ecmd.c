@@ -654,7 +654,7 @@ int ocmd_DeleteRain(void **rain)
 }
 /* 0x40eac0, callback of CreateParticle: a stream of particles falling from y = 100 */
 
-static void ocmd_ParticleCB(D3PARTSYS *ps, unsigned long time)
+void ocmd_ParticleCB(D3PARTSYS *ps, unsigned long time)
 {
     int i;
     double dt;

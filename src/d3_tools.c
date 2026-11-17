@@ -130,7 +130,7 @@ int d3t_PlaceAtObject(D3OBJECT *obj, int unk)
 }
 /* 0x4118d0, d3_FindObject callback: keeps the object whose name matches (case-insensitive) and stops the search */
 
-static char d3t_FindObjectCB(D3OBJECT *obj, void *name)
+char d3t_FindObjectCB(D3OBJECT *obj, void *name)
 {
     if (_strcmpi(obj->name, name) == 0) {
         d3t_FoundObject = obj;
@@ -915,7 +915,7 @@ void d3t_SetColor(D3OBJECT *obj, unsigned char r, unsigned char g, unsigned char
 }
 /* 0x413620, object walk callback: d3t_SetColor with an r/g/b triple */
 
-static char d3t_SetColorCB(D3OBJECT *obj, void *rgb)
+char d3t_SetColorCB(D3OBJECT *obj, void *rgb)
 {
     d3t_SetColor(obj, ((unsigned char *)rgb)[0], ((unsigned char *)rgb)[1], ((unsigned char *)rgb)[2]);
     return 1;
@@ -1772,7 +1772,7 @@ void d3t_DrawSnow(D3TSNOW *Snow)
    x, z, y), and goes through a second local (root moved to st(3), dead values popped, then stored).
    z is volatile because the original keeps it in memory (fld z; fmul z, and fst z; fstp vel.z)
    where x and y follow from the parenthesized assignments. */
-static char d3t_EmitterCB(D3PARTSYS *ps, unsigned long time)
+char d3t_EmitterCB(D3PARTSYS *ps, unsigned long time)
 {
     D3PARTICLE *p;
     D3VECTOR4 n;
@@ -1886,7 +1886,7 @@ D3PARTSYS *d3t_CreateEmitter(D3OBJECT *obj, char *tex, char flag, unsigned long 
 }
 /* 0x415bb0, callback of d3t_CreateBlood */
 
-static char d3t_BloodCB(D3PARTSYS *ps, unsigned long time)
+char d3t_BloodCB(D3PARTSYS *ps, unsigned long time)
 {
     D3PARTICLE *p, *q;
     float dt, y;
@@ -1966,7 +1966,7 @@ D3PARTSYS *d3t_CreateBlood(void *parent, int n, float a, float b, float c, float
 }
 /* 0x415f30, callback of d3t_CreateExplosion. ps->flags holds the duration. */
 
-static char d3t_ExplosionCB(D3PARTSYS *ps, unsigned long time)
+char d3t_ExplosionCB(D3PARTSYS *ps, unsigned long time)
 {
     D3PARTICLE *p;
     float t;
@@ -2044,7 +2044,7 @@ D3PARTSYS *d3t_CreateExplosion(void *parent, D3VECTOR *pos, int count, float rad
 /* 0x416240, callback of d3t_CreateSmoke. Each particle rises from its start for ps->flags ms,
    fading in until unk10.w and out after it; ps->v00.x is the maximum alpha. */
 
-static char d3t_SmokeCB(D3PARTSYS *ps, unsigned long time)
+char d3t_SmokeCB(D3PARTSYS *ps, unsigned long time)
 {
     D3PARTICLE *p;
     float t;
@@ -2138,7 +2138,7 @@ D3PARTSYS *d3t_CreateSmoke(void *parent, D3VECTOR *pos, int count, float size, f
    parameter slot and a in the slot of s (ours: the reverse), and loads ps->tex before c.a.
    Clods are thrown up once, bounce on the ground at v00.w and fade out. */
 
-static int d3t_EarthCB(D3PARTSYS *ps, unsigned long time)
+int d3t_EarthCB(D3PARTSYS *ps, unsigned long time)
 {
     D3PARTICLE *p;
     D3COLOR c;
