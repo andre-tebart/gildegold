@@ -4,7 +4,7 @@ exe	0x00401040	util_BaseName	bio	byte	readable
 exe	0x00401090	file_Exists	bio	byte	readable		
 exe	0x004010b0	util_ReadLine	bio	byte	readable		
 exe	0x00401180	bio_rd_c	bio	byte	readable		
-exe	0x004011a0	bio_rd_s	bio	shape	readable	deep	
+exe	0x004011a0	bio_rd_s	bio	byte	readable		
 exe	0x004011d0	bio_rd_i	bio	byte	readable		
 exe	0x004011f0	bio_wr_c	bio	byte	readable		
 exe	0x00401210	bio_wr_s	bio	byte	readable		
@@ -1775,7 +1775,7 @@ exe	0x004a8630	ai_PokerExchange	poker	byte	readable
 exe	0x004a8650	ai_PokerAnte	poker	byte	readable		
 exe	0x004a8690	ai_PokerEndRound	poker	byte	readable		
 exe	0x004a86f0	ai_PokerNpcSetStake	poker	shape	readable		
-exe	0x004a8760	ai_DecideOfficePartner	poker	shape	readable		
+exe	0x004a8760	ai_DecideOfficePartner	poker	byte	readable		
 exe	0x004a8a50	ai_DecideTableValue	poker	byte	readable		
 exe	0x004a8ad0	ai_DecidePartnerOtherSex	poker	byte	readable		
 exe	0x004a8bf0	ai_EvalOneInFour	poker	byte	readable		
@@ -1900,7 +1900,7 @@ exe	0x004b17c0	ai_CommandRemoteTradeRaider	hst	byte	readable
 exe	0x004b1880	ai_CommandViewDonation	hst	byte	readable		
 exe	0x004b1950	ai_CommandParticipation	hst	byte	readable		
 exe	0x004b1a20	ai_CommandComments	hst	byte	readable		
-exe	0x004b1bd0	ai_CommandPlague	hst	shape	readable		
+exe	0x004b1bd0	ai_CommandPlague	hst	byte	readable		
 exe	0x004b1c90	ai_CommandInventoryPlus	hst	byte	readable		
 exe	0x004b1d20	hst_LoadPlayerTexts	hst	byte	readable		
 exe	0x004b1e40	hst_ResetPlayerTexts	hst	byte	readable		
@@ -1927,7 +1927,7 @@ exe	0x004b3a90	ai_RestartMission	mission	byte	readable
 exe	0x004b3ae0	ai_GetMissionType	mission	byte	readable		
 exe	0x004b3b10	ai_HasMission	mission	byte	readable		
 exe	0x004b3b40	ai_CountMissionTypes	mission	byte	readable		
-exe	0x004b3b70	ai_FindMissionType	mission	shape	readable	deep	
+exe	0x004b3b70	ai_FindMissionType	mission	byte	readable		
 exe	0x004b3bd0	ai_SetFirstMission	mission	byte	readable		
 exe	0x004b3c10	ai_NewRandomMission	mission	byte	readable		
 exe	0x004b3c40	ai_RandomMissionType	mission	byte	readable		
@@ -3137,7 +3137,7 @@ exe	0x0050a150	gm_CreditEvents	f3gm	byte	readable
 exe	0x0050a1c0	gm_BuildingEvents	f3gm	byte	readable		
 exe	0x0050a250	gm_GetCreditOffers	f3gm	draft	readable	deep	
 exe	0x0050a640	gm_GetWorth	f3gm	byte	readable		
-exe	0x0050a6c0	gm_IsBankrupt	f3gm	shape	readable		
+exe	0x0050a6c0	gm_IsBankrupt	f3gm	byte	readable		
 exe	0x0050a810	gm_FindCharacterByMaster	f3gm	byte	readable		
 exe	0x0050a880	gm_SortCharsByName	f3gm	byte	readable		
 exe	0x0050a970	gm_LevelPayout	f3gm	byte	readable		
@@ -3723,7 +3723,7 @@ exe	0x00558e70	he_AllocSabotage	he	byte	readable
 exe	0x00558f10	he_RunSabotage	he	draft	readable	deep	
 exe	0x00559d20	he_AllocSpying	he	draft	readable	deep	
 exe	0x0055a030	he_RunSpying	he	draft	readable	deep	
-exe	0x0055a5f0	he_AllocBrawl	he	draft	readable	deep	
+exe	0x0055a5f0	he_AllocBrawl	he	byte	readable		
 exe	0x0055a730	he_RunBrawl	he	draft	readable	deep	
 exe	0x0055af70	he_AllocTheft	he	byte	readable		
 exe	0x0055b140	he_RunTheft	he	byte	readable		
@@ -4312,7 +4312,7 @@ exe	0x005a6cb0	ai_BuildTownMap	lc	draft	readable	deep
 exe	0x005a78a0	ai_OpenTownMap	lc	byte	readable		
 exe	0x005a79e0	ai_DragTownMap	lc	shape	readable		
 exe	0x005a7bc0	ai_ScrollTownMap	lc	byte	readable		
-exe	0x005a7cd0	ai_UpdateTownMap	lc	draft	readable	deep	
+exe	0x005a7cd0	ai_UpdateTownMap	lc	byte	readable		
 exe	0x005a82f0	ai_CloseMapWindow	lc	byte	readable		
 exe	0x005a8340	ai_SettingRandom	lc	byte	readable		
 exe	0x005a8390	ai_FreeSettingChain	lc	byte	readable		
@@ -4497,7 +4497,7 @@ exe	0x005c26a0	ai_MasterLetterNoticeWindow	lc	byte	readable
 exe	0x005c2730	ai_MasterLetterKindWindow	lc	byte	readable		
 exe	0x005c27b0	ai_MasterHireWindow	lc	byte	readable		
 exe	0x005c2a10	ai_ShowSettingGoods	lc	shape	readable		
-exe	0x005c2b90	ai_MasterLetterSettings	lc	shape	readable		
+exe	0x005c2b90	ai_MasterLetterSettings	lc	byte	readable		
 exe	0x005c3200	ai_MasterLetterWindow	lc	draft	readable	deep	
 exe	0x005c33c0	ai_PassesPartnerFilter	lc	draft	readable	deep	
 exe	0x005c37a0	ai_PassesBuildingFilter	lc	draft	readable	deep	
