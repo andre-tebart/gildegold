@@ -3276,11 +3276,12 @@ void sv_CameraToObject(int b)
     sv_SelectedModel = (int)((AIBLD *)b)->object;
 }
 /* 0x527e90, moves the camera (animated, d3t_PlaceObjectV) to 600 units back along its view from the 3D object
-   m, like sv_FlyCameraToObject for a bare object: no stored view, no selection @deep read whole against 0x527e90..0x528130: the statements, the AxisPair*-600 back vector through the 4x4 rows, the two mean-height placements, the distance-scaled step min(3*step, max(step, len)) and the 5-argument d3t_PlaceObjectV all match (192 vs 192 instructions). Left: allocation only - the height-above-centre temp h gets a low slot ([esp+0x2c]) where the original keeps it at the frame top ([esp+0xb8], frame 0x9c vs ours 0x8c), and with it the second d3t_GetHeightRange's push ecx is scheduled before the pos[1] store (ours 0x527f97) instead of after (0x527fbe); tried h declared first: no change */
+   m, like sv_FlyCameraToObject for a bare object: no stored view, no selection */
 
 void sv_FlyCameraToModel(int m)
 {
-    float h;                        /* the camera height above the centre, then the pull-in factor */
+    float h;                        /* the pull-in factor */
+    D3VECTOR4 up;                   /* the camera above the centre (only its height is used) */
     float pos[4];                   /* the target camera position (a padded vector) */
     float dir[3];                   /* the camera rotation, kept */
     float lo, hi;                   /* the object's height range */
@@ -3306,10 +3307,9 @@ void sv_FlyCameraToModel(int m)
     pos[1] = cen[1] + back[1];
     pos[2] = cen[2] + back[2];
     t = d3t_GetMeanHeight((struct D3VECTOR *)pos);
-    pos[1] = (sv_CameraHeightFar - sv_CameraHeightNear) * sv_CameraHeightFactor + sv_CameraHeightNear + t;
-    h = pos[1] - cen[1];
+    up.y = (pos[1] = (sv_CameraHeightFar - sv_CameraHeightNear) * sv_CameraHeightFactor + sv_CameraHeightNear + t) - cen[1];
     d3t_GetHeightRange((char *)m, &lo, &hi);
-    h = back[1] / ((hi - lo) * 0.5f + h);
+    h = back[1] / ((hi - lo) * 0.5f + up.y);
     pos[0] = pos[0] - (h * back[0] - back[0] * 1.8);
     pos[2] = pos[2] - (h * back[2] - back[2] * 1.8);
     dir[0] = d3_Camera->rotation.x;
