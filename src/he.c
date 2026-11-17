@@ -3426,6 +3426,951 @@ void ai_ShowTributeDelayedNews(int param_1);
 void ai_ShowTributeCollectNews(int param_1);
 void ai_ShowTributeClaimNews(int param_1, int param_2);
 
+/* 0x541b40, the inn meeting ("Stammtisch", see 0x53f430) hears of a table request (cm_ExTableRequest) or of its
+   own run (he_RunStammtisch): `cmd` is a four letter code, inn the inn building, table its table object (kind 0x12d,
+   the four seats), figId the character who joins / leaves. It tells the seated players and the inn's owner (boss)
+   the news 0x1893 .. 0x189d: 'join' (with a full table now), 'leav' (the last one gone; a table that was full tells
+   every other player too), 'cler' (cleared), 'new ' (a new meeting, to every player but the owner), and 'exec'
+   (the meeting is held: every member pays the owner the price of the goods 0x179 + 0x17a, and all the members and
+   the owner rise in each other's relations) */
+void he_StammtischCommand(unsigned cmd, AIBLD *inn, AIOBJ *table, int figId)
+{
+    AICHAR *boss;
+    int n;
+    int total;
+    AICHAR *mem[4];
+    char big[0x400];
+    char s2[0x100];
+    char s1[0x100];
+    AICHAR *fig, *pm, *c;
+    int *seat;
+    int i, j, k, amt;
+
+    n = 0;
+    boss = &ai_CharsT[inn->owner];
+    seat = table->seats;
+    for (i = 4; i != 0; i--, seat++) {
+        pm = (AICHAR *)gm_FindChar(*seat);
+        if (pm != 0)
+            mem[n++] = pm;
+    }
+    switch (cmd) {
+    case 'exec':
+        amt = (int)(gm_GoodsPrice(0x17a, ai_OwnPlayer) + gm_GoodsPrice(0x179, ai_OwnPlayer));
+        total = 0;
+        txt_Format(big, 0x189a, inn, amt);
+        for (j = 0; j < n; j++) {
+            pm = mem[j];
+            cm_SendMoveGoodsUnchecked(boss->netId, pm->netId, ai_OwnPlayer, amt);
+            total += amt;
+            if (pm->kind == 6 || pm->kind == 7)
+                he_MessageBoxQuickjump(pm->netId, -1, big, 0, 0x5ec, inn->id, -1, 0, ch_EmptyName);
+            cm_SendRelations(boss->netId, pm->netId, 3, 1);
+            cm_SendRelations(pm->netId, boss->netId, 3, 1);
+        }
+        if (boss->kind == 6 || boss->kind == 7) {
+            txt_Format(big, 0x1893, inn, total);
+            he_MessageBoxQuickjump(boss->netId, -1, big, 0, 0x5ec, inn->id, -1, 0, ch_EmptyName);
+        }
+        for (i = 0; i < n; i++) {
+            for (j = 0; j < n; j++) {
+                if (i != j) {
+                    cm_SendRelations(mem[i]->netId, mem[j]->netId, 3, 1);
+                    cm_SendRelations(mem[j]->netId, mem[i]->netId, 3, 1);
+                }
+            }
+        }
+        break;
+    case 'cler':
+        txt_Format(big, 0x189d, inn);
+        for (j = 0; j < n; j++) {
+            if (mem[j]->kind == 6 || mem[j]->kind == 7)
+                he_MessageBoxQuickjump(mem[j]->netId, -1, big, 0, 0x5ec, inn->id, -1, 0, ch_EmptyName);
+        }
+        break;
+    case 'join':
+        fig = (AICHAR *)gm_FindChar(figId);
+        if (fig == 0)
+            break;
+        txt_Format(big, 0x189b, inn, fig->id);
+        for (j = 0; j < n; j++) {
+            if (mem[j]->kind == 6 || mem[j]->kind == 7)
+                he_MessageBoxQuickjump(mem[j]->netId, -1, big, 0, 0x5ec, inn->id, -1, 0, ch_EmptyName);
+        }
+        if (boss->kind == 6 || boss->kind == 7) {
+            if (++n == 4) {
+                txt_Format(s1, 0x1894, inn, fig->id);
+                txt_Format(s2, 0x1896);
+                txt_Format(big, "%s%s", s1, s2);
+            } else {
+                txt_Format(big, 0x1894, inn, fig->id);
+            }
+            he_MessageBoxQuickjump(boss->netId, -1, big, 0, 0x5ec, inn->id, -1, 0, ch_EmptyName);
+        }
+        break;
+    case 'leav':
+        fig = (AICHAR *)gm_FindChar(figId);
+        if (fig == 0)
+            break;
+        txt_Format(big, 0x189c, inn, fig->id);
+        for (j = 0; j < n; j++) {
+            if ((mem[j]->kind == 6 || mem[j]->kind == 7) && mem[j]->netId != fig->netId)
+                he_MessageBoxQuickjump(mem[j]->netId, -1, big, 0, 0x5ec, inn->id, -1, 0, ch_EmptyName);
+        }
+        if (boss->kind == 6 || boss->kind == 7) {
+            if (n - 1 == 0) {
+                txt_Format(s1, 0x1895, inn, fig->id);
+                txt_Format(s2, 0x1897);
+                txt_Format(big, "%s%s", s1, s2);
+            } else {
+                txt_Format(big, 0x1895, inn, fig->id);
+            }
+            he_MessageBoxQuickjump(boss->netId, -1, big, 0, 0x5ec, inn->id, -1, 0, ch_EmptyName);
+        }
+        if (n == 4) {
+            txt_Format(big, 0x1899, inn);
+            for (i = 0; i < 768; i++) {
+                c = &ai_CharsT[i];
+                if ((c->kind == 6 || c->kind == 7) && c->netId != boss->netId) {
+                    for (k = 0; k < 4; k++) {
+                        if (c->netId == mem[k]->netId)
+                            break;
+                    }
+                    if (k < 4)
+                        he_MessageBoxQuickjump(c->netId, -1, big, 0, 0x5ec, inn->id, -1, 0, ch_EmptyName);
+                }
+            }
+        }
+        break;
+    case 'new ':
+        txt_Format(big, 0x1898, inn);
+        for (i = 0; i < 768; i++) {
+            c = &ai_CharsT[i];
+            if ((c->kind == 6 || c->kind == 7) && c->netId != boss->netId)
+                he_MessageBoxQuickjump(c->netId, -1, big, 0, 0x5ec, inn->id, -1, 0, ch_EmptyName);
+        }
+        break;
+    }
+}
+/* 0x542100, the run handler of the inn meeting event 0x2a ("Stammtisch", he_AllocStammtisch; its scripts
+   he_StammtischCommand): the inn (innId) must have its table object 0x12d, else it waits 5 minutes. With an inn owner
+   who is alive, not the player and not of kind 0xf: in state 1 the meeting is announced ('new ', the state counted
+   down), else when the meeting time has come it is held ('exec') (before that it waits an hour); either way the next
+   meeting is planned a day ahead at a random hour 0x13 .. 0x16. Without such an owner the table is cleared once
+   ('cler' request, the state raised) and the meeting planned again */
+void he_RunStammtisch(int r)
+{
+    AIJOB *e = (AIJOB *)r;
+    HESTAMMTISCH *m = (HESTAMMTISCH *)r;
+    AIBLD *bld;
+    AIOBJ *table;
+    AICHAR *boss;
+    int cmd[3];
+
+    if (e->stage == -1 || e->stage == -2) {
+        he_FreeEvent((int *)r);
+        return;
+    }
+    if ((e->opts & 4) != 0)
+        return;
+    if (e->exSlot != -1 && cm_GetSlotState(e->exSlot) == 0)
+        return;
+    e->exSlot = -1;
+    gm_FindById(&bld, 0, 0, m->innId);
+    if (bld == 0) {
+        gm_AddTime(&e->end, 0, 5, 0);
+        cm_SendExSetHEI(-1, r);
+        return;
+    }
+    table = (AIOBJ *)gm_Query((void *)bld->objList, 2, 6, 0, 0x12d);
+    if (table == 0) {
+        gm_AddTime(&e->end, 0, 5, 0);
+        cm_SendExSetHEI(-1, r);
+        return;
+    }
+    if (bld->owner != 0xffff && (boss = &ai_CharsT[bld->owner]) != 0 && boss != he_PlayerCh && boss->health != 0
+        && boss->kind != 0xf) {
+        if (m->state == 1) {
+            he_StammtischCommand('new ', bld, table, -1);
+            m->state--;
+            e->end = ai_Time;
+            gm_AddTime(&e->end, 1, 0, 0);
+            m->meeting = ai_Time;
+            gm_AddTime(&m->meeting, 0x18, 0, 0);
+        } else {
+            if (gm_MinutesBetween(&ai_Time, &m->meeting) > 0) {
+                gm_AddTime(&e->end, 1, 0, 0);
+                cm_SendExSetHEI(0, r);
+                return;
+            }
+            he_StammtischCommand('exec', bld, table, -1);
+            e->end = ai_Time;
+            gm_AddTime(&e->end, 1, 0, 0);
+            m->meeting = ai_Time;
+            gm_AddTime(&m->meeting, 0x18, 0, 0);
+        }
+        m->meeting.min = 0;
+        m->meeting.hour = util_Random(4) + 0x13;
+        cm_SendExSetHEI(0, r);
+        return;
+    }
+    if (m->state == 0) {
+        cmd[0] = 'cler';
+        cmd[1] = -1;
+        cmd[2] = bld->id;
+        cm_BeginGroup("stammtisch clear HE");
+        cm_SendTableRequest((G17TABLEMSG *)cmd);
+        cm_EndGroup("stammtisch clear HE");
+        m->state++;
+    }
+    e->end = ai_Time;
+    gm_AddTime(&e->end, 1, 0, 0);
+    m->meeting = ai_Time;
+    gm_AddTime(&m->meeting, 0x18, 0, 0);
+    m->meeting.min = 0;
+    m->meeting.hour = util_Random(4) + 0x13;
+    cm_SendExSetHEI(0, r);
+}
+/* 0x542490, a Ghidra miss (disassembled): the event of the building `from`: sets its end clock to a day ahead at 7:00;
+   with the building gone it is posted again (key -1), else a building without an object of kind 0x1b5 gets one
+   (cm_SendObject1b5, its value all -1) and the event is posted (key 0) */
+void he_AllocTavern(int r)
+{
+    AIJOB *e = (AIJOB *)r;
+    AIBLD *bld = 0;
+    HEOBJ1B5VALUE v;
+
+    if ((e->opts & 4) != 0)
+        return;
+    e->end = ai_Time;
+    gm_AddTime(&e->end, 0x18, 0, 0);
+    e->end.hour = 7;
+    e->end.min = 0;
+    gm_FindById(&bld, 0, 0, e->from);
+    if (bld == 0) {
+        cm_SendExSetHEI(-1, r);
+        return;
+    }
+    if (gm_Query((void *)bld->objList, 1, 0, 0x1b5) == 0) {
+        v.f.c1c = -1;
+        v.f.c1d = -1;
+        v.f.v1e = -1;
+        cm_SendObject1b5(bld->id, v.block);
+    }
+    e->exSlot = -1;
+    cm_SendExSetHEI(0, r);
+}
+
+int ai_ChooseObjectTarget();
+void ai_ShowTavernHelperNews(char *param_1, char *param_2, int param_3);
+
+/* 0x542590, a Ghidra miss (disassembled): the run handler of the tavern event 0x2b of the building `from` (no owner:
+   again in a day at 7:00). Stage 0: an AI owner may hire a helper (ai_ChooseObjectTarget on the tavern's object
+   0x1b5), a player's helper is hired when the object says so (hired): then stage 1 in an hour, else again in a day.
+   Stage 1 waits 1 .. 2 hours. Stage 2: the hired helper is done: its news (ai_ShowTavernHelperNews), the object is
+   reset (no helper), and when the tavern pays out (gm_HandOutMoney) its owner gets the takings (the news 0x19a7 for a
+   player) and the building's field 0x69 the amount; again in a day at 7:00
+   @deep Read whole against the original and rebuilt typed (AIJOB, AIBLD, the tavern object view
+   HETAVERNOBJ, int out[3] whose out[2] gm_HandOutMoney reads as the partner = the helper). Every call,
+   store and branch matches; what is left is VC6's tail merging and scheduling: (1) code hunk at +0x2b8,
+   stage 0's AI branch: ours 'je X; push 0; push 0; lea ecx,[esi+0x52]; push 1; push ecx; jmp' (the hour
+   block inline, the 0x18 block shared), the original 'push 0; push 0; jne X; lea edx,[esi+0x52]; push
+   0x18; push edx; jmp' (the 0x18 block inline, the hour block shared with the player branch); tried the AI
+   / player branch order both ways and the inverted AI condition: those merge more tails (dist 46 / 52).
+   (2) tail at +0x32d: the original jumps from the player's 0x18 block into the shared Send(0) call. (3)
+   order at +0x102: the original loads t->helperId before the three field-value stores (no, none, noId) and
+   out[2] = 0; the prover stops there (a call argument read after other local stores). (size: 6 of the
+   instruction difference are shared / inline tails) */
+void he_RunTavern(int r)
+{
+    AIJOB *e = (AIJOB *)r;
+    AIBLD *bld = 0;
+    HETAVERNOBJ *t;
+    AICHAR *helper;
+    int out[3];
+    unsigned char no, none;
+    int noId;
+    char buf[0x100];
+
+    if (e->stage == -1 || e->stage == -2) {
+        he_FreeEvent((int *)r);
+        return;
+    }
+    if ((e->opts & 4) != 0)
+        return;
+    if (e->exSlot != -1 && cm_GetSlotState(e->exSlot) == 0)
+        return;
+    e->exSlot = -1;
+    gm_FindById(&bld, 0, 0, e->from);
+    if (bld == 0) {
+        cm_SendExSetHEI(-1, r);
+        return;
+    }
+    if (bld->owner == 0xffff) {
+        gm_AddTime(&e->end, 0x18, 0, 0);
+        e->end.hour = 7;
+        cm_SendExSetHEI(0, r);
+        return;
+    }
+    t = (HETAVERNOBJ *)gm_Query((void *)bld->objList, 1, 0, 0x1b5);
+    switch (e->stage) {
+    case 0:
+        if (ai_CharsT[bld->owner].kind == 6 || ai_CharsT[bld->owner].kind == 7) {
+            if (t != 0 && t->hired != 0) {
+                gm_AddTime(&e->end, 1, 0, 0);
+                e->exSlot = cm_SendExSetHEI(1, r);
+                return;
+            }
+            gm_AddTime(&e->end, 0x18, 0, 0);
+            e->end.hour = 7;
+            e->exSlot = cm_SendExSetHEI(0, r);
+            return;
+        }
+        if (t != 0 && ai_ChooseObjectTarget(&ai_CharsT[bld->owner], t) != 0) {
+            gm_AddTime(&e->end, 1, 0, 0);
+            e->exSlot = cm_SendExSetHEI(1, r);
+            return;
+        }
+        gm_AddTime(&e->end, 0x18, 0, 0);
+        e->end.hour = 7;
+        e->exSlot = cm_SendExSetHEI(0, r);
+        return;
+    case 1:
+        gm_AddTime(&e->end, util_RandomU(2) + 1, 0, 0);
+        e->exSlot = cm_SendExSetHEI(2, r);
+        return;
+    case 2:
+        if (t != 0 && t->hired != 0) {
+            no = 0;
+            none = 0xff;
+            noId = -1;
+            out[2] = 0;
+            helper = (AICHAR *)gm_FindChar(t->helperId);
+            if (helper != 0) {
+                out[2] = (int)helper;
+                ai_ShowTavernHelperNews((char *)&ai_CharsT[bld->owner], (char *)helper, (int)bld);
+            }
+            cm_BeginFieldBlock((char *)t, t->objId);
+            cm_AddFieldDelta(1, 1, 0x22, &no);
+            cm_AddFieldDelta(1, 1, 0x1c, &none);
+            cm_AddFieldDelta(1, 1, 0x1d, &none);
+            cm_AddFieldDelta(4, 1, 0x1e, &noId);
+            cm_SendFieldDeltas();
+            if (gm_HandOutMoney(bld, out) != 0) {
+                if (ai_CharsT[bld->owner].kind == 6 || ai_CharsT[bld->owner].kind == 7) {
+                    txt_Format(buf, 0x19a7, out[0], out[1]);
+                    he_ShowNews(ai_CharsT[bld->owner].netId, -1, buf, 0, 0x5ff, ch_EmptyName);
+                }
+                cm_SendMoveGoods(ai_CharsT[bld->owner].netId, -1, ai_OwnPlayer, out[1]);
+                cm_BeginFieldBlock((char *)bld, bld->id);
+                cm_AddFieldDelta(4, 1, 0x69, &out[1]);
+                cm_SendFieldDeltas();
+            }
+        }
+        gm_AddTime(&e->end, 0x18, 0, 0);
+        e->end.hour = 7;
+        e->exSlot = cm_SendExSetHEI(0, r);
+    }
+}
+/* 0x542960, the alloc handler of the offer event 0x2c between the figures partner1 (+0xac) and partner2 (+0xb0):
+   sets the event's end clock to ai_Time and the offer clock (+0xc5) to now + 0x18 units, hour 0xa, minute 0; when
+   opts bit 2 is set it walks the other pending 0x2c offers of the same kind: an offer of the same figure only
+   shows the news 0x1bbe and re-posts this event at once, an older one of another figure moves our clock to its
+   time; at the end the offer is created (cm_SendHandOverCrimes, +0xd4) and the event posted */
+void he_AllocOffer(int ev)
+{
+    AIJOB *e = (AIJOB *)ev;
+    HEOFFER *o = (HEOFFER *)ev;
+    AIJOB *o2;
+    HEOFFER *f2;
+    AICHAR *q, *p;
+    int r;
+    unsigned char fl;
+    char buf[0x100];
+
+    q = (AICHAR *)gm_FindChar(e->partner2);
+    p = (AICHAR *)gm_FindChar(e->partner1);
+    o->clock = ai_Time;
+    gm_AddTime(&o->clock, 0x18, 0, 0);
+    o->clock.hour = 0xa;
+    o->clock.min = 0;
+    e->end = ai_Time;
+    fl = e->opts;
+    if ((fl & 2) != 0) {
+        r = (int)he_FindEvent(1, 0, 0x2c);
+        while (r != 0) {
+            o2 = (AIJOB *)r;
+            f2 = (HEOFFER *)r;
+            if (o2->id != e->id && f2->kind == o->kind) {
+                if (o2->partner1 == e->partner1) {
+                    txt_Format(buf, 0x1bbe, p->id, q->id);
+                    he_ShowNews(p->netId, p->netId, buf, 0, 0x5f5, (char *)0);
+                    e->end = ai_Time;
+                    e->exSlot = cm_SendExSetHEI(-1, ev);
+                    return;
+                }
+                if (o->clock.year <= f2->clock.year) {
+                    o->clock = f2->clock;
+                    gm_AddTime(&o->clock, 0x18, 0, 0);
+                    o->clock.hour = 0xa;
+                    o->clock.min = 0;
+                }
+            }
+            r = (int)he_NextEvent();
+        }
+        o->offer = ((int (*)(int, int, int, int))cm_SendHandOverCrimes)(e->partner1, e->partner2, e->id, 1);
+        e->exSlot = cm_SendExSetHEI(0, ev);
+    }
+}
+/* 0x542b60, a Ghidra miss (disassembled): the run handler of the wedding offer event (see 0x542960; HEOFFER). Stage 0
+   waits for the answer to the offer (cm_GetSlotState of the offer handle: 1 accepted, 2 refused). Accepted: the end
+   clock becomes the offer's clock, the partner and the suitor get the news 0x1bc0 / 0x1bbf ("_NACHRICHTEN_HS_16" /
+   "_NACHRICHTEN_HS_15"), the guests who[3] / who[4] the news 0x1bc1 (HS_11) and who[2] / who[5] the news 0x1bc2
+   (HS_12) when they are players, and the event goes on to stage 1. Refused: the suitor hears 0x1bbe and the event is
+   posted again two minutes on. Stage 1 sends the wedding party (G28REC, kind 2, flags 0xa2, its 5 or 6 members, 45
+   minutes from now, hosted by the player) and posts the event again */
+void he_RunWeddingOffer(int r)
+{
+    AIJOB *e = (AIJOB *)r;
+    HEOFFER *o = (HEOFFER *)r;
+    AICHAR *partner, *suitor, *g2, *g3, *g4, *g5;
+    char ok;
+    G28REC m;
+    char buf[0x200];
+
+    if (e->stage == -1 || e->stage == -2) {
+        he_FreeEvent((int *)r);
+        return;
+    }
+    if ((e->opts & 4) != 0)
+        return;
+    if (e->exSlot != -1 && cm_GetSlotState(e->exSlot) == 0)
+        return;
+    e->exSlot = -1;
+    switch (e->stage) {
+    case 0:
+        ok = cm_GetSlotState(o->offer);
+        if (ok == 0)
+            return;
+        partner = (AICHAR *)gm_FindChar(o->who[1]);
+        suitor = (AICHAR *)gm_FindChar(o->who[0]);
+        g2 = (AICHAR *)gm_FindChar(o->who[2]);
+        g3 = (AICHAR *)gm_FindChar(o->who[3]);
+        g4 = (AICHAR *)gm_FindChar(o->who[4]);
+        g5 = (AICHAR *)gm_FindChar(o->who[5]);
+        if (ok == 1) {
+            e->end = o->clock;
+            if (partner->kind == 6 || partner->kind == 7) {
+                txt_Format(buf, 0x1bc0, suitor->id, &e->end, e->end.hour, g2->id, g3->id, g4->id);
+                he_ShowNews(partner->netId, partner->netId, buf, 0, 0x5f5, "_NACHRICHTEN_HS_16");
+            }
+            if (suitor->kind == 6 || partner->kind == 7) {
+                txt_Format(buf, 0x1bbf, partner->id, &e->end, e->end.hour, g2->id, g3->id, g4->id);
+                he_ShowNews(suitor->netId, suitor->netId, buf, 1, 0x5f5, "_NACHRICHTEN_HS_15");
+            }
+            txt_Format(buf, 0x1bc1, suitor->id, partner->id, &e->end, e->end.hour);
+            if (g3->kind == 6 || g3->kind == 7)
+                he_ShowNews(g3->netId, g3->netId, buf, 0, 0x5f5, "_NACHRICHTEN_HS_11");
+            if (g4->kind == 6 || g4->kind == 7)
+                he_ShowNews(g4->netId, g4->netId, buf, 0, 0x5f5, "_NACHRICHTEN_HS_11");
+            txt_Format(buf, 0x1bc2, suitor->id, partner->id, &e->end, e->end.hour);
+            if (g2->kind == 6 || g2->kind == 7)
+                he_ShowNews(g2->netId, g2->netId, buf, 0, 0x5f5, "_NACHRICHTEN_HS_12");
+            if (g5 != 0 && (g5->kind == 6 || g5->kind == 7))
+                he_ShowNews(g5->netId, g5->netId, buf, 0, 0x5f5, "_NACHRICHTEN_HS_12");
+            cm_SendExSetHEI(1, r);
+            return;
+        }
+        if (ok == 2) {
+            if (suitor->kind == 6 || partner->kind == 7) {
+                txt_Format(buf, 0x1bbe, partner->id);
+                he_ShowNews(suitor->netId, suitor->netId, buf, 0, 0x5f5, 0);
+            }
+            e->end = ai_Time;
+            e->end.min += 2;
+            cm_SendExSetHEI(-1, r);
+        }
+        return;
+    case 1:
+        memset(&m, 0, sizeof(m));
+        m.offerKind = o->kind;
+        m.eventId = e->id;
+        m.members[0] = o->who[0];
+        m.members[1] = o->who[1];
+        m.members[2] = o->who[2];
+        m.members[3] = o->who[3];
+        m.members[4] = o->who[4];
+        m.members[5] = o->who[5];
+        m.used = (o->who[5] != -1) + 5;
+        m.kind = 2;
+        m.flags = 0xa2;
+        m.thing = -1;
+        m.host = ai_CharsT[ai_PlayerId].netId;
+        m.time = ai_Time;
+        gm_AddTime(&m.time, 0, 0x2d, 0);
+        cm_SendNewParty(&m);
+        gm_AddTime(&e->end, 0, 2, 0);
+        e->exSlot = cm_SendExSetHEI(-1, r);
+        return;
+    }
+}
+/* 0x543020, the alloc handler of the quarrel event 0x2e between the figures partner1 (+0xac) and partner2 (+0xb0):
+   re-posts the event in 0x30 units, takes 0x14 relation points of partner2 towards partner1, tells partner1 (news
+   0x175a) and reports the crime (gv_Accuse 0x13, 1, partner2, partner1) with the home building (AICHAR.bld2) id of
+   partner2, else of partner1 */
+
+void he_AllocQuarrel(int ev)
+{
+    AIJOB *e = (AIJOB *)ev;
+    AICHAR *a, *b;
+    AIBLD *t;
+    int id;
+    char buf[0x200];
+    unsigned char fl;
+
+    a = (AICHAR *)gm_FindChar(e->partner1);
+    b = (AICHAR *)gm_FindChar(e->partner2);
+    fl = e->opts;
+    e->exSlot = -1;
+    if ((fl & 2) != 0) {
+        if (a == 0 || b == 0) {
+            e->end = ai_Time;
+            cm_SendExSetHEI(-1, ev);
+        }
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 0x30, 0, 0);
+        cm_SendExSetHEI(0, ev);
+        cm_SendRelations(b->netId, a->netId, -20, 1);
+        if (a->kind == 6 || a->kind == 7) {
+            txt_Format(buf, 0x175a, b->id, b->id);
+            he_ShowNews(a->netId, -1, buf, 0, 0x5fb, (char *)(unsigned)&ch_EmptyName);
+        }
+        t = b->bld2;
+        id = -1;
+        if (t != 0) {
+            id = t->id;
+        } else {
+            t = a->bld2;
+            if (t != 0)
+                id = t->id;
+        }
+        gv_Accuse(0x13, 1, e->partner2, e->partner1, id);
+    }
+}
+/* 0x543180, the run handler of the quarrel event 0x2e: tells partner2 (news 0x175d, message 0x5fa) when its option 2
+   is set, then re-posts the event in one unit (stage 0 only); a missing partner ends it at the current time */
+
+void he_RunQuarrel(int ev)
+{
+    AIJOB *e = (AIJOB *)ev;
+    AICHAR *a, *b;
+    char buf[0x100];
+
+    if (e->stage == -1 || e->stage == -2) {
+        he_FreeEvent((int *)e);
+        return;
+    }
+    if ((e->opts & 4) != 0)
+        return;
+    if (e->exSlot != -1 && cm_GetSlotState(e->exSlot) == 0)
+        return;
+    e->exSlot = -1;
+    a = (AICHAR *)gm_FindChar(e->partner1);
+    b = (AICHAR *)gm_FindChar(e->partner2);
+    if (b == 0 || a == 0) {
+        e->end = ai_Time;
+        e->exSlot = cm_SendExSetHEI(-1, ev);
+        return;
+    }
+    if (e->stage == 0) {
+        if ((e->opts & 2) != 0) {
+            txt_Format(buf, 0x175d, a->id);
+            he_ShowNews(b->netId, -1, buf, 0, 0x5fa, (char *)0);
+        }
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 0, 1, 0);
+        e->exSlot = cm_SendExSetHEI(-1, ev);
+    }
+}
+/* 0x5432f0, a Ghidra miss (disassembled): the run handler of the master exam event ("Meisterpruefung") of the three
+   characters who[0] (the master), who[1] (the one told) and who[2] (the candidate); gone ones end it, and a candidate
+   who is no player skips to stage 2. Stage 0 opens the window "Berufe\Messagebox_Meisterpruefung" (news 0x5ec) with
+   the text 0x1763 and the voice "_NACHRICHTEN_HS_20", due in a day. Stage 1 waits for the answer in that window
+   (d2_ClickedId 0: passed, 1: failed) or for the due time (then stage 2). Stage 2 decides by chance
+   (gm_Mix(who[1], who[0], 4) + a random 0 .. 1 below 1: failed). Passed: who[1] hears 0x1764 and the master's
+   relation to the candidate drops by 20; failed: 0x1765 and who[1] and the candidate drop by 15 each way */
+void he_RunMasterExam(int ev)
+{
+    AIJOB *e = (AIJOB *)ev;
+    HEOFFER *o = (HEOFFER *)ev;
+    AICHAR *p, *q, *r;
+    float f;
+    char buf[0x100];
+
+    p = (AICHAR *)gm_FindChar(o->who[0]);
+    q = (AICHAR *)gm_FindChar(o->who[1]);
+    r = (AICHAR *)gm_FindChar(o->who[2]);
+    if (e->stage == -2 || p == 0 || q == 0 || r == 0) {
+        he_FreeEvent((int *)ev);
+        if (e->slot != 0)
+            he_ReleaseSlot(ev);
+        return;
+    }
+    if (e->stage == -1 || (r->kind != 6 && r->kind != 7))
+        e->stage = 2;
+    switch (e->stage) {
+    case 0:
+        he_OpenEventSlot(ev, 0, 0, "Berufe\\Messagebox_Meisterpruefung", 0x5ec);
+        if (e->slot == 0) {
+            he_FreeEvent((int *)ev);
+            return;
+        }
+        d2_SetForm(e->slot->win, 0);
+        io_PrintText(0x1763, q->id, p->id);
+        e->start = ai_Time;
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 0x18, 0, 0);
+        snd_PlayVoice(-7, 0, "_NACHRICHTEN_HS_20", 0);
+        e->stage++;
+        return;
+    case 1:
+        if (gm_CompareTime(&ai_Time, &e->end) > 0) {
+            he_ReleaseSlot(ev);
+            e->stage = 2;
+            return;
+        }
+        if (d2_ClickedForm != e->slot->win || d2_ClickedId == -1)
+            return;
+        if (d2_ClickedId == 0) {
+            txt_Format(buf, 0x1764, r->id, p->id);
+            he_ShowNews(q->netId, q->netId, buf, 0, 0x5fa, 0);
+            cm_SendRelations(p->netId, r->netId, -20, 1);
+            he_ReleaseSlot(ev);
+            he_FreeEvent((int *)ev);
+            return;
+        }
+        if (d2_ClickedId == 1) {
+            txt_Format(buf, 0x1765, r->id, p->id);
+            he_ShowNews(q->netId, q->netId, buf, 0, 0x5fa, 0);
+            cm_SendRelations(q->netId, r->netId, -15, 1);
+            cm_SendRelations(r->netId, q->netId, -15, 1);
+        }
+        he_ReleaseSlot(ev);
+        he_FreeEvent((int *)ev);
+        return;
+    case 2:
+        f = gm_Mix((int)q, (int)p, 4);
+        if (util_RandomF() + f >= 1.0f) {
+            txt_Format(buf, 0x1764, r->id, p->id);
+            he_ShowNews(q->netId, q->netId, buf, 0, 0x5fa, 0);
+            cm_SendRelations(p->netId, r->netId, -20, 1);
+        } else {
+            txt_Format(buf, 0x1765, r->id, p->id);
+            he_ShowNews(q->netId, q->netId, buf, 0, 0x5fa, 0);
+            cm_SendRelations(q->netId, r->netId, -15, 1);
+            cm_SendRelations(r->netId, q->netId, -15, 1);
+        }
+        he_FreeEvent((int *)ev);
+        return;
+    }
+}
+/* 0x5436a0, the alloc handler of the feast event 0x37 (its run handler he_RunFeast): stage 0, end clock in 0x18
+   units, hour 0x14; with inviteGuests set every guest gets the invitation message 0x36 carrying the feast time and
+   event id (flag 9 for the players, else 1), then the event is posted */
+
+void he_AllocFeast(int ev)
+{
+    AIMSG msg;
+    AIJOB *e = (AIJOB *)ev;
+    AICHAR *c;
+    int *pp;
+    int k;
+    unsigned char fl;
+
+    fl = e->opts;
+    e->stage = 0;
+    if ((fl & 4) == 0) {
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 0x18, 0, 0);
+        e->end.hour = 0x14;
+        e->end.min = 0;
+        if (e->inviteGuests == 1) {
+            pp = e->festGuests;
+            for (k = 4; k != 0; k--, pp++) {
+                c = (AICHAR *)gm_FindChar(*pp);
+                if (c != 0) {
+                    msg.type = 0x36;
+                    msg.to = c->netId;
+                    msg.fromId = -1;
+                    msg.arg[4] = 1;
+                    msg.inviteWhen = e->end;
+                    msg.arg[5] = e->id;
+                    if (c->kind == 6 || c->kind == 7)
+                        msg.flags = 9;
+                    else
+                        msg.flags = 1;
+                    cm_SendLongMessage((char *)&msg);
+                }
+            }
+        }
+        cm_SendExSetHEI(0, ev);
+    }
+}
+
+int ai_EvalFest();
+
+/* 0x5437c0, the run handler of the feast event: the host is the event's character, the guests and the menu /
+   musician picks come from the feast table object (gm_Query kind 0x17) of the building e->from, or from the event's
+   own words when it names no building; a building without a feast table only re-posts the event. Stage 0 has the
+   feast evaluated (ai_EvalFest, sending its effects) and, when that returns 0 for a player host (kind 6 / 7), tells
+   the host the news 0x5fd: the text 0x1787 with the cost, then one line 0x1788 per guest (0x178f + 3 * the guest's
+   verdict + a random 0 .. 2); it re-posts the event, as stage 1 does. The original clears only the group's first
+   4 bytes, and without a building it tests the guests of a null table (*(int *)0x1c ..) before it looks up the
+   event's own guests: both kept
+   @deep reconstructed and read in full against the original (feast event: AIGRP filled from the feast
+   table object kind 0x17 or the event's festGuests, MEM_ZERO inline clear of 4 bytes, switch on stage);
+   same instruction count 261/261, 14 differing. Left: +0x100 the table branch stores essen ([ebp-0x1c])
+   before loading festMusik (mov cl,[esi+0x2d]) where the original loads both first (order); +0x1df the
+   txt_Format(line, 0x1788, id, ...) argument setup: ours mov ecx,[ebp+ebx*8-0x3c]; xor edx,edx; mov
+   dx,[ecx]; lea eax,line vs the original xor ecx,ecx; mov eax,[ebp+ebx*8-0x3c]; lea edx,line; mov cx,[eax]
+   (registers eax/ecx/edx permuted, same pushes); tried the arguments' term order (no change) */
+void he_RunFeast(int ev)
+{
+    AIJOB *e = (AIJOB *)ev;
+    AIBLD *bld = 0;
+    AIOBJ *table = 0;
+    AICHAR *c;
+    int k, n;
+    AIGRP g;
+    char text[0x800];
+    char line[0xec];
+    G28REC party;
+
+    if (e->stage == -2 || e->stage == -1) {
+        he_FreeEvent((int *)ev);
+        return;
+    }
+    if (e->opts & 4)
+        return;
+    gm_FindById(&bld, 0, 0, e->from);
+    if (bld != 0 && (table = (AIOBJ *)gm_Query((void *)bld->objList, 1, 0, 0x17)) == 0) {
+        e->end = ai_Time;
+        cm_SendExSetHEI(-1, ev);
+        return;
+    }
+    switch (e->stage) {
+    case 0:
+        MEM_ZERO(&g, 4);
+        n = 0;
+        g.leader = (struct AIC4 *)&ai_CharsT[e->chr];
+        if (table != 0) {
+            g.essen = table->festEssen;
+            g.musik = table->festMusik;
+            for (k = 0; k < 4; k++) {
+                if (table->festGuests[k] != -1 && (c = (AICHAR *)gm_FindChar(table->festGuests[k])) != 0)
+                    g.mem[n++].ch = (struct AIC4 *)c;
+            }
+        } else {
+            g.essen = e->festEssen;
+            g.musik = e->festMusik;
+            for (k = 0; k < 4; k++) {
+                if (table->festGuests[k] != -1 && (c = (AICHAR *)gm_FindChar(e->festGuests[k])) != 0)
+                    g.mem[n++].ch = (struct AIC4 *)c;
+            }
+        }
+        g.n = (unsigned char)n;
+        if (ai_EvalFest(&g, 1) == 0
+            && (((AICHAR *)g.leader)->kind == 6 || ((AICHAR *)g.leader)->kind == 7)) {
+            txt_Format(text, 0x1787, g.cost);
+            for (k = 0; k < g.n; k++) {
+                txt_Format(line, 0x1788, ((AICHAR *)g.mem[k].ch)->id, util_RandomU(3) + 0x178f + g.mem[k].d * 3);
+                strcat(text, line);
+            }
+            he_ShowNews(((AICHAR *)g.leader)->netId, -1, text, 0x20, 0x5fd, ch_EmptyName);
+        }
+        e->end = ai_Time;
+        cm_SendExSetHEI(-1, ev);
+        return;
+    case 1:
+        e->end = ai_Time;
+        cm_SendExSetHEI(-1, ev);
+        return;
+    }
+}
+
+int ai_MasterExamPassed();
+
+/* 0x543ac0, a Ghidra miss (disassembled): the run handler of the master exam at a feast (kind 0x36). The examiner is
+   the owner of the building e->from, the guests read from its feast table object (gm_Query kind 0x17), or (examAt 1)
+   the host of the feast event examFeast (kind 0x37) with that event's guests; the candidate is the event's character,
+   and one who is no player (kind 6 / 7) skips to stage 2. Stage 0 opens the window
+   "Berufe\Messagebox_Meisterpruefung" (news 0x5ec) with the text 0x1770 / 0x1771 and the voice "_NACHRICHTEN_HS_28",
+   due in a day. Stage 1 waits for the answer in that window (d2_ClickedId 0: passed, 1: failed) or for the due time
+   (then stage 2); stage 2 decides by ai_MasterExamPassed. Passed: the examiner hears 0x1785; failed: the candidate
+   leaves the feast's guests (the table's field, or the feast event re-posted) and the examiner hears 0x1786; either
+   only while the candidate is a guest. The text 0x1771 reads the owner of a null building: kept as the original
+   @deep reconstructed and read in full against the original (all 4 search loops, the field delta / feast
+   re-post on failure, the 0x1785 / 0x1786 news, the stage 0 window and texts, the 0x200 buffer). The
+   calls, stores and branches match per path; what differs is tail merging: the original reloads ev from
+   its argument slot (mov edx/esi, [esp+0x220]) before the closing he_FreeEvent / he_ReleaseSlot of the
+   stage 1 / 2 paths, so their tails are identical and cross-jumped (stage 1 not-found exits jmp +0x479,
+   the news calls share +0x471 / +0x295), where ours keeps ev in esi on the passed paths and duplicates
+   each return block (returns 13/9, txt_Format x4 vs x3, he_ShowNews x4 vs x2). Hunks: code at +0xf8 (mov
+   ecx,eax: master kept in a register), +0x172/+0x19b/+0x386/+0x3b5 (duplicated return blocks), +0x1ba (the
+   0x1785 news not cross-jumped into the 0x1786 one), +0x404 (the stage 1 news tail), +0x53e/+0x578 (the
+   ai_Time copies into start / end: regs + order) (size: 539 vs 485 instructions, explained: 54
+   instructions: four duplicated return blocks (push ev; call he_FreeEvent [; he_ReleaseSlot]; four pops;
+   add esp; ret, ~8-10 each) and two news sequences (txt_Format + he_ShowNews, ~16 each) that the original
+   cross-jumps because it reloads ev from the argument slot on those paths: allocation, not statements) */
+void he_RunFeastExam(int ev)
+{
+    AIJOB *e = (AIJOB *)ev;
+    AIBLD *bld = 0;
+    AIOBJ *table = 0;
+    AIJOB *feast = 0;
+    AICHAR *master, *cand;
+    int i, none;
+    char buf[0x200];
+
+    if (e->stage == -1 || e->stage == -2)
+        goto fail;
+    if (e->examAt == 0) {
+        gm_FindById(&bld, 0, 0, e->from);
+        if (bld == 0)
+            goto fail;
+        table = (AIOBJ *)gm_Query((void *)bld->objList, 1, 0, 0x17);
+        if (table == 0 || bld->owner == 0xffff)
+            goto fail;
+        master = &ai_CharsT[bld->owner];
+        if (master == 0)
+            goto fail;
+    } else if (e->examAt == 1) {
+        feast = (AIJOB *)he_FindEvent(2, 1, e->examFeast, 0, 0x37);
+        if (feast == 0)
+            goto fail;
+        master = &ai_CharsT[feast->chr];
+        if (master == 0)
+            goto fail;
+    } else {
+        goto done;
+    }
+    cand = &ai_CharsT[e->chr];
+    if (cand->kind != 6 && cand->kind != 7)
+        e->stage = 2;
+    switch (e->stage) {
+    case 0:
+        he_OpenEventSlot(ev, 0, 0, "Berufe\\Messagebox_Meisterpruefung", 0x5ec);
+        if (e->slot == 0)
+            goto done;
+        d2_SetForm(e->slot->win, 0);
+        if (e->examAt == 0)
+            io_PrintText(0x1770, bld->owner, cand->id, e->examText, bld, master->id, cand->id);
+        else
+            io_PrintText(0x1771, bld->owner, cand->id, e->examText, master->id, cand->id);
+        e->start = ai_Time;
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 0x18, 0, 0);
+        snd_PlayVoice(-7, 0, "_NACHRICHTEN_HS_28", 0);
+        e->stage++;
+        return;
+    case 1:
+        if (gm_CompareTime(&ai_Time, &e->end) > 0) {
+            he_ReleaseSlot(ev);
+            e->stage++;
+            return;
+        }
+        if (d2_ClickedForm != e->slot->win)
+            return;
+        none = -1;
+        if (d2_ClickedId == -1)
+            return;
+        if (d2_ClickedId == 0) {
+            if (e->examAt == 0) {
+                for (i = 0; i < 4; i++)
+                    if (table->festGuests[i] == cand->netId)
+                        break;
+            } else {
+                for (i = 0; i < 4; i++)
+                    if (feast->festGuests[i] == cand->netId)
+                        break;
+            }
+            if (i < 4) {
+                txt_Format(buf, 0x1785, cand->id);
+                he_ShowNews(master->netId, -1, buf, 0, 0x5ec, 0);
+            }
+        } else if (d2_ClickedId == 1) {
+            if (e->examAt == 0) {
+                for (i = 0; i < 4; i++)
+                    if (table->festGuests[i] == cand->netId) {
+                        cm_BeginFieldBlock((char *)table, table->objId);
+                        cm_AddFieldDelta(4, 1, 0x1c + i * 4, &none);    /* table->festGuests[i] = -1 */
+                        cm_SendFieldDeltas();
+                        break;
+                    }
+            } else {
+                for (i = 0; i < 4; i++)
+                    if (feast->festGuests[i] == cand->netId) {
+                        feast->festGuests[i] = -1;
+                        cm_SendExSetHEI(0, ev);
+                        break;
+                    }
+            }
+            if (i < 4) {
+                txt_Format(buf, 0x1786, cand->id);
+                he_ShowNews(master->netId, -1, buf, 0, 0x5ec, 0);
+            }
+        }
+        he_ReleaseSlot(ev);
+        he_FreeEvent((int *)ev);
+        return;
+    case 2:
+        if (ai_MasterExamPassed(master, cand) == 1) {
+            if (e->examAt == 0) {
+                for (i = 0; i < 4; i++)
+                    if (table->festGuests[i] == cand->netId)
+                        break;
+            } else {
+                for (i = 0; i < 4; i++)
+                    if (feast->festGuests[i] == cand->netId)
+                        break;
+            }
+            if (i < 4) {
+                txt_Format(buf, 0x1785, cand->id);
+                he_ShowNews(master->netId, -1, buf, 0, 0x5ec, 0);
+            }
+        } else {
+            none = -1;
+            if (e->examAt == 0) {
+                for (i = 0; i < 4; i++)
+                    if (table->festGuests[i] == cand->netId) {
+                        cm_BeginFieldBlock((char *)table, table->objId);
+                        cm_AddFieldDelta(4, 1, 0x1c + i * 4, &none);    /* table->festGuests[i] = -1 */
+                        cm_SendFieldDeltas();
+                        break;
+                    }
+            } else {
+                for (i = 0; i < 4; i++)
+                    if (feast->festGuests[i] == cand->netId) {
+                        feast->festGuests[i] = -1;
+                        cm_SendExSetHEI(0, ev);
+                        break;
+                    }
+            }
+            if (i < 4) {
+                txt_Format(buf, 0x1786, cand->id);
+                he_ShowNews(master->netId, -1, buf, 0, 0x5ec, 0);
+            }
+        }
+        he_FreeEvent((int *)ev);
+        return;
+    }
+    return;
+fail:
+    if (e->slot != 0)
+        he_ReleaseSlot(ev);
+done:
+    he_FreeEvent((int *)ev);
+}
 /* 0x544070, a Ghidra miss (disassembled): the alloc handler of the tribute event 0x35, once it is started (opts bit 4
    clear). Without its collector (idbc) the event is re-posted; with more than four tribute events running it is
    re-posted and the event's character hears the delay (ai_ShowTributeDelayedNews). Else it runs from now to a day
@@ -3854,6 +4799,672 @@ void he_RunCourtship(int ev)
         he_FreeEvent((int *)ev);
     }
 }
+/* 0x5455e0, the alloc handler of the random-message event 0x42 (ai_PostRandomMessages wraps a random message in
+   it): the due clock is now at a random hour 10 .. 19, minute 0 .. 0x3a and second 0 */
+
+void he_AllocRandomMessage(int ev)
+{
+    AIJOB *e = (AIJOB *)ev;
+
+    e->end = ai_Time;
+    e->end.hour = (short)(util_Random(10) + 10);
+    e->end.min = (unsigned short)util_Random(0x3b);
+    e->end.sec = 0;
+}
+/* 0x545640, the run handler of the random-message event 0x42: runs the message it wraps (a G14MSG at 0xac) unless
+   the event is cancelled (stage -2), then frees the event record */
+void he_RunRandomMessage(int ev)
+{
+    AIJOB *e = (AIJOB *)ev;
+
+    if (e->stage != -2)
+        ai_RunMessage(&e->u.id);
+    he_FreeEvent((int *)e);
+}
+/* 0x545670, a Ghidra miss (disassembled): the alloc handler of the patrol event 0x43, once it is started (opts bit
+   4 clear): the start clock is now; of the buildings of kind 6 (gm_BuildQuery 1, 6) up to 8 with a scene object,
+   other than the target and the start and not of type 0x47, within 950 of the target's object are collected, and
+   up to four of them in a random order (gm_Shuffled) become its way (patrolWay, else -1); prints the
+   "STREIFE_INIT" line (not shown), its first step is due in a second, and it is posted with key 0 */
+void he_AllocPatrol(int ev)
+{
+    AIJOB *e = (AIJOB *)ev;
+    AIBLD *target, *b;
+    D3OBJECT *p, *q;
+    int cand[8];
+    int pick[8];
+    char buf[0x100];
+    int n = 0;
+    int k;
+    float dx, dy, dz, dist;
+
+    if (e->opts & 4)
+        return;
+    e->start = ai_Time;
+    memset(cand, -1, sizeof(cand));
+    target = (AIBLD *)gm_BuildQuery(1, 1, e->patrolTarget);
+    for (b = (AIBLD *)gm_BuildQuery(1, 6); b != 0; b = (AIBLD *)gm_BuildNext()) {
+        if (n >= 8)
+            break;
+        p = (D3OBJECT *)b->object;
+        if (p != 0 && b->id != target->id && b->id != e->patrolStart && b->type != 0x47) {
+            q = (D3OBJECT *)target->object;
+            dx = p->pos.x - q->pos.x;
+            dy = p->pos.y - q->pos.y;
+            dz = p->pos.z - q->pos.z;
+            dist = (float)sqrt(dx * dx + dy * dy + dz * dz);
+            if (dist <= 950.0f)
+                cand[n++] = b->id;
+        }
+    }
+    if (n != 0) {
+        memset(e->patrolWay, -1, sizeof(e->patrolWay));
+        gm_Shuffled((unsigned char)n, pick);
+        for (k = 0; k < n && k < 4; k++)
+            e->patrolWay[k] = cand[pick[k]];
+    }
+    sprintf(buf, "STREIFE_INIT: Target: %i, Way: %i, %i, %i, %i, Start: %i", e->patrolTarget, e->patrolWay[0],
+            e->patrolWay[1], e->patrolWay[2], e->patrolWay[3], e->patrolStart);
+    e->end = ai_Time;
+    gm_AddTime(&e->end, 0, 0, 1);
+    e->patrolStep = 0;
+    e->patrolRound = 0;
+    e->patrolWait = -1;
+    e->exSlot = cm_SendExSetHEI(0, ev);
+}
+/* 0x545840, a Ghidra miss (disassembled): the run handler of the patrol event 0x43 (he_AllocPatrol); each stage
+   posts the next one with cm_SendExSetHE, due after gm_AddTime (hours, minutes, seconds). While none of the four
+   patrolGuards is found the event is put off a minute and ends (-1). Stage -2 runs stage 1 once and frees the event;
+   a set patrolWait enters stage 0x400. Stage 0 sends the guards with a scene character to the target building
+   ("Streife"; "GOTO_TARGET: %i", not shown; the others are dropped) -> 2; stage 2 / 0x400 wait while a guard's
+   scene character has actions queued (0x400 looks every 4 minutes and clears patrolWait) -> 3; stage 3 sends them
+   to the next way point (patrolStep) with a random gesture ("gestik/..." once or twice; "GOTO_NEXT: %i") -> 2, past
+   the last one counts patrolRound and starts at the target again -> 0, and 8 hours (0x1e0 minutes) after the start
+   turns home -> 1; stage 1 sends them to the start building's object 0x146 and pays the event's character for
+   each guard 3 .. 6 rolls of random(v * (v + 1)) + 2v, v = sk82 / 42 + 1 (gm_PlayerFactor of the sum: the news
+   0x1a6a and cm_SendMoveGoods; "GOTO_START: %i") -> -1, the end; a building not found ends it as well */
+void he_RunPatrol(int ev)
+{
+    AIJOB *e = (AIJOB *)ev;
+    AIBLD *b;
+    AIOBJ *o;
+    AICHAR *c;
+    char line[0x40];
+    char text[0x200];
+    int i, k, v, pay;
+    int gone = 0, leaving = 0, paid, sum;
+
+    if (e->stage == -1) {
+        he_FreeEvent((int *)ev);
+        return;
+    }
+    if (e->opts & 4) {
+        if (e->stage == -2)
+            he_FreeEvent((int *)ev);
+        return;
+    }
+    for (i = 0; i < 4; i++) {
+        if (gm_FindChar(e->patrolGuards[i]) != 0)
+            break;
+        gone++;
+    }
+    if (gone == 4) {
+        gm_AddTime(&e->end, 0, 1, 0);
+        e->exSlot = cm_SendExSetHEI(-1, ev);
+        return;
+    }
+    if (e->stage == -2) {
+        leaving = 1;
+        e->stage = 1;
+    }
+    if (e->patrolWait != -1)
+        e->stage = 0x400;
+    switch (e->stage) {
+    case 0:
+        b = (AIBLD *)gm_BuildQuery(1, 1, e->patrolTarget);
+        if (b == 0) {
+            e->end = ai_Time;
+            gm_AddTime(&e->end, 0, 1, 0);
+            e->exSlot = cm_SendExSetHEI(-1, ev);
+            return;
+        }
+        for (i = 0; i < 4; i++) {
+            if (e->patrolGuards[i] == -1)
+                continue;
+            c = (AICHAR *)gm_FindChar(e->patrolGuards[i]);
+            if (c != 0 && c->scene != 0) {
+                sv_MoveToGroup(0, 0, c->id, ev);
+                cm_SendChrStop(e->patrolGuards[i]);
+                cm_SendChrGotoBuilding(e->patrolGuards[i], b->id, -1, 0, 1, "Streife");
+            } else {
+                e->patrolGuards[i] = -1;
+            }
+        }
+        sprintf(line, "GOTO_TARGET: %i", b->id);
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 0, 2, 0);
+        e->exSlot = cm_SendExSetHEI(2, ev);
+        return;
+    case 1:
+        b = (AIBLD *)gm_BuildQuery(1, 1, e->patrolStart);
+        if (b == 0) {
+            e->end = ai_Time;
+            gm_AddTime(&e->end, 0, 1, 0);
+            e->exSlot = cm_SendExSetHEI(-1, ev);
+            return;
+        }
+        o = (AIOBJ *)gm_Query((void *)b->objList, 1, 0, 0x146);
+        paid = 0;
+        sum = 0;
+        for (i = 0; i < 4; i++) {
+            if (e->patrolGuards[i] == -1)
+                continue;
+            c = (AICHAR *)gm_FindChar(e->patrolGuards[i]);
+            if (c != 0 && c->scene != 0) {
+                v = (int)((float)c->sk82 * 0.023809524f + 1.0f);
+                for (k = (unsigned short)util_Random(4) + 3; k > 0; k--)
+                    sum += (unsigned short)util_Random((v + 1) * v) + v * 2;
+                paid++;
+                cm_SendChrStop(e->patrolGuards[i]);
+                cm_SendChrGotoBuilding(e->patrolGuards[i], b->id, o->objId, 0, 0, "Streife");
+                sv_MoveToGroup(0, 0, c->id, ev);
+            } else {
+                e->patrolGuards[i] = -1;
+            }
+        }
+        if (leaving) {
+            he_FreeEvent((int *)ev);
+            return;
+        }
+        if (paid != 0) {
+            pay = gm_PlayerFactor(sum, ai_OwnPlayer);
+            txt_Format(text, 0x1a6a, pay);
+            he_MessageBoxQuickjump(ai_CharInts[e->chr][0], -1, text, 0, 0x5ec, b->id, -1, 0, (char *)0);
+            cm_SendMoveGoods(ai_CharInts[e->chr][0], -1, ai_OwnPlayer, pay);
+        }
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 0, 2, 0);
+        e->exSlot = cm_SendExSetHEI(-1, ev);
+        sprintf(line, "GOTO_START: %i", b->id);
+        return;
+    case 2:
+        for (i = 0; i < 4; i++) {
+            if (e->patrolGuards[i] != -1 && (c = (AICHAR *)gm_FindChar(e->patrolGuards[i])) != 0 && c->scene != 0
+                && c->scene->actions != 0)
+                return;
+        }
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 0, 2, 0);
+        e->exSlot = cm_SendExSetHEI(3, ev);
+        return;
+    case 0x400:
+        for (i = 0; i < 4; i++) {
+            if (e->patrolGuards[i] != -1 && (c = (AICHAR *)gm_FindChar(e->patrolGuards[i])) != 0 && c->scene != 0
+                && c->scene->actions != 0) {
+                gm_AddTime(&e->end, 0, 4, 0);
+                e->exSlot = cm_SendExSetHEI(0x400, ev);
+                return;
+            }
+        }
+        e->end = ai_Time;
+        e->patrolWait = -1;
+        gm_AddTime(&e->end, 0, 2, 0);
+        e->exSlot = cm_SendExSetHEI(3, ev);
+        return;
+    case 3:
+        if (e->patrolStep <= 3 && e->patrolWay[e->patrolStep] != -1) {
+            if (gm_MinutesBetween(&e->start, &ai_Time) > 0x1e0) {
+                e->end = ai_Time;
+                gm_AddTime(&e->end, 0, 2, 0);
+                e->exSlot = cm_SendExSetHEI(1, ev);
+                return;
+            }
+            b = (AIBLD *)gm_BuildQuery(1, 1, e->patrolWay[e->patrolStep]);
+            e->patrolStep++;
+            if (b == 0) {
+                e->end = ai_Time;
+                gm_AddTime(&e->end, 0, 2, 0);
+                e->exSlot = cm_SendExSetHEI(1, ev);
+                return;
+            }
+            for (i = 0; i < 4; i++) {
+                if (e->patrolGuards[i] == -1)
+                    continue;
+                c = (AICHAR *)gm_FindChar(e->patrolGuards[i]);
+                if (c != 0 && c->scene != 0) {
+                    char gestures[3][0x20] = { "gestik/kopf_kratzen", "gestik/durch_haar_fahr", "gestik/kinn_kratzen" };
+
+                    sv_MoveToGroup(0, 0, c->id, ev);
+                    cm_SendChrStop(e->patrolGuards[i]);
+                    cm_SendChrGotoBuilding(e->patrolGuards[i], b->id, -1, 0, 1, "Streife");
+                    k = (unsigned short)util_Random(2) + 1;
+                    cm_SendChrAnim(e->patrolGuards[i], gestures[(unsigned short)util_Random(3)], k);
+                } else {
+                    e->patrolGuards[i] = -1;
+                }
+            }
+            e->end = ai_Time;
+            gm_AddTime(&e->end, 0, 2, 0);
+            e->exSlot = cm_SendExSetHEI(2, ev);
+            sprintf(line, "GOTO_NEXT: %i", b->id);
+            return;
+        }
+        if (gm_MinutesBetween(&e->start, &ai_Time) > 0x1e0) {
+            e->end = ai_Time;
+            gm_AddTime(&e->end, 0, 2, 0);
+            e->exSlot = cm_SendExSetHEI(1, ev);
+            return;
+        }
+        e->patrolStep = 0;
+        e->patrolRound++;
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 0, 2, 0);
+        e->exSlot = cm_SendExSetHEI(0, ev);
+        return;
+    }
+}
+/* 0x546100, the alloc handler of the raid event 0x44 ("Razzia", its run handler he_RunRaid): when it runs when due
+   and its target building (gm_BuildQuery kind 1) is gone, it ends the event at once; either way it posts the event
+   again in a second */
+
+void he_AllocRaid(int ev)
+{
+    AIJOB *e = (AIJOB *)ev;
+
+    if ((e->opts & 2) != 0) {
+        if (gm_BuildQuery(1, 1, e->raidTarget) == 0) {
+            e->end = ai_Time;
+            gm_AddTime(&e->end, 0, 0, 1);
+            e->exSlot = cm_SendExSetHEI(-1, ev);
+        }
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 0, 0, 1);
+        e->exSlot = cm_SendExSetHEI(0, ev);
+    }
+}
+/* 0x5461c0, a Ghidra miss (disassembled): the run handler of the raid event 0x44 ("Razzia"; the raiders are ids[],
+   the buildings raidTarget / raidStart). It waits for the event's cm send slot (exSlot); stage -2 (left) runs
+   stage 1 once and frees the event. Stage 0 sends the raiders to the target ("Razzia"; the others are dropped) -> 2,
+   while the target has an owner, else the event ends (-1, as when a building is not found); stage 2 waits until no
+   raider's scene character has actions queued -> 3; stage 3 rolls random(0x4b) + 100 * the start building's spy
+   report on the target (its object 0xca: (100 + reportKnow) / 100, 5 with gm_AllowAll) against 125 * (1 + 0.01 *
+   gm_BuildingSkill(target, 5, 1)): above it a fight party of kind 3 (G28REC.raid: the target's living
+   people against the raiders, half an hour on) is posted -> 4, but with no defender or no raider the target
+   is looted (cm_LootStock, the news 0x1c54 / 0x1c55 to the players among owner and raider) -> 1; not above it
+   the raid fails (the news 0x114b with the start building's fight role, 0x1c56 to a player owner) -> -1;
+   stage 4 waits for the party's slot and keeps its id -> 5, stage 5 until the party is over -> 1; stage 1
+   (only with opts 2) sends the living raiders back to the start building's object 0x146 -> -1; stage -1
+   sends them to its main room and frees the event. The opts tests of the stages 0 and 2 are
+   @original `(opts == 0) & 2`, never true.
+   @deep Read whole against the original and fixed: stage -1 last in the switch (table equal), text[0x800]
+   (frame 0x924 equal), the party lists initialised -1 (G28REC.raid), the defenders scan as an index loop
+   over ai_Chars (signed jl, health && bld == the target), the start building queried into its own temp
+   before gm_Query 0xca, the spy-report search as for/break + if, the failure branch's kind tests re-read
+   ai_Chars[b->owner]; 826 vs 825 instructions. Left: scheduling and allocation only: the entry (ours mov
+   edi,1 before the 1.0f store, the original stores 1.0f first and keeps 1 in ebp: edi->ebp throughout),
+   the -1 of raid100 in ebp (ours) vs eax (+0x546704), the party.time copy loads in another register order
+   (+0x546775), the cm_LootStock / he_MessageBoxQuickjump / he_ShowNews argument address computations
+   interleaved with the pushes in another order (+0x546813..+0x54691c: the same lea chains,
+   ai_Chars[b->owner] pushed at once in the original); the prover stops at the switch jump (references: M8
+   at +0x5af: ours refers to ai_Time+0x4 (0x770ae4), the original's field to 0x770ae0 (ai_Time) (and 1
+   more), explained: the two ref: M8 lines (+0x5b5 / +0x5ba) are the party.time copy of ai_Time loaded in
+   another register order (ours eax=[+4], edx=[+0], ecx=[+8]; the original ecx=[+4], eax=[+0], edx=[+8]):
+   the alignment pairs different loads, the same four words are copied to party.time) */
+void he_RunRaid(int ev)
+{
+    AIJOB *e = (AIJOB *)ev;
+    AIBLD *b, *home;
+    AICHAR *c, *raider;
+    AIOBJ *o;
+    G28REC party;
+    char text[0x800];
+    int i, n, k, loot, role;
+    int leaving = 0, idle = 1;
+    float chance = 1.0f, defence;
+
+    if (e->stage == -2) {
+        if ((e->opts & 2) == 0) {
+            he_FreeEvent((int *)ev);
+            return;
+        }
+        leaving = 1;
+        e->stage = 1;
+    }
+    if (e->exSlot != -1 && cm_GetSlotState(e->exSlot) == 0)
+        return;
+    e->exSlot = -1;
+    switch (e->stage) {
+    case 0:
+        if ((e->opts == 0) & 2)
+            return;
+        b = (AIBLD *)gm_BuildQuery(1, 1, e->raidTarget);
+        if (b == 0 || b->owner == 0xffff) {
+            e->end = ai_Time;
+            gm_AddTime(&e->end, 0, 1, 0);
+            e->exSlot = cm_SendExSetHEI(-1, ev);
+            return;
+        }
+        for (i = 0; i < 8; i++) {
+            if (e->ids[i] == -1)
+                continue;
+            c = (AICHAR *)gm_FindChar(e->ids[i]);
+            if (c != 0) {
+                sv_MoveToGroup((unsigned char *)b, 0, c->id, (char *)ev);
+                cm_SendChrStop(e->ids[i]);
+                cm_SendChrGotoBuilding(e->ids[i], b->id, -1, 0, 0, "Razzia");
+            } else {
+                e->ids[i] = -1;
+            }
+        }
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 0, 2, 0);
+        e->exSlot = cm_SendExSetHEI(2, ev);
+        return;
+    case 1:
+        if ((e->opts & 2) == 0)
+            return;
+        home = (AIBLD *)gm_BuildQuery(1, 1, e->raidStart);
+        if (home == 0) {
+            e->end = ai_Time;
+            gm_AddTime(&e->end, 0, 1, 0);
+            e->exSlot = cm_SendExSetHEI(-1, ev);
+            return;
+        }
+        o = (AIOBJ *)gm_Query((void *)home->objList, 1, 0, 0x146);
+        for (i = 0; i < 8; i++) {
+            if (e->ids[i] == -1)
+                continue;
+            c = (AICHAR *)gm_FindChar(e->ids[i]);
+            if (c != 0 && c->health > 0) {
+                cm_SendChrStop(e->ids[i]);
+                cm_SendChrGotoBuilding(e->ids[i], home->id, o->objId, 0, 0, "Razzia");
+                sv_MoveToGroup((unsigned char *)home, 0, c->id, (char *)ev);
+            } else {
+                e->ids[i] = -1;
+            }
+        }
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 0, 2, 0);
+        if (leaving) {
+            he_FreeEvent((int *)ev);
+            return;
+        }
+        e->exSlot = cm_SendExSetHEI(-1, ev);
+        return;
+    case 2:
+        if ((e->opts == 0) & 2)
+            return;
+        for (i = 0; i < 8; i++) {
+            if (e->ids[i] != -1 && (c = (AICHAR *)gm_FindChar(e->ids[i])) != 0 && c->scene->actions != 0) {
+                idle = 0;
+                break;
+            }
+        }
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 0, 2, 0);
+        if (idle)
+            e->exSlot = cm_SendExSetHEI(3, ev);
+        else
+            e->exSlot = cm_SendExSetHEI(2, ev);
+        return;
+    case 3:
+        if ((e->opts & 2) == 0)
+            return;
+        b = (AIBLD *)gm_BuildQuery(1, 1, e->raidTarget);
+        c = &ai_CharsT[b->owner];
+        raider = &ai_CharsT[e->chr];
+        defence = (float)(gm_BuildingSkill(b, 5, 1) * 0.01 + 1.0);
+        home = (AIBLD *)gm_BuildQuery(1, 1, e->raidStart);
+        o = (AIOBJ *)gm_Query((void *)home->objList, 1, 0, 0xca);
+        for (; o != 0; o = (AIOBJ *)gm_QueryNext())
+            if (o->reportBld == b->id)
+                break;
+        if (o != 0)
+            chance = (float)((o->reportKnow + 100.0) * 0.01);
+        if (gm_AllowAll != 0)
+            chance = 5.0f;
+        if ((float)(unsigned short)util_Random(0x4b) + chance * 100.0f > defence * 125.0f) {
+            memset(&party, 0, sizeof(party));
+            party.kind = 3;
+            party.flags = 0xa2;
+            party.thing = b->id;
+            party.host = ai_CharInts[ai_PlayerId][0];
+            party.used = 2;
+            party.variant = 2;
+            party.members[0] = raider->netId;
+            party.members[1] = c->netId;
+            for (i = 0; i < 16; i++) {
+                party.raid.raiders[i] = -1;
+                party.raid.defenders[i] = -1;
+            }
+            n = 0;
+            for (i = 0; i < 768 && n < 16 && n < 6; i++) {
+                if (ai_CharsT[i].health != 0 && ai_CharsT[i].bld == b) {
+                    party.raid.defenders[n] = ai_CharsT[i].netId;
+                    n++;
+                }
+            }
+            party.raid.raid100[0] = -1;
+            party.raid.raid100[1] = -1;
+            party.raid.raid100[2] = -1;
+            party.raid.raidHome = ((AIBLD *)gm_BuildQuery(1, 1, e->raidStart))->id;
+            k = 0;
+            for (i = 0; i < 8 && k < 6; i++) {
+                if (e->ids[i] != -1) {
+                    party.raid.raiders[k] = e->ids[i];
+                    k++;
+                }
+            }
+            if (k != 0 && n != 0) {
+                party.time = ai_Time;
+                gm_AddTime(&party.time, 0, 0x1e, 0);
+                e->raidSlot = cm_SendNewParty(&party);
+                e->end = ai_Time;
+                gm_AddTime(&e->end, 0, 0, 1);
+                e->stage = 4;
+                return;
+            }
+        } else {
+            role = cm_FightRole(gm_BuildQuery(1, 1, e->raidStart)) + 0x1125;
+            txt_Format(text, 0x114b, role, b->owner, b, role);
+            he_ShowNews(ai_CharInts[e->chr][0], -1, text, 0, 0x5f0, (char *)0);
+            if (ai_CharsT[b->owner].kind == 6 || ai_CharsT[b->owner].kind == 7) {
+                txt_Format(text, 0x1c56, b);
+                he_MessageBoxQuickjump(ai_CharInts[b->owner][0], -1, text, 0, 0x5f0, b->id, -1, 0, (char *)0);
+            }
+            e->stage = -1;
+            return;
+        }
+        home = (AIBLD *)gm_BuildQuery(1, 1, e->raidStart);
+        b = (AIBLD *)gm_BuildQuery(1, 1, e->raidTarget);
+        loot = cm_LootStock(b, home, &ai_CharsT[e->chr], &ai_CharsT[b->owner]);
+        if (ai_CharsT[b->owner].kind == 6 || ai_CharsT[b->owner].kind == 7) {
+            txt_Format(text, 0x1c54, b, loot);
+            he_MessageBoxQuickjump(ai_CharInts[b->owner][0], -1, text, 0, 0x5f0, b->id, -1, 0, (char *)0);
+        }
+        if (ai_CharsT[e->chr].kind == 6 || ai_CharsT[e->chr].kind == 7) {
+            txt_Format(text, 0x1c55, b->owner, b, loot);
+            he_ShowNews(ai_CharInts[e->chr][0], -1, text, 0, 0x5f0, (char *)0);
+        }
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 0, 0, 1);
+        e->stage = 1;
+        return;
+    case 4:
+        if (cm_GetSlotState(e->raidSlot) == 0)
+            return;
+        e->raidParty = ((G28REC *)cm_GetSlotValue(e->raidSlot))->id;    /* the slot's value: the party record made */
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 0, 1, 0);
+        e->stage = 5;
+        return;
+    case 5:
+        if (cm_PartyById(e->raidParty) != 0) {
+            e->end = ai_Time;
+            gm_AddTime(&e->end, 0, 5, 0);
+            return;
+        }
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 0, 0, 1);
+        e->stage = 1;
+        return;
+    case -1:
+        if (e->opts & 2) {
+            home = (AIBLD *)gm_BuildQuery(1, 1, e->raidStart);
+            o = (AIOBJ *)gm_GetGebaeudeHauptraum((unsigned char *)home);
+            for (i = 0; i < 8; i++) {
+                if (e->ids[i] != -1 && (c = (AICHAR *)gm_FindChar(e->ids[i])) != 0) {
+                    cm_SendChrStop(e->ids[i]);
+                    cm_SendChrGotoBuilding(e->ids[i], home->id, o->objId, 0, 0, "Razzia");
+                    sv_MoveToGroup((unsigned char *)home, 0, c->id, 0);
+                }
+            }
+        }
+        he_FreeEvent((int *)ev);
+        return;
+    }
+}
+
+int gv_HeldCrimeIdsOf(int culprit, int *out, unsigned short t);
+
+/* 0x546c40, a Ghidra miss (disassembled): the alloc handler of the fight event 0x45 between partner1 (a) and
+   partner2 (b), its run handler 0x546ef0 the end: the event is due from now, stage 2. Unless it is started (opts 2)
+   nothing more; with a or b gone, a already fighting (flags1c8 0x100) or b already fought (0x200) it ends in two
+   minutes. With +0xb4 set (id3) it runs a day and a player b hears the news 0x1e18 (code -4); else it runs four
+   days, a player b hears 0x1d5b, a is accused of the crime 0x16 against b (at a's home, else b's: gv_Accuse), a's
+   relation to b gets 0x34, up to three crimes of b whose evidence a holds are dropped (gv_HeldCrimeIdsOf in a
+   random order, cm_SendDropEvidence), a player a counts the mission event 0xb, code -2. Both get their flag and
+   cm_SendMoneyDelta(a, code) */
+void he_AllocFight(int ev)
+{
+    AIJOB *e = (AIJOB *)ev;
+    AICHAR *a, *b;
+    char text[0x100];
+    int pick[16];
+    int crimes[32];
+    int code, place, n, i;
+    AIBLD *home;
+
+    e->end = ai_Time;
+    e->stage = 2;
+    if ((e->opts & 2) == 0)
+        return;
+    a = (AICHAR *)gm_FindChar(e->partner1);
+    b = (AICHAR *)gm_FindChar(e->partner2);
+    if (a == 0 || (a->flags1c8 & 0x100) != 0 || b == 0 || (b->flags1c8 & 0x200) != 0) {
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 0, 2, 0);
+        e->exSlot = cm_SendExSetHEI(-1, ev);
+        return;
+    }
+    if (e->id3 != 0) {
+        gm_AddTime(&e->end, 0x18, 0, 0);
+        e->end.min = 0;
+        if (b->kind == 6 || b->kind == 7) {
+            txt_Format(text, 0x1e18, a->id);
+            he_ShowNews(b->netId, -1, text, 0, 0x5fb, "_NACHRICHTEN_NEU_04");
+        }
+        code = -4;
+    } else {
+        gm_AddTime(&e->end, 0x60, 0, 0);
+        e->end.min = 0;
+        code = -2;
+        if (b->kind == 6 || b->kind == 7) {
+            txt_Format(text, 0x1d5b, a->id, a->id);
+            he_ShowNews(b->netId, -1, text, 0, 0x5fb, "_NACHRICHTEN_HS_21");
+        }
+        place = -1;
+        home = a->bld2;
+        if (home == 0)
+            home = b->bld2;
+        if (home != 0)
+            place = home->id;
+        gv_Accuse(0x16, 1, a->netId, b->netId, place);
+        cm_SendRelations(a->netId, b->netId, 0x34, 1);
+        n = gv_HeldCrimeIdsOf(b->netId, crimes, a->id);
+        gm_Shuffled(n < 0x10 ? n : 0x10, pick);
+        for (i = 0; i < 3 && n != 0; i++, n--)
+            cm_SendDropEvidence(crimes[pick[i]], a->netId, 0);
+        if (a->kind == 6)
+            ai_CountMissionEvent(a, 0xb);
+    }
+    cm_SendSetField(a->netId, 0x1c8, 4, 0x100, 0);
+    cm_SendSetField(b->netId, 0x1c8, 4, 0x200, 0);
+    cm_SendMoneyDelta(a->netId, code);
+}
+/* 0x546ef0, a Ghidra miss (disassembled): the run handler of the fight event 0x45 (he_AllocFight): at stage 2
+   (started, opts 2) both fighters lose their flag (flags1c8 0x100 / 0x200); with both found the outcome id3 tells:
+   1 / 2 a player partner2 (b) hears the news 0x1e19 / 0x1e20, else a's relation to b drops by 0x68 and b hears
+   0x1d5d, a player a's news 0x1d5c goes to b as well; the event ends in two minutes. Stage -1 / -2 (left) clears
+   the flags (when started) and frees the event */
+void he_RunFight(int ev)
+{
+    AIJOB *e = (AIJOB *)ev;
+    AICHAR *a, *b;
+    char text[0x100];
+
+    switch (e->stage) {
+    case 2:
+        if ((e->opts & 2) == 0)
+            return;
+        a = (AICHAR *)gm_FindChar(e->partner1);
+        if (a != 0)
+            cm_SendSetField(a->netId, 0x1c8, 4, 0, 0x100);
+        b = (AICHAR *)gm_FindChar(e->partner2);
+        if (b != 0)
+            cm_SendSetField(b->netId, 0x1c8, 4, 0, 0x200);
+        if (a != 0 && b != 0) {
+            if (e->id3 == 1) {
+                if (b->kind == 6 || b->kind == 7) {
+                    txt_Format(text, 0x1e19, a->id);
+                    he_ShowNews(b->netId, -1, text, 0, 0x5fb, (char *)0);
+                }
+            } else if (e->id3 == 2) {
+                if (b->kind == 6 || b->kind == 7) {
+                    txt_Format(text, 0x1e20, a->id);
+                    he_ShowNews(b->netId, -1, text, 0, 0x5fb, (char *)0);
+                }
+            } else {
+                cm_SendRelations(a->netId, b->netId, -0x68, 1);
+                if (b->kind == 6 || b->kind == 7) {
+                    txt_Format(text, 0x1d5d, a->id);
+                    he_ShowNews(b->netId, b->netId, text, 0, 0x5fb, (char *)0);
+                }
+                if (a->kind == 6 || a->kind == 7) {
+                    txt_Format(text, 0x1d5c, b->id);
+                    he_ShowNews(b->netId, b->netId, text, 0, 0x5fb, (char *)0);
+                }
+            }
+        }
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 0, 2, 0);
+        e->exSlot = cm_SendExSetHEI(-1, ev);
+        return;
+    case -1:
+    case -2:
+        if (e->opts & 2) {
+            a = (AICHAR *)gm_FindChar(e->partner1);
+            if (a != 0)
+                cm_SendSetField(a->netId, 0x1c8, 4, 0, 0x100);
+            b = (AICHAR *)gm_FindChar(e->partner2);
+            if (b != 0)
+                cm_SendSetField(b->netId, 0x1c8, 4, 0, 0x200);
+        }
+        he_FreeEvent((int *)ev);
+        return;
+    }
+}
+/* 0x547170, the alloc handler of the duel challenge event 0x46 (its run handler he_RunDuelChallenge): the start and
+   the due clock are now, the event runs two units later */
+
+void he_AllocDuelChallenge(int ev)
+{
+    AIJOB *e = (AIJOB *)ev;
+
+    e->start = ai_Time;
+    e->end = ai_Time;
+    gm_AddTime(&e->end, 2, 0, 0);
+}
 /* 0x5471e0, the duel intro: lets both duellists (p2 / p3, 0x4c4a60 flag 0x400) hear the news 0x1d83 / 0x1d82 (messages 0x5fa / 0x5fb, "_DUELL_INTRO_EVENT_DUELLANTEN_HS_00" for the first) and posts the event (state 2) */
 
 void he_DuelAccepted(int ev, AICHAR *p2, AICHAR *p3)
@@ -4263,7 +5874,6 @@ void gm_ChangeRelationToJobs(unsigned short a, int b);
 void ai_PlagueNews(void);
 int ai_PickActionBuilding(struct AIPER *p, int a, __int64 mask, float lo, float hi, int *out);
 void amt_ChangeDistrictOpinion();
-
 
 
 /* 0x548230, the run handler of the insult news event (type 0x4b, whose start handler is 0x548110): a pending cm
@@ -7908,1635 +9518,8 @@ int he_CreateReaper(int ev)
     return 0;
 }
 
-/* 0x541b40, the inn meeting ("Stammtisch", see 0x53f430) hears of a table request (cm_ExTableRequest) or of its
-   own run (he_RunStammtisch): `cmd` is a four letter code, inn the inn building, table its table object (kind 0x12d,
-   the four seats), figId the character who joins / leaves. It tells the seated players and the inn's owner (boss)
-   the news 0x1893 .. 0x189d: 'join' (with a full table now), 'leav' (the last one gone; a table that was full tells
-   every other player too), 'cler' (cleared), 'new ' (a new meeting, to every player but the owner), and 'exec'
-   (the meeting is held: every member pays the owner the price of the goods 0x179 + 0x17a, and all the members and
-   the owner rise in each other's relations) */
-void he_StammtischCommand(unsigned cmd, AIBLD *inn, AIOBJ *table, int figId)
-{
-    AICHAR *boss;
-    int n;
-    int total;
-    AICHAR *mem[4];
-    char big[0x400];
-    char s2[0x100];
-    char s1[0x100];
-    AICHAR *fig, *pm, *c;
-    int *seat;
-    int i, j, k, amt;
-
-    n = 0;
-    boss = &ai_CharsT[inn->owner];
-    seat = table->seats;
-    for (i = 4; i != 0; i--, seat++) {
-        pm = (AICHAR *)gm_FindChar(*seat);
-        if (pm != 0)
-            mem[n++] = pm;
-    }
-    switch (cmd) {
-    case 'exec':
-        amt = (int)(gm_GoodsPrice(0x17a, ai_OwnPlayer) + gm_GoodsPrice(0x179, ai_OwnPlayer));
-        total = 0;
-        txt_Format(big, 0x189a, inn, amt);
-        for (j = 0; j < n; j++) {
-            pm = mem[j];
-            cm_SendMoveGoodsUnchecked(boss->netId, pm->netId, ai_OwnPlayer, amt);
-            total += amt;
-            if (pm->kind == 6 || pm->kind == 7)
-                he_MessageBoxQuickjump(pm->netId, -1, big, 0, 0x5ec, inn->id, -1, 0, ch_EmptyName);
-            cm_SendRelations(boss->netId, pm->netId, 3, 1);
-            cm_SendRelations(pm->netId, boss->netId, 3, 1);
-        }
-        if (boss->kind == 6 || boss->kind == 7) {
-            txt_Format(big, 0x1893, inn, total);
-            he_MessageBoxQuickjump(boss->netId, -1, big, 0, 0x5ec, inn->id, -1, 0, ch_EmptyName);
-        }
-        for (i = 0; i < n; i++) {
-            for (j = 0; j < n; j++) {
-                if (i != j) {
-                    cm_SendRelations(mem[i]->netId, mem[j]->netId, 3, 1);
-                    cm_SendRelations(mem[j]->netId, mem[i]->netId, 3, 1);
-                }
-            }
-        }
-        break;
-    case 'cler':
-        txt_Format(big, 0x189d, inn);
-        for (j = 0; j < n; j++) {
-            if (mem[j]->kind == 6 || mem[j]->kind == 7)
-                he_MessageBoxQuickjump(mem[j]->netId, -1, big, 0, 0x5ec, inn->id, -1, 0, ch_EmptyName);
-        }
-        break;
-    case 'join':
-        fig = (AICHAR *)gm_FindChar(figId);
-        if (fig == 0)
-            break;
-        txt_Format(big, 0x189b, inn, fig->id);
-        for (j = 0; j < n; j++) {
-            if (mem[j]->kind == 6 || mem[j]->kind == 7)
-                he_MessageBoxQuickjump(mem[j]->netId, -1, big, 0, 0x5ec, inn->id, -1, 0, ch_EmptyName);
-        }
-        if (boss->kind == 6 || boss->kind == 7) {
-            if (++n == 4) {
-                txt_Format(s1, 0x1894, inn, fig->id);
-                txt_Format(s2, 0x1896);
-                txt_Format(big, "%s%s", s1, s2);
-            } else {
-                txt_Format(big, 0x1894, inn, fig->id);
-            }
-            he_MessageBoxQuickjump(boss->netId, -1, big, 0, 0x5ec, inn->id, -1, 0, ch_EmptyName);
-        }
-        break;
-    case 'leav':
-        fig = (AICHAR *)gm_FindChar(figId);
-        if (fig == 0)
-            break;
-        txt_Format(big, 0x189c, inn, fig->id);
-        for (j = 0; j < n; j++) {
-            if ((mem[j]->kind == 6 || mem[j]->kind == 7) && mem[j]->netId != fig->netId)
-                he_MessageBoxQuickjump(mem[j]->netId, -1, big, 0, 0x5ec, inn->id, -1, 0, ch_EmptyName);
-        }
-        if (boss->kind == 6 || boss->kind == 7) {
-            if (n - 1 == 0) {
-                txt_Format(s1, 0x1895, inn, fig->id);
-                txt_Format(s2, 0x1897);
-                txt_Format(big, "%s%s", s1, s2);
-            } else {
-                txt_Format(big, 0x1895, inn, fig->id);
-            }
-            he_MessageBoxQuickjump(boss->netId, -1, big, 0, 0x5ec, inn->id, -1, 0, ch_EmptyName);
-        }
-        if (n == 4) {
-            txt_Format(big, 0x1899, inn);
-            for (i = 0; i < 768; i++) {
-                c = &ai_CharsT[i];
-                if ((c->kind == 6 || c->kind == 7) && c->netId != boss->netId) {
-                    for (k = 0; k < 4; k++) {
-                        if (c->netId == mem[k]->netId)
-                            break;
-                    }
-                    if (k < 4)
-                        he_MessageBoxQuickjump(c->netId, -1, big, 0, 0x5ec, inn->id, -1, 0, ch_EmptyName);
-                }
-            }
-        }
-        break;
-    case 'new ':
-        txt_Format(big, 0x1898, inn);
-        for (i = 0; i < 768; i++) {
-            c = &ai_CharsT[i];
-            if ((c->kind == 6 || c->kind == 7) && c->netId != boss->netId)
-                he_MessageBoxQuickjump(c->netId, -1, big, 0, 0x5ec, inn->id, -1, 0, ch_EmptyName);
-        }
-        break;
-    }
-}
-
-
-/* 0x542100, the run handler of the inn meeting event 0x2a ("Stammtisch", he_AllocStammtisch; its scripts
-   he_StammtischCommand): the inn (innId) must have its table object 0x12d, else it waits 5 minutes. With an inn owner
-   who is alive, not the player and not of kind 0xf: in state 1 the meeting is announced ('new ', the state counted
-   down), else when the meeting time has come it is held ('exec') (before that it waits an hour); either way the next
-   meeting is planned a day ahead at a random hour 0x13 .. 0x16. Without such an owner the table is cleared once
-   ('cler' request, the state raised) and the meeting planned again */
-void he_RunStammtisch(int r)
-{
-    AIJOB *e = (AIJOB *)r;
-    HESTAMMTISCH *m = (HESTAMMTISCH *)r;
-    AIBLD *bld;
-    AIOBJ *table;
-    AICHAR *boss;
-    int cmd[3];
-
-    if (e->stage == -1 || e->stage == -2) {
-        he_FreeEvent((int *)r);
-        return;
-    }
-    if ((e->opts & 4) != 0)
-        return;
-    if (e->exSlot != -1 && cm_GetSlotState(e->exSlot) == 0)
-        return;
-    e->exSlot = -1;
-    gm_FindById(&bld, 0, 0, m->innId);
-    if (bld == 0) {
-        gm_AddTime(&e->end, 0, 5, 0);
-        cm_SendExSetHEI(-1, r);
-        return;
-    }
-    table = (AIOBJ *)gm_Query((void *)bld->objList, 2, 6, 0, 0x12d);
-    if (table == 0) {
-        gm_AddTime(&e->end, 0, 5, 0);
-        cm_SendExSetHEI(-1, r);
-        return;
-    }
-    if (bld->owner != 0xffff && (boss = &ai_CharsT[bld->owner]) != 0 && boss != he_PlayerCh && boss->health != 0
-        && boss->kind != 0xf) {
-        if (m->state == 1) {
-            he_StammtischCommand('new ', bld, table, -1);
-            m->state--;
-            e->end = ai_Time;
-            gm_AddTime(&e->end, 1, 0, 0);
-            m->meeting = ai_Time;
-            gm_AddTime(&m->meeting, 0x18, 0, 0);
-        } else {
-            if (gm_MinutesBetween(&ai_Time, &m->meeting) > 0) {
-                gm_AddTime(&e->end, 1, 0, 0);
-                cm_SendExSetHEI(0, r);
-                return;
-            }
-            he_StammtischCommand('exec', bld, table, -1);
-            e->end = ai_Time;
-            gm_AddTime(&e->end, 1, 0, 0);
-            m->meeting = ai_Time;
-            gm_AddTime(&m->meeting, 0x18, 0, 0);
-        }
-        m->meeting.min = 0;
-        m->meeting.hour = util_Random(4) + 0x13;
-        cm_SendExSetHEI(0, r);
-        return;
-    }
-    if (m->state == 0) {
-        cmd[0] = 'cler';
-        cmd[1] = -1;
-        cmd[2] = bld->id;
-        cm_BeginGroup("stammtisch clear HE");
-        cm_SendTableRequest((G17TABLEMSG *)cmd);
-        cm_EndGroup("stammtisch clear HE");
-        m->state++;
-    }
-    e->end = ai_Time;
-    gm_AddTime(&e->end, 1, 0, 0);
-    m->meeting = ai_Time;
-    gm_AddTime(&m->meeting, 0x18, 0, 0);
-    m->meeting.min = 0;
-    m->meeting.hour = util_Random(4) + 0x13;
-    cm_SendExSetHEI(0, r);
-}
-
-
-/* 0x542490, a Ghidra miss (disassembled): the event of the building `from`: sets its end clock to a day ahead at 7:00;
-   with the building gone it is posted again (key -1), else a building without an object of kind 0x1b5 gets one
-   (cm_SendObject1b5, its value all -1) and the event is posted (key 0) */
-void he_AllocTavern(int r)
-{
-    AIJOB *e = (AIJOB *)r;
-    AIBLD *bld = 0;
-    HEOBJ1B5VALUE v;
-
-    if ((e->opts & 4) != 0)
-        return;
-    e->end = ai_Time;
-    gm_AddTime(&e->end, 0x18, 0, 0);
-    e->end.hour = 7;
-    e->end.min = 0;
-    gm_FindById(&bld, 0, 0, e->from);
-    if (bld == 0) {
-        cm_SendExSetHEI(-1, r);
-        return;
-    }
-    if (gm_Query((void *)bld->objList, 1, 0, 0x1b5) == 0) {
-        v.f.c1c = -1;
-        v.f.c1d = -1;
-        v.f.v1e = -1;
-        cm_SendObject1b5(bld->id, v.block);
-    }
-    e->exSlot = -1;
-    cm_SendExSetHEI(0, r);
-}
-
-int ai_ChooseObjectTarget();
-void ai_ShowTavernHelperNews(char *param_1, char *param_2, int param_3);
-
-/* 0x542590, a Ghidra miss (disassembled): the run handler of the tavern event 0x2b of the building `from` (no owner:
-   again in a day at 7:00). Stage 0: an AI owner may hire a helper (ai_ChooseObjectTarget on the tavern's object
-   0x1b5), a player's helper is hired when the object says so (hired): then stage 1 in an hour, else again in a day.
-   Stage 1 waits 1 .. 2 hours. Stage 2: the hired helper is done: its news (ai_ShowTavernHelperNews), the object is
-   reset (no helper), and when the tavern pays out (gm_HandOutMoney) its owner gets the takings (the news 0x19a7 for a
-   player) and the building's field 0x69 the amount; again in a day at 7:00
-   @deep Read whole against the original and rebuilt typed (AIJOB, AIBLD, the tavern object view
-   HETAVERNOBJ, int out[3] whose out[2] gm_HandOutMoney reads as the partner = the helper). Every call,
-   store and branch matches; what is left is VC6's tail merging and scheduling: (1) code hunk at +0x2b8,
-   stage 0's AI branch: ours 'je X; push 0; push 0; lea ecx,[esi+0x52]; push 1; push ecx; jmp' (the hour
-   block inline, the 0x18 block shared), the original 'push 0; push 0; jne X; lea edx,[esi+0x52]; push
-   0x18; push edx; jmp' (the 0x18 block inline, the hour block shared with the player branch); tried the AI
-   / player branch order both ways and the inverted AI condition: those merge more tails (dist 46 / 52).
-   (2) tail at +0x32d: the original jumps from the player's 0x18 block into the shared Send(0) call. (3)
-   order at +0x102: the original loads t->helperId before the three field-value stores (no, none, noId) and
-   out[2] = 0; the prover stops there (a call argument read after other local stores). (size: 6 of the
-   instruction difference are shared / inline tails) */
-void he_RunTavern(int r)
-{
-    AIJOB *e = (AIJOB *)r;
-    AIBLD *bld = 0;
-    HETAVERNOBJ *t;
-    AICHAR *helper;
-    int out[3];
-    unsigned char no, none;
-    int noId;
-    char buf[0x100];
-
-    if (e->stage == -1 || e->stage == -2) {
-        he_FreeEvent((int *)r);
-        return;
-    }
-    if ((e->opts & 4) != 0)
-        return;
-    if (e->exSlot != -1 && cm_GetSlotState(e->exSlot) == 0)
-        return;
-    e->exSlot = -1;
-    gm_FindById(&bld, 0, 0, e->from);
-    if (bld == 0) {
-        cm_SendExSetHEI(-1, r);
-        return;
-    }
-    if (bld->owner == 0xffff) {
-        gm_AddTime(&e->end, 0x18, 0, 0);
-        e->end.hour = 7;
-        cm_SendExSetHEI(0, r);
-        return;
-    }
-    t = (HETAVERNOBJ *)gm_Query((void *)bld->objList, 1, 0, 0x1b5);
-    switch (e->stage) {
-    case 0:
-        if (ai_CharsT[bld->owner].kind == 6 || ai_CharsT[bld->owner].kind == 7) {
-            if (t != 0 && t->hired != 0) {
-                gm_AddTime(&e->end, 1, 0, 0);
-                e->exSlot = cm_SendExSetHEI(1, r);
-                return;
-            }
-            gm_AddTime(&e->end, 0x18, 0, 0);
-            e->end.hour = 7;
-            e->exSlot = cm_SendExSetHEI(0, r);
-            return;
-        }
-        if (t != 0 && ai_ChooseObjectTarget(&ai_CharsT[bld->owner], t) != 0) {
-            gm_AddTime(&e->end, 1, 0, 0);
-            e->exSlot = cm_SendExSetHEI(1, r);
-            return;
-        }
-        gm_AddTime(&e->end, 0x18, 0, 0);
-        e->end.hour = 7;
-        e->exSlot = cm_SendExSetHEI(0, r);
-        return;
-    case 1:
-        gm_AddTime(&e->end, util_RandomU(2) + 1, 0, 0);
-        e->exSlot = cm_SendExSetHEI(2, r);
-        return;
-    case 2:
-        if (t != 0 && t->hired != 0) {
-            no = 0;
-            none = 0xff;
-            noId = -1;
-            out[2] = 0;
-            helper = (AICHAR *)gm_FindChar(t->helperId);
-            if (helper != 0) {
-                out[2] = (int)helper;
-                ai_ShowTavernHelperNews((char *)&ai_CharsT[bld->owner], (char *)helper, (int)bld);
-            }
-            cm_BeginFieldBlock((char *)t, t->objId);
-            cm_AddFieldDelta(1, 1, 0x22, &no);
-            cm_AddFieldDelta(1, 1, 0x1c, &none);
-            cm_AddFieldDelta(1, 1, 0x1d, &none);
-            cm_AddFieldDelta(4, 1, 0x1e, &noId);
-            cm_SendFieldDeltas();
-            if (gm_HandOutMoney(bld, out) != 0) {
-                if (ai_CharsT[bld->owner].kind == 6 || ai_CharsT[bld->owner].kind == 7) {
-                    txt_Format(buf, 0x19a7, out[0], out[1]);
-                    he_ShowNews(ai_CharsT[bld->owner].netId, -1, buf, 0, 0x5ff, ch_EmptyName);
-                }
-                cm_SendMoveGoods(ai_CharsT[bld->owner].netId, -1, ai_OwnPlayer, out[1]);
-                cm_BeginFieldBlock((char *)bld, bld->id);
-                cm_AddFieldDelta(4, 1, 0x69, &out[1]);
-                cm_SendFieldDeltas();
-            }
-        }
-        gm_AddTime(&e->end, 0x18, 0, 0);
-        e->end.hour = 7;
-        e->exSlot = cm_SendExSetHEI(0, r);
-    }
-}
-/* 0x543020, the alloc handler of the quarrel event 0x2e between the figures partner1 (+0xac) and partner2 (+0xb0):
-   re-posts the event in 0x30 units, takes 0x14 relation points of partner2 towards partner1, tells partner1 (news
-   0x175a) and reports the crime (gv_Accuse 0x13, 1, partner2, partner1) with the home building (AICHAR.bld2) id of
-   partner2, else of partner1 */
-
-void he_AllocQuarrel(int ev)
-{
-    AIJOB *e = (AIJOB *)ev;
-    AICHAR *a, *b;
-    AIBLD *t;
-    int id;
-    char buf[0x200];
-    unsigned char fl;
-
-    a = (AICHAR *)gm_FindChar(e->partner1);
-    b = (AICHAR *)gm_FindChar(e->partner2);
-    fl = e->opts;
-    e->exSlot = -1;
-    if ((fl & 2) != 0) {
-        if (a == 0 || b == 0) {
-            e->end = ai_Time;
-            cm_SendExSetHEI(-1, ev);
-        }
-        e->end = ai_Time;
-        gm_AddTime(&e->end, 0x30, 0, 0);
-        cm_SendExSetHEI(0, ev);
-        cm_SendRelations(b->netId, a->netId, -20, 1);
-        if (a->kind == 6 || a->kind == 7) {
-            txt_Format(buf, 0x175a, b->id, b->id);
-            he_ShowNews(a->netId, -1, buf, 0, 0x5fb, (char *)(unsigned)&ch_EmptyName);
-        }
-        t = b->bld2;
-        id = -1;
-        if (t != 0) {
-            id = t->id;
-        } else {
-            t = a->bld2;
-            if (t != 0)
-                id = t->id;
-        }
-        gv_Accuse(0x13, 1, e->partner2, e->partner1, id);
-    }
-}
-/* 0x543180, the run handler of the quarrel event 0x2e: tells partner2 (news 0x175d, message 0x5fa) when its option 2
-   is set, then re-posts the event in one unit (stage 0 only); a missing partner ends it at the current time */
-
-void he_RunQuarrel(int ev)
-{
-    AIJOB *e = (AIJOB *)ev;
-    AICHAR *a, *b;
-    char buf[0x100];
-
-    if (e->stage == -1 || e->stage == -2) {
-        he_FreeEvent((int *)e);
-        return;
-    }
-    if ((e->opts & 4) != 0)
-        return;
-    if (e->exSlot != -1 && cm_GetSlotState(e->exSlot) == 0)
-        return;
-    e->exSlot = -1;
-    a = (AICHAR *)gm_FindChar(e->partner1);
-    b = (AICHAR *)gm_FindChar(e->partner2);
-    if (b == 0 || a == 0) {
-        e->end = ai_Time;
-        e->exSlot = cm_SendExSetHEI(-1, ev);
-        return;
-    }
-    if (e->stage == 0) {
-        if ((e->opts & 2) != 0) {
-            txt_Format(buf, 0x175d, a->id);
-            he_ShowNews(b->netId, -1, buf, 0, 0x5fa, (char *)0);
-        }
-        e->end = ai_Time;
-        gm_AddTime(&e->end, 0, 1, 0);
-        e->exSlot = cm_SendExSetHEI(-1, ev);
-    }
-}
-
-
-/* 0x5432f0, a Ghidra miss (disassembled): the run handler of the master exam event ("Meisterpruefung") of the three
-   characters who[0] (the master), who[1] (the one told) and who[2] (the candidate); gone ones end it, and a candidate
-   who is no player skips to stage 2. Stage 0 opens the window "Berufe\Messagebox_Meisterpruefung" (news 0x5ec) with
-   the text 0x1763 and the voice "_NACHRICHTEN_HS_20", due in a day. Stage 1 waits for the answer in that window
-   (d2_ClickedId 0: passed, 1: failed) or for the due time (then stage 2). Stage 2 decides by chance
-   (gm_Mix(who[1], who[0], 4) + a random 0 .. 1 below 1: failed). Passed: who[1] hears 0x1764 and the master's
-   relation to the candidate drops by 20; failed: 0x1765 and who[1] and the candidate drop by 15 each way */
-void he_RunMasterExam(int ev)
-{
-    AIJOB *e = (AIJOB *)ev;
-    HEOFFER *o = (HEOFFER *)ev;
-    AICHAR *p, *q, *r;
-    float f;
-    char buf[0x100];
-
-    p = (AICHAR *)gm_FindChar(o->who[0]);
-    q = (AICHAR *)gm_FindChar(o->who[1]);
-    r = (AICHAR *)gm_FindChar(o->who[2]);
-    if (e->stage == -2 || p == 0 || q == 0 || r == 0) {
-        he_FreeEvent((int *)ev);
-        if (e->slot != 0)
-            he_ReleaseSlot(ev);
-        return;
-    }
-    if (e->stage == -1 || (r->kind != 6 && r->kind != 7))
-        e->stage = 2;
-    switch (e->stage) {
-    case 0:
-        he_OpenEventSlot(ev, 0, 0, "Berufe\\Messagebox_Meisterpruefung", 0x5ec);
-        if (e->slot == 0) {
-            he_FreeEvent((int *)ev);
-            return;
-        }
-        d2_SetForm(e->slot->win, 0);
-        io_PrintText(0x1763, q->id, p->id);
-        e->start = ai_Time;
-        e->end = ai_Time;
-        gm_AddTime(&e->end, 0x18, 0, 0);
-        snd_PlayVoice(-7, 0, "_NACHRICHTEN_HS_20", 0);
-        e->stage++;
-        return;
-    case 1:
-        if (gm_CompareTime(&ai_Time, &e->end) > 0) {
-            he_ReleaseSlot(ev);
-            e->stage = 2;
-            return;
-        }
-        if (d2_ClickedForm != e->slot->win || d2_ClickedId == -1)
-            return;
-        if (d2_ClickedId == 0) {
-            txt_Format(buf, 0x1764, r->id, p->id);
-            he_ShowNews(q->netId, q->netId, buf, 0, 0x5fa, 0);
-            cm_SendRelations(p->netId, r->netId, -20, 1);
-            he_ReleaseSlot(ev);
-            he_FreeEvent((int *)ev);
-            return;
-        }
-        if (d2_ClickedId == 1) {
-            txt_Format(buf, 0x1765, r->id, p->id);
-            he_ShowNews(q->netId, q->netId, buf, 0, 0x5fa, 0);
-            cm_SendRelations(q->netId, r->netId, -15, 1);
-            cm_SendRelations(r->netId, q->netId, -15, 1);
-        }
-        he_ReleaseSlot(ev);
-        he_FreeEvent((int *)ev);
-        return;
-    case 2:
-        f = gm_Mix((int)q, (int)p, 4);
-        if (util_RandomF() + f >= 1.0f) {
-            txt_Format(buf, 0x1764, r->id, p->id);
-            he_ShowNews(q->netId, q->netId, buf, 0, 0x5fa, 0);
-            cm_SendRelations(p->netId, r->netId, -20, 1);
-        } else {
-            txt_Format(buf, 0x1765, r->id, p->id);
-            he_ShowNews(q->netId, q->netId, buf, 0, 0x5fa, 0);
-            cm_SendRelations(q->netId, r->netId, -15, 1);
-            cm_SendRelations(r->netId, q->netId, -15, 1);
-        }
-        he_FreeEvent((int *)ev);
-        return;
-    }
-}
-/* 0x5436a0, the alloc handler of the feast event 0x37 (its run handler he_RunFeast): stage 0, end clock in 0x18
-   units, hour 0x14; with inviteGuests set every guest gets the invitation message 0x36 carrying the feast time and
-   event id (flag 9 for the players, else 1), then the event is posted */
-
-void he_AllocFeast(int ev)
-{
-    AIMSG msg;
-    AIJOB *e = (AIJOB *)ev;
-    AICHAR *c;
-    int *pp;
-    int k;
-    unsigned char fl;
-
-    fl = e->opts;
-    e->stage = 0;
-    if ((fl & 4) == 0) {
-        e->end = ai_Time;
-        gm_AddTime(&e->end, 0x18, 0, 0);
-        e->end.hour = 0x14;
-        e->end.min = 0;
-        if (e->inviteGuests == 1) {
-            pp = e->festGuests;
-            for (k = 4; k != 0; k--, pp++) {
-                c = (AICHAR *)gm_FindChar(*pp);
-                if (c != 0) {
-                    msg.type = 0x36;
-                    msg.to = c->netId;
-                    msg.fromId = -1;
-                    msg.arg[4] = 1;
-                    msg.inviteWhen = e->end;
-                    msg.arg[5] = e->id;
-                    if (c->kind == 6 || c->kind == 7)
-                        msg.flags = 9;
-                    else
-                        msg.flags = 1;
-                    cm_SendLongMessage((char *)&msg);
-                }
-            }
-        }
-        cm_SendExSetHEI(0, ev);
-    }
-}
-
-
-/* 0x542960, the alloc handler of the offer event 0x2c between the figures partner1 (+0xac) and partner2 (+0xb0):
-   sets the event's end clock to ai_Time and the offer clock (+0xc5) to now + 0x18 units, hour 0xa, minute 0; when
-   opts bit 2 is set it walks the other pending 0x2c offers of the same kind: an offer of the same figure only
-   shows the news 0x1bbe and re-posts this event at once, an older one of another figure moves our clock to its
-   time; at the end the offer is created (cm_SendHandOverCrimes, +0xd4) and the event posted */
-void he_AllocOffer(int ev)
-{
-    AIJOB *e = (AIJOB *)ev;
-    HEOFFER *o = (HEOFFER *)ev;
-    AIJOB *o2;
-    HEOFFER *f2;
-    AICHAR *q, *p;
-    int r;
-    unsigned char fl;
-    char buf[0x100];
-
-    q = (AICHAR *)gm_FindChar(e->partner2);
-    p = (AICHAR *)gm_FindChar(e->partner1);
-    o->clock = ai_Time;
-    gm_AddTime(&o->clock, 0x18, 0, 0);
-    o->clock.hour = 0xa;
-    o->clock.min = 0;
-    e->end = ai_Time;
-    fl = e->opts;
-    if ((fl & 2) != 0) {
-        r = (int)he_FindEvent(1, 0, 0x2c);
-        while (r != 0) {
-            o2 = (AIJOB *)r;
-            f2 = (HEOFFER *)r;
-            if (o2->id != e->id && f2->kind == o->kind) {
-                if (o2->partner1 == e->partner1) {
-                    txt_Format(buf, 0x1bbe, p->id, q->id);
-                    he_ShowNews(p->netId, p->netId, buf, 0, 0x5f5, (char *)0);
-                    e->end = ai_Time;
-                    e->exSlot = cm_SendExSetHEI(-1, ev);
-                    return;
-                }
-                if (o->clock.year <= f2->clock.year) {
-                    o->clock = f2->clock;
-                    gm_AddTime(&o->clock, 0x18, 0, 0);
-                    o->clock.hour = 0xa;
-                    o->clock.min = 0;
-                }
-            }
-            r = (int)he_NextEvent();
-        }
-        o->offer = ((int (*)(int, int, int, int))cm_SendHandOverCrimes)(e->partner1, e->partner2, e->id, 1);
-        e->exSlot = cm_SendExSetHEI(0, ev);
-    }
-}
-
-
-/* 0x542b60, a Ghidra miss (disassembled): the run handler of the wedding offer event (see 0x542960; HEOFFER). Stage 0
-   waits for the answer to the offer (cm_GetSlotState of the offer handle: 1 accepted, 2 refused). Accepted: the end
-   clock becomes the offer's clock, the partner and the suitor get the news 0x1bc0 / 0x1bbf ("_NACHRICHTEN_HS_16" /
-   "_NACHRICHTEN_HS_15"), the guests who[3] / who[4] the news 0x1bc1 (HS_11) and who[2] / who[5] the news 0x1bc2
-   (HS_12) when they are players, and the event goes on to stage 1. Refused: the suitor hears 0x1bbe and the event is
-   posted again two minutes on. Stage 1 sends the wedding party (G28REC, kind 2, flags 0xa2, its 5 or 6 members, 45
-   minutes from now, hosted by the player) and posts the event again */
-void he_RunWeddingOffer(int r)
-{
-    AIJOB *e = (AIJOB *)r;
-    HEOFFER *o = (HEOFFER *)r;
-    AICHAR *partner, *suitor, *g2, *g3, *g4, *g5;
-    char ok;
-    G28REC m;
-    char buf[0x200];
-
-    if (e->stage == -1 || e->stage == -2) {
-        he_FreeEvent((int *)r);
-        return;
-    }
-    if ((e->opts & 4) != 0)
-        return;
-    if (e->exSlot != -1 && cm_GetSlotState(e->exSlot) == 0)
-        return;
-    e->exSlot = -1;
-    switch (e->stage) {
-    case 0:
-        ok = cm_GetSlotState(o->offer);
-        if (ok == 0)
-            return;
-        partner = (AICHAR *)gm_FindChar(o->who[1]);
-        suitor = (AICHAR *)gm_FindChar(o->who[0]);
-        g2 = (AICHAR *)gm_FindChar(o->who[2]);
-        g3 = (AICHAR *)gm_FindChar(o->who[3]);
-        g4 = (AICHAR *)gm_FindChar(o->who[4]);
-        g5 = (AICHAR *)gm_FindChar(o->who[5]);
-        if (ok == 1) {
-            e->end = o->clock;
-            if (partner->kind == 6 || partner->kind == 7) {
-                txt_Format(buf, 0x1bc0, suitor->id, &e->end, e->end.hour, g2->id, g3->id, g4->id);
-                he_ShowNews(partner->netId, partner->netId, buf, 0, 0x5f5, "_NACHRICHTEN_HS_16");
-            }
-            if (suitor->kind == 6 || partner->kind == 7) {
-                txt_Format(buf, 0x1bbf, partner->id, &e->end, e->end.hour, g2->id, g3->id, g4->id);
-                he_ShowNews(suitor->netId, suitor->netId, buf, 1, 0x5f5, "_NACHRICHTEN_HS_15");
-            }
-            txt_Format(buf, 0x1bc1, suitor->id, partner->id, &e->end, e->end.hour);
-            if (g3->kind == 6 || g3->kind == 7)
-                he_ShowNews(g3->netId, g3->netId, buf, 0, 0x5f5, "_NACHRICHTEN_HS_11");
-            if (g4->kind == 6 || g4->kind == 7)
-                he_ShowNews(g4->netId, g4->netId, buf, 0, 0x5f5, "_NACHRICHTEN_HS_11");
-            txt_Format(buf, 0x1bc2, suitor->id, partner->id, &e->end, e->end.hour);
-            if (g2->kind == 6 || g2->kind == 7)
-                he_ShowNews(g2->netId, g2->netId, buf, 0, 0x5f5, "_NACHRICHTEN_HS_12");
-            if (g5 != 0 && (g5->kind == 6 || g5->kind == 7))
-                he_ShowNews(g5->netId, g5->netId, buf, 0, 0x5f5, "_NACHRICHTEN_HS_12");
-            cm_SendExSetHEI(1, r);
-            return;
-        }
-        if (ok == 2) {
-            if (suitor->kind == 6 || partner->kind == 7) {
-                txt_Format(buf, 0x1bbe, partner->id);
-                he_ShowNews(suitor->netId, suitor->netId, buf, 0, 0x5f5, 0);
-            }
-            e->end = ai_Time;
-            e->end.min += 2;
-            cm_SendExSetHEI(-1, r);
-        }
-        return;
-    case 1:
-        memset(&m, 0, sizeof(m));
-        m.offerKind = o->kind;
-        m.eventId = e->id;
-        m.members[0] = o->who[0];
-        m.members[1] = o->who[1];
-        m.members[2] = o->who[2];
-        m.members[3] = o->who[3];
-        m.members[4] = o->who[4];
-        m.members[5] = o->who[5];
-        m.used = (o->who[5] != -1) + 5;
-        m.kind = 2;
-        m.flags = 0xa2;
-        m.thing = -1;
-        m.host = ai_CharsT[ai_PlayerId].netId;
-        m.time = ai_Time;
-        gm_AddTime(&m.time, 0, 0x2d, 0);
-        cm_SendNewParty(&m);
-        gm_AddTime(&e->end, 0, 2, 0);
-        e->exSlot = cm_SendExSetHEI(-1, r);
-        return;
-    }
-}
-
-int ai_EvalFest();
-
-/* 0x5437c0, the run handler of the feast event: the host is the event's character, the guests and the menu /
-   musician picks come from the feast table object (gm_Query kind 0x17) of the building e->from, or from the event's
-   own words when it names no building; a building without a feast table only re-posts the event. Stage 0 has the
-   feast evaluated (ai_EvalFest, sending its effects) and, when that returns 0 for a player host (kind 6 / 7), tells
-   the host the news 0x5fd: the text 0x1787 with the cost, then one line 0x1788 per guest (0x178f + 3 * the guest's
-   verdict + a random 0 .. 2); it re-posts the event, as stage 1 does. The original clears only the group's first
-   4 bytes, and without a building it tests the guests of a null table (*(int *)0x1c ..) before it looks up the
-   event's own guests: both kept
-   @deep reconstructed and read in full against the original (feast event: AIGRP filled from the feast
-   table object kind 0x17 or the event's festGuests, MEM_ZERO inline clear of 4 bytes, switch on stage);
-   same instruction count 261/261, 14 differing. Left: +0x100 the table branch stores essen ([ebp-0x1c])
-   before loading festMusik (mov cl,[esi+0x2d]) where the original loads both first (order); +0x1df the
-   txt_Format(line, 0x1788, id, ...) argument setup: ours mov ecx,[ebp+ebx*8-0x3c]; xor edx,edx; mov
-   dx,[ecx]; lea eax,line vs the original xor ecx,ecx; mov eax,[ebp+ebx*8-0x3c]; lea edx,line; mov cx,[eax]
-   (registers eax/ecx/edx permuted, same pushes); tried the arguments' term order (no change) */
-void he_RunFeast(int ev)
-{
-    AIJOB *e = (AIJOB *)ev;
-    AIBLD *bld = 0;
-    AIOBJ *table = 0;
-    AICHAR *c;
-    int k, n;
-    AIGRP g;
-    char text[0x800];
-    char line[0xec];
-    G28REC party;
-
-    if (e->stage == -2 || e->stage == -1) {
-        he_FreeEvent((int *)ev);
-        return;
-    }
-    if (e->opts & 4)
-        return;
-    gm_FindById(&bld, 0, 0, e->from);
-    if (bld != 0 && (table = (AIOBJ *)gm_Query((void *)bld->objList, 1, 0, 0x17)) == 0) {
-        e->end = ai_Time;
-        cm_SendExSetHEI(-1, ev);
-        return;
-    }
-    switch (e->stage) {
-    case 0:
-        MEM_ZERO(&g, 4);
-        n = 0;
-        g.leader = (struct AIC4 *)&ai_CharsT[e->chr];
-        if (table != 0) {
-            g.essen = table->festEssen;
-            g.musik = table->festMusik;
-            for (k = 0; k < 4; k++) {
-                if (table->festGuests[k] != -1 && (c = (AICHAR *)gm_FindChar(table->festGuests[k])) != 0)
-                    g.mem[n++].ch = (struct AIC4 *)c;
-            }
-        } else {
-            g.essen = e->festEssen;
-            g.musik = e->festMusik;
-            for (k = 0; k < 4; k++) {
-                if (table->festGuests[k] != -1 && (c = (AICHAR *)gm_FindChar(e->festGuests[k])) != 0)
-                    g.mem[n++].ch = (struct AIC4 *)c;
-            }
-        }
-        g.n = (unsigned char)n;
-        if (ai_EvalFest(&g, 1) == 0
-            && (((AICHAR *)g.leader)->kind == 6 || ((AICHAR *)g.leader)->kind == 7)) {
-            txt_Format(text, 0x1787, g.cost);
-            for (k = 0; k < g.n; k++) {
-                txt_Format(line, 0x1788, ((AICHAR *)g.mem[k].ch)->id, util_RandomU(3) + 0x178f + g.mem[k].d * 3);
-                strcat(text, line);
-            }
-            he_ShowNews(((AICHAR *)g.leader)->netId, -1, text, 0x20, 0x5fd, ch_EmptyName);
-        }
-        e->end = ai_Time;
-        cm_SendExSetHEI(-1, ev);
-        return;
-    case 1:
-        e->end = ai_Time;
-        cm_SendExSetHEI(-1, ev);
-        return;
-    }
-}
-
-int ai_MasterExamPassed();
-/* 0x543ac0, a Ghidra miss (disassembled): the run handler of the master exam at a feast (kind 0x36). The examiner is
-   the owner of the building e->from, the guests read from its feast table object (gm_Query kind 0x17), or (examAt 1)
-   the host of the feast event examFeast (kind 0x37) with that event's guests; the candidate is the event's character,
-   and one who is no player (kind 6 / 7) skips to stage 2. Stage 0 opens the window
-   "Berufe\Messagebox_Meisterpruefung" (news 0x5ec) with the text 0x1770 / 0x1771 and the voice "_NACHRICHTEN_HS_28",
-   due in a day. Stage 1 waits for the answer in that window (d2_ClickedId 0: passed, 1: failed) or for the due time
-   (then stage 2); stage 2 decides by ai_MasterExamPassed. Passed: the examiner hears 0x1785; failed: the candidate
-   leaves the feast's guests (the table's field, or the feast event re-posted) and the examiner hears 0x1786; either
-   only while the candidate is a guest. The text 0x1771 reads the owner of a null building: kept as the original
-   @deep reconstructed and read in full against the original (all 4 search loops, the field delta / feast
-   re-post on failure, the 0x1785 / 0x1786 news, the stage 0 window and texts, the 0x200 buffer). The
-   calls, stores and branches match per path; what differs is tail merging: the original reloads ev from
-   its argument slot (mov edx/esi, [esp+0x220]) before the closing he_FreeEvent / he_ReleaseSlot of the
-   stage 1 / 2 paths, so their tails are identical and cross-jumped (stage 1 not-found exits jmp +0x479,
-   the news calls share +0x471 / +0x295), where ours keeps ev in esi on the passed paths and duplicates
-   each return block (returns 13/9, txt_Format x4 vs x3, he_ShowNews x4 vs x2). Hunks: code at +0xf8 (mov
-   ecx,eax: master kept in a register), +0x172/+0x19b/+0x386/+0x3b5 (duplicated return blocks), +0x1ba (the
-   0x1785 news not cross-jumped into the 0x1786 one), +0x404 (the stage 1 news tail), +0x53e/+0x578 (the
-   ai_Time copies into start / end: regs + order) (size: 539 vs 485 instructions, explained: 54
-   instructions: four duplicated return blocks (push ev; call he_FreeEvent [; he_ReleaseSlot]; four pops;
-   add esp; ret, ~8-10 each) and two news sequences (txt_Format + he_ShowNews, ~16 each) that the original
-   cross-jumps because it reloads ev from the argument slot on those paths: allocation, not statements) */
-void he_RunFeastExam(int ev)
-{
-    AIJOB *e = (AIJOB *)ev;
-    AIBLD *bld = 0;
-    AIOBJ *table = 0;
-    AIJOB *feast = 0;
-    AICHAR *master, *cand;
-    int i, none;
-    char buf[0x200];
-
-    if (e->stage == -1 || e->stage == -2)
-        goto fail;
-    if (e->examAt == 0) {
-        gm_FindById(&bld, 0, 0, e->from);
-        if (bld == 0)
-            goto fail;
-        table = (AIOBJ *)gm_Query((void *)bld->objList, 1, 0, 0x17);
-        if (table == 0 || bld->owner == 0xffff)
-            goto fail;
-        master = &ai_CharsT[bld->owner];
-        if (master == 0)
-            goto fail;
-    } else if (e->examAt == 1) {
-        feast = (AIJOB *)he_FindEvent(2, 1, e->examFeast, 0, 0x37);
-        if (feast == 0)
-            goto fail;
-        master = &ai_CharsT[feast->chr];
-        if (master == 0)
-            goto fail;
-    } else {
-        goto done;
-    }
-    cand = &ai_CharsT[e->chr];
-    if (cand->kind != 6 && cand->kind != 7)
-        e->stage = 2;
-    switch (e->stage) {
-    case 0:
-        he_OpenEventSlot(ev, 0, 0, "Berufe\\Messagebox_Meisterpruefung", 0x5ec);
-        if (e->slot == 0)
-            goto done;
-        d2_SetForm(e->slot->win, 0);
-        if (e->examAt == 0)
-            io_PrintText(0x1770, bld->owner, cand->id, e->examText, bld, master->id, cand->id);
-        else
-            io_PrintText(0x1771, bld->owner, cand->id, e->examText, master->id, cand->id);
-        e->start = ai_Time;
-        e->end = ai_Time;
-        gm_AddTime(&e->end, 0x18, 0, 0);
-        snd_PlayVoice(-7, 0, "_NACHRICHTEN_HS_28", 0);
-        e->stage++;
-        return;
-    case 1:
-        if (gm_CompareTime(&ai_Time, &e->end) > 0) {
-            he_ReleaseSlot(ev);
-            e->stage++;
-            return;
-        }
-        if (d2_ClickedForm != e->slot->win)
-            return;
-        none = -1;
-        if (d2_ClickedId == -1)
-            return;
-        if (d2_ClickedId == 0) {
-            if (e->examAt == 0) {
-                for (i = 0; i < 4; i++)
-                    if (table->festGuests[i] == cand->netId)
-                        break;
-            } else {
-                for (i = 0; i < 4; i++)
-                    if (feast->festGuests[i] == cand->netId)
-                        break;
-            }
-            if (i < 4) {
-                txt_Format(buf, 0x1785, cand->id);
-                he_ShowNews(master->netId, -1, buf, 0, 0x5ec, 0);
-            }
-        } else if (d2_ClickedId == 1) {
-            if (e->examAt == 0) {
-                for (i = 0; i < 4; i++)
-                    if (table->festGuests[i] == cand->netId) {
-                        cm_BeginFieldBlock((char *)table, table->objId);
-                        cm_AddFieldDelta(4, 1, 0x1c + i * 4, &none);    /* table->festGuests[i] = -1 */
-                        cm_SendFieldDeltas();
-                        break;
-                    }
-            } else {
-                for (i = 0; i < 4; i++)
-                    if (feast->festGuests[i] == cand->netId) {
-                        feast->festGuests[i] = -1;
-                        cm_SendExSetHEI(0, ev);
-                        break;
-                    }
-            }
-            if (i < 4) {
-                txt_Format(buf, 0x1786, cand->id);
-                he_ShowNews(master->netId, -1, buf, 0, 0x5ec, 0);
-            }
-        }
-        he_ReleaseSlot(ev);
-        he_FreeEvent((int *)ev);
-        return;
-    case 2:
-        if (ai_MasterExamPassed(master, cand) == 1) {
-            if (e->examAt == 0) {
-                for (i = 0; i < 4; i++)
-                    if (table->festGuests[i] == cand->netId)
-                        break;
-            } else {
-                for (i = 0; i < 4; i++)
-                    if (feast->festGuests[i] == cand->netId)
-                        break;
-            }
-            if (i < 4) {
-                txt_Format(buf, 0x1785, cand->id);
-                he_ShowNews(master->netId, -1, buf, 0, 0x5ec, 0);
-            }
-        } else {
-            none = -1;
-            if (e->examAt == 0) {
-                for (i = 0; i < 4; i++)
-                    if (table->festGuests[i] == cand->netId) {
-                        cm_BeginFieldBlock((char *)table, table->objId);
-                        cm_AddFieldDelta(4, 1, 0x1c + i * 4, &none);    /* table->festGuests[i] = -1 */
-                        cm_SendFieldDeltas();
-                        break;
-                    }
-            } else {
-                for (i = 0; i < 4; i++)
-                    if (feast->festGuests[i] == cand->netId) {
-                        feast->festGuests[i] = -1;
-                        cm_SendExSetHEI(0, ev);
-                        break;
-                    }
-            }
-            if (i < 4) {
-                txt_Format(buf, 0x1786, cand->id);
-                he_ShowNews(master->netId, -1, buf, 0, 0x5ec, 0);
-            }
-        }
-        he_FreeEvent((int *)ev);
-        return;
-    }
-    return;
-fail:
-    if (e->slot != 0)
-        he_ReleaseSlot(ev);
-done:
-    he_FreeEvent((int *)ev);
-}
-/* 0x5455e0, the alloc handler of the random-message event 0x42 (ai_PostRandomMessages wraps a random message in
-   it): the due clock is now at a random hour 10 .. 19, minute 0 .. 0x3a and second 0 */
-
-void he_AllocRandomMessage(int ev)
-{
-    AIJOB *e = (AIJOB *)ev;
-
-    e->end = ai_Time;
-    e->end.hour = (short)(util_Random(10) + 10);
-    e->end.min = (unsigned short)util_Random(0x3b);
-    e->end.sec = 0;
-}
-
-/* 0x545640, the run handler of the random-message event 0x42: runs the message it wraps (a G14MSG at 0xac) unless
-   the event is cancelled (stage -2), then frees the event record */
-void he_RunRandomMessage(int ev)
-{
-    AIJOB *e = (AIJOB *)ev;
-
-    if (e->stage != -2)
-        ai_RunMessage(&e->u.id);
-    he_FreeEvent((int *)e);
-}
-
-
-/* 0x545670, a Ghidra miss (disassembled): the alloc handler of the patrol event 0x43, once it is started (opts bit
-   4 clear): the start clock is now; of the buildings of kind 6 (gm_BuildQuery 1, 6) up to 8 with a scene object,
-   other than the target and the start and not of type 0x47, within 950 of the target's object are collected, and
-   up to four of them in a random order (gm_Shuffled) become its way (patrolWay, else -1); prints the
-   "STREIFE_INIT" line (not shown), its first step is due in a second, and it is posted with key 0 */
-void he_AllocPatrol(int ev)
-{
-    AIJOB *e = (AIJOB *)ev;
-    AIBLD *target, *b;
-    D3OBJECT *p, *q;
-    int cand[8];
-    int pick[8];
-    char buf[0x100];
-    int n = 0;
-    int k;
-    float dx, dy, dz, dist;
-
-    if (e->opts & 4)
-        return;
-    e->start = ai_Time;
-    memset(cand, -1, sizeof(cand));
-    target = (AIBLD *)gm_BuildQuery(1, 1, e->patrolTarget);
-    for (b = (AIBLD *)gm_BuildQuery(1, 6); b != 0; b = (AIBLD *)gm_BuildNext()) {
-        if (n >= 8)
-            break;
-        p = (D3OBJECT *)b->object;
-        if (p != 0 && b->id != target->id && b->id != e->patrolStart && b->type != 0x47) {
-            q = (D3OBJECT *)target->object;
-            dx = p->pos.x - q->pos.x;
-            dy = p->pos.y - q->pos.y;
-            dz = p->pos.z - q->pos.z;
-            dist = (float)sqrt(dx * dx + dy * dy + dz * dz);
-            if (dist <= 950.0f)
-                cand[n++] = b->id;
-        }
-    }
-    if (n != 0) {
-        memset(e->patrolWay, -1, sizeof(e->patrolWay));
-        gm_Shuffled((unsigned char)n, pick);
-        for (k = 0; k < n && k < 4; k++)
-            e->patrolWay[k] = cand[pick[k]];
-    }
-    sprintf(buf, "STREIFE_INIT: Target: %i, Way: %i, %i, %i, %i, Start: %i", e->patrolTarget, e->patrolWay[0],
-            e->patrolWay[1], e->patrolWay[2], e->patrolWay[3], e->patrolStart);
-    e->end = ai_Time;
-    gm_AddTime(&e->end, 0, 0, 1);
-    e->patrolStep = 0;
-    e->patrolRound = 0;
-    e->patrolWait = -1;
-    e->exSlot = cm_SendExSetHEI(0, ev);
-}
-
-
-/* 0x545840, a Ghidra miss (disassembled): the run handler of the patrol event 0x43 (he_AllocPatrol); each stage
-   posts the next one with cm_SendExSetHE, due after gm_AddTime (hours, minutes, seconds). While none of the four
-   patrolGuards is found the event is put off a minute and ends (-1). Stage -2 runs stage 1 once and frees the event;
-   a set patrolWait enters stage 0x400. Stage 0 sends the guards with a scene character to the target building
-   ("Streife"; "GOTO_TARGET: %i", not shown; the others are dropped) -> 2; stage 2 / 0x400 wait while a guard's
-   scene character has actions queued (0x400 looks every 4 minutes and clears patrolWait) -> 3; stage 3 sends them
-   to the next way point (patrolStep) with a random gesture ("gestik/..." once or twice; "GOTO_NEXT: %i") -> 2, past
-   the last one counts patrolRound and starts at the target again -> 0, and 8 hours (0x1e0 minutes) after the start
-   turns home -> 1; stage 1 sends them to the start building's object 0x146 and pays the event's character for
-   each guard 3 .. 6 rolls of random(v * (v + 1)) + 2v, v = sk82 / 42 + 1 (gm_PlayerFactor of the sum: the news
-   0x1a6a and cm_SendMoveGoods; "GOTO_START: %i") -> -1, the end; a building not found ends it as well */
-void he_RunPatrol(int ev)
-{
-    AIJOB *e = (AIJOB *)ev;
-    AIBLD *b;
-    AIOBJ *o;
-    AICHAR *c;
-    char line[0x40];
-    char text[0x200];
-    int i, k, v, pay;
-    int gone = 0, leaving = 0, paid, sum;
-
-    if (e->stage == -1) {
-        he_FreeEvent((int *)ev);
-        return;
-    }
-    if (e->opts & 4) {
-        if (e->stage == -2)
-            he_FreeEvent((int *)ev);
-        return;
-    }
-    for (i = 0; i < 4; i++) {
-        if (gm_FindChar(e->patrolGuards[i]) != 0)
-            break;
-        gone++;
-    }
-    if (gone == 4) {
-        gm_AddTime(&e->end, 0, 1, 0);
-        e->exSlot = cm_SendExSetHEI(-1, ev);
-        return;
-    }
-    if (e->stage == -2) {
-        leaving = 1;
-        e->stage = 1;
-    }
-    if (e->patrolWait != -1)
-        e->stage = 0x400;
-    switch (e->stage) {
-    case 0:
-        b = (AIBLD *)gm_BuildQuery(1, 1, e->patrolTarget);
-        if (b == 0) {
-            e->end = ai_Time;
-            gm_AddTime(&e->end, 0, 1, 0);
-            e->exSlot = cm_SendExSetHEI(-1, ev);
-            return;
-        }
-        for (i = 0; i < 4; i++) {
-            if (e->patrolGuards[i] == -1)
-                continue;
-            c = (AICHAR *)gm_FindChar(e->patrolGuards[i]);
-            if (c != 0 && c->scene != 0) {
-                sv_MoveToGroup(0, 0, c->id, ev);
-                cm_SendChrStop(e->patrolGuards[i]);
-                cm_SendChrGotoBuilding(e->patrolGuards[i], b->id, -1, 0, 1, "Streife");
-            } else {
-                e->patrolGuards[i] = -1;
-            }
-        }
-        sprintf(line, "GOTO_TARGET: %i", b->id);
-        e->end = ai_Time;
-        gm_AddTime(&e->end, 0, 2, 0);
-        e->exSlot = cm_SendExSetHEI(2, ev);
-        return;
-    case 1:
-        b = (AIBLD *)gm_BuildQuery(1, 1, e->patrolStart);
-        if (b == 0) {
-            e->end = ai_Time;
-            gm_AddTime(&e->end, 0, 1, 0);
-            e->exSlot = cm_SendExSetHEI(-1, ev);
-            return;
-        }
-        o = (AIOBJ *)gm_Query((void *)b->objList, 1, 0, 0x146);
-        paid = 0;
-        sum = 0;
-        for (i = 0; i < 4; i++) {
-            if (e->patrolGuards[i] == -1)
-                continue;
-            c = (AICHAR *)gm_FindChar(e->patrolGuards[i]);
-            if (c != 0 && c->scene != 0) {
-                v = (int)((float)c->sk82 * 0.023809524f + 1.0f);
-                for (k = (unsigned short)util_Random(4) + 3; k > 0; k--)
-                    sum += (unsigned short)util_Random((v + 1) * v) + v * 2;
-                paid++;
-                cm_SendChrStop(e->patrolGuards[i]);
-                cm_SendChrGotoBuilding(e->patrolGuards[i], b->id, o->objId, 0, 0, "Streife");
-                sv_MoveToGroup(0, 0, c->id, ev);
-            } else {
-                e->patrolGuards[i] = -1;
-            }
-        }
-        if (leaving) {
-            he_FreeEvent((int *)ev);
-            return;
-        }
-        if (paid != 0) {
-            pay = gm_PlayerFactor(sum, ai_OwnPlayer);
-            txt_Format(text, 0x1a6a, pay);
-            he_MessageBoxQuickjump(ai_CharInts[e->chr][0], -1, text, 0, 0x5ec, b->id, -1, 0, (char *)0);
-            cm_SendMoveGoods(ai_CharInts[e->chr][0], -1, ai_OwnPlayer, pay);
-        }
-        e->end = ai_Time;
-        gm_AddTime(&e->end, 0, 2, 0);
-        e->exSlot = cm_SendExSetHEI(-1, ev);
-        sprintf(line, "GOTO_START: %i", b->id);
-        return;
-    case 2:
-        for (i = 0; i < 4; i++) {
-            if (e->patrolGuards[i] != -1 && (c = (AICHAR *)gm_FindChar(e->patrolGuards[i])) != 0 && c->scene != 0
-                && c->scene->actions != 0)
-                return;
-        }
-        e->end = ai_Time;
-        gm_AddTime(&e->end, 0, 2, 0);
-        e->exSlot = cm_SendExSetHEI(3, ev);
-        return;
-    case 0x400:
-        for (i = 0; i < 4; i++) {
-            if (e->patrolGuards[i] != -1 && (c = (AICHAR *)gm_FindChar(e->patrolGuards[i])) != 0 && c->scene != 0
-                && c->scene->actions != 0) {
-                gm_AddTime(&e->end, 0, 4, 0);
-                e->exSlot = cm_SendExSetHEI(0x400, ev);
-                return;
-            }
-        }
-        e->end = ai_Time;
-        e->patrolWait = -1;
-        gm_AddTime(&e->end, 0, 2, 0);
-        e->exSlot = cm_SendExSetHEI(3, ev);
-        return;
-    case 3:
-        if (e->patrolStep <= 3 && e->patrolWay[e->patrolStep] != -1) {
-            if (gm_MinutesBetween(&e->start, &ai_Time) > 0x1e0) {
-                e->end = ai_Time;
-                gm_AddTime(&e->end, 0, 2, 0);
-                e->exSlot = cm_SendExSetHEI(1, ev);
-                return;
-            }
-            b = (AIBLD *)gm_BuildQuery(1, 1, e->patrolWay[e->patrolStep]);
-            e->patrolStep++;
-            if (b == 0) {
-                e->end = ai_Time;
-                gm_AddTime(&e->end, 0, 2, 0);
-                e->exSlot = cm_SendExSetHEI(1, ev);
-                return;
-            }
-            for (i = 0; i < 4; i++) {
-                if (e->patrolGuards[i] == -1)
-                    continue;
-                c = (AICHAR *)gm_FindChar(e->patrolGuards[i]);
-                if (c != 0 && c->scene != 0) {
-                    char gestures[3][0x20] = { "gestik/kopf_kratzen", "gestik/durch_haar_fahr", "gestik/kinn_kratzen" };
-
-                    sv_MoveToGroup(0, 0, c->id, ev);
-                    cm_SendChrStop(e->patrolGuards[i]);
-                    cm_SendChrGotoBuilding(e->patrolGuards[i], b->id, -1, 0, 1, "Streife");
-                    k = (unsigned short)util_Random(2) + 1;
-                    cm_SendChrAnim(e->patrolGuards[i], gestures[(unsigned short)util_Random(3)], k);
-                } else {
-                    e->patrolGuards[i] = -1;
-                }
-            }
-            e->end = ai_Time;
-            gm_AddTime(&e->end, 0, 2, 0);
-            e->exSlot = cm_SendExSetHEI(2, ev);
-            sprintf(line, "GOTO_NEXT: %i", b->id);
-            return;
-        }
-        if (gm_MinutesBetween(&e->start, &ai_Time) > 0x1e0) {
-            e->end = ai_Time;
-            gm_AddTime(&e->end, 0, 2, 0);
-            e->exSlot = cm_SendExSetHEI(1, ev);
-            return;
-        }
-        e->patrolStep = 0;
-        e->patrolRound++;
-        e->end = ai_Time;
-        gm_AddTime(&e->end, 0, 2, 0);
-        e->exSlot = cm_SendExSetHEI(0, ev);
-        return;
-    }
-}
-
-int gv_HeldCrimeIdsOf(int culprit, int *out, unsigned short t);
-
-/* 0x546100, the alloc handler of the raid event 0x44 ("Razzia", its run handler he_RunRaid): when it runs when due
-   and its target building (gm_BuildQuery kind 1) is gone, it ends the event at once; either way it posts the event
-   again in a second */
-
-void he_AllocRaid(int ev)
-{
-    AIJOB *e = (AIJOB *)ev;
-
-    if ((e->opts & 2) != 0) {
-        if (gm_BuildQuery(1, 1, e->raidTarget) == 0) {
-            e->end = ai_Time;
-            gm_AddTime(&e->end, 0, 0, 1);
-            e->exSlot = cm_SendExSetHEI(-1, ev);
-        }
-        e->end = ai_Time;
-        gm_AddTime(&e->end, 0, 0, 1);
-        e->exSlot = cm_SendExSetHEI(0, ev);
-    }
-}
-
 
 #define HE_REC(id) ((unsigned)&ai_Chars + (id) * 0x21c)
-
-/* 0x5461c0, a Ghidra miss (disassembled): the run handler of the raid event 0x44 ("Razzia"; the raiders are ids[],
-   the buildings raidTarget / raidStart). It waits for the event's cm send slot (exSlot); stage -2 (left) runs
-   stage 1 once and frees the event. Stage 0 sends the raiders to the target ("Razzia"; the others are dropped) -> 2,
-   while the target has an owner, else the event ends (-1, as when a building is not found); stage 2 waits until no
-   raider's scene character has actions queued -> 3; stage 3 rolls random(0x4b) + 100 * the start building's spy
-   report on the target (its object 0xca: (100 + reportKnow) / 100, 5 with gm_AllowAll) against 125 * (1 + 0.01 *
-   gm_BuildingSkill(target, 5, 1)): above it a fight party of kind 3 (G28REC.raid: the target's living
-   people against the raiders, half an hour on) is posted -> 4, but with no defender or no raider the target
-   is looted (cm_LootStock, the news 0x1c54 / 0x1c55 to the players among owner and raider) -> 1; not above it
-   the raid fails (the news 0x114b with the start building's fight role, 0x1c56 to a player owner) -> -1;
-   stage 4 waits for the party's slot and keeps its id -> 5, stage 5 until the party is over -> 1; stage 1
-   (only with opts 2) sends the living raiders back to the start building's object 0x146 -> -1; stage -1
-   sends them to its main room and frees the event. The opts tests of the stages 0 and 2 are
-   @original `(opts == 0) & 2`, never true.
-   @deep Read whole against the original and fixed: stage -1 last in the switch (table equal), text[0x800]
-   (frame 0x924 equal), the party lists initialised -1 (G28REC.raid), the defenders scan as an index loop
-   over ai_Chars (signed jl, health && bld == the target), the start building queried into its own temp
-   before gm_Query 0xca, the spy-report search as for/break + if, the failure branch's kind tests re-read
-   ai_Chars[b->owner]; 826 vs 825 instructions. Left: scheduling and allocation only: the entry (ours mov
-   edi,1 before the 1.0f store, the original stores 1.0f first and keeps 1 in ebp: edi->ebp throughout),
-   the -1 of raid100 in ebp (ours) vs eax (+0x546704), the party.time copy loads in another register order
-   (+0x546775), the cm_LootStock / he_MessageBoxQuickjump / he_ShowNews argument address computations
-   interleaved with the pushes in another order (+0x546813..+0x54691c: the same lea chains,
-   ai_Chars[b->owner] pushed at once in the original); the prover stops at the switch jump (references: M8
-   at +0x5af: ours refers to ai_Time+0x4 (0x770ae4), the original's field to 0x770ae0 (ai_Time) (and 1
-   more), explained: the two ref: M8 lines (+0x5b5 / +0x5ba) are the party.time copy of ai_Time loaded in
-   another register order (ours eax=[+4], edx=[+0], ecx=[+8]; the original ecx=[+4], eax=[+0], edx=[+8]):
-   the alignment pairs different loads, the same four words are copied to party.time) */
-void he_RunRaid(int ev)
-{
-    AIJOB *e = (AIJOB *)ev;
-    AIBLD *b, *home;
-    AICHAR *c, *raider;
-    AIOBJ *o;
-    G28REC party;
-    char text[0x800];
-    int i, n, k, loot, role;
-    int leaving = 0, idle = 1;
-    float chance = 1.0f, defence;
-
-    if (e->stage == -2) {
-        if ((e->opts & 2) == 0) {
-            he_FreeEvent((int *)ev);
-            return;
-        }
-        leaving = 1;
-        e->stage = 1;
-    }
-    if (e->exSlot != -1 && cm_GetSlotState(e->exSlot) == 0)
-        return;
-    e->exSlot = -1;
-    switch (e->stage) {
-    case 0:
-        if ((e->opts == 0) & 2)
-            return;
-        b = (AIBLD *)gm_BuildQuery(1, 1, e->raidTarget);
-        if (b == 0 || b->owner == 0xffff) {
-            e->end = ai_Time;
-            gm_AddTime(&e->end, 0, 1, 0);
-            e->exSlot = cm_SendExSetHEI(-1, ev);
-            return;
-        }
-        for (i = 0; i < 8; i++) {
-            if (e->ids[i] == -1)
-                continue;
-            c = (AICHAR *)gm_FindChar(e->ids[i]);
-            if (c != 0) {
-                sv_MoveToGroup((unsigned char *)b, 0, c->id, (char *)ev);
-                cm_SendChrStop(e->ids[i]);
-                cm_SendChrGotoBuilding(e->ids[i], b->id, -1, 0, 0, "Razzia");
-            } else {
-                e->ids[i] = -1;
-            }
-        }
-        e->end = ai_Time;
-        gm_AddTime(&e->end, 0, 2, 0);
-        e->exSlot = cm_SendExSetHEI(2, ev);
-        return;
-    case 1:
-        if ((e->opts & 2) == 0)
-            return;
-        home = (AIBLD *)gm_BuildQuery(1, 1, e->raidStart);
-        if (home == 0) {
-            e->end = ai_Time;
-            gm_AddTime(&e->end, 0, 1, 0);
-            e->exSlot = cm_SendExSetHEI(-1, ev);
-            return;
-        }
-        o = (AIOBJ *)gm_Query((void *)home->objList, 1, 0, 0x146);
-        for (i = 0; i < 8; i++) {
-            if (e->ids[i] == -1)
-                continue;
-            c = (AICHAR *)gm_FindChar(e->ids[i]);
-            if (c != 0 && c->health > 0) {
-                cm_SendChrStop(e->ids[i]);
-                cm_SendChrGotoBuilding(e->ids[i], home->id, o->objId, 0, 0, "Razzia");
-                sv_MoveToGroup((unsigned char *)home, 0, c->id, (char *)ev);
-            } else {
-                e->ids[i] = -1;
-            }
-        }
-        e->end = ai_Time;
-        gm_AddTime(&e->end, 0, 2, 0);
-        if (leaving) {
-            he_FreeEvent((int *)ev);
-            return;
-        }
-        e->exSlot = cm_SendExSetHEI(-1, ev);
-        return;
-    case 2:
-        if ((e->opts == 0) & 2)
-            return;
-        for (i = 0; i < 8; i++) {
-            if (e->ids[i] != -1 && (c = (AICHAR *)gm_FindChar(e->ids[i])) != 0 && c->scene->actions != 0) {
-                idle = 0;
-                break;
-            }
-        }
-        e->end = ai_Time;
-        gm_AddTime(&e->end, 0, 2, 0);
-        if (idle)
-            e->exSlot = cm_SendExSetHEI(3, ev);
-        else
-            e->exSlot = cm_SendExSetHEI(2, ev);
-        return;
-    case 3:
-        if ((e->opts & 2) == 0)
-            return;
-        b = (AIBLD *)gm_BuildQuery(1, 1, e->raidTarget);
-        c = &ai_CharsT[b->owner];
-        raider = &ai_CharsT[e->chr];
-        defence = (float)(gm_BuildingSkill(b, 5, 1) * 0.01 + 1.0);
-        home = (AIBLD *)gm_BuildQuery(1, 1, e->raidStart);
-        o = (AIOBJ *)gm_Query((void *)home->objList, 1, 0, 0xca);
-        for (; o != 0; o = (AIOBJ *)gm_QueryNext())
-            if (o->reportBld == b->id)
-                break;
-        if (o != 0)
-            chance = (float)((o->reportKnow + 100.0) * 0.01);
-        if (gm_AllowAll != 0)
-            chance = 5.0f;
-        if ((float)(unsigned short)util_Random(0x4b) + chance * 100.0f > defence * 125.0f) {
-            memset(&party, 0, sizeof(party));
-            party.kind = 3;
-            party.flags = 0xa2;
-            party.thing = b->id;
-            party.host = ai_CharInts[ai_PlayerId][0];
-            party.used = 2;
-            party.variant = 2;
-            party.members[0] = raider->netId;
-            party.members[1] = c->netId;
-            for (i = 0; i < 16; i++) {
-                party.raid.raiders[i] = -1;
-                party.raid.defenders[i] = -1;
-            }
-            n = 0;
-            for (i = 0; i < 768 && n < 16 && n < 6; i++) {
-                if (ai_CharsT[i].health != 0 && ai_CharsT[i].bld == b) {
-                    party.raid.defenders[n] = ai_CharsT[i].netId;
-                    n++;
-                }
-            }
-            party.raid.raid100[0] = -1;
-            party.raid.raid100[1] = -1;
-            party.raid.raid100[2] = -1;
-            party.raid.raidHome = ((AIBLD *)gm_BuildQuery(1, 1, e->raidStart))->id;
-            k = 0;
-            for (i = 0; i < 8 && k < 6; i++) {
-                if (e->ids[i] != -1) {
-                    party.raid.raiders[k] = e->ids[i];
-                    k++;
-                }
-            }
-            if (k != 0 && n != 0) {
-                party.time = ai_Time;
-                gm_AddTime(&party.time, 0, 0x1e, 0);
-                e->raidSlot = cm_SendNewParty(&party);
-                e->end = ai_Time;
-                gm_AddTime(&e->end, 0, 0, 1);
-                e->stage = 4;
-                return;
-            }
-        } else {
-            role = cm_FightRole(gm_BuildQuery(1, 1, e->raidStart)) + 0x1125;
-            txt_Format(text, 0x114b, role, b->owner, b, role);
-            he_ShowNews(ai_CharInts[e->chr][0], -1, text, 0, 0x5f0, (char *)0);
-            if (ai_CharsT[b->owner].kind == 6 || ai_CharsT[b->owner].kind == 7) {
-                txt_Format(text, 0x1c56, b);
-                he_MessageBoxQuickjump(ai_CharInts[b->owner][0], -1, text, 0, 0x5f0, b->id, -1, 0, (char *)0);
-            }
-            e->stage = -1;
-            return;
-        }
-        home = (AIBLD *)gm_BuildQuery(1, 1, e->raidStart);
-        b = (AIBLD *)gm_BuildQuery(1, 1, e->raidTarget);
-        loot = cm_LootStock(b, home, &ai_CharsT[e->chr], &ai_CharsT[b->owner]);
-        if (ai_CharsT[b->owner].kind == 6 || ai_CharsT[b->owner].kind == 7) {
-            txt_Format(text, 0x1c54, b, loot);
-            he_MessageBoxQuickjump(ai_CharInts[b->owner][0], -1, text, 0, 0x5f0, b->id, -1, 0, (char *)0);
-        }
-        if (ai_CharsT[e->chr].kind == 6 || ai_CharsT[e->chr].kind == 7) {
-            txt_Format(text, 0x1c55, b->owner, b, loot);
-            he_ShowNews(ai_CharInts[e->chr][0], -1, text, 0, 0x5f0, (char *)0);
-        }
-        e->end = ai_Time;
-        gm_AddTime(&e->end, 0, 0, 1);
-        e->stage = 1;
-        return;
-    case 4:
-        if (cm_GetSlotState(e->raidSlot) == 0)
-            return;
-        e->raidParty = ((G28REC *)cm_GetSlotValue(e->raidSlot))->id;    /* the slot's value: the party record made */
-        e->end = ai_Time;
-        gm_AddTime(&e->end, 0, 1, 0);
-        e->stage = 5;
-        return;
-    case 5:
-        if (cm_PartyById(e->raidParty) != 0) {
-            e->end = ai_Time;
-            gm_AddTime(&e->end, 0, 5, 0);
-            return;
-        }
-        e->end = ai_Time;
-        gm_AddTime(&e->end, 0, 0, 1);
-        e->stage = 1;
-        return;
-    case -1:
-        if (e->opts & 2) {
-            home = (AIBLD *)gm_BuildQuery(1, 1, e->raidStart);
-            o = (AIOBJ *)gm_GetGebaeudeHauptraum((unsigned char *)home);
-            for (i = 0; i < 8; i++) {
-                if (e->ids[i] != -1 && (c = (AICHAR *)gm_FindChar(e->ids[i])) != 0) {
-                    cm_SendChrStop(e->ids[i]);
-                    cm_SendChrGotoBuilding(e->ids[i], home->id, o->objId, 0, 0, "Razzia");
-                    sv_MoveToGroup((unsigned char *)home, 0, c->id, 0);
-                }
-            }
-        }
-        he_FreeEvent((int *)ev);
-        return;
-    }
-}
-/* 0x546c40, a Ghidra miss (disassembled): the alloc handler of the fight event 0x45 between partner1 (a) and
-   partner2 (b), its run handler 0x546ef0 the end: the event is due from now, stage 2. Unless it is started (opts 2)
-   nothing more; with a or b gone, a already fighting (flags1c8 0x100) or b already fought (0x200) it ends in two
-   minutes. With +0xb4 set (id3) it runs a day and a player b hears the news 0x1e18 (code -4); else it runs four
-   days, a player b hears 0x1d5b, a is accused of the crime 0x16 against b (at a's home, else b's: gv_Accuse), a's
-   relation to b gets 0x34, up to three crimes of b whose evidence a holds are dropped (gv_HeldCrimeIdsOf in a
-   random order, cm_SendDropEvidence), a player a counts the mission event 0xb, code -2. Both get their flag and
-   cm_SendMoneyDelta(a, code) */
-void he_AllocFight(int ev)
-{
-    AIJOB *e = (AIJOB *)ev;
-    AICHAR *a, *b;
-    char text[0x100];
-    int pick[16];
-    int crimes[32];
-    int code, place, n, i;
-    AIBLD *home;
-
-    e->end = ai_Time;
-    e->stage = 2;
-    if ((e->opts & 2) == 0)
-        return;
-    a = (AICHAR *)gm_FindChar(e->partner1);
-    b = (AICHAR *)gm_FindChar(e->partner2);
-    if (a == 0 || (a->flags1c8 & 0x100) != 0 || b == 0 || (b->flags1c8 & 0x200) != 0) {
-        e->end = ai_Time;
-        gm_AddTime(&e->end, 0, 2, 0);
-        e->exSlot = cm_SendExSetHEI(-1, ev);
-        return;
-    }
-    if (e->id3 != 0) {
-        gm_AddTime(&e->end, 0x18, 0, 0);
-        e->end.min = 0;
-        if (b->kind == 6 || b->kind == 7) {
-            txt_Format(text, 0x1e18, a->id);
-            he_ShowNews(b->netId, -1, text, 0, 0x5fb, "_NACHRICHTEN_NEU_04");
-        }
-        code = -4;
-    } else {
-        gm_AddTime(&e->end, 0x60, 0, 0);
-        e->end.min = 0;
-        code = -2;
-        if (b->kind == 6 || b->kind == 7) {
-            txt_Format(text, 0x1d5b, a->id, a->id);
-            he_ShowNews(b->netId, -1, text, 0, 0x5fb, "_NACHRICHTEN_HS_21");
-        }
-        place = -1;
-        home = a->bld2;
-        if (home == 0)
-            home = b->bld2;
-        if (home != 0)
-            place = home->id;
-        gv_Accuse(0x16, 1, a->netId, b->netId, place);
-        cm_SendRelations(a->netId, b->netId, 0x34, 1);
-        n = gv_HeldCrimeIdsOf(b->netId, crimes, a->id);
-        gm_Shuffled(n < 0x10 ? n : 0x10, pick);
-        for (i = 0; i < 3 && n != 0; i++, n--)
-            cm_SendDropEvidence(crimes[pick[i]], a->netId, 0);
-        if (a->kind == 6)
-            ai_CountMissionEvent(a, 0xb);
-    }
-    cm_SendSetField(a->netId, 0x1c8, 4, 0x100, 0);
-    cm_SendSetField(b->netId, 0x1c8, 4, 0x200, 0);
-    cm_SendMoneyDelta(a->netId, code);
-}
-/* 0x546ef0, a Ghidra miss (disassembled): the run handler of the fight event 0x45 (he_AllocFight): at stage 2
-   (started, opts 2) both fighters lose their flag (flags1c8 0x100 / 0x200); with both found the outcome id3 tells:
-   1 / 2 a player partner2 (b) hears the news 0x1e19 / 0x1e20, else a's relation to b drops by 0x68 and b hears
-   0x1d5d, a player a's news 0x1d5c goes to b as well; the event ends in two minutes. Stage -1 / -2 (left) clears
-   the flags (when started) and frees the event */
-void he_RunFight(int ev)
-{
-    AIJOB *e = (AIJOB *)ev;
-    AICHAR *a, *b;
-    char text[0x100];
-
-    switch (e->stage) {
-    case 2:
-        if ((e->opts & 2) == 0)
-            return;
-        a = (AICHAR *)gm_FindChar(e->partner1);
-        if (a != 0)
-            cm_SendSetField(a->netId, 0x1c8, 4, 0, 0x100);
-        b = (AICHAR *)gm_FindChar(e->partner2);
-        if (b != 0)
-            cm_SendSetField(b->netId, 0x1c8, 4, 0, 0x200);
-        if (a != 0 && b != 0) {
-            if (e->id3 == 1) {
-                if (b->kind == 6 || b->kind == 7) {
-                    txt_Format(text, 0x1e19, a->id);
-                    he_ShowNews(b->netId, -1, text, 0, 0x5fb, (char *)0);
-                }
-            } else if (e->id3 == 2) {
-                if (b->kind == 6 || b->kind == 7) {
-                    txt_Format(text, 0x1e20, a->id);
-                    he_ShowNews(b->netId, -1, text, 0, 0x5fb, (char *)0);
-                }
-            } else {
-                cm_SendRelations(a->netId, b->netId, -0x68, 1);
-                if (b->kind == 6 || b->kind == 7) {
-                    txt_Format(text, 0x1d5d, a->id);
-                    he_ShowNews(b->netId, b->netId, text, 0, 0x5fb, (char *)0);
-                }
-                if (a->kind == 6 || a->kind == 7) {
-                    txt_Format(text, 0x1d5c, b->id);
-                    he_ShowNews(b->netId, b->netId, text, 0, 0x5fb, (char *)0);
-                }
-            }
-        }
-        e->end = ai_Time;
-        gm_AddTime(&e->end, 0, 2, 0);
-        e->exSlot = cm_SendExSetHEI(-1, ev);
-        return;
-    case -1:
-    case -2:
-        if (e->opts & 2) {
-            a = (AICHAR *)gm_FindChar(e->partner1);
-            if (a != 0)
-                cm_SendSetField(a->netId, 0x1c8, 4, 0, 0x100);
-            b = (AICHAR *)gm_FindChar(e->partner2);
-            if (b != 0)
-                cm_SendSetField(b->netId, 0x1c8, 4, 0, 0x200);
-        }
-        he_FreeEvent((int *)ev);
-        return;
-    }
-}
-/* 0x547170, the alloc handler of the duel challenge event 0x46 (its run handler he_RunDuelChallenge): the start and
-   the due clock are now, the event runs two units later */
-
-void he_AllocDuelChallenge(int ev)
-{
-    AIJOB *e = (AIJOB *)ev;
-
-    e->start = ai_Time;
-    e->end = ai_Time;
-    gm_AddTime(&e->end, 2, 0, 0);
-}
 
 
 /* 0x550370, one step of the reaper's flight to the building reaperTo (in scene 0): while the object follows a path
@@ -22300,7 +22283,6 @@ int he_RegisterEventTypes99(void)
 }
 
 
-
 /* 0x56e460, the alloc of the event 0x99 (not while paused, flags +0x78 & 4): when another event of the type 0x99 of the same player (+8) already runs, this one only announces the text 0x3ff7 (0x5176d0 / 0x53dda0), schedules with the handle -1 (0x4c4c60 ( -1, ev) into +0x84) and frees; else the start clock +0x44 and the due clock +0x52 = now, due 1, +0xcc = the notification 0x4c59f0 (0xd, ev's +0xb0, -1, 0x2d, 0, 0, the text 0x628dc8) and the handler scheduled (0x4c4c60 (0, ev)) into +0x84 */
 void he_AllocSecretRoom(AIJOB *e)
 {
@@ -25180,12 +25162,6 @@ int he_HasEvent9f(AICHAR *a)
 {
     return he_FindEvent(2, 0, 0x9f, 2, a->id) != 0;
 }
-/* 0x5741d0, the curse event 0xa0 the building `a` sent (he_FindEvent (2, 0, 0xa0, 3, a->id): its from id), 0 when none */
-
-char *ai_FindCurseEvent(char *a)
-{
-    return he_FindEvent(2, 0, 0xa0, 3, ((AIBLD *)a)->id);
-}
 /* 0x574120, the alloc of the event 0xa0: nothing while paused (opts & 4); start and end = now; when gm_AllowAll is set
    the end moves 1 hour ahead, else 24 hours with the hour 0x13 + random (2); the minute 0 and the handler scheduled with 0 */
 
@@ -25208,6 +25184,12 @@ void he_AllocTrialScene(int ev)
 }
 
 
+/* 0x5741d0, the curse event 0xa0 the building `a` sent (he_FindEvent (2, 0, 0xa0, 3, a->id): its from id), 0 when none */
+
+char *ai_FindCurseEvent(char *a)
+{
+    return he_FindEvent(2, 0, 0xa0, 3, ((AIBLD *)a)->id);
+}
 /* 0x5741f0, the trial payment of the event 0xa0 (state 1 of he_RunTrialScene): the building from (gm_FindById) and the
    character netId (gm_FindChar) must exist. By the building's trial kind (gm_TrialBuildingKind) and the trial's level
    the bar (the liking a figure needs) and a bonus count are: kind 3: 40 + 20 / 10 / 0 and 10 / 20 / 25 for a level
