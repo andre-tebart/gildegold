@@ -19496,20 +19496,12 @@ void he_AllocHint(AIJOB *ev)
     ev->end.hour = he_Hints[0].hour;
     ev->end.min = he_Hints[0].min;
 }
-/* 0x567a80, the run handler of the tutorial hint event 0x83: state 0 shows the he_Hints entry of the event's index (its text id through he_ShowNews to the local player, when the hint option ai_GamePanel.byte[1] is on), steps to the next entry and sets the next run to that entry's due clock; an empty entry ends (state 1); stages -1 / -2 free the record
-   @deep read the whole function against the original and rebuilt the statements: the hint entry
-   (he_Hints[h->entry].text) shown through he_ShowNews when ai_GamePanel.byte[1] is on, the step to the
-   next entry and its due clock, the empty entry ending at stage 1, the free of the stages -1 / -2. Only
-   allocation is left: ours keeps i (the next entry) in eax and pushes edi only in the clock path, the
-   original keeps i in edi (mov edi,[esi+0xac]; inc edi; mov eax,edi; mov [esi+0xac],edi) and so pushes edi
-   at the top (+0x5) and pops it in the shared epilogue; 68 vs 71 instructions. Tried: the early-return
-   form, the nested if/else and the if (st >= 0) { ... return; } he_FreeEvent form (the last puts the free
-   block at the end and leaves only the edi hunk), int and unsigned i, the declaration orders; no change. */
+/* 0x567a80, the run handler of the tutorial hint event 0x83: state 0 shows the he_Hints entry of the event's index (its text id through he_ShowNews to the local player, when the hint option ai_GamePanel.byte[1] is on), steps to the next entry and sets the next run to that entry's due clock; an empty entry ends (state 1); stages -1 / -2 free the record */
 
 void he_RunHint(AIJOB *ev)
 {
     HEHINTEVENT *h = (HEHINTEVENT *)ev;
-    int st, v, i;
+    int st, v;
 
     st = ev->stage;
     if (st < -2)
@@ -19520,16 +19512,15 @@ void he_RunHint(AIJOB *ev)
         v = he_Hints[h->entry].text;
         if (v != 0 && v != -1 && ai_GamePanel.byte[1] != 0)
             he_ShowNews(ai_CharsT[ai_PlayerId].netId, -1, d2_Strings[v], 0x40, 0x5f9, 0);
-        i = h->entry + 1;
-        h->entry = i;
-        if (he_Hints[i].text == 0) {
+        h->entry++;
+        if (he_Hints[h->entry].text == 0) {
             ev->stage = 1;
             return;
         }
         ev->end = ai_Time;
-        ev->end.year = he_Hints[i].year;
-        ev->end.hour = he_Hints[i].hour;
-        ev->end.min = he_Hints[i].min;
+        ev->end.year = he_Hints[h->entry].year;
+        ev->end.hour = he_Hints[h->entry].hour;
+        ev->end.min = he_Hints[h->entry].min;
         return;
     }
     he_FreeEvent((int *)ev);
