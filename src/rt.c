@@ -349,11 +349,12 @@ int rt_ChooseRouteGood(int x, RTPOINT *p)
     int o;
     int objs[10];
     int goods[24];
+    RTPOINT *q;
 
-    n = 0;
     ret = 0;
-    for (; p != 0; p = p->next) {
-        s = p->loadSlots;
+    n = 0;
+    for (q = p; q != 0; q = q->next) {
+        s = q->loadSlots;
         for (k = 3; k != 0; k--) {
             if (s[0] != 0 && s[1] > 0)
                 goods[n++] = s[0];
