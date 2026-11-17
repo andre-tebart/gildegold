@@ -433,7 +433,13 @@ int sv_MessageBox(int text, unsigned flags)
     d2_CloseView(form);
     return ret;
 }
-/* 0x521410, the green message box ("misc\\MessageBoxGreen" 0x623ed0) with an optional title text a and the text b; like 0x521150, a button returns its number + 1. Not reentrant (sv_MessageBoxGreenOpen, 0x6f2351) */
+/* 0x521410, the green message box ("misc\\MessageBoxGreen" 0x623ed0) with an optional title text a and the text b; like 0x521150, a button returns its number + 1. Not reentrant (sv_MessageBoxGreenOpen, 0x6f2351)
+   @deep size fixed s4 (644 = original): bar = -1 as an init with the slider opened under if (flags & 0x80)
+   (the original's -1 store at the top, mov esi,[bar] at the join); 7 -> 2 ins. Left: the original stores
+   -1 before the open-box guard (mov [esp+0x14],-1 before je), ours after it; with bar = -1 before the
+   guard (any of the 24 orders of t0 / i / ret / bar) the zero constant moves from esi to ebp (82 ins);
+   every split of the inits around the guard: best 2 ins (t0, i, ret | guard | bar, or t0, ret | guard | i,
+   bar). */
 
 int sv_MessageBoxGreen(int a, int b, unsigned flags)
 {
@@ -447,6 +453,7 @@ int sv_MessageBoxGreen(int a, int b, unsigned flags)
     ret = 0;
     if (sv_MessageBoxGreenOpen != 0)
         return 0;
+    bar = -1;
     mask = sv_FrameMask & 0xffffffc7;
     form = d2_OpenForm(0, 0, "misc\\MessageBoxGreen");
     if ((flags & 8) != 0)
@@ -472,9 +479,7 @@ int sv_MessageBoxGreen(int a, int b, unsigned flags)
     }
     d2_RadioSelect(idx, 0);
     d2_SetForm(form, 0);
-    if ((flags & 0x80) == 0)
-        bar = -1;
-    else
+    if ((flags & 0x80) != 0)
         bar = d2_WinOpenSlider(0x1c, d2_LastWindowPtr->h - 0x18, d2_LastWindowPtr->w - 0x40, 0, 500, 0x83, 0x42, d2_LastWindow);
     while (sv_RunFrame(sv_MessageBoxGreen, mask) != 0) {
         d2_MenuNavigate(idx);
