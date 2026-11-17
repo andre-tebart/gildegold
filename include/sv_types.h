@@ -15,16 +15,22 @@ typedef struct SVWEATHER {              /* 0x188 bytes at 0x760488: the day's we
     float windY[24];                    /* +0x128, cos of the angle */
 } SVWEATHER;
 
-typedef struct SVCLIMATE {              /* 0x18c bytes at 0x760484: the season's climate and the day's weather as one object
-                                           (sv_WeatherFrame reads the previous hour's clouds through one base with the
-                                           hour's: the original keeps the weather 4 bytes after the climate) */
-    int seasonClimate;                  /* +0x000, sv_SeasonClimate: ai_SeasonClimate of the own player and the season */
-    SVWEATHER weather;                  /* +0x004, sv_Weather */
+typedef struct SVCLIMATE {              /* 0x190 bytes at 0x760480: the cloud chance, the season's climate and the day's
+                                           weather as one object (sv_WeatherFrame reads the previous hour's clouds through
+                                           one base with the hour's: the original keeps the weather 4 bytes after the
+                                           climate; the 0x18c bytes from the climate on sit at 0x760484, off the 32-byte
+                                           alignment of a common that size: the object starts with the cloud chance) */
+    int cloudChance;                    /* +0x000, sv_CloudChance */
+    int seasonClimate;                  /* +0x004, sv_SeasonClimate: ai_SeasonClimate of the own player and the season */
+    SVWEATHER weather;                  /* +0x008, sv_Weather */
 } SVCLIMATE;
 
-typedef struct SVBAND {                 /* 0x10 bytes at 0x760444: the rubber band selection (sv_StartBand / sv_UpdateBand) */
-    int x0, y0;                         /* +0x00, the corner where the band started (the mouse at the start, clamped to d3_Viewport) */
-    int x1, y1;                         /* +0x08, the corner at the mouse (not ordered against x0 / y0) */
+typedef struct SVBAND {                 /* 0x14 bytes at 0x760440: the rubber band selection (sv_StartBand / sv_UpdateBand); the
+                                           corners at 0x760444 are off the 16-byte alignment of a 16-byte common: the
+                                           object starts with the active flag */
+    int active;                         /* +0x00, sv_BandActive: 1 while the band is dragged */
+    int x0, y0;                         /* +0x04, the corner where the band started (the mouse at the start, clamped to d3_Viewport) */
+    int x1, y1;                         /* +0x0c, the corner at the mouse (not ordered against x0 / y0) */
 } SVBAND;
 
 typedef struct SVBOOK {                 /* 0x274 bytes, an open book ("f3_sv:OpenBook", sv_OpenBook) */

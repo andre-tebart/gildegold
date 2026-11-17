@@ -79,7 +79,6 @@ extern const int sv_PhaseMinutes[24];
 extern float d3s_QuadUV[6];
 extern GAPDATA full_data_5fea38[];
 
-extern int sv_PanelFlag;
 extern GAPDATA full_data_602568[];
 
 
@@ -319,11 +318,9 @@ extern int sv_PopRequest;
 
 extern int sv_FrameMask;
 extern unsigned char kb_Last;
-extern int sv_PanelFlag;
 
 extern unsigned char kb_Last;
 extern int sv_FrameMask;
-extern int sv_PanelFlag;
 extern char ai_Chars[768][0x21c];
 
 #define AI_4A63F0_7(p, a, fl, b, c, f, o) ((int (*)(void *, int, unsigned int, int, int, float, int *))ai_PickActionBuilding)(p, a, fl, b, c, f, o)

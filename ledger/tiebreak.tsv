@@ -3475,7 +3475,7 @@ exe	0x00537f40	main_EndGame	main	68671b89ac5fb237	no	byte	control=byte p1=byte p
 exe	0x00538140	main_RundenBeginn	main	503e9d8c2106fe24	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005384e0	main_EndRound	main	87bb9c64cddb5a00	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00539620	main_ReplaceFigure	main	c35457202d9f562a	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	af22ce15de209ae0
-exe	0x00539870	main_RoundReport	main	4454050e6938977e	yes	byte	sweep control=shape best=byte by 13 unused typedefs at the unit's start; codegens=2 compiled=36 (stopped at the goal)	be97f6b717cb0f12
+exe	0x00539870	main_RoundReport	main	4454050e6938977e	yes	byte	sweep control=shape best=byte by 13 unused typedefs at the unit's start; codegens=2 compiled=36 (stopped at the goal)	bed6b6200febb2b5
 exe	0x0053a250	main_UpdateFigure	main	ac316cd664468c41	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
 exe	0x0053a450	main_UpdateFigures	main	0adcc8f2a3d2c65f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0053a520	main_SettleRound	main	3a13bbd7e2c68953	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
@@ -4002,7 +4002,7 @@ exe	0x00578370	ai_TutorialStop	sv_t	9d1db8f5a93c7021	no	byte	control=byte p1=byt
 exe	0x00578440	ai_TutorialFreeRuns	sv_t	7db4c5d18c22886f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005784a0	ai_TutorialInitMainIntro	sv_t	798c8d26cb8bedf5	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00578570	ai_TutorialInitChapter1	sv_t	1104bf614d4657fb	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x00578e40	ai_TutorialInitChapter2	sv_t	1997337a7073c8ff	yes	byte	sweep control=shape best=byte by 2 unused typedefs at the unit's start; codegens=2 compiled=12 (stopped at the goal)	5f284ad3834eb534
+exe	0x00578e40	ai_TutorialInitChapter2	sv_t	1997337a7073c8ff	yes	byte	sweep control=shape best=byte by 2 unused typedefs at the unit's start; codegens=2 compiled=12 (stopped at the goal)	6f21ce798c1ca39c
 exe	0x00579570	ai_TutorialInitChapter3	sv_t	7a7c849570dd38d6	yes	shape	sweep control=draft best=shape by 1 unused typedef before ai_TutorialInitChapter3; codegens=10 compiled=12 (stopped at the goal)	995ac3739a8313db
 exe	0x0057aa80	ai_TutorialInitChapter4	sv_t	6084c4a654a21837	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0057aeb0	ai_TutorialInitChapter5	sv_t	8774329fa9d901d6	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	

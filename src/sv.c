@@ -2088,7 +2088,6 @@ void sv_UpdateMemberList(unsigned char *g)
 
 extern OPTIONBYTES ai_GfxResolution;        /* 0x6f2f94, the player bar variant */
 extern int sv_WinterWeather;  /* 0x760610 */
-extern int sv_CloudChance;  /* 0x760480 */
 extern int sv_WeatherHour;  /* 0x760614 */
 extern int * d3t_Rain;  /* 0x760618 */
 extern int d3t_Snow;  /* 0x76061c */
@@ -2857,7 +2856,6 @@ int sv_ScrollCamera(void)
 extern int sv_MouseDragOn, sv_ZoomTurnOn, sv_MouseCamActive, sv_DragStartX, sv_DragStartY, sv_DragLastX, sv_DragLastY, sv_SavedMaxX, sv_SavedMaxY, sv_SavedMinX, sv_SavedMinY, sv_ZoomStartX, sv_ZoomStartY;  /* 0x6f23b8, 0x6f23a0, 0x6f23a4, 0x6f2398, 0x6f239c, 0x6f1c88, 0x6f1c48, 0x6f1c50, 0x6f1c40, 0x6f1c84, 0x6f2298, 0x6f2290, 0x6f1c8c */
 extern float sv_ZoomStartHeight, sv_ZoomStartAngle, sv_ZoomStartTurn, sv_ZoomBaseY, sv_DragLastPos[3];  /* 0x6f23a8, 0x6f23ac, 0x6f23b0, 0x6f23b4, 0x6f1c64 */
 extern int tb_Paused;  /* 0x6333e0 */
-extern int sv_BandActive;  /* 0x760440 */
 extern int ai_DragWindow;  /* 0x62a8cc */
 extern int sv_CameraScrolled;  /* 0x6f22b4 */
 extern int sv_FrameDepth;  /* 0x6f229c */
@@ -7470,9 +7468,7 @@ void sv_UpdateClock(void)
 
 extern int sv_SkyScene;
 extern float sv_SkyScale;
-extern int sv_BandActive;
 extern int sv_SkyPhase;
-extern int sv_CloudChance;
 extern int sv_WinterWeather;
 extern int sv_WeatherHour;
 extern int d3t_Snow;
@@ -7674,8 +7670,7 @@ unsigned char ai_GameState = 0;  /* 0x6f25ac */
 /* the two flags after ai_GameState are objects of their own (the original reads each as a byte: no views of it) */
 unsigned char main_GameEnded = 0;  /* 0x6f25ad, nonzero when the player has reached the game's goal: the round start plays the fanfare and the outro (cleared at the game start) */
 unsigned char sv_MenuOpen = 0;  /* 0x6f25ae, 1 while a menu screen runs */
-int sv_PanelFlag;  /* 0x75e8c0, 1 when the panel is up (an int; cm.h / f3init.c) */
-SVQUICKJUMP sv_QuickJump;  /* 0x75e8c4, the info panel's pending quick jump (sv.h) */
+SVQUICKJUMP sv_QuickJump;  /* 0x75e8c0, the info panel's flag (sv_PanelFlag) and pending quick jump (sv_quickjump.h) */
 int sv_SelectionFlags[0xc0];  /* 0x75e920, the mirror of the character selection flags (byte i per character) */
 int sv_SkyScene;  /* 0x75ec20 */
 MSG sv_Message;  /* 0x75ec40, the window message sv_PumpMessages reads (PeekMessageA / GetMessageA) */
@@ -7685,15 +7680,13 @@ int ai_Unk75f280[576];  /* 0x75f280, the member panel: */
 float sv_ViewPos[4];  /* 0x75fb80, the stored camera position (a padded vector): set by the camera moves, restored when the player leaves a building */
 float sv_ViewRot[4];  /* 0x75fb90, its rotation (D3OBJECT.rotation) */
 float sv_SkyScale;  /* 0x760420 */
-int sv_BandActive;  /* 0x760440 */
-SVBAND sv_Band;  /* 0x760444, the rubber band's corners */
+SVBAND sv_Band;  /* 0x760440, the rubber band: sv_BandActive and its corners */
 int sv_Season;  /* 0x760454, the season of the game clock (sv_ClockSeason's result), stored by main_EndRound / main_GameLoop (sv.c itself never reads it) */
 int sv_ClickedBuilding;  /* 0x760458, sv_HoverBuilding at the last click (sv_HandleObjects) */
 int sv_ClickedItem;  /* 0x76045c, sv_HoverItem at the last click */
 int sv_ClickedChar;  /* 0x760460, ai_PickedChar at the last click */
 int sv_SkyPhase;  /* 0x760464 */
-int sv_CloudChance;  /* 0x760480 */
-SVCLIMATE sv_Climate;  /* 0x760484, sv_SeasonClimate and sv_Weather (0x760488) */
+SVCLIMATE sv_Climate;  /* 0x760480, sv_CloudChance, sv_SeasonClimate (0x760484) and sv_Weather (0x760488) */
 int sv_WinterWeather;  /* 0x760610 */
 int sv_WeatherHour;  /* 0x760614 */
 int d3t_Snow;  /* 0x76061c */

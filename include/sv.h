@@ -327,9 +327,9 @@ extern int sv_ShownChar;  /* 0x6f23d0 */
 extern int sv_ShownOther;  /* 0x6f23d4 */
 extern int sv_ShownCount;  /* 0x6f23d8 */
 extern unsigned char ai_GameState;                          /* 0x6f25ac */
-extern int sv_PanelFlag;                                    /* 0x75e8c0, 1 while the info panel is up */
 typedef struct SVQUICKJUMP SVQUICKJUMP;  /* the info panel's quick jump record: sv_quickjump.h */
-extern SVQUICKJUMP sv_QuickJump;                            /* 0x75e8c4 */
+extern SVQUICKJUMP sv_QuickJump;                            /* 0x75e8c0 */
+#define sv_PanelFlag (*(int *)&sv_QuickJump)                 /* 0x75e8c0, 1 while the info panel is up: the first field of SVQUICKJUMP (panelFlag) */
 extern int sv_SelectionFlags[0xc0];                         /* 0x75e920 */
 extern int sv_SkyScene;                                    /* 0x75ec20 */
 extern MSG sv_Message;                                     /* 0x75ec40, the window message sv_PumpMessages reads */
@@ -339,15 +339,15 @@ extern int ai_Unk75f280[576];                               /* 0x75f280 */
 extern float sv_ViewPos[4];                                 /* 0x75fb80, the stored camera position (X/Y/Z views: data_views.h) */
 extern float sv_ViewRot[4];                                 /* 0x75fb90, its rotation */
 extern float sv_SkyScale;                                  /* 0x760420 */
-extern int sv_BandActive;                                    /* 0x760440 */
-extern SVBAND sv_Band;                                       /* 0x760444 */
+extern SVBAND sv_Band;                                       /* 0x760440 */
+#define sv_BandActive (sv_Band.active)                          /* 0x760440 */
 extern int sv_Season;                                        /* 0x760454, the game clock's season (written by main) */
 extern int sv_ClickedBuilding;                               /* 0x760458 */
 extern int sv_ClickedItem;                                   /* 0x76045c */
 extern int sv_ClickedChar;                                   /* 0x760460 */
 extern int sv_SkyPhase;                                    /* 0x760464 */
-extern int sv_CloudChance;                                    /* 0x760480 */
-extern SVCLIMATE sv_Climate;                                /* 0x760484 */
+extern SVCLIMATE sv_Climate;                                /* 0x760480 */
+#define sv_CloudChance (sv_Climate.cloudChance)               /* 0x760480 */
 #define sv_SeasonClimate (sv_Climate.seasonClimate)           /* 0x760484 */
 #define sv_Weather (sv_Climate.weather)                       /* 0x760488 */
 extern int sv_WinterWeather;                                    /* 0x760610 */
