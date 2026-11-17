@@ -156,15 +156,11 @@ extern float gm_DayStartHours[];
 extern OPTIONBYTES ai_GameSwitches;
 extern char main_GamePath[];  /* 0x624690, main.c: the game directory */
 extern float gm_DayEndHours[];
-extern GAPDATA full_data_6279f0[];
-extern GAPDATA full_data_627a10[];
-extern GAPDATA full_data_627d74[];
 extern OPTIONBYTES ai_GamePanel;
 extern OPTIONBYTES ai_GamePanel;
 
 extern unsigned char ai_GameState;
 extern int gm_PlayerRecords[688];
-extern GAPDATA full_data_628a28[];
 #include "cm_types.h"
 extern int d2_ClickedForm;
 #include "mission_types.h"
@@ -172,19 +168,9 @@ extern int d2_ClickedForm;
 extern float gm_DayStartHours[];
 extern float gm_DayEndHours[];
 extern char he_AssassinName[12];  /* 0x628dc8, the name of the agent the secret room event 0x99 spawns */
-extern GAPDATA full_data_628dd4[];
-extern GAPDATA full_data_628dec[];
-extern GAPDATA full_data_628df8[];
-extern GAPDATA full_data_628e10[];
-extern GAPDATA full_data_628e28[];
-extern GAPDATA full_data_628e58[];
-extern GAPDATA full_data_628e98[];
-extern GAPDATA full_data_628ea4[];
-extern GAPDATA full_data_628eb8[];
 extern unsigned char he_Events[339968];
 extern int d2_ClickedForm;
 extern GAPDATA full_data_602568[];
-extern GAPDATA full_data_628ecc[];
 extern const int sv_PhaseMinutes[24];
 extern float gm_DayStartHours[];
 extern float gm_DayEndHours[];
@@ -193,12 +179,7 @@ extern char he_MeetingSceneSmall[56];           /* 0x628f3c, the meeting scene s
 extern char he_MeetingSceneMiddle[56];          /* 0x628f74, the meeting scene script of the kind 1 */
 extern char he_MeetingSceneBig[56];             /* 0x628fac, the meeting scene script of the kind 2 */
 extern const float gv_SaleShares[];
-extern GAPDATA full_data_628fe4[];
-extern GAPDATA full_data_629000[];
 extern int gm_PlayerRecords[688];
-extern GAPDATA full_data_62901c[];
-extern GAPDATA full_data_629038[];
-extern GAPDATA full_data_629054[];
 extern GAPDATA he_TheaterScripts[];
 
 struct AIPER; struct AMTREC; struct CHARACTER; struct CHACTION; struct EVTSCRIPT; struct G15PLANT; struct G11REC; struct AITIME;

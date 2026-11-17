@@ -35,195 +35,22 @@ struct D3SKY;
 /* full rebuild: the symbols whose original addresses the code above spells literally */
 extern GAPDATA full_data_5f1890[];
 extern GAPDATA full_data_624204[];
-extern GAPDATA full_data_629304[];
 extern GAPDATA full_data_602568[];
 extern unsigned char kb_Last;
-extern GAPDATA full_data_629314[];
-extern GAPDATA full_data_629328[];
-extern GAPDATA full_data_629340[];
-extern GAPDATA full_data_629354[];
-extern GAPDATA full_data_629368[];
-extern GAPDATA full_data_62937c[];
-extern GAPDATA full_data_629390[];
-extern GAPDATA full_data_6293a8[];
-extern GAPDATA full_data_6293bc[];
-extern GAPDATA full_data_6293d8[];
-extern GAPDATA full_data_6293e8[];
-extern GAPDATA full_data_6293f8[];
-extern GAPDATA full_data_629424[];
-extern GAPDATA full_data_629438[];
-extern GAPDATA full_data_62944c[];
-extern GAPDATA full_data_629474[];
-extern GAPDATA full_data_629488[];
-extern GAPDATA full_data_62949c[];
-extern GAPDATA full_data_6294c8[];
-extern GAPDATA full_data_6294dc[];
-extern GAPDATA full_data_6294f0[];
-extern GAPDATA full_data_629518[];
-extern GAPDATA full_data_62952c[];
-extern GAPDATA full_data_629540[];
-extern GAPDATA full_data_629554[];
-extern GAPDATA full_data_629568[];
-extern GAPDATA full_data_629590[];
-extern GAPDATA full_data_6295a0[];
-extern GAPDATA full_data_6295b4[];
-extern GAPDATA full_data_6295c8[];
-extern GAPDATA full_data_6295f0[];
-extern GAPDATA full_data_629600[];
-extern GAPDATA full_data_629614[];
-extern GAPDATA full_data_629628[];
-extern GAPDATA full_data_629650[];
-extern GAPDATA full_data_629660[];
-extern GAPDATA full_data_629674[];
-extern GAPDATA full_data_629688[];
-extern GAPDATA full_data_6296b0[];
-extern GAPDATA full_data_6296c4[];
-extern GAPDATA full_data_6296d8[];
-extern GAPDATA full_data_6296ec[];
-extern GAPDATA full_data_6296fc[];
-extern GAPDATA full_data_629710[];
-extern GAPDATA full_data_629724[];
-extern GAPDATA full_data_629734[];
-extern GAPDATA full_data_62974c[];
-extern GAPDATA full_data_629760[];
-extern GAPDATA full_data_629774[];
-extern GAPDATA full_data_62979c[];
-extern GAPDATA full_data_6297b0[];
-extern GAPDATA full_data_6297c4[];
-extern GAPDATA full_data_6297ec[];
-extern GAPDATA full_data_629800[];
-extern GAPDATA full_data_629814[];
-extern GAPDATA full_data_62983c[];
-extern GAPDATA full_data_629850[];
-extern GAPDATA full_data_629864[];
-extern GAPDATA full_data_62988c[];
-extern GAPDATA full_data_6298a0[];
-extern GAPDATA full_data_6298b4[];
-extern GAPDATA full_data_6298dc[];
-extern GAPDATA full_data_6298f0[];
-extern GAPDATA full_data_629904[];
-extern GAPDATA full_data_62992c[];
-extern GAPDATA full_data_629940[];
-extern GAPDATA full_data_629954[];
-extern GAPDATA full_data_629968[];
-extern GAPDATA full_data_629978[];
-extern GAPDATA full_data_62998c[];
-extern GAPDATA full_data_6299a0[];
-extern GAPDATA full_data_6299b0[];
-extern GAPDATA full_data_6299c8[];
-extern GAPDATA full_data_6299f0[];
-extern GAPDATA full_data_629a08[];
-extern GAPDATA full_data_629a1c[];
-extern GAPDATA full_data_629a30[];
-extern GAPDATA full_data_629a48[];
-extern GAPDATA full_data_629a70[];
-extern GAPDATA full_data_629a88[];
-extern GAPDATA full_data_629a9c[];
-extern GAPDATA full_data_629ab0[];
-extern GAPDATA full_data_629ac8[];
-extern GAPDATA full_data_629adc[];
-extern GAPDATA full_data_629af0[];
-extern GAPDATA full_data_629b04[];
-extern GAPDATA full_data_629b1c[];
-extern GAPDATA full_data_629b34[];
-extern GAPDATA full_data_629b4c[];
-extern GAPDATA full_data_629b78[];
-extern GAPDATA full_data_629b90[];
-extern GAPDATA full_data_629ba4[];
-extern GAPDATA full_data_629bb8[];
-extern GAPDATA full_data_629bd4[];
-extern GAPDATA full_data_629bf0[];
-extern GAPDATA full_data_629c08[];
-extern GAPDATA full_data_629c20[];
-extern GAPDATA full_data_629c48[];
-extern GAPDATA full_data_629c58[];
-extern GAPDATA full_data_629c6c[];
-extern GAPDATA full_data_629c80[];
-extern GAPDATA full_data_629c9c[];
-extern GAPDATA full_data_629cb0[];
-extern GAPDATA full_data_629cc8[];
-extern GAPDATA full_data_629ce0[];
-extern GAPDATA full_data_629d0c[];
-extern GAPDATA full_data_629d24[];
-extern GAPDATA full_data_629d38[];
-extern GAPDATA full_data_629d4c[];
-extern GAPDATA full_data_629d68[];
-extern GAPDATA full_data_629d80[];
-extern GAPDATA full_data_629d98[];
-extern GAPDATA full_data_629db0[];
-extern GAPDATA full_data_629dd8[];
-extern GAPDATA full_data_629dec[];
-extern GAPDATA full_data_629e00[];
-extern GAPDATA full_data_629e1c[];
-extern GAPDATA full_data_629e2c[];
-extern GAPDATA full_data_629e40[];
-extern GAPDATA full_data_629e50[];
-extern GAPDATA full_data_629e7c[];
-extern GAPDATA full_data_629e8c[];
-extern GAPDATA full_data_629ea0[];
-extern GAPDATA full_data_629eb4[];
-extern GAPDATA full_data_629edc[];
-extern GAPDATA full_data_629eec[];
-extern GAPDATA full_data_629f00[];
-extern GAPDATA full_data_629f14[];
-extern GAPDATA full_data_629f3c[];
-extern GAPDATA full_data_629f4c[];
-extern GAPDATA full_data_629f60[];
-extern GAPDATA full_data_629f74[];
-extern GAPDATA full_data_629f88[];
-extern GAPDATA full_data_629f98[];
-extern GAPDATA full_data_629fac[];
-extern GAPDATA full_data_629fc0[];
-extern GAPDATA full_data_629fd4[];
-extern GAPDATA full_data_62a000[];
-extern GAPDATA full_data_62a014[];
-extern GAPDATA full_data_62a03c[];
-extern GAPDATA full_data_62a050[];
-extern GAPDATA full_data_62a064[];
-extern GAPDATA full_data_62a08c[];
-extern GAPDATA full_data_62a0a4[];
-extern GAPDATA full_data_62a0b8[];
-extern GAPDATA full_data_62a0cc[];
-extern GAPDATA full_data_62a0f4[];
-extern GAPDATA full_data_62a10c[];
-extern GAPDATA full_data_62a120[];
-extern GAPDATA full_data_62a134[];
-extern GAPDATA full_data_62a160[];
-extern GAPDATA full_data_62a174[];
-extern GAPDATA full_data_62a188[];
-extern GAPDATA full_data_62a1b0[];
-extern GAPDATA full_data_62a1c4[];
-extern GAPDATA full_data_62a1d8[];
-extern GAPDATA full_data_62a1ec[];
-extern GAPDATA full_data_62a1fc[];
-extern GAPDATA full_data_62a210[];
-extern GAPDATA full_data_62a224[];
-extern GAPDATA full_data_62a238[];
 
 
-extern GAPDATA full_data_624ee0[];
 #include "f3init_types.h"
 extern GAPDATA full_data_6024f8[];
 extern GAPDATA full_data_624204[];
-extern GAPDATA full_data_62a248[];
 
 
 
-extern GAPDATA full_data_62a284[];
-extern GAPDATA full_data_62a2a4[];
-extern GAPDATA full_data_62a2c4[];
 extern const int sv_PhaseMinutes[24];
 #define d2_DirtyRectTop (*(int *)((char *)&d2_DirtyRectLeft + 0x4))       /* 0xfb9064 */
 #define d2_DirtyRectRight (*(int *)((char *)&d2_DirtyRectLeft + 0x8))     /* 0xfb9068 */
 #define d2_DirtyRectBottom (*(int *)((char *)&d2_DirtyRectLeft + 0xc))    /* 0xfb906c */
 extern float d3s_QuadUV[6];
 extern GAPDATA full_data_5fea38[];
-extern GAPDATA full_data_62a2dc[];
-extern GAPDATA full_data_62a2fc[];
-extern GAPDATA full_data_62a310[];
-extern GAPDATA full_data_62a328[];
-extern GAPDATA full_data_62a340[];
-extern GAPDATA full_data_62a350[];
 
 extern int sv_PanelFlag;
 extern GAPDATA full_data_602568[];
@@ -241,9 +68,6 @@ extern GAPDATA full_data_5f36e0[];
 
 
 
-extern GAPDATA full_data_62a38c[];
-extern GAPDATA full_data_62a3ac[];
-extern GAPDATA full_data_62a3cc[];
 
 extern struct D2OBJ *d2_Objs;
 
@@ -251,8 +75,6 @@ extern struct D2OBJ *d2_Objs;
 
 
 extern GAPDATA full_data_602568[];
-extern GAPDATA full_data_62a3ec[];
-extern GAPDATA full_data_62a3f8[];
 extern int sv_PopRequest;
 extern int d2_LastWindow;
 extern struct D2OBJ *d2_Objs;
@@ -262,8 +84,6 @@ extern struct D2OBJ *d2_Objs;
 
 
 extern GAPDATA full_data_602568[];
-extern GAPDATA full_data_62a3ec[];
-extern GAPDATA full_data_62a3f8[];
 extern int sv_PopRequest;
 extern int d2_PointerObj;
 extern int d2_LastWindow;
@@ -274,16 +94,12 @@ extern struct D2OBJ *d2_Objs;
 
 
 extern GAPDATA full_data_602568[];
-extern GAPDATA full_data_62a3ec[];
-extern GAPDATA full_data_62a3f8[];
 extern int sv_PopRequest;
 extern int d2_PointerObj;
 extern int d2_ClickedId;
 extern int d2_LastWindow;
 
 extern GAPDATA full_data_602568[];
-extern GAPDATA full_data_62a3ec[];
-extern GAPDATA full_data_62a418[];
 extern int sv_PopRequest;
 
 
@@ -292,53 +108,34 @@ extern int sv_PopRequest;
 
 
 
-extern GAPDATA full_data_62a434[];
 extern GAPDATA full_data_62a450[];
 extern GAPDATA full_data_62a464[];
-extern GAPDATA full_data_62a474[];
-extern GAPDATA full_data_62a488[];
-extern GAPDATA full_data_62a4a8[];
 extern int sv_PopRequest;
 extern unsigned short ai_PlayerId;
 extern int d2_PointerObj;
 extern int d2_ClickedId;
 extern int d2_LastWindow;
 extern GAPDATA full_data_602568[];
-extern GAPDATA full_data_62a418[];
 
-extern GAPDATA full_data_62a4bc[];
 extern int sv_PopRequest;
 extern int ai_BuildingPerms;
 
 
 
 
-extern GAPDATA full_data_62a4cc[];
-extern GAPDATA full_data_62a4e8[];
-extern GAPDATA full_data_62a508[];
-extern GAPDATA full_data_62a524[];
 extern int sv_PopRequest;
 extern const int sv_PhaseMinutes[24];
 extern struct D2OBJ *d2_Objs;
 extern GAPDATA full_data_602568[];
 extern GAPDATA full_data_60c7b8[];
 extern GAPDATA full_data_623594[];
-extern GAPDATA full_data_62a570[];
 extern int d2_ClickedId;
 extern int d2_LastWindow;
-extern GAPDATA full_data_62a578[];
-extern GAPDATA full_data_62a580[];
 extern char ai_Chars[768][0x21c];
 extern unsigned short ai_PlayerId;
-extern GAPDATA full_data_62a53c[];
-extern GAPDATA full_data_62a544[];
-extern GAPDATA full_data_62a54c[];
 extern char ai_CharNameFmt[];
-extern GAPDATA full_data_62a59c[];
 extern int d2_PointerObj;
-extern GAPDATA full_data_62a5bc[];
 extern GAPDATA full_data_625150[];
-extern GAPDATA full_data_62a5d8[];
 
 
 extern int sv_PopRequest;
@@ -348,20 +145,15 @@ extern const int sv_PhaseMinutes[24];
 extern int d2_PointerObj;
 extern int d2_ClickedId;
 extern int d2_LastWindow;
-extern GAPDATA full_data_62a5bc[];
 extern int sv_FrameMask;
 extern GAPDATA full_data_625150[];
-extern GAPDATA full_data_62a5d8[];
 
 
 
-extern GAPDATA full_data_62a5bc[];
 extern int sv_PopRequest;
 extern int d2_PointerObj;
 extern int d2_ClickedId;
 extern int d2_LastWindow;
-extern GAPDATA full_data_62a5f8[];
-extern GAPDATA full_data_62a62c[];
 
 extern int d2_PointerObj;
 extern int d2_ClickedId;
@@ -386,8 +178,6 @@ extern int d2_LastWindow;
 
 
 extern GAPDATA full_data_602568[];
-extern GAPDATA full_data_62a64c[];
-extern GAPDATA full_data_62a664[];
 extern int sv_PopRequest;
 extern char ai_Chars[768][0x21c];
 extern unsigned short ai_PlayerId;
@@ -396,26 +186,18 @@ extern int d2_ClickedId;
 extern int d2_LastWindow;
 
 
-extern GAPDATA full_data_62a680[];
 extern int sv_PopRequest;
 extern unsigned short ai_PlayerId;
 extern volatile unsigned long d3_Time;
 extern GAPDATA full_data_60c7b8[];
-extern GAPDATA full_data_62a69c[];
-extern GAPDATA full_data_62a6b8[];
-extern GAPDATA full_data_62a6dc[];
 extern char ai_Chars[768][0x21c];
 extern int d2_ClickedId;
 extern int d2_LastWindow;
-extern GAPDATA full_data_62a5bc[];
-extern GAPDATA full_data_62a6f8[];
-extern GAPDATA full_data_62a70c[];
 extern int d2_PointerObj;
 extern const int sv_PhaseMinutes[24];
 
 
 extern unsigned short ai_PlayerId;
-extern GAPDATA full_data_62a718[];
 extern int ai_BuildingPerms;
 extern int ai_ClickedObject;
 
@@ -428,14 +210,6 @@ extern int ai_ClickedObject;
 
 
 extern GAPDATA full_data_62a450[];
-extern GAPDATA full_data_62a740[];
-extern GAPDATA full_data_62a754[];
-extern GAPDATA full_data_62a768[];
-extern GAPDATA full_data_62a780[];
-extern GAPDATA full_data_62a79c[];
-extern GAPDATA full_data_62a7b4[];
-extern GAPDATA full_data_62a7cc[];
-extern GAPDATA full_data_62a7e0[];
 extern unsigned char kb_Last;
 extern char ai_Chars[768][0x21c];
 extern unsigned short ai_PlayerId;
@@ -446,7 +220,6 @@ extern int d2_LastWindow;
 
 
 
-extern GAPDATA full_data_62a5bc[];
 extern int sv_FrameMask;
 extern int sv_PopRequest;
 extern char ai_Chars[768][0x21c];
@@ -457,7 +230,6 @@ extern int d2_ClickedId;
 extern int d2_LastWindow;
 
 
-extern GAPDATA full_data_62a5bc[];
 extern int sv_FrameMask;
 extern int sv_PopRequest;
 
@@ -473,7 +245,6 @@ extern int d2_PointerObj;
 extern int d2_ClickedId;
 extern int d2_LastWindow;
 
-extern GAPDATA full_data_62a5bc[];
 extern int sv_PopRequest;
 extern int ai_BuildingPerms;
 extern int ai_ClickedObject;
@@ -484,12 +255,8 @@ extern int ai_ClickedObject;
 
 extern GAPDATA full_data_62a450[];
 extern GAPDATA full_data_62a464[];
-extern GAPDATA full_data_62a7f8[];
-extern GAPDATA full_data_62a808[];
-extern GAPDATA full_data_62a818[];
 extern int ai_ClickedObject;
 
-extern GAPDATA full_data_62a83c[];
 extern unsigned short ai_PlayerId;
 extern AITIME ai_Time;                   /* 0x770ae0, the game clock */
 extern char ai_Chars[768][0x21c];
@@ -498,14 +265,11 @@ extern int gm_AllowAll;
 extern int d2_ClickedId;
 extern int d2_LastWindow;
 
-extern GAPDATA full_data_62a84c[];
 extern int sv_PopRequest;
 extern int ai_BuildingPerms;
 extern int ai_ClickedObject;
 
 
-extern GAPDATA full_data_62a870[];
-extern GAPDATA full_data_62a88c[];
 extern int gm_AllowAll;
 extern volatile unsigned long d3_Time;
 extern char ai_Chars[768][0x21c];
@@ -515,35 +279,19 @@ extern int di_Absolute;
 extern int gm_PlayerRecords[688];
 extern unsigned short ai_PlayerId;
 extern int d2_LastWindow;
-extern GAPDATA full_data_62a9a8[];
-extern GAPDATA full_data_62a9b4[];
-extern GAPDATA full_data_62a9cc[];
 extern unsigned char ai_OwnPlayer;
 extern const float gm_MoodRanges[476];
 extern GAPDATA full_data_602568[];
-extern GAPDATA full_data_62a91c[];
-extern GAPDATA full_data_62a940[];
-extern GAPDATA full_data_62a960[];
-extern GAPDATA full_data_62a96c[];
-extern GAPDATA full_data_62a978[];
-extern GAPDATA full_data_62a984[];
-extern GAPDATA full_data_62a9e4[];
-extern GAPDATA full_data_62a9ec[];
 extern GAPDATA full_data_62a9f8[];
 extern int sv_PopRequest;
 extern GAPDATA full_data_6f5f4c[];
 extern GAPDATA full_data_6f5f48[];
 extern unsigned char kb_Last;
-extern GAPDATA full_data_62aa14[];
-extern GAPDATA full_data_62aa20[];
 
 extern int d2_LastWindow;
 
-extern GAPDATA full_data_62aa38[];
 extern int sv_PopRequest;
 
-extern GAPDATA full_data_62aa4c[];
-extern GAPDATA full_data_62aa58[];
 extern int sv_FrameMask;
 extern GAPDATA full_data_6f5f44[];
 extern unsigned char kb_Last;

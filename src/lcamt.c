@@ -49,7 +49,6 @@ extern float gm_DayEndHours[];
 extern struct D2OBJ *d2_Objs;
 extern D2VIEW d2_Views[];
 extern D2WIN d2_Wins[];
-extern GAPDATA full_data_62b098[];
 extern char * cm_FieldObject;
 extern struct D2PIC *d2_Pics;
 extern unsigned char kb_Last;
@@ -423,7 +422,6 @@ extern struct D2WIN *d2_LastWindowPtr;
 extern struct D2OBJ *d2_Objs;
 extern D2WIN d2_Wins[];
 extern struct D2SURF *rt_MapSurface;
-extern GAPDATA full_data_62c274[];
 extern short d2_MouseX;
 extern short d2_MouseY;
 extern int di_Absolute;
@@ -434,22 +432,11 @@ extern int di_MinY;
 extern int ai_MapScrollEnabled;
 extern D2VIEW d2_Views[];
 #include "am_types.h"
-extern GAPDATA full_data_62c284[];
-extern GAPDATA full_data_62c298[];
 extern char ch_EmptyName[1];
-extern GAPDATA full_data_62c2c0[];
-extern GAPDATA full_data_62c2dc[];
 
 
 
-extern GAPDATA full_data_62c2f4[];
-extern GAPDATA full_data_62c310[];
 extern char ch_EmptyName[1];
-extern GAPDATA full_data_62c32c[];
-extern GAPDATA full_data_62c348[];
-extern GAPDATA full_data_62c3b8[]; 
-extern GAPDATA full_data_62c3e8[];
-extern GAPDATA full_data_62c400[];
 extern int ai_DomizilCount;
 extern char ai_Chars[768][0x21c];
 extern unsigned char ai_OwnPlayer;
@@ -472,10 +459,6 @@ extern int d2_LastWindow;
 extern struct D2OBJ *d2_Objs;
 
 extern GAPDATA full_data_602568[];
-extern GAPDATA full_data_60d38c[];
-extern GAPDATA full_data_624ec4[];
-extern GAPDATA full_data_624fcc[];
-extern GAPDATA full_data_62cbb4[];
 extern struct AIBLD *ai_MarketBuilding;
 extern char ch_EmptyName[1];
 extern int d2_ClickedId;
@@ -493,7 +476,6 @@ extern char ai_Chars[768][0x21c];
 extern unsigned char ai_OwnPlayer;
 extern int d2_ClickedId;
 extern int d2_LastWindow;
-extern GAPDATA full_data_62cc6c[];
 #pragma pack(push, 1)
 typedef struct G8INVOBJ {               /* an object of a character's inventory (AIOBJ, ai_types.h, read as a held good:
                                            ai_InventoryHas, ai_BuildingHasItem, the inventory window, the Domizil
@@ -521,13 +503,10 @@ typedef struct G8INVOBJ {               /* an object of a character's inventory 
 #define d2_OpenFormS ((int (*)(short, short, char *))d2_OpenForm)  /* @original: the transport window computes x = d2_ScreenW - 0x68 in 16 bits (0x5af336 mov ax, [d2_ScreenW]; sub ax, 0x68; push eax), as sv_OpenPlayerBar */
 extern char * ai_BTypes;
 extern GAPDATA full_data_60c28c[];
-extern GAPDATA full_data_62cc94[];
 extern int ai_MapSize;
 extern char ai_PlayerSlots[4][0x2f4];
 extern struct D2SURF *rt_MapSurface;
-extern GAPDATA full_data_62cce8[];
 extern char ch_EmptyName[1];
-extern GAPDATA full_data_62ccfc[];
 extern int ai_SabotageCallback();
 extern int ai_EspionageAmountCB();
 extern int ai_BeatingCallback();
@@ -537,26 +516,16 @@ extern struct D2OBJ *d2_Objs;
 
 
 
-extern GAPDATA full_data_62d134[];
 extern int d2_LastWindow;
 extern struct D2OBJ *d2_Objs;
 extern char ai_Chars[768][0x21c];
-extern GAPDATA full_data_62a578[];
 extern struct D2WIN *d2_LastWindowPtr;
 extern struct D2PIC *d2_Pics;
 extern GAPDATA full_data_60d224[];
-extern GAPDATA full_data_62d1e8[];
-extern GAPDATA full_data_62d1ec[];
-extern GAPDATA full_data_62d1f4[];
-extern GAPDATA full_data_62d1fc[];
-extern GAPDATA full_data_62d204[];
 extern int gm_PlayerRecords[688];
 extern GAPDATA full_data_602568[];
-extern GAPDATA full_data_62d214[];
 extern int d2_ClickedId;
 
-extern GAPDATA full_data_62d224[];
-extern GAPDATA full_data_62d204[];
 extern int d2_ClickedId;
 
 extern int d2_ClickedId;
@@ -564,27 +533,20 @@ extern int d2_LastWindow;
 extern struct D2WIN *d2_LastWindowPtr;
 extern struct D2OBJ *d2_Objs;
 
-extern GAPDATA full_data_62d224[];
 
 extern int d2_ClickedId;
 extern GAPDATA full_data_625380[];
 extern GAPDATA full_data_62bdc8[];
 extern GAPDATA full_data_62bde4[];
 extern GAPDATA full_data_62be00[];
-extern GAPDATA full_data_62d284[];
-extern GAPDATA full_data_62d294[];
-extern GAPDATA full_data_62d2a4[];
 extern char * ai_BTypes;
 extern unsigned char ai_OwnPlayer;
 extern int d2_LastWindow;
 extern GAPDATA full_data_602568[];
-extern GAPDATA full_data_624cf8[];
-extern GAPDATA full_data_62d2bc[];
 extern struct D2OBJ *d2_Objs;
 extern char * cm_FieldObject;
 
 
-extern GAPDATA full_data_62d2d4[];
 extern char * ai_BTypes;
 extern char ai_Chars[768][0x21c];
 extern signed char ai_Relations[768][768];
@@ -593,29 +555,14 @@ extern G17MSG cm_SendRing[];
 extern int d2_ClickedId;
 extern int d2_LastWindow;
 extern char ai_CharNameFmt[];  /* 0x62a564, "%1N3" (main.c gap block; Open: data) */
-extern GAPDATA full_data_62d2ec[];
 extern struct D2OBJ *d2_Objs;
-extern GAPDATA full_data_62d1fc[];
-extern GAPDATA full_data_62d300[];
-extern GAPDATA full_data_62d3a0[];
-extern GAPDATA full_data_62d3b8[];
-extern GAPDATA full_data_62d3c4[];
-extern GAPDATA full_data_62d3d4[];
-extern GAPDATA full_data_62d3e0[];
 extern int sv_FrameMask;
 extern unsigned char ai_OwnPlayer;
-extern GAPDATA full_data_62d3f4[];
-extern GAPDATA full_data_62d3fc[];
-extern GAPDATA full_data_62d424[];
 extern unsigned gm_OwnNameHeads[136];
 #include "gv_types.h"
 #include "ai_bld.h"                /* AIBLD, AIBTYPE */
 extern GAPDATA full_data_5fe7d0[];
-extern GAPDATA full_data_62d43c[];
 extern char ai_PlayerSlots[4][0x2f4];
-extern GAPDATA full_data_62d440[];
-extern GAPDATA full_data_62d458[];
-extern GAPDATA full_data_62d468[];
 
 extern char cm_TextNewline[4];
 extern int d2_ClickedId;
@@ -624,54 +571,32 @@ extern struct D2OBJ *d2_Objs;
 extern GAPDATA full_data_602568[];
 extern GAPDATA full_data_625150[];
 extern GAPDATA full_data_625154[];
-extern GAPDATA full_data_62d480[];
 extern unsigned char ai_OwnPlayer;
-extern GAPDATA full_data_62d494[];
-extern GAPDATA full_data_62d4ac[];
-extern GAPDATA full_data_62d4c4[];
 
 extern int d2_ClickedId;
 extern int d2_LastWindow;
-extern GAPDATA full_data_62cd9c[];
-extern GAPDATA full_data_62d4e0[];
 extern char ai_Chars[768][0x21c];
-extern GAPDATA full_data_62cd48[];
-extern GAPDATA full_data_62d4f8[];
-extern GAPDATA full_data_62d518[];
-extern GAPDATA full_data_62d538[];
-extern GAPDATA full_data_62d554[];
-extern GAPDATA full_data_62d56c[];
 extern GAPDATA full_data_624204[];
-extern GAPDATA full_data_62d588[];
 extern int gm_PlayerRecords[688];
 extern char cm_EventNames[115][0x20];
 extern unsigned char ai_OwnPlayer;
-extern GAPDATA full_data_62d634[];
-extern GAPDATA full_data_62d660[];
 extern char * ai_BTypes;
 extern char ai_Crimes[];
-extern GAPDATA full_data_62d694[];
 
 extern int d2_ClickedId;
-extern GAPDATA full_data_62d5c4[];
 
 extern int d2_ClickedId;
-extern GAPDATA full_data_62d5c4[];
-extern GAPDATA full_data_62d6a8[];
 
 extern char ch_EmptyName[1];
 extern int d2_ClickedId;
-extern GAPDATA full_data_62d5c4[];
 
 extern char ch_EmptyName[1];
 extern int d2_ClickedId;
-extern GAPDATA full_data_62d5c4[];
 
 extern int d2_ClickedId;
 extern int d2_LastWindow;
 extern struct D2OBJ *d2_Objs;
 extern struct D2PIC *d2_Pics;
-extern GAPDATA full_data_62d660[];
 extern int sv_FrameMask;
 extern char ai_Chars[768][0x21c];
 extern GAPDATA full_data_60d224[];

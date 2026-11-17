@@ -87,8 +87,6 @@ extern char gm_TagTmp[4];  /* 0x60c1ec, f3gm.c: the "tmp" allocation tag (mem_Al
 extern GAPDATA full_data_930370[];
 extern int gm_PlayerRecords[688];
 extern GAPDATA full_data_602568[];
-extern GAPDATA full_data_60d5a4[];
-extern GAPDATA full_data_60d5b4[];
 extern GAPDATA full_data_92bcb8[];
 
 
