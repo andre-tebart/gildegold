@@ -24,7 +24,6 @@ typedef struct CHCALPHA {
 } CHCALPHA;
 #define d3_SetObjectAlphaC ((void (*)(D3OBJECT *, struct D3OBJINFO *, CHCALPHA))d3_SetObjectAlpha)
 
-extern char ch_StepSample[];        /* 0x5f1230, "normal_s" (ch.c data) */
 
 int chc_CreateCharacter(char **name, float *x, float *y, float *z);                     /* 0x40ba10 */
 int chc_CreateCharacterAtDummy(char **mesh, D3OBJECT **dummy, char **name);                        /* 0x40ba90 */

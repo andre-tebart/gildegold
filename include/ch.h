@@ -171,6 +171,7 @@ float d3_YawTo(struct D3OBJECT *obj, float *p);                                 
 #define D3OBJ_ANIM(obj) ((D3ANIMCTL *)(obj)->info)
 
 extern char ch_ShadowEnabled;           /* 0x5f122c */
+extern char ch_StepSample[0x60];        /* 0x5f1230, the step sound sample name ("normal_s"; chc.c SetCharacterStepSample, lc.c reset it) */
 extern int ch_CurrentGroup;         /* 0x5f1294, the group of the building the player is in (sv.c / f3init.c
                                        write it from the building record); -1 = none, ch_Reset sets both */
 extern int ch_CurrentScriptGroup;   /* 0x5f1298, the script group that goes with it; -1 = none */

@@ -880,5 +880,3 @@ void chc_Register(void)
     evt_ImportCommand("CharacterSitsDown", chc_CharacterSitsDown, 5, 1, 1);
     evt_ImportCommand("FindInCharacterName", chc_FindInCharacterName, 1, 2, 1, 6);
 }
-
-char ch_StepSample[] = "normal_s";  /* 0x5f1230, "normal_s" (ch.c data) */
