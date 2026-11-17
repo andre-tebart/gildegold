@@ -1732,16 +1732,6 @@ int pic;
 {
     return d2_OpenPicS(x, y, pic);
 }
-/* 0x46cfd0, redraws a picture and flips */
-
-void d2_ShowPicture(int pic)
-{
-    d2_DrawPic(0, 0, pic, d2_ScreenSurf);
-    d2_BlitPart(0, 0, ((D2SURF *)d2_ScreenSurf)->w, ((D2SURF *)d2_ScreenSurf)->h, d2_ScreenSurf, 0, 0, d2_BackSurf);
-    d2_DrawFades();
-    dd_Flip();
-    d2_BlitPart(0, 0, ((D2SURF *)d2_ScreenSurf)->w, ((D2SURF *)d2_ScreenSurf)->h, d2_BackSurf, 0, 0, d2_ScreenSurf);
-}
 
 /* 0x46cda0, moves an object (and, for a window, the objects on it) to x, y and recomputes its clip rectangle */
 void d2_MoveObj(short x, short y, int obj);
@@ -1806,6 +1796,16 @@ void d2_MoveObj(short x, short y, int obj)
         d2_AnimView[o->input].y = o->y;
         break;
     }
+}
+/* 0x46cfd0, redraws a picture and flips */
+
+void d2_ShowPicture(int pic)
+{
+    d2_DrawPic(0, 0, pic, d2_ScreenSurf);
+    d2_BlitPart(0, 0, ((D2SURF *)d2_ScreenSurf)->w, ((D2SURF *)d2_ScreenSurf)->h, d2_ScreenSurf, 0, 0, d2_BackSurf);
+    d2_DrawFades();
+    dd_Flip();
+    d2_BlitPart(0, 0, ((D2SURF *)d2_ScreenSurf)->w, ((D2SURF *)d2_ScreenSurf)->h, d2_BackSurf, 0, 0, d2_ScreenSurf);
 }
 /* 0x46d040, draws a picture (or a frame of one) at x, y on a surface @deep draft (25 differing instructions of 159; 13 code + 12 regs + 4 order hunks): the code hunks are the x/y register swap read in the previous base-3 session (0x46d157: ours mov esi,[esp+0x18] + mov edi,[esp+0x14], original esi=[esp+0x14] + edi=[esp+0x18], and the movsx/push at 0x46d17a/0x46d18c follow the swap); no meaning error, the source passes (short)x, (short)y, surf, data in that order. spell.py: reload at 0x46d157 (drop the local / use the parameter itself) is already the source form - x and y are the parameters, re-read at the call, no local holds them - and the regs/code entries name no source form. Q2 fails only on d3io_NoopCallback, an empty no-op triangle filler with no evidence at all (assigned to d3_TriFuncs[0..5] with different signatures, @deep in d3_io_a.c/d3_engine.c), so no name can be given here. Left: the x/y allocation and the tail at 0x46d208 (listing/c2prio/siblings) plus that name. */
 
@@ -4985,23 +4985,6 @@ void d2_FillViewTextures(int view, char *tex1, char *tex2)
     d2_BlitPart(0, 0, ((D2SURF *)v->viewSurf)->w, ((D2SURF *)v->viewSurf)->h, (void *)v->texSurf, 0, 0,
                  (void *)v->viewSurf);
 }
-/* 0x4754d0, sets D2OBJ::clickDisabled of every object on the windows of a view */
-
-void d2_EnableViewObjects(int view, int on)
-{
-    D2VIEW *v = &d2_Views[view];
-    int i, j;
-
-    if (v->active != 0) {
-        for (i = 0; i < v->nwins; i++) {
-            D2WIN *w = &d2_Wins[v->wins[i]];
-
-            for (j = 0; j < w->nobjs; j++)
-                d2_Objs[w->objs[j]].clickDisabled = (on == 0);
-        }
-        v->shown = on;
-    }
-}
 /* 0x474e80, draws the windows of a view onto its image and copies the image onto the textures */
 
 void d2_RedrawView(int view)
@@ -5149,6 +5132,23 @@ void d2_RedrawView(int view)
                 d2_BlitPartToDD(0, t->size, t2->size, ((D2SURF *)v->viewSurf)->h - t->size, (void *)v->viewSurf, 0, 0,
                              t2->surf);
         }
+    }
+}
+/* 0x4754d0, sets D2OBJ::clickDisabled of every object on the windows of a view */
+
+void d2_EnableViewObjects(int view, int on)
+{
+    D2VIEW *v = &d2_Views[view];
+    int i, j;
+
+    if (v->active != 0) {
+        for (i = 0; i < v->nwins; i++) {
+            D2WIN *w = &d2_Wins[v->wins[i]];
+
+            for (j = 0; j < w->nobjs; j++)
+                d2_Objs[w->objs[j]].clickDisabled = (on == 0);
+        }
+        v->shown = on;
     }
 }
 /* 0x475590, enables / disables the objects of a view */
