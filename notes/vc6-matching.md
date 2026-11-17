@@ -484,6 +484,10 @@ copied back into short predecessors only after all of this.
 
 ### Which arm is inline and which is out of line
 
+- **`if (A || .. || F) X else if (G || ..) Y` with X laid out last (near je to it, the G tests inline), the
+  original falls into X and jumps to the G tests**: the X test was a value first, `int is24 = A || .. || F; if
+  (is24) X else if (..) Y` (or separate `if (A) goto x;` tests): the `||` jumps go into X, so the block walk
+  reaches X first and puts it last (ai_UpdateProduction byte, +20 bytes of near jumps).
 - **An out-of-line block (after the main `ret`)**: the `else` of an `if` whose test was written the other way
   round: swap the branches (`if (s->snd) {...} else {create}`, `if (!a || !b) {fail} else {ok}`). A fall-through
   body handling the flipped case: test `x & 1`, not `!(x & 1)`. (458ce0, 458650, d3snd_UpdateVolume,
@@ -524,6 +528,10 @@ copied back into short predecessors only after all of this.
 
 ### Redundant tests the original keeps, threading
 
+- **Both arms of a ternary / if-else load the same field, VC6 hoists the load above the test (ours), the
+  original loads it per arm (`mov eax,[f]; lea edi,[eax-2]; jmp; mov edi,[f]`)**: a `max(1, ..)` per arm reads the
+  field twice in each arm (`if (t) e = max(1, cur - 2); else e = max(1, cur);`), so the arms no longer begin
+  with one equal load (ch_GetNewPath, +8 bytes; every ternary / if form of `cur - 2 : cur` hoists).
 - **An `fsqrt` (or any result) computed in the block that tests the output pointer (`test ecx,ecx; fsqrt; je`),
   the else path popping it, and a sum stored to its slot and compared from memory (`fstp [slot]` / `fcom
   [slot]`)**: the results were stored under a decided `if (ok) { if (radius) *radius = r; if (center) .. }`
@@ -624,6 +632,8 @@ copied back into short predecessors only after all of this.
 
 ### setcc, defaults, conditional assignments
 
+- **`mov [slot],-1` among the inits and `mov esi,[slot]` at the join of an optional open (ours `or esi,-1` in an
+  else arm)**: `bar = -1;` as an init, `if (flags & 0x80) bar = open(..);` (sv_MessageBoxGreen, 9 bytes).
 - **Every return tail `mov edi,K; xor edx,edx; cmp edi,eax; setge dl` (one per case)**: one limit set per case
   in an if / else-if chain and one `return lim >= r;` (VC6 duplicates the short return block), not `return r <
   2;` per case (gm_BuildingRankGate byte).
@@ -2548,6 +2558,13 @@ How arguments are pushed, a call written in both arms, parameter and return type
   changes the caller's code (64 of d3fl_UpdateTiles' differing bytes). Grep build logs for C4013.
 
 ### Call written in both arms of an if/else
+- **`push K` above the test of an if / else, the call's own `add esp,4` after it**: the call ended each arm
+  (`if (..) { lod = 2; sh = 2; f(0x40); } else { lod = 1; sh = 1; f(0x40); }`), not once after the join
+  (cm_LoadEventScene byte).
+- **Two call sites (the first arm's with its own epilogue), x / y in ebp / edi and the flags in a slot**: a guard
+  return, `if (style & 4) { call(o->x - 0x30, o->y + o->h, ..); return; } call(x - 0x30, y, ..);` with x / y
+  each assigned once (`x = c != -1 ? o->x + c : o->x;`, y in an if / else); `x = o->x; if (..) x += c;` ranks x
+  below the flags (d2_DrawObjCaption byte).
 - **A call and the shared argument pushes hoisted above the test that picks the action code**: the shared
   argument call written inline in both calls (`ch_AddAction(p, 0x2d, x, z, d3t_SceneIndex(p->scene))` in each
   arm); a local `sc = d3t_SceneIndex(..)` before the test keeps the pushes in the arms (cm_ExObjCell byte).
@@ -2830,6 +2847,9 @@ the stack at every instruction.
 
 ### Product and sum chains: association, factoring, folding
 
+- **`fld [m]; fmul [1.0f]; fsubr` where ours has a plain `fsub [m]`**: VC6 folds `x * 1.0f` and `x * -1.0f` literals;
+  the -1 came from a vector local (`d.z = -1.0f; pl.x = m->_11 * d.x + m->_21 * d.y + m->_31 * d.z;`), +1 / 0
+  from it fold or stay `* 0.0f` as with literals (d3fl_FarDist, 50 bytes; every term order is one code).
 - **`fadd st(0),st` right after the definition's `fmul` (before its `fstp`), ours `fld x; fadd st,st` in the final sum**:
   the doubling was its own statement, `age = (b + 1) * 0.1f; age = age + age;`, the sum then uses `age`; `* 2` /
   `* 2.0f` folds into the constant (hmt_Score byte).
@@ -3276,6 +3296,9 @@ the stack at every instruction.
 
 ### Globals: width, type, unions, volatile
 
+- **`test [table+8],reg` where ours tests an immediate (a const table defined in the same unit is folded)**: the
+  table's definition belongs to another unit; ai_BuildingTypeMasks (0x5eed70) sits behind menu.c's gypsyFilter
+  (0x5eed68) and is defined there (ai_MasterUpdate byte; with a signed end-of-table compare).
 - **`mov si, word [g]` before a loop, `cmp si, 0xb` inside** where ours has `mov esi, dword [g]`: read `g` at its
   use, not through a local `d = g;` (VC6 hoists it itself, as a word; the local also cost a register)
   (amt_ClearOffices).
