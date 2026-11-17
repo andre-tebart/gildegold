@@ -1351,7 +1351,7 @@ exe	0x00476220	d2_Plot	d2	byte	readable
 exe	0x004764f0	d2_PlotLine	d2	byte	readable		
 exe	0x00476710	d2_ClearPaintbox	d2	byte	readable		
 exe	0x00476760	d2_FillPaintbox	d2	byte	readable		
-exe	0x004767d0	d2_StartFade	d2	shape	readable	deep	
+exe	0x004767d0	d2_StartFade	d2	byte	readable		
 exe	0x00476860	d2_ReleaseFade	d2	byte	readable		
 exe	0x004768a0	d2_DrawFade	d2	byte	readable		
 exe	0x00476b10	d2_DrawFades	d2	byte	readable		
@@ -1597,7 +1597,7 @@ exe	0x00495790	ai_PopAction	am	byte	readable
 exe	0x004957a0	ai_ActionOnStack	am	byte	readable		
 exe	0x004957d0	ai_ChooseAction	am	byte	readable		
 exe	0x00495a50	ai_ChooseSubAction	am	byte	readable		
-exe	0x00495ce0	ai_ExecuteAction	am	shape	readable	deep	
+exe	0x00495ce0	ai_ExecuteAction	am	byte	readable		
 exe	0x00495ee0	ai_RollCharFlags	am	byte	readable		
 exe	0x00495fa0	ai_DecideDummyRighteousness	am	byte	readable		
 exe	0x00495fc0	ai_ExecuteDummyRighteousness	am	byte	readable		
@@ -1627,7 +1627,7 @@ exe	0x00497c80	ai_ExecuteBuyRoom	am	byte	readable
 exe	0x00497cf0	ai_DecideRepairBuilding	am	byte	readable		
 exe	0x00497ee0	ai_ExecuteRepairBuilding	am	byte	readable		
 exe	0x00497fa0	ai_DecideBuyBuilding	am	draft	readable	deep	
-exe	0x00498470	ai_ExecuteBuyBuilding	am	shape	readable	deep	
+exe	0x00498470	ai_ExecuteBuyBuilding	am	byte	readable		
 exe	0x004984d0	ai_DecideBuildResidence	am	byte	readable		
 exe	0x00498a80	ai_ExecuteBuildResidence	am	byte	readable		
 exe	0x00498b80	ai_DecideUpgradeResidence	am	byte	readable		
@@ -1843,7 +1843,7 @@ exe	0x004ad190	hmt_GetElectionObjType	hmt	byte	readable
 exe	0x004ad1b0	hmt_SetPendingElection	hmt	byte	readable		
 exe	0x004ad1c0	hmt_Election	hmt	byte	readable		
 exe	0x004ad3b0	hmt_SendElectionMessage	hmt	byte	readable		
-exe	0x004ad3e0	hmt_Score	hmt	shape	readable		
+exe	0x004ad3e0	hmt_Score	hmt	byte	readable		
 exe	0x004ad510	hmt_ClearOffices	hmt	shape	readable	deep	
 exe	0x004ad580	hmt_DecideElection	hmt	byte	readable		
 exe	0x004ad7a0	hmt_FillCouncils	hmt	shape	readable		
@@ -2745,7 +2745,7 @@ exe	0x004eedd0	gv_GetEffect	gv	byte	readable
 exe	0x004eee00	gv_StartShot	gv	byte	readable		
 exe	0x004eeee0	gv_SetEffectCallback	gv	byte	readable		
 exe	0x004eef50	gv_SalvoCharge	gv	byte	readable		
-exe	0x004ef000	gv_CannonKind	gv	shape	readable		
+exe	0x004ef000	gv_CannonKind	gv	byte	readable		
 exe	0x004ef090	gv_CannonCost	gv	byte	readable		
 exe	0x004ef170	gv_BuildingCannon	gv	byte	readable		
 exe	0x004ef260	gv_CannonScatter	gv	byte	readable		
@@ -3985,7 +3985,7 @@ exe	0x00577740	ai_TutorialOpenIntro	sv_t	byte	readable
 exe	0x00577820	ai_TutorialCloseIntro	sv_t	byte	readable		
 exe	0x00577850	ai_TutorialClearRunWindow	sv_t	byte	readable		
 exe	0x005778b0	ai_TutorialShowRunText	sv_t	byte	readable		
-exe	0x00577a00	ai_TutorialIntroAnswered	sv_t	shape	readable	deep	
+exe	0x00577a00	ai_TutorialIntroAnswered	sv_t	byte	readable		
 exe	0x00577a90	ai_TutorialShowText	sv_t	byte	readable		
 exe	0x00577b60	ai_TutorialHideText	sv_t	byte	readable		
 exe	0x00577b90	ai_TutorialShowText2	sv_t	byte	readable		
@@ -4272,7 +4272,7 @@ exe	0x005a2e60	ai_SermonWindow	lc	draft	readable	deep
 exe	0x005a36c0	ai_ProductionWriteContact	lc	byte	readable		
 exe	0x005a3810	ai_ChurchListener	lc	shape	readable		
 exe	0x005a39b0	ai_ChurchContact	lc	byte	readable		
-exe	0x005a3a40	ai_DungeonPlanWindow	lc	shape	readable		
+exe	0x005a3a40	ai_DungeonPlanWindow	lc	byte	readable		
 exe	0x005a3b20	ai_DungeonContact	lc	byte	readable		
 exe	0x005a3b90	ai_DungeonBribeWindow	lc	draft	readable	deep	
 exe	0x005a3df0	ai_DungeonBribeListener	lc	byte	readable		
@@ -4357,7 +4357,7 @@ exe	0x005a9880	ai_ShowGraveOrderCancelled	lc	byte	readable
 exe	0x005a9910	ai_HauntingText	lc	byte	readable		
 exe	0x005a9990	ai_TellGraveWorkSuccess	lc	byte	readable		
 exe	0x005a99e0	ai_TellGraveWorkFailure	lc	byte	readable		
-exe	0x005a9a30	ai_GraveyardMessage	lc	draft	readable	deep	
+exe	0x005a9a30	ai_GraveyardMessage	lc	byte	readable		
 exe	0x005a9af0	ai_GraveyardMessagePlain	lc	byte	readable		
 exe	0x005a9b50	ai_DomizilMessageResearch	lc	byte	readable		
 exe	0x005a9bc0	ai_DomizilMessageResearchKind	lc	byte	readable		
@@ -4521,7 +4521,7 @@ exe	0x005c7800	ai_PlotCombinedChart	lc	byte	readable
 exe	0x005c7970	ai_DrawStatisticsCharts	lc	draft	readable	deep	
 exe	0x005c7f00	ai_CityStatsPanel	lc	byte	readable		
 exe	0x005c82f0	ai_PlayerComparePanel	lc	draft	readable	deep	
-exe	0x005c8640	ai_PrivilegesPanel	lc	shape	readable		
+exe	0x005c8640	ai_PrivilegesPanel	lc	byte	readable		
 exe	0x005c8bc0	ai_MedicusHandler	lc	byte	readable		
 exe	0x005c8ef0	ai_DivorceDialog	lc	draft	readable	deep	
 exe	0x005c9290	ai_BlackmailWindow	lc	byte	readable		
