@@ -124,7 +124,11 @@ typedef struct ORDCHARKIND {            /* the character record seen from its ki
 } ORDCHARKIND;
 #define ORD_CHARKINDS ((ORDCHARKIND *)((char *)ai_Chars + 2))
 unsigned char ai_OwnPlayer = 0;  /* 0x6f1bc5: defined here because ord.c does not read it (the ai data area) */
+float ord_RatingRate = 0;  /* 0x91aaf4, the change rate of the rating (ord_AdvanceRatingBase; ls.c saves it) */
+ORDSTATROUND ord_StatisticsHistory[16] = {0};  /* 0x91ab00, the statistics of the last 16 rounds */
+char ord_RatingBytes[16] = {0};  /* 0x91b460, 5 + 1 bytes */
 AITIME ord_StatisticsClock = {0}; /* 0x91b470, the clock of the last rating step (ord_AdvanceRatingBase) */
+ORDMSGREC ord_MessageRecord = {0};  /* 0x91b480, the record the messages carry */
 ORDSTATS ord_Statistics = {0}; /* 0x91b4c0, the last statistics (ord_UpdateStatistics) */
 
 /* 0x4f4e20, the order "apply for office" (table 0x611768 entry 0; c the character, m the message: m[0] the
@@ -1614,6 +1618,7 @@ int ord_DismissWorkerOrder(char *c, int *m)
         r = 1;
     return r;
 }
+int (*ord_OrderHandlers[0x3a])(char *c, int *m) = { ord_ApplyForOffice, ord_LevelOrder, ord_MedicusOrder, ord_AccusationOrder, ord_BlackmailBuildingOrder, ord_Level3Order, ord_ChangeProfessionOrder, ord_IntimidateOrder, ord_BlackmailContactOrder, ord_Level4Order, ord_Level4Order2, ord_Level4To5Order, ord_Level5UpOrder, ord_Level5UpOrder2, ord_DivorceOrder, ord_Level6UpOrder, ord_Level6UpOrder2, ord_WageReportOrder, ord_DismissOfficeOrder, ord_LawOrder, ord_LawOrder2, ord_Job11Order, ord_JobMultiOrder, ord_Job28Order, ord_Job29Order, ord_Job34Order, ord_JobRangeOrder, ord_JobMultiOrder2, ord_BewitchOrder, ord_CounterEspionageOrder, ord_Job17Order, ord_Job17Order2, ord_JobMultiOrder4, ord_MisappropriationOrder, ord_Job10Order, ord_Job15Order, ord_SeatSwapOrder, ord_HatredOrder, ord_JobMultiOrder3, ord_HearingOrder, ord_ExpelWorkerOrder, ord_ConvertOrder, ord_PeaceOrder, ord_PenanceOrder, ord_SpyTargetFlagOrder, ord_MiracleOrder, ord_Level7Order, ord_Level8Order, ord_Level9UpOrder, ord_InterrogationOrder, ord_DismissalOrder, ord_Flag800Order, ord_Flag800Order2, ord_InterrogationOrder2, ord_Flag200Order, ord_InterrogationOrder3, ord_Flag400Order, ord_DismissWorkerOrder };  /* 0x611768, the order handler of each order number (ord.c's .data block: the table, then its strings 0x611850..) */
 /* 0x4f81c0, the order dispatcher: the handler number id (below 0x3a, else 0x40) of the table 0x611768 (0x4f4e20 .. 0x4f8140, one per order) runs on the character c (0x40 without one, 1 for a character whose kind +2 is 10 or more) and the message m */
 
 int ord_DispatchOrder(int id, char *c, int *m)
