@@ -526,7 +526,7 @@ exe	0x004273c0	sb_IsInit	sblib	byte	readable
 exe	0x004273d0	evt_Error	evt	byte	readable		
 exe	0x00427570	evt_AddGlobal	evt	byte	readable		
 exe	0x004276a0	evt_AddLocal	evt	byte	readable		
-exe	0x004277c0	evt_DeclareLocal	evt	shape	readable	deep	
+exe	0x004277c0	evt_DeclareLocal	evt	byte	readable		
 exe	0x004278d0	evt_FindVar	evt	byte	readable		
 exe	0x00427a20	evt_FindInclude	evt	byte	readable		
 exe	0x00427a90	evt_FindFunc	evt	byte	readable		
