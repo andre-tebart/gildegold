@@ -2987,18 +2987,18 @@ exe	0x004fe9c0	gm_Free	f3gm	88ff4af0067ee028	no	byte	control=byte p1=byte p2=byt
 exe	0x004fea50	gm_FindById	f3gm	9280933e4b64ea9a	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004feb30	gm_UpdatePlayers	f3gm	897f620640ebdee8	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004feb60	gm_InitPlayerRecord	f3gm	9fae68b98adba9d5	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x004fec10	gm_SyncMarket	f3gm	f5eb0107a7bd3dfd	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	c233327e4ed399b6
-exe	0x004ff190	gm_RefreshGoodsLists	f3gm	61b072533ac67f74	yes	shape	sweep control=shape best=shape by the build's declarations; codegens=2 compiled=127	291ac9aa57e40bb8
+exe	0x004fec10	gm_SyncMarket	f3gmt	f5eb0107a7bd3dfd	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=568	4a81fc9e68993bc8
+exe	0x004ff190	gm_RefreshGoodsLists	f3gmt	61b072533ac67f74	yes	shape	sweep control=shape best=shape by the build's declarations; codegens=2 compiled=568	4a81fc9e68993bc8
 exe	0x004ff450	gm_RandomMarketShake	f3gm	6404493593e4e5da	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	291ac9aa57e40bb8
-exe	0x004ff550	gm_UpdatePrices	f3gm	c99a5e4da2f8db88	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	1c96939fabcef245
+exe	0x004ff550	gm_UpdatePrices	f3gmt	c99a5e4da2f8db88	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=568	4a81fc9e68993bc8
 exe	0x004ff8c0	gm_GoodsDemand	f3gm	747d1674d7782fc0	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004ff950	gm_GoodsStock	f3gm	a3d1bd1cdfdb2f2b	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x004ffa10	gm_StockPrice	f3gm	bdda2bd260f12106	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	1c96939fabcef245
+exe	0x004ffa10	gm_StockPrice	f3gmt	bdda2bd260f12106	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=568	4a81fc9e68993bc8
 exe	0x004ffbf0	gm_GoodsValue	f3gm	3836209e5c5f8f3d	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004ffc40	gm_FindGoods	f3gm	ef3306d28a47d032	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004ffc90	gm_MapDistance	f3gm	cda55d663378db8b	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004ffcc0	gm_QueryNext	f3gm	bebf1a4311b2cd74	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
-exe	0x004ffe90	gm_Query	f3gm	e219bdbd30b1716a	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	291ac9aa57e40bb8
+exe	0x004ffe90	gm_Query	f3gmt	e219bdbd30b1716a	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=568	4a81fc9e68993bc8
 exe	0x004fffc0	gm_FindFreeObject	f3gm	6bb86bc5b9d8222a	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004ffff0	gm_RemoveObject	f3gm	c627346c8edca235	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00500080	gm_FreeObjectExtra	f3gm	3e7521ba111cef97	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
@@ -3010,10 +3010,10 @@ exe	0x00500a40	gm_TakeObjekt	f3gm	e861a35a1edc44bb	no	byte	control=byte p1=byte 
 exe	0x00500ae0	gm_AddNegative	f3gm	525dfe958d461c2d	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00500b90	gm_BuildKindObjects	f3gm	d36629f377827a2b	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x00500c20	gm_CollectOffers	f3gm	29c2b4137d91eb34	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
-exe	0x00500ec0	gm_FindMarketObject	f3gm	806c613841f3b994	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	291ac9aa57e40bb8
+exe	0x00500ec0	gm_FindMarketObject	f3gmt	806c613841f3b994	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=568	4a81fc9e68993bc8
 exe	0x00501000	gm_FindPlayerBuilding	f3gm	e85ce06fb90c9859	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x00501030	gm_BuildNext	f3gm	3530dd6c8777f456	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	1c96939fabcef245
-exe	0x00501190	gm_BuildQuery	f3gm	6321c625c18f0bb2	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	4850f870d40ae10b
+exe	0x00501030	gm_BuildNext	f3gmt	3530dd6c8777f456	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=568	4a81fc9e68993bc8
+exe	0x00501190	gm_BuildQuery	f3gmt	6321c625c18f0bb2	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=568	4a81fc9e68993bc8
 exe	0x005012b0	gm_FindFreeBuilding	f3gm	946257dcb23a7901	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005012e0	gm_FreeBuilding	f3gm	85f5f7b665318d0f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00501400	gm_StockBuildingObjects	f3gm	a08f5c1b60e3c077	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	

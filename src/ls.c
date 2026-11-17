@@ -35,7 +35,6 @@ extern int gm_TreeNodeCount;
 extern int gm_QueryDepth;
 
 #include "cm.h"
-int ai_NextPartyId = 1;  /* 0x61a658 */
 int ls_Language = 65535;  /* 0x62364c, the language number ( */
 int ls_Version = 65626;  /* 0x623650 */
 const char ls_LanguageNames[][0x40] = { "GERMAN", "ENGLISH", "FRENCH", "ITALIAN", "SPANISH" };  /* 0x5ee978, the language names (5 of */
