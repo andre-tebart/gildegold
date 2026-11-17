@@ -9182,8 +9182,8 @@ void he_RunDarkCorner(int ev)
             loot[0] = -1;
             loot[1] = -1;
             loot[2] = -1;
-            idx = (unsigned short)util_Random(0x200);
-            w = ai_CharWalkSteps[(unsigned short)util_Random(8)];
+            idx = util_RandomU(0x200);
+            w = ai_CharWalkSteps[util_RandomU(8)];
             n = 0;
             for (i = 0x200; i != 0 && n < d->loot; i--) {
                 if (ai_CrimesT[idx].id != -1 && ai_CrimesT[idx].state == 1 && ai_CrimesT[idx].culprit != ai_CharsT[bld->owner].netId
@@ -9223,8 +9223,8 @@ void he_RunDarkCorner(int ev)
             loot[0] = -1;
             loot[1] = -1;
             loot[2] = -1;
-            idx = (unsigned short)util_Random(0x200);
-            w = ai_CharWalkSteps[(unsigned short)util_Random(8)];
+            idx = util_RandomU(0x200);
+            w = ai_CharWalkSteps[util_RandomU(8)];
             n = 0;
             for (i = 0x200; i != 0 && n < d->loot; i--) {
                 if (ai_CrimesT[idx].id != -1 && ai_CrimesT[idx].state == 1 && ai_CrimesT[idx].culprit != ai_CharsT[bld->owner].netId
