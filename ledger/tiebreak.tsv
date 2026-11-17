@@ -2744,7 +2744,7 @@ exe	0x004eedd0	gv_GetEffect	gv	6dc15e5e0cd57676	no	byte	control=byte p1=byte p2=
 exe	0x004eee00	gv_StartShot	gv	6f0dbfa4c249a1f5	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004eeee0	gv_SetEffectCallback	gv	072432e313629431	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004eef50	gv_SalvoCharge	gv	d79fc6765886fb6b	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x004ef000	gv_CannonKind	gv	355725d80d021d03	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	b5de196b2aa58a97
+exe	0x004ef000	gv_CannonKind	gv	355725d80d021d03	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	56a1160dacf96f6f
 exe	0x004ef090	gv_CannonCost	gv	260a2d581fa3e713	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004ef170	gv_BuildingCannon	gv	490b5e22c2d46322	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004ef260	gv_CannonScatter	gv	d437ed9d8d8af90f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	

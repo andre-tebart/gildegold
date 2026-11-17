@@ -1055,15 +1055,14 @@ float gv_SalvoCharge(int a, int b, int c)
 
 void gv_CannonKind(int n, int *out)
 {
-    float t, a, v;
+    float a, v;
     int kind, i;
 
     kind = max(min(n, 4), 0);
     out[0] = kind;
     out[1] = kind + 2;
-    t = (float)kind * 0.25f + 1.0f;
     for (i = 1; i <= 3; i++) {
-        a = (float)i * t;
+        a = (float)i * ((float)kind * 0.25f + 1.0f);
         v = 500.0f * a;
         out[1 + i] = (int)(v * 32.0f);
         v = a * 700.0f;

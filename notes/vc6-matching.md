@@ -1876,6 +1876,10 @@ Frame size, slot order, holes, shared slots, dead parameter slots, block-scoped 
 
 ### Dead parameter slots
 
+- **A loop counter's `fild` temp in the second dead parameter slot, ours in the first (with the clamped value
+  `kind`)**: the loop-invariant factor written inside the loop (`a = (float)i * ((float)kind * 0.25f + 1.0f);`):
+  VC6 hoists it, but kind's lifetime then spans the loop and i cannot share its slot; a `t` computed before the
+  loop lets them share (gv_CannonKind byte; `i = 1;` before `t = ..` is the same code).
 - **Frame 4 short, our memory local packed into a parameter's dead slot**: the local's first assignment stands
   before the parameter's last read in the original. ai_PickActionBuilding: `win = 0;` moved above `q[4] = a;`
   gave the original's own slot (frame 0x54 -> 0x58); moving the read `q[4] = a` later did not.
