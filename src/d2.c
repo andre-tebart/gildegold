@@ -125,6 +125,10 @@ int d2_DragStartX = 0;  /* 0x6ed9e8 */
 int d2_DragStartY = 0;  /* 0x6ed9ec */
 int d2_ClickUsed = 0;  /* 0x6ed9f0 */
 int d2_DragActive = 0;  /* 0x6ed9f4 */
+unsigned char d2_UnreadBss[10836] = {0};  /* 0x6ed9f8, d2's .bss up to shp's block (0x6f044c): no surviving instruction or
+                                              pointer reads any of it; a unit's .bss outlives /OPT:REF, so these are data
+                                              of d2 functions the linker removed (layout, extent and type unknown: one
+                                              unread byte block, not a padding) */
 extern int d2_PaletteDepth;
 extern int d2_ClickedId;
 extern short d2_MouseX;
