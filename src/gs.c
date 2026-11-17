@@ -116,7 +116,7 @@ AIDEC gv_Decisions[0x1d] = {  /* 0x611258 */
     { 27, 2, 0, 0, 1, 5, 12, 1, 0, 0x1a, 2, 16, 0, (void *)ai_DecideLaw27 },
     { 28, 2, 0, 0, 1, 5, 12, 1, 0, 0x1b, 2, 17, 0, (void *)ai_DecideLaw28 },
 };
-const int gv_RankWorth[11] = { 0, 160000, 320000, 640000, 1600000, 3200000, 6400000, 8000000, 16000000, 32000000, 0 };  /* 0x5ee0f8, the worth each rank needs (gv_CheckRankUp reads [0 .. 10]; hmt.c's council founders get up to [7]) */
+const int gv_RankWorth[10] = { 0, 160000, 320000, 640000, 1600000, 3200000, 6400000, 8000000, 16000000, 32000000 };  /* 0x5ee0f8, the worth each rank needs (hmt.c's council founders get up to [7]); 10 entries: the original's next object at 0x5ee120 is ord.c's literal -20.0. gv_CheckRankUp clamps the index to 10 and so reads [10], past the end (the low dword of that double, 0): the original's own overrun */
 
 /* 0x4f2720, copies the AI decision record i (0 .. 0x1c, an AIDEC of the table 0x611258) to out (a struct copy); 0 for i > 0x1c */
 

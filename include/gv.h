@@ -524,7 +524,7 @@ int gv_RankCulprits(int *ids, int *cnt, unsigned short t);/* 0x4f3c50 */
 
 int gv_RankCulpritsAll(int *ids, int *open, int *total, unsigned short t);  /* 0x4f3dd0 */
 
-extern const int gv_RankWorth[11];           /* 0x5ee0f8, the worth each rank needs */
+extern const int gv_RankWorth[10];           /* 0x5ee0f8, the worth each rank needs */
 extern unsigned char ai_NumPlayers;     /* 0x62489c, the number of players (as ai.h / cm.h / mission.c) */
 int gm_GetWorth(unsigned short id);    /* 0x50a640 */
 int cm_SendSetField(int a, int b, int c, int d, int e);                     /* 0x4c4a60 */
