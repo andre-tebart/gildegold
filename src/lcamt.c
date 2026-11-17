@@ -7376,7 +7376,9 @@ int amt_GetKind(); int amt_FindOffice(); int amt_SendOfficeCandidates(); int ai_
    player picks the character in the special-amount list of owner's column (mode 0x400, kind 6, the gypsy filter,
    option 3, leaving out me and, of a partner's ask, owner; the captions 0x1d98 / 0x1d99): an office in state 1 is
    removed as above with the relation -20, the flag's send and the group waited for; unless the group failed
-   (state 2) the text 0x1d9b and 0x90, else the text 0x1d9a and 0x20; nothing picked: 0x20 */
+   (state 2) the text 0x1d9b and 0x90, else the text 0x1d9a and 0x20; nothing picked: 0x20
+   @original the refusal block is shared by the state test and the failed group (goto refused): written out at
+   both or nested under if (office.state == 1) VC6 lays it out otherwise (42 / 40 instructions off) */
 
 int ai_DismissOfficeAsk(AICHARREC *me, LCORDMSG *m)
 {
@@ -7431,34 +7433,36 @@ int ai_DismissOfficeAsk(AICHARREC *me, LCORDMSG *m)
         cfg.kind = 6;
         cfg.option14 = 3;
         cfg.mode = 0x400;
-        cfg.filter = gypsyFilter;
+        cfg.classMask[0] = gypsyFilterWords[0];
+        cfg.classMask[1] = gypsyFilterWords[1];
         txt_Format(caption, 0x1d98);
         txt_Format(caption2, 0x1d99);
         ch = (AICHARREC *)ai_SpecialAmountListWindow(ownerKind.col, (unsigned int *)&cfg, caption, caption2, 0);
-        if (ch == 0)
-            return 0x20;
-        if (amt_FindOffice((char *)ch, &kind, &office) == 0)
-            return 0x60;
-        if (office.state != 1)
-            goto refused;
-        cm_BeginGroup("absetzen");
-        amt_SendOfficeCandidates((char *)ch, (char *)owner);
-        flagSlot = cm_SendSetField(owner->netId, 0x1c8, 4, 0x200000, 0);
-        cm_SendRelations(me->netId, ch->netId, -20, 1);
-        slot = cm_EndGroup("absetzen");
-        while (cm_GetSlotState(slot) == 0)
-            sv_PumpNet();
-        if (cm_GetSlotState(slot) == 2) {
+        if (ch != 0) {
+            if (amt_FindOffice((char *)ch, &kind, &office) == 0)
+                return 0x60;
+            if (office.state != 1)
+                goto refused;
+            cm_BeginGroup("absetzen");
+            amt_SendOfficeCandidates((char *)ch, (char *)owner);
+            flagSlot = cm_SendSetField(owner->netId, 0x1c8, 4, 0x200000, 0);
+            cm_SendRelations(me->netId, ch->netId, -20, 1);
+            slot = cm_EndGroup("absetzen");
+            while (cm_GetSlotState(slot) == 0)
+                sv_PumpNet();
+            if (cm_GetSlotState(slot) == 2) {
 refused:
-            txt_Format(text, 0x1d9a, ch->id);
+                txt_Format(text, 0x1d9a, ch->id);
+                sv_MessageBox(text, 0);
+                return 0x20;
+            }
+            while (cm_GetSlotState(flagSlot) == 0)
+                sv_PumpNet();
+            txt_Format(text, 0x1d9b, ch->id, ch->id);
             sv_MessageBox(text, 0);
-            return 0x20;
+            return 0x90;
         }
-        while (cm_GetSlotState(flagSlot) == 0)
-            sv_PumpNet();
-        txt_Format(text, 0x1d9b, ch->id, ch->id);
-        sv_MessageBox(text, 0);
-        return 0x90;
+        return 0x20;
     }
 }
 #define LC_POWER_EMBEZZLED 0x400000  /* AICHARREC.powerFlags: the office's embezzlement used (ai_MisappropriationWindow) */
