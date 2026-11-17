@@ -1325,6 +1325,223 @@ int ahm_HasRecord();                     /* 0x4eaad0 */
 struct D3SKY; struct D3SKYLAYER; struct D3VECTOR; int d3_VecEqual(struct D3VECTOR *a, struct D3VECTOR *b, float eps);  /* 0x453e80 */
 char * cm_CharWeapon(char *c);                     /* 0x4cda50 */
 
+/* 0x522f10, the city / time panel (the big panel at the top of the screen), only while the player's character
+   is in state 6: blits the saved view shape back; a & 1 rebuilds the widgets (the shield, the money and name
+   texts, the clock / compass pictures, the help captions from the text list), then every call draws the date
+   ("<season> A.D.<year>"), the sun and hour hands, the time under the pointer, the compass (camera angle) or
+   the groundplan, the player's name, number and city arms, the money (the research class's list or the slots
+   of the player), re-opens the shield when its picture changed and moves the side panel by 0x625718 */
+void sv_UpdateCityPanel(unsigned char a, int b)
+{
+    struct {                            /* the calendar record gm_ClockToDate fills */
+        unsigned char day, season;
+        short year;
+        unsigned char hour, min;
+        char sec[4], pad[2];
+    } t;
+    char buf[0x100], name[0x100], arms[0x100];
+    void *shape;
+    int pic;
+    int h, n, who;
+    D2WIN *win;
+
+    if (ai_CharsT[ai_PlayerId].kind != 6)
+        return;
+    /* 0x522f42: the grabbed view shape back onto the screen at the view rectangle. The skeleton called
+       d2_ShpBlit(0, 0, 0), so the shape was whatever the stack held (a click on "Weiter" then crashed in
+       d2_ShpBlit with esi = 1); the original pushes sv_ViewRectLeft, sv_ViewRectTop, d2_ScreenSurf,
+       sv_ViewShape. */
+    if (sv_ViewShape != 0)
+        d2_ShpBlit(sv_ViewRectLeft, sv_ViewRectTop, (struct D2SURF *)d2_ScreenSurf, (struct D2SHP *)sv_ViewShape);
+    if (a & 1) {
+        if (sv_ButtonFamilyTree != -1) { d2_RemoveObj(sv_ButtonFamilyTree); sv_ButtonFamilyTree = -1; }
+        if (sv_ButtonCompare != -1) { d2_RemoveObj(sv_ButtonCompare); sv_ButtonCompare = -1; }
+        if (sv_ButtonCityStats != -1) { d2_RemoveObj(sv_ButtonCityStats); sv_ButtonCityStats = -1; }
+        if (sv_ButtonPrivileges != -1) { d2_RemoveObj(sv_ButtonPrivileges); sv_ButtonPrivileges = -1; }
+        if (sv_PanelMoneyText != -1) { d2_RemoveObj(sv_PanelMoneyText); sv_PanelMoneyText = -1; }
+        if (sv_ButtonInventory != -1) { d2_RemoveObj(sv_ButtonInventory); sv_ButtonInventory = -1; }
+        if (sv_ButtonPlayerStats != -1) { d2_RemoveObj(sv_ButtonPlayerStats); sv_ButtonPlayerStats = -1; }
+        if (sv_ButtonMessages != -1) { d2_RemoveObj(sv_ButtonMessages); sv_ButtonMessages = -1; }
+        if (sv_PanelBuildingIcon != -1) { d2_RemoveObj(sv_PanelBuildingIcon); sv_PanelBuildingIcon = -1; }
+        if (sv_PanelCompass != -1) { d2_RemoveObj(sv_PanelCompass); sv_PanelCompass = -1; }
+        sv_ButtonFamilyTree = d2_WinOpenPic(0x10, 8, ai_CharsT[ai_PlayerId].ref54, sv_BarWindow);
+        d2_Objs[sv_ButtonFamilyTree].style = 0x43;
+        d2_Objs[sv_ButtonFamilyTree].interactive = 1;
+        sv_ButtonCompare = d2_WinOpenPic(0x23a, 0xd, 0x522, sv_BarWindow);
+        d2_Objs[sv_ButtonCompare].style = 0x43;
+        d2_Objs[sv_ButtonCompare].interactive = 1;
+        sv_ButtonPrivileges = d2_CreateWinText(0x39, 0xd, ch_EmptyName, sv_BarWindow);
+        d2_Objs[sv_ButtonPrivileges].style = 0x43;
+        d2_Objs[sv_ButtonPrivileges].interactive = 1;
+        d2_Objs[sv_ButtonPrivileges].font = 0x55;
+        sv_ButtonPlayerStats = d2_CreatePicObjS(d2_ScreenW - 0x8d, d2_ScreenH - 0x73, 0x583);
+        d2_Objs[sv_ButtonPlayerStats].style = 0x43;
+        d2_Objs[sv_ButtonPlayerStats].interactive = 1;
+        sv_ButtonMessages = d2_CreatePicObjS(d2_ScreenW - 0x57, d2_ScreenH - 0x4f, 0x7d9);
+        d2_Objs[sv_ButtonMessages].style = 3;
+        d2_Objs[sv_ButtonMessages].interactive = 1;
+        sv_ButtonInventory = d2_CreatePicObjS(d2_ScreenW - 0x2a, d2_ScreenH - 0x66, 0x584);
+        d2_Objs[sv_ButtonInventory].style = 0x43;
+        d2_Objs[sv_ButtonInventory].interactive = 1;
+        sv_PanelBuildingIcon = d2_CreatePicObjS(d2_ScreenW - 0x4a, 0xd6, 0x585);
+        d2_Objs[sv_PanelBuildingIcon].style = 0x43;
+        d2_Objs[sv_PanelBuildingIcon].interactive = 1;
+        sv_PanelCompass = d2_CreatePicObjS(d2_ScreenW - 0x48, 0xd7, 0x551);
+        d2_Objs[sv_PanelCompass].style = 0x43;
+        d2_Objs[sv_PanelCompass].interactive = 1;
+        d2_Objs[sv_PanelCompass].type = 8;
+        sv_PanelMoneyText = d2_CreateScreenText(d2_ScreenW - 0x6a, d2_ScreenH - 0x7e, ch_EmptyName);
+        d2_Objs[sv_PanelMoneyText].centred = 1;
+        d2_Objs[sv_PanelMoneyText].font = 0x54;
+        d2_Objs[sv_PanelMoneyText].w = 0x6b;
+        d2_Objs[sv_PanelMoneyText].h = 0x20;
+    } else {
+        /* the texts of the six plates come from the text lists 0x1441ec8 .. 0x1441ee0 (or are cleared) */
+        if (ai_OptionPanelHelp.byte[0] != 0) {
+            if (sv_ButtonFamilyTree != -1) strcpy(d2_Objs[sv_ButtonFamilyTree].caption, txt_Ptrs[0x1f45]);
+            if (sv_ButtonCompare != -1) strcpy(d2_Objs[sv_ButtonCompare].caption, txt_Ptrs[0x1f48]);
+            if (sv_ButtonPrivileges != -1) strcpy(d2_Objs[sv_ButtonPrivileges].caption, txt_Ptrs[0x1f44]);
+            if (sv_ButtonPlayerStats != -1) strcpy(d2_Objs[sv_ButtonPlayerStats].caption, txt_Ptrs[0x1f43]);
+            if (sv_ButtonInventory != -1) strcpy(d2_Objs[sv_ButtonInventory].caption, txt_Ptrs[0x1f42]);
+            if (sv_PanelCompass != -1) strcpy(d2_Objs[sv_PanelCompass].caption, txt_Ptrs[0x1f46]);
+        } else {
+            if (sv_ButtonFamilyTree != -1) d2_Objs[sv_ButtonFamilyTree].caption[0] = ch_EmptyName[0];
+            if (sv_ButtonCompare != -1) d2_Objs[sv_ButtonCompare].caption[0] = ch_EmptyName[0];
+            if (sv_ButtonPrivileges != -1) d2_Objs[sv_ButtonPrivileges].caption[0] = ch_EmptyName[0];
+            if (sv_ButtonPlayerStats != -1) d2_Objs[sv_ButtonPlayerStats].caption[0] = ch_EmptyName[0];
+            if (sv_ButtonInventory != -1) d2_Objs[sv_ButtonInventory].caption[0] = ch_EmptyName[0];
+            if (sv_PanelCompass != -1) d2_Objs[sv_PanelCompass].caption[0] = ch_EmptyName[0];
+        }
+        sv_UpdateGroundplan(b);
+        d2_SetFont(0x55);
+        gm_ClockToDate(&ai_Time, (unsigned char *)&t);
+        if (ls_GetLanguage() == 2) {
+            sprintf(buf, "%s A.D.%i", d2_Strings[0x4c + gm_Season((char *)&t)], t.year);
+            d2_DrawText(d2_Wins[sv_BarWindow].x + 0x181, 0x17, d2_ScreenSurf, buf, 0);
+        } else {
+            sprintf(buf, "%s A.D.%i", d2_Strings[0x4c + gm_Season((char *)&t)], t.year);
+            d2_DrawText(d2_Wins[sv_BarWindow].x + 0x195, 0x17, d2_ScreenSurf, buf, 0);
+        }
+        h = (int)((ai_Time.min % 0x3c) * 0.8);
+        shape = d2_GetPic(0x581);
+        d2_DrawShape(d2_ScreenW - 0x50, 0x11, d2_ScreenSurf, shape, h);
+        d2_AddDirty(d2_ScreenW - 0x50, 0x11, d2_ShpW, d2_ShpH);
+        h = (int)((float)((ai_Time.hour * 0x3c + ai_Time.min) * 4.0) / 60.0) % 0x30;
+        shape = d2_GetPic(0x582);
+        d2_DrawShape(d2_ScreenW - 0x50, 0x11, d2_ScreenSurf, shape, h);
+        d2_AddDirty(d2_ScreenW - 0x50, 0x11, d2_ShpW, d2_ShpH);
+        if (d2_HitUnderPointer == sv_AdvanceHit) {
+            sprintf(buf, "%02i:%02i", ai_Time.hour, ai_Time.min);
+            d2_SetFont(0x54);
+            d2_DrawTextBox(d2_ScreenW - 0x50, 2, 0x2e, 0x14, d2_ScreenSurf, buf, 0x28);
+            d2_AddDirty(d2_ScreenW - 0x50, 2, d2_TextDrawnW, d2_TextDrawnH);
+            d2_SetFont(0x55);
+        }
+        if (ai_FallbackBuilding == 0 && ai_PlayerBuilding == 0 && sv_PanelCompass != -1 && sv_PanelBuildingIcon != -1) {
+            d2_EnableObject(sv_PanelBuildingIcon, 0);
+            d2_EnableObject(sv_PanelCompass, 1);
+            h = (int)((float)fmod(d3_Camera->rotation.y, 6.2831853f) * 0.15915494f * 48.0 + 48.5) % 0x30;
+            d2_Objs[sv_PanelCompass].input = h;
+        } else {
+            if (sv_PanelBuildingIcon != -1)
+                d2_EnableObject(sv_PanelBuildingIcon, 1);
+            if (sv_PanelCompass != -1)
+                d2_EnableObject(sv_PanelCompass, 0);
+        }
+        d2_SetFont(0x55);
+        if (sv_ButtonPrivileges != -1) {
+            io_CharacterName(ai_PlayerId, 1, 2, name);
+            strcpy(buf, name);
+            d2_SetObjText(sv_ButtonPrivileges, buf);
+        }
+        sprintf(buf, "%i", ai_CharsT[ai_PlayerId].money);
+        d2_DrawText(d2_Wins[sv_BarWindow].x + 0x23a, 0x17, d2_ScreenSurf, buf, 0);
+        if (sv_ButtonCompare != -1)
+            d2_MoveObj(d2_Wins[sv_BarWindow].x + (short)d2_TextDrawnW + 0x23d, 0x18, sv_ButtonCompare);
+        if (ai_PlayerBuilding == 0 && ai_FallbackBuilding == 0) {
+            if (sv_ButtonCityStats == -1) {
+                strcpy(name, ai_PlayerSlotsT[ai_OwnPlayer].name);
+                _strupr(name);
+                sprintf(arms, "_STADTWAPPEN_%s", name);
+                pic = d2_FindPic(arms);
+                if (pic != -1)
+                    sv_ButtonCityStats = d2_CreatePicObjS(d2_ScreenW - 0x6e, 0x5b, pic);
+                else
+                    sv_ButtonCityStats = d2_CreatePicObjS(d2_ScreenW - 0x6e, 0x5b, 0x5b1);
+                d2_Objs[sv_ButtonCityStats].style = 0x43;
+                d2_Objs[sv_ButtonCityStats].interactive = 1;
+            }
+            if (ai_OptionPanelHelp.byte[0] != 0) {
+                if (sv_ButtonCityStats != -1) strcpy(d2_Objs[sv_ButtonCityStats].caption, txt_Ptrs[0x1f47]);
+            } else if (sv_ButtonCityStats != -1)
+                d2_Objs[sv_ButtonCityStats].caption[0] = ch_EmptyName[0];
+            d2_SetFont(0x56);
+            strcpy(name, ai_PlayerSlotsT[ai_OwnPlayer].townName);
+            d2_DrawTextBox(d2_ScreenW - 0x70, 0x5d, 0x68, 0x14, d2_ScreenSurf, name, 8);
+            d2_AddDirty(d2_ScreenW - 0x70, 0x5d, d2_TextDrawnW, d2_TextDrawnH);
+        } else if (sv_ButtonCityStats != -1) {
+            d2_RemoveObj(sv_ButtonCityStats);
+            sv_ButtonCityStats = -1;
+        }
+        d2_SetFont(0x54);
+        if (sv_ResearchClass == 0) {
+            if (ai_FallbackBuilding != 0 && ((AIBLD *)ai_FallbackBuilding)->type == 0x47)
+                who = ((AIBLD *)ai_FallbackBuilding)->playerSlot;
+            else
+                who = ai_OwnPlayer;
+            n = gm_SumSlotAmounts((void *)ai_CharsT[ai_PlayerId].inventory, who) + sv_PendingMoney;
+        } else {
+            n = ((int (*)(void *))gm_SumListAmounts)(((AIOBJ *)gm_PlayerSeat(sv_ResearchClass))->list) + sv_PendingMoney;
+            who = ai_OwnPlayer;
+        }
+        if (sv_PanelMoneyText != -1) {
+            if (n != 0) {
+                h = gm_ConvertMoney(n, who);
+                txt_Format(buf, "%I~ %w", (int)(float)h, who);   /* 0x523d17: the second argument (esi) is
+                                                                    the same owner index, for the %w city name */
+                d2_SetObjText(sv_PanelMoneyText, buf);
+            } else
+                d2_SetObjText(sv_PanelMoneyText, txt_Ptrs[0x1f00]);
+        }
+    }
+    if (sv_ButtonFamilyTree != -1 && d2_Objs[sv_ButtonFamilyTree].pic != ai_CharsT[ai_PlayerId].ref54) {
+        d2_RemoveObj(sv_ButtonFamilyTree);
+        sv_ButtonFamilyTree = -1;
+        sv_ButtonFamilyTree = d2_WinOpenPic(0x10, 8, ai_CharsT[ai_PlayerId].ref54, sv_BarWindow);
+        d2_Objs[sv_ButtonFamilyTree].style = 3;
+        d2_Objs[sv_ButtonFamilyTree].interactive = 1;
+    }
+    if (he_BarShown >= 0) {
+        if (he_LastSlot > 3) {
+            d2_EnableObject(sv_BarToggle, 1);
+        } else {
+            d2_EnableObject(sv_BarToggle, 0);
+            sv_BarMoved = 0;
+        }
+        if (d2_ClickedId != -1 && d2_PointerObj == sv_BarToggle)
+            sv_BarMoved = sv_BarMoved == 0;
+        if (sv_BarSlots != he_LastSlot || (d2_ClickedId != -1 && d2_PointerObj == sv_BarToggle)) {
+            if (sv_BarMoved != 0) {
+                d2_SetForm(he_BarView, 0);
+                win = &d2_Wins[d2_LastWindow];
+                d2_MoveObj(d2_ScreenW - (he_LastSlot << 5) - 0x1d, win->y, win->parent);
+                d2_MoveObj(d2_ScreenW - (he_LastSlot << 5) - 0x4d, d2_ScreenH - 0x21, sv_BarToggle);
+            } else {
+                d2_SetForm(he_BarView, 0);
+                win = &d2_Wins[d2_LastWindow];
+                d2_MoveObj(d2_ScreenW - 0x7d, win->y, win->parent);
+                d2_MoveObj(d2_ScreenW - 0xad, d2_ScreenH - 0x21, sv_BarToggle);
+            }
+            sv_BarSlots = he_LastSlot;
+        }
+        if (sv_BarMoved != 0) {
+            d2_SetClipRect(0, 0, d2_ScreenW - 0x8c, d2_ScreenH);
+            shape = d2_GetPic(sv_PanelPic + 3);
+            d2_DrawShape(d2_ScreenW - (he_LastSlot << 5) - 0x37, d2_ScreenH - 0x37, d2_ScreenSurf, shape, 0);
+            d2_SetClipRect(0, 0, d2_ScreenW, d2_ScreenH);
+        }
+    }
+}
 /* 0x524010, redraws the whole screen: the background view 0x6ed924 is filled (0x46d040), the panel 0x522f10 (1, 0) built into it, the view blitted (0x479480) to 0x6ed92c, a black clip rectangle ("BLACK") over the
    whole screen shown for one message round (0x5309a0 (0, 0x1c6)), the strip 0x623840 shown (0x4756b0) and the background copied back */
 void sv_RedrawScreen(void)
@@ -2992,38 +3209,6 @@ int d3t_SceneIndex();                     /* 0x411be0 */
 void d3_SetWorldPosRot();                     /* 0x449920 */
 int d3t_PlayAnim();                     /* 0x411960 */
 
-/* 0x528180, the d3_ForEachObject callback of 0x5282f0 over the model parts of the building b: for the part named
-   "dummy_FAHNE" it creates the banner object "sp_WIMPEL" in b's model scene at the dummy's world position, turned by pi
-   around the y axis, coloured for the owner like 0x528290 (texture set 'f' + the owner's ref54 byte, kind 4), starts its
-   animation "sonstiges\sp_WIMPEL.baf" and sets its flags (stateFlags 0x44 on, 8 off; objectFlags 2 off); returns 1 */
-char sv_CreateBannerCB(D3OBJECT *part, AIBLD *b)
-{
-    D3VECTOR rot;
-    D3VECTOR4 pos;
-    D3MATRIX m;
-    D3OBJECT *o;
-
-    if (_stricmp(part->name, "dummy_FAHNE") == 0) {
-        rot.x = 0;
-        rot.y = 0;
-        rot.z = 0;
-        d3_PointToWorld(part, &part->pos, (D3VECTOR *)&pos);
-        o = d3_CreateObject((int)b->object, (D3VECTOR *)&pos, &rot, "sp_WIMPEL");
-        rot.x = 0;
-        rot.y = 3.1415927f;
-        rot.z = 0;
-        d3_MatFromAngles((D3VECTOR4 *)&rot, &m);
-        d3_SetWorldPosRot(o, &pos, &m);
-        if (b->owner != 0xffff) {
-            d3if_SelectTextureSet(o, (struct D3SURF *)o->info, (unsigned char)((char)ai_CharsT[b->owner].ref54 + 'f'), 1);
-            o->kind = 4;
-        }
-        d3t_PlayAnim(o, "sonstiges\\sp_WIMPEL.baf", 1);
-        o->stateFlags = (o->stateFlags & 0xf7) | 0x44;
-        o->objectFlags &= 0xfd;
-    }
-    return 1;
-}
 /* 0x527bb0, puts the camera directly 600 units back along its view from the building b's 3D object (its centre,
    the terrain's mean height plus the zoom height, pulled in by the object's height range): the stored view
    sv_ViewPos / sv_ViewRot and the player's camera record get the new position, b becomes sv_SelectedObject;
@@ -3150,6 +3335,38 @@ void sv_FlyCameraToModel(int m)
 void sv_MoveCameraToView(void)
 {
     d3t_PlaceObject(d3_Camera, sv_ViewPos[0], sv_ViewPos[1], sv_ViewPos[2], sv_ViewRot[0], sv_ViewRot[1], sv_ViewRot[2], ai_CameraStep, 8);
+}
+/* 0x528180, the d3_ForEachObject callback of 0x5282f0 over the model parts of the building b: for the part named
+   "dummy_FAHNE" it creates the banner object "sp_WIMPEL" in b's model scene at the dummy's world position, turned by pi
+   around the y axis, coloured for the owner like 0x528290 (texture set 'f' + the owner's ref54 byte, kind 4), starts its
+   animation "sonstiges\sp_WIMPEL.baf" and sets its flags (stateFlags 0x44 on, 8 off; objectFlags 2 off); returns 1 */
+char sv_CreateBannerCB(D3OBJECT *part, AIBLD *b)
+{
+    D3VECTOR rot;
+    D3VECTOR4 pos;
+    D3MATRIX m;
+    D3OBJECT *o;
+
+    if (_stricmp(part->name, "dummy_FAHNE") == 0) {
+        rot.x = 0;
+        rot.y = 0;
+        rot.z = 0;
+        d3_PointToWorld(part, &part->pos, (D3VECTOR *)&pos);
+        o = d3_CreateObject((int)b->object, (D3VECTOR *)&pos, &rot, "sp_WIMPEL");
+        rot.x = 0;
+        rot.y = 3.1415927f;
+        rot.z = 0;
+        d3_MatFromAngles((D3VECTOR4 *)&rot, &m);
+        d3_SetWorldPosRot(o, &pos, &m);
+        if (b->owner != 0xffff) {
+            d3if_SelectTextureSet(o, (struct D3SURF *)o->info, (unsigned char)((char)ai_CharsT[b->owner].ref54 + 'f'), 1);
+            o->kind = 4;
+        }
+        d3t_PlayAnim(o, "sonstiges\\sp_WIMPEL.baf", 1);
+        o->stateFlags = (o->stateFlags & 0xf7) | 0x44;
+        o->objectFlags &= 0xfd;
+    }
+    return 1;
 }
 /* 0x528290, an object callback (the object o, the building b): for the model part named "sp_WIMPEL" (the banner)
    sets its texture set to 'f' + the low byte of its owner's character ref54 (the owner's colour) when the owner
@@ -3918,223 +4135,6 @@ int gm_SumListAmounts(void *list, unsigned char p);                     /* 0x509
 int gm_ConvertMoney(int a, unsigned char k);                     /* 0x5085b0 */
 void txt_Format(char *out, int id0, ...);  /* 0x5176d0 */
 
-/* 0x522f10, the city / time panel (the big panel at the top of the screen), only while the player's character
-   is in state 6: blits the saved view shape back; a & 1 rebuilds the widgets (the shield, the money and name
-   texts, the clock / compass pictures, the help captions from the text list), then every call draws the date
-   ("<season> A.D.<year>"), the sun and hour hands, the time under the pointer, the compass (camera angle) or
-   the groundplan, the player's name, number and city arms, the money (the research class's list or the slots
-   of the player), re-opens the shield when its picture changed and moves the side panel by 0x625718 */
-void sv_UpdateCityPanel(unsigned char a, int b)
-{
-    struct {                            /* the calendar record gm_ClockToDate fills */
-        unsigned char day, season;
-        short year;
-        unsigned char hour, min;
-        char sec[4], pad[2];
-    } t;
-    char buf[0x100], name[0x100], arms[0x100];
-    void *shape;
-    int pic;
-    int h, n, who;
-    D2WIN *win;
-
-    if (ai_CharsT[ai_PlayerId].kind != 6)
-        return;
-    /* 0x522f42: the grabbed view shape back onto the screen at the view rectangle. The skeleton called
-       d2_ShpBlit(0, 0, 0), so the shape was whatever the stack held (a click on "Weiter" then crashed in
-       d2_ShpBlit with esi = 1); the original pushes sv_ViewRectLeft, sv_ViewRectTop, d2_ScreenSurf,
-       sv_ViewShape. */
-    if (sv_ViewShape != 0)
-        d2_ShpBlit(sv_ViewRectLeft, sv_ViewRectTop, (struct D2SURF *)d2_ScreenSurf, (struct D2SHP *)sv_ViewShape);
-    if (a & 1) {
-        if (sv_ButtonFamilyTree != -1) { d2_RemoveObj(sv_ButtonFamilyTree); sv_ButtonFamilyTree = -1; }
-        if (sv_ButtonCompare != -1) { d2_RemoveObj(sv_ButtonCompare); sv_ButtonCompare = -1; }
-        if (sv_ButtonCityStats != -1) { d2_RemoveObj(sv_ButtonCityStats); sv_ButtonCityStats = -1; }
-        if (sv_ButtonPrivileges != -1) { d2_RemoveObj(sv_ButtonPrivileges); sv_ButtonPrivileges = -1; }
-        if (sv_PanelMoneyText != -1) { d2_RemoveObj(sv_PanelMoneyText); sv_PanelMoneyText = -1; }
-        if (sv_ButtonInventory != -1) { d2_RemoveObj(sv_ButtonInventory); sv_ButtonInventory = -1; }
-        if (sv_ButtonPlayerStats != -1) { d2_RemoveObj(sv_ButtonPlayerStats); sv_ButtonPlayerStats = -1; }
-        if (sv_ButtonMessages != -1) { d2_RemoveObj(sv_ButtonMessages); sv_ButtonMessages = -1; }
-        if (sv_PanelBuildingIcon != -1) { d2_RemoveObj(sv_PanelBuildingIcon); sv_PanelBuildingIcon = -1; }
-        if (sv_PanelCompass != -1) { d2_RemoveObj(sv_PanelCompass); sv_PanelCompass = -1; }
-        sv_ButtonFamilyTree = d2_WinOpenPic(0x10, 8, ai_CharsT[ai_PlayerId].ref54, sv_BarWindow);
-        d2_Objs[sv_ButtonFamilyTree].style = 0x43;
-        d2_Objs[sv_ButtonFamilyTree].interactive = 1;
-        sv_ButtonCompare = d2_WinOpenPic(0x23a, 0xd, 0x522, sv_BarWindow);
-        d2_Objs[sv_ButtonCompare].style = 0x43;
-        d2_Objs[sv_ButtonCompare].interactive = 1;
-        sv_ButtonPrivileges = d2_CreateWinText(0x39, 0xd, ch_EmptyName, sv_BarWindow);
-        d2_Objs[sv_ButtonPrivileges].style = 0x43;
-        d2_Objs[sv_ButtonPrivileges].interactive = 1;
-        d2_Objs[sv_ButtonPrivileges].font = 0x55;
-        sv_ButtonPlayerStats = d2_CreatePicObjS(d2_ScreenW - 0x8d, d2_ScreenH - 0x73, 0x583);
-        d2_Objs[sv_ButtonPlayerStats].style = 0x43;
-        d2_Objs[sv_ButtonPlayerStats].interactive = 1;
-        sv_ButtonMessages = d2_CreatePicObjS(d2_ScreenW - 0x57, d2_ScreenH - 0x4f, 0x7d9);
-        d2_Objs[sv_ButtonMessages].style = 3;
-        d2_Objs[sv_ButtonMessages].interactive = 1;
-        sv_ButtonInventory = d2_CreatePicObjS(d2_ScreenW - 0x2a, d2_ScreenH - 0x66, 0x584);
-        d2_Objs[sv_ButtonInventory].style = 0x43;
-        d2_Objs[sv_ButtonInventory].interactive = 1;
-        sv_PanelBuildingIcon = d2_CreatePicObjS(d2_ScreenW - 0x4a, 0xd6, 0x585);
-        d2_Objs[sv_PanelBuildingIcon].style = 0x43;
-        d2_Objs[sv_PanelBuildingIcon].interactive = 1;
-        sv_PanelCompass = d2_CreatePicObjS(d2_ScreenW - 0x48, 0xd7, 0x551);
-        d2_Objs[sv_PanelCompass].style = 0x43;
-        d2_Objs[sv_PanelCompass].interactive = 1;
-        d2_Objs[sv_PanelCompass].type = 8;
-        sv_PanelMoneyText = d2_CreateScreenText(d2_ScreenW - 0x6a, d2_ScreenH - 0x7e, ch_EmptyName);
-        d2_Objs[sv_PanelMoneyText].centred = 1;
-        d2_Objs[sv_PanelMoneyText].font = 0x54;
-        d2_Objs[sv_PanelMoneyText].w = 0x6b;
-        d2_Objs[sv_PanelMoneyText].h = 0x20;
-    } else {
-        /* the texts of the six plates come from the text lists 0x1441ec8 .. 0x1441ee0 (or are cleared) */
-        if (ai_OptionPanelHelp.byte[0] != 0) {
-            if (sv_ButtonFamilyTree != -1) strcpy(d2_Objs[sv_ButtonFamilyTree].caption, txt_Ptrs[0x1f45]);
-            if (sv_ButtonCompare != -1) strcpy(d2_Objs[sv_ButtonCompare].caption, txt_Ptrs[0x1f48]);
-            if (sv_ButtonPrivileges != -1) strcpy(d2_Objs[sv_ButtonPrivileges].caption, txt_Ptrs[0x1f44]);
-            if (sv_ButtonPlayerStats != -1) strcpy(d2_Objs[sv_ButtonPlayerStats].caption, txt_Ptrs[0x1f43]);
-            if (sv_ButtonInventory != -1) strcpy(d2_Objs[sv_ButtonInventory].caption, txt_Ptrs[0x1f42]);
-            if (sv_PanelCompass != -1) strcpy(d2_Objs[sv_PanelCompass].caption, txt_Ptrs[0x1f46]);
-        } else {
-            if (sv_ButtonFamilyTree != -1) d2_Objs[sv_ButtonFamilyTree].caption[0] = ch_EmptyName[0];
-            if (sv_ButtonCompare != -1) d2_Objs[sv_ButtonCompare].caption[0] = ch_EmptyName[0];
-            if (sv_ButtonPrivileges != -1) d2_Objs[sv_ButtonPrivileges].caption[0] = ch_EmptyName[0];
-            if (sv_ButtonPlayerStats != -1) d2_Objs[sv_ButtonPlayerStats].caption[0] = ch_EmptyName[0];
-            if (sv_ButtonInventory != -1) d2_Objs[sv_ButtonInventory].caption[0] = ch_EmptyName[0];
-            if (sv_PanelCompass != -1) d2_Objs[sv_PanelCompass].caption[0] = ch_EmptyName[0];
-        }
-        sv_UpdateGroundplan(b);
-        d2_SetFont(0x55);
-        gm_ClockToDate(&ai_Time, (unsigned char *)&t);
-        if (ls_GetLanguage() == 2) {
-            sprintf(buf, "%s A.D.%i", d2_Strings[0x4c + gm_Season((char *)&t)], t.year);
-            d2_DrawText(d2_Wins[sv_BarWindow].x + 0x181, 0x17, d2_ScreenSurf, buf, 0);
-        } else {
-            sprintf(buf, "%s A.D.%i", d2_Strings[0x4c + gm_Season((char *)&t)], t.year);
-            d2_DrawText(d2_Wins[sv_BarWindow].x + 0x195, 0x17, d2_ScreenSurf, buf, 0);
-        }
-        h = (int)((ai_Time.min % 0x3c) * 0.8);
-        shape = d2_GetPic(0x581);
-        d2_DrawShape(d2_ScreenW - 0x50, 0x11, d2_ScreenSurf, shape, h);
-        d2_AddDirty(d2_ScreenW - 0x50, 0x11, d2_ShpW, d2_ShpH);
-        h = (int)((float)((ai_Time.hour * 0x3c + ai_Time.min) * 4.0) / 60.0) % 0x30;
-        shape = d2_GetPic(0x582);
-        d2_DrawShape(d2_ScreenW - 0x50, 0x11, d2_ScreenSurf, shape, h);
-        d2_AddDirty(d2_ScreenW - 0x50, 0x11, d2_ShpW, d2_ShpH);
-        if (d2_HitUnderPointer == sv_AdvanceHit) {
-            sprintf(buf, "%02i:%02i", ai_Time.hour, ai_Time.min);
-            d2_SetFont(0x54);
-            d2_DrawTextBox(d2_ScreenW - 0x50, 2, 0x2e, 0x14, d2_ScreenSurf, buf, 0x28);
-            d2_AddDirty(d2_ScreenW - 0x50, 2, d2_TextDrawnW, d2_TextDrawnH);
-            d2_SetFont(0x55);
-        }
-        if (ai_FallbackBuilding == 0 && ai_PlayerBuilding == 0 && sv_PanelCompass != -1 && sv_PanelBuildingIcon != -1) {
-            d2_EnableObject(sv_PanelBuildingIcon, 0);
-            d2_EnableObject(sv_PanelCompass, 1);
-            h = (int)((float)fmod(d3_Camera->rotation.y, 6.2831853f) * 0.15915494f * 48.0 + 48.5) % 0x30;
-            d2_Objs[sv_PanelCompass].input = h;
-        } else {
-            if (sv_PanelBuildingIcon != -1)
-                d2_EnableObject(sv_PanelBuildingIcon, 1);
-            if (sv_PanelCompass != -1)
-                d2_EnableObject(sv_PanelCompass, 0);
-        }
-        d2_SetFont(0x55);
-        if (sv_ButtonPrivileges != -1) {
-            io_CharacterName(ai_PlayerId, 1, 2, name);
-            strcpy(buf, name);
-            d2_SetObjText(sv_ButtonPrivileges, buf);
-        }
-        sprintf(buf, "%i", ai_CharsT[ai_PlayerId].money);
-        d2_DrawText(d2_Wins[sv_BarWindow].x + 0x23a, 0x17, d2_ScreenSurf, buf, 0);
-        if (sv_ButtonCompare != -1)
-            d2_MoveObj(d2_Wins[sv_BarWindow].x + (short)d2_TextDrawnW + 0x23d, 0x18, sv_ButtonCompare);
-        if (ai_PlayerBuilding == 0 && ai_FallbackBuilding == 0) {
-            if (sv_ButtonCityStats == -1) {
-                strcpy(name, ai_PlayerSlotsT[ai_OwnPlayer].name);
-                _strupr(name);
-                sprintf(arms, "_STADTWAPPEN_%s", name);
-                pic = d2_FindPic(arms);
-                if (pic != -1)
-                    sv_ButtonCityStats = d2_CreatePicObjS(d2_ScreenW - 0x6e, 0x5b, pic);
-                else
-                    sv_ButtonCityStats = d2_CreatePicObjS(d2_ScreenW - 0x6e, 0x5b, 0x5b1);
-                d2_Objs[sv_ButtonCityStats].style = 0x43;
-                d2_Objs[sv_ButtonCityStats].interactive = 1;
-            }
-            if (ai_OptionPanelHelp.byte[0] != 0) {
-                if (sv_ButtonCityStats != -1) strcpy(d2_Objs[sv_ButtonCityStats].caption, txt_Ptrs[0x1f47]);
-            } else if (sv_ButtonCityStats != -1)
-                d2_Objs[sv_ButtonCityStats].caption[0] = ch_EmptyName[0];
-            d2_SetFont(0x56);
-            strcpy(name, ai_PlayerSlotsT[ai_OwnPlayer].townName);
-            d2_DrawTextBox(d2_ScreenW - 0x70, 0x5d, 0x68, 0x14, d2_ScreenSurf, name, 8);
-            d2_AddDirty(d2_ScreenW - 0x70, 0x5d, d2_TextDrawnW, d2_TextDrawnH);
-        } else if (sv_ButtonCityStats != -1) {
-            d2_RemoveObj(sv_ButtonCityStats);
-            sv_ButtonCityStats = -1;
-        }
-        d2_SetFont(0x54);
-        if (sv_ResearchClass == 0) {
-            if (ai_FallbackBuilding != 0 && ((AIBLD *)ai_FallbackBuilding)->type == 0x47)
-                who = ((AIBLD *)ai_FallbackBuilding)->playerSlot;
-            else
-                who = ai_OwnPlayer;
-            n = gm_SumSlotAmounts((void *)ai_CharsT[ai_PlayerId].inventory, who) + sv_PendingMoney;
-        } else {
-            n = ((int (*)(void *))gm_SumListAmounts)(((AIOBJ *)gm_PlayerSeat(sv_ResearchClass))->list) + sv_PendingMoney;
-            who = ai_OwnPlayer;
-        }
-        if (sv_PanelMoneyText != -1) {
-            if (n != 0) {
-                h = gm_ConvertMoney(n, who);
-                txt_Format(buf, "%I~ %w", (int)(float)h, who);   /* 0x523d17: the second argument (esi) is
-                                                                    the same owner index, for the %w city name */
-                d2_SetObjText(sv_PanelMoneyText, buf);
-            } else
-                d2_SetObjText(sv_PanelMoneyText, txt_Ptrs[0x1f00]);
-        }
-    }
-    if (sv_ButtonFamilyTree != -1 && d2_Objs[sv_ButtonFamilyTree].pic != ai_CharsT[ai_PlayerId].ref54) {
-        d2_RemoveObj(sv_ButtonFamilyTree);
-        sv_ButtonFamilyTree = -1;
-        sv_ButtonFamilyTree = d2_WinOpenPic(0x10, 8, ai_CharsT[ai_PlayerId].ref54, sv_BarWindow);
-        d2_Objs[sv_ButtonFamilyTree].style = 3;
-        d2_Objs[sv_ButtonFamilyTree].interactive = 1;
-    }
-    if (he_BarShown >= 0) {
-        if (he_LastSlot > 3) {
-            d2_EnableObject(sv_BarToggle, 1);
-        } else {
-            d2_EnableObject(sv_BarToggle, 0);
-            sv_BarMoved = 0;
-        }
-        if (d2_ClickedId != -1 && d2_PointerObj == sv_BarToggle)
-            sv_BarMoved = sv_BarMoved == 0;
-        if (sv_BarSlots != he_LastSlot || (d2_ClickedId != -1 && d2_PointerObj == sv_BarToggle)) {
-            if (sv_BarMoved != 0) {
-                d2_SetForm(he_BarView, 0);
-                win = &d2_Wins[d2_LastWindow];
-                d2_MoveObj(d2_ScreenW - (he_LastSlot << 5) - 0x1d, win->y, win->parent);
-                d2_MoveObj(d2_ScreenW - (he_LastSlot << 5) - 0x4d, d2_ScreenH - 0x21, sv_BarToggle);
-            } else {
-                d2_SetForm(he_BarView, 0);
-                win = &d2_Wins[d2_LastWindow];
-                d2_MoveObj(d2_ScreenW - 0x7d, win->y, win->parent);
-                d2_MoveObj(d2_ScreenW - 0xad, d2_ScreenH - 0x21, sv_BarToggle);
-            }
-            sv_BarSlots = he_LastSlot;
-        }
-        if (sv_BarMoved != 0) {
-            d2_SetClipRect(0, 0, d2_ScreenW - 0x8c, d2_ScreenH);
-            shape = d2_GetPic(sv_PanelPic + 3);
-            d2_DrawShape(d2_ScreenW - (he_LastSlot << 5) - 0x37, d2_ScreenH - 0x37, d2_ScreenSurf, shape, 0);
-            d2_SetClipRect(0, 0, d2_ScreenW, d2_ScreenH);
-        }
-    }
-}
 
 unsigned char * gm_BuildQuery(int n, ...);                     /* 0x501190 */
 unsigned short * gm_QueryNext(void);                   /* 0x4ffcc0 */
@@ -4284,6 +4284,9 @@ void ai_TechTreeWindow(int param_1, int param_2);                     /* 0x591bf
 void d2_FreeAnim(int n);                     /* 0x47ce30 */
 int d3t_PlaceAtObject();                     /* 0x4118a0 */
 void snd_PlayWorkerClick(struct G16CHARCLICK *c);                     /* 0x4c2c70 */
+
+
+struct D3OBJECT * d3if_Pick(float x, float y, int flags, int mask);   /* 0x448630 */
 
 /* 0x52a050, the per-frame update of the info panel (not while the player bar is open or before the game runs):
    enables the transport button unless the selected building holds the objects 0x2a / 0x116; with the 0x2000 frame
@@ -4439,9 +4442,6 @@ refresh:
     sv_OpenBuildingPanel(b);
     sv_RefreshPanel();
 }
-
-struct D3OBJECT * d3if_Pick(float x, float y, int flags, int mask);   /* 0x448630 */
-
 /* 0x52a680, the hover pick of the town view: unless the pointer shows a look 1 .. 8, picks the scene object under
    the pointer inside the view rectangle (d3if_Pick kind 0x20, then 0x40; none, or a window / widget under the
    pointer: clears the caption unless the pointed widget keeps it, frees the pointer sprite and forgets the hover
