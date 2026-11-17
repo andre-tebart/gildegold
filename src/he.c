@@ -22610,19 +22610,17 @@ void he_RunDomizilEvent(int ev)
     char text[0x100];
     AICHAR *c, *c2;
 
-    if (e->stage != 0) {
-        he_FreeEvent((int *)ev);
-        return;
-    }
-    c = (AICHAR *)gm_FindChar(e->partner1);
-    c2 = (AICHAR *)gm_FindChar(e->partner2);
-    if (c != 0) {
-        txt_Format(text, 0x4035);
-        he_ShowNews(e->partner1, -1, text, 1, 0x5fb, he_NewsDomizil11);
-    }
-    if (c2 != 0) {
-        txt_Format(text, 0x4036, c->id);
-        he_ShowNews(e->partner2, -1, text, 1, 0x5fa, 0);
+    if (e->stage == 0) {
+        c = (AICHAR *)gm_FindChar(e->partner1);
+        c2 = (AICHAR *)gm_FindChar(e->partner2);
+        if (c != 0) {
+            txt_Format(text, 0x4035);
+            he_ShowNews(e->partner1, -1, text, 1, 0x5fb, he_NewsDomizil11);
+        }
+        if (c2 != 0) {
+            txt_Format(text, 0x4036, c->id);
+            he_ShowNews(e->partner2, -1, text, 1, 0x5fa, 0);
+        }
     }
     he_FreeEvent((int *)ev);
 }
