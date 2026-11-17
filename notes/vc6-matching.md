@@ -1352,6 +1352,11 @@ a stack slot is a split piece, and the piece's extent is decided by the rules be
 
 ### A constant or zero kept in a register
 
+- **An address constant in a scratch register for an entry test and a loop guard (`mov ecx,&T[47]; cmp eax,ecx;
+  jae; add; cmp eax,ecx; ja`), the loop's bottom test immediate**: the bound through a count local, `n = 48; ..
+  after >= &T[n - 1] .. p <= &T[n - 1]`: the address is a CSE temp (refcost > 0) before n folds. A literal
+  `&T[47]` (with or without a cached `last` local, `T + 47`, `i = 47; &T[i]`) is a plain constant with savings
+  -1 and stays immediate; extra uses do not help (ai_FindMissionType byte).
 - **`or ebx,-1` + a dword store from ebx and a byte store from bl (`mov [v],bl`)**: one pooled -1 used as int and
   as byte; ours had `unsigned char v` with `v = 0xff` (another constant): `char v; .. v = -1;`
   (ai_ChooseObjectTarget, byte). **Zero in ebx through a record fill where ours has edx**: another scratch
