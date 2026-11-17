@@ -1673,10 +1673,16 @@ extern char d3if_ParList[0x31c];
 int d3o_LightSet = -1;  /* 0x5fbcfc, the current light set */
 int d3o_FogSet = -1;  /* 0x5fbd00, the current fog set */
 float d3o_FogScale = 1.0f;  /* 0x5fbd04, the factor d3_SetFogSet scales the fog distances by (1 - the fog option %; f3init, cm, menu set it) */
+unsigned char d3if_UnreadHead[352] = {0};  /* 0x633758, the start of d3_interface's .bss (8-aligned after d3_fl's last byte
+                                              0x633751) up to d3if_CamOben: no surviving instruction or pointer reads it,
+                                              so it is data of d3_interface functions the linker removed (a unit's .bss
+                                              outlives /OPT:REF; layout, extent and type unknown: one unread byte block) */
 int d3if_CamOben = 0;  /* 0x6338b8 */
 int d3if_CamVorne = 0;  /* 0x6338bc */
 int d3if_CamSeite = 0;  /* 0x6338c0 */
 int d3if_MegaCam = 0;  /* 0x6338c4 */
+unsigned char d3if_UnreadMid[275] = {0};  /* 0x6338c8, the unread bytes between d3if_MegaCam and d3if_TexturesEvicted (same
+                                              reasoning as d3if_UnreadHead; 8-aligned, the byte after it ends it) */
 unsigned char d3if_TexturesEvicted = 0;  /* 0x6339db */
 unsigned int d3if_SceneSwitches = 0;  /* 0x6339dc, counts the scene switches (an object of its own: 4-aligned after the byte d3if_TexturesEvicted) */
 char d3if_ParList[0x31c];  /* 0xfb95e0, the default scene's particle list head node (a D3PARTSYS, 0x31c bytes: d3_ParHead is its next field, +0x318 its prev) */
