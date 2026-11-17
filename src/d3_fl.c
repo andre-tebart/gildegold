@@ -1660,84 +1660,6 @@ void d3fl_ReloadTextures(D3FLMAP *map)
     d3fl_Box[i].y = d3fl_AxisY.y * (H) + q.y;                        \
     d3fl_Box[i].z = d3fl_AxisY.z * (H) + q.z;
 
-/* 0x442ac0, the bounding box of tile (tx, ty) in world space (bottom from t->hmin, top from the map's tile) */
-D3BOXVERT *d3fl_TileBox(D3FLMAP *map, D3FLTILE *t, int tx, int ty)
-{
-    D3VECTOR4 p, q;
-    float x0, x1, z0, z1, h;
-
-    x0 = (float)(map->n * tx);
-    x1 = (float)((tx + 1) * map->n);
-    z0 = (float)(map->n * ty);
-    z1 = (float)((ty + 1) * map->n);
-    h = t->hmin;
-    D3FL_CORNER(0, x0, z0, h)
-    D3FL_CORNER(1, x1, z0, h)
-    D3FL_CORNER(2, x1, z1, h)
-    D3FL_CORNER(3, x0, z1, h)
-    h = map->tiles[ty][tx].hmax;
-    D3FL_CORNER(4, x0, z0, h)
-    D3FL_CORNER(5, x1, z0, h)
-    D3FL_CORNER(6, x1, z1, h)
-    D3FL_CORNER(7, x0, z1, h)
-    return d3fl_Box;
-}
-/* 0x4437f0, culls the tiles against the view and picks their detail levels; returns 1 if any level changed */
-
-char d3fl_UpdateTiles(D3FLMAP *map)
-{
-    D3FLTILE *t;
-    D3BOXVERT *box;
-    unsigned int x, y, k;
-    float sum = 0.0f;
-    int i, n = 0;
-    char changed = 0;
-    D3VECTOR4 c;
-    unsigned char lod;
-
-    for (y = 0; y < 8; y++)
-        for (x = 0; x < 8; x++) {
-            t = &map->tiles[y][x];
-            box = d3fl_TileBox(map, t, x, y);
-            if ((t->clip = d3_ClipBox(box, &t->zmin, &t->zmax)) & 0x40)
-                t->lodLevel = 0;
-            else {
-                t->lodLevel = 1;
-                t->zmin += 16.0f;
-                t->zmax += 16.0f;
-                c.x = box[0].x;
-                c.y = box[0].y;
-                c.z = box[0].z;
-                for (i = 1; i < 8; i++) {
-                    c.x += box[i].x;
-                    c.y += box[i].y;
-                    c.z += box[i].z;
-                }
-                n++;
-                c.x *= 0.125f;
-                c.y *= 0.125f;
-                c.z *= 0.125f;
-                t->center.x = c.x;
-                t->center.y = c.y;
-                t->center.z = c.z;
-                sum += t->centerDist = (float)sqrt(c.x * c.x + c.y * c.y + c.z * c.z);
-            }
-        }
-    for (y = 0; y < 8; y++)
-        for (k = 0; k < 8; k++) {
-            t = &map->tiles[y][k];
-            if (t->lodLevel > 0 && (t->lodLevel = lod = d3fl_TileLod(map, t, sum, n)) > 0) {
-                if (k > 0 && (lod == 4 && t[-1].lodLevel == 1 || lod == 1 && t[-1].lodLevel == 4))
-                    t->lodLevel = 2;
-                if (y > 0 && (t->lodLevel == 4 && t[-8].lodLevel == 1 || t->lodLevel == 1 && t[-8].lodLevel == 4))
-                    t->lodLevel = 2;
-                t->lodLevel = max(1 << map->shift, t->lodLevel);
-            }
-            if (t->lodLevel != (unsigned char)t->lod)
-                changed = 1;
-        }
-    return changed;
-}
 /* 0x442390, creates a terrain map from a description: height, water and texture maps either from memory or from
    "boden/<name>.bmp", "boden/<name>_w.bmp" and "boden/<texname>.bmp" */
 
@@ -1853,6 +1775,28 @@ D3FLMAP *d3fl_LoadMap(D3FLDESC *desc)
     }
     d3fl_FreeMap(map);
     return 0;
+}
+/* 0x442ac0, the bounding box of tile (tx, ty) in world space (bottom from t->hmin, top from the map's tile) */
+D3BOXVERT *d3fl_TileBox(D3FLMAP *map, D3FLTILE *t, int tx, int ty)
+{
+    D3VECTOR4 p, q;
+    float x0, x1, z0, z1, h;
+
+    x0 = (float)(map->n * tx);
+    x1 = (float)((tx + 1) * map->n);
+    z0 = (float)(map->n * ty);
+    z1 = (float)((ty + 1) * map->n);
+    h = t->hmin;
+    D3FL_CORNER(0, x0, z0, h)
+    D3FL_CORNER(1, x1, z0, h)
+    D3FL_CORNER(2, x1, z1, h)
+    D3FL_CORNER(3, x0, z1, h)
+    h = map->tiles[ty][tx].hmax;
+    D3FL_CORNER(4, x0, z0, h)
+    D3FL_CORNER(5, x1, z0, h)
+    D3FL_CORNER(6, x1, z1, h)
+    D3FL_CORNER(7, x0, z1, h)
+    return d3fl_Box;
 }
 /* 0x442ed0, animates n water regions: texture frame, texture offsets and the 16 wave vectors */
 
@@ -2094,6 +2038,62 @@ void d3fl_DrawWater(D3FLMAP *map, D3FLTILE *t)
 
 #define T map->tiles[y][x]
 
+/* 0x4437f0, culls the tiles against the view and picks their detail levels; returns 1 if any level changed */
+
+char d3fl_UpdateTiles(D3FLMAP *map)
+{
+    D3FLTILE *t;
+    D3BOXVERT *box;
+    unsigned int x, y, k;
+    float sum = 0.0f;
+    int i, n = 0;
+    char changed = 0;
+    D3VECTOR4 c;
+    unsigned char lod;
+
+    for (y = 0; y < 8; y++)
+        for (x = 0; x < 8; x++) {
+            t = &map->tiles[y][x];
+            box = d3fl_TileBox(map, t, x, y);
+            if ((t->clip = d3_ClipBox(box, &t->zmin, &t->zmax)) & 0x40)
+                t->lodLevel = 0;
+            else {
+                t->lodLevel = 1;
+                t->zmin += 16.0f;
+                t->zmax += 16.0f;
+                c.x = box[0].x;
+                c.y = box[0].y;
+                c.z = box[0].z;
+                for (i = 1; i < 8; i++) {
+                    c.x += box[i].x;
+                    c.y += box[i].y;
+                    c.z += box[i].z;
+                }
+                n++;
+                c.x *= 0.125f;
+                c.y *= 0.125f;
+                c.z *= 0.125f;
+                t->center.x = c.x;
+                t->center.y = c.y;
+                t->center.z = c.z;
+                sum += t->centerDist = (float)sqrt(c.x * c.x + c.y * c.y + c.z * c.z);
+            }
+        }
+    for (y = 0; y < 8; y++)
+        for (k = 0; k < 8; k++) {
+            t = &map->tiles[y][k];
+            if (t->lodLevel > 0 && (t->lodLevel = lod = d3fl_TileLod(map, t, sum, n)) > 0) {
+                if (k > 0 && (lod == 4 && t[-1].lodLevel == 1 || lod == 1 && t[-1].lodLevel == 4))
+                    t->lodLevel = 2;
+                if (y > 0 && (t->lodLevel == 4 && t[-8].lodLevel == 1 || t->lodLevel == 1 && t[-8].lodLevel == 4))
+                    t->lodLevel = 2;
+                t->lodLevel = max(1 << map->shift, t->lodLevel);
+            }
+            if (t->lodLevel != (unsigned char)t->lod)
+                changed = 1;
+        }
+    return changed;
+}
 /* 0x4439e0, draws the floor: transforms the map into camera space; if the map is dirty, rebuilds the tile meshes
    (vertices, lit from the light map, and triangles; extra vertices on edges next to finer tiles), projects them and
    culls the triangles; then animates the water (water != 0) and queues the visible triangles of all tiles,
