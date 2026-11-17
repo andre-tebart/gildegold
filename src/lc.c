@@ -13800,9 +13800,9 @@ void ai_CityWatchListener(AIBLD *bld, int room)
 {
     int patrol = 0;
     int wachplan = 0;
+    int zoll = 0;
     int personal = 0;
     int meister = 0;
-    int zoll = 0;
     int r;
 
     sv_ReleaseNamePlates();
@@ -13817,18 +13817,18 @@ void ai_CityWatchListener(AIBLD *bld, int room)
                 zoll = sv_RegisterNamePlate("ob_ZOLLKASSE", ai_ContactTextCustomsBox, 0x16);
             else if (gm_Query(bld->objList, 2, 6, 0, 0x148) != 0)
                 zoll = sv_RegisterNamePlate("ob_ZOLLKASSE_MIT_GEHEIMFACH", ai_ContactTextCustomsBox, 0x16);
-            if ((ai_BuildingPerms & 0x200) && ai_ClickedObject != 0) {
-                if (ai_ClickedObject == personal)
-                    ai_PersonnelBook(bld, "ob_PERSONALBUCH");
-                else if (ai_ClickedObject == patrol)
-                    ai_PatrolStart((int)bld);
-                else if (ai_ClickedObject == wachplan)
-                    ai_WatchPlanStart((int)bld);
-                else if (ai_ClickedObject == zoll)
-                    ai_ArrestStart((int)bld);
-                else if (ai_ClickedObject == meister)
-                    ai_MasterLetterWindow((AIBLD *)bld);
-            }
+        }
+        if ((ai_BuildingPerms & 0x200) && ai_ClickedObject != 0) {
+            if (ai_ClickedObject == personal)
+                ai_PersonnelBook(bld, "ob_PERSONALBUCH");
+            else if (ai_ClickedObject == patrol)
+                ai_PatrolStart((int)bld);
+            else if (ai_ClickedObject == wachplan)
+                ai_WatchPlanStart((int)bld);
+            else if (ai_ClickedObject == zoll)
+                ai_ArrestStart((int)bld);
+            else if (ai_ClickedObject == meister)
+                ai_MasterLetterWindow((AIBLD *)bld);
         }
         r = sv_RunFrame(ai_CityWatchListener, 0x67fff);
     }
