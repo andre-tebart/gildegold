@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "d3_io_a.h"
+#include "d3_io_b.h"
 #include "bio.h"
 #include "bmp.h"
 #include "mem.h"
@@ -20,6 +21,43 @@
    .rdata, its string literals in .data), 4 bytes each (a char[2] would put the second at +2) */
 const char agi_SepSpace[4] = " ";   /* 0x5ebb58 */
 const char agi_SepQuote[4] = "\"";  /* 0x5ebb5c */
+
+/* The keyword tables of the AGI text reader: {keyword, line handler or sub table, entries of the sub table}, each
+   opened by "*INIT*" and closed by "*DONE*" (the handlers run when the reader enters / leaves the block). The
+   reader that walked them is not in the image (/OPT:REF removed it; .data keeps the tables, and they keep the
+   handlers): no code refers to them. The materials' "*DONE*" handler is 0x44f000 (bgi_NextMat, the one body the
+   linker kept for the identical "next material" handlers of both readers). The names are ours. */
+typedef struct AGIENT {             /* 12 bytes */
+    char *key;                      /* the keyword */
+    void *fn;                       /* handler (unused, ctx), or the sub table when n != 0 */
+    int n;                          /* entries of the sub table */
+} AGIENT;
+
+AGIENT agi_TabMat[16] = {  /* 0x5fc2c8, the keywords of one material */
+    {"*INIT*", 0, 0}, {"*DONE*", bgi_NextMat, 0}, {"BASE_MAP", agi_Bitmap0, 0}, {"BUMP_MAP", agi_Bitmap1, 0},
+    {"ENVIRONMENT_MAP", agi_Bitmap2, 0}, {"ALPHA_TYPE", agi_Blend, 0}, {"ALPHA_VALUE", agi_MatB1, 0},
+    {"COLORKEYING", agi_MatB2, 0}, {"NO_MIPMAP", agi_MatB4, 0}, {"SCROLL_X", agi_MatB8, 0}, {"SCROLL_Y", agi_MatB8, 0},
+    {"U_TILE", agi_MatF0, 0}, {"V_TILE", agi_MatF1, 0}, {"U_OFFSET", agi_MatF2, 0}, {"V_OFFSET", agi_MatF3, 0},
+    {"UVW_ROTATE", agi_MatF4, 0}
+};
+AGIENT agi_TabMats[4] = {  /* 0x5fc388, the materials block */
+    {"*INIT*", 0, 0}, {"*DONE*", 0, 0}, {"NUM_MATERIALS", agi_Materials, 0}, {"MATERIAL", agi_TabMat, 16}
+};
+AGIENT agi_TabPoly[6] = {  /* 0x5fc3b8, the keywords of one face */
+    {"*INIT*", d3io_NoopCallback, 0}, {"*DONE*", 0, 0}, {"INDEX", agi_PolyVerts, 0}, {"UUUVVVWWW", agi_PolyUV, 0},
+    {"NORMAL", d3io_NoopCallback, 0}, {"MATERIAL_REF", agi_PolyMat, 0}
+};
+AGIENT agi_TabGeom[7] = {  /* 0x5fc400, the mesh block */
+    {"*INIT*", 0, 0}, {"*DONE*", agi_EndObject, 0}, {"TIME_INDEX", agi_GeomInt, 0}, {"NUM_VERTICES", agi_NumPoints, 0},
+    {"NUM_FACES", agi_NumPolys, 0}, {"VERTICES", agi_Points, 0}, {"FACES", agi_TabPoly, 6}
+};
+AGIENT agi_TabObj[5] = {  /* 0x5fc454, the object block */
+    {"*INIT*", 0, 0}, {"*DONE*", 0, 0}, {"NAME", d3io_NoopCallback, 0}, {"HAS_SHADOW", d3io_NoopCallback, 0},
+    {"MESH", agi_TabGeom, 7}
+};
+AGIENT agi_TabTop[5] = {  /* 0x5fc490, the file's top level */
+    {"*INIT*", 0, 0}, {"*DONE*", 0, 0}, {"SPACE", agi_Kind, 0}, {"MATERIALS", agi_TabMats, 4}, {"OBJECT", agi_TabObj, 5}
+};
 
 /* 0x44e570, exactly one bit set */
 char agi_IsPow2(int n)

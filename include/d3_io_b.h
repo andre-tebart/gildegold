@@ -41,6 +41,7 @@ extern int bgi_Depth;                                                           
 int bgi_ReadId(void *f);                                                        /* 0x44eea0 */
 int bgi_Find(int id, BGIENT *t, int n);                                         /* 0x44eee0 */
 void bgi_Parse(void *f, BGIENT *t, int n, BGIRD *c);                            /* 0x44ef10 */
+void bgi_NextMat(void *f, BGIRD *c);                                            /* 0x44f000, next material (also the AGI tables' handler) */
 
 /* 0x44f8c0..0x450858: binary vertex animation stream reader and two chunk-file probes (was unk_44f8c0.h,
    worker anim). d3_io_t.h declares 0x44f8c0 and 0x4506f0 too (by the struct tag). */
