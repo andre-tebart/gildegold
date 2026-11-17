@@ -13,32 +13,7 @@ typedef struct FILEREC {            /* 0x210 bytes, a file of ai_ListFiles's lis
     char path[0x107];               /* 0x109, "<dir>/<file name>" */
 } FILEREC;
 
-/* The option values the profile keeps (the reader 0x5d5640 and the writer 0x5d4c70, the "Game" /
-   "Gfx" / "Sound" sections of 0x75e480). The reader stores the camera / mouse speed as single bytes;
-   the run time reads them as integers here. */
-extern unsigned char ai_GfxDetail;  /* 0x6f35c4, the "details" key */
-extern unsigned char ai_GfxTextureScale;  /* 0x6f35c5, the "texture_scale" key */
-extern unsigned char ai_GfxLodHandling;  /* 0x6f35c6, the "lod_handling" key */
-extern unsigned char ai_GfxShadowDetail;  /* 0x6f35c7, the "shadow_detail" key */
-extern int ai_OptionSpeed;          /* 0x6f3608, the "speed" key: the game speed setting (0x2ee = 4.9375) */
-extern unsigned char ai_OptionCameraSpeed; /* 0x6f360c, the "camera_speed" key */
-extern int ai_OptionMouseSpeed;     /* 0x6f3610, the "mouse_speed" key (the input base is this - 0x40) */
-
-/* 0x6f3600: the "Sound" options of the profile (the reader 0x5d5640), the master_vol / sfx_vol /
-   msx_vol / speech_vol bytes and the msx_freq dword. The byte fields are bitfields on a char base
-   type: the original's compiler loads the packed master + sfx dword as a whole and extracts the
-   second byte with `mov dl, ah` - a plain unsigned char field would be a separate byte load. */
-typedef struct SNDOPTIONBYTES {
-    unsigned char masterVolume:8;   /* +0x0, "master_vol" */
-    unsigned char sfxVolume:8;      /* +0x1, "sfx_vol" */
-    unsigned char msxVolume:8;      /* +0x2, "msx_vol" */
-    unsigned char voiceVolume:8;    /* +0x3, "speech_vol" */
-    union {
-        int msxFreq;                /* +0x4, "msx_freq" (the low byte is used) */
-        unsigned char msxFreqByte[4]; /* +0x4, the same as the four bytes the reader stores */
-    };
-} SNDOPTIONBYTES;
-extern SNDOPTIONBYTES ai_SoundOptions;  /* 0x6f3600 */
+/* the option values (ai_GfxDetail .. ai_OptionPanelHelp): fields of MENUOPTIONS ai_Options, menu_types.h */
 
 void sb_SetMasterVolume(int volume);/* 0x427370, sblib.c (that unit has no header yet) */
 /* the two msx.h setters (msx.h and f3snd.h once declared msx_Play with differently scoped tags; the unit

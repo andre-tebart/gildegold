@@ -256,7 +256,6 @@ typedef struct LCMASTERROW {            /* 0x18 bytes, a row of the stats panel'
 extern LCMASTERROW ai_MasterRows[0x80];  /* 0x6f40e0, the master list page's rows (ai_PlayerStatsPanel fills them) */
 extern int ai_StatsBldRows[0x80];       /* 0x6f4ce0, the control of each row of the stats panel's building page (ai_ShowBuildingRows fills them) */
 extern int ai_MasterBar;                /* 0x6f4ee0, the master list page's scroll bar (sv_CreateScrollButtons) */
-extern unsigned char ai_GfxDetail;  /* 0x6f35c4, the "details" key */
 void ai_OpenInventoryWindow(int win, int x, int y, unsigned short charId, int text);  /* 0x5ba1c0, opens the inventory child window of the character charId */
 int ai_UpdateInventoryWindow(void);                    /* 0x5ba290, the inventory child window's frame (1 while goods are picked from it) */
 void ai_CloseChildWindow(void);            /* 0x5ba600, closes the inventory child window */

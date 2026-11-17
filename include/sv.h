@@ -327,7 +327,6 @@ extern int sv_ShownChar;  /* 0x6f23d0 */
 extern int sv_ShownOther;  /* 0x6f23d4 */
 extern int sv_ShownCount;  /* 0x6f23d8 */
 extern unsigned char ai_GameState;                          /* 0x6f25ac */
-extern int ai_OptionScrollSpeed;                            /* 0x6f3614 */
 extern int sv_PanelFlag;                                    /* 0x75e8c0, 1 while the info panel is up */
 typedef struct SVQUICKJUMP SVQUICKJUMP;  /* the info panel's quick jump record: sv_quickjump.h */
 extern SVQUICKJUMP sv_QuickJump;                            /* 0x75e8c4 */

@@ -109,12 +109,10 @@ extern char ai_OptionsFile[288];
 
 extern INIT_PLAYER init_PlayerProfile;
 extern int sv_PopRequest;
-extern int ai_OptionHistorie;
 
 extern unsigned char hst_TextsOn;
 extern INIT_PLAYER init_PlayerProfile;
 extern int sv_PopRequest;
-extern OPTIONBYTES ai_GamePanel;
 extern int ai_Opponents[7];
 
 
@@ -195,7 +193,6 @@ extern int main_NoRoundFade;        /* 0x6f25c0, 1 skips the black fade before t
 extern unsigned char main_GameEnded;  /* 0x6f25ad, sv.c: nonzero when the player reached the game's goal */
 extern int main_WindBank;           /* 0x75e630, the wind sound bank */
 extern int sv_FrameMask;
-extern OPTIONBYTES ai_GamePanel;
 extern char ai_MissionMode;
 extern int d2_DirtyRectLeft[4];         /* 0xfb9060, the rectangle d2_AddDirty tests against: left, top, right, bottom (one object: one memset clears it) */
 #define d2_DirtyRectTop (*(int *)((char *)&d2_DirtyRectLeft + 0x4))       /* 0xfb9064 */
@@ -226,7 +223,6 @@ extern int d2_DirtyRectLeft[4];         /* 0xfb9060, the rectangle d2_AddDirty t
 extern int sv_FrameMask;
 extern int sv_PopRequest;
 
-extern OPTIONBYTES ai_GamePanel;
 extern char gm_TagTmp[4];
 extern int cm_NetFlags;
 

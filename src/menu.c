@@ -69,7 +69,7 @@ extern int gm_PlayerRecords[688];
 #define ai_CharsC (*(char (*)[768 * 0x21c])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) read flat, as this unit does */
 #define ai_CharsK ((AICHARKINDVIEW *)((char *)ai_Chars + 2))  /* 0x770b82, the records from their kind byte (ai_HasQuicksavePlayer walks them so) */
 
-extern OPTIONBYTES ai_GfxSet, ai_GfxFog, ai_GfxResolution, ai_GameSwitches, ai_GamePanel, ai_OptionPanelHelp;
+extern OPTIONBYTES ai_GfxResolution;
 /* full rebuild: the symbols whose original addresses the code above spells literally */
 
 extern struct D2OBJ *d2_Objs;              /* 0xf8f080, d2.h: D2OBJ * */
@@ -503,36 +503,7 @@ OPTIONBYTES ai_GfxResolution = {0};  /* 0x6f2f94: byte 0 cur_res */
 /* ai_ContactTextProductionTailor: view of txt_Ptrs (build/mk_txt_views.py) */
 EFFECTSTATE ai_EffectState;  /* 0x6f3300 .. 0x6f34f0, the wind state ai_InitWind builds */
 POKERGAME ai_PokerState;  /* 0x6f3500 .. 0x6f35c0, the poker game state (poker.c steps it) */
-OPTIONBYTES ai_GfxSet;  /* 0x6f35c0: byte 0 gfx_set */
-/* the option globals the writer 0x5d4c70 (and the reader 0x5d5640) use: each dword holds four option
-   bytes, the INI keys name the bytes (see the key order in 0x5d4c70); the four "Gfx" detail bytes are
-   objects of their own (anm.c reads 0x6f35c4 as a byte, 0x4bb884 mov al, byte ptr), as are the four floor bytes
-   (ai_ApplyGfxOptions reads 0x6f35c9 with xor eax, eax / mov al, byte ptr, where a union gives a dword load) */
-unsigned char ai_GfxDetail = 0;  /* 0x6f35c4, the "details" key */
-unsigned char ai_GfxTextureScale = 0;  /* 0x6f35c5, the "texture_scale" key */
-unsigned char ai_GfxLodHandling = 0;  /* 0x6f35c6, the "lod_handling" key */
-unsigned char ai_GfxShadowDetail = 0;  /* 0x6f35c7, the "shadow_detail" key */
-unsigned char ai_GfxFloor = 0;  /* 0x6f35c8, the "floor_mipmapping" key */
-unsigned char ai_GfxCameraLimits = 0;  /* 0x6f35c9, the "camera_limits" key */
-unsigned char ai_GfxFloorLod = 0;  /* 0x6f35ca, the "floor_lod" key */
-unsigned char ai_GfxCharDetail = 0;  /* 0x6f35cb, the "character_detail" key */
-OPTIONBYTES ai_GfxFog;  /* 0x6f35cc: byte 0 fog_plane */
-float ai_ScreenTuning[0xc];  /* 0x6f35d0: brightness r, g, b, a, contrast r, g, b, a, gamma
-                                               r, g, b, a (0 .. 1, the keys are the value * 100) */
-SNDOPTIONBYTES ai_SoundOptions;  /* 0x6f3600 */
-int ai_OptionSpeed;  /* 0x6f3608, the "speed" key: the game speed setting ( */
-unsigned char ai_OptionCameraSpeed = 0;  /* 0x6f360c, the "camera_speed" key */
-int ai_OptionMouseSpeed;  /* 0x6f3610, the "mouse_speed" key (the input base is this - */
-OPTIONBYTES ai_GameSwitches;  /* 0x6f3618: byte 0 invert_mouse, 1 nachtwaechter, 2 show_cursor_txt, 3 show_geb_info */
-extern OPTIONBYTES ai_GamePanel;
-extern int ai_OptionScrollSpeed;            /* 0x6f3614, the "scroll_speed" key */
-char ai_TownName[64];  /* 0x6f361c, the "stadt" key (written as a string) */
-int ai_OptionHistorie;  /* 0x6f365c, the "historie" key */
-int ai_OptionMission;  /* 0x6f3660, the "mission" key */
-int ai_OptionNetMission;  /* 0x6f3664, the "net_mission" key */
-OPTIONBYTES ai_GamePanel;  /* 0x6f3668: byte 0 panel_mode, 1 help_events, 2 difficulty, 3 hints */
-OPTIONBYTES ai_OptionPanelHelp;  /* 0x6f366c, the "panel_help" key */
-int ai_OptionScrollSpeed;  /* 0x6f3614 */
+MENUOPTIONS ai_Options;  /* 0x6f35c0 .. 0x6f3670, the profile's option values (menu_types.h: the old names are its field macros) */
 extern int ai_Opponents[7];
 extern char ai_OptionsFile[288];
 typedef struct SCREENMODE {                 /* 8 bytes, a screen mode of the table 0x62d7b8 */

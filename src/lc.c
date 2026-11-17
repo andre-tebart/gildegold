@@ -348,7 +348,6 @@ extern int d2_CutsceneActive;
 extern int snd_RoomBank;
 extern char * ai_BTypes;
 #include "menu_types.h"
-extern unsigned char ai_GfxFloorLod;  /* 0x6f35ca, menu.c: the "floor_lod" option */
 extern char ai_Chars[768][0x21c];
 extern unsigned char ai_OwnPlayer;
 extern char ch_EmptyName[1];
@@ -927,7 +926,6 @@ typedef struct G8USEVIEW {              /* a local view of am.h's G8USE (am.h ca
 #include "menu.h"
 #include "sv.h"
 #include "sv_quickjump.h"
-#define ai_GfxDetailI (*(int *)&ai_GfxDetail)  /* 0x6f35c4 (menu.c: unsigned char): @original ai_ShowVgObjects reads the detail as a dword and takes its low byte (0x58f9d7 mov ecx, dword ptr [0x6f35c4] / and edx, 0xff); the byte object compiles to mov cl, byte ptr */
 #define d2_CreatePicObjS ((int (*)(short, short, int))d2_CreatePicObj)  /* 0x46cd80 (d2.h: int x, y): @original the town map update adds the window position to the mark pixel in 16 bits (0x5a8052 mov dx, word ptr [eax + 4] / add dx, di / push edx), as d2.c's callers */
 #define d2_SetObjValue2 ((void (*)(int, int))d2_SetObjValue)  /* 0x475cb0 (d2.h: five parameters): @original the checkbox / route-box calls push only the object and the value (0x5c81ab ai_CityStatsPanel: push esi; push edi; 0x5b0a1b ai_TransportWindow: push 0; push esi) */
 #define d2_SetObjValue4 ((void (*)(int, int, int, int))d2_SetObjValue)  /* 0x475cb0 (d2.h: five parameters): @original the range calls push four (0x5c2610 ai_ShowWorkSettingsPage: push *budget; push 0x2328; push 0x3e8; push eax; 0x5c2675: push eax; push 0x96; push 0x32; push esi) */
@@ -2473,7 +2471,7 @@ void ai_ShowVgObjects(int start, int showAll)
     for (i = 0; i < list[0x20]; i++) {
         v = list[i];
         if (showAll == 0 ||
-            (i >= (unsigned char)ai_GfxDetailI && (char)ai_GfxDetailI != 2))
+            (i >= ai_GfxDetail && ai_GfxDetail != 2))
             d3if_ShowTree((struct D3OBJECT *)v, 0);
         else
             d3if_ShowTree((struct D3OBJECT *)v, 1);

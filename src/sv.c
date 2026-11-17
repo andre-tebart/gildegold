@@ -49,7 +49,6 @@ struct VFSDIR;
 
 #include "menu_types.h"
 #include "ai_types.h"
-extern OPTIONBYTES ai_OptionPanelHelp;
 
 extern int d2_HitUnderPointer;
 
@@ -69,7 +68,6 @@ extern int hst_KeyNext;
 
 extern GAPDATA full_data_623240[];
 extern int ai_PermsDirty;
-extern OPTIONBYTES ai_GameSwitches;
 extern float d3s_QuadUV[6];
 extern int ai_SceneChars[32];
 
@@ -100,7 +98,6 @@ extern unsigned char kb_Last;  /* 0x1468410 */
 /* ai_SeasonClimate: view of ai_PlayerSlots (tools/data_views.py) */
 extern int sv_ViewShape;  /* 0x6f22c0 */
 extern struct D2SURF *sv_GroundplanSurf, *sv_GroundplanView;  /* 0x6f22c4, 0x6f22c8 */
-extern OPTIONBYTES ai_GamePanel;  /* 0x6f3668 */
 #define d2_TransparentBytes ((unsigned char *)&d2_TransparentColour)  /* 0x6f0454, @original: sv_BuildScreenLayout clears the key byte by byte (mov byte [0x6f0454] / [0x6f0455] / [0x6f0456], bl), not through the D2COLKEY word gb */
 /* the object / character record fields sv.c reads (AIBLD / AICHAR in ai.h; ai.h cannot be included here: its
    declarations of ai_Time / ai_Chars / ai_BTypes / ai_Blds clash with gv.h's char views). Views, as gv.h's ORDCHAR */
@@ -2858,7 +2855,6 @@ int sv_ScrollCamera(void)
 }
 
 extern int sv_MouseDragOn, sv_ZoomTurnOn, sv_MouseCamActive, sv_DragStartX, sv_DragStartY, sv_DragLastX, sv_DragLastY, sv_SavedMaxX, sv_SavedMaxY, sv_SavedMinX, sv_SavedMinY, sv_ZoomStartX, sv_ZoomStartY;  /* 0x6f23b8, 0x6f23a0, 0x6f23a4, 0x6f2398, 0x6f239c, 0x6f1c88, 0x6f1c48, 0x6f1c50, 0x6f1c40, 0x6f1c84, 0x6f2298, 0x6f2290, 0x6f1c8c */
-extern int ai_OptionScrollSpeed;
 extern float sv_ZoomStartHeight, sv_ZoomStartAngle, sv_ZoomStartTurn, sv_ZoomBaseY, sv_DragLastPos[3];  /* 0x6f23a8, 0x6f23ac, 0x6f23b0, 0x6f23b4, 0x6f1c64 */
 extern int tb_Paused;  /* 0x6333e0 */
 extern int sv_BandActive;  /* 0x760440 */
@@ -7678,7 +7674,6 @@ unsigned char ai_GameState = 0;  /* 0x6f25ac */
 /* the two flags after ai_GameState are objects of their own (the original reads each as a byte: no views of it) */
 unsigned char main_GameEnded = 0;  /* 0x6f25ad, nonzero when the player has reached the game's goal: the round start plays the fanfare and the outro (cleared at the game start) */
 unsigned char sv_MenuOpen = 0;  /* 0x6f25ae, 1 while a menu screen runs */
-extern int ai_OptionScrollSpeed;
 int sv_PanelFlag;  /* 0x75e8c0, 1 when the panel is up (an int; cm.h / f3init.c) */
 SVQUICKJUMP sv_QuickJump;  /* 0x75e8c4, the info panel's pending quick jump (sv.h) */
 int sv_SelectionFlags[0xc0];  /* 0x75e920, the mirror of the character selection flags (byte i per character) */

@@ -129,7 +129,6 @@ extern void (*he_RunHandlers[5544])(unsigned char *);
 extern const volatile unsigned __int64 gypsyFilter;  /* 0x5eed68, menu.c */
 #define gypsyFilterValue (*(unsigned __int64 *)&gypsyFilter)  /* 0x5eed68, gypsyFilter read as a plain value (he_AllocSpying passes it by value, the high word loaded first) */
 #include "menu_types.h"
-extern OPTIONBYTES ai_GameSwitches;
 extern int gm_PlayerRecords[688];
 extern GAPDATA full_data_602568[];
 extern GAPDATA full_data_5ff710[];
@@ -152,11 +151,8 @@ extern const int sv_PhaseMinutes[24];
 #include "sv_types.h"
 extern char gm_TagGebaeudePROT[24];
 extern float gm_DayStartHours[];
-extern OPTIONBYTES ai_GameSwitches;
 extern char main_GamePath[];  /* 0x624690, main.c: the game directory */
 extern float gm_DayEndHours[];
-extern OPTIONBYTES ai_GamePanel;
-extern OPTIONBYTES ai_GamePanel;
 
 extern unsigned char ai_GameState;
 extern int gm_PlayerRecords[688];
