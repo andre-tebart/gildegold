@@ -276,6 +276,11 @@ Where the pushes and pops sit, how many epilogue copies there are, shared agains
 
 ### Which copy of a cross-jumped tail survives, the join position
 
+- **Three copies of one final store + epilogue, each with its own scratch register (`mov edx,[eax+1]` /
+  `mov eax,[edi+1]` / `mov ecx,[edi+1]`), the null path not folded**: one final statement after a fallback
+  that reassigns the variable, `if (home == 0) { if (pick(..)) home = query(..); } br->meet = home->id;`; VC6
+  duplicates the join into each predecessor. Writing the copies out (`return` per arm) folds `home == 0` into
+  `[1]` (he_AllocBrawl byte; the `&&` form of the fallback differs in one branch).
 - **Two `o1->arg = ..; o1->kind = 0x12; return ai_DecideTakeCredit(..)` tails, the original one call (`jmp` into the
   first copy's middle, the second's difference in ecx: `mov ecx,edi / sub ecx,eax`), ours two full copies with
   the stores after the pushes**: the difference was written out (`(float)(cost - lim) / cost`, `o1->arg = cost -

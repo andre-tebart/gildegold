@@ -14048,16 +14048,7 @@ int ai_BrawlWin();
    without a hiring building (AIJOB.from -1) the first building of the kind 0x16, else 0xf, is taken; the thug is
    spawned there (cm_SendSpawnCharacterR, "PRUEGEL"; its slot kept, no thug yet), and the building it goes to is
    the victim's home, else the victim's first building, else one of the gypsyFilter kinds the event's character
-   picks (ai_PickActionBuilding, up to 100.0); none at all: the original reads the id through a null building
-   @deep read whole against 0x55a5f0..0x55a72c and typed (HEBRAWL over AIJOB): 102/107 instructions equal,
-   the only hunk is the original's second copy of the 'meet = home->id' tail for the home != 0 path
-   (+0x55a720: + mov ecx,[edi+1] / pop edi / mov [esi+0xd0],ecx / pop esi / ret; ours jumps to the one tail
-   at +0x710 with eax). Settled: home as if/else assignment (the bld2 test then the owner query, as the
-   original's test ecx / mov edi,ecx / jmp), the home pointer passed as ai_PickActionBuilding's lo (push
-   edi, unfolded: ai_PickActionBuildingI), at an int (no _ftol), gypsyFilterValue (the high word first),
-   cm_SendSpawnCharacterR with f an int (push 0x154). Tried: if (home) {..; return;} first, if/else if,
-   nested if/else: VC6 then folds home == 0 (push 0, mov [1]) - 30..54 instructions; && and
-   nested-if-with-return keep the 5. The proof stops only on eax at the return of this void function */
+   picks (ai_PickActionBuilding, up to 100.0); none at all: the original reads the id through a null building */
 void he_AllocBrawl(AIJOB *e)
 {
     HEBRAWL *br = (HEBRAWL *)e;
@@ -14082,10 +14073,8 @@ void he_AllocBrawl(AIJOB *e)
     else
         home = (AIBLD *)gm_BuildQuery(1, 4, victim->id);
     if (home == 0) {
-        if (ai_PickActionBuildingI((struct AIPER *)&ai_CharsT[e->chr], 6, gypsyFilterValue, (int)home, 100.0f, &at) != 0) {
-            br->meet = ((AIBLD *)gm_BuildQuery(1, 1, at))->id;
-            return;
-        }
+        if (ai_PickActionBuildingI((struct AIPER *)&ai_CharsT[e->chr], 6, gypsyFilterValue, (int)home, 100.0f, &at) != 0)
+            home = (AIBLD *)gm_BuildQuery(1, 1, at);
     }
     br->meet = home->id;
 }

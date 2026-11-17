@@ -3722,7 +3722,7 @@ exe	0x00558e70	he_AllocSabotage	he	cd93edbba1fa8484	no	byte	control=byte p1=byte
 exe	0x00558f10	he_RunSabotage	he	1a0d02041b1eb643	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x00559d20	he_AllocSpying	he	369f0df784f23ec3	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x0055a030	he_RunSpying	he	37a550da7d20393f	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
-exe	0x0055a5f0	he_AllocBrawl	he	730970d1cf7ecb1a	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
+exe	0x0055a5f0	he_AllocBrawl	he	d7dbfd9901533ac2	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	951e95f1fe8c0813
 exe	0x0055a730	he_RunBrawl	he	6617abebf23575fa	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x0055af70	he_AllocTheft	he	102362bec5cf273b	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0055b140	he_RunTheft	he	0812ed29abd0c609	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
