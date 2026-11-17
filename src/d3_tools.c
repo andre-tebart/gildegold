@@ -1004,19 +1004,19 @@ int d3t_MoveCameraPath(int time, int n, ...)
     return 1;
 }
 /* 0x413960, moves obj along the n objects in path (null entries are skipped) within time
-   @deep size queue s6: kept for (i = 0, k = 1; ..) (prologue matches, 49 ins / 132 bytes, size 418 vs 416:
-   the k reload is now mov edx,ecx). Per-block terms (c2trace --prio): k#2 = def blk0 +16, tail +24 (3
-   refs: k*11 = k + 2*(k + 4k), P 4), head -8, latch -4, D3_ZERO -3; i#2 = def +16, head +16, latch +16,
-   -3; so k needs a head/latch reference (+24 / +12) or tail P +3 (+6 each). Tried s6: time (the parameter)
-   reused as the key counter (time = 1; keys[time]..): its web is separate from the parameter's, = same
-   prio (49 ins); a key pointer key = &keys[k] at the loop top (unconditional): forward-substituted, =
-   control; o = path[i]; if (o != NULL): = ik; ++n in the call: = ik. Open as in s5: a natural k reference
-   in head/latch/tail, or a waiting candidate preferring ecx when i#2 is chosen (choice rule). prior: size
-   queue s5: mechanism proven with a probe: pass-2 pieces k#2 (prio 29: k = 1 block +16, tail +24, minus
-   head/latch/D3_ZERO blocks) and i#2 (43); i#2 is served first, its scores tie (no waiting candidate
-   prefers ecx or edx) and it takes ecx. Two extra k reads in the tail (extern probe1 = k; probe2 = k + 7)
-   give k#2 45 > 43: k takes ecx, i edx, the k reload is gone, and with for (i = 0, k = 1; ..) the prologue
-matches too (33 ins, all left is the probe's tail plus one hunk: the step load in the body gets edx and the i reload comes after it; the original reloads i into edx right after the call and step into eax). So the original has about +14 prio more on k#2 or less on i#2; k refs in block 0 fold (k is the constant 1 there: k = 0 + keys[k] stores + k++ = control, k = 1 before D3_ZERO = 136 bytes). n#2 (41, avail ecx ebx) must stay below i#2 or it takes ecx. Tried s5 (none below 49 ins):... */
+   @deep size queue s7: read from the original: k = ecx from the k = 1 def through head/latch/tail (no
+   move), i = edx, the body reloads k/step/i right after the call; body, tail and head instructions are the
+   same as ours (only names differ), so the original's candidates and blocks must give k#2 > i#2 (43; equal
+   prio goes to i#2, created later). Pass-2 raw: k is cut before op 63 (line of pos.z), k#2 = def blk0 +
+   tail (3 refs, P 4 = k n obj const0; af and keys are no candidates, so the tail's P cannot grow
+   naturally). Choice rule checked: no waiting candidate has a ecx preference or a single register when i#2
+   is popped (n#2 {ecx ebx}, k#2 {eax ecx edx ebx}); a k#2 pref ecx or a waiting single-ecx candidate would
+   give the original. Tried s7 (all 49 ins = control unless named): unsigned k, o block-scoped, key pointer
+   in the if body (= control); tail i + 1 instead of n + 1 51 (code 33); k = 1 as its own statement 49/133
+   (regs 42, order 4, slots 4); while (i < n) o = path[i++] 74; i != n 53; for (..; i++, path++) with *path
+   88; *path++ in the head 95; key pointer advanced in the body with k 53. Open: same as s6. prior: size
+   queue s6: kept for (i = 0, k = 1; ..) (prologue matches, 49 ins / 132 bytes, size 418 vs 416: the k
+reload is now mov edx,ecx). Per-block terms (c2trace --prio): k#2 = def blk0 +16, tail +24 (3 refs: k*11 = k + 2*(k + 4k), P 4), head -8, latch -4, D3_ZERO -3; i#2 = def +16, head +16, latch +16, -3; so k needs a head/latch reference (+24 / +12) or tail P +3 (+6 each). Tried s6: time (the parameter) reused as the key counter (time = 1; keys[time]..): its web is separate from the parameter's, = same prio (49 ins); a key pointer key = &keys[k] at the loop top (unconditional): forward-substituted, = control; o = path[i]; if (o != NULL): = ik; ++n in the call: = ik. Open as in s5: a natural k reference in head/latch/tail, or a waiting candidate preferring ecx when i#2 is chosen (choice rule). prior: size queue s5: mechanism proven with a probe: pass-2 pieces k#2 (prio 29: k = 1 block +16,... */
 
 D3ANIM *d3t_MoveObjectPath(D3OBJECT *obj, int time, int n, D3OBJECT **path)
 {
