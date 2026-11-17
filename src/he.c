@@ -4036,11 +4036,7 @@ void he_RunMasterExam(int ev)
             txt_Format(buf, 0x1764, r->id, p->id);
             he_ShowNews(q->netId, q->netId, buf, 0, 0x5fa, 0);
             cm_SendRelations(p->netId, r->netId, -20, 1);
-            he_ReleaseSlot(ev);
-            he_FreeEvent((int *)ev);
-            return;
-        }
-        if (d2_ClickedId == 1) {
+        } else if (d2_ClickedId == 1) {
             txt_Format(buf, 0x1765, r->id, p->id);
             he_ShowNews(q->netId, q->netId, buf, 0, 0x5fa, 0);
             cm_SendRelations(q->netId, r->netId, -15, 1);
