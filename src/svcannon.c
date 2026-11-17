@@ -1132,27 +1132,25 @@ typedef struct CANNONROT {  /* ai_CannonCamera's rotation / position vector: thr
    ms during the first 4, then (1 - (elapsed - 4) * 0.0125)^2) times 50 pushes the cannon object back along the
    level aim direction and the wimpel out from ai_WimpelPos; after it the wimpel is set back and the cannon object placed at
    the scene position
-   @deep match-deep 2026-11-14: draft 142 -> 50 ins. Levers that moved: pos.w stored as an int 0
-   (CANNONROT, 99 -> the zero web in ebx from the zero block on, as the original); d as a 16-byte D3VECTOR4
-   (its slot packs with ratio and the qword temps at the original's 0x14); the d copies after the v.x
-   statement (xy9: fpu 55 -> 23). No lever: ai_FloatOne / ai_FloatZero objects (= same distance), recoil
-   x,z,y order, wimpel add order. Left: (1) frame 0x74 vs 0x78: the original has v at 0x24 as a 16-byte
-   slot (hole at 0x30) before pos at 0x34; v as D3VECTOR4 gives 0x78 but pos (count 36) then opens its slot
-   before v (27), every shift 162+ ins; splitting pos into rot / w locals (function or block scope) does
-   not share slots. (2) the dirZ copy: the original copies sc->dirZ to its slot (0x1c) after the
-   d2_GetObjValue call and forwards dirX / dirY; ours forwards all three in the 50-ins form, the copy only
-   survives placed before the call (z3..z5 = 99 / 113 ins with the frame right). Next: find the count /
-   scope that puts v before pos with v padded, then redo the copy placement round (gen script: all d.z /
-   d.xy positions). (tiebreak: not measured (dcp headers sample ai_CannonCamera)) prior: read whole against
-   the original (334 = 334 ins, frame 0x78 = 0x78). Fixed meaning: the wimpel turn goes to pos.y (not z),
-   the pitch ratios are (x - min) / (max - min) over the const data ai_CameraPitch* / ai_CannonPitch*
-   (loaded, divided at run time), 1450 the zoom range (a literal: 0x5eecac follows the literals 0x5eec9c ..), the camera rotation reuses v (= sc->rot, the
-   camera direction is a copied d scaled by fade), the 30-unit back step and the recoil step scale first
-   and subtract after (v = fade * v; v = sc->pos - v, SetObjectPos(obj98, &v)), the wimpel offset is fade *
-   axis + ai_WimpelPos, the fired / recoil branches as the original lays them out (reset inline, recoil
-   returns). pos.w is cleared as an int (CANNONROT): that store starts the original's zero register (ebx),
-   from which the later float zeros and the fired tests take it. d is a 16-byte vector (its slot packs with
-   ratio and the recoil's qword temps, the original's 0x14..0... */
+   @deep match-deep 2026-11-17 (s8): 1450 is a LITERAL (kept): its only reader is this function (grep_orig
+   0x5eecac), it sits behind ai_CannonAim's literals 0x5eec9c..0x5eeca8 (literals in function order, each
+   function's in reverse first use) and before svgrave's tables 0x5eecb0; a named const there would have to
+   come first in its object. The 2 ins the literal cost: VC6 moves a literal factor of a product to the end
+   (a*1450*r compiled as a*r*1450); the original multiplies by 1450 first. Lever: the zoom distance as its
+   own statement (fade = (speed*ratio2*0.5+1)*1450; fade = (fade*ratio2 + 50)*zoom): 52 -> 50, = the
+   named-const code. Same code: ratio2*((..)*1450), ((..)*1450)*ratio2 (parens: a trick, not kept);
+   1450*(..)*ratio2 / ratio2*(..)*1450 / (..)*1450*ratio2 as one fade = control; 1450.0 double 54; a k
+   local 57. Left as in prior: frame 0x74 vs 0x78 (v as padded 16-byte slot before pos), the dirZ copy
+   placement. prior: match-deep 2026-11-14: draft 142 -> 50 ins. Levers that moved: pos.w stored as an int
+   0 (CANNONROT, 99 -> the zero web in ebx from the zero block on, as the original); d as a 16-byte
+   D3VECTOR4 (its slot packs with ratio and the qword temps at the original's 0x14); the d copies after the
+   v.x statement (xy9: fpu 55 -> 23). No lever: ai_FloatOne / ai_FloatZero objects (= same distance),
+   recoil x,z,y order, wimpel add order. Left: (1) frame 0x74 vs 0x78: the original has v at 0x24 as a
+   16-byte slot (hole at 0x30) before pos at 0x34; v as D3VECTOR4 gives 0x78 but pos (count 36) then opens
+   its slot before v (27), every shift 162+ ins; splitting pos into rot / w locals (function or block
+   scope) does not share slots. (2) the dirZ copy: the original copies sc->dirZ to its slot (0x1c) after
+   the d2_GetObjValue call and forwards dirX / dirY; ours forwards all three in the 50-ins form, the copy
+   only ... */
 void ai_CannonCamera(CANNONSCENE *sc)
 {
     CANNONROT pos;    /* the rotations, then the camera position */
@@ -1211,7 +1209,8 @@ void ai_CannonCamera(CANNONSCENE *sc)
     d.z = sc->dirZ;
     d.x = sc->dirX;
     d.y = sc->dirY;
-    fade = ((speed * ratio2 * 0.5f + 1.0f) * 1450.0f * ratio2 + 50.0f) * sc->zoom;
+    fade = (speed * ratio2 * 0.5f + 1.0f) * 1450.0f;
+    fade = (fade * ratio2 + 50.0f) * sc->zoom;
     d.x = fade * d.x;
     d.y = fade * d.y;
     d.z = fade * d.z;
