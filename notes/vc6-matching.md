@@ -1004,6 +1004,10 @@ Rotation, test position, countdown, induction variables and strength reduction, 
 
 ### Counters, countdowns and increment order
 
+- **A counter argument as `lea eax,[edi+1]; ... mov edi,eax; push eax`, ours `inc edi; push edi`**: `f(.., n++ +
+  1, ..)`; `++n`, `n = n + 1`, `n++;` before or after the call, `n + 1` then `n++` are all one code
+  (ai_DungeonPlanWindow byte).
+
 - **A chain count loop with `inc edx; mov [esp],edx` scheduled after the `mov eax,[eax+next]`** (the counter in
   memory, its address goes to a write): the step stood in the body before the count: `s = head; while (s != 0) {
   s = s->next; n++; }` (ai_SaveSettings byte; `for (..; s = s->next) n++;` puts the inc first).

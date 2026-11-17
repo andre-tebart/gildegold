@@ -12245,7 +12245,7 @@ void ai_DungeonPlanWindow(AIBLD *bld)
     d2_SetForm(win, 1);
     for (i = 0; i < 0x300; i++) {
         if (gm_Homeless(ai_Chars[i]) != 0)
-            io_PrintText(0x19ae, ++n, ((G8CHARREC *)ai_Chars[i])->id);
+            io_PrintText(0x19ae, n++ + 1, ((G8CHARREC *)ai_Chars[i])->id);
     }
     if (n == 0)
         io_PrintText(0x19af);

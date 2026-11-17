@@ -4271,7 +4271,7 @@ exe	0x005a2e60	ai_SermonWindow	lc	196751a3084e2b10	no	draft	control=draft p1=dra
 exe	0x005a36c0	ai_ProductionWriteContact	lc	8920ef7d7dbcbf6c	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	363b43c45b83d63b
 exe	0x005a3810	ai_ChurchListener	lc	cf396a64d619c961	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	4404f9ca1b648b10
 exe	0x005a39b0	ai_ChurchContact	lc	def575cf87a89c6a	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x005a3a40	ai_DungeonPlanWindow	lc	c1f6096803a659cf	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
+exe	0x005a3a40	ai_DungeonPlanWindow	lc	c1f6096803a659cf	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	86ac49a1c1bce1a2
 exe	0x005a3b20	ai_DungeonContact	lc	8005362f8e2815b4	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005a3b90	ai_DungeonBribeWindow	lc	6b668b39bd8a8202	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x005a3df0	ai_DungeonBribeListener	lc	f06532af98bc58dc	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
