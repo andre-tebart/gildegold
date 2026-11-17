@@ -3808,7 +3808,7 @@ exe	0x00568220	he_RunPatrolEvent	he	811807481666d386	no	byte	control=byte p1=byt
 exe	0x00568310	he_RegisterEventTypes02	he	b08a213744e4542b	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00568aa0	he_EndKind23Events	he	a77de2841f8dcf4a	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00568ae0	he_AllocIncomeEvent	he	c05348f8a9c2cd42	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x00568be0	he_RunIncomeEvent	he	4f97e52dcd30edab	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
+exe	0x00568be0	he_RunIncomeEvent	he_b	4f97e52dcd30edab	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=568	3ca5b3fe521e2bd8
 exe	0x005690c0	he_AllocProduktion	he	ca3f60510a9c3a7f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00569210	he_RunProduktion	he	efcab8e20e92919b	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x0056a100	he_AllocSearchEvent	he	befd97a83d66ff26	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
@@ -3835,28 +3835,28 @@ exe	0x0056d2d0	he_AllocRecipeResearch	he	0d75e98d22ad2110	no	shape	control=shape
 exe	0x0056d3d0	he_RunRecipeResearch	he	51d6dc310ad989ee	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0056d610	he_AllocResearchRecipe	he	f72b8cb56b3374a2	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	4cbf06cae45cb11e
 exe	0x0056d730	he_RunResearchRecipe	he	bd14c5e73f99f483	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x0056d990	he_AllocTrainShare	he	6ceb111d6429eac8	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=505	16d55ba700d46f39
+exe	0x0056d990	he_AllocTrainShare	he_b	6ceb111d6429eac8	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=568	3ca5b3fe521e2bd8
 exe	0x0056daa0	he_RunTrainShare	he	a90a2d5e8f072166	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0056dd20	he_AllocAlchemistDay	he	94c2b7bb5a337f9e	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0056ddc0	he_RoomBusy	he	036c9bf7654b552c	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0056de10	he_RunAlchemistDay	he	6aa2e76b7d870b01	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x0056e070	he_LabIncident	he	f937241ea6267a59	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
+exe	0x0056e070	he_LabIncident	he_b	f937241ea6267a59	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=568	3ca5b3fe521e2bd8
 exe	0x0056e400	he_RegisterEventTypes99	he	886b1d479ef4184b	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0056e460	he_AllocSecretRoom	he	b63de88acedb5ca6	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x0056e5b0	he_RunSecretRoom	he	bfa7a700d3f8d72e	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	de19b514c0c92f7f
+exe	0x0056e5b0	he_RunSecretRoom	he_b	bfa7a700d3f8d72e	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=568	3ca5b3fe521e2bd8
 exe	0x0056efc0	he_AllocEvent9a	he	963a8b7c00a40e7e	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0056f040	he_FreeEventNow	he	8ebbf0bd37d80d17	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0056f050	he_AllocDomizilEvent	he	ab721adffda3465d	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0056f0b0	he_RunDomizilEvent	he	7c1e8f3b55f90759	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	4cbf06cae45cb11e
 exe	0x0056f170	he_EventOnBuilding	he	978e7f10a78b7958	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0056f1b0	he_SecretRoomAccuse	he	e3d186ae46e200cd	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x0056f260	he_FindMeetingSlot	he	e4a5f6518482a313	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
+exe	0x0056f260	he_FindMeetingSlot	he_b	e4a5f6518482a313	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=568	3ca5b3fe521e2bd8
 exe	0x0056f2e0	he_SecretRoomAttack	he	913b0aebaf2f4071	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0056f360	he_NoEvent9aFor	he	18fb877fa21c52eb	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0056f3b0	he_NoEvent9bFor	he	fed2f7967839d1ca	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x0056f3f0	he_SecretRoomDomizil	he	006b09297d2705a0	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
-exe	0x0056f600	he_FindNearestSpying	he	a3a585dbe65ac8ef	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	4cbf06cae45cb11e
-exe	0x0056f740	he_SecretRoomCatchSpy	he	aba9423e9cfd3b88	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
+exe	0x0056f3f0	he_SecretRoomDomizil	he_b	006b09297d2705a0	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=568	3ca5b3fe521e2bd8
+exe	0x0056f600	he_FindNearestSpying	he_b	a3a585dbe65ac8ef	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=568	3ca5b3fe521e2bd8
+exe	0x0056f740	he_SecretRoomCatchSpy	he_b	2186227869f0a34c	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=568	3ca5b3fe521e2bd8
 exe	0x0056f980	he_RegisterEventTypes88	he	a9f6434ed82fa4a1	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0056fbc0	he_SetLifeByAge	he	7eaf06352f0a8540	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	2eb351387392f924
 exe	0x0056fc50	he_AllocHaunting	he	46fadd6f204a0f6b	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	

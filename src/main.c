@@ -5240,47 +5240,6 @@ char main_RoundTotalFmt[20] = "$L%s %i%%:$R-%T$A";  /* 0x6253bc, the line of the
 char main_MasterExamLog[56] = "MeisterPr\xfc" "fung started: player_id:%i beruf:%i grad:%i";  /* 0x6253d0, the debug line main_EndRound sends to the log when a master exam starts (sprintf; 54 bytes and 2 of padding) */
 char he_VoiceHealing[20] = "_NACHRICHTEN_HS_80";  /* 0x627b0c, the voice of the healing event 0x6c's news 0x1a18 (he_RunHealing) */
 char he_InitBetrieb[12] = "InitBetrieb";  /* 0x627b20, the scene name he.c's cm_SendChrGotoBuilding plays for the new worker */
-/* 0x627e98, the construction models of the building types (he.c's he_CreateConstruction): the types of each record, then
-   its scaffolding model; the record with type 0 ends the table and names the model for the types not listed */
-HEBLDMODEL he_BuildingModels[37] = {
-    { { 8, 9, 10, 0 }, "*bau_BRUNNEN_a.ogr" },
-    { { 5, 0, 0, 0 }, "*bau_BUERGERHAUS_a.ogr" },
-    { { 17, 0, 0, 0 }, "*bau_GEFAENGNIS_a.ogr" },
-    { { 18, 19, 0, 0 }, "*bau_GEFAENGNIS_b.ogr" },
-    { { 50, 51, 52, 0 }, "*bau_HANDWERK_b.ogr" },
-    { { 33, 34, 35, 0 }, "*bau_WIRTSHAUS_a.ogr" },
-    { { 14, 15, 16, 0 }, "*bau_WIRTSHAUS_a.ogr" },
-    { { 41, 42, 43, 0 }, "*bau_WIRTSHAUS_a.ogr" },
-    { { 26, 27, 28, 0 }, "*bau_HANDWERK_d.ogr" },
-    { { 4, 2, 0, 0 }, "*bau_HAUS_a.ogr" },
-    { { 3, 1, 0, 0 }, "*bau_HAUS_a.ogr" },
-    { { 22, 0, 0, 0 }, "*bau_KIRCHE_GROSS_a.ogr" },
-    { { 20, 0, 0, 0 }, "*bau_KIRCHE_KLEIN_a.ogr" },
-    { { 21, 0, 0, 0 }, "*bau_KIRCHE_MITTEL_a.ogr" },
-    { { 44, 0, 0, 0 }, "*bau_STADTWACHE_a.ogr" },
-    { { 45, 0, 0, 0 }, "*bau_STADTWACHE_b.ogr" },
-    { { 46, 0, 0, 0 }, "*bau_STADTWACHE_b.ogr" },
-    { { 11, 12, 13, 0 }, "*bau_STADTWACHE_b.ogr" },
-    { { 23, 24, 25, 0 }, "*bau_WIRTSHAUS_a.ogr" },
-    { { 47, 48, 49, 0 }, "*bau_WIRTSHAUS_a.ogr" },
-    { { 53, 54, 55, 0 }, "*bau_WIRTSHAUS_a.ogr" },
-    { { 6, 7, 0, 0 }, "*bau_WOHNSITZ_GROSS_a.ogr" },
-    { { 57, 58, 56, 0 }, "*bau_ZUNFTHAUS_a.ogr" },
-    { { 60, 61, 59, 0 }, "*bau_ZUNFTHAUS_a.ogr" },
-    { { 63, 64, 62, 0 }, "*bau_ZUNFTHAUS_a.ogr" },
-    { { 66, 67, 65, 0 }, "*bau_ZUNFTHAUS_a.ogr" },
-    { { 75, 0, 0, 0 }, "*bau_DOMIZIL_LANDSITZ.ogr" },
-    { { 76, 0, 0, 0 }, "*bau_DOMIZIL_BURG.ogr" },
-    { { 77, 0, 0, 0 }, "*bau_DOMIZIL_SCHLOSS.ogr" },
-    { { 84, 85, 86, 0 }, "*bau_BRUNNEN_a.ogr" },
-    { { 81, 0, 0, 0 }, "*bau_HANDWERK_SCHNEIDER_a.ogr" },
-    { { 82, 83, 0, 0 }, "*bau_HANDWERK_SCHNEIDER_b.ogr" },
-    { { 79, 78, 80, 0 }, "*bau_ZIGEUNER_ZIGEUNER_a.ogr" },
-    { { 72, 0, 0, 0 }, "*bau_FRIEDHOF_TOTENFELD.ogr" },
-    { { 73, 0, 0, 0 }, "*bau_FRIEDHOF_GOTTESACKER.ogr" },
-    { { 74, 0, 0, 0 }, "*bau_FRIEDHOF_FRIEDHOF.ogr" },
-    { { 0, 0, 0, 0 }, "*bau_HAUS_a.ogr" }
-};
 char he_AssassinName[12] = "ASSASSIN";  /* 0x628dc8, the name of the agent the secret room event 0x99 spawns (he_AllocSecretRoom's cm_SendSpawnCharacter) */
 char he_NewsDomizil11[24] = "_NACHRICHTEN_DOMIZIL_11";  /* 0x628e40, the second text (the sound key) of the news 0x5fb the domicile event 0x9b's run sends */
 char he_ActivityUpgrade[12] = "Upgraden";  /* 0x628e70, the activity name (sv_RegisterActivity) of the grave training event 0x8f */
