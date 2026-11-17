@@ -94,6 +94,7 @@ extern int ai_EvalStack[73];
 const int ai_CharWalkSteps[16] = { 1, 5, 7, 11, 13, 17, 19, 23, 745, 749, 751, 755, 757, 761, 763, 767 };  /* 0x5ed100, random steps */
 const int ai_RandomStrides[16] = { 1, 3, 5, 7, 11, 13, 17, 19, 237, 239, 243, 245, 249, 251, 253, 255 };  /* 0x5ed140, random steps */
 const int ai_RingStrides[11] = { 1, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31 };  /* 0x5ed180, the strides of the near ring cursor */
+const int ai_RingStrideCount = 11;  /* 0x5ed1ac, the entries of ai_RingStrides (the name a guess from the value and the place); no reader in the surviving code: ai_FillNearRing scans from the immediate 0xb */
 G6CURSOR *const ai_NearRingCursor = &ai_NearRingCursorState;  /* 0x5ed1b0, the code reaches the cursor through this constant pointer (mov reg, [0x5ed1b0]) */
 
 /* 0x4a3a90, the next entry of the ring */

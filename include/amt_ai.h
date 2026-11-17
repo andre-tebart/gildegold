@@ -2,4 +2,6 @@
 #ifndef AMT_AI_H
 #define AMT_AI_H
 
+extern const int ai_RingStrideCount;  /* 0x5ed1ac, the entries of ai_RingStrides */
+
 #endif
