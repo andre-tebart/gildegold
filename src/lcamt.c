@@ -10161,15 +10161,24 @@ int ai_UseGoodCureAilment(AICHARREC *ch)
    kind 4), else the building use->target; none -> 0. Every character in that building (AICHARREC.bld) has its
    b1c5 halved, rounded up, sent as a field delta. Returns 1. (am.c's AI uses the good where the workers' b1c5
    averages at least 6; what b1c5 means is not known.)
-   @deep Read whole against the original and rewritten typed (AMOUNTCFG, AIBLD, lc_CharRecs[i].bld / .b1c5
-   named in AICHARREC): the pick, the query, the loop over the 0x300 characters with b1c5 % 2 + b1c5 / 2
-   and the field block match instruction for instruction (the loop body is equal). Left: allocation of
-   constants: the original keeps 0 in esi from the entry (xor esi,esi; push esi x2, cfg filter high = esi,
-   cmp ebx,esi, the failure returns mov eax,esi) and 1 in ebp (mov ebp,1; push ebp, cfg.flags = ebp, the
-   end returns mov eax,ebp; path 2 sets mov ebp,1 after its null check), ours pushes immediates and returns
-   0 / 1 literally; with it the frame shifts by the extra push (slots). Tried: a ret variable 0 -> 1 (VC6
-   propagates it, no change), one shared if (bld != 0) { .. } (50 ins but the original checks in each path,
-   kept the per-path returns). */
+   @deep match-deep 2026-11-17 (s8): padded size now the original's (316 vs 317): kept ret = 0 at the top,
+   one if (bld != 0) { ret = 1; loop } after both paths, return ret (56 -> 50 ins): the original has ONE
+   failure block (mov eax,esi) that path 2 reaches by je, 0 in esi from the entry, ret in ebp. Left: the
+   original's const-1 web in path 1: it loads ebp = 1 before ai_MapPick (push ebp, cfg.flags = ebp) so only
+   path 2 sets ebp = 1 at the join; ours pushes immediates in path 1 (c2trace: const#0#5, lines flags /
+   MapPick / ret = 1, savings -1 in pass 2; the loop's cm_AddFieldDelta(1, 1) refs join the web in pass 1
+   and cut it), hence the slots shift of the 4th push. Rounds: join (if (bld == 0) return 0 after both
+   paths) 64; return ret in each path = control (56); else-if form = control; climb --base retvar 2 rounds:
+   only meaning-changing mutants. Next: what gives path 1's const-1 web positive savings (another ref of 1
+   in path 1, the type of the loop's 1s). prior: Read whole against the original and rewritten typed
+   (AMOUNTCFG, AIBLD, lc_CharRecs[i].bld / .b1c5 named in AICHARREC): the pick, the query, the loop over
+   the 0x300 characters with b1c5 % 2 + b1c5 / 2 and the field block match instruction for instruction (the
+   loop body is equal). Left: allocation of constants: the original keeps 0 in esi from the entry (xor
+   esi,esi; push esi x2, cfg filter high = esi, cmp ebx,esi, the failure returns mov eax,esi) and 1 in ebp
+   (mov ebp,1; push ebp, cfg.flags = ebp, the end returns mov eax,ebp; path 2 sets mov ebp,1 after its null
+   check), ours pushes immediates and returns 0 / 1 literally; with it the frame shifts by the extra push
+   (slots). Tried: a ret variable 0 -> 1 (VC6 propagates it, no change), one shared if (bld != 0) { .. }
+   (50 ins but the original checks in each path, kept the per-path returns). */
 
 int ai_UseGoodHalveWorkerValue(AICHARREC *ch, G8USEVIEW *use)
 {
@@ -10178,7 +10187,9 @@ int ai_UseGoodHalveWorkerValue(AICHARREC *ch, G8USEVIEW *use)
     unsigned char value;
     AIBLD *bld;
     int i;
+    int ret;
 
+    ret = 0;
     if (ch->kind == 6) {
         memset(&cfg, 0, sizeof(cfg));
         memset(cfg.ids, 0xff, sizeof(cfg.ids));
@@ -10188,22 +10199,21 @@ int ai_UseGoodHalveWorkerValue(AICHARREC *ch, G8USEVIEW *use)
         cfg.kind = 4;
         cfg.filter = 0x90010;
         bld = (AIBLD *)ai_MapPick(1, &cfg, text, 0, 0);
-        if (bld == 0)
-            return 0;
     } else {
         bld = (AIBLD *)gm_BuildQuery(1, 1, use->target);
-        if (bld == 0)
-            return 0;
     }
-    for (i = 0; i < 0x300; i++) {
-        if (lc_CharRecs[i].bld == bld) {
-            value = lc_CharRecs[i].b1c5 % 2 + lc_CharRecs[i].b1c5 / 2;
-            cm_BeginFieldBlock((char *)&lc_CharRecs[i], lc_CharRecs[i].netId);
-            cm_AddFieldDelta(1, 1, (unsigned short)((char *)&lc_CharRecs[i].b1c5 - cm_FieldObject), &value);
-            cm_SendFieldDeltas();
+    if (bld != 0) {
+        ret = 1;
+        for (i = 0; i < 0x300; i++) {
+            if (lc_CharRecs[i].bld == bld) {
+                value = lc_CharRecs[i].b1c5 % 2 + lc_CharRecs[i].b1c5 / 2;
+                cm_BeginFieldBlock((char *)&lc_CharRecs[i], lc_CharRecs[i].netId);
+                cm_AddFieldDelta(1, 1, (unsigned short)((char *)&lc_CharRecs[i].b1c5 - cm_FieldObject), &value);
+                cm_SendFieldDeltas();
+            }
         }
     }
-    return 1;
+    return ret;
 }
 /* 0x5d08c0, raises a skill of the character ch by a trial step (he.c's trial event calls it for both of its
    skills): skill 0 .. 4 (>= 5 -> 0); a skill value n of 252 or more -> 0. With x = (252 - n) / 252 and
