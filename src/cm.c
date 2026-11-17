@@ -8216,14 +8216,7 @@ void cm_ClickSceneChar()
    held cleared there) is copied with state 2 and tgt's netId, for the weapon kinds 0x15e / 0x160 also the cell (x, z) of
    tgt's body, for 0x174 / 0x176 that cell alone, and sent as message 0x50 (cm_SendCutEntry); held is set for the
    formation types 1 .. 3. A weapon of those kinds with no uses left shows its txt_WeaponEmpty text instead. -1 when c,
-   tgt, its body or the entry is missing; else the original returns nothing (eax as the last call left it)
-   @deep Read whole against the original: the three weapon-empty checks were inverted (the original returns
-   -1 only when the item exists with usesLeft <= 0) - fixed; byte +0xc of the entry is a byte store
-   (CMCUTENTRY.b0c). Left: VC6 cross-jumps ours' 0x174 ok path into the 0x176 block (L[4]=0, x, z, then the
-   shared charId/state tail), while the original keeps the 0x174 path inline at 0x4d00f9 (mov edx,[ebp+4];
-   ... mov [esp+0xc],edx; mov [esp+0x1c],esi; [esp+0x20]; [esp+0x24]; jmp 0x4d01c5) - the same stores in
-   the same source order; reordering the 0x174 statements does not change ours. The other hunks are regs
-   (eax->ecx ecx->edx) of the same blocks. Block layout / tail-merge, no meaning difference. */
+   tgt, its body or the entry is missing; else the original returns nothing (eax as the last call left it) */
 
 int cm_OrderAttack(char *rec, char *c, char *tgt, int x, int z)
 {
@@ -8251,8 +8244,8 @@ int cm_OrderAttack(char *rec, char *c, char *tgt, int x, int z)
     memcpy(&order, e, sizeof(order));
     if (w == 0 || w->id == 0x154 || w->id == 0x156 || w->id == 0x158 || w->id == 0x16e || w->id == 0x172 ||
         w->id == 0) {
-        order.stateArg = t->netId;
         order.charId = ch->netId;
+        order.stateArg = t->netId;
         order.state = 2;
     } else if (w->id == 0x15e || w->id == 0x160) {
         item = (AIOBJ *)cm_CharWeaponItem(c);
@@ -8283,9 +8276,9 @@ int cm_OrderAttack(char *rec, char *c, char *tgt, int x, int z)
             return -1;
         }
         order.stateArg = 0;
+        order.charId = ch->netId;
         order.x = x;
         order.z = z;
-        order.charId = ch->netId;
         order.state = 2;
     }
     if (ch->formation == 1 || ch->formation == 2 || ch->formation == 3)
