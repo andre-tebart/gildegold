@@ -332,8 +332,8 @@ unsigned int net_RecvBytes = 0;  /* 0x633174 */
 unsigned int net_RecvPackets = 0;  /* 0x633178 */
 unsigned int net_SentBytes = 0;  /* 0x63317c */
 unsigned int net_SentPackets = 0;  /* 0x633180 */
-int net_Seq = 0;  /* 0x1460ac4, last received sequence number */
+int net_Seq;  /* 0x1460ac4, last received sequence number */
 /* 0x1460ae0, the network connection (net.h's NETCONN, 0x14 bytes); the game code tests net_Conn.s != -1 for "a
    network game is running" */
-NETCONN net_Conn = {0};  /* 0x1460ae0, the network connection of a running network game */
-NETSTAT net_Stats[NET_TYPES] = {0};  /* 0x1460b00 */
+NETCONN net_Conn;  /* 0x1460ae0, the network connection of a running network game */
+NETSTAT net_Stats[NET_TYPES];  /* 0x1460b00 */

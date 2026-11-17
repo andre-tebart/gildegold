@@ -7679,38 +7679,38 @@ unsigned char ai_GameState = 0;  /* 0x6f25ac */
 /* the two flags after ai_GameState are objects of their own (the original reads each as a byte: no views of it) */
 unsigned char main_GameEnded = 0;  /* 0x6f25ad, nonzero when the player has reached the game's goal: the round start plays the fanfare and the outro (cleared at the game start) */
 unsigned char sv_MenuOpen = 0;  /* 0x6f25ae, 1 while a menu screen runs */
-int ai_OptionScrollSpeed = 0;  /* 0x6f3614 */
-int sv_PanelFlag = 0;  /* 0x75e8c0, 1 when the panel is up (an int; cm.h / f3init.c) */
-SVQUICKJUMP sv_QuickJump = {0};  /* 0x75e8c4, the info panel's pending quick jump (sv.h) */
-int sv_SelectionFlags[0xc0] = {0};  /* 0x75e920, the mirror of the character selection flags (byte i per character) */
-int sv_SkyScene = 0;  /* 0x75ec20 */
-MSG sv_Message = {0};  /* 0x75ec40, the window message sv_PumpMessages reads (PeekMessageA / GetMessageA) */
-unsigned short * sv_SelectedItem = 0;  /* 0x75ec5c */
-SVACTIVITY sv_Activities[0x30] = {0};  /* 0x75ec80, the character activities the he.c scripts register (sv_RegisterActivity) */
-int ai_Unk75f280[576] = {0};  /* 0x75f280, the member panel: */
-float sv_ViewPos[4] = {0};  /* 0x75fb80, the stored camera position (a padded vector): set by the camera moves, restored when the player leaves a building */
-float sv_ViewRot[4] = {0};  /* 0x75fb90, its rotation (D3OBJECT.rotation) */
-float sv_SkyScale = 0;  /* 0x760420 */
-int sv_BandActive = 0;  /* 0x760440 */
-SVBAND sv_Band = {0};  /* 0x760444, the rubber band's corners */
-int sv_Season = 0;  /* 0x760454, the season of the game clock (sv_ClockSeason's result), stored by main_EndRound / main_GameLoop (sv.c itself never reads it) */
-int sv_ClickedBuilding = 0;  /* 0x760458, sv_HoverBuilding at the last click (sv_HandleObjects) */
-int sv_ClickedItem = 0;  /* 0x76045c, sv_HoverItem at the last click */
-int sv_ClickedChar = 0;  /* 0x760460, ai_PickedChar at the last click */
-int sv_SkyPhase = 0;  /* 0x760464 */
-int sv_CloudChance = 0;  /* 0x760480 */
-SVCLIMATE sv_Climate = {0};  /* 0x760484, sv_SeasonClimate and sv_Weather (0x760488) */
-int sv_WinterWeather = 0;  /* 0x760610 */
-int sv_WeatherHour = 0;  /* 0x760614 */
-int d3t_Snow = 0;  /* 0x76061c */
-int d3_SkyLayers[6] = {0};  /* 0x760620, the sky layer handles: sv creates 0 .. 2, sv and main_EndGame delete all six */
-SVPLATE sv_NamePlates[0x20] = {0};  /* 0x760640, the name plate records (200 bytes each) */
-char sv_StatusText[128] = {0};  /* 0x761f40, the status line text */
-SVBUBBLE sv_Bubbles[0x40] = {0};  /* 0x761fc0, the 64 speech bubble records */
+int ai_OptionScrollSpeed;  /* 0x6f3614 */
+int sv_PanelFlag;  /* 0x75e8c0, 1 when the panel is up (an int; cm.h / f3init.c) */
+SVQUICKJUMP sv_QuickJump;  /* 0x75e8c4, the info panel's pending quick jump (sv.h) */
+int sv_SelectionFlags[0xc0];  /* 0x75e920, the mirror of the character selection flags (byte i per character) */
+int sv_SkyScene;  /* 0x75ec20 */
+MSG sv_Message;  /* 0x75ec40, the window message sv_PumpMessages reads (PeekMessageA / GetMessageA) */
+unsigned short * sv_SelectedItem;  /* 0x75ec5c */
+SVACTIVITY sv_Activities[0x30];  /* 0x75ec80, the character activities the he.c scripts register (sv_RegisterActivity) */
+int ai_Unk75f280[576];  /* 0x75f280, the member panel: */
+float sv_ViewPos[4];  /* 0x75fb80, the stored camera position (a padded vector): set by the camera moves, restored when the player leaves a building */
+float sv_ViewRot[4];  /* 0x75fb90, its rotation (D3OBJECT.rotation) */
+float sv_SkyScale;  /* 0x760420 */
+int sv_BandActive;  /* 0x760440 */
+SVBAND sv_Band;  /* 0x760444, the rubber band's corners */
+int sv_Season;  /* 0x760454, the season of the game clock (sv_ClockSeason's result), stored by main_EndRound / main_GameLoop (sv.c itself never reads it) */
+int sv_ClickedBuilding;  /* 0x760458, sv_HoverBuilding at the last click (sv_HandleObjects) */
+int sv_ClickedItem;  /* 0x76045c, sv_HoverItem at the last click */
+int sv_ClickedChar;  /* 0x760460, ai_PickedChar at the last click */
+int sv_SkyPhase;  /* 0x760464 */
+int sv_CloudChance;  /* 0x760480 */
+SVCLIMATE sv_Climate;  /* 0x760484, sv_SeasonClimate and sv_Weather (0x760488) */
+int sv_WinterWeather;  /* 0x760610 */
+int sv_WeatherHour;  /* 0x760614 */
+int d3t_Snow;  /* 0x76061c */
+int d3_SkyLayers[6];  /* 0x760620, the sky layer handles: sv creates 0 .. 2, sv and main_EndGame delete all six */
+SVPLATE sv_NamePlates[0x20];  /* 0x760640, the name plate records (200 bytes each) */
+char sv_StatusText[128];  /* 0x761f40, the status line text */
+SVBUBBLE sv_Bubbles[0x40];  /* 0x761fc0, the 64 speech bubble records */
 /* sv_BubbleObjects: view of sv_Bubbles (+0x8) */
-int sv_SelectedChar = 0;  /* 0x7662c0 */
-int sv_GroundplanButtons[15] = {0};  /* 0x7662e0, 15 widget ids */
-int sv_SelectedExtra = 0;  /* 0x76631c, a fourth selection word, cleared with sv_SelectedItem / sv_SelectedObject / sv_SelectedModel (its only use; name and int type are a guess) */
-int cm_Bombs[0x40] = {0};  /* 0x935c00, cm's 32 bomb records (object, time), cm.h */
-int d2_HitWindow = 0;  /* 0xf8aad0 */
-int d2_DirtyRectLeft[4] = {0};  /* 0xfb9060, left, top, right, bottom (d2_DirtyRectTop .. Bottom are its elements) */
+int sv_SelectedChar;  /* 0x7662c0 */
+int sv_GroundplanButtons[15];  /* 0x7662e0, 15 widget ids */
+int sv_SelectedExtra;  /* 0x76631c, a fourth selection word, cleared with sv_SelectedItem / sv_SelectedObject / sv_SelectedModel (its only use; name and int type are a guess) */
+int cm_Bombs[0x40];  /* 0x935c00, cm's 32 bomb records (object, time), cm.h */
+int d2_HitWindow;  /* 0xf8aad0 */
+int d2_DirtyRectLeft[4];  /* 0xfb9060, left, top, right, bottom (d2_DirtyRectTop .. Bottom are its elements) */

@@ -284,8 +284,6 @@ extern const float gm_MoodRanges[476];
 extern GAPDATA full_data_602568[];
 extern GAPDATA full_data_62a9f8[];
 extern int sv_PopRequest;
-extern GAPDATA full_data_6f5f4c[];
-extern GAPDATA full_data_6f5f48[];
 extern unsigned char kb_Last;
 
 extern int d2_LastWindow;
@@ -293,7 +291,6 @@ extern int d2_LastWindow;
 extern int sv_PopRequest;
 
 extern int sv_FrameMask;
-extern GAPDATA full_data_6f5f44[];
 extern unsigned char kb_Last;
 extern int sv_PanelFlag;
 

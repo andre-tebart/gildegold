@@ -1301,4 +1301,4 @@ void ocmd_Register(void)
     evt_ImportCommand("SelectAllTextureSets", ocmd_SelectAllTextureSets, 1, 2, 6, 1);
 }
 
-D3EMITTERCFG d3_EmitterCfg = {0};  /* 0x1468620 */
+D3EMITTERCFG d3_EmitterCfg;  /* 0x1468620 */

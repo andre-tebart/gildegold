@@ -501,9 +501,9 @@ int ai_LeaveGame = 0;  /* 0x6f25a0, set with ai_GameOver when the menu leaves th
                                        starts ( */
 OPTIONBYTES ai_GfxResolution = {0};  /* 0x6f2f94: byte 0 cur_res */
 /* ai_ContactTextProductionTailor: view of txt_Ptrs (build/mk_txt_views.py) */
-EFFECTSTATE ai_EffectState = {0};  /* 0x6f3300 .. 0x6f34f0, the wind state ai_InitWind builds */
-POKERGAME ai_PokerState = {0};  /* 0x6f3500 .. 0x6f35c0, the poker game state (poker.c steps it) */
-OPTIONBYTES ai_GfxSet = {0};  /* 0x6f35c0: byte 0 gfx_set */
+EFFECTSTATE ai_EffectState;  /* 0x6f3300 .. 0x6f34f0, the wind state ai_InitWind builds */
+POKERGAME ai_PokerState;  /* 0x6f3500 .. 0x6f35c0, the poker game state (poker.c steps it) */
+OPTIONBYTES ai_GfxSet;  /* 0x6f35c0: byte 0 gfx_set */
 /* the option globals the writer 0x5d4c70 (and the reader 0x5d5640) use: each dword holds four option
    bytes, the INI keys name the bytes (see the key order in 0x5d4c70); the four "Gfx" detail bytes are
    objects of their own (anm.c reads 0x6f35c4 as a byte, 0x4bb884 mov al, byte ptr), as are the four floor bytes
@@ -516,24 +516,24 @@ unsigned char ai_GfxFloor = 0;  /* 0x6f35c8, the "floor_mipmapping" key */
 unsigned char ai_GfxCameraLimits = 0;  /* 0x6f35c9, the "camera_limits" key */
 unsigned char ai_GfxFloorLod = 0;  /* 0x6f35ca, the "floor_lod" key */
 unsigned char ai_GfxCharDetail = 0;  /* 0x6f35cb, the "character_detail" key */
-OPTIONBYTES ai_GfxFog = {0};  /* 0x6f35cc: byte 0 fog_plane */
-float ai_ScreenTuning[0xc] = {0};  /* 0x6f35d0: brightness r, g, b, a, contrast r, g, b, a, gamma
+OPTIONBYTES ai_GfxFog;  /* 0x6f35cc: byte 0 fog_plane */
+float ai_ScreenTuning[0xc];  /* 0x6f35d0: brightness r, g, b, a, contrast r, g, b, a, gamma
                                                r, g, b, a (0 .. 1, the keys are the value * 100) */
-SNDOPTIONBYTES ai_SoundOptions = {0};  /* 0x6f3600 */
-int ai_OptionSpeed = 0;  /* 0x6f3608, the "speed" key: the game speed setting ( */
+SNDOPTIONBYTES ai_SoundOptions;  /* 0x6f3600 */
+int ai_OptionSpeed;  /* 0x6f3608, the "speed" key: the game speed setting ( */
 unsigned char ai_OptionCameraSpeed = 0;  /* 0x6f360c, the "camera_speed" key */
-int ai_OptionMouseSpeed = 0;  /* 0x6f3610, the "mouse_speed" key (the input base is this - */
-OPTIONBYTES ai_GameSwitches = {0};  /* 0x6f3618: byte 0 invert_mouse, 1 nachtwaechter, 2 show_cursor_txt, 3 show_geb_info */
+int ai_OptionMouseSpeed;  /* 0x6f3610, the "mouse_speed" key (the input base is this - */
+OPTIONBYTES ai_GameSwitches;  /* 0x6f3618: byte 0 invert_mouse, 1 nachtwaechter, 2 show_cursor_txt, 3 show_geb_info */
 extern OPTIONBYTES ai_GamePanel;
 extern int ai_OptionScrollSpeed;            /* 0x6f3614, the "scroll_speed" key */
-char ai_TownName[64] = {0};  /* 0x6f361c, the "stadt" key (written as a string) */
-int ai_OptionHistorie = 0;  /* 0x6f365c, the "historie" key */
-int ai_OptionMission = 0;  /* 0x6f3660, the "mission" key */
-int ai_OptionNetMission = 0;  /* 0x6f3664, the "net_mission" key */
-OPTIONBYTES ai_GamePanel = {0};  /* 0x6f3668: byte 0 panel_mode, 1 help_events, 2 difficulty, 3 hints */
-OPTIONBYTES ai_OptionPanelHelp = {0};  /* 0x6f366c, the "panel_help" key */
-int ai_Opponents[7] = {0};  /* 0x75e160 .. */
-char ai_OptionsFile[288] = {0};  /* 0x75e480, the INI the options are read from and written to */
+char ai_TownName[64];  /* 0x6f361c, the "stadt" key (written as a string) */
+int ai_OptionHistorie;  /* 0x6f365c, the "historie" key */
+int ai_OptionMission;  /* 0x6f3660, the "mission" key */
+int ai_OptionNetMission;  /* 0x6f3664, the "net_mission" key */
+OPTIONBYTES ai_GamePanel;  /* 0x6f3668: byte 0 panel_mode, 1 help_events, 2 difficulty, 3 hints */
+OPTIONBYTES ai_OptionPanelHelp;  /* 0x6f366c, the "panel_help" key */
+int ai_Opponents[7];  /* 0x75e160 .. */
+char ai_OptionsFile[288];  /* 0x75e480, the INI the options are read from and written to */
 typedef struct SCREENMODE {                 /* 8 bytes, a screen mode of the table 0x62d7b8 */
     int w;                                  /* +0x0, the width */
     int h;                                  /* +0x4, the height */

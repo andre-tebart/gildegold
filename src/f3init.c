@@ -387,7 +387,7 @@ int init_BonusStart = 0;  /* 0x6f2440, a start bonus switch (a guess: only read,
 int main_MoneyCheat = 0;  /* 0x6f2444, set from the command line switch "MO_MONEY" (main.c); nonzero gives 500000 start money instead of 2000 and the first kind 6 character its starter buildings */
 #include "anm.h"
 #include "rd.h"
-int ai_MapSize = 0;  /* 0x6f4ee8 */
+int ai_MapSize;  /* 0x6f4ee8 */
 void d3if_Prerender(char map);                     /* 0x447860, d3_interface.c */
 void d3fl_SetShift(struct D3FLMAP *map, unsigned char shift, char light);   /* 0x446dc0, d3_fl.c */
 extern int __mb_cur_max;                /* 0x62e3a0, the CRT locale state */
@@ -399,14 +399,14 @@ extern unsigned char ai_GfxFloorLod;   /* 0x6f35ca, menu.c: the "floor_lod" opti
 extern int snd_SfxEnabled;              /* 0x6f257c, sound on */
 struct SBSAMPLE; struct SBBANK;
 int _isctype(int c, int mask);
-int init_StatusForm = 0;  /* 0x75df00, the panel form the load status is printed in */
+int init_StatusForm;  /* 0x75df00, the panel form the load status is printed in */
 /* 0x75e5a0, the player profile of the character creation: main_ChoosePlayer reads it from game.INI ([Network]
    Name, Familienname, Wappen, Geschlecht, Glauben) and writes the result of its stage 5, main_CreateStartCouple
    takes it for the start couple, 0x57bc30 is the default profile of the demo. Layout from those writers and
    from the registration message 0xc (0x4c46d0: short + 0xc, byte + 0xe, int + 0xf, sex + 0x13, faith + 0x14) */
 #include "f3init_types.h"
-INIT_PLAYER init_PlayerProfile = {0};  /* 0x75e5a0 */
-int ai_SceneChars[32] = {0};  /* 0x7603a0 .. INIT_WINDOWS_END: the characters of the current scene (INIT_CHAR pointers; cm.c 0x4cf000 updates them each tick) */
+INIT_PLAYER init_PlayerProfile;  /* 0x75e5a0 */
+int ai_SceneChars[32];  /* 0x7603a0 .. INIT_WINDOWS_END: the characters of the current scene (INIT_CHAR pointers; cm.c 0x4cf000 updates them each tick) */
 #define INIT_WINDOWS_END (unsigned)&sv_SkyScale       /* one past the scene window table 0x7603a0 (0x20 ints) */
 #include "rd_types.h"                 /* G15BK, the building sites ai_Bauplaetze (rd.h cannot be included here) */
 #include "ls.h"
@@ -432,13 +432,13 @@ int ai_SceneChars[32] = {0};  /* 0x7603a0 .. INIT_WINDOWS_END: the characters of
 #include "menu.h"
 #include "vfs.h"
 #include "sv.h"
-signed char init_BuildingUniverse[0x22] = {0};  /* 0x76fa60, the universe of each building class's scene */
-unsigned short * ai_SceneObject = 0;  /* 0x76fa84 */
-signed char init_ObjectUniverse[0x2dc] = {0};  /* 0x76faa0, the universe of each object prototype's scene (-1 = not loaded) */
-int init_TownSounds[16] = {0};  /* 0x76fd80, the handles of the town's sounds (16 at most), stopped by */
-unsigned char * ai_SceneBuilding = 0;  /* 0x76fdc0 */
-int ai_NBauplaetze = 0;  /* 0xf812e0, the number of building sites */
-G15BK * ai_Bauplaetze = 0;  /* 0xf812e4, the building sites */
+signed char init_BuildingUniverse[0x22];  /* 0x76fa60, the universe of each building class's scene */
+unsigned short * ai_SceneObject;  /* 0x76fa84 */
+signed char init_ObjectUniverse[0x2dc];  /* 0x76faa0, the universe of each object prototype's scene (-1 = not loaded) */
+int init_TownSounds[16];  /* 0x76fd80, the handles of the town's sounds (16 at most), stopped by */
+unsigned char * ai_SceneBuilding;  /* 0x76fdc0 */
+int ai_NBauplaetze;  /* 0xf812e0, the number of building sites */
+G15BK * ai_Bauplaetze;  /* 0xf812e4, the building sites */
 /* init_SlotCurrency: view of ai_PlayerSlots (tools/data_views.py) */
 /* 0x50a810, f3gm.c: the first kind 6 / 7 / 1 / 2 character with a job whose master is m */
 void amt_InitTable(void);               /* 0x4e5cd0, amt.h */

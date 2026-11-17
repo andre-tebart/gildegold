@@ -40,14 +40,14 @@ extern char ai_DataPath[608];
 /* ai_Unk7e3f80: view of ai_PlayerSlots (tools/data_views.py) */
 /* ai_Unk7e3f84: view of ai_PlayerSlots (tools/data_views.py) */
 /* ai_Unk7e4274: view of ai_PlayerSlots (tools/data_views.py) */
-char ai_ActionIniPath[260] = {0};  /* 0xf83da0, the ini file of the actions */
-int ai_EvalDepth = 0;  /* 0xf83ea4, the depth of the evaluation stack */
-AIACT ai_Actions[0x49] = {0};  /* 0xf83ec0, the registered actions (0x49 of them: the init clears 0x49 * 0x94 bytes) */
+char ai_ActionIniPath[260];  /* 0xf83da0, the ini file of the actions */
+int ai_EvalDepth;  /* 0xf83ea4, the depth of the evaluation stack */
+AIACT ai_Actions[0x49];  /* 0xf83ec0, the registered actions (0x49 of them: the init clears 0x49 * 0x94 bytes) */
 /* ai_Unkf84c40: view of ai_Actions (tools/data_views.py) */
 /* ai_Unkf84c60: view of ai_Actions (tools/data_views.py) */
 /* ai_Unkf84cd4: view of ai_Actions (tools/data_views.py) */
 /* ai_Unkf84cf4: view of ai_Actions (tools/data_views.py) */
-int ai_EvalStack[73] = {0};  /* 0xf86900, the action ids on the evaluation stack (73 deep) */
+int ai_EvalStack[73];  /* 0xf86900, the action ids on the evaluation stack (73 deep) */
 
 #include "ls.h"
 #include "gv.h"

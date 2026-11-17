@@ -1537,15 +1537,7 @@ void ai_ShowBldCarts(SVBOOK *book, AIBLD *bld)
    destination (0x1a3e: the building of the job it runs; 0x1a3f: without a job the building it stands at, the
    market for a 'D' building) into its text control; a destination other than bld without a button gets one
    (picture 5, its user record the building), each button its caption 0x1a3d; on the book's page 2 a click on
-   a button (d2_ClickedId 5 on the pointer's object) selects its building in the panel
-   @deep Read whole against the original and rewritten (SVBOOK page, AIOBJ carts / job24->cartBld, the
-   typed ai_BldCart* data, the 0x1a3e / 0x1a3f texts, the button for a destination other than bld, the
-   click loop over ai_BldCartButtons): 131 vs 131 instructions, every statement lines up. Left is
-   allocation only: the original pushes esi in the prologue and keeps it for dest and then the click loop's
-   pointer, ours pushes esi after the count test ('- push esi' at +0x16), pops it before the click loop ('-
-   pop esi / mov edx, [esp + 0x208]' vs '+ mov edx, [esp + 0x20c]') and walks the buttons in edi; the rest
-   is the esi/edi swap. Tried: the click loop as pointer walk or index, the locals in the other order:
-   unchanged. */
+   a button (d2_ClickedId 5 on the pointer's object) selects its building in the panel */
 
 void ai_UpdateBldCarts(SVBOOK *book, AIBLD *bld)
 {
@@ -9518,15 +9510,12 @@ struct AICHARREC *ai_InvChar = 0;  /* 0x6f2f60, the character whose inventory th
 LCSETTINGS lc_Settings = { 0 };  /* 0x6f2f64, the escort kind of the last transport order, the goods-reserve clock and cursor and the equip window's row count (see LCSETTINGS) */
 int ai_StatsBldCount = 0;  /* 0x6f2f80, the rows of the stats panel's building page ai_ShowBuildingRows filled (ai_OpenBuildingListPage stores it, ai_PlayerStatsPanel loops over it) */
 int ai_StatsPage = 0;  /* 0x6f2f84, the stats panel's page selected last (ai_PlayerStatsPanel selects the radio group with it and stores the radio's sel back) */
-LCEXCHROW ai_StatsMoneyRows[16] = { 0 };  /* 0x6f3680, the currency rows of the stats panel's money page (ai_FillExchangeRows fills them, ai_OpenMoneyInfoPage) */
-LCINVSLOT ai_InvSlots[6] = { 0 };  /* 0x6f3840, the six rows of the inventory child window (ai_OpenInventoryWindow clears them: -1, 0, and fills them from the character's inventory) */
-int ai_MasterDown = 0;  /* 0x6f3870, the master list page's scroll down button (ai_PlayerStatsPanel passes it to sv_CreateScrollButtons and compares d2_PointerObj with it) */
-AIEQUIPROW ai_EquipRows[0x20] = { 0 };  /* 0x6f3880, the equip window's rows: ai_EquipRowsInit frees all 32, ai_UpdateEquipRows fills and updates them, ai_EquipWindow lays them out; 32 x 0x40 runs to 0x6f4080 */
-int ai_MasterUp = 0;  /* 0x6f4080, the master list page's scroll up button (sv_CreateScrollButtons) */
-int ai_BldCartCount = 0;  /* 0x6f40a0, the number of carts in ai_BldCarts (gm_BuildingCarts, at most 3) */
-struct AIOBJ *ai_BldCarts[3] = { 0 };  /* 0x6f40a4, the carts of the building the cart list shows */
-int ai_BldCartButtons[3] = { 0 };  /* 0x6f40b0, per cart the button to its destination building (picture 5), -1: none */
-int ai_BldCartTexts[3] = { 0 };  /* 0x6f40bc, per cart its text control, -1: none */
-LCMASTERROW ai_MasterRows[0x80] = { 0 };  /* 0x6f40e0, the master list page's rows: ai_PlayerStatsPanel fills one per building of the player whose master is not the player (128 rows of 0x18) */
-int ai_StatsBldRows[0x80] = { 0 };  /* 0x6f4ce0, the control of each row of the stats panel's building page (ai_ShowBuildingRows fills it, at most ai_StatsBldCount; ai_PlayerStatsPanel marks the clicked one) */
-int ai_MasterBar = 0;  /* 0x6f4ee0, the master list page's scroll bar (ai_PlayerStatsPanel passes it to sv_CreateScrollButtons and compares d2_PointerObj with it) */
+LCEXCHROW ai_StatsMoneyRows[16];  /* 0x6f3680, the currency rows of the stats panel's money page (ai_FillExchangeRows fills them, ai_OpenMoneyInfoPage) */
+LCINVSLOT ai_InvSlots[6];  /* 0x6f3840, the six rows of the inventory child window (ai_OpenInventoryWindow clears them: -1, 0, and fills them from the character's inventory) */
+int ai_MasterDown;  /* 0x6f3870, the master list page's scroll down button (ai_PlayerStatsPanel passes it to sv_CreateScrollButtons and compares d2_PointerObj with it) */
+AIEQUIPROW ai_EquipRows[0x20];  /* 0x6f3880, the equip window's rows: ai_EquipRowsInit frees all 32, ai_UpdateEquipRows fills and updates them, ai_EquipWindow lays them out; 32 x 0x40 runs to 0x6f4080 */
+int ai_MasterUp;  /* 0x6f4080, the master list page's scroll up button (sv_CreateScrollButtons) */
+LCBLDCARTS ai_BldCartList;  /* 0x6f40a0, the building window's cart list: count, carts, buttons, texts (lc.h) */
+LCMASTERROW ai_MasterRows[0x80];  /* 0x6f40e0, the master list page's rows: ai_PlayerStatsPanel fills one per building of the player whose master is not the player (128 rows of 0x18) */
+int ai_StatsBldRows[0x80];  /* 0x6f4ce0, the control of each row of the stats panel's building page (ai_ShowBuildingRows fills it, at most ai_StatsBldCount; ai_PlayerStatsPanel marks the clicked one) */
+int ai_MasterBar;  /* 0x6f4ee0, the master list page's scroll bar (ai_PlayerStatsPanel passes it to sv_CreateScrollButtons and compares d2_PointerObj with it) */

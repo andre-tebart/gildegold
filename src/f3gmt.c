@@ -59,10 +59,8 @@ extern char ai_Crimes[];
 #include "am_types.h"
 /* full rebuild: the symbols whose original addresses the code above spells literally */
 #include "d3_types.h"
-extern GAPDATA full_data_91f6e0[];
 extern unsigned char he_Events[339968];
 #include "amt_types.h"
-extern GAPDATA full_data_7585f4[];
 
 #include "ai_types.h"
 extern int gm_PlayerRecords[688];
@@ -8630,16 +8628,16 @@ ORDOBJ *gm_QueryCursor = 0;  /* 0x6f1bf4, the current record */
 unsigned short gm_KindObjCount;  /* 0x76fdc4, common: tentative as in the original (the common block past LIBC's
                                     .bss; gm_BuildKindObjects keeps it in a word register only when VC6 does not
                                     know its place) */
-int gm_TechTreeTime = 0;  /* 0x76fdc8 */
-char gm_TreeNodes[3328] = {0};  /* 0x76fde0, the family records ( */
-int gm_TechTreeView = 0;  /* 0x770af0, the view of the tech tree form (gm_TechTreeWindow) */
-unsigned short gm_TreeRankStart[64] = {0};  /* 0x770b00 */
-int gm_TreeNodeCount = 0;  /* 0x7d6a40, the number of family records */
-GMBLOCK gm_StockBlocks[5] = {0}; /* 0x7d6a60, the five stock blocks (four header ints, then 0x55 goods records of 0x80 bytes) */
-struct AIOBJ *ai_Objects = 0;  /* 0x7e3f34, the object instances (AIOBJ, ai.h) */
-int gm_QueryDepth = 0;  /* 0x7e3f38, the depth of the child stack */
-int gm_NOffers = 0;  /* 0x7e3f3c, the number of offers */
-AISTORE gm_Offers[88] = {0};  /* 0x7e4b20, the offers (ai.h's AISTORE rows of 6 ints: building, market, goods object, supply, price float, flag) */
-int gm_QueryStack[20488] = {0};  /* 0x8753e0, the child stack (the first word of */
-unsigned gm_KindObjs[732] = {0};  /* 0x889400 */
-int gm_TreeRanks = 0;  /* 0x889f70 */
+int gm_TechTreeTime;  /* 0x76fdc8 */
+char gm_TreeNodes[3328];  /* 0x76fde0, the family records ( */
+int gm_TechTreeView;  /* 0x770af0, the view of the tech tree form (gm_TechTreeWindow) */
+unsigned short gm_TreeRankStart[64];  /* 0x770b00 */
+int gm_TreeNodeCount;  /* 0x7d6a40, the number of family records */
+GMBLOCK gm_StockBlocks[5]; /* 0x7d6a60, the five stock blocks (four header ints, then 0x55 goods records of 0x80 bytes) */
+struct AIOBJ *ai_Objects;  /* 0x7e3f34, the object instances (AIOBJ, ai.h) */
+int gm_QueryDepth;  /* 0x7e3f38, the depth of the child stack */
+int gm_NOffers;  /* 0x7e3f3c, the number of offers */
+AISTORE gm_Offers[88];  /* 0x7e4b20, the offers (ai.h's AISTORE rows of 6 ints: building, market, goods object, supply, price float, flag) */
+int gm_QueryStack[20488];  /* 0x8753e0, the child stack (the first word of */
+unsigned gm_KindObjs[732];  /* 0x889400 */
+int gm_TreeRanks;  /* 0x889f70 */

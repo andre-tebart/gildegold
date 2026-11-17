@@ -34,8 +34,6 @@ typedef struct GVPLAYERREC {           /* 0x2f4 bytes, a player's slot record (a
 #define gv_PlayerRecs (*(GVPLAYERREC (*)[4])&ai_PlayerSlots)  /* 0x7e3f40, ai_PlayerSlots (char[4][0x2f4]) as the player records */
 
 /* full rebuild: the symbols whose original addresses the code above spells literally */
-extern GAPDATA full_data_91f6e3[];
-extern GAPDATA full_data_91f6e4[];
 #include "amt_types.h"
 #include "ls.h"
 #include "ahm.h"

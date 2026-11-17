@@ -98,20 +98,20 @@ struct TSTEXTURE * tex_Load(char *name, TSFLAGS flags, unsigned char opts, unsig
 
 int ts_ReloadDone = 0;               /* 0x633f00, 0 once a reload-all has finished; only written here (reasoned name) */
 TSCACHE *ts_Cache = 0;              /* 0x633f08 */
-TSTEXTURE *d3_Textures = 0;             /* 0xfb9074 */
-unsigned int ts_MaxHiCol = 0;                   /* 0xfb9078 */
-unsigned int ts_CacheUsed = 0;          /* 0xfb907c */
-unsigned int ts_CacheSize = 0;          /* 0xfb9080 */
-unsigned int d3_TexCount = 0;           /* 0xfb9084 */
-float ts_ScrollU[0x20] = {0}; /* 0xfb90a0 */
-float ts_ScrollV[0x20] = {0}; /* 0xfb9120 */
-int ts_NextGroup = 0;                   /* 0xfb91a0 */
-TSHICOL *ts_HiCol = 0;                  /* 0xfb91a4 */
-int ts_TexUsed = 0;                     /* 0xfb91a8 */
-unsigned long ts_LastTime = 0;          /* 0xfb91ac */
-unsigned int ts_HiColCount = 0;         /* 0xfb91b0 */
-int ts_CacheReset = 0;                  /* 0xfb91b4, always 0: zeroed with the cache counters at init, never read (reasoned name) */
-void *ts_Palette = 0;                   /* 0xfb91b8 */
+TSTEXTURE *d3_Textures;             /* 0xfb9074 */
+unsigned int ts_MaxHiCol;                   /* 0xfb9078 */
+unsigned int ts_CacheUsed;          /* 0xfb907c */
+unsigned int ts_CacheSize;          /* 0xfb9080 */
+unsigned int d3_TexCount;           /* 0xfb9084 */
+float ts_ScrollU[0x20]; /* 0xfb90a0 */
+float ts_ScrollV[0x20]; /* 0xfb9120 */
+int ts_NextGroup;                   /* 0xfb91a0 */
+TSHICOL *ts_HiCol;                  /* 0xfb91a4 */
+int ts_TexUsed;                     /* 0xfb91a8 */
+unsigned long ts_LastTime;          /* 0xfb91ac */
+unsigned int ts_HiColCount;         /* 0xfb91b0 */
+int ts_CacheReset;                  /* 0xfb91b4, always 0: zeroed with the cache counters at init, never read (reasoned name) */
+void *ts_Palette;                   /* 0xfb91b8 */
 int ts_Mips = 8;  /* 0x5fd0b0, initialized to 8; TODO define here once .data is matched */
 /* 0x45f610, sets the surface cache to size entries: clears the cache counters and (when size > 0) allocates
    the TSCACHE array */

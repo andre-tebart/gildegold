@@ -2679,80 +2679,80 @@ unsigned int d3_LightKeysCulled = 0;  /* 0x633b08, light keys this frame spent o
 unsigned int d3_LightKeysVisible = 0;  /* 0x633b0c, light keys this frame spent on visible lights */
 unsigned int d3_LightGeneration = 0;  /* 0x633b10, lightmap generation, D3MESH::lightGeneration holds the one drawn */
 char d3_LightsChanged = 0;  /* 0x633b14 */
-D3PARTSYS d3_ParEnd = {0};  /* 0xfb9280, particle system list end marker */
+D3PARTSYS d3_ParEnd;  /* 0xfb9280, particle system list end marker */
 /* d3_ParTail: view of d3_ParEnd (tools/data_views.py) */
 /* d3_ParHead: view of d3if_ParList (the head node's next field) */
 /* d3_Unkfb9928: view of d3_Mirror (tools/data_views.py) */
-struct VFSDIR *d3io_StockDir = {0}; /* 0xfba940, the stock object directory */
-float d3_ZFar = 0;  /* 0xfc2564 */
-D3ANIMDATA d3anim_Head = {0}; /* 0xfc2580, the head sentinel of the animation cache list (d3_anim.c): its next is the first animation */
+struct VFSDIR *d3io_StockDir; /* 0xfba940, the stock object directory */
+float d3_ZFar;  /* 0xfc2564 */
+D3ANIMDATA d3anim_Head; /* 0xfc2580, the head sentinel of the animation cache list (d3_anim.c): its next is the first animation */
 
-float d3_VOfs = 0;  /* 0xfc26ec */
-D3OBJECT d3_ObjEnd = {0};  /* 0xfc2700, list end marker */
+float d3_VOfs;  /* 0xfc26ec */
+D3OBJECT d3_ObjEnd;  /* 0xfc2700, list end marker */
 /* d3_TopLast is d3_ObjEnd.prev (0xfc28f4 = 0xfc2700 + 0x1f4): a macro in d3_engine.h */
-float d3_ScaleY = 0;  /* 0xfc2944 */
-float d3_FogScale = 0;  /* 0xfc2948 */
-float d3_Dist2 = 0;  /* 0xfc294c */
-D3VECTOR4 d3_Frustum[5] = {0}; /* 0xfc2960, corner directions of the view, then (0, 0, 1) */
-float d3_FogStart1 = {0}; /* 0xfc29bc */
-unsigned int d3_RadixCount[256] = {0};  /* 0xfc29c0 */
-int d3_TextureBytes = 0;  /* 0xfc2dc0, texture bytes used this frame */
-int d3_VertCount = 0;  /* 0xfc2dc4 */
-D3SORTENT * d3_SortPtr = 0;  /* 0xfc2dc8 */
-unsigned int d3_SortCount = 0;  /* 0xfc2dcc */
-float d3_InvZFar = 0;  /* 0xfc2dd4, 1 / d3_ZFar */
-float d3_FogEnd = 0;  /* 0xfc2dd8 */
-float d3_ViewZScale = 0;  /* 0xfc2ddc */
-D3SORTENT * d3_SortBuf = 0;  /* 0xfc2de0 */
-D3OBJECT *d3_Camera = 0;  /* 0xfc2dec, the camera object */
-int d3_ScreenH = 0;  /* 0xfc2df0 */
-int d3_ScreenW = 0;  /* 0xfc2df4 */
-D3BGF d3_StockListStart = {0};  /* 0xfc2e00, the head sentinel of the stock object list (D3BGF, d3_io_t.h; 0x20c bytes up to
+float d3_ScaleY;  /* 0xfc2944 */
+float d3_FogScale;  /* 0xfc2948 */
+float d3_Dist2;  /* 0xfc294c */
+D3VECTOR4 d3_Frustum[5]; /* 0xfc2960, corner directions of the view, then (0, 0, 1) */
+float d3_FogStart1; /* 0xfc29bc */
+unsigned int d3_RadixCount[256];  /* 0xfc29c0 */
+int d3_TextureBytes;  /* 0xfc2dc0, texture bytes used this frame */
+int d3_VertCount;  /* 0xfc2dc4 */
+D3SORTENT * d3_SortPtr;  /* 0xfc2dc8 */
+unsigned int d3_SortCount;  /* 0xfc2dcc */
+float d3_InvZFar;  /* 0xfc2dd4, 1 / d3_ZFar */
+float d3_FogEnd;  /* 0xfc2dd8 */
+float d3_ViewZScale;  /* 0xfc2ddc */
+D3SORTENT * d3_SortBuf;  /* 0xfc2de0 */
+D3OBJECT *d3_Camera;  /* 0xfc2dec, the camera object */
+int d3_ScreenH;  /* 0xfc2df0 */
+int d3_ScreenW;  /* 0xfc2df4 */
+D3BGF d3_StockListStart;  /* 0xfc2e00, the head sentinel of the stock object list (D3BGF, d3_io_t.h; 0x20c bytes up to
                                    d3_FogStart): its next at 0xfc2ffc is the list's first stock object, its prev at 0xfc3000 */
-float d3_FogStart = 0;  /* 0xfc300c */
-char d3_ClipInfo[64][0x68] = {0};  /* 0xfc3020 */
-float d3_FovX = 0;  /* 0xfc4a20 */
-D3BGF d3_StockListEnd = {0};  /* 0xfc4a40, the end sentinel of the stock object list (D3BGF, d3_io_t.h): d3io_LoadObjectFile links new ones in before it */
-float d3_FovY = 0;  /* 0xfc4c4c, half the vertical view angle (d3_FovX the horizontal one) */
-D3CVERT * d3_ClipList[2][0x80] = {0};  /* 0xfc4c60, polygon vertex lists (ping-pong) */
-int d3_ClipNone = 0;  /* 0xfc5060 */
-unsigned char d3_ClipFlagA = 0;  /* 0xfc5064 */
-unsigned char d3_ClipFlagB = 0;  /* 0xfc5065 */
-D3VECTOR4 d3_Planes[6] = {0};  /* 0xfc5068, side planes of the view frustum (normal, distance); the code writes 6 */
-D3SORTENT * d3_RadixDst = 0;  /* 0xfc50c8 */
-D3OBJECT d3_TopHead = {0};  /* 0xfc5100, list start marker */
+float d3_FogStart;  /* 0xfc300c */
+char d3_ClipInfo[64][0x68];  /* 0xfc3020 */
+float d3_FovX;  /* 0xfc4a20 */
+D3BGF d3_StockListEnd;  /* 0xfc4a40, the end sentinel of the stock object list (D3BGF, d3_io_t.h): d3io_LoadObjectFile links new ones in before it */
+float d3_FovY;  /* 0xfc4c4c, half the vertical view angle (d3_FovX the horizontal one) */
+D3CVERT * d3_ClipList[2][0x80];  /* 0xfc4c60, polygon vertex lists (ping-pong) */
+int d3_ClipNone;  /* 0xfc5060 */
+unsigned char d3_ClipFlagA;  /* 0xfc5064 */
+unsigned char d3_ClipFlagB;  /* 0xfc5065 */
+D3VECTOR4 d3_Planes[6];  /* 0xfc5068, side planes of the view frustum (normal, distance); the code writes 6 */
+D3SORTENT * d3_RadixDst;  /* 0xfc50c8 */
+D3OBJECT d3_TopHead;  /* 0xfc5100, list start marker */
 /* d3_TopFirst is d3_TopHead.next (0xfc52f0 = 0xfc5100 + 0x1f0): a macro in d3_engine.h */
-float d3_ViewY = 0;  /* 0xfc5328 */
-float d3_ZScale = 0;  /* 0xfc532c */
-float d3_FogStart2 = 0;  /* 0xfc5330, squared */
-float d3_MaxZ = 0;  /* 0xfc5338 */
-float d3_FogEnd2 = {0}; /* 0xfc5340 */
-float d3_MinZ = 0;  /* 0xfc5344 */
-float d3_ScaleX = 0;  /* 0xfc5348, projection */
-D3CVERT d3_ClipPool[128] = {0};  /* 0xfc5360, vertices made by the clipper */
-int d3_TriCount = 0;  /* 0xfc7b60 */
-float d3_ZOfs = 0;  /* 0xfc7b64 */
-unsigned char d3_Noise[256][256] = {0};  /* 0xfc7b80 */
-int d3_ViewBottomFx = 0;  /* 0xfe73a4 */
-float d3_ViewX = 0;  /* 0xfe73a8 */
-float d3_UOfs = 0;  /* 0xfe73ac */
-float d3_ZNear = 0;  /* 0xfe73b4 */
-float d3_SavedZFar = 0;  /* 0xfe73bc, d3_ZFar while the fog is off */
-D3SORTENT * d3_RadixSrc = 0;  /* 0xfe73c0 */
-float d3_ViewH = 0;  /* 0xfe73c4 */
-float d3_ViewW = 0;  /* 0xfe73c8 */
-D3INITCFG d3_Cfg = {0};  /* 0xfe73e0 */
+float d3_ViewY;  /* 0xfc5328 */
+float d3_ZScale;  /* 0xfc532c */
+float d3_FogStart2;  /* 0xfc5330, squared */
+float d3_MaxZ;  /* 0xfc5338 */
+float d3_FogEnd2; /* 0xfc5340 */
+float d3_MinZ;  /* 0xfc5344 */
+float d3_ScaleX;  /* 0xfc5348, projection */
+D3CVERT d3_ClipPool[128];  /* 0xfc5360, vertices made by the clipper */
+int d3_TriCount;  /* 0xfc7b60 */
+float d3_ZOfs;  /* 0xfc7b64 */
+unsigned char d3_Noise[256][256];  /* 0xfc7b80 */
+int d3_ViewBottomFx;  /* 0xfe73a4 */
+float d3_ViewX;  /* 0xfe73a8 */
+float d3_UOfs;  /* 0xfe73ac */
+float d3_ZNear;  /* 0xfe73b4 */
+float d3_SavedZFar;  /* 0xfe73bc, d3_ZFar while the fog is off */
+D3SORTENT * d3_RadixSrc;  /* 0xfe73c0 */
+float d3_ViewH;  /* 0xfe73c4 */
+float d3_ViewW;  /* 0xfe73c8 */
+D3INITCFG d3_Cfg;  /* 0xfe73e0 */
 /* d3_SortMax: view of d3_Cfg (tools/data_views.py) */
 /* d3_Unkfe7400: view of d3_Cfg (tools/data_views.py) */
-D3ANIMDATA d3anim_Tail = {0}; /* 0xfe7440, the end sentinel of the animation cache list (d3_anim.c): new animations are linked in before it */
-int d3_DrawnVerts = 0;  /* 0xfe75b0, vertices drawn this frame (d3_DrawSorted resets it) */
-int d3_TextureSwitches = 0;  /* 0xfe75b4 */
-float d3_HalfH = 0;  /* 0xfe75b8 */
-float d3_HalfAngleY = 0;  /* 0xfe75bc */
-D3SORTENT * d3_SortTmp = 0;  /* 0xfe75c0 */
-D3TRIFUNC d3_TriFuncs[6] = {0};  /* 0xfe75e0, software triangle fillers by mode */
-float d3_HalfW = 0;  /* 0xfe75f8 */
-float d3_CenterX = 0;  /* 0xfe75fc */
-float d3_HalfAngleX = 0;  /* 0xfe7600 */
-float d3_CenterY = 0;  /* 0xfe7604 */
+D3ANIMDATA d3anim_Tail; /* 0xfe7440, the end sentinel of the animation cache list (d3_anim.c): new animations are linked in before it */
+int d3_DrawnVerts;  /* 0xfe75b0, vertices drawn this frame (d3_DrawSorted resets it) */
+int d3_TextureSwitches;  /* 0xfe75b4 */
+float d3_HalfH;  /* 0xfe75b8 */
+float d3_HalfAngleY;  /* 0xfe75bc */
+D3SORTENT * d3_SortTmp;  /* 0xfe75c0 */
+D3TRIFUNC d3_TriFuncs[6];  /* 0xfe75e0, software triangle fillers by mode */
+float d3_HalfW;  /* 0xfe75f8 */
+float d3_CenterX;  /* 0xfe75fc */
+float d3_HalfAngleX;  /* 0xfe7600 */
+float d3_CenterY;  /* 0xfe7604 */
 /* d3_ShadowMode: view of d3d_Config (tools/data_views.py) */

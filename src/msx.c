@@ -506,6 +506,6 @@ int msx_Quit = 0;  /* 0x6325c0, ends the update thread */
 int msx_Driver = 0;  /* 0x6325c4, music */
 int msx_AmbDriver = 0;  /* 0x6325c8, ambient */
 MSXTRACK msx_Tracks[MSX_TRACKS] = {0};  /* 0x6325d0 */
-char msx_Path[0x100] = {0};  /* 0x14611a0 */
-MSXTRACK msx_Dummy = {0};  /* 0x14612a0, returned when there is no driver */
-CRITICAL_SECTION msx_Lock = {0};  /* 0x14613e0 */
+char msx_Path[0x100];  /* 0x14611a0 */
+MSXTRACK msx_Dummy;  /* 0x14612a0, returned when there is no driver */
+CRITICAL_SECTION msx_Lock;  /* 0x14613e0 */

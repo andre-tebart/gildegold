@@ -73,12 +73,12 @@ char lobby_FmtChatShout[20] = "$%dFF%s (%s): %s$A";  /* 0x62aad0, a chat line wh
 unsigned int *lobby_List = 0;  /* 0x6f267c, cm's player list (cm_LobbyPlayerList): the count, then the eight player ids */
 int lobby_ChatShown = 0;  /* 0x6f2680, the chat line count the chat box last showed (lobby_ShowChat grows the box and takes the frame's count when lobby_ChatNewest exceeds it) */
 int lobby_ChatNewest = 0;  /* 0x6f2684, the chat lines of the frame: lobby_ShowChat counts the records as it prints them, then copies it into lobby_ChatShown */
-int lobby_ChatTo = 0;  /* 0x6f5e00, the id of the player the chat lines go to (the selected list line), -1: everybody */
-CMLOBBYPLAYER lobby_Player = {0};  /* 0x6f5e20, this player's record as sent to the lobby (join / change) */
-CMLOBBYPLAYER *lobby_Me = 0;  /* 0x6f5e78, this player's record in cm's table (cm_LobbyMyPlayer) */
-int lobby_Rows[8] = {0};  /* 0x6f5e80, the text control of each line of the player list */
-int lobby_MyRow = 0;  /* 0x6f5ea0, the player list line of this player */
-int *lobby_State = 0;  /* 0x6f5ea4, cm's lobby state (cm_LobbyState): [1] a lobby message came in */
+int lobby_ChatTo;  /* 0x6f5e00, the id of the player the chat lines go to (the selected list line), -1: everybody */
+CMLOBBYPLAYER lobby_Player;  /* 0x6f5e20, this player's record as sent to the lobby (join / change) */
+CMLOBBYPLAYER *lobby_Me;  /* 0x6f5e78, this player's record in cm's table (cm_LobbyMyPlayer) */
+int lobby_Rows[8];  /* 0x6f5e80, the text control of each line of the player list */
+int lobby_MyRow;  /* 0x6f5ea0, the player list line of this player */
+int *lobby_State;  /* 0x6f5ea4, cm's lobby state (cm_LobbyState): [1] a lobby message came in */
 
 /* 0x589f10, the network lobby screen: clears this player's record lobby_Player, fills it from the "Network"
    profile (or from the joined saved game's character), joins the lobby (cm_LobbyJoin) and fetches the player

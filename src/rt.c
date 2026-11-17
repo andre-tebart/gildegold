@@ -53,7 +53,7 @@ int rt_MarkCount = 0;  /* 0x6f0750, the marks used */
 int rt_PickedBuilding = 0;  /* 0x6f0754, the building shown */
 RTPOINT * rt_EditRoute = 0;  /* 0x6f0758, the route being edited */
 /* ai_Unk7e422c: view of ai_PlayerSlots (tools/data_views.py) */
-RTMARK rt_Marks[8] = {0};  /* 0xf812a0 */
+RTMARK rt_Marks[8];  /* 0xf812a0 */
 
 /* 0x4bd950, appends a new point to list p (0 if it has 8 already) */
 RTPOINT *rt_AddPoint(RTPOINT *p)

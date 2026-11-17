@@ -374,4 +374,4 @@ int mem_MaxBlocks = 0;  /* 0x632394 */
 int mem_Count = 0;  /* 0x632398, allocations minus frees */
 int mem_Verbose = 0;  /* 0x63239c, dump the groups at exit */
 MEMENTRY * mem_Table = 0;  /* 0x6323a0 */
-MEMGROUP mem_Main = {0};  /* 0x1461400, "_main_:", head of the group list */
+MEMGROUP mem_Main;  /* 0x1461400, "_main_:", head of the group list */

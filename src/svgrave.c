@@ -284,8 +284,6 @@ extern const float gm_MoodRanges[476];
 extern GAPDATA full_data_602568[];
 extern GAPDATA full_data_62a9f8[];
 extern int sv_PopRequest;
-extern GAPDATA full_data_6f5f4c[];
-extern GAPDATA full_data_6f5f48[];
 extern unsigned char kb_Last;
 
 extern int d2_LastWindow;
@@ -293,7 +291,6 @@ extern int d2_LastWindow;
 extern int sv_PopRequest;
 
 extern int sv_FrameMask;
-extern GAPDATA full_data_6f5f44[];
 extern unsigned char kb_Last;
 extern int sv_PanelFlag;
 
@@ -4328,5 +4325,5 @@ int ai_DragViewWin = -1;  /* 0x62a8d4, the first window of the tooltip view ai_D
 char *ai_DragPicked = 0;  /* 0x6f266c, the picked object (ai_PickedObject) the tooltip was last opened for, 0 = none */
 int ai_DragCutscene = 0;  /* 0x6f2670, 1 while the tooltip view holds d2_CutsceneActive set */
 int ai_ScreenshotCount = 0;  /* 0x6f2674, the number of the next screenshot (gamedata/screenshots/gilde%04i.bmp, ai_SaveScreenshot) */
-AIBOOKMARK ai_Bookmarks[11] = { 0 };  /* 0x6f5ec0, the function-key building bookmarks (ai_BookmarksInit sets the keys F1 .. F11) */
-unsigned char ai_TurnTable[0x4000] = { 0 };  /* 0x6f5f60, the 0x4000-byte table ai_ClearTurnTable clears once at engine open; no other code refers to it (its role is taken from that function's name), it ends where ai_ShotTable starts */
+AIBOOKMARK ai_Bookmarks[11];  /* 0x6f5ec0, the function-key building bookmarks (ai_BookmarksInit sets the keys F1 .. F11) */
+unsigned char ai_TurnTable[0x4000];  /* 0x6f5f60, the 0x4000-byte table ai_ClearTurnTable clears once at engine open; no other code refers to it (its role is taken from that function's name), it ends where ai_ShotTable starts */

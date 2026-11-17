@@ -124,12 +124,12 @@ typedef struct ORDCHARKIND {            /* the character record seen from its ki
 } ORDCHARKIND;
 #define ORD_CHARKINDS ((ORDCHARKIND *)((char *)ai_Chars + 2))
 unsigned char ai_OwnPlayer = 0;  /* 0x6f1bc5: defined here because ord.c does not read it (the ai data area) */
-float ord_RatingRate = 0;  /* 0x91aaf4, the change rate of the rating (ord_AdvanceRatingBase; ls.c saves it) */
-ORDSTATROUND ord_StatisticsHistory[16] = {0};  /* 0x91ab00, the statistics of the last 16 rounds */
-char ord_RatingBytes[16] = {0};  /* 0x91b460, 5 + 1 bytes */
-AITIME ord_StatisticsClock = {0}; /* 0x91b470, the clock of the last rating step (ord_AdvanceRatingBase) */
-ORDMSGREC ord_MessageRecord = {0};  /* 0x91b480, the record the messages carry */
-ORDSTATS ord_Statistics = {0}; /* 0x91b4c0, the last statistics (ord_UpdateStatistics) */
+float ord_RatingRate;  /* 0x91aaf4, the change rate of the rating (ord_AdvanceRatingBase; ls.c saves it) */
+ORDSTATROUND ord_StatisticsHistory[16];  /* 0x91ab00, the statistics of the last 16 rounds */
+char ord_RatingBytes[16];  /* 0x91b460, 5 + 1 bytes */
+AITIME ord_StatisticsClock; /* 0x91b470, the clock of the last rating step (ord_AdvanceRatingBase) */
+ORDMSGREC ord_MessageRecord;  /* 0x91b480, the record the messages carry */
+ORDSTATS ord_Statistics; /* 0x91b4c0, the last statistics (ord_UpdateStatistics) */
 
 /* 0x4f4e20, the order "apply for office" (table 0x611768 entry 0; c the character, m the message: m[0] the
    kind 1 = do / 3 = ask, the text at m + 5): only when c has no partner (partner = -1) or the partner record

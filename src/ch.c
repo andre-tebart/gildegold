@@ -85,16 +85,16 @@ int ch_DirtyZ1 = 0;  /* 0x631080 */
 D3SCENE * ch_Saved1 = 0;  /* 0x631088, the same for ch_Ground1 */
 D3SM * ch_PathMap = 0;  /* 0x63108c */
 char ch_EmptyName[1] = {0};  /* 0x631090, "" */
-D3SCENE d3_Scenes[D3_MAX_SCENES] = {0}; /* 0xfd7ba0 */
-unsigned char ch_PathBuf[1024] = {0};  /* 0x14686e0, the cells path_Find writes for ch_Path */
-CHARACTER *ch_List[CH_MAX] = {0};  /* 0x1468ae0, the characters by id (CHARACTER.id) */
-PATHOUT ch_Path = {0};  /* 0x14696e0, the result of a path search (xy = ch_PathBuf, max 0x200); nothing of the
+D3SCENE d3_Scenes[D3_MAX_SCENES]; /* 0xfd7ba0 */
+unsigned char ch_PathBuf[1024];  /* 0x14686e0, the cells path_Find writes for ch_Path */
+CHARACTER *ch_List[CH_MAX];  /* 0x1468ae0, the characters by id (CHARACTER.id) */
+PATHOUT ch_Path;  /* 0x14696e0, the result of a path search (xy = ch_PathBuf, max 0x200); nothing of the
                            original reads 0x14696ec..0x1469700 */
-CHACTDEF ch_ActDefs[64] = {0};  /* 0x1469700, the action types (ch_DeclareAction); the name of type m is also the
+CHACTDEF ch_ActDefs[64];  /* 0x1469700, the action types (ch_DeclareAction); the name of type m is also the
                                    motion name ch_AttachMotion loads; ch_Open clears all 0x1300 bytes */
-int ch_Ground0[65536] = {0};  /* 0x146aa00, ground types of d3_Scenes[0] */
-int ch_Ground1[65536] = {0};  /* 0x14aaa20, ground types of the default scene */
-CHFADE ch_Fades[16] = {0};                /* 0x14eaa20 */
+int ch_Ground0[65536];  /* 0x146aa00, ground types of d3_Scenes[0] */
+int ch_Ground1[65536];  /* 0x14aaa20, ground types of the default scene */
+CHFADE ch_Fades[16];                /* 0x14eaa20 */
 
 /* 0x402140, creates the height map of the character's scene on first use */
 struct D3HMAP *ch_GetHMap(CHARACTER *ch)

@@ -38,20 +38,20 @@ int di_PressX = 0;                      /* 0x6310d4 */
 int di_PressY = 0;                      /* 0x6310d8 */
 int di_LClickTime = 0;                  /* 0x6310dc (.bss: 0 at start) */
 union { int i; unsigned char b; } kb_RepeatKey = {0};     /* 0x6310e0 */
-HWND di_Hwnd = 0;                           /* 0x146735c */
-LPDIRECTINPUTDEVICE di_Mouse = {0};           /* 0x1467360 */
-HINSTANCE di_Hinst = {0};                     /* 0x1467364 */
-DIMOUSEST dm_L = {0};                         /* 0x1467380 */
-LPDIRECTINPUTDEVICE di_Keyboard = {0};        /* 0x14673cc */
-DIMOUSEST dm_S = {0};                         /* 0x14673e0 */
-DIMOUSEST dm_Q[32] = {0};                     /* 0x1467440 */
-unsigned short kb_Map[256] = {0};             /* 0x1467dc0 */
-unsigned char kb_Down[256] = {0};             /* 0x14681c0 */
-DIMOUSEST dm_P = {0};                         /* 0x14683c0 */
-HANDLE di_Event = 0;                        /* 0x146840c */
-unsigned char kb_Last = 0;                  /* 0x1468410 */
-LPDIRECTINPUT di_Main = {0};                  /* 0x1468414 */
-unsigned char kb_Pressed[256] = {0};          /* 0x1468420 */
+HWND di_Hwnd;                           /* 0x146735c */
+LPDIRECTINPUTDEVICE di_Mouse;           /* 0x1467360 */
+HINSTANCE di_Hinst;                     /* 0x1467364 */
+DIMOUSEST dm_L;                         /* 0x1467380 */
+LPDIRECTINPUTDEVICE di_Keyboard;        /* 0x14673cc */
+DIMOUSEST dm_S;                         /* 0x14673e0 */
+DIMOUSEST dm_Q[32];                     /* 0x1467440 */
+unsigned short kb_Map[256];             /* 0x1467dc0 */
+unsigned char kb_Down[256];             /* 0x14681c0 */
+DIMOUSEST dm_P;                         /* 0x14683c0 */
+HANDLE di_Event;                        /* 0x146840c */
+unsigned char kb_Last;                  /* 0x1468410 */
+LPDIRECTINPUT di_Main;                  /* 0x1468414 */
+unsigned char kb_Pressed[256];          /* 0x1468420 */
 
 /* 0x4104e0, fill kb_Map[256] with the VkKeyScan / MapVirtualKey code of every character, 0xffff when no key; always returns 1 */
 

@@ -50,8 +50,6 @@ typedef struct GVPLAYERREC {           /* 0x2f4 bytes, a player's slot record (a
 #define gv_PlayerRecs (*(GVPLAYERREC (*)[4])&ai_PlayerSlots)  /* 0x7e3f40, ai_PlayerSlots (char[4][0x2f4]) as the player records */
 
 /* full rebuild: the symbols whose original addresses the code above spells literally */
-extern GAPDATA full_data_91f6e3[];
-extern GAPDATA full_data_91f6e4[];
 #include "amt_types.h"
 #include "ls.h"
 #include "ahm.h"
@@ -1159,5 +1157,5 @@ float ai_RatingBase = 0;  /* 0x6f1b9c, the running rating (it moves towards ai.h
 struct AICHAR *ai_JudgeCatholic = 0;  /* 0x6f1bfc / */
 struct AICHAR *ai_JudgeProtestant = 0;  /* 0x6f1c00 */
 /* ai_PlayerCity: view of ai_PlayerSlots (tools/data_views.py) */
-char gm_IncomeHistory[0x154] = {0};  /* 0x91b580, the 17-round history of the five income sums (rows of */
-GVCANNON gv_Cannon = {0};  /* 0x925100, the cannon scene state */
+char gm_IncomeHistory[0x154];  /* 0x91b580, the 17-round history of the five income sums (rows of */
+GVCANNON gv_Cannon;  /* 0x925100, the cannon scene state */

@@ -206,7 +206,6 @@ extern int sv_PopRequest;
 
 
 extern int ai_NextCharNumber;
-extern GAPDATA full_data_92bca8[];
 extern unsigned char he_Events[339968];
 extern char * he_QuickList[10921];
 extern int d2_DirtyRectLeft[4];         /* 0xfb9060, the rectangle d2_AddDirty tests against: left, top, right, bottom (one object: one memset clears it) */
@@ -219,7 +218,6 @@ extern int sv_PopRequest;
 extern char ai_MissionMode;
 
 
-extern GAPDATA full_data_75e401[];
 extern INIT_PLAYER init_PlayerProfile;
 extern int d2_DirtyRectLeft[4];         /* 0xfb9060, the rectangle d2_AddDirty tests against: left, top, right, bottom (one object: one memset clears it) */
 #define d2_DirtyRectTop (*(int *)((char *)&d2_DirtyRectLeft + 0x4))       /* 0xfb9064 */
@@ -5294,48 +5292,22 @@ AIBLD *he_PatrolBuilding = 0;  /* 0x6f2638, he.h; owner he or main (an open ques
 int he_MessageFilterMask = 0;  /* 0x6f263c, he.h; owner he or main (an open question of he.c) */
 GAPDATA full_data_6f2678[4] = { 0 };  /* 0x6f2678 */
 GAPDATA full_data_6f26c4[4] = { 0 };  /* 0x6f26c4, the alignment after ai_Settings, before ai_NewsText */
-GAPDATA full_data_6f3874[12] = { 0 };  /* 0x6f3874, the rest of the 16-byte bss at 0x6f3870 (no reader) */
-GAPDATA full_data_6f4084[28] = { 0 };  /* 0x6f4084, the rest of the 32-byte bss at 0x6f4080 (no reader) */
-GAPDATA full_data_6f40c8[24] = { 0 };  /* 0x6f40c8 */
-int ai_MapHeight = 0;  /* 0x6f4ee4, the height of the town map bitmap (ai_MapSize its width), set by lc's map loader 0x5b2090; f3init's by place (next to ai_MapSize), only lc reads it */
-GAPDATA full_data_6f4f50[16] = { 0 };  /* 0x6f4f50 */
-GAPDATA full_data_6f5310[16] = { 0 };  /* 0x6f5310 */
-GAPDATA full_data_6f5a64[28] = { 0 };  /* 0x6f5a64 */
-GAPDATA full_data_6f5e04[28] = { 0 };  /* 0x6f5e04 */
-GAPDATA full_data_6f5e7c[4] = { 0 };  /* 0x6f5e7c */
-GAPDATA full_data_6f5ea8[24] = { 0 };  /* 0x6f5ea8 */
-GAPDATA full_data_6f5f44[4] = { 0 };  /* 0x6f5f44 */
-GAPDATA full_data_6f5f48[4] = { 0 };  /* 0x6f5f48 */
-GAPDATA full_data_6f5f4c[20] = { 0 };  /* 0x6f5f4c */
-GAPDATA full_data_6fa008[24] = { 0 };  /* 0x6fa008 */
-GAPDATA full_data_6fa0d0[16] = { 0 };  /* 0x6fa0d0, the rest of the 128-byte bss at 0x6fa060 (no reader) */
-char he_OptionsPath[256] = { 0 };  /* 0x6fa0e0, the options INI path he_LoadMessageFilter copies from ai_OptionsFile for its
+int ai_MapHeight;  /* 0x6f4ee4, the height of the town map bitmap (ai_MapSize its width), set by lc's map loader 0x5b2090; f3init's by place (next to ai_MapSize), only lc reads it */
+char he_OptionsPath[256];  /* 0x6fa0e0, the options INI path he_LoadMessageFilter copies from ai_OptionsFile for its
                                       GetPrivateProfileIntA / WritePrivateProfileStringA calls (he_SaveMessageFilter) */
-int he_TipOrder[0x20] = { 0 };  /* 0x6fa1e0, he.h: the tip order (the 27 tip text slots, gm_Shuffled fills it) */
-HEHINT he_Hints[128] = { 0 };  /* 0x6fa260, he.h: the tutorial hint table (he_OpenHelpEvents fills it, he_RunHint walks it) */
-int he_BarView = 0;  /* 0x6faa60, he.h */
-GAPDATA full_data_6faa64[28] = { 0 };  /* 0x6faa64 */
-HEEVSLOT he_EventSlots[16] = { 0 };  /* 0x6faa80, he.h: the event bar's 16 slots */
+int he_TipOrder[0x20];  /* 0x6fa1e0, he.h: the tip order (the 27 tip text slots, gm_Shuffled fills it) */
+HEHINT he_Hints[128];  /* 0x6fa260, he.h: the tutorial hint table (he_OpenHelpEvents fills it, he_RunHint walks it) */
+int he_BarView;  /* 0x6faa60, he.h */
+HEEVSLOT he_EventSlots[16];  /* 0x6faa80, he.h: the event bar's 16 slots */
 /* full_data_6faa84 / 6faa88 / 6faa90: views of he_EventSlots */
-GAPDATA full_data_7585f4[12] = { 0 };  /* 0x7585f4 */
-int main_SoundBanks[0x80] = { 0 };  /* 0x75df20, the loaded sample-bank handles (main_PreloadSound fills, main_FreeSoundBanks frees; the next object is ai_MissionSeed 0x75e120) */
-void * main_Instance = 0;  /* 0x75e140, its instance handle (HINSTANCE) */
-MAINFAMILY main_Family = { 0 };  /* 0x75e180, the character creation's family and talents */
-GAPDATA full_data_75e1ac[20] = { 0 };  /* 0x75e1ac */
-char main_NetHost[0x80] = { 0 };  /* 0x75e1c0, the network host address ([Network] Host of game.INI, read with size 0x80 at 0x53ccf0; up to main_AppDir 0x75e240) */
-char main_AppDir[288] = { 0 };  /* 0x75e240 */
-char main_NetSaveName[161] = { 0 };  /* 0x75e360, the network game's city / save name (sprintf "%s/%s.net", read for "gamedata/network/%s.SAV"); size: up to the address 0x75e401, which is only 0x53b840's copy-loop base constant, so the name may run to ai_OptionsFile 0x75e480 */
-GAPDATA full_data_75e401[127] = { 0 };  /* 0x75e401 */
-int main_PlatformNT = 0;  /* 0x75e62c, the OS is NT based (dwPlatformId != VER_PLATFORM_WIN32_WINDOWS) */
-int main_WindBank = 0;  /* 0x75e630, the wind sample bank (sb_LoadSampleBank "natur\wind.sbf" at the game start) */
-GAPDATA full_data_75e634[12] = { 0 };  /* 0x75e634 */
-GAPDATA full_data_91f6e0[3] = { 0 };  /* 0x91f6e0 */
-GAPDATA full_data_91f6e3[1] = { 0 };  /* 0x91f6e3 */
-GAPDATA full_data_91f6e4[28] = { 0 };  /* 0x91f6e4 */
-GAPDATA full_data_92bca8[11] = { 0 };  /* 0x92bca8 */
-GAPDATA full_data_92bcb3[5] = { 0 };  /* 0x92bcb3 */
-GAPDATA full_data_92bcb8[8] = { 0 };  /* 0x92bcb8 */
-GAPDATA full_data_930370[16] = { 0 };  /* 0x930370 */
+int main_SoundBanks[0x80];  /* 0x75df20, the loaded sample-bank handles (main_PreloadSound fills, main_FreeSoundBanks frees; the next object is ai_MissionSeed 0x75e120) */
+void * main_Instance;  /* 0x75e140, its instance handle (HINSTANCE) */
+MAINFAMILY main_Family;  /* 0x75e180, the character creation's family and talents */
+char main_NetHost[0x80];  /* 0x75e1c0, the network host address ([Network] Host of game.INI, read with size 0x80 at 0x53ccf0; up to main_AppDir 0x75e240) */
+char main_AppDir[288];  /* 0x75e240 */
+char main_NetSaveName[161];  /* 0x75e360, the network game's city / save name (sprintf "%s/%s.net", read for "gamedata/network/%s.SAV"); size: up to the address 0x75e401, which is only 0x53b840's copy-loop base constant, so the name may run to ai_OptionsFile 0x75e480 */
+int main_PlatformNT;  /* 0x75e62c, the OS is NT based (dwPlatformId != VER_PLATFORM_WIN32_WINDOWS) */
+int main_WindBank;  /* 0x75e630, the wind sample bank (sb_LoadSampleBank "natur\wind.sbf" at the game start) */
 /* full_data_143a3c4: view of txt_Ptrs (build/mk_txt_views.py) */
 /* txt_GateItemSuffix: view of txt_Ptrs (build/mk_txt_views.py) */
 /* txt_GatePlaceSuffix: view of txt_Ptrs (build/mk_txt_views.py) */

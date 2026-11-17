@@ -311,8 +311,6 @@ extern const float gm_MoodRanges[476];
 extern GAPDATA full_data_602568[];
 extern GAPDATA full_data_62a9f8[];
 extern int sv_PopRequest;
-extern GAPDATA full_data_6f5f4c[];
-extern GAPDATA full_data_6f5f48[];
 extern unsigned char kb_Last;
 
 extern int d2_LastWindow;
@@ -320,7 +318,6 @@ extern int d2_LastWindow;
 extern int sv_PopRequest;
 
 extern int sv_FrameMask;
-extern GAPDATA full_data_6f5f44[];
 extern unsigned char kb_Last;
 extern int sv_PanelFlag;
 
@@ -381,7 +378,7 @@ int ai_TutorialBanks[6] = { 0 };  /* 0x6f2640, the voice banks of the main intro
 TUTRUN *ai_TutorialRuns = 0;  /* 0x6f2658, the chain of the tutorial's run records (built by its start 0x578180, freed by its stop 0x578370) */
 int ai_TutorialOn = 0;  /* 0x6f265c, the tutorial runs (set by its start 0x578180, cleared by its end) */
 int ai_TutorialRunning = 0;  /* 0x6f2660, the tutorial's state machine advances (unk_SetEndGameGate / unk_ClearEndGameGate) */
-SHOTRESULT ai_ShotTable[3] = { 0 };  /* 0x6f9f60, the cannon scene's shot results (the callback ai_ShotTableStore fills it, ai_ShotTableReset resets it) */
+SHOTRESULT ai_ShotTable[3];  /* 0x6f9f60, the cannon scene's shot results (the callback ai_ShotTableStore fills it, ai_ShotTableReset resets it) */
 
 #include "ls.h"
 #include "f3init.h"
@@ -5053,8 +5050,8 @@ void txt_Format(char *out, int id0, ...); int sv_MessageBox();
 void sv_ReleaseNamePlates(void); int sv_RegisterNamePlate(); void ai_StorageWindow();
 void ai_AlchemistResearchWindow(); void ai_AlchemistWindow();
 void cm_BeginFieldBlock(char *o, int id); int cm_AddFieldDelta(unsigned char size, unsigned char n, unsigned short field, void *v); int cm_SendFieldDeltas(void);
-char ai_ShotCallbackArg[0x40] = { 0 };  /* 0x6fa020, the argument gv_SetEffectCallback stores with the shot callback ai_ShotTableStore (ai_CannonScene); never read by the code, its type is unknown; it runs to the tutorial state record at 0x6fa060 */
-TUTSTATE ai_TutorialState = { 0 };  /* 0x6fa060, the tutorial state record ai_Tutorial points to (the tutorial code reads it through S); its last read field is progressSlider at +0x6c, the 0x10 bytes to he_OptionsPath at 0x6fa0e0 stay unowned */
+char ai_ShotCallbackArg[0x40];  /* 0x6fa020, the argument gv_SetEffectCallback stores with the shot callback ai_ShotTableStore (ai_CannonScene); never read by the code, its type is unknown; it runs to the tutorial state record at 0x6fa060 */
+TUTSTATE ai_TutorialState;  /* 0x6fa060, the tutorial state record ai_Tutorial points to (the tutorial code reads it through S); its last read field is progressSlider at +0x6c, the 0x10 bytes to he_OptionsPath at 0x6fa0e0 stay unowned */
 
 /* dcp unit split: the functions of svgrave the rest of sv_t uses */
 void ai_GraveDeadName(GVGRAVE *e, char *out);

@@ -14060,11 +14060,11 @@ LCOPENHOURS ai_OpeningHours[19] = { { 5, 9, 20 }, { 6, 7, 22 }, { 8, 9, 20 }, { 
 int ai_ClickedObject = 0;  /* 0x6f22e4: the object clicked in the scene (cm.h declares it for the units that include cm.h) */
 int ai_BuildingPerms = 0;  /* 0x6f231c */
 int ai_BauplatzCount = 0;  /* 0x6f2688 */
-LCPRODROW ai_ProdRows[4] = { 0 };  /* 0x6f4f00 */
-LCPRODSLOT ai_ProdGoods[16] = { 0 };  /* 0x6f4f60 */
-LCPRODROW ai_ProdRows2[2] = { 0 };  /* 0x6f52e0 */
-int * ai_BauplatzList = 0;  /* 0x6f5308 */
-LCPRODCOL ai_ProdColumns[16] = { 0 };  /* 0x6f5320, the goods columns of the production window */
-LCPRODSLOT ai_ProdGoods2[8] = { 0 };  /* 0x6f58a0 */
-int ai_ProdSelectedInput = 0;  /* 0x6f5a60, the input goods picked in the production goods window, 0 = none */
-LCPRODSLOT ai_ProdColumnSlots[16] = { 0 };  /* 0x6f5a80, a slot per production column (ai_InitProductionTables: x 0x1a, y 0x10 + 0x45 * i); ai_ProductionGoodsWindow compares its goods with a job's */
+LCPRODROW ai_ProdRows[4];  /* 0x6f4f00 */
+LCPRODSLOT ai_ProdGoods[16];  /* 0x6f4f60 */
+LCPRODROW ai_ProdRows2[2];  /* 0x6f52e0 */
+int * ai_BauplatzList;  /* 0x6f5308 */
+LCPRODCOL ai_ProdColumns[16];  /* 0x6f5320, the goods columns of the production window */
+LCPRODSLOT ai_ProdGoods2[8];  /* 0x6f58a0 */
+int ai_ProdSelectedInput;  /* 0x6f5a60, the input goods picked in the production goods window, 0 = none */
+LCPRODSLOT ai_ProdColumnSlots[16];  /* 0x6f5a80, a slot per production column (ai_InitProductionTables: x 0x1a, y 0x10 + 0x45 * i); ai_ProductionGoodsWindow compares its goods with a job's */

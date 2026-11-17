@@ -132,6 +132,6 @@ int tb_Paused = 0;  /* 0x6333e0 */
 int tb_OneShot = 0;  /* 0x6333e4, the callback restarts the timer */
 char tb_Slow = 0;  /* 0x6333e8, d3_Time advances every 20th callback */
 int tb_SlowCount = 0;  /* 0x6333ec */
-TIMECAPS tb_Caps = {0};  /* 0xfe7a80 */
-UINT tb_Delay = 0;  /* 0xfe7a88 */
-TBFUNC tb_Funcs[32] = {0};  /* 0xfe7aa0 */
+TIMECAPS tb_Caps;  /* 0xfe7a80 */
+UINT tb_Delay;  /* 0xfe7a88 */
+TBFUNC tb_Funcs[32];  /* 0xfe7aa0 */

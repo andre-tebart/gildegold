@@ -28,7 +28,6 @@ struct D3TERRAIN;
 /* full rebuild: the symbols whose original addresses the code above spells literally */
 extern int gm_TreeNodeCount;
 extern unsigned gm_OwnNameHeads[136];
-extern GAPDATA full_data_92bcb3[];
 #include "cm_types.h"
 extern void main_LoadProgressCallback(int kind, int cur, int total);
 extern int gm_TreeNodeCount;
@@ -93,10 +92,10 @@ int gv_ReadEffects();                     /* 0x4ed910 */
 
 /* he_EventTop: view of ai_NextEventId (tools/data_views.py) */
 int he_QuickTop = 0;  /* 0x6f2620 / */
-unsigned char he_Events[339968] = {0};  /* 0x6fab40, the */
-char * he_QuickList[10921] = {0};  /* 0x74db40, pointers to the */
-int he_EventCount = 0;  /* 0x7585e4 */
-void (*he_RunHandlers[5544])(unsigned char *) = {0};  /* 0x758600, the event run handlers by type (he.c */
+unsigned char he_Events[339968];  /* 0x6fab40, the */
+char * he_QuickList[10921];  /* 0x74db40, pointers to the */
+int he_EventCount;  /* 0x7585e4 */
+void (*he_RunHandlers[5544])(unsigned char *);  /* 0x758600, the event run handlers by type (he.c */
 /* ai_Unk75e134 / ai_Unk75e138 / ai_Unk75e13c: views of ai_TimeCopy (data_views.h), the clock copy */
 
 void he_FreeEvents();                    /* 0x53d590 */
@@ -1239,9 +1238,9 @@ int ls_Read(void *buf, int size, int count, int f)
 }
 
 
-LSSAVE ls_SavePath = {0};  /* 0x75e640 */
-unsigned short ai_ScreenImage[19200] = {0};  /* 0x766320, the */
-LSHEADER ls_LoadedHeader = {0};  /* 0x76f920, the 0x100-byte header of the loaded save game (id, flag byte, name, ..; ls_ReadSaveHeader fills it up to +0xfc) */
+LSSAVE ls_SavePath;  /* 0x75e640 */
+unsigned short ai_ScreenImage[19200];  /* 0x766320, the */
+LSHEADER ls_LoadedHeader;  /* 0x76f920, the 0x100-byte header of the loaded save game (id, flag byte, name, ..; ls_ReadSaveHeader fills it up to +0xfc) */
 extern char * cm_LoadBuf;                /* 0xf31140 */
 extern int ai_TimeCopy[4];  /* 0x75e130, the clock copy */
 #define LS_RD(p, sz) ls_Read((int)(p), (sz), 1, h)
@@ -2682,6 +2681,6 @@ int ls_ReceiveGame(void)
     return 1;
 }
 
-unsigned cm_LoadSize = 0;  /* 0xa68d28, the received bytes and the expected length (compared unsigned */
-int cm_LastSeq = 0;  /* 0xf81168 .. */
-unsigned cm_LoadReceived = 0;  /* 0xf81220 / */
+unsigned cm_LoadSize;  /* 0xa68d28, the received bytes and the expected length (compared unsigned */
+int cm_LastSeq;  /* 0xf81168 .. */
+unsigned cm_LoadReceived;  /* 0xf81220 / */

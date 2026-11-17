@@ -346,18 +346,18 @@ void path_Reverse(PMAP *map, unsigned int last)
 }
 
 int path_Mode = 0;  /* 0x633184, 1 = one-directional search */
-unsigned char path_SetFlag = 0;  /* 0x1460aa0 */
-float * path_Costs = 0;  /* 0x1460aa4, path_Terrain[type] of the running search */
-unsigned char path_TestFlag = 0;  /* 0x1460aa8 */
-float path_Tab1Sel = 0;  /* 0x1460aac, path_Tab1[type], written per search, never read */
-unsigned short path_Count = 0;  /* 0x1460ab0 */
-short path_Stamp = 0;  /* 0x1460ab2 */
-unsigned short path_Goal = 0;  /* 0x1460ab4 */
-unsigned short path_Start = 0;  /* 0x1460ab6 */
-float path_Tab2Sel = 0;  /* 0x1460ab8, path_Tab2[type], written per search, never read */
-unsigned short path_Target = 0;  /* 0x1460abc */
-unsigned short path_Meet = 0;  /* 0x1460abe */
-float path_Weight = 0;  /* 0x1460ac0 */
+unsigned char path_SetFlag;  /* 0x1460aa0 */
+float * path_Costs;  /* 0x1460aa4, path_Terrain[type] of the running search */
+unsigned char path_TestFlag;  /* 0x1460aa8 */
+float path_Tab1Sel;  /* 0x1460aac, path_Tab1[type], written per search, never read */
+unsigned short path_Count;  /* 0x1460ab0 */
+short path_Stamp;  /* 0x1460ab2 */
+unsigned short path_Goal;  /* 0x1460ab4 */
+unsigned short path_Start;  /* 0x1460ab6 */
+float path_Tab2Sel;  /* 0x1460ab8, path_Tab2[type], written per search, never read */
+unsigned short path_Target;  /* 0x1460abc */
+unsigned short path_Meet;  /* 0x1460abe */
+float path_Weight;  /* 0x1460ac0 */
 int path_Mask = 63;  /* 0x5f7f60, size - 1 */
 int path_Shift = 6;  /* 0x5f7f64, log2(size) */
 short path_DX[8] = { -1, 0, 1, 0, -1, 1, 1, -1 };  /* 0x5f7f68 */

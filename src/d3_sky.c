@@ -29,7 +29,7 @@ void d3_BeginScene(unsigned char fog, DWORD fogcol, unsigned char zbuffer);     
 void d3_SetBlendState(unsigned char balpha, unsigned char glow, unsigned char colorkey);                                             /* 0x4387b0 */
 
 D3SKY *d3_Sky = 0;                          /* 0x633dd4 */
-D3COLORU d3sky_Colors[6] = {0}; /* 0xfb91c0, the sky colour of each day-time light set (d3_SetLightSet blends [set] and [(set + 1) % 7]: set 6 reads the dword after the array) */
+D3COLORU d3sky_Colors[6]; /* 0xfb91c0, the sky colour of each day-time light set (d3_SetLightSet blends [set] and [(set + 1) % 7]: set 6 reads the dword after the array) */
 /* 0x45ce60, draws one sky layer: sets its texture and blend, tints and maps the dome's vertices, then draws */
 char d3sky_DrawLayer(D3SKY *s, D3SKYLAYER *l)
 {

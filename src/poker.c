@@ -970,6 +970,6 @@ void ai_PokerNpcSetStake(void)
 /* the poker unit's one .rdata constant: it precedes the unit's literals (77.0f at 0x5ed1c0, ...), after am's */
 const int ai_CardBack = 0x18;  /* 0x5ed1bc, the picture offset of the card back (d2_Pics[0x775 + ai_CardBack], ai_PokerSeatPanel) */
 char ai_PokerHandNames[9][0x100] = { "H\xf6" "chste Karte", "Paar", "2 Paar", "Dreier", "Strasse", "Fullhouse", "Flush", "Poker", "Royal Flush" };  /* 0x600490, the hand names by ai_PokerRateHand's rank 0 .. 8; no reader in the image: the first datum of the unit's .data block, after am's strings */
-G10GAME * ai_PokerTable = 0;  /* 0xf83654 */
-G10CARD ai_PokerDeck[24] = {0};  /* 0xf83660 */
-G10NPC ai_PokerOpponents[2] = {0};  /* 0xf837e0 */
+G10GAME * ai_PokerTable;  /* 0xf83654 */
+G10CARD ai_PokerDeck[24];  /* 0xf83660 */
+G10NPC ai_PokerOpponents[2];  /* 0xf837e0 */

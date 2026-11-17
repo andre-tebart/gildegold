@@ -118,33 +118,33 @@ short d2_ShpW = 0;  /* 0x6f044c */
 short d2_ShpH = 0;  /* 0x6f044e */
 int d2_ClipLeft = 0;  /* 0x6f0458, clip left */
 int d2_ClipTop = 0;  /* 0x6f045c, clip top */
-int d2_PaletteDepth = 0;  /* 0xf8a64c */
-int d2_ClickedId = 0;  /* 0xf8a668 */
-short d2_MouseX = 0;  /* 0xf8a674, mouse x */
-short d2_MouseY = 0;  /* 0xf8a676, mouse y */
-D2FRCT d2_PointerItems[6] = {0};  /* 0xf8ab80, the item list drawn next to the pointer */
-D2DISSOLVE * d2_CurrentDissolve = 0;  /* 0xf8abc8 */
-D2SEG d2_TextSegs[64] = {0};  /* 0xf8abe0 */
-int d2_MainWindow = 0;  /* 0xf8eee0, the main window handle (HWND) given to d2_Open */
-char d2_PointerTexName[128] = {0};  /* 0xf8ef00 */
-D2OBJ * d2_Objs = 0;  /* 0xf8f080 */
-int d2_FontHeight = 0;  /* 0xf8f084, font height */
-int d2_HalfScreenH = 0;  /* 0xf8f088, half the screen height */
-int d2_HalfScreenW = 0;  /* 0xf8f08c, half the screen width */
-D2FADE * d2_Fades[32] = {0};  /* 0xf8f0a0, fades (d2_StartFade) */
-D2WIN d2_Wins[0x60] = {0};  /* 0xf8f120, 96 windows: 0xfa5aa0 is d2_Radios */
-D2RADIO d2_Radios[8] = {0};  /* 0xfa5aa0 */
-int d2_PointerX = 0;  /* 0xfa5f08, pointer x (own object: cm_PickCellZ is a 4-byte int) */
-int d2_PointerY = 0;  /* 0xfa5f0c, pointer y */
-char d2_GfxPath[256] = {0};  /* 0xfa5f20 */
-D2INPUT d2_Inputs[0x80] = {0};  /* 0xfa6020 */
-D2VIEW d2_Views[0x30] = {0};  /* 0xfb1020 */
+int d2_PaletteDepth;  /* 0xf8a64c */
+int d2_ClickedId;  /* 0xf8a668 */
+short d2_MouseX;  /* 0xf8a674, mouse x */
+short d2_MouseY;  /* 0xf8a676, mouse y */
+D2FRCT d2_PointerItems[6];  /* 0xf8ab80, the item list drawn next to the pointer */
+D2DISSOLVE * d2_CurrentDissolve;  /* 0xf8abc8 */
+D2SEG d2_TextSegs[64];  /* 0xf8abe0 */
+int d2_MainWindow;  /* 0xf8eee0, the main window handle (HWND) given to d2_Open */
+char d2_PointerTexName[128];  /* 0xf8ef00 */
+D2OBJ * d2_Objs;  /* 0xf8f080 */
+int d2_FontHeight;  /* 0xf8f084, font height */
+int d2_HalfScreenH;  /* 0xf8f088, half the screen height */
+int d2_HalfScreenW;  /* 0xf8f08c, half the screen width */
+D2FADE * d2_Fades[32];  /* 0xf8f0a0, fades (d2_StartFade) */
+D2WIN d2_Wins[0x60];  /* 0xf8f120, 96 windows: 0xfa5aa0 is d2_Radios */
+D2RADIO d2_Radios[8];  /* 0xfa5aa0 */
+int d2_PointerX;  /* 0xfa5f08, pointer x (own object: cm_PickCellZ is a 4-byte int) */
+int d2_PointerY;  /* 0xfa5f0c, pointer y */
+char d2_GfxPath[256];  /* 0xfa5f20 */
+D2INPUT d2_Inputs[0x80];  /* 0xfa6020 */
+D2VIEW d2_Views[0x30];  /* 0xfb1020 */
 short d2_ScreenH;  /* 0xfb9070, common: tentative as in the original (the common block past LIBC's .bss; VC6 keeps
                      d2_ResizeWindow's arithmetic on it in a word register only when it does not know its place) */
 short d2_ScreenW;  /* 0xfb9072, common */
 /* 0x143a1c0, the text pointer table: 0x4800 slots, the one block the text loader fills;
    d2_Strings (the first 122) and every named text pointer are views of it (txt_views.h) */
-char *txt_Ptrs[0x4800] = {0};
+char *txt_Ptrs[0x4800];
 
 /* 0x4687a0, drops the picture that was used longest ago (not locked, not in use); 0 if there is none */
 

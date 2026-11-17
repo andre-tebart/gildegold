@@ -1892,16 +1892,16 @@ EVTBUILTIN * evt_CurCall = 0;  /* 0x6332dc */
 int evt_ReturnValue = 0;  /* 0x6332e0, the value of the last script "return" */
 int evt_Parens = 0;  /* 0x6332e4 */
 int evt_Depth = 0;  /* 0x6332e8, entries in evt_Stack */
-EVTSCRIPT * evt_Stack[32] = {0};  /* 0x145e1e0, evt_Cur of the callers of evt_Step */
-int evt_Lines[0x800] = {0};  /* 0x145e260 */
-char evt_Keywords[9][0x10] = {0};  /* 0x1460260, [0] unused: "while", "if", ... */
-int evt_Loaded = 0;  /* 0x14602f0 */
-char evt_StrResult[0x100] = {0};  /* 0x1460300 */
-char evt_StrArgs[8][0x60] = {0};  /* 0x1460400 */
-char evt_Ops[30][5] = {0};  /* 0x1460700, [0] unused */
-EVTGLOBALS evt_G = { 0 };  /* 0x14607a0, evt_Globals / evt_NGlobals / evt_MaxGlobals (evt.h) */
-int evt_FloatResult = 0;  /* 0x14607ac */
-EVTLOG * evt_Log = 0;  /* 0x14607b0 */
+EVTSCRIPT * evt_Stack[32];  /* 0x145e1e0, evt_Cur of the callers of evt_Step */
+int evt_Lines[0x800];  /* 0x145e260 */
+char evt_Keywords[9][0x10];  /* 0x1460260, [0] unused: "while", "if", ... */
+int evt_Loaded;  /* 0x14602f0 */
+char evt_StrResult[0x100];  /* 0x1460300 */
+char evt_StrArgs[8][0x60];  /* 0x1460400 */
+char evt_Ops[30][5];  /* 0x1460700, [0] unused */
+EVTGLOBALS evt_G;  /* 0x14607a0, evt_Globals / evt_NGlobals / evt_MaxGlobals (evt.h) */
+int evt_FloatResult;  /* 0x14607ac */
+EVTLOG * evt_Log;  /* 0x14607b0 */
 char evt_Path[0x100] = "x:\\engine\\gfx\\scripts\\";  /* 0x5f8330, the scripts directory (a buffer: main.c strcpy's "scripts/" into it) */
 int evt_NoGroup = -1;  /* 0x5f8430, the group of scripts that belong to no group (evt_ResetNoGroup) */
 int evt_NextId = 1;  /* 0x5f8434 */

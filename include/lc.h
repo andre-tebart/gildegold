@@ -231,10 +231,19 @@ typedef struct AIEQUIPROW {             /* 0x40 bytes, one row */
 } AIEQUIPROW;
 extern AIEQUIPROW ai_EquipRows[0x20];   /* 0x6f3880, 32 rows; written until 0x6f4080 */
 extern int ai_MasterUp;                 /* 0x6f4080, the master list page's scroll up button */
-extern int ai_BldCartCount;             /* 0x6f40a0, the number of carts in ai_BldCarts (at most 3) */
-extern struct AIOBJ *ai_BldCarts[3];    /* 0x6f40a4, the carts of the building the cart list shows (gm_BuildingCarts) */
-extern int ai_BldCartButtons[3];        /* 0x6f40b0, per cart the button to its destination building, -1: none */
-extern int ai_BldCartTexts[3];          /* 0x6f40bc, per cart its text control, -1: none */
+typedef struct LCBLDCARTS {             /* 0x28 bytes at 0x6f40a0: the building window's cart list as one object (a common
+                                           of 40 bytes, 32-aligned; the parts at +4 / +0x1c are not on their own common
+                                           alignment, ai_ShowBldCarts reaches buttons and texts with one index) */
+    int count;                          /* +0x00, the number of carts in carts (gm_BuildingCarts, at most 3) */
+    struct AIOBJ *carts[3];             /* +0x04, the carts of the building the cart list shows */
+    int buttons[3];                     /* +0x10, per cart the button to its destination building (picture 5), -1: none */
+    int texts[3];                       /* +0x1c, per cart its text control, -1: none */
+} LCBLDCARTS;
+extern LCBLDCARTS ai_BldCartList;       /* 0x6f40a0 */
+#define ai_BldCartCount (ai_BldCartList.count)
+#define ai_BldCarts (ai_BldCartList.carts)
+#define ai_BldCartButtons (ai_BldCartList.buttons)
+#define ai_BldCartTexts (ai_BldCartList.texts)
 typedef struct LCMASTERROW {            /* 0x18 bytes, a row of the stats panel's master list page (128 rows) */
     int pic;                            /* 0x00, the building type's picture, -1 none */
     int input;                          /* 0x04, the budget input box, -1 none (ai_PlayerStatsPanel compares its value

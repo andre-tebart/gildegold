@@ -84,10 +84,8 @@ extern char gm_TagTmp[4];  /* 0x60c1ec, f3gm.c: the "tmp" allocation tag (mem_Al
 #define GAPDATA __declspec(align(1)) unsigned char
 
 /* full rebuild: the symbols whose original addresses the code above spells literally */
-extern GAPDATA full_data_930370[];
 extern int gm_PlayerRecords[688];
 extern GAPDATA full_data_602568[];
-extern GAPDATA full_data_92bcb8[];
 
 
 #define G17_I(m, o) (*(int *)&(m).data[o])
@@ -17343,74 +17341,74 @@ int cm_FightFixedLight = 0;  /* 0x6f244c */
 int cm_NetFlags = 0;  /* 0x6f2594, flags */
 int cm_RequestedSaveSlot = 0;  /* 0x6f25c8 */
 char cm_RequestedSaveName[72] = {0};  /* 0x6f25d0 */
-unsigned int ai_MissionSeed = 0;  /* 0x75e120, the random seed of the missions (as mission.h) */
-int ai_TimeCopy[4] = {0};  /* 0x75e130, the clock copy 0x75e130..0x75e13e (14 bytes, written whole by cm.c / sv.c): [0] the year; ai_Unk75e134 / 75e138 / 75e13c are views */
-char * sv_SelectedObject = 0;  /* 0x75ec60 */
-char cm_ChatLog[2048] = {0};  /* 0x75fba0 */
-int cm_SaveAcks[8][2] = {0};  /* 0x76fa20 */
+unsigned int ai_MissionSeed;  /* 0x75e120, the random seed of the missions (as mission.h) */
+int ai_TimeCopy[4];  /* 0x75e130, the clock copy 0x75e130..0x75e13e (14 bytes, written whole by cm.c / sv.c): [0] the year; ai_Unk75e134 / 75e138 / 75e13c are views */
+char * sv_SelectedObject;  /* 0x75ec60 */
+char cm_ChatLog[2048];  /* 0x75fba0 */
+int cm_SaveAcks[8][2];  /* 0x76fa20 */
 /* ai_Unk770d8c: view of ai_Chars (tools/data_views.py) */
-int ai_Evidence[0x800][2] = {0}; /* 0x91b6e0 */
-char ai_Crimes[0x5a00] = {0}; /* 0x91f700, the crime records (0x2d bytes each) up to 0x925100; f3gm's goods
+int ai_Evidence[0x800][2]; /* 0x91b6e0 */
+char ai_Crimes[0x5a00]; /* 0x91f700, the crime records (0x2d bytes each) up to 0x925100; f3gm's goods
                                     table ai_Unk91f716 is the same storage, a view at +0x16 */
-int cm_SavedScene = 0;  /* 0x925510 */
-G28REC cm_Parties[96] = {0};  /* 0x925520 */
-int cm_DuelRight = 0;  /* 0x92bca0 */
-int cm_DuelLeft = 0;  /* 0x92bca4 */
-int cm_DuelVariants[128] = {0};  /* 0x92bcc0, the shuffled order of the duel variants (gm_Shuffled fills it) */
-int cm_OrderTicks = 0;  /* 0x92bec0 */
-unsigned short cm_DisabledObjs[768] = {0};  /* 0x92bee0 */
-unsigned int cut_RandState = 0;  /* 0x92c4e0, the random seed of the scenes */
-CMKIND cm_Kinds[12] = {0};  /* 0x92c500, the scene kind table: run, callbacks, flag, check (cm_RegisterSceneKind) */
-char cm_SceneState[1152] = {0};  /* 0x92c600 */
-int cm_SceneChars[16] = {0};  /* 0x92ca80 */
-int cm_SavedNoGroup = 0;  /* 0x92cac0 */
-char cm_CutInfos[16][0x35c] = {0};  /* 0x92cae0 */
-float cm_OrderChances[0xb4] = {0};  /* 0x9300a0 */
-char * cm_PointList[32] = {0};  /* 0x930380 */
-CMPORTRAIT cm_Portraits[6] = {0};  /* 0x930400 */
-G18POP cm_DamagePops[16] = {0};  /* 0x9304c0 */
-char cm_Fighters[21376] = {0};  /* 0x930600 */
-char * cm_FlagObjects[32] = {0};  /* 0x935980 */
-char cm_Grenades[512] = {0};  /* 0x935a00 */
-float cm_FightCellScale = 0;  /* 0x935d00 */
-int cm_CharInfoWins[32] = {0};  /* 0x935d20 */
-G18LOG cm_LobbyChat[15] = {0};  /* 0x935da0 */
-int cm_LobbyChatNext = 0;  /* 0x9363f4 */
-int cm_LobbyStateFlags = 0;  /* 0x936400, [0] the lobby is open, [1] a lobby message came in */
-int cm_LobbyChanged = 0;  /* 0x936404 */
-int cm_LobbyClosed = 0;  /* 0x936408 */
-unsigned int cm_LobbyList[9] = {0};  /* 0x936420, the count then the eight player states (0x24 bytes) */
-CMNETGAME cm_NetGame = {0};  /* 0x936460, the network game (hdr.players 0x936496, mode 0x9364dc) */
-char cm_LobbyRecords[752] = {0};  /* 0x9364e0 */
-int cm_LobbyPlayerId = 0;  /* 0x9367d0, this player's lobby id */
-int cm_LobbyHelloValue = 0;  /* 0x9367d4, the hello answer's second value */
+int cm_SavedScene;  /* 0x925510 */
+G28REC cm_Parties[96];  /* 0x925520 */
+int cm_DuelRight;  /* 0x92bca0 */
+int cm_DuelLeft;  /* 0x92bca4 */
+int cm_DuelVariants[128];  /* 0x92bcc0, the shuffled order of the duel variants (gm_Shuffled fills it) */
+int cm_OrderTicks;  /* 0x92bec0 */
+unsigned short cm_DisabledObjs[768];  /* 0x92bee0 */
+unsigned int cut_RandState;  /* 0x92c4e0, the random seed of the scenes */
+CMKIND cm_Kinds[12];  /* 0x92c500, the scene kind table: run, callbacks, flag, check (cm_RegisterSceneKind) */
+char cm_SceneState[1152];  /* 0x92c600 */
+int cm_SceneChars[16];  /* 0x92ca80 */
+int cm_SavedNoGroup;  /* 0x92cac0 */
+char cm_CutInfos[16][0x35c];  /* 0x92cae0 */
+float cm_OrderChances[0xb4];  /* 0x9300a0 */
+char * cm_PointList[32];  /* 0x930380 */
+CMPORTRAIT cm_Portraits[6];  /* 0x930400 */
+G18POP cm_DamagePops[16];  /* 0x9304c0 */
+char cm_Fighters[21376];  /* 0x930600 */
+char * cm_FlagObjects[32];  /* 0x935980 */
+char cm_Grenades[512];  /* 0x935a00 */
+float cm_FightCellScale;  /* 0x935d00 */
+int cm_CharInfoWins[32];  /* 0x935d20 */
+G18LOG cm_LobbyChat[15];  /* 0x935da0 */
+int cm_LobbyChatNext;  /* 0x9363f4 */
+int cm_LobbyStateFlags;  /* 0x936400, [0] the lobby is open, [1] a lobby message came in */
+int cm_LobbyChanged;  /* 0x936404 */
+int cm_LobbyClosed;  /* 0x936408 */
+unsigned int cm_LobbyList[9];  /* 0x936420, the count then the eight player states (0x24 bytes) */
+CMNETGAME cm_NetGame;  /* 0x936460, the network game (hdr.players 0x936496, mode 0x9364dc) */
+char cm_LobbyRecords[752];  /* 0x9364e0 */
+int cm_LobbyPlayerId;  /* 0x9367d0, this player's lobby id */
+int cm_LobbyHelloValue;  /* 0x9367d4, the hello answer's second value */
 G17MSG cm_RecvPool[0x2000] = {0};  /* 0x9367e0, the free receive records */
-int cm_LastSyncCount = 0;  /* 0xa687e0, "cm_LastSyncCount" (net.h) */
-int cm_NextNetStep = 0;  /* 0xa687e4, d3_Time of the start */
-CMSPLITBUF cm_SplitMsg = {0};  /* 0xa68800, a long message to split (cm_SplitMsgLen bytes) */
-G17MSG * cm_RecvFree = 0;  /* 0xa68c00, the free list */
-unsigned int cm_GroupEndSeq = 0;  /* 0xa68c04 */
-int cm_FieldBlockLen = 0;  /* 0xa68c08, bytes used in cm_FieldBlock.buf */
-G17FIELDS cm_FieldBlock = {0};  /* 0xa68c20 */
-G17FIELDS ai_NeedBlock = {0};  /* 0xa68ca0 */
-unsigned int cm_LastRequCount = 0;  /* 0xa68d1c, "cm_LastRequCount" */
-int ai_NeedBlockLen = 0;  /* 0xa68d20, bytes used in ai_NeedBlock.buf */
-G17MSG * cm_RecvQueue = 0;  /* 0xa68d24, the received messages */
-char * cm_FieldObject = 0;  /* 0xa68d2c, the object of the field block (fields are offsets into it) */
-int cm_SplitMsgLen = 0;  /* 0xa68d30, length of cm_SplitMsg */
-struct AICHAR * ai_NeedBlockChar = 0;  /* 0xa68d34, the character ai_BeginNeedBlock builds the block for */
-unsigned char cm_LongMsg[1024] = {0};  /* 0xa68d40, a joined long message */
+int cm_LastSyncCount;  /* 0xa687e0, "cm_LastSyncCount" (net.h) */
+int cm_NextNetStep;  /* 0xa687e4, d3_Time of the start */
+CMSPLITBUF cm_SplitMsg;  /* 0xa68800, a long message to split (cm_SplitMsgLen bytes) */
+G17MSG * cm_RecvFree;  /* 0xa68c00, the free list */
+unsigned int cm_GroupEndSeq;  /* 0xa68c04 */
+int cm_FieldBlockLen;  /* 0xa68c08, bytes used in cm_FieldBlock.buf */
+G17FIELDS cm_FieldBlock;  /* 0xa68c20 */
+G17FIELDS ai_NeedBlock;  /* 0xa68ca0 */
+unsigned int cm_LastRequCount;  /* 0xa68d1c, "cm_LastRequCount" */
+int ai_NeedBlockLen;  /* 0xa68d20, bytes used in ai_NeedBlock.buf */
+G17MSG * cm_RecvQueue;  /* 0xa68d24, the received messages */
+char * cm_FieldObject;  /* 0xa68d2c, the object of the field block (fields are offsets into it) */
+int cm_SplitMsgLen;  /* 0xa68d30, length of cm_SplitMsg */
+struct AICHAR * ai_NeedBlockChar;  /* 0xa68d34, the character ai_BeginNeedBlock builds the block for */
+unsigned char cm_LongMsg[1024];  /* 0xa68d40, a joined long message */
 G17MSG cm_SendRing[0x8000] = {0};  /* 0xa69140, the send ring */
-char * cm_LoadBuf = 0;  /* 0xf31140, the load buffer ("cm_LoadBuf") */
-int cm_DayEndRequest = 0;  /* 0xf31144 */
-G17STAT cm_SendStates[0x8000] = {0};  /* 0xf31160 */
-G17MSG * cm_SendQueue = 0;  /* 0xf81160, the messages to send */
-unsigned int cm_LongMsgLen = 0;  /* 0xf81164, length of cm_LongMsg */
-G17MSG cm_RecvMsg = {0};  /* 0xf81180, the message being received */
-unsigned int cm_GroupFirstSeq = 0;  /* 0xf8121c */
-AIWATCH ai_Watch = {0}; /* 0xf895a0, what the watched building's masters did (0xb00 bytes) */
-char d2_CaptionCopy[0x80] = {0}; /* 0xf8aae0, the d2 caption / status text buffer (gfx.h's d2_CaptionCopy, 0x80 bytes up to d2_InputDragValue at 0xf8ab60) */
+char * cm_LoadBuf;  /* 0xf31140, the load buffer ("cm_LoadBuf") */
+int cm_DayEndRequest;  /* 0xf31144 */
+G17STAT cm_SendStates[0x8000];  /* 0xf31160 */
+G17MSG * cm_SendQueue;  /* 0xf81160, the messages to send */
+unsigned int cm_LongMsgLen;  /* 0xf81164, length of cm_LongMsg */
+G17MSG cm_RecvMsg;  /* 0xf81180, the message being received */
+unsigned int cm_GroupFirstSeq;  /* 0xf8121c */
+AIWATCH ai_Watch; /* 0xf895a0, what the watched building's masters did (0xb00 bytes) */
+char d2_CaptionCopy[0x80]; /* 0xf8aae0, the d2 caption / status text buffer (gfx.h's d2_CaptionCopy, 0x80 bytes up to d2_InputDragValue at 0xf8ab60) */
 /* ai_Unkf8f39c: view of d2_Wins (tools/data_views.py) */
-int cm_PickCellX = {0}; /* 0xfa5f00 */
-int cm_PickCellZ = {0}; /* 0xfa5f04 */
+int cm_PickCellX; /* 0xfa5f00 */
+int cm_PickCellZ; /* 0xfa5f04 */
 /* txt_AmountUnit: view of txt_Ptrs (build/mk_txt_views.py) */

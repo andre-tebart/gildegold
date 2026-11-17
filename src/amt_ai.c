@@ -42,7 +42,7 @@ extern char ai_DataPath[608];
 /* ai_Unk7e3f80: view of ai_PlayerSlots (tools/data_views.py) */
 /* ai_Unk7e3f84: view of ai_PlayerSlots (tools/data_views.py) */
 /* ai_Unk7e4274: view of ai_PlayerSlots (tools/data_views.py) */
-G6RING ai_NearRing[32] = {0};  /* 0xf83c20 */
+G6RING ai_NearRing[32];  /* 0xf83c20 */
 extern char ai_ActionIniPath[260];
 extern int ai_EvalDepth;
 extern AIACT ai_Actions[0x49];
