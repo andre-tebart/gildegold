@@ -1913,20 +1913,11 @@ void ai_TutorialCloseProgress(void)
 #define MINU(a, b) ((a) < (b) ? (a) : (b))
 /* 0x577d90, updates the tutorial progress slider of the state 0xa: without a run record or in another state the
    progress form is released (ai_TutorialCloseProgress); else the form is opened when it is not, and its slider set to the
-   part of the run's tailTime still left since stepAt, scaled to 0 .. 400
-   @deep read whole function against 0x577d90..0x577e43: calls, constants (400, 1, 0/0x190), the
-   double-evaluated TUT_SINCE/MINU macros with the volatile clock and the signed fild/fidiv all match.
-   Left: eax/ecx swapped (--regs eax=ecx,ecx=eax clears it) and the slot use at the float conversion: the
-   original stores a dead 0 to [esp+8] (577dfa mov dword ptr [esp+8],0), then reuses one slot for left and
-   total (577e06 mov [esp+8],edx; fild; 577e0e mov [esp+8],ecx; fidiv [esp+8]), ours keeps two slots (mov
-   [esp+8],ecx / mov [esp+4],ecx; fidiv [esp+0xc]). Tried: (float)(int)(__int64), __int64 local, unsigned
-   total, (float)total, multiply-first, inline expression: the dead store never appears (qword forms grow
-   the frame to 0xc) */
+   part of the run's tailTime still left since stepAt, scaled to 0 .. 400 */
 
 void ai_TutorialProgressSlider(void)
 {
     unsigned int t;
-    int total;
     int left;
 
     if (!ai_Tutorial->run || ai_Tutorial->state != 0xa) {
@@ -1936,9 +1927,8 @@ void ai_TutorialProgressSlider(void)
     if (ai_Tutorial->progressForm == -1)
         ai_TutorialOpenProgress();
     t = MINU(TUT_SINCE(ai_Tutorial->stepAt), ai_Tutorial->run->tailTime);
-    total = ai_Tutorial->run->tailTime;
-    left = total - t;
-    d2_SetObjValue(ai_Tutorial->progressSlider, 0, 400, (int)((float)left / total * 400.0f), 1);
+    left = ai_Tutorial->run->tailTime - t;
+    d2_SetObjValue(ai_Tutorial->progressSlider, 0, 400, (int)((float)left / ai_Tutorial->run->tailTime * 400.0f), 1);
 }
 /* 0x577e50, shows the form of the run's current step: -4 without a run record; nothing (0) for a run without
    steps. Past the last step the run's stepShown callback runs and an open step form is closed (stepForm,
