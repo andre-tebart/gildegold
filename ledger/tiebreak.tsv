@@ -1738,7 +1738,7 @@ exe	0x004a49a0	ai_EvalMoodWeights	am	edc920f019d59a3d	no	draft	control=draft p1=
 exe	0x004a4ae0	ai_EvalCurrentNeed	am	1346869e70d1058e	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004a4c10	ai_EvalGuiltWeights	am	120d5560bfafa329	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	b80f1eebdec5b648
 exe	0x004a4e30	ai_RepairCost	am	ecadb570b8a90d27	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x004a4e70	ai_PickBuildSite	am	9e4b376a49ba88b5	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	1670200eeadad7dc
+exe	0x004a4e70	ai_PickBuildSite	amt_ai	9e4b376a49ba88b5	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=190	53632e6d91436818
 exe	0x004a5140	ai_CanBuildType	am	17b175b2485d3fca	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004a5320	ai_ExecBuildBuilding	am	02468578ba703696	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x004a5540	ai_FindGoodToMake	am	5aac1d9a5ea06332	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	e2c01e303ffa02ff
@@ -1747,7 +1747,7 @@ exe	0x004a58d0	ai_PickPartnerChain	am	b9819201e0ecb43d	no	shape	sweep control=sh
 exe	0x004a5a30	ai_PickPartnerInRange	am	e1f10624bd03f870	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004a5b50	ai_FindPartnersRandomWalk	am	c6cdfd7583387988	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004a5d30	ai_PickPartnerRandomWalk	am	4dc9e0434b2ee3db	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
-exe	0x004a5ef0	ai_FindCandidates	am	3a080945157105cb	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	1670200eeadad7dc
+exe	0x004a5ef0	ai_FindCandidates	amt_ai	3a080945157105cb	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=190	53632e6d91436818
 exe	0x004a61d0	ai_PickPartnerChainLevel	am	b9e9d91bcbdcd20c	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004a63f0	ai_PickActionBuilding	am	1c90357e4c67dbcd	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	12ddc633e4fde293
 exe	0x004a6570	ai_PickActionBuildings	am	dd06184b96ae6f79	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
