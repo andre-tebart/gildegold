@@ -14721,19 +14721,23 @@ int cm_EndWedding(int *s)
    names "a b 1") / -intro and the speeches -reden1 .. -reden4 with their texts 0x1aa9 .. 0x1aad and voices, the pauses
    between; st holds the scene, the view, the bank and the voice for cm_EndWedding. A click ends it at once through
    cm_EndWedding (its result returned); 0 when one of the couple is not found
-   @deep size queue s11: 216 -> 12 ins (raw 1831 -> 1827 vs 1817). Kept: the name records as GMHEAD
-   pointers with ->name in the sprintf args (the original adds the +4 after both calls, the head of a in
-   ebx), the sex test as if (a->sex == 0) .. else { swap; .. } (the original falls into the a-first
-   sprintf), the swap as t = b; b = a; a = t (mov ecx,edi; mov edi,esi; mov esi,ecx). Left (tail 12, 10
-   bytes): the two guards (a / b not found) jump (je) straight to the final exit (eax is the 0 the find
-   returned) in the original; ours inverts them into jne + an own epilogue copy each. Tried, no lever (=
-   control): return (int)a / (int)b, return r = 0, the guard as if/else, WED_STEP / WED_WAIT as r = ..; if
-   (r != 0) return r, r = cm_EndWedding(st); return r. Worse: one || guard with the assignments in the
-   condition (draft 5: one trailing xor eax,eax return block), the whole body nested under if (a) { b = ..;
-   if (b) {..} } return 0 (draft 5, same block), b = 0; if (a) b = find; if (b == 0) return 0 (draft 7: the
-   first guard right, the second still copied), r = 0 + one return r (draft 145, r in a slot). Next: c2tail
-   --tries on the guard blocks; why the two return-0 blocks are laid behind their tests (walk) and copied,
-   while the steps' return r blocks thread to the exit. */
+   @deep size queue s12 (no change): c2tail --il pre shows the mechanism of the guard copies: the two 'if
+   (x == 0) return 0' guards lie before the ebx save (opba ebx after them, the name heads in ebx up to the
+   sprintf) and return through their own exit label (ret; jmp L9fbc: the epilogue without ebx) while every
+   WED_STEP / WED_WAIT return and the final return go to the main exit L6fa4; the guard label's short
+   epilogue is then copied into both guards. The original's guards je to the main exit, so there the two
+   exits were one label (or merged before the copy). c2tail's merger log shows only the sprintf call merge
+   (no pair / move of the epilogues). Next: what makes VC6 give the pre-save returns the main exit label (a
+   guard after the first ebx use? the save region's start?). prior: size queue s11: 216 -> 12 ins (raw 1831
+   -> 1827 vs 1817). Kept: the name records as GMHEAD pointers with ->name in the sprintf args (the
+   original adds the +4 after both calls, the head of a in ebx), the sex test as if (a->sex == 0) .. else {
+   swap; .. } (the original falls into the a-first sprintf), the swap as t = b; b = a; a = t (mov ecx,edi;
+   mov edi,esi; mov esi,ecx). Left (tail 12, 10 bytes): the two guards (a / b not found) jump (je) straight
+   to the final exit (eax is the 0 the find returned) in the original; ours inverts them into jne + an own
+   epilogue copy each. Tried, no lever (= control): return (int)a / (int)b, return r = 0, the guard as
+   if/else, WED_STEP / WED_WAIT as r = ..; if (r != 0) return r, r = cm_EndWedding(st); return r. Worse:
+   one || guard with the assignments in the condition (draft 5: one trailing xor eax,eax return block), the
+   whole body nested under if (a) { b = .... */
 
 int cm_RunWedding(G28REC *m)
 {
