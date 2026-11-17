@@ -6,7 +6,7 @@
    tag names the module; the file name is ours. The first function is 0x43e6b0 (the resolver d3e_Resolve
    starts out as) or an earlier one down to 0x43e090 (no strings in between).
    Open: the first function (bprobe: no function changes at 0x43e090 .. 0x43e6c0).
-   Open: head: the prototypes and data externs are still d3_engine.h's (d3e_*); the includes are d3_engine.c's.
+   Open: head: the includes are d3_engine.c's; d3e_LoadEvents' prototype is still in d3_int_io.h.
    split from d3_engine (rea 8cef7d5b, src/game/d3_engine.c); boundaries in decl/text.dcl */
 #include <stdio.h>
 #include <stdlib.h>

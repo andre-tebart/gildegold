@@ -1014,7 +1014,7 @@ exe	0x00454890	d3_MirCreateOutline	d3_mir	f71a6a68ae0450e6	no	shape	sweep contro
 exe	0x00454be0	d3_MirCreatePlanes	d3_mir	9927e34c70dfd5eb	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00454ec0	d3_MirTransform	d3_mir	3198ef7b7c8c1553	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00454f70	d3_MirBoxInPlanes	d3_mir	e0878350ea5c8bad	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x004550e0	d3_MirDrawObject	d3_mir	449a81205dd9b04f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
+exe	0x004550e0	d3_MirDrawObject	d3_mir	449a81205dd9b04f	yes	byte	sweep control=shape best=byte by 15 unused typedefs at the unit's start; codegens=2 compiled=36 (stopped at the goal)	034f5dce74579e84
 exe	0x004554b0	d3_MirBeginFrame	d3_mir	e3f37a27644c6d83	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00455630	par_Init	d3_par	0d01db92964af2c6	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004556b0	par_DeleteAll	d3_par	ac85705f84179f9a	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	

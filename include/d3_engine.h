@@ -695,16 +695,7 @@ void d3_DrawSorted(void);                                                       
 void ts_UpdateScroll(unsigned long now);                                                   /* 0x460cb0 */
 int ai_AlwaysTrue(void);                                                                /* 0x4a8c10 */
 
-/* event tables ("d3e:") */
-/* D3E_NEVENTS, D3EVHANDLER, D3EVENT: d3_types.h */
-typedef struct D3EVNAME {           /* 0x24 bytes */
-    char name[0x20];
-    int id;
-} D3EVNAME;
-typedef D3EVHANDLER (*D3EVRESOLVE)(void *obj, int id, char *name);
-extern D3EVNAME d3e_Events[8];              /* 0x5fb800 */
-extern D3EVRESOLVE d3e_Resolve;             /* 0x5fb920 */
-void d3e_SaveEvents(void *f, D3EVENT *t);                                                       /* 0x43e900 */
+#include "d3_event.h"                       /* the event tables ("d3e:"), d3_event.c */
 void bio_rd_s(struct VFSFILE *f, char *s);      /* 0x4011a0 */
 void bio_rd_i(struct VFSFILE *f, int *i);         /* 0x4011d0 */
 void bio_wr_s(struct VFSFILE *f, char *s);       /* 0x401210 */
@@ -716,7 +707,6 @@ extern int d3if_SceneState1;  /* 0x5fb5c4 */
 char d3_GetBounds(D3OBJECT *obj, D3OBJECT *camera, D3VECTOR *center, float *radius);  /* 0x43d860 */
 D3OBJECT *d3_NextGroup(D3OBJECT *obj);  /* 0x438c30 */
 char d3_ForEachObject2(D3SCENE *scene, D3OBJECT *obj, unsigned int mask, void (*cb)(D3OBJECT *obj));  /* 0x438e60 */
-void d3e_LoadSceneEvents(void *f);  /* 0x43ea10 */
 void d3_ClipMesh(D3CLIP mask, D3PVERT *v, int nverts, D3PTRI *t, int ntris);  /* 0x439a60 */
 void d3_AppendSibling(D3OBJECT *first, D3OBJECT *obj);  /* 0x43cb20 */
 void d3_SetAlpha(D3OBJECT *obj, D3TEXFLAGS *f);  /* 0x43d690, the alpha flags f on obj and its group */
