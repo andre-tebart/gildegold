@@ -1772,8 +1772,14 @@ unsigned char *he_CreateEvent(unsigned char *m)
 /* 0x53e1f0, frees the event record `r`: its message box text (+0x7c), its entry in he_QuickList when it is shown in the
    event bar (flags 8: releases its slot first, shrinks he_QuickTop), counts it off (he_EventCount), clears it and,
    when it was the last used record, shrinks he_EventTop
-   @deep read whole against the original and rewritten on AIJOB / HEEVSLOT: the text free, the quick list
-   search and its q != ev return, the slot release through q, he_QuickTop's shrink and clamp,
+   @deep s6 (size queue, 244 vs 260): the 16 bytes are exactly the original's second &he_Jobs[he_EventTop]
+   (the loop pointer recomputed after the >= 0 guard). Tried, all = control (VC6 canonicalises them to one
+   CSE): while (top >= 0 && kind == 0) top--, an early return on ev != .., an if-guarded do-while, r ==
+   (int *)he_Events + top * 0x53, (char *)ev == (char *)he_Events + top * 0x14c, the loop test
+   he_Events[top * 0x14c] / *(char *)&he_Jobs[top], &ev->kind == &he_Jobs[top].kind; ev - he_Jobs == top:
+   71 ins. Open: what kills the CSE in the original (a different index variable at CSE time, a store
+   between). prior: read whole against the original and rewritten on AIJOB / HEEVSLOT: the text free, the
+   quick list search and its q != ev return, the slot release through q, he_QuickTop's shrink and clamp,
    he_EventCount--, the 0x14c-byte clear, the he_EventTop shrink and clamp all match statement for
    statement. Left: the original computes &he_Jobs[he_EventTop] twice (once for the ev compare at +0xb9,
    again after the he_EventTop >= 0 test at +0xd1: lea edx,[eax+eax*4]; lea ecx,[eax+edx*8]; lea
