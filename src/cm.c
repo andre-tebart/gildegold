@@ -4157,14 +4157,16 @@ int cm_ExNewParty(G17MSG *m, G17STAT *s)
     if (o != 0) {
         if (ai_GameFlags & 4)
             o->flags |= 0x80;
+    } else
+        ret = 1;
+    if (o != 0) {
         o->seed = d->seed;
         if (s != 0) {
             s->state = 1;
             s->kind = 9;
             s->value = (int)o;
         }
-    } else
-        ret = 1;
+    }
     if (o->kind == 5) {
         if (ai_CharInts[ai_PlayerId][0] != o->members[0] && !(ai_GameFlags & 4))
             o->flags &= 0x7f;

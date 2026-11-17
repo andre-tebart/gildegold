@@ -2310,7 +2310,7 @@ exe	0x004c9090	cm_ExRetireCrime	cm	2203c7e90429f9c7	no	byte	control=byte p1=byte
 exe	0x004c90d0	cm_ExProofExecuted	cm	23b564df51ef05c2	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004c9110	cm_ExDropEvidence	cm	8a0ccff6daaf2a7a	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004c9170	cm_ExSendCutInfo	cm	b50c7f7262fdee9f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x004c9280	cm_ExNewParty	cm	c3703f2e8440cae4	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	becf1bbdf99775c9
+exe	0x004c9280	cm_ExNewParty	cm	c3703f2e8440cae4	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	c995940d94e4b9a0
 exe	0x004c9340	cm_ExAllocCutscene	cm	a486595745e40b5d	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004c93b0	cm_ExAddPartyMember	cm	4eb432dbe955e68f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004c9400	cm_ExLeaveParty	cm	4d7290b52ce43d4d	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	

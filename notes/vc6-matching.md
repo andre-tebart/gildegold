@@ -465,6 +465,10 @@ copied back into short predecessors only after all of this.
 - **The else arm inline whatever the spelling** (`if (A != 2 || (p = ..) == 0) {X} else {Y}`, &&, nested, early
   returns: one code): p assigned on both paths first, `if (A == 2) p = ..; else p = 0; if (p == 0) {X} ..`
   (init_TownBuildingHook byte).
+- **A one-store else (`mov ebx,1; jmp join`) behind the final `ret`, the then-arm inline** (ours: the else inline
+  behind the then-arm's `jmp`; swapping the arms, a second `if (o == 0)`, `ret = o == 0`: no lever): the then-arm
+  was two `if (o != 0)` blocks, the else on the FIRST: `if (o) { flag fix } else ret = 1; if (o) { rest }` (the
+  second test decided on both paths, so the else jumps straight to the join; cm_ExNewParty byte).
 - **The else block out of line whatever the spelling** (`if (!A || !B || !(d < c)) far else near`, reversed
   operands, `>=`: one code): a flag, `lowPoly = 1; if (A && B) { ..; if (d < c) lowPoly = 0; } if (lowPoly) far
   else near` (ch_UpdateLowPoly byte).
