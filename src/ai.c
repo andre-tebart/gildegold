@@ -6127,4 +6127,3 @@ int ai_WeaponList[10] = {0};  /* 0xf8a0e0, goods ids of the first weapon list (0
 int ai_NetPlayer = 0;  /* 0x1460af4, the player index this client runs (the host sets it, cm.c message type 7) */
 float ai_DifficultyValue = 1.0f;  /* 0x5fef04 */
 float ai_DifficultyScale = 0.5f;  /* 0x5fef08 */
-char ai_AmbushSpots[8][32] = { "sp_AUFLAUERLEGEN_NORDEN", "sp_AUFLAUERLEGEN_OSTEN", "sp_AUFLAUERLEGEN_SUEDEN", "sp_AUFLAUERLEGEN_WESTEN", "sp_AUFLAUERLEGEN_STADT_1", "sp_AUFLAUERLEGEN_STADT_2", "sp_AUFLAUERLEGEN_STADT_3", "sp_AUFLAUERLEGEN_STADT_4" };  /* 0x625720, "sp_AUFLAUERLEGEN_NORDEN" ... */

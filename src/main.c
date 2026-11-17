@@ -5238,14 +5238,6 @@ GAPDATA full_data_625154[4] = { 0x25, 0x73, 0x5d, 0x00 };  /* 0x625154 */
 char main_BeamedHome[12] = "Beamed home";  /* 0x6253b0, the activity name main_EndRound gives a character it beams home (CHACT.name70, the original copies the 12 bytes inline) */
 char main_RoundTotalFmt[20] = "$L%s %i%%:$R-%T$A";  /* 0x6253bc, the line of the player's round totals main_EndRound prints per income kind (io_PrintText; 18 bytes and 2 of padding) */
 char main_MasterExamLog[56] = "MeisterPr\xfc" "fung started: player_id:%i beruf:%i grad:%i";  /* 0x6253d0, the debug line main_EndRound sends to the log when a master exam starts (sprintf; 54 bytes and 2 of padding) */
-unsigned char he_FindKind = 0xff;  /* 0x625708, he.h */
-GAPDATA full_data_625709[3] = { 0x00, 0x00, 0x00 };  /* 0x625709 */
-int he_FindId = -1;  /* 0x62570c, he.h */
-unsigned short he_FindChr = 0xffff;  /* 0x625710, he.h */
-GAPDATA full_data_625712[2] = { 0x00, 0x00 };  /* 0x625712 */
-int he_FindFrom = -1;  /* 0x625714, he.h */
-int he_LastSlot = -1;  /* 0x625718, he.h */
-int he_BarShown = -1;  /* 0x62571c, he.h */
 char he_VoiceHealing[20] = "_NACHRICHTEN_HS_80";  /* 0x627b0c, the voice of the healing event 0x6c's news 0x1a18 (he_RunHealing) */
 char he_InitBetrieb[12] = "InitBetrieb";  /* 0x627b20, the scene name he.c's cm_SendChrGotoBuilding plays for the new worker */
 /* 0x627e98, the construction models of the building types (he.c's he_CreateConstruction): the types of each record, then
