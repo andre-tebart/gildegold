@@ -269,10 +269,10 @@ exe	0x00410160	sndc_GetSampleHandle	sndc	byte	readable
 exe	0x00410180	sndc_SpeechQueued	sndc	byte	readable		
 exe	0x004101d0	sndc_WaitForSample	sndc	byte	readable		
 exe	0x00410220	sndc_Register	sndc	byte	readable		
-exe	0x004103a0	reg_OpenKey	di_input	byte	readable		
-exe	0x00410430	reg_CloseKey	di_input	byte	readable		
-exe	0x00410440	reg_GetString	di_input	byte	readable		
-exe	0x004104b0	reg_SetString	di_input	byte	readable		
+exe	0x004103a0	reg_OpenKey	reg	byte	readable		
+exe	0x00410430	reg_CloseKey	reg	byte	readable		
+exe	0x00410440	reg_GetString	reg	byte	readable		
+exe	0x004104b0	reg_SetString	reg	byte	readable		
 exe	0x004104e0	kb_BuildMap	di_input	byte	readable		
 exe	0x00410560	kb_FindKey	di_input	byte	readable		
 exe	0x00410610	kb_SetBase	di_input	byte	readable		
@@ -4003,8 +4003,8 @@ exe	0x00578370	ai_TutorialStop	sv_t	byte	readable
 exe	0x00578440	ai_TutorialFreeRuns	sv_t	byte	readable		
 exe	0x005784a0	ai_TutorialInitMainIntro	sv_t	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	sv_t	byte	readable		
-exe	0x00578e40	ai_TutorialInitChapter2	sv_t	shape	readable		
-exe	0x00579570	ai_TutorialInitChapter3	sv_t	draft	readable		
+exe	0x00578e40	ai_TutorialInitChapter2	sv_t	byte	readable		
+exe	0x00579570	ai_TutorialInitChapter3	sv_t	shape	readable		
 exe	0x0057aa80	ai_TutorialInitChapter4	sv_t	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	sv_t	byte	readable		
 exe	0x0057b750	ai_TutorialInitMainOutro	sv_t	byte	readable		
