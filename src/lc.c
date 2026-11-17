@@ -12114,10 +12114,10 @@ void ai_ProductionWriteContact(int building, int room)
 
 void ai_ChurchListener(int building, int room)
 {
-    int predigt = 0;
-    int becken = 0;
     int beichtstuhl = 0;
     int spendenkasten = 0;
+    int predigt = 0;
+    int becken = 0;
     int confessionRoom;
 
     sv_ReleaseNamePlates();
@@ -12128,17 +12128,14 @@ void ai_ChurchListener(int building, int room)
         }
         if (((AIBLD *)building)->owner != ai_PlayerId && ((AIBLD *)building)->owner != 0xffff) {
             confessionRoom = gm_Query(((AIBLD *)building)->objList, 2, 6, 0, 0xf2);
-            if (confessionRoom == 0)
-                beichtstuhl = 0;
-            else
+            if (confessionRoom != 0)
                 beichtstuhl = sv_RegisterNamePlate("ob_KIRCHE_BEICHTSTUHLRAUM", txt_Ptrs[0x197e], 0x16);
+            else
+                beichtstuhl = 0;
             spendenkasten = sv_RegisterNamePlate("ob_SPENDENKAESTCHEN", txt_Ptrs[0x1985], 0x16);
             becken = sv_RegisterNamePlate("ob_WEIHWASSERBECKEN", txt_Ptrs[0x1975], 0x16);
         }
-        if (ai_ClickedObject == 0) {
-            if (kb_Last == '0' && gm_AllowAll != 0)
-                ai_ConfessionWindow(building);
-        } else {
+        if (ai_ClickedObject != 0) {
             if ((ai_BuildingPerms & 0x200) != 0) {
                 if (ai_ClickedObject == predigt)
                     ai_SermonWindow(building);
@@ -12153,6 +12150,9 @@ void ai_ChurchListener(int building, int room)
                 if (ai_ClickedObject == becken)
                     ai_BaptismWindow(building, room);
             }
+        } else {
+            if (kb_Last == '0' && gm_AllowAll != 0)
+                ai_ConfessionWindow(building);
         }
     }
 }
