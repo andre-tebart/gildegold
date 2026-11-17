@@ -58,6 +58,7 @@ int ch_Unk5f1228 = 1;  /* 0x5f1228, an int of ch's .data block (1) no surviving 
 char ch_ShadowEnabled = 1;  /* 0x5f122c */
 char ch_StepSample[0x60] = "normal_s";  /* 0x5f1230, the step sound sample name (a buffer: chc.c SetCharacterStepSample and lc.c strcpy into it) */
 float cm_SpeedFactor = 1.0f;  /* 0x5f1290, 1.0 */
+int ch_CurrentGroup = -1;  /* 0x5f1294, the group of the building the player is in; -1 = none */
 int ch_CurrentScriptGroup = -1;  /* 0x5f1298, the script group that goes with it; -1 = none */
 int ch_MorphTimeout = -1;  /* 0x5f129c (-1), the D3ANIMSLOT.timeout of morphs in scene != 0 */
 int ch_MotionTimeout = 2;  /* 0x5f12a0 (2), the same for motions */

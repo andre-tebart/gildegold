@@ -915,7 +915,6 @@ int gm_NetMsgCount = 0;  /* 0x6f1b98, the number of queued messages ( */
 ORDCHAR *gm_RichestChar = 0;  /* 0x6f1bac, the richest character of gm_FindRichest's last search, 0 = none */
 int gm_OwnNameHeadLast = 0;  /* 0x6f1bb0 */
 void gm_ResolveHeadIcons(GMHEAD *rec);
-int ch_CurrentGroup = -1;  /* 0x5f1294 */
 char d3if_SelectTextureSet(struct D3OBJECT *obj, struct D3SURF *surf, unsigned char set, char reload);                     /* 0x446f30 */
 
 /* 0x4fb330, the record of the table kind (0: 0x612bd8, 1: 0x614518) with the id: prepared by 0x4fb620 (the head numbers); the first free record when the id is not found (0x5f records of 0x44 bytes); 0 for another kind */

@@ -113,7 +113,6 @@ extern int gm_AllowAll;  /* 0x6f2448 */
 float gm_AddHealth(unsigned short id, int d);  /* 0x4fca40 */
 int gm_AddNegative(int id, int proto, int n);  /* 0x500ae0 */
 float gm_CharacterHealth(short *c);  /* 0x4fc820 */
-extern int ch_CurrentGroup;  /* 0x5f1294 */
 float gm_GoodsValue(int p, unsigned id);  /* 0x4ffbf0 */
 void gm_Shuffled(unsigned char n, int *out);  /* 0x505ca0 */
 int gm_BuildingKindCost(int c, int kind);  /* 0x509dc0 */
