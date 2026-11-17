@@ -5,6 +5,8 @@ Example: uv run --with capstone python tools/exe/vsize.py src/ch.c ch_ActTurn bu
 import sys, os, re, struct
 sys.path.insert(0, r'C:\Users\andre\Documents\gildegold\tools\c2dag')
 import vdiff
+if len(sys.argv) < 4 or not sys.argv[1].endswith(".c"):
+    sys.exit(__doc__)
 vdiff.SRC, vdiff.FN = os.path.abspath(sys.argv[1]), sys.argv[2]
 vf = sys.argv[3]
 labels = sys.argv[4:]
