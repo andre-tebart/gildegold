@@ -1004,19 +1004,19 @@ int d3t_MoveCameraPath(int time, int n, ...)
     return 1;
 }
 /* 0x413960, moves obj along the n objects in path (null entries are skipped) within time
-   @deep size queue: ours 419 vs 416 (+3 = the extra k reload mov edx,[ebp+0xc] in the loop). c2trace:
-   pass-2 pieces i#2 (lines for/path[i], prio 43) is served before k#2 (k = 1 / tail, prio 29) and takes
-   ecx; the original serves k first (k ecx from k++ through the tail, i edx). k#3 (the k++ block) memory,
-   savings -4. --prio: i gets +16 in the path[i] block and the latch, k only the init block and the tail
-   (P=4). Tried this session: climb --rounds 2 (best: time store before the call, 115 bytes, the original
-   stores after), keys[k++].pos.z, k = 0 + keys[k] stores + k++, keys[k++].time, register k / register i,
-   unsigned i (53), o = path[i]; if (o != 0), k as the reused time parameter (= control / 136 bytes). Open:
-   a reference of k in the path[i] block or the latch, or one of i fewer, that keeps the meaning. prior:
-   i/k register swap (ours i=ecx k=edx, original i=edx k=ecx; the original reloads k, step, i right after
-   d3_PointToWorld and keeps k in ecx to the end, ours reloads i after storing k and reloads k into edx
-   after the loop). headers sample: insensitive (32, one codegen). dcp try: decl order k,i / for
-   (k=1,i=0;..) / k=1 before keys[0].time / o=path[i] separate / path[i] twice / continue form / k=k+1 /
-keys[k-1].time at the end or mid: = control; for (i=0,k=1;..) and i=0;k=1; before the loop (also as if(n>0) do..while): 49 ins/132 B, regs 50 (only the prologue i/k pair flips); time store before the call: 49/115 (+ i,k order: 45/105, but the original stores it after the call); k=1 at the top or after step: 49/189; key pointer local: 59/153; k++ before the subtractions with k-1 indexes: 109; while form: 74. Left: asmdiff mov edx,1/xor ecx,ecx vs xor edx,edx/mov ecx,1, the k/step/i reloads after ... */
+   @deep size queue: ours 419 vs 416 (+3 = the extra k reload). s2: the register CHOICE, not only the
+   order: by the choice rule (vc6-matching 'Choice rule') i#2 (prio 43) picks the lowest-score register of
+   avail{eax ecx edx ebx}, ties eax, ecx, edx: the original's i took edx, so either k#2 is served first
+   (needs prio > 43) or a waiting candidate's preference makes ecx cost more for i. Tried s2 (all = control
+   or 418-419 bytes): if (n > 0) do..while (++i < n), while loop, continue form, for (k = 1, i = 0;..), k =
+   1 before keys[0].time; for (i = 0, k = 1;..) gives 418 bytes (only the prologue pair flips: xor edx /
+   mov ecx,1 as the original, the loop still reloads k); the time store at each of the 8 body positions:
+   419; climb all ops 3 rounds: 49 ins (115 bytes dist, time store before the call, which the original does
+   not do). Next: c2trace the pass-2 choice (which waiting candidate prefers ecx/edx), a k reference in the
+   init/tail blocks; the byte twin d3t_MoveCameraPath has the same k / keys[k - 1].time loop. prior: size
+   queue: ours 419 vs 416 (+3 = the extra k reload mov edx,[ebp+0xc] in the loop). c2trace: pass-2 pieces
+   i#2 (lines for/path[i], prio 43) is served before k#2 (k = 1 / tail, prio 29) and takes ecx; the
+original serves k first (k ecx from k++ through the tail, i edx). k#3 (the k++ block) memory, savings -4. --prio: i gets +16 in the path[i] block and the latch, k only the init block and the tail (P=4). Tried this session: climb --rounds 2 (best: time store before the call, 115 bytes, the original stores after), keys[k++].pos.z, k = 0 + keys[k] stores + k++, keys[k++].time, register k / register i, unsigned i (53), o = path[i]; if (o != 0), k as the reused time parameter (= control / 136 bytes). Open: a reference of k in the path[i] block or the latch, or one of i fewer, that keeps the meaning. prior: i/k register swap (ours i=ecx k=edx, original i=edx k=ecx; the original reloads k, ste... */
 
 D3ANIM *d3t_MoveObjectPath(D3OBJECT *obj, int time, int n, D3OBJECT **path)
 {
