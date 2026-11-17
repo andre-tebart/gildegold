@@ -2815,6 +2815,11 @@ the stack at every instruction.
   the sum went into a float local converted at two uses, `y = .. * f + c; r->top = min(r->top, (int)y); r->bottom
   = max(r->bottom, (int)y);` (one `_ftol`, the result stored over f's slot); an int local `iy = (int)(..)` and every
   single-use float local are folded to the control (d3if_ScreenBox byte).
+- **`fisubr [int]` / `fsubrp` for the LAST use of a float local (`half`), the result then stored to memory** (ours:
+  `fild; fsub st,st(1) .. fstp [y]; fstp st(0)`): that one subtraction was done in double, `y = (m->cellZ -
+  (double)half) * scale;` (half itself float: a `double half` gives the control). Two-step / copies / struct fields
+  / chained assignments / names all fold to the control; `double y` gives the pop but keeps y on the FPU
+  (ai_MapCellToScreen byte; ai_UpdateTownMap the same hunk). fisubr occurs once in the whole image.
 - **Unsigned ints into a macro using them three times**: pass straight; a float local spills (~1000 asm lines,
   d3fl_Draw).
 - **`if ((g = f()) < best)`** gives `fld st(0); fcomp`, split gives `fcom`. `x = (float)(p->m - 2.0)` stores before

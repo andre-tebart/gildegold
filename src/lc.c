@@ -13887,7 +13887,7 @@ void ai_MapCellToScreen(LCMAPMARK *m, int originX, int originY)
 
     half = ((D3SM *)d3_Scenes[0].hmap)->size * 0.5;
     x = (m->cellX - half) * ai_MapCellScale;
-    y = (m->cellZ - half) * ai_MapCellScale;
+    y = (m->cellZ - (double)half) * ai_MapCellScale;    /* @original y alone is taken in double (half popped by fisubr) */
     edgeX = fabs(x) / (ai_MapSize * 0.5f);
     edgeY = fabs(y) / (ai_MapHeight * 0.5f);
     if (x < 0.0f)
@@ -14384,8 +14384,7 @@ int ai_ScrollTownMap(D2WIN *win)
    edx, [ecx+0x124] / test edx, edx) where our VC6 threads it away; spelling the owner re-test as the
    expression ch->obj->owner (against the variable of the outer test) kept that one, but no spelling of the
    transport test (CH_TRANSPORT cast, !x, swapped branches, ch_List[i] base, separate ifs, goto create,
-   flag) keeps it without other differences; (2) fpu 7 at +0x7eb6: the original pops half with fsubrp in
-   the y line where ours keeps it to an fstp st(0); (3) frame 0x2c vs 0x30: the original keeps one more
+   flag) keeps it without other differences; (2) frame 0x2c vs 0x30: the original keeps one more
    slot (the ch_List entry pointer at +0x1c and ch in the argument slot). */
 
 void ai_UpdateTownMap(LCMAPWIN *m)
@@ -14439,7 +14438,7 @@ void ai_UpdateTownMap(LCMAPWIN *m)
             d3_PointToWorld(ch->obj, &ch->obj->pos, &pos);
             half = ((struct D3SM *)d3_Scenes[0].hmap)->size * 0.5;
             x = ((pos.x - hm->origin.x) / hm->cell.x - half) * ai_MapCellScale;
-            y = ((pos.z - hm->origin.z) / hm->cell.z - half) * ai_MapCellScale;
+            y = ((pos.z - hm->origin.z) / hm->cell.z - (double)half) * ai_MapCellScale;   /* @original y alone in double (half popped by fsubrp) */
             edgeX = fabs(x) / (ai_MapSize * 0.5f);
             edgeY = fabs(y) / (ai_MapHeight * 0.5f);
             if (x < 0.0f)
