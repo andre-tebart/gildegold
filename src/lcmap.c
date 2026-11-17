@@ -63,7 +63,7 @@ extern int di_MaxX;
 extern int di_MaxY;
 extern int di_MinX;
 extern int di_MinY;
-extern int d3t_BoxCornerIdx;  /* 0x5f3418 (main.c gap block) */
+extern int d3t_BoxCornerIdx;  /* 0x5f3418 (d3_tools.c) */
 extern int init_TerrainDivide;  /* 0x6f1c2c (f3init.h) */
 extern int gm_TreeNodeCount;
 

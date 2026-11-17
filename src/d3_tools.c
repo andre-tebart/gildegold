@@ -57,7 +57,14 @@ static D3OBJECT *d3t_FoundObject = 0;    /* 0x6310ec */
 D3OBJECT *d3t_SunRays = 0;               /* 0x631120, reached from main.c by its address */
 static int d3t_SunFade = 0;              /* 0x631124, 1 fading in, -1 fading out */
 static int d3t_SunFadeOutArg = 0;         /* 0x631128, the b of the last d3t_FadeOutSunRays, 0 after a fade-in; never read */
-int d3t_SunFadeStart = -1;  /* 0x5f345c, initialized to -1; TODO define here once .data is matched */
+int d3t_BoxCornerIdx = -1;  /* 0x5f3418, the first datum of d3_tools' .data block (after di_input's strings); lc.c's ai_GameFrame sets it to -1 at the game start, no reader: a reasoned guess, the index into the corner vectors that follow */
+/* four corners (+-200, 200, +-200) of a box top, no reader in the surviving code (names guessed from the values);
+   four objects, not one D3VECTOR4[4]: VC6 8-aligns a 64-byte object, the original's first is at 0x5f341c */
+D3VECTOR4 d3t_BoxCorner0 = { -200.0f, 200.0f, -200.0f, 0.0f };  /* 0x5f341c */
+D3VECTOR4 d3t_BoxCorner1 = { -200.0f, 200.0f, 200.0f, 0.0f };  /* 0x5f342c */
+D3VECTOR4 d3t_BoxCorner2 = { 200.0f, 200.0f, 200.0f, 0.0f };  /* 0x5f343c */
+D3VECTOR4 d3t_BoxCorner3 = { 200.0f, 200.0f, -200.0f, 0.0f };  /* 0x5f344c */
+int d3t_SunFadeStart = -1;  /* 0x5f345c, the d3t_FadeOutSunRays / d3t_FadeInSunRays start time (-1 at start) */
 
 /* 0x411680, starts an animation that moves the object to pos and turns it to dir (angles). */
 int d3t_PlaceObject(D3OBJECT *camera, float px, float py, float pz,

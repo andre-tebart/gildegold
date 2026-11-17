@@ -80,8 +80,6 @@
    Open: data: 0x6f2450 ai_DebugHotkeys (a view of main.c's full_data_6f2450), owner cm or main (the bss
    there interleaves f3init, cm, main and am: cm's 0x6f244c before, main's main_DevMenu 0x6f245c after; only
    this unit reads it).
-   Open: data: 0x5f3418 d3t_BoxCornerIdx, owner di_input or d3_tools (only ai_GameFrame writes it, -1; it lies
-   between di_input's literals and d3_tools' d3t_SunFadeStart, before four corner vectors), named in main.c's gap block.
    Open: data: 0x6f2314 sv_LastRoom, owner sv or f3gm (between sv's sv_PanelShown and f3gm's ai_PermsDirty; only
    ai_EnterBuilding writes it), named in main.c's gap block.
    The Domizil goods' clock at 0x6f2f64 is LCSETTINGS lc_Settings; the transport window's cart rows are LCCARTROW,
@@ -174,7 +172,7 @@ extern int di_MaxX;
 extern int di_MaxY;
 extern int di_MinX;
 extern int di_MinY;
-extern int d3t_BoxCornerIdx;  /* 0x5f3418 (main.c gap block) */
+extern int d3t_BoxCornerIdx;  /* 0x5f3418 (d3_tools.c) */
 extern int init_TerrainDivide;  /* 0x6f1c2c (f3init.h) */
 extern int gm_TreeNodeCount;
 
