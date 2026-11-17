@@ -416,6 +416,11 @@ Where the pushes and pops sit, how many epilogue copies there are, shared agains
 - **One result variable for two pick paths**: a single failure block both paths reach (path 2 by `je`), 0 in a
   callee-saved register from the entry and the result in another: `ret = 0;` at the top, `if (p != 0) { ret = 1;
   .. }` after both paths, `return ret;` (ai_UseGoodHalveWorkerValue: padded size right, 56 -> 50).
+- **An empty pick's `return K` joins another exit's tail** (`je` into the refusal block after its `add esp`, one
+  copy of `mov eax,K` + epilogue): the picked work under `if (ch != 0) { .. }` and `return K;` after it
+  (ai_DismissOfficeAsk 13 -> 2).
+- **The closing call of an if / else falls into `he_FreeEvent`**: the arm frees in place (`he_FreeEvent(ev);
+  return;`), not `break` to the shared free after the switch (he_RunSlotOrder 24 -> 0).
 
 ## Branch layout, conditions, switches
 Which arm is inline, jumps into another arm, threaded and redundant tests, `&&` / `||` forms, compare operand order and jcc, `setne` against a branch, ternaries, switch dispatch and case order.
@@ -785,6 +790,14 @@ copied back into short predecessors only after all of this.
 - **A shared mismatch block out of line after the returns** (every criterion's `jne` to one `xor cl,cl; jmp`):
   `if (field == want) m = 1; else goto no;` per criterion; `if (field != want) goto no; m = 1;` puts the block
   inline after the last test (gm_BuildNext 8 -> 2, size right).
+  The same code without goto: one `&&` chain whose tests mark the match, `(t == want && (m = 1))`, else `m = 0`
+  (gm_BuildNext s9).
+- **Pair merging takes the first earlier identical `jmp` to the same label**: case 2's closing `stage++` merged into
+  case 1's copy (near jumps, +8 bytes) where the original shares case 3's; `break` at case 1's end (the other cases
+  `return`) gives its jmp another label (he_RunPlunder, flagged @original).
+- **`cmp i,0xffff` after a search loop and a second inline copy of its failure block** (both copies reached by
+  fall-through, below the merge size): `n = 0xffff; for (..) if (..) { n = i; break; } if (n == 0xffff) ..`: the
+  test is decided on the exhausted path (main_ReplaceFigure).
 
 ## Loops and induction variables
 Rotation, test position, countdown, induction variables and strength reduction, pointer walk against index loop, bounds, search loops.
@@ -1768,6 +1781,9 @@ a stack slot is a split piece, and the piece's extent is decided by the rules be
 - **A stepped field in a callee-saved register** (`mov edi,[esi+N]; inc edi; mov eax,edi; mov [esi+N],edi`, edi
   pushed at the top): `h->entry++;` and the reads as `tab[h->entry]`, no `i = h->entry + 1` local (he_RunHint
   byte). The local form keeps it in eax.
+- **Zero-initialised locals in callee-saved registers from the prologue** (pushes before the first call, `xor
+  edi,edi` ..): they are read on a path that skips their assignments: the click test after the block that registers
+  the plates, not inside it (ai_CityWatchListener; the init order is then a permute round).
 - **n and max swapped between two callee-saved registers**: the one served first takes ebx; c2trace --prio shows
   which block terms rank them (ai_FillLoversTab: memset's `max * 56` counts max twice).
 
@@ -3168,6 +3184,8 @@ the stack at every instruction.
 - **A literal factor moves to the end of a product**: VC6 compiles `a * 1450.0f * r` as `a * r * 1450`; the
   original's multiply by the literal first is its own statement (`f = a * 1450.0f; f = f * r + ..`), the same
   code a named const gives (ai_CannonCamera; the .rdata order said literal).
+- **`fimul [m]` on a joined float against `fild; fmul st,st(1)` + `fstp st(0)` after the call**: the product into
+  the float itself (`f = f * r->points * 10.0;`, then `(int)f`): its last use is that statement (he_AllocRepair).
 
 ## Types, widths, bitfields
 `movsx` / `movzx`, signedness, char and short locals, bitfields and byte read-modify-write, shifts, multiply and divide idioms, casts, unions.
@@ -3620,6 +3638,14 @@ the stack at every instruction.
   p2 = &amt_Table[j];` (0x4e6c50, 60 -> 0); indexed `amt_Table[i].owner` recomputes lea/shl/lea per use.
 - **An inlined `repne scasb` twice in the original, once in ours**: `strlen(s)` written in each call, not a length
   local (ai_BauplatzFilter byte; an older note had read it as an intrinsic question).
+- **`lea eax,[i*4+ai_Chars]; mov al,[eax+0xd]`** (the record address kept apart from the field offset): a
+  record pointer read in several tests (`c = &ai_CharsT[i]; if (c->b00d >= 9) .. else if (c->b00d == 8)`); a
+  local for the byte folds to `[i*4+ai_Chars+0xd]` (he_AllocRepair).
+- **An `unsigned __int64` member copy with the high word loaded first**: the two words copied apart, low then
+  high (`cfg.classMask[0] = gypsyFilterWords[0]; cfg.classMask[1] = ..[1];`; ai_DismissOfficeAsk).
+- **`mov eax,0x5d` (the list's first element folded) before the walk's `lea ecx,[list]`**: an index loop over
+  the initialised local array, not a pointer walk; `rep stosd` of -1 with `mov ecx,8` before `lea edi`: memset,
+  not the element loop (main_ReplaceFigure).
 
 ## Declaration set, headers, unit order
 Effects from outside the function's text: headers, a struct or extern that moves another function, callees defined above or below, unit boundaries.
