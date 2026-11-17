@@ -22939,7 +22939,15 @@ int he_RegisterEventTypes88(void)
 }
 /* 0x56fbc0, ages the character c's life value f01c by num years: fnum not above f020 -> sends the delta
    f018 - f01c; else (fnum - f020) steps of v = v - f014 + f014 / v from v = fnum - f020, then the delta
-   v - f01c (cm_SendFloatDelta, field 0x1c) */
+   v - f01c (cm_SendFloatDelta, field 0x1c)
+   @deep size queue: padded size right (129 = original raw) with the parenthesised (c->f020) in the compare
+   (rank lever: fld f020; fld st(1); fcompp, 10 ins), not the original's form. Left: the original keeps
+   fnum in memory (num's dead slot: fst [esp+0xc]; fcomp f020; reloaded by fld for v = fnum - f020); ours
+   holds it on the x87 stack (c2fpu: fnum prio 1 / sav 1 -> stack; the original needs savings <= 0). s3
+   tried: the conversion as a CSE without fnum, (ushort)num compared directly, v as the fnum carrier
+   (draft), if/else and if (c) {..} forms, > with swapped arms, c->f020 >= fnum, !(fnum > f020), double
+   compare, f = c->f014 before the test, fnum initialised at its declaration, v assigned inside the ftol,
+   while (n-- > 0): none puts fnum in memory. */
 
 void he_SetLifeByAge(AICHAR *c, int num)
 {
@@ -22949,7 +22957,7 @@ void he_SetLifeByAge(AICHAR *c, int num)
     if (c == 0)
         return;
     fnum = (float)(unsigned short)num;
-    if (fnum <= c->f020) {
+    if (fnum <= (c->f020)) {
         ((int (*)(int, int, float))cm_SendFloatDelta)(c->netId, 0x1c, c->f018 - c->f01c);
         return;
     }
