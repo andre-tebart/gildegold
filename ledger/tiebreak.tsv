@@ -3027,7 +3027,7 @@ exe	0x00501f60	gm_NearestFreeBuilding	f3gm	321f06454d76c645	no	byte	control=byte
 exe	0x00502020	gm_FindBuildingById	f3gm	6eef8472d3b52e59	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00502060	gm_FindBuildingKind	f3gm	b0fff72b8b52755f	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	291ac9aa57e40bb8
 exe	0x005020a0	gm_ListBuildingsOfType	f3gm	3006bf42a7aa1ceb	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	291ac9aa57e40bb8
-exe	0x005020e0	gm_MayTakeJob	f3gm	85e0ecc260bf96be	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	1c96939fabcef245
+exe	0x005020e0	gm_MayTakeJob	f3gmt	0d9e1806320e5e21	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	62f0969067bec12b
 exe	0x005024f0	gm_IsType10	f3gm	ac3be2b10213f57a	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00502520	gm_IsHomeType	f3gm	4694c87a4c6bd132	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00502570	gm_GoodPicture	f3gm	69cd96e67917638f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	

@@ -2680,7 +2680,12 @@ extern int gm_AllowAll;
             return code;                                                             \
     }
 
-/* 0x5020e0, whether the character c may take a job in the building kind k: 0 no, 1 yes, 2 yes in another building of the same type (gm_ListBuildingsOfType); by the kind's class (gm_BuildingClass): 1 / 7 (type 0x13 only) / 8 the job number of c for the kind (gm_TitleJob) is in the kind's job list, 2 never, 3 by the character's profession (0xf: types 1 / 0xf / 6, 0xa: type 3), 4 the kind's own list only, 6 by the character's level against a limit per kind (1 / 3 / 4 / 5), giving 1 or 2; with gm_AllowAll every person (kind 6 / 7) may */
+/* 0x5020e0, whether the character c may take a job in the building kind k: 0 no, 1 yes, 2 yes in another building of the same type (gm_ListBuildingsOfType); by the kind's class (gm_BuildingClass): 1 / 7 (type 0x13 only) / 8 the job number of c for the kind (gm_TitleJob) is in the kind's job list, 2 never, 3 by the character's profession (0xf: types 1 / 0xf / 6, 0xa: type 3), 4 the kind's own list only, 6 by the character's level against a limit per kind (1 / 3 / 4 / 5), giving 1 or 2; with gm_AllowAll every person (kind 6 / 7) may
+   @deep size queue s11: padded size fixed (raw 946 -> 940 = 940), 37 -> 28 ins: class 7 as if (*p == 0x13)
+   { the job finds } return 0; (the original's type test jumps to the class's shared return 0; the early
+   return 0 had its own epilogue copy). Left (regs / slots only, 19 bytes): k and c swap esi / edi (the
+   original loads k into esi before push edi, c into edi). climb --rounds 1: nothing. Not tried yet:
+   c2trace on k / c, the order of the class tests. */
 int gm_MayTakeJob(int k, int c)
 {
     int cls, i, j, n;
@@ -2717,13 +2722,13 @@ int gm_MayTakeJob(int k, int c)
         return 0;
     }
     if (cls == 7) {
-        if (*p != 0x13)
-            return 0;
-        JOB_FIND(p, v, 1);
-        n = gm_ListBuildingsOfType(0x13, list);
-        for (i = 0; i < n; i++) {
-            q = (unsigned char *)ai_BTypes + list[i] * 0x24d;
-            JOB_FIND(q, v, 2);
+        if (*p == 0x13) {
+            JOB_FIND(p, v, 1);
+            n = gm_ListBuildingsOfType(0x13, list);
+            for (i = 0; i < n; i++) {
+                q = (unsigned char *)ai_BTypes + list[i] * 0x24d;
+                JOB_FIND(q, v, 2);
+            }
         }
         return 0;
     }
