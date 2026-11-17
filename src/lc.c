@@ -17535,18 +17535,18 @@ typedef struct G8SCENECHAR {            /* the scene character fields this unit 
 
 int ai_CartAtBuilding(AIBLD *bld, AIOBJ *cart)
 {
-    AIOBJ *c = cart;
-    AIBLD *b = bld;
     G8SCENECHAR *rec;
     D3OBJECT *obj;
     float v[4];
+    AIOBJ *hitObj;
+    AIBLD *hitBld;
     int out;
     int id;
 
-    rec = (G8SCENECHAR *)c->sceneObj;
+    rec = (G8SCENECHAR *)cart->sceneObj;
     if (rec == 0)
         return 0;
-    obj = (D3OBJECT *)b->object;
+    obj = (D3OBJECT *)bld->object;
     if (obj != 0) {
         d3_PointToWorld(obj, &obj->pos, (struct D3VECTOR *)v);
         if (d3_VecEqual(&rec->body->pos, (struct D3VECTOR *)v, 1350.0f) != 0) {
@@ -17554,14 +17554,14 @@ int ai_CartAtBuilding(AIBLD *bld, AIOBJ *cart)
                 return 1;
         }
     }
-    id = c->ownerId;
+    id = cart->ownerId;
     while (id != -1) {
-        if (gm_FindById((int *)&cart, (int *)&bld, &out, id) == 0)
+        if (gm_FindById((int *)&hitObj, (int *)&hitBld, &out, id) == 0)
             return 0;
-        if (cart != 0)
-            return (int)cart == (int)b;
-        if (bld != 0)
-            id = ((AIOBJ *)bld)->ownerId;
+        if (hitObj != 0)
+            return (int)hitObj == (int)bld;
+        if (hitBld != 0)
+            id = ((AIOBJ *)hitBld)->ownerId;
         if (out != 0)
             return 0;
     }
