@@ -511,8 +511,6 @@ typedef struct SCREENMODE {                 /* 8 bytes, a screen mode of the tab
     int h;                                  /* +0x4, the height */
 } SCREENMODE;
 /* ai_ContactTextCardGame: view of txt_Ptrs (build/mk_txt_views.py) */
-int ai_CameraStep = 50;  /* 0x623814, the camera move step, 100 - camera speed; sv.c converts it
-                                       with fild at the float uses (the original loads an int) */
 SCREENMODE ai_ScreenModes[3] = { { 800, 600 }, { 1024, 768 }, { 1152, 864 } };  /* 0x62d7b8, the 800x600 / 1024x768 / 1152x864 modes */
 int ai_ScreenModeW = 800;  /* 0x62d7d0, the width of the mode ai_GfxResolution picks */
 int ai_ScreenModeH = 600;  /* 0x62d7d4, its height */

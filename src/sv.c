@@ -7507,6 +7507,9 @@ float sv_CameraHeightNear = 450.0f;  /* 0x623800 */
 float sv_CameraAngleNear = -0.471238911f;  /* 0x623804 */
 float sv_CameraHeightFar = 1600.0f;  /* 0x623808 */
 float sv_CameraAngleFar = -1.08210409f;  /* 0x62380c */
+float sv_CameraUnread = 700.0f;  /* 0x623810, a camera value after the near / far heights and angles; no surviving instruction or pointer reads it (its readers were removed by /OPT:REF) */
+int ai_CameraStep = 50;  /* 0x623814, the camera move step, 100 - camera speed (menu sets it); sv.c converts it
+                                       with fild at the float uses (the original loads an int) */
 float sv_ScrollSpeed = 1.0f;  /* 0x623818 */
 char sv_CameraEaseOn = 1;  /* 0x62381c */
 int sv_ButtonFamilyTree = -1;  /* 0x623820 */
@@ -7576,6 +7579,7 @@ int sv_ScrollEndBottom = -1;  /* 0x623ea8 */
 int sv_CharsOn = 1;  /* 0x623eac, nonzero: sv_RunFrame updates the characters (ch_UpdatePositions, ch_Update, ..) */
 int sv_WorldOn = 1;  /* 0x623eb0, nonzero: sv_RunFrame steps the 3D world (sky phase, quad tree, camera, view clear) */
 int sv_CityPanelOn = 1;  /* 0x623eb4, nonzero: sv_RunFrame redraws the city panel */
+int sv_UnreadSwitch = 1;  /* 0x623eb8, 1 like the on-switches before it (sv_CharsOn, sv_WorldOn, sv_CityPanelOn); no surviving instruction or pointer reads it (its readers were removed by /OPT:REF) */
 unsigned char sv_ChatRecipients[8] = { 1, 1, 1, 1, 1, 1, 1, 1 };  /* 0x623ebc, the chat console's recipient buttons, one per human player in ai_Chars order (1 = checked), kept between openings */
 unsigned sv_ChatTime = 0xffffffff;  /* 0x623ec4, d3_Time when the last chat line arrived (cm.c's 0x4b handler), 0 / -1: none */
 int sv_QuickChatForm = -1;  /* 0x623ec8 */

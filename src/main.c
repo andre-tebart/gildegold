@@ -5206,7 +5206,6 @@ extern void * main_Instance;
 
 /* ---- full-link gap data (tools/full_addrs.py) ---- */
 #define GAPDATA __declspec(align(1)) unsigned char
-GAPDATA full_data_623eb8[4] = { 0x01, 0x00, 0x00, 0x00 };  /* 0x623eb8 */
 int main_GfxOn = 1;  /* 0x624560, nonzero when the round change shows its pages and fades (main_EndRound, main_RoundReport and main_BeginPlayerRound test it) */
 int init_AiTown = 1;  /* 0x624564: .data initial 1, no writer in the exe; nonzero = the opening also stocks the free buildings of the class-1 table and sends the computer players' mail (the AI part of the town) */
 int main_Switch624568 = 1;  /* 0x624568, 1 like the on-switches around it; no reader in the image (a switch whose readers /OPT:REF removed, or read by none) */
