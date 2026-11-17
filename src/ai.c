@@ -1062,7 +1062,18 @@ done:
    0x47e990 comes here when gm_BuildingClass(type) == 2): buys slots / capacity / upgrades, starts the entries'
    production, sends the job orders and finishes with the trade (ai_MeisterCollectTrans / ai_MeisterTrade);
    the same production steps as ai_EvaluateProduction for this category's AIENTRY flags
-   @deep B3 far draft (970/975 instructions, 447 differing; diffclass 708 code / 42 regs / 38 slots / 5 fill): every hunk read against build/ghidra/4801f0.c and tools/asmdiff - no missing / extra statement, constant, callee or field offset; the whole diff is the c/ch register swap (ours c=ebp ch=ebx, original c=ebx ch=ebp) with the [esp+0x10]/[0x1c]/[0x20]/[0x24] slot rotation and the reloads it causes, i.e. allocation / scheduling. spell.py: the reload (19x) and dup-tail (6x) entries all describe that same allocation; no meaning-class lead (wrong type / signedness / offset / width) exists to try one edit on, so the last-bytes pass leaves nothing to measure. Q1 named by role (0x47e990 dispatches here on gm_BuildingClass(type) == 2). Q2 gap: AIMSG.unk14 is only ever written 0 by the ai.c senders (hst.c -1) and has no reader that names it. */
+   @deep size queue s6: the r = util_RandomU(ai_NEntries) site of the PFLANZBAR walk: the original keeps r
+   in edx inside the loop (mov dx, ax / and edx, 0xffff, the loop-skip path reads its home [esp+0x18]);
+   ours stores it to [esp+0x1c] after and eax, 0xffff. r is already an int local: no 16-bit spelling lever,
+   it is the same allocation race as the c/ch swap. prior: B3 far draft (970/975 instructions, 447
+   differing; diffclass 708 code / 42 regs / 38 slots / 5 fill): every hunk read against
+   build/ghidra/4801f0.c and tools/asmdiff - no missing / extra statement, constant, callee or field
+   offset; the whole diff is the c/ch register swap (ours c=ebp ch=ebx, original c=ebx ch=ebp) with the
+   [esp+0x10]/[0x1c]/[0x20]/[0x24] slot rotation and the reloads it causes, i.e. allocation / scheduling.
+   spell.py: the reload (19x) and dup-tail (6x) entries all describe that same allocation; no meaning-class
+   lead (wrong type / signedness / offset / width) exists to try one edit on, so the last-bytes pass leaves
+   nothing to measure. Q1 named by role (0x47e990 dispatches here on gm_BuildingClass(type) == 2). Q2 gap:
+   AIMSG.unk14 is only ever written 0 by the ai.c senders (hst.c -1) and has no reader that names it. */
 
 void ai_EvaluateProductionCategory2(AICHAR *ch)
 {

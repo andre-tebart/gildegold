@@ -8541,27 +8541,18 @@ void he_StartPopulation(int ev)
    newcomer is created (cm_SendCreateCharacter, stage 3: it gets a free home, (51 .. 100) * 32 money and its fields
    2 / 0xc set); stage 6 likewise kills a homeless figure of kind 0 without a workplace (-2000 health); stage 7 gives
    a homeless figure of kind 0 / 1 a free home every ten minutes until 22:00, then the event rests until 6:00
-   @deep Reconstructed whole against the original (all 8 cases: the switch table equal; every call, push
-   order and gm_AddTime argument read from the pushes: case 0 (0,0,5), 1 and the 2/3/6 waits (1,0,0),
-   creation (0,0,1), the kill (0,0x1e,0), case 7 (0,0xa,0); ORDSTATS out[4]/out[8] as ints, col[3] against
-   0.1 / 0.3, the 2.0f / 1.0f literals; the newcomer's cm_SendMoveGoodsUnchecked(netId, -1, own,
-   (51..100)<<5), its field deltas 2 / 0xc; the free-home loop with the unsigned short compare). Left:
-   allocation and VC6 cross-jumping. The original keeps -1 in ebp (case 3's c==0 path stores an immediate
-   0xffffffff and jumps into the slot==2 block after its store), case 3's found flag in [esp+0x10] with b
-   in ebx, case 7's found in ebp with b in [esp+0x10] (ours the reverse: found ebp / b ebx in case 3, found
-   [esp+0x10] in case 7); the original merges the cm_SendExSetHE call tails of case 1 (<=0.3), case 2 / 6
-   (hour >= 20), case 3's end and all of case 7 into the shared block 0x54e08d..0x54e0ac (the kill path
-   even into case 0's gm_AddTime call at 0x54df23) where ours keeps inline copies (tail hunks at +0x19a,
-   +0x6c, +0x819; the M8 lines at +0x3a4 / +0x7f4 / +0x835 / +0x83f are those misaligned tails and ai_Time
-   copies in another register order). Tried: the while/do forms of both loops (found && n vs n && found:
-   the found flag moved between ebp and the slot), case 7's chain as if/else with one return (worse, 692
-   ins), chance *= 0.0f vs ai_FloatZero (the literal matches). (references: M8 at +0x3a4: ours refers to
-   cm_SendExSetHE (0x4c4c60), the original's field to 0x4fe140 (gm_AddTime) (and 3 more), explained: the M8
-   refs are the misaligned tails (our cm_SendExSetHE call aligned against the original's gm_AddTime in a
-   merged block) and the ai_Time struct copies whose dwords load in another register order; every call and
-   store is present on both sides) (size: 677 vs 657 instructions, explained: ours 677 vs 657: the 20 extra
-   are the inline copies of the call / epilogue tails the original cross-jumps into 0x54e097 (case 7's two
-   cm_SendExSetHEI(0) tails, 2 x 9, and case 6's kill path reusing case 0's gm_AddTime call)) */
+   @deep s6: every draw through util_RandomU (mov di, ax / mov bx, ax as the original; 244 -> 240 ins, size
+   2212 vs 2192 plus the 8-entry table). Left at the draws: the 0xffff constant / the draw in ebx vs ebp
+   (ours mov bp, ax / mov ebx, 0xffff; the original mov bx, ax / mov ebp, 0xffff). prior: Reconstructed
+   whole against the original (all 8 cases: the switch table equal; every call, push order and gm_AddTime
+   argument read from the pushes: case 0 (0,0,5), 1 and the 2/3/6 waits (1,0,0), creation (0,0,1), the kill
+   (0,0x1e,0), case 7 (0,0xa,0); ORDSTATS out[4]/out[8] as ints, col[3] against 0.1 / 0.3, the 2.0f / 1.0f
+   literals; the newcomer's cm_SendMoveGoodsUnchecked(netId, -1, own, (51..100)<<5), its field deltas 2 /
+   0xc; the free-home loop with the unsigned short compare). Left: allocation and VC6 cross-jumping. The
+   original keeps -1 in ebp (case 3's c==0 path stores an immediate 0xffffffff and jumps into the slot==2
+   block after its store), case 3's found flag in [esp+0x10] with b in ebx, case 7's found in ebp with b in
+   [esp+0x10] (ours the reverse: found ebp / b ebx in case 3, found [esp+0x10] in case 7); the original
+   merges the cm_SendExSetHE call tails of case 1 (<=0.3), case... */
 
 void he_RunPopulation(int ev)
 {
@@ -9030,25 +9021,17 @@ void he_StartDarkCorner(int ev)
    at the victim (stage 4 at once) takes up to loot (0 .. 3; stage 4 draws it against the victim owner's skill 2)
    open crimes of others from ai_Crimes as proofs (cm_SendProofExecuted), writes them into the victim's job table
    and tells its owner (the news 0x18a9 / 0x18aa); freed with the flag 2 it removes the carrier
-   @deep Reconstructed whole against the original (the five cases of the jump table equal; every call, push
-   order and gm_AddTime argument read from the pushes; case 1's 64-bit kind mask 0xa7fcc3a6 / bit 32 with
-   the target != the victim (the draft had ==), case 2's loot chance util_RandomF() * 0.5f < skill, case
-   4's three draws at 0.66f, the MAX(MIN(loot, 3), 0) clamp, the proof walk over ai_Crimes (CRIME: state 1,
-   another culprit, not after the event's start) with loot[0..2] = -1, the job table's proofs[] (HEJOBTABLE
-   +0x1c) and year, case 3's two full message calls against case 4's if / else of txt_Format). Left:
-   allocation and VC6 cross-jumping. Case 1's walk: the original keeps hi in ebx and computes the AIBTYPE
-   pointer (lea eax, [ebx + eax*4]) before the kind byte compare, n in [esp+0x14]; ours keeps hi in ebx but
-   lo / n in other homes ([esp+0x18]); the original shares the Send(-1) tails of case 1 / 2 (0x54f311,
-   0x54f319) and the AddTime of case 2's not-at-door path, ours keeps inline copies (tail hunks at +0x2ee,
-   +0x49d) and shares case 3/4's end at +0x9a5 instead; the message calls schedule add esp later in the
-   original; the loot index from util_Random is moved as mov bx, ax in the original (ours mov ebx, eax: the
-   same zero extension). Tried: kind as an unsigned char local (the byte compare jbe now matches), the
-   crimes read by index instead of a CRIME pointer (matches the original's [edi + ai_Crimes + off]
-   addressing), the three -1 stores in order, case 4's ternary (neg / sbb: wrong, reverted to if / else).
-   (size: 6 of the instruction difference are shared / inline tails) (references: M8 at +0x989: ours refers
-   to ai_Time+0x4 (0x770ae4), the original's field to 0x770ae0 (ai_Time), explained: the one M8 is the
-   ai_Time copy of case 4 aligned against a shifted tail (ours loads ai_Time+4 where the alignment pairs
-   the original's ai_Time); every call and store is present on both sides) */
+   @deep s6: the loot index draws through util_RandomU (mov bx, ax as the original; 225 -> 221 ins). The
+   size gap (+48 padded) is the shared Send(-1) / AddTime tails the original cross-jumps (see prior).
+   prior: Reconstructed whole against the original (the five cases of the jump table equal; every call,
+   push order and gm_AddTime argument read from the pushes; case 1's 64-bit kind mask 0xa7fcc3a6 / bit 32
+   with the target != the victim (the draft had ==), case 2's loot chance util_RandomF() * 0.5f < skill,
+   case 4's three draws at 0.66f, the MAX(MIN(loot, 3), 0) clamp, the proof walk over ai_Crimes (CRIME:
+   state 1, another culprit, not after the event's start) with loot[0..2] = -1, the job table's proofs[]
+   (HEJOBTABLE +0x1c) and year, case 3's two full message calls against case 4's if / else of txt_Format).
+   Left: allocation and VC6 cross-jumping. Case 1's walk: the original keeps hi in ebx and computes the
+   AIBTYPE pointer (lea eax, [ebx + eax*4]) before the kind byte compare, n in [esp+0x14]; ours keeps hi in
+   ebx but lo / n in other homes ([esp+0x18]); the original shares the Send(-1) tails of ca... */
 
 void he_RunDarkCorner(int ev)
 {
