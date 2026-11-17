@@ -656,37 +656,6 @@ void hmt_DecideElection(void)
         }
     }
 }
-/* 0x4ada80, loads the hmt state from the savegame f; on failure it is reset; 1 or 0 @deep code hunks 8: the original's success return is out of line (jne over the success block), ours returns inline (je); if / else with an empty then tried before, no change (match-deep) */
-
-int hmt_Load(void *f, int version)
-{
-    if (ls_Read(&hmt_CurrentPerson, 4, 1, f) && ls_Read(&hmt_Person, 4, 1, f)
-        && ls_Read(&hmt_CurrentEvent, 4, 1, f) && ls_Read(&hmt_Event, 4, 1, f)
-        && ls_Read(&hmt_PendingElection, 4, 1, f)) {
-    } else {
-        hmt_CurrentPerson = -1;
-        hmt_CurrentEvent = -1;
-        hmt_Person = -1;
-        hmt_Event = -1;
-        hmt_PendingElection = -1;
-        return 0;
-    }
-    return 1;
-}
-/* 0x4adb20, saves the hmt state to the savegame f */
-
-int hmt_Save(VFSFILE *f)
-{
-    if (!HMT_FW(&hmt_CurrentPerson, 4, 1, f))
-        return 0;
-    if (!HMT_FW(&hmt_Person, 4, 1, f))
-        return 0;
-    if (!HMT_FW(&hmt_CurrentEvent, 4, 1, f))
-        return 0;
-    if (!HMT_FW(&hmt_Event, 4, 1, f))
-        return 0;
-    return HMT_FW(&hmt_PendingElection, 4, 1, f);
-}
 /* 0x4ad7a0, at a round start (main_BeginPlayerRound): counts the members of the three councils (every member of
    rank 7 or more counts 0.33, one that is not the last counted of the other two councils 0.67 more) and creates
    new characters (cm_SendCreateCharacter type 3) until each council has two: rank 7, the council's office kind
@@ -769,6 +738,37 @@ void hmt_FillCouncils(void)
             cm_SendSetField(p->netId, 0x1cc, 4, bits, 0);
         }
     }
+}
+/* 0x4ada80, loads the hmt state from the savegame f; on failure it is reset; 1 or 0 @deep code hunks 8: the original's success return is out of line (jne over the success block), ours returns inline (je); if / else with an empty then tried before, no change (match-deep) */
+
+int hmt_Load(void *f, int version)
+{
+    if (ls_Read(&hmt_CurrentPerson, 4, 1, f) && ls_Read(&hmt_Person, 4, 1, f)
+        && ls_Read(&hmt_CurrentEvent, 4, 1, f) && ls_Read(&hmt_Event, 4, 1, f)
+        && ls_Read(&hmt_PendingElection, 4, 1, f)) {
+    } else {
+        hmt_CurrentPerson = -1;
+        hmt_CurrentEvent = -1;
+        hmt_Person = -1;
+        hmt_Event = -1;
+        hmt_PendingElection = -1;
+        return 0;
+    }
+    return 1;
+}
+/* 0x4adb20, saves the hmt state to the savegame f */
+
+int hmt_Save(VFSFILE *f)
+{
+    if (!HMT_FW(&hmt_CurrentPerson, 4, 1, f))
+        return 0;
+    if (!HMT_FW(&hmt_Person, 4, 1, f))
+        return 0;
+    if (!HMT_FW(&hmt_CurrentEvent, 4, 1, f))
+        return 0;
+    if (!HMT_FW(&hmt_Event, 4, 1, f))
+        return 0;
+    return HMT_FW(&hmt_PendingElection, 4, 1, f);
 }
 
 #define HMT_START_MONEY 16000000  /* the money a historical character starts with (0xf42400, pushed as an immediate) */
