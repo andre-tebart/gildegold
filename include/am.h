@@ -1034,7 +1034,7 @@ typedef struct G9KIND {                 /* filled by 0x4ef000 */
     int unk08[6];
 } G9KIND;
 extern G9SHOT ai_CannonShot;                                                      /* 0x6f0698 */
-extern const G9BALL ai_CannonBalls[3];                                                   /* 0x5edfe0 */
+extern const G9BALL ai_CannonBalls[5];                                                   /* 0x5edfe0 */
 extern const float ai_IronDensity;                                                       /* 0x5eee08, 7874 */
 int ai_SphereVolume(float radius, float size, float *out);                                   /* 0x5dc1a0 */
 struct SPHEREVOLUME; void ai_PositionShare(float a, float b, struct SPHEREVOLUME *rec, float *out);                        /* 0x5dc210 */

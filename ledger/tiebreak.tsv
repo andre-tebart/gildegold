@@ -2763,12 +2763,12 @@ exe	0x004ef780	gv_EntryHasId	gv	374b3298db1a4fa5	no	byte	control=byte p1=byte p2
 exe	0x004ef7c0	gv_FindEntry	gv	c41003a4d8de503c	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004ef900	gv_LoadGraveyard	gv	7679c4b8b8c617cd	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004ef930	gv_RandomGrave	gv	eadf6d3530738cf0	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x004ef9c0	gv_BuryNewDead	gv	835d77ab86c3ed45	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	b5de196b2aa58a97
-exe	0x004efc10	gv_AllocGraveyard	gv	4a58d0d9af9b6917	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	628a01ce177f6c64
-exe	0x004eff50	gv_GrowGraveyard	gv	efb42d25c7bbda2a	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	b5de196b2aa58a97
+exe	0x004ef9c0	gv_BuryNewDead	grave	835d77ab86c3ed45	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=442	8e2803bd14ee7240
+exe	0x004efc10	gv_AllocGraveyard	grave	4a58d0d9af9b6917	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=442	8e2803bd14ee7240
+exe	0x004eff50	gv_GrowGraveyard	grave	efb42d25c7bbda2a	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=442	8e2803bd14ee7240
 exe	0x004f0180	gv_FreeGraveyard	gv	eab36f0085a34cf3	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004f01d0	gv_OrderBury	gv	1b99eabbdeccfdb3	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
-exe	0x004f0240	gv_BuryCharacter	gv	2dcdd137b356af83	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	b5de196b2aa58a97
+exe	0x004f0240	gv_BuryCharacter	grave	2dcdd137b356af83	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=442	8e2803bd14ee7240
 exe	0x004f0430	gv_OrderReserveGrave	gv	e764796f930c26ed	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004f0490	gv_ReserveGrave	gv	2d66f9852ef1ebb8	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004f0700	gv_OrderExtendGrave	gv	93efd2c53fd6a885	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
@@ -2776,9 +2776,9 @@ exe	0x004f0770	gv_ExtendGrave	gv	1b2dec0d09a642fe	no	byte	control=byte p1=byte p
 exe	0x004f0900	gv_OrderSetGraveHolder	gv	b4e0592f6ebc492b	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004f0970	gv_SetGraveHolder	gv	35920c5b0d8cc795	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004f0a90	gv_OrderOpenSize	gv	6b0599e5f23b5676	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x004f0af0	gv_OpenSize	gv	dc74a53162f3a1c0	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	628a01ce177f6c64
+exe	0x004f0af0	gv_OpenSize	grave	dc74a53162f3a1c0	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=442	8e2803bd14ee7240
 exe	0x004f0c20	gv_OrderAdjustEntry	gv	1c4fbd9a4cdc6c91	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x004f0c80	gv_AdjustEntry	gv	a62d643ab7e334b1	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	b5de196b2aa58a97
+exe	0x004f0c80	gv_AdjustEntry	grave	a62d643ab7e334b1	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=442	8e2803bd14ee7240
 exe	0x004f0d70	gv_OrderNewDead	gv	dc0bd3b78e76412e	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004f0dd0	gv_AddNewDead	gv	4c7a7687ce6ee441	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004f0e80	gv_OrderMoveGrave	gv	f6227fafc39dec62	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
@@ -3104,7 +3104,7 @@ exe	0x00508740	gm_JobWage	f3gm	c90d43d89fc39b68	no	shape	sweep control=shape bes
 exe	0x005087f0	gm_ItemPrice	f3gm	f331c749edc985bd	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005089c0	gm_GoodsPrice	f3gm	93bf8d69375689f2	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00508a20	gm_HealthFactor	f3gm	7c4bf967df612085	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x00508a80	gm_FormatAmount	f3gm	36f18a19a7a5509a	yes	shape	sweep control=shape best=shape by the build's declarations; codegens=2 compiled=127	fc48e2dfd9dc69f0
+exe	0x00508a80	gm_FormatAmount	f3gm	36f18a19a7a5509a	yes	shape	sweep control=shape best=shape by the build's declarations; codegens=2 compiled=12 (stopped at the goal)	e0334b74411b9049
 exe	0x00508cc0	gm_ListObjectsAfter	f3gm	ea1fab2c70960bad	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x00508d70	gm_BuildingLevel	f3gm	52709faf0cab91a9	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00508d80	gm_BuildingBalance	f3gm	af452c69ad0d5219	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft	
@@ -3269,7 +3269,7 @@ exe	0x0051c560	ls_WriteMessageQueues	ls	0457b3163773ef41	no	shape	sweep control=
 exe	0x0051c870	ls_WriteEnvironment	ls	d984ce088d952031	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0051c920	ls_Read	ls	8ef6952a1392156e	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0051c950	ls_LoadGame	ls	e181b24b97bc9bec	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x0051cee0	ls_ReadSaveHeader	ls	3d4858ba8f00b8f7	yes	byte	sweep control=shape best=byte by 6 unused typedefs at the unit's start; codegens=2 compiled=12 (stopped at the goal)	0d079dbbad41441d
+exe	0x0051cee0	ls_ReadSaveHeader	ls	3d4858ba8f00b8f7	yes	byte	sweep control=shape best=byte by 6 unused typedefs at the unit's start; codegens=2 compiled=12 (stopped at the goal)	3cdb35a7ebb3da4f
 exe	0x0051d2d0	ls_LoadScene	ls	36281c1b51aa7f8a	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0051d3d0	ls_ReadObjects	ls	48fdc5f9f398cd1e	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0051d4f0	ls_HookBuildingCB	ls	c92fc2edada53f47	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
@@ -4003,7 +4003,7 @@ exe	0x00578440	ai_TutorialFreeRuns	sv_t	7db4c5d18c22886f	no	byte	control=byte p1
 exe	0x005784a0	ai_TutorialInitMainIntro	sv_t	798c8d26cb8bedf5	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00578570	ai_TutorialInitChapter1	sv_t	1104bf614d4657fb	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00578e40	ai_TutorialInitChapter2	sv_t	1997337a7073c8ff	yes	byte	sweep control=shape best=byte by 5 unused typedefs before ai_TutorialInitChapter2; codegens=2 compiled=12 (stopped at the goal)	a792c823123d4ef3
-exe	0x00579570	ai_TutorialInitChapter3	sv_t	7a7c849570dd38d6	yes	byte	sweep control=draft best=byte by 4 unused typedefs at the unit's start; codegens=11 compiled=12 (stopped at the goal)	6965902acb82e214
+exe	0x00579570	ai_TutorialInitChapter3	sv_t	7a7c849570dd38d6	yes	byte	sweep control=draft best=byte by 4 unused typedefs at the unit's start; codegens=11 compiled=12 (stopped at the goal)	3f2a1c00b9fd5463
 exe	0x0057aa80	ai_TutorialInitChapter4	sv_t	6084c4a654a21837	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0057aeb0	ai_TutorialInitChapter5	sv_t	8774329fa9d901d6	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0057b750	ai_TutorialInitMainOutro	sv_t	fa030cb776dbd933	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
