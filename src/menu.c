@@ -3625,7 +3625,7 @@ int ai_PokerGame(void)
    back (picture 0x775 + ai_CardBack) when the seat has folded (foldPhase >= 0), or while an opponent's first two
    cards are shown at the end of the game (winner 4); else the card's face (0x775 + the card index), and the player's
    first two cards are greyed (they are chosen for the exchange in phase 6). Void. Reasoned: the picture and text
-   roles follow from the offsets (0x775 + index into d2_Pics, the label with the centred flag). @deep Body reconstructed whole from the disassembly (label, centred title text, portrait, then one picture per card: face, card back for a folded seat or an opponent's first two cards at the end, the player's first two greyed); 231 vs 230 instructions, no meaning difference left. asmdiff (49 instructions, hunks at 0x5dae76 / 0x5daf9e / 0x5db00a / 0x5db0d7): (1) the original reads the card-back constant 0x5ed1bc once per picture (mov ecx,[0x5ed1bc]; lea edx,[ecx+0x775] and the picture height index from the same ecx) while ours, with ai_CardBack as const volatile int (the original does not fold it), reads it twice in each of the two back blocks; a local copy (pic = ai_CardBack + 0x775) makes the compiler merge the two identical back blocks (size 704, the original keeps two copies), so the original's two blocks must differ in a way not visible here; (2) the title index scheduling (push edx before sbb ecx,ecx; and ecx,0xa / add ecx,0x114 order); (3) 6 order instructions in the loop increment (inc eax / add edx,ecx vs add edi,0x20). Tried: win / mid locals (the call in both seat branches without a window local fixed 130 instructions), branch order (seat != 0 first), pic local. */
+   roles follow from the offsets (0x775 + index into d2_Pics, the label with the centred flag). */
 
 void ai_PokerSeatPanel(int seat, int n, int *cards)
 {
@@ -3639,7 +3639,7 @@ void ai_PokerSeatPanel(int seat, int n, int *cards)
     h = d2_Wins[d2_LastWindow].h;
     x = (w - 0xc4) / 2;
     who = ai_PokerState.seat[seat].who;
-    sprintf(text, "%s %s %s", txt_Ptrs[0x114 + (who->female != 0 ? 10 : 0) + who->title], who->vname, who->nname);
+    sprintf(text, "%s %s %s", txt_Ptrs[(who->female != 0 ? 0x11e : 0x114) + who->title], who->vname, who->nname);
     o = d2_CreateWinText(0, 5, text, ai_PokerUi.panel[seat].win);
     d2_Objs[o].w = w;
     d2_Objs[o].centred = 1;
@@ -3651,7 +3651,7 @@ void ai_PokerSeatPanel(int seat, int n, int *cards)
         pic = ((AICHARVIEW *)(ai_CharsC + ai_PlayerId * 0x21c))->pic;
         d2_WinOpenPic(x - 0x37, h / 2 - d2_Pics[pic].h / 2, pic, ai_PokerUi.panel[0].win);
     }
-    for (i = 0; i < n; i++) {
+    for (i = 0; i < n; i++, x += 0x20) {
         if (ai_PokerState.seat[seat].foldPhase >= 0) {
             ai_PokerUi.panel[seat].slot[i] = d2_WinOpenPic(x, h / 2 - d2_Pics[ai_CardBack + 0x775].h / 2, ai_CardBack + 0x775, ai_PokerUi.panel[seat].win);
         } else if (seat != 0 && i < 2 && ai_PokerState.winner == 4) {
@@ -3661,7 +3661,6 @@ void ai_PokerSeatPanel(int seat, int n, int *cards)
             if (seat == 0 && i < 2)
                 d2_Objs[ai_PokerUi.panel[0].slot[i]].greyed = 1;
         }
-        x += 0x20;
     }
 }
 /* 0x5db110, the second poker window "Locations\\zigeuner\\poker2" (the poker hands table, opened by the fifth button of the poker
