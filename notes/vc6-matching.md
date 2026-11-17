@@ -171,6 +171,11 @@ Where the pushes and pops sit, how many epilogue copies there are, shared agains
 
 ### Shared against separate failure blocks
 
+- **`mov eax,edi` (a zero kept in a callee-saved register) at the failure return, the failure arms' `call
+  evt_Error` cross-jumped but its `add esp,0xc` NOT merged with the next call's**: one `int r = 0;` and one final
+  `return r;`; the failure arms each call the error function and JOIN before the common `evt_Stop(sc);` (the join
+  label splits the add-esp run), the success arm assigns `r = f(..)`. `return 0` in each arm (= ours, 8 bytes
+  short) and an if / else-if chain with the stop call per arm were both wrong (evt_DeclareLocal 43 ins -> byte).
 - **A `return <constant>;` merged into an earlier equal block (ours `test; je <earlier>`, original `jne <continue>`
   + own copy)**: the lever is the flow graph elsewhere: `for (n = 0x300; n != 0; n--) { if (found) break; .. } if (n
   == 0) return 0;` keeps the copy, `for (;;) { ..; if (--n == 0) return 0; .. }` folds. No lever: if/if!, braces,
@@ -1535,6 +1540,9 @@ a stack slot is a split piece, and the piece's extent is decided by the rules be
 
 ### Pointer locals and addresses
 
+- **`add eax,edx` then every field read as `[eax-0xc0+off]` (disp32), ours `lea eax,[edx+eax-0xc0]` + disp8**: the
+  last record read through a pointer to the END: `fr = &d->frames[d->nframes]; .. fr[-1].turn.y` (ch_ActTurn,
+  +4 bytes); `&frames[nframes - 1]`, `frames + n - 1` and the index written out at each use do not.
 - **`add eax,ecx; mov al,[eax]` / `cmp byte ptr [eax],K` (ours `[eax+ecx]`) on a table record's byte tested
   twice**: a record pointer local tested at each use (`g = GM_GOOD(o->type); if (g->type == 0x17 ..`), not a
   `char` copy of the field (gm_BuildingGoodsList17, ai_TradeContactChecks byte).
@@ -1860,6 +1868,11 @@ Frame size, slot order, holes, shared slots, dead parameter slots, block-scoped 
 
 ### Slot order swapped, frame size equal
 
+- **Equal-density ties after the K&R sort**: simulate it from c2frame's B rows (the 12-line sort in the note above:
+  middle element to the left end, Lomuto on `dens > pivot`, recurse both halves) and search count changes x tie
+  orders for the original's A order; the original's per-slot reference counts come from its listing (count each
+  `[esp+X]` operand with the push depth tracked; late passes remove a few, so compare ours the same way). ch_GetNewPath:
+  the listing counts showed i one reference lower = the escaped-counter store above.
 - **Two equal-size locals swapped**: add a reference with no code - a statement in both arms of a tail-merged
   if/else (par_EmitterCB1: speed in both initfill arms), a split variable, a `x = -x`-style use, locals for
   repeated loads (`p = res[j]; q = res[j + 1];`). No lever: declaration order, names, block scope,
@@ -1950,6 +1963,11 @@ Frame size, slot order, holes, shared slots, dead parameter slots, block-scoped 
 
 ### Shared slots
 
+- **A loop counter stored to its slot after the loop although nothing reads it (ours), frame one slot bigger**:
+  the counter's name was reused as a call's out-argument further down (`f(.., &cz, &i, ..)`), which escapes it
+  for the whole function. The original had its own block-local out-arguments (`int fz;` beside `int sx;` in the
+  `if (res & 1)` block), which share the counter's slot; a function result reused through a scan variable (tz) got
+  its own block local as well (ch_GetNewPath: frame 0x9bc -> 0x9b8, 120 -> 102 ins).
 - **Out-argument locals of the last call in their own slots, the original packs them into dead slots (a parameter's,
   a counter's; frame 8 smaller)**: declare them in a block around that call (`{ int flags = 0xc00; unsigned short
   id; if (f(.., &flags, .., &id)) return ..; }`): function-scope address-taken locals live through the whole
@@ -2478,6 +2496,10 @@ Store order in a fill, hoisted loads and sunk stores, statement order effects, `
 
 ### Stores VC6 merges, drops or keeps
 
+- **`or dl,0x14` .. `or dl,8` on one flags byte where ours folds `or dl,0x1c`**: the engine's flag idiom stores
+  another byte in between: `memset(&af, 0, sizeof(af)); af.b[1] |= 0x14; af.b[8] |= 2; af.b[1] |= 8;`
+  (D3ANIMFLAGS for d3anim_CreatePath; d3t_MoveCameraPath, cm, ch_ActTurn). A private bitfield struct for the
+  same flags folds.
 - **Two stores to one field where ours has one** (`mov [esi+0x14],eax` then `and al,0xfc; mov [esi+0x14],eax`):
   `s->flags |= 8; s->fadestart = 0; s->flags &= ~3;` and a temp copy both merge; the first store must be a
   volatile access at the field: `*(volatile unsigned int *)&s->flags = fl;` or a union member `volatile unsigned
