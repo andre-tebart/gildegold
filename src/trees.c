@@ -146,7 +146,7 @@ local static_tree_desc  static_bl_desc =
  * Local (static) routines in this file.
  */
 
-local void tr_static_init OF((void));
+void tr_static_init OF((void));
 local void init_block     OF((deflate_state *s));
 local void pqdownheap     OF((deflate_state *s, ct_data *tree, int k));
 local void gen_bitlen     OF((deflate_state *s, tree_desc *desc));
@@ -212,11 +212,49 @@ local void gen_trees_header OF((void));
 #define MAX(a,b) (a >= b ? a : b)
 /* the arguments must not have side effects */
 
+
+/* ===========================================================================
+ * Genererate the file trees.h describing the static trees.
+ */
+
+/* ===========================================================================
+ * Initialize the tree data structures for a new zlib stream.
+ */
+/* 0x465e00, initializes the tree data of a new deflate stream: the tree descriptors, the bit buffer and the
+   first block */
+void _tr_init(s)
+    deflate_state *s;
+{
+    tr_static_init();
+
+    s->l_desc.dyn_tree = s->dyn_ltree;
+    s->l_desc.stat_desc = &static_l_desc;
+
+    s->d_desc.dyn_tree = s->dyn_dtree;
+    s->d_desc.stat_desc = &static_d_desc;
+
+    s->bl_desc.dyn_tree = s->bl_tree;
+    s->bl_desc.stat_desc = &static_bl_desc;
+
+    s->bi_buf = 0;
+    s->bi_valid = 0;
+    s->last_eob_len = 8; /* enough lookahead for inflate */
+#ifdef DEBUG
+    s->compressed_len = 0L;
+    s->bits_sent = 0L;
+#endif
+
+    /* Initialize the first block of the first file: */
+    init_block(s);
+}
 /* ===========================================================================
  * Initialize the various 'constant' tables.
  */
-/* unlinked */
-local void tr_static_init()
+/* unlinked: empty (STDC, no GEN_TREES_H); LINK folds it (/OPT:ICF) into ai_MsgNoOp, 0x4b70f0, where the
+   original's call in _tr_init points. @original external, not local: LINK 6 folds only external COMDATs (a static
+   copy stays in the link); defined below _tr_init, which VC6 would otherwise compile without the call to the
+   empty body */
+void tr_static_init()
 {
 #if defined(GEN_TREES_H) || !defined(STDC)
     static int static_init_done = 0;
@@ -294,41 +332,6 @@ local void tr_static_init()
     gen_trees_header();
 #  endif
 #endif /* defined(GEN_TREES_H) || !defined(STDC) */
-}
-
-/* ===========================================================================
- * Genererate the file trees.h describing the static trees.
- */
-
-/* ===========================================================================
- * Initialize the tree data structures for a new zlib stream.
- */
-/* 0x465e00, initializes the tree data of a new deflate stream: the tree descriptors, the bit buffer and the
-   first block */
-void _tr_init(s)
-    deflate_state *s;
-{
-    tr_static_init();
-
-    s->l_desc.dyn_tree = s->dyn_ltree;
-    s->l_desc.stat_desc = &static_l_desc;
-
-    s->d_desc.dyn_tree = s->dyn_dtree;
-    s->d_desc.stat_desc = &static_d_desc;
-
-    s->bl_desc.dyn_tree = s->bl_tree;
-    s->bl_desc.stat_desc = &static_bl_desc;
-
-    s->bi_buf = 0;
-    s->bi_valid = 0;
-    s->last_eob_len = 8; /* enough lookahead for inflate */
-#ifdef DEBUG
-    s->compressed_len = 0L;
-    s->bits_sent = 0L;
-#endif
-
-    /* Initialize the first block of the first file: */
-    init_block(s);
 }
 
 /* ===========================================================================
