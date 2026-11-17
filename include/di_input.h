@@ -40,10 +40,7 @@ extern unsigned char kb_Down[256];      /* 0x14681c0 */
 extern unsigned char kb_Pressed[256];   /* 0x1468420 */
 extern volatile int tb_Calls;           /* 0x6333d8, timer callbacks */
 
-HKEY reg_OpenKey(char *name, int mode);                                 /* 0x4103a0, mode 1 read, 2 create; -1 on failure */
-void reg_CloseKey(HKEY key);                                            /* 0x410430 */
-int reg_GetString(HKEY key, char *name, char *out);                     /* 0x410440, out needs 128 bytes */
-void reg_SetString(HKEY key, char *name, char *value);                  /* 0x4104b0 */
+#include "reg.h"                                                        /* the registry helpers (reg.c, 0x4103a0 .. 0x4104e0) */
 int kb_BuildMap(void);                                                  /* 0x4104e0 */
 unsigned char kb_FindKey(int shift, int ctrl, int alt, char code);                /* 0x410560 */
 void kb_SetBase(int v);                                                 /* 0x410610 */

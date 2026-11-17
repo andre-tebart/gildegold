@@ -53,61 +53,6 @@ unsigned char kb_Last = 0;                  /* 0x1468410 */
 LPDIRECTINPUT di_Main = {0};                  /* 0x1468414 */
 unsigned char kb_Pressed[256] = {0};          /* 0x1468420 */
 
-/* 0x4103a0 */
-HKEY reg_OpenKey(char *name, int mode)
-{
-    char path[256];
-    HKEY key;
-    DWORD disp;
-    int r;
-
-    sprintf(path, "%s%s", "Software\\Ahead Entertainment\\", name);
-    switch (mode) {
-    case 1:
-        r = RegOpenKeyEx(HKEY_CURRENT_USER, path, 0, KEY_READ, &key);
-        break;
-    case 2:
-        r = RegCreateKeyEx(HKEY_CURRENT_USER, path, 0, NULL, 0, KEY_WRITE, NULL, &key, &disp);
-        break;
-    default:
-        return (HKEY)-1;
-    }
-    if (r == 0)
-        return key;
-    return (HKEY)-1;
-}
-/* 0x410430, close a registry key opened by reg_OpenKey */
-
-void reg_CloseKey(HKEY key)
-{
-    RegCloseKey(key);
-}
-/* 0x410440 */
-
-int reg_GetString(HKEY key, char *name, char *out)
-{
-    BYTE buf[128];
-    DWORD size = 128;
-    BYTE *p;
-    BYTE c;
-
-    if (RegQueryValueEx(key, name, NULL, NULL, buf, &size) == 0) {
-        p = buf;
-        do {
-            c = *p;
-            p[(BYTE *)out - buf] = c;
-            p++;
-        } while (c);
-        return 1;
-    }
-    return 0;
-}
-/* 0x4104b0, store value as a REG_SZ string under name */
-
-void reg_SetString(HKEY key, char *name, char *value)
-{
-    RegSetValueEx(key, name, 0, REG_SZ, (BYTE *)value, strlen(value) + 1);
-}
 /* 0x4104e0, fill kb_Map[256] with the VkKeyScan / MapVirtualKey code of every character, 0xffff when no key; always returns 1 */
 
 int kb_BuildMap(void)
