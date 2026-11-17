@@ -292,6 +292,9 @@ Where the pushes and pops sit, how many epilogue copies there are, shared agains
 
 ### Which copy of a cross-jumped tail survives, the join position
 
+- **A guard's `return 1` with its own epilogue copy where the original `jle`s into a later `return 1` copy**: the
+  work in the if, the return in the else (`if (year - q->year > 1) { stores } else return 1;`); the plain guard
+  `if (.. <= 1) return 1;` keeps its own copy (cm_ExDarkCorner byte).
 - **Three copies of one final store + epilogue, each with its own scratch register (`mov edx,[eax+1]` /
   `mov eax,[edi+1]` / `mov ecx,[edi+1]`), the null path not folded**: one final statement after a fallback
   that reassigns the variable, `if (home == 0) { if (pick(..)) home = query(..); } br->meet = home->id;`; VC6

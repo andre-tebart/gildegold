@@ -5868,12 +5868,13 @@ int cm_ExDarkCorner(G17MSG *m, G17STAT *s)
         q = (AIOBJ *)gm_Query((void *)b->objList, 2, 6, 0, 0x12c);
         if (q == 0)
             return 1;
-        if (ai_Time.year - q->cornerYear <= 1)
+        if (ai_Time.year - q->cornerYear > 1) {
+            q->recs[0] = -1;
+            q->recs[1] = -1;
+            q->recs[2] = -1;
+            q->cornerYear = ai_Time.year - 1;
+        } else
             return 1;
-        q->recs[0] = -1;
-        q->recs[1] = -1;
-        q->recs[2] = -1;
-        q->cornerYear = ai_Time.year - 1;
     } else if (m->script.op == 0x62757920) {        /* 'buy ' */
         c = (unsigned short *)gm_FindChar(m->script.netId);
         if (c == 0)
