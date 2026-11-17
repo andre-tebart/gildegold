@@ -11559,8 +11559,7 @@ void cm_RunCutOrders(CMCUTINFO *rec)
     char name3[0x30];
     char name1[0x30];
     char name7[0x30];
-    int slot, i, n, res, b, hit, ix, iz, st, cx, cz;
-    unsigned short r;
+    int slot, i, n, res, b, hit, ix, iz, st, cx, cz, r;
     float py;
 
     for (slot = 0; slot < 16; slot++) {
