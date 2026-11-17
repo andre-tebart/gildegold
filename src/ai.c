@@ -2940,21 +2940,7 @@ done:
    for the building kinds 0xe / 8 / 0x20 the goods 0x1c4 .. 0x1c7 / 0x2af / 0x2b0 get flag 0x24 and 0x1c1 .. 0x1c3
    flag 0x204, for the kinds 0x1d / 0x1f the goods 0x225 .. 0x227 / 0x293 .. 0x295 flag 0x404 (entries added for
    them); then the store b's amounts and free capacities, the pieces the running jobs (events 0xb, 0x14 / 0x15,
-   0x8c) bring, the costs, the entries sorted by margin, flag 0x40 for a slot that is also an entry, the ranks
-   @deep Read whole against the original 0x4854f0..0x486181: the entry / slot table build, the three kind
-   groups (0xe / 8 / 0x20: 0x24 and 0x204, 0x1d / 0x1f: 0x404) with their entry creation, the slot-entry
-   links, amounts and capacities, the pending sums of the events 0xb / 0x14 / 0x15 / 0x8c, the costs, the
-   margin sort, the 0x40 flags and the ranks all match statement for statement (every call, constant and
-   field; 33 differing of 933). Readability done here: AIENTRY need1c / need20 for the unk1c / unk20
-   stores, AISLOT.unk10 -> cleared10 (only ever cleared), the description. Left are two layout / scheduling
-   hunks: (1) +0x61: the inline memset of the new entry's four slots - ours lea ebp,[ecx+ai_Entries+4] /
-   mov [ebp..ebp+0xc],eax, the original mov [ecx+0xf88a44..0xf88a50],eax with the ai_NEntries store
-   between; tried individual slot[k] = -1 stores (the -1 is hoisted out of the loop into esi, 106
-   differing), memset(.., -1, 16), memset(&..slot, 0xff, 16), memset(&slot[0], 0xff, sizeof(int) * 4): all
-   identical to the current; (2) +0x322..+0x51b: the kind 0xe / 8 / 0x20 group - the original falls into
-   the 0x24 block after the 0x1c7 .. 0x2b0 compares (jne to the 0x1c1 tests) and lays the 0x204 block after
-   it, ours jumps to the 0x24 block laid out after the 0x204 one (je 0x485956); tried continue, else if and
-   the inverted != chain: identical code. */
+   0x8c) bring, the costs, the entries sorted by margin, flag 0x40 for a slot that is also an entry, the ranks */
 
 void ai_UpdateProduction(AICHAR *ch, AIOBJ *a, AIOBJ *b)
 {
@@ -3019,7 +3005,8 @@ void ai_UpdateProduction(AICHAR *ch, AIOBJ *a, AIOBJ *b)
     kind = ai_BTypesT[ch->bld->type].kind;
     if (kind == 14 || kind == 8 || kind == 32) {
         for (j = 0; j < ai_NSlots; j++) {
-            if (ai_Slots[j].item == 0x1c7 || ai_Slots[j].item == 0x1c4 || ai_Slots[j].item == 0x1c5 || ai_Slots[j].item == 0x1c6 || ai_Slots[j].item == 0x2af || ai_Slots[j].item == 0x2b0) {
+            int is24 = ai_Slots[j].item == 0x1c7 || ai_Slots[j].item == 0x1c4 || ai_Slots[j].item == 0x1c5 || ai_Slots[j].item == 0x1c6 || ai_Slots[j].item == 0x2af || ai_Slots[j].item == 0x2b0;  /* the item is one of the goods marked 0x24 */
+            if (is24) {
                 ai_Slots[j].flags |= 0x24;
                 for (i = 0; i < ai_NEntries; i++) {
                     if (ai_Entries[i].item == ai_Slots[j].item) {
