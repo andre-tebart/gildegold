@@ -165,6 +165,12 @@ a unit boundary looks like. Not needed to match a function's code (that is `note
 
 ### Link checks
 
+- **Link order (exemeasure's `order:` pairs)**: functions land in the exe in their definition order within the
+  obj, except `static` functions: VC6 emits those after their first user, so a static callback defined above its
+  creator ends up behind it. The original's callbacks (d3t_*CB, d3_FindObject*CB, ocmd_ParticleCB) sit before
+  their creators: they were not static. Write callbacks extern (the codegen is the same). A pair of two extern
+  functions is a definition order that differs from the address order in our source.
+
 - **"matched sites disagree" for both symbols of two stores of one value to two globals**: VC6's store order is
   not controllable from the C (source order, chained assignment, types, names, declaration order: no lever); the
   masked compare reports "matched" while `dcp link` sees the relocations swapped. Fix: a struct view of the two
