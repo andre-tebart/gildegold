@@ -762,7 +762,7 @@ exe	0x0043c670	d3_FreeObjectData	d3_engine	55b03ce8700921da	no	byte	control=byte
 exe	0x0043c7a0	d3_DisposeObject	d3_engine	cd4b4c7366056b4a	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0043ca20	d3_LinkTop	d3_engine	02560a15555113b6	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0043cab0	d3_UnlinkTop	d3_engine	c4962cd979ade691	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x0043cb20	d3_AppendSibling	d3_engine	adca4955883278bc	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	cd7ec9ed5ef4b6d7
+exe	0x0043cb20	d3_AppendSibling	d3_engine	adca4955883278bc	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	390c5b51870dc7cc
 exe	0x0043cb80	d3_AddChild	d3_engine	e402383837b85317	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0043cbe0	d3_SetCamera	d3_engine	308f52b67dc5c8aa	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0043cc10	d3_AllocObjectPolys	d3_engine	51ff9a3b2bb6825d	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
@@ -870,7 +870,7 @@ exe	0x004486e0	d3if_ScreenBox	d3_interface	a9d4c4fbdcc7cc2d	no	shape	sweep contr
 exe	0x00448910	d3if_CreateCameras	d3_interface	ea8c37187df136f0	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00448a50	d3if_ClearView	d3_interface	d9903c1d453aec0a	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00448ac0	d3_YawTo	d3_interface	46a6b13ec1093be1	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	ac7be0bf90775364
-exe	0x00448c20	d3_CornerCB	d3_interface	a528799b5b6114d8	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	ac7be0bf90775364
+exe	0x00448c20	d3_CornerCB	d3_interface	a528799b5b6114d8	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	49e6e93647db464c
 exe	0x00448e60	d3_ScreenToUV	d3_interface	a24ecbf04431e874	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x004495f0	d3_FindObjectCB	d3_interface	08674e4ad385bda9	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00449690	d3_FindObject	d3_interface	7c50cee03e4239e6	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
@@ -1003,7 +1003,7 @@ exe	0x00453e20	d3_Hermite	d3_vec	93f18a05b87317f8	no	byte	control=byte p1=byte p
 exe	0x00453e80	d3_VecEqual	d3_vec	18964eb6b06c4197	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00453ee0	d3_MatMul43	d3_vec	33cf153ae91d63ee	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00454040	d3_MatTranspose	d3_vec	96ec9dd7a40904ec	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x00454070	d3_MatInverse	d3_vec	59b0c8c745edb3e3	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	1d636c0a5b47a612
+exe	0x00454070	d3_MatInverse	d3_vec	59b0c8c745edb3e3	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	b9c7de25b67b625e
 exe	0x00454510	d3_MatIdentity	d3_vec	1fef01b1fddb4585	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00454560	d3_Normalize	d3_vec	c243d6b6479d4312	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004545c0	d3_MatFromAngles	d3_vec	3e2bb4c0c85ecc18	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
