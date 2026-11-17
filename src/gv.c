@@ -537,6 +537,97 @@ found:
 }
 
 
+/* 0x4edf80, the per-frame update of the effect slots (the cannon balls in flight): the minutes since gv_LastTime (* 1/60 * 0.1) are added
+   to the three fade values of every used slot (up to 1.0); each part in flight (state 1) moves one step (ai_StepShot, ai_StepShotSlow
+   when the slot's f14 is set) and gets its "kugel" object placed at the ball; a ball that left the map (3) or landed (2: the explosion
+   gv_ExplodeShot) loses its object and is reported to the slot's callback (arg->cur = the part); a slot with three idle parts loses flags
+   1 / 2 and is released when flag 4 is set, as is a slot without flag 2 */
+
+void gv_UpdateEffects(void)
+{
+    int dt;
+    int scene;
+    float step;
+    int i, j;
+    int idle;
+
+    dt = gm_MinutesBetween(&gv_LastTime, &ai_Time);
+    if (dt < 0)
+        dt = 0;
+    gv_LastTime = ai_Time;
+    scene = d3_CurrentScene;
+    step = (float)dt * 0.016666668f;
+    step = step * 0.1f;
+    d3if_SelectScene(0, 1);
+    for (i = 0; i < 8; i++) {
+        if (gv_EffectsT[i].id == -1)
+            continue;
+        idle = 0;
+        gv_EffectsT[i].f08 += step;
+        gv_EffectsT[i].f0c += step;
+        gv_EffectsT[i].f10 += step;
+        gv_EffectsT[i].f08 = gv_EffectsT[i].f08 < 1.0f ? gv_EffectsT[i].f08 : 1.0f;
+        gv_EffectsT[i].f0c = gv_EffectsT[i].f0c < 1.0f ? gv_EffectsT[i].f0c : 1.0f;
+        gv_EffectsT[i].f10 = gv_EffectsT[i].f10 < 1.0f ? gv_EffectsT[i].f10 : 1.0f;
+        if ((gv_EffectsT[i].flags & 2) == 0) {
+            if (gv_EffectsT[i].flags & 4)
+                gv_ReleaseEffect(gv_EffectsT[i].id);
+            continue;
+        }
+        for (j = 0; j < 3; j++) {
+            if (gv_EffectsT[i].parts[j].state == 0) {
+                if (++idle >= 3) {
+                    gv_EffectsT[i].flags &= ~3;
+                    if (gv_EffectsT[i].flags & 4)
+                        gv_ReleaseEffect(gv_EffectsT[i].id);
+                }
+            } else if (gv_EffectsT[i].parts[j].state == 1) {
+                if (gv_EffectsT[i].f14 == 0 ? ai_StepShot((SHOTREC *)&gv_EffectsT[i].parts[j]) : ai_StepShotSlow((SHOTREC *)&gv_EffectsT[i].parts[j])) {
+                    if (gv_EffectsT[i].objs[j] == 0) {
+                        gv_EffectsT[i].objs[j] = d3_CreateObject(0, &d3_Origin, (D3VECTOR *)ai_ZeroRot, "kugel");
+                        gv_EffectsT[i].objs[j]->objectFlags |= 4;
+                        gv_EffectsT[i].objs[j]->stateFlags |= 0xc;
+                        gv_EffectsT[i].objs[j]->objectFlags &= ~8;
+                    }
+                    d3_SetObjectPos(gv_EffectsT[i].objs[j], (D3VECTOR *)gv_EffectsT[i].parts[j].v3);
+                }
+                if (gv_EffectsT[i].parts[j].state == 3) {
+                    if (gv_EffectsT[i].objs[j] != 0) {
+                        d3if_Delete(gv_EffectsT[i].objs[j]);
+                        gv_EffectsT[i].objs[j] = 0;
+                    }
+                    if (gv_EffectsT[i].arg != 0)
+                        gv_EffectsT[i].arg->cur = j;
+                    gv_EffectsT[i].arg->recs[j].bldId = -1;
+                    if (gv_EffectsT[i].cb != 0)
+                        gv_EffectsT[i].cb(gv_EffectsT[i].arg);
+                    gv_EffectsT[i].parts[j].state = 0;
+                    gv_EffectsT[i].tail[j] = 0;
+                } else if (gv_EffectsT[i].parts[j].state == 2) {
+                    idle++;
+                    if (gv_EffectsT[i].objs[j] != 0) {
+                        d3if_Delete(gv_EffectsT[i].objs[j]);
+                        gv_EffectsT[i].objs[j] = 0;
+                    }
+                    gv_ExplodeShot(gv_EffectsT[i].flags & 1, gv_EffectsT[i].id, (SHOTREC *)&gv_EffectsT[i].parts[j], gv_EffectsT[i].arg);
+                    if (gv_EffectsT[i].arg != 0)
+                        gv_EffectsT[i].arg->cur = j;
+                    if (gv_EffectsT[i].cb != 0)
+                        gv_EffectsT[i].cb(gv_EffectsT[i].arg);
+                    gv_EffectsT[i].parts[j].state = 0;
+                    gv_EffectsT[i].tail[j] = 0;
+                    gv_EffectsT[i].arg->cur = -1;
+                }
+            }
+        }
+        if (idle >= 3) {
+            gv_EffectsT[i].flags &= ~3;
+            if (gv_EffectsT[i].flags & 4)
+                gv_ReleaseEffect(gv_EffectsT[i].id);
+        }
+    }
+    d3if_SelectScene(scene, 1);
+}
 /* 0x4ee360, the explosion of a cannon ball that landed (gv_UpdateEffects): finds the buildings (ai_Blds) whose box (d3t_GetMeshBounds
    around the world position) holds the ball's position (mode 1, weight 1 / (1 + 0.005 d)) or lies within twice a tenth of its energy
    of it (mode 2, weight 1 / (1 + (0.0002 d + 0.005) d)); of those with energy * weight > 100 the 3 strongest go to the records of out
@@ -717,97 +808,6 @@ void gv_ExplodeShot(int damage, int effectId, SHOTREC *shot, GVEFFARG *out)
     }
     if (out != 0)
         *out = h;
-}
-/* 0x4edf80, the per-frame update of the effect slots (the cannon balls in flight): the minutes since gv_LastTime (* 1/60 * 0.1) are added
-   to the three fade values of every used slot (up to 1.0); each part in flight (state 1) moves one step (ai_StepShot, ai_StepShotSlow
-   when the slot's f14 is set) and gets its "kugel" object placed at the ball; a ball that left the map (3) or landed (2: the explosion
-   gv_ExplodeShot) loses its object and is reported to the slot's callback (arg->cur = the part); a slot with three idle parts loses flags
-   1 / 2 and is released when flag 4 is set, as is a slot without flag 2 */
-
-void gv_UpdateEffects(void)
-{
-    int dt;
-    int scene;
-    float step;
-    int i, j;
-    int idle;
-
-    dt = gm_MinutesBetween(&gv_LastTime, &ai_Time);
-    if (dt < 0)
-        dt = 0;
-    gv_LastTime = ai_Time;
-    scene = d3_CurrentScene;
-    step = (float)dt * 0.016666668f;
-    step = step * 0.1f;
-    d3if_SelectScene(0, 1);
-    for (i = 0; i < 8; i++) {
-        if (gv_EffectsT[i].id == -1)
-            continue;
-        idle = 0;
-        gv_EffectsT[i].f08 += step;
-        gv_EffectsT[i].f0c += step;
-        gv_EffectsT[i].f10 += step;
-        gv_EffectsT[i].f08 = gv_EffectsT[i].f08 < 1.0f ? gv_EffectsT[i].f08 : 1.0f;
-        gv_EffectsT[i].f0c = gv_EffectsT[i].f0c < 1.0f ? gv_EffectsT[i].f0c : 1.0f;
-        gv_EffectsT[i].f10 = gv_EffectsT[i].f10 < 1.0f ? gv_EffectsT[i].f10 : 1.0f;
-        if ((gv_EffectsT[i].flags & 2) == 0) {
-            if (gv_EffectsT[i].flags & 4)
-                gv_ReleaseEffect(gv_EffectsT[i].id);
-            continue;
-        }
-        for (j = 0; j < 3; j++) {
-            if (gv_EffectsT[i].parts[j].state == 0) {
-                if (++idle >= 3) {
-                    gv_EffectsT[i].flags &= ~3;
-                    if (gv_EffectsT[i].flags & 4)
-                        gv_ReleaseEffect(gv_EffectsT[i].id);
-                }
-            } else if (gv_EffectsT[i].parts[j].state == 1) {
-                if (gv_EffectsT[i].f14 == 0 ? ai_StepShot((SHOTREC *)&gv_EffectsT[i].parts[j]) : ai_StepShotSlow((SHOTREC *)&gv_EffectsT[i].parts[j])) {
-                    if (gv_EffectsT[i].objs[j] == 0) {
-                        gv_EffectsT[i].objs[j] = d3_CreateObject(0, &d3_Origin, (D3VECTOR *)ai_ZeroRot, "kugel");
-                        gv_EffectsT[i].objs[j]->objectFlags |= 4;
-                        gv_EffectsT[i].objs[j]->stateFlags |= 0xc;
-                        gv_EffectsT[i].objs[j]->objectFlags &= ~8;
-                    }
-                    d3_SetObjectPos(gv_EffectsT[i].objs[j], (D3VECTOR *)gv_EffectsT[i].parts[j].v3);
-                }
-                if (gv_EffectsT[i].parts[j].state == 3) {
-                    if (gv_EffectsT[i].objs[j] != 0) {
-                        d3if_Delete(gv_EffectsT[i].objs[j]);
-                        gv_EffectsT[i].objs[j] = 0;
-                    }
-                    if (gv_EffectsT[i].arg != 0)
-                        gv_EffectsT[i].arg->cur = j;
-                    gv_EffectsT[i].arg->recs[j].bldId = -1;
-                    if (gv_EffectsT[i].cb != 0)
-                        gv_EffectsT[i].cb(gv_EffectsT[i].arg);
-                    gv_EffectsT[i].parts[j].state = 0;
-                    gv_EffectsT[i].tail[j] = 0;
-                } else if (gv_EffectsT[i].parts[j].state == 2) {
-                    idle++;
-                    if (gv_EffectsT[i].objs[j] != 0) {
-                        d3if_Delete(gv_EffectsT[i].objs[j]);
-                        gv_EffectsT[i].objs[j] = 0;
-                    }
-                    gv_ExplodeShot(gv_EffectsT[i].flags & 1, gv_EffectsT[i].id, (SHOTREC *)&gv_EffectsT[i].parts[j], gv_EffectsT[i].arg);
-                    if (gv_EffectsT[i].arg != 0)
-                        gv_EffectsT[i].arg->cur = j;
-                    if (gv_EffectsT[i].cb != 0)
-                        gv_EffectsT[i].cb(gv_EffectsT[i].arg);
-                    gv_EffectsT[i].parts[j].state = 0;
-                    gv_EffectsT[i].tail[j] = 0;
-                    gv_EffectsT[i].arg->cur = -1;
-                }
-            }
-        }
-        if (idle >= 3) {
-            gv_EffectsT[i].flags &= ~3;
-            if (gv_EffectsT[i].flags & 4)
-                gv_ReleaseEffect(gv_EffectsT[i].id);
-        }
-    }
-    d3if_SelectScene(scene, 1);
 }
 /* 0x4eea70, the message 'nCTa' (0x4c6230) with the building bld's id; returns its result (ai_CannonScene waits on the slot it names) */
 
@@ -2286,6 +2286,138 @@ int gv_OrderRaiseDead(char *o, int size, int entry, int grave, int kind)
     }
     return -1;
 }
+/* 0x4f1200, runs a raising of a dead person (GVRAISE m, message 0x62, sent by gv_OrderRaiseDead): the dead GVGRAVE m->grave
+   of the entry m->entry of the size m->size of the graveyard building m->bld becomes a living character of kind 0x14 in
+   the first free ai_Chars slot (or one of kind 0xf, as ahm_CreateAlchemist): the building is its home, its title m->kind,
+   its skills half the grave's traits, its names and sex the grave's, f014 = 1000 / (random * 4 + 8), its relations to
+   all others random -0x20 .. 0x1f; it is placed at the building. The grave record is cleared; when the entry's id was
+   this dead person's, it passes to the first other dead of the entry (none: the entry is freed). Returns the new
+   character's id, 0xffff (no such entry or grave, no free slot) or a negative reason as gv_BuryCharacter (-6 another
+   kind, -1 no owner or the player's own building, -2 not a graveyard, -3 no GVYARD, -4 the size not open) */
+
+unsigned gv_RaiseDead(GVRAISE *m)
+{
+    AIBLD *bld;
+    GVENTRY *e;
+    GVGRAVE *q, *z;
+    AICHAR *c;
+    int size, i, j, n, slot;
+    float r;
+
+    if (m->kind != 0x1b && m->kind != 0x1c)
+        return (unsigned)-6;
+    gm_FindById((int *)&bld, 0, 0, m->bld);
+    if (bld == 0 || bld->owner == 0xffff || &gv_CharsT[bld->owner] == gv_PlayerAiChar)
+        return (unsigned)-1;
+    if (((AIBTYPE *)(ai_BTypes + bld->type * 0x24d))->kind != 0x1d)
+        return (unsigned)-2;
+    if (bld->yard == 0)
+        return (unsigned)-3;
+    size = m->size;
+    if (gv_SizeOpen((char *)bld->yard, size) == 0)
+        return (unsigned)-4;
+    e = (GVENTRY *)gv_ListEntry((char *)bld->yard, size, m->entry);
+    if (e == 0)
+        return 0xffff;
+    i = 0;
+    if (gv_EntryCounts[size] > 0) {
+        do {
+            q = &e->grave[i];
+            if (q->id == m->grave)
+                break;
+            i++;
+        } while (i < gv_EntryCounts[size]);
+        if (q->id == m->grave) {
+            for (slot = 0; slot < 0x300; slot++)
+                if (gv_CharsT[slot].id == 0xffff)
+                    break;
+            if (slot == 0x300) {
+                for (slot = 0; slot < 0x300; slot++)
+                    if (gv_CharsT[slot].kind == 0x0f)
+                        break;
+                if (slot == 0x300)
+                    return 0xffff;
+            }
+            if (gv_CharsT[slot].kind == 0x0f)
+                ai_CharCount--;
+            c = &gv_CharsT[slot];
+            memset(c, 0, sizeof(AICHAR));
+            gv_CharsT[slot].netId = -1;
+            gv_CharsT[slot].id = 0xffff;
+            for (i = 0; i < 8; i++)
+                gv_CharsT[slot].relatives[i] = -1;
+            ai_CharCount++;
+            c->netId = ai_NextObjectId;
+            c->id = (unsigned short)slot;
+            c->kind = 0x14;
+            c->bld2 = bld;
+            c->bld = bld;
+            c->v1f0 = 0;
+            c->partner = -1;
+            c->b215 = 0;
+            c->b216 = 0;
+            c->b217 = 0;
+            c->mask = 1;
+            ai_NextObjectId++;
+            c->mood3Rate = 1.0f;
+            c->health = 100;
+            c->w00a = 0x10;
+            c->jobId = 0;
+            c->officeKind = 0;
+            c->title = (char)m->kind;
+            c->ownName[0] = 0;
+            c->picture = -1;
+            c->partyId = -1;
+            c->v190 = 4;
+            c->money = 0;
+            c->b00d = 1;
+            c->w050 = 0x7fff;
+            for (j = 0; j < 5; j++)
+                c->skills[j] = q->traits[j] >> 1;
+            c->sex = (unsigned char)q->sex;
+            strcpy(c->first, q->first);
+            strcpy(c->family, q->family);
+            c->f010 = 0;
+            r = util_RandomF();
+            c->f018 = 0;
+            c->f01c = 1000.0f;
+            c->f020 = 0;
+            c->v024 = 0;
+            c->w028 = 0;
+            c->v02c = 0;
+            c->f014 = 1000.0f / (r * 4.0f + 8.0f);
+            for (j = 0; j < 0x300; j++) {
+                ai_Relations[j][c->id] = (signed char)util_RandomU(0x40) - 0x20;
+                ai_RelationMemory[j][c->id] = 0;
+                ai_Relations[c->id][j] = (signed char)util_RandomU(0x40) - 0x20;
+                ai_RelationMemory[c->id][j] = 0;
+            }
+            gm_PlaceOnStage(c->netId, bld->id, -1, 0, 0);
+            gm_ChooseHeadIcon(&c->id);
+            if (q->id == e->id) {
+                n = 0;
+                if (gv_EntryCounts[m->size] > 0) {
+                    z = e->grave;
+                    do {
+                        if (z->id != -1 && z->id != q->id) {
+                            e->id = z->id;
+                            goto cleared;
+                        }
+                        n++;
+                        z++;
+                    } while (n < gv_EntryCounts[m->size]);
+                }
+                e->id = -1;
+                e->w08 = 0xffff;
+            }
+        cleared:
+            memset(q, 0, sizeof(GVGRAVE));
+            q->id = -1;
+            return c->id;
+        }
+    }
+    return 0xffff;
+}
 /* 0x4f15e0, takes a random grave (0x4ef930) of the object o and its list entry (0x4ef900) and sends it with 0x4f1170 (type 0x1c); -1 when 0x4f1d50 (o, 0) is not 1 or nothing is found */
 
 int gv_SendGrave(unsigned char *o)
@@ -2435,166 +2567,6 @@ int gv_WriteGraveyard(void *f, unsigned char *o)
     }
     return 1;
 }
-/* 0x4f1d50, counts the raised dead persons of the graveyard building o (kind 0x14 characters whose bld is o) into *n
-   (n may be 0); returns 1 while they are fewer than the building type's places k231 + k232, 0 when it is full, -1 for
-   a building that is no graveyard (kind 0x1d) or has no GVYARD */
-
-int gv_RoomForRaised(unsigned char *o, int *n)
-{
-    AIBLD *bld;
-    AIBTYPE *t;
-    AICHAR *c;
-    int places;
-    int cnt;
-
-    bld = (AIBLD *)o;
-    t = (AIBTYPE *)(ai_BTypes + bld->type * 0x24d);
-    if (t->kind != 0x1d)
-        return -1;
-    if (bld->yard == 0)
-        return -1;
-    places = t->k232 + t->k231;
-    cnt = 0;
-    for (c = gv_CharsT; (int)&c->bld < (int)&gv_CharsT[768].bld; c++) {
-        if (c->id != 0xffff && c->kind == 0x14 && c->bld == bld)
-            cnt++;
-    }
-    if (n != 0)
-        *n = cnt;
-    return cnt < places;
-}
-/* 0x4f1200, runs a raising of a dead person (GVRAISE m, message 0x62, sent by gv_OrderRaiseDead): the dead GVGRAVE m->grave
-   of the entry m->entry of the size m->size of the graveyard building m->bld becomes a living character of kind 0x14 in
-   the first free ai_Chars slot (or one of kind 0xf, as ahm_CreateAlchemist): the building is its home, its title m->kind,
-   its skills half the grave's traits, its names and sex the grave's, f014 = 1000 / (random * 4 + 8), its relations to
-   all others random -0x20 .. 0x1f; it is placed at the building. The grave record is cleared; when the entry's id was
-   this dead person's, it passes to the first other dead of the entry (none: the entry is freed). Returns the new
-   character's id, 0xffff (no such entry or grave, no free slot) or a negative reason as gv_BuryCharacter (-6 another
-   kind, -1 no owner or the player's own building, -2 not a graveyard, -3 no GVYARD, -4 the size not open) */
-
-unsigned gv_RaiseDead(GVRAISE *m)
-{
-    AIBLD *bld;
-    GVENTRY *e;
-    GVGRAVE *q, *z;
-    AICHAR *c;
-    int size, i, j, n, slot;
-    float r;
-
-    if (m->kind != 0x1b && m->kind != 0x1c)
-        return (unsigned)-6;
-    gm_FindById((int *)&bld, 0, 0, m->bld);
-    if (bld == 0 || bld->owner == 0xffff || &gv_CharsT[bld->owner] == gv_PlayerAiChar)
-        return (unsigned)-1;
-    if (((AIBTYPE *)(ai_BTypes + bld->type * 0x24d))->kind != 0x1d)
-        return (unsigned)-2;
-    if (bld->yard == 0)
-        return (unsigned)-3;
-    size = m->size;
-    if (gv_SizeOpen((char *)bld->yard, size) == 0)
-        return (unsigned)-4;
-    e = (GVENTRY *)gv_ListEntry((char *)bld->yard, size, m->entry);
-    if (e == 0)
-        return 0xffff;
-    i = 0;
-    if (gv_EntryCounts[size] > 0) {
-        do {
-            q = &e->grave[i];
-            if (q->id == m->grave)
-                break;
-            i++;
-        } while (i < gv_EntryCounts[size]);
-        if (q->id == m->grave) {
-            for (slot = 0; slot < 0x300; slot++)
-                if (gv_CharsT[slot].id == 0xffff)
-                    break;
-            if (slot == 0x300) {
-                for (slot = 0; slot < 0x300; slot++)
-                    if (gv_CharsT[slot].kind == 0x0f)
-                        break;
-                if (slot == 0x300)
-                    return 0xffff;
-            }
-            if (gv_CharsT[slot].kind == 0x0f)
-                ai_CharCount--;
-            c = &gv_CharsT[slot];
-            memset(c, 0, sizeof(AICHAR));
-            gv_CharsT[slot].netId = -1;
-            gv_CharsT[slot].id = 0xffff;
-            for (i = 0; i < 8; i++)
-                gv_CharsT[slot].relatives[i] = -1;
-            ai_CharCount++;
-            c->netId = ai_NextObjectId;
-            c->id = (unsigned short)slot;
-            c->kind = 0x14;
-            c->bld2 = bld;
-            c->bld = bld;
-            c->v1f0 = 0;
-            c->partner = -1;
-            c->b215 = 0;
-            c->b216 = 0;
-            c->b217 = 0;
-            c->mask = 1;
-            ai_NextObjectId++;
-            c->mood3Rate = 1.0f;
-            c->health = 100;
-            c->w00a = 0x10;
-            c->jobId = 0;
-            c->officeKind = 0;
-            c->title = (char)m->kind;
-            c->ownName[0] = 0;
-            c->picture = -1;
-            c->partyId = -1;
-            c->v190 = 4;
-            c->money = 0;
-            c->b00d = 1;
-            c->w050 = 0x7fff;
-            for (j = 0; j < 5; j++)
-                c->skills[j] = q->traits[j] >> 1;
-            c->sex = (unsigned char)q->sex;
-            strcpy(c->first, q->first);
-            strcpy(c->family, q->family);
-            c->f010 = 0;
-            r = util_RandomF();
-            c->f018 = 0;
-            c->f01c = 1000.0f;
-            c->f020 = 0;
-            c->v024 = 0;
-            c->w028 = 0;
-            c->v02c = 0;
-            c->f014 = 1000.0f / (r * 4.0f + 8.0f);
-            for (j = 0; j < 0x300; j++) {
-                ai_Relations[j][c->id] = (signed char)util_RandomU(0x40) - 0x20;
-                ai_RelationMemory[j][c->id] = 0;
-                ai_Relations[c->id][j] = (signed char)util_RandomU(0x40) - 0x20;
-                ai_RelationMemory[c->id][j] = 0;
-            }
-            gm_PlaceOnStage(c->netId, bld->id, -1, 0, 0);
-            gm_ChooseHeadIcon(&c->id);
-            if (q->id == e->id) {
-                n = 0;
-                if (gv_EntryCounts[m->size] > 0) {
-                    z = e->grave;
-                    do {
-                        if (z->id != -1 && z->id != q->id) {
-                            e->id = z->id;
-                            goto cleared;
-                        }
-                        n++;
-                        z++;
-                    } while (n < gv_EntryCounts[m->size]);
-                }
-                e->id = -1;
-                e->w08 = 0xffff;
-            }
-        cleared:
-            memset(q, 0, sizeof(GVGRAVE));
-            q->id = -1;
-            return c->id;
-        }
-    }
-    return 0xffff;
-}
 /* 0x4f1aa0, reads the graveyard record of 0x4f17f0 from the file f for the object o (allocated by 0x4efc10): the same fields in the same order; the graves' zombie pointers are rebuilt from the saved indexes; 1 when all was read */
 
 int gv_ReadGraveyard(void *f, unsigned char *o)
@@ -2669,6 +2641,155 @@ int gv_ReadGraveyard(void *f, unsigned char *o)
         } while (i < gv_EntryTotals[g->kind]);
     }
     return 1;
+}
+/* 0x4f1d50, counts the raised dead persons of the graveyard building o (kind 0x14 characters whose bld is o) into *n
+   (n may be 0); returns 1 while they are fewer than the building type's places k231 + k232, 0 when it is full, -1 for
+   a building that is no graveyard (kind 0x1d) or has no GVYARD */
+
+int gv_RoomForRaised(unsigned char *o, int *n)
+{
+    AIBLD *bld;
+    AIBTYPE *t;
+    AICHAR *c;
+    int places;
+    int cnt;
+
+    bld = (AIBLD *)o;
+    t = (AIBTYPE *)(ai_BTypes + bld->type * 0x24d);
+    if (t->kind != 0x1d)
+        return -1;
+    if (bld->yard == 0)
+        return -1;
+    places = t->k232 + t->k231;
+    cnt = 0;
+    for (c = gv_CharsT; (int)&c->bld < (int)&gv_CharsT[768].bld; c++) {
+        if (c->id != 0xffff && c->kind == 0x14 && c->bld == bld)
+            cnt++;
+    }
+    if (n != 0)
+        *n = cnt;
+    return cnt < places;
+}
+/* 0x4f1de0, the turn step of the graveyard building o (main.c): walks its used grave entries (gv_FindEntry with
+   gv_EntryIsUsed, all sizes); after 0x40 orders it waits for the last one's answer (cm_GetSlotState). An entry whose
+   holder is gone is freed (gv_OrderSetGraveHolder) when no dead lies in it, else its care b0c wears down by
+   b0c / 255 * gv_GraveWear[size] * (random + 1) / 2 (gv_OrderAdjustEntry, on every other turn by the entry's parity);
+   a held entry wears the same way. With an owner that is not the player: a holder other than the owner whose grave
+   is in bad care (below 0.66) loses relation to the owner (cm_SendRelations -5 .. -20, by the year and the holder's
+   netId); when the lease runs out (GVENTRY.until == the year) it is renewed for 10 years (gv_OrderExtendGrave): free
+   for the owner, offered to a player (message 0x92, AIMSG.lease), paid by a character with enough money (0.44 of
+   gm_CharCurrency above gv_LeasePrice), else the entry is freed. At the end the graveyard gets 1 .. 2 new dead while
+   fewer than 4 graves are in use (gv_OrderNewDead), and a player owner is told the paid leases (ai_TellGravesPaid)
+   and the angered holders (ai_TellGraveNeglect) */
+
+void gv_GraveyardTurn(char *o)
+{
+    AIBLD *bld;
+    AICHAR *pl;
+    AICHAR *c;
+    GVENTRY *e;
+    GVGRAVE *g;
+    GVYARD *yard;
+    int h, rounds, nrel, paid, sum;
+    int k, t, size, price, share;
+    float f;
+
+    bld = (AIBLD *)o;
+    pl = 0;
+    rounds = 0;
+    nrel = 0;
+    paid = 0;
+    sum = 0;
+    h = -1;
+    if (bld->owner != 0xffff && bld->owner != *ai_PlayerChar)
+        pl = &gv_CharsT[bld->owner];
+    e = (GVENTRY *)gv_FindEntry(0, (unsigned char *)bld, 0, gv_EntryIsUsed, 0xff);
+    while (e != 0) {
+        if (rounds >= 0x40 && h != -1) {
+            while (1) {
+                if (cm_GetSlotState(h) != 0)
+                    break;
+                cm_FlushSendQueue();
+                cm_ReceiveMessages();
+                cm_ExecCommands();
+            }
+            rounds = 0;
+            h = -1;
+        }
+        c = (AICHAR *)gm_FindChar(e->id);
+        if (c == 0) {
+            size = e->size;
+            for (k = 0; k < gv_EntryCounts[size]; k++) {
+                g = &e->grave[k];
+                if (g->id != -1) {
+                    f = (util_RandomF() + 1.0f) * 0.5f;
+                    t = (int)(f * (gv_GraveWear[e->size] * ((float)e->b0c / 255.0f)));
+                    if (t <= 0 || ((gv_EntryIndex((char *)bld->yard, (int *)e) ^ ai_Time.year) & 1) != 0)
+                        goto next;
+                    h = gv_OrderAdjustEntry(o, e->size, gv_EntryIndex((char *)bld->yard, (int *)e), -t);
+                    goto counted;
+                }
+            }
+            h = gv_OrderSetGraveHolder(0, o, size, gv_EntryIndex((char *)bld->yard, (int *)e));
+        } else {
+            AIMSG m;
+
+            f = (util_RandomF() + 1.0f) * 0.5f;
+            size = e->size;
+            t = (int)(f * (gv_GraveWear[size] * ((float)e->b0c / 255.0f)));
+            if (t > 0 && ((gv_EntryIndex((char *)(yard = bld->yard), (int *)e) ^ ai_Time.year) & 1) == 0) {
+                h = gv_OrderAdjustEntry(o, size, gv_EntryIndex((char *)yard, (int *)e), -t);
+                rounds++;
+            }
+            if (pl == 0)
+                goto next;
+            if (c != pl && ai_Time.year % 4 == (c->netId & 3)
+                && (float)e->b0c / 255.0f < 0.66f) {
+                h = cm_SendRelations(pl->netId, c->netId, -5 - util_RandomU(0x10), 1);
+                rounds++;
+                nrel++;
+            }
+            if (e->until != ai_Time.year)
+                goto next;
+            h = price = gv_LeasePrice(&c->id, e->b0c, e->size, 0, &share);
+            if (c == pl) {
+                h = gv_OrderExtendGrave((int *)c, o, e->size, gv_EntryIndex((char *)bld->yard, (int *)e), 10, 0);
+            } else if (c->kind == 6 || c->kind == 7) {
+                memset(&m, 0, sizeof(m));
+                m.to = c->netId;
+                m.fromId = bld->id;
+                m.type = 0x92;
+                m.time = ai_Time;
+                m.flags = 9;
+                m.lease.bld = bld->id;
+                m.lease.size = e->size;
+                m.lease.entry = (unsigned char)gv_EntryIndex((char *)bld->yard, (int *)e);
+                m.lease.price = price;
+                m.lease.years = 10;
+                h = cm_SendLongMessage((char *)&m);
+            } else if ((int)(gm_CharCurrency((char *)c, ai_OwnPlayer) * 0.44f) > price) {
+                h = gv_OrderExtendGrave((int *)c, o, e->size, gv_EntryIndex((char *)bld->yard, (int *)e), 10, price);
+                rounds++;
+                paid++;
+                sum += share;
+                goto next;
+            } else {
+                h = gv_OrderSetGraveHolder(0, o, e->size, gv_EntryIndex((char *)bld->yard, (int *)e));
+            }
+        }
+    counted:
+        rounds++;
+    next:
+        e = (GVENTRY *)gv_FindEntry(0, (unsigned char *)bld, (unsigned)e, gv_EntryIsUsed, 0xff);
+    }
+    if (gv_GravesInUse((unsigned char *)bld) < 4)
+        gv_OrderNewDead(o, util_RandomU(2) + 1);
+    if (pl != 0 && (pl->kind == 6 || pl->kind == 7)) {
+        if (paid > 0)
+            ai_TellGravesPaid((int)pl, (int)bld, paid, sum);
+        if (nrel != 0)
+            ai_TellGraveNeglect((unsigned short *)pl, (int)bld);
+    }
 }
 /* 0x4f22a0, the entry of the list 0xff of the object o (0x4ef7c0 with 0x4ef770) whose byte +0xc is below m and the smallest of them; 0 when the owner is the player or has no item 0x1f8 (list 2, key 4) or none qualifies */
 
@@ -2816,6 +2937,53 @@ int gv_GetTableRecord(int i, int *out)
     *rec = gv_Decisions[i];
     return 1;
 }
+/* 0x4f2750, sets the AI decision record i (AIDEC.cur) to v, clamped to the record's min .. max: sends message 0x46
+   (cm_SendDecisionValue) with the netId of the character c (-1 for none); -1 for a bad record or a free character */
+int gv_SetTableRecord(AICHAR *c, int i, int v)
+{
+    AIDEC rec;
+    GVDECMSG m;
+    int id;
+
+    if (gv_GetTableRecord(i, (int *)&rec) == 0)
+        return -1;
+    if (c == 0)
+        id = -1;
+    else {
+        if (c->id == 0xffff)
+            return -1;
+        id = c->netId;
+    }
+    if (v < rec.min)
+        v = rec.min;
+    else if (v > rec.max)
+        v = rec.max;
+    m.id = id;
+    m.rec = (unsigned char)i;
+    m.value = v;
+    return cm_SendDecisionValue(&m);
+}
+/* 0x4f27d0, the handler of message 0x46 (gv_SetTableRecord): stores the value as the decision record's AIDEC.cur and,
+   unless the character is the player's own, tells it (ai_ShowCharacterNews with gv_TableRecordText); 0 for a bad record */
+
+int gv_OnDecisionValue(GVDECMSG *p)
+{
+    AIDEC rec;
+    char buf[0x100];
+    short *c;
+
+    if (gv_GetTableRecord(p->rec, (int *)&rec) == 0)
+        return 0;
+    gv_Decisions[p->rec].cur = p->value;
+    if (gv_CharsT[ai_PlayerId].netId != p->id) {
+        c = gm_FindChar(p->id);
+        if (c != 0) {
+            gv_TableRecordText(buf, p->rec);
+            ai_ShowCharacterNews(c, buf);
+        }
+    }
+    return 1;
+}
 /* 0x4f2870, finds the AI decision record of the office held by the character c (AICHAR.officeKind, +0x166) with the number b and copies it to out; 0 when none */
 
 int gv_FindTableRecord(char *c, unsigned b, int *out)
@@ -2898,25 +3066,6 @@ int gv_WriteCrimes(void *f)
     }
     return 1;
 }
-/* 0x4f2da0, the highest level (0x5092e0 (b, 10, 1)) among the school buildings (kind 7) of the character *c's, times 0.01; 0.75 when one has exactly 0x4b */
-
-float gv_SchoolLevelFactor(unsigned short *c)
-{
-    int best, i, v;
-    AIBLD *b;
-
-    best = 0;
-    for (i = 0, b = ai_BldsT; i < 0x100; i++, b++) {
-        if (b->type != 0 && b->owner == *c && ((AIBTYPE *)(ai_BTypes + b->type * 0x24d))->kind == 7) {
-            v = gm_BuildingSkill((unsigned char *)b, 10, 1);
-            if (v == 0x4b)
-                return 0.75f;
-            if (v > best)
-                best = v;
-        }
-    }
-    return (float)best * 0.01f;
-}
 /* 0x4f2b30, reads the crime state gv_WriteCrimes wrote from the save file f (the tag must be 0x1d): the AIDEC.cur values,
    ai_NextCrimeId, the counts (only saves of version 0x10041 on carry them; older ones hold 0x80 records and 0x200
    pairs), the crime records (the rest of ai_Crimes are made free) and the evidence pairs (ai_Evidence starts as all
@@ -2983,6 +3132,94 @@ int gv_ReadCrimes(int f)
             return 0;
     }
     return 1;
+}
+/* 0x4f2da0, the highest level (0x5092e0 (b, 10, 1)) among the school buildings (kind 7) of the character *c's, times 0.01; 0.75 when one has exactly 0x4b */
+
+float gv_SchoolLevelFactor(unsigned short *c)
+{
+    int best, i, v;
+    AIBLD *b;
+
+    best = 0;
+    for (i = 0, b = ai_BldsT; i < 0x100; i++, b++) {
+        if (b->type != 0 && b->owner == *c && ((AIBTYPE *)(ai_BTypes + b->type * 0x24d))->kind == 7) {
+            v = gm_BuildingSkill((unsigned char *)b, 10, 1);
+            if (v == 0x4b)
+                return 0.75f;
+            if (v > best)
+                best = v;
+        }
+    }
+    return (float)best * 0.01f;
+}
+/* 0x4f2e30, the character a commits a crime against the character b at the object obj by breaking the law (AI decision
+   record) i with the value v: the law's rule (AIDEC.rule 1 .. 7) compares its current value with v; when it is
+   broken, unless the culprit's school level (gv_SchoolLevelFactor) beats a random float or, holding the item 0x22a, a
+   second random float is above 0.5, the crime is reported (cm_SendCrime); -1 when nothing is reported */
+
+int gv_Accuse(int i, int v, int a, int b, int obj)
+{
+    AIDEC rec;
+    char *culprit;
+    int place;
+    float escape;
+    CRIME m;
+
+    if (gv_GetTableRecord(i, (int *)&rec) == 0)
+        return -1;
+    culprit = (char *)gm_FindChar(a);
+    gm_FindChar(b);
+    gm_FindById(&place, 0, 0, obj);
+    switch ((unsigned char)rec.rule) {
+    case 1:
+        if (rec.cur != v)
+            goto unreported;
+        break;
+    case 2:
+        if (rec.cur == v)
+            goto unreported;
+        break;
+    case 6:
+        if (rec.cur > v)
+            goto unreported;
+        break;
+    case 5:
+        if (rec.cur >= v)
+            goto unreported;
+        break;
+    case 4:
+        if (rec.cur < v)
+            goto unreported;
+        break;
+    case 3:
+        if (rec.cur <= v)
+            goto unreported;
+        break;
+    case 7:
+        if (rec.cur == v)
+            goto unreported;
+        if (rec.cur == 2)
+            goto unreported;
+        break;
+    default:
+        goto unreported;
+    }
+    escape = gv_SchoolLevelFactor((unsigned short *)culprit);
+    if (util_RandomF() < escape)
+        goto unreported;
+    if (ai_InventoryHas(culprit, 0x22a) != 0 && util_RandomF() > 0.5)
+        goto unreported;
+    m.time = ai_Time;
+    m.v1d = v;
+    m.law = (unsigned char)rec.id;
+    m.victim = b;
+    m.culprit = a;
+    m.count = (short)rec.crimeCount;
+    m.state = 1;
+    m.place = obj;
+    return cm_SendCrime(&m);
+unreported:
+    return -1;
 }
 /* 0x4f2fe0, the text of the AI decision record i into out (txt_Format with the texts 0x13fe + 5 * id / 0x13fd + 5 * id):
    its current value as a number or, by AIDEC.valueText 1 / 2 / 3, as the name 0x13dd / 0x13e6 / 0x13ec + cur;
@@ -3231,6 +3468,32 @@ int gv_FindCrime(int id)
     } while (i < 0x200);
     return -1;
 }
+/* 0x4f3700, sends every crime record with message 0x23 (cm_SendRetireCrime (id, flag)): an open one (state 1) with flag 0, a
+   handed-over one (state above 1: a job id) whose job he_FindEvent (1, 1, state) no longer finds with flag 1; after 32
+   sends it pumps the net until the last send's slot is done (cm_GetSlotState). */
+
+void gv_SendCrimes(void)
+{
+    int slot, sent, i;
+
+    slot = -1;
+    sent = 0;
+    for (i = 0; i < 0x200; i++) {
+        if (gv_CrimesT[i].state == 1) {
+            slot = cm_SendRetireCrime(gv_CrimesT[i].id, 0);
+            sent++;
+        } else if (gv_CrimesT[i].state > 1 && he_FindEvent(1, 1, gv_CrimesT[i].state) == 0) {
+            slot = cm_SendRetireCrime(gv_CrimesT[i].id, 1);
+            sent++;
+        }
+        if (sent >= 0x20) {
+            while (slot != -1 && cm_GetSlotState(slot) == 0)
+                sv_PumpNet();
+            slot = -1;
+            sent = 0;
+        }
+    }
+}
 /* 0x4f3780, the slot for the pair (a, b) in the table ai_Evidence (2048 pairs): -2 when it exists already, else the first free one or -1 */
 
 int gv_EvidenceSlot(int a, int b)
@@ -3257,6 +3520,44 @@ int gv_EvidenceSlot(int a, int b)
         }
     }
     return -2;
+}
+/* 0x4f37e0, retires the crime record of id (message 0x23): its count counts down; it stays (2) while the count is not 0
+   unless force, and (1) while it is handed over (state above 1) without force or free. Else the scene's grid amount of the
+   law is taken back (ord_SubGridAmount), every evidence pair of the crime is cleared (telling the player whose pair it
+   was, ai_ShowEvidenceVoidNews, without force) and the record freed (state 0, culprit and id -1): 0. 3 when there is no
+   record of id. */
+
+int gv_RetireCrime(int id, int force)
+{
+    int k, i;
+    short count;
+    short *culprit;
+
+    k = gv_FindCrime(id);
+    if (k == -1)
+        return 3;
+    count = gv_CrimesT[k].count;
+    if (count > 0)
+        gv_CrimesT[k].count = count - 1;
+    if (gv_CrimesT[k].count != 0 && force == 0)
+        return 2;
+    if (gv_CrimesT[k].state != 1 && (force == 0 || gv_CrimesT[k].state == 0))
+        return 1;
+    culprit = gm_FindChar(gv_CrimesT[k].culprit);
+    ord_SubGridAmount(gv_CrimesT[k].place, gv_CrimesT[k].law);
+    for (i = 0; i < 0x800; i++) {
+        if (id == ai_Evidence[i][1]) {
+            if (ai_PlayerId != 0xffff && ai_Evidence[i][0] == gv_CharsT[ai_PlayerId].netId && culprit != 0 && force == 0) {
+                ai_ShowEvidenceVoidNews((unsigned short *)&gv_CharsT[ai_PlayerId], (unsigned short *)culprit);
+                        }
+            ai_Evidence[i][0] = -1;
+            ai_Evidence[i][1] = -1;
+        }
+    }
+    gv_CrimesT[k].state = 0;
+    gv_CrimesT[k].culprit = -1;
+    gv_CrimesT[k].id = -1;
+    return 0;
 }
 /* 0x4f3910, message 0x3c: with hand, every open crime (state 1) against culprit that owner holds evidence of (ai_Evidence)
    gets the state state (handed over); without, every crime in the state state is open again (1). Returns the count. */
@@ -3320,315 +3621,6 @@ int gv_CulpritGuilt(int c)
         }
     }
     return sum;
-}
-/* 0x4f3fe0, fills out[0x20] (-1 first) with the indexes (of ai_Crimes) of the crimes of the culprit that the character t
-   holds evidence of (ai_Evidence); returns the count; 0 when the culprit does not exist. A 33rd crime is still written
-   (out[0x20]) before the walk stops, as in the original. */
-
-int gv_HeldCrimesOf(int culprit, int *out, unsigned short t)
-{
-    int n, i, k;
-    ORDCHAR *ch;
-
-    n = 0;
-    if (gm_FindChar(culprit) == 0)
-        return 0;
-    ch = &ORD_CHARS[t];
-    if (ch == 0)
-        return 0;
-    memset(out, 0xff, 0x20 * sizeof(int));
-    for (i = 0; i < 0x800; i++) {
-        if (ai_Evidence[i][0] == ch->netId) {
-            k = gv_FindCrime(ai_Evidence[i][1]);
-            if (k != -1 && gv_CrimesT[k].culprit == culprit) {
-                out[n++] = k;
-                if (n > 0x20)
-                    break;
-            }
-        }
-    }
-    return n;
-}
-/* 0x4f4080, as gv_HeldCrimesOf, but the crimes' ids (CRIME.id) are stored; t is the ai_Chars index of the character
-   holding the evidence (he.c's fight outcome 0x546c40 pushes it as a word without zero-extending: a 16-bit parameter) */
-
-int gv_HeldCrimeIdsOf(int culprit, int *out, unsigned short t)
-{
-    int n, i, k;
-    ORDCHAR *ch;
-
-    n = 0;
-    if (gm_FindChar(culprit) == 0)
-        return 0;
-    ch = &ORD_CHARS[t];
-    if (ch == 0)
-        return 0;
-    memset(out, 0xff, 0x20 * sizeof(int));
-    for (i = 0; i < 0x800; i++) {
-        if (ai_Evidence[i][0] == ch->netId) {
-            k = gv_FindCrime(ai_Evidence[i][1]);
-            if (k != -1 && gv_CrimesT[k].culprit == culprit) {
-                out[n++] = gv_CrimesT[k].id;
-                if (n > 0x20)
-                    break;
-            }
-        }
-    }
-    return n;
-}
-/* 0x4f4130, the count of gv_HeldCrimesOf without the list: how many crimes of the culprit the character t (low word)
-   holds evidence of, stopping past 0x20; 0 when the culprit does not exist (t is a character index, a 16-bit
-   word: lc.c's callers push it unextended) */
-
-int gv_HeldCrimeCount(int culprit, unsigned short t)
-{
-    int n, i, k;
-    ORDCHAR *ch;
-
-    n = 0;
-    if (gm_FindChar(culprit) == 0)
-        return 0;
-    ch = &ORD_CHARS[t];
-    if (ch == 0)
-        return 0;
-    for (i = 0; i < 0x800; i++) {
-        if (ai_Evidence[i][0] == ch->netId) {
-            k = gv_FindCrime(ai_Evidence[i][1]);
-            if (k != -1 && gv_CrimesT[k].culprit == culprit) {
-                n++;
-                if (n > 0x20)
-                    break;
-            }
-        }
-    }
-    return n;
-}
-/* 0x4f41b0, the character with the most open crimes the character c holds no evidence of yet: goes over the open
-   crimes (state > 0) of a living culprit other than c whose pair (c's netId, crime id) is not in ai_Evidence, counts
-   them per culprit (up to 0x300 culprits) and returns the culprit with the most; ids[] gets the ids of its crimes (up
-   to max), *cnt their number; 0 when there is none (the seance's ghost: ai_SeanceGhost) */
-
-char *gv_FindAccused(char *c, int max, int *ids, int *cnt)
-{
-    int count[0x300];
-    AICHAR *who[0x300];
-    CRIME *rec[0x200];
-    int i, j, k, n, nw, nr, bestn;
-    AICHAR *ch, *o, *best;
-
-    ch = (AICHAR *)c;
-    *cnt = 0;
-    memset(who, 0, sizeof(who));
-    memset(count, 0, sizeof(count));
-    best = 0;
-    bestn = 0;
-    n = 0;
-    nr = 0;
-    nw = 1;
-    for (i = 0; i < 0x200; i++) {
-        if (gv_CrimesT[i].state > 0 && gv_CrimesT[i].culprit != ch->netId) {
-            o = (AICHAR *)gm_FindChar(gv_CrimesT[i].culprit);
-            if (o != 0) {
-                for (k = 0; k < 0x800; k++)
-                    if (ai_Evidence[k][0] == ch->netId && ai_Evidence[k][1] == gv_CrimesT[i].id)
-                        goto next;      /* c holds evidence of it already */
-                rec[nr++] = &gv_CrimesT[i];
-                for (j = 0; j < nw; j++) {
-                    if (j >= 0x300)
-                        break;
-                    if (who[j] == 0) {
-                        who[j] = o;
-                        n = nw;
-                        count[j]++;
-                        nw++;
-                        break;
-                    }
-                    if (who[j]->netId == o->netId) {
-                        count[j]++;
-                        break;
-                    }
-                }
-            }
-        }
-next:;
-    }
-    if (nr == 0 || n == 0)
-        return 0;
-    for (j = 0; j < n; j++) {
-        if (count[j] > bestn) {
-            best = who[j];
-            bestn = count[j];
-        }
-    }
-    k = 0;
-    for (i = 0; i < nr; i++) {
-        if (k >= max)
-            break;
-        if (rec[i]->culprit == best->netId)
-            ids[k++] = rec[i]->id;
-    }
-    *cnt = k;
-    return (char *)best;
-}
-/* 0x4f4350, clears the crimes: ai_NextCrimeId = 0, every CRIME record free (culprit, victim and id -1, state 0) and
-   every evidence pair (-1, -1) */
-
-void gv_ClearCrimes(void)
-{
-    int i;
-
-    ai_NextCrimeId = 0;
-    for (i = 0; i < 0x200; i++) {
-        gv_CrimesT[i].culprit = -1;
-        gv_CrimesT[i].victim = -1;
-        gv_CrimesT[i].id = -1;
-        gv_CrimesT[i].state = 0;
-    }
-    for (i = 0; i < 0x800; i++) {
-        ai_Evidence[i][0] = -1;
-        ai_Evidence[i][1] = -1;
-    }
-}
-/* 0x4f4420, whether the sentence k (0 .. 9, the trial's punishment choices of cm.c's "cutscenes\prozess") can be passed on
-   the character c: 0 yes, -1 without c, -3 for k >= 10, -4 when c lacks what it takes (5: an office, AICHAR.officeKind;
-   7: AICHAR.b00d). The name is a reasoned guess from the trial window. */
-
-int gv_CheckSentence(AICHAR *c, unsigned k)
-{
-    int r;
-
-    r = 0;
-    if (c == 0)
-        return -1;
-    if (k >= 10)
-        return -3;
-    if (k == 5) {
-        if (c->officeKind == 0)
-            r = -4;
-    } else if (k == 7) {
-        if (c->b00d == 0)
-            r = -4;
-    }
-    return r;
-}
-/* 0x4f4d10, the rank check (gv_CheckRankUp) of every one of the 768 character slots */
-
-void gv_CheckRankUps(void)
-{
-    int i;
-
-    for (i = 0; i < 0x300; i++)
-        gv_CheckRankUp(i);
-}
-/* 0x4f4d30, the price of the evidence of the crime id offered by the character seller (the 'dunkle ecke' shops,
-   ai_DecideBuyDunkleEcke): (liking of the culprit for the seller * 0.005 + 0.5) * (the culprit's level gm_CharLevel + the
-   law's AIDEC.guilt) * 1600 into *price, the culprit's id into *culprit, the law into *law; 1 when the crime exists, its
-   law carries guilt and the culprit exists, else 0 */
-
-int gv_EvidencePrice(int id, AICHAR *seller, int *price, short *culprit, unsigned *law)
-{
-    int i;
-    AICHAR *ch;
-    AIDEC rec;
-    int level;
-
-    if (id == -1)
-        return 0;
-    i = gv_FindCrime(id);
-    if (i == -1)
-        return 0;
-    if (gv_GetTableRecord(gv_CrimesT[i].law, (int *)&rec) == 0 || rec.guilt == 0)
-        return 0;
-    ch = (AICHAR *)gm_FindChar(gv_CrimesT[i].culprit);
-    if (ch == 0)
-        return 0;
-    *culprit = ch->id;
-    level = gm_CharLevel(ch->id, 1);
-    *price = (int)((gm_Liking(ch->id, seller->id, 1) * 0.005f + 0.5f) * (level + rec.guilt) * 1600.0f);
-    *law = rec.id;
-    return 1;
-}
-/* 0x4f3700, sends every crime record with message 0x23 (cm_SendRetireCrime (id, flag)): an open one (state 1) with flag 0, a
-   handed-over one (state above 1: a job id) whose job he_FindEvent (1, 1, state) no longer finds with flag 1; after 32
-   sends it pumps the net until the last send's slot is done (cm_GetSlotState). */
-
-void gv_SendCrimes(void)
-{
-    int slot, sent, i;
-
-    slot = -1;
-    sent = 0;
-    for (i = 0; i < 0x200; i++) {
-        if (gv_CrimesT[i].state == 1) {
-            slot = cm_SendRetireCrime(gv_CrimesT[i].id, 0);
-            sent++;
-        } else if (gv_CrimesT[i].state > 1 && he_FindEvent(1, 1, gv_CrimesT[i].state) == 0) {
-            slot = cm_SendRetireCrime(gv_CrimesT[i].id, 1);
-            sent++;
-        }
-        if (sent >= 0x20) {
-            while (slot != -1 && cm_GetSlotState(slot) == 0)
-                sv_PumpNet();
-            slot = -1;
-            sent = 0;
-        }
-    }
-}
-/* 0x4f37e0, retires the crime record of id (message 0x23): its count counts down; it stays (2) while the count is not 0
-   unless force, and (1) while it is handed over (state above 1) without force or free. Else the scene's grid amount of the
-   law is taken back (ord_SubGridAmount), every evidence pair of the crime is cleared (telling the player whose pair it
-   was, ai_ShowEvidenceVoidNews, without force) and the record freed (state 0, culprit and id -1): 0. 3 when there is no
-   record of id. */
-
-int gv_RetireCrime(int id, int force)
-{
-    int k, i;
-    short count;
-    short *culprit;
-
-    k = gv_FindCrime(id);
-    if (k == -1)
-        return 3;
-    count = gv_CrimesT[k].count;
-    if (count > 0)
-        gv_CrimesT[k].count = count - 1;
-    if (gv_CrimesT[k].count != 0 && force == 0)
-        return 2;
-    if (gv_CrimesT[k].state != 1 && (force == 0 || gv_CrimesT[k].state == 0))
-        return 1;
-    culprit = gm_FindChar(gv_CrimesT[k].culprit);
-    ord_SubGridAmount(gv_CrimesT[k].place, gv_CrimesT[k].law);
-    for (i = 0; i < 0x800; i++) {
-        if (id == ai_Evidence[i][1]) {
-            if (ai_PlayerId != 0xffff && ai_Evidence[i][0] == gv_CharsT[ai_PlayerId].netId && culprit != 0 && force == 0) {
-                ai_ShowEvidenceVoidNews((unsigned short *)&gv_CharsT[ai_PlayerId], (unsigned short *)culprit);
-                        }
-            ai_Evidence[i][0] = -1;
-            ai_Evidence[i][1] = -1;
-        }
-    }
-    gv_CrimesT[k].state = 0;
-    gv_CrimesT[k].culprit = -1;
-    gv_CrimesT[k].id = -1;
-    return 0;
-}
-/* 0x4f4390, sorts the n crime records at r by the law broken (CRIME.law), ascending: an exchange sort with whole-record
-   swaps (the crime list windows ai_EvidenceDetailsWindow / ai_AccuseWindow sort their copies of the records held) */
-
-void gv_SortCrimesByLaw(int n, CRIME *r)
-{
-    int i, j;
-    CRIME tmp;
-
-    for (i = 0; i < n - 1; i++) {
-        for (j = i + 1; j < n; j++) {
-            if (r[i].law > r[j].law) {
-                tmp = r[i];
-                r[i] = r[j];
-                r[j] = tmp;
-            }
-        }
-    }
 }
 /* 0x4f3a30, retires (cm_SendRetireCrime) up to n open crimes (state 1) of the culprit; every other player character
    (kind 6 / 7, the first 8) holding evidence of one of them (ai_Evidence) is told (ai_ShowEvidenceVoidNews). Returns
@@ -3854,6 +3846,251 @@ int gv_RankCulpritsAll(int *ids, int *open, int *total, unsigned short t)
     }
     return n > 0x20 ? 0x20 : n;
 }
+/* 0x4f3fe0, fills out[0x20] (-1 first) with the indexes (of ai_Crimes) of the crimes of the culprit that the character t
+   holds evidence of (ai_Evidence); returns the count; 0 when the culprit does not exist. A 33rd crime is still written
+   (out[0x20]) before the walk stops, as in the original. */
+
+int gv_HeldCrimesOf(int culprit, int *out, unsigned short t)
+{
+    int n, i, k;
+    ORDCHAR *ch;
+
+    n = 0;
+    if (gm_FindChar(culprit) == 0)
+        return 0;
+    ch = &ORD_CHARS[t];
+    if (ch == 0)
+        return 0;
+    memset(out, 0xff, 0x20 * sizeof(int));
+    for (i = 0; i < 0x800; i++) {
+        if (ai_Evidence[i][0] == ch->netId) {
+            k = gv_FindCrime(ai_Evidence[i][1]);
+            if (k != -1 && gv_CrimesT[k].culprit == culprit) {
+                out[n++] = k;
+                if (n > 0x20)
+                    break;
+            }
+        }
+    }
+    return n;
+}
+/* 0x4f4080, as gv_HeldCrimesOf, but the crimes' ids (CRIME.id) are stored; t is the ai_Chars index of the character
+   holding the evidence (he.c's fight outcome 0x546c40 pushes it as a word without zero-extending: a 16-bit parameter) */
+
+int gv_HeldCrimeIdsOf(int culprit, int *out, unsigned short t)
+{
+    int n, i, k;
+    ORDCHAR *ch;
+
+    n = 0;
+    if (gm_FindChar(culprit) == 0)
+        return 0;
+    ch = &ORD_CHARS[t];
+    if (ch == 0)
+        return 0;
+    memset(out, 0xff, 0x20 * sizeof(int));
+    for (i = 0; i < 0x800; i++) {
+        if (ai_Evidence[i][0] == ch->netId) {
+            k = gv_FindCrime(ai_Evidence[i][1]);
+            if (k != -1 && gv_CrimesT[k].culprit == culprit) {
+                out[n++] = gv_CrimesT[k].id;
+                if (n > 0x20)
+                    break;
+            }
+        }
+    }
+    return n;
+}
+/* 0x4f4130, the count of gv_HeldCrimesOf without the list: how many crimes of the culprit the character t (low word)
+   holds evidence of, stopping past 0x20; 0 when the culprit does not exist (t is a character index, a 16-bit
+   word: lc.c's callers push it unextended) */
+
+int gv_HeldCrimeCount(int culprit, unsigned short t)
+{
+    int n, i, k;
+    ORDCHAR *ch;
+
+    n = 0;
+    if (gm_FindChar(culprit) == 0)
+        return 0;
+    ch = &ORD_CHARS[t];
+    if (ch == 0)
+        return 0;
+    for (i = 0; i < 0x800; i++) {
+        if (ai_Evidence[i][0] == ch->netId) {
+            k = gv_FindCrime(ai_Evidence[i][1]);
+            if (k != -1 && gv_CrimesT[k].culprit == culprit) {
+                n++;
+                if (n > 0x20)
+                    break;
+            }
+        }
+    }
+    return n;
+}
+/* 0x4f41b0, the character with the most open crimes the character c holds no evidence of yet: goes over the open
+   crimes (state > 0) of a living culprit other than c whose pair (c's netId, crime id) is not in ai_Evidence, counts
+   them per culprit (up to 0x300 culprits) and returns the culprit with the most; ids[] gets the ids of its crimes (up
+   to max), *cnt their number; 0 when there is none (the seance's ghost: ai_SeanceGhost) */
+
+char *gv_FindAccused(char *c, int max, int *ids, int *cnt)
+{
+    int count[0x300];
+    AICHAR *who[0x300];
+    CRIME *rec[0x200];
+    int i, j, k, n, nw, nr, bestn;
+    AICHAR *ch, *o, *best;
+
+    ch = (AICHAR *)c;
+    *cnt = 0;
+    memset(who, 0, sizeof(who));
+    memset(count, 0, sizeof(count));
+    best = 0;
+    bestn = 0;
+    n = 0;
+    nr = 0;
+    nw = 1;
+    for (i = 0; i < 0x200; i++) {
+        if (gv_CrimesT[i].state > 0 && gv_CrimesT[i].culprit != ch->netId) {
+            o = (AICHAR *)gm_FindChar(gv_CrimesT[i].culprit);
+            if (o != 0) {
+                for (k = 0; k < 0x800; k++)
+                    if (ai_Evidence[k][0] == ch->netId && ai_Evidence[k][1] == gv_CrimesT[i].id)
+                        goto next;      /* c holds evidence of it already */
+                rec[nr++] = &gv_CrimesT[i];
+                for (j = 0; j < nw; j++) {
+                    if (j >= 0x300)
+                        break;
+                    if (who[j] == 0) {
+                        who[j] = o;
+                        n = nw;
+                        count[j]++;
+                        nw++;
+                        break;
+                    }
+                    if (who[j]->netId == o->netId) {
+                        count[j]++;
+                        break;
+                    }
+                }
+            }
+        }
+next:;
+    }
+    if (nr == 0 || n == 0)
+        return 0;
+    for (j = 0; j < n; j++) {
+        if (count[j] > bestn) {
+            best = who[j];
+            bestn = count[j];
+        }
+    }
+    k = 0;
+    for (i = 0; i < nr; i++) {
+        if (k >= max)
+            break;
+        if (rec[i]->culprit == best->netId)
+            ids[k++] = rec[i]->id;
+    }
+    *cnt = k;
+    return (char *)best;
+}
+/* 0x4f4350, clears the crimes: ai_NextCrimeId = 0, every CRIME record free (culprit, victim and id -1, state 0) and
+   every evidence pair (-1, -1) */
+
+void gv_ClearCrimes(void)
+{
+    int i;
+
+    ai_NextCrimeId = 0;
+    for (i = 0; i < 0x200; i++) {
+        gv_CrimesT[i].culprit = -1;
+        gv_CrimesT[i].victim = -1;
+        gv_CrimesT[i].id = -1;
+        gv_CrimesT[i].state = 0;
+    }
+    for (i = 0; i < 0x800; i++) {
+        ai_Evidence[i][0] = -1;
+        ai_Evidence[i][1] = -1;
+    }
+}
+/* 0x4f4d10, the rank check (gv_CheckRankUp) of every one of the 768 character slots */
+
+void gv_CheckRankUps(void)
+{
+    int i;
+
+    for (i = 0; i < 0x300; i++)
+        gv_CheckRankUp(i);
+}
+/* 0x4f4d30, the price of the evidence of the crime id offered by the character seller (the 'dunkle ecke' shops,
+   ai_DecideBuyDunkleEcke): (liking of the culprit for the seller * 0.005 + 0.5) * (the culprit's level gm_CharLevel + the
+   law's AIDEC.guilt) * 1600 into *price, the culprit's id into *culprit, the law into *law; 1 when the crime exists, its
+   law carries guilt and the culprit exists, else 0 */
+
+int gv_EvidencePrice(int id, AICHAR *seller, int *price, short *culprit, unsigned *law)
+{
+    int i;
+    AICHAR *ch;
+    AIDEC rec;
+    int level;
+
+    if (id == -1)
+        return 0;
+    i = gv_FindCrime(id);
+    if (i == -1)
+        return 0;
+    if (gv_GetTableRecord(gv_CrimesT[i].law, (int *)&rec) == 0 || rec.guilt == 0)
+        return 0;
+    ch = (AICHAR *)gm_FindChar(gv_CrimesT[i].culprit);
+    if (ch == 0)
+        return 0;
+    *culprit = ch->id;
+    level = gm_CharLevel(ch->id, 1);
+    *price = (int)((gm_Liking(ch->id, seller->id, 1) * 0.005f + 0.5f) * (level + rec.guilt) * 1600.0f);
+    *law = rec.id;
+    return 1;
+}
+/* 0x4f4390, sorts the n crime records at r by the law broken (CRIME.law), ascending: an exchange sort with whole-record
+   swaps (the crime list windows ai_EvidenceDetailsWindow / ai_AccuseWindow sort their copies of the records held) */
+
+void gv_SortCrimesByLaw(int n, CRIME *r)
+{
+    int i, j;
+    CRIME tmp;
+
+    for (i = 0; i < n - 1; i++) {
+        for (j = i + 1; j < n; j++) {
+            if (r[i].law > r[j].law) {
+                tmp = r[i];
+                r[i] = r[j];
+                r[j] = tmp;
+            }
+        }
+    }
+}
+/* 0x4f4420, whether the sentence k (0 .. 9, the trial's punishment choices of cm.c's "cutscenes\prozess") can be passed on
+   the character c: 0 yes, -1 without c, -3 for k >= 10, -4 when c lacks what it takes (5: an office, AICHAR.officeKind;
+   7: AICHAR.b00d). The name is a reasoned guess from the trial window. */
+
+int gv_CheckSentence(AICHAR *c, unsigned k)
+{
+    int r;
+
+    r = 0;
+    if (c == 0)
+        return -1;
+    if (k >= 10)
+        return -3;
+    if (k == 5) {
+        if (c->officeKind == 0)
+            r = -4;
+    } else if (k == 7) {
+        if (c->b00d == 0)
+            r = -4;
+    }
+    return r;
+}
 /* 0x4f4460, carries out the sentence a (0 .. 9, the trial's punishments, see gv_CheckSentence) on the character c:
    0 / 2 the long message 0x5c (arg 3, kind 1 / 3) and 1 / 3 the message 0x5b (3 per cent of c's worth, kind 1 / 4), due in
    an hour; 4 / 6 / 8 cm_SendMessage5b (c, 1 / 2 / 3, 0); 5 takes his office (amt_SendOfficeMessage, mode 4); 7 raises
@@ -4064,243 +4301,6 @@ void gv_CheckRankUp(unsigned i)
                 n++;
             }
         }
-    }
-}
-/* 0x4f2750, sets the AI decision record i (AIDEC.cur) to v, clamped to the record's min .. max: sends message 0x46
-   (cm_SendDecisionValue) with the netId of the character c (-1 for none); -1 for a bad record or a free character */
-int gv_SetTableRecord(AICHAR *c, int i, int v)
-{
-    AIDEC rec;
-    GVDECMSG m;
-    int id;
-
-    if (gv_GetTableRecord(i, (int *)&rec) == 0)
-        return -1;
-    if (c == 0)
-        id = -1;
-    else {
-        if (c->id == 0xffff)
-            return -1;
-        id = c->netId;
-    }
-    if (v < rec.min)
-        v = rec.min;
-    else if (v > rec.max)
-        v = rec.max;
-    m.id = id;
-    m.rec = (unsigned char)i;
-    m.value = v;
-    return cm_SendDecisionValue(&m);
-}
-/* 0x4f27d0, the handler of message 0x46 (gv_SetTableRecord): stores the value as the decision record's AIDEC.cur and,
-   unless the character is the player's own, tells it (ai_ShowCharacterNews with gv_TableRecordText); 0 for a bad record */
-
-int gv_OnDecisionValue(GVDECMSG *p)
-{
-    AIDEC rec;
-    char buf[0x100];
-    short *c;
-
-    if (gv_GetTableRecord(p->rec, (int *)&rec) == 0)
-        return 0;
-    gv_Decisions[p->rec].cur = p->value;
-    if (gv_CharsT[ai_PlayerId].netId != p->id) {
-        c = gm_FindChar(p->id);
-        if (c != 0) {
-            gv_TableRecordText(buf, p->rec);
-            ai_ShowCharacterNews(c, buf);
-        }
-    }
-    return 1;
-}
-/* 0x4f2e30, the character a commits a crime against the character b at the object obj by breaking the law (AI decision
-   record) i with the value v: the law's rule (AIDEC.rule 1 .. 7) compares its current value with v; when it is
-   broken, unless the culprit's school level (gv_SchoolLevelFactor) beats a random float or, holding the item 0x22a, a
-   second random float is above 0.5, the crime is reported (cm_SendCrime); -1 when nothing is reported */
-
-int gv_Accuse(int i, int v, int a, int b, int obj)
-{
-    AIDEC rec;
-    char *culprit;
-    int place;
-    float escape;
-    CRIME m;
-
-    if (gv_GetTableRecord(i, (int *)&rec) == 0)
-        return -1;
-    culprit = (char *)gm_FindChar(a);
-    gm_FindChar(b);
-    gm_FindById(&place, 0, 0, obj);
-    switch ((unsigned char)rec.rule) {
-    case 1:
-        if (rec.cur != v)
-            goto unreported;
-        break;
-    case 2:
-        if (rec.cur == v)
-            goto unreported;
-        break;
-    case 6:
-        if (rec.cur > v)
-            goto unreported;
-        break;
-    case 5:
-        if (rec.cur >= v)
-            goto unreported;
-        break;
-    case 4:
-        if (rec.cur < v)
-            goto unreported;
-        break;
-    case 3:
-        if (rec.cur <= v)
-            goto unreported;
-        break;
-    case 7:
-        if (rec.cur == v)
-            goto unreported;
-        if (rec.cur == 2)
-            goto unreported;
-        break;
-    default:
-        goto unreported;
-    }
-    escape = gv_SchoolLevelFactor((unsigned short *)culprit);
-    if (util_RandomF() < escape)
-        goto unreported;
-    if (ai_InventoryHas(culprit, 0x22a) != 0 && util_RandomF() > 0.5)
-        goto unreported;
-    m.time = ai_Time;
-    m.v1d = v;
-    m.law = (unsigned char)rec.id;
-    m.victim = b;
-    m.culprit = a;
-    m.count = (short)rec.crimeCount;
-    m.state = 1;
-    m.place = obj;
-    return cm_SendCrime(&m);
-unreported:
-    return -1;
-}
-/* 0x4f1de0, the turn step of the graveyard building o (main.c): walks its used grave entries (gv_FindEntry with
-   gv_EntryIsUsed, all sizes); after 0x40 orders it waits for the last one's answer (cm_GetSlotState). An entry whose
-   holder is gone is freed (gv_OrderSetGraveHolder) when no dead lies in it, else its care b0c wears down by
-   b0c / 255 * gv_GraveWear[size] * (random + 1) / 2 (gv_OrderAdjustEntry, on every other turn by the entry's parity);
-   a held entry wears the same way. With an owner that is not the player: a holder other than the owner whose grave
-   is in bad care (below 0.66) loses relation to the owner (cm_SendRelations -5 .. -20, by the year and the holder's
-   netId); when the lease runs out (GVENTRY.until == the year) it is renewed for 10 years (gv_OrderExtendGrave): free
-   for the owner, offered to a player (message 0x92, AIMSG.lease), paid by a character with enough money (0.44 of
-   gm_CharCurrency above gv_LeasePrice), else the entry is freed. At the end the graveyard gets 1 .. 2 new dead while
-   fewer than 4 graves are in use (gv_OrderNewDead), and a player owner is told the paid leases (ai_TellGravesPaid)
-   and the angered holders (ai_TellGraveNeglect) */
-
-void gv_GraveyardTurn(char *o)
-{
-    AIBLD *bld;
-    AICHAR *pl;
-    AICHAR *c;
-    GVENTRY *e;
-    GVGRAVE *g;
-    GVYARD *yard;
-    int h, rounds, nrel, paid, sum;
-    int k, t, size, price, share;
-    float f;
-
-    bld = (AIBLD *)o;
-    pl = 0;
-    rounds = 0;
-    nrel = 0;
-    paid = 0;
-    sum = 0;
-    h = -1;
-    if (bld->owner != 0xffff && bld->owner != *ai_PlayerChar)
-        pl = &gv_CharsT[bld->owner];
-    e = (GVENTRY *)gv_FindEntry(0, (unsigned char *)bld, 0, gv_EntryIsUsed, 0xff);
-    while (e != 0) {
-        if (rounds >= 0x40 && h != -1) {
-            while (1) {
-                if (cm_GetSlotState(h) != 0)
-                    break;
-                cm_FlushSendQueue();
-                cm_ReceiveMessages();
-                cm_ExecCommands();
-            }
-            rounds = 0;
-            h = -1;
-        }
-        c = (AICHAR *)gm_FindChar(e->id);
-        if (c == 0) {
-            size = e->size;
-            for (k = 0; k < gv_EntryCounts[size]; k++) {
-                g = &e->grave[k];
-                if (g->id != -1) {
-                    f = (util_RandomF() + 1.0f) * 0.5f;
-                    t = (int)(f * (gv_GraveWear[e->size] * ((float)e->b0c / 255.0f)));
-                    if (t <= 0 || ((gv_EntryIndex((char *)bld->yard, (int *)e) ^ ai_Time.year) & 1) != 0)
-                        goto next;
-                    h = gv_OrderAdjustEntry(o, e->size, gv_EntryIndex((char *)bld->yard, (int *)e), -t);
-                    goto counted;
-                }
-            }
-            h = gv_OrderSetGraveHolder(0, o, size, gv_EntryIndex((char *)bld->yard, (int *)e));
-        } else {
-            AIMSG m;
-
-            f = (util_RandomF() + 1.0f) * 0.5f;
-            size = e->size;
-            t = (int)(f * (gv_GraveWear[size] * ((float)e->b0c / 255.0f)));
-            if (t > 0 && ((gv_EntryIndex((char *)(yard = bld->yard), (int *)e) ^ ai_Time.year) & 1) == 0) {
-                h = gv_OrderAdjustEntry(o, size, gv_EntryIndex((char *)yard, (int *)e), -t);
-                rounds++;
-            }
-            if (pl == 0)
-                goto next;
-            if (c != pl && ai_Time.year % 4 == (c->netId & 3)
-                && (float)e->b0c / 255.0f < 0.66f) {
-                h = cm_SendRelations(pl->netId, c->netId, -5 - util_RandomU(0x10), 1);
-                rounds++;
-                nrel++;
-            }
-            if (e->until != ai_Time.year)
-                goto next;
-            h = price = gv_LeasePrice(&c->id, e->b0c, e->size, 0, &share);
-            if (c == pl) {
-                h = gv_OrderExtendGrave((int *)c, o, e->size, gv_EntryIndex((char *)bld->yard, (int *)e), 10, 0);
-            } else if (c->kind == 6 || c->kind == 7) {
-                memset(&m, 0, sizeof(m));
-                m.to = c->netId;
-                m.fromId = bld->id;
-                m.type = 0x92;
-                m.time = ai_Time;
-                m.flags = 9;
-                m.lease.bld = bld->id;
-                m.lease.size = e->size;
-                m.lease.entry = (unsigned char)gv_EntryIndex((char *)bld->yard, (int *)e);
-                m.lease.price = price;
-                m.lease.years = 10;
-                h = cm_SendLongMessage((char *)&m);
-            } else if ((int)(gm_CharCurrency((char *)c, ai_OwnPlayer) * 0.44f) > price) {
-                h = gv_OrderExtendGrave((int *)c, o, e->size, gv_EntryIndex((char *)bld->yard, (int *)e), 10, price);
-                rounds++;
-                paid++;
-                sum += share;
-                goto next;
-            } else {
-                h = gv_OrderSetGraveHolder(0, o, e->size, gv_EntryIndex((char *)bld->yard, (int *)e));
-            }
-        }
-    counted:
-        rounds++;
-    next:
-        e = (GVENTRY *)gv_FindEntry(0, (unsigned char *)bld, (unsigned)e, gv_EntryIsUsed, 0xff);
-    }
-    if (gv_GravesInUse((unsigned char *)bld) < 4)
-        gv_OrderNewDead(o, util_RandomU(2) + 1);
-    if (pl != 0 && (pl->kind == 6 || pl->kind == 7)) {
-        if (paid > 0)
-            ai_TellGravesPaid((int)pl, (int)bld, paid, sum);
-        if (nrel != 0)
-            ai_TellGraveNeglect((unsigned short *)pl, (int)bld);
     }
 }
 
