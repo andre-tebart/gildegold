@@ -159,6 +159,11 @@ a unit boundary looks like. Not needed to match a function's code (that is `note
   codegen-neutral except where code depends on knowing the placement (the short-global widening). Convert one when
   a stuck function shows that symptom.
 
+- **All-zero initialisers go to .bss** (`int x = 0;`, `= {0}`, a GAPDATA of zeros: our map has them past .data's
+  end, as VC6 does). A zero datum inside the original's initialised .data is a pad (the 8-alignment before a
+  >= 64-byte datum, a string's NUL / pad) or a member of an initialised object (sv_ViewRectLeft / Top 0 between
+  Right / Bottom 694 / 600: one RECT-like object). Zero gap blocks before such an object are pads: delete them.
+
 ### Unit boundaries
 
 - **TU evidence from .data**: each obj has one plain .data block of its initialised globals, then its string
@@ -272,5 +277,25 @@ a unit boundary looks like. Not needed to match a function's code (that is `note
 - **Splitting a header's prototypes into a new unit's header**: replace them in the old header with `#include
   "new.h"` at the same place; removing them (and including new.h in the callers) moved two functions of unrelated
   includers by the declaration set (reg.h from di_input.h).
-- **bprobe.py caches the merged compile** (build/c2dag/unitprobe/bp_base_<tree>_<unit>.pkl) and reuses it: delete
-  it after editing the unit, or the "changed" list compares against stale code.
+- **datameasure --sizes** (s5): per obj of our link order the shift over its data and its string literals (placed
+  by their bytes in the original). A jump inside one obj ("own") is data of another place; a jump between objs is
+  data the original has there. The +6.7 KB of initialised .data were 341 main.c gap blocks holding string literals
+  the code also writes (duplicates, 9.9 KB). A gap block whose bytes are only strings already in our map is a
+  duplicate: delete it.
+- **Plain data after a run of strings = a new object** found so (s5): poker / aip (ai_LeisureActions after poker's
+  NPC model strings), he / he_b (he_BuildingModels after 0x568310's "Heilen"), d3_engine / d3_event (d3e_Events
+  after "_0"). bprobe found no function in each; the first function was bounded only by the last string user before
+  and the first reader after.
+- **Blocks hold other units' data by place** (s5): he's block 0x625708.. (he_Find*, ai.c's ai_AmbushSpots, cm.c's
+  cm_EventNames), main's 0x624560.. (init_AiTown, cm_Run*, mission's ai_MissionMode / ai_NumPlayers /
+  ai_MissionPartner, sv_ViewRect*): moved to the block's unit; no grade moved.
+- **A pushed address dcp refs misses**: `dcp refs 0x6248b8` showed no reader, `grep_orig.py 0x6248b8` seven
+  functions pushing the char[128] "gamedata/cities" our code wrote as a literal (main_CitiesDir). Before calling
+  a datum readerless, grep the original's code for the address.
+- **dcp unit split with data definitions after the split point** (d3_engine: its data sit between and after the
+  moved functions) removes multi-line comment lines and leaves orphans: 14 errors, 75 "falls". Write such a
+  split by hand (old file minus the functions, the tool's head for the new one): no grade moved.
+- **tr_Key1 -16** is the same accepted cause as evt_Path -24: sblib's short strings ("wb", "%s\n") that our link
+  places with txt, their first surviving user.
+- **bprobe.py caches the merged compile** (build/c2dag/unitprobe/bp_base_<tree>_<unit>.pkl), keyed by the unit's
+  text since s5's start: an edited unit is recompiled.
