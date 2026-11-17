@@ -136,6 +136,7 @@ exe	0x00582b40	ai_GraveDetail	1
 exe	0x00583240	ai_GraveWindow	1
 exe	0x00583700	ai_RentGraveDetail	1
 exe	0x00588310	ai_OpenItemTooltip	1
+exe	0x005a7cd0	ai_UpdateTownMap	1
 exe	0x005d3a00	ai_RegisterSaveSlot	1
 exe	0x005d3ab0	ai_FillSaveSlots	1
 exe	0x005dc240	ai_InitShot	1

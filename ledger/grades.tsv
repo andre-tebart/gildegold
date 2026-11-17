@@ -1098,7 +1098,7 @@ exe	0x0045db40	d3sm_GetGround	d3_sm	byte	readable
 exe	0x0045dc00	d3sm_Sample	d3_sm	draft	readable	deep	
 exe	0x0045e180	d3sm_BoundsCB	d3_sm	byte	readable		
 exe	0x0045e210	d3sm_ShadowCB	d3_sm	shape	readable	deep	
-exe	0x0045e560	d3sm_Replace	d3_sm	shape	readable	deep	
+exe	0x0045e560	d3sm_Replace	d3_sm	byte	readable		
 exe	0x0045e620	d3sm_Build	d3_sm	draft	readable	deep	
 exe	0x0045eeb0	d3sm_Create	d3_sm	byte	readable		
 exe	0x0045ef60	d3sm_Destroy	d3_sm	byte	readable		
@@ -2310,7 +2310,7 @@ exe	0x004c9090	cm_ExRetireCrime	cm	byte	readable
 exe	0x004c90d0	cm_ExProofExecuted	cm	byte	readable		
 exe	0x004c9110	cm_ExDropEvidence	cm	byte	readable		
 exe	0x004c9170	cm_ExSendCutInfo	cm	byte	readable		
-exe	0x004c9280	cm_ExNewParty	cm	shape	readable		
+exe	0x004c9280	cm_ExNewParty	cm	byte	readable		
 exe	0x004c9340	cm_ExAllocCutscene	cm	byte	readable		
 exe	0x004c93b0	cm_ExAddPartyMember	cm	byte	readable		
 exe	0x004c9400	cm_ExLeaveParty	cm	byte	readable		
@@ -3652,7 +3652,7 @@ exe	0x0054fc70	he_CreatePointsEffect	he	byte	readable
 exe	0x0054fce0	he_RunEffectEvent	he	shape	readable		
 exe	0x0054fe80	he_StartSendHomeEvent	he	byte	readable		
 exe	0x0054ff20	he_RunSendHomeEvent	he	draft	readable	deep	
-exe	0x00550070	he_CreateReaper	he	draft	readable	deep	
+exe	0x00550070	he_CreateReaper	he	byte	readable		
 exe	0x00550370	he_MoveReaper	he	draft	readable	deep	
 exe	0x005506c0	he_AimReaper	he	shape	readable		
 exe	0x00550850	he_TurnReaper	he	byte	readable		
@@ -4064,7 +4064,7 @@ exe	0x00584b70	ai_GraveRaiseHelper	sv_t	byte	readable
 exe	0x00584d70	ai_GypsyHelperWindow	sv_t	byte	readable		
 exe	0x00585380	ai_GraveFogWindow	sv_t	shape	readable	deep	
 exe	0x00585750	ai_SeanceWindow	sv_t	byte	readable		
-exe	0x005859c0	ai_SeanceRitual	sv_t	shape	readable	deep	
+exe	0x005859c0	ai_SeanceRitual	sv_t	byte	readable		
 exe	0x00585c40	ai_SeanceRollFormulas	sv_t	byte	readable		
 exe	0x00585cb0	ai_SeanceGhost	sv_t	byte	readable		
 exe	0x00585f30	ai_SeanceSacrifice	sv_t	byte	readable		
@@ -4306,7 +4306,7 @@ exe	0x005a67a0	ai_CityWatchListener	lc	shape	readable
 exe	0x005a6920	ai_GuildHallListener	lc	byte	readable		
 exe	0x005a6a90	ai_TrainingRoomListener	lc	byte	readable		
 exe	0x005a6b50	ai_FormatCityName	lc	byte	readable		
-exe	0x005a6b70	ai_MapCellToScreen	lc	shape	readable		
+exe	0x005a6b70	ai_MapCellToScreen	lc	byte	readable		
 exe	0x005a6c40	ai_PlaceMapControls	lc	byte	readable		
 exe	0x005a6cb0	ai_BuildTownMap	lc	draft	readable	deep	
 exe	0x005a78a0	ai_OpenTownMap	lc	byte	readable		
