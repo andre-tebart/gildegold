@@ -2824,8 +2824,8 @@ exe	0x004f39b0	gv_CountOwnedGraves	gv	d0ea4688a542178a	no	byte	control=byte p1=b
 exe	0x004f39e0	gv_CulpritGuilt	gv	b4eecb6b7ded8c53	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004f3a30	gv_RetireCrimesOf	gv	de7ca908fb1522c7	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004f3b40	gv_RetireCrimeIds	gv	6a9638f094835f67	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x004f3c50	gv_RankCulprits	gv	6aa9aabee1c41d60	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	b5de196b2aa58a97
-exe	0x004f3dd0	gv_RankCulpritsAll	gv	29a9b0dddd09289a	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	b5de196b2aa58a97
+exe	0x004f3c50	gv_RankCulprits	gs	6aa9aabee1c41d60	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=253	2e3deb9ff84c76e5
+exe	0x004f3dd0	gv_RankCulpritsAll	gs	29a9b0dddd09289a	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=253	2e3deb9ff84c76e5
 exe	0x004f3fe0	gv_HeldCrimesOf	gv	004cba9cac3c1805	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004f4080	gv_HeldCrimeIdsOf	gv	70f4e8ec02c95e92	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004f4130	gv_HeldCrimeCount	gv	0ade0ecdab6a1132	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
@@ -2835,7 +2835,7 @@ exe	0x004f4390	gv_SortCrimesByLaw	gv	4c658224c4da1f52	no	byte	control=byte p1=by
 exe	0x004f4420	gv_CheckSentence	gv	cdd01465657754f9	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004f4460	gv_PassSentence	gv	c9ff718d3dca2349	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004f48f0	gv_SentenceText	gv	bf011dcf4f1ae0dd	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x004f4970	gv_CheckRankUp	gv	f361d400f4e23504	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	b5de196b2aa58a97
+exe	0x004f4970	gv_CheckRankUp	gs	f361d400f4e23504	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=253	2e3deb9ff84c76e5
 exe	0x004f4d10	gv_CheckRankUps	gv	e4ae1be51466e2bf	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004f4d30	gv_EvidencePrice	gv	d52f98d9c87d00de	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004f4e20	ord_ApplyForOffice	ord	7487029e5d4c1fdd	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	dc671bf8ebe636a7
