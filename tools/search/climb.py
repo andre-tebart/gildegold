@@ -259,9 +259,20 @@ def op_local(lines, rng):
                 i0 -= 1
             if KEYWORD.match(lines[i0]) and lines[i0].strip().startswith(("else", "}", "case", "default")):
                 continue
+            # only uses inside the block that holds the assignment: leaving it (a `}` below its depth, e.g. into a
+            # sibling else arm) would read the new local uninitialised on the other path
+            inside, d = set(), 0
+            for k in range(i0, len(lines)):
+                left = False
+                for ch in lines[k]:                   # char by char: `} else {` leaves the block, then re-enters
+                    d += (ch == "{") - (ch == "}")
+                    left = left or d < 0
+                if left:
+                    break
+                inside.add(k)
             done = set()
             for span in (3, 10, 30, 400):
-                last = max(k for k in idx if a0 <= k and k - a0 <= span)
+                last = max(k for k in idx if a0 <= k and k - a0 <= span and k in inside)
                 if last in done or (last == a0 and lines[a0].count(expr) < 2):
                     continue
                 done.add(last)
