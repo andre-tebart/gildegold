@@ -3682,7 +3682,11 @@ int cm_ExRelations(G17MSG *m, G17STAT *s)
     return 0;
 }
 /* 0x4c85c0, handler of type 0x1c: creates the job / message box of the long message (AIMSG, 0xf8 bytes copied
-   from cm_LongMsg) and its texts (after it in cm_LongMsg), and adopts the message's next event id */
+   from cm_LongMsg) and its texts (after it in cm_LongMsg), and adopts the message's next event id
+   @deep s6: the kind == 7 return in the else of if (c->kind != 7) gives identical instructions and the
+   original's size; left one byte: the je of kind == 7 targets a later return 1 copy (+0xc7) where the
+   original's goes to the next one (+0x65, the s == 0 return). Tried: kind != 6 first with (kind != 7 && s)
+   goto set: 4 ins; (kind == 7 || kind != 6) forms: draft; one || condition: draft. */
 
 int cm_ExLongMessage(G17MSG *m, G17STAT *s)
 {
@@ -3697,13 +3701,14 @@ int cm_ExLongMessage(G17MSG *m, G17STAT *s)
         if (msg.flags & 1) {
             if (c == 0)
                 return 1;
-            if (c->kind == 7)
+            if (c->kind != 7) {
+                if (c->kind != 6) {
+                    if (s == 0)
+                        return 1;
+                    goto set;
+                }
+            } else
                 return 1;
-            if (c->kind != 6) {
-                if (s == 0)
-                    return 1;
-                goto set;
-            }
         }
         if (s == 0 && (msg.flags & 2))
             msg.flags = (msg.flags & ~2) | 4;
