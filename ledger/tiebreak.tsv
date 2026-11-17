@@ -3879,7 +3879,7 @@ exe	0x00571ac0	he_AllocGraveTraining	he	b4e48bdd30b63c20	no	shape	sweep control=
 exe	0x00571c30	he_RunGraveTraining	he	cd804e3b809f464a	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	7a3148e73a2869ed
 exe	0x00571f60	he_AllocMeeting	he	275b1afc3cc95e90	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
 exe	0x005720f0	he_CatchMeetingDisease	he	5dd406254abf8642	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
-exe	0x00572310	he_SpreadMeetingDisease	he	97391b1f7dfb5ac4	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	4cbf06cae45cb11e
+exe	0x00572310	he_SpreadMeetingDisease	he_b	38d3a78fe89af5e1	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	e6400e55c148741b
 exe	0x005725b0	he_RunMeeting	he	ecf3da0bb67cfb36	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005726a0	he_AllocMeetingScene	he	2f779211059cfe51	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005726b0	he_RunMeetingScene	he	4bded109af358bb8	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
