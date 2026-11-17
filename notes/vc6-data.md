@@ -119,13 +119,20 @@ a unit boundary looks like. Not needed to match a function's code (that is `note
   stay open (no dead function is invented). Accepted so far: vfs_Ext -32, d3fl_Suffix -24, agi_SepSpace -32,
   d3_ZAxis -24 (d3_tools 0x5eb978..; 6.0f 0x5ebb1c in d3_fl's literals, first user am 0x490ed7; 100f / 256f /
   0.0015625 / 512 around -pi/2 0x5ebb40..), the 100.0f / 0.002 ours puts in d2 / ai (0x5ece08 / 0x5ece30), the
-  0.2857 ours puts in cm (0x5edc58: the +8 of amt_TabA .. ord's literals).
+  0.2857 ours puts in cm (0x5edc58: the +8 of amt_TabA .. ord's literals), the 512.0f ours puts in f3gmt
+  (0x5ee8e8, first surviving user 0x4ffba4; the original's is 0x5ebb54: the +8 -> +16 at ls_LanguageNames).
 - **A main.c GAPDATA block of 4 bytes in .rdata's range with no source user** (only `extern GAPDATA` lines) is a
   pooled literal its users already write: delete it (it sat in .data, +200k off).
 - **A header comment edit is a tie-break too**: changing only comments in d3_vec.h / am.h moved sv_t's
   ai_TutorialInitChapter3 / f3gm's gm_FormatAmount off their grade; keep shared headers' text unless needed.
 - **datameasure's placed count is not monotonic**: symbols at delta 0 behind two cancelling errors drop out when
   one error is fixed (7 -> 2 at agi_SepSpace); count the steps instead.
+- **The .rdata size gap is mostly the library**: of .rdata's -952 at s3's start only -128 was game data (lc's
+  unwritten kind masks, gm_SpecialItemGroups in .data); the rest is LIBC objects the original links and ours does
+  not (the syserr strings 0x5ef274 .. 0x5ef5a0, SEH scope tables, five more dxguid GUIDs). Compare the game part at
+  the first library symbol (c_dfDIKeyboard: ours vs the original's address), not the section size.
+- **A named const that is a string literal of the original**: main_DefaultHost "127.0.0.1" sat among main's .data
+  strings, ours had it as const char[] in .rdata: write the literal at the user.
 
 ### .bss, common block and tentative definitions
 
@@ -160,6 +167,22 @@ a unit boundary looks like. Not needed to match a function's code (that is `note
   of that obj used it. `__LINE__` constants date a file (0x43f needs ~1100 lines of the same file before it).
 - **A callee defined above its caller is a two-way probe**, even for nonmatching callers: a big drop in differing
   bytes = same TU; "no change" proves nothing.
+  The split itself is the probe: f3gm split at 0x4fe570 dropped gm_BirthDate / gm_UpdateTechTree /
+  gm_TitlePeriodServed (the clock functions 0x4fe140 .. no longer above them), at 0x4fe140 nothing fell.
+- **A literal or a named const: the codegen decides**: VC6 /O2 shares a load across branches with a literal
+  operand but not with a const object (ai_CannonAim: `dt * 1.6f` byte, `dt * ai_CannonZoomSpeed` draft); a value
+  amid named .rdata that a byte function needs as a literal ends the named block there: the object's literals
+  start (in function order, each function's in reverse order of first use), the next named datum is a new object
+  (sv_t / svcannon / svgrave at 0x5eec68 / 0x5eecb0).
+- **A short global loaded as a dword** (`mov eax, dword [g]; and eax, 0xffff`) after a split: the user's unit
+  defines it; ai_CityStatsPanel fell to draft until ai_StatsChartFlags moved with it (lcamt).
+- **Data of other units inside a block go by place**: rt_MapSurface / ai_MapScrollEnabled (lcmap), ai_NextPartyId
+  (f3gmt), ai_DragWindow (svgrave), ord_KindTable (f3gm) were defined by their readers' units; the block's object
+  owns them.
+- **dcp unit split (data)**: it leaves data definitions in place but moves their comment continuation lines into
+  the declaration copies (orphan `... */` lines: C2143 at the copy, and the definition's comment then swallows the
+  next definitions: unresolved externals). Remove the orphans and restore the continuations from git. Its
+  prototype copies can precede the typedef they use (CANNONSCENE): move them below it.
 - **A function with NO trailing alignment nops** (the linker's 0xcc right after its last byte, while every /O2
   function carries 0x90 nops inside its own section): compiled with optimization off or for size;
   `#pragma optimize("", off)` (or `("s", on)`, same bytes) around it reproduces it. The 0xcc there is not
