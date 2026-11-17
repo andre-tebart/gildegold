@@ -1805,38 +1805,6 @@ float gm_AddHealth(unsigned short id, int d)
     cm_SendFloatDelta(c->netId, 0x1c, a);
     return f;
 }
-/* 0x4fd090, 1 when the character c may be removed: it is no player (kind 6 / 7), no other player has it as one
-   of the relatives[0..2] (the partner and the parents), and no other player with fewer than
-   5 children has it among the children (relatives[3..7]) */
-
-int gm_IsNoPlayerKin(ORDCHAR *c)
-{
-    ORDCHAR *p;
-    int id, i, k, n, found;
-
-    if (c->kind == 6 || c->kind == 7)
-        return 0;
-    id = c->netId;
-    for (i = 0; i < 0x300; i++) {
-        p = &ORD_CHARS[i];
-        found = 0;
-        n = 0;
-        if (p->netId != id && (p->kind == 6 || p->kind == 7)) {
-            if (p->relatives[0] == id || p->relatives[1] == id || p->relatives[2] == id)
-                return 0;
-            for (k = 3; k < 8; k++) {
-                if (p->relatives[k] == id) {
-                    found |= 1;
-                    n++;
-                } else if (p->relatives[k] != -1)
-                    n++;
-            }
-            if (found && n < 5)
-                return 0;
-        }
-    }
-    return 1;
-}
 
 extern float gm_BirthChance[6];
 void gm_AddTime(struct AITIME *c, int hours, int mins, int secs);                     /* 0x4fe140 */
@@ -1971,6 +1939,38 @@ void gm_PartnerStep(ORDCHAR *c)
     fv = (util_RandomF() + 1.0f) * gm_BirthChance[n];
     cm_SendFloatDelta(c->netId, 0x7c, fv);
     gm_NetMsgCount++;
+}
+/* 0x4fd090, 1 when the character c may be removed: it is no player (kind 6 / 7), no other player has it as one
+   of the relatives[0..2] (the partner and the parents), and no other player with fewer than
+   5 children has it among the children (relatives[3..7]) */
+
+int gm_IsNoPlayerKin(ORDCHAR *c)
+{
+    ORDCHAR *p;
+    int id, i, k, n, found;
+
+    if (c->kind == 6 || c->kind == 7)
+        return 0;
+    id = c->netId;
+    for (i = 0; i < 0x300; i++) {
+        p = &ORD_CHARS[i];
+        found = 0;
+        n = 0;
+        if (p->netId != id && (p->kind == 6 || p->kind == 7)) {
+            if (p->relatives[0] == id || p->relatives[1] == id || p->relatives[2] == id)
+                return 0;
+            for (k = 3; k < 8; k++) {
+                if (p->relatives[k] == id) {
+                    found |= 1;
+                    n++;
+                } else if (p->relatives[k] != -1)
+                    n++;
+            }
+            if (found && n < 5)
+                return 0;
+        }
+    }
+    return 1;
 }
 /* 0x4fd120, the yearly population step. n counts the characters in use. A child (kind 3) without a profession or an
    office applied for that gm_IsNoPlayerKin lets go is removed (its whole life taken) when it is old enough (44 + random 4
@@ -2936,96 +2936,219 @@ void gm_InitPlayerRecord(int p)
 int gm_FreeList(int *list);                     /* 0x500140 */
 void cm_SendGoodsDelta(struct GMSTOCK *p, unsigned char k);                     /* 0x4c5710 */
 
-/* 0x4ffbf0, the 0x4ffa10 value of the goods record of the player p with the word at +0 equal to id (0x55 records of 0x80 bytes), -1 when there is none */
-float gm_GoodsValue(int p, unsigned id)
+void cm_SendExSellObject(int a, int b, int c, int d, unsigned char e, int f);                     /* 0x4c4880 */
+void cm_SendGoodsRecord(void *p, unsigned char k);                     /* 0x4c56d0 */
+void cm_BeginSendGroup(void);                     /* 0x4c3b30 */
+void cm_EndSendGroup(void);                     /* 0x4c3b40 */
+int cm_SendGroupState();                     /* 0x4c3b50 */
+int gm_FindPlayerBuilding(int p);                   /* 0x501000 */
+void gm_ClockToDate(struct AITIME *c, unsigned char *out);                     /* 0x4fe2c0 */
+
+/* the goods record n (0x80 bytes) of the player p */
+#define GM_GOODS(p, n) (init_StockBlocks + (p) * 0x2a90 + (n) * 0x80)
+
+
+void gm_SyncMarket(unsigned p);
+int gm_GoodsDemand(int p, int i);
+int gm_GoodsStock(int p, int i);
+
+
+#define GM_WAIT(h) while (cm_GetSlotState(h) == 0) sv_PumpNet()
+#define cm_SendExSellObjectH ((int (*)(int, int, int, int, unsigned char, int))cm_SendExSellObject)  /* 0x4c4880: it returns the slot handle of its message (cm_QueueSend's result stays in eax), which cm.h's void prototype drops; @original gm_SyncMarket pushes the goods id zero-extended (int), as ai.c's cm_SendExSellObjectI */
+
+/* 0x4fec10, the market sync of the player p (group 1, 5, 10 is the market building ai_MarketBuilding): for the own player the amount flag of every goods record is set when a building other than kind 10 holds the good in its store (0xff object) or needs it for one it holds (the four needs at +0x2e of its ai_Goods record); then every record is synced with the market object of its marketKind (its store created first with cm_SendExSellObject when missing): a flagged good the store lacks is requested (one), an unflagged one it has is sold with its count; each record goes to the server (cm_SendGoodsRecord), and the goods count of the market objects 0x92 .. 0x97, 0x2db raises the level byte +0x1c of their kind 0x11 object. For another player: the goods its two market objects (0x1db / 0x1dc) hold get the offer counter (random, then + 0x18 .. 0x1f per call; offered up to 0x80) and are sent in one group */
+void gm_SyncMarket(unsigned p)
 {
-    int i;
-    unsigned short *q;
+    int list[8];
+    GMSTOCK rec;
+    GMSTOCK *stock, *g, *g2;
+    unsigned char *b;
+    ORDOBJ *o, *o2, *m, *a1;
+    char *gp;
+    int i, j, k, cnt, h;
+    int *lp;
 
-    i = 0;
-    q = (unsigned short *)(init_StockBlocks + p * 0x2a90);
-    do {
-        if (*q == id)
-            return gm_StockPrice(p, i);
-        i++;
-        q += 0x40;
-    } while (i < 0x55);
-    return -1.0f;
-}
-/* 0x4ffc40, the goods record of the player p with the word at +0 equal to id, 0 when none */
-
-char *gm_FindGoods(int p, unsigned id)
-{
-    int i;
-    unsigned short *q;
-
-    i = 0;
-    q = (unsigned short *)(init_StockBlocks + p * 0x2a90);
-    do {
-        if (*q == id)
-            return init_StockBlocks + i * 0x80 + p * 0x2a90;
-        i++;
-        q += 0x40;
-    } while (i < 0x55);
-    return 0;
-}
-/* 0x4ffc90, the distance of the points (a, b) and (c, d) times 2.90816330909729 (the map scale) */
-
-float gm_MapDistance(int a, int b, int c, int d)
-{
-    return (float)(sqrt(fabs((double)a - (double)c) * fabs((double)a - (double)c) + fabs((double)b - (double)d) * fabs((double)b - (double)d)) * 2.90816330909729);
-}
-/* 0x4fffc0, the first free record (prototype 0) of the object instance table ai_Objects (0x5008 records of 0x43 bytes), 0 when it is full */
-
-short *gm_FindFreeObject(void)
-{
-    int i;
-    ORDOBJ *p, *res;
-
-    res = 0;
-    i = 0;
-    p = (ORDOBJ *)ai_Objects;
-    while (res == 0 && i < 0x5008) {
-        if (p->type != 0) {
-            i++;
-            p++;
-        } else
-            res = p;
-    }
-    return (short *)res;
-}
-/* 0x4ffff0, removes the object instance with the prototype id from the singly linked list whose head pointer is *list (the next pointer sits at +0x3f of each node): frees its extra part (0x500140 of the pointer at +0x14), the node itself (0x500080), relinks, marks the record free and decrements the count 0x6f1bdc. Returns 0, -1 for an empty list, -2 when not found */
-
-int gm_RemoveObject(int *list, unsigned id)
-{
-    ORDOBJ *prev, *cur;
-    int n;
-
-    prev = 0;
-    if (list == 0)
-        return -1;
-    if ((ORDOBJ *)*list == 0)
-        return -1;
-    n = 0;
-    cur = (ORDOBJ *)*list;
-    do {
-        if (cur->type == id) {
-            if (cur->list != 0)
-                gm_FreeList(&cur->list);
-            gm_FreeObjectExtra((unsigned short *)cur);
-            if (n == 0)
-                *list = (int)cur->next;
-            else
-                prev->next = cur->next;
-            cur->type = 0;
-            f3gm_ObjectCount--;
-            return 0;
+    list[0] = 0x92;
+    list[1] = 0x93;
+    list[2] = 0x94;
+    list[3] = 0x95;
+    list[4] = 0x96;
+    list[5] = 0x97;
+    list[6] = 0x2db;
+    list[7] = 0;
+    ai_MarketBuilding = (struct AIBLD *)gm_BuildQuery(1, 5, 10);
+    if (ai_MarketBuilding == 0)
+        return;
+    stock = (GMSTOCK *)(init_StockBlocks + p * 0x2a90);
+    if (p == ai_OwnPlayer) {
+        for (i = 0; i < 0x55; i++)
+            stock[i].amount = 0;
+        b = (unsigned char *)gm_BuildQuery(1, 6);
+        while (b != 0) {
+            if (ai_BTypes[*b * 0x24d] != 10) {
+                o = (ORDOBJ *)gm_Query(((ORDBLD *)b)->objList, 1, 0, 0xff);
+                for (i = 0; o != 0 && i < 0x55; i++) {
+                    {
+                        g = &stock[i];
+                        if (g->item != 0 && gm_Query(o->list, 1, 0, g->item) != 0) {
+                            g->amount = 1;
+                            gp = ai_Goods + g->item * 0x41;
+                            for (j = 0; j < 0x55; j++) {
+                                g2 = &stock[j];
+                                for (k = 0; k < 4; k++)
+                                    if (g2->item == ((GMGOOD *)gp)->in[k])
+                                        g2->amount = 1;
+                            }
+                        }
+                    }
+                }
+            }
+            b = (unsigned char *)gm_BuildNext();
         }
-        n++;
-        prev = cur;
-        cur = cur->next;
-    } while (cur != 0);
-    return -2;
+        for (i = 0; i < 0x55; i++) {
+            g = (GMSTOCK *)(init_StockBlocks + p * 0x2a90) + i;
+            rec = stock[i];
+            o = (ORDOBJ *)gm_Query(((ORDBLD *)ai_MarketBuilding)->objList, 1, 0, g->marketKind);
+            if (o != 0) {
+                o2 = (ORDOBJ *)gm_Query(o->list, 1, 0, 0xff);
+                if (o2 == 0) {
+                    h = cm_SendExSellObjectH(o->objId, -1, 0xff, 1, ai_OwnPlayer, 0);
+                    GM_WAIT(h);
+                    o2 = (ORDOBJ *)cm_GetSlotValue(h);
+                }
+                if (g->amount != 0) {
+                    m = (ORDOBJ *)gm_Query(o2->list, 1, 0, g->item);
+                    if (m == 0) {
+                        h = cm_SendExSellObjectH(o2->objId, -1, g->item, 1, ai_OwnPlayer, 0);
+                        GM_WAIT(h);
+                    }
+                } else {
+                    m = (ORDOBJ *)gm_Query(o2->list, 1, 0, g->item);
+                    if (m != 0) {
+                        h = cm_SendExSellObjectH(-1, o2->objId, g->item, m->count, ai_OwnPlayer, 0);
+                        GM_WAIT(h);
+                    }
+                }
+                cm_SendGoodsRecord(&rec, p);
+            }
+        }
+        for (lp = list; *lp != 0; lp++) {
+            cnt = 0;
+            o = (ORDOBJ *)gm_Query(((ORDBLD *)ai_MarketBuilding)->objList, 1, 0, *lp);
+            if (o != 0 && (o2 = (ORDOBJ *)gm_Query(o->list, 1, 0, 0xff)) != 0) {
+                o2 = (ORDOBJ *)gm_Query(o2->list, 1, 5);
+                while (o2 != 0) {
+                    cnt++;
+                    o2 = (ORDOBJ *)gm_QueryNext();
+                }
+                o = (ORDOBJ *)gm_Query(o->list, 1, 4, 0x11);
+                if (o != 0 && (int)o->lvl1c < cnt) {
+                    cnt -= o->lvl1c;
+                    cm_BeginFieldBlock((char *)o, o->objId);
+                    cm_AddFieldValues(1, 1, (char *)&o->lvl1c - cm_FieldObject, &cnt);
+                    cm_SendFieldDeltas();
+                }
+            }
+        }
+        return;
+    }
+    o = (ORDOBJ *)gm_FindPlayerBuilding(p);
+    if (o != 0 && (a1 = (ORDOBJ *)gm_Query(((ORDBLD *)o)->objList, 2, 0, 0x1db, 6)) != 0 && (o2 = (ORDOBJ *)gm_Query(((ORDBLD *)o)->objList, 2, 0, 0x1dc, 6)) != 0) {
+        cm_BeginSendGroup();
+        for (i = 0; i < 0x55; i++) {
+            rec = stock[i];
+            if (rec.item != 0) {
+                m = (ORDOBJ *)gm_Query(a1->list, 1, 0, rec.item);
+                if (m == 0)
+                    m = (ORDOBJ *)gm_Query(o2->list, 1, 0, rec.item);
+                if (m != 0) {
+                    if (rec.offer == 0) {
+                        rec.offer = (unsigned char)util_RandomU(0xff);
+                        rec.amount = rec.offer <= 0x80;
+                    } else {
+                        rec.offer += util_RandomU(8) + 0x18;
+                        rec.amount = rec.offer <= 0x80;
+                    }
+                } else
+                    rec.amount = 0;
+                cm_SendGoodsRecord(&rec, p);
+            }
+        }
+        cm_EndSendGroup();
+        while (cm_SendGroupState() == 0)
+            sv_PumpNet();
+    }
+}
+/* 0x4ff190, refreshes the goods lists of the own player p (as the first part of gm_SyncMarket): clears the amount flag of the 0x55 goods records, flags the goods a building of the town (group (1, 6), not kind 10) holds in its store (its 0xff object) and the goods those need (the four words at +0x2e of the ai_Goods record), creates the flagged goods missing in the store of their market object (marketKind) there (gm_CreateObject), and sets the level byte +0x1c of the kind 0x11 object of the market objects 0x92 .. 0x97 / 0x2db to their goods count */
+void gm_RefreshGoodsLists(unsigned p)
+{
+    int list[8];
+    GMSTOCK *stock, *g, *g2;
+    unsigned char *b;
+    ORDOBJ *o, *o2;
+    char *gp;
+    int i, j, k, cnt;
+    int *lp;
+
+    list[0] = 0x92;
+    list[1] = 0x93;
+    list[2] = 0x94;
+    list[3] = 0x95;
+    list[4] = 0x96;
+    list[5] = 0x97;
+    list[6] = 0x2db;
+    list[7] = 0;
+    ai_MarketBuilding = (struct AIBLD *)gm_BuildQuery(1, 5, 10);
+    if (ai_MarketBuilding == 0)
+        return;
+    stock = (GMSTOCK *)(init_StockBlocks + p * 0x2a90);
+    if (p != ai_OwnPlayer)
+        return;
+    for (i = 0; i < 0x55; i++)
+        stock[i].amount = 0;
+    b = (unsigned char *)gm_BuildQuery(1, 6);
+    while (b != 0) {
+        if (ai_BTypes[*b * 0x24d] != 10) {
+            o = (ORDOBJ *)gm_Query(((ORDBLD *)b)->objList, 1, 0, 0xff);
+            for (i = 0; o != 0 && i < 0x55; i++) {
+                g = &stock[i];
+                if (g->item != 0 && gm_Query(o->list, 1, 0, g->item) != 0) {
+                    g->amount = 1;
+                    gp = ai_Goods + g->item * 0x41;
+                    for (j = 0; j < 0x55; j++) {
+                        g2 = &stock[j];
+                        for (k = 0; k < 4; k++)
+                            if (g2->item == ((GMGOOD *)gp)->in[k])
+                                g2->amount = 1;
+                    }
+                }
+            }
+        }
+        b = (unsigned char *)gm_BuildNext();
+    }
+    for (i = 0; i < 0x55; i++) {
+        g = &stock[i];
+        o = (ORDOBJ *)gm_Query(((ORDBLD *)ai_MarketBuilding)->objList, 1, 0, g->marketKind);
+        if (o != 0) {
+            o = (ORDOBJ *)gm_Query(o->list, 1, 0, 0xff);
+            if (g->amount != 0 && gm_Query(o->list, 1, 0, g->item) == 0)
+                gm_CreateObject(o->objId, g->item, 1);
+        }
+    }
+    for (lp = list; *lp != 0; lp++) {
+        cnt = 0;
+        o = (ORDOBJ *)gm_Query(((ORDBLD *)ai_MarketBuilding)->objList, 1, 0, *lp);
+        if (o != 0 && (o2 = (ORDOBJ *)gm_Query(o->list, 1, 0, 0xff)) != 0) {
+            o2 = (ORDOBJ *)gm_Query(o2->list, 1, 5);
+            while (o2 != 0) {
+                cnt++;
+                o2 = (ORDOBJ *)gm_QueryNext();
+            }
+            o = (ORDOBJ *)gm_Query(o->list, 1, 4, 0x11);
+            if (o != 0 && o->lvl1c != cnt)
+                o->lvl1c = (unsigned char)cnt;
+        }
+    }
 }
 /* 0x4ff450, a random market shake: with chance 1 / 2, 0 .. 1 times (0x2 draws) a random goods record of the own player (of the first 0x54) that is in use and held gets a copy whose mean is the demand raised by 1.5 or halved, and whose price is the item's price (gm_ItemPrice, 100) scaled the same; the copy goes to cm_SendGoodsDelta for the own player */
 
@@ -3054,20 +3177,140 @@ void gm_RandomMarketShake(int unused)
         }
     }
 }
+/* 0x4ff550, the daily price update of the player p at the clock t: the date's year and month are interpolated in the player slot's two yearly tables (GMPOINT, at +0x64 and +0xb4) into the block's two indices, each scaled by its factor / 1000; then for the 0x55 goods records the demand moves halfway to gm_GoodsDemand (not for the kinds 0x17 / 0x25), the stock is gm_GoodsStock for the own player and the base stock for the others, the price is gm_StockPrice, a record with the byte +0x40 set takes its stock as demand, and the four counters +0x10 .. +0x1c are cleared; without a network game the market syncs (gm_SyncMarket) and shakes (gm_RandomMarketShake)
+   @deep match-deep 2026-11-14: draft 40 -> shape 37 ins. Fixed: the goods kind through a pointer local (g
+   = GM_GOOD(item); g->type tested twice: the original's add eax,edx; mov al,[eax]) and cm_DoubleHalf for
+   the 0.5 (M10). Table B matches the original exactly; what is left is table A's three inner arms: the
+   original hoists p*17 (mov eax,ebp; shl eax,4; add eax,ebp) above 'cmp ebx,edi' for all three arms and
+   loads the lower value first (arm 1 A[k].value in ebp, arm 2 A[k-1].value into the p slot [esp+0x24],
+   A[k-1].year into [esp+0x10]); ours loads A[k+1].value first and the k>0 arm starts with its two CSE
+   loads, so nothing is hoisted. Tried (dcp try): 63 spellings of both arm expressions (operand / term /
+   factor orders) = control; the arms nested under else {} = control, as if (k < n - 1) {..} else (61), k
+   <= 0 arm first (59), d.year for year = control, the table B form with temp a for A (244, frame 0xc), a
+   temp per arm = control. headers sample: insensitive. flip.py (want the hoist): only mutants that break
+   the CSE of A[k-1].year in the k>0 arm hoist (157 ins, frame 0xc). (tiebreak: not measured (dcp headers
+   sample gm_UpdatePrices)) prior: read the whole function against the original 0x4ff550..0x4ff8b2 and
+   reconciled every statement: date / yearly table interpolation of both GMPOINT tables, the block indices
+   and factors (GMBLOCK), the goods loop (demand, stock, price, demandIsStock, the daily counters), the
+   net_Conn.s gate. Tried: else-if chain (kept), the inner three cases nested under if (k < n - 1) (worse,
+   64 ins), a temporary for table A like table B (worse, 245 ins). What remains is CSE placement in table
+   A: the original computes p*17 (mov eax,ebp; shl eax,4; add eax,ebp) once before 'cmp ebx,edi; jne' and
+   reuses it in all three inner cases, ours recomputes it in the k>0 case (0x4ff660..0x4ff665) and in the
+   k<=0 case (0x4ff6b1..0x4ff6bc): those 6 instructions are the whole size difference; the rest is ebx/ebp
+   rotation and the [esp+0x10]/[esp+0x24] slot swap (diffclass: slots), plus the folded 'mov al,[eax+edx]'
+   vs 'ad... */
+void gm_UpdatePrices(unsigned p, void *t)
+{
+    GMDATE d;
+    int year, n, k, a;
+    int i;
+    AIGOOD *g;
 
-extern int gm_QueryType;
-extern int gm_QueryOwner;
-extern unsigned short gm_QueryOwnerNo;
-#define ALIGN1 __declspec(align(1))
-extern ALIGN1 char gm_QueryKind[550];
-extern char gm_QueryFirst, gm_QueryScanAll, gm_QueryChildren, gm_QueryStopFirst;  /* 0x6f1be0, 0x6f1be8, 0x6f1be9, 0x6f1bea, first-step flag, scan all, descend into children, stop at the first */
-extern int gm_QueryScanned;
-extern ORDOBJ *gm_QueryCursor;
-extern int gm_QueryDepth;
-extern int gm_QueryStack[20488];
-int gm_FindMarketObject(int id);                     /* 0x500ec0 */
-int gm_FindPlayerBuilding(int p);                   /* 0x501000 */
+    gm_ClockToDate(t, (unsigned char *)&d);
+    year = d.year;
+    for (n = 0; n < 9; n++)
+        if (GM_TABLE_A(p)[n].year >= GM_TABLE_A(p)[n + 1].year)
+            break;
+    if (n >= 9)
+        n = 9;
+    for (k = 0; k < n; k++)
+        if (GM_TABLE_A(p)[k].year >= year)
+            break;
+    if (k >= n - 1)
+        GM_BLOCK(p)->demandIndex = GM_TABLE_A(p)[n - 1].value;
+    else if (year == GM_TABLE_A(p)[k].year)
+        GM_BLOCK(p)->demandIndex = (d.month + (year - GM_TABLE_A(p)[k].year) * 12) * (GM_TABLE_A(p)[k + 1].value - GM_TABLE_A(p)[k].value) / ((GM_TABLE_A(p)[k + 1].year - GM_TABLE_A(p)[k].year) * 12) + GM_TABLE_A(p)[k].value;
+    else if (k > 0)
+        GM_BLOCK(p)->demandIndex = (d.month + (year - GM_TABLE_A(p)[k - 1].year) * 12) * (GM_TABLE_A(p)[k].value - GM_TABLE_A(p)[k - 1].value) / ((GM_TABLE_A(p)[k].year - GM_TABLE_A(p)[k - 1].year) * 12) + GM_TABLE_A(p)[k - 1].value;
+    else
+        GM_BLOCK(p)->demandIndex = GM_TABLE_A(p)[0].value;
+    GM_BLOCK(p)->demandIndex = GM_BLOCK(p)->demandFactor * GM_BLOCK(p)->demandIndex / 1000;
+    for (n = 0; n < 9; n++)
+        if (GM_TABLE_B(p)[n].year >= GM_TABLE_B(p)[n + 1].year)
+            break;
+    if (n >= 9)
+        n = 9;
+    for (k = 0; k < n; k++)
+        if (GM_TABLE_B(p)[k].year >= year)
+            break;
+    if (k >= n - 1)
+        GM_BLOCK(p)->indexB = GM_TABLE_B(p)[n - 1].value;
+    else {
+        if (year == GM_TABLE_B(p)[k].year)
+            a = (d.month + (year - GM_TABLE_B(p)[k].year) * 12) * (GM_TABLE_B(p)[k + 1].value - GM_TABLE_B(p)[k].value) / ((GM_TABLE_B(p)[k + 1].year - GM_TABLE_B(p)[k].year) * 12) + GM_TABLE_B(p)[k].value;
+        else if (k > 0)
+            a = (d.month + (year - GM_TABLE_B(p)[k - 1].year) * 12) * (GM_TABLE_B(p)[k].value - GM_TABLE_B(p)[k - 1].value) / ((GM_TABLE_B(p)[k].year - GM_TABLE_B(p)[k - 1].year) * 12) + GM_TABLE_B(p)[k - 1].value;
+        else
+            a = GM_TABLE_B(p)[0].value;
+        GM_BLOCK(p)->indexB = a;
+    }
+    GM_BLOCK(p)->indexB = GM_BLOCK(p)->factorB * GM_BLOCK(p)->indexB / 1000;
+    for (i = 0; i < 0x55; i++) {
+        g = GM_GOOD(GM_BLOCK(p)->goods[i].item);
+        if (g->type != 0x17 && g->type != 0x25) {
+            a = gm_GoodsDemand(p, i);
+            GM_BLOCK(p)->goods[i].demand = (float)(((float)a - GM_BLOCK(p)->goods[i].demand) * 0.5 + GM_BLOCK(p)->goods[i].demand);
+        }
+        if (p == ai_OwnPlayer)
+            GM_BLOCK(p)->goods[i].stock = gm_GoodsStock(p, i);
+        else
+            GM_BLOCK(p)->goods[i].stock = GM_BLOCK(p)->goods[i].baseStock;
+        GM_BLOCK(p)->goods[i].price = gm_StockPrice(p, i);
+        if (GM_BLOCK(p)->goods[i].demandIsStock != 0)
+            GM_BLOCK(p)->goods[i].demand = (float)GM_BLOCK(p)->goods[i].stock;
+        GM_BLOCK(p)->goods[i].daily[0] = 0;
+        GM_BLOCK(p)->goods[i].daily[1] = 0;
+        GM_BLOCK(p)->goods[i].daily[3] = 0;
+        GM_BLOCK(p)->goods[i].daily[2] = 0;
+    }
+    if ((int)net_Conn.s == -1) {
+        gm_SyncMarket(p);
+        gm_RandomMarketShake(p);
+    }
+}
+/* 0x4ff8c0, the market demand of the goods record i of the player p: 0 for the goods kinds 0x17 / 0x25; for player 0 the rating (ai_RatingBase) times the record's rate * 0.0025, rounded; for the others the block's demand index times the rate * 0.0005 */
 
+int gm_GoodsDemand(int p, int i)
+{
+    char *good;
+
+    good = ai_Goods + GM_BLOCK(p)->goods[i].item * 0x41;
+    if (*good != 0x17 && *good != 0x25) {
+        if (p == 0)
+            return (int)(ai_RatingBase * GM_BLOCK(0)->goods[i].rate * 0.0025 + 0.5);
+        return (int)(GM_BLOCK(p)->demandIndex * GM_BLOCK(p)->goods[i].rate * 0.0005);
+    }
+    return 0;
+}
+/* 0x4ff950, the stock of the goods record i of the player p: 0.5 times the sum over its four production groups
+   of the group's factor taken once per building of the group (gm_BuildQuery(1, 5, group) / gm_BuildNext), scaled
+   by mean / demand when the mean is not 0; 0 when the record's first group is unset */
+
+int gm_GoodsStock(int p, int i)
+{
+    int sum;
+    GMSTOCK *g;
+    GMSTOCKGROUP *s;
+    int k, o;
+
+    sum = 0;
+    g = &GM_BLOCK(p)->goods[i];
+    s = g->groups;
+    if (s->group == 0)
+        return 0;
+    for (k = 4; k != 0; k--, s++) {
+        if (s->group != 0 && (o = gm_BuildQuery(1, 5, s->group)) != 0) {
+            do {
+                sum = (int)((float)sum + s->factor);
+                o = gm_BuildNext();
+            } while (o != 0);
+        }
+    }
+    sum = (int)(sum * 0.5);
+    if (g->mean != 0.0f)
+        sum = (int)(g->mean / g->demand * sum);
+    return sum;
+}
 /* 0x4ffa10, the price of the goods record n of the player p: the base price (gm_ItemPrice, 100) when no market object holds the good (gm_FindMarketObject, for another player the kind 0x1db object of its building, gm_FindPlayerBuilding); else a factor mean / demand, times demand / the market's count of the good (at least 1) when that count is above the demand and the good is not of the kind 0x17, clamped to 0.25 .. 5.0, and the price moves 0.4 of the way from the stored price to the base price times the factor; a record without a stored price (<= 0) gets the base price, at least 512
    @deep cross-jump of the mk == 0 'return gm_ItemPrice(id, 100)' into the 512 path's second call (ours 2
    rets, the original 3). Fixed: the 0.25 clamp reads cm_DoubleQuarter (12 -> 10 ins). Tried (dcp try, all
@@ -3120,6 +3363,59 @@ float gm_StockPrice(int p, int n)
     }
     return r;
 }
+/* 0x4ffbf0, the 0x4ffa10 value of the goods record of the player p with the word at +0 equal to id (0x55 records of 0x80 bytes), -1 when there is none */
+float gm_GoodsValue(int p, unsigned id)
+{
+    int i;
+    unsigned short *q;
+
+    i = 0;
+    q = (unsigned short *)(init_StockBlocks + p * 0x2a90);
+    do {
+        if (*q == id)
+            return gm_StockPrice(p, i);
+        i++;
+        q += 0x40;
+    } while (i < 0x55);
+    return -1.0f;
+}
+/* 0x4ffc40, the goods record of the player p with the word at +0 equal to id, 0 when none */
+
+char *gm_FindGoods(int p, unsigned id)
+{
+    int i;
+    unsigned short *q;
+
+    i = 0;
+    q = (unsigned short *)(init_StockBlocks + p * 0x2a90);
+    do {
+        if (*q == id)
+            return init_StockBlocks + i * 0x80 + p * 0x2a90;
+        i++;
+        q += 0x40;
+    } while (i < 0x55);
+    return 0;
+}
+/* 0x4ffc90, the distance of the points (a, b) and (c, d) times 2.90816330909729 (the map scale) */
+
+float gm_MapDistance(int a, int b, int c, int d)
+{
+    return (float)(sqrt(fabs((double)a - (double)c) * fabs((double)a - (double)c) + fabs((double)b - (double)d) * fabs((double)b - (double)d)) * 2.90816330909729);
+}
+
+extern int gm_QueryType;
+extern int gm_QueryOwner;
+extern unsigned short gm_QueryOwnerNo;
+#define ALIGN1 __declspec(align(1))
+extern ALIGN1 char gm_QueryKind[550];
+extern char gm_QueryFirst, gm_QueryScanAll, gm_QueryChildren, gm_QueryStopFirst;  /* 0x6f1be0, 0x6f1be8, 0x6f1be9, 0x6f1bea, first-step flag, scan all, descend into children, stop at the first */
+extern int gm_QueryScanned;
+extern ORDOBJ *gm_QueryCursor;
+extern int gm_QueryDepth;
+extern int gm_QueryStack[20488];
+int gm_FindMarketObject(int id);                     /* 0x500ec0 */
+int gm_FindPlayerBuilding(int p);                   /* 0x501000 */
+
 /* 0x4ffcc0, the next match of the object query gm_Query set up: from the cursor record it walks the whole instance table (gm_QueryScanAll, skipping empty records, counting them in gm_QueryScanned) or the next pointers of the list (with gm_QueryChildren the child lists go on gm_QueryStack and are walked when a list ends), tests each record against the set criteria (prototype, owner id, the owner's character number gm_ObjectOwnerNo, the prototype kind) and returns the last record that matched before the first match ends the walk (or, with gm_QueryStopFirst, the first record looked at); 0 when none
    @deep 155 -> 153 ins: the criteria as four plain tests with an ok flag (if (ok && ..), if (!ok) m = 0)
    instead of the goto no chain - same code as the goto-only sequence, and it ends the cross-jumped
@@ -3334,354 +3630,7 @@ char gm_QueryScanAll = 0;  /* 0x6f1be8 */
 char gm_QueryChildren = 0;  /* 0x6f1be9 */
 char gm_QueryStopFirst = 0;  /* 0x6f1bea, first-step flag, scan all, descend into children, stop at the first */
 /* 0x500190 */
-void cm_SendExSellObject(int a, int b, int c, int d, unsigned char e, int f);                     /* 0x4c4880 */
-void cm_SendGoodsRecord(void *p, unsigned char k);                     /* 0x4c56d0 */
-void cm_BeginSendGroup(void);                     /* 0x4c3b30 */
-void cm_EndSendGroup(void);                     /* 0x4c3b40 */
-int cm_SendGroupState();                     /* 0x4c3b50 */
-int gm_FindPlayerBuilding(int p);                   /* 0x501000 */
-void gm_ClockToDate(struct AITIME *c, unsigned char *out);                     /* 0x4fe2c0 */
 
-/* the goods record n (0x80 bytes) of the player p */
-#define GM_GOODS(p, n) (init_StockBlocks + (p) * 0x2a90 + (n) * 0x80)
-
-/* 0x4ff190, refreshes the goods lists of the own player p (as the first part of gm_SyncMarket): clears the amount flag of the 0x55 goods records, flags the goods a building of the town (group (1, 6), not kind 10) holds in its store (its 0xff object) and the goods those need (the four words at +0x2e of the ai_Goods record), creates the flagged goods missing in the store of their market object (marketKind) there (gm_CreateObject), and sets the level byte +0x1c of the kind 0x11 object of the market objects 0x92 .. 0x97 / 0x2db to their goods count */
-void gm_RefreshGoodsLists(unsigned p)
-{
-    int list[8];
-    GMSTOCK *stock, *g, *g2;
-    unsigned char *b;
-    ORDOBJ *o, *o2;
-    char *gp;
-    int i, j, k, cnt;
-    int *lp;
-
-    list[0] = 0x92;
-    list[1] = 0x93;
-    list[2] = 0x94;
-    list[3] = 0x95;
-    list[4] = 0x96;
-    list[5] = 0x97;
-    list[6] = 0x2db;
-    list[7] = 0;
-    ai_MarketBuilding = (struct AIBLD *)gm_BuildQuery(1, 5, 10);
-    if (ai_MarketBuilding == 0)
-        return;
-    stock = (GMSTOCK *)(init_StockBlocks + p * 0x2a90);
-    if (p != ai_OwnPlayer)
-        return;
-    for (i = 0; i < 0x55; i++)
-        stock[i].amount = 0;
-    b = (unsigned char *)gm_BuildQuery(1, 6);
-    while (b != 0) {
-        if (ai_BTypes[*b * 0x24d] != 10) {
-            o = (ORDOBJ *)gm_Query(((ORDBLD *)b)->objList, 1, 0, 0xff);
-            for (i = 0; o != 0 && i < 0x55; i++) {
-                g = &stock[i];
-                if (g->item != 0 && gm_Query(o->list, 1, 0, g->item) != 0) {
-                    g->amount = 1;
-                    gp = ai_Goods + g->item * 0x41;
-                    for (j = 0; j < 0x55; j++) {
-                        g2 = &stock[j];
-                        for (k = 0; k < 4; k++)
-                            if (g2->item == ((GMGOOD *)gp)->in[k])
-                                g2->amount = 1;
-                    }
-                }
-            }
-        }
-        b = (unsigned char *)gm_BuildNext();
-    }
-    for (i = 0; i < 0x55; i++) {
-        g = &stock[i];
-        o = (ORDOBJ *)gm_Query(((ORDBLD *)ai_MarketBuilding)->objList, 1, 0, g->marketKind);
-        if (o != 0) {
-            o = (ORDOBJ *)gm_Query(o->list, 1, 0, 0xff);
-            if (g->amount != 0 && gm_Query(o->list, 1, 0, g->item) == 0)
-                gm_CreateObject(o->objId, g->item, 1);
-        }
-    }
-    for (lp = list; *lp != 0; lp++) {
-        cnt = 0;
-        o = (ORDOBJ *)gm_Query(((ORDBLD *)ai_MarketBuilding)->objList, 1, 0, *lp);
-        if (o != 0 && (o2 = (ORDOBJ *)gm_Query(o->list, 1, 0, 0xff)) != 0) {
-            o2 = (ORDOBJ *)gm_Query(o2->list, 1, 5);
-            while (o2 != 0) {
-                cnt++;
-                o2 = (ORDOBJ *)gm_QueryNext();
-            }
-            o = (ORDOBJ *)gm_Query(o->list, 1, 4, 0x11);
-            if (o != 0 && o->lvl1c != cnt)
-                o->lvl1c = (unsigned char)cnt;
-        }
-    }
-}
-
-void gm_SyncMarket(unsigned p);
-int gm_GoodsDemand(int p, int i);
-int gm_GoodsStock(int p, int i);
-
-/* 0x4ff550, the daily price update of the player p at the clock t: the date's year and month are interpolated in the player slot's two yearly tables (GMPOINT, at +0x64 and +0xb4) into the block's two indices, each scaled by its factor / 1000; then for the 0x55 goods records the demand moves halfway to gm_GoodsDemand (not for the kinds 0x17 / 0x25), the stock is gm_GoodsStock for the own player and the base stock for the others, the price is gm_StockPrice, a record with the byte +0x40 set takes its stock as demand, and the four counters +0x10 .. +0x1c are cleared; without a network game the market syncs (gm_SyncMarket) and shakes (gm_RandomMarketShake)
-   @deep match-deep 2026-11-14: draft 40 -> shape 37 ins. Fixed: the goods kind through a pointer local (g
-   = GM_GOOD(item); g->type tested twice: the original's add eax,edx; mov al,[eax]) and cm_DoubleHalf for
-   the 0.5 (M10). Table B matches the original exactly; what is left is table A's three inner arms: the
-   original hoists p*17 (mov eax,ebp; shl eax,4; add eax,ebp) above 'cmp ebx,edi' for all three arms and
-   loads the lower value first (arm 1 A[k].value in ebp, arm 2 A[k-1].value into the p slot [esp+0x24],
-   A[k-1].year into [esp+0x10]); ours loads A[k+1].value first and the k>0 arm starts with its two CSE
-   loads, so nothing is hoisted. Tried (dcp try): 63 spellings of both arm expressions (operand / term /
-   factor orders) = control; the arms nested under else {} = control, as if (k < n - 1) {..} else (61), k
-   <= 0 arm first (59), d.year for year = control, the table B form with temp a for A (244, frame 0xc), a
-   temp per arm = control. headers sample: insensitive. flip.py (want the hoist): only mutants that break
-   the CSE of A[k-1].year in the k>0 arm hoist (157 ins, frame 0xc). (tiebreak: not measured (dcp headers
-   sample gm_UpdatePrices)) prior: read the whole function against the original 0x4ff550..0x4ff8b2 and
-   reconciled every statement: date / yearly table interpolation of both GMPOINT tables, the block indices
-   and factors (GMBLOCK), the goods loop (demand, stock, price, demandIsStock, the daily counters), the
-   net_Conn.s gate. Tried: else-if chain (kept), the inner three cases nested under if (k < n - 1) (worse,
-   64 ins), a temporary for table A like table B (worse, 245 ins). What remains is CSE placement in table
-   A: the original computes p*17 (mov eax,ebp; shl eax,4; add eax,ebp) once before 'cmp ebx,edi; jne' and
-   reuses it in all three inner cases, ours recomputes it in the k>0 case (0x4ff660..0x4ff665) and in the
-   k<=0 case (0x4ff6b1..0x4ff6bc): those 6 instructions are the whole size difference; the rest is ebx/ebp
-   rotation and the [esp+0x10]/[esp+0x24] slot swap (diffclass: slots), plus the folded 'mov al,[eax+edx]'
-   vs 'ad... */
-void gm_UpdatePrices(unsigned p, void *t)
-{
-    GMDATE d;
-    int year, n, k, a;
-    int i;
-    AIGOOD *g;
-
-    gm_ClockToDate(t, (unsigned char *)&d);
-    year = d.year;
-    for (n = 0; n < 9; n++)
-        if (GM_TABLE_A(p)[n].year >= GM_TABLE_A(p)[n + 1].year)
-            break;
-    if (n >= 9)
-        n = 9;
-    for (k = 0; k < n; k++)
-        if (GM_TABLE_A(p)[k].year >= year)
-            break;
-    if (k >= n - 1)
-        GM_BLOCK(p)->demandIndex = GM_TABLE_A(p)[n - 1].value;
-    else if (year == GM_TABLE_A(p)[k].year)
-        GM_BLOCK(p)->demandIndex = (d.month + (year - GM_TABLE_A(p)[k].year) * 12) * (GM_TABLE_A(p)[k + 1].value - GM_TABLE_A(p)[k].value) / ((GM_TABLE_A(p)[k + 1].year - GM_TABLE_A(p)[k].year) * 12) + GM_TABLE_A(p)[k].value;
-    else if (k > 0)
-        GM_BLOCK(p)->demandIndex = (d.month + (year - GM_TABLE_A(p)[k - 1].year) * 12) * (GM_TABLE_A(p)[k].value - GM_TABLE_A(p)[k - 1].value) / ((GM_TABLE_A(p)[k].year - GM_TABLE_A(p)[k - 1].year) * 12) + GM_TABLE_A(p)[k - 1].value;
-    else
-        GM_BLOCK(p)->demandIndex = GM_TABLE_A(p)[0].value;
-    GM_BLOCK(p)->demandIndex = GM_BLOCK(p)->demandFactor * GM_BLOCK(p)->demandIndex / 1000;
-    for (n = 0; n < 9; n++)
-        if (GM_TABLE_B(p)[n].year >= GM_TABLE_B(p)[n + 1].year)
-            break;
-    if (n >= 9)
-        n = 9;
-    for (k = 0; k < n; k++)
-        if (GM_TABLE_B(p)[k].year >= year)
-            break;
-    if (k >= n - 1)
-        GM_BLOCK(p)->indexB = GM_TABLE_B(p)[n - 1].value;
-    else {
-        if (year == GM_TABLE_B(p)[k].year)
-            a = (d.month + (year - GM_TABLE_B(p)[k].year) * 12) * (GM_TABLE_B(p)[k + 1].value - GM_TABLE_B(p)[k].value) / ((GM_TABLE_B(p)[k + 1].year - GM_TABLE_B(p)[k].year) * 12) + GM_TABLE_B(p)[k].value;
-        else if (k > 0)
-            a = (d.month + (year - GM_TABLE_B(p)[k - 1].year) * 12) * (GM_TABLE_B(p)[k].value - GM_TABLE_B(p)[k - 1].value) / ((GM_TABLE_B(p)[k].year - GM_TABLE_B(p)[k - 1].year) * 12) + GM_TABLE_B(p)[k - 1].value;
-        else
-            a = GM_TABLE_B(p)[0].value;
-        GM_BLOCK(p)->indexB = a;
-    }
-    GM_BLOCK(p)->indexB = GM_BLOCK(p)->factorB * GM_BLOCK(p)->indexB / 1000;
-    for (i = 0; i < 0x55; i++) {
-        g = GM_GOOD(GM_BLOCK(p)->goods[i].item);
-        if (g->type != 0x17 && g->type != 0x25) {
-            a = gm_GoodsDemand(p, i);
-            GM_BLOCK(p)->goods[i].demand = (float)(((float)a - GM_BLOCK(p)->goods[i].demand) * 0.5 + GM_BLOCK(p)->goods[i].demand);
-        }
-        if (p == ai_OwnPlayer)
-            GM_BLOCK(p)->goods[i].stock = gm_GoodsStock(p, i);
-        else
-            GM_BLOCK(p)->goods[i].stock = GM_BLOCK(p)->goods[i].baseStock;
-        GM_BLOCK(p)->goods[i].price = gm_StockPrice(p, i);
-        if (GM_BLOCK(p)->goods[i].demandIsStock != 0)
-            GM_BLOCK(p)->goods[i].demand = (float)GM_BLOCK(p)->goods[i].stock;
-        GM_BLOCK(p)->goods[i].daily[0] = 0;
-        GM_BLOCK(p)->goods[i].daily[1] = 0;
-        GM_BLOCK(p)->goods[i].daily[3] = 0;
-        GM_BLOCK(p)->goods[i].daily[2] = 0;
-    }
-    if ((int)net_Conn.s == -1) {
-        gm_SyncMarket(p);
-        gm_RandomMarketShake(p);
-    }
-}
-
-#define GM_WAIT(h) while (cm_GetSlotState(h) == 0) sv_PumpNet()
-#define cm_SendExSellObjectH ((int (*)(int, int, int, int, unsigned char, int))cm_SendExSellObject)  /* 0x4c4880: it returns the slot handle of its message (cm_QueueSend's result stays in eax), which cm.h's void prototype drops; @original gm_SyncMarket pushes the goods id zero-extended (int), as ai.c's cm_SendExSellObjectI */
-
-/* 0x4fec10, the market sync of the player p (group 1, 5, 10 is the market building ai_MarketBuilding): for the own player the amount flag of every goods record is set when a building other than kind 10 holds the good in its store (0xff object) or needs it for one it holds (the four needs at +0x2e of its ai_Goods record); then every record is synced with the market object of its marketKind (its store created first with cm_SendExSellObject when missing): a flagged good the store lacks is requested (one), an unflagged one it has is sold with its count; each record goes to the server (cm_SendGoodsRecord), and the goods count of the market objects 0x92 .. 0x97, 0x2db raises the level byte +0x1c of their kind 0x11 object. For another player: the goods its two market objects (0x1db / 0x1dc) hold get the offer counter (random, then + 0x18 .. 0x1f per call; offered up to 0x80) and are sent in one group */
-void gm_SyncMarket(unsigned p)
-{
-    int list[8];
-    GMSTOCK rec;
-    GMSTOCK *stock, *g, *g2;
-    unsigned char *b;
-    ORDOBJ *o, *o2, *m, *a1;
-    char *gp;
-    int i, j, k, cnt, h;
-    int *lp;
-
-    list[0] = 0x92;
-    list[1] = 0x93;
-    list[2] = 0x94;
-    list[3] = 0x95;
-    list[4] = 0x96;
-    list[5] = 0x97;
-    list[6] = 0x2db;
-    list[7] = 0;
-    ai_MarketBuilding = (struct AIBLD *)gm_BuildQuery(1, 5, 10);
-    if (ai_MarketBuilding == 0)
-        return;
-    stock = (GMSTOCK *)(init_StockBlocks + p * 0x2a90);
-    if (p == ai_OwnPlayer) {
-        for (i = 0; i < 0x55; i++)
-            stock[i].amount = 0;
-        b = (unsigned char *)gm_BuildQuery(1, 6);
-        while (b != 0) {
-            if (ai_BTypes[*b * 0x24d] != 10) {
-                o = (ORDOBJ *)gm_Query(((ORDBLD *)b)->objList, 1, 0, 0xff);
-                for (i = 0; o != 0 && i < 0x55; i++) {
-                    {
-                        g = &stock[i];
-                        if (g->item != 0 && gm_Query(o->list, 1, 0, g->item) != 0) {
-                            g->amount = 1;
-                            gp = ai_Goods + g->item * 0x41;
-                            for (j = 0; j < 0x55; j++) {
-                                g2 = &stock[j];
-                                for (k = 0; k < 4; k++)
-                                    if (g2->item == ((GMGOOD *)gp)->in[k])
-                                        g2->amount = 1;
-                            }
-                        }
-                    }
-                }
-            }
-            b = (unsigned char *)gm_BuildNext();
-        }
-        for (i = 0; i < 0x55; i++) {
-            g = (GMSTOCK *)(init_StockBlocks + p * 0x2a90) + i;
-            rec = stock[i];
-            o = (ORDOBJ *)gm_Query(((ORDBLD *)ai_MarketBuilding)->objList, 1, 0, g->marketKind);
-            if (o != 0) {
-                o2 = (ORDOBJ *)gm_Query(o->list, 1, 0, 0xff);
-                if (o2 == 0) {
-                    h = cm_SendExSellObjectH(o->objId, -1, 0xff, 1, ai_OwnPlayer, 0);
-                    GM_WAIT(h);
-                    o2 = (ORDOBJ *)cm_GetSlotValue(h);
-                }
-                if (g->amount != 0) {
-                    m = (ORDOBJ *)gm_Query(o2->list, 1, 0, g->item);
-                    if (m == 0) {
-                        h = cm_SendExSellObjectH(o2->objId, -1, g->item, 1, ai_OwnPlayer, 0);
-                        GM_WAIT(h);
-                    }
-                } else {
-                    m = (ORDOBJ *)gm_Query(o2->list, 1, 0, g->item);
-                    if (m != 0) {
-                        h = cm_SendExSellObjectH(-1, o2->objId, g->item, m->count, ai_OwnPlayer, 0);
-                        GM_WAIT(h);
-                    }
-                }
-                cm_SendGoodsRecord(&rec, p);
-            }
-        }
-        for (lp = list; *lp != 0; lp++) {
-            cnt = 0;
-            o = (ORDOBJ *)gm_Query(((ORDBLD *)ai_MarketBuilding)->objList, 1, 0, *lp);
-            if (o != 0 && (o2 = (ORDOBJ *)gm_Query(o->list, 1, 0, 0xff)) != 0) {
-                o2 = (ORDOBJ *)gm_Query(o2->list, 1, 5);
-                while (o2 != 0) {
-                    cnt++;
-                    o2 = (ORDOBJ *)gm_QueryNext();
-                }
-                o = (ORDOBJ *)gm_Query(o->list, 1, 4, 0x11);
-                if (o != 0 && (int)o->lvl1c < cnt) {
-                    cnt -= o->lvl1c;
-                    cm_BeginFieldBlock((char *)o, o->objId);
-                    cm_AddFieldValues(1, 1, (char *)&o->lvl1c - cm_FieldObject, &cnt);
-                    cm_SendFieldDeltas();
-                }
-            }
-        }
-        return;
-    }
-    o = (ORDOBJ *)gm_FindPlayerBuilding(p);
-    if (o != 0 && (a1 = (ORDOBJ *)gm_Query(((ORDBLD *)o)->objList, 2, 0, 0x1db, 6)) != 0 && (o2 = (ORDOBJ *)gm_Query(((ORDBLD *)o)->objList, 2, 0, 0x1dc, 6)) != 0) {
-        cm_BeginSendGroup();
-        for (i = 0; i < 0x55; i++) {
-            rec = stock[i];
-            if (rec.item != 0) {
-                m = (ORDOBJ *)gm_Query(a1->list, 1, 0, rec.item);
-                if (m == 0)
-                    m = (ORDOBJ *)gm_Query(o2->list, 1, 0, rec.item);
-                if (m != 0) {
-                    if (rec.offer == 0) {
-                        rec.offer = (unsigned char)util_RandomU(0xff);
-                        rec.amount = rec.offer <= 0x80;
-                    } else {
-                        rec.offer += util_RandomU(8) + 0x18;
-                        rec.amount = rec.offer <= 0x80;
-                    }
-                } else
-                    rec.amount = 0;
-                cm_SendGoodsRecord(&rec, p);
-            }
-        }
-        cm_EndSendGroup();
-        while (cm_SendGroupState() == 0)
-            sv_PumpNet();
-    }
-}
-/* 0x4ff8c0, the market demand of the goods record i of the player p: 0 for the goods kinds 0x17 / 0x25; for player 0 the rating (ai_RatingBase) times the record's rate * 0.0025, rounded; for the others the block's demand index times the rate * 0.0005 */
-
-int gm_GoodsDemand(int p, int i)
-{
-    char *good;
-
-    good = ai_Goods + GM_BLOCK(p)->goods[i].item * 0x41;
-    if (*good != 0x17 && *good != 0x25) {
-        if (p == 0)
-            return (int)(ai_RatingBase * GM_BLOCK(0)->goods[i].rate * 0.0025 + 0.5);
-        return (int)(GM_BLOCK(p)->demandIndex * GM_BLOCK(p)->goods[i].rate * 0.0005);
-    }
-    return 0;
-}
-/* 0x4ff950, the stock of the goods record i of the player p: 0.5 times the sum over its four production groups
-   of the group's factor taken once per building of the group (gm_BuildQuery(1, 5, group) / gm_BuildNext), scaled
-   by mean / demand when the mean is not 0; 0 when the record's first group is unset */
-
-int gm_GoodsStock(int p, int i)
-{
-    int sum;
-    GMSTOCK *g;
-    GMSTOCKGROUP *s;
-    int k, o;
-
-    sum = 0;
-    g = &GM_BLOCK(p)->goods[i];
-    s = g->groups;
-    if (s->group == 0)
-        return 0;
-    for (k = 4; k != 0; k--, s++) {
-        if (s->group != 0 && (o = gm_BuildQuery(1, 5, s->group)) != 0) {
-            do {
-                sum = (int)((float)sum + s->factor);
-                o = gm_BuildNext();
-            } while (o != 0);
-        }
-    }
-    sum = (int)(sum * 0.5);
-    if (g->mean != 0.0f)
-        sum = (int)(g->mean / g->demand * sum);
-    return sum;
-}
 
 extern unsigned short gm_BQMaster, gm_BQOwner;  /* 0x61a674 / 0x61a676 */
 extern char gm_BQStopFirst, gm_BQFirstCall; /* 0x6f1bd4, 0x6f1bd5, stop at the first, first call */
@@ -3691,6 +3640,58 @@ extern unsigned short gm_KindObjCount;
 void rt_FreePoints(struct RTPOINT *p);                     /* 0x4bd9e0 */
 /* 0x500190 */
 
+/* 0x4fffc0, the first free record (prototype 0) of the object instance table ai_Objects (0x5008 records of 0x43 bytes), 0 when it is full */
+
+short *gm_FindFreeObject(void)
+{
+    int i;
+    ORDOBJ *p, *res;
+
+    res = 0;
+    i = 0;
+    p = (ORDOBJ *)ai_Objects;
+    while (res == 0 && i < 0x5008) {
+        if (p->type != 0) {
+            i++;
+            p++;
+        } else
+            res = p;
+    }
+    return (short *)res;
+}
+/* 0x4ffff0, removes the object instance with the prototype id from the singly linked list whose head pointer is *list (the next pointer sits at +0x3f of each node): frees its extra part (0x500140 of the pointer at +0x14), the node itself (0x500080), relinks, marks the record free and decrements the count 0x6f1bdc. Returns 0, -1 for an empty list, -2 when not found */
+
+int gm_RemoveObject(int *list, unsigned id)
+{
+    ORDOBJ *prev, *cur;
+    int n;
+
+    prev = 0;
+    if (list == 0)
+        return -1;
+    if ((ORDOBJ *)*list == 0)
+        return -1;
+    n = 0;
+    cur = (ORDOBJ *)*list;
+    do {
+        if (cur->type == id) {
+            if (cur->list != 0)
+                gm_FreeList(&cur->list);
+            gm_FreeObjectExtra((unsigned short *)cur);
+            if (n == 0)
+                *list = (int)cur->next;
+            else
+                prev->next = cur->next;
+            cur->type = 0;
+            f3gm_ObjectCount--;
+            return 0;
+        }
+        n++;
+        prev = cur;
+        cur = cur->next;
+    } while (cur != 0);
+    return -2;
+}
 /* 0x500080, an object instance of the prototype kind 0x1d frees the route it holds (+0x29) */
 
 void gm_FreeObjectExtra(unsigned short *o)
@@ -3753,353 +3754,6 @@ int gm_FreeList(int *list)
     }
     return 0;
 }
-/* 0x500970, adds the amount n of the object prototype proto to the owner id (a building / object / character found by 0x4fea50): an existing instance gets +n (+0xe), else 0x500190 creates one; an unknown owner writes the message "gm_AddObjekt(): Parent not found. ObjProt:%i Menge:%i" (the buffer is not shown). Returns the instance or 0 */
-
-int gm_AddObjekt(int id, int proto, int n)
-{
-    ORDBLD *b;
-    ORDOBJ *o;
-    ORDCHAR *c;
-    int *list;
-    ORDOBJ *r;
-    char buf[512];
-
-    if (proto == 0)
-        return 0;
-    if (gm_FindById((int *)&b, (int *)&o, (int *)&c, id) == 0) {
-        sprintf(buf, "gm_AddObjekt(): Parent not found. ObjProt:%i Menge:%i", proto, n);
-        return 0;
-    }
-    if (b != 0)
-        list = &b->objList;
-    else if (o != 0)
-        list = &o->list;
-    else if (c != 0)
-        list = &c->inventory;
-    else
-        return 0;
-    r = (ORDOBJ *)gm_Query((void *)*list, 1, 0, proto);
-    if (r == 0)
-        return (int)gm_CreateObject(id, proto, n);
-    r->count += n;
-    return (int)r;
-}
-/* 0x500a40, takes the amount n of the prototype proto from the owner id: 1 when it had enough (the instance is removed when it drops to 0 or below), else 0 */
-
-int gm_TakeObjekt(int id, int proto, int n)
-{
-    ORDBLD *b;
-    ORDOBJ *o;
-    ORDCHAR *c;
-    int *list;
-    ORDOBJ *r;
-
-    if (gm_FindById((int *)&b, (int *)&o, (int *)&c, id) == 0)
-        return 0;
-    if (b != 0)
-        list = &b->objList;
-    else if (o != 0)
-        list = &o->list;
-    else if (c != 0)
-        list = &c->inventory;
-    else
-        return 0;
-    r = (ORDOBJ *)gm_Query((void *)*list, 1, 0, proto);
-    if (r == 0 || r->count < n)
-        return 0;
-    r->count -= n;
-    if (r->count <= 0)
-        gm_RemoveObject(list, proto);
-    return 1;
-}
-/* 0x500ae0, like 0x500a40 but creates a missing instance with 0 first and removes it when the amount is exactly 0 (a negative stock is possible) */
-
-int gm_AddNegative(int id, int proto, int n)
-{
-    ORDBLD *b;
-    ORDOBJ *o;
-    ORDCHAR *c;
-    int *list;
-    ORDOBJ *r;
-
-    if (gm_FindById((int *)&b, (int *)&o, (int *)&c, id) == 0)
-        return 0;
-    if (b != 0)
-        list = &b->objList;
-    else if (o != 0)
-        list = &o->list;
-    else if (c != 0)
-        list = &c->inventory;
-    else
-        return 0;
-    r = (ORDOBJ *)gm_Query((void *)*list, 1, 0, proto);
-    if (r == 0) {
-        r = (ORDOBJ *)gm_CreateObject(id, proto, 1);
-        r->count = 0;
-    }
-    r->count -= n;
-    if (r->count == 0)
-        gm_RemoveObject(list, proto);
-    return 1;
-}
-/* 0x500b90, looks the kind of the building b up in gm_BuildingItemGroups (37 records: a kind byte and ten object prototypes) and collects its non-zero prototypes into the list gm_KindObjs (count gm_KindObjCount); 1 when the kind is not there (or no tables), else 0 */
-
-int gm_BuildKindObjects(char *b)
-{
-    G7GRP *g;
-    int i, k;
-
-    if (ai_Goods == 0)
-        return 1;
-    g = 0;
-    for (i = 0; i < 37; i++) {
-        if (gm_BuildingItemGroups[i].key == ((ORDBLD *)b)->type) {
-            g = &gm_BuildingItemGroups[i];
-            break;
-        }
-    }
-    if (g == 0)
-        return 1;
-    gm_KindObjCount = 0;
-    for (k = 0; k < 10; k++) {
-        if (g->items[k] != 0)
-            gm_KindObjs[gm_KindObjCount++] = g->items[k];
-    }
-    return 0;
-}
-/* 0x501000, the building of the type 0x47 (group (1, 0, 0x47)) whose int at +0x65 is the player p, 0 when none */
-
-int gm_FindPlayerBuilding(int p)
-{
-    ORDBLD *b;
-
-    b = (ORDBLD *)gm_BuildQuery(1, 0, 0x47);
-    while (b != 0) {
-        if (b->v65 == p)
-            return (int)b;
-        b = (ORDBLD *)gm_BuildNext();
-    }
-    return 0;
-}
-/* 0x501030, the next building of the query gm_BuildQuery (0x501190) started: walks the cursor gm_BQCursor over the used records of ai_Blds and returns the first that matches every set criterion (type, id, master, owner, the class of its type; gm_BQStopFirst takes any); 0 when the table ends (the cursor is cleared) or more than 0x100 records were tested
-   @deep match-deep 2026-11-14: 44 -> 8 ins. Fixed: the match loop leaves by break to one final return
-   (not a return in each exit): VC6 then pushes ebx / ebp / edi only before the loop as the original (44 ->
-   10); gm_BQFirstCall = 0 after the first-call walk (10 -> 8: the walk's exit then goes to the shared end
-   check instead of a threaded return copy). Left: (1) the original stores gm_BQFirstCall = 0 before the
-   walk (cmp; mov byte; jae) and still jumps from the walk's bottom to the shared check; with the store
-   first VC6 threads that exit to a return copy; (2) the no block (xor cl,cl; jmp) inline after the owner
-   test in ours, out of line after the returns in the original. Tried (dcp try): every criteria form (goto
-   chain, all four criteria as goto tests, nested if/else with m = 0 per level: 22, the no block after the
-   final return with goto back) = control; first-call walk as for / while with break = control, the if
-   (!first) arm first (26), the loop under if (cursor < end) (27), while (1) = control. flip.py (want the
-   owner test as jne): only the meaning-changing != -> == mutant. (tiebreak: not measured (dcp headers
-   sample gm_BuildNext)) prior: read against the original statement by statement: the two early returns,
-   the first-call / next-record walks of the cursor, the criteria chain (type, id, masterId +0x25, owner
-   +0x27, the class byte of ai_BTypes, sete), the tested counter, the advance and the end / match returns
-   all match (equal compares, operands and loop-invariant loads into edi / bp / bl). Left: the original
-   saves ebx / ebp / edi only before the criteria loop (0x5010a4 push ebx .. push edi; the early returns
-   pop esi only, the first-call walk jumps to the shared end check 0x50109c), ours pushes all four in the
-   prolog and so duplicates every early return with four pops; and the 'm = 0' block (xor cl,cl; jmp) sits
-   after the match return in the original, inline in ours. Tried the criteria as a goto chain, as an
-   if/else with the no label in the else, with the no block after the loop's continue, and as nested ifs
-   with separat... */
-
-unsigned char *gm_BuildNext(void)
-{
-    char m;
-    ORDBLD *end;
-
-    m = 0;
-    end = (ORDBLD *)ai_Blds + 0x100;
-    if (ai_BTypes == 0)
-        return 0;
-    if (gm_BQTested > 0x100)
-        return 0;
-    if (gm_BQFirstCall) {
-        while (gm_BQCursor < end && gm_BQCursor->type == 0)
-            gm_BQCursor++;
-        gm_BQFirstCall = 0;
-    } else {
-        do
-            gm_BQCursor++;
-        while (gm_BQCursor < end && gm_BQCursor->type == 0);
-    }
-    if (gm_BQCursor >= end)
-        return 0;
-    for (;;) {
-        if (gm_BQStopFirst)
-            m = 1;
-        if (gm_BQType == 0xff || gm_BQCursor->type == gm_BQType) {
-            if (gm_BQType != 0xff)
-                m = 1;
-            if (gm_BQId != -1) {
-                if (gm_BQCursor->id != gm_BQId)
-                    goto no;
-                m = 1;
-            }
-            if (gm_BQMaster != 0x7fff) {
-                if (gm_BQCursor->masterId != gm_BQMaster)
-                    goto no;
-                m = 1;
-            }
-            if (gm_BQOwner != 0x7fff) {
-                if (gm_BQCursor->owner != gm_BQOwner)
-                    goto no;
-                m = 1;
-            }
-            if (gm_BQClass != 0xff)
-                m = (unsigned char)ai_BTypes[gm_BQCursor->type * 0x24d] == gm_BQClass;
-        } else {
-        no:
-            m = 0;
-        }
-        gm_BQTested++;
-        if (!m) {
-            do
-                gm_BQCursor++;
-            while (gm_BQCursor < end && gm_BQCursor->type == 0);
-        }
-        if (gm_BQCursor >= end) {
-            if (!m)
-                gm_BQCursor = 0;
-            break;
-        }
-        if (m)
-            break;
-    }
-    return (unsigned char *)gm_BQCursor;
-}
-/* 0x501190, starts a building query and returns its first match (gm_BuildNext): resets the criteria, then reads n (kind, value) pairs: 0 the type, 1 the id, 2 a name (copied to gm_BQName, never tested), 3 the master id, 4 the owner, 5 the class of the type, 6 stop at the first (no value); the cursor starts at ai_Blds. Used all over the exe (gm_BuildQuery(1, 5, 10) ..)
-   @deep read against the original: the reset of the nine criteria, the (kind, value) walk with a
-   pre-incremented argument pointer, the seven cases (switch tables equal, strcpy intrinsic for the name)
-   and the tail call to gm_BuildNext all match; gm_BQClass is unsigned char like gm_BQType (the original
-   stores one 0xff register into both). The one hunk left (+0xc, 10 lines) is the same five instructions
-   scheduled and allocated differently: the original loads 0xff into cl, stores type / class, then loads n
-   into ecx; ours loads n into ecx first and takes al for 0xff (its short mov [mem], al form makes ours 2
-   bytes smaller). Tried the class / type stores chained and the copy locals reordered: no change */
-
-unsigned char *gm_BuildQuery(int n, ...)
-{
-    int *ap;
-    int i;
-
-    if (ai_BTypes == 0)
-        return 0;
-    gm_BQType = 0xff;
-    gm_BQClass = 0xff;
-    gm_BQId = -1;
-    gm_BQName = 0;
-    gm_BQMaster = 0x7fff;
-    gm_BQOwner = 0x7fff;
-    gm_BQFirstCall = 1;
-    gm_BQTested = 0;
-    gm_BQStopFirst = 0;
-    if (n > 0) {
-        ap = &n;
-        for (i = n; i != 0; i--) {
-            switch ((unsigned char)*++ap) {
-            case 0:
-                gm_BQType = (unsigned char)*++ap;
-                break;
-            case 1:
-                gm_BQId = *++ap;
-                break;
-            case 2:
-                strcpy(gm_BQName, (char *)*++ap);
-                break;
-            case 3:
-                gm_BQMaster = (unsigned short)*++ap;
-                break;
-            case 4:
-                gm_BQOwner = (unsigned short)*++ap;
-                break;
-            case 5:
-                gm_BQClass = (unsigned char)*++ap;
-                break;
-            case 6:
-                gm_BQStopFirst = 1;
-                break;
-            }
-        }
-    }
-    gm_BQCursor = (ORDBLD *)ai_Blds;
-    return gm_BuildNext();
-}
-/* 0x5012b0, the first free record of the building table (0x100 records of 0xa9 bytes), 0 when it is full */
-
-char *gm_FindFreeBuilding(void)
-{
-    ORDBLD *end, *b;
-
-    end = (ORDBLD *)ai_Blds + 0x100;
-    for (b = (ORDBLD *)ai_Blds; b < end; b++) {
-        if (b->type == 0)
-            break;
-    }
-    if (b >= end)
-        return 0;
-    return (char *)b;
-}
-/* 0x5012e0, frees the building b: a player's building (its owner a character of kind 6) frees its production setting (ai_FreeProdSetting); by type, 0x1e frees its plant records, 0x48 .. 0x4a its graveyard record, 0x4b .. 0x4d its heap block; every character living or working in it loses it, its object list is freed and the type set to 0 (free). Returns 0, -1 for no building, -2 for one already free */
-
-int gm_FreeBuilding(char *p)
-{
-    ORDBLD *b = (ORDBLD *)p;
-    int i;
-
-    if (b == 0)
-        return -1;
-    if (b->type == 0)
-        return -2;
-    if (b->owner != 0xffff && ORD_CHARS[b->owner].kind == 6)
-        ai_FreeProdSetting(b->id);
-    switch (b->type) {
-    case 0x1e:
-        if (b->plants != 0) {
-            mem_Free(b->plants);
-            b->plants = 0;
-        }
-        b->plants = 0;
-        break;
-    case 0x48:
-    case 0x49:
-    case 0x4a:
-        gv_FreeGraveyard((int *)b->block65);
-        b->block65 = 0;
-        break;
-    case 0x4b:
-    case 0x4c:
-    case 0x4d:
-        mem_Free(b->block65);
-        b->block65 = 0;
-        break;
-    }
-    for (i = 0; i < 0x300; i++) {
-        if (ORD_CHARS[i].bld2 == b)
-            ORD_CHARS[i].bld2 = 0;
-        if (ORD_CHARS[i].bld == b)
-            ORD_CHARS[i].bld = 0;
-    }
-    if (b->objList != 0)
-        gm_FreeList(&b->objList);
-    b->type = 0;
-    return 0;
-}
-
-extern int gm_NOffers;
-int gm_ListStock(short *l, int id);     /* 0x50ab50 */
-int gm_ListAmount(short *l, char *o);   /* 0x50aaf0 */
-float gm_GoodsPrice(unsigned id, unsigned char p);                   /* 0x5089c0 */
-unsigned short * gm_ObjectBuildingOwner(unsigned short *p);                     /* 0x50a050 */
-void init_HookObject(struct D3OBJECT *o, void *p, int kind);                     /* 0x50d380 */
-struct CHTRANSPORT * ch_AttachTransport();                     /* 0x4034e0 */
-char d3if_SelectTextureSet(struct D3OBJECT *obj, struct D3SURF *surf, unsigned char set, char reload);                     /* 0x446f30 */
-struct CHARACTER * ch_Create();                     /* 0x403390 */
-void ch_PreloadAnims(struct CHARACTER *ch, int n, ...);                     /* 0x404200 */
-void ch_SetVisible();                     /* 0x402480 */
-int gm_IsHomeType();                     /* 0x502520 */
-int init_BuildingSceneUniverse();                     /* 0x511e60 */
-
 /* 0x500190, creates an object instance of the prototype proto with the amount n in the list of the holder id (a building, an object or a character, gm_FindById): takes a free record (gm_FindFreeObject) and appends it to the holder's list (ORDBLD.objList, ORDOBJ.list or the character's list at +0x178), fills it (the prototype, a new object id ai_NextObjectId, the holder id, the holder's own id, the amount, fill 100) and counts it (f3gm_ObjectCount); a few prototypes get their own start values (0xb8, 300, 0x12d, 0x15e / 0x160, 0x174 / 0x176, 0x24b / 0x256 / 0x266), the goods kinds 0x17 / 0x20 / 0x25 clear +0x1c, and the three carts 0x134 / 0x135 / 0x136 get the id of their building, a load object (prototype 0x1dd), a model (a cart man or the horse, ch_Create at the building's "dummy_TRANSPORTER") pulling the cart object ob_KARREN_klein / _mittel / _GROSS (textured by the owner character's v054). Returns the instance, 0 on failure
    @deep 194 -> 145 ins: no pr = ai_Goods copies (the top one and the one inside if (list != 0)): plain pr
    = (char *)GM_GOOD(proto) after the list block; VC6 itself loads ai_Goods into edi for the null test and
@@ -4338,29 +3992,117 @@ unsigned short *gm_CreateObject(int id, int proto, int n)
         r->v1c[0] = 0;
     return (unsigned short *)r;
 }
-/* 0x500ec0, the market object of the town market building (0x6f1bc5's market 0x6f1bc8) that holds the goods id: looks through its objects 0x92 .. 0x97 / 0x2db for one with the goods id (query (2, 6, 0, id)) and returns its 0x116 object, 0 when none */
+/* 0x500970, adds the amount n of the object prototype proto to the owner id (a building / object / character found by 0x4fea50): an existing instance gets +n (+0xe), else 0x500190 creates one; an unknown owner writes the message "gm_AddObjekt(): Parent not found. ObjProt:%i Menge:%i" (the buffer is not shown). Returns the instance or 0 */
 
-int gm_FindMarketObject(int id)
+int gm_AddObjekt(int id, int proto, int n)
 {
-    ORDOBJ *l[8];
+    ORDBLD *b;
     ORDOBJ *o;
-    int i;
+    ORDCHAR *c;
+    int *list;
+    ORDOBJ *r;
+    char buf[512];
 
-    if (ai_MarketBuilding != 0) {
-        l[0] = (ORDOBJ *)gm_Query(((ORDBLD *)ai_MarketBuilding)->objList, 1, 0, 0x92);
-        l[1] = (ORDOBJ *)gm_Query(((ORDBLD *)ai_MarketBuilding)->objList, 1, 0, 0x93);
-        l[2] = (ORDOBJ *)gm_Query(((ORDBLD *)ai_MarketBuilding)->objList, 1, 0, 0x94);
-        l[3] = (ORDOBJ *)gm_Query(((ORDBLD *)ai_MarketBuilding)->objList, 1, 0, 0x95);
-        l[4] = (ORDOBJ *)gm_Query(((ORDBLD *)ai_MarketBuilding)->objList, 1, 0, 0x96);
-        l[5] = (ORDOBJ *)gm_Query(((ORDBLD *)ai_MarketBuilding)->objList, 1, 0, 0x97);
-        l[6] = (ORDOBJ *)gm_Query(((ORDBLD *)ai_MarketBuilding)->objList, 1, 0, 0x2db);
-        l[7] = 0;
-        i = 0;
-        for (o = l[0]; o != 0; o = l[i]) {
-            if (gm_Query(o->list, 2, 6, 0, id) != 0)
-                return (int)gm_Query(l[i]->list, 1, 0, 0x116);
-            i++;
+    if (proto == 0)
+        return 0;
+    if (gm_FindById((int *)&b, (int *)&o, (int *)&c, id) == 0) {
+        sprintf(buf, "gm_AddObjekt(): Parent not found. ObjProt:%i Menge:%i", proto, n);
+        return 0;
+    }
+    if (b != 0)
+        list = &b->objList;
+    else if (o != 0)
+        list = &o->list;
+    else if (c != 0)
+        list = &c->inventory;
+    else
+        return 0;
+    r = (ORDOBJ *)gm_Query((void *)*list, 1, 0, proto);
+    if (r == 0)
+        return (int)gm_CreateObject(id, proto, n);
+    r->count += n;
+    return (int)r;
+}
+/* 0x500a40, takes the amount n of the prototype proto from the owner id: 1 when it had enough (the instance is removed when it drops to 0 or below), else 0 */
+
+int gm_TakeObjekt(int id, int proto, int n)
+{
+    ORDBLD *b;
+    ORDOBJ *o;
+    ORDCHAR *c;
+    int *list;
+    ORDOBJ *r;
+
+    if (gm_FindById((int *)&b, (int *)&o, (int *)&c, id) == 0)
+        return 0;
+    if (b != 0)
+        list = &b->objList;
+    else if (o != 0)
+        list = &o->list;
+    else if (c != 0)
+        list = &c->inventory;
+    else
+        return 0;
+    r = (ORDOBJ *)gm_Query((void *)*list, 1, 0, proto);
+    if (r == 0 || r->count < n)
+        return 0;
+    r->count -= n;
+    if (r->count <= 0)
+        gm_RemoveObject(list, proto);
+    return 1;
+}
+/* 0x500ae0, like 0x500a40 but creates a missing instance with 0 first and removes it when the amount is exactly 0 (a negative stock is possible) */
+
+int gm_AddNegative(int id, int proto, int n)
+{
+    ORDBLD *b;
+    ORDOBJ *o;
+    ORDCHAR *c;
+    int *list;
+    ORDOBJ *r;
+
+    if (gm_FindById((int *)&b, (int *)&o, (int *)&c, id) == 0)
+        return 0;
+    if (b != 0)
+        list = &b->objList;
+    else if (o != 0)
+        list = &o->list;
+    else if (c != 0)
+        list = &c->inventory;
+    else
+        return 0;
+    r = (ORDOBJ *)gm_Query((void *)*list, 1, 0, proto);
+    if (r == 0) {
+        r = (ORDOBJ *)gm_CreateObject(id, proto, 1);
+        r->count = 0;
+    }
+    r->count -= n;
+    if (r->count == 0)
+        gm_RemoveObject(list, proto);
+    return 1;
+}
+/* 0x500b90, looks the kind of the building b up in gm_BuildingItemGroups (37 records: a kind byte and ten object prototypes) and collects its non-zero prototypes into the list gm_KindObjs (count gm_KindObjCount); 1 when the kind is not there (or no tables), else 0 */
+
+int gm_BuildKindObjects(char *b)
+{
+    G7GRP *g;
+    int i, k;
+
+    if (ai_Goods == 0)
+        return 1;
+    g = 0;
+    for (i = 0; i < 37; i++) {
+        if (gm_BuildingItemGroups[i].key == ((ORDBLD *)b)->type) {
+            g = &gm_BuildingItemGroups[i];
+            break;
         }
+    }
+    if (g == 0)
+        return 1;
+    gm_KindObjCount = 0;
+    for (k = 0; k < 10; k++) {
+        if (g->items[k] != 0)
+            gm_KindObjs[gm_KindObjCount++] = g->items[k];
     }
     return 0;
 }
@@ -4447,6 +4189,265 @@ int gm_CollectOffers(int goods)
     }
     return 0;
 }
+/* 0x500ec0, the market object of the town market building (0x6f1bc5's market 0x6f1bc8) that holds the goods id: looks through its objects 0x92 .. 0x97 / 0x2db for one with the goods id (query (2, 6, 0, id)) and returns its 0x116 object, 0 when none */
+
+int gm_FindMarketObject(int id)
+{
+    ORDOBJ *l[8];
+    ORDOBJ *o;
+    int i;
+
+    if (ai_MarketBuilding != 0) {
+        l[0] = (ORDOBJ *)gm_Query(((ORDBLD *)ai_MarketBuilding)->objList, 1, 0, 0x92);
+        l[1] = (ORDOBJ *)gm_Query(((ORDBLD *)ai_MarketBuilding)->objList, 1, 0, 0x93);
+        l[2] = (ORDOBJ *)gm_Query(((ORDBLD *)ai_MarketBuilding)->objList, 1, 0, 0x94);
+        l[3] = (ORDOBJ *)gm_Query(((ORDBLD *)ai_MarketBuilding)->objList, 1, 0, 0x95);
+        l[4] = (ORDOBJ *)gm_Query(((ORDBLD *)ai_MarketBuilding)->objList, 1, 0, 0x96);
+        l[5] = (ORDOBJ *)gm_Query(((ORDBLD *)ai_MarketBuilding)->objList, 1, 0, 0x97);
+        l[6] = (ORDOBJ *)gm_Query(((ORDBLD *)ai_MarketBuilding)->objList, 1, 0, 0x2db);
+        l[7] = 0;
+        i = 0;
+        for (o = l[0]; o != 0; o = l[i]) {
+            if (gm_Query(o->list, 2, 6, 0, id) != 0)
+                return (int)gm_Query(l[i]->list, 1, 0, 0x116);
+            i++;
+        }
+    }
+    return 0;
+}
+/* 0x501000, the building of the type 0x47 (group (1, 0, 0x47)) whose int at +0x65 is the player p, 0 when none */
+
+int gm_FindPlayerBuilding(int p)
+{
+    ORDBLD *b;
+
+    b = (ORDBLD *)gm_BuildQuery(1, 0, 0x47);
+    while (b != 0) {
+        if (b->v65 == p)
+            return (int)b;
+        b = (ORDBLD *)gm_BuildNext();
+    }
+    return 0;
+}
+/* 0x501030, the next building of the query gm_BuildQuery (0x501190) started: walks the cursor gm_BQCursor over the used records of ai_Blds and returns the first that matches every set criterion (type, id, master, owner, the class of its type; gm_BQStopFirst takes any); 0 when the table ends (the cursor is cleared) or more than 0x100 records were tested
+   @deep match-deep 2026-11-14: 44 -> 8 ins. Fixed: the match loop leaves by break to one final return
+   (not a return in each exit): VC6 then pushes ebx / ebp / edi only before the loop as the original (44 ->
+   10); gm_BQFirstCall = 0 after the first-call walk (10 -> 8: the walk's exit then goes to the shared end
+   check instead of a threaded return copy). Left: (1) the original stores gm_BQFirstCall = 0 before the
+   walk (cmp; mov byte; jae) and still jumps from the walk's bottom to the shared check; with the store
+   first VC6 threads that exit to a return copy; (2) the no block (xor cl,cl; jmp) inline after the owner
+   test in ours, out of line after the returns in the original. Tried (dcp try): every criteria form (goto
+   chain, all four criteria as goto tests, nested if/else with m = 0 per level: 22, the no block after the
+   final return with goto back) = control; first-call walk as for / while with break = control, the if
+   (!first) arm first (26), the loop under if (cursor < end) (27), while (1) = control. flip.py (want the
+   owner test as jne): only the meaning-changing != -> == mutant. (tiebreak: not measured (dcp headers
+   sample gm_BuildNext)) prior: read against the original statement by statement: the two early returns,
+   the first-call / next-record walks of the cursor, the criteria chain (type, id, masterId +0x25, owner
+   +0x27, the class byte of ai_BTypes, sete), the tested counter, the advance and the end / match returns
+   all match (equal compares, operands and loop-invariant loads into edi / bp / bl). Left: the original
+   saves ebx / ebp / edi only before the criteria loop (0x5010a4 push ebx .. push edi; the early returns
+   pop esi only, the first-call walk jumps to the shared end check 0x50109c), ours pushes all four in the
+   prolog and so duplicates every early return with four pops; and the 'm = 0' block (xor cl,cl; jmp) sits
+   after the match return in the original, inline in ours. Tried the criteria as a goto chain, as an
+   if/else with the no label in the else, with the no block after the loop's continue, and as nested ifs
+   with separat... */
+
+unsigned char *gm_BuildNext(void)
+{
+    char m;
+    ORDBLD *end;
+
+    m = 0;
+    end = (ORDBLD *)ai_Blds + 0x100;
+    if (ai_BTypes == 0)
+        return 0;
+    if (gm_BQTested > 0x100)
+        return 0;
+    if (gm_BQFirstCall) {
+        while (gm_BQCursor < end && gm_BQCursor->type == 0)
+            gm_BQCursor++;
+        gm_BQFirstCall = 0;
+    } else {
+        do
+            gm_BQCursor++;
+        while (gm_BQCursor < end && gm_BQCursor->type == 0);
+    }
+    if (gm_BQCursor >= end)
+        return 0;
+    for (;;) {
+        if (gm_BQStopFirst)
+            m = 1;
+        if (gm_BQType == 0xff || gm_BQCursor->type == gm_BQType) {
+            if (gm_BQType != 0xff)
+                m = 1;
+            if (gm_BQId != -1) {
+                if (gm_BQCursor->id != gm_BQId)
+                    goto no;
+                m = 1;
+            }
+            if (gm_BQMaster != 0x7fff) {
+                if (gm_BQCursor->masterId != gm_BQMaster)
+                    goto no;
+                m = 1;
+            }
+            if (gm_BQOwner != 0x7fff) {
+                if (gm_BQCursor->owner != gm_BQOwner)
+                    goto no;
+                m = 1;
+            }
+            if (gm_BQClass != 0xff)
+                m = (unsigned char)ai_BTypes[gm_BQCursor->type * 0x24d] == gm_BQClass;
+        } else {
+        no:
+            m = 0;
+        }
+        gm_BQTested++;
+        if (!m) {
+            do
+                gm_BQCursor++;
+            while (gm_BQCursor < end && gm_BQCursor->type == 0);
+        }
+        if (gm_BQCursor >= end) {
+            if (!m)
+                gm_BQCursor = 0;
+            break;
+        }
+        if (m)
+            break;
+    }
+    return (unsigned char *)gm_BQCursor;
+}
+/* 0x501190, starts a building query and returns its first match (gm_BuildNext): resets the criteria, then reads n (kind, value) pairs: 0 the type, 1 the id, 2 a name (copied to gm_BQName, never tested), 3 the master id, 4 the owner, 5 the class of the type, 6 stop at the first (no value); the cursor starts at ai_Blds. Used all over the exe (gm_BuildQuery(1, 5, 10) ..)
+   @deep read against the original: the reset of the nine criteria, the (kind, value) walk with a
+   pre-incremented argument pointer, the seven cases (switch tables equal, strcpy intrinsic for the name)
+   and the tail call to gm_BuildNext all match; gm_BQClass is unsigned char like gm_BQType (the original
+   stores one 0xff register into both). The one hunk left (+0xc, 10 lines) is the same five instructions
+   scheduled and allocated differently: the original loads 0xff into cl, stores type / class, then loads n
+   into ecx; ours loads n into ecx first and takes al for 0xff (its short mov [mem], al form makes ours 2
+   bytes smaller). Tried the class / type stores chained and the copy locals reordered: no change */
+
+unsigned char *gm_BuildQuery(int n, ...)
+{
+    int *ap;
+    int i;
+
+    if (ai_BTypes == 0)
+        return 0;
+    gm_BQType = 0xff;
+    gm_BQClass = 0xff;
+    gm_BQId = -1;
+    gm_BQName = 0;
+    gm_BQMaster = 0x7fff;
+    gm_BQOwner = 0x7fff;
+    gm_BQFirstCall = 1;
+    gm_BQTested = 0;
+    gm_BQStopFirst = 0;
+    if (n > 0) {
+        ap = &n;
+        for (i = n; i != 0; i--) {
+            switch ((unsigned char)*++ap) {
+            case 0:
+                gm_BQType = (unsigned char)*++ap;
+                break;
+            case 1:
+                gm_BQId = *++ap;
+                break;
+            case 2:
+                strcpy(gm_BQName, (char *)*++ap);
+                break;
+            case 3:
+                gm_BQMaster = (unsigned short)*++ap;
+                break;
+            case 4:
+                gm_BQOwner = (unsigned short)*++ap;
+                break;
+            case 5:
+                gm_BQClass = (unsigned char)*++ap;
+                break;
+            case 6:
+                gm_BQStopFirst = 1;
+                break;
+            }
+        }
+    }
+    gm_BQCursor = (ORDBLD *)ai_Blds;
+    return gm_BuildNext();
+}
+/* 0x5012b0, the first free record of the building table (0x100 records of 0xa9 bytes), 0 when it is full */
+
+char *gm_FindFreeBuilding(void)
+{
+    ORDBLD *end, *b;
+
+    end = (ORDBLD *)ai_Blds + 0x100;
+    for (b = (ORDBLD *)ai_Blds; b < end; b++) {
+        if (b->type == 0)
+            break;
+    }
+    if (b >= end)
+        return 0;
+    return (char *)b;
+}
+/* 0x5012e0, frees the building b: a player's building (its owner a character of kind 6) frees its production setting (ai_FreeProdSetting); by type, 0x1e frees its plant records, 0x48 .. 0x4a its graveyard record, 0x4b .. 0x4d its heap block; every character living or working in it loses it, its object list is freed and the type set to 0 (free). Returns 0, -1 for no building, -2 for one already free */
+
+int gm_FreeBuilding(char *p)
+{
+    ORDBLD *b = (ORDBLD *)p;
+    int i;
+
+    if (b == 0)
+        return -1;
+    if (b->type == 0)
+        return -2;
+    if (b->owner != 0xffff && ORD_CHARS[b->owner].kind == 6)
+        ai_FreeProdSetting(b->id);
+    switch (b->type) {
+    case 0x1e:
+        if (b->plants != 0) {
+            mem_Free(b->plants);
+            b->plants = 0;
+        }
+        b->plants = 0;
+        break;
+    case 0x48:
+    case 0x49:
+    case 0x4a:
+        gv_FreeGraveyard((int *)b->block65);
+        b->block65 = 0;
+        break;
+    case 0x4b:
+    case 0x4c:
+    case 0x4d:
+        mem_Free(b->block65);
+        b->block65 = 0;
+        break;
+    }
+    for (i = 0; i < 0x300; i++) {
+        if (ORD_CHARS[i].bld2 == b)
+            ORD_CHARS[i].bld2 = 0;
+        if (ORD_CHARS[i].bld == b)
+            ORD_CHARS[i].bld = 0;
+    }
+    if (b->objList != 0)
+        gm_FreeList(&b->objList);
+    b->type = 0;
+    return 0;
+}
+
+extern int gm_NOffers;
+int gm_ListStock(short *l, int id);     /* 0x50ab50 */
+int gm_ListAmount(short *l, char *o);   /* 0x50aaf0 */
+float gm_GoodsPrice(unsigned id, unsigned char p);                   /* 0x5089c0 */
+unsigned short * gm_ObjectBuildingOwner(unsigned short *p);                     /* 0x50a050 */
+void init_HookObject(struct D3OBJECT *o, void *p, int kind);                     /* 0x50d380 */
+struct CHTRANSPORT * ch_AttachTransport();                     /* 0x4034e0 */
+char d3if_SelectTextureSet(struct D3OBJECT *obj, struct D3SURF *surf, unsigned char set, char reload);                     /* 0x446f30 */
+struct CHARACTER * ch_Create();                     /* 0x403390 */
+void ch_PreloadAnims(struct CHARACTER *ch, int n, ...);                     /* 0x404200 */
+void ch_SetVisible();                     /* 0x402480 */
+int gm_IsHomeType();                     /* 0x502520 */
+int init_BuildingSceneUniverse();                     /* 0x511e60 */
+
 
 int gm_IsHomeType(unsigned char *b);
 int gm_IsType10(unsigned char *b);
@@ -6837,182 +6838,6 @@ float gm_CatchPlague(ORDCHAR *c)
     cm_SendFieldDeltas();
     return gm_AddHealth(c->id, -(int)(v * rec.cost));
 }
-/* 0x505ca0, fills out[0 .. n-1] with 0 .. n-1 and shuffles it with (n / 2 + max (1, n / 4)) random swaps of different places (n > 1) */
-
-void gm_Shuffled(unsigned char n, int *out)
-{
-    int i, cnt, swaps;
-    int a, b;
-    int t;
-
-    for (i = 0; i < n; i++)
-        out[i] = i;
-    if (n >= 2) {
-        cnt = n / 2 + (n / 4 > 1 ? n / 4 : 1);
-        for (swaps = 0; swaps < cnt; ) {
-            a = util_RandomS(n);
-            b = util_RandomS(n);
-            if (a != b) {
-                t = out[a];
-                out[a] = out[b];
-                out[b] = t;
-                swaps++;
-            }
-        }
-    }
-}
-/* 0x505d30, shuffles the n ints at out in place (n / 2 + max (1, n / 4) swaps of different places) */
-
-void gm_Shuffle(unsigned n, int *out)
-{
-    unsigned m, a, b;
-    int cnt, swaps, t;
-
-    if (n >= 2) {
-        m = n >> 2;
-        if (m <= 1)
-            m = 1;
-        swaps = 0;
-        cnt = (n >> 1) + m;
-        if (0 < cnt) {
-            do {
-                a = util_RandomU(n);
-                b = util_RandomU(n) & 0xffff;
-                if (a != b) {
-                    t = out[a];
-                    out[a] = out[b];
-                    out[b] = t;
-                    swaps++;
-                }
-            } while (swaps < cnt);
-        }
-    }
-}
-/* 0x505da0, a random age for the value n: for 0 a value of 0x15 .. 0x3e, below 42 n + (0 .. 5), else n + (0 .. 10) */
-
-char gm_RandomAge(unsigned char n)
-{
-    char r;
-
-    if (n == 0) {
-        r = (char)util_RandomU(0x2a);
-        r += 0x15;
-        return r;
-    }
-    r = (char)util_RandomU((float)n >= 42.0f ? 0xb : 6);
-    n += r;
-    return n;
-}
-/* 0x505df0, the character in use whose netId is id, 0 when none */
-
-short *gm_FindChar(int id)
-{
-    int i;
-
-    for (i = 0; i < 768; i++)
-        if (ORD_CHARS[i].id != 0xffff && ORD_CHARS[i].netId == id)
-            return (short *)ai_Chars[i];
-    return 0;
-}
-/* 0x505e30, the age (its w00a word) of the character with the number id as a float */
-
-float gm_CharAge(unsigned short id)
-{
-    return (float)ORD_CHARS[id].w00a;
-}
-/* 0x505e60, the level of the character id: 0 for a free slot or a dead one, 1 when its job has no kind record
-   (amt_GetKind), else the kind's level + 1; below the top level 10 and unless again is set, the level of its
-   parent (relatives[1]) when that is not lower */
-
-int gm_CharLevel(unsigned short id, int again)
-{
-    AMTKIND kind;
-    short *parent;
-    int level;
-
-    if (ORD_CHARS[id].netId == -1 || ORD_CHARS[id].health <= 0)
-        return 0;
-    if (amt_GetKind(ORD_CHARS[id].job, &kind) == 0)
-        return 1;
-    level = kind.level + 1;
-    if (kind.level == 10)
-        return level;
-    if (again != 0)
-        return level;
-    parent = gm_FindChar(ORD_CHARS[id].relatives[1]);
-    if (parent != 0 && level <= gm_CharLevel(*parent, 1))
-        return gm_CharLevel(*parent, 1);
-    return level;
-}
-/* 0x505f30, gm_CharLevel for the character's previous office (prevOffice +0x167): 0 for a free slot or a dead one,
-   1 when the office has no kind record, else its level + 1, raised to the parent's (relatives[1]) when that is not
-   lower (below the top level 10, unless again is set) */
-
-int gm_CharPrevLevel(unsigned short id, int again)
-{
-    AMTKIND kind;
-    short *parent;
-    int level;
-
-    if (ORD_CHARS[id].netId == -1 || ORD_CHARS[id].health <= 0)
-        return 0;
-    if (amt_GetKind(ORD_CHARS[id].prevOffice, &kind) == 0)
-        return 1;
-    level = kind.level + 1;
-    if (kind.level == 10)
-        return level;
-    if (again != 0)
-        return level;
-    parent = gm_FindChar(ORD_CHARS[id].relatives[1]);
-    if (parent != 0 && level <= gm_CharPrevLevel(*parent, 1))
-        return gm_CharPrevLevel(*parent, 1);
-    return level;
-}
-/* 0x506000, the birthday of the character c as a calendar record in out: the birth year is the clock's year (a dead
-   character's: w028) minus the age w00a, the month ((x >> 3) % 13 + year % 11) % 12 + 1 and the day (x >> 5) % 28 + 1
-   with x = the first name's first four bytes xor the calendar year, so it stays the same from year to year */
-
-void gm_BirthDate(ORDCHAR *c, GMDATE *out)
-{
-    AITIME clk;
-    GMDATE d;
-    unsigned x;
-
-    clk = ai_Time;
-    if (c->health == 0)
-        clk.year = c->w028;
-    clk.year -= c->w00a;
-    gm_ClockToDate(&clk, (unsigned char *)&d);
-    x = c->nameKey ^ d.year;
-    d.month = (char)(((x >> 3) % 13 + clk.year % 11) % 12) + 1;
-    d.day = (unsigned char)((x >> 5) % 28) + 1;
-    *out = d;
-}
-/* 0x5060d0, the day of death of the character c as a calendar record in out: 0 for a living one, else 1 with the
-   year w028 and a month ((x >> 3) % 7 + year % 19) % 12 + 1 and day (x >> 5) % 28 + 1 from x = the first name's first
-   four bytes xor the calendar year (gm_BirthDate's scheme) */
-
-int gm_DeathDate(ORDCHAR *c, GMDATE *out)
-{
-    AITIME clk;
-    GMDATE d;
-    int year;
-    unsigned x;
-
-    if (c->health != 0)
-        return 0;
-    year = c->w028;
-    clk.year = year;
-    gm_ClockToDate(&clk, (unsigned char *)&d);
-    x = c->nameKey ^ d.year;
-    d.month = (char)(((x >> 3) % 7 + year % 19) % 12) + 1;
-    d.day = (unsigned char)((x >> 5) % 28) + 1;
-    *out = d;
-    return 1;
-}
-
-/* the bit fields of the word +0x2c of a character (the skill levels): field k starts at the bit FIELD_SHIFT[k] with the mask FIELD_MASK[k] (4, 4, 2, 3, 3, 3, 2, 4 bits) */
-
 /* 0x5054f0, the character c catches one of the minor diseases 2 .. 5 (the fields of its word +0x2c at bits 4, 8, 12
    and 14) it does not have yet, from a random start: the severity is util_Random(half the record's range) of
    gm_GetDisease, written into the field and sent, and the health drops by severity * the record's cost
@@ -7366,6 +7191,182 @@ void gm_ShuffledBytes(unsigned char n, unsigned char *out)
         }
     }
 }
+/* 0x505ca0, fills out[0 .. n-1] with 0 .. n-1 and shuffles it with (n / 2 + max (1, n / 4)) random swaps of different places (n > 1) */
+
+void gm_Shuffled(unsigned char n, int *out)
+{
+    int i, cnt, swaps;
+    int a, b;
+    int t;
+
+    for (i = 0; i < n; i++)
+        out[i] = i;
+    if (n >= 2) {
+        cnt = n / 2 + (n / 4 > 1 ? n / 4 : 1);
+        for (swaps = 0; swaps < cnt; ) {
+            a = util_RandomS(n);
+            b = util_RandomS(n);
+            if (a != b) {
+                t = out[a];
+                out[a] = out[b];
+                out[b] = t;
+                swaps++;
+            }
+        }
+    }
+}
+/* 0x505d30, shuffles the n ints at out in place (n / 2 + max (1, n / 4) swaps of different places) */
+
+void gm_Shuffle(unsigned n, int *out)
+{
+    unsigned m, a, b;
+    int cnt, swaps, t;
+
+    if (n >= 2) {
+        m = n >> 2;
+        if (m <= 1)
+            m = 1;
+        swaps = 0;
+        cnt = (n >> 1) + m;
+        if (0 < cnt) {
+            do {
+                a = util_RandomU(n);
+                b = util_RandomU(n) & 0xffff;
+                if (a != b) {
+                    t = out[a];
+                    out[a] = out[b];
+                    out[b] = t;
+                    swaps++;
+                }
+            } while (swaps < cnt);
+        }
+    }
+}
+/* 0x505da0, a random age for the value n: for 0 a value of 0x15 .. 0x3e, below 42 n + (0 .. 5), else n + (0 .. 10) */
+
+char gm_RandomAge(unsigned char n)
+{
+    char r;
+
+    if (n == 0) {
+        r = (char)util_RandomU(0x2a);
+        r += 0x15;
+        return r;
+    }
+    r = (char)util_RandomU((float)n >= 42.0f ? 0xb : 6);
+    n += r;
+    return n;
+}
+/* 0x505df0, the character in use whose netId is id, 0 when none */
+
+short *gm_FindChar(int id)
+{
+    int i;
+
+    for (i = 0; i < 768; i++)
+        if (ORD_CHARS[i].id != 0xffff && ORD_CHARS[i].netId == id)
+            return (short *)ai_Chars[i];
+    return 0;
+}
+/* 0x505e30, the age (its w00a word) of the character with the number id as a float */
+
+float gm_CharAge(unsigned short id)
+{
+    return (float)ORD_CHARS[id].w00a;
+}
+/* 0x505e60, the level of the character id: 0 for a free slot or a dead one, 1 when its job has no kind record
+   (amt_GetKind), else the kind's level + 1; below the top level 10 and unless again is set, the level of its
+   parent (relatives[1]) when that is not lower */
+
+int gm_CharLevel(unsigned short id, int again)
+{
+    AMTKIND kind;
+    short *parent;
+    int level;
+
+    if (ORD_CHARS[id].netId == -1 || ORD_CHARS[id].health <= 0)
+        return 0;
+    if (amt_GetKind(ORD_CHARS[id].job, &kind) == 0)
+        return 1;
+    level = kind.level + 1;
+    if (kind.level == 10)
+        return level;
+    if (again != 0)
+        return level;
+    parent = gm_FindChar(ORD_CHARS[id].relatives[1]);
+    if (parent != 0 && level <= gm_CharLevel(*parent, 1))
+        return gm_CharLevel(*parent, 1);
+    return level;
+}
+/* 0x505f30, gm_CharLevel for the character's previous office (prevOffice +0x167): 0 for a free slot or a dead one,
+   1 when the office has no kind record, else its level + 1, raised to the parent's (relatives[1]) when that is not
+   lower (below the top level 10, unless again is set) */
+
+int gm_CharPrevLevel(unsigned short id, int again)
+{
+    AMTKIND kind;
+    short *parent;
+    int level;
+
+    if (ORD_CHARS[id].netId == -1 || ORD_CHARS[id].health <= 0)
+        return 0;
+    if (amt_GetKind(ORD_CHARS[id].prevOffice, &kind) == 0)
+        return 1;
+    level = kind.level + 1;
+    if (kind.level == 10)
+        return level;
+    if (again != 0)
+        return level;
+    parent = gm_FindChar(ORD_CHARS[id].relatives[1]);
+    if (parent != 0 && level <= gm_CharPrevLevel(*parent, 1))
+        return gm_CharPrevLevel(*parent, 1);
+    return level;
+}
+/* 0x506000, the birthday of the character c as a calendar record in out: the birth year is the clock's year (a dead
+   character's: w028) minus the age w00a, the month ((x >> 3) % 13 + year % 11) % 12 + 1 and the day (x >> 5) % 28 + 1
+   with x = the first name's first four bytes xor the calendar year, so it stays the same from year to year */
+
+void gm_BirthDate(ORDCHAR *c, GMDATE *out)
+{
+    AITIME clk;
+    GMDATE d;
+    unsigned x;
+
+    clk = ai_Time;
+    if (c->health == 0)
+        clk.year = c->w028;
+    clk.year -= c->w00a;
+    gm_ClockToDate(&clk, (unsigned char *)&d);
+    x = c->nameKey ^ d.year;
+    d.month = (char)(((x >> 3) % 13 + clk.year % 11) % 12) + 1;
+    d.day = (unsigned char)((x >> 5) % 28) + 1;
+    *out = d;
+}
+/* 0x5060d0, the day of death of the character c as a calendar record in out: 0 for a living one, else 1 with the
+   year w028 and a month ((x >> 3) % 7 + year % 19) % 12 + 1 and day (x >> 5) % 28 + 1 from x = the first name's first
+   four bytes xor the calendar year (gm_BirthDate's scheme) */
+
+int gm_DeathDate(ORDCHAR *c, GMDATE *out)
+{
+    AITIME clk;
+    GMDATE d;
+    int year;
+    unsigned x;
+
+    if (c->health != 0)
+        return 0;
+    year = c->w028;
+    clk.year = year;
+    gm_ClockToDate(&clk, (unsigned char *)&d);
+    x = c->nameKey ^ d.year;
+    d.month = (char)(((x >> 3) % 7 + year % 19) % 12) + 1;
+    d.day = (unsigned char)((x >> 5) % 28) + 1;
+    *out = d;
+    return 1;
+}
+
+/* the bit fields of the word +0x2c of a character (the skill levels): field k starts at the bit FIELD_SHIFT[k] with the mask FIELD_MASK[k] (4, 4, 2, 3, 3, 3, 2, 4 bits) */
+
 
 float gm_Liking();                     /* 0x50c550 */
 void ai_RestartMission(struct G13MIS *m);                     /* 0x4b3a90 */
