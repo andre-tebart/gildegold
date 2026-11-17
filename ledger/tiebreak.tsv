@@ -730,7 +730,7 @@ exe	0x00438c60	d3_TypeInMask	d3_engine	710d5793cf1145ad	no	byte	control=byte p1=
 exe	0x00438d40	d3_ForEachObject	d3_engine	11175a24cd816660	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00438e60	d3_ForEachObject2	d3_engine	805b0f16c2d0b235	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00438f60	d3_ProjectMesh	d3_engine	52cc6972a792cd1c	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	cd7ec9ed5ef4b6d7
-exe	0x004391d0	d3_SetupFrustum	d3_engine	d860847c1bac9a51	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft	
+exe	0x004391d0	d3_SetupFrustum	d3_engine	e6b7975364020c74	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	c0d71501f2c356c8
 exe	0x00439650	d3_ClipBox	d3_engine	9a1bc9ae153d8646	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00439870	d3_UpdateWorldMatrix	d3_engine	d778b32a834b040b	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004399e0	d3_ClipObject	d3_engine	09279b8da5ea88eb	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
@@ -3702,7 +3702,7 @@ exe	0x00555350	he_TransportFromHome	he	cd3e941e170eacf7	no	byte	control=byte p1=
 exe	0x00555690	he_TransportToHome	he	3fb19b09e19c025c	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00555b60	he_TransportStadtStadt	he	e542082bdd46b485	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
 exe	0x00556080	he_TransportHomeHome	he	e973f8d115a8967e	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x00556600	he_RunTransport	he	1f75abfb1454485f	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
+exe	0x00556600	he_RunTransport	he	7c3efe32ab36e4a2	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	221f7ce18b8cc65f
 exe	0x00556dc0	he_AllocCartRepair	he	ab44ccc55131f5a7	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
 exe	0x00556ed0	he_RunCartRepair	he	c98f72f4cb867b66	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00557160	he_AllocMessageBox	he	14ecc6bf7e43d45d	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
@@ -3843,7 +3843,7 @@ exe	0x0056de10	he_RunAlchemistDay	he	6aa2e76b7d870b01	no	byte	control=byte p1=by
 exe	0x0056e070	he_LabIncident	he	f937241ea6267a59	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x0056e400	he_RegisterEventTypes99	he	886b1d479ef4184b	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0056e460	he_AllocSecretRoom	he	b63de88acedb5ca6	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x0056e5b0	he_RunSecretRoom	he	2d0e0da5a3e48e0a	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	4cbf06cae45cb11e
+exe	0x0056e5b0	he_RunSecretRoom	he	bfa7a700d3f8d72e	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	de19b514c0c92f7f
 exe	0x0056efc0	he_AllocEvent9a	he	963a8b7c00a40e7e	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0056f040	he_FreeEventNow	he	8ebbf0bd37d80d17	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0056f050	he_AllocDomizilEvent	he	ab721adffda3465d	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	

@@ -2325,7 +2325,7 @@ exe	0x004c9c80	cm_ExChrSetPos	cm	byte	readable
 exe	0x004c9d00	cm_ExCartState	cm	byte	readable		
 exe	0x004c9d80	cm_ExPlaceOnStage	cm	byte	readable		
 exe	0x004c9dc0	cm_ExChrGotoBuilding	cm	draft	readable	deep	
-exe	0x004ca8a0	cm_ExChrUseGates	cm	shape	readable		
+exe	0x004ca8a0	cm_ExChrUseGates	cm	byte	readable		
 exe	0x004caa20	cm_ExChrAnim	cm	byte	readable		
 exe	0x004caaa0	cm_ExOwnership	cm	byte	readable		
 exe	0x004cab40	cm_ExSetHome	cm	byte	readable		
@@ -3695,7 +3695,7 @@ exe	0x00553e90	he_RunSale	he	byte	readable
 exe	0x00554320	he_RunCustomers	he	draft	readable	deep	
 exe	0x00554820	he_AllocCustomersHire	he	byte	readable		
 exe	0x00554860	he_RunHire	he	draft	readable	deep	
-exe	0x00554cb0	he_AllocTransport	he	shape	readable		
+exe	0x00554cb0	he_AllocTransport	he	byte	readable		
 exe	0x005551c0	he_CollectTransporter	he	byte	readable		
 exe	0x00555210	he_RandomTransporter	he	byte	readable		
 exe	0x005552c0	he_SetCartSpeed	he	byte	readable		
@@ -3844,7 +3844,7 @@ exe	0x0056de10	he_RunAlchemistDay	he	byte	readable
 exe	0x0056e070	he_LabIncident	he	draft	readable	deep	
 exe	0x0056e400	he_RegisterEventTypes99	he	byte	readable		
 exe	0x0056e460	he_AllocSecretRoom	he	byte	readable		
-exe	0x0056e5b0	he_RunSecretRoom	he	draft	readable	deep	
+exe	0x0056e5b0	he_RunSecretRoom	he	shape	readable	deep	
 exe	0x0056efc0	he_AllocEvent9a	he	byte	readable		
 exe	0x0056f040	he_FreeEventNow	he	byte	readable		
 exe	0x0056f050	he_AllocDomizilEvent	he	byte	readable		
@@ -4344,7 +4344,7 @@ exe	0x005a9050	ai_ShowPartnerNews	lc	shape	readable
 exe	0x005a9110	ai_ShowCharacterNews	lc	byte	readable		
 exe	0x005a9170	ai_NotifyPlayerOfChar	lc	byte	readable		
 exe	0x005a91c0	ai_PlagueNews	lc	byte	readable		
-exe	0x005a9240	ai_PlagueMessage	lc	draft	readable	deep	
+exe	0x005a9240	ai_PlagueMessage	lc	byte	readable		
 exe	0x005a92b0	ai_PlagueMessageAll	lc	byte	readable		
 exe	0x005a9330	ai_SendSwapText	lc	byte	readable		
 exe	0x005a9430	ai_ShowEvidenceVoidNews	lc	byte	readable		
@@ -4553,7 +4553,7 @@ exe	0x005cde90	ai_AccusationWindow	lc	draft	readable	deep
 exe	0x005ce1a0	ai_FaithAccusationWindow	lc	draft	readable	deep	
 exe	0x005ce4b0	ai_Interrogate	lc	byte	readable		
 exe	0x005ce610	ai_InterrogationWindow	lc	byte	readable		
-exe	0x005ce7f0	ai_WorkerDismissalWindow	lc	shape	readable	deep	
+exe	0x005ce7f0	ai_WorkerDismissalWindow	lc	byte	readable		
 exe	0x005ce950	ai_DismissalHandler	lc	byte	readable		
 exe	0x005ced50	ai_SendInterrogationRefusal	lc	byte	readable		
 exe	0x005cede0	ai_InterrogationWindow1	lc	byte	readable		
