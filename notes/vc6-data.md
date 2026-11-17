@@ -299,3 +299,34 @@ a unit boundary looks like. Not needed to match a function's code (that is `note
   places with txt, their first surviving user.
 - **bprobe.py caches the merged compile** (build/c2dag/unitprobe/bp_base_<tree>_<unit>.pkl), keyed by the unit's
   text since s5's start: an edited unit is recompiled.
+
+### s6 additions
+- **A named char array at a unit's string run is that unit's literal** (he / he_b: 10 `char x[N] = "..."` in main.c,
+  N the length padded to 4): write the literal at the user, the run then lines up by first use. Turning the arrays
+  into literals let M9 compare the text: main.c's "Rohstoff suchen" was "Rohstoffsuchen" in the original.
+- **A .data table no code refers to, whose entries point at a unit's functions** (d3_io_a's AGI keyword tables
+  0x5fc2c8..0x5fc4cc, 912 bytes): the reader that walked it was removed by /OPT:REF; .data keeps the table and the
+  table keeps the callbacks (their only reference). Declare it with the original's bytes (D6 checks each pointer).
+  Its initialiser strings come in reverse order of the source (VC6 prepends) and before the functions' literals
+  when the table is defined above the functions. An entry pointing into another unit's function is an ICF fold
+  of an identical body (the AGI materials' "*DONE*" = bgi_NextMat): reference the kept one, do not invent a copy.
+- **A boundary inside a unit pair can be moved by hand** (d3_int_io / d3_io_t at 0x44c510): move the functions
+  to the next file's top and edit both boundary lines in decl/text.dcl; the moved functions may need the
+  receiving file's missing includes. A .bss gap larger than the 8-alignment of the next datum (d3_LodMissing ..
+  d3io_StockPath) reads as an object boundary and can pick the first function where bprobe finds nothing.
+- **Including a new header moves tie-breaks by itself**: an empty `#include "d3_event.h"` (guard only) in
+  d3_engine.h took d3_mir's d3_MirDrawObject byte -> shape (byte again with 15 unused typedefs): the file / guard
+  macro, not the declarations. Expect it on every header split; the build's sweep settles it (commit its row).
+- **A block of plain data right before a unit's literals is that unit's**, whoever defines or writes it (the
+  light budgets f3init wrote and the ambient colour d3_interface wrote are d3_light's 0x5fcc6c block; d3o_FogScale
+  is d3_interface's). Moving such a definition changed no grade; moving its extern between shared headers
+  (f3init.h -> d3_interface.h) changed none either.
+- **Zero members of an initialised object in .data** (sv_ViewRect {0, 0, 694, 600}): accesses by absolute field
+  address cannot tell four ints from a struct; the section can (VC6 puts a zero scalar in .bss). One RECT with the
+  old names as field macros in the header; local `extern int` copies of the names must go (the macro breaks them).
+- **The common block (s6 count)**: our link emits 5 game commons (gm_KindObjCount, d2_ScreenH / W, dd_BLoss /
+  RLoss, the tentative ones) plus 25 LIBC ones; the original's 0x6f3300..0x14ebe84 is all common. The other game
+  data there are `= 0` definitions in the units' .bss, so our commons are a tiny subset (sizes agree) and come
+  after LIBC's .bss as one group instead of being interleaved; the bss steps above 0x6f3300 are this.
+- **ai_TutorialInitChapter3 (sv_t)**: every build after an he.h / sv_t change re-sweeps it and stops at shape
+  (the baseline goal); `dcp try` with 6 unused typedefs before it still gives byte: restore its tiebreak row.
