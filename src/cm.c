@@ -15681,11 +15681,12 @@ void cm_LoadEventScene(char *name)
         if (ai_GfxFloorLod == 0) {
             ((D3FLMAP *)d3_Terrain)->lod = 2;
             sh = 2;
+            d3fl_SetDetail(0x40);
         } else {
             ((D3FLMAP *)d3_Terrain)->lod = 1;
             sh = 1;
+            d3fl_SetDetail(0x40);
         }
-        d3fl_SetDetail(0x40);
         d3fl_SetShift((struct D3FLMAP *)d3_Terrain, sh >> 1, 1);
     }
     if (((G28REC *)cm_CurrentFight)->flags & 0x20) {
