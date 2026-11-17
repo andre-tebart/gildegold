@@ -4014,43 +4014,6 @@ void gv_ClearCrimes(void)
         ai_Evidence[i][1] = -1;
     }
 }
-/* 0x4f4d10, the rank check (gv_CheckRankUp) of every one of the 768 character slots */
-
-void gv_CheckRankUps(void)
-{
-    int i;
-
-    for (i = 0; i < 0x300; i++)
-        gv_CheckRankUp(i);
-}
-/* 0x4f4d30, the price of the evidence of the crime id offered by the character seller (the 'dunkle ecke' shops,
-   ai_DecideBuyDunkleEcke): (liking of the culprit for the seller * 0.005 + 0.5) * (the culprit's level gm_CharLevel + the
-   law's AIDEC.guilt) * 1600 into *price, the culprit's id into *culprit, the law into *law; 1 when the crime exists, its
-   law carries guilt and the culprit exists, else 0 */
-
-int gv_EvidencePrice(int id, AICHAR *seller, int *price, short *culprit, unsigned *law)
-{
-    int i;
-    AICHAR *ch;
-    AIDEC rec;
-    int level;
-
-    if (id == -1)
-        return 0;
-    i = gv_FindCrime(id);
-    if (i == -1)
-        return 0;
-    if (gv_GetTableRecord(gv_CrimesT[i].law, (int *)&rec) == 0 || rec.guilt == 0)
-        return 0;
-    ch = (AICHAR *)gm_FindChar(gv_CrimesT[i].culprit);
-    if (ch == 0)
-        return 0;
-    *culprit = ch->id;
-    level = gm_CharLevel(ch->id, 1);
-    *price = (int)((gm_Liking(ch->id, seller->id, 1) * 0.005f + 0.5f) * (level + rec.guilt) * 1600.0f);
-    *law = rec.id;
-    return 1;
-}
 /* 0x4f4390, sorts the n crime records at r by the law broken (CRIME.law), ascending: an exchange sort with whole-record
    swaps (the crime list windows ai_EvidenceDetailsWindow / ai_AccuseWindow sort their copies of the records held) */
 
@@ -4302,6 +4265,43 @@ void gv_CheckRankUp(unsigned i)
             }
         }
     }
+}
+/* 0x4f4d10, the rank check (gv_CheckRankUp) of every one of the 768 character slots */
+
+void gv_CheckRankUps(void)
+{
+    int i;
+
+    for (i = 0; i < 0x300; i++)
+        gv_CheckRankUp(i);
+}
+/* 0x4f4d30, the price of the evidence of the crime id offered by the character seller (the 'dunkle ecke' shops,
+   ai_DecideBuyDunkleEcke): (liking of the culprit for the seller * 0.005 + 0.5) * (the culprit's level gm_CharLevel + the
+   law's AIDEC.guilt) * 1600 into *price, the culprit's id into *culprit, the law into *law; 1 when the crime exists, its
+   law carries guilt and the culprit exists, else 0 */
+
+int gv_EvidencePrice(int id, AICHAR *seller, int *price, short *culprit, unsigned *law)
+{
+    int i;
+    AICHAR *ch;
+    AIDEC rec;
+    int level;
+
+    if (id == -1)
+        return 0;
+    i = gv_FindCrime(id);
+    if (i == -1)
+        return 0;
+    if (gv_GetTableRecord(gv_CrimesT[i].law, (int *)&rec) == 0 || rec.guilt == 0)
+        return 0;
+    ch = (AICHAR *)gm_FindChar(gv_CrimesT[i].culprit);
+    if (ch == 0)
+        return 0;
+    *culprit = ch->id;
+    level = gm_CharLevel(ch->id, 1);
+    *price = (int)((gm_Liking(ch->id, seller->id, 1) * 0.005f + 0.5f) * (level + rec.guilt) * 1600.0f);
+    *law = rec.id;
+    return 1;
 }
 
 const char ai_ZeroRot[12] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };  /* 0x5ebbb4 */
