@@ -3,6 +3,7 @@
     python tools/exe/exemeasure.py                 # summary: sections, functions at their address, first mismatches
     python tools/exe/exemeasure.py --queue [-n N]  # the size queue: functions whose padded size differs, by address
     python tools/exe/exemeasure.py --unit ch       # the size queue of one unit
+    python tools/exe/exemeasure.py --pairs          # every link-order pair
     python tools/exe/exemeasure.py --no-link       # use build/link/exe as it is (default: `dcp link` first)
 
 Why: per-function byte matching does not move a function to its original address. One function 16 bytes short
@@ -51,6 +52,7 @@ def main():
     ap.add_argument("--unit")
     ap.add_argument("-n", type=int, default=20)
     ap.add_argument("--no-link", action="store_true")
+    ap.add_argument("--pairs", action="store_true", help="every link-order pair, not only the first 5")
     a = ap.parse_args()
     if not a.no_link:
         r = subprocess.run(["dcp", "link"], cwd=ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace")
@@ -94,12 +96,14 @@ def main():
             continue
         vb, vsb, rawb = usec[k]
         print("  %-6s va 0x%06x vs 0x%06x  vsize 0x%06x vs 0x%06x (%+d)" % (k, va, vb, vs, vsb, vsb - vs))
-    print("functions: %d in both, %d at their original address (%.1f%%)" % (len(both), placed, 100.0 * placed / len(g)))
+    sized = sum(1 for n in osz if n in usz and osz[n] == usz[n])
+    print("functions: %d in both, %d at their original address (%.1f%%), %d with the original's padded size" % (
+        len(both), placed, 100.0 * placed / len(g), sized))
     print("size queue: %d functions with another padded size; out of order in the link: %d pairs" % (
         len(sizeq), len(misorder)))
     for n in sizeq[:5]:
         print("  first: 0x%08x %s unit=%s %s orig=%d ours=%d" % (g[n][0], n, g[n][1], g[n][2], osz[n], usz[n]))
-    for x, y in misorder[:5]:
+    for x, y in (misorder if a.pairs else misorder[:5]):
         print("  order: %s (0x%x) is followed by %s (0x%x)" % (x, g[x][0], y, g[y][0]))
 
 
