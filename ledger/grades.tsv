@@ -1860,7 +1860,7 @@ exe	0x004ae030	ai_IsLivingPlayer	hst	byte	readable
 exe	0x004ae080	ai_IsLivingNonPlayer	hst	byte	readable		
 exe	0x004ae0d0	ai_IsLivingHuman	hst	byte	readable		
 exe	0x004ae120	ai_IsLivingInhabitant	hst	byte	readable		
-exe	0x004ae160	ai_TokenMayor	hst	shape	readable	deep	
+exe	0x004ae160	ai_TokenMayor	hst	byte	readable		
 exe	0x004ae280	ai_TokenBishop	hst	byte	readable		
 exe	0x004ae3a0	ai_TokenRandomGuildMaster	hst	byte	readable		
 exe	0x004ae600	ai_TokenRandomOfficeHolderFemale	hst	byte	readable		
@@ -2094,7 +2094,7 @@ exe	0x004bdb30	rt_PutRouteMark	rt	byte	readable
 exe	0x004bdc90	rt_MarkValue	rt	byte	readable		
 exe	0x004bdca0	rt_ReadMarkValues	rt	byte	readable		
 exe	0x004bdcd0	rt_ChooseGoodsDialog	rt	shape	readable		
-exe	0x004be180	rt_ChooseRouteGood	rt	shape	readable		
+exe	0x004be180	rt_ChooseRouteGood	rt	byte	readable		
 exe	0x004be3b0	rt_ChooseTabGood	rt	byte	readable		
 exe	0x004be790	rt_OpenSlotControls	rt	byte	readable		
 exe	0x004be8e0	rt_RemoveControls	rt	byte	readable		
@@ -2121,7 +2121,7 @@ exe	0x004c18a0	snd_EnterBuilding	f3snd	byte	readable
 exe	0x004c1bd0	snd_PlayOutdoorTrack	f3snd	byte	readable		
 exe	0x004c1f90	snd_FindActiveTrack	f3snd	byte	readable		
 exe	0x004c1fc0	snd_FindTrackKind	f3snd	byte	readable		
-exe	0x004c2000	snd_UpdateMusic	f3snd	shape	readable		
+exe	0x004c2000	snd_UpdateMusic	f3snd	shape	readable	deep	
 exe	0x004c23f0	snd_PlaySpecialTrack	f3snd	byte	readable		
 exe	0x004c2480	snd_EndSpecialTrack	f3snd	byte	readable		
 exe	0x004c24c0	snd_FadeMusic	f3snd	byte	readable		
@@ -2138,7 +2138,7 @@ exe	0x004c2d20	snd_PlayFavourComment	f3snd	byte	readable
 exe	0x004c2f30	ai_FavourComment	f3snd	shape	readable		
 exe	0x004c30e0	snd_StartMarketAmbience	f3snd	byte	readable		
 exe	0x004c3140	snd_StopMarketAmbience	f3snd	byte	readable		
-exe	0x004c3180	cm_MessageSize	cm	draft	readable	deep	
+exe	0x004c3180	cm_MessageSize	cm	byte	readable		
 exe	0x004c3480	ai_InitStates	cm	byte	readable		
 exe	0x004c3560	ai_ResetMessages	cm	byte	readable		
 exe	0x004c3600	cm_SendHello	cm	byte	readable		
@@ -2215,7 +2215,7 @@ exe	0x004c51b0	cm_RequestChrMoveToUniverse	cm	byte	readable
 exe	0x004c5230	cm_SendChrStop	cm	byte	readable		
 exe	0x004c5260	cm_SendCartState	cm	byte	readable		
 exe	0x004c52a0	cm_SendPlaceOnStage	cm	byte	readable		
-exe	0x004c52e0	cm_SendChrGotoBuilding	cm	draft	readable	deep	
+exe	0x004c52e0	cm_SendChrGotoBuilding	cm	byte	readable		
 exe	0x004c5410	cm_SendChrAnim	cm	byte	readable		
 exe	0x004c5460	cm_SendChrUseGates	cm	byte	readable		
 exe	0x004c54a0	cm_SendOwnership	cm	byte	readable		
@@ -2777,7 +2777,7 @@ exe	0x004f0770	gv_ExtendGrave	grave	byte	readable
 exe	0x004f0900	gv_OrderSetGraveHolder	grave	byte	readable		
 exe	0x004f0970	gv_SetGraveHolder	grave	byte	readable		
 exe	0x004f0a90	gv_OrderOpenSize	grave	byte	readable		
-exe	0x004f0af0	gv_OpenSize	grave	shape	readable	deep	
+exe	0x004f0af0	gv_OpenSize	grave	byte	readable		
 exe	0x004f0c20	gv_OrderAdjustEntry	grave	byte	readable		
 exe	0x004f0c80	gv_AdjustEntry	grave	shape	readable		
 exe	0x004f0d70	gv_OrderNewDead	grave	byte	readable		
