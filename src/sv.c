@@ -3301,7 +3301,8 @@ void sv_FlyCameraToModel(int m)
     pos[1] = cen[1] + back[1];
     pos[2] = cen[2] + back[2];
     t = d3t_GetMeanHeight((struct D3VECTOR *)pos);
-    up.y = (pos[1] = (sv_CameraHeightFar - sv_CameraHeightNear) * sv_CameraHeightFactor + sv_CameraHeightNear + t) - cen[1];
+    pos[1] = (float)((sv_CameraHeightFar - sv_CameraHeightNear) * sv_CameraHeightFactor + sv_CameraHeightNear + t);
+    up.y = pos[1] - cen[1];
     d3t_GetHeightRange((char *)m, &lo, &hi);
     h = back[1] / ((hi - lo) * 0.5f + up.y);
     pos[0] = pos[0] - (h * back[0] - back[0] * 1.8);
