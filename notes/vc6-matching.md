@@ -325,7 +325,9 @@ Where the pushes and pops sit, how many epilogue copies there are, shared agains
   callee-saved register). All failures early `return 0` lets the mode-1 success skip the `mode == 0` store. (six
   ai_Token* siblings byte, ai_TokenRichestInhabitant)
 - **`dec; test; mov; jne` bottom test**: `while (n != 0) { ..; n--; i = ..; }`; `for (..; n != 0; n--)` drops the
-  test.
+  test. A `do { } while (n != 0)` gives the same loop but, when the loop breaks into a shared test, puts the
+  exhausted exit's reload behind the break block instead of in front of it (ai_DecideOfficePartner byte with
+  `while`).
 - **A capped count (`cmp eax, ecx / jl / mov eax, ecx`)**: `if (cnt >= n) return n; return cnt;`
   (amt_GetOfficeCandidates / ...Full).
 - **A `cmp ptr, end` pointer loop over a static table**: `q = tab; do { if (*q != -1) ...; q++; } while ((int)q <

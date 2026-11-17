@@ -1775,7 +1775,7 @@ exe	0x004a8630	ai_PokerExchange	poker	2f4538cf19e53f57	no	byte	control=byte p1=b
 exe	0x004a8650	ai_PokerAnte	poker	1f1e613c58251481	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004a8690	ai_PokerEndRound	poker	5baca7afb5c2ab27	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004a86f0	ai_PokerNpcSetStake	poker	57edade6ab1dd8b7	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	8d526123c4adbed9
-exe	0x004a8760	ai_DecideOfficePartner	poker	1fa702936e30a56c	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	8d526123c4adbed9
+exe	0x004a8760	ai_DecideOfficePartner	poker	dde6e201ff6c5089	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	6473ff2bc3745157
 exe	0x004a8a50	ai_DecideTableValue	poker	a1382c7e7c502420	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004a8ad0	ai_DecidePartnerOtherSex	poker	dfadc586e65498d3	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004a8bf0	ai_EvalOneInFour	poker	9d35283ea557a90c	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	

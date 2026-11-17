@@ -1018,7 +1018,8 @@ int ai_DecideOfficePartner(int a, AICHAR *p, int *ctx, int d, AIARG *m)
     for (i = n; i < 6; i++)
         who[i] = 0;
     r = util_RandomU(6);
-    for (j = 6; j-- != 0;) {
+    j = 6;
+    while (j != 0) {
         if (who[r] != 0 && id != who[r]->netId
             && gm_Liking(who[r]->id, p->id, 1) < 33.0f && rec[r].k == 1) {
             o = who[r];
@@ -1029,12 +1030,14 @@ int ai_DecideOfficePartner(int a, AICHAR *p, int *ctx, int d, AIARG *m)
             }
             break;
         }
+        j--;
         r = (r + 1) % 6;
     }
     if (info.lvl == 3 || info.lvl == 6 || info.lvl == 9 || p->sel != 7)
         return 0;
     r = util_RandomU(6);
-    for (j = 6; j-- != 0;) {
+    j = 6;
+    while (j != 0) {
         c = who[r];
         if (c != 0 && id != c->netId) {
             if (amt_GetKind(c->officeKind, &info2) == 0)
@@ -1045,6 +1048,7 @@ int ai_DecideOfficePartner(int a, AICHAR *p, int *ctx, int d, AIARG *m)
                 break;
             }
         }
+        j--;
         r = (r + 1) % 6;
     }
     if (o != 0 && p->relatives[0] != o->netId) {
