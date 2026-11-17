@@ -6066,8 +6066,8 @@ void ai_MistressAffairWindow(AICHARREC *player, AICHARREC *ch, AIJOB *ev)
     char text[0x200];
     char ask[0x200];
 
-    netId = ch->netId;
     evId = ev->id;
+    netId = ch->netId;
     win = d2_OpenForm(0, 0, "locations\\wohnsitz\\geliebte2");
     d2_SetForm(win, 0);
     sv_FitForm(d2_LastWindow);
@@ -6092,9 +6092,10 @@ void ai_MistressAffairWindow(AICHARREC *player, AICHARREC *ch, AIJOB *ev)
     }
     d2_ClickedId = -1;
     do {
-        alive = 0;
         if (gm_FindChar(netId) != 0 && he_FindEvent(1, 1, evId) != 0)
             alive = 1;
+        else
+            alive = 0;
         if (alive && ev->idbc < ai_Time.year)       /* once a year */
             d2_SetObjEnabled(affair, 1);
         else
