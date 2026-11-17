@@ -488,111 +488,6 @@ void lobby_ShowPlayers(void)
 }
 
 
-/* 0x58b880, the choose-profession window (496 B): opens "Menu\CHOOSEPROFESSION" with its text and a radio
-   group of eleven profession buttons (the kinds 1 .. 7, 0xb, 0xd .. 0xf) at (i % 3) * 0x60 + 100,
-   ((i / 3) * 5 + 5) * 0x10, each the picture kind + 0x5a1 captioned with the profession name, interactive,
-   style 3; the frame loop navigates the radio group and a click on one of the buttons stores its
-   gm_TitleNumber into init_PlayerProfile.job, raises sv_PopRequest and returns 1 */
-
-int lobby_ChooseProfession(int param)
-{
-    int ids[22];
-    int win;
-    int obj;
-    int ret;
-    int i;
-    int id;
-
-    ret = 0;
-    ids[0] = 1;
-    ids[1] = 2;
-    ids[2] = 3;
-    ids[3] = 4;
-    ids[4] = 5;
-    ids[5] = 6;
-    ids[6] = 7;
-    ids[7] = 0xb;
-    ids[8] = 0xd;
-    ids[9] = 0xe;
-    ids[10] = 0xf;
-    win = d2_OpenForm(0, 0, lobby_ChooseProfessionForm);
-    d2_CentreViewWindows(win);
-    d2_SetForm(win, 0);
-    io_PrintText(0x1afa);
-    obj = d2_CreateRadioGroup(0);
-    for (i = 0; i < 0xb; i++) {
-        id = d2_WinOpenPic((i % 3) * 0x60 + 100, ((i / 3) * 5 + 5) * 0x10, ids[i] + 0x5a1, d2_LastWindow);
-        ids[i + 0xb] = id;
-        d2_Objs[id].interactive = 1;
-        d2_Objs[id].style = 3;
-        strcpy(d2_Objs[id].caption, txt_ProfessionNames[ids[i]]);
-        d2_Objs[id].capfont = 0x56;
-        d2_RadioAdd(obj, id);
-    }
-    d2_ClickedId = -1;
-    if (sv_RunFrame((int)lobby_ChooseProfession, param)) {
-        do {
-            d2_MenuNavigate(obj);
-            if (d2_ClickedId != -1) {
-                for (i = 0; i < 0xb; i++) {
-                    if (d2_PointerObj == ids[i + 0xb]) {
-                        init_PlayerProfile.job = gm_TitleNumber(ids[i], 1);
-                        sv_PopRequest = 1;
-                        ret = 1;
-                        break;
-                    }
-                }
-            }
-        } while (sv_RunFrame((int)lobby_ChooseProfession, param));
-    }
-    d2_RadioClear(obj);
-    d2_CloseView(win);
-    return ret;
-}
-/* 0x58ba70, prints the lobby chat into control 5 of the lobby form: one line per chat record (cm_LobbyChatFirst /
-   cm_LobbyChatNextLine) in the colour of the sender's coat of arms (cm_LobbyFindPlayer, 9 for an unknown sender),
-   "name: text" for a line to everybody, "name (txt_ChatPrivate): text" for a private line to or from this player
-   (a private line between others prints the previous text again); when lines came in since the last call and the
-   chat box overflows, its content grows by a line (0x18) and scrolls to the end */
-
-void lobby_ShowChat(void)
-{
-    char text[352];
-    G18LOG *p;
-    CMLOBBYPLAYER *from;
-    int id;
-    int height;
-
-    id = -1;
-    p = cm_LobbyChatFirst();
-    d2_SetForm(lobby_Form, 5);
-    height = d2_Wins[d2_LastWindow].contentHeight;
-    io_PrintText("$C");
-    lobby_ChatNewest = 0;
-    while (p != 0) {
-        lobby_ChatNewest++;
-        from = cm_LobbyFindPlayer(p->id);
-        if (from != 0 && from->id == p->id)
-            id = from->coat;
-        else
-            id = 9;
-        if (p->to != 0) {
-            if ((lobby_Me != 0 && p->to == lobby_Me->id) || p->id == lobby_Me->id)
-                sprintf(text, lobby_FmtChatShout, id, p->name, txt_ChatPrivate, p->text);
-        } else {
-            sprintf(text, lobby_FmtChat, id, p->name, p->text);
-        }
-        id = io_PrintText(text);
-        p = cm_LobbyChatNextLine();
-    }
-    if (lobby_ChatNewest > lobby_ChatShown && id >= 0 && height > d2_Wins[d2_LastWindow].h) {
-        lobby_ChatShown = lobby_ChatNewest;
-        height += 0x18;
-        d2_Wins[d2_LastWindow].contentHeight = height;
-        d2_Wins[d2_LastWindow].scrollY = height - d2_Wins[d2_LastWindow].h;
-        d2_ScrollWindow(d2_LastWindow);
-    }
-}
 /* 0x58af50, the choose-player window "Menu\CHOOSEPLAYER" of the network lobby: loads the "Network" profile
    (name, family name, coat of arms, sex, faith) into init_PlayerProfile, shows the two name inputs, the sex
    and faith button rows and the eight coats of arms (the ones other lobby players hold are disabled), then
@@ -825,4 +720,109 @@ int lobby_ChoosePlayer(unsigned mask, int b)
     _itoa(init_PlayerProfile.faith, num, 10);
     WritePrivateProfileStringA("Network", "Glauben", num, ai_OptionsFile);
     return ret;
+}
+/* 0x58b880, the choose-profession window (496 B): opens "Menu\CHOOSEPROFESSION" with its text and a radio
+   group of eleven profession buttons (the kinds 1 .. 7, 0xb, 0xd .. 0xf) at (i % 3) * 0x60 + 100,
+   ((i / 3) * 5 + 5) * 0x10, each the picture kind + 0x5a1 captioned with the profession name, interactive,
+   style 3; the frame loop navigates the radio group and a click on one of the buttons stores its
+   gm_TitleNumber into init_PlayerProfile.job, raises sv_PopRequest and returns 1 */
+
+int lobby_ChooseProfession(int param)
+{
+    int ids[22];
+    int win;
+    int obj;
+    int ret;
+    int i;
+    int id;
+
+    ret = 0;
+    ids[0] = 1;
+    ids[1] = 2;
+    ids[2] = 3;
+    ids[3] = 4;
+    ids[4] = 5;
+    ids[5] = 6;
+    ids[6] = 7;
+    ids[7] = 0xb;
+    ids[8] = 0xd;
+    ids[9] = 0xe;
+    ids[10] = 0xf;
+    win = d2_OpenForm(0, 0, lobby_ChooseProfessionForm);
+    d2_CentreViewWindows(win);
+    d2_SetForm(win, 0);
+    io_PrintText(0x1afa);
+    obj = d2_CreateRadioGroup(0);
+    for (i = 0; i < 0xb; i++) {
+        id = d2_WinOpenPic((i % 3) * 0x60 + 100, ((i / 3) * 5 + 5) * 0x10, ids[i] + 0x5a1, d2_LastWindow);
+        ids[i + 0xb] = id;
+        d2_Objs[id].interactive = 1;
+        d2_Objs[id].style = 3;
+        strcpy(d2_Objs[id].caption, txt_ProfessionNames[ids[i]]);
+        d2_Objs[id].capfont = 0x56;
+        d2_RadioAdd(obj, id);
+    }
+    d2_ClickedId = -1;
+    if (sv_RunFrame((int)lobby_ChooseProfession, param)) {
+        do {
+            d2_MenuNavigate(obj);
+            if (d2_ClickedId != -1) {
+                for (i = 0; i < 0xb; i++) {
+                    if (d2_PointerObj == ids[i + 0xb]) {
+                        init_PlayerProfile.job = gm_TitleNumber(ids[i], 1);
+                        sv_PopRequest = 1;
+                        ret = 1;
+                        break;
+                    }
+                }
+            }
+        } while (sv_RunFrame((int)lobby_ChooseProfession, param));
+    }
+    d2_RadioClear(obj);
+    d2_CloseView(win);
+    return ret;
+}
+/* 0x58ba70, prints the lobby chat into control 5 of the lobby form: one line per chat record (cm_LobbyChatFirst /
+   cm_LobbyChatNextLine) in the colour of the sender's coat of arms (cm_LobbyFindPlayer, 9 for an unknown sender),
+   "name: text" for a line to everybody, "name (txt_ChatPrivate): text" for a private line to or from this player
+   (a private line between others prints the previous text again); when lines came in since the last call and the
+   chat box overflows, its content grows by a line (0x18) and scrolls to the end */
+
+void lobby_ShowChat(void)
+{
+    char text[352];
+    G18LOG *p;
+    CMLOBBYPLAYER *from;
+    int id;
+    int height;
+
+    id = -1;
+    p = cm_LobbyChatFirst();
+    d2_SetForm(lobby_Form, 5);
+    height = d2_Wins[d2_LastWindow].contentHeight;
+    io_PrintText("$C");
+    lobby_ChatNewest = 0;
+    while (p != 0) {
+        lobby_ChatNewest++;
+        from = cm_LobbyFindPlayer(p->id);
+        if (from != 0 && from->id == p->id)
+            id = from->coat;
+        else
+            id = 9;
+        if (p->to != 0) {
+            if ((lobby_Me != 0 && p->to == lobby_Me->id) || p->id == lobby_Me->id)
+                sprintf(text, lobby_FmtChatShout, id, p->name, txt_ChatPrivate, p->text);
+        } else {
+            sprintf(text, lobby_FmtChat, id, p->name, p->text);
+        }
+        id = io_PrintText(text);
+        p = cm_LobbyChatNextLine();
+    }
+    if (lobby_ChatNewest > lobby_ChatShown && id >= 0 && height > d2_Wins[d2_LastWindow].h) {
+        lobby_ChatShown = lobby_ChatNewest;
+        height += 0x18;
+        d2_Wins[d2_LastWindow].contentHeight = height;
+        d2_Wins[d2_LastWindow].scrollY = height - d2_Wins[d2_LastWindow].h;
+        d2_ScrollWindow(d2_LastWindow);
+    }
 }
