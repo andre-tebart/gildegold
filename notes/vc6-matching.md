@@ -1935,6 +1935,9 @@ Frame size, slot order, holes, shared slots, dead parameter slots, block-scoped 
   both arms of an if/else in the asm was written twice. One array reused for unrelated values also leaves gaps.
 - **One slot larger, an address-taken out-param (`&sx`) shares the original's slot with a loop temp** (dcp frame:
   `shared in the original`): declare it in its block; other equal-count slots may reorder (ch_GetNewPath, open).
+  An address-taken int sent once at the function's end (`&delta` to cm_AddFieldValues) sharing a block array's
+  slot (`tabs[2]` in an `if`): its own `{ int delta = ..; ..send.. }` block at the end; blockscope.py does not
+  offer it (ai_MasterLetterSettings frame 0x80 -> 0x7c, byte).
 - **Two small out-arrays sharing ONE slot with a hole behind, frame size equal** (`shared in the original`,
   `holes:` right after it): one array reused for both calls, sized slot + hole - `int row[4]` for two
   `sv_ButtonRow(.., row, 2, ..)` reading row[0] / row[1]; two `int[2]` give two slots, one `int[2]` a frame 8

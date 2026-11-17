@@ -26632,7 +26632,6 @@ void ai_MasterLetterSettings(AIBLD *bld, AICHARREC *ch)
     int win;
     int workTab;
     int goodsTab;
-    int delta;
     LCWORKSET set;
     int checks[4];
     int sliders[7];
@@ -26766,10 +26765,13 @@ void ai_MasterLetterSettings(AIBLD *bld, AICHARREC *ch)
     cm_BeginFieldBlock((char *)bld, bld->id);
     cm_AddFieldDelta(4, 1, (char *)&bld->budget - cm_FieldObject, &budget);
     cm_SendFieldDeltas();
-    delta = budget - bld->budget;
-    cm_BeginFieldBlock((char *)ch, ch->netId);
-    cm_AddFieldValues(4, 1, (char *)&ch->budget - cm_FieldObject, &delta);
-    cm_SendFieldDeltas();
+    {
+        int delta = budget - bld->budget;
+
+        cm_BeginFieldBlock((char *)ch, ch->netId);
+        cm_AddFieldValues(4, 1, (char *)&ch->budget - cm_FieldObject, &delta);
+        cm_SendFieldDeltas();
+    }
     d2_CloseView(win);
 }
 /* 0x5c3200, opens the master letter of the player's building (448 B .. its switch tables 0x5c3360 / 0x5c3374):
