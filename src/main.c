@@ -1615,41 +1615,6 @@ void main_Menue(void)
     }
     msx_SetFadeTime(5000);
 }
-/* 0x5344f0, puts a person (the template model name n of the list main_FamilyModelNames, index k) at the dummy "a" of the scene: the dummy position (0x458a20), a character object (0x403390 (b, pos)) that
-   looks along the dummy's heading (0x458810 / 0x4539f0, 0x43b860), walks ("bewegung/gehen", walkSpeed 0.7), is registered as a status text plate (0x52e1c0); returns the new object or 0 */
-
-CHARACTER *main_PlaceFamilyModel(char *dummy, char *model, int k)
-{
-    D3OBJECT *o;
-    CHARACTER *ch;
-    float pos[4];
-
-    o = d3_FindObject(0, 0x100, 0, dummy);
-    if (o == 0)
-        return 0;
-    d3_PointToWorld(o, &o->pos, (D3VECTOR *)pos);
-    ch = ch_Create(model, (D3VECTOR *)pos);
-    if (ch != 0) {
-        float dir[3], loc[3];
-        dir[0] = 0;
-        dir[1] = 0.0f;
-        dir[2] = 0;
-        d3_DirToWorld((struct XOBJ *)o, (float *)&d3_ZAxis, loc);
-        dir[1] = d3_VecAngle((D3VECTOR *)&d3_ZAxis, (D3VECTOR *)loc);
-        d3_SetObjectRot(ch->obj, (D3VECTOR *)dir);
-        ch_PlaceOnGround(ch, 0);
-        ch->obj->owner = ch;
-        d3_UpdateObject(ch->obj, 1);
-        ch_PreloadAnims(ch, 1, "bewegung/gehen");
-        ch->obj->pickId = 0;
-        ch->walkSpeed = 0.7f;
-        ch->familySlot = -1;
-        ch->group = 1;
-        ch->pathType = 4;
-        sv_RegisterNamePlate((char *)ch->obj, main_FamilyModelNames[k], 0);
-    }
-    return ch;
-}
 /* 0x534040, gives the player p the start buildings: the home (kind 6, named "Home-Sweet-Home", its 0x13 objects
    shown by the character's slots, the start messages 0x15 / 0x17 / 0x18 / 0x14 to its id) and the buildings of
    the kinds 0x20 (master and owner p, three 3d messages), 0x2a, 0x1e, 0x1f, 0x12, 0x14, 0x32, 0x21, 0x19, 0x34,
@@ -1769,6 +1734,41 @@ void main_GiveStartBuildings(int p)
 
 #define SV_WI2(i, o) (*(int *)(U_I((unsigned)&d2_Objs) + (i) * 0x2ec + (o)))
 
+/* 0x5344f0, puts a person (the template model name n of the list main_FamilyModelNames, index k) at the dummy "a" of the scene: the dummy position (0x458a20), a character object (0x403390 (b, pos)) that
+   looks along the dummy's heading (0x458810 / 0x4539f0, 0x43b860), walks ("bewegung/gehen", walkSpeed 0.7), is registered as a status text plate (0x52e1c0); returns the new object or 0 */
+
+CHARACTER *main_PlaceFamilyModel(char *dummy, char *model, int k)
+{
+    D3OBJECT *o;
+    CHARACTER *ch;
+    float pos[4];
+
+    o = d3_FindObject(0, 0x100, 0, dummy);
+    if (o == 0)
+        return 0;
+    d3_PointToWorld(o, &o->pos, (D3VECTOR *)pos);
+    ch = ch_Create(model, (D3VECTOR *)pos);
+    if (ch != 0) {
+        float dir[3], loc[3];
+        dir[0] = 0;
+        dir[1] = 0.0f;
+        dir[2] = 0;
+        d3_DirToWorld((struct XOBJ *)o, (float *)&d3_ZAxis, loc);
+        dir[1] = d3_VecAngle((D3VECTOR *)&d3_ZAxis, (D3VECTOR *)loc);
+        d3_SetObjectRot(ch->obj, (D3VECTOR *)dir);
+        ch_PlaceOnGround(ch, 0);
+        ch->obj->owner = ch;
+        d3_UpdateObject(ch->obj, 1);
+        ch_PreloadAnims(ch, 1, "bewegung/gehen");
+        ch->obj->pickId = 0;
+        ch->walkSpeed = 0.7f;
+        ch->familySlot = -1;
+        ch->group = 1;
+        ch->pathType = 4;
+        sv_RegisterNamePlate((char *)ch->obj, main_FamilyModelNames[k], 0);
+    }
+    return ch;
+}
 /* 0x534610, the talent choice of the character creation ("menu\choosecharacter_talent"): the five talents of
    main_Family start at 0, the father's and the mother's profession group (group[4] / group[5]) add 63 points
    to their talent (a grandparent would add 21: the loop starts at the parents); each row shows a label (text
