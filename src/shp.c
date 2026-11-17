@@ -34,8 +34,12 @@
 #include "gfx.h"
 #include "mem.h"
 
+short d2_ShpW = 0;  /* 0x6f044c */
+short d2_ShpH = 0;  /* 0x6f044e */
 int d2_ColourFormatSet = 0;  /* 0x6f0450 */
 D2COLKEY d2_TransparentColour = {0};  /* 0x6f0454, the colour key of the transparent pixels */
+int d2_ClipLeft = 0;  /* 0x6f0458, clip left */
+int d2_ClipTop = 0;  /* 0x6f045c, clip top */
 extern unsigned int d2_HighBitMask32;
 
 /* 0x479d00, makes the light table: every 16 bit colour brightened by add

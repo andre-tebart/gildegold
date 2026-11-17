@@ -7590,7 +7590,6 @@ unsigned sv_ChatTime = 0xffffffff;  /* 0x623ec4, d3_Time when the last chat line
 int sv_QuickChatForm = -1;  /* 0x623ec8 */
 int sv_SunRaysHour = -1;  /* 0x623ecc, the hour the sun rays started (sv_WeatherFrame), -1: none */
 int sv_PanelCartChar = 0;  /* 0x631078 */
-short d2_PointerLook = 0;  /* 0x6ed9d0, the pointer direction / panel layout code (1 .. 8) */
 int sv_SavedMaxY = 0;  /* 0x6f1c40 */
 float sv_ScrollVelYPrev = 0;  /* 0x6f1c44 */
 int sv_DragLastY = 0;  /* 0x6f1c48 */

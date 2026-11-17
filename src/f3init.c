@@ -349,7 +349,6 @@ int gm_ListStock(short *l, int id);               /* 0x50ab50, f3gm.c */
 unsigned int d3fl_DetailScale = 0;  /* 0x633748 */
 unsigned char d3if_TexturesEvicted = 0;  /* 0x6339db */
 /* init_StatusFormat: view of txt_Ptrs (build/mk_txt_views.py) */
-int d2_CutsceneActive = 0;  /* 0x6ed9d4 */
 char * ai_KindBChars[8] = {0};  /* 0x6f1c04, the characters of the kind */
 extern char ai_PlayerSlots[4][0x2f4];      /* 0x7e3f40, the player slots */
 #define ai_PlayerSlotsT (*(GMPLAYERSLOT (*)[4])&ai_PlayerSlots)  /* 0x7e3f40, ai_PlayerSlots (char[4][0x2f4]) as the four player slots */

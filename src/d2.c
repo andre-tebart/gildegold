@@ -98,11 +98,13 @@ int d2_TextDrawnW = 0;  /* 0x6ed968 */
 int d2_TextDrawnH = 0;  /* 0x6ed96c */
 int d2_TextLeft = 0;  /* 0x6ed970, left edge of the text drawn last */
 int d2_TextTop = 0;  /* 0x6ed974, top of the text drawn last */
+int d2_LayoutMode = 0;  /* 0x6ed978 */
 unsigned char d2_PenSize = 0;  /* 0x6ed97c, the pen size of d2_Plot (0: one pixel, 1: a cross); the statistics window stores it as a byte */
 D2WIN * d2_LastWindowPtr = 0;  /* 0x6ed980, window created last */
 int d2_FullFormPath = 0;  /* 0x6ed984, nonzero: the name given to d2_OpenForm is a full path (no d2_FormsDir prefix, no .form suffix); cleared after each load, nothing in the binary sets it */
 FILE *d2_File = 0;                  /* 0x6ed988 */
 int d2_PicShift = 0;                /* 0x6ed98c */
+int d2_ClickBank = 0;  /* 0x6ed990 */
 D2RECT *d2_Dirty[2] = {0};          /* 0x6ed994 */
 void *d2_RedrawInfo2 = 0;           /* 0x6ed99c, third redraw info buffer ("d2:d2_RedrawInfo2") */
 D2SHAPE *d2_Shapes = 0;             /* 0x6ed9a0 */
@@ -112,12 +114,17 @@ D2WIN * d2_PendingCaptionWin = 0;  /* 0x6ed9b8, window of d2_PendingCaptionObj *
 D2OBJ * d2_PendingCaptionObj = 0;  /* 0x6ed9bc, the object whose caption is drawn last
                                         (under the pointer / hit object): d2_DrawObjCaption, then 0 */
 int d2_TextSegFlags = 0;  /* 0x6ed9c0, flags of the next text piece */
+int d2_DragStartValue = 0;  /* 0x6ed9c4 */
 unsigned char d2_HoverBlocked = 0;  /* 0x6ed9c8, nonzero: sv_HoverPick names no object (read by sv.c only; reasoned name) */
+void * d2_PointerPic = 0;  /* 0x6ed9cc, "_MOUSE_CURSOR" data */
+short d2_PointerLook = 0;  /* 0x6ed9d0, the pointer direction / panel layout code (1 .. 8) */
+int d2_CutsceneActive = 0;  /* 0x6ed9d4 */
 D2INPUT * d2_FocusedInput = 0;  /* 0x6ed9dc, the focused input */
-short d2_ShpW = 0;  /* 0x6f044c */
-short d2_ShpH = 0;  /* 0x6f044e */
-int d2_ClipLeft = 0;  /* 0x6f0458, clip left */
-int d2_ClipTop = 0;  /* 0x6f045c, clip top */
+int d2_RightHolding = 0;  /* 0x6ed9e4 */
+int d2_DragStartX = 0;  /* 0x6ed9e8 */
+int d2_DragStartY = 0;  /* 0x6ed9ec */
+int d2_ClickUsed = 0;  /* 0x6ed9f0 */
+int d2_DragActive = 0;  /* 0x6ed9f4 */
 extern int d2_PaletteDepth;
 extern int d2_ClickedId;
 extern short d2_MouseX;

@@ -1710,14 +1710,6 @@ void d2_SetSurfaceClip(int x, int y, int w, int h, D2SURF *surf)
     }
 }
 
-int d2_ClickBank = 0;  /* 0x6ed990 */
-int d2_DragStartValue = 0;  /* 0x6ed9c4 */
-void * d2_PointerPic = 0;  /* 0x6ed9cc, "_MOUSE_CURSOR" data */
-int d2_RightHolding = 0;  /* 0x6ed9e4 */
-int d2_DragStartX = 0;  /* 0x6ed9e8 */
-int d2_DragStartY = 0;  /* 0x6ed9ec */
-int d2_ClickUsed = 0;  /* 0x6ed9f0 */
-int d2_DragActive = 0;  /* 0x6ed9f4 */
 short d2_LastMouseX;  /* 0xf8a650 */
 short d2_LastMouseY;  /* 0xf8a652 */
 int d2_HoverTick;  /* 0xf8a654 */
