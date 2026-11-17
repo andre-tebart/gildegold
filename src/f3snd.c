@@ -674,7 +674,7 @@ int snd_FindTrackKind(int kind)
 /* 0x4c2000, the music step: a new season stops the outdoor track; a finished track starts a pause (its name kept
    in snd_LastTrack); after the pause, or when the player moved to another building / room (and the current track
    loses a random draw against its priority), the track of the place starts (snd_EnterBuilding /
-   snd_PlayOutdoorTrack) */
+snd_PlayOutdoorTrack) @deep size queue s7: k = 0 before the kind if/else (the original's xor edx,edx sits before test eax,eax, so the kind arm takes ebp for the ai_BTypes base): 19 -> 9 ins, raw 1012 vs 1008. Left: line 743 (t - snd_LastDecision > 40000): the original still has t in edi there (sub edi,ecx; cmp; then mov edi,[ai_PlayerBuilding] = b) where ours reads t from its slot; c2trace --split t: the t piece grows into the block of lines 737-743 and is cut before b = ai_PlayerBuildingB (b takes edi), so in the original b's def must come after the t use in IL while still before the jbe. Tried (no lever): all 6 orders of b2 / room / b; an elapsed local dt = t - snd_LastDecision at each of the 4 positions (forward-substituted, = control). */
 
 void snd_UpdateMusic(void)
 {
@@ -749,12 +749,13 @@ void snd_UpdateMusic(void)
         snd_TrackRoom = room;
         prio = snd_LocationTracks[i].prio;
         if (util_RandomU(0x80) < prio) {
+            k = 0;
             if (snd_TrackBuilding != 0)
                 kind = ai_BTypesT[*snd_TrackBuilding].kind;
             else
                 kind = 0x2694;
-            for (k = 0; snd_LocationTracks[i].kinds[k] != 0 && snd_LocationTracks[i].kinds[k] != kind; k++)
-                ;
+            while (snd_LocationTracks[i].kinds[k] != 0 && snd_LocationTracks[i].kinds[k] != kind)
+                k++;
             if (snd_LocationTracks[i].kinds[k] != 0)
                 return;
             sprintf(snd_MusicLog, "Random decision: interrupt running track %s, propability was %d.", snd_LocationTracks[i].track, prio);

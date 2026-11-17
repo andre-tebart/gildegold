@@ -2121,7 +2121,7 @@ exe	0x004c18a0	snd_EnterBuilding	f3snd	b18be0dba1875365	no	draft	control=draft p
 exe	0x004c1bd0	snd_PlayOutdoorTrack	f3snd	2361448be387b911	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004c1f90	snd_FindActiveTrack	f3snd	0b5be96b1c31bf1d	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004c1fc0	snd_FindTrackKind	f3snd	02261b6c29daaf96	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
-exe	0x004c2000	snd_UpdateMusic	f3snd	c1e656280040428f	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	c3325d1ec6f0e6f6
+exe	0x004c2000	snd_UpdateMusic	f3snd	8dc7841e558cb9e8	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	00e274af2fbf26a0
 exe	0x004c23f0	snd_PlaySpecialTrack	f3snd	149a468dfed51d3b	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004c2480	snd_EndSpecialTrack	f3snd	7760b65c9c173aec	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004c24c0	snd_FadeMusic	f3snd	5a6575628637fcf6	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
