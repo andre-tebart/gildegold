@@ -174,6 +174,10 @@ Where the pushes and pops sit, how many epilogue copies there are, shared agains
 
 ### Shared against separate failure blocks
 
+- **An allocation chain whose cleanup (free what was allocated, return 0) sits inline right after the last
+  allocation test with the success init behind it (`jne init`), ours the cleanup at the end**: an ok flag,
+  `ok = 0; a = alloc; if (a) { ..; b = alloc; if (b) ok = 1; } if (ok == 0) { cleanup; return 0; } init..`
+  (VC6 decides the flag, the layout stays: gv_AllocGraveyard byte, s12).
 - **One `or eax,-1` failure block after the success epilogue (ours an inline copy per failed lookup)**: both
   lookups in one condition, `if (a(..) && b(..)) { ..; return send(..); } return -1;` (cm_OrderToBestCell byte;
   the success path returns the last call's eax).
@@ -235,6 +239,9 @@ Where the pushes and pops sit, how many epilogue copies there are, shared agains
 
 ### Where a return block is laid out
 
+- **A float range test whose `fstp st(0); return 0` (lower bound failed) lies between the upper bound's
+  reject and the accept**: `if (!(x < min)) { if (x > max) goto reject; } else return 0;` (ai_PassesPartnerFilter
+  byte, s12).
 - **A return block copied into one arm with its own `add esp`** (`add esp,0x10; push; call; add esp,4; pop; ret`
   where ours merges `add esp,0x14`): no `f(); return;` in that arm, let it fall to the one final call; VC6 copies
   the return block after add-esp merging (init_OpenBuilding byte). A dead `cmp reg,K` in an argument setup = an
@@ -1114,6 +1121,14 @@ Rotation, test position, countdown, induction variables and strength reduction, 
 
 ### Counters, countdowns and increment order
 
+- **Two word-copy loops that walk two pointers with a down counter (`lea ecx,dst; lea eax,src; mov edx,n; mov
+  edi,[eax]; add eax,4; mov [ecx],edi; add ecx,4; dec edx`), ours one pointer plus the difference
+  (`sub ecx,eax; [edx+eax]`)**: index loops over the fields, `for (k..) ev->ids[k] = msg->ids[k];` and for a
+  run of fields `ev->w[k] = (&msg->first)[k];` (a named `int *s` gives the difference form again)
+  (he_CreateEvent byte, s12).
+- **A search loop top-tested on a found flag with the bound tested only at the bottom (`test edi,edi; jne`
+  at the top, `add k; cmp k,lim; jl top`)**: `for (k = 0; k < lim; k += n) { if (ok) break; .. }`;
+  `k = 0; while (!ok) { ..; k += n; if (k >= lim) break; }` is the rotated variant (init_OpenTown, s12).
 - **The tick x strength-reduced (`lea esi,[edi+edi*2+9]; lea esi,[esi+esi*4]`, `neg eax; mov [dead arg slot],eax`) while
   the label x of the same round keeps `imul`**: `x = 0x2d + round * scale;` at the top of each round, not a running
   `x -= scale` (ai_DrawStatisticsCharts byte; an earlier session called the recomputed form worse because the init
@@ -1542,6 +1557,15 @@ a stack slot is a split piece, and the piece's extent is decided by the rules be
 
 ### Named local or expression: a candidate too many or too few
 
+- **A named sum (`role = f(..) + 0x1125`) takes a callee-saved register and pushes two record pointers into
+  slots; the original keeps the sum in a slot and the pointers in esi / ebp**: the constant added at each use
+  (`role = f(..); g(role + 0x1125); h(role + 0x1125)`): the CSE temp is no candidate like the named local
+  (cm_CheckFight 75 -> 26, s12).
+- **One of two pointers kept in its slot where the original holds it (pointer g against type record bt)**:
+  the store-and-return tail written in each arm of a final if/else chain (`bld->yard = g; return g;` per
+  level arm) adds g's references in the arms it otherwise lives through unreferenced (gv_AllocGraveyard, s12).
+- **A flag accumulator whose first value is computed in eax and then `mov edi,eax` (ours straight into edi)**:
+  `any = 0; any |= c1; any |= c2; ..` (ai_PassesPartnerFilter byte, s12).
 - **Two out-pointer accumulators, the one summed first kept in memory instead of a register** (`*a` reloaded
   `mov eax,[esp+N]; fadd [eax]`, `*b` in ebx, the original the other way round): the sum written in each arm
   (`if (w > 0) *a = (sel ? x : y) + *a; else *a = z + *a;`), not `t = ..` per arm plus one `*a = t + *a;`. Two
@@ -2108,6 +2132,8 @@ Frame size, slot order, holes, shared slots, dead parameter slots, block-scoped 
 
 ### Shared slots
 
+- **A frame one slot bigger with an out-parameter local (`vfs_FindFile(.., &dir)`) in its own slot**: the
+  local declared in the blocks that use it packs with the scalars (he_RunHarvest frame 0x254 -> 0x250, s12).
 - **A loop counter stored to its slot after the loop although nothing reads it (ours), frame one slot bigger**:
   the counter's name was reused as a call's out-argument further down (`f(.., &cz, &i, ..)`), which escapes it
   for the whole function. The original had its own block-local out-arguments (`int fz;` beside `int sx;` in the
