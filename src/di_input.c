@@ -25,6 +25,7 @@ extern HANDLE di_Event;
 extern HWND di_Hwnd;
 extern HINSTANCE di_Hinst;
 unsigned int kb_RepeatTime = 0;         /* 0x631098 */
+int di_UnreadBss[5] = {0};  /* 0x63109c, no surviving instruction or pointer refers to it: data of functions /OPT:REF removed; size from the neighbours' addresses */
 int di_MinX = 0;                        /* 0x6310b0 */
 int di_MinY = 0;                        /* 0x6310b4 */
 unsigned int di_Flags = 0;              /* 0x6310b8 */

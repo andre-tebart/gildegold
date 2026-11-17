@@ -97,6 +97,7 @@ TSTEXTURE *tex_CreateAlias(TSTEXTURE *src, TSFLAGS flags, char group);          
 struct TSTEXTURE * tex_Load(char *name, TSFLAGS flags, unsigned char opts, unsigned char fmt);/* 0x4605c0 */
 
 int ts_ReloadDone = 0;               /* 0x633f00, 0 once a reload-all has finished; only written here (reasoned name) */
+int ts_UnreadBss = 0;  /* 0x633f04, no surviving instruction or pointer refers to it: data of functions /OPT:REF removed; size from the neighbours' addresses */
 TSCACHE *ts_Cache = 0;              /* 0x633f08 */
 TSTEXTURE *d3_Textures;             /* 0xfb9074 */
 unsigned int ts_MaxHiCol;                   /* 0xfb9078 */

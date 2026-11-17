@@ -53,6 +53,7 @@ int err_Started = 0;  /* 0x632368 */
 void (*err_CrashCB)(HANDLE) = 0;  /* 0x63236c, set by err_Init, called by the crash filter with the log handle (or -1 when no log was written) */
 unsigned int err_Flags = 0;  /* 0x632370 */
 char err_ShowUnknown = 0;  /* 0x632374 */
+int err_UnreadBss[3] = {0};  /* 0x632378, no surviving instruction or pointer refers to it: data of functions /OPT:REF removed; size from the neighbours' addresses */
 char err_Buf[8192];  /* 0x1461440 */
 HWND err_Hwnd;  /* 0x1463440 */
 char err_Dir[260];  /* 0x1463460 */

@@ -783,3 +783,4 @@ char d3_LightsChanged = 0;  /* 0x633b14 */
 float d3_LightRadiusMargin = 0;  /* 0x633b18, added to the mesh radius for the light reach:
                                                the matrix z offset (m->_43) or 0 */
 D3VECTOR d3_SunColor = {0};  /* 0x633b1c, the sun colour, added to the ambient colour */
+int d3_LightUnreadBss[2] = {0};  /* 0x633b28, no surviving instruction or pointer refers to it: data of functions /OPT:REF removed; size from the neighbours' addresses */

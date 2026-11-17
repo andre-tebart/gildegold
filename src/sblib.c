@@ -53,6 +53,7 @@ int sb_Mem = 0;  /* 0x633190 */
 int sb_Used = 0;  /* 0x633194 */
 SBBANK * sb_Banks = 0;  /* 0x633198 */
 int sb_Driver = 0;  /* 0x63319c */
+int sb_UnreadBss[2] = {0};  /* 0x6331a0, no surviving instruction or pointer refers to it: data of functions /OPT:REF removed; size from the neighbours' addresses */
 char sb_Path[256] = {0};  /* 0x6331a8 */
 SBSAMPLE * sb_Samples = 0;  /* 0x6332a8 */
 int sb_Count = 0;  /* 0x6332ac */

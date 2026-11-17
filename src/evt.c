@@ -1886,6 +1886,7 @@ EVTSCRIPT * evt_Cur = 0;  /* 0x6332b8 */
 EVTBUILTIN * evt_Builtins = 0;  /* 0x6332bc, [256] */
 int * evt_Args = 0;  /* 0x6332c0 */
 void * evt_Console = 0;  /* 0x6332c4 */
+int evt_UnreadBss[2] = {0};  /* 0x6332c8, no surviving instruction or pointer refers to it: data of functions /OPT:REF removed; size from the neighbours' addresses */
 int evt_LogPos = 0;  /* 0x6332d0 */
 int evt_LastOp = 0;  /* 0x6332d4 */
 EVTSCRIPT * evt_Scope = 0;  /* 0x6332d8 */

@@ -328,6 +328,7 @@ int net_Send(void)
 extern int net_Seq;
 extern NETSTAT net_Stats[NET_TYPES];
 int net_WSAStarted = 0;  /* 0x633160 */
+int net_UnreadBss[4] = {0};  /* 0x633164, no surviving instruction or pointer refers to it: data of functions /OPT:REF removed; size from the neighbours' addresses */
 unsigned int net_RecvBytes = 0;  /* 0x633174 */
 unsigned int net_RecvPackets = 0;  /* 0x633178 */
 unsigned int net_SentBytes = 0;  /* 0x63317c */

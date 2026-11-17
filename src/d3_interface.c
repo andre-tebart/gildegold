@@ -1685,6 +1685,7 @@ unsigned char d3if_UnreadMid[275] = {0};  /* 0x6338c8, the unread bytes between 
                                               reasoning as d3if_UnreadHead; 8-aligned, the byte after it ends it) */
 unsigned char d3if_TexturesEvicted = 0;  /* 0x6339db */
 unsigned int d3if_SceneSwitches = 0;  /* 0x6339dc, counts the scene switches (an object of its own: 4-aligned after the byte d3if_TexturesEvicted) */
+int d3if_UnreadTail = 0;  /* 0x6339e0, no surviving instruction or pointer refers to it: data of functions /OPT:REF removed; size from the neighbours' addresses */
 char d3if_ParList[0x31c];  /* 0xfb95e0, the default scene's particle list head node (a D3PARTSYS, 0x31c bytes: d3_ParHead is its next field, +0x318 its prev) */
 int d3if_LastMegaCam;  /* 0xfba944 (own object: d3io_StockDir is a 4-byte pointer) */
 D3FOGSET d3if_Fog[6]; /* 0xfba960 */

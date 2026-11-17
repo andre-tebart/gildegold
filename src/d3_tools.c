@@ -54,6 +54,7 @@ typedef struct D3OBJPOSE {
 int d3t_CamMoving = 0;                   /* 0x6310e4 */
 D3ANIM *d3t_CamMove = 0;                 /* 0x6310e8, running camera animation */
 static D3OBJECT *d3t_FoundObject = 0;    /* 0x6310ec */
+int d3t_UnreadBss[12] = {0};  /* 0x6310f0, no surviving instruction or pointer refers to it: data of functions /OPT:REF removed; size from the neighbours' addresses */
 D3OBJECT *d3t_SunRays = 0;               /* 0x631120, reached from main.c by its address */
 static int d3t_SunFade = 0;              /* 0x631124, 1 fading in, -1 fading out */
 static int d3t_SunFadeOutArg = 0;         /* 0x631128, the b of the last d3t_FadeOutSunRays, 0 after a fade-in; never read */

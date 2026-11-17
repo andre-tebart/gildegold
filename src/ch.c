@@ -81,6 +81,7 @@ int ch_SndLib = 0;  /* 0x63105c, sound library for step sounds */
 int ch_StepSounds = 0;  /* 0x631060 */
 int ch_LowPoly = 0;  /* 0x631064 */
 D3VECTOR ch_PathOffset = {0};  /* 0x631068, added to the last path cell */
+int ch_UnreadBss = 0;  /* 0x631074, no surviving instruction or pointer refers to it: data of functions /OPT:REF removed; size from the neighbours' addresses */
 int sv_PanelCartChar = 0;  /* 0x631078 */
 int ch_DirtyX1 = 0;  /* 0x63107c */
 int ch_DirtyZ1 = 0;  /* 0x631080 */

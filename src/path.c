@@ -346,6 +346,7 @@ void path_Reverse(PMAP *map, unsigned int last)
 }
 
 int path_Mode = 0;  /* 0x633184, 1 = one-directional search */
+int path_UnreadBss[2] = {0};  /* 0x633188, no surviving instruction or pointer refers to it: data of functions /OPT:REF removed; size from the neighbours' addresses */
 unsigned char path_SetFlag;  /* 0x1460aa0 */
 float * path_Costs;  /* 0x1460aa4, path_Terrain[type] of the running search */
 unsigned char path_TestFlag;  /* 0x1460aa8 */

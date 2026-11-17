@@ -1071,6 +1071,7 @@ LPDIRECT3D3 d3d_D3D = {0};  /* 0x633414 */
 struct IDirect3DDevice3 * d3d_Device = 0;  /* 0x633418 */
 LPDIRECT3DVIEWPORT3 d3d_Viewport = {0};  /* 0x63341c */
 LPDIRECTDRAWSURFACE4 d3d_ZBuffer = {0};  /* 0x633420 */
+int d3d_UnreadBss[2] = {0};  /* 0x633424, no surviving instruction or pointer refers to it: data of functions /OPT:REF removed; size from the neighbours' addresses */
 /* d3_MipSkip and the three flags after it are four objects of this unit's block (0x633410..), each read as a
    byte by the original: no views of one char */
 unsigned char d3_MipSkip = 0;  /* 0x63342c */

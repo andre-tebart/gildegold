@@ -667,3 +667,4 @@ D3OBJECT *d3_LoadGroup(char *name, void *f, D3OBJECT *parent)
 }
 
 char d3_LodMissing = 0;  /* 0x6339e4, set when an object LOD is missing */
+int d3io_UnreadBss[6] = {0};  /* 0x6339e8, no surviving instruction or pointer refers to it: data of functions /OPT:REF removed; size from the neighbours' addresses */
