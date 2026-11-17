@@ -3275,13 +3275,7 @@ int ai_TransportFromLager(int lagerId, AIOBJ *cart, AIBLD *bld, int priced, char
    ai_ProdGoods adds its amount (its check control) times the goods price at the owner (the building's player
    slot for the kind 0x47, else ai_OwnPlayer), times 1.1 at the market class 0xa, else times bld->priceFactor;
    the modes 2 / 4 take the plain price at the building's player slot instead. sv_PendingMoney becomes the
-   negated total. The second argument is not read
-   @deep Read whole against the original and rewritten (both goods grids, the owner / market-class /
-   priceFactor price, the modes 2 / 4 plain price kept in st0, the negated total into sv_PendingMoney); 133
-   vs 133 instructions, every instruction equal but the stack homes. Left: frame and slots only: ours 'push
-   ecx' (one local, sum in bld's dead parameter slot [esp+0x18], n in mode's slot [esp+0x20]), the original
-   'sub esp, 8' (sum [esp+0x10] and bt [esp+0x14] as locals, n in bld's slot [esp+0x1c]). Tried: other
-   declaration orders, n block-scoped per loop, mode as int / unsigned: no change in the slot choice */
+   negated total. The second argument is not read */
 
 void ai_TransportGoodsTotal(AIBLD *bld, float factor, int mode)
 {
@@ -3293,8 +3287,8 @@ void ai_TransportGoodsTotal(AIBLD *bld, float factor, int mode)
     AIBTYPE *bt;
     float sum;
 
-    bt = &((AIBTYPE *)ai_BTypes)[bld->type];
     sum = 0.0f;
+    bt = &((AIBTYPE *)ai_BTypes)[bld->type];
     if (bld->type == 0x47)
         owner = bld->playerSlot;
     else
