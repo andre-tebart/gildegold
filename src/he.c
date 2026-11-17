@@ -646,7 +646,7 @@ int he_RegisterEventTypeA2();
 #define ai_BTypesT (*(AIBTYPE **)&ai_BTypes)  /* 0x7e3f30, ai_BTypes (ahm.c: char *) as the AIBTYPE records it points to */
 #define cm_SendSpawnCharacterR ((int (*)(unsigned char, int, int, unsigned char, unsigned char, int, const char *))cm_SendSpawnCharacter)  /* 0x4c59f0: @original he_BeginPlague keeps what it returns (eax after the call: the cm slot of the new character), cm.c's definition is void; f an int: he_AllocBrawl pushes 0x154 whole */
 #define gm_SumListAmountsL ((int (*)(void *))gm_SumListAmounts)  /* 0x509e30 with the list alone: @original he_AllocTheft pushes only the list (add esp, 4), as lc.c / sv.c call it */
-#define util_RandomU ((unsigned short (*)(unsigned short))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original he_SpawnFounders reads the 16-bit result (mov cx, ax / and 0xffff) */
+#define util_RandomU ((unsigned short (*)(unsigned short))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original he_SpawnFounders and he_AllocTransport read the 16-bit result (mov cx, ax / and 0xffff) */
 #define ai_PlayerSlotsT (*(GMPLAYERSLOT (*)[4])&ai_PlayerSlots)  /* 0x7e3f40, ai_PlayerSlots (cm.h: char[][0x2f4]) as the four player slots */
 #define snd_CurrentTrack (*(char **)&snd_TrackHandles)  /* 0x6f0b6c, snd_TrackHandles.current (f3snd.h G16TRACKHANDLES, not included here): the music track playing */
 #define he_PlayerCh (*(AICHAR **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) as the AICHAR it points to */
@@ -11747,7 +11747,6 @@ void he_AllocTransport(int ev)
     HEROUTEREFS *r;
     CHARACTER *ch;
     int home1, home2, k, skill, pay;
-    unsigned short rnd;
     float mind, dist, dx, dy, dz;
     D3VECTOR4 p1, p2;                   /* d3_PointToWorld writes past the vector */
     unsigned goods[0x2e];
@@ -11845,8 +11844,7 @@ void he_AllocTransport(int ev)
         if ((o->flags20 & 1) != 0) {
             gm_StallGoodsList((char *)o, goods);
             if ((int)goods[0x2c] > 0) {
-                rnd = util_Random(2);
-                t->escorts = (int)goods[0x2c] / 16000 + rnd;
+                t->escorts = (int)goods[0x2c] / 16000 + util_RandomU(2);
             } else
                 t->escorts = 0;
             t->escorts = t->escorts > 2 ? 2 : t->escorts;
