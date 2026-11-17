@@ -844,7 +844,7 @@ exe	0x00446180	d3fl_Prerender	d3_fl	b9bdb858f36796d3	no	shape	sweep control=shap
 exe	0x004463b0	map_Pick	d3_fl	55473037550506e1	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x00446750	map_PickScreen	d3_fl	f8e9bb9b2bd9560d	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x00446910	map_Region	d3_fl	6adcb6d683f48040	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x00446990	d3fl_FarDist	d3_fl	f5206b82dda5d7c4	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	60c4c4d724766c06
+exe	0x00446990	d3fl_FarDist	d3_fl	e2c5fca88fd02a5b	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	f49f79248f0a537a
 exe	0x00446dc0	d3fl_SetShift	d3_fl	871e76fe590013ce	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00446e10	d3_CreateObject	d3_interface	0383c09817700c77	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00446f30	d3if_SelectTextureSet	d3_interface	5df15495f5f6c2b7	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	

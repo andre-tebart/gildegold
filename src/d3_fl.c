@@ -2909,31 +2909,42 @@ int map_Region(D3FLMAP *map, int x, int y)
    d3_interface.c, starts at 0x446e10 (its first string, the SelectTextureSet message at 0x5fbd08, follows
    the 1.0f constant of this TU). ---- */
 
-/* 0x446990, distance along the view rays to the edge of the map volume (4 planes through the corners) */
+/* 0x446990, distance along the view rays to the edge of the map volume (4 planes through the corners)
+   @deep size fixed s4 (1067 = original): the four plane normals as m * d with a direction vector d set per
+   plane ((0,0,-1), (1,0,0), (-1,0,0), (0,0,1)): VC6 folds x * 1.0f and x * -1.0f literals (ours had fsub
+   without the multiply) but a -1 propagated from a local keeps fmul [1.0f] + fsubr (the original's 6
+   multiplies by the pooled 1.0f); every term / operand order of the m * d and dot formulas gives one code.
+   Left (10 ins): the r and pl walk pointers in ecx / edx swapped in the ray loop's dot product, push edi
+   one instruction later. climb round 1: only (pl[j].x) parenthesised reaches 2 ins (a VC6 perturbation,
+   not kept); no lever: index loop (197), r = &d3_Frustum[i] (205), p walk, operand orders (48 variants:
+   one code), nested ifs (= code, kept for reading). */
 float d3fl_FarDist(D3FLMAP *map, D3VECTOR *pos, D3MATRIX *m)
 {
     D3VECTOR4 pl[4];
     D3VECTOR4 u, v;
-    float dx, dy, dz, f, best, zmin, t, t4, t5, t6;
+    float dx, dy, dz, f, best, zmin, t;
     int i, j;
+    D3VECTOR d;
     D3VECTOR4 *r;
 
     dx = map->orgx - pos->x;
     dy = map->orgy - pos->y;
     dz = map->orgz - pos->z;
-    u.x = dy * m->_21 + dz * m->_31 + dx * m->_11;
-    u.y = dy * m->_22 + dz * m->_32 + dx * m->_12;
+    u.x = dx * m->_11 + dy * m->_21 + dz * m->_31;
+    u.y = dx * m->_12 + dy * m->_22 + dz * m->_32;
     u.z = dx * m->_13 + dy * m->_23 + dz * m->_33;
-    t4 = m->_21 * 0.0f;
-    pl[0].x = (m->_11 * 0.0f - m->_31 * 1.0f) + t4;
-    t5 = m->_22 * 0.0f;
-    pl[0].y = (m->_12 * 0.0f - m->_32 * 1.0f) + t5;
-    t6 = m->_23 * 0.0f;
-    pl[0].z = (m->_13 * 0.0f - m->_33 * 1.0f) + t6;
+    d.x = 0.0f;
+    d.y = 0.0f;
+    d.z = -1.0f;
+    pl[0].x = m->_11 * d.x + m->_21 * d.y + m->_31 * d.z;
+    pl[0].y = m->_12 * d.x + m->_22 * d.y + m->_32 * d.z;
+    pl[0].z = m->_13 * d.x + m->_23 * d.y + m->_33 * d.z;
     pl[0].w = pl[0].x * u.x + pl[0].y * u.y + pl[0].z * u.z;
-    pl[1].x = (m->_31 * 0.0f + t4) + m->_11;
-    pl[1].y = (m->_32 * 0.0f + t5) + m->_12;
-    pl[1].z = (m->_33 * 0.0f + t6) + m->_13;
+    d.x = 1.0f;
+    d.z = 0.0f;
+    pl[1].x = m->_11 * d.x + m->_21 * d.y + m->_31 * d.z;
+    pl[1].y = m->_12 * d.x + m->_22 * d.y + m->_32 * d.z;
+    pl[1].z = m->_13 * d.x + m->_23 * d.y + m->_33 * d.z;
     pl[1].w = pl[1].x * u.x + pl[1].y * u.y + pl[1].z * u.z;
     f = (float)(map->size - 4);
     v.x = f * map->scale + map->orgx;
@@ -2945,24 +2956,30 @@ float d3fl_FarDist(D3FLMAP *map, D3VECTOR *pos, D3MATRIX *m)
     v.x -= pos->x;
     v.y -= pos->y;
     v.z -= pos->z;
-    u.x = v.y * m->_21 + v.z * m->_31 + v.x * m->_11;
-    u.y = v.y * m->_22 + v.z * m->_32 + v.x * m->_12;
+    u.x = v.x * m->_11 + v.y * m->_21 + v.z * m->_31;
+    u.y = v.x * m->_12 + v.y * m->_22 + v.z * m->_32;
     u.z = v.x * m->_13 + v.y * m->_23 + v.z * m->_33;
-    pl[2].x = (m->_31 * 0.0f + t4) - m->_11 * 1.0f;
-    pl[2].y = (m->_32 * 0.0f + t5) - m->_12 * 1.0f;
-    pl[2].z = (m->_33 * 0.0f + t6) - m->_13 * 1.0f;
+    d.x = -1.0f;
+    pl[2].x = m->_11 * d.x + m->_21 * d.y + m->_31 * d.z;
+    pl[2].y = m->_12 * d.x + m->_22 * d.y + m->_32 * d.z;
+    pl[2].z = m->_13 * d.x + m->_23 * d.y + m->_33 * d.z;
     pl[2].w = pl[2].x * u.x + pl[2].y * u.y + pl[2].z * u.z;
-    pl[3].x = (m->_11 * 0.0f + t4) + m->_31;
-    pl[3].y = (m->_12 * 0.0f + t5) + m->_32;
-    pl[3].z = (m->_13 * 0.0f + t6) + m->_33;
+    d.x = 0.0f;
+    d.z = 1.0f;
+    pl[3].x = m->_11 * d.x + m->_21 * d.y + m->_31 * d.z;
+    pl[3].y = m->_12 * d.x + m->_22 * d.y + m->_32 * d.z;
+    pl[3].z = m->_13 * d.x + m->_23 * d.y + m->_33 * d.z;
     pl[3].w = pl[3].x * u.x + pl[3].y * u.y + pl[3].z * u.z;
     zmin = min(pl[0].w, min(pl[1].w, min(pl[2].w, pl[3].w)));
     best = 1e10f;
     for (r = d3_Frustum, i = 0; i < 5; i++, r++)
         for (j = 0; j < 4; j++) {
-            t = pl[j].x * r->x + pl[j].z * r->z + r->y * pl[j].y;
-            if ((t < -1e-07f || t > 1e-07f) && (t = pl[j].w / t, t > 0.0f) && (t > zmin && t < best))
-                best = t;
+            t = pl[j].x * r->x + pl[j].y * r->y + pl[j].z * r->z;
+            if (t < -1e-07f || t > 1e-07f) {
+                t = pl[j].w / t;
+                if (t > 0.0f && t > zmin && t < best)
+                    best = t;
+            }
         }
     if (best == 1e10)
         return fabs(zmin);
