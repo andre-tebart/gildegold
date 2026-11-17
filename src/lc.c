@@ -13420,46 +13420,6 @@ void ai_KidnapContact(int building, int room)
         ch->model = 0;
     }
 }
-/* 0x5a61f0, the city watch raid start, the click of the contact_RAZZIA plate (124 B): 0x520fe0 (the building);
-   the 20-int map pick record zeroed with its +4 = 0x400, +8 = 0x90010, +0x10 = 7 and +0x4c = 0x727; the player
-   bar opens (0x525220, the building), the map pick runs (0x5b2180: 1, the record, the prompt text
-   ai_RaidPickPrompt, the city watch crew window ai_CityWatchCrewWindow as callback, 0), then the player bar
-   closes (0x525440) and the selection is cleared (0x52ae40) */
-
-void ai_RaidStart(int building)
-{
-    int req[20];
-    int i;
-
-    if (sv_CheckCharacterFlag(building) != 0)
-        return;
-    for (i = 0; i < 0x14; i++)
-        req[i] = 0;
-    req[1] = 0x400;
-    req[4] = 7;
-    req[2] = 0x90010;
-    if (building == 0)
-        return;
-    req[19] = 0x727;
-    sv_OpenPlayerBar(building, 0);
-    ai_MapPick(1, req, ai_RaidPickPrompt, (int)ai_CityWatchCrewWindow, 0);
-    sv_ClosePlayerBar();
-    sv_ClearSelection();
-}
-/* 0x5a6480, the city watch plan start, the click of the ob_WACHPLAN plate (67 B): 0x520fe0 (the building);
-   the player bar opens (0x525220, the building), the map pick runs (0x5b2180: 4, 0, the prompt text
-   ai_WatchPlanPickPrompt, the city watch search window ai_WatchPlanWindow as callback, 0), then the player bar
-   closes (0x525440) and the selection is cleared (0x52ae40) */
-
-void ai_WatchPlanStart(int building)
-{
-    if (sv_CheckCharacterFlag(building) != 0 || building == 0)
-        return;
-    sv_OpenPlayerBar(building, 0);
-    ai_MapPick(4, 0, ai_WatchPlanPickPrompt, (int)ai_WatchPlanWindow, 0);
-    sv_ClosePlayerBar();
-    sv_ClearSelection();
-}
 /* 0x5a5d70, the city watch window "LOCATIONS\STADTWACHE\STANDARD" (the map pick's callback in 0x5a5f60: its context,
    not read here, and the picked building target; 0 for none): with no character selected the text 0x1a5e and 0.
    The text 0x1a69 and two buttons: the first sends the group job message 0x43 (to the player's netId, flags 2,
@@ -13626,6 +13586,32 @@ int ai_CityWatchCrewWindow(int ctx, AIBLD *target)
     d2_CloseView(win);
     return done;
 }
+/* 0x5a61f0, the city watch raid start, the click of the contact_RAZZIA plate (124 B): 0x520fe0 (the building);
+   the 20-int map pick record zeroed with its +4 = 0x400, +8 = 0x90010, +0x10 = 7 and +0x4c = 0x727; the player
+   bar opens (0x525220, the building), the map pick runs (0x5b2180: 1, the record, the prompt text
+   ai_RaidPickPrompt, the city watch crew window ai_CityWatchCrewWindow as callback, 0), then the player bar
+   closes (0x525440) and the selection is cleared (0x52ae40) */
+
+void ai_RaidStart(int building)
+{
+    int req[20];
+    int i;
+
+    if (sv_CheckCharacterFlag(building) != 0)
+        return;
+    for (i = 0; i < 0x14; i++)
+        req[i] = 0;
+    req[1] = 0x400;
+    req[4] = 7;
+    req[2] = 0x90010;
+    if (building == 0)
+        return;
+    req[19] = 0x727;
+    sv_OpenPlayerBar(building, 0);
+    ai_MapPick(1, req, ai_RaidPickPrompt, (int)ai_CityWatchCrewWindow, 0);
+    sv_ClosePlayerBar();
+    sv_ClearSelection();
+}
 /* 0x5a6270, the city watch plan window "LOCATIONS\STADTWACHE\STANDARD" (ai_WatchPlanStart's map pick callback, mode
    4: its context, not read here, and the picked place's name; 0 for none): with no character selected the text
    0x1a5e. The text 0x1a70 and two buttons: the first sends the watch message 0x65 (to the player's netId, from the
@@ -13694,6 +13680,20 @@ int ai_WatchPlanWindow(int ctx, char *place)
     } while (sv_RunFrame(ai_WatchPlanWindow, 0x677c7) != 0);
     d2_CloseView(win);
     return 0;
+}
+/* 0x5a6480, the city watch plan start, the click of the ob_WACHPLAN plate (67 B): 0x520fe0 (the building);
+   the player bar opens (0x525220, the building), the map pick runs (0x5b2180: 4, 0, the prompt text
+   ai_WatchPlanPickPrompt, the city watch search window ai_WatchPlanWindow as callback, 0), then the player bar
+   closes (0x525440) and the selection is cleared (0x52ae40) */
+
+void ai_WatchPlanStart(int building)
+{
+    if (sv_CheckCharacterFlag(building) != 0 || building == 0)
+        return;
+    sv_OpenPlayerBar(building, 0);
+    ai_MapPick(4, 0, ai_WatchPlanPickPrompt, (int)ai_WatchPlanWindow, 0);
+    sv_ClosePlayerBar();
+    sv_ClearSelection();
 }
 /* 0x5a64d0, the city watch arrest window, the map pick callback of ai_ArrestStart (ai_MapPick): for the picked
    building bld (0: nothing) it needs a selected character (else the text 0x1a5e) and a building without the flag
@@ -13796,6 +13796,50 @@ void ai_ArrestStart(int building)
     ai_MapPick(1, req, ai_ArrestPickPrompt, (void *)(unsigned)&ai_ArrestWindow, 0);
     sv_ClosePlayerBar();
     sv_ClearSelection();
+}
+/* 0x5a67a0, the city watch contact listener, the room 0x146 of the building driver 0x59e420 (376 B): releases
+   the name plates, then every frame registers the plates contact_PATROL, ob_WACHPLAN, ob_PERSONALBUCH,
+   ob_MEISTERBRIEF and the customs box ob_ZOLLKASSE / ob_ZOLLKASSE_MIT_GEHEIMFACH (sv_RegisterNamePlate, 0x16 /
+   0xc); the customs box only with the record 0x147 / 0x148 of the building's objList (gm_Query); a click on a
+   plate opens its window: ai_PersonnelBook, ai_PatrolStart, ai_WatchPlanStart, ai_ArrestStart,
+   ai_MasterLetterWindow */
+
+void ai_CityWatchListener(AIBLD *bld, int room)
+{
+    int patrol = 0;
+    int wachplan = 0;
+    int personal = 0;
+    int meister = 0;
+    int zoll = 0;
+    int r;
+
+    sv_ReleaseNamePlates();
+    r = sv_RunFrame(ai_CityWatchListener, 0x67fff);
+    while (r != 0) {
+        if (ai_BuildingPerms & 0x200) {
+            patrol = sv_RegisterNamePlate("contact_PATROL", ai_ContactTextPatrol, 0x16);
+            wachplan = sv_RegisterNamePlate("ob_WACHPLAN", ai_ContactTextWatchPlan, 0x16);
+            personal = sv_RegisterNamePlate("ob_PERSONALBUCH", ai_ContactTextPersonnelBook, 0xc);
+            meister = sv_RegisterNamePlate("ob_MEISTERBRIEF", ai_ContactTextMasterLetter, 0x16);
+            if (gm_Query(bld->objList, 2, 6, 0, 0x147) != 0)
+                zoll = sv_RegisterNamePlate("ob_ZOLLKASSE", ai_ContactTextCustomsBox, 0x16);
+            else if (gm_Query(bld->objList, 2, 6, 0, 0x148) != 0)
+                zoll = sv_RegisterNamePlate("ob_ZOLLKASSE_MIT_GEHEIMFACH", ai_ContactTextCustomsBox, 0x16);
+            if ((ai_BuildingPerms & 0x200) && ai_ClickedObject != 0) {
+                if (ai_ClickedObject == personal)
+                    ai_PersonnelBook(bld, "ob_PERSONALBUCH");
+                else if (ai_ClickedObject == patrol)
+                    ai_PatrolStart((int)bld);
+                else if (ai_ClickedObject == wachplan)
+                    ai_WatchPlanStart((int)bld);
+                else if (ai_ClickedObject == zoll)
+                    ai_ArrestStart((int)bld);
+                else if (ai_ClickedObject == meister)
+                    ai_MasterLetterWindow((AIBLD *)bld);
+            }
+        }
+        r = sv_RunFrame(ai_CityWatchListener, 0x67fff);
+    }
 }
 /* 0x5a6920, the guild hall contact listener, the room 0x14c of the building driver 0x59e420 (183 B; the guild
    hall is a reasoned reading of the plates: the watch's raid and the thieves' guild's espionage next to the
@@ -13902,50 +13946,6 @@ void ai_MapCellToScreen(LCMAPMARK *m, int originX, int originY)
     m->y = ai_MapHeight * 0.5f + originY + edgeY;
 }
 
-/* 0x5a67a0, the city watch contact listener, the room 0x146 of the building driver 0x59e420 (376 B): releases
-   the name plates, then every frame registers the plates contact_PATROL, ob_WACHPLAN, ob_PERSONALBUCH,
-   ob_MEISTERBRIEF and the customs box ob_ZOLLKASSE / ob_ZOLLKASSE_MIT_GEHEIMFACH (sv_RegisterNamePlate, 0x16 /
-   0xc); the customs box only with the record 0x147 / 0x148 of the building's objList (gm_Query); a click on a
-   plate opens its window: ai_PersonnelBook, ai_PatrolStart, ai_WatchPlanStart, ai_ArrestStart,
-   ai_MasterLetterWindow */
-
-void ai_CityWatchListener(AIBLD *bld, int room)
-{
-    int patrol = 0;
-    int wachplan = 0;
-    int personal = 0;
-    int meister = 0;
-    int zoll = 0;
-    int r;
-
-    sv_ReleaseNamePlates();
-    r = sv_RunFrame(ai_CityWatchListener, 0x67fff);
-    while (r != 0) {
-        if (ai_BuildingPerms & 0x200) {
-            patrol = sv_RegisterNamePlate("contact_PATROL", ai_ContactTextPatrol, 0x16);
-            wachplan = sv_RegisterNamePlate("ob_WACHPLAN", ai_ContactTextWatchPlan, 0x16);
-            personal = sv_RegisterNamePlate("ob_PERSONALBUCH", ai_ContactTextPersonnelBook, 0xc);
-            meister = sv_RegisterNamePlate("ob_MEISTERBRIEF", ai_ContactTextMasterLetter, 0x16);
-            if (gm_Query(bld->objList, 2, 6, 0, 0x147) != 0)
-                zoll = sv_RegisterNamePlate("ob_ZOLLKASSE", ai_ContactTextCustomsBox, 0x16);
-            else if (gm_Query(bld->objList, 2, 6, 0, 0x148) != 0)
-                zoll = sv_RegisterNamePlate("ob_ZOLLKASSE_MIT_GEHEIMFACH", ai_ContactTextCustomsBox, 0x16);
-            if ((ai_BuildingPerms & 0x200) && ai_ClickedObject != 0) {
-                if (ai_ClickedObject == personal)
-                    ai_PersonnelBook(bld, "ob_PERSONALBUCH");
-                else if (ai_ClickedObject == patrol)
-                    ai_PatrolStart((int)bld);
-                else if (ai_ClickedObject == wachplan)
-                    ai_WatchPlanStart((int)bld);
-                else if (ai_ClickedObject == zoll)
-                    ai_ArrestStart((int)bld);
-                else if (ai_ClickedObject == meister)
-                    ai_MasterLetterWindow((AIBLD *)bld);
-            }
-        }
-        r = sv_RunFrame(ai_CityWatchListener, 0x67fff);
-    }
-}
 /* 0x5a6c40, the four control pictures of the map window (102 B): on the screen window at (0, 0) the picture
    id, at (0, 0x1a2) id + 1, at (0, 0x78) id + 2 and at (0x243, 0x78) id + 3, each raised (d2_WinOpenPic,
    d2_RaiseObject); its caller ai_OpenTownMap passes the map's child window and the base id (0x727 / 0x72b / 0x723 /
@@ -19890,24 +19890,6 @@ void ai_EvidenceBookWindow(AIBLD *bld)
 }
 int ai_BribeAmountCB(AICHARREC *ch);
 
-/* 0x5b4bf0, the bribe amount menu of the robbers' room (105 B, ai_RobberContact): the AMOUNTCFG with mode
-   0x40400, the filter's high word from gypsyFilter (its low word stored 0) and kind 6, the prompt 0x174f, the menu with the callback ai_BribeAmountCB; the
-   camera follows again */
-
-void ai_OpenRobberBribe(int bld)
-{
-    AMOUNTCFG cfg;
-    char text[0x100];
-
-    memset(&cfg, 0, sizeof(cfg));
-    cfg.mode = 0x40400;
-    cfg.kind = 6;
-    cfg.classMask[1] = gypsyFilterWords[1];
-    cfg.classMask[0] = 0;
-    txt_Format(text, 0x174f);
-    ai_AmountMenu(&cfg, text, 0, ai_BribeAmountCB);
-    sv_CameraFollow();
-}
 /* 0x5b4820, the bribe window "misc\perga_rolle" (ai_OpenRobberBribe's amount menu callback, with the picked
    character ch): the text 0x174d (ch, the player's currency) with a money slider (up to 0.078 % of the two
    characters' worth together, ai_AmountLimit against the player's goods value, in the player's currency) and the
@@ -20010,6 +19992,24 @@ int ai_BribeAmountCB(AICHARREC *ch)
 }
 int gv_HeldCrimeCount(int culprit, unsigned short t);  /* 0x4f4130, gv.h's prototype (gv.h is not included yet: Open: head) */
 
+/* 0x5b4bf0, the bribe amount menu of the robbers' room (105 B, ai_RobberContact): the AMOUNTCFG with mode
+   0x40400, the filter's high word from gypsyFilter (its low word stored 0) and kind 6, the prompt 0x174f, the menu with the callback ai_BribeAmountCB; the
+   camera follows again */
+
+void ai_OpenRobberBribe(int bld)
+{
+    AMOUNTCFG cfg;
+    char text[0x100];
+
+    memset(&cfg, 0, sizeof(cfg));
+    cfg.mode = 0x40400;
+    cfg.kind = 6;
+    cfg.classMask[1] = gypsyFilterWords[1];
+    cfg.classMask[0] = 0;
+    txt_Format(text, 0x174f);
+    ai_AmountMenu(&cfg, text, 0, ai_BribeAmountCB);
+    sv_CameraFollow();
+}
 /* 0x5b4c60, the threatening letter window "misc\perga_rolle" (ai_DrohbriefWindow's amount menu callback, with the
    picked character ch; nothing for none, an empty pick, the player, or a player without 2 money). A haunting of
    the player by ch (he_NoEvent88Pair) gives the text 0x409f, no evidence of ch's crimes (gv_HeldCrimeCount) the
