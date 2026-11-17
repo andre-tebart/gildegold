@@ -87,7 +87,8 @@ def compile_t(text, label):
     return fns
 
 
-CACHE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "orig_cache.pkl")
+# the original never changes: its disassembly per address is cached under build/ (ignored), not next to the tool
+CACHE = os.path.join(up.W, "orig_cache.pkl")
 oc = pickle.load(open(CACHE, "rb")) if os.path.exists(CACHE) else {}
 
 
@@ -106,7 +107,9 @@ for a in LST:
             print("  %d 0x%x %s" % (n, d[3], d[1]))
 if LST and not Ps:
     raise SystemExit(0)
-tag = os.path.basename(tree.rstrip("/\\")) + "_" + unit
+import hashlib
+# keyed by the unit's text: an edited unit compiles a new base instead of comparing against stale code
+tag = os.path.basename(tree.rstrip("/\\")) + "_" + unit + "_" + hashlib.sha1(src.encode("latin-1")).hexdigest()[:12]
 bp = os.path.join(up.W, "bp_base_%s.pkl" % tag)
 if os.path.exists(bp):
     base = pickle.load(open(bp, "rb"))
