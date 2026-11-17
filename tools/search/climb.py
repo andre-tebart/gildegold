@@ -201,6 +201,14 @@ def op_commute(lines, rng):
             a, o, b = m.groups()
             if a == b or a.endswith("-") or "->" == a[-2:]:
                 continue
+            # only a whole operand pair: `0x2d + scale * 15` must not become `scale + 0x2d * 15`, nor
+            # `x - a + b` become `x - b + a`. The neighbours outside the pair must bind less than any operator.
+            before, after = l[:m.start()].rstrip(), l[m.end():].lstrip()
+            if not (before == "" or before.endswith(("(", "=", ",", "?", ":", "&&", "||", "return", "{", ";"))
+                    and not before.endswith(("==", "!=", "<=", ">="))):
+                continue
+            if not after.startswith((")", ";", ",", "?", ":", "&&", "||", "]")):
+                continue
             new = l[:m.start()] + "%s %s %s" % (b, flip.get(o, o), a) + l[m.end():]
             yield "commute@%d:%d" % (i, m.start()), lines[:i] + [new] + lines[i + 1:]
 
