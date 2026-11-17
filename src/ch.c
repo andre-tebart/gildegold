@@ -52,7 +52,9 @@ typedef struct CHANIMFLAGSB {
 #define d3t_CamMoveI (*(int *)&d3t_CamMove)  /* 0x6310e8, d3t_CamMove (d3_tools.c: D3ANIM *) as the int this unit tests and clears */
 
 char ch_AnimPath[0x100] = "x:\\gfx\\engine\\animations\\character";  /* 0x5f1120 */
+int ch_Unk5f1220 = -1;  /* 0x5f1220, an int of ch's .data block (-1) no surviving code reads (a removed function's) */
 int ch_LastUpdate = -1;  /* 0x5f1224 */
+int ch_Unk5f1228 = 1;  /* 0x5f1228, an int of ch's .data block (1) no surviving code reads (a removed function's) */
 char ch_ShadowEnabled = 1;  /* 0x5f122c */
 float cm_SpeedFactor = 1.0f;  /* 0x5f1290, 1.0 */
 int ch_CurrentScriptGroup = -1;  /* 0x5f1298, the script group that goes with it; -1 = none */
