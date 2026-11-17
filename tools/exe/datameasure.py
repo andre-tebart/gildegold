@@ -118,34 +118,73 @@ def sizes(a, decl, ours, both, bss_start, dsyms):
     u_end = base + va + bss_start      # ours: the map's .bss contribution
     print("initialised .data: the original 0x%08x..0x%08x (%d), ours ..0x%08x (%d), %+d" % (
         base + va, o_end, o_end - base - va, u_end, u_end - base - va, u_end - o_end))
-    # obj -> unit by the declared symbols it defines
+    # obj -> unit: by the declared data it defines, else by its first functions' defining source file
     objunit = {}
     for at, obj, name in dsyms:
         if name in decl:
             objunit.setdefault(obj, {}).setdefault(decl[name][4], 0)
             objunit[obj][decl[name][4]] += 1
     objunit = {o: max(c, key=c.get) for o, c in objunit.items()}
+    texts = {}
+    for l in open(MAP, encoding="latin-1"):
+        m = re.match(r"\s*0001:[0-9a-f]+\s+_?(\S+)\s+[0-9a-f]{8}\s+(?:f\s+)?(\S+)", l)
+        if m:
+            texts.setdefault(m.group(2), []).append(re.sub(r"@\d+$", "", m.group(1)))
+    srcs = None
+
+    def unit_of(obj):
+        nonlocal srcs
+        if obj in objunit:
+            return objunit[obj]
+        if obj.startswith("LIBC:") or obj not in texts:
+            return obj.split(".")[0]
+        if srcs is None:
+            srcs = {os.path.basename(f)[:-2]: open(f, encoding="utf-8", errors="replace").read()
+                    for f in glob.glob(os.path.join(ROOT, "src", "*.c"))}
+        for n in texts[obj][:3]:
+            for u, t in srcs.items():
+                if re.search(r"^[A-Za-z_][^;\n]*\b" + re.escape(n) + r"\s*\([^;\n]*$", t, re.M):
+                    objunit[obj] = u
+                    return u
+        return obj[:12]
+    # every symbol of our initialised .data with the original's address: a declared datum's, or a string
+    # literal's found by its bytes (the NUL included, 4-aligned, one place only) in the original's .data
+    uva, uvs, uraw = exemeasure.sections(exemeasure.OURS)[1][".data"]
     dsyms.sort()
-    ourper = {}
+    objs = []
     for i, (at, obj, name) in enumerate(dsyms):
         if at >= u_end:
             break
-        nxt = dsyms[i + 1][0] if i + 1 < len(dsyms) else u_end
-        u = objunit.get(obj, obj.split(":")[0][:12])
-        ourper[u] = ourper.get(u, 0) + min(nxt, u_end) - at
-    order = sorted(decl, key=lambda n: decl[n][0])
-    origper = {}
-    for i, n in enumerate(order):
-        at = decl[n][0]
-        if decl[n][1] == "rdata" or at >= o_end or at < base + va:
+        nxt = min(dsyms[i + 1][0] if i + 1 < len(dsyms) else u_end, u_end)
+        orig = decl[name][0] if name in decl else None
+        if orig is None and name.startswith("??_C@"):
+            b = uraw[at - base - uva:nxt - base - uva]
+            z = b.find(b"\0")
+            if z >= 0:
+                hits = [m.start() for m in re.finditer(re.escape(b[:z + 1]), raw[:k]) if m.start() % 4 == 0]
+                if len(hits) == 1:
+                    orig = base + va + hits[0]
+        if not objs or objs[-1][0] != obj:
+            objs.append([obj, 0, []])
+        objs[-1][1] += nxt - at
+        if orig is not None:
+            objs[-1][2].append((name, at - orig))
+    print("per obj in our link order (delta = ours - original over its placed data and strings; in = the change "
+          "from the obj before, own = the change across the obj):")
+    prev = None
+    for obj, nb, ds in objs:
+        if not ds:
             continue
-        nxt = min(decl[order[i + 1]][0] if i + 1 < len(order) else o_end, o_end)
-        origper[decl[n][4]] = origper.get(decl[n][4], 0) + nxt - at
-    rows = sorted(set(ourper) | set(origper), key=lambda u: -abs(ourper.get(u, 0) - origper.get(u, 0)))
-    print("per unit (ours - original; the original's bytes are its declared data's rooms, strings included):")
-    for u in rows[:a.n]:
-        print("  %-14s ours %7d  original %7d  %+7d" % (u, ourper.get(u, 0), origper.get(u, 0),
-                                                       ourper.get(u, 0) - origper.get(u, 0)))
+        # the median of the first / last few: a pooled string or a datum of another block does not count
+        first = sorted(d for _, d in ds[:5])[len(ds[:5]) // 2]
+        last = sorted(d for _, d in ds[-5:])[len(ds[-5:]) // 2]
+        jump_in = first - prev if prev is not None else 0
+        if jump_in or last != first:
+            big = max(((ds[j][1] - ds[j - 1][1], ds[j][0]) for j in range(1, len(ds))), default=(0, "-"),
+                      key=lambda x: abs(x[0]))
+            print("  %-14s bytes=%6d  delta %+7d .. %+7d  in %+7d  own %+7d  largest %+d at %s" % (
+                unit_of(obj), nb, first, last, jump_in, last - first, big[0], big[1][:48]))
+        prev = last
     wrong = [n for n in both if decl[n][0] >= o_end and ours[n] < u_end]
     print("initialised in ours, .bss in the original: %d symbols, %d bytes" % (len(wrong), sum(decl[n][2] for n in wrong)))
     for n in sorted(wrong, key=lambda n: -decl[n][2])[:a.n]:
