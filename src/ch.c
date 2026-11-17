@@ -1995,31 +1995,7 @@ int ch_TakeObject1(CHARACTER *ch, char *name, D3OBJECT *obj, int frame)
     }
     return 0;
 }
-/* 0x405fb0, action callback: plays a->u.name and drops the object at frame args[0]
-   @deep size queue (exe line-up): 272 vs 275, the 3 bytes are exactly the a->ch reload at 406050 (mov
-   ecx,[esi+0x14]). flip.py --want 'DWORD PTR \[esi\+20\]\s+push 0\s+push e.x\s+push e.x\s+call
-   _ch_SetHandObject\s+add esp, 12\s+mov DWORD PTR \[esi\+48\]' finds ONE mutant: deleting the count==0
-   block's final return (ch.c 2041): any join INTO the count!=0 path before the frame check (here the
-   count==0 tail falling into 406033) makes VC6 reload a->ch there, and that mutant is otherwise identical
-   to the original but for the missing epilogue copy (4 ins). So the original has a join into the count!=0
-   code (its EBB starts at a join) that later vanishes. Tried this session: retest (count==0 joins at a
-   shared ch->next test, then if (!a->count) {drop; remove; return;}): 6 ins, only the a->count re-test and
-   the missing duplicate of the ch->next test differ (VC6 cannot decide a->count after the SetNextAnim
-   call); int first = !a->count / first=1 in the block / first=1 else 0 tested after the ch->next test:
-   12-27 ins (flag materialised, not threaded); count local: 24; if (a->count) {run} else {init} / switch /
-   while(a->count){..return;}: 83 ins (layout flips); else around the run, joinret (if (!ch->next) {drop;
-   remove;} else if): = control; if (args[0] != 99999999) guard as in ch_ActTakingObject: 28. climb
-   --rounds 2: nothing. Open: a construct whose join into 406033 VC6 removes after CSE (a decided test VC6
-   only learns late, a loop back edge that disappears). prior: headers sample: insensitive (32 samples, one
-   codegen). The one real hunk is 406050: the original reloads a->ch for the frame-check ch_SetHandObject,
-   ours forwards ch (edi); the later regs hunks (406086, 406095) are the scratch-register rotation that one
-   extra temp gives. Proven: any join with a call on one path before the frame check gives the reload
-   (sepcount: count==0 block falls through to a shared ch->next test and a second a->count test: 6 ins, the
-   frame check matches, only the re-test and the lost second ch->next copy differ). No form found that
-   joins without leaving a test: flag set in the count==0 block and tested after the join = control (VC6
-   threads it before CSE); flag tested after the shared ch->next test = 15 ins (not threaded); int n =
-   a->count local re-test 24 ins (n in ebx, not threaded). = control: (CHARACTER *)*(int *)&a->ch at entry
-   or call, char*+0x14, ch assigned lat... */
+/* 0x405fb0, action callback: plays a->u.name and drops the object at frame args[0] */
 
 void ch_ActDroppingObject(CHACTION *a)
 {
@@ -2037,8 +2013,10 @@ void ch_ActDroppingObject(CHACTION *a)
             return;
         ch_SetHandObject(a->ch, a->args[2], 0);
         ch_RemoveAction(a);
-        return;
+        a = 0;
     }
+    if (!a)
+        return;
     if (ch->next)
         return;
     if (ch->slot && ch->slot->frame >= a->args[0]) {

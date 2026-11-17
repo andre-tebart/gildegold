@@ -2213,6 +2213,12 @@ Store order in a fill, hoisted loads and sunk stores, statement order effects, `
 
 ### Reloads the original keeps (and CSEs it does not)
 
+- **A field reloaded (`mov ecx,[esi+0x14]`) where ours forwards the entry local (`push edi`), no call on the
+  path**: something joins into that path before the use, at CSE time, and vanishes later. `ch_RemoveAction(a); a
+  = 0;` at the end of the first-call block plus `if (!a) return;` after it: the test is decided on both paths
+  (a dereferenced / a = 0) only after CSE, so the join cuts the forwarding and then disappears. flip.py
+  `--want` on the reload found it as "delete the block's `return`" (ch_ActDroppingObject byte). Flags (`first =
+  1`) are threaded before CSE and give the forwarding back.
 - **Two globals reloaded after a call in the other order** (`mov ecx,[hour]; mov esi,[rain]` against the
   original's `mov esi,[rain]; mov ecx,[hour]`, both register candidates killed by the call, equal scheduler
   priority): the reload tuples follow the globals' memory-symbol numbers (`m:#N` in c2dag), given in the order
