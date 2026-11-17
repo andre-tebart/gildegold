@@ -140,19 +140,20 @@ unsigned short path_Search2(PMAP *map, int sx, int sy, short ex, int ey, int typ
 }
 /* 0x425470, one-directional A*: expands from the start node alone until it reaches the goal;
    the start node index, or 0xffff when no path exists. Sets the path_ globals like path_Search2.
-   @deep kept: loop stores Target, SetFlag, TestFlag (original order), b = path_Goal before the Start
-   test, top tests !(c < 0.0) (gives test ah,5/jnp) and loop test c > 0.0 (gives and eax,0x4100): 188 ->
-   175 ins. Left: the original keeps a and b as memory locals in dead param slots (a: word store to map's
-   slot [esp+0x14], read back dword & 0xffff, pushed from there, edi only in the Expand loop with a spill
-   store after each call; b: word store to sy's slot), zero in edi, ex then Stamp in ebx, 0xffff in ebp and
-   returns mov ax,bp; ours keeps a in edx, b in a register, zero in ebx, Stamp in bp (reloads 0xffff).
-   Tried: unsigned short a (+38 ins), int ex, return 0xffff, no b, (unsigned short)a != 0xffff (= control),
-   119 orders of Count/a/Start/Goal/Stamp (valid ones 173 at best, slots 20, no memory a). headers sample
-   insensitive. Next: what makes VC6 refuse a register for a/b (address taken? a second variable sharing
-   the home?), and check path_Search2 which has the same prologue (tiebreak: insensitive, dcp headers
-   sample path_Search1: 32 samples, one codegen) prior: behaviour only: size 784 = original, remaining code hunks are register
-   allocation and the same double-compare idiom (and eax,0x100 vs test ah,0x5/jnp, loop and eax,0x4100) as
-   path_Search2; readable met */
+   @deep size queue (s2): raw 766 vs 779 (padded needs >= 769). Hunk sizes: the gap is the prologue/init
+   block (+0x75..+0xa5: the original's a = start cell computed and stored as a WORD into map's dead
+   parameter slot [esp+0x14] early, between the path_DY stores, with the b / Goal stores interleaved: +29
+   bytes there, -17 in ours' later block) and the 0xffff / Stamp registers. Same open point as the earlier
+   note: what keeps a (unsigned short) in memory. prior: kept: loop stores Target, SetFlag, TestFlag
+   (original order), b = path_Goal before the Start test, top tests !(c < 0.0) (gives test ah,5/jnp) and
+   loop test c > 0.0 (gives and eax,0x4100): 188 -> 175 ins. Left: the original keeps a and b as memory
+   locals in dead param slots (a: word store to map's slot [esp+0x14], read back dword & 0xffff, pushed
+   from there, edi only in the Expand loop with a spill store after each call; b: word store to sy's slot),
+   zero in edi, ex then Stamp in ebx, 0xffff in ebp and returns mov ax,bp; ours keeps a in edx, b in a
+   register, zero in ebx, Stamp in bp (reloads 0xffff). Tried: unsigned short a (+38 ins), int ex, return
+   0xffff, no b, (unsigned short)a != 0xffff (= control), 119 orders of Count/a/Start/Goal/Stamp (valid
+   ones 173 at best, slots 20, no memory a). headers sample insensitive. Next: what makes VC6 refuse a
+   register for a/b (address taken? a second v... */
 
 unsigned short path_Search1(PMAP *map, int sx, int sy, short ex, int ey, int type)
 {
