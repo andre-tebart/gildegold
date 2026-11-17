@@ -3524,27 +3524,26 @@ void main_ReplaceFigure(unsigned p)
     MAINCHARNEW *ch;
     AIJOB *e;
     G28REC *pt;
-    int *pi;
-    int i, j;
+    int i, j, n;
 
-    i = 0;
-    while (ai_CharsT[i].kind != 6 || ai_CharsT[i].health == 0) {
-        i++;
-        if (i >= 768) {
-            ai_GameOver = 1;
-            return;
+    n = 0xffff;
+    for (i = 0; i < 768; i++) {
+        if (ai_CharsT[i].kind == 6 && ai_CharsT[i].health != 0) {
+            n = i;
+            break;
         }
     }
-    if (i == 0xffff) {
+    if (n == 0xffff) {
         ai_GameOver = 1;
         return;
-    } else if (ai_CharsT[p].kind == 6 && ai_CharsT[p].health == 0) {
+    }
+    if (ai_CharsT[p].kind == 6 && ai_CharsT[p].health == 0) {
         ch = (MAINCHARNEW *)&ai_CharsT[p];
         e = (AIJOB *)he_Events;
         do {
             if (e->kind != 0 && e->chr == p) {
-                for (pi = la; *pi != 0; pi++) {
-                    if (*pi == (unsigned char)e->kind) {
+                for (j = 0; la[j] != 0; j++) {
+                    if (la[j] == (unsigned char)e->kind) {
                         he_FreeEvent((int *)e);
                         break;
                     }
@@ -3565,8 +3564,7 @@ void main_ReplaceFigure(unsigned p)
             strcpy(ch->name, txt_FemaleFirstNames[(unsigned short)util_RandomInt(0x70)]);
         }
         ch->seq = (short)ai_NextCharNumber;
-        for (i = 0; i < 8; i++)
-            ch->clear[i] = -1;
+        memset(ch->clear, 0xff, sizeof(ch->clear));
         ai_NextCharNumber = ai_NextCharNumber + 1;
         /* the original walks the records by their kind byte, 8 bytes into each */
         for (pt = cm_Parties; (int)&pt->kind < (int)((unsigned)cm_Parties + 0x6788); pt++) {
