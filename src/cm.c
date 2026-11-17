@@ -1054,12 +1054,18 @@ void cm_FreeReceived(G17MSG *m)
 }
 /* 0x4c4190, "cm_ExecCommand": runs the received messages (groups 5..6 checked first by 0x4c43c0), frees them;
    when the connection is closed, fails all of them
-   @deep read against 0x4c4190..0x4c43b0: fixed the meaning (no cm_RecvQueue=0 after the closed-connection
-   loop, the state reset loop is an int index with jl, the group check clears ok only on 0). Same
-   statements and calls in the same order now; left is allocation: ours keeps 0 in ebx (cmp reg,ebx / mov
-   [eax+1],bl) and grp/ok in ebp/edi, the original codes immediates, keeps grp in ebx, ok in ebp and
-   &t->next in edi (lea edi,[esi+0x95]; mov edx,[edi]; mov [edi],edx); it loads cm_RecvQueue into esi
-   before the closed test and reloads it after sv_PopTo (scheduling). 162 vs 165 ins. */
+   @deep size queue s12 (climb --rounds 1): t = m before next = m->next in the receive loop: 75 -> 18 ins,
+   165 = 165 ins, padded size equal. Left: the closed-connection loop: the original pushes ebx / esi before
+   the net_Conn.closed je and keeps cm_RecvQueue in esi through the free loop (mov esi,[cm_RecvQueue] /
+   test esi,esi / push esi / reload after the call), ours walks it in ecx and pushes ebx / esi behind the
+   loop. Tried (= control): the loop's pointer as t / next / grp (a name shared with the second loop), a
+   for form, m = cm_RecvQueue before the while and at its end. prior: read against 0x4c4190..0x4c43b0:
+   fixed the meaning (no cm_RecvQueue=0 after the closed-connection loop, the state reset loop is an int
+   index with jl, the group check clears ok only on 0). Same statements and calls in the same order now;
+   left is allocation: ours keeps 0 in ebx (cmp reg,ebx / mov [eax+1],bl) and grp/ok in ebp/edi, the
+   original codes immediates, keeps grp in ebx, ok in ebp and &t->next in edi (lea edi,[esi+0x95]; mov
+   edx,[edi]; mov [edi],edx); it loads cm_RecvQueue into esi before the closed test and reloads it after
+   sv_PopTo (scheduling). 162 vs 165 ins. */
 
 int cm_ExecCommands(void)
 {
@@ -1086,8 +1092,8 @@ int cm_ExecCommands(void)
     }
     grp = 0;
     for (m = cm_RecvQueue; m != 0; m = next) {
-        next = m->next;
         t = m;
+        next = m->next;
         ok = 1;
         if (grp == 0) {
             if (m->type == 5)
