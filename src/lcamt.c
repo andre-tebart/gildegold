@@ -2412,7 +2412,17 @@ unsigned int ai_FillEnemiesTab(AICHARREC *me, unsigned int max, LCAMOUNTROW *row
    four pair events 0x6f of me (AIJOB.partner1 me's netId); with max set it clears max rows of rows and fills the
    first min(max, count) of them (LCAMOUNTROW.rec) with the corner icons (ai_AmountRowStatus) and the partner
    filter filter (ai_PassesPartnerFilter, pickable); returns the count
-   @deep Read the whole function against the original and rewrote it (the pair event 0x6f scan into
+   @deep match-deep 2026-11-17 (s8): draft -> shape, size 195 = 195: the fill loop walks rows (i++, rows++;
+   rows->rec, ai_AmountRowStatus(rows)): the original's esi row pointer and frame 0x10 (n in a register all
+   through, filter and me reloaded). Left: n and max swapped (the original n = ebx, max = ebp; ours n =
+   ebp, max = ebx): c2trace --prio: max#1 prio 14 (memset's max * 56 counts 2 refs in a P = 4 block) > n#1
+   prio 9 (lives unreferenced through the scan's call blocks 3/4 and the fill body 14), so max is served
+   first and takes ebx. With the regs swapped the min reads n < max ? n : max (20 ins, kept); max < n ? max
+   : n gives the same allocation plus an order hunk (26). Rounds: index form with count local 63, unsigned
+   n 57, while scan = control, row local = control, row-walk (row = rows; row++) 59, lovers[n] stored
+   before the test (no c) 26 but the store order is wrong, split n++ / nested if = control; climb --base
+   rowp 2 rounds: nothing. Next: what raises n above max (an n reference the original has, or max's memset
+   refs). prior: Read the whole function against the original and rewrote it (the pair event 0x6f scan into
    lovers[4], the clear, the min(max, n) fill loop with the corner icons and the partner filter); the
    statements and the control flow match (same branches, same calls and arguments). Left is allocation: the
    original keeps n in ebx all through (frame 0x10, only lovers[4]) and max in ebp, reloading me and filter
@@ -2439,10 +2449,10 @@ unsigned int ai_FillLoversTab(AICHARREC *me, unsigned int max, LCAMOUNTROW *rows
     }
     if (max != 0) {
         memset(rows, 0, max * sizeof(LCAMOUNTROW));
-        for (i = 0; i < (max < n ? max : n); i++) {
-            rows[i].rec = lovers[i];
-            ai_AmountRowStatus(&rows[i]);
-            rows[i].pickable = ai_PassesPartnerFilter(me->id, rows[i].rec->id, filter, 0);
+        for (i = 0; i < (n < max ? n : max); i++, rows++) {
+            rows->rec = lovers[i];
+            ai_AmountRowStatus(rows);
+            rows->pickable = ai_PassesPartnerFilter(me->id, rows->rec->id, filter, 0);
         }
     }
     return n;
