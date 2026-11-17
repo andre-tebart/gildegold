@@ -423,7 +423,10 @@ unsigned gv_FindEntry(void *a, unsigned char *o, unsigned after, int (*cb)(), in
 unsigned gv_LoadGraveyard(unsigned char *o, int *e);  /* 0x4ef900 */
 GVGRAVE *gv_RandomGrave(unsigned char *o);/* 0x4ef930 */
 extern const int gv_EntryCounts[];             /* 0x5ee054, entries per kind */
-extern const int gv_ListEntries[4][4];         /* 0x5ee084 */
+extern const int gv_ListEntries0[4];         /* 0x5ee084, the entries of list 0 by the building level */
+extern const int gv_ListEntries1[4];         /* 0x5ee094, of list 1 */
+extern const int gv_ListEntries2[4];         /* 0x5ee0a4, of list 2 */
+extern const int gv_ListEntries3[4];         /* 0x5ee0b4, of list 3 */
 int gv_BuryNewDead(unsigned char *o, int n);  /* 0x4ef9c0 */
 GVYARD *gv_AllocGraveyard(unsigned char *o);  /* 0x4efc10, allocates the graveyard record of the building o ("gv_AllocGraveyardField", at +0x65 of o) */
 extern const int gv_EntryTotals[];             /* 0x5ee064 */

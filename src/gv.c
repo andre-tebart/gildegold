@@ -7,7 +7,7 @@
    gv_StartShot, moved by gv_UpdateEffects and exploded by gv_ExplodeShot; the save game writes gv_LastTime, the cannon
    scene state gv_Cannon (cannon scene of sv_t) and the slots field by field.
    A graveyard building (kind 0x1d) holds a GVYARD (AIBLD.yard): four grave sizes, each a list of GVENTRY entries opened by
-   GVYARD.open, counted per type level by gv_ListEntries / gv_EntryCount / gv_GraveCount and walked by gv_FindEntry; each
+   GVYARD.open, counted per type level by gv_ListEntries0..3 / gv_EntryCount / gv_GraveCount and walked by gv_FindEntry; each
    entry points at its GVGRAVE records (a dead person). Graveyard orders are GVORDER records (message 0x60, sent by the
    gv_Order* senders through cm_SendGraveOrder, run by type: gv_BuryCharacter, gv_ReserveGrave, gv_ExtendGrave,
    gv_SetGraveHolder, gv_OpenSize, gv_AdjustEntry, ..); a grave move is GVMOVE (message 0x61, gv_OrderMoveGrave ->

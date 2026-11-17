@@ -320,7 +320,7 @@ int gv_EntryHasId(int *a, int *b)
 }
 /* 0x4ef7c0, the first entry (GVENTRY) of the list l (the grave size 0 .. 3; 0xff: all entries, GVYARD.entries) of the
    graveyard building o after the entry `after` (0: from the start) for which cb (a, entry) is true (no cb: any); the list
-   ends after gv_ListEntries[l][level] entries (0xff: gv_EntryCount); 0 when none or the size is not open (gv_SizeOpen).
+   ends after gv_ListEntries<l>[level] entries (0xff: gv_EntryCount); 0 when none or the size is not open (gv_SizeOpen).
    after walks as the cursor (the original keeps the two in one register) */
 
 unsigned gv_FindEntry(void *a, unsigned char *o, unsigned after, int (*cb)(), int l)
@@ -335,13 +335,13 @@ unsigned gv_FindEntry(void *a, unsigned char *o, unsigned after, int (*cb)(), in
     if (l != 0xff && gv_SizeOpen((char *)g, l) == 0)
         return 0;
     if (l == 0)
-        end = g->lists[0] + gv_ListEntries[0][((AIBTYPE *)bt)->cap247];
+        end = g->lists[0] + gv_ListEntries0[((AIBTYPE *)bt)->cap247];
     else if (l == 1)
-        end = g->lists[1] + gv_ListEntries[1][((AIBTYPE *)bt)->cap247];
+        end = g->lists[1] + gv_ListEntries1[((AIBTYPE *)bt)->cap247];
     else if (l == 2)
-        end = g->lists[2] + gv_ListEntries[2][((AIBTYPE *)bt)->cap247];
+        end = g->lists[2] + gv_ListEntries2[((AIBTYPE *)bt)->cap247];
     else if (l == 3)
-        end = g->lists[3] + gv_ListEntries[3][((AIBTYPE *)bt)->cap247];
+        end = g->lists[3] + gv_ListEntries3[((AIBTYPE *)bt)->cap247];
     else if (l == 0xff)
         end = g->entries + gv_EntryCount(o);
     else
@@ -1853,4 +1853,10 @@ const float gv_GraveWear[] = { 15.0f, 12.5f, 10.0f, 7.5f };  /* 0x5ee044, the ca
 const int gv_EntryCounts[] = { 1, 2, 4, 8 };  /* 0x5ee054, entries per kind */
 const int gv_EntryTotals[] = { 0, 12, 20, 30 };  /* 0x5ee064 */
 const int gv_GraveTotals[] = { 0, 16, 32, 64 };  /* 0x5ee074 */
-const int gv_ListEntries[4][4] = { { 0, 8, 12, 16 }, { 0, 4, 6, 8 }, { 0, 0, 2, 4 }, { 0, 0, 0, 2 } };  /* 0x5ee084 */
+/* the entries of the lists l = 0 .. 3 (the grave sizes) by the building's level (AIBTYPE.cap247): four arrays, not one
+   int[4][4]: VC6 gives a const object of 64 bytes or more 8-byte alignment (and its section), and the original's
+   section of these constants starts at 0x5ee034 (4 mod 8), so no object in it is that large */
+const int gv_ListEntries0[4] = { 0, 8, 12, 16 };  /* 0x5ee084 */
+const int gv_ListEntries1[4] = { 0, 4, 6, 8 };  /* 0x5ee094 */
+const int gv_ListEntries2[4] = { 0, 0, 2, 4 };  /* 0x5ee0a4 */
+const int gv_ListEntries3[4] = { 0, 0, 0, 2 };  /* 0x5ee0b4 */
