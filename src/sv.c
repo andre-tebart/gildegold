@@ -7592,7 +7592,6 @@ int sv_ViewRectTop = 0;  /* 0x6248a8 */
 int sv_SunRaysHour = -1;  /* 0x623ecc, the hour the sun rays started (sv_WeatherFrame), -1: none */
 int sv_ViewRectRight = 694;  /* 0x6248ac */
 int sv_ViewRectBottom = 600;  /* 0x6248b0 */
-int ai_DragWindow = -1;  /* 0x62a8cc */
 int sv_PanelCartChar = 0;  /* 0x631078 */
 short d2_PointerLook = 0;  /* 0x6ed9d0, the pointer direction / panel layout code (1 .. 8) */
 int sv_SavedMaxY = 0;  /* 0x6f1c40 */
