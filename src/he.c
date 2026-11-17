@@ -23888,32 +23888,26 @@ void he_AllocGraveTraining(int ev)
 {
     AIJOB *e = (AIJOB *)ev;
     HEGRAVETRAINING *p = (HEGRAVETRAINING *)ev;
+    short *grp = 0;
     AICHAR *per = (AICHAR *)gm_FindChar(p->trainee);
     AIBLD *bld;
-    short *grp = 0;
 
-    if (per == 0)
-        goto free_ev;
-    if (per->job != 0 && (unsigned char)per->job->kind == 0x8f)
-        goto free_ev;
-    bld = (AIBLD *)gm_BuildQuery(1, 1, e->from);
-    if (bld == 0)
-        goto free_ev;
-    if (p->objId != -1)
-        grp = (short *)gm_Query((void *)bld->objList, 2, 6, 1, p->objId);
-    e->end = ai_Time;
-    e->start = ai_Time;
-    if (grp != 0)
-        sv_MoveToGroup((unsigned char *)bld, grp, per->id, (char *)ev);
-    else
-        sv_MoveToGroup((unsigned char *)bld, 0, per->id, (char *)ev);
-    e->clock60 = ai_Time;
-    gm_AddTime(&e->end, 0, 0x1e, 0);
-    p->until = e->end;
-    gm_AddTime(&p->until, 3, 0, 0);
-    return;
-free_ev:
-    he_FreeEvent((int *)ev);
+    if (per != 0 && (per->job == 0 || (unsigned char)per->job->kind != 0x8f)
+        && (bld = (AIBLD *)gm_BuildQuery(1, 1, e->from)) != 0) {
+        if (p->objId != -1)
+            grp = (short *)gm_Query((void *)bld->objList, 2, 6, 1, p->objId);
+        e->end = ai_Time;
+        e->start = ai_Time;
+        if (grp != 0)
+            sv_MoveToGroup((unsigned char *)bld, grp, per->id, (char *)ev);
+        else
+            sv_MoveToGroup((unsigned char *)bld, 0, per->id, (char *)ev);
+        e->clock60 = ai_Time;
+        gm_AddTime(&e->end, 0, 0x1e, 0);
+        p->until = e->end;
+        gm_AddTime(&p->until, 3, 0, 0);
+    } else
+        he_FreeEvent((int *)ev);
 }
 /* 0x571c30, the run handler of the training job 0x8f (ai_SendFreeSpies posts its message for the free characters
    of a graveyard building: the trainee's netId, the skill index 1 / 2 / 4, the object 0x211's id; alloc

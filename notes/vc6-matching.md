@@ -1934,6 +1934,10 @@ Frame size, slot order, holes, shared slots, dead parameter slots, block-scoped 
 
 ### Dead parameter slots
 
+- **A pointer local's 0 initializer stored right after the prologue's parameter load into its own slot (`push ecx`
+  frame), ours in the dead parameter's slot after the first call**: the declaration with the initializer stands
+  before the one that calls (`short *grp = 0; AICHAR *per = gm_FindChar(..);`); the guards as one if with the free
+  in the else put the shared failure call at the end (he_AllocGraveTraining byte).
 - **Out-arguments of a lookup at [esp+0x24]/[esp+0x28] (the parameters' slots), ours `&param` reused as the
   outputs**: they were own locals VC6 packed into the dead parameter slots; with the parameters no longer
   address-taken they load straight into their registers (ai_CartAtBuilding `gm_FindById(&hitObj, &hitBld, ..)`,
