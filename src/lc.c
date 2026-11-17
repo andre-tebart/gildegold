@@ -101,7 +101,7 @@
 
 #define sv_ReturnZeroV ((int (*)(int))sv_ReturnZero)  /* @original 0x5c4100 passes the research class as an argument (sv.h declares the function void) */
 #define ai_MapPickCb(cb) ((void (*)(void *, void *))(cb))  /* @original: ai_MapPick's cb is void (*)() (lc.h, its callbacks take differing pointer types); both indirect calls push two dwords and read no result (0x5b22f6/0x5b22f7 push ebp twice; 0x5b248f/0x5b2490 push the picked building and picked) */
-#define util_RandomS ((unsigned short (*)(unsigned short))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original the plague messages (ai_PlagueNews, ai_PlagueMessageAll) read the 16-bit result (mov si,ax / and esi,0xffff), as f3gm.c's gm_Shuffled */
+#define util_RandomS ((unsigned short (*)(unsigned short))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original the plague messages (ai_PlagueNews, ai_PlagueMessage, ai_PlagueMessageAll) read the 16-bit result (mov si,ax / and esi,0xffff), as f3gm.c's gm_Shuffled */
 /* lc.c --the production / trade windows and the tavern / location / money lender / Rathaus windows
    (0x58bbd0 .. 0x5d33b0): the
    "Handel\Handel_PRODUKTION" screen of a building (0x58bd60) and its helpers (the table init 0x58bbd0, the
@@ -15203,27 +15203,14 @@ void ai_PlagueNews(void)
 }
 /* 0x5a9240, a plague message (112 B): util_Random (2) picks the sound "_KATASTROPHE_PEST_HS_0<v + 3>" and the
    text 0x20ca + the value; a character of the kind 6 / 7 sends the text and the sound with the news 0x600 to its
-   netId
-   @deep read whole against 0x5a9240..0x5a92b0 and the meaning is right: the sound literal
-   _KATASTROPHE_PEST_HS_0%i (the 0x62c2c0 bytes) formatted with v + 3, the text 0x20ca + v into ai_NewsText
-   (0x6f26c8), the kind test at +2 on a G8CHARREC (id +0, kind +2, netId +4) and the news 0x600 to netId;
-   the callers push two arguments (he.c ai_PlagueMessageK(0, o) uses the K&R cast) and the second is unused, as
-   the original. All that is left is the allocation of the random v: ours keeps the util_Random result in
-   eax and emits mov esi,eax / and esi,0xffff inside the branch (and the kind byte into cl, push esi inside
-   the branch), the original truncates at the definition (mov si,ax right after the call, and esi,0xffff
-   before the test) so the kind byte lands in al and its esi is saved in the prologue; the two
-   materialisations are the same value (mov si,ax; and esi,0xffff = mov esi,eax; and esi,0xffff), so this
-   is the 16-bit truncation VC6 keeps or drops. Tried, one build each, all identical or worse: plain
-   assignment, an initializer at the declaration, (unsigned short) casts at both uses, a char kind local,
-   the direct c->kind test, a two-case switch (turns the compares into jb/ja), an int parameter with the
-   raw +2 / +4 reads, and an unsigned short v[1] (spilled, frame 0x44). */
+   netId */
 
 void ai_PlagueMessage(G8CHARREC *c)
 {
     char local[64];
-    unsigned short v;
+    int v;
 
-    v = util_Random(2);
+    v = util_RandomS(2);
     if (c->kind == 6 || c->kind == 7) {
         sprintf(local, "_KATASTROPHE_PEST_HS_0%i", v + 3);
         txt_Format(ai_NewsText, v + 0x20ca);
