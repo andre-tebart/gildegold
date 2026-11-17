@@ -439,7 +439,6 @@ int init_TownSounds[16] = {0};  /* 0x76fd80, the handles of the town's sounds (1
 unsigned char * ai_SceneBuilding = 0;  /* 0x76fdc0 */
 int ai_NBauplaetze = 0;  /* 0xf812e0, the number of building sites */
 G15BK * ai_Bauplaetze = 0;  /* 0xf812e4, the building sites */
-float d3o_FogScale = 1.0f;  /* 0x5fbd04 */
 /* init_SlotCurrency: view of ai_PlayerSlots (tools/data_views.py) */
 /* 0x50a810, f3gm.c: the first kind 6 / 7 / 1 / 2 character with a job whose master is m */
 void amt_InitTable(void);               /* 0x4e5cd0, amt.h */

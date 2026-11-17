@@ -254,6 +254,7 @@ typedef struct D3IFMAP {            /* D3FLMAP, the fields the map writer serial
 
 extern int d3o_LightSet;            /* 0x5fbcfc, the current light set */
 extern int d3o_FogSet;              /* 0x5fbd00, the current fog set */
+extern float d3o_FogScale;          /* 0x5fbd04, the factor of the fog distances (1 - the fog option %) */
 
 char d3_SetParent(D3OBJECT *obj, D3OBJECT *parent);                                    /* 0x449960 */
 char d3_SetLightKey(D3OBJECT *obj, unsigned int key, float t);                          /* 0x449b20 */

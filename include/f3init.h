@@ -104,6 +104,5 @@ extern unsigned char * ai_SceneBuilding;                    /* 0x76fdc0 */
 extern int ai_NBauplaetze;                                  /* 0xf812e0 */
 extern G15BK * ai_Bauplaetze;                               /* 0xf812e4 */
 extern int evt_NoGroup;                                     /* 0x5f8430 */
-extern float d3o_FogScale;                                  /* 0x5fbd04 */
 
 #endif

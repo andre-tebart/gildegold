@@ -1672,6 +1672,7 @@ extern char d3if_ParList[0x31c];
 /* d3if_SceneState1 is defined in d3_engine.c, right after that block (0x5fb5c4, the same unit) */
 int d3o_LightSet = -1;  /* 0x5fbcfc, the current light set */
 int d3o_FogSet = -1;  /* 0x5fbd00, the current fog set */
+float d3o_FogScale = 1.0f;  /* 0x5fbd04, the factor d3_SetFogSet scales the fog distances by (1 - the fog option %; f3init, cm, menu set it) */
 float d3if_Gray = 200.0f;  /* 0x5fcc74, 0.3 r + 0.59 g + 0.11 b of the ambient colour */
 D3VECTOR d3_AmbientColor = {200.0f, 200.0f, 200.0f};  /* 0x5fcc78, the ambient colour (r, g, b) */
 int d3if_CamOben = 0;  /* 0x6338b8 */
