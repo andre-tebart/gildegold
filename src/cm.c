@@ -4888,7 +4888,8 @@ int cm_ExChrUseGates(G17MSG *m, G17STAT *s)
         k = init_ObjectSceneUniverse((unsigned short *)q);
         sprintf(gate2, "dummy_gate_ob_%s", _strupr(g->name));
     }
-    sprintf(gate, "dummy_gate_ob_%s", _strupr(ai_GoodsT[r->id].name));
+    g = &ai_GoodsT[r->id];
+    sprintf(gate, "dummy_gate_ob_%s", _strupr(g->name));
     if (k >= 0)
         ch_UseGate(p, gate, gate2, k, b->id, q->objId);
     if (s != 0) {
