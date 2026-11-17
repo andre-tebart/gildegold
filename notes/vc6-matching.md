@@ -324,6 +324,10 @@ Where the pushes and pops sit, how many epilogue copies there are, shared agains
   `c = 0;` at the top of the arm, every break sets `c`, `if (c == 0) c = pick;` (at the declaration c gets a
   callee-saved register). All failures early `return 0` lets the mode-1 success skip the `mode == 0` store. (six
   ai_Token* siblings byte, ai_TokenRichestInhabitant)
+- **`dec eax` before the loop, `lea esi,[eax+1]; push esi; call; mov eax,esi; add esp; cmp byte [eax],0; jne`**
+  (a string read byte by byte): an index loop testing the element behind the call, `i = 0; do { rd(f, s + i);
+  i++; } while (s[i - 1] != 0);`; every pointer form (`p = s + 1; rd(p); s = p; while (*s)`, `*s++`, `++s`) tests
+  `mov cl,[esi]; test cl,cl` (bio_rd_s byte).
 - **`dec; test; mov; jne` bottom test**: `while (n != 0) { ..; n--; i = ..; }`; `for (..; n != 0; n--)` drops the
   test. A `do { } while (n != 0)` gives the same loop but, when the loop breaks into a shared test, puts the
   exhausted exit's reload behind the break block instead of in front of it (ai_DecideOfficePartner byte with
