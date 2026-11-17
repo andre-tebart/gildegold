@@ -1735,27 +1735,22 @@ extern char ai_MissionMode;        /* 0x624580 */
    persons, 2 / 3 = special), the start characters (0x50e690) and the opening goods (0x4f8ed0) are made, a message
    0x1b goes to every building (types E / D / F skipped) and the mission-mode message 0x4c out, and finally the
    characters of the kinds 2 .. 7 greet each other (0x4c4b00 both ways).
-   @deep 115 -> 57 ins, frame now 0x404 like the original and every array at the original's offset. Levers
-   that worked: the address-taken &n of the 0x65/0x69 field deltas as its own block-scoped int v (n kept
-   its spill slot, frame 0x408 -> 0x404); the greeting loops as index loops (outer c = ai_Chars[i], inner
-   ai_Chars[j]: pointer IVs with the original's signed ends, i in [esp+0x10]); !ok && k < 0xa900 (kb3: 89
-   -> 57). Left: (1) the two packed scalar slots are swapped - ours [esp+0x10] = ncl/m/v and [esp+0x14] =
-   i/nch, the original the other way round (all 120 declaration orders of ncl/i/k/nch/m = one code); (2)
-   the house loop: the original tests ok at the entry and k < 0xa900 at the bottom with k reloaded into ebp
-   (b = k + ai_Blds in place), ours tests k at the entry and ok at the bottom (k < 0xa900 && !ok keeps the
-   entry ok test but reloads k: 89 ins; ok = 0 / k = 0 in the for-init, a while with k += 0xa9 at the end:
-   65 ins, slots 84); (3) ncl kept in esi after the first loop for the second loop's bound (ours re-reads
-   [esp+0x10]); (4) a vecA of 12 bytes gives the right frame without the v split but 190 ins (16 is right).
-   (tiebreak: insensitive, 32 samples one codegen) prior: read against the whole original
-   0x50f910..0x51072a and rewritten: the house choice as kind != 5 && != 4 first and q != 0 first (both
-   loops), the ncl bound without the n copy, the building-type record re-read from ai_BTypes where the
-   original re-reads it (INIT_BTYPE) and kept in cl where it keeps it, gm_PlayerFactor /
-   gm_BuildingKindValue inline in cm_SendMoveGoods, w and the class index as ints, nch = 0 inside the
-   AiTown branch, the missing cm_SendOwnership of the 0x1b message loop, the 4-argument cm_SendRelations of
-   the greetings, the kind-pointer loops with the original's signed ends (ours walked one record past the
-   table), the h != -1 wait of the build branch; 745 -> 145 differing, 1157 vs 1150 instructions. Left: the
-   frame is 0x408 vs 0x404 - one more spill slot, which shifts cls / cnt / pl / ch2 / list200 by 4 (cmp
-   byte [esp+eax+0x20] vs [esp+eax+0x1c], lea [esp+eax*4+0x80] vs +0x7c... */
+   @deep size queue s12: the house loop as k = 0; while (!ok) { ..; k += 0xa9; if (k >= 0xa900) break; }:
+   raw 3617 -> 3611 vs 3610, padded size equal (57 -> 63 ins, code 27 -> 9, slots 38 -> 84: the scalar slot
+   pair swap now shows on more lines). The original's loop is top-tested: xor edi,edi / xor ebp,ebp / [k
+   slot] / test edi,edi / jne out at the top, k += 0xa9 / cmp / jl top at the bottom (no second ok test):
+   for (k = 0; k < 0xa900; k += 0xa9) { if (ok) break; .. } gives exactly that shape but k leaves ebp (89
+   ins, b = k + ai_Blds via lea ebp,[edx+ecx]); kept the while form. Left as before: the [esp+0x10] /
+   [esp+0x14] scalar slot swap, ncl in esi for the second loop. prior: 115 -> 57 ins, frame now 0x404 like
+   the original and every array at the original's offset. Levers that worked: the address-taken &n of the
+   0x65/0x69 field deltas as its own block-scoped int v (n kept its spill slot, frame 0x408 -> 0x404); the
+   greeting loops as index loops (outer c = ai_Chars[i], inner ai_Chars[j]: pointer IVs with the original's
+   signed ends, i in [esp+0x10]); !ok && k < 0xa900 (kb3: 89 -> 57). Left: (1) the two packed scalar slots
+   are swapped - ours [esp+0x10] = ncl/m/v and [esp+0x14] = i/nch, the original the other way round (all
+   120 declaration orders of ncl/i/k/nch/m = one code); (2) the house loop: the original tests ok at the
+   entry and k < 0xa900 at the bottom with k reloaded into ebp (b = k + ai_Blds in place), ours tests k at
+   the entry and ok at the bottom (k < 0xa900 && !ok keeps the entry ok test but reloads k: 89 ins; ok = 0
+   / k = 0 in the for-init, a while wit... */
 void init_OpenTown(void)
 {
     char cls[0x22] = {0, 0, 3, 0, 1, 1, 0, 1, 1, 1, 0, 2, 2, 2, 1, 0, 2, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 3, 3, 1, 0, 1, 1, 0};
@@ -1789,7 +1784,8 @@ void init_OpenTown(void)
         if (c == 0 || !(((INIT_CHAR *)c)->kind == 6 || ((INIT_CHAR *)c)->kind == 7 || ((INIT_CHAR *)c)->kind == 5))
             continue;
         ok = 0;
-        for (k = 0; !ok && k < 0xa900; k += 0xa9) {
+        k = 0;
+        while (!ok) {
             b = ai_Blds + k;
             if (((INIT_BLD *)b)->type != 0 && ((INIT_BLD *)b)->owner == 0xffff) {
                 cl = INIT_BTYPE(b);
@@ -1805,6 +1801,9 @@ void init_OpenTown(void)
                     }
                 }
             }
+            k += 0xa9;
+            if (k >= 0xa900)
+                break;
         }
         if (!ok) {
             int proto = gm_FirstTitleNumber((unsigned char)c[0x164]);
