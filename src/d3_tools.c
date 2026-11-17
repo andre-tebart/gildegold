@@ -1004,19 +1004,19 @@ int d3t_MoveCameraPath(int time, int n, ...)
     return 1;
 }
 /* 0x413960, moves obj along the n objects in path (null entries are skipped) within time
-   @deep size queue s5: mechanism proven with a probe: pass-2 pieces k#2 (prio 29: k = 1 block +16, tail
-   +24, minus head/latch/D3_ZERO blocks) and i#2 (43); i#2 is served first, its scores tie (no waiting
-   candidate prefers ecx or edx) and it takes ecx. Two extra k reads in the tail (extern probe1 = k; probe2
-   = k + 7) give k#2 45 > 43: k takes ecx, i edx, the k reload is gone, and with for (i = 0, k = 1; ..) the
-   prologue matches too (33 ins, all left is the probe's tail plus one hunk: the step load in the body gets
-   edx and the i reload comes after it; the original reloads i into edx right after the call and step into
-   eax). So the original has about +14 prio more on k#2 or less on i#2; k refs in block 0 fold (k is the
-   constant 1 there: k = 0 + keys[k] stores + k++ = control, k = 1 before D3_ZERO = 136 bytes). n#2 (41,
-   avail ecx ebx) must stay below i#2 or it takes ecx. Tried s5 (none below 49 ins): for-ik 49/132 (418
-   bytes raw), while (i < n) with path[i++] 74, D3ANIMKEY *key = &keys[k++] 98, k++ first in the if body
-   with k - 1 / k - 2 indices 91, n++ before the return = control, path[i] written out without o = control,
-   o = path[i] inside the if = control, every position of i = 0 and k = 1 in the init block (81 variants,
-best = for-ik), climb 2 rounds from for-ik (best 45 ins: the time store before the call, which the original does not do). Open: a natural reference of k in the head / latch / tail, or one of i fewer; the step/i reload order after the call. prior: size queue: ours 419 vs 416 (+3 = the extra k reload). s2: the register CHOICE, not only the order: by the choice rule (vc6-matching 'Choice rule') i#2 (prio 43) picks the lowest-score register of avail{eax ecx edx ebx}, ties eax, ecx, edx: the original's i took edx, so either k#2 is served first (needs prio > 43) or a waiting candidate's preference makes ecx cost more for i. Tried s2 (all = control or 418-419 bytes): if (n > 0) do..while (++i < n), while loop, continue form, for (k = 1, i = 0;..), k = 1 before keys[0].time; for (i = 0, k = 1;..) gives 418 bytes (only the prologue pair flips: xor edx / mov ecx,1 as the original, the loop still reloads k); the time store at each of the 8 body positions: 419; climb all ops 3 rounds: 49 ins (115 bytes dist, time store before the call, which the original does not do). Next: c2trace the pass-2 choice (which waiting candidate prefers ecx/edx),... */
+   @deep size queue s6: kept for (i = 0, k = 1; ..) (prologue matches, 49 ins / 132 bytes, size 418 vs 416:
+   the k reload is now mov edx,ecx). Per-block terms (c2trace --prio): k#2 = def blk0 +16, tail +24 (3
+   refs: k*11 = k + 2*(k + 4k), P 4), head -8, latch -4, D3_ZERO -3; i#2 = def +16, head +16, latch +16,
+   -3; so k needs a head/latch reference (+24 / +12) or tail P +3 (+6 each). Tried s6: time (the parameter)
+   reused as the key counter (time = 1; keys[time]..): its web is separate from the parameter's, = same
+   prio (49 ins); a key pointer key = &keys[k] at the loop top (unconditional): forward-substituted, =
+   control; o = path[i]; if (o != NULL): = ik; ++n in the call: = ik. Open as in s5: a natural k reference
+   in head/latch/tail, or a waiting candidate preferring ecx when i#2 is chosen (choice rule). prior: size
+   queue s5: mechanism proven with a probe: pass-2 pieces k#2 (prio 29: k = 1 block +16, tail +24, minus
+   head/latch/D3_ZERO blocks) and i#2 (43); i#2 is served first, its scores tie (no waiting candidate
+   prefers ecx or edx) and it takes ecx. Two extra k reads in the tail (extern probe1 = k; probe2 = k + 7)
+   give k#2 45 > 43: k takes ecx, i edx, the k reload is gone, and with for (i = 0, k = 1; ..) the prologue
+matches too (33 ins, all left is the probe's tail plus one hunk: the step load in the body gets edx and the i reload comes after it; the original reloads i into edx right after the call and step into eax). So the original has about +14 prio more on k#2 or less on i#2; k refs in block 0 fold (k is the constant 1 there: k = 0 + keys[k] stores + k++ = control, k = 1 before D3_ZERO = 136 bytes). n#2 (41, avail ecx ebx) must stay below i#2 or it takes ecx. Tried s5 (none below 49 ins):... */
 
 D3ANIM *d3t_MoveObjectPath(D3OBJECT *obj, int time, int n, D3OBJECT **path)
 {
@@ -1038,8 +1038,7 @@ D3ANIM *d3t_MoveObjectPath(D3OBJECT *obj, int time, int n, D3OBJECT **path)
     keys[0].pos.y = 0.0f;
     keys[0].pos.z = 0.0f;
     keys[0].time = step;
-    k = 1;
-    for (i = 0; i < n; i++) {
+    for (i = 0, k = 1; i < n; i++) {
         if (o = path[i]) {
             d3_PointToWorld(o, &o->pos, (D3VECTOR *)&keys[k].pos);
             keys[k - 1].time = step;
