@@ -182,6 +182,10 @@ Section names are those of `notes/vc6-matching.md`.
 | nothing in the function's text moves it | callees above; a struct or extern in a shared header (put views in the unit); a macro body or type the function uses; `climb.py` with more rounds | Declaration set |
 
 ## 5. Tools
+- `python tools/exe/exemeasure.py`: the whole exe against the original (sections, functions at their address,
+  the first size mismatches and link-order pairs). `--queue` / `--unit U`: the size queue, functions whose padded
+  size (distance to the next function, 16-byte alignment) differs, lowest address first. A size fix lines up
+  every function after it; the right instruction lengths are enough, byte is the usual way there.
 - `dcp try NAME FILE`: one row per variant. Read the `ins` column yourself: `best:` says "none closer" when a
   variant has fewer instructions at a lower grade. `= control` means that source change is no lever for VC6.
   An empty replacement (`===` directly followed by `>>>`) swallows the next block: put a comment in.
