@@ -8643,7 +8643,7 @@ void he_RunPopulation(int ev)
             return;
         }
         c = (AICHAR *)cm_GetSlotValue(p->slot);
-        id = (unsigned short)util_Random(2);
+        id = util_RandomU(2);
         zero = 0;
         if (c == 0) {
             gm_AddTime(&e->end, 1, 0, 0);
@@ -8653,7 +8653,7 @@ void he_RunPopulation(int ev)
         }
         found = 0;
         n = 0x100;
-        i = (unsigned short)util_Random(0x100);
+        i = util_RandomU(0x100);
         while (found == 0 && n != 0) {
             b = &ai_BldsT[i];
             if (ai_BTypesT[b->type].kind == 1 && ord_GetKindRecord(b->type, kind) != 0
@@ -8664,7 +8664,7 @@ void he_RunPopulation(int ev)
         }
         if (found != 0)
             cm_SendBoss(c->netId, b->id);
-        cm_SendMoveGoodsUnchecked(c->netId, -1, ai_OwnPlayer, ((unsigned short)util_Random(0x32) + 0x33) << 5);
+        cm_SendMoveGoodsUnchecked(c->netId, -1, ai_OwnPlayer, (util_RandomU(0x32) + 0x33) << 5);
         cm_BeginFieldBlock((char *)c, c->netId);
         cm_AddFieldDelta(1, 1, 2, &zero);
         cm_AddFieldDelta(1, 1, 0xc, &id);
@@ -8682,7 +8682,7 @@ void he_RunPopulation(int ev)
             return;
         }
         if (util_RandomF() > p->chance) {
-            i = (unsigned short)util_Random(0x300);
+            i = util_RandomU(0x300);
             n = 0x300;
             do {
                 if (ai_CharsT[i].id != 0xffff && ai_CharsT[i].health != 0 && ai_CharsT[i].kind == 0 && ai_CharsT[i].bld == 0) {
@@ -8706,7 +8706,7 @@ void he_RunPopulation(int ev)
         return;
     case 7:
         found = 0;
-        i = (unsigned short)util_Random(0x300);
+        i = util_RandomU(0x300);
         n = 0x300;
         do {
             if (ai_CharsT[i].id != 0xffff && ai_CharsT[i].health != 0
@@ -8720,7 +8720,7 @@ void he_RunPopulation(int ev)
         if (found != 0) {
             found = 0;
             n = 0x100;
-            j = (unsigned short)util_Random(0x100);
+            j = util_RandomU(0x100);
             while (found == 0 && n != 0) {
                 b = &ai_BldsT[j];
                 if (ai_BTypesT[b->type].kind == 1 && ord_GetKindRecord(b->type, kind) != 0
