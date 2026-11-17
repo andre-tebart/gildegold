@@ -7494,13 +7494,13 @@ void ai_ManagedBuildingWindow(AIBLD *bld)
     int cond;
     AIBLD *found;
 
-    type = &((AIBTYPE *)ai_BTypes)[bld->type];
     upgradeBtn = -1;
     lastFlags = -1;
+    redraw = 1;
     techBtn = -1;
     renovateBtn = -1;
     roomBtn = -1;
-    redraw = 1;
+    type = &((AIBTYPE *)ai_BTypes)[bld->type];
     bldId = bld->id;
     win = d2_OpenForm(0, 0, "Panel\\gebaeude_optionen_pergament");
     d2_CentreViewWindows(win);
@@ -7553,22 +7553,22 @@ void ai_ManagedBuildingWindow(AIBLD *bld)
             d2_SetViewEnabled(win, 0);
             ai_TechTreeWindow((int)bld, 0xfd);
             d2_SetViewEnabled(win, 1);
-            continue;
-        }
-        if (d2_PointerObj == renovateBtn) {
+        } else if (d2_PointerObj == renovateBtn) {
             d2_SetViewEnabled(win, 0);
             ai_RenovationWindow(bld);
+            d2_SetViewEnabled(win, 1);
+            redraw = 1;
         } else if (d2_PointerObj == roomBtn) {
             d2_SetViewEnabled(win, 0);
             ai_RoomUpgradeWindow(bld);
+            d2_SetViewEnabled(win, 1);
+            redraw = 1;
         } else if (d2_PointerObj == upgradeBtn) {
             d2_SetViewEnabled(win, 0);
             ai_UpgradeBuilding(bld);
-        } else {
-            continue;
+            d2_SetViewEnabled(win, 1);
+            redraw = 1;
         }
-        d2_SetViewEnabled(win, 1);
-        redraw = 1;
     } while (sv_RunFrame((int)ai_ManagedBuildingWindow, 0x677c7) != 0);
     d2_CloseView(win);
     sv_ResearchClass = 0;

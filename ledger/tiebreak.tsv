@@ -4419,7 +4419,7 @@ exe	0x005b7b80	ai_BuyBuildingOfferWindow	lcdom	0b77d45296ee39a3	no	shape	sweep c
 exe	0x005b7dd0	ai_TechEffectsWindow	lc	50b1a8184f0f9c2f	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x005b82a0	ai_FireFightingWindow	lc	339686a3f30644bf	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	65f3805095278c82
 exe	0x005b84f0	ai_BuildingWindow	lc	634b775723a4e1ee	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
-exe	0x005b8fc0	ai_ManagedBuildingWindow	lc	790746e01e95ba59	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	65f3805095278c82
+exe	0x005b8fc0	ai_ManagedBuildingWindow	lcdom	903b2b3f3d5cb564	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	575085f9b5d2e4fd
 exe	0x005b92e0	ai_LiquidateAssets	lc	579276d0a439dcd0	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x005b9730	ob_HandleBepflanzung	lc	c1ca321d59dd237a	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x005b9db0	ai_HandlePickedPlant	lc	a435f91b56fb7d49	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
