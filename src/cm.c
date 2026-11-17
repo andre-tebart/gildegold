@@ -5701,16 +5701,14 @@ int cm_ExObjCell(G17MSG *m, G17STAT *s)
 {
     CHARACTER *p, *q = 0;
     CHACTION *r;
-    int sc;
 
     p = ch_FindByName(m->objCell.name);
     if (p == 0)
         return 1;
     if (m->objCell.name[0] != 0)
         q = ch_FindByName(m->objCell.name2);
-    sc = d3t_SceneIndex(p->scene);
     if (s != 0) {
-        r = ch_AddAction(p, 0x2d, m->objCell.x, m->objCell.z, sc);
+        r = ch_AddAction(p, 0x2d, m->objCell.x, m->objCell.z, d3t_SceneIndex(p->scene));
         r->u.walk.flags |= 2;                   /* 0x2: the walk names its target (no reader names the bit) */
         if (q != 0) {
             strcpy(r->u.walk.tname, m->objCell.name2);
@@ -5721,7 +5719,7 @@ int cm_ExObjCell(G17MSG *m, G17STAT *s)
         s->value = 0;
         return 0;
     }
-    ch_AddAction(p, 0x3a, m->objCell.x, m->objCell.z, sc);
+    ch_AddAction(p, 0x3a, m->objCell.x, m->objCell.z, d3t_SceneIndex(p->scene));
     return 0;
 }
 /* 0x4cc110, message 0x4f (no sender in the sources; reasoned: the path cells of a walk): writes up to two cells
