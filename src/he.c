@@ -23324,7 +23324,9 @@ void he_PlunderFailNews(int *a, AICHAR *c);   /* 0x570c70 */
    (gv_ProtectionPrice) and its flags1cc bit 0 is clear, asks a player victim (kind 6 / 7) with the message 0x8b,
    else takes the price (he_PlunderTakePrice) or tells of the failure (he_PlunderFailNews) by a coin throw; then the next
    building (stage 1 again) up to 5, else stage 3; stage 3 sends the agent home (stage 4), stage 4 waits 4
-   minutes while it is busy there; a missing agent or home ends the event. */
+   minutes while it is busy there; a missing agent or home ends the event.
+   @original case 1 ends with break where the other cases return: VC6 then merges case 2's closing stage++ into
+   case 3's copy as the original does (with return it takes case 1's, and case 2's jumps become near jumps) */
 void he_RunPlunder(int ev)
 {
     unsigned short idx;
@@ -23346,8 +23348,8 @@ void he_RunPlunder(int ev)
     switch (e->stage) {
     case 0:
         sv_MoveToGroup(0, 0, agent->id, (char *)ev);
-        e->exSlot = -1;
         e->stage++;
+        e->exSlot = -1;
         return;
     case 1:
         bld = (AIBLD *)gm_BuildQuery(1, 1, p->bld[p->at]);
@@ -23357,7 +23359,7 @@ void he_RunPlunder(int ev)
         }
         cm_SendChrGotoBuilding(p->agent, bld->id, -1, 0, 1, "PAKT MIT DEM TOD");
         e->stage++;
-        return;
+        break;
     case 2:
         agent = (AICHAR *)gm_FindChar(p->agent);
         if (agent == 0) {
@@ -23369,44 +23371,44 @@ void he_RunPlunder(int ev)
             gm_AddTime(&e->end, 0, 10, 0);
             return;
         }
-        if (ai_PickPartnerRandomWalk((struct AIPER *)&ai_CharsT[e->chr], PLUNDER_PARTNER_FLAGS, 4, p->victims, 0, 100.0f, &idx) == 0) {
-            e->stage = -1;
-            return;
-        }
-        price = gv_ProtectionPrice((unsigned short *)&ai_CharsT[idx]);
-        worth = gm_ConvertMoney(gm_GetWorth(idx), ai_OwnPlayer);
-        p->victims[p->at] = idx;
-        if (worth > price && !(ai_CharsT[idx].flags1cc & 1)) {
-            if (ai_CharsT[idx].kind == 6 || ai_CharsT[idx].kind == 7) {
-                msg.type = 0x8b;
-                msg.to = ai_CharsT[idx].netId;
-                msg.fromId = ai_CharsT[idx].netId;
-                msg.nIds = 0;
-                msg.reserved14 = 0;
-                msg.time = ai_Time;
-                msg.flags = 9;
-                msg.arg[0] = e->netId;
-                msg.arg[1] = p->agent;
-                msg.arg[2] = ai_CharsT[idx].netId;
-                msg.arg[3] = price;
-                cm_SendLongMessage((char *)&msg);
-            } else {
-                deal[0] = e->netId;
-                deal[1] = p->agent;
-                deal[2] = ai_CharsT[idx].netId;
-                deal[3] = price;
-                if (util_RandomU(2) != 0)
-                    he_PlunderTakePrice(deal, &ai_CharsT[idx]);
-                else
-                    he_PlunderFailNews(deal, &ai_CharsT[idx]);
+        if (ai_PickPartnerRandomWalk((struct AIPER *)&ai_CharsT[e->chr], PLUNDER_PARTNER_FLAGS, 4, p->victims, 0, 100.0f, &idx) != 0) {
+            price = gv_ProtectionPrice((unsigned short *)&ai_CharsT[idx]);
+            worth = gm_ConvertMoney(gm_GetWorth(idx), ai_OwnPlayer);
+            p->victims[p->at] = idx;
+            if (worth > price && !(ai_CharsT[idx].flags1cc & 1)) {
+                if (ai_CharsT[idx].kind == 6 || ai_CharsT[idx].kind == 7) {
+                    msg.type = 0x8b;
+                    msg.to = ai_CharsT[idx].netId;
+                    msg.fromId = ai_CharsT[idx].netId;
+                    msg.nIds = 0;
+                    msg.reserved14 = 0;
+                    msg.time = ai_Time;
+                    msg.flags = 9;
+                    msg.arg[0] = e->netId;
+                    msg.arg[1] = p->agent;
+                    msg.arg[2] = ai_CharsT[idx].netId;
+                    msg.arg[3] = price;
+                    cm_SendLongMessage((char *)&msg);
+                } else {
+                    deal[0] = e->netId;
+                    deal[1] = p->agent;
+                    deal[2] = ai_CharsT[idx].netId;
+                    deal[3] = price;
+                    if (util_RandomU(2) != 0)
+                        he_PlunderTakePrice(deal, &ai_CharsT[idx]);
+                    else
+                        he_PlunderFailNews(deal, &ai_CharsT[idx]);
+                }
             }
-        }
-        p->at++;
-        if (p->at < 5 && p->bld[p->at] != 0) {
-            e->stage--;
+            p->at++;
+            if (p->at < 5 && p->bld[p->at] != 0) {
+                e->stage--;
+                return;
+            }
+            e->stage++;
             return;
         }
-        e->stage++;
+        e->stage = -1;
         return;
     case 3:
         agent = (AICHAR *)gm_FindChar(p->agent);
