@@ -264,25 +264,25 @@ void d3_ProjectMesh(D3OBJECT *obj)
 }
 /* 0x4391d0, sets up the view frustum planes (d3_Planes), the corner directions (d3_Frustum) and the
    plane lists of the 64 clip codes (d3_ClipInfo).
-   @deep headers sample: insensitive (32 samples, one codegen). Kept: the atan2 results as double locals
-   ta/tb (d3_FovX = a = (float)ta, sin/cos/negation of ta): VC6 now keeps them on the FPU stack through
-   sin/cos and the -b/-a of rot as the original does (fld st(0) / fst a / fstp d3_FovX / fld st(0) / fsin
-   ...), 108 -> 98 ins; c = cos(..) chained into the P0 store. Left (asmdiff): (1) the original keeps s in a
-   memory local (fst [esp+0x14] after fstp P0.x, P1.z by an int copy after the next fpatan; that slot is
-   shared with nb) and computes fsin before fcos; ours keeps s on the FPU (fsin after fcos); (2) the frame
-   order of the four floats: the original nb +0, b +4, a +8, na +0xc, ours b, a, nb, na (all 48 declaration
-   orders of a/b/na/nb/s/c = control); (3) the first MatFromAngles pushes: the original pushes &m at entry and
-   &rot after the second fpatan, ours both at entry; (4) the clip-plane loop's store order (+8/+0xc,
-   +0x10/+0x14) and a je/jbe. dcp try (this session): sep/chain FovX and sin-first/cos-first with float a:
-   80-130 ins with the reload of a; s/c orders and the 4 P stores in all 24 orders on the double base: 90-124
-   (s never goes to memory); double c: = control; s reused as nb: = control under every form; sin first then c
-   = cos chained (D: 90 ins, P1 stores swapped) not kept. Next: a form that gives s a memory home (a
-   struct/array local, or a use after a call). prior: behaviour draft: the 152 code hunks are the same
-   instructions scheduled differently - the original keeps the atan2 results a/b on the FPU stack through
-   sin/cos (fld st(0)/fsin/fld st(1)/fcos at 0x439242..0x4392b8) where VC6 reloads from the local; the je/jbe
-   in the popcount loop (0x4394fd) is the same test (cmp edi,esi with esi=0) and the info->plane store order
-   (+8/+0xc, +0x10/+0x14) is swapped only; recorded attempts: chained/parenthesized assignments, s/c locals,
-   double CSE of sin/cos, 15 statement orders */
+   @deep s4 (size queue, 1134 vs 1145): the P1.z = s copy moved after tb = atan2 (cf-p1at6) gives s its
+   memory home and the original's int copy (mov eax,[s]; mov [P1.z],eax), 98 -> 84 ins, 1135 bytes; after
+   FovY / the second sin: same 84 / 1135; sin-first forms (sf, sp) 87-122 ins. Left with cf-p1at6: fsin
+   still after fcos (original fsin; fld st(1); fcos), the second plane pair's s copy (mov ecx,[s2]), the &m
+   / &rot pushes, the d3_Planes[4]/[5] store order (+10 bytes of the gap: the original stores P4 / P5
+   constants among the loop setup). Not applied (worse slots on its own); next: P3.z = s after rot.x /
+   MatFromAngles in combination with p1at6. prior: headers sample: insensitive (32 samples, one codegen).
+   Kept: the atan2 results as double locals ta/tb (d3_FovX = a = (float)ta, sin/cos/negation of ta): VC6
+   now keeps them on the FPU stack through sin/cos and the -b/-a of rot as the original does (fld st(0) /
+   fst a / fstp d3_FovX / fld st(0) / fsin ...), 108 -> 98 ins; c = cos(..) chained into the P0 store. Left
+   (asmdiff): (1) the original keeps s in a memory local (fst [esp+0x14] after fstp P0.x, P1.z by an int
+   copy after the next fpatan; that slot is shared with nb) and computes fsin before fcos; ours keeps s on
+   the FPU (fsin after fcos); (2) the frame order of the four floats: the original nb +0, b +4, a +8, na
+   +0xc, ours b, a, nb, na (all 48 declaration orders of a/b/na/nb/s/c = control); (3) the first
+   MatFromAngles pushes: the original pushes &m at entry and &rot after the second fpatan, ours both at
+   entry; (4) the clip-plane loop's...
+
+
+   */
 
 void d3_SetupFrustum(void)
 {
