@@ -1,5 +1,6 @@
 /* d3_light.c -- dynamic lighting of mesh objects ("d3_light:cache", "d3_light:rlight_object"), original file
-   name unknown: 0x451e80..0x453920 (the end next to d3_vec.c is not proven). One object view (D3OBJECT +
+   name unknown: 0x451e80..0x4539b0 (the end: d3_ShadeInit's two literals 0x5ebb6c / 0x5ebb70 close this unit's
+   .rdata, right before d3_vec.c's named constants d3_ZAxis.., which VC6 puts first in an object). One object view (D3OBJECT +
    D3_L, d3_light.h). Names are ours.
    Open: the bits d3_SetVertexColors / d3_RelightObject read (D3PTRI 0x26, D3TEXTURE 0x68 / 0x6c) go through
    d3_light.h's cast views; the typed fields flip d3_CloneObject / d3_MirDrawObject.
@@ -723,7 +724,7 @@ void d3_RelightObjectFrame(D3OBJECT *obj, struct D3ANIMFRAME *frame)
         d3_Busy--;
     }
 }
-/* 0x4538a0, last function of the TU: invalidates the cached scene lighting (light generation ++, all light
+/* 0x4538a0, invalidates the cached scene lighting (light generation ++, all light
    records dropped, the lights-changed flag set) and rebuilds the terrain light map. on > 1 relights every
    object of the default scene at once; on 0 it does nothing unless d3_EditorMode is set. */
 
@@ -746,5 +747,29 @@ done:
     d3_Busy--;
 }
 
+/* 0x453920, fills d3fl_Shade with 1 - 2/pi * acos(i / 1024) and sets the per-frame light key
+ * budgets for lights that are culled (out of view) and for the ones that pass the clip test */
+void d3_ShadeInit(unsigned int visible_budget, unsigned int culled_budget)
+{
+    int i;
+
+    for (i = 0; i < 0x400; i++)
+        d3fl_Shade[i] = 1.0f - (float)acos(i * 0.0009765625f) * 0.63661975f;
+    d3_LightKeyBudgetVisible = visible_budget;
+    d3_LightKeyBudgetCulled = culled_budget;
+    d3_LightKeysVisible = 0;
+    d3_LightKeysCulled = 0;
+    d3_LightGeneration = 0;
+}
+/* 0x453990, clears the light key budgets and the per-frame key counters and resets the lightmap generation */
+
+void d3_ShadeReset(void)
+{
+    d3_LightKeyBudgetCulled = 0;
+    d3_LightKeyBudgetVisible = 0;
+    d3_LightKeysVisible = 0;
+    d3_LightKeysCulled = 0;
+    d3_LightGeneration = 0;
+}
 float d3_LightRadiusMargin = 0;  /* 0x633b18, added to the mesh radius for the light reach:
                                                the matrix z offset (m->_43) or 0 */

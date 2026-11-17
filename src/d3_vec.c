@@ -1,5 +1,6 @@
-/* d3_vec.c -- light budget counters, angle / vector / matrix helpers: 0x453920..0x454780 (0x454780 is d3_mir.c's
-   by codegen). Original file name unknown; the name is a guess. Names are ours.
+/* d3_vec.c -- angle / vector / matrix helpers and the engine's axes: 0x4539b0..0x454780 (0x454780 is d3_mir.c's
+   by codegen; 0x4539b0: d3_ShadeInit's literals end d3_light.c's .rdata, the axes start this unit's).
+   Original file name unknown; the name is a guess. Names are ours.
    unit of rea 8cef7d5b (src/game/d3_vec.c); boundaries in decl/text.dcl */
 #include <math.h>
 #include <windows.h>
@@ -11,30 +12,6 @@
 #include "d3_fl.h"
 
 
-/* 0x453920, fills d3fl_Shade with 1 - 2/pi * acos(i / 1024) and sets the per-frame light key
- * budgets for lights that are culled (out of view) and for the ones that pass the clip test */
-void d3_ShadeInit(unsigned int visible_budget, unsigned int culled_budget)
-{
-    int i;
-
-    for (i = 0; i < 0x400; i++)
-        d3fl_Shade[i] = 1.0f - (float)acos(i * 0.0009765625f) * 0.63661975f;
-    d3_LightKeyBudgetVisible = visible_budget;
-    d3_LightKeyBudgetCulled = culled_budget;
-    d3_LightKeysVisible = 0;
-    d3_LightKeysCulled = 0;
-    d3_LightGeneration = 0;
-}
-/* 0x453990, clears the light key budgets and the per-frame key counters and resets the lightmap generation */
-
-void d3_ShadeReset(void)
-{
-    d3_LightKeyBudgetCulled = 0;
-    d3_LightKeyBudgetVisible = 0;
-    d3_LightKeysVisible = 0;
-    d3_LightKeysCulled = 0;
-    d3_LightGeneration = 0;
-}
 /* 0x4539b0, out = a + (b - a) * t */
 
 void d3_Lerp3(float *a, float *b, float t, float *out)
