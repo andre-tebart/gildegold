@@ -1,5 +1,8 @@
-/* lc -- the production / trade windows and the location, privilege and statistics windows of the game
-   screen (0x58bbd0 .. 0x5d33b0, about 480 functions); name unknown, subject and boundary evidence below. The
+/* lc -- the production / trade windows and the location windows of the game screen (0x58bbd0 .. 0x5a6b50, about
+   190 functions); name unknown. Its .rdata literals end with 1600000.0 0x5eed10, its .data strings with
+   "contact_RAZZIA" 0x62c25c, its .bss with ai_BauplatzCount 0x6f2688: the town map object lcmap (0x5a6b50), the
+   Domizil object lcdom (0x5a9e90) and the special-amount object lcamt (0x5bd060) follow, each starting with named
+   data; the descriptions below still cover their parts too. The
    contact listeners and the map picks of the kontor / thieves' guild / church / guild-hall scenes read their
    plate texts through the txt_views.h slots (ai_ContactText*) or their txt_Ptrs text id and the building record
    as AIBLD (id, owner, mainRoom, objList, object); the character record view AICHARREC names id, kind, netId,
@@ -85,11 +88,8 @@
    the inventory window's character ai_InvChar (0x6f2f60, after ai_NewsSecond), its six rows ai_InvSlots
    (LCINVSLOT) and their objects G8INVOBJ (a view of AIOBJ: its union does not reach the
    use stamp at +0x2d).
-   Open: layout: lc may hold more than one original TU: VC6 sees our ai_FindUsableGood (0x5ba620) write no memory
-   and keeps use->obj->id in a register across the call in ai_UseGood (0x5cf8a0), where the original reloads it
-   (the callee was not visible to it there: a TU boundary between 0x5ba620 and 0x5cf8a0?); likewise the use
-   callbacks ai_UseGoodLowerOfficialRelations / ai_UseGoodCharmOtherSex load their pick ids before our
-   ai_FindUsableGoodIndex (0x5ba660) call where the original calls it first.
+   The TU boundary the use callbacks pointed at (our ai_FindUsableGood 0x5ba620 visible to ai_UseGood 0x5cf8a0) is
+   lcamt's start 0x5bd060.
    Open: head: held by own declarations that differ from the owner's: ai_Time, d3sm_GetVertex, d2_CreateWinText, AIBLD, AIBTYPE, cm_SendExSetHE,
    d3sm_Pick; calls whose argument count differs from the definition (read the original's pushes): vfs_GetPath,
    d2_SetViewEnabled, d2_GetWinObj, d2_CreateWinText, d2_GetObjValue, d3_LoadGroup, d2_GetViewWin, sv_MessageBox,
