@@ -469,6 +469,10 @@ copied back into short predecessors only after all of this.
   behind the then-arm's `jmp`; swapping the arms, a second `if (o == 0)`, `ret = o == 0`: no lever): the then-arm
   was two `if (o != 0)` blocks, the else on the FIRST: `if (o) { flag fix } else ret = 1; if (o) { rest }` (the
   second test decided on both paths, so the else jumps straight to the join; cm_ExNewParty byte).
+- (Order) **A parameter's load `mov edi,[esp+N]` at the head of a block, its first use several calls later**
+  (ours: the load right before the use): the original named a member pointer at the block's top, `GVGRAVE *g =
+  &ev->grave;`, the uses `g->sex` (the pointer is folded to ev + offset, the load stays where g was set)
+  (ai_SeanceRitual byte).
 - **The else block out of line whatever the spelling** (`if (!A || !B || !(d < c)) far else near`, reversed
   operands, `>=`: one code): a flag, `lowPoly = 1; if (A && B) { ..; if (d < c) lowPoly = 0; } if (lowPoly) far
   else near` (ch_UpdateLowPoly byte).

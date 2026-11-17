@@ -8606,15 +8606,7 @@ int sb_IsInit(); void d2_PlaceViewWindows(int view, unsigned char flags);
    each name record's own id, else the first of its sex). With the sound system: each formula is voiced
    ("_SEANCE_FORMEL_PART_%i_0%i", its pair and variant), and its text shown while it plays. Without: the texts
    appear one by one, the first after 0x47 ms, the rest 0xf8 ms apart, and the window closes after the last.
-   Closes the form; returns the script
-   @deep Read whole against the original 0x5859c0..0x585c3e: the formula roll, the Seance2 form, the
-   SEANCE_KRYPTA script with the two names (the original drops the player's fallback name record: kept as a
-   bare call), the sb_IsInit voice path (formula k = id - 0x40d7 as its own local: sub vs add-negative
-   fixed) and the clock path (d3_Time, the nine waits written out as the original stores them);
-   196 of 200 instructions equal. Left is one moved instruction: the original loads ev (mov edi,
-   [esp+0x57c]) at the head of the script block (0x585a23) before the first gm_NameRecord, ours just before
-   the ev->grave loads (0x585a77); the branch-target difference (jne at +0x93) is that move. Scheduling, no
-   source lead (no other use of ev in the block) */
+   Closes the form; returns the script */
 int ai_SeanceRitual(char *ch, GVSEANCE *ev)
 {
     char buf[0x400];
@@ -8638,12 +8630,13 @@ int ai_SeanceRitual(char *ch, GVSEANCE *ev)
     d2_SetForm(win, 0);
     script = (int)evt_Load("LOCATIONS\\KRYPTA\\SEANCE_KRYPTA.esc");
     if (script != 0) {
+        GVGRAVE *g = &ev->grave;
         name1 = (char *)gm_NameRecord(ai_CharsT[ai_PlayerId].sex, ai_CharsT[ai_PlayerId].jobId);
         if (name1 == 0)
             gm_NameRecord(ai_CharsT[ai_PlayerId].sex, 0);   /* @original drops the result: name1 stays 0 */
-        name2 = (char *)gm_NameRecord(ev->grave.sex, ev->grave.nameId);
+        name2 = (char *)gm_NameRecord(g->sex, g->nameId);
         if (name2 == 0)
-            name2 = (char *)gm_NameRecord(ev->grave.sex, 0);
+            name2 = (char *)gm_NameRecord(g->sex, 0);
         sprintf(buf, "%s %s", name1 + 4, name2 + 4);
         evt_RunCommand((EVTSCRIPT *)script, buf);
     }
