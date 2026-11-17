@@ -63,8 +63,8 @@ void qnt_InitTables(void)
         qnt_B[i] = (i & 0x80) << 5 | (i & 0x40) << 3 | (i & 0x20) << 1 | (i & 0x10) >> 1 | (i & 8) >> 3;
     }
     for (i = -255; i <= 255; i++)
-        qnt_Sq[i] = i * i;
-    qnt_SqPtr = qnt_Sq;
+        qnt_Closest.squares[i + 255] = i * i;
+    qnt_SqPtr = &qnt_Closest.squares[255];
 }
 /* 0x420870, allocates the six octree levels (8^n nodes of 0x18 bytes); 0 on failure */
 
@@ -392,7 +392,7 @@ int qnt_Nearest(unsigned int r, unsigned int g, unsigned int b)
 unsigned short qnt_G[256] = {0};  /* 0x631228 */
 unsigned char qnt_Pal[3][256] = {0};  /* 0x631428, the palette built so far: [0] red, [1] green, [2] blue (DL1's palette[3][256]) */
 int qnt_Colors = 0;  /* 0x631728 */
-int qnt_Sq[256] = {0};  /* 0x631b34, i * i for i = -255..255 (indexed around 0) */
+QCLOSEST qnt_Closest = {0};  /* 0x631730, DL1's c_info; squares[255] (0x631b34) is where qnt_SqPtr points */
 unsigned short qnt_B[256] = {0};  /* 0x631f38 */
 int * qnt_SqPtr = 0;  /* 0x632138 */
 unsigned short qnt_R[256] = {0};  /* 0x632140, r bits spread to octree index positions */

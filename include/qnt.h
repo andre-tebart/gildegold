@@ -17,6 +17,12 @@ typedef struct QHEAP {              /* heap entry: a leaf node */
     unsigned short node;
 } QHEAP;
 
+typedef struct QCLOSEST {           /* DL1's CLOSEST_INFO c_info, 0x804 bytes */
+    unsigned char index, r, g, b;   /* the closest-colour search's state: unread in this build (DL1's */
+    unsigned int distance;          /* closest_color / bestcolor; qnt_Nearest searches without them) */
+    int squares[511];               /* 0x08, i * i for i = -255..255; qnt_SqPtr = &squares[255] */
+} QCLOSEST;
+
 extern QNODE *qnt_Level[6];                 /* 0x632340 */
 extern QHEAP *qnt_Heap;                     /* 0x632360, 1-based min-heap on total */
 extern void *qnt_UnusedBuffer;                 /* 0x632364 */
@@ -27,7 +33,7 @@ extern unsigned char qnt_Pal[3][256];       /* 0x631428, [0] red, [1] green, [2]
 extern unsigned short qnt_R[256];           /* 0x632140, r bits spread to octree index positions */
 extern unsigned short qnt_G[256];           /* 0x631228 */
 extern unsigned short qnt_B[256];           /* 0x631f38 */
-extern int qnt_Sq[];                        /* 0x631b34, i * i for i = -255..255 (indexed around 0) */
+extern QCLOSEST qnt_Closest;                /* 0x631730 */
 extern int *qnt_SqPtr;                      /* 0x632138 */
 
 int qnt_Quantize(unsigned char *rgb, unsigned char *out, int w, int h, int ncolors, int dither, unsigned char *pal); /* 0x4206d0 */
