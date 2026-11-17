@@ -31754,17 +31754,10 @@ int ai_InterrogationWindow(AICHARREC *me, LCORDMSG *m)
 }
 /* 0x5ce7f0, the worker dismissal window "privillegien_arbeiter_ausweisen" (352 B): the character ch, kinds
    6 / 7 only; its office (the byte +0x166) through amt_GetFirstOffice (the list out[0]); the window
-   ai_WorkerDismissalForm with the text 0x1e24 (0x253 + (ch->sex != 0 ? 0x28 : 0) + the office) and the
+   ai_WorkerDismissalForm with the text 0x1e24 ((ch->sex != 0 ? 0x27b : 0x253) + the office) and the
    button 0x1e25 / d2_GetWinObj; click 0 -> amt_SendOfficeMessage (out[0], 0, 0, the hour > 0xd ? 0xff : 3, 0xff)
    and 0x90; click 1 closes; the pump 0x5309a0 (0x657c7) and the exit 0x4758f0. The return is 0x22 when nothing
-   was clicked, 0x20 for another kind, 0x40 when the office has no list. The second argument m is not read
-   @deep read the whole original 0x5ce7f0..0x5ce941 and reconciled every statement: the kind guard 6 / 7,
-   the office list amt_GetFirstOffice(ch->officeKind, out), the window and caption 0x1e24 (0x253 + sex term
-   + office), the two d2_GetWinObj buttons, the click dispatch with amt_SendOfficeMessage(out[0], 0, 0,
-   hour > 0xd ? 0xff : 3, 0xff) and the pump. Only codegen is left: the caption id is lea [edx+eax+0x253] in
-   ours and two adds in the original (diffclass: code 5, regs 22, proof: equal; the message kind is an int
-   parameter of amt_SendOfficeMessage, 0xff : 3, as ai_DismissalHandler's byte match shows). Tried the 0x253-first and the sex-term-first sums and the typed
-   AICHARREC fields; the rest is register rotation */
+   was clicked, 0x20 for another kind, 0x40 when the office has no list. The second argument m is not read */
 
 int ai_WorkerDismissalWindow(void *chp, int *m)
 {
@@ -31788,7 +31781,7 @@ int ai_WorkerDismissalWindow(void *chp, int *m)
     d2_SetPointerSprite(0, 0);
     d2_CentreViewWindows(win);
     d2_SetForm(win, 1);
-    io_PrintText(0x1e24, 0x253 + (ch->sex != 0 ? 0x28 : 0) + ch->officeKind);
+    io_PrintText(0x1e24, (ch->sex != 0 ? 0x27b : 0x253) + ch->officeKind);
     text = io_PrintText(0x1e25);
     click1 = d2_GetWinObj(win, 1, text);
     click2 = d2_GetWinObj(win, 1, text + 1);
