@@ -28,6 +28,7 @@ extern int main_DevMenu;                /* 0x6f245c, nonzero: the main menu show
 extern MAINFAMILY main_Family;          /* 0x75e180 */
 extern int main_QuitProgram;            /* 0x6f25b4, set by quit / Escape / WM_QUIT: WinMain exits */
 extern int main_ClockScale;              /* 0x6248b4, 100: the game seconds of a clock update per speed step (sv_UpdateClock) */
+extern char main_CitiesDir[128];         /* 0x6248b8, "gamedata/cities": the folder of the city files */
 extern unsigned char main_GfxPath[264];  /* 0x624588, the GfxPath option of game.INI (default \project\gfx\): the vfs root and the base of the city ini / save paths */
 extern char main_BeamedHome[12];        /* 0x6253b0, the activity name of a character main_EndRound beams home */
 extern char main_HomeSweetHome[16];     /* 0x624ce0, the name of the player's start building */
