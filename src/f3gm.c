@@ -909,6 +909,8 @@ extern unsigned gm_BoyHead[], gm_GirlHead[], gm_TitleHeadsMale[], gm_TitleHeadsF
 int gm_IconNameCount = 0;  /* 0x6f1b90, the number of icon names */
 char * gm_IconNames = 0;  /* 0x6f1b94, the icon names ( */
 int gm_NetMsgCount = 0;  /* 0x6f1b98, the number of queued messages ( */
+float ai_RatingBase = 0;  /* 0x6f1b9c, the running rating (it moves towards ai.h's ai_Rating) */
+float ai_Rating = 0;  /* 0x6f1ba0, the smoothed game rating (statistics out[5]; the running rating ai_RatingBase follows it) */
 ORDCHAR *gm_RichestChar = 0;  /* 0x6f1bac, the richest character of gm_FindRichest's last search, 0 = none */
 int gm_OwnNameHeadLast = 0;  /* 0x6f1bb0 */
 void gm_ResolveHeadIcons(GMHEAD *rec);

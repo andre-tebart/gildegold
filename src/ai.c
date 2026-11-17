@@ -6106,8 +6106,6 @@ int ai_MeisterTradeFernEinkauf2(AICHAR *ch, AIOBJ *b)
 
 AICHAR * ai_Partner = 0;  /* 0x6f0468 */
 int ai_TradeMsgCount = 0;  /* 0x6f046c, the trade messages sent since the last reset */
-float ai_Rating = 0;  /* 0x6f1ba0, the smoothed game rating (statistics out[5]; the running rating ai_RatingBase follows it) */
-AIBLD * ai_MarketBuilding = 0;  /* 0x6f1bc8, the market building (gm_BuildQuery(1, 5, 10)); @original: f3snd.h declares G16BLDVIEW * (f3snd.c reads its + */
 unsigned short * ai_PlayerChar = 0;  /* 0x6f1bf8 */
 int ai_CurrentPlayer = 0;  /* 0x6f2590, the player index whose turn the local round loop simulates */
 extern AIGRID ai_Grid[8][8];
