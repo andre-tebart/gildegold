@@ -1998,27 +1998,24 @@ int gm_FindPlayerBuilding(int p)
     return 0;
 }
 /* 0x501030, the next building of the query gm_BuildQuery (0x501190) started: walks the cursor gm_BQCursor over the used records of ai_Blds and returns the first that matches every set criterion (type, id, master, owner, the class of its type; gm_BQStopFirst takes any); 0 when the table ends (the cursor is cleared) or more than 0x100 records were tested
-   @deep match-deep 2026-11-14: 44 -> 8 ins. Fixed: the match loop leaves by break to one final return
-   (not a return in each exit): VC6 then pushes ebx / ebp / edi only before the loop as the original (44 ->
-   10); gm_BQFirstCall = 0 after the first-call walk (10 -> 8: the walk's exit then goes to the shared end
-   check instead of a threaded return copy). Left: (1) the original stores gm_BQFirstCall = 0 before the
-   walk (cmp; mov byte; jae) and still jumps from the walk's bottom to the shared check; with the store
-   first VC6 threads that exit to a return copy; (2) the no block (xor cl,cl; jmp) inline after the owner
-   test in ours, out of line after the returns in the original. Tried (dcp try): every criteria form (goto
-   chain, all four criteria as goto tests, nested if/else with m = 0 per level: 22, the no block after the
-   final return with goto back) = control; first-call walk as for / while with break = control, the if
-   (!first) arm first (26), the loop under if (cursor < end) (27), while (1) = control. flip.py (want the
-   owner test as jne): only the meaning-changing != -> == mutant. (tiebreak: not measured (dcp headers
-   sample gm_BuildNext)) prior: read against the original statement by statement: the two early returns,
-   the first-call / next-record walks of the cursor, the criteria chain (type, id, masterId +0x25, owner
-   +0x27, the class byte of ai_BTypes, sete), the tested counter, the advance and the end / match returns
-   all match (equal compares, operands and loop-invariant loads into edi / bp / bl). Left: the original
-   saves ebx / ebp / edi only before the criteria loop (0x5010a4 push ebx .. push edi; the early returns
-   pop esi only, the first-call walk jumps to the shared end check 0x50109c), ours pushes all four in the
-   prolog and so duplicates every early return with four pops; and the 'm = 0' block (xor cl,cl; jmp) sits
-   after the match return in the original, inline in ours. Tried the criteria as a goto chain, as an
-   if/else with the no label in the else, with the no block after the loop's continue, and as nested ifs
-   with separat... */
+   @deep match-deep 2026-11-17 (s8): draft 8 -> shape 2, size 341 = 341: the id / master / owner criteria
+   as if (field == want) m = 1; else goto no; (the mismatch is the else of the match test): VC6 then puts
+   the no block (xor cl,cl; jmp) out of line after the returns and every mismatch test jumps to it as the
+   original (only the owner form decides it; id / master alone = control; all three kept for one form).
+   Left: gm_BQFirstCall = 0: the original stores it in the first block of the first-call walk (before jae)
+   and the walk's bottom exit still jumps to the shared end check; ours stores after the walk (2 ins, moved
+   store). Store first (before the while, as a for-init, or a guarded inner while) threads the bottom exit
+   to a return-0 copy (4 ins, +2 instructions); the walks swapped under if (!first) 20. Next: what keeps
+   VC6 from threading the bottom exit of the first-call walk with the store first. prior: match-deep
+   2026-11-14: 44 -> 8 ins. Fixed: the match loop leaves by break to one final return (not a return in each
+   exit): VC6 then pushes ebx / ebp / edi only before the loop as the original (44 -> 10); gm_BQFirstCall =
+   0 after the first-call walk (10 -> 8: the walk's exit then goes to the shared end check instead of a
+   threaded return copy). Left: (1) the original stores gm_BQFirstCall = 0 before the walk (cmp; mov byte;
+   jae) and still jumps from the walk's bottom to the shared check; with the store first VC6 threads that
+   exit to a return copy; (2) the no block (xor cl,cl; jmp) inline after the owner test in ours, out of
+   line after the returns in the original. Tried (dcp try): every criteria form (goto chain, all four
+   criteria as goto tests, nested if/else with m = 0 per level: 22, the no block after the final return
+   with goto back) = control; first-call walk as for / while with break =... */
 
 unsigned char *gm_BuildNext(void)
 {
@@ -2049,19 +2046,22 @@ unsigned char *gm_BuildNext(void)
             if (gm_BQType != 0xff)
                 m = 1;
             if (gm_BQId != -1) {
-                if (gm_BQCursor->id != gm_BQId)
+                if (gm_BQCursor->id == gm_BQId)
+                    m = 1;
+                else
                     goto no;
-                m = 1;
             }
             if (gm_BQMaster != 0x7fff) {
-                if (gm_BQCursor->masterId != gm_BQMaster)
+                if (gm_BQCursor->masterId == gm_BQMaster)
+                    m = 1;
+                else
                     goto no;
-                m = 1;
             }
             if (gm_BQOwner != 0x7fff) {
-                if (gm_BQCursor->owner != gm_BQOwner)
+                if (gm_BQCursor->owner == gm_BQOwner)
+                    m = 1;
+                else
                     goto no;
-                m = 1;
             }
             if (gm_BQClass != 0xff)
                 m = (unsigned char)ai_BTypes[gm_BQCursor->type * 0x24d] == gm_BQClass;
