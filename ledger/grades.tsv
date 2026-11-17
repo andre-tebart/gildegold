@@ -53,7 +53,7 @@ exe	0x00403c10	ch_StopAnim	ch	byte	readable
 exe	0x00403d60	ch_ReleaseMorph	ch	byte	readable		
 exe	0x00403dc0	ch_CheckAniMorph	ch	shape	readable		
 exe	0x00404200	ch_PreloadAnims	ch	byte	readable		
-exe	0x00404360	ch_LoadLowAnims	ch	shape	readable	deep	
+exe	0x00404360	ch_LoadLowAnims	ch	byte	readable		
 exe	0x004044a0	ch_AttachAni	ch	byte	readable		
 exe	0x00404640	ch_ActAnim	ch	byte	readable		
 exe	0x00404760	ch_GetFreeQueueEntry	ch	byte	readable		
@@ -89,7 +89,7 @@ exe	0x00405cb0	ch_UseGate	ch	byte	readable
 exe	0x00405d40	ch_ActTakingObject	ch	byte	readable		
 exe	0x00405e70	ch_TakeObject	ch	byte	readable		
 exe	0x00405f10	ch_TakeObject1	ch	byte	readable		
-exe	0x00405fb0	ch_ActDroppingObject	ch	draft	readable	deep	
+exe	0x00405fb0	ch_ActDroppingObject	ch	byte	readable		
 exe	0x004060d0	ch_DropObject	ch	byte	readable		
 exe	0x00406170	ch_DropObject1	ch	byte	readable		
 exe	0x00406210	ch_ActTurnTo	ch	byte	readable		
