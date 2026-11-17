@@ -31,6 +31,7 @@ extern int gm_PlayerRecords[688];
 /* the unit's first .rdata constant (before the header's, in address order): the filter of the gypsy windows, the
    flags and kind he and lc pass to ai_PickActionBuilding too */
 const volatile unsigned __int64 gypsyFilter = 0x1a7fdfbb6;  /* 0x5eed68 (volatile: VC6 would fold it into immediates here; the original reads it from memory) */
+const unsigned int ai_BuildingTypeMasks[6] = { 2692498336, 1, 3766305712, 1, 0xf82806f, 2 };  /* 0x5eed70, bit masks of building classes (defined beside gypsyFilter: ai.c reads it through the extern, from memory) (three 64 bit masks: [2..3] the house-owner classes, [4..5] the classes lc.c's ai_PassesMapPickFilter greys out under its 0x40000000 flag) */
 #include "menu.h"
 #define d2_SetObjValue2 ((void (*)(int, char *))d2_SetObjValue)  /* 0x475cb0 (d2.c: five parameters): @original the file selector ai_FilePickWindow pushes 2 arguments (the input, the name) */
 #define d2_PlaceMainWindowF ((void (*)(int, int))d2_PlaceMainWindow)  /* 0x475850 (d2.h: int view): @original the callers push the placement flags too, which the original's tail jump leaves on the stack for d2_PlaceWindowScaled */

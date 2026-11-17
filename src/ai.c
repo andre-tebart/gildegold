@@ -323,8 +323,7 @@ AICHAR *ai_FindPartner(AICHAR *c)
     return p;
 }
 /* 0x47e360, a master of this machine looks for a free workshop of its own that needs hiring, then lets its
-   partner logic run
-   @deep byte; readability left: Q1 no evidenced name (the role is a local master's per-frame scan of its own buildings that announces a master hire - its sprintf 'stellt Meister fuer %s ein' - then runs the partner logic; no string or text id names it), Q2 AICHAR.health (32 uses, truthy / > 0 tests only, no reader names it) and AICHAR.heldRounds (2 uses, 0x47e360 skips its post-partner action refresh and 0x4bb6c0's sender skips the character), Q3 0x7d5f82 = ai_Chars + 768 * 0x21c + 2 loop bound, still a literal (an extern would need an evidenced name for the one-past-the-end kind field). Named on the way: ai_FindPartner, ai_ChooseAction, ai_ExecuteAction, ai_FillNearRing, cm_SendMessage3d, ai_BuildingTypeMasks, ai_Partner, ai_ActionFlags, gm_FindChar, cm_AddFieldDelta, AICHAR.act / mask, AITIME.hour. gm_BuildingClass (0x501d80) is in no source and has no Ghidra export: read by disassembly, it maps ai_BTypes[type].kind 1..0x20 to the category 1..9 (jump table 0x501e14, default 0) - a role name (gm_BuildingClass) needs the defining unit, which is undrafted. */
+   partner logic run */
 
 void ai_MasterUpdate(AICHAR *c)
 {
@@ -350,7 +349,7 @@ void ai_MasterUpdate(AICHAR *c)
                     found = 0;
                     p = ai_CharsT;
                     while (1) {
-                        if ((int)&p->kind >= (unsigned)&gm_PlayerRecordBytes)
+                        if ((int)&p->kind >= (int)&gm_PlayerRecordBytes)
                             break;
                         if (p->id != 0xffff && p->bld == b && (p->kind == 1 || p->kind == 2))
                             found = 1;
@@ -6128,7 +6127,6 @@ AICHAR * ai_LoggedMaster = 0;  /* 0xf8a0c8, the master whose decisions are logge
 int ai_NumCarts = 0;  /* 0xf8a0cc, how many of ai_Carts are set (0 .. 16) */
 int ai_WeaponList[10] = {0};  /* 0xf8a0e0, goods ids of the first weapon list (0-terminated) */
 int ai_NetPlayer = 0;  /* 0x1460af4, the player index this client runs (the host sets it, cm.c message type 7) */
-const unsigned int ai_BuildingTypeMasks[6] = { 2692498336, 1, 3766305712, 1, 0xf82806f, 2 };  /* 0x5eed70, bit masks of building classes (three 64 bit masks: [2..3] the house-owner classes, [4..5] the classes lc.c's ai_PassesMapPickFilter greys out under its 0x40000000 flag) */
 float ai_DifficultyValue = 1.0f;  /* 0x5fef04 */
 float ai_DifficultyScale = 0.5f;  /* 0x5fef08 */
 char ai_AmbushSpots[8][32] = { "sp_AUFLAUERLEGEN_NORDEN", "sp_AUFLAUERLEGEN_OSTEN", "sp_AUFLAUERLEGEN_SUEDEN", "sp_AUFLAUERLEGEN_WESTEN", "sp_AUFLAUERLEGEN_STADT_1", "sp_AUFLAUERLEGEN_STADT_2", "sp_AUFLAUERLEGEN_STADT_3", "sp_AUFLAUERLEGEN_STADT_4" };  /* 0x625720, "sp_AUFLAUERLEGEN_NORDEN" ... */

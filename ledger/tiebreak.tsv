@@ -739,7 +739,7 @@ exe	0x00439c90	d3_ClipPoly	d3_engine	12bd5273536c2033	no	shape	sweep control=sha
 exe	0x0043a000	d3_SelectSurf	d3_engine	c707499252b3b3f9	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0043a160	d3_DrawObjectCB	d3_engine	434ecae527907ce1	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft	
 exe	0x0043a610	d3_SetFogRange	d3_engine	f4263bdaf20a30d4	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x0043a6f0	d3_SetFog	d3_engine	4499e35c99a1ac03	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	cd7ec9ed5ef4b6d7
+exe	0x0043a6f0	d3_SetFog	d3_engine	4499e35c99a1ac03	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	fa1ebe040a6df9dd
 exe	0x0043a7d0	d3_DrawSortedD3D	d3_engine	eaaf1fee25ee2547	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft	
 exe	0x0043b080	d3_DrawSortedSW	d3_engine	239a800e6523bff8	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0043b300	d3_RadixSort	d3_engine	7e1b5c7b5662cbc6	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
@@ -844,7 +844,7 @@ exe	0x00446180	d3fl_Prerender	d3_fl	b9bdb858f36796d3	no	shape	sweep control=shap
 exe	0x004463b0	map_Pick	d3_fl	55473037550506e1	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x00446750	map_PickScreen	d3_fl	f8e9bb9b2bd9560d	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x00446910	map_Region	d3_fl	6adcb6d683f48040	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x00446990	d3fl_FarDist	d3_fl	f5206b82dda5d7c4	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	85056e047a1af59c
+exe	0x00446990	d3fl_FarDist	d3_fl	f5206b82dda5d7c4	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	60c4c4d724766c06
 exe	0x00446dc0	d3fl_SetShift	d3_fl	871e76fe590013ce	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00446e10	d3_CreateObject	d3_interface	0383c09817700c77	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00446f30	d3if_SelectTextureSet	d3_interface	5df15495f5f6c2b7	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
@@ -1474,7 +1474,7 @@ exe	0x00483d30	ai_StartBuildingWork	ai	fb4756fabe173208	no	shape	control=shape p
 exe	0x00483ee0	ai_EndWorkerPose	ai	7830a709dbd548a9	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00483fc0	ai_Unk483fc0	ai	9d8994ed97e51612	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x00484a60	ai_Unk484a60	ai	cec6c71338ef4f07	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
-exe	0x004854f0	ai_UpdateProduction	ai	971ddfb4cbfec75d	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	63fd104250288054
+exe	0x004854f0	ai_UpdateProduction	ai	971ddfb4cbfec75d	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	9ae3229e4c037d19
 exe	0x00486190	ai_FillSlotTable	ai	34aebf3db62ccc91	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x004864b0	ai_BuildTradeOffers	ai	df2be80315c04f44	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x00487040	ai_CalcEntryCost	ai	5ca140e33749b218	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
