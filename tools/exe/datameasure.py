@@ -2,7 +2,7 @@
 
     python tools/exe/datameasure.py              # summary and the first steps
     python tools/exe/datameasure.py --steps -n 80 [--section rdata|data|bss] [--unit U]
-    python tools/exe/datameasure.py --refresh    # re-read `dcp data map` of every unit (cached in build/exe/datamap)
+    python tools/exe/datameasure.py --refresh    # `dcp link`, then re-read `dcp data map` of every unit (build/exe/datamap)
     python tools/exe/datameasure.py --sizes [-n N]  # initialised .data per unit, ours vs the original, and the
                                                  # symbols one side keeps initialised and the other zero (.bss)
 
@@ -12,7 +12,7 @@ before it in its section has the original's size, order and owner unit. A STEP i
 - size < room: the original has more after this datum (an undeclared neighbour, a string or float literal of the
   unit, alignment of a char / short, a bigger array);
 - the datum is defined in another unit than the original's neighbours (it is placed with its own unit's data);
-- the datum is in another section (const / initialised / zero: VC6 puts `= 0` into .data, not .bss;
+- the datum is in another section (const / initialised / zero: VC6 puts `= 0` and all-zero data into .bss;
   string literals go to .data, `const` tables to .rdata);
 - definition order inside a unit (VC6 emits a unit's data in definition order per section).
 The COMMON area (tentative definitions `T x;`, from COMMON_START on) is measured per group, not per symbol: LINK
@@ -32,6 +32,10 @@ import exemeasure  # noqa: E402
 
 
 def refresh():
+    # relink first: the map and the data maps must describe the same tree (a stale exe.map gave stale steps)
+    r = subprocess.run(["dcp", "link"], cwd=ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace")
+    if r.returncode:
+        sys.exit("dcp link failed:\n" + r.stdout[-2000:] + r.stderr[-2000:])
     os.makedirs(CACHE, exist_ok=True)
     r = subprocess.run(["dcp", "data", "map"], cwd=ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace")
     units = re.findall(r"unit=(\S+)", r.stdout)
