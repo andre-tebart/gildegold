@@ -17243,7 +17243,6 @@ extern int cm_PickCellZ;
 /* txt_SpeedNames: view of txt_Ptrs (build/mk_txt_views.py) */
 /* txt_ScenePartySync: view of txt_Ptrs (build/mk_txt_views.py) */
 const int cm_SpeedTicks[] = { 1155, 937, 770, 577, 385, 0 };  /* 0x5edc10 */
-int ai_Unk5f8b10 = 6251111;  /* 0x5f8b10 */
 float d2_ScreenScale = 1.0f;  /* 0x5fe708 */
 int cm_SpeedTick = 770;  /* 0x60bd80 */
 unsigned int cm_SpeedLevel = 2;  /* 0x60bd84, = 2 (0..4) */
