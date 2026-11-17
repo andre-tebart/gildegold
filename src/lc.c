@@ -14373,19 +14373,30 @@ int ai_ScrollTownMap(D2WIN *win)
    picture control clipped to the window; a placed control follows the window's scroll; the control of a character
    that left the scene, or whose body is of type 1 without a transport, is removed. The arrow keys scroll the
    window by 4 pixels
-   @deep Reconstructed whole against the original (all 441 instructions read): focus-gated drag/key scroll
-   with scrolled/scrollTime, the 75 ms right-held mark info (ai_CharInfoWindow, kind < 10), the ch_List
-   walk over scene 0 with the ai_MapCellToScreen projection (half = hmap size * 0.5 double,
-   ai_MapCellScale, 51-pixel edge push, (float)(size/2) + origin), the crest picture of a character's
-   building owner (indexed ai_Chars, its own kind test) or of a cart's gm_ObjectBuildingOwner (pic = ref54
-   - 0x53 in each branch, d2_CreatePicObj with 16-bit sums), the clip rectangle and view buffer, the
-   scroll-following d2_MoveObj, the removal test and the arrow keys. Remaining: (1) code 3 at +0x8009: the
-   original re-tests the cart branch's 'ch->transport != 0' after the 'transport == 0' branch (+ je / mov
-   edx, [ecx+0x124] / test edx, edx) where our VC6 threads it away; spelling the owner re-test as the
-   expression ch->obj->owner (against the variable of the outer test) kept that one, but no spelling of the
-   transport test (CH_TRANSPORT cast, !x, swapped branches, ch_List[i] base, separate ifs, goto create,
-   flag) keeps it without other differences; (2) frame 0x2c vs 0x30: the original keeps one more
-   slot (the ch_List entry pointer at +0x1c and ch in the argument slot). */
+   @deep This session: (a) the y line in double, '- (double)half' (fsubrp pops half; see
+   ai_MapCellToScreen) and (b) pos as D3VECTOR4 (the original's 4-byte hole behind pos): frame 0x30 and fpu
+   fixed, 6 -> 3 ins. Left: code 3 at +0x800d, the original RELOADS and re-tests ch->transport (mov
+   edx,[ecx+0x124]; test; je removed) in the cart branch after its owner test; ours CSEs the load from the
+   'transport == 0' test and drops the test. Probe: with the 7fad test changed (== (void*)1) ours keeps the
+   cart test but on the CSE'd register (no reload): so in the original the load was not CSE'd (a kill, or a
+   second predecessor of the cart test at CSE time). The kept owner re-test is the field ch->obj->owner
+   after the local owner (= vc6-matching 'a local drops the second test'). = control (all): the cart arm as
+   an else block with goto guards / separate guards / nested owner if / rec = 0 + one test; casts (int),
+   !x, CH_TRANSPORT, ((int *)ch)[0x49], *(int *)((char *)ch + 0x124) on either test; a local tr =
+   ch->transport for the first test (folded); outer 'type == 1 && transport == 0' goto; nested / && / split
+   bld tests. Worse: owner local in the cart (5, drops the owner test), ch_List[i] for any transport test
+   (slots 24+), the cart as a separate if after the body ('goto create', 163: ch gets a callee-saved
+   register). flip.py --want the reload: only deleting the bld test (meaning change). climb round 1 (371
+   mutants): nothing. prior: Reconstructed whole against the original (all 441 instructions read):
+   focus-gated drag/key scroll with scrolled/scrollTime, the 75 ms right-held mark info (ai_CharInfoWindow,
+   kind < 10), the ch_List walk over scene 0 with the ai_MapCellToScreen projection (half = hmap size * 0.5
+   double, ai_MapCellScale, 51-pixel edge push, (float)(size/2) + origin), the crest picture of a
+   character's building owner (indexed ai_Chars, its own kind test) or of a cart's gm_ObjectBuildingOwner
+   (pic = ref54 - 0x53 in each branch, d2_CreatePicObj with 16-bit sums), the clip rectangle and view
+   buffer, the scroll-following d2_MoveObj, the removal test and the arrow keys. Remaining: (1) code 3 at
+   +0x8009: the original re-tests the cart branch's 'ch->transport != 0' after the 'transport == 0' branch
+   (+ je / mov edx, [ecx+0x124] / test edx, edx) where our VC6 threads it away; spelling the owner re-test
+   as the expre... */
 
 void ai_UpdateTownMap(LCMAPWIN *m)
 {
@@ -14395,7 +14406,7 @@ void ai_UpdateTownMap(LCMAPWIN *m)
     AIBLD *bld;
     AICHARREC *owner;
     AICHARREC *rec;
-    D3VECTOR pos;
+    D3VECTOR4 pos;
     float half;
     float x;
     float y;
@@ -14435,7 +14446,7 @@ void ai_UpdateTownMap(LCMAPWIN *m)
         if (ch == 0)
             continue;
         if (ch->scene == &d3_Scenes[0]) {
-            d3_PointToWorld(ch->obj, &ch->obj->pos, &pos);
+            d3_PointToWorld(ch->obj, &ch->obj->pos, (D3VECTOR *)&pos);
             half = ((struct D3SM *)d3_Scenes[0].hmap)->size * 0.5;
             x = ((pos.x - hm->origin.x) / hm->cell.x - half) * ai_MapCellScale;
             y = ((pos.z - hm->origin.z) / hm->cell.z - (double)half) * ai_MapCellScale;   /* @original y alone in double (half popped by fsubrp) */

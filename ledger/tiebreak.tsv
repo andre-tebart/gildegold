@@ -4311,7 +4311,7 @@ exe	0x005a6cb0	ai_BuildTownMap	lc	9033cb73e186a9a1	no	draft	control=draft p1=dra
 exe	0x005a78a0	ai_OpenTownMap	lc	30bc1fd419c0218a	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005a79e0	ai_DragTownMap	lc	d237f887976f6617	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
 exe	0x005a7bc0	ai_ScrollTownMap	lc	ef55dc5dac75a585	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x005a7cd0	ai_UpdateTownMap	lc	0cc25f6208afc2d0	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	8da5f4c8bf8dd47e
+exe	0x005a7cd0	ai_UpdateTownMap	lc	691ce25855671f03	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	e059ae972ded539e
 exe	0x005a82f0	ai_CloseMapWindow	lc	fb738d6c7f500f2e	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005a8340	ai_SettingRandom	lc	750dbe5adb9fd6c6	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005a8390	ai_FreeSettingChain	lc	3e40d84f36742a23	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
