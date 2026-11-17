@@ -2436,7 +2436,7 @@ exe	0x004cf9c0	cm_UpdatePortraits	cm	draft	readable	deep
 exe	0x004cfc10	cm_BuildPortraits	cm	shape	readable		
 exe	0x004cfe70	cm_ClosePortraits	cm	byte	readable		
 exe	0x004cfeb0	cm_ClickSceneChar	cm	byte	readable		
-exe	0x004cffd0	cm_OrderAttack	cm	draft	readable	deep	
+exe	0x004cffd0	cm_OrderAttack	cm	byte	readable		
 exe	0x004d0200	cm_OrderEscape	cm	byte	readable		
 exe	0x004d02d0	cm_OrderConquer	cm	byte	readable		
 exe	0x004d0380	cm_OrderWare	cm	shape	readable		
@@ -3343,7 +3343,7 @@ exe	0x00526cf0	sv_MouseCamera	sv	draft	readable	deep
 exe	0x00527640	sv_UpdateCamera	sv	byte	readable		
 exe	0x00527840	sv_FlyCameraToObject	sv	byte	readable		
 exe	0x00527bb0	sv_CameraToObject	sv	byte	readable		
-exe	0x00527e90	sv_FlyCameraToModel	sv	shape	readable	deep	
+exe	0x00527e90	sv_FlyCameraToModel	sv	byte	readable		
 exe	0x00528140	sv_MoveCameraToView	sv	byte	readable		
 exe	0x00528180	sv_CreateBannerCB	sv	byte	readable		
 exe	0x00528290	sv_ColourBannerCB	sv	byte	readable		
@@ -3880,7 +3880,7 @@ exe	0x00571ac0	he_AllocGraveTraining	he_b	byte	readable
 exe	0x00571c30	he_RunGraveTraining	he_b	byte	readable		
 exe	0x00571f60	he_AllocMeeting	he_b	shape	readable		
 exe	0x005720f0	he_CatchMeetingDisease	he_b	draft	readable	deep	
-exe	0x00572310	he_SpreadMeetingDisease	he_b	draft	readable	deep	
+exe	0x00572310	he_SpreadMeetingDisease	he_b	shape	readable	deep	
 exe	0x005725b0	he_RunMeeting	he_b	byte	readable		
 exe	0x005726a0	he_AllocMeetingScene	he_b	byte	readable		
 exe	0x005726b0	he_RunMeetingScene	he_b	byte	readable		
@@ -3992,7 +3992,7 @@ exe	0x00577b90	ai_TutorialShowText2	sv_t	byte	readable
 exe	0x00577c60	ai_TutorialHideText2	sv_t	byte	readable		
 exe	0x00577cd0	ai_TutorialOpenProgress	sv_t	byte	readable		
 exe	0x00577d60	ai_TutorialCloseProgress	sv_t	byte	readable		
-exe	0x00577d90	ai_TutorialProgressSlider	sv_t	shape	readable	deep	
+exe	0x00577d90	ai_TutorialProgressSlider	sv_t	byte	readable		
 exe	0x00577e50	ai_TutorialStepForm	sv_t	byte	readable		
 exe	0x005780e0	ai_TutorialStepClicked	sv_t	byte	readable		
 exe	0x00578120	ai_TutorialSetHost	sv_t	byte	readable		
@@ -4386,7 +4386,7 @@ exe	0x005ae6b0	ai_SendTransportOrder	lcdom	byte	readable
 exe	0x005ae870	ai_TransportOrderDue	lcdom	byte	readable		
 exe	0x005ae8e0	ai_CartAtBuilding	lcdom	byte	readable		
 exe	0x005ae9a0	ai_TransportFromLager	lcdom	shape	readable		
-exe	0x005af010	ai_TransportGoodsTotal	lcdom	draft	readable	deep	
+exe	0x005af010	ai_TransportGoodsTotal	lcdom	byte	readable		
 exe	0x005af1a0	ai_OpenTransport	lcdom	byte	readable		
 exe	0x005af1b0	ai_OpenTransportSell	lcdom	byte	readable		
 exe	0x005af1c0	ai_OpenTransportBuy	lcdom	byte	readable		
@@ -4518,7 +4518,7 @@ exe	0x005c7460	ai_PlotScoreChart	lcamt	shape	readable
 exe	0x005c7560	ai_PlotNoFirstChart	lcamt	byte	readable		
 exe	0x005c76b0	ai_PlotNoSecondChart	lcamt	byte	readable		
 exe	0x005c7800	ai_PlotCombinedChart	lcamt	byte	readable		
-exe	0x005c7970	ai_DrawStatisticsCharts	lcamt	draft	readable	deep	
+exe	0x005c7970	ai_DrawStatisticsCharts	lcamt	byte	readable		
 exe	0x005c7f00	ai_CityStatsPanel	lcamt	byte	readable		
 exe	0x005c82f0	ai_PlayerComparePanel	lcamt	draft	readable	deep	
 exe	0x005c8640	ai_PrivilegesPanel	lcamt	byte	readable		
@@ -4549,8 +4549,8 @@ exe	0x005cd2e0	ai_MiracleWindow	lcamt	draft	readable	deep
 exe	0x005cd400	ai_ChangeProfessionWindow	lcamt	shape	readable		
 exe	0x005cd8c0	ai_OpenTrial	lcamt	byte	readable		
 exe	0x005cdb90	ai_AccuseWindow	lcamt	byte	readable		
-exe	0x005cde90	ai_AccusationWindow	lcamt	draft	readable	deep	
-exe	0x005ce1a0	ai_FaithAccusationWindow	lcamt	draft	readable	deep	
+exe	0x005cde90	ai_AccusationWindow	lcamt	byte	readable		
+exe	0x005ce1a0	ai_FaithAccusationWindow	lcamt	byte	readable		
 exe	0x005ce4b0	ai_Interrogate	lcamt	byte	readable		
 exe	0x005ce610	ai_InterrogationWindow	lcamt	byte	readable		
 exe	0x005ce7f0	ai_WorkerDismissalWindow	lcamt	byte	readable		
@@ -4646,7 +4646,7 @@ exe	0x005d9de0	ai_OpenPokerWindow	menu	byte	readable
 exe	0x005d9f50	ai_PokerBetControl	menu	byte	readable		
 exe	0x005da010	ai_ClosePokerWindow	menu	byte	readable		
 exe	0x005da030	ai_PokerGame	menu	byte	readable		
-exe	0x005dadf0	ai_PokerSeatPanel	menu	shape	readable	deep	
+exe	0x005dadf0	ai_PokerSeatPanel	menu	byte	readable		
 exe	0x005db110	ai_PokerWindow2	menu	byte	readable		
 exe	0x005dbc10	ai_GetDefaultEffect	shot	byte	readable		
 exe	0x005dbc20	ai_GetDefaultEffectScale	shot	byte	readable		
