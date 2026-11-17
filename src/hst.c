@@ -1974,11 +1974,7 @@ int ai_CommandPlague(int a, int b, char *fmt)
     if (*fmt != '-')
         return 0;
     n = atoi(fmt + 1);
-    if (n <= 10) {
-        if (n <= 1)
-            n = 1;
-    } else
-        n = 10;
+    n = max(min(10, n), 1);
     memset(&msg, 0, sizeof(msg));
     msg.type = 0x59;
     msg.to = ((AICHAR *)ai_PlayerChar)->netId;

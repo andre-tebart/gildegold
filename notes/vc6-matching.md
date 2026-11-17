@@ -645,6 +645,9 @@ copied back into short predecessors only after all of this.
 - **Operand order shows in the jcc**: `max(1, n)` / `if (n < 1) n = 1` `jge`, `max(n, 1)` `jg`; `max(5, v / 4)`
   jge / `max(v / 4, 5)` jg; `min(0xff, iv)` `jle` / `min(iv, 0xff)` `jl`; `max(1, v)` jae / `max(v, 1)` jbe;
   `max(min(d.max, n), d.min)` `cmp eax,esi; jl` (0x4b09f0 byte). Try both orders per statement.
+- **Int clamp with the upper store out of line after the epilogue** (`cmp 0xa; jg far; cmp 1; jg join; mov 1`,
+  `far: mov 10; jmp join`): `n = max(min(10, n), 1);`; the 7 other operand orders and every if / else-if /
+  ternary spelling differ (ai_CommandPlague byte, one 17-variant round).
 - **Against zero**: `max(0, y - n)` `sub; sets; dec; and`, `max(y - n, 0)` `test; setle`; `max(0, x0)` `setl`.
 - **`mov byte [g],2; jb L; mov [g],al; L: mov eax,[g]; and eax,0xff`**: `g = max(2, g);` (or `g < 2 ? 2 : g`),
   read as `ai_NumPlayersW & 0xff`. No lever: `max(g, 2)`, `if` (main_PlayerCountDialog byte).
