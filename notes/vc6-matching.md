@@ -512,6 +512,12 @@ copied back into short predecessors only after all of this.
 - **`if (p)` and `while (p)` tests both kept** (`test eax,eax; je end; mov esi,eax; test esi,esi; je end`): `if
   (obj->parent) { p = obj->parent; while (p) ... }`, not `p = obj->parent; if (p) {...}` (d3s_GetGround 0x45bcd0).
   A value tested twice in a row is a re-read field (`if (CH_SLOT(ch) && ...)`); a local drops the second test.
+- **A field reloaded and re-tested in an else-if although the if just tested it** (`mov edx,[ecx+0x124]; test; jne
+  else` .. `else: test eax; je; mov edx,[ecx+0x124]; test; je`): the else-if has a second predecessor at CSE time,
+  so the load is not available there; the earlier guard sits in the if's own condition, `if ((o = p->owner) != 0
+  && !ch->tr) {..} else if (p->owner && ch->tr ..)`, not `if (o = p->owner) { if (!ch->tr) .. else if ..}`
+  (the o == 0 edge is threaded to the exit afterwards). 30 spellings, casts, flip and climb did nothing
+  (ai_UpdateTownMap byte).
 - **A redundant re-test** (`test [m],0x20; jne call; cmp eax,ebx; jne skip; call:`, third term of `!s || s->f ||
   !s`): `if (s && s->f) { call } else if (!s) { call }` (ch_ActWalk byte); with a long arm a flag `r = 0; if (s &&
   s->f) r = 1; else if (!s) r = 1; if (r) {arm}` or a goto into the arm (ch_ActWalkCells byte).

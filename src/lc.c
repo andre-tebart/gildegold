@@ -14372,31 +14372,7 @@ int ai_ScrollTownMap(D2WIN *win)
    or a cart (transport) whose owner (gm_ObjectBuildingOwner) is one, gets that player's crest (ref54 - 0x53) as a
    picture control clipped to the window; a placed control follows the window's scroll; the control of a character
    that left the scene, or whose body is of type 1 without a transport, is removed. The arrow keys scroll the
-   window by 4 pixels
-   @deep This session: (a) the y line in double, '- (double)half' (fsubrp pops half; see
-   ai_MapCellToScreen) and (b) pos as D3VECTOR4 (the original's 4-byte hole behind pos): frame 0x30 and fpu
-   fixed, 6 -> 3 ins. Left: code 3 at +0x800d, the original RELOADS and re-tests ch->transport (mov
-   edx,[ecx+0x124]; test; je removed) in the cart branch after its owner test; ours CSEs the load from the
-   'transport == 0' test and drops the test. Probe: with the 7fad test changed (== (void*)1) ours keeps the
-   cart test but on the CSE'd register (no reload): so in the original the load was not CSE'd (a kill, or a
-   second predecessor of the cart test at CSE time). The kept owner re-test is the field ch->obj->owner
-   after the local owner (= vc6-matching 'a local drops the second test'). = control (all): the cart arm as
-   an else block with goto guards / separate guards / nested owner if / rec = 0 + one test; casts (int),
-   !x, CH_TRANSPORT, ((int *)ch)[0x49], *(int *)((char *)ch + 0x124) on either test; a local tr =
-   ch->transport for the first test (folded); outer 'type == 1 && transport == 0' goto; nested / && / split
-   bld tests. Worse: owner local in the cart (5, drops the owner test), ch_List[i] for any transport test
-   (slots 24+), the cart as a separate if after the body ('goto create', 163: ch gets a callee-saved
-   register). flip.py --want the reload: only deleting the bld test (meaning change). climb round 1 (371
-   mutants): nothing. prior: Reconstructed whole against the original (all 441 instructions read):
-   focus-gated drag/key scroll with scrolled/scrollTime, the 75 ms right-held mark info (ai_CharInfoWindow,
-   kind < 10), the ch_List walk over scene 0 with the ai_MapCellToScreen projection (half = hmap size * 0.5
-   double, ai_MapCellScale, 51-pixel edge push, (float)(size/2) + origin), the crest picture of a
-   character's building owner (indexed ai_Chars, its own kind test) or of a cart's gm_ObjectBuildingOwner
-   (pic = ref54 - 0x53 in each branch, d2_CreatePicObj with 16-bit sums), the clip rectangle and view
-   buffer, the scroll-following d2_MoveObj, the removal test and the arrow keys. Remaining: (1) code 3 at
-   +0x8009: the original re-tests the cart branch's 'ch->transport != 0' after the 'transport == 0' branch
-   (+ je / mov edx, [ecx+0x124] / test edx, edx) where our VC6 threads it away; spelling the owner re-test
-   as the expre... */
+   window by 4 pixels */
 
 void ai_UpdateTownMap(LCMAPWIN *m)
 {
@@ -14463,8 +14439,8 @@ void ai_UpdateTownMap(LCMAPWIN *m)
             px = (int)((float)(ai_MapSize / 2) + originX + edgeX);
             py = (int)((float)(ai_MapHeight / 2) + originY + edgeY);
             if (m->controls[i] == -1) {
-                if ((ch->obj->type != 1 || ch->transport != 0) && (owner = (AICHARREC *)ch->obj->owner) != 0) {
-                    if (ch->transport == 0) {
+                if (ch->obj->type != 1 || ch->transport != 0) {
+                    if ((owner = (AICHARREC *)ch->obj->owner) != 0 && ch->transport == 0) {
                         bld = owner->bld;
                         if (bld == 0 || bld->owner == 0xffff)
                             goto removed;
