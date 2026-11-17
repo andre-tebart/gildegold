@@ -237,53 +237,66 @@ typedef struct CMAMOUNTROW {        /* 0x38 bytes, one row of the special-amount
 } CMAMOUNTROW;
 /* 0x4c3180, the size in bytes of the game message m by its type: fixed per type, the lists 0x16 / 0x17 a 0x15-byte
    head and data[4] records of w * h + 4 bytes, 0x18 a head and data[4] records of 5, 0x20 by its kind byte data[0];
-   0x91 (the whole G17MSG body) for any other type
-   @deep Read whole against the original: the 42 case bodies, their values and their order (the 0x18 group
-   after case 0x22, the 0x28 group and 0x5f after 0x61/0x62, as the original's block layout), the list loop
-   of 0x16/0x17 (int count, jle) and 0x18 / 0x20 all match; the decoded jump table maps every type 3..0x69
-   to the same value as ours. Left: VC6 lowers our switch through a byte index table (xor edx,edx; mov
-   dl,[ecx+X]; jmp [edx*4+X]) where the original jumps directly through a 0x67-entry table (mov dl,[eax];
-   mov ecx,edx; and ecx,0xff; ... jmp [ecx*4+X]), and the original's dead 'cmp dl, 0x16' in the 0x16/0x17
-   body. Tried: explicit labels for the default types (with default:, with their own return), one case per
-   type (no grouping), the type in an unsigned char local, ternaries on t == 0x16 in the count / pointer /
-   head size: the table form never changed. A variant round (switch-lowering heuristic). */
+   0x91 (the whole G17MSG body) for any other type. One return per type, as the original: its jump table has an
+   entry per type (0x67 direct entries), which VC6 builds only when the cases are distinct statements */
 
 int cm_MessageSize(G17MSG *m)
 {
     unsigned char *p;
     int n, k;
     int i;
-    unsigned char t;
 
-    t = m->type;
-    switch (t) {
+    switch (m->type) {
     case 3:
+        return 0x1c;
     case 0x13:
+        return 0x1c;
     case 0x1a:
+        return 0x1c;
     case 0x25:
+        return 0x1c;
     case 0x2b:
+        return 0x1c;
     case 0x34:
+        return 0x1c;
     case 0x36:
+        return 0x1c;
     case 0x38:
+        return 0x1c;
     case 0x47:
+        return 0x1c;
     case 0x52:
+        return 0x1c;
     case 0x54:
+        return 0x1c;
     case 0x5b:
+        return 0x1c;
     case 0x5d:
         return 0x1c;
     case 4:
         return 0x11;
     case 8:
+        return 0x14;
     case 0x1c:
+        return 0x14;
     case 0x28:
+        return 0x14;
     case 0x31:
+        return 0x14;
     case 0x3b:
+        return 0x14;
     case 0x42:
+        return 0x14;
     case 0x43:
+        return 0x14;
     case 0x4a:
+        return 0x14;
     case 0x4d:
+        return 0x14;
     case 0x57:
+        return 0x14;
     case 0x58:
+        return 0x14;
     case 0x69:
         return 0x14;
     case 10:
@@ -293,12 +306,15 @@ int cm_MessageSize(G17MSG *m)
     case 0xc:
         return 0x49;
     case 0xf:
+        return 0x21;
     case 0x2c:
         return 0x21;
     case 0x11:
+        return 0x27;
     case 0x3d:
         return 0x27;
     case 0x12:
+        return 0x1e;
     case 0x1e:
         return 0x1e;
     case 0x14:
@@ -307,8 +323,15 @@ int cm_MessageSize(G17MSG *m)
         return 0x39;
     case 0x16:
     case 0x17:
-        n = 0x15;
-        p = m->fields.buf;
+        /* @original 0x16 (deltas) and 0x17 (values) set up their head each on its own; the two arms compile
+           alike and VC6 merged them, leaving a dead cmp dl,0x16 */
+        if (m->type == 0x16) {
+            n = 0x15;
+            p = m->fields.buf;
+        } else {
+            n = 0x15;
+            p = m->fields.buf;
+        }
         for (i = m->fields.n; i > 0; i--) {
             k = p[1] * p[0] + 4;
             n += k;
@@ -318,6 +341,7 @@ int cm_MessageSize(G17MSG *m)
     case 0x18:
         return m->data[4] * 5 + 0x15;
     case 0x19:
+        return 0x24;
     case 0x53:
         return 0x24;
     case 0x1d:
@@ -327,27 +351,43 @@ int cm_MessageSize(G17MSG *m)
     case 0x22:
         return 0x3d;
     case 0xd:
+        return 0x18;
     case 0x21:
+        return 0x18;
     case 0x23:
+        return 0x18;
     case 0x24:
+        return 0x18;
     case 0x26:
+        return 0x18;
     case 0x27:
+        return 0x18;
     case 0x29:
+        return 0x18;
     case 0x2a:
+        return 0x18;
     case 0x33:
+        return 0x18;
     case 0x39:
+        return 0x18;
     case 0x3a:
+        return 0x18;
     case 0x5a:
+        return 0x18;
     case 0x66:
+        return 0x18;
     case 0x68:
         return 0x18;
     case 0x2d:
+        return 0x1f;
     case 0x45:
         return 0x1f;
     case 0x2e:
+        return 0x20;
     case 0x3c:
         return 0x20;
     case 0x2f:
+        return 0x3c;
     case 0x30:
         return 0x3c;
     case 0x32:
@@ -357,11 +397,15 @@ int cm_MessageSize(G17MSG *m)
     case 0x37:
         return 0x45;
     case 0x3e:
+        return 0x34;
     case 0x4f:
+        return 0x34;
     case 0x5e:
+        return 0x34;
     case 99:
         return 0x34;
     case 0x40:
+        return 0x2f;
     case 0x60:
         return 0x2f;
     case 0x41:
@@ -375,6 +419,7 @@ int cm_MessageSize(G17MSG *m)
     case 0x49:
         return 0x36;
     case 0x4b:
+        return 0x90;
     case 0x67:
         return 0x90;
     case 0x4c:
@@ -382,6 +427,7 @@ int cm_MessageSize(G17MSG *m)
     case 0x4e:
         return 0x40;
     case 0x50:
+        return 0x44;
     case 0x51:
         return 0x44;
     case 0x55:
@@ -391,9 +437,11 @@ int cm_MessageSize(G17MSG *m)
     case 0x5c:
         return 0x1a;
     case 0x61:
+        return 0x29;
     case 0x62:
         return 0x29;
     case 0x1b:
+        return 0x28;
     case 100:
         return 0x28;
     case 0x5f:
