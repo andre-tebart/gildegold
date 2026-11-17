@@ -14409,27 +14409,12 @@ void he_RunTheft(AIJOB *e)
 /* 0x55b3e0, the allocation handler of the repair event 28 (HEREPAIR; run handler he_RunRepair): without the
    building the event is freed; else it is the event's place, the building's field 0x5a gets the mark 4
    (cm_SendSetField), the clocks start now, the event is due in 10 minutes, and the planned end is 10 minutes per
-   point from then, times 0.4 / 0.6 / 0.8 for an event character of the rank 9 and up / 8 / 7
-   @deep s4 size queue (337 vs 336: one byte over the padded 336). Bytes: the rank load fold is 3 bytes
-   shorter in ours, the factor 4 longer (fild / fmul st,st(1) / fstp st(0) against fimul): c2fpu lifts f
-   onto the x87 stack (prio 8, savings 8 from the four defs) and it dies after the call's pushes; the
-   original's chain value is consumed by fimul in place. No lever (all one code): the factor inline as a
-   ternary in the argument, f as a ternary, f *= points, a minutes local, an AICHAR pointer for the rank,
-   (points * f) order; worse: f = 1.0f default first (341), double f (fpu 16), a call per arm (326, 58
-   ins), f = f * points * 10.0f (9 ins, same bytes). prior: read whole against 0x55b3e0..0x55b530 and typed
-   (HEREPAIR over AIJOB): the place, the 0x5a mark 4, clock60 / end / start = now in the original's order,
-   due in 10 minutes, until = end + rank factor 0.4 / 0.6 / 0.8 / 1.0 (b00d >= 9 / 8 / 7) * points * 10.0
-   minutes; refs_differ 0, every constant equal. Left: the factor's FPU allocation (- fild [edi+0xb0] /
-   fmul st,st(1) / fstp st(0) after the call; + fimul [edi+0xb0]: ours keeps the joined factor on the
-   stack) and the rank load's address fold (- mov al,[eax*4+ai_Chars+0xd]; + lea eax,[eax*4+ai_Chars] / mov
-   al,[eax+0xd]). Tried: a nested ternary, the if-chain into a float, a double factor (worse: qword
-   constants, reverted), points * f order, an AICHAR pointer for the rank: no change. Open: 1.0f where the
-   original's field is ai_FloatOne (VC6's pooled 1.0f, kept as the literal) */
+   point from then, times 0.4 / 0.6 / 0.8 for an event character of the rank 9 and up / 8 / 7 */
 void he_AllocRepair(AIJOB *e)
 {
     HEREPAIR *r = (HEREPAIR *)e;
     AIBLD *b;
-    unsigned char rank;
+    AICHAR *c;
     float f;
 
     b = (AIBLD *)gm_BuildQuery(1, 1, r->bld);
@@ -14444,16 +14429,17 @@ void he_AllocRepair(AIJOB *e)
     e->start = ai_Time;
     gm_AddTime(&e->end, 0, 10, 0);
     r->until = e->end;
-    rank = ai_CharsT[e->chr].b00d;
-    if (rank >= 9)
+    c = &ai_CharsT[e->chr];
+    if (c->b00d >= 9)
         f = 0.4f;
-    else if (rank == 8)
+    else if (c->b00d == 8)
         f = 0.6f;
-    else if (rank == 7)
+    else if (c->b00d == 7)
         f = 0.8f;
     else
         f = 1.0f;
-    gm_AddTime(&r->until, 0, (int)(f * r->points * 10.0), 0);
+    f = f * r->points * 10.0;
+    gm_AddTime(&r->until, 0, (int)f, 0);
 }
 /* 0x55b530, the run handler of the repair event 28 (HEREPAIR; allocated by he_AllocRepair). Stage 0: without the
    building the event is freed; else the minutes since AIJOB.clock60, one point per 10 (rounded), are taken off the
