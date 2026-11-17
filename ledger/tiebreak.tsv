@@ -4464,7 +4464,7 @@ exe	0x005bea50	ai_SpecialAmountListWindow	lc	c6b41d1490bdab26	no	draft	control=d
 exe	0x005bf0d0	ai_FillFamilyTab	lc	af5279b11337aa23	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x005bf300	ai_FillFriendsTab	lc	e9d86cb4104de8fc	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005bf4f0	ai_FillEnemiesTab	lc	a0b57684f41a808a	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x005bf6f0	ai_FillLoversTab	lc	b12d463b240b7226	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
+exe	0x005bf6f0	ai_FillLoversTab	lcamt	b14cc653d3ce8952	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	e97aa5cc73816526
 exe	0x005bf7c0	ai_FillWeddingTab	lc	232b27619b0629e3	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x005bfa90	ai_FillQuarrelTab	lc	3c41b7bc461ef634	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x005bfc40	ai_FillCandidacyTab	lc	61fc72a55c54e184	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
