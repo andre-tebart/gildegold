@@ -2647,6 +2647,8 @@ int d3if_SceneState1 = 15;  /* 0x5fb5c4, the scene pair's second dword (d3_inter
 char d3_EditorMode = 0;  /* 0x633438, editor / tool mode (reasoned guess: the ortho view cameras, the type-6 lights
                             and the on=0 relight; only ever set 0 in this build) */
 int d3_FrameCount = 0;  /* 0x63343c */
+int d3_CurrentScene = 0;  /* 0x633444 */
+D3OBJECT * d3s_Object = 0;  /* 0x633448, object the shadow polygons go to */
 int d3_MirrorObject = 0;  /* 0x63344c, the object the frame's mirror was built for (0 none) */
 unsigned char d3_Hardware = 0;  /* 0x633450 */
 unsigned char d3_EngineReady = 0;  /* 0x633451, engine up: set at the end of d3_Init, cleared in d3_Shutdown */
@@ -2665,6 +2667,7 @@ unsigned int d3_Fps60 = 0;  /* 0x63348c, frames per second (two windows) */
 unsigned int d3_Fps10 = 0;  /* 0x633490 */
 int d3_ObjectsTested = 0;  /* 0x633494, objects tested / drawn */
 int d3_ObjectsDrawn = 0;  /* 0x633498 */
+unsigned int d3_SceneFlags = 0;  /* 0x63349c */
 D3COLORU d3_fog_color = {0};  /* 0x6334a0, the fog colour (the name: d3d_Clear's D3DCHECK string "d3_fog_color.col") */
 char d3_FogOn = 0;  /* 0x6334a4 */
 unsigned char d3_FogByDistance = 0;  /* 0x6334a5, the byte right after d3_FogOn: when set, d3_Render clamps the fog end to the
@@ -2673,12 +2676,6 @@ unsigned int d3_Fps60Time = 0;  /* 0x6334a8 */
 unsigned int d3_Fps60Frames = 0;  /* 0x6334ac */
 unsigned int d3_Fps10Time = 0;  /* 0x6334b0 */
 unsigned int d3_Fps10Frames = 0;  /* 0x6334b4 */
-int d3if_MegaCam = 0;  /* 0x6338c4 */
-int d3_Busy = 0;  /* 0x633b04, nesting guard of d3_Render/d3_Animate */
-unsigned int d3_LightKeysCulled = 0;  /* 0x633b08, light keys this frame spent on culled lights */
-unsigned int d3_LightKeysVisible = 0;  /* 0x633b0c, light keys this frame spent on visible lights */
-unsigned int d3_LightGeneration = 0;  /* 0x633b10, lightmap generation, D3MESH::lightGeneration holds the one drawn */
-char d3_LightsChanged = 0;  /* 0x633b14 */
 extern D3PARTSYS d3_ParEnd;
 /* d3_ParTail: view of d3_ParEnd (tools/data_views.py) */
 /* d3_ParHead: view of d3if_ParList (the head node's next field) */

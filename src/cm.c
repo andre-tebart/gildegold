@@ -17288,10 +17288,6 @@ char ai_Unk60dd68 = 49;  /* 0x60dd68 */
    digest, arguments in call order but mostly 0), not the arguments of 0x4f2720 / 0x4f3580 / 0x4f3b40 and the mood floats (0x3fb33333 ..) */
 char ai_Unk60de4c = 50;  /* 0x60de4c, scene slots of the trial */
 char ai_CharKindNames[10][24] = { "DUMMY_NPC", "MEISTER_NPC", "POLITICIAN_NPC", "AI_NPC", "NPC", "PLAYER", "REMOTE_PLAYER", "RELATIVE_PLAYER", "USED_PLAYER", "INVISIBLE_NPC" };  /* 0x60eae0, the names of the NPC kinds */
-int ch_LowPoly = 0;  /* 0x631064 */
-struct D3SCENE *ch_Saved0 = 0;  /* 0x631084 */
-EVTSCRIPT *evt_Scripts = 0;  /* 0x6332b4, [128] */
-unsigned int d3_SceneFlags = 0;  /* 0x63349c */
 int cm_RecvCount = 0;  /* 0x6f0cd0, received messages */
 int cm_NoticeCount = 0;  /* 0x6f0cd4 */
 int cm_LobbyChatCount = 0;  /* 0x6f0cd8, the lines in the ring (at most 15) */

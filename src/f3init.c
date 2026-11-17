@@ -346,8 +346,6 @@ int d2_SetForm(int view, int n);                     /* 0x475f70 */
 unsigned short * gm_QueryNext(void);                   /* 0x4ffcc0 */
 float gm_ItemPrice(int item, unsigned char n);
 int gm_ListStock(short *l, int id);               /* 0x50ab50, f3gm.c */
-unsigned int d3fl_DetailScale = 0;  /* 0x633748 */
-unsigned char d3if_TexturesEvicted = 0;  /* 0x6339db */
 /* init_StatusFormat: view of txt_Ptrs (build/mk_txt_views.py) */
 char * ai_KindBChars[8] = {0};  /* 0x6f1c04, the characters of the kind */
 extern char ai_PlayerSlots[4][0x2f4];      /* 0x7e3f40, the player slots */

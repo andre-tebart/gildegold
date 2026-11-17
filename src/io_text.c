@@ -431,7 +431,6 @@ int io_CharacterNameMarkup(int id, unsigned char c, unsigned char kind, char *ou
 
 extern int txt_Loaded;
 extern int d2_LastWindow;                /* 0x6ed938, the current text window */
-int txt_Count = 0;  /* 0x6333b8 */
 extern char *d2_Objs;  /* 0xf8f080, 0x2ec bytes each; @original: d2.h declares D2OBJ *; the units add byte offsets to it and do not include d2.h yet (their own char * declarations of d2_Objs / d2_LastWindowPtr supersede d2.h's) */
 #define D2_OBJS ((D2OBJ *)d2_Objs)     /* d2_Objs as d2.h types it */
 /* ---- the text engine (0x515960 .. 0x519010) ---- */

@@ -906,7 +906,6 @@ void gm_ShiftLoyalty(void)
 
 /* the head tables (records of 0x44 bytes: +0 the id, +4 the name, +0x34 four head numbers): 0x6118a8 / 0x6118f0 (the two default entries), 0x611938 (0x23 records, kind 0), 0x612288, 0x612bd8 (0x5f records, kind 0) / 0x614518 (0x5f, kind 1), 0x617398 (3 records), the history 0x91ac40 (8 records) */
 extern unsigned gm_BoyHead[], gm_GirlHead[], gm_TitleHeadsMale[], gm_TitleHeadsFemale[], gm_JobHeadsMale[], gm_JobHeadsFemale[], gm_SpyHeads[], gm_OwnNameHeads[];  /* 0x6118a8, 0x6118f0, 0x611938, 0x612288, 0x612bd8, 0x614518, 0x617398, 0x91ac40 */
-int d3_CurrentScene = 0;  /* 0x633444 */
 int gm_IconNameCount = 0;  /* 0x6f1b90, the number of icon names */
 char * gm_IconNames = 0;  /* 0x6f1b94, the icon names ( */
 int gm_NetMsgCount = 0;  /* 0x6f1b98, the number of queued messages ( */

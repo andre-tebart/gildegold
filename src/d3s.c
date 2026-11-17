@@ -50,13 +50,13 @@ extern int d3s_Fill;
 extern int dd_PitchPixels;                      /* 0x14661a0 */
 extern int dd_Pitch;                       /* 0x1463588 */
 extern void *dd_Surface;                 /* 0x1463590 */
-D3OBJECT * d3s_Object = 0;  /* 0x633448, object the shadow polygons go to */
 unsigned int d3s_CacheCount = 0;  /* 0x633db8 */
 unsigned int d3s_CacheAge = 0;  /* 0x633dbc */
 extern D3SCENT * d3s_Cache;
 unsigned int d3s_Count = 0;  /* 0x633dc0 */
 unsigned int d3s_MaxPolys = 0;  /* 0x633dc4 */
 int d3s_MaxPolys2 = 0;  /* 0x633dc8 */
+int d3s_ShadowMapSize = 0;  /* 0x633dcc */
 extern int d3s_ShadowMapSize;              /* 0x633dcc, cells per side of the object shadow map */
 extern const unsigned char d3s_Palette[];
 extern float * d3s_Verts;

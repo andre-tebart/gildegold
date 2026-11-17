@@ -1881,6 +1881,7 @@ void evt_ResetNoGroup(void)
     evt_NoGroup = -1;
 }
 
+EVTSCRIPT *evt_Scripts = 0;  /* 0x6332b4, [128] */
 EVTSCRIPT * evt_Cur = 0;  /* 0x6332b8 */
 EVTBUILTIN * evt_Builtins = 0;  /* 0x6332bc, [256] */
 int * evt_Args = 0;  /* 0x6332c0 */

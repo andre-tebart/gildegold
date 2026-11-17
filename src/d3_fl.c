@@ -3005,10 +3005,10 @@ char d3fl_MapShift = 0;  /* 0x63373d, texture shift copied into D3FLMAP.shift (d
 float d3fl_LightMargin = 0;  /* 0x633740, world units added to map->scale when a light's
                                              ground radius is converted to map cells (d3fl_LightCB; no writer) */
 unsigned int d3fl_Count = 0;  /* 0x633744 */
+unsigned int d3fl_DetailScale = 0;  /* 0x633748 */
 D3FLCACHE * d3fl_Cache = 0;  /* 0x63374c */
 unsigned char d3fl_DetailShift = 0;  /* 0x633750, 6 - log2(detail scale): */
 unsigned char d3fl_DetailSizeShift = 0;  /* 0x633751, the byte right after d3fl_DetailShift (f3init.c's detail shift) */
-D3VECTOR d3_SunColor = {0};  /* 0x633b1c, the sun colour, added to the ambient colour */
 extern float d3fl_Shade[1024];
 unsigned long d3fl_ColorTab[3][256];  /* 0xfbac60, 8-bit channel -> 16-bit pixel bits */
 D3VECTOR4 d3fl_LightCol;  /* 0xfbb860, color per light-map unit */

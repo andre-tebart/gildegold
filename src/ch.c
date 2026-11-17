@@ -79,9 +79,12 @@ char ch_MarkWalkErrors = 0;  /* 0x631058, when set, a failed walk animation mark
                                 flags bit 8; a debug switch (no writer in the image, always 0) */
 int ch_SndLib = 0;  /* 0x63105c, sound library for step sounds */
 int ch_StepSounds = 0;  /* 0x631060 */
+int ch_LowPoly = 0;  /* 0x631064 */
 D3VECTOR ch_PathOffset = {0};  /* 0x631068, added to the last path cell */
+int sv_PanelCartChar = 0;  /* 0x631078 */
 int ch_DirtyX1 = 0;  /* 0x63107c */
 int ch_DirtyZ1 = 0;  /* 0x631080 */
+struct D3SCENE *ch_Saved0 = 0;  /* 0x631084 */
 D3SCENE * ch_Saved1 = 0;  /* 0x631088, the same for ch_Ground1 */
 D3SM * ch_PathMap = 0;  /* 0x63108c */
 char ch_EmptyName[1] = {0};  /* 0x631090, "" */
