@@ -383,3 +383,37 @@ original's order (reverse-engineering LINK's name order) is kept for the very en
 - **datameasure --groups** prints every common group (start and extent deltas); an extent off by a few dozen bytes
   is the in-group name order padding (menu +16 with three commons), not a size error.
 
+
+### s9 additions
+- **A table indexed around 0 reveals its base**: qnt_InitTables writes `[i*4 + 0x631b34]` for i = -255..255 and
+  stores 0x631b34 into a pointer: the table spans 0x631738..0x631f34 (511 ints); 8 more bytes before it at the
+  8-aligned 0x631730 made it DL1's CLOSEST_INFO c_info (index/r/g/b, distance, squares[511]): QCLOSEST qnt_Closest
+  (+1 KB). Our int[256] at the middle address had the loop write below the array.
+- **An initialised path buffer**: a string followed by zeros up to the next datum is one char[N] (d2_FormsDir
+  "forms\\" is char[256]: 0x5fe608..0x5fe708; main_OpenScreen sprintfs into it). Ours was char[8]: -248.
+- **LIBC data with no reader, pulled by a removed function**: syserr.obj's _sys_errlist / _sys_nerr (.data
+  0x630740..0x6307f8) and its 43 strings (.rdata 0x5ef274..0x5ef5a0) sit in the original with no reference. A
+  call from code /OPT:REF later removes still pulls the member (and its data stays). zlib's gzerror calls
+  zstrerror(errno), which is strerror only under HAVE_STRERROR: defining it in gzio.c pulls strerror -> syserr and
+  closes .rdata (-809 -> +16) and .data's LIBC part. Check a LIBC gap against members the source's removed code
+  could reference before calling it unfixable.
+- **Unread .bss holes** (`tools/exe/holes.py LO HI`): a gap between two declared data that is not the
+  8-alignment before a >= 64-byte datum (or before the first datum of a unit whose section holds one) and that no
+  instruction operand or image dword points into is data of removed functions: declare an unread int block after
+  the datum it follows (s9: ~30 blocks in ch .. f3gmt, `<prefix>_UnreadBss`). A gap at a unit boundary goes to the
+  unit before it unless alignment says otherwise (d3_interface's 352 bytes start 8-aligned at 0x633758 after
+  d3_fl's last byte: a d3_fl block would be 8-aligned to 0x633758 too and overrun).
+- **The pooled "" literal in .bss**: twenty units push 0x631090 for "" (ours ch_EmptyName); VC6 places the
+  all-zero "" COMDAT in .bss. Ours still has ecmd's ocmd_* "" literal right after ch's block, which fills the
+  4 bytes 0x631094 the original has there: do not declare an unread block for them.
+- **Unread .data tables between a string run and the next named datum** are the next object's first datum: the
+  58 shorts at 0x6116f0 before ord_OrderHandlers (58 pointers) are the handlers' texts (ord_OrderTexts, -120).
+- **LIBC member order (open)**: the original's LIBC .text puts strupr / stricmp / strnicmp / mkdir / getcwd / itoa
+  at its end (0x5ea986..): the game called the old names (strupr, stricmp ..), which LIBC does not define, so they
+  resolve only through OLDNAMES.LIB, and the members are pulled in a later pass. Ours calls _strupr (23 files),
+  _stricmp, _strnicmp, .. and pulls them early (bio.c's `strupr` alone moved strupr.obj out of second place).
+  fpinit / _file / rand also come in another order (the original: strrchr, fpinit, ftol, fprintf, _file, rand ..;
+  ours fprintf, _file before fpinit): the LIBC .data then nets +20 against the original. Not done in s9.
+- **Common start reached by cancelling errors (s9 end)**: menu .. main start at the original's address with game
+  .data -4 (ai_ShotDrag), LIBC .data +20, the mixed .bss block 0x6f1bf8..0x6f2f98 -68, LIBC .bss +52. Each part
+  still needs its own fix.
