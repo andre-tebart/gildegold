@@ -5976,11 +5976,12 @@ void he_RunGraveyardWorkers(int ev)
                     if (ch->id != 0xffff && ch->bld == bld)
                         chars[n++] = ch;
                 }
+                i = 0;
                 if (n > 0) {
                     AIMSG msg;
 
                     chance += 0.75f;
-                    for (i = 0; i < n; i++) {
+                    while (i < n) {
                         r = util_RandomF();
                         if (r > chance) {
                             ch = chars[i];
@@ -6002,6 +6003,7 @@ void he_RunGraveyardWorkers(int ev)
                                 }
                             }
                         }
+                        i++;
                     }
                 }
                 bld = (AIBLD *)gm_BuildNext();
@@ -6010,11 +6012,11 @@ void he_RunGraveyardWorkers(int ev)
         e->end = ai_Time;
         gm_AddTime(&e->end, 0, 0x14 + (util_Random(0x14) & 0xffff), 0);
         e->stage++;
-        return;
+        break;
     case 1:
         for (bld = (AIBLD *)gm_BuildQuery(1, 5, 0x1d); bld != 0; bld = (AIBLD *)gm_BuildNext()) {
-            master = (AICHAR *)gm_FindCharacterByMaster(bld);
             n = 0;
+            master = (AICHAR *)gm_FindCharacterByMaster(bld);
             for (ch = ai_CharsT; (int)ch < (int)&ai_CharsT[768]; ch++) {
                 if (ch->id != 0xffff && ch->bld == bld)
                     chars[n++] = ch;
@@ -6035,21 +6037,21 @@ void he_RunGraveyardWorkers(int ev)
         e->end = ai_Time;
         gm_AddTime(&e->end, 0, 0x14 + (util_Random(0x14) & 0xffff), 0);
         e->stage++;
-        return;
+        break;
     case 2:
         e->end = ai_Time;
         gm_AddTime(&e->end, 0, 0x1e, 0);
         e->stage++;
-        return;
+        break;
     case 3:
         e->end = ai_Time;
         gm_AddTime(&e->end, 0, 0x1e, 0);
         e->stage = 0;
-        return;
+        break;
     case -2:
     case -1:
         he_FreeEvent((int *)ev);
-        return;
+        break;
     }
 }
 /* 0x572fd0, the run handler of the graveyard worker's theft 0x94 (he_RunGraveyardWorkers posts its message for a

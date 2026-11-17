@@ -3888,7 +3888,7 @@ exe	0x005728d0	he_AnswerGraveLease	he	515cceb8118f9ca9	no	byte	control=byte p1=b
 exe	0x005729c0	he_ExamCancelled	he	d5ef265b1bd5b131	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00572a50	he_RunGraveLease	he	2dc998a82315b449	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
 exe	0x00572b90	he_AllocGraveyardWorkers	he	2ea16b6b96395215	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x00572bf0	he_RunGraveyardWorkers	he	26c695257ae19217	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	4cbf06cae45cb11e
+exe	0x00572bf0	he_RunGraveyardWorkers	he_b	0debbbc0cc18bd75	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	a16b999ee169607d
 exe	0x00572fd0	he_RunGraveyardTheft	he	8a1a49654e60ed20	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00573200	he_HasGraveWork	he	82663258fecc8198	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00573260	he_RegisterEventTypeA2	he	e4e74ad57fdea43b	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
