@@ -344,6 +344,10 @@ Where the pushes and pops sit, how many epilogue copies there are, shared agains
 
 ### Search loops and their exits
 
+- **Three `xor eax,eax` return copies where ours folds the last into the first**: the search loop's exhausted
+  return tested at the loop top, `for (i = 0; ; i++) { if (i >= 768) return 0; if (found(i)) break; }`, not
+  `while (!found(i)) if (++i >= 768) return 0;` (ai_TokenMayor byte).
+
 - **`cmp i,N; jl <copy>` and a second `xor eax,eax; ret`**: `for (..) if (t[i].k == k) break; if (i >= N) return 0;
   *out = t[i]; return 1;`; in-loop exits merge the returns. `xor eax,eax` after the pops of a `goto add` loop: an
   always-true `if (i >= N) return 0;`. (amt_GetFirstOffice, amt_GetOffice, veg_SetPlant byte)
@@ -590,6 +594,12 @@ copied back into short predecessors only after all of this.
 
 ### Jumps into another arm, goto chains, shared tails
 
+- **One arm's store + return cross-jumped into the middle of another's (the target's `pop edi` after the stores,
+  ours hoists it and keeps a copy)**: the jumping arm returns its failure value itself, `if (!list[1]) return -7;
+  open[1] = 1; return 0;`, not `if (list[1]) { open[1] = 1; return 0; }` before a shared `return -7` (gv_OpenSize
+  byte; goto forms = control). A test + store repeated in each arm of an if/else (`o = f(); if (o) x = o->id;` in
+  both, `if (o == 0) {fail}` after): write it per arm, not once after the join (cm_SendChrGotoBuilding byte).
+
 - **One arm ends `cmp; jmp L` into the other arm's `jne fail` (L), the code behind it shared, and a register of
   the shared code that no candidate spelling moves (voice in ecx, ours eax)**: the shared code was written in both
   arms and cross-jumped: `if (click) { if (obj == cont) { stop voice; return 1; } } else if (key == 0x1c) { stop
@@ -717,6 +727,13 @@ copied back into short predecessors only after all of this.
 - **Macros on globals** give compare-then-conditional-store; `abs(0x7f) / 2` is not folded.
 
 ### Switch dispatch, case order, empty cases
+
+- **A direct table (`and ecx,0xff; add ecx,-3; jmp [ecx*4+T]`, one entry per value) where ours goes through a byte
+  index table (`mov dl,[ecx+X]; jmp [edx*4+T]`)**: VC6 picks the index table by the count of distinct case
+  statements, before identical `return K` blocks are merged: write one `return K;` per case label, not grouped
+  labels (cm_MessageSize 0x4c3180: 42 groups over 103 values -> one return per label, byte). A dead `cmp dl,K`
+  inside a case body plus the switched byte kept in dl: an `if (m->type == K)` in that case whose arms compile
+  alike, testing the switched expression itself (a `t = m->type` local spills it).
 
 - **A `xor eax,eax; ret` block laid out between two case bodies**: the case was written there (`case 1: ..; break;
   case 6: case 7: return 0; case 2: ..`); the table entries alone do not show it (gm_FirstBuilding).
@@ -1677,6 +1694,12 @@ a stack slot is a split piece, and the piece's extent is decided by the rules be
 - **`d2_ClickedId = -1;`** after the last d2_Inputs field store, not between them (lobby_Screen byte).
 
 ### Loops: counters, running values, loop pointers
+
+- **`mov eax,[p]; test eax,eax; mov esi,eax` before a list walk**: the walk has its own pointer, `for (q = p; q;
+  q = q->next)`, not `for (; p; p = p->next)`; an init store `mov [slot],0` as an immediate where ours stores the
+  zero register: that local was set before the one in the register (`ret = 0; n = 0;`) (rt_ChooseRouteGood byte).
+  A counter's `xor edx,edx` hoisted above an if/else that precedes the loop: its `k = 0` stood before the if, which
+  moves the arm's scratch registers (snd_UpdateMusic 19 -> 9).
 
 - **A parameter compared from memory at its first use in the loop body, loaded into a register at the second**
   (ours: in the register from the first use; nested ifs / `continue` / split conditions: the control's code): the
