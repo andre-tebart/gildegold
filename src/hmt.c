@@ -73,7 +73,17 @@ unsigned short hmt_RandomTextOffset(unsigned short k)
         return util_RandomU(10);
     return ret;
 }
-/* 0x4ac1a0, the text id of line n (at most 9) of record k: 0x1e2b + n, or 0x1e35 + n if textSet is set @deep code hunks 53: the original keeps n only in its argument slot and reloads it after the call (m in esi), ours holds n in edi across the call (extra push/pop); statements and result are equal, register allocation differs (match-deep) */
+/* 0x4ac1a0, the text id of line n (at most 9) of record k: 0x1e2b + n, or 0x1e35 + n if textSet is set
+   @deep size queue: 67 vs 63 raw (padded 80 vs 64): the original keeps n in memory (m = n loaded straight
+   into esi, return n reloads mov ax,[n]; only esi pushed); ours n#1 -> edi (c2trace: 3 refs, sav 4), so
+   edi is pushed/popped at each exit. s3 tried (no lever): ?: / if-else / (m = n) >= 9 / min() clamps x
+   four exit shapes (if/else returns, !e early return, ?: return, textSet test flipped), single-exit r / n
+   reuse forms: control or worse. hmt_GetRecord is defined below (unknown callee). Twin
+   hmt_RandomTextOffset (0x4ac170) has a dead load of e->textSet in the original: both may come from a
+   shared inline/macro around hmt_GetRecord + textSet; next: try that shape (and n's type as int with the
+   header). prior: code hunks 53: the original keeps n only in its argument slot and reloads it after the
+   call (m in esi), ours holds n in edi across the call (extra push/pop); statements and result are equal,
+   register allocation differs (match-deep) */
 
 unsigned short hmt_RecordTextId(unsigned short k, unsigned short n)
 {
