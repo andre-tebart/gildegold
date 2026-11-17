@@ -4139,155 +4139,6 @@ void txt_Format(char *out, int id0, ...);  /* 0x5176d0 */
 unsigned char * gm_BuildQuery(int n, ...);                     /* 0x501190 */
 unsigned short * gm_QueryNext(void);                   /* 0x4ffcc0 */
 
-/* 0x52adb0, resets the selection (item, object, model, sv_SelectedExtra) and clears the bit 2 of the carts (kind 0x1d) of the building ai_FallbackBuilding; without a player building (ai_PlayerBuilding) and without a fallback it
-   takes the first one gm_BuildQuery(1, 0, 0x44) finds. The player-building arm tests the global itself before the
-   common test of b (the original tests the value twice there) */
-void sv_ResetSelection(void)
-{
-    AIBLD *b;
-    AIOBJ *o;
-
-    sv_SelectedItem = 0;
-    sv_SelectedObject = 0;
-    sv_SelectedExtra = 0;
-    sv_SelectedModel = 0;
-    if (ai_PlayerBuilding == 0) {
-        b = (AIBLD *)ai_FallbackBuilding;
-        if (b == 0)
-            b = (AIBLD *)gm_BuildQuery(1, 0, 0x44);
-    } else {
-        if (ai_FallbackBuilding == 0)
-            return;
-        b = (AIBLD *)ai_FallbackBuilding;
-    }
-    if (b == 0)
-        return;
-    sv_OtherSelected = 0;
-    o = (AIOBJ *)gm_Query((void *)b->objList, 1, 5);
-    while (o != 0) {
-        if (ai_GoodsT[o->id].type == 0x1d)
-            o->flags20 &= ~2u;
-        o = (AIOBJ *)gm_QueryNext();
-    }
-}
-/* 0x52ae40, clears the group selection: the focus 0x7662c0, 0x6f2304, the selected flag (+0x21c stride: +0x188 of the character records at 0x770d08) and 0x6f2334 */
-
-void sv_ClearSelection(void)
-{
-    char *q;
-
-    q = (char *)(unsigned)&ai_Selected;
-    sv_SelectedChar = 0;
-    sv_SelectedModel = 0;
-    do {
-        *q = 0;
-        q += 0x21c;
-    } while ((int)q < (int)((unsigned)&ai_Selected + 0x65400));
-    ai_SelectedCount = 0;
-}
-/* 0x52b2a0, collects into ai_SceneChars the characters whose scene character (AICHAR.model, its +0x2c) belongs to the
-   building b (b == 0: the ones in no building, -1), at most 31; past the eighth one of a building the scene character
-   is hidden */
-void sv_CollectGroupCharacters(char *b)
-{
-    int n, i;
-    AICHAR *c;
-
-    memset(ai_SceneChars, 0, sizeof(ai_SceneChars));
-    if (b != 0) {
-        n = 0;
-        for (i = 0; i < 768; i++) {
-            if (n >= 31)
-                return;
-            c = &ai_CharsT[i];
-            if (c->model != 0 && c->model->bldId == ((AIBLD *)b)->id) {
-                ai_SceneChars[n++] = (int)c;
-                if (n > 8)
-                    ch_SetVisible((CHARACTER *)c->model, 0);
-            }
-        }
-    } else {
-        n = 0;
-        for (i = 0; i < 768; i++) {
-            if (n >= 31)
-                return;
-            if (ai_CharsT[i].model != 0 && ai_CharsT[i].model->bldId == -1)
-                ai_SceneChars[n++] = (int)&ai_CharsT[i];
-        }
-    }
-}
-/* 0x52b350, registers the activity of the character job kind (name, dayOnly, icon, valueOff: SVACTIVITY) in the
-   first free entry of sv_Activities; returns 1, or 0 when the table is full */
-int sv_RegisterActivity(int kind, char *name, int dayOnly, int icon, int valueOff)
-{
-    int i;
-
-    for (i = 0; i < 0x30; i++) {
-        if (sv_Activities[i].kind == 0) {
-            if (name != 0)
-                strcpy(sv_Activities[i].name, name);
-            sv_Activities[i].kind = kind;
-            sv_Activities[i].dayOnly = dayOnly;
-            sv_Activities[i].icon = icon;
-            sv_Activities[i].valueOff = valueOff;
-            return 1;
-        }
-    }
-    return 0;
-}
-/* 0x52b3c0, copies to out the location name of the activity (sv_Activities) of c's job kind when c is not flagged
-   0x1000000, is in the building b, and the activity is not day-only or the hour lies in the season's day window
-   (gm_DayStartHours / gm_DayEndHours); returns 1, else 0 */
-int sv_ActivityName(AICHAR *c, AIBLD *b, char *out)
-{
-    int season, i;
-
-    season = gm_ClockSeason(&ai_Time);
-    for (i = 0; sv_Activities[i].kind != 0; i++) {
-        if (sv_Activities[i].kind == c->jobKind) {
-            if ((c->flags1cc & (1 << 24)) == 0 && c->bld == b
-                && (sv_Activities[i].dayOnly == 0
-                    || ((float)ai_Time.hour < gm_DayEndHours[season] && gm_DayStartHours[season] <= (float)ai_Time.hour))) {
-                strcpy(out, sv_Activities[i].name);
-                return 1;
-            }
-            return 0;
-        }
-    }
-    return 0;
-}
-/* 0x52b490, starts the role pose script "sp_<netId>" of the character a from the template b (an .esc name) and
-   links it back: the script's character (+0xc94) and the character model's scriptId (+0x28 of the model at +0x184) */
-
-int sv_StartPoseScript(char *a, int b)
-{
-    AICHAR *c;
-    EVTSCRIPT *script;
-    char buf[0x80];
-
-    c = (AICHAR *)a;
-    sprintf(buf, "sp_%i", c->netId);
-    script = evt_Load((char *)b);
-    if (script != 0) {
-        evt_RunScriptArgs(script, 1, buf);
-        script->character = (CHARACTER *)c->model;
-        c->model->scriptId = script->id;
-    }
-    return (int)script;
-}
-
-void d2_SetObjEnabled();                     /* 0x475e40 */
-int ai_RunAllows();                     /* 0x5763c0 */
-void ai_CampaignStep(int a, int b, int c, int d);                     /* 0x576040 */
-int gm_BuildingClass(int kind);                /* 0x501d80, f3gm.c, the class of a building kind */
-void ai_TechTreeWindow(int param_1, int param_2);                     /* 0x591bf0 */
-void d2_FreeAnim(int n);                     /* 0x47ce30 */
-int d3t_PlaceAtObject();                     /* 0x4118a0 */
-void snd_PlayWorkerClick(struct G16CHARCLICK *c);                     /* 0x4c2c70 */
-
-
-struct D3OBJECT * d3if_Pick(float x, float y, int flags, int mask);   /* 0x448630 */
-
 /* 0x52a050, the per-frame update of the info panel (not while the player bar is open or before the game runs):
    enables the transport button unless the selected building holds the objects 0x2a / 0x116; with the 0x2000 frame
    flag a click on the action button opens the tech tree of the player's (or the fallback building's shown room)
@@ -4610,6 +4461,52 @@ void sv_HoverPick(void)
         sv_HoverLast = (int)ai_PickedObject;
     }
 }
+/* 0x52adb0, resets the selection (item, object, model, sv_SelectedExtra) and clears the bit 2 of the carts (kind 0x1d) of the building ai_FallbackBuilding; without a player building (ai_PlayerBuilding) and without a fallback it
+   takes the first one gm_BuildQuery(1, 0, 0x44) finds. The player-building arm tests the global itself before the
+   common test of b (the original tests the value twice there) */
+void sv_ResetSelection(void)
+{
+    AIBLD *b;
+    AIOBJ *o;
+
+    sv_SelectedItem = 0;
+    sv_SelectedObject = 0;
+    sv_SelectedExtra = 0;
+    sv_SelectedModel = 0;
+    if (ai_PlayerBuilding == 0) {
+        b = (AIBLD *)ai_FallbackBuilding;
+        if (b == 0)
+            b = (AIBLD *)gm_BuildQuery(1, 0, 0x44);
+    } else {
+        if (ai_FallbackBuilding == 0)
+            return;
+        b = (AIBLD *)ai_FallbackBuilding;
+    }
+    if (b == 0)
+        return;
+    sv_OtherSelected = 0;
+    o = (AIOBJ *)gm_Query((void *)b->objList, 1, 5);
+    while (o != 0) {
+        if (ai_GoodsT[o->id].type == 0x1d)
+            o->flags20 &= ~2u;
+        o = (AIOBJ *)gm_QueryNext();
+    }
+}
+/* 0x52ae40, clears the group selection: the focus 0x7662c0, 0x6f2304, the selected flag (+0x21c stride: +0x188 of the character records at 0x770d08) and 0x6f2334 */
+
+void sv_ClearSelection(void)
+{
+    char *q;
+
+    q = (char *)(unsigned)&ai_Selected;
+    sv_SelectedChar = 0;
+    sv_SelectedModel = 0;
+    do {
+        *q = 0;
+        q += 0x21c;
+    } while ((int)q < (int)((unsigned)&ai_Selected + 0x65400));
+    ai_SelectedCount = 0;
+}
 /* 0x52ae70, "sv_HandleObjects": turns a click into the selection. A pending quick jump (sv_PanelFlag) looks up its
    contact name (sv_QuickJump.contactName) as an object when the panel shows the current building's remembered room; a left
    click inside the view (or that jump) copies the hover state into the sv_Clicked* state, focuses the camera on a
@@ -4710,6 +4607,109 @@ void sv_HandleObjects(void)
             sv_ResetSelection();
     }
 }
+/* 0x52b2a0, collects into ai_SceneChars the characters whose scene character (AICHAR.model, its +0x2c) belongs to the
+   building b (b == 0: the ones in no building, -1), at most 31; past the eighth one of a building the scene character
+   is hidden */
+void sv_CollectGroupCharacters(char *b)
+{
+    int n, i;
+    AICHAR *c;
+
+    memset(ai_SceneChars, 0, sizeof(ai_SceneChars));
+    if (b != 0) {
+        n = 0;
+        for (i = 0; i < 768; i++) {
+            if (n >= 31)
+                return;
+            c = &ai_CharsT[i];
+            if (c->model != 0 && c->model->bldId == ((AIBLD *)b)->id) {
+                ai_SceneChars[n++] = (int)c;
+                if (n > 8)
+                    ch_SetVisible((CHARACTER *)c->model, 0);
+            }
+        }
+    } else {
+        n = 0;
+        for (i = 0; i < 768; i++) {
+            if (n >= 31)
+                return;
+            if (ai_CharsT[i].model != 0 && ai_CharsT[i].model->bldId == -1)
+                ai_SceneChars[n++] = (int)&ai_CharsT[i];
+        }
+    }
+}
+/* 0x52b350, registers the activity of the character job kind (name, dayOnly, icon, valueOff: SVACTIVITY) in the
+   first free entry of sv_Activities; returns 1, or 0 when the table is full */
+int sv_RegisterActivity(int kind, char *name, int dayOnly, int icon, int valueOff)
+{
+    int i;
+
+    for (i = 0; i < 0x30; i++) {
+        if (sv_Activities[i].kind == 0) {
+            if (name != 0)
+                strcpy(sv_Activities[i].name, name);
+            sv_Activities[i].kind = kind;
+            sv_Activities[i].dayOnly = dayOnly;
+            sv_Activities[i].icon = icon;
+            sv_Activities[i].valueOff = valueOff;
+            return 1;
+        }
+    }
+    return 0;
+}
+/* 0x52b3c0, copies to out the location name of the activity (sv_Activities) of c's job kind when c is not flagged
+   0x1000000, is in the building b, and the activity is not day-only or the hour lies in the season's day window
+   (gm_DayStartHours / gm_DayEndHours); returns 1, else 0 */
+int sv_ActivityName(AICHAR *c, AIBLD *b, char *out)
+{
+    int season, i;
+
+    season = gm_ClockSeason(&ai_Time);
+    for (i = 0; sv_Activities[i].kind != 0; i++) {
+        if (sv_Activities[i].kind == c->jobKind) {
+            if ((c->flags1cc & (1 << 24)) == 0 && c->bld == b
+                && (sv_Activities[i].dayOnly == 0
+                    || ((float)ai_Time.hour < gm_DayEndHours[season] && gm_DayStartHours[season] <= (float)ai_Time.hour))) {
+                strcpy(out, sv_Activities[i].name);
+                return 1;
+            }
+            return 0;
+        }
+    }
+    return 0;
+}
+/* 0x52b490, starts the role pose script "sp_<netId>" of the character a from the template b (an .esc name) and
+   links it back: the script's character (+0xc94) and the character model's scriptId (+0x28 of the model at +0x184) */
+
+int sv_StartPoseScript(char *a, int b)
+{
+    AICHAR *c;
+    EVTSCRIPT *script;
+    char buf[0x80];
+
+    c = (AICHAR *)a;
+    sprintf(buf, "sp_%i", c->netId);
+    script = evt_Load((char *)b);
+    if (script != 0) {
+        evt_RunScriptArgs(script, 1, buf);
+        script->character = (CHARACTER *)c->model;
+        c->model->scriptId = script->id;
+    }
+    return (int)script;
+}
+
+void d2_SetObjEnabled();                     /* 0x475e40 */
+int ai_RunAllows();                     /* 0x5763c0 */
+void ai_CampaignStep(int a, int b, int c, int d);                     /* 0x576040 */
+int gm_BuildingClass(int kind);                /* 0x501d80, f3gm.c, the class of a building kind */
+void ai_TechTreeWindow(int param_1, int param_2);                     /* 0x591bf0 */
+void d2_FreeAnim(int n);                     /* 0x47ce30 */
+int d3t_PlaceAtObject();                     /* 0x4118a0 */
+void snd_PlayWorkerClick(struct G16CHARCLICK *c);                     /* 0x4c2c70 */
+
+
+struct D3OBJECT * d3if_Pick(float x, float y, int flags, int mask);   /* 0x448630 */
+
 
 int sv_RunFrame(int cb, unsigned mask);                     /* 0x5309a0 */
 
@@ -5475,6 +5475,63 @@ void sv_DrawBubbles(void)
         d2_AddDirty(x, y, d2_TextDrawnW, d2_TextDrawnH);
     }
 }
+/* 0x52d010, the d3_ForEachObject2 callback of 0x52d1e0 (scene objects of mask 0x20): for a "gate" part of the shown
+   building (ai_FallbackBuilding, else ai_PlayerBuilding) finds the item named by the part's name from +0x10
+   ("contact_gate_<item>") among the building's objects (kind 6 in a fallback building, else 2), else the room
+   object 0xfd of a fallback building, and draws its name above the part's screen box: the item's name with
+   txt_GateItemSuffix, for the room object the shown room's or the building kind's name with txt_GatePlaceSuffix */
+
+void sv_DrawGateName(D3OBJECT *part)
+{
+    AIBLD *b;
+    unsigned short *it, *obj;
+    char name[0x60];
+    char buf[0x100];
+    D3RECT box;
+    int x, y;
+    AIGOOD *g;
+
+    if (ai_FallbackBuilding != 0)
+        b = (AIBLD *)ai_FallbackBuilding;
+    else if (ai_PlayerBuilding != 0)
+        b = (AIBLD *)ai_PlayerBuilding;
+    else
+        return;
+    if (strstr(part->name, "gate") == 0)
+        return;
+    strcpy(name, part->name + 0x10);
+    if (ai_FallbackBuilding != 0)
+        it = (unsigned short *)gm_Query((void *)b->objList, 1, 4, 6);
+    else
+        it = (unsigned short *)gm_Query((void *)b->objList, 1, 4, 2);
+    for (; it != 0; it = gm_QueryNext()) {
+        g = &ai_GoodsT[*it];
+        if (_strcmpi(name, g->name) == 0) {
+            obj = it;
+            goto found;
+        }
+    }
+    if (ai_FallbackBuilding == 0)
+        return;
+    obj = (unsigned short *)gm_Query((void *)b->objList, 1, 0, 0xfd);
+found:
+    if (obj == 0)
+        return;
+    if (*obj == 0xfd) {
+        if (sv_PanelShown != 0)
+            sprintf(buf, "%s %s", (char *)txt_ObjectNames[*sv_PanelShown][0], txt_GatePlaceSuffix);
+        else
+            sprintf(buf, "%s %s", (char *)ai_BuildingNames[b->type * 0xe - 2], txt_GatePlaceSuffix);
+    } else {
+        sprintf(buf, "%s %s", (char *)txt_ObjectNames[*obj][0], txt_GateItemSuffix);
+    }
+    if (d3if_ScreenBox(part, &box) != 0) {
+        y = box.top;
+        x = (box.right - box.left) / 2 - 0x50 + box.left;
+        d2_DrawTextBox(x, y, 0xa0, 0x60, d2_ScreenSurf, buf, 0x28);
+        d2_AddDirty(x, y, d2_TextDrawnW, d2_TextDrawnH);
+    }
+}
 /* 0x52d1e0, draws the text of every name plate (sv_NamePlates) above the screen box of its object (one with mesh data
    or of type 0), then the names of the contact gates of the current scene (sv_DrawGateName)
    (the null test reads the plate's obj again, not the local: VC6 then walks the plates by obj, as the original) */
@@ -5541,63 +5598,6 @@ void sv_DrawItemNames(void)
             d2_DrawTextBox(x, y, 0xa0, 0x60, d2_ScreenSurf, (char *)txt_ObjectNames[q->id][0], 0x28);
             d2_AddDirty(x, y, d2_TextDrawnW, d2_TextDrawnH);
         }
-    }
-}
-/* 0x52d010, the d3_ForEachObject2 callback of 0x52d1e0 (scene objects of mask 0x20): for a "gate" part of the shown
-   building (ai_FallbackBuilding, else ai_PlayerBuilding) finds the item named by the part's name from +0x10
-   ("contact_gate_<item>") among the building's objects (kind 6 in a fallback building, else 2), else the room
-   object 0xfd of a fallback building, and draws its name above the part's screen box: the item's name with
-   txt_GateItemSuffix, for the room object the shown room's or the building kind's name with txt_GatePlaceSuffix */
-
-void sv_DrawGateName(D3OBJECT *part)
-{
-    AIBLD *b;
-    unsigned short *it, *obj;
-    char name[0x60];
-    char buf[0x100];
-    D3RECT box;
-    int x, y;
-    AIGOOD *g;
-
-    if (ai_FallbackBuilding != 0)
-        b = (AIBLD *)ai_FallbackBuilding;
-    else if (ai_PlayerBuilding != 0)
-        b = (AIBLD *)ai_PlayerBuilding;
-    else
-        return;
-    if (strstr(part->name, "gate") == 0)
-        return;
-    strcpy(name, part->name + 0x10);
-    if (ai_FallbackBuilding != 0)
-        it = (unsigned short *)gm_Query((void *)b->objList, 1, 4, 6);
-    else
-        it = (unsigned short *)gm_Query((void *)b->objList, 1, 4, 2);
-    for (; it != 0; it = gm_QueryNext()) {
-        g = &ai_GoodsT[*it];
-        if (_strcmpi(name, g->name) == 0) {
-            obj = it;
-            goto found;
-        }
-    }
-    if (ai_FallbackBuilding == 0)
-        return;
-    obj = (unsigned short *)gm_Query((void *)b->objList, 1, 0, 0xfd);
-found:
-    if (obj == 0)
-        return;
-    if (*obj == 0xfd) {
-        if (sv_PanelShown != 0)
-            sprintf(buf, "%s %s", (char *)txt_ObjectNames[*sv_PanelShown][0], txt_GatePlaceSuffix);
-        else
-            sprintf(buf, "%s %s", (char *)ai_BuildingNames[b->type * 0xe - 2], txt_GatePlaceSuffix);
-    } else {
-        sprintf(buf, "%s %s", (char *)txt_ObjectNames[*obj][0], txt_GateItemSuffix);
-    }
-    if (d3if_ScreenBox(part, &box) != 0) {
-        y = box.top;
-        x = (box.right - box.left) / 2 - 0x50 + box.left;
-        d2_DrawTextBox(x, y, 0xa0, 0x60, d2_ScreenSurf, buf, 0x28);
-        d2_AddDirty(x, y, d2_TextDrawnW, d2_TextDrawnH);
     }
 }
 /* 0x52d480, with the frame flag 8 and the panel permission 0x1000 (of the shown room, and ai_BuildingPerms): draws the
