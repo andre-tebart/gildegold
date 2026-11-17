@@ -6116,21 +6116,7 @@ int d2_TextWidth();
    second), each drawn from the current statistics stats over the window's width - 1 and height; then the axes, the
    ticks and right-aligned percent labels 100% .. 25% of the four rows, the rating scale (the top value the rating
    base chart returned and its half) on the right, and along the bottom one tick per round back from the game clock
-   ai_Time, a longer tick and the year at each round in the first month of a year. The pen size is restored
-   @deep Reconstructed in full against the original (charts by flag, axes, 4 row ticks, percent labels
-   100..25 right-aligned, the rating scale labels top and top/2, the year ticks from ai_Time back 15 rounds
-   with gm_ClockToDate); every statement, constant, call and argument read and compared. Left: register
-   allocation and spills. The original keeps width in ebx and height in ebp (height also saved at
-   [esp+0x18]), the year-loop counter in ebx, x in esi with -scale in the dead win slot [esp+0x78]; ours
-   swaps ebx/ebp for width/height (the 'M8 at +0x41' is that crossing: both sides load d2_Wins[win].w (+8)
-   first, then .h (+0xa)), spills x to [esp+0x4c] and keeps -scale at [esp+0x18], and CSEs width-0x37 once
-   (add ebp,-0x37) where the original recomputes lea eax,[ebx-0x37]. Hunks 0x5c7bf8 (2), 0x5c7c19 (5),
-   0x5c7d8c (27), 0x5c7e01 (18), 0x5c7e27 (24), 0x5c7e6b (15) are these moves. Tried: a separate year-loop
-   counter, width/height declaration order, x recomputed as 0x2d + i*scale (worse: the original
-   strength-reduces the tick x but imuls the label x). (references: M8 at +0x41: ours refers to d2_Wins+0x8
-   (0xf8f128), the original's field to 0xf8f12a (d2_Wins+0xa), explained: the M8 at +0x41 is a register
-   crossing: both sides load d2_Wins[win].w (0xf8f128) into the width register first and .h (0xf8f12a)
-   second; the aligner pairs ours' ebp load with the original's ebp load) */
+   ai_Time, a longer tick and the year at each round in the first month of a year. The pen size is restored */
 
 void ai_DrawStatisticsCharts(unsigned short flags, ORDSTATS stats, int win)
 {
@@ -6152,8 +6138,8 @@ void ai_DrawStatisticsCharts(unsigned short flags, ORDSTATS stats, int win)
     GMDATE date;
     char buf[16];
 
-    old = d2_PenSize;
     top = 0;
+    old = d2_PenSize;
     d2_ClearPaintbox();
     d2_RemoveWindowObjects(win, 1);
     d2_PenSize = 1;
@@ -6212,8 +6198,8 @@ void ai_DrawStatisticsCharts(unsigned short flags, ORDSTATS stats, int win)
     }
     clock.year--;
     gm_ClockToDate(&clock, (unsigned char *)&date);
-    x = 0x2d + scale * 15;
     for (round = 15; round > 0; round--) {
+        x = 0x2d + round * scale;
         d2_PlotLine(x, height - 0x13, x, height - 0x10, 0x10, 0x10, 0x10);
         if (date.month == 1) {
             txt_Format(buf, "%i", date.year);
@@ -6224,7 +6210,6 @@ void ai_DrawStatisticsCharts(unsigned short flags, ORDSTATS stats, int win)
         }
         clock.year--;
         gm_ClockToDate(&clock, (unsigned char *)&date);
-        x -= scale;
     }
     if (date.month == 1) {
         txt_Format(buf, "%i", date.year);
