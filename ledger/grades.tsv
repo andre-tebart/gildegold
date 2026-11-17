@@ -2093,7 +2093,7 @@ exe	0x004bdae0	rt_BuildMarkGroup	rt	byte	readable
 exe	0x004bdb30	rt_PutRouteMark	rt	byte	readable		
 exe	0x004bdc90	rt_MarkValue	rt	byte	readable		
 exe	0x004bdca0	rt_ReadMarkValues	rt	byte	readable		
-exe	0x004bdcd0	rt_ChooseGoodsDialog	rt	shape	readable		
+exe	0x004bdcd0	rt_ChooseGoodsDialog	rt	shape	readable	deep	
 exe	0x004be180	rt_ChooseRouteGood	rt	byte	readable		
 exe	0x004be3b0	rt_ChooseTabGood	rt	byte	readable		
 exe	0x004be790	rt_OpenSlotControls	rt	byte	readable		
@@ -2298,7 +2298,7 @@ exe	0x004c7f70	cm_ExFieldValues	cm	byte	readable
 exe	0x004c8050	cm_ExMoodDeltas	cm	byte	readable		
 exe	0x004c8110	cm_ExSetField	cm	byte	readable		
 exe	0x004c81d0	cm_ExFloatDelta	cm	byte	readable		
-exe	0x004c8240	cm_ExRelations	cm	shape	readable		
+exe	0x004c8240	cm_ExRelations	cm	shape	readable	deep	
 exe	0x004c85c0	cm_ExLongMessage	cm	shape	readable	deep	
 exe	0x004c87a0	cm_ExSetHE	cm	byte	readable		
 exe	0x004c88a0	cm_ExTime	cm	byte	readable		
@@ -2319,7 +2319,7 @@ exe	0x004c9520	cm_ExSetPlant	cm	byte	readable
 exe	0x004c9740	cm_ExCreateSermon	cm	byte	readable		
 exe	0x004c97c0	cm_ExChrWalkTo	cm	byte	readable		
 exe	0x004c9830	cm_ExChrWalkToDummy	cm	shape	readable		
-exe	0x004c99b0	cm_ExChrMoveToUniverse	cm	shape	readable		
+exe	0x004c99b0	cm_ExChrMoveToUniverse	cm	byte	readable		
 exe	0x004c9c10	cm_ExChrStop	cm	byte	readable		
 exe	0x004c9c80	cm_ExChrSetPos	cm	byte	readable		
 exe	0x004c9d00	cm_ExCartState	cm	byte	readable		
@@ -2522,7 +2522,7 @@ exe	0x004de4b0	cm_SinkDownAction	cm	shape	readable
 exe	0x004de530	cm_DuelSinkDown	cm	byte	readable		
 exe	0x004de5e0	cm_DuelInitVariants	cm	byte	readable		
 exe	0x004de610	cm_DuelVariant	cm	byte	readable		
-exe	0x004de640	cm_DuelShotAction	cm	shape	readable		
+exe	0x004de640	cm_DuelShotAction	cm	shape	readable	deep	
 exe	0x004de900	cm_DuelRound	cm	shape	readable		
 exe	0x004debe0	cm_DuelOutcome	cm	shape	readable		
 exe	0x004ded10	cm_RunDuel	cm	draft	readable	deep	
@@ -2536,7 +2536,7 @@ exe	0x004e0040	cm_ExecutionAftermath	cm	byte	readable
 exe	0x004e01e0	cm_RunExecution	cm	byte	readable		
 exe	0x004e0580	cm_CheckWedding	cm	byte	readable		
 exe	0x004e06d0	cm_EndWedding	cm	byte	readable		
-exe	0x004e0770	cm_RunWedding	cm	shape	readable		
+exe	0x004e0770	cm_RunWedding	cm	shape	readable	deep	
 exe	0x004e0e90	cm_CheckBirth	cm	byte	readable		
 exe	0x004e0f70	cm_RunBirth	cm	draft	readable	deep	
 exe	0x004e1220	cm_DeathSceneCheck	cm	byte	readable		
@@ -3028,7 +3028,7 @@ exe	0x00501f60	gm_NearestFreeBuilding	f3gmt	byte	readable
 exe	0x00502020	gm_FindBuildingById	f3gmt	byte	readable		
 exe	0x00502060	gm_FindBuildingKind	f3gmt	byte	readable		
 exe	0x005020a0	gm_ListBuildingsOfType	f3gmt	byte	readable		
-exe	0x005020e0	gm_MayTakeJob	f3gmt	shape	readable		
+exe	0x005020e0	gm_MayTakeJob	f3gmt	shape	readable	deep	
 exe	0x005024f0	gm_IsType10	f3gmt	byte	readable		
 exe	0x00502520	gm_IsHomeType	f3gmt	byte	readable		
 exe	0x00502570	gm_GoodPicture	f3gmt	byte	readable		
@@ -3558,7 +3558,7 @@ exe	0x00542960	he_AllocOffer	he	byte	readable
 exe	0x00542b60	he_RunWeddingOffer	he	byte	readable		
 exe	0x00543020	he_AllocQuarrel	he	byte	readable		
 exe	0x00543180	he_RunQuarrel	he	byte	readable		
-exe	0x005432f0	he_RunMasterExam	he	shape	readable		
+exe	0x005432f0	he_RunMasterExam	he	byte	readable		
 exe	0x005436a0	he_AllocFeast	he	byte	readable		
 exe	0x005437c0	he_RunFeast	he	draft	readable	deep	
 exe	0x00543ac0	he_RunFeastExam	he	draft	readable	deep	
@@ -3665,7 +3665,7 @@ exe	0x00551340	he_StepWalkSlot	he	byte	readable
 exe	0x00551440	he_FillWalkSlot	he	draft	readable	deep	
 exe	0x005516a0	he_PlayGestures	he	byte	readable		
 exe	0x00551780	he_StepWalk	he	draft	readable	deep	
-exe	0x00551b70	he_RunWalk	he	shape	readable		
+exe	0x00551b70	he_RunWalk	he	byte	readable		
 exe	0x00551d00	he_InitSixGroupEvent	he	byte	readable		
 exe	0x00551d70	he_RunSixGroupEvent	he	draft	readable	deep	
 exe	0x00552040	he_StartExam	he	byte	readable		
@@ -3889,7 +3889,7 @@ exe	0x005728d0	he_AnswerGraveLease	he_b	byte	readable
 exe	0x005729c0	he_ExamCancelled	he_b	byte	readable		
 exe	0x00572a50	he_RunGraveLease	he_b	shape	readable		
 exe	0x00572b90	he_AllocGraveyardWorkers	he_b	byte	readable		
-exe	0x00572bf0	he_RunGraveyardWorkers	he_b	shape	readable		
+exe	0x00572bf0	he_RunGraveyardWorkers	he_b	byte	readable		
 exe	0x00572fd0	he_RunGraveyardTheft	he_b	byte	readable		
 exe	0x00573200	he_HasGraveWork	he_b	byte	readable		
 exe	0x00573260	he_RegisterEventTypeA2	he_b	byte	readable		
@@ -4188,7 +4188,7 @@ exe	0x005962b0	ai_StonecutterContact	lc	byte	readable
 exe	0x00596400	ai_RobberContact	lc	byte	readable		
 exe	0x005965f0	ai_RhetoricContact	lc	byte	readable		
 exe	0x005966f0	ai_FeastContact	lc	byte	readable		
-exe	0x005967c0	ai_MistressAffairWindow	lc	shape	readable		
+exe	0x005967c0	ai_MistressAffairWindow	lc	byte	readable		
 exe	0x00596ba0	ai_MistressWindow	lc	draft	readable	deep	
 exe	0x00596f90	ai_MistressContact	lc	byte	readable		
 exe	0x00596ff0	ai_MasterExamWindow	lc	draft	readable	deep	
@@ -4420,7 +4420,7 @@ exe	0x005b7b80	ai_BuyBuildingOfferWindow	lcdom	shape	readable
 exe	0x005b7dd0	ai_TechEffectsWindow	lcdom	draft	readable	deep	
 exe	0x005b82a0	ai_FireFightingWindow	lcdom	byte	readable		
 exe	0x005b84f0	ai_BuildingWindow	lcdom	draft	readable	deep	
-exe	0x005b8fc0	ai_ManagedBuildingWindow	lcdom	shape	readable		
+exe	0x005b8fc0	ai_ManagedBuildingWindow	lcdom	byte	readable		
 exe	0x005b92e0	ai_LiquidateAssets	lcdom	draft	readable	deep	
 exe	0x005b9730	ob_HandleBepflanzung	lcdom	draft	readable	deep	
 exe	0x005b9db0	ai_HandlePickedPlant	lcdom	byte	readable		
