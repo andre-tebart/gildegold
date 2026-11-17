@@ -4289,16 +4289,7 @@ int gm_IsUnderAge(unsigned short id); int ai_WorksForMaster();
    0x10000 an own building, 0x20000 / 0x20 not the power flags 0x800000 / 0x40000000, 0x80 the word +0x1f0 set,
    unless 0x40000 none of the flags1cc bits 0x3000; of the bits 0x100000 (kinds 6 / 7), 0x200000 (kind 5), 0x400000
    (not 5, working for a master: ai_WorksForMaster) and 0x800000 (kind 0) one must hold. With cfg->liking me's
-   liking of id (gm_Liking) must lie in [likingMin, likingMax]. unused is never read
-   @deep read in full against the original: every test, field (AICHARREC via lc_CharRecs[id], indexed as
-   the original does) and the AMOUNTCFG filter words (mode, option14, ids, liking / likingMin / likingMax)
-   agree, the calls are the same (gm_FindChar, gm_IsUnderAge x2, ai_WorksForMaster, gm_Liking). The shared
-   reject / accept tails need the labels (30 returns duplicated the epilogue: 437 vs 279 instructions).
-   Left (17 lines): the last three blocks' order - the original falls from the likingMax fcomp into reject
-   (+0x3bc), then the fstp return 0 of liking < likingMin (+0x3c3), then accept (+0x3cc); ours jumps to
-   reject and puts accept first, with fstp sharing reject's tail; and the one-of bits' first flag in eax
-   then mov edi, eax (+0x316) where ours sets edi directly. Tried: <= / !(>) / >= nestings of the two
-   liking tests, labels in and out of the block, separate flag variables (worse: 99). */
+   liking of id (gm_Liking) must lie in [likingMin, likingMax]. unused is never read */
 
 int ai_PassesPartnerFilter(unsigned short me, unsigned short id, AMOUNTCFG *cfg, int unused)
 {
@@ -4383,24 +4374,25 @@ int ai_PassesPartnerFilter(unsigned short me, unsigned short id, AMOUNTCFG *cfg,
             goto reject;
     }
     if (mask & PF_ONE_OF) {
-        any = (mask & PF_KIND67) && (lc_CharRecs[id].kind == 6 || lc_CharRecs[id].kind == 7);
+        any = 0;
+        any |= (mask & PF_KIND67) && (lc_CharRecs[id].kind == 6 || lc_CharRecs[id].kind == 7);
         any |= (mask & PF_KIND5) && lc_CharRecs[id].kind == 5;
         any |= (mask & PF_SERVANT) && lc_CharRecs[id].kind != 5 && ai_WorksForMaster(&lc_CharRecs[id]);
         if (!(((cfg->mode & PF_KIND0) && lc_CharRecs[id].kind == 0) | any))
             goto reject;
     }
-    if (cfg->liking == 0)
-        goto accept;
-    liking = gm_Liking(me, id, 1);
-    if (!(liking < cfg->likingMin)) {
-        if (!(liking > cfg->likingMax))
-            goto accept;
-reject:
-        return 0;
+    if (cfg->liking != 0) {
+        liking = gm_Liking(me, id, 1);
+        if (!(liking < cfg->likingMin)) {
+            if (liking > cfg->likingMax)
+                goto reject;
+        } else
+            return 0;
     }
-    return 0;
-accept:
+accept:         /* the tests share these two exits (a return at each test duplicates the epilogue: 437 vs 279 instructions) */
     return 1;
+reject:
+    return 0;
 }
 
 
