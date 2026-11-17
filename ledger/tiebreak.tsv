@@ -2168,7 +2168,7 @@ exe	0x004c3fd0	cm_ReceiveMessages	cm	817661c9df1c71dc	no	byte	control=byte p1=by
 exe	0x004c4030	cm_WaitMessage	cm	cc511c8421d6f3e9	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004c4080	cm_EnqueueReceived	cm	00866de68628c1df	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	becf1bbdf99775c9
 exe	0x004c4130	cm_FreeReceived	cm	eb1fcf2d48ad555d	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x004c4190	cm_ExecCommands	cm	e416c8910c466f9c	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
+exe	0x004c4190	cm_ExecCommands	cm	eaa3a7d325613bc8	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	659a095851fd8c82
 exe	0x004c43c0	cm_CheckGroup	cm	2eb1024076a15341	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004c4450	cm_ResolveId	cm	64750d3fe3ac0d74	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004c4480	cm_SetLongMsg	cm	71501ab075cf012a	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
@@ -2487,7 +2487,7 @@ exe	0x004d4090	cm_LootList	cm	d34758732e8dad41	no	byte	control=byte p1=byte p2=b
 exe	0x004d4340	cm_FightPortraits	cm	ada8cd56d035024d	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004d4540	cm_FightStartDialog	cm	9ce318461f52abe5	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x004d4d70	cm_FightEndDialog	cm	20139f63fbe2d006	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
-exe	0x004d60b0	cm_CheckFight	cm	0af4322fb366aa0d	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
+exe	0x004d60b0	cm_CheckFight	cm	0b7b31b5b3479690	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	659a095851fd8c82
 exe	0x004d63e0	cm_RunFight	cm	c9cbf40840b07b95	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	becf1bbdf99775c9
 exe	0x004d6930	cm_FightResult	cm	33c238c4414c4fe7	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004d6970	cm_FightFrame	cm	5156c99d23ae6d94	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	32d7e33278e3f9e2
@@ -2764,7 +2764,7 @@ exe	0x004ef7c0	gv_FindEntry	gv	c41003a4d8de503c	no	byte	control=byte p1=byte p2=
 exe	0x004ef900	gv_LoadGraveyard	gv	7679c4b8b8c617cd	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004ef930	gv_RandomGrave	gv	eadf6d3530738cf0	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004ef9c0	gv_BuryNewDead	grave	835d77ab86c3ed45	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=442	8e2803bd14ee7240
-exe	0x004efc10	gv_AllocGraveyard	grave	4a58d0d9af9b6917	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=442	8e2803bd14ee7240
+exe	0x004efc10	gv_AllocGraveyard	grave	1d0e7f836fcd7b91	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	9533f50d20479b9a
 exe	0x004eff50	gv_GrowGraveyard	grave	efb42d25c7bbda2a	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=442	8e2803bd14ee7240
 exe	0x004f0180	gv_FreeGraveyard	gv	eab36f0085a34cf3	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004f01d0	gv_OrderBury	gv	1b99eabbdeccfdb3	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
@@ -3503,7 +3503,7 @@ exe	0x0053daf0	he_PickActiveEvent	he	686edd18f1c0efcf	no	shape	sweep control=sha
 exe	0x0053dcb0	he_ActivateSlot	he	0611cbe832fa9c2e	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0053dda0	he_ShowNews	he	f7ab3896fe028ed7	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x0053dee0	he_MessageBoxQuickjump	he	ee16d0a93e8313a2	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x0053e040	he_CreateEvent	he	abf56537dac1016c	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
+exe	0x0053e040	he_CreateEvent	he	142dc52d4f0c9ea7	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	19f56e10e2399f4d
 exe	0x0053e1f0	he_FreeEvent	he	0ded57a8c69ee9a5	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	4cbf06cae45cb11e
 exe	0x0053e300	he_NextEvent	he	67ae368210388739	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x0053e400	he_FindEvent	he	534517257441f234	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
@@ -4498,7 +4498,7 @@ exe	0x005c27b0	ai_MasterHireWindow	lc	36c69bfdd74f82f2	no	shape	sweep control=sh
 exe	0x005c2a10	ai_ShowSettingGoods	lcamt	d8114348687eb5ce	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=568	2eb3e29bb00f55b1
 exe	0x005c2b90	ai_MasterLetterSettings	lc	d88621a20dc76c5e	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
 exe	0x005c3200	ai_MasterLetterWindow	lc	2400265006fee361	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
-exe	0x005c33c0	ai_PassesPartnerFilter	lcamt	cfb6d54ab9de5e22	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=568	2eb3e29bb00f55b1
+exe	0x005c33c0	ai_PassesPartnerFilter	lcamt	36df523a9fabd53e	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	b1de023bb15040ae
 exe	0x005c37a0	ai_PassesBuildingFilter	lc	327a8ff007a90950	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x005c39a0	ai_PassesMapPickFilter	lc	65eb0135671435a2	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x005c3bb0	ai_PickBuildingChar	lc	6686bd2b4375d6dd	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	

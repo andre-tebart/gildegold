@@ -2487,7 +2487,7 @@ exe	0x004d4090	cm_LootList	cm	byte	readable
 exe	0x004d4340	cm_FightPortraits	cm	byte	readable		
 exe	0x004d4540	cm_FightStartDialog	cm	draft	readable	deep	
 exe	0x004d4d70	cm_FightEndDialog	cm	draft	readable	deep	
-exe	0x004d60b0	cm_CheckFight	cm	draft	readable	deep	
+exe	0x004d60b0	cm_CheckFight	cm	shape	readable	deep	
 exe	0x004d63e0	cm_RunFight	cm	shape	readable		
 exe	0x004d6930	cm_FightResult	cm	byte	readable		
 exe	0x004d6970	cm_FightFrame	cm	byte	readable		
@@ -2765,7 +2765,7 @@ exe	0x004ef7c0	gv_FindEntry	grave	byte	readable
 exe	0x004ef900	gv_LoadGraveyard	grave	byte	readable		
 exe	0x004ef930	gv_RandomGrave	grave	byte	readable		
 exe	0x004ef9c0	gv_BuryNewDead	grave	shape	readable	deep	
-exe	0x004efc10	gv_AllocGraveyard	grave	shape	readable	deep	
+exe	0x004efc10	gv_AllocGraveyard	grave	byte	readable		
 exe	0x004eff50	gv_GrowGraveyard	grave	shape	readable	deep	
 exe	0x004f0180	gv_FreeGraveyard	grave	byte	readable		
 exe	0x004f01d0	gv_OrderBury	grave	byte	readable		
@@ -3504,7 +3504,7 @@ exe	0x0053daf0	he_PickActiveEvent	he	byte	readable
 exe	0x0053dcb0	he_ActivateSlot	he	byte	readable		
 exe	0x0053dda0	he_ShowNews	he	draft	readable	deep	
 exe	0x0053dee0	he_MessageBoxQuickjump	he	byte	readable		
-exe	0x0053e040	he_CreateEvent	he	draft	readable	deep	
+exe	0x0053e040	he_CreateEvent	he	byte	readable		
 exe	0x0053e1f0	he_FreeEvent	he	draft	readable	deep	
 exe	0x0053e300	he_NextEvent	he	draft	readable	deep	
 exe	0x0053e400	he_FindEvent	he	byte	readable		
@@ -4499,7 +4499,7 @@ exe	0x005c27b0	ai_MasterHireWindow	lcamt	byte	readable
 exe	0x005c2a10	ai_ShowSettingGoods	lcamt	shape	readable		
 exe	0x005c2b90	ai_MasterLetterSettings	lcamt	byte	readable		
 exe	0x005c3200	ai_MasterLetterWindow	lcamt	draft	readable	deep	
-exe	0x005c33c0	ai_PassesPartnerFilter	lcamt	draft	readable	deep	
+exe	0x005c33c0	ai_PassesPartnerFilter	lcamt	byte	readable		
 exe	0x005c37a0	ai_PassesBuildingFilter	lcamt	draft	readable	deep	
 exe	0x005c39a0	ai_PassesMapPickFilter	lcamt	byte	readable		
 exe	0x005c3bb0	ai_PickBuildingChar	lcamt	draft	readable	deep	
