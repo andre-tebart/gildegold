@@ -2715,10 +2715,7 @@ float d3_FovX;  /* 0xfc4a20 */
 D3BGF d3_StockListEnd;  /* 0xfc4a40, the end sentinel of the stock object list (D3BGF, d3_io_t.h): d3io_LoadObjectFile links new ones in before it */
 float d3_FovY;  /* 0xfc4c4c, half the vertical view angle (d3_FovX the horizontal one) */
 D3CVERT * d3_ClipList[2][0x80];  /* 0xfc4c60, polygon vertex lists (ping-pong) */
-int d3_ClipNone;  /* 0xfc5060 */
-unsigned char d3_ClipFlagA;  /* 0xfc5064 */
-unsigned char d3_ClipFlagB;  /* 0xfc5065 */
-D3VECTOR4 d3_Planes[6];  /* 0xfc5068, side planes of the view frustum (normal, distance); the code writes 6 */
+D3CLIPSTATE d3_ClipState;  /* 0xfc5060, d3_ClipNone, d3_ClipFlagA / B and the frustum planes d3_Planes (d3_engine.h) */
 D3SORTENT * d3_RadixDst;  /* 0xfc50c8 */
 D3OBJECT d3_TopHead;  /* 0xfc5100, list start marker */
 /* d3_TopFirst is d3_TopHead.next (0xfc52f0 = 0xfc5100 + 0x1f0): a macro in d3_engine.h */

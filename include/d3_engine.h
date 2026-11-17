@@ -391,7 +391,7 @@ void tex_Exit(void);                        /* 0x45fd00, ts_texture.c */
 void d3d_Exit(void);                        /* 0x4370e0, d3_d3d.c */
 void dd_Exit(void);                         /* 0x41be00, dd_vesa.c */
 
-extern D3VECTOR4 d3_Planes[6];              /* 0xfc5068, side planes of the view frustum (normal, distance); the code writes 6 (near/far) */
+/* d3_Planes: a field of d3_ClipState (below) */
 extern float d3_MinZ;                   /* 0xfc5344 */
 extern float d3_MaxZ;                   /* 0xfc5338 */
 
@@ -530,8 +530,20 @@ void d3_Shutdown(void);                     /* 0x43c240, stops the engine */
 /* 0xfe73f8 / 0xfe7400 lie inside D3INITCFG (.maxpolys / .maxhicol), but they stay separate definitions:
    spelling them as struct fields costs d3_MirDrawObject's and d3sm_GetGround's byte grade (the load
    schedule changes).  The two ledger overlaps are the price; the macro form is in the note. */
-extern int d3_ClipNone;                    /* 0xfc5060 */
-extern unsigned char d3_ClipFlagA, d3_ClipFlagB;  /* 0xfc5064, 0xfc5065, cleared by d3_Init, no reader (the names are a reasoned guess) */
+typedef struct D3CLIPSTATE {            /* 0x68 bytes at 0xfc5060 (a common of d3_engine's group): the frustum planes sit at
+                                               0xfc5068, off the 32-byte alignment LINK gives a 96-byte common; the
+                                               object starts with the clip word and the two flags before them */
+    int none;                               /* +0x00, d3_ClipNone: the empty clip info the particles point at */
+    unsigned char flagA, flagB;             /* +0x04, +0x05, d3_ClipFlagA / B: cleared by d3_Init, no reader (the
+                                               names are a reasoned guess) */
+    D3VECTOR4 planes[6];                    /* +0x08, d3_Planes: side planes of the view frustum (normal, distance);
+                                               the code writes 6 (near/far) */
+} D3CLIPSTATE;
+extern D3CLIPSTATE d3_ClipState;           /* 0xfc5060 */
+#define d3_ClipNone (d3_ClipState.none)
+#define d3_ClipFlagA (d3_ClipState.flagA)
+#define d3_ClipFlagB (d3_ClipState.flagB)
+#define d3_Planes (d3_ClipState.planes)
 extern D3OBJECT d3_TopHead;               /* 0xfc5100, list start marker */
 #ifndef DATA_VIEWS_H
 extern int d3_Unkfe7400;                /* 0xfe7400 */
