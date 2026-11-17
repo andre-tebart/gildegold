@@ -385,6 +385,24 @@ typedef struct PLAYERRECVIEW {          /* f3gm.h's player record (gm_PlayerReco
     char pad00[0x60];
     float luck;                         /* +0x60, the chance that the player sits down to play (decays by * 0.66 - 0.1 per game; reasoned) */
 } PLAYERRECVIEW;
+/* the cannon constants, read-only, in the original's order (named .rdata 0x5eedf4..0x5eee1c, the unit's first
+   .rdata; read from memory, not folded; 0.0254, 0.1, 4/3 pi and -2.5 are these objects at the sites that read them,
+   the same values elsewhere are pooled literals) */
+const float ai_InchPerMeter = 39.37008f;     /* 0x5eedf4, world units (inches) per meter */
+const float ai_MeterPerInch = 0.0254f;       /* 0x5eedf8, meters per inch (ai_SolveCannonAim) */
+const float ai_Gravity = 9.81f;              /* 0x5eedfc, m/s^2 */
+const float ai_ShotStep = 0.013513514f;      /* 0x5eee00, 1/74, the time (s) of one flight step of ai_StepShot */
+const float ai_ShotHalfStep = 0.0067567569f; /* 0x5eee04, 1/148, the step of ai_StepShotSlow */
+const float ai_IronDensity = 7874.0f;        /* 0x5eee08, kg/m^3, the cannon balls' (am.c, sv_t.c) */
+const float ai_AirDensity = 1.2f;            /* 0x5eee0c, kg/m^3 */
+const float ai_ReachScale = 0.1f;            /* 0x5eee10, the factor of a value divided by the ball's reach
+                                                (ai_PositionShare, ai_InitShot's start speed) */
+const float ai_WindGain = 60.0f;             /* 0x5eee14, the wind scale (60): the factor of ai_InitWind's
+                                                per-direction random values and the range ai_NormalizeEffectScale
+                                                clamps to */
+const float ai_SphereFactor = 4.1887903f;    /* 0x5eee18, 4/3 pi (ai_SphereVolume) */
+const float ai_AimErrLow = -2.5f;            /* 0x5eee1c, the low bound of ai_SolveCannonAim's height error */
+
 /* 0x5dbc10, the default effect record (5 B): returns the address of ai_DefaultEffect (0x62de60: an
    empty name, the scale 1.0, the lifetime 25.0, then the entry's ids / callbacks). The twin
    0x5dbc20 returns its scale from the same record. */
@@ -566,7 +584,7 @@ int ai_SphereVolume(float radius, float size, float *out)
     out[0] = radius;
     out[1] = size;
     out[2] = size * size * 6.2831855f;
-    volume = size * size * size * 4.1887903f;
+    volume = ai_SphereFactor * (size * size * size);
     out[3] = volume;
     out[4] = volume * radius;
     return 1;
@@ -579,8 +597,8 @@ int ai_SphereVolume(float radius, float size, float *out)
 
 void ai_PositionShare(float a, float b, SPHEREVOLUME *rec, float *out)
 {
-    out[0] = a / rec->reach * 0.1f;
-    out[1] = b / rec->reach * 0.1f;
+    out[0] = a / rec->reach * ai_ReachScale;
+    out[1] = b / rec->reach * ai_ReachScale;
 }
 
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
@@ -591,26 +609,7 @@ void ai_PositionShare(float a, float b, SPHEREVOLUME *rec, float *out)
    of iron) gives the speed charge / mass * 0.1; the start velocity is the barrel direction dir times it (also
    the current velocity), the start and the current position are pos, the wind is ai_DefaultEffect with
    its scale clamped to 0 .. 60 (ai_WindGain) and the vector scaled by it; the surface and the mass, state 1
-   (in flight), the clock d3_Time (ms) and 0 steps complete the record. Returns 1.
-   @deep match-deep 57: draft 80 -> shape 4 ins. Kept: ai_GetDefaultEffect through a function pointer (the
-   only spelling that stops VC6 sinking the call past ai_SphereVolume: plain / cast-call / (*f)() / block
-   extern int f() all = the sunk code, 72 ins), ai_FloatZero (block extern) for the clamp (M10), mass
-   before area (area2: the last hunk). headers sample: insensitive (32 samples, one codegen). Left fpu 12 /
-   4 ins: the velocity scale, the original fst [ecx+0xc]; fmul [ecx]; fstp [ecx]; fld [ecx+0xc]; fmul
-   [ecx+4] .. (speed reloaded after each store) where ours keeps it with fld st(0) (size 339 vs 341).
-   Tried, all = control: *=, v * speed, D3VECTOR* / float* / SHOTVEL* views of velStart, chained speed
-   assignment in the x multiply (3 forms), (float) and parenthesised speed, 0.1f * (charge / reach),
-   (float)(...) around the speed; (double) speed casts and a double 0.1 change the code but are worse (fpu
-   13-16); the scale reading dir->x worse (46 ins). (tiebreak: insensitive) prior: body complete and read
-   against 0x5dc240..0x5dc395 (all 113 ins accounted for: GetDefaultEffect, SphereVolume(density, size),
-   dir copy, speed = charge / reach * 0.1, vel scale, vel copy, wind copy + clamp 0..60 (MAX(MIN)) + scale,
-   posStart / pos, area / mass, state 1, d3_Time, steps 0, return 1). Left is VC6 placement: (1) our
-   compiler sinks the call ai_GetDefaultEffect (same TU, known side-effect free) to the wind copy at +0x79
-   where the original calls it first and keeps the pointer in edx across ai_SphereVolume (interprocedural
-   regs); this shifts the whole +0x09..+0xe8 block (76 ins); (2) the vel scale: the original reloads the
-   speed (fld [ecx+0xc]) after each store, ours keeps it on the FPU (fld st(0)); (3) the last hunk loads
-   surface / reach into swapped registers. Tried: the wind pointer initialised at its declaration, compound
-   *=, D3VECTOR-typed velocity (the dir copy as a struct as... */
+   (in flight), the clock d3_Time (ms) and 0 steps complete the record. Returns 1. */
 int ai_InitShot(SHOTREC *shot, D3VECTOR *pos, D3VECTOR *dir, float charge, float size, float density)
 {
     /* @original the call goes through a pointer: the original calls ai_GetDefaultEffect first and keeps the
@@ -621,7 +620,7 @@ int ai_InitShot(SHOTREC *shot, D3VECTOR *pos, D3VECTOR *dir, float charge, float
 
     ai_SphereVolume(density, size, (float *)&ball);
     shot->velStart.v = *dir;
-    shot->velStart.speed = charge / ball.reach * 0.1f;
+    shot->velStart.speed = charge / ball.reach * ai_ReachScale;
     shot->velStart.v.x = shot->velStart.speed * shot->velStart.v.x;
     shot->velStart.v.y = shot->velStart.speed * shot->velStart.v.y;
     shot->velStart.v.z = shot->velStart.speed * shot->velStart.v.z;
@@ -1002,8 +1001,8 @@ int ai_SolveCannonAim(float *from, float *to, float *range, float *outElev, floa
     d3_Normalize(&dir);
     d3_Normalize(&hdir);
     *outYaw = d3_VecAngle2((D3VECTOR *)&d3_ZAxis, (D3VECTOR *)&dir);
-    drop = (float)fabs(to[1] - from[1]) * 0.0254f;
-    horiz = 0.0254f * horiz;
+    drop = (float)fabs(to[1] - from[1]) * ai_MeterPerInch;
+    horiz = ai_MeterPerInch * horiz;
     sign = 0;
     if (from[1] > to[1])
         sign = 1;
@@ -1034,7 +1033,7 @@ int ai_SolveCannonAim(float *from, float *to, float *range, float *outElev, floa
                 angStep = angStep * 0.5f;
             } else
                 return -1;
-        } else if (err < -2.5f) {
+        } else if (err < ai_AimErrLow) {
             if (ang < range[3]) {
                 ang = ang + angStep;
                 angStep = angStep * 0.5f;
