@@ -1864,65 +1864,44 @@ void *surf;
     d2_AddDirty((short)x, (short)y, d2_Pics[pic].w, d2_Pics[pic].h);
     d2_UnlockSurface(surf);
 }
-/* 0x46d220, draws the caption of an object (style bit 4: below it, bit 0x20: with a sprite behind)
-   @deep dcp headers sample: insensitive. The two-call form (control, 85 ins) gives the original's two
-   DrawTextBox sites but the wrong allocation (flags in ebp, x in the dead o slot); one call after `if
-   (o->style & 4) { x = o->x; y = o->y + o->h; }` (kept, 62 ins) gives the original's allocation for the
-   whole head (flags in the dead o slot, 0x20 in ebx, x / y in ebp / edi) but VC6 does not duplicate the
-   call tail into both arms as the original has it (one call site, the pushes of edi / ebp in the prologue
-   differ). Tried: the call in both arms with x / y assigned in arm 1, with and without return (= the
-   two-call code), an empty else, x - 0x30 in the arms (66), `!= 0`, the font as ternary / if-else / two
-   calls (= or worse), flags as if / else (86). flip.py (want sub eax,48 of the original's first arm, base
-   = the one-call form): 3 of 116 mutants, all worse (flags as short / char, a moved brace). Lead: what
-   makes VC6 duplicate the call + epilogue here (d2_PlaceWindow had it with an int y chosen by if / else).
-   Now an ANSI definition (the K&R one compiled the same and broke the tools/c2dag function finder).
-   (tiebreak: not measured (dcp headers sample d2_DrawObjCaption)) prior: read whole against the original:
-   the caption call is two calls, 'if (style & 4)' at o->x - 0x30 / o->y + o->h, else at the computed x / y
-   (the original has two d2_DrawTextBox call sites with an epilogue after the first); every flag test,
-   offset and argument matches. Left: allocation - the original keeps flags in the dead o argument slot ('+
-   mov dword ptr [esp + 0x1c], 8', 'or dword ptr [esp + 0x20], ebx') and x / y in ebp / edi with the 0x20
-   constant in ebx ('test bl, al'), ours keeps flags in ebp and x in that slot ('- mov ebp, 8', '- add
-   dword ptr [esp + 0x1c], eax'); tried the declaration order (no change) */
+/* 0x46d220, draws the caption of an object (style bit 4: below it, bit 0x20: with a sprite behind) */
 
 void d2_DrawObjCaption(D2OBJ *o)
 {
     int flags, x, y, font;
 
-    if (o->caption[0] != 0 && (o->style & 0x40) == 0) {
-        flags = 8;
-        if (o->greyed)
-            flags = 9;
-        if (o->rightAligned)
-            flags |= 0x10;
-        if (o->textShadow)
-            flags |= 4;
-        if (o->style & 8)
-            flags |= 0x20;
-        x = o->x;
-        if (o->captionX != -1)
-            x += o->captionX;
-        y = o->y;
-        if (o->captionY != -1)
-            y += o->captionY;
-        else
-            y -= 0x10;
-        font = o->capfont;
-        if (font == 0)
-            font = d2_DefaultFont + 1;
-        d2_SetFont(font);
-        if (o->style & 0x20) {
-            d2_UnlockSurface(d2_ScreenSurf);
-            d3if_DrawSprite(d2_CaptionTex, o->picW / 2 + o->x, o->picH / 2 + o->y, 0,
-                         (float)o->picW / (float)d2_CaptionTex->size,
-                         (float)o->picH / (float)d2_CaptionTex->size, 0.5f);
-            d2_LockSurface(d2_ScreenSurf);
-        }
-        if (o->style & 4) {
-            x = o->x;
-            y = o->y + o->h;
-        }
-        d2_DrawTextBox(x - 0x30, y, o->picW + 0x60, o->h, d2_ScreenSurf, o->caption, flags);
+    if (o->caption[0] == 0 || (o->style & 0x40) != 0)
+        return;
+    flags = 8;
+    if (o->greyed)
+        flags = 9;
+    if (o->rightAligned)
+        flags |= 0x10;
+    if (o->textShadow)
+        flags |= 4;
+    if (o->style & 8)
+        flags |= 0x20;
+    x = o->captionX != -1 ? o->x + o->captionX : o->x;
+    if (o->captionY != -1)
+        y = o->y + o->captionY;
+    else
+        y = o->y - 0x10;
+    font = o->capfont;
+    if (font == 0)
+        font = d2_DefaultFont + 1;
+    d2_SetFont(font);
+    if (o->style & 0x20) {
+        d2_UnlockSurface(d2_ScreenSurf);
+        d3if_DrawSprite(d2_CaptionTex, o->picW / 2 + o->x, o->picH / 2 + o->y, 0,
+                     (float)o->picW / (float)d2_CaptionTex->size,
+                     (float)o->picH / (float)d2_CaptionTex->size, 0.5f);
+        d2_LockSurface(d2_ScreenSurf);
     }
+    if (o->style & 4) {
+        d2_DrawTextBox(o->x - 0x30, o->y + o->h, o->picW + 0x60, o->h, d2_ScreenSurf, o->caption, flags);
+        return;
+    }
+    d2_DrawTextBox(x - 0x30, y, o->picW + 0x60, o->h, d2_ScreenSurf, o->caption, flags);
 }
 /* 0x46d3d0, draws all objects in drawing order, each clipped to its windows
    @deep dcp headers sample: insensitive. The hunks are one register race in the case 5/8 text arm (lines
