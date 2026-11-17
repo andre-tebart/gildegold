@@ -2661,6 +2661,7 @@ int gm_AllowAll = 0;  /* 0x6f2448 */
 extern int gm_PlayerRecords[688];
 extern int gm_ClassBuilding[32];
 char * ai_Blds;  /* 0x889f74, the buildings ( */
+signed char ai_RelationMemory[768][768];  /* 0x889f80 */
 int gm_GoodBuilding[732];  /* 0x919f80 */
 char * ai_Goods;  /* 0x91aaf0, the object prototypes ( */
 extern unsigned gm_OwnNameHeads[136];

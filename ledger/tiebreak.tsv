@@ -2977,7 +2977,7 @@ exe	0x004fe310	gm_AddTime2	f3gm	302e62682352d7c8	no	byte	control=byte p1=byte p2
 exe	0x004fe330	gm_Season	f3gm	522a55c6c171b0d0	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004fe350	gm_ClockSeason	f3gm	22c2705949299ef4	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004fe370	gm_InitBuildingTables	f3gm	eee7f5ac2af7dd13	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft	
-exe	0x004fe570	gm_LoadTables	f3gmt	68cea2d1047c10d6	yes	byte	sweep control=shape best=byte by 1 unused typedef at the unit's start; codegens=2 compiled=12 (stopped at the goal)	6999c23a51e19cd3
+exe	0x004fe570	gm_LoadTables	f3gmt	68cea2d1047c10d6	yes	byte	sweep control=shape best=byte by 1 unused typedef at the unit's start; codegens=2 compiled=12 (stopped at the goal)	03010302003a8446
 exe	0x004fe7f0	gm_ClearBuildings	f3gm	7e2bac79f2ea17a4	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004fe830	gm_ClearObjects	f3gm	96d51f74357b14b1	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	a54162395c11de5e
 exe	0x004fe900	gm_FindObjectProto	f3gm	19342a7c25002b30	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	291ac9aa57e40bb8

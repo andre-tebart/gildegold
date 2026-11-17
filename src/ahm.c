@@ -1214,5 +1214,5 @@ unsigned short ai_PlayerId = 0;  /* 0x6f25b8: the local player's character id (t
 extern char ai_Chars[768][0x21c];
 extern char * ai_BTypes;
 extern signed char ai_Relations[768][768];
-signed char ai_RelationMemory[768][768] = {0};  /* 0x889f80; a common in the original, kept defined: as a common dcp sizes it by our link's next symbol (the 32-byte alignment pad included) and reports D1 / D8 against gm_GoodBuilding */
+extern signed char ai_RelationMemory[768][768];
 extern unsigned short d2_HighBitMask;

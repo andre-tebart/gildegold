@@ -8638,7 +8638,7 @@ struct AIOBJ *ai_Objects;  /* 0x7e3f34, the object instances (AIOBJ, ai.h) */
 int gm_QueryDepth;  /* 0x7e3f38, the depth of the child stack */
 int gm_NOffers;  /* 0x7e3f3c, the number of offers */
 AISTORE gm_Offers[88];  /* 0x7e4b20, the offers (ai.h's AISTORE rows of 6 ints: building, market, goods object, supply, price float, flag) */
-int gm_QueryStack[20488] = {0};  /* 0x8753e0 (a common in the original, kept defined: dcp sizes a common by our link's next symbol and reports D1 against gm_KindObjs), the child stack (the first word of */
+int gm_QueryStack[20488] = {0};  /* 0x8753e0 (a common in the original, kept defined: as a common dcp's M.data.draft extends it from gm_QueryNext's draft code past its end and reports D1 against gm_KindObjs), the child stack (the first word of */
 unsigned gm_KindObjs[732];  /* 0x889400 */
 int gm_TreeRanks;  /* 0x889f70 */
 AITIME ai_Time;  /* 0x770ae0, the game clock */
