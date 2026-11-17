@@ -1557,6 +1557,8 @@ a stack slot is a split piece, and the piece's extent is decided by the rules be
   &d2_Wins[d2_LastWindow]; d2_MoveObj(w->x, y, w->parent);`. No lever: the pointer for x only,
   `(&d2_Wins[..])->x` inline, an index local, a short local for x, a local for parent (ai_CannonBuildPanel,
   sv_UpdateCityPanel byte).
+  Same with the pointer already named but the test written through the array (`p = &G5_CHARS[i]; if
+  (G5_CHARS[i].act ..)`, one `shl eax,2` temp): every field through `p` (ai_ExecuteAction byte).
 - **`lea edx,[eax+eax*8]; lea eax,[edx*4+X]; test eax,eax`** (an element address in its own temp, tested for
   null) where ours folds into `lea eax,[eax+eax*8]; lea eax,[eax*4+X]`: a pointer local assigned in the
   condition, `(ch = &ai_CharsT[b->owner]) != 0 && ai_CanAct(ch)`, not the address written twice (main_EndRound).
@@ -2769,7 +2771,6 @@ the stack at every instruction.
 - **`fadd st(0),st` right after the definition's `fmul` (before its `fstp`), ours `fld x; fadd st,st` in the final sum**:
   the doubling was its own statement, `age = (b + 1) * 0.1f; age = age + age;`, the sum then uses `age`; `* 2` /
   `* 2.0f` folds into the constant (hmt_Score byte).
-
 - **A chain in a load order no plain spelling gives**: nest it in that order, VC6 keeps nesting:
   `(((((S * area) * drag) * dens) * v) * v) * 0.5f` (360 unnested orders = one code; ai_StepShot); `k = spread *
   (speed * (2r - 1))` gives `fmul [field]` first, `y = dside.y + (dother.y + v.y)` the sum order (ai_ScatterShot 8

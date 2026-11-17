@@ -1597,7 +1597,7 @@ exe	0x00495790	ai_PopAction	am	6b9ff1250db3c1f7	no	byte	control=byte p1=byte p2=
 exe	0x004957a0	ai_ActionOnStack	am	d4b94d7f1f0192f7	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004957d0	ai_ChooseAction	am	d47cc1eec8f77c85	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	660802959fec4ebe
 exe	0x00495a50	ai_ChooseSubAction	am	030515d2105328ee	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	1670200eeadad7dc
-exe	0x00495ce0	ai_ExecuteAction	am	ac0efb35f10f86ad	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	1670200eeadad7dc
+exe	0x00495ce0	ai_ExecuteAction	am	ac0efb35f10f86ad	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	d3cbfd9712f1f856
 exe	0x00495ee0	ai_Unk495ee0	am	4b4bc431ded4ddd9	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00495fa0	ai_DecideDummyRighteousness	am	32857fe4098cb68e	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00495fc0	ai_ExecuteDummyRighteousness	am	58d8073dc37c0e0b	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	

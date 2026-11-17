@@ -3551,13 +3551,7 @@ int ai_ChooseAction(int i)
     }
     return p->act;
 }
-/* 0x495ce0, executes the current action of character i and applies its need weights
-   @deep read the whole function against the original and rewrote it: the index loops over the need weights
-   (k*8, cmp 0x20), the exec through G5_ACTS[G5_CHARS[i].act], p->partner / p->netId, memmove for the w3
-   copy, ai_AddNeedDelta taking an int kind (both call sites zero-extend). Left is one addressing tie-break
-   at the start: ours 'shl eax,2; lea esi,[eax+ai_Chars]; mov al,[eax+ai_Chars+0x132]' where the original
-   scales twice ('lea esi,[eax*4+ai_Chars]; mov al,[eax*4+0x770cb2]'), 1 instruction more. Tried p as (G5CH
-   *)ai_Chars[i], ai_CharsT[i].act, &G5_CHARS[i].arg1 args: no change or worse. */
+/* 0x495ce0, executes the current action of character i and applies its need weights */
 
 int ai_ExecuteAction(int i)
 {
@@ -3565,7 +3559,7 @@ int ai_ExecuteAction(int i)
     unsigned char msg;
     int k;
 
-    if (G5_CHARS[i].act != 0 && G5_ACTS[G5_CHARS[i].act].exec != 0 && G5_ACTS[G5_CHARS[i].act].exec(p, &p->arg1, &p->arg2) != 0) {
+    if (p->act != 0 && G5_ACTS[p->act].exec != 0 && G5_ACTS[p->act].exec(p, &p->arg1, &p->arg2) != 0) {
         ai_BeginNeedBlock((struct AICHAR *)p);
         for (k = 0; k < 4; k++) {
             if (G5_ACTS[p->prev].w1[k].k < 14)
