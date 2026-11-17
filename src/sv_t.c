@@ -9933,30 +9933,6 @@ int ai_OpenBuildingTooltip(int idx)
     }
     return view;
 }
-/* 0x588bb0, opens the help tooltip of the record named s: the key "_HILFE_<S>+0" (the name upper-cased) is
-   looked up in the texts; without it -1 (no window). Else the form "ToolTip\ToolTip_Contact", centred, its
-   section 1 the text's title line and section 2 the text after it; returns the window */
-
-int ai_OpenHelpTooltip(char *s)
-{
-    char buf[0x180];
-    int v;
-    int win;
-
-    strcpy(buf, s);
-    _strupr(buf);
-    sprintf(buf + 0x80, "_HILFE_%s+0", buf);   /* the key from the whole name, built at buf + 0x80 and looked up there (0x588bd8 .. 0x588bf6) */
-    v = txt_FindKey(buf + 0x80);
-    if (v == -1)
-        return v;   /* -1: no window (the original returns txt_FindKey's -1, 0x588c06; 0 would be window 0) */
-    win = d2_OpenForm(0, 0, "ToolTip\\ToolTip_Contact");
-    d2_CentreViewWindows(win);
-    d2_SetForm(0, 1);
-    io_PrintText("$Z$[%s$]", v);
-    d2_SetForm(0, 2);
-    io_PrintText(v + 1);
-    return win;
-}
 
 float gm_GoodsPrice(unsigned id, unsigned char p);
 
@@ -10194,6 +10170,30 @@ int ai_OpenUpgradeTooltip(int idx)
 
 int ai_AmountRowStatus(); int ai_DrawAmountRow(); short * gm_FindChar(int id); int gm_TitlesLeft();
 
+/* 0x588bb0, opens the help tooltip of the record named s: the key "_HILFE_<S>+0" (the name upper-cased) is
+   looked up in the texts; without it -1 (no window). Else the form "ToolTip\ToolTip_Contact", centred, its
+   section 1 the text's title line and section 2 the text after it; returns the window */
+
+int ai_OpenHelpTooltip(char *s)
+{
+    char buf[0x180];
+    int v;
+    int win;
+
+    strcpy(buf, s);
+    _strupr(buf);
+    sprintf(buf + 0x80, "_HILFE_%s+0", buf);   /* the key from the whole name, built at buf + 0x80 and looked up there (0x588bd8 .. 0x588bf6) */
+    v = txt_FindKey(buf + 0x80);
+    if (v == -1)
+        return v;   /* -1: no window (the original returns txt_FindKey's -1, 0x588c06; 0 would be window 0) */
+    win = d2_OpenForm(0, 0, "ToolTip\\ToolTip_Contact");
+    d2_CentreViewWindows(win);
+    d2_SetForm(0, 1);
+    io_PrintText("$Z$[%s$]", v);
+    d2_SetForm(0, 2);
+    io_PrintText(v + 1);
+    return win;
+}
 /* 0x588c60, opens the tooltip view of the character ch: the form "ToolTip\ToolTip_Personen", centred; section 1
    the name, section 4 the character's amount row (ai_AmountRowStatus, drawn by ai_DrawAmountRow when it
    answers), section 2 the age (not for the kind 0x14), the title (text 0x2c with gm_TitlesLeft) and the rank /
