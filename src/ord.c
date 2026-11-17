@@ -132,6 +132,7 @@ ORDMSGREC ord_MessageRecord;  /* 0x91b480, the record the messages carry */
 ORDSTATS ord_Statistics; /* 0x91b4c0, the last statistics (ord_UpdateStatistics) */
 unsigned gm_OwnNameHeads[136];  /* 0x91ac40 */
 AIGRID ai_Grid[8][8]; /* 0x91ae60 */
+char gm_CharacterStatistics[128];  /* 0x91b500, the character statistics ( */
 
 /* 0x4f4e20, the order "apply for office" (table 0x611768 entry 0; c the character, m the message: m[0] the
    kind 1 = do / 3 = ask, the text at m + 5): only when c has no partner (partner = -1) or the partner record

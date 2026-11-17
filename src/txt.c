@@ -916,3 +916,4 @@ TXTFILE txt_Files[0x80];  /* 0x1431fc0 */
 unsigned char txt_GroupLevel[0x4800];  /* 0x14359c0, label column of each group */
 int txt_GroupFirst[0x4800];  /* 0x144c1e0, first text of each group */
 int txt_Random[0x4800]; /* 0x114fe60, per text id its random group (9 + n of "{rn}") or its gender (0 .. 2, 0xff none) */
+int txt_Loaded; /* 0xfe7c20 */

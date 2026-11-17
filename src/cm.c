@@ -17345,7 +17345,7 @@ extern unsigned int ai_MissionSeed;
 extern int ai_TimeCopy[4];
 extern char * sv_SelectedObject;
 extern char cm_ChatLog[2048];
-int cm_SaveAcks[8][2];  /* 0x76fa20 */
+extern int cm_SaveAcks[8][2];
 /* ai_Unk770d8c: view of ai_Chars (tools/data_views.py) */
 int ai_Evidence[0x800][2]; /* 0x91b6e0 */
 char ai_Crimes[0x5a00]; /* 0x91f700, the crime records (0x2d bytes each) up to 0x925100; f3gm's goods
@@ -17411,6 +17411,7 @@ GVCANNON gv_Cannon;  /* 0x925100, the cannon scene state */
 int cm_Bombs[0x40];  /* 0x935c00, cm's 32 bomb records (object, time), cm.h */
 unsigned cm_LoadSize;  /* 0xa68d28, the received bytes and the expected length (compared unsigned */
 int cm_LastSeq;  /* 0xf81168 .. */
+unsigned cm_LoadReceived;  /* 0xf81220 / */
 extern AIWATCH ai_Watch;
 extern char d2_CaptionCopy[0x80];
 /* ai_Unkf8f39c: view of d2_Wins (tools/data_views.py) */

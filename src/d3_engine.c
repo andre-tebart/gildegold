@@ -2679,7 +2679,7 @@ unsigned int d3_LightKeysCulled = 0;  /* 0x633b08, light keys this frame spent o
 unsigned int d3_LightKeysVisible = 0;  /* 0x633b0c, light keys this frame spent on visible lights */
 unsigned int d3_LightGeneration = 0;  /* 0x633b10, lightmap generation, D3MESH::lightGeneration holds the one drawn */
 char d3_LightsChanged = 0;  /* 0x633b14 */
-D3PARTSYS d3_ParEnd;  /* 0xfb9280, particle system list end marker */
+extern D3PARTSYS d3_ParEnd;
 /* d3_ParTail: view of d3_ParEnd (tools/data_views.py) */
 /* d3_ParHead: view of d3if_ParList (the head node's next field) */
 /* d3_Unkfb9928: view of d3_Mirror (tools/data_views.py) */

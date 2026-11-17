@@ -2664,5 +2664,5 @@ char * ai_Blds;  /* 0x889f74, the buildings ( */
 int gm_GoodBuilding[732];  /* 0x919f80 */
 char * ai_Goods;  /* 0x91aaf0, the object prototypes ( */
 extern unsigned gm_OwnNameHeads[136];
-char gm_CharacterStatistics[128];  /* 0x91b500, the character statistics ( */
+extern char gm_CharacterStatistics[128];
 extern char d2_GfxDir[256];

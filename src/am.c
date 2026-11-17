@@ -37,7 +37,7 @@
 #include "mission.h"
 int ai_PlayerCountYear = -1;                  /* 0x5ffd1c */
 int ai_NumPlayerChars = 0;  /* 0x6f0470, number of characters of kind 5, 6, 7 */
-char ai_DataPath[608];  /* 0x75dca0, the data path */
+extern char ai_DataPath[608];
 /* ai_Unk7e3f80: view of ai_PlayerSlots (tools/data_views.py) */
 /* ai_Unk7e3f84: view of ai_PlayerSlots (tools/data_views.py) */
 /* ai_Unk7e4274: view of ai_PlayerSlots (tools/data_views.py) */

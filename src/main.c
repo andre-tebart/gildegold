@@ -5292,7 +5292,7 @@ AIBLD *he_PatrolBuilding = 0;  /* 0x6f2638, he.h; owner he or main (an open ques
 int he_MessageFilterMask = 0;  /* 0x6f263c, he.h; owner he or main (an open question of he.c) */
 GAPDATA full_data_6f2678[4] = { 0 };  /* 0x6f2678 */
 GAPDATA full_data_6f26c4[4] = { 0 };  /* 0x6f26c4, the alignment after ai_Settings, before ai_NewsText */
-int ai_MapHeight;  /* 0x6f4ee4, the height of the town map bitmap (ai_MapSize its width), set by lc's map loader 0x5b2090; f3init's by place (next to ai_MapSize), only lc reads it */
+extern int ai_MapHeight;
 char he_OptionsPath[256];  /* 0x6fa0e0, the options INI path he_LoadMessageFilter copies from ai_OptionsFile for its
                                       GetPrivateProfileIntA / WritePrivateProfileStringA calls (he_SaveMessageFilter) */
 int he_TipOrder[0x20];  /* 0x6fa1e0, he.h: the tip order (the 27 tip text slots, gm_Shuffled fills it) */
@@ -5318,6 +5318,8 @@ int ai_Opponents[7];  /* 0x75e160 .. */
 char ai_OptionsFile[288];  /* 0x75e480, the INI the options are read from and written to */
 int init_StatusForm;  /* 0x75df00, the panel form the load status is printed in */
 INIT_PLAYER init_PlayerProfile;  /* 0x75e5a0 */
+char ai_DataPath[608];  /* 0x75dca0, the data path */
+LSSAVE ls_SavePath;  /* 0x75e640 */
 /* full_data_143a3c4: view of txt_Ptrs (build/mk_txt_views.py) */
 /* txt_GateItemSuffix: view of txt_Ptrs (build/mk_txt_views.py) */
 /* txt_GatePlaceSuffix: view of txt_Ptrs (build/mk_txt_views.py) */

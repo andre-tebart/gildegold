@@ -387,7 +387,7 @@ int init_BonusStart = 0;  /* 0x6f2440, a start bonus switch (a guess: only read,
 int main_MoneyCheat = 0;  /* 0x6f2444, set from the command line switch "MO_MONEY" (main.c); nonzero gives 500000 start money instead of 2000 and the first kind 6 character its starter buildings */
 #include "anm.h"
 #include "rd.h"
-int ai_MapSize;  /* 0x6f4ee8 */
+extern int ai_MapSize;
 void d3if_Prerender(char map);                     /* 0x447860, d3_interface.c */
 void d3fl_SetShift(struct D3FLMAP *map, unsigned char shift, char light);   /* 0x446dc0, d3_fl.c */
 extern int __mb_cur_max;                /* 0x62e3a0, the CRT locale state */
@@ -437,8 +437,8 @@ unsigned short * ai_SceneObject;  /* 0x76fa84 */
 signed char init_ObjectUniverse[0x2dc];  /* 0x76faa0, the universe of each object prototype's scene (-1 = not loaded) */
 int init_TownSounds[16];  /* 0x76fd80, the handles of the town's sounds (16 at most), stopped by */
 unsigned char * ai_SceneBuilding;  /* 0x76fdc0 */
-int ai_NBauplaetze;  /* 0xf812e0, the number of building sites */
-G15BK * ai_Bauplaetze;  /* 0xf812e4, the building sites */
+extern int ai_NBauplaetze;
+extern G15BK * ai_Bauplaetze;
 /* init_SlotCurrency: view of ai_PlayerSlots (tools/data_views.py) */
 /* 0x50a810, f3gm.c: the first kind 6 / 7 / 1 / 2 character with a job whose master is m */
 void amt_InitTable(void);               /* 0x4e5cd0, amt.h */

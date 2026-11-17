@@ -9519,3 +9519,5 @@ LCBLDCARTS ai_BldCartList;  /* 0x6f40a0, the building window's cart list: count,
 LCMASTERROW ai_MasterRows[0x80];  /* 0x6f40e0, the master list page's rows: ai_PlayerStatsPanel fills one per building of the player whose master is not the player (128 rows of 0x18) */
 int ai_StatsBldRows[0x80];  /* 0x6f4ce0, the control of each row of the stats panel's building page (ai_ShowBuildingRows fills it, at most ai_StatsBldCount; ai_PlayerStatsPanel marks the clicked one) */
 int ai_MasterBar;  /* 0x6f4ee0, the master list page's scroll bar (ai_PlayerStatsPanel passes it to sv_CreateScrollButtons and compares d2_PointerObj with it) */
+int ai_MapHeight;  /* 0x6f4ee4, the height of the town map bitmap (ai_MapSize its width), set by the map loader 0x5b2090; owner by place: the commons between lcdom's group and lc's (lcdom or lcmap, both before lc) */
+int ai_MapSize;  /* 0x6f4ee8 */

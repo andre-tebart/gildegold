@@ -2428,6 +2428,7 @@ unsigned int d2_ShpRows;  /* 0xf8a118 */
 unsigned short d2_HighBitMask;  /* 0xf8a11c, mask of the half dark colours; defined here because ahm.c does not read it */
 unsigned int d2_BlitW;  /* 0xf8a634 */
 unsigned int d2_ShpPalTable;  /* 0xf8a644 */
+int d2_PaletteDepth;  /* 0xf8a64c */
 D2COLKEY d2_EndMarkerColour = { 0, 0xff00 };  /* 0x5fed74, blue (0, 0, 255) */
 D2COLKEY d2_StartMarkerColour = { 0xff, 0 };  /* 0x5fed78, red (255, 0, 0) */
 int d2_SurfPitch = 800;  /* 0x5fed84 */

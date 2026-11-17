@@ -118,7 +118,7 @@ short d2_ShpW = 0;  /* 0x6f044c */
 short d2_ShpH = 0;  /* 0x6f044e */
 int d2_ClipLeft = 0;  /* 0x6f0458, clip left */
 int d2_ClipTop = 0;  /* 0x6f045c, clip top */
-int d2_PaletteDepth;  /* 0xf8a64c */
+extern int d2_PaletteDepth;
 extern int d2_ClickedId;
 extern short d2_MouseX;
 extern short d2_MouseY;

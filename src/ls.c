@@ -1238,9 +1238,10 @@ int ls_Read(void *buf, int size, int count, int f)
 }
 
 
-LSSAVE ls_SavePath;  /* 0x75e640 */
+extern LSSAVE ls_SavePath;
 unsigned short ai_ScreenImage[19200];  /* 0x766320, the */
 LSHEADER ls_LoadedHeader;  /* 0x76f920, the 0x100-byte header of the loaded save game (id, flag byte, name, ..; ls_ReadSaveHeader fills it up to +0xfc) */
+int cm_SaveAcks[8][2];  /* 0x76fa20 */
 extern char * cm_LoadBuf;                /* 0xf31140 */
 extern int ai_TimeCopy[4];  /* 0x75e130, the clock copy */
 #define LS_RD(p, sz) ls_Read((int)(p), (sz), 1, h)
@@ -2683,4 +2684,4 @@ int ls_ReceiveGame(void)
 
 extern unsigned cm_LoadSize;
 extern int cm_LastSeq;
-unsigned cm_LoadReceived;  /* 0xf81220 / */
+extern unsigned cm_LoadReceived;
