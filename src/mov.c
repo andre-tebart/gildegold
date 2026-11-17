@@ -69,22 +69,22 @@ void mov_Exit(void)
     CoUninitialize();
 }
 /* 0x422dc0
-   @deep the zero constant and id: in the original id = 0 and every literal 0 (fopen/hwnd/m tests, the
-   NULL pushes) share esi (return paths mov eax, esi; later id = mov_NextId++ lands in esi), file is ebx, m
-   ebp, hwnd edi; ours keeps the zero in ebx/ebp, spills id to [esp+0x28] (the extra slot pushes wc and the
-   later slots 4 down) and swaps file/m (asmdiff --regs ebp=ebx,ebx=ebp leaves the zero/id hunks, the wc
-   slot shift and a store schedule around strcpy). headers sample: insensitive (32, one codegen). dcp try:
-   int id; id = 0; first, long id, the id declaration at every position, id = m->id = mov_NextId++,
-   separate id = mov_NextId; mov_NextId++: = control; id = 0 after fopen: 1244 B; early return 0 for
-   fopen/IsWindow/mov_Alloc with return id at the end: 1232-1257 B (no zero register at all then); id = 0
-   at each of 60 statement positions (changes meaning on the early paths): best 999 B, none byte. Fixed
-   here: CLSID_FilgraphManager (the original's strmiids symbol, M8) and ch_EmptyName for the window title
-   (M9). (tiebreak: not measured (dcp headers sample mov_Open)) prior: 460 code hunks: the whole register
-   map is shifted (the MOVIE pointer is ebp in the original and ebx in ours, the zero constant esi/ebx) and
-   our frame is 4 bytes larger; `int id = 0` is a real stack store in ours and absent in the original.
-   Every hunk read is the same operation with ebx/ebp/esi exchanged (argument copies, the five
-   QueryInterface calls, the window setup); no missing or extra statement found. A 1472-byte register/frame
-   job, not a meaning fix. */
+   @deep size queue (s2): raw 1464 vs 1481 (17 short). Located by hunk sizes: the biggest gap (+22) is the
+   window rect of the w && h, !MOV_ASPECT arm: the original keeps the four r stores of the not-centered
+   path as its OWN copy (mov eax,[y]; mov ecx,eax; add edi,esi; add eax,ebx; 4 stores) while ours
+   cross-jumps them into the centered path's stores (jmp). The original's centered path stores r.left early
+   (mov [esp+0x10],esi between the shifts), so the two tails differ and nothing merges: the store order of
+   the centered rect (left first, then top/right/bottom) is the lever to try, together with the known
+   register map (h in ebx, file/m swapped). Not yet tried. prior: the zero constant and id: in the original
+   id = 0 and every literal 0 (fopen/hwnd/m tests, the NULL pushes) share esi (return paths mov eax, esi;
+   later id = mov_NextId++ lands in esi), file is ebx, m ebp, hwnd edi; ours keeps the zero in ebx/ebp,
+   spills id to [esp+0x28] (the extra slot pushes wc and the later slots 4 down) and swaps file/m (asmdiff
+   --regs ebp=ebx,ebx=ebp leaves the zero/id hunks, the wc slot shift and a store schedule around strcpy).
+   headers sample: insensitive (32, one codegen). dcp try: int id; id = 0; first, long id, the id
+   declaration at every position, id = m->id = mov_NextId++, separate id = mov_NextId; mov_NextId++: =
+   control; id = 0 after fopen: 1244 B; early return 0 for fopen/IsWindow/mov_Alloc with return id at the
+   end: 1232-1257 B (no zero register at all then); id = 0 at each of 60 statement positions (changes
+   meaning on the early paths): best 999 B, none byt... */
 
 int mov_Open(char *file, HWND hwnd, HINSTANCE hinst, int x, int y, int w, int h, unsigned int flags)
 {
