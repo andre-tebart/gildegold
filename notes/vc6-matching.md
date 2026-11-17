@@ -292,6 +292,28 @@ Where the pushes and pops sit, how many epilogue copies there are, shared agains
 
 ### Which copy of a cross-jumped tail survives, the join position
 
+- **Size queue s11 (all byte or padded size by these, one round each)**:
+  - Arms that each end `release; free; return;` where the original duplicates ONE such block into both: the arms as
+    `if (id == 0) {..} else if (id == 1) {..}` with the release / free / return once after them (he_RunMasterExam).
+  - A switch whose stage 0 tail cross-jumps into stage 1's in the original (ours the reverse): `break` in every
+    case instead of `return` (he_RunGraveyardWorkers).
+  - An `add esp` merged across the arms' join in the original (`add esp,0x14` after the shared call), ours `add
+    esp,0xc` before the join: the shared tail (`SetViewEnabled(win, 1); redraw = 1;`) written in each arm of one
+    if / else-if chain (ai_ManagedBuildingWindow).
+  - Several `return 1` / `return 0` guards with own epilogue copies, the original jumping to one block: `if (ci >=
+    N || chars[ci].id == 0xffff) return 1;` (cm_ExRelations), `if (*p == 0x13) { work } return 0;` instead of `if
+    (*p != 0x13) return 0;` (gm_MayTakeJob).
+  - A goto chain into a shared check: one `if / else if / else` choosing k and the work under `if (k >= 0)`
+    (cm_ExChrMoveToUniverse).
+  - `alive = 0; if (A && B) alive = 1;` against the original's `xor esi,esi` in the failure path: the flag set in
+    both arms (ai_MistressAffairWindow).
+  - A loop counter zeroed before the `if (n > 0)` that guards the loop (`xor ebx,ebx` before `test edi,edi`):
+    `i = 0; if (n > 0) { ..; while (i < n) {..; i++;} }` (he_RunGraveyardWorkers); a slot walk `s->state`, `s++`
+    where the original indexes `w->slots[i]` (he_RunWalk).
+  - A record pointer's `+ 4` added after both calls in the original: the record pointers as locals and `->name`
+    at the use (cm_RunWedding, GMHEAD).
+  climb.py found none of these (its best rows were meaning changes: a local read before a call that writes it).
+
 - **An else-if arm cross-jumped whole into a sibling's copy, the original keeps it inline**: the store order of
   the OTHER arms (default arm charId before stateArg; 0x176 arm stateArg, charId, x, z) decides it, found by
   climb.py swap + move in round 2 (cm_OrderAttack byte; permuting only the inlined arm's stores did not). The pair
