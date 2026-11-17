@@ -9,8 +9,10 @@
    ai_GraveSizeButtons 0x582730 (0x58276b).
    Open: layout: a further object starts at 0x587de0 or 0x587e00 (the tooltips / bookmarks): its plain .data block
    ai_DragWindow 0x62a8cc / ai_DragObj / ai_DragViewWin (all -1) follows this object's strings (the chatter's
-   "locationsriedhof\gespraeche.esc" 0x62a8a8, user 0x587dab), its .bss ai_DragPicked 0x6f266c ..; the first
-   function (0x587de0 clears ai_TurnTable, 0x587e00 the tooltip handler) is not settled. Its data is defined here
+   "locations\friedhof\gespraeche.esc" 0x62a8a8, user 0x587dab), its .bss ai_DragPicked 0x6f266c ..; the first
+   function (0x587de0 clears ai_TurnTable, 0x587e00 the tooltip handler) is not settled: bprobe at 0x587c90 ..
+   0x588160 changes nothing, ai_TurnTable is a common (0x6f5f60, between the tooltip object's ai_Bookmarks and
+   svcannon's ai_ShotTable: either object's group). Its data is defined here
    (ai_DragWindow moved from sv.c by place) until the split.
    Open: the head declarations are sv_t.c's as the split copied them; trim them to what the unit uses. */
 struct AHMSTEP;

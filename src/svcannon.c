@@ -9,6 +9,9 @@
    Its .bss ai_ShotDirty 0x6f2664 follows sv_t's 0x6f2660. The first function: 0x57e230 stores into ai_ShotTable,
    whose first user it is (0x57e256); the one before, 0x57e0e0, is the alchemist dismissal window of sv_t's
    "Locations\Domizil\skill" family.
+   Open: layout: the boundary rests on 0x5eec68 being a literal (sv_t's only own float; the one 400.0f in the exe, one
+   reader, ai_TutorialProgressSlider); a named const would leave sv_t + svcannon one object. The codegen does not tell:
+   `extern const float` and `400.0f` compile ai_TutorialProgressSlider to the same instructions; no code bound (bprobe).
    Open: the head declarations are sv_t.c's as the split copied them; trim them to what the unit uses.
    Open: data: the common rows ai_ShotTable 0x6f9f60 / ai_ShotCallbackArg 0x6fa020 stay defined in sv_t.c (their
    order before sv_t's ai_TutorialState 0x6fa060 in the common block). */

@@ -257,3 +257,20 @@ a unit boundary looks like. Not needed to match a function's code (that is `note
 - Pitfalls: a "plain" datum may be a string literal of the original's run (named in our source); a no-reader datum
   can be a literal of a removed function only if it is a float/double; an object without data is invisible to the
   data method.
+- Also found so (s4): a run of short strings ("%s", "rt", "wb" ..) closing a unit's strings whose first users are
+  all later units: that unit's removed functions (sblib before evt_Path, -24; "gb_" in txt's run): an accepted
+  open step. A named int whose bytes spell a string at a string run (ai_Unk5f8b10 = 6251111 = "gb_") is that
+  literal: delete it when the users already write the literal.
+- A unit's first plain .data datum after the previous unit's strings may have no reader at all (dd_vesa's 5x7
+  font, 637 bytes before dd_LastDriver; d3_tools' four corner vectors before d3t_SunFadeStart): declare it with the
+  original's bytes; its place in the block is the owner. Not a split by itself (the block's other data decide).
+- **A >= 64-byte object is 8-aligned in .data too**: D3VECTOR4[4] at 0x5f341c linked at +4; four D3VECTOR4 objects
+  matched. A 64-byte datum at an address not 0 mod 8 is several objects.
+- **The common block is grouped per object, in reverse link order** (menu, lcdom, lc, lobby, svgrave's tooltip
+  object, svcannon / sv_t, he ..); inside a group the order is not first use. A common between two groups can belong
+  to either neighbour.
+- **Splitting a header's prototypes into a new unit's header**: replace them in the old header with `#include
+  "new.h"` at the same place; removing them (and including new.h in the callers) moved two functions of unrelated
+  includers by the declaration set (reg.h from di_input.h).
+- **bprobe.py caches the merged compile** (build/c2dag/unitprobe/bp_base_<tree>_<unit>.pkl) and reuses it: delete
+  it after editing the unit, or the "changed" list compares against stale code.

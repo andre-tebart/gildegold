@@ -9,6 +9,11 @@
    function is a reasoned guess: 0x5bd060 is the first after the stats panel 0x5bcc70 (lc's last string user) and
    below 0x5bd470 (the first user of this object's .data); ai_CityStatsPanel's dword load of the short
    ai_StatsChartFlags shows this unit defines it.
+   Open: layout: the first function within (0x5bcc70, 0x5bd470]: none of 0x5bd060 .. 0x5bd330 has data of its own (only
+   0x5bd250's pooled svgrave string); bprobe at 0x5bd0c0 .. 0x5bd470 drops no byte function (ai_CharInfoPanel and
+   ai_ChangeProfessionWindow move one instruction further away when the helpers are unknown: weak, for 0x5bd060).
+   The callers do not decide: ai_CentredText only from this unit, ai_AmountLimit / ai_ShowWindowRow / ai_ShowBuildingRows
+   only from lc / lcdom, the text controls from both.
    Open: the head declarations are lc.c's as the split copied them (types, views, prototypes); trim them to what
    the unit uses once lc.h / lcamt.h carry the shared ones. */
 #define GAPDATA __declspec(align(1)) unsigned char
