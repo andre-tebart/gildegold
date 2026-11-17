@@ -4655,12 +4655,12 @@ exe	0x005dbfc0	ai_SaveWind	unk_5d33b0	39ed11cddcd6b6fd	no	byte	control=byte p1=b
 exe	0x005dc0c0	ai_LoadWind	unk_5d33b0	22bea48042420f0f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005dc1a0	ai_SphereVolume	unk_5d33b0	d20d3a1e05807289	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005dc210	ai_PositionShare	unk_5d33b0	17008b189d4228ad	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x005dc240	ai_InitShot	menu	41f04014f1b85ea1	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	95df446b3c51717b
+exe	0x005dc240	ai_InitShot	shot	9630aacf0fe23b64	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=316	ca4fdfaecd1a8133
 exe	0x005dc3a0	ai_ScatterShot	menu	33c9e2b3744cb515	no	byte	sample n=32 seed=1 compiled=32 codegens=1 best=byte	
-exe	0x005dc4a0	ai_StepShot	menu	7022705064491ca4	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	95df446b3c51717b
-exe	0x005dc9d0	ai_StepShotSlow	menu	5f63569f3b7866bf	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	95df446b3c51717b
+exe	0x005dc4a0	ai_StepShot	shot	b52286d7644c6583	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=316	ca4fdfaecd1a8133
+exe	0x005dc9d0	ai_StepShotSlow	shot	f80f4370fca5e90f	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=316	ca4fdfaecd1a8133
 exe	0x005dcf00	ai_ShotHitsGround	menu	d5ee153d3ba42fac	no	shape	sample n=32 seed=1 compiled=32 codegens=1 best=shape	
 exe	0x005dd090	ai_NormalizeEffectScale	unk_5d33b0	f4fb3ee3506f24fa	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
-exe	0x005dd100	ai_SolveCannonAim	menu	5d741542f6552084	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	31bfb49d052b5388
+exe	0x005dd100	ai_SolveCannonAim	shot	5d741542f6552084	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=316	ca4fdfaecd1a8133
 exe	0x005de460	MSS_auto_cleanup	mss32lib	c42d3dca4fab99e2	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005de470	mss_AutoCleanupExit	mss32lib	47db3aa67c7b30ae	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
