@@ -2870,6 +2870,9 @@ the stack at every instruction.
   cast the order is canonical (d3t_EmitterCB).
 
 ### Product and sum chains: association, factoring, folding
+- **`a*14 - b*14` with b loaded once but multiplied at every use (the volatile a reloaded each time), ours keeps
+  b*14 as one CSE**: the source was `(a - b) * 14`: VC6 distributes the constant per use after CSE, so only the load
+  of b is shared (cm_DrawFightTime byte, d3_Time volatile).
 
 - **`fld [m]; fmul [1.0f]; fsubr` where ours has a plain `fsub [m]`**: VC6 folds `x * 1.0f` and `x * -1.0f` literals;
   the -1 came from a vector local (`d.z = -1.0f; pl.x = m->_11 * d.x + m->_21 * d.y + m->_31 * d.z;`), +1 / 0
