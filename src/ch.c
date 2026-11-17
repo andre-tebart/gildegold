@@ -2797,7 +2797,7 @@ int ch_GetNewPath(CHARACTER *ch, int n, CHARACTER **others)
     int scene = d3t_SceneIndex(ch->scene);
     D3SM *h;
     int steps, cx, cz, tx, tz, bx, bz, gx, gz;
-    int i, j, k, r, e, last, nrest, cnt, m, sx;
+    int i, j, k, r, e, last, nrest, cnt, m;
     float y, d, dx, dy, dz;
     CHACTION *oa;
     CHWAYPT wp[32];
@@ -2902,6 +2902,8 @@ int ch_GetNewPath(CHARACTER *ch, int n, CHARACTER **others)
             ch->contacts[i].flags = res;
         }
         if (res & 1) {
+            int sx, fz, len;
+
             if (ch->speedScale < 0.5)
                 ch->speedScale = 0.5f;
             for (i = 0; i < n; i++) {
@@ -2953,27 +2955,27 @@ int ch_GetNewPath(CHARACTER *ch, int n, CHARACTER **others)
                 for (k = last + 1; k < a->u.walk.pathLen; k++) {
                     q[-1] = ((unsigned char *)a->u.walk.path)[k * 2];
                     q[0] = ((unsigned char *)a->u.walk.path)[k * 2 + 1];
-                    q += 2;
                     nrest++;
+                    q += 2;
                 }
                 gx = ((unsigned char *)a->u.walk.path)[last * 2];
                 gz = ((unsigned char *)a->u.walk.path)[last * 2 + 1];
                 m = ch->scene == d3_Scenes || d3_Terrain ? 5 : 2;
-                if (!ch_FindFreeCell(h, &ch->obj->pos, &a->u.walk.dest, gx, gz, &cz, &i, steps * m,
+                if (!ch_FindFreeCell(h, &ch->obj->pos, &a->u.walk.dest, gx, gz, &cz, &fz, steps * m,
                                      a->u.walk.flags | 1)) {
                     ch_RestoreGround((struct D3HMAP *)h);
                     return -1;
                 }
                 gx = cz;
-                gz = i;
+                gz = fz;
                 ch_Path.xy = ch_PathBuf;
                 ch_Path.max = 0x200;
                 if (h->entries[h->size * cx + sx].type == 0xd) {
                     m = ch->scene == d3_Scenes || d3_Terrain ? 5 : 2;
-                    if (ch_FindFreeCell(h, &ch->obj->pos, &a->u.walk.dest, sx, cx, &cz, &i, steps * m,
+                    if (ch_FindFreeCell(h, &ch->obj->pos, &a->u.walk.dest, sx, cx, &cz, &fz, steps * m,
                                         a->u.walk.flags | 1)) {
                         sx = cz;
-                        cx = i;
+                        cx = fz;
                     }
                 }
                 if (path_Find(&ch_Path, (PMAP *)h, sx, cx, gx, gz, ch->pathType) == 0xffff) {
@@ -2986,12 +2988,12 @@ int ch_GetNewPath(CHARACTER *ch, int n, CHARACTER **others)
                     a->u.walk.path = 0;
                 }
                 a->u.walk.path = mem_Alloc((cnt + nrest) * 2, "ch:GetNewPath");
-                tz = ch_ThinPath(ch, &ch_Path, (CHPATHPT *)a->u.walk.path, (CHWALKDEF *)h);
+                len = ch_ThinPath(ch, &ch_Path, (CHPATHPT *)a->u.walk.path, (CHWALKDEF *)h);
                 for (k = 0; k < nrest; k++) {
-                    ((unsigned char *)a->u.walk.path)[(tz + k) * 2] = rest[k * 2];
-                    ((unsigned char *)a->u.walk.path)[(tz + k) * 2 + 1] = rest[k * 2 + 1];
+                    ((unsigned char *)a->u.walk.path)[(len + k) * 2] = rest[k * 2];
+                    ((unsigned char *)a->u.walk.path)[(len + k) * 2 + 1] = rest[k * 2 + 1];
                 }
-                a->u.walk.pathLen = tz + nrest;
+                a->u.walk.pathLen = len + nrest;
                 a->u.walk.cur = 0;
                 a->u.walk.prevCell = -1;
                 gx = ((unsigned char *)a->u.walk.path)[a->u.walk.pathLen * 2 - 2];
@@ -3010,7 +3012,7 @@ int ch_GetNewPath(CHARACTER *ch, int n, CHARACTER **others)
                 ch->contactSteps = 4;
                 if (sx == gx && cx == gz)
                     return -2;
-                return tz;
+                return len;
             }
         }
     }
