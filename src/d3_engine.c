@@ -1,7 +1,8 @@
 /* d3_engine.c -- original path D:\develop\Units\d3\d3_engine.c (assert ref 0x43a939)
-   0x438c30..0x43eab0: its .data starts at 0x5fb5b0 (d3_DefaultScene) right after d3_d3d.c's strings and
-   holds the d3_engine.c path, and the first functions (0x438c30..) use d3_DefaultScene. Functions are kept
-   in their original order. Names are ours.
+   0x438c30..0x43e6b0: its .data starts at 0x5fb5b0 (d3_DefaultScene) right after d3_d3d.c's strings and
+   holds the d3_engine.c path, and the first functions (0x438c30..) use d3_DefaultScene; its strings end with
+   "_S" / "_1" / "_0" (0x5fb7fc); the event functions after it are d3_event.c's. Functions are kept in their
+   original order. Names are ours.
    Open: d3_engine functions are still declared in other units' headers (d3.h, rd.h, ch.h, cm.h,
    d3_interface.h, d3_int_io.h; K&R aliases in f3init.c); their callers must include d3_engine.h first.
    Open: d3_CloneObject (and d3_mir.c's d3_MirDrawObject) flip with TU-global changes - definitions added
@@ -2633,13 +2634,6 @@ void d3_Frame(unsigned int mask, char flag, char tick)
     d3_Render(mask, flag);
     d3_Animate(mask, flag, tick, 1);
 }
-/* 0x43e6b0, default for d3e_Resolve: the handler of an event, by name */
-
-D3EVHANDLER d3e_DefaultResolve(void *obj, int id, char *name)
-{
-    return (D3EVHANDLER)ai_AlwaysTrue;
-}
-
 /* 0x5eba80, per triangle vertex i: [i][0] the next vertex, [i][1] the previous one (the edge opposite i);
    d3s.c and d3_sm.c read it, its .rdata lies between vfs.c's and d3_fl.c's, among this unit's constants */
 const int d3_TriEdge[3][2] = { { 1, 2 }, { 2, 0 }, { 0, 1 } };
@@ -2649,41 +2643,6 @@ D3SCENE *d3_DefaultScene = d3_Scenes;  /* 0x5fb5b0, the current scene (d3.h) */
    which the interface's scene select saves and restores; d3d_SetConfig reads only the first three) */
 char d3_DefaultD3DConfig[] = { 94, 1, 0, 0, 3, 0, 0, 0, 2, 0, 0, 0, 4, 0, 0, 0 };  /* 0x5fb5b4 */
 int d3if_SceneState1 = 15;  /* 0x5fb5c4, the scene pair's second dword (d3_interface.c's write-only state) */
-/* 0x5fb800 */
-D3EVNAME d3e_Events[] = {
-    { "NONE", 0 },
-    { "TEST", 1 },
-    { "ZOOM_IN_OBJECT", 2 },
-    { "ZOOM_OUT_OBJECT", 3 },
-    { "TEST", 1 },
-    { "SCENE_ENTER", 4 },
-    { "SCENE_EXIT", 5 },
-    { "SCENE_SUPERVISOR", 6 },
-};
-
-/* 0x43e6c0, the id of an event name ("SCENE_ENTER", case-insensitive), 0 when the name is unknown */
-int d3e_EventId(char *name)
-{
-    unsigned int i;
-
-    for (i = 0; i < sizeof(d3e_Events) / sizeof(d3e_Events[0]); i++)
-        if (!_strcmpi(name, d3e_Events[i].name))
-            return d3e_Events[i].id;
-    return 0;
-}
-/* 0x43e710, the name of an event id, "NONE" when the id is unknown */
-
-char *d3e_EventName(int id)
-{
-    unsigned int i;
-
-    for (i = 0; i < sizeof(d3e_Events) / sizeof(d3e_Events[0]); i++)
-        if (id == d3e_Events[i].id)
-            return d3e_Events[i].name;
-    return "NONE";
-}
-
-D3EVRESOLVE d3e_Resolve = d3e_DefaultResolve;  /* 0x5fb920 */
 /* d3d_Caps98d: view of d3d_UsedCard (tools/data_views.py) */
 char d3_EditorMode = 0;  /* 0x633438, editor / tool mode (reasoned guess: the ortho view cameras, the type-6 lights
                             and the on=0 relight; only ever set 0 in this build) */
@@ -2797,117 +2756,3 @@ float d3_CenterX = 0;  /* 0xfe75fc */
 float d3_HalfAngleX = 0;  /* 0xfe7600 */
 float d3_CenterY = 0;  /* 0xfe7604 */
 /* d3_ShadowMode: view of d3d_Config (tools/data_views.py) */
-
-/* 0x43e740, sets (fn != 0) or clears an event handler of an object */
-char d3e_RegisterEvent(D3OBJECT *obj, int id, D3EVHANDLER fn, char *name)
-{
-    int i;
-
-    if (!obj)
-        return 0;
-    if (id) {
-        if (fn) {
-            if (!D3_X(obj)->events)
-                D3_X(obj)->events = mem_Alloc(D3E_NEVENTS * sizeof(D3EVENT), "d3e:RegisterEvent(eventtable)");
-            ((D3EVENT *)D3_X(obj)->events)[id].name[0x7f] = 0;
-            strncpy(((D3EVENT *)D3_X(obj)->events)[id].name, name, 0x7f);
-            ((D3EVENT *)D3_X(obj)->events)[id].fn = fn;
-            return 1;
-        }
-        if (D3_X(obj)->events && ((D3EVENT *)D3_X(obj)->events)[id].fn) {
-            ((D3EVENT *)D3_X(obj)->events)[id].fn = 0;
-            for (i = 0; i < D3E_NEVENTS; i++)
-                if (((D3EVENT *)D3_X(obj)->events)[i].fn)
-                    break;
-            if (i == D3E_NEVENTS) {
-                mem_Free(D3_X(obj)->events);
-                D3_X(obj)->events = 0;
-            }
-        }
-    }
-    return 1;
-}
-/* 0x43e820, the same for a scene */
-
-char d3e_RegisterSceneEvent(D3SCENE *scene, int id, D3EVHANDLER fn, char *name)
-{
-    int i;
-
-    if (!scene)
-        return 0;
-    if (id) {
-        if (fn) {
-            if (!scene->events)
-                scene->events = mem_Alloc(D3E_NEVENTS * sizeof(D3EVENT), "d3e:RegisterSceneEvent(eventtable)");
-            ((D3EVENT *)scene->events)[id].name[0x7f] = 0;
-            strncpy(((D3EVENT *)scene->events)[id].name, name, 0x7f);
-            ((D3EVENT *)scene->events)[id].fn = fn;
-            return 1;
-        }
-        if (scene->events && ((D3EVENT *)scene->events)[id].fn) {
-            ((D3EVENT *)scene->events)[id].fn = 0;
-            for (i = 0; i < D3E_NEVENTS; i++)
-                if (((D3EVENT *)scene->events)[i].fn)
-                    break;
-            if (i == D3E_NEVENTS) {
-                mem_Free(scene->events);
-                scene->events = 0;
-            }
-        }
-    }
-    return 1;
-}
-/* 0x43e900, writes an event table */
-
-void d3e_SaveEvents(void *f, D3EVENT *t)
-{
-    int i, n;
-
-    if (t) {
-        n = 0;
-        for (i = 0; i < D3E_NEVENTS; i++)
-            if (t[i].fn)
-                n++;
-        bio_wr_i(f, n);
-        for (i = 0; i < D3E_NEVENTS; i++, t++) {
-            if (t->fn) {
-                bio_wr_s(f, d3e_EventName(i));
-                bio_wr_s(f, t->name);
-            }
-        }
-    } else
-        bio_wr_i(f, 0);
-}
-/* 0x43e970, reads the event table of an object */
-
-void d3e_LoadEvents(void *f, D3OBJECT *obj)
-{
-    int n, i, id;
-    char hname[0x100];
-    char ename[0x100];
-
-    bio_rd_i(f, &n);
-    for (i = 0; i < n; i++) {
-        bio_rd_s(f, ename);
-        id = d3e_EventId(ename);
-        bio_rd_s(f, hname);
-        if (obj)
-            d3e_RegisterEvent(obj, id, d3e_Resolve(obj, id, hname), hname);
-    }
-}
-/* 0x43ea10, reads the event table of the default scene */
-
-void d3e_LoadSceneEvents(void *f)
-{
-    int n, i, id;
-    char hname[0x100];
-    char ename[0x100];
-
-    bio_rd_i(f, &n);
-    for (i = 0; i < n; i++) {
-        bio_rd_s(f, ename);
-        id = d3e_EventId(ename);
-        bio_rd_s(f, hname);
-        d3e_RegisterSceneEvent(d3_DefaultScene, id, d3e_Resolve(d3_DefaultScene, id, hname), hname);
-    }
-}
