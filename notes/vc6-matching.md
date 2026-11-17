@@ -2766,6 +2766,10 @@ the stack at every instruction.
 
 ### Product and sum chains: association, factoring, folding
 
+- **`fadd st(0),st` right after the definition's `fmul` (before its `fstp`), ours `fld x; fadd st,st` in the final sum**:
+  the doubling was its own statement, `age = (b + 1) * 0.1f; age = age + age;`, the sum then uses `age`; `* 2` /
+  `* 2.0f` folds into the constant (hmt_Score byte).
+
 - **A chain in a load order no plain spelling gives**: nest it in that order, VC6 keeps nesting:
   `(((((S * area) * drag) * dens) * v) * v) * 0.5f` (360 unnested orders = one code; ai_StepShot); `k = spread *
   (speed * (2r - 1))` gives `fmul [field]` first, `y = dside.y + (dother.y + v.y)` the sum order (ai_ScatterShot 8

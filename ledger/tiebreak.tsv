@@ -1843,7 +1843,7 @@ exe	0x004ad190	hmt_GetElectionObjType	hmt	7f50e510170f59dd	no	byte	control=byte 
 exe	0x004ad1b0	hmt_SetPendingElection	hmt	bbfad04d8cebd9e7	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004ad1c0	hmt_Election	hmt	ec968fdc6e9a0527	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft	
 exe	0x004ad3b0	hmt_SendElectionMessage	hmt	2e2dea2fdef5a552	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x004ad3e0	hmt_Score	hmt	40b9a0036e3e716d	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	9ea3f8f6e4506977
+exe	0x004ad3e0	hmt_Score	hmt	40b9a0036e3e716d	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	35fefc6fe2d96c5a
 exe	0x004ad510	hmt_ClearOffices	hmt	091e00e0086b82d8	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	2d1e0ab881e21b2b
 exe	0x004ad580	hmt_DecideElection	hmt	332aaac1cf08a67f	no	shape	sample n=32 seed=1 compiled=32 codegens=1 best=shape	
 exe	0x004ad7a0	hmt_FillCouncils	hmt	43f07ed0a2169aef	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	2d1e0ab881e21b2b

@@ -554,6 +554,7 @@ float hmt_Score(AICHAR *c, AICHAR *obj, int type, int twice)
     if (twice)
         rel = rel + rel;
     age = (HMT_B(c, 0x0d) + 1) * 0.1f;
+    age = age + age;
     w1 = (float)amt_GetKindLevel(c->officeKind) / (float)amt_GetKindLevel(0x1b);
     w2 = (float)amt_GetKindLevel(c->prevOffice) / (float)amt_GetKindLevel(0x1b);
     t1 = 0;
@@ -562,7 +563,7 @@ float hmt_Score(AICHAR *c, AICHAR *obj, int type, int twice)
     t2 = 0.0f;
     if (c->prevOffice)
         t2 = amt_GetDistrictLiking(c, amt_KindColumn(c->prevOffice));
-    return t1 * w1 + t2 * w2 + (age + age) + rel;
+    return t1 * w1 + t2 * w2 + age + rel;
 }
 /* 0x4ad510, in election years 1..3 the holder of the office object (hmt_ElectionObjTypes) is cleared @deep code hunk 40 at instruction 10 is register allocation only: the original loads hmt_ElectionObjTypes[m-1] into eax and pushes it, ours into edx and pushes edx; the other 10 differing instructions are the same eax<->edx<->ecx swaps (12 asmdiff lines, all register renames, no instruction added or changed) */
 
