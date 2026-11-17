@@ -4356,7 +4356,7 @@ exe	0x005a9880	ai_ShowGraveOrderCancelled	lc	ddafc0d018808fe5	no	byte	control=by
 exe	0x005a9910	ai_HauntingText	lc	1bc4c75e8fc88719	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005a9990	ai_TellGraveWorkSuccess	lc	d1d00ab56f0cc6a5	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005a99e0	ai_TellGraveWorkFailure	lc	63257b9b0df8f5f1	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x005a9a30	ai_GraveyardMessage	lc	f95e12cef7d35a20	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
+exe	0x005a9a30	ai_GraveyardMessage	lc	f95e12cef7d35a20	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	38d8f4d9d72875ed
 exe	0x005a9af0	ai_GraveyardMessagePlain	lc	0f8337793d9ae574	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005a9b50	ai_DomizilMessageResearch	lc	e56f7dc29facbffe	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005a9bc0	ai_DomizilMessageResearchKind	lc	26e1368698b31348	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	

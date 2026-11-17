@@ -602,6 +602,10 @@ copied back into short predecessors only after all of this.
 
 ### setcc, defaults, conditional assignments
 
+- **`neg; sbb; and ecx,K; add ecx,B; add ecx,edx` against our `lea eax,[ecx+edx+B]`**: one ternary of two
+  constants plus the rest, `(c ? B + K : B) + x`; `(c ? K : 0) + B + x` in any order folds into the lea
+  (ai_GraveyardMessage byte).
+
 - **`setne` against a branchy 0/1 (`xor r,r` / `mov r,edi`)**: `(x & A) || (x & B) ? 1 : 0`. No lever: `x & (A|B)
   ? 1 : 0`, `!= 0` (d3d_GetDeviceInfo 91 -> 25 lines).
 - **`setne cl; lea edx,[ecx*4+4]` against `lea ecx,[ecx*4+4]`**: `x != 1 ? 8 : 4` or if / else, not `(x != 1) * 4

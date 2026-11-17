@@ -15475,29 +15475,19 @@ void ai_TellGraveWorkFailure(int chRec)
     he_ShowNews(c->netId, -1, ai_NewsText, 1, 0x5fb, ai_NewsKeyFriedhof13);
 }
 /* 0x5a9a30, the graveyard news of the two characters worker / other to `to` (188 B): the text 0x40ad (0x40a3,
-   worker's id, its building +0x16c, other's id); with detail the text 0x40ae (0x20d + 0x23 for a feminine worker
+   worker's id, its building +0x16c, other's id); with detail the text 0x40ae (0x230 for a feminine worker, else 0x20d,
    + its title +0x165) is formatted into ai_NewsSecond and appended; the news 0x5fa goes to to->netId with the
-   sound "_NACHRICHTEN_FRIEDHOF_00"
-   @deep read whole against 0x5a9a30..0x5a9aec and the meaning is right: txt_Format(ai_NewsText, 0x40ad,
-   0x40a3, worker->id, worker->bld, other->id), with detail the second text 0x40ae (0x20d + 0x23 for a
-   feminine worker + its title +0x165) into ai_NewsSecond and strcat onto ai_NewsText, then
-   he_ShowNews(to->netId, -1, ai_NewsText, 0, 0x5fa, _NACHRICHTEN_FRIEDHOF_00); the records are G8CHARREC
-   (AICHAR: id +0, kind +2, netId +4, sex +9, title +0x165, bld +0x16c). All that is left is the second
-   text's argument: the original adds it up in ecx (and ecx,0x23; add ecx,0x20d; add ecx,edx) while ours
-   folds the sum into one lea (lea eax,[ecx+edx+0x20d]; push eax), one instruction and one byte of
-   difference. Tried, one build each, all the same lea: (sex ? 0x23 : 0) + 0x20d + title, title + 0x20d +
-   (sex ? 0x23 : 0), (sex != 0 ? 0x23 : 0) + 0x20d + title, and a local n = (sex ? 0x23 : 0) + 0x20d;
-   txt_Format(.., n + title) - VC6 12.00.9044 always folds the 3-operand sum to lea here. */
+   sound ai_NewsKeyFriedhof00 */
 
 void ai_GraveyardMessage(G8CHARREC *to, G8CHARREC *worker, G8CHARREC *other, int detail)
 {
     txt_Format(ai_NewsText, 0x40ad, 0x40a3, worker->id, worker->bld, other->id);
     if (detail != 0) {
         txt_Format(ai_NewsSecond, 0x40ae,
-                     (worker->sex ? 0x23 : 0) + 0x20d + worker->title);
+                     (worker->sex ? 0x230 : 0x20d) + worker->title);
         strcat(ai_NewsText, ai_NewsSecond);
     }
-    he_ShowNews(to->netId, -1, ai_NewsText, 0, 0x5fa, "_NACHRICHTEN_FRIEDHOF_00");
+    he_ShowNews(to->netId, -1, ai_NewsText, 0, 0x5fa, ai_NewsKeyFriedhof00);
 }
 /* 0x5a9af0, the graveyard news of the worker / other characters to `to`, without a detail sentence (83 B):
    the text 0x40af (0x40a3, the worker's id, its building +0x16c, the other's id) into ai_NewsText, shown to
