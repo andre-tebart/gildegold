@@ -12330,8 +12330,18 @@ void he_TransportHomeHome(int ev)
     4: the cart unloads at its point for the player slot of a kind 0x47 goal (else the own player), stage 5.
     5: at the building of the cart's route point that takes the load (ai_IsBuildingOpen) the cart hands it over
        (rt_LoadAtPoint) and the transport ends (-1); no such point: -1; else it waits 15 minutes
-   @deep Read all 8 stages (jump table equal) against the original and rebuilt them; frame, calls, stores,
-   switch tables all equal (ours=603 original=603 ins). What is left: (1) case -2's third branch (t->at ==
+   @deep size queue s5: ours 1936 vs 1937 raw: the original +4 (fxch / fmulp st(2) / fxch in the chance
+   test) and ours +3 (push esi / push 1 before the jmp in case -2's from arm). Slots fixed s5 by AIOBJ *o
+   declared in a case 1 block (from and o share [esp+0x10] in the original; c2frame: a function-scope &o
+   conflicts with every local), 36 -> 8 ins. Left: (1) the fxch pair: fild rnd; fld chance; fmul 0.01;
+   fxch; fild fill; fmulp st(2); fxch; fcompp (he_RunBuyBuilding's open price test has the same shape: an
+   int operand fild'ed last and multiplied into st(2)). No lever s5: (float) / (double) / (int) casts on
+   fill or on the random, the product's operands swapped, chance / 100.0, !(<=) (12 ins), the compare
+   flipped (175 ins, chance kept on the FPU), fill * chance * 0.01 (11 ins, other rounding). (2) case -2:
+   the from arm jumps to the call of the to arm's copy, the original to the push esi of the guards arm's
+   copy (jmp +0x711 -> +0x6cc); returns per arm (34 ins), break instead of return = control. prior: Read
+   all 8 stages (jump table equal) against the original and rebuilt them; frame, calls, stores, switch
+   tables all equal (ours=603 original=603 ins). What is left: (1) case -2's third branch (t->at ==
    from->id): VC6 cross-jumps it to the shared 'push esi; push 1; call cm_SendExSetHE' tail at +0x6cc, ours
    keeps 'push esi; push 1' and jumps to the call (asmdiff +0x70e: '- push esi / - push 1 / jmp X'); the
    if/else-if order guards/to/from is the original's, a merged condition made it worse (68 ins). (2) fpu 16
@@ -12343,7 +12353,7 @@ void he_RunTransport(int ev)
     AIJOB *e = (AIJOB *)ev;
     HETRANSPORT *t = (HETRANSPORT *)ev;
     AIBLD *guards, *market, *from, *to, *b;
-    AIOBJ *tr, *o, *c;
+    AIOBJ *tr, *c;
     RTPOINT *p;
     HESOLDMSG m;
     int mode;
@@ -12375,65 +12385,68 @@ void he_RunTransport(int ev)
         gm_AddTime(&e->end, 0, 0, 1);
         e->exSlot = cm_SendExSetHEI(e->stage + 1, ev);
         return;
-    case 1:
-        if ((e->opts & 2) == 0)
-            return;
-        if (gm_CompareTime(&e->end, &ai_Time) >= 0)
-            return;
-        if (t->route != -1 && cm_GetSlotState(t->route) == 0)
-            return;
-        if (t->route != -1 && cm_GetSlotState(t->route) == 2) {
-            e->exSlot = cm_SendExSetHEI(-1, ev);
-            return;
-        }
-        t->route = -1;
-        mode = t->mode;
-        if (mode == 2)
-            he_TransportFromHome(ev);
-        else if (mode == 1)
-            he_TransportToHome(ev);
-        else if (mode == 3)
-            he_TransportStadtStadt(ev);
-        else if (mode == 4)
-            he_TransportHomeHome(ev);
-        else
-            err_Message("he_RunTransport: invalid type!");
-        t->rounds++;
-        e->clock60 = ai_Time;
-        e->end = ai_Time;
-        gm_AddTime(&e->end, 0, 5, 0);
-        if (t->rounds == 5) {
-            gm_FindById(0, &o, 0, t->cart);
-            if (util_RandomU(0x1e) > o->fill) {
-                txt_Format(text, 0x1c46, o->id * 2 + 0x9a8);
-                he_ShowNews(ai_CharsT[e->chr].netId, -1, text, 0, 0x5ec, 0);
-                cm_SendFreeObject(o->objId);
+    case 1: {
+        AIOBJ *o;
+
+            if ((e->opts & 2) == 0)
+                return;
+            if (gm_CompareTime(&e->end, &ai_Time) >= 0)
+                return;
+            if (t->route != -1 && cm_GetSlotState(t->route) == 0)
+                return;
+            if (t->route != -1 && cm_GetSlotState(t->route) == 2) {
                 e->exSlot = cm_SendExSetHEI(-1, ev);
                 return;
             }
-        }
-        if (t->weatherStage != 0 || t->rounds < 5)
-            return;
-        chance = 0;
-        gm_FindById(0, &o, 0, t->cart);
-        b = (AIBLD *)gm_FindBuildingById(o->bldId);
-        if (b != 0)
-            chance = gm_BuildingSkill(b, 2, 1) + 100.0f;
-        if (d3t_SnowP != 0 && *d3t_SnowP > 100)
-            chance -= 15.0f;
-        else if (d3t_Rain != 0 && *d3t_Rain > 200)
-            chance -= 10.0f;
-        if (util_RandomU(0x69) > o->fill * (chance * 0.01)) {
-            if ((ai_CharsT[e->chr].kind == 6 || ai_CharsT[e->chr].kind == 7) && (o->flags20 & 1) == 0) {
-                txt_Format(text, 0x1c45);
-                he_ShowNews(ai_CharsT[e->chr].netId, -1, text, 0, 0x608, 0);
+            t->route = -1;
+            mode = t->mode;
+            if (mode == 2)
+                he_TransportFromHome(ev);
+            else if (mode == 1)
+                he_TransportToHome(ev);
+            else if (mode == 3)
+                he_TransportStadtStadt(ev);
+            else if (mode == 4)
+                he_TransportHomeHome(ev);
+            else
+                err_Message("he_RunTransport: invalid type!");
+            t->rounds++;
+            e->clock60 = ai_Time;
+            e->end = ai_Time;
+            gm_AddTime(&e->end, 0, 5, 0);
+            if (t->rounds == 5) {
+                gm_FindById(0, &o, 0, t->cart);
+                if (util_RandomU(0x1e) > o->fill) {
+                    txt_Format(text, 0x1c46, o->id * 2 + 0x9a8);
+                    he_ShowNews(ai_CharsT[e->chr].netId, -1, text, 0, 0x5ec, 0);
+                    cm_SendFreeObject(o->objId);
+                    e->exSlot = cm_SendExSetHEI(-1, ev);
+                    return;
+                }
             }
-            gm_ChangeObjektZustand(o->objId, -10);
-            t->weatherStage = 2;
+            if (t->weatherStage != 0 || t->rounds < 5)
+                return;
+            chance = 0;
+            gm_FindById(0, &o, 0, t->cart);
+            b = (AIBLD *)gm_FindBuildingById(o->bldId);
+            if (b != 0)
+                chance = gm_BuildingSkill(b, 2, 1) + 100.0f;
+            if (d3t_SnowP != 0 && *d3t_SnowP > 100)
+                chance -= 15.0f;
+            else if (d3t_Rain != 0 && *d3t_Rain > 200)
+                chance -= 10.0f;
+            if (util_RandomU(0x69) > o->fill * (chance * 0.01)) {
+                if ((ai_CharsT[e->chr].kind == 6 || ai_CharsT[e->chr].kind == 7) && (o->flags20 & 1) == 0) {
+                    txt_Format(text, 0x1c45);
+                    he_ShowNews(ai_CharsT[e->chr].netId, -1, text, 0, 0x608, 0);
+                }
+                gm_ChangeObjektZustand(o->objId, -10);
+                t->weatherStage = 2;
+                return;
+            }
+            t->weatherStage = 1;
             return;
-        }
-        t->weatherStage = 1;
-        return;
+    }
     case 2:
         if (!e->opts & 2)                       /* the original's test: `!` before `&`, never true */
             return;
