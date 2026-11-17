@@ -8638,6 +8638,13 @@ struct AIOBJ *ai_Objects;  /* 0x7e3f34, the object instances (AIOBJ, ai.h) */
 int gm_QueryDepth;  /* 0x7e3f38, the depth of the child stack */
 int gm_NOffers;  /* 0x7e3f3c, the number of offers */
 AISTORE gm_Offers[88];  /* 0x7e4b20, the offers (ai.h's AISTORE rows of 6 ints: building, market, goods object, supply, price float, flag) */
-int gm_QueryStack[20488];  /* 0x8753e0, the child stack (the first word of */
+int gm_QueryStack[20488] = {0};  /* 0x8753e0 (a common in the original, kept defined: dcp sizes a common by our link's next symbol and reports D1 against gm_KindObjs), the child stack (the first word of */
 unsigned gm_KindObjs[732];  /* 0x889400 */
 int gm_TreeRanks;  /* 0x889f70 */
+AITIME ai_Time;  /* 0x770ae0, the game clock */
+char ai_Chars[768][0x21c];  /* 0x770b80, the characters */
+char * ai_BTypes;  /* 0x7e3f30 */
+signed char ai_Relations[768][768];  /* 0x7e5360 */
+int gm_PlayerRecords[688];  /* 0x7d5f80, the 16 player records ( */
+int gm_ClassBuilding[32];  /* 0x875360 */
+char ai_PlayerSlots[4][0x2f4];  /* 0x7e3f40, per player: starts with the name of its history file */

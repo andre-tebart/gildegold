@@ -17341,10 +17341,10 @@ int cm_FightFixedLight = 0;  /* 0x6f244c */
 int cm_NetFlags = 0;  /* 0x6f2594, flags */
 int cm_RequestedSaveSlot = 0;  /* 0x6f25c8 */
 char cm_RequestedSaveName[72] = {0};  /* 0x6f25d0 */
-unsigned int ai_MissionSeed;  /* 0x75e120, the random seed of the missions (as mission.h) */
-int ai_TimeCopy[4];  /* 0x75e130, the clock copy 0x75e130..0x75e13e (14 bytes, written whole by cm.c / sv.c): [0] the year; ai_Unk75e134 / 75e138 / 75e13c are views */
-char * sv_SelectedObject;  /* 0x75ec60 */
-char cm_ChatLog[2048];  /* 0x75fba0 */
+extern unsigned int ai_MissionSeed;
+extern int ai_TimeCopy[4];
+extern char * sv_SelectedObject;
+extern char cm_ChatLog[2048];
 int cm_SaveAcks[8][2];  /* 0x76fa20 */
 /* ai_Unk770d8c: view of ai_Chars (tools/data_views.py) */
 int ai_Evidence[0x800][2]; /* 0x91b6e0 */
@@ -17382,7 +17382,7 @@ CMNETGAME cm_NetGame;  /* 0x936460, the network game (hdr.players 0x936496, mode
 char cm_LobbyRecords[752];  /* 0x9364e0 */
 int cm_LobbyPlayerId;  /* 0x9367d0, this player's lobby id */
 int cm_LobbyHelloValue;  /* 0x9367d4, the hello answer's second value */
-G17MSG cm_RecvPool[0x2000] = {0};  /* 0x9367e0, the free receive records */
+G17MSG cm_RecvPool[0x2000];  /* 0x9367e0, the free receive records */
 int cm_LastSyncCount;  /* 0xa687e0, "cm_LastSyncCount" (net.h) */
 int cm_NextNetStep;  /* 0xa687e4, d3_Time of the start */
 CMSPLITBUF cm_SplitMsg;  /* 0xa68800, a long message to split (cm_SplitMsgLen bytes) */
@@ -17398,7 +17398,7 @@ char * cm_FieldObject;  /* 0xa68d2c, the object of the field block (fields are o
 int cm_SplitMsgLen;  /* 0xa68d30, length of cm_SplitMsg */
 struct AICHAR * ai_NeedBlockChar;  /* 0xa68d34, the character ai_BeginNeedBlock builds the block for */
 unsigned char cm_LongMsg[1024];  /* 0xa68d40, a joined long message */
-G17MSG cm_SendRing[0x8000] = {0};  /* 0xa69140, the send ring */
+G17MSG cm_SendRing[0x8000];  /* 0xa69140, the send ring */
 char * cm_LoadBuf;  /* 0xf31140, the load buffer ("cm_LoadBuf") */
 int cm_DayEndRequest;  /* 0xf31144 */
 G17STAT cm_SendStates[0x8000];  /* 0xf31160 */
@@ -17406,9 +17406,14 @@ G17MSG * cm_SendQueue;  /* 0xf81160, the messages to send */
 unsigned int cm_LongMsgLen;  /* 0xf81164, length of cm_LongMsg */
 G17MSG cm_RecvMsg;  /* 0xf81180, the message being received */
 unsigned int cm_GroupFirstSeq;  /* 0xf8121c */
-AIWATCH ai_Watch; /* 0xf895a0, what the watched building's masters did (0xb00 bytes) */
-char d2_CaptionCopy[0x80]; /* 0xf8aae0, the d2 caption / status text buffer (gfx.h's d2_CaptionCopy, 0x80 bytes up to d2_InputDragValue at 0xf8ab60) */
+AMTREC amt_Table[42];  /* 0x925120 */
+GVCANNON gv_Cannon;  /* 0x925100, the cannon scene state */
+int cm_Bombs[0x40];  /* 0x935c00, cm's 32 bomb records (object, time), cm.h */
+unsigned cm_LoadSize;  /* 0xa68d28, the received bytes and the expected length (compared unsigned */
+int cm_LastSeq;  /* 0xf81168 .. */
+extern AIWATCH ai_Watch;
+extern char d2_CaptionCopy[0x80];
 /* ai_Unkf8f39c: view of d2_Wins (tools/data_views.py) */
-int cm_PickCellX; /* 0xfa5f00 */
-int cm_PickCellZ; /* 0xfa5f04 */
+extern int cm_PickCellX;
+extern int cm_PickCellZ;
 /* txt_AmountUnit: view of txt_Ptrs (build/mk_txt_views.py) */

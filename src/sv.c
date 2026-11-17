@@ -7679,7 +7679,7 @@ unsigned char ai_GameState = 0;  /* 0x6f25ac */
 /* the two flags after ai_GameState are objects of their own (the original reads each as a byte: no views of it) */
 unsigned char main_GameEnded = 0;  /* 0x6f25ad, nonzero when the player has reached the game's goal: the round start plays the fanfare and the outro (cleared at the game start) */
 unsigned char sv_MenuOpen = 0;  /* 0x6f25ae, 1 while a menu screen runs */
-int ai_OptionScrollSpeed;  /* 0x6f3614 */
+extern int ai_OptionScrollSpeed;
 int sv_PanelFlag;  /* 0x75e8c0, 1 when the panel is up (an int; cm.h / f3init.c) */
 SVQUICKJUMP sv_QuickJump;  /* 0x75e8c4, the info panel's pending quick jump (sv.h) */
 int sv_SelectionFlags[0xc0];  /* 0x75e920, the mirror of the character selection flags (byte i per character) */
@@ -7711,6 +7711,11 @@ SVBUBBLE sv_Bubbles[0x40];  /* 0x761fc0, the 64 speech bubble records */
 int sv_SelectedChar;  /* 0x7662c0 */
 int sv_GroundplanButtons[15];  /* 0x7662e0, 15 widget ids */
 int sv_SelectedExtra;  /* 0x76631c, a fourth selection word, cleared with sv_SelectedItem / sv_SelectedObject / sv_SelectedModel (its only use; name and int type are a guess) */
-int cm_Bombs[0x40];  /* 0x935c00, cm's 32 bomb records (object, time), cm.h */
-int d2_HitWindow;  /* 0xf8aad0 */
-int d2_DirtyRectLeft[4];  /* 0xfb9060, left, top, right, bottom (d2_DirtyRectTop .. Bottom are its elements) */
+char * sv_SelectedObject;  /* 0x75ec60 */
+char cm_ChatLog[2048];  /* 0x75fba0 */
+int ai_SceneChars[32];  /* 0x7603a0 .. INIT_WINDOWS_END: the characters of the current scene (INIT_CHAR pointers; cm.c 0x4cf000 updates them each tick) */
+int * d3t_Rain;  /* 0x760618, the rain level */
+int sv_FrameMask;  /* 0x760638 */
+extern int cm_Bombs[0x40];
+extern int d2_HitWindow;
+extern int d2_DirtyRectLeft[4];

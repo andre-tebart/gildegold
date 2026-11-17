@@ -1259,7 +1259,7 @@ int snd_VoiceBankGreeting = 0;  /* 0x6f0ccc, voice bank: greeting */
 int snd_Bank = 0;  /* 0x6f2404, the sample bank */
 int snd_MusicEnabled = 0;  /* 0x6f2578, the "msx" setting of game.INI [Sound]: music enabled */
 int snd_SfxEnabled = 0;  /* 0x6f257c, the "sfx" setting of game.INI [Sound]: effects and voices on */
-int * d3t_Rain;  /* 0x760618, the rain level */
+extern int * d3t_Rain;
 /* ai_Selected: view of ai_Chars (tools/data_views.py) */
 char snd_TimeCopy[14];  /* 0xf81240, a copy of ai_Time */
 int snd_RainDrops;  /* 0xf81254, the "Tropfen_s" loop */

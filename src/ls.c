@@ -92,10 +92,10 @@ int gv_ReadEffects();                     /* 0x4ed910 */
 
 /* he_EventTop: view of ai_NextEventId (tools/data_views.py) */
 int he_QuickTop = 0;  /* 0x6f2620 / */
-unsigned char he_Events[339968];  /* 0x6fab40, the */
-char * he_QuickList[10921];  /* 0x74db40, pointers to the */
-int he_EventCount;  /* 0x7585e4 */
-void (*he_RunHandlers[5544])(unsigned char *);  /* 0x758600, the event run handlers by type (he.c */
+extern unsigned char he_Events[339968];
+extern char * he_QuickList[10921];
+extern int he_EventCount;
+extern void (*he_RunHandlers[5544])(unsigned char *);
 /* ai_Unk75e134 / ai_Unk75e138 / ai_Unk75e13c: views of ai_TimeCopy (data_views.h), the clock copy */
 
 void he_FreeEvents();                    /* 0x53d590 */
@@ -2681,6 +2681,6 @@ int ls_ReceiveGame(void)
     return 1;
 }
 
-unsigned cm_LoadSize;  /* 0xa68d28, the received bytes and the expected length (compared unsigned */
-int cm_LastSeq;  /* 0xf81168 .. */
+extern unsigned cm_LoadSize;
+extern int cm_LastSeq;
 unsigned cm_LoadReceived;  /* 0xf81220 / */

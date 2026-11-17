@@ -1158,4 +1158,4 @@ struct AICHAR *ai_JudgeCatholic = 0;  /* 0x6f1bfc / */
 struct AICHAR *ai_JudgeProtestant = 0;  /* 0x6f1c00 */
 /* ai_PlayerCity: view of ai_PlayerSlots (tools/data_views.py) */
 char gm_IncomeHistory[0x154];  /* 0x91b580, the 17-round history of the five income sums (rows of */
-GVCANNON gv_Cannon;  /* 0x925100, the cannon scene state */
+extern GVCANNON gv_Cannon;

@@ -1742,6 +1742,11 @@ void * d2_ItemListSurf64;  /* 0xf8aadc */
 int d2_InputDragValue;  /* 0xf8ab60 */
 int d2_PrevHoverObj;  /* 0xf8ab64 */
 int d2_InputDragReleased;  /* 0xf8ab68 */
+int d2_ClickedId;  /* 0xf8a668 */
+short d2_MouseX;  /* 0xf8a674, mouse x */
+short d2_MouseY;  /* 0xf8a676, mouse y */
+int d2_HitWindow;  /* 0xf8aad0 */
+char d2_CaptionCopy[0x80]; /* 0xf8aae0, the d2 caption / status text buffer (gfx.h's d2_CaptionCopy, 0x80 bytes up to d2_InputDragValue at 0xf8ab60) */
 int d2_PointerSprite = -1;  /* 0x5febc8, sprite of the pointer, -1: none */
 int d2_TextCursorOffset = -7;  /* 0x5febcc, -7 or 0 */
 int d2_HitClicked = -1;  /* 0x5febd0 */

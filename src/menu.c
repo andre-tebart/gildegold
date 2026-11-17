@@ -532,8 +532,9 @@ int ai_OptionMission;  /* 0x6f3660, the "mission" key */
 int ai_OptionNetMission;  /* 0x6f3664, the "net_mission" key */
 OPTIONBYTES ai_GamePanel;  /* 0x6f3668: byte 0 panel_mode, 1 help_events, 2 difficulty, 3 hints */
 OPTIONBYTES ai_OptionPanelHelp;  /* 0x6f366c, the "panel_help" key */
-int ai_Opponents[7];  /* 0x75e160 .. */
-char ai_OptionsFile[288];  /* 0x75e480, the INI the options are read from and written to */
+int ai_OptionScrollSpeed;  /* 0x6f3614 */
+extern int ai_Opponents[7];
+extern char ai_OptionsFile[288];
 typedef struct SCREENMODE {                 /* 8 bytes, a screen mode of the table 0x62d7b8 */
     int w;                                  /* +0x0, the width */
     int h;                                  /* +0x4, the height */

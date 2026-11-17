@@ -2683,7 +2683,7 @@ D3PARTSYS d3_ParEnd;  /* 0xfb9280, particle system list end marker */
 /* d3_ParTail: view of d3_ParEnd (tools/data_views.py) */
 /* d3_ParHead: view of d3if_ParList (the head node's next field) */
 /* d3_Unkfb9928: view of d3_Mirror (tools/data_views.py) */
-struct VFSDIR *d3io_StockDir; /* 0xfba940, the stock object directory */
+extern struct VFSDIR *d3io_StockDir;
 float d3_ZFar;  /* 0xfc2564 */
 D3ANIMDATA d3anim_Head; /* 0xfc2580, the head sentinel of the animation cache list (d3_anim.c): its next is the first animation */
 
@@ -2755,4 +2755,18 @@ float d3_HalfW;  /* 0xfe75f8 */
 float d3_CenterX;  /* 0xfe75fc */
 float d3_HalfAngleX;  /* 0xfe7600 */
 float d3_CenterY;  /* 0xfe7604 */
+D3RECT d3_Viewport;  /* 0xfc2930 */
+unsigned char * d3s_Dst;  /* 0xfc2940 */
+int d3s_EdgeC[3];  /* 0xfc29b0 */
+int d3s_SlopeC;  /* 0xfc2dd0, slope of the interpolated value along the left edge */
+int d3s_SlopeL;  /* 0xfc2de4 */
+int d3s_CL;  /* 0xfc2de8, interpolated value at the left edge */
+int d3s_SlopeR;  /* 0xfc2df8 */
+int d3s_XL;  /* 0xfc5334 */
+int d3s_XR;  /* 0xfc533c */
+D3SCENE d3_Scenes[D3_MAX_SCENES]; /* 0xfd7ba0 */
+int d3s_SpanLen;  /* 0xfe73a0 */
+unsigned short * d3s_Dst16;  /* 0xfe73b0 */
+int d3s_Area;  /* 0xfe73b8 */
+int d3s_Fill;  /* 0xfe75ac */
 /* d3_ShadowMode: view of d3d_Config (tools/data_views.py) */

@@ -2658,11 +2658,11 @@ int ai_PermsDirty = 0;  /* 0x6f2318 */
 int ai_GameFlags = 0;  /* 0x6f23f8 */
 int ai_Difficulty = 0;  /* 0x6f23fc */
 int gm_AllowAll = 0;  /* 0x6f2448 */
-int gm_PlayerRecords[688];  /* 0x7d5f80, the 16 player records ( */
-int gm_ClassBuilding[32];  /* 0x875360 */
+extern int gm_PlayerRecords[688];
+extern int gm_ClassBuilding[32];
 char * ai_Blds;  /* 0x889f74, the buildings ( */
 int gm_GoodBuilding[732];  /* 0x919f80 */
 char * ai_Goods;  /* 0x91aaf0, the object prototypes ( */
-unsigned gm_OwnNameHeads[136];  /* 0x91ac40 */
+extern unsigned gm_OwnNameHeads[136];
 char gm_CharacterStatistics[128];  /* 0x91b500, the character statistics ( */
-char d2_GfxDir[256]; /* 0xf8ef80, the game root path */
+extern char d2_GfxDir[256];

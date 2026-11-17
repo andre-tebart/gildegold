@@ -51,9 +51,12 @@ def main():
     for f in glob.glob(os.path.join(CACHE, "*.txt")):
         u = os.path.basename(f)[:-4]
         for l in open(f, encoding="utf-8", errors="replace"):
-            m = re.search(r"at=0x([0-9a-f]+)\s+name=(\S+).*?section=(\S+)\s+size=(\d+)\s+room=(\S+).*?src=(\S+)", l)
+            m = re.search(r"at=0x([0-9a-f]+)\s+name=(\S+).*?section=(\S+)\s+size=((?:0x)?[0-9a-f]+)\s+room=(\S+).*?src=(\S+)", l)  # dcp prints big sizes in hex
             if m:
-                decl[m.group(2)] = (int(m.group(1), 16), m.group(3), int(m.group(4)), m.group(5), u, m.group(6))
+                room = m.group(5)
+                if room.startswith("0x"):
+                    room = str(int(room, 16))
+                decl[m.group(2)] = (int(m.group(1), 16), m.group(3), int(m.group(4), 0), room, u, m.group(6))
     ours = {}
     bss_start = None
     dsyms = []  # (our address, obj) of every .data/.bss symbol of the map

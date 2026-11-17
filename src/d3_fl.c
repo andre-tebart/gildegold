@@ -3009,7 +3009,7 @@ D3FLCACHE * d3fl_Cache = 0;  /* 0x63374c */
 unsigned char d3fl_DetailShift = 0;  /* 0x633750, 6 - log2(detail scale): */
 unsigned char d3fl_DetailSizeShift = 0;  /* 0x633751, the byte right after d3fl_DetailShift (f3init.c's detail shift) */
 D3VECTOR d3_SunColor = {0};  /* 0x633b1c, the sun colour, added to the ambient colour */
-float d3fl_Shade[1024];  /* 0xfb9940, sun shade by -cos(angle) * 1023 */
+extern float d3fl_Shade[1024];
 unsigned long d3fl_ColorTab[3][256];  /* 0xfbac60, 8-bit channel -> 16-bit pixel bits */
 D3VECTOR4 d3fl_LightCol;  /* 0xfbb860, color per light-map unit */
 unsigned int d3fl_TileN;  /* 0xfbb870, pixels per tile in the texture being drawn */

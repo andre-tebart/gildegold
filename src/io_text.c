@@ -437,7 +437,7 @@ extern char *d2_Objs;  /* 0xf8f080, 0x2ec bytes each; @original: d2.h declares D
 #define D2_OBJS ((D2OBJ *)d2_Objs)     /* d2_Objs as d2.h types it */
 /* ---- the text engine (0x515960 .. 0x519010) ---- */
 int txt_Loaded; /* 0xfe7c20 */
-int txt_Random[0x4800]; /* 0x114fe60, per text id its random group (9 + n of "{rn}") or its gender (0 .. 2, 0xff none) */
+extern int txt_Random[0x4800];
 int d2_SetForm(int view, int n);                    /* 0x475f70 */
 void d2_DrawAll(void);                    /* 0x46e150 */
 void d2_DrawWindow(int win, void *surf);                    /* 0x471a90, draws a window (d2.h) */

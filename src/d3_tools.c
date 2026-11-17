@@ -2275,7 +2275,7 @@ D3PARTSYS *d3t_CreateEarth(void *parent, D3VECTOR *pos, int count, float size, f
 
 /* Software mipmap chains of the snow texture, levels 1x1..256x256 (index = log2 size), built by
    d3t_CreateSnowMipmaps and freed by d3t_FreeSnowMipmaps. */
-D3RECT d3_Viewport;  /* 0xfc2930 */
+extern D3RECT d3_Viewport;
 DDSURFACEDESC2 d3t_SnowMip8[9];       /* 0x14661c0, 8-bit palettized */
 D3VECTOR d3t_PlaceTarget;  /* 0x1466620, camera target position */
 D3VECTOR d3t_PlaceAngles;  /* 0x1466630, camera target angles */

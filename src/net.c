@@ -337,3 +337,4 @@ int net_Seq;  /* 0x1460ac4, last received sequence number */
    network game is running" */
 NETCONN net_Conn;  /* 0x1460ae0, the network connection of a running network game */
 NETSTAT net_Stats[NET_TYPES];  /* 0x1460b00 */
+int ai_NetPlayer;  /* 0x1460af4, the player index this client runs (the host sets it, cm.c message type 7) */

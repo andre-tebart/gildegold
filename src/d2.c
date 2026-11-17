@@ -119,9 +119,9 @@ short d2_ShpH = 0;  /* 0x6f044e */
 int d2_ClipLeft = 0;  /* 0x6f0458, clip left */
 int d2_ClipTop = 0;  /* 0x6f045c, clip top */
 int d2_PaletteDepth;  /* 0xf8a64c */
-int d2_ClickedId;  /* 0xf8a668 */
-short d2_MouseX;  /* 0xf8a674, mouse x */
-short d2_MouseY;  /* 0xf8a676, mouse y */
+extern int d2_ClickedId;
+extern short d2_MouseX;
+extern short d2_MouseY;
 D2FRCT d2_PointerItems[6];  /* 0xf8ab80, the item list drawn next to the pointer */
 D2DISSOLVE * d2_CurrentDissolve;  /* 0xf8abc8 */
 D2SEG d2_TextSegs[64];  /* 0xf8abe0 */
@@ -142,9 +142,10 @@ D2VIEW d2_Views[0x30];  /* 0xfb1020 */
 short d2_ScreenH;  /* 0xfb9070, common: tentative as in the original (the common block past LIBC's .bss; VC6 keeps
                      d2_ResizeWindow's arithmetic on it in a word register only when it does not know its place) */
 short d2_ScreenW;  /* 0xfb9072, common */
-/* 0x143a1c0, the text pointer table: 0x4800 slots, the one block the text loader fills;
-   d2_Strings (the first 122) and every named text pointer are views of it (txt_views.h) */
-char *txt_Ptrs[0x4800];
+char d2_GfxDir[256]; /* 0xf8ef80, the game root path */
+int cm_PickCellX; /* 0xfa5f00 */
+int cm_PickCellZ; /* 0xfa5f04 */
+int d2_DirtyRectLeft[4];  /* 0xfb9060, left, top, right, bottom (d2_DirtyRectTop .. Bottom are its elements) */
 
 /* 0x4687a0, drops the picture that was used longest ago (not locked, not in use); 0 if there is none */
 

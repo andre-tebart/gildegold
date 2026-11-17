@@ -1682,3 +1682,6 @@ char d3if_ParList[0x31c];  /* 0xfb95e0, the default scene's particle list head n
 int d3if_LastMegaCam;  /* 0xfba944 (own object: d3io_StockDir is a 4-byte pointer) */
 D3FOGSET d3if_Fog[6]; /* 0xfba960 */
 D3LIGHTSET d3if_Levels[7]; /* 0xfba9c0 */
+D3MIRROR d3_Mirror;  /* 0xfb9900 (d3_Unkfb9900.. in d3_engine.h) */
+float d3fl_Shade[1024];  /* 0xfb9940, sun shade by -cos(angle) * 1023 */
+struct VFSDIR *d3io_StockDir; /* 0xfba940, the stock object directory */

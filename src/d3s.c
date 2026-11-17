@@ -826,20 +826,20 @@ unsigned int d3s_NumLights;                 /* 0xfb9264 */
 char d3s_Byte;  /* 0xfb9268 */
 int d3s_ShadowRadius;  /* 0xfb926c, rows / pixels the marked span widens around the shadow */
 D3SPANPIX * d3s_SpanRow;  /* 0xfb9270, current row of the span buffer */
-unsigned char * d3s_Dst;  /* 0xfc2940 */
-int d3s_EdgeC[3];  /* 0xfc29b0 */
-int d3s_SlopeC;  /* 0xfc2dd0, slope of the interpolated value along the left edge */
-int d3s_SlopeL;  /* 0xfc2de4 */
-int d3s_CL;  /* 0xfc2de8, interpolated value at the left edge */
-int d3s_SlopeR;  /* 0xfc2df8 */
+extern unsigned char * d3s_Dst;
+extern int d3s_EdgeC[3];
+extern int d3s_SlopeC;
+extern int d3s_SlopeL;
+extern int d3s_CL;
+extern int d3s_SlopeR;
 int d3s_EdgeX[4] = {0};  /* 0xfc50d0; a common in the original (16-aligned on its own), kept defined: dcp's M.layout wants it at d3s_EdgeY - 0x10, the linker's name order of commons puts our names apart */
 int d3s_EdgeY[4] = {0};  /* 0xfc50e0; kept defined with d3s_EdgeX */
-int d3s_XL;  /* 0xfc5334 */
-int d3s_XR;  /* 0xfc533c */
-int d3s_SpanLen;  /* 0xfe73a0 */
-unsigned short * d3s_Dst16;  /* 0xfe73b0 */
-int d3s_Area;  /* 0xfe73b8 */
-int d3s_Fill;  /* 0xfe75ac */
+extern int d3s_XL;
+extern int d3s_XR;
+extern int d3s_SpanLen;
+extern unsigned short * d3s_Dst16;
+extern int d3s_Area;
+extern int d3s_Fill;
 
 /* 0x45b510, a shadow mesh over the map cells in rect
    @deep 328 -> 167 ins this session, plus a meaning fix (first polygon's a read row[i + nx + 1], the

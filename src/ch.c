@@ -85,7 +85,7 @@ int ch_DirtyZ1 = 0;  /* 0x631080 */
 D3SCENE * ch_Saved1 = 0;  /* 0x631088, the same for ch_Ground1 */
 D3SM * ch_PathMap = 0;  /* 0x63108c */
 char ch_EmptyName[1] = {0};  /* 0x631090, "" */
-D3SCENE d3_Scenes[D3_MAX_SCENES]; /* 0xfd7ba0 */
+extern D3SCENE d3_Scenes[D3_MAX_SCENES];
 unsigned char ch_PathBuf[1024];  /* 0x14686e0, the cells path_Find writes for ch_Path */
 CHARACTER *ch_List[CH_MAX];  /* 0x1468ae0, the characters by id (CHARACTER.id) */
 PATHOUT ch_Path;  /* 0x14696e0, the result of a path search (xy = ch_PathBuf, max 0x200); nothing of the

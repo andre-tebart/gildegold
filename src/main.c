@@ -5299,6 +5299,10 @@ int he_TipOrder[0x20];  /* 0x6fa1e0, he.h: the tip order (the 27 tip text slots,
 HEHINT he_Hints[128];  /* 0x6fa260, he.h: the tutorial hint table (he_OpenHelpEvents fills it, he_RunHint walks it) */
 int he_BarView;  /* 0x6faa60, he.h */
 HEEVSLOT he_EventSlots[16];  /* 0x6faa80, he.h: the event bar's 16 slots */
+unsigned char he_Events[339968];  /* 0x6fab40, the */
+char * he_QuickList[10921];  /* 0x74db40, pointers to the */
+int he_EventCount;  /* 0x7585e4 */
+void (*he_RunHandlers[5544])(unsigned char *);  /* 0x758600, the event run handlers by type (he.c */
 /* full_data_6faa84 / 6faa88 / 6faa90: views of he_EventSlots */
 int main_SoundBanks[0x80];  /* 0x75df20, the loaded sample-bank handles (main_PreloadSound fills, main_FreeSoundBanks frees; the next object is ai_MissionSeed 0x75e120) */
 void * main_Instance;  /* 0x75e140, its instance handle (HINSTANCE) */
@@ -5308,6 +5312,12 @@ char main_AppDir[288];  /* 0x75e240 */
 char main_NetSaveName[161];  /* 0x75e360, the network game's city / save name (sprintf "%s/%s.net", read for "gamedata/network/%s.SAV"); size: up to the address 0x75e401, which is only 0x53b840's copy-loop base constant, so the name may run to ai_OptionsFile 0x75e480 */
 int main_PlatformNT;  /* 0x75e62c, the OS is NT based (dwPlatformId != VER_PLATFORM_WIN32_WINDOWS) */
 int main_WindBank;  /* 0x75e630, the wind sample bank (sb_LoadSampleBank "natur\wind.sbf" at the game start) */
+unsigned int ai_MissionSeed;  /* 0x75e120, the random seed of the missions (as mission.h) */
+int ai_TimeCopy[4];  /* 0x75e130, the clock copy 0x75e130..0x75e13e (14 bytes, written whole by cm.c / sv.c): [0] the year; ai_Unk75e134 / 75e138 / 75e13c are views */
+int ai_Opponents[7];  /* 0x75e160 .. */
+char ai_OptionsFile[288];  /* 0x75e480, the INI the options are read from and written to */
+int init_StatusForm;  /* 0x75df00, the panel form the load status is printed in */
+INIT_PLAYER init_PlayerProfile;  /* 0x75e5a0 */
 /* full_data_143a3c4: view of txt_Ptrs (build/mk_txt_views.py) */
 /* txt_GateItemSuffix: view of txt_Ptrs (build/mk_txt_views.py) */
 /* txt_GatePlaceSuffix: view of txt_Ptrs (build/mk_txt_views.py) */
