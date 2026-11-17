@@ -38,7 +38,6 @@ typedef struct BGIRD {              /* reader context; the first 0x38 bytes are 
 extern int bgi_Depth;                                                           /* 0x633b00 */
 
 
-void agi_Kind(void *unused, char *out);                                         /* 0x44ee50 */
 int bgi_ReadId(void *f);                                                        /* 0x44eea0 */
 int bgi_Find(int id, BGIENT *t, int n);                                         /* 0x44eee0 */
 void bgi_Parse(void *f, BGIENT *t, int n, BGIRD *c);                            /* 0x44ef10 */

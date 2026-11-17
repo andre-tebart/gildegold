@@ -1,7 +1,8 @@
 /* d3_io_a.c -- AGI / AGF text model reader ("d3_io_a:" allocation tags): line handlers that fill a reader
    context (materials, points, polygons). Extent in GildeGold.exe: 0x44e570 (right after the object /
-   animation loaders of d3_io_t.c) .. 0x44ee50, where the binary reader d3_io_b.c follows. Names are ours.
-   Open: whether d3_io_a.c and d3_io_b.c are one TU (they compile together unchanged; not proven).
+   animation loaders of d3_io_t.c) .. 0x44eea0, where the binary reader d3_io_b.c follows. Two objects: the
+   .data strings of agi_Kind ("ANIM", "LOCAL" 0x5fc6e4..) close this unit's string run, and d3_io_b.c's
+   handler tables (0x5fc6f8) start a new plain .data block after them. Names are ours.
    unit of rea 8cef7d5b (src/game/d3_io_a.c); boundaries in decl/text.dcl */
 #include <stdio.h>
 #include <stdlib.h>
@@ -276,4 +277,17 @@ void agi_Points(void *f, AGICTX *c)
 
 void d3io_NoopCallback(void *t)
 {
+}
+/* 0x44ee50, "LOCAL" / "ANIM" keyword of the text format */
+void agi_Kind(void *unused, char *out)
+{
+    char *tok = strtok(0, " ");
+
+    *out = 0;
+    if (!strcmp(tok, "LOCAL")) {
+        *out = 1;
+        return;
+    }
+    if (!strcmp(tok, "ANIM"))
+        *out = 2;
 }

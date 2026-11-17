@@ -1,6 +1,6 @@
 /* d3_io_a.h -- AGI / AGF text model reader of the d3 engine ("d3_io_a:AGIMaterialBuffer", "d3_io_a:AGIPointBuffer",
    "d3_io_a:AGIPolyBuffer" allocation tags): the line handlers that fill a reader context. The TU starts at
-   0x44e570 and continues past 0x44ee50 (worker scopes end there). Names are ours. */
+   0x44e570 and ends at 0x44eea0 (agi_Kind is its last function). Names are ours. */
 #ifndef UNK_44E570_H
 #define UNK_44E570_H
 struct VFSFILE;
@@ -74,5 +74,6 @@ void agi_NumPoints(void *unused, AGICTX *c);                                    
 void agi_NumPolys(void *unused, AGICTX *c);                                     /* 0x44ed50 */
 void agi_Points(void *f, AGICTX *c);                                            /* 0x44eda0 */
 void d3io_NoopCallback(void *t);                                                        /* 0x44ee40, empty */
+void agi_Kind(void *unused, char *out);                                         /* 0x44ee50 */
 
 #endif

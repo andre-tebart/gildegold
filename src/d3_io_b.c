@@ -1,7 +1,7 @@
-/* d3_io_b.c -- binary BGF reader ("d3_io_b:" allocation tags): continues the AGI text reader of
-   d3_io_a.c ("d3_io_a:"), probably the same TU (0x44e570..). A chunk parser (bgi_Parse) walks tables of
-   {id, handler, count}; the handlers fill a BGIRD (the same context layout as the text reader's AGICTX).
-   Names are ours.
+/* d3_io_b.c -- binary BGF reader ("d3_io_b:" allocation tags): 0x44eea0.., after the AGI text reader
+   d3_io_a.c (another object: this unit's handler tables 0x5fc6f8 follow d3_io_a.c's strings). A chunk
+   parser (bgi_Parse) walks tables of {id, handler, count}; the handlers fill a BGIRD (the same context
+   layout as the text reader's AGICTX). Names are ours.
    Open: whether d3_BGFCanWeld and d3_OpenFastChunk (0x4506f0, 0x4507a0; the latter's only caller is
    d3_io_fl.c's 0x450860) open d3_io_fl.c instead; not tested.
    unit of rea 8cef7d5b (src/game/d3_io_b.c); boundaries in decl/text.dcl */
@@ -23,19 +23,6 @@
 #define BGI_M(c) ((c)->mats[(c)->cur])
 #define BGI_P(c) ((c)->polys[(c)->polyidx])
 
-/* 0x44ee50, "LOCAL" / "ANIM" keyword of the text format */
-void agi_Kind(void *unused, char *out)
-{
-    char *tok = strtok(0, " ");
-
-    *out = 0;
-    if (!strcmp(tok, "LOCAL")) {
-        *out = 1;
-        return;
-    }
-    if (!strcmp(tok, "ANIM"))
-        *out = 2;
-}
 /* 0x44eea0, reads a chunk id: 0x2b at the end of the file, 0x27 for an invalid byte */
 
 int bgi_ReadId(void *f)
