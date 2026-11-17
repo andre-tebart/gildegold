@@ -10407,6 +10407,7 @@ int ai_QuarrelCallback(AICHARREC *ch, int *req)
         memset(&cfg, 0, sizeof(cfg));
         memset(cfg.ids, 0xff, sizeof(cfg.ids));
         txt_Format(text, (char *)0x9c);
+        cfg.flags = 0;
         cfg.mode = 0x400;
         cfg.filter = gypsyFilter;
         cfg.kind = 6;
@@ -10430,11 +10431,11 @@ int ai_QuarrelCallback(AICHARREC *ch, int *req)
     cm_SendRelations(b->netId, a->netId, amount, 1);
     if (a->kind == 6 || a->kind == 7) {
         txt_Format(text2, (char *)0xfea, b->id);
-        he_ShowNews(a->netId, -1, 1, text2, 0x5fb, 0);
+        he_ShowNews(a->netId, -1, text2, 1, 0x5fb, 0);
     }
     if (b->kind == 6 || b->kind == 7) {
         txt_Format(text2, (char *)0xfeb, a->id, a->id);
-        he_ShowNews(b->netId, -1, 1, text2, 0x5fb, 0);
+        he_ShowNews(b->netId, -1, text2, 1, 0x5fb, 0);
     }
     return 1;
 }
