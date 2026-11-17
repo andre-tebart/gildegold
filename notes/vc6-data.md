@@ -358,3 +358,9 @@ a unit boundary looks like. Not needed to match a function's code (that is `note
   order in our link, which is the name order: keep such a pair defined until the record is proven. A D1 that appears
   only once a datum is a common (gm_QueryStack: M.data.draft from a draft's code) is the tool's extent, not the
   datum's; ai_RelationMemory's D1 / D8 went away once it was defined in its group's unit (f3gm).
+
+## Decision: commons are placed per group (user, s7)
+The order inside an object's common group follows LINK's hash of the original names, which the exe does not hold.
+Until everything else matches, a common group counts as placed when its start and extent equal the original's
+(tools/exe/datameasure.py "common groups"); the in-group order is not worked. Choosing names that sort into the
+original's order (reverse-engineering LINK's name order) is kept for the very end.

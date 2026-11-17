@@ -15,6 +15,10 @@ before it in its section has the original's size, order and owner unit. A STEP i
 - the datum is in another section (const / initialised / zero: VC6 puts `= 0` into .data, not .bss;
   string literals go to .data, `const` tables to .rdata);
 - definition order inside a unit (VC6 emits a unit's data in definition order per section).
+The COMMON area (tentative definitions `T x;`, from COMMON_START on) is measured per group, not per symbol: LINK
+places each object's commons as one group (groups in reverse link order) but orders a group by a hash of the names,
+which our reconstructed names cannot reproduce (decision: accepted until the very end; notes/vc6-data.md). A group
+counts as placed when its start and its extent equal the original's; its symbols are left out of the steps.
 Reads build/link/exe/exe.map (run `dcp link` or tools/exe/exemeasure.py first) and `dcp data map UNIT`.
 """
 import argparse, glob, os, re, struct, subprocess, sys
@@ -22,6 +26,7 @@ import argparse, glob, os, re, struct, subprocess, sys
 ROOT = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
 CACHE = os.path.join(ROOT, "build", "exe", "datamap")
 MAP = os.path.join(ROOT, "build", "link", "exe", "exe.map")
+COMMON_START = 0x6f3300  # the original's first common (menu's group); everything after is common data
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import exemeasure  # noqa: E402
 
@@ -73,6 +78,8 @@ def main():
     if a.sizes:
         sizes(a, decl, ours, both, bss_start, dsyms)
         return
+    common = [k for k in both if decl[k][0] >= COMMON_START]
+    both = [k for k in both if decl[k][0] < COMMON_START]
     placed = sum(1 for k in both if ours[k] == decl[k][0])
     steps, prev = [], None
     for k in both:
@@ -93,8 +100,9 @@ def main():
             while kb and rawb[kb - 1] == 0:
                 kb -= 1
             print("%-6s original: %d bytes up to the last nonzero byte, %d in all; ours: %d / %d" % (s, k, vs, kb, vsb))
-        print("data symbols: %d with an original address, %d in our map, %d at their original address, %d steps" % (
-            len(decl), len(both), placed, len(steps)))
+        print("data symbols: %d with an original address; outside the common area %d in our map, %d at their original "
+              "address, %d steps; %d commons" % (len(decl), len(both), placed, len(steps), len(common)))
+        groups(common, decl, ours)
         lost = [k for k in decl if k not in ours]
         if lost:
             print("not in our map (dropped or renamed): %d, e.g. %s" % (len(lost), " ".join(sorted(lost)[:8])))
@@ -106,6 +114,27 @@ def main():
         flag = "  room>size" if room not in ("-", str(size)) else ""
         print("  0x%08x %-30s delta %+8d  %-5s unit=%-10s size=%s room=%s %s%s" % (
             at, k, ours[k] - at, sec, u, size, room, src, flag))
+
+
+def groups(common, decl, ours):
+    """the common area per owner unit: start and extent, ours against the original's"""
+    g = {}
+    for k in common:
+        g.setdefault(decl[k][4], []).append(k)
+    rows, ok = [], 0
+    for u, ks in g.items():
+        o0, o1 = min(decl[k][0] for k in ks), max(decl[k][0] + decl[k][2] for k in ks)
+        u0, u1 = min(ours[k] for k in ks), max(ours[k] + decl[k][2] for k in ks)
+        good = o0 == u0 and o1 - o0 == u1 - u0
+        ok += good
+        rows.append((o0, u, u0 - o0, (u1 - u0) - (o1 - o0), len(ks), good))
+    rows.sort()
+    print("common groups: %d, %d at the original's start with the original's extent (in-group order: by names, "
+          "not measured)" % (len(rows), ok))
+    for o0, u, ds, dx, n, good in rows:
+        if not good:
+            print("  0x%08x %-12s start %+8d  extent %+7d  (%d symbols)" % (o0, u, ds, dx, n))
+            break
 
 
 def sizes(a, decl, ours, both, bss_start, dsyms):
