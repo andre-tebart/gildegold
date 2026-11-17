@@ -1011,19 +1011,44 @@ int d3t_MoveCameraPath(int time, int n, ...)
     return 1;
 }
 /* 0x413960, moves obj along the n objects in path (null entries are skipped) within time
-   @deep size queue s7: read from the original: k = ecx from the k = 1 def through head/latch/tail (no
-   move), i = edx, the body reloads k/step/i right after the call; body, tail and head instructions are the
-   same as ours (only names differ), so the original's candidates and blocks must give k#2 > i#2 (43; equal
-   prio goes to i#2, created later). Pass-2 raw: k is cut before op 63 (line of pos.z), k#2 = def blk0 +
-   tail (3 refs, P 4 = k n obj const0; af and keys are no candidates, so the tail's P cannot grow
-   naturally). Choice rule checked: no waiting candidate has a ecx preference or a single register when i#2
-   is popped (n#2 {ecx ebx}, k#2 {eax ecx edx ebx}); a k#2 pref ecx or a waiting single-ecx candidate would
-   give the original. Tried s7 (all 49 ins = control unless named): unsigned k, o block-scoped, key pointer
-   in the if body (= control); tail i + 1 instead of n + 1 51 (code 33); k = 1 as its own statement 49/133
-   (regs 42, order 4, slots 4); while (i < n) o = path[i++] 74; i != n 53; for (..; i++, path++) with *path
-   88; *path++ in the head 95; key pointer advanced in the body with k 53. Open: same as s6. prior: size
-   queue s6: kept for (i = 0, k = 1; ..) (prologue matches, 49 ins / 132 bytes, size 418 vs 416: the k
-reload is now mov edx,ecx). Per-block terms (c2trace --prio): k#2 = def blk0 +16, tail +24 (3 refs: k*11 = k + 2*(k + 4k), P 4), head -8, latch -4, D3_ZERO -3; i#2 = def +16, head +16, latch +16, -3; so k needs a head/latch reference (+24 / +12) or tail P +3 (+6 each). Tried s6: time (the parameter) reused as the key counter (time = 1; keys[time]..): its web is separate from the parameter's, = same prio (49 ins); a key pointer key = &keys[k] at the loop top (unconditional): forward-substituted, = control; o = path[i]; if (o != NULL): = ik; ++n in the call: = ik. Open as in s5: a natural k reference in head/latch/tail, or a waiting candidate preferring ecx when i#2 is chosen (choice rule). prior: size queue s5: mechanism proven with a probe: pass-2 pieces k#2 (prio 29: k = 1 block +16,... */
+   @deep s8 (one-function investigation, the original's form not found; source unchanged: 49 ins / 132 bytes, size
+   418 vs 416). TWO things differ from the original, not one. (I) The pass-2 race: k#2 29 vs i#2 43; pass-2 terms
+   (raw `T PRI`, C2TRACE_PRIO=1): k#2 = init block +16, preheader -1, head -6 (P 3 = i o const0), latch -4 (P 2 = i
+   n), tail +24 (P 4); i#2 = +16 -1 +12 +16. With these instructions k - i = 6*Pt - 6*Ph - 10*Pl, so k needs a
+   reference in head / latch or another candidate set there. (II) The scratch register of the body's step load:
+   with k served first and nothing else changed (probe: a store `p1 = k` in the loop head, no temp added) the body
+   is still `mov edx,[step]` .. `mov edx,[i]` where the original has `mov eax,[step]; mov edx,[i]`, and the tail
+   then starts at eax (original edx). Scratch temps rotate forward eax, ecx, edx (checked with global copies behind
+   the call: edx, eax, ecx, edx ..): the original has one more scratch step between `lea ecx,[o+0x4c]` and the step
+   load, or step is a register candidate there (a second read of step behind the call makes a piece step#3, prio
+   80, eax). One extra global copy in front of the time store on the probe base gives the original's body exactly.
+   So the s5 probe (two reads of k in the tail) fixed (I) and the size, not the bytes: its own `lea` is a scratch
+   step in the tail. Facts read from c2dag / c2trace: the reloads of the split pieces (n#2, k#2, i#2) are nodes at
+   the END of the body block, hoisted by the scheduler behind the call; `add esp` is a node of that block (the cuts
+   of step are before it and before `add esi`); k#3 (k++) stays memory, its load / inc / store runs in a temp and
+   the k#2 reload behind it is forwarded: `mov edx,ecx` in ours (the 2 bytes), `mov ecx,ecx` dropped in the
+   original. Ruled out s8 (= control unless named): dead reads of k (a never-read local `last = k` in the tail, the
+   head, the body end, the for increment, the init; `k + 1;`; an empty `if (k > 63) ;` in tail / head / latch;
+   `keys[k++].time = 0`): VC6 removes them before allocation, no priority and no scratch step; every position pair
+   of `i = 0;` / `k = 1;` in the init block (239 variants; `i = 0;` in front of the last zero stores gives const0 a
+   register: size 402..415 but 51+ ins, the original stores immediates); `k = 1; keys[k - 1].time = step;` and `k =
+   0; keys[k].. = ..; k++;` (folded); the time store at the body end, duplicated, behind k++ as keys[k - 2]; a dead
+   first store `keys[k - 1].time = X;`; `keys[0].time = time / n` with `keys[k - 1].time = time / n` and no step
+   (49 / 129); `time /= n` for step (slots 64); named locals for &o->pos, &keys[k].pos, &keys[k] (= control),
+   &keys[k - 1] or `j = k - 1` (59); path[i] written out; decided tests around the call (`if (o)` again, a `found`
+   flag, continue / else continue / goto next); do { } while (0), a label, braces behind the call; goto loops (same
+   loop weights); i++ in both arms of a while (52..54, no merge); field-wise flag structs (ints, unions, char
+   bitfields: af is address-taken, no candidates; the bitfields `f04 = 1; f10 = 1;` do merge to `or al,0x14`); the
+   callee cast to return int, its result assigned; flip.py over the function (only the call <-> time-store swap: 45
+   ins, the store then stands before the call) and over the whole unit (9384 mutants, 0 hits); 1537
+   single-statement insertions on the probe base. Open: one construct that gives (I) and (II) together. prior
+   (s5..s7, condensed): kept for (i = 0, k = 1; ..) (prologue matches; `k = 1;` as its own statement 49 / 133 with
+   order and slot hunks). Choice rule: when i#2 is popped no waiting candidate prefers ecx or has ecx only (n#2
+   {ecx ebx}, k#2 {eax ecx edx ebx}). Tried before: unsigned k, unsigned i 53, o block-scoped, tail i + 1 51, while
+   (i < n) o = path[i++] 74, i != n 53, path++ forms 88 / 95, a key pointer advanced with k 53, time (the
+   parameter) reused as k, a key pointer at the loop top (forward-substituted), o = path[i]; if (o != NULL), ++n in
+   the call, keys[k++].pos.z, register k / i, climb 2-3 rounds (best: the time store before the call), dcp headers
+   sample (insensitive: the text decides). */
 
 D3ANIM *d3t_MoveObjectPath(D3OBJECT *obj, int time, int n, D3OBJECT **path)
 {

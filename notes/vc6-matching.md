@@ -1621,6 +1621,23 @@ a stack slot is a split piece, and the piece's extent is decided by the rules be
   split around the call; the pass-2 pieces race (i#2 43 vs k#2 29, `c2trace --seq`: ASSIGN order and avail); a
   probe (`extern int p1, p2; p1 = k; p2 = k + 7;` in the tail) that adds two references of k proves the order
   decides it. Use such a probe to confirm a race before searching for the natural reference.
+  A probe is only clean when it adds no scratch temporary: `p2 = k + 7` is a `lea` into the next rotation
+  register, so everything after it in code order is one step off and the probe variant cannot reach the
+  original's bytes; a plain store of the value (`p1 = k;` in the block that needs the reference) adds none. With
+  the clean probe a second difference showed (the step load behind the call in edx, original eax): one scratch
+  step is missing between the call's `lea` and that load; a global copy `p3 = q1;` in front of it plus the clean
+  probe gives the original apart from the probe instructions. Measure each lever with its own minimal probe and
+  check that both together leave only the probe lines (`vdiff.py`) before the search for the natural forms.
+- **Dead reads do not count for the allocator**: a read of a local that VC6 deletes (a never-read local `last =
+  k;`, an expression statement `k + 1;`, an empty `if (k > 63) ;`, a dead `k++` behind the last use, a first
+  store overwritten by the next statement) is gone before the priority pass: no reference, no change of P, no
+  scratch rotation step, the same code in the loop head, the latch, the tail and the init block
+  (d3t_MoveObjectPath, 14 forms = control). Only the frame's reference count sees a dead STORE to a used
+  local ("Reference count of a local"). A leftover dead read is never the missing reference of a priority race.
+- **Reloads of pieces split around a call are nodes at the END of the call's block** (`c2dag.py`: after the
+  block's last statement, in ascending piece id), whatever stands behind the call; the scheduler hoists them
+  (load bonus), so they appear right behind the call. A scratch temp behind the call is chosen before them in
+  list order and may take a register a piece is reloaded into later (d3t_MoveObjectPath).
 
 ### Pointer locals and addresses
 
