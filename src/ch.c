@@ -2811,11 +2811,12 @@ int ch_GetNewPath(CHARACTER *ch, int n, CHARACTER **others)
     steps = (int)(50.0f / h->cell.x + 0.5);
     if (steps > 10)
         steps = 10;
-    p = (unsigned char *)a->u.walk.path + a->u.walk.cur * 2;
+    k = a->u.walk.cur;
     if (d3_DefaultScene[scene].map)
         ch_PathMap->cell.x = 60.0f;
     else
         ch_PathMap->cell.x = 60.0f;
+    p = (unsigned char *)a->u.walk.path + k * 2;
     ch_CellToCell(h, p[0], p[1], ch_PathMap, &cx, &cz);
     if (ch->transport)
         ch_PosToCell(ch_PathMap, &CH_TRANSPORT(ch)->obj->pos, &tx, &tz);
@@ -2909,10 +2910,13 @@ int ch_GetNewPath(CHARACTER *ch, int n, CHARACTER **others)
                     r = steps;
                     if (r > 3)
                         r = 3;
-                    k = others[i]->transport ? oa->u.walk.cur - 2 : oa->u.walk.cur;
-                    if (k < 1)
-                        k = 1;
-                    for (e = k + 2; k < e && k < oa->u.walk.pathLen; k++) {
+                    if (others[i]->transport)
+                        e = oa->u.walk.cur - 2;
+                    else
+                        e = oa->u.walk.cur;
+                    if (e < 1)
+                        e = 1;
+                    for (k = e; k < e + 2 && k < oa->u.walk.pathLen; k++) {
                         gx = ((unsigned char *)oa->u.walk.path)[k * 2];
                         gz = ((unsigned char *)oa->u.walk.path)[k * 2 + 1];
                         if (k == oa->u.walk.pathLen - 1)
