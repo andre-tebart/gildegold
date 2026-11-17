@@ -49,8 +49,10 @@
 /* full rebuild: the symbols whose original addresses the code above spells literally */
 extern struct D3OBJECT *d3s_Lights[4];
 
-char d2_FormsDir[] = "forms\\";  /* 0x5fe608, "forms\\", prefix of a form file name */
+char d2_FormsDir[256] = "forms\\";  /* 0x5fe608, "forms\\", prefix of a form file name (a 256-byte path buffer: main_OpenScreen sprintfs into it) */
+float d2_ScreenScale = 1.0f;  /* 0x5fe708, screen width / 800 */
 unsigned int d2_PicLimit = 8000000;          /* 0x5fe70c, bytes of pictures kept in memory */
+int d2_PointerObj = -1;  /* 0x5fe710, focused object */
 int d2_HitObjId = -1;  /* 0x5fe714 */
 int d2_CurrentFont = -1;  /* 0x5fe718 */
 char d2_NoBackgroundRestore = 1;  /* 0x5fe71c, 1: the alternate background path - captions are drawn without saving / restoring the background underneath (d2_DrawWindowBackground, d2_DrawObjects); it is only compared to 1, no writer is drafted */

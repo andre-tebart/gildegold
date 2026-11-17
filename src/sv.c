@@ -7486,7 +7486,6 @@ extern int d2_DirtyRectLeft[4];         /* 0xfb9060, the rectangle d2_AddDirty t
 /* txt_PanelBtnItemOwn: view of txt_Ptrs (build/mk_txt_views.py) */
 /* txt_PanelBtnItem: view of txt_Ptrs (build/mk_txt_views.py) */
 /* txt_PanelPersons: view of txt_Ptrs (build/mk_txt_views.py) */
-int d2_PointerObj = -1;  /* 0x5fe710 */
 float sv_FramesPerTick = 30.0f;  /* 0x62378c */
 int sv_TickFrames = 30;  /* 0x623790, the frames drawn since the last timer tick (counted by the frame loop) */
 char sv_GroundplanColours[] = "\377\376\005\005%\377\377/\021\005\377\030\3746\343\377\231\005\005\377\366z\005\005\266W\377<\005P\031H\005\013\304^\305\005g\357\234\231\005\010r";  /* 0x623794, the table of */
