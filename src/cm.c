@@ -4506,53 +4506,46 @@ int cm_ExChrMoveToUniverse(G17MSG *m, G17STAT *s)
         q = (AIOBJ *)gm_Query((void *)b->objList, 1, 1, m->place.objId);
         if (q == 0)
             return 3;
-        if (q->id != 0xfd) {
-            k = init_ObjectSceneUniverse((unsigned short *)q);
-            goto chk;
-        }
     }
-    if (b != 0 && gm_IsHomeType((unsigned char *)b) != 0) {
+    if (q != 0 && q->id != 0xfd)
+        k = init_ObjectSceneUniverse((unsigned short *)q);
+    else if (b != 0 && gm_IsHomeType((unsigned char *)b) != 0) {
         k = init_BuildingSceneUniverse((unsigned char *)b);
         q = (AIOBJ *)gm_Query((void *)b->objList, 1, 0, 0xfd);
-        goto chk;
-    }
-    k = 0;
-    goto body;
-chk:
-    if (k < 0)
-        goto end;
-body:
-    v = -1;
-    if (q != 0)
-        v = q->objId;
-    if (b != 0)
-        x = b->id;
-    if (k != 0) {
-        c = gm_FindChar(m->place.netId);
-        if (c != 0)
-            gm_SelectModelVariant((char *)c);
-    }
-    ch_AddAction(p, 0x38, 0);
-    if (k != 0) {
-        r = ch_AddAction(p, 0x33, k, x, v);
-        if (r != 0)
-            strcpy(r->u.name, m->place.name);
-    } else if (b->object != 0) {
-        r = ch_AddAction(p, 0x33, 0, -1, -1);
-        if (r != 0) {
-            save = d3_CurrentScene;
-            d3if_SelectScene(0, 1);
-            o = d3_FindObject((int)b->object, 0x100, 0, m->place.name);
-            if (o != 0) {
-                d3_PointToWorld(o, &o->pos, &r->move.pos);
-                r->move.hasPos = 1;
-            } else
-                strcpy(r->u.name, m->place.name);
-            d3if_SelectScene(save, 1);
+    } else
+        k = 0;
+    if (k >= 0) {
+        v = -1;
+        if (q != 0)
+            v = q->objId;
+        if (b != 0)
+            x = b->id;
+        if (k != 0) {
+            c = gm_FindChar(m->place.netId);
+            if (c != 0)
+                gm_SelectModelVariant((char *)c);
         }
+        ch_AddAction(p, 0x38, 0);
+        if (k != 0) {
+            r = ch_AddAction(p, 0x33, k, x, v);
+            if (r != 0)
+                strcpy(r->u.name, m->place.name);
+        } else if (b->object != 0) {
+            r = ch_AddAction(p, 0x33, 0, -1, -1);
+            if (r != 0) {
+                save = d3_CurrentScene;
+                d3if_SelectScene(0, 1);
+                o = d3_FindObject((int)b->object, 0x100, 0, m->place.name);
+                if (o != 0) {
+                    d3_PointToWorld(o, &o->pos, &r->move.pos);
+                    r->move.hasPos = 1;
+                } else
+                    strcpy(r->u.name, m->place.name);
+                d3if_SelectScene(save, 1);
+            }
+        }
+        ch_AddAction(p, 0x38, 1);
     }
-    ch_AddAction(p, 0x38, 1);
-end:
     if (s != 0) {
         s->state = 2;
         s->kind = 0;
