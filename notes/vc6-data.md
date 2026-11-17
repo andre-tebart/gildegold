@@ -153,8 +153,9 @@ a unit boundary looks like. Not needed to match a function's code (that is `note
   32 (3 -> 4, 12 -> 16, 17..inf -> 32; 609 of our commons follow it exactly); (5) /OPT:REF drops a common no kept
   code references (a unit's own .bss is never dropped).
 - **Consequences**: a common-range datum off its common alignment is part of a bigger object (ai_BldCarts at
-  0x6f40a4: one 40-byte LCBLDCARTS ai_BldCartList at 0x6f40a0, ai_UpdateBldCarts byte; open: ai_ScreenTuning
-  0x6f35d0, ai_TownName 0x6f361c, sv_QuickJump 0x75e8c4, sv_Climate 0x760484, d3_Planes 0xfc5068). A readerless gap
+  0x6f40a4: one 40-byte LCBLDCARTS ai_BldCartList at 0x6f40a0, ai_UpdateBldCarts byte; s8:
+  menu's MENUOPTIONS 0x6f35c0, sv's SVQUICKJUMP 0x75e8c0 / SVBAND 0x760440 / SVCLIMATE 0x760480, d3_engine's
+  D3CLIPSTATE 0xfc5060, each starting with the small datum before the misaligned one; none is left). A readerless gap
   block in the common range is the alignment pad before the next common: delete it (26 deleted). A datum inside
   another unit's group span is that unit's (move the tentative definition; moves changed no grade); at a boundary
   between two groups pick the neighbour among its users.
@@ -173,9 +174,9 @@ a unit boundary looks like. Not needed to match a function's code (that is `note
   the owner whose code does not touch it (an extern in the user unit). dcp's D5 (decompanion fedde79) fires only
   below the common block and names the block's start. (d2_ScreenH / d2_ScreenW 0xfb9070 / 0xfb9072,
   gm_KindObjCount 0x76fdc4; d2_ResizeWindow, gm_BuildKindObjects byte)
-- **Done (s7)**: every game datum above 0x6f3300 is a tentative definition in its group's unit, except menu's option
-  bytes (above), d3s_EdgeX / EdgeY (dcp M.layout wants EdgeX at EdgeY - 0x10; our names' order differs) and
-  gm_QueryStack (as a common dcp's M.data.draft extends it past its end from gm_QueryNext's draft: D1).
+- **Done (s7, s8)**: every game datum above 0x6f3300 is a tentative definition in its group's unit, except d3s_EdgeX /
+  EdgeY (s8 again: the original reads them at [esi*4+0xfc50d0] / [esi*4+0xfc50e0], two displacements, any order
+  works; as commons dcp's M.layout fails the gate because our name order puts EdgeY first: a dcp false alarm).
 - **Measure the common area per group, not by steps**: every symbol of it is a step (name order); compare each
   group's start (s7: from f3gm on -13.0 .. -14.1 KB, before it +68.7 KB = gm_QueryStack in f3gmt's .bss - 13 KB).
 
@@ -351,12 +352,12 @@ a unit boundary looks like. Not needed to match a function's code (that is `note
 ### s7 additions
 - **dcp prints sizes >= 1 MB in hex** (`size=0x00132000`): datameasure skipped those data (cm_RecvPool, txt_Keys ..,
   6.9 MB not counted); its parser takes hex now.
-- **A unit-.bss gap no instruction reads** (d2: 10840 bytes after d2_DragActive, 0x6ed9f8..0x6f044c; grep_orig finds
-  no reference): data of removed functions (a unit's .bss survives /OPT:REF, a common does not). An accepted step
-  (-10.8 KB at d2_ShpW), not padded.
+- **A unit-.bss gap no instruction reads** (d2: 10836 bytes after d2_DragActive, 0x6ed9f8..0x6f044c; grep_orig finds
+  no reference, no dword of the image points into it): data of removed functions (a unit's .bss survives /OPT:REF, a
+  common does not). s8 declared it as d2_UnreadBss[10836] (one unread block of its owner, no invented readers).
 - **dcp and commons**: M.layout compares two commons one register expression indexes (d3s_EdgeX / EdgeY) by their
   order in our link, which is the name order: keep such a pair defined until the record is proven. A D1 that appears
-  only once a datum is a common (gm_QueryStack: M.data.draft from a draft's code) is the tool's extent, not the
+  only once a datum is a common (gm_QueryStack: s8 found cl's COMM size, see s8) is the tool's extent, not the
   datum's; ai_RelationMemory's D1 / D8 went away once it was defined in its group's unit (f3gm).
 
 ## Decision: commons are placed per group (user, s7)
@@ -364,3 +365,21 @@ The order inside an object's common group follows LINK's hash of the original na
 Until everything else matches, a common group counts as placed when its start and extent equal the original's
 (tools/exe/datameasure.py "common groups"); the in-group order is not worked. Choosing names that sort into the
 original's order (reverse-engineering LINK's name order) is kept for the very end.
+
+### s8 additions
+- **cl's COMM size depends on the symbol table, i.e. the names**: VC6 cl wrote COMM _gm_QueryStack 0x14030 for an
+  int[20488] (0x14020) when the name hashed next to a big common (ai_Relations); a 2-common test reproduces it (int
+  q[20488] + char r[0x90000]: q 0x14030; names swapped: the other one bumped, by (64 - size % 64) / 2 or 0x20). The
+  original's layout shows its exact size, so the bump is our name's: pick a true name cl does not pad
+  (gm_QueryChildStack). Check a big common's COMM value in the obj (a symbol-table dump) when D1 / C.overlap names
+  it with a few bytes over. `dcp rename` patches names into the existing objects: `dcp build --force` recompiles.
+- **Below the common area the blocks go by place** (s8 moved 37 data, no grade moved): a datum between two data of
+  one obj's .bss block is defined by that obj (d2 block 0x6ed918.. holds gfx / io_text / sv / f3init data; shp's
+  0x6f044c.. holds d2_ShpW / ClipLeft; ch / evt / txt / d3_engine / d3_fl / d3_interface / d3_light / d3s / f3gm /
+  f3gmt blocks). Keep a char where a defining unit's dword load would be wrong (ai_OwnPlayer in ord).
+- **A common group is placed only when every byte below it is**: start = 0x6f3300 needs the units' .bss and the
+  .data before it exact. s8 left -2.4 KB below the common area: the .bss start (util_Line) -528 = game .data -356 +
+  LIBC .data, then the units' unread holes (qnt -1 KB, d3if_MegaCam's 275, 4-byte holes). Fix those, then extents.
+- **datameasure --groups** prints every common group (start and extent deltas); an extent off by a few dozen bytes
+  is the in-group name order padding (menu +16 with three commons), not a size error.
+
