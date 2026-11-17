@@ -462,43 +462,6 @@ void d3_LightPrepare(D3OBJECT *obj)
         if (D3_L(obj)->info->ops)
             D3_L(obj)->info->ops->fn1ec(obj, obj->info);
 }
-/* 0x453580, recomputes the vertex colours (d3_RelightObject) of the objects of obj's scene that d3_ForEachObject2 selects
-   from obj with mask 0x240; nothing for a null obj */
-
-void d3_RelightObjects(D3OBJECT *obj)
-{
-    if (obj)
-        d3_ForEachObject2(obj->scene, obj, 0x240, (void (*)(D3OBJECT *))d3_RelightObject);
-}
-/* 0x453110, d3_ForEachObject callback over the lights: pass 1 (list == 0) counts the ones that reach
-   ctx->obj, pass 2 collects them */
-
-char d3_LightCollectCB(D3OBJECT *obj, D3LCTX *ctx)
-{
-    if (!ctx->list) {
-        D3_L(obj)->light->on = 0;
-        d3_PointToRefD(obj, d3_Camera, &obj->pos, (D3VECTOR4 *)&D3_L(obj)->cam);
-        if (obj->type == 7) {
-            if (D3_L(obj)->power != 0.0 && !(obj->objectFlags & 0x10)) {
-                d3_DirToRefD(obj, d3_Camera, &d3_ZAxis, (D3VECTOR4 *)&D3_L(obj)->light->dir);
-                ctx->count++;
-                D3_L(obj)->light->on = 1;
-            }
-        } else {
-            float r = D3_L(obj)->radius2 = D3_L(obj)->range;
-            float dx = D3_L(obj)->cam.x - D3_L(ctx->obj)->cam.x;
-            float dy = D3_L(obj)->cam.y - D3_L(ctx->obj)->cam.y;
-            float dz = D3_L(obj)->cam.z - D3_L(ctx->obj)->cam.z;
-            float s;
-            if (D3_L(obj)->power != 0.0 && (s = (float)sqrt(dx * dx + dy * dy + dz * dz), s < r + D3_L(ctx->obj)->radius2)) {
-                ctx->count++;
-                D3_L(obj)->light->on = 1;
-            }
-        }
-    } else if (D3_L(obj)->light->on)
-        ctx->list[ctx->count++] = obj;
-    return 1;
-}
 /* 0x452fa0, sets the colours (c and s) of the vertices of the triangles of surface s from the texture's
    flags: the grey of the accumulated light scaled by the texture's two flag bytes, or the alpha byte alone.
    The callers pass on and fl, the body reads neither. */
@@ -549,6 +512,35 @@ void d3_SetVertexColors(D3OBJECT *obj, D3SURF *s, char on, D3TEXFLAGS fl)
             }
         }
     }
+}
+/* 0x453110, d3_ForEachObject callback over the lights: pass 1 (list == 0) counts the ones that reach
+   ctx->obj, pass 2 collects them */
+
+char d3_LightCollectCB(D3OBJECT *obj, D3LCTX *ctx)
+{
+    if (!ctx->list) {
+        D3_L(obj)->light->on = 0;
+        d3_PointToRefD(obj, d3_Camera, &obj->pos, (D3VECTOR4 *)&D3_L(obj)->cam);
+        if (obj->type == 7) {
+            if (D3_L(obj)->power != 0.0 && !(obj->objectFlags & 0x10)) {
+                d3_DirToRefD(obj, d3_Camera, &d3_ZAxis, (D3VECTOR4 *)&D3_L(obj)->light->dir);
+                ctx->count++;
+                D3_L(obj)->light->on = 1;
+            }
+        } else {
+            float r = D3_L(obj)->radius2 = D3_L(obj)->range;
+            float dx = D3_L(obj)->cam.x - D3_L(ctx->obj)->cam.x;
+            float dy = D3_L(obj)->cam.y - D3_L(ctx->obj)->cam.y;
+            float dz = D3_L(obj)->cam.z - D3_L(ctx->obj)->cam.z;
+            float s;
+            if (D3_L(obj)->power != 0.0 && (s = (float)sqrt(dx * dx + dy * dy + dz * dz), s < r + D3_L(ctx->obj)->radius2)) {
+                ctx->count++;
+                D3_L(obj)->light->on = 1;
+            }
+        }
+    } else if (D3_L(obj)->light->on)
+        ctx->list[ctx->count++] = obj;
+    return 1;
 }
 /* 0x453280, recomputes the vertex colours of obj from the lights that reach it */
 
@@ -636,6 +628,14 @@ char d3_RelightObject(D3OBJECT *obj)
         return 1;
     }
     return 0;
+}
+/* 0x453580, recomputes the vertex colours (d3_RelightObject) of the objects of obj's scene that d3_ForEachObject2 selects
+   from obj with mask 0x240; nothing for a null obj */
+
+void d3_RelightObjects(D3OBJECT *obj)
+{
+    if (obj)
+        d3_ForEachObject2(obj->scene, obj, 0x240, (void (*)(D3OBJECT *))d3_RelightObject);
 }
 /* 0x4535b0, like d3_RelightObject for an object whose vertices and normals were just posed by the animation
    frame: lights of group mask 0xe, the frame's radius as the reach margin */
