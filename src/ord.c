@@ -2398,88 +2398,6 @@ float ord_BuildingCapacityRatio(void)
         return (float)a / b;
     return 0.0f;
 }
-/* 0x4f9c00, advances the float 0x6f1b9c by the time since the stamp 0x91b470 (14 bytes, the layout of the clock 0x770ae0): 0x4fe280 (stamp, clock) gives the elapsed steps k; no step: the stamp is set to the clock; otherwise, when the float 0x6f1ba0 is not 0 and the clock's hour (word at +4) is between 7 and 0x14, 0x6f1b9c += k * the float 0x91aaf4, clamped to 0x6f1ba0 * 0.25, and the stamp = the clock */
-
-void ord_AdvanceRatingBase(void)
-{
-    int k;
-    double lim;
-
-    k = gm_MinutesBetween(&ord_StatisticsClock, &ai_Time);  /* @original: gv.h's shared K&R declaration (the call
-         pushes the two clock pointers, 0x4f9c01 push 0x770ae0 / 0x4f9c06 push 0x91b470); a prototype in ord.c
-         is a lint cross-TU conflict with he.c / sv.c / gv.c, which call it with an int address literal */
-    if (k == 0) {
-        ord_StatisticsClock = ai_Time;
-        return;
-    }
-    if (ai_Rating != 0 && ai_Time.hour > 6
-        && ai_Time.hour < 0x15) {
-        ai_RatingBase = k * ord_RatingRate + ai_RatingBase;
-        lim = ai_Rating * 0.25;
-        if (ai_RatingBase < lim)
-            ai_RatingBase = (float)lim;
-        ord_StatisticsClock = ai_Time;
-    }
-}
-/* 0x4f9ce0, a rating from the table records 0 and 1 of 0x4f2720 (their int +0x18): (4 - rec0[6]) * 0.25 * 0.75 + (1 - rec1[6]) * 0.25 */
-
-float ord_StatisticsRating(void)
-{
-    int ra[9];
-    int rb[9];
-
-    gv_GetTableRecord(0, ra);
-    gv_GetTableRecord(1, rb);
-    return (float)(4 - ra[6]) * 0.25f * 0.75 + (1 - rb[6]) * 0.25;
-}
-/* 0x4f9d40, the weighted sum of the +0x18 ints (rec[6]) of the twelve table records 0x11 .. 0x1c of gv_GetTableRecord (0x4f2720) with the weights 0.06 0.05 0.08 0.04 0.13 0.1 0.13 0.12 0.14 0.15 and two zeros (the array is twelve long like the record range); the ints themselves are stored to out[0 .. 11]
-   @deep headers sample: insensitive (32 samples, one codegen). Kept: fv = (float)rec[6] before the out
-   store (fild right after the call as in the original): draft 18 ins/45 B -> shape 16 ins/11 B. Left: i in
-   esi and the w pointer IV in edi where the original has i in edi and the pointer in esi, and inc i
-   scheduled before the fmul (original: fmul [esi]; add esi,4; inc edi; cmp edi,0x1d). Tried (dcp try):
-   w[]*rec / no cast / sum = sum + .. / sum = .. + sum / (float)(..) / parenthesized rec / int local v /
-   do-while / while / idx j = i - 0x11 / *(rec + 6) / separate counter j (i++,j++ and j++,i++ and j++ in
-   body) / fv block-scoped or declared first / fv *= w; sum += fv / w*fv / (out - 0x11)[i] / (w - 0x11)[i]:
-   = control. double cast: draft 21 B (fimul). unsigned i: same + jb. i <= 0x1c, i != 0x1d, j from 0 with i
-   + 0x11, pointer walks *out++ / *pw++, swapped statements, double fv: worse. (tiebreak: not measured (dcp
-   headers sample ord_WeightedRecordSum)) prior: meaning read and settled against tools/disasm 0x4f9d40; 40
-   asm / 172 B -> 19 asm / 45 B this session. Fixed: the weight table is one initializer (float w[12] =
-   {twelve values}) - the original zero-fills w[10] / w[11] through eax when the zeros are the
-   initializer's implicit tail, and stores the ten explicit weights as immediates; sum is declared and
-   initialized before the table (sum = 0 as an immediate at [esp+0xc], not the register store the later
-   statement gave). The frame (0x58), the rec[6] / w[i - 0x11] addressing, the gv_GetTableRecord(i, rec)
-   call and the fild/fmul/fadd/fstp accumulation all match. Tried and reverted: the sum statement after the
-   table (33 asm / 114 B), the w[10]/w[11] statements (the register-form zero stores disappear), the two
-   body statements swapped (WORSE, 43 asm / 68 B). Left: one hunk, the loop's register and schedule - ours
-   keeps i in esi and &w in edi (mov ... */
-
-float ord_WeightedRecordSum(int *out)
-{
-    float sum = 0;
-    float w[12] = {0.06f, 0.05f, 0.08f, 0.04f, 0.13f, 0.1f, 0.13f, 0.12f, 0.14f, 0.15f};
-    int rec[9];
-    int i;
-    float fv;
-
-    for (i = 0x11; i < 0x1d; i++) {
-        gv_GetTableRecord(i, rec);
-        fv = (float)rec[6];
-        out[i - 0x11] = rec[6];
-        sum += fv * w[i - 0x11];
-    }
-    return sum;
-}
-/* 0x4f9e00, copies the last statistics record (ord_Statistics, ten floats) to o, overwrites out[6] with the float
-   bits of ord_Statistics's base field's live value (ai_RatingBase) and returns out[9] (the score); 0 for no o */
-
-float ord_GetStatistics(int *o)
-{
-    if (o == 0)
-        return 0.0f;
-    memcpy(o, &ord_Statistics, 0x28);
-    o[6] = ORD_RATINGBASE_BITS;
-    return ((ORDSTATS *)o)->score;
-}
 /* 0x4f9850, ord_ReportStatistics, in a game year >= 8 divisible by 4: averages the last four rounds of the
    statistics history (ord_StatisticsHistory[12..15]) into a = the share without the second object, b = the share
    without the first object, c = the combined score and d = the overall score; rates a / b / c against 0.15 (the
@@ -2565,4 +2483,86 @@ void ord_ReportStatistics(void)
             if (ORD_CHARS[i].kind == 6)
                 he_ShowNews(ORD_CHARS[i].netId, -1, tierText, 0, 0x5f8, 0);
     }
+}
+/* 0x4f9c00, advances the float 0x6f1b9c by the time since the stamp 0x91b470 (14 bytes, the layout of the clock 0x770ae0): 0x4fe280 (stamp, clock) gives the elapsed steps k; no step: the stamp is set to the clock; otherwise, when the float 0x6f1ba0 is not 0 and the clock's hour (word at +4) is between 7 and 0x14, 0x6f1b9c += k * the float 0x91aaf4, clamped to 0x6f1ba0 * 0.25, and the stamp = the clock */
+
+void ord_AdvanceRatingBase(void)
+{
+    int k;
+    double lim;
+
+    k = gm_MinutesBetween(&ord_StatisticsClock, &ai_Time);  /* @original: gv.h's shared K&R declaration (the call
+         pushes the two clock pointers, 0x4f9c01 push 0x770ae0 / 0x4f9c06 push 0x91b470); a prototype in ord.c
+         is a lint cross-TU conflict with he.c / sv.c / gv.c, which call it with an int address literal */
+    if (k == 0) {
+        ord_StatisticsClock = ai_Time;
+        return;
+    }
+    if (ai_Rating != 0 && ai_Time.hour > 6
+        && ai_Time.hour < 0x15) {
+        ai_RatingBase = k * ord_RatingRate + ai_RatingBase;
+        lim = ai_Rating * 0.25;
+        if (ai_RatingBase < lim)
+            ai_RatingBase = (float)lim;
+        ord_StatisticsClock = ai_Time;
+    }
+}
+/* 0x4f9ce0, a rating from the table records 0 and 1 of 0x4f2720 (their int +0x18): (4 - rec0[6]) * 0.25 * 0.75 + (1 - rec1[6]) * 0.25 */
+
+float ord_StatisticsRating(void)
+{
+    int ra[9];
+    int rb[9];
+
+    gv_GetTableRecord(0, ra);
+    gv_GetTableRecord(1, rb);
+    return (float)(4 - ra[6]) * 0.25f * 0.75 + (1 - rb[6]) * 0.25;
+}
+/* 0x4f9d40, the weighted sum of the +0x18 ints (rec[6]) of the twelve table records 0x11 .. 0x1c of gv_GetTableRecord (0x4f2720) with the weights 0.06 0.05 0.08 0.04 0.13 0.1 0.13 0.12 0.14 0.15 and two zeros (the array is twelve long like the record range); the ints themselves are stored to out[0 .. 11]
+   @deep headers sample: insensitive (32 samples, one codegen). Kept: fv = (float)rec[6] before the out
+   store (fild right after the call as in the original): draft 18 ins/45 B -> shape 16 ins/11 B. Left: i in
+   esi and the w pointer IV in edi where the original has i in edi and the pointer in esi, and inc i
+   scheduled before the fmul (original: fmul [esi]; add esi,4; inc edi; cmp edi,0x1d). Tried (dcp try):
+   w[]*rec / no cast / sum = sum + .. / sum = .. + sum / (float)(..) / parenthesized rec / int local v /
+   do-while / while / idx j = i - 0x11 / *(rec + 6) / separate counter j (i++,j++ and j++,i++ and j++ in
+   body) / fv block-scoped or declared first / fv *= w; sum += fv / w*fv / (out - 0x11)[i] / (w - 0x11)[i]:
+   = control. double cast: draft 21 B (fimul). unsigned i: same + jb. i <= 0x1c, i != 0x1d, j from 0 with i
+   + 0x11, pointer walks *out++ / *pw++, swapped statements, double fv: worse. (tiebreak: not measured (dcp
+   headers sample ord_WeightedRecordSum)) prior: meaning read and settled against tools/disasm 0x4f9d40; 40
+   asm / 172 B -> 19 asm / 45 B this session. Fixed: the weight table is one initializer (float w[12] =
+   {twelve values}) - the original zero-fills w[10] / w[11] through eax when the zeros are the
+   initializer's implicit tail, and stores the ten explicit weights as immediates; sum is declared and
+   initialized before the table (sum = 0 as an immediate at [esp+0xc], not the register store the later
+   statement gave). The frame (0x58), the rec[6] / w[i - 0x11] addressing, the gv_GetTableRecord(i, rec)
+   call and the fild/fmul/fadd/fstp accumulation all match. Tried and reverted: the sum statement after the
+   table (33 asm / 114 B), the w[10]/w[11] statements (the register-form zero stores disappear), the two
+   body statements swapped (WORSE, 43 asm / 68 B). Left: one hunk, the loop's register and schedule - ours
+   keeps i in esi and &w in edi (mov ... */
+
+float ord_WeightedRecordSum(int *out)
+{
+    float sum = 0;
+    float w[12] = {0.06f, 0.05f, 0.08f, 0.04f, 0.13f, 0.1f, 0.13f, 0.12f, 0.14f, 0.15f};
+    int rec[9];
+    int i;
+    float fv;
+
+    for (i = 0x11; i < 0x1d; i++) {
+        gv_GetTableRecord(i, rec);
+        fv = (float)rec[6];
+        out[i - 0x11] = rec[6];
+        sum += fv * w[i - 0x11];
+    }
+    return sum;
+}
+/* 0x4f9e00, copies the last statistics record (ord_Statistics, ten floats) to o, overwrites out[6] with the float
+   bits of ord_Statistics's base field's live value (ai_RatingBase) and returns out[9] (the score); 0 for no o */
+
+float ord_GetStatistics(int *o)
+{
+    if (o == 0)
+        return 0.0f;
+    memcpy(o, &ord_Statistics, 0x28);
+    o[6] = ORD_RATINGBASE_BITS;
+    return ((ORDSTATS *)o)->score;
 }
