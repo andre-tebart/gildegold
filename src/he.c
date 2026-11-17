@@ -7840,17 +7840,7 @@ float d3_VecAngle2();
    reaperTo must have a 3D object with a mesh driver; the first time it stands above reaperFrom's object (its height
    + 80) turned (y angle) towards the same point above reaperTo's, later at the cached reaperPos / reaperRot; the
    object's position and angles are cached (reaperPlaced = 1), its flags set and "*sensenmann.baf" played, the clock
-   reaperClock started. 1 = created, 0 = a building or the object missing
-   @deep Read whole against the original and rewritten typed: AIJOB reaper fields
-   (reaperFrom/To/Placed/reaper/Pos/Rot at 0xb0..0xe8, reaperClock over stormDue at 0xec), the D3VECTOR4
-   locals (the 16-byte slots pos 0x14, target 0x24, rot 0x34, dir 0x44), the one found-building slot reused
-   for both lookups with from / to taken after their test chains, rot zeroed before its y angle
-   (d3_VecAngle2(d3_ZAxis, dir)), the member-wise caches, d3t_PlayAnim(obj, name, 1). Instruction count 201
-   = 201, every other line equal. Left (diffclass: the code hunks are moved instructions): the original
-   hoists the push 1 shared by d3t_PlayAnim and the failure tail's d3if_SelectScene above the je at +0x22b
-   (the original's je goes to push ebp at +0x2eb), and pushes the '*sensenmann.baf' string before mov byte
-   ptr [eax+0x211], cl; ours pushes 1 after the and cl, 0xfd and the string after mov eax,[esi+0xc8]:
-   scheduling. The prover stops on the d3t_PlayAnim string literal address only. */
+   reaperClock started. 1 = created, 0 = a building or the object missing */
 int he_CreateReaper(int ev)
 {
     AIJOB *e = (AIJOB *)ev;
@@ -7908,6 +7898,9 @@ int he_CreateReaper(int ev)
                 e->reaperClock = d3_Time;
                 d3if_SelectScene(scene, 1);
                 return 1;
+            } else {
+                d3if_SelectScene(scene, 1);
+                return 0;
             }
         }
     }

@@ -539,6 +539,10 @@ copied back into short predecessors only after all of this.
 - **A jump to a shared tail's second instruction, its first (`mov eax,[esp+o1]`) hoisted above the jcc**: the
   arm wrote the tail out itself (`o1->kind = 0; o1->ref = -1; o1->arg = 'noop'; return 0x35;`), no `goto noop`;
   cross-jumping merges all but the load, which the jcc's block already did (ai_DecideStammtisch byte).
+- **A `push 1` hoisted above `test eax; je`, the je to the failure tail's SECOND push** (`push 1; push ebp; call
+  SelectScene`; ours: the push late in the success block): the inner test had its own failure arm written out,
+  `if (obj != 0) {.. f(.., 1); g(scene, 1); return 1;} else { g(scene, 1); return 0; }` before the outer `g(scene,
+  1); return 0;`: both successors start with `push 1` and it is hoisted (he_CreateReaper byte).
 - **A jump into a sibling branch just behind a test of the same variable** (`cmp m,w; je <neutral block of the men
   branch>`): a threaded re-test; route the path through that test, `if (men < women && (w != 0xffff || m !=
   0xffff)) { if (w == 0xffff) return; ..women.. return; } if (m == 0xffff) { m = -5; f = 1; } ..men..`. No lever:
