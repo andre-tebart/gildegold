@@ -10385,7 +10385,7 @@ int ai_UseGoodRaiseRelation(AICHARREC *ch, G8USEVIEW *use)
    0x53dda0 (the first + 4, -1, 1, 0x5fb); when the second's is, the text 0x5176d0 (0xfeb, the first
    word twice) goes through 0x53dda0 (the second + 4, -1, 1, 0x5fb). Returns 1 (0 without records).
    @deep read the whole original 0x5d0c70..0x5d0e54 and reconciled every statement: the kind-6 two amount
-   menus (AMOUNTCFG: mode 0x400, the gypsy filter, kind 6, the 16 ids 0xffff, option14 3, ids[4] the first
+   menus (AMOUNTCFG: mode 0x400, the gypsy filter, kind 6, the 16 ids 0xffff, option14 3, ids[0] the first
    pick), the gm_FindChar pair for other kinds, the -40 / -80 (item 0x2c5) transfers both ways, the two
    he_ShowNews texts 0xfea / 0xfeb (key 0x5fb) and the 0 / 1 returns. Only allocation and scheduling are
    left: the 0 constant lives in esi in the original (push esi, cmp edi,esi, mov eax,esi) and as immediates
@@ -10415,7 +10415,7 @@ int ai_QuarrelCallback(AICHARREC *ch, int *req)
         if (a == 0)
             return 0;
         cfg.option14 = 3;
-        cfg.ids[4] = a->id;
+        cfg.ids[0] = a->id;
         txt_Format(text, (char *)0x9e);
         b = (AICHARREC *)ai_AmountMenu((int)&cfg, text, 0, 0);
         if (b == 0)
