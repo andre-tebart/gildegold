@@ -167,7 +167,7 @@ int ai_IsLivingInhabitant(unsigned short id)
 /* 0x4ae160, the BUERGERMEISTER token of a history text (callback 0x601b10[0], name 0x601730[0]): the mayor
    (officeKind 0x0f); mode 1 checks args[k].id, otherwise the first living one is taken (mode 0 stores it in
    args[k]); out = fmt (0x4adf40) with its id; 0 if there is none
-@deep size queue: 265 vs 273 raw (padded 272 vs 288): the 8 bytes are the third return-0 copy (c == 0 after the mode 0 store falls into its own xor/epilogue in the original; ours je back to the mode-1 failure copy). c2tail --tries: VC6 cross-jumps the IL 'return 0' of line 180 (mode 1 failure) and 191 (c == 0) into 185 (loop exhausted) by xjump against the code falling into the label. s3 tried: the c test after the if/else join (draft, branch 1), c != 0 && (..) in mode 1 with the join test, if (c) { rest; return 1; } return 0 at the join, goto found, return (int)c, a single return c != 0: none keeps the three copies apart. Next: what makes the original's three IL returns differ before cross-jumping (a value other than the constant 0 that VC6 folds later, or a different loop exit shape: break + test). prior: behaviour: one code hunk at 0x4ae1f7 - our 'if (c == 0) return 0;' after the mode==0 store is folded to the first return-0 tail (je back to 0x4ae19c), the original keeps its own inline copy (test esi,esi / jne 0x4ae201 / pop edi / xor eax,eax / pop esi / mov esp,ebp / pop ebp / ret); every other instruction (58 + 50) is equal. The meaning is read and right: the statement order is store-then-null-test (the swap puts c in esi / i in edx and breaks 30 instructions). Forms tried, one build each: if (c==0), if (!c), braces, if/else with empty then, 'if (c!=0) ; else return 0', while (c==0) return 0, do{}while(0), nested if (1), switch, check before the store, and dead statements between store and check (k=0, c=c, i=0) - all give the folded je; scratch reproductions in build/scratch show VC6 folds any later identical return block into the first, so the missing copy is original block layout/sch... */
+   */
 int ai_TokenMayor(int mode, G12ARG *args, int k, char *fmt, char *out)
 {
     char buf[512];
@@ -179,10 +179,11 @@ int ai_TokenMayor(int mode, G12ARG *args, int k, char *fmt, char *out)
         if (c == 0 || c->health == 0 || c->officeKind != 0x0f)
             return 0;
     } else {
-        i = 0;
-        while (!(ai_IsLivingCharacter((unsigned short)i) && ai_CharsT[i].officeKind == 0x0f)) {
-            if (++i >= 768)
+        for (i = 0; ; i++) {
+            if (i >= 768)
                 return 0;
+            if (ai_IsLivingCharacter((unsigned short)i) && ai_CharsT[i].officeKind == 0x0f)
+                break;
         }
         c = &ai_CharsT[i];
         if (mode == 0)
