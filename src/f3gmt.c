@@ -1081,7 +1081,11 @@ int gm_GoodsStock(int p, int i)
     return sum;
 }
 /* 0x4ffa10, the price of the goods record n of the player p: the base price (gm_ItemPrice, 100) when no market object holds the good (gm_FindMarketObject, for another player the kind 0x1db object of its building, gm_FindPlayerBuilding); else a factor mean / demand, times demand / the market's count of the good (at least 1) when that count is above the demand and the good is not of the kind 0x17, clamped to 0.25 .. 5.0, and the price moves 0.4 of the way from the stored price to the base price times the factor; a record without a stored price (<= 0) gets the base price, at least 512
-   @deep cross-jump of the mk == 0 'return gm_ItemPrice(id, 100)' into the 512 path's second call (ours 2
+   @deep s10: the cm_DoubleQuarter object of the earlier fix was replaced by the pooled 0.25 literal in a
+   data session (correct per vc6-data), so ours again threads the 0.25 path past the 5.0 compare (the
+   8-byte hunk at +0x12b; 10 -> 12 ins). Padded size: ours 457 raw, 470 the original; the unmerged
+   ItemPrice tail (+19) alone gives 476 -> 480 = the original's padded size. climb.py 2 rounds: nothing.
+   prior: cross-jump of the mk == 0 'return gm_ItemPrice(id, 100)' into the 512 path's second call (ours 2
    rets, the original 3). Fixed: the 0.25 clamp reads cm_DoubleQuarter (12 -> 10 ins). Tried (dcp try, all
    = one code at 10 ins): mk test as if/else with r assigned, != with the mk==0 path last, early return;
    the 512 clamp as ?:, max / min macros (22-28 ins), r assigned per arm, >= and !(>=) spellings (14-28),
@@ -1089,15 +1093,7 @@ int gm_GoodsStock(int p, int i)
    or worse); ai_FloatOne / cm_DoubleOne / ai_FloatZero objects for the M10s (8 combos, same diff). c2pass
    with cross-jumping skipped shows ne-c lays the mk==0 block last exactly as the original; so the
    original's two tails differ in something cross-jumping compares that the code does not show. flip.py
-   (want 3 rets): only meaning-changing hits (tiebreak: not measured (dcp headers sample gm_StockPrice))
-   prior: read the whole function against 0x4ffa10..0x4ffbe6 and reconciled every statement (the market
-   lookup, the count, the mean/demand ratio kept in st, the ternary factor with the float-cast division by
-   max(count,1), the 0.25 / 5.0 clamps, the (float)f * base - cur step, the 512 floor). Tried: if-clamps,
-   nested min(max()) in one expression, the clamp on f itself (all worse), the 512 test as >= (worse), mk
-   == 0 nested or as an early return (same). The 0.25 is the shared double cm_DoubleQuarter (an object, so
-   VC6 cannot thread the 0.25 path past the 5.0 compare as it does with the literal). Left: ours
-   cross-jumps the two identical 'push 0x64; push esi; call gm_ItemPrice; add esp,8; epilogue' tails into
-   one, the original keeps them apart (0x4ffbb8..0x4ffbc8, its third ret) */
+   (want 3 rets): only meaning-changing hits (tiebreak: not measured (dcp headers sample gm... */
 float gm_StockPrice(int p, int n)
 {
     unsigned id;

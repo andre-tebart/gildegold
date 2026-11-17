@@ -292,6 +292,10 @@ Where the pushes and pops sit, how many epilogue copies there are, shared agains
 
 ### Which copy of a cross-jumped tail survives, the join position
 
+- **An else-if arm cross-jumped whole into a sibling's copy, the original keeps it inline**: the store order of
+  the OTHER arms (default arm charId before stateArg; 0x176 arm stateArg, charId, x, z) decides it, found by
+  climb.py swap + move in round 2 (cm_OrderAttack byte; permuting only the inlined arm's stores did not). The pair
+  merger takes the arms' else-jmps newest first, then the return jmps in source order (c2tail --tries).
 - **A guard's `return 1` with its own epilogue copy where the original `jle`s into a later `return 1` copy**: the
   work in the if, the return in the else (`if (year - q->year > 1) { stores } else return 1;`); the plain guard
   `if (.. <= 1) return 1;` keeps its own copy (cm_ExDarkCorner byte).
@@ -1088,6 +1092,11 @@ Rotation, test position, countdown, induction variables and strength reduction, 
 
 ### Counters, countdowns and increment order
 
+- **The tick x strength-reduced (`lea esi,[edi+edi*2+9]; lea esi,[esi+esi*4]`, `neg eax; mov [dead arg slot],eax`) while
+  the label x of the same round keeps `imul`**: `x = 0x2d + round * scale;` at the top of each round, not a running
+  `x -= scale` (ai_DrawStatisticsCharts byte; an earlier session called the recomputed form worse because the init
+  order hunk was left: fix both). `x += 0x20` as the for loop's second increment (`i++, x += 0x20`) and `for (i = 0,
+  n = 0; ..)` against `n = 0; for (i = 0; ..)` are order levers (ai_PokerSeatPanel, ai_AccusationWindow byte).
 - **A counter argument as `lea eax,[edi+1]; ... mov edi,eax; push eax`, ours `inc edi; push edi`**: `f(.., n++ +
   1, ..)`; `++n`, `n = n + 1`, `n++;` before or after the call, `n + 1` then `n++` are all one code
   (ai_DungeonPlanWindow byte).
@@ -3798,6 +3807,12 @@ Differences that looked like allocation and were a wrong field, index, constant,
 
 ### Locals, arrays and frame size
 
+- **A store of a call's result into a slot of an array the other branch uses, before an early return** (dead, so
+  VC6 keeps it only for an address-taken local): the result was written into that array's element (`open[0] =
+  gv_HeldCrimesOf(..)`); the extra reference also orders the arrays in the frame (ai_AccusationWindow /
+  ai_FaithAccusationWindow byte).
+- **The original's frame 16 bytes larger with one 4-byte slot at the top (r1 w1)**: a temporary of its own D3VECTOR4
+  (`up.y = (pos[1] = ..) - cen[1];`), not a reused float (sv_FlyCameraToModel byte).
 - **Compiled size well below the original's**: a block local array declared twice under one name, one block
   reading its never-written copy (VC6 drops the dead stores); grep for it before variant work: one function-scope
   array. (ai_OpenItemTooltip: three `int list[32]`, the original ONE at [esp+0x24], 104 bytes short -> 1600 vs

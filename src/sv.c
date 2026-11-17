@@ -6412,19 +6412,20 @@ void sv_UpdateBand(void)
 }
 /* 0x52f0d0, sv_UpdateBand for the 0x8000 mode of sv_RunFrame: the same band and projection, but a character is
    selectable when ai_LedSelectBits gives 0x800 (led by the player's character) instead of gm_PermissionBits.
-   @deep the same single copy as sv_UpdateBand (see its stuck reason for the full list, all = control
-   there): the original 'mov ecx,[eax+0x1cc]; test ecx,ecx ... mov eax,ecx; mov ecx,8; mov eax,[eax]', ours
-   info in eax (code 5, regs 4). Applied ai_FloatZero / cm_DoubleOne (M10 cleared, same ins). Tried here as
-   well: a static __inline helper for the 8-vertex sum (info as its parameter) and one returning info->keys
-   (no change in dist), the tests as separate ifs / one nested && block / !info (= control), the scene
-   compare swapped (11 ins), info reused as a char walk (= control), index loops through info->keys + n (=
-   control) and v[n] with v set inside the loop (19). The two functions share the hunk, so the cause is
-   likely a construct common to both (a macro or helper of the original), not this function's text
-   (tiebreak: not measured (dcp headers sample sv_UpdateBandLed)) prior: read whole against the original:
-   it is sv_UpdateBand with ai_LedSelectBits(ai_PlayerId, c) in place of gm_PermissionBits; reconstructed
-   the same way (min/max clamp, D3VECTOR4 centre, frame matches). The one remaining hunk is the same
-   allocation as sv_UpdateBand's: ours 'mov eax, [eax+0x1cc]; test eax, eax ... mov ecx, 8', the original's
-   'mov ecx, [eax+0x1cc]; test ecx, ecx ... mov eax, ecx; mov ecx, 8'. */
+   @deep s10: c2trace: info#1 (prio 40) and v#1 (prio 112) both get eax (no conflict: info dies at v's
+   def); the original's 'mov eax,ecx; mov ecx,8; mov eax,[eax]' needs info in ecx, i.e. live where v is
+   born or a copy the coalescer keeps. = control: info dropped (the chain c->model->body->info written at
+   both uses, in the for init too), for-init / index loop forms; v defined in the condition chain (9).
+   climb.py 2 rounds: nothing. Padded size needs only the 2-byte copy. prior: the same single copy as
+   sv_UpdateBand (see its stuck reason for the full list, all = control there): the original 'mov
+   ecx,[eax+0x1cc]; test ecx,ecx ... mov eax,ecx; mov ecx,8; mov eax,[eax]', ours info in eax (code 5, regs
+   4). Applied ai_FloatZero / cm_DoubleOne (M10 cleared, same ins). Tried here as well: a static __inline
+   helper for the 8-vertex sum (info as its parameter) and one returning info->keys (no change in dist),
+   the tests as separate ifs / one nested && block / !info (= control), the scene compare swapped (11 ins),
+   info reused as a char walk (= control), index loops through info->keys + n (= control) and v[n] with v
+   set inside the loop (19). The two functions share the hunk, so the cause is likely a construct common to
+   both (a macro or helper of the original), not this function's text (tiebreak: not measured (dcp headers
+   sample sv_UpdateBandLed)) */
 
 void sv_UpdateBandLed(void)
 {

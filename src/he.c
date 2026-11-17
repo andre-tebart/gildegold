@@ -12311,24 +12311,26 @@ void he_TransportHomeHome(int ev)
     4: the cart unloads at its point for the player slot of a kind 0x47 goal (else the own player), stage 5.
     5: at the building of the cart's route point that takes the load (ai_IsBuildingOpen) the cart hands it over
        (rt_LoadAtPoint) and the transport ends (-1); no such point: -1; else it waits 15 minutes
-   @deep size queue s5: ours 1936 vs 1937 raw: the original +4 (fxch / fmulp st(2) / fxch in the chance
-   test) and ours +3 (push esi / push 1 before the jmp in case -2's from arm). Slots fixed s5 by AIOBJ *o
-   declared in a case 1 block (from and o share [esp+0x10] in the original; c2frame: a function-scope &o
-   conflicts with every local), 36 -> 8 ins. Left: (1) the fxch pair: fild rnd; fld chance; fmul 0.01;
-   fxch; fild fill; fmulp st(2); fxch; fcompp (he_RunBuyBuilding's open price test has the same shape: an
-   int operand fild'ed last and multiplied into st(2)). No lever s5: (float) / (double) / (int) casts on
-   fill or on the random, the product's operands swapped, chance / 100.0, !(<=) (12 ins), the compare
-   flipped (175 ins, chance kept on the FPU), fill * chance * 0.01 (11 ins, other rounding). (2) case -2:
-   the from arm jumps to the call of the to arm's copy, the original to the push esi of the guards arm's
-   copy (jmp +0x711 -> +0x6cc); returns per arm (34 ins), break instead of return = control. prior: Read
-   all 8 stages (jump table equal) against the original and rebuilt them; frame, calls, stores, switch
-   tables all equal (ours=603 original=603 ins). What is left: (1) case -2's third branch (t->at ==
-   from->id): VC6 cross-jumps it to the shared 'push esi; push 1; call cm_SendExSetHE' tail at +0x6cc, ours
-   keeps 'push esi; push 1' and jumps to the call (asmdiff +0x70e: '- push esi / - push 1 / jmp X'); the
-   if/else-if order guards/to/from is the original's, a merged condition made it worse (68 ins). (2) fpu 16
-   at +0x393: the compare util_RandomU(0x69) > o->fill * (chance * 0.01) computes the same product, the
-   original with fxch / fmulp st(2) stack order. (3) slots 48: [esp+0x10]-shared locals (from / &o / pl)
-   laid out otherwise. No call, store or reference differs. */
+   @deep size queue s10: padding: ours 1936 + the 8-entry table = 1968, the original 1937 -> 1984, so any
+   +1 byte fixes the padded size; the fpu hunk alone (+4) would. Case -2 (c2tail --tries): the pair merger
+   takes the to-arm's else-jmp (12490) as anchor before the guards' (12488), so the from arm merges 3 ins
+   into the to copy; only the to arm with its own return (m2e1: shape 32) makes from jump into the guards
+   copy as the original, but then the to block moves to the other -1 site's copy (je at +0x162). FPU s10
+   (all draft): flipped compare (fill * (chance*0.01) < rnd) 175 (product before the call); r =
+   util_RandomU(0x69) as a statement with double/float/int/ushort r, either compare side: 8..18, none with
+   the fxch pair; (double)f = chance * 0.01 inside the product (asg1, 8 ins): puts fld chance before add
+   esp as the original, the fxch pair still missing. Reading: the original generated fild fill before the
+   chance product (then the scheduler moved it, the fxch pair) - something makes fill the first-evaluated
+   operand. prior: size queue s5: ours 1936 vs 1937 raw: the original +4 (fxch / fmulp st(2) / fxch in the
+   chance test) and ours +3 (push esi / push 1 before the jmp in case -2's from arm). Slots fixed s5 by
+   AIOBJ *o declared in a case 1 block (from and o share [esp+0x10] in the original; c2frame: a
+   function-scope &o conflicts with every local), 36 -> 8 ins. Left: (1) the fxch pair: fild rnd; fld
+   chance; fmul 0.01; fxch; fild fill; fmulp st(2); fxch; fcompp (he_RunBuyBuilding's open price test has
+   the same shape: an int operand fild'ed last and multiplied into st(2)). No lever s5: (float) / (double)
+   / (int) casts on fill or on the random, the product's operands swapped, chance / 100.0, !(<=) (12 ins),
+   the compare flipped (175 ins, chance kept on the FPU), fill * chance * 0.01 (11 ins, other rounding).
+   (2) case -2: the from arm jumps to the call of the to arm's copy, the original to the push esi of the
+   guar... */
 void he_RunTransport(int ev)
 {
     AIJOB *e = (AIJOB *)ev;
