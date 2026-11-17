@@ -16,6 +16,8 @@
    building's turn step (care wear, lease ends via gv_LeasePrice / gv_OrderExtendGrave, new dead).
    The laws and crimes (gv_Decisions, ai_Crimes, ai_Evidence, the sentences, the rank check) are gs.c's, the
    graveyard grave.c's; this unit keeps their record types (gv.h).
+   Open: data: ord.c's ord_OrderHandlers 0x611768 (its .data block, after gs.c's strings), ord_KindTable 0x617468 and
+   the ord_* .bss globals are defined here; their owner is ord (move them in .data order).
    Open: gv_FindCrime and gv_EvidenceSlot still read ai_Crimes (cm.c's char[], the 0x2d-byte CRIME records) and ai_Evidence (cm.c, the int pairs) through raw offsets.
    Open: some functions index ai_PlayerSlots with the stride 0x5e8 where gv_ReserveGrave shows 0x2f4 (gv_PlayerRecs).
    Open: head: cm.h redeclares gv functions (gv_GrowGraveyard as struct GVYARD *); cm.c cannot include gv.h yet (two

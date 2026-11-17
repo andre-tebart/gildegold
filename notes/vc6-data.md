@@ -93,9 +93,20 @@ a unit boundary looks like. Not needed to match a function's code (that is `note
   offset 0 of the obj's one .rdata section; the `__real@` COMDATs follow in function order). So a named datum
   AFTER literals in the original starts a new object: a unit boundary. Found so: d3_light ends with
   d3_ShadeInit (its 2/pi, 1/1024 before d3_ZAxis), shot (0x5dbc10) splits from menu, grave (0x4ef3c0) from gv
-  (ai_CannonBalls then gv's literals then gv_SaleShares). Open the same way: am's ag_Pairs .. ai_TortureInstruments,
-  its literals 0x5ed048..0x5ed0fc (first users up to 0x4a05aa), then ai_CharWalkSteps .. ai_NearRingCursor (a
-  second object); gv_Decisions 0x611258 (a plain .data block after grave's strings: a third object).
+  (ai_CannonBalls then gv's literals then gv_SaleShares), am's literals 0x5ecec0.. then ag_Pairs (amr split off
+  at 0x492fd0), amr's literals then ai_CharWalkSteps (amt_ai at 0x4a3a90), grave's literals then gv_RankWorth with
+  the .data block gv_Decisions (gs at 0x4f2720). A step at a named datum is the place to look: walk the literals
+  before it (their first users' order shows which object they belong to).
+- **A const object of 64 bytes or more is 8-aligned** (cl tests: int[15] align 4, int[16] / int[4][4] / a 64-byte
+  struct align 8, also inside the section: an int[1] before an int[16] puts it at +8) and makes its obj's
+  constant section 8-aligned. A >= 64-byte named datum at an address not 0 mod 8 in the original is several objects
+  (gv_ListEntries[4][4] -> four int[4], read with a constant row at four sites).
+- **A named int nobody reads between named constants** (0x5ed1ac = 11 after the 11 ai_RingStrides, 0x5edbb0 = 48
+  after hmt's literals): a const of the unit (a count) whose readers use the immediate or were removed; declare it
+  (ai_RingStrideCount, ai_MissionTypeCount: names / owner guesses, said so), never pad.
+- **An index the original clamps to N on an array of N entries** reads the next object (gv_RankWorth[10] reads
+  ord's -20.0's low dword): declare the real size, the overrun is the original's; a padding entry moves the
+  next unit's data.
 - **Named constants keep definition order and pack** (char[2] + char[2] at +0, +2): two 2-byte strings 4 apart in
   .rdata are char[4] (agi_SepSpace / agi_SepQuote); 12-byte vectors 16 apart are D3VECTOR4 (the d3 axes).
 - **Values in .rdata in an order no first-use gives** (the first users' addresses jump up and down, or an
@@ -105,7 +116,12 @@ a unit boundary looks like. Not needed to match a function's code (that is `note
 - **Literals of functions /OPT:REF removed**: a literal sits in a unit whose code never reads it (d3_tools'
   255.0, 0.002, 0.59f, 4.0f, 0.25, 0.2857 at 0x5eb978..; 100f / 256f / 0.0015625 / 512 at 0x5ebb40..): a removed
   function of that unit used it first. Our link places it with its first surviving user instead; these steps
-  stay open (no dead function is invented).
+  stay open (no dead function is invented). Accepted so far: vfs_Ext -32, d3fl_Suffix -24, agi_SepSpace -32,
+  d3_ZAxis -24 (d3_tools 0x5eb978..; 6.0f 0x5ebb1c in d3_fl's literals, first user am 0x490ed7; 100f / 256f /
+  0.0015625 / 512 around -pi/2 0x5ebb40..), the 100.0f / 0.002 ours puts in d2 / ai (0x5ece08 / 0x5ece30), the
+  0.2857 ours puts in cm (0x5edc58: the +8 of amt_TabA .. ord's literals).
+- **A main.c GAPDATA block of 4 bytes in .rdata's range with no source user** (only `extern GAPDATA` lines) is a
+  pooled literal its users already write: delete it (it sat in .data, +200k off).
 - **A header comment edit is a tie-break too**: changing only comments in d3_vec.h / am.h moved sv_t's
   ai_TutorialInitChapter3 / f3gm's gm_FormatAmount off their grade; keep shared headers' text unless needed.
 - **datameasure's placed count is not monotonic**: symbols at delta 0 behind two cancelling errors drop out when
