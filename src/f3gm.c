@@ -8807,12 +8807,12 @@ int gm_BuildingRankGate(unsigned char *b, unsigned char *c)
     p = ai_BTypes + (unsigned)*b * 0x24d;
     r = gm_BuildingRank(c);
     if (p[0x247] == 1)
-        return r < 2;
-    if (p[0x247] == 2)
-        return r < 3;
-    if (p[0x247] == 3)
+        lim = 1;
+    else if (p[0x247] == 2)
+        lim = 2;
+    else if (p[0x247] == 3)
         lim = 7;
-    return r <= lim;
+    return lim >= r;
 }
 /* 0x5091a0, two values of the building b: out[0] a share of its owner's worth (gm_GetWorth, capped at 2048000:
    7 % for a kind of class 2, else 3 %, not below 0), out[1] the price of the goods its stall object (prototype 0x2a)
