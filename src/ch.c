@@ -2760,32 +2760,23 @@ int ch_GetWaypoints(D3SM *h, CHARACTER *ch, CHWAYPT *out)
 /* 0x4079b0, walk actions: checks the next path cells against the nearby characters others[0..n-1] and,
    if one blocks the way, marks them in the ground map and searches a new path around them ("ch:GetNewPath"
    is the mem_Alloc tag). Returns the new path length, 0 nothing to do, -1 failed, -2 no way around.
-   @deep size queue: 2758 vs 2774 (16 short, padded needs >= 2769). s2 kept (184 -> 102 ins): k = walk.cur
-   read before the scene-map test, p after it (the original's load order, that hunk now equal); the
-   ground-mark range as if/else into e + for (k = e; k < e + 2 ..) (oa back in esi); the frame: sx and fz
-   (the FindFreeCell second output, was i) block locals of if (res & 1), the ThinPath result in its own
-   block local len: frame 0x9b8 as the original, i no longer escapes (the original never stores i after the
-   ground loops), slots i+fz / tmp+sx / tz+len shared as the original's; nrest++ before q += 2. Frame left:
-   two equal-density ties come out of the K&R sort the other way (ours cz before scene, tz before bz; a K&R
-   simulation says cz one reference fewer, or scene before cz and bz before tz in the table, fixes both).
-   Size left: (1) the transport ternary: the original loads walk.cur in BOTH arms (mov eax,[esi+0xf8]; lea
-   edi,[eax-2]; jmp; mov edi,[esi+0xf8]: +8 bytes), ours hoists the load above the test - ternary, if/else,
-   if (!t), e = cur; if (t) e -= 2 / e = cur - 2, the else arm via CH_ACTIONS(others[i]), cur + -2, -2 +
-   cur, start variable: all hoist (unique pattern in the whole image: grep_orig); (2) the FindFreeCell
-   argument order: the original pushes walk.flags | 1 before computing steps * m (mov ebx,[steps]; imul
-   ebx,eax), ours imul eax,[steps] first (m local or the ternary inline, either operand order: = control);
-   (3) the rest-copy loop: lea ecx,[rest+1] after the guard and add eax,2 / add ecx,2 / inc edi order
-   (rest[nrest*2] index forms: 172-212, for (..; k++, q += 2): = control). Tools: scratch kr.py (K&R slot
-   sort), slotref.py (listing reference counts per slot), vsize.py. prior: Read the frame again (dcp
-   frame): ours has one 4-byte slot more because the original packs sx with the others-pointer temp of the
-   blocker scan ([esp+0x1c]); ours keeps them apart. sx declared in the if (res & 1) block (or if (res))
-   gives the original's frame 0x9b8 and the shared slot, but reorders gx/gz, steps/cx and leaves tz/bz
-   swapped (184 -> 250 ins, reverted); sx in a block around the tail (296), gx/gz in the res & 1 block
-   (frame 0x9b0, 312-326), tx/tz/bx/bz in a block around the scan (= control), subsets of
-   last/nrest/cnt/m/q moved with sx into the res & 1 / res / tail blocks (95 variants, 2 codegens),
-   declaration order swaps of gx/gz, tz/bz, steps/cx (= control), steps = min(10, ..) (worse), ThinPath
-   result in r instead of tz (= control), gz/gx assignment order (worse), a dead bz = bz (= control). Kept:
-   p computed before the scene-map test (200 -> 184 ins, 2259 -> 1542 bytes) and ... */
+   @deep size fixed s4 (2770 vs 2774, padded 2784 = original): the transport arms as e = max(1,
+   oa->u.walk.cur - 2) / max(1, oa->u.walk.cur): the max macro reads cur twice per arm, so the arms no
+   longer start with one equal load and VC6 stops hoisting it (the original's mov eax,[cur]; lea
+   edi,[eax-2]; jmp; mov edi,[cur]); 102 -> 96 ins. Tried same round: clamp written in each arm (2764
+   bytes), max of the ternary (145 ins), k/e roles swapped, e -= 2 statement, r clamp moved (= control or
+   worse). Left: the slot ties (cz/scene, tz/bz, see prior), the first FindFreeCell's steps * m after the
+   flags push (mov ebx,[steps]; imul ebx,eax), the second's m in ebx with or al,1, the rest-copy loop's lea
+   ecx placement. prior: size queue: 2758 vs 2774 (16 short, padded needs >= 2769). s2 kept (184 -> 102
+   ins): k = walk.cur read before the scene-map test, p after it (the original's load order, that hunk now
+   equal); the ground-mark range as if/else into e + for (k = e; k < e + 2 ..) (oa back in esi); the frame:
+   sx and fz (the FindFreeCell second output, was i) block locals of if (res & 1), the ThinPath result in
+   its own block local len: frame 0x9b8 as the original, i no longer escapes (the original never stores i
+   after the ground loops), slots i+fz / tmp+sx / tz+len shared as the original's; nrest++ before q += 2.
+   Frame left: two equal-density ties come out of the K&R sort the other way (ours cz before scene, tz
+   before bz; a K&R simulation says cz one reference fewer, or scene before cz and bz before tz in the
+   table, fixes both). Size left: (1) the transport ternary: the original loads walk.cur in BOTH arms
+   (mov... */
 
 int ch_GetNewPath(CHARACTER *ch, int n, CHARACTER **others)
 {
@@ -2910,11 +2901,9 @@ int ch_GetNewPath(CHARACTER *ch, int n, CHARACTER **others)
                     if (r > 3)
                         r = 3;
                     if (others[i]->transport)
-                        e = oa->u.walk.cur - 2;
+                        e = max(1, oa->u.walk.cur - 2);
                     else
-                        e = oa->u.walk.cur;
-                    if (e < 1)
-                        e = 1;
+                        e = max(1, oa->u.walk.cur);
                     for (k = e; k < e + 2 && k < oa->u.walk.pathLen; k++) {
                         gx = ((unsigned char *)oa->u.walk.path)[k * 2];
                         gz = ((unsigned char *)oa->u.walk.path)[k * 2 + 1];
