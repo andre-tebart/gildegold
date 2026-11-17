@@ -4021,7 +4021,7 @@ exe	0x0057dc50	ai_AlchemistTrainShareWindow	sv_t	4dd344bada7d3fe4	no	draft	contr
 exe	0x0057de60	ai_AlchemistFundWindow	sv_t	2fcea238c0ac3039	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
 exe	0x0057e0e0	ai_AlchemistRescheduleWindow	sv_t	f8a060bac0d9cb96	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0057e230	ai_ShotTableStore	sv_t	2ad4f6bcf8a79313	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x0057e270	ai_CannonScene	sv_t	61b8e41fe5a576b7	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	b07b4db99b041969
+exe	0x0057e270	ai_CannonScene	sv_t	5ad06ffcc36a3cd4	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	2fb5a5b9b01ea818
 exe	0x0057ec40	ai_CannonAim	sv_t	253577d9d4076218	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x0057f0e0	ai_CannonCamera	sv_t	81384ade34b6f617	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft	
 exe	0x0057f5d0	ai_CannonAxes	sv_t	46cdfc303cdab16e	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	

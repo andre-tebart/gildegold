@@ -5443,14 +5443,14 @@ void ai_CannonScene(char *rec)
         rotv.x = 0.0f;
         sc.obj98 = d3_CreateObject(0, &d3_Origin, &rotv, "KANONE_UNTERBAU_Aa");
     }
-    sc.obj8c[0] = d3_CreateObject(sc.obj98, &d3_Origin, (D3VECTOR *)ai_ZeroRot, "KANONE_ROHR_Aa");
-    sc.obj8c[1] = d3_CreateObject(sc.obj98, &d3_Origin, (D3VECTOR *)ai_ZeroRot, "KANONE_DOPPEL_ROHR_Aa");
-    sc.obj8c[2] = d3_CreateObject(sc.obj98, &d3_Origin, (D3VECTOR *)ai_ZeroRot, "KANONE_DREIFACH_ROHR_Aa");
+    sc.obj8c[0] = d3_CreateObject(sc.obj98, &d3_Origin, &d3_ZeroRot, "KANONE_ROHR_Aa");
+    sc.obj8c[1] = d3_CreateObject(sc.obj98, &d3_Origin, &d3_ZeroRot, "KANONE_DOPPEL_ROHR_Aa");
+    sc.obj8c[2] = d3_CreateObject(sc.obj98, &d3_Origin, &d3_ZeroRot, "KANONE_DREIFACH_ROHR_Aa");
     sc.selected = gv_Cannon.selected;
     sc.zoom = 0.0f;
     d3_SetObjectPos(sc.obj98, &sc.pos);
     d3_SetObjectRot(sc.obj98, (D3VECTOR *)&sc.rot);
-    sc.obj9c = d3_CreateObject(sc.obj98, (D3VECTOR *)&ai_WimpelPos, (D3VECTOR *)ai_ZeroRot, "AO_KANONE_WIMPEL_Aa");
+    sc.obj9c = d3_CreateObject(sc.obj98, (D3VECTOR *)&ai_WimpelPos, &d3_ZeroRot, "AO_KANONE_WIMPEL_Aa");
     d3t_PlayAnim(sc.obj9c, "_ADDON\\AO_KANONE_WIMPEL_Aa.baf", 1);
     sc.obj9c->stateFlags = (sc.obj9c->stateFlags & 0xf7) | 4;
     sc.obj9c->stateFlags |= 0x40;

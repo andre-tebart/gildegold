@@ -584,7 +584,7 @@ void gv_UpdateEffects(void)
             } else if (gv_EffectsT[i].parts[j].state == 1) {
                 if (gv_EffectsT[i].f14 == 0 ? ai_StepShot((SHOTREC *)&gv_EffectsT[i].parts[j]) : ai_StepShotSlow((SHOTREC *)&gv_EffectsT[i].parts[j])) {
                     if (gv_EffectsT[i].objs[j] == 0) {
-                        gv_EffectsT[i].objs[j] = d3_CreateObject(0, &d3_Origin, (D3VECTOR *)ai_ZeroRot, "kugel");
+                        gv_EffectsT[i].objs[j] = d3_CreateObject(0, &d3_Origin, &d3_ZeroRot, "kugel");
                         gv_EffectsT[i].objs[j]->objectFlags |= 4;
                         gv_EffectsT[i].objs[j]->stateFlags |= 0xc;
                         gv_EffectsT[i].objs[j]->objectFlags &= ~8;
@@ -4304,7 +4304,6 @@ int gv_EvidencePrice(int id, AICHAR *seller, int *price, short *culprit, unsigne
     return 1;
 }
 
-const char ai_ZeroRot[12] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };  /* 0x5ebbb4 */
 const float gv_SaleShares[] = { 0.800000012f, 0.699999988f, 0.600000024f, 0.5f };  /* 0x5ee034, the owner's share of a grave sale per size */
 const float gv_GraveWear[] = { 15.0f, 12.5f, 10.0f, 7.5f };  /* 0x5ee044, the care a grave entry of each size loses per step (gv_GraveyardTurn: times (random + 1) / 2 and the care / 255) */
 const int gv_EntryCounts[] = { 1, 2, 4, 8 };  /* 0x5ee054, entries per kind */

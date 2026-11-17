@@ -308,3 +308,6 @@ const D3VECTOR4 d3_ZAxis = { 0.0f, 0.0f, 1.0f, 0.0f };  /* 0x5ebb74, (0, 0, 1) *
 const D3VECTOR4 d3_XAxis = { 1.0f, 0.0f, 0.0f, 0.0f };  /* 0x5ebb84, (1, 0, 0) */
 const D3VECTOR4 d3_YAxis = { 0.0f, 1.0f, 0.0f, 0.0f };  /* 0x5ebb94, (0, 1, 0) */
 const D3VECTOR4 d3_Origin = { 0.0f, 0.0f, 0.0f, 0.0f };  /* 0x5ebba4, (0, 0, 0) */
+/* the zero rotation d3_CreateObject gets from gv.c / sv_t.c: 12 bytes (d3_MatToAngles' double literal follows at
+   0x5ebbc0) */
+const D3VECTOR d3_ZeroRot = { 0.0f, 0.0f, 0.0f };  /* 0x5ebbb4, (0, 0, 0) */

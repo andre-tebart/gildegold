@@ -10,6 +10,7 @@ extern const D3VECTOR4 d3_ZAxis;          /* 0x5ebb74, (0, 0, 1) */
 extern const D3VECTOR4 d3_XAxis;          /* 0x5ebb84, (1, 0, 0) */
 extern const D3VECTOR4 d3_YAxis;          /* 0x5ebb94, (0, 1, 0) */
 extern const D3VECTOR4 d3_Origin;         /* 0x5ebba4, (0, 0, 0) */
+extern const D3VECTOR d3_ZeroRot;         /* 0x5ebbb4, (0, 0, 0), the zero rotation */
 
 void d3_ShadeInit(unsigned int visible_budget, unsigned int culled_budget); /* 0x453920 */
 void d3_ShadeReset(void);                                              /* 0x453990 */
