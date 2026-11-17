@@ -8328,7 +8328,7 @@ int cm_OrderWare(char *rec, char *c, char *tgt, unsigned char a)
 /* 0x4d0460, orders the character c of the cutscene record rec (CMCUTINFO) to the best ground cell within 8 rings of
    its own (cm_BestCellNear, formation type 4): its entry (cm_CutEntrySlot, b0c cleared there) is copied with state 7 and
    that cell in stateArg / x, and sent as message 0x50 (cm_SendCutEntry). -1 when c's body is not on the ground or no
-   cell is found; else the original returns nothing (VC6 keeps x in c's dead parameter slot) */
+   cell is found; else cm_SendCutEntry's result (VC6 keeps x in c's dead parameter slot) */
 
 int cm_OrderToBestCell(char *rec, char *c)
 {
@@ -8339,18 +8339,17 @@ int cm_OrderToBestCell(char *rec, char *c)
     int x, z;
     float y;
 
-    if (d3_GetHeightAt(hmap, &ch->scene->obj->pos, &x, &z, &y) == 0)
-        return -1;
-    if (cm_BestCellNear(c, x, z, 8, &x, &z) == 0)
-        return -1;
-    e = (CMCUTENTRY *)cm_CutEntrySlot(rec, c);
-    e->b0c = 0;
-    memcpy(&order, e, sizeof(order));
-    order.charId = ch->netId;
-    order.stateArg = x;
-    order.state = 7;
-    order.x = z;
-    cm_SendCutEntry(((CMCUTINFO *)rec)->playerId, (int)&order);
+    if (d3_GetHeightAt(hmap, &ch->scene->obj->pos, &x, &z, &y) != 0 && cm_BestCellNear(c, x, z, 8, &x, &z) != 0) {
+        e = (CMCUTENTRY *)cm_CutEntrySlot(rec, c);
+        e->b0c = 0;
+        memcpy(&order, e, sizeof(order));
+        order.charId = ch->netId;
+        order.stateArg = x;
+        order.state = 7;
+        order.x = z;
+        return cm_SendCutEntry(((CMCUTINFO *)rec)->playerId, (int)&order);
+    }
+    return -1;
 }
 /* 0x4d0520, the formation type 3's order for the character c: its entry (cm_CutEntrySlot, b0c cleared there) is copied
    with state 8 and no target and sent as message 0x50 (cm_SendCutEntry); case 8 of cm_RunCutOrders then sends fight
