@@ -1992,22 +1992,21 @@ int gm_FindPlayerBuilding(int p)
     return 0;
 }
 /* 0x501030, the next building of the query gm_BuildQuery (0x501190) started: walks the cursor gm_BQCursor over the used records of ai_Blds and returns the first that matches every set criterion (type, id, master, owner, the class of its type; gm_BQStopFirst takes any); 0 when the table ends (the cursor is cleared) or more than 0x100 records were tested
-   @deep match-deep s9: the criteria are one && chain, each match marking m inside its test ((t == want &&
-   (m = 1))), else m = 0: the same code as the goto form of s8 (mismatch block out of line after the
-   returns), goto-free. Left (2 ins): gm_BQFirstCall = 0 is stored before the first-call walk's jae in the
-   original, its bottom exit still jumping to the shared end check; ours stores after the walk. Tried s9:
-   store first with while (c < end) { if (type) break; c++; } / !type: 4 ins (bottom exit threaded); store
-   first + guarded inner while with break: 9; walks swapped under if (!first): 20; nested if/else per
-   criterion with m = 0 at each level: 20. prior: match-deep 2026-11-17 (s8): draft 8 -> shape 2, size 341
-   = 341: the id / master / owner criteria as if (field == want) m = 1; else goto no; (the mismatch is the
-   else of the match test): VC6 then puts the no block (xor cl,cl; jmp) out of line after the returns and
-   every mismatch test jumps to it as the original (only the owner form decides it; id / master alone =
-   control; all three kept for one form). Left: gm_BQFirstCall = 0: the original stores it in the first
-   block of the first-call walk (before jae) and the walk's bottom exit still jumps to the shared end
-   check; ours stores after the walk (2 ins, moved store). Store first (before the while, as a for-init, or
-   a guarded inner while) threads the bottom exit to a return-0 copy (4 ins, +2 instructions); the walks
-   swapped under if (!first) 20. Next: what keeps VC6 from threading the bottom exit of the first-call walk
-   with the store first. */
+   @deep s13: back to the goto no form of s8 (the orchestrator's choice; the && chain marking m in each
+   test is the same code, dcp try = control). Left (2 ins): gm_BQFirstCall = 0 is stored before the
+   first-call walk's jae in the original, its bottom exit still jumping to the shared end check; ours
+   stores after the walk. Tried s9: store first with while (c < end) { if (type) break; c++; } / !type: 4
+   ins (bottom exit threaded); store first + guarded inner while with break: 9; walks swapped under if
+   (!first): 20; nested if/else per criterion with m = 0 at each level: 20. prior: match-deep s9: the
+   criteria are one && chain, each match marking m inside its test ((t == want && (m = 1))), else m = 0:
+   the same code as the goto form of s8 (mismatch block out of line after the returns), goto-free. Left (2
+   ins): gm_BQFirstCall = 0 is stored before the first-call walk's jae in the original, its bottom exit
+   still jumping to the shared end check; ours stores after the walk. Tried s9: store first with while (c <
+   end) { if (type) break; c++; } / !type: 4 ins (bottom exit threaded); store first + guarded inner while
+   with break: 9; walks swapped under if (!first): 20; nested if/else per criterion with m = 0 at each
+   level: 20. prior: match-deep 2026-11-17 (s8): draft 8 -> shape 2, size 341 = 341: the id / master /
+   owner criteria as if (field == want) m = 1; else goto no; (the mismatch is the else of the match test):
+   VC6 then puts the no block (xor cl,cl; jmp) out of line after... */
 
 unsigned char *gm_BuildNext(void)
 {
@@ -2034,13 +2033,33 @@ unsigned char *gm_BuildNext(void)
     for (;;) {
         if (gm_BQStopFirst)
             m = 1;
-        if ((gm_BQType == 0xff || gm_BQCursor->type == gm_BQType && (m = 1))
-            && (gm_BQId == -1 || gm_BQCursor->id == gm_BQId && (m = 1))
-            && (gm_BQMaster == 0x7fff || gm_BQCursor->masterId == gm_BQMaster && (m = 1))
-            && (gm_BQOwner == 0x7fff || gm_BQCursor->owner == gm_BQOwner && (m = 1))) {
+        /* @original: each criterion's mismatch jumps to one m = 0 block that VC6 lays out after the
+           returns; the original reached it from every test as the else of the match (goto no) */
+        if (gm_BQType == 0xff || gm_BQCursor->type == gm_BQType) {
+            if (gm_BQType != 0xff)
+                m = 1;
+            if (gm_BQId != -1) {
+                if (gm_BQCursor->id == gm_BQId)
+                    m = 1;
+                else
+                    goto no;
+            }
+            if (gm_BQMaster != 0x7fff) {
+                if (gm_BQCursor->masterId == gm_BQMaster)
+                    m = 1;
+                else
+                    goto no;
+            }
+            if (gm_BQOwner != 0x7fff) {
+                if (gm_BQCursor->owner == gm_BQOwner)
+                    m = 1;
+                else
+                    goto no;
+            }
             if (gm_BQClass != 0xff)
                 m = (unsigned char)ai_BTypes[gm_BQCursor->type * 0x24d] == gm_BQClass;
         } else {
+        no:
             m = 0;
         }
         gm_BQTested++;
