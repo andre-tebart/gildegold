@@ -174,9 +174,9 @@ a unit boundary looks like. Not needed to match a function's code (that is `note
   the owner whose code does not touch it (an extern in the user unit). dcp's D5 (decompanion fedde79) fires only
   below the common block and names the block's start. (d2_ScreenH / d2_ScreenW 0xfb9070 / 0xfb9072,
   gm_KindObjCount 0x76fdc4; d2_ResizeWindow, gm_BuildKindObjects byte)
-- **Done (s7, s8)**: every game datum above 0x6f3300 is a tentative definition in its group's unit, except d3s_EdgeX /
-  EdgeY (s8 again: the original reads them at [esi*4+0xfc50d0] / [esi*4+0xfc50e0], two displacements, any order
-  works; as commons dcp's M.layout fails the gate because our name order puts EdgeY first: a dcp false alarm).
+- **Done (s7, s8)**: every game datum above 0x6f3300 is a tentative definition in its group's unit, d3s_EdgeX / EdgeY
+  too since decompanion 8cbfa28 (the original reads them at [esi*4+0xfc50d0] / [esi*4+0xfc50e0], two displacements,
+  any order works; our link puts EdgeY 0x10 before EdgeX, and M.layout no longer judges a pair of two commons).
 - **Measure the common area per group, not by steps**: every symbol of it is a step (name order); compare each
   group's start (s7: from f3gm on -13.0 .. -14.1 KB, before it +68.7 KB = gm_QueryStack in f3gmt's .bss - 13 KB).
 
@@ -355,10 +355,10 @@ a unit boundary looks like. Not needed to match a function's code (that is `note
 - **A unit-.bss gap no instruction reads** (d2: 10836 bytes after d2_DragActive, 0x6ed9f8..0x6f044c; grep_orig finds
   no reference, no dword of the image points into it): data of removed functions (a unit's .bss survives /OPT:REF, a
   common does not). s8 declared it as d2_UnreadBss[10836] (one unread block of its owner, no invented readers).
-- **dcp and commons**: M.layout compares two commons one register expression indexes (d3s_EdgeX / EdgeY) by their
-  order in our link, which is the name order: keep such a pair defined until the record is proven. A D1 that appears
-  only once a datum is a common (gm_QueryStack: s8 found cl's COMM size, see s8) is the tool's extent, not the
-  datum's; ai_RelationMemory's D1 / D8 went away once it was defined in its group's unit (f3gm).
+- **dcp and commons**: M.layout does not judge a pair of two commons one register expression indexes (decompanion
+  8cbfa28: LINK's name order, not ours); a common cl padded (gm_QueryStack: 0x14030 COMM size for 0x14020 bytes)
+  takes its declared size as its extent, the pad a D1 warning (toolchain effect); `dcp rename` compiles an object
+  with commons again (dbc55e7). ai_RelationMemory's D1 / D8 went away once it was defined in its group's unit (f3gm).
 
 ## Decision: commons are placed per group (user, s7)
 The order inside an object's common group follows LINK's hash of the original names, which the exe does not hold.

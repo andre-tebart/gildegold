@@ -832,8 +832,8 @@ extern int d3s_SlopeC;
 extern int d3s_SlopeL;
 extern int d3s_CL;
 extern int d3s_SlopeR;
-int d3s_EdgeX[4] = {0};  /* 0xfc50d0; a common in the original (16-aligned on its own), kept defined: dcp's M.layout wants it at d3s_EdgeY - 0x10, the linker's name order of commons puts our names apart */
-int d3s_EdgeY[4] = {0};  /* 0xfc50e0; kept defined with d3s_EdgeX */
+int d3s_EdgeX[4];  /* 0xfc50d0; a common in the original (16-aligned on its own): LINK orders an object's commons by its name hash, so our order of the pair need not be the original's */
+int d3s_EdgeY[4];  /* 0xfc50e0; a common with d3s_EdgeX */
 extern int d3s_XL;
 extern int d3s_XR;
 extern int d3s_SpanLen;
