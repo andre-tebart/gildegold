@@ -139,12 +139,30 @@ a unit boundary looks like. Not needed to match a function's code (that is `note
 - **.bss statics / globals**: need `= 0` to keep declaration order; globals in the original's common block (past
   the last LIBC .bss symbol, gildegold 0x6f3300) are tentative `T x;`, and dcp's D5 accepts a tentative definition
   there.
-- **Where the commons are**: a VC6 link (`int a = 0; int c;` in two objects plus LIBC, map file) puts .bss as
-  a.obj's, b.obj's, then LIBC's contributions (crt0dat, nlsdata2, ..), then every common symbol as `<common>` (the
-  program's first, in encounter order, then the CRT's __crtheap, __acmdln, ..). In GildeGold LIBC's last .bss
-  symbol ends at 0x6f3300: everything above (0x6f3300..0x14ebe84) is common data, tentative definitions in the
-  original (the d2_ / d3_ / ts_ names interleaved there follow the first object's header order). Below it the
-  units' `= 0` definitions are right.
+- **Where the commons are**: a VC6 link puts .bss as each obj's own .bss in link order, then LIBC's, then every
+  common symbol as `<common>` (rule: next bullet). In GildeGold LIBC's last .bss symbol ends at 0x6f3300: everything
+  above (0x6f3300..0x14ebe84) is common data, tentative definitions in the original. Below it the units' `= 0` /
+  static definitions are right.
+- **LINK 6.00's common rule** (s7, cl/link tests in a scratch dir, map files): (1) a common belongs to the FIRST
+  object in link order that has a tentative definition of it (an extern or a mere reference does not count);
+  (2) one group per object, the groups in REVERSE link order of the command-line objects (menu's group first at
+  0x6f3300, udp's last at 0x14eaae0), LIBC members' commons after all of them; (3) inside a group the order is
+  LINK's name order, not definition order, size or alignment (two-letter names sort by 4*c1 + c2, longer names
+  scramble like a hash; definition order only breaks ties): with our invented names the in-group order cannot
+  match, the group order and extents can; (4) each common is aligned to the next power of two of its size, at most
+  32 (3 -> 4, 12 -> 16, 17..inf -> 32; 609 of our commons follow it exactly); (5) /OPT:REF drops a common no kept
+  code references (a unit's own .bss is never dropped).
+- **Consequences**: a common-range datum off its common alignment is part of a bigger object (ai_BldCarts at
+  0x6f40a4: one 40-byte LCBLDCARTS ai_BldCartList at 0x6f40a0, ai_UpdateBldCarts byte; open: ai_ScreenTuning
+  0x6f35d0, ai_TownName 0x6f361c, sv_QuickJump 0x75e8c4, sv_Climate 0x760484, d3_Planes 0xfc5068). A readerless gap
+  block in the common range is the alignment pad before the next common: delete it (26 deleted). A datum inside
+  another unit's group span is that unit's (move the tentative definition; moves changed no grade); at a boundary
+  between two groups pick the neighbour among its users.
+- **Codegen of a tentative definition**: `unsigned char x;` loads as a byte (like an extern); a tentative char[4] or
+  4-byte struct, and every `= 0` definition, loads as `mov ecx, dword; and ecx, 0xff`. menu's ai_SaveOptions /
+  ApplyOptions / OptionsGfxScreen / OptionsGameScreen need the dword at 0x6f35c4 / 0x6f35c8: those bytes were two
+  4-byte objects (kept `= 0` until declared so). `__declspec(align(1))` (GAPDATA) turns a tentative definition into
+  a .bss definition (no COMM): write a common gap block as plain `unsigned char x[N];`.
 - **A short global loaded as a dword and widened** (`mov ecx, dword [d2_ScreenH]; .. sub ecx,eax; mov [m],cx`)
   where the original keeps `mov cx, word [..]; sub cx,ax`: VC6 widens only when it knows the global is 4-aligned
   (its unit defines it); it keeps a short global in a word register through a call-free loop only when the unit
@@ -155,9 +173,11 @@ a unit boundary looks like. Not needed to match a function's code (that is `note
   the owner whose code does not touch it (an extern in the user unit). dcp's D5 (decompanion fedde79) fires only
   below the common block and names the block's start. (d2_ScreenH / d2_ScreenW 0xfb9070 / 0xfb9072,
   gm_KindObjCount 0x76fdc4; d2_ResizeWindow, gm_BuildKindObjects byte)
-- **Not done**: the other ~2000 `= 0` definitions above 0x6f3300 are commons in the original too; converting them is
-  codegen-neutral except where code depends on knowing the placement (the short-global widening). Convert one when
-  a stuck function shows that symptom.
+- **Done (s7)**: every game datum above 0x6f3300 is a tentative definition in its group's unit, except menu's option
+  bytes (above), d3s_EdgeX / EdgeY (dcp M.layout wants EdgeX at EdgeY - 0x10; our names' order differs) and
+  gm_QueryStack (as a common dcp's M.data.draft extends it past its end from gm_QueryNext's draft: D1).
+- **Measure the common area per group, not by steps**: every symbol of it is a step (name order); compare each
+  group's start (s7: from f3gm on -13.0 .. -14.1 KB, before it +68.7 KB = gm_QueryStack in f3gmt's .bss - 13 KB).
 
 - **All-zero initialisers go to .bss** (`int x = 0;`, `= {0}`, a GAPDATA of zeros: our map has them past .data's
   end, as VC6 does). A zero datum inside the original's initialised .data is a pad (the 8-alignment before a
@@ -272,8 +292,8 @@ a unit boundary looks like. Not needed to match a function's code (that is `note
 - **A >= 64-byte object is 8-aligned in .data too**: D3VECTOR4[4] at 0x5f341c linked at +4; four D3VECTOR4 objects
   matched. A 64-byte datum at an address not 0 mod 8 is several objects.
 - **The common block is grouped per object, in reverse link order** (menu, lcdom, lc, lobby, svgrave's tooltip
-  object, svcannon / sv_t, he ..); inside a group the order is not first use. A common between two groups can belong
-  to either neighbour.
+  object, svcannon / sv_t, he ..); inside a group the order is LINK's name order (see the common rule). A common
+  between two groups can belong to either neighbour.
 - **Splitting a header's prototypes into a new unit's header**: replace them in the old header with `#include
   "new.h"` at the same place; removing them (and including new.h in the callers) moved two functions of unrelated
   includers by the declaration set (reg.h from di_input.h).
@@ -324,9 +344,17 @@ a unit boundary looks like. Not needed to match a function's code (that is `note
 - **Zero members of an initialised object in .data** (sv_ViewRect {0, 0, 694, 600}): accesses by absolute field
   address cannot tell four ints from a struct; the section can (VC6 puts a zero scalar in .bss). One RECT with the
   old names as field macros in the header; local `extern int` copies of the names must go (the macro breaks them).
-- **The common block (s6 count)**: our link emits 5 game commons (gm_KindObjCount, d2_ScreenH / W, dd_BLoss /
-  RLoss, the tentative ones) plus 25 LIBC ones; the original's 0x6f3300..0x14ebe84 is all common. The other game
-  data there are `= 0` definitions in the units' .bss, so our commons are a tiny subset (sizes agree) and come
-  after LIBC's .bss as one group instead of being interleaved; the bss steps above 0x6f3300 are this.
+- **The common block (s6 count)**: 5 game commons then; s7 made the rest tentative (609 commons now).
 - **ai_TutorialInitChapter3 (sv_t)**: every build after an he.h / sv_t change re-sweeps it and stops at shape
   (the baseline goal); `dcp try` with 6 unused typedefs before it still gives byte: restore its tiebreak row.
+
+### s7 additions
+- **dcp prints sizes >= 1 MB in hex** (`size=0x00132000`): datameasure skipped those data (cm_RecvPool, txt_Keys ..,
+  6.9 MB not counted); its parser takes hex now.
+- **A unit-.bss gap no instruction reads** (d2: 10840 bytes after d2_DragActive, 0x6ed9f8..0x6f044c; grep_orig finds
+  no reference): data of removed functions (a unit's .bss survives /OPT:REF, a common does not). An accepted step
+  (-10.8 KB at d2_ShpW), not padded.
+- **dcp and commons**: M.layout compares two commons one register expression indexes (d3s_EdgeX / EdgeY) by their
+  order in our link, which is the name order: keep such a pair defined until the record is proven. A D1 that appears
+  only once a datum is a common (gm_QueryStack: M.data.draft from a draft's code) is the tool's extent, not the
+  datum's; ai_RelationMemory's D1 / D8 went away once it was defined in its group's unit (f3gm).

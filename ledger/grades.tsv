@@ -2978,7 +2978,7 @@ exe	0x004fe310	gm_AddTime2	f3gmt	byte	readable
 exe	0x004fe330	gm_Season	f3gmt	byte	readable		
 exe	0x004fe350	gm_ClockSeason	f3gmt	byte	readable		
 exe	0x004fe370	gm_InitBuildingTables	f3gmt	draft	readable	deep	
-exe	0x004fe570	gm_LoadTables	f3gmt	byte	readable		
+exe	0x004fe570	gm_LoadTables	f3gmt	shape	readable		
 exe	0x004fe7f0	gm_ClearBuildings	f3gmt	byte	readable		
 exe	0x004fe830	gm_ClearObjects	f3gmt	byte	readable		
 exe	0x004fe900	gm_FindObjectProto	f3gmt	byte	readable		
@@ -4375,7 +4375,7 @@ exe	0x005aa1f0	ai_FillPersonnelRow	lcdom	byte	readable
 exe	0x005aa4b0	ai_DomizilFreeRow	lcdom	byte	readable		
 exe	0x005aa520	ai_FillVacantPersonnelRow	lcdom	byte	readable		
 exe	0x005aa700	ai_ShowBldCarts	lcdom	byte	readable		
-exe	0x005aa9a0	ai_UpdateBldCarts	lcdom	draft	readable	deep	
+exe	0x005aa9a0	ai_UpdateBldCarts	lcdom	byte	readable		
 exe	0x005aab80	ai_PersonnelBook	lcdom	draft	readable	deep	
 exe	0x005ac110	ai_MercenaryBook	lcdom	draft	readable	deep	
 exe	0x005ad000	ai_AskHelperBonus	lcdom	shape	readable		
