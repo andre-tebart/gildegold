@@ -2574,6 +2574,9 @@ How arguments are pushed, a call written in both arms, parameter and return type
   changes the caller's code (64 of d3fl_UpdateTiles' differing bytes). Grep build logs for C4013.
 
 ### Call written in both arms of an if/else
+- **The same call duplicated at the end of each arm, one copy's `add esp` not merged with the call before it**
+  (`call sv_MessageBox; add esp,8; push 1; push edi; call d2_SetViewEnabled`): one call after the if / else, VC6
+  duplicated the tail; ours wrote it in each arm and merged the stack adjusts (ai_FireFightingWindow byte).
 - **The reverse: call + `ret` per arm with the arguments in registers (`xor edx,edx` at entry, `mov edx,-0x28;
   push ecx; push edx`), ours pushes immediates**: the arms only assign x / y and ONE call follows the if / else-if
   chain; VC6 duplicates the short return tail into the arms after allocation, so x / y stay registers. Writing the

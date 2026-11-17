@@ -21600,11 +21600,9 @@ void ai_FireFightingWindow(AIBLD *bld)
                     sv_MessageBox(txt_Ptrs[0x17f7], 4);
                 }
                 sv_PopRequest = 1;
-                d2_SetViewEnabled(win, 1);
-            } else {
+            } else
                 sv_MessageBox(txt_Ptrs[0x17f8], 4);
-                d2_SetViewEnabled(win, 1);
-            }
+            d2_SetViewEnabled(win, 1);
         } else if (d2_ClickedId == 1) {
             sv_PopRequest = 1;
         }
