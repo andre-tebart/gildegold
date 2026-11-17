@@ -372,6 +372,11 @@ typedef struct SHOTRESULT {     /* 0x38 bytes, three of them in ai_ShotTable: th
 #define sv_CheckGoodAmountB ((int (*)(char *, int, unsigned char))sv_CheckGoodAmount)  /* @original: ai_AlchemistHire pushes the player byte unextended (mov al, ai_OwnPlayer / push eax), a char third parameter; sv_CheckGoodAmount itself masks it (t & 0xff) */
 int ai_TutorialChapterOn[5] = { 1, 1, 1, 1, 1 };  /* 0x62918c, per chapter 1 = played (the start window's check boxes, ai_TutorialWindow) */
 int (*ai_TutorialChapterInit[5])(void) = { ai_TutorialInitChapter1, ai_TutorialInitChapter2, ai_TutorialInitChapter3, ai_TutorialInitChapter4, ai_TutorialInitChapter5 };  /* 0x6291a0, the chapter chain builders the start appends for every chapter played */
+char *ai_TutorialStateNames[18] = {  /* 0x6291b4, the names of the tutorial's 18 states (the FT* strings 0x6291fc.. in reverse order); no reader in the image (its users were removed); the name is ours */
+    "FTDisabled", "FTStart", "FTViewing", "FTReviewing", "FTIdle", "FTBeginScript", "FTIdleScript", "FTEndScript",
+    "FTRemind", "FTPartialSuccsess", "FTBeginSuccsess", "FTSuccsess", "FTEndSuccsess", "FTNoBezierAnim",
+    "FTBezierAnimOff", "FTBezierStartDelay", "FTBezierAnimating", "FTBezierEndDelay"
+};
 int ai_TutorialBanks[6] = { 0 };  /* 0x6f2640, the voice banks of the main intro / outro and the chapters 1 .. 5 (snd_LoadVoiceBank), unloaded by the stop */
 TUTRUN *ai_TutorialRuns = 0;  /* 0x6f2658, the chain of the tutorial's run records (built by its start 0x578180, freed by its stop 0x578370) */
 int ai_TutorialOn = 0;  /* 0x6f265c, the tutorial runs (set by its start 0x578180, cleared by its end) */
