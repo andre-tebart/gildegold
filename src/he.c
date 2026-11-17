@@ -150,7 +150,6 @@ extern int ai_PermsDirty;
 extern unsigned char ai_GameState;
 extern int snd_SystemBank;
 extern const int sv_PhaseMinutes[24];
-extern GAPDATA full_rdata_5ee020[];
 #include "sv_types.h"
 extern char gm_TagGebaeudePROT[24];
 extern float gm_DayStartHours[];
@@ -201,7 +200,6 @@ extern GAPDATA full_data_62901c[];
 extern GAPDATA full_data_629038[];
 extern GAPDATA full_data_629054[];
 extern GAPDATA he_TheaterScripts[];
-extern GAPDATA full_rdata_5ee01c[];
 
 struct AIPER; struct AMTREC; struct CHARACTER; struct CHACTION; struct EVTSCRIPT; struct G15PLANT; struct G11REC; struct AITIME;
 
