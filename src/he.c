@@ -21886,24 +21886,23 @@ void he_AllocResearchRecipe(int ev)
     char *p;
 
     c = (AICHAR *)gm_FindChar(r->chr);
-    if (c == 0)
-        goto done;
-    p = (char *)ahm_FindRecipe(r->id);
-    if (p == 0)
-        goto done;
-    r->progress = ahm_ResearchProgress((char *)c, p, &r->start);
-    if (r->progress <= 0.0f)
-        goto done;
-    r->amount = r->start;
-    r->clock = ai_Time;
-    e->end = ai_Time;
-    gm_AddTime(&e->end, 0, 5, 0);
-    e->stage = 0;
-    sv_MoveToGroup((unsigned char *)c->bld, (short *)gm_Query((void *)c->bld->objList, 2, 6, 0, 0x24b), c->id,
-                   (char *)ev);
-    snd_PlayFavourComment();
-    return;
-done:
+    if (c != 0) {
+        p = (char *)ahm_FindRecipe(r->id);
+        if (p != 0) {
+            r->progress = ahm_ResearchProgress((char *)c, p, &r->start);
+            if (!(r->progress <= 0.0f)) {
+                r->amount = r->start;
+                r->clock = ai_Time;
+                e->end = ai_Time;
+                gm_AddTime(&e->end, 0, 5, 0);
+                e->stage = 0;
+                sv_MoveToGroup((unsigned char *)c->bld, (short *)gm_Query((void *)c->bld->objList, 2, 6, 0, 0x24b), c->id,
+                               (char *)ev);
+                snd_PlayFavourComment();
+                return;
+            }
+        }
+    }
     he_FreeEvent((int *)ev);
 }
 
