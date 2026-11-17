@@ -202,7 +202,18 @@ void d3_MatTranspose(D3MATRIX *src, D3MATRIX *dst)
 }
 /* 0x454070, inverse of a 4x4 matrix (cofactor expansion; falls back to the transpose when |det| < 1e-7).
    Each m[k] is spelled either m[k] or src->_ij: the spelling changes VC6's operand order of the products
-   (matching trick, found by search; no meaning). */
+   (matching trick, found by search; no meaning).
+   @deep size queue: 1160 vs 1176 raw (padded 1168 vs 1184). The gap is the det statement: the original
+   multiplies each 2x2 minor CSE in the order mem * CSE (fld [m]; fmul st,st(k), never consuming the CSE),
+   so the 5 stack CSEs die at the statement end: fstp det; fstp st(0) x5; fld det (+14 bytes); ours
+   multiplies CSE * mem (fld st(k); fmul [m]) and the last uses become fxch / fsubp st(k) (no dead pops,
+   fst det). s3 tried: fabs(det) < 1e-07 (double) = no size change; inverted test (if >= ... else
+   transpose): worse; inv local: = control; o / m assignments as statements after det: = control / worse;
+   per-site operand order of the 12 member * (minor) products in det: swapping operands = control (all 12),
+   parenthesising the member (P0..P11): moves sizes (P3 1170, P6/P7/P9 1172 = the right padded size) but by
+   changing ranks elsewhere, not the det pops, 124-227 ins (kept none). Next: make the det products load
+   the member first (rank of the CSE below the member), e.g. the minors as named float locals or as
+   products written mem * minor everywhere in the later o[] statements (CSEs shared with o[0]). */
 
 void d3_MatInverse(D3MATRIX *src, D3MATRIX *dst)
 {

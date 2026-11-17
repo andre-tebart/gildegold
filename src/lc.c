@@ -14819,13 +14819,11 @@ int ai_DrawSettingGood(int bld)
     if (rec == 0)
         return 0;
     draw = (int)((float)ai_SettingRandom(rec) * 100.0f);
-    sum = 0;
-    pick = 0;
     i = 0;
+    pick = 0;
+    sum = 0;
     p = rec->slots;
-    do {
-        if (pick != 0)
-            return pick;
+    while (i < 7 && pick == 0) {
         if (p->good != 0) {
             sum += p->weight;
             if (p->weight != 0 && draw < sum)
@@ -14833,7 +14831,7 @@ int ai_DrawSettingGood(int bld)
         }
         i++;
         p++;
-    } while (i < 7);
+    }
     return pick;
 }
 
