@@ -3475,7 +3475,7 @@ exe	0x00537de0	main_StartGame	main	byte	readable
 exe	0x00537f40	main_EndGame	main	byte	readable		
 exe	0x00538140	main_RundenBeginn	main	byte	readable		
 exe	0x005384e0	main_EndRound	main	byte	readable		
-exe	0x00539620	main_ReplaceFigure	main	shape	readable		
+exe	0x00539620	main_ReplaceFigure	main	byte	readable		
 exe	0x00539870	main_RoundReport	main	shape	readable		
 exe	0x0053a250	main_UpdateFigure	main	shape	readable		
 exe	0x0053a450	main_UpdateFigures	main	byte	readable		
@@ -3708,7 +3708,7 @@ exe	0x00556dc0	he_AllocCartRepair	he	byte	readable
 exe	0x00556ed0	he_RunCartRepair	he	byte	readable		
 exe	0x00557160	he_AllocMessageBox	he	byte	readable		
 exe	0x00557190	he_RunMessageBox	he	draft	readable	deep	
-exe	0x005578a0	he_RunSlotOrder	he	shape	readable		
+exe	0x005578a0	he_RunSlotOrder	he	byte	readable		
 exe	0x00557b30	he_AllocSlotOrderStore	he	byte	readable		
 exe	0x00557b70	he_RunStoreExtension	he	shape	readable		
 exe	0x00557d70	he_AllocHerbGathering	he	byte	readable		
@@ -3727,7 +3727,7 @@ exe	0x0055a5f0	he_AllocBrawl	he	byte	readable
 exe	0x0055a730	he_RunBrawl	he	draft	readable	deep	
 exe	0x0055af70	he_AllocTheft	he	byte	readable		
 exe	0x0055b140	he_RunTheft	he	byte	readable		
-exe	0x0055b3e0	he_AllocRepair	he	draft	readable	deep	
+exe	0x0055b3e0	he_AllocRepair	he	byte	readable		
 exe	0x0055b530	he_RunRepair	he	byte	readable		
 exe	0x0055b720	he_AllocUpgrade	he	byte	readable		
 exe	0x0055b830	he_RunUpgrade	he	byte	readable		
@@ -3865,7 +3865,7 @@ exe	0x0056fda0	he_RunHaunting	he	byte	readable
 exe	0x00570130	he_AllocDecay	he	byte	readable		
 exe	0x005702e0	he_RunDecay	he	draft	readable	deep	
 exe	0x005706e0	he_AllocPlunder	he	draft	readable	deep	
-exe	0x005707a0	he_RunPlunder	he	shape	readable		
+exe	0x005707a0	he_RunPlunder	he	byte	readable		
 exe	0x00570bf0	he_PlunderTakePrice	he	byte	readable		
 exe	0x00570c70	he_PlunderFailNews	he	byte	readable		
 exe	0x00570cc0	he_RunPlunderOffer	he	shape	readable		
@@ -4270,7 +4270,7 @@ exe	0x005a2b60	ai_ConfessionWindow	lc	byte	readable
 exe	0x005a2de0	ai_ConfessionListener	lc	byte	readable		
 exe	0x005a2e60	ai_SermonWindow	lc	draft	readable	deep	
 exe	0x005a36c0	ai_ProductionWriteContact	lc	byte	readable		
-exe	0x005a3810	ai_ChurchListener	lc	shape	readable		
+exe	0x005a3810	ai_ChurchListener	lc	byte	readable		
 exe	0x005a39b0	ai_ChurchContact	lc	byte	readable		
 exe	0x005a3a40	ai_DungeonPlanWindow	lc	byte	readable		
 exe	0x005a3b20	ai_DungeonContact	lc	byte	readable		
@@ -4302,7 +4302,7 @@ exe	0x005a6270	ai_WatchPlanWindow	lc	byte	readable
 exe	0x005a6480	ai_WatchPlanStart	lc	byte	readable		
 exe	0x005a64d0	ai_ArrestWindow	lc	byte	readable		
 exe	0x005a6720	ai_ArrestStart	lc	byte	readable		
-exe	0x005a67a0	ai_CityWatchListener	lc	shape	readable		
+exe	0x005a67a0	ai_CityWatchListener	lc	byte	readable		
 exe	0x005a6920	ai_GuildHallListener	lc	byte	readable		
 exe	0x005a6a90	ai_TrainingRoomListener	lc	byte	readable		
 exe	0x005a6b50	ai_FormatCityName	lcmap	byte	readable		
@@ -4531,7 +4531,7 @@ exe	0x005c9c50	ai_BlackmailContact	lcamt	shape	readable
 exe	0x005c9df0	ai_IntimidateWindow	lcamt	byte	readable		
 exe	0x005c9ff0	ai_IntimidateContact	lcamt	shape	readable		
 exe	0x005ca150	ai_LawPrivilegeWindow	lcamt	byte	readable		
-exe	0x005ca560	ai_DismissOfficeAsk	lcamt	shape	readable		
+exe	0x005ca560	ai_DismissOfficeAsk	lcamt	byte	readable		
 exe	0x005ca860	ai_MisappropriationWindow	lcamt	byte	readable		
 exe	0x005caab0	ai_BewitchWindow	lcamt	byte	readable		
 exe	0x005cacd0	ai_BewitchOrder	lcamt	shape	readable		
