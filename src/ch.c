@@ -2366,31 +2366,36 @@ void ch_ActAnimOnce(CHACTION *a)
         ch_RemoveAction(a);
 }
 /* 0x406e60, turn action: args[0] degrees (args[1]: relative to the z axis), plays "dreh_90_*" and turns
-   @deep size queue (exe line-up): 902 vs 915 (13 bytes short), all in the slot branch 0x406fc1..0x407081:
-   add eax,edx + four disp32 loads (+4), or dl,0x14 / or dl,8 unfolded (+3), keys[1].rot.z = dir.z copied
-   through edx after fchs; fstp dir.z (ours fst + fstp), -turn.x and angle - dir.y held on the x87 stack
-   until after the f arg copy (fxch; fstp rot.x; fstp rot.y). Tried this session (no gain): fr = &frames[n]
-   with fr[-1] x dir.z = -dir.z between the ors / at the end x rot.x early/mid/late (12 variants, 45-123
-   ins); float rx, ry block locals (or dir.x/dir.w) for the two held values (114-134, frame changes); no fr
-   (s->data->frames[..] at each use: 166; ch->slot direct: 249); fr = frames + n - 1 / + (n - 1): =
-   control; b8 = 1 between the ors as in the else block: 46, climb --ops move,swap --rounds 3 from it: 43
-   ins / 473 bytes (no layout change). dir.z = -dir.z between the ors does NOT stop the 0x1c fold (only a
-   store to f does, as b8 in the else block). prior: Read 0x406e60..0x4071f0 again; no meaning difference
-   (the proof's 'different conditions' at +0xf3 was the angle>=0.2 compare spelling). Kept: memset without
-   the redundant f.mid = 0 (the original never stores dword 1: 108 -> 88 ins), outer test as !(angle >=
-   0.2) (and eax,0x100/je as the original: 88 -> 84), and the store orders found by tryclimb.py
-   (deep-tools, dcp try hill climb): the else block (keys[0].time = 8 .. rot.y = angle, with f.w.c.b8 = 1
-   between the two b1 ors, which stops VC6 folding them into or 0x1c) now matches the original exactly;
-   slot block dir.y/dir.z/time/memset/b1/b1/b8/rot.x/zeros/rot.y/neg/rot.z (84 -> 43 ins). Tried without
-   gain: bitfield views of b1 (f04/f10/f08, mixes with u.c.b1, dword |= 0x1400: = control or worse),
-   f.u.all/f.mid/f.w.all field inits instead of memset (128-179), fr as frames + n - 1 (= control), fr =
-   &frames[n] with fr[-1] (gives the original'... */
+   @deep size queue: 909 vs 915 (6 short; was 902). s2 kept: D3ANIMFLAGS f with the engine idiom memset;
+   f.b[1] |= 0x14; f.b[8] |= 2; f.b[1] |= 8 (as d3t_MoveCameraPath/cm, unfolds or 0x14 / or 8 like the
+   original: CHKEYFLAGS cast dropped), and fr = &frames[nframes] with fr[-1] (the original's add eax,edx +
+   disp32 loads). Left (6 bytes): the original loads turn.z, turn.y, turn.x, time all before storing
+   dir.z/dir.y (ours: the dir.y store blocks the turn.z load, dir escaped via d3_DirToWorld), and keeps
+   dir.z in memory (fld; fchs; fstp dir.z; mov edx,[dir.z] -> rot.z) while -turn.x and angle-dir.y stay on
+   the x87 stack until after the f arg copy (fxch; fstp rot.x; fstp rot.y); ours fst dir.z + fstp rot.z
+   (dir.z#2 prio 1 -> stack). Tried s2 (no size change, all 909): block-local D3VECTOR/D3VECTOR4/scalar
+   ty,tz for the slot values (loads hoist as the original, but VC6 lifts both fields to x87: 75-100 ins),
+   block-local v for d3_DirToWorld (same), *(D3VECTOR*)&dir = fr[-1].turn (copies x: frame 0xdc), float rx,
+   ry locals x all 90 orders of rx/ry/dz/rot.z/rot.x/rot.y x 4 zero-block positions (best 52 ins, ry is
+   folded into its use, dz always fst), if (!args[1]) flipped (layout flips), climb move,swap 3 rounds (48
+   ins, no layout change). Mechanism to find: what keeps the slot-branch y/z values in memory but not
+   escaped (loads hoisted) - c2fpu: dir+8 piece 2447-2448 must get savings <= 0. Tool: scratch vsize.py
+   (raw size of a variant without applying) in the session scratchpad. prior: size queue (exe line-up): 902
+   vs 915 (13 bytes short), all in the slot branch 0x406fc1..0x407081: add eax,edx + four disp32 loads
+   (+4), or dl,0x14 / or dl,8 unfolded (+3), keys[1].rot.z = dir.z copied through edx after fchs; fstp
+   dir.z (ours fst + fstp), -turn.x and angle - dir.y held on the x87 stack until after the f arg copy
+   (fxch; fstp rot.x; fstp rot.y). Tried this session (no gain): fr = &frames[n] with fr[-1] x dir.z =
+   -dir.z between the ors / at the end x rot.x early/mid/late (12 variants, 45-123 ins); float rx, ry block
+   locals (or dir.x/dir.w) for the two held values (114-134, frame changes); no fr (s->data->frames[..] at
+   each use: 166; ch->slot direct: 249); fr = frames + n - 1 / + (n - 1): = control; b8 = 1 between the ors
+   as in the else block: 46, climb --ops move,swap --rounds 3 from it: 43 ins / 473 bytes (no layout
+   change). dir.z = -dir.z between the ors does NOT stop the ... */
 
 void ch_ActTurn(CHACTION *a)
 {
     CHARACTER *ch = a->ch;
     float angle;
-    CHKEYFLAGS f;
+    D3ANIMFLAGS f;
     D3ANIMSLOT *s;
     D3VECTOR4 dir;
     D3ANIMFRAME *fr;
@@ -2425,15 +2430,15 @@ void ch_ActTurn(CHACTION *a)
         a->u.turn.started = 1;
         if (ch->slot) {
             s = ch->slot;
-            fr = &s->data->frames[s->data->nframes - 1];
-            dir.y = fr->turn.y;
-            dir.z = fr->turn.z;
-            keys[0].time = fr->time - 30;
+            fr = &s->data->frames[s->data->nframes];
+            dir.y = fr[-1].turn.y;
+            dir.z = fr[-1].turn.z;
+            keys[0].time = fr[-1].time - 30;
             memset(&f, 0, sizeof(f));
-            f.u.c.b1 |= 0x14;
-            f.u.c.b1 |= 8;
-            f.w.c.b8 = 1;
-            keys[1].rot.x = -fr->turn.x;
+            f.b[1] |= 0x14;
+            f.b[8] |= 2;
+            f.b[1] |= 8;
+            keys[1].rot.x = -fr[-1].turn.x;
             keys[0].rot.x = 0.0f;
             keys[0].rot.y = 0.0f;
             keys[0].rot.z = 0.0f;
@@ -2446,13 +2451,13 @@ void ch_ActTurn(CHACTION *a)
             keys[1].rot.y = angle - dir.y;
             dir.z = -dir.z;
             keys[1].rot.z = dir.z;
-            ch->turnAnim = d3anim_CreatePathK(a->ch->obj, f, 2, keys);
+            ch->turnAnim = d3anim_CreatePath(a->ch->obj, f, 2, keys);
         } else {
             keys[0].time = 8;
             memset(&f, 0, sizeof(f));
-            f.u.c.b1 |= 0x14;
-            f.w.c.b8 = 1;
-            f.u.c.b1 |= 8;
+            f.b[1] |= 0x14;
+            f.b[8] |= 2;
+            f.b[1] |= 8;
             keys[0].rot.x = 0.0f;
             keys[0].rot.y = 0.0f;
             keys[0].rot.z = 0.0f;
@@ -2465,7 +2470,7 @@ void ch_ActTurn(CHACTION *a)
             keys[1].pos.y = 0.0f;
             keys[1].pos.z = 0.0f;
             keys[1].rot.y = angle;
-            ch->turnAnim = d3anim_CreatePathK(a->ch->obj, f, 2, keys);
+            ch->turnAnim = d3anim_CreatePath(a->ch->obj, f, 2, keys);
         }
         return;
     }
