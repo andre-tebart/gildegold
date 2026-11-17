@@ -14712,14 +14712,27 @@ int cm_EndWedding(int *s)
    "KIRCHE_HOCHZEIT.ed3", the track "Hochzeit", the sample bank "ADDON\\HOCHZEIT_NEU.sbf", the scenes hochzeit-create (the
    names "a b 1") / -intro and the speeches -reden1 .. -reden4 with their texts 0x1aa9 .. 0x1aad and voices, the pauses
    between; st holds the scene, the view, the bank and the voice for cm_EndWedding. A click ends it at once through
-   cm_EndWedding (its result returned); 0 when one of the couple is not found */
+   cm_EndWedding (its result returned); 0 when one of the couple is not found
+   @deep size queue s11: 216 -> 12 ins (raw 1831 -> 1827 vs 1817). Kept: the name records as GMHEAD
+   pointers with ->name in the sprintf args (the original adds the +4 after both calls, the head of a in
+   ebx), the sex test as if (a->sex == 0) .. else { swap; .. } (the original falls into the a-first
+   sprintf), the swap as t = b; b = a; a = t (mov ecx,edi; mov edi,esi; mov esi,ecx). Left (tail 12, 10
+   bytes): the two guards (a / b not found) jump (je) straight to the final exit (eax is the 0 the find
+   returned) in the original; ours inverts them into jne + an own epilogue copy each. Tried, no lever (=
+   control): return (int)a / (int)b, return r = 0, the guard as if/else, WED_STEP / WED_WAIT as r = ..; if
+   (r != 0) return r, r = cm_EndWedding(st); return r. Worse: one || guard with the assignments in the
+   condition (draft 5: one trailing xor eax,eax return block), the whole body nested under if (a) { b = ..;
+   if (b) {..} } return 0 (draft 5, same block), b = 0; if (a) b = find; if (b == 0) return 0 (draft 7: the
+   first guard right, the second still copied), r = 0 + one return r (draft 145, r in a slot). Next: c2tail
+   --tries on the guard blocks; why the two return-0 blocks are laid behind their tests (walk) and copied,
+   while the steps' return r blocks thread to the exit. */
 
 int cm_RunWedding(G28REC *m)
 {
     int st[4];
     char buf[0x100];
     AICHAR *a, *b, *t;
-    char *na, *nb;
+    GMHEAD *ha, *hb;
     int r;
 
     a = (AICHAR *)gm_FindChar(m->members[0]);
@@ -14736,15 +14749,16 @@ int cm_RunWedding(G28REC *m)
     d2_CutsceneActive = 1;
     cm_SendSetField(a->netId, 0x1c8, 4, 0, 0x40000);
     cm_SendSetField(b->netId, 0x1c8, 4, 0, 0x40000);
-    na = (char *)gm_CharNameRecord(a->id) + 4;
-    nb = (char *)gm_CharNameRecord(b->id) + 4;
-    if (a->sex != 0) {
-        t = a;
-        a = b;
-        b = t;
-        sprintf(buf, "%s %s %i", nb, na, 1);
-    } else
-        sprintf(buf, "%s %s %i", na, nb, 1);
+    ha = (GMHEAD *)gm_CharNameRecord(a->id);
+    hb = (GMHEAD *)gm_CharNameRecord(b->id);
+    if (a->sex == 0)
+        sprintf(buf, "%s %s %i", ha->name, hb->name, 1);
+    else {
+        t = b;
+        b = a;
+        a = t;
+        sprintf(buf, "%s %s %i", hb->name, ha->name, 1);
+    }
     st[2] = cm_LoadVoiceBank("ADDON\\HOCHZEIT_NEU.sbf", 0);
     cm_LoadEventScene("KIRCHE_HOCHZEIT.ed3");
     cm_PlaySpecialTrack("cd2\\Hochzeit.mp3");
