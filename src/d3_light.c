@@ -771,5 +771,9 @@ void d3_ShadeReset(void)
     d3_LightKeysCulled = 0;
     d3_LightGeneration = 0;
 }
+unsigned int d3_LightKeyBudgetCulled = 128;  /* 0x5fcc6c, the per-frame light key budget of the culled lights (d3_ShadeInit) */
+unsigned int d3_LightKeyBudgetVisible = 512;  /* 0x5fcc70, the same for the visible lights */
+float d3if_Gray = 200.0f;  /* 0x5fcc74, 0.3 r + 0.59 g + 0.11 b of the ambient colour */
+D3VECTOR d3_AmbientColor = {200.0f, 200.0f, 200.0f};  /* 0x5fcc78, the ambient colour (r, g, b) */
 float d3_LightRadiusMargin = 0;  /* 0x633b18, added to the mesh radius for the light reach:
                                                the matrix z offset (m->_43) or 0 */

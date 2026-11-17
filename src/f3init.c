@@ -1725,8 +1725,6 @@ void init_OpenBuilding(INIT_BLD *b)
 
 
 extern char *ai_Blds;              /* 0x889f74, the buildings (0xa9 bytes each, 0x100) */
-unsigned int d3_LightKeyBudgetCulled = 128;  /* 0x5fcc6c */
-unsigned int d3_LightKeyBudgetVisible = 512;  /* 0x5fcc70 */
 unsigned char init_Detail = 2;  /* 0x61adf8, the detail level of the scene (4 = high / 2 / 1 = low, a byte) */
 float init_SoundVolume = 0.699999988f;  /* 0x61adfc, 0.7f: the volume factor of a started town sound ( */
 int init_ShopScript = -1;  /* 0x61ae00, the handle of the shopping script running in the town scene (-1 = none; */
