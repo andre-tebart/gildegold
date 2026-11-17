@@ -71,6 +71,9 @@ Where the pushes and pops sit, how many epilogue copies there are, shared agains
 
 ### Pushes on the wrong side of an early exit
 
+- **Callee-saved pushes after the early guard, ours at entry, a `return pick;` inside a search loop**: the loop
+  runs `while (i < 7 && pick == 0)` with one final return (ai_DrawSettingGood byte; the init order i, pick, sum
+  decides ebx / ebp / edi).
 - **An early `je` straight to the final `pop esi; ret`, ours its own epilogue copy**: one final return; the loop
   under `if (first != end)`, the in-loop `return 0` as `ret = 0; break;` (cm_SendGroupState).
 - **Pushes at entry in ours, after a guard in the original**: count the `return`s first. Guards (`if (!p) return
@@ -171,6 +174,9 @@ Where the pushes and pops sit, how many epilogue copies there are, shared agains
 
 ### Shared against separate failure blocks
 
+- **One `or eax,-1` failure block after the success epilogue (ours an inline copy per failed lookup)**: both
+  lookups in one condition, `if (a(..) && b(..)) { ..; return send(..); } return -1;` (cm_OrderToBestCell byte;
+  the success path returns the last call's eax).
 - **`mov eax,edi` (a zero kept in a callee-saved register) at the failure return, the failure arms' `call
   evt_Error` cross-jumped but its `add esp,0xc` NOT merged with the next call's**: one `int r = 0;` and one final
   `return r;`; the failure arms each call the error function and JOIN before the common `evt_Stop(sc);` (the join
@@ -405,6 +411,10 @@ Which arm is inline, jumps into another arm, threaded and redundant tests, `&&` 
 
 ### How VC6 orders blocks and merges tails (c2.dll)
 
+- **Identical statements of both arms sunk into one shared IL block before scheduling** (c2dag shows a block
+  with in-edges from both arms: the flag ors, zero stores and the call of ch_ActTurn's two branches): the
+  arm's own statement order decides whether they can sink; one statement placed among them (keys[0].time
+  after the ors) kept the arms separate (909 -> 841 bytes merged, 915 with the original's order).
 - **A failure tail with its constant scheduled among the pops (`pop edi; pop esi; pop ebp; or eax,-1; pop
   ebx`), an early return jumping to the success return's pops** (ours: `or eax,-1` before the pops, the early
   exit joining there; `0 ins / N bytes`): the success return falls into the exit label, so the walk must finish
@@ -614,6 +624,9 @@ copied back into short predecessors only after all of this.
 
 ### setcc, defaults, conditional assignments
 
+- **Every return tail `mov edi,K; xor edx,edx; cmp edi,eax; setge dl` (one per case)**: one limit set per case
+  in an if / else-if chain and one `return lim >= r;` (VC6 duplicates the short return block), not `return r <
+  2;` per case (gm_BuildingRankGate byte).
 - **`neg; sbb; and ecx,K; add ecx,B; add ecx,edx` against our `lea eax,[ecx+edx+B]`**: one ternary of two
   constants plus the rest, `(c ? B + K : B) + x`; `(c ? K : 0) + B + x` in any order folds into the lea
   (ai_GraveyardMessage byte).
@@ -1895,6 +1908,10 @@ Frame size, slot order, holes, shared slots, dead parameter slots, block-scoped 
 
 ### Dead parameter slots
 
+- **Out-arguments of a lookup at [esp+0x24]/[esp+0x28] (the parameters' slots), ours `&param` reused as the
+  outputs**: they were own locals VC6 packed into the dead parameter slots; with the parameters no longer
+  address-taken they load straight into their registers (ai_CartAtBuilding `gm_FindById(&hitObj, &hitBld, ..)`,
+  195 -> 191 bytes, byte).
 - **A loop counter's `fild` temp in the second dead parameter slot, ours in the first (with the clamped value
   `kind`)**: the loop-invariant factor written inside the loop (`a = (float)i * ((float)kind * 0.25f + 1.0f);`):
   VC6 hoists it, but kind's lifetime then spans the loop and i cannot share its slot; a `t` computed before the
@@ -2531,6 +2548,9 @@ How arguments are pushed, a call written in both arms, parameter and return type
   changes the caller's code (64 of d3fl_UpdateTiles' differing bytes). Grep build logs for C4013.
 
 ### Call written in both arms of an if/else
+- **A call and the shared argument pushes hoisted above the test that picks the action code**: the shared
+  argument call written inline in both calls (`ch_AddAction(p, 0x2d, x, z, d3t_SceneIndex(p->scene))` in each
+  arm); a local `sc = d3t_SceneIndex(..)` before the test keeps the pushes in the arms (cm_ExObjCell byte).
 - **Argument pushes before the test that picks one argument** (`push f; push size; push 1; test flip; jne`, arms
   only computing the row index, one shared `imul; lea; push; call`): the call in each arm, `if (flip == 0)
   fread(dst + i * w * 3, ..); else fread(dst + (h - i - 1) * w * 3, ..);`. A ternary in the argument is evaluated
@@ -2850,6 +2870,11 @@ the stack at every instruction.
 
 ### Values kept on the FPU vs stored and reloaded
 
+- **Two results held on the x87 stack until after a call's argument copy (`fxch; fstp [key.rot.x] .. fstp
+  [key.rot.y]` at the end), a third copied through memory (`fstp v.z; mov edx,[v.z]`)**: the values were fields
+  of a block-local D3VECTOR4 copied field by field into the key at the end (`v.y = angle - v.y; v.z = -v.z;
+  keys[1].rot.x = v.x; ..`): field webs are candidates, v.z#2 gets no fit; a function-scope vector whose address
+  went to a call earlier also orders the field loads after its stores (ch_ActTurn 909 -> 915 = original).
 - **`fild n; fmul st,st(1); fidiv d; fstp qword [tmp]; fstp st(0); call ..; fadd; fcomp [tmp]`**: the product is
   the LEFT operand of a compare against a call: `if (c * share / d > util_RandomF() + 0.15)` (evaluated first,
   spilled as a double over the call, share kept on the FPU). A `double limit` local, casts, both orders of the
@@ -3122,6 +3147,9 @@ the stack at every instruction.
 
 ### Bitfields and byte read-modify-write
 
+- **An inline accessor function for a bitfield (`(*d3_ObjBits(o)).top = ..`) moves the allocation**: the
+  original wrote `obj->bits.top = ..` directly (d3_AppendSibling byte, with a `last` cursor instead of the
+  parameter as the loop variable).
 - **`or BYTE PTR [x],2` (byte RMW)**: `unsigned char` bitfields; word ops narrowed to a byte (`or/and BYTE PTR
   [p+1],imm` on a flag word) are `unsigned short` bitfields; `unsigned int` ones give dword ops; plain
   `unsigned char` flags give load/op/store. A word bitfield `&= ~8` is narrowed to `and BYTE PTR`. CHARACTER+0x8c
