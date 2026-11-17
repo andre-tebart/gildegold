@@ -31,7 +31,6 @@
 #include "d3.h"
 
 int rt_MarkGroup = -1;                  /* 0x602a90 */
-int ai_MapScrollEnabled = 1;  /* 0x62c26c */
 extern RTMARK rt_Marks[8];
 /* txt_InfoPanelButtons: view of txt_Ptrs (build/mk_txt_views.py) */
 /* txt_PanelBtnCart: view of txt_Ptrs (build/mk_txt_views.py) */
@@ -53,7 +52,6 @@ struct D2SURF *rt_MapSaved = 0;  /* 0x6f074c, rt_EditCartRoute's copy of rt_MapS
 int rt_MarkCount = 0;  /* 0x6f0750, the marks used */
 int rt_PickedBuilding = 0;  /* 0x6f0754, the building shown */
 RTPOINT * rt_EditRoute = 0;  /* 0x6f0758, the route being edited */
-struct D2SURF *rt_MapSurface = 0;  /* 0x6f26ac, the screen surface */
 /* ai_Unk7e422c: view of ai_PlayerSlots (tools/data_views.py) */
 RTMARK rt_Marks[8] = {0};  /* 0xf812a0 */
 

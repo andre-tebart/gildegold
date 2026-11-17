@@ -4309,7 +4309,7 @@ exe	0x005a6b70	ai_MapCellToScreen	lc	b3aa21dd9753abb3	no	shape	sweep control=sha
 exe	0x005a6c40	ai_PlaceMapControls	lc	4b250049dce5b393	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005a6cb0	ai_BuildTownMap	lc	9033cb73e186a9a1	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x005a78a0	ai_OpenTownMap	lc	30bc1fd419c0218a	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x005a79e0	ai_DragTownMap	lc	d237f887976f6617	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
+exe	0x005a79e0	ai_DragTownMap	lcmap	d237f887976f6617	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=379	db1d26fd81240c3a
 exe	0x005a7bc0	ai_ScrollTownMap	lc	ef55dc5dac75a585	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005a7cd0	ai_UpdateTownMap	lc	691ce25855671f03	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	e059ae972ded539e
 exe	0x005a82f0	ai_CloseMapWindow	lc	fb738d6c7f500f2e	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
@@ -4319,7 +4319,7 @@ exe	0x005a83b0	ai_FillSettingWeights	lc	e7e46a5c6f1bd16d	no	byte	control=byte p1
 exe	0x005a84b0	ai_FindSetting	lc	2f16967069497307	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005a84d0	ai_FindItemGroup	lc	5e2d844ba6127cd7	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005a8540	ai_FindSettingSlots	lc	fc8bac007112cf5a	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x005a8560	ai_ProdSetting	lc	c051408b58e0c141	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
+exe	0x005a8560	ai_ProdSetting	lcmap	c051408b58e0c141	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=379	db1d26fd81240c3a
 exe	0x005a86c0	ai_FreeProdSetting	lc	19e2116c91d12c9a	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005a8710	ai_SetSettingWeight	lc	a6417f3bb28a1ead	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005a8850	ai_RefreshProdSetting	lc	748e1d801acd9e46	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
@@ -4337,9 +4337,9 @@ exe	0x005a8d00	ai_ShowTributeDelayedNews	lc	5fd0be718ebcee17	no	byte	control=byt
 exe	0x005a8d40	ai_ShowTributeCollectNews	lc	c0815c3af5fda3eb	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005a8d80	ai_ShowTributeClaimNews	lc	41c0b1b35977bebf	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005a8e10	ai_ShowTavernHelperNews	lc	c350ccbc7e0ab15c	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x005a8ee0	ai_ShowPartingNews	lc	d55dbe0063675c62	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
-exe	0x005a8f90	ai_ShowFeudNews	lc	0bd1d2e9c014bf96	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
-exe	0x005a9050	ai_ShowPartnerNews	lc	57a2815695248962	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
+exe	0x005a8ee0	ai_ShowPartingNews	lcmap	51763954917a41e9	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=379	db1d26fd81240c3a
+exe	0x005a8f90	ai_ShowFeudNews	lcmap	49be5e9be82b76a8	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=379	db1d26fd81240c3a
+exe	0x005a9050	ai_ShowPartnerNews	lcmap	2cddbeb2541271a5	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=379	db1d26fd81240c3a
 exe	0x005a9110	ai_ShowCharacterNews	lc	08d7e76e70e9a4db	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005a9170	ai_NotifyPlayerOfChar	lc	2b7876153bbf4da0	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005a91c0	ai_PlagueNews	lc	99e1cc2295e9e1ee	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	f7d41e6f0b56efc7

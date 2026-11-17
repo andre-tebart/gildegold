@@ -267,7 +267,7 @@ char *ai_FindCurseEvent(char *a);                              /* 0x5741d0, he.c
 int gm_CurseObjectCount(char *b);                            /* 0x50cfd0, f3gm.c: 2 + the objects 0x274 / 0x27e / 0x28e / 0x291 of the building (as poker.h) */
 int gm_CurseTargetCount(char *b);                                   /* 0x50d0b0, f3gm.c: counts from the objects 0x284 / 0x289 of the building */
 extern const int ai_CardBack;  /* 0x5ed1bc, poker.c: the picture offset of the card back (another unit's constant: the original loads it from memory) */
-extern const volatile unsigned __int64 gypsyFilter;  /* 0x5eed68, menu.c: the filter of the gypsy windows (flags, kind of ai_PickActionBuilding), read from memory as two dwords */
+extern const volatile unsigned __int64 gypsyFilter;  /* 0x5eed68, lcmap.c: the filter of the gypsy windows (flags, kind of ai_PickActionBuilding), read from memory as two dwords */
 extern const struct D3VECTOR4 d3_ZAxis;  /* 0x5ebb74, (0, 0, 1), d3_vec.c */
 int ai_ShotHitsGround(struct D3SM *map, D3VECTOR *from, D3VECTOR *to, int px, int pz, int *npx, int *npz);  /* 0x5dcf00, 1 when the move from -> to of a flight step hits the ground (to is moved to the hit) */
 int d2_WinOpenSlider(int x, int y, int len, int p4, int p5, int pic, unsigned int flags, int win); /* 0x46a960, d2.c: a slider in a window */
