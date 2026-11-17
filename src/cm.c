@@ -13890,16 +13890,29 @@ int cm_DuelVariant(int n)
    the damage 5 + (0..15) when the other won the roll round, else 15 + (0..30) (* 0.75 when the target has the item 0x2b5), added
    to the target's score byte cm_DuelScore[0] / [1] and shown (cm_ShowDamage); the shot sound, then the target sinks
    (cm_DuelSinkDown: the duel is over) or, on a hit, bleeds, staggers and loses the damage from v024 and its health (text
-   0x1102 + variant), on a miss dodges (text 0x1109 + variant) */
+   0x1102 + variant), on a miss dodges (text 0x1109 + variant)
+   @deep size queue s11: raw 679 vs 689 (10 short). Kept: d2_SetForm(cm_TextBox, 0) before sh / tg are read
+   from the action (the original loads a->shot after the call): 78 -> 70 ins. Left: (1) block layout: the
+   original lays out [hit tests][0xf arm, jmp J][miss: hit = dmg = 0][sample .. returns][0x1e arm][J: the
+   0x2b5 test .. cm_ShowDamage, jmp back to the sample]; ours puts the 0x1e arm and J right after the 0xf
+   arm (the short / near jumps are the 10 bytes). By c2's reverse-postorder walk the original's order needs
+   J reached only after the sample's subtree; no text order gave it. Tried (no lever or worse): the roll
+   test as ternary / negated (= control), dmg preset + if (draft 72), the roll as else-if (78), the rand
+   test negated with the miss first (>= : draft 86; !(<): draft 76), hit / dmg zeroed before the test
+   (draft 95), sh / tg read order (= same). climb --rounds 2 from here: only paren (tg->f01c) at the b line
+   (66 ins; the original's fld f01c; fimul dmg there) - a paren trick, not applied. (2) acc's fstp after
+   the 0x16f pushes in the original. */
 
 void cm_DuelShotAction(CHACTION *a)
 {
-    AICHAR *sh = a->shot.shooter;
-    AICHAR *tg = a->shot.target;
+    AICHAR *sh;
+    AICHAR *tg;
     float acc, b;
     int hit, dmg, n;
 
     d2_SetForm(cm_TextBox, 0);
+    sh = a->shot.shooter;
+    tg = a->shot.target;
     acc = (float)gm_GetSkill((char *)sh, 3);
     gm_GetSkill((char *)tg, 3);
     acc = (float)(acc * 0.8);
