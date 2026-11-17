@@ -844,7 +844,7 @@ exe	0x00446180	d3fl_Prerender	d3_fl	shape	readable
 exe	0x004463b0	map_Pick	d3_fl	byte	readable		
 exe	0x00446750	map_PickScreen	d3_fl	byte	readable		
 exe	0x00446910	map_Region	d3_fl	byte	readable		
-exe	0x00446990	d3fl_FarDist	d3_fl	shape	readable		
+exe	0x00446990	d3fl_FarDist	d3_fl	shape	readable	deep	
 exe	0x00446dc0	d3fl_SetShift	d3_fl	byte	readable		
 exe	0x00446e10	d3_CreateObject	d3_interface	byte	readable		
 exe	0x00446f30	d3if_SelectTextureSet	d3_interface	byte	readable		
@@ -1277,7 +1277,7 @@ exe	0x0046cd80	d2_CreatePicObj	d2	byte	readable
 exe	0x0046cda0	d2_MoveObj	d2	byte	readable		
 exe	0x0046cfd0	d2_ShowPicture	d2	byte	readable		
 exe	0x0046d040	d2_DrawPic	d2	shape	readable	deep	
-exe	0x0046d220	d2_DrawObjCaption	d2	draft	readable	deep	
+exe	0x0046d220	d2_DrawObjCaption	d2	byte	readable		
 exe	0x0046d3d0	d2_DrawObjects	d2	draft	readable	deep	
 exe	0x0046e150	d2_DrawAll	d2	byte	readable		
 exe	0x0046e190	d2_FindWindowAt	d2	byte	readable		
@@ -1452,7 +1452,7 @@ exe	0x0047dd30	ai_WorkLoad	ai	byte	readable
 exe	0x0047dd70	ai_WorksForMaster	ai	byte	readable		
 exe	0x0047dd90	ai_IsLocalMaster	ai	byte	readable		
 exe	0x0047ddf0	ai_FindPartner	ai	draft	readable	deep	
-exe	0x0047e360	ai_MasterUpdate	ai	draft	readable	deep	
+exe	0x0047e360	ai_MasterUpdate	ai	byte	readable		
 exe	0x0047e560	ai_UpdateCharacters	ai	byte	readable		
 exe	0x0047e7f0	ai_CanAct	ai	byte	readable		
 exe	0x0047e840	ai_IsLocalWorker	ai	byte	readable		
@@ -1474,7 +1474,7 @@ exe	0x00483d30	ai_StartBuildingWork	ai	byte	readable
 exe	0x00483ee0	ai_EndWorkerPose	ai	byte	readable		
 exe	0x00483fc0	ai_EvaluateProductionGraveyard	ai	draft	readable	deep	
 exe	0x00484a60	ai_EvaluateProductionGypsies	ai	draft	readable	deep	
-exe	0x004854f0	ai_UpdateProduction	ai	shape	readable	deep	
+exe	0x004854f0	ai_UpdateProduction	ai	byte	readable		
 exe	0x00486190	ai_FillSlotTable	ai	draft	readable	deep	
 exe	0x004864b0	ai_BuildTradeOffers	ai	draft	readable	deep	
 exe	0x00487040	ai_CalcEntryCost	ai	byte	readable		
@@ -2557,7 +2557,7 @@ exe	0x004e2d40	cm_WaitEventFull	cm	byte	readable
 exe	0x004e2d90	cm_StopScript	cm	byte	readable		
 exe	0x004e2dc0	cm_StopGroupScripts	cm	byte	readable		
 exe	0x004e2e00	cm_WaitGroupScripts	cm	byte	readable		
-exe	0x004e2e60	cm_LoadEventScene	cm	shape	readable		
+exe	0x004e2e60	cm_LoadEventScene	cm	byte	readable		
 exe	0x004e3060	cm_FadeToBlack	cm	byte	readable		
 exe	0x004e30c0	cm_LeaveEventScene	cm	byte	readable		
 exe	0x004e3210	cm_SceneTick	cm	byte	readable		
@@ -3301,7 +3301,7 @@ exe	0x00520fe0	sv_CheckCharacterFlag	sv	byte	readable
 exe	0x00521040	sv_CheckGoodAmount	sv	byte	readable		
 exe	0x005210a0	sv_CheckStock	sv	byte	readable		
 exe	0x00521150	sv_MessageBox	sv	shape	readable	deep	
-exe	0x00521410	sv_MessageBoxGreen	sv	shape	readable		
+exe	0x00521410	sv_MessageBoxGreen	sv	shape	readable	deep	
 exe	0x005216a0	sv_MessageBoxYesNo	sv	byte	readable		
 exe	0x00521900	sv_OpenMessageBox	sv	byte	readable		
 exe	0x00521960	sv_SelectPanelObject	sv	byte	readable		
@@ -4367,7 +4367,7 @@ exe	0x005a9d00	ai_DomizilMessageAge	lc	byte	readable
 exe	0x005a9d60	ai_DomizilMessageTask	lc	byte	readable		
 exe	0x005a9dd0	ai_DomizilMessagePlace	lc	byte	readable		
 exe	0x005a9e40	ai_DomizilMessage12	lc	byte	readable		
-exe	0x005a9e90	ai_RandomDomizilGoodNotIn	lc	draft	readable	deep	
+exe	0x005a9e90	ai_RandomDomizilGoodNotIn	lc	shape	readable	deep	
 exe	0x005a9f10	ai_DomizilGoodInRange	lc	shape	readable		
 exe	0x005a9f80	ai_AskBonusAmount	lc	shape	readable		
 exe	0x005aa0d0	ai_CreatePersonnelRow	lc	byte	readable		
