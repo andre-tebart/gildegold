@@ -9,6 +9,9 @@
 
 #include <stdio.h>
 
+#define HAVE_STRERROR  /* zstrerror is strerror: gzerror (removed by /OPT:REF) references it, which links LIBC's
+                         strerror.obj / syserr.obj; the original holds syserr's _sys_errlist / _sys_nerr (.data
+                         0x630740..0x6307f8) and its strings (.rdata 0x5ef274..0x5ef5a0) with no reader */
 #include "zutil.h"
 
 struct internal_state {int dummy;}; /* for buggy compilers */
