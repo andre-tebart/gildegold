@@ -4596,7 +4596,7 @@ exe	0x005d2bc0	ai_UseGoodFrameChar2	lc	c7bd9d6f715eba43	no	byte	control=byte p1=
 exe	0x005d2e80	ai_UseGoodHeatBuilding	lc	59c638fe9044181f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005d2f20	ai_UseEventGood	lc	c3dfe9fe757f6669	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
 exe	0x005d2f90	ai_UseGoodStaffBonus	lc	6ded74bb6fc7200a	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x005d3030	ai_UseGoodPettyLoss	lc	f6fd5e9f7ea2d901	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
+exe	0x005d3030	ai_UseGoodPettyLoss	lcamt	f6fd5e9f7ea2d901	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	262f0dc6966d9a44
 exe	0x005d31c0	ai_UseGoodSkillBonus	lc	893f8fe9ad763092	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005d3270	ai_UseGoodDistrust	lc	95b58f74f272610c	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x005d33b0	ai_ListFiles	unk_5d33b0	cba86f8009092a17	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
