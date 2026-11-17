@@ -4366,9 +4366,9 @@ exe	0x005a9d00	ai_DomizilMessageAge	lc	e68fa5c741c51593	no	byte	control=byte p1=
 exe	0x005a9d60	ai_DomizilMessageTask	lc	97a7602571084c79	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005a9dd0	ai_DomizilMessagePlace	lc	5e6da885bee334d5	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005a9e40	ai_DomizilMessage12	lc	ded19819b36cde1c	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x005a9e90	ai_RandomDomizilGoodNotIn	lc	893346dc05a77c10	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	24f8e327f4310d51
-exe	0x005a9f10	ai_DomizilGoodInRange	lc	7f34b8890e372f02	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
-exe	0x005a9f80	ai_AskBonusAmount	lc	556b76d56b85817b	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
+exe	0x005a9e90	ai_RandomDomizilGoodNotIn	lcdom	893346dc05a77c10	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=568	c3097bbae009c1dc
+exe	0x005a9f10	ai_DomizilGoodInRange	lcdom	ce3106491c0c2aa2	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=568	c3097bbae009c1dc
+exe	0x005a9f80	ai_AskBonusAmount	lcdom	556b76d56b85817b	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=568	c3097bbae009c1dc
 exe	0x005aa0d0	ai_CreatePersonnelRow	lc	5077cbd91200a8de	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
 exe	0x005aa1f0	ai_FillPersonnelRow	lc	de5770a7068e8d74	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005aa4b0	ai_DomizilFreeRow	lc	80029a0153fb85e3	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
@@ -4377,14 +4377,14 @@ exe	0x005aa700	ai_ShowBldCarts	lc	3370230506a06a20	no	byte	control=byte p1=byte 
 exe	0x005aa9a0	ai_UpdateBldCarts	lc	ca66c69e4fb9d5c7	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x005aab80	ai_PersonnelBook	lc	856e8569f8217eb9	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x005ac110	ai_MercenaryBook	lc	4fbe9cf788ab5242	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
-exe	0x005ad000	ai_AskHelperBonus	lc	8d2ed110a20a2275	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
+exe	0x005ad000	ai_AskHelperBonus	lcdom	8d2ed110a20a2275	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=568	c3097bbae009c1dc
 exe	0x005ad150	ai_HelperBook	lc	a681d7ba348c4a09	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
-exe	0x005ae240	ai_BuyCartWindow	lc	385cb7de9499cc06	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
+exe	0x005ae240	ai_BuyCartWindow	lcdom	385cb7de9499cc06	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=568	c3097bbae009c1dc
 exe	0x005ae570	ai_SellCarts	lc	d4345d3370cea5a0	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005ae6b0	ai_SendTransportOrder	lc	270787c6f2527cdb	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005ae870	ai_TransportOrderDue	lc	92c7371ec4325104	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005ae8e0	ai_CartAtBuilding	lc	53f37101b811b72d	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	836f5b94b9fc0a4d
-exe	0x005ae9a0	ai_TransportFromLager	lc	75179f0f8df74a61	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
+exe	0x005ae9a0	ai_TransportFromLager	lcdom	cca88931eb055638	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=568	c3097bbae009c1dc
 exe	0x005af010	ai_TransportGoodsTotal	lc	198836392589a8f2	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x005af1a0	ai_OpenTransport	lc	012290b42a9c06a0	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005af1b0	ai_OpenTransportSell	lc	5fa5840c2a26e838	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
@@ -4392,7 +4392,7 @@ exe	0x005af1c0	ai_OpenTransportBuy	lc	6148597419d04bda	no	byte	control=byte p1=b
 exe	0x005af1d0	ai_TransportWindow	lc	41ef477cec79ce17	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x005b2090	ai_LoadTownMap	lc	eaaccae439f4ec74	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
 exe	0x005b2180	ai_MapPick	lc	c644f952ecb14b1e	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x005b2530	ai_NewStorageSlotWindow	lc	7acd5a8aa20aba74	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
+exe	0x005b2530	ai_NewStorageSlotWindow	lcdom	7acd5a8aa20aba74	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=568	c3097bbae009c1dc
 exe	0x005b26b0	ai_StorageWindow	lc	6ca1eb8abef5e8be	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x005b3130	ai_TalentWindow	lc	a2e5c76d50566d63	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
 exe	0x005b3630	ai_SabotageCallback	lc	0500bbab99563ca7	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
@@ -4415,7 +4415,7 @@ exe	0x005b6b20	ai_RenovationWindow	lc	e62f423d6b7b1d72	no	draft	control=draft p1
 exe	0x005b6eb0	ai_WithdrawSaleWindow	lc	8ea250e94cf9f842	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005b6fe0	ai_RoomUpgradeWindow	lc	f31f8bf8edc16c60	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x005b7690	ai_UpgradeBuilding	lc	38fac143ff8399c6	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
-exe	0x005b7b80	ai_BuyBuildingOfferWindow	lc	0b77d45296ee39a3	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
+exe	0x005b7b80	ai_BuyBuildingOfferWindow	lcdom	0b77d45296ee39a3	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=568	c3097bbae009c1dc
 exe	0x005b7dd0	ai_TechEffectsWindow	lc	50b1a8184f0f9c2f	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x005b82a0	ai_FireFightingWindow	lc	339686a3f30644bf	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	65f3805095278c82
 exe	0x005b84f0	ai_BuildingWindow	lc	634b775723a4e1ee	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	

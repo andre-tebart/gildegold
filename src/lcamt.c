@@ -429,7 +429,6 @@ extern int di_MinY;
 extern int ai_MapScrollEnabled;
 extern D2VIEW d2_Views[];
 #include "am_types.h"
-extern GAPDATA gm_SpecialItemGroups[];
 extern GAPDATA full_data_62c284[];
 extern GAPDATA full_data_62c298[];
 extern char ch_EmptyName[1];
