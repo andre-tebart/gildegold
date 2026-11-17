@@ -413,6 +413,9 @@ Where the pushes and pops sit, how many epilogue copies there are, shared agains
 - **Tools**: tools/c2dag/vdiff.py; `dcp try` rows are unsorted and `best:` says "none closer" for fewer ins at a
   lower grade: read the `ins` column. For __stdcall pass `WinMain@16` to c2pass; flip.py then cannot find the source
   line (a copy with `(@\d+)?` in its PROC/ENDP regex works).
+- **One result variable for two pick paths**: a single failure block both paths reach (path 2 by `je`), 0 in a
+  callee-saved register from the entry and the result in another: `ret = 0;` at the top, `if (p != 0) { ret = 1;
+  .. }` after both paths, `return ret;` (ai_UseGoodHalveWorkerValue: padded size right, 56 -> 50).
 
 ## Branch layout, conditions, switches
 Which arm is inline, jumps into another arm, threaded and redundant tests, `&&` / `||` forms, compare operand order and jcc, `setne` against a branch, ternaries, switch dispatch and case order.
@@ -779,6 +782,9 @@ copied back into short predecessors only after all of this.
   pix[k * 3 + 2]` in a for loop (see d2_Convert16ToRgb), not a do-while with `pix += 3`; `pix = base; pix[(w * i +
   j) * 3 + 0..2]` gives `lea ecx,[ebp+eax*2+0x32]; add eax,ecx`.
 - **di_UpdateButtons**: `mov [g],0` means `mhold = 1` came first; `t = now; px = (volatile)x; py = (volatile)y;`.
+- **A shared mismatch block out of line after the returns** (every criterion's `jne` to one `xor cl,cl; jmp`):
+  `if (field == want) m = 1; else goto no;` per criterion; `if (field != want) goto no; m = 1;` puts the block
+  inline after the last test (gm_BuildNext 8 -> 2, size right).
 
 ## Loops and induction variables
 Rotation, test position, countdown, induction variables and strength reduction, pointer walk against index loop, bounds, search loops.
@@ -1759,6 +1765,11 @@ a stack slot is a split piece, and the piece's extent is decided by the rules be
   dead parameter slot are one source variable.
 - **`int btns[3]` declared in two blocks** (the frame loop read its own uninitialised copy; VC6 happened to share
   the slot): one array (ai_GypsyHelperWindow).
+- **A stepped field in a callee-saved register** (`mov edi,[esi+N]; inc edi; mov eax,edi; mov [esi+N],edi`, edi
+  pushed at the top): `h->entry++;` and the reads as `tab[h->entry]`, no `i = h->entry + 1` local (he_RunHint
+  byte). The local form keeps it in eax.
+- **n and max swapped between two callee-saved registers**: the one served first takes ebx; c2trace --prio shows
+  which block terms rank them (ai_FillLoversTab: memset's `max * 56` counts max twice).
 
 ## Stack frame and slots
 Frame size, slot order, holes, shared slots, dead parameter slots, block-scoped and address-taken locals.
@@ -3154,6 +3165,9 @@ the stack at every instruction.
   pushes, they may be the outer call's (0x4ad0a0); a `short` parameter cast through the K&R cast leaves upper bits
   (`imul cx,cx,10`); zeroed `int m[6]`: `memset(m, 0, 24)`; one shared `call` / `mov [g],eax` after if / else:
   calls in both branches (ternary: `mov eax,..; jb`); `while` over `ai_Unk5309a0(fn, 0xfd6c6)` tests first.
+- **A literal factor moves to the end of a product**: VC6 compiles `a * 1450.0f * r` as `a * r * 1450`; the
+  original's multiply by the literal first is its own statement (`f = a * 1450.0f; f = f * r + ..`), the same
+  code a named const gives (ai_CannonCamera; the .rdata order said literal).
 
 ## Types, widths, bitfields
 `movsx` / `movzx`, signedness, char and short locals, bitfields and byte read-modify-write, shifts, multiply and divide idioms, casts, unions.
@@ -3604,6 +3618,8 @@ the stack at every instruction.
   header work (0x4b0d40, 0x4b0fd0).
 - **0x18-byte record copy (rep movs 6 dwords) after a search**: two pointer locals `p1 = &amt_Table[i];
   p2 = &amt_Table[j];` (0x4e6c50, 60 -> 0); indexed `amt_Table[i].owner` recomputes lea/shl/lea per use.
+- **An inlined `repne scasb` twice in the original, once in ours**: `strlen(s)` written in each call, not a length
+  local (ai_BauplatzFilter byte; an older note had read it as an intrinsic question).
 
 ## Declaration set, headers, unit order
 Effects from outside the function's text: headers, a struct or extern that moves another function, callees defined above or below, unit boundaries.
@@ -3820,6 +3836,9 @@ Differences that looked like allocation and were a wrong field, index, constant,
 - **sbb / inc / xchg hunks after the last `ret`**: data (a 20-case switch table after `ret 4`); check the real end
   with dcp disasm. (err_ExceptionFilter 0x4215c0, ends 0x421c34)
 - **"Matched" names on swapped struct fields** (D3DCARDINFO, DIMOUSEST): the link gate finds them.
+- **A swapped argument pair against a K&R or loose prototype**: compare the push order of every call with a byte
+  twin of the same callee; `he_ShowNews(id, -1, 1, text, ..)` compiled with a warning and pushed the text as the int
+  (ai_QuarrelCallback). A word store 8 bytes off inside a filled record is another index (`ids[4]` for `ids[0]`).
 
 ## Method and tools
 How to work: variant rounds, the c2 tools, sweeps, what the tools' output means, when a result says nothing.
