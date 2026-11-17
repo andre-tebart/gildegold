@@ -8987,16 +8987,7 @@ int ai_AccusationWindow(AICHARREC *me, LCORDMSG *m)
    his crimes (0x60). A player gets the evidence book "privillegien\Beweise_Sichten" (one amount row per culprit,
    "%i (%i) %s", or the text 0x1741); a clicked row opens its accusation window (ai_AccuseWindow), whose result it
    returns (0x20 when none was opened); a right click closes it. The frame pump names ai_AccusationWindow as its
-   owner (the original's copy)
-   @deep Rewritten whole from the original 0x5ce1a0..0x5ce4a7 (was a skeleton) as the twin of
-   ai_AccusationWindow: the AI branch (office 0xd refusals, gm_FindChar, gv_HeldCrimesOf, ai_OpenTrial
-   byFaith 1) and the player's evidence book (caption 0x173f, gv_RankCulpritsAll rows, "%i (%i) %s",
-   0x1741, ai_AccuseWindow's result returned, sv_RunFrame owner ai_AccusationWindow as the original pushes
-   0x5cde90) read and matched call by call; ours=245 original=246, no ref/literal difference. Left, the
-   same as the twin: the frame layout of the three int[0x20] arrays (original open 0x5c, ids 0xdc, total
-   0x15c; ours ids 0x5c, open 0xdc: slot hunks at 0x5ce216 / 0x5ce2b0 / 0x5ce2e3 / 0x5ce2f4) and the one
-   store of the AI branch's crime count to [esp+0x5c] (mov dword ptr [esp + 0x5c], eax at 0x5ce228, dead
-   after) that ours keeps in eax. */
+   owner (the original's copy) */
 
 int ai_FaithAccusationWindow(AICHARREC *me, LCORDMSG *m)
 {
@@ -9021,10 +9012,10 @@ int ai_FaithAccusationWindow(AICHARREC *me, LCORDMSG *m)
         ch = (AICHARREC *)gm_FindChar(m->target);
         if (ch == 0 || ch->officeKind == 0xd)
             return 0x60;
-        n = gv_HeldCrimesOf(m->target, ids, me->id);
-        if (n == 0)
+        open[0] = gv_HeldCrimesOf(m->target, ids, me->id);    /* the original keeps the count in open[0] */
+        if (open[0] == 0)
             return 0x60;
-        return ai_OpenTrial(me, ch, n, 1);
+        return ai_OpenTrial(me, ch, open[0], 1);
     }
     win = d2_OpenForm(0, 0, "privillegien\\Beweise_Sichten");
     d2_CentreViewWindows(win);
@@ -9035,8 +9026,7 @@ int ai_FaithAccusationWindow(AICHARREC *me, LCORDMSG *m)
     d2_SetForm(win, 3);
     d2_CreateScrollButtons(-1, -1, d2_LastWindow, list, 0x767);
     count = gv_RankCulpritsAll(ids, open, total, me->id);
-    n = 0;
-    for (i = 0; i < count; i++) {
+    for (i = 0, n = 0; i < count; i++) {
         ch = (AICHARREC *)gm_FindChar(ids[i]);
         if (ch != 0) {
             rows[n].rec = ch;
