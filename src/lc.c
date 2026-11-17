@@ -15647,40 +15647,43 @@ void ai_DomizilMessage12(char *chRec, char *bldRec, int level)
    0x62cb58) picks an index into the 0x42 entries of 0x1c bytes at 0x62c420; each try returns the entry's id
    when it is not among the nObjs words of objs, else the index advances modulo the count; 0 when every id is
    taken
-   @deep whole function read and rewritten to the original's structure (the loop guard, the entry->id
-   compare and the modulo advance match instruction for instruction); the one remaining hunk is a redundant
-   test on the found path: ours has 'cmp ecx,esi / jge' at +0x5f (the 'if (k < nObjs)' after the break)
-   where the original goes from the loop's 'je' straight to 'mov ecx,[esp+0x10]'; tried for+break with 'if
-   (k >= nObjs)' (same cmp at the break target), with 'if (k == nObjs)' (return block moved to the end, 21
-   differing), 'while (k < nObjs && objs[k] != entry->id)' (same cmp), 'goto advance' (VC6 rotates the
-   loop, 44 ins), 'for (;;) { if (k >= nObjs) return; ... }' (rotated, 44 ins), 'if (nObjs < 1) ... while
-   (objs[k] != entry->id) { if (++k >= nObjs) return; }' (unrolled, 56 ins); needs a source-variant round
-   to find the form whose break target has no test; no call or store differs, the prover stops only on the
-   branch condition */
+   @deep size fixed s4 (125 bytes, padded 128 = original), shape 5 ins: a found flag set at the break (the
+   original's decided test: the break goes straight to the advance, no cmp k,nObjs) and the count loop as
+   for (n = count; n != 0; n--) (one code with the guard + while form). Left: the original schedules n's
+   load and dec before the modulo's inc / idiv and tests it again (mov ecx,[n]; dec ecx; inc eax; cdq;
+   idiv; test ecx,ecx), ours decrements after the idiv. No lever: n-- before the modulo (30 ins, n into a
+   register), do-while forms, while (n--), i++ / i %= split (30). prior: whole function read and rewritten
+   to the original's structure (the loop guard, the entry->id compare and the modulo advance match
+   instruction for instruction); the one remaining hunk is a redundant test on the found path: ours has
+   'cmp ecx,esi / jge' at +0x5f (the 'if (k < nObjs)' after the break) where the original goes from the
+   loop's 'je' straight to 'mov ecx,[esp+0x10]'; tried for+break with 'if (k >= nObjs)' (same cmp at the
+   break target), with 'if (k == nObjs)' (return block moved to the end, 21 differing), 'while (k < nObjs
+   && objs[k] != entry->id)' (same cmp), 'goto advance' (VC6 rotates the loop, 44 ins), 'for (;;) { if (k
+   >= nObjs) return; ... }' (rotated, 44 ins), 'if (nObjs < 1) ... while (objs[k] != entry->id) { if (++k
+   >= nObjs) return; }' (unrolled, 56 ins); needs a source-variant round to find the form whose break
+   target has no test; no call or store differs, the prover s... */
 
 unsigned short ai_RandomDomizilGoodNotIn(int nObjs, unsigned short *objs)
 {
     int n;
     int i;
     int k;
+    int found;
     G9DOMIZIL *entry;
 
     i = util_Random((unsigned short)ai_DomizilCount) & 0xffff;
-    n = ai_DomizilCount;
-    if (n == 0)
-        return 0;
-    while (n != 0) {
+    for (n = ai_DomizilCount; n != 0; n--) {
         entry = &ai_DomizilTable[i];
+        found = 0;
         for (k = 0; k < nObjs; k++) {
-            if (objs[k] == entry->id)
+            if (objs[k] == entry->id) {
+                found = 1;
                 break;
+            }
         }
-        if (k < nObjs) {
-            i = (i + 1) % ai_DomizilCount;
-            n--;
-            continue;
-        }
-        return entry->id;
+        if (!found)
+            return entry->id;
+        i = (i + 1) % ai_DomizilCount;
     }
     return 0;
 }

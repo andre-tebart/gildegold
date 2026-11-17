@@ -4366,7 +4366,7 @@ exe	0x005a9d00	ai_DomizilMessageAge	lc	e68fa5c741c51593	no	byte	control=byte p1=
 exe	0x005a9d60	ai_DomizilMessageTask	lc	97a7602571084c79	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005a9dd0	ai_DomizilMessagePlace	lc	5e6da885bee334d5	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005a9e40	ai_DomizilMessage12	lc	ded19819b36cde1c	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x005a9e90	ai_RandomDomizilGoodNotIn	lc	877d6773cbad534c	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	65f3805095278c82
+exe	0x005a9e90	ai_RandomDomizilGoodNotIn	lc	893346dc05a77c10	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	24f8e327f4310d51
 exe	0x005a9f10	ai_DomizilGoodInRange	lc	7f34b8890e372f02	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
 exe	0x005a9f80	ai_AskBonusAmount	lc	556b76d56b85817b	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
 exe	0x005aa0d0	ai_CreatePersonnelRow	lc	5077cbd91200a8de	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
@@ -4419,7 +4419,7 @@ exe	0x005b7b80	ai_BuyBuildingOfferWindow	lc	0b77d45296ee39a3	no	shape	control=sh
 exe	0x005b7dd0	ai_TechEffectsWindow	lc	50b1a8184f0f9c2f	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x005b82a0	ai_FireFightingWindow	lc	339686a3f30644bf	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	65f3805095278c82
 exe	0x005b84f0	ai_BuildingWindow	lc	634b775723a4e1ee	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
-exe	0x005b8fc0	ai_ManagedBuildingWindow	lc	790746e01e95ba59	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
+exe	0x005b8fc0	ai_ManagedBuildingWindow	lc	790746e01e95ba59	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	65f3805095278c82
 exe	0x005b92e0	ai_LiquidateAssets	lc	579276d0a439dcd0	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x005b9730	ob_HandleBepflanzung	lc	c1ca321d59dd237a	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x005b9db0	ai_HandlePickedPlant	lc	a435f91b56fb7d49	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
@@ -4498,7 +4498,7 @@ exe	0x005c27b0	ai_MasterHireWindow	lc	36c69bfdd74f82f2	no	shape	sweep control=sh
 exe	0x005c2a10	ai_ShowSettingGoods	lc	d8114348687eb5ce	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
 exe	0x005c2b90	ai_MasterLetterSettings	lc	d88621a20dc76c5e	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
 exe	0x005c3200	ai_MasterLetterWindow	lc	2400265006fee361	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
-exe	0x005c33c0	ai_PassesPartnerFilter	lc	cfb6d54ab9de5e22	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
+exe	0x005c33c0	ai_PassesPartnerFilter	lc	cfb6d54ab9de5e22	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	65f3805095278c82
 exe	0x005c37a0	ai_PassesBuildingFilter	lc	327a8ff007a90950	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x005c39a0	ai_PassesMapPickFilter	lc	65eb0135671435a2	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x005c3bb0	ai_PickBuildingChar	lc	6686bd2b4375d6dd	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
@@ -4517,7 +4517,7 @@ exe	0x005c7460	ai_PlotScoreChart	lc	241820fa9d6d7f03	no	shape	control=shape p1=s
 exe	0x005c7560	ai_PlotNoFirstChart	lc	30996244fb2d8ece	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005c76b0	ai_PlotNoSecondChart	lc	86f8c4456c89eda9	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005c7800	ai_PlotCombinedChart	lc	8668b26402a97a3c	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x005c7970	ai_DrawStatisticsCharts	lc	88218eff0e4d8b8b	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
+exe	0x005c7970	ai_DrawStatisticsCharts	lc	88218eff0e4d8b8b	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	65f3805095278c82
 exe	0x005c7f00	ai_CityStatsPanel	lc	6a39f0d5b8264a13	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005c82f0	ai_PlayerComparePanel	lc	c01c9e0574d47c14	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x005c8640	ai_PrivilegesPanel	lc	07db3820c93ae8a2	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	9f29ef858e2dd5b3
@@ -4530,7 +4530,7 @@ exe	0x005c9c50	ai_BlackmailContact	lc	7a58f0b1cf79d645	no	shape	control=shape p1
 exe	0x005c9df0	ai_IntimidateWindow	lc	a4fb4b693df3d999	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005c9ff0	ai_IntimidateContact	lc	b1fe30deb28770d7	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
 exe	0x005ca150	ai_LawPrivilegeWindow	lc	ed9f0b9994c8e565	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	e8239d145522bd75
-exe	0x005ca560	ai_DismissOfficeAsk	lc	bbf3db204bfdd533	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
+exe	0x005ca560	ai_DismissOfficeAsk	lc	bbf3db204bfdd533	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	65f3805095278c82
 exe	0x005ca860	ai_MisappropriationWindow	lc	d6bd0b1e31736e27	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005caab0	ai_BewitchWindow	lc	b48e7c378437db58	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005cacd0	ai_BewitchOrder	lc	ef3ef3d23345ff16	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
@@ -4548,11 +4548,11 @@ exe	0x005cd2e0	ai_MiracleWindow	lc	0aeafcb49304a91c	no	draft	control=draft p1=dr
 exe	0x005cd400	ai_ChangeProfessionWindow	lc	632dc5fa1e631801	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
 exe	0x005cd8c0	ai_OpenTrial	lc	3be40c2f3c0c9fb2	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005cdb90	ai_AccuseWindow	lc	fc1b95fd523b6218	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x005cde90	ai_AccusationWindow	lc	169d7b141dcf6038	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
-exe	0x005ce1a0	ai_FaithAccusationWindow	lc	203138241aa81576	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
+exe	0x005cde90	ai_AccusationWindow	lc	169d7b141dcf6038	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	65f3805095278c82
+exe	0x005ce1a0	ai_FaithAccusationWindow	lc	203138241aa81576	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	65f3805095278c82
 exe	0x005ce4b0	ai_Interrogate	lc	3428d7d9a34ddb2e	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005ce610	ai_InterrogationWindow	lc	3e7aed3cf7585e92	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x005ce7f0	ai_WorkerDismissalWindow	lc	c163f48a5ab0a084	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
+exe	0x005ce7f0	ai_WorkerDismissalWindow	lc	c163f48a5ab0a084	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	65f3805095278c82
 exe	0x005ce950	ai_DismissalHandler	lc	45525b49ae6017c0	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005ced50	ai_SendInterrogationRefusal	lc	df030f4bf8276656	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005cede0	ai_InterrogationWindow1	lc	ab4c85c96ab0a6bb	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
@@ -4645,7 +4645,7 @@ exe	0x005d9de0	ai_OpenPokerWindow	menu	929148ad9dff22f0	no	draft	sample n=32 see
 exe	0x005d9f50	ai_PokerBetControl	unk_5d33b0	4920b537cbcb48ee	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005da010	ai_ClosePokerWindow	unk_5d33b0	3d397e7350bd5199	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005da030	ai_PokerGame	unk_5d33b0	08a067eb8df358af	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
-exe	0x005dadf0	ai_PokerSeatPanel	unk_5d33b0	2941d46e53af97f6	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
+exe	0x005dadf0	ai_PokerSeatPanel	menu	2941d46e53af97f6	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	31bfb49d052b5388
 exe	0x005db110	ai_PokerWindow2	unk_5d33b0	34128d76f20262f2	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005dbc10	ai_GetDefaultEffect	unk_5d33b0	293b201469ce0ccd	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005dbc20	ai_GetDefaultEffectScale	unk_5d33b0	aff73f15d1837a43	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
@@ -4661,6 +4661,6 @@ exe	0x005dc4a0	ai_StepShot	menu	7022705064491ca4	no	shape	sweep control=shape be
 exe	0x005dc9d0	ai_StepShotSlow	menu	5f63569f3b7866bf	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	95df446b3c51717b
 exe	0x005dcf00	ai_ShotHitsGround	menu	d5ee153d3ba42fac	no	shape	sample n=32 seed=1 compiled=32 codegens=1 best=shape	
 exe	0x005dd090	ai_NormalizeEffectScale	unk_5d33b0	f4fb3ee3506f24fa	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
-exe	0x005dd100	ai_SolveCannonAim	unk_5d33b0	5d741542f6552084	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
+exe	0x005dd100	ai_SolveCannonAim	menu	5d741542f6552084	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	31bfb49d052b5388
 exe	0x005de460	MSS_auto_cleanup	mss32lib	c42d3dca4fab99e2	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005de470	mss_AutoCleanupExit	mss32lib	47db3aa67c7b30ae	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
