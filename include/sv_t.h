@@ -240,10 +240,9 @@ extern const float ai_CannonPitchMin;   /* 0x5eec70, -15 degrees: the lowest pit
 extern const float ai_CameraPitchMin;   /* 0x5eec74, -35 degrees: the low end of the cannon camera's pitch range */
 extern const float ai_CameraPitchMax;   /* 0x5eec78, 45 degrees: its high end */
 extern const float ai_CameraPitchZero;  /* 0x5eec7c, the level camera */
-extern const struct D3VECTOR ai_WimpelPos;  /* 0x5eec80, the wimpel's place on the cannon base */
+extern const struct D3VECTOR4 ai_WimpelPos;  /* 0x5eec80, the wimpel's place on the cannon base */
 extern const float ai_CannonSwitchMs;    /* 0x5eec94, the length of each half of the barrel switch (ms) */
 extern const float ai_CannonSwitchDist;  /* 0x5eec98, how far the cannon sinks back while the barrel switches */
-extern const float ai_CannonZoomRange;  /* 0x5eecac, the distance the zoom moves the camera out */
 void ai_CannonCamera(struct CANNONSCENE *sc);  /* 0x57f0e0, the cannon camera update */
 void ai_CannonPanel(char *rec, struct CANNONSCENE *sc, struct GVEFFECT *run);  /* 0x57f890, the cannon control panel */
 void ai_CannonBuildPanel(struct CANNONSCENE *sc, struct GVEFFECT *run);  /* 0x580a90, builds the cannon control panel */

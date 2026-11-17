@@ -646,10 +646,9 @@ extern const float ai_CannonPitchMin;
 extern const float ai_CameraPitchMin;
 extern const float ai_CameraPitchMax;
 extern const float ai_CameraPitchZero;
-extern const struct D3VECTOR ai_WimpelPos;
+extern const struct D3VECTOR4 ai_WimpelPos;
 extern const float ai_CannonSwitchMs;
 extern const float ai_CannonSwitchDist;
-extern const float ai_CannonZoomRange;
 #include "d3_pose.h"
 #include "dd_vesa.h"
 #include "menu.h"
