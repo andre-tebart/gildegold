@@ -2037,13 +2037,8 @@ int ai_TutorialShowRunText(void)
 /* 0x577a00, asks whether the player answered the tutorial's intro message: -4 without the host's event slot; 0
    while the active event window does not show an event of the kind 0x87 (the intro) or it is not answered yet;
    answered by a click on its continue object (continueObj) or, without a click, by the key 0x1c (Return) - then
-   the voice still playing is stopped and 1 answers
-   @deep read against the original in full and rewritten on TUTSTATE / HEEVSLOT / AIJOB (no null check of
-   he_ActiveSlot itself, as the original; the shared return 0 through a label gives the original's jmp into
-   the common jne). Only allocation is left: at 0x577a4f the voice pointer is loaded into eax (ours: mov
-   eax, [ecx+0x14]; test eax, eax; push eax) where the original reuses ecx (mov ecx, [ecx+0x14]; test ecx,
-   ecx; push ecx); diffclass calls the first two lines code only because the destination register is also
-   the base register on the original's side, 45 vs 45 instructions, 3 bytes differ */
+   the voice still playing is stopped and 1 answers (the answer code is written in each arm, as the
+   original: VC6 cross-jumps the two copies) */
 
 int ai_TutorialIntroAnswered(void)
 {
@@ -2055,31 +2050,39 @@ int ai_TutorialIntroAnswered(void)
 #ifdef REA_START
         /* REA_START=tutorial (`uv run play|dbg --start tutorial`): accept the tutorial's intro message (the 0x87
            event, whose "Weiter" text object 0x577740 stores in S+0x20) without a mouse click, so a run without GUI
-           automation gets past it. Jump straight to the answer like the keyboard arm does - forging a click in
+           automation gets past it. Answer straight away like the keyboard arm does - forging a click in
            d2_ClickedId / d2_PointerObj would leak the phantom click into the rest of the frame. Without the flag
            the message waits for the real click / Return. */
         {
             char *rea = getenv("REA_START");
-            if (rea != 0 && strcmp(rea, "tutorial") == 0)
-                goto answered;
+            if (rea != 0 && strcmp(rea, "tutorial") == 0) {
+                if (ai_Tutorial->voice) {
+                    if (sb_IsPlaying(ai_Tutorial->voice))
+                        sb_Stop(ai_Tutorial->voice, 0);
+                    ai_Tutorial->voice = 0;
+                }
+                return 1;
+            }
         }
 #endif
         if (d2_ClickedId != -1) {
-            if (d2_PointerObj != ai_Tutorial->continueObj)
-                goto unanswered;
-        } else if (kb_Last != 0x1c)
-            goto unanswered;
-#ifdef REA_START
-answered:
-#endif
-        if (ai_Tutorial->voice) {
-            if (sb_IsPlaying(ai_Tutorial->voice))
-                sb_Stop(ai_Tutorial->voice, 0);
-            ai_Tutorial->voice = 0;
+            if (d2_PointerObj == ai_Tutorial->continueObj) {
+                if (ai_Tutorial->voice) {
+                    if (sb_IsPlaying(ai_Tutorial->voice))
+                        sb_Stop(ai_Tutorial->voice, 0);
+                    ai_Tutorial->voice = 0;
+                }
+                return 1;
+            }
+        } else if (kb_Last == 0x1c) {
+            if (ai_Tutorial->voice) {
+                if (sb_IsPlaying(ai_Tutorial->voice))
+                    sb_Stop(ai_Tutorial->voice, 0);
+                ai_Tutorial->voice = 0;
+            }
+            return 1;
         }
-        return 1;
     }
-unanswered:
     return 0;
 }
 /* 0x577a90, shows the run's first text window: nothing without a run record or its text1; else the status text

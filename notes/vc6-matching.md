@@ -558,6 +558,12 @@ copied back into short predecessors only after all of this.
 
 ### Jumps into another arm, goto chains, shared tails
 
+- **One arm ends `cmp; jmp L` into the other arm's `jne fail` (L), the code behind it shared, and a register of
+  the shared code that no candidate spelling moves (voice in ecx, ours eax)**: the shared code was written in both
+  arms and cross-jumped: `if (click) { if (obj == cont) { stop voice; return 1; } } else if (key == 0x1c) { stop
+  voice; return 1; } return 0;`. Our `goto unanswered` form had the layout but one CSE candidate for both paths
+  (ai_TutorialIntroAnswered byte; flip.py found no single mutation, candidate spellings and prio probes = one
+  code).
 - **A jump to a shared tail's second instruction, its first (`mov eax,[esp+o1]`) hoisted above the jcc**: the
   arm wrote the tail out itself (`o1->kind = 0; o1->ref = -1; o1->arg = 'noop'; return 0x35;`), no `goto noop`;
   cross-jumping merges all but the load, which the jcc's block already did (ai_DecideStammtisch byte).

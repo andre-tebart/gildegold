@@ -3984,7 +3984,7 @@ exe	0x00577740	ai_TutorialOpenIntro	sv_t	84da2638d9840994	no	byte	control=byte p
 exe	0x00577820	ai_TutorialCloseIntro	sv_t	69fe4ca40d41761d	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00577850	ai_TutorialClearRunWindow	sv_t	397e996f3b2de01c	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005778b0	ai_TutorialShowRunText	sv_t	5abaac23a6f99b6b	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x00577a00	ai_TutorialIntroAnswered	sv_t	1fd34e5aefc70794	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
+exe	0x00577a00	ai_TutorialIntroAnswered	sv_t	1fd34e5aefc70794	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	639483be9c31b804
 exe	0x00577a90	ai_TutorialShowText	sv_t	e2a9e7e79dff882c	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00577b60	ai_TutorialHideText	sv_t	a3f4c56f5a905db6	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00577b90	ai_TutorialShowText2	sv_t	4f01f029f569dcf3	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
