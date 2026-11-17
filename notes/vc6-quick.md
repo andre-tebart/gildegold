@@ -186,6 +186,8 @@ Section names are those of `notes/vc6-matching.md`.
   the first size mismatches and link-order pairs). `--queue` / `--unit U`: the size queue, functions whose padded
   size (distance to the next function, 16-byte alignment) differs, lowest address first. A size fix lines up
   every function after it; the right instruction lengths are enough, byte is the usual way there.
+- `python tools/exe/datameasure.py [--steps --section data --unit U]`: the data side: each data symbol's shift
+  against the original and the STEPS where the shift changes (size < room, wrong unit, wrong section, definition order).
   Locate a size gap before any variant: sum each asmdiff hunk's byte lengths on both sides (ours from `dcp disasm
   --ours`, the original's from `dcp disasm`); the hunks with a net difference are the work (dd_SetMode: all 10 bytes in
   one expression, so no statement was missing; evt_DeclareLocal: the failure tail). A variant's raw size without
