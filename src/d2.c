@@ -73,8 +73,6 @@ int d2_PointerPicIndex = -1;  /* 0x5fe750, "_MOUSE_CURSOR" */
 int d2_ExtraSymbolsPic = -1;  /* 0x5fe754, "_EXTRA_SYMBOLS" */
 int d2_TextCursorPic = -1;  /* 0x5fe758, "_TEXT_CURSOR" */
 int d2_PointerMoved = 1;  /* 0x5fe75c */
-int d2_ClipRight = 640;  /* 0x5fed7c, width of the screen */
-int d2_ClipBottom = 480;  /* 0x5fed80, height of the screen */
 
 int d2_LastPointerX = 0;  /* 0x633f10, last pointer x */
 int d2_LastPointerY = 0;  /* 0x633f14, last pointer y */
