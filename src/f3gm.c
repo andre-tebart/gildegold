@@ -2504,7 +2504,7 @@ extern char gm_QueryFirst, gm_QueryScanAll, gm_QueryChildren, gm_QueryStopFirst;
 extern int gm_QueryScanned;
 extern ORDOBJ *gm_QueryCursor;
 extern int gm_QueryDepth;
-extern int gm_QueryStack[20488];
+extern int gm_QueryChildStack[20488];
 int gm_FindMarketObject(int id);                     /* 0x500ec0 */
 int gm_FindPlayerBuilding(int p);                   /* 0x501000 */
 extern struct AIBLD *ai_MarketBuilding;                /* 0x6f1bc8, the market building (group 1, 5, 10) */

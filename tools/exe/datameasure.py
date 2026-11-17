@@ -49,6 +49,7 @@ def main():
     ap.add_argument("-n", type=int, default=25)
     ap.add_argument("--refresh", action="store_true")
     ap.add_argument("--sizes", action="store_true")
+    ap.add_argument("--groups", action="store_true", help="print every common group, not only the first wrong one")
     a = ap.parse_args()
     if a.refresh or not glob.glob(os.path.join(CACHE, "*.txt")):
         print("data map: %d units read" % refresh())
@@ -102,7 +103,7 @@ def main():
             print("%-6s original: %d bytes up to the last nonzero byte, %d in all; ours: %d / %d" % (s, k, vs, kb, vsb))
         print("data symbols: %d with an original address; outside the common area %d in our map, %d at their original "
               "address, %d steps; %d commons" % (len(decl), len(both), placed, len(steps), len(common)))
-        groups(common, decl, ours)
+        groups(common, decl, ours, a.groups)
         lost = [k for k in decl if k not in ours]
         if lost:
             print("not in our map (dropped or renamed): %d, e.g. %s" % (len(lost), " ".join(sorted(lost)[:8])))
@@ -116,7 +117,7 @@ def main():
             at, k, ours[k] - at, sec, u, size, room, src, flag))
 
 
-def groups(common, decl, ours):
+def groups(common, decl, ours, every=False):
     """the common area per owner unit: start and extent, ours against the original's"""
     g = {}
     for k in common:
@@ -132,9 +133,10 @@ def groups(common, decl, ours):
     print("common groups: %d, %d at the original's start with the original's extent (in-group order: by names, "
           "not measured)" % (len(rows), ok))
     for o0, u, ds, dx, n, good in rows:
-        if not good:
-            print("  0x%08x %-12s start %+8d  extent %+7d  (%d symbols)" % (o0, u, ds, dx, n))
-            break
+        if every or not good:
+            print("  0x%08x %-12s start %+8d  extent %+7d  (%d symbols)%s" % (o0, u, ds, dx, n, "  placed" if good else ""))
+            if not every:
+                break
 
 
 def sizes(a, decl, ours, both, bss_start, dsyms):

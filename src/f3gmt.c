@@ -1175,11 +1175,11 @@ extern char gm_QueryFirst, gm_QueryScanAll, gm_QueryChildren, gm_QueryStopFirst;
 extern int gm_QueryScanned;
 extern ORDOBJ *gm_QueryCursor;
 extern int gm_QueryDepth;
-extern int gm_QueryStack[20488];
+extern int gm_QueryChildStack[20488];
 int gm_FindMarketObject(int id);                     /* 0x500ec0 */
 int gm_FindPlayerBuilding(int p);                   /* 0x501000 */
 
-/* 0x4ffcc0, the next match of the object query gm_Query set up: from the cursor record it walks the whole instance table (gm_QueryScanAll, skipping empty records, counting them in gm_QueryScanned) or the next pointers of the list (with gm_QueryChildren the child lists go on gm_QueryStack and are walked when a list ends), tests each record against the set criteria (prototype, owner id, the owner's character number gm_ObjectOwnerNo, the prototype kind) and returns the last record that matched before the first match ends the walk (or, with gm_QueryStopFirst, the first record looked at); 0 when none
+/* 0x4ffcc0, the next match of the object query gm_Query set up: from the cursor record it walks the whole instance table (gm_QueryScanAll, skipping empty records, counting them in gm_QueryScanned) or the next pointers of the list (with gm_QueryChildren the child lists go on gm_QueryChildStack and are walked when a list ends), tests each record against the set criteria (prototype, owner id, the owner's character number gm_ObjectOwnerNo, the prototype kind) and returns the last record that matched before the first match ends the walk (or, with gm_QueryStopFirst, the first record looked at); 0 when none
    @deep 155 -> 153 ins: the criteria as four plain tests with an ok flag (if (ok && ..), if (!ok) m = 0)
    instead of the goto no chain - same code as the goto-only sequence, and it ends the cross-jumped
    stack-push tail (tail 66 -> 0). Left: the register rotation, all from m: c2trace gives m prio 12 (avail
@@ -1215,7 +1215,7 @@ unsigned short *gm_QueryNext(void)
     if (gm_QueryFirst != 0) {
         gm_QueryFirst = 0;
         if (gm_QueryChildren != 0 && gm_QueryCursor->list != 0)
-            gm_QueryStack[gm_QueryDepth++] = gm_QueryCursor->list;
+            gm_QueryChildStack[gm_QueryDepth++] = gm_QueryCursor->list;
     }
     while (gm_QueryScanned < f3gm_ObjectCount) {
         if (gm_QueryCursor == 0 || m)
@@ -1258,11 +1258,11 @@ unsigned short *gm_QueryNext(void)
             gm_QueryCursor = gm_QueryCursor->next;
             if (gm_QueryCursor != 0) {
                 if (gm_QueryCursor->list != 0 && gm_QueryChildren != 0)
-                    gm_QueryStack[gm_QueryDepth++] = gm_QueryCursor->list;
+                    gm_QueryChildStack[gm_QueryDepth++] = gm_QueryCursor->list;
             } else if (gm_QueryChildren != 0 && gm_QueryDepth != 0) {
-                gm_QueryCursor = (ORDOBJ *)gm_QueryStack[--gm_QueryDepth];
+                gm_QueryCursor = (ORDOBJ *)gm_QueryChildStack[--gm_QueryDepth];
                 if (gm_QueryCursor->list != 0)
-                    gm_QueryStack[gm_QueryDepth++] = gm_QueryCursor->list;
+                    gm_QueryChildStack[gm_QueryDepth++] = gm_QueryCursor->list;
             }
         }
     }
@@ -8188,7 +8188,7 @@ extern int gm_QueryDepth;
 extern int gm_NOffers;
 extern AISTORE gm_Offers[88];
 extern int gm_ClassBuilding[32];
-extern int gm_QueryStack[20488];
+extern int gm_QueryChildStack[20488];
 extern unsigned gm_KindObjs[732];
 extern int gm_TreeRanks;
 extern char * ai_Blds;
@@ -8643,7 +8643,7 @@ struct AIOBJ *ai_Objects;  /* 0x7e3f34, the object instances (AIOBJ, ai.h) */
 int gm_QueryDepth;  /* 0x7e3f38, the depth of the child stack */
 int gm_NOffers;  /* 0x7e3f3c, the number of offers */
 AISTORE gm_Offers[88];  /* 0x7e4b20, the offers (ai.h's AISTORE rows of 6 ints: building, market, goods object, supply, price float, flag) */
-int gm_QueryStack[20488] = {0};  /* 0x8753e0 (a common in the original, kept defined: as a common dcp's M.data.draft extends it from gm_QueryNext's draft code past its end and reports D1 against gm_KindObjs), the child stack (the first word of */
+int gm_QueryChildStack[20488];  /* 0x8753e0, the child stack of gm_QueryNext (the child lists still to walk) */
 unsigned gm_KindObjs[732];  /* 0x889400 */
 int gm_TreeRanks;  /* 0x889f70 */
 AITIME ai_Time;  /* 0x770ae0, the game clock */
