@@ -2969,213 +2969,213 @@ exe	0x004fddb0	gm_SpawnCharacter	f3gm	byte	readable
 exe	0x004fde90	unk_LoadIconNames	f3gm	byte	readable		
 exe	0x004fdfb0	gm_FreeIconNames	f3gm	byte	readable		
 exe	0x004fdfd0	gm_CountCharacters	f3gm	draft	readable	deep	
-exe	0x004fe140	gm_AddTime	f3gm	draft	readable	deep	
-exe	0x004fe1e0	gm_SetTime	f3gm	byte	readable		
-exe	0x004fe210	gm_CompareTime	f3gm	byte	readable		
-exe	0x004fe280	gm_MinutesBetween	f3gm	byte	readable		
-exe	0x004fe2c0	gm_ClockToDate	f3gm	byte	readable		
-exe	0x004fe310	gm_AddTime2	f3gm	byte	readable		
-exe	0x004fe330	gm_Season	f3gm	byte	readable		
-exe	0x004fe350	gm_ClockSeason	f3gm	byte	readable		
-exe	0x004fe370	gm_InitBuildingTables	f3gm	draft	readable	deep	
-exe	0x004fe570	gm_LoadTables	f3gm	byte	readable		
-exe	0x004fe7f0	gm_ClearBuildings	f3gm	byte	readable		
-exe	0x004fe830	gm_ClearObjects	f3gm	byte	readable		
-exe	0x004fe900	gm_FindObjectProto	f3gm	byte	readable		
-exe	0x004fe940	gm_IsBuildingKind	f3gm	byte	readable		
-exe	0x004fe980	gm_FindObjectInst	f3gm	byte	readable		
-exe	0x004fe9c0	gm_Free	f3gm	byte	readable		
-exe	0x004fea50	gm_FindById	f3gm	byte	readable		
-exe	0x004feb30	gm_UpdatePlayers	f3gm	byte	readable		
-exe	0x004feb60	gm_InitPlayerRecord	f3gm	byte	readable		
-exe	0x004fec10	gm_SyncMarket	f3gm	shape	readable		
-exe	0x004ff190	gm_RefreshGoodsLists	f3gm	shape	readable		
-exe	0x004ff450	gm_RandomMarketShake	f3gm	byte	readable		
-exe	0x004ff550	gm_UpdatePrices	f3gm	shape	readable	deep	
-exe	0x004ff8c0	gm_GoodsDemand	f3gm	byte	readable		
-exe	0x004ff950	gm_GoodsStock	f3gm	byte	readable		
-exe	0x004ffa10	gm_StockPrice	f3gm	draft	readable	deep	
-exe	0x004ffbf0	gm_GoodsValue	f3gm	byte	readable		
-exe	0x004ffc40	gm_FindGoods	f3gm	byte	readable		
-exe	0x004ffc90	gm_MapDistance	f3gm	byte	readable		
-exe	0x004ffcc0	gm_QueryNext	f3gm	draft	readable	deep	
-exe	0x004ffe90	gm_Query	f3gm	shape	readable	deep	
-exe	0x004fffc0	gm_FindFreeObject	f3gm	byte	readable		
-exe	0x004ffff0	gm_RemoveObject	f3gm	byte	readable		
-exe	0x00500080	gm_FreeObjectExtra	f3gm	byte	readable		
-exe	0x005000c0	gm_RemoveOwned	f3gm	byte	readable		
-exe	0x00500140	gm_FreeList	f3gm	byte	readable		
-exe	0x00500190	gm_CreateObject	f3gm	draft	readable	deep	
-exe	0x00500970	gm_AddObjekt	f3gm	byte	readable		
-exe	0x00500a40	gm_TakeObjekt	f3gm	byte	readable		
-exe	0x00500ae0	gm_AddNegative	f3gm	byte	readable		
-exe	0x00500b90	gm_BuildKindObjects	f3gm	byte	readable		
-exe	0x00500c20	gm_CollectOffers	f3gm	draft	readable	deep	
-exe	0x00500ec0	gm_FindMarketObject	f3gm	shape	readable		
-exe	0x00501000	gm_FindPlayerBuilding	f3gm	byte	readable		
-exe	0x00501030	gm_BuildNext	f3gm	draft	readable	deep	
-exe	0x00501190	gm_BuildQuery	f3gm	shape	readable	deep	
-exe	0x005012b0	gm_FindFreeBuilding	f3gm	byte	readable		
-exe	0x005012e0	gm_FreeBuilding	f3gm	byte	readable		
-exe	0x00501400	gm_StockBuildingObjects	f3gm	byte	readable		
-exe	0x005014b0	gm_SetCapacities	f3gm	byte	readable		
-exe	0x00501580	gm_CreateBuilding	f3gm	draft	readable	deep	
-exe	0x00501b50	gm_BuildingMainObject	f3gm	byte	readable		
-exe	0x00501ce0	gm_GetGebaeudeHauptraum	f3gm	byte	readable		
-exe	0x00501d80	gm_BuildingClass	f3gm	byte	readable		
-exe	0x00501e40	gm_NearestBuilding	f3gm	shape	readable		
-exe	0x00501f60	gm_NearestFreeBuilding	f3gm	byte	readable		
-exe	0x00502020	gm_FindBuildingById	f3gm	byte	readable		
-exe	0x00502060	gm_FindBuildingKind	f3gm	byte	readable		
-exe	0x005020a0	gm_ListBuildingsOfType	f3gm	byte	readable		
-exe	0x005020e0	gm_MayTakeJob	f3gm	shape	readable		
-exe	0x005024f0	gm_IsType10	f3gm	byte	readable		
-exe	0x00502520	gm_IsHomeType	f3gm	byte	readable		
-exe	0x00502570	gm_GoodPicture	f3gm	byte	readable		
-exe	0x005029f0	gm_CollectSlotObject	f3gm	byte	readable		
-exe	0x00502a60	gm_ShowSlotObjects	f3gm	byte	readable		
-exe	0x00502b60	gm_AssignBuilding	f3gm	byte	readable		
-exe	0x00502e30	gm_ShowBuildingObjects	f3gm	byte	readable		
-exe	0x00502eb0	gm_ListWorkers	f3gm	draft	readable	deep	
-exe	0x00502fd0	gm_SellBuilding	f3gm	byte	readable		
-exe	0x005031b0	gm_AllocRaum	f3gm	byte	readable		
-exe	0x00503480	gm_RemoveObjectFromBuilding	f3gm	byte	readable		
-exe	0x005034b0	gm_FreeObject	f3gm	byte	readable		
-exe	0x00503530	gm_PermissionBits	f3gm	shape	readable	deep	
-exe	0x00503c20	gm_ReleaseCharacter	f3gm	byte	readable		
-exe	0x00503c60	gm_KillSpieler	f3gm	draft	readable	deep	
-exe	0x00503e80	gm_ResetCharacters	f3gm	byte	readable		
-exe	0x00503ee0	gm_GetJobTalents	f3gm	byte	readable		
-exe	0x00503f30	gm_SexForJob	f3gm	byte	readable		
-exe	0x00503f50	gm_SexForTitle	f3gm	byte	readable		
-exe	0x00503fa0	gm_BuildingTypeOfJob	f3gm	byte	readable		
-exe	0x00504050	gm_JobBuildingType	f3gm	byte	readable		
-exe	0x00504100	gm_JobSlots	f3gm	byte	readable		
-exe	0x00504290	gm_FirstTitleNumber	f3gm	shape	readable		
-exe	0x00504350	gm_TitleNumberGroup	f3gm	byte	readable		
-exe	0x005043d0	gm_TitleNumber	f3gm	byte	readable		
-exe	0x005044b0	gm_TitleJob	f3gm	byte	readable		
-exe	0x00504510	gm_TitlePeriodServed	f3gm	shape	readable		
-exe	0x00504790	gm_SetJob	f3gm	byte	readable		
-exe	0x00504840	gm_DropRank	f3gm	byte	readable		
-exe	0x005048e0	gm_BuildingJob	f3gm	byte	readable		
-exe	0x005049c0	gm_HasBuilding	f3gm	byte	readable		
-exe	0x005049e0	gm_ClassTreasury	f3gm	byte	readable		
-exe	0x00504a80	gm_PlayerSeat	f3gm	byte	readable		
-exe	0x00504ad0	gm_TitleGroup	f3gm	byte	readable		
-exe	0x00504c00	gm_TitleJobGroup	f3gm	byte	readable		
-exe	0x00504ce0	gm_TitlesLeft	f3gm	byte	readable		
-exe	0x00504e00	gm_SkillPoints	f3gm	byte	readable		
-exe	0x00504e20	gm_Mix	f3gm	byte	readable		
-exe	0x00504e80	gm_Mix2	f3gm	byte	readable		
-exe	0x00504ec0	gm_GetSkill	f3gm	byte	readable		
-exe	0x005051d0	gm_GetDisease	f3gm	shape	readable		
-exe	0x00505230	gm_CatchDisease	f3gm	byte	readable		
-exe	0x00505440	gm_CatchPlague	f3gm	byte	readable		
-exe	0x005054f0	gm_CatchMinorDisease	f3gm	byte	readable		
-exe	0x005056a0	gm_CatchUpperDisease	f3gm	byte	readable		
-exe	0x00505840	gm_CureDisease	f3gm	byte	readable		
-exe	0x005059d0	gm_CureMinorDisease	f3gm	byte	readable		
-exe	0x00505ad0	gm_CureUpperDisease	f3gm	byte	readable		
-exe	0x00505be0	gm_ShuffledBytes	f3gm	byte	readable		
-exe	0x00505ca0	gm_Shuffled	f3gm	byte	readable		
-exe	0x00505d30	gm_Shuffle	f3gm	byte	readable		
-exe	0x00505da0	gm_RandomAge	f3gm	shape	readable		
-exe	0x00505df0	gm_FindChar	f3gm	byte	readable		
-exe	0x00505e30	gm_CharAge	f3gm	byte	readable		
-exe	0x00505e60	gm_CharLevel	f3gm	shape	readable		
-exe	0x00505f30	gm_CharPrevLevel	f3gm	shape	readable		
-exe	0x00506000	gm_BirthDate	f3gm	byte	readable		
-exe	0x005060d0	gm_DeathDate	f3gm	shape	readable		
-exe	0x00506180	gm_RankPlayers	f3gm	shape	readable		
-exe	0x00506430	gm_PlayerRecord	f3gm	byte	readable		
-exe	0x00506480	gm_HasAdultRelative	f3gm	byte	readable		
-exe	0x005064d0	gm_TakeOverCharacter	f3gm	byte	readable		
-exe	0x00506890	gm_InheritEstate	f3gm	shape	readable		
-exe	0x00506e70	gm_ForfeitEstate	f3gm	draft	readable	deep	
-exe	0x005075c0	gm_MayRemoveChar	f3gm	byte	readable		
-exe	0x00507690	gm_CreateCharacter	f3gm	draft	readable	deep	
-exe	0x005085b0	gm_ConvertMoney	f3gm	byte	readable		
-exe	0x005085f0	gm_PlayerFactor	f3gm	byte	readable		
-exe	0x00508620	gm_CurrencyFactor	f3gm	byte	readable		
-exe	0x00508640	gm_CurrencyDivide	f3gm	byte	readable		
-exe	0x00508660	gm_SumSlotAmounts	f3gm	byte	readable		
-exe	0x005086b0	gm_ObjectValue	f3gm	shape	readable		
-exe	0x00508740	gm_JobWage	f3gm	shape	readable		
-exe	0x005087f0	gm_ItemPrice	f3gm	byte	readable		
-exe	0x005089c0	gm_GoodsPrice	f3gm	byte	readable		
-exe	0x00508a20	gm_HealthFactor	f3gm	byte	readable		
-exe	0x00508a80	gm_FormatAmount	f3gm	shape	readable		
-exe	0x00508cc0	gm_ListObjectsAfter	f3gm	byte	readable		
-exe	0x00508d70	gm_BuildingLevel	f3gm	byte	readable		
-exe	0x00508d80	gm_BuildingBalance	f3gm	draft	readable	deep	
-exe	0x00509060	gm_BuildingCarts	f3gm	byte	readable		
-exe	0x005090b0	gm_BuildingRank	f3gm	shape	readable		
-exe	0x00509120	gm_BuildingRankGate	f3gm	byte	readable		
-exe	0x005091a0	gm_BuildingValues	f3gm	byte	readable		
-exe	0x005092e0	gm_BuildingSkill	f3gm	shape	readable		
-exe	0x005093a0	gm_BuildingKindSkill	f3gm	byte	readable		
-exe	0x00509400	gm_WorkMinutesBetween	f3gm	byte	readable		
-exe	0x005096a0	gm_FixedWorkMinutesBetween	f3gm	byte	readable		
-exe	0x005098a0	gm_BuildingGoodsList	f3gm	byte	readable		
-exe	0x005099e0	gm_BuildingGoodsList17	f3gm	byte	readable		
-exe	0x00509b10	gm_EquipmentValue	f3gm	byte	readable		
-exe	0x00509c80	gm_OwnerWorth	f3gm	byte	readable		
-exe	0x00509d30	gm_BuildingKindValue	f3gm	byte	readable		
-exe	0x00509dc0	gm_BuildingKindCost	f3gm	byte	readable		
-exe	0x00509e30	gm_SumListAmounts	f3gm	byte	readable		
-exe	0x00509e60	gm_GetGoodsValue	f3gm	byte	readable		
-exe	0x00509eb0	gm_CharSumAmounts	f3gm	byte	readable		
-exe	0x00509ee0	gm_CharCurrency	f3gm	byte	readable		
-exe	0x00509f20	gm_CharMoney	f3gm	shape	readable		
-exe	0x00509f80	gm_StallValue	f3gm	byte	readable		
-exe	0x00509ff0	gm_ObjectOwnerChar	f3gm	byte	readable		
-exe	0x0050a050	gm_ObjectBuildingOwner	f3gm	byte	readable		
-exe	0x0050a0b0	gm_ObjectOwnerNo	f3gm	byte	readable		
-exe	0x0050a0f0	gm_ObjectBuilding	f3gm	byte	readable		
-exe	0x0050a150	gm_CreditEvents	f3gm	byte	readable		
-exe	0x0050a1c0	gm_BuildingEvents	f3gm	byte	readable		
-exe	0x0050a250	gm_GetCreditOffers	f3gm	draft	readable	deep	
-exe	0x0050a640	gm_GetWorth	f3gm	byte	readable		
-exe	0x0050a6c0	gm_IsBankrupt	f3gm	byte	readable		
-exe	0x0050a810	gm_FindCharacterByMaster	f3gm	byte	readable		
-exe	0x0050a880	gm_SortCharsByName	f3gm	byte	readable		
-exe	0x0050a970	gm_LevelPayout	f3gm	byte	readable		
-exe	0x0050aa00	gm_StallGoodsList	f3gm	byte	readable		
-exe	0x0050aaf0	gm_ListAmount	f3gm	byte	readable		
-exe	0x0050ab20	gm_ListAmountById	f3gm	byte	readable		
-exe	0x0050ab50	gm_ListStock	f3gm	shape	readable		
-exe	0x0050ab80	gm_FreeCapacity	f3gm	byte	readable		
-exe	0x0050acf0	gm_FreeStallCapacity	f3gm	shape	readable		
-exe	0x0050ad70	gm_TakeableCount	f3gm	shape	readable		
-exe	0x0050af00	gm_CollectCarried	f3gm	byte	readable		
-exe	0x0050b010	gm_FirstBuilding	f3gm	byte	readable		
-exe	0x0050b090	gm_ResearchClass	f3gm	byte	readable		
-exe	0x0050b170	gm_DonationRank	f3gm	byte	readable		
-exe	0x0050b1e0	gm_DonationTop5	f3gm	byte	readable		
-exe	0x0050b290	gm_LikingChance	f3gm	byte	readable		
-exe	0x0050b2f0	gm_TreeNodeRank	f3gm	byte	readable		
-exe	0x0050b3a0	gm_LayoutTree	f3gm	byte	readable		
-exe	0x0050b9f0	gm_UpdateTechTree	f3gm	byte	readable		
-exe	0x0050c310	gm_TreeLine	f3gm	byte	readable		
-exe	0x0050c340	gm_TechTreeWindow	f3gm	shape	readable		
-exe	0x0050c4d0	gm_CloseTechTree	f3gm	byte	readable		
-exe	0x0050c4e0	gm_AddToTreasury	f3gm	byte	readable		
-exe	0x0050c520	gm_Opinion	f3gm	byte	readable		
-exe	0x0050c550	gm_Liking	f3gm	byte	readable		
-exe	0x0050c980	gm_MeanLiking	f3gm	byte	readable		
-exe	0x0050ca10	gm_ChangeRelationToJobs	f3gm	byte	readable		
-exe	0x0050ca50	gm_ChangeObjektZustand	f3gm	byte	readable		
-exe	0x0050cad0	gm_ChangeBuildingState	f3gm	byte	readable		
-exe	0x0050cc50	gm_SendMoneyDelta	f3gm	byte	readable		
-exe	0x0050cc60	gm_ResetStock	f3gm	byte	readable		
-exe	0x0050ccd0	gm_Homeless	f3gm	shape	readable		
-exe	0x0050cd40	gm_JobCost	f3gm	byte	readable		
-exe	0x0050cdc0	gm_StaffFactor	f3gm	shape	readable		
-exe	0x0050cf60	gm_BathObjectCount	f3gm	byte	readable		
-exe	0x0050cfd0	gm_CurseObjectCount	f3gm	byte	readable		
-exe	0x0050d060	gm_TrialBuildingKind	f3gm	byte	readable		
-exe	0x0050d0b0	gm_CurseTargetCount	f3gm	byte	readable		
+exe	0x004fe140	gm_AddTime	f3gmt	draft	readable	deep	
+exe	0x004fe1e0	gm_SetTime	f3gmt	byte	readable		
+exe	0x004fe210	gm_CompareTime	f3gmt	byte	readable		
+exe	0x004fe280	gm_MinutesBetween	f3gmt	byte	readable		
+exe	0x004fe2c0	gm_ClockToDate	f3gmt	byte	readable		
+exe	0x004fe310	gm_AddTime2	f3gmt	byte	readable		
+exe	0x004fe330	gm_Season	f3gmt	byte	readable		
+exe	0x004fe350	gm_ClockSeason	f3gmt	byte	readable		
+exe	0x004fe370	gm_InitBuildingTables	f3gmt	draft	readable	deep	
+exe	0x004fe570	gm_LoadTables	f3gmt	byte	readable		
+exe	0x004fe7f0	gm_ClearBuildings	f3gmt	byte	readable		
+exe	0x004fe830	gm_ClearObjects	f3gmt	byte	readable		
+exe	0x004fe900	gm_FindObjectProto	f3gmt	byte	readable		
+exe	0x004fe940	gm_IsBuildingKind	f3gmt	byte	readable		
+exe	0x004fe980	gm_FindObjectInst	f3gmt	byte	readable		
+exe	0x004fe9c0	gm_Free	f3gmt	byte	readable		
+exe	0x004fea50	gm_FindById	f3gmt	byte	readable		
+exe	0x004feb30	gm_UpdatePlayers	f3gmt	byte	readable		
+exe	0x004feb60	gm_InitPlayerRecord	f3gmt	byte	readable		
+exe	0x004fec10	gm_SyncMarket	f3gmt	shape	readable		
+exe	0x004ff190	gm_RefreshGoodsLists	f3gmt	shape	readable		
+exe	0x004ff450	gm_RandomMarketShake	f3gmt	byte	readable		
+exe	0x004ff550	gm_UpdatePrices	f3gmt	shape	readable	deep	
+exe	0x004ff8c0	gm_GoodsDemand	f3gmt	byte	readable		
+exe	0x004ff950	gm_GoodsStock	f3gmt	byte	readable		
+exe	0x004ffa10	gm_StockPrice	f3gmt	draft	readable	deep	
+exe	0x004ffbf0	gm_GoodsValue	f3gmt	byte	readable		
+exe	0x004ffc40	gm_FindGoods	f3gmt	byte	readable		
+exe	0x004ffc90	gm_MapDistance	f3gmt	byte	readable		
+exe	0x004ffcc0	gm_QueryNext	f3gmt	draft	readable	deep	
+exe	0x004ffe90	gm_Query	f3gmt	shape	readable	deep	
+exe	0x004fffc0	gm_FindFreeObject	f3gmt	byte	readable		
+exe	0x004ffff0	gm_RemoveObject	f3gmt	byte	readable		
+exe	0x00500080	gm_FreeObjectExtra	f3gmt	byte	readable		
+exe	0x005000c0	gm_RemoveOwned	f3gmt	byte	readable		
+exe	0x00500140	gm_FreeList	f3gmt	byte	readable		
+exe	0x00500190	gm_CreateObject	f3gmt	draft	readable	deep	
+exe	0x00500970	gm_AddObjekt	f3gmt	byte	readable		
+exe	0x00500a40	gm_TakeObjekt	f3gmt	byte	readable		
+exe	0x00500ae0	gm_AddNegative	f3gmt	byte	readable		
+exe	0x00500b90	gm_BuildKindObjects	f3gmt	byte	readable		
+exe	0x00500c20	gm_CollectOffers	f3gmt	draft	readable	deep	
+exe	0x00500ec0	gm_FindMarketObject	f3gmt	shape	readable		
+exe	0x00501000	gm_FindPlayerBuilding	f3gmt	byte	readable		
+exe	0x00501030	gm_BuildNext	f3gmt	draft	readable	deep	
+exe	0x00501190	gm_BuildQuery	f3gmt	shape	readable	deep	
+exe	0x005012b0	gm_FindFreeBuilding	f3gmt	byte	readable		
+exe	0x005012e0	gm_FreeBuilding	f3gmt	byte	readable		
+exe	0x00501400	gm_StockBuildingObjects	f3gmt	byte	readable		
+exe	0x005014b0	gm_SetCapacities	f3gmt	byte	readable		
+exe	0x00501580	gm_CreateBuilding	f3gmt	draft	readable	deep	
+exe	0x00501b50	gm_BuildingMainObject	f3gmt	byte	readable		
+exe	0x00501ce0	gm_GetGebaeudeHauptraum	f3gmt	byte	readable		
+exe	0x00501d80	gm_BuildingClass	f3gmt	byte	readable		
+exe	0x00501e40	gm_NearestBuilding	f3gmt	shape	readable		
+exe	0x00501f60	gm_NearestFreeBuilding	f3gmt	byte	readable		
+exe	0x00502020	gm_FindBuildingById	f3gmt	byte	readable		
+exe	0x00502060	gm_FindBuildingKind	f3gmt	byte	readable		
+exe	0x005020a0	gm_ListBuildingsOfType	f3gmt	byte	readable		
+exe	0x005020e0	gm_MayTakeJob	f3gmt	shape	readable		
+exe	0x005024f0	gm_IsType10	f3gmt	byte	readable		
+exe	0x00502520	gm_IsHomeType	f3gmt	byte	readable		
+exe	0x00502570	gm_GoodPicture	f3gmt	byte	readable		
+exe	0x005029f0	gm_CollectSlotObject	f3gmt	byte	readable		
+exe	0x00502a60	gm_ShowSlotObjects	f3gmt	byte	readable		
+exe	0x00502b60	gm_AssignBuilding	f3gmt	byte	readable		
+exe	0x00502e30	gm_ShowBuildingObjects	f3gmt	byte	readable		
+exe	0x00502eb0	gm_ListWorkers	f3gmt	draft	readable	deep	
+exe	0x00502fd0	gm_SellBuilding	f3gmt	byte	readable		
+exe	0x005031b0	gm_AllocRaum	f3gmt	byte	readable		
+exe	0x00503480	gm_RemoveObjectFromBuilding	f3gmt	byte	readable		
+exe	0x005034b0	gm_FreeObject	f3gmt	byte	readable		
+exe	0x00503530	gm_PermissionBits	f3gmt	shape	readable	deep	
+exe	0x00503c20	gm_ReleaseCharacter	f3gmt	byte	readable		
+exe	0x00503c60	gm_KillSpieler	f3gmt	draft	readable	deep	
+exe	0x00503e80	gm_ResetCharacters	f3gmt	byte	readable		
+exe	0x00503ee0	gm_GetJobTalents	f3gmt	byte	readable		
+exe	0x00503f30	gm_SexForJob	f3gmt	byte	readable		
+exe	0x00503f50	gm_SexForTitle	f3gmt	byte	readable		
+exe	0x00503fa0	gm_BuildingTypeOfJob	f3gmt	byte	readable		
+exe	0x00504050	gm_JobBuildingType	f3gmt	byte	readable		
+exe	0x00504100	gm_JobSlots	f3gmt	byte	readable		
+exe	0x00504290	gm_FirstTitleNumber	f3gmt	shape	readable		
+exe	0x00504350	gm_TitleNumberGroup	f3gmt	byte	readable		
+exe	0x005043d0	gm_TitleNumber	f3gmt	byte	readable		
+exe	0x005044b0	gm_TitleJob	f3gmt	byte	readable		
+exe	0x00504510	gm_TitlePeriodServed	f3gmt	shape	readable		
+exe	0x00504790	gm_SetJob	f3gmt	byte	readable		
+exe	0x00504840	gm_DropRank	f3gmt	byte	readable		
+exe	0x005048e0	gm_BuildingJob	f3gmt	byte	readable		
+exe	0x005049c0	gm_HasBuilding	f3gmt	byte	readable		
+exe	0x005049e0	gm_ClassTreasury	f3gmt	byte	readable		
+exe	0x00504a80	gm_PlayerSeat	f3gmt	byte	readable		
+exe	0x00504ad0	gm_TitleGroup	f3gmt	byte	readable		
+exe	0x00504c00	gm_TitleJobGroup	f3gmt	byte	readable		
+exe	0x00504ce0	gm_TitlesLeft	f3gmt	byte	readable		
+exe	0x00504e00	gm_SkillPoints	f3gmt	byte	readable		
+exe	0x00504e20	gm_Mix	f3gmt	byte	readable		
+exe	0x00504e80	gm_Mix2	f3gmt	byte	readable		
+exe	0x00504ec0	gm_GetSkill	f3gmt	byte	readable		
+exe	0x005051d0	gm_GetDisease	f3gmt	shape	readable		
+exe	0x00505230	gm_CatchDisease	f3gmt	byte	readable		
+exe	0x00505440	gm_CatchPlague	f3gmt	byte	readable		
+exe	0x005054f0	gm_CatchMinorDisease	f3gmt	byte	readable		
+exe	0x005056a0	gm_CatchUpperDisease	f3gmt	byte	readable		
+exe	0x00505840	gm_CureDisease	f3gmt	byte	readable		
+exe	0x005059d0	gm_CureMinorDisease	f3gmt	byte	readable		
+exe	0x00505ad0	gm_CureUpperDisease	f3gmt	byte	readable		
+exe	0x00505be0	gm_ShuffledBytes	f3gmt	byte	readable		
+exe	0x00505ca0	gm_Shuffled	f3gmt	byte	readable		
+exe	0x00505d30	gm_Shuffle	f3gmt	byte	readable		
+exe	0x00505da0	gm_RandomAge	f3gmt	shape	readable		
+exe	0x00505df0	gm_FindChar	f3gmt	byte	readable		
+exe	0x00505e30	gm_CharAge	f3gmt	byte	readable		
+exe	0x00505e60	gm_CharLevel	f3gmt	shape	readable		
+exe	0x00505f30	gm_CharPrevLevel	f3gmt	shape	readable		
+exe	0x00506000	gm_BirthDate	f3gmt	byte	readable		
+exe	0x005060d0	gm_DeathDate	f3gmt	shape	readable		
+exe	0x00506180	gm_RankPlayers	f3gmt	shape	readable		
+exe	0x00506430	gm_PlayerRecord	f3gmt	byte	readable		
+exe	0x00506480	gm_HasAdultRelative	f3gmt	byte	readable		
+exe	0x005064d0	gm_TakeOverCharacter	f3gmt	byte	readable		
+exe	0x00506890	gm_InheritEstate	f3gmt	shape	readable		
+exe	0x00506e70	gm_ForfeitEstate	f3gmt	draft	readable	deep	
+exe	0x005075c0	gm_MayRemoveChar	f3gmt	byte	readable		
+exe	0x00507690	gm_CreateCharacter	f3gmt	draft	readable	deep	
+exe	0x005085b0	gm_ConvertMoney	f3gmt	byte	readable		
+exe	0x005085f0	gm_PlayerFactor	f3gmt	byte	readable		
+exe	0x00508620	gm_CurrencyFactor	f3gmt	byte	readable		
+exe	0x00508640	gm_CurrencyDivide	f3gmt	byte	readable		
+exe	0x00508660	gm_SumSlotAmounts	f3gmt	byte	readable		
+exe	0x005086b0	gm_ObjectValue	f3gmt	shape	readable		
+exe	0x00508740	gm_JobWage	f3gmt	shape	readable		
+exe	0x005087f0	gm_ItemPrice	f3gmt	byte	readable		
+exe	0x005089c0	gm_GoodsPrice	f3gmt	byte	readable		
+exe	0x00508a20	gm_HealthFactor	f3gmt	byte	readable		
+exe	0x00508a80	gm_FormatAmount	f3gmt	shape	readable		
+exe	0x00508cc0	gm_ListObjectsAfter	f3gmt	byte	readable		
+exe	0x00508d70	gm_BuildingLevel	f3gmt	byte	readable		
+exe	0x00508d80	gm_BuildingBalance	f3gmt	draft	readable	deep	
+exe	0x00509060	gm_BuildingCarts	f3gmt	byte	readable		
+exe	0x005090b0	gm_BuildingRank	f3gmt	shape	readable		
+exe	0x00509120	gm_BuildingRankGate	f3gmt	byte	readable		
+exe	0x005091a0	gm_BuildingValues	f3gmt	byte	readable		
+exe	0x005092e0	gm_BuildingSkill	f3gmt	shape	readable		
+exe	0x005093a0	gm_BuildingKindSkill	f3gmt	byte	readable		
+exe	0x00509400	gm_WorkMinutesBetween	f3gmt	byte	readable		
+exe	0x005096a0	gm_FixedWorkMinutesBetween	f3gmt	byte	readable		
+exe	0x005098a0	gm_BuildingGoodsList	f3gmt	byte	readable		
+exe	0x005099e0	gm_BuildingGoodsList17	f3gmt	byte	readable		
+exe	0x00509b10	gm_EquipmentValue	f3gmt	byte	readable		
+exe	0x00509c80	gm_OwnerWorth	f3gmt	byte	readable		
+exe	0x00509d30	gm_BuildingKindValue	f3gmt	byte	readable		
+exe	0x00509dc0	gm_BuildingKindCost	f3gmt	byte	readable		
+exe	0x00509e30	gm_SumListAmounts	f3gmt	byte	readable		
+exe	0x00509e60	gm_GetGoodsValue	f3gmt	byte	readable		
+exe	0x00509eb0	gm_CharSumAmounts	f3gmt	byte	readable		
+exe	0x00509ee0	gm_CharCurrency	f3gmt	byte	readable		
+exe	0x00509f20	gm_CharMoney	f3gmt	shape	readable		
+exe	0x00509f80	gm_StallValue	f3gmt	byte	readable		
+exe	0x00509ff0	gm_ObjectOwnerChar	f3gmt	byte	readable		
+exe	0x0050a050	gm_ObjectBuildingOwner	f3gmt	byte	readable		
+exe	0x0050a0b0	gm_ObjectOwnerNo	f3gmt	byte	readable		
+exe	0x0050a0f0	gm_ObjectBuilding	f3gmt	byte	readable		
+exe	0x0050a150	gm_CreditEvents	f3gmt	byte	readable		
+exe	0x0050a1c0	gm_BuildingEvents	f3gmt	byte	readable		
+exe	0x0050a250	gm_GetCreditOffers	f3gmt	draft	readable	deep	
+exe	0x0050a640	gm_GetWorth	f3gmt	byte	readable		
+exe	0x0050a6c0	gm_IsBankrupt	f3gmt	byte	readable		
+exe	0x0050a810	gm_FindCharacterByMaster	f3gmt	byte	readable		
+exe	0x0050a880	gm_SortCharsByName	f3gmt	byte	readable		
+exe	0x0050a970	gm_LevelPayout	f3gmt	byte	readable		
+exe	0x0050aa00	gm_StallGoodsList	f3gmt	byte	readable		
+exe	0x0050aaf0	gm_ListAmount	f3gmt	byte	readable		
+exe	0x0050ab20	gm_ListAmountById	f3gmt	byte	readable		
+exe	0x0050ab50	gm_ListStock	f3gmt	shape	readable		
+exe	0x0050ab80	gm_FreeCapacity	f3gmt	byte	readable		
+exe	0x0050acf0	gm_FreeStallCapacity	f3gmt	shape	readable		
+exe	0x0050ad70	gm_TakeableCount	f3gmt	shape	readable		
+exe	0x0050af00	gm_CollectCarried	f3gmt	byte	readable		
+exe	0x0050b010	gm_FirstBuilding	f3gmt	byte	readable		
+exe	0x0050b090	gm_ResearchClass	f3gmt	byte	readable		
+exe	0x0050b170	gm_DonationRank	f3gmt	byte	readable		
+exe	0x0050b1e0	gm_DonationTop5	f3gmt	byte	readable		
+exe	0x0050b290	gm_LikingChance	f3gmt	byte	readable		
+exe	0x0050b2f0	gm_TreeNodeRank	f3gmt	byte	readable		
+exe	0x0050b3a0	gm_LayoutTree	f3gmt	byte	readable		
+exe	0x0050b9f0	gm_UpdateTechTree	f3gmt	byte	readable		
+exe	0x0050c310	gm_TreeLine	f3gmt	byte	readable		
+exe	0x0050c340	gm_TechTreeWindow	f3gmt	shape	readable		
+exe	0x0050c4d0	gm_CloseTechTree	f3gmt	byte	readable		
+exe	0x0050c4e0	gm_AddToTreasury	f3gmt	byte	readable		
+exe	0x0050c520	gm_Opinion	f3gmt	byte	readable		
+exe	0x0050c550	gm_Liking	f3gmt	byte	readable		
+exe	0x0050c980	gm_MeanLiking	f3gmt	byte	readable		
+exe	0x0050ca10	gm_ChangeRelationToJobs	f3gmt	byte	readable		
+exe	0x0050ca50	gm_ChangeObjektZustand	f3gmt	byte	readable		
+exe	0x0050cad0	gm_ChangeBuildingState	f3gmt	byte	readable		
+exe	0x0050cc50	gm_SendMoneyDelta	f3gmt	byte	readable		
+exe	0x0050cc60	gm_ResetStock	f3gmt	byte	readable		
+exe	0x0050ccd0	gm_Homeless	f3gmt	shape	readable		
+exe	0x0050cd40	gm_JobCost	f3gmt	byte	readable		
+exe	0x0050cdc0	gm_StaffFactor	f3gmt	shape	readable		
+exe	0x0050cf60	gm_BathObjectCount	f3gmt	byte	readable		
+exe	0x0050cfd0	gm_CurseObjectCount	f3gmt	byte	readable		
+exe	0x0050d060	gm_TrialBuildingKind	f3gmt	byte	readable		
+exe	0x0050d0b0	gm_CurseTargetCount	f3gmt	byte	readable		
 exe	0x0050d100	init_SceneNameToPrototype	f3init	byte	readable		
 exe	0x0050d350	init_SceneObjectDestroyCB	f3init	byte	readable		
 exe	0x0050d380	init_HookObject	f3init	byte	readable		
@@ -3536,7 +3536,7 @@ exe	0x0053f430	he_InnStaffLeave	he	byte	readable
 exe	0x0053f500	he_ClearInnDarkCorner	he	byte	readable		
 exe	0x0053f5b0	he_TopUpCharMoney	he	byte	readable		
 exe	0x0053f6b0	he_SpawnFounders	he	draft	readable	deep	
-exe	0x00540c90	he_PostEvent67	he	byte	readable		
+exe	0x00540c90	he_PostEvent67	he	shape	readable		
 exe	0x00540e40	he_InnReport	he	byte	readable		
 exe	0x00540fe0	he_DailyEventChecks	he	byte	readable		
 exe	0x00541010	he_PostEvent3a	he	byte	readable		
@@ -4003,8 +4003,8 @@ exe	0x00578370	ai_TutorialStop	sv_t	byte	readable
 exe	0x00578440	ai_TutorialFreeRuns	sv_t	byte	readable		
 exe	0x005784a0	ai_TutorialInitMainIntro	sv_t	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	sv_t	byte	readable		
-exe	0x00578e40	ai_TutorialInitChapter2	sv_t	byte	readable		
-exe	0x00579570	ai_TutorialInitChapter3	sv_t	shape	readable		
+exe	0x00578e40	ai_TutorialInitChapter2	sv_t	shape	readable		
+exe	0x00579570	ai_TutorialInitChapter3	sv_t	draft	readable		
 exe	0x0057aa80	ai_TutorialInitChapter4	sv_t	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	sv_t	byte	readable		
 exe	0x0057b750	ai_TutorialInitMainOutro	sv_t	byte	readable		
@@ -4021,94 +4021,94 @@ exe	0x0057cf90	ai_AlchemistWindow	sv_t	shape	readable	deep
 exe	0x0057dc50	ai_AlchemistTrainShareWindow	sv_t	byte	readable		
 exe	0x0057de60	ai_AlchemistFundWindow	sv_t	byte	readable		
 exe	0x0057e0e0	ai_AlchemistRescheduleWindow	sv_t	byte	readable		
-exe	0x0057e230	ai_ShotTableStore	sv_t	byte	readable		
-exe	0x0057e270	ai_CannonScene	sv_t	shape	readable	deep	
-exe	0x0057ec40	ai_CannonAim	sv_t	byte	readable		
-exe	0x0057f0e0	ai_CannonCamera	sv_t	draft	readable	deep	
-exe	0x0057f5d0	ai_CannonAxes	sv_t	byte	readable		
-exe	0x0057f620	ai_CannonFireCheck	sv_t	byte	readable		
-exe	0x0057f690	ai_CannonShotResults	sv_t	byte	readable		
-exe	0x0057f890	ai_CannonPanel	sv_t	byte	readable		
-exe	0x0057fdb0	ai_CannonPitchRatio	sv_t	byte	readable		
-exe	0x0057fdd0	ai_CannonSwitchAnim	sv_t	byte	readable		
-exe	0x00580160	ai_CannonExplosion	sv_t	draft	readable	deep	
-exe	0x00580a50	ai_ShotTableReset	sv_t	byte	readable		
-exe	0x00580a90	ai_CannonBuildPanel	sv_t	byte	readable		
-exe	0x00580fe0	ai_CanSpyOn	sv_t	byte	readable		
-exe	0x00581020	ai_CabinetSpyWindow	sv_t	byte	readable		
-exe	0x00581400	ai_CabinetSpyOnCharacter	sv_t	byte	readable		
-exe	0x00581950	ai_CabinetSpyByMoney	sv_t	byte	readable		
-exe	0x00581db0	ai_CabinetIntrigueWindow	sv_t	byte	readable		
-exe	0x005821d0	ai_AlchemistLabContact	sv_t	byte	readable		
-exe	0x005823b0	ai_UnlockRoomWindow	sv_t	byte	readable		
-exe	0x00582560	ai_CannonContact	sv_t	byte	readable		
-exe	0x00582600	ai_CabinetContact	sv_t	byte	readable		
-exe	0x00582730	ai_GraveSizeButtons	sv_t	byte	readable		
-exe	0x005828c0	ai_GraveList	sv_t	byte	readable		
-exe	0x00582b40	ai_GraveDetail	sv_t	shape	readable	deep	
-exe	0x005830f0	ai_GraveDeadName	sv_t	byte	readable		
-exe	0x00583150	ai_GraveDeadDescription	sv_t	byte	readable		
-exe	0x00583240	ai_GraveWindow	sv_t	draft	readable	deep	
-exe	0x00583700	ai_RentGraveDetail	sv_t	draft	readable	deep	
-exe	0x00583b70	ai_GraveDetailOpen	sv_t	byte	readable		
-exe	0x00583c50	ai_GraveSizeButtonsAt	sv_t	byte	readable		
-exe	0x00583de0	ai_GraveFreeConfirm	sv_t	byte	readable		
-exe	0x00583ef0	ai_GraveSizeEnable	sv_t	byte	readable		
-exe	0x00584010	ai_GraveMoveConfirm	sv_t	byte	readable		
-exe	0x00584260	ai_GraveMoveWindow	sv_t	byte	readable		
-exe	0x00584410	ai_GraveDetailButtons	sv_t	byte	readable		
-exe	0x00584520	ai_GraveRentConfirm	sv_t	byte	readable		
-exe	0x005847a0	ai_RentGraveSelect	sv_t	byte	readable		
-exe	0x00584900	ai_GraveCare	sv_t	byte	readable		
-exe	0x00584b70	ai_GraveRaiseHelper	sv_t	byte	readable		
-exe	0x00584d70	ai_GypsyHelperWindow	sv_t	byte	readable		
-exe	0x00585380	ai_GraveFogWindow	sv_t	shape	readable	deep	
-exe	0x00585750	ai_SeanceWindow	sv_t	byte	readable		
-exe	0x005859c0	ai_SeanceRitual	sv_t	byte	readable		
-exe	0x00585c40	ai_SeanceRollFormulas	sv_t	byte	readable		
-exe	0x00585cb0	ai_SeanceGhost	sv_t	byte	readable		
-exe	0x00585f30	ai_SeanceSacrifice	sv_t	byte	readable		
-exe	0x00586200	ai_SeanceGift	sv_t	byte	readable		
-exe	0x00586560	ai_SeancePick	sv_t	byte	readable		
-exe	0x00586610	ai_GraveSeance	sv_t	byte	readable		
-exe	0x005867c0	ai_GraveyardSchlag	sv_t	byte	readable		
-exe	0x00586840	ai_GraveyardContact	sv_t	byte	readable		
-exe	0x00586ab0	ai_GraveHauntContact	sv_t	shape	readable		
-exe	0x00586e40	ai_GraveAgeContact	sv_t	byte	readable		
-exe	0x005871c0	ai_GravePlanContact	sv_t	byte	readable		
-exe	0x005871e0	ai_GraveRentContact	sv_t	byte	readable		
-exe	0x00587300	ai_GraveCareContact	sv_t	byte	readable		
-exe	0x00587340	ai_GraveHelperContact	sv_t	byte	readable		
-exe	0x00587370	ai_GraveInsuranceContact	sv_t	byte	readable		
-exe	0x00587560	ai_GraveyardTradeContact	sv_t	byte	readable		
-exe	0x005876a0	ai_GraveyardSeanceContact	sv_t	byte	readable		
-exe	0x00587700	ai_UpgradeWorkerSend	sv_t	byte	readable		
-exe	0x00587810	ai_UpgradeWorkerWindow	sv_t	byte	readable		
-exe	0x00587ad0	ai_GraveyardFogContact	sv_t	byte	readable		
-exe	0x00587b70	ai_PermissionBits1d	sv_t	byte	readable		
-exe	0x00587c40	ai_EndCharExtra	sv_t	byte	readable		
-exe	0x00587c90	ai_GraveyardChatter	sv_t	byte	readable		
-exe	0x00587de0	ai_ClearTurnTable	sv_t	byte	readable		
-exe	0x00587e00	ai_HandleItemDrag	sv_t	byte	readable		
-exe	0x00588160	ai_OpenBuildingTooltip	sv_t	byte	readable		
-exe	0x00588310	ai_OpenItemTooltip	sv_t	draft	readable	deep	
-exe	0x00588950	ai_OpenUpgradeTooltip	sv_t	shape	readable		
-exe	0x00588bb0	ai_OpenHelpTooltip	sv_t	byte	readable		
-exe	0x00588c60	ai_OpenCharTooltip	sv_t	byte	readable		
-exe	0x005890c0	ai_CharInfoWindow	sv_t	byte	readable		
-exe	0x00589400	ai_ClearBookmark	sv_t	byte	readable		
-exe	0x00589410	ai_InitBookmarks	sv_t	byte	readable		
-exe	0x00589450	ai_ValidateBookmarks	sv_t	byte	readable		
-exe	0x005894d0	ai_SelectBookmark	sv_t	byte	readable		
-exe	0x00589570	ai_SetBookmark	sv_t	byte	readable		
-exe	0x00589670	ai_BookmarkWindow	sv_t	shape	readable		
-exe	0x00589aa0	ai_SaveBookmarks	sv_t	byte	readable		
-exe	0x00589b30	ai_LoadBookmarks	sv_t	byte	readable		
-exe	0x00589bc0	ai_SaveScreenshot	sv_t	byte	readable		
-exe	0x00589c90	ai_SlotKeys	sv_t	byte	readable		
-exe	0x00589cf0	ai_SpeedKeys	sv_t	byte	readable		
-exe	0x00589e00	ai_BookmarkSetBuilding	sv_t	byte	readable		
-exe	0x00589e50	ai_BookmarksPreset	sv_t	byte	readable		
+exe	0x0057e230	ai_ShotTableStore	svcannon	byte	readable		
+exe	0x0057e270	ai_CannonScene	svcannon	shape	readable	deep	
+exe	0x0057ec40	ai_CannonAim	svcannon	byte	readable		
+exe	0x0057f0e0	ai_CannonCamera	svcannon	draft	readable	deep	
+exe	0x0057f5d0	ai_CannonAxes	svcannon	byte	readable		
+exe	0x0057f620	ai_CannonFireCheck	svcannon	byte	readable		
+exe	0x0057f690	ai_CannonShotResults	svcannon	byte	readable		
+exe	0x0057f890	ai_CannonPanel	svcannon	byte	readable		
+exe	0x0057fdb0	ai_CannonPitchRatio	svcannon	byte	readable		
+exe	0x0057fdd0	ai_CannonSwitchAnim	svcannon	byte	readable		
+exe	0x00580160	ai_CannonExplosion	svcannon	draft	readable	deep	
+exe	0x00580a50	ai_ShotTableReset	svcannon	byte	readable		
+exe	0x00580a90	ai_CannonBuildPanel	svcannon	byte	readable		
+exe	0x00580fe0	ai_CanSpyOn	svcannon	byte	readable		
+exe	0x00581020	ai_CabinetSpyWindow	svcannon	byte	readable		
+exe	0x00581400	ai_CabinetSpyOnCharacter	svcannon	byte	readable		
+exe	0x00581950	ai_CabinetSpyByMoney	svcannon	byte	readable		
+exe	0x00581db0	ai_CabinetIntrigueWindow	svcannon	byte	readable		
+exe	0x005821d0	ai_AlchemistLabContact	svcannon	byte	readable		
+exe	0x005823b0	ai_UnlockRoomWindow	svcannon	byte	readable		
+exe	0x00582560	ai_CannonContact	svcannon	byte	readable		
+exe	0x00582600	ai_CabinetContact	svcannon	byte	readable		
+exe	0x00582730	ai_GraveSizeButtons	svgrave	byte	readable		
+exe	0x005828c0	ai_GraveList	svgrave	byte	readable		
+exe	0x00582b40	ai_GraveDetail	svgrave	shape	readable	deep	
+exe	0x005830f0	ai_GraveDeadName	svgrave	byte	readable		
+exe	0x00583150	ai_GraveDeadDescription	svgrave	byte	readable		
+exe	0x00583240	ai_GraveWindow	svgrave	draft	readable	deep	
+exe	0x00583700	ai_RentGraveDetail	svgrave	draft	readable	deep	
+exe	0x00583b70	ai_GraveDetailOpen	svgrave	byte	readable		
+exe	0x00583c50	ai_GraveSizeButtonsAt	svgrave	byte	readable		
+exe	0x00583de0	ai_GraveFreeConfirm	svgrave	byte	readable		
+exe	0x00583ef0	ai_GraveSizeEnable	svgrave	byte	readable		
+exe	0x00584010	ai_GraveMoveConfirm	svgrave	byte	readable		
+exe	0x00584260	ai_GraveMoveWindow	svgrave	byte	readable		
+exe	0x00584410	ai_GraveDetailButtons	svgrave	byte	readable		
+exe	0x00584520	ai_GraveRentConfirm	svgrave	byte	readable		
+exe	0x005847a0	ai_RentGraveSelect	svgrave	byte	readable		
+exe	0x00584900	ai_GraveCare	svgrave	byte	readable		
+exe	0x00584b70	ai_GraveRaiseHelper	svgrave	byte	readable		
+exe	0x00584d70	ai_GypsyHelperWindow	svgrave	byte	readable		
+exe	0x00585380	ai_GraveFogWindow	svgrave	shape	readable	deep	
+exe	0x00585750	ai_SeanceWindow	svgrave	byte	readable		
+exe	0x005859c0	ai_SeanceRitual	svgrave	byte	readable		
+exe	0x00585c40	ai_SeanceRollFormulas	svgrave	byte	readable		
+exe	0x00585cb0	ai_SeanceGhost	svgrave	byte	readable		
+exe	0x00585f30	ai_SeanceSacrifice	svgrave	byte	readable		
+exe	0x00586200	ai_SeanceGift	svgrave	byte	readable		
+exe	0x00586560	ai_SeancePick	svgrave	byte	readable		
+exe	0x00586610	ai_GraveSeance	svgrave	byte	readable		
+exe	0x005867c0	ai_GraveyardSchlag	svgrave	byte	readable		
+exe	0x00586840	ai_GraveyardContact	svgrave	byte	readable		
+exe	0x00586ab0	ai_GraveHauntContact	svgrave	shape	readable		
+exe	0x00586e40	ai_GraveAgeContact	svgrave	byte	readable		
+exe	0x005871c0	ai_GravePlanContact	svgrave	byte	readable		
+exe	0x005871e0	ai_GraveRentContact	svgrave	byte	readable		
+exe	0x00587300	ai_GraveCareContact	svgrave	byte	readable		
+exe	0x00587340	ai_GraveHelperContact	svgrave	byte	readable		
+exe	0x00587370	ai_GraveInsuranceContact	svgrave	byte	readable		
+exe	0x00587560	ai_GraveyardTradeContact	svgrave	byte	readable		
+exe	0x005876a0	ai_GraveyardSeanceContact	svgrave	byte	readable		
+exe	0x00587700	ai_UpgradeWorkerSend	svgrave	byte	readable		
+exe	0x00587810	ai_UpgradeWorkerWindow	svgrave	byte	readable		
+exe	0x00587ad0	ai_GraveyardFogContact	svgrave	byte	readable		
+exe	0x00587b70	ai_PermissionBits1d	svgrave	byte	readable		
+exe	0x00587c40	ai_EndCharExtra	svgrave	byte	readable		
+exe	0x00587c90	ai_GraveyardChatter	svgrave	byte	readable		
+exe	0x00587de0	ai_ClearTurnTable	svgrave	byte	readable		
+exe	0x00587e00	ai_HandleItemDrag	svgrave	byte	readable		
+exe	0x00588160	ai_OpenBuildingTooltip	svgrave	byte	readable		
+exe	0x00588310	ai_OpenItemTooltip	svgrave	draft	readable	deep	
+exe	0x00588950	ai_OpenUpgradeTooltip	svgrave	shape	readable		
+exe	0x00588bb0	ai_OpenHelpTooltip	svgrave	byte	readable		
+exe	0x00588c60	ai_OpenCharTooltip	svgrave	byte	readable		
+exe	0x005890c0	ai_CharInfoWindow	svgrave	byte	readable		
+exe	0x00589400	ai_ClearBookmark	svgrave	byte	readable		
+exe	0x00589410	ai_InitBookmarks	svgrave	byte	readable		
+exe	0x00589450	ai_ValidateBookmarks	svgrave	byte	readable		
+exe	0x005894d0	ai_SelectBookmark	svgrave	byte	readable		
+exe	0x00589570	ai_SetBookmark	svgrave	byte	readable		
+exe	0x00589670	ai_BookmarkWindow	svgrave	shape	readable		
+exe	0x00589aa0	ai_SaveBookmarks	svgrave	byte	readable		
+exe	0x00589b30	ai_LoadBookmarks	svgrave	byte	readable		
+exe	0x00589bc0	ai_SaveScreenshot	svgrave	byte	readable		
+exe	0x00589c90	ai_SlotKeys	svgrave	byte	readable		
+exe	0x00589cf0	ai_SpeedKeys	svgrave	byte	readable		
+exe	0x00589e00	ai_BookmarkSetBuilding	svgrave	byte	readable		
+exe	0x00589e50	ai_BookmarksPreset	svgrave	byte	readable		
 exe	0x00589f10	lobby_Screen	lobby	byte	readable		
 exe	0x0058a940	lobby_AddButtons	lobby	byte	readable		
 exe	0x0058a9d0	lobby_AddChatScroll	lobby	byte	readable		
@@ -4305,301 +4305,301 @@ exe	0x005a6720	ai_ArrestStart	lc	byte	readable
 exe	0x005a67a0	ai_CityWatchListener	lc	shape	readable		
 exe	0x005a6920	ai_GuildHallListener	lc	byte	readable		
 exe	0x005a6a90	ai_TrainingRoomListener	lc	byte	readable		
-exe	0x005a6b50	ai_FormatCityName	lc	byte	readable		
-exe	0x005a6b70	ai_MapCellToScreen	lc	byte	readable		
-exe	0x005a6c40	ai_PlaceMapControls	lc	byte	readable		
-exe	0x005a6cb0	ai_BuildTownMap	lc	draft	readable	deep	
-exe	0x005a78a0	ai_OpenTownMap	lc	byte	readable		
-exe	0x005a79e0	ai_DragTownMap	lc	shape	readable		
-exe	0x005a7bc0	ai_ScrollTownMap	lc	byte	readable		
-exe	0x005a7cd0	ai_UpdateTownMap	lc	byte	readable		
-exe	0x005a82f0	ai_CloseMapWindow	lc	byte	readable		
-exe	0x005a8340	ai_SettingRandom	lc	byte	readable		
-exe	0x005a8390	ai_FreeSettingChain	lc	byte	readable		
-exe	0x005a83b0	ai_FillSettingWeights	lc	byte	readable		
-exe	0x005a84b0	ai_FindSetting	lc	byte	readable		
-exe	0x005a84d0	ai_FindItemGroup	lc	byte	readable		
-exe	0x005a8540	ai_FindSettingSlots	lc	byte	readable		
-exe	0x005a8560	ai_ProdSetting	lc	draft	readable	deep	
-exe	0x005a86c0	ai_FreeProdSetting	lc	byte	readable		
-exe	0x005a8710	ai_SetSettingWeight	lc	byte	readable		
-exe	0x005a8850	ai_RefreshProdSetting	lc	byte	readable		
-exe	0x005a8870	ai_DrawSettingGood	lc	byte	readable		
-exe	0x005a88e0	ai_SettingFactor	lc	byte	readable		
-exe	0x005a8900	ai_SetSettingFactor	lc	byte	readable		
-exe	0x005a8920	ai_FreeSettings	lc	byte	readable		
-exe	0x005a8940	ai_SaveSettings	lc	byte	readable		
-exe	0x005a8a20	ai_LoadSettings	lc	byte	readable		
-exe	0x005a8b80	ai_ShowIndulgenceNews	lc	byte	readable		
-exe	0x005a8c00	ai_ShowPaymentNews	lc	byte	readable		
-exe	0x005a8c50	ai_ShowPurchaseNews	lc	byte	readable		
-exe	0x005a8cb0	ai_ShowOfficeNews	lc	byte	readable		
-exe	0x005a8d00	ai_ShowTributeDelayedNews	lc	byte	readable		
-exe	0x005a8d40	ai_ShowTributeCollectNews	lc	byte	readable		
-exe	0x005a8d80	ai_ShowTributeClaimNews	lc	byte	readable		
-exe	0x005a8e10	ai_ShowTavernHelperNews	lc	byte	readable		
-exe	0x005a8ee0	ai_ShowPartingNews	lc	shape	readable		
-exe	0x005a8f90	ai_ShowFeudNews	lc	shape	readable		
-exe	0x005a9050	ai_ShowPartnerNews	lc	shape	readable		
-exe	0x005a9110	ai_ShowCharacterNews	lc	byte	readable		
-exe	0x005a9170	ai_NotifyPlayerOfChar	lc	byte	readable		
-exe	0x005a91c0	ai_PlagueNews	lc	byte	readable		
-exe	0x005a9240	ai_PlagueMessage	lc	byte	readable		
-exe	0x005a92b0	ai_PlagueMessageAll	lc	byte	readable		
-exe	0x005a9330	ai_SendSwapText	lc	byte	readable		
-exe	0x005a9430	ai_ShowEvidenceVoidNews	lc	byte	readable		
-exe	0x005a9470	ai_GypsyDeliveryText	lc	byte	readable		
-exe	0x005a9690	ai_TellGraveNeglect	lc	byte	readable		
-exe	0x005a96e0	ai_NotifySale	lc	byte	readable		
-exe	0x005a9780	ai_TellGravesPaid	lc	byte	readable		
-exe	0x005a97e0	ai_ShowGraveOrderExtended	lc	byte	readable		
-exe	0x005a9880	ai_ShowGraveOrderCancelled	lc	byte	readable		
-exe	0x005a9910	ai_HauntingText	lc	byte	readable		
-exe	0x005a9990	ai_TellGraveWorkSuccess	lc	byte	readable		
-exe	0x005a99e0	ai_TellGraveWorkFailure	lc	byte	readable		
-exe	0x005a9a30	ai_GraveyardMessage	lc	byte	readable		
-exe	0x005a9af0	ai_GraveyardMessagePlain	lc	byte	readable		
-exe	0x005a9b50	ai_DomizilMessageResearch	lc	byte	readable		
-exe	0x005a9bc0	ai_DomizilMessageResearchKind	lc	byte	readable		
-exe	0x005a9c30	ai_DomizilMessage	lc	byte	readable		
-exe	0x005a9ca0	ai_DomizilMessage04	lc	byte	readable		
-exe	0x005a9d00	ai_DomizilMessageAge	lc	byte	readable		
-exe	0x005a9d60	ai_DomizilMessageTask	lc	byte	readable		
-exe	0x005a9dd0	ai_DomizilMessagePlace	lc	byte	readable		
-exe	0x005a9e40	ai_DomizilMessage12	lc	byte	readable		
-exe	0x005a9e90	ai_RandomDomizilGoodNotIn	lc	shape	readable	deep	
-exe	0x005a9f10	ai_DomizilGoodInRange	lc	shape	readable		
-exe	0x005a9f80	ai_AskBonusAmount	lc	shape	readable		
-exe	0x005aa0d0	ai_CreatePersonnelRow	lc	byte	readable		
-exe	0x005aa1f0	ai_FillPersonnelRow	lc	byte	readable		
-exe	0x005aa4b0	ai_DomizilFreeRow	lc	byte	readable		
-exe	0x005aa520	ai_FillVacantPersonnelRow	lc	byte	readable		
-exe	0x005aa700	ai_ShowBldCarts	lc	byte	readable		
-exe	0x005aa9a0	ai_UpdateBldCarts	lc	draft	readable	deep	
-exe	0x005aab80	ai_PersonnelBook	lc	draft	readable	deep	
-exe	0x005ac110	ai_MercenaryBook	lc	draft	readable	deep	
-exe	0x005ad000	ai_AskHelperBonus	lc	shape	readable		
-exe	0x005ad150	ai_HelperBook	lc	draft	readable	deep	
-exe	0x005ae240	ai_BuyCartWindow	lc	shape	readable		
-exe	0x005ae570	ai_SellCarts	lc	byte	readable		
-exe	0x005ae6b0	ai_SendTransportOrder	lc	byte	readable		
-exe	0x005ae870	ai_TransportOrderDue	lc	byte	readable		
-exe	0x005ae8e0	ai_CartAtBuilding	lc	byte	readable		
-exe	0x005ae9a0	ai_TransportFromLager	lc	shape	readable		
-exe	0x005af010	ai_TransportGoodsTotal	lc	draft	readable	deep	
-exe	0x005af1a0	ai_OpenTransport	lc	byte	readable		
-exe	0x005af1b0	ai_OpenTransportSell	lc	byte	readable		
-exe	0x005af1c0	ai_OpenTransportBuy	lc	byte	readable		
-exe	0x005af1d0	ai_TransportWindow	lc	draft	readable	deep	
-exe	0x005b2090	ai_LoadTownMap	lc	byte	readable		
-exe	0x005b2180	ai_MapPick	lc	byte	readable		
-exe	0x005b2530	ai_NewStorageSlotWindow	lc	shape	readable		
-exe	0x005b26b0	ai_StorageWindow	lc	draft	readable	deep	
-exe	0x005b3130	ai_TalentWindow	lc	byte	readable		
-exe	0x005b3630	ai_SabotageCallback	lc	byte	readable		
-exe	0x005b3ad0	ai_EspionageAmountCB	lc	byte	readable		
-exe	0x005b3f30	ai_BeatingCallback	lc	byte	readable		
-exe	0x005b4340	ai_EvidenceDetailsWindow	lc	byte	readable		
-exe	0x005b4590	ai_EvidenceBookWindow	lc	byte	readable		
-exe	0x005b4820	ai_BribeAmountCB	lc	draft	readable	deep	
-exe	0x005b4bf0	ai_OpenRobberBribe	lc	byte	readable		
-exe	0x005b4c60	ai_DrohbriefAmountCB	lc	draft	readable	deep	
-exe	0x005b4fb0	ai_DrohbriefWindow	lc	byte	readable		
-exe	0x005b5010	ai_DenounceWindow	lc	draft	readable	deep	
-exe	0x005b5310	ai_PamphletAmountCB	lc	byte	readable		
-exe	0x005b5610	ai_PamphletWindow	lc	byte	readable		
-exe	0x005b5690	ai_NoticeBoardWindow	lc	draft	readable	deep	
-exe	0x005b5a20	ai_BardWindow	lc	byte	readable		
-exe	0x005b5e80	ai_FeastWindow	lc	draft	readable	deep	
-exe	0x005b6950	ai_SellBuildingWindow	lc	byte	readable		
-exe	0x005b6b20	ai_RenovationWindow	lc	draft	readable	deep	
-exe	0x005b6eb0	ai_WithdrawSaleWindow	lc	byte	readable		
-exe	0x005b6fe0	ai_RoomUpgradeWindow	lc	draft	readable	deep	
-exe	0x005b7690	ai_UpgradeBuilding	lc	draft	readable	deep	
-exe	0x005b7b80	ai_BuyBuildingOfferWindow	lc	shape	readable		
-exe	0x005b7dd0	ai_TechEffectsWindow	lc	draft	readable	deep	
-exe	0x005b82a0	ai_FireFightingWindow	lc	byte	readable		
-exe	0x005b84f0	ai_BuildingWindow	lc	draft	readable	deep	
-exe	0x005b8fc0	ai_ManagedBuildingWindow	lc	shape	readable		
-exe	0x005b92e0	ai_LiquidateAssets	lc	draft	readable	deep	
-exe	0x005b9730	ob_HandleBepflanzung	lc	draft	readable	deep	
-exe	0x005b9db0	ai_HandlePickedPlant	lc	byte	readable		
-exe	0x005b9f30	ai_GelageWindow	lc	byte	readable		
-exe	0x005ba1c0	ai_OpenInventoryWindow	lc	byte	readable		
-exe	0x005ba290	ai_UpdateInventoryWindow	lc	byte	readable		
-exe	0x005ba600	ai_CloseChildWindow	lc	byte	readable		
-exe	0x005ba620	ai_FindUsableGood	lc	byte	readable		
-exe	0x005ba660	ai_FindUsableGoodIndex	lc	byte	readable		
-exe	0x005ba6b0	ai_InventoryHas	lc	byte	readable		
-exe	0x005ba700	ai_BuildingHasItem	lc	byte	readable		
-exe	0x005ba750	lc_UpdateGoodsReserves	lc	draft	readable	deep	
-exe	0x005ba980	ai_UseGoodWindow	lc	byte	readable		
-exe	0x005bac10	ai_InventoryPanel	lc	byte	readable		
-exe	0x005bae10	ai_EquipRowsInit	lc	byte	readable		
-exe	0x005bae50	ai_UpdateEquipRows	lc	shape	readable		
-exe	0x005bb2d0	ai_GoodFitsBuilding	lc	byte	readable		
-exe	0x005bb350	ai_EquipWindow	lc	byte	readable		
-exe	0x005bb950	ai_OpenTrainingRow	lc	byte	readable		
-exe	0x005bba00	ai_TrainingWindow	lc	draft	readable	deep	
-exe	0x005bc0f0	ai_FreePicture	lc	byte	readable		
-exe	0x005bc110	ai_ChooseCoatOfArms	lc	byte	readable		
-exe	0x005bc420	ai_OpenMoneyInfoPage	lc	byte	readable		
-exe	0x005bc6d0	ai_OpenBuildingListPage	lc	byte	readable		
-exe	0x005bc790	ai_BuildingDetailWindow	lc	byte	readable		
-exe	0x005bc9c0	ai_OpenMasterListPage	lc	shape	readable	deep	
-exe	0x005bcc70	ai_PlayerStatsPanel	lc	shape	readable		
-exe	0x005bd060	ai_AmountLimit	lc	byte	readable		
-exe	0x005bd0c0	ai_CentredText	lc	byte	readable		
-exe	0x005bd190	ai_RightAlignedText	lc	byte	readable		
-exe	0x005bd1f0	ai_LeftAlignedText	lc	byte	readable		
-exe	0x005bd250	ai_ShowWindowRow	lc	byte	readable		
-exe	0x005bd330	ai_ShowLoanRows	lc	byte	readable		
-exe	0x005bd470	ai_ShowBuildingRows	lc	byte	readable		
-exe	0x005bd5e0	ai_ShowAmountRows	lc	draft	readable	deep	
-exe	0x005bdb60	ai_ShowOfficeRows	lc	byte	readable		
-exe	0x005be1d0	ai_AmountRowStatus	lc	byte	readable		
-exe	0x005be3b0	ai_AmountRow	lc	byte	readable		
-exe	0x005be720	ai_DrawAmountRow	lc	byte	readable		
-exe	0x005bea00	ai_SpecialAmountList	lc	byte	readable		
-exe	0x005bea50	ai_SpecialAmountListWindow	lc	draft	readable	deep	
-exe	0x005bf0d0	ai_FillFamilyTab	lc	draft	readable	deep	
-exe	0x005bf300	ai_FillFriendsTab	lc	byte	readable		
-exe	0x005bf4f0	ai_FillEnemiesTab	lc	byte	readable		
-exe	0x005bf6f0	ai_FillLoversTab	lc	draft	readable	deep	
-exe	0x005bf7c0	ai_FillWeddingTab	lc	draft	readable	deep	
-exe	0x005bfa90	ai_FillQuarrelTab	lc	draft	readable	deep	
-exe	0x005bfc40	ai_FillCandidacyTab	lc	byte	readable		
-exe	0x005bfd90	ai_FillOfficeTab	lc	byte	readable		
-exe	0x005bfed0	ai_AmountPageSwitch	lc	shape	readable		
-exe	0x005bff80	ai_EnableAmountRows	lc	byte	readable		
-exe	0x005bffb0	ai_ShowFamilyTab	lc	byte	readable		
-exe	0x005c00b0	ai_ShowFriendsTab	lc	byte	readable		
-exe	0x005c01c0	ai_ShowEnemiesTab	lc	byte	readable		
-exe	0x005c02d0	ai_ShowLoversTab	lc	byte	readable		
-exe	0x005c03e0	ai_ShowWeddingTab	lc	byte	readable		
-exe	0x005c0550	ai_ShowQuarrelTab	lc	byte	readable		
-exe	0x005c0650	ai_ShowCandidacyTab	lc	byte	readable		
-exe	0x005c0790	ai_ShowOfficeTab	lc	byte	readable		
-exe	0x005c08b0	ai_ClearAmountTabs	lc	byte	readable		
-exe	0x005c08d0	ai_AmountLikingRows	lc	byte	readable		
-exe	0x005c0970	ai_SpecialAmountWindow	lc	byte	readable		
-exe	0x005c1130	ai_AmountMenu	lc	draft	readable	deep	
-exe	0x005c1500	ai_AmountListWindow	lc	byte	readable		
-exe	0x005c1a80	ai_AmountInfoWindow	lc	byte	readable		
-exe	0x005c1b20	ai_OpenAmountKindMenu	lc	byte	readable		
-exe	0x005c1b40	ai_AmountKindMenu	lc	byte	readable		
-exe	0x005c1df0	ai_OpenAgendaMenu	lc	byte	readable		
-exe	0x005c1e10	ai_AgendaOfficeList	lc	shape	readable		
-exe	0x005c2160	ai_OpenLawBook	lc	byte	readable		
-exe	0x005c2410	ai_LawBookInfoWindow	lc	byte	readable		
-exe	0x005c2490	ai_ShowWorkSettingsPage	lc	shape	readable		
-exe	0x005c26a0	ai_MasterLetterNoticeWindow	lc	byte	readable		
-exe	0x005c2730	ai_MasterLetterKindWindow	lc	byte	readable		
-exe	0x005c27b0	ai_MasterHireWindow	lc	byte	readable		
-exe	0x005c2a10	ai_ShowSettingGoods	lc	shape	readable		
-exe	0x005c2b90	ai_MasterLetterSettings	lc	byte	readable		
-exe	0x005c3200	ai_MasterLetterWindow	lc	draft	readable	deep	
-exe	0x005c33c0	ai_PassesPartnerFilter	lc	draft	readable	deep	
-exe	0x005c37a0	ai_PassesBuildingFilter	lc	draft	readable	deep	
-exe	0x005c39a0	ai_PassesMapPickFilter	lc	byte	readable		
-exe	0x005c3bb0	ai_PickBuildingChar	lc	draft	readable	deep	
-exe	0x005c4100	ai_LawSelectionEntry	lc	draft	readable	deep	
-exe	0x005c4150	ai_FamilyTreeWindow	lc	draft	readable	deep	
-exe	0x005c5310	ai_CharInfoPanel	lc	draft	readable	deep	
-exe	0x005c6050	ai_GiftWindow	lc	byte	readable		
-exe	0x005c64c0	ai_FindCandidateIds	lc	shape	readable		
-exe	0x005c6530	ai_MarriageTest	lc	byte	readable		
-exe	0x005c6620	ai_CourtshipRounds	lc	byte	readable		
-exe	0x005c6910	ai_CourtshipConfirm	lc	draft	readable	deep	
-exe	0x005c6aa0	ai_CourtshipListWindow	lc	byte	readable		
-exe	0x005c6d00	ai_CourtshipWindow	lc	draft	readable	deep	
-exe	0x005c72d0	ai_PlotRatingBaseChart	lc	byte	readable		
-exe	0x005c7460	ai_PlotScoreChart	lc	shape	readable		
-exe	0x005c7560	ai_PlotNoFirstChart	lc	byte	readable		
-exe	0x005c76b0	ai_PlotNoSecondChart	lc	byte	readable		
-exe	0x005c7800	ai_PlotCombinedChart	lc	byte	readable		
-exe	0x005c7970	ai_DrawStatisticsCharts	lc	draft	readable	deep	
-exe	0x005c7f00	ai_CityStatsPanel	lc	byte	readable		
-exe	0x005c82f0	ai_PlayerComparePanel	lc	draft	readable	deep	
-exe	0x005c8640	ai_PrivilegesPanel	lc	byte	readable		
-exe	0x005c8bc0	ai_MedicusHandler	lc	byte	readable		
-exe	0x005c8ef0	ai_DivorceDialog	lc	draft	readable	deep	
-exe	0x005c9290	ai_BlackmailWindow	lc	byte	readable		
-exe	0x005c9550	ai_BlackmailBuildingListener	lc	byte	readable		
-exe	0x005c9990	ai_BlackmailContactWindow	lc	byte	readable		
-exe	0x005c9c50	ai_BlackmailContact	lc	shape	readable		
-exe	0x005c9df0	ai_IntimidateWindow	lc	byte	readable		
-exe	0x005c9ff0	ai_IntimidateContact	lc	shape	readable		
-exe	0x005ca150	ai_LawPrivilegeWindow	lc	byte	readable		
-exe	0x005ca560	ai_DismissOfficeAsk	lc	shape	readable		
-exe	0x005ca860	ai_MisappropriationWindow	lc	byte	readable		
-exe	0x005caab0	ai_BewitchWindow	lc	byte	readable		
-exe	0x005cacd0	ai_BewitchOrder	lc	shape	readable		
-exe	0x005cae00	ai_CounterEspionage	lc	byte	readable		
-exe	0x005cb1e0	ai_SwapSeats	lc	byte	readable		
-exe	0x005cb250	ai_SeatSwapWindow	lc	byte	readable		
-exe	0x005cb4f0	ai_HatredWindow	lc	shape	readable	deep	
-exe	0x005cba90	ai_HearingWindow	lc	byte	readable		
-exe	0x005cbe00	ai_ExpelWorkerWindow	lc	draft	readable	deep	
-exe	0x005cc2b0	ai_PeaceWindow	lc	byte	readable		
-exe	0x005cc700	ai_ConvertWindow	lc	draft	readable	deep	
-exe	0x005cca40	ai_PenanceWindow	lc	byte	readable		
-exe	0x005ccc10	ai_Miracle	lc	draft	readable	deep	
-exe	0x005cd2e0	ai_MiracleWindow	lc	draft	readable	deep	
-exe	0x005cd400	ai_ChangeProfessionWindow	lc	shape	readable		
-exe	0x005cd8c0	ai_OpenTrial	lc	byte	readable		
-exe	0x005cdb90	ai_AccuseWindow	lc	byte	readable		
-exe	0x005cde90	ai_AccusationWindow	lc	draft	readable	deep	
-exe	0x005ce1a0	ai_FaithAccusationWindow	lc	draft	readable	deep	
-exe	0x005ce4b0	ai_Interrogate	lc	byte	readable		
-exe	0x005ce610	ai_InterrogationWindow	lc	byte	readable		
-exe	0x005ce7f0	ai_WorkerDismissalWindow	lc	byte	readable		
-exe	0x005ce950	ai_DismissalHandler	lc	byte	readable		
-exe	0x005ced50	ai_SendInterrogationRefusal	lc	byte	readable		
-exe	0x005cede0	ai_InterrogationWindow1	lc	byte	readable		
-exe	0x005cf020	ai_InterrogationWindow2	lc	byte	readable		
-exe	0x005cf260	ai_ChooseProfessionWindow	lc	byte	readable		
-exe	0x005cf4f0	ai_UniversityWindow	lc	byte	readable		
-exe	0x005cf820	ai_UseObjPanel	lc	byte	readable		
-exe	0x005cf8a0	ai_UseGood	lc	draft	readable	deep	
-exe	0x005cfb60	ai_UseGoodAddMoney	lc	byte	readable		
-exe	0x005cfb80	ai_UseGoodHeal	lc	byte	readable		
-exe	0x005cfc00	ai_UseGoodInfectOwner	lc	byte	readable		
-exe	0x005cff70	ai_UseGoodSendHome	lc	draft	readable	deep	
-exe	0x005d0320	ai_UseGoodWeakenSkills	lc	byte	readable		
-exe	0x005d0530	ai_UseGoodWeakenSkills2	lc	byte	readable		
-exe	0x005d06e0	ai_UseGoodCureAilment	lc	byte	readable		
-exe	0x005d0780	ai_UseGoodHalveWorkerValue	lc	draft	readable	deep	
-exe	0x005d08c0	ai_ApplyTrialStep	lc	byte	readable		
-exe	0x005d09d0	ai_TrialStep1	lc	byte	readable		
-exe	0x005d0a40	ai_TrialStep3	lc	byte	readable		
-exe	0x005d0ab0	ai_TrialStep4	lc	byte	readable		
-exe	0x005d0b20	ai_UseGoodRaiseRelation	lc	draft	readable	deep	
-exe	0x005d0c70	ai_QuarrelCallback	lc	draft	readable	deep	
-exe	0x005d0e60	ai_UseGoodTrialStep	lc	byte	readable		
-exe	0x005d0f20	ai_UseGoodLowerOfficialRelations	lc	draft	readable	deep	
-exe	0x005d1300	ai_UseGoodTwoTrialSteps	lc	byte	readable		
-exe	0x005d13e0	ai_UseGoodCharmOtherSex	lc	draft	readable	deep	
-exe	0x005d1680	ai_UseGoodSowDiscord	lc	byte	readable		
-exe	0x005d1830	ai_UseGoodTributeClaim	lc	byte	readable		
-exe	0x005d18c0	ai_UseGoodDrainActionPoints	lc	byte	readable		
-exe	0x005d1990	ai_UseGoodDrainSkill	lc	byte	readable		
-exe	0x005d1b30	ai_UseGoodHarmBuilding	lc	byte	readable		
-exe	0x005d1da0	ai_UseGoodSpoilStock	lc	byte	readable		
-exe	0x005d1fb0	ai_UseGoodCharmOfficials	lc	shape	readable		
-exe	0x005d22e0	ai_UsePayGood	lc	byte	readable		
-exe	0x005d2320	ai_UseGoodDrainActionPoints8	lc	byte	readable		
-exe	0x005d2440	ai_UseGoodHoldRound	lc	byte	readable		
-exe	0x005d2580	ai_UseGoodCharmPartner	lc	draft	readable	deep	
-exe	0x005d2720	ai_UseGoodWeakenSkills3	lc	byte	readable		
-exe	0x005d2960	ai_UseGoodFrameChar	lc	shape	readable		
-exe	0x005d2bc0	ai_UseGoodFrameChar2	lc	byte	readable		
-exe	0x005d2e80	ai_UseGoodHeatBuilding	lc	byte	readable		
-exe	0x005d2f20	ai_UseEventGood	lc	shape	readable		
-exe	0x005d2f90	ai_UseGoodStaffBonus	lc	byte	readable		
-exe	0x005d3030	ai_UseGoodPettyLoss	lc	draft	readable	deep	
-exe	0x005d31c0	ai_UseGoodSkillBonus	lc	byte	readable		
-exe	0x005d3270	ai_UseGoodDistrust	lc	draft	readable	deep	
+exe	0x005a6b50	ai_FormatCityName	lcmap	byte	readable		
+exe	0x005a6b70	ai_MapCellToScreen	lcmap	byte	readable		
+exe	0x005a6c40	ai_PlaceMapControls	lcmap	byte	readable		
+exe	0x005a6cb0	ai_BuildTownMap	lcmap	draft	readable	deep	
+exe	0x005a78a0	ai_OpenTownMap	lcmap	byte	readable		
+exe	0x005a79e0	ai_DragTownMap	lcmap	shape	readable		
+exe	0x005a7bc0	ai_ScrollTownMap	lcmap	byte	readable		
+exe	0x005a7cd0	ai_UpdateTownMap	lcmap	byte	readable		
+exe	0x005a82f0	ai_CloseMapWindow	lcmap	byte	readable		
+exe	0x005a8340	ai_SettingRandom	lcmap	byte	readable		
+exe	0x005a8390	ai_FreeSettingChain	lcmap	byte	readable		
+exe	0x005a83b0	ai_FillSettingWeights	lcmap	byte	readable		
+exe	0x005a84b0	ai_FindSetting	lcmap	byte	readable		
+exe	0x005a84d0	ai_FindItemGroup	lcmap	byte	readable		
+exe	0x005a8540	ai_FindSettingSlots	lcmap	byte	readable		
+exe	0x005a8560	ai_ProdSetting	lcmap	draft	readable	deep	
+exe	0x005a86c0	ai_FreeProdSetting	lcmap	byte	readable		
+exe	0x005a8710	ai_SetSettingWeight	lcmap	byte	readable		
+exe	0x005a8850	ai_RefreshProdSetting	lcmap	byte	readable		
+exe	0x005a8870	ai_DrawSettingGood	lcmap	byte	readable		
+exe	0x005a88e0	ai_SettingFactor	lcmap	byte	readable		
+exe	0x005a8900	ai_SetSettingFactor	lcmap	byte	readable		
+exe	0x005a8920	ai_FreeSettings	lcmap	byte	readable		
+exe	0x005a8940	ai_SaveSettings	lcmap	byte	readable		
+exe	0x005a8a20	ai_LoadSettings	lcmap	byte	readable		
+exe	0x005a8b80	ai_ShowIndulgenceNews	lcmap	byte	readable		
+exe	0x005a8c00	ai_ShowPaymentNews	lcmap	byte	readable		
+exe	0x005a8c50	ai_ShowPurchaseNews	lcmap	byte	readable		
+exe	0x005a8cb0	ai_ShowOfficeNews	lcmap	byte	readable		
+exe	0x005a8d00	ai_ShowTributeDelayedNews	lcmap	byte	readable		
+exe	0x005a8d40	ai_ShowTributeCollectNews	lcmap	byte	readable		
+exe	0x005a8d80	ai_ShowTributeClaimNews	lcmap	byte	readable		
+exe	0x005a8e10	ai_ShowTavernHelperNews	lcmap	byte	readable		
+exe	0x005a8ee0	ai_ShowPartingNews	lcmap	shape	readable		
+exe	0x005a8f90	ai_ShowFeudNews	lcmap	shape	readable		
+exe	0x005a9050	ai_ShowPartnerNews	lcmap	shape	readable		
+exe	0x005a9110	ai_ShowCharacterNews	lcmap	byte	readable		
+exe	0x005a9170	ai_NotifyPlayerOfChar	lcmap	byte	readable		
+exe	0x005a91c0	ai_PlagueNews	lcmap	byte	readable		
+exe	0x005a9240	ai_PlagueMessage	lcmap	byte	readable		
+exe	0x005a92b0	ai_PlagueMessageAll	lcmap	byte	readable		
+exe	0x005a9330	ai_SendSwapText	lcmap	byte	readable		
+exe	0x005a9430	ai_ShowEvidenceVoidNews	lcmap	byte	readable		
+exe	0x005a9470	ai_GypsyDeliveryText	lcmap	byte	readable		
+exe	0x005a9690	ai_TellGraveNeglect	lcmap	byte	readable		
+exe	0x005a96e0	ai_NotifySale	lcmap	byte	readable		
+exe	0x005a9780	ai_TellGravesPaid	lcmap	byte	readable		
+exe	0x005a97e0	ai_ShowGraveOrderExtended	lcmap	byte	readable		
+exe	0x005a9880	ai_ShowGraveOrderCancelled	lcmap	byte	readable		
+exe	0x005a9910	ai_HauntingText	lcmap	byte	readable		
+exe	0x005a9990	ai_TellGraveWorkSuccess	lcmap	byte	readable		
+exe	0x005a99e0	ai_TellGraveWorkFailure	lcmap	byte	readable		
+exe	0x005a9a30	ai_GraveyardMessage	lcmap	byte	readable		
+exe	0x005a9af0	ai_GraveyardMessagePlain	lcmap	byte	readable		
+exe	0x005a9b50	ai_DomizilMessageResearch	lcmap	byte	readable		
+exe	0x005a9bc0	ai_DomizilMessageResearchKind	lcmap	byte	readable		
+exe	0x005a9c30	ai_DomizilMessage	lcmap	byte	readable		
+exe	0x005a9ca0	ai_DomizilMessage04	lcmap	byte	readable		
+exe	0x005a9d00	ai_DomizilMessageAge	lcmap	byte	readable		
+exe	0x005a9d60	ai_DomizilMessageTask	lcmap	byte	readable		
+exe	0x005a9dd0	ai_DomizilMessagePlace	lcmap	byte	readable		
+exe	0x005a9e40	ai_DomizilMessage12	lcmap	byte	readable		
+exe	0x005a9e90	ai_RandomDomizilGoodNotIn	lcdom	shape	readable	deep	
+exe	0x005a9f10	ai_DomizilGoodInRange	lcdom	shape	readable		
+exe	0x005a9f80	ai_AskBonusAmount	lcdom	shape	readable		
+exe	0x005aa0d0	ai_CreatePersonnelRow	lcdom	byte	readable		
+exe	0x005aa1f0	ai_FillPersonnelRow	lcdom	byte	readable		
+exe	0x005aa4b0	ai_DomizilFreeRow	lcdom	byte	readable		
+exe	0x005aa520	ai_FillVacantPersonnelRow	lcdom	byte	readable		
+exe	0x005aa700	ai_ShowBldCarts	lcdom	byte	readable		
+exe	0x005aa9a0	ai_UpdateBldCarts	lcdom	draft	readable	deep	
+exe	0x005aab80	ai_PersonnelBook	lcdom	draft	readable	deep	
+exe	0x005ac110	ai_MercenaryBook	lcdom	draft	readable	deep	
+exe	0x005ad000	ai_AskHelperBonus	lcdom	shape	readable		
+exe	0x005ad150	ai_HelperBook	lcdom	draft	readable	deep	
+exe	0x005ae240	ai_BuyCartWindow	lcdom	shape	readable		
+exe	0x005ae570	ai_SellCarts	lcdom	byte	readable		
+exe	0x005ae6b0	ai_SendTransportOrder	lcdom	byte	readable		
+exe	0x005ae870	ai_TransportOrderDue	lcdom	byte	readable		
+exe	0x005ae8e0	ai_CartAtBuilding	lcdom	byte	readable		
+exe	0x005ae9a0	ai_TransportFromLager	lcdom	shape	readable		
+exe	0x005af010	ai_TransportGoodsTotal	lcdom	draft	readable	deep	
+exe	0x005af1a0	ai_OpenTransport	lcdom	byte	readable		
+exe	0x005af1b0	ai_OpenTransportSell	lcdom	byte	readable		
+exe	0x005af1c0	ai_OpenTransportBuy	lcdom	byte	readable		
+exe	0x005af1d0	ai_TransportWindow	lcdom	draft	readable	deep	
+exe	0x005b2090	ai_LoadTownMap	lcdom	byte	readable		
+exe	0x005b2180	ai_MapPick	lcdom	byte	readable		
+exe	0x005b2530	ai_NewStorageSlotWindow	lcdom	shape	readable		
+exe	0x005b26b0	ai_StorageWindow	lcdom	draft	readable	deep	
+exe	0x005b3130	ai_TalentWindow	lcdom	byte	readable		
+exe	0x005b3630	ai_SabotageCallback	lcdom	byte	readable		
+exe	0x005b3ad0	ai_EspionageAmountCB	lcdom	byte	readable		
+exe	0x005b3f30	ai_BeatingCallback	lcdom	byte	readable		
+exe	0x005b4340	ai_EvidenceDetailsWindow	lcdom	byte	readable		
+exe	0x005b4590	ai_EvidenceBookWindow	lcdom	byte	readable		
+exe	0x005b4820	ai_BribeAmountCB	lcdom	draft	readable	deep	
+exe	0x005b4bf0	ai_OpenRobberBribe	lcdom	byte	readable		
+exe	0x005b4c60	ai_DrohbriefAmountCB	lcdom	draft	readable	deep	
+exe	0x005b4fb0	ai_DrohbriefWindow	lcdom	byte	readable		
+exe	0x005b5010	ai_DenounceWindow	lcdom	draft	readable	deep	
+exe	0x005b5310	ai_PamphletAmountCB	lcdom	byte	readable		
+exe	0x005b5610	ai_PamphletWindow	lcdom	byte	readable		
+exe	0x005b5690	ai_NoticeBoardWindow	lcdom	draft	readable	deep	
+exe	0x005b5a20	ai_BardWindow	lcdom	byte	readable		
+exe	0x005b5e80	ai_FeastWindow	lcdom	draft	readable	deep	
+exe	0x005b6950	ai_SellBuildingWindow	lcdom	byte	readable		
+exe	0x005b6b20	ai_RenovationWindow	lcdom	draft	readable	deep	
+exe	0x005b6eb0	ai_WithdrawSaleWindow	lcdom	byte	readable		
+exe	0x005b6fe0	ai_RoomUpgradeWindow	lcdom	draft	readable	deep	
+exe	0x005b7690	ai_UpgradeBuilding	lcdom	draft	readable	deep	
+exe	0x005b7b80	ai_BuyBuildingOfferWindow	lcdom	shape	readable		
+exe	0x005b7dd0	ai_TechEffectsWindow	lcdom	draft	readable	deep	
+exe	0x005b82a0	ai_FireFightingWindow	lcdom	byte	readable		
+exe	0x005b84f0	ai_BuildingWindow	lcdom	draft	readable	deep	
+exe	0x005b8fc0	ai_ManagedBuildingWindow	lcdom	shape	readable		
+exe	0x005b92e0	ai_LiquidateAssets	lcdom	draft	readable	deep	
+exe	0x005b9730	ob_HandleBepflanzung	lcdom	draft	readable	deep	
+exe	0x005b9db0	ai_HandlePickedPlant	lcdom	byte	readable		
+exe	0x005b9f30	ai_GelageWindow	lcdom	byte	readable		
+exe	0x005ba1c0	ai_OpenInventoryWindow	lcdom	byte	readable		
+exe	0x005ba290	ai_UpdateInventoryWindow	lcdom	byte	readable		
+exe	0x005ba600	ai_CloseChildWindow	lcdom	byte	readable		
+exe	0x005ba620	ai_FindUsableGood	lcdom	byte	readable		
+exe	0x005ba660	ai_FindUsableGoodIndex	lcdom	byte	readable		
+exe	0x005ba6b0	ai_InventoryHas	lcdom	byte	readable		
+exe	0x005ba700	ai_BuildingHasItem	lcdom	byte	readable		
+exe	0x005ba750	lc_UpdateGoodsReserves	lcdom	draft	readable	deep	
+exe	0x005ba980	ai_UseGoodWindow	lcdom	byte	readable		
+exe	0x005bac10	ai_InventoryPanel	lcdom	byte	readable		
+exe	0x005bae10	ai_EquipRowsInit	lcdom	byte	readable		
+exe	0x005bae50	ai_UpdateEquipRows	lcdom	shape	readable		
+exe	0x005bb2d0	ai_GoodFitsBuilding	lcdom	byte	readable		
+exe	0x005bb350	ai_EquipWindow	lcdom	byte	readable		
+exe	0x005bb950	ai_OpenTrainingRow	lcdom	byte	readable		
+exe	0x005bba00	ai_TrainingWindow	lcdom	draft	readable	deep	
+exe	0x005bc0f0	ai_FreePicture	lcdom	byte	readable		
+exe	0x005bc110	ai_ChooseCoatOfArms	lcdom	byte	readable		
+exe	0x005bc420	ai_OpenMoneyInfoPage	lcdom	byte	readable		
+exe	0x005bc6d0	ai_OpenBuildingListPage	lcdom	byte	readable		
+exe	0x005bc790	ai_BuildingDetailWindow	lcdom	byte	readable		
+exe	0x005bc9c0	ai_OpenMasterListPage	lcdom	shape	readable	deep	
+exe	0x005bcc70	ai_PlayerStatsPanel	lcdom	shape	readable		
+exe	0x005bd060	ai_AmountLimit	lcamt	byte	readable		
+exe	0x005bd0c0	ai_CentredText	lcamt	byte	readable		
+exe	0x005bd190	ai_RightAlignedText	lcamt	byte	readable		
+exe	0x005bd1f0	ai_LeftAlignedText	lcamt	byte	readable		
+exe	0x005bd250	ai_ShowWindowRow	lcamt	byte	readable		
+exe	0x005bd330	ai_ShowLoanRows	lcamt	byte	readable		
+exe	0x005bd470	ai_ShowBuildingRows	lcamt	byte	readable		
+exe	0x005bd5e0	ai_ShowAmountRows	lcamt	draft	readable	deep	
+exe	0x005bdb60	ai_ShowOfficeRows	lcamt	byte	readable		
+exe	0x005be1d0	ai_AmountRowStatus	lcamt	byte	readable		
+exe	0x005be3b0	ai_AmountRow	lcamt	byte	readable		
+exe	0x005be720	ai_DrawAmountRow	lcamt	byte	readable		
+exe	0x005bea00	ai_SpecialAmountList	lcamt	byte	readable		
+exe	0x005bea50	ai_SpecialAmountListWindow	lcamt	draft	readable	deep	
+exe	0x005bf0d0	ai_FillFamilyTab	lcamt	draft	readable	deep	
+exe	0x005bf300	ai_FillFriendsTab	lcamt	byte	readable		
+exe	0x005bf4f0	ai_FillEnemiesTab	lcamt	byte	readable		
+exe	0x005bf6f0	ai_FillLoversTab	lcamt	draft	readable	deep	
+exe	0x005bf7c0	ai_FillWeddingTab	lcamt	draft	readable	deep	
+exe	0x005bfa90	ai_FillQuarrelTab	lcamt	draft	readable	deep	
+exe	0x005bfc40	ai_FillCandidacyTab	lcamt	byte	readable		
+exe	0x005bfd90	ai_FillOfficeTab	lcamt	byte	readable		
+exe	0x005bfed0	ai_AmountPageSwitch	lcamt	shape	readable		
+exe	0x005bff80	ai_EnableAmountRows	lcamt	byte	readable		
+exe	0x005bffb0	ai_ShowFamilyTab	lcamt	byte	readable		
+exe	0x005c00b0	ai_ShowFriendsTab	lcamt	byte	readable		
+exe	0x005c01c0	ai_ShowEnemiesTab	lcamt	byte	readable		
+exe	0x005c02d0	ai_ShowLoversTab	lcamt	byte	readable		
+exe	0x005c03e0	ai_ShowWeddingTab	lcamt	byte	readable		
+exe	0x005c0550	ai_ShowQuarrelTab	lcamt	byte	readable		
+exe	0x005c0650	ai_ShowCandidacyTab	lcamt	byte	readable		
+exe	0x005c0790	ai_ShowOfficeTab	lcamt	byte	readable		
+exe	0x005c08b0	ai_ClearAmountTabs	lcamt	byte	readable		
+exe	0x005c08d0	ai_AmountLikingRows	lcamt	byte	readable		
+exe	0x005c0970	ai_SpecialAmountWindow	lcamt	byte	readable		
+exe	0x005c1130	ai_AmountMenu	lcamt	draft	readable	deep	
+exe	0x005c1500	ai_AmountListWindow	lcamt	byte	readable		
+exe	0x005c1a80	ai_AmountInfoWindow	lcamt	byte	readable		
+exe	0x005c1b20	ai_OpenAmountKindMenu	lcamt	byte	readable		
+exe	0x005c1b40	ai_AmountKindMenu	lcamt	byte	readable		
+exe	0x005c1df0	ai_OpenAgendaMenu	lcamt	byte	readable		
+exe	0x005c1e10	ai_AgendaOfficeList	lcamt	shape	readable		
+exe	0x005c2160	ai_OpenLawBook	lcamt	byte	readable		
+exe	0x005c2410	ai_LawBookInfoWindow	lcamt	byte	readable		
+exe	0x005c2490	ai_ShowWorkSettingsPage	lcamt	shape	readable		
+exe	0x005c26a0	ai_MasterLetterNoticeWindow	lcamt	byte	readable		
+exe	0x005c2730	ai_MasterLetterKindWindow	lcamt	byte	readable		
+exe	0x005c27b0	ai_MasterHireWindow	lcamt	byte	readable		
+exe	0x005c2a10	ai_ShowSettingGoods	lcamt	shape	readable		
+exe	0x005c2b90	ai_MasterLetterSettings	lcamt	byte	readable		
+exe	0x005c3200	ai_MasterLetterWindow	lcamt	draft	readable	deep	
+exe	0x005c33c0	ai_PassesPartnerFilter	lcamt	draft	readable	deep	
+exe	0x005c37a0	ai_PassesBuildingFilter	lcamt	draft	readable	deep	
+exe	0x005c39a0	ai_PassesMapPickFilter	lcamt	byte	readable		
+exe	0x005c3bb0	ai_PickBuildingChar	lcamt	draft	readable	deep	
+exe	0x005c4100	ai_LawSelectionEntry	lcamt	draft	readable	deep	
+exe	0x005c4150	ai_FamilyTreeWindow	lcamt	draft	readable	deep	
+exe	0x005c5310	ai_CharInfoPanel	lcamt	draft	readable	deep	
+exe	0x005c6050	ai_GiftWindow	lcamt	byte	readable		
+exe	0x005c64c0	ai_FindCandidateIds	lcamt	shape	readable		
+exe	0x005c6530	ai_MarriageTest	lcamt	byte	readable		
+exe	0x005c6620	ai_CourtshipRounds	lcamt	byte	readable		
+exe	0x005c6910	ai_CourtshipConfirm	lcamt	draft	readable	deep	
+exe	0x005c6aa0	ai_CourtshipListWindow	lcamt	byte	readable		
+exe	0x005c6d00	ai_CourtshipWindow	lcamt	draft	readable	deep	
+exe	0x005c72d0	ai_PlotRatingBaseChart	lcamt	byte	readable		
+exe	0x005c7460	ai_PlotScoreChart	lcamt	shape	readable		
+exe	0x005c7560	ai_PlotNoFirstChart	lcamt	byte	readable		
+exe	0x005c76b0	ai_PlotNoSecondChart	lcamt	byte	readable		
+exe	0x005c7800	ai_PlotCombinedChart	lcamt	byte	readable		
+exe	0x005c7970	ai_DrawStatisticsCharts	lcamt	draft	readable	deep	
+exe	0x005c7f00	ai_CityStatsPanel	lcamt	byte	readable		
+exe	0x005c82f0	ai_PlayerComparePanel	lcamt	draft	readable	deep	
+exe	0x005c8640	ai_PrivilegesPanel	lcamt	byte	readable		
+exe	0x005c8bc0	ai_MedicusHandler	lcamt	byte	readable		
+exe	0x005c8ef0	ai_DivorceDialog	lcamt	draft	readable	deep	
+exe	0x005c9290	ai_BlackmailWindow	lcamt	byte	readable		
+exe	0x005c9550	ai_BlackmailBuildingListener	lcamt	byte	readable		
+exe	0x005c9990	ai_BlackmailContactWindow	lcamt	byte	readable		
+exe	0x005c9c50	ai_BlackmailContact	lcamt	shape	readable		
+exe	0x005c9df0	ai_IntimidateWindow	lcamt	byte	readable		
+exe	0x005c9ff0	ai_IntimidateContact	lcamt	shape	readable		
+exe	0x005ca150	ai_LawPrivilegeWindow	lcamt	byte	readable		
+exe	0x005ca560	ai_DismissOfficeAsk	lcamt	shape	readable		
+exe	0x005ca860	ai_MisappropriationWindow	lcamt	byte	readable		
+exe	0x005caab0	ai_BewitchWindow	lcamt	byte	readable		
+exe	0x005cacd0	ai_BewitchOrder	lcamt	shape	readable		
+exe	0x005cae00	ai_CounterEspionage	lcamt	byte	readable		
+exe	0x005cb1e0	ai_SwapSeats	lcamt	byte	readable		
+exe	0x005cb250	ai_SeatSwapWindow	lcamt	byte	readable		
+exe	0x005cb4f0	ai_HatredWindow	lcamt	shape	readable	deep	
+exe	0x005cba90	ai_HearingWindow	lcamt	byte	readable		
+exe	0x005cbe00	ai_ExpelWorkerWindow	lcamt	draft	readable	deep	
+exe	0x005cc2b0	ai_PeaceWindow	lcamt	byte	readable		
+exe	0x005cc700	ai_ConvertWindow	lcamt	draft	readable	deep	
+exe	0x005cca40	ai_PenanceWindow	lcamt	byte	readable		
+exe	0x005ccc10	ai_Miracle	lcamt	draft	readable	deep	
+exe	0x005cd2e0	ai_MiracleWindow	lcamt	draft	readable	deep	
+exe	0x005cd400	ai_ChangeProfessionWindow	lcamt	shape	readable		
+exe	0x005cd8c0	ai_OpenTrial	lcamt	byte	readable		
+exe	0x005cdb90	ai_AccuseWindow	lcamt	byte	readable		
+exe	0x005cde90	ai_AccusationWindow	lcamt	draft	readable	deep	
+exe	0x005ce1a0	ai_FaithAccusationWindow	lcamt	draft	readable	deep	
+exe	0x005ce4b0	ai_Interrogate	lcamt	byte	readable		
+exe	0x005ce610	ai_InterrogationWindow	lcamt	byte	readable		
+exe	0x005ce7f0	ai_WorkerDismissalWindow	lcamt	byte	readable		
+exe	0x005ce950	ai_DismissalHandler	lcamt	byte	readable		
+exe	0x005ced50	ai_SendInterrogationRefusal	lcamt	byte	readable		
+exe	0x005cede0	ai_InterrogationWindow1	lcamt	byte	readable		
+exe	0x005cf020	ai_InterrogationWindow2	lcamt	byte	readable		
+exe	0x005cf260	ai_ChooseProfessionWindow	lcamt	byte	readable		
+exe	0x005cf4f0	ai_UniversityWindow	lcamt	byte	readable		
+exe	0x005cf820	ai_UseObjPanel	lcamt	byte	readable		
+exe	0x005cf8a0	ai_UseGood	lcamt	draft	readable	deep	
+exe	0x005cfb60	ai_UseGoodAddMoney	lcamt	byte	readable		
+exe	0x005cfb80	ai_UseGoodHeal	lcamt	byte	readable		
+exe	0x005cfc00	ai_UseGoodInfectOwner	lcamt	byte	readable		
+exe	0x005cff70	ai_UseGoodSendHome	lcamt	draft	readable	deep	
+exe	0x005d0320	ai_UseGoodWeakenSkills	lcamt	byte	readable		
+exe	0x005d0530	ai_UseGoodWeakenSkills2	lcamt	byte	readable		
+exe	0x005d06e0	ai_UseGoodCureAilment	lcamt	byte	readable		
+exe	0x005d0780	ai_UseGoodHalveWorkerValue	lcamt	draft	readable	deep	
+exe	0x005d08c0	ai_ApplyTrialStep	lcamt	byte	readable		
+exe	0x005d09d0	ai_TrialStep1	lcamt	byte	readable		
+exe	0x005d0a40	ai_TrialStep3	lcamt	byte	readable		
+exe	0x005d0ab0	ai_TrialStep4	lcamt	byte	readable		
+exe	0x005d0b20	ai_UseGoodRaiseRelation	lcamt	draft	readable	deep	
+exe	0x005d0c70	ai_QuarrelCallback	lcamt	draft	readable	deep	
+exe	0x005d0e60	ai_UseGoodTrialStep	lcamt	byte	readable		
+exe	0x005d0f20	ai_UseGoodLowerOfficialRelations	lcamt	draft	readable	deep	
+exe	0x005d1300	ai_UseGoodTwoTrialSteps	lcamt	byte	readable		
+exe	0x005d13e0	ai_UseGoodCharmOtherSex	lcamt	draft	readable	deep	
+exe	0x005d1680	ai_UseGoodSowDiscord	lcamt	byte	readable		
+exe	0x005d1830	ai_UseGoodTributeClaim	lcamt	byte	readable		
+exe	0x005d18c0	ai_UseGoodDrainActionPoints	lcamt	byte	readable		
+exe	0x005d1990	ai_UseGoodDrainSkill	lcamt	byte	readable		
+exe	0x005d1b30	ai_UseGoodHarmBuilding	lcamt	byte	readable		
+exe	0x005d1da0	ai_UseGoodSpoilStock	lcamt	byte	readable		
+exe	0x005d1fb0	ai_UseGoodCharmOfficials	lcamt	shape	readable		
+exe	0x005d22e0	ai_UsePayGood	lcamt	byte	readable		
+exe	0x005d2320	ai_UseGoodDrainActionPoints8	lcamt	byte	readable		
+exe	0x005d2440	ai_UseGoodHoldRound	lcamt	byte	readable		
+exe	0x005d2580	ai_UseGoodCharmPartner	lcamt	draft	readable	deep	
+exe	0x005d2720	ai_UseGoodWeakenSkills3	lcamt	byte	readable		
+exe	0x005d2960	ai_UseGoodFrameChar	lcamt	shape	readable		
+exe	0x005d2bc0	ai_UseGoodFrameChar2	lcamt	byte	readable		
+exe	0x005d2e80	ai_UseGoodHeatBuilding	lcamt	byte	readable		
+exe	0x005d2f20	ai_UseEventGood	lcamt	shape	readable		
+exe	0x005d2f90	ai_UseGoodStaffBonus	lcamt	byte	readable		
+exe	0x005d3030	ai_UseGoodPettyLoss	lcamt	shape	readable	deep	
+exe	0x005d31c0	ai_UseGoodSkillBonus	lcamt	byte	readable		
+exe	0x005d3270	ai_UseGoodDistrust	lcamt	byte	readable		
 exe	0x005d33b0	ai_ListFiles	menu	byte	readable		
 exe	0x005d34b0	ai_FilePickWindow	menu	byte	readable		
 exe	0x005d3810	ai_MessageBox	menu	shape	readable		
