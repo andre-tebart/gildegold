@@ -2366,33 +2366,25 @@ void ch_ActAnimOnce(CHACTION *a)
         ch_RemoveAction(a);
 }
 /* 0x406e60, turn action: args[0] degrees (args[1]: relative to the z axis), plays "dreh_90_*" and turns
-   @deep Read 0x406e60..0x4071f0 again; no meaning difference (the proof's 'different conditions' at +0xf3
-   was the angle>=0.2 compare spelling). Kept: memset without the redundant f.mid = 0 (the original never
-   stores dword 1: 108 -> 88 ins), outer test as !(angle >= 0.2) (and eax,0x100/je as the original: 88 ->
-   84), and the store orders found by tryclimb.py (deep-tools, dcp try hill climb): the else block
-   (keys[0].time = 8 .. rot.y = angle, with f.w.c.b8 = 1 between the two b1 ors, which stops VC6 folding
-   them into or 0x1c) now matches the original exactly; slot block
-   dir.y/dir.z/time/memset/b1/b1/b8/rot.x/zeros/rot.y/neg/rot.z (84 -> 43 ins). Tried without gain:
-   bitfield views of b1 (f04/f10/f08, mixes with u.c.b1, dword |= 0x1400: = control or worse),
+   @deep size queue (exe line-up): 902 vs 915 (13 bytes short), all in the slot branch 0x406fc1..0x407081:
+   add eax,edx + four disp32 loads (+4), or dl,0x14 / or dl,8 unfolded (+3), keys[1].rot.z = dir.z copied
+   through edx after fchs; fstp dir.z (ours fst + fstp), -turn.x and angle - dir.y held on the x87 stack
+   until after the f arg copy (fxch; fstp rot.x; fstp rot.y). Tried this session (no gain): fr = &frames[n]
+   with fr[-1] x dir.z = -dir.z between the ors / at the end x rot.x early/mid/late (12 variants, 45-123
+   ins); float rx, ry block locals (or dir.x/dir.w) for the two held values (114-134, frame changes); no fr
+   (s->data->frames[..] at each use: 166; ch->slot direct: 249); fr = frames + n - 1 / + (n - 1): =
+   control; b8 = 1 between the ors as in the else block: 46, climb --ops move,swap --rounds 3 from it: 43
+   ins / 473 bytes (no layout change). dir.z = -dir.z between the ors does NOT stop the 0x1c fold (only a
+   store to f does, as b8 in the else block). prior: Read 0x406e60..0x4071f0 again; no meaning difference
+   (the proof's 'different conditions' at +0xf3 was the angle>=0.2 compare spelling). Kept: memset without
+   the redundant f.mid = 0 (the original never stores dword 1: 108 -> 88 ins), outer test as !(angle >=
+   0.2) (and eax,0x100/je as the original: 88 -> 84), and the store orders found by tryclimb.py
+   (deep-tools, dcp try hill climb): the else block (keys[0].time = 8 .. rot.y = angle, with f.w.c.b8 = 1
+   between the two b1 ors, which stops VC6 folding them into or 0x1c) now matches the original exactly;
+   slot block dir.y/dir.z/time/memset/b1/b1/b8/rot.x/zeros/rot.y/neg/rot.z (84 -> 43 ins). Tried without
+   gain: bitfield views of b1 (f04/f10/f08, mixes with u.c.b1, dword |= 0x1400: = control or worse),
    f.u.all/f.mid/f.w.all field inits instead of memset (128-179), fr as frames + n - 1 (= control), fr =
-   &frames[n] with fr[-1] (gives the original's add eax,edx but the best order then 44-48 ins: 8580
-   placements of rot.x/rot.y/neg/rot.z into the else block's order, plus climbs), no fr / ch->slot direct
-   (153-236), dir.x temps or a D3VECTOR copy (128-137). Left (slot branch only, 0x406fc1..0x407081): the
-   original addresses the last frame from frames + n*0xc0 (add eax,edx;
-   [eax-0x8c]/[eax-0x90]/[eax-0x94]/[eax-0xc0]) and loads turn.z, turn.y, turn.x, time before any store;
-   ours does lea fr then loads; the original keeps -turn.x and angle - dir.y on the FPU stack until after
-   the arg copy (fxch; fstp rot.x; fstp rot.y), stores dir.z = -dir.z and copies it to rot.z through edx,
-   and does or dl,0x14 / or dl,8 separately where ours folds or 0x1c. (tiebreak: insensitive, dcp headers
-   sample: 32 compiles, one codegen) prior: behaviour: far draft, 125 differing instructions / 586 bytes. Same flow; the
-   code hunks are the two D3ANIMFLAGS/key blocks (the original builds the flags block twice, one per branch
-   of if (ch->slot), as a load/or/or/store after a dword zero store with dword 1 enregistered, and loads
-   turn.z/turn.y/turn.x and key[0].time before the stores) and the key[] stores. Read against
-   406e60..407200. Last-bytes leads tried this session: the 406f5f branch spell (jp vs and eax,0x100;je)
-   both ways - !(angle<0.2f) with the two attach calls swapped gave 135 asm lines, angle>=0.2f 137 lines,
-   the kept nested if (angle<0.2) form is 125 (baseline) so both reverted; spell reload at 406fbf/407098
-   and dup-tail at 4071fb need register/slot variants. Earlier attempts: flags b1|=0x14;b1|=8 folded to
-   0x1c or hoisted, memset stores dword 1, fr=&frames[n-1], keys order. Readability done: ch->slot typed,
-   CHARACTER+0x78 named turnAnim (CH_ANIM078 macro gone), no Q failure left. */
+   &frames[n] with fr[-1] (gives the original'... */
 
 void ch_ActTurn(CHACTION *a)
 {
