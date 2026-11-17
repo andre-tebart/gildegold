@@ -8899,17 +8899,7 @@ int ai_AccuseWindow(AICHARREC *me, AICHARREC *culprit)
    0xd, he is unknown or me holds none of his crimes (0x60). A player gets the evidence book "privillegien\
    Beweise_Sichten" (as ai_EvidenceBookWindow: one amount row per culprit, "%i (%i) %s", or the text 0x1741); a
    clicked row opens its accusation window (ai_AccuseWindow), whose result it returns (0x20 when none was opened);
-   a right click closes it
-   @deep Rewritten whole from the original 0x5cde90..0x5ce197 (was a skeleton named ai_SpyTargetHandler)
-   after the byte-matched ai_EvidenceBookWindow it mirrors: the AI branch (office 0xd refusals,
-   gm_FindChar, gv_HeldCrimesOf, ai_OpenTrial) and the player's book (form, caption 0x173f,
-   gv_RankCulpritsAll rows, "%i (%i) %s", 0x1741, the click opening ai_AccuseWindow whose result is
-   returned, 0x20 by default) read and matched call by call; ours=245 original=246. Left: the frame layout
-   of the three int[0x20] arrays (the original open 0x5c, ids 0xdc, total 0x15c; ours ids 0x5c, open 0xdc:
-   the slot hunks at 0x5cdfa0 / 0x5cdfd3 / 0x5cdfe4) and one store the original makes of the AI branch's
-   crime count to [esp+0x5c] (mov dword ptr [esp+0x5c], eax at 0x5cdf18: the slot of open[0], dead after)
-   that ours keeps in eax. Tried the declaration order of the arrays (no effect: VC6 does not lay them out
-   by it here). */
+   a right click closes it */
 
 int ai_AccusationWindow(AICHARREC *me, LCORDMSG *m)
 {
@@ -8934,10 +8924,10 @@ int ai_AccusationWindow(AICHARREC *me, LCORDMSG *m)
         ch = (AICHARREC *)gm_FindChar(m->target);
         if (ch == 0 || ch->officeKind == 0xd)
             return 0x60;
-        n = gv_HeldCrimesOf(m->target, ids, me->id);
-        if (n == 0)
+        open[0] = gv_HeldCrimesOf(m->target, ids, me->id);    /* the original keeps the count in open[0] */
+        if (open[0] == 0)
             return 0x60;
-        return ai_OpenTrial(me, ch, n, 0);
+        return ai_OpenTrial(me, ch, open[0], 0);
     }
     win = d2_OpenForm(0, 0, "privillegien\\Beweise_Sichten");
     d2_CentreViewWindows(win);
@@ -8948,8 +8938,7 @@ int ai_AccusationWindow(AICHARREC *me, LCORDMSG *m)
     d2_SetForm(win, 3);
     d2_CreateScrollButtons(-1, -1, d2_LastWindow, list, 0x767);
     count = gv_RankCulpritsAll(ids, open, total, me->id);
-    n = 0;
-    for (i = 0; i < count; i++) {
+    for (i = 0, n = 0; i < count; i++) {
         ch = (AICHARREC *)gm_FindChar(ids[i]);
         if (ch != 0) {
             rows[n].rec = ch;
