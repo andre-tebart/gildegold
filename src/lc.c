@@ -13420,33 +13420,6 @@ void ai_KidnapContact(int building, int room)
         ch->model = 0;
     }
 }
-/* 0x5a5f60, the city watch patrol start, the click of the contact_PATROL plate (112 B): 0x520fe0 (the
-   building); the 20-int map pick record zeroed with its +4 = 0x400, +8 = 0 (the check's result) and +0x10 = 2;
-   the player bar opens (0x525220, the building), the map pick runs (0x5b2180: 1, the record, the prompt text
-   ai_PatrolPickPrompt, the city watch window ai_CityWatchWindow as callback, 0), then the player bar closes
-   (0x525440) and the selection is cleared (0x52ae40) */
-
-void ai_PatrolStart(int building)
-{
-    int req[20];
-    int i;
-    int r;
-
-    r = sv_CheckCharacterFlag(building);
-    if (r != 0)
-        return;
-    for (i = 0; i < 0x14; i++)
-        req[i] = 0;
-    req[1] = 0x400;
-    req[4] = 2;
-    req[2] = r;
-    if (building == 0)
-        return;
-    sv_OpenPlayerBar(building, 0);
-    ai_MapPick(1, req, ai_PatrolPickPrompt, (int)ai_CityWatchWindow, 0);
-    sv_ClosePlayerBar();
-    sv_ClearSelection();
-}
 /* 0x5a61f0, the city watch raid start, the click of the contact_RAZZIA plate (124 B): 0x520fe0 (the building);
    the 20-int map pick record zeroed with its +4 = 0x400, +8 = 0x90010, +0x10 = 7 and +0x4c = 0x727; the player
    bar opens (0x525220, the building), the map pick runs (0x5b2180: 1, the record, the prompt text
@@ -13552,6 +13525,33 @@ int ai_CityWatchWindow(int ctx, AIBLD *target)
     d2_CloseView(win);
     sv_CameraFollow();
     return 1;
+}
+/* 0x5a5f60, the city watch patrol start, the click of the contact_PATROL plate (112 B): 0x520fe0 (the
+   building); the 20-int map pick record zeroed with its +4 = 0x400, +8 = 0 (the check's result) and +0x10 = 2;
+   the player bar opens (0x525220, the building), the map pick runs (0x5b2180: 1, the record, the prompt text
+   ai_PatrolPickPrompt, the city watch window ai_CityWatchWindow as callback, 0), then the player bar closes
+   (0x525440) and the selection is cleared (0x52ae40) */
+
+void ai_PatrolStart(int building)
+{
+    int req[20];
+    int i;
+    int r;
+
+    r = sv_CheckCharacterFlag(building);
+    if (r != 0)
+        return;
+    for (i = 0; i < 0x14; i++)
+        req[i] = 0;
+    req[1] = 0x400;
+    req[4] = 2;
+    req[2] = r;
+    if (building == 0)
+        return;
+    sv_OpenPlayerBar(building, 0);
+    ai_MapPick(1, req, ai_PatrolPickPrompt, (int)ai_CityWatchWindow, 0);
+    sv_ClosePlayerBar();
+    sv_ClearSelection();
 }
 /* 0x5a5fd0, the second city watch window "LOCATIONS\STADTWACHE\STANDARD" (the map pick's callback in 0x5a61f0: its
    context, not read here, and the picked building target; 0 for none): with no character selected the text 0x1a5e
