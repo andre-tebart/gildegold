@@ -2574,6 +2574,10 @@ How arguments are pushed, a call written in both arms, parameter and return type
   changes the caller's code (64 of d3fl_UpdateTiles' differing bytes). Grep build logs for C4013.
 
 ### Call written in both arms of an if/else
+- **The reverse: call + `ret` per arm with the arguments in registers (`xor edx,edx` at entry, `mov edx,-0x28;
+  push ecx; push edx`), ours pushes immediates**: the arms only assign x / y and ONE call follows the if / else-if
+  chain; VC6 duplicates the short return tail into the arms after allocation, so x / y stay registers. Writing the
+  call into each arm constant-folds them (sv_DrawPanelPointer byte).
 - **`push K` above the test of an if / else, the call's own `add esp,4` after it**: the call ended each arm
   (`if (..) { lod = 2; sh = 2; f(0x40); } else { lod = 1; sh = 1; f(0x40); }`), not once after the join
   (cm_LoadEventScene byte).
