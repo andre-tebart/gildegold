@@ -1585,6 +1585,12 @@ a stack slot is a split piece, and the piece's extent is decided by the rules be
 
 ### Loops: counters, running values, loop pointers
 
+- **A parameter compared from memory at its first use in the loop body, loaded into a register at the second**
+  (ours: in the register from the first use; nested ifs / `continue` / split conditions: the control's code): the
+  row pointer was set in a statement before the inner `for`, `e = &h->entries[h->size * z + 1]; for (x = 1; x <
+  n; x++, e++)`, not in the `for`'s init with a comma (another split point for the parameter's live range)
+  (d3sm_Replace byte).
+
 - **A loop pointer that should take a dead register**: `for (t = s->tris; ..)` in each loop's init, not `t =
   s->tris;` once before `if (hw) for (..) else for (..)` (d3_DrawObjectCB 122 -> byte, the M8 load-order
   crossing went with it).
