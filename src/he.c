@@ -15337,19 +15337,23 @@ void he_AllocHarvest(int ev)
    the same tree at the same or a later state within the tree's reach, lets the worker go and frees the record.
    Stages -2 / -1 put the plant back under the event's id and free the record. The case -2 / -1 body and the shared
    tails lie after the last case (0x55db60 ..), the jump table after them: one function, 0x55d5c0 .. 0x55dbd8.
-   @deep read whole against 0x55d5c0..0x55dbd8 (6 stages, jump table equal, every call / string / constant
-   / field reconciled). Fixed this pass: the buffers are name[0x80] / path[0x80] (the original's offsets:
-   name 0x1e0..0x260, path 0x160..0x1e0) and spot[0x40] (frame 0x21c -> 0x254 vs 0x250), the message reads
-   b->id once (m.arg[0] = m.fromId = b->id), AIMSG.unk14 -> reserved14. Left: (1) the shared AddTime tail
-   of stages 0 / 2 (+0x1bd / +0x3be): the original keeps the body in stage 2 and stage 0's three paths push
-   1 / 0 and jmp down into it, ours keeps it in stage 0 and stage 2 jumps up (VC6 cross-jumping direction,
-   the same statements); (2) the message block +0x4c4: the original copies ai_Time through edi after the
-   rep stosd and loads ripe->id after lea edi, ours through eax / ecx earlier, scheduling only; (3) frame
-   0x254 vs 0x250 and the packed slots (plants / dir / spot / c share slots differently: VC6 stack
-   packing); (4) eax/ecx swaps in the 64-record scan (references: M8 at +0x505: ours refers to ai_Time+0xc
-   (0x770aec), the original's field to 0x770ae4 (ai_TimeHourW), explained: the M8 at +0x505 is the time
-   copy's scheduling: both sides copy all four words of ai_Time (0x770ae0 .. 0x770aec) into m.time, in
-   another order, so the aligned line pairs different words of the same object) */
+   @deep size queue s12: dir declared in the two scene blocks (stage 0 / 2) where vfs_FindFile fills it:
+   the frame is the original's 0x250 (the dir slot packs with the scalars), frame and slot hunks gone, 129
+   -> 119 ins; raw size 1525 vs 1536 (by dcp grade; padded 1552 vs 1568 unchanged). spot in the blocks too:
+   = control. Left: (1) the shared e->end = ai_Time / gm_AddTime / e->stage++ tail of stages 0 and 2: the
+   original keeps it in stage 2 (+0x387) and stage 0's paths push 1 / 0 and jmp down into it, ours keeps it
+   in stage 0 (+0x1d1) and stage 2 pushes 0 / 0xa and jumps up (the pair / move merger's kept copy); (2)
+   the message block (+0x4d3): the time copy through edi after the rep stosd; (3) lea ebx,[ecx+eax+2] vs
+   [eax+ecx+2] in the ripe scan (t->size + plants[i].x + 2 operand order). prior: read whole against
+   0x55d5c0..0x55dbd8 (6 stages, jump table equal, every call / string / constant / field reconciled).
+   Fixed this pass: the buffers are name[0x80] / path[0x80] (the original's offsets: name 0x1e0..0x260,
+   path 0x160..0x1e0) and spot[0x40] (frame 0x21c -> 0x254 vs 0x250), the message reads b->id once
+   (m.arg[0] = m.fromId = b->id), AIMSG.unk14 -> reserved14. Left: (1) the shared AddTime tail of stages 0
+   / 2 (+0x1bd / +0x3be): the original keeps the body in stage 2 and stage 0's three paths push 1 / 0 and
+   jmp down into it, ours keeps it in stage 0 and stage 2 jumps up (VC6 cross-jumping direction, the same
+   statements); (2) the message block +0x4c4: the original copies ai_Time through edi after the rep stosd
+   and loads ripe->id after lea edi, ours through eax / ecx earlier, scheduling only; (3) frame 0x254 vs
+   0x250 and the packed slots (plants / dir / spot / c share slots diffe... */
 
 void he_RunHarvest(int ev)
 {
@@ -15363,7 +15367,7 @@ void he_RunHarvest(int ev)
     AIOBJ *store;
     GMGOOD *g;
     struct CHARACTER *ch;
-    struct VFSDIR *dir;
+
     int i;
     char spot[0x40];
     char path[0x80];
@@ -15392,6 +15396,7 @@ void he_RunHarvest(int ev)
         if (cm_GetSlotState(e->harvestSlot) == 0)
             return;
         if (d3_CurrentScene == init_BuildingSceneUniverse((unsigned char *)b)) {
+            struct VFSDIR *dir;
             bt = &ai_BTypesT[b->type];
             sprintf(name, "Ernten_start_%s", t->name);
             sprintf(path, "%slocations/%s/%s_%s.esc", evt_Path, bt->name, name, bt->name);
@@ -15420,6 +15425,7 @@ void he_RunHarvest(int ev)
         if (e->harvestScript != -1)
             evt_Stop(evt_FindById(e->harvestScript));
         if (d3_CurrentScene == init_BuildingSceneUniverse((unsigned char *)b)) {
+            struct VFSDIR *dir;
             bt = &ai_BTypesT[b->type];
             sprintf(name, "Ernten_end_%s", t->name);
             sprintf(path, "%slocations/%s/%s_%s.esc", evt_Path, bt->name, name, bt->name);
