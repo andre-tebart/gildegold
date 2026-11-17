@@ -169,7 +169,13 @@ a unit boundary looks like. Not needed to match a function's code (that is `note
   obj, except `static` functions: VC6 emits those after their first user, so a static callback defined above its
   creator ends up behind it. The original's callbacks (d3t_*CB, d3_FindObject*CB, ocmd_ParticleCB) sit before
   their creators: they were not static. Write callbacks extern (the codegen is the same). A pair of two extern
-  functions is a definition order that differs from the address order in our source.
+  functions is a definition order that differs from the address order in our source. Moved into address order
+  (no grade changed): d3_engine, d2, d3_fl, d3_light, hmt, lobby, main, ord, sv_t, lc, sv, gv (2026-11). Left:
+  am (ai_ChooseSubAction up: 9 byte functions fall, its callers need it below), f3gm (gm_SyncMarket shape ->
+  draft; also needs its local cm_ prototypes hoisted), menu (the option screens / save windows are defined below
+  their callers on purpose, see menu.h), he (local prototype ai_ShowTavernHelperNews), gv_EvidencePrice /
+  gv_CheckRankUps (belong at the unit's end), and the ICF folds (sv_ReturnZero, ai_AlwaysTrue, ai_MsgNoOp /
+  agi_Kind: one body for several names, not an order).
 
 - **"matched sites disagree" for both symbols of two stores of one value to two globals**: VC6's store order is
   not controllable from the C (source order, chained assignment, types, names, declaration order: no lever); the
