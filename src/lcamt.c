@@ -10384,15 +10384,23 @@ int ai_UseGoodRaiseRelation(AICHARREC *ch, G8USEVIEW *use)
    first record's type is 6 / 7 the text 0x5176d0 (0xfea, the second record's word) goes through
    0x53dda0 (the first + 4, -1, 1, 0x5fb); when the second's is, the text 0x5176d0 (0xfeb, the first
    word twice) goes through 0x53dda0 (the second + 4, -1, 1, 0x5fb). Returns 1 (0 without records).
-   @deep read the whole original 0x5d0c70..0x5d0e54 and reconciled every statement: the kind-6 two amount
-   menus (AMOUNTCFG: mode 0x400, the gypsy filter, kind 6, the 16 ids 0xffff, option14 3, ids[0] the first
-   pick), the gm_FindChar pair for other kinds, the -40 / -80 (item 0x2c5) transfers both ways, the two
-   he_ShowNews texts 0xfea / 0xfeb (key 0x5fb) and the 0 / 1 returns. Only allocation and scheduling are
-   left: the 0 constant lives in esi in the original (push esi, cmp edi,esi, mov eax,esi) and as immediates
-   in ours, the cfg stores and the he_ShowNews argument pushes are in another order, and the frame is 0x550
-   in both now (asmdiff: ours 156 ins, the original 165, differing 37; diffclass: code 45, order 20, slots
-   2). Tried the ret variable and the direct returns, the AMOUNTCFG fields and the memset of cfg.ids, the
-   0x100 text buffer (fixed the frame) */
+   @deep match-deep 2026-11-17 (s8): two meaning bugs fixed (he_ShowNews got 1 as the text and the text as
+   the int: the original pushes (netId, -1, text, 1, 0x5fb, 0); the second menu's left-out id is
+   cfg.ids[0], not ids[4]) and cfg.flags = 0 added (the original stores it after the memset): 37 -> 28 ins.
+   Left (size 469 vs 484): the original holds 0 in esi through the kind-6 path (xor esi,esi before the kind
+   test; push esi for the menus' 0, 0, cfg.flags = esi, cmp edi/ebp,esi, the second failure returns mov
+   eax,esi) while the else path loads req into esi and its failures jump to a third return (xor eax,eax)
+   after the success return; ours pushes immediates, tests, and has 2 returns. No lever: ret = 0 with
+   return ret in path 1 / every failure / ret = 1 at the end (= control); a == 0 and b == 0 as two returns
+   51. prior: read the whole original 0x5d0c70..0x5d0e54 and reconciled every statement: the kind-6 two
+   amount menus (AMOUNTCFG: mode 0x400, the gypsy filter, kind 6, the 16 ids 0xffff, option14 3, ids[4] the
+   first pick), the gm_FindChar pair for other kinds, the -40 / -80 (item 0x2c5) transfers both ways, the
+   two he_ShowNews texts 0xfea / 0xfeb (key 0x5fb) and the 0 / 1 returns. Only allocation and scheduling
+   are left: the 0 constant lives in esi in the original (push esi, cmp edi,esi, mov eax,esi) and as
+   immediates in ours, the cfg stores and the he_ShowNews argument pushes are in another order, and the
+   frame is 0x550 in both now (asmdiff: ours 156 ins, the original 165, differing 37; diffclass: code 45,
+   order 20, slots 2). Tried the ret variable and the direct returns, the AMOUNTCFG fields and the memset
+   of cfg.ids, the 0x100 text buffer (fixed the frame) */
 
 int ai_QuarrelCallback(AICHARREC *ch, int *req)
 {
