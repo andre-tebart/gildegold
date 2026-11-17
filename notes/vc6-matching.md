@@ -2062,6 +2062,10 @@ Store order in a fill, hoisted loads and sunk stores, statement order effects, `
 
 ### Store or push placement around calls and `add esp`
 
+- **A call before an if with no `add esp` of its own, its cleanup added to each arm's last one (`add esp,0x28` /
+  `0xc`), ours `add esp,8` before the test**: the call was written at the head of both arms (VC6 hoists the equal
+  code but the merged adjusts stay per arm): `if (partner) { d2_SetForm(win, 1); ..} else { d2_SetForm(win, 1);
+  ..}` (ai_PrivilegesPanel byte).
 - **An `fstp [temp]` / `fimul [local]` before the argument `lea` / the call's `add esp` in ours, after it in the
   original**: a redundant `(float)( .. )` around the float sub-product (`(float)(gm_GetWorth(..) * 0.05f)` inside
   `min`, `(float)((200.0f - liking) * 0.01f) * guilt * worth`): the cast node lowers the store's priority

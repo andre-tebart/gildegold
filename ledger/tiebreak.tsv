@@ -4520,7 +4520,7 @@ exe	0x005c7800	ai_PlotCombinedChart	lc	8668b26402a97a3c	no	byte	control=byte p1=
 exe	0x005c7970	ai_DrawStatisticsCharts	lc	88218eff0e4d8b8b	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x005c7f00	ai_CityStatsPanel	lc	6a39f0d5b8264a13	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005c82f0	ai_PlayerComparePanel	lc	c01c9e0574d47c14	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
-exe	0x005c8640	ai_PrivilegesPanel	lc	07db3820c93ae8a2	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
+exe	0x005c8640	ai_PrivilegesPanel	lc	07db3820c93ae8a2	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	9f29ef858e2dd5b3
 exe	0x005c8bc0	ai_MedicusHandler	lc	58ae4e961f8b1dd9	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005c8ef0	ai_DivorceDialog	lc	fe6dc3fab0f35dd4	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x005c9290	ai_BlackmailWindow	lc	e4e1b92314271e01	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	

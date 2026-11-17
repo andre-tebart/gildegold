@@ -29047,12 +29047,13 @@ void ai_PrivilegesPanel(void)
                         button = d2_GetWinObj(win, 3, io_PrintText(0x1cdc, partner->id));
                     }
                 } else if (page == 10) {
-                    d2_SetForm(win, 1);
                     if (partner != 0) {
+                        d2_SetForm(win, 1);
                         io_PrintText(0x1cde);
                         d2_SetForm(win, 3);
                         button = d2_GetWinObj(win, 3, io_PrintText(0x1cdb, partner->id));
                     } else {
+                        d2_SetForm(win, 1);
                         io_PrintText(0x1cdd);
                         page = 2;
                     }
