@@ -1580,7 +1580,7 @@ exe	0x004941e0	ai_DecideTortureMercy	am	0b5c340aaec7a8c9	no	byte	control=byte p1
 exe	0x004942a0	ai_PlanLevel	am	b44f1042d43506b8	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00494300	ai_PlanRollTries	am	c807b97d943cdffa	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00494410	ai_DecideAcquittal	am	c4159a800d4386dc	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x004945c0	ai_PlanRank	am	ef31a273163a6f1e	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	1670200eeadad7dc
+exe	0x004945c0	ai_PlanRank	amr	ef31a273163a6f1e	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=568	a9f3f574b872cf9a
 exe	0x004946c0	ai_DecideSentence	am	7387a7fbfe72a609	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004947a0	ai_WealthRating	am	014c4427cb953b27	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00494830	ai_WealthRatingHalf	am	8b2523a0e59334dd	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
@@ -1618,7 +1618,7 @@ exe	0x00496b10	ai_EvalLeastLikedOfEvent	am	bc18baeaa80d9e62	no	draft	control=dra
 exe	0x00496e40	ai_DecideBribe	am	797528d52131beb2	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004972d0	ai_ExecuteBribe	am	926ed6ae870e7760	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004973f0	ai_EvalApplyForOffice	am	fec9120bdc202648	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x00497490	ai_DecideApplyForOffice	am	ee3614e686206af0	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	1670200eeadad7dc
+exe	0x00497490	ai_DecideApplyForOffice	amr	ee3614e686206af0	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=568	a9f3f574b872cf9a
 exe	0x00497630	ai_ExecuteApplyForOffice	am	bb55cba1df37d279	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00497660	ai_DecideProduceGood	am	1ebfa6a65a80563d	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x004979d0	ai_ExecuteProduceGood	am	1a23ec0f2020d21d	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
@@ -1640,15 +1640,15 @@ exe	0x004995d0	ai_EvalSabotage	am	24a0a724e7ba0529	no	byte	control=byte p1=byte 
 exe	0x00499660	ai_DecideSabotage	am	c8aab6060002bebd	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00499a90	ai_ExecuteSabotage	am	b82fb3c9e0f7dd6d	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00499b80	ai_EvalBeatUp	am	63ed7b90c3dee365	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x00499c10	ai_DecideBeatUp	am	d6b05558958fa679	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	1670200eeadad7dc
+exe	0x00499c10	ai_DecideBeatUp	amr	d6b05558958fa679	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=568	a9f3f574b872cf9a
 exe	0x00499f20	ai_ExecuteBeatUp	am	a901a85d1309578f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0049a020	ai_DecideCitizenship	am	902b4be9a65acf47	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0049a0a0	ai_ExecuteCitizenship	am	7ecda435b1c306ff	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	d2f023716b0e5c28
 exe	0x0049a290	ai_DecideSaveAps	am	bd4c3983cdb84b08	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0049a380	ai_ExecuteSaveAps	am	4e058cfe44712ab7	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x0049a390	ai_DecideUseMilitaryObject	am	b8666d9fb7f2ef89	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	bc3ba58db93a9cfc
+exe	0x0049a390	ai_DecideUseMilitaryObject	amr	b8666d9fb7f2ef89	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=568	a9f3f574b872cf9a
 exe	0x0049a5b0	ai_ExecuteUseMilitaryObject	am	a5885dc5896dbcc3	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	1670200eeadad7dc
-exe	0x0049a690	ai_DecideUseReputationObject	am	aa307648e757d20f	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	92d5092ae5633959
+exe	0x0049a690	ai_DecideUseReputationObject	amr	aa307648e757d20f	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=568	a9f3f574b872cf9a
 exe	0x0049aa80	ai_ExecuteUseReputationObject	am	5f4a6ec833c45b4d	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	1670200eeadad7dc
 exe	0x0049ab60	ai_DecideUseApsObject	am	86b2773717ab282b	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	1670200eeadad7dc
 exe	0x0049ad80	ai_ExecuteUseApsObject	am	f0fe5c9ac66f9ad0	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	1670200eeadad7dc
@@ -1673,7 +1673,7 @@ exe	0x0049c700	ai_ExecuteSpy	am	a55cbdb192a746cd	no	byte	control=byte p1=byte p2
 exe	0x0049c790	ai_DecideBuyMarketObject	am	86289e2169371f7e	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0049c880	ai_ExecuteBuyMarketObject	am	d66de03e0a70dda4	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0049c8e0	ai_DecideBuyIndulgence	am	e0fdbcc7a89db57e	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	e02a0889711f5b40
-exe	0x0049cb60	ai_ExecuteBuyIndulgence	am	396411d61bec4552	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	1670200eeadad7dc
+exe	0x0049cb60	ai_ExecuteBuyIndulgence	amr	396411d61bec4552	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=568	a9f3f574b872cf9a
 exe	0x0049cd30	ai_DecideUseOffice	am	2aaa3a097020202f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0049cdb0	ai_ExecuteUseOffice	am	01d7bca9fd89e1b3	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0049cdd0	ai_EvalThreaten	am	2a4b0e79c3543a8d	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
@@ -1701,7 +1701,7 @@ exe	0x0049e230	ai_ExecuteMayorTownHall	am	abc5267a0acb03b3	no	byte	control=byte 
 exe	0x0049e350	ai_DecideMayorPrison	am	88907b2addcacdb4	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0049e680	ai_ExecuteMayorPrison	am	ddb15e804415b555	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0049e7a0	ai_DecideMasterBuilder	am	622b3e0c156d08c5	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	a1bfe28edc32bf1b
-exe	0x0049ea90	ai_ExecuteMasterBuilder	am	2b15b998de048ecb	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	1670200eeadad7dc
+exe	0x0049ea90	ai_ExecuteMasterBuilder	amr	2b15b998de048ecb	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=568	a9f3f574b872cf9a
 exe	0x0049ec10	ai_EvalDarkCorner	am	3c5b17d7129a7213	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0049ed10	ai_DecideDarkCorner	am	54d0553eaf117683	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0049ee20	ai_ExecuteDarkCorner	am	e1313f2dfddc70c3	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
@@ -1727,7 +1727,7 @@ exe	0x004a0e60	ai_ExecuteUpgradeGuild	am	e31554df0372aa00	no	byte	control=byte p
 exe	0x004a1000	ai_EvalApprenticeship	am	8f143e9d1f30ffb1	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004a1170	ai_DecideApprenticeship	am	3f52d30fb15a0529	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	358bab6adfe44d56
 exe	0x004a1360	ai_ExecuteApprenticeship	am	37105ed8d7f98fb6	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x004a13e0	ai_DecideStudy	am	cfa6b044cc9b9497	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	cdb7f568cf64f822
+exe	0x004a13e0	ai_DecideStudy	amr	cfa6b044cc9b9497	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=568	a9f3f574b872cf9a
 exe	0x004a1640	ai_ExecuteStudy	am	71cdeb3e6ab656c9	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004a16f0	ai_RegisterBaseActions	am	b44f23dc191e29c2	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004a3a90	ai_NextNearRingEntry	am	94b6cd8401815eb5	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	

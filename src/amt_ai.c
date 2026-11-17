@@ -2,8 +2,8 @@
    cursor), group prices, the desires by name (tag "amt_GetDesireByName()" 0x600364), the eval callbacks of the moods /
    needs / guilt, the build site and building code (tag "amt_ExecGebaeudeBauen()" 0x60042c), the partner searches
    (chains, random walks over ai_CharWalkSteps) and the AI cannon shot. A unit of its own by its data: its named
-   .rdata ai_CharWalkSteps..ai_NearRingCursor (0x5ed100) follows am's literals 0x5ed048..0x5ed0fc (named constants
-   come first in an object), its .data block ai_NearRingCursorState 0x60034c follows am's strings (last user 0x4a3390)
+   .rdata ai_CharWalkSteps..ai_NearRingCursor (0x5ed100) follows amr's literals 0x5ed048..0x5ed0fc (named constants
+   come first in an object), its .data block ai_NearRingCursorState 0x60034c follows amr's strings (last user 0x4a3390)
    and its strings are used from 0x4a47cf on; the first user of its data is ai_NextNearRingEntry 0x4a3a90. The name
    is a guess from the "amt_" tags (amt.c, the offices, is another unit). Names are ours.
    unit 0x004a3a90..0x004a7140, split from am; boundaries in decl/text.dcl */
