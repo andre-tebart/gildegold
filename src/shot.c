@@ -188,10 +188,6 @@ extern int ai_FrameWait;                /* 0x6f22bc, sv.c: frames still to wait 
 extern int sv_PopRequest;               /* 0x6f22a0, cm.h / gv.h: the dialog close request */
 extern int d2_CutsceneActive;           /* 0x6ed9d4, cm.h / gfx.h */
 extern unsigned char kb_Last;           /* 0x1468410, d2.h: the last key (di_input.c) */
-extern int sv_ViewRectLeft;             /* 0x6248a4, sv.c: the game view rectangle */
-extern int sv_ViewRectTop;              /* 0x6248a8, sv.c */
-extern int sv_ViewRectRight;            /* 0x6248ac, sv.c */
-extern int sv_ViewRectBottom;           /* 0x6248b0, sv.c */
 void d2_FocusInput(int obj);                                           /* 0x478320 */
 #pragma pack(push, 1)
 typedef struct SAVEHEADERVIEW {             /* 0xfc */

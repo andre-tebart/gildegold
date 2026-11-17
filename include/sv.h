@@ -230,11 +230,13 @@ extern int sv_ScrollEndBottom;                                    /* 0x623ea8 */
 extern unsigned char sv_ChatRecipients[8];                  /* 0x623ebc */
 extern unsigned sv_ChatTime;                               /* 0x623ec4 */
 extern int sv_QuickChatForm;                                    /* 0x623ec8 */
-extern int sv_ViewRectLeft;                                 /* 0x6248a4 */
-extern int sv_ViewRectTop;                                  /* 0x6248a8 */
+extern RECT sv_ViewRect;                                    /* 0x6248a4, the game view rectangle: one initialised
+                                                               object ({0, 0, 694, 600}; its zero left / top lie in .data) */
+#define sv_ViewRectLeft (sv_ViewRect.left)                  /* 0x6248a4 */
+#define sv_ViewRectTop (sv_ViewRect.top)                    /* 0x6248a8 */
 extern int sv_SunRaysHour;                                    /* 0x623ecc */
-extern int sv_ViewRectRight;                                /* 0x6248ac */
-extern int sv_ViewRectBottom;                               /* 0x6248b0 */
+#define sv_ViewRectRight (sv_ViewRect.right)                /* 0x6248ac */
+#define sv_ViewRectBottom (sv_ViewRect.bottom)              /* 0x6248b0 */
 extern int ai_DragWindow;                                    /* 0x62a8cc */
 extern int sv_PanelCartChar;                                    /* 0x631078 */
 extern short d2_PointerLook;                                /* 0x6ed9d0 */
