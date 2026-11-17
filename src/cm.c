@@ -1754,13 +1754,7 @@ int cm_SendPlaceOnStage(int charId, int bldId, int objId)
     m.stage.objId = objId;
     return cm_QueueSend(&m);
 }
-/* 0x4c52e0, message 0x35 about character id and building bld; c -1 and not f: the building's object (or -1, flag 1)
-   @deep read against 0x4c52e0..0x4c5400: the branch polarities fixed (s2/s/gm_IsHomeType tested != 0 as
-   the original lays them out), the data typed (G17GOTOMSG, AIBLD/AIOBJ). Same statements and calls; left
-   is a tail duplication: after gm_Query the original repeats the o test and the objId store (test eax,eax
-   / je / mov edx,[eax+2] / mov [esp+0x28],edx / jmp) in the gm_IsHomeType branch where ours jumps to the
-   one shared copy after gm_GetGebaeudeHauptraum (code 4 at 0x4c53ba), plus the eax/ecx/edx renaming that
-   follows (regs 14). Tried a ?: in the condition: no change. 95 vs 99 ins = the duplicated 4. */
+/* 0x4c52e0, message 0x35 about character id and building bld; c -1 and not f: the building's object (or -1, flag 1) */
 
 int cm_SendChrGotoBuilding(int id, int bld, int c, const char *s, int f, const char *s2)
 {
@@ -1789,14 +1783,17 @@ int cm_SendChrGotoBuilding(int id, int bld, int c, const char *s, int f, const c
         o = 0;
         b = (AIBLD *)gm_FindBuildingById(bld);
         if (b != 0) {
-            if (gm_IsHomeType((unsigned char *)b) != 0)
+            if (gm_IsHomeType((unsigned char *)b) != 0) {
                 o = (AIOBJ *)gm_Query((void *)b->objList, 1, 0, 0xfd);
-            else
+                if (o != 0)
+                    m.go.objId = o->objId;
+            } else {
                 o = (AIOBJ *)gm_GetGebaeudeHauptraum((unsigned char *)b);
+                if (o != 0)
+                    m.go.objId = o->objId;
+            }
         }
-        if (o != 0) {
-            m.go.objId = o->objId;
-        } else {
+        if (o == 0) {
             m.go.noObject = 1;
             m.go.objId = -1;
         }
