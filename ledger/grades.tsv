@@ -2299,7 +2299,7 @@ exe	0x004c8050	cm_ExMoodDeltas	cm	byte	readable
 exe	0x004c8110	cm_ExSetField	cm	byte	readable		
 exe	0x004c81d0	cm_ExFloatDelta	cm	byte	readable		
 exe	0x004c8240	cm_ExRelations	cm	shape	readable		
-exe	0x004c85c0	cm_ExLongMessage	cm	shape	readable		
+exe	0x004c85c0	cm_ExLongMessage	cm	shape	readable	deep	
 exe	0x004c87a0	cm_ExSetHE	cm	byte	readable		
 exe	0x004c88a0	cm_ExTime	cm	byte	readable		
 exe	0x004c8990	cm_ExGameOver	cm	byte	readable		
@@ -2354,7 +2354,7 @@ exe	0x004cc110	cm_ExWalkPath	cm	shape	readable
 exe	0x004cc1b0	cm_ExCutEntry	cm	byte	readable		
 exe	0x004cc270	cm_ExCutEntryUpdate	cm	byte	readable		
 exe	0x004cc330	cm_ExDamage	cm	byte	readable		
-exe	0x004cc390	cm_ExDarkCorner	cm	shape	readable		
+exe	0x004cc390	cm_ExDarkCorner	cm	byte	readable		
 exe	0x004cc510	cm_ExTableRequest	cm	byte	readable		
 exe	0x004cc720	cm_PlaceFighter	cm	byte	readable		
 exe	0x004cc7b0	cm_ExFightCommand	cm	byte	readable		
@@ -2505,7 +2505,7 @@ exe	0x004d76a0	cm_RunCutOrders	cm	draft	readable	deep
 exe	0x004d88c0	cm_FightLoop	cm	byte	readable		
 exe	0x004d8b10	cm_FightMember	cm	draft	readable	deep	
 exe	0x004d8b30	cm_ClearSceneChars	cm	byte	readable		
-exe	0x004d8b50	cm_DrawFightTime	cm	shape	readable		
+exe	0x004d8b50	cm_DrawFightTime	cm	byte	readable		
 exe	0x004d8c40	cm_DeleteSceneChars	cm	byte	readable		
 exe	0x004d8c70	cm_StackPicture	cm	byte	readable		
 exe	0x004d8cb0	cm_TallyStack	cm	byte	readable		
@@ -3305,7 +3305,7 @@ exe	0x00521410	sv_MessageBoxGreen	sv	shape	readable	deep
 exe	0x005216a0	sv_MessageBoxYesNo	sv	byte	readable		
 exe	0x00521900	sv_OpenMessageBox	sv	byte	readable		
 exe	0x00521960	sv_SelectPanelObject	sv	byte	readable		
-exe	0x00521ba0	sv_DrawPanelPointer	sv	shape	readable	deep	
+exe	0x00521ba0	sv_DrawPanelPointer	sv	byte	readable		
 exe	0x00521c10	sv_SceneLoadProgress	sv	byte	readable		
 exe	0x00521e70	sv_BuildScreenLayout	sv	byte	readable		
 exe	0x00522040	sv_PanelImage	sv	byte	readable		
@@ -3834,7 +3834,7 @@ exe	0x0056d050	he_RegisterEventTypes03	he	byte	readable
 exe	0x0056d220	he_RegisterEventTypes95	he	byte	readable		
 exe	0x0056d2d0	he_AllocRecipeResearch	he	byte	readable		
 exe	0x0056d3d0	he_RunRecipeResearch	he	byte	readable		
-exe	0x0056d610	he_AllocResearchRecipe	he	shape	readable		
+exe	0x0056d610	he_AllocResearchRecipe	he	byte	readable		
 exe	0x0056d730	he_RunResearchRecipe	he	byte	readable		
 exe	0x0056d990	he_AllocTrainShare	he	shape	readable		
 exe	0x0056daa0	he_RunTrainShare	he	byte	readable		
@@ -3848,7 +3848,7 @@ exe	0x0056e5b0	he_RunSecretRoom	he	shape	readable	deep
 exe	0x0056efc0	he_AllocEvent9a	he	byte	readable		
 exe	0x0056f040	he_FreeEventNow	he	byte	readable		
 exe	0x0056f050	he_AllocDomizilEvent	he	byte	readable		
-exe	0x0056f0b0	he_RunDomizilEvent	he	shape	readable		
+exe	0x0056f0b0	he_RunDomizilEvent	he	byte	readable		
 exe	0x0056f170	he_EventOnBuilding	he	byte	readable		
 exe	0x0056f1b0	he_SecretRoomAccuse	he	byte	readable		
 exe	0x0056f260	he_FindMeetingSlot	he	shape	readable		
@@ -3876,7 +3876,7 @@ exe	0x00571550	he_AllocGraveCare	he	shape	readable
 exe	0x00571640	he_RunGraveCare	he	byte	readable		
 exe	0x00571990	he_AllocDeathDue	he	byte	readable		
 exe	0x005719e0	he_RunDeathDue	he	shape	readable		
-exe	0x00571ac0	he_AllocGraveTraining	he	shape	readable		
+exe	0x00571ac0	he_AllocGraveTraining	he	byte	readable		
 exe	0x00571c30	he_RunGraveTraining	he	byte	readable		
 exe	0x00571f60	he_AllocMeeting	he	shape	readable		
 exe	0x005720f0	he_CatchMeetingDisease	he	draft	readable	deep	
@@ -4418,7 +4418,7 @@ exe	0x005b6fe0	ai_RoomUpgradeWindow	lc	draft	readable	deep
 exe	0x005b7690	ai_UpgradeBuilding	lc	draft	readable	deep	
 exe	0x005b7b80	ai_BuyBuildingOfferWindow	lc	shape	readable		
 exe	0x005b7dd0	ai_TechEffectsWindow	lc	draft	readable	deep	
-exe	0x005b82a0	ai_FireFightingWindow	lc	shape	readable		
+exe	0x005b82a0	ai_FireFightingWindow	lc	byte	readable		
 exe	0x005b84f0	ai_BuildingWindow	lc	draft	readable	deep	
 exe	0x005b8fc0	ai_ManagedBuildingWindow	lc	shape	readable		
 exe	0x005b92e0	ai_LiquidateAssets	lc	draft	readable	deep	
