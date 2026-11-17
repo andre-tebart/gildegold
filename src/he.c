@@ -22339,12 +22339,19 @@ void he_FreeEventNow(int *r);          /* 0x56f040 */
    the nearest spy (he_FindNearestSpying: stage 7) or walks to a picked building (stage 6 again in 15 minutes),
    stage 7 tries to catch it (he_SecretRoomCatchSpy); after 0x5a0 minutes it goes home (stage 4). A lost agent ends
    the event.
-   @deep reconstructed against the whole original (756 vs 756 instructions, switch tables equal): typed as
-   AIJOB + HESECRETROOM (the secret room event 0x99 of am.c's ai_ExecSecretRoom0..3), the string literals,
-   stage 0 not storing the walk's cm_SendExSetHEI(1), stage 1 ending without falling into stage 3, the way-2
-   news per branch, the stage-5 time table (way 2 0x21c, way 4 0xb40, else 0x5a0), stage 7's AddTime(0, 6,
-   0) and its three-way result, the ai_PickActionBuilding mask as the lo/hi union, returns as the
-   original's 11 rets. Left: scheduling only: one 14-byte ai_Time copy of stage 6's lost-agent path
+   @deep size queue s5: size fixed (2512 = 2512, draft -> shape): stage 1's BuildQuery test written as the
+   failure first (== 0: end + Send(-1); return; then the AddTime / Send(3) path), so its failure tail
+   cross-jumps into case 3's lost-agent copy with the ai_Time load hoisted above the je as the original (je
+   short); stage 5's clamp as rest -= minutes; minutes = rest > 5 ? rest : 5 (cmp ecx,5 before the copy);
+   the two agent names are he_AssassinName (M9). Left: identical instructions, 7 bytes: six 'push esi; push
+   4|..; jmp' tails (+0x37b, +0x3e0, +0x433, +0x46d, +0x4bc, +0x4d1) jump to case 0's way-3 copy call at
+   +0xeb in the original, to case 0's Send(-1) copy call at +0x144 in ours (which copy the cross-jumper
+   keeps). prior: reconstructed against the whole original (756 vs 756 instructions, switch tables equal):
+   typed as AIJOB + HESECRETROOM (the secret room event 0x99 of am.c's ai_ExecSecretRoom0..3), the string
+   literals, stage 0 not storing the walk's cm_SendExSetHEI(1), stage 1 ending without falling into stage
+   3, the way-2 news per branch, the stage-5 time table (way 2 0x21c, way 4 0xb40, else 0x5a0), stage 7's
+   AddTime(0, 6, 0) and its three-way result, the ai_PickActionBuilding mask as the lo/hi union, returns as
+   the original's 11 rets. Left: scheduling only: one 14-byte ai_Time copy of stage 6's lost-agent path
    (+0x6f0: ours lea eax,[esi+0x52] before the ai_Time load and stores through eax, the original loads
    first and stores the first dword through [esi+0x52]) and two order hunks (+0x211, +0x624). */
 void he_RunSecretRoom(int ev)
@@ -22388,7 +22395,7 @@ void he_RunSecretRoom(int ev)
                 e->exSlot = cm_SendExSetHEI(-1, ev);
                 return;
             }
-            s->walkSlot = cm_SendChrGotoBuilding(agent->netId, bld->id, -1, 0, 1, "ASSASSIN");
+            s->walkSlot = cm_SendChrGotoBuilding(agent->netId, bld->id, -1, 0, 1, he_AssassinName);
             cm_SendExSetHEI(1, ev);
             return;
         }
@@ -22407,14 +22414,14 @@ void he_RunSecretRoom(int ev)
             gm_AddTime(&e->end, 0, 4, 0);
             return;
         }
-        if (gm_BuildQuery(1, 1, s->target) != 0) {
+        if (gm_BuildQuery(1, 1, s->target) == 0) {
             e->end = ai_Time;
-            gm_AddTime(&e->end, 1, 0, 0);
-            e->exSlot = cm_SendExSetHEI(3, ev);
+            e->exSlot = cm_SendExSetHEI(-1, ev);
             return;
         }
         e->end = ai_Time;
-        e->exSlot = cm_SendExSetHEI(-1, ev);
+        gm_AddTime(&e->end, 1, 0, 0);
+        e->exSlot = cm_SendExSetHEI(3, ev);
         return;
     case 3:
         agent = (AICHAR *)gm_FindChar(s->agent);
@@ -22469,7 +22476,7 @@ void he_RunSecretRoom(int ev)
             e->exSlot = cm_SendExSetHEI(-1, ev);
             return;
         }
-        s->walkSlot = cm_SendChrGotoBuilding(s->agent, s->home, -1, 0, 0, "ASSASSIN");
+        s->walkSlot = cm_SendChrGotoBuilding(s->agent, s->home, -1, 0, 0, he_AssassinName);
         e->exSlot = cm_SendExSetHEI(5, ev);
         return;
     case 5:
@@ -22502,9 +22509,8 @@ void he_RunSecretRoom(int ev)
             rest = 0x5a0;
             break;
         }
-        minutes = rest - minutes;
-        if (minutes <= 5)
-            minutes = 5;
+        rest -= minutes;
+        minutes = rest > 5 ? rest : 5;
         e->end = ai_Time;
         gm_AddTime(&e->end, minutes / 60, minutes % 60, 0);
         cm_SendKillCharacter(s->agent, 1);
