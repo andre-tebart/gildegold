@@ -373,4 +373,5 @@ int anm_NAnimals = 0;  /* 0x6f0734, the number of animals */
 ANMREC * anm_Animals = 0;  /* 0x6f0738, the animal list (32 records, "anm:animals") */
 int anm_NextAnimal = 0;  /* 0x6f073c, the animal updated next */
 unsigned int anm_LastSpawn = 0;  /* 0x6f0740, d3_Time of the last spawn try */
+int anm_UnreadBss = 0;  /* 0x6f0744, no surviving instruction or pointer refers to it: data of functions /OPT:REF removed; size from the neighbours' addresses */
 extern AITIME ai_Time;

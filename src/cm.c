@@ -17316,6 +17316,7 @@ char * cm_PickMarker = 0;  /* 0x6f0cf0 */
 int cm_FightWinner = 0;  /* 0x6f0cf4 */
 int cm_FightSettled = 0;  /* 0x6f0cf8 */
 int cm_FightLootValue = 0;  /* 0x6f0cfc */
+int cm_UnreadBss = 0;  /* 0x6f0d00, no surviving instruction or pointer refers to it: data of functions /OPT:REF removed; size from the neighbours' addresses */
 char * cm_FightRecord = 0;  /* 0x6f0d04 */
 int cm_SelectedCount = 0;  /* 0x6f0d08 */
 int cm_FightSounds = 0;  /* 0x6f0d0c */

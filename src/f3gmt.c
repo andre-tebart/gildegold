@@ -8630,6 +8630,7 @@ int gm_QueryScanned = 0;  /* 0x6f1be4, the number of records scanned */
 char gm_QueryScanAll = 0;  /* 0x6f1be8 */
 char gm_QueryChildren = 0;  /* 0x6f1be9 */
 char gm_QueryStopFirst = 0;  /* 0x6f1bea, first-step flag, scan all, descend into children, stop at the first */
+int gm_QueryUnreadBss = 0;  /* 0x6f1bec, no surviving instruction or pointer refers to it: data of functions /OPT:REF removed; size from the neighbours' addresses */
 ORDBLD *gm_BQCursor = 0;  /* 0x6f1bf0, the current building of the query */
 ORDOBJ *gm_QueryCursor = 0;  /* 0x6f1bf4, the current record */
 unsigned short gm_KindObjCount;  /* 0x76fdc4, common: tentative as in the original (the common block past LIBC's

@@ -911,6 +911,7 @@ char * gm_IconNames = 0;  /* 0x6f1b94, the icon names ( */
 int gm_NetMsgCount = 0;  /* 0x6f1b98, the number of queued messages ( */
 float ai_RatingBase = 0;  /* 0x6f1b9c, the running rating (it moves towards ai.h's ai_Rating) */
 float ai_Rating = 0;  /* 0x6f1ba0, the smoothed game rating (statistics out[5]; the running rating ai_RatingBase follows it) */
+int gm_UnreadBss[2] = {0};  /* 0x6f1ba4, no surviving instruction or pointer refers to it: data of functions /OPT:REF removed; size from the neighbours' addresses */
 ORDCHAR *gm_RichestChar = 0;  /* 0x6f1bac, the richest character of gm_FindRichest's last search, 0 = none */
 int gm_OwnNameHeadLast = 0;  /* 0x6f1bb0 */
 void gm_ResolveHeadIcons(GMHEAD *rec);
