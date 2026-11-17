@@ -892,12 +892,12 @@ exe	0x0044abb0	rd_object	d3_int_io	byte	readable
 exe	0x0044b920	d3io_ReadFloor	d3_int_io	byte	readable		
 exe	0x0044be60	d3_LoadScene	d3_int_io	byte	readable		
 exe	0x0044c3f0	d3_LoadGroup	d3_int_io	byte	readable		
-exe	0x0044c510	d3io_SetStockDir	d3_int_io	byte	readable		
-exe	0x0044c530	d3io_StockFile	d3_int_io	byte	readable		
-exe	0x0044c5d0	d3io_FindStock	d3_int_io	byte	readable		
-exe	0x0044c610	d3io_AttachStock	d3_int_io	byte	readable		
-exe	0x0044c9d0	d3io_LodName	d3_int_io	byte	readable		
-exe	0x0044cbb0	d3_AttachMesh	d3_int_io	byte	readable		
+exe	0x0044c510	d3io_SetStockDir	d3_io_t	byte	readable		
+exe	0x0044c530	d3io_StockFile	d3_io_t	byte	readable		
+exe	0x0044c5d0	d3io_FindStock	d3_io_t	byte	readable		
+exe	0x0044c610	d3io_AttachStock	d3_io_t	byte	readable		
+exe	0x0044c9d0	d3io_LodName	d3_io_t	byte	readable		
+exe	0x0044cbb0	d3_AttachMesh	d3_io_t	byte	readable		
 exe	0x0044cd40	d3iot_DeleteStockObject	d3_io_t	byte	readable		
 exe	0x0044ce40	d3iot_CalcBounds	d3_io_t	byte	readable		
 exe	0x0044d1c0	d3iot_Finish	d3_io_t	byte	readable		
@@ -1014,7 +1014,7 @@ exe	0x00454890	d3_MirCreateOutline	d3_mir	shape	readable
 exe	0x00454be0	d3_MirCreatePlanes	d3_mir	byte	readable		
 exe	0x00454ec0	d3_MirTransform	d3_mir	byte	readable		
 exe	0x00454f70	d3_MirBoxInPlanes	d3_mir	byte	readable		
-exe	0x004550e0	d3_MirDrawObject	d3_mir	byte	readable		
+exe	0x004550e0	d3_MirDrawObject	d3_mir	shape	readable		
 exe	0x004554b0	d3_MirBeginFrame	d3_mir	byte	readable		
 exe	0x00455630	par_Init	d3_par	byte	readable		
 exe	0x004556b0	par_DeleteAll	d3_par	byte	readable		
@@ -3476,7 +3476,7 @@ exe	0x00537f40	main_EndGame	main	byte	readable
 exe	0x00538140	main_RundenBeginn	main	byte	readable		
 exe	0x005384e0	main_EndRound	main	byte	readable		
 exe	0x00539620	main_ReplaceFigure	main	byte	readable		
-exe	0x00539870	main_RoundReport	main	shape	readable		
+exe	0x00539870	main_RoundReport	main	byte	readable		
 exe	0x0053a250	main_UpdateFigure	main	shape	readable		
 exe	0x0053a450	main_UpdateFigures	main	byte	readable		
 exe	0x0053a520	main_SettleRound	main	byte	readable		
@@ -4004,7 +4004,7 @@ exe	0x00578440	ai_TutorialFreeRuns	sv_t	byte	readable
 exe	0x005784a0	ai_TutorialInitMainIntro	sv_t	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	sv_t	byte	readable		
 exe	0x00578e40	ai_TutorialInitChapter2	sv_t	byte	readable		
-exe	0x00579570	ai_TutorialInitChapter3	sv_t	shape	readable		
+exe	0x00579570	ai_TutorialInitChapter3	sv_t	draft	readable		
 exe	0x0057aa80	ai_TutorialInitChapter4	sv_t	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	sv_t	byte	readable		
 exe	0x0057b750	ai_TutorialInitMainOutro	sv_t	byte	readable		
