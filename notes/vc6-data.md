@@ -245,3 +245,15 @@ a unit boundary looks like. Not needed to match a function's code (that is `note
 - **Two `mov [..],imm` stores of one address into one record without a register CSE**: two identical functions
   folded by the linker (/OPT:ICF), not one symbol; one name assigned twice gives one `mov eax,imm` + register
   stores. (0x4a16f0, unresolved; `xor eax,eax; ret` stub at 0x52a040)
+
+## Checking a unit boundary (verification of the s1-s3 splits)
+- Data evidence (named datum after literals, plain data after a string run) proves an object boundary exists; the
+  exact function is only bounded by the last user of the old object's data and the first user of the new one's.
+- `tools/c2dag/bprobe.py TREE UNIT P..` emulates a split at each P (earlier functions become externals for the
+  later ones) and lists the functions whose code changes: a byte function that falls bounds the split from that
+  side (grave <= 0x4ef4f0, gs <= 0x4f2720, f3gmt exactly 0x4fe140, svgrave exactly 0x582730). "No change" proves nothing.
+- Opposite needs on one callee (one caller byte only if it is known, another only if unknown) prove a boundary
+  between them even where no data exists (lcamt: ai_FindUsableGood).
+- Pitfalls: a "plain" datum may be a string literal of the original's run (named in our source); a no-reader datum
+  can be a literal of a removed function only if it is a float/double; an object without data is invisible to the
+  data method.
