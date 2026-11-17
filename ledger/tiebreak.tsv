@@ -1789,7 +1789,7 @@ exe	0x004a8f20	ai_DecideUnfriendlyPair	poker	cfa4dfa6cc585588	no	byte	control=by
 exe	0x004a9030	ai_EvalGraveCount	poker	45a354b13b26e1c5	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004a9080	ai_DecideAcquaintance	poker	c61d2a57b3dfa733	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004a9150	ai_EvalOwnYearTurn	poker	e73c16b04ec0bca3	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x004a91a0	ai_DecideSuitor	poker	817705b08ad51c0f	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	8d526123c4adbed9
+exe	0x004a91a0	ai_DecideSuitor	aip	817705b08ad51c0f	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=253	dd94ada7c5ae1517
 exe	0x004a9280	ai_DecideCloseAcquaintance	poker	5744ecc293d265c4	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004a9350	ai_DecideOfficeAcquaintance	poker	d2ab91b66cc4fe3c	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004a9420	ai_DecideAcceptedChar	poker	d5b250d0ea064d42	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
@@ -1809,12 +1809,12 @@ exe	0x004aa940	aip_ExecPamphlet	poker	e1b6d5e694659b85	no	byte	control=byte p1=b
 exe	0x004aaa10	aip_ExecDrohen	poker	0c1abaebde183e3f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004aaae0	aip_ExecAnschwaerzen	poker	34ac6574c2826b56	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004aab90	ai_TrustedOfTwo	poker	2b0bbc8700171bdb	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft	
-exe	0x004aad30	ai_TrustedOfFour	poker	ef0623afcef65efe	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	1ddcb85582355210
+exe	0x004aad30	ai_TrustedOfFour	aip	ef0623afcef65efe	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=253	dd94ada7c5ae1517
 exe	0x004aaef0	ai_FindDarkCornerTarget	poker	4cddf1a6728575ef	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004aafb0	ai_ExecMessage74	poker	9d7720f790c7de6d	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004ab080	ai_DecideBuyDunkleEcke	poker	f4d2a02d6f6624d4	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004ab2c0	ai_ExecBuyDunkleEcke	poker	08c43c9fe9880d93	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x004ab3e0	ai_DecideBlutrache	poker	5163eb360d230d1d	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	8d526123c4adbed9
+exe	0x004ab3e0	ai_DecideBlutrache	aip	5163eb360d230d1d	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=253	dd94ada7c5ae1517
 exe	0x004ab6b0	ai_ExecBlutrache	poker	74886df01ae82528	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004ab7f0	ai_DecideVerfluchen	poker	0733055ba7dd944e	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004ab9f0	ai_ExecVerfluchen	poker	c8302e49f9d047f0	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
