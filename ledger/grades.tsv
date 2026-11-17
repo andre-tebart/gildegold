@@ -935,7 +935,7 @@ exe	0x0044ed00	agi_NumPoints	d3_io_a	byte	readable
 exe	0x0044ed50	agi_NumPolys	d3_io_a	byte	readable		
 exe	0x0044eda0	agi_Points	d3_io_a	byte	readable		
 exe	0x0044ee40	d3io_NoopCallback	d3_io_a	byte	readable		
-exe	0x0044ee50	agi_Kind	d3_io_b	byte	readable		
+exe	0x0044ee50	agi_Kind	d3_io_a	byte	readable		
 exe	0x0044eea0	bgi_ReadId	d3_io_b	byte	readable		
 exe	0x0044eee0	bgi_Find	d3_io_b	byte	readable		
 exe	0x0044ef10	bgi_Parse	d3_io_b	byte	readable		
@@ -992,8 +992,8 @@ exe	0x00453280	d3_RelightObject	d3_light	byte	readable
 exe	0x00453580	d3_RelightObjects	d3_light	byte	readable		
 exe	0x004535b0	d3_RelightObjectFrame	d3_light	byte	readable		
 exe	0x004538a0	d3_LightInvalidate	d3_light	byte	readable		
-exe	0x00453920	d3_ShadeInit	d3_vec	byte	readable		
-exe	0x00453990	d3_ShadeReset	d3_vec	byte	readable		
+exe	0x00453920	d3_ShadeInit	d3_light	byte	readable		
+exe	0x00453990	d3_ShadeReset	d3_light	byte	readable		
 exe	0x004539b0	d3_Lerp3	d3_vec	byte	readable		
 exe	0x004539f0	d3_VecAngle	d3_vec	byte	readable		
 exe	0x00453b40	d3_VecAngle2	d3_vec	byte	readable		
@@ -2750,95 +2750,95 @@ exe	0x004ef090	gv_CannonCost	gv	byte	readable
 exe	0x004ef170	gv_BuildingCannon	gv	byte	readable		
 exe	0x004ef260	gv_CannonScatter	gv	byte	readable		
 exe	0x004ef330	gv_CannonItemFactor	gv	byte	readable		
-exe	0x004ef3c0	gv_GraveCount	gv	byte	readable		
-exe	0x004ef440	gv_GravesInUse	gv	byte	readable		
-exe	0x004ef470	gv_EntryCount	gv	byte	readable		
-exe	0x004ef4f0	gv_SizeOpen	gv	byte	readable		
-exe	0x004ef570	gv_ListEntry	gv	byte	readable		
-exe	0x004ef6b0	gv_EntryIndex	gv	byte	readable		
-exe	0x004ef710	gv_EntryHeldBy	gv	byte	readable		
-exe	0x004ef740	gv_EntrySameId	gv	byte	readable		
-exe	0x004ef760	gv_EntryIsFree	gv	byte	readable		
-exe	0x004ef770	gv_EntryIsUsed	gv	byte	readable		
-exe	0x004ef780	gv_EntryHasId	gv	byte	readable		
-exe	0x004ef7c0	gv_FindEntry	gv	byte	readable		
-exe	0x004ef900	gv_LoadGraveyard	gv	byte	readable		
-exe	0x004ef930	gv_RandomGrave	gv	byte	readable		
-exe	0x004ef9c0	gv_BuryNewDead	gv	shape	readable	deep	
-exe	0x004efc10	gv_AllocGraveyard	gv	shape	readable	deep	
-exe	0x004eff50	gv_GrowGraveyard	gv	shape	readable	deep	
-exe	0x004f0180	gv_FreeGraveyard	gv	byte	readable		
-exe	0x004f01d0	gv_OrderBury	gv	byte	readable		
-exe	0x004f0240	gv_BuryCharacter	gv	shape	readable		
-exe	0x004f0430	gv_OrderReserveGrave	gv	byte	readable		
-exe	0x004f0490	gv_ReserveGrave	gv	byte	readable		
-exe	0x004f0700	gv_OrderExtendGrave	gv	byte	readable		
-exe	0x004f0770	gv_ExtendGrave	gv	byte	readable		
-exe	0x004f0900	gv_OrderSetGraveHolder	gv	byte	readable		
-exe	0x004f0970	gv_SetGraveHolder	gv	byte	readable		
-exe	0x004f0a90	gv_OrderOpenSize	gv	byte	readable		
-exe	0x004f0af0	gv_OpenSize	gv	shape	readable	deep	
-exe	0x004f0c20	gv_OrderAdjustEntry	gv	byte	readable		
-exe	0x004f0c80	gv_AdjustEntry	gv	shape	readable		
-exe	0x004f0d70	gv_OrderNewDead	gv	byte	readable		
-exe	0x004f0dd0	gv_AddNewDead	gv	byte	readable		
-exe	0x004f0e80	gv_OrderMoveGrave	gv	byte	readable		
-exe	0x004f0ed0	gv_MoveGrave	gv	byte	readable		
-exe	0x004f1170	gv_OrderRaiseDead	gv	byte	readable		
-exe	0x004f1200	gv_RaiseDead	gv	byte	readable		
-exe	0x004f15e0	gv_SendGrave	gv	byte	readable		
-exe	0x004f1660	gv_DecayRaisedDead	gv	byte	readable		
-exe	0x004f16f0	gv_PreserveRate	gv	byte	readable		
-exe	0x004f17f0	gv_WriteGraveyard	gv	byte	readable		
-exe	0x004f1aa0	gv_ReadGraveyard	gv	byte	readable		
-exe	0x004f1d50	gv_RoomForRaised	gv	byte	readable		
-exe	0x004f1de0	gv_GraveyardTurn	gv	byte	readable		
-exe	0x004f22a0	gv_FindWornEntry	gv	byte	readable		
-exe	0x004f2330	gv_LeasePrice	gv	byte	readable		
-exe	0x004f2440	gv_MovePrice	gv	byte	readable		
-exe	0x004f24a0	gv_ProtectionPrice	gv	byte	readable		
-exe	0x004f2540	gv_FindHeldEntry	gv	byte	readable		
-exe	0x004f25d0	gv_FindReservedEntry	gv	byte	readable		
-exe	0x004f2660	gv_SeanceChance	gv	byte	readable		
-exe	0x004f2720	gv_GetTableRecord	gv	byte	readable		
-exe	0x004f2750	gv_SetTableRecord	gv	byte	readable		
-exe	0x004f27d0	gv_OnDecisionValue	gv	byte	readable		
-exe	0x004f2870	gv_FindTableRecord	gv	byte	readable		
-exe	0x004f28d0	gv_WriteCrimes	gv	byte	readable		
-exe	0x004f2b30	gv_ReadCrimes	gv	byte	readable		
-exe	0x004f2da0	gv_SchoolLevelFactor	gv	byte	readable		
-exe	0x004f2e30	gv_Accuse	gv	byte	readable		
-exe	0x004f2fe0	gv_TableRecordText	gv	byte	readable		
-exe	0x004f30a0	gv_CrimeTextLaw2to8	gv	byte	readable		
-exe	0x004f31d0	gv_CrimeTextLaw9to16	gv	byte	readable		
-exe	0x004f3270	gv_CrimeTextLaw17to28	gv	byte	readable		
-exe	0x004f3580	gv_CrimeText	gv	byte	readable		
-exe	0x004f3610	gv_FindCrimesByState	gv	byte	readable		
-exe	0x004f3640	gv_AddEvidence	gv	byte	readable		
-exe	0x004f36b0	gv_FreeCrimeSlot	gv	byte	readable		
-exe	0x004f36e0	gv_FindCrime	gv	byte	readable		
-exe	0x004f3700	gv_SendCrimes	gv	byte	readable		
-exe	0x004f3780	gv_EvidenceSlot	gv	byte	readable		
-exe	0x004f37e0	gv_RetireCrime	gv	byte	readable		
-exe	0x004f3910	gv_HandOverCrimes	gv	byte	readable		
-exe	0x004f39b0	gv_CountOwnedGraves	gv	byte	readable		
-exe	0x004f39e0	gv_CulpritGuilt	gv	byte	readable		
-exe	0x004f3a30	gv_RetireCrimesOf	gv	byte	readable		
-exe	0x004f3b40	gv_RetireCrimeIds	gv	byte	readable		
-exe	0x004f3c50	gv_RankCulprits	gv	shape	readable	deep	
-exe	0x004f3dd0	gv_RankCulpritsAll	gv	shape	readable	deep	
-exe	0x004f3fe0	gv_HeldCrimesOf	gv	byte	readable		
-exe	0x004f4080	gv_HeldCrimeIdsOf	gv	byte	readable		
-exe	0x004f4130	gv_HeldCrimeCount	gv	byte	readable		
-exe	0x004f41b0	gv_FindAccused	gv	byte	readable		
-exe	0x004f4350	gv_ClearCrimes	gv	byte	readable		
-exe	0x004f4390	gv_SortCrimesByLaw	gv	byte	readable		
-exe	0x004f4420	gv_CheckSentence	gv	byte	readable		
-exe	0x004f4460	gv_PassSentence	gv	byte	readable		
-exe	0x004f48f0	gv_SentenceText	gv	byte	readable		
-exe	0x004f4970	gv_CheckRankUp	gv	shape	readable		
-exe	0x004f4d10	gv_CheckRankUps	gv	byte	readable		
-exe	0x004f4d30	gv_EvidencePrice	gv	byte	readable		
+exe	0x004ef3c0	gv_GraveCount	grave	byte	readable		
+exe	0x004ef440	gv_GravesInUse	grave	byte	readable		
+exe	0x004ef470	gv_EntryCount	grave	byte	readable		
+exe	0x004ef4f0	gv_SizeOpen	grave	byte	readable		
+exe	0x004ef570	gv_ListEntry	grave	byte	readable		
+exe	0x004ef6b0	gv_EntryIndex	grave	byte	readable		
+exe	0x004ef710	gv_EntryHeldBy	grave	byte	readable		
+exe	0x004ef740	gv_EntrySameId	grave	byte	readable		
+exe	0x004ef760	gv_EntryIsFree	grave	byte	readable		
+exe	0x004ef770	gv_EntryIsUsed	grave	byte	readable		
+exe	0x004ef780	gv_EntryHasId	grave	byte	readable		
+exe	0x004ef7c0	gv_FindEntry	grave	byte	readable		
+exe	0x004ef900	gv_LoadGraveyard	grave	byte	readable		
+exe	0x004ef930	gv_RandomGrave	grave	byte	readable		
+exe	0x004ef9c0	gv_BuryNewDead	grave	shape	readable	deep	
+exe	0x004efc10	gv_AllocGraveyard	grave	shape	readable	deep	
+exe	0x004eff50	gv_GrowGraveyard	grave	shape	readable	deep	
+exe	0x004f0180	gv_FreeGraveyard	grave	byte	readable		
+exe	0x004f01d0	gv_OrderBury	grave	byte	readable		
+exe	0x004f0240	gv_BuryCharacter	grave	shape	readable		
+exe	0x004f0430	gv_OrderReserveGrave	grave	byte	readable		
+exe	0x004f0490	gv_ReserveGrave	grave	byte	readable		
+exe	0x004f0700	gv_OrderExtendGrave	grave	byte	readable		
+exe	0x004f0770	gv_ExtendGrave	grave	byte	readable		
+exe	0x004f0900	gv_OrderSetGraveHolder	grave	byte	readable		
+exe	0x004f0970	gv_SetGraveHolder	grave	byte	readable		
+exe	0x004f0a90	gv_OrderOpenSize	grave	byte	readable		
+exe	0x004f0af0	gv_OpenSize	grave	shape	readable	deep	
+exe	0x004f0c20	gv_OrderAdjustEntry	grave	byte	readable		
+exe	0x004f0c80	gv_AdjustEntry	grave	shape	readable		
+exe	0x004f0d70	gv_OrderNewDead	grave	byte	readable		
+exe	0x004f0dd0	gv_AddNewDead	grave	byte	readable		
+exe	0x004f0e80	gv_OrderMoveGrave	grave	byte	readable		
+exe	0x004f0ed0	gv_MoveGrave	grave	byte	readable		
+exe	0x004f1170	gv_OrderRaiseDead	grave	byte	readable		
+exe	0x004f1200	gv_RaiseDead	grave	byte	readable		
+exe	0x004f15e0	gv_SendGrave	grave	byte	readable		
+exe	0x004f1660	gv_DecayRaisedDead	grave	byte	readable		
+exe	0x004f16f0	gv_PreserveRate	grave	byte	readable		
+exe	0x004f17f0	gv_WriteGraveyard	grave	byte	readable		
+exe	0x004f1aa0	gv_ReadGraveyard	grave	byte	readable		
+exe	0x004f1d50	gv_RoomForRaised	grave	byte	readable		
+exe	0x004f1de0	gv_GraveyardTurn	grave	byte	readable		
+exe	0x004f22a0	gv_FindWornEntry	grave	byte	readable		
+exe	0x004f2330	gv_LeasePrice	grave	byte	readable		
+exe	0x004f2440	gv_MovePrice	grave	byte	readable		
+exe	0x004f24a0	gv_ProtectionPrice	grave	byte	readable		
+exe	0x004f2540	gv_FindHeldEntry	grave	byte	readable		
+exe	0x004f25d0	gv_FindReservedEntry	grave	byte	readable		
+exe	0x004f2660	gv_SeanceChance	grave	byte	readable		
+exe	0x004f2720	gv_GetTableRecord	grave	byte	readable		
+exe	0x004f2750	gv_SetTableRecord	grave	byte	readable		
+exe	0x004f27d0	gv_OnDecisionValue	grave	byte	readable		
+exe	0x004f2870	gv_FindTableRecord	grave	byte	readable		
+exe	0x004f28d0	gv_WriteCrimes	grave	byte	readable		
+exe	0x004f2b30	gv_ReadCrimes	grave	byte	readable		
+exe	0x004f2da0	gv_SchoolLevelFactor	grave	byte	readable		
+exe	0x004f2e30	gv_Accuse	grave	byte	readable		
+exe	0x004f2fe0	gv_TableRecordText	grave	byte	readable		
+exe	0x004f30a0	gv_CrimeTextLaw2to8	grave	byte	readable		
+exe	0x004f31d0	gv_CrimeTextLaw9to16	grave	byte	readable		
+exe	0x004f3270	gv_CrimeTextLaw17to28	grave	byte	readable		
+exe	0x004f3580	gv_CrimeText	grave	byte	readable		
+exe	0x004f3610	gv_FindCrimesByState	grave	byte	readable		
+exe	0x004f3640	gv_AddEvidence	grave	byte	readable		
+exe	0x004f36b0	gv_FreeCrimeSlot	grave	byte	readable		
+exe	0x004f36e0	gv_FindCrime	grave	byte	readable		
+exe	0x004f3700	gv_SendCrimes	grave	byte	readable		
+exe	0x004f3780	gv_EvidenceSlot	grave	byte	readable		
+exe	0x004f37e0	gv_RetireCrime	grave	byte	readable		
+exe	0x004f3910	gv_HandOverCrimes	grave	byte	readable		
+exe	0x004f39b0	gv_CountOwnedGraves	grave	byte	readable		
+exe	0x004f39e0	gv_CulpritGuilt	grave	byte	readable		
+exe	0x004f3a30	gv_RetireCrimesOf	grave	byte	readable		
+exe	0x004f3b40	gv_RetireCrimeIds	grave	byte	readable		
+exe	0x004f3c50	gv_RankCulprits	grave	shape	readable	deep	
+exe	0x004f3dd0	gv_RankCulpritsAll	grave	shape	readable	deep	
+exe	0x004f3fe0	gv_HeldCrimesOf	grave	byte	readable		
+exe	0x004f4080	gv_HeldCrimeIdsOf	grave	byte	readable		
+exe	0x004f4130	gv_HeldCrimeCount	grave	byte	readable		
+exe	0x004f41b0	gv_FindAccused	grave	byte	readable		
+exe	0x004f4350	gv_ClearCrimes	grave	byte	readable		
+exe	0x004f4390	gv_SortCrimesByLaw	grave	byte	readable		
+exe	0x004f4420	gv_CheckSentence	grave	byte	readable		
+exe	0x004f4460	gv_PassSentence	grave	byte	readable		
+exe	0x004f48f0	gv_SentenceText	grave	byte	readable		
+exe	0x004f4970	gv_CheckRankUp	grave	shape	readable		
+exe	0x004f4d10	gv_CheckRankUps	grave	byte	readable		
+exe	0x004f4d30	gv_EvidencePrice	grave	byte	readable		
 exe	0x004f4e20	ord_ApplyForOffice	ord	shape	readable	deep	
 exe	0x004f4f20	ord_LevelOrder	ord	shape	readable	deep	
 exe	0x004f4ff0	ord_ChangeProfessionOrder	ord	byte	readable		
@@ -2978,7 +2978,7 @@ exe	0x004fe310	gm_AddTime2	f3gm	byte	readable
 exe	0x004fe330	gm_Season	f3gm	byte	readable		
 exe	0x004fe350	gm_ClockSeason	f3gm	byte	readable		
 exe	0x004fe370	gm_InitBuildingTables	f3gm	draft	readable	deep	
-exe	0x004fe570	gm_LoadTables	f3gm	shape	readable		
+exe	0x004fe570	gm_LoadTables	f3gm	byte	readable		
 exe	0x004fe7f0	gm_ClearBuildings	f3gm	byte	readable		
 exe	0x004fe830	gm_ClearObjects	f3gm	byte	readable		
 exe	0x004fe900	gm_FindObjectProto	f3gm	byte	readable		
@@ -3270,7 +3270,7 @@ exe	0x0051c560	ls_WriteMessageQueues	ls	byte	readable
 exe	0x0051c870	ls_WriteEnvironment	ls	byte	readable		
 exe	0x0051c920	ls_Read	ls	byte	readable		
 exe	0x0051c950	ls_LoadGame	ls	byte	readable		
-exe	0x0051cee0	ls_ReadSaveHeader	ls	byte	readable		
+exe	0x0051cee0	ls_ReadSaveHeader	ls	shape	readable		
 exe	0x0051d2d0	ls_LoadScene	ls	byte	readable		
 exe	0x0051d3d0	ls_ReadObjects	ls	byte	readable		
 exe	0x0051d4f0	ls_HookBuildingCB	ls	byte	readable		
@@ -4004,7 +4004,7 @@ exe	0x00578440	ai_TutorialFreeRuns	sv_t	byte	readable
 exe	0x005784a0	ai_TutorialInitMainIntro	sv_t	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	sv_t	byte	readable		
 exe	0x00578e40	ai_TutorialInitChapter2	sv_t	shape	readable		
-exe	0x00579570	ai_TutorialInitChapter3	sv_t	shape	readable		
+exe	0x00579570	ai_TutorialInitChapter3	sv_t	draft	readable		
 exe	0x0057aa80	ai_TutorialInitChapter4	sv_t	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	sv_t	byte	readable		
 exe	0x0057b750	ai_TutorialInitMainOutro	sv_t	byte	readable		
@@ -4648,20 +4648,20 @@ exe	0x005da010	ai_ClosePokerWindow	menu	byte	readable
 exe	0x005da030	ai_PokerGame	menu	byte	readable		
 exe	0x005dadf0	ai_PokerSeatPanel	menu	shape	readable	deep	
 exe	0x005db110	ai_PokerWindow2	menu	byte	readable		
-exe	0x005dbc10	ai_GetDefaultEffect	menu	byte	readable		
-exe	0x005dbc20	ai_GetDefaultEffectScale	menu	byte	readable		
-exe	0x005dbc30	ai_InitWind	menu	byte	readable		
-exe	0x005dbed0	ai_UpdateWind	menu	byte	readable		
-exe	0x005dbfc0	ai_SaveWind	menu	byte	readable		
-exe	0x005dc0c0	ai_LoadWind	menu	byte	readable		
-exe	0x005dc1a0	ai_SphereVolume	menu	byte	readable		
-exe	0x005dc210	ai_PositionShare	menu	byte	readable		
-exe	0x005dc240	ai_InitShot	menu	shape	readable	deep	
-exe	0x005dc3a0	ai_ScatterShot	menu	byte	readable		
-exe	0x005dc4a0	ai_StepShot	menu	shape	readable	deep	
-exe	0x005dc9d0	ai_StepShotSlow	menu	shape	readable	deep	
-exe	0x005dcf00	ai_ShotHitsGround	menu	byte	readable		
-exe	0x005dd090	ai_NormalizeEffectScale	menu	byte	readable		
-exe	0x005dd100	ai_SolveCannonAim	menu	shape	readable		
+exe	0x005dbc10	ai_GetDefaultEffect	shot	byte	readable		
+exe	0x005dbc20	ai_GetDefaultEffectScale	shot	byte	readable		
+exe	0x005dbc30	ai_InitWind	shot	byte	readable		
+exe	0x005dbed0	ai_UpdateWind	shot	byte	readable		
+exe	0x005dbfc0	ai_SaveWind	shot	byte	readable		
+exe	0x005dc0c0	ai_LoadWind	shot	byte	readable		
+exe	0x005dc1a0	ai_SphereVolume	shot	byte	readable		
+exe	0x005dc210	ai_PositionShare	shot	byte	readable		
+exe	0x005dc240	ai_InitShot	shot	byte	readable		
+exe	0x005dc3a0	ai_ScatterShot	shot	byte	readable		
+exe	0x005dc4a0	ai_StepShot	shot	shape	readable	deep	
+exe	0x005dc9d0	ai_StepShotSlow	shot	shape	readable	deep	
+exe	0x005dcf00	ai_ShotHitsGround	shot	byte	readable		
+exe	0x005dd090	ai_NormalizeEffectScale	shot	byte	readable		
+exe	0x005dd100	ai_SolveCannonAim	shot	shape	readable		
 exe	0x005de460	MSS_auto_cleanup	mss32lib	byte	readable		
 exe	0x005de470	mss_AutoCleanupExit	mss32lib	byte	readable		

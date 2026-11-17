@@ -89,6 +89,28 @@ a unit boundary looks like. Not needed to match a function's code (that is `note
   set, 32 samples) where any float in memory (extern, static, static const) gives byte. Kept as a commented static
   local; the original's fmul still reads the pooled 0.0f, so its text differs elsewhere (open).
 
+- **Named constants come first in an object** (cl test: a `const` defined after every function still sits at
+  offset 0 of the obj's one .rdata section; the `__real@` COMDATs follow in function order). So a named datum
+  AFTER literals in the original starts a new object: a unit boundary. Found so: d3_light ends with
+  d3_ShadeInit (its 2/pi, 1/1024 before d3_ZAxis), shot (0x5dbc10) splits from menu, grave (0x4ef3c0) from gv
+  (ai_CannonBalls then gv's literals then gv_SaleShares). Open the same way: am's ag_Pairs .. ai_TortureInstruments,
+  its literals 0x5ed048..0x5ed0fc (first users up to 0x4a05aa), then ai_CharWalkSteps .. ai_NearRingCursor (a
+  second object); gv_Decisions 0x611258 (a plain .data block after grave's strings: a third object).
+- **Named constants keep definition order and pack** (char[2] + char[2] at +0, +2): two 2-byte strings 4 apart in
+  .rdata are char[4] (agi_SepSpace / agi_SepQuote); 12-byte vectors 16 apart are D3VECTOR4 (the d3 axes).
+- **Values in .rdata in an order no first-use gives** (the first users' addresses jump up and down, or an
+  earlier unit reads one) are named constants, not literals; only the sites that read that address use the
+  object, the same value elsewhere is a pooled literal (shot's ai_ReachScale 0.1 vs the 0.1f of ai_InitWind).
+  An object operand can change C2's CSE: ai_SphereVolume needs `ai_SphereFactor * (size * size * size)`.
+- **Literals of functions /OPT:REF removed**: a literal sits in a unit whose code never reads it (d3_tools'
+  255.0, 0.002, 0.59f, 4.0f, 0.25, 0.2857 at 0x5eb978..; 100f / 256f / 0.0015625 / 512 at 0x5ebb40..): a removed
+  function of that unit used it first. Our link places it with its first surviving user instead; these steps
+  stay open (no dead function is invented).
+- **A header comment edit is a tie-break too**: changing only comments in d3_vec.h / am.h moved sv_t's
+  ai_TutorialInitChapter3 / f3gm's gm_FormatAmount off their grade; keep shared headers' text unless needed.
+- **datameasure's placed count is not monotonic**: symbols at delta 0 behind two cancelling errors drop out when
+  one error is fixed (7 -> 2 at agi_SepSpace); count the steps instead.
+
 ### .bss, common block and tentative definitions
 
 - **.bss statics / globals**: need `= 0` to keep declaration order; globals in the original's common block (past
