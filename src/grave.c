@@ -462,16 +462,7 @@ int gv_BuryNewDead(unsigned char *o, int n)
    1 .. 3) with its entries (gv_EntryTotals, "gv_Alloc:_all_graves") and graves (gv_GraveTotals, all free,
    "gv_Alloc:_all_zombies"); only the smallest size is open. The entries are laid out size by size, each pointing at its
    grave (0x44 << size bytes): level 1: 8 / 4, level 2: 12 / 6 / 2, level 3: 16 / 8 / 4 / 2 graves of the sizes 0 .. 3.
-   Stores it as AIBLD.yard and returns it; 0 when out of memory or o is no graveyard
-   @deep Read in full against the original (all 266 instructions reconciled, same count): the kind/level
-   check, the three allocations with their memsets, the free marks, the lists/open setup and the per-level
-   entry loops (gr advanced before e, as the original) match instruction for instruction. Remaining: (1)
-   the register pair esi/ebp swapped (the original keeps g in esi and the type record in ebp; ours the
-   reverse, which also makes ours 9 bytes larger through [ebp] encodings); with --regs esi=ebp,ebp=esi only
-   (2) is left: the out-of-memory cleanup block (free entries, free graves, free g, return 0: 18
-   instructions) that the original places inline after the graves allocation (jne to the init at +0x131)
-   and ours at the end (+0x313); tried the cleanup behind a goto to the init and an entries && graves test
-   before it (same or worse, VC6 lays the block out the same). Block placement and allocation only. */
+   Stores it as AIBLD.yard and returns it; 0 when out of memory or o is no graveyard */
 
 GVYARD *gv_AllocGraveyard(unsigned char *o)
 {
@@ -480,7 +471,7 @@ GVYARD *gv_AllocGraveyard(unsigned char *o)
     GVYARD *g;
     GVENTRY *e;
     GVGRAVE *gr;
-    int i;
+    int i, ok;
 
     bt = (AIBTYPE *)(ai_BTypes + bld->type + bld->type * 0x24c);
     if (bt->kind == 0x1d && bt->cap247 >= 1 && bt->cap247 <= 3) {
@@ -490,74 +481,82 @@ GVYARD *gv_AllocGraveyard(unsigned char *o)
         memset(g, 0, sizeof(GVYARD));
         g->id = bld->id;
         g->kind = bt->cap247;
+        ok = 0;
         g->entries = (GVENTRY *)mem_Alloc(gv_EntryTotals[bt->cap247] * sizeof(GVENTRY), "gv_Alloc:_all_graves");
         if (g->entries != 0) {
             memset(g->entries, 0, gv_EntryTotals[bt->cap247] * sizeof(GVENTRY));
             g->graves = (GVGRAVE *)mem_Alloc(gv_GraveTotals[bt->cap247] * sizeof(GVGRAVE), "gv_Alloc:_all_zombies");
-            if (g->graves != 0) {
-                memset(g->graves, 0, gv_GraveTotals[bt->cap247] * sizeof(GVGRAVE));
-                for (i = 0; i < gv_GraveTotals[bt->cap247]; i++)
-                    g->graves[i].id = -1;
-                e = g->entries;
-                gr = g->graves;
-                g->lists[0] = e;
-                g->open[0] = 1;
-                g->open[1] = 0;
-                g->open[2] = 0;
-                g->open[3] = 0;
-                if (g->kind == 1) {
-                    g->lists[1] = e + 8;
-                    g->lists[2] = 0;
-                    g->lists[3] = 0;
-                    for (i = 0; i < 8; i++, gr += 1, e++) {
-                        e->size = 0; e->grave = gr; e->id = -1; e->w08 = 0xffff;
-                    }
-                    for (i = 0; i < 4; i++, gr += 2, e++) {
-                        e->size = 1; e->grave = gr; e->id = -1; e->w08 = 0xffff;
-                    }
-                } else if (g->kind == 2) {
-                    g->lists[1] = e + 12;
-                    g->lists[2] = e + 18;
-                    g->lists[3] = 0;
-                    for (i = 0; i < 12; i++, gr += 1, e++) {
-                        e->size = 0; e->grave = gr; e->id = -1; e->w08 = 0xffff;
-                    }
-                    for (i = 0; i < 6; i++, gr += 2, e++) {
-                        e->size = 1; e->grave = gr; e->id = -1; e->w08 = 0xffff;
-                    }
-                    for (i = 0; i < 2; i++, gr += 4, e++) {
-                        e->size = 2; e->grave = gr; e->id = -1; e->w08 = 0xffff;
-                    }
-                } else {
-                    g->lists[1] = e + 16;
-                    g->lists[2] = e + 24;
-                    g->lists[3] = e + 28;
-                    for (i = 0; i < 16; i++, gr += 1, e++) {
-                        e->size = 0; e->grave = gr; e->id = -1; e->w08 = 0xffff;
-                    }
-                    for (i = 0; i < 8; i++, gr += 2, e++) {
-                        e->size = 1; e->grave = gr; e->id = -1; e->w08 = 0xffff;
-                    }
-                    for (i = 0; i < 4; i++, gr += 4, e++) {
-                        e->size = 2; e->grave = gr; e->id = -1; e->w08 = 0xffff;
-                    }
-                    for (i = 0; i < 2; i++, gr += 8, e++) {
-                        e->size = 3; e->grave = gr; e->id = -1; e->w08 = 0xffff;
-                    }
-                }
-                bld->yard = g;
-                return g;
+            if (g->graves != 0)
+                ok = 1;
+        }
+        if (ok == 0) {
+            if (g->entries != 0) {
+                mem_Free(g->entries);
+                g->entries = 0;
             }
+            if (g->graves != 0) {
+                mem_Free(g->graves);
+                g->graves = 0;
+            }
+            mem_Free(g);
+            return 0;
         }
-        if (g->entries != 0) {
-            mem_Free(g->entries);
-            g->entries = 0;
+        memset(g->graves, 0, gv_GraveTotals[bt->cap247] * sizeof(GVGRAVE));
+        for (i = 0; i < gv_GraveTotals[bt->cap247]; i++)
+            g->graves[i].id = -1;
+        e = g->entries;
+        gr = g->graves;
+        g->lists[0] = e;
+        g->open[0] = 1;
+        g->open[1] = 0;
+        g->open[2] = 0;
+        g->open[3] = 0;
+        if (g->kind == 1) {
+            g->lists[1] = e + 8;
+            g->lists[2] = 0;
+            g->lists[3] = 0;
+            for (i = 0; i < 8; i++, gr += 1, e++) {
+                e->size = 0; e->grave = gr; e->id = -1; e->w08 = 0xffff;
+            }
+            for (i = 0; i < 4; i++, gr += 2, e++) {
+                e->size = 1; e->grave = gr; e->id = -1; e->w08 = 0xffff;
+            }
+            bld->yard = g;
+            return g;
+        } else if (g->kind == 2) {
+            g->lists[1] = e + 12;
+            g->lists[2] = e + 18;
+            g->lists[3] = 0;
+            for (i = 0; i < 12; i++, gr += 1, e++) {
+                e->size = 0; e->grave = gr; e->id = -1; e->w08 = 0xffff;
+            }
+            for (i = 0; i < 6; i++, gr += 2, e++) {
+                e->size = 1; e->grave = gr; e->id = -1; e->w08 = 0xffff;
+            }
+            for (i = 0; i < 2; i++, gr += 4, e++) {
+                e->size = 2; e->grave = gr; e->id = -1; e->w08 = 0xffff;
+            }
+            bld->yard = g;
+            return g;
+        } else {
+            g->lists[1] = e + 16;
+            g->lists[2] = e + 24;
+            g->lists[3] = e + 28;
+            for (i = 0; i < 16; i++, gr += 1, e++) {
+                e->size = 0; e->grave = gr; e->id = -1; e->w08 = 0xffff;
+            }
+            for (i = 0; i < 8; i++, gr += 2, e++) {
+                e->size = 1; e->grave = gr; e->id = -1; e->w08 = 0xffff;
+            }
+            for (i = 0; i < 4; i++, gr += 4, e++) {
+                e->size = 2; e->grave = gr; e->id = -1; e->w08 = 0xffff;
+            }
+            for (i = 0; i < 2; i++, gr += 8, e++) {
+                e->size = 3; e->grave = gr; e->id = -1; e->w08 = 0xffff;
+            }
+            bld->yard = g;
+            return g;
         }
-        if (g->graves != 0) {
-            mem_Free(g->graves);
-            g->graves = 0;
-        }
-        mem_Free(g);
     }
     return 0;
 }
