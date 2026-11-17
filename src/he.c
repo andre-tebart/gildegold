@@ -57,10 +57,8 @@
    HEGRAVETRAINING (0x8f) and HEMEETING (0x90), HEMEETSCENE / HEMEETNAME (the meeting scene object 0x91), HEGRAVELEASE (the grave
     lease answer 0x92), HEGYPSY (the gypsy approach 0x9d), HEGYPSYCURSE (the curse 0x9e), HETRIALCASE (the trial 0xa0) and HEMEET4 (the circus show 0xa1), and over AIOBJ
    HETAVERNOBJ / HEOBJ1B5VALUE (the tavern's object 0x1b5); the hint table he_Hints (0x6fa260, HEHINT), the tip
-   order he_TipOrder (0x6fa1e0) and the tip texts txt_TipTexts (0x1442430) are typed and he_InitBetrieb (0x627b20),
-   the domicile news key he_NewsDomizil11 (0x628e40), the activity names he_ActivityUpgrade / he_ActivityRawMaterial /
-   he_ActivityGraveCare (0x628e70 / 0x628e7c / 0x628e8c) and the secret room's agent name he_AssassinName
-   (0x628dc8) are named. AIJOB's fields between
+   order he_TipOrder (0x6fa1e0) and the tip texts txt_TipTexts (0x1442430) are typed (the scene, voice and activity
+   names are string literals of he / he_b, not objects). AIJOB's fields between
    0x14 and 0xac are named only as the message's words; a member added to AIJOB / AIMSG / G28REC can flip other
    units' matches by declaration set (ai_CalcMeisterFernhaendler, ord_CountGridObjects are debt for it; ai_TutorialInitChapter3
    is a tie-break for it).
@@ -168,7 +166,6 @@ extern int d2_ClickedForm;
 #include "ahm_types.h"                /* AHMSLOT */
 extern float gm_DayStartHours[];
 extern float gm_DayEndHours[];
-extern char he_AssassinName[12];  /* 0x628dc8, the name of the agent the secret room event 0x99 spawns */
 extern unsigned char he_Events[339968];
 extern int d2_ClickedForm;
 extern GAPDATA full_data_602568[];
@@ -176,12 +173,8 @@ extern const int sv_PhaseMinutes[24];
 extern float gm_DayStartHours[];
 extern float gm_DayEndHours[];
 extern const float gm_MoodRanges[476];
-extern char he_MeetingSceneSmall[56];           /* 0x628f3c, the meeting scene script of the kind 0 / other */
-extern char he_MeetingSceneMiddle[56];          /* 0x628f74, the meeting scene script of the kind 1 */
-extern char he_MeetingSceneBig[56];             /* 0x628fac, the meeting scene script of the kind 2 */
 extern const float gv_SaleShares[];
 extern int gm_PlayerRecords[688];
-extern GAPDATA he_TheaterScripts[];
 
 struct AIPER; struct AMTREC; struct CHARACTER; struct CHACTION; struct EVTSCRIPT; struct G15PLANT; struct G11REC; struct AITIME;
 
@@ -18559,7 +18552,7 @@ void he_AllocHealing(AIJOB *ev)
    AIJOB.ownerCh step by step - the minutes since the last step (AIJOB.clock60) times 0.5 is the step, the health ratio
    times 100.0 plus the step must stay below 100.0 (gm_HealthRatio, gm_AddHealth), else the stage advances; the due clock
    is 10 minutes ahead and the last step time is now. Stage 1 releases the character from the job (sv_MoveToGroup with no
-   group) and tells its owner (news 0x1a18, the voice he_VoiceHealing), then frees the record; the stages -2 / -1 release
+   group) and tells its owner (news 0x1a18, the voice "_NACHRICHTEN_HS_80"), then frees the record; the stages -2 / -1 release
    it and free it too */
 
 void he_RunHealing(AIJOB *ev)
@@ -18598,7 +18591,7 @@ void he_RunHealing(AIJOB *ev)
         if (c != 0 && b != 0) {
             sv_MoveToGroup((unsigned char *)b, 0, c->id, 0);
             txt_Format(text, 0x1a18, b, c->id);
-            he_MessageBoxQuickjump(ai_CharInts[ev->chr][0], -1, text, 0, 0x5f2, ev->from, -1, 0, he_VoiceHealing);
+            he_MessageBoxQuickjump(ai_CharInts[ev->chr][0], -1, text, 0, 0x5f2, ev->from, -1, 0, "_NACHRICHTEN_HS_80");
         }
         he_FreeEvent((int *)ev);
         return;
@@ -18682,7 +18675,7 @@ void he_RunNewWorker(AIJOB *ev)
                 }
                 cm_SendOwnership(o->id, r->netId, r->netId);
                 if (he_FigureContact(r, &v[0], &v[1]) != 0)
-                    cm_SendChrGotoBuilding(r->netId, v[0], v[1], 0, 0, he_InitBetrieb);
+                    cm_SendChrGotoBuilding(r->netId, v[0], v[1], 0, 0, "InitBetrieb");
             }
         }
     }

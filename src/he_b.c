@@ -8,7 +8,6 @@
    he's registration function). The name is ours.
    Open: the first function (bprobe: he_RunProduktion 122 -> 28 for any split from 0x568220 to 0x569210, no other change).
    Open: head: the prototypes of this unit's functions still sit in he.h (scattered among he's).
-   Open: the named strings of this object's run (he_AssassinName .. he_TheaterScripts 0x628dc8 ..) are defined in main.c.
    split from he (rea 8cef7d5b, src/game/he.c); boundaries in decl/text.dcl */
 struct AHMSLOT;
 struct D3HMAP;
@@ -84,7 +83,6 @@ extern int d2_ClickedForm;
 #include "ahm_types.h"                /* AHMSLOT */
 extern float gm_DayStartHours[];
 extern float gm_DayEndHours[];
-extern char he_AssassinName[12];  /* 0x628dc8, the name of the agent the secret room event 0x99 spawns */
 extern unsigned char he_Events[339968];
 extern int d2_ClickedForm;
 extern GAPDATA full_data_602568[];
@@ -92,12 +90,8 @@ extern const int sv_PhaseMinutes[24];
 extern float gm_DayStartHours[];
 extern float gm_DayEndHours[];
 extern const float gm_MoodRanges[476];
-extern char he_MeetingSceneSmall[56];           /* 0x628f3c, the meeting scene script of the kind 0 / other */
-extern char he_MeetingSceneMiddle[56];          /* 0x628f74, the meeting scene script of the kind 1 */
-extern char he_MeetingSceneBig[56];             /* 0x628fac, the meeting scene script of the kind 2 */
 extern const float gv_SaleShares[];
 extern int gm_PlayerRecords[688];
-extern GAPDATA he_TheaterScripts[];
 
 struct AIPER; struct AMTREC; struct CHARACTER; struct CHACTION; struct EVTSCRIPT; struct G15PLANT; struct G11REC; struct AITIME;
 
@@ -3792,7 +3786,7 @@ void he_AllocSecretRoom(AIJOB *e)
     e->start = ai_Time;
     e->end = ai_Time;
     gm_AddTime(&e->end, 0, 1, 0);
-    ((HESECRETROOM *)e)->walkSlot = ((int (*)(int, int, int, int, int, int, const char *))cm_SendSpawnCharacter)(0xd, ((HESECRETROOM *)e)->home, -1, 0x2d, 0, 0, he_AssassinName);
+    ((HESECRETROOM *)e)->walkSlot = ((int (*)(int, int, int, int, int, int, const char *))cm_SendSpawnCharacter)(0xd, ((HESECRETROOM *)e)->home, -1, 0x2d, 0, 0, "ASSASSIN");
     e->exSlot = cm_SendExSetHEI(0, (char *)e);
     return;
 taken:
@@ -3820,7 +3814,7 @@ void he_FreeEventNow(int *r);          /* 0x56f040 */
    failure first (== 0: end + Send(-1); return; then the AddTime / Send(3) path), so its failure tail
    cross-jumps into case 3's lost-agent copy with the ai_Time load hoisted above the je as the original (je
    short); stage 5's clamp as rest -= minutes; minutes = rest > 5 ? rest : 5 (cmp ecx,5 before the copy);
-   the two agent names are he_AssassinName (M9). Left: identical instructions, 7 bytes: six 'push esi; push
+   the two agent names are the literal "ASSASSIN" (M9). Left: identical instructions, 7 bytes: six 'push esi; push
    4|..; jmp' tails (+0x37b, +0x3e0, +0x433, +0x46d, +0x4bc, +0x4d1) jump to case 0's way-3 copy call at
    +0xeb in the original, to case 0's Send(-1) copy call at +0x144 in ours (which copy the cross-jumper
    keeps). prior: reconstructed against the whole original (756 vs 756 instructions, switch tables equal):
@@ -3872,7 +3866,7 @@ void he_RunSecretRoom(int ev)
                 e->exSlot = cm_SendExSetHEI(-1, ev);
                 return;
             }
-            s->walkSlot = cm_SendChrGotoBuilding(agent->netId, bld->id, -1, 0, 1, he_AssassinName);
+            s->walkSlot = cm_SendChrGotoBuilding(agent->netId, bld->id, -1, 0, 1, "ASSASSIN");
             cm_SendExSetHEI(1, ev);
             return;
         }
@@ -3953,7 +3947,7 @@ void he_RunSecretRoom(int ev)
             e->exSlot = cm_SendExSetHEI(-1, ev);
             return;
         }
-        s->walkSlot = cm_SendChrGotoBuilding(s->agent, s->home, -1, 0, 0, he_AssassinName);
+        s->walkSlot = cm_SendChrGotoBuilding(s->agent, s->home, -1, 0, 0, "ASSASSIN");
         e->exSlot = cm_SendExSetHEI(5, ev);
         return;
     case 5:
@@ -4090,7 +4084,7 @@ void he_AllocDomizilEvent(AIJOB *e)
     e->exSlot = cm_SendExSetHEI(0, (char *)e);
 }
 /* 0x56f0b0, the run of the domicile event 0x9b: any stage but 0 frees; stage 0 sends the text 0x4035 with the news
-   0x5fb (its second text he_NewsDomizil11) to the character partner1 when it exists, and the text 0x4036 with the
+   0x5fb (its second text "_NACHRICHTEN_DOMIZIL_11") to the character partner1 when it exists, and the text 0x4036 with the
    news 0x5fa to the character partner2 when it exists (the first character's id as its argument), then frees */
 void he_RunDomizilEvent(int ev)
 {
@@ -4103,7 +4097,7 @@ void he_RunDomizilEvent(int ev)
         c2 = (AICHAR *)gm_FindChar(e->partner2);
         if (c != 0) {
             txt_Format(text, 0x4035);
-            he_ShowNews(e->partner1, -1, text, 1, 0x5fb, he_NewsDomizil11);
+            he_ShowNews(e->partner1, -1, text, 1, 0x5fb, "_NACHRICHTEN_DOMIZIL_11");
         }
         if (c2 != 0) {
             txt_Format(text, 0x4036, c->id);
@@ -4419,9 +4413,9 @@ int he_RegisterEventTypes88(void)
                                                 if (he_SetEventHandlers(0x93, (void *)he_AllocGraveyardWorkers, (void *)he_RunGraveyardWorkers) == 0) {
                                                     if (he_SetEventHandlers(0x94, (void *)he_AllocDueIsStart, (void *)he_RunGraveyardTheft) == 0) {
                                                         if (he_SetEventHandlers(0x92, (void *)he_AllocPlunderOfferLease, (void *)he_RunGraveLease) == 0) {
-                                                            sv_RegisterActivity(0x8d, he_ActivityGraveCare, 1, 0x513, -1);
-                                                            sv_RegisterActivity(0x8c, he_ActivityRawMaterial, 1, 0x500, 0xac);
-                                                            sv_RegisterActivity(0x8f, he_ActivityUpgrade, 0, 0x512, -1);
+                                                            sv_RegisterActivity(0x8d, "grabpflege", 1, 0x513, -1);
+                                                            sv_RegisterActivity(0x8c, "Rohstoffsuchen", 1, 0x500, 0xac);
+                                                            sv_RegisterActivity(0x8f, "Upgraden", 0, 0x512, -1);
                                                             sv_RegisterActivity(0x8a, 0, 0, 0x514, -1);
                                                             sv_RegisterActivity(0x88, 0, 0, 0x511, -1);
                                                             return 0;
@@ -5778,11 +5772,11 @@ void he_RunMeetingScene(int ev)
             }
         }
         if (m->kind == 2)
-            obj = evt_Load(he_MeetingSceneBig);
+            obj = evt_Load("LOCATIONS\\NEKROMANTENTURM\\NEBEL_DES_GRAUENS_GROSS.esc");
         else if (m->kind == 1)
-            obj = evt_Load(he_MeetingSceneMiddle);
+            obj = evt_Load("LOCATIONS\\NEKROMANTENTURM\\NEBEL_DES_GRAUENS_MITTEL.esc");
         else
-            obj = evt_Load(he_MeetingSceneSmall);
+            obj = evt_Load("LOCATIONS\\NEKROMANTENTURM\\NEBEL_DES_GRAUENS_KLEIN.esc");
         if (obj == 0)
             return;
         ((HEMEETNAME *)obj)->tag = 0x66675073;
@@ -6810,7 +6804,7 @@ void he_RunTrialScene(int ev)
             sc = d3_CurrentScene;
             sc2 = init_ObjectSceneUniverse((unsigned short *)grp);
             d3if_SelectScene(sc2, 1);
-            o = evt_Load((char *)he_TheaterScripts);
+            o = evt_Load("locations/zirkuszelt/theaterauffuehrung.esc");
             if (o != 0) {
                 o->group = grp->objId;
                 o->ownScene = 1;
