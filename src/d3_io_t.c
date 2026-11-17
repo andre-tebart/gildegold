@@ -1,5 +1,8 @@
-/* d3_io_t.c -- BGF mesh loader and object / animation file loading of the d3 scene I/O ("d3_io_t:" / "d3_io:"
-   allocation tags), 0x44cd40..0x44e570; tag "d3_int_io:" (d3_int_io.c) is a separate TU. Names are ours.
+/* d3_io_t.c -- stock objects, BGF mesh loader and object / animation file loading of the d3 scene I/O ("d3_io_t:" /
+   "d3_io:" allocation tags), 0x44c510..0x44e570; tag "d3_int_io:" (d3_int_io.c) is a separate TU. Its .data
+   (d3io_Lod, d3_AnimDir) follows d3_int_io's literal run, and the stock-object functions' strings follow it.
+   Open: the first function (0x44c510 by the .bss gap before d3io_StockPath; 0x44c530 .. 0x44c610 not excluded).
+   Open: head: the prototypes of 0x44c510 .. 0x44cbb0 still sit in d3_int_io.h. Names are ours.
    unit of rea 8cef7d5b (src/game/d3_io_t.c); boundaries in decl/text.dcl */
 #include <stdio.h>
 #include <stdlib.h>

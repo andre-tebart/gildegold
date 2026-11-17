@@ -1,6 +1,7 @@
 /* d3_int_io.c -- scene file reader ("d3_int_io:" allocation tag, "rd_object()" in an error message): the object
    tree (0x44abb0) and the floor (0x44b920). Its own TU (see d3_obj.c). The next function,
-   d3_LoadScene (0x44be60), calls both. Names are ours except rd_object.
+   d3_LoadScene (0x44be60), calls both; d3_LoadGroup (0x44c3f0) ends it (the stock-object functions after it
+   are d3_io_t's). Names are ours except rd_object.
    unit of rea 8cef7d5b (src/game/d3_int_io.c); boundaries in decl/text.dcl */
 #include <stdio.h>
 #include <stdlib.h>
