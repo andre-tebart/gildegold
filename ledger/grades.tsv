@@ -101,7 +101,7 @@ exe	0x00406a70	ch_FollowGround	ch	byte	readable
 exe	0x00406bc0	ch_ThinPath	ch	byte	readable		
 exe	0x00406c60	ch_SetHandObject	ch	byte	readable		
 exe	0x00406e40	ch_ActAnimOnce	ch	byte	readable		
-exe	0x00406e60	ch_ActTurn	ch	draft	readable	deep	
+exe	0x00406e60	ch_ActTurn	ch	shape	readable	deep	
 exe	0x00407200	ch_FindNear300	ch	byte	readable		
 exe	0x004072a0	ch_FindFreeCell	ch	shape	readable	deep	
 exe	0x00407690	ch_MapAlloc	ch	byte	readable		
@@ -762,7 +762,7 @@ exe	0x0043c670	d3_FreeObjectData	d3_engine	byte	readable
 exe	0x0043c7a0	d3_DisposeObject	d3_engine	byte	readable		
 exe	0x0043ca20	d3_LinkTop	d3_engine	byte	readable		
 exe	0x0043cab0	d3_UnlinkTop	d3_engine	byte	readable		
-exe	0x0043cb20	d3_AppendSibling	d3_engine	shape	readable	deep	
+exe	0x0043cb20	d3_AppendSibling	d3_engine	byte	readable		
 exe	0x0043cb80	d3_AddChild	d3_engine	byte	readable		
 exe	0x0043cbe0	d3_SetCamera	d3_engine	byte	readable		
 exe	0x0043cc10	d3_AllocObjectPolys	d3_engine	byte	readable		
@@ -1003,7 +1003,7 @@ exe	0x00453e20	d3_Hermite	d3_vec	byte	readable
 exe	0x00453e80	d3_VecEqual	d3_vec	byte	readable		
 exe	0x00453ee0	d3_MatMul43	d3_vec	byte	readable		
 exe	0x00454040	d3_MatTranspose	d3_vec	byte	readable		
-exe	0x00454070	d3_MatInverse	d3_vec	shape	readable		
+exe	0x00454070	d3_MatInverse	d3_vec	shape	readable	deep	
 exe	0x00454510	d3_MatIdentity	d3_vec	byte	readable		
 exe	0x00454560	d3_Normalize	d3_vec	byte	readable		
 exe	0x004545c0	d3_MatFromAngles	d3_vec	byte	readable		
@@ -2349,7 +2349,7 @@ exe	0x004cbb90	cm_ExFreeObject	cm	byte	readable
 exe	0x004cbbd0	cm_ExChat	cm	byte	readable		
 exe	0x004cbca0	cm_ExCreateGeb	cm	byte	readable		
 exe	0x004cbff0	cm_ExCharHalt	cm	byte	readable		
-exe	0x004cc050	cm_ExObjCell	cm	shape	readable		
+exe	0x004cc050	cm_ExObjCell	cm	byte	readable		
 exe	0x004cc110	cm_ExWalkPath	cm	shape	readable		
 exe	0x004cc1b0	cm_ExCutEntry	cm	byte	readable		
 exe	0x004cc270	cm_ExCutEntryUpdate	cm	byte	readable		
@@ -2440,7 +2440,7 @@ exe	0x004cffd0	cm_OrderAttack	cm	draft	readable	deep
 exe	0x004d0200	cm_OrderEscape	cm	byte	readable		
 exe	0x004d02d0	cm_OrderConquer	cm	byte	readable		
 exe	0x004d0380	cm_OrderWare	cm	shape	readable		
-exe	0x004d0460	cm_OrderToBestCell	cm	shape	readable		
+exe	0x004d0460	cm_OrderToBestCell	cm	byte	readable		
 exe	0x004d0520	cm_OrderWait	cm	byte	readable		
 exe	0x004d0570	cm_OrderClick	cm	draft	readable	deep	
 exe	0x004d0740	cm_FightMouse	cm	draft	readable	deep	
@@ -3111,7 +3111,7 @@ exe	0x00508d70	gm_BuildingLevel	f3gm	byte	readable
 exe	0x00508d80	gm_BuildingBalance	f3gm	draft	readable	deep	
 exe	0x00509060	gm_BuildingCarts	f3gm	byte	readable		
 exe	0x005090b0	gm_BuildingRank	f3gm	shape	readable		
-exe	0x00509120	gm_BuildingRankGate	f3gm	shape	readable		
+exe	0x00509120	gm_BuildingRankGate	f3gm	byte	readable		
 exe	0x005091a0	gm_BuildingValues	f3gm	byte	readable		
 exe	0x005092e0	gm_BuildingSkill	f3gm	shape	readable		
 exe	0x005093a0	gm_BuildingKindSkill	f3gm	byte	readable		
@@ -3859,7 +3859,7 @@ exe	0x0056f3f0	he_SecretRoomDomizil	he	shape	readable
 exe	0x0056f600	he_FindNearestSpying	he	shape	readable	deep	
 exe	0x0056f740	he_SecretRoomCatchSpy	he	shape	readable		
 exe	0x0056f980	he_RegisterEventTypes88	he	byte	readable		
-exe	0x0056fbc0	he_SetLifeByAge	he	shape	readable		
+exe	0x0056fbc0	he_SetLifeByAge	he	shape	readable	deep	
 exe	0x0056fc50	he_AllocHaunting	he	byte	readable		
 exe	0x0056fda0	he_RunHaunting	he	byte	readable		
 exe	0x00570130	he_AllocDecay	he	byte	readable		
@@ -4324,7 +4324,7 @@ exe	0x005a8560	ai_ProdSetting	lc	draft	readable	deep
 exe	0x005a86c0	ai_FreeProdSetting	lc	byte	readable		
 exe	0x005a8710	ai_SetSettingWeight	lc	byte	readable		
 exe	0x005a8850	ai_RefreshProdSetting	lc	byte	readable		
-exe	0x005a8870	ai_DrawSettingGood	lc	shape	readable		
+exe	0x005a8870	ai_DrawSettingGood	lc	byte	readable		
 exe	0x005a88e0	ai_SettingFactor	lc	byte	readable		
 exe	0x005a8900	ai_SetSettingFactor	lc	byte	readable		
 exe	0x005a8920	ai_FreeSettings	lc	byte	readable		
@@ -4384,7 +4384,7 @@ exe	0x005ae240	ai_BuyCartWindow	lc	shape	readable
 exe	0x005ae570	ai_SellCarts	lc	byte	readable		
 exe	0x005ae6b0	ai_SendTransportOrder	lc	byte	readable		
 exe	0x005ae870	ai_TransportOrderDue	lc	byte	readable		
-exe	0x005ae8e0	ai_CartAtBuilding	lc	shape	readable		
+exe	0x005ae8e0	ai_CartAtBuilding	lc	byte	readable		
 exe	0x005ae9a0	ai_TransportFromLager	lc	shape	readable		
 exe	0x005af010	ai_TransportGoodsTotal	lc	draft	readable	deep	
 exe	0x005af1a0	ai_OpenTransport	lc	byte	readable		
