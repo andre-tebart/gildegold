@@ -3013,7 +3013,7 @@ exe	0x00500b90	gm_BuildKindObjects	f3gmt	byte	readable
 exe	0x00500c20	gm_CollectOffers	f3gmt	draft	readable	deep	
 exe	0x00500ec0	gm_FindMarketObject	f3gmt	shape	readable		
 exe	0x00501000	gm_FindPlayerBuilding	f3gmt	byte	readable		
-exe	0x00501030	gm_BuildNext	f3gmt	draft	readable	deep	
+exe	0x00501030	gm_BuildNext	f3gmt	shape	readable	deep	
 exe	0x00501190	gm_BuildQuery	f3gmt	shape	readable	deep	
 exe	0x005012b0	gm_FindFreeBuilding	f3gmt	byte	readable		
 exe	0x005012e0	gm_FreeBuilding	f3gmt	byte	readable		
@@ -3536,7 +3536,7 @@ exe	0x0053f430	he_InnStaffLeave	he	byte	readable
 exe	0x0053f500	he_ClearInnDarkCorner	he	byte	readable		
 exe	0x0053f5b0	he_TopUpCharMoney	he	byte	readable		
 exe	0x0053f6b0	he_SpawnFounders	he	draft	readable	deep	
-exe	0x00540c90	he_PostEvent67	he	shape	readable		
+exe	0x00540c90	he_PostEvent67	he	byte	readable		
 exe	0x00540e40	he_InnReport	he	byte	readable		
 exe	0x00540fe0	he_DailyEventChecks	he	byte	readable		
 exe	0x00541010	he_PostEvent3a	he	byte	readable		
@@ -3798,7 +3798,7 @@ exe	0x00567620	he_AllocTitleDue	he	byte	readable
 exe	0x00567660	he_RunTitleDue	he	byte	readable		
 exe	0x00567810	he_OpenHelpEvents	he	byte	readable		
 exe	0x005679b0	he_AllocHint	he	byte	readable		
-exe	0x00567a80	he_RunHint	he	draft	readable	deep	
+exe	0x00567a80	he_RunHint	he	byte	readable		
 exe	0x00567b80	he_AllocTip	he	byte	readable		
 exe	0x00567c00	he_RunTip	he	draft	readable	deep	
 exe	0x00567d20	he_AllocTutorialBuildingTour	he	byte	readable		
@@ -4133,7 +4133,7 @@ exe	0x0058f290	ai_LayoutStoreGoods	lc	byte	readable
 exe	0x0058f510	ai_MarketContact	lc	byte	readable		
 exe	0x0058f620	ai_PumpFrames	lc	byte	readable		
 exe	0x0058f640	ai_BuildingName	lc	byte	readable		
-exe	0x0058f6a0	ai_BauplatzFilter	lc	draft	readable	deep	
+exe	0x0058f6a0	ai_BauplatzFilter	lc	byte	readable		
 exe	0x0058f7a0	ai_FindBauplaetze	lc	byte	readable		
 exe	0x0058f920	ai_VgFilter	lc	byte	readable		
 exe	0x0058f980	ai_ShowVgObjects	lc	byte	readable		
@@ -4465,7 +4465,7 @@ exe	0x005bea50	ai_SpecialAmountListWindow	lcamt	draft	readable	deep
 exe	0x005bf0d0	ai_FillFamilyTab	lcamt	draft	readable	deep	
 exe	0x005bf300	ai_FillFriendsTab	lcamt	byte	readable		
 exe	0x005bf4f0	ai_FillEnemiesTab	lcamt	byte	readable		
-exe	0x005bf6f0	ai_FillLoversTab	lcamt	draft	readable	deep	
+exe	0x005bf6f0	ai_FillLoversTab	lcamt	shape	readable	deep	
 exe	0x005bf7c0	ai_FillWeddingTab	lcamt	draft	readable	deep	
 exe	0x005bfa90	ai_FillQuarrelTab	lcamt	draft	readable	deep	
 exe	0x005bfc40	ai_FillCandidacyTab	lcamt	byte	readable		
@@ -4597,7 +4597,7 @@ exe	0x005d2bc0	ai_UseGoodFrameChar2	lcamt	byte	readable
 exe	0x005d2e80	ai_UseGoodHeatBuilding	lcamt	byte	readable		
 exe	0x005d2f20	ai_UseEventGood	lcamt	shape	readable		
 exe	0x005d2f90	ai_UseGoodStaffBonus	lcamt	byte	readable		
-exe	0x005d3030	ai_UseGoodPettyLoss	lcamt	shape	readable	deep	
+exe	0x005d3030	ai_UseGoodPettyLoss	lcamt	byte	readable		
 exe	0x005d31c0	ai_UseGoodSkillBonus	lcamt	byte	readable		
 exe	0x005d3270	ai_UseGoodDistrust	lcamt	byte	readable		
 exe	0x005d33b0	ai_ListFiles	menu	byte	readable		
