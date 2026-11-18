@@ -832,12 +832,14 @@ int cm_AddFieldValues(unsigned char size, unsigned char n, unsigned short field,
     return 0;
 }
 /* 0x4c3d90, as 0x4c3d00, value by value
-   @original the copies walk the parameter v itself (VC6's cast-as-lvalue extension, `*((T *)v)++`): v is loaded
-   after each loop's guard; a typed local pointer per case loads it before the guard */
+   @original the copies walk the parameter v itself (likely VC6's cast-as-lvalue `*((T *)v)++`, which our checker
+   does not parse; written through the union q): v is loaded after each loop's guard, where a typed local
+   pointer per case loads it before the guard */
 
 int cm_AddFieldValue(unsigned char size, unsigned char n, unsigned short field, void *v)
 {
     union { unsigned char *b; unsigned short *w; short *s; int *i; } p;    /* the entry: size, n, field, the values */
+    union { void *v; unsigned char *b; short *s; int *i; } q;              /* the caller's values */
     unsigned int i, len;
 
     if (size != 1 && size != 2 && size != 4)
@@ -853,16 +855,25 @@ int cm_AddFieldValue(unsigned char size, unsigned char n, unsigned short field, 
     *p.w++ = field;
     switch (size) {
     case 1:
-        for (i = 0; i < n; i++)
-            *p.b++ = *((unsigned char *)v)++;
+        for (i = 0; i < n; i++) {
+            q.v = v;
+            *p.b++ = *q.b++;
+            v = q.v;
+        }
         break;
     case 2:
-        for (i = 0; i < n; i++)
-            *p.s++ = *((short *)v)++;
+        for (i = 0; i < n; i++) {
+            q.v = v;
+            *p.s++ = *q.s++;
+            v = q.v;
+        }
         break;
     case 4:
-        for (i = 0; i < n; i++)
-            *p.i++ = *((int *)v)++;
+        for (i = 0; i < n; i++) {
+            q.v = v;
+            *p.i++ = *q.i++;
+            v = q.v;
+        }
         break;
     }
     return 0;

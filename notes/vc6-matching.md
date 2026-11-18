@@ -631,7 +631,8 @@ Where the pushes and pops sit, how many epilogue copies there are, shared agains
     loop's exit and keeps a separate `return 0` copy for the break path: gm_IncomeKind1 / 2 / 5, as kinds 3 / 4
     already were); `if (r != 0) return 0; return 1;` against the reverse (cm_ExOfficeSwap); the work under
     `if (count != 0) { .. return x; } return 0;` (cm_LobbyChatFirst); the guard returning -1 first
-    (gm_CharMoney); a parent test as its own if with `return level` inside (gm_CharLevel / gm_CharPrevLevel: the
+    (gm_CharMoney); a field read at each use instead of a local, so `(count + 2) * 5` folds into one lea
+    (gm_ListStock); a parent test as its own if with `return level` inside (gm_CharLevel / gm_CharPrevLevel: the
     original has one return more); a switch case's `cm_WaitTicks(4); return;` as `break;` into the same code after
     the switch (cm_DuelRound: the callee-saved pushes move behind the guard).
   - **Record and message fills**: permute the fill (`tools/search/permute.py`), both fills of a function together
