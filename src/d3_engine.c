@@ -549,7 +549,7 @@ __inline void d3_FtoI2(float f, int *dst)
 }
 
 /* 0x439c90, clips the polygon in d3_ClipList[0] (d3_ClipIn vertices) at the planes of info
-   (Sutherland-Hodgman); returns the vertex list of the result, d3_ClipOut vertices. */
+(Sutherland-Hodgman); returns the vertex list of the result, d3_ClipOut vertices. @deep deep s23: left the d1 plane sum's first product (the original multiplies plane.z by b->z after the x product: fld [edx+8]; fmul [ebx+4]) and the fild of b->fog - a->fog scheduled before the byte loads. climb round 1 (241 mutants): nothing. */
 D3CVERT **d3_ClipPoly(D3CLIPINFO *info)
 {
     D3CVERT **in, **out;
