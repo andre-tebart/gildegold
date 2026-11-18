@@ -161,7 +161,6 @@ extern char ai_Chars[768][0x21c];
 extern unsigned short ai_PlayerId;
 extern char ai_CharNameFmt[];
 extern int d2_PointerObj;
-extern GAPDATA full_data_625150[];
 
 
 extern int sv_PopRequest;
@@ -172,7 +171,6 @@ extern int d2_PointerObj;
 extern int d2_ClickedId;
 extern int d2_LastWindow;
 extern int sv_FrameMask;
-extern GAPDATA full_data_625150[];
 
 
 
@@ -308,7 +306,6 @@ extern int d2_LastWindow;
 extern unsigned char ai_OwnPlayer;
 extern const float gm_MoodRanges[476];
 extern GAPDATA full_data_602568[];
-extern GAPDATA full_data_62a9f8[];
 extern int sv_PopRequest;
 extern unsigned char kb_Last;
 

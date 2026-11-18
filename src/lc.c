@@ -675,8 +675,6 @@ extern int d2_ClickedId;
 extern int d2_LastWindow;
 extern struct D2OBJ *d2_Objs;
 extern GAPDATA full_data_602568[];
-extern GAPDATA full_data_625150[];
-extern GAPDATA full_data_625154[];
 extern unsigned char ai_OwnPlayer;
 
 extern int d2_ClickedId;
@@ -706,7 +704,6 @@ extern struct D2PIC *d2_Pics;
 extern int sv_FrameMask;
 extern char ai_Chars[768][0x21c];
 extern GAPDATA full_data_60d224[];
-extern GAPDATA full_data_62d6bc[];
 extern char ai_UseObjForm[];
 extern unsigned char ai_OwnPlayer;
 extern char * cm_FieldObject;
