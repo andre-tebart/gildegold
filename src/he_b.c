@@ -4206,41 +4206,42 @@ int he_SecretRoomDomizil(int bldId, AICHAR *victim)
     AIBLD *bld;
     AICHAR *owner;
     float mine, theirs;
+    int ok;
 
     if (he_NoEvent9bFor(victim) != 0) {
         bld = (AIBLD *)gm_BuildQuery(1, 1, bldId);
         if (bld != 0) {
             owner = &ai_CharsT[bld->owner];
+            ok = 1;
             mine = gm_GetSkill((char *)owner, 2);
             theirs = gm_GetSkill((char *)victim, 2);
-            if (mine - theirs * 0.5f + util_RandomF() * 0.5 < 0.8) {
+            if (mine - theirs * 0.5f + util_RandomF() * 0.5 < 0.8)
+                ok = 0;
+            else {
+                mine = gm_GetSkill((char *)owner, 3);
+                theirs = gm_GetSkill((char *)victim, 3);
+                if (mine - theirs * 0.5f + util_RandomF() * 0.5 < 0.7)
+                    ok = 0;
+            }
+            if (ok == 0) {
                 txt_Format(text, 0x4032, victim->id, victim->id);
                 he_ShowNews(owner->netId, -1, text, 1, 0x5fa, "_NACHRICHTEN_DOMIZIL_07");
                 txt_Format(text, 0x4034);
                 he_ShowNews(victim->netId, -1, text, 1, 0x5fb, "_NACHRICHTEN_DOMIZIL_09");
             } else {
-                mine = gm_GetSkill((char *)owner, 3);
-                theirs = gm_GetSkill((char *)victim, 3);
-                if (mine - theirs * 0.5f + util_RandomF() * 0.5 < 0.7) {
-                    txt_Format(text, 0x4032, victim->id, victim->id);
-                    he_ShowNews(owner->netId, -1, text, 1, 0x5fa, "_NACHRICHTEN_DOMIZIL_07");
-                    txt_Format(text, 0x4034);
-                    he_ShowNews(victim->netId, -1, text, 1, 0x5fb, "_NACHRICHTEN_DOMIZIL_09");
-                } else {
-                    txt_Format(text, 0x4031, victim->id);
-                    he_ShowNews(owner->netId, -1, text, 1, 0x5fa, "_NACHRICHTEN_DOMIZIL_06");
-                    txt_Format(text, 0x4033);
-                    he_ShowNews(victim->netId, -1, text, 1, 0x5fb, "_NACHRICHTEN_DOMIZIL_09");
-                    memset(&msg, 0, sizeof(msg));
-                    msg.type = 0x9b;
-                    msg.to = owner->netId;
-                    msg.fromId = bldId;
-                    msg.arg[0] = victim->netId;     /* the event's partner1 */
-                    msg.arg[1] = owner->netId;      /* its partner2 */
-                    msg.flags = 2;
-                    cm_SendLongMessage((char *)&msg);
-                    return 1;
-                }
+                txt_Format(text, 0x4031, victim->id);
+                he_ShowNews(owner->netId, -1, text, 1, 0x5fa, "_NACHRICHTEN_DOMIZIL_06");
+                txt_Format(text, 0x4033);
+                he_ShowNews(victim->netId, -1, text, 1, 0x5fb, "_NACHRICHTEN_DOMIZIL_09");
+                memset(&msg, 0, sizeof(msg));
+                msg.type = 0x9b;
+                msg.to = owner->netId;
+                msg.fromId = bldId;
+                msg.arg[0] = victim->netId;     /* the event's partner1 */
+                msg.arg[1] = owner->netId;      /* its partner2 */
+                msg.flags = 2;
+                cm_SendLongMessage((char *)&msg);
+                return 1;
             }
         }
     }
