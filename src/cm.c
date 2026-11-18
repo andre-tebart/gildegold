@@ -17078,101 +17078,6 @@ void cm_InitScenes(void)
     cm_RegisterSceneKind(11, (int)cm_RunSale, 0, 0, 0, 0);
     cm_ResetCutInfos(0);
 }
-/* 0x4e58e0, the debug dump of a person (log of the cutscenes): one line of tab separated fields (time, +4, id, the name of the kind (0x60eae0, 24 bytes each) ...) */
-
-void ai_DumpPersonHead(char *c, char *buf)
-{
-    AICHAR *p;
-    char *name;
-
-    p = (AICHAR *)c;
-    if (p->kind < 10)
-        name = ai_CharKindNames[p->kind];
-    else
-        name = "%i\t%i\t%i\t%s\t%s\t%i\t%s\t%i\t%s\t%s\t%s\t%s\t";
-    sprintf(buf, "%i\t%i\t%i\t%s\t%s\t%i\t%s\t%i\t%s\t%s\t%s\t%s\t", ai_Time.year, p->netId, p->id, name, p->name, p->health,
-            txt_SexNames[p->sex], p->w00a, txt_FaithNames[p->b00c], txt_HonourTitles[p->b00d], txt_JobNames[p->jobId],
-            txt_TitleNames[(unsigned char)p->title]);
-}
-/* 0x4e5980, the debug dump of the floats +0x10 .. +0x20 (the 6th "%5.2f" gets the int +0x24 as the original does), the word +0x28 and the bit fields of +0x2c */
-
-void ai_DumpPersonStats(char *c, char *buf)
-{
-    AICHAR *p;
-    unsigned int v;
-
-    p = (AICHAR *)c;
-    sprintf(buf, "%5.2f\t %5.2f\t %5.2f\t %5.2f\t %5.2f\t %5.2f\t %i\t", p->f010, p->f014, p->f018, p->f01c, p->f020, p->v024, p->w028);
-    v = p->v02c;
-    sprintf(buf + strlen(buf), "%i\t %i\t %i\t %i\t %i\t %i\t %i\t %i\t %i\t", v & 0xf, (v >> 4) & 0xf, (v >> 8) & 0xf, (v >> 0xc) & 3, (v >> 0xe) & 7, (v >> 0x11) & 7,
-            (v >> 0x14) & 7, (v >> 0x17) & 3, (v >> 0x19) & 0xf);
-}
-/* 0x4e5a40, the five bytes +0x80 .. +0x84 of a person as a tab separated line */
-
-void ai_DumpPersonSkills(char *c, char *buf)
-{
-    AICHAR *p;
-
-    p = (AICHAR *)c;
-    sprintf(buf, "%i\t%i\t%i\t%i\t%i\t", p->skills[0], p->skills[1], p->skills[2], p->skills[3], p->skills[4]);
-}
-/* 0x4e5a90, the four names (0x143ab0c) of the bytes +0x166 .. +0x169 of a person */
-
-void ai_DumpPersonOffices(char *c, char *buf)
-{
-    AICHAR *p;
-
-    p = (AICHAR *)c;
-    sprintf(buf, "%s\t%s\t%s\t%s\t", txt_OfficeNames[p->officeKind], txt_OfficeNames[p->prevOffice], txt_OfficeNames[p->appliedOffice],
-            txt_OfficeNames[p->secondOffice]);
-}
-/* 0x4e5af0, the debug dump of a person's money fields (v190, money, spent198, wage, v1a0, v1a4), then its goods value (0x509e60) and its worth (0x50a640) */
-
-void ai_DumpPersonMoney(char *c, char *buf)
-{
-    AICHAR *p;
-
-    p = (AICHAR *)c;
-    sprintf(buf, "%i\t%i\t%i\t%i\t%i\t%i\t%i\t%i\t", p->v190, p->money, p->spent198, p->wage, p->v1a0, p->v1a4, gm_GetGoodsValue(c), gm_GetWorth(p->id));
-}
-/* 0x4e5b50, the debug dump of the 8 relatives of a person (the ids at +0x5c): "%i\t%s" of each one's netId and name, -1 and 0x143b3f4 (txt_NoRelative) when it does not exist */
-
-void ai_DumpPersonRelatives(char *c, char *buf)
-{
-    char tmp[0x100];
-    int *p;
-    AICHAR *o;
-    int i;
-
-    p = ((AICHAR *)c)->relatives;
-    for (i = 8; i != 0; i--) {
-        o = (AICHAR *)gm_FindChar(*p);
-        if (o != 0)
-            sprintf(tmp, "%i\t%s", o->netId, o->name);
-        else
-            sprintf(tmp, "%i\t%s", -1, txt_NoRelative);
-        strcat(buf, tmp);
-        p++;
-    }
-}
-/* 0x4e5bf0, the debug dump of a person (one line made by 0x4e58e0, 0x4e5980, 0x4e5a40, 0x4e5a90, 0x4e5af0 and 0x4e5b50 in a 0x1fb8 byte buffer; the end of the cut_ code) */
-
-void ai_DebugDumpPerson(char *c)
-{
-    char buf[0x1fb8];
-    AICHAR *p;
-
-    p = (AICHAR *)c;
-    if (p != 0 && p->id != 0xffff) {
-        memset(buf, 0, sizeof(buf));
-        ai_DumpPersonHead(c, buf + strlen(buf));
-        ai_DumpPersonStats(c, buf + strlen(buf));
-        ai_DumpPersonSkills(c, buf + strlen(buf));
-        ai_DumpPersonOffices(c, buf + strlen(buf));
-        ai_DumpPersonMoney(c, buf + strlen(buf));
-        ai_DumpPersonRelatives(c, buf + strlen(buf));
-    }
-}
 
 extern unsigned int ai_MissionSeed;
 extern int ai_TimeCopy[4];
@@ -17288,14 +17193,6 @@ int cm_TextBox = -1;  /* 0x60d368 */
 int cm_SceneEnterScript = -1;  /* 0x60d36c, -1 or the object waited for ( */
 int cm_DuelVariantCount = 1;  /* 0x60d370, the number of duel variants in cm_DuelVariants (cm_DuelInitVariants) */
 int cm_DialogLength = 1;  /* 0x60d374 */
-/* 0x4db700 .. 0x4dd95d (one function; Ghidra's 0x4dc7c0 lies inside it), the trial scene (the run function of the scene kind 2, called with the party m) of a session request m (+0x30 count, +0x34 .. +0x48 the characters: accused, accuser, judge, two
-   assessors ..): "Gericht.ed3" / "ADDON\\PROZESS_NEU.sbf", the scenes "cutscenes\\prozess\\prozess-*.esc" (create, judge, assessors, intro,
-   accuser, accused), the texts 0x1491 .. 0x1557 through 0x515960 and the voices "_PROZESS_*" (0x4e32d0 / 0x4e32b0); the accusation, the
-   charge (witnesses), the question of guilt, the torture sub-scenes "cutscenes\\prozess\\folter*" (the instrument names 0x60dad0 ..
-   0x60db84 are the .esc names), the vote ("prozess-abstimmen-1 .. 3"), the verdict (guilty / not guilty, penalties 0x4f4420 / 0x4f48f0 /
-   0x4f4460) and the cleanup of all sound slots. The stack frame is 0x760 bytes. ROUGH: the structure and the calls (read from the call
-   digest, arguments in call order but mostly 0), not the arguments of 0x4f2720 / 0x4f3580 / 0x4f3b40 and the mood floats (0x3fb33333 ..) */
-char ai_CharKindNames[10][24] = { "DUMMY_NPC", "MEISTER_NPC", "POLITICIAN_NPC", "AI_NPC", "NPC", "PLAYER", "REMOTE_PLAYER", "RELATIVE_PLAYER", "USED_PLAYER", "INVISIBLE_NPC" };  /* 0x60eae0, the names of the NPC kinds */
 int cm_RecvCount = 0;  /* 0x6f0cd0, received messages */
 int cm_NoticeCount = 0;  /* 0x6f0cd4 */
 int cm_LobbyChatCount = 0;  /* 0x6f0cd8, the lines in the ring (at most 15) */
