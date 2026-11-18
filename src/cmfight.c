@@ -747,19 +747,22 @@ CMGRENADE *cm_ThrowGrenade(D3VECTOR *p, int x, int y)
    type there (the map rebuilt), sounds "Explosion_s" and hurts every scene character within 100.0 of the cell's
    vertex by a random weapon damage (0x176) scaled by its life value and the distance; returns the number of used
    slots
-   @deep read whole against the original: grenade walk (index loop over CMGRENADE, base +0xc, jl),
-   path-ended test D3ANIM.flags2d & 0x20, vectors a/b (D3VECTOR4, a reused for the vertex difference),
-   colour, Smoke/Earth/Explosion prototyped (float pushes, 70/50/20/60), the terrain cell (types / height
-   at x + y*size, reloaded d3_Terrain for the clear, MakeDivide then MakeLight), the sound, the scene-char
-   damage with the tail-merged cm_ShowDamage calls and kampf/arm_greifen all match. Left: allocation only,
-   as cm_UpdateBombs - the original caches 0 in ebx (xor ebx,ebx; push ebx / cmp eax,ebx, re-zeroed after
-   the inner loop) where ours uses immediates, so the terrain index and the vertex call use other registers
+   @deep size queue s18: a / b with an int pad word (struct { float x, y, z; int w; }): the original stores
+   both w as integer 0 from its cached zero register (mov [..],ebx; b.y = 0.0f stays an immediate), so the
+   integer 0 gains the references that give it ebx: 121 -> 99 ins, raw 843 -> 826, padded size (832). Left:
+   frame 0x3c vs 0x40: the original keeps t in its own slot [esp+0x24] (fild t, then fld dist; fmul 0.01f;
+   fsubr 1.0), ours computes (1.0 - dist * 0.01f) before the k product and reuses dist's slot for t. No
+   lever (= control): the factor's operand orders (t * f / f * t, 0.01f * dist), (c->f01c * 0.01) * k,
+   (double)t. The same int pad is in cm_UpdateBombs (w from edi) and he_RunSabotage (ebx). prior: read
+   whole against the original: grenade walk (index loop over CMGRENADE, base +0xc, jl), path-ended test
+   D3ANIM.flags2d & 0x20, vectors a/b (D3VECTOR4, a reused for the vertex difference), colour,
+   Smoke/Earth/Explosion prototyped (float pushes, 70/50/20/60), the terrain cell (types / height at x +
+   y*size, reloaded d3_Terrain for the clear, MakeDivide then MakeLight), the sound, the scene-char damage
+   with the tail-merged cm_ShowDamage calls and kampf/arm_greifen all match. Left: allocation only, as
+   cm_UpdateBombs - the original caches 0 in ebx (xor ebx,ebx; push ebx / cmp eax,ebx, re-zeroed after the
+   inner loop) where ours uses immediates, so the terrain index and the vertex call use other registers
    (imul edx,[eax] / add ecx,edx vs imul eax,[ecx] / add eax,ebp), c goes eax->ebp with ch read before the
-   health test, frame 0x40 vs 0x3c (one slot more), and the (1.0 - dist*0.01f) product is scheduled before
-   the k product in ours. (references: M8 at +0x1a1: ours refers to d3fl_MakeDivide (0x441300), the
-   original's field to 0x441860 (d3fl_MakeLight), explained: the M8 pairs offsets across a
-   register-allocation hunk: both sides call d3fl_MakeDivide then d3fl_MakeLight with d3_Terrain (asmdiff
-   --symbols: ours 0x4ce9d1 / 0x4ce9dd, the original 0x4ce9c2 / 0x4ce9ce)) */
+   health test, frame 0x40 vs 0x3c (one slot more), and the (1.0 - dist*0.01f) product is ... */
 
 int cm_UpdateGrenades()
 {
@@ -769,7 +772,7 @@ int cm_UpdateGrenades()
     CMGRENADE *rec;
     AICHAR *c;
     CHARACTER *ch;
-    D3VECTOR4 a, b;
+    struct { float x, y, z; int w; } a, b;   /* @original the pad word is an int: its 0 stores use the cached zero register */
     D3COLOR col;
     D3FLMAP *map;
     float dist;
