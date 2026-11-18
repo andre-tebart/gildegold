@@ -1889,7 +1889,7 @@ exe	0x004b0640	ai_CommandExecution	hst	b1d841e076f16d65	no	shape	sweep control=s
 exe	0x004b08e0	ai_CommandPrison	hst	2fa56d9bb499fb83	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004b0950	ai_CommandOfficeInventoryPlus	hst	269b768efcbcaf23	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004b09f0	ai_CommandLaw	hst	50ac5b10d35daf24	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x004b0b50	ai_CommandLawChange	hst	8a3aae495a45fe26	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	dced4c0b9d4e675f
+exe	0x004b0b50	ai_CommandLawChange	hst	c4dbdd634345cfd2	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	acb70c7a68141673
 exe	0x004b0d40	ai_CommandFaithChange	hst	4961270af66e041e	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	189a9e60202aa968
 exe	0x004b0fd0	ai_CommandRiot	hst	471d0d7fd6e9fbe5	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x004b1060	ai_CommandBreakGuildSeats	hst	3cf0c2168d04ecca	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	8a1346b77205965c
