@@ -16316,22 +16316,24 @@ float gm_StockPrice(int p, int n);  /* 0x4ffa10 (f3gm.c; f3gm.h does not declare
    their object 0x1db and buy into 0x1dc. Each mean is kept between a quarter (at least 1) and three times the
    demand and reset by a random roll when it strays beyond 1.5 / 2.5 times or below 0.4 / 0.8 times of it; the
    price is refreshed (gm_StockPrice) on most rolls. From 22:00 the record is freed, else it is due in an hour
-   @deep Reconstructed whole from the old stub against the original 0x55fa90..0x560813 (964 ins): the
-   market / hour / minutes guards, the stage switch (-2 / -1 he_SetEventChar, 0 runs), the money top-up
-   (5120000), the four stock passes (own player's market goods 0x25 / 0x17 buy / sell by in-store vs stock,
-   its other goods by the accumulated f2c, the other players' buildings 0x1db sell / 0x1dc buy with
-   gm_FreeCapacity, breaking at the first empty player slot), every call with its arguments, every constant
-   (1/60.0, 1/14.f, 80, 0.01, 0.5, 0.75, 0.8f, 0.6f, 0.25, 0.33, 1.0, 3.0, 0.4, 0.4f, 1.5f, 1.2f, 2.5f,
-   0.1) and the price refresh rolls; the goods pointer before the record copy, block-scoped text / second
-   copy (frame 0x1a8 equal), the min / max ternaries as double expressions, the constant-first compares.
-   Same calls with the same arguments, no ref / literal difference, 970 vs 964 instructions. Left: (1)
-   allocation in pass 2's clamp at 0x560041: ours writes n (edi) to its stack home before and after the
-   (int)(float)amount _ftol (mov [esp+0x1c], edi x2) where the original keeps n in edi only; giving pass 2
-   its own variable made it worse (slots shift, the g product reassociated to fimul); (2) the tail: the
-   original reuses the first he_FreeEvent block (+0x14) for the 22:00 exit, ours keeps it inline
-   (he_FreeEvent x3 vs x2); (3) fpu hunks where VC6 reassociates demand * 1.5f / mean into 1.5f / mean *
-   demand on our side (float context; a double constant fixes the order but widens the literal) and slot
-   shifts from (1). (size: 9 of the instruction difference are shared / inline tails) */
+   @deep frame sweep s21: g as a block local: 156 -> 143 ins but 1327 -> 1561 bytes (not kept); n as a
+   block local 342. Lead: the shared slots dcp frame names at [esp+0xc] / [esp+0x20]. prior: Reconstructed
+   whole from the old stub against the original 0x55fa90..0x560813 (964 ins): the market / hour / minutes
+   guards, the stage switch (-2 / -1 he_SetEventChar, 0 runs), the money top-up (5120000), the four stock
+   passes (own player's market goods 0x25 / 0x17 buy / sell by in-store vs stock, its other goods by the
+   accumulated f2c, the other players' buildings 0x1db sell / 0x1dc buy with gm_FreeCapacity, breaking at
+   the first empty player slot), every call with its arguments, every constant (1/60.0, 1/14.f, 80, 0.01,
+   0.5, 0.75, 0.8f, 0.6f, 0.25, 0.33, 1.0, 3.0, 0.4, 0.4f, 1.5f, 1.2f, 2.5f, 0.1) and the price refresh
+   rolls; the goods pointer before the record copy, block-scoped text / second copy (frame 0x1a8 equal),
+   the min / max ternaries as double expressions, the constant-first compares. Same calls with the same
+   arguments, no ref / literal difference, 970 vs 964 instructions. Left: (1) allocation in pass 2's clamp
+   at 0x560041: ours writes n (edi) to its stack home before and after the (int)(float)amount _ftol (mov
+   [esp+0x1c], edi x2) where the original keeps n in edi only; giving pass 2 its own variable made it worse
+   (slots shift, the g product reassociated to fimul); (2) the tail: the original reuses the first
+   he_FreeEvent block (+0x14) for the 22:00 exit, ours keeps it inline (he_FreeEvent x3 vs x2); (3) fpu
+   hunks where VC6 reassociates demand * 1.5f / mean into 1.5f / mean * demand on our side (float context;
+   a double constant fixes the order but widens the literal) and slot shifts from (1). (size: 9 of the
+   instruction difference are shared / inline tails) */
 void he_RunMarketSupervisor(AIJOB *ev)
 {
     GMSTOCK *rec;
