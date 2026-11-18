@@ -15317,7 +15317,14 @@ void he_AllocHarvest(int ev)
    the same tree at the same or a later state within the tree's reach, lets the worker go and frees the record.
    Stages -2 / -1 put the plant back under the event's id and free the record. The case -2 / -1 body and the shared
    tails lie after the last case (0x55db60 ..), the jump table after them: one function, 0x55d5c0 .. 0x55dbd8.
-   @deep size queue s12: dir declared in the two scene blocks (stage 0 / 2) where vfs_FindFile fills it:
+   @deep size queue s14: right size (raw 1536 = 1536), 119 -> 67 ins: case 0 ends with break instead of
+   return (retgen single: that site alone; the other sites = control or worse: s2 131). Left: case 2's
+   message fill: the original copies m.time = ai_Time through edi (free after the memset's rep stosd)
+   interleaved with the type / reserved14 stores, ours through eax / ecx with arg[1]'s load early; and lea
+   ebx,[eax+ecx+2] operand order in the ripe search (x + size, ours size + x; both spellings one code).
+   Tried: AIMSG m in the if (ripe) block (= control), the bound operands swapped (= control); climb
+   move,swap 2 rounds: 24 ins by moving m.time after m.flags (not the original's store order, not kept).
+   prior: size queue s12: dir declared in the two scene blocks (stage 0 / 2) where vfs_FindFile fills it:
    the frame is the original's 0x250 (the dir slot packs with the scalars), frame and slot hunks gone, 129
    -> 119 ins; raw size 1525 vs 1536 (by dcp grade; padded 1552 vs 1568 unchanged). spot in the blocks too:
    = control. Left: (1) the shared e->end = ai_Time / gm_AddTime / e->stage++ tail of stages 0 and 2: the
@@ -15325,15 +15332,7 @@ void he_AllocHarvest(int ev)
    in stage 0 (+0x1d1) and stage 2 pushes 0 / 0xa and jumps up (the pair / move merger's kept copy); (2)
    the message block (+0x4d3): the time copy through edi after the rep stosd; (3) lea ebx,[ecx+eax+2] vs
    [eax+ecx+2] in the ripe scan (t->size + plants[i].x + 2 operand order). prior: read whole against
-   0x55d5c0..0x55dbd8 (6 stages, jump table equal, every call / string / constant / field reconciled).
-   Fixed this pass: the buffers are name[0x80] / path[0x80] (the original's offsets: name 0x1e0..0x260,
-   path 0x160..0x1e0) and spot[0x40] (frame 0x21c -> 0x254 vs 0x250), the message reads b->id once
-   (m.arg[0] = m.fromId = b->id), AIMSG.unk14 -> reserved14. Left: (1) the shared AddTime tail of stages 0
-   / 2 (+0x1bd / +0x3be): the original keeps the body in stage 2 and stage 0's three paths push 1 / 0 and
-   jmp down into it, ours keeps it in stage 0 and stage 2 jumps up (VC6 cross-jumping direction, the same
-   statements); (2) the message block +0x4c4: the original copies ai_Time through edi after the rep stosd
-   and loads ripe->id after lea edi, ours through eax / ecx earlier, scheduling only; (3) frame 0x254 vs
-   0x250 and the packed slots (plants / dir / spot / c share slots diffe... */
+   0x55d5c0..0x55dbd8 (6 stages, jump table equal, every call / string / constant / fiel... */
 
 void he_RunHarvest(int ev)
 {
@@ -15393,7 +15392,7 @@ void he_RunHarvest(int ev)
         e->end = ai_Time;
         gm_AddTime(&e->end, 0, 0, 1);
         e->stage++;
-        return;
+        break;
     case 1:
         e->harvestSlot = -1;
         g = GM_GOOD(pl->type);
