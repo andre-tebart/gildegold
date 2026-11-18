@@ -6442,19 +6442,7 @@ void ai_SellBuildingWindow(AIBLD *bld)
    -1, flags 1, arg[0] the building, arg[1] the points) in the group "renovieren" with the payment: from the
    building's class treasury when it is the player character's (sv_CheckStock), else from the player's own
    money (sv_CheckGoodAmount, counted in the player record's renovationSpent). A right click, the building gone
-   or no longer enterable (flags5aw 0x400) close it
-   @deep Reconstructed whole against the original 0x5b6b20..0x5b6ea5 (the full-level note txt_Ptrs[0x17ca],
-   0.5 % of gm_EquipmentValue per point clamped to 128 (perPoint kept on the FPU across the early return,
-   as the original), the text 0x17c8 with the quarter / half / all costs, the four buttons, the found /
-   flags5aw 0x400 / right-click closes, the message 0x1c with arg[0] the building and arg[1] the points,
-   the treasury payment through gm_ClassTreasury + sv_CheckStock or the player's through sv_CheckGoodAmount
-   + LCFIN.renovationSpent, cm_BeginGroup / cm_EndGroup renovieren). Left is allocation and tail merging:
-   ours caches -1 in eax for the d2_ClickedId test and msg.fromId (or eax,-1; cmp ecx,eax; mov
-   [esp+0x40],eax at +0x16b..+0x1b3) where the original compares with the immediate and stores 0xffffffff;
-   the original reloads bld into ebp at the loop top (jmp over 'mov ebp,[esp+0x130]' on entry), ours holds
-   it elsewhere; the two cm_SendMoveGoods calls: the original keeps one per payment branch (their &msg
-   pushes take ecx / eax), ours cross-jumps them into one 'push -1; call cm_SendMoveGoods' tail (calls: x1
-   vs x2, the same arguments per path) --divergence: the call count differs only by that merge */
+   or no longer enterable (flags5aw 0x400) close it */
 
 void ai_RenovationWindow(AIBLD *bld)
 {
@@ -6513,10 +6501,10 @@ void ai_RenovationWindow(AIBLD *bld)
                 cost = 0;
                 points = 0;
                 msg.type = 0x1c;
-                msg.fromId = -1;
-                msg.flags = 1;
                 msg.to = ai_CharInts[ai_PlayerId][0];
                 msg.arg[0] = bld->id;
+                msg.fromId = -1;
+                msg.flags = 1;
                 if (d2_PointerObj == btnQuarter) {
                     points = (int)(missing * 0.25);
                     cost = costQuarter;
@@ -6534,6 +6522,9 @@ void ai_RenovationWindow(AIBLD *bld)
                     msg.arg[1] = points;
                     cm_BeginGroup("renovieren");
                     cm_SendMoveGoods(-1, treasury->objId, ai_OwnPlayer, cost);
+                    cm_SendLongMessage((char *)&msg);
+                    cm_EndGroup("renovieren");
+                    sv_PopRequest = 1;
                 } else {
                     if (sv_CheckGoodAmountB(ai_Chars[ai_PlayerId], cost, ai_OwnPlayer) == 0)
                         continue;
@@ -6543,10 +6534,10 @@ void ai_RenovationWindow(AIBLD *bld)
                     msg.arg[1] = points;
                     cm_BeginGroup("renovieren");
                     cm_SendMoveGoods(-1, ai_CharInts[ai_PlayerId][0], ai_OwnPlayer, cost);
+                    cm_SendLongMessage((char *)&msg);
+                    cm_EndGroup("renovieren");
+                    sv_PopRequest = 1;
                 }
-                cm_SendLongMessage((char *)&msg);
-                cm_EndGroup("renovieren");
-                sv_PopRequest = 1;
             } else if (d2_PointerObj == btnClose) {
                 sv_PopRequest = 1;
             }

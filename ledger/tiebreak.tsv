@@ -4411,7 +4411,7 @@ exe	0x005b5690	ai_NoticeBoardWindow	lc	03668664d2844e89	no	draft	control=draft p
 exe	0x005b5a20	ai_BardWindow	lc	dd0fd7c3910d0fa9	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005b5e80	ai_FeastWindow	lc	b531d69ea442dfc0	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x005b6950	ai_SellBuildingWindow	lc	baed4b7117a7dd32	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x005b6b20	ai_RenovationWindow	lc	e62f423d6b7b1d72	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
+exe	0x005b6b20	ai_RenovationWindow	lcdom	0360d549dbe274be	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	c1b6cf6c4c767d55
 exe	0x005b6eb0	ai_WithdrawSaleWindow	lc	8ea250e94cf9f842	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005b6fe0	ai_RoomUpgradeWindow	lc	f31f8bf8edc16c60	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x005b7690	ai_UpgradeBuilding	lc	38fac143ff8399c6	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
