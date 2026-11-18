@@ -12399,15 +12399,7 @@ char * he_NextEvent(void);
    the text 0x19fa. Else the text 0x19f7 (the owner, target) and the buttons: the first posts the spy message 0x40
    (the target, the guild building, up to eight selected characters as ids, flags 1; the text 0x1a5e when nobody
    is selected), the second and a right click close it. The selection is cleared after the window; returns 1 once
-   the spying was ordered
-   @deep Read whole against the original and reconstructed as ai_BriberyWindow's sibling; every call,
-   argument, store and branch matches (ours 241, the original 242). Left: register allocation. The original
-   keeps the uncovered counter in a stack slot (inc dword ptr [esp+0x10], +0x118) and bld / n / the type
-   pointer in esi / edi / ebp; ours keeps uncovered in ebp (xor ebp, ebp at +0x12, inc ebp at +0x115) and
-   the others in edx / esi / edi, so the result flag moves to [esp+0x10] (+0x27e, +0x2f0). Tried: the two
-   declarations swapped (no change). The message fields are scheduled differently (the original loads
-   target->id before the ids memset, +0x213); the prover stops there (the same value loaded at another
-   time). */
+   the spying was ordered */
 int ai_GuildSpyWindow(int ctx, AIBLD *target)
 {
     int done;
@@ -12428,17 +12420,17 @@ int ai_GuildSpyWindow(int ctx, AIBLD *target)
     AIJOB *ev;
     AICHARREC *ch;
 
+    bld = 0;
     uncovered = 0;
     done = 0;
     if (target == 0 || target->owner == 0xffff)
         return 0;
     if (he_NoProtectionEvent(target) == 0) {
         txt_Format(text, 0x1a92, target->owner, target);
-        sv_MessageBox(text, uncovered);
+        sv_MessageBox(text, 0);
         return 0;
     }
     n = 0;
-    bld = 0;
     if (ai_PlayerBuilding != 0)
         bld = (AIBLD *)ai_PlayerBuilding;
     else if (ai_FallbackBuilding != 0)
@@ -12479,8 +12471,8 @@ int ai_GuildSpyWindow(int ctx, AIBLD *target)
             memset(msg.ids, 0xff, sizeof(msg.ids));
             msg.type = 0x40;
             msg.flags = 1;
-            msg.arg[0] = target->id;
             msg.to = ai_CharInts[ai_PlayerId][0];
+            msg.arg[0] = target->id;
             msg.arg[1] = ((AIBLD *)ai_PlayerBuilding)->id;
             n = 0;
             for (i = 0; i < 0x300 && n < 8; i++)

@@ -4278,7 +4278,7 @@ exe	0x005a3df0	ai_DungeonBribeListener	lc	f06532af98bc58dc	no	byte	control=byte 
 exe	0x005a3ef0	ai_DungeonEmptyListener	lc	75d84d62f6bcd804	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005a3f10	ai_BurglaryWindow	lc	4831fc8ce8a4af7e	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005a4130	ai_BurglaryStart	lc	78748db190712524	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
-exe	0x005a41d0	ai_GuildSpyWindow	lc	3fb86e55d9028bab	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
+exe	0x005a41d0	ai_GuildSpyWindow	lc	c4bdeeea873aa948	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	f420e540c78830a4
 exe	0x005a44e0	ai_EspionageStart	lc	b317e924e19f7a7f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005a45c0	ai_SpyReportsWindow	lc	c4910cced5c952bc	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005a48d0	ai_AttackWindow	lc	1fe43de6d3b5f38a	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
