@@ -3612,7 +3612,7 @@ exe	0x00549970	he_StartTraining	he	a0c7d13cc5ee61b9	no	byte	control=byte p1=byte
 exe	0x00549aa0	he_RunTraining	he	021f2a30b38842cb	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x00549ce0	he_BeginPlague	he	f01387b8b562db75	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00549f70	he_StartPlague	he	0963328584da4a58	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x0054a020	he_RunPlague	he	24574f95b9abe071	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
+exe	0x0054a020	he_RunPlague	he	2066437838fdc7e5	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	5f7327b36b2ace43
 exe	0x0054a6f0	he_StartGang	he	20d05295eacf1357	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
 exe	0x0054a7b0	he_RunGang	he	bf49b296ed902113	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=505	16d55ba700d46f39
 exe	0x0054ae20	he_AllocProtectionAsk	he	7a2bca97554bc4f1	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	

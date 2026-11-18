@@ -6799,23 +6799,7 @@ void he_StartPlague(int ev)
    it, a random share of them (at least one) and with 1 in 8 a character of kind 1 in it catch the plague
    (gm_CatchPlague), the owner with 1 in 256; any infection posts the plague message, and each value below 1000
    makes the character ill (he_CharIllness, illness 1). While left counts down it goes on to the next target,
-   else the carriers go home. Stage 3 waits until every carrier is home, then the event ends
-   @deep read in full against the original (576 instructions): the four-stage switch (jump table equal),
-   the carriers loops, the building walk with the 64-bit kind mask 0x1807c4110 and the % 0x100 steps,
-   txt_Format of the debug text, the owner / kind-0 / kind-1 infection block (memset ids -1, value 1000.0f,
-   util_RandomF2 > 0.8f -> 1, * cnt, !(a > 1) -> 1, gm_CatchPlague, the 1/8 and 1/256 rolls,
-   ai_PlagueMessage(owner, o), he_CharIllness(e, c, owner, o, 1, v) below 1000.0f), --left <= 0 sends the
-   carriers home (1 / 10 minutes) else posts stage 1; every callee, constant and string checked. Fixed in
-   this pass: sprintf -> txt_Format, the owner argument, the 0.8 / 1000.0 literals, the home wait 1 not 2
-   minutes, stage 3's missing-carrier test, the start / target words (0xd0 / 0xcc). Left only tail / order
-   hunks (diffclass: tail 80, order 20, no code hunk): VC6's choice of which identical return tails to
-   cross-jump (see the size note), and the loop latch's scheduling at 0x54a172 (o = 0 / --n against the %
-   fixup). Deep work (size: 20 of the instruction difference are shared / inline tails) (references: M8 at
-   +0x381: ours refers to gm_AddTime (0x4fe140), the original's field to 0x4c4c60 (cm_SendExSetHE),
-   explained: the M8 at +0x381 is the tail alignment: ours ends the stage-2 wait block with 'call
-   gm_AddTime; jmp' into stage 1's identical 'push ebp; push 2; call cm_SendExSetHE' tail, the original
-   keeps that tail inline, so the aligner pairs our gm_AddTime call with the original's cm_SendExSetHE
-   call; both sides call gm_AddTime(&end, 0, 5, 0) then cm_SendExSetHEI(2, ev) there) */
+   else the carriers go home. Stage 3 waits until every carrier is home, then the event ends */
 
 void he_RunPlague(int ev)
 {
@@ -6865,7 +6849,7 @@ void he_RunPlague(int ev)
         }
         gm_AddTime(&e->end, 0, 1, 0);
         e->exSlot = cm_SendExSetHEI(1, ev);
-        return;
+        break;
     case 1:
         n = 0x100;
         k = p->walk;
@@ -6880,8 +6864,8 @@ void he_RunPlague(int ev)
                 lo = 1 << (unsigned char)bt->kind;
             if (o->owner != 0xffff && ((lo & 0x807c4110) != 0 || (hi & 1) != 0))
                 break;
-            n--;
             o = 0;
+            n--;
             k = (k + p->step) % 0x100;
         } while (n != 0);
         p->walk = (p->step + k) % 0x100;
@@ -6905,7 +6889,7 @@ void he_RunPlague(int ev)
         gm_AddTime(&e->end, 0, n > 0 ? 5 : 0x14, 0);
         p->target = o->id;
         e->exSlot = cm_SendExSetHEI(2, ev);
-        return;
+        break;
     case 2:
         gm_FindById(&o, 0, 0, p->target);
         gm_AddTime(&e->end, 0, 5, 0);
@@ -6986,9 +6970,10 @@ void he_RunPlague(int ev)
             }
             gm_AddTime(&e->end, 0, n > 0 ? 1 : 10, 0);
             e->exSlot = cm_SendExSetHEI(3, ev);
-        } else
-            e->exSlot = cm_SendExSetHEI(1, ev);
-        return;
+            return;
+        }
+        e->exSlot = cm_SendExSetHEI(1, ev);
+        break;
     case 3:
         gm_AddTime(&e->end, 0, 5, 0);
         gm_FindById(&o, 0, 0, p->home);
@@ -7006,7 +6991,7 @@ void he_RunPlague(int ev)
             }
         }
         e->exSlot = cm_SendExSetHEI(-1, ev);
-        return;
+        break;
     }
 }
 /* 0x54a6f0, a Ghidra miss: the alloc handler of the pickpocket gang event 0x61: counts the members (the ids[]
