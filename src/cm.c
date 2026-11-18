@@ -6585,9 +6585,9 @@ int cm_ExSetRoute(G17MSG *m, G17STAT *s)
         rt_FreePoints(cart->route);
         cart->route = 0;
     }
+    prev = 0;
     n = m->route.count;
     memcpy(pts, cm_LongMsg, n * sizeof(RTPOINT));
-    prev = 0;
     for (i = 0; i < n; i++) {
         pts[i].prev = prev;
         pts[i].next = &pts[i + 1];
