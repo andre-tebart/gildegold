@@ -7719,23 +7719,7 @@ int ai_SeatSwapWindow(AICHARREC *me, LCORDMSG *m)
    has less than 4, one is unknown or its goods are worth less than the price. A player (kind 6) picks them in two
    amount menus (texts 0x1dcf, 0x1dd0; none: 0), then the window (0x1dd1: the 4, the price, the two) whose first
    button, when the player has the 4 (sv_CheckMoney) and the price (sv_CheckGoodAmount), does it and tells 0x1dd2;
-   either button or a right click close it. Returns 1 once it was done, else 0
-   @deep deep s33: the AI branch's price is its own block local (int price beside r1 .. o2): dcp frame
-   showed the original's AI-path price in another slot than the player path's (shared with ok), 16 -> 8
-   ins, slots gone. Left: regs 8, the worth sum's add in both paths: the original add edi,eax / mov
-   [esp+0x18],edi / fild (the sum in t's register), ours add eax,edi / mov [esp+0x18],eax. Every spelling
-   compiles to one code: t + w, w + t, t += w, price = w; price += w, two named worths in either order, no
-   (float) cast, a block-local t, initgen = 0 on all 17 locals, climb round 1 (166 mutants, best = start).
-   The inline sum (no t) gives the edi destination but calls gm_GetWorth(a) first whatever the operand
-   order (regs 14). grep_orig: the only byte function with add reg,eax; mov [esp],reg; fild is
-   gm_WorkMinutesBetween, where the sum's local x stays live after (GM_MAX uses it again): the original's
-   sum may have had a later use. prior: frame sweep s21: 40 -> 24 ins: r1 / r2 / o1 / o2 as locals of the
-   two blocks that roll the relations (the non-player branch and the ok click; o2 decides it, r1 / r2 =
-   control). Left: regs 8 (the worth sum: the original adds into t's register, add edi,eax; t + worth,
-   worth + t, t += worth all = control), slots 8 (t / price slots in the player path), order 20 (push
-   0x1dcf / done = 0 / lea text around the first txt_Format). prior: Twin of ai_PeaceWindow (byte): done =
-   0 before the memset of cfg (the peace window's lever) takes it draft 36/674 -> shape 40/48 (size now
-   equal). Not worked further this session; the rest is slots 30 / order 20 / regs 8 per dcp try. */
+   either button or a right click close it. Returns 1 once it was done, else 0 */
 
 int ai_HatredWindow(AICHARREC *me, LCORDMSG *m)
 {
@@ -7752,7 +7736,8 @@ int ai_HatredWindow(AICHARREC *me, LCORDMSG *m)
 
     if (me->kind != 6) {
         int r1, r2, o1, o2;
-        int price;
+        int price = 0;      /* @original: the initializer (no code) moves VC6's first-reference tie key so that
+                               both worth sums call gm_GetWorth(b) first, as the original (deep s29 lever) */
 
         if (me->money < 4)
             return 0x20;
@@ -7762,8 +7747,7 @@ int ai_HatredWindow(AICHARREC *me, LCORDMSG *m)
         b = (AICHARREC *)gm_FindChar(m->target2);
         if (b == 0)
             return 0x20;
-        t = gm_GetWorth(b->id);
-        price = (int)((float)(t + gm_GetWorth(a->id)) * 0.02f);
+        price = (int)((float)(gm_GetWorth(b->id) + gm_GetWorth(a->id)) * 0.02f);
         if (gm_GetGoodsValue(me) < price)
             return 0x20;
         r1 = util_RandomU(0x1e) + 3;
@@ -7798,8 +7782,7 @@ int ai_HatredWindow(AICHARREC *me, LCORDMSG *m)
     b = (AICHARREC *)ai_AmountMenu(&cfg, text, 0, 0);
     if (b == 0)
         return 0;
-    t = gm_GetWorth(b->id);
-    price = (int)((float)(t + gm_GetWorth(a->id)) * 0.02f);
+    price = (int)((float)(gm_GetWorth(b->id) + gm_GetWorth(a->id)) * 0.02f);
     win = d2_OpenForm(0, 0, "privillegien\\hass_erzeugen");
     d2_SetPointerSprite(0, 0);
     d2_CentreViewWindows(win);
