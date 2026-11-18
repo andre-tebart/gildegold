@@ -952,14 +952,11 @@ void ai_PokerEndRound(void)
 
 void ai_PokerNpcSetStake(void)
 {
-    unsigned short n;
-
     if (ai_PokerTable->turn != 0) {
         if (ai_PokerTable->seat[ai_PokerTable->turn].bold != 0)
-            n = ai_PokerTable->money - ai_PokerTable->stake;
+            ai_PokerTable->stake2 = util_RandomU(ai_PokerTable->money - ai_PokerTable->stake) + ai_PokerTable->stake;
         else
-            n = ai_PokerTable->money - ai_PokerTable->stake >> 1;
-        ai_PokerTable->stake2 = util_RandomU(n) + ai_PokerTable->stake;
+            ai_PokerTable->stake2 = util_RandomU(ai_PokerTable->money - ai_PokerTable->stake >> 1) + ai_PokerTable->stake;
     }
 }
 
