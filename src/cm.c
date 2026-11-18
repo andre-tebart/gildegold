@@ -5008,20 +5008,26 @@ int cm_ExSetHome(G17MSG *m, G17STAT *s)
    its line, refused at the line's maxLevel) and half way to a level of 100; capacities and stock follow its new type,
    a graveyard grows. Its model "<data>gebaeude/*gb_<NAME>[_A.._C].ogr" (_A / _B by the owner's sex for type 0x21)
    is loaded in the town scene and replaces the old object at its place and heading, with the upgrade effect
-   script, the hooks, banners, the season's textures, torches, lights and a restarted chimney smoke. */
+   script, the hooks, banners, the season's textures, torches, lights and a restarted chimney smoke.
+   @deep frame sweep s21: 76 -> 14 ins / 64 -> 7 bytes with the original's frame 0x2b8: v a D3VECTOR4 (the
+   padded engine vector; rot / dir as D3VECTOR4 worse), key a local of the if (b->object != 0) block
+   (escaped by &key), path[0x104] (MAX_PATH: found sits 4 further in the original; found[0x104] instead: 16
+   ins). Left: slots 14, the small scalars save / radius / key one slot off each (the original: radius
+   [esp+0x10], save [esp+0x14], key [esp+0x2c] after the pushes); radius as a block local of the material
+   if: 58. Lead: c2frame --refs counts of t / save / radius / key. */
 int cm_ExGebUpgrade(G17MSG *m, G17STAT *s)
 {
     char name[0x80];
-    char path[0x100];
+    char path[0x104];
     char found[0x100];
-    D3VECTOR v;
+    D3VECTOR4 v;
     D3VECTOR rot;
     D3VECTOR dir;
     AIBLD *b;
     AIBTYPE *t;
     D3OBJECT *o;
     EVTSCRIPT *sc;
-    float radius, key;
+    float radius;
     int i, save, season, size;
 
     if (net_Conn.s != (unsigned int)-1)
@@ -5056,7 +5062,7 @@ int cm_ExGebUpgrade(G17MSG *m, G17STAT *s)
         if (vfs_GetPath(path, vfs_Root, vfs_Root, found) != 0) {
             save = d3_CurrentScene;
             d3if_SelectScene(0, 1);
-            d3_PointToWorld((D3OBJECT *)b->object, &((D3OBJECT *)b->object)->pos, &v);
+            d3_PointToWorld((D3OBJECT *)b->object, &((D3OBJECT *)b->object)->pos, (D3VECTOR *)&v);
             o = d3_LoadGroup(path, 0, 0);
             if (o == 0) {
                 sprintf(name, "cm_ExGebUpgrade(): Could not load 3D-Object-Group '%s'...", path);
@@ -5067,16 +5073,16 @@ int cm_ExGebUpgrade(G17MSG *m, G17STAT *s)
                 rot.y = 0;
                 rot.z = 0;
                 rot.y = d3_VecAngle(&d3_ZAxis, &dir);
-                d3_SetObjectPos(o, &v);
+                d3_SetObjectPos(o, (D3VECTOR *)&v);
                 d3_SetObjectRot(o, &rot);
-                ai_DropObjectAt(o, &v);
+                ai_DropObjectAt(o, (D3VECTOR *)&v);
                 if (d3_QuadTree != 0)
                     d3q_RemoveObject((D3OBJECT *)b->object, (D3QNODE *)d3_QuadTree);
                 d3if_Delete((D3OBJECT *)b->object);
                 if (o->info == 0)
                     d3_InflateObject(o);
                 if (o->material != 0) {
-                    if (d3t_GetBoundingSphere(o, d3_Camera, &v, &radius) != 0) {
+                    if (d3t_GetBoundingSphere(o, d3_Camera, (D3VECTOR *)&v, &radius) != 0) {
                         size = (int)(radius * 1.8);
                         sc = evt_Load("Effekte/geb_upgrade.esc");
                         if (sc != 0) {
@@ -5088,6 +5094,8 @@ int cm_ExGebUpgrade(G17MSG *m, G17STAT *s)
                 init_HookObject(o, b, 2);
                 sv_CreateBanners((char *)b);
                 if (b->object != 0) {
+                    float key;
+
                     season = gm_ClockSeason(&ai_Time);
                     if (season == 1)
                         init_TextureSet = 1;
