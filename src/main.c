@@ -4252,8 +4252,8 @@ void d3_SetViewport(float w, float h, float x, float y, float zn, float zf, floa
 /* 0x53b2e0, starts the player's round: dumps every character and clears its round flags, takes the kind 6 one as the player, a random CD check loop (main_CheckCD, text 0x79), the parties, the round intro page, the alchemists' plants and the kind 7 buildings, then the daily steps of the world (each followed by sv_PumpNet / Sleep(100), main_SettleRound for every living character) or only the income histories when this machine is not the master; the goal fanfare and the outro, the yearly history */
 void main_BeginPlayerRound(void)
 {
-    int sv = snd_AmbientOn;
     int cur = -1;
+    int sv = snd_AmbientOn;
     int i, w;
     AIBLD *b;
     AIBTYPE *bt;
@@ -4312,11 +4312,10 @@ void main_BeginPlayerRound(void)
     while (b != 0) {
         bt = &ai_BTypesT[b->type];
         if (b->type == 0x1e) {
-            int scene;
-
             i = init_BuildingSceneUniverse((unsigned char *)b);
-            scene = d3_CurrentScene;
             if (i != -1) {
+                int scene = d3_CurrentScene;
+
                 d3if_SelectScene(init_BuildingUniverse[ai_BTypesT[b->type].kind], 1);
                 d3_InflateScene(3);
                 veg_GrowPlants((G15PLANT *)b->plants);
