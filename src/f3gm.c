@@ -1068,10 +1068,9 @@ void gm_ResolveHeadIcons(GMHEAD *rec)
 {
     char name[128], suffix[128], icon[128];
     char *u;
-    int h, i, *out;
+    int h, i;
 
-    out = rec->heads;
-    if (*out != 0xff)
+    if (rec->heads[0] != 0xff)
         return;
     strcpy(name, rec->name);
     u = strrchr(name, '_');
@@ -1079,24 +1078,24 @@ void gm_ResolveHeadIcons(GMHEAD *rec)
         strcpy(suffix, u + 1);
         *u = 0;
     }
-    for (h = 0; h < 4; h++, out++) {
+    for (h = 0; h < 4; h++) {
         sprintf(icon, "%s_HEAD%i_%s_ICON.bmp", name, h, suffix);
-        *out = 0xff;
+        rec->heads[h] = 0xff;
         for (i = 0; i < gm_IconNameCount; i++) {
             if (gm_IconNames[i * 0x30] == 0)
                 break;
             if (stricmp(icon, gm_IconNames + i * 0x30) == 0) {
-                *out = i;
+                rec->heads[h] = i;
                 goto next;
             }
         }
         sprintf(icon, "%s_HEAD%i_ICON.bmp", name, h);
-        *out = 0xff;
+        rec->heads[h] = 0xff;
         for (i = 0; i < gm_IconNameCount; i++) {
             if (gm_IconNames[i * 0x30] == 0)
                 break;
             if (stricmp(icon, gm_IconNames + i * 0x30) == 0) {
-                *out = i;
+                rec->heads[h] = i;
                 break;
             }
         }
