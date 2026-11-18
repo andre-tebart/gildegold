@@ -5472,9 +5472,9 @@ int cm_ExDecisionValue(G17MSG *m, G17STAT *s)
 
     r = gv_OnDecisionValue(&m->data[0]);
     if (s != 0) {
+        s->state = (r == 0) + 1;
         s->kind = 0;
         s->value = 0;
-        s->state = (r == 0) + 1;
     }
     return 0;
 }

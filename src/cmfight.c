@@ -484,7 +484,10 @@ int cm_CellUsable(int x, int y)
     return 1;
 }
 /* 0x4ce040, the nearest usable cell (cm_CellUsable) of the current scene's height map around the cell (a, b), in
-   diamonds of the distance d = 0 .. 0x3f, rows top to bottom: *ox, *oy, returns 1; 0: none */
+   diamonds of the distance d = 0 .. 0x3f, rows top to bottom: *ox, *oy, returns 1; 0: none
+   @deep near-byte sweep s22: left the w load chain (ours hmap in ecx, the original eax -> eax) and mov
+   edx,ebp placed after it. climb round 1: nothing; w as a statement / via a D3SM local = control; w - 1 as
+   w: 12; ylo / xlo first: far worse. */
 
 int cm_FindNearCell(int a, int b, int *ox, int *oy)
 {

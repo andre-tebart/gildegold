@@ -421,8 +421,10 @@ int gm_IncomeKind5(unsigned id, GMINCOME *out, unsigned char flags)
 /* 0x4fa4b0, collects the incomes of the character id into the record out (cleared first): none (0) for a free
    record, one not in use (health 0) or one under age (gm_IsUnderAge); else the kind 1 or 2 (2 when the title group
    of the character's job has a town object, amt_HasTownObject), 5, 3 (only when v1a8 is positive) and 4. Returns 1
-   @deep Read whole against the original: statement structure equal (branch targets shift only by the
-   one-instruction size difference). Tried: index loop vs memset (identical code), the index
+   @deep near-byte sweep s22: the zero fill before i (loop / memset), id &= 0xffff: 36-45 ins (the frame of
+   the prologue moves the wrong way); memset after i = control. Callees IncomeKind1/2/5 now byte: no change
+   here. prior: Read whole against the original: statement structure equal (branch targets shift only by
+   the one-instruction size difference). Tried: index loop vs memset (identical code), the index
    ORD_CHARS[(unsigned short)id] at each use (out in ebx, id in edi, ebp pushed late: allocation), a
    character pointer c (lea ebp,[..+ai_Chars] where the original folds the base into [esi+ai_Chars+off]:
    wrong form, reverted), the index temp i = (unsigned short)id (kept: 11 of 84 differ). Remaining hunk at

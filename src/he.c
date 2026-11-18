@@ -5776,7 +5776,11 @@ void he_AllocGeselle(int ev)
    pushes the end four units ahead, frees the event at stage -2 or when its building is gone; at stage 0, once the
    cm slot is answered, sends the new character it holds to the building ("RndGeselle"), shows the news newsId
    (the character, its title text 0x20d / 0x230 by sex + title, the receiver) in a quick-jump message box and frees
-   the event */
+   the event
+   @deep near-byte sweep s22: left only bld / chr in each other's slot (frame 0x200 > 0x80: unstable
+   density sort of two count-3 locals, c2frame L bld, chr -> A chr, bld; the original needs bld one
+   reference more or chr one fewer). Declaration order / init order / init statements late / text as a
+   block local: = control or order hunks only. */
 
 void he_RunGeselle(int ev)
 {
