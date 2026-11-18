@@ -776,21 +776,21 @@ int ai_TokenRandomChurchProfession(int mode, G12ARG *args, int k, char *fmt, cha
 }
 /* 0x4af6c0, text token for one of the five richest characters (0x50a640) passing a predicate: fmt "...-n"
    0 = 0x4adff0, 2 = 0x4ae0d0, else 0x4ae080
-   @deep shape, 16 ins, all 'slots': n1 and found trade slots (ours n1 -0x14 / found -0x10, the original
-   n1 -0x10 / found -0x14); everything else is identical. Applied: AI_ZERO_BUF, the sel-style predicate
-   choice (v = 1 default, if/else-if/else on v: the original threads the failed tests into the NonPlayer
-   arm), health <= 0, the bubble step as t = score[j+1]; v = score[j]; if (t > v), c =
-   &ai_CharsT[ids[util_RandomU(5)]] with c->netId. Frame probes (deep-tools/framesearch.py, target n1 -0x10
-   found -0x14): extra n1 references (1-3 more tests, one inside the loop), declaration order (found
-   first/last, n1 last), found unsigned/long, found = 1 | found, if (!found) found = 1: no change; found =
-   1, found = found || 1 and removing the found test give the original's slots but change the code (the
-   original has the load / or al,1 / store of found |= 1); found block-scoped to the search arm moves both
-   to -0x4. Header sample: insensitive. Next: a toy (deep-tools/toyasm.py) on VC6's frame order for a
-   read-modify-write local against an address-taken one; or found as another type/record field. ai_TokenRandomMerchant (byte, the same body without pred) has found at -0x10 / n1 -0x14 in the original too, so the difference sits in Rich's predicate choice / pred in the fmt slot. (tiebreak:
-   insensitive) prior: behaviour: far draft, 173 code hunks (the RND_REICH token, callback 0x601b10[11] =
-   0x4af6c0, name 0x601730[11]): the reading matches (the top-5 worth lists of the unit note) but the
-   frame/slot layout, the loop form and the c = pick return-tail fold remain - the same three issues as
-   ai_TokenRandomGuildMaster's old deep reason; the -10000000 list start values are HST_NO_WORTH now (Q3) */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   */
 
 int ai_TokenRandomRich(int mode, G12ARG *args, int k, char *fmt, char *out)
 {
@@ -817,7 +817,7 @@ int ai_TokenRandomRich(int mode, G12ARG *args, int k, char *fmt, char *out)
     ids[4] = 0xffff;
     if (mode == 2)
         return 0;
-    AI_ZERO_BUF(n1, buf, 0x200);
+    AI_ZERO_BUF(v, buf, 0x200);
     ai_SplitTokenFormat(fmt, buf, &n1, &n2);
     if (n2 != 1 || (v = atoi(fmt + n1)) < 0 || v > 2)
         v = 1;
