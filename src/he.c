@@ -1566,42 +1566,37 @@ void err_Message(char *text);
 
 /* 0x53dda0, sends the news message 0x11 (message flags 9) to the character `pid`, which must be of kind 6 / 7 (else -1):
    from `from`, the news id `news` (arg[0]), the text flags `tflags` (| 0x10 when `text2` follows the text behind its NUL);
-   cm_SendLongMessageText's result
-   @deep read whole against the original and rewritten on AIMSG (moved to ai_types.h): the parameters are
-   (pid, from -> fromId, text, tflags -> textFlags byte at 0x9c, news -> arg[0], text2); fixed the second
-   textFlags store (0x9c with | 0x10, was 0xa0), the text-only send (passes text itself, not buf) and buf's
-   size (0x1fa0, frame 0x2098). Left: only the placement of the callee-saved pushes: the original pushes
-   esi alone before the kind 6 / 7 check and ebx / ebp / edi after it (its -1 path pops esi only), ours
-   pushes all four at the entry (+0xa / +0x35 / +0x127 hunks) and schedules one lea edx, [esp+0x108] later;
-   tried an early return, the body nested in the if and the locals in the inner block, all the same */
+   cm_SendLongMessageText's result */
 int he_ShowNews(int pid, int from, char *text, int tflags, int news, char *text2)
 {
     AIMSG msg;
     char buf[0x1fa0];
     unsigned char *ch;
+    unsigned char fl;
+    int n, ret;
 
     ch = (unsigned char *)gm_FindChar(pid);
-    if (ch != 0 && (ch[2] == 6 || ch[2] == 7)) {  /* AICHAR.kind */
-        unsigned char fl = (unsigned char)tflags;
-        int n;
-
-        memset(&msg, 0, sizeof(msg));
-        msg.to = pid;
-        msg.fromId = from;
-        msg.type = 0x11;
-        msg.flags = 9;
-        msg.arg[0] = news;
-        msg.textFlags = fl;
-        strcpy(buf, text);
-        n = strlen(text) + 1;
-        if (text2 == 0 || *text2 == 0)
-            return cm_SendLongMessageText(&msg, n, text);
+    if (ch == 0 || (ch[2] != 6 && ch[2] != 7))  /* AICHAR.kind */
+        return -1;
+    fl = (unsigned char)tflags;
+    memset(&msg, 0, sizeof(msg));
+    msg.to = pid;
+    msg.fromId = from;
+    msg.type = 0x11;
+    msg.flags = 9;
+    msg.arg[0] = news;
+    msg.textFlags = fl;
+    strcpy(buf, text);
+    n = strlen(text) + 1;
+    if (text2 == 0 || *text2 == 0) {
+        ret = cm_SendLongMessageText(&msg, n, text);
+    } else {
         memcpy(buf + n, text2, strlen(text2) + 1);
         fl |= 0x10;
         msg.textFlags = fl;
-        return cm_SendLongMessageText(&msg, strlen(text2) + n + 1, buf);
+        ret = cm_SendLongMessageText(&msg, strlen(text2) + n + 1, buf);
     }
-    return -1;
+    return ret;
 }
 /* 0x53dee0, sends the news message 0x11 (message flags 9) with a quick jump to the player `pid`: from `from`, the news
    id `news` (arg[0], as he_ShowNews), the object `obj` and the second id `obj2` (arg[1] / arg[2]; callers pass a
