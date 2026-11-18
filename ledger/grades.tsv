@@ -729,7 +729,7 @@ exe	0x00438c30	d3_NextGroup	d3_engine	byte	readable
 exe	0x00438c60	d3_TypeInMask	d3_engine	byte	readable		
 exe	0x00438d40	d3_ForEachObject	d3_engine	byte	readable		
 exe	0x00438e60	d3_ForEachObject2	d3_engine	byte	readable		
-exe	0x00438f60	d3_ProjectMesh	d3_engine	shape	readable	deep	
+exe	0x00438f60	d3_ProjectMesh	d3_engine	draft	readable	deep	shape+readable -> draft+readable at 0f1c8dc1: promote --accept-falls
 exe	0x004391d0	d3_SetupFrustum	d3_engine	draft	readable	deep	
 exe	0x00439650	d3_ClipBox	d3_engine	byte	readable		
 exe	0x00439870	d3_UpdateWorldMatrix	d3_engine	byte	readable		
@@ -869,7 +869,7 @@ exe	0x00448630	d3if_Pick	d3_interface	byte	readable
 exe	0x004486e0	d3if_ScreenBox	d3_interface	byte	readable		
 exe	0x00448910	d3if_CreateCameras	d3_interface	byte	readable		
 exe	0x00448a50	d3if_ClearView	d3_interface	byte	readable		
-exe	0x00448ac0	d3_YawTo	d3_interface	shape	readable		
+exe	0x00448ac0	d3_YawTo	d3_interface	draft	readable		shape+readable -> draft+readable at 0f1c8dc1: promote --accept-falls
 exe	0x00448c20	d3_CornerCB	d3_interface	shape	readable	deep	
 exe	0x00448e60	d3_ScreenToUV	d3_interface	draft	readable	deep	
 exe	0x004495f0	d3_FindObjectCB	d3_interface	byte	readable		
@@ -1003,7 +1003,7 @@ exe	0x00453e20	d3_Hermite	d3_vec	byte	readable
 exe	0x00453e80	d3_VecEqual	d3_vec	byte	readable		
 exe	0x00453ee0	d3_MatMul43	d3_vec	byte	readable		
 exe	0x00454040	d3_MatTranspose	d3_vec	byte	readable		
-exe	0x00454070	d3_MatInverse	d3_vec	shape	readable	deep	
+exe	0x00454070	d3_MatInverse	d3_vec	draft	readable	deep	shape+readable -> draft+readable at 0f1c8dc1: promote --accept-falls
 exe	0x00454510	d3_MatIdentity	d3_vec	byte	readable		
 exe	0x00454560	d3_Normalize	d3_vec	byte	readable		
 exe	0x004545c0	d3_MatFromAngles	d3_vec	byte	readable		
@@ -1052,7 +1052,7 @@ exe	0x004591a0	d3_AnimBlendWeights	d3_vtx	byte	readable
 exe	0x00459300	d3_TransformVerts	d3_vtx	draft	readable	deep	
 exe	0x004598d0	d3_TransformNormals	d3_vtx	byte	readable		
 exe	0x00459980	d3_FrameNormals	d3_vtx	byte	readable		
-exe	0x00459ab0	d3_GetBoxVerts	d3_vtx	shape	readable		
+exe	0x00459ab0	d3_GetBoxVerts	d3_vtx	draft	readable		shape+readable -> draft+readable at 0f1c8dc1: promote --accept-falls
 exe	0x00459d80	d3s_RightEdge	d3s	byte	readable		
 exe	0x00459e50	d3s_LeftEdgeColor	d3s	byte	readable		
 exe	0x00459f90	d3s_MarkSpan	d3s	byte	readable		
@@ -1097,7 +1097,7 @@ exe	0x0045db20	d3sky_Free	d3_sky	byte	readable
 exe	0x0045db40	d3sm_GetGround	d3_sm	byte	readable		
 exe	0x0045dc00	d3sm_Sample	d3_sm	draft	readable	deep	
 exe	0x0045e180	d3sm_BoundsCB	d3_sm	byte	readable		
-exe	0x0045e210	d3sm_ShadowCB	d3_sm	shape	readable	deep	
+exe	0x0045e210	d3sm_ShadowCB	d3_sm	draft	readable	deep	shape+readable -> draft+readable at 0f1c8dc1: promote --accept-falls
 exe	0x0045e560	d3sm_Replace	d3_sm	byte	readable		
 exe	0x0045e620	d3sm_Build	d3_sm	draft	readable	deep	
 exe	0x0045eeb0	d3sm_Create	d3_sm	byte	readable		
@@ -2417,7 +2417,7 @@ exe	0x004ce200	cm_CharCellDistXZ	cmfight	byte	readable
 exe	0x004ce270	cm_OtherBuilding	cmfight	byte	readable		
 exe	0x004ce290	cm_LayBomb	cmfight	byte	readable		
 exe	0x004ce300	cm_UpdateBombs	cmfight	byte	readable		
-exe	0x004ce5d0	cm_ThrowGrenade	cmfight	shape	readable		
+exe	0x004ce5d0	cm_ThrowGrenade	cmfight	draft	readable		shape+readable -> draft+readable at 0f1c8dc1: promote --accept-falls
 exe	0x004ce830	cm_UpdateGrenades	cmfight	draft	readable	deep	
 exe	0x004ceb70	cm_ObjectOwner	cmfight	byte	readable		
 exe	0x004ceb80	cm_WaitEventStop	cmfight	byte	readable		
@@ -2522,7 +2522,7 @@ exe	0x004de4b0	cm_SinkDownAction	cmscene	shape	readable	deep
 exe	0x004de530	cm_DuelSinkDown	cmscene	byte	readable		
 exe	0x004de5e0	cm_DuelInitVariants	cmscene	byte	readable		
 exe	0x004de610	cm_DuelVariant	cmscene	byte	readable		
-exe	0x004de640	cm_DuelShotAction	cmscene	shape	readable	deep	
+exe	0x004de640	cm_DuelShotAction	cmscene	draft	readable	deep	shape+readable -> draft+readable at 0f1c8dc1: promote --accept-falls
 exe	0x004de900	cm_DuelRound	cmscene	byte	readable		
 exe	0x004debe0	cm_DuelOutcome	cmscene	shape	readable		
 exe	0x004ded10	cm_RunDuel	cmscene	draft	readable	deep	
@@ -2909,7 +2909,7 @@ exe	0x004f8700	ord_RandomObjectId	ord	shape	readable	deep
 exe	0x004f8890	ord_GetKindRecord	ord	byte	readable		
 exe	0x004f88c0	ord_AppendStatisticsRound	ord	byte	readable		
 exe	0x004f8920	ord_RebuildGridSums	ord	byte	readable		
-exe	0x004f8ae0	ord_ComputeStatistics	ord	shape	readable	deep	
+exe	0x004f8ae0	ord_ComputeStatistics	ord	draft	readable	deep	shape+readable -> draft+readable at 0f1c8dc1: promote --accept-falls
 exe	0x004f8ed0	ord_UpdateStatistics	ord	byte	readable		
 exe	0x004f9020	ord_LoadStatistics	ord	draft	readable	deep	
 exe	0x004f9170	ord_GetMessageRecord	ord	byte	readable		
@@ -2948,7 +2948,7 @@ exe	0x004fb890	gm_ChooseHeadIcon	f3gm	byte	readable
 exe	0x004fbb80	gm_CreateCharModel	f3gm	shape	readable	deep	
 exe	0x004fbd10	gm_PlaceOnStage	f3gm	byte	readable		
 exe	0x004fbe90	gm_DailyCharacterStep	f3gm	byte	readable		
-exe	0x004fc6f0	gm_AgeCharacter	f3gm	shape	readable		
+exe	0x004fc6f0	gm_AgeCharacter	f3gm	draft	readable		shape+readable -> draft+readable at 0f1c8dc1: promote --accept-falls
 exe	0x004fc7a0	gm_ExpectedDeathAge	f3gm	byte	readable		
 exe	0x004fc820	gm_CharacterHealth	f3gm	byte	readable		
 exe	0x004fc890	gm_CharacterBaseHealth	f3gm	byte	readable		
@@ -3055,7 +3055,7 @@ exe	0x00504290	gm_FirstTitleNumber	f3gmt	shape	readable
 exe	0x00504350	gm_TitleNumberGroup	f3gmt	byte	readable		
 exe	0x005043d0	gm_TitleNumber	f3gmt	byte	readable		
 exe	0x005044b0	gm_TitleJob	f3gmt	byte	readable		
-exe	0x00504510	gm_TitlePeriodServed	f3gmt	shape	readable		
+exe	0x00504510	gm_TitlePeriodServed	f3gmt	draft	readable		shape+readable -> draft+readable at 0f1c8dc1: promote --accept-falls
 exe	0x00504790	gm_SetJob	f3gmt	byte	readable		
 exe	0x00504840	gm_DropRank	f3gmt	byte	readable		
 exe	0x005048e0	gm_BuildingJob	f3gmt	byte	readable		
@@ -3087,7 +3087,7 @@ exe	0x00505e60	gm_CharLevel	f3gmt	byte	readable
 exe	0x00505f30	gm_CharPrevLevel	f3gmt	byte	readable		
 exe	0x00506000	gm_BirthDate	f3gmt	byte	readable		
 exe	0x005060d0	gm_DeathDate	f3gmt	shape	readable		
-exe	0x00506180	gm_RankPlayers	f3gmt	shape	readable		
+exe	0x00506180	gm_RankPlayers	f3gmt	draft	readable		shape+readable -> draft+readable at 0f1c8dc1: promote --accept-falls
 exe	0x00506430	gm_PlayerRecord	f3gmt	byte	readable		
 exe	0x00506480	gm_HasAdultRelative	f3gmt	byte	readable		
 exe	0x005064d0	gm_TakeOverCharacter	f3gmt	byte	readable		
@@ -3105,7 +3105,7 @@ exe	0x00508740	gm_JobWage	f3gmt	byte	readable
 exe	0x005087f0	gm_ItemPrice	f3gmt	byte	readable		
 exe	0x005089c0	gm_GoodsPrice	f3gmt	byte	readable		
 exe	0x00508a20	gm_HealthFactor	f3gmt	byte	readable		
-exe	0x00508a80	gm_FormatAmount	f3gmt	shape	readable		
+exe	0x00508a80	gm_FormatAmount	f3gmt	draft	readable		shape+readable -> draft+readable at 0f1c8dc1: promote --accept-falls
 exe	0x00508cc0	gm_ListObjectsAfter	f3gmt	byte	readable		
 exe	0x00508d70	gm_BuildingLevel	f3gmt	byte	readable		
 exe	0x00508d80	gm_BuildingBalance	f3gmt	draft	readable	deep	
@@ -3171,7 +3171,7 @@ exe	0x0050cc50	gm_SendMoneyDelta	f3gmt	byte	readable
 exe	0x0050cc60	gm_ResetStock	f3gmt	byte	readable		
 exe	0x0050ccd0	gm_Homeless	f3gmt	shape	readable		
 exe	0x0050cd40	gm_JobCost	f3gmt	byte	readable		
-exe	0x0050cdc0	gm_StaffFactor	f3gmt	shape	readable		
+exe	0x0050cdc0	gm_StaffFactor	f3gmt	draft	readable		shape+readable -> draft+readable at 0f1c8dc1: promote --accept-falls
 exe	0x0050cf60	gm_BathObjectCount	f3gmt	byte	readable		
 exe	0x0050cfd0	gm_CurseObjectCount	f3gmt	byte	readable		
 exe	0x0050d060	gm_TrialBuildingKind	f3gmt	byte	readable		
@@ -3779,7 +3779,7 @@ exe	0x00563980	he_AllocDueInOne	he	byte	readable
 exe	0x005639c0	he_RunAttack	he	draft	readable	deep	
 exe	0x005642e0	he_AllocFire	he	byte	readable		
 exe	0x005644e0	he_RunFire	he	byte	readable		
-exe	0x00564860	he_AllocBurn	he	shape	readable	deep	
+exe	0x00564860	he_AllocBurn	he	draft	readable	deep	shape+readable -> draft+readable at 0f1c8dc1: promote --accept-falls
 exe	0x005649b0	he_RunBurn	he	draft	readable	deep	
 exe	0x005652b0	he_AllocStorm	he	byte	readable		
 exe	0x00565410	he_RunStormEvent	he	byte	readable		
@@ -4008,7 +4008,7 @@ exe	0x00579570	ai_TutorialInitChapter3	sv_t	shape	readable
 exe	0x0057aa80	ai_TutorialInitChapter4	sv_t	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	sv_t	byte	readable		
 exe	0x0057b750	ai_TutorialInitMainOutro	sv_t	byte	readable		
-exe	0x0057b810	ai_TutorialBezier	sv_t	shape	readable		
+exe	0x0057b810	ai_TutorialBezier	sv_t	draft	readable		shape+readable -> draft+readable at 0f1c8dc1: promote --accept-falls
 exe	0x0057b8a0	ai_TutorialMarkerUpdate	sv_t	shape	readable		
 exe	0x0057bc30	ai_SetupTutorialPlayer	sv_t	byte	readable		
 exe	0x0057bce0	ai_TutorialWindow	sv_t	shape	readable	deep	
@@ -4658,8 +4658,8 @@ exe	0x005dc1a0	ai_SphereVolume	shot	byte	readable
 exe	0x005dc210	ai_PositionShare	shot	byte	readable		
 exe	0x005dc240	ai_InitShot	shot	byte	readable		
 exe	0x005dc3a0	ai_ScatterShot	shot	byte	readable		
-exe	0x005dc4a0	ai_StepShot	shot	shape	readable	deep	
-exe	0x005dc9d0	ai_StepShotSlow	shot	shape	readable	deep	
+exe	0x005dc4a0	ai_StepShot	shot	draft	readable	deep	shape+readable -> draft+readable at 0f1c8dc1: promote --accept-falls
+exe	0x005dc9d0	ai_StepShotSlow	shot	draft	readable	deep	shape+readable -> draft+readable at 0f1c8dc1: promote --accept-falls
 exe	0x005dcf00	ai_ShotHitsGround	shot	byte	readable		
 exe	0x005dd090	ai_NormalizeEffectScale	shot	byte	readable		
 exe	0x005dd100	ai_SolveCannonAim	shot	shape	readable	deep	
