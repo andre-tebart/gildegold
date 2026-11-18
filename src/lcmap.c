@@ -2,7 +2,7 @@
    The city name text and map mark helpers, the town map window (ai_OpenTownMap, ai_BuildTownMap, ai_UpdateTownMap
    with the drag / key scroll, its close), the production settings ("hp_" chain ai_Settings, ai_FindSetting ..),
    the item group lookup ai_FindItemGroup and the plague / gypsy / graveyard / partner / Domizil news (their sound
-   keys ai_NewsKey*, the text buffers ai_NewsText / ai_NewsSecond).
+   keys (string literals), the text buffers ai_NewsText / ai_NewsSecond).
    Boundary: lc's .data strings end with "contact_RAZZIA" 0x62c25c (user 0x5a6995 in 0x5a6920); this object's plain
    .data block is ai_MapScrollEnabled 0x62c26c (1) and ai_MapCellScale 0x62c270 (users 0x5a6b8c ..), its .bss starts
    at 0x6f268c (after lc's ai_BauplatzCount 0x6f2688) and holds rt_MapSurface 0x6f26ac, its .rdata starts with the
@@ -2410,7 +2410,7 @@ void ai_ShowCharacterNews(unsigned short *cRec, char *text)
     }
 }
 /* 0x5a9170, tells a player character about another character (74 B): for a kind 6 / 7 character the text 0x20c6
-   with the other character's id, shown to its netId (event 0x5fa, the second text ai_NewsKeyHS46); called by
+   with the other character's id, shown to its netId (event 0x5fa, the second text "_NACHRICHTEN_HS_46"); called by
    cm_ExAddStraftat with the culprit and the character to tell */
 
 void ai_NotifyPlayerOfChar(unsigned short *cRec, unsigned short *pRec)
@@ -2422,7 +2422,7 @@ void ai_NotifyPlayerOfChar(unsigned short *cRec, unsigned short *pRec)
     p = (G8CHARREC *)pRec;
     if (p->kind == 6 || p->kind == 7) {
         txt_Format(ai_NewsText, 0x20c6, c->id);
-        he_ShowNews(p->netId, -1, ai_NewsText, 0, 0x5fa, ai_NewsKeyHS46);
+        he_ShowNews(p->netId, -1, ai_NewsText, 0, 0x5fa, "_NACHRICHTEN_HS_46");
     }
 }
 /* 0x5a91c0, the plague news to every player character (91 B): a random 0 .. 2 picks the news text 0x20c7 + r and
@@ -2678,7 +2678,7 @@ void ai_HauntingText(unsigned short *chrId, int victim, unsigned int end)
 }
 /* 0x5a9990, tells a character of the graveyard work's outcome (69 B): the text 0x40a8 with one of the three
    sub-texts 0x40a9 .. 0x40ab (util_Random(3)) into ai_NewsText, shown to its netId (1, event 0x5fb, the sound
-   ai_NewsKeyFriedhof12); he_RunDecay sends it after he_SetLifeByAge set the second character's value */
+   "_NACHRICHTEN_FRIEDHOF_12"); he_RunDecay sends it after he_SetLifeByAge set the second character's value */
 
 void ai_TellGraveWorkSuccess(int chRec)
 {
@@ -2688,11 +2688,11 @@ void ai_TellGraveWorkSuccess(int chRec)
     c = (G8CHARREC *)chRec;
     v = util_Random(3);
     txt_Format(ai_NewsText, 0x40a8, (v & 0xffff) + 0x40a9);
-    he_ShowNews(c->netId, -1, ai_NewsText, 1, 0x5fb, ai_NewsKeyFriedhof12);
+    he_ShowNews(c->netId, -1, ai_NewsText, 1, 0x5fb, "_NACHRICHTEN_FRIEDHOF_12");
 }
 /* 0x5a99e0, tells a character that the graveyard work failed (69 B): the text 0x40ac with one of the three
    sub-texts 0x40a9 .. 0x40ab (util_Random(3)) into ai_NewsText, shown to its netId (1, event 0x5fb, the sound
-   ai_NewsKeyFriedhof13); he_RunDecay sends it in the work's other branch (no value set, its +0xbc = 0) */
+   "_NACHRICHTEN_FRIEDHOF_13"); he_RunDecay sends it in the work's other branch (no value set, its +0xbc = 0) */
 
 void ai_TellGraveWorkFailure(int chRec)
 {
@@ -2702,12 +2702,12 @@ void ai_TellGraveWorkFailure(int chRec)
     c = (G8CHARREC *)chRec;
     v = util_Random(3);
     txt_Format(ai_NewsText, 0x40ac, (v & 0xffff) + 0x40a9);
-    he_ShowNews(c->netId, -1, ai_NewsText, 1, 0x5fb, ai_NewsKeyFriedhof13);
+    he_ShowNews(c->netId, -1, ai_NewsText, 1, 0x5fb, "_NACHRICHTEN_FRIEDHOF_13");
 }
 /* 0x5a9a30, the graveyard news of the two characters worker / other to `to` (188 B): the text 0x40ad (0x40a3,
    worker's id, its building +0x16c, other's id); with detail the text 0x40ae (0x230 for a feminine worker, else 0x20d,
    + its title +0x165) is formatted into ai_NewsSecond and appended; the news 0x5fa goes to to->netId with the
-   sound ai_NewsKeyFriedhof00 */
+   sound "_NACHRICHTEN_FRIEDHOF_00" */
 
 void ai_GraveyardMessage(G8CHARREC *to, G8CHARREC *worker, G8CHARREC *other, int detail)
 {
@@ -2717,11 +2717,11 @@ void ai_GraveyardMessage(G8CHARREC *to, G8CHARREC *worker, G8CHARREC *other, int
                      (worker->sex ? 0x230 : 0x20d) + worker->title);
         strcat(ai_NewsText, ai_NewsSecond);
     }
-    he_ShowNews(to->netId, -1, ai_NewsText, 0, 0x5fa, ai_NewsKeyFriedhof00);
+    he_ShowNews(to->netId, -1, ai_NewsText, 0, 0x5fa, "_NACHRICHTEN_FRIEDHOF_00");
 }
 /* 0x5a9af0, the graveyard news of the worker / other characters to `to`, without a detail sentence (83 B):
    the text 0x40af (0x40a3, the worker's id, its building +0x16c, the other's id) into ai_NewsText, shown to
-   to's netId (0, event 0x5fa, the sound ai_NewsKeyFriedhof00); he_RunDecay sends it for a work without a
+   to's netId (0, event 0x5fa, the sound "_NACHRICHTEN_FRIEDHOF_00"); he_RunDecay sends it for a work without a
    result (+0xbc = 0), in place of the detailed ai_GraveyardMessage */
 
 void ai_GraveyardMessagePlain(int toRec, unsigned short *workerRec, unsigned short *otherRec)
@@ -2734,7 +2734,7 @@ void ai_GraveyardMessagePlain(int toRec, unsigned short *workerRec, unsigned sho
     worker = (G8CHARREC *)workerRec;
     other = (G8CHARREC *)otherRec;
     txt_Format(ai_NewsText, 0x40af, 0x40a3, worker->id, worker->bld, other->id);
-    he_ShowNews(to->netId, -1, ai_NewsText, 0, 0x5fa, ai_NewsKeyFriedhof00);
+    he_ShowNews(to->netId, -1, ai_NewsText, 0, 0x5fa, "_NACHRICHTEN_FRIEDHOF_00");
 }
 
 int d2_WinOpenPic(short x, short y, int pic, int win); int io_CharacterName(int id, unsigned char c, unsigned char kind, char *out); 
@@ -2885,10 +2885,6 @@ const volatile unsigned __int64 gypsyFilter = 0x1a7fdfbb6;  /* 0x5eed68, the fil
 const unsigned int ai_BuildingTypeMasks[6] = { 2692498336, 1, 3766305712, 1, 0xf82806f, 2 };  /* 0x5eed70, bit masks of building classes (defined beside gypsyFilter: ai.c reads it through the extern, from memory) (three 64 bit masks: [2..3] the house-owner classes, [4..5] the classes lc.c's ai_PassesMapPickFilter greys out under its 0x40000000 flag) */
 int ai_MapScrollEnabled = 1;  /* 0x62c26c, 1 while the town map window has the input (ai_UpdateTownMap scrolls it; rt_EditCartRoute and ai_MapPick set it): the first of the unit's .data block */
 float ai_MapCellScale = 5.33f;  /* 0x62c270, the town map pixels per scene cell: 7.5 for a map bitmap 0x780 wide or wider, else 5.33 (the map loader 0x5b2090 sets it) */
-char ai_NewsKeyHS46[20] = "_NACHRICHTEN_HS_46";  /* 0x62c2ac, the second text of ai_NotifyPlayerOfChar's news (event 0x5fa) */
-char ai_NewsKeyFriedhof12[28] = "_NACHRICHTEN_FRIEDHOF_12";  /* 0x62c364, the sound of the graveyard work news ai_TellGraveWorkSuccess (event 0x5fb) */
-char ai_NewsKeyFriedhof13[28] = "_NACHRICHTEN_FRIEDHOF_13";  /* 0x62c380, the sound of the graveyard work news (event 0x5fb) */
-char ai_NewsKeyFriedhof00[28] = "_NACHRICHTEN_FRIEDHOF_00";  /* 0x62c39c, the sound of the graveyard news ai_GraveyardMessage (event 0x5fa) */
 int ai_BauplatzCount = 0;  /* 0x6f2688 */
 int ai_DragSavedMaxY = 0;  /* 0x6f268c, the mouse bounds di_MaxY / di_MinY / di_MaxX / di_MinX kept while the town map is */
 int ai_DragSavedMinY = 0;  /* 0x6f2690, dragged with the right button (ai_DragTownMap) */
