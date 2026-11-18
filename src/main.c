@@ -223,7 +223,6 @@ extern int d2_DirtyRectLeft[4];         /* 0xfb9060, the rectangle d2_AddDirty t
 extern int sv_FrameMask;
 extern int sv_PopRequest;
 
-extern char gm_TagTmp[4];
 extern int cm_NetFlags;
 
 
@@ -4820,7 +4819,7 @@ void main_GameLoop(int ctl)
                         fseek(sav, 0, 2);
                         len = ftell(sav);
                         fseek(sav, 0, 0);
-                        data = mem_Alloc(len, gm_TagTmp);
+                        data = mem_Alloc(len, "tmp");
                         bak = fopen(ab, "wb");
                         if (data != 0) {
                             if (bak != 0) {
