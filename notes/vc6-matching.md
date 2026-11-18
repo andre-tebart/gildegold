@@ -810,6 +810,48 @@ Where the pushes and pops sit, how many epilogue copies there are, shared agains
     (ord_LoadStatistics), the constants 6 / 1 in ebx / edi (ai_UseGoodCharmPartner), all = 0 before the guards
     (gm_GetCreditOffers: an esi / edi swap).
 
+- **Deep s27 (the near-byte list to 30 instructions, notes older than s22 first, 15 items)**:
+  - **climb.py round 1 first, again**: three of the 15 were one move or swap (gm_BuildQuery the class reset
+    behind the master reset, ai_CalcMeisterFernhaendler `it = ai_Objects` before `ok = 1`, he_RunWorkerTheft
+    `n = 0` before the memset) and ch_GetWaypoints' slot swaps were the action pointer's declaration initializer
+    (`a = CH_ACTIONS(ch);` as the first statement: 10 -> 2).
+  - **A literal held in a callee-saved register (`mov ebx,1; push ebx` .. `mov [g],ebx`) that ours pushes as an
+    immediate**: one more reference of the constant, from a store the original wrote in two arms that VC6
+    merges: `if (dm_L.rup) sv_PopRequest = 1; else if (d2_ClickedId == 0) sv_PopRequest = 1;` instead of the
+    `||` (ai_MissionEndDialog byte; two separate ifs 3 ins). A named `ok = 1` local folds and does nothing.
+  - **Callee-saved pushes in the prologue where ours shrink-wraps them past an early return**: one more
+    `return` inside a branch (guide section 3): the no-target case as its own early return with its tail call
+    written out, the rest flat (ai_GraveFogWindow), a search loop's `break` as `return i;` (gv_BuryNewDead).
+    Both byte; the inverted guard / if-else forms were the old code in each.
+  - **`xor eax,eax` in a shared failure tail where ours returns the known-zero pointer without it**: the alloc
+    branch as `if (rec != 0) { ..; return rec->slots; } return 0;` (ai_ProdSetting byte): the failure no longer
+    returns right after the zero test, and its je joins the other branch's `xor eax,eax` copy.
+  - **A dead field load before a tail call (`mov ecx,[eax+8]`, unused)**: an if / else on that field with the
+    same call in both arms assigned to the result (hmt_RandomTextOffset, kept with @original; two `return`s were
+    8 ins, a ?: 13).
+  - **`fild x; fmul c; fiadd [int temp]` against ours `fild sum; fild x; fmul; faddp`**: the product cast to
+    float, `(int)((float)((left - 1) * 0.5) + (group * 3 + 0x155a))`: a float plus an int expression adds the int
+    by fiadd; every double spelling (casts, operand order, a named sum, / 2.0) loads it by fild first
+    (he_RunMasterExamPassed byte; toy compiles settled it in two runs). he_PostEvent67 has the same expression.
+  - **A table indexed through a named k where the original's index is a temporary**: `t =
+    txt_MaleFirstNames[(unsigned short)util_Random(0xbf)];` (main_CreateStartCouple: the second name copy's ecx /
+    al instead of eax / cl, byte).
+  - **It was a meaning bug, hidden by the x87 stack**: he_SetLifeByAge's original loads `c->f018` before the
+    `fnum <= f020` branch and keeps it on the FPU stack on both paths; `_ftol` pops only the step count
+    `fnum - f020`, so the loop starts from v = f018 (ours started from fnum - f020). dcp graded it shape with
+    "the same behaviour, proved": a load hoisted above a branch that stays on the x87 stack across a call is a
+    value of the other path - read where each st(i) comes from. Then `v = v - f + (f / v)` (the quotient first)
+    was byte.
+  - **A string-terminated list walked by pointer where the original indexes**: ai_AddEquipmentNeeds' final loops
+    `for (k = 0; list[k] != 0; k++) { id = list[k]; .. }` (the second loop's `mov eax,[list2]; test; je; mov
+    edi,eax` head and the per-row NSlots reload; padded size right, 10 ins -> M8 only), then `make -= amount +
+    pending` (VC6 loads the right operand first) byte. **dcp try does not see an M8**: its code hash and hunks
+    mask field displacements, so the operand swap printed "= control" (the s17 note said so too); only the
+    build's grade showed it. A crossed-field M8 needs a build per variant.
+  - Left with notes: ch_GetWaypoints (`mov ebp,ecx; add ebp,edi` for n = i + (t ? 2 : 1), 2 ins),
+    txt_ParseRandomText (the stores reload p from its slot, 10 ins), d2_SliderInput (the vertical test's load
+    order; its goto is the original's single clamp copy).
+
 - **An else-if arm cross-jumped whole into a sibling's copy, the original keeps it inline**: the store order of
   the OTHER arms (default arm charId before stateArg; 0x176 arm stateArg, charId, x, z) decides it, found by
   climb.py swap + move in round 2 (cm_OrderAttack byte; permuting only the inlined arm's stores did not). The pair
