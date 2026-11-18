@@ -2626,14 +2626,13 @@ char *cm_NearestEscapeObject(char *c)
     float d, dx, dy, dz;
     char *res = 0;
     D3OBJECT *m, *o;
-    int i, n;
+    int i;
 
     cm_PointCount = 0;
     d3_ForEachObject(d3_DefaultScene, 0, 0xc0, cm_CollectEscapeObject, list);
     m = ((AICHAR *)c)->scene->obj;
     d3_PointToWorld(m, &m->pos, (D3VECTOR *)&v);
-    n = cm_PointCount;
-    for (i = 0; i < n; i++) {
+    for (i = 0; i < cm_PointCount; i++) {
         o = (D3OBJECT *)list[i];
         dx = v.x - o->pos.x;
         dy = v.y - o->pos.y;
