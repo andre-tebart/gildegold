@@ -352,15 +352,23 @@ void cm_TallyStack(int a, int b, int c)
      tie drawn with cm_Random); the host sends the office message 1 for the winner.
    The event scene "Sitzung_*.ed3" with the members' figures and its fly-in is loaded once per column when there is something
    to vote on, and left at the end of the column.
-   @deep Rebuilt whole from the original (1985 instructions), every block read against it: the array
-   initialisers in the original's order, the voter/observer member setup, the deposition loop (answers,
-   voices, remarks, relations as an if/else chain, office messages) and the election loop (applicant scan
-   by index, the -1/0 fill loop, single/drawn/voted winner, tie draw). No call, store, reference or literal
-   differs (diffclass: no differs/ref lines; ours 1989 vs 1985). Left is allocation only: frame 0x904 vs
-   0x900 (one more spilled scalar; tie/win spilled to [esp+0x24]/[esp+0x14] where the original keeps them
-   in edx/esi because ours caches bankElect in edi: hunks +0x1845..+0x1870), the holders loop keeps 0 in
-   edi where the original keeps 1 (+0x48c: '- xor edi,edi' / '+ mov edi,1'), and the slot renaming that
-   follows from the frame shift. */
+   @deep size queue s20: step as a local of each if (nvoters > 0) block (the depose and the elect tally):
+   frame 0x904 -> 0x900 (the original's), the original's shared slots viewLeft/step and
+   challenger/best/step now as ours, raw 7120 -> 7105 (the original 7089, padded 7104: one byte over); code
+   hunks 104 -> 74 but the scalar slot order is permuted (frame > 0x80: density sort; ours
+   viewTop/nvoters/tie has 19 references, the original's 15: tie / win sit in memory in ours where the
+   original keeps tie in edx, best in edi in the vote loop), so 188 -> 338 ins by count. Left: that tally
+   loop's allocation (tie memory-homed), the 1 cached in edi at the cut infos fill (mov edi,1 where ours
+   xor edi: the 0 / 0 / 1 stores of observer / ready / valid), slot order. prior: Rebuilt whole from the
+   original (1985 instructions), every block read against it: the array initialisers in the original's
+   order, the voter/observer member setup, the deposition loop (answers, voices, remarks, relations as an
+   if/else chain, office messages) and the election loop (applicant scan by index, the -1/0 fill loop,
+   single/drawn/voted winner, tie draw). No call, store, reference or literal differs (diffclass: no
+   differs/ref lines; ours 1989 vs 1985). Left is allocation only: frame 0x904 vs 0x900 (one more spilled
+   scalar; tie/win spilled to [esp+0x24]/[esp+0x14] where the original keeps them in edx/esi because ours
+   caches bankElect in edi: hunks +0x1845..+0x1870), the holders loop keeps 0 in edi where the original
+   keeps 1 (+0x48c: '- xor edi,edi' / '+ mov edi,1'), and the slot renaming that follows from the frame
+   shift. */
 
 void cm_RunCouncilSession(G28REC *a)
 {
@@ -385,7 +393,7 @@ void cm_RunCouncilSession(G28REC *a)
     CMCUTINFO *s;
     struct MSXTRACK *sound;
     int bankDepose, bankElect, loaded, view, viewBottom, viewTop, viewLeft;
-    int npresent, k, kind, n, nh, m, left, nvoters, shown, step, napp, best, win, tie, r, i, j, e, slot;
+    int npresent, k, kind, n, nh, m, left, nvoters, shown, napp, best, win, tie, r, i, j, e, slot;
 
     saved = *a;
     sound = 0;
@@ -513,6 +521,8 @@ void cm_RunCouncilSession(G28REC *a)
             d2_SetForm(viewBottom, 0);
             d2_RemoveWindowObjects(d2_LastWindow, 1);
             if (nvoters > 0) {
+                int step;
+
                 step = (0x320 - d2_Pics[0x5da].w * nvoters) / (nvoters + 1);
                 shown = 0;
                 for (i = 0; i < nh; i++) {
@@ -716,6 +726,8 @@ void cm_RunCouncilSession(G28REC *a)
             d2_SetForm(viewBottom, 0);
             d2_RemoveWindowObjects(d2_LastWindow, 1);
             if (nvoters > 0) {
+                int step;
+
                 step = (0x320 - d2_Pics[0x5da].w * nvoters) / (nvoters + 1);
                 shown = 0;
                 for (i = 0; i < nh; i++) {
