@@ -2326,6 +2326,17 @@ a stack slot is a split piece, and the piece's extent is decided by the rules be
   block's last statement, in ascending piece id), whatever stands behind the call; the scheduler hoists them
   (load bonus), so they appear right behind the call. A scratch temp behind the call is chosen before them in
   list order and may take a register a piece is reloaded into later (d3t_MoveObjectPath).
+- **d3t_MoveObjectPath s31: a scratch step behind a call can be a piece's EXTENT, not a temp.** A reference of a
+  split value in the call's block behind the call makes its piece start there (reload right behind the call)
+  instead of at the next block: that register is busy at the following temps, so the rotation skips it. Here a
+  probe `p2 = i;` before the time store put i's reload in front of the step load (edx busy -> step in eax, the
+  tail one register on), which is the s8 "missing scratch step"; with the k probe in the loop head (k#2 51 >
+  i#2 47) both probes leave only their own stores (vdiff 10 ins). A reference at the block END (behind k++)
+  gives the extent but swaps the two registers (9 ins). Test for this before hunting a missing temporary: a
+  probe store of each value live over the call, at the start and at the end of the call's block.
+  Also measured there: `x = x`, `x += 0`, `x |= 0` and 10 more no-op forms are removed before allocation like
+  dead reads (no priority, no extent); the time-store position among six subtractions is no lever (the
+  scheduler places it); block scopes of the loop counters are no lever.
 
 ### Pointer locals and addresses
 
