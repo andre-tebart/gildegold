@@ -6593,22 +6593,20 @@ void he_RunGypsyCurse(int ev)
     e->stage = e->stage + 1;
     a = (AICHAR *)gm_FindChar(g->cursed);
     b = (AICHAR *)gm_FindChar(g->gypsy);
-    if (a == 0) {
-        he_FreeEvent((int *)ev);
-        return;
-    }
-    n = a->money;
-    if (n != 0) {
-        gm_SendMoneyDelta(a->netId, -n);
-        x = n / 2;
-        if (x <= 2)
-            x = 2;
-        if (b != 0)
-            gm_SendMoneyDelta(b->netId, x);
-    }
-    if (e->stage < 2) {
-        gm_AddTime(&e->end, 0x18, 0, 0);
-        return;
+    if (a != 0) {
+        n = a->money;
+        if (n != 0) {
+            gm_SendMoneyDelta(a->netId, -n);
+            x = n / 2;
+            if (x <= 2)
+                x = 2;
+            if (b != 0)
+                gm_SendMoneyDelta(b->netId, x);
+        }
+        if (e->stage < 2) {
+            gm_AddTime(&e->end, 0x18, 0, 0);
+            return;
+        }
     }
     he_FreeEvent((int *)ev);
 }
