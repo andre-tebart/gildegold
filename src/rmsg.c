@@ -971,8 +971,8 @@ int ai_MsgJobTime(G14MSG *m)
     if (n == 0)
         return 0x400;
     r = util_RandomU(n);
-    o = os[r];
     j = js[r];
+    o = os[r];
     s = (int)gm_ItemPrice(o->id, o->fill);
     for (e = (AIOBJ *)gm_Query(o->list, 2, 5, 6); e != 0; e = (AIOBJ *)gm_QueryNext())
         s = (int)(gm_ItemPrice(e->id, o->fill) * e->count + s);
