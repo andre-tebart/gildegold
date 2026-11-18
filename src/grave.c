@@ -1038,9 +1038,7 @@ int gv_AdjustEntry(GVORDER *m)
         return -7;
     v = e->b0c + m->price;
     v = v <= 0 ? 0 : v;
-    if (v >= 0xff)
-        v = 0xff;
-    e->b0c = (unsigned char)v;
+    e->b0c = (unsigned char)(v >= 0xff ? 0xff : v);
     return 0;
 }
 /* 0x4f0d70, the message 0x4c60b0 type 6 (graveyard id -1, object id +1 of o, value x at +0x13); -1 when o is 0 */
