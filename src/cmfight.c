@@ -1620,8 +1620,8 @@ int cm_OrderConquer(char *rec, char *c, char *tgt)
     return 1;
 }
 /* 0x4d0380, an order kind 6 (walk to the goods store) for the character c: its entry (cm_CutEntrySlot, b0c cleared
-   there) is copied with state 6, the name of the object tgt (dummy), held = a and turn = the low byte of tgt's point,
-   and sent as message 0x50 (cm_SendCutEntry). -1 when the point is not on the ground or the character c is in a job
+   there) is copied with state 6, the name of the object tgt (dummy), the ground cell of tgt's point (d3_GetHeightAt's x / z)
+   as storeX / storeZ (a is not read), and sent as message 0x50 (cm_SendCutEntry). -1 when the point is not on the ground or the character c is in a job
    (AICHAR.v1ac). */
 
 int cm_OrderWare(char *rec, char *c, char *tgt, unsigned char a)
@@ -1644,8 +1644,8 @@ int cm_OrderWare(char *rec, char *c, char *tgt, unsigned char a)
     order.charId = ((AICHAR *)c)->netId;
     order.state = 6;
     strcpy(order.dummy, tgt);
-    order.held = a;
-    order.turn = ((char *)v)[0];
+    order.storeX = (unsigned char)x;
+    order.storeZ = (unsigned char)z;
     cm_SendCutEntry(((CMCUTINFO *)rec)->playerId, (int)&order);
 }
 /* 0x4d0460, orders the character c of the cutscene record rec (CMCUTINFO) to the best ground cell within 8 rings of
