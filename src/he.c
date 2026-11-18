@@ -16816,18 +16816,12 @@ int d3_VecEqual(struct D3VECTOR *a, struct D3VECTOR *b, float eps);
    AP event of text 0x3fd8 (-2), and when the guild has a character whose master it is with the flag 1 (+0x1b4), the
    victim gets the ransom message 0x3e: its worth (at most 1604000) times 2 / 4 / 6 / 10 % by its held rounds
    1 / 2 / 3 / 4 or more. The news and the message only for an event with option 2. Stages -2 / -1 release the
-   victim (heldRounds 0) and free the record
-   @deep frame sweep s21: 20 -> 4 ins, frame 0x30c -> 0x304 (the original's): none a local of the
-   heldRounds <= 0 block, bld / obj of its opts & 2 block (escaped by &none / &bld / &obj: function-scope
-   they each took a slot of their own). Left: order 8 at the message fill, the original loads victim->netId
-   (mov edi,[edi+4]) before the m.type = 0x3e store; tried m.to first (order 10), m.to / fromId before type
-   (12), type before the ransom line (code 10). */
+   victim (heldRounds 0) and free the record */
 void he_RunRansom(AIJOB *ev)
 {
     HEEV3D *x = (HEEV3D *)ev;
     AICHAR *victim, *owner, *payer;
     AIBLD *b;
-    AIMSG m;
     char text[0x200];
     int worth;
     float share, ransom;
@@ -16878,14 +16872,18 @@ void he_RunRansom(AIJOB *ev)
             share = 0.02f;
         worth = gm_GetWorth(victim->id);
         ransom = (1604000.0f < (float)worth ? 1604000.0f : (float)worth) * share;
-        m.type = 0x3e;
-        m.to = victim->netId;
-        m.fromId = b->id;
-        m.flags = 9;
-        m.arg[0] = m.to;
-        m.arg[2] = (int)ransom;
-        m.arg[1] = ai_CharInts[ev->chr][0];
-        cm_SendLongMessage((char *)&m);
+        {
+            AIMSG m;
+
+            m.type = 0x3e;
+            m.to = victim->netId;
+            m.fromId = b->id;
+            m.flags = 9;
+            m.arg[0] = m.to;
+            m.arg[2] = (int)ransom;
+            m.arg[1] = ai_CharInts[ev->chr][0];
+            cm_SendLongMessage((char *)&m);
+        }
         return;
     case -2:
     case -1:
