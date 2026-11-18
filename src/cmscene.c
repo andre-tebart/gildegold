@@ -2699,9 +2699,7 @@ void cm_DuelChooseRound(CMCUTINFO *r, G28REC *m)
 
     a = (AICHAR *)gm_FindChar(m->members[0]);
     b = (AICHAR *)gm_FindChar(m->members[1]);
-    other = b;
-    if (a->netId != ((AICHAR *)cm_CutChar)->netId)
-        other = a;
+    other = a->netId == ((AICHAR *)cm_CutChar)->netId ? b : a;
     view = d2_OpenForm(0, 0, "cutscenes\\duell");
     d2_PlaceMainWindowF(view, 3);
     d2_SetForm(view, 0);
