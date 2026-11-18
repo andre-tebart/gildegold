@@ -12081,9 +12081,7 @@ void he_TransportStadtStadt(int ev)
     D3SM *hmap;
     D3OBJECT *bo;
     CHACTION *walk;
-    D3VECTOR4 back, pos;
-    int sc, px, pz;
-    float py;
+    int sc;
     char text[0x400];
     char err[0x400];
 
@@ -12092,6 +12090,8 @@ void he_TransportStadtStadt(int ev)
     from = (AIBLD *)gm_BuildQuery(1, 1, t->start);
     to = (AIBLD *)gm_BuildQuery(1, 1, t->goal);
     if (t->at == from->id && t->started == 0) {
+        D3VECTOR4 back, pos;
+
         sc = d3_CurrentScene;
         d3if_SelectScene(0, 1);
         o = (AIOBJ *)he_RandomTransporter(to->object);
@@ -12106,6 +12106,9 @@ void he_TransportStadtStadt(int ev)
         if (tr == 0)
             tr = (AIOBJ *)gm_FindObjectInst(t->cart);
         if (tr != 0) {
+            int px, pz;
+            float py;
+
             ch = (CHARACTER *)tr->sceneObj;
             he_SetCartSpeed(ev, (int)tr);
             hmap = (D3SM *)ch_GetHMap(ch);
