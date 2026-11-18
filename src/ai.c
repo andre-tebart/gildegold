@@ -6106,7 +6106,6 @@ int ai_MeisterTradeFernEinkauf2(AICHAR *ch, AIOBJ *b)
 
 AICHAR * ai_Partner = 0;  /* 0x6f0468 */
 int ai_TradeMsgCount = 0;  /* 0x6f046c, the trade messages sent since the last reset */
-unsigned short * ai_PlayerChar = 0;  /* 0x6f1bf8 */
 int ai_CurrentPlayer = 0;  /* 0x6f2590, the player index whose turn the local round loop simulates */
 extern AIGRID ai_Grid[8][8];
 /* ai_ActionFlags: view of ai_Actions (tools/data_views.py) */

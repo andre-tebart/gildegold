@@ -8652,6 +8652,7 @@ char gm_QueryStopFirst = 0;  /* 0x6f1bea, first-step flag, scan all, descend int
 int gm_QueryUnreadBss = 0;  /* 0x6f1bec, no surviving instruction or pointer refers to it: data of functions /OPT:REF removed; size from the neighbours' addresses */
 ORDBLD *gm_BQCursor = 0;  /* 0x6f1bf0, the current building of the query */
 ORDOBJ *gm_QueryCursor = 0;  /* 0x6f1bf4, the current record */
+unsigned short * ai_PlayerChar = 0;  /* 0x6f1bf8 */
 unsigned short gm_KindObjCount;  /* 0x76fdc4, common: tentative as in the original (the common block past LIBC's
                                     .bss; gm_BuildKindObjects keeps it in a word register only when VC6 does not
                                     know its place) */

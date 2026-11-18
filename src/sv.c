@@ -2471,7 +2471,7 @@ extern int sv_BorderViewY;  /* 0x6f22d0 */
 extern int d3t_CamMoving;  /* 0x6310e4 */
 extern struct D3ANIM *d3t_CamMove;  /* 0x6310e8 */
 extern int sv_ScrollTime;  /* 0x6f2394 */
-extern float sv_ScrollLastMove[3];
+extern float sv_ScrollLastMove[4];
 float d3t_GetMeanHeight();                   /* 0x412550 */
 int d3_VecEqual(struct D3VECTOR *a, struct D3VECTOR *b, float eps);  /* 0x453e80 */
 void d3_MatTranspose();                     /* 0x454040 */
@@ -2854,7 +2854,7 @@ int sv_ScrollCamera(void)
 }
 
 extern int sv_MouseDragOn, sv_ZoomTurnOn, sv_MouseCamActive, sv_DragStartX, sv_DragStartY, sv_DragLastX, sv_DragLastY, sv_SavedMaxX, sv_SavedMaxY, sv_SavedMinX, sv_SavedMinY, sv_ZoomStartX, sv_ZoomStartY;  /* 0x6f23b8, 0x6f23a0, 0x6f23a4, 0x6f2398, 0x6f239c, 0x6f1c88, 0x6f1c48, 0x6f1c50, 0x6f1c40, 0x6f1c84, 0x6f2298, 0x6f2290, 0x6f1c8c */
-extern float sv_ZoomStartHeight, sv_ZoomStartAngle, sv_ZoomStartTurn, sv_ZoomBaseY, sv_DragLastPos[3];  /* 0x6f23a8, 0x6f23ac, 0x6f23b0, 0x6f23b4, 0x6f1c64 */
+extern float sv_ZoomStartHeight, sv_ZoomStartAngle, sv_ZoomStartTurn, sv_ZoomBaseY, sv_DragLastPos[4];  /* 0x6f23a8, 0x6f23ac, 0x6f23b0, 0x6f23b4, 0x6f1c64 */
 extern int tb_Paused;  /* 0x6333e0 */
 extern int ai_DragWindow;  /* 0x62a8cc */
 extern int sv_CameraScrolled;  /* 0x6f22b4 */
@@ -7590,8 +7590,9 @@ float sv_ScrollVelYPrev = 0;  /* 0x6f1c44 */
 int sv_DragLastY = 0;  /* 0x6f1c48 */
 int sv_HoverLast = 0;  /* 0x6f1c4c, the scene object sv_HoverPick picked last (0: none) */
 int sv_SavedMaxX = 0;  /* 0x6f1c50 */
-float sv_DragLastPos[3] = {0};  /* 0x6f1c64 */
-float sv_ScrollLastMove[3] = {0};  /* 0x6f1c74 */
+int sv_UnreadBss1[4] = {0};  /* 0x6f1c54, no surviving instruction or pointer refers to it: data of functions /OPT:REF removed; size from the neighbours' addresses */
+float sv_DragLastPos[4] = {0};  /* 0x6f1c64, a 16-byte (D3VECTOR4-padded) vector: x, y, z read, the fourth float unread */
+float sv_ScrollLastMove[4] = {0};  /* 0x6f1c74, a 16-byte vector like sv_DragLastPos */
 int sv_SavedMinX = 0;  /* 0x6f1c84 */
 int sv_DragLastX = 0;  /* 0x6f1c88 */
 int sv_ZoomStartY = 0;  /* 0x6f1c8c */
@@ -7604,7 +7605,10 @@ int sv_PopRequest = 0;  /* 0x6f22a0 */
 int sv_FrameBase = 0;  /* 0x6f22a4, the depth a screen was entered at (the base of the pop count) */
 int sv_FocusDepth = 0;  /* 0x6f22a8, sv_FrameDepth when sv_FocusObject was focused (sv_HandleObjects); the camera code releases the focus when the frame stack drops below it */
 unsigned char sv_Advancing = 0;  /* 0x6f22ac, nonzero while the advance game screen runs (0x5307f0, form "misc\advancegame"); sv_RunFrame tests it */
+int sv_UnreadBss2 = 0;  /* 0x6f22b0, no surviving instruction or pointer refers to it: data of functions /OPT:REF removed; size from the neighbours' addresses */
 int sv_CameraScrolled = 0;  /* 0x6f22b4 */
+int sv_UnreadBss3 = 0;  /* 0x6f22b8, no surviving instruction or pointer refers to it: data of functions /OPT:REF removed; size from the neighbours' addresses */
+int ai_FrameWait = 0;  /* 0x6f22bc */
 int sv_ViewShape = 0;  /* 0x6f22c0 */
 struct D2SURF *sv_GroundplanSurf = 0;  /* 0x6f22c4, the groundplan bitmap while sv_LoadGroundplan reads it */
 struct D2SURF *sv_GroundplanView = 0;  /* 0x6f22c8, the groundplan copy the panel blits */
@@ -7612,23 +7616,33 @@ int sv_BorderViewX = 0;  /* 0x6f22cc */
 int sv_BorderViewY = 0;  /* 0x6f22d0 */
 float sv_CameraHeightFactor = 0;  /* 0x6f22d4 */
 float sv_CameraAngleFactor = 0;  /* 0x6f22d8 */
+int sv_PendingMoney = 0;  /* 0x6f22dc, the money the money panel adds to the player's (the credit window: the limit minus the amount chosen; the transport window: minus the goods' total); sv's by use */
+int sv_UnreadBss4 = 0;  /* 0x6f22e0, no surviving instruction or pointer refers to it: data of functions /OPT:REF removed; size from the neighbours' addresses */
+int ai_ClickedObject = 0;  /* 0x6f22e4: the object clicked in the scene (cm.h declares it for the units that include cm.h) */
+char * ai_PickedObject = 0;  /* 0x6f22e8 */
 char * sv_FocusObject = 0;  /* 0x6f22ec, the clicked object the camera was placed at (d3t_PlaceAtObject): its handler (+0x1d4) gets message 2 at the focus (+0x108) and 3 at the release (+0x18c) */
 int sv_HoverItem = 0;  /* 0x6f22f0, the item (AIOBJ) under the pointer, from the picked object's +0x200 (kind 1) */
 int sv_HoverBuilding = 0;  /* 0x6f22f4, the building (AIBLD) under the pointer (kind 2) */
+int ai_PickedChar = 0;  /* 0x6f22f8 */
 int sv_ClickedContact = 0;  /* 0x6f22fc, sv_HoverContact at the last click (sv_HandleObjects) */
 int sv_HoverContact = 0;  /* 0x6f2300, the goods item a contact gate under the pointer resolves to */
 int sv_SelectedModel = 0;  /* 0x6f2304 */
 char * ai_PlayerBuilding = 0;  /* 0x6f2308 */
 char * ai_FallbackBuilding = 0;  /* 0x6f230c */
 unsigned short * sv_PanelShown = 0;  /* 0x6f2310, the scene record (room) the info panel shows now */
+struct AIOBJ *sv_LastRoom = 0;  /* 0x6f2314, the room whose handler ai_EnterBuilding ran last (cleared on entering a building); sv's by place (between sv_PanelShown and f3gm's ai_PermsDirty), only lc reads it */
+int ai_PermsDirty = 0;  /* 0x6f2318 */
+int ai_BuildingPerms = 0;  /* 0x6f231c */
 int sv_PanelPerms = 0;  /* 0x6f2320, the player's permission bits (gm_PermissionBits) for the building / room the panel acts on, tested for 0x10 / 0x1000 */
 int sv_HoverBldPerms = 0;  /* 0x6f2324, the player's permission bits for sv_HoverBuilding */
 int sv_HoverItemPerms = 0;  /* 0x6f2328, the player's permission bits for sv_HoverItem */
 int sv_HoverCharPerms = 0;  /* 0x6f232c, the player's permission bits for the character under the pointer */
+int sv_UnreadBss5 = 0;  /* 0x6f2330, no surviving instruction or pointer refers to it: data of functions /OPT:REF removed; size from the neighbours' addresses */
 int ai_SelectedCount = 0;  /* 0x6f2334 */
 unsigned char sv_OtherSelected = 0;  /* 0x6f2338, nonzero: a selection of another kind is held (reasoned: like sv_SelectedModel it keeps sv_UpdatePanel from the default panel, and it blocks the object pick 0x52adb0) */
 int sv_ResearchClass = 0;  /* 0x6f233c */
 char sv_LampSwitches = 0;  /* 0x6f2340 */
+int sv_UnreadBss6[3] = {0};  /* 0x6f2344, no surviving instruction or pointer refers to it: data of functions /OPT:REF removed; size from the neighbours' addresses */
 char sv_MessageBoxOpen = 0;  /* 0x6f2350 */
 char sv_MessageBoxGreenOpen = 0;  /* 0x6f2351 */
 char sv_MessageBoxYesNoOpen = 0;  /* 0x6f2352 (the yes / no box) */
@@ -7642,6 +7656,7 @@ int sv_DayPhase = 0;  /* 0x6f236c */
 int sv_ThunderFog = 0;  /* 0x6f2370 */
 float sv_CameraHeightStep = 0;  /* 0x6f2374 */
 int sv_BorderMoved = 0;  /* 0x6f2378 */
+int sv_UnreadBss7[3] = {0};  /* 0x6f237c, no surviving instruction or pointer refers to it: data of functions /OPT:REF removed; size from the neighbours' addresses */
 float sv_ScrollVelX = 0;  /* 0x6f2388 */
 float sv_ScrollVelXPrev = 0;  /* 0x6f238c */
 float sv_ScrollVelY = 0;  /* 0x6f2390 */
@@ -7669,6 +7684,8 @@ char *sv_PermsBuilding = 0;  /* 0x6f23e4, the building ai_BuildingPerms was last
 unsigned short *sv_PermsRoom = 0;  /* 0x6f23e8, the room (sv_PanelShown) it was computed for */
 int sv_DisabledCount = 0;  /* 0x6f23ec, the entries of sv_DisabledWidgets */
 unsigned char sv_BookPhase = 0;  /* 0x6f23f0, toggled 0 / 1 each frame by the open book's update: which page of the shown pair is redrawn this frame */
+unsigned char sv_InMissionComplete = 0;  /* 0x6f23f1, 1 while sv_RunFrame plays ai_MissionCompleteSequence (no re-entry); sv's by use, see sv.c's lead comment */
+int sv_UnreadBss8 = 0;  /* 0x6f23f4, no surviving instruction or pointer refers to it: data of functions /OPT:REF removed; size from the neighbours' addresses */
 unsigned char ai_GameState = 0;  /* 0x6f25ac */
 /* the two flags after ai_GameState are objects of their own (the original reads each as a byte: no views of it) */
 unsigned char main_GameEnded = 0;  /* 0x6f25ad, nonzero when the player has reached the game's goal: the round start plays the fanfare and the outro (cleared at the game start) */

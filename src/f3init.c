@@ -347,6 +347,8 @@ unsigned short * gm_QueryNext(void);                   /* 0x4ffcc0 */
 float gm_ItemPrice(int item, unsigned char n);
 int gm_ListStock(short *l, int id);               /* 0x50ab50, f3gm.c */
 /* init_StatusFormat: view of txt_Ptrs (build/mk_txt_views.py) */
+struct AICHAR *ai_JudgeCatholic = 0;  /* 0x6f1bfc / */
+struct AICHAR *ai_JudgeProtestant = 0;  /* 0x6f1c00 */
 char * ai_KindBChars[8] = {0};  /* 0x6f1c04, the characters of the kind */
 extern char ai_PlayerSlots[4][0x2f4];      /* 0x7e3f40, the player slots */
 #define ai_PlayerSlotsT (*(GMPLAYERSLOT (*)[4])&ai_PlayerSlots)  /* 0x7e3f40, ai_PlayerSlots (char[4][0x2f4]) as the four player slots */
@@ -354,8 +356,8 @@ extern int cm_NetFlags;  /* 0x6f2594 */
 unsigned char init_TextureSet = 0;  /* 0x6f1c24 */
 int d3_QuadTree = 0;  /* 0x6f1c28 */
 int init_TerrainDivide = 0;  /* 0x6f1c2c, nonzero: ai_GameFrame divides the terrain (d3fl_MakeDivide) at the game start and clears it */
+int init_UnreadBss = 0;  /* 0x6f1c30, no surviving instruction or pointer refers to it: data of functions /OPT:REF removed; size from the neighbours' addresses */
 int init_TownSoundCount = 0;  /* 0x6f1c34 */
-int ai_FrameWait = 0;  /* 0x6f22bc */
 int main_StartHouseCheat = 0;  /* 0x6f2430, no writer in the exe: nonzero gives the first kind 6 character its start house ( */
 extern char ai_Unk7e3f40_[];
 

@@ -244,8 +244,8 @@ extern int sv_SavedMaxY;                                    /* 0x6f1c40 */
 extern float sv_ScrollVelYPrev;                                  /* 0x6f1c44 */
 extern int sv_DragLastY;                                    /* 0x6f1c48 */
 extern int sv_SavedMaxX;                                    /* 0x6f1c50 */
-extern float sv_DragLastPos[3];                               /* 0x6f1c64 */
-extern float sv_ScrollLastMove[3];                               /* 0x6f1c74 */
+extern float sv_DragLastPos[4];                               /* 0x6f1c64 */
+extern float sv_ScrollLastMove[4];                               /* 0x6f1c74 */
 extern int sv_SavedMinX;                                    /* 0x6f1c84 */
 extern int sv_DragLastX;                                    /* 0x6f1c88 */
 extern int sv_ZoomStartY;                                    /* 0x6f1c8c */
