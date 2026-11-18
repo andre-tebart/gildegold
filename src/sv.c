@@ -2401,8 +2401,8 @@ char sv_SetLampRamp(char *o, int f)
    the scene changed), the lamps get their ramps at the first two light sets of the day */
 void sv_UpdateSkyPhase(AITIME *t)
 {
-    int s, k, day, d, sc;
-    float a, frac;
+    int s, k, d, sc;
+    float a, frac, f;
     int changed;
 
     a = 0.0f;
@@ -2445,8 +2445,8 @@ void sv_UpdateSkyPhase(AITIME *t)
     sv_SkyPhase = k;
     sv_SkyScale = 1.0f;
     frac = k * 0.01;
-    day = (int)frac;
-    d = day % 7;
+    k = (int)frac;
+    d = k % 7;
     if (sv_LampPhase != d && d3_Scenes[sc].map != 0) {
         if (d >= 0 && sv_LampSwitches == 0) {
             d3_ForEachObject(d3_DefaultScene, 0, 6, sv_SetLampRamp, 0);
@@ -2457,9 +2457,9 @@ void sv_UpdateSkyPhase(AITIME *t)
         }
         sv_LampPhase = d;
     }
-    sv_DayPhaseFrac = frac = frac - (float)day;
+    sv_DayPhaseFrac = f = frac - (float)k;
     sv_DayPhase = d;
-    d3_SetLightSet(d, frac, 1.0f, changed);
+    d3_SetLightSet(d, f, 1.0f, changed);
     d3_SetFogSet(0, 1, a);
 }
 

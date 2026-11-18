@@ -948,7 +948,9 @@ void cm_ShowDamage(char *c, int v, int kind)
 }
 /* 0x4cee20, shows / moves the damage numbers of cm_ShowDamage over their characters (created on first show, kind 1 /
    2 between sign glyphs); each rises half a pixel a step and is removed after 128 steps; a character off screen hides
-   its number and ends the pass */
+   its number and ends the pass
+   @deep near-byte sweep s22: left the ScreenBox call's two temps swapped (original: c chain in eax, &box
+   in ecx). climb round 1: nothing; the body under if (v != 0) instead of continue = control. */
 
 void cm_UpdateDamagePops()
 {
