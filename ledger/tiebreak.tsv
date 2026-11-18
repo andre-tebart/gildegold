@@ -1010,7 +1010,7 @@ exe	0x004545c0	d3_MatFromAngles	d3_vec	3e2bb4c0c85ecc18	no	byte	control=byte p1=
 exe	0x00454690	d3_MatToAngles	d3_vec	11e7632295668a95	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00454700	d3_TriNormal	d3_vec	0a2b6d9467c6f1ba	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00454780	d3_MirBoundaryEdges	d3_mir	ef5d5e04479dcd93	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x00454890	d3_MirCreateOutline	d3_mir	f71a6a68ae0450e6	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	8a91215f759ddec3
+exe	0x00454890	d3_MirCreateOutline	d3_mir	8d823c25c61aa1ae	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	14b9efa8ad83ab0a
 exe	0x00454be0	d3_MirCreatePlanes	d3_mir	9927e34c70dfd5eb	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00454ec0	d3_MirTransform	d3_mir	3198ef7b7c8c1553	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00454f70	d3_MirBoxInPlanes	d3_mir	e0878350ea5c8bad	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
@@ -3042,7 +3042,7 @@ exe	0x00503480	gm_RemoveObjectFromBuilding	f3gm	4907533e25a8f849	no	byte	control
 exe	0x005034b0	gm_FreeObject	f3gm	d57befa7d1ff8081	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00503530	gm_PermissionBits	f3gm	ee230a6066a8b966	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	291ac9aa57e40bb8
 exe	0x00503c20	gm_ReleaseCharacter	f3gm	68f6992261634f9d	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x00503c60	gm_KillSpieler	f3gm	12b4ff61419ffa5a	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	291ac9aa57e40bb8
+exe	0x00503c60	gm_KillSpieler	f3gmt	05b77931c03cdff7	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	835fb17aeffaabb4
 exe	0x00503e80	gm_ResetCharacters	f3gm	d21a0804f78a3dc8	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00503ee0	gm_GetJobTalents	f3gm	f32e037d5cbe92ad	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00503f30	gm_SexForJob	f3gm	8f1e783d88183748	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
