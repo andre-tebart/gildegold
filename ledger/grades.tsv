@@ -3653,7 +3653,7 @@ exe	0x0054fce0	he_RunEffectEvent	he	shape	readable
 exe	0x0054fe80	he_StartSendHomeEvent	he	byte	readable		
 exe	0x0054ff20	he_RunSendHomeEvent	he	draft	readable	deep	
 exe	0x00550070	he_CreateReaper	he	byte	readable		
-exe	0x00550370	he_MoveReaper	he	draft	readable	deep	
+exe	0x00550370	he_MoveReaper	he	shape	readable	deep	
 exe	0x005506c0	he_AimReaper	he	shape	readable		
 exe	0x00550850	he_TurnReaper	he	byte	readable		
 exe	0x005509f0	he_StartReaper	he	byte	readable		
