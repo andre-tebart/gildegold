@@ -6407,25 +6407,23 @@ int gm_BuildingLevel(char *c)
    of the kinds 5 (out[10]), 7 (the goods of the queries 0xe8 / 0xf0 for the own player, out[0xc] / out[0xf], and
    out[0xd] / out[0xe]) and 0x16 (out[0x13]), out[0x11] the income, out[0x14] income - costs; nothing but zeros
    when id is not the owner. Returns 0 when costs and income are both zero, else 1
-   @deep 97 -> 95 ins: the wage slots as plain out[6 + j] / out[4 + j] index loops (VC6 builds the slot
-   pointer in out's register itself, as the original). Read: the frame is 8 bytes (income at [esp+0x10],
-   the kind pointer at [esp+0x14]); the original spills cost into the out parameter's slot after the
-   character walk (out reloaded into ebp), keeps income memory-homed and only loads it into edi around the
-   kind 7 queries, and the not-owner path joins the tail with cost = edx = 0 from the prologue; ours gives
-   cost ebx and income edi throughout (c2trace: cost prio 58 whole in ebx, income split). headers sample:
-   insensitive. Tried (32 variants, one code each or worse): return forms (cost != 0 || income != 0, return
-   income at the zero exit, the boolean), init order income / cost / kind, memset for the clear, tail store
-   order. Left: the cost / income allocation (a priority race: cost must lose ebx after the walk), 95 ins
-   in the tail and the kind 7 block (tiebreak: insensitive) prior: Read whole against the original
-   (0x508d80..0x509060) and rewritten through ORDBLD / ORDCHAR: the 0x1e object-value path, the character
-   walk (an index loop i < 0x300: VC6's strength-reduced pointer with the signed jl end compare against
-   gm_PlayerRecords, as the original), the job / title wage loops (gm_JobWage * (wageRate * 0.01), the
-   fild/fmul/fmulp order equal), the no-job title-0 wage, round sum, kinds 5 / 7 / 0x16 income parts and
-   the tail all match statement for statement; 247 vs 250 instructions. Left is allocation only: the
-   original keeps income in the stack slot [esp+0x10] (loaded into edi around the kind-7 queries: +0x23c
-   mov edi,[esp+0x10] on the o==0 path, stored back at +0x298; kind 0x16 via eax) and spills cost from ebx
-   into the dead out-parameter slot [esp+0x24] (+0x1df) to reload it as edx at the tail (+0x2b2), with the
-   not-owner jump using edx=0 from the prologue; ours kee... */
+   @deep size queue s18: income = 0 as the first statement (climb round 1 found it: 95 -> 41 ins), then the
+   wage arms as found = 1; out[..] += wage; cost += wage; (the no-job arm out[4] first too) and the
+   object-value arm as out[6] = ahm_ObjectValue(b); cost = out[6]; (36-variant round: 41 -> 27 ins), raw
+   714 -> 727, padded size (736). Left (27 ins): the original zeroes income through edx (xor edx,edx before
+   rep stosd, stored after the kind load) and cost through ebx after the ai_BTypes load; it spills cost
+   into the out parameter's slot at the kind 5 test (mov [esp+0x24],ebx) so out[0xd]'s sum stays in ebx for
+   income += out[0xd] + out[0xe], and reloads cost into edx at the tail. climb --rounds 2 from here:
+   nothing below 27. prior: 97 -> 95 ins: the wage slots as plain out[6 + j] / out[4 + j] index loops (VC6
+   builds the slot pointer in out's register itself, as the original). Read: the frame is 8 bytes (income
+   at [esp+0x10], the kind pointer at [esp+0x14]); the original spills cost into the out parameter's slot
+   after the character walk (out reloaded into ebp), keeps income memory-homed and only loads it into edi
+   around the kind 7 queries, and the not-owner path joins the tail with cost = edx = 0 from the prologue;
+   ours gives cost ebx and income edi throughout (c2trace: cost prio 58 whole in ebx, income split).
+   headers sample: insensitive. Tried (32 variants, one code each or worse): return forms (cost != 0 ||
+   income != 0, return income at the zero exit, the boolean), init order income / cost / kind, memset for
+   the clear, tail store order. Left: the cost / income allocation (a priority race: cost must lose ebx
+   after... */
 
 int gm_BuildingBalance(unsigned char *b, unsigned id, int *out)
 {
@@ -6436,18 +6434,18 @@ int gm_BuildingBalance(unsigned char *b, unsigned id, int *out)
     int i, j, cost, income, wage, found;
     ORDOBJ *o;
 
+    income = 0;
     bld = (ORDBLD *)b;
     for (i = 0; i < 0x15; i++)
         out[i] = 0;
     cost = 0;
     kind = (unsigned char *)ai_BTypes + bld->type * 0x24d;
-    income = 0;
     if (id == bld->owner) {
         own = ai_Chars[id];
         if (*kind == 0x1e) {
             if (ahm_OwnerChar(b) != 0) {
-                cost = ahm_ObjectValue(b);
-                out[6] = cost;
+                out[6] = ahm_ObjectValue(b);
+                cost = out[6];
             }
         } else {
             for (i = 0; i < 0x300; i++) {
@@ -6459,22 +6457,22 @@ int gm_BuildingBalance(unsigned char *b, unsigned id, int *out)
                     if (kind[0x223 + j] != 0 && kind[0x223 + j] == c->jobId && c->kind != 0x14) {
                         wage = (int)(gm_JobWage(own, bld->type, j, -1) * (bld->wageRate * 0.01));
                         found = 1;
-                        cost += wage;
                         out[6 + j] += wage;
+                        cost += wage;
                     }
                 }
                 for (j = 0; j < 2; j++) {
                     if (kind[0x22f + j] != 0 && kind[0x22f + j] == (unsigned char)c->title && c->kind != 0x14) {
                         wage = (int)(gm_JobWage(own, bld->type, -1, j) * (bld->wageRate * 0.01));
                         found = 1;
-                        cost += wage;
                         out[4 + j] += wage;
+                        cost += wage;
                     }
                 }
                 if (!found && c->kind != 0x14) {
                     wage = (int)(gm_JobWage(own, bld->type, -1, 0) * (bld->wageRate * 0.01));
-                    cost += wage;
                     out[4] += wage;
+                    cost += wage;
                 }
             }
         }
