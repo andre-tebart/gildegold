@@ -11,9 +11,9 @@ int kb_Base = 0x200;                    /* 0x5f3234 */
 int di_MaxX = 790;                      /* 0x5f3238 mouse limits (as in the exe image) */
 int di_MaxY = 599;                      /* 0x5f323c */
 int di_Absolute = 1;                    /* 0x5f3240 mouse position from GetCursorPos */
-extern unsigned short kb_Map[256];
-extern unsigned char kb_Down[256];
-extern unsigned char kb_Pressed[256];
+extern unsigned short kb_Map[512];
+extern unsigned char kb_Down[512];
+extern unsigned char kb_Pressed[512];
 extern DIMOUSEST dm_L;
 extern DIMOUSEST dm_S;
 extern DIMOUSEST dm_P;
@@ -46,13 +46,13 @@ DIMOUSEST dm_L;                         /* 0x1467380 */
 LPDIRECTINPUTDEVICE di_Keyboard;        /* 0x14673cc */
 DIMOUSEST dm_S;                         /* 0x14673e0 */
 DIMOUSEST dm_Q[32];                     /* 0x1467440 */
-unsigned short kb_Map[256];             /* 0x1467dc0 */
-unsigned char kb_Down[256];             /* 0x14681c0 */
+unsigned short kb_Map[512];             /* 0x1467dc0 */
+unsigned char kb_Down[512];             /* 0x14681c0 */
 DIMOUSEST dm_P;                         /* 0x14683c0 */
 HANDLE di_Event;                        /* 0x146840c */
 unsigned char kb_Last;                  /* 0x1468410 */
 LPDIRECTINPUT di_Main;                  /* 0x1468414 */
-unsigned char kb_Pressed[256];          /* 0x1468420 */
+unsigned char kb_Pressed[512];          /* 0x1468420 */
 
 /* 0x4104e0, fill kb_Map[256] with the VkKeyScan / MapVirtualKey code of every character, 0xffff when no key; always returns 1 */
 

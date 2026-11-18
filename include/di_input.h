@@ -31,13 +31,13 @@ typedef struct {
 
 extern int kb_Base;                     /* 0x5f3234, initial 0x200 (mouse speed) */
 extern int di_SwapLR;                   /* 0x6310c4, swap the left / right buttons; cleared on every option apply */
-extern unsigned short kb_Map[256];      /* 0x1467dc0 */
+extern unsigned short kb_Map[512];      /* 0x1467dc0 */
 extern DIMOUSEST dm_L;                  /* 0x1467380 */
 extern DIMOUSEST dm_S;                  /* 0x14673e0 */
 extern DIMOUSEST dm_P;                  /* 0x14683c0 */
 extern DIMOUSEST dm_Q[32];              /* 0x1467440 */
-extern unsigned char kb_Down[256];      /* 0x14681c0 */
-extern unsigned char kb_Pressed[256];   /* 0x1468420 */
+extern unsigned char kb_Down[512];      /* 0x14681c0 */
+extern unsigned char kb_Pressed[512];   /* 0x1468420 */
 extern volatile int tb_Calls;           /* 0x6333d8, timer callbacks */
 
 #include "reg.h"                                                        /* the registry helpers (reg.c, 0x4103a0 .. 0x4104e0) */
