@@ -3715,7 +3715,24 @@ int ai_HasMaterials(AICHAR *ch, AIENTRY *e, int f)
    buy amount - half the entry capacity at least 1, at least half the slot capacity minus the pending, below the
    capacity - pending - 1, at most the budget / price and the offer's count - goes into make when it covers the
    need
-   @deep behaviour draft, 2 code hunks only, both the block layout of the item chain: the original keeps the special-item block inline after the 15 je (0x4874cb..0x48751b) and puts the entry!=-1 and the offer-scan blocks OUT of line after the loop epilogue/ret (0x48754a, 0x4875e7), ours emits the entry block inline and the special block at $L4532 before the loop tail; 8 slots hunks are the k / j / row slot choice (k 0x18 vs 0x10, j 0x10 vs 0x18, row 0x14 vs 0x1c). Read whole against tools/disasm.py 0x487410 0x370, Ghidra build/ghidra/487410.c and the VC6 listing; statements, constants, callees, field offsets and the item list order all match. Last-bytes pass, one edit one build each, all measured byte-identical (183 asm diff lines, 129 code / 68 slots hunks unchanged): (1) positive == || chain with the special block as then-branch and the entry/offer blocks as else-if, (2) nested else (if (special) {} else { if (entry != -1) .. else if (..) }), (3) special block + continue then a separate if / else if. spell.py branch / dup-tail / reload / slots entries: dup-tail 4877ac is the padding + next function in the window; slots swap of the k / j declaration order tried, identical. Readability done: Q2 AIENTRY.unk38 -> pending, Q6 description. Left: allocation / scheduling / block ordering and the stack slot choice = match-deep */
+   @deep size queue s18 (raw 914 vs 870, ins 268 = 268: the 44 bytes are the layout's near jumps and the
+   slot choice). The original's layout: [chain][special block, falling into the loop latch at 0x48751e + an
+   inline epilogue][entry != -1 block 0x487550][offer block 0x4875e7], every other path jumping back to the
+   latch; so its last chain compare is jne to the entry block (the jump edge), ours je to the special
+   block. No lever (one code for all 8): the chain positive (== / ||, special as then) or negative x the
+   pending / amount operand order in the entry and special tests (the M8 pair at +0x12f is that operand
+   order: = control). climb --rounds 1: best 120 ins via v = min(.., (v = max(..))) in the offer arm, no
+   layout change. Next: what makes the entry branch the jump edge (c2tail --il on the chain; a flag or a
+   separate function for the item test). prior: behaviour draft, 2 code hunks only, both the block layout
+   of the item chain: the original keeps the special-item block inline after the 15 je (0x4874cb..0x48751b)
+   and puts the entry!=-1 and the offer-scan blocks OUT of line after the loop epilogue/ret (0x48754a,
+   0x4875e7), ours emits the entry block inline and the special block at $L4532 before the loop tail; 8
+   slots hunks are the k / j / row slot choice (k 0x18 vs 0x10, j 0x10 vs 0x18, row 0x14 vs 0x1c). Read
+   whole against tools/disasm.py 0x487410 0x370, Ghidra build/ghidra/487410.c and the VC6 listing;
+   statements, constants, callees, field offsets and the item list order all match. Last-bytes pass, one
+   edit one build each, all measured byte-identical (183 asm diff lines, 129 code / 68 slots hunks
+   unchanged): (1) positive == || chain with the special block as then-branch and the entry/offer blocks as
+   else-if, (2) nested else (if (specia... */
 
 int ai_StartProduction(AICHAR *ch, AIENTRY *e)
 {
