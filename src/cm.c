@@ -617,12 +617,21 @@ int cm_SplitComplete(G17MSG *m)
     return 0;
 }
 /* 0x4c38e0, joins the parts of the split message m into cm_LongMsg and frees them; returns the length
-   @deep read against the original in full: meaning matches (both search loops as
-   for(r=cm_RecvQueue;r;r=r->next) if(match) break; if(!r) return 0; p->next7 cleared after the part copy).
-   Tried: seq local, while forms, combined early return, store orders. Left: allocation only, m in ecx and
-   next7 in esi where the original has m in esi, next7 in ecx (slots 16 / regs 8 hunks), and the code hunk
-   at 0x4c391f '- mov [ecx+0xc],ebx; xor ecx,ecx | + xor ecx,ecx; mov [esi+0xc],ebx' (the same store under
-   that renaming, scheduled one later), order 10 at 0x4c398c */
+   @deep deep s33: the original clears p->next7 BEFORE the part's memcpy (mov [edx+0xc],ebx between mov
+   ecx,0x20 and rep movsd; n += 0x80 then lands after the copy as the original): with that order (variant
+   pfirst) the layout and every instruction order match and only registers are left (32 ins, regs): the
+   original m in esi / m->next7's CSE in ecx / p in edx, ours m in ecx / next7 in esi / p in ecx. c2trace
+   --seq of pfirst: p (62) is served first and takes ecx; m and the next7 temp tie at prio 8 (tie keys 6 /
+   4: m first, takes ecx too, no conflict with p); next7 then only has ebp / esi / edi (p and the hoisted
+   p->sender temp hold ecx / edx over its range: p's piece starts at the function's first line). Tried with
+   pfirst: a seq local (= pfirst), m reused as p (= pfirst), climb --rounds 2 from pfirst (best = start).
+   The tree keeps the control (16 ins: memcpy before the clear) until the registers follow. prior: read
+   against the original in full: meaning matches (both search loops as for(r=cm_RecvQueue;r;r=r->next)
+   if(match) break; if(!r) return 0; p->next7 cleared after the part copy). Tried: seq local, while forms,
+   combined early return, store orders. Left: allocation only, m in ecx and next7 in esi where the original
+   has m in esi, next7 in ecx (slots 16 / regs 8 hunks), and the code hunk at 0x4c391f '- mov
+   [ecx+0xc],ebx; xor ecx,ecx | + xor ecx,ecx; mov [esi+0xc],ebx' (the same store under that renaming,
+   scheduled one later), order 10 at 0x4c398c */
 
 unsigned int cm_JoinSplit(G17MSG *m)
 {
