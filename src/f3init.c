@@ -1565,20 +1565,29 @@ void init_StockMarketStalls(void)
    recipe is then sent into the stall (the object kind 4) in the amount times its weight, capped at the
    stall's stock (gm_ListStock 0x50ab50); 0xffff recipe slots are skipped, a 0 slot ends the list.
    The error text fires when the sum is zero.
-   @deep earlier: read whole against 0x50f570..0x50f74e, the two meaning errors fixed (fimul weight, stall
-   clamp). deep session 2: a third meaning error fixed - the float amount is 24000.0f / sum (0x5ee970), the
-   integer one 16000 / sum (ours had 16000.0f for both); the first recipe loop is for (...; i++, rw++) (the
-   original increments i before rw: the skip of a 0xffff slot jumps to inc ebx); the zero-cost error is the
-   else of if (sum != 0) (the original keeps its tail-call block at the function end 0x50f73a; with the
-   early return VC6 placed it inline): 37/353 -> 21/247 ins/bytes differing. Tried without any change: the
-   recipe base as (AIGOOD *)ai_Goods)[st->proto].in (kept: same code, typed), &[...+0x2e], +0x2e first,
-   parenthesised, a cls/int temp for proto*0x41, a char *g temp, rw = rw0 = ... (rw0 = rw = ... worse), sum
-   declared first/last, sum merged into n, v merged into sum, cls merged into i, a j counter for the first
-   loop, sum = 0 after rw0. Left, 2 hunks: 0x50f61a the original computes the base as add ecx,edx; xor
-   ebx,ebx; lea edi,[ecx+0x2e] where ours folds lea edi,[ecx+edx+0x2e] (1 byte, size 477 vs 478); the sum /
-   i registers swapped through the first loop and the idiv (the original sum=ebp i=ebx, ours sum=ebx i=ebp:
-   0x50f60a, 0x50f653, 0x50f68a). The prover stops at the tail jmp to err_Message (+0x1c9 vs +0x1ca, the
-   1-byte shift). (tiebreak: not measured (dcp headers sample init_Betrieb)) */
+   @deep deep s35: c2trace --prio: i#1 (25) is served before sum#1 (22) and takes ebp (free order after rw0
+   edi / rw esi), sum gets ebx; the original has sum ebp (shared with n) and i ebx (shared with st#2): sum
+   needs +4 against i. Block 11 (the sum += line, P 5) is the only block where sum gains and i pays. =
+   control: sum = sum + .., sum = .. + sum, the factors swapped, the ftol into a block int, continue for
+   the 0xffff skip, rw[0]; n merged into sum and sum into n (VC6 splits the webs); a block int w = rw[-4]
+   moves the fimul temp slot (slots 34). The add ecx,edx / lea edi,[ecx+0x2e] split (1 byte): g pointer
+   (AIGOOD * / char *), need + 4, &need[4], (unsigned short *)..+0x17, rw = the expression written again,
+   rw = rw0 = ..: all fold into lea [ecx+edx+0x2e]; rw = expr first then rw0 = rw: still folded, rw0 / rw /
+   sum in other registers (51 ins). climb round 1 and initgen: nothing. prior: earlier: read whole against
+   0x50f570..0x50f74e, the two meaning errors fixed (fimul weight, stall clamp). deep session 2: a third
+   meaning error fixed - the float amount is 24000.0f / sum (0x5ee970), the integer one 16000 / sum (ours
+   had 16000.0f for both); the first recipe loop is for (...; i++, rw++) (the original increments i before
+   rw: the skip of a 0xffff slot jumps to inc ebx); the zero-cost error is the else of if (sum != 0) (the
+   original keeps its tail-call block at the function end 0x50f73a; with the early return VC6 placed it
+   inline): 37/353 -> 21/247 ins/bytes differing. Tried without any change: the recipe base as (AIGOOD
+   *)ai_Goods)[st->proto].in (kept: same code, typed), &[...+0x2e], +0x2e first, parenthesised, a cls/int
+   temp for proto*0x41, a char *g temp, rw = rw0 = ... (rw0 = rw = ... worse), sum declared first/last, sum
+   merged into n, v merged into sum, cls merged into i, a j counter for the first loop, sum = 0 after rw0.
+   Left, 2 hunks: 0x50f61a the original computes the base as add ecx,edx; xor ebx,ebx; lea edi,[ecx+0x2e]
+   where ours folds lea edi,[ecx+edx+0x2e] (1 byte, size 477 vs 478); the sum / i registers swapped through
+   the first loop and the idiv (the original sum=ebp i=ebx, ours sum=ebx i=ebp: 0x50f60a, 0x50f653,
+   0x50f68a). The prover stops at the tail jmp to err_Message (+0x1c9 vs +0x1ca, the 1-byte shift).
+   (tiebreak: not measured (dcp headers sample init_Betrieb)) */
 
 
 void init_Betrieb(INIT_BLD *b)

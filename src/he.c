@@ -3517,7 +3517,15 @@ void he_StammtischCommand(unsigned cmd, AIBLD *inn, AIOBJ *table, int figId)
    who is alive, not the player and not of kind 0xf: in state 1 the meeting is announced ('new ', the state counted
    down), else when the meeting time has come it is held ('exec') (before that it waits an hour); either way the next
    meeting is planned a day ahead at a random hour 0x13 .. 0x16. Without such an owner the table is cleared once
-   ('cler' request, the state raised) and the meeting planned again */
+   ('cler' request, the state raised) and the meeting planned again
+   @deep deep s35: two hunks, both in the boss / state == 1 arm. (1) the original decrements m->state in
+   edi (mov edi,[esi+0xc0]; dec edi; store; edi held the -1 constant until the 'new ' call), ours in eax: a
+   candidate, not a temp; m->state = m->state - 1, --m->state, a named st local (function or block scope)
+   are all = control (single-use locals fold); the dec after e->end = ai_Time is worse (M8). (2) the shared
+   tail at the meeting gm_AddTime call: the original merges add esp to one 0x3c after cm_SendExSetHE with
+   push 4 before the min store, ours add esp,0x30 after the call. min / hour swapped in the arm: worse
+   (21/245), both copies 23. The e->end / meeting code once after the if / else: 193. climb round 1 and
+   initgen (bld, table, boss): nothing. */
 void he_RunStammtisch(int r)
 {
     AIJOB *e = (AIJOB *)r;
@@ -9320,7 +9328,15 @@ void he_StartSendHomeEvent(int ev)
    living character standing in the building bldId and sent there (model->bldId) who has a home goes home with a
    chance of one half: its action is cleared (messages 0x47 / 0x4d) and it walks to its home object ("Unkendunk");
    a missing building or a freed event (-1 / -2) frees it
-   @deep Read whole against the original and rewritten typed (AIJOB stage/bldId/end, the new
+   @deep deep s35: the IV base (ours ai_Chars+0x184 = model, the original +4 = netId) is no reference
+   count: probes with a second cm_SendCharHalt(c->netId) (netId 4 refs), without the model test, without
+   the bld2 test, bld2 test first, health != 0, the condition split into nested ifs, ai_CharsT[i].f at
+   every use: all keep a wrong base (M8 x2), removing the health test gives base bld2 (+0x170). flip.py
+   --want 'mov esi, OFFSET FLAT:_ai_Chars\+(?!388)' hits only meaning changes (health >= 0, a duplicated
+   gm_HomeObject / goto call). climb round 1: nothing. Byte twins with base +4 (he_RunDemolish,
+   gm_ChangeBuildingState) test kind/bld then use netId 3x; their loops have no byte field test first.
+   Left: the base choice (and with it cmp [esi],0 against the original's mov eax,[esi+0x180]; test
+   eax,eax). prior: Read whole against the original and rewritten typed (AIJOB stage/bldId/end, the new
    AIJOB.homeUntil at 0xb0, AICHAR health/model/bld/bld2/netId, the rand > 0.5 test as and 0x4100/jne, the
    768 loop with jl). Every statement, call and argument now equal. Left: VC6's choice of the loop's
    induction pointer inside ai_Chars: ours esi = ai_Chars+0x184 (model) with fields at [esi-0x17c],
