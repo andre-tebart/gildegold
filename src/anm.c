@@ -1,7 +1,10 @@
 /* anm.c -- animals: module tag "anm:animals" (mem_Alloc tag), the animal names "DOG", "CAT", "BIRD", "COW", "SHEEP",
    "CHICK", "PIG", "HORSE" (.data 0x602688, right after rmsg.c's table), "katze_KATZE", "hund_HUND", ..
    Start: 0x4bb810 (first user of the tag); 0x4bb720 / 0x4bb7d0 before it post random messages (rmsg.c).
-   End: the place helpers after anm_UpdateSheep (0x4bc2e0..) share "dummy_TUER" with the road code, so they are rd.c's.
+   End: the animal place helpers 0x4bc2e0..0x4bc5a0 (rd_DoorPos, rd_PointsNear, rd_CollectNamed,
+   rd_RandomNamedObject) are this obj's: "dummy_TUER" (0x602854) closes this unit's string run, right before rd.c's
+   plain block veg_Types (0x602860), so its first user rd_DoorPos is here; the other three use no data, the bound
+   is veg_FindType (0x4bc5a0, the first reader of rd.c's data). bprobe: no code evidence either way.
    An animal's obj is its CHARACTER (ch.h), reached as CHARACTER.obj / D3_MESH; the buildings it walks between
    are G15BLD (rd.h). Names are ours.
    unit of rea 8cef7d5b (src/game/anm.c); boundaries in decl/text.dcl */
@@ -366,6 +369,80 @@ void anm_UpdateSheep(ANMREC *a)
             }
         }
     }
+}
+/* 0x4bc2e0, pos = the "dummy_TUER" (or the object) of a random building of the gm_BuildQuery(1, 6) list */
+int rd_DoorPos(float *pos)
+{
+    G15BLD *bs[0x100];
+    int n;
+    G15BLD *b;
+    char *o;
+
+    n = 0;
+    b = (G15BLD *)gm_BuildQuery(1, 6);
+    while (b != 0) {
+        if (gm_IsHomeType((unsigned char *)b) == 0 && gm_IsType10((unsigned char *)b) == 0 && b->object != 0)
+            bs[(unsigned short)n++] = b;
+        b = (G15BLD *)gm_BuildNext();
+    }
+    b = bs[util_RandomS(n)];
+    o = d3_FindObject(b->object, 0x300, 0, "dummy_TUER");
+    if (o != 0)
+        d3_PointToWorld(o, o + 0x4c, pos);
+    else
+        d3_PointToWorld(b->object, b->object + 0x4c, pos);
+    return 1;
+}
+/* 0x4bc390, n points pts near pos (a free cell within -4..5 cells, else pos's cell); returns n */
+
+int rd_PointsNear(float *pos, int n, float (*pts)[4])
+{
+    G15GRID *h;
+    int px, pz;
+    float py;
+    int x, z;
+    int i;
+
+    h = ((G15SCENE *)d3_DefaultScene)->hmap;
+    d3_GetHeightAt(h, pos, &px, &pz, &py);
+    for (i = 0; i < n; i++) {
+        x = util_RandomS(10) - 4 + px;
+        z = util_RandomS(10) - 4 + pz;
+        if (h->size - 2 < x)
+            x = h->size - 2;
+        if (x < 2)
+            x = 2;
+        if (h->size - 2 < z)
+            z = h->size - 2;
+        if (z < 2)
+            z = 2;
+        if (ch_FindFreeCell((char *)h, pos, pos, x, z, &x, &z, 600, 0))
+            d3sm_GetVertex((char *)h, x, z, pts[i]);
+        else
+            d3sm_GetVertex((char *)h, px, pz, pts[i]);
+    }
+    return n;
+}
+/* 0x4bc4b0, d3_ForEachObject callback: collects the objects named f->name (at most 32) */
+
+int rd_CollectNamed(char *obj, G15FIND *f)
+{
+    if (strcmp(obj, f->name) == 0)
+        f->objs[f->n++] = obj;
+    return f->n < 0x20;
+}
+/* 0x4bc520, a random object of the default scene named name, 0 if none */
+
+char *rd_RandomNamedObject(char *name)
+{
+    G15FIND f;
+
+    f.n = 0;
+    strcpy(f.name, name);
+    d3_ForEachObject(d3_DefaultScene, 0, 0x380, rd_CollectNamed, &f);
+    if (f.n == 0)
+        return 0;
+    return f.objs[util_RandomS(f.n)];
 }
 
 char anm_KindNames[8][0x20] = { "DOG", "CAT", "BIRD", "COW", "SHEEP", "CHICK", "PIG", "HORSE" };  /* 0x602688, "DOG", "CAT", "BIRD", "COW", "SHEEP", "CHICK", "PIG", "HORSE" */

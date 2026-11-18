@@ -1,8 +1,7 @@
-/* rd.c -- tag "rd_" (rd_AllBauplatzToSupermap, rd_GetBKSize in its error texts): helpers that place animals (a building's "dummy_TUER", free cells near a point, a random dummy
-   by name), then the vegetation map and the roads. Start: the first user of "dummy_TUER" (.data 0x602854, right
-   after anm.c's literals); the road code 0x4bcc20 uses the same literal (no cross-obj pooling in this exe, so one
-   obj). The .bss gap 0x6f0744 after anm's globals hints at a new obj here. Names are ours.
-   Open: the start is not proven beyond that .bss gap (rd.c could still be one unit with anm.c).
+/* rd.c -- tag "rd_" (rd_AllBauplatzToSupermap, rd_GetBKSize in its error texts): the vegetation map and the roads.
+   Start: veg_FindType 0x4bc5a0, the first reader of this obj's plain block veg_Types (.data 0x602860). The animal
+   place helpers 0x4bc2e0.. (rd_DoorPos ..) are anm.c's: "dummy_TUER" (0x602854) stands before veg_Types, in anm's
+   string run (data layout s11). Names are ours.
    unit of rea 8cef7d5b (src/game/rd.c); boundaries in decl/text.dcl */
 #include <stdio.h>
 #include <string.h>
@@ -27,80 +26,6 @@
 #include "ch.h"
 #define util_RandomS ((unsigned short (*)(unsigned short))util_Random)  /* 0x42ec00 (as ai.h: unsigned short (int)): this unit's callers were compiled against the 16-bit parameter (as ahm.c's) */
 
-/* 0x4bc2e0, pos = the "dummy_TUER" (or the object) of a random building of the gm_BuildQuery(1, 6) list */
-int rd_DoorPos(float *pos)
-{
-    G15BLD *bs[0x100];
-    int n;
-    G15BLD *b;
-    char *o;
-
-    n = 0;
-    b = (G15BLD *)gm_BuildQuery(1, 6);
-    while (b != 0) {
-        if (gm_IsHomeType((unsigned char *)b) == 0 && gm_IsType10((unsigned char *)b) == 0 && b->object != 0)
-            bs[(unsigned short)n++] = b;
-        b = (G15BLD *)gm_BuildNext();
-    }
-    b = bs[util_RandomS(n)];
-    o = d3_FindObject(b->object, 0x300, 0, "dummy_TUER");
-    if (o != 0)
-        d3_PointToWorld(o, o + 0x4c, pos);
-    else
-        d3_PointToWorld(b->object, b->object + 0x4c, pos);
-    return 1;
-}
-/* 0x4bc390, n points pts near pos (a free cell within -4..5 cells, else pos's cell); returns n */
-
-int rd_PointsNear(float *pos, int n, float (*pts)[4])
-{
-    G15GRID *h;
-    int px, pz;
-    float py;
-    int x, z;
-    int i;
-
-    h = ((G15SCENE *)d3_DefaultScene)->hmap;
-    d3_GetHeightAt(h, pos, &px, &pz, &py);
-    for (i = 0; i < n; i++) {
-        x = util_RandomS(10) - 4 + px;
-        z = util_RandomS(10) - 4 + pz;
-        if (h->size - 2 < x)
-            x = h->size - 2;
-        if (x < 2)
-            x = 2;
-        if (h->size - 2 < z)
-            z = h->size - 2;
-        if (z < 2)
-            z = 2;
-        if (ch_FindFreeCell((char *)h, pos, pos, x, z, &x, &z, 600, 0))
-            d3sm_GetVertex((char *)h, x, z, pts[i]);
-        else
-            d3sm_GetVertex((char *)h, px, pz, pts[i]);
-    }
-    return n;
-}
-/* 0x4bc4b0, d3_ForEachObject callback: collects the objects named f->name (at most 32) */
-
-int rd_CollectNamed(char *obj, G15FIND *f)
-{
-    if (strcmp(obj, f->name) == 0)
-        f->objs[f->n++] = obj;
-    return f->n < 0x20;
-}
-/* 0x4bc520, a random object of the default scene named name, 0 if none */
-
-char *rd_RandomNamedObject(char *name)
-{
-    G15FIND f;
-
-    f.n = 0;
-    strcpy(f.name, name);
-    d3_ForEachObject(d3_DefaultScene, 0, 0x380, rd_CollectNamed, &f);
-    if (f.n == 0)
-        return 0;
-    return f.objs[util_RandomS(f.n)];
-}
 /* 0x4bc5a0, the vegetation type with id type, 0 if none */
 
 G15TREE *veg_FindType(int type)
