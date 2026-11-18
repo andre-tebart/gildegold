@@ -893,16 +893,7 @@ int ahm_SendSetShare(char *c, int id, float v)
     m.charId = ((AHMCHAR *)c)->id;
     m.tag = AHM_CMD_SET_SHARE;
     m.id = id;
-    if (v > 0.0f) {
-        if (v < 1.0f) {
-            m.value.f = v;
-            return ((int (*)(void *))cm_SendCommand)(&m);
-        }
-    } else {
-        m.value.f = 0.0f;
-        return ((int (*)(void *))cm_SendCommand)(&m);
-    }
-    m.value.f = 1.0f;
+    m.value.f = min(max(v, 0.0f), 1.0f);
     return ((int (*)(void *))cm_SendCommand)(&m);
 }
 /* 0x4eca00, the 'SsCa' handler: sets the share m->id (0 .. 3) of the record rec (+8 .. +0xb) to the value m->value.f times 252 (the inverse of 0x4eab20); 0 for
@@ -1021,15 +1012,7 @@ int ahm_SendSetPlaceValue(char *c, int id, float v)
     m.charId = ((AHMCHAR *)c)->id;
     m.tag = AHM_CMD_SET_PLACE;
     m.id = id;
-    if (v > 0.0f) {
-        if (v < 1.0f) {
-            m.value.f = v;
-            return ((int (*)(void *))cm_SendCommand)(&m);
-        }
-        m.value.f = 1.0f;
-        return ((int (*)(void *))cm_SendCommand)(&m);
-    }
-    m.value.f = 0.0f;
+    m.value.f = min(max(v, 0.0f), 1.0f);
     return ((int (*)(void *))cm_SendCommand)(&m);
 }
 /* 0x4ecd10, the 'cRSa' handler: sets the value of the place m->id in the record rec to m->value.f; 0 when there is none */
