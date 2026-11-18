@@ -12257,26 +12257,21 @@ void he_TransportHomeHome(int ev)
     4: the cart unloads at its point for the player slot of a kind 0x47 goal (else the own player), stage 5.
     5: at the building of the cart's route point that takes the load (ai_IsBuildingOpen) the cart hands it over
        (rt_LoadAtPoint) and the transport ends (-1); no such point: -1; else it waits 15 minutes
-   @deep size queue s10: padding: ours 1936 + the 8-entry table = 1968, the original 1937 -> 1984, so any
-   +1 byte fixes the padded size; the fpu hunk alone (+4) would. Case -2 (c2tail --tries): the pair merger
-   takes the to-arm's else-jmp (12490) as anchor before the guards' (12488), so the from arm merges 3 ins
-   into the to copy; only the to arm with its own return (m2e1: shape 32) makes from jump into the guards
-   copy as the original, but then the to block moves to the other -1 site's copy (je at +0x162). FPU s10
-   (all draft): flipped compare (fill * (chance*0.01) < rnd) 175 (product before the call); r =
-   util_RandomU(0x69) as a statement with double/float/int/ushort r, either compare side: 8..18, none with
-   the fxch pair; (double)f = chance * 0.01 inside the product (asg1, 8 ins): puts fld chance before add
-   esp as the original, the fxch pair still missing. Reading: the original generated fild fill before the
-   chance product (then the scheduler moved it, the fxch pair) - something makes fill the first-evaluated
-   operand. prior: size queue s5: ours 1936 vs 1937 raw: the original +4 (fxch / fmulp st(2) / fxch in the
-   chance test) and ours +3 (push esi / push 1 before the jmp in case -2's from arm). Slots fixed s5 by
-   AIOBJ *o declared in a case 1 block (from and o share [esp+0x10] in the original; c2frame: a
-   function-scope &o conflicts with every local), 36 -> 8 ins. Left: (1) the fxch pair: fild rnd; fld
-   chance; fmul 0.01; fxch; fild fill; fmulp st(2); fxch; fcompp (he_RunBuyBuilding's open price test has
-   the same shape: an int operand fild'ed last and multiplied into st(2)). No lever s5: (float) / (double)
-   / (int) casts on fill or on the random, the product's operands swapped, chance / 100.0, !(<=) (12 ins),
-   the compare flipped (175 ins, chance kept on the FPU), fill * chance * 0.01 (11 ins, other rounding).
-   (2) case -2: the from arm jumps to the call of the to arm's copy, the original to the push esi of the
-   guar... */
+   @deep size queue s14: padded size (raw 1940 vs 1937, 2 ins): the chance test as util_RandomU(0x69) >
+   o->fill * (float)(chance * 0.01): the float cast (no code of its own) gives the original's fxch / fild
+   fill / fmulp st(2) / fxch pair (the same barrier matched he_RunBuyBuilding's price test); (double) cast
+   or (float) around the whole product: = control. Left: case -2's from arm (push esi / push 1 / jmp into
+   the to copy, the original jumps to the guards copy's push esi); s14 tried each arm with its own return
+   (rets 28, torets shape 26 tail, guardret / fromret / fromnot / break = control). prior: size queue s10:
+   padding: ours 1936 + the 8-entry table = 1968, the original 1937 -> 1984, so any +1 byte fixes the
+   padded size; the fpu hunk alone (+4) would. Case -2 (c2tail --tries): the pair merger takes the to-arm's
+   else-jmp (12490) as anchor before the guards' (12488), so the from arm merges 3 ins into the to copy;
+   only the to arm with its own return (m2e1: shape 32) makes from jump into the guards copy as the
+   original, but then the to block moves to the other -1 site's copy (je at +0x162). FPU s10 (all draft):
+   flipped compare (fill * (chance*0.01) < rnd) 175 (product before the call); r = util_RandomU(0x69) as a
+   statement with double/float/int/ushort r, either compare side: 8..18, none with the fxch pair; (double)f
+   = chance * 0.01 inside the product (asg1, 8 ins): puts fld chance before add esp as the original, the
+   fxch pair still missing. Reading: the original generated fild fill ... */
 void he_RunTransport(int ev)
 {
     AIJOB *e = (AIJOB *)ev;
@@ -12364,7 +12359,7 @@ void he_RunTransport(int ev)
                 chance -= 15.0f;
             else if (d3t_Rain != 0 && *d3t_Rain > 200)
                 chance -= 10.0f;
-            if (util_RandomU(0x69) > o->fill * (chance * 0.01)) {
+            if (util_RandomU(0x69) > o->fill * (float)(chance * 0.01)) {
                 if ((ai_CharsT[e->chr].kind == 6 || ai_CharsT[e->chr].kind == 7) && (o->flags20 & 1) == 0) {
                     txt_Format(text, 0x1c45);
                     he_ShowNews(ai_CharsT[e->chr].netId, -1, text, 0, 0x608, 0);
