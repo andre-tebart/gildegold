@@ -1617,16 +1617,17 @@ void gm_AgeCharacter(char *c, unsigned short age)
     ch = ORD_CHAR(c);
     if (ch != 0) {
         a = (float)age;
-        v = ch->f018;
         if (a <= ch->f020) {
+            v = ch->f018;
             cm_SendFloatDelta(ch->netId, 0x1c, v - ch->f01c);
         } else {
+            v = ch->f018;
             k = ch->f014;
             n = (int)(a - ch->f020);
             if (n > 0) {
                 do {
                     n--;
-                    v = k / v + (v - k);
+                    v = v - k + (k / v);
                 } while (n != 0);
             }
             cm_SendFloatDelta(ch->netId, 0x1c, v - ch->f01c);
