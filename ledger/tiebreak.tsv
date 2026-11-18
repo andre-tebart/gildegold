@@ -2987,7 +2987,7 @@ exe	0x004fe9c0	gm_Free	f3gm	88ff4af0067ee028	no	byte	control=byte p1=byte p2=byt
 exe	0x004fea50	gm_FindById	f3gm	9280933e4b64ea9a	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004feb30	gm_UpdatePlayers	f3gm	897f620640ebdee8	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004feb60	gm_InitPlayerRecord	f3gm	9fae68b98adba9d5	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x004fec10	gm_SyncMarket	f3gmt	66a7985ce22d44d9	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	85709f65c2698a33
+exe	0x004fec10	gm_SyncMarket	f3gmt	10d6a4d7a44a4209	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	67971f23bb41af6a
 exe	0x004ff190	gm_RefreshGoodsLists	f3gmt	61b072533ac67f74	yes	shape	sweep control=shape best=shape by the build's declarations; codegens=2 compiled=568	4a81fc9e68993bc8
 exe	0x004ff450	gm_RandomMarketShake	f3gm	6404493593e4e5da	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	291ac9aa57e40bb8
 exe	0x004ff550	gm_UpdatePrices	f3gmt	c99a5e4da2f8db88	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=568	4a81fc9e68993bc8
