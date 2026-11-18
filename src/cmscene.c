@@ -5112,13 +5112,12 @@ int cm_AddPartyMember(int id, int who)
 int cm_RemovePartyMember(int id, int who)
 {
     G28REC *r;
-    int i, n;
+    int i;
 
     r = (G28REC *)cm_PartyById(id);
     if (r == 0)
         return 0;
-    n = r->used;
-    for (i = 0; i < n; i++) {
+    for (i = 0; i < r->used; i++) {
         if (r->members[i] == who) {
             r->members[i] = -1;
             break;
