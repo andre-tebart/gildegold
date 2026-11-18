@@ -1242,26 +1242,7 @@ void gm_ChooseHeadIcon(unsigned short *c)
    coordinates), else at p (the zero vector when p is 0; no model at all when p and ori are both 0), named
    "sp_<netId>", its body linked back to c (owner, pickId = id | 0x3000000) and turned to ori when given; copies
    the model name to c's own head name and chooses the variant and the head icon. The current scene is selected
-   again at the end. Returns the model (0 when scene is negative).
-   @deep s15 (size queue): padded size (raw 373 -> 388 vs 395, 62 -> 18 ins): zero is a float vector
-   (D3VECTOR4, 0.0f stores): the four integer 0 stores had made the constant 0 an allocation candidate that
-   took ebx (cmp reg,ebx / push ebx / mov [..],ebx); with float zeros 0 is an immediate again and ori gets
-   ebp, o ebx as the original. p goes through its own pointer src = p != 0 ? p : &zero (the original's mov
-   eax,[p] .. mov edi,eax; 'if (p == 0) p = zero' or p = p ? p : zero load edi directly). Left: the
-   d3_PointToWorld block, the original's out of line after the epilogue (jne to +0x174, jmp back), ours
-   inline. No lever (= control): the dummy test inverted with world in the else, it = dummy ? find : 0 then
-   if (it), nested if (dummy) { it = find; if (it) world } if (!it) {..}, if (!src && !o) goto done in its
-   own if, goto world to a label after the return, an ok flag for the goto done; the else written as its
-   own return (85) and rec = .. in both arms (87) are worse. prior: Read whole against the original and
-   Ghidra; meaning matches (same 130 instructions, calls, args, fields, loop). Left: (1) allocation: ours
-   keeps ori in its arg slot ([esp+0x44] reload at +0x91) and caches 0 in ebx (xor ebx,ebx; cmp reg,ebx /
-   push ebx / mov [zero],ebx), the original keeps p'=edi, o'=ebx, ori=ebp, c=esi and so uses test reg,reg /
-   push 0 / mov [..],0 immediates - every code hunk but one is that substitution (cmp eax,ebx vs test
-   eax,eax; ebp->ebx, eax->ebp regs). Tried o = ori ternary vs if, rot/o naming, declaration order. (2)
-   block layout: the original places the d3_PointToWorld block after the epilogue (jne +0x8b to +0x174, jmp
-   back to +0xb1), ours inline; tried if/else both polarities, else-if chain, nested if with goto placed,
-   goto world label after the return - VC6 emits the identical layout (dist 62 ins every time), so it is
-   not reachable from the statement structure ... */
+   again at the end. Returns the model (0 when scene is negative). */
 
 int gm_CreateCharModel(unsigned short *c, int scene, int *p, int *ori, int obj, char *dummy)
 {
@@ -1284,14 +1265,18 @@ int gm_CreateCharModel(unsigned short *c, int scene, int *p, int *ori, int obj, 
     if (scene < 0)
         return 0;
     d3if_SelectScene(scene, 1);
-    if (dummy != 0 && (it = d3_FindObject(obj, 0x100, 0, dummy)) != 0)
+    it = 0;
+    if (dummy != 0)
+        it = d3_FindObject(obj, 0x100, 0, dummy);
+    if (it == 0 && src == 0 && o == 0)
+        goto done;
+    if (it != 0)
         d3_PointToWorld(it, &it->pos, (D3VECTOR *)pos);
-    else if (src != 0 || o != 0) {
+    else {
         pos[0] = src[0];
         pos[1] = src[1];
         pos[2] = src[2];
-    } else
-        goto done;
+    }
     rec = (GMHEAD *)gm_CharNameRecord(*c);
     if (rec != 0) {
         name = rec->name;
