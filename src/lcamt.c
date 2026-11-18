@@ -8174,8 +8174,13 @@ int ai_PeaceWindow(AICHARREC *me, LCORDMSG *m)
    gets the window (0x1de1: the 6, the price) whose first button, when the player has the 6 (sv_CheckMoney) and the
    price (sv_CheckGoodAmount), does it and tells 0x1de2 (the number converted); either button or a right click
    close it. Returns 1 once it was done, else 0
-   @deep Rewritten whole from the original 0x5cc700..0x5cca3b (was a skeleton named ai_EspionagePayment2;
-   the form privillegien\bekehren): every call, argument, constant and branch read and matched; ours=260
+   @deep frame sweep s21: 50 -> 14 ins: faith / skill as locals of the two convert blocks (the non-player
+   branch, the ok click; escaped by &faith); price / n as block locals = control. Left: code 16, order 6 in
+   the player loop: the original's strength-reduced pointer is based at the record's +2 (kind: cmp
+   [esi],0xa; faith at [esi+0xa]), ours at +0xc (faith); xor ebx,ebx (n = 0) scheduled after the pushes in
+   ours. Lead: what makes kind the loop's base (its reference count against faith in that loop). prior:
+   Rewritten whole from the original 0x5cc700..0x5cca3b (was a skeleton named ai_EspionagePayment2; the
+   form privillegien\bekehren): every call, argument, constant and branch read and matched; ours=260
    original=260. Left: the player loop's induction pointer. VC6 strength-reduces the i-loop over ai_Chars
    to a pointer; the original pivots it on c->kind (esi = ai_Chars+2: cmp word [esi-2],0xffff / cmp byte
    [esi],0xa / mov dl,[esi+0xa] / mov cl,[esi+0x82] / cmp esi,0x7d5f82), ours on c->faith (esi =
@@ -8191,8 +8196,6 @@ int ai_PeaceWindow(AICHARREC *me, LCORDMSG *m)
 
 int ai_ConvertWindow(AICHARREC *me, LCORDMSG *m)
 {
-    int faith;
-    unsigned char skill;
     int price;
     int done;
     int win;
@@ -8205,6 +8208,9 @@ int ai_ConvertWindow(AICHARREC *me, LCORDMSG *m)
     char text[0x100];
 
     if (me->kind != 6) {
+        int faith;
+        unsigned char skill;
+
         skill = me->skills[4];
         faith = me->faith;
         if (me->money < 6)
@@ -8238,6 +8244,9 @@ int ai_ConvertWindow(AICHARREC *me, LCORDMSG *m)
     do {
         if (d2_ClickedId != -1) {
             if (d2_PointerObj == ok) {
+                int faith;
+                unsigned char skill;
+
                 skill = me->skills[4];
                 faith = me->faith;
                 n = 0;
