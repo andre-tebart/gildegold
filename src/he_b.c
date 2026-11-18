@@ -5342,24 +5342,23 @@ void he_RunDeathDue(int ev)
     ch = (AICHAR *)gm_FindChar(e->netId);
     if (ch != 0) {
         money = gm_CharCurrency((char *)ch, ai_OwnPlayer);
-        if (money > d->price) {
+        if (money > d->price)
             cm_SendMoveGoods(-1, ch->netId, ai_OwnPlayer, d->price);
-            he_FreeEvent((int *)ev);
-            return;
-        }
-        found = 0;
-        for (i = 0; i < 5; i++) {
-            if (ch->relatives[3 + i] != -1) {
-                r = (AICHAR *)gm_FindChar(ch->relatives[3 + i]);
-                if (r != 0) {
-                    gm_AddHealth(r->id, -1001);
-                    found = 1;
+        else {
+            found = 0;
+            for (i = 0; i < 5; i++) {
+                if (ch->relatives[3 + i] != -1) {
+                    r = (AICHAR *)gm_FindChar(ch->relatives[3 + i]);
+                    if (r != 0) {
+                        gm_AddHealth(r->id, -1001);
+                        found = 1;
+                    }
                 }
             }
+            if (!found)
+                gm_AddHealth(ch->id, -1001);
+            he_FreeEvent((int *)ev);
         }
-        if (!found)
-            gm_AddHealth(ch->id, -1001);
-        he_FreeEvent((int *)ev);
     }
     he_FreeEvent((int *)ev);
 }
