@@ -1414,11 +1414,11 @@ void gv_CheckRankUp(unsigned i)
         nb = rank + 1;
         if (c->kind == 6 || c->kind == 7) {
             AI_ZERO(&m, sizeof(m));
-            m.to = c->netId;
-            m.time = ai_Time;
             m.type = 0x69;
+            m.to = c->netId;
             m.fromId = -1;
             m.flags = 9;
+            m.time = ai_Time;
             m.time.hour = 7;
             m.time.min = 0;
             m.rankUp.rank = nb;
@@ -1437,11 +1437,11 @@ void gv_CheckRankUp(unsigned i)
                 return;
             if ((gv_CharsT[k].kind == 6 || gv_CharsT[k].kind == 7) && &gv_CharsT[k] != c) {
                 AI_ZERO(&m, sizeof(m));
-                m.to = gv_CharsT[k].netId;
-                m.time = ai_Time;
                 m.type = 0x69;
+                m.to = gv_CharsT[k].netId;
                 m.fromId = -1;
                 m.flags = 9;
+                m.time = ai_Time;
                 m.time.hour = 7;
                 m.time.min = 0;
                 if (c->kind == 5)
