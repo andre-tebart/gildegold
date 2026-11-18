@@ -400,14 +400,7 @@ GVGRAVE *gv_RandomGrave(unsigned char *o)
 }
 /* 0x4ef9c0, buries up to n new dead persons in the free entries of the smallest graves (list 0, gv_EntryIsFree) of the
    graveyard building o (kind 0x1d, level 1 .. 3): each grave gets a new object id, random traits, values and year, a random
-   family and first name by sex and an icon from its gm_NameRecord; returns how many were buried (0 for no graveyard)
-   @deep Read in full against the original (all 185 instructions reconciled): statements, field stores, the
-   traits fpu loop, the icon do-while and the name strncpys match instruction for instruction. Tried: early
-   return 0 first, the whole body inside the kind/level if (kept), i = 0 before the if (worse, fpu hunks).
-   Remaining only the callee-saved register pushes/pops: the original pushes ebx/esi/edi in the prologue
-   (+0x0b..+0x10) and pops them on the return-0 path (+0x241: pop edi; pop esi; xor eax,eax; pop ebx), ours
-   pushes them after the kind/level check (+0x46) and returns 0 without pops; the [esp+0x10] vs [esp+0x1c]
-   load of n is the same slot shifted by those pushes. Prologue placement is allocation, not meaning. */
+   family and first name by sex and an icon from its gm_NameRecord; returns how many were buried (0 for no graveyard) */
 
 int gv_BuryNewDead(unsigned char *o, int n)
 {
@@ -422,7 +415,7 @@ int gv_BuryNewDead(unsigned char *o, int n)
         for (i = 0; i < n; i++) {
             e = (GVENTRY *)gv_FindEntry(0, o, 0, gv_EntryIsFree, 0);
             if (e == 0)
-                break;
+                return i;
             e->grave->id = ai_NextObjectId;
             ai_NextObjectId++;
             e->id = e->grave->id;
