@@ -6338,8 +6338,10 @@ void gm_FormatAmount(int v, unsigned char k, char *out)
         if (n != 0) {
             if (n >= 1000) {
                 itoa(n, a, 10);
-                e = (strlen(a) - 1) / 3.0f + strlen(a);     /* the digits and their dots */
                 j = -1;
+                /* the digits and their dots; @original the parenthesized quotient: VC6 then loads it (fild)
+                   after the second strlen, as the original does (without the parentheses before it) */
+                e = ((strlen(a) - 1) / 3.0f) + strlen(a);
                 i = strlen(a);          /* from the terminator on */
                 if (i >= 0) {
                     q = b + e;
@@ -6360,8 +6362,8 @@ void gm_FormatAmount(int v, unsigned char k, char *out)
     } else {
         if (n >= 1000) {
             itoa(n, a, 10);
-            e = (strlen(a) - 1) / 3.0f + strlen(a);
             j = -1;
+            e = ((strlen(a) - 1) / 3.0f) + strlen(a);
             i = strlen(a);          /* from the terminator on */
             if (i >= 0) {
                 q = b + e;
