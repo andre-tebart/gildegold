@@ -314,7 +314,7 @@ void d2_ScaleObject(int obj, int a);                                            
 void d2_ReleaseFade(D2FADE *f);                                             /* 0x476860 */
 int d2_BlitPartMode(int sx, int sy, int w, int h, struct D2SURF *src, int x, int y, struct D2SURF *dst, unsigned char mode); /* 0x479150 */
 int d2_ClearRect(int x, int y, int w, int h, D2SURF *surf);                     /* 0x4797d0, clears a rectangle */
-void d2_DrawRectOutline(int x, int y, int w, int h, unsigned int r, unsigned int g, unsigned int b, D2SURF *surf); /* 0x479bf0, outline of w x h */
+void d2_DrawRectOutline(int x, int y, int w, int h, unsigned char r, unsigned char g, unsigned char b, D2SURF *surf); /* 0x479bf0, outline of w x h */
 int d2_GetSurfaceDesc(D2SURF *surf, struct _DDSURFACEDESC2 *desc);                   /* 0x479120, 0x7c byte surface desc */
 
 /* d2.c */

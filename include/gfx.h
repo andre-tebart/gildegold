@@ -112,7 +112,7 @@ int d2_LockSurface(D2SURF *s);  /* 0x479020 */
 int d2_PutPixel(int x, int y, unsigned short color, D2SURF *surf);  /* 0x479b60 */
 int d2_FreeSurface(D2SURF *s);  /* 0x478fc0 */
 int d2_ClearRect(int x, int y, int w, int h, D2SURF *surf);  /* 0x4797d0 */
-void d2_DrawRectOutline(int x, int y, int w, int h, unsigned int r, unsigned int g, unsigned int b, D2SURF *surf);  /* 0x479bf0 */
+void d2_DrawRectOutline(int x, int y, int w, int h, unsigned char r, unsigned char g, unsigned char b, D2SURF *surf);  /* 0x479bf0 */
 int d2_BlitPartMode(int sx, int sy, int w, int h, D2SURF *src, int x, int y, D2SURF *dst, unsigned char mode);  /* 0x479150 */
 int d2_ClearSurface(D2SURF *surf);  /* 0x4796c0 */
 void d2_AddPointerItem(int id, int amount);  /* 0x476b90 */
