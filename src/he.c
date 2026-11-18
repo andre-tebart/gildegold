@@ -10108,7 +10108,6 @@ void he_StepWalk(HEWALKSLOT *s)
     AITASK *model;
     int weather, stage, n, hour;
     int idx = 0;
-    unsigned char kind;
     unsigned int lo, hi;
     AIBTYPE *bt;
 
