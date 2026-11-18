@@ -4416,17 +4416,7 @@ int main_CheckCD(void)
 {
     return 1;
 }
-/* 0x53b840, creates the player character from the profile (cm_SendMessage0c) and its parents, the start couple (cm_SendCreateCharacter, mother with the female flag): random first names (txt_FemaleFirstNames / txt_MaleFirstNames), the father the profile's family name, the player's number and coat, the family links (spouse, parents, child), the model, love 0x7f between all three, 16000 .. 32352 money for each parent, the profile's mission and talents
-   @deep Rewrote 0x53b840 typed against the original (154 -> 10 differing, 245 / 245 instructions, size 725
-   / 725): the profile's int coat argument, the two cm_SendCreateCharacter (mother with the female flag),
-   the start couple's fields through MAINCHARNEW (seq, coat, spouse / parent1 / parent2 / child, talents,
-   modelId, ownName), the random index taken before the destination and the table pointer, the name copy as
-   do { c = *t++; *d++ = c; } while (c) (the first copy now equal), the inline strcpy of the model,
-   ai_MissionMode > -1 as a char. Left is one register choice in the second name copy: 0x53b9b9 .. 0x53b9c7
-   ours mov eax, [tbl + idx*4] / mov cl, [eax] / inc eax / test cl, cl, the original mov ecx, [tbl + idx*4]
-   / mov al, [ecx] / inc ecx / test al, al (the original pops ebp, the first copy's destination, right
-   before this loop; ours keeps eax for the pointer). Tried: a second char / pointer variable for the
-   second copy (no change), the while ((*d++ = *t++)) form (22 differing). */
+/* 0x53b840, creates the player character from the profile (cm_SendMessage0c) and its parents, the start couple (cm_SendCreateCharacter, mother with the female flag): random first names (txt_FemaleFirstNames / txt_MaleFirstNames), the father the profile's family name, the player's number and coat, the family links (spouse, parents, child), the model, love 0x7f between all three, 16000 .. 32352 money for each parent, the profile's mission and talents */
 
 void main_CreateStartCouple(void)
 {
@@ -4456,9 +4446,8 @@ void main_CreateStartCouple(void)
         mother->seq = a->seq;
         mother->coat = a->coat;
         mother->rel.child = a->netId;
-        k = (unsigned short)util_Random(0x70);
+        t = txt_FemaleFirstNames[(unsigned short)util_Random(0x70)];
         d = mother->firstName;
-        t = txt_FemaleFirstNames[k];
         do {
             c = *t++;
             *d++ = c;
@@ -4467,9 +4456,8 @@ void main_CreateStartCouple(void)
         father->seq = a->seq;
         father->coat = a->coat;
         father->rel.child = a->netId;
-        k = (unsigned short)util_Random(0xbf);
+        t = txt_MaleFirstNames[(unsigned short)util_Random(0xbf)];
         d = father->firstName;
-        t = txt_MaleFirstNames[k];
         do {
             c = *t++;
             *d++ = c;
