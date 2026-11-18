@@ -1078,19 +1078,20 @@ int gm_GoodsStock(int p, int i)
     return sum;
 }
 /* 0x4ffa10, the price of the goods record n of the player p: the base price (gm_ItemPrice, 100) when no market object holds the good (gm_FindMarketObject, for another player the kind 0x1db object of its building, gm_FindPlayerBuilding); else a factor mean / demand, times demand / the market's count of the good (at least 1) when that count is above the demand and the good is not of the kind 0x17, clamped to 0.25 .. 5.0, and the price moves 0.4 of the way from the stored price to the base price times the factor; a record without a stored price (<= 0) gets the base price, at least 512
-   @deep s10: the cm_DoubleQuarter object of the earlier fix was replaced by the pooled 0.25 literal in a
-   data session (correct per vc6-data), so ours again threads the 0.25 path past the 5.0 compare (the
-   8-byte hunk at +0x12b; 10 -> 12 ins). Padded size: ours 457 raw, 470 the original; the unmerged
-   ItemPrice tail (+19) alone gives 476 -> 480 = the original's padded size. climb.py 2 rounds: nothing.
-   prior: cross-jump of the mk == 0 'return gm_ItemPrice(id, 100)' into the 512 path's second call (ours 2
-   rets, the original 3). Fixed: the 0.25 clamp reads cm_DoubleQuarter (12 -> 10 ins). Tried (dcp try, all
-   = one code at 10 ins): mk test as if/else with r assigned, != with the mk==0 path last, early return;
-   the 512 clamp as ?:, max / min macros (22-28 ins), r assigned per arm, >= and !(>=) spellings (14-28),
-   price > 0 first (14); the id argument as (int)id or the record field at each subset of the four calls (=
-   or worse); ai_FloatOne / cm_DoubleOne / ai_FloatZero objects for the M10s (8 combos, same diff). c2pass
-   with cross-jumping skipped shows ne-c lays the mk==0 block last exactly as the original; so the
-   original's two tails differ in something cross-jumping compares that the code does not show. flip.py
-   (want 3 rets): only meaning-changing hits (tiebreak: not measured (dcp headers sample gm... */
+   @deep size queue s20: the clamp written f = (t = t > 0.25 ? t : 0.25) < 5.0 ? t : 5.0 is the only form
+   (of 13: ?:, if, nested min/max, >= / > spellings, f as the target) that runs the 0.25 path through the
+   5.0 compare as the original does (no threading), but t's re-definition inside the expression makes VC6
+   compare a copy (fld st(0); fcomp 5.0 where the original has fcom 5.0): 13 ins, raw 453; not kept. The mk
+   == 0 tail: c2tail shows the mk == 0 block is the jmp and the 512 path's second call falls into the
+   epilogue label (xjump deletes the mk == 0 copy); the original lays the mk == 0 block last. = control
+   (all one code): mk == 0 as r = ..; else {..} with one return r (both polarities) x the 512 path as
+   returns / r assigned / mixed; the gm_ItemPrice calls through (int, int) / K&R / (int, short) views or
+   (int)id at each of the 15 call subsets; the record field as the argument changes registers only. Padded
+   size needs the unmerged tail (+19). prior: s10: the cm_DoubleQuarter object of the earlier fix was
+   replaced by the pooled 0.25 literal in a data session (correct per vc6-data), so ours again threads the
+   0.25 path past the 5.0 compare (the 8-byte hunk at +0x12b; 10 -> 12 ins). Padded size: ours 457 raw, 470
+   the original; the unmerged ItemPrice tail (+19) alone gives 476 -> 480 = the original's padded size.
+   climb.py 2 rounds: nothing. */
 float gm_StockPrice(int p, int n)
 {
     unsigned id;
@@ -3033,24 +3034,23 @@ void gm_ShowBuildingObjects(unsigned char *b)
     }
 }
 /* 0x502eb0, lists the characters working in the building b (their building, bld, is b) into out and returns their number (also out[0]): out[1 ..] (0xc) those with the title of the kind's first job rank (+0x22f), out[0xd ..] (0xc) of the second (+0x230), out[0x19 ..] (0xc) the others, out[0x25] the one whose job is one of the kind's two jobs (+0x223 / +0x224, both set); the lists are filled with 0xffff
-   @deep 98 -> 74 ins: the 0xffff fills as plain out[1 + j] / out[0x19 + j] loops with the list pointers
-   set after them and the kind pointer first (out then takes edx as in the original). headers sample:
-   insensitive. Read: the original keeps the title IV in esi, i in edi, p3 in ebp (sharing the second
-   fill's lea), byte temps in ebx, out in edx, and k / p1 / p2 in slots with n in out's argument slot (inc
-   dword ptr); ours still gives k ebp (c2trace: k prio 27 above p3's -9, k lives through every arm
-   unreferenced but still outranks the pointers). Tried: index counters out[1 + n1++] (same 74), pointer
-   fills p1[j] / p3[j] with k first (840 orders of the init statements: best 95), the arm stores split into
-   *p = id; p++ / p[0] = id; p += 1 (one code), p / n init orders and k after them (48 variants, best =
-   74). Left: k must lose its register to p3 (a priority question), the slot pairing that follows from it
-   (tiebreak: insensitive) prior: Read whole against the original and rewritten (ORDCHAR walk, c->bld at
-   +0x16c - the draft compared bld2 +0x170, a meaning fix; the three 0xffff-filled lists, the special job
-   test): the statement structure and every operand match, block order equal (bld test, rank 1 -> p1, rank
-   2 -> p2, the 0x223/0x224 job test -> out[0x25], else p3, n++). What is left is the allocation of the six
-   live values: the original keeps p3 in ebp, out in edx and n in out's dead argument slot ([esp+0x24], inc
-   dword ptr), k / p1 / p2 in slots ([esp+0x18] / [esp+0x10] / [esp+0x14]); ours keeps k in ebp, out in
-   esi, p1 in ebx with a slot copy (mov [esp+0x18], ebx / mov ebx, [esp+0x18]: the 3 extra instructions), n
-   / p3 in slots and p2 in the argument slot. The c->bld compare (cmp [ecx+7], edx vs mov eax, [esi+7]; cmp
-   eax, ecx) and the rank loads (mov al, [ebp+0x22f]; cmp al, dl vs cmp [ecx+0x22f], al) follow from tha... */
+   @deep size queue s20: 74 -> 54 ins (raw 291 -> 292, padded 304 both; the original 283): the init order
+   fill 1, p1 = out + 1, n = 0, fill 2, p3, out[0x25], p2 (2520 orders of the seven init statements,
+   climb.py round 2 found the n / p1 move) puts n into out's dead argument slot (mov [esp+0x24],0 / inc
+   dword ptr [esp+0x24]) as the original: n is memory-homed because its = 0 stands before the second fill
+   (live through it). Left: k still takes ebp (c2trace: k#1 prio 27, p3#1 -9 with one loop reference), the
+   original keeps k in [esp+0x18] (reloaded into ecx per iteration) and p3 in ebp (the second fill's dest:
+   mov edi,ebp); the fills written through p1[j] / p3[j] (630 orders) are worse (81+); k inline as the
+   ai_BTypes expression is not hoisted (85). prior: 98 -> 74 ins: the 0xffff fills as plain out[1 + j] /
+   out[0x19 + j] loops with the list pointers set after them and the kind pointer first (out then takes edx
+   as in the original). headers sample: insensitive. Read: the original keeps the title IV in esi, i in
+   edi, p3 in ebp (sharing the second fill's lea), byte temps in ebx, out in edx, and k / p1 / p2 in slots
+   with n in out's argument slot (inc dword ptr); ours still gives k ebp (c2trace: k prio 27 above p3's -9,
+   k lives through every arm unreferenced but still outranks the pointers). Tried: index counters out[1 +
+   n1++] (same 74), pointer fills p1[j] / p3[j] with k first (840 orders of the init statements: best 95),
+   the arm stores split into *p = id; p++ / p[0] = id; p += 1 (one code), p / n init orders and k after
+   them (48 variants, best = 74). Left: k must lose its register to p3 (a priority question), the slot
+   pairing that follows from it (tiebreak: insensitive) */
 int gm_ListWorkers(unsigned char *b, int *out)
 {
     int i, n, j;
@@ -3062,13 +3062,13 @@ int gm_ListWorkers(unsigned char *b, int *out)
     out[0] = 0;
     for (j = 0; j < 0x18; j++)
         out[1 + j] = 0xffff;
+    p1 = out + 1;
+    n = 0;
     for (j = 0; j < 0xc; j++)
         out[0x19 + j] = 0xffff;
-    out[0x25] = 0xffff;
-    p1 = out + 1;
-    p2 = out + 0xd;
     p3 = out + 0x19;
-    n = 0;
+    out[0x25] = 0xffff;
+    p2 = out + 0xd;
     for (i = 0; i < 0x300; i++) {
         c = &ORD_CHARS[i];
         if (c->bld == (ORDBLD *)b) {
