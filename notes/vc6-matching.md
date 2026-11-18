@@ -1373,6 +1373,50 @@ Where the pushes and pops sit, how many epilogue copies there are, shared agains
     follow through jumps): pair our listing's `_x$[esp+N]` lines with asmdiff's aligned `-` / `+` lines and add the
     displacement difference (a 60-line script; cm_RunAuction).
 
+- **Deep s41 (the near-byte list to 80 instructions, the 15 untagged ones at 47-76 instructions: 11 byte, 1 closer
+  (52 -> 32), 3 notes)**:
+  - **A search loop left by `goto` with a re-test behind it, or by `break` + `if (p == end)`**: the original has a
+    found flag (`found = 0; for (..) if (match) { found = 1; break; } if (!found) { ..; continue; }`). VC6 decides
+    the flag's test on each path and emits nothing for it, so the loop exits straight into the two arms; `break`
+    plus a pointer / index test leaves the compare in (ai_UpdateEquipRows 76 -> byte, all three gotos as flags).
+    The same for one store reached from three arms (`pop = 1` in each, `if (pop) sv_PopRequest = 1;`): the
+    arms then count as one block for the priorities (ai_NewStorageSlotWindow r / first right, 52 -> 32).
+  - **A default assigned first and overwritten in one arm** (`other = b; if (..) other = a;`, `u = A; if (sex)
+    u = B;`): written as if / else or a ternary, the value is no longer live into the test (cm_DuelChooseRound,
+    lobby_ShowMyPlayer: a scratch register one step off at the test and every one behind it).
+  - **`lea ebx,[edi+0xa]` and `add edi,ebx` for two text rows** = a running coordinate: `y = 10; .. dy = h + 2; y +=
+    dy; .. y += dy;` (lobby_ShowMyPlayer; `y + 0xc` and `y + 2 + y + 0xc` were the same values in other registers).
+  - **A loop counter in edx from the first instruction, the invariant pointer in eax, a parameter pushed into esi**:
+    the counter was set BEFORE the invariant (`i = 0; t = ..; for (; i < 2; i++)`), so it conflicts with the
+    address temps and the parameter loses its scratch register; then a record pointer used once at the end
+    written as the macro at each use (`GM_GOOD(n)->workTime / GM_GOOD(n)->batch`): gm_ObjectValue byte.
+  - **Explicit `(float)(..)` around a double expression stored to a float is a scheduler node**: removing the casts
+    in a long fill block let the stores fall where the original has them (cm_ThrowGrenade 48 -> 34 for two lines);
+    `d.y -= 60.0;` instead of `d.y = (float)(d.y - 60.0);` was the last step. Also there: a value computed, then
+    a neighbour, then `+ 50` in one pass on the FPU = `mid.y = d.y * 0.5; mid.z = ..; mid.y += 50.0;`, and constant
+    stores the original issues last (`keys[0].time = 0x12; ..`) written last.
+  - **Three 4-byte slots in another list order, frame < 0x80**: one variable used for two counting phases
+    (`cnt2` / `cnt3` -> one `pending`, count 8) opens its slot first (amt_ElectOffices byte).
+  - **One `_ftol` reached from both arms of a float choice** = a ternary: `v = (int)(G * k < lim ? G * k2 : lim);`,
+    one definition of v instead of two lowered its priority below the record pointer m (cm_AuctionAskAI byte; the
+    random factors written inline put the temps in the original's slots).
+  - **A temp of one arm computed in eax and stored, the variable in memory, the other arm's int temp in another
+    slot**: block-local `int add, adj;` in each arm and the bonus defined once per arm as `bonus = adj + 0x19`
+    (he_TrialPayment); then **`add esp,4; shl esi,5` at the join after three calls** = `(util_RandomU(n) + b) * 32`
+    in each arm: the equal tails cross-jump and take the pending `add esp` along.
+  - **A late local packed with an early one in the original** (the tail's `slot` in p / k's slot): the tail copy of
+    the word handler kept its slot in the parameter `k` (hst_ParseCommandline_2nd_Pass byte, @original comment).
+  - **A record pointer computed right after a load, into a callee-saved register** (`lea edi,[ecx*4+X]` before the
+    calls): `win = &d2_Wins[d2_Views[v].wins[3]];`; a call with one argument per arm and its own `add esp` =
+    the call written in both arms; the strength-reduced base on the right field came with the plain nested index
+    loops (gm_TechTreeWindow byte).
+  - `prev = 0;` moved above `n = m->route.count;` (climb round 1): the zero register and prev share ebp, the status
+    pointer leaves the registers (cm_ExSetRoute byte).
+  - Left with notes: ai_DragTownMap (the release block between the init block and the reload edge block: no flow
+    graph found), ai_NewStorageSlotWindow (bt / win tie at 24), he_RunMasterWork (master and bld need one more
+    counted spill reference each: the c2frame replay gives the original's slot groups then), d3fl_Prerender (n
+    never in a register in the original, more memory references; the split pieces decide).
+
 - **An else-if arm cross-jumped whole into a sibling's copy, the original keeps it inline**: the store order of
   the OTHER arms (default arm charId before stateArg; 0x176 arm stateArg, charId, x, z) decides it, found by
   climb.py swap + move in round 2 (cm_OrderAttack byte; permuting only the inlined arm's stores did not). The pair
