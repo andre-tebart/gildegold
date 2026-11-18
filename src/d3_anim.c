@@ -926,7 +926,19 @@ void d3anim_FreePath(D3OBJECT *obj)
         obj->path = 0;
     }
 }
-/* 0x433b50, spline tangents of all keys (flags.b[1] & 4: smooth); b[8] & 1 wraps the angles first. @deep B draft: 46 code hunks, dominated by the strength-reduced key offset in the first loop ([edi+ecx+0x20] ours vs [ecx+edi+0x20] original); the attempts ((p->keys + i)->, i[p->keys], 0.0f vs 0) failed - deep matching. Q2: the callee 0x453d60 is d3_UnwrapAngles in d3_vec.c, but d3.h declares the D3VECTOR* view as d3_UnwrapAngles, so naming it needs a shared-header decision. */
+/* 0x433b50, spline tangents of all keys (flags.b[1] & 4: smooth); b[8] & 1 wraps the angles first.
+   @deep s36: left: only the sib operand order of loop 1's twelve zero stores (ours [edi+ecx+0x20], the
+   original [ecx+edi+0x20]; edi = the strength-reduced i*0x58). Lead: a local t = p->flags.b[1] read after
+   the null test (if (p == 0) return; t = ...; if (t & 4) ..; the two else-branch tests through t) puts
+   loop 1 in the original's order exactly; left then only the three flag tests (ours mov bl,[esi+0x2d] /
+   test bl, the original test byte ptr [esi+0x2d] each time): 8 ins. So a candidate created before i flips
+   the sib order; the original had no register for it. No lever (= control): p != 0, the early return
+   alone, block-scoped i, one i per branch, a j for loop 1, 0.0f. (p->flags.b[1] & 0x11) in one test: 29
+   ins, every sib flipped. climb round 1: best the t local before the null test (10, meaning-changing).
+   prior: B draft: 46 code hunks, dominated by the strength-reduced key offset in the first loop
+   ([edi+ecx+0x20] ours vs [ecx+edi+0x20] original); the attempts ((p->keys + i)->, i[p->keys], 0.0f vs 0)
+   failed - deep matching. Q2: the callee 0x453d60 is d3_UnwrapAngles in d3_vec.c, but d3.h declares the
+   D3VECTOR* view as d3_UnwrapAngles, so naming it needs a shared-header decision. */
 
 void d3path_Init(D3PATH *p)
 {
