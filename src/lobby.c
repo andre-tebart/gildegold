@@ -66,10 +66,6 @@ int lobby_ChoosePlayer(); int lobby_ChooseProfession();
 int lobby_Buttons[2] = { -1 };  /* 0x62aa7c, the controls of the lobby form's button row 4 (sv_ButtonRow): [0] ready, [1] the character (the player and profession pickers) */
 int lobby_LeaveButton = -1;  /* 0x62aa84, the control of the button row 8: leave the lobby */
 int lobby_Form = -1;  /* 0x62aa88, the lobby form "menu\netlobby" (d2_OpenForm), -1: not open */
-char lobby_FmtName[8] = "%s: %s";  /* 0x62aaac, the player line's name and family name (lobby_ShowPlayers; the faith name row uses the second text) */
-char lobby_FmtHonour[12] = "%s %s %s ";  /* 0x62aab4, the honour title, the name and the family name of a player line (lobby_ShowPlayers) */
-char lobby_FmtChat[16] = "$%dFF%s: %s$A";  /* 0x62aac0, a chat line without a shout: the speaker id, the name and the text (lobby_ShowChat) */
-char lobby_FmtChatShout[20] = "$%dFF%s (%s): %s$A";  /* 0x62aad0, a chat line whose shout target is this player: the id, the name, the shout text and the text; 18 bytes used, the rest aligns ai_BuildNames */
 unsigned int *lobby_List = 0;  /* 0x6f267c, cm's player list (cm_LobbyPlayerList): the count, then the eight player ids */
 int lobby_ChatShown = 0;  /* 0x6f2680, the chat line count the chat box last showed (lobby_ShowChat grows the box and takes the frame's count when lobby_ChatNewest exceeds it) */
 int lobby_ChatNewest = 0;  /* 0x6f2684, the chat lines of the frame: lobby_ShowChat counts the records as it prints them, then copies it into lobby_ChatShown */
@@ -388,7 +384,7 @@ void lobby_ShowCity(void)
 }
 /* 0x58aba0, the current player's info window (384 B): the coat of the player's lobby record, control 3 of the
    lobby form and the chart picture of the coat (5, 10); below the picture the honour title of the sex with the
-   first and family name, then the profession and the faith lines, each through lobby_FmtName ("%s: %s") */
+   first and family name, then the profession and the faith lines, each through "%s: %s" */
 
 void lobby_ShowMyPlayer(void)
 {
@@ -416,9 +412,9 @@ void lobby_ShowMyPlayer(void)
         u = txt_FemaleJobNames[lobby_Player.job];
     else
         u = txt_JobNames[lobby_Player.job];
-    sprintf(text, lobby_FmtName, txt_JobLabel, u);
+    sprintf(text, "%s: %s", txt_JobLabel, u);
     d2_CreateWinText(x, y + 0xc, text, d2_LastWindow);
-    sprintf(text, lobby_FmtName, txt_FaithLabel, txt_FaithNames[lobby_Player.faith]);
+    sprintf(text, "%s: %s", txt_FaithLabel, txt_FaithNames[lobby_Player.faith]);
     d2_CreateWinText(x, y + 2 + y + 0xc, text, d2_LastWindow);
 }
 /* 0x58ad20, waits for the lobby player list: cm_LobbyRequestList's slot until cm_GetSlotState answers, then
@@ -470,7 +466,7 @@ void lobby_ShowPlayers(void)
             u = txt_HonourTitles[1];
         else
             u = txt_FemaleHonourTitle;
-        sprintf(text, lobby_FmtHonour, u, p->firstName, p->familyName);
+        sprintf(text, "%s %s %s ", u, p->firstName, p->familyName);
         if (p->ready != 0)
             strcat(text, txt_ReadyMark);
         d2_CreateWinText(d2_Objs[id].w + 10, y, text, d2_LastWindow);
@@ -748,7 +744,7 @@ int lobby_ChooseProfession(int param)
     ids[8] = 0xd;
     ids[9] = 0xe;
     ids[10] = 0xf;
-    win = d2_OpenForm(0, 0, lobby_ChooseProfessionForm);
+    win = d2_OpenForm(0, 0, "Menu\\CHOOSEPROFESSION");
     d2_CentreViewWindows(win);
     d2_SetForm(win, 0);
     io_PrintText(0x1afa);
@@ -811,9 +807,9 @@ void lobby_ShowChat(void)
             id = 9;
         if (p->to != 0) {
             if ((lobby_Me != 0 && p->to == lobby_Me->id) || p->id == lobby_Me->id)
-                sprintf(text, lobby_FmtChatShout, id, p->name, txt_ChatPrivate, p->text);
+                sprintf(text, "$%dFF%s (%s): %s$A", id, p->name, txt_ChatPrivate, p->text);
         } else {
-            sprintf(text, lobby_FmtChat, id, p->name, p->text);
+            sprintf(text, "$%dFF%s: %s$A", id, p->name, p->text);
         }
         id = io_PrintText(text);
         p = cm_LobbyChatNextLine();

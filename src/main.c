@@ -5225,7 +5225,6 @@ RECT sv_ViewRect = { 0, 0, 694, 600 };  /* 0x6248a4, the game view rectangle (sv
 int main_ClockScale = 100;  /* 0x6248b4, the scale sv_UpdateClock multiplies the speed setting by to get the game seconds of one clock update ((speed * 0.00625 + 0.5) * this) */
 char main_CitiesDir[128] = "gamedata/cities";  /* 0x6248b8, the folder of the city files (.CTY / .NET / .INI / standard.scr): the original passes this buffer, not a literal (init_StartNetworkGame, init_LoadCityINI, main_StartCityGame, main_HostNetworkGame, main_Menue, main_ChooseCity, main_GameLoop) */
 int main_MessageBox = -1;  /* 0x624938, the message box open over the character creation (sv_OpenMessageBox), -1 = none */
-char lobby_ChooseProfessionForm[24] = "Menu\\CHOOSEPROFESSION";  /* 0x6250b8, the choose-profession form lobby_ChooseProfession opens (21 bytes and 3 of padding) */
 int ai_GameFlags = 0;  /* 0x6f23f8 */
 int ai_Difficulty = 0;  /* 0x6f23fc */
 int snd_SystemBank = 0;  /* 0x6f2400, the handle of the system sample bank system.sbf (main_ 0x532160 loads it) */
