@@ -816,9 +816,8 @@ void lobby_ShowChat(void)
     }
     if (lobby_ChatNewest > lobby_ChatShown && id >= 0 && height > d2_Wins[d2_LastWindow].h) {
         lobby_ChatShown = lobby_ChatNewest;
-        height += 0x18;
-        d2_Wins[d2_LastWindow].contentHeight = height;
-        d2_Wins[d2_LastWindow].scrollY = height - d2_Wins[d2_LastWindow].h;
+        d2_Wins[d2_LastWindow].contentHeight = height + 0x18;
+        d2_Wins[d2_LastWindow].scrollY = d2_Wins[d2_LastWindow].contentHeight - d2_Wins[d2_LastWindow].h;
         d2_ScrollWindow(d2_LastWindow);
     }
 }
