@@ -593,15 +593,7 @@ CMBOMB *cm_LayBomb(D3VECTOR *p)
 }
 /* 0x4ce300, updates the bombs of cm_Bombs: a bomb older than 0x15e ms explodes (the sound "Explosion_s", smoke, earth
    and explosion effects at its position) and hurts every scene character within 170.0 by a random weapon damage (0x174)
-   scaled by its life value and the distance; returns the number of used slots
-   @deep read whole against the original: bomb walk (index loop, jl), the vectors a/b (D3VECTOR4, a reused
-   as the difference), the colour, the three effect calls prototyped (float pushes), the scene-char walk,
-   the damage and the if/else tail-merged cm_ShowDamage calls all match. Left: allocation only - the
-   original caches 0 in edi (xor edi,edi; push edi / mov [ebp],edi, edi re-zeroed after the inner loop)
-   where ours uses immediates, it loads c into eax then edi with ch (ebx) read before the health test
-   (ours: edi then ebx after), the frame is 0x3c vs our 0x38 (one slot more: dist at +0x20, t at +0x1c),
-   and ours schedules fld dist / fmul 1/170 / fsubr 1.0 before the k * (f01c * 0.01) product instead of
-   after the _ftol. Tried: t as a statement or inline, operand order, declaration order: no change. */
+   scaled by its life value and the distance; returns the number of used slots */
 
 int cm_UpdateBombs()
 {
@@ -611,10 +603,9 @@ int cm_UpdateBombs()
     AICHAR *c;
     CHARACTER *ch;
     D3OBJECT *bo;
-    D3VECTOR4 a, b;
+    struct { float x, y, z; int w; } a, b;   /* @original the pad word is an int: its 0 stores use the cached zero register */
     D3COLOR col;
     float dist;
-    unsigned int k;
     int i, j, t, amt;
 
     cnt = 0;
@@ -646,10 +637,10 @@ int cm_UpdateBombs()
         d3t_CreateEarth(0, (D3VECTOR *)&a, 0x1e, 5.0f, 2.5f, 1.0f, 3.0f, -3.0f, 4.0f, 7.0f, 8.0f, col);
         d3t_CreateExplosion(0, (D3VECTOR *)&a, 0x1e, 120.0f, 80.0f, 20.0f, 60.0f, 0x3c);
         for (j = 0; j < 32; j++) {
-            c = ai_SceneCharsT[j];
-            if (c == 0)
+            if (ai_SceneCharsT[j] == 0)
                 continue;
-            ch = c->scene;
+            ch = ai_SceneCharsT[j]->scene;
+            c = ai_SceneCharsT[j];
             if (c->health == 0)
                 continue;
             bo = rec->obj;
@@ -658,8 +649,7 @@ int cm_UpdateBombs()
             a.z = bo->pos.z - ch->obj->pos.z;
             dist = (float)sqrt(a.z * a.z + a.y * a.y + a.x * a.x);
             if (dist < 170.0f) {
-                k = cm_Random(w->dmgMax - w->dmgMin) + w->dmgMin;
-                t = (int)(k * (c->f01c * 0.01));
+                t = (int)((cm_Random(w->dmgMax - w->dmgMin) + w->dmgMin) * (c->f01c * 0.01));
                 amt = (int)(t * (1.0 - dist * 0.0058823530562222f));
                 ai_SceneCharsT[j]->v024 -= amt;
                 if ((int)ai_SceneCharsT[j]->bld == cm_FightAttacker)
@@ -747,22 +737,25 @@ CMGRENADE *cm_ThrowGrenade(D3VECTOR *p, int x, int y)
    type there (the map rebuilt), sounds "Explosion_s" and hurts every scene character within 100.0 of the cell's
    vertex by a random weapon damage (0x176) scaled by its life value and the distance; returns the number of used
    slots
-   @deep size queue s18: a / b with an int pad word (struct { float x, y, z; int w; }): the original stores
-   both w as integer 0 from its cached zero register (mov [..],ebx; b.y = 0.0f stays an immediate), so the
-   integer 0 gains the references that give it ebx: 121 -> 99 ins, raw 843 -> 826, padded size (832). Left:
-   frame 0x3c vs 0x40: the original keeps t in its own slot [esp+0x24] (fild t, then fld dist; fmul 0.01f;
-   fsubr 1.0), ours computes (1.0 - dist * 0.01f) before the k product and reuses dist's slot for t. No
-   lever (= control): the factor's operand orders (t * f / f * t, 0.01f * dist), (c->f01c * 0.01) * k,
-   (double)t. The same int pad is in cm_UpdateBombs (w from edi) and he_RunSabotage (ebx). prior: read
-   whole against the original: grenade walk (index loop over CMGRENADE, base +0xc, jl), path-ended test
-   D3ANIM.flags2d & 0x20, vectors a/b (D3VECTOR4, a reused for the vertex difference), colour,
-   Smoke/Earth/Explosion prototyped (float pushes, 70/50/20/60), the terrain cell (types / height at x +
-   y*size, reloaded d3_Terrain for the clear, MakeDivide then MakeLight), the sound, the scene-char damage
-   with the tail-merged cm_ShowDamage calls and kampf/arm_greifen all match. Left: allocation only, as
-   cm_UpdateBombs - the original caches 0 in ebx (xor ebx,ebx; push ebx / cmp eax,ebx, re-zeroed after the
-   inner loop) where ours uses immediates, so the terrain index and the vertex call use other registers
-   (imul edx,[eax] / add ecx,edx vs imul eax,[ecx] / add eax,ebp), c goes eax->ebp with ch read before the
-   health test, frame 0x40 vs 0x3c (one slot more), and the (1.0 - dist*0.01f) product is ... */
+   @deep size queue s19: as cm_UpdateBombs (byte): the k local written inline into t's product (t =
+   (int)((cm_Random(..) + w->dmgMin) * (c->f01c * 0.01))) gives the original's frame 0x40 and t's own slot,
+   and the scene-char read as 'if (ai_SceneCharsT[j] == 0) continue; ch = ai_SceneCharsT[j]->scene; c =
+   ai_SceneCharsT[j];' gives the original's eax -> edi copy of c with ch read first: 99 -> 78 ins, raw 828
+   (padded size kept, 832). Left: register rotation in the terrain block (the original: mov
+   eax,[d3_Terrain]; mov edx,[rec->y]; mov ecx,[rec->x]; imul edx,[eax]; add ecx,edx; types at +0x14
+   through edx; ours keeps x in ebp) and an extra d3_Terrain reload before MakeDivide in the original. No
+   lever: the map local / cell local written out (nocell 79, nomap 78 = other regs, nomap-nocell 79); the
+   sound moved before the terrain block reaches 51 ins but is not the original's order (its sound pushes
+   follow MakeLight's add esp). prior: size queue s18: a / b with an int pad word (struct { float x, y, z;
+   int w; }): the original stores both w as integer 0 from its cached zero register (mov [..],ebx; b.y =
+   0.0f stays an immediate), so the integer 0 gains the references that give it ebx: 121 -> 99 ins, raw 843
+   -> 826, padded size (832). Left: frame 0x3c vs 0x40: the original keeps t in its own slot [esp+0x24]
+   (fild t, then fld dist; fmul 0.01f; fsubr 1.0), ours computes (1.0 - dist * 0.01f) before the k product
+   and reuses dist's slot for t. No lever (= control): the factor's operand orders (t * f / f * t, 0.01f *
+   dist), (c->f01c * 0.01) * k, (double)t. The same int pad is in cm_UpdateBombs (w from edi) and
+   he_RunSabotage (ebx). prior: read whole against the original: grenade walk (index loop over CMGRENADE,
+   base +0xc, jl), path-ended test D3ANIM.flags2d & 0x20, vectors a/b (D3VECTOR4, a reused for the vertex
+   difference), co... */
 
 int cm_UpdateGrenades()
 {
@@ -776,7 +769,6 @@ int cm_UpdateGrenades()
     D3COLOR col;
     D3FLMAP *map;
     float dist;
-    unsigned int k;
     int i, j, t, amt, cell;
 
     g = (struct D3SM *)d3_DefaultScene->hmap;
@@ -817,10 +809,10 @@ int cm_UpdateGrenades()
         }
         sb_PlaySampleI(cm_BombSounds, "Explosion_s", 1, 0x3f, 0x7f, 0, 0);
         for (j = 0; j < 32; j++) {
-            c = ai_SceneCharsT[j];
-            if (c == 0)
+            if (ai_SceneCharsT[j] == 0)
                 continue;
-            ch = c->scene;
+            ch = ai_SceneCharsT[j]->scene;
+            c = ai_SceneCharsT[j];
             if (c->health == 0)
                 continue;
             d3sm_GetVertex(g, rec->x, rec->y, (D3VECTOR *)&a);
@@ -829,8 +821,7 @@ int cm_UpdateGrenades()
             a.z -= ch->obj->pos.z;
             dist = (float)sqrt(a.z * a.z + a.y * a.y + a.x * a.x);
             if (dist < 100.0f) {
-                k = cm_Random(w->dmgMax - w->dmgMin) + w->dmgMin;
-                t = (int)(k * (c->f01c * 0.01));
+                t = (int)((cm_Random(w->dmgMax - w->dmgMin) + w->dmgMin) * (c->f01c * 0.01));
                 amt = (int)(t * (1.0 - dist * 0.01f));
                 ai_SceneCharsT[j]->v024 -= amt;
                 if ((int)ai_SceneCharsT[j]->bld == cm_FightAttacker)

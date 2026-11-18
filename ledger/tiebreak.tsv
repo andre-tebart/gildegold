@@ -2416,7 +2416,7 @@ exe	0x004ce1b0	cm_CharObjDistXZ	cm	699c38261f09f239	no	shape	sweep control=shape
 exe	0x004ce200	cm_CharCellDistXZ	cm	3f9694e7eb89c462	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004ce270	cm_OtherBuilding	cm	b7487e19fedc6ee3	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004ce290	cm_LayBomb	cm	68c71c14f27795d6	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x004ce300	cm_UpdateBombs	cm	45c25258ac1e337f	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
+exe	0x004ce300	cm_UpdateBombs	cmfight	d2ebaa61adca18e5	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	6d31a6288cc67058
 exe	0x004ce5d0	cm_ThrowGrenade	cm	582e6e4032e47b06	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	becf1bbdf99775c9
 exe	0x004ce830	cm_UpdateGrenades	cm	0ae561dd4bcd9256	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x004ceb70	cm_ObjectOwner	cm	a88d053eb5a34537	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
