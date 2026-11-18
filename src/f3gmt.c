@@ -5106,8 +5106,8 @@ int gm_DeathDate(ORDCHAR *c, GMDATE *out)
 
     if (c->health != 0)
         return 0;
-    year = c->w028;
-    clk.year = year;
+    clk.year = c->w028;
+    year = clk.year;
     gm_ClockToDate(&clk, (unsigned char *)&d);
     x = c->nameKey ^ d.year;
     d.month = (char)(((x >> 3) % 7 + year % 19) % 12) + 1;
