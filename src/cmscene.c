@@ -2298,7 +2298,7 @@ void cm_DuelOutcome(G28REC *m)
     float fa;
     AMTKIND kind;
     AMTREC office;
-    int i;
+    int i, txt;
 
     a = (AICHAR *)gm_FindChar(m->members[0]);
     b = (AICHAR *)gm_FindChar(m->members[1]);
@@ -2318,7 +2318,11 @@ void cm_DuelOutcome(G28REC *m)
     for (i = 0; i < 768; i++) {
         c = &ai_CharsT[i];
         if (c->kind == 6 || c->kind == 7) {
-            txt_Format(buf, 0x10c7, w->id, (w->sex != 0) + 0x10c8);
+            if (w->sex != 0)
+                txt = 0x10c9;
+            else
+                txt = 0x10c8;
+            txt_Format(buf, 0x10c7, w->id, txt);
             he_ShowNews(c->netId, -1, buf, 0, 0x5fe, &ch_EmptyName);
         }
     }
