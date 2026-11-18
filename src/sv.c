@@ -2620,25 +2620,7 @@ void sv_BorderCameraView(void)
    elapsed ms, at most 4) up to +-50, decay to 0 otherwise; d2_PointerLook gets the direction (1 .. 8, 5 .. 8
    the corners). The camera moves by the velocities rotated into the view (by the view's heading, or by the
    matrix rows when it looks straight down), slower inside a building, clamped to the height map 20 cells in,
-   unless the move equals the last one (sv_ScrollLastMove). Returns 1 when the camera moved
-   @deep deep pass: 146 -> 30 ins (1630 -> 252 bytes), frame now 0x80 like the original. Earlier: read
-   whole and reconstructed (look test, dt, ramps, decays, slow-down, AxisPair rows, dead dst stores,
-   clamp); tried keeping a / fwd[2] / 0.1 / block layout without success. This pass: the move flags are two
-   (xmoved / ymoved, the corners set both, the decays are 'if (!xmoved)' / 'if (!ymoved)' after one flat
-   else-if chain: the original's block order up, down, right, left, x decay, y decay); (float)sqrt(..) <
-   0.1f (the float 0.1 compare, also in sv_MouseCamera); dst / v / fwd are 4-float vectors (the 16-byte
-   holes of the 0x80 frame); dst[0] = v[0] after the two branches (the original's dead store); no sn / cs
-   locals (sin(a) / cos(a) at the uses: a spilled and reloaded as in the original); fwd[1] = 0 between
-   fwd[2] and the sqrt (the fstp/fld of fwd[2]); f = 5.0 * dt without the cast; init order xmoved, ymoved,
-   moved. Left (asmdiff): (1) the d3_VecEqual call: the original pushes its arguments before storing dst[0]
-   ('+ lea edx,[esp+0x10] / push 0x3dcccccd / push edx / push sv_ScrollLastMove / fstp [esp+0x1c] / mov
-   ecx,[eax+0x50]'), ours after dst[1] ('- push 0x3dcccccd / fstp [esp+0x14] / mov edx,[eax+0x50] / ... /
-   lea eax,[esp+0x14] / push eax / push X'); (2) register rotation: down branch 'mov ecx,[esp+0x34]' vs the
-   original's edx, the VecAngle2 argument 'lea edx' vs 'lea eax', dst[2] = v[1] via eax vs edx,
-   d3_DefaultScene loaded into ecx vs eax. Tried (no effect or worse): dst statement orders (1,0,2 /
-   0,2,1), camera field first in the sums, !d3_VecEqual, casts / &dst[0] on the call, D3VECTOR4 structs for
-   dst / v / fwd (identical code), double sn/cs/a, a 3-term sqrt, the other orders of ScrollTime / my / f.
-   (tiebreak: not measured (dcp headers sample sv_ScrollCamera)). match-deep 2026-11-10: parenthesized member copies (the FPU-copy lever) ins 30 -> 16; only dst[1] = (d3_Camera->pos.y), which now copies through the FPU where the original moves it with ecx, but aligns the rest. */
+   unless the move equals the last one (sv_ScrollLastMove). Returns 1 when the camera moved */
 
 int sv_ScrollCamera(void)
 {
@@ -2778,22 +2760,25 @@ int sv_ScrollCamera(void)
         fwd[0] = right[0] * ax[0] + right[4] * ax[1] + right[8] * ax[2];
         fwd[2] = right[2] * ax[0] + right[6] * ax[1] + right[10] * ax[2];
         fwd[1] = 0.0f;
+        /* @original: each arm first sets dst to the move in view space (dead: dst is the target below; the
+           original stores all three, dst[0] in each arm) */
         if ((float)sqrt(fwd[0] * fwd[0] + fwd[2] * fwd[2]) < 0.1f) {   /* the view looks straight down: the matrix rows (0x526ac2) */
+            dst[0] = v[0];
             dst[1] = v[1];
             dst[2] = 0.0f;
             fwd[0] = 0.0f * right[8] + v[0] * right[0] + v[1] * right[4];
             fwd[2] = 0.0f * right[10] + v[0] * right[2] + v[1] * right[6];
         } else {                                                /* else rotated by the view's heading */
             a = -d3_VecAngle2((char *)&d3_ZAxis, fwd);
+            dst[0] = v[0];
             dst[1] = 0.0f;
             dst[2] = v[1];
             fwd[0] = v[0] * cos(a) + v[1] * sin(a);
             fwd[2] = v[1] * cos(a) - v[0] * sin(a);
         }
-        dst[0] = v[0];
         fwd[1] = 0.0f;
         dst[0] = fwd[0] + d3_Camera->pos.x;
-        dst[1] = (d3_Camera->pos.y);
+        dst[1] = d3_Camera->pos.y;
         dst[2] = fwd[2] + d3_Camera->pos.z;
         if (d3_VecEqual(sv_ScrollLastMove, dst, 0.1f) == 0) {
             hm = (D3SM *)d3_DefaultScene->hmap;
