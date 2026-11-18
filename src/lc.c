@@ -6422,18 +6422,18 @@ void ai_SuicideWindow(AIBLD *bld)
     d2_SetForm(win, 2);
     io_PrintText(0x42d1);
     while (sv_RunFrame(ai_SuicideWindow, 0x677c7) != 0) {
-        if (dm_L.rup == 0 && kb_Down[1] == 0) {
-            if (d2_ClickedId == 0) {
-                relatives = d2_ClickedId;
-                if (gm_HasAdultRelative((char *)ch, &relatives) != 0) {
-                    gm_AddHealth(ch->id, -0x7d0);
-                    continue;
-                }
+        if (dm_L.rup != 0 || kb_Down[1] != 0)
+            sv_PopRequest = 1;
+        else if (d2_ClickedId == 0) {
+            relatives = d2_ClickedId;
+            if (gm_HasAdultRelative((char *)ch, &relatives) != 0)
+                gm_AddHealth(ch->id, -0x7d0);
+            else {
                 sv_MessageBox(txt_Ptrs[relatives != 0 ? 0x42d3 : 0x42d2], 0);
-            } else if (d2_ClickedId != 1)
-                continue;
-        }
-        sv_PopRequest = 1;
+                sv_PopRequest = 1;
+            }
+        } else if (d2_ClickedId == 1)
+            sv_PopRequest = 1;
     }
     d2_CloseView(win);
 }
