@@ -5505,21 +5505,21 @@ void he_AllocMeeting(int ev)
    gives its severity util_Random(range); a severity above 0 is written into the disease's bit field (a field
    delta of v02c) and costs severity * the record's cost health (gm_AddHealth), the health left stored in *health
    when given. Returns the disease kind, 0 when none was caught.
-   @deep size queue s14: right size and shape (78 -> 2 ins, raw 541 = 541): a = 0 inside the chance test (b
-   = 0 stays at the top): a no longer lives across util_RandomF's block, its priority (c2trace: a#1 -12
-   against ch -1) rises above ch, so a takes ebx and ch is split / reloaded from its slot as the original
-   (frame 0x10). Left: the original's xor ebx,ebx (a = 0) sits before the call with the xor esi,esi; any a
-   = 0 before the call (a = 0; b = 0 / b = 0; a = 0 / a = b = 0 / b = a = 0 / declared inits / comma in the
-   condition / a float temp for the roll) drops a below ch again (78-80 ins); both inside: 4 ins. prior:
-   read whole against 0x5720f0..0x57230c: every statement, constant, callee and field equals the original
-   (the and/je chance test as an if around the body, the kind 2 / 1 / other bit tests of v02c, b = coin ? 7
-   : 8, the 0x1800000 / 0x700000 checks, the pick, gm_GetDisease into the 12-byte GMDISEASE, the severity
-   reusing b (the original's esi), cost = (int)(b * d.cost), the if/else-if chain of the eight bit fields,
-   the field delta from a separate address-taken copy, gm_AddHealth and the *health store). Left:
-   allocation only - the original keeps a / b / bits / cost in ebx / esi / edi / ebp and leaves ch in its
-   parameter slot (reloaded per kind branch: mov eax,[esp+0x24]), ours holds ch in ebp and spills a to a
-   frame slot (frame 0x14 vs 0x10: '- mov dword ptr [esp + 0x10], 0' for '+ xor ebx, ebx', '- mov eax,
-   dword ptr [esp + 0x10]; test eax, eax' for '+ test ebx, ebx'). Tried: declaration ord... */
+   @deep s15: more forms of a = 0 before the call, all below ch again: a = 0 at the top with b = 0 inside
+   the test (80 ins), a = b = 0 at the top with if (util_RandomF() < chance) (82), the early return form if
+   (.. >= chance) return 0; (104), one final return a; with the b == 0 / chance-fail paths reaching it
+   (93-95: VC6 folds them to xor eax,eax as the original, but a still loses ebx). climb from a = 0; b = 0;
+   at the top (2 rounds): the only movers are meaning changes (gm_AddHealth only when health != 0: 52; b's
+   coin inside the 0x1800000 test: 37). Kept: the s14 text (2 ins, right size). prior: size queue s14:
+   right size and shape (78 -> 2 ins, raw 541 = 541): a = 0 inside the chance test (b = 0 stays at the
+   top): a no longer lives across util_RandomF's block, its priority (c2trace: a#1 -12 against ch -1) rises
+   above ch, so a takes ebx and ch is split / reloaded from its slot as the original (frame 0x10). Left:
+   the original's xor ebx,ebx (a = 0) sits before the call with the xor esi,esi; any a = 0 before the call
+   (a = 0; b = 0 / b = 0; a = 0 / a = b = 0 / b = a = 0 / declared inits / comma in the condition / a float
+   temp for the roll) drops a below ch again (78-80 ins); both inside: 4 ins. prior: read whole against
+   0x5720f0..0x57230c: every statement, constant, callee and field equals the original (the and/je chance
+   test as an if around the body, the kind 2 / 1 / other bit tests of v02c, b = coin ? 7 : 8, the 0x1800000
+   / 0x700000 checks, the pick, gm_GetDisease into the 12-byte... */
 int he_CatchMeetingDisease(AICHAR *ch, float chance, int kind, float *health)
 {
     unsigned int bits, delta;
