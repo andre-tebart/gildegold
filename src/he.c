@@ -18490,26 +18490,24 @@ void he_AllocStorm(AIJOB *ev)
 }
 /* 0x565410, the run handler of the storm event (type 0x50, its alloc handler 0x5652b0): state 0 writes the storm forecast into
    sv_Weather for the three hours after now (clouds 1000, storm 3) and runs again two hours ahead; state 1 damages the stock of
-   the 16 buildings the alloc handler collected (gm_ChangeBuildingState, -(random(5) + 5)) once, then frees the record */
+   the 16 buildings the alloc handler collected (gm_ChangeBuildingState, -(random(5) + 5)) once, then frees the record
+   @deep deep s23: plain loops (for over the three hours, index loop over stormBlds): = control, kept.
+   Left: base (ai_TimeHourW) in edx where the original keeps it in esi and the 1000 in edx; (unsigned
+   short) casts on end.hour: = control; the store order in the hour loop / end.hour moved up: worse. */
 
 void he_RunStormEvent(int ev)
 {
     AIJOB *e = (AIJOB *)ev;
     AIBLD *b;
     unsigned base;
-    int i, last;
+    int i;
 
     switch (e->stage) {
     case 0:
         base = ai_TimeHourW;
-        i = (base & 0xffff) + 1;
-        last = (base & 0xffff) + 4;
-        if (i < last) {
-            do {
-                sv_Weather.clouds[i] = 1000;
-                sv_Weather.storm[i] = 3;
-                i++;
-            } while (i < last);
+        for (i = (base & 0xffff) + 1; i < (int)(base & 0xffff) + 4; i++) {
+            sv_Weather.clouds[i] = 1000;
+            sv_Weather.storm[i] = 3;
         }
         e->end.hour = base + 2;
         e->end.min = 0;
@@ -18518,19 +18516,14 @@ void he_RunStormEvent(int ev)
     case 1: {
         int n, dmg;
         AIBLD *b;
-        int *bldIds;
 
         if ((e->opts & 2) != 0 && e->stormDue != 0) {
-            bldIds = e->stormBlds;
-            n = 0x10;
-            do {
-                if (*bldIds != -1 && (b = (AIBLD *)gm_BuildQuery(1, 1, *bldIds)) != 0) {
+            for (n = 0; n < 0x10; n++) {
+                if (e->stormBlds[n] != -1 && (b = (AIBLD *)gm_BuildQuery(1, 1, e->stormBlds[n])) != 0) {
                     dmg = (unsigned short)util_Random(5) + 5;
                     gm_ChangeBuildingState((unsigned char *)b, -dmg);
                 }
-                bldIds++;
-                n--;
-            } while (n != 0);
+            }
             e->stormDue = 0;
         }
         he_FreeEvent((int *)ev);

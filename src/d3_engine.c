@@ -192,7 +192,7 @@ typedef struct D3OBJCOLOR {
 } D3OBJCOLOR;
 
 /* 0x438f60, projects the visible vertices of a mesh to the screen, sets fog and flat colors, and
-   culls back faces. */
+culls back faces. @deep deep s23: left two x87 operand orders: d3_Dist2 (the original squares y first: fld st(1); fmul st,st(2)) and the back-face cross product (the original computes v0->sx - v1->sx before v0->sy - v2->sy). Commutative swaps of both (16 forms): = control; z*z + y*y + x*x 10 ins but order 18; the compare as >, as a difference < 0, from v1/v2: worse. */
 void d3_ProjectMesh(D3OBJECT *obj)
 {
     unsigned int n = obj->info->nkeys;

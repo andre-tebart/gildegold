@@ -3781,7 +3781,7 @@ exe	0x005644e0	he_RunFire	he	8b08bad696a69954	no	draft	control=draft p1=draft p2
 exe	0x00564860	he_AllocBurn	he	68a90a033d697f84	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=505	16d55ba700d46f39
 exe	0x005649b0	he_RunBurn	he	e473a450dc9adb04	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x005652b0	he_AllocStorm	he	82ae1084086c704c	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x00565410	he_RunStormEvent	he	1d0366d55d970e64	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
+exe	0x00565410	he_RunStormEvent	he	a01263dea1128345	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	3d74480c48f309d1
 exe	0x00565500	he_AllocHealing	he	135bddda28bbffee	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00565620	he_RunHealing	he	97714d1abbe4931c	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00565850	he_AllocNewWorker	he	5d2ac254b66d1fad	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
