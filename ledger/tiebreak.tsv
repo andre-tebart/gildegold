@@ -339,7 +339,7 @@ exe	0x00415f30	d3t_ExplosionCB	d3_tools	cd4777319b834363	no	byte	control=byte p1
 exe	0x00416040	d3t_CreateExplosion	d3_tools	fad4b613b3f582da	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00416240	d3t_SmokeCB	d3_tools	7dd4b4a2d9840f4f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00416340	d3t_CreateSmoke	d3_tools	361cf197c45e7da7	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	7766c8e34802c322
-exe	0x00416550	d3t_EarthCB	d3_tools	975fa71c2e253d1d	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	7766c8e34802c322
+exe	0x00416550	d3t_EarthCB	d3_tools	4e72578dbd4cd616	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	dbd1795e8e517e75
 exe	0x004168e0	d3t_CreateEarth	d3_tools	9d5667f1c14fe73d	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00416980	d3t_CreateSnowMipmaps	d3_tools	a9e7125f8a116279	yes	draft	sample n=32 seed=1 compiled=32 codegens=3 best=draft	
 exe	0x00417150	d3t_FadeOutSunRays	d3_tools	63b256d7c491ddd9	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	

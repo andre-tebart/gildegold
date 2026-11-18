@@ -2164,9 +2164,8 @@ D3PARTSYS *d3t_CreateSmoke(void *parent, D3VECTOR *pos, int count, float size, f
     }
     return ps;
 }
-/* 0x416550, callback of d3t_CreateEarth. NONMATCHING: 15 bytes, the original puts dead in the ps
-   parameter slot and a in the slot of s (ours: the reverse), and loads ps->tex before c.a.
-   Clods are thrown up once, bounce on the ground at v00.w and fade out. */
+/* 0x416550, callback of d3t_CreateEarth.
+Clods are thrown up once, bounce on the ground at v00.w and fade out. @deep deep s29: the fade value is no local: p->start.x -= dt * ps->v00.z; if (p->start.x > 0.0) p->a = (unsigned char)p->start.x; - VC6's CSE temp of the stored field sits in memory (fst / fld / fld, packed with s, dead in the ps slot): slots 22 -> byte there (the volatile float a was the old stand-in; a plain float a at function or block scope lifts it onto the x87 stack, draft 9). Left (2 ins, order): the original loads ps->tex (mov eax,[edi+0xd4]) before c.a (mov ebx,[esp+0x1f]; and ebx,0xff) in the block after the c copy; ours c.a first. Tried: all 12 orders of flags / frames / c / mask (c before mask): = or draft; mask = c.a after the frames if (the load moves to the join block, 4 ins); if / else for frames (5); a tex local (=), tex local first (draft 14); != 0 / != NULL spellings; unsigned mask (=); climb 1 round from the field form: nothing. */
 
 int d3t_EarthCB(D3PARTSYS *ps, unsigned long time)
 {
@@ -2175,7 +2174,6 @@ int d3t_EarthCB(D3PARTSYS *ps, unsigned long time)
     unsigned int frames;
     int mask, i, dead;
     float len, s, k, dt;
-    volatile float a;
 
     if (ps->flags & 1) {
         ps->flags &= ~1;
@@ -2231,9 +2229,9 @@ int d3t_EarthCB(D3PARTSYS *ps, unsigned long time)
             } else if (p->vel.y != 0.0f) {
                 p->vel.y -= dt * ps->v00.y;
             }
-            p->start.x = (a = p->start.x - dt * ps->v00.z);
-            if (a > 0.0)
-                p->a = (unsigned char)a;
+            p->start.x -= dt * ps->v00.z;
+            if (p->start.x > 0.0)
+                p->a = (unsigned char)p->start.x;
             else
                 p->flags &= ~1;
         }
