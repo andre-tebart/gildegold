@@ -2226,8 +2226,7 @@ void cm_DuelRound(AICHAR *a, AICHAR *b, char *side)
         act->shot.target = b;
         act->shot.shooter = a;
         strcpy(act->u.name, "kampf/schiessen_pistole");
-        cm_WaitTicks(4);
-        return;
+        break;
     case 3:
         d2_SetForm(cm_TextBox, 0);
         fa = gm_GetSkill((char *)a, 2);

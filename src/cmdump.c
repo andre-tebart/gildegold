@@ -223,10 +223,10 @@ void ai_DumpPersonHead(char *c, char *buf)
     char *name;
 
     p = (AICHAR *)c;
-    if (p->kind < 10)
-        name = ai_CharKindNames[p->kind];
-    else
+    if (p->kind >= 10)
         name = "%i\t%i\t%i\t%s\t%s\t%i\t%s\t%i\t%s\t%s\t%s\t%s\t";
+    else
+        name = ai_CharKindNames[p->kind];
     sprintf(buf, "%i\t%i\t%i\t%s\t%s\t%i\t%s\t%i\t%s\t%s\t%s\t%s\t", ai_Time.year, p->netId, p->id, name, p->name, p->health,
             txt_SexNames[p->sex], p->w00a, txt_FaithNames[p->b00c], txt_HonourTitles[p->b00d], txt_JobNames[p->jobId],
             txt_TitleNames[(unsigned char)p->title]);
