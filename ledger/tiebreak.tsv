@@ -2545,7 +2545,7 @@ exe	0x004e1700	cm_RunBankruptcy	cm	0f2c36eca175f7b8	no	byte	control=byte p1=byte
 exe	0x004e19a0	cm_CheckAuction	cm	986dd5c5f1d45001	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004e1a80	cm_RunAuction	cm	0bd1e20caf0b9f0e	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	becf1bbdf99775c9
 exe	0x004e24c0	cm_AuctionAskPlayer	cm	0380ddc712963293	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x004e26d0	cm_AuctionAskAI	cm	db6373660c7503ab	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	becf1bbdf99775c9
+exe	0x004e26d0	cm_AuctionAskAI	cmscene	f5a7025def744508	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	c89b1d3adf522a6a
 exe	0x004e2860	cm_RunSale	cm	5cb92b6a18d82fc2	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004e2910	cm_ShowObjectScene	cm	49065d5feb756253	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004e2bd0	cm_SetViewEnabled	cm	f22a4cb3375a9736	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	

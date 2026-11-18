@@ -3704,7 +3704,7 @@ void cm_AuctionAskPlayer(CMCUTINFO *r, CMAUCTION *m)
 void cm_AuctionAskAI(CMCUTINFO *r, CMAUCTION *m)
 {
     AICHAR *c;
-    float lim, k;
+    float lim;
     int i, price, v, x;
 
     r->session.click = 0;
@@ -3719,12 +3719,8 @@ void cm_AuctionAskAI(CMCUTINFO *r, CMAUCTION *m)
     if (c == 0)
         return;
     lim = (float)(m->countdown * 32000 + price);
-    k = (float)cm_RandomFloat() * 0.16666667f + 0.3f;
-    if (gm_GetGoodsValue((char *)c) * k < lim) {
-        k = (float)cm_RandomFloat() * 0.16666667f + 0.3f;
-        v = (int)(gm_GetGoodsValue((char *)c) * k);
-    } else
-        v = (int)lim;
+    v = (int)(gm_GetGoodsValue((char *)c) * ((float)cm_RandomFloat() * 0.16666667f + 0.3f) < lim
+              ? gm_GetGoodsValue((char *)c) * ((float)cm_RandomFloat() * 0.16666667f + 0.3f) : lim);
     if (v < price)
         return;
     lim = (float)price;
