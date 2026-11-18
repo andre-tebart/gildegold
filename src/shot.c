@@ -676,12 +676,17 @@ int ai_ScatterShot(SHOTREC *shot, float sideSpread, D3VECTOR *side, float otherS
     return 1;
 }
 
-/* ai_StepShot and ai_StepShotSlow: the sign with the shared 0 / 1 (ai_FloatZero, ai_FloatOne); the drag
-   0.5 * density * coefficient * area * v^2 signed with v; the products nested as the original multiplies them
-   (VC6 reorders an unnested chain), the wind's x / z drag in another order than its y and the flight drags */
+/* ai_StepShot and ai_StepShotSlow: the drag 0.5 * density * coefficient * area * v^2 signed with v, written as
+   plain products: VC6 orders an unparenthesised float product itself (the two globals by which it met first,
+   so the wind's x drag, the function's first product, names the density before the coefficient) and a
+   parenthesis costs a node in the scheduler's 81-instruction region (the flight step's last region ends
+   exactly behind the fourth argument push of ai_ShotHitsGround).
+   @original the wind's y drag keeps its two multiplications by the wind apart (fmul [wind.y] twice; the plain
+   product squares a loaded copy: fld st(0) / fmul st,st(1)): the parentheses of WINDDRAGY, 8 ins without */
 #define SIGN(v) ((v) > 0.0f ? 1.0f : -1.0f)
-#define DRAG(v) ((((((SIGN(v) * shot->area) * ai_ShotDrag) * ai_AirDensity) * (v)) * (v)) * 0.5f)
-#define WINDDRAG(v) (((((shot->area * v) * v) * SIGN(v)) * ai_ShotDrag) * ai_AirDensity) * 0.5f
+#define DRAG(v) SIGN(v) * shot->area * ai_AirDensity * ai_ShotDrag * (v) * (v) * 0.5f
+#define WINDDRAG(v) shot->area * v * v * SIGN(v) * ai_AirDensity * ai_ShotDrag * 0.5f
+#define WINDDRAGY(v) ((SIGN(v) * shot->area * ai_AirDensity * ai_ShotDrag) * (v)) * (v) * 0.5f
 
 /* 0x5dc4a0, moves a cannon ball (1318 B; gv.c 0x4edf80 calls it every frame): 0 unless the ball is in flight
    (state 1). Off the height map (d3_GetHeightAt fails) the state becomes 3 and the energy 0. Otherwise one
@@ -690,27 +695,7 @@ int ai_ScatterShot(SHOTREC *shot, float sideSpread, D3VECTOR *side, float otherS
    gravity pulls y; the velocity takes Heun's average of the change at the old and the predicted velocity,
    the position moves by velocity * step in inches. When ai_ShotHitsGround finds the move from the old to the
    new position hits the ground and the ball made more than 50 steps, it lands there: state 2, the energy
-   0.5 * mass * v^2, returns 0. Returns 1 while it flies.
-   @deep match-deep 58: 308 -> 28 ins, shape (the same body as ai_StepShot, which got the same). Levers:
-   shared ai_FloatZero / ai_FloatOne in the sign; the drag chains fully nested in the original's load order
-   (DRAG / WINDDRAG macros); fall = ai_Gravity * step; D3VECTOR4 locals v, next, wind, d, a, b, m (frame
-   0x98); a and b built in place (a = d + wind; a *= perMass per field; a.y -= fall); the half sum v = b +
-   a; v *= 0.5f; vel copied to v and next / landing copied field by field; next copied between the y and z
-   drags; the landing stores state = 2 after pos.x. Left (code 22, order 16, fpu 2): the original's next
-   copy (3 int mov pairs) is scheduled inside the z drag (after its sign select), ours inside the y drag;
-   copying next after d.z (alone, in a block, after time++ / steps++, struct copy through a cast) changes
-   VC6's frame to 0x94 (175+ ins); all 5040 orders of d.y / next.x / next.y / next.z / d.z / time++ /
-   steps++ give 28 ins or worse; with it the px push sinks one fmul late. No meaning difference. (tiebreak:
-   insensitive) prior: match-deep 58: 308 -> 174 ins, frame now 0x98 as the original. Levers that moved
-   code: the sign through the shared ai_FloatZero / ai_FloatOne (M10 gone); the drag product nested
-   (((((S*area)*drag)*density)*v)*v)*0.5 for wind y and the flight drags and
-   (((((area*v)*v)*S)*drag)*density)*0.5 for wind x / z (an unnested chain is reordered by VC6, all 360
-   orders = one code; a (v)-parenthesized operand in WINDDRAG costs 8 ins); fall = ai_Gravity * ai_ShotStep
-   (M8 gone); v copied field by field and the landing / step copies of next by fields (270 -> 224);
-   D3VECTOR4 locals v, next, wind, d, a, b, m (the original's frame holes are the w slots; 224 -> 185,
-   frame equal); b built in place (b = d + wind; b *= perMass; b.y = b.y * perMass - fall). No lever: v.x
-   += a.x (= control), a built in place (+22), v = b + a then *= 0.5 (+frame), copy order of v (+14), next
-   copied at the loop top (+8), SHOTVEL v... */
+   0.5 * mass * v^2, returns 0. Returns 1 while it flies. */
 int ai_StepShot(SHOTREC *shot)
 {
     float fall = ai_Gravity * ai_ShotStep;
@@ -730,7 +715,7 @@ int ai_StepShot(SHOTREC *shot)
         return 0;
     }
     wind.x = WINDDRAG(shot->wind.pos[0]);
-    wind.y = DRAG(shot->wind.pos[1]);
+    wind.y = WINDDRAGY(shot->wind.pos[1]);
     wind.z = WINDDRAG(shot->wind.pos[2]);
     for (i = 0; i < ticks; i++) {
         v.x = shot->vel.v.x;
@@ -751,13 +736,13 @@ int ai_StepShot(SHOTREC *shot)
         v.z = a.z + v.z;
         d.x = DRAG(v.x);
         d.y = DRAG(v.y);
+        d.z = DRAG(v.z);
+        b.x = d.x + wind.x;
         next.x = shot->pos.x;
         next.y = shot->pos.y;
         next.z = shot->pos.z;
-        d.z = DRAG(v.z);
         shot->time++;
         shot->steps++;
-        b.x = d.x + wind.x;
         b.y = d.y + wind.y;
         b.z = d.z + wind.z;
         b.x *= perMass;
@@ -799,25 +784,7 @@ int ai_StepShot(SHOTREC *shot)
 
 /* 0x5dc9d0, moves a cannon ball in slow motion (1318 B; gv.c 0x4edf80 calls it instead of ai_StepShot when the
    effect's +0x14 flag is set): ai_StepShot instruction for instruction with the step ai_ShotHalfStep (1/148 s)
-   for ai_ShotStep, in the gravity, the per-mass factor and the position move.
-   @deep match-deep 58: 308 -> 28 ins, shape (the same body as ai_StepShot, which got the same). Levers:
-   shared ai_FloatZero / ai_FloatOne in the sign; the drag chains fully nested in the original's load order
-   (DRAG / WINDDRAG macros); fall = ai_Gravity * step; D3VECTOR4 locals v, next, wind, d, a, b, m (frame
-   0x98); a and b built in place (a = d + wind; a *= perMass per field; a.y -= fall); the half sum v = b +
-   a; v *= 0.5f; vel copied to v and next / landing copied field by field; next copied between the y and z
-   drags; the landing stores state = 2 after pos.x. Left (code 22, order 16, fpu 2): the original's next
-   copy (3 int mov pairs) is scheduled inside the z drag (after its sign select), ours inside the y drag;
-   copying next after d.z (alone, in a block, after time++ / steps++, struct copy through a cast) changes
-   VC6's frame to 0x94 (175+ ins); all 5040 orders of d.y / next.x / next.y / next.z / d.z / time++ /
-   steps++ give 28 ins or worse; with it the px push sinks one fmul late. No meaning difference. (tiebreak:
-   insensitive) prior: Read whole against the original 0x5dc9d0..0x5dcef6: it is ai_StepShot instruction
-   for instruction with ai_ShotHalfStep for ai_ShotStep (the disassemblies differ only in those four
-   operands); same body and the same velocity copy v (348 of 354 instructions). Left, as in ai_StepShot:
-   (1) VC6 reorders the drag product chain - the original multiplies sign*area*drag*density*v*v*0.5 (wind
-   x/z: area*w*w*sign*...), ours sign*drag*density*v*v*area*0.5 for every association tried (6 macro forms,
-   identical code or worse); (2) the temporaries: the original spills dx and the half sums into
-   0x84/0x68/0x6c and reuses the dead v slots [0x10]/[0x14], frame 0x98 vs ours 0x5c - FPU stack scheduling
-   and spill-slot allocation. */
+   for ai_ShotStep, in the gravity, the per-mass factor and the position move. */
 int ai_StepShotSlow(SHOTREC *shot)
 {
     float fall = ai_Gravity * ai_ShotHalfStep;
@@ -837,7 +804,7 @@ int ai_StepShotSlow(SHOTREC *shot)
         return 0;
     }
     wind.x = WINDDRAG(shot->wind.pos[0]);
-    wind.y = DRAG(shot->wind.pos[1]);
+    wind.y = WINDDRAGY(shot->wind.pos[1]);
     wind.z = WINDDRAG(shot->wind.pos[2]);
     for (i = 0; i < ticks; i++) {
         v.x = shot->vel.v.x;
@@ -858,13 +825,13 @@ int ai_StepShotSlow(SHOTREC *shot)
         v.z = a.z + v.z;
         d.x = DRAG(v.x);
         d.y = DRAG(v.y);
+        d.z = DRAG(v.z);
+        b.x = d.x + wind.x;
         next.x = shot->pos.x;
         next.y = shot->pos.y;
         next.z = shot->pos.z;
-        d.z = DRAG(v.z);
         shot->time++;
         shot->steps++;
-        b.x = d.x + wind.x;
         b.y = d.y + wind.y;
         b.z = d.z + wind.z;
         b.x *= perMass;
@@ -906,6 +873,7 @@ int ai_StepShotSlow(SHOTREC *shot)
 #undef SIGN
 #undef DRAG
 #undef WINDDRAG
+#undef WINDDRAGY
 /* 0x5dcf00, the ground test of a cannon ball's flight step (390 B; ai_StepShot / ai_StepShotSlow): the cell
    of to (d3_GetHeightAt into npx / npz). When it is at most one cell from the cell px / pz of from, the
    step hits when to lies less than ai_ShotHitHeight above the ground there. A longer step is walked from
