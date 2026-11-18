@@ -963,6 +963,48 @@ Where the pushes and pops sit, how many epilogue copies there are, shared agains
     file (dcp fn's output turned a string's 0xfc into U+FFFD and round 1 died: main_UpdateFigure).
   - Left with a note: d3_MirCreateOutline (mark[head]'s load order, regs 2).
 
+- **Deep s32 (the near-byte list to 45 instructions, the 15 untagged ones first: 12 byte, 1 draft -> shape, 2
+  notes; 2 bonus)**:
+  - **A shared call tail the original reaches by `mov reg,..; jmp` from several arms = the call written in each
+    arm, and the statement after it too**: ord_ReportStatistics' tier phrase `txt_Format(tierText, "%s%s",
+    ids[k + 2], ids[k + 2] + 1); any = 1;` in each of the three tier arms (VC6 cross-jumps them into one call):
+    the three tierText references order the two 0x200 buffers (count tie broken the original's way), the three
+    `any = 1` rank any above txt1 / txt2 (esi / edi / ebx / ebp rotation). One call after the arms: slots 16;
+    the calls per arm without the flag stores: regs 40; both: byte.
+  - **c2trace --prio again (s30): one value more in a block where the losing piece is referenced**:
+    ai_BuyCartWindow's item (32) and kind's split piece (32) tied for ebx; the caption's price into `price`
+    first (`price = (int)gm_ItemPrice(kind + 0x134, 100); txt_Format(.., price);`) lifted kind: byte. flip.py
+    on that hunk hit only constant tokens all over the function: the mark of a priority tie, not of a
+    spelling.
+  - **A rotated vector, not two scalars**: d3_YawTo's `t = cs * a.x + sn * a.z; u = ..; t * b.x + b.z * u +
+    a.y * b.y` (every operand order one code, fpu 25-32) is `c.x = ..; c.y = a.y; c.z = ..; c.x * b.x + c.y *
+    b.y + c.z * b.z` with a D3VECTOR4 c: the x87 allocator keeps one field in its slot (`fstp [esp+0x20]`) and
+    lifts the other, as the original: byte. When the original stores one of two float temporaries and keeps the
+    other on the stack, try them as fields of one vector.
+  - **Parentheses are a float lever**: gm_AgeCharacter `v = v - k + (k / v)` (fld k; fdiv; fxch; fsub; faddp)
+    against `v - k + k / v` (draft 7). VC6 orders a flat chain of float adds itself (gm_RankPlayers: all 6
+    orders of `title + office + reputation` one code), a parenthesized group is kept:
+    `(reputation + (title + office))` gave the original's fld title; fadd office; fadd reputation.
+  - **Block locals (s21 / s29 again)**: ai_DecideGraveyardOwner0's x (address to ai_PickActionBuilding) and
+    its class mask in the no-building branch: at function scope x conflicted with the pick temp and id, which
+    then took other dead parameter slots (slots 30 -> byte); `flags = 0` before the o1 stores kept flags out
+    of o1's dead slot.
+  - **Decompiler loop and guard shapes -> plain code, byte at once**: two guard blocks with the same free +
+    return as one `||` condition (he_RunEventGood: ev / per swapped); `cnt = 0` after the guard instead of an
+    initializer (cm_LobbyAllReady: the pushes and xor edi behind the early return); a building walk with the
+    match returning 0 inside a `for` and `b++` at the body's end (gm_Homeless); a pointer q stepped beside i
+    -> `lst[i]` (gv_BuryCharacter), `o = l[i]` beside i -> `l[i]` (gm_FindMarketObject); a hand-advanced
+    search `u = *++t` -> index loop + break; the arms of `if (index == -1)` swapped (ai_SwitchRoom); a goods
+    record pointer g with `(unsigned char)g->type` in the search (gm_TakeableCount: the original materializes
+    the record address and keeps the type in al; the unsigned char local spilled it).
+  - **A literal in a callee-saved register (s27): the store in each closing arm** (ai_SuicideWindow's
+    sv_PopRequest = 1 three times in an if / else-if chain instead of one store behind `continue`s).
+  - Left with notes: gm_RankPlayers (the prologue's zero register for best: edx = n's in the original, edi =
+    i's in ours; const#0 piece), hst_NextEvent (the d != 1 arm laid behind the loop's return in the original;
+    the tail in both arms moves it there but VC6 then decides the r == 0 test on that path), he_PatrolStep
+    (the message 0xf's n / ch stores after the push of &m; 4000+ orders and the block-local m tried),
+    hmt_FillCouncils (bonus: the council loop's i = 2 .. 0 with the test on i + 1).
+
 - **An else-if arm cross-jumped whole into a sibling's copy, the original keeps it inline**: the store order of
   the OTHER arms (default arm charId before stateArg; 0x176 arm stateArg, charId, x, z) decides it, found by
   climb.py swap + move in round 2 (cm_OrderAttack byte; permuting only the inlined arm's stores did not). The pair
