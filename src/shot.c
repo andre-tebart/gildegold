@@ -974,16 +974,21 @@ float ai_NormalizeEffectScale(float value)
    *outYaw and three vectors: outDir the horizontal direction tilted by the elevation, outUp d3_YAxis tilted
    the same way, outSide their cross product; -1 when no setting in the range hits (reasoned: the names follow
    the use in am.c).
-   @deep size queue s16: 208 -> 14 ins, raw size 727 = the original (padded size). Kept: sign = 0 at its
-   declaration (the original zeroes ebp first and stores hdir.y from it), ang = range[3] before speed =
-   range[0] (the FPU stack order), 1.0f / g written inline at both uses instead of an inv local (VC6 hoists
-   g * 2 first, then 1 / g, as the original), g declared before speedStep / angStep (with equal counts the
-   symbol order decides that speedStep, not g, takes range's dead slot). Left: hdir.y's mov [..],ebp
-   scheduled before the speedStep fstp (the original after the angStep fsub), and in the success arm the c
-   products of outUp[1] / outUp[2] load c first (the original the d3_YAxis component). No lever for those:
-   all 1023 operand swaps of the five tail lines, 144 declaration orders of s / c, d3_YAxis through a
-   pointer / array view / local copies of c and s (one code each); climb round 1 best 10 ins by inlining
-   err in both tests (another place differs, not kept). */
+   @deep deep s29: climb round 1 again: only the old err-inlined row (10 ins elsewhere, not kept). The
+   first-reference tie key (a local declared with an initializer, the lever that put cm_TrialAskPlayer's
+   two calls and ai_DonationWindow's reloads in the original's order): horiz / drop / speed / ang / i =
+   control; s / c / h / t / err with = 0 emit a store and are worse (22..30 ins). Hunks unchanged: hdir.y's
+   mov [..],ebp before the speedStep fstp, the d3_YAxis.y / .z products loading c first, outSide[0]'s
+   second product operand order. prior: size queue s16: 208 -> 14 ins, raw size 727 = the original (padded
+   size). Kept: sign = 0 at its declaration (the original zeroes ebp first and stores hdir.y from it), ang
+   = range[3] before speed = range[0] (the FPU stack order), 1.0f / g written inline at both uses instead
+   of an inv local (VC6 hoists g * 2 first, then 1 / g, as the original), g declared before speedStep /
+   angStep (with equal counts the symbol order decides that speedStep, not g, takes range's dead slot).
+   Left: hdir.y's mov [..],ebp scheduled before the speedStep fstp (the original after the angStep fsub),
+   and in the success arm the c products of outUp[1] / outUp[2] load c first (the original the d3_YAxis
+   component). No lever for those: all 1023 operand swaps of the five tail lines, 144 declaration orders of
+   s / c, d3_YAxis through a pointer / array view / local copies of c and s (one code each); climb round 1
+   best 10 ins by inlining err in both tests (another place differs, not kept). */
 int ai_SolveCannonAim(float *from, float *to, float *range, float *outElev, float *outYaw, float *outSpeed,
                       float *outDir, float *outUp, float *outSide)
 {
