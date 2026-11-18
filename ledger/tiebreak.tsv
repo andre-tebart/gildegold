@@ -4511,7 +4511,7 @@ exe	0x005c6530	ai_MarriageTest	lc	cdd796f72d1336ff	no	byte	control=byte p1=byte 
 exe	0x005c6620	ai_CourtshipRounds	lc	6ce6c20439e6fa97	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005c6910	ai_CourtshipConfirm	lc	4248759569a05eca	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x005c6aa0	ai_CourtshipListWindow	lc	39eeb984df8298b1	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x005c6d00	ai_CourtshipWindow	lc	32480e67e478e429	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
+exe	0x005c6d00	ai_CourtshipWindow	lcamt	b5798163acfd724a	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	e2af6b2ef412c6f9
 exe	0x005c72d0	ai_PlotRatingBaseChart	lc	b37e6aa02ab77a76	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005c7460	ai_PlotScoreChart	lcamt	241820fa9d6d7f03	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=568	2eb3e29bb00f55b1
 exe	0x005c7560	ai_PlotNoFirstChart	lc	30996244fb2d8ece	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	

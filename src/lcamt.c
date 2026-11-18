@@ -5749,20 +5749,24 @@ int ai_CourtshipListWindow(G8CHARREC *ch, LCORDMSG *m)
    (pick - the partner's b00d) / 9 * 3 + 0.5 clamped to 0 .. 3 (a round due when the rounds are reached: an hour on),
    posts the event again (cm_SendExSetHE), pays pairPrice (cm_SendMoveGoods) and tells the partner's answer 0x1cf9
    (text 0x1d02 + a random pick by the gain); the close button tells 0x1cfa and posts the event. Returns 2
-   @deep reconstructed and read the whole function 0x5c6d00..0x5c72c7 (was the draft ai_OfficeApplication):
-   the courtship event walk (AIJOB.partner1/partner2, pairDone/pairDrawn states 1..4), the non-player
-   courtship message 0x41 (AIMSG, m->target, gv.h ORDMSG.target union added), the list window call with
-   both arguments, the werbung2 texts 0x1ce7/0x1ce3/0x1d31/0x1cf4, the gift buttons 0x1cf5..0x1cf8
-   (pairPick/pairPrice), the gift gain (pick - b00d) * 0.11111111 clamped at 0, *3 + 0.5, the 0x1d02 answer
-   pick, pairRound/end/gm_AddTime, cm_SendExSetHE, cm_SendMoveGoods, the close 0x1cfa; the frame now
-   matches (btns[9]). Left: the local layout of prices[3] / picks[3] (ours prices at +0x34 / picks at
-   +0x28, the original the other way; the picks copy loop is 'xor ecx; add ecx,4; mov dl,[edi]; inc edi;
-   mov [esp+ecx+0x30],edx; cmp ecx,0xc' in the original, an indexed loop in ours, and prices stay in
-   ebp/ebx/edx there), the message's store scheduling (+0xe7: the original loads p->netId before the memset
-   and interleaves the AITIME copy), the out-of-line placement of 'mov bl,3' and the gain<=0 util_Random(5)
-   block (+0x434/+0x461), and register renaming; tried six orders of the message stores, four forms of the
-   gain clamp (ternary, min, if/else, switch), a single int[15] and int[2][3] for the gift words,
-   declaration orders. 417 vs 421 instructions. */
+   @deep size queue s17: fixed the meaning (one function-scope prices[3]; the click read a second,
+   uninitialized block array; frame 0x540 -> 0x54c as the original), then the gift words copied in ONE loop
+   (for (i..3) { prices[i] = ev->pairPrice[i]; picks[i] = ev->pairPick[i]; }: VC6 unrolls the price loads
+   into ebp/ebx/edx and walks the picks with a pointer and a scaled counter as the original): 142 -> 15
+   ins, raw 1477 vs 1479 (padded size). The picks loop through a byte pointer (pp++) / prices as their own
+   loop = control, picks first 146. Left: the 0x41 message's word store (msg+0x38) scheduled before the
+   flags byte (ours) vs after; the gain clamp's mov bl,3 out of line and the gain <= 0 block placed after
+   the gain == 1 arm in the original: 16 clamp spellings x both if polarities (ternary, min either order,
+   if/else either way, set-then-if) none closer (neg polarity +2 / tail hunks). prior: reconstructed and
+   read the whole function 0x5c6d00..0x5c72c7 (was the draft ai_OfficeApplication): the courtship event
+   walk (AIJOB.partner1/partner2, pairDone/pairDrawn states 1..4), the non-player courtship message 0x41
+   (AIMSG, m->target, gv.h ORDMSG.target union added), the list window call with both arguments, the
+   werbung2 texts 0x1ce7/0x1ce3/0x1d31/0x1cf4, the gift buttons 0x1cf5..0x1cf8 (pairPick/pairPrice), the
+   gift gain (pick - b00d) * 0.11111111 clamped at 0, *3 + 0.5, the 0x1d02 answer pick,
+   pairRound/end/gm_AddTime, cm_SendExSetHE, cm_SendMoveGoods, the close 0x1cfa; the frame now matches
+   (btns[9]). Left: the local layout of prices[3] / picks[3] (ours prices at +0x34 / picks at +0x28, the
+   original the other way; the picks copy loop is 'xor ecx; add ecx,4; mov dl,[edi]; inc edi; mov
+   [esp+ecx+0x30],edx; cmp ecx,0xc' in the original, an indexed loop in ours, and prices stay in ebp... */
 
 int ai_CourtshipWindow(AICHARREC *ch, LCORDMSG *m)
 {
@@ -5834,12 +5838,11 @@ int ai_CourtshipWindow(AICHARREC *ch, LCORDMSG *m)
         io_PrintText(0x1d31, p->id);
     } else if (state == 4) {
         p = (AICHARREC *)gm_FindChar(partner);
-        prices[0] = ev->pairPrice[0];
-        prices[1] = ev->pairPrice[1];
-        prices[2] = ev->pairPrice[2];
         level = p->b00d;
-        for (i = 0; i < 3; i++)
+        for (i = 0; i < 3; i++) {
+            prices[i] = ev->pairPrice[i];
             picks[i] = ev->pairPick[i];
+        }
         io_PrintText(0x1cf4, p->id, 0x5d, ev->pairRounds - ev->pairRound, 0x5d);
         btns[0] = d2_GetWinObj(win, 1, io_PrintText(0x1cf5, picks[0] + 0x1d11, prices[0]));
         btns[1] = d2_GetWinObj(win, 1, io_PrintText(0x1cf6, picks[1] + 0x1d11, prices[1]));
