@@ -9592,9 +9592,7 @@ void ai_SwitchRoom(int index, unsigned short room)
     unsigned short *p;
     int i;
 
-    if (index == -1) {
-        ((AIBLD *)ai_PlayerBuilding)->mainRoom = room;
-    } else {
+    if (index != -1) {
         p = (unsigned short *)gm_Query(((AIBLD *)ai_PlayerBuilding)->objList, 1, 4, 2);
         if (p == 0)
             return;
@@ -9604,7 +9602,8 @@ void ai_SwitchRoom(int index, unsigned short room)
                 return;
         }
         ((AIBLD *)ai_PlayerBuilding)->mainRoom = *p;
-    }
+    } else
+        ((AIBLD *)ai_PlayerBuilding)->mainRoom = room;
     sv_PopRequest = (sv_FrameDepth - sv_FrameBase) + 1;
     d3_SetObjectPos(d3_Camera, sv_ViewPos);
     d3_SetObjectRot(d3_Camera, sv_ViewRot);
