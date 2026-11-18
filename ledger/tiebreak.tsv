@@ -3858,7 +3858,7 @@ exe	0x0056f3f0	he_SecretRoomDomizil	he_b	006b09297d2705a0	no	shape	sweep control
 exe	0x0056f600	he_FindNearestSpying	he_b	a3a585dbe65ac8ef	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=568	3ca5b3fe521e2bd8
 exe	0x0056f740	he_SecretRoomCatchSpy	he_b	2186227869f0a34c	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=568	3ca5b3fe521e2bd8
 exe	0x0056f980	he_RegisterEventTypes88	he	a9f6434ed82fa4a1	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x0056fbc0	he_SetLifeByAge	he	7eaf06352f0a8540	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	2eb351387392f924
+exe	0x0056fbc0	he_SetLifeByAge	he_b	5afaaafade5201d9	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	4dcc726ef14520f7
 exe	0x0056fc50	he_AllocHaunting	he	46fadd6f204a0f6b	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0056fda0	he_RunHaunting	he	17adf3eaa4d42b3c	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00570130	he_AllocDecay	he	e50d69748c11a709	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	

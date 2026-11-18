@@ -4418,7 +4418,7 @@ int he_RegisterEventTypes88(void)
     return 1;
 }
 /* 0x56fbc0, ages the character c's life value f01c by num years: fnum not above f020 -> sends the delta
-   f018 - f01c; else (fnum - f020) steps of v = v - f014 + f014 / v from v = fnum - f020, then the delta
+   f018 - f01c; else (int)(fnum - f020) steps of v = v - f014 + f014 / v from v = f018, then the delta
    v - f01c (cm_SendFloatDelta, field 0x1c)
    @deep size queue: padded size right (129 = original raw) with the parenthesised (c->f020) in the compare
    (rank lever: fld f020; fld st(1); fcompp, 10 ins), not the original's form. Left: the original keeps
@@ -4437,13 +4437,13 @@ void he_SetLifeByAge(AICHAR *c, int num)
     if (c == 0)
         return;
     fnum = (float)(unsigned short)num;
-    if (fnum <= (c->f020)) {
+    if (fnum <= c->f020) {
         ((int (*)(int, int, float))cm_SendFloatDelta)(c->netId, 0x1c, c->f018 - c->f01c);
         return;
     }
+    v = c->f018;
     f = c->f014;
-    v = fnum - c->f020;
-    for (n = (int)v; n > 0; n--)
+    for (n = (int)(fnum - c->f020); n > 0; n--)
         v = v - f + f / v;
     ((int (*)(int, int, float))cm_SendFloatDelta)(c->netId, 0x1c, v - c->f01c);
 }
