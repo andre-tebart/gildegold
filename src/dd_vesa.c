@@ -1475,26 +1475,26 @@ __inline char dd_CpuHasMMX(void)
 #define DD_RMASK888 0xff0000u
 
 /* 0x41d2e0, sets up the display: mode DD_GDI..DD_FULLMEM, xres x yres at bpp bits
-   @deep size queue (s2): raw 2732 vs 2742 (+ a 20-byte jump table each). Fresh read by size: the whole
-   10-byte gap sits in the dd_PixelFormat expression (+0x58a..+0x5d7: the original's G * -10 as mov/neg/shl
-   2/sub/add, R * 100 as lea/lea/shl 2, add 0x378 last = 23 bytes more code than our (R*10 + G)*10 lea
-   chain); every other hunk of the function is size-neutral, so no statement is missing. s2 forms (all =
-   control): (8 - R) * 100 + (8 - G) * 10 + 8 - B and with (8 - B), 888 - (G*10 + R*100) - B, G * -10 -
-   R*100 - B + 888, -10 * G - 100 * R - B + 888, (int) casts, G term first, R * 10 * 10, (R * 10 + G) * 10;
-   B % 256 changes code (+20 bytes, wrong form). Mechanism still open: what keeps R*100 out of VC6's
-   multiply-add merge (the earlier note: only a narrowing cast, a float multiply or shifts did, each with
-   extra code). prior: 73 -> 68 ins this session: the GDI arm's bpp tests as switch (bpp) { case 24: case
-   32: .. case 16: .. } (the branch hunk and the cross-jump stub gone; if/else forms 84..88, case orders
-   all one code) and ddsd.dwHeight stored before the #ifdef'd dwFlags in the window arm (order hunk). Left,
-   two mechanisms: (1) dd_PixelFormat: ours folds R*100 + G*10 into (R*10 + G)*10 (lea chain, mov esi,0x378
-   first); the original computes G*-10 (mov esi,edi; neg; shl 2; sub; add esi,esi), R*100 alone
-   (lea/lea/shl 2), subtracts R and B and adds 0x378 last - VC6's code when the R*100 term is opaque to the
-   multiply-add merge. Toys (VC6 /O2, 300+ forms): every spelling, term order, parenthesisation, split into
-   statements (global or local), unsigned/short/char/int types of all three, casts on R/G/B and on the
-   whole merge; only a narrowing cast on R*100 ((short), (unsigned short), & 0xffff), a float multiply
-   or...
-
-
+   @deep deep s39: nothing kept. The whole distance is still the dd_PixelFormat expression: the original
+   loads GLoss, RLoss, BLoss in that order and computes ((G * -10 - R * 100) - B) + 888 (mov esi,edi / neg
+   / shl 2 / sub / add esi,esi; lea / lea / shl 2; sub; sub; add esi,0x378 last), ours 888 - (R * 10 + G) *
+   10 - B. Toy sweeps (VC6 /O2, the mask expression behind it as in the function): 400 random forms (term
+   order, association, -G * 10 / G * -10 / (8 - G) * 10 / (G - 8) * -10, constants split 800 / 80 / 8,
+   casts int / unsigned / long / short / char on the operands), 576 forms with L / U / UL constants, RLoss
+   read as a byte of an int / unsigned / short / char global ((unsigned char)R, R & 0xff, *(unsigned char
+   *)&R), the value built through compound statements on the global or on a local (F = -G * 10; F -= R *
+   100; F -= B; F += 888 and five more): every one compiles to the merged form (mov 888 first, no neg). VC6
+   forward-substitutes and re-associates across statements, so no plain int expression of these three bytes
+   keeps R * 100 apart; what does (s2) costs code. Open: a construct that makes the R * 100 product opaque
+   without code. prior: size queue (s2): raw 2732 vs 2742 (+ a 20-byte jump table each). Fresh read by
+   size: the whole 10-byte gap sits in the dd_PixelFormat expression (+0x58a..+0x5d7: the original's G *
+   -10 as mov/neg/shl 2/sub/add, R * 100 as lea/lea/shl 2, add 0x378 last = 23 bytes more code than our
+   (R*10 + G)*10 lea chain); every other hunk of the function is size-neutral, so no statement is missing.
+   s2 forms (all = control): (8 - R) * 100 + (8 - G) * 10 + 8 - B and with (8 - B), 888 - (G*10 + R*100) -
+   B, G * -10 - R*100 - B + 888, -10 * G - 100 * R - B + 888, (int) casts, G term first, R * 10 * 10, (R *
+   10 + G) * 10; B % 256 changes code (+20 bytes, wrong form). Mechanism still open: what keeps R*100 out
+   of VC6's multiply-add merge (the earlier note: only a narrowing cast, a float multiply or shifts did,
+   each with extra code).
 
 
 
