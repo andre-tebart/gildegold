@@ -1121,6 +1121,38 @@ Where the pushes and pops sit, how many epilogue copies there are, shared agains
     d3_SetFog (no new lever).
   - Tools: c2trace.py function_span and initgen.py read K&R definitions (d2_DrawPic).
 
+- **Deep s36 (the near-byte list to 80 instructions, notes older than s22 first: the 15 at 22-25 instructions,
+  10 byte, 2 closer, 3 notes; hst_NextEvent closer as a bonus)**:
+  - **The old note's mechanism can be the wrong one: re-run the plain form with the inits reordered**:
+    d2_RaiseWindow's note blamed the 0x2ff constant shared by its two search loops (78 ins for the plain
+    form); the cause was `D2WIN *w = &d2_Wins[win];` in the declaration. Assigned after `first = -1; j = -1;`
+    the plain for loops are byte. A pointer initialised in its declaration is an init statement at the top:
+    put it in the init-order round.
+  - **A partial initialiser's implicit zeros and explicit zeros are different stores**: ai_UpdateProdGoodsList's
+    `rows[9][4] = { {2}, .. }`: the original's second column written out (`{ 2, 0 }`) for the five rows whose
+    second value is 0: those zeros join the other table's explicit zeros (ebx after the push), byte.
+  - **A dummy out-parameter declared per block shares one slot sorted last**: ai_PokerNpcFold's `&any` of three
+    switch cases at [esp+0x2c] behind every other 4-byte local (one reference each): `int any;` in each case
+    block (slots 24 -> byte).
+  - **`x != 0 ? 1 : -1` against `(x != 0) * 2 - 1`**: both setne / lea, the multiply form one scratch register
+    more (he_RunEffectEvent byte; if / else = the ternary).
+  - **A stored field read back instead of the local reused**: lobby_ShowChat's `contentHeight = height + 0x18;
+    scrollY = contentHeight - h` (lea ecx,[ebx+0x18] / sub ecx,esi) instead of `height += 0x18` (byte).
+  - **Message data through m->data at each use, the loop counter set before the enclosing if**:
+    cm_ExWalkPath (m kept in esi, xor edi,edi ahead of the path test, `for (; i < 2 && idx < len; i++, idx++)`).
+  - **A check that only one arm needs, written after the if-chain with a decided test**: hst_NextEventCmd /
+    hst_NextEvent `if (r == 1 && *out == 0) r = 6;` behind the d chain: VC6 decides r == 1 on every path, but
+    the block now sits behind the d != 1 block as in the original (24 -> 18, 16 -> 10).
+  - **Alloc handlers: the lookups nested with one he_FreeEvent at the end** (he_AllocTrainShare,
+    he_AllocGraveCare: `if (c != 0) { .. if (..) { ..; return; } } he_FreeEvent(ev);`, the original's single
+    shared exit; with a float test `!(x <= 0.0f)` for test ah,0x41 / jnp, as he_AllocResearchRecipe). The
+    reverse in a switch handler: the free written in the arm (`he_FreeEvent; return;` instead of `break` to
+    the shared free) puts the cross-jumped call tail into the else arm (he_RunStoreExtension byte).
+  - **`for (k = 0; k < 5; k++, y += 0xd)`** for inc ebx before add esi,0xd (ai_GraveDetail 22 -> 20).
+  - Left with notes: ai_GraveDetail (const 0 web in ebp), d3path_Init (sib order: a t local for the flags byte
+    fixes it but reads flags into a register), d3fl_TileBox (a scheduling-region cut), d3_SetupFrustum,
+    ai_HasMaterials (found known 0 at our loop top), hst_NextEventCmd (return block order, name / cmd).
+
 - **An else-if arm cross-jumped whole into a sibling's copy, the original keeps it inline**: the store order of
   the OTHER arms (default arm charId before stateArg; 0x176 arm stateArg, charId, x, z) decides it, found by
   climb.py swap + move in round 2 (cm_OrderAttack byte; permuting only the inlined arm's stores did not). The pair
