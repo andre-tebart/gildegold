@@ -1266,15 +1266,20 @@ unsigned short *gm_QueryNext(void)
     return (unsigned short *)res;
 }
 /* 0x4ffe90, starts an object query over the list (or, with the flag 7, over the whole instance table) and returns the first match (gm_QueryNext): n criteria follow as (kind, value) pairs: kind 0 = prototype, 1 = owner id, 3 = the owner's character number (gm_ObjectOwnerNo), 4 = the prototype kind (each with a value), 5 = stop at the first match, 6 = descend into the children, 7 = scan the whole table (without value). Not set criteria match everything; 0 without the goods table or a list, and for 6 together with 7. Used as gm_Query (list, 2, 6, 0, 0x115) .. all over the exe
-   @deep match-deep 2026-11-14: draft 33 -> shape 4 ins. Rewritten with va_list / va_arg (same code as the
-   hand-walked ap), the kind byte stored as the unsigned 0xff (a char -1 shared the owner's -1 register: 33
-   -> 10), scan = 0 / kids = 0 written right before their stores (48 placements, 10 -> 6: dl / bl kept
-   apart), a count-down loop i = n .. 1 (6 -> 4: pop esi after the flag stores). Left: the scan tail loads
-   ai_Objects into edx where the original uses eax (scratch rotation one step off). Tried: va_end placement
-   / none, flag store order (worse), the both-flags test as one &&, list reused for the scan cursor (eax
-   right but the two tails cross-jump, branch 1), a goto to one shared call, a kind local, switch on an int
-   & 0xff (worse), flip.py want mov eax ai_Objects (7 hits, all meaning changes, 58-88 ins). (tiebreak: not
-   measured (dcp headers sample gm_Query)) */
+   @deep deep s24: the criteria loop as for (i = 0; i < n; i++) 6 ins, while (n--) / while (n-- > 0) 38-40,
+   do { } while (--i) 22 (the countdown for stays); va_start at the top / before the if, va_end after the
+   block: = control; the scan / kids tests after the if (n > 0) block (VC6 threads the known zeros: =
+   control) or with the flag stores outside too (8); climb --rounds 2 (370 mutants): nothing. Left: the
+   scan tail's ai_Objects load in edx (the original eax), a scratch-rotation step. prior: match-deep
+   2026-11-14: draft 33 -> shape 4 ins. Rewritten with va_list / va_arg (same code as the hand-walked ap),
+   the kind byte stored as the unsigned 0xff (a char -1 shared the owner's -1 register: 33 -> 10), scan = 0
+   / kids = 0 written right before their stores (48 placements, 10 -> 6: dl / bl kept apart), a count-down
+   loop i = n .. 1 (6 -> 4: pop esi after the flag stores). Left: the scan tail loads ai_Objects into edx
+   where the original uses eax (scratch rotation one step off). Tried: va_end placement / none, flag store
+   order (worse), the both-flags test as one &&, list reused for the scan cursor (eax right but the two
+   tails cross-jump, branch 1), a goto to one shared call, a kind local, switch on an int & 0xff (worse),
+   flip.py want mov eax ai_Objects (7 hits, all meaning changes, 58-88 ins). (tiebreak: not measured (dcp
+   headers sample gm_Query)) */
 char *gm_Query(void *list, int n, ...)
 {
     va_list ap;
