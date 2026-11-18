@@ -2051,12 +2051,12 @@ void cm_SendSpawnCharacter(unsigned char a, int b, int c, unsigned char d, unsig
     G17MSG m;
 
     m.spawn.kind = a;
-    m.spawn.objId = c;
     m.spawn.bldId = b;
+    m.spawn.objId = c;
     m.spawn.job = d;
-    m.spawn.item = f;
     m.type = 0x49;
     m.spawn.title = e;
+    m.spawn.item = f;
     strcpy(m.spawn.text, s);
     cm_QueueSend(&m);
 }
