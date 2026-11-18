@@ -2978,7 +2978,7 @@ exe	0x004fe310	gm_AddTime2	f3gmt	byte	readable
 exe	0x004fe330	gm_Season	f3gmt	byte	readable		
 exe	0x004fe350	gm_ClockSeason	f3gmt	byte	readable		
 exe	0x004fe370	gm_InitBuildingTables	f3gmt	draft	readable	deep	
-exe	0x004fe570	gm_LoadTables	f3gmt	shape	readable		
+exe	0x004fe570	gm_LoadTables	f3gmt	byte	readable		
 exe	0x004fe7f0	gm_ClearBuildings	f3gmt	byte	readable		
 exe	0x004fe830	gm_ClearObjects	f3gmt	byte	readable		
 exe	0x004fe900	gm_FindObjectProto	f3gmt	byte	readable		
@@ -3270,7 +3270,7 @@ exe	0x0051c560	ls_WriteMessageQueues	ls	byte	readable
 exe	0x0051c870	ls_WriteEnvironment	ls	byte	readable		
 exe	0x0051c920	ls_Read	ls	byte	readable		
 exe	0x0051c950	ls_LoadGame	ls	byte	readable		
-exe	0x0051cee0	ls_ReadSaveHeader	ls	shape	readable		
+exe	0x0051cee0	ls_ReadSaveHeader	ls	byte	readable		
 exe	0x0051d2d0	ls_LoadScene	ls	byte	readable		
 exe	0x0051d3d0	ls_ReadObjects	ls	byte	readable		
 exe	0x0051d4f0	ls_HookBuildingCB	ls	byte	readable		
@@ -3662,7 +3662,7 @@ exe	0x00550ea0	he_StartRanking	he	byte	readable
 exe	0x00550ee0	he_RunRanking	he	byte	readable		
 exe	0x005512c0	he_StartWalk	he	byte	readable		
 exe	0x00551340	he_StepWalkSlot	he	byte	readable		
-exe	0x00551440	he_FillWalkSlot	he	draft	readable	deep	
+exe	0x00551440	he_FillWalkSlot	he	byte	readable		
 exe	0x005516a0	he_PlayGestures	he	byte	readable		
 exe	0x00551780	he_StepWalk	he	draft	readable	deep	
 exe	0x00551b70	he_RunWalk	he	byte	readable		
@@ -3736,13 +3736,13 @@ exe	0x0055bad0	he_RunEvent1f	he	byte	readable
 exe	0x0055bd20	he_AllocDemolish	he	byte	readable		
 exe	0x0055bd80	he_RunDemolish	he	byte	readable		
 exe	0x0055bf50	he_AllocBuyBuilding	he	byte	readable		
-exe	0x0055bfd0	he_RunBuyBuilding	he	draft	readable	deep	
+exe	0x0055bfd0	he_RunBuyBuilding	he	byte	readable		
 exe	0x0055c540	he_AllocKredit	he	byte	readable		
 exe	0x0055c700	he_RunKredit	he	byte	readable		
 exe	0x0055cb00	he_RunEvent24	he	byte	readable		
 exe	0x0055cc10	he_RunMasterExamNotice	he	byte	readable		
 exe	0x0055ce00	he_AllocMasterExamPass	he	byte	readable		
-exe	0x0055ce60	he_RunMasterExamPassed	he	draft	readable	deep	
+exe	0x0055ce60	he_RunMasterExamPassed	he	shape	readable	deep	
 exe	0x0055d310	he_AllocEvent27	he	byte	readable		
 exe	0x0055d390	he_RunEvent27	he	byte	readable		
 exe	0x0055d490	he_AllocHarvest	he	draft	readable	deep	
@@ -3879,7 +3879,7 @@ exe	0x005719e0	he_RunDeathDue	he_b	shape	readable
 exe	0x00571ac0	he_AllocGraveTraining	he_b	byte	readable		
 exe	0x00571c30	he_RunGraveTraining	he_b	byte	readable		
 exe	0x00571f60	he_AllocMeeting	he_b	shape	readable		
-exe	0x005720f0	he_CatchMeetingDisease	he_b	draft	readable	deep	
+exe	0x005720f0	he_CatchMeetingDisease	he_b	shape	readable	deep	
 exe	0x00572310	he_SpreadMeetingDisease	he_b	shape	readable	deep	
 exe	0x005725b0	he_RunMeeting	he_b	byte	readable		
 exe	0x005726a0	he_AllocMeetingScene	he_b	byte	readable		
@@ -4003,8 +4003,8 @@ exe	0x00578370	ai_TutorialStop	sv_t	byte	readable
 exe	0x00578440	ai_TutorialFreeRuns	sv_t	byte	readable		
 exe	0x005784a0	ai_TutorialInitMainIntro	sv_t	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	sv_t	byte	readable		
-exe	0x00578e40	ai_TutorialInitChapter2	sv_t	shape	readable		
-exe	0x00579570	ai_TutorialInitChapter3	sv_t	draft	readable		
+exe	0x00578e40	ai_TutorialInitChapter2	sv_t	byte	readable		
+exe	0x00579570	ai_TutorialInitChapter3	sv_t	shape	readable		
 exe	0x0057aa80	ai_TutorialInitChapter4	sv_t	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	sv_t	byte	readable		
 exe	0x0057b750	ai_TutorialInitMainOutro	sv_t	byte	readable		
@@ -4498,7 +4498,7 @@ exe	0x005c2730	ai_MasterLetterKindWindow	lcamt	byte	readable
 exe	0x005c27b0	ai_MasterHireWindow	lcamt	byte	readable		
 exe	0x005c2a10	ai_ShowSettingGoods	lcamt	shape	readable		
 exe	0x005c2b90	ai_MasterLetterSettings	lcamt	byte	readable		
-exe	0x005c3200	ai_MasterLetterWindow	lcamt	draft	readable	deep	
+exe	0x005c3200	ai_MasterLetterWindow	lcamt	byte	readable		
 exe	0x005c33c0	ai_PassesPartnerFilter	lcamt	byte	readable		
 exe	0x005c37a0	ai_PassesBuildingFilter	lcamt	draft	readable	deep	
 exe	0x005c39a0	ai_PassesMapPickFilter	lcamt	byte	readable		
