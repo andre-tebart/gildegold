@@ -3482,7 +3482,11 @@ int ai_ExecuteSaveAps(G5CH *p, AIARG *s1, AIARG *s2)
    mask 0x90010 (ai_PickActionBuilding) whose workers average at least 6 - a random 0..3 in AICHAR.b1c5, the good
    0x161: with fewer than six goods and none usable, the sub-action 0x1c to get it from the character (weight
    0.05; k is a or 0x1c, and only a = 0 gets this far), else with a usable one the action 0x1b on it (o1 kind 1,
-   its inventory entry; o2 the building) */
+   its inventory entry; o2 the building)
+   @deep deep s23: left the final s1 / s2 fill: the original loads b->id and 0x1b before the first rep
+   movsd (*o1 = s1) and stores s2.kind = 4 after it. All 48 orders of the s2 fill with *o1 before / after
+   it: best 10 ins / 33 bytes; climb move,swap 2 rounds: 8 ins / 20 bytes (s1.ref after s2.ref, moved up),
+   not kept (no layout gain). */
 
 int ai_DecideUseMilitaryObject(int a, AIPER *p, int f, AIARG *o1, AIARG *o2)
 {
