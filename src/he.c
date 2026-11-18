@@ -10515,23 +10515,22 @@ void he_RunDelay(int ev)
    (the kind the person tooltip names) is `from` to the other kind (1 - from, a field delta of AICHAR +0xc), walking
    the 0x300 characters from a random one (ids in use, kinds up to 4); found fewer than n, it tries again 5 minutes
    later. A negative stage, no rounds or no characters left free the event, flag 4 of opts holds it
-   @deep size queue s14: padded size, 99 -> 6 ins (raw 540 vs 538): (a) the candidate test reads
-   ai_CharsT[ring].id / .kind / .b00c by index and c = &ai_CharsT[ring] only inside for the calls (the
-   original's shl eax,2 offset CSE with lea ecx; through c the fields go via eax); (b) the loop as left >
-   0: puts left in ebp and cnt in its frame slot (frame 0x10) as the original. Left: the original's loop
-   test is jne (left != 0) and on the loop's fall-through exit it pushes ebp (left, known 0) for
-   gm_AddTime's two zeros; with != (any for / while / do / && / truthy / unsigned spelling, all one code)
-   VC6 ranks cnt (prio -8) above left (-11, c2trace) and left goes to the dead parameter slot: in the
-   original the two pushes count as left's references, so its IL had left at those pushes. short left: 6
-   ins too (test bp,bp, push 0). Next: what makes VC6 substitute left for the zero constants (value
-   numbering on the exit edge). prior: read whole against the original and fixed the meaning (ceil not
-   sqrt, n = min(left, ceil(left + rounds)) as one double expression, the field value 1 - from computed
-   first, util_RandomU start, typed HECONVERT words). Left, allocation only: the original keeps cnt in a
-   frame slot (inc dword ptr [esp+0x10], cmp [esp+0x10], ebx) and left in ebp (dec ebp; test ebp, ebp),
-   ours keeps cnt in ebx and left in the dead parameter slot (dec dword ptr [esp+0x20]); hence frame 0xc vs
-   0x10, 526 vs 538 bytes, the permuted registers (n ebx | ebp, ring esi | edi, ev edi | esi) and the
-   original's push ebp (left, 0 after the loop) for gm_AddTime's zeros where ours pushes 0. A do / while
-   form of the loop tried, no change. The prover stops there (it reads left as 0x2ff on its path). */
+   @deep size queue s18 (padded size kept, 6 ins). Round: the loop test != 0 / > 0 x left = 0x300 in the
+   for or before n / ring / at the top x cnt = 0 at its declaration or before the loop (14 variants): every
+   != 0 form gives left the memory home and cnt ebp (17-29 ins: the original has cnt's store mov
+   [esp+0x10],0 in the first block and mov ebp,0x300 before the loop, left in ebp with dec ebp; test
+   ebp,ebp; jne); ours with != never pushes ebp for gm_AddTime's zeros either, so the push ebp follows from
+   left holding ebp at the loop's == 0 exit (a post-allocation known-value use), not from the source. Next:
+   what ranks left above cnt with the != test (c2trace --prio 'left|cnt' on ne-na-decl). prior: size queue
+   s14: padded size, 99 -> 6 ins (raw 540 vs 538): (a) the candidate test reads ai_CharsT[ring].id / .kind
+   / .b00c by index and c = &ai_CharsT[ring] only inside for the calls (the original's shl eax,2 offset CSE
+   with lea ecx; through c the fields go via eax); (b) the loop as left > 0: puts left in ebp and cnt in
+   its frame slot (frame 0x10) as the original. Left: the original's loop test is jne (left != 0) and on
+   the loop's fall-through exit it pushes ebp (left, known 0) for gm_AddTime's two zeros; with != (any for
+   / while / do / && / truthy / unsigned spelling, all one code) VC6 ranks cnt (prio -8) above left (-11,
+   c2trace) and left goes to the dead parameter slot: in the original the two pushes count as left's
+   references, so its IL had left at those pushes. short left: 6 ins too (test bp,bp, push 0). Next: what
+   makes VC6 substitute left for the zero constants (value numbering on... */
 void he_RunConversion(int ev)
 {
     AIJOB *e = (AIJOB *)ev;
