@@ -7722,36 +7722,30 @@ int ai_SeatSwapWindow(AICHARREC *me, LCORDMSG *m)
    amount menus (texts 0x1dcf, 0x1dd0; none: 0), then the window (0x1dd1: the 4, the price, the two) whose first
    button, when the player has the 4 (sv_CheckMoney) and the price (sv_CheckGoodAmount), does it and tells 0x1dd2;
    either button or a right click close it. Returns 1 once it was done, else 0
-   @deep Twin of ai_PeaceWindow (byte): done = 0 before the memset of cfg (the peace window's lever) takes
-   it draft 36/674 -> shape 40/48 (size now equal). Not worked further this session; the rest is slots 30 /
-   order 20 / regs 8 per dcp try. prior: Rewritten whole from the original 0x5cb4f0..0x5cba80 (the draft
-   was a skeleton): every call, argument, constant and branch read and matched; ours=462 original=462.
-   Left: one hunk at +0x220 (the player branch's AMOUNTCFG set-up): the original loads the high word of
-   gypsyFilter (mov edx,[0x5eed6c]) before the rep stosd and stores done=0 as an immediate after the
-   txt_Format pushes; ours loads both words after the memset (lc.c declares gypsyFilter const volatile like
-   menu.c's definition, so VC6 cannot hoist the load; a non-volatile extern in lc.c is an M5 against
-   menu.c:34) and stores done from eax before the rep stosd. Tried done=0 before the memset, after
-   txt_Format (85 bytes off but code 22) and at the top (worse). The rest is slots (o1/o2, price) and regs.
-   A declaration question (the volatile of gypsyFilter), not a statement. */
+   @deep frame sweep s21: 40 -> 24 ins: r1 / r2 / o1 / o2 as locals of the two blocks that roll the
+   relations (the non-player branch and the ok click; o2 decides it, r1 / r2 = control). Left: regs 8 (the
+   worth sum: the original adds into t's register, add edi,eax; t + worth, worth + t, t += worth all =
+   control), slots 8 (t / price slots in the player path), order 20 (push 0x1dcf / done = 0 / lea text
+   around the first txt_Format). prior: Twin of ai_PeaceWindow (byte): done = 0 before the memset of cfg
+   (the peace window's lever) takes it draft 36/674 -> shape 40/48 (size now equal). Not worked further
+   this session; the rest is slots 30 / order 20 / regs 8 per dcp try. */
 
 int ai_HatredWindow(AICHARREC *me, LCORDMSG *m)
 {
     int done;
     int ok;
     int price;
-    int o1;
     int cancel;
     int win;
-    int o2;
     AMOUNTCFG cfg;
     char text[0x100];
     AICHARREC *a;
     AICHARREC *b;
-    int r1;
-    int r2;
     int t;
 
     if (me->kind != 6) {
+        int r1, r2, o1, o2;
+
         if (me->money < 4)
             return 0x20;
         a = (AICHARREC *)gm_FindChar(m->target);
@@ -7809,6 +7803,8 @@ int ai_HatredWindow(AICHARREC *me, LCORDMSG *m)
         if (d2_ClickedId != -1) {
             if (d2_PointerObj == ok) {
                 if (sv_CheckMoney(me, 4) != 0 && sv_CheckGoodAmountB((char *)me, price, ai_OwnPlayer) != 0) {
+                    int r1, r2, o1, o2;
+
                     r1 = util_RandomU(0x1e) + 3;
                     r2 = util_RandomU(0x1e) + 3;
                     o1 = gm_Opinion(a->id, b->id);
