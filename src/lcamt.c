@@ -5748,25 +5748,7 @@ int ai_CourtshipListWindow(G8CHARREC *ch, LCORDMSG *m)
    text 0x1d11 + pairPick, pairPrice) with the close button 0x1cf8. A gift the player can pay counts gain rounds,
    (pick - the partner's b00d) / 9 * 3 + 0.5 clamped to 0 .. 3 (a round due when the rounds are reached: an hour on),
    posts the event again (cm_SendExSetHE), pays pairPrice (cm_SendMoveGoods) and tells the partner's answer 0x1cf9
-   (text 0x1d02 + a random pick by the gain); the close button tells 0x1cfa and posts the event. Returns 2
-   @deep size queue s17: fixed the meaning (one function-scope prices[3]; the click read a second,
-   uninitialized block array; frame 0x540 -> 0x54c as the original), then the gift words copied in ONE loop
-   (for (i..3) { prices[i] = ev->pairPrice[i]; picks[i] = ev->pairPick[i]; }: VC6 unrolls the price loads
-   into ebp/ebx/edx and walks the picks with a pointer and a scaled counter as the original): 142 -> 15
-   ins, raw 1477 vs 1479 (padded size). The picks loop through a byte pointer (pp++) / prices as their own
-   loop = control, picks first 146. Left: the 0x41 message's word store (msg+0x38) scheduled before the
-   flags byte (ours) vs after; the gain clamp's mov bl,3 out of line and the gain <= 0 block placed after
-   the gain == 1 arm in the original: 16 clamp spellings x both if polarities (ternary, min either order,
-   if/else either way, set-then-if) none closer (neg polarity +2 / tail hunks). prior: reconstructed and
-   read the whole function 0x5c6d00..0x5c72c7 (was the draft ai_OfficeApplication): the courtship event
-   walk (AIJOB.partner1/partner2, pairDone/pairDrawn states 1..4), the non-player courtship message 0x41
-   (AIMSG, m->target, gv.h ORDMSG.target union added), the list window call with both arguments, the
-   werbung2 texts 0x1ce7/0x1ce3/0x1d31/0x1cf4, the gift buttons 0x1cf5..0x1cf8 (pairPick/pairPrice), the
-   gift gain (pick - b00d) * 0.11111111 clamped at 0, *3 + 0.5, the 0x1d02 answer pick,
-   pairRound/end/gm_AddTime, cm_SendExSetHE, cm_SendMoveGoods, the close 0x1cfa; the frame now matches
-   (btns[9]). Left: the local layout of prices[3] / picks[3] (ours prices at +0x34 / picks at +0x28, the
-   original the other way; the picks copy loop is 'xor ecx; add ecx,4; mov dl,[edi]; inc edi; mov
-   [esp+ecx+0x30],edx; cmp ecx,0xc' in the original, an indexed loop in ours, and prices stay in ebp... */
+   (text 0x1d02 + a random pick by the gain); the close button tells 0x1cfa and posts the event. Returns 2 */
 
 int ai_CourtshipWindow(AICHARREC *ch, LCORDMSG *m)
 {
@@ -5811,10 +5793,10 @@ int ai_CourtshipWindow(AICHARREC *ch, LCORDMSG *m)
 
             memset(&msg, 0, sizeof(msg));
             msg.type = 0x41;
+            msg.flags = 2;
             msg.to = ch->netId;
             msg.fromId = ch->netId;
             msg.time = ai_Time;
-            msg.flags = 2;
             msg.arg[0] = ch->netId;
             msg.arg[1] = p->netId;
             cm_SendLongMessage((char *)&msg);
@@ -5865,17 +5847,16 @@ int ai_CourtshipWindow(AICHARREC *ch, LCORDMSG *m)
                     p = (AICHARREC *)gm_FindChar(partner);
                     left = picks[i] - level;
                     gain = (int)(max(left * 0.11111111f, 0.0f) * 3.0f + 0.5f);
-                    if (gain > 0) {
-                        rounds = gain >= 3 ? 3 : gain;
-                        if (gain == 1)
-                            r = (util_Random(5) & 0xffff) + 5;
-                        else if (gain == 2)
-                            r = (util_Random(4) & 0xffff) + 9;
-                        else
-                            r = (util_Random(3) & 0xffff) + 0xc;
-                    } else {
+                    if (gain > 0)
+                        rounds = min(gain, 3);
+                    if (gain <= 0)
                         r = util_Random(5) & 0xffff;
-                    }
+                    else if (gain == 1)
+                        r = (util_Random(5) & 0xffff) + 5;
+                    else if (gain == 2)
+                        r = (util_Random(4) & 0xffff) + 9;
+                    else
+                        r = (util_Random(3) & 0xffff) + 0xc;
                     txt_Format(answer, 0x1cf9, p->id, r + 0x1d02);
                     ev->pairRound += rounds;
                     if (ev->pairRound >= ev->pairRounds) {
