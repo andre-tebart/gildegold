@@ -471,3 +471,49 @@ original's order (reverse-engineering LINK's name order) is kept for the very en
   ai_PokerUi 0x62dda0 sits after menu's strings (another object's plain block?), the menu option form strings and
   "Gamedata/saves/GILDE_SAVEGAME_%i.SAV" stand earlier in the original's run; the .data steps before main
   (evt -24, tr -16, d3_event -64 .. rd -72, the cm / f3gm / f3gmt / sv named arrays) are untouched.
+
+### s11 additions
+- **One obj's .data is its plain block, then its literals, even with data defined between functions** (cl test,
+  scratch: `int a1 = 1; f() {"string_of_f"} int b1 = 2; g() {"string_of_g"} int c1 = 3;` -> a1 b1 c1, then the two
+  strings). So a plain datum after a string run is a new object, wherever the source defines it.
+- **Finding the objects of a unit**: `tools/exe/blockusers.py UNIT LO:HI:LABEL ..` labels each plain block + run and
+  prints per function the blocks its original code reads; the users change at the boundary. Found so (s11):
+  anm / rd at 0x4bc5a0 ("dummy_TUER" closes anm's run before rd's veg_Types: rd_DoorPos .. rd_RandomNamedObject
+  are anm's), cmdump (ai_CharKindNames 0x60eae0, ai_DumpPerson* 0x4e58e0..), svtip (ai_DragWindow 0x62a8cc,
+  0x587e00..), pokerwin (ai_PokerUi 0x62dda0, 0x5d9de0..). Each with bprobe: no change.
+- **The common block confirms a split**: the first rows 0x6f3300 / 0x6f3500 / 0x6f35c0 were ai_EffectState (shot's
+  ai_InitWind), ai_PokerState (pokerwin), ai_Options (menu): three objects in reverse link order. Defined all in
+  menu.c, the group's extent was +16; per object all three are exact.
+- **cm is four objects by its .data, but the code disagrees (open)**: cm_SpeedTick .. cm_Checks + strings up to
+  cm_LobbyAddChat's "%s %s" (0x60c7b8); ai_WeaponRecordData / cm_DefenseFactor .. cm_FightButton 0x60c7c0 + the
+  fight strings (first user ai_FindWeaponRecord 0x4cd9d0); cm_DialogFrameFlags .. cm_DialogLength 0x60d360 + the
+  scene strings (first user cm_DrawFightTime 0x4d8b50); ai_CharKindNames (done: cmdump). bprobe at 0x4cd9d0 makes
+  cm_FightWeaponLoss byte -> 31 ins, cm_LayBombAction / cm_ThrowBombAction byte -> 1: the fight code needs to know
+  cm_AddFieldValues (0x4c3d00, A's start): `dcp try` with only that callee made an unknown external: draft 63 ins
+  (slots: VC6 sees that v does not escape). The fight object of the original therefore defined (or included) a
+  copy of cm_AddFieldValues that /OPT:ICF folded into A's (a header-defined static or a shared include): not
+  settled, no split made. The scene part (0x4d8b50..) has no byte fall at its boundary (RunBirth / RunAuction /
+  ExecCutscene distances grow).
+- **Named char arrays inside a string run are literals** (continued from s10): cm_WalkToDummyWhy (strcpy of the
+  literal: the same mov ecx,5 / rep movsd), cm_TextNewline "$A" (11 users across units: the first user's object
+  holds the pooled literal), ai_CharNameFmt "%1N3" / ai_FmtLabel "%s:" (svgrave's run), lobby_FmtName ..
+  FmtChatShout (lobby's run, first-use order), lobby_ChooseProfessionForm (main's run: a removed main function, the
+  literal now with its surviving user lobby, +24 accepted). Single chars at a string run's pad
+  (ai_Unk60dd24 = '0' ..) are the pooled "0" / "1" / "2": delete them when the users write the literals.
+- **A string of an earlier unit's run whose only surviving user is later is a removed function's literal**
+  (s11 more): d3d_D3D->lpVtbl->EvictManagedTextures text in d3_engine's run (user d3_interface; d3_engine -48 /
+  d3_interface +48 cancel), "FULLSCREEN" / "DIRECTWINDOW" in d3_io_t's run (user WinMain), "!bk_" / "bk_" in rd's
+  run (users f3init / lc). Accepted, like s10's.
+- **A LARGE_INTEGER at 4 mod 8**: cl test: `#pragma pack(4)` before `#include <windows.h>` declares winnt.h's
+  LARGE_INTEGER 4-aligned (the CRT headers push their own packing; struct { __int64 } and double stay 8-aligned).
+  msx.c sets it: msx_Last 0x6325b4 placed, every msx function byte.
+- **A common group's extent off by less than the largest alignment pad** can be the in-group name order alone
+  (lcdom -24: its commons' pads 12 / 28 / 24 depend on the order). Not a size error until the names are settled.
+- **Removing a shared header's extern moves tie-breaks** (as before): cm.h's two externs took ls_ReadSaveHeader byte
+  -> shape (proven byte under a declaration set), sv_t.c's took ai_TutorialInitChapter2 byte -> shape, lobby.h's
+  took main_RoundReport shape -> byte.
+- **State at s11's end**: steps 61 -> 48 (no .bss step below the common area); .data end -48 (only the accepted
+  removed-function literals); the common area starts at +0 (s10: +32): shot, pokerwin, menu, lc, lobby, svtip,
+  svgrave placed by start and extent. Open: cm's fight / scene objects (above), lcdom's group extent (name
+  order), f3gm (gm_TagTmp +22108, gm_BoyHead), f3gmt (gm_BQType .. gm_RankLogFormat -608), sv (sv_FramesPerTick ..
+  sv_BarToggle), d2_PointerSprite / d2_HoverX, amt_TabA +8, the early accepted steps.
