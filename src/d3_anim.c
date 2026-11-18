@@ -117,30 +117,7 @@ void d3anim_ApplyMotionTo(D3OBJECT *obj, D3ANIMSLOT *s, int sub, int frame, int 
         s->lastSub = sub;
     }
 }
-/* 0x4319e0, maps the bones of the object's skeleton animations to its child objects (by name).
-   @deep deep s24: the k loop written plainly as for (k = 0; n < 4 && k < anim->nbones; k++) (= control,
-   kept: the same code as the break form; while / do-while forms = control too; n >= 4 break at the bottom:
-   draft 55). flip.py --want the original's obj-before-anim reload at the latch: only 4 hits, all meaning
-   changes (delete bs =, delete n = 0, swap the i loop with bs =, duplicate the strcmp if): no ordinary
-   respelling found. Left: order 4 (the latch reloads esi=obj / eax=anim in the other order), mechanism in
-   prior. prior: Only the reload order at the k-loop latch differs: the original reloads obj (esi,
-   [esp+0x24]) before anim (eax, [esp+0x1c]); ours anim first. Mechanism (c2trace --seq/--raw): when n#1
-   takes edx, its pressure-split set (in id order: const#0 1, obj 2, const#0 3, const#0 5, anim a, k,
-   k#114, temp#121) is re-created as pass-2 pieces with ids popped from the LIFO free list holding the ids
-   4,6,7,8 of four unreferenced k#0 values (freed at endblk 2): c01 8, obj 7, c02 6, anim 4; the reloads
-   come out in ascending piece id. With only three k#0 (probe tex[i & 3] or names[k & 3]: one k#0 comes
-   from each loop's strength reduction) or one more const#0 piece before anim (delete n = 0), anim gets a
-   fresh id and the order is the original's. So the original has one SR byproduct fewer or one more zero
-   piece, with the same code. bs++ walk (user pointer) gives the right reload order but loses the IV's
-   +0x10 bias (8 ins). No lever (= control): all 120 decl orders, block-scope subsets, n=0 placements
-   (entry, before the i loop, k = n = 0, for (k = n = 0..), k = n), for(k<nbones && n<4), while-k, guard
-   returns / continue, if (anim != 0), cnull, braces, strcmp()==0, no bs local, map local, name local,
-   child local, mapAll as 0xffffffff/~0/memset/element loop/*(int *)map, (unsigned char)k, n<=3, i as
-   short/char/unsigned, i <= 2, i != 3, do-while i, tex + i / i + tex / byte-offset forms, probes storing
-   obj/anim/mat/0 anywhere. Worse: names pointer walk 4 (reload unchanged), n=0 at top of i body 4, for (k
-   = 0, n = 0..) 6, strcmp args swapped 12, k-for with n break 53. climb --rounds 4 --unsafe: nothing.
-   Next: find what else creates or removes a k#0 (the other two are common to both loops) or a const#0
-   piece. */
+/* 0x4319e0, maps the bones of the object's skeleton animations to its child objects (by name). */
 
 char d3anim_MapBones(D3OBJECT *obj)
 {
@@ -148,7 +125,9 @@ char d3anim_MapBones(D3OBJECT *obj)
     D3BONEANIM *anim;
     D3OBJECT *c;
     D3MATERIAL *mat;
-    int i, k, n;
+    /* @original k's initializer emits no code; it is the one zero piece more the original's
+       allocation shows: the k-loop latch reloads obj before anim (ours without it: anim first) */
+    int i, k = 0, n;
 
     if (obj && (mat = obj->material)) {
         for (i = 0; i < 3; i++) {
