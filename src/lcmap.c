@@ -2379,7 +2379,7 @@ void ai_ShowPartnerNews(unsigned short *cRec, unsigned short *pRec)
     p = (G8CHARREC *)pRec;
     if (p->kind == 6 || p->kind == 7) {
         txt_Format(local, (util_Random(3) & 0xffff) + 0x134a, c->id);
-        txt_Format(ai_NewsText, 0x1343, c->id, (util_Random(3) & 0xffff) + (p->sex != 0 ? 3 : 0) + 0x1344, p->id,
+        txt_Format(ai_NewsText, 0x1343, c->id, (util_Random(3) & 0xffff) + (p->sex != 0 ? 0x1347 : 0x1344), p->id,
                    local);
         he_ShowNews(p->netId, -1, ai_NewsText, 1, 0x5ec, 0);
     }
