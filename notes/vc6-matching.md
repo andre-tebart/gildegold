@@ -1045,6 +1045,50 @@ Where the pushes and pops sit, how many epilogue copies there are, shared agains
     `<<<*` blocks; initgen.py takes every declaration run (later function-scope runs, inner blocks; `<<<N` for
     a repeated line) and a definition with a comment before its `{`.
 
+- **Deep s34 (the near-byte list to 60 instructions, notes older than s22 first: the 15 at 17-20 instructions,
+  8 byte (one after a fix), 7 notes; 1 bonus)**:
+  - **Read the frame offsets of a struct copy before calling a slot swap allocation**: he_AimReaper's "target /
+    at slot swap" (noted since s21) was reaperPos copied from the wrong vector: with the pushes outstanding
+    counted (0x28 at the copy), the original's `mov eax,[esp+0x34]` is frame 0xc, the reaper's own
+    d3_PointToWorld result, not the target. With the right source the reference counts reorder the two 16-byte
+    slots by themselves: fix + byte. A slot-order hunk between two equal-size records whose counts differ a lot
+    (9 against 4) is a meaning question first.
+  - **A global read again instead of the local copy**: cm_EnqueueReceived's free-list pop `cm_RecvFree =
+    cm_RecvFree->next` (not m->next): VC6 then keeps &m->next in ebp for the two later m->next = 0 stores
+    (draft 18 -> byte); cm_ExecCommands' closed-connection loop `while (cm_RecvQueue != 0) { m = cm_RecvQueue;
+    ..}` (the head becomes a global candidate in esi across cm_FreeReceived, ebx / esi pushed before the
+    closed test: draft 18 -> byte). The s23 flip lever from the other side: the original reads the global
+    where ours reuses a value.
+  - **A global walked in a loop -> a local copy inside the if**: he_FreeEvent's top shrink `t = he_EventTop;
+    for (; t >= 0 && he_Jobs[t].kind == 0; t--); he_EventTop = t < 0 ? 0 : t;` (as its quick-list twin above
+    it): the original's recomputed &he_Events[top] after the jl guard (s6 / s9 had tried every spelling of the
+    compare and the loop on the global: all CSE'd): draft 18 -> byte, +16 bytes.
+  - **Exclude the failure first, then if / else** (an out-of-line block after the epilogue): gm_CreateCharModel
+    `it = 0; if (dummy) it = find; if (it == 0 && src == 0 && o == 0) goto done; if (it) world; else copy;`
+    puts d3_PointToWorld behind the epilogue with a jmp back to the name record (s15's nine if-forms were one
+    code; a flag with a second `if (it)` got the test order right first: 16 ins, then the excluded-case form).
+  - **One store per arm for an `||` flag, split where the original's tests split**: he_AllocSpying `if (me->kind
+    == 6 || victim kinds) spawn = 1; else if (spies < 8) spawn = 1;` (spawn's count rises above spies' and
+    victim's, the frame order follows; the four-arm chain and separate ifs were worse), then `int spawn = 0,
+    spies = 0` in that order (the two init stores): draft 17 -> byte.
+  - **An unused parameter reused as a local keeps its own slot**: ai_CommandWealthTax's percentage / worth as
+    locals n / w instead of the parameter b: they pack into fmt's dead slot and f gets the original's own
+    4-byte slot (push ecx frame): shape 19 -> byte.
+  - **Block locals per branch, again (s21)**: ai_DecideUseReputationObject's flags / id in each of the i == 9 /
+    i == 10 branches (each pair packs with its branch's fild temp: 15 subsets in one round, only all four
+    right), then the good-8 tail `if (r != 0) { copies } return r;` (the je joins behind xor eax,eax): byte.
+  - **if / else-if / else for a fallback chain**: cm_CheckSetField's base = b, else o, else c (ternary the same
+    code) instead of reassigning base under nested ifs: the eax / ecx pair and size 134 -> 133 (bonus).
+  - Left with notes: init_SoundObjectHook (loop 17 against s 16: the Play block's const#0 decides it),
+    d2_DrawPic (x / y tie at 51, tie keys 5b / 5c), ai_PlanRank (q 18 against n 16 / r 17; a float copy of
+    q->score fixes the registers but not the x87 code), d3anim_CreateMorphAnim (climb's d.x copy: two of the
+    three reload edges), cm_OrderClick (the scene load first in the pick block: one byte), d2_MakeLightTable
+    (i needs +7 against the 0xff - add temp), ai_FillLoversTab (n in the call block gives the registers but
+    moves the store before the test). Parenthesized float rows on d3_GetBoxVerts (bonus, untagged): every
+    paren form worse than the flat control.
+  - The he_AimReaper fix's commit message names he_UpdateReaper as the function that fills reaperPos from
+    obj->pos; it is he_CreateReaper.
+
 - **An else-if arm cross-jumped whole into a sibling's copy, the original keeps it inline**: the store order of
   the OTHER arms (default arm charId before stateArg; 0x176 arm stateArg, charId, x, z) decides it, found by
   climb.py swap + move in round 2 (cm_OrderAttack byte; permuting only the inlined arm's stores did not). The pair
