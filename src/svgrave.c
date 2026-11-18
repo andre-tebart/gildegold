@@ -1895,17 +1895,7 @@ int snd_QueueVoice(int id, int bank, char *text, int var, unsigned int delay); i
    steps 0x40c0 .. 0x40c2 / 0x40c4 .. 0x40c6) and the order / leave entries from txt 0x40be on; each frame the
    cost (factor1 + 2) * (factor2 + 2) (txt 0x40b9 / 0x40ba). Order, when the player has the money: the message
    0x90 (flags 2) from the graveyard to the player's character with the target and the two factors, and the
-   form closes; a right click or leave closes it too. The camera follows again at the end
-   @deep Read whole against the original 0x585380..0x58574f and reconstructed: the pending-fog check
-   he_FindEvent(2,0,0x90,3,rec->id) with voice + message box, the AI_ZERO inline-asm clear of the AMOUNTCFG
-   map filter (flags 1, mode -1, filter 0x1a07c43b4, kind 6, option4c 0x727), ai_MapPick, the Fog form with
-   its two sliders and txt_Ptrs labels, the cost (f2+2)*(f1+2), the 0x90 message (to, fromId, time, arg
-   0..2) and the do/while pump; 280 of 289 instructions equal. Left is only the callee-saved push
-   placement: the original pushes ebx/esi/edi in the prologue (+0x9..0xb) and pops them before the early
-   return (pop edi/pop esi/pop ebx before mov esp,ebp), ours shrink-wraps them past the early return (push
-   ebx / push esi / push edi at +0x64..); the branch-target difference (je at +0x3b: +0x64 vs +0x6a) is
-   only that 3-byte shift. Tried: the early exit as if/else with one exit (same code), the inverted if
-   (found == 0) {..} else {..} (135 differing, reverted). VC6 shrink-wrapping, no source lead left */
+   form closes; a right click or leave closes it too. The camera follows again at the end */
 void ai_GraveFogWindow(AIBLD *rec)
 {
     char buf[0x400];
@@ -1933,59 +1923,61 @@ void ai_GraveFogWindow(AIBLD *rec)
     cfg.filter = 0x1a07c43b4;
     cfg.option4c = 0x727;
     target = (AIBLD *)ai_MapPick(1, &cfg, txt_Ptrs[0x40b6], 0, 0);
-    if (target != 0) {
-        win = d2_OpenForm(0, 0, "Locations\\Friedhof\\Fog");
-        d2_SetPointerSprite(0, 0);
-        d2_CentreViewWindows(win);
-        d2_SetForm(win, 0);
-        sv_FitForm(d2_LastWindow);
-        d2_SetForm(win, 1);
-        io_PrintText(0x40b7, 0x40b6, target->owner, target);
-        factor1 = d2_WinOpenSlider(100, 0xa0, 0xc8, 0, 2, 0x7b, 0x82, d2_LastWindow);
-        d2_SetObjValue4(factor1, 0, 2, 0);
-        d2_SetSliderFlags(factor1, 0x82);
-        d2_SetLabel(factor1, txt_Ptrs[0x40bf]);
-        d2_SetList(factor1, 3, txt_Ptrs[0x40c0], txt_Ptrs[0x40c1], txt_Ptrs[0x40c2]);
-        factor2 = d2_WinOpenSlider(100, 0xbe, 0xc8, 0, 2, 0x7b, 0x82, d2_LastWindow);
-        d2_SetObjValue4(factor2, 0, 2, 0);
-        d2_SetSliderFlags(factor2, 0x82);
-        d2_SetLabel(factor2, txt_Ptrs[0x40c3]);
-        d2_SetList(factor2, 3, txt_Ptrs[0x40c4], txt_Ptrs[0x40c5], txt_Ptrs[0x40c6]);
-        d2_SetForm(win, 2);
-        k = io_PrintText(0x40be);
-        btnOrder = d2_GetWinObj(win, 2, k);
-        btnLeave = d2_GetWinObj(win, 2, k + 1);
-        d2_ClickedId = -1;
-        do {
-            d2_SetForm(win, 3);
-            io_PrintText("$C");
-            cost = (d2_GetObjValue(factor2) + 2) * (d2_GetObjValue(factor1) + 2);
-            io_PrintText(0x40b9);
-            io_PrintText(0x40ba, cost);
-            if (dm_L.rup != 0) {
-                sv_PopRequest = 1;
-            } else if (d2_ClickedId != -1) {
-                if (d2_PointerObj == btnOrder) {
-                    if (sv_CheckMoney(ai_Chars[ai_PlayerId], cost) == 1) {
-                        memset(&msg, 0, sizeof(msg));
-                        msg.type = 0x90;
-                        msg.flags = 2;
-                        msg.to = ((AICHAR *)ai_Chars[ai_PlayerId])->netId;
-                        msg.fromId = rec->id;
-                        msg.time = ai_Time;
-                        msg.arg[1] = d2_GetObjValue(factor1);
-                        msg.arg[2] = d2_GetObjValue(factor2);
-                        msg.arg[0] = target->id;
-                        cm_SendLongMessage((char *)&msg);
-                        sv_PopRequest = 1;
-                    }
-                } else if (d2_PointerObj == btnLeave) {
+    if (target == 0) {
+        sv_CameraFollow();
+        return;
+    }
+    win = d2_OpenForm(0, 0, "Locations\\Friedhof\\Fog");
+    d2_SetPointerSprite(0, 0);
+    d2_CentreViewWindows(win);
+    d2_SetForm(win, 0);
+    sv_FitForm(d2_LastWindow);
+    d2_SetForm(win, 1);
+    io_PrintText(0x40b7, 0x40b6, target->owner, target);
+    factor1 = d2_WinOpenSlider(100, 0xa0, 0xc8, 0, 2, 0x7b, 0x82, d2_LastWindow);
+    d2_SetObjValue4(factor1, 0, 2, 0);
+    d2_SetSliderFlags(factor1, 0x82);
+    d2_SetLabel(factor1, txt_Ptrs[0x40bf]);
+    d2_SetList(factor1, 3, txt_Ptrs[0x40c0], txt_Ptrs[0x40c1], txt_Ptrs[0x40c2]);
+    factor2 = d2_WinOpenSlider(100, 0xbe, 0xc8, 0, 2, 0x7b, 0x82, d2_LastWindow);
+    d2_SetObjValue4(factor2, 0, 2, 0);
+    d2_SetSliderFlags(factor2, 0x82);
+    d2_SetLabel(factor2, txt_Ptrs[0x40c3]);
+    d2_SetList(factor2, 3, txt_Ptrs[0x40c4], txt_Ptrs[0x40c5], txt_Ptrs[0x40c6]);
+    d2_SetForm(win, 2);
+    k = io_PrintText(0x40be);
+    btnOrder = d2_GetWinObj(win, 2, k);
+    btnLeave = d2_GetWinObj(win, 2, k + 1);
+    d2_ClickedId = -1;
+    do {
+        d2_SetForm(win, 3);
+        io_PrintText("$C");
+        cost = (d2_GetObjValue(factor2) + 2) * (d2_GetObjValue(factor1) + 2);
+        io_PrintText(0x40b9);
+        io_PrintText(0x40ba, cost);
+        if (dm_L.rup != 0) {
+            sv_PopRequest = 1;
+        } else if (d2_ClickedId != -1) {
+            if (d2_PointerObj == btnOrder) {
+                if (sv_CheckMoney(ai_Chars[ai_PlayerId], cost) == 1) {
+                    memset(&msg, 0, sizeof(msg));
+                    msg.type = 0x90;
+                    msg.flags = 2;
+                    msg.to = ((AICHAR *)ai_Chars[ai_PlayerId])->netId;
+                    msg.fromId = rec->id;
+                    msg.time = ai_Time;
+                    msg.arg[1] = d2_GetObjValue(factor1);
+                    msg.arg[2] = d2_GetObjValue(factor2);
+                    msg.arg[0] = target->id;
+                    cm_SendLongMessage((char *)&msg);
                     sv_PopRequest = 1;
                 }
+            } else if (d2_PointerObj == btnLeave) {
+                sv_PopRequest = 1;
             }
-        } while (sv_RunFrame(ai_GraveFogWindow, 0x677c7) != 0);
-        d2_CloseView(win);
-    }
+        }
+    } while (sv_RunFrame(ai_GraveFogWindow, 0x677c7) != 0);
+    d2_CloseView(win);
     sv_CameraFollow();
 }
 /* the result of the seance window (ai_SeanceWindow), read by the seance kinds 0x585cb0 / 0x586200 / 0x585f30 */
