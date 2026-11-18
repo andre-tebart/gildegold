@@ -3545,8 +3545,8 @@ exe	0x00541170	he_PostEventA6	he	a65c42fee262d010	no	byte	control=byte p1=byte p
 exe	0x00541200	he_EndEventNow	he	ca840ea5881ee563	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00541250	he_SetEventChar	he	e637ff4c9c3d8297	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00541280	he_CharacterBehavior	he	61a3d309ff7e94ff	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x005414a0	he_CharAccident	he	f6e849f743e81c1d	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
-exe	0x005417d0	he_CharIllness	he	d93b3a2a53ec0061	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
+exe	0x005414a0	he_CharAccident	he	81af2cc7779ea7aa	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	8e03c1e6b1f02ce1
+exe	0x005417d0	he_CharIllness	he	f223ffa0c85a6791	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=190	1ca58cadb20a2bd6
 exe	0x00541a50	he_RunDueNow	he	cce1edd382adeffc	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00541a80	he_AllocStammtisch	he	b2749e16fe5e41e9	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00541b40	he_StammtischCommand	he	9b26f0897f3c50ea	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	

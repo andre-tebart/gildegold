@@ -3250,7 +3250,10 @@ void he_CharacterBehavior(AIJOB *ev, float *pos)
    else the boss), and a playing boss (kind 6 / 7) gets the news 0x1bb0, or 0x414a for a kind 0x14 character,
    unless quiet; for a value below half its base health with a place to carry it to (he_FindFigurePlace) it is
    carried there ("Unfall") and the boss gets the news 0x1baf; else the boss gets 0x1bae, or 0x4149 for kind 0x14.
-   value: the float the simulation rolls (reasoned guess: what is left of the character after the accident) */
+   value: the float the simulation rolls (reasoned guess: what is left of the character after the accident)
+   @deep near-byte sweep s22: message fill fromId, time, flags, arg (6 -> 2 ins). Left: fcomp of value
+   scheduled before the call's add esp,4 in the original (after it in ours). = control: value < base *
+   0.5f, 0.5f * base, base / 2, the && split into a nested if, m as a block local. */
 
 void he_CharAccident(AIJOB *ev, AICHAR *c, AICHAR *boss, AIBLD *bld, float value, int quiet)
 {
@@ -3268,8 +3271,8 @@ void he_CharAccident(AIJOB *ev, AICHAR *c, AICHAR *boss, AIBLD *bld, float value
             m.to = ai_CharInts[ev->chr][0];
         else
             m.to = boss->netId;
-        m.time = ai_Time;
         m.fromId = -1;
+        m.time = ai_Time;
         m.flags = 2;
         m.arg[0] = c->netId;
         cm_SendLongMessage((char *)&m);
@@ -3316,7 +3319,10 @@ void he_CharAccident(AIJOB *ev, AICHAR *c, AICHAR *boss, AIBLD *bld, float value
    and value, the plague): for value <= 0 a playing boss (kind 6 / 7) gets the news 0x1632 and the death message
    0x71 is posted (to the event ev's character, else the boss); for a value below half its base health with a place
    to carry it to (he_FindFigurePlace) it is carried there ("Unfall") and the boss gets the news 0x1631, else
-   0x1630; both name the disease (text 0x1626 + disease) */
+   0x1630; both name the disease (text 0x1626 + disease)
+   @deep near-byte sweep s22: message fill fromId, time, flags, arg (6 -> 2 ins). Left: fcomp of value
+   scheduled before the call's add esp,4 in the original (after it in ours). = control: value < base *
+   0.5f, 0.5f * base, base / 2, the && split into a nested if, m as a block local. */
 
 void he_CharIllness(AIJOB *ev, AICHAR *c, AICHAR *boss, AIBLD *bld, int disease, float value)
 {
@@ -3335,8 +3341,8 @@ void he_CharIllness(AIJOB *ev, AICHAR *c, AICHAR *boss, AIBLD *bld, int disease,
             m.to = ai_CharInts[ev->chr][0];
         else
             m.to = boss->netId;
-        m.time = ai_Time;
         m.fromId = -1;
+        m.time = ai_Time;
         m.flags = 2;
         m.arg[0] = c->netId;
         cm_SendLongMessage((char *)&m);
