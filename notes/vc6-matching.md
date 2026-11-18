@@ -1122,7 +1122,7 @@ Where the pushes and pops sit, how many epilogue copies there are, shared agains
   - Tools: c2trace.py function_span and initgen.py read K&R definitions (d2_DrawPic).
 
 - **Deep s36 (the near-byte list to 80 instructions, notes older than s22 first: the 15 at 22-25 instructions,
-  10 byte, 2 closer, 3 notes; hst_NextEvent closer as a bonus)**:
+  9 byte, 2 closer, 4 notes; hst_NextEvent closer as a bonus)**:
   - **The old note's mechanism can be the wrong one: re-run the plain form with the inits reordered**:
     d2_RaiseWindow's note blamed the 0x2ff constant shared by its two search loops (78 ins for the plain
     form); the cause was `D2WIN *w = &d2_Wins[win];` in the declaration. Assigned after `first = -1; j = -1;`
