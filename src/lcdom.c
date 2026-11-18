@@ -1587,21 +1587,24 @@ void d2_RadioSelect(int g, int sel);
    working elsewhere, 0x1a27 below four years of service). The worker rows are refilled every frame from
    gm_ListWorkers (both title lists; a row whose character or title changed is freed first). At the end the
    work rate (field 0x41) and the wage (0x3d) are sent, the book closed and the camera follows again
-   @deep Written whole from the original (was a stub): the four-page book, the wage slider / work list, the
-   bonus button and its pay_worker / pay_meister groups, the master row, the 12 worker rows in one radio
-   group, the per-frame refill from gm_ListWorkers with the old-row compare, the click handling (hire 6 / 7
-   with the new AIMSG hire members, fire 0x31, promote 0x32 with the two wages), the exit field deltas 0x41
-   / 0x3d. 1579 vs 1567 instructions, every call the same number of times (no calls: line), no branch
-   target differences. Left is allocation and layout: the scalar frame has one slot more than the
-   original's (masterRow at frame 0x158 vs 0x154, msg at 0x60 vs 0x5c; the original packs halfH / master /
-   the list counter in 0x2c and pg / n in 0x30), so the prover stops at the first fill ('ours fill4 [(args
-   + 0x14c)] the original fill4 [(args + 0x148)]'); the message bodies' stores are scheduled otherwise (the
-   three M8 lines are the AITIME copy msg.time = ai_Time stored in another word order, '+0xaa3 ai_Time |
-   ai_Time+0x8'), and the slots / regs hunks follow the frame. Tried: the declarations in the original's
-   address order (frame start now matches but for the one slot), a local for the owner's AICHAR (the wage
-   calls), the row column / row split (r = j / 2). (references: M8 at +0xaa3: ours refers to ai_Time
-   (0x770ae0), the original's field to 0x770ae8 (ai_Time+0x8) (and 2 more), explained: the M8 refs are the
-   words of one struct copy (msg.time = ai_Time) stored in another order, no other object) */
+   @deep frame sweep s21: 748 -> 606 ins: wage (escaped: the slider value compared and sent) a local of the
+   page-0 block. Left: code 342, slots 282, regs 216 (an ebp frame: dcp frame names nothing); msg as a
+   block local = control. prior: Written whole from the original (was a stub): the four-page book, the wage
+   slider / work list, the bonus button and its pay_worker / pay_meister groups, the master row, the 12
+   worker rows in one radio group, the per-frame refill from gm_ListWorkers with the old-row compare, the
+   click handling (hire 6 / 7 with the new AIMSG hire members, fire 0x31, promote 0x32 with the two wages),
+   the exit field deltas 0x41 / 0x3d. 1579 vs 1567 instructions, every call the same number of times (no
+   calls: line), no branch target differences. Left is allocation and layout: the scalar frame has one slot
+   more than the original's (masterRow at frame 0x158 vs 0x154, msg at 0x60 vs 0x5c; the original packs
+   halfH / master / the list counter in 0x2c and pg / n in 0x30), so the prover stops at the first fill
+   ('ours fill4 [(args + 0x14c)] the original fill4 [(args + 0x148)]'); the message bodies' stores are
+   scheduled otherwise (the three M8 lines are the AITIME copy msg.time = ai_Time stored in another word
+   order, '+0xaa3 ai_Time | ai_Time+0x8'), and the slots / regs hunks follow the frame. Tried: the
+   declarations in the original's address order (frame start now matches but for the one slot), a local for
+   the owner's AICHAR (the wage calls), the row column / row split (r = j / 2). (references: M8 at +0xaa3:
+   ours refers to ai_Time (0x770ae0), the original's field to 0x770ae8 (ai_Time+0x8) (and 2 more),
+   explained: the M8 refs are the words of one struct copy (msg.time = ai_Time) stored in another order, no
+   other object) */
 
 void ai_PersonnelBook(AIBLD *bld, char *model)
 {
@@ -1616,7 +1619,6 @@ void ai_PersonnelBook(AIBLD *bld, char *model)
     int n;
     int fireMasterButton;
     int nWorkers;
-    int wage;
     int radio;
     int workList;
     int hireMasterButton;
@@ -1765,6 +1767,8 @@ void ai_PersonnelBook(AIBLD *bld, char *model)
         if (kb_Last == 0xcb)
             sv_BookBack(book);
         if (book->page == 0) {
+            int wage;
+
             if (wageSlider != -1 && (wage = d2_GetObjValue(wageSlider)) != bld->wageRate &&
                 (slot == -1 || cm_GetSlotState(slot) != 0)) {
                 cm_BeginFieldBlock((char *)bld, bld->id);
@@ -6095,20 +6099,24 @@ int ai_EvalFest(AIGRP *g, int send);   /* 0x494ac0, am.h's prototype (am.h is no
    writes the guests' netIds into the table (-1 for the empty seats), the second or a right click cancel. A
    running feast (or a planned one) shows its summary in "fest2": the time (0x1780), the guests (0x1781), the
    menu (0x1782), the musicians (0x1783, with a stage) and the cost (0x1784). The camera follows
-   @deep Reconstructed whole against the original 0x5b5e80..0x5b693c (feast planning: the clock + 24 h at
-   20:00, the feast event 0x37 search by AIJOB.from, the stage query gm_Query kind 0x18, the menu window
-   fest2 with the rows 0x1773+i and the table field 0x2c, the musician rows 0x177a+i and field 0x2d or 5,
-   the guest window fest with 0x1769 / 0x176a / ai_EvalFest / 0x176b / sv_ButtonRow 0x176c 0x176d, the
-   invite amount menu with the ids filled and option14 |= 2, the messages 0x37 and 0x36 with flags 9 / 1,
-   the table's guest fields 0x1c + 4k with -1 for empty seats, the summary 0x1780..0x1784, one shared close
-   tail): same instruction count (739 / 739), every call, constant and reference equal. Left is frame and
-   allocation: the original packs two pairs of locals into one slot each (the menu index byte i and the
-   guest window's refresh flag at frame+0x10, the done flag and the -1 of the empty seats at frame+0x14),
-   ours gives each its own slot (frame 0x3ec vs 0x3e4), and keeps 0 in edi where the original keeps it in
-   ebp at the start (the time copy and the cfg / guests stores scheduled around it, asmdiff +0x0..+0x80)
-   plus the store order of the AIGRP fields at +0x348. Tried: done reused for the -1 (puts done in memory
-   everywhere, worse), block-scoped i / refresh (no slot sharing), memset vs single stores of guests
-   (single stores give the original's per-slot stores) */
+   @deep frame sweep s21: 202 -> 108 ins: none (the -1 sent by address with the feast message) a local of
+   the send block. Left: frame 0x3e8 vs 0x3e4 (one slot more: the original packs ok / cancel into one slot
+   and i / refresh), two of the original's write-once slots ([esp+0xbc], [esp+0x164]) without a partner,
+   code 70. Lead: ok / cancel as locals of the blocks that create and test them. prior: Reconstructed whole
+   against the original 0x5b5e80..0x5b693c (feast planning: the clock + 24 h at 20:00, the feast event 0x37
+   search by AIJOB.from, the stage query gm_Query kind 0x18, the menu window fest2 with the rows 0x1773+i
+   and the table field 0x2c, the musician rows 0x177a+i and field 0x2d or 5, the guest window fest with
+   0x1769 / 0x176a / ai_EvalFest / 0x176b / sv_ButtonRow 0x176c 0x176d, the invite amount menu with the ids
+   filled and option14 |= 2, the messages 0x37 and 0x36 with flags 9 / 1, the table's guest fields 0x1c +
+   4k with -1 for empty seats, the summary 0x1780..0x1784, one shared close tail): same instruction count
+   (739 / 739), every call, constant and reference equal. Left is frame and allocation: the original packs
+   two pairs of locals into one slot each (the menu index byte i and the guest window's refresh flag at
+   frame+0x10, the done flag and the -1 of the empty seats at frame+0x14), ours gives each its own slot
+   (frame 0x3ec vs 0x3e4), and keeps 0 in edi where the original keeps it in ebp at the start (the time
+   copy and the cfg / guests stores scheduled around it, asmdiff +0x0..+0x80) plus the store order of the
+   AIGRP fields at +0x348. Tried: done reused for the -1 (puts done in memory everywhere, worse),
+   block-scoped i / refresh (no slot sharing), memset vs single stores of guests (single stores give the
+   original's per-slot stores) */
 
 void ai_FeastWindow(AIBLD *bld, AIOBJ *table)
 {
@@ -6116,7 +6124,6 @@ void ai_FeastWindow(AIBLD *bld, AIOBJ *table)
     int n;
     int win;
     int done;
-    int none;
     int essen;
     int musik;
     int hasStage;
@@ -6303,6 +6310,8 @@ void ai_FeastWindow(AIBLD *bld, AIOBJ *table)
                         }
                     }
                 } else if (d2_PointerObj == ok) {
+                    int none;
+
                     none = -1;
                     msg.type = 0x37;
                     msg.arg[5] = 0;
@@ -9207,9 +9216,13 @@ int d2_WinOpenInput(int x, int y, int w, int h, unsigned char flags, int win);  
    captions 0x1934 / 0x1935 / 0x1936 and per building of the player (gm_BuildQuery(1, 4, id)) whose master is not
    the player a row of ai_MasterRows: the type's picture, the type and name ("%s~ %s"), the master's budget ("%T")
    and an input box 1000 .. 9000 on the building's budget; returns the form, or -1 (closed) without rows
-   @deep reconstructed from the skeleton (all 212 instructions read against the original: the row init,
-   scroll buttons, captions, the build query loop with the master filter, pic / name / budget texts, input
-   box, the -1 exit); the rows are ai_MasterRows[count] (index, the original's biased pointer
+   @deep frame sweep s21: 12 -> 8 ins: one text[0x100] buffer for the row's name and budget texts (dcp
+   frame: one slot of the original for nameText / budgetText; both as block locals = control). Left: regs
+   20, the loop tail's count in ecx where the original has edx (a scratch rotation from earlier in the row
+   block); count++ before y += (order 14), bld store before budget (24) no better. Lead: climb.py over the
+   row block. prior: reconstructed from the skeleton (all 212 instructions read against the original: the
+   row init, scroll buttons, captions, the build query loop with the master filter, pic / name / budget
+   texts, input box, the -1 exit); the rows are ai_MasterRows[count] (index, the original's biased pointer
    esi=&rows[count].nameText matches), init store order matched (no M8). Left: allocation only - the
    original keeps count in edi (spilled to [esp+0x10], 'imul edi, 0x3e' for the row y, 'mov edi, edx' after
    inc) and y in the stack slot [esp+0x14], ours the other way round (y in ebx, count in [esp+0x18]); the
@@ -9226,8 +9239,7 @@ int ai_OpenMasterListPage(void)
     int count;
     int y;
     AICHARREC *master;
-    char nameText[0xe0];
-    char budgetText[0x20];
+    char text[0x100];
     int i;
     AIBLD *bld;
     int win;
@@ -9262,12 +9274,12 @@ int ai_OpenMasterListPage(void)
             if (master != 0 && master->id != ai_PlayerId) {
                 d2_SetForm(win, 2);
                 ai_MasterRows[count].pic = d2_WinOpenPic(0, count * 0x3e, bld->type + 0x427, d2_LastWindow);
-                txt_Format(nameText, "%s~ %s", bld->type * 14 + 0x48e, bld->name);
-                ai_MasterRows[count].nameText = d2_CreateWinText(0x40, count * 0x3e + 8, nameText, d2_LastWindow);
+                txt_Format(text, "%s~ %s", bld->type * 14 + 0x48e, bld->name);
+                ai_MasterRows[count].nameText = d2_CreateWinText(0x40, count * 0x3e + 8, text, d2_LastWindow);
                 d2_Objs[ai_MasterRows[count].nameText].w = 0xa0;
                 d2_SetObjFont(ai_MasterRows[count].nameText, 0x54);
-                txt_Format(budgetText, "%T", master->budget);
-                ai_MasterRows[count].budgetText = d2_CreateWinText(0x180, count * 0x3e + 0x14, budgetText, d2_LastWindow);
+                txt_Format(text, "%T", master->budget);
+                ai_MasterRows[count].budgetText = d2_CreateWinText(0x180, count * 0x3e + 0x14, text, d2_LastWindow);
                 ai_MasterRows[count].input = d2_WinOpenInput(0xea, y, 0x40, 0x40, 0x82, d2_LastWindow);
                 d2_SetObjValue4(ai_MasterRows[count].input, 1000, 9000, gm_ConvertMoney(bld->budget, ai_OwnPlayer));
                 ai_MasterRows[count].budget = d2_GetObjValue(ai_MasterRows[count].input);
