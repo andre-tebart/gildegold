@@ -8104,53 +8104,31 @@ void gm_TreeLine(int a, int b, int c, int d)
 
 int gm_TechTreeWindow(char *form, unsigned char *bld, unsigned short *item)
 {
-    int i, w, t, n;
-    RTNODE *node;
-    int a, b, c, d;
+    int i, j;
+    D2WIN *win;
 
     gm_TechTreeView = d2_OpenForm(0, 0, form);
     d2_CentreViewWindows(gm_TechTreeView);
     gm_TechTreeTime = d3_Time;
-    w = d2_Views[gm_TechTreeView].wins[3];
+    win = &d2_Wins[d2_Views[gm_TechTreeView].wins[3]];
     d2_SetForm(0, 1);
     if (*item == 0xfd)
-        t = *bld * 0xe + 0x48e;
+        io_PrintText("$[%s$]", 0x19, *bld * 0xe + 0x48e);
     else
-        t = *item * 2 + 0x9a8;
-    io_PrintText("$[%s$]", 0x19, t);
+        io_PrintText("$[%s$]", 0x19, *item * 2 + 0x9a8);
     d2_SetForm(0, 3);
-    n = gm_LayoutTree(bld, item, d2_Wins[w].w, d2_Wins[w].h);
-    if (n != 0) {
+    if (gm_LayoutTree(bld, item, win->w, win->h) != 0) {
         d2_CloseView(gm_TechTreeView);
         return -1;
     }
     gm_UpdateTechTree(bld, item);
-    i = 0;
-    if (0 < gm_TreeNodeCount) {
-        do {
-            if (0 < i) {
-                node = NODES;
-                t = i;
-                do {
-                    if (node->id == NODES[i].p1) {
-                        a = NODES[i].y;
-                        b = NODES[i].x;
-                        c = node->y;
-                        d = node->x;
-                        gm_TreeLine(d + 0x18, c + 0x30, b + 0x18, a + 0x18);
-                    } else if (node->id == NODES[i].p2) {
-                        a = NODES[i].y;
-                        b = NODES[i].x;
-                        c = node->y;
-                        d = node->x;
-                        gm_TreeLine(d + 0x18, c + 0x30, b + 0x18, a + 0x18);
-                    }
-                    node++;
-                    t--;
-                } while (t != 0);
-            }
-            i++;
-        } while (i < gm_TreeNodeCount);
+    for (i = 0; i < gm_TreeNodeCount; i++) {
+        for (j = 0; j < i; j++) {
+            if (NODES[j].id == NODES[i].p1)
+                gm_TreeLine(NODES[j].x + 0x18, NODES[j].y + 0x30, NODES[i].x + 0x18, NODES[i].y + 0x18);
+            else if (NODES[j].id == NODES[i].p2)
+                gm_TreeLine(NODES[j].x + 0x18, NODES[j].y + 0x30, NODES[i].x + 0x18, NODES[i].y + 0x18);
+        }
     }
     return gm_TechTreeView;
 }
