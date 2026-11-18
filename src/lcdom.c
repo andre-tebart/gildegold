@@ -4518,7 +4518,18 @@ int ai_MapPick(unsigned int flags, int *req, char *name, void (*cb)(), int unuse
    (384 B, ai_StorageWindow): the caption 0x10b; a store of type 0x116 offers one upgrade (0x10e) while level is
    below the type's max116, else the text 0x111; the others offer the first slot (0x10c) while level is below
    min0 (else 0x110) and the second (0x10d) while level2 is below min1 (else 0x111); the closing text 0x10f.
-   Returns 1 for the first offer, 2 for the second, 0 when closed (the button 1 or the right button) */
+   Returns 1 for the first offer, 2 for the second, 0 when closed (the button 1 or the right button)
+   @deep 52 ins, a pure register permutation (the original: r ebp, first ebx, bt edi, win esi; ours r ebx,
+   first ebp, bt esi, win edi). c2trace: r -1 / first -2 (first must rank above r), bt 24 / win 22 (win
+   must rank above bt). s41: the loop's sv_PopRequest = 1 written ONCE (if first r = 1; else if second r =
+   2; else if (d2_ClickedId != 1) goto rup; sv_PopRequest = 1;) fixes r / first (prio -5 / 0) and lifts win
+   to 24 = bt: 32 ins; then win before bt in the source breaks the tie (20 ins, but bt is computed after
+   d2_OpenForm, the original computes it before). Not kept: the goto form is no plain source. flip.py
+   --want 'mov esi, eax' after d2_OpenForm named the loop's stores (del r = 2, del the ClickedId == 1
+   store, dup else-if second): the loop's block count decides both pairs. No lever: all 120 orders of the 5
+   inits, inline bt (82), the 0x116 arm first, inverted min tests, while(1)+break, nested ||, climb 2
+   rounds on both texts. Next: a plain loop body with one PopRequest store and one block fewer than formA
+   for win (+1 over bt) */
 
 int ai_NewStorageSlotWindow(AIOBJ *obj, AIBLD *bld, int level, int level2)
 {
