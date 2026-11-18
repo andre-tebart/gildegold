@@ -784,6 +784,32 @@ Where the pushes and pops sit, how many epilogue copies there are, shared agains
     (d3_Animate), a store-order / load-hoist pair (ai_CommandExecution), the zero pushes as left's references
     (he_RunConversion), an induction-variable merge that only a short counter avoids (ai_TutorialWindow).
 
+- **Deep s26 (the near-byte list to 25 instructions, notes older than s22 first, 15 items: 5 byte + 1 draft ->
+  shape)**:
+  - **A second variable that only mirrors the index is a decompiler artifact; write the expression**: a row y
+    stepped by `y += 0x3e` next to `count * 0x3e + 0x14` in the same row (ai_OpenMasterListPage: the input
+    box's y as `count * 0x3e + 0x14`, y dropped, byte); a bound `n = size * size` and a reused `i = y * size`
+    (ts_LoadSoft: both written inline, `for (i = 0; i < tex->size * tex->size; i++)` and `data[y * tex->size +
+    x]`, byte; climb found the bound, the index form alone was = control). The hunks sat in another
+    statement (a scratch-register rotation, an address reassociation).
+  - **A reciprocal local (`inv = 1.0f / factor;`) where the original loads the reciprocal first in a product**:
+    `1.0f / factor` written at each use (VC6's CSE temp, its own slot) puts it first (`fld [inv]; fmul [fn]`);
+    any operand order of the product with the local is one code (ai_TransportFromLager, both loops, byte).
+  - **`neg eax; fild; fmul 0.01; fadd 1.0` against ours `fmul; fsubr 1.0`**: a double expression `-r * 0.01 +
+    1.0` always folds to fsubr (every cast and grouping); a float conversion of the product keeps the neg:
+    `(float)(-util_RandomU(0x1e) * 0.01) + 1.0` (or a float local) (gm_GetCreditOffers 7 -> 4 ins, draft ->
+    shape). Toy compiles (`toycc.py` in the s25 scratch) settle such folds in one run.
+  - **A redundant second test the original keeps (`cmp al,6; jne` behind the kind-7 path, the kind-6 path
+    threaded past it)**: two ifs on the same field, `if (kind != 6 && kind != 7) {..return} if (kind == 6)
+    {..} return 0;` (ai_MiracleWindow byte; the nested if / else forms put the return 0 inline).
+  - `t->entry++; if (t->entry > 0x1a)` instead of `i = t->entry + 1; t->entry = i; if (0x1a < i)` (he_RunTip
+    byte; the copy is what the original's `mov eax,ecx` was).
+  - Left with notes: the info / v copy (sv_UpdateBand / Led), n's register against s1's (ai_ExecuteMasterBuilder),
+    the x / w load order (d2_DrawSlider), SIB base / index orders (d3_SetObjectAlpha; gv_GrowGraveyard: only loop
+    0's stores, so another IL form there), the exit block order (hmt_Load: 19 forms one code), a level temp
+    (ord_LoadStatistics), the constants 6 / 1 in ebx / edi (ai_UseGoodCharmPartner), all = 0 before the guards
+    (gm_GetCreditOffers: an esi / edi swap).
+
 - **An else-if arm cross-jumped whole into a sibling's copy, the original keeps it inline**: the store order of
   the OTHER arms (default arm charId before stateArg; 0x176 arm stateArg, charId, x, z) decides it, found by
   climb.py swap + move in round 2 (cm_OrderAttack byte; permuting only the inlined arm's stores did not). The pair
