@@ -1124,7 +1124,7 @@ exe	0x0045fe10	ts_AddColor	ts_texture	byte	readable
 exe	0x0045ff70	ts_GetHiColTab	ts_texture	byte	readable		
 exe	0x00460130	ts_AllocSlot	ts_texture	byte	readable		
 exe	0x004601b0	tex_AddRef	ts_texture	byte	readable		
-exe	0x00460220	ts_LoadSoft	ts_texture	shape	readable	deep	
+exe	0x00460220	ts_LoadSoft	ts_texture	byte	readable		
 exe	0x00460380	ts_LoadAnim	ts_texture	byte	readable		
 exe	0x004605c0	tex_Load	ts_texture	byte	readable		
 exe	0x00460aa0	tex_GetParams	ts_texture	byte	readable		
@@ -3135,7 +3135,7 @@ exe	0x0050a0b0	gm_ObjectOwnerNo	f3gmt	byte	readable
 exe	0x0050a0f0	gm_ObjectBuilding	f3gmt	byte	readable		
 exe	0x0050a150	gm_CreditEvents	f3gmt	byte	readable		
 exe	0x0050a1c0	gm_BuildingEvents	f3gmt	byte	readable		
-exe	0x0050a250	gm_GetCreditOffers	f3gmt	draft	readable	deep	
+exe	0x0050a250	gm_GetCreditOffers	f3gmt	shape	readable	deep	
 exe	0x0050a640	gm_GetWorth	f3gmt	byte	readable		
 exe	0x0050a6c0	gm_IsBankrupt	f3gmt	byte	readable		
 exe	0x0050a810	gm_FindCharacterByMaster	f3gmt	byte	readable		
@@ -3800,7 +3800,7 @@ exe	0x00567810	he_OpenHelpEvents	he	byte	readable
 exe	0x005679b0	he_AllocHint	he	byte	readable		
 exe	0x00567a80	he_RunHint	he	byte	readable		
 exe	0x00567b80	he_AllocTip	he	byte	readable		
-exe	0x00567c00	he_RunTip	he	draft	readable	deep	
+exe	0x00567c00	he_RunTip	he	byte	readable		
 exe	0x00567d20	he_AllocTutorialBuildingTour	he	byte	readable		
 exe	0x00567d60	he_RunTutorialBuildingTour	he	draft	readable	deep	
 exe	0x00567f00	he_AllocPatrolEvent	he	byte	readable		
@@ -4385,7 +4385,7 @@ exe	0x005ae570	ai_SellCarts	lcdom	byte	readable
 exe	0x005ae6b0	ai_SendTransportOrder	lcdom	byte	readable		
 exe	0x005ae870	ai_TransportOrderDue	lcdom	byte	readable		
 exe	0x005ae8e0	ai_CartAtBuilding	lcdom	byte	readable		
-exe	0x005ae9a0	ai_TransportFromLager	lcdom	shape	readable	deep	
+exe	0x005ae9a0	ai_TransportFromLager	lcdom	byte	readable		
 exe	0x005af010	ai_TransportGoodsTotal	lcdom	byte	readable		
 exe	0x005af1a0	ai_OpenTransport	lcdom	byte	readable		
 exe	0x005af1b0	ai_OpenTransportSell	lcdom	byte	readable		
@@ -4446,7 +4446,7 @@ exe	0x005bc110	ai_ChooseCoatOfArms	lcdom	byte	readable
 exe	0x005bc420	ai_OpenMoneyInfoPage	lcdom	byte	readable		
 exe	0x005bc6d0	ai_OpenBuildingListPage	lcdom	byte	readable		
 exe	0x005bc790	ai_BuildingDetailWindow	lcdom	byte	readable		
-exe	0x005bc9c0	ai_OpenMasterListPage	lcdom	shape	readable	deep	
+exe	0x005bc9c0	ai_OpenMasterListPage	lcdom	byte	readable		
 exe	0x005bcc70	ai_PlayerStatsPanel	lcdom	shape	readable	deep	
 exe	0x005bd060	ai_AmountLimit	lcamt	byte	readable		
 exe	0x005bd0c0	ai_CentredText	lcamt	byte	readable		
@@ -4545,7 +4545,7 @@ exe	0x005cc2b0	ai_PeaceWindow	lcamt	byte	readable
 exe	0x005cc700	ai_ConvertWindow	lcamt	draft	readable	deep	
 exe	0x005cca40	ai_PenanceWindow	lcamt	byte	readable		
 exe	0x005ccc10	ai_Miracle	lcamt	draft	readable	deep	
-exe	0x005cd2e0	ai_MiracleWindow	lcamt	draft	readable	deep	
+exe	0x005cd2e0	ai_MiracleWindow	lcamt	byte	readable		
 exe	0x005cd400	ai_ChangeProfessionWindow	lcamt	shape	readable		
 exe	0x005cd8c0	ai_OpenTrial	lcamt	byte	readable		
 exe	0x005cdb90	ai_AccuseWindow	lcamt	byte	readable		
