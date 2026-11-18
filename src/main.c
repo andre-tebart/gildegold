@@ -5310,7 +5310,7 @@ void * main_Instance;  /* 0x75e140, its instance handle (HINSTANCE) */
 MAINFAMILY main_Family;  /* 0x75e180, the character creation's family and talents */
 char main_NetHost[0x80];  /* 0x75e1c0, the network host address ([Network] Host of game.INI, read with size 0x80 at 0x53ccf0; up to main_AppDir 0x75e240) */
 char main_AppDir[288];  /* 0x75e240 */
-char main_NetSaveName[161];  /* 0x75e360, the network game's city / save name (sprintf "%s/%s.net", read for "gamedata/network/%s.SAV"); size: up to the address 0x75e401, which is only 0x53b840's copy-loop base constant, so the name may run to ai_OptionsFile 0x75e480 */
+char main_NetSaveName[MAX_PATH];  /* 0x75e360, the network game's city / save name (sprintf "%s/%s.net", read for "gamedata/network/%s.SAV"); size: 257..288 bytes, as LINK's pad puts ai_OptionsFile (32-aligned) at 0x75e480 and no code reads past the name (tools/exe/commongaps.py); MAX_PATH taken */
 int main_PlatformNT;  /* 0x75e62c, the OS is NT based (dwPlatformId != VER_PLATFORM_WIN32_WINDOWS) */
 int main_WindBank;  /* 0x75e630, the wind sample bank (sb_LoadSampleBank "natur\wind.sbf" at the game start) */
 unsigned int ai_MissionSeed;  /* 0x75e120, the random seed of the missions (as mission.h) */

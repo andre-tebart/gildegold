@@ -99,10 +99,12 @@ typedef struct D3DTEXFMTCTX {       /* 0x50 bytes, d3d_UsedTexFormat */
     char pad4f;
 } D3DTEXFMTCTX;
 
-typedef struct D3DZBUFCTX {         /* 0x28 bytes, d3d_UsedZBufferFormat */
+typedef struct D3DZBUFCTX {         /* 0x50 bytes, d3d_UsedZBufferFormat */
     DWORD bpp;                      /* 0x00, wanted depth */
     DWORD unk04;
     DDPIXELFORMAT pf;               /* 0x08 */
+    DWORD unread28[10];             /* 0x28, no surviving code reads them; the common is 65..80 bytes: LINK's pad puts
+                                       d3d_Config (16-aligned) at 0xfe7670 (tools/exe/commongaps.py), 0x50 taken */
 } D3DZBUFCTX;
 
 extern D3DTEXFMTCTX d3d_UsedTexFormat;      /* 0xfe79c0 */
