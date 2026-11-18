@@ -1134,7 +1134,7 @@ void snd_PlayFavourComment(void)
    (gm_Liking / 33) picks "_SCHLECHTE_GUNST" (0), "_MITTLERE_GUNST" (1) or "_GUTE_GUNST" (2 and up); with the
    building's goods list empty (AIRECIPE.count 0) the variation is 3, else the random r. a is the character's
    scene record (AITASK). x is volatile because the original reloads it from its slot before every use
-   (matching trick, do not clean). */
+(matching trick, do not clean). @deep near-byte sweep s22: left the pop esi placed before je (ours) vs after the test ebx (original) around the goods-list call; not worked (the volatile x is the open question: an ordinary form that spills x is the first lever). */
 
 void ai_FavourComment(char *a)
 {

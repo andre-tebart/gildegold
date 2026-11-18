@@ -2069,7 +2069,10 @@ void cm_TrialAskAI(CMCUTINFO *r, AIPLAN *m)
     }
 }
 /* 0x4de4b0, the sink-to-ground action's callback (cm_DuelSinkDown): a blood puddle "ub_Blutlache" turned at random at
-   the character's place, as cm_FallDownAction without the sound */
+   the character's place, as cm_FallDownAction without the sound
+   @deep near-byte sweep s22: left the a->ch->obj->pos loads scheduled after the fild in the original
+   (before in ours). climb round 1: nothing; D3VECTOR4 rot: frame 0x18 (no); a pos local: 10; rot.z after
+   rot.y: 9; / 180.0 = control. */
 
 void cm_SinkDownAction(CHACTION *a)
 {

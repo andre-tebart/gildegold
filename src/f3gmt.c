@@ -7019,16 +7019,15 @@ int gm_CharMoney(int c)
     ORDOBJ *o;
 
     p = (ORDCHAR *)gm_FindChar(ORD_CHAR(ai_Chars[c])->netId);
-    if (p != 0) {
-        s = 0;
-        o = (ORDOBJ *)gm_Query((void *)p->inventory, 1, 4, 9);
-        while (o) {
-            s += o->count;
-            o = (ORDOBJ *)gm_QueryNext();
-        }
-        return s;
+    if (p == 0)
+        return -1;
+    s = 0;
+    o = (ORDOBJ *)gm_Query((void *)p->inventory, 1, 4, 9);
+    while (o) {
+        s += o->count;
+        o = (ORDOBJ *)gm_QueryNext();
     }
-    return -1;
+    return s;
 }
 /* 0x509f80, the value of the goods in the building b's stall (its first object 0x2a): the sum of their prices (gm_ItemPrice of the prototype and fill) */
 

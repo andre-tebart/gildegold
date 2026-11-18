@@ -5472,7 +5472,10 @@ void he_RunGraveTraining(int ev)
    running event 0x90 of the building (from) -> exSlot = cm_SendExSetHEI(-1, ev) and return; else the message 0x91
    (to the netId, from the building bldId, the clock, flags 0xa, arg 0 = the id, arg 1 = -1, arg 2 = unkb0) is
    sent, unkb4 / unkb0 are capped at 2, unkb8 = 0, the money -((unkb4 + 2) * (unkb0 + 2)) is taken from the
-   character, due now + 5 hours, then the event is scheduled (cm_SendExSetHE) */
+   character, due now + 5 hours, then the event is scheduled (cm_SendExSetHE)
+   @deep near-byte sweep s22: m->rounds = 0 before the clamps (6 -> 4 ins). Left: the cost product's two
+   field loads in the other order (original [+0xb4] into ecx first). = control: factors swapped, -(a)*b,
+   a*b*-1, 0 - a*b. */
 void he_AllocMeeting(int ev)
 {
     AIJOB *e = (AIJOB *)ev;
@@ -5500,11 +5503,11 @@ void he_AllocMeeting(int ev)
     msg.arg[1] = -1;
     msg.arg[2] = m->radius;
     cm_SendLongMessage((char *)&msg);
+    m->rounds = 0;
     if (m->kind > 2)
         m->kind = 2;
     if (m->radius > 2)
         m->radius = 2;
-    m->rounds = 0;
     gm_SendMoneyDelta(ai_CharInts[e->chr][0], -((m->kind + 2) * (m->radius + 2)));
     gm_AddTime(&e->end, 0, 5, 0);
     cm_SendExSetHEI(0, ev);

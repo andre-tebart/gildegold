@@ -7469,7 +7469,9 @@ int ai_BewitchWindow(AICHARREC *ch)
    the amount menu (the partner filter 0x400, gypsyFilter, the text 0x1dae with 0x1daf / 0x1db0 by me's sex) whose
    callback ai_BewitchWindow does the rest: 1 when it bewitched someone, else 0. The AI pays m->amount (1 .. 5, not
    above its money) for the relation with the character m->target (ai_RelationGain), sends the payment and the
-   relation change: 0x10; a wrong amount or an unknown target: 0x60 */
+   relation change: 0x10; a wrong amount or an unknown target: 0x60
+   @deep near-byte sweep s22: left the order of the two gypsyFilter dword loads around the cfg zero fill
+   (the original loads one before rep stosd). climb round 1: nothing. */
 
 int ai_BewitchOrder(AICHARREC *me, LCORDMSG *m)
 {
