@@ -2942,7 +2942,8 @@ void ai_BuyCartWindow(AIBLD *bld)
             }
         }
         if (d2_Radios[list].sel != -1) {
-            txt_Format(text, 0xda, kind * 2 + 0xc10, (int)gm_ItemPrice(kind + 0x134, 100));
+            price = (int)gm_ItemPrice(kind + 0x134, 100);
+            txt_Format(text, 0xda, kind * 2 + 0xc10, price);
             d2_SetCaption(buyButton, text);
             d2_CenterObj(buyButton);
         }
