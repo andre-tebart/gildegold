@@ -17567,24 +17567,21 @@ void he_AllocAmbush(AIJOB *ev)
    as raiders, in 15 minutes (stage 2). Else it waits 10 .. 14 minutes more until the event's time is up (then the
    cm ends it). Stage 2 waits for the party's slot (no party: cm slot 1), stage 3 waits (5 minutes) while the party
    runs, then ends in an hour. Stages -2 / -1 send the gang (option 2) home and free the record
-   @deep Reconstructed whole from the skeleton against 0x5630f0..0x56397c (654 vs 660 instructions, switch
-   tables equal): the exSlot wait, stage 0 the gang to the place ('\334berfall', mean skills[2], no member:
-   cm slot -1), stage 1 the 25000 place check (d3_FindObject 0x100 / d3_PointToWorld / d3_VecEqual),
-   he_CharacterBehavior, the event 0x51 / 15 searches, the transport pick (1500 near, the level = skill *
-   0.023809524f value bands, HETRANSPORT.ambushed, owner, the carts' objects gm_Query(0, 2, 7, 1, cart)),
-   the chance 30 / 80 / gm_AllowAll, cm_FindPartyOfKind(3, -1), the G28REC kind 3 party (flags 0xa2,
-   variant 1 | 8 for 'STADT', raid100 = the carts' objIds, ai_ArmGateGuards by escort, raidHome, raiders =
-   ids, +15 minutes), the 10 + rand 5 wait / end at until, stages 2 / 3 / -2 / -1. Tried: the n == 0 block
-   as the else (matched its out-of-line place), the escort passed for the n == 1 case (push eax as the
-   original). Left: ai_ArmGateGuards has no prototype in he.c (cm.h is not includable, unit Open: head), so
-   ours sign-extends the char escort (movsx) where the original pushes eax (+0x62b, code); the value band
-   ladder: the original threads a failed band of level >= 1 straight to the near test (jge / jmp, 4 x 3
-   lines at +0x430 ..), ours falls into the next level test; allocation: the guild building b in ebx vs our
-   slot (+0x546), o in a slot vs our ebx so the original tests o != 0 again before strstr (+0x585), n in a
-   slot vs our edi (references: M8 at +0x5a1: ours refers to ai_Time+0x4 (0x770ae4), the original's field
-   to 0x770ae0 (ai_Time) (and 1 more), explained: the two M8 lines are AITIME struct copies (party.time =
-   ai_Time at +0x5a1, ev->end = ai_Time at +0x644): both sides copy the same four words of ai_Time to the
-   same places, loaded into other registers in another order; no other object, string or constant differs) */
+   @deep size queue s19 (raw 2172, padded 2176 vs 2192): the ai_ArmGateGuards prototype is in reach now
+   (cm.h, unsigned char kind): ours pushes eax as the original, the movsx of the older note is gone. Read
+   at the arm loop: the original keeps n in a slot ([esp+0x10]: cmp [esp+0x10],1 and push 1), ours n in
+   edi, so VC6's equality propagation turns the second call's literal 1 into push edi inside the n == 1
+   arm; the lever is what keeps n memory-homed in the original (as gm_CreateObject's last). No lever: the
+   stage 1 cart count as its own local (cnt, either declaration order) = control. prior: Reconstructed
+   whole from the skeleton against 0x5630f0..0x56397c (654 vs 660 instructions, switch tables equal): the
+   exSlot wait, stage 0 the gang to the place ('\334berfall', mean skills[2], no member: cm slot -1), stage
+   1 the 25000 place check (d3_FindObject 0x100 / d3_PointToWorld / d3_VecEqual), he_CharacterBehavior, the
+   event 0x51 / 15 searches, the transport pick (1500 near, the level = skill * 0.023809524f value bands,
+   HETRANSPORT.ambushed, owner, the carts' objects gm_Query(0, 2, 7, 1, cart)), the chance 30 / 80 /
+   gm_AllowAll, cm_FindPartyOfKind(3, -1), the G28REC kind 3 party (flags 0xa2, variant 1 | 8 for 'STADT',
+   raid100 = the carts' objIds, ai_ArmGateGuards by escort, raidHome, raiders = ids, +15 minutes), the 10 +
+   rand 5 wait / end at until, stages 2 / 3 / -2 / -1. Tried: the n == 0 block as the else (matched its
+   out-of-line place), the escort passed for the n == 1 case (pus... */
 void he_RunAmbush(AIJOB *ev)
 {
     HEAMBUSH *x = (HEAMBUSH *)ev;
