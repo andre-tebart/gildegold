@@ -603,5 +603,6 @@ original's order (reverse-engineering LINK's name order) is kept for the very en
 - **State at s13's end**: unchanged layout (36 steps, total +448, 0 groups placed); the +64 is explained to the byte
   and is not reachable without the removed functions. The remaining .data steps re-checked by strdiff are the
   accepted removed-function literal class ("SHAPBANK" and "..." in d2's run: the only surviving SHAPBANK user is
-  shp's d2_BankAppendShape, "..." has no surviving game user; main's run; "!bk_" / "bk_" in rd). Not re-checked:
-  am / poker ("Keine Methode", "gb_"), cmdump ("handwerker3_MANN" / "buerger2_MANN" order, "!vg_").
+  shp's d2_BankAppendShape, "..." has no surviving game user; main's run; "!bk_" / "bk_" in rd; am's run: "Keine
+  Methode" 0x600354 has no reader, 0x600464 / 0x600478 only cm / amt / lc readers, "gb_" is txt's). Not re-checked:
+  cmdump ("handwerker3_MANN" / "buerger2_MANN" order, "!vg_").
