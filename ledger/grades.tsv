@@ -869,7 +869,7 @@ exe	0x00448630	d3if_Pick	d3_interface	byte	readable
 exe	0x004486e0	d3if_ScreenBox	d3_interface	byte	readable		
 exe	0x00448910	d3if_CreateCameras	d3_interface	byte	readable		
 exe	0x00448a50	d3if_ClearView	d3_interface	byte	readable		
-exe	0x00448ac0	d3_YawTo	d3_interface	draft	readable		shape+readable -> draft+readable at 0f1c8dc1: promote --accept-falls
+exe	0x00448ac0	d3_YawTo	d3_interface	byte	readable		
 exe	0x00448c20	d3_CornerCB	d3_interface	shape	readable	deep	
 exe	0x00448e60	d3_ScreenToUV	d3_interface	draft	readable	deep	
 exe	0x004495f0	d3_FindObjectCB	d3_interface	byte	readable		
@@ -1521,7 +1521,7 @@ exe	0x0048f600	ai_DecideUseAlchemyItems	am	byte	readable
 exe	0x0048f990	ai_ExecUseAlchemyItems	am	byte	readable		
 exe	0x0048fb70	ai_RegisterBuildingActions	am	byte	readable		
 exe	0x0048feb0	ai_PickRandomBuildingChar	am	byte	readable		
-exe	0x0048ff50	ai_DecideGraveyardOwner0	am	shape	readable		
+exe	0x0048ff50	ai_DecideGraveyardOwner0	am	byte	readable		
 exe	0x004900c0	ai_ExecGraveyardOwner0	am	byte	readable		
 exe	0x00490170	ai_DecideGraveyardOwner1	am	byte	readable		
 exe	0x004902b0	ai_ExecGraveyardOwner1	am	byte	readable		
@@ -1846,7 +1846,7 @@ exe	0x004ad3b0	hmt_SendElectionMessage	hmt	byte	readable
 exe	0x004ad3e0	hmt_Score	hmt	byte	readable		
 exe	0x004ad510	hmt_ClearOffices	hmt	byte	readable		
 exe	0x004ad580	hmt_DecideElection	hmt	byte	readable		
-exe	0x004ad7a0	hmt_FillCouncils	hmt	shape	readable		
+exe	0x004ad7a0	hmt_FillCouncils	hmt	shape	readable	deep	
 exe	0x004ada80	hmt_Load	hmt	shape	readable	deep	
 exe	0x004adb20	hmt_Save	hmt	byte	readable		
 exe	0x004adbb0	hmt_Create	hmt	byte	readable		
@@ -1915,7 +1915,7 @@ exe	0x004b28d0	hst_ParseText_Fake_2nd_Pass	hst	byte	readable
 exe	0x004b2c90	hst_ParseEventText	hst	byte	readable		
 exe	0x004b2ce0	hst_ParseText_Real	hst	byte	readable		
 exe	0x004b2ed0	hst_ParseDate	hst	byte	readable		
-exe	0x004b3280	hst_NextEvent	hst	shape	readable		
+exe	0x004b3280	hst_NextEvent	hst	shape	readable	deep	
 exe	0x004b3350	hst_LastYearDialog	hst	byte	readable		
 exe	0x004b35e0	hst_NextEventCmd	hst	shape	readable		
 exe	0x004b36d0	hst_LastYearCmdDialog	hst	byte	readable		
@@ -2384,7 +2384,7 @@ exe	0x004cd3c0	cm_LobbyAddChat	cm	byte	readable
 exe	0x004cd480	cm_LobbyChatFirst	cm	byte	readable		
 exe	0x004cd4c0	cm_LobbyChatNextLine	cm	byte	readable		
 exe	0x004cd500	cm_LobbyClearChat	cm	byte	readable		
-exe	0x004cd510	cm_LobbyAllReady	cm	shape	readable		
+exe	0x004cd510	cm_LobbyAllReady	cm	byte	readable		
 exe	0x004cd580	cm_LobbyStart	cm	byte	readable		
 exe	0x004cd5d0	cm_LobbyPlayerList	cm	byte	readable		
 exe	0x004cd5e0	cm_LobbyFindPlayer	cm	byte	readable		
@@ -2769,7 +2769,7 @@ exe	0x004efc10	gv_AllocGraveyard	grave	byte	readable
 exe	0x004eff50	gv_GrowGraveyard	grave	shape	readable	deep	
 exe	0x004f0180	gv_FreeGraveyard	grave	byte	readable		
 exe	0x004f01d0	gv_OrderBury	grave	byte	readable		
-exe	0x004f0240	gv_BuryCharacter	grave	shape	readable		
+exe	0x004f0240	gv_BuryCharacter	grave	byte	readable		
 exe	0x004f0430	gv_OrderReserveGrave	grave	byte	readable		
 exe	0x004f0490	gv_ReserveGrave	grave	byte	readable		
 exe	0x004f0700	gv_OrderExtendGrave	grave	byte	readable		
@@ -2918,7 +2918,7 @@ exe	0x004f9220	ord_UpdateMessageEvent	ord	byte	readable
 exe	0x004f9710	ord_HandleMessageRecord	ord	byte	readable		
 exe	0x004f97a0	ord_GetRatingByte	ord	byte	readable		
 exe	0x004f97c0	ord_BuildingCapacityRatio	ord	byte	readable		
-exe	0x004f9850	ord_ReportStatistics	ord	shape	readable		
+exe	0x004f9850	ord_ReportStatistics	ord	byte	readable		
 exe	0x004f9c00	ord_AdvanceRatingBase	ord	byte	readable		
 exe	0x004f9ce0	ord_StatisticsRating	ord	byte	readable		
 exe	0x004f9d40	ord_WeightedRecordSum	ord	shape	readable	deep	
@@ -2948,7 +2948,7 @@ exe	0x004fb890	gm_ChooseHeadIcon	f3gm	byte	readable
 exe	0x004fbb80	gm_CreateCharModel	f3gm	shape	readable	deep	
 exe	0x004fbd10	gm_PlaceOnStage	f3gm	byte	readable		
 exe	0x004fbe90	gm_DailyCharacterStep	f3gm	byte	readable		
-exe	0x004fc6f0	gm_AgeCharacter	f3gm	draft	readable		shape+readable -> draft+readable at 0f1c8dc1: promote --accept-falls
+exe	0x004fc6f0	gm_AgeCharacter	f3gm	byte	readable		
 exe	0x004fc7a0	gm_ExpectedDeathAge	f3gm	byte	readable		
 exe	0x004fc820	gm_CharacterHealth	f3gm	byte	readable		
 exe	0x004fc890	gm_CharacterBaseHealth	f3gm	byte	readable		
@@ -3011,7 +3011,7 @@ exe	0x00500a40	gm_TakeObjekt	f3gmt	byte	readable
 exe	0x00500ae0	gm_AddNegative	f3gmt	byte	readable		
 exe	0x00500b90	gm_BuildKindObjects	f3gmt	byte	readable		
 exe	0x00500c20	gm_CollectOffers	f3gmt	draft	readable	deep	
-exe	0x00500ec0	gm_FindMarketObject	f3gmt	shape	readable		
+exe	0x00500ec0	gm_FindMarketObject	f3gmt	byte	readable		
 exe	0x00501000	gm_FindPlayerBuilding	f3gmt	byte	readable		
 exe	0x00501030	gm_BuildNext	f3gmt	shape	readable	deep	
 exe	0x00501190	gm_BuildQuery	f3gmt	byte	readable		
@@ -3087,7 +3087,7 @@ exe	0x00505e60	gm_CharLevel	f3gmt	byte	readable
 exe	0x00505f30	gm_CharPrevLevel	f3gmt	byte	readable		
 exe	0x00506000	gm_BirthDate	f3gmt	byte	readable		
 exe	0x005060d0	gm_DeathDate	f3gmt	shape	readable		
-exe	0x00506180	gm_RankPlayers	f3gmt	draft	readable		shape+readable -> draft+readable at 0f1c8dc1: promote --accept-falls
+exe	0x00506180	gm_RankPlayers	f3gmt	shape	readable	deep	
 exe	0x00506430	gm_PlayerRecord	f3gmt	byte	readable		
 exe	0x00506480	gm_HasAdultRelative	f3gmt	byte	readable		
 exe	0x005064d0	gm_TakeOverCharacter	f3gmt	byte	readable		
@@ -3147,7 +3147,7 @@ exe	0x0050ab20	gm_ListAmountById	f3gmt	byte	readable
 exe	0x0050ab50	gm_ListStock	f3gmt	byte	readable		
 exe	0x0050ab80	gm_FreeCapacity	f3gmt	byte	readable		
 exe	0x0050acf0	gm_FreeStallCapacity	f3gmt	shape	readable		
-exe	0x0050ad70	gm_TakeableCount	f3gmt	shape	readable		
+exe	0x0050ad70	gm_TakeableCount	f3gmt	byte	readable		
 exe	0x0050af00	gm_CollectCarried	f3gmt	byte	readable		
 exe	0x0050b010	gm_FirstBuilding	f3gmt	byte	readable		
 exe	0x0050b090	gm_ResearchClass	f3gmt	byte	readable		
@@ -3169,7 +3169,7 @@ exe	0x0050ca50	gm_ChangeObjektZustand	f3gmt	byte	readable
 exe	0x0050cad0	gm_ChangeBuildingState	f3gmt	byte	readable		
 exe	0x0050cc50	gm_SendMoneyDelta	f3gmt	byte	readable		
 exe	0x0050cc60	gm_ResetStock	f3gmt	byte	readable		
-exe	0x0050ccd0	gm_Homeless	f3gmt	shape	readable		
+exe	0x0050ccd0	gm_Homeless	f3gmt	byte	readable		
 exe	0x0050cd40	gm_JobCost	f3gmt	byte	readable		
 exe	0x0050cdc0	gm_StaffFactor	f3gmt	draft	readable		shape+readable -> draft+readable at 0f1c8dc1: promote --accept-falls
 exe	0x0050cf60	gm_BathObjectCount	f3gmt	byte	readable		
@@ -3804,7 +3804,7 @@ exe	0x00567c00	he_RunTip	he	byte	readable
 exe	0x00567d20	he_AllocTutorialBuildingTour	he	byte	readable		
 exe	0x00567d60	he_RunTutorialBuildingTour	he	draft	readable	deep	
 exe	0x00567f00	he_AllocPatrolEvent	he	byte	readable		
-exe	0x00567f50	he_PatrolStep	he	shape	readable		
+exe	0x00567f50	he_PatrolStep	he	shape	readable	deep	
 exe	0x00568220	he_RunPatrolEvent	he	byte	readable		
 exe	0x00568310	he_RegisterEventTypes02	he	byte	readable		
 exe	0x00568aa0	he_EndKind23Events	he_b	byte	readable		
@@ -3923,7 +3923,7 @@ exe	0x00575030	he_CircusShowIncome	he_b	byte	readable
 exe	0x00575150	he_AllocPettyLoss	he_b	byte	readable		
 exe	0x005751e0	he_RunPettyLoss	he_b	draft	readable	deep	
 exe	0x00575320	he_AllocEventGood	he_b	byte	readable		
-exe	0x005753a0	he_RunEventGood	he_b	shape	readable		
+exe	0x005753a0	he_RunEventGood	he_b	byte	readable		
 exe	0x00575430	he_GiveDomizilGood	he_b	byte	readable		
 exe	0x00575540	he_EventGoodMoney	he_b	byte	readable		
 exe	0x00575570	he_EventGoodRefund	he_b	byte	readable		
@@ -4193,7 +4193,7 @@ exe	0x00596ba0	ai_MistressWindow	lc	draft	readable	deep
 exe	0x00596f90	ai_MistressContact	lc	byte	readable		
 exe	0x00596ff0	ai_MasterExamWindow	lc	draft	readable	deep	
 exe	0x00597380	ai_EspionageAmountMenu	lc	byte	readable		
-exe	0x005973f0	ai_SuicideWindow	lc	shape	readable		
+exe	0x005973f0	ai_SuicideWindow	lc	byte	readable		
 exe	0x00597500	ai_StudyContact	lc	byte	readable		
 exe	0x005976a0	ai_TavernRulesWindow	lc	byte	readable		
 exe	0x00597780	ai_DrawDice	lc	byte	readable		
@@ -4237,7 +4237,7 @@ exe	0x0059d5e0	ai_MoneyExchangeWindow	lc	shape	readable
 exe	0x0059dc00	ai_MoneyLenderInfoWindow	lc	byte	readable		
 exe	0x0059df10	ai_FortuneOverview	lc	byte	readable		
 exe	0x0059df80	ai_MoneyLenderContact	lc	byte	readable		
-exe	0x0059e0a0	ai_SwitchRoom	lc	shape	readable		
+exe	0x0059e0a0	ai_SwitchRoom	lc	byte	readable		
 exe	0x0059e170	ai_IsBuildingOpen	lc	byte	readable		
 exe	0x0059e210	ai_MayEnterBuilding	lc	byte	readable		
 exe	0x0059e420	ai_EnterBuilding	lc	byte	readable		
@@ -4380,7 +4380,7 @@ exe	0x005aab80	ai_PersonnelBook	lcdom	draft	readable	deep
 exe	0x005ac110	ai_MercenaryBook	lcdom	draft	readable	deep	
 exe	0x005ad000	ai_AskHelperBonus	lcdom	byte	readable		
 exe	0x005ad150	ai_HelperBook	lcdom	draft	readable	deep	
-exe	0x005ae240	ai_BuyCartWindow	lcdom	shape	readable		
+exe	0x005ae240	ai_BuyCartWindow	lcdom	byte	readable		
 exe	0x005ae570	ai_SellCarts	lcdom	byte	readable		
 exe	0x005ae6b0	ai_SendTransportOrder	lcdom	byte	readable		
 exe	0x005ae870	ai_TransportOrderDue	lcdom	byte	readable		
@@ -4595,7 +4595,7 @@ exe	0x005d2720	ai_UseGoodWeakenSkills3	lcamt	byte	readable
 exe	0x005d2960	ai_UseGoodFrameChar	lcamt	shape	readable		
 exe	0x005d2bc0	ai_UseGoodFrameChar2	lcamt	byte	readable		
 exe	0x005d2e80	ai_UseGoodHeatBuilding	lcamt	byte	readable		
-exe	0x005d2f20	ai_UseEventGood	lcamt	shape	readable		
+exe	0x005d2f20	ai_UseEventGood	lcamt	byte	readable		
 exe	0x005d2f90	ai_UseGoodStaffBonus	lcamt	byte	readable		
 exe	0x005d3030	ai_UseGoodPettyLoss	lcamt	byte	readable		
 exe	0x005d31c0	ai_UseGoodSkillBonus	lcamt	byte	readable		
