@@ -4654,20 +4654,17 @@ void ai_GraveyardMessagePlain(int param_1, unsigned short *param_2, unsigned sho
    stage 3 sends the agent back to its building, stage 4 waits until it is there and reports to the event's
    character (aged: ai_GraveyardMessage, its last argument 0 when random + 1 - the agent's skill 1 is above 1;
    else ai_GraveyardMessagePlain); then the event ends (stage -1)
-   @deep read the whole function against the original: typed as AIJOB + HEDECAY (event 0x89, am.c
-   ai_ExecGraveyardOwner2 / sv_t.c), the walk text literal, the default stage leaves the event alone, the
-   message's last argument as the original's told flag (!(random + 1 - skill > 1.0) -> 1), the age sum
-   level / 50 + (random + type level * 2) with he_SetLifeByAge taking an int (its callee narrows it: and
-   eax, 0xffff at 0x56fbcd; the caller keeps the and at +0x1bf). Left: the original's stage 1 pushes the
-   walk text and 1 and jumps into stage 3's cm_SendChrGotoBuilding call tail (+0x91: push X; push 1; jmp),
-   ours keeps its own copy with the arguments loaded before the pushes (+0x8a, +0x261 scheduling), and
-   stage 4's per address computed after the agent id push (+0x321): scheduling / cross-jumping only
-   (references: M8 at +0x2d2: ours refers to ai_Time+0x4 (0x770ae4), the original's field to 0x770ae8
-   (ai_Time+0x8), explained: the M8 at +0x2d2 is the alignment of stage 4's 14-byte ai_Time copy (e->end =
-   ai_Time, the same four loads and stores of ai_Time+0/4/8/c in both, other registers and order): our load
-   of ai_Time+4 lines up with the original's load of ai_Time+8) (size: 355 vs 340 instructions, explained:
-   ours 355 vs 340: the stage-1 copy of the cm_SendChrGotoBuilding tail (the 6 argument pushes, the call,
-   stage++ and the epilogue, 15 instructions) that the original cross-jumps into stage 3's) */
+   @deep size queue s17 (raw 1044 with the table, padded 1056 vs 1024): the stage-1 tail is a
+   post-allocation cross-jump into stage 3's call (push text; push 1; jmp to stage 3's mov eax,[eax+1]
+   after its push 0), so stage 3's argument temps must have stage 1's registers: the original's scratch
+   rotation is one step ahead of ours from the -1/-2 block on (that block xor edx,edx / mov dx,[eax] vs
+   ours ecx; stage 3 FindChar push edx vs ecx; stage 3's loads eax/ecx vs edx/eax; stage 4 push edx vs
+   ecx); the code before it (FindChar, the stage CSE in ecx, compares, table) is identical. Rounds: retgen
+   single (12 sites, every return -> break alone / all but one) = all one code, no change in the tail; told
+   as short / char / uchar / ushort (flip.py hit: the -1 block's register flips with told int->short)
+   677..710 bytes, none closer. flip.py --want the stage-1 'push 1; jmp': no mutant of 487. Next: find the
+   temp the original has one more of before the -1 block in code order (c2trace temps; the stage compare
+   spelled as a switch / a local). */
 void he_RunDecay(int ev)
 {
     AIJOB *e = (AIJOB *)ev;

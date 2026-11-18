@@ -3843,7 +3843,7 @@ exe	0x0056de10	he_RunAlchemistDay	he	6aa2e76b7d870b01	no	byte	control=byte p1=by
 exe	0x0056e070	he_LabIncident	he_b	f937241ea6267a59	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=568	3ca5b3fe521e2bd8
 exe	0x0056e400	he_RegisterEventTypes99	he	886b1d479ef4184b	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0056e460	he_AllocSecretRoom	he	b63de88acedb5ca6	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x0056e5b0	he_RunSecretRoom	he_b	bfa7a700d3f8d72e	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=568	3ca5b3fe521e2bd8
+exe	0x0056e5b0	he_RunSecretRoom	he_b	f7772f7a44e33a40	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	ae82ec1dc71e43f3
 exe	0x0056efc0	he_AllocEvent9a	he	963a8b7c00a40e7e	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0056f040	he_FreeEventNow	he	8ebbf0bd37d80d17	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0056f050	he_AllocDomizilEvent	he	ab721adffda3465d	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
