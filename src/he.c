@@ -7045,14 +7045,13 @@ void he_RunGang(int ev)
     AIBTYPE *bt;
     AIOBJ *room;
     HEFINVIEW *fin;
-    int *id;
     int dt, idx, i, k, n, r, lvl, loot, sum, v, amt, tries, kind, diff;
     int pick[5];                        /* the building kinds to pick from, then the buildings of the kind */
     char text[0x400];
 
     dt = gm_MinutesBetween(&g->start, &ai_Time);
-    member = 0;
     idx = 0;
+    member = 0;
     leader = (AICHAR *)gm_FindChar(g->leader);
     s = (AIBLD *)gm_BuildQuery(1, 1, e->from);
     if (s != 0 && s->owner != 0xffff)
@@ -7151,9 +7150,8 @@ void he_RunGang(int ev)
         sum = 0;
         if (s != 0 && leader != 0) {
             room = (AIOBJ *)gm_GetGebaeudeHauptraum((unsigned char *)s);
-            id = e->ids;
-            for (i = 6; i != 0; i--) {
-                c = (AICHAR *)gm_FindChar(*id);
+            for (i = 0; i < 6; i++) {
+                c = (AICHAR *)gm_FindChar(e->ids[i]);
                 if (c != 0) {
                     lvl = (int)(c->skills[2] * (1.0f / 42.0f) + 1.0f);
                     for (k = (unsigned short)util_Random(4) + 3; k > 0; k--)
@@ -7162,10 +7160,9 @@ void he_RunGang(int ev)
                     cm_SendChrGotoBuilding(c->netId, s->id, room->objId, 0, 0, "Taschendieb");
                     sv_MoveToGroup(0, 0, c->id, 0);
                 }
-                id++;
             }
-            v = gm_PlayerFactor(sum, ai_OwnPlayer);
-            amt = (int)((gm_BuildingSkill(s, 1, 1) * 0.01f + 1.0f) * v);
+            sum = gm_PlayerFactor(sum, ai_OwnPlayer);
+            amt = (int)((gm_BuildingSkill(s, 1, 1) * 0.01f + 1.0f) * sum);
             cm_SendMoveGoodsUnchecked(leader->netId, -1, ai_OwnPlayer, amt);
             s->roundSums[0] += amt;
             if (leader->kind == 6) {
