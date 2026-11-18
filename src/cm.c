@@ -5003,13 +5003,7 @@ int cm_ExSetHome(G17MSG *m, G17STAT *s)
    its line, refused at the line's maxLevel) and half way to a level of 100; capacities and stock follow its new type,
    a graveyard grows. Its model "<data>gebaeude/*gb_<NAME>[_A.._C].ogr" (_A / _B by the owner's sex for type 0x21)
    is loaded in the town scene and replaces the old object at its place and heading, with the upgrade effect
-   script, the hooks, banners, the season's textures, torches, lights and a restarted chimney smoke.
-   @deep frame sweep s21: 76 -> 14 ins / 64 -> 7 bytes with the original's frame 0x2b8: v a D3VECTOR4 (the
-   padded engine vector; rot / dir as D3VECTOR4 worse), key a local of the if (b->object != 0) block
-   (escaped by &key), path[0x104] (MAX_PATH: found sits 4 further in the original; found[0x104] instead: 16
-   ins). Left: slots 14, the small scalars save / radius / key one slot off each (the original: radius
-   [esp+0x10], save [esp+0x14], key [esp+0x2c] after the pushes); radius as a block local of the material
-   if: 58. Lead: c2frame --refs counts of t / save / radius / key. */
+   script, the hooks, banners, the season's textures, torches, lights and a restarted chimney smoke. */
 int cm_ExGebUpgrade(G17MSG *m, G17STAT *s)
 {
     char name[0x80];
@@ -5022,7 +5016,6 @@ int cm_ExGebUpgrade(G17MSG *m, G17STAT *s)
     AIBTYPE *t;
     D3OBJECT *o;
     EVTSCRIPT *sc;
-    float radius;
     int i, save, season, size;
 
     if (net_Conn.s != (unsigned int)-1)
@@ -5063,6 +5056,8 @@ int cm_ExGebUpgrade(G17MSG *m, G17STAT *s)
                 sprintf(name, "cm_ExGebUpgrade(): Could not load 3D-Object-Group '%s'...", path);
                 err_Message(name);
             } else {
+                float radius, key;
+
                 d3_DirToWorld((struct XOBJ *)b->object, (float *)&d3_ZAxis, (float *)&dir);
                 rot.x = 0;
                 rot.y = 0;
@@ -5089,8 +5084,6 @@ int cm_ExGebUpgrade(G17MSG *m, G17STAT *s)
                 init_HookObject(o, b, 2);
                 sv_CreateBanners((char *)b);
                 if (b->object != 0) {
-                    float key;
-
                     season = gm_ClockSeason(&ai_Time);
                     if (season == 1)
                         init_TextureSet = 1;
