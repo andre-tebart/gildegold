@@ -20,25 +20,30 @@
 #include "cm.h"
 
 /* 0x458e70, environment map coordinates of the vertices of a part that has a reflecting texture
-   @deep Hunk (first loop, the normals path): the original reloads fr (spilled into part's parameter slot)
-   right after the fadd of v->u = (b.x + 1.0f) * 0.5f, BEFORE the d3_Normalize call's add esp,4 (mov
-   eax,[esp+0x7c]); ours after the fmul (mov eax,[esp+0x78]). Everything else equal. flip.py --want 'mov
-   eax, _fr before add esp': only meaning changes flip it (swap d3_Normalize with v->u; delete or duplicate
-   any of b.x / b.y / b.z / nv.x / nv.y / d earlier in the body): the count of IL before the reload decides
-   (a scheduling region cut?), not the statement itself. Rounds (session s12): volatile on nv.z = control
-   (dropped, kept plain); d without volatile: +28 ins (d * nv.z operand order flips in both loops and the
-   second loop's nv sums reorder; b.z = d * nv.z = same code); d as double, d as nv.w / b.w, D3VECTOR4 nv:
-   worse; v->u forms (0.5f * (..), 1.0f + b.x), (float)(int) / (unsigned) casts of the normals, k += 3
-   index, for-init v, v++ in the body, else instead of return, slot != 0: = control or worse; climb 2
-   rounds: nothing. Left: the volatile d (no @original comment yet) reproduces the original's fst/reload of
-   d; find the plain form of d (or of nv) that gives the same FPU code, then the reload order may follow.
-   c2dag.py shows another function's graph here (unusable). */
+   @deep deep s24: the volatile d is gone: d is a plain float local of each if (v->used) block (= the
+   volatile's code exactly; two function-scope locals d / d2 also = control; one plain function-scope d: 20
+   ins, the second loop's nv sums reorder). nv as block locals = control; b as block locals: draft (slots).
+   nv sum orders with a plain function d: 14..24 ins. climb round 1 on the block-local text: nothing. Left:
+   the same order hunk as before (fr reloaded from part's slot after the fmul of v->u where the original
+   loads it before the call's add esp,4). prior: Hunk (first loop, the normals path): the original reloads
+   fr (spilled into part's parameter slot) right after the fadd of v->u = (b.x + 1.0f) * 0.5f, BEFORE the
+   d3_Normalize call's add esp,4 (mov eax,[esp+0x7c]); ours after the fmul (mov eax,[esp+0x78]). Everything
+   else equal. flip.py --want 'mov eax, _fr before add esp': only meaning changes flip it (swap
+   d3_Normalize with v->u; delete or duplicate any of b.x / b.y / b.z / nv.x / nv.y / d earlier in the
+   body): the count of IL before the reload decides (a scheduling region cut?), not the statement itself.
+   Rounds (session s12): volatile on nv.z = control (dropped, kept plain); d without volatile: +28 ins (d *
+   nv.z operand order flips in both loops and the second loop's nv sums reorder; b.z = d * nv.z = same
+   code); d as double, d as nv.w / b.w, D3VECTOR4 nv: worse; v->u forms (0.5f * (..), 1.0f + b.x),
+   (float)(int) / (unsigned) casts of the normals, k += 3 index, for-init v, v++ in the body, else instead
+   of return, slot != 0: = control or worse; climb 2 rounds: nothing. Left: the volatile d (no @original
+   comment yet) reproduces the original's fst/reload of d; find the plain form of d (or of nv) that gives
+   the same FPU code, then the reload order may follow. c2dag.py shows another function's graph here
+   (unusable). */
 void d3_EnvMapCoords(XOBJ *obj, XPART *part)
 {
     D3MATRIX m;
     D3VECTOR4 b;
     D3VECTOR4 nv;
-    volatile float d;  /* @original the original stores d (fst) and reloads it for each of its three uses */
     int n, i, k;
     D3ANIMSLOT *slot;
     D3ANIMFRAME *fr;
@@ -56,6 +61,8 @@ void d3_EnvMapCoords(XOBJ *obj, XPART *part)
                 v = part->keys;
                 for (i = 0; i < part->nkeys; i++, v++) {
                     if (v->used) {
+                        float d;
+
                         b.x = ((float)fr->normals[i * 3] - 128.0f) * 0.007843138f;
                         b.y = ((float)fr->normals[i * 3 + 1] - 128.0f) * 0.007843138f;
                         b.z = ((float)fr->normals[i * 3 + 2] - 128.0f) * 0.007843138f;
@@ -76,6 +83,8 @@ void d3_EnvMapCoords(XOBJ *obj, XPART *part)
             v = part->keys;
             for (i = 0; i < part->nkeys; i++, v++) {
                 if (v->used) {
+                    float d;
+
                     nv.x = (m._11 * v->src->nx) + m._31 * v->src->nz + m._21 * v->src->ny;
                     nv.y = (m._12 * v->src->nx) + m._32 * v->src->nz + m._22 * v->src->ny;
                     nv.z = (m._13 * v->src->nx) + m._33 * v->src->nz + m._23 * v->src->ny;
