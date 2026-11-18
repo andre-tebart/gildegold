@@ -2671,10 +2671,12 @@ int ch_CellToCell(D3SM *h, int x, int z, D3SM *to, int *px, int *pz)
    @deep deep s27: a = CH_ACTIONS(ch) assigned as the first statement instead of the declaration's
    initializer (climb round 1, init@2): the x / z slot swaps are gone, 10 -> 2 ins. Left: the n hunk at
    0x40783c, the original setne cl; inc ecx; mov ebp,ecx; add ebp,edi (the 1/2 count copied into n, then i
-   added), ours add ecx,edi; mov ebp,ecx. = control: n = k; n += i in every placement (before the for, in
-   its init, n = n + i, n += cur), (k) + i operand orders, n = cur + k before the loop. Worse: (transport
-   != 0) + 1 (8), the bound i < cur + n in the loop test (91), if / else n = 2 / 1 (41), n = 1; if (t) n =
-   2 (72). flip.py --want 'mov ebp, ecx / add ebp, edi': 279 mutants, no hit. prior: match-deep 2026-11-10:
+   added: as if the count were a value still live after the add), ours add ecx,edi; mov ebp,ecx. = control:
+   n = k; n += i in every placement (before the for, in its init, n = n + i, n += cur), (k) + i operand
+   orders, n = cur + k before the loop, a while loop, transport == 0 ? 1 : 2, CH_TRANSPORT(ch) ?. Worse:
+   (transport != 0) + 1 / i + 1 + (t ? 1 : 0) (8: lea ebp,[ecx+edi+1]), t ? i + 2 : i + 1 (32), the bound i
+   < cur + n in the loop test (91), if / else n = 2 / 1 (41), n = 1; if (t) n = 2 (72). flip.py --want 'mov
+   ebp, ecx / add ebp, edi': 279 mutants, no hit; climb 3 rounds: nothing. prior: match-deep 2026-11-10:
    headers sample insensitive (32, one codegen). Frame read: x and z live in dead parameter slots (original
    z in ch's slot [esp+0x1c], x in out's slot [esp+0x20]; ours swapped); start = out is the push-ecx slot
    in both. Slot hunk: out->z = z; out->x = x (store order) puts the slots right but swaps the loads (order
