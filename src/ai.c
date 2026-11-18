@@ -2065,21 +2065,22 @@ pick:
     if (msg.ids[0] != -1)
         cm_SendLongMessage(&msg);
 }
-/* 0x482f00, ai_CalcMeisterRaeuber: the robber master (the Wache message names the guard master's room) @deep B3 draft, 207 code / 12 slots hunks after the strcpy fix (was 321 / 26): every hunk of tools/asmdiff was read against build/ghidra/482f00.c - statements, constants, callees and field offsets match. Last-bytes pass: the manual copy loop `src[i] / ((char *)msg.arg)[i]` was the meaning-class lead - the original's asm is VC6's inlined strcpy (sub ecx,eax / mov dl,[eax] / mov [ecx+eax],dl / inc eax / test dl,dl); replacing it by strcpy((char *)msg.arg, src) dropped the function from 321 code / 26 slots to 207 / 12 and its asm diff from 211 to 139 lines. The same idiom was applied to ai_CalcMeisterWache (byte-neutral there, its pointer-loop form already compiles as the inline copy). What is left is allocation / block order (the ebp/esi roles, [esp+0x1c..0x44] rotation, the best/rank block emitted before vs after the compare) = match-deep. Q2 gaps: ord_GetGridCell (ord.c's ord_GetGridCell; unit unnamed, @named_by guess), AIBLD.budget (a building amount used as the purchase limit, scaled by 1/64000 in ai.c - no source names it). */
+/* 0x482f00, ai_CalcMeisterRaeuber: the robber master (the Wache message names the guard master's room). k is
+   zeroed at the top and not again before the protect-money pick: that loop starts from it as the original does
+   (its slot is read there) */
 
 void ai_CalcMeisterRaeuber(AICHAR *ch)
 {
     AIOBJ *obj, *room;
     AIBLD *bb, *best;
     AIBTYPE *bt;
-    int i, j, k, c, n, all, half, r, t;
-    volatile int z;
+    int i, j, k, c, n, all, half, r, t, want;
     float max, v, w, bestw;
     char *src;
     AIMSG msg;
     char buf[1024];
 
-    z = 0;
+    k = 0;
     obj = gm_Query(ch->bld->objList, 2, 6, 0, 0x116);
     if (obj) {
         ai_NEntries = 0;
@@ -2161,12 +2162,13 @@ attack:
                         else
                             w = 1.0f - (ai_Grid[i][j].a * 0.125f + ai_Grid[i][j].b) / max;
                         w = util_RandomU(100) * w * 0.01;
-                        if (best) {
-                            if (!((float)gm_GetGoodsValue(&ai_CharsT[bb->owner]) * w > (float)gm_GetGoodsValue(&ai_CharsT[best->owner]) * bestw))
-                                continue;
+                        if (best == 0) {
+                            bestw = w;
+                            best = bb;
+                        } else if ((float)gm_GetGoodsValue(&ai_CharsT[bb->owner]) * w > (float)gm_GetGoodsValue(&ai_CharsT[best->owner]) * bestw) {
+                            bestw = w;
+                            best = bb;
                         }
-                        bestw = w;
-                        best = bb;
                     }
                 }
             }
@@ -2187,7 +2189,6 @@ attack:
                 return;
             }
             msg.arg[5] = room->objId;
-            k = z;
             for (c = 0; k == 0; c++) {
                 if (c >= 768)
                     break;
@@ -2214,11 +2215,10 @@ lauer:
     msg.flags = 2;
     src = ai_AmbushSpots[util_RandomU(8)];
     strcpy((char *)msg.arg, src);
-    if (n > 7)
-        n = 8;
+    want = min(n, 8);
     k = 0;
     t = 0;
-    for (c = 0; t < n; c++) {
+    for (c = 0; k < want; c++) {
         if (k >= 4 || c >= 768)
             break;
         if (ai_CharsT[c].id != 0xffff && ai_CharsT[c].bld == ch->bld && ai_CharsT[c].title && !ai_CharsT[c].job
@@ -2227,9 +2227,9 @@ lauer:
             k++;
         }
     }
-    for (i = t; i < 8; i++)
-        msg.ids[i] = -1;
-    if (msg.ids[0] != -1 && k > 1)
+    for (; t < 8; t++)
+        msg.ids[t] = -1;
+    if (msg.ids[0] != -1 && k >= 2)
         cm_SendLongMessage(&msg);
 }
 /* 0x4836a0, the bank master's step (building kind 5, ai_RunMasterEvaluation), once a round (flags1c8 bit 3): steers
