@@ -2660,7 +2660,7 @@ int ai_FindNearestObject(float *ref, int *list)
     float best;
     float p[4];
     float pos[4];
-    float d;
+    float d, dx, dz;
 
     obj = 0;
     best = 1e+08f;
@@ -2671,10 +2671,12 @@ int ai_FindNearestObject(float *ref, int *list)
             d3_PointToWorld((struct D3OBJECT *)list[i], (struct D3VECTOR *)(list[i] + 0x4c),
                             (struct D3VECTOR *)p);
             p[1] = 0.0f;
-            d = (float)sqrt((p[0] - pos[0]) * (p[0] - pos[0]) + (p[2] - pos[2]) * (p[2] - pos[2]));
+            dx = p[0] - pos[0];
+            dz = p[2] - pos[2];
+            d = (float)sqrt(dx * dx + dz * dz);
             if (d < best && d < 100.0) {
-                obj = list[i];
                 best = d;
+                obj = list[i];
             }
         }
     }

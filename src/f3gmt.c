@@ -6633,9 +6633,9 @@ int gm_BuildingSkill(unsigned char *b, unsigned k, int flag)
     unsigned short *slot;
 
     bld = (ORDBLD *)b;
-    i = 0;
     s = 0;
     kind = (unsigned char *)ai_BTypes + bld->type * 0x24d;
+    i = 0;
     slot = ((GMBTYPE *)kind)->objs;
     do {
         proto = *slot & 0x7fff;
@@ -6647,7 +6647,7 @@ int gm_BuildingSkill(unsigned char *b, unsigned k, int flag)
         slot++;
     } while (i < 0x40);
     if (flag)
-        return (int)(gm_BuildingLevel((char *)b) * 0.01 * s + 0.5);
+        return (int)(s * (gm_BuildingLevel((char *)b) * 0.01) + 0.5);
     return s;
 }
 /* 0x5093a0, the sum over the building kind `kind` alone (the same as gm_BuildingSkill's, without the query for

@@ -4142,7 +4142,7 @@ exe	0x0058fba0	ai_FindBauplatz	lc	ae5b0e398116f1f3	no	byte	control=byte p1=byte 
 exe	0x0058fc40	lc_GetGebaeudeBauplatz	lc	601e527fb84426c3	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x0058fd40	ai_ObjectPosition	lc	fb5fda7d28e164cd	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0058fd90	ai_ObjectAngle	lc	d2c0e4913d76054c	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x0058fe10	ai_FindNearestObject	lc	0d797a520d1c2594	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
+exe	0x0058fe10	ai_FindNearestObject	lc	bf12077186893be1	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	00c0340c10423233
 exe	0x0058feb0	ai_DropObjectAt	lc	47b414236081b5de	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0058ff00	lc_GebaeudeAusrichten	lc	235cf4bebc745180	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x005909a0	ai_ConstructionWindow	lc	8e15ee27c500f916	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
