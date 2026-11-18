@@ -19074,20 +19074,28 @@ typedef struct HEROBBERY {                 /* the robbery event 0x75's words ove
    amount (at least 1, n the gang's size) sold into the store and counted at its price (no store: the loot is lost);
    the player gets the loot list (0x1a85), the owner 0x1a86; a failed robbery tells the player 0x19e7 and the owner
    0x19e9; freed. Stages -2 / -1 send the gang home ("Raubzug") and free the record
-   @deep Reconstructed whole against 0x566830..0x5675f3 as the twin of he_RunBurglary (switch tables equal,
-   1155 vs 1151 instructions, no ref / literal difference): stage 0 the gang to the target 'Raubzug', 1 the
-   door wait (index loop), 2 he_DetectAttack range 2500 / gv_Accuse 0x17 or the break-in with the three
-   gestures names[3][64] (cm_SendChrAnim), 3 cm_GetSlotState / cm_SendProofExecuted (gm_FindChar of the
-   watch id), 4 the reward gm_PlayerFactor(550 + rand 200), news 0x19ea / 0x19eb, field 0x65, health -100 -
-   rand 100, home 'Entdeckt', 5 the theft (gm_SkillPoints, 0.35 of gm_BuildingValues, the field 0x69 with
-   &store as the original, the stall goods into the 0x116 store, the no-store text, gm_PlayerRecord, news
-   0x1a85 / 0x1a86 / 0x19e7 / 0x19e9), -2 / -1 home. Tried: room without the zero init (fixed most regs),
-   ok = 1 before gv_Accuse (push esi). Left: allocation as in he_RunBurglary's @deep: ours keeps a
-   zero-valued variable (store / n) in ebp and uses it for the 0 pushes and compares (cmp reg, ebp vs test
-   reg, reg; push ebp vs push 0 at +0xd0, +0x26d, +0x34e, +0x3e8 ..), the original spills both to
-   [esp+0x14] / [esp+0x30] and reuses ebp (room in case -1, +0xd22; the counter in case 0 / 2); d.found
-   held in esi across gv_Accuse in the original, reloaded after it in ours (+0x2de, 27 lines); frame 0x800
-   vs 0x7f4 (the original packs reward with master and room with stall into one slot each). */
+   @deep size queue s20: frame 0x800 -> 0x7f4 (the original's), 214 -> 180 ins: reward is a local of case
+   4's if (b != 0) block and vals one of case 5's loot block (escaped function-scope locals conflict with
+   every slot; block locals share: reward with master, vals with room / stall as the original packs them);
+   stall in the block = this code. Raw size unchanged (3514 vs 3523: the gap is the zero in ebp, push ebp /
+   cmp reg,ebp where the original has push 0 / test reg,reg, 1 byte each). Left: ours keeps the entry zero
+   (n = 0, store = 0 at the top, both stored from ebp in the original too) in ebp through the switch: n,
+   known 0, replaces literal zeros (equality propagation) until case 5's n++; the original spills n to
+   [esp+0x30] and reuses ebp (room in case -1, the counter in case 0 / 2). prior: Reconstructed whole
+   against 0x566830..0x5675f3 as the twin of he_RunBurglary (switch tables equal, 1155 vs 1151
+   instructions, no ref / literal difference): stage 0 the gang to the target 'Raubzug', 1 the door wait
+   (index loop), 2 he_DetectAttack range 2500 / gv_Accuse 0x17 or the break-in with the three gestures
+   names[3][64] (cm_SendChrAnim), 3 cm_GetSlotState / cm_SendProofExecuted (gm_FindChar of the watch id), 4
+   the reward gm_PlayerFactor(550 + rand 200), news 0x19ea / 0x19eb, field 0x65, health -100 - rand 100,
+   home 'Entdeckt', 5 the theft (gm_SkillPoints, 0.35 of gm_BuildingValues, the field 0x69 with &store as
+   the original, the stall goods into the 0x116 store, the no-store text, gm_PlayerRecord, news 0x1a85 /
+   0x1a86 / 0x19e7 / 0x19e9), -2 / -1 home. Tried: room without the zero init (fixed most regs), ok = 1
+   before gv_Accuse (push esi). Left: allocation as in he_RunBurglary's deep: ours keeps a zero-valued
+   variable (store / n) in ebp and uses it for the 0 pushes and compares (cmp reg, ebp vs test reg, reg;
+   push ebp vs push 0 at +0xd0, +0x26d, +0x34e, +0x3e8 ..), the original spills both to [esp+0x14] /
+   [esp+0x30] and reuses ebp (room in case -1, +0xd22; the counter in case 0 / 2); d.found held in esi
+   across gv_Accuse in the original, reloaded after it in ours (+0x2de, 27 lines); frame 0x800 vs 0x7f4
+   (the original packs reward with master and room with stall into one slot each). */
 void he_RunRobbery(AIJOB *ev)
 {
     HEROBBERY *x = (HEROBBERY *)ev;
@@ -19099,11 +19107,11 @@ void he_RunRobbery(AIJOB *ev)
     AIJOB *patrol;
     HEFINVIEW *fin;
     CRIME *cr;
-    int vals[2];
+
     char names[3][64] = { "gestik/mit_faust_droh", "gestikg/herranwinken", "spezial/meckern" };
     char text[0x200];
     char line[0x100];
-    int k, ok, money, amt, reward;
+    int k, ok, money, amt;
     int n = 0;
 
     switch (ev->stage) {
@@ -19194,6 +19202,8 @@ void he_RunRobbery(AIJOB *ev)
         }
         b = (AIBLD *)gm_BuildQuery(1, 1, x->target);
         if (b != 0) {
+            int reward;
+
             master = (AICHAR *)gm_FindChar(ai_CharInts[ev->chr][0]);
             guard = &ai_CharsT[((AIJOB *)w)->chr];
             if (guard != 0 && master != 0) {
@@ -19254,6 +19264,7 @@ void he_RunRobbery(AIJOB *ev)
         }
         if (he_NoProtectionEvent((int)b) != 0 && ok) {
             char loot[0x400];
+            int vals[2];
 
             loot[0] = ch_EmptyName[0];
             memset(loot + 1, 0, sizeof(loot) - 1);
