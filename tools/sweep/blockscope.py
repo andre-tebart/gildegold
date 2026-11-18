@@ -4,6 +4,7 @@
     python tools/sweep/blockscope.py NAME [NAME ..]  # only these
     python tools/sweep/blockscope.py --unit main     # one unit's functions
     python tools/sweep/blockscope.py --scalars       # scalars too (default: arrays and struct / typedef'd records)
+    python tools/sweep/blockscope.py NAME --scalars --locals a,b   # only these locals
 
 Why: VC6 packs block locals with disjoint scopes into one stack slot, so the frame size and the instructions do
 not tell whether `AIMSG msg;` stood at the top of the function or in each block that fills it. Two other things
@@ -72,7 +73,7 @@ def blocks(lines, body):
     return out
 
 
-def variants(lines, scalars):
+def variants(lines, scalars, only=None):
     body = next((i for i, l in enumerate(lines) if l == "{"), None)
     if body is None:
         return {}
@@ -85,7 +86,7 @@ def variants(lines, scalars):
             base = m.group(1).split()[0] if m.group(1).split() else ""
             pointer = "*" in m.group(1)
             record = not pointer and (bool(m.group(3)) or base not in SCALARS or m.group(1).startswith(("struct", "union")))
-            if record or (scalars and not pointer):
+            if (record or (scalars and not pointer)) and (not only or m.group(2) in only):
                 cands.append((i, m.group(2), lines[i].strip()))
         i += 1
     first_stmt = i
@@ -168,6 +169,7 @@ def main():
     ap.add_argument("names", nargs="*")
     ap.add_argument("--unit")
     ap.add_argument("--scalars", action="store_true")
+    ap.add_argument("--locals", help="comma list: only these locals (frame sweep s21: the escaped ones framescan.py names)")
     a = ap.parse_args()
     todo = a.names or queue(a.unit)
     tried = moved = 0
@@ -176,7 +178,7 @@ def main():
         if not lines:
             continue
         try:
-            vs = variants(lines, a.scalars)
+            vs = variants(lines, a.scalars, set(a.locals.split(",")) if a.locals else None)
         except Exception as e:  # a shape of code the brace reader does not handle
             print("%-34s skipped (%s)" % (name, e))
             continue
