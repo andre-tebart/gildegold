@@ -219,7 +219,7 @@ void snd_UpdateRain(void)
     }
     w = 0;
     f = d3_Camera->pos.y - d3t_GetMeanHeight(&d3_Camera->pos);
-    memcpy(snd_TimeCopy, &ai_Time, 14);
+    memcpy(&snd_TimeCopy, &ai_Time, 14);
     if (d3t_Rain == 0 || (n = *d3t_Rain) == 0) {
         SND_STOP(snd_RainHeavyFar);
         SND_STOP(snd_RainHeavyNear);
@@ -1209,14 +1209,6 @@ void snd_StopMarketAmbience(void)
 }
 
 extern int * d3t_Rain;
-extern char snd_TimeCopy[14];
-extern int snd_RainDrops;
-extern int snd_RainLightNear;
-extern int snd_RainMediumNear;
-extern int snd_RainHeavyNear;
-extern int snd_RainLightFar;
-extern int snd_RainMediumFar;
-extern int snd_RainHeavyFar;
 float snd_VoiceVolume = 1.0f;  /* 0x602b08, voice volume (1.0, scaled by 127) */
 char snd_GustNames[3][0x32] = { "Boehe_Leicht_s", "Boehe_Mittel_s", "Boehe_Stark_s" };  /* 0x602b10, "Boehe_Leicht_s", "Boehe_Mittel_s", "Boehe_Stark_s" */
 G16SEASON snd_Gusts[] = { { 0.699999988f, 0.5f, 16000 }, { 0.300000012f, 0.200000003f, 27000 }, { 0.899999976f, 0.600000024f, 12000 }, { 0.5f, 0.400000006f, 20000 } };  /* 0x602ba8, by season */
@@ -1258,11 +1250,6 @@ int snd_UnreadBss = 0;  /* 0x6f0cc8, no surviving instruction or pointer refers 
 int snd_VoiceBankGreeting = 0;  /* 0x6f0ccc, voice bank: greeting */
 extern int * d3t_Rain;
 /* ai_Selected: view of ai_Chars (tools/data_views.py) */
-char snd_TimeCopy[14];  /* 0xf81240, a copy of ai_Time */
-int snd_RainDrops;  /* 0xf81254, the "Tropfen_s" loop */
-int snd_RainLightNear;  /* 0xf8125c, "LeichtNah_l_01" */
-int snd_RainMediumNear;  /* 0xf81264, "MittelNah_l_01" */
-int snd_RainHeavyNear;  /* 0xf8126c, "StarkNah_l_01" */
-int snd_RainLightFar;  /* 0xf81274, "LeichtFern_l_01" */
-int snd_RainMediumFar;  /* 0xf8127c, "MittelFern_l_01" */
-int snd_RainHeavyFar;  /* 0xf81284, "StarkFern_l_01" */
+SNDRAIN snd_Rain;  /* 0xf81240, the rain sounds' state: one common of 72 bytes (tools/exe/commongaps.py: the copy of
+                      ai_Time, 14 bytes, starts the f3snd group 32-aligned at 0xf81240 and each loop handle lies 8 after
+                      the previous one, with no reader between them; 4-byte commons would be packed) */

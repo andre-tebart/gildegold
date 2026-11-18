@@ -131,16 +131,22 @@ extern int snd_Season;                  /* 0x6f0b8c, the season */
 extern unsigned int snd_LastGust;       /* 0x6f0b90, time of the last gust */
 #include "ai_types.h"                /* AITIME */
 extern AITIME ai_Time;                   /* 0x770ae0, the game clock */
-extern char snd_TimeCopy[14];           /* 0xf81240, a copy of ai_Time */
 extern int *d3t_Rain;               /* 0x760618, the rain level */
 extern int snd_Bank;                    /* 0x6f2404, the sample bank */
-extern int snd_RainDrops;               /* 0xf81254, the "Tropfen_s" loop */
-extern int snd_RainLightNear;           /* 0xf8125c, "LeichtNah_l_01" */
-extern int snd_RainLightFar;            /* 0xf81274, "LeichtFern_l_01" */
-extern int snd_RainMediumNear;          /* 0xf81264, "MittelNah_l_01" */
-extern int snd_RainMediumFar;           /* 0xf8127c, "MittelFern_l_01" */
-extern int snd_RainHeavyNear;           /* 0xf8126c, "StarkNah_l_01" */
-extern int snd_RainHeavyFar;            /* 0xf81284, "StarkFern_l_01" */
+typedef struct SNDRAIN {                /* 0x48 bytes, snd_UpdateRain's state */
+    AITIME time;                        /* 0x00, a copy of ai_Time (14 bytes) */
+    struct { int unread; int smp; } loop[7];  /* 0x10, the loops (smp: the playing sample, 0: none); no surviving code
+                                           reads the int before each */
+} SNDRAIN;
+extern SNDRAIN snd_Rain;                /* 0xf81240 */
+#define snd_TimeCopy snd_Rain.time      /* 0xf81240 */
+#define snd_RainDrops snd_Rain.loop[0].smp      /* 0xf81254, the "Tropfen_s" loop */
+#define snd_RainLightNear snd_Rain.loop[1].smp  /* 0xf8125c, "LeichtNah_l_01" */
+#define snd_RainMediumNear snd_Rain.loop[2].smp /* 0xf81264, "MittelNah_l_01" */
+#define snd_RainHeavyNear snd_Rain.loop[3].smp  /* 0xf8126c, "StarkNah_l_01" */
+#define snd_RainLightFar snd_Rain.loop[4].smp   /* 0xf81274, "LeichtFern_l_01" */
+#define snd_RainMediumFar snd_Rain.loop[5].smp  /* 0xf8127c, "MittelFern_l_01" */
+#define snd_RainHeavyFar snd_Rain.loop[6].smp   /* 0xf81284, "StarkFern_l_01" */
 extern int snd_FanfareFade;             /* 0x6f0b7c, 1 while a "Fanfare" has faded the music out */
 extern G16SND *snd_Queue;               /* 0x6f0b84, the queue (the first queued sound) */
 extern int snd_QueuePaused;             /* 0x6f0b68, nonzero: the queue does not advance */
