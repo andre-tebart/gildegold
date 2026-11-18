@@ -329,7 +329,7 @@ exe	0x00414590	d3t_DrawRain	d3_tools	byte	readable
 exe	0x004148f0	d3t_CreateSnow	d3_tools	byte	readable		
 exe	0x00414b50	d3t_FreeSnow	d3_tools	byte	readable		
 exe	0x00414c60	d3t_SetSnow	d3_tools	byte	readable		
-exe	0x00414ea0	d3t_UpdateSnow	d3_tools	shape	readable		
+exe	0x00414ea0	d3t_UpdateSnow	d3_tools	shape	readable	deep	
 exe	0x00415380	d3t_DrawSnow	d3_tools	byte	readable		
 exe	0x004156a0	d3t_EmitterCB	d3_tools	byte	readable		
 exe	0x00415ad0	d3t_CreateEmitter	d3_tools	byte	readable		
@@ -729,13 +729,13 @@ exe	0x00438c30	d3_NextGroup	d3_engine	byte	readable
 exe	0x00438c60	d3_TypeInMask	d3_engine	byte	readable		
 exe	0x00438d40	d3_ForEachObject	d3_engine	byte	readable		
 exe	0x00438e60	d3_ForEachObject2	d3_engine	byte	readable		
-exe	0x00438f60	d3_ProjectMesh	d3_engine	shape	readable		
+exe	0x00438f60	d3_ProjectMesh	d3_engine	shape	readable	deep	
 exe	0x004391d0	d3_SetupFrustum	d3_engine	draft	readable	deep	
 exe	0x00439650	d3_ClipBox	d3_engine	byte	readable		
 exe	0x00439870	d3_UpdateWorldMatrix	d3_engine	byte	readable		
 exe	0x004399e0	d3_ClipObject	d3_engine	byte	readable		
 exe	0x00439a60	d3_ClipMesh	d3_engine	byte	readable		
-exe	0x00439c90	d3_ClipPoly	d3_engine	shape	readable		
+exe	0x00439c90	d3_ClipPoly	d3_engine	shape	readable	deep	
 exe	0x0043a000	d3_SelectSurf	d3_engine	byte	readable		
 exe	0x0043a160	d3_DrawObjectCB	d3_engine	byte	readable		
 exe	0x0043a610	d3_SetFogRange	d3_engine	byte	readable		
@@ -769,7 +769,7 @@ exe	0x0043cc10	d3_AllocObjectPolys	d3_engine	byte	readable
 exe	0x0043cc90	d3_FreeSurf	d3_engine	byte	readable		
 exe	0x0043cd80	d3_FreeMesh	d3_engine	byte	readable		
 exe	0x0043ce10	d3_InitSurf	d3_engine	byte	readable		
-exe	0x0043ce60	d3_InitObject	d3_engine	shape	readable		
+exe	0x0043ce60	d3_InitObject	d3_engine	shape	readable	deep	
 exe	0x0043cfb0	d3_AddObjectDrawData	d3_engine	byte	readable		
 exe	0x0043d0e0	d3_Unlink	d3_engine	byte	readable		
 exe	0x0043d180	d3_CloneObject	d3_engine	byte	readable		
@@ -836,7 +836,7 @@ exe	0x00442210	d3fl_ReplaceTexture	d3_fl	byte	readable
 exe	0x00442280	d3fl_ReloadTextures	d3_fl	byte	readable		
 exe	0x00442390	d3fl_LoadMap	d3_fl	byte	readable		
 exe	0x00442ac0	d3fl_TileBox	d3_fl	shape	readable		
-exe	0x00442ed0	d3fl_UpdateWater	d3_fl	shape	readable		
+exe	0x00442ed0	d3fl_UpdateWater	d3_fl	shape	readable	deep	
 exe	0x004430c0	d3fl_DrawWater	d3_fl	draft	readable	deep	
 exe	0x004437f0	d3fl_UpdateTiles	d3_fl	byte	readable		
 exe	0x004439e0	d3fl_Draw	d3_fl	draft	readable	deep	
@@ -1646,7 +1646,7 @@ exe	0x0049a020	ai_DecideCitizenship	amr	byte	readable
 exe	0x0049a0a0	ai_ExecuteCitizenship	amr	byte	readable		
 exe	0x0049a290	ai_DecideSaveAps	amr	byte	readable		
 exe	0x0049a380	ai_ExecuteSaveAps	amr	byte	readable		
-exe	0x0049a390	ai_DecideUseMilitaryObject	amr	shape	readable		
+exe	0x0049a390	ai_DecideUseMilitaryObject	amr	shape	readable	deep	
 exe	0x0049a5b0	ai_ExecuteUseMilitaryObject	amr	byte	readable		
 exe	0x0049a690	ai_DecideUseReputationObject	amr	shape	readable	deep	
 exe	0x0049aa80	ai_ExecuteUseReputationObject	amr	byte	readable		
@@ -1727,7 +1727,7 @@ exe	0x004a0e60	ai_ExecuteUpgradeGuild	amr	byte	readable
 exe	0x004a1000	ai_EvalApprenticeship	amr	byte	readable		
 exe	0x004a1170	ai_DecideApprenticeship	amr	byte	readable		
 exe	0x004a1360	ai_ExecuteApprenticeship	amr	byte	readable		
-exe	0x004a13e0	ai_DecideStudy	amr	shape	readable		
+exe	0x004a13e0	ai_DecideStudy	amr	shape	readable	deep	
 exe	0x004a1640	ai_ExecuteStudy	amr	byte	readable		
 exe	0x004a16f0	ai_RegisterBaseActions	amr	byte	readable		
 exe	0x004a3a90	ai_NextNearRingEntry	amt_ai	byte	readable		
@@ -1789,7 +1789,7 @@ exe	0x004a8f20	ai_DecideUnfriendlyPair	aip	byte	readable
 exe	0x004a9030	ai_EvalGraveCount	aip	byte	readable		
 exe	0x004a9080	ai_DecideAcquaintance	aip	byte	readable		
 exe	0x004a9150	ai_EvalOwnYearTurn	aip	byte	readable		
-exe	0x004a91a0	ai_DecideSuitor	aip	shape	readable		
+exe	0x004a91a0	ai_DecideSuitor	aip	byte	readable		
 exe	0x004a9280	ai_DecideCloseAcquaintance	aip	byte	readable		
 exe	0x004a9350	ai_DecideOfficeAcquaintance	aip	byte	readable		
 exe	0x004a9420	ai_DecideAcceptedChar	aip	byte	readable		
@@ -2108,7 +2108,7 @@ exe	0x004bf410	rt_RemoveMark	rt	byte	readable
 exe	0x004bf440	rt_HighlightRoute	rt	byte	readable		
 exe	0x004bf5b0	rt_EditCartRoute	rt	byte	readable		
 exe	0x004bfa40	rt_UnloadAtPoint	rt	byte	readable		
-exe	0x004bfc60	rt_LoadAtPoint	rt	shape	readable		
+exe	0x004bfc60	rt_LoadAtPoint	rt	byte	readable		
 exe	0x004bff40	rt_SaveRoutes	rt	byte	readable		
 exe	0x004c0040	rt_LoadRoutes	rt	draft	readable	deep	
 exe	0x004c01b0	snd_ClearQueue	f3snd	byte	readable		
@@ -2116,7 +2116,7 @@ exe	0x004c0210	snd_QueueTail	f3snd	byte	readable
 exe	0x004c0230	snd_AddToQueue	f3snd	byte	readable		
 exe	0x004c02e0	snd_UpdateQueue	f3snd	byte	readable		
 exe	0x004c0470	snd_UpdateRain	f3snd	byte	readable		
-exe	0x004c0e60	snd_UpdateAnimals	f3snd	shape	readable		
+exe	0x004c0e60	snd_UpdateAnimals	f3snd	byte	readable		
 exe	0x004c18a0	snd_EnterBuilding	f3snd	byte	readable		
 exe	0x004c1bd0	snd_PlayOutdoorTrack	f3snd	byte	readable		
 exe	0x004c1f90	snd_FindActiveTrack	f3snd	byte	readable		
@@ -2144,7 +2144,7 @@ exe	0x004c3560	ai_ResetMessages	cm	byte	readable
 exe	0x004c3600	cm_SendHello	cm	byte	readable		
 exe	0x004c3630	cm_WaitHello	cm	byte	readable		
 exe	0x004c3680	cm_FlushSendQueue	cm	byte	readable		
-exe	0x004c3720	cm_QueueSplit	cm	shape	readable		
+exe	0x004c3720	cm_QueueSplit	cm	byte	readable		
 exe	0x004c3850	cm_SplitComplete	cm	byte	readable		
 exe	0x004c38e0	cm_JoinSplit	cm	draft	readable	deep	
 exe	0x004c39c0	cm_QueueSend	cm	draft	readable	deep	
@@ -2275,7 +2275,7 @@ exe	0x004c6780	cm_CheckApplication	cm	byte	readable
 exe	0x004c67a0	cm_CheckOfficeMessage	cm	byte	readable		
 exe	0x004c67c0	cm_CheckDarkCorner	cm	byte	readable		
 exe	0x004c6870	cm_CheckTableRequest	cm	byte	readable		
-exe	0x004c69c0	cm_CheckCutsceneReady	cm	shape	readable		
+exe	0x004c69c0	cm_CheckCutsceneReady	cm	byte	readable		
 exe	0x004c6a20	cm_ExNothing	cm	byte	readable		
 exe	0x004c6a50	cm_ExGroupPassed	cm	byte	readable		
 exe	0x004c6a60	cm_ExNetFlags	cm	byte	readable		
@@ -2318,7 +2318,7 @@ exe	0x004c9450	cm_ExRemoveOwned	cm	byte	readable
 exe	0x004c9520	cm_ExSetPlant	cm	byte	readable		
 exe	0x004c9740	cm_ExCreateSermon	cm	byte	readable		
 exe	0x004c97c0	cm_ExChrWalkTo	cm	byte	readable		
-exe	0x004c9830	cm_ExChrWalkToDummy	cm	shape	readable		
+exe	0x004c9830	cm_ExChrWalkToDummy	cm	byte	readable		
 exe	0x004c99b0	cm_ExChrMoveToUniverse	cm	byte	readable		
 exe	0x004c9c10	cm_ExChrStop	cm	byte	readable		
 exe	0x004c9c80	cm_ExChrSetPos	cm	byte	readable		
@@ -2433,13 +2433,13 @@ exe	0x004cf000	cm_UpdateSceneChars	cmfight	draft	readable	deep
 exe	0x004cf370	cm_DrawScrollArrows	cmfight	byte	readable		
 exe	0x004cf670	cm_UpdatePointer	cmfight	draft	readable	deep	
 exe	0x004cf9c0	cm_UpdatePortraits	cmfight	draft	readable	deep	
-exe	0x004cfc10	cm_BuildPortraits	cmfight	shape	readable		
+exe	0x004cfc10	cm_BuildPortraits	cmfight	byte	readable		
 exe	0x004cfe70	cm_ClosePortraits	cmfight	byte	readable		
 exe	0x004cfeb0	cm_ClickSceneChar	cmfight	byte	readable		
 exe	0x004cffd0	cm_OrderAttack	cmfight	byte	readable		
 exe	0x004d0200	cm_OrderEscape	cmfight	byte	readable		
 exe	0x004d02d0	cm_OrderConquer	cmfight	byte	readable		
-exe	0x004d0380	cm_OrderWare	cmfight	shape	readable		
+exe	0x004d0380	cm_OrderWare	cmfight	byte	readable		
 exe	0x004d0460	cm_OrderToBestCell	cmfight	byte	readable		
 exe	0x004d0520	cm_OrderWait	cmfight	byte	readable		
 exe	0x004d0570	cm_OrderClick	cmfight	draft	readable	deep	
@@ -2488,7 +2488,7 @@ exe	0x004d4340	cm_FightPortraits	cmfight	byte	readable
 exe	0x004d4540	cm_FightStartDialog	cmfight	draft	readable	deep	
 exe	0x004d4d70	cm_FightEndDialog	cmfight	draft	readable	deep	
 exe	0x004d60b0	cm_CheckFight	cmfight	shape	readable	deep	
-exe	0x004d63e0	cm_RunFight	cmfight	shape	readable		
+exe	0x004d63e0	cm_RunFight	cmfight	byte	readable		
 exe	0x004d6930	cm_FightResult	cmfight	byte	readable		
 exe	0x004d6970	cm_FightFrame	cmfight	byte	readable		
 exe	0x004d6a50	cm_BuildFightUI	cmfight	byte	readable		
@@ -2571,7 +2571,7 @@ exe	0x004e32f0	cm_CreateSceneSky	cmscene	byte	readable
 exe	0x004e3390	cm_DestroySceneSky	cmscene	byte	readable		
 exe	0x004e33d0	cm_StartSceneRain	cmscene	byte	readable		
 exe	0x004e33f0	cm_StopSceneRain	cmscene	byte	readable		
-exe	0x004e3420	cm_WaitTicks	cmscene	shape	readable		
+exe	0x004e3420	cm_WaitTicks	cmscene	shape	readable	deep	
 exe	0x004e3490	cm_RunSceneTicksOrClick	cmscene	byte	readable		
 exe	0x004e3570	cm_RunSceneTicks	cmscene	byte	readable		
 exe	0x004e3620	cm_PlaySpecialTrack	cmscene	byte	readable		
@@ -2655,7 +2655,7 @@ exe	0x004e7b60	amt_InitApplicant	amt	byte	readable
 exe	0x004e7c40	amt_GetKindLevel	amt	byte	readable		
 exe	0x004e7c60	amt_ElectOffices	amt	shape	readable		
 exe	0x004e8160	amt_CheckOfficeColumns	amt	byte	readable		
-exe	0x004e83b0	amt_IsColumnDecided	amt	shape	readable		
+exe	0x004e83b0	amt_IsColumnDecided	amt	byte	readable		
 exe	0x004e8530	amt_HasDeposalVote	amt	byte	readable		
 exe	0x004e85d0	amt_UpdateOffices	amt	byte	readable		
 exe	0x004e86e0	amt_HasColumn7Holder	amt	byte	readable		
@@ -2712,12 +2712,12 @@ exe	0x004ec320	ahm_StepValue	ahm	byte	readable
 exe	0x004ec3d0	ahm_ObjectValue	ahm	byte	readable		
 exe	0x004ec490	ahm_SendCreateAlchemist	ahm	byte	readable		
 exe	0x004ec500	ahm_CreateAlchemist	ahm	byte	readable		
-exe	0x004ec940	ahm_SendSetShare	ahm	shape	readable		
+exe	0x004ec940	ahm_SendSetShare	ahm	byte	readable		
 exe	0x004eca00	ahm_SetShare	ahm	byte	readable		
 exe	0x004ecaa0	ahm_SendAddPlace	ahm	byte	readable		
 exe	0x004ecb30	ahm_AddPlace	ahm	byte	readable		
 exe	0x004ecbc0	ahm_RemovePlace	ahm	byte	readable		
-exe	0x004ecc30	ahm_SendSetPlaceValue	ahm	shape	readable		
+exe	0x004ecc30	ahm_SendSetPlaceValue	ahm	byte	readable		
 exe	0x004ecd10	ahm_SetPlaceValue	ahm	byte	readable		
 exe	0x004ecd50	ahm_SendAddValue	ahm	byte	readable		
 exe	0x004ecdb0	ahm_AddValue	ahm	byte	readable		
@@ -3023,7 +3023,7 @@ exe	0x00501580	gm_CreateBuilding	f3gmt	draft	readable	deep
 exe	0x00501b50	gm_BuildingMainObject	f3gmt	byte	readable		
 exe	0x00501ce0	gm_GetGebaeudeHauptraum	f3gmt	byte	readable		
 exe	0x00501d80	gm_BuildingClass	f3gmt	byte	readable		
-exe	0x00501e40	gm_NearestBuilding	f3gmt	shape	readable		
+exe	0x00501e40	gm_NearestBuilding	f3gmt	byte	readable		
 exe	0x00501f60	gm_NearestFreeBuilding	f3gmt	byte	readable		
 exe	0x00502020	gm_FindBuildingById	f3gmt	byte	readable		
 exe	0x00502060	gm_FindBuildingKind	f3gmt	byte	readable		
@@ -3101,7 +3101,7 @@ exe	0x00508620	gm_CurrencyFactor	f3gmt	byte	readable
 exe	0x00508640	gm_CurrencyDivide	f3gmt	byte	readable		
 exe	0x00508660	gm_SumSlotAmounts	f3gmt	byte	readable		
 exe	0x005086b0	gm_ObjectValue	f3gmt	shape	readable		
-exe	0x00508740	gm_JobWage	f3gmt	shape	readable		
+exe	0x00508740	gm_JobWage	f3gmt	byte	readable		
 exe	0x005087f0	gm_ItemPrice	f3gmt	byte	readable		
 exe	0x005089c0	gm_GoodsPrice	f3gmt	byte	readable		
 exe	0x00508a20	gm_HealthFactor	f3gmt	byte	readable		
@@ -3198,7 +3198,7 @@ exe	0x0050f570	init_Betrieb	f3init	shape	readable	deep
 exe	0x0050f750	init_OpenBuilding	f3init	byte	readable		
 exe	0x0050f910	init_OpenTown	f3init	draft	readable	deep	
 exe	0x00510730	init_CollectSiteObject	f3init	byte	readable		
-exe	0x00510770	init_LoadSiteScene	f3init	shape	readable		
+exe	0x00510770	init_LoadSiteScene	f3init	byte	readable		
 exe	0x00510ad0	init_InitTown	f3init	byte	readable		
 exe	0x00510e20	init_ShowStatus	f3init	byte	readable		
 exe	0x00510e50	init_StartNetworkGame	f3init	byte	readable		
@@ -3240,7 +3240,7 @@ exe	0x00513970	init_ParseNumberList	f3init	byte	readable
 exe	0x00513a20	init_LoadCityINI	f3init	byte	readable		
 exe	0x005142e0	io_TownDisplayName	io_text	byte	readable		
 exe	0x00514360	io_TrailingDigits	io_text	byte	readable		
-exe	0x005143d0	io_CharacterName	io_text	shape	readable		
+exe	0x005143d0	io_CharacterName	io_text	shape	readable	deep	
 exe	0x00514e90	io_CharacterNameMarkup	io_text	byte	readable		
 exe	0x00515960	io_PrintText	io_text	draft	readable	deep	
 exe	0x005176d0	txt_Format	io_text	draft	readable	deep	
@@ -3480,7 +3480,7 @@ exe	0x00539870	main_RoundReport	main	byte	readable
 exe	0x0053a250	main_UpdateFigure	main	shape	readable		
 exe	0x0053a450	main_UpdateFigures	main	byte	readable		
 exe	0x0053a520	main_SettleRound	main	byte	readable		
-exe	0x0053b2e0	main_BeginPlayerRound	main	shape	readable		
+exe	0x0053b2e0	main_BeginPlayerRound	main	byte	readable		
 exe	0x0053b830	main_CheckCD	main	byte	readable		
 exe	0x0053b840	main_CreateStartCouple	main	shape	readable	deep	
 exe	0x0053bb20	main_GameLoop	main	byte	readable		
@@ -3604,7 +3604,7 @@ exe	0x00548fa0	he_RunFinePayment	he	byte	readable
 exe	0x00549040	he_AllocPunishment	he	byte	readable		
 exe	0x00549080	he_RunPilloryPunishment	he	byte	readable		
 exe	0x00549110	he_AllocOffspring	he	byte	readable		
-exe	0x00549120	he_RunOffspring	he	shape	readable		
+exe	0x00549120	he_RunOffspring	he	byte	readable		
 exe	0x005493a0	he_StartTrialEvent	he	byte	readable		
 exe	0x00549430	he_RunTrialEvent	he	shape	readable		
 exe	0x005496f0	he_StartNextTrialStep	he	byte	readable		
@@ -3644,7 +3644,7 @@ exe	0x0054e770	he_StartLover	he	byte	readable
 exe	0x0054e890	he_RunLover	he	byte	readable		
 exe	0x0054eb80	he_IsSimCandidate	he	byte	readable		
 exe	0x0054ebd0	he_RunDiseaseSim	he	byte	readable		
-exe	0x0054ef70	he_StartDarkCorner	he	shape	readable		
+exe	0x0054ef70	he_StartDarkCorner	he	shape	readable	deep	
 exe	0x0054f160	he_RunDarkCorner	he	draft	readable	deep	
 exe	0x0054fb50	he_StartEffectEvent	he	byte	readable		
 exe	0x0054fc00	he_CreateSmokeEffect	he	byte	readable		
@@ -3782,7 +3782,7 @@ exe	0x005644e0	he_RunFire	he	byte	readable
 exe	0x00564860	he_AllocBurn	he	shape	readable	deep	
 exe	0x005649b0	he_RunBurn	he	draft	readable	deep	
 exe	0x005652b0	he_AllocStorm	he	byte	readable		
-exe	0x00565410	he_RunStormEvent	he	shape	readable		
+exe	0x00565410	he_RunStormEvent	he	byte	readable		
 exe	0x00565500	he_AllocHealing	he	byte	readable		
 exe	0x00565620	he_RunHealing	he	byte	readable		
 exe	0x00565850	he_AllocNewWorker	he	byte	readable		
@@ -3875,7 +3875,7 @@ exe	0x00571000	he_RunMasterWork	he_b	shape	readable
 exe	0x00571550	he_AllocGraveCare	he_b	shape	readable		
 exe	0x00571640	he_RunGraveCare	he_b	byte	readable		
 exe	0x00571990	he_AllocDeathDue	he_b	byte	readable		
-exe	0x005719e0	he_RunDeathDue	he_b	shape	readable		
+exe	0x005719e0	he_RunDeathDue	he_b	byte	readable		
 exe	0x00571ac0	he_AllocGraveTraining	he_b	byte	readable		
 exe	0x00571c30	he_RunGraveTraining	he_b	byte	readable		
 exe	0x00571f60	he_AllocMeeting	he_b	shape	readable	deep	
@@ -4268,7 +4268,7 @@ exe	0x005a23a0	ai_BaptismWindow	lc	byte	readable
 exe	0x005a28f0	ai_Top5Window	lc	shape	readable		
 exe	0x005a2b60	ai_ConfessionWindow	lc	byte	readable		
 exe	0x005a2de0	ai_ConfessionListener	lc	byte	readable		
-exe	0x005a2e60	ai_SermonWindow	lc	draft	readable	deep	
+exe	0x005a2e60	ai_SermonWindow	lc	shape	readable	deep	
 exe	0x005a36c0	ai_ProductionWriteContact	lc	byte	readable		
 exe	0x005a3810	ai_ChurchListener	lc	byte	readable		
 exe	0x005a39b0	ai_ChurchContact	lc	byte	readable		
@@ -4278,7 +4278,7 @@ exe	0x005a3b90	ai_DungeonBribeWindow	lc	draft	readable	deep
 exe	0x005a3df0	ai_DungeonBribeListener	lc	byte	readable		
 exe	0x005a3ef0	ai_DungeonEmptyListener	lc	byte	readable		
 exe	0x005a3f10	ai_BurglaryWindow	lc	byte	readable		
-exe	0x005a4130	ai_BurglaryStart	lc	shape	readable		
+exe	0x005a4130	ai_BurglaryStart	lc	byte	readable		
 exe	0x005a41d0	ai_GuildSpyWindow	lc	byte	readable		
 exe	0x005a44e0	ai_EspionageStart	lc	byte	readable		
 exe	0x005a45c0	ai_SpyReportsWindow	lc	byte	readable		
@@ -4489,7 +4489,7 @@ exe	0x005c1a80	ai_AmountInfoWindow	lcamt	byte	readable
 exe	0x005c1b20	ai_OpenAmountKindMenu	lcamt	byte	readable		
 exe	0x005c1b40	ai_AmountKindMenu	lcamt	byte	readable		
 exe	0x005c1df0	ai_OpenAgendaMenu	lcamt	byte	readable		
-exe	0x005c1e10	ai_AgendaOfficeList	lcamt	shape	readable		
+exe	0x005c1e10	ai_AgendaOfficeList	lcamt	byte	readable		
 exe	0x005c2160	ai_OpenLawBook	lcamt	byte	readable		
 exe	0x005c2410	ai_LawBookInfoWindow	lcamt	byte	readable		
 exe	0x005c2490	ai_ShowWorkSettingsPage	lcamt	shape	readable		
@@ -4507,7 +4507,7 @@ exe	0x005c4100	ai_LawSelectionEntry	lcamt	draft	readable	deep
 exe	0x005c4150	ai_FamilyTreeWindow	lcamt	draft	readable	deep	
 exe	0x005c5310	ai_CharInfoPanel	lcamt	draft	readable	deep	
 exe	0x005c6050	ai_GiftWindow	lcamt	byte	readable		
-exe	0x005c64c0	ai_FindCandidateIds	lcamt	shape	readable		
+exe	0x005c64c0	ai_FindCandidateIds	lcamt	byte	readable		
 exe	0x005c6530	ai_MarriageTest	lcamt	byte	readable		
 exe	0x005c6620	ai_CourtshipRounds	lcamt	byte	readable		
 exe	0x005c6910	ai_CourtshipConfirm	lcamt	draft	readable	deep	
@@ -4529,12 +4529,12 @@ exe	0x005c9550	ai_BlackmailBuildingListener	lcamt	byte	readable
 exe	0x005c9990	ai_BlackmailContactWindow	lcamt	byte	readable		
 exe	0x005c9c50	ai_BlackmailContact	lcamt	shape	readable		
 exe	0x005c9df0	ai_IntimidateWindow	lcamt	byte	readable		
-exe	0x005c9ff0	ai_IntimidateContact	lcamt	shape	readable		
+exe	0x005c9ff0	ai_IntimidateContact	lcamt	shape	readable	deep	
 exe	0x005ca150	ai_LawPrivilegeWindow	lcamt	byte	readable		
 exe	0x005ca560	ai_DismissOfficeAsk	lcamt	byte	readable		
 exe	0x005ca860	ai_MisappropriationWindow	lcamt	byte	readable		
 exe	0x005caab0	ai_BewitchWindow	lcamt	byte	readable		
-exe	0x005cacd0	ai_BewitchOrder	lcamt	shape	readable	deep	
+exe	0x005cacd0	ai_BewitchOrder	lcamt	byte	readable		
 exe	0x005cae00	ai_CounterEspionage	lcamt	byte	readable		
 exe	0x005cb1e0	ai_SwapSeats	lcamt	byte	readable		
 exe	0x005cb250	ai_SeatSwapWindow	lcamt	byte	readable		
@@ -4586,11 +4586,11 @@ exe	0x005d18c0	ai_UseGoodDrainActionPoints	lcamt	byte	readable
 exe	0x005d1990	ai_UseGoodDrainSkill	lcamt	byte	readable		
 exe	0x005d1b30	ai_UseGoodHarmBuilding	lcamt	byte	readable		
 exe	0x005d1da0	ai_UseGoodSpoilStock	lcamt	byte	readable		
-exe	0x005d1fb0	ai_UseGoodCharmOfficials	lcamt	shape	readable		
+exe	0x005d1fb0	ai_UseGoodCharmOfficials	lcamt	byte	readable		
 exe	0x005d22e0	ai_UsePayGood	lcamt	byte	readable		
 exe	0x005d2320	ai_UseGoodDrainActionPoints8	lcamt	byte	readable		
 exe	0x005d2440	ai_UseGoodHoldRound	lcamt	byte	readable		
-exe	0x005d2580	ai_UseGoodCharmPartner	lcamt	draft	readable	deep	
+exe	0x005d2580	ai_UseGoodCharmPartner	lcamt	shape	readable	deep	
 exe	0x005d2720	ai_UseGoodWeakenSkills3	lcamt	byte	readable		
 exe	0x005d2960	ai_UseGoodFrameChar	lcamt	shape	readable		
 exe	0x005d2bc0	ai_UseGoodFrameChar2	lcamt	byte	readable		
@@ -4621,7 +4621,7 @@ exe	0x005d6950	ai_OptionsGameScreen	menu	byte	readable
 exe	0x005d6f40	ai_MenuButton	menu	byte	readable		
 exe	0x005d6fa0	ai_LeaveGameScreen	menu	byte	readable		
 exe	0x005d7080	ai_ResumeGameScreen	menu	byte	readable		
-exe	0x005d7160	ai_Screenshot	menu	shape	readable		
+exe	0x005d7160	ai_Screenshot	menu	byte	readable		
 exe	0x005d7320	ai_LoadScreenImage	menu	byte	readable		
 exe	0x005d73e0	ai_HasQuicksavePlayer	menu	byte	readable		
 exe	0x005d7430	ai_Quicksave	menu	byte	readable		
@@ -4636,7 +4636,7 @@ exe	0x005d8420	ai_ProductionContact	menu	byte	readable
 exe	0x005d85e0	ai_BloodRevengeWindow	menu	byte	readable		
 exe	0x005d8c90	ai_CurseWindow	menu	byte	readable		
 exe	0x005d90e0	ai_CurseTargetWindow	menu	byte	readable		
-exe	0x005d95a0	ai_HomageWindow	menu	shape	readable	deep	
+exe	0x005d95a0	ai_HomageWindow	menu	byte	readable		
 exe	0x005d9890	ai_GypsyBeggingWindow	menu	byte	readable		
 exe	0x005d9a80	ai_GypsyContact	menu	byte	readable		
 exe	0x005d9b20	ai_CurseContact	menu	byte	readable		
