@@ -12,8 +12,15 @@ if not m:
     sys.exit("initgen: no definition of %s in %s" % (func, src))
 body = t[m.end():]
 lines = []
+depth = 0       # inside a local struct / union type's member list (`union { .. } p;`): skipped
 for ln in body.split("\n"):
     s = ln.strip()
+    if depth:
+        depth += s.count("{") - s.count("}")
+        continue
+    if re.match(r"^(?:struct|union)\b[^;]*\{\s*$", s):
+        depth = 1
+        continue
     if not s or s.startswith("/*") or s.startswith("*") or s.startswith("//"):
         if lines and not s:
             break
