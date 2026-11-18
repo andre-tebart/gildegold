@@ -179,17 +179,10 @@ void ahm_ShuffleTable(void)
 AHMGRID *ahm_FindRecipe(int id)
 {
     int i;
-    AHMGRID *p;
 
-    i = 0;
-    p = ai_RecipePrototypes;
-    if (ai_RecipePrototypeCount > 0) {
-        do {
-            if (p->rcp.id == id)
-                return ai_RecipePrototypes + i;
-            i++;
-            p++;
-        } while (i < ai_RecipePrototypeCount);
+    for (i = 0; i < ai_RecipePrototypeCount; i++) {
+        if (ai_RecipePrototypes[i].rcp.id == id)
+            return &ai_RecipePrototypes[i];
     }
     return 0;
 }

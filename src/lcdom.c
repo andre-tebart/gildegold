@@ -9306,7 +9306,10 @@ int ai_PassesPartnerFilter(unsigned short me, unsigned short id, AMOUNTCFG *cfg,
    without masters) in a radio group that starts on the page picked last (ai_StatsPage). Per frame: shows the
    picked page, refills the money rows, opens the building detail window for a clicked building row, scrolls the
    master list by its buttons and sends a changed master budget input to the building (AIBLD.budget, in the
-   player's money: gm_PlayerFactor) and the change to its master (AICHARREC.budget) */
+   player's money: gm_PlayerFactor) and the change to its master (AICHARREC.budget)
+   @deep near-byte sweep s22: left win in the slot above the one the original gives it ([esp+0xc] vs
+   [esp+0x8]) and two reloads after the master loop in swapped registers. value as a local of the if / the
+   loop body = control (frame sweep lever does not reach it). */
 void ai_PlayerStatsPanel(void)
 {
     int out[3];

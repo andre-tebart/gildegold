@@ -5953,7 +5953,9 @@ int ai_PlotRatingBaseChart(ORDSTATS stats, int width, int height)
 /* 0x5c7460, the score chart of the statistics window (ai_DrawStatisticsCharts, its flag 2; 255 B): the rounds' overall scores
    (ord_StatisticsHistory[].score, 0 .. 1) as green (0x10, 0xee, 0x10) line segments, scale = (width - 0x69) / 16
    apart from x 0x2d, y from height - 0x20 + 10 up by height - 0x1e for a score of 1, the last one to the current
-   score stats.score. The highest score is looked for and not used */
+   score stats.score. The highest score is looked for and not used
+   @deep near-byte sweep s22: left fld unit; fmul score in ours where the original loads the score first
+   (both loop products). unit * score = control. */
 
 void ai_PlotScoreChart(ORDSTATS stats, int width, int height)
 {
