@@ -2748,18 +2748,25 @@ void sv_CreateBanners(char *b);
    script SpecialEvents\\Hausbau_2.esc from stage 2 on) and at the last one shows the building, builds its road,
    sends the news and moves the owner in; -1 / -2 tear the construction down; every stage but the waiting ones goes
    on through the cm slot cm_SendExSetHE gives
-   @deep reconstructed the whole function (1213 vs 1211 instructions) against the original
-   0x56be30..0x56cda7, every stage 0..7 and -1/-2 read and written (HECONSTRUCTION words,
-   HEFINVIEW.buildPaid, gm_AddToTreasury's eax kept @original); no call, store or reference differs
-   (diffclass: no differs/ref lines). Left: (1) VC6 cross-jumping of the identical cm_SendExSetHE tails in
-   stages 0..3 lands the other way: the original's stage 0 jumps forward into stage 3's copies (0x56bf0e
-   jmp 0x56c050, je 0x56c00a) and stage 3's bld==0 into stage 1's (je 0x56bf6f), ours keeps stage 0's
-   copies and stage 3 jumps back (code hunks +0x9c, +0x10c, +0x200..+0x225; gotos to labels in stage 3
-   tried: worse, 1228 instructions, VC6 moves labelled blocks out of line); (2) the frame 0x394 vs 0x38c
-   and the slot packing: the original shares [esp+0x14] best / i / radius, [esp+0x18] dist / nearest,
-   [esp+0x30] the PointToWorld vector / the AITIME copy; ours lays out list/site/v at other offsets (slots
-   138; declaration order tried, no effect); (3) one memset scheduling in stage -1 (lea before rep stosd,
-   +0xf26) */
+   @deep size queue s16: 202 -> 70 ins, raw 4000 = the original's padded size. Kept: stage 0's two exits
+   (payer gone, the success send) end with break (retgen sites 0+1: the original's stage 0 jumps into stage
+   3's copies), stage 3's bld test written positive (if (bld != 0) { ..; send(stage + 1); return; }
+   send(-1); return;: its failure send cross-jumps into stage 1's copy as in the original), the bounding
+   sphere into its own center / radius locals (the original's lea [esp+0x20] / [esp+0x14]; &v / &best kept
+   best address-taken and moved every slot). Left: only frame slots (frame 0x3a4 vs 0x38c): the original
+   shares [0x14] best / i / radius, [0x18] dist / nearest, [0x30] v / now, center at [0x20]. Block-scoping
+   center+radius, now, at, v (31 subsets) gives frame 0x388 at best (sphere+now+at 67 ins, but raw 4004,
+   padded too big); a sphere with &at / &v (any radius) brings back 2400 bytes of slot hunks. Next: c2frame
+   on sphere+now+at for the 4 missing bytes. prior: reconstructed the whole function (1213 vs 1211
+   instructions) against the original 0x56be30..0x56cda7, every stage 0..7 and -1/-2 read and written
+   (HECONSTRUCTION words, HEFINVIEW.buildPaid, gm_AddToTreasury's eax kept @original); no call, store or
+   reference differs (diffclass: no differs/ref lines). Left: (1) VC6 cross-jumping of the identical
+   cm_SendExSetHE tails in stages 0..3 lands the other way: the original's stage 0 jumps forward into stage
+   3's copies (0x56bf0e jmp 0x56c050, je 0x56c00a) and stage 3's bld==0 into stage 1's (je 0x56bf6f), ours
+   keeps stage 0's copies and stage 3 jumps back (code hunks +0x9c, +0x10c, +0x200..+0x225; gotos to labels
+   in stage 3 tried: worse, 1228 instructions, VC6 moves labelled blocks out of line); (2) the frame 0x394
+   vs 0x38c and the slot packing: the original shares [esp+0x14] best / i / radius, [esp+0x18] dist /
+   nearest, [esp+0x30] the PointToWorld ... */
 void he_RunConstruction(int ev)
 {
     AIJOB *e = (AIJOB *)ev;
@@ -2767,6 +2774,8 @@ void he_RunConstruction(int ev)
     AIBLD *bld;
     float best;
     float dist;
+    float radius;
+    D3VECTOR center;
     int scene;
     D3VECTOR v;
     D3VECTOR at;
@@ -2805,7 +2814,7 @@ void he_RunConstruction(int ev)
             ch = (AICHAR *)gm_FindChar(c->payer);
             if (ch == 0) {
                 e->exSlot = cm_SendExSetHEI(-1, ev);
-                return;
+                break;
             }
             c->slot = cm_SendMoveGoods(-1, c->payer, ai_OwnPlayer, c->carry);
             fin = (HEFINVIEW *)gm_PlayerRecord((char *)ch);
@@ -2815,7 +2824,7 @@ void he_RunConstruction(int ev)
             c->slot = gm_AddToTreasuryI(c->carry);
         }
         e->exSlot = cm_SendExSetHEI(e->stage + 1, ev);
-        return;
+        break;
     case 1:
         e->exSlot = -1;
         if (e->opts & 4)
@@ -2845,13 +2854,13 @@ void he_RunConstruction(int ev)
             return;
         }
         bld = (AIBLD *)cm_GetSlotValue(c->slot);
-        if (bld == 0) {
-            e->exSlot = cm_SendExSetHEI(-1, ev);
+        if (bld != 0) {
+            c->bld = bld->id;
+            e->from = bld->id;
+            e->exSlot = cm_SendExSetHEI(e->stage + 1, ev);
             return;
         }
-        c->bld = bld->id;
-        e->from = bld->id;
-        e->exSlot = cm_SendExSetHEI(e->stage + 1, ev);
+        e->exSlot = cm_SendExSetHEI(-1, ev);
         return;
     case 4:
         e->exSlot = -1;
@@ -3045,11 +3054,11 @@ void he_RunConstruction(int ev)
         if (((D3OBJECT *)bld->object)->info == 0)
             d3_InflateObject((D3OBJECT *)bld->object);
         if (((D3OBJECT *)bld->object)->material != 0
-            && d3t_GetBoundingSphere((D3OBJECT *)bld->object, d3_Camera, &v, &best) != 0) {
-            size = (int)(best * 1.8);
+            && d3t_GetBoundingSphere((D3OBJECT *)bld->object, d3_Camera, &center, &radius) != 0) {
+            size = (int)(radius * 1.8);
             sc = evt_Load("Effekte/geb_bauen.esc");
             if (sc != 0) {
-                evt_RunScriptArgs(sc, 6, (int)v.x, (int)v.y, (int)v.z, (int)best, size, bld->object);
+                evt_RunScriptArgs(sc, 6, (int)center.x, (int)center.y, (int)center.z, (int)radius, size, bld->object);
                 sc->group = 0;
             }
         }
