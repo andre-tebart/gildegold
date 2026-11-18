@@ -13434,22 +13434,24 @@ int ord_DispatchOrder(int id, char *c, int *m);
    stage is 6. 6: back home (else 4 more minutes) it is cancelled. 7: the accusation answered, the proof goes to the
    watch (cm_SendProofExecuted), the stage is 8 in 10 minutes. 8: while the watch event still holds it 6 more
    minutes, then the saboteur walks home (stage 6). Stages -2 / -1 kill the saboteur and free the event
-   @deep reconstructed from the 425-byte stub against 0x558f10..0x559d14: all 11 stages read and written
-   (the switch tables now equal: case order 0,1,2,3,7,8,4,5,6,-2/-1 as the original lays them out), every
-   call, argument and string checked (refs_differ=0; the explosion message 0x4f, smoke / earth / explosion
-   arguments as cm.c's bomb, the dummy object names, HEDETECT, gv_Accuse, CRIME.id for
-   cm_SendProofExecuted, HEWATCH.attackId), the effect block's FPU order matches. Left (diffclass): regs
-   144, order 20, tail 20 and code 88 that are allocation / scheduling: stage 3 found path ours stores
-   stage 7 before add esp,0x14 where the original rebases on add esi,0x52 first (mov [esi+0x1e],7 / mov
-   [esi+0x7a],edx); stage 4's failure path recomputes owner / me with ours lea ebx before push ebx, the
-   original lea ecx then lea ebx (+0x55961b..+0x559635), and the gv_Accuse argument loads in another order
-   (+0x559775..+0x55979d); stage 5 the original caches 0 in ebx (xor ebx,ebx; mov [esp+0x34],ebx; cmp
-   [d3_CurrentScene],ebx; push ebx; cmp eax,ebx) where ours uses immediates / test; tails: the original
-   shares the stage++ block at +0x7cd and the stage = 6 block at +0x10f that ours keeps inline. Tried:
-   case-0 failure after the success path (matched), the blasts test outside the block-scoped arrays
-   (matched), util_RandomU for the message strength (matched), the col stores after a.z (FPU hunk gone), o
-   = 0 at declaration (no change), stage 3 store orders (worse, reverted) (size: 16 of the instruction
-   difference are shared / inline tails) */
+   @deep size queue s18: stage 5's a / dir with an int pad word (struct { float x, y, z; int w; }: the
+   original stores both w as integer 0 from its cached ebx, as cm_UpdateGrenades): 160 -> 142 ins; stage
+   2's busy test written positive (if (c->scene->actions != 0) { end = now + 4; stage = 2; return; }
+   stage++; return;) so its stage++ jumps into stage 4's copy as the original (je +0x7cd): 142 -> 137 ins,
+   raw 3575 -> 3553, padded size (3600). retgen single (30 return sites, 61 variants): no row below the
+   control. Left: the stage = 6 tail at +0x10f (ours inline at +0xd5d), stage 3's found-path store order
+   (add esi,0x52 first in the original), stage 4's failure-path lea order (lea ecx / lea ebx, the scratch
+   rotation behind it through +0x5597a0), stage 5's dir.y also stored from ebx in the original (dir.y =
+   0.0f / 0: = same code). prior: reconstructed from the 425-byte stub against 0x558f10..0x559d14: all 11
+   stages read and written (the switch tables now equal: case order 0,1,2,3,7,8,4,5,6,-2/-1 as the original
+   lays them out), every call, argument and string checked (refs_differ=0; the explosion message 0x4f,
+   smoke / earth / explosion arguments as cm.c's bomb, the dummy object names, HEDETECT, gv_Accuse,
+   CRIME.id for cm_SendProofExecuted, HEWATCH.attackId), the effect block's FPU order matches. Left
+   (diffclass): regs 144, order 20, tail 20 and code 88 that are allocation / scheduling: stage 3 found
+   path ours stores stage 7 before add esp,0x14 where the original rebases on add esi,0x52 first (mov
+   [esi+0x1e],7 / mov [esi+0x7a],edx); stage 4's failure path recomputes owner / me with ours lea ebx
+   before push ebx, the original lea ecx then lea ebx (+0x55961b..+0x559635), and the gv_Accuse argument
+   loads in another order (+0x5... */
 void he_RunSabotage(int ev)
 {
     AIJOB *e = (AIJOB *)ev;
@@ -13498,13 +13500,13 @@ void he_RunSabotage(int ev)
             e->stage = -1;
             return;
         }
-        if (c->scene->actions == 0) {
-            e->stage++;
+        if (c->scene->actions != 0) {
+            e->end = ai_Time;
+            gm_AddTime(&e->end, 0, 4, 0);
+            e->stage = 2;
             return;
         }
-        e->end = ai_Time;
-        gm_AddTime(&e->end, 0, 4, 0);
-        e->stage = 2;
+        e->stage++;
         return;
     case 3: {
         HEDETECT d;
@@ -13638,7 +13640,7 @@ void he_RunSabotage(int ev)
             int scene;
             float scale;
             D3COLOR col;
-            D3VECTOR4 a, dir;
+            struct { float x, y, z; int w; } a, dir;   /* @original the pad word is an int: its 0 stores use the cached zero register */
             char dummies[3][0x40] = { "dummy_TUER", "dummy_FAHNE", "dummy_RAUCH_0" };
             AIMSG msg;
             D3OBJECT *o;
