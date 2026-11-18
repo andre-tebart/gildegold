@@ -1915,9 +1915,9 @@ exe	0x004b28d0	hst_ParseText_Fake_2nd_Pass	hst	3583c89a41842ead	no	draft	sample 
 exe	0x004b2c90	hst_ParseEventText	hst	9ac7294834c34487	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004b2ce0	hst_ParseText_Real	hst	9e0d519b71e5d524	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004b2ed0	hst_ParseDate	hst	56ac655355335203	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft	
-exe	0x004b3280	hst_NextEvent	hst	a2ba0b09b1ab25c1	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	8a1346b77205965c
+exe	0x004b3280	hst_NextEvent	hst	109f064c379494fe	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	a09ba22725e40823
 exe	0x004b3350	hst_LastYearDialog	hst	260fd5f7d5b9bf20	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x004b35e0	hst_NextEventCmd	hst	acf4bcc9e3d4772b	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	8a1346b77205965c
+exe	0x004b35e0	hst_NextEventCmd	hst	a3b50b216341e9c0	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	a6e4ed494db9e584
 exe	0x004b36d0	hst_LastYearCmdDialog	hst	6af6332922572667	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004b3960	hst_YearlyHistory	hst	2a6892cb6cc6deeb	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004b39f0	ai_ClearMissions	unk_4b39f0	c3c697d94f7f21f7	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	

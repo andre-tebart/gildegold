@@ -2675,7 +2675,7 @@ int hst_ParseDate(int k, int mode, int *year, char *name)
     return 1;
 }
 /* 0x4b3280, the next history event (3 texts per entry from hst_TextCurrent: date, text, ..) of last year: 1 with
-its date in name and its text in out; 2: not yet; 3 / 4: history off / ended @deep deep s32: the one hunk is block layout: the original lays the d != 1 code (jle r2; xor esi,esi; jmp tail) behind the loop's return r, then the r = 2 return copy, return 3, return 4; ours keeps it between the d == 1 arm (whose r = 6 then needs a jmp) and the tail. Tried (dcp try, whole-function products): the d test as if/else-if/else, d < 1 first, d > 1 first, if (d != 1) {..} else {..} (B before A: draft 20), r = 0 default, return 2 in the arm; x the guards as if (hst_TextsOn) {..} else return 3 and if (hst_ParseDate(..)) {..} else {..; return 4;}; x do-while / for (;;) with if (r != 0 && r != 6) break (M8, 29). Best: both guards positive (12 ins / 58 bytes: the return 3 / 4 blocks move, B stays inline) - not kept, it puts return 3 last where the original has it before return 4. The tail (TextCurrent += 3 + the TextsOn clear) written in both arms puts B behind the return as the original (draft 18), but VC6 decides the r == 0 loop test on B's path (r = 0 known) and B's copy jumps to the loop top, so xjump cannot merge it; only the += 3 in both arms: 3 becomes a register constant (40). climb round 1: nothing. c2tail: no tail merged in the control. */
+its date in name and its text in out; 2: not yet; 3 / 4: history off / ended @deep s36: the empty-text check moved behind the d chain (if (r == 1 && *out == 0) r = 6;): the d != 1 block now sits where the original has it: 16 -> 10 ins, kept. Left: only the order of the return blocks behind the main return (the original: r = 2, return 3, return 4; ours: return 3, return 4, r = 2). Guards positive x negative on this text: ParseDate positive (g01) gives return 3, r = 2, return 4 (6 ins); both positive (g11) r = 2, return 4, return 3 (6 ins); the d chain as d < 1 first / d > 1 first / if (d != 1) x the guard forms: 10..20; while (hst_TextsOn) {..} return 3: 28-30 (M8). prior: deep s32: the one hunk is block layout: the original lays the d != 1 code (jle r2; xor esi,esi; jmp tail) behind the loop's return r, then the r = 2 return copy, return 3, return 4; ours keeps it between the d == 1 arm (whose r = 6 then needs a jmp) and the tail. Tried (dcp try, whole-function products): the d test as if/else-if/else, d < 1 first, d > 1 first, if (d != 1) {..} else {..} (B before A: draft 20), r = 0 default, return 2 in the arm; x the guards as if (hst_TextsOn) {..} else return 3 and if (hst_ParseDate(..)) {..} else {..; return 4;}; x do-while / for (;;) with if (r != 0 && r != 6) break (M8, 29). Best: both guards positive (12 ins / 58 bytes: the return 3 / 4 blocks move, B stays inline) - not kept, it puts return 3 last where the original has it before return 4. The tail (TextCurrent += 3 + the TextsOn clear) written in both arms puts B behind the return as the original (draft 18), but VC6 decides the r == 0 loop test on B's path (r = 0 known) and B's copy jumps to the loop top, so xjump cannot merge it; only the += 3 in both arms: 3 becomes a register constant (40). climb round 1: nothing. c2tail: no tail merged in the control. */
 
 int hst_NextEvent(char *name, char *out)
 {
@@ -2693,14 +2693,14 @@ int hst_NextEvent(char *name, char *out)
         if (d == 1) {
             r = d;
             hst_ParseText_Real(out, hst_TextCurrent + 1);
-            if (*out == 0)
-                r = 6;
         } else if (d > 1)
             r = 0;
         else {
             r = 2;
             break;
         }
+        if (r == 1 && *out == 0)
+            r = 6;
         hst_TextCurrent += 3;
         if (hst_TextLast < hst_TextCurrent)
             hst_TextsOn = 0;
@@ -2772,7 +2772,7 @@ void hst_LastYearDialog(void)
     } while (sv_RunFrame(hst_LastYearDialog, 0x66087));
     sv_DestroyScrollForm();
 }
-/* 0x4b35e0, 0x4b3280 with both passes (0x4b2c90, commands if cmd): 5 when they fail */
+/* 0x4b35e0, 0x4b3280 with both passes (0x4b2c90, commands if cmd): 5 when they fail @deep s36: the empty-text check as if (r == 1 && *out == 0) r = 6; after the d chain (VC6 decides r == 1 on each path, so the *out test sits behind the d != 1 block as in the original): 24 -> 18 ins, kept. Left: (1) the return blocks: the original orders r = 2 / return 3 / return 4 behind the main return, ours return 3 / return 4 / r = 2 (same as the twin hst_NextEvent); (2) name and cmd swapped between ebx and ebp (c2trace --prio: name -46 (ParseDate block P=3), cmd -40 (ParseEventText block P=4); the original serves name first). No lever: r = 1 for r = d, r = hst_ParseDate(..) (= control), d == 1 in the check (25), the d chain as d <= 1 / d < 1 first / d > 1 first (18 / 22 / 26), TextsOn == 0. */
 
 int hst_NextEventCmd(char *name, char *out, int cmd)
 {
@@ -2791,14 +2791,14 @@ int hst_NextEventCmd(char *name, char *out, int cmd)
             r = d;
             if (!hst_ParseEventText(out, hst_TextCurrent, cmd))
                 r = 5;
-            else if (*out == 0)
-                r = 6;
         } else if (d > 1)
             r = 0;
         else {
             r = 2;
             break;
         }
+        if (r == 1 && *out == 0)
+            r = 6;
         hst_TextCurrent += 3;
         if (hst_TextLast < hst_TextCurrent)
             hst_TextsOn = 0;
