@@ -3466,21 +3466,20 @@ void he_AllocTrainShare(int ev)
     AICHAR *c;
 
     c = (AICHAR *)gm_FindChar(r->chr);
-    if (c == 0)
-        goto done;
-    r->progress = ahm_ShareProgress((char *)c, r->id, &r->start);
-    if (r->progress <= 0.0f)
-        goto done;
-    r->amount = r->start;
-    r->clock = ai_Time;
-    e->end = ai_Time;
-    gm_AddTime(&e->end, 0, 5, 0);
-    e->stage = 0;
-    sv_MoveToGroup((unsigned char *)c->bld, (short *)gm_Query((void *)c->bld->objList, 2, 6, 0, 0x24b), c->id,
-                   (char *)ev);
-    snd_PlayFavourComment();
-    return;
-done:
+    if (c != 0) {
+        r->progress = ahm_ShareProgress((char *)c, r->id, &r->start);
+        if (!(r->progress <= 0.0f)) {
+            r->amount = r->start;
+            r->clock = ai_Time;
+            e->end = ai_Time;
+            gm_AddTime(&e->end, 0, 5, 0);
+            e->stage = 0;
+            sv_MoveToGroup((unsigned char *)c->bld, (short *)gm_Query((void *)c->bld->objList, 2, 6, 0, 0x24b), c->id,
+                           (char *)ev);
+            snd_PlayFavourComment();
+            return;
+        }
+    }
     he_FreeEvent((int *)ev);
 }
 /* 0x56daa0, the run handler of the alchemist training event 0x97 (alloc he_AllocTrainShare): without its character,
