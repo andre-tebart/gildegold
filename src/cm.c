@@ -2977,17 +2977,23 @@ int cm_ExMoveGoodsUnchecked(G17MSG *m, G17STAT *s)
    an object's or a character's list, gm_FindById) to the buyer; with a price, the buyer pays count * price in the
    money good of the player slot to the seller (gm_TakeObjekt / gm_AddObjekt) and both book it. A store (an object of
    kind 0x2a / 0x116) of the own player character gives the status text of its building and a sound
-   @deep Read whole against 0x4c70b0..0x4c78bd and rewritten typed (G17SELLMSG, AIOBJ / AIBLD / AICHAR /
-   GMSTOCK / GMPLAYERSLOT): the same calls in the same order with the same arguments, stores, constants and
-   strings; fixed on the way: one buf[0x200] for the sprintf texts and the status text (frame 0x228 now
-   equal), the reserve check as one expression (the original spills the ListStock term), the room check of
-   the buyer object shared by the store kinds and 0x1dd (one gm_FreeCapacity call), the goods record taken
-   before o2->count++. Left: block layout and scheduling - the y2 = y store is laid out after the room
-   check (0x4c735d, the original inline with a jmp), the return-1 tails the original shares (0x4c7594 /
-   0x4c77ad jump to +0x66d, ours inline), the gm_TakeObjekt / txt_Format argument loads in another order
-   (0x4c768b, 0x4c7865), register renamings (0x4c766f, 0x4c76d1, 0x4c77ed, 0x4c7841). Tried: if / else-if /
-   goto forms of the room check (this one the closest, 179 -> 173 ins). (size: 7 of the instruction
-   difference are shared / inline tails) */
+   @deep size queue s17 (127 -> 103 ins, raw 2089 -> 2059 vs 2061: padded size): the two gotos gone, each
+   its plain form: the room check as 'if (store kinds) y2 = y; if ((y2 != 0 || y->type == 0x1dd) &&
+   gm_FreeCapacity(..) < count) return 1;' (121; two FreeCapacity calls 144 / 145), the money goto as if
+   (ys != 0 && r2 != 0) (= control); the buyer's room 'if (x2 != 0) o2 = gm_AllocRaum(..); if (o2 == 0)
+   return 1;' (112, 2071) and the seller's 'else if (x1 != 0) RemoveFromBuilding else return 1' (103, 2059:
+   its failure jumps to a shared return-1 copy as the original). Left: register rotation from the
+   gm_TakeObjekt call on (0x4c768b: the original pushes count * price first), the ys type test's mov
+   ecx,eax copy, the goods-record address add order (0x4c774f). prior: Read whole against
+   0x4c70b0..0x4c78bd and rewritten typed (G17SELLMSG, AIOBJ / AIBLD / AICHAR / GMSTOCK / GMPLAYERSLOT):
+   the same calls in the same order with the same arguments, stores, constants and strings; fixed on the
+   way: one buf[0x200] for the sprintf texts and the status text (frame 0x228 now equal), the reserve check
+   as one expression (the original spills the ListStock term), the room check of the buyer object shared by
+   the store kinds and 0x1dd (one gm_FreeCapacity call), the goods record taken before o2->count++. Left:
+   block layout and scheduling - the y2 = y store is laid out after the room check (0x4c735d, the original
+   inline with a jmp), the return-1 tails the original shares (0x4c7594 / 0x4c77ad jump to +0x66d, ours
+   inline), the gm_TakeObjekt / txt_Format argument loads in another order (0x4c768b, 0x4c7865), register
+   renamings (0x4c766f, 0x4c76d1, 0x4c77ed, 0x4c7841). Trie... */
 
 int cm_ExSellObjekt(G17MSG *m, G17STAT *s)
 {
@@ -3066,15 +3072,11 @@ int cm_ExSellObjekt(G17MSG *m, G17STAT *s)
             else
                 r2 = 0;
         } else if (y != 0) {
-            if (y->type == 0x2a || y->type == 0x1db || y->type == 0x1dc || y->type == 0x116) {
+            if (y->type == 0x2a || y->type == 0x1db || y->type == 0x1dc || y->type == 0x116)
                 y2 = y;
-                goto room;
-            }
-            if (y->type == 0x1dd) {
-            room:
-                if (gm_FreeCapacity((short *)y, m->sell.item, m->sell.count) < m->sell.count)
-                    return 1;
-            }
+            if ((y2 != 0 || y->type == 0x1dd)
+                && gm_FreeCapacity((short *)y, m->sell.item, m->sell.count) < m->sell.count)
+                return 1;
             q = &y->list;
             r2 = (AICHAR *)gm_ObjectBuildingOwner((unsigned short *)y);
         } else {
@@ -3090,9 +3092,7 @@ int cm_ExSellObjekt(G17MSG *m, G17STAT *s)
                 return 1;
         }
     }
-    if (ys != 0) {
-        if (r2 == 0)
-            goto money;
+    if (ys != 0 && r2 != 0) {
         if ((AICHAR *)gm_ObjectBuildingOwner((unsigned short *)o) != r2 && o->reserve != 0) {
             if (gm_ListAmount((short *)ys, (char *)o) - ((unsigned int)(gm_ListStock((short *)ys, o->type) * o->reserve) >> 2)
                 < (unsigned int)m->sell.count)
@@ -3104,7 +3104,6 @@ int cm_ExSellObjekt(G17MSG *m, G17STAT *s)
         if (m->sell.count == 0)
             return 1;
     }
-money:
     if (m->sell.price != 0) {
         GMSTOCK *g;
 
@@ -3122,13 +3121,12 @@ money:
     if (m->sell.seller != -1) {
         o->count -= m->sell.count;
         if (o->count <= 0) {
-            if (ai_GoodsT[m->sell.item].type != 2 && ai_GoodsT[m->sell.item].type != 6) {
+            if (ai_GoodsT[m->sell.item].type != 2 && ai_GoodsT[m->sell.item].type != 6)
                 gm_RemoveObject(p, m->sell.item);
-            } else {
-                if (x1 == 0)
-                    return 1;
+            else if (x1 != 0)
                 gm_RemoveObjectFromBuilding((int)x1, m->sell.item);
-            }
+            else
+                return 1;
         }
         if (m->sell.price != 0) {
             gm_AddObjekt(r1->netId, ai_PlayerSlotsT[m->sell.player].moneyGood, m->sell.count * m->sell.price);
@@ -3144,9 +3142,8 @@ money:
         if (o2 != 0) {
             o2->count += m->sell.count;
         } else if (ai_GoodsT[m->sell.item].type == 2 || ai_GoodsT[m->sell.item].type == 6) {
-            if (x2 == 0)
-                return 1;
-            o2 = (AIOBJ *)gm_AllocRaum((unsigned char *)x2, m->sell.item);
+            if (x2 != 0)
+                o2 = (AIOBJ *)gm_AllocRaum((unsigned char *)x2, m->sell.item);
             if (o2 == 0)
                 return 1;
         } else {
