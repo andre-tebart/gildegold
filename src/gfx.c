@@ -510,24 +510,24 @@ void d2_DragInput(void)
     }
 }
 /* 0x477ba0, mouse and keys on the focused slider object
-   @deep deep s27: the goto wheel (the else of the two drag tests skipping the clamp and store) checked
-   against the plain forms: the clamp + store written out in both arms (no goto) 95 ins / slots 50, the
-   original has ONE clamp copy at 0x477da1 reached by a jmp from the horizontal arm and by fall-through
-   from the vertical one, and both failing tests jump to 0x477dec (the wheel code) - the goto form is that
-   layout. Left as before: the vertical test's load order (the original movsx edi,[o->y]; mov dx,[f6->h];
-   lea eax,[edx+edi]; then mov edi,[py]; ours py into edi first, add eax,edx: 1 byte). climb round 1 (s27):
-   nothing. prior: s13 (size queue): 66 -> 10 ins, raw 796 -> 806 (padded 816 = the original's): the
-   original sums the bottom edge o->y + o->h ONCE in the vertical test (movsx y, movsx h, add, then -
-   f6->h) and reuses that sum for a = .. - f0->h - py; written out at both uses VC6 reassociates the test
-   to o->h - f6->h + o->y and recomputes the sum for a, a CSE fewer, which cost mx its ebx (every earlier
-   hunk). The sum as bottom assigned inside the test (py < (bottom = o->y + o->h) - f6->h); bottom as a
-   statement at the top of the block or after d: 134 / 150 ins (computed on every path). Spellings of the
-   sums, parens, (int) casts, operands swapped: = control. Left (10 ins, 1 byte): the first vertical test
-   loads o->y into edi, f6->h into edx, lea eax,[edx+edi], then py into edi; ours loads py into edi first
-   and adds (add eax,edx: the missing byte). py on the right of the compare (f6->h + o->y < py): 12 ins;
-   climb round 1 (147 mutants): nothing better.
-
-
+   @deep deep s27: the goto wheel (the else of the two drag tests skipping the clamp and store) is the
+   original's layout: written out in both arms (no goto) 95 ins / slots 50; the original has ONE clamp copy
+   at 0x477da1 (jmp from the horizontal arm, fall-through from the vertical one) and both failing tests
+   jump to the wheel code. Left (10 ins, 1 byte): the first vertical test's evaluation order, the original
+   o->y first (movsx edi,[o->y]; mov dx,[f6->h]; lea eax,[edx+edi]) and py loaded after (mov edi,[py]),
+   ours py into edi first, o->y into eax, add eax,edx. = control: py > (top = f6->h + o->y) / (top = o->y +
+   f6->h) in a new local; worse: the compare reversed (f6->h + o->y < py, o->y + f6->h < py, (top = ..) <
+   py: 12, py still first), py - o->y > f6->h / py - f6->h > o->y / o->y < py - f6->h (9 ins / 331 B,
+   another code). climb.py 3 rounds (s27): nothing. prior: s13 (size queue): 66 -> 10 ins, raw 796 -> 806
+   (padded 816 = the original's): the original sums the bottom edge o->y + o->h ONCE in the vertical test
+   (movsx y, movsx h, add, then - f6->h) and reuses that sum for a = .. - f0->h - py; written out at both
+   uses VC6 reassociates the test to o->h - f6->h + o->y and recomputes the sum for a, a CSE fewer, which
+   cost mx its ebx (every earlier hunk). The sum as bottom assigned inside the test (py < (bottom = o->y +
+   o->h) - f6->h); bottom as a statement at the top of the block or after d: 134 / 150 ins (computed on
+   every path). Spellings of the sums, parens, (int) casts, operands swapped: = control. Left (10 ins, 1
+   byte): the first vertical test loads o->y into edi, f6->h into edx, lea eax,[edx+edi], then py into edi;
+   ours loads py into edi first and adds (add eax,edx: the missing byte). py on the right of the compare
+   (f6->h + o->y < py): 12 ins; climb round 1 (147 mutants): nothing better.
 
    */
 
