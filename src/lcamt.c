@@ -11020,7 +11020,15 @@ int ai_UseGoodHoldRound(AICHARREC *ch, G8USEVIEW *use)
    The target's relation to the user rises by 25 (cm_SendRelations); a player target (kind 6 / 7) gets the news
    0xffa naming the user (key 0x5ec). A player user sees the text 0xfe8 (the good's rank + 1, the target) in the
    use-object panel, and the use is marked handled. Returns 1.
-   @deep Read whole against the original and written typed (AMOUNTCFG with the sex-dependent partner bit,
+   @deep deep s26: climb round 1 (52 mutants): nothing. c2trace: the constant 6 (ch->kind test, cfg.kind,
+   target->kind, the second ch->kind test; byte compares, prio 7) takes ebx for the whole function; the
+   constant 1 (ret = 1 twice, cfg.flags, the relations argument, handled; prio 6) is cut by it and its
+   pieces go to memory (savings -1 even with edi = ret available). The original: 6 in ebx only for the
+   first test / cfg.kind, 1 in edi (ret's register) for the relations push and handled. = control: if (ret)
+   / if (ret == 1) as the block test (VC6 threads both). ret = 1 as the block's first statement (and the
+   else's ret = 1 dropped, with or without the first path's): 11 ins, push edi / handled edi right but the
+   first path's mov edi,1 is then dead. Left: code 8 (the two immediates 6, push 1, handled = 1). prior:
+   Read whole against the original and written typed (AMOUNTCFG with the sex-dependent partner bit,
    AICHARREC target, G9DOMIZIL found); every call, argument, constant, store and branch matches in order.
    Left is VC6's constant-in-register choice: the original holds ret (edi) = 1 and uses it for the 4th
    cm_SendRelations argument (push edi at +0xe3) and use->handled (mov [ebx+0x10], edi at +0x154), and
