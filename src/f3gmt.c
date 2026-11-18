@@ -2083,14 +2083,7 @@ unsigned char *gm_BuildNext(void)
     }
     return (unsigned char *)gm_BQCursor;
 }
-/* 0x501190, starts a building query and returns its first match (gm_BuildNext): resets the criteria, then reads n (kind, value) pairs: 0 the type, 1 the id, 2 a name (copied to gm_BQName, never tested), 3 the master id, 4 the owner, 5 the class of the type, 6 stop at the first (no value); the cursor starts at ai_Blds. Used all over the exe (gm_BuildQuery(1, 5, 10) ..)
-   @deep read against the original: the reset of the nine criteria, the (kind, value) walk with a
-   pre-incremented argument pointer, the seven cases (switch tables equal, strcpy intrinsic for the name)
-   and the tail call to gm_BuildNext all match; gm_BQClass is unsigned char like gm_BQType (the original
-   stores one 0xff register into both). The one hunk left (+0xc, 10 lines) is the same five instructions
-   scheduled and allocated differently: the original loads 0xff into cl, stores type / class, then loads n
-   into ecx; ours loads n into ecx first and takes al for 0xff (its short mov [mem], al form makes ours 2
-   bytes smaller). Tried the class / type stores chained and the copy locals reordered: no change */
+/* 0x501190, starts a building query and returns its first match (gm_BuildNext): resets the criteria, then reads n (kind, value) pairs: 0 the type, 1 the id, 2 a name (copied to gm_BQName, never tested), 3 the master id, 4 the owner, 5 the class of the type, 6 stop at the first (no value); the cursor starts at ai_Blds. Used all over the exe (gm_BuildQuery(1, 5, 10) ..) */
 
 unsigned char *gm_BuildQuery(int n, ...)
 {
@@ -2100,10 +2093,10 @@ unsigned char *gm_BuildQuery(int n, ...)
     if (ai_BTypes == 0)
         return 0;
     gm_BQType = 0xff;
-    gm_BQClass = 0xff;
     gm_BQId = -1;
     gm_BQName = 0;
     gm_BQMaster = 0x7fff;
+    gm_BQClass = 0xff;
     gm_BQOwner = 0x7fff;
     gm_BQFirstCall = 1;
     gm_BQTested = 0;
