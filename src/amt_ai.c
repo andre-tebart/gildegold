@@ -984,14 +984,7 @@ int ai_PickPartnerRandomWalk(AIPER *p, unsigned int fl, int n, unsigned short *i
 /* 0x4a5ef0: up to n candidates for an action with the flags fl, from two random walks over all 768 characters
    (no kinds 8 / 7 / 5 / 9 / 0x14; first the ones with a jobId (+0x164) other than 'R', then those without),
    accepted by ai_PassesPartnerFilter, with a previous-office level (gm_CharPrevLevel) within 5 of p's and, when
-   the window is narrower than 0..100, a liking in [lo, hi]; ids into out[], returns the number
-   @deep read in full against the original: double constants 0.0/100.0, gm_CharPrevLevel prototyped
-   (unsigned short id), AICHAR fields, !(r < lo) && !(r > hi), out[cnt++], k-- before the step; instruction
-   count equal (224/224). Left: allocation of the constant 0 only: ours zeroes edi (cnt = 0) before the
-   window test and stores win = 0 / pushes the 0 argument of gm_CharPrevLevel from edi ('- xor edi, edi; -
-   mov [esp+0x10], edi; - push edi'), the original stores immediates ('+ mov dword ptr [esp + 0x10], 0; +
-   push 0') and zeroes edi after push ebx ('+ xor edi, edi'); moving cnt = 0 after the util_Random call or
-   retyping cnt int/unsigned does not change it */
+   the window is narrower than 0..100, a liking in [lo, hi]; ids into out[], returns the number */
 
 unsigned int ai_FindCandidates(AIPER *p, unsigned int n, unsigned int fl, float lo, float hi, unsigned short *out)
 {
@@ -1002,17 +995,17 @@ unsigned int ai_FindCandidates(AIPER *p, unsigned int n, unsigned int fl, float 
     float r;
 
     step = ai_CharWalkSteps[util_RandomU(0x10)];
+    win = 0;
     memset(q, 0, sizeof(q));
     memset(&q[7], 0xff, 8 * 4);
-    win = 0;
     if ((lo > 0.0 || hi < 100.0) && lo < hi)
         win = 1;
     q[5] = 2;
     q[1] = fl;
     rank = gm_CharPrevLevel(p->id, 0);
+    cnt = 0;
     k = 0x300;
     i = util_RandomU(0x300);
-    cnt = 0;
     while (cnt < n && k != 0) {
         t = ai_CharsT[i].kind;
         if (t != 8 && t != 7 && t != 5 && t != 9 && t != 0x14 && ai_CharsT[i].jobId != 0 && ai_CharsT[i].jobId != 'R'
