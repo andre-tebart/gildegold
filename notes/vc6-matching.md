@@ -413,6 +413,50 @@ Where the pushes and pops sit, how many epilogue copies there are, shared agains
     (init_NameBuildings: the reload is a rematerialisation of the memory-homed b, not source); the
     out-of-line placement of one if-arm after the epilogue (gm_CreateCharModel: polarity, nesting,
     goto to a label after the return, a ternary for the pointer, an ok flag).
+- **Size queue s16 (byte or padded size by these)**:
+  - A `volatile int z = 0` read back as `k = z` (the draft's way to get the original's load of a slot
+    zeroed at entry) was `k = 0;` at the top of the function and nothing before the loop that starts
+    from it (`for (c = 0; k == 0; c++)`): k is live from the entry store, so VC6 keeps its slot and
+    loads it there (ai_CalcMeisterRaeuber byte). Read a volatile as "which plain local is live from
+    where the original stores it".
+  - `cmp ebp,8; mov edi,ebp; jl; mov edi,8` = a NEW local (`want = min(n, 8)`), not `if (n > 7) n =
+    8;` (that gives n a memory home and stores 0 into it at the top); a -1 fill after a counted loop
+    without a store of the final index = `for (; t < 8; t++) ids[t] = -1;` from the count, not a
+    fresh `i` (i's address went to a call elsewhere, so its final value is stored); `cmp esi,2; jl`
+    = `k >= 2` (`k > 1` gives `cmp esi,1; jle`); two stores of bestw (edx / ecx) cross-jumped at
+    `best = bb` = `if (best == 0) { bestw = w; best = bb; } else if (cmp) { bestw = w; best = bb; }`
+    (ai_CalcMeisterRaeuber 131 ins -> byte, raw 1956 -> 1937).
+  - A scalar whose address goes to a call for an unrelated value (`&best` as the bounding radius,
+    `&v` as its center) is in memory everywhere and conflicts with every slot: the call's own locals
+    (`D3VECTOR center; float radius;`) brought the original's lea [esp+0x20] / [esp+0x14] and the
+    padded size (he_RunConstruction 202 -> 70 ins, with retgen sites 0+1 and stage 3's bld test
+    written positive: `if (bld != 0) { ..; send(stage + 1); return; } send(-1); return;` so its
+    failure send cross-jumps into stage 1's copy as in the original).
+  - The x87 stack order of loop-carried floats follows their init order (`ang = range[3]; speed =
+    range[0];`); an invariant the original hoists AFTER another (g * 2 before 1 / g) was written
+    inline in the loop (`1.0f / g * s * speed`), not as a local before it; with equal reference
+    counts the frame packer takes the symbols in declaration order (g declared before speedStep:
+    speedStep, not g, takes the dead parameter slot); `int sign = 0` at the declaration put the
+    `xor ebp,ebp` first, whose register the float `hdir.y = 0.0f` store then used (ai_SolveCannonAim
+    208 -> 14 ins, padded size).
+  - `goto done` out of a search loop whose done is `info->z1++;` = `info->z1++; return;` in the loop
+    like the other branches (ai_SendJobOrders, padded size). A goto to the loop's continuation that
+    ends with the while test was a plain break (ai_LiquidateAssets: same code).
+  - climb.py round 1 found a memset moved above an index computation (`memset(&msg..); i = id -
+    0xdf;`: 204 -> 42 ins) the sessions before had not tried; then the two arms' message fills
+    permuted (720 + 5040) and `msg.flags = 1` moved from before the kind test into each arm (the
+    original reads the kind before the store): byte (ai_TechTreeWindow).
+  - An argument the original pushes from the computing register without movsx and recomputes per
+    call (`lea eax,[edx+ebx+0x11]; push eax` from k) where ours has `(short)(k * 0x31 + 0x11)` to a
+    K&R-declared callee (movsx) or, without the cast, a strength-reduced IV: the callee through a
+    short-parameter view (`d2_WinOpenPicStyledS`, as sv.c / svtip.c) (ai_UpdateResourceColumns 110
+    -> 91, ai_UpdateProdColumns 186 -> 161 ins). climb.py's store moves in a message fill or a row
+    record are a cue for a permutation round of that fill (ai_StorageWindow 200 -> 165,
+    ai_DarkCornerBuy 119 -> 94).
+  - No lever: all 1023 operand swaps of five product lines, s / c declaration orders, d3_YAxis
+    through a pointer or array view (the c products of ai_SolveCannonAim's success arm keep c first);
+    block-local records in ai_MistressWindow / gm_FindHome (the escape lever does not reach their
+    hunks).
 
 - **An else-if arm cross-jumped whole into a sibling's copy, the original keeps it inline**: the store order of
   the OTHER arms (default arm charId before stateArg; 0x176 arm stateArg, charId, x, z) decides it, found by
