@@ -3644,8 +3644,8 @@ void ai_AgendaOfficeList(int kind)
         for (i = 0; i < n; i++) {
             if (seats[i].state != 3)
                 continue;
-            shown |= 1;
             found = 0;
+            shown |= 1;
             io_PrintText(0x13a1, seats[i].kind + 0x253);
             count = 0;
             for (c = lc_CharRecs; (int)c < (int)&lc_CharRecs[0x300]; c++) {  /* a signed compare (jl) in the original */
