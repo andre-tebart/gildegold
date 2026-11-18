@@ -946,26 +946,25 @@ unsigned *gm_NameRecord(int kind, int id)
    head numbers = the picture - 0x639); a spy (kind 0x11) one of the three spy heads; else the record of its job,
    or of its title, in the table of its sex (resolving its head icons), the table's first record when the title is
    not listed.
-   @deep 129 ins, unchanged; the q walks are plain p[i] index loops now (same code). headers sample:
-   insensitive. Read: the original has no frame: p in ebp (0 at entry), i in edx (0 at entry, shared by
-   both loops), k in bl (unsigned char: test bl,bl and the per-compare mov ecx,ebx / and ecx,0xff), the
-   ownName address in esi and the picture in edi (add edi,-0x639), the child path returns gm_BoyHead in eax
-   through the final epilogue. Ours spills p and k (frame 8) because the gm_TitleHeadsMale address, used
-   twice, takes ebx as a constant candidate (c2trace: k's two webs prio -2, refs 1, the compares go through
-   hoisted temps). Tried: k as int / unsigned / char / unsigned short (int: no frame, p in ebp, 103 ins,
-   but the original's byte loads and test bl,bl say unsigned char), p = 0 / i = 0 / k orders (one code),
-   the child arm returning both heads directly (108-135), the fallback returning the tables directly or
-   with its own return (129-135). Left: k must take ebx before the table constant does (a priority
-   question), then the layout and rotations that follow (tiebreak: insensitive) prior: Read whole against
-   the original: the child test (jobId 0, (float)w00a < f020) with boy/girl, the own-name ring copy (index
-   (n+1)%8, inline strcpy loop, picture-0x639 into the four heads), the spy pick util_RandomU(3), the job
-   loop (0x5f, key 0 ends, found -> gm_ResolveHeadIcons) and the title loop (0x23, i<0x23 after a key-0
-   end) and the sex fallback all have the original's statements, compares and constants; 199 vs 196
-   instructions. What remains is allocation and its block layout: ours spills p and k into an 8-byte frame
-   (sub esp,8; mov [esp+0x10],edx; mov [esp+0x1c],bl; reloads mov ecx,[esp+0x10] / mov esi,[esp+0x1c] in
-   both loops) and keeps gm_TitleHeadsMale in ebx, where the original holds p in ebp and k in bl with no
-   frame (the fild temp in the argument slot); with the different register set VC6 places the job loop's
-   found block after the title code (the branch-target pairs at +0x11... */
+   @deep size queue s18 (raw 576 vs 518; int k 481, ushort k 501: both too short for the padded 528).
+   c2trace corrects the earlier reading: p (prio -7, 15 refs, live over the whole body) loses ebp to v (the
+   picture, prio 14) and then esi to k; the TitleHeadsMale constant is no cause (probe: the fallback with
+   another table: same count). The original: v in edi, p in ebp, k in bl, the boy path returning gm_BoyHead
+   in eax through the final epilogue (je behind mov eax,ebp). No lever this round: child arm as two returns
+   (c1/c2/c3) x k uchar/int x p/i init order (12 variants: 103-135), v not a local (picture read in the
+   condition and again in the stores: = same count), climb --rounds 1 (best 125 via an
+   assignment-in-expression for gm_OwnNameHeadLast, not applied). Next: what gives p a priority above v
+   (fewer blocks where p lives unreferenced: p assigned only in the job / title / fallback paths, the
+   own-name and spy paths returning before p is set). prior: 129 ins, unchanged; the q walks are plain p[i]
+   index loops now (same code). headers sample: insensitive. Read: the original has no frame: p in ebp (0
+   at entry), i in edx (0 at entry, shared by both loops), k in bl (unsigned char: test bl,bl and the
+   per-compare mov ecx,ebx / and ecx,0xff), the ownName address in esi and the picture in edi (add
+   edi,-0x639), the child path returns gm_BoyHead in eax through the final epilogue. Ours spills p and k
+   (frame 8) because the gm_TitleHeadsMale address, used twice, takes ebx as a constant candidate (c2trace:
+   k's two webs prio -2, refs 1, the compares go through hoisted temps). Tried: k as int / unsigned / char
+   / unsigned short (int: no frame, p in ebp, 103 ins, but the original's byte loads and test bl,bl say
+   unsigned char), p = 0 / i = 0 / k orders (one code), the child arm returning both heads directly
+   (108-135), the fallback returning the tables d... */
 
 unsigned *gm_CharNameRecord(int id)
 {
