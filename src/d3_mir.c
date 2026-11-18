@@ -154,7 +154,7 @@ char d3_MirCreateOutline(D3PVERT **pts, unsigned int n, unsigned int *nout, D3PV
                 start = NULL;
                 for (i = 0; i < nedge; i += 2) {
                     if (!mark[i]) {
-                        D3M_ZERO_VAR(used, pts);
+                        D3M_ZERO_VAR(used, nedge);
                         tail = head = i;
                         mark[i] = 1;
                         used[i] = 1;
