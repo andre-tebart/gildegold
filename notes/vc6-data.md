@@ -417,3 +417,57 @@ original's order (reverse-engineering LINK's name order) is kept for the very en
 - **Common start reached by cancelling errors (s9 end)**: menu .. main start at the original's address with game
   .data -4 (ai_ShotDrag), LIBC .data +20, the mixed .bss block 0x6f1bf8..0x6f2f98 -68, LIBC .bss +52. Each part
   still needs its own fix.
+
+### s10 additions
+- **LINK's library order is the unresolved list's order** (checked member by member, `tools/exe/extorder.py`): the
+  list grows in link order, each object's undefined externals in its COFF symbol-table order, and cl writes those
+  per function in definition order, inside a function in REVERSE order of first use (`f1 { fprintf(stderr, ..);
+  return rand(); }` -> _rand, _fprintf, __iob). A pulled member's own externals go to the end of the list. LIBC's
+  .text, .data and .bss each follow that member order.
+- **Old CRT names (s10, done)**: a member the original links after every other one (strupr, stricmp, strnicmp,
+  mkdir, getcwd at 0x5ea986..) is reached only through OLDNAMES.LIB in LINK's later pass: no object referred to the
+  underscore name. The game called `strupr`, `stricmp` / `strcmpi`, `strnicmp`, `mkdir`, `getcwd`, `itoa`
+  (xtoa.obj then lands where a LIBC member pulls it, after crtmbox, as in the original). Respelled in 41 files:
+  .rdata -> exact (+16 -> 0), .data's end exact, no grade moved. In extorder's output an old name shows with one
+  underscore (_strupr), the CRT's own with two (__strupr).
+- **LIBC members pulled earlier than any surviving user (open, not reproducible)**: fpinit / ftol before udp's
+  fprintf, rand before ch's sprintf, atof and crt0dat right after chc's strncpy (before d3t's chkstk), fwrite
+  after sb's fread, fgets before strncmp, toupper before findfile. No surviving function of the objects before
+  those points calls them (dcp refs: the first ftol call is ch's 0x402360, the only exit call WinMain's, no early
+  code touches crt0dat's .bss): the externals of functions /OPT:REF removed (their symbols stay in the object).
+  Effect: LIBC .bss order (ours _file, fpinit, time, strtok, crt0dat ..; the original fpinit, _file, crt0dat,
+  time, strtok ..) and its size: ours ends +48 at __fmode, the commons start +64 (32-aligned) after s10's moves.
+- **A defined char keeps byte loads where it is only tested / stored**: sv_RunFrame (byte) reads sv_MenuOpen /
+  sv_InMissionComplete with `mov al, byte` also when sv.c defines them `= 0`; ai_OwnPlayer defined in f3gmt keeps
+  f3gmt's `mov dl / cl / al, byte` loads. Only the widening use loads the dword (sv_UpdateBook's `mov eax, dword
+  [sv_BookPhase]`). So a datum's dword load in a unit proves the unit defines it; a byte load proves nothing.
+- **The mixed .bss block 0x6f1bf8..0x6f2f98 (done)** is the units after f3gmt in link order, each contiguous:
+  f3gmt's tail (ai_PlayerChar), f3init 0x6f1bfc.., ls_SaveSlot, sv 0x6f1c40..0x6f23f8, main 0x6f23f8..0x6f2618
+  (he_* data after it: main's or he's), sv_t, svcannon, svgrave, lobby, lcmap (from ai_BauplatzCount 0x6f2688: its
+  block is 8-aligned by ai_NewsText), lcdom, lcamt, menu (ai_GfxResolution only). ~45 definitions moved
+  (tools/exe/movedef.py), unread holes declared, no grade moved; every game .bss datum below LIBC's sits at its
+  original address once .data's end is right.
+- **An 8-byte datum is 8-aligned by cl in .bss / .data** even as a union of two DWORDs; a DWORD[2] or a
+  pack(4) struct is not. msx_Last at 0x6325b4 (LARGE_INTEGER, used as one by msx_Thread, byte) is therefore not
+  an 8-byte LARGE_INTEGER in the original's declaration: open (4 bytes, absorbed by the pad before msx_Tracks).
+- **Literals of a removed function in an earlier unit's string run**: main's run holds "%ia[%s]",
+  "dummy_Kartentisch_RECHTS_UNTEN", "sonstiges\STADTPUNKT_ANM_K.baf", "sp_STADTPUNKT_K" (0x625150..0x6251d8)
+  right after main_ChooseCity's strings; their surviving users are lcamt / lc (ai_CityInfoWindow,
+  ai_CreateCityPoint). /GF puts a pooled literal into the first object that uses it, so a main.c function
+  /OPT:REF removed used them. The source keeps the literals at the true users: main's block is short by them and
+  .data's end is -32 (s10 end). Earlier sessions had filled such places with GAPDATA copies of other units'
+  literals (full_data_625150, full_data_62a9f8): those were deleted (the users write the literals).
+- **Named char arrays that are literals of the string run**: tools/exe/strdiff.py lists a unit's strings against
+  the original's; a string the original has inside the run that ours has as `char x[N] = ".."` in the plain block
+  is the literal at its users (s10: main_HomeSweetHome / BeamedHome / RoundTotalFmt / MasterExamLog, lcmap's four
+  news keys, lcamt's form names, lcdom's "panel\useobj"; push imm32 or the same inline copy, no grade moved).
+  Still named: lobby_ChooseProfessionForm (0x6250b8, main's run, used by lobby only: same removed-function case),
+  ai_CharNameFmt / ai_FmtLabel (0x62a564 / 0x62a56c, svgrave's run; svgrave keeps them as objects for its code).
+- **A readerless table between a unit's last literal and the next unit's first datum** is the next unit's first
+  datum: menu_UnreadData[240] 0x62d6c8 (after lcamt's "special\uni", before ai_ScreenModes); ai_DomizilCount
+  0x62cb58 directly after ai_DomizilTable is lcdom's, with 88 readerless bytes after it.
+- **Open for s11 (.data)**: svgrave's .data looks like two objects (ai_GraveChatterAt 0x62a538 + strings, then a
+  second plain block ai_DragWindow 0x62a8cc..): a unit boundary inside svgrave (the s4 question); menu's
+  ai_PokerUi 0x62dda0 sits after menu's strings (another object's plain block?), the menu option form strings and
+  "Gamedata/saves/GILDE_SAVEGAME_%i.SAV" stand earlier in the original's run; the .data steps before main
+  (evt -24, tr -16, d3_event -64 .. rd -72, the cm / f3gm / f3gmt / sv named arrays) are untouched.
