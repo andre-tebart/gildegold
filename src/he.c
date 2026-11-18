@@ -5352,10 +5352,13 @@ void he_AllocFight(int ev)
         }
         place = -1;
         home = a->bld2;
-        if (home == 0)
-            home = b->bld2;
         if (home != 0)
             place = home->id;
+        else {
+            home = b->bld2;
+            if (home != 0)
+                place = home->id;
+        }
         gv_Accuse(0x16, 1, a->netId, b->netId, place);
         cm_SendRelations(a->netId, b->netId, 0x34, 1);
         n = gv_HeldCrimeIdsOf(b->netId, crimes, a->id);
