@@ -5773,6 +5773,7 @@ int ai_CourtshipWindow(AICHARREC *ch, LCORDMSG *m)
     int price;
     int left;
     int picks[3];
+    int prices[3];
     int btns[9];               /* the gift buttons and the close button in [0 .. 3]; the original's frame holds nine */
     AIJOB *ev;
     AICHARREC *p;
@@ -5832,8 +5833,6 @@ int ai_CourtshipWindow(AICHARREC *ch, LCORDMSG *m)
         io_PrintText(0x1ce3);
         io_PrintText(0x1d31, p->id);
     } else if (state == 4) {
-        int prices[3];
-
         p = (AICHARREC *)gm_FindChar(partner);
         prices[0] = ev->pairPrice[0];
         prices[1] = ev->pairPrice[1];
@@ -5857,8 +5856,6 @@ int ai_CourtshipWindow(AICHARREC *ch, LCORDMSG *m)
                     break;
             }
             if (i < 3) {
-                int prices[3];
-
                 price = prices[i];
                 if (sv_CheckGoodAmountB((char *)&lc_CharRecs[ai_PlayerId], price, ai_OwnPlayer)) {
                     rounds = 0;
