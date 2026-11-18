@@ -2328,8 +2328,8 @@ void ai_CalcMeisterFernhaendler(AICHAR *ch)
                 return;
             ai_BuySlots(obj, ch, 0x14);
             ai_BuyCapacity(obj, ch, 0x32);
-            ok = 1;
             it = ai_Objects;
+            ok = 1;
             for (i = 0; ok && i < 0x5008; it++, i++) {
                 if (it->id && ai_GoodsT[it->id].type == 0x1d && it->bldId == ch->bld->id && it->id == 0x136)
                     ok = 0;
