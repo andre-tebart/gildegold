@@ -847,16 +847,7 @@ int ls_WriteSceneRecords(int f)
    +0x4c, +0x50, the currency +0x54 (2), +0x58 (8), +0x60, +0x61, the ten pairs +0x64 and the ten pairs +0xb4 (8
    bytes each), +0x104, +0x105, the four words +0x108 and +0x118, +0x128, the eleven privilege bytes +0x12c, +0x137,
    the seven bytes +0x138, +0x13f .. +0x142, the eight 0x12-byte entries +0x144, +0x1d4, +0x1d8, the 0xd0 bytes
-   +0x1dc and the map offset +0x2ec (8). Returns 1, 0 when a write fails.
-   @deep read whole against 0x51b340..0x51b882: the count 0x55, the five stock blocks (4 header words, 0x55
-   records of 0x80 with the 11 fields +0 (2) +4 +8 +0xc +0x20 +0x24 +0x30 +0x34 +0x38 +0x3c (2) +0x2c) and
-   the four player slots (every field, size and loop of 0x51b513..0x51b87c) match; instruction count equal
-   (479 vs 479), 32 bytes differ. Left: only the strength-reduced record pointer's bias in the record loop
-   0x51b3de..0x51b4f1 - ours add edi, 0x14 (fields at edi-4, edi, edi+4 .. edi+0x38), the original's add
-   edi, 0x18 (edi-8, edi-4, edi .. edi+0x34); every lea displacement in that loop shifts by 4, nothing else
-   differs. Tried: a char pointer walked by 0x80 (bias 0x10), char + j*0x80 index form and
-   GMBLOCK/GMSTOCK struct index (bias 0x14), a struct pointer incremented / indexed through the
-   global view (larger), the int fields as one array w[14] (no change): needs a generated variant round */
+   +0x1dc and the map offset +0x2ec (8). Returns 1, 0 when a write fails. */
 
 
 int ls_WritePlayerSlots(int f)
@@ -877,17 +868,19 @@ int ls_WritePlayerSlots(int f)
         LS_W(&b->indexB, 4)
         LS_W(&b->factorB, 4)
         for (j = 0; j < 0x55; j++) {
-            LS_W(&b->goods[j].item, 2)
-            LS_W(&b->goods[j].amount, 4)
-            LS_W(&b->goods[j].rate, 4)
-            LS_W(&b->goods[j].v00c, 4)
-            LS_W(&b->goods[j].demand, 4)
-            LS_W(&b->goods[j].mean, 4)
-            LS_W(&b->goods[j].baseStock, 4)
-            LS_W(&b->goods[j].stock, 4)
-            LS_W(&b->goods[j].price, 4)
-            LS_W(&b->goods[j].marketKind, 2)
-            LS_W(&b->goods[j].f2c, 4)
+            GMSTOCK *s = &b->goods[j];
+
+            LS_W(&s->item, 2)
+            LS_W(&s->amount, 4)
+            LS_W(&s->rate, 4)
+            LS_W(&s->v00c, 4)
+            LS_W(&s->demand, 4)
+            LS_W(&s->mean, 4)
+            LS_W(&s->baseStock, 4)
+            LS_W(&s->stock, 4)
+            LS_W(&s->price, 4)
+            LS_W(&s->marketKind, 2)
+            LS_W(&s->f2c, 4)
         }
     }
     for (n = 0; n < 4; n++) {
