@@ -3262,7 +3262,6 @@ int ai_DecideBeatUp(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
     AIDEC d;
     AIARG s1, s2;
     AIPER *c;
-    unsigned short cid;
     float g, t;
     int m, flags, v, r;
 
@@ -3309,35 +3308,41 @@ int ai_DecideBeatUp(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
             gv_GetTableRecord(0x15, &d);
             if (!d.cur || util_RandomU(3) || ai_Partner) {
                 if (o1->kind == 0) {
-                    flags = AI_CHAIN_BEATUP;
-                    t = util_RandomU(0x20) + 32.0f;
-                    if (ai_PickPartnerChain(p, 1, &flags, 0, t, &cid)) {
+                    /* @original cid is a local of this block: its slot is shared with g (the frame), so its
+                       scope ends before the gm_Mix call */
+                    {
+                        unsigned short cid;
+
+                        flags = AI_CHAIN_BEATUP;
+                        t = util_RandomU(0x20) + 32.0f;
+                        if (!ai_PickPartnerChain(p, 1, &flags, 0, t, &cid))
+                            return 0;
                         c = (AIPER *)&ai_CharsT[cid];
-                        if (c->money >= 2) {
-                            g = gm_Mix(p, c, 3);
-                            if (!(util_RandomF() + g >= 1.0f)) {
-                                s1.kind = 0xe;
-                                s1.ref = 3;
-                                s1.arg = 1;
-                                s1.fvalue = 0.0f;
-                                s2.kind = 0;
-                                s2.ref = 0;
-                                s2.arg = 0;
-                                r = ai_ChooseSubAction(0x18, p->id, 0, &s1, &s2);
-                                if (r) {
-                                    *o1 = s1;
-                                    *o2 = s2;
-                                }
-                                return r;
+                    }
+                    if (c->money >= 2) {
+                        g = gm_Mix(p, c, 3);
+                        if (!(util_RandomF() + g >= 1.0f)) {
+                            s1.kind = 0xe;
+                            s1.ref = 3;
+                            s1.arg = 1;
+                            s1.fvalue = 0.0f;
+                            s2.kind = 0;
+                            s2.ref = 0;
+                            s2.arg = 0;
+                            r = ai_ChooseSubAction(0x18, p->id, 0, &s1, &s2);
+                            if (r) {
+                                *o1 = s1;
+                                *o2 = s2;
                             }
-                            if (he_NoEvent4bPair(c, p) && he_NoEvent2ePair(c, p)) {
-                                o1->kind = 7;
-                                o1->ref = c->netId;
-                                o1->arg = 1;
-                                o1->fvalue = (float)(d.cur * 2 + 1);
-                                o1->arg2 = v;
-                                return 0x18;
-                            }
+                            return r;
+                        }
+                        if (he_NoEvent4bPair(c, p) && he_NoEvent2ePair(c, p)) {
+                            o1->kind = 7;
+                            o1->ref = c->netId;
+                            o1->arg = 1;
+                            o1->fvalue = (float)(d.cur * 2 + 1);
+                            o1->arg2 = v;
+                            return 0x18;
                         }
                     }
                 }
