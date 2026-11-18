@@ -1,6 +1,8 @@
 """initgen.py SRC FUNC OUT [BASEFILE]: one dcp try variant per local variable, declared with `= 0`.
-Locals are read from the declaration lines at the top of the function body (before the first blank line
-or statement). BASEFILE: an optional variants-file body (blocks) prepended to each variant."""
+Locals are read from every declaration run of the body: the run at the top of the function (blank lines and
+comments inside it included), a later run at function scope, and the declarations that open each inner block
+(C89: a block starts with its declarations). A declaration line the function has more than once is picked with
+`<<<N`. BASEFILE: an optional variants-file body (blocks) prepended to each variant."""
 import re, sys
 
 src, func, out = sys.argv[1], sys.argv[2], sys.argv[3]
@@ -11,25 +13,54 @@ m = re.search(r"(?m)^(?![ \t])[^\n;{}=]*\b" + re.escape(func) + r"\([^;{]*\)\s*\
 if not m:
     sys.exit("initgen: no definition of %s in %s" % (func, src))
 body = t[m.end():]
-lines = []
-depth = 0       # inside a local struct / union type's member list (`union { .. } p;`): skipped
-for ln in body.split("\n"):
+KEYWORDS = {"return", "if", "else", "for", "while", "do", "switch", "case", "default", "goto", "break", "continue",
+            "sizeof"}
+
+
+def is_decl(s):
+    """a declaration statement: `TYPE name[, *name ..];` (an assignment `x = 1;`, `i += 2;` or a call is none)"""
+    if not s.endswith(";"):
+        return False
+    if "(" in s.split("=")[0] and not re.match(r"^[A-Za-z_][\w\s\*]*\(\*", s):
+        return False
+    m3 = re.match(r"^(?:(?:const|volatile|unsigned|signed|struct|union|enum|static|register)\s+)*"
+                  r"([A-Za-z_]\w*)\s+([*A-Za-z_(])", s)
+    return bool(m3) and m3.group(1) not in KEYWORDS
+
+
+lines = []      # (line, its index among the body's lines)
+blines = body.split("\n")
+depth = 0       # brace depth inside the body (0 = function scope)
+skip = 0        # inside a local struct / union type's member list (`union { .. } p;`): skipped
+opened = True   # at the start of a block: declarations may follow
+nbody = len(blines)
+for k, ln in enumerate(blines):
     s = ln.strip()
-    if depth:
-        depth += s.count("{") - s.count("}")
+    if skip:
+        skip += s.count("{") - s.count("}")
         continue
     if re.match(r"^(?:struct|union)\b[^;]*\{\s*$", s):
-        depth = 1
+        skip = 1
         continue
     if not s or s.startswith("/*") or s.startswith("*") or s.startswith("//"):
-        if lines and not s:
-            break
         continue
-    if not s.endswith(";") or "(" in s.split("=")[0] and not re.match(r"^[A-Za-z_][\w\s\*]*\(\*", s):
+    if is_decl(s):
+        if opened or depth == 0:
+            lines.append((ln, k))
+        continue
+    opened = False
+    code = re.sub(r'"(?:\\.|[^"\\])*"' + r"|'(?:\\.|[^'\\])*'|/\*.*?\*/", "", s)
+    for ch in code:
+        if ch == "{":
+            depth += 1
+            opened = True
+        elif ch == "}":
+            depth -= 1
+            opened = False
+    if depth < 0:
+        nbody = k + 1   # the function's closing brace
         break
-    if re.match(r"^(return|if|for|while|do|switch)\b", s):
-        break
-    lines.append(ln)
+fn = "\n".join(blines[:nbody])
 INT_WORDS = {"int", "char", "short", "long", "unsigned", "signed", "BOOL", "BYTE", "WORD", "DWORD", "UINT",
              "ULONG", "LONG", "HANDLE", "HWND", "size_t", "uint8_t", "uint16_t", "uint32_t", "int8_t", "int16_t",
              "int32_t", "u8", "u16", "u32", "s8", "s16", "s32"}
@@ -47,8 +78,17 @@ def scalar_type(typ):
     return not re.match(r"^[A-Z0-9_]+$", last)
 
 
+def marker(ln, k):
+    """`<<<` for a line the function has once, else `<<<N` (N: its occurrence, as dcp try counts them)"""
+    if fn.count(ln) == 1:
+        return "<<<"
+    before = "\n".join(blines[:k])
+    return "<<<%d" % (before.count(ln) + 1)
+
+
 res = []
-for ln in lines:
+names = {}
+for ln, k in lines:
     m2 = re.match(r"^(\s*)((?:const\s+|volatile\s+|unsigned\s+|signed\s+|struct\s+)*[A-Za-z_]\w*)\s+(.*);\s*(/\*.*\*/)?\s*$", ln)
     if not m2:
         continue
@@ -67,8 +107,10 @@ for ln in lines:
         newln = ind + typ + " " + ", ".join(np) + ";"
         if m2.group(4):
             newln += " " + m2.group(4)
-        res.append((name, ln, newln))
+        names[name] = names.get(name, 0) + 1
+        label = name if names[name] == 1 else "%s-%d" % (name, names[name])   # one name in two blocks
+        res.append((label, marker(ln, k), ln, newln))
 with open(out, "w", newline="\n") as f:
-    for name, old, new in res:
-        f.write("### init-%s\n%s<<<\n%s\n===\n%s\n>>>\n\n" % (name, base, old, new))
+    for name, mk, old, new in res:
+        f.write("### init-%s\n%s%s\n%s\n===\n%s\n>>>\n\n" % (name, base, mk, old, new))
 print(len(res), "variants:", " ".join(r[0] for r in res))
