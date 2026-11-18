@@ -5061,8 +5061,11 @@ int gm_CharLevel(unsigned short id, int again)
     if (again != 0)
         return level;
     parent = gm_FindChar(ORD_CHARS[id].relatives[1]);
-    if (parent != 0 && level <= gm_CharLevel(*parent, 1))
+    if (parent != 0) {
+        if (level > gm_CharLevel(*parent, 1))
+            return level;
         return gm_CharLevel(*parent, 1);
+    }
     return level;
 }
 /* 0x505f30, gm_CharLevel for the character's previous office (prevOffice +0x167): 0 for a free slot or a dead one,
@@ -5085,8 +5088,11 @@ int gm_CharPrevLevel(unsigned short id, int again)
     if (again != 0)
         return level;
     parent = gm_FindChar(ORD_CHARS[id].relatives[1]);
-    if (parent != 0 && level <= gm_CharPrevLevel(*parent, 1))
+    if (parent != 0) {
+        if (level > gm_CharPrevLevel(*parent, 1))
+            return level;
         return gm_CharPrevLevel(*parent, 1);
+    }
     return level;
 }
 /* 0x506000, the birthday of the character c as a calendar record in out: the birth year is the clock's year (a dead
