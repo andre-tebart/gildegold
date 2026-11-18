@@ -2590,12 +2590,12 @@ int cm_CheckSetField(G17MSG *m)
     m->setField.objId = cm_ResolveId((int)m, m->setField.objId);
     if (gm_FindById((int *)&b, (int *)&o, (int *)&c, m->setField.objId) == 0)
         return 1;
-    base = (char *)b;
-    if (base == 0) {
+    if (b != 0)
+        base = (char *)b;
+    else if (o != 0)
         base = (char *)o;
-        if (base == 0)
-            base = (char *)c;
-    }
+    else
+        base = (char *)c;
     if (c != 0 && base + m->setField.offset == (char *)&c->flags1c8
         && (m->setField.set & CM_KEEPER_FLAG) && (c->flags1c8 & CM_KEEPER_FLAG))
         return 1;
