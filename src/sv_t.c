@@ -4030,11 +4030,17 @@ int sv_RunFrame(int cb, unsigned mask);
    it (mask 0x86): start is enabled only while a chapter is checked; the right mouse button, the escape key or
    the control 1 close the window; back closes it, start closes it and stores the checkboxes into
    ai_TutorialChapterOn. 1 when start was clicked with a chapter checked (the tutorial starts), else 0
-   @deep read whole against the original (167 instructions, ours 165, every call, field and constant
-   equal). Left: the scan loop of the frame pump keeps two counters in the original (edx the index i, esi
-   the count n: xor edx,edx / inc esi / inc edx / cmp edx,5, then cmp esi,5), ours merges them into esi
-   (cmp esi,5 as the loop test). Tried: for (i = 0, n = 0; ...; i++, n++), n unsigned, else { n++; }, n
-   declared before i: all merge the same; a VC6 induction-variable decision, not a statement difference */
+   @deep s25: what keeps the two counters apart in VC6: a narrower n. short n gives the original's two
+   induction variables (xor / inc edx for i, inc esi for n, cmp edx,5 as the loop test: 6 ins / 150 bytes)
+   but compares n as a word (cmp si,5 / test si,si) and zeroes esi before edx; char n (40), unsigned i (12,
+   jb), short i (105, frame). = control: long n, n = n + 1, continue / while / for-comma forms, n before i,
+   i == 5 after the loop. n = i + 1 in the loop: 6 ins / 174. climb.py 2 rounds (288 mutants): nothing.
+   Left: the IV merge (code 4, regs 2). prior: read whole against the original (167 instructions, ours 165,
+   every call, field and constant equal). Left: the scan loop of the frame pump keeps two counters in the
+   original (edx the index i, esi the count n: xor edx,edx / inc esi / inc edx / cmp edx,5, then cmp
+   esi,5), ours merges them into esi (cmp esi,5 as the loop test). Tried: for (i = 0, n = 0; ...; i++,
+   n++), n unsigned, else { n++; }, n declared before i: all merge the same; a VC6 induction-variable
+   decision, not a statement difference */
 int ai_TutorialWindow(void)
 {
     int start;
