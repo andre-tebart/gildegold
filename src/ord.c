@@ -2140,21 +2140,21 @@ void ord_UpdateStatistics(void)
    columns, ai_Rating / ai_RatingBase, the three values, the rate and the clock stamp; then rebuilds the rating
    bytes 0x91b460[0..4] from the characters' skill bytes +0x80..+0x84 (kind below 10, health above 0) and [5] from
    the weighted level +0xd, and runs ord_ReportStatistics. The inverse of ord_UpdateStatistics (0x4f8ed0).
-   @deep headers sample: insensitive (32, one codegen). Kept (47 ins/160 B -> 8 ins): the character walk
-   as an index loop over ORD_CHARS[j] / ORD_CHARKINDS[j] (the original's jl pointer compare and the kind+2
-   base), and n = 0; w = 0 at the top of the function (the original zeroes n's own slot first: frame 0x18
-   -> 0x1c, n no longer packed into the dead parameter slot). Left: one hunk in the counted body, ours 'xor
-   eax,eax; inc edi; mov al,[ecx+0xb]; lea edx,[eax+esi]; lea esi,[edx+eax*4]', the original 'xor edx,edx;
-   inc edi; mov dl,[ecx+0xb]; xor eax,eax; add esi,edx; lea esi,[esi+edx*4]' (the level temp in edx, w
-   updated in place). Tried: w = w + l*5 / l*5 + w / (int) / 5u / (unsigned) / two += / l + l*4 / l*4 + l /
-   << 2 forms / an int or byte level local / a separate inner counter / sum[i] = sum[i] + .. / a k pointer
-   local (worse) / a stats pointer: = control; (char) level 7 ins but movsx (meaning); all six orders of
-   n++, w +=, the sum loop: = control or worse; health != 0 / >= 1, kind <= 9, nested if: = control or
-   worse; ai_Rating stored before ai_RatingBase: worse. (tiebreak: insensitive) prior: readable, 69 asm /
-   160 B left; allocation only: frame 0x18 vs 0x1c (7 vs 8 slots, the original zeroes a slot at 0x8), push
-   ebx at entry vs after fld p[6], the walk base is health +8 vs kind +2, epilogue order; tried and kept
-   the clock struct copy, a packed 3-int clock view, q = p + 11 base, ORDCHARKIND walk, declaration order;
-   reverted the health pointer; next slotmap / vargen */
+   @deep deep s26: climb round 1 (148 mutants, 100 codes): nothing below 8 ins / 91 bytes. Left: the same
+   level / w hunk (the level byte in eax and w + l + 4l through edx in ours, the original level in edx and
+   w updated in place: add esi,edx; lea esi,[esi+edx*4]). prior: headers sample: insensitive (32, one
+   codegen). Kept (47 ins/160 B -> 8 ins): the character walk as an index loop over ORD_CHARS[j] /
+   ORD_CHARKINDS[j] (the original's jl pointer compare and the kind+2 base), and n = 0; w = 0 at the top of
+   the function (the original zeroes n's own slot first: frame 0x18 -> 0x1c, n no longer packed into the
+   dead parameter slot). Left: one hunk in the counted body, ours 'xor eax,eax; inc edi; mov al,[ecx+0xb];
+   lea edx,[eax+esi]; lea esi,[edx+eax*4]', the original 'xor edx,edx; inc edi; mov dl,[ecx+0xb]; xor
+   eax,eax; add esi,edx; lea esi,[esi+edx*4]' (the level temp in edx, w updated in place). Tried: w = w +
+   l*5 / l*5 + w / (int) / 5u / (unsigned) / two += / l + l*4 / l*4 + l / << 2 forms / an int or byte level
+   local / a separate inner counter / sum[i] = sum[i] + .. / a k pointer local (worse) / a stats pointer: =
+   control; (char) level 7 ins but movsx (meaning); all six orders of n++, w +=, the sum loop: = control or
+   worse; health != 0 / >= 1, kind <= 9, nested if: = control or worse; ai_Rating stored before
+   ai_RatingBase: worse. (tiebreak: insensitive)
+   */
 
 void ord_LoadStatistics(void *p)
 {
