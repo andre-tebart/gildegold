@@ -1187,9 +1187,9 @@ int ai_CommandCityTreasury(int a, int b, char *fmt)
             v = g->count;
             if (v > 0) {
                 if (s == -1)
-                    cm_SendMoveGoodsUnchecked(s, o->objId, 0, (int)(n * 0.01f * v));
+                    cm_SendMoveGoodsUnchecked(s, o->objId, 0, (int)(v * (n * 0.01f)));
                 else if (s == 1)
-                    cm_SendMoveGoodsUnchecked(o->objId, -1, 0, (int)(n * 0.01f * v));
+                    cm_SendMoveGoodsUnchecked(o->objId, -1, 0, (int)(v * (n * 0.01f)));
             }
         }
         return 1;
