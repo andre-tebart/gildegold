@@ -685,7 +685,7 @@ int gv_BuryCharacter(int *p)
     GVYARD *g;
     AICHAR *c;
     GVENTRY *e;
-    GVGRAVE *lst, *best, *q;
+    GVGRAVE *lst, *best;
     int i, list;
     char *s, *d;
     char ch;
@@ -709,16 +709,15 @@ int gv_BuryCharacter(int *p)
         return -7;
     lst = e->grave;
     best = lst;
-    q = lst;
-    for (i = 0; i < gv_EntryCounts[list]; i++, q++) {
+    for (i = 0; i < gv_EntryCounts[list]; i++) {
         if (best->id == -1)
             break;
-        if (q->id == -1) {
+        if (lst[i].id == -1) {
             best = &lst[i];
             break;
         }
-        if (best->year > q->year)
-            best = q;
+        if (best->year > lst[i].year)
+            best = &lst[i];
     }
     best->id = c->netId;
     s = c->first;
