@@ -1261,9 +1261,9 @@ int ai_AskBonusAmount(void)
     int ctrl;
     int v;
 
-    mask = sv_FrameMask;
     ret = 0;
-    if (sv_CheckGoodAmount((char *)&ai_Chars[ai_PlayerId], 0x140, ai_OwnPlayer) == 0)
+    mask = sv_FrameMask;
+    if (sv_CheckGoodAmountB((char *)&ai_Chars[ai_PlayerId], 0x140, ai_OwnPlayer) == 0)
         return 0;
     win = d2_OpenForm(0, 0, "misc\\Messagebox");
     ctrl = d2_GetWinObj(win, 0, io_PrintText(0x1a34, ai_OwnPlayer));
@@ -2447,9 +2447,9 @@ int ai_AskHelperBonus(void)
     int ctrl;
     int v;
 
-    mask = sv_FrameMask;
     ret = 0;
-    if (sv_CheckGoodAmount((char *)&ai_Chars[ai_PlayerId], 0x140, ai_OwnPlayer) == 0)
+    mask = sv_FrameMask;
+    if (sv_CheckGoodAmountB((char *)&ai_Chars[ai_PlayerId], 0x140, ai_OwnPlayer) == 0)
         return 0;
     win = d2_OpenForm(0, 0, "misc\\Messagebox");
     ctrl = d2_GetWinObj(win, 0, io_PrintText(0x4141, ai_OwnPlayer));
