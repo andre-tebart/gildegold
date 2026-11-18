@@ -4437,18 +4437,14 @@ int cm_ExChrWalkToDummy(G17MSG *m, G17STAT *s)
     else
         b = gm_FindBuildingById(m->place.bldId);
     save = d3_CurrentScene;
-    if (m->place.objId != -1) {
+    if (m->place.objId != -1)
         i = init_ObjectSceneUniverse(i);
-        if (i == -1)
-            return 2;
-    } else {
-        if (m->place.bldId != -1) {
-            i = init_BuildingSceneUniverse(b);
-            if (i == -1)
-                return 2;
-        } else
-            i = 0;
-    }
+    else if (m->place.bldId != -1)
+        i = init_BuildingSceneUniverse(b);
+    else
+        i = 0;
+    if (i == -1)
+        return 2;
     if (init_SceneDirty[i * 0x3e0] != 0)
         return 3;
     if (m->place.name[0] != 0) {
