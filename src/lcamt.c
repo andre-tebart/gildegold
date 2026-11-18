@@ -2116,15 +2116,7 @@ int ai_SpecialAmountListWindow(int kind, unsigned int *filter, char *caption, ch
    then the partner of my running pair event 0x41 (8 / 9, unless it is relatives[0]). With max 0 it only counts
    them; else it clears max rows of rows and fills up to max of them (LCAMOUNTROW.rec, x2c the class), gives each
    its corner icons (ai_AmountRowStatus) and makes it pickable when it passes the partner filter filter
-   (ai_PassesPartnerFilter); returns the count
-   @deep Read the whole function against the original and rewrote it: the count path (max 0) and the fill
-   path, the relative search as a found flag (the original jumps from the match straight to the count / the
-   class switch), the character walk as an index loop (the signed jl end compare, the record base as the
-   induction pointer), the pair event 0x41 tail, the corner icons and ai_PassesPartnerFilter per row;
-   AICHARREC got w050 / b058. 208 vs 201 instructions; what is left is allocation: the original keeps n in
-   ebx and reloads me ([esp+0x14]) and max ([esp+0x18]) from their argument slots, ours keeps me in ebx and
-   spills n to a pushed slot (push ecx; mov [esp+0x10], ebp / mov edi, [esp+0x10]; inc edi at +0x1f5,
-   +0x2cb), which moves every later register. Tried: local declaration order (no change). */
+   (ai_PassesPartnerFilter); returns the count */
 
 unsigned int ai_FillFamilyTab(AICHARREC *me, unsigned int max, LCAMOUNTROW *rows, unsigned int *filter)
 {
@@ -2134,8 +2126,9 @@ unsigned int ai_FillFamilyTab(AICHARREC *me, unsigned int max, LCAMOUNTROW *rows
     int j;
     int i;
     unsigned int n;
+    unsigned int cnt;
 
-    n = 0;
+    cnt = 0;
     if (max == 0) {
         for (i = 0; i < 0x300; i++) {
             c = &lc_CharRecs[i];
@@ -2149,17 +2142,18 @@ unsigned int ai_FillFamilyTab(AICHARREC *me, unsigned int max, LCAMOUNTROW *rows
                 }
             }
             if (found || (c->w050 == me->w050 && c->b058 == me->b058))
-                n++;
+                cnt++;
         }
         for (ev = (AIJOB *)he_FindEvent(1, 0, 0x41); ev != 0; ev = (AIJOB *)he_NextEvent()) {
             if (ev->partner1 == me->netId) {
-                n++;
+                cnt++;
                 break;
             }
         }
-        return n;
+        return cnt;
     }
     memset(rows, 0, max * sizeof(LCAMOUNTROW));
+    n = 0;
     for (i = 0; i < 0x300; i++) {
         c = &lc_CharRecs[i];
         if (n >= max)
