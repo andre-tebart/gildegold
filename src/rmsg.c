@@ -1524,7 +1524,8 @@ int ai_MsgWorkerLoseSkillType30(G14MSG *m)
 }
 /* 0x4ba630, message 0x31: one of c's buildings of kind 1 / 2 gets item 0x134 / 0x135 (cm_SendExSellObject); the text
    names one of up to 16 characters (not kind 6 / 7, below 10) of one half of ai_Chars, none found: nothing happens
-   (the reverse direction finds nobody); sent with he_MessageBoxQuickjump */
+   (the reverse direction finds nobody); sent with he_MessageBoxQuickjump. @original the reverse-direction test
+   stands in each half's arm (both arms start `mov edi,1; push 2`, hoisted before the half test) */
 
 int ai_MsgBuildingGetsItemType31(G14MSG *m)
 {
@@ -1548,18 +1549,24 @@ int ai_MsgBuildingGetsItemType31(G14MSG *m)
     if (n == 0)
         return 0x400;
     b = a[util_RandomU(n)];
-    d = 1;
     if (util_RandomU(2)) {
+        d = 1;
         lo = 0;
         hi = 0x180;
+        if (util_RandomU(2)) {
+            hi = 0;
+            lo = 0x180;
+            d = -1;
+        }
     } else {
+        d = 1;
         lo = 0x180;
         hi = 0x300;
-    }
-    if (util_RandomU(2)) {
-        hi = 0;
-        lo = 0x180;
-        d = -1;
+        if (util_RandomU(2)) {
+            hi = 0;
+            lo = 0x180;
+            d = -1;
+        }
     }
     for (i = lo; i < hi; i += d) {
         if (ai_CharsT[i].kind != 6 && ai_CharsT[i].kind != 7 && ai_CharsT[i].kind < 10 && ai_CharsT[i].id != 0xffff) {
