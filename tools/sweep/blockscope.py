@@ -73,10 +73,30 @@ def blocks(lines, body):
     return out
 
 
-def variants(lines, scalars, only=None):
+def split_lists(lines, body):
+    """the function-top declarations `T a, b[4], *c;` as one line per name (frame sweep s21: most escaped locals sit in
+    such lists); initializers and function pointers are left alone"""
+    out = lines[:body + 1]
+    i = body + 1
+    while i < len(lines) and (not lines[i].strip() or re.match(r"^    [\w \*]+[\w\[\], \*]*;", lines[i])):
+        m = re.match(r"^    ((?:struct |union |unsigned |signed |const )*[A-Za-z_]\w*)\s+([^;=(]+);\s*$", lines[i])
+        if m and "," in m.group(2):
+            for v in m.group(2).split(","):
+                v = v.strip()
+                stars = len(v) - len(v.lstrip("*"))
+                out.append("    %s %s%s;" % (m.group(1), "*" * stars, v.lstrip("*")))
+        else:
+            out.append(lines[i])
+        i += 1
+    return out + lines[i:]
+
+
+def variants(lines, scalars, only=None, lists=False):
     body = next((i for i, l in enumerate(lines) if l == "{"), None)
     if body is None:
         return {}
+    if lists:
+        lines = split_lists(lines, body)
     chain = blocks(lines, body)
     cands = []
     i = body + 1
@@ -91,6 +111,8 @@ def variants(lines, scalars, only=None):
         i += 1
     first_stmt = i
     out, all_plan = {}, []
+    if lists and cands:
+        out["control-split"] = "\n".join(lines)
     for di, name, decl in cands:
         uses = [k for k in range(first_stmt, len(lines)) if re.search(r"\b%s\b" % re.escape(name), strip(lines[k]))]
         if not uses:
@@ -169,6 +191,7 @@ def main():
     ap.add_argument("names", nargs="*")
     ap.add_argument("--unit")
     ap.add_argument("--scalars", action="store_true")
+    ap.add_argument("--lists", action="store_true", help="split `T a, b;` declaration lists first (one line per name in the variants)")
     ap.add_argument("--locals", help="comma list: only these locals (frame sweep s21: the escaped ones framescan.py names)")
     a = ap.parse_args()
     todo = a.names or queue(a.unit)
@@ -178,7 +201,7 @@ def main():
         if not lines:
             continue
         try:
-            vs = variants(lines, a.scalars, set(a.locals.split(",")) if a.locals else None)
+            vs = variants(lines, a.scalars, set(a.locals.split(",")) if a.locals else None, a.lists)
         except Exception as e:  # a shape of code the brace reader does not handle
             print("%-34s skipped (%s)" % (name, e))
             continue
