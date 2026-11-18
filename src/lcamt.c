@@ -4205,13 +4205,7 @@ void ai_MasterLetterSettings(AIBLD *bld, AICHARREC *ch)
    0x30 when the building has a master (gm_FindCharacterByMaster: ai_MasterLetterSettings), else 0x20, or 0x10 when
    the player's own job in the title group of the type's first job is one of the type's six jobs (the player is
    the master: ai_MasterHireWindow with that mode); a running master hire event (he_FindEvent 2, 0, 7, 3, its
-   hireTitle 0) makes it 0x50 (ai_MasterLetterNoticeWindow). sv_CameraFollow after the window
-   @deep read whole against the original: same statements, the same switch tables (equal), the same calls
-   and slots (master in the bld arg slot); left is VC6's callee-save placement: ours pushes ebx at entry
-   and pops esi/ebp right after he_FindEvent (+0xda: pop esi; pop ebp), the original pushes ebx after the
-   owner check (+0x20) and keeps esi/ebp saved to every switch exit (+0x117 pop esi; pop ebp; pop ebx; pop
-   edi; jmp sv_CameraFollow, per case). Tried: the body as one if block, the locals declared in that block
-   (no change). Allocation / save-region work. */
+   hireTitle 0) makes it 0x50 (ai_MasterLetterNoticeWindow). sv_CameraFollow after the window */
 
 void ai_MasterLetterWindow(AIBLD *bld)
 {
@@ -4255,16 +4249,13 @@ void ai_MasterLetterWindow(AIBLD *bld)
     case 0x10:
     case 0x20:
         ai_MasterHireWindow(bld, mode);
-        sv_CameraFollow();
-        return;
+        break;
     case 0x30:
         ai_MasterLetterSettings(bld, master);
-        sv_CameraFollow();
-        return;
+        break;
     case 0x40:
         ai_MasterLetterKindWindow(bld);
-        sv_CameraFollow();
-        return;
+        break;
     case 0x50:
         ai_MasterLetterNoticeWindow(bld);
         break;
