@@ -694,7 +694,7 @@ CMGRENADE *cm_ThrowGrenade(D3VECTOR *p, int x, int y)
         if (cm_GrenadesT[i].obj != 0)
             continue;
         pos.x = p->x;
-        pos.y = (float)(p->y + 60.0);
+        pos.y = p->y + 60.0;
         pos.z = p->z;
         cm_GrenadesT[i].obj = d3_CreateObject(0, (D3VECTOR *)&pos, &rot, "ob_BOMBE");
         cm_GrenadesT[i].obj->objectFlags |= 4;
@@ -703,23 +703,21 @@ CMGRENADE *cm_ThrowGrenade(D3VECTOR *p, int x, int y)
         d.y -= p->y;
         d.z -= p->z;
         memset(keys, 0, sizeof(keys));
-        mid.x = (float)(d.x * 0.5);
-        mid.y = (float)(d.y * 0.5 + 50.0);
-        mid.z = (float)(d.z * 0.5);
+        mid.x = d.x * 0.5;
+        mid.y = d.y * 0.5;
+        mid.z = d.z * 0.5;
+        mid.y += 50.0;
         D3_ZERO(&af, sizeof(af));
         af.b[1] |= 0x14;
         af.b[8] |= 2;
         af.b[1] |= 8;
-        keys[0].time = 0x12;
-        keys[1].time = 0x12;
         keys[1].pos.x = mid.x;
         keys[1].pos.y = mid.y;
         keys[1].pos.z = mid.z;
         keys[1].rot.x = 3.1415927f;
         keys[1].rot.y = 3.1415927f;
         keys[1].rot.z = 3.1415927f;
-        keys[2].time = 1;
-        d.y = (float)(d.y - 60.0);
+        d.y -= 60.0;
         keys[2].pos.x = d.x;
         keys[2].pos.y = d.y;
         keys[2].pos.z = d.z;
@@ -732,6 +730,9 @@ CMGRENADE *cm_ThrowGrenade(D3VECTOR *p, int x, int y)
         keys[3].rot.x = 3.1415927f;
         keys[3].rot.y = 3.1415927f;
         keys[3].rot.z = 3.1415927f;
+        keys[0].time = 0x12;
+        keys[1].time = 0x12;
+        keys[2].time = 1;
         cm_GrenadesT[i].anim = d3anim_CreatePath(cm_GrenadesT[i].obj, af, 4, keys);
         cm_GrenadesT[i].x = x;
         cm_GrenadesT[i].y = y;
