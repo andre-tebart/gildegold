@@ -5380,7 +5380,7 @@ void gm_InheritEstate(ORDCHAR *dead, ORDCHAR *heir)
     GVENTRY *e;
     ORDBLD *s;                  /* the graves building, then the buildings of dead */
     ORDCHAR *c;
-    int n, taken, k, i, j, kind;      /* k: the building's class, then the money and the worth handed on */
+    int n, taken, k, i, j;      /* k: the building's class, then the money and the worth handed on */
 
     n = 0;
     taken = 0;
@@ -5413,8 +5413,8 @@ void gm_InheritEstate(ORDCHAR *dead, ORDCHAR *heir)
                     m.type = 0x31;
                     m.to = GM_PLAYERCH->netId;
                     m.fromId = s->id;
-                    m.time = ai_Time;
                     m.flags = 1;
+                    m.time = ai_Time;
                     m.arg0 = c->netId;
                     cm_SendLongMessage((char *)&m);
                 }
@@ -5424,6 +5424,8 @@ void gm_InheritEstate(ORDCHAR *dead, ORDCHAR *heir)
         s = (ORDBLD *)gm_BuildNext();
     }
     if (heir != GM_PLAYERCH) {
+        int kind;               /* the kind a heir with a building gets */
+
         k = gm_CharSumAmounts((char *)dead);
         kind = dead->kind == 5 ? 5 : 4;
         cm_SendMoveGoods(heir->netId, -1, ai_OwnPlayer, k);
