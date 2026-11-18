@@ -17069,22 +17069,26 @@ void he_AllocBurglary(AIJOB *ev)
    counted at its price; the loot list goes to the master (0x19e6, "_NACHRICHTEN_HS_74") and the owner is told 0x19e8
    ("_NACHRICHTEN_HS_27"); a failed one tells the master 0x19e7 ("_NACHRICHTEN_HS_75") and the owner 0x19e9. The spy
    report moves out of the guild and the record is freed. Stages -2 / -1 send the gang back to the guild and free it
-   @deep Reconstructed whole against 0x561a20..0x5628dc (the false start 0x561c20 taken in): every stage of
-   the switch (0 send the gang 'Einbruch', 1 wait at the door, 2 he_DetectAttack range 5000 / gv_Accuse
-   0x17, 3 cm_GetSlotState / cm_SendProofExecuted, 4 reward gm_PlayerFactor(550 + rand 200) news 0x19ea /
-   0x19eb, field 0x65, health -100 - rand 100, back 'Entdeckt', 5 the theft roll from the 0xca spy report
-   and skill 7, gm_BuildingValues money with the skill 1 bonus, the stall goods sold into the 0x116 store,
-   the news 0x19e6 .. 0x19e9, cm_SendMoveObject; -2 / -1 back to the guild), every call with its arguments,
-   every constant and string; 1214 vs 1214 instructions, switch tables equal, no ref / literal difference.
-   Tried: the know clamp as two statements with 0.001f > know (matched), money = money < 0 ? 0 : money (the
-   setl form, matched), the reward / spy report word as one union (the original's single [esp+0x1c] slot
-   with one zero init), a patrol local for d.found. Left: allocation: the original keeps 0 in ebx, room in
-   edi and master in ebp (and [esp+0x2c]) from the prologue, ours keeps 0 in ebx/edi with room in a slot
-   (code hunk at +0x1b: the zero-init stores [esp+0x34]/[0x2c]/[0x30]/[0x1c] vs ours
-   [0x28]/[0x10]/[0x2c]/[0x20]/[0x30]); the original holds d.found in edi across gv_Accuse (+0x26b, ours
-   reloads it from d after the call); test reg,reg vs cmp reg,ebx(0) in stage 3 (+0x364, +0x3b3); frame
-   0x740 vs 0x738 (two more slots of ours); 5 branch targets: stage 3's 'stage = -1; return' tail merged
-   with stage 0's copy in ours, with stage 4's in the original */
+   @deep size queue s20 (twin of he_RunRobbery): 348 -> 108 ins, frame 0x740 -> 0x738 (the original's): the
+   reward / spy report union (one word for both) was the stand-in for VC6's slot packing; plain locals do
+   it: reward a local of case 4's if (b != 0) block (escaped by &reward, so only a block local shares a
+   slot), report = 0 at function scope, vals a local of the loot block (R alone: 106 ins, frame 0x740).
+   Left: slots 134, code 22, order 10. prior: Reconstructed whole against 0x561a20..0x5628dc (the false
+   start 0x561c20 taken in): every stage of the switch (0 send the gang 'Einbruch', 1 wait at the door, 2
+   he_DetectAttack range 5000 / gv_Accuse 0x17, 3 cm_GetSlotState / cm_SendProofExecuted, 4 reward
+   gm_PlayerFactor(550 + rand 200) news 0x19ea / 0x19eb, field 0x65, health -100 - rand 100, back
+   'Entdeckt', 5 the theft roll from the 0xca spy report and skill 7, gm_BuildingValues money with the
+   skill 1 bonus, the stall goods sold into the 0x116 store, the news 0x19e6 .. 0x19e9, cm_SendMoveObject;
+   -2 / -1 back to the guild), every call with its arguments, every constant and string; 1214 vs 1214
+   instructions, switch tables equal, no ref / literal difference. Tried: the know clamp as two statements
+   with 0.001f > know (matched), money = money < 0 ? 0 : money (the setl form, matched), the reward / spy
+   report word as one union (the original's single [esp+0x1c] slot with one zero init), a patrol local for
+   d.found. Left: allocation: the original keeps 0 in ebx, room in edi and master in ebp (and [esp+0x2c])
+   from the prologue, ours keeps 0 in ebx/edi with room in a slot (code hunk at +0x1b: the zero-init stores
+   [esp+0x34]/[0x2c]/[0x30]/[0x1c] vs ours [0x28]/[0x10]/[0x2c]/[0x20]/[0x30]); the original holds d.found
+   in edi across gv_Accuse (+0x26b, ours reloads it from d after the call); test reg,reg vs cmp reg,ebx(0)
+   in stage 3 (+0x364, +0x3b3); frame 0x740 vs 0x738 (two more slots of ours); 5 branch targets: stage 3's
+   'stage = -1; return' tail merged with stage 0's copy in ours, with stage 4's in the original */
 void he_RunBurglary(AIJOB *ev)
 {
     HEBURGLARY *x = (HEBURGLARY *)ev;
@@ -17096,14 +17100,10 @@ void he_RunBurglary(AIJOB *ev)
     AIJOB *patrol;
     HEFINVIEW *fin;
     CRIME *cr;
-    int vals[2];
     char text[0x200];
     char line[0x100];
     int k, ok, money, amt, skill;
-    union {                             /* one word: the reward in stage 4, the spy report in stage 5 */
-        int reward;
-        AIOBJ *report;
-    } u = { 0 };
+    AIOBJ *report = 0;
     int n = 0;
     float know, sk;
 
@@ -17193,22 +17193,24 @@ void he_RunBurglary(AIJOB *ev)
         }
         b = (AIBLD *)gm_BuildQuery(1, 1, x->target);
         if (b != 0) {
+            int reward;
+
             g = (AIBLD *)gm_BuildQuery(1, 1, x->guild);
             if (g != 0)
                 master = (AICHAR *)gm_FindChar(ai_CharInts[g->owner][0]);
             guard = &ai_CharsT[((AIJOB *)w)->chr];
             if (guard != 0 && master != 0) {
-                u.reward = gm_PlayerFactor((unsigned short)util_Random(200) + 0x226, ai_OwnPlayer);
-                txt_Format(text, 0x19ea, b, u.reward, guard->id);
+                reward = gm_PlayerFactor((unsigned short)util_Random(200) + 0x226, ai_OwnPlayer);
+                txt_Format(text, 0x19ea, b, reward, guard->id);
                 he_ShowNews(master->netId, master->netId, text, 1, 0x5f0, "_NACHRICHTEN_HS_76");
-                txt_Format(text, 0x19eb, b, u.reward);
+                txt_Format(text, 0x19eb, b, reward);
                 he_ShowNews(guard->netId, guard->netId, text, 1, 0x5f0, "_NACHRICHTEN_HS_77");
-                cm_SendMoveGoodsUnchecked(guard->netId, master->netId, ai_OwnPlayer, u.reward);
+                cm_SendMoveGoodsUnchecked(guard->netId, master->netId, ai_OwnPlayer, reward);
             }
             gb = (AIBLD *)gm_BuildQuery(1, 1, x->guardBld);
             if (gb != 0) {
                 cm_BeginFieldBlock((char *)gb, gb->id);
-                cm_AddFieldValues(4, 1, 0x65, &u.reward);  /* 0x65: AIBLD.earnings */
+                cm_AddFieldValues(4, 1, 0x65, &reward);  /* 0x65: AIBLD.earnings */
                 cm_SendFieldDeltas();
             }
         }
@@ -17254,13 +17256,13 @@ void he_RunBurglary(AIJOB *ev)
                     sv_MoveToGroup((unsigned char *)g, 0, c->id, 0);
                 }
             }
-            for (u.report = (AIOBJ *)gm_Query((void *)g->objList, 1, 0, 0xca); u.report != 0;
-                 u.report = (AIOBJ *)gm_QueryNext()) {
-                if (u.report->reportBld == b->id)
+            for (report = (AIOBJ *)gm_Query((void *)g->objList, 1, 0, 0xca); report != 0;
+                 report = (AIOBJ *)gm_QueryNext()) {
+                if (report->reportBld == b->id)
                     break;
             }
-            if (u.report != 0) {
-                know = (float)(u.report->reportKnow * 0.01);
+            if (report != 0) {
+                know = (float)(report->reportKnow * 0.01);
                 if (0.001f > know)
                     know = 0.001f;
             } else
@@ -17276,6 +17278,7 @@ void he_RunBurglary(AIJOB *ev)
         gv_Accuse(0x17, 1, ai_CharInts[g->owner][0], owner->netId, b->id);
         if (ok) {
             char loot[0x400];
+            int vals[2];
 
             loot[0] = ch_EmptyName[0];
             memset(loot + 1, 0, sizeof(loot) - 1);
@@ -17337,8 +17340,8 @@ void he_RunBurglary(AIJOB *ev)
                 }
             }
         }
-        if (u.report != 0 && (gb = (AIBLD *)gm_BuildQuery(1, 1, x->guild)) != 0)
-            cm_SendMoveObject(gb->id, -1, u.report->objId);
+        if (report != 0 && (gb = (AIBLD *)gm_BuildQuery(1, 1, x->guild)) != 0)
+            cm_SendMoveObject(gb->id, -1, report->objId);
         he_FreeEvent((int *)ev);
         return;
     case -2:
