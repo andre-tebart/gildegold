@@ -3833,7 +3833,14 @@ void ai_LawBookInfoWindow(int textId, int lawText)
    0x1951 + bit 0 of the flags), for a building of another class than 5 the three option checkboxes (texts 0x1954 /
    0x1957 / 0x195a, bits 1 .. 3; else those controls are -1), the budget counter (text 0x1953, 1000 .. 9000, the
    converted budget *budget) and, for a class other than 5 with a production setting, the weight factor slider
-   (text 0x42c2, 50 .. 150, the setting's factor in percent) into *factorCtrl (else -1) */
+   (text 0x42c2, 50 .. 150, the setting's factor in percent) into *factorCtrl (else -1)
+   @deep deep s38: left set.flags (the field web k#b, 8 refs, prio 186) in edi and checks (prio 198) in esi
+   where the original has them the other way round (checks is served first and takes esi). flags as a named
+   local (at the top or at the first use), checks[0] as *checks, the -1 stores first / reversed, (flags &
+   4) != 0 spellings, every subset of the four on values inlined into their two uses (15 variants): =
+   control or worse; climb round 1 (49 mutants): nothing. Open: a set.flags reference more in the first
+   block (P 15, +30 each) or one checks reference fewer would flip them; the original's parameter may have
+   been the four words of LCWORKSET as scalars (flags a parameter candidate). */
 
 void ai_ShowWorkSettingsPage(int win, int *budgetCtrl, int *budget, int *checks, AIBLD *bld, int charId,
                              LCWORKSET set, int *factorCtrl, G8SETTAIL *setting)
@@ -10181,16 +10188,24 @@ int ai_TrialStep4(G8CHARREC *ch, G8USEVIEW *use)
    bit 1 for a player whose sex byte is set, else 2; the prompt 0x9c), else the character use->target
    (gm_FindChar); none -> 0. The target's relation to the user rises by 25, 50 when the user holds the good 0x2c5
    (cm_SendRelations); a player target (kind 6 / 7) gets the news 0xfe9 naming the user (key 0x5ec). Returns 1.
-   @deep Read whole against the original and rewritten typed (AMOUNTCFG, AICHARREC user / target); fixed
-   two meaning errors of the draft: the partner bit is 1 for a set sex byte and 2 otherwise (neg / sbb /
-   add 2 / or dh,4), and he_ShowNews gets (netId, -1, text, 0, 0x5ec, 0). The structure follows the
-   original: ret 0 in edi, path 2 joins at if (target != 0) { ret = 1; .. }, the amount in a local (the
-   pops merge, add esp,0x18 as the original). Left: where VC6 materialises the constant 1 in edi: the
-   original sets mov edi,1 in path 1 before the menu call and stores cfg.flags from it (+0x53 mov
-   [esp+0x1c],edi), path 2 sets it after the null check; ours stores cfg.flags as an immediate, sets edi
-   after the 0x2c5 pushes and pushes edi for cm_SendRelations' last argument where the original pushes 1;
-   the rest is register renaming and argument load order (regs 32, order 6). Tried: the inventory call
-   inside the argument list (12 ins but its pops split, the original's merge), ret = 1 after the send. */
+   @deep deep s38: path 1 sets ret = 1 after its null check (the original's mov edi,1 before the menu call,
+   cfg.flags stored from edi, path 1 jumping past path 2's mov edi,1) and path 2 sets ret = 1 after
+   cm_SendRelations (its last argument an immediate again, not edi): 31 -> 26 ins, path 1 exact. Left: path
+   2's mov edi,1 sits right after the null test in the original (ret = 1 at the block start) while its push
+   1 stays an immediate; with ret = 1 there ours pushes edi (const 1 propagated). Then the argument loads:
+   the original loads target->netId into ecx right after the inventory call and ch->netId into edx later,
+   ours ch->netId first. Tried: amount inline in the call (pushes 1 before the inventory call, pops split),
+   (has != 0) + 1, ? 50 : 25, if-form, ret as unsigned / short / char, 1u: no better. prior: Read whole
+   against the original and rewritten typed (AMOUNTCFG, AICHARREC user / target); fixed two meaning errors
+   of the draft: the partner bit is 1 for a set sex byte and 2 otherwise (neg / sbb / add 2 / or dh,4), and
+   he_ShowNews gets (netId, -1, text, 0, 0x5ec, 0). The structure follows the original: ret 0 in edi, path
+   2 joins at if (target != 0) { ret = 1; .. }, the amount in a local (the pops merge, add esp,0x18 as the
+   original). Left: where VC6 materialises the constant 1 in edi: the original sets mov edi,1 in path 1
+   before the menu call and stores cfg.flags from it (+0x53 mov [esp+0x1c],edi), path 2 sets it after the
+   null check; ours stores cfg.flags as an immediate, sets edi after the 0x2c5 pushes and pushes edi for
+   cm_SendRelations' last argument where the original pushes 1; the rest is register renaming and argument
+   load order (regs 32, order 6). Tried: the inventory call inside the argument list (12 ins but its pops
+   split, the original's merge), ret = 1 after the send. */
 
 int ai_UseGoodRaiseRelation(AICHARREC *ch, G8USEVIEW *use)
 {
@@ -10213,13 +10228,14 @@ int ai_UseGoodRaiseRelation(AICHARREC *ch, G8USEVIEW *use)
         target = (AICHARREC *)ai_AmountMenu(&cfg, text, 0, 0);
         if (target == 0)
             return 0;
+        ret = 1;
     } else {
         target = (AICHARREC *)gm_FindChar(use->target);
     }
     if (target != 0) {
-        ret = 1;
         amount = (ai_InventoryHas(ch, 0x2c5) != 0 ? 2 : 1) * 25;
         cm_SendRelations(ch->netId, target->netId, amount, 1);
+        ret = 1;
         if (target->kind == 6 || target->kind == 7) {
             txt_Format(news, 0xfe9, ch->id);
             he_ShowNews(target->netId, -1, news, 0, 0x5ec, 0);
