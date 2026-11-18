@@ -6654,17 +6654,7 @@ void he_StartTraining(int ev)
    a random part of range, at most to the cap 252 (cm_SendAddSkill). For a player character (kind 6) a new level
    (the value / 42) posts the AI message 0x6a (flags 9) with the skill and its level, else the news 0x16f2 with
    the skill's name 0x16f3 + skill and the sound "tal_0<skill>"; then the skills' message (cm_SendSkillsChanged)
-   and the event is freed
-   @deep read fully against the original: every statement, callee, constant (252.0f, 1/42), string
-   ('tal_0%i', '%s%s'), the AIMSG 0x6a fields (type, to, fromId -1, time, flags 9, skill +0x58, level
-   +0x5c) and the switch on stage (-2 frees, 0 runs) match; same size (575 vs 575, 165 ins each). Left: the
-   first skill read's address form and one store's place: the original +0x61 'mov al, byte ptr [ecx + edx*4
-   + ai_Chars+0x80]' (c->skills[skill] folded with ai_Chars) and stores c ([ebp-0xc]) after it, ours
-   computes c first, 'mov [ebp-0xc], ebx; mov al, [ebx + ecx + 0x80]'; and +0x65 [eax + ebx + 0x80] vs [ebx
-   + eax + 0x80] (operand order). Tried: the first read as ai_CharsT[e->chr].skills[skill] before / after c
-   (VC6 then CSEs the second read into the absolute form too: M8, 22 ins worse), c assigned at the case's
-   start (31 ins worse), if-chains instead of the switch (the free tail moves). A CSE / addressing choice:
-   deep work */
+   and the event is freed */
 
 void he_RunTraining(int ev)
 {
@@ -6682,8 +6672,8 @@ void he_RunTraining(int ev)
         return;
     case 0:
         rise = t->base - (unsigned short)util_Random(t->range);
-        skill = t->skill;
         c = &ai_CharsT[e->chr];
+        skill = t->skill;
         cur = c->skills[skill];
         if ((float)(cur + rise) > 252.0f)
             rise = (int)(252.0f - (float)cur);
