@@ -3824,22 +3824,23 @@ void ai_MercenaryBookContact(char *bld)
    workers of that job (column 0 clears them). A right click clears the marks or pops the window. Each column
    gets its inputs, the amount the store's inputs make and its stock; the count text shows the goods columns;
    the frame callback is ai_ProductionWindow's
-   @deep Reconstructed in full from the original 0x5923c0..0x592b8d (was a skeleton) on the model of
-   ai_ProductionWindow: the three rooms (0xff / 0x2a / 0xfe), the member-row any-loop, the column click (no
-   marks: select / clear the workers of job 9 / 8; marks: the job 9 / 8 found or created by the message
+   @deep size queue s17 (raw 2015 vs 1998, padded 2016 vs 2000; 141 ins): snd_PlayFavourComment stands in
+   each arm of if (c == 0) {..} else {..} as in the original (it calls it at 0x592654 and 0x59273e): now
+   the column-0 arm's slot wait jumps into the other arm's job = cm_GetSlotValue(slot) tail as the original
+   (144 -> 141). Left: bld in ebp where the original has ebx (and ai_ProdColumns index base the other way),
+   the frame's equal-size pairs swapped (ncols / c, store / room, win / res, down / up: every declaration
+   order of the four pairs = control, so reference counts / the unstable sort decide), and the goods-column
+   loop keeps ncols in memory where the original holds a split piece in ebx (mov ebx,[ncols] after
+   gm_Query, mov edi,ebx; imul edi,0x58, cmp edx,ebx, inc ebx). climb round 1 (364 mutants): nothing
+   closer. prior: Reconstructed in full from the original 0x5923c0..0x592b8d (was a skeleton) on the model
+   of ai_ProductionWindow: the three rooms (0xff / 0x2a / 0xfe), the member-row any-loop, the column click
+   (no marks: select / clear the workers of job 9 / 8; marks: the job 9 / 8 found or created by the message
    type 9 / 8 with its slot wait, sv_MoveToGroup, the stage), the right click, the goods columns from 1 on
    (gm_Query 1, 4, 0x17, new kinds, < 16), the inputs / amount / stock per column, the count text and the
    three update calls with ai_ProductionWindow as the frame callback. ours=609 original=603. Left:
    allocation only: the original keeps bld in ebx (reloaded from edi at the loop end, 0x592b6c 'mov ebx,
    edi') and ncols in ebx inside the column collection where ours keeps bld in ebp and ncols in [esp+0x10]
-   (0x592992: ours 'mov ecx, [esp+0x10]; inc ecx; ... mov [esp+0x10], ecx' vs the original 'inc ebx'), and
-   compares d2_ClickedForm with win in esi (0x59254d). A variant round. (references: M8 at +0x37a: ours
-   refers to cm_GetSlotValue (0x4c3b10), the original's field to 0x4c2d20 (snd_PlayFavourComment),
-   explained: the M8 line pairs our cm_GetSlotValue call of the column-0 branch with the original's
-   snd_PlayFavourComment of the column-n branch: the original merged the two branches' identical tails 'job
-   = cm_GetSlotValue(slot); if (job == 0) continue;' into one copy (0x592841) where ours keeps a copy in
-   the column-0 branch (it compares with the zero register edi, the other with test, so VC6 does not
-   cross-jump them); both sides call each function on the same paths) */
+   (0x592992: ours 'mov ecx, [esp+0x10]; inc ecx; ... mov [esp+0x10], ecx' vs the original 'inc ... */
 int ai_SearchResourceWindow(AIBLD *bld)
 {
     AIMSG msg;
@@ -3916,8 +3917,8 @@ int ai_SearchResourceWindow(AIBLD *bld)
                     }
                     continue;
                 }
-                snd_PlayFavourComment();
                 if (c == 0) {
+                    snd_PlayFavourComment();
                     job = (AIJOB *)he_FindEvent(2, 0, 9, 3, bld->id);
                     if (job == 0) {
                         memset(&msg, 0, sizeof(msg));
@@ -3939,6 +3940,7 @@ int ai_SearchResourceWindow(AIBLD *bld)
                             continue;
                     }
                 } else {
+                    snd_PlayFavourComment();
                     for (job = (AIJOB *)he_FindEvent(2, 0, 8, 3, bld->id); job != 0; job = (AIJOB *)he_NextEvent())
                         if (job->u.w.lo == ai_ProdColumns[c].good)
                             break;
