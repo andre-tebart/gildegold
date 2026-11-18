@@ -411,7 +411,7 @@ exe	0x0041f220	surf_Up8	surf	byte	readable
 exe	0x0041f2b0	surf_Up16	surf	byte	readable		
 exe	0x0041f800	surf_Up24	surf	byte	readable		
 exe	0x0041fc00	surf_Up32	surf	byte	readable		
-exe	0x00420140	surf_ScaleBlit	surf	shape	readable		
+exe	0x00420140	surf_ScaleBlit	surf	shape	readable	deep	
 exe	0x004202d0	surf_Pal8To16	surf	byte	readable		
 exe	0x00420450	surf_24To16	surf	byte	readable		
 exe	0x004205c0	surf_Blit	surf	byte	readable		
@@ -1052,7 +1052,7 @@ exe	0x004591a0	d3_AnimBlendWeights	d3_vtx	byte	readable
 exe	0x00459300	d3_TransformVerts	d3_vtx	draft	readable	deep	
 exe	0x004598d0	d3_TransformNormals	d3_vtx	byte	readable		
 exe	0x00459980	d3_FrameNormals	d3_vtx	byte	readable		
-exe	0x00459ab0	d3_GetBoxVerts	d3_vtx	draft	readable		shape+readable -> draft+readable at 0f1c8dc1: promote --accept-falls
+exe	0x00459ab0	d3_GetBoxVerts	d3_vtx	draft	readable	deep	shape+readable -> draft+readable at 0f1c8dc1: promote --accept-falls
 exe	0x00459d80	d3s_RightEdge	d3s	byte	readable		
 exe	0x00459e50	d3s_LeftEdgeColor	d3s	byte	readable		
 exe	0x00459f90	d3s_MarkSpan	d3s	byte	readable		
@@ -1076,7 +1076,7 @@ exe	0x0045c620	d3s_Update	d3s	byte	readable
 exe	0x0045c9c0	d3s_LightCB	d3s	byte	readable		
 exe	0x0045c9f0	d3s_CollectLights	d3s	byte	readable		
 exe	0x0045ca20	d3s_UpdateObject	d3s	byte	readable		
-exe	0x0045ca60	d3s_UpdateObjectAt	d3s	shape	readable	deep	
+exe	0x0045ca60	d3s_UpdateObjectAt	d3s	byte	readable		
 exe	0x0045cc90	d3s_FreeSlot	d3s	byte	readable		
 exe	0x0045ccd0	d3s_FreeShadows	d3s	byte	readable		
 exe	0x0045cd60	d3s_FreeLightCB	d3s	byte	readable		
@@ -3055,7 +3055,7 @@ exe	0x00504290	gm_FirstTitleNumber	f3gmt	shape	readable
 exe	0x00504350	gm_TitleNumberGroup	f3gmt	byte	readable		
 exe	0x005043d0	gm_TitleNumber	f3gmt	byte	readable		
 exe	0x005044b0	gm_TitleJob	f3gmt	byte	readable		
-exe	0x00504510	gm_TitlePeriodServed	f3gmt	draft	readable		shape+readable -> draft+readable at 0f1c8dc1: promote --accept-falls
+exe	0x00504510	gm_TitlePeriodServed	f3gmt	draft	readable	deep	shape+readable -> draft+readable at 0f1c8dc1: promote --accept-falls
 exe	0x00504790	gm_SetJob	f3gmt	byte	readable		
 exe	0x00504840	gm_DropRank	f3gmt	byte	readable		
 exe	0x005048e0	gm_BuildingJob	f3gmt	byte	readable		
@@ -3502,7 +3502,7 @@ exe	0x0053d9f0	he_ShowEventBar	he	byte	readable
 exe	0x0053dad0	he_SetBarEnabled	he	byte	readable		
 exe	0x0053daf0	he_PickActiveEvent	he	byte	readable		
 exe	0x0053dcb0	he_ActivateSlot	he	byte	readable		
-exe	0x0053dda0	he_ShowNews	he	draft	readable	deep	
+exe	0x0053dda0	he_ShowNews	he	byte	readable		
 exe	0x0053dee0	he_MessageBoxQuickjump	he	byte	readable		
 exe	0x0053e040	he_CreateEvent	he	byte	readable		
 exe	0x0053e1f0	he_FreeEvent	he	byte	readable		
@@ -3551,7 +3551,7 @@ exe	0x005417d0	he_CharIllness	he	shape	readable	deep
 exe	0x00541a50	he_RunDueNow	he	byte	readable		
 exe	0x00541a80	he_AllocStammtisch	he	byte	readable		
 exe	0x00541b40	he_StammtischCommand	he	byte	readable		
-exe	0x00542100	he_RunStammtisch	he	shape	readable		
+exe	0x00542100	he_RunStammtisch	he	shape	readable	deep	
 exe	0x00542490	he_AllocTavern	he	byte	readable		
 exe	0x00542590	he_RunTavern	he	byte	readable		
 exe	0x00542960	he_AllocOffer	he	byte	readable		
@@ -4140,7 +4140,7 @@ exe	0x0058f980	ai_ShowVgObjects	lc	byte	readable
 exe	0x0058fa20	ai_CheckBuildable	lc	byte	readable		
 exe	0x0058fb60	ai_CheckBuildSites	lc	byte	readable		
 exe	0x0058fba0	ai_FindBauplatz	lc	byte	readable		
-exe	0x0058fc40	lc_GetGebaeudeBauplatz	lc	draft	readable	deep	
+exe	0x0058fc40	lc_GetGebaeudeBauplatz	lc	byte	readable		
 exe	0x0058fd40	ai_ObjectPosition	lc	byte	readable		
 exe	0x0058fd90	ai_ObjectAngle	lc	byte	readable		
 exe	0x0058fe10	ai_FindNearestObject	lc	byte	readable		
@@ -4225,7 +4225,7 @@ exe	0x0059b160	ai_CreditListWindow	lc	byte	readable
 exe	0x0059b630	ai_BorrowerLoansWindow	lc	byte	readable		
 exe	0x0059b880	ai_CreditReleaseWindow	lc	byte	readable		
 exe	0x0059bad0	ai_CreditGiverWindow	lc	byte	readable		
-exe	0x0059be90	ai_SortExchangeRows	lc	draft	readable	deep	
+exe	0x0059be90	ai_SortExchangeRows	lc	byte	readable		
 exe	0x0059c120	ai_FillExchangeRows	lc	byte	readable		
 exe	0x0059c450	ai_ShowExchangeRows	lc	byte	readable		
 exe	0x0059c6b0	ai_ClickedExchangeRecord	lc	byte	readable		
@@ -4233,7 +4233,7 @@ exe	0x0059c6e0	ai_UsedRecordCount	lc	byte	readable
 exe	0x0059c700	ai_ExchangeWindow	lc	draft	readable	deep	
 exe	0x0059d2d0	ai_ExchangeFeesWindow	lc	byte	readable		
 exe	0x0059d410	ai_MoneyMessengerWindow	lc	byte	readable		
-exe	0x0059d5e0	ai_MoneyExchangeWindow	lc	shape	readable		
+exe	0x0059d5e0	ai_MoneyExchangeWindow	lc	byte	readable		
 exe	0x0059dc00	ai_MoneyLenderInfoWindow	lc	byte	readable		
 exe	0x0059df10	ai_FortuneOverview	lc	byte	readable		
 exe	0x0059df80	ai_MoneyLenderContact	lc	byte	readable		
@@ -4284,7 +4284,7 @@ exe	0x005a44e0	ai_EspionageStart	lc	byte	readable
 exe	0x005a45c0	ai_SpyReportsWindow	lc	byte	readable		
 exe	0x005a48d0	ai_AttackWindow	lc	byte	readable		
 exe	0x005a4b30	ai_AttackStart	lc	byte	readable		
-exe	0x005a4b90	ai_PickpocketGangWindow	lc	draft	readable	deep	
+exe	0x005a4b90	ai_PickpocketGangWindow	lc	byte	readable		
 exe	0x005a4d40	ai_ThievesGuildListener	lc	byte	readable		
 exe	0x005a4f50	ai_ThievesGuildEmptyListener	lc	byte	readable		
 exe	0x005a4f70	ai_StorageContact	lc	byte	readable		
@@ -4546,7 +4546,7 @@ exe	0x005cc700	ai_ConvertWindow	lcamt	byte	readable
 exe	0x005cca40	ai_PenanceWindow	lcamt	byte	readable		
 exe	0x005ccc10	ai_Miracle	lcamt	draft	readable	deep	
 exe	0x005cd2e0	ai_MiracleWindow	lcamt	byte	readable		
-exe	0x005cd400	ai_ChangeProfessionWindow	lcamt	shape	readable		
+exe	0x005cd400	ai_ChangeProfessionWindow	lcamt	shape	readable	deep	
 exe	0x005cd8c0	ai_OpenTrial	lcamt	byte	readable		
 exe	0x005cdb90	ai_AccuseWindow	lcamt	byte	readable		
 exe	0x005cde90	ai_AccusationWindow	lcamt	byte	readable		
