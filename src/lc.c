@@ -100,6 +100,7 @@
 #define sv_ReturnZeroV ((int (*)(int))sv_ReturnZero)  /* @original 0x5c4100 passes the research class as an argument (sv.h declares the function void) */
 #define ai_MapPickCb(cb) ((void (*)(void *, void *))(cb))  /* @original: ai_MapPick's cb is void (*)() (lc.h, its callbacks take differing pointer types); both indirect calls push two dwords and read no result (0x5b22f6/0x5b22f7 push ebp twice; 0x5b248f/0x5b2490 push the picked building and picked) */
 #define util_RandomS ((unsigned short (*)(unsigned short))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original the plague messages (ai_PlagueNews, ai_PlagueMessage, ai_PlagueMessageAll) read the 16-bit result (mov si,ax / and esi,0xffff), as f3gm.c's gm_Shuffled */
+#define d2_WinOpenPicStyledS ((int (*)(short, short, int, int, int))d2_WinOpenPicStyled)  /* @original the production columns' input pictures pass x = k * 0x31 + 0x11 as a short (no movsx, computed afresh per call: no strength reduction), as sv.c / svtip.c do */
 /* lc.c --the production / trade windows and the tavern / location / money lender / Rathaus windows
    (0x58bbd0 .. 0x5d33b0): the
    "Handel\Handel_PRODUKTION" screen of a building (0x58bd60) and its helpers (the table init 0x58bbd0, the
@@ -1271,17 +1272,21 @@ int d2_SetForm(int view, int n); int io_PrintText(char *fmt, ...);
    column 0, else the kind 8 job of the column's goods: the progress picture 0x4fd and the fill fraction of the
    elapsed time) and the amount text (200 / 0xc9); then removes the columns from ncols up to 16. The fourth
    argument is not read
-   @deep rewritten from the original (was a condensed skeleton, 1097 B; now 1429 vs 1421, 408 vs 406 instructions,
-   same calls): the column build (child window, font 0x54, frame 0x749, goods picture, input pictures with
-   (short)(k*0x31+0x11), amount window), the input marks from the AIRECIPE goods list (0x74f none / 0x74e
-   short / 0x74d enough, icon 0x750 + worst), the job progress (kind 9 for column 0, else the kind 8 job of
-   the goods; progress picture 0x4fd, fillFraction = minutes(start, now) / minutes(start, end)), the amount
-   texts 200 / 0xc9, the removal of the columns up to 16 (the inPics loop the original unrolls through a
-   pointer). All hunks read: allocation - the original holds 0x54 in ebp for the two font stores and -1 in
-   ecx per store (ours: -1 in ebp, 0x54 immediate: 0x58c734 '+ mov ebp, 0x54' / 0x58c7a1 '- or ebp, -1'),
-   keeps k in ebx with the x recomputed (lea/shl) where ours strength-reduces, and uses ebx = amount = 0 as
-   the zero register in the job branch (0x58ca0d '- test edi, edi' / '+ cmp edi, ebx'; the prover stops at
-   he_FindEvent's 0 pushed from that register). */
+   @deep size queue s16: the input pictures' x goes through a short-x view (d2_WinOpenPicStyledS, as sv.c /
+   svtip.c): the original pushes k * 0x31 + 0x11 without movsx and computes it per call (110 -> 91 ins, raw
+   1429 -> 1427, padded still 1440 vs 1424: 3 bytes over). Left: the original holds 0x54 in ebp for the two
+   font stores and loads -1 into ecx per iconx / icony pair; ours makes -1 the ebp candidate (4 refs). No
+   lever: iconx = icony = -1 / icony = iconx = -1 chains (= control), icony copied from iconx (worse),
+   climb round 1 (its best was a float local, a meaning change). prior: rewritten from the original (was a
+   condensed skeleton, 1097 B; now 1429 vs 1421, 408 vs 406 instructions, same calls): the column build
+   (child window, font 0x54, frame 0x749, goods picture, input pictures with (short)(k*0x31+0x11), amount
+   window), the input marks from the AIRECIPE goods list (0x74f none / 0x74e short / 0x74d enough, icon
+   0x750 + worst), the job progress (kind 9 for column 0, else the kind 8 job of the goods; progress
+   picture 0x4fd, fillFraction = minutes(start, now) / minutes(start, end)), the amount texts 200 / 0xc9,
+   the removal of the columns up to 16 (the inPics loop the original unrolls through a pointer). All hunks
+   read: allocation - the original holds 0x54 in ebp for the two font stores and -1 in ecx per store (ours:
+   -1 in ebp, 0x54 immediate: 0x58c734 '+ mov ebp, 0x54' / 0x58c7a1 '- or ebp, -1'), keeps k in ebx with
+   the x recomputed (lea/shl) where ours strength-r... */
 void ai_UpdateResourceColumns(int win, int part, int ncols, int unused)
 {
     AIBLD *bld;
@@ -1316,7 +1321,7 @@ void ai_UpdateResourceColumns(int win, int part, int ncols, int unused)
             d2_Objs[ai_ProdColumns[c].pic].icony = -1;
             for (k = 0; k < 4; k++) {
                 if (ai_ProdColumns[c].in[k] != 0) {
-                    ai_ProdColumns[c].inPics[k] = d2_WinOpenPicStyled((short)(k * 0x31 + 0x11), 0x3a, ai_ProdColumns[c].in[k] + 0xdf, ai_ProdColumns[c].win, -2);
+                    ai_ProdColumns[c].inPics[k] = d2_WinOpenPicStyledS(k * 0x31 + 0x11, 0x3a, ai_ProdColumns[c].in[k] + 0xdf, ai_ProdColumns[c].win, -2);
                     d2_Objs[ai_ProdColumns[c].inPics[k]].interactive = 1;
                     d2_Objs[ai_ProdColumns[c].inPics[k]].iconx = -1;
                     d2_Objs[ai_ProdColumns[c].inPics[k]].icony = -1;
@@ -1404,20 +1409,18 @@ void d2_SetPointerItem(int id, int amount); void d2_ClearPointerItems(void);
    fill fraction and its amount); then the amount text: without a picked input the texts 0xb8 / 0xba / 0xbb by
    mode, with one it highlights it and prints the batch (0xc1 / 0xc2 in the language's word order), the amount of
    the input a run takes (0xc3 / 0xc4) and what is missing (0xc5 / 0xc6). Removes the columns from ncols up to 16
-   @deep rewritten from the original (was a condensed draft, 1812 B; now 794 vs 794 instructions, 2804 vs 2827 B, same
-   calls): the picked-input marks (ai_ProdSelectedInput -> LCPRODCOL.selected), the column build with the
-   input captions (need, font 0x54, caption -8 / 6), the input marks 0x74d..0x74f with the missing amount,
-   the job search (production job 4, then income job 3), the day test (hour >= start && hour < end: the
-   original's test ah,5), the pictures 0x4fc / 0x50b / 0x50c, the fill 1.0 - prodLeft / prodWork (AIJOB's
-   new production words) or 1.0 - incomeAmount / incomeAmountF, the amount texts (the three format literals
-   that sat in main.c's gap block), the batch / need / missing texts 0xc1..0xc6 in both language orders,
-   the column removal. All code hunks read: block layout and allocation - the original lays the found-job
-   block out of line after the mode 0 text (0x58d110 '- xor ebp, ebp; cmp edi, ebp' / '+ the none block
-   first'; writing the if either way compiles the same), pops each call's arguments at once in the column
-   build (0x58cd01 '+ add esp, 0x18' where ours merges into add esp, 0x38) with a dead reload of the
-   building class (0x58cd28 '+ mov ecx, [esp+0x34]'), keeps five more frame slots (frame 0xf0 vs 0xd8: the
-   itoa buffer at frame-0x20 vs ours -0xc, where the prover stops) and pairs the amount in edx / ebp the
-   other way round (0x58d1f5). */
+   @deep size queue s16: the input pictures' x through the short-x view d2_WinOpenPicStyledS (no movsx, no
+   strength reduction, as the original): 186 -> 161 ins; raw 2802 vs 2827 (frame 0xd8 vs 0xf0 left: 0x18
+   bytes of locals missing). prior: rewritten from the original (was a condensed draft, 1812 B; now 794 vs
+   794 instructions, 2804 vs 2827 B, same calls): the picked-input marks (ai_ProdSelectedInput ->
+   LCPRODCOL.selected), the column build with the input captions (need, font 0x54, caption -8 / 6), the
+   input marks 0x74d..0x74f with the missing amount, the job search (production job 4, then income job 3),
+   the day test (hour >= start && hour < end: the original's test ah,5), the pictures 0x4fc / 0x50b /
+   0x50c, the fill 1.0 - prodLeft / prodWork (AIJOB's new production words) or 1.0 - incomeAmount /
+   incomeAmountF, the amount texts (the three format literals that sat in main.c's gap block), the batch /
+   need / missing texts 0xc1..0xc6 in both language orders, the column removal. All code hunks read: block
+   layout and allocation - the original lays the found-job block out of line after the mode 0 text
+   (0x58d110 '- xor ebp, ebp; cm... */
 void ai_UpdateProdColumns(int win, int part, int ncols, int store, int mode)
 {
     AIBLD *bld;
@@ -1463,7 +1466,7 @@ void ai_UpdateProdColumns(int win, int part, int ncols, int store, int mode)
             d2_Objs[ai_ProdColumns[c].pic].icony = -1;
             for (k = 0; k < 4; k++) {
                 if (ai_ProdColumns[c].in[k] != 0) {
-                    ai_ProdColumns[c].inPics[k] = d2_WinOpenPicStyled((short)(k * 0x31 + 0x11), 0x3a, ai_ProdColumns[c].in[k] + 0xdf,
+                    ai_ProdColumns[c].inPics[k] = d2_WinOpenPicStyledS(k * 0x31 + 0x11, 0x3a, ai_ProdColumns[c].in[k] + 0xdf,
                                                                       ai_ProdColumns[c].win, -2);
                     d2_Objs[ai_ProdColumns[c].inPics[k]].interactive = 1;
                     d2_SetObjFont(ai_ProdColumns[c].inPics[k], 0x54);
