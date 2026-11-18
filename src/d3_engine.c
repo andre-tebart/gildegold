@@ -1906,7 +1906,7 @@ void d3_InitSurf(D3SURF *s, D3OBJECT *owner)
 /* 0x43ce60, initialises an object: clears the ten preset camera views and the pivot / posOffset, unlinks it
    (prev / next / parent / child / sound), gives it the type-1 defaults (objectFlags, state, stateFlags, flags,
    kind, mask, meshMode), clears its path, events and last-light time, and gives a light the flicker defaults 0.3
-   and every 15 (the light and its seven keys); finally the angles and position are zeroed. */
+and every 15 (the light and its seven keys); finally the angles and position are zeroed. @deep deep s23: stateFlags &= 0xc1 first (before objectFlags): 10 -> 6 ins. Left: the light keys loop stores [ebx+eax-4] where the original has [eax+ebx-4] (IV first); loop body swapped, &e[0] + i, i[e], int i: no lever or worse. */
 void d3_InitObject(D3OBJECT *obj)
 {
     unsigned int i;
@@ -1919,6 +1919,7 @@ void d3_InitObject(D3OBJECT *obj)
         D3_X(obj)->views[i].dir.y = 0;
         D3_X(obj)->views[i].dir.z = 0;
     }
+    obj->stateFlags &= 0xc1;
     obj->objectFlags = obj->objectFlags & 0xa2 | 2;
     D3_X(obj)->meshMode = 0;
     obj->prev = 0;
@@ -1927,7 +1928,6 @@ void d3_InitObject(D3OBJECT *obj)
     obj->parent = 0;
     obj->sound = 0;
     obj->state = obj->state & 0x18 | 0x65;
-    obj->stateFlags &= 0xc1;
     obj->flags &= 0xcf;
     obj->type = 1;
     obj->kind = 0;
