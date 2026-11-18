@@ -6741,8 +6741,7 @@ void cm_LobbyClearChat()
 int cm_LobbyAllReady()
 {
     unsigned int n;
-    int cnt = 0;
-    int *p;
+    int cnt, i;
     CMLOBBYPLAYER *q;
 
     if (cm_NetGame.mode == 0x3f)
@@ -6751,9 +6750,10 @@ int cm_LobbyAllReady()
         n = cm_NetGame.hdr.players;
     if (cm_LobbyList[0] < n)
         return 0;
-    for (p = cm_LobbyListIds; (int)p < (int)(cm_LobbyListIds + 8); p++) {
-        if (*p != 0) {
-            q = cm_LobbyFindPlayer(*p);
+    cnt = 0;
+    for (i = 0; i < 8; i++) {
+        if (cm_LobbyListIds[i] != 0) {
+            q = cm_LobbyFindPlayer(cm_LobbyListIds[i]);
             if (q == 0)
                 return 0;
             if (q->ready == 1)
