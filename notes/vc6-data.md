@@ -495,7 +495,7 @@ original's order (reverse-engineering LINK's name order) is kept for the very en
   settled, no split made. The scene part (0x4d8b50..) has no byte fall at its boundary (RunBirth / RunAuction /
   ExecCutscene distances grow).
 - **Named char arrays inside a string run are literals** (continued from s10): cm_WalkToDummyWhy (strcpy of the
-  literal: the same mov ecx,5 / rep movsd), cm_TextNewline "$A" (11 users across units: the first user's object
+  literal: the same mov ecx,5 / rep movsd), cm_TextNewline "$A" (10 users across units: the first user's object
   holds the pooled literal), ai_CharNameFmt "%1N3" / ai_FmtLabel "%s:" (svgrave's run), lobby_FmtName ..
   FmtChatShout (lobby's run, first-use order), lobby_ChooseProfessionForm (main's run: a removed main function, the
   literal now with its surviving user lobby, +24 accepted). Single chars at a string run's pad
