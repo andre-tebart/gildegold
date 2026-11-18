@@ -9476,29 +9476,22 @@ int he_CreateReaper(int ev)
    object moves along the direction by the time since reaperClock times a speed of 0.5 + 0.25 per cm_SpeedLevel,
    rising (0.978 per time unit, with a tenth of the step) while it is less than 80 above the ground there, and its
    position and angles are cached; 1 = flying, 0 = the object or the building missing
-   @deep size queue s20: 118 -> 4 ins, raw 831 -> 839 (the original's size, padded 848 both). Found: the
-   second d3_GetHeightAt reads the height map from a block local of the else arm (D3SM *hm =
-   d3_Scenes[0].hmap first: the original's mov edi,[hmap] before the clock math, scene spilled to its slot
-   and reloaded for the last d3if_SelectScene, ret in ebx, 0 in ebp); the two calls' out values are block
-   locals (the first call's int x, z / float ground in a block around the call and target.y, the else arm's
-   own int x, z / float h): the original's frame shares ground with step (ev's argument slot), h with dist
-   and x with the fild qword temps, which needs disjoint block scopes (function-scope escaped locals
-   conflict with every slot: frame 0x54 / 0x58); ret = 2 before reaperPlaced = 0. Left: target.y = dir.y +
-   at.y loads at.y first in ours (fld [at.y]; fadd [dir.y]), the original dir.y first; = this code: at.y +
-   dir.y, dir.y *= step / dir.y * step, all six declaration orders of target / at / dir, hm / step in the
-   else block; climb.py round 1: nothing. prior: Read whole against the original and rewritten typed: AIJOB
-   reaper fields, reaperClock unsigned (the original zero-extends it to a qword before the fisub),
-   D3OBJECT.path at 0x1d0 (the path animation, d3_anim.h D3PATH) for the early clock refresh,
-   d3_Scenes[0].hmap for both d3_GetHeightAt calls, the D3VECTOR4 target/at/dir with target reused for the
-   new position, dist < 45.0f (test ah,5/jp), ground + 80 > target.y (and 0x4100/jne), step =
-   (float)d3_Time - reaperClock then * (cm_GetSpeedLevel() (unsigned: fild qword) * 0.25f + 0.5f), the
-   0.978 double and the 0.1f rise, ret 2 / 1 through ebx. 234 vs 236 instructions; diffclass: slots 80,
-   frame 78, regs 56, order 44, fpu 26 and code 28 that are all allocation: the original zeroes ebp and
-   compares / pushes it (ours test reg,reg / push 0), keeps the scene in edi and also spills it to
-   [esp+0x14] (reloaded mov edi,[esp+0x20] before the last d3if_SelectScene), loads the height map into edi
-   before the second d3_GetHeightAt (ours mov eax,[X] at the push), returns ebx where ours returns edi, and
-   its frame is 0x50 vs ours 0x48 (stack offsets shifted by 8). The prover stops on the escaped frame
-   layout (ours frame+0x8 = nothing, the original's = the spilled d3_CurrentScene). */
+   @deep deep s24: dist written as the full length sqrt(x*x + y*y + z*z) with dir.y = 0.0f (VC6 folds the
+   zero term: every term order = control; kept, it gives the dir.y = 0 store its use). flip.py --want the
+   original's fld dir.y / fadd at.y for target.y: 5 hits, the only non-local one deletes dir.y = 0.0f (then
+   the order is right but the original's zero store is missing: draft 1); dir.y = 0.0f at each position of
+   the first dir block: = control or worse (5..19). Left: target.y = dir.y + at.y emitted as fld at.y /
+   fadd dir.y (the original dir.y first, as x and z). prior: size queue s20: 118 -> 4 ins, raw 831 -> 839
+   (the original's size, padded 848 both). Found: the second d3_GetHeightAt reads the height map from a
+   block local of the else arm (D3SM *hm = d3_Scenes[0].hmap first: the original's mov edi,[hmap] before
+   the clock math, scene spilled to its slot and reloaded for the last d3if_SelectScene, ret in ebx, 0 in
+   ebp); the two calls' out values are block locals (the first call's int x, z / float ground in a block
+   around the call and target.y, the else arm's own int x, z / float h): the original's frame shares ground
+   with step (ev's argument slot), h with dist and x with the fild qword temps, which needs disjoint block
+   scopes (function-scope escaped locals conflict with every slot: frame 0x54 / 0x58); ret = 2 before
+   reaperPlaced = 0. Left: target.y = dir.y + at.y loads at.y first in ours (fld [at.y]; fadd [dir.y]), the
+   original dir.y first; = this code: at.y + dir.y, dir.y *= step / dir.y * step, all six declaration
+   orders of target / at / dir, hm / step in the else block; climb.py round 1: nothing. */
 int he_MoveReaper(int ev)
 {
     AIJOB *e = (AIJOB *)ev;
@@ -9523,7 +9516,7 @@ int he_MoveReaper(int ev)
             dir.x = target.x - at.x;
             dir.y = 0.0f;
             dir.z = target.z - at.z;
-            dist = (float)sqrt(dir.z * dir.z + dir.x * dir.x);
+            dist = (float)sqrt(dir.x * dir.x + dir.y * dir.y + dir.z * dir.z);
             {
                 int x, z;
                 float ground;

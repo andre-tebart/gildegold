@@ -3652,7 +3652,7 @@ exe	0x0054fce0	he_RunEffectEvent	he	ee2a93928e24efa9	no	shape	control=shape p1=s
 exe	0x0054fe80	he_StartSendHomeEvent	he	586753ea234a7102	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0054ff20	he_RunSendHomeEvent	he	15ff3a1a7dba3bc6	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x00550070	he_CreateReaper	he	94e941fa40e5d03b	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	7e3cc8a80867a479
-exe	0x00550370	he_MoveReaper	he	3fa91d9ecde5564e	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	5f03137db2214739
+exe	0x00550370	he_MoveReaper	he	f40a430a36156889	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	5076cb0f7a1ad60a
 exe	0x005506c0	he_AimReaper	he	e9200a4e074ebb1e	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
 exe	0x00550850	he_TurnReaper	he	94188416a266ea93	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005509f0	he_StartReaper	he	e0d59237f14f7cce	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
