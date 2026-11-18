@@ -2016,15 +2016,7 @@ int ls_ReadSceneRecords(int f)
    bytes), +4, +8, +0xc, +0x20, +0x24, +0x30, +0x34, +0x38, +0x3c (2 bytes), +0x2c), then the four player slots of
    ai_PlayerSlots field by field (the map offset +0x2ec from version 0x10037). Finally the town text of the first
    slot ("_STADTAUSWAHL_<name>_INFO+0", upper case, txt_FindKey) is copied to its +0x20, the slot's own name when
-   there is none. Returns 1, 0 when a read fails.
-   @deep read whole against 0x51f080..0x51f646: the count (0x3e, read from 0x10048), the five stock blocks
-   (4 header words, n records with the 11 fields +0 (2) +4 +8 +0xc +0x20 +0x24 +0x30 +0x34 +0x38 +0x3c (2)
-   +0x2c), the four player slots (every field, size and loop, +0x2ec from 0x10037) and the _STADTAUSWAHL_
-   town text lookup match; 508 vs 508 instructions, 32 bytes differ. Left: only the strength-reduced record
-   pointer's bias in the record loop 0x51f12c..0x51f24c - ours lea edi, [ebx + 0xc] (blk+0x14: fields at
-   edi-4 .. edi+0x38), the original's lea edi, [ebx + 0x10] (blk+0x18: edi-8 .. edi+0x34); the same bias as
-   ls_WritePlayerSlots 0x51b340 (same record type, same tries there: char pointer, index form, struct
-   index, int array): needs a generated variant round */
+   there is none. Returns 1, 0 when a read fails. */
 
 
 int ls_ReadPlayerSlots(int f)
@@ -2045,17 +2037,19 @@ int ls_ReadPlayerSlots(int f)
         LS_R(&blk->indexB, 4)
         LS_R(&blk->factorB, 4)
         for (j = 0; j < n; j++) {
-            LS_R(&blk->goods[j].item, 2)
-            LS_R(&blk->goods[j].amount, 4)
-            LS_R(&blk->goods[j].rate, 4)
-            LS_R(&blk->goods[j].v00c, 4)
-            LS_R(&blk->goods[j].demand, 4)
-            LS_R(&blk->goods[j].mean, 4)
-            LS_R(&blk->goods[j].baseStock, 4)
-            LS_R(&blk->goods[j].stock, 4)
-            LS_R(&blk->goods[j].price, 4)
-            LS_R(&blk->goods[j].marketKind, 2)
-            LS_R(&blk->goods[j].f2c, 4)
+            GMSTOCK *s = &blk->goods[j];
+
+            LS_R(&s->item, 2)
+            LS_R(&s->amount, 4)
+            LS_R(&s->rate, 4)
+            LS_R(&s->v00c, 4)
+            LS_R(&s->demand, 4)
+            LS_R(&s->mean, 4)
+            LS_R(&s->baseStock, 4)
+            LS_R(&s->stock, 4)
+            LS_R(&s->price, 4)
+            LS_R(&s->marketKind, 2)
+            LS_R(&s->f2c, 4)
         }
     }
     for (b = 0; b < 4; b++) {
