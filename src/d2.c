@@ -574,23 +574,23 @@ void d2_DrawFrame(D2INPUT *dlg, void *arg)
     }
 }
 /* 0x4694c0, draws an input field (and the slider-like frame around it)
-   @deep 6 ins, headers sample insensitive (32 samples, one codegen). The original computes bw from the
-   WORD o->w (movsx ebx, word [edi+0x14], p0->w taken from ebx before it is overwritten) and reads o->x
-   before o->w in the second d2_DrawShape. bw = o->w - p0->w - p1->w gives exactly the original's
-   instructions for that block, but p0 then gets one slot reference more (c2frame: count 4 instead of 3)
-   and is packed with a temp into the i / p1 neighbour slot - 135 ins of frame and register shift (any
-   operand order / grouping of bw and of the DrawShape x: one code). Orders of the four statements in->w /
-   o->w / o->x / bw with three in->w spellings (36 variants): best 53, none below the control. The volatile
-   hv (ClipBottom saved in ebp and in p0's slot, reloaded from the slot for the restoring d2_SetClipRect)
-   has no ordinary replacement found: a plain hi / min() / > forms keep it in ebp (60 ins). Open: which
-   source makes p0's last use a register use with bw read from o->w (tiebreak: insensitive) prior: B draft:
-   3 code hunks (6 instructions) at 0x4697a3/0x4697d6/0x4697e9 in the number-input frame block (in->w =
-   p0->w + in->ndigits * 0xe + p1->w; o->w = in->w; bw = in->w - p0->w - p1->w; d2_DrawShape(o->x - p1->w +
-   o->w, ...)): the original loads the WORD o->w ([edi+0x14]) where ours reuses the int in->w ([esi+0x10])
-   and reads o->x/o->w in the other order - same values, different loads; bw = o->w - p0->w - p1->w tried,
-   6 code hunks became 165 (whole-function allocation), reverted; Q2 needs 12 names (d2_DrawText,
-   d2_DrawShapeMode2, d2_PointerObj/14, d2_ButtonPulldownPic, d2_PendingCaptionWin/9bc,
-   D2OBJ.textShadow/greyed/picW/picH/1e4) */
+   @deep s25: the volatile hv is gone: hv = d2_ClipBottom; and the clamp reading d2_ClipBottom itself (if
+   (d2_ClipBottom < y1) y1 = d2_ClipBottom;) give exactly the volatile's code (VC6 merges the two global
+   reads into ebp and keeps hv's own slot); hv = hi = .., hi = hv, hv = hi with a plain hv: 60 ins (one
+   variable in ebp); hv and hi block-scoped: the same 60. Kept the plain form. The bw block: bw from o->w
+   in every spelling (o->w - p0->w - p1->w, parenthesised, p1 first, in steps, o->w = in->w = sum) is one
+   code, 135 ins (frame / register shift); bw = in->ndigits * 0xe: 105. Left: code 6 (bw read from the int
+   in->w, o->x / o->w order in the second d2_DrawShape). prior: 6 ins, headers sample insensitive (32
+   samples, one codegen). The original computes bw from the WORD o->w (movsx ebx, word [edi+0x14], p0->w
+   taken from ebx before it is overwritten) and reads o->x before o->w in the second d2_DrawShape. bw =
+   o->w - p0->w - p1->w gives exactly the original's instructions for that block, but p0 then gets one slot
+   reference more (c2frame: count 4 instead of 3) and is packed with a temp into the i / p1 neighbour slot
+   - 135 ins of frame and register shift (any operand order / grouping of bw and of the DrawShape x: one
+   code). Orders of the four statements in->w / o->w / o->x / bw with three in->w spellings (36 variants):
+   best 53, none below the control. The volatile hv (ClipBottom saved in ebp and in p0's slot, reloaded
+   from the slot for the restoring d2_SetClipRect) has no ordinary replacement found: a plain hi / min() /
+   > forms keep it in ebp (60 ins). Open: which source makes p0's last use a register use with bw read from
+   o->w (tiebreak: insensitive) */
 
 void d2_DrawInput(int idx, void *surf)
 {
@@ -600,8 +600,7 @@ void d2_DrawInput(int idx, void *surf)
     D2PICHDR *ip;
     D2FRAME *p0, *p1, *p2;
     unsigned int flags;
-    int n, v, bw, i, hi, x0, y1;
-    volatile int hv;
+    int n, v, bw, i, hv, x0, y1;
     char text[32];
     char fmt[32];
     char pct[64];
@@ -683,10 +682,10 @@ void d2_DrawInput(int idx, void *surf)
             }
             o = &d2_Objs[in->obj];
             if (d2_Objs[in->obj].fillFraction != 0.0f) {
-                hv = hi = d2_ClipBottom;
+                hv = d2_ClipBottom;
                 y1 = (int)((1.0 - o->fillFraction) * o->h + in->y);
-                if (hi < y1)
-                    y1 = hi;
+                if (d2_ClipBottom < y1)
+                    y1 = d2_ClipBottom;
                 d2_SetClipRect(d2_ClipLeft, d2_ClipTop, d2_ClipRight, y1);
                 d2_DrawShapeMode2(in->x, in->y, d2_ScreenSurf, ip, d2_PicShift);
                 d2_SetClipRect(d2_ClipLeft, d2_ClipTop, d2_ClipRight, hv);
