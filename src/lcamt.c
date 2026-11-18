@@ -8573,7 +8573,15 @@ void cm_SendSetJob(int id, int job);  /* 0x4c59b0 (cm.h, not included) */
    blocks it (he_FindEvent) a click only tells 0x15bd; else a click on another profession asks 0x1d37 for its price
    (4 for one me holds a title in, else 8; sv_CheckMoney) and on yes sets me's job to its title (or the group's first,
    gm_TitleNumber) and pays (cm_SendSetJob, cm_SendMoneyDelta). The campaign step 9 brackets the window. Returns 0x10
-   once me changed, else 0 (and 0 for any other kind) */
+   once me changed, else 0 (and 0 for any other kind)
+   @deep deep s35: the caption copy is strcpy (the hand while ((*d++ = *s++)) loop scheduled inc ecx after
+   the store; strcpy gives the original's order): 21 -> 19 ins, s / d dropped. Left: the 0x15bd arm's
+   ternary: the original computes (sex ? 0x18f : 0x130) into edx, copies it to esi and loads jobId into edx
+   (index in ecx); ours keeps the index in esi and the ternary in ecx. = (same code): the operand orders
+   (lc.c ai_MasterExamWindow's jobId - 1 + (..) form, + .. - 1, (.. - 1) + ..), != 0, a block / function
+   int t, job / w / h / dx / i / obj / cost / group for the ternary (all fold); base = the ternary gives
+   the original's registers but stores base and moves two slots (17 ins, draft); win for it: 1 ins (its
+   store), but win is read after the loop. ai_MasterExamWindow (lc.c) has the same arm left with a note. */
 
 int ai_ChangeProfessionWindow(AICHARREC *me, LCORDMSG *m)
 {
@@ -8590,8 +8598,6 @@ int ai_ChangeProfessionWindow(AICHARREC *me, LCORDMSG *m)
     int i;
     int job;
     int obj;
-    char *s;
-    char *d;
     int cost;
 
     if (me->kind == 6) {
@@ -8627,10 +8633,7 @@ int ai_ChangeProfessionWindow(AICHARREC *me, LCORDMSG *m)
             } else if (job == 0) {
                 d2_Objs[obj].capfont = 0x56;
                 d2_Objs[obj].picW = 0xa4;
-                s = *name;
-                d = d2_Objs[obj].caption;
-                while ((*d++ = *s++) != 0)
-                    ;
+                strcpy(d2_Objs[obj].caption, *name);
             }
             name++;
         }
