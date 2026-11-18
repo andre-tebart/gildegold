@@ -1,6 +1,8 @@
 """vsize.py SRC FUNC VARIANTS [LABEL...|all]: the raw code size of FUNC per variant (VC6 /O2 /Gy section size,
 trailing int3/nop fill dropped), with the control first. The size queue (tools/exe/exemeasure.py --queue) needs the
-padded size (raw rounded up to 16) to equal the original's; dcp try does not print sizes.
+padded size (raw rounded up to 16) to equal the original's; dcp try does not print sizes. The raw size includes a
+switch's jump table (it sits in the function's section), so it is larger than `dcp grade`'s "size X vs Y" for
+functions with a switch; compare against the original's padded size, not dcp grade's figure.
 Example: uv run --with capstone python tools/exe/vsize.py src/ch.c ch_ActTurn build/climb/v.txt all"""
 import sys, os, re, struct
 sys.path.insert(0, r'C:\Users\andre\Documents\gildegold\tools\c2dag')
