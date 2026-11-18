@@ -655,7 +655,9 @@ unsigned int cm_JoinSplit(G17MSG *m)
     return cm_LongMsgLen;
 }
 /* 0x4c39c0, queues a copy of src in the send ring; returns its slot, -1: closed or the slot is still in use
-   @deep read in full against the original: the append was if/else inverted with a while walk from p =
+   @deep deep s23: the slot computed inline in the tx test, m == tx, cm_SendRing + i: = control or worse.
+   (Its sibling cm_QueueSplit went byte with the queue test p != 0 first and last->next7 = m->seq.) prior:
+   read in full against the original: the append was if/else inverted with a while walk from p =
    cm_SendQueue (fixed; now 91/91 instructions, all else equal). Tried m = cm_SendRing + i (no change).
    Left: scheduling only at +0x19: ours loads net_Conn.s into eax before computing the slot address in ebp
    ('- mov eax,[net_Conn]; mov ebp,ebx; shl ebp,4; add ebp,ebx; ... lea ebp,[ebp+ebp*8+cm_SendRing]'), the
