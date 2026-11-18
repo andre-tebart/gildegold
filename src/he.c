@@ -15740,15 +15740,7 @@ void he_AllocDueIsStart(AIJOB *ev)
    object 0x2a, else 0x116; up to 0x20 goods of its list) is picked at random and taken out of the store
    (cm_SendExSellObject to nobody, one piece); the event character gets the message box 0x1bb9 (the building, the
    good's name 0x9a8 + 2 * good, its price; 0x5f2, quick jump to the building's main object, "_NACHRICHTEN_HS_09");
-   the record is freed (reasoned: a theft, from the dislike and the good leaving the store unpaid)
-   @deep read whole against 0x55e3d0..0x55e5b6 and reconstructed (the dislike check <= -26, the store 0x2a
-   / 0x116, the 0x20 goods table memset + gm_Query list fill, the util_Random pick, gm_GoodsPrice / _ftol,
-   cm_SendExSellObject (-1, store, good, 1), txt_Format 0x1bb9, the message box 0x5f2 _NACHRICHTEN_HS_09);
-   155 vs 155 instructions, 7 bytes differ. Left is allocation only: the goods count n lives in edi in ours
-   (+0xce xor edi,edi / mov [esp+edi*4+0x18] / inc edi / test / push edi), in esi in the original, which
-   then reloads ev (mov esi,[esp+0x49c] at +0x1b9) on the n == 0 / g == 0 exits - the two 'branch' hunks
-   are those je's targeting the reload instead of push esi. Tried: n declared apart, the parameter typed
-   AIJOB *, a while-loop fill (worse, reverted) */
+   the record is freed (reasoned: a theft, from the dislike and the good leaving the store unpaid) */
 void he_RunWorkerTheft(int ev)
 {
     AIJOB *e = (AIJOB *)ev;
@@ -15775,8 +15767,8 @@ void he_RunWorkerTheft(int ev)
             store = (AIOBJ *)gm_Query((void *)b->objList, 2, 6, 0, 0x116);
         o = (AIOBJ *)gm_BuildingMainObject((unsigned char *)b);
         if (store != 0) {
-            memset(goods, 0, sizeof(goods));
             n = 0;
+            memset(goods, 0, sizeof(goods));
             for (g = (AIOBJ *)gm_Query((void *)store->list, 1, 5); g != 0; g = (AIOBJ *)gm_QueryNext())
                 goods[n++] = g;
             if (n != 0 && (g = goods[(unsigned short)util_Random(n)]) != 0) {
