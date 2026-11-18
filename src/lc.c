@@ -11611,7 +11611,6 @@ void ai_Top5Window(void)
     int changed;
     int half;
     int x;
-    int y;
 
     win = d2_OpenForm(0, 0, "Locations\\Kirche\\Top5");
     d2_CentreViewWindows(win);
@@ -11638,8 +11637,8 @@ void ai_Top5Window(void)
             half = d2_LastWindowPtr->w / 2;
             rowX = half - d2_Pics[0x5da].w - 0x87;
             x = half - 100;
-            for (i = 0, y = 0x34; y < 0x34 + 5 * 0x4c; i++, y += 0x4c) {
-                rows[i].y = y - 8;
+            for (i = 0; i < 5; i++) {
+                rows[i].y = 0x34 + i * 0x4c - 8;
                 rows[i].x = rowX;
                 rows[i].pickable = rows[i].rec != 0;
                 ai_AmountRowStatus(&rows[i]);
@@ -11649,9 +11648,9 @@ void ai_Top5Window(void)
                     txt_Format(buf, 0x196d, id[i]);
                 else
                     strcpy(buf, txt_NoRelative);
-                ai_LeftAlignedText(buf, x, y, d2_LastWindowPtr->w - x + 0x14, 0x53);
+                ai_LeftAlignedText(buf, x, 0x34 + i * 0x4c, d2_LastWindowPtr->w - x + 0x14, 0x53);
                 txt_Format(buf, 0x196e, sum[i]);
-                ai_LeftAlignedText(buf, x, y + 0x19, d2_LastWindowPtr->w - x + 0x14, 0x53);
+                ai_LeftAlignedText(buf, x, 0x34 + i * 0x4c + 0x19, d2_LastWindowPtr->w - x + 0x14, 0x53);
             }
             changed = 0;
         }

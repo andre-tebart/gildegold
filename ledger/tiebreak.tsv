@@ -4264,7 +4264,7 @@ exe	0x005a1a60	ai_GuildLevel1Listener	lc	48dfd06c3d736bd4	no	byte	control=byte p
 exe	0x005a1af0	ai_DonationWindow	lc	23a6ead72710105e	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
 exe	0x005a1f70	ai_IndulgenceWindow	lc	5d46d9599c339272	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
 exe	0x005a23a0	ai_BaptismWindow	lc	1c33ebae883a6a79	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x005a28f0	ai_Top5Window	lc	524b1775664d6ad7	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
+exe	0x005a28f0	ai_Top5Window	lc	d5b2501cbb36924b	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	2a408cdb9ba3d702
 exe	0x005a2b60	ai_ConfessionWindow	lc	2ea02f6e915fd095	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005a2de0	ai_ConfessionListener	lc	12cd21c83fe6efc6	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005a2e60	ai_SermonWindow	lc	196751a3084e2b10	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
