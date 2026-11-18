@@ -2588,10 +2588,10 @@ int gm_BuildingClass(int kind)
 
 unsigned char *gm_NearestBuilding(unsigned char *b, unsigned kind)
 {
-    float best, d;
+    float best, d, dx, dy, dz;
     unsigned char *r, *p, *k;
     D3OBJECT *o;
-    float v1[3], v2[3];
+    D3VECTOR4 v1, v2;
 
     r = 0;
     best = 1e+08f;
@@ -2600,9 +2600,12 @@ unsigned char *gm_NearestBuilding(unsigned char *b, unsigned kind)
         while (p != 0) {
             k = (unsigned char *)ai_BTypes + ((ORDBLD *)p)->type * 0x24d;
             if (gm_IsHomeType(p) == 0 && gm_IsType10(p) == 0 && (o = ((ORDBLD *)p)->object) != 0 && p != b && *k == kind) {
-                d3_PointToWorld(o, &o->pos, (D3VECTOR *)v1);
-                d3_PointToWorld(((ORDBLD *)b)->object, &((ORDBLD *)b)->object->pos, (D3VECTOR *)v2);
-                d = (float)sqrt((v1[0] - v2[0]) * (v1[0] - v2[0]) + (v1[1] - v2[1]) * (v1[1] - v2[1]) + (v1[2] - v2[2]) * (v1[2] - v2[2]));
+                d3_PointToWorld(o, &o->pos, (D3VECTOR *)&v1);
+                d3_PointToWorld(((ORDBLD *)b)->object, &((ORDBLD *)b)->object->pos, (D3VECTOR *)&v2);
+                dx = v1.x - v2.x;
+                dy = v1.y - v2.y;
+                dz = v1.z - v2.z;
+                d = (float)sqrt(dx * dx + dy * dy + dz * dz);
                 if (d < best) {
                     r = p;
                     best = d;
