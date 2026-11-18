@@ -546,15 +546,20 @@ int ls_WritePlayerRecords(int f)
 /* 0x51a4b0, writes the characters (the counterpart of ls_ReadCharacters 0x51de70): the player character, the count
    of the used AICHAR records of ai_Chars (a record is used when its id is not 0xffff), the two judges and the eight
    characters of ai_KindBChars as netIds (-1 for none), then each used record field by field (the building, job and
-   scene pointers as their ids, ref54 and picture less their bases 0x59a / 0x639). Returns 1, 0 when a write fails. */
+   scene pointers as their ids, ref54 and picture less their bases 0x59a / 0x639). Returns 1, 0 when a write fails.
+   @deep frame sweep s21: 42 -> 4 ins: the -1 written for a missing building / building 2 / job is a local
+   of each else block (int tmp = -1), model a local of the record block, the 8 KindB slots' tmp a local of
+   their loop body (all escaped by &: function-scope each took its own slot). Left: slots 4, the KindB
+   loop's tmp at [esp+0x10] (with model) where the original has it at [esp+0x14] with the record block's
+   tmps. Tried: its = -1 in the else (draft 6, the store moves after the test), = -1 as an initializer (=
+   control), cnt split from the record's ref54 / picture values (v local: 10, frame 0x10), those through
+   tmp (34), none per else block (draft, frame 0x8). */
 
 
 int ls_WriteCharacters(int f)
 {
     int none;
     int cnt;
-    int model;
-    int tmp;
     int i;
     AICHAR *c;
 
@@ -577,6 +582,8 @@ int ls_WriteCharacters(int f)
         LS_W(&none, 4)
     }
     for (i = 0; i < 8; i++) {
+        int tmp;
+
         tmp = -1;
         if (ai_KindBChars[i] != 0) {
             LS_W(&((AICHAR *)ai_KindBChars[i])->netId, 4)
@@ -587,6 +594,8 @@ int ls_WriteCharacters(int f)
     for (i = 0; i < 768; i++) {
         c = &ai_CharsT[i];
         if (c->id != 0xffff) {
+            int model;
+
             LS_W(&c->id, 2)
             LS_W(&c->partyId, 4)
             LS_W(&c->kind, 1)
@@ -623,20 +632,23 @@ int ls_WriteCharacters(int f)
             if (c->bld != 0) {
                 LS_W(&c->bld->id, 4)
             } else {
-                tmp = -1;
+                int tmp = -1;
+
                 LS_W(&tmp, 4)
             }
             if (c->bld2 != 0) {
                 LS_W(&c->bld2->id, 4)
             } else {
-                tmp = -1;
+                int tmp = -1;
+
                 LS_W(&tmp, 4)
             }
             LS_W(&c->v174, 4)
             if (c->job != 0) {
                 LS_W(&c->job->id, 4)
             } else {
-                tmp = -1;
+                int tmp = -1;
+
                 LS_W(&tmp, 4)
             }
             LS_W(&c->jobKind, 1)
