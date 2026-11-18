@@ -8724,22 +8724,29 @@ int ai_OpenTrainingRow(int n, int pic, LCTRAINROW *row, int win)
    event 0x6c (the class 4 needs the room 0x5d, the class 0x10 the room 0x5e); each row shows its count. A row
    clicked with characters selected sends them (sv_MoveToGroup, cm_SendLongMessage) up to three thieves in all
    (text 0x1a4a past it, 0x1a49 when none went); clicked without, it selects the row's characters
-   @deep Reconstructed whole from 0x5bba00..0x5bc0eb (523 vs 517 instructions): the form, the three
-   ai_OpenTrainingRow rows, the DIEB / SOLDAT background, the room-enable queries 0x35 / 0x34 / 0x5d /
-   0x5e, the alpha fade (min(elapsed/750, 0.4), test ah,5 / jnp matched), the right click, the 0x16 / 0x6c
-   event counts and captions, the send loops (thief message 0x16 with memset, 0x6c without), the selection
-   branch, the closing calls; every callee, constant and string reads equal. Left: (1) the click loop over
-   rows: ours strength-reduces rows[row].pic into a pointer kept in a slot (0x5bbd52 '- lea edx,[esp+0x28];
-   mov [esp+0x18],edx; mov eax,[esp+0x18]; mov eax,[eax]' | '+ lea edx,[edi+edi*2]; mov
-   eax,[esp+edx*4+0x24]'; 0x5bbf94 '- mov ecx,[esp+0x18]; add ecx,0xc') which costs the extra slot (frame
-   0x93c vs 0x938, all frame/slot hunks); tried the if-block form and the operand order: no change. (2) the
-   msg.time struct copy scheduling in both send loops (ours loads ai_Time / +4 / +0xc in another order:
-   0x5bbde8 '- mov eax,[ai_Time]' | '+ mov eax,[ai_TimeHourW]'); tried 8 statement orders of
-   type/to/fromId/time/flags/arg0: none better. Allocation and scheduling only. (references: M8 at +0x3e6:
-   ours refers to ai_Time (0x770ae0), the original's field to 0x770ae4 (ai_TimeHourW) (and 1 more),
-   explained: the two M8 lines are the 14-byte AITIME copy msg.time = ai_Time read in another order
-   (crosswise loads of the same struct's words into the same msg words); every store's target and source
-   match) */
+   @deep size queue s20: the frame's extra slot (ours 0x93c, the original 0x938) is a strength-reduced
+   pointer temp of the row click loop (c2frame: tmp@8845 = &rows[row], stored at [esp+0x18] and reloaded
+   per pass); the original indexes rows[row].pic from row each pass (lea edx,[edi+edi*2]; mov
+   eax,[esp+edx*4+0x24]). = control: count = n2 + n3 / count = n3; count += n2 / count = 0; count += ..;
+   separate en0 / en1 enable flags instead of row / n2 reuse (136, slots +4); the click search as a break
+   loop + if (row < 3) (a meaning change, not kept). climb.py round 1: nothing (every mutant changes the
+   frame). The M8s at +0x3e6 / +0x4e9 are the ai_Time struct copy scheduled in another order (all four
+   parts are read on both sides). prior: Reconstructed whole from 0x5bba00..0x5bc0eb (523 vs 517
+   instructions): the form, the three ai_OpenTrainingRow rows, the DIEB / SOLDAT background, the
+   room-enable queries 0x35 / 0x34 / 0x5d / 0x5e, the alpha fade (min(elapsed/750, 0.4), test ah,5 / jnp
+   matched), the right click, the 0x16 / 0x6c event counts and captions, the send loops (thief message 0x16
+   with memset, 0x6c without), the selection branch, the closing calls; every callee, constant and string
+   reads equal. Left: (1) the click loop over rows: ours strength-reduces rows[row].pic into a pointer kept
+   in a slot (0x5bbd52 '- lea edx,[esp+0x28]; mov [esp+0x18],edx; mov eax,[esp+0x18]; mov eax,[eax]' | '+
+   lea edx,[edi+edi*2]; mov eax,[esp+edx*4+0x24]'; 0x5bbf94 '- mov ecx,[esp+0x18]; add ecx,0xc') which
+   costs the extra slot (frame 0x93c vs 0x938, all frame/slot hunks); tried the if-block form and the
+   operand order: no change. (2) the msg.time struct copy scheduling in both send loops (ours loads ai_Time
+   / +4 / +0xc in another order: 0x5bbde8 '- mov eax,[ai_Time]' | '+ mov eax,[ai_TimeHourW]'); tried 8
+   statement orders of type/to/fromId/time/flags/arg0: none better. Allocation and scheduling only.
+   (references: M8 at +0x3e6: ours refers to ai_Time (0x770ae0), the original's field to 0x770ae4
+   (ai_TimeHourW) (and 1 more), explained: the two M8 lines are the 14-byte AITIME copy msg.time = ai_Time
+   read in another order (crosswise loads of the same struct's words into the same msg words); every
+   store's target and source match) */
 
 void ai_TrainingWindow(AIBLD *bld)
 {
