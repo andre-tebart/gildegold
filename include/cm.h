@@ -546,9 +546,13 @@ extern int gm_AllowAll;  /* 0x6f2448 */
 extern char cm_Fighters[];  /* 0x930600 */
 extern G18LOG cm_LobbyChat[15];  /* 0x935da0 */
 extern int cm_LobbyChatNext;  /* 0x9363f4 */
-extern int cm_LobbyStateFlags;  /* 0x936400, [0] the lobby is open, [1] a lobby message came in (cm_LobbyState) */
-extern int cm_LobbyChanged;  /* 0x936404 */
-extern int cm_LobbyClosed;  /* 0x936408 */
+typedef struct CMLOBBYSTATE {
+    int open;       /* 0x00, the lobby is open (cm_LobbyStart) */
+    int changed;    /* 0x04, a lobby message came in (cm_ExLobby) */
+    int closed;     /* 0x08, the lobby was closed (message 0x5f kind 3) */
+    int unread[2];  /* 0x0c, no surviving code reads them */
+} CMLOBBYSTATE;
+extern CMLOBBYSTATE cm_LobbyStateFlags;  /* 0x936400 */
 extern unsigned int cm_LobbyList[];  /* 0x936420, the count then the eight player states (0x24 bytes; cm_LobbyListIds
                                         is a view at +4) */
 extern CMNETGAME cm_NetGame;  /* 0x936460, the network game */

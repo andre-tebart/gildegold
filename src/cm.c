@@ -6772,10 +6772,10 @@ void cm_LobbyStart(int lobbyId, int value)
 {
     memset(cm_LobbyList, 0, 0x24);
     memset(cm_LobbyRecords, 0, 0x2b8);
-    cm_LobbyStateFlags = 1;
+    cm_LobbyStateFlags.open = 1;
     cm_LobbyPlayerId = lobbyId;
     cm_LobbyHelloValue = value;
-    cm_LobbyClosed = 0;
+    cm_LobbyStateFlags.closed = 0;
 }
 /* 0x4cd5d0, the lobby's player list cm_LobbyList (the count, then the eight player ids) */
 
@@ -6799,7 +6799,7 @@ CMLOBBYPLAYER *cm_LobbyMyPlayer()
 
 int *cm_LobbyState()
 {
-    return &cm_LobbyStateFlags;
+    return &cm_LobbyStateFlags.open;
 }
 /* 0x4cd610, sends the lobby message 0x5f kind 0 (asks for the player list); returns the send slot (cm_GetSlotState) */
 
@@ -6927,7 +6927,7 @@ int cm_ExLobby(G17MSG *m, G17STAT *s)
         if (p == 0)
             return -2;
         if (m->lobby.state.value == 1)
-            cm_LobbyClosed = 1;
+            cm_LobbyStateFlags.closed = 1;
         memset(p, 0, sizeof(CMLOBBYPLAYER));
         break;
     case 4:
@@ -6951,7 +6951,7 @@ int cm_ExLobby(G17MSG *m, G17STAT *s)
     }
     if (s != 0)
         s->state = 1;
-    cm_LobbyChanged = 1;
+    cm_LobbyStateFlags.changed = 1;
     return 0;
 }
 
@@ -7021,9 +7021,6 @@ extern float cm_FightCellScale;
 extern int cm_CharInfoWins[32];
 extern G18LOG cm_LobbyChat[15];
 extern int cm_LobbyChatNext;
-extern int cm_LobbyStateFlags;
-extern int cm_LobbyChanged;
-extern int cm_LobbyClosed;
 extern unsigned int cm_LobbyList[9];
 extern CMNETGAME cm_NetGame;
 extern char cm_LobbyRecords[752];
@@ -7103,9 +7100,9 @@ extern int cm_SaveAcks[8][2];
 /* ai_Unk770d8c: view of ai_Chars (tools/data_views.py) */
 G18LOG cm_LobbyChat[15];  /* 0x935da0 */
 int cm_LobbyChatNext;  /* 0x9363f4 */
-int cm_LobbyStateFlags;  /* 0x936400, [0] the lobby is open, [1] a lobby message came in */
-int cm_LobbyChanged;  /* 0x936404 */
-int cm_LobbyClosed;  /* 0x936408 */
+CMLOBBYSTATE cm_LobbyStateFlags;  /* 0x936400, the lobby state cm_LobbyState hands out (open, changed, closed): one object of
+                                    17..32 bytes, LINK's common pad puts it at 0x936400 after cm_LobbyChatNext's end 0x9363f8
+                                    (tools/exe/commongaps.py); 20 taken */
 unsigned int cm_LobbyList[9];  /* 0x936420, the count then the eight player states (0x24 bytes) */
 CMNETGAME cm_NetGame;  /* 0x936460, the network game (hdr.players 0x936496, mode 0x9364dc) */
 char cm_LobbyRecords[752];  /* 0x9364e0 */
