@@ -1319,6 +1319,60 @@ Where the pushes and pops sit, how many epilogue copies there are, shared agains
     dd_SetMode (no plain int expression keeps R * 100 out of VC6's multiply-add merge: 1000 toy forms),
     ai_RentGraveDetail (e / n priorities 76 / 74, flipped by any const-0 reference more or fewer).
 
+- **Deep s40 (the near-byte list to 80 instructions, the 15 untagged ones at 36-44 instructions: 13 byte, 2 at 41 ->
+  2 with notes)**:
+  - **Two callee-saved registers swapped between a pointer parameter and a value local**: count the exit
+    statements. he_RunGypsyCurse wrote `he_FreeEvent(ev); return;` for a == 0 AND at the end (ev 33 against n 32 in
+    `c2trace --prio`: the extra free block is +2 for ev); nesting the money part under `if (a != 0) { .. }` with one
+    free at the bottom took ev below n (byte). The same in he_RunTrialSteps' case 1, the other way round: the
+    original had the early `if (teacher == 0) { end; send; return; }` and the same end written again after the
+    news; VC6 cross-jumps the second copy into case 0's (byte, size +2).
+  - **A local copied from a record field just stored** (`clk.year = c->w028; year = clk.year;` instead of `year =
+    c->w028; clk.year = year;`, same code for the stores): the parameter c then outranks year (gm_DeathDate esi /
+    edi swap, byte). The two-reads and chained forms are the old code.
+  - **A test chain whose second arm comes first in the image** (`test eax,eax; je ->arm0; cmp eax,ecx; jne; arm1`,
+    ecx = 1 held for the stores): `if (id != 0) { if (id == 1) {..} } else {..}` (ai_MessageBox; the switch, the
+    swapped else-if and two separate ifs are other codes).
+  - **A 4-byte char array sorted as if denser**: `char voice[3]` (the frame sort divides by the declared size: 4 refs
+    * 1000 / 3 = 1333 beats the 1250 slots; slot still 4 aligned): cm_RunAuction slots 48 -> 0. Then a store of a
+    value loaded for a compare: `req.price = req.bids[best];` (not `= top`) keeps the loaded ecx (byte).
+  - **`mov ebx, K` held across a loop for an `__int64` argument, `xor eax,eax; push eax; push ebx`**: the mask was a
+    `union { struct { unsigned lo, hi; } s; __int64 q; }` local (he_b.c's kinds): `kinds.s.lo = K; kinds.s.hi = 0;
+    ..(kinds.q)` keeps lo in a register and builds hi per call. An `unsigned` or `__int64` local is folded into
+    `push 0; push K` (he_RunCharPayouts byte).
+  - **One callee-saved register for a saved value and a later index, `mov edi,eax` after a lea from eax**: the
+    store went through the global directly (`d2_Wins[d2_LastWindow].scrollY = 0;`) and the index local was taken
+    after it (`win = d2_LastWindow;`): ai_AmountPageSwitch byte.
+  - **`test ah,5; jnp` to a shared failure block with the second skill test inline**: a flag set by the two tests
+    (`ok = 1; if (A < 0.8) ok = 0; else { ..; if (B < 0.7) ok = 0; } if (ok == 0) {fail} else {success}`):
+    he_SecretRoomDomizil byte; `||` with a comma expression and the nested ifs with the failure written twice are
+    other layouts.
+  - **add esp of two calls merged in each arm** (s38's lever again): cm_SessionAskPlayer / cm_SessionAskAI wrote
+    `r->session.answer = res; sprintf(r->text, ..)` once behind the if / else; in each arm it is byte.
+  - **min / max as ternaries, not as if-clamps** (cm_FindNearCell's form): `hi = sc->size - 1 < cy + k ?
+    sc->size - 1 : cy + k;` instead of `hi = sc->size - 1; if (hi >= cy + k) hi = cy + k;` (the reload of hi
+    from its slot at the join vanished): cm_BestCellNear / cm_MostThreatenedCellNear 41 -> 2 and their sizes
+    right. A 0.0f stored from the zero register of the loop counter: `k = 0;` before `best = 0.0f;`.
+  - **y as an expression of i, not a second loop variable**: ai_Top5Window's `for (i = 0, y = 0x34; y < .. ; i++,
+    y += 0x4c)` gave y the third register; `0x34 + i * 0x4c` written at each use (VC6 strength-reduces it into
+    the same IV, tests it against 0x1b0 and drops i) is byte. A y local assigned in the body leaves the two IV
+    inits of the preheader in the wrong order.
+  - **A local in a dead parameter slot of the original**: the frame packer gives the slot to the first local in
+    list order whose lifetime is compatible. gm_StaffFactor's fit took b's slot in ours; in the original fit = 0
+    stood BEFORE the load of b (`t = GM_BTYPE(bld->type);` after the inits), so the f group got it (permute.py of
+    the 6 inits). Then the dead pop before the final product: the sum into f as its own statement (`f = opinion +
+    f + ..; return (fit + health) * f;`), byte.
+  - **An expression temp in a callee-saved register across a call, the named local got another one**: the amount
+    written inline into the call (he_DuelDeclined's `-9 - (int)(..) - (unsigned short)util_Random(8)`); then
+    `if (q->sex != 0) txt = 0x1d69; else txt = 0x1d68;` for `(q->sex != 0) + 0x1d68` (cm_DuelOutcome's lever
+    again: the setne's byte temp in al), byte.
+  - Left with notes: cm_BestCellNear / cm_MostThreatenedCellNear (two reloads of split pieces at the k loop's
+    latch, cy before the cy - k IV in the original; flip.py names only the float 0.0f constants of the
+    MostThreatened copy).
+  - Tool: the original's slot of each of our locals without `dcp frame` (it refuses functions whose esp it cannot
+    follow through jumps): pair our listing's `_x$[esp+N]` lines with asmdiff's aligned `-` / `+` lines and add the
+    displacement difference (a 60-line script; cm_RunAuction).
+
 - **An else-if arm cross-jumped whole into a sibling's copy, the original keeps it inline**: the store order of
   the OTHER arms (default arm charId before stateArg; 0x176 arm stateArg, charId, x, z) decides it, found by
   climb.py swap + move in round 2 (cm_OrderAttack byte; permuting only the inlined arm's stores did not). The pair
