@@ -2944,7 +2944,7 @@ exe	0x004fb5a0	gm_SelectModelVariant	f3gm	9cfae41c459357f8	no	shape	sweep contro
 exe	0x004fb620	gm_ResolveHeadIcons	f3gm	5e96d1ca61e45ea2	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	f3a0954592a8c40b
 exe	0x004fb770	gm_HeadIconNumber	f3gm	0b5ffe2169f0e73f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004fb890	gm_ChooseHeadIcon	f3gm	e7426eb95d68632b	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x004fbb80	gm_CreateCharModel	f3gm	d5ddd0ed5c8fe759	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	1c96939fabcef245
+exe	0x004fbb80	gm_CreateCharModel	f3gm	5e090ec6e9e69aed	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	d3bf9de64068b28a
 exe	0x004fbd10	gm_PlaceOnStage	f3gm	2652a97ea0a06ce5	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004fbe90	gm_DailyCharacterStep	f3gm	7844d2f6d2ba2fe9	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x004fc6f0	gm_AgeCharacter	f3gm	c2d065ffab1a5e42	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	291ac9aa57e40bb8
