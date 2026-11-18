@@ -4537,7 +4537,7 @@ exe	0x005cacd0	ai_BewitchOrder	lc	ef3ef3d23345ff16	no	shape	control=shape p1=sha
 exe	0x005cae00	ai_CounterEspionage	lc	0c07c0390f9c71fa	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005cb1e0	ai_SwapSeats	lc	38ce63584e590092	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005cb250	ai_SeatSwapWindow	lc	965f75c95ecf4488	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x005cb4f0	ai_HatredWindow	lcamt	9e5ece4d4a8cfdba	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	172a9312bd77d39d
+exe	0x005cb4f0	ai_HatredWindow	lcamt	6708a5f9cb4b4c2d	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	f8f356b0957c44b8
 exe	0x005cba90	ai_HearingWindow	lc	f9ce01d01283799c	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005cbe00	ai_ExpelWorkerWindow	lc	c05f0fddc9044a65	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x005cc2b0	ai_PeaceWindow	lc	7d70b044c43d4c1e	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
