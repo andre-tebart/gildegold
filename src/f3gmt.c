@@ -8461,17 +8461,15 @@ int gm_Homeless(char *c)
     int i;
     ORDBLD *b;
 
-    if (ORD_CHAR(c)->b1b1 != 0) {
-        i = 0;
-        b = (ORDBLD *)ai_Blds;
-        while (b->type == 0 || ai_BTypes[b->type * 0x24d] != 4 || b->v65 != (int)ORD_CHAR(c)->netId) {
-            b++;
-            i++;
-            if (i > 0xff)
-                return 1;
-        }
+    if (ORD_CHAR(c)->b1b1 == 0)
+        return 0;
+    b = (ORDBLD *)ai_Blds;
+    for (i = 0; i < 0x100; i++) {
+        if (b->type != 0 && ai_BTypes[b->type * 0x24d] == 4 && b->v65 == (int)ORD_CHAR(c)->netId)
+            return 0;
+        b++;
     }
-    return 0;
+    return 1;
 }
 /* 0x50cd40, the wage of 0x508740 times 3 (9 for the jobs 10 .. 12 of the building kind k) */
 
