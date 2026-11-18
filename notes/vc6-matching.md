@@ -381,6 +381,38 @@ Where the pushes and pops sit, how many epilogue copies there are, shared agains
     the out local declared in the block after the parameter's last use (he_FillWalkSlot).
   - A long-lived flag initialised before a call loses its register to a parameter: its `= 0` inside the
     test that follows the call (he_CatchMeetingDisease: a outranks ch, 78 -> 2 ins).
+- **Size queue s15 (byte or padded size by these)**:
+  - A loop-invariant table byte the original addresses before the loop's guard (`lea edx,[base+idx]` in
+    the first block, `mov al,[edx]` in the preheader) where ours tests a hand do/while: a pointer local
+    to the byte as its own statement before a plain `for` search loop (`cls = &ai_BTypes[*b * 0x24d];
+    for (i = 0; tab[i].kind != 0; i++) if (tab[i].kind == *cls) break;`) (init_SetCharacterAnimations
+    93 ins -> byte).
+  - A global's load into a register scheduled after the last use of the value that held that register
+    (`sub edi,ecx; cmp edi,K; mov edi,[g]; jbe`), ours with t spilled: the global read directly in the
+    test and the statements after it, not copied into a local before the test (the global is an
+    allocation candidate whose range starts in that block) (snd_UpdateMusic 9 ins -> byte).
+  - A zero vector stored with `mov [..],0` immediates where ours caches 0 in a callee-saved register
+    (`cmp reg,ebx` / `push ebx` everywhere): the vector is a float vector (`D3VECTOR4`, `0.0f` stores),
+    so the integer 0 loses four references and stays an immediate (gm_CreateCharModel 62 -> 18 ins,
+    padded size). The original's `mov eax,[p] .. mov edi,eax` for `p ? p : &zero`: its own pointer
+    local (`src = p != 0 ? p : &zero`), not `p` reassigned.
+  - `xor esi,esi` in the first block feeding several zero stores and a later `bld = 0`: the `bld = 0`
+    stands with the other inits at the top (before the early guards), not after them (ai_GuildSpyWindow
+    77 -> 14 ins, then the message fill permuted: byte).
+  - A `-1` cached in a register (`or eax,-1; cmp ecx,eax; mov [msg.fromId],eax`) where the original
+    compares and stores immediates: the fromId store later in the fill (after to / arg[0]), found by a
+    5-line permutation round (ai_RenovationWindow byte). Its two payment arms each keep the whole tail
+    (`cm_SendMoveGoods; cm_SendLongMessage; cm_EndGroup; sv_PopRequest = 1;`): VC6 cross-jumps them from
+    the SendLongMessage call on, so the add esp of the move call merges into one 0x1c (68 -> 28 ins,
+    padded size).
+  - A meaning bug read from the slots (cm_MessageBox): the answer started at -1 in ours; the original
+    zeroes ret's slot in the first block and keeps the -1 in its own slot read as the slider handle.
+    Read which slot each early constant goes to before treating a constant-in-a-register hunk as
+    allocation.
+  - No lever (one code each): every second-read spelling of a table entry the original reloads
+    (init_NameBuildings: the reload is a rematerialisation of the memory-homed b, not source); the
+    out-of-line placement of one if-arm after the epilogue (gm_CreateCharModel: polarity, nesting,
+    goto to a label after the return, a ternary for the pointer, an ok flag).
 
 - **An else-if arm cross-jumped whole into a sibling's copy, the original keeps it inline**: the store order of
   the OTHER arms (default arm charId before stateArg; 0x176 arm stateArg, charId, x, z) decides it, found by
