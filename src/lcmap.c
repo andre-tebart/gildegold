@@ -2338,7 +2338,7 @@ void ai_ShowPartingNews(unsigned short *cRec, unsigned short *pRec)
     c = (G8CHARREC *)cRec;
     p = (G8CHARREC *)pRec;
     if (p->kind == 6 || p->kind == 7) {
-        txt_Format(ai_NewsText, 0x132f, c->id, (util_Random(3) & 0xffff) + (p->sex != 0 ? 3 : 0) + 0x1330, p->id,
+        txt_Format(ai_NewsText, 0x132f, c->id, (util_Random(3) & 0xffff) + (p->sex != 0 ? 0x1333 : 0x1330), p->id,
                    (util_Random(3) & 0xffff) + 0x1336, ai_PlayerSlots[ai_OwnPlayer]);
         he_ShowNews(p->netId, -1, ai_NewsText, 1, 0x5ec, 0);
     }
