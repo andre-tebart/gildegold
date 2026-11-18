@@ -615,44 +615,46 @@ int sb_UnloadSampleBank(SBBANK *bank)
 
     if (!sb_Driver)
         return 1;
-    if (sb_Used && bank) {
-        for (b = sb_Banks; b; b = b->next) {
-            if (b == bank) {
-                if (--b->refs <= 0) {
-                    if (prev)
-                        prev->next = b->next;
-                    else
-                        sb_Banks = b->next;
-                    path = bank->path;
-                    sprintf(sb_Msg, "Unloading Samplebank %s ... MemUsed before unloading %d bytes.", path, sb_Used);
-                    for (i = 0; i < b->count; i++) {
-                        e = &b->entries[i];
-                        if (b->entries[i].data) {
-                            k = 0;
-                            for (s = sb_FindSampleOf(e, &k); s; s = sb_FindSampleOf(&b->entries[i], &k)) {
-                                sb_Stop(s, 0);
-                                s->info = NULL;
-                                k++;
-                            }
+    if (sb_Used) {
+        if (bank) {
+            for (b = sb_Banks; b; b = b->next) {
+                if (b == bank) {
+                    if (--b->refs <= 0) {
+                        if (prev)
+                            prev->next = b->next;
+                        else
+                            sb_Banks = b->next;
+                        path = bank->path;
+                        sprintf(sb_Msg, "Unloading Samplebank %s ... MemUsed before unloading %d bytes.", path, sb_Used);
+                        for (i = 0; i < b->count; i++) {
                             e = &b->entries[i];
-                            if (b->entries[i].type == 1)
-                                sb_Used -= ((SBDATA *)e->data)->len + 12;
-                            else
-                                sb_Used -= ((SBVAR *)e->data)->len + 12;
-                            mem_Free(b->entries[i].data);
-                            b->entries[i].data = NULL;
-                            b->entries[i].data = NULL;
+                            if (b->entries[i].data) {
+                                k = 0;
+                                for (s = sb_FindSampleOf(e, &k); s; s = sb_FindSampleOf(&b->entries[i], &k)) {
+                                    sb_Stop(s, 0);
+                                    s->info = NULL;
+                                    k++;
+                                }
+                                e = &b->entries[i];
+                                if (b->entries[i].type == 1)
+                                    sb_Used -= ((SBDATA *)e->data)->len + 12;
+                                else
+                                    sb_Used -= ((SBVAR *)e->data)->len + 12;
+                                mem_Free(b->entries[i].data);
+                                b->entries[i].data = NULL;
+                                b->entries[i].data = NULL;
+                            }
                         }
+                        sb_Used -= b->count * sizeof(SBENTRY) + sizeof(SBBANK);
+                        sprintf(sb_Msg, "Finished unloading Samplebank %s ... MemUsed after unloading %d bytes.", path, sb_Used);
+                        mem_Free(b);
                     }
-                    sb_Used -= b->count * sizeof(SBENTRY) + sizeof(SBBANK);
-                    sprintf(sb_Msg, "Finished unloading Samplebank %s ... MemUsed after unloading %d bytes.", path, sb_Used);
-                    mem_Free(b);
+                    break;
                 }
-                break;
+                prev = b;
             }
-            prev = b;
-        }
-
+        } else
+            ret = -1;
     } else
         ret = -1;
     return ret;
