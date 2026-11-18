@@ -3673,7 +3673,7 @@ exe	0x00552200	he_StartExamOffer	he	48ce0b9ffb9a6147	no	byte	control=byte p1=byt
 exe	0x00552270	he_RunExamOffer	he	8c166ece8a85c66d	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=505	16d55ba700d46f39
 exe	0x005524e0	he_StartDue	he	4fbbbbcda3c64a7e	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00552520	he_RunDelay	he	eff83cb1358f70b0	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x005525a0	he_RunConversion	he	3be82dd2a2486c7c	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
+exe	0x005525a0	he_RunConversion	he	6b73f0b6cf8e7f2c	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	2508bda473ffc856
 exe	0x005527c0	he_StartSkillBonus	he	6f70b40ee00057eb	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00552820	he_RunSkillBonus	he	dc9207a02a750d48	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00552880	he_StartApplicants	he	eaabf3adb2680dd0	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	

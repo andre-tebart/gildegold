@@ -10513,14 +10513,23 @@ void he_RunDelay(int ev)
    (the kind the person tooltip names) is `from` to the other kind (1 - from, a field delta of AICHAR +0xc), walking
    the 0x300 characters from a random one (ids in use, kinds up to 4); found fewer than n, it tries again 5 minutes
    later. A negative stage, no rounds or no characters left free the event, flag 4 of opts holds it
-   @deep read whole against the original and fixed the meaning (ceil not sqrt, n = min(left, ceil(left +
-   rounds)) as one double expression, the field value 1 - from computed first, util_RandomU start, typed
-   HECONVERT words). Left, allocation only: the original keeps cnt in a frame slot (inc dword ptr
-   [esp+0x10], cmp [esp+0x10], ebx) and left in ebp (dec ebp; test ebp, ebp), ours keeps cnt in ebx and
-   left in the dead parameter slot (dec dword ptr [esp+0x20]); hence frame 0xc vs 0x10, 526 vs 538 bytes,
-   the permuted registers (n ebx | ebp, ring esi | edi, ev edi | esi) and the original's push ebp (left, 0
-   after the loop) for gm_AddTime's zeros where ours pushes 0. A do / while form of the loop tried, no
-   change. The prover stops there (it reads left as 0x2ff on its path). */
+   @deep size queue s14: padded size, 99 -> 6 ins (raw 540 vs 538): (a) the candidate test reads
+   ai_CharsT[ring].id / .kind / .b00c by index and c = &ai_CharsT[ring] only inside for the calls (the
+   original's shl eax,2 offset CSE with lea ecx; through c the fields go via eax); (b) the loop as left >
+   0: puts left in ebp and cnt in its frame slot (frame 0x10) as the original. Left: the original's loop
+   test is jne (left != 0) and on the loop's fall-through exit it pushes ebp (left, known 0) for
+   gm_AddTime's two zeros; with != (any for / while / do / && / truthy / unsigned spelling, all one code)
+   VC6 ranks cnt (prio -8) above left (-11, c2trace) and left goes to the dead parameter slot: in the
+   original the two pushes count as left's references, so its IL had left at those pushes. short left: 6
+   ins too (test bp,bp, push 0). Next: what makes VC6 substitute left for the zero constants (value
+   numbering on the exit edge). prior: read whole against the original and fixed the meaning (ceil not
+   sqrt, n = min(left, ceil(left + rounds)) as one double expression, the field value 1 - from computed
+   first, util_RandomU start, typed HECONVERT words). Left, allocation only: the original keeps cnt in a
+   frame slot (inc dword ptr [esp+0x10], cmp [esp+0x10], ebx) and left in ebp (dec ebp; test ebp, ebp),
+   ours keeps cnt in ebx and left in the dead parameter slot (dec dword ptr [esp+0x20]); hence frame 0xc vs
+   0x10, 526 vs 538 bytes, the permuted registers (n ebx | ebp, ring esi | edi, ev edi | esi) and the
+   original's push ebp (left, 0 after the loop) for gm_AddTime's zeros where ours pushes 0. A do / while
+   form of the loop tried, no change. The prover stops there (it reads left as 0x2ff on its path). */
 void he_RunConversion(int ev)
 {
     AIJOB *e = (AIJOB *)ev;
@@ -10538,11 +10547,11 @@ void he_RunConversion(int ev)
         return;
     n = (int)((double)cv->left < ceil((double)(cv->left + cv->rounds)) ? (double)cv->left : ceil((double)(cv->rounds + cv->left)));
     ring = util_RandomU(0x300);
-    for (left = 0x300; left != 0; left--) {
+    for (left = 0x300; left > 0; left--) {
         if (cnt >= n)
             break;
-        c = &ai_CharsT[ring];
-        if (c->id != 0xffff && c->kind <= 4 && c->b00c == cv->from) {
+        if (ai_CharsT[ring].id != 0xffff && ai_CharsT[ring].kind <= 4 && ai_CharsT[ring].b00c == cv->from) {
+            c = &ai_CharsT[ring];
             cm_BeginFieldBlock((char *)c, c->netId);
             cm_AddFieldDelta(1, 1, 0xc, &to);
             cm_SendFieldDeltas();
