@@ -16962,19 +16962,25 @@ int cm_DialogTimer(int dlg, int a, int c)
    objects are put into a radio group (all but the type 0x40), the loop runs the frame wait sv_RunFrame until the stop request; the answer: the selected
    button index + 1 when the text window is clicked, 0 otherwise (a right click on it, the escape key, a timeout); not reentrant (cm_MessageBoxOpen).
    @deep s15 (size queue, 687 vs 697): meaning fixed: the answer starts at 0, not -1 (the original zeroes
-   ret's slot [esp+0xc] at 1 push from esi = 0 and returns that slot), and the slider handle starts at -1
-   in its own slot ([esp+0x14] = -1 in the first block, read as slider when the 0x80 flag is off): slider =
-   -1; ret = 0; at the top, no else arm. Left as before: the original keeps ret, fl, win, t0, slider, timed
-   in memory (frame 0x18: win 0, fl 4, ret 8, t0 0xc, slider 0x10, timed 0x14; textwin in id's slot, raise
-   in flags' slot), leaves ebp unused and holds the constant 0 in esi from the first block (push esi for
-   d2_OpenForm / d2_CreateRadioGroup, i starts in it); ours gives ret ebp (pass 2, sav 20) and fl esi.
-   prior: read whole against the original; fixed the d2_OpenForm (x, y, name) and sv_RunFrame (cb, mask)
-   argument orders, the frame mask (& ~0x38: and al, 0xc7), the clicked window (d2_LastWindow after
-   io_PrintText, the original keeps it in id's slot), typed D2WIN/D2OBJ access. Left: allocation only: ours
-   keeps ret in ebp (or ebp, -1 / xor ebp, ebp / mov eax, ebp) and fl in a register, the original keeps ret
-   at [esp+0x14] and fl at [esp+0x10] with no ebp (frame 0x10 vs 0x18), and the original holds 0 in esi
-   from the start (push esi for the d2_OpenForm / d2_CreateRadioGroup zeros, i starts in it); slider = ret
-   loads the slot there (or esi, -1 here). */
+   ret's slot in the first block from esi = 0 and returns that slot), and the slider handle starts at -1 in
+   its own slot (read as slider when the 0x80 flag is off): slider = -1; ret = 0; at the top, no else arm.
+   The original's allocation: frame 0x18 (win 0, fl 4, ret 8, t0 0xc, slider 0x10, timed 0x14; textwin in
+   id's arg slot, raise in flags' arg slot), ebp never used, esi = the constant 0 from the first block
+   (push esi for d2_OpenForm / d2_CreateRadioGroup, i starts in it, slider later), flags in ebx but split
+   around the radio loop (d2_Objs in ebx there, flags reloaded from its arg slot after it), radio edi.
+   Ours: ret#2 takes ebp in pass 2 (sav 20), fl esi, flags ebx whole, d2_Objs ebp. Rounds (dcp try): i = 0
+   at the top with for (; ..): 98 ins (ret still ebp); CreateRadioGroup(i = 0): = control; the click tests
+   flat (clicked == 0 && hit == textwin first, then (clicked == 1 && hit == textwin) || kb_Last == 1): =
+   control; while loop with raise / ends before it: 130 (the original computes them after the first
+   sv_RunFrame test: if + do/while is right); climb round 1: only inline:ends (75 ins, ends must stay: and
+   ebx,4). Open: what keeps ret out of ebp (and flags off ebx in the radio loop) in the original. prior:
+   read whole against the original; fixed the d2_OpenForm (x, y, name) and sv_RunFrame (cb, mask) argument
+   orders, the frame mask (& ~0x38: and al, 0xc7), the clicked window (d2_LastWindow after io_PrintText,
+   the original keeps it in id's slot), typed D2WIN/D2OBJ access. Left: allocation only: ours keeps ret in
+   ebp (or ebp, -1 / xor ebp, ebp / mov eax, ebp) and fl in a register, the original keeps ret at
+   [esp+0x14] and fl at [esp+0x10] with no ebp (frame 0x10 vs 0x18), and the original holds 0 in esi from
+   the start (push esi for the d2_OpenForm / d2_CreateRadioGroup zeros, i starts in it); slider = ret loads
+   the slot there (or esi, -1 here). */
 
 int cm_MessageBox(int id, int flags)
 {
