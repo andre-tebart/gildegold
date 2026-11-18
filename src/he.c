@@ -6384,10 +6384,8 @@ void he_RunOffspring(int ev)
 {
     AIJOB *e = (AIJOB *)ev;
     HEOFFSPRING *s = (HEOFFSPRING *)ev;
-    G28REC party;
     int home = -1;
     AICHAR *c, *partner;
-    int *child;
     int i, n;
     float f, odds;
 
@@ -6401,6 +6399,8 @@ void he_RunOffspring(int ev)
         if (e->stage == 1) {
             if (s->chance >= 3.0) {
                 if (c->kind == 6) {
+                    G28REC party;
+
                     memset(&party, 0, sizeof(party));
                     party.host = c->netId;
                     party.members[0] = c->netId;
@@ -6429,11 +6429,9 @@ void he_RunOffspring(int ev)
         }
     } else {
         n = 0;
-        child = &c->relatives[3];
-        for (i = 5; i != 0; i--) {
-            if (*child != -1 && gm_FindChar(*child) != 0)
+        for (i = 0; i < 5; i++) {
+            if (c->relatives[3 + i] != -1 && gm_FindChar(c->relatives[3 + i]) != 0)
                 n++;
-            child++;
         }
         if (n == 5) {
             he_FreeEvent((int *)ev);
@@ -6443,8 +6441,8 @@ void he_RunOffspring(int ev)
         f = f * f;
         odds = f * s->chance;
         if (util_RandomF() + (1.0f - f) < odds) {
-            e->end.year++;
             e->stage = 1;
+            e->end.year++;
             s->chance = 0;
         } else
             s->chance += f * 0.1;
