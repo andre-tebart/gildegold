@@ -3417,7 +3417,7 @@ int cm_CheckAuction(G28REC *m)
 
 void cm_RunAuction(G28REC *m)
 {
-    char voice[4];
+    char voice[3];
     char kindName[0x40];
     char model[0x40];
     char buf[0x200];
@@ -3483,16 +3483,16 @@ void cm_RunAuction(G28REC *m)
     }
     /* the auctioneer */
     if (speaker == 0) {
-        sprintf(model, "%s", "buerger3_DICKER");
         speaker = -5;
+        sprintf(model, "%s", "buerger3_DICKER");
         sprintf(voice, "%s", "M1");
     } else if (speaker == 1) {
-        sprintf(model, "%s", "wirt2_DICKER");
         speaker = -4;
+        sprintf(model, "%s", "wirt2_DICKER");
         sprintf(voice, "%s", "M2");
     } else {
-        sprintf(model, "%s", "buergerin2_FRAU");
         speaker = -2;
+        sprintf(model, "%s", "buergerin2_FRAU");
         sprintf(voice, "%s", "W1");
     }
     o = d3_FindObject(0, 0x100, 0, "dummy_AUKTIONATOR");
@@ -3549,9 +3549,9 @@ void cm_RunAuction(G28REC *m)
         int nbid, top;
 
         rounds = 10 - round;
-        req.countdown = rounds;
         top = 0;
         nbid = 0;
+        req.countdown = rounds;
         cm_RunSceneParty(m, &req);
         if (rounds > 6 && cm_Random(3) != 0)
             cm_QueueVoice(cm_Random(4) != 0 ? -4 : -2, bankRemarks, "_VERSTEIGERUNG_KOMMENTARE", cm_Random(6), cm_Random(0x200) + 0x32);
@@ -3561,7 +3561,7 @@ void cm_RunAuction(G28REC *m)
                 if (top < req.bids[i]) {
                     top = req.bids[i];
                     best = i;
-                    req.price = top;
+                    req.price = req.bids[best];
                 }
                 nbid++;
             } else
