@@ -1250,6 +1250,75 @@ Where the pushes and pops sit, how many epilogue copies there are, shared agains
     callee-saved registers), he_EndPersonEvents (the constant 3 of seven byte tests gets bl; no spelling of
     the test changes it).
 
+- **Deep s39 (the near-byte list to 80 instructions, notes older than s22 first: the 6 old-note ones at 28-31 and
+  the 9 at 32-36 instructions, 10 byte + 1 proven byte under a declaration set, 4 notes; bonus
+  ai_MeisterTradeFernEinkauf2, ai_UpgradeBuilding byte)**:
+  - **`mul 0xaaaaaaab` / `shr edx,4` / `lea [esi+eax*8]` around a field update that goes through a callee-saved
+    register, an `inc` behind the second quotient** = two counting loops VC6 replaced by their trip counts:
+    `while (h >= 24) { h -= 24; c->year++; } while (h < 0) { h += 24; c->year--; }` (gm_AddTime byte; the
+    written-out `d = (unsigned)h / 24; c->year += d; h -= d * 24;` has the same instructions with the update
+    in eax and one register fewer). A division that looks hand-optimised next to a read-modify-write temp in
+    edi / esi is a loop first.
+  - **A parenthesis in a float product is a node in the scheduler's region** (c2dag: `op=263 r32 -> r32` behind
+    each parenthesised product), and a region ends after 81 nodes: a macro nested to force the multiply order
+    (`(((((s * a) * b) * c) * v) * v) * 0.5f`) made ai_StepShot's last region six nodes longer, so the four
+    hoisted argument pushes of the following call fell into the next region (28 ins, "the pushes sink behind
+    the float code"). Count the original's region: the 81st instruction behind the last label / jump (fxch
+    and the pops count) is where its hoisting stops. Probe: delete N instructions' worth of statements in a
+    variant and watch N more instructions hoist.
+  - **VC6 orders the operands of an unparenthesised float product itself**: by class (the ?: temp, a pointer
+    field, globals, locals, the constant), and two globals by which node it MET FIRST in the function, the
+    later one first. So the function's first product decides every later one: ai_StepShot's wind x drag as
+    `shot->area * v * v * SIGN(v) * ai_AirDensity * ai_ShotDrag * 0.5f` gives fmul drag / fmul density there and
+    in all six flight drags (all 2520 operand orders of the flight macro were one code; with the nested wind
+    macro naming the drag first the flight products came out density / drag, 12 crossed M8). A product that
+    must keep `fmul [m]` twice instead of squaring a loaded copy keeps two parentheses (`((k) * v) * v`, the
+    wind y drag, @original).
+  - **The x87 allocator takes its candidates block by block in definition order**: a float copied by integer
+    moves (`next.x = pos.x`) stays in memory only if a stack candidate defined before it in the same block
+    does not nest with it; placed right behind the block's first statement it went on the stack (frame -4,
+    175 ins), behind `b.x = d.x + wind.x` it is the original's (ai_StepShot: next copied in the last block; the
+    integer statements of that block keep their source order when the scheduler hoists them).
+  - **Two registers holding the same constant for two arrays** (`or edx,-1` for objs1, `or eax,-1` for objs2;
+    `xor edx,edx` for exp[] beside `xor ecx,ecx` for nB / i): the arrays were filled by a loop or memset each
+    (`for (i = 0; i < 3; i++) objs1[i] = -1;` twice = `memset(.., 0xff, ..)` twice; `memset(exp, 0, sizeof(exp))`),
+    not by element stores, which share one register with every other use of the constant (rt_EditPointDialog
+    35 -> 6, ai_MeisterTradeFernEinkauf 35 -> 17, its twin 62 -> 16).
+  - **A long message fill: write the repeated value out at each store and permute all seven**: the chained
+    `msg.arg[0] = msg.fromId = msg.to = X` bottomed at 18 ins in 600 orders; `msg.to = X; .. msg.fromId = X;
+    msg.arg[0] = X;` as three statements among type / flags / time / arg[1] had one byte order in 5040
+    (ai_CourtshipConfirm: type, flags, to, time, arg[1], fromId, arg[0]). The 14-byte `msg.time = ai_Time` is
+    scheduled in pieces around the other stores, so its place in the source is not readable from the image.
+  - **A scratch register one step further in the second arm of an if / else whose arms end alike** (`lea eax`
+    where ours has `lea ecx`, every later temp shifted, `mov ebx,eax` sunk behind the push): the code BEHIND
+    the if / else stood in both arms. The first copy's temporaries advance the rotation, then VC6 cross-jumps
+    the copy away (the first arm ends `test eax,eax / jmp` into the second arm's `je`): ai_UpgradeBuilding's
+    stock check + message in both treasury arms, 49 -> byte, kept with an @original. The 30 repeated stores an
+    earlier pass had left in that fill bought nothing (the plain six: the same 49).
+  - **The frame's slot table as a hint for one object**: two locals of ours swapped at equal density, the
+    original's pair adjacent (rect[4] at +0x38, scene at +0x48) = ONE 20-byte local (`struct { int rect[4]; int
+    scene; } saved`); with it the K&R quicksort also resolved the unrelated n / dt tie (ai_CannonScene byte;
+    simulate the table with the 12-line sort before permuting statements). A slot weight tie made by a temp
+    (`tmp@strcat` joining `taken`): give the escaped local whose scope blocks the better partner a block scope
+    (gm_InheritEstate: `int kind` in the heir block, the temp joins kind, taken sorts last).
+  - **A byte temp that needs the fourth byte register takes ebx away from a zero held across calls**: the
+    original materialised the record address (`lea eax,[edx+eax*4]`, the byte through edx) and kept ebx = 0
+    for nine compares and stores; a type pointer read at each use (`bt = &ai_BTypesT[it->type]; if (bt->level >
+    best) { best = bt->level; ..`) instead of an `(unsigned char)table[i * size + off]` value local
+    (amt_ExecutePriceMessage 28 -> byte; flip.py --want 'cmp esi, ebx' named the lvl statement).
+  - Known levers that matched again: a goods pointer tested at each use for `add eax,ebp / mov al,[eax]`
+    (ai_RoomUpgradeWindow, both type loops); the row's field written out at each use for the strength-reduced
+    base on that field (`rows[i].good` instead of a `good` local: lea [esp+0x138] against 0x13c); a block
+    pointer `sl = &ai_Slots[i]` for the base on the third address expression (ai_MeisterTradeFernEinkauf, the
+    M8 gone); `min(amt, buyAmount)` in both calls instead of a clamped local (the twin); u^3 / t^3 as float
+    locals kept on the FPU stack over two statements (ai_TutorialBezier).
+  - Left with notes: d2_BankConvertTo16 (size needs +5 priority against the strength-reduced pointer: one
+    more distinct value in the first block; the second arm's scratch rotation), ai_QuarrelCallback (the zero
+    of the kind-6 arm lives in esi from the first block: a ret-like variable whose return only merges with
+    ret = 1 behind the body; the form with every instruction right has the else arm out of line),
+    dd_SetMode (no plain int expression keeps R * 100 out of VC6's multiply-add merge: 1000 toy forms),
+    ai_RentGraveDetail (e / n priorities 76 / 74, flipped by any const-0 reference more or fewer).
+
 - **An else-if arm cross-jumped whole into a sibling's copy, the original keeps it inline**: the store order of
   the OTHER arms (default arm charId before stateArg; 0x176 arm stateArg, charId, x, z) decides it, found by
   climb.py swap + move in round 2 (cm_OrderAttack byte; permuting only the inlined arm's stores did not). The pair
