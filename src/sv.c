@@ -7527,6 +7527,8 @@ int sv_ButtonPrivileges = -1;  /* 0x623848 */
 int sv_PanelMoneyText = -1;  /* 0x62384c */
 int sv_AdvanceHit = -1;  /* 0x623850 */
 int sv_PanelPic = -1;  /* 0x623854 */
+int sv_PanelUnread = 1;  /* 0x623858, a value among the panel handles no surviving instruction or pointer reads (its readers
+   were removed by /OPT:REF; tools/exe/holes.py --section data); the original's value */
 int sv_PlayerBarForm = -1;  /* 0x62385c, the player bar's form, -1 = closed */
 int sv_PanelForm = -1;  /* 0x623860 */
 int sv_PanelBldPic = -1;  /* 0x623864 */
@@ -7540,6 +7542,7 @@ int sv_PanelTransportBtn = -1;  /* 0x62388c */
 int sv_PanelCartBtn = -1;  /* 0x623890 */
 int sv_PanelActionBtn = -1;  /* 0x623894 */
 int sv_PanelPlantBtn = -1;  /* 0x623898 */
+int sv_PanelUnread2[2] = { -1, -1 };  /* 0x62389c, two more handles no surviving code reads; the original's values */
 int sv_BarToggle = -1;  /* 0x6238a4 */
 /* 0x6238a8, the skies of fair weather (sv_UpdateWeather picks one below 50 clouds, cm picks one for the fair cutscene) */
 SVSKYREC sv_SkyFair[4] = {
