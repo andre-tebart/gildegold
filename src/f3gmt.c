@@ -7491,7 +7491,12 @@ int gm_FreeCapacity(short *l, int id, int n)
 }
 /* 0x50acf0, how many of the goods id the stall object l can still take, at most n, as gm_FreeCapacity without the
    goods groups: the room left on its stock (gm_ListStock less the held object's count) when it holds the goods
-   already; else none when its goods fill cap[0], else the stock */
+   already; else none when its goods fill cap[0], else the stock
+   @deep deep s38: stock (prio 18) and cnt (16) take edi / ebx, the original ebx / edi: cnt must outrank
+   stock (a probe with one more cnt reference flips both). Loop forms, clamp forms, cnt init placement,
+   declaration order: = control or worse (details in the session note text: for / while / do-while, cnt in
+   for init / increment, ternary / >= / n = stock, nested cap test). (declaration set: no declaration set
+   makes this text byte (every symbol-count shift 0..63 at the unit's start and before the function) */
 
 int gm_FreeStallCapacity(char *l, int id, int n)
 {

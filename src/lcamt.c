@@ -4007,7 +4007,13 @@ void ai_MasterHireWindow(AIBLD *bld, int mode)
 /* 0x5c2a10, fills the master letter window's goods page (400 B): the title text 0x1949, then one row per slot of
    the production setting (seven, 0x30 pixels apart): the good's picture (d2 style 3, its AIGOOD record as the
    object's user data, interactive, checked while the slot is not locked) into locks[i] and the weight slider
-   (0 .. 100, the slot's weight, disabled while locked) into sliders[i]; an empty slot gives -1 in both */
+   (0 .. 100, the slot's weight, disabled while locked) into sliders[i]; an empty slot gives -1 in both
+   @deep deep s38: the empty-slot arm as the else and y, i stepped in the for's increment (y += 0x30 first)
+   put y into win's dead parameter slot as in the original (32 -> 6 ins). Left: the latch's inc edi comes
+   before add eax,0x30 in the original, and at the loop entry the slider cursor is stored to sliders' slot
+   before y = 0xc. i++ written before y += 0x30 (in the increment or in the body) makes the cursor temp
+   reach its count 4 before y in the walk and y loses win's slot (24 ins); 36 init x increment orders: 3
+   codegens; i < 7 as the bound: 8 ins; climb 2 rounds (341 mutants): nothing. */
 
 void ai_ShowSettingGoods(int win, G8SLOT *slots, int *sliders, int *locks)
 {
@@ -10186,14 +10192,15 @@ int ai_TrialStep4(G8CHARREC *ch, G8USEVIEW *use)
    bit 1 for a player whose sex byte is set, else 2; the prompt 0x9c), else the character use->target
    (gm_FindChar); none -> 0. The target's relation to the user rises by 25, 50 when the user holds the good 0x2c5
    (cm_SendRelations); a player target (kind 6 / 7) gets the news 0xfe9 naming the user (key 0x5ec). Returns 1.
-   @deep deep s38: path 1 sets ret = 1 after its null check (the original's mov edi,1 before the menu call,
-   cfg.flags stored from edi, path 1 jumping past path 2's mov edi,1) and path 2 sets ret = 1 after
-   cm_SendRelations (its last argument an immediate again, not edi): 31 -> 26 ins, path 1 exact. Left: path
-   2's mov edi,1 sits right after the null test in the original (ret = 1 at the block start) while its push
-   1 stays an immediate; with ret = 1 there ours pushes edi (const 1 propagated). Then the argument loads:
-   the original loads target->netId into ecx right after the inventory call and ch->netId into edx later,
-   ours ch->netId first. Tried: amount inline in the call (pushes 1 before the inventory call, pops split),
-   (has != 0) + 1, ? 50 : 25, if-form, ret as unsigned / short / char, 1u: no better. prior: Read whole
+   @deep deep s38: ret = 1 set in each arm after its null test (path 1 after if (target == 0) return 0;,
+   path 2 as if (target != 0) ret = 1; in the else): the original's mov edi,1 positions (path 1 before the
+   menu call with cfg.flags stored from edi, path 2 right after its test) and cm_SendRelations' last
+   argument an immediate 1 (ret = 1 in the common block makes VC6 push edi): 31 -> 24 ins, draft -> shape.
+   Left (regs / order): after ai_InventoryHas the original loads target->netId into ecx, then ch->netId
+   into edx, and pushes both; ours hoists ch->netId into ecx and loads target->netId late into eax; the
+   news block's scratch registers rotate behind it. Tried: amount inline in the call (pushes the 1 before
+   the inventory call, pops split; climb's best at 12 ins / 198 bytes), (has != 0) + 1, ? 50 : 25, ret =
+   target != 0, ret types: no better. climb 2 rounds from this text: nothing else. prior: Read whole
    against the original and rewritten typed (AMOUNTCFG, AICHARREC user / target); fixed two meaning errors
    of the draft: the partner bit is 1 for a set sex byte and 2 otherwise (neg / sbb / add 2 / or dh,4), and
    he_ShowNews gets (netId, -1, text, 0, 0x5ec, 0). The structure follows the original: ret 0 in edi, path
@@ -10229,11 +10236,12 @@ int ai_UseGoodRaiseRelation(AICHARREC *ch, G8USEVIEW *use)
         ret = 1;
     } else {
         target = (AICHARREC *)gm_FindChar(use->target);
+        if (target != 0)
+            ret = 1;
     }
     if (target != 0) {
         amount = (ai_InventoryHas(ch, 0x2c5) != 0 ? 2 : 1) * 25;
         cm_SendRelations(ch->netId, target->netId, amount, 1);
-        ret = 1;
         if (target->kind == 6 || target->kind == 7) {
             txt_Format(news, 0xfe9, ch->id);
             he_ShowNews(target->netId, -1, news, 0, 0x5ec, 0);
