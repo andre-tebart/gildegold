@@ -1026,9 +1026,9 @@ int ls_WriteEventTables(int f)
   i = 0xa0;                             /* the size of each record's tail from +0xac */
   LS_W(&i, 4)
   for (i = 0; i < 0x400; i++) {
-    job = &he_Jobs[i];
-    if (job->kind == 0)
+    if (he_Jobs[i].kind == 0)
       continue;
+    job = &he_Jobs[i];
     LS_W(&job->kind, 1)
     LS_W(&job->id, 4)
     LS_W(&job->chr, 2)
