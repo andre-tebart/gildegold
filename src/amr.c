@@ -2109,12 +2109,13 @@ int ai_EvalApplyForOffice(float *a, float *b, int i, AIPER *p, int f, AIARG *o1,
 int ai_DecideApplyForOffice(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
 {
     int list[6];
-    AIARG s1;
-    AIARG s2;
     int r, k;
 
     if (f == 0) {
         if (p->rank < 2) {
+            AIARG s1;
+            AIARG s2;
+
             s1.kind = 13;
             s1.ref = 2;
             s1.arg = 1;
@@ -2130,6 +2131,9 @@ int ai_DecideApplyForOffice(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
             k = amt_GetOfficeCandidates(p, 2, list);
             if (k == 0) {
                 if (util_RandomU(4) == 0) {
+                    AIARG s1;
+                    AIARG s2;
+
                     s2.kind = 0x10;
                     s2.ref = 0x12;
                     s2.arg = 0;
