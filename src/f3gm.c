@@ -1644,14 +1644,15 @@ void gm_AgeCharacter(char *c, unsigned short age)
 int gm_ExpectedDeathAge(char *c)
 {
     ORDCHAR *ch = ORD_CHAR(c);
-    float k, v, r;
+    float k, v, r, t;
     int n;
 
     n = 0;
     v = ch->f01c;
     k = ch->f014;
     while (v > 1.0f) {
-        v = k / v + (v - k);
+        t = k / v;
+        v = v - k + t;
         n++;
     }
     r = ch->f020 - (float)ch->w00a;

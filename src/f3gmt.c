@@ -5009,7 +5009,11 @@ void gm_Shuffle(unsigned n, int *out)
         }
     }
 }
-/* 0x505da0, a random age for the value n: for 0 a value of 0x15 .. 0x3e, below 42 n + (0 .. 5), else n + (0 .. 10) */
+/* 0x505da0, a random age for the value n: for 0 a value of 0x15 .. 0x3e, below 42 n + (0 .. 5), else n + (0 .. 10)
+   @deep near-byte sweep s22: the original keeps n as a byte (mov bl,[esp+8]), reloads the parameter's
+   dword for the float compare and adds into bl (add bl,al; mov al,bl); ours holds the whole dword in ebx.
+   = control: char n with (unsigned char) cast, n += call, r += n, if/else with one return; worse: the
+   compare as int (17) / double (9), return n + call (18), the 0 case as one return expression (9). */
 
 char gm_RandomAge(unsigned char n)
 {

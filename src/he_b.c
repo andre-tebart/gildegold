@@ -5055,18 +5055,18 @@ int he_NoEvent88Pair(AICHAR *a, AICHAR *b)
    clock since = now, 0x168 working minutes left, the due clock (AIJOB.end) = now + 5 minutes, stage 0 */
 void he_AllocMasterWork(int ev)
 {
+    int i, n = 0;
     AIJOB *e = (AIJOB *)ev;
     HEMASTERWORK *p = (HEMASTERWORK *)ev;
     AIBLD *bld = (AIBLD *)gm_BuildQuery(1, 1, e->from);
     short *grp = (short *)gm_Query((void *)bld->objList, 2, 0, 0xfd, 6);
-    int i, n = 0;
     AICHAR *w;
 
     for (i = 0; i < 4; i++) {
         w = (AICHAR *)gm_FindChar(e->ids[i]);
         if (w != 0) {
-            sv_MoveToGroup((unsigned char *)bld, grp, w->id, (char *)ev);
             n++;
+            sv_MoveToGroup((unsigned char *)bld, grp, w->id, (char *)ev);
         }
     }
     if (n == 0) {

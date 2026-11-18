@@ -2948,7 +2948,7 @@ exe	0x004fbb80	gm_CreateCharModel	f3gm	5e090ec6e9e69aed	no	shape	sweep control=s
 exe	0x004fbd10	gm_PlaceOnStage	f3gm	2652a97ea0a06ce5	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004fbe90	gm_DailyCharacterStep	f3gm	7844d2f6d2ba2fe9	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x004fc6f0	gm_AgeCharacter	f3gm	c2d065ffab1a5e42	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	291ac9aa57e40bb8
-exe	0x004fc7a0	gm_ExpectedDeathAge	f3gm	a3334f41bf031a5d	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	291ac9aa57e40bb8
+exe	0x004fc7a0	gm_ExpectedDeathAge	f3gm	860e4b4bc1336cc9	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	e51412347521068a
 exe	0x004fc820	gm_CharacterHealth	f3gm	ea3bc2530bcfc2d0	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004fc890	gm_CharacterBaseHealth	f3gm	ecffbcb8de9e693b	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004fc8e0	gm_HealthRatio	f3gm	e20280b6c6d1961a	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
