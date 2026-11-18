@@ -3909,10 +3909,14 @@ int ai_TutorialInitMainOutro(void)
 void ai_TutorialBezier(float *a, float *b, float *c, float *d, float t, float *out)
 {
     float u;
+    float u3;
+    float t3;
 
     u = 1.0f - t;
-    out[0] = u * u * u * a[0] + 3.0f * u * t * (u * b[0] + t * c[0]) + t * t * t * d[0];
-    out[1] = u * u * u * a[1] + 3.0f * u * t * (u * b[1] + t * c[1]) + t * t * t * d[1];
+    u3 = u * u * u;
+    t3 = t * t * t;
+    out[0] = u3 * a[0] + (u * b[0] + t * c[0]) * u * t * 3.0f + t3 * d[0];
+    out[1] = u3 * a[1] + (u * b[1] + t * c[1]) * u * t * 3.0f + t3 * d[1];
 }
 
 struct G5CH; struct G9REC; struct VFSFILE;
