@@ -192,7 +192,7 @@ typedef struct D3OBJCOLOR {
 } D3OBJCOLOR;
 
 /* 0x438f60, projects the visible vertices of a mesh to the screen, sets fog and flat colors, and
-culls back faces. @deep deep s23: left two x87 operand orders: d3_Dist2 (the original squares y first: fld st(1); fmul st,st(2)) and the back-face cross product (the original computes v0->sx - v1->sx before v0->sy - v2->sy). Commutative swaps of both (16 forms): = control; z*z + y*y + x*x 10 ins but order 18; the compare as >, as a difference < 0, from v1/v2: worse. */
+culls back faces. @deep deep s23: left two x87 operand orders: d3_Dist2 (the original squares y first: fld st(1); fmul st,st(2)) and the back-face cross product (the original computes v0->sx - v1->sx before v0->sy - v2->sy). Commutative swaps of both (16 forms): = control; compare as >, as a difference < 0, from v1/v2: worse. flip.py: rhw as double flips the dist order (10 ins, then the cross product left); climb from there: a float local k = v->z for the z square, 4 ins / 6 bytes (double_k). Neither double rhw nor k is plausible original text: not kept. */
 void d3_ProjectMesh(D3OBJECT *obj)
 {
     unsigned int n = obj->info->nkeys;
