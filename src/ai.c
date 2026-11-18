@@ -3798,25 +3798,7 @@ int ai_StartProduction(AICHAR *ch, AIENTRY *e)
 }
 /* 0x487780, adds the equipment the building's characters need (their object list at 0x178, queried for the
    prototype kind 0xc, matched against ai_WeaponList / ai_WeaponList2) to the slot table with the mark
-   `make` and the flag 2, then reduces the marks until make * price fits the building's limit (0x39)
-   @deep size queue s17 (73 -> 10 ins, raw 937 -> 960 vs 955: padded size): the offer loop as k = 0; while
-   (1) { if (k >= gm_NOffers) break; ..; k++; } (top-tested, jmp back, no countdown: for (;;) / for with
-   the bound / continue = control, all count down); the weapon-list walks compare ai_Slots[j].item == *p
-   with no id local (the original's [edi-4] / [edi] base off &list[1] and the kept found pre-tests: idx /
-   ptr0 forms = control); the final loops as for (p = list; (id = *p) != 0; p++). Left (14 lines): the M8
-   cross of pending / amount loads in make -= pending + amount (amount + pending = control); first final
-   loop mov ebx,list scheduled before the je (original after); the second final loop loads list2 into eax
-   and copies to edi (mov edi,eax) and does not reload ai_NSlots at the bottom (the id = *p body form gives
-   that head but swaps id / count to ebp / edi: 19 ins); reusing k / i / n / u for the second id = control.
-   prior: Read whole against the original and fixed: the inner slot searches as for (j = 0; !found && j <
-   n; j++) (cmp j,n / jge, the found pre-test), the need reduction as make -= pending + amount then a clamp
-   at 0 (the original's two stores of make), the offer filter count >= 1 (cmp 1 / jl); the !found tests
-   after the weapon-list loops moved out of the break branch. Left are optimizer decisions no source
-   variant changed (do-while with the test inside or after the loop, for(;;) with a top break, for with the
-   bound: all compile to the same object): ours folds the found tests VC6 kept in the original (+0x487855
-   test edx,edx / jne, +0x48788b test edx,edx / jne, +0x487965 test eax,eax / jne: found is provably 0
-   there), rebases the walk pointer (ours [edi] / [edi+4] from ai_WeaponList, the original [edi-4] / [edi]
-   from &ai_WeaponList[1]), turns the offer loop into a countdown (ours test ecx / jle .. d... */
+   `make` and the flag 2, then reduces the marks until make * price fits the building's limit (0x39) */
 
 void ai_AddEquipmentNeeds(AICHAR *ch, AIOBJ *obj, int limit)
 {
@@ -3887,7 +3869,7 @@ void ai_AddEquipmentNeeds(AICHAR *ch, AIOBJ *obj, int limit)
                 if (*p == 0)
                     break;
                 if (ai_Slots[i].item == *p) {
-                    ai_Slots[i].make -= ai_Slots[i].pending + ai_Slots[i].amount;
+                    ai_Slots[i].make -= ai_Slots[i].amount + ai_Slots[i].pending;
                     ai_Slots[i].make = ai_Slots[i].make < 0 ? 0 : ai_Slots[i].make;
                     found = 1;
                 }
@@ -3899,7 +3881,7 @@ void ai_AddEquipmentNeeds(AICHAR *ch, AIOBJ *obj, int limit)
                     if (*p == 0)
                         break;
                     if (ai_Slots[i].item == *p) {
-                        ai_Slots[i].make -= ai_Slots[i].pending + ai_Slots[i].amount;
+                        ai_Slots[i].make -= ai_Slots[i].amount + ai_Slots[i].pending;
                         ai_Slots[i].make = ai_Slots[i].make < 0 ? 0 : ai_Slots[i].make;
                         found = 1;
                     }
@@ -3923,7 +3905,8 @@ void ai_AddEquipmentNeeds(AICHAR *ch, AIOBJ *obj, int limit)
         }
     }
     sum = 0;
-    for (p = ai_WeaponList; (id = *p) != 0; p++) {
+    for (k = 0; ai_WeaponList[k] != 0; k++) {
+        id = ai_WeaponList[k];
         for (j = 0; j < ai_NSlots; j++) {
             if (id == ai_Slots[j].item && ai_Slots[j].make != 0) {
                 if (ai_Slots[j].make > 0) {
@@ -3936,7 +3919,8 @@ void ai_AddEquipmentNeeds(AICHAR *ch, AIOBJ *obj, int limit)
             }
         }
     }
-    for (p = ai_WeaponList2; (id = *p) != 0; p++) {
+    for (k = 0; ai_WeaponList2[k] != 0; k++) {
+        id = ai_WeaponList2[k];
         for (j = 0; j < ai_NSlots; j++) {
             if (id == ai_Slots[j].item && ai_Slots[j].make != 0) {
                 if (ai_Slots[j].make > 0) {
