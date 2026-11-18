@@ -15524,7 +15524,7 @@ void he_AllocEvent32(int ev)
     AICHAR *p;
 
     for (e = (AIJOB *)he_FindEvent(1, 0, 0x32); e != 0; e = (AIJOB *)he_NextEvent()) {
-        if (e != j && e->ownerCh == j->ownerCh) {
+        if (e != j && j->ownerCh == e->ownerCh) {
             he_FreeEvent((int *)ev);
             return;
         }
