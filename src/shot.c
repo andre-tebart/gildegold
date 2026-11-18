@@ -1056,3 +1056,4 @@ int ai_SolveCannonAim(float *from, float *to, float *range, float *outElev, floa
 float ai_ShotDrag = 1.5f;  /* 0x62de58, the drag coefficient of a cannon ball (ai_StepShot) */
 float ai_ShotHitHeight = 98.4252014f;  /* 0x62de5c, 2.5 m in inches: a ball within this height above the ground hits it (ai_ShotHitsGround) */
 EFFECTREC ai_DefaultEffect = { { 0.0f, 0.0f, 1.0f }, { 25.0f } };  /* 0x62de60, the default effect: the vector (0, 0, 1) and the scale 25.0 (0x62de6c) */
+EFFECTSTATE ai_EffectState;  /* 0x6f3300 .. 0x6f34f0, the wind state ai_InitWind builds */
