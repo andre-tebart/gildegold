@@ -8969,17 +8969,20 @@ void he_StartDarkCorner(int ev)
    at the victim (stage 4 at once) takes up to loot (0 .. 3; stage 4 draws it against the victim owner's skill 2)
    open crimes of others from ai_Crimes as proofs (cm_SendProofExecuted), writes them into the victim's job table
    and tells its owner (the news 0x18a9 / 0x18aa); freed with the flag 2 it removes the carrier
-   @deep s6: the loot index draws through util_RandomU (mov bx, ax as the original; 225 -> 221 ins). The
-   size gap (+48 padded) is the shared Send(-1) / AddTime tails the original cross-jumps (see prior).
-   prior: Reconstructed whole against the original (the five cases of the jump table equal; every call,
-   push order and gm_AddTime argument read from the pushes; case 1's 64-bit kind mask 0xa7fcc3a6 / bit 32
-   with the target != the victim (the draft had ==), case 2's loot chance util_RandomF() * 0.5f < skill,
-   case 4's three draws at 0.66f, the MAX(MIN(loot, 3), 0) clamp, the proof walk over ai_Crimes (CRIME:
-   state 1, another culprit, not after the event's start) with loot[0..2] = -1, the job table's proofs[]
-   (HEJOBTABLE +0x1c) and year, case 3's two full message calls against case 4's if / else of txt_Format).
-   Left: allocation and VC6 cross-jumping. Case 1's walk: the original keeps hi in ebx and computes the
-   AIBTYPE pointer (lea eax, [ebx + eax*4]) before the kind byte compare, n in [esp+0x14]; ours keeps hi in
-   ebx but lo / n in other homes ([esp+0x18]); the original shares the Send(-1) tails of ca... */
+   @deep size queue s14: the switch is followed by e->exSlot = cm_SendExSetHEI(-1, ev): a plain return ->
+   break round (retgen) changes the meaning here (sends twice); its rows (all / allbut8: tail 58 -> 12, raw
+   2528 / 2540) are void. Done right (the four sites that end send(-1); return; written as break; with the
+   send after the switch, all 15 subsets): best d3 (site 9072) 210 ins but raw 2572; d013 / d0123 2552;
+   none reaches the original's padded 2544 (raw 2529..2544). prior: s6: the loot index draws through
+   util_RandomU (mov bx, ax as the original; 225 -> 221 ins). The size gap (+48 padded) is the shared
+   Send(-1) / AddTime tails the original cross-jumps (see prior). prior: Reconstructed whole against the
+   original (the five cases of the jump table equal; every call, push order and gm_AddTime argument read
+   from the pushes; case 1's 64-bit kind mask 0xa7fcc3a6 / bit 32 with the target != the victim (the draft
+   had ==), case 2's loot chance util_RandomF() * 0.5f < skill, case 4's three draws at 0.66f, the
+   MAX(MIN(loot, 3), 0) clamp, the proof walk over ai_Crimes (CRIME: state 1, another culprit, not after
+   the event's start) with loot[0..2] = -1, the job table's proofs[] (HEJOBTABLE +0x1c) and year, case 3's
+   two full message calls against case 4's if / else of txt_Format). Left: allocation and VC6
+   cross-jumping. Case 1's walk: the original keeps hi in ebx and comp... */
 
 void he_RunDarkCorner(int ev)
 {

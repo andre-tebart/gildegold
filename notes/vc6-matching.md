@@ -350,6 +350,37 @@ Where the pushes and pops sit, how many epilogue copies there are, shared agains
     block (ai_DrohbriefAmountCB, the forms tried in its note).
   - The tail copy of an if-arm with different registers from the shared tail (d3_SetFog: copy eax/edx, tail
     ecx/edx/eax) was duplicated BEFORE allocation, not by the post-allocation return-block copy.
+- **Size queue s14 (byte or padded size by these)**:
+  - Every switch case ending `X(); sv_CameraFollow(); return;` where the original has `pop ..; jmp
+    sv_CameraFollow` per case: the cases `break` and the shared call stands once after the switch; VC6
+    duplicates the tail call + epilogue into each case itself (ai_MasterLetterWindow byte). A retgen
+    return -> break round is only valid when nothing follows the switch: with `e->exSlot =
+    cm_SendExSetHEI(-1, ev);` after it, turn only the sites that end with that same send into `break`
+    (dropping their copy) (he_RunDarkCorner: the plain round's rows were meaning changes).
+  - `fxch; fild int; fmulp st(2); fxch` in a compare where ours has `fimul` / `fild; fmulp`: a `(float)`
+    barrier on the double product (`o->fill * (float)(chance * 0.01)`, `p->price > (float)((1.5 - liking) *
+    factor) * value`); the cast emits no code (he_RunTransport, he_RunBuyBuilding). A price loaded after the
+    call but before the rest: the call's result in a float local first (`liking = gm_Liking(..) * 0.01f;`).
+  - A 64-bit constant argument the original loads into ecx/edx before a branch (`mov ecx, lo; mov edx, hi ..
+    push edx; push ecx`): a two-dword union local (`union { struct { unsigned lo, hi; } s; __int64 q; }`)
+    set by halves, as am.c's other ai_PickActionBuilding callers do; an `__int64` local or the literal
+    propagate to pushes. Where the stores stand decides the scheduling (after `ch = ..`: byte)
+    (he_FillWalkSlot).
+  - A dead `lea reg,[edx+eax*4]` of a type record after the field read: the record pointer is assigned
+    again there (`bt = &ai_BTypesT[b->type];` before its use; the original's dead store) (he_RunBuyBuilding).
+  - An early guard `if (buyer == 0 || b == 0) { he_FreeEvent(ev); return; }` instead of the body under
+    `if (buyer != 0 && b != 0)` + a shared final free: the guard jumps into the LAST copy of the tail, as the
+    original (he_RunBuyBuilding byte).
+  - A guarded test whose failing path the original jumps straight past (`jne ret; jmp next`): the condition
+    written positive around the remaining work (`if (id != -1 || (ok && active == slot)) { .. }` + one
+    return) instead of `if (id == -1 && (..)) return;` (he_RunMasterExamPassed).
+  - A loop counter the original keeps in a register while ours spills it (ours: the loop's `!= 0` exit
+    leaves it unreferenced afterwards): `left > 0` (he_RunConversion); fields read by index
+    (`ai_CharsT[ring].id`) with `c = &ai_CharsT[ring]` only for the calls give the original's `shl eax,2`
+    offset CSE. A record pointer from a dead parameter's slot (`lea ecx,[esp+n_slot]` for the out pointer):
+    the out local declared in the block after the parameter's last use (he_FillWalkSlot).
+  - A long-lived flag initialised before a call loses its register to a parameter: its `= 0` inside the
+    test that follows the call (he_CatchMeetingDisease: a outranks ch, 78 -> 2 ins).
 
 - **An else-if arm cross-jumped whole into a sibling's copy, the original keeps it inline**: the store order of
   the OTHER arms (default arm charId before stateArg; 0x176 arm stateArg, charId, x, z) decides it, found by
