@@ -1197,17 +1197,7 @@ int ai_TrustedOfTwo(AIPER *p, AIPER *b, AIPER *c, int *k)
     return 2;
 }
 /* 0x4aad30, of the four candidates ids the one character p trusts most for district k (liking + the office rating,
-   item 0x2be +0.2, flag AIPER_F1CC_DISTRUST -0.2); a tie is broken at random; -1 if none
-   @deep Read whole 0x4aad30..0x4aaeee against the C: the scoring loop (gm_FindChar, amt_GetOffice rate,
-   gm_Liking, item 0x2be +0.2, flags1cc 0x400000 -0.2, -1000), the best/tie loop (c[i] tested in both
-   branches as the original's second test edx), bi<0 / tie checks, the signed (r+1)%4 tie-break loop
-   (do-while with the counter decremented before the step: dec edx / test edx) all correspond; every
-   instruction between the blocks is equal. Left: the original gives each return -1 its own 'pop edi; or
-   eax,-1; pop esi; add esp,0x38; ret' copy (0x4aad55, 0x4aae6f, 0x4aaed8 plus the loop end) where VC6
-   cross-jumps ours into one block (- je X / jl X to the shared tail, + jne/jge over an inline epilogue),
-   the same epilogue-duplication quirk as ai_PokerShowdown 0x4a8190. (size: 147 vs 162 instructions,
-   explained: 146 vs 162: the original's three extra inline 'pop edi; or eax,-1; pop esi; add esp,0x38;
-   ret' return -1 copies (15 instructions) and the test edx,edx the dec placement needs) */
+   item 0x2be +0.2, flag AIPER_F1CC_DISTRUST -0.2); a tie is broken at random; -1 if none */
 
 int ai_TrustedOfFour(unsigned char k, AIPER *p, int *ids, int *out)
 {
@@ -1215,7 +1205,7 @@ int ai_TrustedOfFour(unsigned char k, AIPER *p, int *ids, int *out)
     AIPER *c[4];
     AMTREC info;
     float f, best;
-    int tie, bi, i, r;
+    int tie, bi, i, r, found;
 
     *out = 0;
     if (amt_GetOffice(k, &info) == 0)
@@ -1250,16 +1240,20 @@ int ai_TrustedOfFour(unsigned char k, AIPER *p, int *ids, int *out)
         return c[bi]->netId;
     r = util_RandomU(4);
     i = 4;
+    found = 0;
     do {
         if (sc[r] == best && c[r] != 0) {
-            if (r >= 0)
-                return c[r]->netId;
-            return -1;
+            found = 1;
+            break;
         }
         i--;
         r = (r + 1) % 4;
     } while (i != 0);
-    return -1;
+    if (!found)
+        return -1;
+    if (r < 0)
+        return -1;
+    return c[r]->netId;
 }
 /* 0x4aaef0, decide callback: a building of p (type with cap > 1) with a free workplace object (lists 0x120 / 300)
    and no job 0x74 yet, into a (kind 4) and b (kind 1) */
