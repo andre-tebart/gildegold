@@ -3952,7 +3952,18 @@ int gm_TitleJob(int i, int p)
    12 / 10 -> 3, 8 -> 0, 9 -> 4, else 1), its hour of day moved into 7 .. 21; the time served is the job's days
    (+0x174, cleared by a job change) at the clock's hour. Served less than the period: returns served / period in
    minutes and writes to *out (an AITIME; the callers declare int *) the date the period completes (now + period -
-   served); else returns 1.0; 0.0 when the character has no title left in 1 .. 5 */
+   served); else returns 1.0; 0.0 when the character has no title left in 1 .. 5
+   @deep deep s35: the original computes hours (its ftol) before the three AITIME zero fills and
+   interleaves the fills' stores with fild hours / fst [h] / fmul (the (h = hours) * (1 / 24) store, h kept
+   on the FPU); ours schedules all twelve stores first. hours moved above the memsets (24 orders of the
+   three memsets and hours, (h = hours) in the expression): = control or worse, the int conversion is no
+   barrier for the scheduler. h = hours; as a statement after hours and before the memsets gives the
+   original's order (22 -> 5 ins) but fstp / fld [h] where the original has fst: a statement boundary the
+   original provably lacks, not kept. Left with it: the share's fdivp, the original's late (after the
+   pushes of the first gm_AddTime, the quotient kept on the FPU across both calls); (float)a / (float)b
+   moves it there but makes fidiv (6 ins). = {0} initializers: 34; the served / zero fills after the hour
+   clamp: 46. (declaration set: no declaration set makes this text byte (every symbol-count shift 0..63 at
+   the unit's start and before the function) */
 
 float gm_TitlePeriodServed(int n, int *out)
 {

@@ -12751,15 +12751,7 @@ void ai_AttackStart(int building)
    "locations\diebesgilde\taschendiebstahl" with the text 0x19f0; the member list updates every frame. The first
    button sends the selected scene characters (up to six, collected over the clicks) as the gang message 0x61 from
    bld (to and leader the owner's netId, flags 1), clears the selection and closes; with nobody selected the text
-   0x19e3. The second button and a right click close it; then the player bar closes and the camera follows again
-   @deep Read whole against the original: every call, argument, branch and store matches (121 / 121
-   instructions); the draft's six-entry list is msg.ids itself (memset 6 ints once, n kept across frames),
-   the message is an AIMSG. Left: the order in which VC6 schedules the four loads of the AITIME struct copy
-   msg.time = ai_Time (ours +0xe2 loads ai_Time+8 first, the original ai_Time+4; +0x105). Tried all orders
-   of the five message statements (48 variants, from early): none closer than 22 instructions. (references:
-   M8 at +0xe2: ours refers to ai_Time+0x8 (0x770ae8), the original's field to 0x770ae4 (ai_TimeHourW) (and
-   1 more), explained: the two M8 lines are the same struct copy's loads of ai_Time+0/+4/+8/+0xc taken in
-   another order; the same four stores result) */
+   0x19e3. The second button and a right click close it; then the player bar closes and the camera follows again */
 void ai_PickpocketGangWindow(AIBLD *bld)
 {
     AIMSG msg;
@@ -12776,8 +12768,8 @@ void ai_PickpocketGangWindow(AIBLD *bld)
     d2_CentreViewWindows(win);
     d2_SetForm(win, 1);
     io_PrintText(0x19f0);
-    memset(msg.ids, 0xff, 6 * sizeof(int));  /* the gang's six members (HEGANG: AIJOB.ids[0..5]) */
     d2_ClickedId = -1;
+    memset(msg.ids, 0xff, 6 * sizeof(int));  /* the gang's six members (HEGANG: AIJOB.ids[0..5]) */
     n = 0;
     do {
         sv_UpdateMemberList((unsigned char *)bld);
@@ -12794,9 +12786,9 @@ void ai_PickpocketGangWindow(AIBLD *bld)
             if (n != 0) {
                 msg.type = 0x61;
                 msg.to = ai_CharInts[bld->owner][0];
-                msg.arg[10] = msg.to;  /* 0x80: the gang's leader (the event's HEGANG.leader, 0x54 further on) */
                 msg.fromId = bld->id;
                 msg.time = ai_Time;
+                msg.arg[10] = msg.to;  /* 0x80: the gang's leader (the event's HEGANG.leader, 0x54 further on) */
                 msg.flags = 1;
                 cm_SendLongMessage((char *)&msg);
                 snd_PlayFavourComment();
