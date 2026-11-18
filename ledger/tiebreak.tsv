@@ -3741,7 +3741,7 @@ exe	0x0055c700	he_RunKredit	he	4830c70a590ad3c1	no	byte	control=byte p1=byte p2=
 exe	0x0055cb00	he_RunEvent24	he	e22a2dadd309bc30	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0055cc10	he_RunMasterExamNotice	he	de0f03a2809d59d5	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0055ce00	he_AllocMasterExamPass	he	753530a1cf048be6	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x0055ce60	he_RunMasterExamPassed	he	4656d638e9a39e4f	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	4cbf06cae45cb11e
+exe	0x0055ce60	he_RunMasterExamPassed	he	45560c994fb4d701	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	0684159e9b8fedf5
 exe	0x0055d310	he_AllocEvent27	he	9bf57b963e9d4ab1	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0055d390	he_RunEvent27	he	60358dc9bcfab2da	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0055d490	he_AllocHarvest	he	6d450934e7ff388d	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
