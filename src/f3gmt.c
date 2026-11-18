@@ -1979,11 +1979,9 @@ int gm_FindMarketObject(int id)
         l[5] = (ORDOBJ *)gm_Query(((ORDBLD *)ai_MarketBuilding)->objList, 1, 0, 0x97);
         l[6] = (ORDOBJ *)gm_Query(((ORDBLD *)ai_MarketBuilding)->objList, 1, 0, 0x2db);
         l[7] = 0;
-        i = 0;
-        for (o = l[0]; o != 0; o = l[i]) {
-            if (gm_Query(o->list, 2, 6, 0, id) != 0)
+        for (i = 0; l[i] != 0; i++) {
+            if (gm_Query(l[i]->list, 2, 6, 0, id) != 0)
                 return (int)gm_Query(l[i]->list, 1, 0, 0x116);
-            i++;
         }
     }
     return 0;
