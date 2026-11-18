@@ -6972,7 +6972,16 @@ int ai_BlackmailContactWindow(AICHARREC *ch)
    order message m. Of another kind than 6 / 7 (the AI): no character m->target: 0x60; else the letter 0x47 to it
    as ai_BlackmailContactWindow sends it (not waited for), me pays 2: 0x10. A player picks the victim in the amount
    menu (mode 0x400, kind 6, the gypsy filter, the caption 0x1d66) with the letter window ai_BlackmailContactWindow
-   as its pick callback: 0x81 when the picked character is marked (powerFlags 0x400) afterwards, else 2 */
+   as its pick callback: 0x81 when the picked character is marked (powerFlags 0x400) afterwards, else 2
+   @deep deep s29: the original emits the letter fill as: the ai_Time dwords, me->netId into to / fromId /
+   letter.from, text1, the victim->netId load, lea / push &msg, and only then the type 0x47, flags 2, the
+   time's last word, text2 and the victim store (five stores after the push); ours puts every store before
+   the push (order 30). The byte sibling ai_BlackmailContactWindow has the same statement order (type, to,
+   fromId, flags, time, from, text1, text2, victim) and keeps its stores before the push. Tried: msg at
+   function scope / cfg in the else block (= control); victim->netId into a local before the memset (64);
+   no memset (diagnostic, 85); 1500 sampled orders of the nine fill statements (permute.py, best 12 ins /
+   63 bytes); climb 2 rounds: 10 ins / 71 bytes (victim, flags, text2 last; the same order 30 hunks, bytes
+   worse, not kept). */
 
 int ai_BlackmailContact(AICHARREC *me, LCORDMSG *m)
 {
