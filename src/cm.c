@@ -2534,11 +2534,15 @@ int cm_CheckFieldDeltas(G17MSG *m)
     ORDOBJ *o;
     ORDCHAR *c;
     char *base, *a;
-    unsigned char *p;
-    CMFIELD *f;
+    union {
+        unsigned char *b;
+        unsigned short *w;
+        short *s;
+        int *i;
+    } p;
     ORDCHAR *r;
     unsigned int i, j, n;
-    int size;
+    int size, id;
 
     m->fields.id = cm_ResolveId((int)m, m->fields.id);
     if (gm_FindById((int *)&b, (int *)&o, (int *)&c, m->fields.id) == 0)
@@ -2549,18 +2553,17 @@ int cm_CheckFieldDeltas(G17MSG *m)
         base = (char *)o;
     else
         base = (char *)c;
-    p = m->fields.buf;
+    p.b = m->fields.buf;
     for (i = 0; i < m->fields.n; i++) {
-        f = (CMFIELD *)p;
-        size = f->size;
-        n = f->n;
-        a = base + f->offset;
-        p += 4;
+        size = (char)*p.b++;
+        n = (char)*p.b++;
+        a = base + *p.w++;
         if (c != 0) {
             if (a == (char *)&c->netId)
                 return 1;
             if (a == (char *)&c->partner) {
-                r = (ORDCHAR *)gm_FindChar(f->values[0] + c->partner);
+                id = *p.i + c->partner;
+                r = (ORDCHAR *)gm_FindChar(id);
                 if (r == 0)
                     return 1;
                 if (r->partner != -1 && r->partner != c->netId)
@@ -2570,15 +2573,15 @@ int cm_CheckFieldDeltas(G17MSG *m)
         switch (size) {
         case 1:
             for (j = 0; j < n; j++)
-                p += 1;
+                p.b++;
             break;
         case 2:
             for (j = 0; j < n; j++)
-                p += 2;
+                p.s++;
             break;
         case 4:
             for (j = 0; j < n; j++)
-                p += 4;
+                p.i++;
             break;
         }
     }
