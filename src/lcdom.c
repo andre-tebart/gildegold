@@ -6600,18 +6600,7 @@ void ai_WithdrawSaleWindow(AIBLD *bld)
    not 0xfd) with their price (text 0x17d3: the goods price times 0.5 + difficulty / 4); a click on one buys it
    (message 0x1f "room_upgrade", the price moved from the player) while the built and running upgrades stay below
    AIBTYPE.extensions (else the message box 0x17d0); a running upgrade event 0x1f fills its picture by its progress
-   (text 0x17d1), a built one is marked (text 0x17d2); text 0x17cf shows the upgrades left
-   @deep reconstructed from the stub against the whole original (all calls, stores, the AIMSG 0x1f
-   room_upgrade message, the event 0x1f progress, the built marks, texts 0x17ce/0x17cf/0x17d0..0x17d3);
-   ours 488 vs 494 ins, no ref/literal differences. Left is register/slot allocation: the original keeps
-   nRows in ebp across the frame loop and running/built in slots (ours: running in ebp, nRows in a slot),
-   so the event loop (+0x4be: xor ebx/ebp vs mov [esp+0x1c],0; cmp edi,ebx vs test edi,edi), the built loop
-   (+0x5a0) and the 0x17cf print (+0x652 sub edx,ebp vs sub edx,esi) differ by allocation; the row-create
-   loop (+0x1c7..+0x2c0): the original keeps i in ebx and recomputes imul esi,i*0x3c with price spilled to
-   the factor's slot, ours strength-reduces i*0x3c+10 into a slot and keeps price in ebp (tried y local,
-   i*0x3c inline, factor inline / before the call); the kind byte load (+0x93: mov al,[eax] via eax vs mov
-   cl,[eax+ebx]); frame 0x2ac vs 0x2a8 (the original shares the factor / price slot and the fill total /
-   built slot) */
+   (text 0x17d1), a built one is marked (text 0x17d2); text 0x17cf shows the upgrades left */
 
 void ai_RoomUpgradeWindow(AIBLD *bld)
 {
@@ -6629,7 +6618,7 @@ void ai_RoomUpgradeWindow(AIBLD *bld)
     int i;
     int k;
     int good;
-    char kind;
+    AIGOOD *g;
     int price;
     int down;
     int up;
@@ -6656,16 +6645,16 @@ void ai_RoomUpgradeWindow(AIBLD *bld)
             break;
         if (type->objs[i] != 0xffff) {
             good = type->objs[i] & 0x7fff;
-            kind = ((AIGOOD *)ai_Goods)[good].type;
-            if ((kind == 2 || kind == 6) && good != 0xfd) {
+            g = &((AIGOOD *)ai_Goods)[good];
+            if ((g->type == 2 || g->type == 6) && good != 0xfd) {
                 rows[nRows].good = good;
                 nRows++;
             }
         }
     }
     for (obj = (unsigned short *)gm_Query((void *)bld->objList, 1, 5); obj != 0; obj = gm_QueryNext()) {
-        kind = ((AIGOOD *)ai_Goods)[*obj].type;
-        if ((kind == 2 || kind == 6) && *obj != 0xfd)
+        g = &((AIGOOD *)ai_Goods)[*obj];
+        if ((g->type == 2 || g->type == 6) && *obj != 0xfd)
             built++;
     }
     win = d2_OpenForm(0, 0, "Panel\\Gebaeude_Raum_Erweitern");
@@ -6683,16 +6672,15 @@ void ai_RoomUpgradeWindow(AIBLD *bld)
         char text[0x100];
         float factor;
 
-        good = rows[i].good;
         factor = ai_Difficulty * 0.25 + 0.5;
-        price = (int)(gm_ItemPrice(good, 100) * factor);
-        rows[i].pic = d2_WinOpenPic(0x10, i * 0x3c, good + 0xdf, d2_LastWindow);
+        price = (int)(gm_ItemPrice(rows[i].good, 100) * factor);
+        rows[i].pic = d2_WinOpenPic(0x10, i * 0x3c, rows[i].good + 0xdf, d2_LastWindow);
         d2_Objs[rows[i].pic].interactive = 1;
         d2_Objs[rows[i].pic].style = 3;
         d2_Objs[rows[i].pic].icon = 0x520;
         d2_Objs[rows[i].pic].iconx = -2;
         d2_Objs[rows[i].pic].icony = -2;
-        txt_Format(text, 0x17d3, txt_ObjectNames[good][0], price);
+        txt_Format(text, 0x17d3, txt_ObjectNames[rows[i].good][0], price);
         rows[i].text = d2_CreateWinText(0x60, i * 0x3c + 10, text, d2_LastWindow);
     }
     d2_SetPointerSprite(0, 0);
