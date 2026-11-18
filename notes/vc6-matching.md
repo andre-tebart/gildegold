@@ -880,6 +880,42 @@ Where the pushes and pops sit, how many epilogue copies there are, shared agains
     epilogues), hmt_RecordTextId (n copy-propagated into the clamp compare), ai_GuildCashPayWindow (amount /
     cancelBtn slot counts 4 / 3), ai_OpenUpgradeTooltip (view / f against idx's argument slot).
 
+- **Deep s29 (the near-byte list to 35 instructions, notes older than s22 first, 15 items: 9 byte + 1 fix, 3
+  bonus)**:
+  - **A local declared with an initializer that emits no code (`int k = 0;`, `AICHAR *c = 0`) moves VC6's
+    first-reference tie key**: the same mechanism as main_EndRound's `AIBLD *b = 0` (the call order of two
+    calls), now seen deciding (a) which of two calls of one sum runs first (cm_TrialAskPlayer: gm_GetWorth of c
+    before accused; both operand orders were one code), (b) the reload order of split pieces after a call or at
+    a loop latch (ai_DonationWindow win / bld; d3anim_MapBones obj / anim: the s24 note's "one zero piece more,
+    the same code"), (c) whether VC6 merges two counters into one induction variable (ai_TutorialWindow, the
+    s25 IV merge), (d) the load order of a test (d2_SliderInput draft 10 -> shape 4). All five kept with an
+    `@original` comment. Sweep it as a round: one variant per local with `= 0` at its declaration (a scratch
+    generator over the declaration lines, one `dcp try` per function: ~1 min); over 200 functions of the list
+    it found MapBones / TutorialWindow / SliderInput. Float locals' `= 0` emits a store (worse); ints / pointers
+    are = control where the key does not matter.
+  - **climb.py round 1 first, a fourth time**: cm_RemovePartyMember (the loop bound r->used in the for, no n
+    local), d3anim_CreatePath (p->frameTime = 0 after the flag bytes: proven byte under a declaration set).
+  - **A local that only carries a field to its store is the field**: init_InheritOwner (`for (par = obj->parent;
+    obj->owner == 0 && par != 0; ..) obj->owner = par->owner;`, no own: regs 22 -> byte); d3t_EarthCB's
+    `volatile float a` was the CSE temp of `p->start.x -= ..; if (p->start.x > 0.0) p->a = p->start.x` (fst /
+    fld / fld from a slot packed with s: slots 22 -> 0).
+  - **Escaped field values as block locals of their sending blocks** (s21 again): gm_PopulationStep `int kind =
+    3, level = 2` and `int office` (slots 26 -> byte), ai_DonationWindow `int amount` (frame 0x220 -> 0x21c).
+  - **Hand-walked pointer -> index**: he_FindGuestInn `tab[i].inn` (byte); gm_GetDisease the other way: the
+    original read the record through `p = &gm_Diseases[n * 3]` with `n >= 10` (cmp 0xa / jl): byte, size 84 ->
+    83. amt_ApplyForOffice's do-while pointer walk is a plain for + break (same code, kept for reading).
+  - **Clamp then store**: gv_AdjustEntry `e->b0c = (unsigned char)(v >= 0xff ? 0xff : v)` after the low clamp
+    (the if form and min/max over the sum were other code).
+  - **It was a meaning bug**: cm_TrialAskPlayer's mode 1 stored the yes / no answers swapped (the original's
+    `mov [ebx+0x94],edi` with edi = 0 on click 1): a regs hunk whose two registers hold different constants is a
+    swapped value, not an allocation.
+  - **A buffer size from the frame difference**: he_RunFeast line[0xec] -> line[0x100] (frame 0x14 short).
+  - Left with notes: amt_ApplyForOffice (the !f2 tail's lea register / cross-jump), d3t_EarthCB (ps->tex
+    before c.a, 2 ins), ai_SolveCannonAim, he_RunFeast (fill load order, txt_Format argument registers),
+    ai_RegisterSaveSlot (which compare copy the xjump merger keeps: c2tail shows it deletes the copy before
+    the jmp), ai_BlackmailContact (five stores after the push in the original), d2_SliderInput (bottom sum
+    load order).
+
 - **An else-if arm cross-jumped whole into a sibling's copy, the original keeps it inline**: the store order of
   the OTHER arms (default arm charId before stateArg; 0x176 arm stateArg, charId, x, z) decides it, found by
   climb.py swap + move in round 2 (cm_OrderAttack byte; permuting only the inlined arm's stores did not). The pair
