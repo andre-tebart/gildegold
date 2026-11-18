@@ -3014,31 +3014,31 @@ int ch_PathToTarget(CHACTION *a)
 {
     CHARACTER *ch = a->ch;
     D3SM *h = (D3SM *)ch_GetHMap(ch);
-    int x1, z1, x2, z2, ox, oz;
+    int cx, cz, gx, gz, ox, oz;
     float y;
     CHARACTER *t;
 
-    if (!d3_GetHeightAt(h, &a->ch->obj->pos, &x1, &z1, &y))
+    if (!d3_GetHeightAt(h, &a->ch->obj->pos, &cx, &cz, &y))
         return 0;
-    if (!d3_GetHeightAt(h, &a->u.walk.target->obj->pos, &x2, &z2, &y))
+    if (!d3_GetHeightAt(h, &a->u.walk.target->obj->pos, &gx, &gz, &y))
         return 0;
-    if (z1 < 1)
-        z1 = 1;
-    else if (z1 > h->size - 2)
-        z1 = h->size - 2;
-    if (x1 < 1)
-        x1 = 1;
-    else if (x1 > h->size - 2)
-        x1 = h->size - 2;
-    d3sm_FindGround(h, x1, z1, &ox, &oz);
-    x1 = ox;
-    z1 = oz;
-    ch_FindFreeCell(h, &ch->obj->pos, &a->u.walk.dest, x2, z2, &ox, &oz, 4, 0);
-    x2 = ox;
-    z2 = oz;
+    if (cx < 1)
+        cx = 1;
+    else if (cx > h->size - 2)
+        cx = h->size - 2;
+    if (cz < 1)
+        cz = 1;
+    else if (cz > h->size - 2)
+        cz = h->size - 2;
+    d3sm_FindGround(h, cx, cz, &ox, &oz);
+    cx = ox;
+    cz = oz;
+    ch_FindFreeCell(h, &ch->obj->pos, &a->u.walk.dest, gx, gz, &ox, &oz, 4, 0);
+    gx = ox;
+    gz = oz;
     ch_Path.xy = ch_PathBuf;
     ch_Path.max = 0x200;
-    if (path_Find(&ch_Path, (PMAP *)h, x1, z1, x2, z2, ch->pathType) == 0xffff)
+    if (path_Find(&ch_Path, (PMAP *)h, cx, cz, gx, gz, ch->pathType) == 0xffff)
         return 0;
     if (a->u.walk.path) {
         mem_Free(a->u.walk.path);
