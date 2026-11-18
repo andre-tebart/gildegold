@@ -534,7 +534,7 @@ exe	0x00427b20	evt_SkipStatement	evt	byte	readable
 exe	0x00427b90	evt_SkipBlock	evt	byte	readable		
 exe	0x00427c70	evt_TypeOf	evt	byte	readable		
 exe	0x00427dd0	evt_Match	evt	byte	readable		
-exe	0x00427e00	evt_FindLogic	evt	shape	readable	deep	
+exe	0x00427e00	evt_FindLogic	evt	byte	readable		
 exe	0x00427e60	evt_GetToken	evt	byte	readable		
 exe	0x004282a0	evt_Preprocess	evt	byte	readable		
 exe	0x004284a0	evt_FindById	evt	byte	readable		
@@ -697,7 +697,7 @@ exe	0x00434a80	d3anim_GetSize	d3_anim	byte	readable
 exe	0x00434af0	d3anim_Purge	d3_anim	byte	readable		
 exe	0x00434b70	d3anim_Release	d3_anim	byte	readable		
 exe	0x00434d00	d3anim_MaxRadius	d3_anim	byte	readable		
-exe	0x00434d60	d3anim_CalculateAnimNormals	d3_anim	shape	readable	deep	
+exe	0x00434d60	d3anim_CalculateAnimNormals	d3_anim	byte	readable		
 exe	0x00435550	d3anim_StartAnim	d3_anim	byte	readable		
 exe	0x00435740	d3_ReleaseTexture	d3_anim	byte	readable		
 exe	0x00435810	d3anim_PauseAnim	d3_anim	byte	readable		
@@ -1097,14 +1097,14 @@ exe	0x0045db20	d3sky_Free	d3_sky	byte	readable
 exe	0x0045db40	d3sm_GetGround	d3_sm	byte	readable		
 exe	0x0045dc00	d3sm_Sample	d3_sm	draft	readable	deep	
 exe	0x0045e180	d3sm_BoundsCB	d3_sm	byte	readable		
-exe	0x0045e210	d3sm_ShadowCB	d3_sm	draft	readable	deep	shape+readable -> draft+readable at 0f1c8dc1: promote --accept-falls
+exe	0x0045e210	d3sm_ShadowCB	d3_sm	byte	readable		
 exe	0x0045e560	d3sm_Replace	d3_sm	byte	readable		
 exe	0x0045e620	d3sm_Build	d3_sm	draft	readable	deep	
 exe	0x0045eeb0	d3sm_Create	d3_sm	byte	readable		
 exe	0x0045ef60	d3sm_Destroy	d3_sm	byte	readable		
 exe	0x0045efc0	d3sm_FindGround	d3_sm	byte	readable		
 exe	0x0045f100	d3sm_GetVertex	d3_sm	byte	readable		
-exe	0x0045f170	d3_GetHeightAt	d3_sm	shape	readable	deep	
+exe	0x0045f170	d3_GetHeightAt	d3_sm	byte	readable		
 exe	0x0045f2b0	d3sm_Pick	d3_sm	byte	readable		
 exe	0x0045f610	ts_InitCache	ts_texture	byte	readable		
 exe	0x0045f650	ts_FreeCache	ts_texture	byte	readable		
@@ -1381,7 +1381,7 @@ exe	0x004788f0	d2_RemoveHitRect	gfx	byte	readable
 exe	0x00478930	d2_CompareColour	gfx	byte	readable		
 exe	0x00478960	d2_SetColour	gfx	byte	readable		
 exe	0x00478980	d2_GetBmpSize	gfx	byte	readable		
-exe	0x00478a00	d2_ReadBmpPixels	gfx	draft	readable	deep	
+exe	0x00478a00	d2_ReadBmpPixels	gfx	byte	readable		
 exe	0x00478b50	d2_LoadBmpSurface	gfx	byte	readable		
 exe	0x00478bd0	d2_ConvertRgbTo16	gfx	byte	readable		
 exe	0x00478c50	d2_Convert16ToRgb	gfx	byte	readable		
@@ -1774,7 +1774,7 @@ exe	0x004a85e0	ai_PokerDealFifth	poker	byte	readable
 exe	0x004a8630	ai_PokerExchange	poker	byte	readable		
 exe	0x004a8650	ai_PokerAnte	poker	byte	readable		
 exe	0x004a8690	ai_PokerEndRound	poker	byte	readable		
-exe	0x004a86f0	ai_PokerNpcSetStake	poker	shape	readable		
+exe	0x004a86f0	ai_PokerNpcSetStake	poker	byte	readable		
 exe	0x004a8760	ai_DecideOfficePartner	aip	byte	readable		
 exe	0x004a8a50	ai_DecideTableValue	aip	byte	readable		
 exe	0x004a8ad0	ai_DecidePartnerOtherSex	aip	byte	readable		
@@ -1844,7 +1844,7 @@ exe	0x004ad1b0	hmt_SetPendingElection	hmt	byte	readable
 exe	0x004ad1c0	hmt_Election	hmt	byte	readable		
 exe	0x004ad3b0	hmt_SendElectionMessage	hmt	byte	readable		
 exe	0x004ad3e0	hmt_Score	hmt	byte	readable		
-exe	0x004ad510	hmt_ClearOffices	hmt	shape	readable	deep	
+exe	0x004ad510	hmt_ClearOffices	hmt	byte	readable		
 exe	0x004ad580	hmt_DecideElection	hmt	byte	readable		
 exe	0x004ad7a0	hmt_FillCouncils	hmt	shape	readable		
 exe	0x004ada80	hmt_Load	hmt	shape	readable	deep	
@@ -2329,7 +2329,7 @@ exe	0x004ca8a0	cm_ExChrUseGates	cm	byte	readable
 exe	0x004caa20	cm_ExChrAnim	cm	byte	readable		
 exe	0x004caaa0	cm_ExOwnership	cm	byte	readable		
 exe	0x004cab40	cm_ExSetHome	cm	byte	readable		
-exe	0x004cac40	cm_ExGebUpgrade	cm	shape	readable	deep	
+exe	0x004cac40	cm_ExGebUpgrade	cm	byte	readable		
 exe	0x004cb100	cm_ExBuildingDestroyed	cm	byte	readable		
 exe	0x004cb210	cm_ExHandOverCrimes	cm	byte	readable		
 exe	0x004cb250	cm_ExHire	cm	byte	readable		
@@ -3312,7 +3312,7 @@ exe	0x00522040	sv_PanelImage	sv	byte	readable
 exe	0x00522100	sv_SetPanelEnabled	sv	byte	readable		
 exe	0x00522280	sv_ClosePanelWidgets	sv	byte	readable		
 exe	0x005223c0	sv_DestroyScreen	sv	byte	readable		
-exe	0x005224a0	sv_LoadGroundplan	sv	byte	readable		
+exe	0x005224a0	sv_LoadGroundplan	sv	shape	readable		
 exe	0x005229b0	sv_UpdateGroundplan	sv	byte	readable		
 exe	0x00522ec0	sv_SetResearchClass	sv	byte	readable		
 exe	0x00522f10	sv_UpdateCityPanel	sv	byte	readable		
@@ -3476,7 +3476,7 @@ exe	0x00537f40	main_EndGame	main	byte	readable
 exe	0x00538140	main_RundenBeginn	main	byte	readable		
 exe	0x005384e0	main_EndRound	main	byte	readable		
 exe	0x00539620	main_ReplaceFigure	main	byte	readable		
-exe	0x00539870	main_RoundReport	main	byte	readable		
+exe	0x00539870	main_RoundReport	main	shape	readable		
 exe	0x0053a250	main_UpdateFigure	main	shape	readable		
 exe	0x0053a450	main_UpdateFigures	main	byte	readable		
 exe	0x0053a520	main_SettleRound	main	byte	readable		
@@ -4003,7 +4003,7 @@ exe	0x00578370	ai_TutorialStop	sv_t	byte	readable
 exe	0x00578440	ai_TutorialFreeRuns	sv_t	byte	readable		
 exe	0x005784a0	ai_TutorialInitMainIntro	sv_t	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	sv_t	byte	readable		
-exe	0x00578e40	ai_TutorialInitChapter2	sv_t	byte	readable		
+exe	0x00578e40	ai_TutorialInitChapter2	sv_t	shape	readable		
 exe	0x00579570	ai_TutorialInitChapter3	sv_t	shape	readable		
 exe	0x0057aa80	ai_TutorialInitChapter4	sv_t	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	sv_t	byte	readable		
@@ -4092,7 +4092,7 @@ exe	0x00587de0	ai_ClearTurnTable	svgrave	byte	readable
 exe	0x00587e00	ai_HandleItemDrag	svtip	byte	readable		
 exe	0x00588160	ai_OpenBuildingTooltip	svtip	byte	readable		
 exe	0x00588310	ai_OpenItemTooltip	svtip	draft	readable	deep	
-exe	0x00588950	ai_OpenUpgradeTooltip	svtip	shape	readable		
+exe	0x00588950	ai_OpenUpgradeTooltip	svtip	shape	readable	deep	
 exe	0x00588bb0	ai_OpenHelpTooltip	svtip	byte	readable		
 exe	0x00588c60	ai_OpenCharTooltip	svtip	byte	readable		
 exe	0x005890c0	ai_CharInfoWindow	svtip	byte	readable		
@@ -4251,7 +4251,7 @@ exe	0x0059fe40	ai_CitizenRightWindow	lc	byte	readable
 exe	0x005a0220	ai_OfficeApplicantsWindow	lc	draft	readable	deep	
 exe	0x005a0590	ai_OfficeApplicationWindow	lc	byte	readable		
 exe	0x005a07d0	ai_LawBookContact	lc	byte	readable		
-exe	0x005a0950	ai_GuildCashPayWindow	lc	shape	readable		
+exe	0x005a0950	ai_GuildCashPayWindow	lc	shape	readable	deep	
 exe	0x005a0ca0	ai_GuildGiftCallback	lc	byte	readable		
 exe	0x005a0f10	ai_GuildGiftEntry	lc	byte	readable		
 exe	0x005a1000	ai_GuildLevel1Window	lc	byte	readable		
@@ -4338,9 +4338,9 @@ exe	0x005a8d00	ai_ShowTributeDelayedNews	lcmap	byte	readable
 exe	0x005a8d40	ai_ShowTributeCollectNews	lcmap	byte	readable		
 exe	0x005a8d80	ai_ShowTributeClaimNews	lcmap	byte	readable		
 exe	0x005a8e10	ai_ShowTavernHelperNews	lcmap	byte	readable		
-exe	0x005a8ee0	ai_ShowPartingNews	lcmap	shape	readable		
-exe	0x005a8f90	ai_ShowFeudNews	lcmap	shape	readable		
-exe	0x005a9050	ai_ShowPartnerNews	lcmap	shape	readable		
+exe	0x005a8ee0	ai_ShowPartingNews	lcmap	byte	readable		
+exe	0x005a8f90	ai_ShowFeudNews	lcmap	byte	readable		
+exe	0x005a9050	ai_ShowPartnerNews	lcmap	byte	readable		
 exe	0x005a9110	ai_ShowCharacterNews	lcmap	byte	readable		
 exe	0x005a9170	ai_NotifyPlayerOfChar	lcmap	byte	readable		
 exe	0x005a91c0	ai_PlagueNews	lcmap	byte	readable		
