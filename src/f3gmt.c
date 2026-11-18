@@ -4485,15 +4485,18 @@ float gm_GetSkill(char *c, int skill)
 
 int gm_GetDisease(int n, int *out)
 {
-    if (9 < n) {
+    int *p;
+
+    if (n >= 10) {
         out[0] = gm_Diseases[0];
         out[1] = gm_Diseases[1];
         out[2] = gm_Diseases[2];
         return 0;
     }
-    out[0] = gm_Diseases[n * 3];
-    out[1] = gm_Diseases[n * 3 + 1];
-    out[2] = gm_Diseases[n * 3 + 2];
+    p = &gm_Diseases[n * 3];
+    out[0] = p[0];
+    out[1] = p[1];
+    out[2] = p[2];
     return 1;
 }
 /* 0x505230, the character c catches a disease: its word +0x2c holds the diseases 2 .. 9 as bit fields (4 / 4 / 2 / 3 /
