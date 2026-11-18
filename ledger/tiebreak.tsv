@@ -109,7 +109,7 @@ exe	0x004076b0	ch_MapFree	ch	46d5ce1fa835a471	no	byte	control=byte p1=byte p2=by
 exe	0x004076c0	ch_CopyVec	ch	ee54c896b801bb76	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004076e0	ch_PosToCell	ch	c1e37bfa1dff80e6	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00407740	ch_CellToCell	ch	c3d32bb49966197d	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x00407790	ch_GetWaypoints	ch	ac0aee75a1be08a4	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	8b2394f43e5fbd12
+exe	0x00407790	ch_GetWaypoints	ch	84cab87e7987d792	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	fe60b82b736b204d
 exe	0x004079b0	ch_GetNewPath	ch	d737d5bd4329f293	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft	
 exe	0x00408490	ch_PathToTarget	ch	b69a76b6f5c10af8	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	8b2394f43e5fbd12
 exe	0x00408690	ch_InitWalk	ch	5b60fbca416de7b9	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	8b2394f43e5fbd12
