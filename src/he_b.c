@@ -5473,9 +5473,13 @@ void he_RunGraveTraining(int ev)
    sent, unkb4 / unkb0 are capped at 2, unkb8 = 0, the money -((unkb4 + 2) * (unkb0 + 2)) is taken from the
    character, due now + 5 hours, then the event is scheduled (cm_SendExSetHE)
    @deep deep s23: left the money product's two loads swapped (original kind [+0xb4] into ecx first, ours
-   radius). Operand order / negation spellings (8 forms) and climb round 1: = control. prior: near-byte
-   sweep s22: m->rounds = 0 before the clamps (6 -> 4 ins). Left: the cost product's two field loads in the
-   other order (original [+0xb4] into ecx first). = control: factors swapped, -(a)*b, a*b*-1, 0 - a*b. */
+   radius). Operand order / negation spellings (8 forms), climb round 1, r as AIJOB *, e->end moved, 1500
+   sampled orders of the msg fill: = control or worse. flip.py --want 'mov ecx,[esi+180]': deleting
+   msg.type / msg.flags / msg.arg[1] / msg.arg[2] or swapping memset with msg.type gives the original's
+   order, so it is a value-numbering tie decided by the message fill above, not by the product's spelling.
+   prior: near-byte sweep s22: m->rounds = 0 before the clamps (6 -> 4 ins). Left: the cost product's two
+   field loads in the other order (original [+0xb4] into ecx first). = control: factors swapped, -(a)*b,
+   a*b*-1, 0 - a*b. */
 void he_AllocMeeting(int ev)
 {
     AIJOB *e = (AIJOB *)ev;

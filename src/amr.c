@@ -7027,7 +7027,9 @@ int ai_ExecuteApprenticeship(G5CH *p, AIARG *s1, AIARG *s2)
    values; the character needs ten times the price
    @deep deep s23: the c index as a named local sk (climb local op) and the sum b/va first: 8 -> 2 ins.
    Left: best->skills[sk] addressed [esi+edi+0x80] where the original has [edi+esi+0x80] (index register
-   first); sk as unsigned/long/short/char, *(skills + sk), parens: no lever; both indexes named: worse. */
+   first). sk as unsigned/long/short/char, *(skills + sk), parens, both indexes named, 30 orders of the va
+   / sk / vb statements x sum forms, sk = .. inside the max argument: no lever or worse; flip.py: only sk
+   first (worse elsewhere) and type changes flip it. */
 
 int ai_DecideStudy(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
 {
