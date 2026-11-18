@@ -1723,22 +1723,7 @@ unsigned char *he_CreateEvent(unsigned char *m)
 }
 /* 0x53e1f0, frees the event record `r`: its message box text (+0x7c), its entry in he_QuickList when it is shown in the
    event bar (flags 8: releases its slot first, shrinks he_QuickTop), counts it off (he_EventCount), clears it and,
-   when it was the last used record, shrinks he_EventTop
-   @deep match-deep s9: more forms of the top shrink, all CSE the address (= control): the loop through ev
-   = &he_Jobs[top] (ev->kind), the compare on r (and memset(r, ..)); worse: a hand pointer walk under an if
-   (top >= 0) guard with --top < 0 break (24 ins, still CSE), the clamp as if (top < 0) top = 0 (21: a
-   branch instead of setl/dec/and). The original's second address is the loop's strength-reduced pointer
-   init after the jl guard; ours reuses the compare's ecx. Open as before: what makes VC6 recompute it (not
-   a spelling of the compare or the loop). prior: s6 (size queue, 244 vs 260): the 16 bytes are exactly the
-   original's second &he_Jobs[he_EventTop] (the loop pointer recomputed after the >= 0 guard). Tried, all =
-   control (VC6 canonicalises them to one CSE): while (top >= 0 && kind == 0) top--, an early return on ev
-   != .., an if-guarded do-while, r == (int *)he_Events + top * 0x53, (char *)ev == (char *)he_Events + top
-   * 0x14c, the loop test he_Events[top * 0x14c] / *(char *)&he_Jobs[top], &ev->kind == &he_Jobs[top].kind;
-   ev - he_Jobs == top: 71 ins. Open: what kills the CSE in the original (a different index variable at CSE
-   time, a store between). prior: read whole against the original and rewritten on AIJOB / HEEVSLOT: the
-   text free, the quick list search and its q != ev return, the slot release through q, he_QuickTop's
-   shrink and clamp, he_EventCount--, the 0x14c-byte clear, the he_EventTop shrink and clamp all match
-   statement for sta... */
+   when it was the last used record, shrinks he_EventTop */
 void he_FreeEvent(int *r)
 {
     AIJOB *ev = (AIJOB *)r;
@@ -1771,10 +1756,10 @@ void he_FreeEvent(int *r)
     he_EventCount--;
     memset(ev, 0, sizeof(AIJOB));
     if (ev == &he_Jobs[he_EventTop]) {
-        for (; he_EventTop >= 0; he_EventTop--)
-            if (he_Jobs[he_EventTop].kind != 0)
-                break;
-        he_EventTop = he_EventTop < 0 ? 0 : he_EventTop;
+        t = he_EventTop;
+        for (; t >= 0 && he_Jobs[t].kind == 0; t--)
+            ;
+        he_EventTop = t < 0 ? 0 : t;
     }
 }
 #define he_Cursor (*(AIJOB **)((char *)&he_QuickList + 0xaaa0))  /* 0x7585e0, the record he_NextEvent stands on, 0: the search ended */
