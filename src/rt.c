@@ -1127,9 +1127,9 @@ void rt_LoadAtPoint(AIOBJ *c, char pl)
     int k;
     int n;
     int price;
-    AIRECIPE ci = {0};
-    char name[0x80];
     AIRECIPE bi = {0};
+    char name[0x80];
+    AIRECIPE ci = {0};
     char buf[0x400];
 
     if (c->route == 0)
