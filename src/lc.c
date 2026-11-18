@@ -7473,18 +7473,18 @@ void ai_DarkCornerMenu(AIBLD *bld, AIOBJ *room, AIOBJ *corner)
    in the group "buy dunkle ecke" the script message 0x53 {'buy ', the player, the building, the offer, the
    price} (cm_SendScriptMessage), the proof message (cm_SendProofExecuted) and the price paid to the owner
    (cm_SendMoveGoodsUnchecked). The frames are pumped with ai_DarkCornerMenu's callback
-   @deep Reconstructed whole from the original (as ai_DarkCornerMenu: the three gv_EvidencePrice offers,
-   the rows, the y-controlled draw loop; the click finds the row by its ctl[0], checks the offer is still
-   in corner->recs and sv_CheckGoodAmount, then the group 'buy dunkle ecke' with the script message {'buy
-   ', player, building, offer, price}, cm_SendProofExecuted and the payment to the owner; the 'nicht mehr
-   zum verkauf' box behind the original's sel == 3 test). Left: allocation and frame layout only: the
+   @deep size queue s16: the offer row stores as rows[i].rec, cur[i], vals[i] (all 6 orders): 119 -> 94
+   ins, raw 1016 -> 1020 (padded 1024 vs 1008). climb.py round 2 further: rows[i].x after .pickable and
+   cur[sel] read at each use instead of id (85 ins), not kept (an id local reads better and the size
+   stays). prior: Reconstructed whole from the original (as ai_DarkCornerMenu: the three gv_EvidencePrice
+   offers, the rows, the y-controlled draw loop; the click finds the row by its ctl[0], checks the offer is
+   still in corner->recs and sv_CheckGoodAmount, then the group 'buy dunkle ecke' with the script message
+   {'buy ', player, building, offer, price}, cm_SendProofExecuted and the payment to the owner; the 'nicht
+   mehr zum verkauf' box behind the original's sel == 3 test). Left: allocation and frame layout only: the
    original keeps 0 in ebx through the head (push ebx, vals = ebx), ours in edi after rep stosd; ours
    hoists the cur[i] load above the gv_EvidencePrice test ('mov ecx,[esp+esi+0x28]'), the original loads it
    in each branch; the original keeps x in ebp and half in [esp+0x10], ours the reverse; sel in ebp
-   ('[esp+ebp*4+0x14]') vs ours edi with 'lea edx,[eax*4]'; ai_OwnPlayer via cl vs al; the slots of cur /
-   vals / price / who differ (VC6 does not lay locals by declaration order: five orders tried on
-   ai_DarkCornerMenu, no change). Tried: price kept apart from the address-taken price local (fixed the
-   esi/price spill) */
+   ('[esp+ebp*4+0x14]') vs ours edi with 'lea edx,[eax*4]'; ai_OwnPlayer via cl vs al; the slots o... */
 
 void ai_DarkCornerBuy(AIBLD *bld, AIOBJ *corner)
 {
@@ -7525,9 +7525,9 @@ void ai_DarkCornerBuy(AIBLD *bld, AIOBJ *corner)
             if (gv_EvidencePrice(corner->recs[i], ai_Chars[bld->owner], &price, &who, &law[i]) != 0) {
                 if (cur[i] != corner->recs[i])
                     changed = 1;
+                rows[i].rec = (AICHARREC *)ai_Chars[who];
                 cur[i] = corner->recs[i];
                 vals[i] = price;
-                rows[i].rec = (AICHARREC *)ai_Chars[who];
             } else if (cur[i] != -1) {
                 changed = 1;
                 rows[i].rec = 0;
