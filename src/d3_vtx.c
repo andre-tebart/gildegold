@@ -413,7 +413,17 @@ void d3_FrameNormals(D3OBJECT *obj, D3LINFO *info, D3ANIMFRAME *f)
 }
 /* 0x459ab0, transforms the 8 corners of the bounding box that follow the vertices of the mesh by the matrix m,
    from the corners of the source (no animation) or of the union of the boxes of the key frames in use.
-   Returns the corners (0 if the mesh has no vertices). info is a D3ANIMCTL (d3_anim.h) here. */
+   Returns the corners (0 if the mesh has no vertices). info is a D3ANIMCTL (d3_anim.h) here.
+   @deep deep s35: the hunks are the term order of the flat three-product sums (the active branch: original
+   z, y, x products in all three rows; the source branch: y, x, z / z, y, x / z, y, x with the matrix
+   operand first in the second and third products of row x). Every order of the three products and of each
+   product's two operands (47 per row, 282 in one dcp try) is one code per row: VC6 orders a flat float sum
+   itself. Parenthesized operands are a lever (423 variants, 327 codes: each paren set gives another order,
+   chaotic, e.g. (c[i].x) parens in row 460: shape 20 ins, other fpu hunks), so the order follows node
+   identity, not spelling; the parens already in rows 469 / 470 of the source branch are such leftovers
+   (removing them: 50 / 24 ins). m declared at another place: = control. Not tried: a combined per-row
+   search over paren subsets (no evidence the original had parens). (declaration set: no declaration set
+   makes this text byte (every symbol-count shift 0..63 at the unit's start and before the function) */
 
 D3BOXVERT *d3_GetBoxVerts(D3OBJECT *obj, D3OBJINFO *info, void *unk)
 {

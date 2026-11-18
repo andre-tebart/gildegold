@@ -811,24 +811,24 @@ void d3_SetFogRange(float start, float end)
 }
 /* 0x43a6f0, turns the fog on (start < end: sets the range through d3_SetFogRange) or off (start >= end:
    restores the viewport when the fog was on), then stores the fog range, the on flag and the colour
-   @deep s13 (size queue): the then-arm copy of the tail is NOT a post-allocation duplicate: its registers
-   differ from the shared tail's (copy: eax=end, edx=start, eax=color; tail: ecx=start, edx=end, eax=color)
-   and it keeps on in bl, so VC6 duplicated the 4-store tail into the start<end arm BEFORE allocation (as
-   the single-return tail rule of main_ChooseHistory) and scheduled it with the add esp,8. Tried s13 (dcp
-   try): on = 0 at the top (30 ins), on = 0; if (start < end) on = 1; if (on) .. else if (FogOn) .. (24),
-   on = start < end + if (on) / else if, an empty if (!FogOn) {} else, guards as two early returns, the
-   outer && as nested ifs: all = control. flip.py --want two pop ebx (every single delete / duplicate /
-   swap / constant): no mutant duplicates the tail. Open: what makes the original's tail cheap enough for
-   the pre-allocation duplicator (its IL size or predecessor count). prior: headers sample: insensitive (32
-   samples, one codegen). Left: the original duplicates the 4-store tail (FogOn=bl, FogStart1, FogEnd2,
-   fog_color, pop ebx, ret) into the start<end arm before scheduling (loads above add esp,8, stores
-   End/On/Start/color); ours jumps to the merged tail, and the else arm's eax/ecx/edx rotation follows.
-   Probed the threshold: VC6 duplicates this tail with 2 stores left (On, Start) but not with 3 or 4, so
-   the original's tail is cheaper to VC6 than ours in some way not found. dcp try (this session): all 23
-   orders of the tail stores: no duplication (best 18 ins is a store-order artefact, not kept); early
-   return guard = control; else if + char on = 0: 30 ins; int on: 26; on = start < end + if (on) / ternary
-   / if (!on): = control or block-reorder only; tail written in both arms (24 orders, with on = start <
-   end): 31-33 ins (const 1 store); same with return: 33; comma-...
+   @deep deep s35: no new lever found; read again: the M8 lines of the d3_SetViewport call and the tail
+   stores are the register rotation behind the missing tail duplicate (the original's pushes and stores
+   name the same globals in the same order). Rounds of the s13 note not repeated. prior: s13 (size queue):
+   the then-arm copy of the tail is NOT a post-allocation duplicate: its registers differ from the shared
+   tail's (copy: eax=end, edx=start, eax=color; tail: ecx=start, edx=end, eax=color) and it keeps on in bl,
+   so VC6 duplicated the 4-store tail into the start<end arm BEFORE allocation (as the single-return tail
+   rule of main_ChooseHistory) and scheduled it with the add esp,8. Tried s13 (dcp try): on = 0 at the top
+   (30 ins), on = 0; if (start < end) on = 1; if (on) .. else if (FogOn) .. (24), on = start < end + if
+   (on) / else if, an empty if (!FogOn) {} else, guards as two early returns, the outer && as nested ifs:
+   all = control. flip.py --want two pop ebx (every single delete / duplicate / swap / constant): no mutant
+   duplicates the tail. Open: what makes the original's tail cheap enough for the pre-allocation duplicator
+   (its IL size or predecessor count).
+
+
+
+
+
+
 
 
 

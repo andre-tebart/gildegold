@@ -1089,6 +1089,38 @@ Where the pushes and pops sit, how many epilogue copies there are, shared agains
   - The he_AimReaper fix's commit message names he_UpdateReaper as the function that fills reaperPos from
     obj->pos; it is he_CreateReaper.
 
+- **Deep s35 (the near-byte list to 60 instructions, notes older than s22 first: the 15 at 20-22 instructions,
+  6 byte, 1 closer, 8 notes)**:
+  - **Read the frame with the pushes counted; a hole in the original's frame is an array's tail**:
+    ai_MoneyExchangeWindow's itoa text sat at [esp+0x28] with exchangeButton at 0x30 (8 bytes), and the button
+    array at 0x38 ran to playerRows at 0x58 (the original's unreferenced 0x18 hole): `char text[8]`, `int
+    buttons[8]` (as ai_CreditGiverWindow's buttons[8]): slots 22 -> byte. d3s_UpdateObjectAt's 12-byte hole
+    beside one stored float was a D3VECTOR4 whose x / y stay on the FPU (the projected point p; only p.z
+    stored), and the camera-relative point reused the ray vector d (its x stored in d's own slot): frame 0x34
+    -> 0x44, byte. When one float of three is stored, look for the vector it belongs to (s32's lever).
+  - **A local that only names a field hides the field's references from the induction-variable choice**:
+    ai_SortExchangeRows' `v = rows[j].good; if (v == own) .. else if (v == 0) .. else names[v]` -> the field
+    read at each test (the same CSE'd code): the inner pointer pivots on rows[j].good as the original's
+    (draft 21 -> byte). he_RunSendHomeEvent's pivot (netId, ours model) did not move by any reference probe.
+  - **Guard + one final return through a result variable for partially shrink-wrapped pushes**: he_ShowNews
+    pushes esi before the kind guard and ebx / ebp / edi after it: `if (!ok) return -1;` then both sends
+    assigned to ret and one `return ret;` (VC6 still emits the two call copies); two `return send(..)`: the
+    old code, the nested form: worse (21 -> byte).
+  - **permute.py on a message fill, then the fill's neighbour**: ai_PickpocketGangWindow type, to, fromId,
+    time, arg[10] (= msg.to), flags (719 orders: 22 -> 2, the AITIME copy's load order), then the ids memset
+    after `d2_ClickedId = -1` instead of before it: byte. The earlier note's 48 orders had not covered it.
+  - **A hand string copy loop is strcpy**: ai_ChangeProfessionWindow's caption copy (inc ecx before the store
+    in the original): 21 -> 19.
+  - Left with notes: he_RunSendHomeEvent (IV pivot), he_RunStammtisch (m->state-- in edi, a candidate; the
+    shared tail's add esp merge), init_Betrieb (i 25 against sum 22, c2trace --prio; the add / lea split),
+    ai_ChangeProfessionWindow (the 0x15bd ternary through esi), ai_ProductionGoodsWindow (column pointer
+    against gm_KindObjs pointer for ebp), surf_ScaleBlit (pal8 26 against the src->dwWidth CSE 22),
+    cm_FightMouse (stateFlags loaded once before the branch with 2 in bl), gm_TitlePeriodServed (hours'
+    ftol before the zero fills; `h = hours;` as a statement gives the order but fstp / fld), d3_GetBoxVerts
+    (flat float sums: every term / operand order one code, each paren set another code: node identity),
+    d3_SetFog (no new lever).
+  - Tools: c2trace.py function_span and initgen.py read K&R definitions (d2_DrawPic).
+
 - **An else-if arm cross-jumped whole into a sibling's copy, the original keeps it inline**: the store order of
   the OTHER arms (default arm charId before stateArg; 0x176 arm stateArg, charId, x, z) decides it, found by
   climb.py swap + move in round 2 (cm_OrderAttack byte; permuting only the inlined arm's stores did not). The pair
