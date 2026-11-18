@@ -5792,19 +5792,7 @@ int ai_MeisterTradeAllgemein(AICHAR *ch, AIOBJ *b)
     return 1;
 }
 /* 0x48d010, ai_MeisterTradeFernEinkauf: the long-distance buyer sends every cart that is in the world to a
-   market store (unloads it, then orders the purchases of the slots / entries)
-   @deep Read the whole function against the original. Fixed: the slot purchase loop continues while saving
-   <= ai_FloatZero (our draft had it inverted), the clamped amount n = min(amt, buyAmount) is a variable of
-   its own that the 'G' expectation reads (frame 0x694 now equal), the entries loop for (i = 0; nA < 3 &&
-   ...; i++), min(amt, buyAmount) for the sale, the slot search an index loop, AIBLD fields for the 'G'
-   building (Q4), ai_FloatZero. Left (code 69, fpu 4, regs 2): the slot loop's i - the original keeps it in
-   memory after the slot-0 block ('mov esi, dword ptr [esp + 0xc] / shl esi, 6 / add esi, ai_Slots+0x34')
-   where ours carries it in edi (hunks 0x48d1c4, 0x48d36f, 0x48d392), and so the strength-reduced base is
-   +0x34 (buyAmount) there, +0x8 in ours (the M8, hunk 0x48d411 the same accesses at the other base); a
-   pointer do-while form (as ai_MeisterTradeFernEinkauf2's, which matches) gives the same. (references: M8
-   at +0x3d6: ours refers to ai_Slots+0x8 (0xf86a48), the original's field to 0xf86a74 (ai_Slots+0x34),
-   explained: the M8 is the base offset of the strength-reduced ai_Slots[i] pointer (both walk ai_Slots
-   from i with the same fields saving, bld, buyAmount, item, price)) */
+   market store (unloads it, then orders the purchases of the slots / entries) */
 
 int ai_MeisterTradeFernEinkauf(AICHAR *ch, AIOBJ *b)
 {
@@ -5873,11 +5861,8 @@ int ai_MeisterTradeFernEinkauf(AICHAR *ch, AIOBJ *b)
                     }
                 }
             }
-            exp[0] = 0;
-            exp[1] = 0;
-            exp[2] = 0;
+            memset(exp, 0, sizeof(exp));
             nB = 0;
-            exp[3] = 0;
             i = 0;
             if (ai_Slots[0].item) {
                 amt = gm_ListStock(market, ai_Slots[0].item);
@@ -5890,16 +5875,18 @@ int ai_MeisterTradeFernEinkauf(AICHAR *ch, AIOBJ *b)
                 i = 1;
             }
             for (; nB < 3 && i < ai_NSlots && ai_Slots[i].saving <= 0.0f; i++) {
-                if (msg.dst[3] == ai_Slots[i].bld->id && ai_Slots[i].buyAmount) {
-                    amt = gm_ListStock(market, ai_Slots[i].item);
-                    bl = ai_Slots[i].bld;
+                AISLOT *sl = &ai_Slots[i];
+
+                if (msg.dst[3] == sl->bld->id && sl->buyAmount) {
+                    amt = gm_ListStock(market, sl->item);
+                    bl = sl->bld;
                     if (bl) {
-                        msg.u.item[nB + 3] = ai_Slots[i].item;
+                        msg.u.item[nB + 3] = sl->item;
                         msg.dst[nB + 3] = bl->id;
-                        n = min(amt, ai_Slots[i].buyAmount);
+                        n = min(amt, sl->buyAmount);
                         msg.amount[nB] = n;
                         if (bl->type == 'G')
-                            exp[bl->playerSlot] = (int)(n * ai_Slots[i].price + exp[bl->playerSlot]);
+                            exp[bl->playerSlot] = (int)(n * sl->price + exp[bl->playerSlot]);
                         nB++;
                     }
                 }
