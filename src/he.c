@@ -5947,7 +5947,7 @@ void he_RunCharPayouts(int ev)
     char news[0x800];
     char line[0x200];
     AICHAR *c;
-    unsigned kinds;
+    union { struct { unsigned int lo, hi; } s; __int64 q; } kinds;
     int bld, i, at, amount;
 
     if (e->stage == -2) {
@@ -5955,12 +5955,13 @@ void he_RunCharPayouts(int ev)
         return;
     }
     txt_Format(news, 0x10c2, &ai_PlayerSlotsT[ai_OwnPlayer].name[0x20], (unsigned short)util_Random(3) + 0x10c4);
-    kinds = (1 << 22) | (1 << 7);       /* ai_PassesBuildingFilter's kind mask: the building kinds 22 and 7 */
+    kinds.s.lo = (1 << 22) | (1 << 7);  /* ai_PassesBuildingFilter's kind mask: the building kinds 22 and 7 */
+    kinds.s.hi = 0;
     bld = 0;
     for (i = 0; i < 0x300; i++) {
         c = &ai_CharsT[i];
         if (c->id != 0xffff && c->health >= 2 && (c->kind == 6 || c->kind == 7 || c->kind == 5)) {
-            if (ai_PickActionBuilding((struct AIPER *)c, 4, kinds, 0.0f, 100.0f, &at) != 0)
+            if (ai_PickActionBuilding((struct AIPER *)c, 4, kinds.q, 0.0f, 100.0f, &at) != 0)
                 gm_FindById(&bld, 0, 0, at);
             if (c->kind == 6 || c->kind == 7)
                 he_ShowNews(c->netId, -1, news, 0x20, 0x601, (char *)0);
