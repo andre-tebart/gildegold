@@ -852,6 +852,34 @@ Where the pushes and pops sit, how many epilogue copies there are, shared agains
     txt_ParseRandomText (the stores reload p from its slot, 10 ins), d2_SliderInput (the vertical test's load
     order; its goto is the original's single clamp copy).
 
+- **Deep s28 (the near-byte list to 30 instructions, notes older than s22 first, 15 items: 10 byte + 1 twin)**:
+  - **climb.py round 1 first, a third time**: d3sm_ShadowCB (one `(b->gx)` parenthesized in the cross term
+    after an earlier session's 1440 orders: fpu 14 -> byte, kept with @original) and d2_ReadBmpPixels (no pad local, `w3 & 3`
+    at both uses: draft -> byte) were climb's first-round rows.
+  - **SIB base / index order across loops = which loops share the index variable** (rule (5) of the allocation notes above):
+    d3anim_CalculateAnimNormals' three bounding-box loops after the frame loop all indexed with i (the frame
+    loop keeps f): byte; any other f / i / k assignment of the three, a separate i for one loop, while forms:
+    = control. Generate all assignments in one `dcp try` (27 rows) before any spelling of the address.
+  - **A statement in both arms instead of a named result** (the s27 lever, again): ai_PokerNpcSetStake's
+    `n = bold ? d : d >> 1; stake2 = util_RandomU(n) + stake` as the whole store in each arm (VC6 merges the
+    call tails; the argument becomes a temporary in edx): byte. evt_FindLogic's `(&& test) || (|| test)` as two
+    ifs each with `return s + n` (n's second reference ranks it above end: esi / edi swap): byte.
+  - **A complete-constant ternary**: `(p->sex != 0 ? 0x133d : 0x133a) + pick` for `pick + (sex ? 3 : 0) +
+    0x133a` (the original's `add ecx,K; add eax,ecx`); every regrouping of the three-term sum = control
+    (ai_ShowFeudNews, ai_ShowPartnerNews, ai_ShowPartingNews byte).
+  - **An escaped block local's scope**: cm_ExGebUpgrade's key (address to a callback walk) and radius (out
+    parameter) declared together in the block of the loaded object: radius packs with t, key keeps its own slot
+    and its store stays after the pushes (slots 14 -> byte); key at function scope reorders the store (order
+    20), radius alone in its inner block loses 4 bytes of frame.
+  - **Named sub-results for an integer / x87 interleave**: d3_GetHeightAt's neighbour corner heights as yz / yx
+    locals before the interpolation (the original computes both byte indices before the x87 work): order 24 ->
+    byte; y assigned inside the expression got the order but `fld st(2); fsubp` (3 ins).
+  - **A loaded value read into its own local**: hmt_ClearOffices `type = hmt_ElectionObjTypes[m - 1];` before
+    the call that takes it (edx -> eax): byte.
+  - Left with notes: gm_StockPrice (threaded 0.25 clamp path, the merged mk == 0 tail), cm_RunWedding (guard
+    epilogues), hmt_RecordTextId (n copy-propagated into the clamp compare), ai_GuildCashPayWindow (amount /
+    cancelBtn slot counts 4 / 3), ai_OpenUpgradeTooltip (view / f against idx's argument slot).
+
 - **An else-if arm cross-jumped whole into a sibling's copy, the original keeps it inline**: the store order of
   the OTHER arms (default arm charId before stateArg; 0x176 arm stateArg, charId, x, z) decides it, found by
   climb.py swap + move in round 2 (cm_OrderAttack byte; permuting only the inlined arm's stores did not). The pair
