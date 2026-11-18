@@ -7530,28 +7530,23 @@ int gm_FreeStallCapacity(char *l, int id, int n)
 int gm_TakeableCount(char *c, int proto, int n)
 {
     ORDCHAR *ch;
-    unsigned char kind;
     int found, kinds, v;
     int counted[8] = { 8, 0xc, 0x12, 0x19, 0x22, 0x20, 0x27, 0 };
-    int *t;
-    int u;
+    int i;
+    GMGOOD *g;
     ORDOBJ *o;
     unsigned short *w;
 
-    v = 0;
     found = 0;
-    kind = GM_GOOD(proto)->type;
-    if (kind == 9)
+    g = GM_GOOD(proto);
+    v = 0;
+    if (g->type == 9)
         return n;
-    u = 8;
-    t = counted;
-    do {
-        if (u == kind) {
+    for (i = 0; counted[i] != 0; i++)
+        if (counted[i] == (unsigned char)g->type) {
             found = 1;
             break;
         }
-        u = *++t;
-    } while (u != 0);
     ch = (ORDCHAR *)c;
     if (((ch->kind == 6 || ch->kind == 7) && ai_FindWeaponRecord(proto) != 0) || proto == 0x179 || proto == 0x17a || !found)
         return 0;
@@ -7573,9 +7568,7 @@ int gm_TakeableCount(char *c, int proto, int n)
             } while (w != 0);
         }
         if (kinds < 6) {
-            v = 3;
-            if (n <= 3)
-                v = n;
+            v = n > 3 ? 3 : n;
         }
     }
     return v < 0 ? 0 : v;
