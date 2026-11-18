@@ -493,6 +493,36 @@ Where the pushes and pops sit, how many epilogue copies there are, shared agains
     spellings (ternary, min both orders, if / else, set-then-if) x both polarities for an
     out-of-line `mov bl,3`; a local copy of a parameter (`m = mode`) to hoist its load; memset with
     -1 instead of 0xff (a -1 cached in ebx).
+- **Size queue s18 (byte or padded size by these)**:
+  - `mov edi,1; push 2` hoisted above a half test (`test ax,ax; push 2; je`) whose arms both run into
+    the next `util_RandomU(2)` test: that next test written in EACH arm (both arms then start with the
+    same instructions and VC6 hoists them); `d = 1` in both arms alone gave the `mov` but not the push
+    (ai_MsgBuildingGetsItemType31 byte).
+  - A vector's pad word stored from the cached zero register (`mov [esp+0x3c],ebx` for `a.w = 0`, while
+    `b.y = 0.0f` stays an immediate): the pad is an INT (`struct { float x, y, z; int w; } a, b;`), so
+    the integer 0 gains the references that give it ebx and every `push 0` / `cmp ..,0` follows
+    (cm_UpdateGrenades 121 -> 99, he_RunSabotage 160 -> 142 ins; cm_UpdateBombs has the same pad from
+    edi). A float `w = 0` folds to a float constant and never uses the register.
+  - A case's `stage++; return;` the original reaches by `je` into a later case's copy, ours inline: the
+    test written positive with the other work in the if and the `stage++; return;` after it
+    (he_RunSabotage stage 2: 142 -> 137 ins, padded size).
+  - A memory-homed accumulator zeroed through a scratch register in the prologue (`xor edx,edx` before
+    `rep stosd`, stored after): its `= 0` as the function's first statement (climb.py round 1 found it:
+    gm_BuildingBalance 95 -> 41); then the arms' store order from the listing (`found = 1; out[..] +=
+    wage; cost += wage;`, `out[6] = f(); cost = out[6];`): 27 ins, padded size.
+  - A byte local that must take dl while a global pointer CSE takes edx first (dealt / ai_PokerTable):
+    the priority race is lost by the char because its other compares go through the zero-extension
+    CSE temp; unsigned short (any register) gave the padded size and only the two registers swapped
+    (ai_PokerPickStrategies 79 -> 24 ins).
+  - `push ebp` for literal zeros right after a `left != 0` loop: VC6's equality propagation (in the
+    block a `left == 0` test guards, left replaces the 0 and gains the references that rank it);
+    `if (cnt < n && left == 0)` shows it, but the original has no surviving left test (he_RunConversion,
+    open).
+  - No lever: the || / && polarity of a 15-compare item chain and its arms' order (VC6 canonicalizes
+    both; ai_StartProduction's layout is the chain's jump edge); the goto-free d2_SliderInput (the
+    clamp in each arm: 10 -> 95 ins); the factor order of `t * (1.0 - dist * 0.01f)` (one code).
+  - climb.py moves that cross a call into a record fill (ai_TechEffectsWindow: `style = 3` after
+    d2_SetCaption, 215 -> 141 ins) are not the original's order: read the listing before keeping one.
 
 - **An else-if arm cross-jumped whole into a sibling's copy, the original keeps it inline**: the store order of
   the OTHER arms (default arm charId before stateArg; 0x176 arm stateArg, charId, x, z) decides it, found by
