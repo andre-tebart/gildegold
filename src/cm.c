@@ -572,20 +572,20 @@ int cm_QueueSplit(void)
         m->seq = cm_LastSeq;
         m->next7 = 0;
         if (last != 0)
-            last->next7 = cm_LastSeq;
+            last->next7 = m->seq;
+        last = m;
         cm_SendStates[i].state = 0;
         cm_SendStates[i].idx = i;
-        if (cm_SendQueue == 0) {
-            cm_SendQueue = m;
-            m->prev = 0;
-        } else {
+        if (cm_SendQueue != 0) {
             for (p = cm_SendQueue; p->next != 0; p = p->next)
                 ;
             m->prev = p;
             p->next = m;
+        } else {
+            cm_SendQueue = m;
+            m->prev = 0;
         }
         m->next = 0;
-        last = m;
     }
     cm_SplitMsgLen = 0;
     return first;
