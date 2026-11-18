@@ -757,18 +757,27 @@ float gm_GoodsPrice(unsigned id, unsigned char p);
    then the list: the goods it is made of with their amounts (section 4, text 0x25), the guild-house buildings
    that make it (gm_BuildingItemGroups, section 3, text 0x26), for the item types 0x17 / 0x25 the buildings that use the
    item idx and the extra slot 0x444 (text 0x624); "$C" when the list stayed empty; returns the view
-   @deep 273 -> 53 ins: d2_WinOpenPicStyled called with a short y (cast macro d2_WinOpenPicStyledS, as
-   sv.c; the row y is recomputed per call, loop counters in memory: -101), the staff loop as an index loop
-   over ai_CharsT (countdown edx 0x300: -117), (float)(c->sk81 * (1.0 / 1008)) + factor (the fxch pair).
-   Left: only the type 0x17/0x25 chain layout (all 49 code ins, 0x58869f..0x588843): the original puts each
-   arm inline after an inverted last compare, A/B/1c1 with their own n store and the n = 1 arms
-   cross-jumped into one tail; ours places A, B, 1c1 after the chain (switch-like) and threads 0x293.. into
-   the inner test at 0x227. Tried: inner order (6 perms, all worse), flat chain without the outer test
-   (162), else-B, B first, sequential ifs, idx <= 0x227 range, n = 0 inside, outer test negated with
-   swapped arms, 1c1 condition spellings: none moved the layout (tiebreak: not measured (dcp headers sample
-   ai_OpenItemTooltip)) prior: the 0x225..0x295 / 0x1c1.. if-else chain: the original lays each arm inline
-   after its test and re-tests 0x226/0x227 at 0x5886cf; our VC6 threads the tests to arms placed after the
-   chain */
+   @deep size queue s19: the size gap (raw 1620 vs 1596, padded 1632 vs 1600) is all in the type 0x17/0x25
+   chain (ours 0x58869f..0x58885b = 444 bytes, the original 420). The original's jump threading is weaker
+   than ours: outer 0x225 / 0x226 -> A, but 0x227 / 0x293 / 0x294 / 0x295 -> a re-test 'cmp 0x226; je A;
+   cmp 0x227; jne B-chain' (the inner 0x225 test gone), and its four n = 1 arms share ONE n store (0x1e
+   arm, 0x20 arm, second 0x1e arm jmp to the 0x1f arm's 'mov [n],1'), the two 0x1e arms NOT merged with
+   each other; ours threads 0x227 straight to A and 0x293.. into the inner test, merges the two 0x1e arms
+   whole and keeps own n = 1 stores in the first two arms. So the original's arms were not identical blocks
+   at merge time. No lever (rows): list[n++] = K in the n = 1 arms or everywhere (= control); n = 1 / n = 3
+   / n = 2 before the list stores (55 / 53 / 55 ins, raw 1620 each); all 719 orders of the outer
+   six-compare (best o9 53 ins / 574 bytes, nothing moves the layout). Next: a form where the arms differ
+   before cross-jumping (a value per arm through a local, the list written by a helper), or the 0x225 chain
+   as a macro shared with the 0x1c1 test at the end. prior: 273 -> 53 ins: d2_WinOpenPicStyled called with
+   a short y (cast macro d2_WinOpenPicStyledS, as sv.c; the row y is recomputed per call, loop counters in
+   memory: -101), the staff loop as an index loop over ai_CharsT (countdown edx 0x300: -117),
+   (float)(c->sk81 * (1.0 / 1008)) + factor (the fxch pair). Left: only the type 0x17/0x25 chain layout
+   (all 49 code ins, 0x58869f..0x588843): the original puts each arm inline after an inverted last compare,
+   A/B/1c1 with their own n store and the n = 1 arms cross-jumped into one tail; ours places A, B, 1c1
+   after the chain (switch-like) and threads 0x293.. into the inner test at 0x227. Tried: inner order (6
+   perms, all worse), flat chain without the outer test (162), else-B, B first, sequential ifs, idx <=
+   0x227 range, n = 0 inside, outer test negated with swapped arms, 1c1 condition spellings: none moved the
+   layout (tiebreak: not measured (dcp headers s... */
 int ai_OpenItemTooltip(int idx)
 {
     int n;
