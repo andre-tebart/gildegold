@@ -1694,8 +1694,7 @@ int amt_IsColumnDecided(int col)
                 }
             }
         } else if (list[j].state == 3 && list[j].cnt > 0) {
-            k = 0;
-            do {
+            for (k = 0; k < 768; k++) {
                 if (ai_CharsT[k].appliedOffice == (unsigned char)list[j].kind) {
                     f |= 1;
                     if ((ai_CharsT[k].kind == 6 || ai_CharsT[k].kind == 7) && ai_CharsT[k].heldRounds == 0) {
@@ -1703,20 +1702,17 @@ int amt_IsColumnDecided(int col)
                         break;
                     }
                 }
-                k++;
-            } while (k < 768);
+            }
         }
     }
-    if ((f & 1) != 0 && n > 0) {
-        j = 0;
-        do {
+    if ((f & 1) != 0) {
+        for (j = 0; j < n; j++) {
             a = gm_FindChar(list[j].owner);
             if (a != 0 && (a[2] == 6 || a[2] == 7) && a[0x1b1] == 0) {
                 f |= 2;
                 break;
             }
-            j++;
-        } while (j < n);
+        }
     }
     if ((char)f & 2)
         return 1;
