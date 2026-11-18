@@ -64,21 +64,26 @@ char d3_MirBoundaryEdges(unsigned int n, unsigned char *used, D3PVERT **pts, uns
 /* 0x454890, d3_mir:CreateOutline: turns the boundary edges of the mirror polygon (d3_MirBoundaryEdges: pairs of
    vertices in edges[], nedge of them) into the outline segments: connected edges that are collinear are
    merged, *out gets the (start, end) vertex pairs, *nout their count (2 per segment). Returns 0 only for n < 3.
-   used[0..nedge) = edge taken by the current chain, used[nedge..2*nedge) (mark) = edge taken by any chain */
+   used[0..nedge) = edge taken by the current chain, used[nedge..2*nedge) (mark) = edge taken by any chain
+   @deep deep s30: fixed the new-chain clear (D3M_ZERO_VAR(used, nedge), the original reads nedge from the
+   dead pts slot it passed as the count pointer): frame 0x48 as the original, 14 -> 2 ins. The dead stores
+   mark = 0 / tail = 0 are one code with the declaration initializer mark = 0 alone (tail's is = control).
+   Left: the head chain's mark[head] = 1, written used[nedge + head]: [edx+eax] where the original has
+   [eax+edx] (regs 2). With mark[head] (any spelling: *(mark + head), head[mark], chained with used[i]) VC6
+   loads head before mark (order 10 with mark = 0; head = 0 instead fixes that block but reverses the two
+   mark[i] accesses of the restart scan, 6). Tried: 64 initializer subsets x both forms, 24 orders of the
+   head block, climb 3 rounds from the plain form (10) and 2 from the tree (2): nothing closer. */
 
 char d3_MirCreateOutline(D3PVERT **pts, unsigned int n, unsigned int *nout, D3PVERT ***out)
 {
     D3PVERT **edges;
     unsigned char *used;
-    unsigned char *mark;
+    unsigned char *mark = 0;
     D3PVERT **res;
     D3PVERT *start, *end, *p, *q;
     D3VECTOR4 dir, d, nd;
     unsigned int i, j, nres, tail, head, nedge;
 
-    /* dead stores: they rank mark / tail for the operand order of VC6's addresses (2 of 4 orders) */
-    mark = 0;
-    tail = 0;
     if (n < 3)
         return 0;
     edges = mem_Alloc(n << 5, "d3_mir:CreateOutlineMaxOut");
@@ -170,7 +175,6 @@ char d3_MirCreateOutline(D3PVERT **pts, unsigned int n, unsigned int *nout, D3PV
             }
         } while (start);
     }
-done:
     mem_Free(used);
     mem_Free(edges);
     *nout = nres;

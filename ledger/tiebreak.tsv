@@ -1010,7 +1010,7 @@ exe	0x004545c0	d3_MatFromAngles	d3_vec	3e2bb4c0c85ecc18	no	byte	control=byte p1=
 exe	0x00454690	d3_MatToAngles	d3_vec	11e7632295668a95	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00454700	d3_TriNormal	d3_vec	0a2b6d9467c6f1ba	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00454780	d3_MirBoundaryEdges	d3_mir	ef5d5e04479dcd93	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x00454890	d3_MirCreateOutline	d3_mir	8d823c25c61aa1ae	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	14b9efa8ad83ab0a
+exe	0x00454890	d3_MirCreateOutline	d3_mir	e48da6838ce4ea7e	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	c032509c79eb7ca1
 exe	0x00454be0	d3_MirCreatePlanes	d3_mir	9927e34c70dfd5eb	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00454ec0	d3_MirTransform	d3_mir	3198ef7b7c8c1553	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00454f70	d3_MirBoxInPlanes	d3_mir	e0878350ea5c8bad	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
