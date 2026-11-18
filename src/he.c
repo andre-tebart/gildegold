@@ -14683,23 +14683,7 @@ void he_AllocBuyBuilding(int ev)
    buyer gets the news 0x17e9, the master the price (cm_SendMoveGoodsUnchecked) and the buyer the building
    (cm_SendOwnership; also as the owner when the master owned it); no (1): the news 0x17ea; both clear the
    building's 0x5a mark 0x200 and free the event (the computer's no frees it twice, the original's). Stages -2 /
-   -1 clear the mark and free the event
-   @deep size queue s14: padded size + shape (21 -> 13 ins, raw 1363 vs 1369): (a) the original's dead lea
-   [edx+eax*4] after the kind read in the computer branch = bt taken again before gm_BuildQuery (bt =
-   &ai_BTypesT[b->type]; .. bt->kind; +3 bytes; (bt = ..)->kind inline gives the same code; dropping the
-   top bt or using bt->kind without the new assignment: 62 / 258 / 291 ins); (b) the price test as liking =
-   gm_Liking(..) then p->price > (1.5 - liking * 0.01f) * factor * value: the price fild sits after the
-   call as the original (price on the left without the local spills it across the call, frame 0x410). Left:
-   the original multiplies X * factor then fild value / fmulp st(2) with fxch pairs; ours fimul value
-   first, then fmul factor. No lever (bb5, 42 variants): products in all 7 orders, (double) / (float)
-   value, (double) price, a double liking; = control or 1-row worse. prior: read whole against the original
-   (4 stages, jump table 0x55c52c equal) and reconstructed: player offer box, computer decision with
-   factors 15/5/1.2/8/1.6, yes/no paths incl. the original's double free. Left, scheduling only: (1) the
-   price test: the original hoists fild [edi+0xb0] between fmul 0.01f and fsubr 1.5, splits fimul value
-   into fild+fmulp and compares st0=X*V with fxch (test ah,5 / jp) where ours loads the price last (and
-   eax,0x4100 / jne); same condition X*V < price; P on the left (price > ...) spills it over the call
-   (frame 0x410) instead; (2) +0x12a the original has a dead lea eax,[edx+eax*4] and pushes the kind before
-   mov ax,[esi+0x25]; tried bt / cast variants */
+   -1 clear the mark and free the event */
 
 void he_RunBuyBuilding(int ev)
 {
@@ -14717,61 +14701,63 @@ void he_RunBuyBuilding(int ev)
     case 0:
         buyer = (AICHAR *)gm_FindChar(p->buyer);
         b = (AIBLD *)gm_FindBuildingById(e->bldId);
-        if (buyer != 0 && b != 0) {
-            if (ai_CharsT[b->masterId].kind == 6 || ai_CharsT[b->masterId].kind == 7) {
-                he_OpenEventSlot(ev, 0, 0, "misc\\EventMessagebox_NULL", 0x5ec);
-                d2_SetForm(e->slot->win, 0);
-                io_PrintText(0x17e8, buyer->id, b, p->price);
-                e->stage++;
-                return;
+        if (buyer == 0 || b == 0) {
+            he_FreeEvent((int *)ev);
+            return;
+        }
+        if (ai_CharsT[b->masterId].kind == 6 || ai_CharsT[b->masterId].kind == 7) {
+            he_OpenEventSlot(ev, 0, 0, "misc\\EventMessagebox_NULL", 0x5ec);
+            d2_SetForm(e->slot->win, 0);
+            io_PrintText(0x17e8, buyer->id, b, p->price);
+            e->stage++;
+            return;
+        }
+        if (gm_CompareTime(&e->end, &ai_Time) >= 0)
+            return;
+        factor = 15.0f;
+        buyer = (AICHAR *)gm_FindChar(p->buyer);
+        b = (AIBLD *)gm_FindBuildingById(e->bldId);
+        bt = &ai_BTypesT[b->type];
+        value = gm_EquipmentValue((unsigned char *)b, b->level);
+        if (bt->kind == 2) {
+            home = ai_CharsT[b->masterId].bld2;
+            if (home != 0) {
+                if (home == b)
+                    factor = 5.0f;
+                else if (ai_CharsT[b->masterId].bld2 != 0 && ai_CharsT[b->masterId].bld2->type < b->type)
+                    factor = 1.2f;
             }
-            if (gm_CompareTime(&e->end, &ai_Time) >= 0)
-                return;
-            factor = 15.0f;
-            buyer = (AICHAR *)gm_FindChar(p->buyer);
-            b = (AIBLD *)gm_FindBuildingById(e->bldId);
+        } else {
+            n = 0;
+            /* @original bt is taken again here (the original's dead lea of the type record after the kind read) */
             bt = &ai_BTypesT[b->type];
-            value = gm_EquipmentValue((unsigned char *)b, b->level);
-            if (bt->kind == 2) {
-                home = ai_CharsT[b->masterId].bld2;
-                if (home != 0) {
-                    if (home == b)
-                        factor = 5.0f;
-                    else if (ai_CharsT[b->masterId].bld2 != 0 && ai_CharsT[b->masterId].bld2->type < b->type)
-                        factor = 1.2f;
-                }
-            } else {
-                n = 0;
-                /* @original bt is taken again here (the original's dead lea of the type record after the kind read) */
-                bt = &ai_BTypesT[b->type];
-                if (gm_BuildQuery(2, 4, ai_CharsT[b->masterId].id, 5, (unsigned char)bt->kind) != 0) {
-                    do
-                        n++;
-                    while (gm_BuildNext() != 0);
-                }
-                if (n <= 1 && (ai_CharsT[b->masterId].kind == 6 || ai_CharsT[b->masterId].kind == 7 || ai_CharsT[b->masterId].kind == 5))
-                    factor = 8.0f;
-                else
-                    factor = 1.6f;
+            if (gm_BuildQuery(2, 4, ai_CharsT[b->masterId].id, 5, (unsigned char)bt->kind) != 0) {
+                do
+                    n++;
+                while (gm_BuildNext() != 0);
             }
-            liking = gm_Liking(buyer->id, b->masterId, 1);
-            if (p->price > (1.5 - liking * 0.01f) * factor * value) {
-                txt_Format(text, 0x17e9, b->owner, b);
-                he_MessageBoxQuickjump(buyer->netId, -1, text, 0, 0x5ec, b->id, -1, 0, 0);
-                cm_SendSetField(b->id, 0x5a, 2, 2, 0x200);
-                cm_SendMoveGoodsUnchecked(ai_CharsT[b->masterId].netId, buyer->netId, ai_OwnPlayer, p->price);
-                if (b->owner == b->masterId)
-                    cm_SendOwnership(b->id, buyer->netId, buyer->netId);
-                else
-                    cm_SendOwnership(b->id, buyer->netId, -1);
-                cm_SendSetField(b->id, 0x5a, 2, 0, 2);
-            } else {
-                txt_Format(text, 0x17ea, b->owner, b);
-                he_MessageBoxQuickjump(buyer->netId, -1, text, 0, 0x5ec, b->id, -1, 0, 0);
-                cm_SendSetField(b->id, 0x5a, 2, 0, 0x200);
-                he_ReleaseSlot(ev);
-                he_FreeEvent((int *)ev);
-            }
+            if (n <= 1 && (ai_CharsT[b->masterId].kind == 6 || ai_CharsT[b->masterId].kind == 7 || ai_CharsT[b->masterId].kind == 5))
+                factor = 8.0f;
+            else
+                factor = 1.6f;
+        }
+        liking = gm_Liking(buyer->id, b->masterId, 1) * 0.01f;
+        if (p->price > (float)((1.5 - liking) * factor) * value) {
+            txt_Format(text, 0x17e9, b->owner, b);
+            he_MessageBoxQuickjump(buyer->netId, -1, text, 0, 0x5ec, b->id, -1, 0, 0);
+            cm_SendSetField(b->id, 0x5a, 2, 2, 0x200);
+            cm_SendMoveGoodsUnchecked(ai_CharsT[b->masterId].netId, buyer->netId, ai_OwnPlayer, p->price);
+            if (b->owner == b->masterId)
+                cm_SendOwnership(b->id, buyer->netId, buyer->netId);
+            else
+                cm_SendOwnership(b->id, buyer->netId, -1);
+            cm_SendSetField(b->id, 0x5a, 2, 0, 2);
+        } else {
+            txt_Format(text, 0x17ea, b->owner, b);
+            he_MessageBoxQuickjump(buyer->netId, -1, text, 0, 0x5ec, b->id, -1, 0, 0);
+            cm_SendSetField(b->id, 0x5a, 2, 0, 0x200);
+            he_ReleaseSlot(ev);
+            he_FreeEvent((int *)ev);
         }
         he_FreeEvent((int *)ev);                /* the original's: the decline above frees the record once more */
         return;
