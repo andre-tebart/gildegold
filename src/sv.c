@@ -6225,12 +6225,13 @@ void sv_FitForm(int f)
 
 void sv_ValueBar(int x, int y, int value, int k)
 {
-    int n, odd, w, i;
+    int n, odd, w, i, half;
 
     w = d2_Pics[k].w + 2;
     n = (int)(value / 21.0f);
     odd = n % 2;
-    for (i = 0; i < n / 2; i++)
+    half = n / 2;
+    for (i = 0; i < half; i++)
         d2_WinOpenPic(i * w + x, y, k, d2_LastWindow);
     if (odd != 0)
         d2_WinOpenPic(i * w + x, y, k + 1, d2_LastWindow);
