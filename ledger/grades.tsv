@@ -4462,7 +4462,7 @@ exe	0x005be3b0	ai_AmountRow	lcamt	byte	readable
 exe	0x005be720	ai_DrawAmountRow	lcamt	byte	readable		
 exe	0x005bea00	ai_SpecialAmountList	lcamt	byte	readable		
 exe	0x005bea50	ai_SpecialAmountListWindow	lcamt	draft	readable	deep	
-exe	0x005bf0d0	ai_FillFamilyTab	lcamt	draft	readable	deep	
+exe	0x005bf0d0	ai_FillFamilyTab	lcamt	byte	readable		
 exe	0x005bf300	ai_FillFriendsTab	lcamt	byte	readable		
 exe	0x005bf4f0	ai_FillEnemiesTab	lcamt	byte	readable		
 exe	0x005bf6f0	ai_FillLoversTab	lcamt	shape	readable	deep	
