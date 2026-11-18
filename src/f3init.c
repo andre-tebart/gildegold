@@ -2669,7 +2669,17 @@ void init_RecreateQuadTree(void)
     d3_QuadTree = (int)d3q_Create(0, 0x40, 8, 7);
 }
 /* 0x511890, gives every building of the class 6 (not the type 0x1c) a name: the names of its kind (the 0xc names at 0x143b400 + 0x38 per kind) that no building uses yet, up to 0x20 characters ("Building name too long: %s" is the error text), one picked at random into the building's name field (+5). The original returns nothing (no eax at the end; init_LocalData ignores it)
-   @deep behaviour + readable, read whole against 0x511890..0x511ac1; layout, frame and every block match;
+   @deep s15 (size queue, 542 vs 561): c2trace: b#2 (prio -367) wins ebx over i#1 (-370) by 3; the blocks
+   both live through cost them alike, b gains outside the i loop (the for's def/next +16+16, the class test
+   +20, the name clear +24) and i only its own init (+24) and increment block (+32). The original's second
+   table read (sub edx,[idx*4+T] with the index recomputed from cl = *b and ebx = i) is a rematerialisation
+   of the memory-homed b, not source: every spelling of a second read (ai_BuildingNames / txt_Ptrs[0x490 +
+   ..], index orders, 50+32 variants) is CSE'd to one code (65 ins). strcpy(names[cnt], one); cnt++; (and
+   names[(cnt += 1) - 1], u = names[cnt++]) puts b in memory as the original but the strcpy offset temp
+   takes ebx (k#1a3) and i stays in memory (68 ins, the strength-reduced names pointer lost); if (j ==
+   0x100) {..} for the continue: 56; strlen >= 0x20 first: 71; strcpy into one first and test one[0]: 68;
+   climb round 1: nothing. Open: one reference more for i (or less for b) in a block outside the j loop.
+   prior: behaviour + readable, read whole against 0x511890..0x511ac1; layout, frame and every block match;
    53 differing instructions left, all from ONE register choice: VC6 gives ebx to b and keeps i in memory,
    the original gives ebx to i and keeps b in memory (reloaded per i iteration), which also makes it
    recompute the name table entry for the copy offset (sub edx,[T+idx*4]) where ours reuses src. Found this
@@ -2678,10 +2688,7 @@ void init_RecreateQuadTree(void)
    changed, init_LocalData ignored it), the for walk (shrink-wrapped pushes after the first test). Tried
    for the b/i choice (dcp try, all = one code): declaration order of every local (--move-line),
    block-scoped i / j / cnt, a separate first-walk variable, the name field via nm / b[5] / ->name, the
-   table entry written in both the test and the copy (strcpy, explicit offset copy, char ** / int views:
-   two-pointer copy, worse), the walk as while / if-do. A non-rotated while (1) { if (b == 0) break; .. }
-   puts b in memory and i in ebx (40 ins) but loses the rotation and the shrink-wrap. (tiebreak: not
-   measured (dcp headers sample init_NameBuildings)) */
+   table ... */
 
 
 void init_NameBuildings(void)
