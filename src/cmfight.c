@@ -1698,14 +1698,21 @@ void cm_OrderWait(char *rec, char *c)
    "sp_ESCAPE" cm_OrderEscape, on "sp_CONQUER.." cm_OrderConquer, on "WARE.." cm_OrderWare; with nothing picked the ground
    cell under the pointer (d3sm_Pick) is sent in state 1 (stateArg / x), else txt_ClickNoGround is shown. Returns 1 when
    an order was given
-   @deep Read whole against the original: fixed the shift key (kb_Down[0x36], DIK_RSHIFT) and the
-   ground-click path (ret = 1 falls through to the common return: the original keeps 1 in bl/ebx for both
-   state and result); every call, string and store now lines up. Left: one hunk at +0x11a, the argument
-   evaluation of d3sm_Pick(d3_DefaultScene->hmap, dm_L.x + 0x1a, dm_L.y + 0x1a, &x, &z): the original loads
+   @deep deep s34: the whole distance (140 bytes) is one byte: the pick block's d3_DefaultScene load is mov
+   ecx,[X] (6 bytes) in ours where the original loads it first into eax (a1, 5 bytes); every later address
+   shifts. The original's order in that block: scene -> eax, &z ecx, &x edx, push, movsx ecx y, hmap, push,
+   movsx edx x, adds, pushes (the scene load first, then the args right to left); ours loads dm_L.y first.
+   = control: 0x1a + dm_L.x, (int)dm_L.x + 0x1a, x / z declared z first, an unprototyped cast call; worse:
+   (short) sums (46), the sel == 0 branch first (118). climb round 1: nothing. Open: what puts the hmap
+   argument first in the block's IL (a CSE / candidate for the scene pointer, a statement boundary). prior:
+   Read whole against the original: fixed the shift key (kb_Down[0x36], DIK_RSHIFT) and the ground-click
+   path (ret = 1 falls through to the common return: the original keeps 1 in bl/ebx for both state and
+   result); every call, string and store now lines up. Left: one hunk at +0x11a, the argument evaluation of
+   d3sm_Pick(d3_DefaultScene->hmap, dm_L.x + 0x1a, dm_L.y + 0x1a, &x, &z): the original loads
    [d3_DefaultScene] first and pushes the +0x1a sums in ecx/edx, ours loads dm_L.y first (movsx edx / lea
    eax,[esp+0x10] / ... / mov edx,[ecx+0xb0]) - the same five pushes of the same values; tried the K&R
-   d3sm_PickK spelling and a prototyped call: no change. Scheduling only; the
-   prover stops at the inlined strcmp (rep cmpsb). */
+   d3sm_PickK spelling and a prototyped call: no change. Scheduling only; the prover stops at the inlined
+   strcmp (rep cmpsb). */
 char cm_OrderClick(char *rec, char *c)
 {
     char ret = 0;
