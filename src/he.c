@@ -18201,7 +18201,10 @@ void he_RunFire(AIJOB *ev)
 /* 0x564860, the allocation handler of the burning event 0x4f (HEBURN): helpers[] = -1, the due clock and the second
    clock are now, state 0; no building bld: the record is freed; else the burning time is scaled by the distance
    (d3_PointToWorld positions) to the nearest building of kind 3 (gm_NearestBuilding) times 0.001, at most 1.5
-   (none: 1.0) */
+   (none: 1.0)
+   @deep near-byte sweep s22: left the scale / f x87 handling (the original keeps the clamped value on the
+   stack: fld st(0); fcomp 1.5, then fimul duration). = control: (float) on the sqrt product, f * duration;
+   scale used directly with no f: 11. */
 void he_AllocBurn(AIJOB *ev)
 {
     HEBURN *x = (HEBURN *)ev;

@@ -4272,22 +4272,23 @@ void cm_ApplySeason(void)
 }
 /* 0x4e36a0, resets the 16 cutscene records cm_CutInfos for the party m: each one fresh 1, ready / valid 0, recvFlag 1, no
    text, and the member's netId m->members[j] as its playerId (-1 without a party); for a fight (kind 3) the 16 entries
-   of each of the first m->used records whose playerId is set are freed (charId -1, state 0) */
+   of each of the first m->used records whose playerId is set are freed (charId -1, state 0)
+   @deep near-byte sweep s22: members read by index, no ids walk (10 -> 4 ins). Left: the clear loop's row
+   pointer starts at playerId (0x92caf0, test [esi]) with lea eax,[esi+0x88] per row in the original, ours
+   at entries (test [esi-0x88]). A row pointer local r = &cm_CutInfosT[i] = control. */
 
 int cm_ResetCutInfos(char *m)
 {
     G28REC *party = (G28REC *)m;
-    int *ids;
     int j, i, q;
 
-    ids = party->members;
-    for (j = 0; j < 16; j++, ids++) {
+    for (j = 0; j < 16; j++) {
         cm_CutInfosT[j].fresh = 1;
         cm_CutInfosT[j].valid = 0;
         cm_CutInfosT[j].ready = 0;
         cm_CutInfosT[j].recvFlag = 1;
         if (party != 0) {
-            cm_CutInfosT[j].playerId = *ids;
+            cm_CutInfosT[j].playerId = party->members[j];
             if (party->kind == 3) {
                 for (i = 0; i < party->used; i++) {
                     if (cm_CutInfosT[i].playerId == -1)

@@ -2577,7 +2577,7 @@ exe	0x004e3570	cm_RunSceneTicks	cm	a1b2d5bbb0fba12a	no	byte	control=byte p1=byte
 exe	0x004e3620	cm_PlaySpecialTrack	cm	275e8265089df9bc	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004e3640	cm_EndSpecialTrack	cm	266a9a1ef76ccad7	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004e3650	cm_ApplySeason	cm	17b186d87089b2e8	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x004e36a0	cm_ResetCutInfos	cm	76e2bb96edcb1be8	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	becf1bbdf99775c9
+exe	0x004e36a0	cm_ResetCutInfos	cmscene	150cbcdc7802cd26	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	02e86ae52b295d91
 exe	0x004e3750	cm_PartyAnswered	cm	d2f9a9b1a516facc	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004e37a0	cm_ShowPartyTexts	cm	8c70aad5c5d2272a	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004e3800	cm_PrevPartyMember	cm	7b77550130ece620	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	

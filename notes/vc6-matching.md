@@ -618,6 +618,49 @@ Where the pushes and pops sit, how many epilogue copies there are, shared agains
   - `dcp try` pitfall met again: a `<<< old === >>>` block with an empty replacement swallows the next block;
     write the declaration's removal as a two-line old text with one line kept.
 
+- **Near-byte sweep s22 (the functions within 12 instructions, a few minutes each)**:
+  - The list: `tools/sweep/nearbyte.py` (`dcp grade UNIT` over every unit with a function below byte; shape and
+    draft at most `--max` instructions, sorted). 157 at the start; about 75% had no `@deep` note at all, and those
+    were where nearly every gain came from (the noted ones had had their quick levers tried).
+  - **A hand-walked pointer is the first suspect**: the plain index loop was byte in gm_RefreshGoodsLists /
+    gm_SyncMarket (`for (lp = list; *lp; lp++)` -> `list[i]`), ahm_FindRecipe (a do-while with `p++` -> `for`
+    over `table[i]`), cm_FightCutEntry (`r++` in the for -> `r = &table[i]` per row). The reverse once:
+    cm_AddFieldValue's per-case copy walks the parameter itself (`*((T *)v)++`, VC6's cast-as-lvalue: v is loaded
+    after each loop guard; a typed local loads it before).
+  - **Exits**: a search loop with `break` and one `if (k >= 6) return 0;` after it (VC6 decides the test on the
+    loop's exit and keeps a separate `return 0` copy for the break path: gm_IncomeKind1 / 2 / 5, as kinds 3 / 4
+    already were); `if (r != 0) return 0; return 1;` against the reverse (cm_ExOfficeSwap); the work under
+    `if (count != 0) { .. return x; } return 0;` (cm_LobbyChatFirst); the guard returning -1 first
+    (gm_CharMoney); a parent test as its own if with `return level` inside (gm_CharLevel / gm_CharPrevLevel: the
+    original has one return more); a switch case's `cm_WaitTicks(4); return;` as `break;` into the same code after
+    the switch (cm_DuelRound: the callee-saved pushes move behind the guard).
+  - **Record and message fills**: permute the fill (`tools/search/permute.py`), both fills of a function together
+    (gv_CheckRankUp: type, to, flags, fromId, time in both, byte only as a pair; he_CharIllness /
+    he_CharAccident fromId before the time copy); the state store first in a G17STAT fill (cm_ExDecisionValue);
+    `rounds = 0` before the clamps (he_AllocMeeting).
+  - **One named variable more or fewer**: a call argument into the result variable first (`rate = 0xe - cur;
+    rate = f(rate, ..)`: gm_CharacterUpkeep); the summed value into the reused index (`k = c->skills[k] + d;
+    f = (float)k;` with the store indexed by the message field: cm_ExAddSkill; a new local `v` was = control);
+    `t = k / v; v = v - k + t;` (gm_ExpectedDeathAge); dx / dz locals for a distance (ai_FindNearestObject);
+    the sign as its own `int sign = -1` block local first, not the reused parameter (ai_CommandLawChange, the
+    s21 note's "kinds slot" was this); a day number reusing the dead k and the fraction its own float
+    (sv_UpdateSkyPhase: frame slots); `n = 0` declared first when its zero is pushed for a call before the loop
+    (he_AllocMasterWork: `push ebp` for the constant).
+  - **Operand order that VC6 keeps**: `s * (level * 0.01)` (gm_BuildingSkill), `v * (n * 0.01f)`
+    (ai_CommandCityTreasury); `(float)price / log10(price)`: two fild of the price in the original (one shared
+    conversion when both operands are the int): ai_ExecuteBuyIndulgence, ai_IndulgenceWindow. Plain operand
+    swaps were = control nearly everywhere.
+  - **Slot ties in frames above 0x80** (unstable density sort): two equal arrays follow their read order after
+    the loop (`j = js[r]; o = os[r];`: ai_MsgJobTime); s21's block locals again (he_RunRansomDemand: none, bld,
+    obj in both sending blocks, all three needed).
+  - A prototype: the player byte pushed without zero extension = the unit's `sv_CheckGoodAmountB` view
+    (ai_AskBonusAmount / ai_AskHelperBonus), then the init order ret before mask.
+  - climb round 1 found three (gv_RankCulprits `c = 1` first, cm_OpenCharInfoWin y0 before w,
+    ai_FindNearestObject's p[2] local, written as dx / dz); it found nothing on most others in about a minute.
+  - Left (noted): fcomp of a parameter before the call's `add esp` (he_CharIllness / he_CharAccident), the filter
+    dword loaded before `rep stosd` (ai_BewitchOrder, ai_HomageWindow), two-temp swaps at a call (cm_FindNearCell,
+    cm_UpdateDamagePops), bld / chr slot tie (he_RunGeselle), byte parameter kept in bl (gm_RandomAge).
+
 - **An else-if arm cross-jumped whole into a sibling's copy, the original keeps it inline**: the store order of
   the OTHER arms (default arm charId before stateArg; 0x176 arm stateArg, charId, x, z) decides it, found by
   climb.py swap + move in round 2 (cm_OrderAttack byte; permuting only the inlined arm's stores did not). The pair

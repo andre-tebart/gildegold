@@ -2910,14 +2910,15 @@ int map_Region(D3FLMAP *map, int x, int y)
    the 1.0f constant of this TU). ---- */
 
 /* 0x446990, distance along the view rays to the edge of the map volume (4 planes through the corners)
-   @deep size fixed s4 (1067 = original): the four plane normals as m * d with a direction vector d set per
-   plane ((0,0,-1), (1,0,0), (-1,0,0), (0,0,1)): VC6 folds x * 1.0f and x * -1.0f literals (ours had fsub
-   without the multiply) but a -1 propagated from a local keeps fmul [1.0f] + fsubr (the original's 6
-   multiplies by the pooled 1.0f); every term / operand order of the m * d and dot formulas gives one code.
-   Left (10 ins): the r and pl walk pointers in ecx / edx swapped in the ray loop's dot product, push edi
-   one instruction later. climb round 1: only (pl[j].x) parenthesised reaches 2 ins (a VC6 perturbation,
-   not kept); no lever: index loop (197), r = &d3_Frustum[i] (205), p walk, operand orders (48 variants:
-   one code), nested ifs (= code, kept for reading). */
+   @deep near-byte sweep s22: the frustum row walk r as an index or per-row pointer: 197-205 ins (keep the
+   walk). prior: size fixed s4 (1067 = original): the four plane normals as m * d with a direction vector d
+   set per plane ((0,0,-1), (1,0,0), (-1,0,0), (0,0,1)): VC6 folds x * 1.0f and x * -1.0f literals (ours
+   had fsub without the multiply) but a -1 propagated from a local keeps fmul [1.0f] + fsubr (the
+   original's 6 multiplies by the pooled 1.0f); every term / operand order of the m * d and dot formulas
+   gives one code. Left (10 ins): the r and pl walk pointers in ecx / edx swapped in the ray loop's dot
+   product, push edi one instruction later. climb round 1: only (pl[j].x) parenthesised reaches 2 ins (a
+   VC6 perturbation, not kept); no lever: index loop (197), r = &d3_Frustum[i] (205), p walk, operand
+   orders (48 variants: one code), nested ifs (= code, kept for reading). */
 float d3fl_FarDist(D3FLMAP *map, D3VECTOR *pos, D3MATRIX *m)
 {
     D3VECTOR4 pl[4];
