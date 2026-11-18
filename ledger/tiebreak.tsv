@@ -2516,7 +2516,7 @@ exe	0x004dada0	cm_SessionAskPlayer	cm	79bdc1af10e655a5	no	shape	sweep control=sh
 exe	0x004dae90	cm_SessionAskAI	cm	f04f1b0eeed25f0b	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	becf1bbdf99775c9
 exe	0x004daf80	cm_CheckTrial	cm	e0f2725840e6616e	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004db700	cm_RunTrial	cm	ba6f972507d6a377	yes	draft	control=draft p1=draft* p2=draft* p3=draft* p4=draft*	
-exe	0x004dd960	cm_TrialAskPlayer	cm	8349ae7fe093e13b	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	becf1bbdf99775c9
+exe	0x004dd960	cm_TrialAskPlayer	cmscene	1bbff2a18765bf41	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	b3036a29644bdf9e
 exe	0x004de340	cm_TrialAskAI	cm	e5ae2e956bb372ce	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004de4b0	cm_SinkDownAction	cm	76d25605dbe5f924	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=253	653ac214333ac5bd
 exe	0x004de530	cm_DuelSinkDown	cm	964048c9348f33c0	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	

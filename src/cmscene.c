@@ -1877,7 +1877,7 @@ void cm_TrialAskPlayer(CMCUTINFO *r, AIPLAN *m)
         r->session.answer = 0;
         dlg = CUT_BOX();
         cm_DialogTimer(dlg, 0x5dc, 1);
-        CM_ASK_YESNO(r, 1, 0)
+        CM_ASK_YESNO(r, 0, 1)
         d2_CloseView(view);
         return;
     case 2:
