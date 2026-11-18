@@ -1906,7 +1906,7 @@ void d3_InitSurf(D3SURF *s, D3OBJECT *owner)
 /* 0x43ce60, initialises an object: clears the ten preset camera views and the pivot / posOffset, unlinks it
    (prev / next / parent / child / sound), gives it the type-1 defaults (objectFlags, state, stateFlags, flags,
    kind, mask, meshMode), clears its path, events and last-light time, and gives a light the flicker defaults 0.3
-and every 15 (the light and its seven keys); finally the angles and position are zeroed. @deep deep s23: stateFlags &= 0xc1 first (before objectFlags): 10 -> 6 ins. Left: the light keys loop stores [ebx+eax-4] where the original has [eax+ebx-4] (IV first); loop body swapped, &e[0] + i, i[e], int i: no lever or worse. */
+and every 15 (the light and its seven keys); finally the angles and position are zeroed. @deep deep s23: stateFlags &= 0xc1 first (before objectFlags): 10 -> 6 ins. Left: the light keys loop stores [ebx+eax-4] where the original has [eax+ebx-4] (IV first). Loop body swapped, &e[0] + i, i[e], int i, chain assignments of the field clears, light != 0: no lever or worse. flip.py: deleting any one store above the loop or moving lightTime = 0 behind the light block flips it (lightTime there costs 4 bytes elsewhere): a value-numbering tie, not the loop's spelling. */
 void d3_InitObject(D3OBJECT *obj)
 {
     unsigned int i;

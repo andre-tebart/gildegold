@@ -365,6 +365,7 @@ int ai_DecideSuitor(int a, AICHAR *p, int c, int d, AIARG *m)
     unsigned short ids[12];
     AIJOB *r;
     unsigned int n;
+    unsigned int fl;
 
     if (ai_Time.year % 4 == p->netId % 4 && gm_FindChar(p->relatives[0]) == 0) {
         for (r = (AIJOB *)he_FindEvent(1, 0, 0x41); r != 0; r = (AIJOB *)he_NextEvent()) {
@@ -373,7 +374,8 @@ int ai_DecideSuitor(int a, AICHAR *p, int c, int d, AIARG *m)
             if (r->partner1 == p->netId)
                 return 0;
         }
-        n = ai_FindCandidates((AIPER *)p, 12, p->sex != 0 ? SUITOR_FLAGS_SEX1 : SUITOR_FLAGS_SEX0, 30.0f, 100.0f, ids);
+        fl = p->sex != 0 ? SUITOR_FLAGS_SEX1 : SUITOR_FLAGS_SEX0;
+        n = ai_FindCandidates((AIPER *)p, 12, fl, 30.0f, 100.0f, ids);
         if (n != 0) {
             m->kind = 7;
             m->ref = ai_CharsT[ids[util_RandomU(n)]].netId;
