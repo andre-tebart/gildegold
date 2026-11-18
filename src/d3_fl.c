@@ -2724,7 +2724,19 @@ void d3fl_Draw(D3FLMAP *map, char water)
 #undef T
 
 /* 0x446180, renders the cache textures of all tiles at their current detail level and precaches them;
-   returns the number of textures drawn */
+   returns the number of textures drawn
+   @deep 70 ins: the frame order and the first region's registers. The original (frame offsets): ty 0x0, n
+   0x4, ? 0x8, tx 0xc, count 0x10, .., my 0x1c, size 0x20, types 0x24, .., mx 0x2c (frame 0x30 < 0x80: list
+   order, size then count); ours tx, ty, tmp, count, tmp, tmp, n, my, ... So n has more counted memory
+   references in the original (it is never in a register there: imul eax,[n] for my, imul ebx,[n] for mx,
+   mov eax,[n] for n / s) and tx fewer (the original keeps tx in esi at the top of the tile loop: lea
+   eax,[esi+ecx*8], cmp esi,7; ours n in esi). The original also materialises t (lea eax,[edi+eax*4+0xe0];
+   mov al,[eax+0x5e]) where ours folds it into the load. The outer loop computes my (its back edge goes to
+   my = ty * n, the inner one behind it). s41 no lever: my in the outer loop (72), mx/my inline (draft,
+   frame -4), mx / t / my orders (= control), nx = n / s + 1 written for nx or both (108-111), climb 2
+   rounds (only a float temp, 64 ins / 421 bytes). c2trace: every outer candidate is cut by pressure (k#19b
+   took ebx) and split; the pieces decide. Next: c2trace --split n|tx on the first region; a guard 'if
+   (!d3_Hardware || !d3_Camera) return 0;' with the body unindented; n as a local of the hardware block */
 int d3fl_Prerender(D3FLMAP *map)
 {
     int count = 0;
