@@ -7074,7 +7074,10 @@ int ai_IntimidateWindow(AICHARREC *ch)
 /* 0x5c9ff0, the intimidation order's ask (ord_IntimidateOrder, kind 3) for the character me with the order message
    m. Of another kind than 6 / 7 (the AI): no character m->target: 0x60; else me pays 2 and sends the message 0x4b
    to it as ai_IntimidateWindow does: 0x10. A player picks the victim in the amount menu (mode 0x400, kind 6, the
-   gypsy filter, the caption 0x1d61) with ai_IntimidateWindow as its pick callback: 1 when one was picked, else 0 */
+   gypsy filter, the caption 0x1d61) with ai_IntimidateWindow as its pick callback: 1 when one was picked, else 0
+   @deep deep s23: left the AIMSG fill: the original stores type / to / fromId / flags after the arg[1]
+   load (mov ecx,[ebx+4]) and the push. All 5040 orders of the seven fill statements: best 4 ins / 39 bytes
+   (to, time, arg[1], type, fromId, flags, arg[0]), not byte; kept the source order. */
 
 int ai_IntimidateContact(AICHARREC *me, LCORDMSG *m)
 {
@@ -10854,7 +10857,11 @@ extern const int ai_CharWalkSteps[16];  /* 0x5ed100, the random walk steps (am.h
    user nor the target) each get the target's relation to them raised by 20 .. 51 (cm_SendRelations), and the
    target loses 50 .. 113 life (gm_AddHealth). The target, if a player (kind 6 / 7), gets the news 0x100d,
    each player office holder 0x100e / 0x100f (key 0x5fb); marks the use handled, and a player user sees the
-   text 0x10a1 (the target, the three) inside 0xfe8 in the use-object panel. Returns 1. */
+   text 0x10a1 (the target, the three) inside 0xfe8 in the use-object panel. Returns 1.
+   @deep deep s23: left the AMOUNTCFG fill's scheduling: the original hoists one load (mov edx,[..]) above
+   the first rep stosd and pushes ai_AmountMenu's two 0 after the fills; ours pushes a 0 first. All 120
+   orders of the ids memset / option14 / mode / kind / filter, cfg as a block local, memset -1: = control
+   or worse (the same open hunk as the sermon window in lc.c). */
 
 int ai_UseGoodCharmOfficials(AICHARREC *ch, G8USEVIEW *use)
 {
