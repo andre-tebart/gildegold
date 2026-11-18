@@ -5457,10 +5457,14 @@ void he_DuelDeclined(int ev, AICHAR *p, AICHAR *q)
     char text[0x400];
     int office[6];
     int seat[6];
-    int district = 0, amt;
+    int district = 0, txt;
 
     if (p->kind == 6 || p->kind == 7) {
-        txt_Format(text, 0x1d81, q->id, q->id, (q->sex != 0) + 0x1d68);
+        if (q->sex != 0)
+            txt = 0x1d69;
+        else
+            txt = 0x1d68;
+        txt_Format(text, 0x1d81, q->id, q->id, txt);
         he_ShowNews(p->netId, p->netId, text, 0, 0x5fb, (char *)0);
         cm_SendSetField(p->netId, 0x1c8, 4, 0, 0x400);
         cm_SendSetField(q->netId, 0x1c8, 4, 0, 0x400);
@@ -5471,9 +5475,7 @@ void he_DuelDeclined(int ev, AICHAR *p, AICHAR *q)
         else
             district = util_RandomU(3) + 1;
     }
-    amt = -9 - (int)(gm_GetSkill(p, 4) * 8.0f);
-    amt -= (unsigned short)util_Random(8);
-    amt_ChangeDistrictOpinion(q, district, amt);
+    amt_ChangeDistrictOpinion(q, district, -9 - (int)(gm_GetSkill(p, 4) * 8.0f) - (unsigned short)util_Random(8));
     cm_SendRelations(p->netId, q->netId, -0x14, 1);
     ((AIJOB *)ev)->end = ai_Time;
     cm_SendExSetHEI(-1, ev);
