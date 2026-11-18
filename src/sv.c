@@ -6314,22 +6314,25 @@ void sv_EndBand(void)
    (gm_PermissionBits 0x800) whose body stands in d3_DefaultScene and has mesh data; its screen position is the
    centre of the body's first 8 transformed vertices (the bounding box corners, camera space) projected with
    d3_ScaleX / d3_ScaleY around d3_CenterX / d3_CenterY (the 1 / z truncated to an int, as the original does).
-   @deep one copy left: the original loads info into ecx ('mov ecx,[eax+0x1cc]; test ecx,ecx') and at the
-   loop entry 'mov eax,ecx; mov ecx,8; mov eax,[eax]'; ours loads info into eax and 'mov eax,[eax]; mov
-   ecx,8' (code 5, regs 4). Declaration set insensitive (32 samples, one codegen). Applied ai_FloatZero /
-   cm_DoubleOne for the M10 literals (same ins). Every one = control: info tested in its own if / nested
-   block / not a local (field read twice), v = info then v = *v, v reused for info, for-init with v, do /
-   while(n--) / n > 0 / n up-count walk, n as bits / iz, index loop through info->keys[n] and &keys[n],
-   every declaration position of c / v / info. Worse: v[n] index loop (16 ins), v set before the p inits
-   (9), n = 8 before the inits (9), 1.0f (11), selected = 0 in both arms (11), p inits before the info test
-   (49). Open: what in the original's IR made info a separate value from v (a second use of info, or a
-   different loop the strength reduction turned into this one) (tiebreak: not measured (dcp headers sample
-   sv_UpdateBand)) prior: read whole against the original and reconstructed (band clamp via min/max, the
-   per-character permission / scene / info tests, the 8-vertex centre in a padded D3VECTOR4 (frame matches
-   0x20), the 1/z projection); all hunks equal but the allocation of info vs. the loop counter: ours 'mov
-   eax, [eax+0x1cc]; test eax, eax ... mov ecx, 8', the original's 'mov ecx, [eax+0x1cc]; test ecx, ecx ...
-   mov eax, ecx; mov ecx, 8' (one extra move). Tried: info local, v set before the inits, an indexed loop
-   (worse). */
+   @deep deep s26: declaration set measured (dcp headers sample: 32 samples, one codegen, not sensitive).
+   climb round 1: nothing (82 mutants). = control: v = *(D3PVERT **)info, v from the whole chain, n = 8
+   before v, do/while(--n), index loop through info->keys[n], block-scoped walker + counter (for and
+   do/while), info via an int local, info assigned through v in its own if, the body nested in if (..) {..}
+   instead of continue (one or both tests). Worse: pointer-compare loop v < keys + 8 (18), v[n] index (16),
+   probe keeping info live after the loop (28), selected = condition (30). flip.py --want 'mov
+   ecx,[eax+460]': only deleting v's def, != -> ==, deleting the final selection test or swapping selected
+   = 0 with the test give info ecx (all far). Left: the same 2-instruction copy (original mov eax,ecx; mov
+   ecx,8; mov eax,[eax]). prior: one copy left: the original loads info into ecx ('mov ecx,[eax+0x1cc];
+   test ecx,ecx') and at the loop entry 'mov eax,ecx; mov ecx,8; mov eax,[eax]'; ours loads info into eax
+   and 'mov eax,[eax]; mov ecx,8' (code 5, regs 4). Declaration set insensitive (32 samples, one codegen).
+   Applied ai_FloatZero / cm_DoubleOne for the M10 literals (same ins). Every one = control: info tested in
+   its own if / nested block / not a local (field read twice), v = info then v = *v, v reused for info,
+   for-init with v, do / while(n--) / n > 0 / n up-count walk, n as bits / iz, index loop through
+   info->keys[n] and &keys[n], every declaration position of c / v / info. Worse: v[n] index loop (16 ins),
+   v set before the p inits (9), n = 8 before the inits (9), 1.0f (11), selected = 0 in both arms (11), p
+   inits before the info test (49). Open: what in the original's IR made info a separate value from v (a
+   second use of info, or a different loop the strength reduction turned into this one) (tiebreak: not
+   measured (dcp headers sample sv_UpdateBand)) */
 
 void sv_UpdateBand(void)
 {
@@ -6377,20 +6380,12 @@ void sv_UpdateBand(void)
 }
 /* 0x52f0d0, sv_UpdateBand for the 0x8000 mode of sv_RunFrame: the same band and projection, but a character is
    selectable when ai_LedSelectBits gives 0x800 (led by the player's character) instead of gm_PermissionBits.
-   @deep s10: c2trace: info#1 (prio 40) and v#1 (prio 112) both get eax (no conflict: info dies at v's
-   def); the original's 'mov eax,ecx; mov ecx,8; mov eax,[eax]' needs info in ecx, i.e. live where v is
-   born or a copy the coalescer keeps. = control: info dropped (the chain c->model->body->info written at
-   both uses, in the for init too), for-init / index loop forms; v defined in the condition chain (9).
-   climb.py 2 rounds: nothing. Padded size needs only the 2-byte copy. prior: the same single copy as
-   sv_UpdateBand (see its stuck reason for the full list, all = control there): the original 'mov
-   ecx,[eax+0x1cc]; test ecx,ecx ... mov eax,ecx; mov ecx,8; mov eax,[eax]', ours info in eax (code 5, regs
-   4). Applied ai_FloatZero / cm_DoubleOne (M10 cleared, same ins). Tried here as well: a static __inline
-   helper for the 8-vertex sum (info as its parameter) and one returning info->keys (no change in dist),
-   the tests as separate ifs / one nested && block / !info (= control), the scene compare swapped (11 ins),
-   info reused as a char walk (= control), index loops through info->keys + n (= control) and v[n] with v
-   set inside the loop (19). The two functions share the hunk, so the cause is likely a construct common to
-   both (a macro or helper of the original), not this function's text (tiebreak: not measured (dcp headers
-   sample sv_UpdateBandLed)) */
+   @deep deep s26: shares sv_UpdateBand's hunk; every s26 round run there (see its note) was = control or
+   worse there; not repeated here. prior: s10: c2trace: info#1 (prio 40) and v#1 (prio 112) both get eax
+   (no conflict: info dies at v's def); the original's 'mov eax,ecx; mov ecx,8; mov eax,[eax]' needs info
+   in ecx, i.e. live where v is born or a copy the coalescer keeps. = control: info dropped (the chain
+   c->model->body->info written at both uses, in the for init too), for-init / index loop forms; v defined
+   in the condition chain (9). climb.py 2 rounds: nothing. Padded size needs only the 2-byte copy. */
 
 void sv_UpdateBandLed(void)
 {

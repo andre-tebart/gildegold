@@ -3401,8 +3401,8 @@ exe	0x0052eaa0	sv_ValueBar	sv	4bb7b1c899645573	no	shape	control=shape p1=shape p
 exe	0x0052eb50	sv_DrawBalanceBar	sv	701d646de4aa6655	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0052ee50	sv_StartBand	sv	98f7817056050b5b	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0052eed0	sv_EndBand	sv	a6a7b5162105eff9	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x0052eee0	sv_UpdateBand	sv	b6fdd6d8d359ca70	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	951a32915bcf2269
-exe	0x0052f0d0	sv_UpdateBandLed	sv	e5e6f7485922152a	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	5f07bc7d129a0680
+exe	0x0052eee0	sv_UpdateBand	sv	d98d4dc80c912aea	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft	7b22e3aa011f8fc5
+exe	0x0052f0d0	sv_UpdateBandLed	sv	e5e6f7485922152a	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft	c6b8f10b8c189fe4
 exe	0x0052f2c0	sv_DrawRubberBand	sv	d2a37d1d11b8ba39	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0052f340	sv_BookKeys	sv	25225f5f8b527195	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0052f360	sv_OpenBook	sv	b95f85dc7d69a6fa	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
