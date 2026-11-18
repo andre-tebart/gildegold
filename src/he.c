@@ -18491,26 +18491,21 @@ void he_AllocStorm(AIJOB *ev)
 }
 /* 0x565410, the run handler of the storm event (type 0x50, its alloc handler 0x5652b0): state 0 writes the storm forecast into
    sv_Weather for the three hours after now (clouds 1000, storm 3) and runs again two hours ahead; state 1 damages the stock of
-   the 16 buildings the alloc handler collected (gm_ChangeBuildingState, -(random(5) + 5)) once, then frees the record
-   @deep deep s23: plain loops (for over the three hours, index loop over stormBlds): = control, kept.
-   Left: base (ai_TimeHourW) in edx where the original keeps it in esi and the 1000 in edx; (unsigned
-   short) casts on end.hour: = control; the store order in the hour loop / end.hour moved up: worse. */
+   the 16 buildings the alloc handler collected (gm_ChangeBuildingState, -(random(5) + 5)) once, then frees the record */
 
 void he_RunStormEvent(int ev)
 {
     AIJOB *e = (AIJOB *)ev;
     AIBLD *b;
-    unsigned base;
     int i;
 
     switch (e->stage) {
     case 0:
-        base = ai_TimeHourW;
-        for (i = (base & 0xffff) + 1; i < (int)(base & 0xffff) + 4; i++) {
+        for (i = ai_Time.hour + 1; i < ai_Time.hour + 4; i++) {
             sv_Weather.clouds[i] = 1000;
             sv_Weather.storm[i] = 3;
         }
-        e->end.hour = base + 2;
+        e->end.hour = ai_Time.hour + 2;
         e->end.min = 0;
         e->stage = e->stage + 1;
         return;
