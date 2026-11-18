@@ -1839,7 +1839,7 @@ int ord_RandomCellPoint(int x, int y, int z)
 /* 0x4f8700, picks a random object id for the character c (-1 without one): the ids of its two buildings
    (bld / bld2, when their object is present) and, up to 0x20 times, of up to 3 random buildings (3 of 4
    chances each) of a random one of the 20 kinds of the table (4 x 5), through gm_BuildQuery(1, 5, kind),
-   until 16 are collected; then one of them at random */
+until 16 are collected; then one of them at random @deep near-byte sweep s22: goto done -> break (same code, kept). Left regs 8: kinds[idx] loaded into edx (original eax) and the list store's [esi+1] in eax (original edx): one scratch rotation step. = control: break / n < 16 in the inner condition, the kinds as an initializer; worse: k = 0 before idx (10), return in the loop (60), the c == 0 guard first (72). climb round 1: nothing. */
 
 int ord_RandomObjectId(char *c)
 {
@@ -1890,7 +1890,7 @@ int ord_RandomObjectId(char *c)
         o = (ORDBLD *)gm_BuildQuery(1, 5, kinds[idx]);
         while (o != 0 && k < 3) {
             if (n >= 16)
-                goto done;
+                break;
             if (util_RandomU(4) < 3) {
                 list[n] = o->id;
                 n++;
@@ -1899,7 +1899,6 @@ int ord_RandomObjectId(char *c)
             o = (ORDBLD *)gm_BuildNext();
         }
     }
-done:
     return list[util_RandomU(n)];
 }
 /* 0x4f8890, copies the kind record i (below 0x58) of ord_KindTable to out; 0 for a bad i */
