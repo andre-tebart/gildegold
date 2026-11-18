@@ -2711,15 +2711,14 @@ int cm_CheckCutsceneReady(G17MSG *m)
     AICHAR *c;
     int i;
 
-    if (m->ready.partyId != -1) {
-        for (i = 0; i < 0x10; i++) {
-            c = (AICHAR *)gm_FindChar(m->ready.members[i]);
-            if (c != 0 && (c->kind == 6 || c->kind == 7) && c->partyId != -1 && c->partyId != m->ready.partyId)
-                return 1;
-        }
-        return 0;
+    if (m->ready.partyId == -1)
+        return 1;
+    for (i = 0; i < 0x10; i++) {
+        c = (AICHAR *)gm_FindChar(m->ready.members[i]);
+        if (c != 0 && (c->kind == 6 || c->kind == 7) && c->partyId != -1 && c->partyId != m->ready.partyId)
+            return 1;
     }
-    return 1;
+    return 0;
 }
 /* 0x4c6a20, the handler of the message types that carry no command (0 the empty slot, 3 hello, 5 group begin, 6
    group end, 7 a part of a split message): nothing to do, s->state = 1; 1 for any other type */
