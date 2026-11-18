@@ -460,7 +460,8 @@ int *cm_FightCutEntry(char *c)
     CMCUTINFO *r;
     int i, j;
 
-    for (i = 0, r = cm_CutInfosT; i < n; i++, r++) {
+    for (i = 0; i < n; i++) {
+        r = &cm_CutInfosT[i];
         for (j = 0; j < 16; j++) {
             if (r->entries[j].charId == ((AICHAR *)c)->netId)
                 return &r->entries[j].charId;
