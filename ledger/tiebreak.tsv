@@ -4367,7 +4367,7 @@ exe	0x005a9d60	ai_DomizilMessageTask	lc	97a7602571084c79	no	byte	control=byte p1
 exe	0x005a9dd0	ai_DomizilMessagePlace	lc	5e6da885bee334d5	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005a9e40	ai_DomizilMessage12	lc	ded19819b36cde1c	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005a9e90	ai_RandomDomizilGoodNotIn	lcdom	893346dc05a77c10	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=568	c3097bbae009c1dc
-exe	0x005a9f10	ai_DomizilGoodInRange	lcdom	ce3106491c0c2aa2	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=568	c3097bbae009c1dc
+exe	0x005a9f10	ai_DomizilGoodInRange	lcdom	08f7ce56621df8c1	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	40cd1eb7c4e5a3bd
 exe	0x005a9f80	ai_AskBonusAmount	lcdom	ea93939f9add5ef9	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=190	eb245f6a5444f9cc
 exe	0x005aa0d0	ai_CreatePersonnelRow	lc	5077cbd91200a8de	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
 exe	0x005aa1f0	ai_FillPersonnelRow	lc	de5770a7068e8d74	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	

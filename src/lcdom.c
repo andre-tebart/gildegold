@@ -1235,14 +1235,14 @@ unsigned short ai_DomizilGoodInRange(int from, int to)
 
     i = util_Random((unsigned short)ai_DomizilCount) & 0xffff;
     n = ai_DomizilCount;
-    if (n == 0)
+    if (ai_DomizilCount == 0)
         return 0;
     while (n != 0) {
         entry = &ai_DomizilTable[i];
         if ((int)entry->rank >= from && (int)entry->rank <= to)
             return (unsigned short)entry->id;
-        i = (i + 1) % ai_DomizilCount;
         n--;
+        i = (i + 1) % ai_DomizilCount;
     }
     return 0;
 }
