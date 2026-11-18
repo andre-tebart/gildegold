@@ -1842,7 +1842,9 @@ void cm_TrialAskPlayer(CMCUTINFO *r, AIPLAN *m)
     int btn[7];                         /* the instrument buttons */
     int order[7];
     int sel[3];                         /* the sentence buttons */
-    AICHAR *c, *accused;
+    /* @original c's initializer emits no code; it moves c's first reference, which VC6's tie key for
+       the two gm_GetWorth calls of mode 2 follows: the original calls c's first (without it accused's) */
+    AICHAR *c = 0, *accused;
     int view, dlg, rank, obj, i, k, t, sum;
 
     r->session.answer = -1;
