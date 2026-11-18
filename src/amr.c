@@ -5733,12 +5733,18 @@ int ai_DecideMasterBuilder(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
 /* 0x49ea90, execute callback of "Baumeister" (0x2f): upgrades the well ("upgr_brunnen", s2->kind 4: pays 0.3
    of the new type's value, sends the upgrade message 0x1e) or builds it ("bau_brunnen"), paid from the seat
    object of player 1; then doubles weight s1->arg2 (1..3) of the action's second weight set
-   @deep read whole against the original: the guards, the upgrade message (AIMSG fromId / flags / arg[0]),
-   both payment paths, the failure path placed last (if (build) {...} else {end group; return 0}) and the
-   weight doubling all match, 105/105 instructions. Left is one register choice: n = s1->arg2 goes to esi
-   (s1's register, dead) in ours, to eax in the original: '- mov esi, dword ptr [esi + 0x10] / test esi,
-   esi / cmp esi, 4 / fstp [esi*8 + X]' vs '+ mov eax, dword ptr [esi + 0x10] / test eax, eax / cmp eax, 4
-   / fstp [eax*8 + X]'; reading s1->arg2 without a local gives the same code. */
+   @deep deep s26: climb round 1 (42 mutants): nothing. = control: n in a block of its own, n set inside
+   the if from a re-read s1->arg2, nested ifs, 2.0f * w, w + w, return through n. flip.py --want 'mov
+   eax,[esi+16]': only swapping n = s1->arg2 with its test (meaning) and moving the else's return 0 out.
+   c2trace: s1#1 (4 refs, prio 32) takes esi first, n#1 (prio 18, avail eax..edi) then takes esi (n's def
+   is s1's last use); the original's eax for n means n was served before s1 (n's priority above s1's) or s1
+   lived past n's def. Left: n in esi vs eax (4 lines, 4 bytes). prior: read whole against the original:
+   the guards, the upgrade message (AIMSG fromId / flags / arg[0]), both payment paths, the failure path
+   placed last (if (build) {...} else {end group; return 0}) and the weight doubling all match, 105/105
+   instructions. Left is one register choice: n = s1->arg2 goes to esi (s1's register, dead) in ours, to
+   eax in the original: '- mov esi, dword ptr [esi + 0x10] / test esi, esi / cmp esi, 4 / fstp [esi*8 + X]'
+   vs '+ mov eax, dword ptr [esi + 0x10] / test eax, eax / cmp eax, 4 / fstp [eax*8 + X]'; reading s1->arg2
+   without a local gives the same code. */
 
 int ai_ExecuteMasterBuilder(G5CH *p, AIARG *s1, AIARG *s2)
 {
