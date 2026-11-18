@@ -523,6 +523,34 @@ Where the pushes and pops sit, how many epilogue copies there are, shared agains
     clamp in each arm: 10 -> 95 ins); the factor order of `t * (1.0 - dist * 0.01f)` (one code).
   - climb.py moves that cross a call into a record fill (ai_TechEffectsWindow: `style = 3` after
     d2_SetCaption, 215 -> 141 ins) are not the original's order: read the listing before keeping one.
+- **Size queue s19 (byte or padded size by these)**:
+  - The s18 int pad word took cm_UpdateBombs 43 -> 21 ins (padded size); then two plain spellings to
+    byte: the random damage written into t's product (`t = (int)((cm_Random(..) + w->dmgMin) * (c->f01c
+    * 0.01))`, no `k` local: the original's frame slot for t and its fild t / fld dist order), and the
+    table entry tested and read through the table with ch first (`if (ai_SceneCharsT[j] == 0)
+    continue; ch = ai_SceneCharsT[j]->scene; c = ai_SceneCharsT[j];`: the original's `mov eax,[esi];
+    .. mov ebx,[eax+0x184]; mov edi,eax`, a CSE temp copied into c). The same two took cm_UpdateGrenades
+    99 -> 78 ins.
+  - A frame 4 bytes short with a hole of 8 behind a vector in the original = the vector is a
+    `D3VECTOR4` (cm_UpdatePointer's v; `dcp frame` shows the hole).
+  - A callee summary that needs a write the leaf's code does not show: a dead `if (0) g = 0;` in the
+    leaf (with an @original comment naming the caller's reloads) makes VC6 count it as writing g; the
+    leaf's bytes stay equal (cm_UpdatePointer 142 -> 36 ins, padded size, via ai_LedSelectBits). Only
+    when the reload names the global (here the caller reloads exactly ai_PickedObject); where any
+    global would do (cm_RunCutOrders / cm_CharObjDistXZ) the form is unknown and not taken.
+  - A variable memory-homed in the original while ours has it in a register (gm_CreateObject's
+    `last`, he_RunAmbush's `n`: `cmp [slot],1; push 1` where ours propagates n into `push edi` inside
+    the n == 1 arm): a probe `{ static T *pp; pp = &v; }` shows whether that is the whole hunk
+    (gm_CreateObject: frame equal, regs 76 -> 12); its ordinary cause is still open (not the walk's
+    loop form, not one local for two roles).
+  - Read the size gap's place first (ai_OpenItemTooltip: all 24 bytes in one compare chain whose
+    arms the original does not cross-jump; ai_CalcAngriff: the text tails' `lea buf` scheduled before
+    the format push keeps them apart; d3t_CreateSnowMipmaps: the alloc's size * size is recomputed in
+    the original, n = size << i reaches the size but is not its imul): forms that hit the size but
+    contradict the listing are not kept.
+  - No lever (= control): return polarity of `if (kind != 0) return 16; return 0;` tails
+    (ai_DecideBuyBuilding), list[n++] forms and all 719 orders of a six-compare chain
+    (ai_OpenItemTooltip), the alloc argument through the just-stored struct fields (forwarded).
 
 - **An else-if arm cross-jumped whole into a sibling's copy, the original keeps it inline**: the store order of
   the OTHER arms (default arm charId before stateArg; 0x176 arm stateArg, charId, x, z) decides it, found by
