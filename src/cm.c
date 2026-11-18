@@ -1005,14 +1005,7 @@ G17MSG *cm_WaitMessage(unsigned char type, int timeout)
     }
     return 0;
 }
-/* 0x4c4080, appends a copy of src to the receive list; 1: no free record (closes the connection)
-   @deep read against the original 0x4c4080..0x4c4126 instruction by instruction: same statements in the
-   same order (free-list pop, struct copy rep movsd/movsb, cm_MessageSize, walk to tail / else head insert,
-   the out-of-line else now matches after flipping the condition). Left is allocation: the original keeps
-   &m->next in ebp (push ebp; lea ebp,[ebx+0x95]; mov dword ptr [ebp],0 in both branches) where ours stores
-   [ebx+0x95] directly, and the pops of edi/esi/ebp are scheduled into the tails (pop edi before mov
-   [ebx+0x91]); the add esp,4 after cm_MessageSize is scheduled after the load of cm_RecvQueue. 47 vs 53
-   ins = the ebp push/lea/pops and duplicated pops in the two tails. */
+/* 0x4c4080, appends a copy of src to the receive list; 1: no free record (closes the connection) */
 
 int cm_EnqueueReceived(G17MSG *src)
 {
@@ -1024,7 +1017,7 @@ int cm_EnqueueReceived(G17MSG *src)
             net_Close();
         return 1;
     }
-    cm_RecvFree = m->next;
+    cm_RecvFree = cm_RecvFree->next;
     *m = *src;
     m->size = cm_MessageSize(m);
     if (cm_RecvQueue != 0) {
