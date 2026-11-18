@@ -15100,25 +15100,7 @@ void he_AllocMasterExamPass(int ev)
    ceremony voices: a fanfare by the titles left, "SELBST", the job list "brk_<group>" (the BERUF_LISTE bank of
    the sex, ADDON_ for the groups above 12), the building list, "GEZEICHNET", the signature
    "_BERUFE_VEREINIGUNG_UNTERSCHRIFT" and the click. Stage 2 waits for the box's answer (or a confirmed slot)
-   and closes and frees it. Stages -2 / -1 close and free
-   @deep size queue s14: padded size (1174+table vs 1172): stage 2's click handling written as the
-   original's one guarded block, if (d2_ClickedId != -1 || (he_SlotConfirmed != 0 && he_ActiveSlot ==
-   e->slot)) { the 0 / 1 / confirmed arms } then the single return: the -1 path now jumps straight into the
-   confirmed test (jne ret / jmp) as the original, 18 -> 9 ins, shape. The '-1 && (..) return;' guard in
-   any spelling (!(&&), nested if, else-if, break, the arms as 0 / else-if, early returns) = control. Left:
-   only (1) of the prior: (int)((left - 1) * 0.5 + (group * 3 + 0x155a)) the original fild left-1 / fmul /
-   fiadd [sum]; no lever: --left, operand swap, (double) casts, / 2.0, 0.5 * x, the sum in i (statement
-   before, or earlier), 0x155a + group * 3; only the unparenthesized sum (.. * 0.5 + group * 3 + 0x155a)
-   gets the fild-first order (6 ins) but adds group*3 and 0x155a separately (fadd qword), so the original's
-   operand was one int value added by fiadd. prior: read whole against the original (5 stages, jump table
-   0x55d2f4 equal, all strings/banks/voice calls, the confirm logic) and reconstructed; 381 vs 387 ins.
-   Left, layout/scheduling only: (1) stage 0's text id (int)((left - 1) * 0.5 + (group * 3 + 0x155a)): the
-   original stores left-1, fild, fmul 0.5, fiadd [the int sum]; ours stores the sum first and does fild +
-   faddp (same fild/fiadd choice that flipped on he_PostEvent67 between two builds of the same text);
-   operand order swapped tried, same code; (2) stage 2 +0x44a: the original reaches the confirm test of the
-   -1 path by jne ret / jmp, ours duplicates the 7-instruction epilogue inline (je X + pops/ret): the same
-   branch logic; tried the nested -1 / else forms and the d2_ClickedId != 0 form of he.c 0x54d..., same
-   code */
+   and closes and frees it. Stages -2 / -1 close and free */
 
 void he_RunMasterExamPassed(int ev)
 {
@@ -15156,7 +15138,7 @@ void he_RunMasterExamPassed(int ev)
         left = gm_TitlesLeft(x->job) + 1;
         d2_SetForm(e->slot->win, 1);
         io_PrintText(0x15c3, &ai_PlayerSlotsT[ai_OwnPlayer].name[0x20], &ai_Time, x->newJob + sexText,
-                     (int)((left - 1) * 0.5 + (group * 3 + 0x155a)), group + 0x158a);
+                     (int)((float)((left - 1) * 0.5) + (group * 3 + 0x155a)), group + 0x158a);
         cm_SendSetJob(c->netId, x->newJob);
         if (c->kind == 6 || c->kind == 7 || c->kind == 5) {
             txt_Format(text, 0x1c1f, c->id, x->job + sexText, x->newJob + sexText);
