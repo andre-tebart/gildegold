@@ -224,32 +224,31 @@ int gm_IncomeKind1(unsigned id, GMINCOME *out, unsigned char flags)
 
     gv_GetTableRecord(9, rec);
     for (k = 0; k < 6; k++) {
-        if (out->kind[k] == 0) {
-            if (k >= 6)
-                return 0;
-            cnt = ORD_CHARS[(unsigned short)id].wage;
-            x = rec[6] * 0.01f;
-            x = x * cnt;
-            if (!(x > 0.0f))
-                x = 0.0f;
-            n = (int)x;
-            if (cnt > 0) {
-                out->kind[k] = 1;
-                out->amount[k] = n;
-                out->rate[k] = rec[6];
-                if (flags & 1) {
-                    b = (ORDBLD *)gm_FirstBuilding(1);
-                    o = (ORDOBJ *)gm_Query((void *)b->objList, 2, 6, 0, 0x115);
-                    cm_SendMoveGoodsUnchecked(o->objId, ORD_CHARS[(unsigned short)id].netId, 0, n);
-                    gm_NetMsgCount++;
-                }
-                if (flags & 2)
-                    gm_IncomeRows[0][16] += n;
-            }
-            return 1;
-        }
+        if (out->kind[k] == 0)
+            break;
     }
-    return 0;
+    if (k >= 6)
+        return 0;
+    cnt = ORD_CHARS[(unsigned short)id].wage;
+    x = rec[6] * 0.01f;
+    x = x * cnt;
+    if (!(x > 0.0f))
+        x = 0.0f;
+    n = (int)x;
+    if (cnt > 0) {
+        out->kind[k] = 1;
+        out->amount[k] = n;
+        out->rate[k] = rec[6];
+        if (flags & 1) {
+            b = (ORDBLD *)gm_FirstBuilding(1);
+            o = (ORDOBJ *)gm_Query((void *)b->objList, 2, 6, 0, 0x115);
+            cm_SendMoveGoodsUnchecked(o->objId, ORD_CHARS[(unsigned short)id].netId, 0, n);
+            gm_NetMsgCount++;
+        }
+        if (flags & 2)
+            gm_IncomeRows[0][16] += n;
+    }
+    return 1;
 }
 /* 0x4fa060, income kind 2 (the record 10, the int at +0x19c; sum 0x91b604): a copy of 0x4f9f60 */
 
@@ -263,32 +262,31 @@ int gm_IncomeKind2(unsigned id, GMINCOME *out, unsigned char flags)
 
     gv_GetTableRecord(10, rec);
     for (k = 0; k < 6; k++) {
-        if (out->kind[k] == 0) {
-            if (k >= 6)
-                return 0;
-            cnt = ORD_CHARS[(unsigned short)id].wage;
-            x = rec[6] * 0.01f;
-            x = x * cnt;
-            if (!(x > 0.0f))
-                x = 0.0f;
-            n = (int)x;
-            if (cnt > 0) {
-                out->kind[k] = 2;
-                out->amount[k] = n;
-                out->rate[k] = rec[6];
-                if (flags & 1) {
-                    b = (ORDBLD *)gm_FirstBuilding(1);
-                    o = (ORDOBJ *)gm_Query((void *)b->objList, 2, 6, 0, 0x115);
-                    cm_SendMoveGoodsUnchecked(o->objId, ORD_CHARS[(unsigned short)id].netId, 0, n);
-                    gm_NetMsgCount++;
-                }
-                if (flags & 2)
-                    gm_IncomeRows[1][16] += n;
-            }
-            return 1;
-        }
+        if (out->kind[k] == 0)
+            break;
     }
-    return 0;
+    if (k >= 6)
+        return 0;
+    cnt = ORD_CHARS[(unsigned short)id].wage;
+    x = rec[6] * 0.01f;
+    x = x * cnt;
+    if (!(x > 0.0f))
+        x = 0.0f;
+    n = (int)x;
+    if (cnt > 0) {
+        out->kind[k] = 2;
+        out->amount[k] = n;
+        out->rate[k] = rec[6];
+        if (flags & 1) {
+            b = (ORDBLD *)gm_FirstBuilding(1);
+            o = (ORDOBJ *)gm_Query((void *)b->objList, 2, 6, 0, 0x115);
+            cm_SendMoveGoodsUnchecked(o->objId, ORD_CHARS[(unsigned short)id].netId, 0, n);
+            gm_NetMsgCount++;
+        }
+        if (flags & 2)
+            gm_IncomeRows[1][16] += n;
+    }
+    return 1;
 }
 /* 0x4fa160, the income kind 3 of the character id: the rate of the decision 0xd percent of the character's v1a8
    into the first free entry of out (0 when out is full; no entry, but 1, when v1a8 is not positive); flags 1 moves
@@ -396,30 +394,29 @@ int gm_IncomeKind5(unsigned id, GMINCOME *out, unsigned char flags)
 
     gv_GetTableRecord(0xb, rec);
     for (k = 0; k < 6; k++) {
-        if (out->kind[k] == 0) {
-            if (k >= 6)
-                return 0;
-            cnt = ORD_CHARS[(unsigned short)id].wage;
-            x = rec[6] * 0.01f;
-            x = x * cnt;
-            if (!(x > 0.0f))
-                x = 0.0f;
-            n = (int)x;
-            if (cnt > 0) {
-                out->kind[k] = 5;
-                out->amount[k] = n;
-                out->rate[k] = rec[6];
-                if (flags & 1) {
-                    cm_SendMoveGoodsUnchecked(-1, ORD_CHARS[(unsigned short)id].netId, 0, n);
-                    gm_NetMsgCount++;
-                }
-                if (flags & 2)
-                    gm_IncomeRows[4][16] += n;
-            }
-            return 1;
-        }
+        if (out->kind[k] == 0)
+            break;
     }
-    return 0;
+    if (k >= 6)
+        return 0;
+    cnt = ORD_CHARS[(unsigned short)id].wage;
+    x = rec[6] * 0.01f;
+    x = x * cnt;
+    if (!(x > 0.0f))
+        x = 0.0f;
+    n = (int)x;
+    if (cnt > 0) {
+        out->kind[k] = 5;
+        out->amount[k] = n;
+        out->rate[k] = rec[6];
+        if (flags & 1) {
+            cm_SendMoveGoodsUnchecked(-1, ORD_CHARS[(unsigned short)id].netId, 0, n);
+            gm_NetMsgCount++;
+        }
+        if (flags & 2)
+            gm_IncomeRows[4][16] += n;
+    }
+    return 1;
 }
 /* 0x4fa4b0, collects the incomes of the character id into the record out (cleared first): none (0) for a free
    record, one not in use (health 0) or one under age (gm_IsUnderAge); else the kind 1 or 2 (2 when the title group
