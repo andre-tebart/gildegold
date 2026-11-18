@@ -8393,6 +8393,7 @@ int ai_UpdateEquipRows(int view, int form)
     int i;
     int group;
     int picked;
+    int found;
 
     picked = 0;
     d2_SetForm(view, form);
@@ -8401,25 +8402,29 @@ int ai_UpdateEquipRows(int view, int form)
         if (ai_EquipRowTab[r].ch == 0)
             continue;
         lc_Settings.equipRowCount++;
+        found = 0;
         for (sc = ai_SceneChars; (int)sc < (int)&ai_SceneChars[0x20]; sc++)
-            if ((int)ai_EquipRowTab[r].ch == *sc)
-                goto shown;
-        /* the character left the scene: free the row */
-        ai_EquipRowTab[r].ch = 0;
-        if (ai_EquipRowTab[r].portrait != -1) {
-            d2_RemoveObj(ai_EquipRowTab[r].portrait);
-            ai_EquipRowTab[r].portrait = -1;
+            if ((int)ai_EquipRowTab[r].ch == *sc) {
+                found = 1;
+                break;
+            }
+        if (!found) {
+            /* the character left the scene: free the row */
+            ai_EquipRowTab[r].ch = 0;
+            if (ai_EquipRowTab[r].portrait != -1) {
+                d2_RemoveObj(ai_EquipRowTab[r].portrait);
+                ai_EquipRowTab[r].portrait = -1;
+            }
+            if (ai_EquipRowTab[r].frame != -1) {
+                d2_RemoveObj(ai_EquipRowTab[r].frame);
+                ai_EquipRowTab[r].frame = -1;
+            }
+            if (ai_EquipRowTab[r].window != -1) {
+                d2_RemoveObj(ai_EquipRowTab[r].window);
+                ai_EquipRowTab[r].window = -1;
+            }
+            continue;
         }
-        if (ai_EquipRowTab[r].frame != -1) {
-            d2_RemoveObj(ai_EquipRowTab[r].frame);
-            ai_EquipRowTab[r].frame = -1;
-        }
-        if (ai_EquipRowTab[r].window != -1) {
-            d2_RemoveObj(ai_EquipRowTab[r].window);
-            ai_EquipRowTab[r].window = -1;
-        }
-        continue;
-shown:
         d2_LastWindow = ai_EquipRowTab[r].window;
         for (i = 0; i < 6; i++) {
             if (ai_EquipRowTab[r].slot[i].obj != 0
@@ -8440,20 +8445,24 @@ shown:
              item = (AIOBJ *)gm_QueryNext()) {
             if (((AIGOOD *)ai_Goods)[item->id].type == 9)
                 continue;
+            found = 0;
             for (i = 0; i < 6; i++)
-                if (ai_EquipRowTab[r].slot[i].obj == item->id)
-                    goto have;
-            /* a new good: the first free slot shows it */
-            d2_SetForm(view, form);
-            for (i = 0; i < 6; i++) {
-                if (ai_EquipRowTab[r].slot[i].obj == 0) {
-                    ai_EquipRowTab[r].slot[i].pic = d2_WinOpenInputIcon(i * 0x36 + 0x50, r * 0x78 + 0x28,
-                                                                        item->id + 0xdf, 10, d2_LastWindow);
-                    ai_EquipRowTab[r].slot[i].obj = item->id;
+                if (ai_EquipRowTab[r].slot[i].obj == item->id) {
+                    found = 1;
                     break;
                 }
+            if (!found) {
+                /* a new good: the first free slot shows it */
+                d2_SetForm(view, form);
+                for (i = 0; i < 6; i++) {
+                    if (ai_EquipRowTab[r].slot[i].obj == 0) {
+                        ai_EquipRowTab[r].slot[i].pic = d2_WinOpenInputIcon(i * 0x36 + 0x50, r * 0x78 + 0x28,
+                                                                            item->id + 0xdf, 10, d2_LastWindow);
+                        ai_EquipRowTab[r].slot[i].obj = item->id;
+                        break;
+                    }
+                }
             }
-have:
             d2_SetObjValue4(ai_EquipRowTab[r].slot[i].pic, 0, item->count, d2_GetObjValue(ai_EquipRowTab[r].slot[i].pic));
         }
     }
@@ -8464,9 +8473,14 @@ have:
         group = gm_TitleJobGroup(((AICHARREC *)*sc)->title);
         if (group < 10 || group > 12)
             continue;
+        found = 0;
         for (row = ai_EquipRowTab; (int)row < (int)(ai_EquipRowTab + 0x20); row++)
-            if ((int)row->ch == *sc)
-                goto next;
+            if ((int)row->ch == *sc) {
+                found = 1;
+                break;
+            }
+        if (found)
+            continue;
         for (r = 0, row = ai_EquipRowTab; (int)row < (int)(ai_EquipRowTab + 0x20); row++, r++) {
             if (row->ch == 0) {
                 d2_SetForm(view, form);
@@ -8480,7 +8494,6 @@ have:
                 break;
             }
         }
-next:;
     }
     /* the picked amounts go to the pointer */
     for (r = 0; r < 0x20; r++) {
