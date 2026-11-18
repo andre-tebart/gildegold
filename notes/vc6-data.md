@@ -517,3 +517,52 @@ original's order (reverse-engineering LINK's name order) is kept for the very en
   svgrave placed by start and extent. Open: cm's fight / scene objects (above), lcdom's group extent (name
   order), f3gm (gm_TagTmp +22108, gm_BoyHead), f3gmt (gm_BQType .. gm_RankLogFormat -608), sv (sv_FramesPerTick ..
   sv_BarToggle), d2_PointerSprite / d2_HoverX, amt_TabA +8, the early accepted steps.
+
+### s12 additions
+- **LINK 6.00.8447 /OPT:ICF keeps the LAST copy in link order and folds only external COMDATs** (cl/link test,
+  scratch: a.obj / b.obj each with an identical function between two distinct ones; the surviving body sits at
+  b.obj's place under both names, with the objects swapped at a.obj's; a `static` copy is never folded, even with
+  identical bytes and relocations). So a function at an earlier object's address can't be the folded twin of a
+  later object's copy, and a static twin would stay in the exe as a second body.
+- **The cm conflict was our C, not the boundary**: the fight code needed cm_AddFieldValues (0x4c3d00) defined in its
+  unit only because its sent values were function-scope locals other statements share. With the callee unknown
+  (`dcp try`: a local prototype of `cm_AddFieldValuesX` + `#define cm_AddFieldValues cm_AddFieldValuesX` inside the
+  function), VC6 treats the address as escaping and orders the loads after the store / drops the register. A value
+  sent by address to a message builder (cm_AddFieldValues / AddFieldValue / AddFieldDelta) is the sending block's own
+  local (`{ int vv = -1; cm_BeginFieldBlock(..); cm_AddFieldValues(.., &vv); .. }`), or one variable for one meaning
+  (cm_FightWeaponLoss: `char v = 1`, `v = -neg` on the loss path; the original's one slot holds both). Written so the
+  functions are byte with the callee known AND unknown, and the split is free. The probe for any "the callee must be
+  known" fall: make that one callee an unknown external in a `dcp try`, then look for the plain local that makes the
+  unknown form byte. (cm_ExecCutscene shape -> byte, cm_RunAuction 62 -> 36 ins on the way.)
+- **cm is three objects** (A 0x4c3180.., fight 0x4cd9d0.., scene 0x4d8b50..; cmdump since s11): .data blocks, the .bss
+  blocks (0x6f0cd0 / 0x6f0ce0 / 0x6f0d68) and the common groups (scene 0x925510.., fight 0x930380.., cm 0x935da0..)
+  agree. A common read only by an earlier object can lie in a later object's group (cm_OrderTicks, read by
+  cmfight's cm_RunCutOrders, in the scene group): that object defined it tentatively, the reader only declared it.
+- **The pair test of the common area** (`tools/exe/commongaps.py`): between two neighbouring commons of the original
+  the gap must equal LINK's alignment pad of the second (next power of two of its size, max 32), whatever the name
+  order. A larger gap with no reader is the first object's own space (an unreferenced common is dropped by
+  /OPT:REF, so it can't be a datum of its own): kb_Map / kb_Down / kb_Pressed [512], main_NetSaveName 257..288 bytes,
+  D3DZBUFCTX 65..80 (its twin D3DTEXFMTCTX is 0x50). A pad the next one's size can't explain means the next one is
+  bigger: cm_LobbyStateFlags is a 17..32-byte object (open / changed / closed: cm_LobbyState hands out its address);
+  snd_TimeCopy + the seven rain loops 8 apart are one 72-byte object (SNDRAIN). Check the codegen before taking a
+  merge: cm_LobbyChat + cm_LobbyChatNext as one ring object took cm_LobbyAddChat byte -> draft (the original keeps
+  the index in a register across the line stores: two objects); SNDRAIN moved nothing.
+- **The +32 after huge commons is cl's COMM bump** (ai_Evidence, d3_Noise, txt_Keys / Random / Names / Ptrs,
+  ch_Ground0): it depends on the original names (s8), commongaps lists it as unexplained; leave it for the naming end.
+- **A common another object owns can't be written yet** (decompanion bug-reports/common-owned-by-another-unit.md):
+  d3s_EdgeX / EdgeY lie in d3_engine's group (d3_engine tentatively defined them too, first in link order), but
+  defining them in d3_engine.c fails dcp link's M.layout (the pair exemption needs the reader's unit to define them)
+  and defining them in both units fails L.src (two definitions). Left in d3s.c.
+- **Named char arrays of a later unit inside an earlier unit's run** (gm_TagTmp "tmp" in cm's run, f3gmt's
+  "f3_gm:lp..INST / PROT" tags and the rank log format in f3gmt's run): literals at the users, as s10 / s11.
+  A replacement through Python's re.sub turns `\366` into the raw byte: write escapes with str.replace or check
+  the line afterwards.
+- **Unread .data inside a plain block** (holes.py --section data, plus an image dword scan): f3gmt 0x61a65c (16
+  bytes), sv 0x623858 / 0x62389c, gfx 0x5febd8, and sv's first datum 0x623780 (int[3] after ls's last string):
+  declared with the original's bytes. With them .data's end is exact (the s11 "-48 accepted" was these, not only
+  removed-function literals), and every datum below LIBC's .bss sits at its address (765).
+- **State at s12's end**: steps 47 -> 36; .rdata and .data ends exact; the common area now starts at +64: LIBC's .bss
+  (+48 at __fmode, s10's open member order: fpinit / _file / crt0dat pulled by removed functions' externals), which
+  the old .data -48 had cancelled. So no group is "placed" until that is fixed; the extents are the measure:
+  commongaps finds no unexplained pair except cl's bumps; groups outside the name-order range: amt (the bump), txt /
+  ch (bumps), d3s (EdgeX / EdgeY above).
