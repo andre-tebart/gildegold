@@ -619,30 +619,21 @@ void gv_UpdateEffects(void)
    (the strength / 100, up to 100); starts the smoke, earth and explosion particles at the ball (bigger when a building was hit) and
    the sound "Explosion" at the nearest building; with damage set the owners of the hit buildings get message 0x4f with the strength
    (mode 1), or the building's level (field 0x5c) falls by it (mode 2)
-   @deep kept: c copied field by field (shot in ebx pushed after the init loop, as the original), fd
-   through dx (dx = sqrt(...); fd = dx: the original's fstp st(3)), fv = w * energy in each arm, pos / lo
-   as D3VECTOR4 (the original's frame strides its vectors by 16): 383 -> 300 ins, frame 0x1a8 -> 0x1b0 of
-   0x1b4. Every other vector subset as D3VECTOR4 tried (63 rows): worse. No change (= control): mode = 0
-   at the loop top or before the init loop, int / float declaration orders, w1 / w2 order, fv = w1 kept
-   apart, w1 computed into fv, the loop's i in a for-init. Left: the original keeps zero and mode in ebp
-   across d3_PointToWorld (cmp eax,ebp after the call; xor ebp,ebp at the back edge) where ours
-   zero-tests in edx / test eax,eax and spills mode to a slot; sel in esi (ours ebp); w1 computed before
-   d3t_GetMeshBounds into a slot (fstp [esp+0x7c]) where VC6 forward-substitutes ours into the inside arm
-   (the missing 4 frame bytes); the selection loop by pointer (lea edx,[esp+0xa8]) against our scaled
-   index; the wind block with scale in a slot and wind x / z on the FPU stack. M10s on ai_FloatOne /
-   ai_FloatHundred are pooled literals. (tiebreak: insensitive) prior: read the whole function against
-   the original (hit record init, building loop with world position / distance / box tests as >= / <=
-   chains, w1 / w2 weights, the 3-strongest selection, smoke / earth / explosion calls with float
-   arguments through the real d3_tools prototypes and a D3COLOR, the sound, the damage messages as
-   AIMSG); 469 vs 478 instructions, frame 0x1a8 vs 0x1b4. Left: register roles (ours zero in ebx / shot
-   in esi / sel in ebp, the original's zero-and-mode in ebp / shot in ebx / sel in esi; hence ebx pushed
-   after the init loop in the original), the original keeps w1 in a slot computed before
-   d3t_GetMeshBounds where ours sinks it into the inside branch (fmul / fadd / fdivr after mov ebx,1),
-   the selection loop walks &recs[k].value by pointer in the original (lea edx,[esp+0xa8]) and ours by a
-   scaled index (mov esi,0xfffffff0), and the wind direction block keeps scale in a slot and wind x / z
-   on the FPU stack (fld [ebx+0x40]; fld [ebx+0x48]; fld [esp+0x4c]; fmul st(2)) where ours folds them
-   (fld [esi+0x4c]; fld st(0); fmul [esi+0x40]): FPU scheduling and allocation. Tried: sqrt without the
-   float cast (no change), mode = 0 at the loop top (no change). */
+   @deep frame sweep s21: ours 0x1b0 vs 0x1b4. D3VECTOR4 subsets of c / half / mn / hi / dir (31 variants):
+   two vectors give 278 ins (300) but frame 0x1b8 (overshoots), one vector does not reach 0x1b4 with a
+   gain; the code / fpu hunks (141 / 17) stay. Not kept. Lead: the shared slots dcp frame names (m/mode,
+   fd/color; hit / w2; half+0x4 / hi / dir). prior: kept: c copied field by field (shot in ebx pushed after
+   the init loop, as the original), fd through dx (dx = sqrt(...); fd = dx: the original's fstp st(3)), fv
+   = w * energy in each arm, pos / lo as D3VECTOR4 (the original's frame strides its vectors by 16): 383 ->
+   300 ins, frame 0x1a8 -> 0x1b0 of 0x1b4. Every other vector subset as D3VECTOR4 tried (63 rows): worse.
+   No change (= control): mode = 0 at the loop top or before the init loop, int / float declaration orders,
+   w1 / w2 order, fv = w1 kept apart, w1 computed into fv, the loop's i in a for-init. Left: the original
+   keeps zero and mode in ebp across d3_PointToWorld (cmp eax,ebp after the call; xor ebp,ebp at the back
+   edge) where ours zero-tests in edx / test eax,eax and spills mode to a slot; sel in esi (ours ebp); w1
+   computed before d3t_GetMeshBounds into a slot (fstp [esp+0x7c]) where VC6 forward-substitutes ours into
+   the inside arm (the missing 4 frame bytes); the selection loop by pointer (lea edx,[esp+0xa8]) against
+   our scaled index; the wind block with scale in a slot and wind x / z on the FPU stack. M10s on
+   ai_FloatOne / ai_FloatHundred are pooled literals. (tiebreak: insensitive) */
 void gv_ExplodeShot(int damage, int effectId, SHOTREC *shot, GVEFFARG *out)
 {
     GVEFFARG h;
