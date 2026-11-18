@@ -1798,7 +1798,10 @@ D3BOXVERT *d3fl_TileBox(D3FLMAP *map, D3FLTILE *t, int tx, int ty)
     D3FL_CORNER(7, x0, z1, h)
     return d3fl_Box;
 }
-/* 0x442ed0, animates n water regions: texture frame, texture offsets and the 16 wave vectors */
+/* 0x442ed0, animates n water regions: texture frame, texture offsets and the 16 wave vectors
+   @deep deep s23: left the x87 handling of the converted i: the original copies it (fld st(1); faddp) at
+   the v.x / v.y sums and keeps the d product on the stack (fmul [esi+0x34] without the extra fld / fstp
+   st(0)). d as v.w, d inline, (float) on d: = control or far worse. */
 
 void d3fl_UpdateWater(unsigned long time, unsigned int n, D3FLREGION *r)
 {
