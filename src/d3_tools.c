@@ -1625,7 +1625,7 @@ void d3t_SetSnow(D3TSNOW *snow, int n, ...)
 /* 0x414ea0. NONMATCHING: 33 bytes, the integer loads of d3_Viewport.right/left for hw are scheduled
    two FPU instructions later than in the original; everything else is identical. The locals x and y
    keep the x update on the FPU stack and fix the sy2 operand order; (snow->windz) fixes where the
-move.z store is scheduled. Initializing fall at the top puts it below wind on the stack. @deep deep s23: left the viewport right/left loads for hw scheduled two FPU instructions later than the original. climb round 1 (462 mutants) and the hw line moved to every position 1640..1681: = control. */
+move.z store is scheduled. Initializing fall at the top puts it below wind on the stack. @deep deep s23: left the viewport right/left loads for hw scheduled two FPU instructions later than the original. climb round 1 (462 mutants), the hw line at every position 1640..1681, the fall vector as - 1.0f * m / -1.0f literal / from fall.y, hw as (float)(int), max(), cx / cy before size: = control or worse. */
 
 void d3t_UpdateSnow(D3TSNOW *snow, float dt)
 {
