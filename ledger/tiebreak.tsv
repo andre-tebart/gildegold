@@ -4151,7 +4151,7 @@ exe	0x005912c0	ai_TradeContactChecks	lc	4f7c372f959fefbf	no	shape	sweep control=
 exe	0x00591480	ai_CampaignKey1	lc	40d255afea32d863	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x00591520	ai_GameFrame	lc	978b1d6b344e2cd8	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00591ad0	lc_PlayerInJail	lc	e503689d4fb15146	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x00591bf0	ai_TechTreeWindow	lc	d59558007acb8ba1	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
+exe	0x00591bf0	ai_TechTreeWindow	lc	3dd9b3f3f87eab62	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	79b0a80b9db789b2
 exe	0x00592230	ai_UpgradeContact	lc	965416dd3b1940fa	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00592290	ai_BookContact	lc	9022030e27c6cc05	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00592320	ai_MercenaryBookContact	lc	ab99ab2c4fa446f2	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
