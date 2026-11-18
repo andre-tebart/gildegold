@@ -3657,15 +3657,7 @@ void ai_DomizilMessagePlace(int param_1, int param_2, int param_3, int param_4);
    +0x20 by 3 .. 6), 2 the building's level drops by 4 .. 6 / 6 .. 8 / 8 .. 10 by the type's level 3 / 2 / other
    (only above level 10), 3 the alchemist ages by 1 .. 3 years (he_SetLifeByAge; always possible), 4 a place of
    the alchemist record above 0.2 loses 0.05 .. 0.15 (not in research state 2); the owner gets the message of the
-   mishap; the mishap (0 none) goes to the event's +0xac (HEAHMDAY.bonus)
-   @deep reconstructed against the original (the possible[5] = {0} array of the four mishaps in its block
-   after the kind 0x1e check, countdown search loops, the type's level for the level drop, the lab device
-   fields AIOBJ.lab, the float temp of the place value); 298 vs 298 instructions, every call, store and
-   constant the same. Left: the frame 0x2c vs 0x28 - the original packs the float temp v of case 4 into the
-   dead state parameter's slot ([esp+0x48], fstp/mov/push) where ours gives it a slot of its own
-   ([esp+0x18]), which shifts possible[] by 4 and reorders its zero stores (ours possible[0] = edx stored
-   after [1..3], the original's ecx in index order, +0x0bc..+0x0c4). Tried: v at function / block scope,
-   declaration order, mishap as initializer, state reused for the 1 of case 1, a full initializer (worse). */
+   mishap; the mishap (0 none) goes to the event's +0xac (HEAHMDAY.bonus) */
 void he_LabIncident(AICHAR *c, int ev, AIBLD *b, int state)
 {
     HEAHMDAY *d = (HEAHMDAY *)ev;
@@ -3673,14 +3665,16 @@ void he_LabIncident(AICHAR *c, int ev, AIBLD *b, int state)
     AHMREC *rec;
     AIOBJ *task[3];
     int mishap = 0;
-    int i, n, k, pick, one, step;
+    int i, n, k, pick;
     char drop;
     float v;
 
     bt = &ai_BTypesT[b->type];
     if (bt->kind == 0x1e) {
-        int possible[5] = {0};
+        int possible[5];
 
+        for (i = 0; i < 5; i++)
+            possible[i] = 0;
         possible[3] = 1;
         if (b->level > 10)
             possible[2] = 1;
@@ -3715,8 +3709,9 @@ void he_LabIncident(AICHAR *c, int ev, AIBLD *b, int state)
             k = util_RandomU(3);
             for (n = 3; n != 0; n--) {
                 if (task[k] != 0 && task[k]->lab.broken == 0) {
-                    one = 1;
-                    step = util_RandomU(4) + 3;
+                    int one = 1;
+                    int step = util_RandomU(4) + 3;
+
                     cm_BeginFieldBlock((char *)task[k], task[k]->objId);
                     cm_AddFieldDelta(4, 1, 0x1c, &one);
                     cm_AddFieldDelta(4, 1, 0x20, &step);
@@ -4328,7 +4323,7 @@ int he_SecretRoomCatchSpy(AICHAR *agent, int ev, AIJOB *spy)
     HESECRETROOM *s = (HESECRETROOM *)ev;
     HESPYING *sp = (HESPYING *)spy;
     AICHAR *spyChr, *employer, *victim;
-    D3VECTOR d, there;
+    D3VECTOR4 d, there;
     float dist, spyBonus, guard, skill;
 
     if (spy == 0 || spy->kind != 0x18)
