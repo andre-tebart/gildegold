@@ -16960,8 +16960,15 @@ int cm_DialogTimer(int dlg, int a, int c)
 /* 0x4e5470, a message box for the text id with the flags (2: "Messagebox_Autosize", 0x10: "_BIG", 0x20: "_VERY_BIG", 0x100: "_NONE_PERGA" (form 1), else "misc\\Messagebox";
    8: the frame wait flags 0x717c6, 0x80: a timer slider (0x500 ms), 0x40: raises the dialog's windows every frame, 4: ends after 500 ms): the dialog's
    objects are put into a radio group (all but the type 0x40), the loop runs the frame wait sv_RunFrame until the stop request; the answer: the selected
-   button index + 1 when the text window is clicked, 0 on a right click on it or the escape key, else -1; not reentrant (cm_MessageBoxOpen).
-   @deep read whole against the original; fixed the d2_OpenForm (x, y, name) and sv_RunFrame (cb, mask)
+   button index + 1 when the text window is clicked, 0 otherwise (a right click on it, the escape key, a timeout); not reentrant (cm_MessageBoxOpen).
+   @deep s15 (size queue, 687 vs 697): meaning fixed: the answer starts at 0, not -1 (the original zeroes
+   ret's slot [esp+0xc] at 1 push from esi = 0 and returns that slot), and the slider handle starts at -1
+   in its own slot ([esp+0x14] = -1 in the first block, read as slider when the 0x80 flag is off): slider =
+   -1; ret = 0; at the top, no else arm. Left as before: the original keeps ret, fl, win, t0, slider, timed
+   in memory (frame 0x18: win 0, fl 4, ret 8, t0 0xc, slider 0x10, timed 0x14; textwin in id's slot, raise
+   in flags' slot), leaves ebp unused and holds the constant 0 in esi from the first block (push esi for
+   d2_OpenForm / d2_CreateRadioGroup, i starts in it); ours gives ret ebp (pass 2, sav 20) and fl esi.
+   prior: read whole against the original; fixed the d2_OpenForm (x, y, name) and sv_RunFrame (cb, mask)
    argument orders, the frame mask (& ~0x38: and al, 0xc7), the clicked window (d2_LastWindow after
    io_PrintText, the original keeps it in id's slot), typed D2WIN/D2OBJ access. Left: allocation only: ours
    keeps ret in ebp (or ebp, -1 / xor ebp, ebp / mov eax, ebp) and fl in a register, the original keeps ret
@@ -16975,8 +16982,8 @@ int cm_MessageBox(int id, int flags)
     int ret, win, textwin, radio, i, k, slider, fl, timed, raise, ends;
 
     t0 = d3_Time;
-    ret = -1;
-    win = 0;
+    slider = -1;
+    ret = 0;
     if (cm_MessageBoxOpen != 0)
         return 0;
     fl = sv_FrameMask & ~0x38;
@@ -17008,8 +17015,6 @@ int cm_MessageBox(int id, int flags)
     timed = flags & 0x80;
     if (timed != 0)
         slider = d2_WinOpenSlider(0x1c, d2_LastWindowPtr->h - 0x18, d2_LastWindowPtr->w - 0x40, 0, 0x1f4, 0x83, 0x42, d2_LastWindow);
-    else
-        slider = ret;
     if (sv_RunFrame(cm_MessageBox, fl) != 0) {
         raise = flags & 0x40;
         ends = flags & 4;
