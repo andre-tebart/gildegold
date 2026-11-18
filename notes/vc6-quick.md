@@ -118,6 +118,10 @@ when something later in the SAME block depends on it.
 - Otherwise an order hunk means: another list order (the expression tree: parentheses, a temporary, an
   assignment inside the expression: `(depth = 2600.0f - f) * t`, `SND_SET(h, n, v = expr, 0, 0)`), another
   dependency (a later statement of the block reading or overwriting it), or another block extent (a label).
+- The 81 count the fxch / pops and one node per parenthesised float product (c2dag `op=263`): a macro nested to
+  force a multiply order lengthens the region, and what the original hoisted (argument pushes) falls into the
+  next one. Unparenthesised float products are ordered by VC6 itself (two globals: the one met later in the
+  function first), so the first product of the function decides the rest (ai_StepShot, vc6-matching "Deep s39").
 - One statement at the wrong place in a long store block rotates the scratch registers of everything behind it:
   run a move-one-statement round (n^2 variants) before judging spellings (main_OpenScreen 66 -> 6).
 
