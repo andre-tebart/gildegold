@@ -2047,31 +2047,7 @@ void amt_ElectKind22(void)
    jobId lies in the town's range (up to 16): the richest by gm_GetWorth takes it, unless the holder is richer. With fewer than 3 such buildings nothing
    happens. When the town's building (kind 0x17 .. 0x1a) does not exist yet it is built for the player: the building type 0x38 / 0x3b / 0x3e / 0x41 goes on a
    free plot (ai_FindBauplaetze, a random one, else the first; none: "amt_calc_zuenfte(): could not find a free place...") with the build message 0xd
-   (cm_SendLongMessage). The name is the function's own error string at 0x60f11c.
-   @deep 84 -> 28 ins: the file name 'gb_<NAME>' goes to its own block buffer gb[64] (the original's lea
-   [esp+0x40] strcpy/strcat/_strupr/sprintf target is cand's slot, buf stays at 0x178 for ai_BuildingName /
-   ai_FindBauplaetze) - that moved m to 0x80 and cand to 0x40 as in the original; best = 0 in an else arm (VC6
-   then keeps best in the zero register ebx with cur's 0 and zeroes j in ebp, as the original; best = 0 before
-   the if, cur = 0 / best = (int)cur, nested ifs, variable renames for best/j: = control). Left: pos and rot swap
-   slots (ours rot 0x1c with a, pos 0x34; the original pos 0x1c, rot 0x34: lea edx,[esp+0x34] / lea
-   ecx,[esp+0x28] at +0x200 / +0x20f) and the message store schedule that reads them (+0x2b5..+0x31c: the fromId
-   -1 store and the pos/rot loads in another order). framesearch: all 24 orders of the block's declarations
-   (pos/rot/plot/gb), pos/rot as one or two declarations, rot or pos or both in the inner if (j != 0) block, gb
-   inner, the vectors at function scope (frame +0xc), float[3] arrays for either, *(D3VECTOR *) struct copies of
-   either into m (fewer references), an extra pos reference: none moves pos/rot. m header orders: time before to
-   (worse 46), fromId first (worse 40), fromId before time (= control). headers sample: insensitive. (tiebreak:
-   insensitive) prior: Read the whole 0x4e8dc0..0x4e9255 against the C: the kind switch (k1/k2/lo/hi/bld), the
-   cand dedupe loop over gm_BuildQuery(1,5,k1) (owner != 0xffff, flags5a bit 0, jobId in lo..hi), total < 3 || n
-   == 0, the k2 query, the plot pick (random, then the first non-zero, the j != 0 then-arm with the error after
-   it), the 0xd AIMSG fields (type, to, fromId -1, time, flags 2, buildPos x/z/y, arg[0..2], buildRot,
-   buildPath), the amt_Table scan 36..0 with the struct copy, cur/best, the richest loop and both send arms all
-   correspond (no differs/ref lines). Left: stack layout - the original shares the block's pos/rot with a's slot
-   (pos at 0x1c, rot 0x34, cand 0x40, msg 0x80), ours puts the msg at 0x40, cand at 0x138, rot/pos at 0x1c/0x34;
-   that moves the message stores' schedule (the 50-line hunk at +0x2c1: the same stores, other offsets and order)
-   and the cand memset (proof stops at that fill). best lives in ebp (ours) vs ebx; the in-loop jmp to the found
-   arm (original 'test esi; je loop; jmp found' then 'test esi; je err') is merged in ours (size 1170 vs 1173).
-   Tried: declaration orders of the function and block locals, pos/rot as arrays and D3VECTOR, statement orders
-   of the msg fields (time before / after to / fromId), the loop as for / while-break. */
+   (cm_SendLongMessage). The name is the function's own error string at 0x60f11c. */
 
 void amt_CalcZuenfte(unsigned int kind)
 {
@@ -2131,7 +2107,8 @@ void amt_CalcZuenfte(unsigned int kind)
         return;
     it = (AIBLD *)gm_BuildQuery(1, 5, k2);
     if (it == 0) {
-        D3VECTOR pos, rot;
+        D3VECTOR4 pos;
+        D3VECTOR rot;
         D3OBJECT *plot;
         char gb[64];                    /* "gb_<NAME>": the original keeps it in cand's 64-byte slot */
 
@@ -2151,7 +2128,7 @@ void amt_CalcZuenfte(unsigned int kind)
         }
         if (j != 0) {
             plot = (D3OBJECT *)j;
-            d3_PointToWorld(plot, &plot->pos, &pos);
+            d3_PointToWorld(plot, &plot->pos, (D3VECTOR *)&pos);
             ai_ObjectAngle(&rot, j);
             d3if_SelectScene(scene, 1);
             strcpy(gb, "gb_");
@@ -2160,16 +2137,16 @@ void amt_CalcZuenfte(unsigned int kind)
             sprintf(name, "%sgebaeude/*%s.ogr", ai_DataPath, gb);
             m.type = 0xd;
             m.to = amt_PlayerAiChar->netId;
-            m.time = ai_Time;
             m.fromId = -1;
+            m.time = ai_Time;
             m.flags = 2;
-            m.buildPos[0] = pos.x;
             m.arg[0] = amt_PlayerAiChar->netId;
-            m.buildPos[2] = pos.z;
-            m.buildPos[1] = pos.y;
-            m.buildRot[0] = rot.x;
             m.arg[1] = bld;
             m.arg[2] = 0;
+            m.buildPos[0] = pos.x;
+            m.buildPos[1] = pos.y;
+            m.buildPos[2] = pos.z;
+            m.buildRot[0] = rot.x;
             m.buildRot[1] = rot.y;
             m.buildRot[2] = rot.z;
             strcpy(m.buildPath, name);
