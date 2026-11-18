@@ -6923,6 +6923,7 @@ void ai_BuyBuildingOfferWindow(AIBLD *bld)
     int win;
     int slider;
     AIBLD *found;
+    char *text;
 
     bldId = bld->id;
     if (gm_MayTakeJob(bld->type, ai_PlayerId) != 1) {
@@ -6934,7 +6935,8 @@ void ai_BuyBuildingOfferWindow(AIBLD *bld)
     value = gm_EquipmentValue(bld, bld->level);
     value = gm_ConvertMoney(value, ai_OwnPlayer);
     d2_SetForm(win, 2);
-    slider = d2_GetWinObj(win, 2, io_PrintText(0x17de, bld->masterId, bld, ai_OwnPlayer));
+    text = io_PrintText(0x17de, bld->masterId, bld, ai_OwnPlayer);
+    slider = d2_GetWinObj(win, 2, text);
     d2_SetObjValue4(slider, (int)(value * 0.5), (int)(value * 10.0), value);
     d2_SetPointerSprite(0, 0);
     sv_RunFrame(0, 0x677c7);
