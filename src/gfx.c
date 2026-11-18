@@ -1746,6 +1746,8 @@ int d2_PointerSprite = -1;  /* 0x5febc8, sprite of the pointer, -1: none */
 int d2_TextCursorOffset = -7;  /* 0x5febcc, -7 or 0 */
 int d2_HitClicked = -1;  /* 0x5febd0 */
 int d2_HitUnderPointer = -1;  /* 0x5febd4 */
+int d2_UnreadData = -1;  /* 0x5febd8, no surviving instruction or image dword reads it (holes.py --section data): data of
+   functions /OPT:REF removed; the original's value */
 int d2_HoverX = -1;  /* 0x5febdc */
 int d2_HoverY = -1;  /* 0x5febe0 */
 int d2_LimitsChanged = -1;  /* 0x5febe4 */
