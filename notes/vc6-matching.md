@@ -1153,6 +1153,66 @@ Where the pushes and pops sit, how many epilogue copies there are, shared agains
     fixes it but reads flags into a register), d3fl_TileBox (a scheduling-region cut), d3_SetupFrustum,
     ai_HasMaterials (found known 0 at our loop top), hst_NextEventCmd (return block order, name / cmd).
 
+- **Deep s37 (the near-byte list to 80 instructions, notes older than s22 first: the 15 at 26-28 instructions,
+  15 byte; bonus he_TransportStadtStadt, ls_ReadEventTables, ls_WriteEventTables byte, ai_UseGoodLowerOfficialRelations
+  72 -> 32, ai_ExpelWorkerWindow 130 -> 31)**:
+  - **An inline asm block adds its 2 references to the escaped locals IN SCOPE, in an order that follows their
+    NAMES**: ch_PathToTarget's x1 / z1 / x2 / z2 (frame ties, slots 50) were byte as cx / cz / gx / gz (a pure
+    rename; `c2frame --refs` R rows show the order the asm adds them in; declaration order is no lever, the
+    names are). he_TransportStadtStadt: the vectors and cell locals declared in the blocks that use them get no
+    asm references at all (slots 54 -> byte). Rename or block-scope before any count work when the function
+    has `__asm`.
+  - **The strength-reduced record pointer's bias (`add edi,0x14` against `0x18`, every lea displacement off by
+    4)**: with `b->goods[j].f` written at each use VC6 takes the SECOND address expression as the base; a block
+    pointer `GMSTOCK *s = &b->goods[j];` gives the third (ls_WritePlayerSlots / ls_ReadPlayerSlots byte). Records
+    of a GLOBAL array: plain index loops `gm_CarryRecs[i].f` instead of a hand-advanced pointer (bias 0,
+    ls_ReadEventTables byte); a record pointer taken AFTER the skip test written on the array (`if
+    (he_Jobs[i].kind == 0) continue; job = &he_Jobs[i];`, ls_WriteEventTables 150 -> byte). Probe: delete or swap
+    the first writes and watch which field gets displacement 0.
+  - **SIB order `[edx+esi]` against `[esi+edx]` of a `rec[K + j]` search loop**: the FIRST loop of each record
+    pointer VARIABLE has the operands the other way round; the original had one such loop, so the later loops
+    reused the same pointer (`p = ai_BTypes + list[i] * 0x24d` in the list loop, no `q`): gm_MayTakeJob byte.
+    Probe: delete loop sites and see which become the odd one.
+  - **A nested call's argument as a named local** (`job = gm_BuildingJob(*p); v = gm_TitleJob(c, job);`) swapped
+    the two parameters' callee-saved registers (gm_MayTakeJob 28 -> 2).
+  - **A value 'spilled' at one point and reloaded into another register at the tail, two zero registers at the
+    top** = two variables, not a split piece: gm_BuildingBalance's wage `sum` of the owner block and `cost` (0 at
+    the top, `cost = sum` behind the block), `sum = 0` before `cost = 0; income = 0`. The probe that showed the
+    middle was right: make the variable dead behind the block (delete the tail uses in a variant).
+  - **The emitted store order of a record fill is not the source order when loads from escaped vectors feed
+    it**: amt_CalcZuenfte's build message was the plain order (type, to, fromId, time, flags, arg[0..2],
+    buildPos[0..2], buildRot[0..2]); the scheduler interleaves it into x, arg0, z, y, .. Found with the
+    interleavings of the three ordered triples (1680 variants) after the header's 5! round. The slot swap
+    there: of two vectors the one that shares a bigger record's slot is the D3VECTOR4 (16 bytes sort behind
+    12, the newest slot is the one the record joins).
+  - **Inits at the top**: (1) a 0.0f store takes the register of the latest REGISTER variable set to 0 before
+    it in source order (none yet: an immediate); an int 0 into memory takes the const-0 candidate. A fourth
+    word of a vector cleared from the int zero register is an int member; the local struct is then no longer
+    split into float symbols and the float expression's term order flips back to the plain one
+    (ob_HandleBepflanzung). (2) the users of one scratch register keep their source order: `mov eax,[bld]`
+    ahead of `or eax,-1` ahead of `mov eax,[d3_Terrain]; cmp` = the pointer load's statement stood before the
+    -1 assignments although their stores are emitted first.
+  - **`dec esi; test esi,esi; jne` (the dec not fused) and the counter / id registers swapped**: the wrap step
+    in the for's increment clause behind n--, `for (n = 0x300; n != 0; n--, id = (id + k) % 0x300)`
+    (ai_UseGoodCharmOtherSex byte; `while (n != 0) { ..; n--; id = ..; }` is the same code, do / while moves
+    the found arms out of line). The old note blamed a unit boundary for the tail; it followed from the loops.
+    `grep_orig.py --multi 'idiv ecx
+[^
+]*dec e(si|di)
+[^
+]*test' --grade byte` found the byte siblings.
+  - **flip.py names the place, the ordinary form follows**: cm_CheckFight's duplicated guard line (a decided
+    nested test: one more reference of ca / cb) -> `if (bad) { if (ca == cb) return 0; return 0; }`, kept with
+    an @original comment (no plainer form found: 14 guard spellings = control); cm_DuelOutcome's tok 0 -> 1 at
+    `(w->sex != 0) + K` -> `if (w->sex != 0) txt = K + 1; else txt = K;` into a local (the setne's byte temp
+    in dl instead of the free bl).
+  - Small ones: `c->x = v >= 0xff ? 0xff : v;` as one ternary store and `> 0` on the unsigned byte (jbe)
+    (cm_ExHeldRounds); the switch's cases in the image's block order (gm_FirstTitleNumber, cm_OrderRating's
+    case 3 last); `if (x == 0) f = 1.0f; else f = 0.5f;` so f's first store stands behind the parameter's
+    load and f can take the parameter's slot (cm_OrderRating); a saved global read in the block that needs it
+    (he_FreeGfxInfo: push ebx behind the je); `rec->heads[h]` instead of a walked out pointer
+    (gm_ResolveHeadIcons); the x clamp before the z clamp.
+
 - **An else-if arm cross-jumped whole into a sibling's copy, the original keeps it inline**: the store order of
   the OTHER arms (default arm charId before stateArg; 0x176 arm stateArg, charId, x, z) decides it, found by
   climb.py swap + move in round 2 (cm_OrderAttack byte; permuting only the inlined arm's stores did not). The pair

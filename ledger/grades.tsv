@@ -111,7 +111,7 @@ exe	0x004076e0	ch_PosToCell	ch	byte	readable
 exe	0x00407740	ch_CellToCell	ch	byte	readable		
 exe	0x00407790	ch_GetWaypoints	ch	draft	readable	deep	
 exe	0x004079b0	ch_GetNewPath	ch	draft	readable	deep	
-exe	0x00408490	ch_PathToTarget	ch	shape	readable		
+exe	0x00408490	ch_PathToTarget	ch	byte	readable		
 exe	0x00408690	ch_InitWalk	ch	shape	readable		
 exe	0x00408ab0	ch_WalkSound	ch	byte	readable		
 exe	0x00408cb0	ch_StartWalkAnim	ch	byte	readable		
@@ -2363,7 +2363,7 @@ exe	0x004cc920	cm_ExChrDelete	cm	byte	readable
 exe	0x004cc980	cm_ExCancelParty	cm	byte	readable		
 exe	0x004cca10	cm_ExCutsceneReady	cm	byte	readable		
 exe	0x004ccaa0	cm_ExMoneyDelta	cm	byte	readable		
-exe	0x004ccb10	cm_ExHeldRounds	cm	shape	readable		
+exe	0x004ccb10	cm_ExHeldRounds	cm	byte	readable		
 exe	0x004ccbd0	cm_ExOfficeSwap	cm	byte	readable		
 exe	0x004ccc20	cm_ExAddSkill	cm	byte	readable		
 exe	0x004ccce0	cm_ExSpyReport	cm	byte	readable		
@@ -2469,7 +2469,7 @@ exe	0x004d2650	cm_CollectConquerPoint	cmfight	byte	readable
 exe	0x004d2680	cm_NearestConquerPoint	cmfight	byte	readable		
 exe	0x004d27a0	cm_InitOrderChances	cmfight	draft	readable	deep	
 exe	0x004d2c00	cm_OrderChancesFor	cmfight	byte	readable		
-exe	0x004d2e30	cm_OrderRating	cmfight	shape	readable		
+exe	0x004d2e30	cm_OrderRating	cmfight	byte	readable		
 exe	0x004d2f80	cm_GiveFightOrders	cmfight	byte	readable		
 exe	0x004d3120	cm_CarryOutOrder	cmfight	byte	readable		
 exe	0x004d3300	cm_FallDownAction	cmfight	byte	readable		
@@ -2487,7 +2487,7 @@ exe	0x004d4090	cm_LootList	cmfight	byte	readable
 exe	0x004d4340	cm_FightPortraits	cmfight	byte	readable		
 exe	0x004d4540	cm_FightStartDialog	cmfight	draft	readable	deep	
 exe	0x004d4d70	cm_FightEndDialog	cmfight	draft	readable	deep	
-exe	0x004d60b0	cm_CheckFight	cmfight	shape	readable	deep	
+exe	0x004d60b0	cm_CheckFight	cmfight	byte	readable		
 exe	0x004d63e0	cm_RunFight	cmfight	byte	readable		
 exe	0x004d6930	cm_FightResult	cmfight	byte	readable		
 exe	0x004d6970	cm_FightFrame	cmfight	byte	readable		
@@ -2524,7 +2524,7 @@ exe	0x004de5e0	cm_DuelInitVariants	cmscene	byte	readable
 exe	0x004de610	cm_DuelVariant	cmscene	byte	readable		
 exe	0x004de640	cm_DuelShotAction	cmscene	draft	readable	deep	shape+readable -> draft+readable at 0f1c8dc1: promote --accept-falls
 exe	0x004de900	cm_DuelRound	cmscene	byte	readable		
-exe	0x004debe0	cm_DuelOutcome	cmscene	shape	readable		
+exe	0x004debe0	cm_DuelOutcome	cmscene	byte	readable		
 exe	0x004ded10	cm_RunDuel	cmscene	draft	readable	deep	
 exe	0x004dfa20	cm_DuelAftermath	cmscene	byte	readable		
 exe	0x004dfcb0	cm_DuelRoundDialog	cmscene	byte	readable		
@@ -2663,7 +2663,7 @@ exe	0x004e8730	amt_SendOfficeNews	amt	byte	readable
 exe	0x004e87e0	amt_SendOfficeLost	amt	byte	readable		
 exe	0x004e88a0	amt_ElectDeputies	amt	draft	readable	deep	
 exe	0x004e8c20	amt_ElectKind22	amt	byte	readable		
-exe	0x004e8dc0	amt_CalcZuenfte	amt	draft	readable	deep	
+exe	0x004e8dc0	amt_CalcZuenfte	amt	byte	readable		
 exe	0x004e9260	amt_CheckOffices	amt	byte	readable		
 exe	0x004e9400	amt_HasTownObject	amt	byte	readable		
 exe	0x004e94a0	amt_MayorBonusStep	amt	byte	readable		
@@ -2942,7 +2942,7 @@ exe	0x004fb0e0	gm_ShiftLoyalty	f3gm	byte	readable
 exe	0x004fb330	gm_NameRecord	f3gm	byte	readable		
 exe	0x004fb390	gm_CharNameRecord	f3gm	draft	readable	deep	
 exe	0x004fb5a0	gm_SelectModelVariant	f3gm	byte	readable		
-exe	0x004fb620	gm_ResolveHeadIcons	f3gm	shape	readable		
+exe	0x004fb620	gm_ResolveHeadIcons	f3gm	byte	readable		
 exe	0x004fb770	gm_HeadIconNumber	f3gm	byte	readable		
 exe	0x004fb890	gm_ChooseHeadIcon	f3gm	byte	readable		
 exe	0x004fbb80	gm_CreateCharModel	f3gm	byte	readable		
@@ -3028,7 +3028,7 @@ exe	0x00501f60	gm_NearestFreeBuilding	f3gmt	byte	readable
 exe	0x00502020	gm_FindBuildingById	f3gmt	byte	readable		
 exe	0x00502060	gm_FindBuildingKind	f3gmt	byte	readable		
 exe	0x005020a0	gm_ListBuildingsOfType	f3gmt	byte	readable		
-exe	0x005020e0	gm_MayTakeJob	f3gmt	shape	readable	deep	
+exe	0x005020e0	gm_MayTakeJob	f3gmt	byte	readable		
 exe	0x005024f0	gm_IsType10	f3gmt	byte	readable		
 exe	0x00502520	gm_IsHomeType	f3gmt	byte	readable		
 exe	0x00502570	gm_GoodPicture	f3gmt	byte	readable		
@@ -3051,7 +3051,7 @@ exe	0x00503f50	gm_SexForTitle	f3gmt	byte	readable
 exe	0x00503fa0	gm_BuildingTypeOfJob	f3gmt	byte	readable		
 exe	0x00504050	gm_JobBuildingType	f3gmt	byte	readable		
 exe	0x00504100	gm_JobSlots	f3gmt	byte	readable		
-exe	0x00504290	gm_FirstTitleNumber	f3gmt	shape	readable		
+exe	0x00504290	gm_FirstTitleNumber	f3gmt	byte	readable		
 exe	0x00504350	gm_TitleNumberGroup	f3gmt	byte	readable		
 exe	0x005043d0	gm_TitleNumber	f3gmt	byte	readable		
 exe	0x005044b0	gm_TitleJob	f3gmt	byte	readable		
@@ -3108,7 +3108,7 @@ exe	0x00508a20	gm_HealthFactor	f3gmt	byte	readable
 exe	0x00508a80	gm_FormatAmount	f3gmt	byte	readable		
 exe	0x00508cc0	gm_ListObjectsAfter	f3gmt	byte	readable		
 exe	0x00508d70	gm_BuildingLevel	f3gmt	byte	readable		
-exe	0x00508d80	gm_BuildingBalance	f3gmt	draft	readable	deep	
+exe	0x00508d80	gm_BuildingBalance	f3gmt	byte	readable		
 exe	0x00509060	gm_BuildingCarts	f3gmt	byte	readable		
 exe	0x005090b0	gm_BuildingRank	f3gmt	shape	readable	deep	
 exe	0x00509120	gm_BuildingRankGate	f3gmt	byte	readable		
@@ -3259,11 +3259,11 @@ exe	0x0051ad30	ls_ActionIndex	ls	byte	readable
 exe	0x0051ad60	ls_ActionAt	ls	byte	readable		
 exe	0x0051ad80	ls_WriteSceneCharacter	ls	byte	readable		
 exe	0x0051aff0	ls_WriteSceneRecords	ls	byte	readable		
-exe	0x0051b340	ls_WritePlayerSlots	ls	shape	readable	deep	
+exe	0x0051b340	ls_WritePlayerSlots	ls	byte	readable		
 exe	0x0051b890	ls_WriteRelations	ls	byte	readable		
 exe	0x0051b910	ls_WriteStatistics	ls	byte	readable		
 exe	0x0051bdb0	ls_WriteAvatars	ls	byte	readable		
-exe	0x0051bdc0	ls_WriteEventTables	ls	shape	readable		
+exe	0x0051bdc0	ls_WriteEventTables	ls	byte	readable		
 exe	0x0051c2f0	ls_WriteParties	ls	byte	readable		
 exe	0x0051c450	ls_WriteHistory	ls	byte	readable		
 exe	0x0051c560	ls_WriteMessageQueues	ls	byte	readable		
@@ -3280,11 +3280,11 @@ exe	0x0051db00	ls_ReadPlayerRecords	ls	byte	readable
 exe	0x0051de70	ls_ReadCharacters	ls	byte	readable		
 exe	0x0051e750	ls_ReadCharacter	ls	byte	readable		
 exe	0x0051e900	ls_ReadSceneRecords	ls	draft	readable	deep	
-exe	0x0051f080	ls_ReadPlayerSlots	ls	shape	readable	deep	
+exe	0x0051f080	ls_ReadPlayerSlots	ls	byte	readable		
 exe	0x0051f650	ls_ReadRelations	ls	byte	readable		
 exe	0x0051f720	ls_ReadStatistics	ls	byte	readable		
 exe	0x0051fb80	ls_ReadAvatars	ls	byte	readable		
-exe	0x0051fb90	ls_ReadEventTables	ls	shape	readable		
+exe	0x0051fb90	ls_ReadEventTables	ls	byte	readable		
 exe	0x00520000	ls_ReadParties	ls	byte	readable		
 exe	0x00520200	ls_ReadHistory	ls	byte	readable		
 exe	0x00520310	ls_ReadMessageQueues	ls	byte	readable		
@@ -3511,7 +3511,7 @@ exe	0x0053e400	he_FindEvent	he	byte	readable
 exe	0x0053e4e0	he_SpreadGfxInfos	he	byte	readable		
 exe	0x0053e5f0	he_CreateGfxObject	he	byte	readable		
 exe	0x0053e780	he_CreateGfxInfo	he	draft	readable	deep	
-exe	0x0053e840	he_FreeGfxInfo	he	shape	readable		
+exe	0x0053e840	he_FreeGfxInfo	he	byte	readable		
 exe	0x0053e8b0	he_AddEventGfxInfo	he	byte	readable		
 exe	0x0053eba0	he_RemoveStaleGfxInfos	he	byte	readable		
 exe	0x0053ebe0	he_RemoveGfxInfos	he	byte	readable		
@@ -3701,7 +3701,7 @@ exe	0x00555210	he_RandomTransporter	he	byte	readable
 exe	0x005552c0	he_SetCartSpeed	he	byte	readable		
 exe	0x00555350	he_TransportFromHome	he	byte	readable		
 exe	0x00555690	he_TransportToHome	he	byte	readable		
-exe	0x00555b60	he_TransportStadtStadt	he	shape	readable		
+exe	0x00555b60	he_TransportStadtStadt	he	byte	readable		
 exe	0x00556080	he_TransportHomeHome	he	byte	readable		
 exe	0x00556600	he_RunTransport	he	byte	readable		
 exe	0x00556dc0	he_AllocCartRepair	he	byte	readable		
@@ -4422,7 +4422,7 @@ exe	0x005b82a0	ai_FireFightingWindow	lcdom	byte	readable
 exe	0x005b84f0	ai_BuildingWindow	lcdom	draft	readable	deep	
 exe	0x005b8fc0	ai_ManagedBuildingWindow	lcdom	byte	readable		
 exe	0x005b92e0	ai_LiquidateAssets	lcdom	draft	readable	deep	
-exe	0x005b9730	ob_HandleBepflanzung	lcdom	draft	readable	deep	
+exe	0x005b9730	ob_HandleBepflanzung	lcdom	byte	readable		
 exe	0x005b9db0	ai_HandlePickedPlant	lcdom	byte	readable		
 exe	0x005b9f30	ai_GelageWindow	lcdom	byte	readable		
 exe	0x005ba1c0	ai_OpenInventoryWindow	lcdom	byte	readable		
@@ -4579,7 +4579,7 @@ exe	0x005d0c70	ai_QuarrelCallback	lcamt	draft	readable	deep
 exe	0x005d0e60	ai_UseGoodTrialStep	lcamt	byte	readable		
 exe	0x005d0f20	ai_UseGoodLowerOfficialRelations	lcamt	draft	readable	deep	
 exe	0x005d1300	ai_UseGoodTwoTrialSteps	lcamt	byte	readable		
-exe	0x005d13e0	ai_UseGoodCharmOtherSex	lcamt	draft	readable	deep	
+exe	0x005d13e0	ai_UseGoodCharmOtherSex	lcamt	byte	readable		
 exe	0x005d1680	ai_UseGoodSowDiscord	lcamt	byte	readable		
 exe	0x005d1830	ai_UseGoodTributeClaim	lcamt	byte	readable		
 exe	0x005d18c0	ai_UseGoodDrainActionPoints	lcamt	byte	readable		
