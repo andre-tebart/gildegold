@@ -2200,8 +2200,6 @@ int ls_ReadEventTables(int f)
 {
     int n, size2, i, idx;
     AIJOB *rec;
-    GMCARRYREC *cr;
-    HEAPEVENT *ap;
     char *tb;
 
     he_FreeEvents();
@@ -2258,35 +2256,23 @@ int ls_ReadEventTables(int f)
     }
     he_EventTop = he_EventCount;
     LS_R(&n, 4)
-    i = 0;
-    if (n > 0) {
-        cr = gm_CarryRecs;
-        do {
-            cr->ref = 0;
-            LS_R(&cr->ref, 4)
-            LS_R(&cr->ttl, 1)
-            LS_R(&cr->hasValue, 4)
-            LS_R(&cr->owner, 4)
-            LS_R(&cr->value, 4)
-            LS_R(&cr->spec, 0xe)
-            LS_R(cr->data, 0x80)
-            i++;
-            cr++;
-        } while (i < n);
+    for (i = 0; i < n; i++) {
+            gm_CarryRecs[i].ref = 0;
+            LS_R(&gm_CarryRecs[i].ref, 4)
+            LS_R(&gm_CarryRecs[i].ttl, 1)
+            LS_R(&gm_CarryRecs[i].hasValue, 4)
+            LS_R(&gm_CarryRecs[i].owner, 4)
+            LS_R(&gm_CarryRecs[i].value, 4)
+            LS_R(&gm_CarryRecs[i].spec, 0xe)
+            LS_R(gm_CarryRecs[i].data, 0x80)
     }
     LS_R(&n, 4)
-    if (n > 0) {
-        i = 0;
-        ap = he_ApEvents;
-        do {
-            LS_R(&ap->counter, 1)
-            LS_R(&ap->key, 4)
-            LS_R(&ap->income, 4)
-            LS_R(&ap->cost, 4)
-            LS_R(ap->name, 0x40)
-            i++;
-            ap++;
-        } while (i < n);
+    for (i = 0; i < n; i++) {
+            LS_R(&he_ApEvents[i].counter, 1)
+            LS_R(&he_ApEvents[i].key, 4)
+            LS_R(&he_ApEvents[i].income, 4)
+            LS_R(&he_ApEvents[i].cost, 4)
+            LS_R(he_ApEvents[i].name, 0x40)
     }
     return 1;
 }
