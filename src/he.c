@@ -8150,23 +8150,20 @@ int he_FindGuestInn(int rec, HEINN *tab, int *out)
 {
     AICHAR *c = (AICHAR *)rec;
     AIBLD *b;
-    HEINN *e;
     int i;
 
     if (c->id == 0xffff || c->health == 0 || c->kind != 0)
         return 0;
     if (c->model == 0 || ai_CanAct(rec) == 0)
         return 0;
-    e = tab;
     for (i = 0; i < 16; i++) {
-        if (e->inn == 0)
+        b = tab[i].inn;
+        if (b == 0)
             return 0;
-        b = e->inn;
         if (b->id == c->model->bldId && b->owner != 0xffff) {
             *out = i;
             return 1;
         }
-        e++;
     }
     return 0;
 }
