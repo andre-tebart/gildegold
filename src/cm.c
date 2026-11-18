@@ -6280,10 +6280,11 @@ int cm_ExAddSkill(G17MSG *m, G17STAT *s)
     k = m->skill.skill;
     if (k < 0 || k > 4)
         return 1;
-    f = (float)(c->skills[k] + m->skill.delta);
+    k = c->skills[k] + m->skill.delta;
+    f = (float)k;
     /* MAX(MIN(f, 252), 0) as macros expand it: the MIN is evaluated again for the result */
     f = (f < 252.0f ? f : 252.0f) > 0.0f ? (f < 252.0f ? f : 252.0f) : 0.0f;
-    c->skills[k] = (unsigned char)f;
+    c->skills[m->skill.skill] = (unsigned char)f;
     if (s != 0)
         s->state = 1;
     return 0;
