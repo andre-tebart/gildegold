@@ -239,15 +239,23 @@ void rt_ReadMarkValues(void)
    its object 0xff holds more than one of (with their names); then "none" (picture 0x527, the entry 0). Runs the
    frame loop until a pick or a right click; returns the goods picked (0: none), def when nothing was picked.
    x is not read
-   @deep size queue s11: raw 1175 vs 1185; the whole 10 bytes are the constant 1: the original loads it
-   (mov ebx,1) in each of the three branches (after n = 0, before the store / loop test) where ours loads
-   it once (mov ebp,1) in the kind dispatch block; w sits in ebp at the top in the original (ebx in ours),
-   0x525 in ebp (ebx in ours). c2trace: ours serves const 1 (const#0#4, lines 265-325, prio 23) whole in
-   pass 1 and 0x525 (prio 30) ebx, w#1 (prio -51) is cut; in the original const 1 must have been cut too
-   (its pieces start per branch) and w's top piece won ebp. climb --rounds 2: nothing (best a
-   meaning-changing local). Tried: the dispatch as a switch (draft 278), n = 0 hoisted before the dispatch
-   (draft 94). Next: a lever that lowers const 1's pass-1 priority or raises w's (w referenced in the
-   branches, the tail's 1s), c2trace --prio 'const#0#4|w'. */
+   @deep s15: c2trace --prio: const 1 (const#0#4, lines 275-334) wins pass 1 with prio 23 against w#1 -51
+   (w is referenced only in the first block and at d2_CloseView, and pays every block between); the
+   call-argument 1s (gm_Query(.., 1, 5), branch 3's gm_Query(.., 1, 0, ..)) count no reference to it, the
+   count tests and interactive = 1 per branch (+4/+18/+28) and the two sv_PopRequest = 1 carry it. The
+   original serves it per branch (mov ebx,1 after each n = 0, i.e. cut in pass 1 and split) with w's top
+   piece in ebp and 0x525 in ebp inside the loops. So 74 priority points separate them: no single reference
+   does it; look for a candidate that outranks const 1 in pass 1 and takes ebp (0x525 hoisted per loop in
+   the original) or a form where the 1s are not one value (e.g. the tail's interactive / PopRequest stores
+   from another constant expression). prior: size queue s11: raw 1175 vs 1185; the whole 10 bytes are the
+   constant 1: the original loads it (mov ebx,1) in each of the three branches (after n = 0, before the
+   store / loop test) where ours loads it once (mov ebp,1) in the kind dispatch block; w sits in ebp at the
+   top in the original (ebx in ours), 0x525 in ebp (ebx in ours). c2trace: ours serves const 1 (const#0#4,
+   lines 265-325, prio 23) whole in pass 1 and 0x525 (prio 30) ebx, w#1 (prio -51) is cut; in the original
+   const 1 must have been cut too (its pieces start per branch) and w's top piece won ebp. climb --rounds
+   2: nothing (best a meaning-changing local). Tried: the dispatch as a switch (draft 278), n = 0 hoisted
+   before the dispatch (draft 94). Next: a lever that lowers const 1's pass-1 priority or raises w's (w
+   referenced in the branches, the tail's 1s), c2trace --prio 'const#0#4|w'. */
 int rt_ChooseGoodsDialog(AIBLD *b, int x, int def)
 {
     int ret;
