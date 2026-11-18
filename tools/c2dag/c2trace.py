@@ -132,12 +132,16 @@ def function_span(lines, func):
     return cs, s, e
 
 
+OPEN = re.compile(r"<<<(\d+|\*)?$")   # a block's opening marker: `<<<`, `<<<N` (the N-th occurrence), `<<<*` (all)
+
+
 def parse_variants(vt):
     """a dcp try variants file read as dcp try reads it (decompanion src/variants.rs): {label: edit}, in file order.
     A variant starts with `### label`; its body (blank lines around it dropped) is either the function's whole new
     text or, when its first line is `<<<` (white space around any marker is ignored), `<<<` old `===` new `>>>`
-    blocks: each old text must occur exactly once in the function's text. edit = ("whole", text) or ("pairs",
-    [(old, new)])."""
+    blocks: each old text must occur exactly once in the function's text, unless the opening marker picks
+    one: `<<<N` the N-th occurrence (counted in the text the earlier blocks left), `<<<*` every one. edit =
+    ("whole", text) or ("pairs", [(old, new, which)]), which None (exactly once), N or "*"."""
     out, cur = {}, None
     def finish():
         if cur is None:
@@ -151,7 +155,7 @@ def parse_variants(vt):
             raise SystemExit("variant %r is empty" % label)
         if label in out:
             raise SystemExit("a second variant %r" % label)
-        if body[0].strip() != "<<<":
+        if not OPEN.match(body[0].strip()):
             out[label] = ("whole", "\n".join(body))
             return
         pairs, k = [], 0
@@ -159,8 +163,12 @@ def parse_variants(vt):
             if not body[k].strip():
                 k += 1
                 continue
-            if body[k].strip() != "<<<":
+            om = OPEN.match(body[k].strip())
+            if not om:
                 raise SystemExit("variant %r: %r outside a <<< === >>> block" % (label, body[k]))
+            which = om.group(1) and (om.group(1) if om.group(1) == "*" else int(om.group(1)))
+            if which == 0:
+                raise SystemExit("variant %r: <<<0 (occurrences count from 1)" % label)
             mid = next((i for i in range(k, len(body)) if body[i].strip() == "==="), None)
             if mid is None:
                 raise SystemExit("variant %r: <<< without ===" % label)
@@ -170,7 +178,7 @@ def parse_variants(vt):
             old = "\n".join(body[k + 1:mid])
             if not old.strip():
                 raise SystemExit("variant %r: an empty old text" % label)
-            pairs.append((old, "\n".join(body[mid + 1:end])))
+            pairs.append((old, "\n".join(body[mid + 1:end]), which or None))
             k = end + 1
         out[label] = ("pairs", pairs)
     for l in vt.replace("\r\n", "\n").split("\n"):
@@ -219,12 +227,27 @@ def variant_text(text, func, vfile, label, src=None):
     kind, edit = vs[label]
     fn = "\n".join(lines[cs:e + 1])
     if kind == "pairs":
-        for old, new in edit:
+        for old, new, which in edit:
             n = fn.count(old)
-            if n != 1:
-                raise SystemExit("variant %r: the old text %r.. occurs %d times in the function (once needed)" % (
-                    label, next((l.strip() for l in old.split("\n") if l.strip()), "")[:60], n))
-            fn = fn.replace(old, new, 1)
+            first = next((l.strip() for l in old.split("\n") if l.strip()), "")[:60]
+            if which == "*":
+                if not n:
+                    raise SystemExit("variant %r: the old text %r.. does not occur in the function" % (label, first))
+                fn = fn.replace(old, new)
+            elif which:
+                if n < which:
+                    raise SystemExit("variant %r: <<<%d but the old text %r.. occurs %d times in the function" % (
+                        label, which, first, n))
+                at, start = -1, 0
+                for _ in range(which):
+                    at = fn.index(old, start)
+                    start = at + len(old)
+                fn = fn[:at] + new + fn[at + len(old):]
+            else:
+                if n != 1:
+                    raise SystemExit("variant %r: the old text %r.. occurs %d times in the function (once needed)" % (
+                        label, first, n))
+                fn = fn.replace(old, new, 1)
     else:
         fn = edit
     return "\n".join(lines[:cs] + [fn] + lines[e + 1:]), label

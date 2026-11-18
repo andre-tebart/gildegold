@@ -489,14 +489,24 @@ def base_text(spec, tree):
         if label not in found:
             raise SystemExit("--base: no variant %r in %s (%s)" % (label, path, ", ".join(found)))
         text = found[label]
-        blocks = re.findall(r"^\s*<<<\s*\n(.*?)\n\s*===\s*\n(.*?)\n?\s*>>>\s*$", text, re.M | re.S)
+        blocks = re.findall(r"^\s*<<<(\d+|\*)?\s*\n(.*?)\n\s*===\s*\n(.*?)\n?\s*>>>\s*$", text, re.M | re.S)
         if blocks:
             body = "\n".join(tree)
-            for old, new in blocks:
+            for which, old, new in blocks:   # `<<<N`: the N-th occurrence, `<<<*`: every one (as dcp try)
                 n = body.count(old)
-                if n != 1:
-                    raise SystemExit("--base: the old text of a block of %r occurs %d times in the function" % (label, n))
-                body = body.replace(old, new)
+                if which == "*" and n:
+                    body = body.replace(old, new)
+                elif which and 1 <= int(which) <= n:
+                    at, start = -1, 0
+                    for _ in range(int(which)):
+                        at = body.index(old, start)
+                        start = at + len(old)
+                    body = body[:at] + new + body[at + len(old):]
+                elif not which and n == 1:
+                    body = body.replace(old, new)
+                else:
+                    raise SystemExit("--base: the old text of a block of %r occurs %d times in the function (<<<%s)" % (
+                        label, n, which))
             return body.split("\n")
     lines = [l.rstrip("\r") for l in text.strip("\n").split("\n")]
     if lines and lines[0].lstrip().startswith("/*") and lines[0].rstrip().endswith("*/"):
