@@ -149,7 +149,6 @@ extern unsigned char ai_GameState;
 extern int snd_SystemBank;
 extern const int sv_PhaseMinutes[24];
 #include "sv_types.h"
-extern char gm_TagGebaeudePROT[24];
 extern float gm_DayStartHours[];
 extern char main_GamePath[];  /* 0x624690, main.c: the game directory */
 extern float gm_DayEndHours[];

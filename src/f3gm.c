@@ -2472,7 +2472,6 @@ extern char * ai_Goods;
 extern unsigned gm_OwnNameHeads[136];
 extern struct AIOBJ *ai_Objects;
 extern int gm_DefaultStock[];
-extern char gm_TagGebaeudePROT[], gm_TagGebaeudeINST[], gm_TagObjektePROT[], gm_TagObjekteINST[];  /* 0x61aa38, 0x61aa20, 0x61aa00, 0x61a9ec */
 void * mem_Alloc(int size, char *tag);                   /* 0x4223c0 */
 void util_Randomize();                     /* 0x42ec80 */
 

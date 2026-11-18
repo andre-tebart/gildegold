@@ -3086,7 +3086,7 @@ exe	0x00505e60	gm_CharLevel	f3gm	cc0ea9a22d912e21	no	shape	sweep control=shape b
 exe	0x00505f30	gm_CharPrevLevel	f3gm	7e0f47cf40529e7b	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	e0b1e84025becc72
 exe	0x00506000	gm_BirthDate	f3gm	2a5f5869d8fe8a1e	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	55dbe17996343dd4
 exe	0x005060d0	gm_DeathDate	f3gm	c911c4339d0ac454	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	e0b1e84025becc72
-exe	0x00506180	gm_RankPlayers	f3gm	0662dd45bed63e8a	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	e0b1e84025becc72
+exe	0x00506180	gm_RankPlayers	f3gmt	37d0df84418b17f9	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	5555755888ea13fe
 exe	0x00506430	gm_PlayerRecord	f3gm	96707c788812cc66	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
 exe	0x00506480	gm_HasAdultRelative	f3gm	4a01a82b285f0652	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005064d0	gm_TakeOverCharacter	f3gm	82d1a68912aa6ba9	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft	
