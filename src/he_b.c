@@ -7167,11 +7167,7 @@ void he_RunEventGood(int ev)
 
     per = (AICHAR *)gm_FindChar(e->netId);
     state = e->stage;
-    if (state == -1 || state == -2) {
-        he_FreeEvent((int *)ev);
-        return;
-    }
-    if (per == 0) {
+    if (state == -1 || state == -2 || per == 0) {
         he_FreeEvent((int *)ev);
         return;
     }
