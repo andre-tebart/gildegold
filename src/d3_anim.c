@@ -1358,8 +1358,7 @@ typedef struct D3ANIMBOX {
 } D3ANIMBOX;
 
 /* 0x434d60, per key frame: vertex normals (3 bytes, 0..255), radius and bounding box; the boxes are
-   then widened to cover the neighbouring frames.
-   @deep B draft: 34 code hunks, all of one form - [eax+esi+0x3c] vs [esi+eax+0x3c], the SIB base/index roles of the same frame-array address computation; every operation and constant is identical on both sides, so this is a VC6 addressing-mode choice (the d3path_Init note records the same pattern resisting (p->keys + i)-> / i[p->keys]), not a meaning error. Readable otherwise. */
+   then widened to cover the neighbouring frames. */
 void d3anim_CalculateAnimNormals(D3ANIMDATA *a, D3ANIMMESH *mesh)
 {
     D3VECTOR4 *points;
@@ -1430,39 +1429,39 @@ void d3anim_CalculateAnimNormals(D3ANIMDATA *a, D3ANIMMESH *mesh)
     mem_Free(normals);
     mem_Free(points);
     bbox = mem_Alloc(a->nframes << 5, "d3_anim:CalculateAnimNormals(bbox_points)");
-    for (f = 0; f < a->nframes; f++) {
-        bbox[f].min.x = a->frames[f].min.x;
-        bbox[f].min.y = a->frames[f].min.y;
-        bbox[f].min.z = a->frames[f].min.z;
-        bbox[f].max.x = a->frames[f].max.x;
-        bbox[f].max.y = a->frames[f].max.y;
-        bbox[f].max.z = a->frames[f].max.z;
+    for (i = 0; i < a->nframes; i++) {
+        bbox[i].min.x = a->frames[i].min.x;
+        bbox[i].min.y = a->frames[i].min.y;
+        bbox[i].min.z = a->frames[i].min.z;
+        bbox[i].max.x = a->frames[i].max.x;
+        bbox[i].max.y = a->frames[i].max.y;
+        bbox[i].max.z = a->frames[i].max.z;
     }
-    for (f = 0; f < a->nframes; f++) {
-        if (f > 0) {
-            bbox[f].min.x = min(bbox[f].min.x, a->frames[f - 1].min.x);
-            bbox[f].min.y = min(bbox[f].min.y, a->frames[f - 1].min.y);
-            bbox[f].min.z = min(bbox[f].min.z, a->frames[f - 1].min.z);
-            bbox[f].max.x = max(bbox[f].max.x, a->frames[f - 1].max.x);
-            bbox[f].max.y = max(bbox[f].max.y, a->frames[f - 1].max.y);
-            bbox[f].max.z = max(bbox[f].max.z, a->frames[f - 1].max.z);
+    for (i = 0; i < a->nframes; i++) {
+        if (i > 0) {
+            bbox[i].min.x = min(bbox[i].min.x, a->frames[i - 1].min.x);
+            bbox[i].min.y = min(bbox[i].min.y, a->frames[i - 1].min.y);
+            bbox[i].min.z = min(bbox[i].min.z, a->frames[i - 1].min.z);
+            bbox[i].max.x = max(bbox[i].max.x, a->frames[i - 1].max.x);
+            bbox[i].max.y = max(bbox[i].max.y, a->frames[i - 1].max.y);
+            bbox[i].max.z = max(bbox[i].max.z, a->frames[i - 1].max.z);
         }
-        if (f < a->nframes - 1) {
-            bbox[f].min.x = min(bbox[f].min.x, a->frames[f + 1].min.x);
-            bbox[f].min.y = min(bbox[f].min.y, a->frames[f + 1].min.y);
-            bbox[f].min.z = min(bbox[f].min.z, a->frames[f + 1].min.z);
-            bbox[f].max.x = max(bbox[f].max.x, a->frames[f + 1].max.x);
-            bbox[f].max.y = max(bbox[f].max.y, a->frames[f + 1].max.y);
-            bbox[f].max.z = max(bbox[f].max.z, a->frames[f + 1].max.z);
+        if (i < a->nframes - 1) {
+            bbox[i].min.x = min(bbox[i].min.x, a->frames[i + 1].min.x);
+            bbox[i].min.y = min(bbox[i].min.y, a->frames[i + 1].min.y);
+            bbox[i].min.z = min(bbox[i].min.z, a->frames[i + 1].min.z);
+            bbox[i].max.x = max(bbox[i].max.x, a->frames[i + 1].max.x);
+            bbox[i].max.y = max(bbox[i].max.y, a->frames[i + 1].max.y);
+            bbox[i].max.z = max(bbox[i].max.z, a->frames[i + 1].max.z);
         }
     }
-    for (f = 0; f < a->nframes; f++) {
-        a->frames[f].min.x = bbox[f].min.x;
-        a->frames[f].min.y = bbox[f].min.y;
-        a->frames[f].min.z = bbox[f].min.z;
-        a->frames[f].max.x = bbox[f].max.x;
-        a->frames[f].max.y = bbox[f].max.y;
-        a->frames[f].max.z = bbox[f].max.z;
+    for (i = 0; i < a->nframes; i++) {
+        a->frames[i].min.x = bbox[i].min.x;
+        a->frames[i].min.y = bbox[i].min.y;
+        a->frames[i].min.z = bbox[i].min.z;
+        a->frames[i].max.x = bbox[i].max.x;
+        a->frames[i].max.y = bbox[i].max.y;
+        a->frames[i].max.z = bbox[i].max.z;
     }
     mem_Free(bbox);
 }
