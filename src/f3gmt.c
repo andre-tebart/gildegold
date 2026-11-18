@@ -1512,25 +1512,16 @@ int gm_FreeList(int *list)
     return 0;
 }
 /* 0x500190, creates an object instance of the prototype proto with the amount n in the list of the holder id (a building, an object or a character, gm_FindById): takes a free record (gm_FindFreeObject) and appends it to the holder's list (ORDBLD.objList, ORDOBJ.list or the character's list at +0x178), fills it (the prototype, a new object id ai_NextObjectId, the holder id, the holder's own id, the amount, fill 100) and counts it (f3gm_ObjectCount); a few prototypes get their own start values (0xb8, 300, 0x12d, 0x15e / 0x160, 0x174 / 0x176, 0x24b / 0x256 / 0x266), the goods kinds 0x17 / 0x20 / 0x25 clear +0x1c, and the three carts 0x134 / 0x135 / 0x136 get the id of their building, a load object (prototype 0x1dd), a model (a cart man or the horse, ch_Create at the building's "dummy_TRANSPORTER") pulling the cart object ob_KARREN_klein / _mittel / _GROSS (textured by the owner character's v054). Returns the instance, 0 on failure
-   @deep 194 -> 145 ins: no pr = ai_Goods copies (the top one and the one inside if (list != 0)): plain pr
-   = (char *)GM_GOOD(proto) after the list block; VC6 itself loads ai_Goods into edi for the null test and
-   reloads it after the gm_FindFreeObject calls, as the original. The M9 literal line is alignment only (0
-   arbeiter, 1 holzfaeller, else handwerker: the original's order, read at 0x50054b). Left: the original
-   keeps the top ai_Goods web in edi across the tail walk, so last lives in its slot [esp+0x1c] (stored per
-   step, reloaded for last->next = r); ours gives last edi there (frame 0x430 vs 0x434), and from that the
-   store order of the four zero inits, the sprintf argument registers and the later rotation (regs 76,
-   frame 90). Tried: pr = ai_Goods tested instead of the global (193), the zero-init statement orders of b
-   / c / last (143 at best, same hunks). Not tried for lack of time: the cart branch (most of the remaining
-   code hunks follow the frame shift). (tiebreak: not measured (dcp headers sample gm_CreateObject)) prior:
-   read the whole function against 0x500190..0x5007a4 and reconciled every statement: the holder lookup and
-   its list (ORDBLD.objList / ORDOBJ.list / the character's +0x178), the tail walk, the record fill in the
-   original's order, the 0x1f-byte clear (rep stosd 7 + stosw + stosb, now equal), the one switch on proto
-   as an int (jg / the two byte tables equal), the case order 300 / 0x12d / 0xb8 / carts, the cart branch
-   (holder netId, the walk up to the building, the 0x1dd load object, the scene, the dummy_TRANSPORTER
-   position, the four ch_Create blocks, the three d3_CreateObject blocks, the texture set from the owner
-   character's v054, the group by the home building). Tried: a switch vs an if chain for the random model
-   (the if chain matches block for block), the home tail as if/else-if (matches block for block), set as
-   char / unsigned char / a cast sum, the dummy ternary with the cast outside. L... */
+   @deep size queue s19 (raw 1995, padded 2000 vs 2016): the frame's extra slot is last in memory. The
+   original zeroes b / o / c / last at [esp+0x10..0x1c] from ebx (last = 0 is the fourth store), stores
+   last per walk step and reloads it for last->next = r; ours gives last edi (c2trace: last#1 prio 16, 2
+   refs, edi free in the walk in both). A probe making last memory-homed ({ static ORDOBJ **pp; pp = &last;
+   }) gives the original's frame 0x434 (171 ins: slots 216 from the probe's own effects, regs 76 -> 12,
+   code 97 -> 61), so finding why the original's last has no register is the lever. No lever (= control):
+   last = 0 first or dropped, the walk as while / for, the load object written into last or it (separate
+   webs). The walk as 'while (it) {last = it; ..} if (last != 0) {..} else {..}' (same meaning, last = 0
+   reaches the test) gives raw 2003 (padded 2016) but 189 ins and not the original's *list test first: not
+   kept. */
 unsigned short *gm_CreateObject(int id, int proto, int n)
 {
     ORDBLD *b;
