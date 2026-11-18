@@ -3735,7 +3735,7 @@ exe	0x0055bad0	he_RunEvent1f	he	4c371a9f76aa5ea8	no	byte	control=byte p1=byte p2
 exe	0x0055bd20	he_AllocDemolish	he	f665784c0f4f477e	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0055bd80	he_RunDemolish	he	6034053a66afafa4	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0055bf50	he_AllocBuyBuilding	he	91b3480bc8592056	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x0055bfd0	he_RunBuyBuilding	he	145b046242ad9210	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	4cbf06cae45cb11e
+exe	0x0055bfd0	he_RunBuyBuilding	he	19087bbc98064d35	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	223ad74599424a04
 exe	0x0055c540	he_AllocKredit	he	9f98abcd6de38c8a	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0055c700	he_RunKredit	he	4830c70a590ad3c1	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0055cb00	he_RunEvent24	he	e22a2dadd309bc30	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
