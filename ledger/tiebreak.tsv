@@ -3170,7 +3170,7 @@ exe	0x0050cc50	gm_SendMoneyDelta	f3gm	43becc2d460acaed	no	byte	control=byte p1=b
 exe	0x0050cc60	gm_ResetStock	f3gm	d5520489584d0cb6	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0050ccd0	gm_Homeless	f3gm	2ee541a47a919f95	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	e0b1e84025becc72
 exe	0x0050cd40	gm_JobCost	f3gm	23c3b572ff7729fb	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x0050cdc0	gm_StaffFactor	f3gm	821192872e788004	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	e0b1e84025becc72
+exe	0x0050cdc0	gm_StaffFactor	f3gmt	0910d4956a924713	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	30e74b47a3ce7b5e
 exe	0x0050cf60	gm_BathObjectCount	f3gm	fad39ced6ed4ae45	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0050cfd0	gm_CurseObjectCount	f3gm	d4e7fa3b9f2b90a6	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0050d060	gm_Unk50d060	f3gm	afa239cc4ec19ff5	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	

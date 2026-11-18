@@ -8478,12 +8478,12 @@ float gm_StaffFactor(unsigned char *b, int n, int *ids)
     float sum, health, fit, f, inv;
     float skill, opinion;
 
-    t = GM_BTYPE(bld->type);
     health = 0.0f;
     i = 0;
     cnt = 0;
     sum = 0.0f;
     fit = 0.0f;
+    t = GM_BTYPE(bld->type);
     skill = gm_BuildingSkill(b, 1, 1) * 0.01 + 1.0;
     c = (ORDCHAR *)gm_FindCharacterByMaster((int)b);
     if (c == 0)
@@ -8513,7 +8513,8 @@ float gm_StaffFactor(unsigned char *b, int n, int *ids)
     opinion = (gm_MeanLiking(bld->owner, n, ids) - 0.5) * 0.25;
     if ((bld->flags5aw & 0x1000) != 0)
         f = f + 0.1f;
-    return (fit + health) * (opinion + f + (bld->workRate - 2) * 0.1);
+    f = opinion + f + (bld->workRate - 2) * 0.1;
+    return (fit + health) * f;
 }
 /* 0x50cf60, the number of the kitchen / bath objects (0x27a, 0x27b, 0x292) the building b has: 1 plus one
    per prototype found in its object list */
