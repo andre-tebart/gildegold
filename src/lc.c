@@ -11445,7 +11445,7 @@ void ai_IndulgenceWindow(AIBLD *bld, int room)
             cm_SendFieldDeltas();
             gv_RetireCrimesOf(me->netId, graves);
             if (bld->owner != 0xffff && bld->owner != ai_PlayerId) {
-                gain = (int)(price / log10(price));
+                gain = (int)((float)price / log10(price));
                 cm_SendMoveGoods(-1, me->netId, ai_OwnPlayer, price);
                 slot = cm_SendMoveGoods(((AICHARREC *)ai_Chars)[bld->owner].netId, -1, ai_OwnPlayer, gain);
                 ai_ShowIndulgenceNews(me, &((AICHARREC *)ai_Chars)[bld->owner], bld, gain, price);

@@ -4748,7 +4748,7 @@ int ai_ExecuteBuyIndulgence(G5CH *p, AIARG *s1, AIARG *s2)
     o = gm_Query(b->objList, 2, 6, 0, 0xf2);
     if (s2->kind == 0x12) {
         n = s1->arg2;
-        d = (int)(n / log10(n));
+        d = (int)((float)n / log10(n));
         cm_BeginFieldBlock((AIPER *)p, p->netId);
         cm_AddFieldValues(4, 1, 0x1ac, &s1->arg2);
         cm_SendFieldDeltas();
