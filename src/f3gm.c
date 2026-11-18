@@ -522,16 +522,21 @@ void gm_CharacterUpkeep(void)
    0xf's value. flag != 0 pays them (the player's seat object must exist): one goods move each from the character,
    and for the kind 3 a random extra ((0 .. level + 1) + level) * 0x1900 and a money delta of the level.
    Returns 1 when the wages were computed
-   @deep Read whole against the original and rewritten (ORDWAGES / ORDCHAR / AMTKIND / AIDEC typed): the
-   kind chain into a local, the index form ORD_CHARS[id] (the original folds ai_Chars into the
-   displacements), the wage order job2 / job / kind, the money delta of AMTKIND.level (was the column), the
-   random extra via a temp. 207 = 207 instructions, statement structure equal (the je/jae targets differ by
-   the one byte of the end). Remaining: hunk 0x4fa95e (code 6) is the same three instructions reordered
-   with the commutative add's destination swapped: ours add ecx,eax / lea eax,[ecx+ecx*4] / mov
-   ecx,[esi+netId], the original mov edx,[esi+netId] / add eax,ecx / lea eax,[eax+eax*4]; hunk 0x4fa974
-   (regs 14) is the rotation eax->ecx ecx->edx edx->eax that follows from it through the two sends. Tried
-   (r + level) and (level + r), an int and an unsigned short temp, the one-expression form: no change.
-   Allocation / scheduling of the kind-3 tail only. */
+   @deep deep s33: the hunk is the add's destination of (r + kind.level): the original adds into r's
+   register (and eax,0xffff / and ecx,0xff / mov edx,netId / add eax,ecx), ours into level's (add ecx,eax),
+   and the netId load and the next call's registers rotate from it. The same pattern as ai_HatredWindow's
+   worth sum (the original's destination is the operand computed first, ours the later one). Tried:
+   kind.level + r, r * 0x1900 + kind.level * 0x1900 (= control), r += kind.level as statements (21) or in
+   the call's statement (23), the whole roll inline (18). prior: Read whole against the original and
+   rewritten (ORDWAGES / ORDCHAR / AMTKIND / AIDEC typed): the kind chain into a local, the index form
+   ORD_CHARS[id] (the original folds ai_Chars into the displacements), the wage order job2 / job / kind,
+   the money delta of AMTKIND.level (was the column), the random extra via a temp. 207 = 207 instructions,
+   statement structure equal (the je/jae targets differ by the one byte of the end). Remaining: hunk
+   0x4fa95e (code 6) is the same three instructions reordered with the commutative add's destination
+   swapped: ours add ecx,eax / lea eax,[ecx+ecx*4] / mov ecx,[esi+netId], the original mov edx,[esi+netId]
+   / add eax,ecx / lea eax,[eax+eax*4]; hunk 0x4fa974 (regs 14) is the rotation eax->ecx ecx->edx edx->eax
+   that follows from it through the two sends. Tried (r + level) and (level + r), an int and an unsigned
+   short temp, the one-expression form: no change. Allocation / scheduling of the kind-3 tail only. */
 
 int gm_CharacterWages(unsigned short id, int flag, unsigned char *rec_)  /* the callers pass a 16-bit id and the original call site loads it without an extension (0x4f5a80: mov cx,[esi]) */
 {
