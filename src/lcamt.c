@@ -8549,16 +8549,7 @@ void ai_Miracle(AICHARREC *me, int which)
    Kind 6: the window "privillegien\wunder", 0x476f80 / 0x475600 / 0x475f70 with the caption 0x515960
    (0x1df6, 4); click 0 (0x520f90 (4)) pays 0x4c5f60 (-4) and runs ai_Miracle (0x42ec00 (6) & 0xffff), return 1;
    click 1 sets 0x6f22a0; the pump 0x5309a0 (this, 0x657c7) and the end 0x4758f0. The second argument m is not
-   read
-   @deep read the whole original 0x5cd2e0..0x5cd3fa and reconciled every statement: the kind tests 6 / 7,
-   the money < 4 refusal 0x20, the payment cm_SendMoneyDelta(-4) and the overview window 0x5ccc10, the
-   kind-6 window (the form, d2_SetPointerSprite, the caption 0x1df6, the click dispatch, the money check,
-   the pump and the close). Only the shared return-0 block is left: ours returns 0 inline after the kind-7
-   test (xor eax,eax; pop esi; ret at +0x48), the original jumps to a return-0 block at the end (0x5cd3f6)
-   behind a redundant cmp al,6 / jne guard at 0x5cd328 (asmdiff: ours 100 ins, the original 102, differing
-   8; diffclass: the blocks end differently, a branch against a jump). Tried the flat if, the nested if
-   (kind != 7), the kind-7 test first and the if / else-if / else chain; the ret = 0 before the window
-   (that fixed the zero register and the argument pushes) */
+   read */
 
 int ai_MiracleWindow(void *chp, int *m)
 {
@@ -8568,43 +8559,43 @@ int ai_MiracleWindow(void *chp, int *m)
 
     ch = (AICHARREC *)chp;
 
-    if (ch->kind != 6) {
-        if (ch->kind != 7) {
-            if (ch->money < 4)
-                return 0x20;
-            cm_SendMoneyDelta(ch->netId, 0xfffffffc);
-            ai_Miracle(ch, util_Random(6) & 0xffff);
-            return 0x10;
-        }
-        return 0;
+    if (ch->kind != 6 && ch->kind != 7) {
+        if (ch->money < 4)
+            return 0x20;
+        cm_SendMoneyDelta(ch->netId, 0xfffffffc);
+        ai_Miracle(ch, util_Random(6) & 0xffff);
+        return 0x10;
     }
-    ret = 0;
-    win = d2_OpenForm(0, 0, "privillegien\\wunder");
-    d2_SetPointerSprite(0, 0);
-    d2_CentreViewWindows(win);
-    d2_SetForm(win, 1);
-    io_PrintText(0x1df6, 4);
-    d2_ClickedId = -1;
-    do {
-        if (d2_ClickedId != -1) {
-            if (d2_ClickedId == 0) {
-                if (sv_CheckMoney((char *)ch, 4) != 0) {
-                    cm_SendMoneyDelta(ch->netId, 0xfffffffc);
-                    ai_Miracle(ch, util_Random(6) & 0xffff);
-                    ret = 1;
+    if (ch->kind == 6) {
+        ret = 0;
+        win = d2_OpenForm(0, 0, "privillegien\\wunder");
+        d2_SetPointerSprite(0, 0);
+        d2_CentreViewWindows(win);
+        d2_SetForm(win, 1);
+        io_PrintText(0x1df6, 4);
+        d2_ClickedId = -1;
+        do {
+            if (d2_ClickedId != -1) {
+                if (d2_ClickedId == 0) {
+                    if (sv_CheckMoney((char *)ch, 4) != 0) {
+                        cm_SendMoneyDelta(ch->netId, 0xfffffffc);
+                        ai_Miracle(ch, util_Random(6) & 0xffff);
+                        ret = 1;
+                        sv_PopRequest = 1;
+                    }
+                } else if (d2_ClickedId == 1) {
                     sv_PopRequest = 1;
                 }
-            } else if (d2_ClickedId == 1) {
-                sv_PopRequest = 1;
             }
-        }
-        if (dm_L.rup != 0)
-            sv_PopRequest = 1;
-        if (sv_RunFrame(ai_MiracleWindow, 0x657c7) == 0) {
-            d2_CloseView(win);
-            return ret;
-        }
-    } while (1);
+            if (dm_L.rup != 0)
+                sv_PopRequest = 1;
+            if (sv_RunFrame(ai_MiracleWindow, 0x657c7) == 0) {
+                d2_CloseView(win);
+                return ret;
+            }
+        } while (1);
+    }
+    return 0;
 }
 void cm_SendSetJob(int id, int job);  /* 0x4c59b0 (cm.h, not included) */
 /* 0x5cd400, the profession change (ord.c's handler 0x4f4ff0, a player's ask) "privillegien\CHOOSEPROFESSION2": a
