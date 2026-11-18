@@ -1027,9 +1027,9 @@ D3ANIM *d3anim_CreatePath(D3OBJECT *obj, D3ANIMFLAGS f, int nkeys, D3ANIMKEY *ke
         p->flags = f;
         p->maxStep = 100;
         p->fadeEnd = 1.0f;
-        p->frameTime = 0;
         p->flags.b[1] &= ~0x20;
         p->flags.b[8] = p->flags.b[8] & ~0x20 | 0x10;
+        p->frameTime = 0;
         p->keys = mem_Alloc(nkeys * sizeof(D3PATHKEY), "d3_int:CrObjAnimFrameData");
         D3PATH_COPY(p->keys, keys, p->nkeys * sizeof(D3PATHKEY));
         p->keys[p->nkeys - 1].time = p->keys[p->nkeys - 2].time;
