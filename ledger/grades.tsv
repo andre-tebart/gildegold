@@ -1648,7 +1648,7 @@ exe	0x0049a290	ai_DecideSaveAps	amr	byte	readable
 exe	0x0049a380	ai_ExecuteSaveAps	amr	byte	readable		
 exe	0x0049a390	ai_DecideUseMilitaryObject	amr	shape	readable	deep	
 exe	0x0049a5b0	ai_ExecuteUseMilitaryObject	amr	byte	readable		
-exe	0x0049a690	ai_DecideUseReputationObject	amr	shape	readable	deep	
+exe	0x0049a690	ai_DecideUseReputationObject	amr	byte	readable		
 exe	0x0049aa80	ai_ExecuteUseReputationObject	amr	byte	readable		
 exe	0x0049ab60	ai_DecideUseApsObject	amr	byte	readable		
 exe	0x0049ad80	ai_ExecuteUseApsObject	amr	byte	readable		
@@ -1881,7 +1881,7 @@ exe	0x004aff30	ai_CommandUprising	hst	byte	readable
 exe	0x004affc0	ai_CommandFire	hst	byte	readable		
 exe	0x004b0050	ai_CommandTornado	hst	byte	readable		
 exe	0x004b00e0	ai_CommandCityTreasury	hst	byte	readable		
-exe	0x004b02a0	ai_CommandWealthTax	hst	shape	readable	deep	
+exe	0x004b02a0	ai_CommandWealthTax	hst	byte	readable		
 exe	0x004b0360	ai_CommandWealth	hst	byte	readable		
 exe	0x004b04a0	ai_CommandOfficeStanding	hst	byte	readable		
 exe	0x004b05e0	ai_CommandKillPlayer	hst	byte	readable		
@@ -2166,9 +2166,9 @@ exe	0x004c3f80	cm_GetSpeedLevel	cm	byte	readable
 exe	0x004c3f90	cm_SendPlayerId	cm	byte	readable		
 exe	0x004c3fd0	cm_ReceiveMessages	cm	byte	readable		
 exe	0x004c4030	cm_WaitMessage	cm	byte	readable		
-exe	0x004c4080	cm_EnqueueReceived	cm	draft	readable	deep	
+exe	0x004c4080	cm_EnqueueReceived	cm	byte	readable		
 exe	0x004c4130	cm_FreeReceived	cm	byte	readable		
-exe	0x004c4190	cm_ExecCommands	cm	draft	readable	deep	
+exe	0x004c4190	cm_ExecCommands	cm	byte	readable		
 exe	0x004c43c0	cm_CheckGroup	cm	byte	readable		
 exe	0x004c4450	cm_ResolveId	cm	byte	readable		
 exe	0x004c4480	cm_SetLongMsg	cm	byte	readable		
@@ -2269,7 +2269,7 @@ exe	0x004c6320	cm_SendClearRoute	cm	byte	readable
 exe	0x004c6350	cm_CheckMoveGoods	cm	byte	readable		
 exe	0x004c63e0	cm_CheckSellObject	cm	byte	readable		
 exe	0x004c65b0	cm_CheckFieldDeltas	cm	byte	readable		
-exe	0x004c66c0	cm_CheckSetField	cm	shape	readable		
+exe	0x004c66c0	cm_CheckSetField	cm	byte	readable		
 exe	0x004c6750	cm_CheckOwnership	cm	byte	readable		
 exe	0x004c6780	cm_CheckApplication	cm	byte	readable		
 exe	0x004c67a0	cm_CheckOfficeMessage	cm	byte	readable		
@@ -2945,7 +2945,7 @@ exe	0x004fb5a0	gm_SelectModelVariant	f3gm	byte	readable
 exe	0x004fb620	gm_ResolveHeadIcons	f3gm	shape	readable		
 exe	0x004fb770	gm_HeadIconNumber	f3gm	byte	readable		
 exe	0x004fb890	gm_ChooseHeadIcon	f3gm	byte	readable		
-exe	0x004fbb80	gm_CreateCharModel	f3gm	shape	readable	deep	
+exe	0x004fbb80	gm_CreateCharModel	f3gm	byte	readable		
 exe	0x004fbd10	gm_PlaceOnStage	f3gm	byte	readable		
 exe	0x004fbe90	gm_DailyCharacterStep	f3gm	byte	readable		
 exe	0x004fc6f0	gm_AgeCharacter	f3gm	byte	readable		
@@ -3505,7 +3505,7 @@ exe	0x0053dcb0	he_ActivateSlot	he	byte	readable
 exe	0x0053dda0	he_ShowNews	he	draft	readable	deep	
 exe	0x0053dee0	he_MessageBoxQuickjump	he	byte	readable		
 exe	0x0053e040	he_CreateEvent	he	byte	readable		
-exe	0x0053e1f0	he_FreeEvent	he	draft	readable	deep	
+exe	0x0053e1f0	he_FreeEvent	he	byte	readable		
 exe	0x0053e300	he_NextEvent	he	draft	readable	deep	
 exe	0x0053e400	he_FindEvent	he	byte	readable		
 exe	0x0053e4e0	he_SpreadGfxInfos	he	byte	readable		
@@ -3654,7 +3654,7 @@ exe	0x0054fe80	he_StartSendHomeEvent	he	byte	readable
 exe	0x0054ff20	he_RunSendHomeEvent	he	draft	readable	deep	
 exe	0x00550070	he_CreateReaper	he	byte	readable		
 exe	0x00550370	he_MoveReaper	he	shape	readable	deep	
-exe	0x005506c0	he_AimReaper	he	shape	readable	deep	
+exe	0x005506c0	he_AimReaper	he	byte	readable		
 exe	0x00550850	he_TurnReaper	he	byte	readable		
 exe	0x005509f0	he_StartReaper	he	byte	readable		
 exe	0x00550b60	he_RunReaper	he	byte	readable		
@@ -3721,7 +3721,7 @@ exe	0x00558de0	he_AllocEvent17	he	byte	readable
 exe	0x00558e10	he_RunEvent17	he	byte	readable		
 exe	0x00558e70	he_AllocSabotage	he	byte	readable		
 exe	0x00558f10	he_RunSabotage	he	draft	readable	deep	
-exe	0x00559d20	he_AllocSpying	he	draft	readable	deep	
+exe	0x00559d20	he_AllocSpying	he	byte	readable		
 exe	0x0055a030	he_RunSpying	he	draft	readable	deep	
 exe	0x0055a5f0	he_AllocBrawl	he	byte	readable		
 exe	0x0055a730	he_RunBrawl	he	byte	readable		
