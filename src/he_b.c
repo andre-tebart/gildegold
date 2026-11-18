@@ -4140,15 +4140,18 @@ int he_FindMeetingSlot(int c)
 
     round = 2;
     do {
-        slot = (unsigned short)util_Random(0x1d);
-        for (i = 0x1d; i != 0; i--) {
+        round--;
+        slot = util_RandomU(0x1d);
+        i = 0x1d;
+        do {
             gv_GetTableRecord(slot, (int *)&dec);
             if (dec.cur == 1 && dec.valueText == 2 && dec.guilt == want)
                 return slot;
+            i--;
             slot = (slot + 1) % 0x1d;
-        }
+        } while (i != 0);
         want++;
-    } while (--round != 0);
+    } while (round != 0);
     return -1;
 }
 /* 0x56f2e0, a message when the person a and the record b (its word at 0 is the target) can meet: b not 0 and (0x504ec0 (a, 2) - 0x504ec0 (b, 2) * 0.5f) + 0x42ec20 () >= 1.0; then 0x4fca40 (*b, (-1 - c) * 5) */
