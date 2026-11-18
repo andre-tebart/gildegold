@@ -947,14 +947,13 @@ AIPX *ai_PickRandomBuildingChar(AIBLD *b)
 
 int ai_DecideGraveyardOwner0(AIPX *p, AIBLD *b, AIARG *o1, AIARG *o2)
 {
-    union { struct { unsigned int lo, hi; } s; __int64 q; } m;
     AIPX *c, *q;
     unsigned short id;
-    int flags, x;
+    int flags;
 
+    flags = 0;
     o1->arg2 = 0;
     o1->ref2 = b->id;
-    flags = 0;
     if (p->money < 4)
         return 0;
     if (!gm_Query(b->objList, 2, 0, 0x1fc, 6))
@@ -973,6 +972,9 @@ int ai_DecideGraveyardOwner0(AIPX *p, AIBLD *b, AIARG *o1, AIARG *o2)
     else if (q->bld)
         o2->arg = q->bld->id;
     else {
+        union { struct { unsigned int lo, hi; } s; __int64 q; } m;
+        int x;
+
         x = -1;
         m.s.lo = 0x7b4c4a0;
         m.s.hi = 0;
