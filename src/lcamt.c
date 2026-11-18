@@ -5493,7 +5493,10 @@ unsigned int ai_FindCandidates(struct AIPER *p, unsigned int n, unsigned int fl,
 #define AI_CANDIDATE_FLAGS_SEX1 0xc05409    /* ditto for sex != 0 */
 /* 0x5c64c0, collects the candidate net ids of a kind 9 search into out[] and their count into *n: up to 10
    candidates of character p (ai_FindCandidates, the filter 0xc0540a, one less for a female character, sex +9);
-   the ids are the characters' net ids, ai_CharInts[id][0] (the caller finds them again with gm_FindChar) */
+   the ids are the characters' net ids, ai_CharInts[id][0] (the caller finds them again with gm_FindChar)
+   @deep deep s23: left the schedule of the one call: the original loads p (mov eax,[esp+4]) before sub esp
+   and pushes the ids address after the sex byte load. Ternary reversed / plain / as SEX0 - (sex != 0), a
+   cast of the result, a count local: = control or worse. ai_DecideSuitor (aip.c) has the same call. */
 
 void ai_FindCandidateIds(G8CHARREC *p, int *n, int *out)
 {
