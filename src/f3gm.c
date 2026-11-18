@@ -486,7 +486,8 @@ void gm_CharacterUpkeep(void)
 
     seat = (ORDOBJ *)gm_PlayerSeat(1);
     gv_GetTableRecord(5, (int *)&rec);
-    rate = gm_PlayerFactor(0xe - rec.cur, ai_OwnPlayer);
+    rate = 0xe - rec.cur;
+    rate = gm_PlayerFactor(rate, ai_OwnPlayer);
     gm_NetMsgCount = 0;
     for (i = 0; i < 0x300; i++) {
         c = &ORD_CHARS[i];
