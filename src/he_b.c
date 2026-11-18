@@ -5602,28 +5602,11 @@ int he_CatchMeetingDisease(AICHAR *ch, float chance, int kind, float *health)
    kind group `kind` with the chance (1 - dist / radius) * 0.5 + 0.25. A disease caught by a worker is reported as
    the owner's character illness (he_CharIllness); one caught by a player owner (kind 6 / 7) is told to it (the
    text 0x163c with the disease's name 0x1632 + kind). The positions are three 16-byte vectors as the original's
-   frame shows (0x844: the text, five words, three D3VECTOR4).
-   @deep size queue s10: padded size now the original's (672; raw 672 vs 668): bt = &ai_BTypesT[rec->type]
-   between lo = 0 and hi = 0 (climb.py swap, 17 -> 5 ins; the eax/edx/ebp rotation at the kind test fixed).
-   Left (fpu 7): after fsqrt the original pops the two dying d values first ('fstp st(2); fstp st(0); fst
-   [dist]; fcomp lim'), ours stores dist and reloads ('fstp [dist]; fstp st(0); fstp st(0); fld [dist]').
-   c2fpu: d+4 / d+8 on the stack die in the sqrt statement, dist memory (sav 0 / -16). No lever s10 (= one
-   code): no (float) cast, if ((dist = sqrt(..)) > lim), the sum in x/y/z order, owner after the sqrt;
-   worse: lim < dist (11), !(dist <= lim) (9), >= (7). climb 3 more rounds from the kept text: nothing. The
-   parenthesised copies (o->pos.x) are still a VC6 perturbation (flagged by the s9 session); without them
-   65 ins. prior: read whole against 0x572310..0x5725ab and fixed the meaning (all 768 characters, not
-   0x80; the building type through ai_BTypesT with the unsigned kind > 0x1f split; the 0x807c4116 / 1 kind
-   masks; the player test against *ai_PlayerChar; bld 3 / bld2 2 / owner 1 modes; the chance (ai_FloatOne -
-   dist / lim) * 0.5f + 0.25f; he_CharIllness / the 0x163c news); the frame now equals the original's 0x844
-   with three D3VECTOR4 locals (pos, at, d). Left: instruction selection and allocation only - the original
-   copies the object positions with the FPU ('+ fld dword ptr [eax + 0x4c]; fstp dword ptr [esp + 0x14]'
-   and keeps at.x / at.y on the FPU stack, storing only at.z) where ours copies with integer moves ('- mov
-   ecx, dword ptr [eax + 0x4c] ... mov dword ptr [esp + 0x24], ecx'), and the register choice that follows
-   (regs 60). Tried: field-wise and struct copies, D3VECTOR / D3VECTOR4 / separate floats... */
+   frame shows (0x844: the text, five words, three D3VECTOR4). */
 void he_SpreadMeetingDisease(AIBLD *b, int radiusKind, int kind, int group)
 {
     char text[0x800];
-    float lim, dist, f;
+    float lim, dist, f, len;
     D3VECTOR4 pos, at, d;
     unsigned int lo, hi;
     int i, n, v, mode;
@@ -5667,8 +5650,8 @@ void he_SpreadMeetingDisease(AIBLD *b, int radiusKind, int kind, int group)
         d.y = pos.y - at.y;
         d.z = pos.z - at.z;
         owner = &ai_CharsT[rec->owner];
-        dist = (float)sqrt(d.z * d.z + d.y * d.y + d.x * d.x);
-        if (dist > lim)
+        len = (float)sqrt(d.z * d.z + d.y * d.y + d.x * d.x);
+        if ((dist = len) > lim)
             continue;
         for (i = 0; i < 0x300; i++) {
             ch = &ai_CharsT[i];
