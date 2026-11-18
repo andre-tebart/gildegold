@@ -1893,10 +1893,10 @@ void he_SpreadGfxInfos(D3OBJECT *obj)
 {
     int cnt = 0;
     HEGFXINFO *list[32];
-    D3VECTOR pos;
+    D3VECTOR4 pos;
     float lo, hi, rad, ang;
     int i;
-    D3VECTOR at;
+    D3VECTOR4 at;
 
     for (i = 0; i < 0x40; i++) {
         if (cnt >= 0x20)
@@ -1907,7 +1907,7 @@ void he_SpreadGfxInfos(D3OBJECT *obj)
     rad = 0.0f;
     if (cnt != 1)
         rad = 100.0f;
-    d3_PointToWorld(obj, &obj->pos, &pos);
+    d3_PointToWorld(obj, &obj->pos, (D3VECTOR *)&pos);
     d3t_GetHeightRange(obj, &lo, &hi);
     pos.y = hi;
     for (i = 0; i < cnt; i++) {
@@ -1916,7 +1916,7 @@ void he_SpreadGfxInfos(D3OBJECT *obj)
         at.x = (float)(sin(ang) * rad + pos.x);
         at.y = (float)((hi - lo) * 0.5 + pos.y);
         at.z = (float)(cos(ang) * rad + pos.z);
-        d3_SetObjectPos(list[i]->obj, &at);
+        d3_SetObjectPos(list[i]->obj, (D3VECTOR *)&at);
     }
 }
 /* 0x53e5f0, creates the model object `name` of the gfx info `e` at the top of `obj` (its world position, at its
@@ -3410,8 +3410,6 @@ void he_StammtischCommand(unsigned cmd, AIBLD *inn, AIOBJ *table, int figId)
     int total;
     AICHAR *mem[4];
     char big[0x400];
-    char s2[0x100];
-    char s1[0x100];
     AICHAR *fig, *pm, *c;
     int *seat;
     int i, j, k, amt;
@@ -3469,6 +3467,9 @@ void he_StammtischCommand(unsigned cmd, AIBLD *inn, AIOBJ *table, int figId)
         }
         if (boss->kind == 6 || boss->kind == 7) {
             if (++n == 4) {
+                char s1[0x100];
+                char s2[0x100];
+
                 txt_Format(s1, 0x1894, inn, fig->id);
                 txt_Format(s2, 0x1896);
                 txt_Format(big, "%s%s", s1, s2);
@@ -3489,6 +3490,9 @@ void he_StammtischCommand(unsigned cmd, AIBLD *inn, AIOBJ *table, int figId)
         }
         if (boss->kind == 6 || boss->kind == 7) {
             if (n - 1 == 0) {
+                char s1[0x100];
+                char s2[0x100];
+
                 txt_Format(s1, 0x1895, inn, fig->id);
                 txt_Format(s2, 0x1897);
                 txt_Format(big, "%s%s", s1, s2);
@@ -9562,7 +9566,11 @@ int he_MoveReaper(int ev)
 /* 0x5506c0, turns the reaper towards its next target: both the reaper object and the building reaperTo's object
    need a mesh driver; the target is the point above reaperTo's object (its height + 80), the object's angles are
    set from the direction to it (d3_VecAngle2 writes them), cached in reaperRot with the target in reaperPos, and
-   reaperPlaced = 1. 1 = done, 0 = an object missing */
+   reaperPlaced = 1. 1 = done, 0 = an object missing
+   @deep frame sweep s21: frame equal, target / at swapped (the original has target at [esp+0x1c]: its
+   count must rank below at's). No lever: bld a block local of the reaper if (26 ins, frame 0x30), target /
+   at / dir block locals of the inner if (draft 29), both (35), target.y += (= control). Lead: c2frame
+   --refs counts of target vs at (the twin he_MoveReaper matched with per-call blocks). */
 int he_AimReaper(int ev)
 {
     AIJOB *e = (AIJOB *)ev;
@@ -13850,17 +13858,22 @@ void he_AllocSpying(int ev)
    its door, before the end the next round (stage 1), at the end the spy goes to the target (stage 3). 3: there,
    the event's character gets the news 0x1734 (the victim) and the event ends. 4: ended. Stages -2 / -1: a started
    event's spy is stopped and killed, the event freed
-   @deep reconstructed from the 207-byte stub against 0x55a030..0x55a5e4 with he_RunDarkCorner (0x54f160)
-   as its twin: the cancel path (opts 2: stop / kill the spy), the slot waits, all five stages (the switch
-   tables equal), the walk over the 0x100 buildings with the 64-bit kind mask 0x1a7fcc3a6 and the signed %
-   0x100 steps, the debug text, the door waits, the end test gm_CompareTime(&until, &ai_Time) == -1, the
-   news 0x1734; every call and argument read. Left is allocation and tails, the twin's own deep reason: in
-   the walk ours keeps lo in a stack slot (frame 0x40c vs 0x408; - mov [esp+0x18],ebx) where the original
-   keeps lo in ebp and hi in ebx with the AIBTYPE base in ebx (+ mov ebx,[ai_BTypes] / xor ebp,ebp / add
-   ebx,ecx), and schedules the n-- / cursor step otherwise (+0x55a24d); tails: the original jumps to the
-   shared gm_AddTime(..,0,1,0) + cm_SendExSetHEI(-1) block (jmp 0x55a29f from +0x55a340 / +0x55a3b3 /
-   +0x55a580) that ours keeps inline, and keeps case 2's first -1 return inline where ours shares it.
-   Tried: the twin's declarations (unsigned lo / hi, unsigned char kind, n in memory) */
+   @deep frame sweep s21: frame 0x40c vs 0x408 is not an escaped local: ours spills lo of case 1's kind
+   mask to [esp+0x18] where the original keeps lo in ebp (and the BTypesT base in ebx with a dead lea after
+   the kind load: the record-pointer form). No lever: a bt = &ai_BTypesT[bld->type] record pointer (106
+   ins, frame unchanged), bld without its = 0 (107), lo / hi / kind as block locals of the do-while body (=
+   control). Lead: case 1's loop form (the n countdown, the bld = 0 reset). prior: reconstructed from the
+   207-byte stub against 0x55a030..0x55a5e4 with he_RunDarkCorner (0x54f160) as its twin: the cancel path
+   (opts 2: stop / kill the spy), the slot waits, all five stages (the switch tables equal), the walk over
+   the 0x100 buildings with the 64-bit kind mask 0x1a7fcc3a6 and the signed % 0x100 steps, the debug text,
+   the door waits, the end test gm_CompareTime(&until, &ai_Time) == -1, the news 0x1734; every call and
+   argument read. Left is allocation and tails, the twin's own deep reason: in the walk ours keeps lo in a
+   stack slot (frame 0x40c vs 0x408; - mov [esp+0x18],ebx) where the original keeps lo in ebp and hi in ebx
+   with the AIBTYPE base in ebx (+ mov ebx,[ai_BTypes] / xor ebp,ebp / add ebx,ecx), and schedules the n--
+   / cursor step otherwise (+0x55a24d); tails: the original jumps to the shared gm_AddTime(..,0,1,0) +
+   cm_SendExSetHEI(-1) block (jmp 0x55a29f from +0x55a340 / +0x55a3b3 / +0x55a580) that ours keeps inline,
+   and keeps case 2's first -1 return inline where ours shares it. Tried: the twin's declarations (unsigned
+   lo / hi, unsigned char kind, n in memory) */
 void he_RunSpying(int ev)
 {
     char text[0x400];
@@ -16812,7 +16825,12 @@ int d3_VecEqual(struct D3VECTOR *a, struct D3VECTOR *b, float eps);
    AP event of text 0x3fd8 (-2), and when the guild has a character whose master it is with the flag 1 (+0x1b4), the
    victim gets the ransom message 0x3e: its worth (at most 1604000) times 2 / 4 / 6 / 10 % by its held rounds
    1 / 2 / 3 / 4 or more. The news and the message only for an event with option 2. Stages -2 / -1 release the
-   victim (heldRounds 0) and free the record */
+   victim (heldRounds 0) and free the record
+   @deep frame sweep s21: 20 -> 4 ins, frame 0x30c -> 0x304 (the original's): none a local of the
+   heldRounds <= 0 block, bld / obj of its opts & 2 block (escaped by &none / &bld / &obj: function-scope
+   they each took a slot of their own). Left: order 8 at the message fill, the original loads victim->netId
+   (mov edi,[edi+4]) before the m.type = 0x3e store; tried m.to first (order 10), m.to / fromId before type
+   (12), type before the ransom line (code 10). */
 void he_RunRansom(AIJOB *ev)
 {
     HEEV3D *x = (HEEV3D *)ev;
@@ -16820,7 +16838,7 @@ void he_RunRansom(AIJOB *ev)
     AIBLD *b;
     AIMSG m;
     char text[0x200];
-    int none, bld, obj, worth;
+    int worth;
     float share, ransom;
 
     switch (ev->stage) {
@@ -16835,8 +16853,11 @@ void he_RunRansom(AIJOB *ev)
         if (b->hostage == -1)
             b->hostage = victim->netId;
         if (victim->heldRounds <= 0) {
-            none = -1;
+            int none = -1;
+
             if (ev->opts & 2) {
+                int bld, obj;
+
                 txt_Format(text, 0x19da);
                 he_ShowNews(victim->netId, victim->netId, text, 0, 0x5fb, 0);
                 if (victim->model != 0 && he_FindFigurePlace(victim, &bld, &obj, 0) != 0)
