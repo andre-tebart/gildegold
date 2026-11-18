@@ -1332,7 +1332,24 @@ int d2_WinCreateSlider(int x, int y, int kind, int unk, int dlg)
     d2_AddToWin(id, dlg);
     return id;
 }
-/* 0x46bf60, draws a button: left cap, right cap, the middle tiled, then the caption @deep B draft: 222 instructions, 16 differ (26 code hunks) - register allocation / member load order, no meaning error. (1) 0x46c039..0x46c059 len = w->w - r->w - l->w: original subtracts l->w first (ecx = [esp+0x40] = l, ebx = r), ours r first; source form w->w - l->w - r->w compiles to identical bytes (VC6 reassociates). (2) 0x46c091 / 0x46c0a3 w->w - r->w + w->x: original loads w->w (ecx) then w->x (edx), ours w->x then w->w; the commuted spelling w->x + w->w - r->w compiles to identical bytes. spell.py: one 'reload' prescription at 0x46c091 (drop the local) - the reload is already equal on both sides (asmdiff shows the same mov eax,[esp+0x48]), so it does not touch the differing loads. Recorded attempts: ~21 variants on this function (dead stores, dead member loads into reused locals, d2_Objs[id]. form, frame pointer array, casts via 0x47c6f0, renaming l/r, declaration order) and ~60 on the siblings, plus this session's two source orders - all no change. Readability done (d2_DrawButton; D2OBJ.checked/clickDisabled/greyed/textShadow/rightAligned; callees named). */
+/* 0x46bf60, draws a button: left cap, right cap, the middle tiled, then the caption
+   @deep deep s33: the original evaluates both sums in source order (len: w->w, - r->w, - l->w; the right
+   cap's x: w->w, - r->w, + w->x); ours reassociates (l->w first; w->x first). Every spelling is one code,
+   so the order is VC6's reassociation rank, not the text: 36 regroupings of the two expressions
+   (parenthesised, negated, commuted), len in two statements (len = w->w - r->w; len -= l->w), a temp for
+   w->w - r->w, (int) casts, the 12 declaration orders of l / r / m: all = control. Next: what ranks the
+   operands (a probe on the operand types: D2FRAME.w / D2OBJ.w, or a use of r->w before len). prior: B
+   draft: 222 instructions, 16 differ (26 code hunks) - register allocation / member load order, no meaning
+   error. (1) 0x46c039..0x46c059 len = w->w - r->w - l->w: original subtracts l->w first (ecx = [esp+0x40]
+   = l, ebx = r), ours r first; source form w->w - l->w - r->w compiles to identical bytes (VC6
+   reassociates). (2) 0x46c091 / 0x46c0a3 w->w - r->w + w->x: original loads w->w (ecx) then w->x (edx),
+   ours w->x then w->w; the commuted spelling w->x + w->w - r->w compiles to identical bytes. spell.py: one
+   'reload' prescription at 0x46c091 (drop the local) - the reload is already equal on both sides (asmdiff
+   shows the same mov eax,[esp+0x48]), so it does not touch the differing loads. Recorded attempts: ~21
+   variants on this function (dead stores, dead member loads into reused locals, d2_Objs[id]. form, frame
+   pointer array, casts via 0x47c6f0, renaming l/r, declaration order) and ~60 on the siblings, plus this
+   session's two source orders - all no change. Readability done (d2_DrawButton;
+   D2OBJ.checked/clickDisabled/greyed/textShadow/rightAligned; callees named). */
 
 void d2_DrawButton(int id, D2SURF *surf)
 {
