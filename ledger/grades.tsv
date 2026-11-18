@@ -1497,8 +1497,8 @@ exe	0x00489cb0	ai_MeisterCollectTrans	ai	draft	readable	deep
 exe	0x0048a380	ai_UnloadCarts	ai	byte	readable		
 exe	0x0048a4d0	ai_MeisterTrade	ai	draft	readable	deep	
 exe	0x0048bc80	ai_MeisterTradeAllgemein	ai	draft	readable	deep	
-exe	0x0048d010	ai_MeisterTradeFernEinkauf	ai	draft	readable	deep	
-exe	0x0048d810	ai_MeisterTradeFernEinkauf2	ai	draft	readable	deep	
+exe	0x0048d010	ai_MeisterTradeFernEinkauf	ai	byte	readable		
+exe	0x0048d810	ai_MeisterTradeFernEinkauf2	ai	byte	readable		
 exe	0x0048e070	ai_FindMasterBuilding	am	byte	readable		
 exe	0x0048e120	ai_DecideBuildDomizil	am	byte	readable		
 exe	0x0048e370	ai_ExecBuildDomizil	am	byte	readable		
@@ -2099,7 +2099,7 @@ exe	0x004be3b0	rt_ChooseTabGood	rt	byte	readable
 exe	0x004be790	rt_OpenSlotControls	rt	byte	readable		
 exe	0x004be8e0	rt_RemoveControls	rt	byte	readable		
 exe	0x004be930	rt_InitControls	rt	byte	readable		
-exe	0x004be940	rt_EditPointDialog	rt	draft	readable	deep	
+exe	0x004be940	rt_EditPointDialog	rt	shape	readable	deep	
 exe	0x004bf080	rt_CartSettingsDialog	rt	byte	readable		
 exe	0x004bf360	rt_SetMarkPic	rt	byte	readable		
 exe	0x004bf3b0	rt_UpdateMarkPics	rt	byte	readable		
@@ -2669,7 +2669,7 @@ exe	0x004e9400	amt_HasTownObject	amt	byte	readable
 exe	0x004e94a0	amt_MayorBonusStep	amt	byte	readable		
 exe	0x004e94e0	amt_CanUseMayorPower2	amt	byte	readable		
 exe	0x004e95a0	amt_CanUseMayorPower3	amt	byte	readable		
-exe	0x004e9660	amt_ExecutePriceMessage	amt	shape	readable		
+exe	0x004e9660	amt_ExecutePriceMessage	amt	byte	readable		
 exe	0x004e9a00	amt_ExecuteShareMessage	amt	byte	readable		
 exe	0x004e9ce0	amt_ExecuteMayorPowerMessage	amt	draft	readable	deep	
 exe	0x004ea550	amt_ChangeDistrictOpinion	amt	byte	readable		
@@ -2969,7 +2969,7 @@ exe	0x004fddb0	gm_SpawnCharacter	f3gm	byte	readable
 exe	0x004fde90	unk_LoadIconNames	f3gm	byte	readable		
 exe	0x004fdfb0	gm_FreeIconNames	f3gm	byte	readable		
 exe	0x004fdfd0	gm_CountCharacters	f3gm	byte	readable		
-exe	0x004fe140	gm_AddTime	f3gmt	draft	readable	deep	
+exe	0x004fe140	gm_AddTime	f3gmt	byte	readable		
 exe	0x004fe1e0	gm_SetTime	f3gmt	byte	readable		
 exe	0x004fe210	gm_CompareTime	f3gmt	byte	readable		
 exe	0x004fe280	gm_MinutesBetween	f3gmt	byte	readable		
@@ -3091,7 +3091,7 @@ exe	0x00506180	gm_RankPlayers	f3gmt	shape	readable	deep
 exe	0x00506430	gm_PlayerRecord	f3gmt	byte	readable		
 exe	0x00506480	gm_HasAdultRelative	f3gmt	byte	readable		
 exe	0x005064d0	gm_TakeOverCharacter	f3gmt	byte	readable		
-exe	0x00506890	gm_InheritEstate	f3gmt	shape	readable		
+exe	0x00506890	gm_InheritEstate	f3gmt	byte	readable		
 exe	0x00506e70	gm_ForfeitEstate	f3gmt	draft	readable	deep	
 exe	0x005075c0	gm_MayRemoveChar	f3gmt	byte	readable		
 exe	0x00507690	gm_CreateCharacter	f3gmt	draft	readable	deep	
@@ -4008,7 +4008,7 @@ exe	0x00579570	ai_TutorialInitChapter3	sv_t	shape	readable
 exe	0x0057aa80	ai_TutorialInitChapter4	sv_t	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	sv_t	byte	readable		
 exe	0x0057b750	ai_TutorialInitMainOutro	sv_t	byte	readable		
-exe	0x0057b810	ai_TutorialBezier	sv_t	draft	readable		shape+readable -> draft+readable at 0f1c8dc1: promote --accept-falls
+exe	0x0057b810	ai_TutorialBezier	sv_t	byte	readable		
 exe	0x0057b8a0	ai_TutorialMarkerUpdate	sv_t	byte	readable		
 exe	0x0057bc30	ai_SetupTutorialPlayer	sv_t	byte	readable		
 exe	0x0057bce0	ai_TutorialWindow	sv_t	byte	readable		
@@ -4022,7 +4022,7 @@ exe	0x0057dc50	ai_AlchemistTrainShareWindow	sv_t	byte	readable
 exe	0x0057de60	ai_AlchemistFundWindow	sv_t	byte	readable		
 exe	0x0057e0e0	ai_AlchemistRescheduleWindow	sv_t	byte	readable		
 exe	0x0057e230	ai_ShotTableStore	svcannon	byte	readable		
-exe	0x0057e270	ai_CannonScene	svcannon	shape	readable	deep	
+exe	0x0057e270	ai_CannonScene	svcannon	byte	readable		
 exe	0x0057ec40	ai_CannonAim	svcannon	byte	readable		
 exe	0x0057f0e0	ai_CannonCamera	svcannon	draft	readable	deep	
 exe	0x0057f5d0	ai_CannonAxes	svcannon	byte	readable		
@@ -4414,8 +4414,8 @@ exe	0x005b5e80	ai_FeastWindow	lcdom	draft	readable	deep
 exe	0x005b6950	ai_SellBuildingWindow	lcdom	byte	readable		
 exe	0x005b6b20	ai_RenovationWindow	lcdom	byte	readable		
 exe	0x005b6eb0	ai_WithdrawSaleWindow	lcdom	byte	readable		
-exe	0x005b6fe0	ai_RoomUpgradeWindow	lcdom	draft	readable	deep	
-exe	0x005b7690	ai_UpgradeBuilding	lcdom	draft	readable	deep	
+exe	0x005b6fe0	ai_RoomUpgradeWindow	lcdom	byte	readable		
+exe	0x005b7690	ai_UpgradeBuilding	lcdom	byte	readable		
 exe	0x005b7b80	ai_BuyBuildingOfferWindow	lcdom	byte	readable		
 exe	0x005b7dd0	ai_TechEffectsWindow	lcdom	draft	readable	deep	
 exe	0x005b82a0	ai_FireFightingWindow	lcdom	byte	readable		
@@ -4510,7 +4510,7 @@ exe	0x005c6050	ai_GiftWindow	lcamt	byte	readable
 exe	0x005c64c0	ai_FindCandidateIds	lcamt	byte	readable		
 exe	0x005c6530	ai_MarriageTest	lcamt	byte	readable		
 exe	0x005c6620	ai_CourtshipRounds	lcamt	byte	readable		
-exe	0x005c6910	ai_CourtshipConfirm	lcamt	draft	readable	deep	
+exe	0x005c6910	ai_CourtshipConfirm	lcamt	byte	readable		
 exe	0x005c6aa0	ai_CourtshipListWindow	lcamt	byte	readable		
 exe	0x005c6d00	ai_CourtshipWindow	lcamt	byte	readable		
 exe	0x005c72d0	ai_PlotRatingBaseChart	lcamt	byte	readable		
@@ -4658,8 +4658,8 @@ exe	0x005dc1a0	ai_SphereVolume	shot	byte	readable
 exe	0x005dc210	ai_PositionShare	shot	byte	readable		
 exe	0x005dc240	ai_InitShot	shot	byte	readable		
 exe	0x005dc3a0	ai_ScatterShot	shot	byte	readable		
-exe	0x005dc4a0	ai_StepShot	shot	draft	readable	deep	shape+readable -> draft+readable at 0f1c8dc1: promote --accept-falls
-exe	0x005dc9d0	ai_StepShotSlow	shot	draft	readable	deep	shape+readable -> draft+readable at 0f1c8dc1: promote --accept-falls
+exe	0x005dc4a0	ai_StepShot	shot	byte	readable		
+exe	0x005dc9d0	ai_StepShotSlow	shot	byte	readable		
 exe	0x005dcf00	ai_ShotHitsGround	shot	byte	readable		
 exe	0x005dd090	ai_NormalizeEffectScale	shot	byte	readable		
 exe	0x005dd100	ai_SolveCannonAim	shot	shape	readable	deep	
