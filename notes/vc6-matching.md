@@ -582,6 +582,41 @@ Where the pushes and pops sit, how many epilogue copies there are, shared agains
     gm_ListWorkers); `unsigned char stage` for the original's `mov edi,ecx; and edi,0xff` widening (a byte
     slot, frame +8: he_StepWalk); `count = n2 + n3` spellings against a strength-reduced `&rows[row]` temp
     (ai_TrainingWindow); `n = 0` moved into the case that counts (he_RunRobbery: the zero stays in ebp).
+- **Frame sweep s21 (the escaped-local lever over every function below byte)**:
+  - The candidate list: `tools/sweep/framescan.py` (each below-byte function's `dcp frame`: the frame size differs
+    or `shared in the original:` lines, AND a function-scope local whose address goes to a call); 101 of 611.
+    The names in a shared line that are themselves escaped locals were the real leads (about 25); a frame
+    difference alone mostly was not this lever. `--vec`: ours smaller with D3VECTOR locals (8 functions).
+    `tools/sweep/blockscope.py --scalars [--lists]` then tries each local in its blocks (`--lists` splits
+    `int a, b;` lines first: most escaped scalars sit in such lists).
+  - Byte or the original's frame by the lever: he_StammtischCommand (s1 / s2 text buffers declared in each
+    of the two branches that format them: byte), he_LabIncident (one / step of a cm_AddFieldDelta pair in their
+    if block, then the possible[] zero fill as an element loop, not `= {0}`: draft -> byte), he_RunRansom
+    (none / bld / obj in their blocks: 20 -> 4, frame), gm_SyncMarket (cnt: 22 -> 14, frame),
+    ls_WriteCharacters (the -1 for a missing id is `int tmp = -1` of each else block: 42 -> 4), cm_ExGebUpgrade
+    (key in the block that sends it). Out-parameters of a call inside a loop are locals of the loop body
+    (ai_DarkCornerMenu price / who 73 -> 47; ai_TransportFromLager inv per loop 12 -> 8). Values rolled in
+    two disjoint blocks (the non-player branch and the ok click of the lcamt privilege windows) are locals of
+    each block: ai_HatredWindow r1 / r2 / o1 / o2 40 -> 24, ai_ConvertWindow faith / skill 50 -> 14 (the
+    byte siblings of that family already had this form). ai_FeastWindow none 202 -> 108, ai_PersonnelBook
+    wage 748 -> 606.
+  - **Ours smaller than the original by 4 per vector = D3VECTOR4**: he_SecretRoomCatchSpy (d / there: byte),
+    he_SpreadGfxInfos (pos / at: byte), d3s_Update (ldir / lpos / opos: 22 -> 2, then `mesh = obj->info;
+    info = mesh;` byte), d3s_UpdateObjectAt (lpos / ldir 48 -> 22), cm_ExGebUpgrade (v, with path[0x104]: 76 ->
+    14 at the frame). Cast at the calls (`(D3VECTOR *)&pos`), as he_AimReaper does. A subset that does not
+    reach the frame is not the original's (d3sm_Build, gv_ExplodeShot: only the slot table moved; not kept).
+  - Buffer sizes: a frame 4 off with a 0x100 / 0x104 buffer: path[0x104] (MAX_PATH, cm_ExGebUpgrade: the
+    next buffer sits 4 further), name[0x100] not 0x104 (init_SoundObjectHook: frame, 12 -> 9 bytes). A
+    0x104 text in the ai_UseGood windows overshoots (their frame is equal in `dcp try`).
+  - One buffer for two texts that `dcp frame` shares (ai_OpenMasterListPage nameText / budgetText as one
+    text[0x100]: 12 -> 8); ai_AlchemistResearchWindow's msg / line share fails (frame 0x164): the pairing is by
+    alignment, check the frame size of the merged variant.
+  - Not this lever (= control or worse): scalars reused across disjoint uses when neither is escaped
+    (gm_UpdatePrices a, snd_UpdateAnimals n / c, ai_PlayerStatsPanel value: an extra delta local is worse),
+    he_RunSpying (lo spilled: record pointer, block lo / hi = control), he_AimReaper (target / at slot swap),
+    ai_BuyBuildingOfferWindow (msg in its block), cm_ExChrGotoBuilding (y as a block local: frame -4).
+  - `dcp try` pitfall met again: a `<<< old === >>>` block with an empty replacement swallows the next block;
+    write the declaration's removal as a two-line old text with one line kept.
 
 - **An else-if arm cross-jumped whole into a sibling's copy, the original keeps it inline**: the store order of
   the OTHER arms (default arm charId before stateArg; 0x176 arm stateArg, charId, x, z) decides it, found by

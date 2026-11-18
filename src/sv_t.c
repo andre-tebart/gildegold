@@ -4305,7 +4305,11 @@ int ahm_ResearchState(); char * ahm_OwnerChar(); AHMGRID * ahm_RandomRecipe();
    ai_AlchemistSendRecipeResearch when ahm_RandomRecipe gives the owner a recipe, else the message 0x41b0. The second is enabled
    while no research runs and calls ai_AlchemistSendResearchStart. The right mouse button closes the window; the camera follows
    again at the end
-   @deep match-deep 2026-11-14 (199 ins kept). Tried: the slot loops as index loops (rec->slots[k],
+   @deep frame sweep s21: frame 0x264 vs 0x25c. dcp frame pairs msg with line in one of the original's
+   slots, but one buffer for both gives frame 0x164 (235 ins): the two are separate 0x100 arrays; line per
+   slot loop / msg in the state block = control (199). The 8 bytes are among the scalars (the original
+   packs pid / t / slot / group / pic / slider into three slots). Lead: c2frame --names on the scalars.
+   prior: match-deep 2026-11-14 (199 ins kept). Tried: the slot loops as index loops (rec->slots[k],
    pics[n]): 343..359 ins (the original's [edx] store through a reloaded pic pointer is a hand pointer,
    *pic = pid; pic++); *pic++ = pid: 237..247; slot index + pic pointer: 197 (frame hunk unchanged). row[2]
    declared in a block around sv_ButtonRow: frame 0x25c = the original's (sel then shares row's slot as
@@ -4314,16 +4318,7 @@ int ahm_ResearchState(); char * ahm_OwnerChar(); AHMGRID * ahm_RandomRecipe();
    (c2trace prio 1187, 11 refs) keeps ebx where the original stores it to 0x40 right after the
    SetForm(form, 2) and reloads it in the loops. Next: from the row-block form, make win2 / start / other
    lose priority (fewer references or a split) - c2trace.py with the arw2 variant sep_ptr_row1 in the
-   session notes' generator. (tiebreak: insensitive under the four probes only, best draft) prior: read
-   whole against the original, reconstructed (559 vs 563 instructions, asmdiff --symbols has no
-   symbol/argument/constant difference; no branch-target class remains after inlining the slot loop twice
-   with function-level n/pic/slot). Left (dcp diffclass: code 140, slots 122, frame 34, order 20, regs 8),
-   all allocation: (1) the original keeps owner in edi and the record in ebp, form in esi, ours form in
-   ebp/record in esi (regs esi<->ebp rotate: asmdiff --regs esi=ebp,ebp=esi turns the push/pop lines
-   equal); (2) win2 is spilled by the original to [esp+0x40] right after d2_SetForm(form,2) ('+ mov dword
-   ptr [esp + 0x40], ebx' at 0x57c725) and reloaded as mov ebx,[esp+0x64] after each text, ours keeps it in
-   ebx; (3) in the slot loop the original holds x in ebp, y in esi, i in edi and the slot/picture pointers
-   in [esp+0x14]/[esp+0x10] with the counter in [esp+0x1c], ours x in esi, y in ebp, co... */
+   session notes' generator. (tiebreak: insensitive under the four probes only, best draft) */
 void ai_AlchemistResearchWindow(unsigned char *obj)
 {
     char msg[0x100];
