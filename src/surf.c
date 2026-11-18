@@ -337,7 +337,13 @@ void surf_Up32(DDSURFACEDESC2 *dst, DDSURFACEDESC2 *src)
         }
     }
 }
-/* 0x420140 */
+/* 0x420140
+   @deep deep s35: one register swap through the function: pal8 (the original's edi) and the CSE temp of
+   src->dwWidth (the original's esi). c2trace --prio: pal8#1 26 (block 1, the assignment inside the
+   condition, +30 at P 5) is served before temp#d4#1 22 and takes esi (free order esi, edi); the width temp
+   needs +5. = control: initgen (bpp, pal8, y), climb round 1, pal8 as int, != 0, 2 * w factors, the
+   up-scale arms as else-if; pal8 assigned before the if (all three spellings): 75 ins (another layout); a
+   w local or src->dwWidth > dst->dwWidth: order 10 + the same swap; the == operands swapped: worse. */
 
 void surf_ScaleBlit(DDSURFACEDESC2 *dst, DDSURFACEDESC2 *src)
 {

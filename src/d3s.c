@@ -1428,21 +1428,17 @@ void d3s_UpdateObject(D3OBJECT *obj)
     }
 }
 /* 0x45ca60, makes the shadows of obj: projects its box along each shadow light onto the ground, and updates
-   the shadow of every light whose projected box is on screen
-   @deep frame sweep s21: 48 -> 22 ins: lpos / ldir as D3VECTOR4 (the engine's padded vectors; all three
-   D3VECTOR4: 22 ins, frame 0x38; d alone 48). Left: frame 0x34 vs 0x44: the original keeps obj in a local
-   slot [esp+0x14] (ours reads the argument) and has an untouched 12-byte hole [esp+0x40..0x4c) (d's fields
-   there never stored: d lives on the FPU, its slot stays), slots 26. Lead: obj copied to a local (the twin
-   d3s_Update's info / mesh), d as D3VECTOR4 with the x87 fields. */
+   the shadow of every light whose projected box is on screen */
 
 void d3s_UpdateObjectAt(D3OBJECT *obj)
 {
     D3OBJECT *light;
     D3OBJINFO *info;
     D3BOXVERT *verts, *box;
-    D3VECTOR d;
+    D3VECTOR4 d;                        /* the light's ray through a corner, then the point relative to the camera */
     D3VECTOR4 lpos, ldir;
-    float y, f, x, z, w;
+    D3VECTOR4 p;                        /* the corner projected onto the ground */
+    float y, f;
     unsigned int i;
     int k;
 
@@ -1461,24 +1457,24 @@ void d3s_UpdateObjectAt(D3OBJECT *obj)
         for (k = 8, box = verts; k; k--, box++) {
             if (light->objectFlags & 0x10) {
                 f = -((box->y - y) / ldir.y);
-                x = ldir.x * f + box->x;
-                w = ldir.y * f + box->y;
-                z = ldir.z * f + box->z;
+                p.x = ldir.x * f + box->x;
+                p.y = ldir.y * f + box->y;
+                p.z = ldir.z * f + box->z;
             } else {
                 d.x = lpos.x - box->x;
                 d.y = lpos.y - box->y;
                 d.z = lpos.z - box->z;
                 f = -((lpos.y - y) / d.y);
-                x = d.x * f + lpos.x;
-                w = d.y * f + lpos.y;
-                z = d.z * f + lpos.z;
+                p.x = d.x * f + lpos.x;
+                p.y = d.y * f + lpos.y;
+                p.z = d.z * f + lpos.z;
             }
-            x -= d3_Camera->pos.x;
-            w -= d3_Camera->pos.y;
-            z -= d3_Camera->pos.z;
-            box->x = x * d3_Camera->matrix._11 + w * d3_Camera->matrix._21 + z * d3_Camera->matrix._31 + d3_Camera->matrix._41;
-            box->y = x * d3_Camera->matrix._12 + w * d3_Camera->matrix._22 + z * d3_Camera->matrix._32 + d3_Camera->matrix._42;
-            box->z = x * d3_Camera->matrix._13 + w * d3_Camera->matrix._23 + z * d3_Camera->matrix._33 + d3_Camera->matrix._43;
+            d.x = p.x - d3_Camera->pos.x;
+            d.y = p.y - d3_Camera->pos.y;
+            d.z = p.z - d3_Camera->pos.z;
+            box->x = d.x * d3_Camera->matrix._11 + d.y * d3_Camera->matrix._21 + d.z * d3_Camera->matrix._31 + d3_Camera->matrix._41;
+            box->y = d.x * d3_Camera->matrix._12 + d.y * d3_Camera->matrix._22 + d.z * d3_Camera->matrix._32 + d3_Camera->matrix._42;
+            box->z = d.x * d3_Camera->matrix._13 + d.y * d3_Camera->matrix._23 + d.z * d3_Camera->matrix._33 + d3_Camera->matrix._43;
         }
         if (!(d3_ClipBox(verts, 0, 0) & 0x40)) {
             obj->flags |= 2;
