@@ -6138,12 +6138,14 @@ void ai_MistressAffairWindow(AICHARREC *player, AICHARREC *ch, AIJOB *ev)
    filter, kind 6; the texts 0x1a53 / 0x1a54), asks (0x1a55 / 0x1a56) and posts the message 0x6f (flags 2, from
    the building, the player and the picked character); a mistress' button opens her window
    ai_MistressAffairWindow with this one disabled. A right click closes it; then the camera follows
-   @deep Reconstructed whole from the original (all statements, calls, the 0x6f message record, the
-   amount-menu config, the texts 0x1a50..0x1a56 and the mistress buttons read and compared; the -1 inits
-   are inline memsets, which gives the original's ebx=0). Left is allocation/scheduling only: the original
-   keeps the -1 of memset(ctl) in esi up to d2_ClickedId = esi and skips the loop-top 'or esi,-1' on the
-   first pass (jmp +0xa2), ours materializes -1 again ('mov [d2_ClickedId], 0xffffffff', 'or eax,-1; or
-   ecx,-1'); the player-record index (ai_PlayerId*0x21c) is computed before/after the ev+0xac load, the
+   @deep size queue s16: cfg, msg, prompt / title, text and pick declared in the blocks that use them (all
+   31 subsets): two codes, the control's and one 2 bytes off (msg block-local); no lever for the -1 /
+   store-order hunks. prior: Reconstructed whole from the original (all statements, calls, the 0x6f message
+   record, the amount-menu config, the texts 0x1a50..0x1a56 and the mistress buttons read and compared; the
+   -1 inits are inline memsets, which gives the original's ebx=0). Left is allocation/scheduling only: the
+   original keeps the -1 of memset(ctl) in esi up to d2_ClickedId = esi and skips the loop-top 'or esi,-1'
+   on the first pass (jmp +0xa2), ours materializes -1 again ('mov [d2_ClickedId], 0xffffffff', 'or eax,-1;
+   or ecx,-1'); the player-record index (ai_PlayerId*0x21c) is computed before/after the ev+0xac load, the
    cfg/msg field stores are scheduled in another order (mode/filter/kind, to/fromId/arg[0]/arg[1]) and the
    0x1a55/0x1a56 arms swap eax/ecx. Tried: explicit -1 stores in the original's order (ebx stayed -1),
    if/else for the sex and stage tests, field reorderings */

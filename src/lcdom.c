@@ -7567,17 +7567,21 @@ void ai_ManagedBuildingWindow(AIBLD *bld)
    all goods but the types 0x17 / 0x25 first and then, from the 0x2a stores only, those two, round after round
    while something sells. The sale proceeds go to `to`, noted in `note` (text 0x18eb appended); without any sale
    the rest is moved unchecked. Returns what was paid
-   @deep reconstructed from the stub against the whole original 0x5b92e0..0x5b9727: the money first (min of
-   gm_GetGoodsValue and the amount, cm_SendMoveGoods), the two sale rounds over the class 1/2/8 buildings'
-   stores (0x2a else 0x116 for the other goods, 0x2a only for the types 0x17/0x25) at half gm_GoodsPrice
-   with the n <= 1 / gm_ListAmount clamps and cm_SendExSellObject, the stop flag per round, the proceeds
-   message 0x18eb strcat into the note and the rest through cm_SendMoveGoodsUnchecked; ours 359 vs 366 ins.
-   Left is register allocation: the original keeps the ai_Goods base in ebp before reusing ebp for the
-   price (+0x406..+0x41c: mov ebp,[ai_Goods]; add ebp,edx; add ecx,ebp; mov cl,[ecx] vs ours mov
-   ecx,[ai_Goods]; add ecx,edx; mov cl,[eax+ecx]) and so assigns eax/ecx/edx otherwise around
-   cm_SendExSellObject (+0x479..+0x4c0, +0x61d.., the same five pushes from other registers) and the second
-   round's character id load (+0x503). The prover stops at the goods type test (+0x144) whose byte comes
-   from the two address forms */
+   @deep size queue s16: the two goto exits of the sale rounds (remaining <= 0 inside the building loop)
+   are a plain break (the while test ends the round): the same code, kept as the plainer form. The original
+   calls cm_SendExSellObject right after the n clamp (as ours) and keeps n in esi (mov eax,esi; cdq; idiv
+   ebp: remaining's register reused), so climb.py's best (the call after the sums: 111 ins, raw 1088) is
+   not it; both loops' call moved gives raw 1092 (padded right) at 116 ins with another order, not kept.
+   Left: register allocation as before. prior: reconstructed from the stub against the whole original
+   0x5b92e0..0x5b9727: the money first (min of gm_GetGoodsValue and the amount, cm_SendMoveGoods), the two
+   sale rounds over the class 1/2/8 buildings' stores (0x2a else 0x116 for the other goods, 0x2a only for
+   the types 0x17/0x25) at half gm_GoodsPrice with the n <= 1 / gm_ListAmount clamps and
+   cm_SendExSellObject, the stop flag per round, the proceeds message 0x18eb strcat into the note and the
+   rest through cm_SendMoveGoodsUnchecked; ours 359 vs 366 ins. Left is register allocation: the original
+   keeps the ai_Goods base in ebp before reusing ebp for the price (+0x406..+0x41c: mov ebp,[ai_Goods]; add
+   ebp,edx; add ecx,ebp; mov cl,[ecx] vs ours mov ecx,[ai_Goods]; add ecx,edx; mov cl,[eax+ecx]) and so
+   assigns eax/ecx/edx otherwise around cm_SendExSellObject (+0x479..+0x4c0, +0x61d.., the same five pushes
+   from other registers) and the secon... */
 
 int ai_LiquidateAssets(int to, AICHARREC *ch, int amount, char *note)
 {
@@ -7613,7 +7617,7 @@ int ai_LiquidateAssets(int to, AICHARREC *ch, int amount, char *note)
         stop = 1;
         for (; bld != 0; bld = gm_BuildNext()) {
             if (remaining <= 0)
-                goto other;
+                break;
             cls = gm_BuildingClass(*bld);
             if (cls != 1 && cls != 2 && cls != 8)
                 continue;
@@ -7648,14 +7652,13 @@ int ai_LiquidateAssets(int to, AICHARREC *ch, int amount, char *note)
             }
         }
     }
-other:
     stop = 0;
     while (remaining > 0 && stop == 0) {
         bld = gm_BuildQuery(1, 4, ch->id);
         stop = 1;
         for (; bld != 0; bld = gm_BuildNext()) {
             if (remaining <= 0)
-                goto done;
+                break;
             cls = gm_BuildingClass(*bld);
             if (cls != 1 && cls != 2 && cls != 8)
                 continue;
@@ -7687,7 +7690,6 @@ other:
             }
         }
     }
-done:
     if (sold != 0) {
         cm_SendMoveGoods(to, -1, ai_OwnPlayer, sold);
         txt_Format(text, 0x18eb, sold);

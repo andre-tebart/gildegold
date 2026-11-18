@@ -1914,16 +1914,18 @@ int ai_SpecialAmountList(G8CHARREC *ch, char *text)
    views the list as that character; a click on a row's frame chooses its character: without pick the window closes
    with it, else pick (character, 0) decides (the window disabled meanwhile); a vacant seat ends the viewing. Returns
    the chosen character record (0: none)
-   @deep Reconstructed the whole body (1655 B) against the original: captions, the row fill of the kinds 0
-   / 1..6 / 7 / 8, the corner icons written out in line (the original inlines ai_AmountRowStatus's code;
-   __inline on the definition drops the out-of-line copy other units link to), ai_ShowAmountRows /
-   ai_ShowOfficeRows, the rup / rhold / lclick dispatch and the pick callback. 497 vs 499 instructions;
-   every remaining code hunk is register allocation: the original keeps viewing in ebx (spilled to
-   [esp+0x1c]) and reloads win from [esp+0x18] for each d2_SetForm / d2_SetViewEnabled / d2_CloseView, ours
-   keeps win in ebx and viewing in a slot (hunks at +0xa, +0x3a, +0x56, +0x49b, +0x539, +0x54a, +0x5dc,
-   +0x5ee, +0x624). Tried: declaration order, an extra viewing = 0 at the top (dead-store eliminated),
-   &c->kind as the loop bound (fixed the bound compare). The prover stops at the first call only because
-   the string literal's address differs (0xf00dc900 vs 0x62d204, same bytes). */
+   @deep size queue s16: the viewer ternaries of the two row calls written on viewing (viewing ? viewer :
+   ..) to raise viewing's references against win: worse (104-109 ins); c2trace: win#2 (sav 20) takes ebx
+   over viewing#2 (sav 8) in pass 3 after the bulk split. prior: Reconstructed the whole body (1655 B)
+   against the original: captions, the row fill of the kinds 0 / 1..6 / 7 / 8, the corner icons written out
+   in line (the original inlines ai_AmountRowStatus's code; __inline on the definition drops the
+   out-of-line copy other units link to), ai_ShowAmountRows / ai_ShowOfficeRows, the rup / rhold / lclick
+   dispatch and the pick callback. 497 vs 499 instructions; every remaining code hunk is register
+   allocation: the original keeps viewing in ebx (spilled to [esp+0x1c]) and reloads win from [esp+0x18]
+   for each d2_SetForm / d2_SetViewEnabled / d2_CloseView, ours keeps win in ebx and viewing in a slot
+   (hunks at +0xa, +0x3a, +0x56, +0x49b, +0x539, +0x54a, +0x5dc, +0x5ee, +0x624). Tried: declaration order,
+   an extra viewing = 0 at the top (dead-store eliminated), &c->kind as the loop bound (fixed the bound
+   compare). The prover stops at the first call only because... */
 
 int ai_SpecialAmountListWindow(int kind, unsigned int *filter, char *caption, char *caption2,
                                int (*pick)(AICHARREC *, int))

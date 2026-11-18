@@ -2143,26 +2143,19 @@ int gm_IsUnderAge(unsigned short id)
    nearest to o when o and the building both have a scene object, else the least full one (people / capacity);
    none: a random one of the first 16 of the query (1, 5, 0x16) with the flag clear. The first parameter is
    not read
-   @deep draft 90 -> 67 ins. Read: the original keeps the pick's capacity in ebx (loaded from the first
-   record after the query test) and kind[0] in edi across the d3_PointToWorld calls, stores only the
-   record's second int at a pick, and shares the int-to-float temp with the first record's first int (frame
-   0x74, the 8-byte record slot shared with a 4-byte temp, which no variant reproduces: c2frame gives the
-   temps their own 4-byte slot). Kept: a scalar cap for the pick's capacity (cap = pickKind[0] after the
-   query; cap = kind[0] at each pick): 90 -> 67. Tried: a def[2] copied into a scalarized pickKind (75, the
-   [1] stores vanish), struct / unsigned short[4] records and struct copies (= control), cap scalars for
-   kind[0] too (82-99), the init in the if / before the query, all 24 orders of the pick block (best 88
-   with the kind scalar). Left: the rotation pick edi / cap ebp / kind[0] ebx against the original's ebp /
-   ebx / edi, the second d3_PointToWorld argument loads, the sum's fstp of v1.x, the frame 0x78 vs 0x74
-   (tiebreak: not measured (dcp headers sample gm_FindHome)) prior: read in full against the original and
-   reconstructed (ORDBLD people 0x65 / flags5a / object as D3OBJECT, the 16-byte D3VECTOR4 positions
-   subtracted in place and summed z, y, x, the ratio compare, the fallback list of 16 under if (pick == 0)
-   as the original's block order shows); same statements, branch targets and calls, 160 = 160 instructions.
-   Left is allocation: the original keeps the pick in ebp, the pick's capacity (pickKind[0]) promoted to
-   ebx and the kind's capacity in edi, rereads o from the parameter, and overlaps the int-to-float
-   conversion temp with pickKind[0]'s slot (frame 0x74); ours keeps the constant 1 in ebx and o in ebp,
-   pickKind in memory and the temp in its own slot (frame 0x78), so every code / regs / slots hunk is one
-   of these registers or slots (tried: pickKind as an 8-byte struct copy instead of the array: identical
-   code; o as a local copy of a char * parameter: iden... */
+   @deep size queue s16: the escape lever (kind / v1 / v2 / d declared in the blocks that use them, all 7
+   subsets) is the control's code; a k = kind[0] scalar gives the original's candidate set (o loses its
+   register and is reread from the argument as in the original) but the rotation pick edi / cap ebp / k ebx
+   against the original's ebp / ebx / edi (88 ins); unsigned short k = control. prior: draft 90 -> 67 ins.
+   Read: the original keeps the pick's capacity in ebx (loaded from the first record after the query test)
+   and kind[0] in edi across the d3_PointToWorld calls, stores only the record's second int at a pick, and
+   shares the int-to-float temp with the first record's first int (frame 0x74, the 8-byte record slot
+   shared with a 4-byte temp, which no variant reproduces: c2frame gives the temps their own 4-byte slot).
+   Kept: a scalar cap for the pick's capacity (cap = pickKind[0] after the query; cap = kind[0] at each
+   pick): 90 -> 67. Tried: a def[2] copied into a scalarized pickKind (75, the [1] stores vanish), struct /
+   unsigned short[4] records and struct copies (= control), cap scalars for kind[0] too (82-99), the init
+   in the if / before the query, all 24 orders of the pick block (best 88 with the kind scalar). Left: the
+   rotation pick edi / cap ebp / kind[0] ebx against the or... */
 
 ORDBLD *gm_FindHome(int unused, ORDBLD *o)
 {
