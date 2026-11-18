@@ -2374,26 +2374,21 @@ void ch_ActAnimOnce(CHACTION *a)
         ch_RemoveAction(a);
 }
 /* 0x406e60, turn action: args[0] degrees (args[1]: relative to the z axis), plays "dreh_90_*" and turns
-   @deep size queue: done (915 = original, padded 928; 4 ins / 10 bytes, shape). s3 lever: the slot
-   branch's turn values in a block-local D3VECTOR4 v copied field by field into keys[1].rot at the end (v.x
-   and v.y = angle - v.y are x87 candidates held to the copies, v.z = -v.z goes through memory: no fit),
-   dir block-local in the args[1] branch (shares v's slot, so the frame loads are no longer ordered after
-   its escape), keys[0].time after the flag ors (before: IL tail merge with the else branch sank the
+   @deep deep s24: flip.py --want the original's fchs / fstp v.z before or dl,8: one hit only, deleting v.y
+   = angle - v.y (a meaning change, draft 82); keys[1].rot.y = angle - v.y without the v.y store in 4
+   positions: draft 54..102 (frame 0xc4 / 0xd4); v.z = -v.z moved to every line of the slot block: 18..110.
+   Left: the 4-ins position of fchs / fstp v.z (the original before or dl,8 / push eax, ours after). prior:
+   size queue: done (915 = original, padded 928; 4 ins / 10 bytes, shape). s3 lever: the slot branch's turn
+   values in a block-local D3VECTOR4 v copied field by field into keys[1].rot at the end (v.x and v.y =
+   angle - v.y are x87 candidates held to the copies, v.z = -v.z goes through memory: no fit), dir
+   block-local in the args[1] branch (shares v's slot, so the frame loads are no longer ordered after its
+   escape), keys[0].time after the flag ors (before: IL tail merge with the else branch sank the
    ors/zeros/call into one shared block), fr inlined as s->data->frames[s->data->nframes - 1] (climb
    inline:fr: the original's eax/ecx/edx for data/nframes/index). Left (4 ins): the original emits fchs;
    fstp v.z before or dl,8 / push eax (ours after). Tried s3 on that: climb --rounds 2 (1175 mutants,
    nothing closer); defs order (only y,x,z gives shape), Y/N order (YN only), zero/copy placement (= same
    code). c2dag: VC6 merges identical statements of both branches into a shared block at IL level when they
-   can sink (variants whose order breaks this went from 841 to 915 bytes). prior: size queue: 909 vs 915 (6
-   short; was 902). s2 kept: D3ANIMFLAGS f with the engine idiom memset; f.b[1] |= 0x14; f.b[8] |= 2;
-   f.b[1] |= 8 (as d3t_MoveCameraPath/cm, unfolds or 0x14 / or 8 like the original: CHKEYFLAGS cast
-   dropped), and fr = &frames[nframes] with fr[-1] (the original's add eax,edx + disp32 loads). Left (6
-   bytes): the original loads turn.z, turn.y, turn.x, time all before storing dir.z/dir.y (ours: the dir.y
-   store blocks the turn.z load, dir escaped via d3_DirToWorld), and keeps dir.z in memory (fld; fchs; fstp
-   dir.z; mov edx,[dir.z] -> rot.z) while -turn.x and angle-dir.y stay on the x87 stack until after the f
-   arg copy (fxch; fstp rot.x; fstp rot.y); ours fst dir.z + fstp rot.z (dir.z#2 prio 1 -> stack). Tried s2
-   (no size change, all 909): block-local D3VECTOR/D3VECTOR4/scalar ty,tz for the slot values (loads hoist
-   as the original, but VC6 lifts both fields to x87: 75-10... */
+   can sink (variants whose order breaks this went from 841 to 915 bytes). */
 
 void ch_ActTurn(CHACTION *a)
 {
