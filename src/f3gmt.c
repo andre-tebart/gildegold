@@ -1994,21 +1994,19 @@ int gm_FindPlayerBuilding(int p)
     return 0;
 }
 /* 0x501030, the next building of the query gm_BuildQuery (0x501190) started: walks the cursor gm_BQCursor over the used records of ai_Blds and returns the first that matches every set criterion (type, id, master, owner, the class of its type; gm_BQStopFirst takes any); 0 when the table ends (the cursor is cleared) or more than 0x100 records were tested
-   @deep s13: back to the goto no form of s8 (the orchestrator's choice; the && chain marking m in each
+   @deep deep s24: the store-first form (gm_BQFirstCall = 0 before the walk, while or for+break) is 4 ins:
+   VC6 threads the walk's bottom exit (known cursor >= end) into a return-0 copy, the original jumps to the
+   shared end check (cmp eax,esi) instead; so in the original something non-empty sat between the walk's
+   bottom exit and the check in the IL. Tried this session: the check written in the first branch / in the
+   else / in both (14..19), if (gm_BQFirstCall == 0) arms swapped (20), guarded do-while form (9), climb
+   --rounds 2 from the store-first text (best = the tree's store-after form). Left: the 2-ins store
+   position (ours mov byte [gm_BQFirstCall],0 after the walk's jb, the original between its cmp and jae).
+   prior: s13: back to the goto no form of s8 (the orchestrator's choice; the && chain marking m in each
    test is the same code, dcp try = control). Left (2 ins): gm_BQFirstCall = 0 is stored before the
    first-call walk's jae in the original, its bottom exit still jumping to the shared end check; ours
    stores after the walk. Tried s9: store first with while (c < end) { if (type) break; c++; } / !type: 4
    ins (bottom exit threaded); store first + guarded inner while with break: 9; walks swapped under if
-   (!first): 20; nested if/else per criterion with m = 0 at each level: 20. prior: match-deep s9: the
-   criteria are one && chain, each match marking m inside its test ((t == want && (m = 1))), else m = 0:
-   the same code as the goto form of s8 (mismatch block out of line after the returns), goto-free. Left (2
-   ins): gm_BQFirstCall = 0 is stored before the first-call walk's jae in the original, its bottom exit
-   still jumping to the shared end check; ours stores after the walk. Tried s9: store first with while (c <
-   end) { if (type) break; c++; } / !type: 4 ins (bottom exit threaded); store first + guarded inner while
-   with break: 9; walks swapped under if (!first): 20; nested if/else per criterion with m = 0 at each
-   level: 20. prior: match-deep 2026-11-17 (s8): draft 8 -> shape 2, size 341 = 341: the id / master /
-   owner criteria as if (field == want) m = 1; else goto no; (the mismatch is the else of the match test):
-   VC6 then puts the no block (xor cl,cl; jmp) out of line after... */
+   (!first): 20; nested if/else per criterion with m = 0 at each level: 20. */
 
 unsigned char *gm_BuildNext(void)
 {
