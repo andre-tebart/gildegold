@@ -5196,23 +5196,21 @@ void he_AllocGraveCare(int ev)
     AIBLD *bld;
     short *grp;
 
-    if (per == 0) {
-        he_FreeEvent((int *)ev);
-        return;
+    if (per != 0) {
+        bld = (AIBLD *)gm_FindBuildingById(e->from);
+        if (bld != 0) {
+            grp = (short *)gm_Query((void *)bld->objList, 1, 0, 0xfd);
+            sv_MoveToGroup((unsigned char *)bld, grp, per->id, (char *)ev);
+            p->care = 0.0f;
+            p->left = 0x1fe;
+            p->since = ai_Time;
+            e->end = ai_Time;
+            e->stage = 0;
+            gm_AddTime(&e->end, 0, 5, 0);
+            return;
+        }
     }
-    bld = (AIBLD *)gm_FindBuildingById(e->from);
-    if (bld == 0) {
-        he_FreeEvent((int *)ev);
-        return;
-    }
-    grp = (short *)gm_Query((void *)bld->objList, 1, 0, 0xfd);
-    sv_MoveToGroup((unsigned char *)bld, grp, per->id, (char *)ev);
-    p->care = 0.0f;
-    p->left = 0x1fe;
-    p->since = ai_Time;
-    e->end = ai_Time;
-    e->stage = 0;
-    gm_AddTime(&e->end, 0, 5, 0);
+    he_FreeEvent((int *)ev);
 }
 /* 0x571640, the run handler of the grave care job 0x8d (alloc he_AllocGraveCare; ai.c's ai_GraveCare posts it with the
    grave's list size and entry): outside the working hours of the season (gm_DayStartHours .. gm_DayEndHours) a
