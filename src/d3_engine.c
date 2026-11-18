@@ -265,25 +265,25 @@ void d3_ProjectMesh(D3OBJECT *obj)
 }
 /* 0x4391d0, sets up the view frustum planes (d3_Planes), the corner directions (d3_Frustum) and the
    plane lists of the 64 clip codes (d3_ClipInfo).
-   @deep size queue s5: kept the two s copies late: d3_Planes[1].z = s after tb = atan2 (s4's p1at) and
-   d3_Planes[3].z = s after rot.x / rot.y: 98 -> 24 ins, raw 1141 vs 1145 (padded 1152 = the original's).
-   c2fpu: the original's s webs both go to memory because each outlives an atan2 result it does not nest
-   with (s1 vs tb, s2 vs tb dying at rot.x = nb = -tb); a P3.z store before nb keeps s2 on the FPU. Left:
-   (1) the frame is 4 bytes bigger (0x60 vs 0x5c): ours s now overlaps nb, the original shares s and nb in
-   one slot (the second group reads nb from s's slot), so in the original's IL P3.z reads s before nb is
-   defined and s2 is still in memory: what spills s2 there is open (all orders of P3.z / rot.x = nb / rot.y
-   = na: 24-88 ins; split nb = -tb; rot.x = nb = same code); (2) fsin before fcos in both pairs (s =
-   sin(..) first, sf2 forms: 80-89 ins without the late P3.z, 25-30 with it); (3) the P4 / P5 constant
-   stores among the loop setup. Ideas: nb reusing s's variable, rot.x = nb = -b (tb dying at b). prior: s4
-   (size queue, 1134 vs 1145): the P1.z = s copy moved after tb = atan2 (cf-p1at6) gives s its memory home
-   and the original's int copy (mov eax,[s]; mov [P1.z],eax), 98 -> 84 ins, 1135 bytes; after FovY / the
-   second sin: same 84 / 1135; sin-first forms (sf, sp) 87-122 ins. Left with cf-p1at6: fsin still after
-   fcos (original fsin; fld st(1); fcos), the second plane pair's s copy (mov ecx,[s2]), the &m / &rot
-   pushes, the d3_Planes[4]/[5] store order (+10 bytes of the gap: the original stores P4 / P5 constants
-   among the loop setup). Not applied (worse slots on its own); next: P3.z = s after rot.x / MatFromAngles
-   in combination with p1at6. prior: headers sample: insensitive (32 samples, one codegen). Kept: the atan2
-   results as double locals ta/tb (d3_FovX = a = (float)ta, sin/cos/negation of ta): VC6 now keeps them on
-   the FPU stack through sin/cos and the -b/-a of rot as the original does (f... */
+   @deep s36: the M8 lines of dcp grade on d3_Frustum are alignment artifacts of the 2-instruction gap
+   (both store [0..3].x/y/z in the same order), no meaning bug. Tried the note's two ideas: s reused for nb
+   (P3.z = s; rot.x = s = -tb; second group rot.x = s): frame 0x5c as the original (no frame hunk) but 84
+   ins (regs 40, code 43); rot.x = nb = -b: 37 ins (fpu 56). Left as before: fsin after fcos in both pairs,
+   the s / nb slot sharing (frame 0x60 vs 0x5c), the P4 / P5 constant stores. prior: size queue s5: kept
+   the two s copies late: d3_Planes[1].z = s after tb = atan2 (s4's p1at) and d3_Planes[3].z = s after
+   rot.x / rot.y: 98 -> 24 ins, raw 1141 vs 1145 (padded 1152 = the original's). c2fpu: the original's s
+   webs both go to memory because each outlives an atan2 result it does not nest with (s1 vs tb, s2 vs tb
+   dying at rot.x = nb = -tb); a P3.z store before nb keeps s2 on the FPU. Left: (1) the frame is 4 bytes
+   bigger (0x60 vs 0x5c): ours s now overlaps nb, the original shares s and nb in one slot (the second
+   group reads nb from s's slot), so in the original's IL P3.z reads s before nb is defined and s2 is still
+   in memory: what spills s2 there is open (all orders of P3.z / rot.x = nb / rot.y = na: 24-88 ins; split
+   nb = -tb; rot.x = nb = same code); (2) fsin before fcos in both pairs (s = sin(..) first, sf2 forms:
+   80-89 ins without the late P3.z, 25-30 with it); (3) the P4 / P5 constant stores among the loop setup.
+   Ideas: nb reusing s's variable, rot.x = nb = -b (tb dying at b).
+
+
+
+   */
 
 void d3_SetupFrustum(void)
 {
