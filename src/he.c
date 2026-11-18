@@ -1955,17 +1955,7 @@ D3OBJECT *he_CreateGfxObject(HEGFXINFO *e, char *name, D3OBJECT *obj)
 /* 0x53e780, adds a gfx info for the event `ev`: the model `name` over the object `parent` in the first free of the 0x40
    he_GfxInfos (he_CreateGfxObject), with the 3D option (ai_GameSwitches byte 3) only; an unknown parent gives the
    message "he_CreateGfxInfo(): invalid parent :%s" (formatted, never shown; %s prints the parent's name at its
-   offset 0). Selects scene 0 meanwhile
-   @deep read whole against the original and rewritten on HEGFXINFO / AIJOB.gfx / D3OBJECT: the 3D option
-   test (ai_GameSwitches byte 3), the free entry search over he_GfxInfos[].ev, the scene switch to 0 and
-   back, d3_FindObject(0, 0x40, parent, 0), the dropped sprintf of the parent's name, the ev / parent 0 /
-   eventId / ev->gfx stores and the he_CreateGfxObject call all match. Left is allocation: the original
-   keeps the index in esi through the loop and turns it into the entry pointer in place (shl esi,4; add
-   esi,he_GfxInfos), pushing esi / edi at the entry; ours runs the loop in eax and moves the entry to esi
-   (mov esi,eax), pushing esi / edi after the loop (+0x7 / +0x37 hunks, the eax->esi renames); and the
-   original folds the he_CreateGfxObject cleanup into the last add esp,0x14 where ours keeps add esp,0xc /
-   add esp,8 (+0xa2). Tried early returns, nested ifs, a do-while search, the entry indexed in place of a
-   pointer, and the parent itself as the %s argument */
+   offset 0). Selects scene 0 meanwhile */
 void he_CreateGfxInfo(AIJOB *ev, char *name, D3OBJECT *parent)
 {
     int scene = d3_CurrentScene;
@@ -1974,25 +1964,24 @@ void he_CreateGfxInfo(AIJOB *ev, char *name, D3OBJECT *parent)
     char buf[0x200];
 
     if (ai_GameSwitches.byte[3] != 0) {
-        i = 0;
-        do {
+        for (i = 0; i < 0x40; i++) {
             if (he_GfxInfos[i].ev == 0)
                 break;
-            i++;
-        } while (i < 0x40);
+        }
         if (i != 0x40) {
             e = &he_GfxInfos[i];
             d3if_SelectScene(0, 1);
             if (d3_FindObject(0, 0x40, (int)parent, 0) == 0) {
                 sprintf(buf, "he_CreateGfxInfo(): invalid parent :%s", parent->name);
+                d3if_SelectScene(scene, 1);
             } else {
                 e->ev = ev;
-                e->parent = 0;
                 e->eventId = ev->id;
+                e->parent = 0;
                 ev->gfx = e;
                 he_CreateGfxObject(e, name, parent);
+                d3if_SelectScene(scene, 1);
             }
-            d3if_SelectScene(scene, 1);
         }
     }
 }

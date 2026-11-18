@@ -1344,7 +1344,15 @@ int sv_CreateScrollButtons(); void d2_RadioClear(int g);
    each bookmark's building (its picture 0x427 + type, "%2N8~ %1G" with its owner) or the text 0x205d, and its
    room (picture 0xdf + id, its name) unless none or 0xfd. The right button, F12 (0x58) or escape close it; the
    set button stores the current building in the selected bookmark (ai_SetBookmark), the clear button clears it;
-   the bookmark keys work while it is open (ai_SelectBookmark) */
+   the bookmark keys work while it is open (ai_SelectBookmark)
+   @deep deep s38: left i in ebx / o in ebp where the original has i in ebp (it shares ebp with rebuild)
+   and o in ebx, plus the view slot [esp+0x28] against the group*20 temp's [esp+0x24] (two count-2 slots of
+   a 0x128 frame: the unstable density sort). c2trace: o#1 prio 148 (its block-16 use o->id * 2 + 0x9a8, P
+   13) outranks i#1 132 (i is only referenced at the loop top and latch; the bookmark walk is an IV in
+   [esp+0x10]), so o is served first and takes ebp. climb round 1 (96 mutants): nothing; o = 0 / b = 0
+   placed elsewhere or as else arms: far worse (M8). flip --want 'inc ebp' flips on kb_Last == 1 -> 0 / 2
+   (the const 1 web: rebuild = 1 in ebp is also d2_GetViewWin's 1 at the top) and on b = 0 / o = 0 -> 1:
+   the constant 0 / 1 webs decide it, not i's references. */
 void ai_BookmarkWindow(void)
 {
     char line[0x100];
