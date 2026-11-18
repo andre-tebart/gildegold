@@ -1396,7 +1396,7 @@ void cm_BuildPortraits()
 {
     AICHAR *c;
     AIWEAPON *w;
-    int i, n, x = 0;
+    int i, n, x;
     float t;
 
     for (i = 0; i < 6; i++) {
@@ -1407,6 +1407,7 @@ void cm_BuildPortraits()
         cm_Portraits[i].countText = -1;
         cm_Portraits[i].weaponPic = -1;
     }
+    x = 0;
     for (i = 0, n = 0; i < 31 && n < 6; i++) {
         c = ai_SceneCharsT[i];
         if (c == 0)
