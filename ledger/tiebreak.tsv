@@ -2619,7 +2619,7 @@ exe	0x004e5cd0	amt_InitTable	amt	d8f9efb0c4e8db5f	no	byte	control=byte p1=byte p
 exe	0x004e5e50	amt_Rating	amt	1282ffa091da850b	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	a36f86aa38c5c713
 exe	0x004e6030	amt_FindOffice	amt	c395e1ba23510d09	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	a36f86aa38c5c713
 exe	0x004e60b0	amt_GetOfficeRate	amt	2bbc0436242d1a4d	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x004e6180	amt_ApplyForOffice	amt	b9f0c40b9892fb18	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	a36f86aa38c5c713
+exe	0x004e6180	amt_ApplyForOffice	amt	bc435b429ac700b7	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	7a56b3565760587a
 exe	0x004e6360	amt_CheckApplication	amt	7587603cff647fc2	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004e6430	amt_AcceptApplication	amt	b5613c6209392fc8	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	a36f86aa38c5c713
 exe	0x004e65e0	amt_SendOfficeFree	amt	415667983aaa1e85	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
