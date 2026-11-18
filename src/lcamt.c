@@ -8191,26 +8191,7 @@ int ai_PeaceWindow(AICHARREC *me, LCORDMSG *m)
    6 / 7) alone: 0x10, or 0x20 when it has less than 6 or its goods are worth less than the price. A player (kind 6)
    gets the window (0x1de1: the 6, the price) whose first button, when the player has the 6 (sv_CheckMoney) and the
    price (sv_CheckGoodAmount), does it and tells 0x1de2 (the number converted); either button or a right click
-   close it. Returns 1 once it was done, else 0
-   @deep frame sweep s21: 50 -> 14 ins: faith / skill as locals of the two convert blocks (the non-player
-   branch, the ok click; escaped by &faith); price / n as block locals = control. Left: code 16, order 6 in
-   the player loop: the original's strength-reduced pointer is based at the record's +2 (kind: cmp
-   [esi],0xa; faith at [esi+0xa]), ours at +0xc (faith); xor ebx,ebx (n = 0) scheduled after the pushes in
-   ours. Lead: what makes kind the loop's base (its reference count against faith in that loop). prior:
-   Rewritten whole from the original 0x5cc700..0x5cca3b (was a skeleton named ai_EspionagePayment2; the
-   form privillegien\bekehren): every call, argument, constant and branch read and matched; ours=260
-   original=260. Left: the player loop's induction pointer. VC6 strength-reduces the i-loop over ai_Chars
-   to a pointer; the original pivots it on c->kind (esi = ai_Chars+2: cmp word [esi-2],0xffff / cmp byte
-   [esi],0xa / mov dl,[esi+0xa] / mov cl,[esi+0x82] / cmp esi,0x7d5f82), ours on c->faith (esi =
-   ai_Chars+0xc: [esi-0xc], [esi-0xa], [esi], [esi+0x78], cmp end 0x7d5f8c), hence the two M8 lines. The AI
-   loop (kind read 3 times) pivots on kind on both sides. Adding a second use of c->kind (c->kind != 0xff)
-   moves our pivot to kind (the M8 lines go) but costs a compare: the original must have a second kind use
-   that folds away. Tried pointer walk, lc_CharRecs[i] indexing, (AICHARREC *)ai_Chars[i], continue form,
-   separate player-branch locals (frame grows). The rest: slots (faith / skill / price / ok / win share
-   other slots) and order of the two local stores at +0x1e5. (references: M8 at +0x241: ours refers to
-   ai_Chars+0xc (0x770b8c), the original's field to 0x770b82 (ai_Chars+0x2) (and 1 more), explained: the M8
-   pair is the strength-reduced loop pointer's base (ai_Chars+2 vs ai_Chars+0xc, the same records and
-   fields read): an induction-variable choice, not another object) */
+   close it. Returns 1 once it was done, else 0 */
 
 int ai_ConvertWindow(AICHARREC *me, LCORDMSG *m)
 {
@@ -8265,15 +8246,18 @@ int ai_ConvertWindow(AICHARREC *me, LCORDMSG *m)
                 int faith;
                 unsigned char skill;
 
+                n = 0;
                 skill = me->skills[4];
                 faith = me->faith;
-                n = 0;
                 if (sv_CheckMoney(me, 6) != 0 && sv_CheckGoodAmountB((char *)me, price, ai_OwnPlayer) != 0) {
                     cm_SendMoveGoods(-1, me->netId, ai_OwnPlayer, price);
                     cm_SendMoneyDelta(me->netId, -6);
+                    /* @original: the loop's strength-reduced pointer is based on c->kind (ai_Chars+2: cmp byte
+                       [esi],0xa, faith at [esi+0xa]), which VC6 picks only with a second kind reference, as in
+                       the AI loop above; the original had a kind test VC6 folds away (written twice here) */
                     for (i = 0; i < 768; i++) {
                         c = &((AICHARREC *)ai_Chars)[i];
-                        if (c->id != 0xffff && c->kind < 0xa && c->faith != me->faith &&
+                        if (c->id != 0xffff && c->kind < 0xa && c->kind < 0xa && c->faith != me->faith &&
                             skill > (int)(util_RandomU(0x7e) + c->skills[4])) {
                             n++;
                             cm_BeginFieldBlock((char *)c, c->netId);
