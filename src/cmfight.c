@@ -896,8 +896,8 @@ void cm_OpenCharInfoWin(int a, char *c)
     if (d3if_ScreenBox(((AICHAR *)c)->scene->obj, &r) == 0)
         return;
     x0 = r.left - 0x10;
-    w = r.right - r.left + 0x20;
     y0 = r.top - 0x10;
+    w = r.right - r.left + 0x20;
     if (w <= 0x6e)
         w = 0x6e;
     h = r.bottom - r.top + 0x20;
