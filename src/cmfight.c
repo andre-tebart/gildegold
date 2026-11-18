@@ -4229,22 +4229,7 @@ void cm_FightEndDialog(CMFIGHTREC *a)
    record): 0 when a leader is missing or both are the same, a cart is gone or its goods are worth nothing
    (gm_StallGoodsList's value) or the attacker's building is gone; else for both leaders one party note each by the
    kind of the fight (flags 1: texts 0x11e0 / 0x11e1, 2: 0x11e3 / 0x11e4 with the role of the attacker's building and
-   the target building, 4: 0x11e6 / 0x11e7), the kind's closing text (0x11e2 / 0x11e5 / 0x11e8) appended; 1
-   @deep size queue s12: the role text id is the CSE of cm_FightRole(..) + 0x1125 written at both
-   txt_Format uses (role = cm_FightRole(..); role + 0x1125 twice): the CSE temp is no register candidate
-   the way the named role (prio 80, took ebp, pushed ca / cb into slots) was; 75 -> 26 ins, draft -> shape,
-   282 = 282 ins, padded size equal. Left: esi / edi swapped between cb and the cart pointer / place (the
-   original: cb esi, cart pointer and place edi). Tried (= control): 6 declaration orders; role reusing i
-   or cart; cart as block local; place after gm_BuildQuery (worse, 86). climb --rounds 2 from here: only a
-   txt_Ptrs local (21 ins / 165 bytes, not kept). prior: Read in full against 0x4d60b0..0x4d63d0 and
-   rewritten typed (CMFIGHTREC, AICHAR, AIRECIPE, the closing texts as txt_Ptrs[0x11e2 / 0x11e5 / 0x11e8]
-   instead of the ai_Unk143e9xx views). Meaning fix: the cart test reads the goods' value (AIRECIPE +0xb0,
-   pada8[2]). All statements line up (ours 283 vs 282), same calls, same pushes. Left: allocation - the
-   original keeps cb in esi (stored to [esp+0x18]) and the cart loop counter i in [esp+0x10], ours keeps cb
-   only in its slot [esp+0x10] and i in edi ('- inc edi / add esi,4 / cmp edi,3' vs '+ mov eax,[esp+0x10] /
-   add edi,4 / inc eax / cmp eax,3 / mov [esp+0x10],eax'); hence the reload hunks at +0x20, +0x160 (role in
-   ebp vs a slot [esp+0x14]) and the SendPartyNote pushes at +0x1be; the variable declaration order does
-   not move it. */
+   the target building, 4: 0x11e6 / 0x11e7), the kind's closing text (0x11e2 / 0x11e5 / 0x11e8) appended; 1 */
 int cm_CheckFight(CMFIGHTREC *a)
 {
     char buf[0x400];
@@ -4255,8 +4240,14 @@ int cm_CheckFight(CMFIGHTREC *a)
 
     ca = (AICHAR *)gm_FindChar(a->attackerId);
     cb = (AICHAR *)gm_FindChar(a->defenderId);
-    if (ca == 0 || cb == 0 || ca == cb)
+    if (ca == 0 || cb == 0 || ca == cb) {
+        /* @original the failing guard tests ca == cb once more and returns 0 either way (no code left of it):
+           only with that second test, one more reference of ca and cb, VC6 serves cb before the cart loop's
+           pointer (cb esi, the pointer and place edi); the plain guard gives the two swapped */
+        if (ca == cb)
+            return 0;
         return 0;
+    }
     if (a->flags & 1) {
         for (i = 0; i < 3; i++) {
             if (a->carts[i] != -1) {
