@@ -355,19 +355,29 @@ typedef struct SAVESLOTVIEW {               /* 0x220, one slot of the save / loa
    takes the slot 1 and "AUTOSAVE" the slot 0 whatever slot says, and the slots 0 / 1 take no other name (a
    case-insensitive compare); a free slot (win -1) gets the kind byte and a copy of the request. Returns the
    slot, -1 when it is taken, the name does not fit it or slot is -1. count (0x10) is not read.
-   @deep insensitive (32 samples). Meaning equal. Now shape 14 ins (was draft 17): the arms 'if (slot ==
-   0) { if (strcmpi(name, AUTOSAVE) == 0) goto fill; } else if (slot == 1) {.. QUICKSAVE ..} else if (slot
-   == -1) goto done; else goto fill; slot = -1; goto done;' make VC6 cross-jump the two compare tails into
-   one push edi / call _strcmpi / or ebx,-1 block as the original does, but VC6 keeps the slot==1 arm's
-   copy (the slot==0 arm pushes AUTOSAVE and jumps forward) where the original keeps the slot==0 arm's copy
-   (falls into the call) and places 'cmp ebx,1; jne; push QUICKSAVE; jmp back' after the failure return
-   (+0x61). Left: that block placement (code 10) plus mov edx|ecx for slots at +0x72/+0x80 (regs 4). Tried
-   (dcp try, rs1-rs7): per-arm 'return -1' / 'slot = -1; goto done' / 'goto fail' / inline fail in each
-   arm, 25 combinations x both arm orders: no cross-jump (two compare blocks with their own epilogue, 16-28
-   ins) or the wrong copy; arm order 1-then-0: 12 ins but tests slot==1 first (not the original's order,
-   not kept); slot != 0 nesting: 41-46; switch: 40-48; ?: condition: 34; && / || condition: 18;
-   goto-structured layouts (autosave label after the chain, fail label inside arm 0): 18. The previous
-   want-local form (17) is gone. (tiebreak: insensitive) */
+   @deep deep s29: c2tail --tries on the goto form: the xjump merger deletes the copy before the jmp at the
+   end of the slot == 0 arm (} else if (slot == 1)) and keeps the slot == 1 arm's compare, which falls into
+   the join; the original keeps the slot == 0 copy, so in its flow graph the slot == 1 compare is the one
+   ending in a jmp. Goto-free forms measured (slot = -1 in the failing arm, one if (slot != -1) fill, one
+   return slot): if / else-if arms 17 (flag-inl, slots[slot] inline: 13 ins, every block right except that
+   the QUICKSAVE compare stays a second full copy, no cross-jump: the return block is duplicated into both
+   arms so neither ends in a jmp); (slot == 0 || slot == 1) + strcmpi(name, slot == 1 ? QUICKSAVE :
+   AUTOSAVE): 14 ins with the original's layout but the string as a mov eax / push eax value (the original
+   pushes per arm: two calls); || / && conditions 13-14; ?: condition 10 (neg / sbb setcc); if (slot != 0)
+   {..} else {AUTOSAVE} nesting 24-41. slots[slot] instead of s in the goto form: 10 ins but draft (M9),
+   not kept. prior: insensitive (32 samples). Meaning equal. Now shape 14 ins (was draft 17): the arms 'if
+   (slot == 0) { if (strcmpi(name, AUTOSAVE) == 0) goto fill; } else if (slot == 1) {.. QUICKSAVE ..} else
+   if (slot == -1) goto done; else goto fill; slot = -1; goto done;' make VC6 cross-jump the two compare
+   tails into one push edi / call _strcmpi / or ebx,-1 block as the original does, but VC6 keeps the
+   slot==1 arm's copy (the slot==0 arm pushes AUTOSAVE and jumps forward) where the original keeps the
+   slot==0 arm's copy (falls into the call) and places 'cmp ebx,1; jne; push QUICKSAVE; jmp back' after the
+   failure return (+0x61). Left: that block placement (code 10) plus mov edx|ecx for slots at +0x72/+0x80
+   (regs 4). Tried (dcp try, rs1-rs7): per-arm 'return -1' / 'slot = -1; goto done' / 'goto fail' / inline
+   fail in each arm, 25 combinations x both arm orders: no cross-jump (two compare blocks with their own
+   epilogue, 16-28 ins) or the wrong copy; arm order 1-then-0: 12 ins but tests slot==1 first (not the
+   original's order, not kept); slot != 0 nesting: 41-46; switch: 40-48; ?: condition: 34; && / ||
+   condition: 18; goto-structured layouts (autosave label after the chain, fail label inside arm 0): 18.
+   The previous want-local form (17) is gone. (tiebreak: insensitive) */
 
 int ai_RegisterSaveSlot(int count, SAVESLOTVIEW *slots, int slot, SAVEREQUEST *req)
 {
