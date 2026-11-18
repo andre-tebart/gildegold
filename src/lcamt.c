@@ -10248,27 +10248,35 @@ int ai_UseGoodRaiseRelation(AICHARREC *ch, G8USEVIEW *use)
    first record's type is 6 / 7 the text 0x5176d0 (0xfea, the second record's word) goes through
    0x53dda0 (the first + 4, -1, 1, 0x5fb); when the second's is, the text 0x5176d0 (0xfeb, the first
    word twice) goes through 0x53dda0 (the second + 4, -1, 1, 0x5fb). Returns 1 (0 without records).
-   @deep match-deep s9 (size 469 vs 484 padded 480/496): c2trace: the 0 constant's kind-6 piece (flags, the
-   menus' 0, 0, a == 0, b == 0: 7 refs) has prio 2 sav 0 -> memory; the original's piece also holds the
-   failure return (mov eax,esi), one more ref. const#0 in c2trace names all constants (const#0#1 is the 6).
-   Rounds: return (int)a / (int)b, ret = 0 with return ret in kind 6 + cfg.flags = ret: = control. The
-   tests moved behind the if/else (if (a != 0 && b != 0) { body; return 1; } return 0;) or return ret only
-   in the kind-6 path: 76 ins but the original's three returns (else failures to a return after the success
-   one); there ch takes esi and ebx stays unused. ret = 0 .. ret = 1 .. return ret (body-if): 60 ins, the
-   zero in a callee-saved register (ebx) through the kind-6 path as the original, but live to the end
-   (final return ret) so ch moves to esi. The original's zero is dead after the kind-6 path (esi = req
-   there, final returns xor eax,eax / mov eax,1). Next: a form where a 0-valued variable is a candidate
-   only in the kind-6 path (its last use there) with the body-if return layout. climb round 1 from body-if:
-   best 72 (a local for b->netId), nothing. prior: match-deep 2026-11-17 (s8): two meaning bugs fixed
-   (he_ShowNews got 1 as the text and the text as the int: the original pushes (netId, -1, text, 1, 0x5fb,
-   0); the second menu's left-out id is cfg.ids[0], not ids[4]) and cfg.flags = 0 added (the original
-   stores it after the memset): 37 -> 28 ins. Left (size 469 vs 484): the original holds 0 in esi through
-   the kind-6 path (xor esi,esi before the kind test; push esi for the menus' 0, 0, cfg.flags = esi, cmp
-   edi/ebp,esi, the second failure returns mov eax,esi) while the else path loads req into esi and its
-   failures jump to a third return (xor eax,eax) after the success return; ours pushes immediates, tests,
-   and has 2 returns. No lever: ret = 0 with return ret in path 1 / every failure / ret = 1 at the end (=
-   control); a == 0 and b == 0 as two returns 51. prior: read the whole original 0x5d0c70..0x5d0e54 and
-   reconciled every statement: the ki... */
+   @deep deep s39: the original's esi holds three things in turn: the zero through the kind-6 path (xor
+   esi,esi in the FIRST block before cmp al,6; push esi x4, cfg.flags, cmp edi/ebp,esi, the kind-6 failure
+   return mov eax,esi inline behind cmp ebp,esi / jne body), req in the else path, amount in the body; the
+   else failures go to a third return (xor eax,eax) behind the success return (mov eax,1). Probe: one more
+   zero store in the kind-6 arm (cfg.lockSecond = 0) gives the const-0 piece esi (16 ins) but with xor
+   esi,esi inside the arm and xor eax,eax returns: the original's zero starts in block 0, so it is a
+   variable set to 0 there (the family's ret = 0), not the constant web alone. Sweeps (dcp try, about 900
+   variants): ret = 0 at the top with kind-6 exits goto done / return ret, the else exits return 0 / return
+   ret / goto done, the body plain or under if (b != 0) / if (a != 0 && b != 0), ret = 1 at the body's
+   start / after amount / end, the second menu nested under if (a != 0), b = 0 / a = 0 inits: every form
+   whose return ret only sees ret = 0 folds to the control's code; best layout-right-but-28: control. Best
+   instruction set: 'if (a == 0) goto done' in the kind-6 arm, 'if (a == 0 || b == 0) goto done' in the
+   else arm, 'if (b != 0) { body; ret = 1; }', 'done: return ret' (44 ins, shape: every instruction of the
+   original incl. the esi zero, mov eax,esi and the three returns, but VC6 puts the else arm behind the
+   success return and the kind-6 return copy last; one store order cfg.kind / cfg.filter). With the kind-6
+   arm's own 'if (b == 0) goto done' the arms' tails merge and ret takes ebx for the whole function (51).
+   Open: a flow graph with that liveness (ret's zero live through the kind-6 arm only) and the else arm in
+   line. prior: match-deep s9 (size 469 vs 484 padded 480/496): c2trace: the 0 constant's kind-6 piece
+   (flags, the menus' 0, 0, a == 0, b == 0: 7 refs) has prio 2 sav 0 -> memory; the original's piece also
+   holds the failure return (mov eax,esi), one more ref. const#0 in c2trace names all constants (const#0#1
+   is the 6). Rounds: return (int)a / (int)b, ret = 0 with return ret in kind 6 + cfg.flags = ret: =
+   control. The tests moved behind the if/else (if (a != 0 && b != 0) { body; return 1; } return 0;) or
+   return ret only in the kind-6 path: 76 ins but the original's three returns (else failures to a return
+   after the success one); there ch takes esi and ebx stays unused. ret = 0 .. ret = 1 .. return ret
+   (body-if): 60 ins, the zero in a callee-saved register (ebx) through the kind-6 path as the original,
+   but live to the end (final return ret) so ch moves to esi. The original's zero is dead after the kind-6
+   path (esi = req there, final returns xor eax,eax / mov eax,1). Next: a form where a 0-valued variable is
+   a candidate only in the kind-6 path (its last use there) with the body-if return layout. climb round 1
+   from body-if: best 72 (a local for b->netId), nothing. */
 
 int ai_QuarrelCallback(AICHARREC *ch, int *req)
 {
