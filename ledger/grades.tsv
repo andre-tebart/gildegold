@@ -835,7 +835,7 @@ exe	0x00442080	d3fl_LoadTexture	d3_fl	byte	readable
 exe	0x00442210	d3fl_ReplaceTexture	d3_fl	byte	readable		
 exe	0x00442280	d3fl_ReloadTextures	d3_fl	byte	readable		
 exe	0x00442390	d3fl_LoadMap	d3_fl	byte	readable		
-exe	0x00442ac0	d3fl_TileBox	d3_fl	shape	readable		
+exe	0x00442ac0	d3fl_TileBox	d3_fl	shape	readable	deep	
 exe	0x00442ed0	d3fl_UpdateWater	d3_fl	shape	readable	deep	
 exe	0x004430c0	d3fl_DrawWater	d3_fl	draft	readable	deep	
 exe	0x004437f0	d3fl_UpdateTiles	d3_fl	byte	readable		
@@ -1307,7 +1307,7 @@ exe	0x00472ce0	d2_RemoveWindow	d2	byte	readable
 exe	0x00472d20	d2_RemoveWindowObjects	d2	byte	readable		
 exe	0x00472e00	d2_CloseWindow	d2	byte	readable		
 exe	0x00472f50	d2_RaiseObject	d2	byte	readable		
-exe	0x00472fd0	d2_RaiseWindow	d2	draft	readable	deep	
+exe	0x00472fd0	d2_RaiseWindow	d2	byte	readable		
 exe	0x004730e0	d2_AddToDrawOrder	d2	byte	readable		
 exe	0x004731d0	d2_WinOpenPic	d2	byte	readable		
 exe	0x00473350	d2_WinOpenPicStyled	d2	byte	readable		
@@ -1764,7 +1764,7 @@ exe	0x004a77e0	ai_PokerNpcExchange	poker	byte	readable
 exe	0x004a79d0	ai_PokerSwapCard	poker	byte	readable		
 exe	0x004a7a20	ai_PokerPayStakes	poker	byte	readable		
 exe	0x004a7ac0	ai_PokerPickStrategies	poker	draft	readable	deep	
-exe	0x004a7c20	ai_PokerNpcFold	poker	shape	readable		
+exe	0x004a7c20	ai_PokerNpcFold	poker	byte	readable		
 exe	0x004a7e70	ai_PokerOpenCounts	poker	draft	readable	deep	
 exe	0x004a7f50	ai_PokerRateHand	poker	byte	readable		
 exe	0x004a8190	ai_PokerShowdown	poker	draft	readable	deep	
@@ -1917,7 +1917,7 @@ exe	0x004b2ce0	hst_ParseText_Real	hst	byte	readable
 exe	0x004b2ed0	hst_ParseDate	hst	byte	readable		
 exe	0x004b3280	hst_NextEvent	hst	shape	readable	deep	
 exe	0x004b3350	hst_LastYearDialog	hst	byte	readable		
-exe	0x004b35e0	hst_NextEventCmd	hst	shape	readable		
+exe	0x004b35e0	hst_NextEventCmd	hst	shape	readable	deep	
 exe	0x004b36d0	hst_LastYearCmdDialog	hst	byte	readable		
 exe	0x004b3960	hst_YearlyHistory	hst	byte	readable		
 exe	0x004b39f0	ai_ClearMissions	mission	byte	readable		
@@ -2350,7 +2350,7 @@ exe	0x004cbbd0	cm_ExChat	cm	byte	readable
 exe	0x004cbca0	cm_ExCreateGeb	cm	byte	readable		
 exe	0x004cbff0	cm_ExCharHalt	cm	byte	readable		
 exe	0x004cc050	cm_ExObjCell	cm	byte	readable		
-exe	0x004cc110	cm_ExWalkPath	cm	shape	readable		
+exe	0x004cc110	cm_ExWalkPath	cm	byte	readable		
 exe	0x004cc1b0	cm_ExCutEntry	cm	byte	readable		
 exe	0x004cc270	cm_ExCutEntryUpdate	cm	byte	readable		
 exe	0x004cc330	cm_ExDamage	cm	byte	readable		
@@ -3649,7 +3649,7 @@ exe	0x0054f160	he_RunDarkCorner	he	draft	readable	deep
 exe	0x0054fb50	he_StartEffectEvent	he	byte	readable		
 exe	0x0054fc00	he_CreateSmokeEffect	he	byte	readable		
 exe	0x0054fc70	he_CreatePointsEffect	he	byte	readable		
-exe	0x0054fce0	he_RunEffectEvent	he	shape	readable		
+exe	0x0054fce0	he_RunEffectEvent	he	byte	readable		
 exe	0x0054fe80	he_StartSendHomeEvent	he	byte	readable		
 exe	0x0054ff20	he_RunSendHomeEvent	he	draft	readable	deep	
 exe	0x00550070	he_CreateReaper	he	byte	readable		
@@ -3710,7 +3710,7 @@ exe	0x00557160	he_AllocMessageBox	he	byte	readable
 exe	0x00557190	he_RunMessageBox	he	draft	readable	deep	
 exe	0x005578a0	he_RunSlotOrder	he	byte	readable		
 exe	0x00557b30	he_AllocSlotOrderStore	he	byte	readable		
-exe	0x00557b70	he_RunStoreExtension	he	shape	readable		
+exe	0x00557b70	he_RunStoreExtension	he	byte	readable		
 exe	0x00557d70	he_AllocHerbGathering	he	byte	readable		
 exe	0x00557e20	he_RunHerbGathering	he	draft	readable	deep	
 exe	0x005584d0	he_AllocAnimalHunt	he	byte	readable		
@@ -3836,7 +3836,7 @@ exe	0x0056d2d0	he_AllocRecipeResearch	he_b	byte	readable
 exe	0x0056d3d0	he_RunRecipeResearch	he_b	byte	readable		
 exe	0x0056d610	he_AllocResearchRecipe	he_b	byte	readable		
 exe	0x0056d730	he_RunResearchRecipe	he_b	byte	readable		
-exe	0x0056d990	he_AllocTrainShare	he_b	shape	readable		
+exe	0x0056d990	he_AllocTrainShare	he_b	byte	readable		
 exe	0x0056daa0	he_RunTrainShare	he_b	byte	readable		
 exe	0x0056dd20	he_AllocAlchemistDay	he_b	byte	readable		
 exe	0x0056ddc0	he_RoomBusy	he_b	byte	readable		
@@ -3872,7 +3872,7 @@ exe	0x00570cc0	he_RunPlunderOffer	he_b	byte	readable
 exe	0x00570ea0	he_NoEvent88Pair	he_b	byte	readable		
 exe	0x00570ef0	he_AllocMasterWork	he_b	byte	readable		
 exe	0x00571000	he_RunMasterWork	he_b	shape	readable		
-exe	0x00571550	he_AllocGraveCare	he_b	shape	readable		
+exe	0x00571550	he_AllocGraveCare	he_b	byte	readable		
 exe	0x00571640	he_RunGraveCare	he_b	byte	readable		
 exe	0x00571990	he_AllocDeathDue	he_b	byte	readable		
 exe	0x005719e0	he_RunDeathDue	he_b	byte	readable		
@@ -4118,12 +4118,12 @@ exe	0x0058ad20	lobby_FetchPlayers	lobby	byte	readable
 exe	0x0058ada0	lobby_ShowPlayers	lobby	byte	readable		
 exe	0x0058af50	lobby_ChoosePlayer	lobby	byte	readable		
 exe	0x0058b880	lobby_ChooseProfession	lobby	byte	readable		
-exe	0x0058ba70	lobby_ShowChat	lobby	shape	readable		
+exe	0x0058ba70	lobby_ShowChat	lobby	byte	readable		
 exe	0x0058bbd0	ai_InitProductionTables	lc	byte	readable		
 exe	0x0058bd60	ai_ProductionWindow	lc	draft	readable	deep	
 exe	0x0058c680	ai_UpdateResourceColumns	lc	draft	readable	deep	
 exe	0x0058cc10	ai_UpdateProdColumns	lc	draft	readable	deep	
-exe	0x0058d720	ai_UpdateProdGoodsList	lc	draft	readable	deep	
+exe	0x0058d720	ai_UpdateProdGoodsList	lc	byte	readable		
 exe	0x0058dd00	ai_LayoutProdGoodsList	lc	byte	readable		
 exe	0x0058e130	ai_UpdateMarketGoodsList	lc	byte	readable		
 exe	0x0058e440	ai_LayoutMarketGoodsList	lc	byte	readable		
