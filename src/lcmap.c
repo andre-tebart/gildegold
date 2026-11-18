@@ -1908,16 +1908,7 @@ G8SLOT *ai_FindSettingSlots(int bldId)
    slots when the chain ai_Settings has one for the building's id (ai_FindSettingSlots); else, for a building with an
    item group (ai_FindItemGroup), a zeroed record ("hp_AddProdSetting") keyed by the id with a random seed, the
    factor 1.0 and the weights of its goods (ai_FillSettingWeights) is put at the head of the chain and its slots
-   returned; 0 without a group or memory
-   @deep Read whole against the original (130 instructions): the empty-chain branch and the lookup branch
-   (ai_FindSettingSlots by G8BLD.id), the item-group test, mem_Alloc(0x4c, "hp_AddProdSetting") with the
-   rec kept in a slot for the engine's inline-asm clear (D3_ZERO_AT, _zn at [ebp-8]), the key, rand seed,
-   factor 1.0, ai_FillSettingWeights, the head link; every statement and store is equal. Remaining (code
-   9): the original's two alloc-failure returns share one tail with 'xor eax, eax' (0x5a8646: the first
-   branch's 'je' jumps into the second branch's return) where our VC6 knows eax is the zero rec and returns
-   without the xor, each from its own epilogue (returns 6/5). Tried: return of a zero-known variable, if
-   (rec != 0) { ... } blocks (worse: 32), an int return type (the K&R callers in f3gm), none makes the
-   compiler forget eax. */
+   returned; 0 without a group or memory */
 
 void *ai_ProdSetting(int bld)
 {
@@ -1928,15 +1919,16 @@ void *ai_ProdSetting(int bld)
         if (ai_FindItemGroup((char *)bld) == 0)
             return 0;
         rec = (G8SETTING *)mem_Alloc(0x4c, "hp_AddProdSetting");
-        if (rec == 0)
-            return 0;
-        D3_ZERO_AT(rec, sizeof(G8SETTING));
-        rec->bldId = ((G8BLD *)bld)->id;
-        rec->seed = rand();
-        rec->factor = 1.0f;
-        ai_FillSettingWeights((G8BLD *)bld, rec);
-        ai_Settings = rec;
-        return rec->slots;
+        if (rec != 0) {
+            D3_ZERO_AT(rec, sizeof(G8SETTING));
+            rec->bldId = ((G8BLD *)bld)->id;
+            rec->seed = rand();
+            rec->factor = 1.0f;
+            ai_FillSettingWeights((G8BLD *)bld, rec);
+            ai_Settings = rec;
+            return rec->slots;
+        }
+        return 0;
     }
     slots = ai_FindSettingSlots(((G8BLD *)bld)->id);
     if (slots != 0)
