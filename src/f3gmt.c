@@ -5138,7 +5138,20 @@ void he_RecheckPersonEvents();                     /* 0x53ed40 */
 
 /* 0x506180, the ranking of the players: the up to 8 characters of the kinds 5 / 6 / 7 into out (*count of them),
    each with its talents, title, office, reputation and worth (see GMRANK), the weighted sum 0.15 * (title + office +
-   reputation) + 0.3 * worthShare + 0.25 * talents and the points; every line is formatted into a log buffer */
+   reputation) + 0.3 * worthShare + 0.25 * talents and the points; every line is formatted into a log buffer
+   @deep deep s32: draft 16 -> shape 4 ins. Kept: the sum as (r->reputation + (r->title + r->office)) *
+   0.15f (VC6 orders a left-assoc float chain itself: all 6 orders of title + office + reputation are one
+   code with fld reputation first; the original's fld title; fadd office; fadd reputation comes from the
+   right-nested grouping), acc = 0.0f then for (j = 0, liked = 0; ..) (j's xor ebx ahead of liked's xor ebp
+   and the acc store, the original's order), best = 0 before n = 0, the first loop as for (i = 0; i < 0x300
+   && n < 8; i++) (= the break form). Left (4 ins, the prologue): the original stores best = 0 from edx
+   (n's zero: xor edx; push edi; mov [esp+0x1c],edx; xor edi,edi), ours from edi (push edi; xor edi,edi;
+   mov [esp+0x1c],edi; xor edx,edx): c2trace const#0#16 (pass 5, lines best/n/i, savings 0) took edi. =
+   control or worse: all 6 orders of best/n/r, n = best = 0, best = n, = 0 initializers (initgen),
+   int/unsigned types of n/i/best, out[n].id = i, a c pointer in loop 1, n < 8 first in the for (26 ins).
+   climb round 1 + 2 from this text: nothing. flip --want 'xor edx, edx\s+push edi': only i = 1 and r->id =
+   i moved out of the if (both meaning changes). (declaration set: no declaration set makes this text byte
+   (every symbol-count shift 0..63 at the unit's start and before the function) */
 
 void gm_RankPlayers(int *count, GMRANK *out)
 {
@@ -5150,12 +5163,10 @@ void gm_RankPlayers(int *count, GMRANK *out)
     int n, i, j, skills, best, liked;
     float office1, acc, scale;
 
-    n = 0;
     best = 0;
+    n = 0;
     r = out;
-    for (i = 0; i < 0x300; i++) {
-        if (n >= 8)
-            break;
+    for (i = 0; i < 0x300 && n < 8; i++) {
         if (ORD_CHARS[i].kind == 6 || ORD_CHARS[i].kind == 7 || ORD_CHARS[i].kind == 5) {
             r->id = i;
             n++;
@@ -5178,8 +5189,7 @@ void gm_RankPlayers(int *count, GMRANK *out)
         amt_GetKind(ORD_CHARS[r->id].job2, &kind);
         r->office = ((float)kind.level + office1) * 0.07692308f; /* / 13 */
         acc = 0.0f;
-        liked = 0;
-        for (j = 0; j < 0x300; j++) {
+        for (j = 0, liked = 0; j < 0x300; j++) {
             c = &ORD_CHARS[j];
             if (j != r->id && c->id != 0xffff
                 && (c->kind == 6 || c->kind == 7 || c->kind == 5 || c->kind == 4)) {
@@ -5195,7 +5205,7 @@ void gm_RankPlayers(int *count, GMRANK *out)
     scale = (float)best * 0.0001f;
     for (i = 0, r = out; i < *count; i++, r++) {
         r->worthShare = (float)r->worth / (float)best;
-        r->sum = (r->title + r->office + r->reputation) * 0.15f + r->worthShare * 0.3f + r->talents * 0.25f;
+        r->sum = (r->reputation + (r->title + r->office)) * 0.15f + r->worthShare * 0.3f + r->talents * 0.25f;
         r->points = (int)(scale * r->sum);
         sprintf(buf, "player %i: sum:%f points:%i verm\366gen:%i vermoegen_trend:%f ansehen:%f talente:%f amt:%f", i, (double)r->sum, r->points, r->worth, (double)r->worthShare,
                 (double)r->reputation, (double)r->talents, (double)r->office);
