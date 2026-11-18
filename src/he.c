@@ -12926,7 +12926,8 @@ void he_RunStoreExtension(int ev)
                     he_MessageBoxQuickjump(ai_CharsT[e->chr].netId, -1, text, 0, tid, b->id, q->objId, 0, 0);
                 else
                     he_MessageBoxQuickjump(ai_CharsT[e->chr].netId, -1, text, 0, tid, b->id, -1, 0, 0);
-                break;
+                he_FreeEvent((int *)ev);
+                return;
             } else {
                 e->end = ai_Time;
                 gm_AddTime(&e->end, 0, 0xf, 0);
