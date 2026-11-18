@@ -3604,15 +3604,11 @@ int ai_ExecuteUseMilitaryObject(G5CH *p, AIARG *s1, AIARG *s2)
    than six goods and none of them usable, the sub-action 2 to get one fitting the office level (weight 0.05; o2
    the character itself); else with a usable one the action 0x1c on a random one (o1 kind 1, its inventory entry):
    goods 9 and 10 with a partner of the other / the same sex (ai_PickPartnerChain, o2 kind 7), good 8 through the
-   sub-action 3
-   @deep order hunk gone with the sub-action tail if (r != 0) { *o1 = s1; *o2 = s2; } return r;
-   (ai_DecideUseEducationObject byte with it). Left: slots 28 (not worked yet: dcp frame). */
+   sub-action 3 */
 
 int ai_DecideUseReputationObject(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
 {
     int k, i, r;
-    int flags;
-    unsigned short id;
     AIARG s1;
     AIARG s2;
     int st[3];
@@ -3680,6 +3676,9 @@ int ai_DecideUseReputationObject(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     s1.arg = -1;
     s1.arg2 = 0x1c;
     if (i == 9) {
+        int flags;
+        unsigned short id;
+
         flags = (p->sex != 0 ? 1 : 2) | AI_CHAIN_USEREPUTATION;
         if (ai_PickPartnerChain((AIPER *)p, 1, &flags, 10.0f, (float)util_RandomU(0x20) + 40.0f, &id) == 0)
             return 0;
@@ -3687,6 +3686,9 @@ int ai_DecideUseReputationObject(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         s1.ref = ai_CharsT[id].netId;
         s1.arg = -1;
     } else if (i == 10) {
+        int flags;
+        unsigned short id;
+
         flags = (p->sex != 1 ? 1 : 2) | AI_CHAIN_USEREPUTATION;
         if (ai_PickPartnerChain((AIPER *)p, 1, &flags, 10.0f, (float)util_RandomU(0x20) + 40.0f, &id) == 0)
             return 0;
@@ -3695,10 +3697,10 @@ int ai_DecideUseReputationObject(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         s1.arg = -1;
     } else if (i == 8) {
         r = ai_ChooseSubAction(k, p->id, 3, &s2, &s1);
-        if (r == 0)
-            return r;
-        *o1 = s2;
-        *o2 = s1;
+        if (r != 0) {
+            *o1 = s2;
+            *o2 = s1;
+        }
         return r;
     }
     *o1 = s2;
