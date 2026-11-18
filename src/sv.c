@@ -431,12 +431,16 @@ int sv_MessageBox(int text, unsigned flags)
     return ret;
 }
 /* 0x521410, the green message box ("misc\\MessageBoxGreen" 0x623ed0) with an optional title text a and the text b; like 0x521150, a button returns its number + 1. Not reentrant (sv_MessageBoxGreenOpen, 0x6f2351)
-   @deep size fixed s4 (644 = original): bar = -1 as an init with the slider opened under if (flags & 0x80)
-   (the original's -1 store at the top, mov esi,[bar] at the join); 7 -> 2 ins. Left: the original stores
-   -1 before the open-box guard (mov [esp+0x14],-1 before je), ours after it; with bar = -1 before the
-   guard (any of the 24 orders of t0 / i / ret / bar) the zero constant moves from esi to ebp (82 ins);
-   every split of the inits around the guard: best 2 ins (t0, i, ret | guard | bar, or t0, ret | guard | i,
-   bar). */
+   @deep deep s24: all 120 orders of the inits t0 / i / ret / bar and the open-box guard (best rbGti 6 ins,
+   irGtb 8; every bar-before-guard order with t0 first 71..86: ret takes ebp, the zero leaves esi); the
+   sibling sv_MessageBox's forms (timed = flags & 0x80 local, the radio loop as guarded do-while) with bar
+   first: = 82, no lever; climb --rounds 2: nothing. Left: the 2-ins bar = -1 store (original before the je
+   of the guard, ours after it). prior: size fixed s4 (644 = original): bar = -1 as an init with the slider
+   opened under if (flags & 0x80) (the original's -1 store at the top, mov esi,[bar] at the join); 7 -> 2
+   ins. Left: the original stores -1 before the open-box guard (mov [esp+0x14],-1 before je), ours after
+   it; with bar = -1 before the guard (any of the 24 orders of t0 / i / ret / bar) the zero constant moves
+   from esi to ebp (82 ins); every split of the inits around the guard: best 2 ins (t0, i, ret | guard |
+   bar, or t0, ret | guard | i, bar). */
 
 int sv_MessageBoxGreen(int a, int b, unsigned flags)
 {
