@@ -4392,7 +4392,7 @@ exe	0x005af1c0	ai_OpenTransportBuy	lc	6148597419d04bda	no	byte	control=byte p1=b
 exe	0x005af1d0	ai_TransportWindow	lc	41ef477cec79ce17	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x005b2090	ai_LoadTownMap	lc	eaaccae439f4ec74	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
 exe	0x005b2180	ai_MapPick	lc	c644f952ecb14b1e	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x005b2530	ai_NewStorageSlotWindow	lcdom	7acd5a8aa20aba74	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=568	c3097bbae009c1dc
+exe	0x005b2530	ai_NewStorageSlotWindow	lcdom	bac359d1e28d0368	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	37f3fcdfa8fc77de
 exe	0x005b26b0	ai_StorageWindow	lc	6ca1eb8abef5e8be	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x005b3130	ai_TalentWindow	lc	a2e5c76d50566d63	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
 exe	0x005b3630	ai_SabotageCallback	lc	0500bbab99563ca7	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	

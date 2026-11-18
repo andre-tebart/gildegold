@@ -4519,17 +4519,15 @@ int ai_MapPick(unsigned int flags, int *req, char *name, void (*cb)(), int unuse
    below the type's max116, else the text 0x111; the others offer the first slot (0x10c) while level is below
    min0 (else 0x110) and the second (0x10d) while level2 is below min1 (else 0x111); the closing text 0x10f.
    Returns 1 for the first offer, 2 for the second, 0 when closed (the button 1 or the right button)
-   @deep 52 ins, a pure register permutation (the original: r ebp, first ebx, bt edi, win esi; ours r ebx,
-   first ebp, bt esi, win edi). c2trace: r -1 / first -2 (first must rank above r), bt 24 / win 22 (win
-   must rank above bt). s41: the loop's sv_PopRequest = 1 written ONCE (if first r = 1; else if second r =
-   2; else if (d2_ClickedId != 1) goto rup; sv_PopRequest = 1;) fixes r / first (prio -5 / 0) and lifts win
-   to 24 = bt: 32 ins; then win before bt in the source breaks the tie (20 ins, but bt is computed after
-   d2_OpenForm, the original computes it before). Not kept: the goto form is no plain source. flip.py
-   --want 'mov esi, eax' after d2_OpenForm named the loop's stores (del r = 2, del the ClickedId == 1
-   store, dup else-if second): the loop's block count decides both pairs. No lever: all 120 orders of the 5
-   inits, inline bt (82), the 0x116 arm first, inverted min tests, while(1)+break, nested ||, climb 2
-   rounds on both texts. Next: a plain loop body with one PopRequest store and one block fewer than formA
-   for win (+1 over bt) */
+   @deep 32 ins (was 52), a register permutation of bt / win only: the original has bt in edi, win in esi;
+   ours the reverse. c2trace: bt 24 = win 24 (tie, bt served first). Kept (s41): the loop's three
+   sv_PopRequest stores as a flag decided per path (pop = 0; .. pop = 1 in each arm; if (pop) sv_PopRequest
+   = 1;), the same code as one store behind gotos: it fixes r / first (r ebp, first ebx as in the original)
+   and lifts win from 22 to 24. Breaking the tie: win before bt in the source gives the right registers (20
+   ins) but then bt is computed after d2_OpenForm (the original computes it before). No lever: all 120
+   orders of the 5 inits, inline bt (82), the 0x116 arm first, inverted min tests, while(1)+break, nested
+   ||, the flag around the rup test too (= 32), climb 2 rounds. Next: one more reference for win or one
+   fewer block where bt is live (P weights in c2trace --prio) */
 
 int ai_NewStorageSlotWindow(AIOBJ *obj, AIBLD *bld, int level, int level2)
 {
@@ -4537,6 +4535,7 @@ int ai_NewStorageSlotWindow(AIOBJ *obj, AIBLD *bld, int level, int level2)
     int first;
     int second;
     int win;
+    int pop;
     AIBTYPE *bt;
 
     r = 0;
@@ -4562,16 +4561,18 @@ int ai_NewStorageSlotWindow(AIOBJ *obj, AIBLD *bld, int level, int level2)
     }
     io_PrintText(0x10f, 1);
     do {
+        pop = 0;
         if (d2_ClickedId != -1) {
             if (d2_PointerObj == first) {
                 r = 1;
-                sv_PopRequest = 1;
+                pop = 1;
             } else if (d2_PointerObj == second) {
                 r = 2;
+                pop = 1;
+            } else if (d2_ClickedId == 1)
+                pop = 1;
+            if (pop)
                 sv_PopRequest = 1;
-            } else if (d2_ClickedId == 1) {
-                sv_PopRequest = 1;
-            }
         }
         if (dm_L.rup != 0)
             sv_PopRequest = 1;
