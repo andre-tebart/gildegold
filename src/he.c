@@ -9277,7 +9277,7 @@ void he_RunEffectEvent(int ev)
         else if (e->effectGood == 0x178)
             e->effectObj = he_CreatePointsEffect((int)bld);
         d3if_SelectScene(scene, 1);
-        e->stage = (e->effectObj != 0) * 2 - 1;
+        e->stage = e->effectObj != 0 ? 1 : -1;
         return;
     case 1:
         if (gm_CompareTime(&ai_Time, &e->end6c) == 1) {
