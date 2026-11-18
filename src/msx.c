@@ -12,6 +12,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+/* the original's msx_Last (a LARGE_INTEGER, 0x6325b4) is only 4-aligned: winnt.h's LARGE_INTEGER was declared
+   under a 4-byte packing in this file (a cl test: #pragma pack(4) before windows.h puts a LARGE_INTEGER global
+   at 4 mod 8, the default packing at 0 mod 8; the CRT headers push their own packing) */
+#pragma pack(4)
 #include <windows.h>
 #include "msx.h"
 #include "sfx.h"
