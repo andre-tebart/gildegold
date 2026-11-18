@@ -4256,24 +4256,11 @@ int he_SecretRoomDomizil(int bldId, AICHAR *victim)
 }
 /* 0x56f600, the spy hunt's search (he_RunSecretRoom stage 6): of the running spying events 24 that spy on the
    character per (HESPYING.victim) and are not the event skip (an event id), the one whose spied building
-   (HESPYING.at, gm_FindById) stands nearest to the agent's body; 0 when none (or the agent has no scene character)
-   @deep s6: the loop's original loads bld->object's x, y, z onto the FPU first (z spilled to [esp+0x2c]),
-   then dx = x - here.x spilled to [esp+0x24], dy / dz on the stack: three float values loaded before the
-   subtracts. Tried: float x, y, z locals copied first (also with parenthesised loads): = control
-   (copy-propagated); a D3VECTOR there = body->pos (struct copy, also with a D3VECTOR4 diff): draft 38 ins
-   (integer copy through the frame); here = body->pos: 42; here without the parentheses: 27 (the
-   parentheses of the last session are a VC6 perturbation, not a natural spelling: flag). prior: read
-   against the original (101 vs 104 instructions): typed (AICHAR agent->scene->obj, HESPYING victim / at,
-   the building's D3OBJECT), the found-first / nearer branches as two stores like the original, best > d.
-   Left: the original copies the agent's body position into its locals through the FPU (fld/fstp at
-   +0x29..+0x3a) where ours copies the three floats through ecx/edx/eax, and its loop spills dx and the
-   loaded z into frame slots (frame 0x24 vs 0x10; the fpu hunks at +0xba / +0xd6); tried floats, a D3VECTOR
-   here / diff, the loads into px/py/pz first: same code. match-deep 2026-11-10: the parenthesized copies
-   `here.x = (body->pos.x)` give the FPU copy (draft -> shape, 27 -> 15 ins); the frame / spills are left. */
+   (HESPYING.at, gm_FindById) stands nearest to the agent's body; 0 when none (or the agent has no scene character) */
 AIJOB *he_FindNearestSpying(AICHAR *per, AICHAR *agent, int skip)
 {
     float best = 1.0e7f;
-    D3VECTOR here, diff;
+    D3VECTOR4 here, diff;
     float d;
     AIJOB *found, *ev;
     AIBLD *bld;
@@ -4283,6 +4270,8 @@ AIJOB *he_FindNearestSpying(AICHAR *per, AICHAR *agent, int skip)
     if (agent->scene == 0)
         return 0;
     body = agent->scene->obj;
+    /* @original: the position copies go through the FPU (fld / fstp), here and into diff before the
+       subtracts; VC6 copies a parenthesised float member that way, a plain one through an integer register */
     here.x = (body->pos.x);
     here.y = (body->pos.y);
     here.z = (body->pos.z);
@@ -4296,9 +4285,12 @@ AIJOB *he_FindNearestSpying(AICHAR *per, AICHAR *agent, int skip)
         if (bld == 0)
             continue;
         body = (D3OBJECT *)bld->object;
-        diff.x = body->pos.x - here.x;
-        diff.y = body->pos.y - here.y;
-        diff.z = body->pos.z - here.z;
+        diff.x = (body->pos.x);
+        diff.y = (body->pos.y);
+        diff.z = (body->pos.z);
+        diff.x -= here.x;
+        diff.y -= here.y;
+        diff.z -= here.z;
         d = sqrt(diff.z * diff.z + diff.y * diff.y + diff.x * diff.x);
         if (found == 0) {
             best = d;
