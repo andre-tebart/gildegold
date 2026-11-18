@@ -551,6 +551,37 @@ Where the pushes and pops sit, how many epilogue copies there are, shared agains
   - No lever (= control): return polarity of `if (kind != 0) return 16; return 0;` tails
     (ai_DecideBuyBuilding), list[n++] forms and all 719 orders of a six-compare chain
     (ai_OpenItemTooltip), the alloc argument through the just-stored struct fields (forwarded).
+- **Size queue s20 (byte or padded size by these)**:
+  - A frame larger than the original's with `dcp frame` "shared in the original" for an escaped local (its
+    address goes to a call: `&reward`, `&home`, `&ground`, `vals`) = that local is a BLOCK local of the
+    block that uses it. A function-scope local whose address escapes conflicts with every slot; block locals
+    with disjoint scopes share one. he_RunRobbery / he_RunBurglary (reward in case 4's `if (b != 0)` block,
+    vals in the loot block: the frame exact, he_RunBurglary 348 -> 108 ins; its reward / report UNION was the
+    draft's stand-in for this packing), he_RunTrade (home in `if (t->bld == -1) {..}`: frame + padded size
+    with the index loops below), he_MoveReaper (each d3_GetHeightAt call's `int x, z; float ground;` in its
+    own block: ground shares with step, h with dist, x with the fild temps; 118 -> 4 ins, padded size). The
+    same for a non-escaped local used in two disjoint places: two `int step;` block locals
+    (cm_RunCouncilSession: frame exact; the original pairs each step with another variable).
+  - A value the original loads into a callee-saved register at the head of an arm and keeps across two
+    calls until a call argument (`mov edi,[d3_Scenes[0].hmap]` before the clock math, the scene spilled to
+    its slot and reloaded for the final call) = a named local of that arm (`D3SM *hm = d3_Scenes[0].hmap;`),
+    while the first call of the function reads the global at its push (he_MoveReaper).
+  - `mov cl,[t+eax*4]; lea eax,[t+eax*4]` (a dead lea after the field load) and `lea eax,[..]; mov al,[eax]`
+    = the field read through a record pointer local (`bt = &ai_BTypesT[b->type]; if (bt->kind > 0x1f) hi = 1
+    << (bt->kind - 0x20); else lo = 1 << bt->kind;`, `if (bt->kind == 0x16 || bt->kind == 7 ..)`), no kind
+    local (he_StepWalk 86 -> 48 ins).
+  - Hand-advanced slot pointers (`for (i = 0, pb = t->sellBld, pg = t->sell; ..; i++, pb++, pg++)`) -> the
+    plain index loop over `t->sell[i]` / `t->sellBld[i]`: he_RunTrade 420 -> 192 ins by itself.
+  - A counter memory-homed in a dead argument slot (`inc dword ptr [esp+0x24]`) = its `= 0` stands early, live
+    through a fill it does not take part in (gm_ListWorkers: `n = 0` and `p1 = out + 1` between the two 0xffff
+    fills, 74 -> 54 ins; climb.py round 2 found it, a 2520-order permutation of the seven inits confirmed it).
+  - A clamp whose constant path the original runs through the next compare (`fld 0.25; fcom 5.0` where ours
+    jumps past it): only `f = (t = t > 0.25 ? t : 0.25) < 5.0 ? t : 5.0;` stops the threading, at the cost of a
+    `fld st(0); fcomp` copy (gm_StockPrice, not kept; 13 forms tried).
+  - No lever (= control): an inline `ai_BTypes + *b * 0x24d` instead of the k local (not hoisted:
+    gm_ListWorkers); `unsigned char stage` for the original's `mov edi,ecx; and edi,0xff` widening (a byte
+    slot, frame +8: he_StepWalk); `count = n2 + n3` spellings against a strength-reduced `&rows[row]` temp
+    (ai_TrainingWindow); `n = 0` moved into the case that counts (he_RunRobbery: the zero stays in ebp).
 
 - **An else-if arm cross-jumped whole into a sibling's copy, the original keeps it inline**: the store order of
   the OTHER arms (default arm charId before stateArg; 0x176 arm stateArg, charId, x, z) decides it, found by
