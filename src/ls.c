@@ -109,7 +109,7 @@ int ls_LanguageOf(char *s)
     int i;
 
     strcpy(buf, s);
-    _strupr(buf);
+    strupr(buf);
     ls_Language = 0xffff;
     for (i = 0; i < 5; i++) {
         if (strcmp(ls_LanguageNames[i], buf) == 0) {
@@ -1876,7 +1876,7 @@ int ls_ReadSceneRecords(int f)
         if (strstr(buf, "hozfaeller") != 0)
             sprintf(buf, "holzfaeller_%s", ch->body);
         sprintf(file, "*%s.bgf", buf);
-        _strupr(file);
+        strupr(file);
         if (vfs_GetPath(file, vfs_Root, vfs_Root, path) == 0) {
             c = ch->owner;
             c->ownName[0] = 0;
@@ -2105,7 +2105,7 @@ int ls_ReadPlayerSlots(int f)
             LS_R(slot + 0x2ec, 8)
     }
     sprintf(buf, "_STADTAUSWAHL_%s_INFO+0", ai_PlayerSlots[0]);
-    _strupr(buf);
+    strupr(buf);
     k = txt_FindKey(buf);
     if (k != -1)
         strcpy(ai_PlayerSlots[0] + 0x20, txt_Ptrs[k]);

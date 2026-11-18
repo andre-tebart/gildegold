@@ -11364,7 +11364,7 @@ void he_RunSale(int ev)
                         tid = 0x60b;
                 }
                 strcpy(name, g->name);
-                _strupr(name);
+                strupr(name);
                 sprintf(jump, "ob_%s", name);
                 txt_Format(text, 0x1c2b, b, s->good * 2 + 0x9a8);
                 he_MessageBoxQuickjump(ai_CharsT[b->owner].netId, e->from, text, 0, tid, b->id, s->obj, jump, "_NACHRICHTEN_HS_53");

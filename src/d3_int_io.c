@@ -576,7 +576,7 @@ char d3_LoadScene(char *name, void *f, D3IOPROGRESS progress)
                 if (c)
                     d3_Terrain = d3io_ReadFloor(in, version);
                 for (o = d3_TopFirst; o != &d3_ObjEnd; o = o->next)
-                    if (o->type == 3 && !_strcmpi(cam, o->name)) {
+                    if (o->type == 3 && !strcmpi(cam, o->name)) {
                         d3if_MegaCam = (int)o;
                         if (o->objectFlags & 1) {
                             d3_SetObjectPos(o, &o->savedPos);

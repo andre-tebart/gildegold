@@ -68,7 +68,7 @@ char *util_ReadLine(VFSFILE *f)
                     break;
             }
             if (*p && *p != ';') {
-                _strupr(p);
+                strupr(p);
                 return p;
             }
         }

@@ -328,33 +328,33 @@ int ai_GetDesireByName(char *s)
 {
     char buf[128];
 
-    if (_strcmpi(s, "APS") == 0)
+    if (strcmpi(s, "APS") == 0)
         return 0;
-    if (_strcmpi(s, "UNVERSEHRTHEIT") == 0)
+    if (strcmpi(s, "UNVERSEHRTHEIT") == 0)
         return 1;
-    if (_strcmpi(s, "WOHNUNG") == 0)
+    if (strcmpi(s, "WOHNUNG") == 0)
         return 2;
-    if (_strcmpi(s, "GELD") == 0)
+    if (strcmpi(s, "GELD") == 0)
         return 3;
-    if (_strcmpi(s, "BERUF") == 0)
+    if (strcmpi(s, "BERUF") == 0)
         return 4;
-    if (_strcmpi(s, "VERGNUEGEN") == 0)
+    if (strcmpi(s, "VERGNUEGEN") == 0)
         return 5;
-    if (_strcmpi(s, "ANSEHEN") == 0)
+    if (strcmpi(s, "ANSEHEN") == 0)
         return 6;
-    if (_strcmpi(s, "AMT") == 0)
+    if (strcmpi(s, "AMT") == 0)
         return 7;
-    if (_strcmpi(s, "BILDUNG") == 0)
+    if (strcmpi(s, "BILDUNG") == 0)
         return 8;
-    if (_strcmpi(s, "RECHTSCHAFFENHEIT") == 0)
+    if (strcmpi(s, "RECHTSCHAFFENHEIT") == 0)
         return 9;
-    if (_strcmpi(s, "GEMEINHEIT") == 0)
+    if (strcmpi(s, "GEMEINHEIT") == 0)
         return 10;
-    if (_strcmpi(s, "SICHERHEIT") == 0)
+    if (strcmpi(s, "SICHERHEIT") == 0)
         return 11;
-    if (_strcmpi(s, "FORTPFLANZUNG") == 0)
+    if (strcmpi(s, "FORTPFLANZUNG") == 0)
         return 12;
-    if (_strcmpi(s, "TRAEGHEIT") == 0)
+    if (strcmpi(s, "TRAEGHEIT") == 0)
         return 13;
     sprintf(buf, "amt_GetDesireByName(): Unbekanntes Bed\xfc" "rfnis: %s", s);
     return -1;
@@ -645,7 +645,7 @@ int ai_ExecBuildBuilding(AIPER *p, AIARG *s1, AIARG *s2)
     plot = s2->ref;
     strcpy(name, "gb_");
     strcat(name, ai_BTypesT[s1->ref].name);
-    _strupr(name + 2);
+    strupr(name + 2);
     ok = 0;
     alt = 0;
     for (;;) {

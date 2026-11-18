@@ -415,7 +415,7 @@ CHARACTER *ch_FindByName(char *name)
     int i;
 
     for (i = 0; i < CH_MAX; i++)
-        if (ch_List[i] && !_strcmpi(ch_List[i]->obj->name, name))
+        if (ch_List[i] && !strcmpi(ch_List[i]->obj->name, name))
             break;
     if (i < CH_MAX)
         return ch_List[i];
@@ -845,7 +845,7 @@ D3ANIMDATA *ch_SetNextAnim(CHARACTER *ch, char *anim, char loops)
     sprintf(name, "%s_%s", anim, ch->body);
     vfs_ToSlashes(name);
     a = (D3ANIMDATA *)d3_FindAnim(name);
-    if (!_strcmpi(anim, "bewegung/gehen") || !_strcmpi(anim, "bewegung/karren_ziehen"))
+    if (!strcmpi(anim, "bewegung/gehen") || !strcmpi(anim, "bewegung/karren_ziehen"))
         walk = 1;
     if (!a)
         ch->next = d3_LoadAnimStream(path, name, walk);
@@ -1028,7 +1028,7 @@ void ch_PreloadAnims(CHARACTER *ch, int n, ...)
         anim = va_arg(ap, char *);
         if (*anim) {
             walk = 0;
-            if (!_strcmpi(anim, "bewegung/gehen") || !_strcmpi(anim, "bewegung/karren_ziehen"))
+            if (!strcmpi(anim, "bewegung/gehen") || !strcmpi(anim, "bewegung/karren_ziehen"))
                 walk = 1;
             sprintf(path, "character/%s/%s_%s.baf", ch->body, anim, ch->body);
             sprintf(name, "%s_%s", anim, ch->body);

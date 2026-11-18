@@ -140,7 +140,7 @@ int d3t_PlaceAtObject(D3OBJECT *obj, int unk)
 
 char d3t_FindObjectCB(D3OBJECT *obj, void *name)
 {
-    if (_strcmpi(obj->name, name) == 0) {
+    if (strcmpi(obj->name, name) == 0) {
         d3t_FoundObject = obj;
         return 0;
     }
@@ -211,7 +211,7 @@ int d3t_ReleaseObjectTexture(D3OBJECT *obj, char *name)
 {
     int i;
     for (i = 0; i < 3; i++) {
-        if (obj->material && obj->material->tex[i].name && _strcmpi(obj->material->tex[i].name, name) == 0) {
+        if (obj->material && obj->material->tex[i].name && strcmpi(obj->material->tex[i].name, name) == 0) {
             d3_ReleaseTexture(obj->material->animCtl, name);
             d3_UpdateObject(obj, 0);
         }
@@ -1548,7 +1548,7 @@ void d3t_FreeSnow(D3TSNOW *snow)
         }
         tex = (D3TEXTURE *)d3_Textures;
         for (i = 0; i < d3_TexCount; tex++, i++) {
-            if (tex->refs > 0 && _strnicmp("DC_", tex->name, 3) == 0 && !(tex->flags & 2)) {
+            if (tex->refs > 0 && strnicmp("DC_", tex->name, 3) == 0 && !(tex->flags & 2)) {
                 if (!tex_SetHiColor(tex, !d3d_UsedTexFormat.fourcc && tex->filebpp > 8 ? 1 : 0))
                     tex_Unload(tex);
                 tex->reserved = 0;

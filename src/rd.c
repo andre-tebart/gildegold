@@ -416,7 +416,7 @@ int rd_BuildRoad(char *obj, int name)
     rd_Road.simple = -1;
     for (i = 0; i < 8; i++) {
         strcpy(buf, rd_Road.map->ground[i]);
-        _strupr(buf);
+        strupr(buf);
         if (strstr(buf, "EINFACHER_WEG"))
             rd_Road.simple = i;
         if (strstr(buf, "PRUNK_WEG"))
@@ -649,7 +649,7 @@ char rd_FindSiteCB(char *obj, G15BKFIND *f)
 {
     float v[4];
 
-    if (_strnicmp(obj, f->name, strlen(f->name)) == 0 || _strnicmp(obj + 1, f->name, strlen(f->name)) == 0) {
+    if (strnicmp(obj, f->name, strlen(f->name)) == 0 || strnicmp(obj + 1, f->name, strlen(f->name)) == 0) {
         d3_PointToWorld(obj, obj + 0x4c, v);
         if (d3_VecEqual(f->pos, v, 100.0f)) {
             f->found = obj;
@@ -666,7 +666,7 @@ G15BK *rd_GetBKSize(char *name)
     char buf[0x40];
 
     for (i = 0; i < ai_NBauplaetze; i++) {
-        if (_strcmpi(name, ai_Bauplaetze[i].name) == 0)
+        if (strcmpi(name, ai_Bauplaetze[i].name) == 0)
             return &ai_Bauplaetze[i];
     }
     sprintf(buf, "rd_GetBKSize(): Unbekannter Bauplatz '%s'", name);

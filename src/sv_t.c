@@ -5118,7 +5118,7 @@ void sv_ReleaseNamePlates(void); void ai_TradeContactChecks(void);
 int ai_AmountMenu(); int sv_CheckMoney();
 float gm_GetSkill(char *c, int skill); int gm_ClockSeason(); char * he_FindEvent(int n, ...);
 int gm_BuildingJob(); 
-int gm_BuildingKindCost(int c, int kind); char *_strupr(char *); int sprintf(char *buf, const char *fmt, ...);
+int gm_BuildingKindCost(int c, int kind); char *strupr(char *); int sprintf(char *buf, const char *fmt, ...);
 float gm_GoodsPrice(unsigned id, unsigned char p);
 int ai_AmountRowStatus(); int ai_DrawAmountRow(); short * gm_FindChar(int id); int gm_TitlesLeft();
 char * gm_FindBuildingById(int id); int gm_FindObjectInst(int id); unsigned gm_PermissionBits(unsigned p1, unsigned char *b, unsigned short *o, int c);

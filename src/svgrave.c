@@ -3384,7 +3384,7 @@ tail:
     }
 }
 
-int gm_BuildingKindCost(int c, int kind); char *_strupr(char *); int sprintf(char *buf, const char *fmt, ...);
+int gm_BuildingKindCost(int c, int kind); char *strupr(char *); int sprintf(char *buf, const char *fmt, ...);
 
 /* 0x588160, opens the tooltip view of the building type idx (ai_BTypes): the form "ToolTip\ToolTip_Gebaeude",
    centred; section 1 the type's name (text idx * 0xe + 0x48e), for a kind other than 0xa through the text 0x27
@@ -3664,7 +3664,7 @@ int ai_OpenHelpTooltip(char *s)
     int win;
 
     strcpy(buf, s);
-    _strupr(buf);
+    strupr(buf);
     sprintf(buf + 0x80, "_HILFE_%s+0", buf);   /* the key from the whole name, built at buf + 0x80 and looked up there (0x588bd8 .. 0x588bf6) */
     v = txt_FindKey(buf + 0x80);
     if (v == -1)

@@ -43,7 +43,7 @@ int io_TownDisplayName(char *name, char *out)
     int idx;
 
     sprintf(key, "_STADTAUSWAHL_%s_INFO+0", name);
-    _strupr(key);
+    strupr(key);
     idx = txt_FindKey(key);
     if (idx != -1) {
         strcpy(out, txt_Ptrs[idx]);
@@ -698,7 +698,7 @@ int io_PrintText(char *fmt, ...)
                 }
                 if (dig != -1) {
                     /* zero padded to dig places, then the dots: tmp -> fmtbuf backwards */
-                    _itoa(dig, num, 10);
+                    itoa(dig, num, 10);
                     strcpy(fmtbuf, "%0");
                     strcat(fmtbuf, num);
                     strcat(fmtbuf, "i");
@@ -758,10 +758,10 @@ int io_PrintText(char *fmt, ...)
                 else
                     k = 2;
                 if (dig != -1) {
-                    _itoa(dig, num, 10);
+                    itoa(dig, num, 10);
                     strcpy(fmtbuf, "%0");
                     strcat(fmtbuf, num);
-                    _itoa(k, num, 10);
+                    itoa(k, num, 10);
                     strcat(fmtbuf, ".");
                     strcat(fmtbuf, num);
                     strcat(fmtbuf, "f");
@@ -773,7 +773,7 @@ int io_PrintText(char *fmt, ...)
                     memmove(p + strlen(tmp), &buf[pos], strlen(buf) + 1 - pos);
                     memcpy(p, tmp, strlen(tmp));
                 } else {
-                    _itoa(k, num, 10);
+                    itoa(k, num, 10);
                     strcpy(fmtbuf, "%.");
                     strcat(fmtbuf, num);
                     strcat(fmtbuf, "f");
@@ -1234,7 +1234,7 @@ void txt_Format(char *out, int id0, ...)
             case 'I':
                 if (dig != -1) {
                     /* zero padded to dig places, then the dots: tmp -> fmtbuf backwards */
-                    _itoa(dig, num, 10);
+                    itoa(dig, num, 10);
                     strcpy(fmtbuf, "%0");
                     strcat(fmtbuf, num);
                     strcat(fmtbuf, "i");
@@ -1306,10 +1306,10 @@ void txt_Format(char *out, int id0, ...)
                 else
                     k = 0;
                 if (dig != -1) {
-                    _itoa(dig, num, 10);
+                    itoa(dig, num, 10);
                     strcpy(fmtbuf, "%0");
                     strcat(fmtbuf, num);
-                    _itoa(k, num, 10);
+                    itoa(k, num, 10);
                     strcat(fmtbuf, ".");
                     strcat(fmtbuf, num);
                     strcat(fmtbuf, "f");
@@ -1320,7 +1320,7 @@ void txt_Format(char *out, int id0, ...)
                     memmove(&buf[pos - 4 + strlen(tmp)], &buf[pos], strlen(buf) + 1 - pos);
                     memcpy(&buf[pos - 4], tmp, strlen(tmp));
                 } else {
-                    _itoa(k, num, 10);
+                    itoa(k, num, 10);
                     strcpy(fmtbuf, "%.");
                     strcat(fmtbuf, num);
                     strcat(fmtbuf, "f");

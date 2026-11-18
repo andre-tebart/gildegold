@@ -2188,7 +2188,7 @@ void amt_CalcZuenfte(unsigned int kind)
             d3if_SelectScene(scene, 1);
             strcpy(gb, "gb_");
             strcat(gb, t->name);
-            _strupr(gb + 2);
+            strupr(gb + 2);
             sprintf(name, "%sgebaeude/*%s.ogr", ai_DataPath, gb);
             m.type = 0xd;
             m.to = amt_PlayerAiChar->netId;

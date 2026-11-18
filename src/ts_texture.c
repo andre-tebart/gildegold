@@ -267,7 +267,7 @@ TSTEXTURE *tex_Find(char *name)
 
     strcpy(buf, name);
     for (i = 0, tex = d3_Textures; i < d3_TexCount; i++, tex++) {
-        if (tex->refs > 0 && !_strcmpi(buf, tex->name))
+        if (tex->refs > 0 && !strcmpi(buf, tex->name))
             return tex;
     }
     return 0;
@@ -580,7 +580,7 @@ void ts_LoadAnim(TSTEXTURE *tex, TSFLAGS flags, unsigned char opts, unsigned cha
     strcpy(name, tex->name);
     strcpy(base, name);
     strcpy(upper, name);
-    _strupr(upper);
+    strupr(upper);
     i = strlen(name);
     while (isdigit(name[--i]) && i > 0)
         digits = 1;
@@ -690,7 +690,7 @@ TSTEXTURE *tex_Load(char *name, TSFLAGS flags, unsigned char opts, unsigned char
     tex = ts_AllocSlot(flags, 0);
     strcpy(upper, name);
     strcpy(copy, name);
-    _strupr(upper);
+    strupr(upper);
     if (ok && tex && w == h) {
         D3_ZERO_AT(tex, sizeof(TSTEXTURE));
         strncpy(tex->name, name, 0x3f);

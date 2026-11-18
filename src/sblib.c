@@ -230,7 +230,7 @@ SBENTRY *sb_FindEntry(SBBANK *bank, char *name)
     if (bank) {
         n = bank->count;
         for (; i < n; i++)
-            if (!_strnicmp(bank->entries[i].name, name, 50)) {
+            if (!strnicmp(bank->entries[i].name, name, 50)) {
                 e = &bank->entries[i];
                 break;
             }
@@ -300,7 +300,7 @@ SBBANK *sb_FindBank(char *name)
 {
     SBBANK *bank;
 
-    for (bank = sb_Banks; bank && _strnicmp(bank->name, name, 50); bank = bank->next)
+    for (bank = sb_Banks; bank && strnicmp(bank->name, name, 50); bank = bank->next)
         ;
     return bank;
 }

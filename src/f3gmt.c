@@ -544,7 +544,7 @@ int gm_FindObjectProto(char *name)
     int n;
 
     for (n = 0; n < 0x2dc; n++) {
-        if (_stricmp(name, GM_GOOD(n)->name) == 0)
+        if (stricmp(name, GM_GOOD(n)->name) == 0)
             return n;
     }
     return 0;
@@ -2664,7 +2664,7 @@ int gm_FindBuildingKind(char *name)
     int n;
 
     for (n = 0; n < 0x58; n++) {
-        if (_stricmp(name, GM_BTYPE(n)->name) == 0)
+        if (stricmp(name, GM_BTYPE(n)->name) == 0)
             return n;
     }
     return 0;
@@ -6322,7 +6322,7 @@ void gm_FormatAmount(int v, unsigned char k, char *out)
     if (v < 0) {
         if (n != 0) {
             if (n >= 1000) {
-                _itoa(n, a, 10);
+                itoa(n, a, 10);
                 e = (strlen(a) - 1) / 3.0f + strlen(a);     /* the digits and their dots */
                 j = -1;
                 i = strlen(a);          /* from the terminator on */
@@ -6344,7 +6344,7 @@ void gm_FormatAmount(int v, unsigned char k, char *out)
         }
     } else {
         if (n >= 1000) {
-            _itoa(n, a, 10);
+            itoa(n, a, 10);
             e = (strlen(a) - 1) / 3.0f + strlen(a);
             j = -1;
             i = strlen(a);          /* from the terminator on */

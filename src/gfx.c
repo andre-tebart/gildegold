@@ -351,7 +351,7 @@ void d2_DragInputValue(D2INPUT *in, int val, int y0, int y1)
                 in->value = -1;
         }
     }
-    _itoa(in->value, in->text, 10);
+    itoa(in->value, in->text, 10);
 }
 /* 0x477530, ends the editing of the input field */
 
@@ -454,7 +454,7 @@ void d2_InputKey(void)
         if (D2CUR->flags & 2) {
             if (kb_Last < 2 || kb_Last > 0xb || kb_Down[0x36] != 0 || kb_Down[0x2a] != 0)
                 break;
-            _itoa(D2CUR->value, D2CUR->text, 10);
+            itoa(D2CUR->value, D2CUR->text, 10);
         }
         len = strlen(D2CUR->text);
         if (D2CUR->flags & 1)

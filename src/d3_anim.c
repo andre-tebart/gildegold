@@ -1059,7 +1059,7 @@ int d3_FindAnim(char *name)
     D3ANIMDATA *a;
 
     for (a = d3anim_Head.next; a != &d3anim_Tail; a = a->next)
-        if (!_strcmpi(name, a->name))
+        if (!strcmpi(name, a->name))
             return (int)a;
     return 0;
 }

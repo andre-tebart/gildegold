@@ -4691,7 +4691,7 @@ int cm_ExChrGotoBuilding(G17MSG *m, G17STAT *s)
         if (p->scriptGroup != -1) {
             q = (AIOBJ *)gm_Query((void *)cb->objList, 1, 1, p->scriptGroup);
             if (q != 0 && q->id != 0xfd) {
-                sprintf(gate, "dummy_gate_ob_%s", _strupr(ai_GoodsT[q->id].name));
+                sprintf(gate, "dummy_gate_ob_%s", strupr(ai_GoodsT[q->id].name));
                 q2 = (AIOBJ *)gm_Query((void *)cb->objList, 1, 0, 0xfd);
                 k = init_BuildingSceneUniverse((unsigned char *)cb);
                 if (k >= 0 && q2 != 0) {
@@ -4885,7 +4885,7 @@ int cm_ExChrGotoBuilding(G17MSG *m, G17STAT *s)
                 }
             } else {
                 i = init_ObjectSceneUniverse((unsigned short *)q);
-                sprintf(gate, "dummy_gate_ob_%s", _strupr(ai_GoodsT[q->id].name));
+                sprintf(gate, "dummy_gate_ob_%s", strupr(ai_GoodsT[q->id].name));
                 if (cb != 0) {
                     r = ch_UseGate(p, "dummy_EINGANG", gate, i, cb->id, q->objId);
                     if (r != 0)
@@ -4933,10 +4933,10 @@ int cm_ExChrUseGates(G17MSG *m, G17STAT *s)
     } else {
         g = &ai_GoodsT[q->id];
         k = init_ObjectSceneUniverse((unsigned short *)q);
-        sprintf(gate2, "dummy_gate_ob_%s", _strupr(g->name));
+        sprintf(gate2, "dummy_gate_ob_%s", strupr(g->name));
     }
     g = &ai_GoodsT[r->id];
-    sprintf(gate, "dummy_gate_ob_%s", _strupr(g->name));
+    sprintf(gate, "dummy_gate_ob_%s", strupr(g->name));
     if (k >= 0)
         ch_UseGate(p, gate, gate2, k, b->id, q->objId);
     if (s != 0) {
@@ -5063,7 +5063,7 @@ int cm_ExGebUpgrade(G17MSG *m, G17STAT *s)
         gv_GrowGraveyard((unsigned char *)b);
     strcpy(name, "gb_");
     strcat(name, ai_BTypesT[b->type].name);
-    _strupr(name + 2);
+    strupr(name + 2);
     for (i = 0; i < 4; i++) {
         if (t->kind == 0x21) {
             if (ai_CharsT[b->owner].sex == 1)
@@ -5668,7 +5668,7 @@ int cm_ExCreateGeb(G17MSG *m, G17STAT *s)
 
         strcpy(name, "gb_");
         strcat(name, ai_BTypesT[b->type].name);
-        _strupr(name + 2);
+        strupr(name + 2);
         for (i = 0; i < 4; i++) {
             if (i != 0)
                 sprintf(path, "%sgebaeude/*%s_%c.ogr", ai_DataPath, name, (char)(i + 0x40));
@@ -7141,8 +7141,8 @@ void cm_UpdateHandObject(char *ch)
         g = &ai_GoodsT[w->id];
         if (c->scene == 0)
             return;
-        sprintf(buf, "ob_%s", _strupr(g->name));
-        if (c->scene->rightHand != 0 && _strcmpi(c->scene->rightHand->name, buf) == 0)
+        sprintf(buf, "ob_%s", strupr(g->name));
+        if (c->scene->rightHand != 0 && strcmpi(c->scene->rightHand->name, buf) == 0)
             return;
         if (c->scene->rightHand != 0)
             ch_SetHandObject(c->scene, 2, 0);
@@ -9329,7 +9329,7 @@ int cm_MostThreatenedCellNear(char *c, int cx, int cy, int r, int *ox, int *oy)
 
 char cm_CollectEscapeObject(char *o, int *list)
 {
-    if (_stricmp(o, "sp_ESCAPE") == 0) {
+    if (stricmp(o, "sp_ESCAPE") == 0) {
         list[cm_PointCount] = (int)o;
         cm_PointCount++;
     }

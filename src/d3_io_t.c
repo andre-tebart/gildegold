@@ -52,7 +52,7 @@ int d3io_FindStock(char *name)
     D3BGF *s;
 
     for (s = d3_StockListStart.next; s != &d3_StockListEnd; s = s->next)
-        if (!_strnicmp(name, s->name, 0x3f))
+        if (!strnicmp(name, s->name, 0x3f))
             return (int)s;
     return 0;
 }
@@ -447,7 +447,7 @@ D3BGF *d3iot_LoadBGF(char *path, char *name, char *texnames, int ntexsets, int n
     char *tmp;
 
     strcpy(buf, path);
-    _strupr(buf);
+    strupr(buf);
     if (strstr(buf, ".BGF")) {
         m = d3_FindBGF(buf, name, texnames, ntexsets, ntex);
         if (m) {

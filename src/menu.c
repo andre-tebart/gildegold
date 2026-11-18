@@ -137,7 +137,7 @@ int ai_ListFiles(char *dirPath, const char *ext, char *records)
             dot = strrchr(entry->name, '.');
             if (dot != 0)
                 strncpy(foundExt, dot, 0x20);
-            if (_strcmpi(foundExt, ext) == 0) {
+            if (strcmpi(foundExt, ext) == 0) {
                 strcpy(out, entry->name);
                 sprintf(out + 0x100, "%s/%s", dirPath, entry->name);
                 dot = strrchr(out, '.');
@@ -170,7 +170,7 @@ void cm_SendMoneyDelta(int character, int delta); /* 0x4c5f60, cm.c: message 0x5
                                                character's money (+0x194), clamped 0 .. 0x32 */
 int he_ShowNews(int pid, int fl, char *text, int unused, int ev, char *text2); /* 0x53dda0, he.c */
 void d2_SetObjValue(); int d2_GetObjValue(int obj); int d2_CreateWinText(short x, short y, char *text, int win); void d2_SetObjText(int obj, char *text);
-char *_itoa(int, char *, int); void d2_SetObjFont(int obj, int font); int sv_RunFrame(int cb, unsigned mask);
+char *itoa(int, char *, int); void d2_SetObjFont(int obj, int font); int sv_RunFrame(int cb, unsigned mask);
 
 /* 0x5d34b0, the file selector window "menu\fileselector": lists the files of dir with the extension ext
    (ai_ListFiles, up to 32) under the caption, with their count. With bit 0 of flags a click on a file writes
@@ -223,7 +223,7 @@ int ai_FilePickWindow(unsigned mask, int flags, char *caption, char *dir, char *
         d2_Objs[recs[i].ctrl].w = d2_LastWindowPtr->w;
         d2_Objs[recs[i].ctrl].style = 3;
     }
-    _itoa(n, num, 10);
+    itoa(n, num, 10);
     d2_SetObjText(count, num);
     d2_SetObjFont(count, 0x54);
     while (sv_RunFrame((int)ai_FilePickWindow, mask) != 0) {
@@ -354,7 +354,7 @@ typedef struct SAVESLOTVIEW {               /* 0x220, one slot of the save / loa
    case-insensitive compare); a free slot (win -1) gets the kind byte and a copy of the request. Returns the
    slot, -1 when it is taken, the name does not fit it or slot is -1. count (0x10) is not read.
    @deep insensitive (32 samples). Meaning equal. Now shape 14 ins (was draft 17): the arms 'if (slot ==
-   0) { if (_strcmpi(name, AUTOSAVE) == 0) goto fill; } else if (slot == 1) {.. QUICKSAVE ..} else if (slot
+   0) { if (strcmpi(name, AUTOSAVE) == 0) goto fill; } else if (slot == 1) {.. QUICKSAVE ..} else if (slot
    == -1) goto done; else goto fill; slot = -1; goto done;' make VC6 cross-jump the two compare tails into
    one push edi / call _strcmpi / or ebx,-1 block as the original does, but VC6 keeps the slot==1 arm's
    copy (the slot==0 arm pushes AUTOSAVE and jumps forward) where the original keeps the slot==0 arm's copy
@@ -373,15 +373,15 @@ int ai_RegisterSaveSlot(int count, SAVESLOTVIEW *slots, int slot, SAVEREQUEST *r
     SAVESLOTVIEW *s;
 
     name = req->name;
-    if (_strcmpi(name, "QUICKSAVE") == 0)
+    if (strcmpi(name, "QUICKSAVE") == 0)
         slot = 1;
-    else if (_strcmpi(name, "AUTOSAVE") == 0)
+    else if (strcmpi(name, "AUTOSAVE") == 0)
         slot = 0;
     if (slot == 0) {
-        if (_strcmpi(name, "AUTOSAVE") == 0)
+        if (strcmpi(name, "AUTOSAVE") == 0)
             goto fill;
     } else if (slot == 1) {
-        if (_strcmpi(name, "QUICKSAVE") == 0)
+        if (strcmpi(name, "QUICKSAVE") == 0)
             goto fill;
     } else if (slot == -1)
         goto done;
@@ -514,7 +514,7 @@ typedef struct SCREENMODE {                 /* 8 bytes, a screen mode of the tab
 SCREENMODE ai_ScreenModes[3] = { { 800, 600 }, { 1024, 768 }, { 1152, 864 } };  /* 0x62d7b8, the 800x600 / 1024x768 / 1152x864 modes */
 int ai_ScreenModeW = 800;  /* 0x62d7d0, the width of the mode ai_GfxResolution picks */
 int ai_ScreenModeH = 600;  /* 0x62d7d4, its height */
-char *_itoa(int value, char *buf, int base); /* 0x5e56c4, the library's integer to text (base 10 here) */
+char *itoa(int value, char *buf, int base); /* 0x5e56c4, the library's integer to text (base 10 here) */
 
 /* 0x5d3ab0, fills the 16 slots of a save / load window (1488 B): view / form the window's form
    (d2_SetForm), slots the 16 slot records, files the 0x210-byte file list buffer and dir the save
@@ -804,108 +804,108 @@ void ai_SaveOptions(void)
 {
     char buf[0x20];
 
-    _itoa(ai_GfxTextureScale, buf, 10);
+    itoa(ai_GfxTextureScale, buf, 10);
     WritePrivateProfileStringA("Gfx", "texture_scale", buf, ai_OptionsFile);
-    _itoa(ai_GfxDetail, buf, 10);
+    itoa(ai_GfxDetail, buf, 10);
     WritePrivateProfileStringA("Gfx", "details", buf, ai_OptionsFile);
-    _itoa(ai_GfxLodHandling, buf, 10);
+    itoa(ai_GfxLodHandling, buf, 10);
     WritePrivateProfileStringA("Gfx", "lod_handling", buf, ai_OptionsFile);
-    _itoa(ai_GfxShadowDetail, buf, 10);
+    itoa(ai_GfxShadowDetail, buf, 10);
     WritePrivateProfileStringA("Gfx", "shadow_detail", buf, ai_OptionsFile);
-    _itoa(ai_GfxFloor, buf, 10);
+    itoa(ai_GfxFloor, buf, 10);
     WritePrivateProfileStringA("Gfx", "floor_mipmapping", buf, ai_OptionsFile);
-    _itoa(ai_GfxSet.word & 0xff, buf, 10);
+    itoa(ai_GfxSet.word & 0xff, buf, 10);
     WritePrivateProfileStringA("Gfx", "gfx_set", buf, ai_OptionsFile);
-    _itoa(ai_GfxCameraLimits, buf, 10);
+    itoa(ai_GfxCameraLimits, buf, 10);
     WritePrivateProfileStringA("Gfx", "camera_limits", buf, ai_OptionsFile);
-    _itoa(ai_GfxFloorLod, buf, 10);
+    itoa(ai_GfxFloorLod, buf, 10);
     WritePrivateProfileStringA("Gfx", "floor_lod", buf, ai_OptionsFile);
-    _itoa(ai_GfxCharDetail, buf, 10);
+    itoa(ai_GfxCharDetail, buf, 10);
     WritePrivateProfileStringA("Gfx", "character_detail", buf, ai_OptionsFile);
-    _itoa(ai_GfxFog.word & 0xff, buf, 10);
+    itoa(ai_GfxFog.word & 0xff, buf, 10);
     WritePrivateProfileStringA("Gfx", "fog_plane", buf, ai_OptionsFile);
-    _itoa(ai_GfxResolution.word & 0xff, buf, 10);
+    itoa(ai_GfxResolution.word & 0xff, buf, 10);
     WritePrivateProfileStringA("Gfx", "cur_res", buf, ai_OptionsFile);
-    _itoa((int)(ai_ScreenTuning[0] * 100.0f), buf, 10);
+    itoa((int)(ai_ScreenTuning[0] * 100.0f), buf, 10);
     WritePrivateProfileStringA("Gfx", "brightness_r", buf, ai_OptionsFile);
-    _itoa((int)(ai_ScreenTuning[1] * 100.0f), buf, 10);
+    itoa((int)(ai_ScreenTuning[1] * 100.0f), buf, 10);
     WritePrivateProfileStringA("Gfx", "brightness_g", buf, ai_OptionsFile);
-    _itoa((int)(ai_ScreenTuning[2] * 100.0f), buf, 10);
+    itoa((int)(ai_ScreenTuning[2] * 100.0f), buf, 10);
     WritePrivateProfileStringA("Gfx", "brightness_b", buf, ai_OptionsFile);
-    _itoa((int)(ai_ScreenTuning[3] * 100.0f), buf, 10);
+    itoa((int)(ai_ScreenTuning[3] * 100.0f), buf, 10);
     WritePrivateProfileStringA("Gfx", "brightness_a", buf, ai_OptionsFile);
-    _itoa((int)(ai_ScreenTuning[4] * 100.0f), buf, 10);
+    itoa((int)(ai_ScreenTuning[4] * 100.0f), buf, 10);
     WritePrivateProfileStringA("Gfx", "contrast_r", buf, ai_OptionsFile);
-    _itoa((int)(ai_ScreenTuning[5] * 100.0f), buf, 10);
+    itoa((int)(ai_ScreenTuning[5] * 100.0f), buf, 10);
     WritePrivateProfileStringA("Gfx", "contrast_g", buf, ai_OptionsFile);
-    _itoa((int)(ai_ScreenTuning[6] * 100.0f), buf, 10);
+    itoa((int)(ai_ScreenTuning[6] * 100.0f), buf, 10);
     WritePrivateProfileStringA("Gfx", "contrast_b", buf, ai_OptionsFile);
-    _itoa((int)(ai_ScreenTuning[7] * 100.0f), buf, 10);
+    itoa((int)(ai_ScreenTuning[7] * 100.0f), buf, 10);
     WritePrivateProfileStringA("Gfx", "contrast_a", buf, ai_OptionsFile);
-    _itoa((int)(ai_ScreenTuning[8] * 100.0f), buf, 10);
+    itoa((int)(ai_ScreenTuning[8] * 100.0f), buf, 10);
     WritePrivateProfileStringA("Gfx", "gamma_r", buf, ai_OptionsFile);
-    _itoa((int)(ai_ScreenTuning[9] * 100.0f), buf, 10);
+    itoa((int)(ai_ScreenTuning[9] * 100.0f), buf, 10);
     WritePrivateProfileStringA("Gfx", "gamma_g", buf, ai_OptionsFile);
-    _itoa((int)(ai_ScreenTuning[10] * 100.0f), buf, 10);
+    itoa((int)(ai_ScreenTuning[10] * 100.0f), buf, 10);
     WritePrivateProfileStringA("Gfx", "gamma_b", buf, ai_OptionsFile);
-    _itoa((int)(ai_ScreenTuning[11] * 100.0f), buf, 10);
+    itoa((int)(ai_ScreenTuning[11] * 100.0f), buf, 10);
     WritePrivateProfileStringA("Gfx", "gamma_a", buf, ai_OptionsFile);
-    _itoa(ai_SoundOptions.masterVolume, buf, 10);
+    itoa(ai_SoundOptions.masterVolume, buf, 10);
     WritePrivateProfileStringA("Sound", "master_vol", buf, ai_OptionsFile);
-    _itoa(ai_SoundOptions.sfxVolume, buf, 10);
+    itoa(ai_SoundOptions.sfxVolume, buf, 10);
     WritePrivateProfileStringA("Sound", "sfx_vol", buf, ai_OptionsFile);
-    _itoa(ai_SoundOptions.msxVolume, buf, 10);
+    itoa(ai_SoundOptions.msxVolume, buf, 10);
     WritePrivateProfileStringA("Sound", "msx_vol", buf, ai_OptionsFile);
-    _itoa(ai_SoundOptions.voiceVolume, buf, 10);
+    itoa(ai_SoundOptions.voiceVolume, buf, 10);
     WritePrivateProfileStringA("Sound", "speech_vol", buf, ai_OptionsFile);
-    _itoa(ai_SoundOptions.msxFreq & 0xff, buf, 10);
+    itoa(ai_SoundOptions.msxFreq & 0xff, buf, 10);
     WritePrivateProfileStringA("Sound", "msx_freq", buf, ai_OptionsFile);
-    _itoa(ai_OptionSpeed, buf, 10);
+    itoa(ai_OptionSpeed, buf, 10);
     WritePrivateProfileStringA("Game", "speed", buf, ai_OptionsFile);
-    _itoa(ai_OptionMouseSpeed, buf, 10);
+    itoa(ai_OptionMouseSpeed, buf, 10);
     WritePrivateProfileStringA("Game", "mouse_speed", buf, ai_OptionsFile);
-    _itoa(ai_OptionScrollSpeed, buf, 10);
+    itoa(ai_OptionScrollSpeed, buf, 10);
     WritePrivateProfileStringA("Game", "scroll_speed", buf, ai_OptionsFile);
-    _itoa(ai_OptionCameraSpeed, buf, 10);
+    itoa(ai_OptionCameraSpeed, buf, 10);
     WritePrivateProfileStringA("Game", "camera_speed", buf, ai_OptionsFile);
-    _itoa(ai_GameSwitches.word & 0xff, buf, 10);
+    itoa(ai_GameSwitches.word & 0xff, buf, 10);
     WritePrivateProfileStringA("Game", "invert_mouse", buf, ai_OptionsFile);
-    _itoa(ai_GameSwitches.byte[1], buf, 10);
+    itoa(ai_GameSwitches.byte[1], buf, 10);
     WritePrivateProfileStringA("Game", "nachtwaechter", buf, ai_OptionsFile);
     WritePrivateProfileStringA("Game", "stadt", ai_TownName, ai_OptionsFile);
-    _itoa(ai_OptionHistorie, buf, 10);
+    itoa(ai_OptionHistorie, buf, 10);
     WritePrivateProfileStringA("Game", "historie", buf, ai_OptionsFile);
-    _itoa(ai_OptionMission, buf, 10);
+    itoa(ai_OptionMission, buf, 10);
     WritePrivateProfileStringA("Game", "mission", buf, ai_OptionsFile);
-    _itoa(ai_OptionNetMission, buf, 10);
+    itoa(ai_OptionNetMission, buf, 10);
     WritePrivateProfileStringA("Game", "net_mission", buf, ai_OptionsFile);
-    _itoa(ai_GameSwitches.byte[2], buf, 10);
+    itoa(ai_GameSwitches.byte[2], buf, 10);
     WritePrivateProfileStringA("Game", "show_cursor_txt", buf, ai_OptionsFile);
-    _itoa(ai_GameSwitches.byte[3], buf, 10);
+    itoa(ai_GameSwitches.byte[3], buf, 10);
     WritePrivateProfileStringA("Game", "show_geb_info", buf, ai_OptionsFile);
-    _itoa(ai_GamePanel.word & 0xff, buf, 10);
+    itoa(ai_GamePanel.word & 0xff, buf, 10);
     WritePrivateProfileStringA("Game", "panel_mode", buf, ai_OptionsFile);
-    _itoa(ai_GamePanel.byte[1], buf, 10);
+    itoa(ai_GamePanel.byte[1], buf, 10);
     WritePrivateProfileStringA("Game", "help_events", buf, ai_OptionsFile);
-    _itoa(ai_GamePanel.byte[2], buf, 10);
+    itoa(ai_GamePanel.byte[2], buf, 10);
     WritePrivateProfileStringA("Game", "difficulty", buf, ai_OptionsFile);
-    _itoa(ai_GamePanel.byte[3], buf, 10);
+    itoa(ai_GamePanel.byte[3], buf, 10);
     WritePrivateProfileStringA("Game", "hints", buf, ai_OptionsFile);
-    _itoa(ai_OptionPanelHelp.word & 0xff, buf, 10);
+    itoa(ai_OptionPanelHelp.word & 0xff, buf, 10);
     WritePrivateProfileStringA("Game", "panel_help", buf, ai_OptionsFile);
-    _itoa(ai_Opponents[0], buf, 10);
+    itoa(ai_Opponents[0], buf, 10);
     WritePrivateProfileStringA("Game", "opponent_a", buf, ai_OptionsFile);
-    _itoa(ai_Opponents[1], buf, 10);
+    itoa(ai_Opponents[1], buf, 10);
     WritePrivateProfileStringA("Game", "opponent_b", buf, ai_OptionsFile);
-    _itoa(ai_Opponents[2], buf, 10);
+    itoa(ai_Opponents[2], buf, 10);
     WritePrivateProfileStringA("Game", "opponent_c", buf, ai_OptionsFile);
-    _itoa(ai_Opponents[3], buf, 10);
+    itoa(ai_Opponents[3], buf, 10);
     WritePrivateProfileStringA("Game", "opponent_d", buf, ai_OptionsFile);
-    _itoa(ai_Opponents[4], buf, 10);
+    itoa(ai_Opponents[4], buf, 10);
     WritePrivateProfileStringA("Game", "opponent_e", buf, ai_OptionsFile);
-    _itoa(ai_Opponents[5], buf, 10);
+    itoa(ai_Opponents[5], buf, 10);
     WritePrivateProfileStringA("Game", "opponent_f", buf, ai_OptionsFile);
-    _itoa(ai_Opponents[6], buf, 10);
+    itoa(ai_Opponents[6], buf, 10);
     WritePrivateProfileStringA("Game", "opponent_g", buf, ai_OptionsFile);
 }
 /* 0x5d5640, the options reader (1523 B), the twin of ai_SaveOptions: every option is read with

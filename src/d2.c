@@ -1185,7 +1185,7 @@ void d2_DrawSlider(int id, D2SURF *surf)
             else
                 d2_SetFont(d2_DefaultFont + 1);
             if (w->dirty) {
-                _itoa(w->scale * value, buf2, 10);
+                itoa(w->scale * value, buf2, 10);
                 d2_SetClipRect(0, 0, d2_ScreenW, d2_ScreenH);
                 d2_DrawText((int)(w->x + pos1), w->y - 0x10, surf, buf2, 0);
                 d2_AddDirty((int)(w->x + pos1), w->y - 0x10, d2_TextDrawnW, d2_TextDrawnH);
@@ -1256,7 +1256,7 @@ void d2_DrawSlider(int id, D2SURF *surf)
             d2_DrawShape(w->x, (int)(w->h - spr0->h + w->y - pos1 - spr3->h / 2), surf, sprites, 3);
         if (flags & 4) {
             if (w->dirty && !(flags & 8)) {
-                _itoa(value, buf2, 10);
+                itoa(value, buf2, 10);
                 d2_SetClipRect(0, 0, d2_ScreenW, d2_ScreenH);
                 d2_SetFont(d2_DefaultFont + 1);
                 d2_DrawText(w->x - 0x18, (int)(w->h + w->y - pos1), surf, buf2, 0);
@@ -3696,7 +3696,7 @@ void *surf;
                     d2_SetObjEnabled(w->btnup, 1);
             }
             if (w->bar != -1) {
-                _itoa((int)((float)w2->contentHeight / w2->visible + 0.5f), buf, 10);
+                itoa((int)((float)w2->contentHeight / w2->visible + 0.5f), buf, 10);
                 d2_SetObjText(w->bar, buf);
             }
         }
@@ -5410,7 +5410,7 @@ void d2_SetObjValue(int obj, int a, int b, int c, int d)
             in->minval = a;
             in->maxval = b;
             in->value = c;
-            _itoa(c, in->text, 10);
+            itoa(c, in->text, 10);
             fl = in->flags;
             if (!(fl & 0x80))
                 return;

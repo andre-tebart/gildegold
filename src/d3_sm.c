@@ -40,7 +40,7 @@ int d3sm_GetGround(unsigned int x, unsigned int z, D3TERRAIN *t)
             d3sm_Ground[i] = 1;
             if (D3TERRAIN_NAMES(t)[i][0]) {
                 for (k = 0; k < 15; k++) {
-                    if (strstr(_strupr(D3TERRAIN_NAMES(t)[i]), d3sm_GroundNames[k])) {
+                    if (strstr(strupr(D3TERRAIN_NAMES(t)[i]), d3sm_GroundNames[k])) {
                         d3sm_Ground[i] = k;
                         break;
                     }

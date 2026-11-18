@@ -2104,7 +2104,7 @@ void hst_ResetLists(void)
         }
     }
     for (i = 0; i < 0x80; i++) {
-        if (_strnicmp(txt_Files[i].name, "historie\\", 9) == 0)
+        if (strnicmp(txt_Files[i].name, "historie\\", 9) == 0)
             txt_FreeFile(txt_Files[i].name);
     }
 }

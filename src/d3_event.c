@@ -98,7 +98,7 @@ int d3e_EventId(char *name)
     unsigned int i;
 
     for (i = 0; i < sizeof(d3e_Events) / sizeof(d3e_Events[0]); i++)
-        if (!_strcmpi(name, d3e_Events[i].name))
+        if (!strcmpi(name, d3e_Events[i].name))
             return d3e_Events[i].id;
     return 0;
 }

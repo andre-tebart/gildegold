@@ -1081,7 +1081,7 @@ void gm_ResolveHeadIcons(GMHEAD *rec)
         for (i = 0; i < gm_IconNameCount; i++) {
             if (gm_IconNames[i * 0x30] == 0)
                 break;
-            if (_stricmp(icon, gm_IconNames + i * 0x30) == 0) {
+            if (stricmp(icon, gm_IconNames + i * 0x30) == 0) {
                 *out = i;
                 goto next;
             }
@@ -1091,7 +1091,7 @@ void gm_ResolveHeadIcons(GMHEAD *rec)
         for (i = 0; i < gm_IconNameCount; i++) {
             if (gm_IconNames[i * 0x30] == 0)
                 break;
-            if (_stricmp(icon, gm_IconNames + i * 0x30) == 0) {
+            if (stricmp(icon, gm_IconNames + i * 0x30) == 0) {
                 *out = i;
                 break;
             }
@@ -1125,7 +1125,7 @@ int gm_HeadIconNumber(char *name)
         for (i = 0; i < gm_IconNameCount; i++) {
             if (gm_IconNames[i * 0x30] == 0)
                 break;
-            if (_stricmp(icon, gm_IconNames + i * 0x30) == 0) {
+            if (stricmp(icon, gm_IconNames + i * 0x30) == 0) {
                 r = i;
                 break;
             }
@@ -1184,7 +1184,7 @@ void gm_ChooseHeadIcon(unsigned short *c)
                     for (j = 0; j < gm_IconNameCount; j++) {
                         if (gm_IconNames[j * 0x30] == 0)
                             break;
-                        if (_stricmp(icon, gm_IconNames + j * 0x30) == 0) {
+                        if (stricmp(icon, gm_IconNames + j * 0x30) == 0) {
                             found = 1;
                             ORD_CHAR(c)->picture = j + 0x639;
                             break;
@@ -1215,7 +1215,7 @@ void gm_ChooseHeadIcon(unsigned short *c)
                 for (j = 0; j < gm_IconNameCount; j++) {
                     if (gm_IconNames[j * 0x30] == 0)
                         break;
-                    if (_stricmp(icon, gm_IconNames + j * 0x30) == 0) {
+                    if (stricmp(icon, gm_IconNames + j * 0x30) == 0) {
                         rec->heads[h] = j;
                         break;
                     }

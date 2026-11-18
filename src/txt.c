@@ -113,11 +113,11 @@ int txt_ParseLine(char *line, int group)
             strcpy(tmp, p);
             p = txt_SkipSpaces(tmp);
             txt_TrimRight(p);
-            if (!_strcmpi(p, "(m)"))
+            if (!strcmpi(p, "(m)"))
                 mode = 0;
-            else if (!_strcmpi(p, "(w)"))
+            else if (!strcmpi(p, "(w)"))
                 mode = 1;
-            else if (!_strcmpi(p, "(s)"))
+            else if (!strcmpi(p, "(s)"))
                 mode = 2;
         } else {
             p = txt_SkipSpaces(p);

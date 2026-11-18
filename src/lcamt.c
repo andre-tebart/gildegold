@@ -833,7 +833,7 @@ int gm_FreeCapacity(); char * he_FindEvent(int n, ...); char * he_NextEvent(void
 int ai_ScriptQuery(); int cm_SendLongMessage(char *msg); int cm_GetSlotState(); int cm_GetSlotValue(int h);
 void snd_PlayFavourComment(void); void d2_CloseView(int view);
 int gm_ListAmount(); char * gm_Query(void *list, int n, ...);
-void ai_LayoutProdGoodsList(int param_1, int param_2, int param_3, int param_4); char *_itoa(int, char *, int); void d2_SetObjText();
+void ai_LayoutProdGoodsList(int param_1, int param_2, int param_3, int param_4); char *itoa(int, char *, int); void d2_SetObjText();
 int gm_BuildingGoodsList(char *b, unsigned *out, int kind); int d2_CreateChildWindow(short x, short y, short w, short h, unsigned int flags, int win); struct AIPER; struct D3VECTOR; int d2_WinOpenPic(short x, short y, int pic, int win); int d2_WinOpenPicStyled();
 void d2_RemoveObj(); int gm_MinutesBetween(); char * he_FindEvent(int n, ...); char * he_NextEvent(void);
 int d2_SetForm(int view, int n); int io_PrintText(char *fmt, ...);
@@ -878,7 +878,7 @@ void d3_DirToWorld(struct XOBJ *obj, float *in, float *out);    /* 0x458810 (d3_
 float d3_VecAngle(struct D3VECTOR *a, struct D3VECTOR *b);      /* 0x4539f0 (d3_vec.c) */
 extern const struct D3VECTOR4 d3_ZAxis;                          /* 0x5ebb74, (0, 0, 1) */
 unsigned char * gm_BuildQuery(int n, ...); unsigned char * gm_BuildNext(void); int gm_MayTakeJob(int k, int c);
-char *_strupr(char *); int sprintf(char *buf, const char *fmt, ...); char * vfs_GetPath();
+char *strupr(char *); int sprintf(char *buf, const char *fmt, ...); char * vfs_GetPath();
 struct D3OBJECT * d3_LoadGroup(); void d3t_InflateObjectTree(D3OBJECT *obj); int d3t_DropObject();
 struct D3OBJECT;
 char d3if_Delete(struct D3OBJECT *obj);  /* 0x447190, d3_interface.h */
@@ -905,7 +905,7 @@ int d2_GetWinObj(); void ai_TechEffectsWindow(AIBLD *bld);
 float gm_ItemPrice(int item, unsigned char n);
 void cm_BeginGroup(const char *s); void cm_SendMoveGoodsUnchecked(int a, int b, unsigned char c, int d); int cm_SendMoveGoods(int a, int b, unsigned char c, int d); short * gm_PlayerRecord(char *c);
 int cm_SendLongMessage(char *msg); int cm_EndGroup(const char *s); int cm_GetSlotState(); void cm_SendMoneyDelta(int a, int b);
-char *_strupr(char *); void gm_CloseTechTree(void);
+char *strupr(char *); void gm_CloseTechTree(void);
 void ai_MasterLetterWindow();
 void ai_GameFrame(void);
 void lc_PlayerInJail(void);
@@ -921,7 +921,7 @@ typedef struct LCTREENODE {        /* a node of f3gm's research tree layout gm_T
 extern char gm_TreeNodes[3328];    /* 0x76fde0, LCTREENODE[64] (f3gm.c) */
 extern int ai_Difficulty;          /* 0x6f23fc, the game difficulty 0 .. 4 (ai.h) */
 int gm_BuildKindObjects(char *b);
-char *_itoa(int, char *, int);
+char *itoa(int, char *, int);
 int ai_SearchResourceWindow(AIBLD *bld);
 int ai_ExtractResourceWindow(AIBLD *bld);
 void ob_HandleBepflanzung(AIBLD *bld);
@@ -1027,7 +1027,7 @@ void gm_SortCharsByName(int n, int *ids, int flag); void d2_AddPointerItem(int i
 void d2_EndInputEdit(void); void d2_EnableObject(); void d2_ScrollWindowBy(); void d2_MoveObj(short x, short y, int obj);
 int d2_WinOpenInputIcon(int x, int y, int icon, unsigned char flags, int win); void d2_SetObjFont(); void d2_CopyCaption(char *caption);
 void d2_SetObjPic(); int cm_AddFieldDelta(unsigned char size, unsigned char n, unsigned short field, void *v); int cm_SendFieldDeltas(void); void cm_BeginFieldBlock(char *o, int id);
-char *_itoa(int, char *, int); void cm_BeginGroup(const char *s); int cm_EndGroup(const char *s);
+char *itoa(int, char *, int); void cm_BeginGroup(const char *s); int cm_EndGroup(const char *s);
 void cm_SendExSellObject(int a, int b, int c, int d, unsigned char e, int f); int cm_SendMoveGoods(int a, int b, unsigned char c, int d); int gm_GetGoodsValue(); int gm_ConvertMoney(int a, unsigned char k);
 typedef struct CREDITLISTROW {      /* a row of the credit list window (ai_CreditListWindow) */
     int child;                      /* 0x0, the row's child window (d2_CreateChildWindow), -1: none */
@@ -1099,7 +1099,7 @@ int d2_RemoveWindowObjects();
 void cm_SendMoneyDelta(int a, int b); void ai_ShowPaymentNews(); 
 int cm_SendObject1b5(int owner, G17B7 value); int cm_GetSlotValue(int h); int cm_SendGroupState(); int cm_FlushSendQueue();
 int cm_ReceiveMessages(); int cm_ExecCommands(); int cm_SendLongMessage(char *msg); int cm_GetSlotState();
-int ai_AmountMenu(); void d2_SetObjEnabled(); char *_itoa(int, char *, int);
+int ai_AmountMenu(); void d2_SetObjEnabled(); char *itoa(int, char *, int);
 void ai_StorageWindow(); int ai_ProductionWindow();
 int ai_OpenTransport(); void ai_MasterLetterWindow();
 #pragma pack(push, 1)

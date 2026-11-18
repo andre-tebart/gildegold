@@ -982,7 +982,7 @@ struct D2SURF; int d2_PutPixelRGB(int x, int y, unsigned char r, unsigned char g
 void ai_SwitchRoom(int param_1, unsigned short param_2);                     /* 0x59e0a0 */
 unsigned gm_PermissionBits(unsigned p1, unsigned char *b, unsigned short *o, int c);                     /* 0x503530 */
 int d2_FindPic();                     /* 0x468890 */
-char *_strupr(char *);                     /* 0x5ea986 */
+char *strupr(char *);                     /* 0x5ea986 */
 #define ai_SwitchRoomI ((void (*)(int, int))ai_SwitchRoom)  /* @original: sv_UpdateGroundplan zero-extends the room word into an int argument (xor edx,edx / mov dx,[esi]) */
 extern int d2_PicShift;                   /* 0x6ed98c, d2.h (not includable here) */
 #define d2_PutPixelRGBc ((int (*)(int, int, unsigned char, unsigned char, unsigned char, struct D2SURF *))d2_PutPixelRGB)  /* @original: sv_LoadGroundplan pushes the colour bytes as dwords loaded from the pixel buffer (char parameters, gfx.c masks them) */
@@ -1203,7 +1203,7 @@ void sv_UpdateGroundplan(unsigned flags)
     }
     if (ai_PlayerBuilding == 0 && ai_FallbackBuilding == 0) {
         strcpy(name, ai_PlayerSlots[ai_OwnPlayer]);
-        _strupr(name);
+        strupr(name);
         sprintf(path, "_STADTWAPPEN_%s", name);
         pic = d2_FindPic(path);
         if (pic == -1)
@@ -1456,7 +1456,7 @@ void sv_UpdateCityPanel(unsigned char a, int b)
         if (ai_PlayerBuilding == 0 && ai_FallbackBuilding == 0) {
             if (sv_ButtonCityStats == -1) {
                 strcpy(name, ai_PlayerSlotsT[ai_OwnPlayer].name);
-                _strupr(name);
+                strupr(name);
                 sprintf(arms, "_STADTWAPPEN_%s", name);
                 pic = d2_FindPic(arms);
                 if (pic != -1)
@@ -3193,7 +3193,7 @@ void sv_FlyCameraToObject(int b)
 }
 
 int d3t_PlaceObject(struct D3OBJECT *camera, float px, float py, float pz, float dx, float dy, float dz, int unk, char flags);                     /* 0x411680 */
-int _stricmp();                     /* 0x5eaa30 (_strcmpi) */
+int stricmp();                     /* 0x5eaa30 (_strcmpi) */
 char d3if_SelectTextureSet(struct D3OBJECT *obj, struct D3SURF *surf, unsigned char set, char reload);                     /* 0x446f30 */
 unsigned char * gm_BuildQuery(int n, ...);                     /* 0x501190 */
 unsigned char * gm_BuildNext(void);                     /* 0x501030 */
@@ -3340,7 +3340,7 @@ char sv_CreateBannerCB(D3OBJECT *part, AIBLD *b)
     D3MATRIX m;
     D3OBJECT *o;
 
-    if (_stricmp(part->name, "dummy_FAHNE") == 0) {
+    if (stricmp(part->name, "dummy_FAHNE") == 0) {
         rot.x = 0;
         rot.y = 0;
         rot.z = 0;
@@ -3367,7 +3367,7 @@ char sv_CreateBannerCB(D3OBJECT *part, AIBLD *b)
 
 char sv_ColourBannerCB(D3OBJECT *o, AIBLD *b)
 {
-    if (_stricmp(o->name, "sp_WIMPEL") == 0) {
+    if (stricmp(o->name, "sp_WIMPEL") == 0) {
         if (b->owner != 0xffff)
             d3if_SelectTextureSet(o, (struct D3SURF *)o->info, (unsigned char)((char)ai_CharsT[b->owner].ref54 + 'f'), 1);
     }
@@ -4405,7 +4405,7 @@ void sv_HoverPick(void)
                 it = (unsigned short *)gm_Query(b->objList, 1, 4, 2);
             for (; it != 0; it = gm_QueryNext()) {
                 g = &ai_GoodsT[*it];
-                if (_strcmpi(goods, g->name) == 0)
+                if (strcmpi(goods, g->name) == 0)
                     break;
             }
             if (it != 0)
@@ -5499,7 +5499,7 @@ void sv_DrawGateName(D3OBJECT *part)
         it = (unsigned short *)gm_Query((void *)b->objList, 1, 4, 2);
     for (; it != 0; it = gm_QueryNext()) {
         g = &ai_GoodsT[*it];
-        if (_strcmpi(name, g->name) == 0) {
+        if (strcmpi(name, g->name) == 0) {
             obj = it;
             goto found;
         }
@@ -6645,14 +6645,14 @@ int sv_TurnBook(SVBOOK *bk, char dir)
         strcpy(path, "buch\\Buch_vorblaettern.baf");
         name = util_BaseName(path);
         slot = &SV_ANIMCTL(bk->obj)->slots[i];
-        if (slot->data != 0 && _strcmpi(slot->data->name, name) == 0 && dir > 0) {
+        if (slot->data != 0 && strcmpi(slot->data->name, name) == 0 && dir > 0) {
             if ((slot->flags.b[1] & 0x20) == 0)
                 return 0;
             d3_ReleaseTexture(SV_ANIMCTL(bk->obj), SV_ANIMCTL(bk->obj)->slots[i].data->name);
         }
         strcpy(path, "buch\\Buch_zurueckblaettern.baf");
         name = util_BaseName(path);
-        if (slot->data != 0 && _strcmpi(slot->data->name, name) == 0) {
+        if (slot->data != 0 && strcmpi(slot->data->name, name) == 0) {
             if ((slot->flags.b[1] & 0x20) == 0 && dir > 0)
                 return 0;
             d3_ReleaseTexture(SV_ANIMCTL(bk->obj), SV_ANIMCTL(bk->obj)->slots[i].data->name);
@@ -7001,17 +7001,17 @@ void sv_UpdateWeather(void)
         if (sv_SkyLayersT[1]->alpha == 0) {
             if (c < 0x32) {
                 k = util_RandomU(4);
-                if (_strcmpi(sv_SkyLayersT[1]->t->name, sv_SkyFair[k].name) == 0)
+                if (strcmpi(sv_SkyLayersT[1]->t->name, sv_SkyFair[k].name) == 0)
                     k++;
                 sky = &sv_SkyFair[k];
             } else if (c < 0x96) {
                 k = util_RandomU(3);
-                if (_strcmpi(sv_SkyLayersT[1]->t->name, sv_SkyMedium[k].name) == 0)
+                if (strcmpi(sv_SkyLayersT[1]->t->name, sv_SkyMedium[k].name) == 0)
                     k++;
                 sky = &sv_SkyMedium[k];
             } else {
                 k = util_RandomU(2);
-                if (_strcmpi(sv_SkyLayersT[1]->t->name, sv_SkyHeavy[k].name) == 0)
+                if (strcmpi(sv_SkyLayersT[1]->t->name, sv_SkyHeavy[k].name) == 0)
                     k++;
                 sky = &sv_SkyHeavy[k];
             }
@@ -7024,17 +7024,17 @@ void sv_UpdateWeather(void)
         if (sv_SkyLayersT[1]->alpha == 0xff) {
             if (c < 0x32) {
                 k = util_RandomU(4);
-                if (_strcmpi(sv_SkyLayersT[0]->t->name, sv_SkyFair[k].name) == 0)
+                if (strcmpi(sv_SkyLayersT[0]->t->name, sv_SkyFair[k].name) == 0)
                     k++;
                 sky = &sv_SkyFair[k];
             } else if (c < 0x96) {
                 k = util_RandomU(3);
-                if (_strcmpi(sv_SkyLayersT[0]->t->name, sv_SkyMedium[k].name) == 0)
+                if (strcmpi(sv_SkyLayersT[0]->t->name, sv_SkyMedium[k].name) == 0)
                     k++;
                 sky = &sv_SkyMedium[k];
             } else {
                 k = util_RandomU(2);
-                if (_strcmpi(sv_SkyLayersT[0]->t->name, sv_SkyHeavy[k].name) == 0)
+                if (strcmpi(sv_SkyLayersT[0]->t->name, sv_SkyHeavy[k].name) == 0)
                     k++;
                 sky = &sv_SkyHeavy[k];
             }

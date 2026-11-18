@@ -124,7 +124,7 @@ void cm_SendMoneyDelta(int character, int delta); /* 0x4c5f60, cm.c: message 0x5
                                                character's money (+0x194), clamped 0 .. 0x32 */
 int he_ShowNews(int pid, int fl, char *text, int unused, int ev, char *text2); /* 0x53dda0, he.c */
 void d2_SetObjValue(); int d2_GetObjValue(int obj); int d2_CreateWinText(short x, short y, char *text, int win); void d2_SetObjText(int obj, char *text);
-char *_itoa(int, char *, int); void d2_SetObjFont(int obj, int font); int sv_RunFrame(int cb, unsigned mask);
+char *itoa(int, char *, int); void d2_SetObjFont(int obj, int font); int sv_RunFrame(int cb, unsigned mask);
 int d2_CreateRadioGroup(int n, ...); void d2_RadioAdd(int g, int obj); void d2_MenuNavigate(int g); void d2_RaiseViewWindows(int view); void d2_RadioClear(int g);
 #pragma pack(push, 1)
 typedef struct SAVEREQUEST {                /* 0x210, a save file entry (ai_ListFiles) or an empty slot's request */
@@ -231,7 +231,7 @@ typedef struct SCREENMODE {                 /* 8 bytes, a screen mode of the tab
     int w;                                  /* +0x0, the width */
     int h;                                  /* +0x4, the height */
 } SCREENMODE;
-char *_itoa(int value, char *buf, int base); /* 0x5e56c4, the library's integer to text (base 10 here) */
+char *itoa(int value, char *buf, int base); /* 0x5e56c4, the library's integer to text (base 10 here) */
 extern unsigned int d3s_TexSize;         /* 0xfb9260, d3s.c */
 extern unsigned int d3s_MaxTexSize;      /* 0xfb91dc, d3s.c */
 extern float d3o_FogScale;               /* 0x5fbd04, d3_interface.h */

@@ -317,7 +317,7 @@ int lobby_Screen(void)
     return ret;
 }
 
-char *_itoa(int, char *, int); char *_strupr(char *);
+char *itoa(int, char *, int); char *strupr(char *);
 
 /* 0x58a940, adds the lobby form's buttons: row 4 (sv_ButtonRow) the ready and character buttons into
    lobby_Buttons, row 8 the leave button; in the single-player mode (cm_NetGame.mode 0x7f) the character button
@@ -368,12 +368,12 @@ void lobby_ShowCity(void)
     if (cm_NetGame.mode == 0x3f) {
         strcpy(name, cm_NetGame.hdr.name);
         strcpy(city, cm_NetGame.hdr.name);
-        _strupr(name);
+        strupr(name);
         players = cm_NetGame.hdr.players;
     } else {
         strcpy(name, cm_NetGame.hdr.name);
         strcpy(city, cm_NetGame.hdr.name);
-        _strupr(name);
+        strupr(name);
         players = cm_NetGame.hdr.players;
     }
     sprintf(pic, "_STADTWAPPEN_%s", name);
@@ -713,11 +713,11 @@ int lobby_ChoosePlayer(unsigned mask, int b)
     d2_CloseView(win);
     WritePrivateProfileStringA("Network", "Name", init_PlayerProfile.firstName, ai_OptionsFile);
     WritePrivateProfileStringA("Network", "Familienname", init_PlayerProfile.familyName, ai_OptionsFile);
-    _itoa(init_PlayerProfile.coat - 0x59a, num, 10);
+    itoa(init_PlayerProfile.coat - 0x59a, num, 10);
     WritePrivateProfileStringA("Network", "Wappen", num, ai_OptionsFile);
-    _itoa(init_PlayerProfile.sex, num, 10);
+    itoa(init_PlayerProfile.sex, num, 10);
     WritePrivateProfileStringA("Network", "Geschlecht", num, ai_OptionsFile);
-    _itoa(init_PlayerProfile.faith, num, 10);
+    itoa(init_PlayerProfile.faith, num, 10);
     WritePrivateProfileStringA("Network", "Glauben", num, ai_OptionsFile);
     return ret;
 }

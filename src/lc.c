@@ -1017,7 +1017,7 @@ int gm_FreeCapacity(); char * he_FindEvent(int n, ...); char * he_NextEvent(void
 int ai_ScriptQuery(); int cm_SendLongMessage(char *msg); int cm_GetSlotState(); int cm_GetSlotValue(int h);
 void snd_PlayFavourComment(void); void d2_CloseView(int view);
 int gm_ListAmount(); char * gm_Query(void *list, int n, ...);
-void ai_LayoutProdGoodsList(int param_1, int param_2, int param_3, int param_4); char *_itoa(int, char *, int); void d2_SetObjText();
+void ai_LayoutProdGoodsList(int param_1, int param_2, int param_3, int param_4); char *itoa(int, char *, int); void d2_SetObjText();
 
 #define sv_MemberRows (*(SVMEMBERROW (*)[0x20])&ai_Unk75f280)  /* 0x75f280, sv.c's member list rows (32 of SVMEMBERROW) */
 
@@ -1244,7 +1244,7 @@ int ai_ProductionWindow(AIBLD *bld)
             else
                 col->stock = 0;
         }
-        _itoa(ncols, count, 10);
+        itoa(ncols, count, 10);
         d2_SetObjText(bar, count);
         d2_Objs[bar].centred = 1;
         d2_Objs[bar].w = 0x30;
@@ -1473,7 +1473,7 @@ void ai_UpdateProdColumns(int win, int part, int ncols, int store, int mode)
                                                                       ai_ProdColumns[c].win, -2);
                     d2_Objs[ai_ProdColumns[c].inPics[k]].interactive = 1;
                     d2_SetObjFont(ai_ProdColumns[c].inPics[k], 0x54);
-                    _itoa(((AIGOOD *)ai_Goods)[ai_ProdColumns[c].good].need[k], buf, 10);
+                    itoa(((AIGOOD *)ai_Goods)[ai_ProdColumns[c].good].need[k], buf, 10);
                     d2_SetCaption(ai_ProdColumns[c].inPics[k], buf);
                     d2_Objs[ai_ProdColumns[c].inPics[k]].captionX = -8;
                     d2_Objs[ai_ProdColumns[c].inPics[k]].captionY = 6;
@@ -2347,11 +2347,11 @@ char ai_BauplatzFilter(int obj, char *prefix)
     float q[4];
 
     if (prefix == 0) {
-        if (_strnicmp((char *)obj, "bk_", 3) != 0 && _strnicmp((char *)(obj + 1), "bk_", 3) != 0)
+        if (strnicmp((char *)obj, "bk_", 3) != 0 && strnicmp((char *)(obj + 1), "bk_", 3) != 0)
             return 1;
     } else {
-        if (_strnicmp((char *)obj, prefix, strlen(prefix)) != 0 &&
-            _strnicmp((char *)(obj + 1), prefix, strlen(prefix)) != 0)
+        if (strnicmp((char *)obj, prefix, strlen(prefix)) != 0 &&
+            strnicmp((char *)(obj + 1), prefix, strlen(prefix)) != 0)
             return 1;
     }
     d3_PointToWorld((struct D3OBJECT *)obj, &((D3OBJECT *)obj)->pos, (struct D3VECTOR *)pos);
@@ -2554,7 +2554,7 @@ char ai_FindBauplatz(int obj, AIBUILDSITE *ctx)
     float pos[4];
     char *s;
 
-    if (_strnicmp((char *)obj, "bk_", 3) != 0 && _strnicmp((char *)(obj + 1), "bk_", 3) != 0)
+    if (strnicmp((char *)obj, "bk_", 3) != 0 && strnicmp((char *)(obj + 1), "bk_", 3) != 0)
         return 1;
     d3_PointToWorld((struct D3OBJECT *)obj, &((D3OBJECT *)obj)->pos, (struct D3VECTOR *)pos);
     if (d3_VecEqual((struct D3VECTOR *)ctx->pos, (struct D3VECTOR *)pos, 100.0f) != 0) {
@@ -2698,7 +2698,7 @@ void ai_DropObjectAt(struct D3OBJECT *obj, struct D3VECTOR *target)
 }
 
 unsigned char * gm_BuildQuery(int n, ...); unsigned char * gm_BuildNext(void); int gm_MayTakeJob(int k, int c);
-char *_strupr(char *); int sprintf(char *buf, const char *fmt, ...); char * vfs_GetPath();
+char *strupr(char *); int sprintf(char *buf, const char *fmt, ...); char * vfs_GetPath();
 struct D3OBJECT * d3_LoadGroup(); void d3t_InflateObjectTree(D3OBJECT *obj); int d3t_DropObject();
 struct D3OBJECT;
 char d3if_Delete(struct D3OBJECT *obj);  /* 0x447190, d3_interface.h */
@@ -2800,7 +2800,7 @@ int lc_GebaeudeAusrichten(int kind, char *out)
     memset(flags, 0, sizeof(flags));
     strcpy(buf, "gb_");
     strcat(buf, ((AIBTYPE *)ai_BTypes)[kind].name);
-    _strupr(buf + 2);
+    strupr(buf + 2);
     for (letter = 0.0f; letter < 128.0f; letter += 1.0f) {
         if (letter != 0.0f)
             sprintf(path, "%sgebaeude/*%s_%c.ogr", ai_DataPath, buf, (char)(letter + 'A' - 1.0f));
@@ -3240,7 +3240,7 @@ int d2_GetWinObj(); void ai_TechEffectsWindow(AIBLD *bld);
 float gm_ItemPrice(int item, unsigned char n);
 void cm_BeginGroup(const char *s); void cm_SendMoveGoodsUnchecked(int a, int b, unsigned char c, int d); int cm_SendMoveGoods(int a, int b, unsigned char c, int d); short * gm_PlayerRecord(char *c);
 int cm_SendLongMessage(char *msg); int cm_EndGroup(const char *s); int cm_GetSlotState(); void cm_SendMoneyDelta(int a, int b);
-char *_strupr(char *); void gm_CloseTechTree(void);
+char *strupr(char *); void gm_CloseTechTree(void);
 void ai_MasterLetterWindow();
 
 void ai_GameFrame(void);
@@ -3741,7 +3741,7 @@ void ai_TechTreeWindow(int bld, int room)
                     } else if (rec != 0 && (!rec->id == 0xfd || ai_FallbackBuilding != 0)) {
                         /* held already: select it on the panel */
                         strcpy(name, good->name);
-                        _strupr(name);
+                        strupr(name);
                         sprintf(objName, "ob_%s", name);
                         sv_SelectPanelObject((unsigned char *)bld, rec->objId, objName);
                     }
@@ -3765,7 +3765,7 @@ void ai_UpgradeContact(int building)
 
     r = sv_RunFrame(ai_UpgradeContact, 0x67fff);
     while (r != 0) {
-        if (ai_ClickedObject != 0 && _strcmpi("UPGRADE", (char *)ai_ClickedObject) == 0)
+        if (ai_ClickedObject != 0 && strcmpi("UPGRADE", (char *)ai_ClickedObject) == 0)
             ai_TechTreeWindow(building, 0x2c);
         r = sv_RunFrame(ai_UpgradeContact, 0x67fff);
     }
@@ -4037,7 +4037,7 @@ int ai_SearchResourceWindow(AIBLD *bld)
             else
                 col->stock = 0;
         }
-        _itoa(ncols - 1, count, 10);
+        itoa(ncols - 1, count, 10);
         d2_SetObjText(bar, count);
         ai_UpdateResourceColumns(win, 2, ncols, (int)res);
         ai_UpdateProdGoodsList(bld, store);
@@ -4201,7 +4201,7 @@ int ai_ExtractResourceWindow(AIBLD *bld)
                 ai_ProdColumns[c].stock = 0;
             memset(ai_ProdColumns[c].in, 0, sizeof(ai_ProdColumns[c].in));
         }
-        _itoa(ncols, count, 10);
+        itoa(ncols, count, 10);
         d2_SetObjText(bar, count);
         ai_UpdateProdColumns(win, 2, ncols, store, 1);
         ai_UpdateProdGoodsList(bld, store);
@@ -4213,7 +4213,7 @@ int ai_ExtractResourceWindow(AIBLD *bld)
 }
 
 int gm_BuildKindObjects(char *b);
-char *_itoa(int, char *, int);
+char *itoa(int, char *, int);
 
 /* 0x593150, the production window of a workshop bld (1894 B): the production screen "Handel\Handel_PRODUKTION" with
    the title text 0xcb and the frame 0x70b; the columns are the kinds of objects the building can make
@@ -4414,7 +4414,7 @@ int ai_ProductionGoodsWindow(AIBLD *bld)
             else
                 col->stock = 0;
         }
-        _itoa(ncols, count, 10);
+        itoa(ncols, count, 10);
         d2_SetObjText(bar, count);
         ai_UpdateProdColumns(win, 2, ncols, store, 2);
         ai_UpdateProdGoodsList(bld, store);
@@ -7856,7 +7856,7 @@ D3OBJECT *ai_CreateCityPoint(char *city)
     D3OBJECT *obj;
 
     strcpy(upper, city);
-    _strupr(upper);
+    strupr(upper);
     sprintf(name, "dummy_%s", upper);
     obj = d3_FindObject(0, 0x140, 0, name);
     if (obj == 0)
@@ -8241,7 +8241,7 @@ void gm_SortCharsByName(int n, int *ids, int flag); void d2_AddPointerItem(int i
 void d2_EndInputEdit(void); void d2_EnableObject(); void d2_ScrollWindowBy(); void d2_MoveObj(short x, short y, int obj);
 int d2_WinOpenInputIcon(int x, int y, int icon, unsigned char flags, int win); void d2_SetObjFont(); void d2_CopyCaption(char *caption);
 void d2_SetObjPic(); int cm_AddFieldDelta(unsigned char size, unsigned char n, unsigned short field, void *v); int cm_SendFieldDeltas(void); void cm_BeginFieldBlock(char *o, int id);
-char *_itoa(int, char *, int); void cm_BeginGroup(const char *s); int cm_EndGroup(const char *s);
+char *itoa(int, char *, int); void cm_BeginGroup(const char *s); int cm_EndGroup(const char *s);
 void cm_SendExSellObject(int a, int b, int c, int d, unsigned char e, int f); int cm_SendMoveGoods(int a, int b, unsigned char c, int d); int gm_GetGoodsValue(); int gm_ConvertMoney(int a, unsigned char k);
 
 /* 0x59b030, pays back the loan loan of the bank bank (300 B): the borrower (gm_FindChar of the loan's partner) is
@@ -9023,7 +9023,7 @@ void ai_ExchangeWindow(AIBLD *bank)
             d2_EnableObject(bankUp, 1);
             d2_EnableObject(bankDown, 1);
             d2_EnableObject(bankText, 1);
-            _itoa(bankCount, text, 10);
+            itoa(bankCount, text, 10);
             d2_SetObjText(bankText, text);
         }
         if (ownCount <= 4) {
@@ -9034,7 +9034,7 @@ void ai_ExchangeWindow(AIBLD *bank)
             d2_EnableObject(ownUp, 1);
             d2_EnableObject(ownDown, 1);
             d2_EnableObject(ownText, 1);
-            _itoa(ownCount, text, 10);
+            itoa(ownCount, text, 10);
             d2_SetObjText(ownText, text);
         }
         if (d2_ClickedId == 3 || d2_ClickedId == 4) {
@@ -9373,7 +9373,7 @@ void ai_MoneyExchangeWindow(AIBLD *bank)
             d2_EnableObject(bankUp, 1);
             d2_EnableObject(bankDown, 1);
             d2_EnableObject(bankText, 1);
-            _itoa(bankCount, text, 10);
+            itoa(bankCount, text, 10);
             d2_SetObjText(bankText, text);
         }
         if (playerCount <= 4) {
@@ -9384,7 +9384,7 @@ void ai_MoneyExchangeWindow(AIBLD *bank)
             d2_EnableObject(playerUp, 1);
             d2_EnableObject(playerDown, 1);
             d2_EnableObject(playerText, 1);
-            _itoa(playerCount, text, 10);
+            itoa(playerCount, text, 10);
             d2_SetObjText(playerText, text);
         }
         if (d2_ClickedId == 3 || d2_ClickedId == 4) {
@@ -11751,7 +11751,7 @@ void ai_ConfessionListener(int building, int room)
 
 int cm_SendObject1b5(int owner, G17B7 value); int cm_GetSlotValue(int h); int cm_SendGroupState(); int cm_FlushSendQueue();
 int cm_ReceiveMessages(); int cm_ExecCommands(); int cm_SendLongMessage(char *msg); int cm_GetSlotState();
-int ai_AmountMenu(); void d2_SetObjEnabled(); char *_itoa(int, char *, int);
+int ai_AmountMenu(); void d2_SetObjEnabled(); char *itoa(int, char *, int);
 
 /* 0x5a2e60, the sermon window "Locations\Kirche\Predigt" of the player's own church bld: its sermon object (gm_Query
    kind 0x1b5 of the objList; made by cm_SendObject1b5 with every setting -1 when missing) and its event 0x2b

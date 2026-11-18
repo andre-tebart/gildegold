@@ -650,7 +650,7 @@ char vfs_MakeDirs(char *name, int unk)
                 *p = 0;
             h = _findfirst(dir, &fd);
             if (h == -1) {
-                if (_mkdir(dir))
+                if (mkdir(dir))
                     return 0;
             } else
                 _findclose(h);
@@ -724,11 +724,11 @@ VFSFILE *vfs_Tfopen(char *name, char *mode, int unk)
                     zip = unzOpen(path);
                     if (zip) {
                         vfs_EntryPath(e, r, e->zip, buf);
-                        _strupr(buf);
+                        strupr(buf);
                         if (e->pos > 0) {
                             err = unzGoToFilePos(zip, e->pos, e->num);
                             if (unzGetCurrentFileInfo(zip, &info, tmp, 0x100, 0, 0, 0, 0) == 0) {
-                                _strupr(tmp);
+                                strupr(tmp);
                                 vfs_ToSlashes(tmp);
                                 if (info.uncompressed_size > 0 && !strcmp(buf, tmp)) {
 found:
@@ -744,7 +744,7 @@ found:
                         } else {
                             do {
                                 if (unzGetCurrentFileInfo(zip, &info, tmp, 0x100, 0, 0, 0, 0) == 0) {
-                                    _strupr(tmp);
+                                    strupr(tmp);
                                     vfs_ToSlashes(tmp);
                                     if (info.uncompressed_size > 0 && !strcmp(buf, tmp))
                                         goto found;
@@ -1205,7 +1205,7 @@ char vfs_Init(char *root, char unk)
     vfs_OpenCount = 0;
     vfs_IgnoreCase = unk;
     vfs_Root = vfs_AddDir(root, 0);
-    _getcwd(cwd, 0x100);
+    getcwd(cwd, 0x100);
     sprintf(msg, "vfs_init: root -> \"%s\" relative to \"%s\"", root, cwd);
     vfs_EntryPool = 0;
     return vfs_Root != 0;

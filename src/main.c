@@ -1123,7 +1123,7 @@ int main_SearchNetworkGame(int saved)
                         ent[i][0] = -1;
                         continue;
                     }
-                    _strupr(name);
+                    strupr(name);
                     sprintf(key, "_STADTWAPPEN_%s", name);
                     h = d2_FindPic(key);
                     if (h == -1)
@@ -2343,11 +2343,11 @@ int main_ChoosePlayer(int mask, int flag)
     d2_CloseView(f);
     WritePrivateProfileStringA("Network", "Name", init_PlayerProfile.firstName, ai_OptionsFile);
     WritePrivateProfileStringA("Network", "Familienname", init_PlayerProfile.familyName, ai_OptionsFile);
-    _itoa(init_PlayerProfile.coat - 0x59a, buf, 10);
+    itoa(init_PlayerProfile.coat - 0x59a, buf, 10);
     WritePrivateProfileStringA("Network", "Wappen", buf, ai_OptionsFile);
-    _itoa(init_PlayerProfile.sex, buf, 10);
+    itoa(init_PlayerProfile.sex, buf, 10);
     WritePrivateProfileStringA("Network", "Geschlecht", buf, ai_OptionsFile);
-    _itoa(init_PlayerProfile.faith, buf, 10);
+    itoa(init_PlayerProfile.faith, buf, 10);
     WritePrivateProfileStringA("Network", "Glauben", buf, ai_OptionsFile);
     return ret;
 }
@@ -2645,7 +2645,7 @@ int main_ChooseCity(int unused, int host)
             char key[0x100];
 
             sprintf(key, "_STADTAUSWAHL_%s_INFO+0", hdr.name);
-            _strupr(key);
+            strupr(key);
             k = txt_FindKey(key);
             if (k != -1)
                 strcpy(name, d2_Strings[k]);
@@ -2729,7 +2729,7 @@ int main_ChooseCity(int unused, int host)
 
                             strcpy(ai_CityName, sel->name + 6);
                             sprintf(key, "_STADTAUSWAHL_%s_BESCHR+0", ai_CityName);
-                            _strupr(key);
+                            strupr(key);
                             k = txt_FindKey(key);
                             if (k != -1) {
                                 d2_SetForm(f2, 1);
@@ -2915,7 +2915,7 @@ int main_PreloadSound(char *f)
             if (inc == 0)
                 return 0;
             *inc = 0;
-            if (_strnicmp(q, "sprache\\", 8) == 0) {
+            if (strnicmp(q, "sprache\\", 8) == 0) {
                 q = strchr(q, 0x5c);
                 *slot = snd_LoadVoiceBank(q + 1, 0);
             } else
@@ -5048,14 +5048,14 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE prev, char *cmd, int show)
     } while (c != 0);
     p = strrchr(ls_SavePath.netDir, '\\');
     *p = 0;
-    _strupr(cmd);
+    strupr(cmd);
     main_TextureDivider = GetPrivateProfileIntA("Gfx", "TextureDivider", 0, ai_OptionsFile);
     snd_MusicEnabled = GetPrivateProfileIntA("Sound", "msx", 0, ai_OptionsFile);
     main_AmbientSoundOn = GetPrivateProfileIntA("Sound", "ambient", 0, ai_OptionsFile);
     snd_SfxEnabled = GetPrivateProfileIntA("Sound", "sfx", 0, ai_OptionsFile);
     main_WeatherSound = GetPrivateProfileIntA("Sound", "weather", 1, ai_OptionsFile);
     GetPrivateProfileStringA("General", "Bildmodus", "FULLSCREEN", bm, 0x100, ai_OptionsFile);
-    _strupr(bm);
+    strupr(bm);
     if (strcmp(bm, "DIRECTWINDOW") == 0)
         mode = 1;
     else
@@ -5159,7 +5159,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE prev, char *cmd, int show)
             k = 0x38;
             if (main_JobName[0] != 0) {
                 for (i = 0; i < 0x5f; i++) {
-                    if (_strcmpi(main_JobName, txt_JobNames[i]) == 0) {
+                    if (strcmpi(main_JobName, txt_JobNames[i]) == 0) {
                         k = i;
                         break;
                     }

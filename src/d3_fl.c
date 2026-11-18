@@ -855,7 +855,7 @@ void d3fl_PrepareWater(D3FLMAP *map)
     if (map->watertype == 0xff)
         for (i = 0; i < 8; i++) {
             strcpy(buf, map->typenames[i]);
-            _strupr(buf);
+            strupr(buf);
             if (strstr(buf, "WASSER")) {
                 map->watertype = i;
                 break;

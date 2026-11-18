@@ -480,19 +480,19 @@ int init_SceneNameToPrototype(char *o)
             strcmp(tail, "_E") == 0 || strcmp(tail, "_F") == 0 || strcmp(tail, "_G") == 0 || strcmp(tail, "_H") == 0)
             *t = 0;
     }
-    if (_strcmpi(head, "ob") == 0 || _strcmpi(head + 1, "ob") == 0) {
+    if (strcmpi(head, "ob") == 0 || strcmpi(head + 1, "ob") == 0) {
         for (i = 0; i < 0xb9dc / 0x41; i++) {
-            if (_strcmpi(rest, ((AIGOOD *)ai_Goods)[i].name) == 0) {
+            if (strcmpi(rest, ((AIGOOD *)ai_Goods)[i].name) == 0) {
                 obj->proto = i | INIT_PROTO_OBJECT;
                 return 1;
             }
         }
         return 0;
     }
-    if (_strcmpi(head, "gb") != 0)
+    if (strcmpi(head, "gb") != 0)
         return 0;
     for (i = 0; i < 0xca78 / 0x24d; i++) {
-        if (_strcmpi(rest, ((INIT_BTYPEREC *)ai_BTypes)[i].name) == 0) {
+        if (strcmpi(rest, ((INIT_BTYPEREC *)ai_BTypes)[i].name) == 0) {
             obj->proto = i | INIT_PROTO_BUILDING;
             return 1;
         }
@@ -642,7 +642,7 @@ void init_AllocSceneBuilding(int o)
                     for (i = 1; i < 4; i++) {
                         if (ai_PlayerSlots[i][0] == 0)
                             break;
-                        if (_stricmp(tail, ai_PlayerSlots[i]) == 0) {
+                        if (stricmp(tail, ai_PlayerSlots[i]) == 0) {
                             b->player = i;
                             strcpy(b->name, ai_PlayerSlots[i]);
                             break;
@@ -771,7 +771,7 @@ void init_LoadObjectScene(int n)
             err_Message("init_LoadObjektScene:Could not find a free universe...");
         d3if_SelectScene(uni, 0);
         sprintf(buf, "scenes/*ob_%s.ed3", p + 1);
-        _strupr(buf);
+        strupr(buf);
         if (d3_LoadScene(buf, 0, cb) != 0) {
             d3if_SelectScene(d3_CurrentScene, 0);
             d3_ForEachObject2(d3_DefaultScene, 0, 0x1e0, init_SceneNameToPrototype);
@@ -786,7 +786,7 @@ void init_LoadObjectScene(int n)
         uni = init_ObjectUniverse[n];
         d3if_SelectScene(uni, 0);
         sprintf(buf, "scenes/*ob_%s.ed3", p + 1);
-        _strupr(buf);
+        strupr(buf);
         if (d3_LoadScene(buf, 0, cb) != 0) {
             d3if_SelectScene(d3_CurrentScene, 0);
             d3sm_Destroy(d3_DefaultScene->hmap);
@@ -898,7 +898,7 @@ void init_LoadBuildingScene(int k)
         d3if_SelectScene(uni, 0);
         init_BuildingKindName(k, name);
         sprintf(buf, "scenes/*gb_%s.ed3", name);
-        _strupr(buf);
+        strupr(buf);
         sprintf(name, "init_LoadGebaeudeScene: %s", buf);
         if (d3_LoadScene(buf, 0, cb) == 0) {
             d3if_SelectScene(save, 0);
@@ -937,7 +937,7 @@ void init_LoadBuildingScene(int k)
         d3if_SelectScene(cls, 0);
         init_BuildingKindName(k, name2);
         sprintf(buf, "scenes/*gb_%s.ed3", name2);
-        _strupr(buf);
+        strupr(buf);
         if (d3_LoadScene(buf, 0, cb) == 0) {
             d3if_SelectScene(save, 0);
         } else {
@@ -2100,11 +2100,11 @@ void init_LoadSiteScene(char *name)
     d3_ForEachObject(d3_DefaultScene, 0, 0x1c0, init_CollectSiteObject, &list);
     if (list.n != 0) {
         o = list.obj[0];
-        if (_strnicmp(name, "bk_", 3) == 0 || _strnicmp(name, "!bk_", 4) == 0) {
+        if (strnicmp(name, "bk_", 3) == 0 || strnicmp(name, "!bk_", 4) == 0) {
             i = 0;
             if (0 < ai_NBauplaetze) {
                 do {
-                    if (_strcmpi(name, ai_Bauplaetze[i].name) == 0) {
+                    if (strcmpi(name, ai_Bauplaetze[i].name) == 0) {
                         if (i < ai_NBauplaetze)
                             goto place;
                         break;

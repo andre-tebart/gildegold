@@ -775,7 +775,7 @@ void d3d_LoadTexture(char *name, DDPIXELFORMAT *pf, LPDIRECTDRAWSURFACE4 *surf, 
             for (i = 1; i < levels; i++) {
                 LPDIRECTDRAWSURFACE4 tempt;
 
-                _itoa(i, num, 10);
+                itoa(i, num, 10);
                 strcpy(namebuf, name);
                 strcat(namebuf, "_");
                 strcat(namebuf, num);

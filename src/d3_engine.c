@@ -2449,7 +2449,7 @@ char d3_ReloadMeshCB(D3OBJECT *obj, D3RELOADCTX *ctx)
         len = strlen(name);
         if (len > 2) {
             ext = &name[len - 2];
-            if (!strcmp(ext, "_0") || !strcmp(ext, "_1") || !_strcmpi(ext, "_S"))
+            if (!strcmp(ext, "_0") || !strcmp(ext, "_1") || !strcmpi(ext, "_S"))
                 *ext = 0;
         }
         d3_FreeObjectData(obj);
