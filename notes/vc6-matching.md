@@ -745,6 +745,45 @@ Where the pushes and pops sit, how many epilogue copies there are, shared agains
     an x87 operand order (he_MoveReaper target.y), fchs placement (ch_ActTurn), a = 0 before a call
     (he_CatchMeetingDisease), a scratch rotation (gm_Query).
 
+- **Deep s25 (the near-byte list to 20 instructions, notes older than s22 first, 15 items: 9 byte + 1 twin)**:
+  - **Run climb.py round 1 before anything else, also on items with long notes**: he_RunTraining (c = &ai_CharsT[..]
+    before skill = t->skill: one swap), ai_FindCandidates (win = 0 before the memsets, cnt = 0 before the walk
+    setup: two moves, round 2) and d2_DrawInput (the object id read once into a local in an unrelated branch:
+    6 -> 2, after which the noted "135 ins" form bw = o->w - .. was byte) had notes saying "allocation only".
+  - **VC6 tail calls (scratch compiles, tools: toycc.py pattern = c2dag.setup/env + CL /FAs)**: a call followed by
+    return becomes `jmp` only when the call's argument count equals the caller's parameter count; arguments
+    equal to the incoming parameters are left in place, others are stored over the parameter slots (`mov
+    [esp+4],edx; jmp`), and that store form only for a callee whose body VC6 has seen (defined above). So a
+    non-tail `push [esp+4]; call f; add esp,4; ret` next to a tail jmp in the other arm = the caller has more
+    parameters than f takes: cm_FightMember is the 2-argument askPlayer callback and passes both to
+    cm_FightLoop (byte). A tail jmp with a param store = a callee of the caller's arity defined above:
+    ai_LawSelectionEntry calls a 4-argument stub (cls, filter, text, cb) that /OPT:ICF folds into
+    sv_ReturnZero (an `unlinked` definition above the caller; exemeasure unchanged) (byte).
+  - **A header prototype's parameters count in the declaration set**: giving two cm.h prototypes one parameter
+    more (named or not) moved main_RoundReport, ai_TutorialInitChapter2/3 and sv_LoadGroundplan; keep the
+    count (one prototype gains a parameter, the other is declared unprototyped `f();` with a comment).
+  - **A pointer local to a global record (`T *st = (T *)global;`) is not the object itself**: gm_CountCharacters'
+    `st->baseHealth[k] += f()` kept `[edx*4+X]`; through a view of the object (`#define gm_CharStats (*(T
+    *)&gm_CharacterStatistics)`) VC6 computes the element address into edx before the call (lea; fadd /
+    fstp [edx]) as the original (byte).
+  - **A materialized record address (`mov ecx,eax; add ecx,ebx; mov cl,[ecx]` instead of `[eax+ebx]`)**: a
+    record pointer local tested twice (`g = &ai_GoodsT[w & 0x7fff]; if (g->type == 2 || g->type == 6)`), the
+    index variable assigned after it (sv_LoadGroundplan, sv_UpdateGroundplan at both slot loops: byte). The
+    byte twins with that load (sv_HoverPick, gm_AllocRaum) had the pointer.
+  - **`movsx ecx, byte ptr [..]; cmp ecx,2` instead of `cmp byte ptr [..],2`**: the byte is an int local with a
+    second reference; any second test, even one VC6 decides away, keeps it a register value
+    (init_AllocSceneBuilding: the Kontor test `kind == 2 && id == 0x47`, kept with @original).
+  - **The sqrt result kept on the x87 stack over the dying vector slots (`fstp st(2); fstp st(0); fst [dist];
+    fcomp lim`)**: the distance as its own float assigned inside the range test, `len = sqrt(..); if ((dist =
+    len) > lim) continue;` (he_SpreadMeetingDisease byte; `dist = sqrt(..)` then the test, or the test on len
+    before dist = len: the old code).
+  - **A volatile scalar saved in ebp and in a slot**: two reads of the global (`hv = d2_ClipBottom;` and the
+    clamp reading `d2_ClipBottom` itself), not a copy: same code as the volatile (d2_DrawInput).
+  - Left with notes: a counter's rank against a pointer with its decrement first (ai_RandomDomizilGoodNotIn), a
+    function-wide SIB operand order (ai_AlchemistWindow: flip names a swap in another block), fr's live range
+    (d3_Animate), a store-order / load-hoist pair (ai_CommandExecution), the zero pushes as left's references
+    (he_RunConversion), an induction-variable merge that only a short counter avoids (ai_TutorialWindow).
+
 - **An else-if arm cross-jumped whole into a sibling's copy, the original keeps it inline**: the store order of
   the OTHER arms (default arm charId before stateArg; 0x176 arm stateArg, charId, x, z) decides it, found by
   climb.py swap + move in round 2 (cm_OrderAttack byte; permuting only the inlined arm's stores did not). The pair
