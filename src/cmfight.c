@@ -2588,7 +2588,19 @@ int cm_BestCellNear(char *c, int cx, int cy, int r, int *ox, int *oy)
 }
 /* 0x4d22d0, the most threatened cell around (cx, cy) for the fighter c: the rings of cm_BestCellNear, the cell with the
    greatest cm_ThreatAt rating goes into (*ox, *oy); returns 1 when that rating is above 5 (0 too when no cell rated
-   above 0) */
+   above 0)
+   @deep s40: min-ternary hi / hic (sc->size - 1 < cy + k ? sc->size - 1 : cy + k, as cm_FindNearCell) and
+   k = 0 before best (best's 0 stored from k's zero register) took 41 -> 2 ins, size right. Left: the two
+   reloads of the k-loop latch's reload block (the row loop's exit, its own 2-instruction block) in another
+   order: the original loads cy into ebp before the strength-reduced cy - k (edx); ours the IV first. They
+   are split pieces (pass 2 ids: k#154#2 id b before cy#2 id 16) and the block keeps list order. Tried
+   without result: if-forms of the row / col lower bounds (draft), lo / loc locals (= or far), every
+   operand order of the two ternaries, the final test spelled 7 ways (best != 0 / 0.0 / ==, return of the
+   &&), best = 0 / 0.0, climb 3 rounds; flip.py names only the float 0.0f constants (best = 1.0f, or the
+   final compare's 0.0f: identical instructions with another constant) and the 0 of the row bound, i.e. the
+   const-0 web decides the split order. Probes of cy / cy - k references move far more than the order.
+   (declaration set: no declaration set makes this text byte (every symbol-count shift 0..63 at the unit's
+   start and before the function) */
 
 int cm_MostThreatenedCellNear(char *c, int cx, int cy, int r, int *ox, int *oy)
 {
@@ -2598,16 +2610,13 @@ int cm_MostThreatenedCellNear(char *c, int cx, int cy, int r, int *ox, int *oy)
     int k, row, col, hi, hic, m, type;
 
     sc = (D3SM *)d3_DefaultScene->hmap;
+    k = 0;
     best = 0.0f;
-    for (k = 0; k < r; k++) {
-        hi = sc->size - 1;
-        if (hi >= cy + k)
-            hi = cy + k;
+    for (; k < r; k++) {
+        hi = sc->size - 1 < cy + k ? sc->size - 1 : cy + k;
         for (row = cy - k < 0 ? 0 : cy - k; row <= hi; row++) {
             m = k - abs(cy - row);
-            hic = sc->size - 1;
-            if (hic >= cx + m)
-                hic = cx + m;
+            hic = sc->size - 1 < cx + m ? sc->size - 1 : cx + m;
             for (col = cx - m < 0 ? 0 : cx - m; col <= hic; col++) {
                 type = sc->entries[sc->size * row + col].type;
                 if (type != 0 && type != 0xd) {
