@@ -1395,7 +1395,7 @@ int amt_GetKindLevel(int k)
 
 void amt_ElectOffices(int unused, int n, AMTREC *recs)
 {
-    int cnt2, cnt3, i, j, m, k, r, left;
+    int pending, i, j, m, k, r, left;
     char *cand[4];
     int ids[4];
     int votes[6];
@@ -1405,22 +1405,22 @@ void amt_ElectOffices(int unused, int n, AMTREC *recs)
     AMTREC *p;
     char buf[4];
 
-    cnt2 = 0;
+    pending = 0;
     for (i = 0; i < n; i++) {
         if (recs[i].state == 2)
-            cnt2++;
+            pending++;
     }
     for (i = 0, p = recs; i < n; i++, p++) {
         unsigned int tally[3];
 
-        if (cnt2 == 0)
+        if (pending == 0)
             break;
         tally[0] = 0;
         tally[1] = 0;
         tally[2] = 0;
         if (p->state != 2)
             continue;
-        cnt2--;
+        pending--;
         o = gm_FindChar(p->owner);
         x = gm_FindChar(p->x14);
         if (o == 0 || x == 0)
@@ -1466,15 +1466,15 @@ void amt_ElectOffices(int unused, int n, AMTREC *recs)
                 sv_PumpNet();
         }
     }
-    cnt3 = 0;
+    pending = 0;
     for (i = 0; i < n; i++) {
         if (recs[i].state == 3)
-            cnt3++;
+            pending++;
     }
     for (i = 0; i < n; i++) {
         int cnt[4];
 
-        if (cnt3 == 0)
+        if (pending == 0)
             return;
         cnt[0] = 0;
         cnt[1] = 0;
@@ -1488,7 +1488,7 @@ void amt_ElectOffices(int unused, int n, AMTREC *recs)
         votes[5] = -1;
         if (recs[i].state != 3 || recs[i].cnt == 0)
             continue;
-        cnt3--;
+        pending--;
         k = 0;
         for (j = 0; j < 768; j++) {
             if (k >= recs[i].cnt || k >= 4)
