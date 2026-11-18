@@ -6596,13 +6596,16 @@ void he_RunTrialSteps(int ev)
     case 1:
         c = &ai_CharsT[e->chr];
         teacher = (AICHAR *)gm_FindChar(t->teacher);
-        if (teacher != 0) {
-            txt_Format(text, 0x1a9f, c->id);
-            he_ShowNews(teacher->netId, teacher->netId, text, 0, 0x5f4, (char *)0);
-            fin = (HEFINVIEW *)gm_PlayerRecord((char *)teacher);
-            if (fin != 0)
-                fin->taught++;
+        if (teacher == 0) {
+            e->end = ai_Time;
+            cm_SendExSetHEI(-1, ev);
+            return;
         }
+        txt_Format(text, 0x1a9f, c->id);
+        he_ShowNews(teacher->netId, teacher->netId, text, 0, 0x5f4, (char *)0);
+        fin = (HEFINVIEW *)gm_PlayerRecord((char *)teacher);
+        if (fin != 0)
+            fin->taught++;
         e->end = ai_Time;
         cm_SendExSetHEI(-1, ev);
         return;
