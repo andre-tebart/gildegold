@@ -7169,14 +7169,22 @@ int gm_BuildingEvents(unsigned owner, int b, int c, int *out)
     return n;
 }
 /* 0x50a250, the credit offers of the bank b to the person p: up to cnt offers (amount, term 2 .. 7, interest) written to out; returns 3, or 0 when b has no owner, p or cnt is 0 or the bank already has 9 credits running (gm_BuildingEvents). A player (kind 6) gets the bank's kept offers (ORDBLD.credits) while one of them is taken (-1) or within the bank's money (gm_SumSlotAmounts); before day 6 a bank of a computer owner tops its money up to 0.2 of the player's worth (at most 64000, cm_SendMoveGoods). New offers: at most worth (gm_GetWorth) x 0.3 (0.6 / 0.45 for the orders 0xf / 0xb of ord_DispatchOrder) and half the bank's money, each 70 .. 100 % of it (the first 1/4, the second 1/2); the interest lies between 0.7 and 1.5 of the bank's v65 by the term, less (liking - 50) / 20 (gm_Liking) for a player or a computer player at a computer bank; a player's offers are kept
-   @deep match-deep 2026-11-14: 38 -> 7 ins. Fixed: both 0.5 factors read cm_DoubleHalf (M10), all = 0
-   after the guard (all in esi, cnt in edi as the original: 38 -> 9), the liking term without the f copy (9
-   -> 7), the offers copied back by an index loop. Left: (1) the original zeroes esi (all) right after push
-   esi, before the first guard test; all = 0 at the top in any of 12 guard orders swaps esi / edi again
-   (36-46 ins), flip.py want 'push esi / xor esi,esi': 0 of 279 mutants; (2) the 70 .. 100 % factor: the
-   original negates the random in an int (neg eax; fild; fmul 0.01; fadd 1.0), every spelling folds to
-   fsubr: 1.0 - r * 0.01, -(int)r, (float) / (double) casts, an int amount = -r first, the cm_DoubleOne
-   object (8 forms, = control). (tiebreak: not measured (dcp headers sample gm_GetCreditOffers)) */
+   @deep deep s26: the 70 .. 100 % factor matched: (float)(-util_RandomU(0x1e) * 0.01) + 1.0 keeps the
+   original's neg eax / fadd 1.0 (a double expression folds to fsubr; toy compile: a float local or float
+   cast of the product is the only form that keeps the neg) -> shape 4 ins / 58 bytes, padded size right.
+   Left: the original's xor esi,esi (all = 0) between push esi and push edi, before the first guard. all =
+   0 at the top (statement, initializer, return all at the guard): 33 ins, a pure esi/edi swap of all and
+   cnt's guard piece (c2trace: all prio 18 -> -10 once live over the guards, then it picks edi; cnt#4 the
+   piece left); separate guard ifs 94. climb round 1 from the tree and climb --rounds 2 from the top form:
+   nothing. prior: match-deep 2026-11-14: 38 -> 7 ins. Fixed: both 0.5 factors read cm_DoubleHalf (M10),
+   all = 0 after the guard (all in esi, cnt in edi as the original: 38 -> 9), the liking term without the f
+   copy (9 -> 7), the offers copied back by an index loop. Left: (1) the original zeroes esi (all) right
+   after push esi, before the first guard test; all = 0 at the top in any of 12 guard orders swaps esi /
+   edi again (36-46 ins), flip.py want 'push esi / xor esi,esi': 0 of 279 mutants; (2) the 70 .. 100 %
+   factor: the original negates the random in an int (neg eax; fild; fmul 0.01; fadd 1.0), every spelling
+   folds to fsubr: 1.0 - r * 0.01, -(int)r, (float) / (double) casts, an int amount = -r first, the
+   cm_DoubleOne object (8 forms, = control). (tiebreak: not measured (dcp headers sample
+   gm_GetCreditOffers)) */
 
 int gm_GetCreditOffers(int b, unsigned short *p, unsigned cnt, int *out)
 {
