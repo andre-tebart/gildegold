@@ -1622,10 +1622,8 @@ void d3t_SetSnow(D3TSNOW *snow, int n, ...)
         }
     }
 }
-/* 0x414ea0. NONMATCHING: 33 bytes, the integer loads of d3_Viewport.right/left for hw are scheduled
-   two FPU instructions later than in the original; everything else is identical. The locals x and y
-   keep the x update on the FPU stack and fix the sy2 operand order; (snow->windz) fixes where the
-move.z store is scheduled. Initializing fall at the top puts it below wind on the stack. @deep deep s23: left the viewport right/left loads for hw scheduled two FPU instructions later than the original. climb round 1 (462 mutants), the hw line at every position 1640..1681, the fall vector as - 1.0f * m / -1.0f literal / from fall.y, hw as (float)(int), max(), cx / cy before size: = control or worse. */
+/* 0x414ea0, moves the snow flakes with the camera, the wind and the fall, and projects them. The locals x and y
+   keep the x update on the FPU stack and fix the sy2 operand order. Initializing fall at the top puts it below wind on the stack. @deep deep s23: wz = snow->windz without the parentheses: 8 -> 4 ins (the viewport loads now at the original's place). Left: the move.z store (fstp) one load later than the original (after mov ecx,[eax+0x50] instead of before). All 720 orders of the move scaling / cam04c copies: no lever; climb round 1 nothing; flip.py: deleting wx = / wz = (a load fewer) or dup of a cam04c copy flips it. The fall / wind transforms through vector temporaries (fall in place via x / y, the wind source as d): worse. */
 
 void d3t_UpdateSnow(D3TSNOW *snow, float dt)
 {
@@ -1664,7 +1662,7 @@ void d3t_UpdateSnow(D3TSNOW *snow, float dt)
     snow->cam04c.z = d3_Camera->pos.z;
 
     wx = snow->windx;
-    wz = (snow->windz);
+    wz = snow->windz;
     wind.x = wx * d3_Camera->matrix._11 + 0.0f * d3_Camera->matrix._21 + wz * d3_Camera->matrix._31;
     wind.y = wx * d3_Camera->matrix._12 + 0.0f * d3_Camera->matrix._22 + wz * d3_Camera->matrix._32;
     wind.z = wx * d3_Camera->matrix._13 + 0.0f * d3_Camera->matrix._23 + wz * d3_Camera->matrix._33;

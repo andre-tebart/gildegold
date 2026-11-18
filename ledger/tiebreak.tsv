@@ -329,7 +329,7 @@ exe	0x00414590	d3t_DrawRain	d3_tools	c062a8c6e7bb4179	no	byte	control=byte p1=by
 exe	0x004148f0	d3t_CreateSnow	d3_tools	9d2877bf2b968f9e	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00414b50	d3t_FreeSnow	d3_tools	67f947dfef12eefc	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00414c60	d3t_SetSnow	d3_tools	d33e350ee99ef941	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x00414ea0	d3t_UpdateSnow	d3_tools	080cb5cd1efc1a79	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	7766c8e34802c322
+exe	0x00414ea0	d3t_UpdateSnow	d3_tools	a40840e30ef7c3b1	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	c35184a2bf1f6ced
 exe	0x00415380	d3t_DrawSnow	d3_tools	c51346c03dc02a8c	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004156a0	d3t_EmitterCB	d3_tools	d5dbb050f8e7c973	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00415ad0	d3t_CreateEmitter	d3_tools	d25987ca85c07cba	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
