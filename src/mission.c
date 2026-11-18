@@ -1042,8 +1042,8 @@ void snd_ClearQueue(void);                                                      
     }                                                               \
 }
 #define G13_WAIT(ok, id) {                                          \
-    unsigned long _end = d3_Time + 0xfa;                            \
-    while (_end > d3_Time) {                                        \
+    unsigned long _start = d3_Time;                                 \
+    while (_start + 0xfa > d3_Time) {                               \
         sv_RunFrame(0, (id) | 0x80);                               \
         if (d2_ClickedId != -1 && d2_PointerObj == (ok))             \
             break;                                                  \
@@ -1051,8 +1051,7 @@ void snd_ClearQueue(void);                                                      
 }
 
 /* 0x4b5460, the mission success dialog of t: three general speeches ("AUFTRAEGE_ALLGEMEIN" 0..2), then
-   "_AUFTRAEGE_ERFOLG_HS_nn", each cut short by the button
-   @deep behaviour: 4 code hunks (20 differing instructions), all one pattern: 'unsigned long _end = d3_Time + 0xfa;' compiles here as mov ebx,[d3_Time]; add ebx,0xfa, the original as mov eax,[d3_Time]; lea ebx,[eax+0xfa] (the load goes to a temp, the sum into _end); the following load for 'while (_end > d3_Time)' and every other instruction match (the loop structure top test + bottom cmp ebx,[d3_Time] is identical). Meaning checked: same end time, same volatile reads. Tried, one build each: 0xfa + d3_Time (identical bytes), the inline while (d3_Time + 0xfa > d3_Time) without the local (much WORSE: 578 -> 606 bytes, 20 -> 222 asm lines, reverted). spell.py: the four code hunks have no menu rule (meaning check first); the dup-tail hunk 0x4b58ac is the alignment fill of the 4-instruction size difference (no if/else at the tail). Readability done this session: Q1/Q2 cleared (sb_IsInit is the canonical sblib.c name of 0x4273c0, G13TYPE.unk10 -> speech). */
+   "_AUFTRAEGE_ERFOLG_HS_nn", each cut short by the button */
 void ai_MissionSuccessDialog(G13TYPE *t, int id)
 {
     char name[0x100];
