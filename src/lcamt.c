@@ -7930,16 +7930,22 @@ int ai_HearingWindow(AICHARREC *me, LCORDMSG *m)
    owner, the building) whose first button, when the player has the 5 (sv_CheckMoney), does it for a kind 0 worker
    in that building from a random start (none: only the payment) and tells 0x1dde: 0x81; the second button or a
    right click close it with 0
-   @deep Rewritten whole from the original 0x5cbe00..0x5cc2ab (the draft was a skeleton): both branches
-   read statement by statement against the disassembly (holder by m->kind, the power bit 0x80, gm_FindChar
-   / gm_BuildQuery(1, 1, target2), the payment, cm_SendSetField, the owner news with the owner index as pid
-   in the AI branch, gm_InheritEstate / cm_SendKillCharacter, the map pick with mode 0x410 and flags 0, the
-   slot wait, the random worker search (i+1) % 0x300 over id != 0xffff, bld, kind 0); ours=373
-   original=373. Left is allocation: the original keeps me in ebx through the AI branch (ours reloads it
-   into edx), the constant 0x80 in cl (test byte ptr [ebx+0x1c8], cl; ours mov cl,[..]; test cl,cl; js -
-   the same bit-7 test, where the prover stops), the search loop keeps bld in the slot [esp+0x18] with
-   0xffff in ebp and tests cmp byte ptr [kind], 0 (ours bld in ebx, mov dl / test dl), ret in ebp (ours
-   [esp+0x14]); the rest regs / slots. Tried a mask variable for 0x80 (no change). */
+   @deep deep s37: 130 -> 31 ins: the worker search as for (n = 0x300; n != 0; n--, i = (i + 1) % 0x300)
+   (the ai_UseGoodCharmOtherSex lever). Left (slots 26, code 17): the constant 0x80 lives in cl from the
+   top (mov cl,0x80; test byte ptr [ebx+0x1c8],cl; jne - ours mov cl,[..]; test cl,cl; js at both power
+   tests), two 4-byte slots swapped ([esp+0x14] / [esp+0x18]: the slot handle against the menu result) and
+   the text buffers' offsets (lea [esp+0x17c] against ours 0x7c: the two 0x100 buffers the other way
+   round). Not tried yet: powerFlags as unsigned char / an int mask so the 0x80 test is no sign test, the
+   buffers' block scope. prior: Rewritten whole from the original 0x5cbe00..0x5cc2ab (the draft was a
+   skeleton): both branches read statement by statement against the disassembly (holder by m->kind, the
+   power bit 0x80, gm_FindChar / gm_BuildQuery(1, 1, target2), the payment, cm_SendSetField, the owner news
+   with the owner index as pid in the AI branch, gm_InheritEstate / cm_SendKillCharacter, the map pick with
+   mode 0x410 and flags 0, the slot wait, the random worker search (i+1) % 0x300 over id != 0xffff, bld,
+   kind 0); ours=373 original=373. Left is allocation: the original keeps me in ebx through the AI branch
+   (ours reloads it into edx), the constant 0x80 in cl (test byte ptr [ebx+0x1c8], cl; ours mov cl,[..];
+   test cl,cl; js - the same bit-7 test, where the prover stops), the search loop keeps bld in the slot
+   [esp+0x18] with 0xffff in ebp and tests cmp byte ptr [kind], 0 (ours bld in ebx, mov dl / test dl), ret
+   in ebp (ours [esp+0x14]); the rest regs / slots. Tried a mask variable for 0x80 (no change). */
 
 int ai_ExpelWorkerWindow(AICHARREC *me, LCORDMSG *m)
 {
@@ -8032,13 +8038,12 @@ int ai_ExpelWorkerWindow(AICHARREC *me, LCORDMSG *m)
                     sv_MessageBox(text, 0);
                     worker = 0;
                     i = util_RandomU(0x300);
-                    for (n = 0x300; n != 0; n--) {
+                    for (n = 0x300; n != 0; n--, i = (i + 1) % 0x300) {
                         if (((AICHARREC *)ai_Chars)[i].id != 0xffff && ((AICHARREC *)ai_Chars)[i].bld == bld &&
                             ((AICHARREC *)ai_Chars)[i].kind == 0) {
                             worker = &((AICHARREC *)ai_Chars)[i];
                             break;
                         }
-                        i = (i + 1) % 0x300;
                     }
                     if (worker != 0) {
                         if (owner->kind == 6 || owner->kind == 7) {
@@ -10337,20 +10342,29 @@ int ai_UseGoodTrialStep(AICHARREC *ch, G8USEVIEW *use)
    holds the good 0x2c5 (cm_SendRelations). A player target (kind 6 / 7) gets the news 0xfec naming the three,
    each player pick the news 0xfed naming the target (key 0x5fb); a player user sees the text 0xfe8 (the good's
    rank + 1 and the three) in the use-object panel. Returns 1.
-   @deep Read whole against the original and rewritten typed (AICHARREC ch / target / pick[3], G8USEVIEW
-   use, AMOUNTCFG cfg, lc_CharRecs); every call, argument, constant and store matches in order (the draft
-   compared the picks with use instead of ch, had two picks of three and no tail). The ret = 0 / if (target
-   != 0) { .. ret = 1; } form gives the original's zero register and two epilogues. Left: (1) at the end
-   the original calls ai_FindUsableGoodIndex (+0x361) before loading the three pick ids for txt_Format
-   0xfe8; ours (+0x35b) loads them first and calls after, because VC6 sees our earlier-defined
-   ai_FindUsableGoodIndex write only *index (the same TU-boundary effect as ai_UseGood, lc lead Open:
-   layout); the inline and separate-statement spellings give the same code, so the M8 at +0x3b0
-   (ai_UseObjPanel | txt_Format) is this misalignment; (2) allocation: the zero in esi where the original
-   has ebx, ebp pushed after the null test (ours +0x5d0fc3 push ebp) where the original pushes it at entry,
-   the loop counters in ebp/esi swapped, and loop 1's dec ebp scheduled after the idiv (the original
-   before). (references: M8 at +0x3b0: ours refers to ai_UseObjPanel (0x5cf820), the original's field to
-   0x5176d0 (txt_Format), explained: the M8 is the call reordered across the pick id loads (VC6 sees the
-   callee in our TU), not another callee: both sides call txt_Format and ai_UseObjPanel once at the end) */
+   @deep deep s37: 72 -> 32 ins: the three searches as for (n = 0x300; n != 0; n--, id = (id + k) % 0x300)
+   (the lever that made the twin ai_UseGoodCharmOtherSex byte: the original's dec / test pair, the loop
+   registers, and the tail's call order follows by itself; the unit-boundary reading of the tail in the
+   prior note is wrong). Left (slots 32, code 12, order 6): the original's frame is 4 bytes larger (0x960;
+   one more 4-byte local at [esp+0x10], written at +0x134 'mov [esp+0x10],eax' and read back as 'mov
+   edx,[esp+0x10]' in loops 2 / 3 and before the sends: a value kept in memory across the searches, most
+   likely target->id or the amount), ebp is pushed in the prologue (ours after the null test), ch->kind is
+   loaded into cl for the first test (mov cl,[esi+2]; cmp cl,6), and the failure return has mov eax,ebx
+   behind pop esi. Not tried yet: target->id as a named local, level / amount forms. prior: Read whole
+   against the original and rewritten typed (AICHARREC ch / target / pick[3], G8USEVIEW use, AMOUNTCFG cfg,
+   lc_CharRecs); every call, argument, constant and store matches in order (the draft compared the picks
+   with use instead of ch, had two picks of three and no tail). The ret = 0 / if (target != 0) { .. ret =
+   1; } form gives the original's zero register and two epilogues. Left: (1) at the end the original calls
+   ai_FindUsableGoodIndex (+0x361) before loading the three pick ids for txt_Format 0xfe8; ours (+0x35b)
+   loads them first and calls after, because VC6 sees our earlier-defined ai_FindUsableGoodIndex write only
+   *index (the same TU-boundary effect as ai_UseGood, lc lead Open: layout); the inline and
+   separate-statement spellings give the same code, so the M8 at +0x3b0 (ai_UseObjPanel | txt_Format) is
+   this misalignment; (2) allocation: the zero in esi where the original has ebx, ebp pushed after the null
+   test (ours +0x5d0fc3 push ebp) where the original pushes it at entry, the loop counters in ebp/esi
+   swapped, and loop 1's dec ebp scheduled after the idiv (the original before). (references: M8 at +0x3b0:
+   ours refers to ai_UseObjPanel (0x5cf820), the original's field to 0x5176d0 (txt_Format), explained: the
+   M8 is the call reordered across the pick id loads (VC6 sees the callee in our TU), not another callee:
+   both sides call txt_Format and ai_UseObjPanel once at the end) */
 
 int ai_UseGoodLowerOfficialRelations(AICHARREC *ch, G8USEVIEW *use)
 {
@@ -10385,31 +10399,28 @@ int ai_UseGoodLowerOfficialRelations(AICHARREC *ch, G8USEVIEW *use)
     if (target != 0) {
         level = ai_InventoryHas(ch, 0x2c5) != 0 ? 2 : 1;
         id = util_Random(0x300) & 0xffff;
-        for (n = 0x300; n != 0; n--) {
+        for (n = 0x300; n != 0; n--, id = (id + 1) % 0x300) {
             if (id != target->id && id != ch->id && lc_CharRecs[id].id != 0xffff && lc_CharRecs[id].kind < 10 &&
                 lc_CharRecs[id].officeKind != 0) {
                 pick[0] = &lc_CharRecs[id];
                 break;
             }
-            id = (id + 1) % 0x300;
         }
         id = util_Random(0x300) & 0xffff;
-        for (n = 0x300; n != 0; n--) {
+        for (n = 0x300; n != 0; n--, id = (id + 7) % 0x300) {
             if (id != target->id && id != ch->id && id != pick[0]->id && lc_CharRecs[id].id != 0xffff &&
                 lc_CharRecs[id].kind < 10 && lc_CharRecs[id].officeKind != 0) {
                 pick[1] = &lc_CharRecs[id];
                 break;
             }
-            id = (id + 7) % 0x300;
         }
         id = util_Random(0x300) & 0xffff;
-        for (n = 0x300; n != 0; n--) {
+        for (n = 0x300; n != 0; n--, id = (id + 13) % 0x300) {
             if (id != target->id && id != ch->id && id != pick[0]->id && id != pick[1]->id &&
                 lc_CharRecs[id].id != 0xffff && lc_CharRecs[id].kind < 10 && lc_CharRecs[id].officeKind != 0) {
                 pick[2] = &lc_CharRecs[id];
                 break;
             }
-            id = (id + 13) % 0x300;
         }
         amount = level * -20;
         cm_SendRelations(target->netId, pick[0]->netId, amount, 1);
