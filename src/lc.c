@@ -12369,30 +12369,30 @@ int ai_BurglaryWindow(int ctx, AIBLD *bld)
     return done;
 }
 /* 0x5a4130, the burglary start of the thieves' guild hall, the click of its contact_EINBRUCH plate (158 B): a
-   building whose character is free (0x520fe0) zeroes the 20-int map pick record, sets {+4 = 0x400, +0x10 =
-   0xa07443b4, +0x14 = 1, +0x18 = 7, +0x1c = 0x727}, opens the player bar (0x525220, the building) and the map
+   building whose character is free (0x520fe0) zeroes the 20-int map pick record, sets {+4 = 0x400, +8 =
+   0xa07443b4, +0xc = 1, +0x10 = 7, +0x4c = 0x727}, opens the player bar (0x525220, the building) and the map
    pick 0x5b2180 (1, the record, the text 0x19e2, the burglary window 0x5a3f10, 0), then closes the bar
    (0x525440) and clears the selection (0x52ae40) */
 
 void ai_BurglaryStart(int building)
 {
     int req[20];
-    char buf[0x40];
+    char buf[0x80];
     int i;
 
     if (sv_CheckCharacterFlag(building) != 0)
         return;
     for (i = 0; i < 20; i++)
         req[i] = 0;
+    req[1] = 0x400;
     if (building == 0)
         return;
-    req[1] = 0x400;
     sv_OpenPlayerBar(building, 0);
     txt_Format(buf, 0x19e2);
-    req[4] = 0xa07443b4;
-    req[5] = 1;
-    req[6] = 7;
-    req[7] = 0x727;
+    req[19] = 0x727;
+    req[4] = 7;
+    req[2] = 0xa07443b4;
+    req[3] = 1;
     ai_MapPick(1, req, buf, (int)ai_BurglaryWindow, 0);
     sv_ClosePlayerBar();
     sv_ClearSelection();
