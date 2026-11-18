@@ -3059,7 +3059,15 @@ int ch_PathToTarget(CHACTION *a)
 
 /* ---- 0x408690..0x40a900 (worker ch5) ---- */
 
-/* 0x408690, walk actions: drops the current animation and finds the path to args[0], args[1] in scene args[2] */
+/* 0x408690, walk actions: drops the current animation and finds the path to args[0], args[1] in scene args[2]
+   @deep deep s38: the frame says y is the third word of one 12-byte local with t: the original's order z,
+   x, t[0], t[1], y, name cannot come from separate locals (y size 4 sorts before t size 8; separate tx/tz
+   ints count 7 > x/z 5 and sort first). int t[3] with GetHeightAt(.., (float *)&t[2]) or struct { int
+   t[2]; float y; } c: frame exact, 6 ins left (order 12): the two t stores are emitted before mov
+   edx,[ebp+0x88] (ch->scene) where the original loads the scene and pushes it first: c2dag shows an edge
+   store -> load (the aggregate counts as aliased), which int t[2] / int t[3] without the cast do not have
+   (int t[3] + separate y: order right, frame 0x78). Moving the two stores (19 positions): no better. Open:
+   which 12-byte form leaves the load free (a typed record of the game? an array of a union?). */
 int ch_InitWalk(CHACTION *a, D3SM *h)
 {
     CHARACTER *ch = a->ch;

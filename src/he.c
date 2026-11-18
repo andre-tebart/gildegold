@@ -11096,7 +11096,16 @@ int he_RegisterEventTypes22(void)
    free slot) takes part in: the pair events 0x41, 0x6f and 0x45 (either partner; the other one is looked up with
    gm_FindChar first), the offer events 0x2c (as the suitor or a guest (who[0], who[2], who[5]) the offer's
    crimes are handed over first, cm_SendHandOverCrimes (who[0], who[1], the event's id, 0); as the partner who[1]
-   only ended), the events 0x47 (either partner), the trials 0x5e and the trial steps 0x5f (as the teacher) */
+   only ended), the events 0x47 (either partner), the trials 0x5e and the trial steps 0x5f (as the teacher)
+   @deep deep s38: the 0x45 loop with gm_FindChar + he_EndEventNow written in each arm (as the 0x41 loop):
+   one gm_FindChar call with the push per arm and add esp,8 merged as the original (28 -> 25 ins). Left:
+   (1) the constant 3 of the seven (e->opts & 3) tests gets bl in ours (const#0#3, c2trace: prio -134 but
+   sav 13 -> ebx; push/pop ebx), the original tests with the immediate and never touches ebx; changing k of
+   the constants to another value (probe, 1..8 sites) keeps a register: no count threshold; ternary /
+   single-call / b = a forms of the 0x45 loop: worse. Only this function in the image tests [reg+0x78],3
+   more than once (grep_orig). Open: what makes the constant no candidate (a bitfield test? opts typed
+   differently?). (2) the 0x2c loop's e->id / who[1] loads in edx / eax swapped (scratch rotation, probably
+   follows (1)). */
 void he_EndPersonEvents(unsigned short *p)
 {
     AICHAR *c = (AICHAR *)p;
@@ -11134,13 +11143,13 @@ void he_EndPersonEvents(unsigned short *p)
             continue;
         a = e->partner1;
         b = e->partner2;
-        if (a == c->netId)
+        if (a == c->netId) {
             gm_FindChar(b);
-        else if (b == c->netId)
+            he_EndEventNow((int)e);
+        } else if (b == c->netId) {
             gm_FindChar(a);
-        else
-            continue;
-        he_EndEventNow((int)e);
+            he_EndEventNow((int)e);
+        }
     }
     for (e = (AIJOB *)he_FindEvent(1, 0, 0x2c); e != 0; e = (AIJOB *)he_NextEvent()) {
         HEOFFER *o = (HEOFFER *)e;
