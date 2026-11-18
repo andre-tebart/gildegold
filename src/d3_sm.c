@@ -156,22 +156,9 @@ char d3sm_BoundsCB(D3OBJECT *obj, D3VECTOR4 *box)
 }
 /* 0x45e210, d3_ForEachObject callback: maps the object's vertices into the height map and queues its
    shadow casting triangles
-   @deep draft 123 ins -> shape 12 ins this session (meaning-neutral respellings read off the original: no
-   mesh local before the vertex loop, the loop bound re-reads obj->info's nkeys; h->size compared in place
-   (VC6's CSE temp is the original's [esp+0x10]); nrm scoped to the triangle loop body (shares inv's slot,
-   frame 0x24 -> 0x18); one final return (callee-saved pushes at entry); tri->cast stored before tri->solid
-   = 0 (the and 0x3f / xor bitfield form); hmax = a->h; if (hmax <= b->h) hmax = b->h (the int cmp/jg);
-   (int)d3_SortCount in the min (jge, as d3_mir / d3_par). Left: the 6-product cross term's operand order
-   (fpu 14): the original loads b before c before a in every product (b.gz*c.gx, b.gx*c.gz, b.gx*a.gz,
-   b.gz*a.gx, c.gz*a.gx, c.gx*a.gz), ours always loads the gz field first. Tried: all 64 factor
-   orientations (= control: VC6 canonicalizes them), 360 term orders and the 3 groupings x6 (VC6
-   reassociates the sum; best p412305 8 ins), the same 360 orders combined with a/b/c load orders and the
-   gz-before-gx vertex statement order (1440 variants, best 8 ins / fpu 4 regs 4), 30 declaration orders of
-   v/a/b/c (= control), the fields as (&v->gx)[k] (= control). The orientation moves with code earlier in
-   the function (the gx/gz statement order in the vertex loop changes it), so the operand rank seems to
-   come from function-wide leaf numbering, not the expression's text (tiebreak: insensitive, 32 samples)
-   prior: behaviour: no meaning error found; its frame / register / bitfield / max idiom hunks are the ones
-   fixed above */
+   @original the cross term's parenthesized (b->gx) of the second product: the original loads b before c
+   before a in all six products; VC6 ranks a parenthesized member read on its own, and only this one gives
+   that operand order (the bare form loads gz first in three products). */
 
 char d3sm_ShadowCB(D3OBJECT *obj, D3SM *h)
 {
@@ -203,7 +190,7 @@ char d3sm_ShadowCB(D3OBJECT *obj, D3SM *h)
                 tri->solid = 1;
                 tri->cast = 1;
             } else {
-                tri->cast = (tri->f26 & 4) || b->gz * c->gx - b->gx * c->gz + b->gx * a->gz - b->gz * a->gx + c->gz * a->gx - c->gx * a->gz < 0.0f;
+                tri->cast = (tri->f26 & 4) || b->gz * c->gx - (b->gx) * c->gz + b->gx * a->gz - b->gz * a->gx + c->gz * a->gx - c->gx * a->gz < 0.0f;
                 tri->solid = 0;
             }
             if (tri->cast && !(tri->f26 & 2)) {
