@@ -16952,7 +16952,6 @@ void he_RunRansomDemand(AIJOB *ev)
     AIBLD *b;
     HEFINVIEW *fin;
     char text[0x200];
-    int none, bld, obj;
 
     victim = (AICHAR *)gm_FindChar(x->victim);
     master = (AICHAR *)gm_FindChar(x->master);
@@ -16980,6 +16979,8 @@ void he_RunRansomDemand(AIJOB *ev)
         if (d2_ClickedForm != ev->slot->win || d2_ClickedId == -1)
             return;
         if (d2_ClickedId == 0) {
+            int none, bld, obj;
+
             none = -1;
             b = (AIBLD *)gm_BuildQuery(1, 1, ev->from);
             txt_Format(text, 0x19d4, victim->id, x->ransom, victim->id);
@@ -17016,6 +17017,8 @@ void he_RunRansomDemand(AIJOB *ev)
         return;
     case 2:
         if ((unsigned short)util_Random(100) > 0x14) {
+            int none, bld, obj;
+
             none = -1;
             b = (AIBLD *)gm_BuildQuery(1, 1, ev->from);
             if (b == 0) {
