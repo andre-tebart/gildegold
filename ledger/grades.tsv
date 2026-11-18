@@ -2416,7 +2416,7 @@ exe	0x004ce1b0	cm_CharObjDistXZ	cmfight	byte	readable
 exe	0x004ce200	cm_CharCellDistXZ	cmfight	byte	readable		
 exe	0x004ce270	cm_OtherBuilding	cmfight	byte	readable		
 exe	0x004ce290	cm_LayBomb	cmfight	byte	readable		
-exe	0x004ce300	cm_UpdateBombs	cmfight	draft	readable	deep	
+exe	0x004ce300	cm_UpdateBombs	cmfight	byte	readable		
 exe	0x004ce5d0	cm_ThrowGrenade	cmfight	shape	readable		
 exe	0x004ce830	cm_UpdateGrenades	cmfight	draft	readable	deep	
 exe	0x004ceb70	cm_ObjectOwner	cmfight	byte	readable		
