@@ -573,24 +573,7 @@ void d2_DrawFrame(D2INPUT *dlg, void *arg)
         d2_DrawTextBox(d2_PointerX, d2_PointerY, f3->w, f3->h, arg, buf, 8);
     }
 }
-/* 0x4694c0, draws an input field (and the slider-like frame around it)
-   @deep s25: the volatile hv is gone: hv = d2_ClipBottom; and the clamp reading d2_ClipBottom itself (if
-   (d2_ClipBottom < y1) y1 = d2_ClipBottom;) give exactly the volatile's code (VC6 merges the two global
-   reads into ebp and keeps hv's own slot); hv = hi = .., hi = hv, hv = hi with a plain hv: 60 ins (one
-   variable in ebp); hv and hi block-scoped: the same 60. Kept the plain form. The bw block: bw from o->w
-   in every spelling (o->w - p0->w - p1->w, parenthesised, p1 first, in steps, o->w = in->w = sum) is one
-   code, 135 ins (frame / register shift); bw = in->ndigits * 0xe: 105. Left: code 6 (bw read from the int
-   in->w, o->x / o->w order in the second d2_DrawShape). prior: 6 ins, headers sample insensitive (32
-   samples, one codegen). The original computes bw from the WORD o->w (movsx ebx, word [edi+0x14], p0->w
-   taken from ebx before it is overwritten) and reads o->x before o->w in the second d2_DrawShape. bw =
-   o->w - p0->w - p1->w gives exactly the original's instructions for that block, but p0 then gets one slot
-   reference more (c2frame: count 4 instead of 3) and is packed with a temp into the i / p1 neighbour slot
-   - 135 ins of frame and register shift (any operand order / grouping of bw and of the DrawShape x: one
-   code). Orders of the four statements in->w / o->w / o->x / bw with three in->w spellings (36 variants):
-   best 53, none below the control. The volatile hv (ClipBottom saved in ebp and in p0's slot, reloaded
-   from the slot for the restoring d2_SetClipRect) has no ordinary replacement found: a plain hi / min() /
-   > forms keep it in ebp (60 ins). Open: which source makes p0's last use a register use with bw read from
-   o->w (tiebreak: insensitive) */
+/* 0x4694c0, draws an input field (and the slider-like frame around it) */
 
 void d2_DrawInput(int idx, void *surf)
 {
@@ -600,7 +583,7 @@ void d2_DrawInput(int idx, void *surf)
     D2PICHDR *ip;
     D2FRAME *p0, *p1, *p2;
     unsigned int flags;
-    int n, v, bw, i, hv, x0, y1;
+    int n, v, bw, i, hv, x0, y1, id;
     char text[32];
     char fmt[32];
     char pct[64];
@@ -618,7 +601,8 @@ void d2_DrawInput(int idx, void *surf)
             in->w = min(in->w, in->maxw);
         d2_SetClipRect(0, 0, d2_ScreenW, d2_ScreenH);
         d2_Objs[in->obj].w = in->w;
-        if (d2_Objs[in->obj].highlighted == 0 && d2_PointerObj != in->obj)
+        id = in->obj;
+        if (d2_Objs[id].highlighted == 0 && d2_PointerObj != id)
             d2_DrawText(in->x, in->y, surf, in->text, 0);
         else
             d2_DrawText(in->x, in->y, surf, in->text, 2);
@@ -654,7 +638,7 @@ void d2_DrawInput(int idx, void *surf)
             in->w = p0->w + in->ndigits * 0xe + p1->w;
             o->w = in->w;
             o->x = in->x;
-            bw = in->w - p0->w - p1->w;
+            bw = o->w - p0->w - p1->w;
             d2_DrawShape(o->x, o->y, surf, pic, 0);
             d2_DrawShape(o->x - p1->w + o->w, o->y, surf, pic, 1);
             x0 = o->x + (unsigned)p0->w;
