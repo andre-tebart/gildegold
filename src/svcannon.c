@@ -517,16 +517,7 @@ extern TUTSTATE ai_TutorialState;
    ai_CannonSwitchAnim (0 .. 2) and a fire (ai_CannonFireCheck) ai_CannonExplosion; a right button release or a click
    on the quit control sets sv_PopRequest. The teardown fades out again, closes the three windows, removes the two
    objects, deletes the 3D objects, re-enables the listed objects, restores viewport, clip rectangle, scene, sky and
-   camera and releases the callback of the run record
-   @deep draft 378 -> shape 36 ins, slots only: the view walk as an index loop with a block pointer vw =
-   &d2_Views[v] (-210), list[0x300] (the object count; 0x2f2 was short), cam3 / save3 as D3VECTOR4 and
-   CANNONSCENE 0x104 (bmin's fourth float: the original's frame 0x750), rotv block-local (shares the
-   view-pointer slot), rotv.x = 0 last, list[n++] before the disabled store. Left: two equal-density frame
-   ties (dt slot before n, scene before rect; the original n at +0x20 / dt +0x24, rect +0x38 / scene
-   +0x48). Tried: dt in the loop block, n++ split, the 120 orders of the rect / scene saves, scene read
-   first: no order fix without code changes (c2frame: n 4/4 = dt 4/4, rect 8/16 = scene 2/4) (tiebreak: not
-   measured (dcp headers sample ai_CannonScene)) prior: the frame order of two equal-density pairs is left
-   (n / dt and rect / scene swapped) */
+   camera and releases the callback of the run record */
 void ai_CannonScene(char *rec)
 {
     GVEFFECT *run;
@@ -534,8 +525,10 @@ void ai_CannonScene(char *rec)
     unsigned short list[0x300];
     int n;
     int m;
-    int rect[4];
-    int scene;
+    struct {
+        int rect[4];
+        int scene;
+    } saved;                    /* the clip rectangle and the scene to restore: one 20-byte local in the original's frame */
     unsigned mask;
     float dt;
     unsigned char *pb;
@@ -565,11 +558,11 @@ void ai_CannonScene(char *rec)
     save3.x = d3_Camera->rotation.x;
     save3.y = d3_Camera->rotation.y;
     save3.z = d3_Camera->rotation.z;
-    rect[2] = d2_DirtyRectRight;
-    rect[0] = d2_DirtyRectLeft[0];
-    rect[1] = d2_DirtyRectTop;
-    rect[3] = d2_DirtyRectBottom;
-    scene = d3_CurrentScene;
+    saved.rect[2] = d2_DirtyRectRight;
+    saved.rect[0] = d2_DirtyRectLeft[0];
+    saved.rect[1] = d2_DirtyRectTop;
+    saved.rect[3] = d2_DirtyRectBottom;
+    saved.scene = d3_CurrentScene;
     d2_SetPointerSprite(0, 0);
     sv_ClearSelection();
     d2_ClearPointerItems();
@@ -716,13 +709,13 @@ void ai_CannonScene(char *rec)
     for (m = 0; m < n; m++)
         d2_Objs[list[m]].disabled = 0;
     d3_SetViewport((float)(sv_ViewRectRight - sv_ViewRectLeft), (float)(sv_ViewRectBottom - sv_ViewRectTop), (float)sv_ViewRectLeft, (float)sv_ViewRectTop, d3_ZNear, d3_ZFar, d3_ScaleX, d2_ScreenW, d2_ScreenH);
-    d2_DirtyRectRight = rect[2];
-    d2_DirtyRectLeft[0] = rect[0];
-    d2_DirtyRectTop = rect[1];
-    d2_DirtyRectBottom = rect[3];
+    d2_DirtyRectRight = saved.rect[2];
+    d2_DirtyRectLeft[0] = saved.rect[0];
+    d2_DirtyRectTop = saved.rect[1];
+    d2_DirtyRectBottom = saved.rect[3];
     sv_SetPanelEnabled(1);
     sv_RedrawScreen();
-    d3if_SelectScene(scene, 0);
+    d3if_SelectScene(saved.scene, 0);
     if (d3_Sky)
         d3sky_Init(d3_Sky, 1);
     d3_SetObjectPos(d3_Camera, (D3VECTOR *)&cam3);
