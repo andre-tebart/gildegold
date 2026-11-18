@@ -9215,29 +9215,11 @@ int d2_WinOpenInput(int x, int y, int w, int h, unsigned char flags, int win);  
 /* 0x5bc9c0, opens the master list page "panel\meister_liste_2" of the player stats panel (its third entry): the
    captions 0x1934 / 0x1935 / 0x1936 and per building of the player (gm_BuildQuery(1, 4, id)) whose master is not
    the player a row of ai_MasterRows: the type's picture, the type and name ("%s~ %s"), the master's budget ("%T")
-   and an input box 1000 .. 9000 on the building's budget; returns the form, or -1 (closed) without rows
-   @deep frame sweep s21: 12 -> 8 ins: one text[0x100] buffer for the row's name and budget texts (dcp
-   frame: one slot of the original for nameText / budgetText; both as block locals = control). Left: regs
-   20, the loop tail's count in ecx where the original has edx (a scratch rotation from earlier in the row
-   block); count++ before y += (order 14), bld store before budget (24) no better. Lead: climb.py over the
-   row block. prior: reconstructed from the skeleton (all 212 instructions read against the original: the
-   row init, scroll buttons, captions, the build query loop with the master filter, pic / name / budget
-   texts, input box, the -1 exit); the rows are ai_MasterRows[count] (index, the original's biased pointer
-   esi=&rows[count].nameText matches), init store order matched (no M8). Left: allocation only - the
-   original keeps count in edi (spilled to [esp+0x10], 'imul edi, 0x3e' for the row y, 'mov edi, edx' after
-   inc) and y in the stack slot [esp+0x14], ours the other way round (y in ebx, count in [esp+0x18]); the
-   exit 'test edi, edi / pop esi / jne' vs ours 'mov eax, [esp+0x10] / pop edi / test eax, eax' and the
-   epilogue pop order follow from it; nameText buffer slot differs by 0x20 (slots). Tried: declaration
-   order of count / y, a for loop (worse), buffer sizes 8..0xc0. (references: M8 at +0x242: ours refers to
-   d2_SetObjValue (0x475cb0), the original's field to 0x475980 (d2_GetObjValue), explained: the ref line
-   pairs our d2_SetObjValue call with the original's d2_GetObjValue only by the alignment shift around
-   +0x242: both sides call d2_SetObjValue then d2_GetObjValue once each, in that order, with the same
-   arguments) */
+   and an input box 1000 .. 9000 on the building's budget; returns the form, or -1 (closed) without rows */
 
 int ai_OpenMasterListPage(void)
 {
     int count;
-    int y;
     AICHARREC *master;
     char text[0x100];
     int i;
@@ -9268,7 +9250,6 @@ int ai_OpenMasterListPage(void)
     d2_SetForm(win, 2);
     bld = (AIBLD *)gm_BuildQuery(1, 4, ai_PlayerId);
     if (bld != 0) {
-        y = 0x14;
         do {
             master = (AICHARREC *)gm_FindCharacterByMaster((int)bld);
             if (master != 0 && master->id != ai_PlayerId) {
@@ -9280,11 +9261,10 @@ int ai_OpenMasterListPage(void)
                 d2_SetObjFont(ai_MasterRows[count].nameText, 0x54);
                 txt_Format(text, "%T", master->budget);
                 ai_MasterRows[count].budgetText = d2_CreateWinText(0x180, count * 0x3e + 0x14, text, d2_LastWindow);
-                ai_MasterRows[count].input = d2_WinOpenInput(0xea, y, 0x40, 0x40, 0x82, d2_LastWindow);
+                ai_MasterRows[count].input = d2_WinOpenInput(0xea, count * 0x3e + 0x14, 0x40, 0x40, 0x82, d2_LastWindow);
                 d2_SetObjValue4(ai_MasterRows[count].input, 1000, 9000, gm_ConvertMoney(bld->budget, ai_OwnPlayer));
                 ai_MasterRows[count].budget = d2_GetObjValue(ai_MasterRows[count].input);
                 ai_MasterRows[count].bld = bld;
-                y += 0x3e;
                 count++;
             }
         } while ((bld = (AIBLD *)gm_BuildNext()) != 0);
