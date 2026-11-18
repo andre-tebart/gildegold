@@ -4290,18 +4290,20 @@ void ai_FreeJobCharacters(AICHAR *ch, int n)
    the trade kinds 3 / 4 / 8 name the carts' objects (info->b / info->c) and the building in the message.
    Side effects: info->z2 counts what was sent (also across calls), info->z1 is set as the round flag; the order
    message goes as one cm_SendLongMessage (0x28: one per free character, then the round ends).
-   @deep Read whole against the original 0x4889f0..0x4892f4 and rewritten: every worker loop as for (i = 0;
-   info->z2 < total && i < 768; i++) (the original's z2 test before the loop and at the bottom, i < 768 at
-   the top), the harvest plant search as !found && k < 64 over the G15PLANT records with the plant id taken
-   before the memset, msg.nIds / reserved14 stored before the time, the 0x8c count with base = info->z2
-   loaded before the division, the trade kinds tested on info->type itself (the original reloads it and
-   does not thread the 4 / 8 / 3 tests), the goods orders' count / item through the new AIMSG.goodsOrder
-   view (was the *(unsigned char *) / *((unsigned short *) + 1) casts on arg[0]), AIJOB.harvestPlant for
-   unkb8. 327 -> 130 differing; every call, constant and field the same. Left: the original keeps a third
-   send site for 0x8c (ours cross-jumps it), the 0x14 / found-default total keeps its add per branch in the
-   original (ours shares the final add ebp,eax: +0x22e, +0x82c; z2 + n2 % n + n2 / n spelled either way
-   compiles identical), the zero register (ebx / ebp) choices and the message stores' scheduling (+0x138 ..
-   +0x1b9, +0x725 ..). */
+   @deep size queue s16: 87 -> 84 ins, raw 2305 (padded 2320 = the original's). Kept: the job-group
+   branch's found job ends with info->z1++; return; in the loop (as the other branches) instead of goto
+   done (the break + if (job) return form is the same code; a break with the message under if (job == 0) is
+   the control's code). Left as the prior note says: the 0x8c send site, the per-branch adds of the totals,
+   the zero register and the message store order. prior: Read whole against the original 0x4889f0..0x4892f4
+   and rewritten: every worker loop as for (i = 0; info->z2 < total && i < 768; i++) (the original's z2
+   test before the loop and at the bottom, i < 768 at the top), the harvest plant search as !found && k <
+   64 over the G15PLANT records with the plant id taken before the memset, msg.nIds / reserved14 stored
+   before the time, the 0x8c count with base = info->z2 loaded before the division, the trade kinds tested
+   on info->type itself (the original reloads it and does not thread the 4 / 8 / 3 tests), the goods
+   orders' count / item through the new AIMSG.goodsOrder view (was the *(unsigned char *) / *((unsigned
+   short *) + 1) casts on arg[0]), AIJOB.harvestPlant for unkb8. 327 -> 130 differing; every call, constant
+   and field the same. Left: the original keeps a third send site for 0x8c (ours cross-jumps it), the 0x14
+   / found-default total keeps its ... */
 
 void ai_SendJobOrders(AIINFO *info)
 {
@@ -4493,7 +4495,8 @@ void ai_SendJobOrders(AIINFO *info)
                         info->z2++;
                     }
                 }
-                goto done;
+                info->z1++;
+                return;
             }
         }
         memset(&msg, 0, sizeof(msg));
@@ -4523,7 +4526,6 @@ void ai_SendJobOrders(AIINFO *info)
         }
         cm_SendLongMessage(&msg);
     }
-done:
     info->z1++;
 }
 /* 0x489300, a thief master: are there free characters, and what do they know */
