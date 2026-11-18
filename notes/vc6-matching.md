@@ -709,6 +709,42 @@ Where the pushes and pops sit, how many epilogue copies there are, shared agains
     U+FFFD and that function fell to draft); restore the byte after each apply (bug report
     try-apply-mangles-latin1-bytes.md).
 
+- **Deep s24 (the near-byte list to 20 instructions, notes older than s22 first, 15 items)**:
+  - **One `return;` of a switch case as `break;` decides which epilogue copy the pair merger keeps**: a stage
+    handler whose `push esi; push N; jmp` tails jump into another copy of the shared `call; add; mov` than the
+    original's (identical instructions, a few bytes of jump targets). Generate one variant per `return;` inside
+    the switch (each turned into `break;`, the switch being the function's last statement) and measure them all:
+    he_RunSecretRoom (stage 3's final send, 7 bytes) and he_RunTransport (stage 1's failed-route exit inside
+    an `if`: draft 2 ins / padded size -> byte) matched with exactly one; all of them at once was far worse in
+    the first. c2tail --tries shows why: the pair merger walks the return jmps in source order against one
+    anchor copy, and a `break` makes the site a jump to the switch's end instead. Generator:
+    `tools/sweep/returnbreak.py FILE FUNC ADDR OUT`; run over every below-byte he_Run* it matched two more
+    (he_RunPlunderOffer, he_RunGraveLease: stage 0's final `e->stage = 1; return;` as `break;`). Only the
+    functions whose hunks are jump targets / tails moved; on regs / code hunks it is = control.
+  - **A message record in the block that fills and sends it**, again: he_RunRansom's AIMSG m (function scope:
+    the victim->netId load came after the m.type store; in its block: byte). Run it before any fill
+    permutation.
+  - **An escaped local at function scope on purpose**: ls_WriteCharacters' `model` (its address goes to the
+    write macro) is a function-scope local in the original: an escaped function local conflicts with every
+    slot, so the KindB loop's block `tmp` packs with the record block's tmps instead of with `model` (slots 4
+    -> byte; read the packer with `c2frame --names`: the `P` lines show which slot each local joined).
+  - **Plain index loop over a list the original walked**: ai_FillSaveSlots `for (k = 0; k < n; k++) { rec =
+    (SAVEREQUEST *)files + k; ..}` (VC6 strength-reduces it to the same countdown) instead of
+    `for (rec = files; n > 0; rec++, n--)`: the rec spill moves behind the loop guard, byte.
+  - **A `goto` past a test = VC6's own jump threading**: cm_ExLongMessage's `if (kind != 7) { if (kind != 6) { if
+    (!s) return 1; goto set; } } else return 1;` is `if (kind == 7 || (kind != 6 && s == 0)) return 1;` (VC6 threads
+    the s != 0 path past the later `s == 0 &&` test itself): byte.
+  - **A `volatile` float reproducing an fst / reload = a block local**: d3_EnvMapCoords' d declared in each
+    `if (v->used)` block (plain float) gives exactly the volatile's code; one plain function-scope d lifts it
+    to the x87 stack (+20). Try block scope before keeping any volatile scalar.
+  - Same code, kept for reading: a severity local of its own instead of a reused pick variable
+    (he_CatchMeetingDisease), the horizontal length as the full sqrt(x*x + y*y + z*z) with y = 0 (VC6 folds the
+    zero term: he_MoveReaper), `for (k = 0; n < 4 && k < nbones; k++)` for a for + break (d3anim_MapBones).
+  - Left with notes: reloads of split pieces in ascending piece id at a loop exit (d3anim_MapBones,
+    d2_ShpBlit16HalfDark), a threaded bottom exit (gm_BuildNext), a store before a guard (sv_MessageBoxGreen),
+    an x87 operand order (he_MoveReaper target.y), fchs placement (ch_ActTurn), a = 0 before a call
+    (he_CatchMeetingDisease), a scratch rotation (gm_Query).
+
 - **An else-if arm cross-jumped whole into a sibling's copy, the original keeps it inline**: the store order of
   the OTHER arms (default arm charId before stateArg; 0x176 arm stateArg, charId, x, z) decides it, found by
   climb.py swap + move in round 2 (cm_OrderAttack byte; permuting only the inlined arm's stores did not). The pair
