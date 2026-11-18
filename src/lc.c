@@ -8663,13 +8663,7 @@ void ai_CreditGiverWindow(AIBLD *bank)
 /* 0x59be90, sorts the rows of the money lender's exchange window by the name of their currency good and places
    them (653 B): the rows are counted up to the last used one (a good and an icon), sorted by an exchange
    sort on the name (the own player slot's money good as "AAAAAAAAA" first, none as "ZZZZZZZZZ" last), then each
-   used row's icon and text move to the row's place in the current window (0x4c apart, the text 0x30 below)
-   @deep read whole function against the original: count loop, exchange sort with inlined strcpy/strcmp
-   (==1), struct swap, the placing loop with its own row counter all match; only the induction pointers of
-   the sort differ: ours keeps &rows[i+1] (add esi,0x1c; lea ebx,[esi-0x1c]; mov ebp,esi; mov
-   eax,[esi-0x10]) where the original keeps &rows[i].good (add esi,0xc; lea ebp,[esi-0xc]; lea
-   ebx,[esi+0x1c]; mov eax,[esi]) and derives &rows[j] as lea eax,[ebx-0xc] for the swap; tried memcpy swap
-   (same) and a 1-based outer loop (much worse); a strength-reduction / variant round */
+   used row's icon and text move to the row's place in the current window (0x4c apart, the text 0x30 below) */
 void ai_SortExchangeRows(LCEXCHROW *rows)
 {
     char nameB[0x80];
@@ -8680,7 +8674,6 @@ void ai_SortExchangeRows(LCEXCHROW *rows)
     int j;
     int row;
     int own;
-    int v;
 
     n = 0;
     for (i = 15; i >= 0; i--) {
@@ -8692,20 +8685,18 @@ void ai_SortExchangeRows(LCEXCHROW *rows)
     for (i = 0; i < n; i++) {
         for (j = i + 1; j < n; j++) {
             own = ((GMPLAYERSLOT *)ai_PlayerSlots)[ai_OwnPlayer].moneyGood;
-            v = rows[i].good;
-            if (v == own)
+            if (rows[i].good == own)
                 strcpy(nameA, "AAAAAAAAA");
-            else if (v == 0)
+            else if (rows[i].good == 0)
                 strcpy(nameA, "ZZZZZZZZZ");
             else
-                strcpy(nameA, (char *)txt_ObjectNames[v][0]);
-            v = rows[j].good;
-            if (v == own)
+                strcpy(nameA, (char *)txt_ObjectNames[rows[i].good][0]);
+            if (rows[j].good == own)
                 strcpy(nameB, "AAAAAAAAA");
-            else if (v == 0)
+            else if (rows[j].good == 0)
                 strcpy(nameB, "ZZZZZZZZZ");
             else
-                strcpy(nameB, (char *)txt_ObjectNames[v][0]);
+                strcpy(nameB, (char *)txt_ObjectNames[rows[j].good][0]);
             if (strcmp(nameA, nameB) == 1) {
                 tmp = rows[i];
                 rows[i] = rows[j];
