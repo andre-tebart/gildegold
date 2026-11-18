@@ -2348,7 +2348,8 @@ int amt_CanUseMayorPower3(char *c)
 
 int amt_ExecutePriceMessage(char *c, int *m)
 {
-    int lvl, best;
+    int best;
+    AIBTYPE *bt;                        /* the building's type */
     AMTBLDVIEW *it;
     unsigned int id, id2, r;
     int i, n, t, pick[10], cands[10];
@@ -2370,9 +2371,9 @@ int amt_ExecutePriceMessage(char *c, int *m)
             it = (AMTBLDVIEW *)gm_BuildQuery(1, 5, t);
             if (it != 0) {
                 do {
-                    lvl = (unsigned char)ai_BTypes[it->type * 0x24d + 0x247];
-                    if (lvl > best) {
-                        best = lvl;
+                    bt = &ai_BTypesT[it->type];
+                    if (bt->level > best) {
+                        best = bt->level;
                         id = it->type;
                     }
                     it = (AMTBLDVIEW *)gm_BuildNext();
