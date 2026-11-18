@@ -1072,11 +1072,11 @@ exe	0x0045b510	d3s_MeshFromMap	d3s	fcd2ba02700c2fa8	no	draft	sample n=32 seed=1 
 exe	0x0045b8d0	d3s_AddShadow	d3s	340d3df19ff2423f	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft	
 exe	0x0045bcd0	d3s_GetGround	d3s	9227cb0efb1e5a80	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0045be10	d3s_Project	d3s	f02f822af9eee343	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft	
-exe	0x0045c620	d3s_Update	d3s	d18e799ff037c0b2	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	fd54a2000e6417ce
+exe	0x0045c620	d3s_Update	d3s	95575b8764be5413	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	4d6cd8f9174d0754
 exe	0x0045c9c0	d3s_LightCB	d3s	71392ca59204c3d9	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0045c9f0	d3s_CollectLights	d3s	4a43e6cc419ddd58	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0045ca20	d3s_UpdateObject	d3s	4f0f1d913bc0790d	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x0045ca60	d3s_UpdateObjectAt	d3s	68f3c92602455848	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	fd54a2000e6417ce
+exe	0x0045ca60	d3s_UpdateObjectAt	d3s	beb034067a55ea35	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	1ab7c5d84a2ab52b
 exe	0x0045cc90	d3s_FreeSlot	d3s	485676c8a79e65f9	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0045ccd0	d3s_FreeShadows	d3s	4c22a7c9b54b3ea5	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0045cd60	d3s_FreeLightCB	d3s	434d625c345fe69a	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
@@ -2329,7 +2329,7 @@ exe	0x004ca8a0	cm_ExChrUseGates	cm	4a9736abdae0bea0	no	shape	sweep control=shape
 exe	0x004caa20	cm_ExChrAnim	cm	7e2f163967756abc	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004caaa0	cm_ExOwnership	cm	99f3910e0d56c489	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004cab40	cm_ExSetHome	cm	8fb03c275c9e1166	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x004cac40	cm_ExGebUpgrade	cm	e7404488e931a348	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	fd9b9eded8153571
+exe	0x004cac40	cm_ExGebUpgrade	cm	733ebcf4f2db0631	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	a2eeba8db616778d
 exe	0x004cb100	cm_ExBuildingDestroyed	cm	118a10bf8b3a4d6c	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004cb210	cm_ExHandOverCrimes	cm	69c0cf0a3bd375a6	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004cb250	cm_ExHire	cm	1554501ea987403a	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
@@ -4445,7 +4445,7 @@ exe	0x005bc110	ai_ChooseCoatOfArms	lc	5646dbf681dac72d	no	byte	control=byte p1=b
 exe	0x005bc420	ai_OpenMoneyInfoPage	lc	75051ac3b789ade6	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005bc6d0	ai_OpenBuildingListPage	lc	0534a6d8ba1a0978	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005bc790	ai_BuildingDetailWindow	lc	407510a17ce4f3d8	yes	byte	sweep control=shape best=byte by 1 unused typedef at the unit's start; codegens=2 compiled=190	092c2c5a4f463028
-exe	0x005bc9c0	ai_OpenMasterListPage	lc	407c1f5ba117ec26	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
+exe	0x005bc9c0	ai_OpenMasterListPage	lcdom	912423f1393510a1	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	fd3aa2ee67499a75
 exe	0x005bcc70	ai_PlayerStatsPanel	lc	88c4f97440fe560b	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
 exe	0x005bd060	ai_AmountLimit	lc	37c5d642560eb0b9	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005bd0c0	ai_CentredText	lc	f05a4d239d0481ac	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
@@ -4541,7 +4541,7 @@ exe	0x005cb4f0	ai_HatredWindow	lcamt	9e5ece4d4a8cfdba	no	shape	sweep control=sha
 exe	0x005cba90	ai_HearingWindow	lc	f9ce01d01283799c	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005cbe00	ai_ExpelWorkerWindow	lc	c05f0fddc9044a65	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x005cc2b0	ai_PeaceWindow	lc	7d70b044c43d4c1e	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
-exe	0x005cc700	ai_ConvertWindow	lc	8f715ea3ea642bc4	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
+exe	0x005cc700	ai_ConvertWindow	lcamt	e7b0fa893b528788	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	cd2fa7478617fd67
 exe	0x005cca40	ai_PenanceWindow	lc	e81985c5ef0852f7	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005ccc10	ai_Miracle	lc	8cf458c2b4045883	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x005cd2e0	ai_MiracleWindow	lcamt	2be2fffe7c387690	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	f63a298b1e02a23a
