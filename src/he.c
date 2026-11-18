@@ -19508,23 +19508,12 @@ void he_AllocTip(AIJOB *ev)
     ev->end.min = 0;
     gm_Shuffled(0x1a, he_TipOrder);
 }
-/* 0x567c00, the run handler of the tips event 0x84: state 0 shows the next of the 27 tip texts (txt_TipTexts[he_TipOrder[entry]]) to the local player while the tips option ai_GamePanel.byte[3] is on, steps the entry and sets the next run to random(4) + 8 units; with the tips off it runs again in 1 unit; stages -1 / -2 free the record
-   @deep read the whole function against the original and rebuilt the statements: the tip text
-   txt_TipTexts[he_TipOrder[entry]] through he_ShowNews while ai_GamePanel.byte[3] is on, the step and the
-   random(4) + 8 due clock, the 1-unit rerun with the tips off, the free of the stages -1 / -2; typed the
-   data (he_TipOrder, txt_TipTexts, HETIPEVENT). Only allocation is left: ours keeps i in eax (mov
-   eax,[esi+0xac]; inc eax; cmp eax,0x1a; mov [esi+0xac],eax), the original in ecx (mov ecx,[esi+0xac]; inc
-   ecx; mov eax,ecx; mov [esi+0xac],ecx; cmp eax,0x1a); 79 vs 80 instructions. The due clock's call is
-   gm_AddTime(&ev->end, util_Random(4) + 8, 0, 0) - the random value is the hours argument: the original
-   pushes mins 0 and secs 0 before the inner call (push 0; push 0; push 4), calls util_Random, add esp,4,
-   push eax, push &ev->end, add esp,0x10 (0x567c92..0x567ccd; a 2-argument call left the callee reading
-   mins/secs from stale stack slots). Tried for the counter: int and unsigned i, the declaration orders; no
-   change. */
+/* 0x567c00, the run handler of the tips event 0x84: state 0 shows the next of the 27 tip texts (txt_TipTexts[he_TipOrder[entry]]) to the local player while the tips option ai_GamePanel.byte[3] is on, steps the entry and sets the next run to random(4) + 8 units; with the tips off it runs again in 1 unit; stages -1 / -2 free the record */
 
 void he_RunTip(AIJOB *ev)
 {
     HETIPEVENT *t = (HETIPEVENT *)ev;
-    int st, i;
+    int st;
 
     st = ev->stage;
     if (st < -2)
@@ -19534,9 +19523,8 @@ void he_RunTip(AIJOB *ev)
             return;
         if (ai_GamePanel.byte[3] != 0) {
             he_ShowNews(ai_CharsT[ai_PlayerId].netId, -1, txt_TipTexts[he_TipOrder[t->entry]], 0, 0x5f9, 0);
-            i = t->entry + 1;
-            t->entry = i;
-            if (0x1a < i)
+            t->entry++;
+            if (t->entry > 0x1a)
                 ev->stage = 1;
             ev->end = ai_Time;
             gm_AddTime(&ev->end, util_RandomU(4) + 8, 0, 0);
