@@ -4217,18 +4217,26 @@ char *itoa(int, char *, int);
    its slot); with none marked it selects the workers of the job 4 of the column's goods; on an input picture it
    picks that input (ai_ProdSelectedInput, again: none). A right click clears the marks or pops the window. Each
    column gets its inputs, the amount the store's inputs make (by the column's need) and its stock
-   @deep Reconstructed in full from the original 0x593150..0x5938b5 (was a skeleton) on the model of
-   ai_ProductionWindow: the two rooms, the member any-loop, the column click (no marks: select the workers
-   of job 4; marks: the job 4 by ai_ProdColumnSlots' goods or the order message type 4 with its slot wait,
-   the move into the shown room or the room 0xfd, the stage), the input-picture pick
-   (ai_ProdSelectedInput), the right click, the columns from gm_BuildKindObjects (type 0x17 skipped, the
-   four inputs in the room: count 2 or a kind 0x1e building; new ones, < 16), the inputs / amount (by
-   col->need) / stock per column and the update calls. ours=575 original=574, no ref difference. Left:
-   allocation and scheduling: in the fresh-goods check the original keeps ncols in esi and reloads the
-   gm_KindObjs pointer from [esp+0x10] into ebx each pass (ours: the pointer in esi, ncols in edi,
-   0x5936a6), and it increments ncols before storing the new column ('inc esi; mov [esp+0x18], esi; add
-   ebp, 0x58; mov ecx, [eax]; mov [ebp-0x58], ecx' vs ours 'mov ecx, [eax]; mov [ebp], ecx; mov ecx,
-   [esp+0x18]; inc ecx'); one store of the message (msg.time's word) is scheduled later. A variant round. */
+   @deep deep s35: the column loop has two strength-reduced pointers: &ai_ProdColumns[ncols] (the
+   original's ebp, its end compare cmp ebp,X for ncols < 16, the store add ebp,0x58; mov [ebp-0x58],ecx
+   after inc esi = ncols) and &gm_KindObjs[i] (the original's [esp+0x10], reloaded into ebx in the fresh
+   loop); ours gives ebp to the gm_KindObjs pointer. ai_ProdColumns[ncols].good = ..; ncols++ = control;
+   ncols++ then [ncols - 1] (or [++ncols - 1]) builds the column pointer as imul ebp,0x58 / add ebp like
+   the original but keeps the gm_KindObjs pointer in ebp and the column pointer in [esp+0x14] (77 ins); the
+   fresh loop without the fresh && test: 113. climb round 1: only msg.nIds = 0 before msg.time (21 ins /
+   429 bytes, not kept). Left as the prior note says plus this pointer priority. prior: Reconstructed in
+   full from the original 0x593150..0x5938b5 (was a skeleton) on the model of ai_ProductionWindow: the two
+   rooms, the member any-loop, the column click (no marks: select the workers of job 4; marks: the job 4 by
+   ai_ProdColumnSlots' goods or the order message type 4 with its slot wait, the move into the shown room
+   or the room 0xfd, the stage), the input-picture pick (ai_ProdSelectedInput), the right click, the
+   columns from gm_BuildKindObjects (type 0x17 skipped, the four inputs in the room: count 2 or a kind 0x1e
+   building; new ones, < 16), the inputs / amount (by col->need) / stock per column and the update calls.
+   ours=575 original=574, no ref difference. Left: allocation and scheduling: in the fresh-goods check the
+   original keeps ncols in esi and reloads the gm_KindObjs pointer from [esp+0x10] into ebx each pass
+   (ours: the pointer in esi, ncols in edi, 0x5936a6), and it increments ncols before storing the new
+   column ('inc esi; mov [esp+0x18], esi; add ebp, 0x58; mov ecx, [eax]; mov [ebp-0x58], ecx' vs ours 'mov
+   ecx, [eax]; mov [ebp], ecx; mov ecx, [esp+0x18]; inc ecx'); one store of the message (msg.time's word)
+   is scheduled later. A variant round. */
 int ai_ProductionGoodsWindow(AIBLD *bld)
 {
     AIMSG msg;
@@ -9255,11 +9263,11 @@ void ai_MoneyExchangeWindow(AIBLD *bank)
 {
     LCEXCHROW bankRows[16];
     LCEXCHROW playerRows[16];
-    char text[0x20];
+    char text[8];
     AIJOB *payment;
     int feesButton;
     int exchangeButton;
-    int buttons[2];
+    int buttons[8];
     int bankUp;
     int bankDown;
     int playerUp;
