@@ -831,7 +831,9 @@ int cm_AddFieldValues(unsigned char size, unsigned char n, unsigned short field,
     memcpy(p.b + 2, v, size * n);
     return 0;
 }
-/* 0x4c3d90, as 0x4c3d00, value by value */
+/* 0x4c3d90, as 0x4c3d00, value by value
+   @original the copies walk the parameter v itself (VC6's cast-as-lvalue extension, `*((T *)v)++`): v is loaded
+   after each loop's guard; a typed local pointer per case loads it before the guard */
 
 int cm_AddFieldValue(unsigned char size, unsigned char n, unsigned short field, void *v)
 {
@@ -850,24 +852,18 @@ int cm_AddFieldValue(unsigned char size, unsigned char n, unsigned short field, 
     *p.b++ = n;
     *p.w++ = field;
     switch (size) {
-    case 1: {
-        unsigned char *s = (unsigned char *)v;
+    case 1:
         for (i = 0; i < n; i++)
-            *p.b++ = *s++;
+            *p.b++ = *((unsigned char *)v)++;
         break;
-    }
-    case 2: {
-        short *s = (short *)v;
+    case 2:
         for (i = 0; i < n; i++)
-            *p.s++ = *s++;
+            *p.s++ = *((short *)v)++;
         break;
-    }
-    case 4: {
-        int *s = (int *)v;
+    case 4:
         for (i = 0; i < n; i++)
-            *p.i++ = *s++;
+            *p.i++ = *((int *)v)++;
         break;
-    }
     }
     return 0;
 }
@@ -6256,9 +6252,9 @@ int cm_ExOfficeSwap(G17MSG *m, G17STAT *s)
     r = amt_ExecuteSwapMessage(&m->trade);
     if (s != 0 && r != 0)
         s->state = 1;
-    if (r == 0)
-        return 1;
-    return 0;
+    if (r != 0)
+        return 0;
+    return 1;
 }
 /* 0x4ccc20, handler of message 0x5d: adds data[8] to the skill data[4] (0 .. 4, AICHAR.skills) of the character
    data[0], clamped to 0 .. 252. s->state is 2 (refused) for an unknown character or skill (returns 1), else 1 */
@@ -6706,15 +6702,16 @@ G18LOG *cm_LobbyChatFirst()
 {
     int i;
 
-    if (cm_LobbyChatCount == 0)
-        return 0;
-    i = cm_LobbyChatNext - cm_LobbyChatCount;
-    cm_LobbyChatPos = i;
-    if (i < 0) {
-        i = cm_LobbyChatNext + 1;
+    if (cm_LobbyChatCount != 0) {
+        i = cm_LobbyChatNext - cm_LobbyChatCount;
         cm_LobbyChatPos = i;
+        if (i < 0) {
+            i = cm_LobbyChatNext + 1;
+            cm_LobbyChatPos = i;
+        }
+        return &cm_LobbyChat[i];
     }
-    return &cm_LobbyChat[i];
+    return 0;
 }
 /* 0x4cd4c0, the next line the lobby chat window reads after cm_LobbyChatFirst: advances the read index
    cm_LobbyChatPos (15 wraps to 0) and returns that line; 0 when the cursor reaches the write index
