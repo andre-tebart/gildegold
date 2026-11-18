@@ -11299,8 +11299,9 @@ void ai_DonationWindow(AIBLD *bld)
     int giveBtn;
     AIROOM *box;
     int slider;
-    int win;
-    int amount;
+    /* @original win's initializer emits no code; it moves win's first reference, which orders VC6's
+       reloads after the gift path's message box: the original reloads win (edi) before bld (ebx) */
+    int win = 0;
     int gift;
     float total;
     char text[0x200];
@@ -11311,9 +11312,7 @@ void ai_DonationWindow(AIBLD *bld)
     float rel;
 
     ok = 0;
-    cancelBtn = -1;
-    giveBtn = -1;
-    slider = -1;
+    cancelBtn = giveBtn = slider = -1;
     if (bld == 0 || bld->owner == 0xffff || bld->owner == ai_PlayerId)
         return;
     box = (AIROOM *)gm_Query((void *)bld->objList, 2, 6, 0, 0xe8);
@@ -11334,6 +11333,8 @@ void ai_DonationWindow(AIBLD *bld)
     if (!ok) {
         io_PrintText(0x1987, ai_PlayerId, ai_PlayerCity[ai_OwnPlayer][0] * 2 + 0x9a8);
     } else {
+        int amount;
+
         v = io_PrintText(0x1988, ai_PlayerId, bld->owner, 0x48c, ai_PlayerCity[ai_OwnPlayer][0] * 2 + 0x9a8);
         ai_AmountLimit(least, money, 0x20, &amount);
         slider = d2_GetWinObj(win, 1, v);
