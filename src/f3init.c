@@ -653,15 +653,10 @@ void init_AllocSceneBuilding(int o)
 void init_InheritOwner(char *o)
 {
     SCENEOBJ *obj = (SCENEOBJ *)o;
-    SCENEOBJ *par, *own;
+    SCENEOBJ *par;
 
-    own = obj->owner;
-    par = obj->parent;
-    while (own == 0 && par != 0) {
-        own = par->owner;
-        obj->owner = own;
-        par = par->parent;
-    }
+    for (par = obj->parent; obj->owner == 0 && par != 0; par = par->parent)
+        obj->owner = par->owner;
 }
 /* 0x50d6d0, loads the town scene "scenes/*stadt_%s.ed3" (name n) into the current scene; the callback 0x50d730 adjusts its lights. 0 when it does not exist */
 
