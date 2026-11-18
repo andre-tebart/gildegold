@@ -5948,16 +5948,7 @@ int ai_MeisterTradeFernEinkauf(AICHAR *ch, AIOBJ *b)
    gets the unload order (message 0x10); a loaded one first unloads its goods at the market (a fake sale at the
    market's price credits the budget), then buys entry 0 and up to two more entries whose building is dst[3],
    then the slots (up to three buys per player, the expected value exp[] per player from the banks of the type
-   'G'), and sends the trade message 0xb (unless ai_TradeMsgOff)
-   @deep Read the whole function against the original (598 = 598 instructions, the same calls, constants
-   and branches). Fixed: the slot purchase clamps into its own variable n = min(amt, buyAmount) that the
-   'G' expectation reads (the original stores only the clamped amount, our draft stored amt twice),
-   ai_FloatZero for the three float tests, the 'G' building's playerSlot (Q2 unk65), the slot search as an
-   index loop. Left: allocation only - in the entry-0 block the original keeps amt in esi and caches b
-   ([ebp+0xc]) in edi where ours keeps amt in edi and caches market ([esp+0x14]) in esi (code hunks
-   0x48db84 'mov edi, dword ptr [ebp + 0xc]' / 'mov ecx, dword ptr [esp + 0x1c]' vs 'mov esi, dword ptr
-   [esp + 0x14]', 0x48dbce the same pushes), 0x48dd6f the exp[] zeroing scheduled around the nB < 3 compare
-   (edx vs eax as the zero), regs elsewhere. */
+   'G'), and sends the trade message 0xb (unless ai_TradeMsgOff) */
 
 int ai_MeisterTradeFernEinkauf2(AICHAR *ch, AIOBJ *b)
 {
@@ -5966,7 +5957,6 @@ int ai_MeisterTradeFernEinkauf2(AICHAR *ch, AIOBJ *b)
     AIOBJ *car, *market;
     AISLOT *hit;
     AIBLD *bl;
-    AISLOT *sl;
     char buf[1024];
     int exp[4];
     int k, i, m, n, nA, nB, amt, d, v;
@@ -6026,70 +6016,46 @@ int ai_MeisterTradeFernEinkauf2(AICHAR *ch, AIOBJ *b)
                 }
             }
             amt = gm_ListStock(market, ai_Entries[0].item);
-            n = ai_Entries[0].buyAmount;
-            if (amt < n)
-                n = amt;
-            sprintf(buf, SELL_FMT, market->objId, b->objId, ai_Entries[0].item, n, ai_OwnPlayer, 0);
-            if (amt >= ai_Entries[0].buyAmount)
-                amt = ai_Entries[0].buyAmount;
-            cm_SendExSellObjectI(market->objId, b->objId, ai_Entries[0].item, amt, ai_OwnPlayer, 0);
+            sprintf(buf, SELL_FMT, market->objId, b->objId, ai_Entries[0].item, min(amt, ai_Entries[0].buyAmount), ai_OwnPlayer, 0);
+            cm_SendExSellObjectI(market->objId, b->objId, ai_Entries[0].item, min(amt, ai_Entries[0].buyAmount), ai_OwnPlayer, 0);
             msg.u.item[nA] = ai_Entries[0].item;
             msg.dst[nA] = ai_Entries[0].bld->id;
             nA++;
             rec.item[0] = ai_Entries[0].item;
-            i = 1;
-            if (nA < 3) {
-                do {
-                    if (i >= ai_NEntries || !(ai_Entries[i].margin <= 0.0f))
-                        break;
-                    if (msg.dst[3] == ai_Entries[i].bld->id && ai_Entries[i].buyAmount) {
-                        amt = gm_ListStock(market, ai_Entries[i].item);
-                        for (m = 0; m < rec.n; m++) {
-                            if (!rec.item[m]) {
-                                n = ai_Entries[i].buyAmount;
-                                if (amt < n)
-                                    n = amt;
-                                sprintf(buf, SELL_FMT, market->objId, b->objId, ai_Entries[i].item, n, ai_OwnPlayer, 0);
-                                n = ai_Entries[i].buyAmount;
-                                if (amt < n)
-                                    n = amt;
-                                cm_SendExSellObjectI(market->objId, b->objId, ai_Entries[i].item, n, ai_OwnPlayer, 0);
-                                msg.u.item[nA] = ai_Entries[i].item;
-                                msg.dst[nA] = ai_Entries[i].bld->id;
-                                nA++;
-                                rec.item[m] = ai_Entries[i].item;
-                            }
+            for (i = 1; nA < 3 && i < ai_NEntries && ai_Entries[i].margin <= 0.0f; i++) {
+                if (msg.dst[3] == ai_Entries[i].bld->id && ai_Entries[i].buyAmount) {
+                    amt = gm_ListStock(market, ai_Entries[i].item);
+                    for (m = 0; m < rec.n; m++) {
+                        if (!rec.item[m]) {
+                            sprintf(buf, SELL_FMT, market->objId, b->objId, ai_Entries[i].item,
+                                    min(amt, ai_Entries[i].buyAmount), ai_OwnPlayer, 0);
+                            cm_SendExSellObjectI(market->objId, b->objId, ai_Entries[i].item,
+                                                 min(amt, ai_Entries[i].buyAmount), ai_OwnPlayer, 0);
+                            msg.u.item[nA] = ai_Entries[i].item;
+                            msg.dst[nA] = ai_Entries[i].bld->id;
+                            nA++;
+                            rec.item[m] = ai_Entries[i].item;
                         }
                     }
-                    i++;
-                } while (nA < 3);
+                }
             }
-            exp[0] = 0;
-            exp[1] = 0;
-            exp[2] = 0;
-            exp[3] = 0;
-            i = 0;
-            if (nB < 3) {
-                sl = ai_Slots;
-                do {
-                    if (i >= ai_NSlots || !(sl->saving <= 0.0f))
-                        break;
-                    if (msg.dst[0] == sl->bld->id && sl->buyAmount) {
-                        amt = gm_ListStock(market, sl->item);
-                        bl = sl->bld;
-                        if (bl) {
-                            msg.u.item[nB + 3] = sl->item;
-                            msg.dst[nB + 3] = bl->id;
-                            n = min(amt, sl->buyAmount);
-                            msg.amount[nB] = n;
-                            if (bl->type == 'G')
-                                exp[bl->playerSlot] = (int)(n * sl->price + exp[bl->playerSlot]);
-                            nB++;
-                        }
+            memset(exp, 0, sizeof(exp));
+            for (i = 0; nB < 3 && i < ai_NSlots && ai_Slots[i].saving <= 0.0f; i++) {
+                AISLOT *sl = &ai_Slots[i];
+
+                if (msg.dst[0] == sl->bld->id && sl->buyAmount) {
+                    amt = gm_ListStock(market, sl->item);
+                    bl = sl->bld;
+                    if (bl) {
+                        msg.u.item[nB + 3] = sl->item;
+                        msg.dst[nB + 3] = bl->id;
+                        n = min(amt, sl->buyAmount);
+                        msg.amount[nB] = n;
+                        if (bl->type == 'G')
+                            exp[bl->playerSlot] = (int)(n * sl->price + exp[bl->playerSlot]);
+                        nB++;
                     }
-                    i++;
-                    sl++;
-                } while (nB < 3);
+                }
             }
             for (i = 1; i < 4; i++) {
                 v = gm_SumSlotAmounts(ai_CharsT[ch->bld->owner].inventory, i);
