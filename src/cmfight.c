@@ -6,9 +6,10 @@
    (cm_PointList .. cm_CharInfoWins, read only by these functions) between the scene's group and cm's. The sync
    values sent by address are block locals (cm_AddFieldValues in cm stays unknown here; byte both ways).
    Open: summary: two leaves defined above their callers count as writing globals in the original, which their
-   texts do not give: ai_LedSelectBits as writing ai_PickedObject (cm_UpdatePointer reloads it after each call; a
-   scratch `if (0) ai_PickedObject = 0;` in the leaf takes it 90 -> 29 differing instructions, an external copy
-   only to 49, a write of another global nothing) and cm_CharObjDistXZ as writing some global but nothing through
+   texts do not give: ai_LedSelectBits as writing ai_PickedObject (cm_UpdatePointer reloads it after each call; the
+   leaf now holds a dead `if (0) ai_PickedObject = 0;` with an @original comment: cm_UpdatePointer 142 -> 36 ins
+   and its padded size, size queue s19; the original's own form of that write is not known; an external copy
+   gave only 49, a write of another global nothing) and cm_CharObjDistXZ as writing some global but nothing through
    a pointer (cm_RunCutOrders reloads x->scene->obj after it: any dead global store in the leaf takes it 849 ->
    275 of 1445; cm_NearestEnemy, byte, keeps ai_SceneChars[i] across it, so no indirect store and no external
    call). VC6 takes the summary from the text (dead code counts, see notes/vc6-matching.md), so both originals hold
