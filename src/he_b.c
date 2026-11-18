@@ -4664,7 +4664,14 @@ void ai_GraveyardMessagePlain(int param_1, unsigned short *param_2, unsigned sho
    as short / char / uchar / ushort (flip.py hit: the -1 block's register flips with told int->short)
    677..710 bytes, none closer. flip.py --want the stage-1 'push 1; jmp': no mutant of 487. Next: find the
    temp the original has one more of before the -1 block in code order (c2trace temps; the stage compare
-   spelled as a switch / a local). */
+   spelled as a switch / a local). prior: read the whole function against the original: typed as AIJOB +
+   HEDECAY (event 0x89, am.c ai_ExecGraveyardOwner2 / sv_t.c), the walk text literal, the default stage
+   leaves the event alone, the message's last argument as the original's told flag (!(random + 1 - skill >
+   1.0) -> 1), the age sum level / 50 + (random + type level * 2) with he_SetLifeByAge taking an int (its
+   callee narrows it: and eax, 0xffff at 0x56fbcd; the caller keeps the and at +0x1bf). Left: the original's
+   stage 1 pushes the walk text and 1 and jumps into stage 3's cm_SendChrGotoBuilding call tail, ours keeps
+   its own copy (15 instructions, the whole size difference), and stage 4's per address computed after the
+   agent id push (+0x321); the M8 at +0x2d2 is the alignment of stage 4's ai_Time copy. */
 void he_RunDecay(int ev)
 {
     AIJOB *e = (AIJOB *)ev;
