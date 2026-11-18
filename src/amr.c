@@ -7020,7 +7020,10 @@ int ai_ExecuteApprenticeship(G5CH *p, AIARG *s1, AIARG *s2)
 }
 /* 0x4a13e0, decide callback 0x3b: the oldest married child (0x164, not 0x10000 in 0x1c8) gets one of three
    offers of 0x4948f0 (o2 kind 0xe), the best or the worst by the child's ratio 0x80.. to the family's 0x503ee0
-   values; the character needs ten times the price */
+   values; the character needs ten times the price
+   @deep deep s23: the c index as a named local sk (climb local op) and the sum b/va first: 8 -> 2 ins.
+   Left: best->skills[sk] addressed [esi+edi+0x80] where the original has [edi+esi+0x80] (index register
+   first); sk as unsigned/long/short/char, *(skills + sk), parens: no lever; both indexes named: worse. */
 
 int ai_DecideStudy(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
 {
@@ -7031,6 +7034,7 @@ int ai_DecideStudy(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     unsigned char k;
     int m, n;
     float va, vb;
+    int sk;
 
     if (f != 0)
         return 0;
@@ -7060,8 +7064,9 @@ int ai_DecideStudy(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     x = gm_GetJobTalents(best->jobId);
     for (n = 0; n < 3; n++) {
         va = max((float)x.skills[rec[n].b], 1.0f);
-        vb = max((float)x.skills[rec[n].c], 1.0f);
-        s[n] = best->skills[rec[n].c] / vb + best->skills[rec[n].b] / va;
+        sk = rec[n].c;
+        vb = max((float)x.skills[sk], 1.0f);
+        s[n] = best->skills[rec[n].b] / va + best->skills[sk] / vb;
     }
     if (util_RandomU(2) != 0) {
         m = s[0] > s[1] ? 0 : 1;
