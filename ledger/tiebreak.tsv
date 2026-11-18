@@ -3912,7 +3912,7 @@ exe	0x005740d0	he_RunGypsySlowdown	he	bf234b14349b9413	no	byte	control=byte p1=b
 exe	0x005740f0	he_HasEvent9f	he	80a06ff7635c6860	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00574120	he_AllocTrialScene	he	197c88a8e85d79d2	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005741d0	ai_FindCurseEvent	he	1c966097d1870031	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x005741f0	he_TrialPayment	he	c6dcdb975569ae1a	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
+exe	0x005741f0	he_TrialPayment	he_b	52b9a4e66ec58b43	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	20a4453929ed5b4f
 exe	0x005743c0	he_RunTrialScene	he	05ae3622f6bdcd90	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00574550	he_AllocMeeting4	he	3ec9a3217cee32c3	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005746b0	he_CircusShowPayout	he	acd95011ba4b813b	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	

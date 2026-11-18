@@ -6680,7 +6680,7 @@ void he_TrialPayment(int ev)
     char text[0x200];
     char *bld;
     AICHAR *per, *ch;
-    int kind, add, bonus, cnt, fee, sum, i;
+    int kind, bonus, cnt, fee, sum, i;
     float bar;
 
     gm_FindById(&bld, 0, 0, e->from);
@@ -6689,37 +6689,40 @@ void he_TrialPayment(int ev)
     per = (AICHAR *)gm_FindChar(e->netId);
     if (per == 0)
         return;
-    cnt = 0;
     kind = gm_TrialBuildingKind(bld);
     if (kind == 3) {
+        int add, adj;
+
         add = 0;
-        bonus = 0;
+        adj = 0;
         if (t->level < 4) {
             add = 0x14;
-            bonus = -0xf;
+            adj = -0xf;
         } else if (t->level < 7) {
             add = 0xa;
-            bonus = -5;
+            adj = -5;
         }
         bar = add + 40.0f;
-        bonus += 0x19;
-        fee = util_RandomU(0x18) + 0xf;
+        bonus = adj + 0x19;
+        fee = (util_RandomU(0x18) + 0xf) * 32;
     } else if (kind == 2) {
+        int add, adj;
+
         add = 0;
-        bonus = 0;
+        adj = 0;
         if (t->level < 4) {
             add = 0xa;
-            bonus = -5;
+            adj = -5;
         }
         bar = add + 50.0f;
-        bonus += 0xf;
-        fee = util_RandomU(0x10) + 0xc;
+        bonus = adj + 0xf;
+        fee = (util_RandomU(0x10) + 0xc) * 32;
     } else {
         bar = 70.0f;
         bonus = 0xa;
-        fee = util_RandomU(8) + 0xa;
+        fee = (util_RandomU(8) + 0xa) * 32;
     }
-    fee <<= 5;
+    cnt = 0;
     for (i = 0; i < 0x300; i++) {
         ch = &ai_CharsT[i];
         if (ch->id == 0xffff || ch == per || ch->kind >= 0xa)
