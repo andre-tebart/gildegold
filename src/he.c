@@ -2001,10 +2001,11 @@ void he_CreateGfxInfo(AIJOB *ev, char *name, D3OBJECT *parent)
 void he_FreeGfxInfo(int *e)
 {
     HEGFXINFO *g = (HEGFXINFO *)e;
-    int sv = d3_CurrentScene;
+    int sv;
     D3OBJECT *par = g->parent;
 
     if (g->obj != 0) {
+        sv = d3_CurrentScene;
         g->parent = 0;
         d3if_SelectScene(0, 1);
         if (par != 0) {
