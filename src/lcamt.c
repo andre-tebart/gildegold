@@ -7477,9 +7477,7 @@ int ai_BewitchWindow(AICHARREC *ch)
    the amount menu (the partner filter 0x400, gypsyFilter, the text 0x1dae with 0x1daf / 0x1db0 by me's sex) whose
    callback ai_BewitchWindow does the rest: 1 when it bewitched someone, else 0. The AI pays m->amount (1 .. 5, not
    above its money) for the relation with the character m->target (ai_RelationGain), sends the payment and the
-   relation change: 0x10; a wrong amount or an unknown target: 0x60
-   @deep near-byte sweep s22: left the order of the two gypsyFilter dword loads around the cfg zero fill
-   (the original loads one before rep stosd). climb round 1: nothing. */
+   relation change: 0x10; a wrong amount or an unknown target: 0x60 */
 
 int ai_BewitchOrder(AICHARREC *me, LCORDMSG *m)
 {
@@ -7495,7 +7493,8 @@ int ai_BewitchOrder(AICHARREC *me, LCORDMSG *m)
         memset(&cfg, 0, sizeof(cfg));
         cfg.mode = 0x400;
         cfg.kind = 6;
-        cfg.filter = gypsyFilter;
+        cfg.classMask[0] = gypsyFilterWords[0];
+        cfg.classMask[1] = gypsyFilterWords[1];
         if (me->sex == 0)
             txt_Format(text, 0x1dae, 0x1daf);
         else
@@ -7790,7 +7789,8 @@ int ai_HatredWindow(AICHARREC *me, LCORDMSG *m)
     memset(&cfg, 0, sizeof(cfg));
     cfg.mode = 0x400;
     cfg.kind = 6;
-    cfg.filter = gypsyFilter;
+    cfg.classMask[0] = gypsyFilterWords[0];
+    cfg.classMask[1] = gypsyFilterWords[1];
     txt_Format(text, 0x1dcf);
     a = (AICHARREC *)ai_AmountMenu(&cfg, text, 0, 0);
     if (a == 0)
@@ -11049,7 +11049,8 @@ int ai_UseGoodCharmPartner(AICHARREC *ch, G8USEVIEW *use)
         cfg.flags = 1;
         cfg.kind = 6;
         cfg.mode = ((lc_CharRecs[ai_PlayerId].sex != 0) + 1) | 0x400;
-        cfg.filter = gypsyFilter;
+        cfg.classMask[0] = gypsyFilterWords[0];
+        cfg.classMask[1] = gypsyFilterWords[1];
         target = (AICHARREC *)ai_AmountMenu(&cfg, text, 0, 0);
         if (target == 0)
             return 0;

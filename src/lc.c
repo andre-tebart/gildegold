@@ -11940,7 +11940,8 @@ void ai_SermonWindow(AIBLD *bld)
                 memset(&cfg, 0, sizeof(cfg));
                 cfg.mode = 0x400;
                 cfg.kind = 6;
-                cfg.filter = gypsyFilter;
+                cfg.classMask[0] = gypsyFilterWords[0];
+                cfg.classMask[1] = gypsyFilterWords[1];
                 txt_Format(title, 0x19a2);
                 priest = (AICHARREC *)ai_AmountMenu(&cfg, title, 0, 0);
                 sermon = (AIOBJ *)gm_Query((void *)bld->objList, 1, 0, 0x1b5);

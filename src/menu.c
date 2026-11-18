@@ -30,6 +30,7 @@ extern int gm_PlayerRecords[688];
 #include "d3_vec.h"
 #include "surf.h"
 #include "menu.h"
+#define gypsyFilterWords (*(int (*)[2])&gypsyFilter)  /* 0x5eed68, the filter's two 32-bit words (as lc.c / lcamt.c) */
 #define d2_SetObjValue2 ((void (*)(int, char *))d2_SetObjValue)  /* 0x475cb0 (d2.c: five parameters): @original the file selector ai_FilePickWindow pushes 2 arguments (the input, the name) */
 #define d2_PlaceMainWindowF ((void (*)(int, int))d2_PlaceMainWindow)  /* 0x475850 (d2.h: int view): @original the callers push the placement flags too, which the original's tail jump leaves on the stack for d2_PlaceWindowScaled */
 #include "sv_t.h"
@@ -3015,7 +3016,7 @@ void ai_CurseTargetWindow(int building)
    pays when the player has the money (sv_CheckMoney of v): the status bit 0x20 is set (cm_SendSetField), v is paid
    (gm_SendMoneyDelta) and the person's relation to the player rises by v * 5 (cm_SendRelations); a player character (kind 6 / 7)
    gets the news 0x420e ("_NACHRICHTEN_ZIGEUNER_04", channel 0x5f0) with the id of the player (he_ShowNews). The pump ends
-   with d2_CloseView and the camera follow. @deep body reconstructed and read whole against the disassembly: 223 = 223 instructions, 745 = 745 bytes; the owner / status guards, the amount-menu config (AMOUNTCFG with the const volatile 64-bit filter), the form with the 2 .. 8 gift slider and the buttons, the per-pass text, the confirm branch (status bit 0x20, money, relation v * 5, the news for the player characters through he_ShowNews) and the tail jumps all match. ONE hunk of 6 differing instructions is left at 0x5d9604: the original loads the hi dword of the filter (mov edx,[0x5eed6c]) before the first rep stosd and pushes the hoisted 0 (the amount menu's last arguments) after the second lea edi, ours pushes the 0 before the first rep stosd and loads the hi dword after the second; cfg is then 4 bytes lower ([esp+0x30] vs [esp+0x2c]). Scheduling of constant loads / pushes around the two inline memsets. Tried: the filter assigned first (8 instructions), the id clearing as a dword loop instead of memset (same code). */
+   with d2_CloseView and the camera follow. */
 
 void ai_HomageWindow(int building)
 {
@@ -3039,7 +3040,8 @@ void ai_HomageWindow(int building)
     cfg.flags = 1;
     cfg.mode = 0x400;
     cfg.kind = 6;
-    cfg.filter = gypsyFilter;
+    cfg.classMask[0] = gypsyFilterWords[0];
+    cfg.classMask[1] = gypsyFilterWords[1];
     target = (AICHARVIEW *)ai_AmountMenu((int)&cfg, (int)txt_Ptrs[0x4209], 0, 0);
     if (target == 0) {
         sv_CameraFollow();
