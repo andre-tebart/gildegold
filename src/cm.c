@@ -7054,7 +7054,7 @@ void cm_DiscardWeapons(char *c)
 char cm_FightWeaponLoss(char *ch)
 {
     char buf[0x800];
-    char one = 1;
+    char v = 1;    /* the value sent for b1c5: 1, or the negated chance */
     char neg;
     AICHAR *c = (AICHAR *)ch;
     AICHAR *owner;
@@ -7063,10 +7063,10 @@ char cm_FightWeaponLoss(char *ch)
     if (c != 0 && (c->flags1c8 & 0x20000000) != 0) {
         neg = c->b1c5;
         if (util_RandomU(10) < (unsigned char)neg) {
-            neg = -neg;
+            v = -neg;
             cm_DiscardWeapons((char *)c);
             cm_BeginFieldBlock((char *)c, c->netId);
-            cm_AddFieldValues(1, 1, (int)((char *)c - cm_FieldObject) + 0x1c5, &neg);
+            cm_AddFieldValues(1, 1, (int)((char *)c - cm_FieldObject) + 0x1c5, &v);
             cm_SendFieldDeltas();
             if (c->bld != 0 && c->bld->owner != 0xffff) {
                 owner = &ai_CharsT[c->bld->owner];
@@ -7081,7 +7081,7 @@ char cm_FightWeaponLoss(char *ch)
             return 1;
         }
         cm_BeginFieldBlock((char *)c, c->netId);
-        cm_AddFieldValues(1, 1, (int)((char *)c - cm_FieldObject) + 0x1c5, &one);
+        cm_AddFieldValues(1, 1, (int)((char *)c - cm_FieldObject) + 0x1c5, &v);
         cm_SendFieldDeltas();
         cm_SendSetField(c->netId, 0x1c8, 4, 0, 0x20000000);
     }
@@ -9936,7 +9936,7 @@ int cm_CheckDeath(AICHAR *c)
 #define G19_FIGHTER_SYNC(ch)                                                          \
     r = (AIOBJ *)cm_CharWeaponItem((char *)(ch));                                          \
     if (r != 0) {                                                                     \
-        vv = -1;                                                                      \
+        int vv = -1;                                                                  \
         cm_BeginFieldBlock((char *)r, r->objId);                                            \
         cm_AddFieldValues(4, 1, (unsigned short)((char *)&r->usesLeft - cm_FieldObject), &vv); \
         cm_SendFieldDeltas();                                                               \
@@ -9954,7 +9954,6 @@ void cm_HitAction(CHACTION *a)
 {
     int damage, ok;
     AIWEAPON *hw, *vw;
-    int v;
     char anims[2][0x20] = {"kampf/arm_greifen", "kampf/bauch_greifen"};
     char buf[0x100];
     AICHAR *victim, *hitter;
@@ -9975,7 +9974,7 @@ void cm_HitAction(CHACTION *a)
     if (((AICHAR *)cm_CutChar)->netId == cm_FightOwner && (hw->kind == 1 || hw->kind == 2)) {
         item = (AIOBJ *)cm_CharWeaponItem((char *)hitter);
         if (item != 0) {
-            v = -1;
+            int v = -1;
             cm_BeginFieldBlock((char *)item, item->objId);
             cm_AddFieldValues(4, 1, (unsigned short)((char *)item - cm_FieldObject + 0x20), &v);
             cm_SendFieldDeltas();
@@ -10042,7 +10041,6 @@ void cm_LayBombAction(char *ev)
     AICHAR *att = ((CHACTION *)ev)->pot.thrower;
     AIWEAPON *k;
     AIOBJ *r;
-    int vv;
 
     k = (AIWEAPON *)cm_CharWeapon((char *)att);
     cm_LayBomb(&att->scene->obj->pos);
@@ -10059,7 +10057,6 @@ void cm_ThrowBombAction(char *ev)
     CHACTION *b = (CHACTION *)ev;
     AICHAR *att = b->bomb.thrower;
     AIOBJ *r;
-    int vv;
 
     if (((AICHAR *)cm_CutChar)->netId == cm_FightOwner) {
         G19_FIGHTER_SYNC(att);
@@ -15310,8 +15307,8 @@ void cm_RunAuction(G28REC *m)
     io_PrintText(0x1aa2, b, req.price);
     cm_WaitEvent(enter);
     /* the rounds */
-    round = 0;  /* then the year of the sale */
-    done = 0;   /* then the price paid */
+    round = 0;
+    done = 0;
     for (; round < 5 && done == 0; round++) {
         int nbid, top;
 
@@ -15348,8 +15345,10 @@ void cm_RunAuction(G28REC *m)
         cm_WaitTicks(5);
     }
     if (best > -1) {
-        done = req.bids[best];
-        round = ai_Time.year;
+        int price, year;
+
+        price = req.bids[best];
+        year = ai_Time.year;
         cm_QueueVoice(speaker, bankBids, "_VERSTEIGERUNG_GEBOTE", 6, 200);
         d2_SetForm(form, 0);
         w = chars[best];
@@ -15363,8 +15362,8 @@ void cm_RunAuction(G28REC *m)
                 }
             }
             cm_BeginFieldBlock((char *)b, b->id);
-            cm_AddFieldDelta(4, 1, 0x69, &done);
-            cm_AddFieldDelta(4, 1, 0x6d, &round);
+            cm_AddFieldDelta(4, 1, 0x69, &price);
+            cm_AddFieldDelta(4, 1, 0x6d, &year);
             cm_SendFieldDeltas();
             cm_SendOwnership(b->id, ((AICHAR *)ai_PlayerChar)->netId, w->netId);
             first = (AIBLD *)gm_FirstBuilding(1);
@@ -16336,7 +16335,7 @@ void cm_ExecCutscene(char *m)
     int savedFog, savedLowPoly;
     int rect[4], pos[4], rot[4];
     char buf[0x200];
-    int savedBox, i, v;
+    int savedBox, i;
     AICHAR *c;
     unsigned int fl;
 
@@ -16506,7 +16505,8 @@ void cm_ExecCutscene(char *m)
             cm_CutInfosT[i].fresh = 0;
             cm_CutInfosT[i].valid = 0;
             if (party->members[i] != -1 && (c = (AICHAR *)gm_FindChar(party->members[i])) != 0) {
-                v = -1;
+                int v = -1;
+
                 cm_BeginFieldBlock(c, c->netId);
                 cm_AddFieldValue(4, 1, (char *)c - cm_FieldObject + 0x20c, &v);
                 cm_SendFieldValues();
@@ -16514,7 +16514,8 @@ void cm_ExecCutscene(char *m)
         }
     }
     if (party->host != -1) {
-        v = -1;
+        int v = -1;
+
         if ((c = (AICHAR *)gm_FindChar(party->host)) != 0) {
             cm_BeginFieldBlock(c, c->netId);
             cm_AddFieldValue(4, 1, (char *)c - cm_FieldObject + 0x20c, &v);
