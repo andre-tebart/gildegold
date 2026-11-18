@@ -1469,7 +1469,7 @@ exe	0x004817a0	ai_CalcAngriff	ai	draft	readable	deep
 exe	0x00481ef0	ai_CalcMeisterDiebe	ai	draft	readable	deep	
 exe	0x00482f00	ai_CalcMeisterRaeuber	ai	byte	readable		
 exe	0x004836a0	ai_CalcMeisterBank	ai	byte	readable		
-exe	0x00483a60	ai_CalcMeisterFernhaendler	ai	shape	readable		byte+draft -> shape+draft at c0993bbb: ai_bld.h types AIBLD.workSet as the AIWORKSET record (flags / budget / prod / target, what cm_ExHire copies into AICHAR.flags1b4 .. target and ls_ReadBuildings sets) instead of char[0x10]; ai_Unk483a60 never touches workSet, only its two stack slots swap (slots 12, the same code otherwise) under the changed declaration of AIBLD, so its byte match was no evidence of the original's source [waits for: the declaration set of ai.c's includes (ai.h > ai_bld.h), match-deep on the slot order]
+exe	0x00483a60	ai_CalcMeisterFernhaendler	ai	byte	readable		
 exe	0x00483d30	ai_StartBuildingWork	ai	byte	readable		
 exe	0x00483ee0	ai_EndWorkerPose	ai	byte	readable		
 exe	0x00483fc0	ai_EvaluateProductionGraveyard	ai	draft	readable	deep	
@@ -1480,7 +1480,7 @@ exe	0x004864b0	ai_BuildTradeOffers	ai	draft	readable	deep
 exe	0x00487040	ai_CalcEntryCost	ai	byte	readable		
 exe	0x00487180	ai_HasMaterials	ai	draft	readable	deep	
 exe	0x00487410	ai_StartProduction	ai	draft	readable	deep	
-exe	0x00487780	ai_AddEquipmentNeeds	ai	draft	readable	deep	
+exe	0x00487780	ai_AddEquipmentNeeds	ai	byte	readable		
 exe	0x00487b40	ai_UpdateStaff	ai	byte	readable		
 exe	0x00487ea0	ai_OfferGrave	ai	byte	readable		
 exe	0x00487fb0	ai_BuyUpgrade	ai	draft	readable	deep	
@@ -1825,7 +1825,7 @@ exe	0x004abe60	ai_ExecEhrerbietung	aip	byte	readable
 exe	0x004abed0	ai_RegisterSocialActions	aip	byte	readable		
 exe	0x004ac140	hmt_RecordCount	hmt	byte	readable		
 exe	0x004ac150	hmt_RandomRecord	hmt	byte	readable		
-exe	0x004ac170	hmt_RandomTextOffset	hmt	shape	readable	deep	
+exe	0x004ac170	hmt_RandomTextOffset	hmt	byte	readable		
 exe	0x004ac1a0	hmt_RecordTextId	hmt	shape	readable	deep	
 exe	0x004ac1e0	hmt_GetRecord	hmt	byte	readable		
 exe	0x004ac200	hmt_GetPrice	hmt	byte	readable		
@@ -1967,7 +1967,7 @@ exe	0x004b5270	ai_PlayerShare	mission	byte	readable
 exe	0x004b5310	ai_ShowMissions	mission	byte	readable		
 exe	0x004b5360	ai_MissionInfoDialog	mission	byte	readable		
 exe	0x004b5460	ai_MissionSuccessDialog	mission	shape	readable	deep	
-exe	0x004b58b0	ai_MissionEndDialog	mission	shape	readable	deep	
+exe	0x004b58b0	ai_MissionEndDialog	mission	byte	readable		
 exe	0x004b5950	ai_QuitGame	mission	byte	readable		
 exe	0x004b5970	ai_MissionCompleteDialog	mission	byte	readable		
 exe	0x004b5c20	ai_MissionNextDialog	mission	byte	readable		
@@ -2764,7 +2764,7 @@ exe	0x004ef780	gv_EntryHasId	grave	byte	readable
 exe	0x004ef7c0	gv_FindEntry	grave	byte	readable		
 exe	0x004ef900	gv_LoadGraveyard	grave	byte	readable		
 exe	0x004ef930	gv_RandomGrave	grave	byte	readable		
-exe	0x004ef9c0	gv_BuryNewDead	grave	shape	readable	deep	
+exe	0x004ef9c0	gv_BuryNewDead	grave	byte	readable		
 exe	0x004efc10	gv_AllocGraveyard	grave	byte	readable		
 exe	0x004eff50	gv_GrowGraveyard	grave	shape	readable	deep	
 exe	0x004f0180	gv_FreeGraveyard	grave	byte	readable		
@@ -3014,7 +3014,7 @@ exe	0x00500c20	gm_CollectOffers	f3gmt	draft	readable	deep
 exe	0x00500ec0	gm_FindMarketObject	f3gmt	shape	readable		
 exe	0x00501000	gm_FindPlayerBuilding	f3gmt	byte	readable		
 exe	0x00501030	gm_BuildNext	f3gmt	shape	readable	deep	
-exe	0x00501190	gm_BuildQuery	f3gmt	shape	readable	deep	
+exe	0x00501190	gm_BuildQuery	f3gmt	byte	readable		
 exe	0x005012b0	gm_FindFreeBuilding	f3gmt	byte	readable		
 exe	0x005012e0	gm_FreeBuilding	f3gmt	byte	readable		
 exe	0x00501400	gm_StockBuildingObjects	f3gmt	byte	readable		
@@ -3482,7 +3482,7 @@ exe	0x0053a450	main_UpdateFigures	main	byte	readable
 exe	0x0053a520	main_SettleRound	main	byte	readable		
 exe	0x0053b2e0	main_BeginPlayerRound	main	byte	readable		
 exe	0x0053b830	main_CheckCD	main	byte	readable		
-exe	0x0053b840	main_CreateStartCouple	main	shape	readable	deep	
+exe	0x0053b840	main_CreateStartCouple	main	byte	readable		
 exe	0x0053bb20	main_GameLoop	main	byte	readable		
 exe	0x0053c9b0	main_PlayIntroMovies	main	byte	readable		
 exe	0x0053cb40	main_PlayOutro	main	byte	readable		
@@ -3742,7 +3742,7 @@ exe	0x0055c700	he_RunKredit	he	byte	readable
 exe	0x0055cb00	he_RunEvent24	he	byte	readable		
 exe	0x0055cc10	he_RunMasterExamNotice	he	byte	readable		
 exe	0x0055ce00	he_AllocMasterExamPass	he	byte	readable		
-exe	0x0055ce60	he_RunMasterExamPassed	he	shape	readable	deep	
+exe	0x0055ce60	he_RunMasterExamPassed	he	byte	readable		
 exe	0x0055d310	he_AllocEvent27	he	byte	readable		
 exe	0x0055d390	he_RunEvent27	he	byte	readable		
 exe	0x0055d490	he_AllocHarvest	he	draft	readable	deep	
@@ -3753,7 +3753,7 @@ exe	0x0055de30	he_RunPromotion	he	byte	readable
 exe	0x0055e180	he_AllocWorkerQuits	he	byte	readable		
 exe	0x0055e1d0	he_RunWorkerQuits	he	byte	readable		
 exe	0x0055e3a0	he_AllocDueIsStart	he	byte	readable		
-exe	0x0055e3d0	he_RunWorkerTheft	he	draft	readable	deep	
+exe	0x0055e3d0	he_RunWorkerTheft	he	byte	readable		
 exe	0x0055e5c0	he_AllocEvent38	he	byte	readable		
 exe	0x0055e600	he_RunEvent38	he	byte	readable		
 exe	0x0055e730	he_RunEvent39	he	byte	readable		
@@ -3859,7 +3859,7 @@ exe	0x0056f3f0	he_SecretRoomDomizil	he_b	shape	readable
 exe	0x0056f600	he_FindNearestSpying	he_b	byte	readable		
 exe	0x0056f740	he_SecretRoomCatchSpy	he_b	byte	readable		
 exe	0x0056f980	he_RegisterEventTypes88	he_b	byte	readable		
-exe	0x0056fbc0	he_SetLifeByAge	he_b	shape	readable	deep	
+exe	0x0056fbc0	he_SetLifeByAge	he_b	byte	readable		
 exe	0x0056fc50	he_AllocHaunting	he_b	byte	readable		
 exe	0x0056fda0	he_RunHaunting	he_b	byte	readable		
 exe	0x00570130	he_AllocDecay	he_b	byte	readable		
@@ -4062,7 +4062,7 @@ exe	0x005847a0	ai_RentGraveSelect	svgrave	byte	readable
 exe	0x00584900	ai_GraveCare	svgrave	byte	readable		
 exe	0x00584b70	ai_GraveRaiseHelper	svgrave	byte	readable		
 exe	0x00584d70	ai_GypsyHelperWindow	svgrave	byte	readable		
-exe	0x00585380	ai_GraveFogWindow	svgrave	shape	readable	deep	
+exe	0x00585380	ai_GraveFogWindow	svgrave	byte	readable		
 exe	0x00585750	ai_SeanceWindow	svgrave	byte	readable		
 exe	0x005859c0	ai_SeanceRitual	svgrave	byte	readable		
 exe	0x00585c40	ai_SeanceRollFormulas	svgrave	byte	readable		
@@ -4320,7 +4320,7 @@ exe	0x005a83b0	ai_FillSettingWeights	lcmap	byte	readable
 exe	0x005a84b0	ai_FindSetting	lcmap	byte	readable		
 exe	0x005a84d0	ai_FindItemGroup	lcmap	byte	readable		
 exe	0x005a8540	ai_FindSettingSlots	lcmap	byte	readable		
-exe	0x005a8560	ai_ProdSetting	lcmap	draft	readable	deep	
+exe	0x005a8560	ai_ProdSetting	lcmap	byte	readable		
 exe	0x005a86c0	ai_FreeProdSetting	lcmap	byte	readable		
 exe	0x005a8710	ai_SetSettingWeight	lcmap	byte	readable		
 exe	0x005a8850	ai_RefreshProdSetting	lcmap	byte	readable		
