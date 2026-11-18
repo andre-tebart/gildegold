@@ -898,9 +898,9 @@ void d3if_ClearView(void)
    point `p`, around the vertical axis */
 float d3_YawTo(D3OBJECT *obj, float *p)
 {
-    D3VECTOR4 a, b, pos;
-    float d, e, ang, t;
-    float sn, cs, u;
+    D3VECTOR4 a, b, pos, c;
+    float d, e, ang;
+    float sn, cs;
 
     d3_LocalToWorld(obj, &d3_ZAxis, (D3VECTOR *)&a);
     d3_PointToWorld(obj, &obj->pos, (D3VECTOR *)&pos);
@@ -915,11 +915,12 @@ float d3_YawTo(D3OBJECT *obj, float *p)
     d = a.x * b.x + a.y * b.y + a.z * b.z;
     e = min(max(-1.0f, d), 1.0f);
     ang = (float)acos(e);
-    cs = cos(1.5707964f);
     sn = sin(1.5707964f);
-    t = cs * a.x + sn * a.z;
-    u = cs * a.z - sn * a.x;
-    if (t * b.x + b.z * u + a.y * b.y > 0.0f)
+    cs = cos(1.5707964f);
+    c.x = cs * a.x + sn * a.z;
+    c.y = a.y;
+    c.z = cs * a.z - sn * a.x;
+    if (c.x * b.x + c.y * b.y + c.z * b.z > 0.0f)
         ang = -ang;
     return ang;
 }
