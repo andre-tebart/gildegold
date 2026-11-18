@@ -1360,8 +1360,10 @@ void ai_Screenshot(void)
         return;
     buf = mem_Alloc(0x25800, "!f3:ScreenShot");
     for (y = 0xf0; y != 0; y--) {
-        int row = (int)yf * d2_ScreenSurf->pitch;
+        int row;
+
         xf = 0.0f;
+        row = (int)yf * d2_ScreenSurf->pitch;
         for (x = 0x140; x != 0; x--) {
             int col = (int)xf;
             xf += step;
@@ -1372,18 +1374,18 @@ void ai_Screenshot(void)
     d2_UnlockSurface(d2_ScreenSurf);
     D3_ZERO(&src, sizeof(src));
     src.dwSize = sizeof(src);
-    src.dwHeight = 0xf0;
     src.dwWidth = 0x140;
+    src.dwHeight = 0xf0;
     src.lPitch = 0x280;                 /* 0x140 pixels of 16 bits */
     src.lpSurface = buf;
-    src.ddpfPixelFormat.dwRGBBitCount = 0x10;
     src.ddpfPixelFormat.dwRBitMask = dd_RMask;
     src.ddpfPixelFormat.dwGBitMask = dd_GMask;
     src.ddpfPixelFormat.dwBBitMask = dd_BMask;
+    src.ddpfPixelFormat.dwRGBBitCount = 0x10;
     D3_ZERO(&dst, sizeof(dst));
     dst.dwSize = sizeof(dst);
-    dst.dwHeight = 0x78;
     dst.dwWidth = 0xa0;
+    dst.dwHeight = 0x78;
     dst.lPitch = 0x140;                 /* 0xa0 pixels of 16 bits */
     dst.lpSurface = ai_ScreenImage;
     dst.ddpfPixelFormat.dwRGBBitCount = 0x10;
