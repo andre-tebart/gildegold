@@ -394,6 +394,7 @@ void lobby_ShowMyPlayer(void)
     int id;
     int x;
     int y;
+    int dy;
 
     p = cm_LobbyFindPlayer(lobby_List[lobby_MyRow + 1]);
     if (p != 0)
@@ -402,20 +403,24 @@ void lobby_ShowMyPlayer(void)
     io_PrintText("$C");
     id = d2_WinOpenPic(5, 10, lobby_Player.coat + 0x59a, d2_LastWindow);
     x = d2_Objs[id].w + 0xf;
-    u = txt_HonourTitles[1];
-    if (lobby_Player.sex != 0)
+    if (lobby_Player.sex == 0)
+        u = txt_HonourTitles[1];
+    else
         u = txt_FemaleHonourTitle;
     sprintf(text, "%s %s %s", u, lobby_Player.firstName, lobby_Player.familyName);
-    id = d2_CreateWinText(x, 10, text, d2_LastWindow);
-    y = d2_Objs[id].h;
+    y = 10;
+    id = d2_CreateWinText(x, y, text, d2_LastWindow);
+    dy = d2_Objs[id].h + 2;
+    y += dy;
     if (lobby_Player.sex == 1)
         u = txt_FemaleJobNames[lobby_Player.job];
     else
         u = txt_JobNames[lobby_Player.job];
     sprintf(text, "%s: %s", txt_JobLabel, u);
-    d2_CreateWinText(x, y + 0xc, text, d2_LastWindow);
+    d2_CreateWinText(x, y, text, d2_LastWindow);
     sprintf(text, "%s: %s", txt_FaithLabel, txt_FaithNames[lobby_Player.faith]);
-    d2_CreateWinText(x, y + 2 + y + 0xc, text, d2_LastWindow);
+    y += dy;
+    d2_CreateWinText(x, y, text, d2_LastWindow);
 }
 /* 0x58ad20, waits for the lobby player list: cm_LobbyRequestList's slot until cm_GetSlotState answers, then
    lobby_List = cm_LobbyPlayerList(); each of the entries 1 .. 8 with a player is requested
