@@ -7363,16 +7363,18 @@ int gv_EvidencePrice(); void cm_SendScriptMessage(void *p); void cm_SendProofExe
    the law's name 0x13fd + law * 5 and the price, 0x18a6 for none), and frame 2 shows 0x18a8 while an order 0x74
    of this building runs (he_FindEvent), else the order button 0x18a7 once corner->cornerYear is past. A click on
    it sends the order message 0x74 (the player, the building, the clock, the room); the right button leaves
-   @deep Reconstructed whole from the original (the three gv_EvidencePrice offers with cur/vals/law, the
-   rows LCAMOUNTROW, the y-controlled draw loop to 0x181, the order-0x74 event check via AIJOB.id2,
-   AIOBJ.cornerYear vs ai_Time.year, the AIMSG 0x74 with D3_ZERO, time copy, arg[1]/arg[2]). Left: frame
-   layout and allocation only: the original lays the arrays cur -0x18 / vals -0x28 / law -0x40 and price
-   -0x2c / who -0x30 / D3_ZERO's _zn -0x34 _zp -0x1c, ours cur -0x20 / vals -0x34 / price -0x10 / who -0x14
-   / _zn -0x28 _zp -0x24 (the indexed [ebp+edi-0x18] vs [ebp+edi-0x20] lines are the 'code' hunks); the
-   original keeps 0 in ebx through the head (push ebx, vals=ebx), ours in edi after rep stosd; ours loads
-   cur[i] before the gv_EvidencePrice test ('mov ecx,[ebp+edi-0x20]'), the original in each branch; 'mov
-   [ebp-4],0' vs ours 'mov [ebp-4],esi'. Tried: five declaration orders of the locals (no change: VC6 does
-   not lay them by declaration), ctl before cur, the compare's operand order */
+   @deep frame sweep s21: 73 -> 47 ins: price / who (gv_EvidencePrice's out-parameters) locals of the
+   evidence loop's body; msg / text as block locals = control. Left: code 55, regs 36. prior: Reconstructed
+   whole from the original (the three gv_EvidencePrice offers with cur/vals/law, the rows LCAMOUNTROW, the
+   y-controlled draw loop to 0x181, the order-0x74 event check via AIJOB.id2, AIOBJ.cornerYear vs
+   ai_Time.year, the AIMSG 0x74 with D3_ZERO, time copy, arg[1]/arg[2]). Left: frame layout and allocation
+   only: the original lays the arrays cur -0x18 / vals -0x28 / law -0x40 and price -0x2c / who -0x30 /
+   D3_ZERO's _zn -0x34 _zp -0x1c, ours cur -0x20 / vals -0x34 / price -0x10 / who -0x14 / _zn -0x28 _zp
+   -0x24 (the indexed [ebp+edi-0x18] vs [ebp+edi-0x20] lines are the 'code' hunks); the original keeps 0 in
+   ebx through the head (push ebx, vals=ebx), ours in edi after rep stosd; ours loads cur[i] before the
+   gv_EvidencePrice test ('mov ecx,[ebp+edi-0x20]'), the original in each branch; 'mov [ebp-4],0' vs ours
+   'mov [ebp-4],esi'. Tried: five declaration orders of the locals (no change: VC6 does not lay them by
+   declaration), ctl before cur, the compare's operand order */
 
 void ai_DarkCornerMenu(AIBLD *bld, AIOBJ *room, AIOBJ *corner)
 {
@@ -7381,8 +7383,6 @@ void ai_DarkCornerMenu(AIBLD *bld, AIOBJ *room, AIOBJ *corner)
     int win;
     int cur[3];
     int vals[3];
-    unsigned short who;
-    int price;
     unsigned int law[3];
     AIMSG msg;
     LCAMOUNTROW rows[3];
@@ -7411,6 +7411,9 @@ void ai_DarkCornerMenu(AIBLD *bld, AIOBJ *room, AIOBJ *corner)
     changed = 1;
     do {
         for (i = 0; i < 3; i++) {
+            int price;
+            unsigned short who;
+
             if (gv_EvidencePrice(corner->recs[i], ai_Chars[bld->owner], &price, &who, &law[i]) != 0) {
                 if (corner->recs[i] != cur[i])
                     changed = 1;
