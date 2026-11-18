@@ -1401,7 +1401,7 @@ exe	0x004798f0	d2_GetPixelColour	gfx	draft	readable	deep
 exe	0x004799e0	d2_PutPixelRGB	gfx	byte	readable		
 exe	0x00479b60	d2_PutPixel	gfx	byte	readable		
 exe	0x00479b90	d2_PutPixelClipped	gfx	byte	readable		
-exe	0x00479bf0	d2_DrawRectOutline	gfx	shape	readable	deep	
+exe	0x00479bf0	d2_DrawRectOutline	gfx	byte	readable		
 exe	0x00479cd0	d2_SetSurfaceClip	gfx	byte	readable		
 exe	0x00479d00	d2_MakeLightTable	shp	shape	readable	deep	
 exe	0x00479df0	d2_SetColourFormat	shp	byte	readable		
@@ -1866,12 +1866,12 @@ exe	0x004ae3a0	ai_TokenRandomGuildMaster	hst	byte	readable
 exe	0x004ae600	ai_TokenRandomOfficeHolderFemale	hst	byte	readable		
 exe	0x004ae900	ai_TokenRandomOfficeHolder	hst	byte	readable		
 exe	0x004aec00	ai_TokenRandomOfficePerson	hst	byte	readable		
-exe	0x004aef10	ai_TokenRichestInhabitant	hst	shape	readable	deep	
+exe	0x004aef10	ai_TokenRichestInhabitant	hst	byte	readable		
 exe	0x004af090	ai_TokenBestInn	hst	byte	readable		
 exe	0x004af1b0	ai_TokenMoney	hst	byte	readable		
 exe	0x004af2c0	ai_TokenCityTreasury	hst	byte	readable		
 exe	0x004af3f0	ai_TokenRandomChurchProfession	hst	byte	readable		
-exe	0x004af6c0	ai_TokenRandomRich	hst	shape	readable	deep	
+exe	0x004af6c0	ai_TokenRandomRich	hst	byte	readable		
 exe	0x004af8d0	ai_TokenRandomNpcInhabitant	hst	byte	readable		
 exe	0x004afa20	ai_TokenRandomMerchant	hst	byte	readable		
 exe	0x004afc30	ai_TokenRandomPlayer	hst	byte	readable		
@@ -1966,7 +1966,7 @@ exe	0x004b51f0	ai_CharBuildingShare	mission	byte	readable
 exe	0x004b5270	ai_PlayerShare	mission	byte	readable		
 exe	0x004b5310	ai_ShowMissions	mission	byte	readable		
 exe	0x004b5360	ai_MissionInfoDialog	mission	byte	readable		
-exe	0x004b5460	ai_MissionSuccessDialog	mission	shape	readable	deep	
+exe	0x004b5460	ai_MissionSuccessDialog	mission	byte	readable		
 exe	0x004b58b0	ai_MissionEndDialog	mission	byte	readable		
 exe	0x004b5950	ai_QuitGame	mission	byte	readable		
 exe	0x004b5970	ai_MissionCompleteDialog	mission	byte	readable		
@@ -2616,7 +2616,7 @@ exe	0x004e5af0	ai_DumpPersonMoney	cmdump	byte	readable
 exe	0x004e5b50	ai_DumpPersonRelatives	cmdump	byte	readable		
 exe	0x004e5bf0	ai_DebugDumpPerson	cmdump	byte	readable		
 exe	0x004e5cd0	amt_InitTable	amt	byte	readable		
-exe	0x004e5e50	amt_Rating	amt	draft	readable	deep	
+exe	0x004e5e50	amt_Rating	amt	byte	readable		
 exe	0x004e6030	amt_FindOffice	amt	shape	readable	deep	
 exe	0x004e60b0	amt_GetOfficeRate	amt	byte	readable		
 exe	0x004e6180	amt_ApplyForOffice	amt	draft	readable	deep	
@@ -3338,7 +3338,7 @@ exe	0x00525ad0	sv_UpdateSkyPhase	sv	byte	readable
 exe	0x00525dd0	sv_PlaceCamera	sv	byte	readable		
 exe	0x00525ee0	sv_EaseCameraHeight	sv	byte	readable		
 exe	0x00525ff0	sv_BorderCameraView	sv	byte	readable		
-exe	0x005263a0	sv_ScrollCamera	sv	draft	readable	deep	
+exe	0x005263a0	sv_ScrollCamera	sv	byte	readable		
 exe	0x00526cf0	sv_MouseCamera	sv	draft	readable	deep	
 exe	0x00527640	sv_UpdateCamera	sv	byte	readable		
 exe	0x00527840	sv_FlyCameraToObject	sv	byte	readable		
@@ -4512,7 +4512,7 @@ exe	0x005c6530	ai_MarriageTest	lcamt	byte	readable
 exe	0x005c6620	ai_CourtshipRounds	lcamt	byte	readable		
 exe	0x005c6910	ai_CourtshipConfirm	lcamt	draft	readable	deep	
 exe	0x005c6aa0	ai_CourtshipListWindow	lcamt	byte	readable		
-exe	0x005c6d00	ai_CourtshipWindow	lcamt	draft	readable	deep	
+exe	0x005c6d00	ai_CourtshipWindow	lcamt	byte	readable		
 exe	0x005c72d0	ai_PlotRatingBaseChart	lcamt	byte	readable		
 exe	0x005c7460	ai_PlotScoreChart	lcamt	shape	readable	deep	
 exe	0x005c7560	ai_PlotNoFirstChart	lcamt	byte	readable		
@@ -4538,11 +4538,11 @@ exe	0x005cacd0	ai_BewitchOrder	lcamt	byte	readable
 exe	0x005cae00	ai_CounterEspionage	lcamt	byte	readable		
 exe	0x005cb1e0	ai_SwapSeats	lcamt	byte	readable		
 exe	0x005cb250	ai_SeatSwapWindow	lcamt	byte	readable		
-exe	0x005cb4f0	ai_HatredWindow	lcamt	shape	readable	deep	
+exe	0x005cb4f0	ai_HatredWindow	lcamt	byte	readable		
 exe	0x005cba90	ai_HearingWindow	lcamt	byte	readable		
 exe	0x005cbe00	ai_ExpelWorkerWindow	lcamt	draft	readable	deep	
 exe	0x005cc2b0	ai_PeaceWindow	lcamt	byte	readable		
-exe	0x005cc700	ai_ConvertWindow	lcamt	draft	readable	deep	
+exe	0x005cc700	ai_ConvertWindow	lcamt	byte	readable		
 exe	0x005cca40	ai_PenanceWindow	lcamt	byte	readable		
 exe	0x005ccc10	ai_Miracle	lcamt	draft	readable	deep	
 exe	0x005cd2e0	ai_MiracleWindow	lcamt	byte	readable		
