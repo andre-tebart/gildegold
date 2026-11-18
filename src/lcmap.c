@@ -2360,7 +2360,7 @@ void ai_ShowFeudNews(unsigned short *cRec, unsigned short *pRec)
     p = (G8CHARREC *)pRec;
     if (p->kind == 6 || p->kind == 7) {
         txt_Format(local, (util_Random(3) & 0xffff) + 0x1340, c->id);
-        txt_Format(ai_NewsText, 0x1339, c->id, (util_Random(3) & 0xffff) + (p->sex != 0 ? 3 : 0) + 0x133a, p->id,
+        txt_Format(ai_NewsText, 0x1339, c->id, (util_Random(3) & 0xffff) + (p->sex != 0 ? 0x133d : 0x133a), p->id,
                    local);
         he_ShowNews(p->netId, -1, ai_NewsText, 1, 0x5ec, 0);
     }
