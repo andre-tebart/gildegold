@@ -5585,7 +5585,15 @@ void he_RunDuelChallenge(int ev)
    gm_Mix(b, a, 3) of 1 or more it challenges (both in a quarrel, a player a hears the duel intro news 0x1d83)
    -> 2; below, it declines as he_DuelDeclined does (a hears 0x1d81, b's district's opinion and b's relation to a
    drop) and the event ends in two minutes
-   @deep Read whole against the original and fixed: typed over AIJOB / AICHAR / AIMSG (the message 0x46
+   @deep deep s33: the chance written inline (util_RandomF() + gm_Mix(b, a, 3) >= 1.0f, no liking local:
+   the same code). Left as before: the 0x1d81 news arguments. Mechanism read: b->id (used twice in the
+   call) is a CSE candidate (c2trace temp at that line, prio 50) that takes eax for the whole argument run,
+   so the sex byte goes to cl and the id load is scheduled between it and the setne; the original loads sex
+   into al and finishes (sex != 0) + 0x1d68 in ecx before the id (he_DuelDeclined, byte, the same
+   statement, compiles that way). Tried: district = 0 after the news (18), the ternary 0x1d69 : 0x1d68 (=
+   control), district initialised at the declaration (frame +4), the text buffer at function scope (frame
+   0x234, same order), the chance's operand orders (= control), climb round 1 (133 mutants, best = start).
+   prior: Read whole against the original and fixed: typed over AIJOB / AICHAR / AIMSG (the message 0x46
    with msg.time + 6 hours through gm_AddTime2, the original's +0x28), the second office array 6 ints and
    the text / message buffers block-scoped (frame 0x134 equal), the chance as util_RandomF() + gm_Mix(b, a,
    3) >= ai_FloatOne (the original's and eax,0x100 / jne), the null-pointer flag test of the gone branch
@@ -5601,7 +5609,6 @@ void he_AllocInsult(int ev)
     int office[6];
     int seat[6];
     int place, district, amt;
-    float liking;
 
     e->exSlot = -1;
     e->end = ai_Time;
@@ -5646,8 +5653,7 @@ void he_AllocInsult(int ev)
         cm_SendSetField(b->netId, 0x1c8, 4, 0x400, 0);
         return;
     }
-    liking = gm_Mix(b, a, 3);
-    if (util_RandomF() + liking >= 1.0f) {
+    if (util_RandomF() + gm_Mix(b, a, 3) >= 1.0f) {
         cm_SendSetField(a->netId, 0x1c8, 4, 0x400, 0);
         cm_SendSetField(b->netId, 0x1c8, 4, 0x400, 0);
         e->end = ai_Time;
