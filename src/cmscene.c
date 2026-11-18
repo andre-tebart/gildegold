@@ -4181,7 +4181,8 @@ int cm_StopSceneRain(void)
 /* 0x4e3420, runs the scene for a ticks (frame wait with the flag 0x8000): the end sets the stop flag 0x6f22a0
    @deep deep s23: left one temp more in the original: a is loaded into ecx (mov ecx,[esp+8]; add esi,ecx),
    the later temps rotate edx / eax. end = a + end / end + a / unsigned a: = control; end = cm_SceneTicks +
-   a worse. */
+   a worse. flip.py: only end += a written twice (a with two references) gives the original's load, so the
+   original references a once more somewhere that leaves no code; not found. */
 
 int cm_WaitTicks(int a)
 {
