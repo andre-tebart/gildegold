@@ -916,6 +916,53 @@ Where the pushes and pops sit, how many epilogue copies there are, shared agains
     the jmp), ai_BlackmailContact (five stores after the push in the original), d2_SliderInput (bottom sum
     load order).
 
+- **Deep s30 (the near-byte list to 40 instructions, the functions without a note first, 15 items: 14 byte + 1
+  fix)**:
+  - **Read c2trace's priorities when a callee-saved register goes to the wrong candidate; then change ONE
+    block's distinct-value count**: ai_BuyBuildingOfferWindow's win#1 stood at -15 against the loop-hoisted
+    constant -1 of msg.fromId at -14 (the constant took ebp, win was spilled: frame +4). A block's term is P
+    (distinct values in it) times the weight, + for a referencing candidate, - for one living through: the
+    offer text printed into its own local before d2_GetWinObj (one value more in win's setup block) gave win
+    ebp: byte. gm_KillSpieler's index temp c * 0x21c (-41) outranked the loop-hoisted ch->netId (-56):
+    `netId = ch->netId` instead of `ORD_CHARS[c].netId` at the top (one reference of the index fewer in the
+    first block) gave ch->netId ebx and spilled the index as the original does (draft 15 -> order 6, then
+    the id store as ORD_CHARS[c].id: byte; the netId local used in the culprit compare was worse, 19).
+  - **Frame slot ties at equal counts: a store written in two merged arms**: sb_UnloadSampleBank's ret and i
+    both counted 3 (c2frame; i reached it first and took the lower slot): the guards nested, `if (sb_Used) {
+    if (bank) {..} else ret = -1; } else ret = -1;` (two -1 stores, merged late, count twice): byte.
+  - **A pointer temp that only feeds one assignment is the expression**: he_RunIncomeEvent's `rec =
+    &ai_CharsT[bld->owner]; if (rec != he_PlayerCh) owner = rec;` as one condition with the address written
+    twice (scratch rotation regs 26 -> byte); ai_GraveHauntContact's b carried into msg.arg[0] is a store in
+    each arm of one if / else-if chain (regs 18 -> byte, size +1). The reverse at a call: the argument sum
+    into its own local (cm_CheckFieldDeltas `id = *p.i + c->partner;`, as its sibling cm_ExFieldDeltas has
+    it: eax / edx -> byte) and the bound n / 2 into `half` (sv_ValueBar: the loop counter / bound in ebx /
+    edi).
+  - **Block locals again (s21)**: main_UpdateFigure's `int one` (the field value whose address goes to
+    cm_AddFieldValues) in each branch: the else branch's packs with f (slots 8 -> 0); the else branch names
+    the record `c = &ai_CharsT[i]` (edi).
+  - **Loop forms by the test after the decrement**: he_FindMeetingSlot's `dec edi; mov esi,edx; test edi,edi;
+    jne` is `i--;` as a statement before the slot step with `while (i != 0)` (for (..; i != 0; i--) folds the
+    test away); the outer counter decremented at the head of its do loop; the random start as util_RandomU
+    (mov si,ax). A product of 50 loop forms in one dcp try found the outer form, the inner needed the
+    statement form. ai_DomizilGoodInRange: the guard on the global (`ai_DomizilCount == 0`) where the original
+    tests the loaded value, not the n copy.
+  - **Parentheses decide a fild's place**: gm_FormatAmount `((strlen(a) - 1) / 3.0f) + strlen(a)` (the
+    quotient's fild after the second strlen; casts, double and reciprocal forms = control).
+  - **Nested ifs for a fallback (no flag)**: he_AllocFight's place = a's home, else b's home as `if (home)
+    place = home->id; else { home = b->bld2; if (home) place = home->id; }` (the flat reassignment + one
+    test swapped the place / home registers).
+  - **It was a meaning bug**: d3_MirCreateOutline cleared `pts` bytes (the asm clear macro read the pts
+    parameter); the original passes pts's own slot as d3_MirBoundaryEdges' count pointer, so that slot holds
+    nedge: `dcp frame`'s "shared in the original: arg+0x0 (nedge, pts)" named it. Clearing nedge bytes fixed
+    the frame (0x4c -> 0x48).
+  - climb round 1 found 4 of the 15 (cm_NearestEscapeObject's bound in the for: byte; the swaps that led
+    ai_DomizilGoodInRange / gm_FormatAmount / ai_BuyBuildingOfferWindow); the initializer lever (initgen) was
+    = control on all 15. A message fill permuted (cm_SendSpawnCharacter, 5040 orders): byte.
+  - Tools: initgen.py now finds the definition (not an indented call of the name: gm_Query), skips float and
+    record locals and skips a local union's member list; climb.py reads the function's Latin-1 text from the
+    file (dcp fn's output turned a string's 0xfc into U+FFFD and round 1 died: main_UpdateFigure).
+  - Left with a note: d3_MirCreateOutline (mark[head]'s load order, regs 2).
+
 - **An else-if arm cross-jumped whole into a sibling's copy, the original keeps it inline**: the store order of
   the OTHER arms (default arm charId before stateArg; 0x176 arm stateArg, charId, x, z) decides it, found by
   climb.py swap + move in round 2 (cm_OrderAttack byte; permuting only the inlined arm's stores did not). The pair
