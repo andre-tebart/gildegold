@@ -3878,7 +3878,7 @@ exe	0x005719e0	he_RunDeathDue	he	32c94ebd3a4cee07	no	shape	control=shape p1=shap
 exe	0x00571ac0	he_AllocGraveTraining	he	b4e48bdd30b63c20	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	4cbf06cae45cb11e
 exe	0x00571c30	he_RunGraveTraining	he	cd804e3b809f464a	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	7a3148e73a2869ed
 exe	0x00571f60	he_AllocMeeting	he_b	16703a8c8c342544	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	1c5db40f20f8fa58
-exe	0x005720f0	he_CatchMeetingDisease	he_b	76e53adbba23a7d8	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	77154703e87fda18
+exe	0x005720f0	he_CatchMeetingDisease	he_b	5b8928429925e664	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	a03096e08dc64f2b
 exe	0x00572310	he_SpreadMeetingDisease	he_b	38d3a78fe89af5e1	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	e6400e55c148741b
 exe	0x005725b0	he_RunMeeting	he	ecf3da0bb67cfb36	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005726a0	he_AllocMeetingScene	he	2f779211059cfe51	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	

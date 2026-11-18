@@ -5510,26 +5510,23 @@ void he_AllocMeeting(int ev)
    gives its severity util_Random(range); a severity above 0 is written into the disease's bit field (a field
    delta of v02c) and costs severity * the record's cost health (gm_AddHealth), the health left stored in *health
    when given. Returns the disease kind, 0 when none was caught.
-   @deep s15: more forms of a = 0 before the call, all below ch again: a = 0 at the top with b = 0 inside
-   the test (80 ins), a = b = 0 at the top with if (util_RandomF() < chance) (82), the early return form if
-   (.. >= chance) return 0; (104), one final return a; with the b == 0 / chance-fail paths reaching it
-   (93-95: VC6 folds them to xor eax,eax as the original, but a still loses ebx). climb from a = 0; b = 0;
-   at the top (2 rounds): the only movers are meaning changes (gm_AddHealth only when health != 0: 52; b's
-   coin inside the 0x1800000 test: 37). Kept: the s14 text (2 ins, right size). prior: size queue s14:
-   right size and shape (78 -> 2 ins, raw 541 = 541): a = 0 inside the chance test (b = 0 stays at the
-   top): a no longer lives across util_RandomF's block, its priority (c2trace: a#1 -12 against ch -1) rises
-   above ch, so a takes ebx and ch is split / reloaded from its slot as the original (frame 0x10). Left:
-   the original's xor ebx,ebx (a = 0) sits before the call with the xor esi,esi; any a = 0 before the call
-   (a = 0; b = 0 / b = 0; a = 0 / a = b = 0 / b = a = 0 / declared inits / comma in the condition / a float
-   temp for the roll) drops a below ch again (78-80 ins); both inside: 4 ins. prior: read whole against
-   0x5720f0..0x57230c: every statement, constant, callee and field equals the original (the and/je chance
-   test as an if around the body, the kind 2 / 1 / other bit tests of v02c, b = coin ? 7 : 8, the 0x1800000
-   / 0x700000 checks, the pick, gm_GetDisease into the 12-byte... */
+   @deep deep s24: the severity as its own local sev (not the reused b) = the same code, kept (one register
+   either way, esi). a = 0 before the call again with the pick written as (a == 0 || (b != 0 && rnd == 0))
+   { if (b == 0) return 0; a = b; } (or: 3 ins with a = 0 inside, 79 with a = 0 at the top), if / else-if +
+   one if (a == 0) return 0 (7 / 79), the zero test first (23 / 97): a = 0 at the top always lets ch#1
+   (prio -1) take ebp before a#1 (-12, c2trace), frame 0x14. Left: the original's xor ebx,ebx before the
+   util_RandomF call (ours after the chance test). prior: s15: more forms of a = 0 before the call, all
+   below ch again: a = 0 at the top with b = 0 inside the test (80 ins), a = b = 0 at the top with if
+   (util_RandomF() < chance) (82), the early return form if (.. >= chance) return 0; (104), one final
+   return a; with the b == 0 / chance-fail paths reaching it (93-95: VC6 folds them to xor eax,eax as the
+   original, but a still loses ebx). climb from a = 0; b = 0; at the top (2 rounds): the only movers are
+   meaning changes (gm_AddHealth only when health != 0: 52; b's coin inside the 0x1800000 test: 37). Kept:
+   the s14 text (2 ins, right size). */
 int he_CatchMeetingDisease(AICHAR *ch, float chance, int kind, float *health)
 {
     unsigned int bits, delta;
     GMDISEASE d;
-    int a, b, cost;     /* b: the second pick, then the severity (the original reuses it) */
+    int a, b, sev, cost;
     float res;
 
     b = 0;
@@ -5565,26 +5562,26 @@ int he_CatchMeetingDisease(AICHAR *ch, float chance, int kind, float *health)
         bits = ch->v02c;
         if (gm_GetDisease(a, &d) == 0)
             return a;
-        b = util_RandomU(d.range);
-        cost = (int)(b * d.cost);
-        if (b == 0)
+        sev = util_RandomU(d.range);
+        cost = (int)(sev * d.cost);
+        if (sev == 0)
             return a;
         if (a == 2)
-            bits ^= ((b << 4) ^ bits) & 0xf0;
+            bits ^= ((sev << 4) ^ bits) & 0xf0;
         else if (a == 3)
-            bits ^= ((b << 8) ^ bits) & 0xf00;
+            bits ^= ((sev << 8) ^ bits) & 0xf00;
         else if (a == 4)
-            bits ^= ((b << 0xc) ^ bits) & 0x3000;
+            bits ^= ((sev << 0xc) ^ bits) & 0x3000;
         else if (a == 5)
-            bits ^= ((b << 0xe) ^ bits) & 0x1c000;
+            bits ^= ((sev << 0xe) ^ bits) & 0x1c000;
         else if (a == 6)
-            bits ^= ((b << 0x11) ^ bits) & 0xe0000;
+            bits ^= ((sev << 0x11) ^ bits) & 0xe0000;
         else if (a == 7)
-            bits ^= ((b << 0x14) ^ bits) & (7 << 0x14);
+            bits ^= ((sev << 0x14) ^ bits) & (7 << 0x14);
         else if (a == 8)
-            bits ^= ((b << 0x17) ^ bits) & 0x1800000;
+            bits ^= ((sev << 0x17) ^ bits) & 0x1800000;
         else if (a == 9)
-            bits ^= ((b << 0x19) ^ bits) & 0x1e000000;
+            bits ^= ((sev << 0x19) ^ bits) & 0x1e000000;
         delta = bits;
         cm_BeginFieldBlock((char *)ch, ch->netId);
         cm_AddFieldDelta(4, 1, 0x2c, &delta);
