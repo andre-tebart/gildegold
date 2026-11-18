@@ -675,28 +675,25 @@ void ai_GraveDeadName(GVGRAVE *e, char *out);
    Section 7: a free grave shows its size's name (txt 0x4100), else the holder (the character's name, or the
    item of that id), the year "AD %i" (until + 1400) and the state in percent (txt 0x4101 .. 0x4103); with flag 1
    a slider (0xbf, txt 0x42f1) 0xb4 wide is added at the bottom. The scroll position is restored
-   @deep draft 30 -> shape 22 ins. Kept: the labels "%s:" / "%1N3" (literals of this unit's run since s11); the
-   item fill as the plain index loop ((GVWIN *)w)->items[i].grave / id / btn (gives the original's lea
-   [n*3+0x51] form; the int-pointer walk is gone); the collect loop as items[n].f with n++ (the item++
-   walk: 24, a count-free bound in the for: 34). Left: the constant 0 web: the original zeroes ebp at
-   entry, re-zeroes it only on the collect loop's path (xor ebp,ebp before the join) and later pushes
-   immediates / test; ours keeps const#0 in ebp after the main loop (push ebp x2 for
-   sv_CreateScrollButtons, cmp esi,ebp / mov [esp+0x10],ebp, cmp eax,ebp, an extra xor ebp,ebp after the
-   main loop, the n spill before the collect loop moving the jle target). Tried: 6 fill store orders (all
-   worse), saved = 0 in an else (25), n = 0 in the for-init / while fill / init order (= one code), flip.py
-   --want two push 0 (25 mutants, only meaning-changing ones closer: the fill's grave = 0 constant is the
-   reference that decides). Open: M10 100.0f vs ai_FloatHundred (no view of full_rdata_5ebb40 in sv_t).
-   Next: c2trace.py on the const#0 pieces (ids 1/2/3 of 6 webs) to see which web takes ebp. (tiebreak: not
-   measured (dcp headers sample ai_GraveDetail)) prior: reconstructed in full from the original (all 434
-   instructions read: the item collection, the per-item pictures / texts / trait bars, the detail texts,
-   the slider); what is left is allocation: ours keeps the constant 0 in ebp after the first loop (push ebp
-   / push ebp for sv_CreateScrollButtons' 0, 0 at 0x582c76, cmp esi,ebp / mov [esp+0x10],ebp / cmp eax,ebp
-   at 0x582c8d, the re-zero xor ebp,ebp at 0x582efa, cmp eax,ebp at 0x582f72, cmp esi,ebp at 0x582f97)
-   where the original uses immediates and test; and ours spills n to [esp+0x1c] before the first loop
-   (0x582b5f) where the original stores it once after, which moves the count<=0 jle target by that one
-   store (same statement, both jump to the n < 8 test). Tried: the count hoisted into a local (kept, it
-   gives the original's dec-counter loop), the fill loop through an int pointer (kept, the original's
-   [n*3+0x51] index form), the items pointer... */
+   @deep s36: the trait loop as for (k = 0; k < 5; k++, y += 0xd) (the original increments k before y: inc
+   ebx / add esi,0xd): 22 -> 20 ins, kept. Left: the constant 0 web only (c2trace: const#0#28 lines 717-795
+   takes ebp in pass 7 at savings 0; the original's 0 piece ends at the fill loop, push 0 / test after it)
+   and the n=0 slot store before the first loop. No lever (= control): items local dropped for ((GVWIN
+   *)w)->items (24), the fill through items[] (24, other code), loop 1 through w->items, NULL, !flag, c !=
+   0, item = items + i, separate obj locals for the text objects / trait labels, saved = 0 moved after the
+   fill (22, other bytes). climb round 1: nothing. prior: draft 30 -> shape 22 ins. Kept: the labels "%s:"
+   / "%1N3" (literals of this unit's run since s11); the item fill as the plain index loop ((GVWIN
+   *)w)->items[i].grave / id / btn (gives the original's lea [n*3+0x51] form; the int-pointer walk is
+   gone); the collect loop as items[n].f with n++ (the item++ walk: 24, a count-free bound in the for: 34).
+   Left: the constant 0 web: the original zeroes ebp at entry, re-zeroes it only on the collect loop's path
+   (xor ebp,ebp before the join) and later pushes immediates / test; ours keeps const#0 in ebp after the
+   main loop (push ebp x2 for sv_CreateScrollButtons, cmp esi,ebp / mov [esp+0x10],ebp, cmp eax,ebp, an
+   extra xor ebp,ebp after the main loop, the n spill before the collect loop moving the jle target).
+   Tried: 6 fill store orders (all worse), saved = 0 in an else (25), n = 0 in the for-init / while fill /
+   init order (= one code), flip.py --want two push 0 (25 mutants, only meaning-changing ones closer: the
+   fill's grave = 0 constant is the reference that decides). Open: M10 100.0f vs ai_FloatHundred (no view
+   of full_rdata_5ebb40 in sv_t). Next: c2trace.py on the const#0 pieces (ids 1/2/3 of 6 webs) to see which
+   web takes ebp. (tiebreak: not measured (dcp headers sample ai_GraveDetail)) */
 void ai_GraveDetail(AIBLD *rec, int *w, int clicked, int flag)
 {
     int i;
@@ -766,13 +763,12 @@ void ai_GraveDetail(AIBLD *rec, int *w, int clicked, int flag)
         d2_Objs[k].w = d2_Wins[w[3]].w;
         d2_SetObjFont(k, 0x54);
         y += 0x12;
-        for (k = 0; k < 5; k++) {
+        for (k = 0; k < 5; k++, y += 0xd) {
             txt_Format(buf, "%s:", 0x16b7 + k);
             x = d2_CreateWinText(0x28, y, buf, w[3]);
             d2_Objs[x].w = 300;
             d2_SetObjFont(x, 0x54);
             sv_ValueBar(0xa0, y, item->grave->traits[k], 0x4df);
-            y += 0xd;
         }
     }
     d2_Wins[w[3]].scrollY = saved;
