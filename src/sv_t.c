@@ -159,7 +159,6 @@ extern int d2_ClickedId;
 extern int d2_LastWindow;
 extern char ai_Chars[768][0x21c];
 extern unsigned short ai_PlayerId;
-extern char ai_CharNameFmt[];
 extern int d2_PointerObj;
 
 

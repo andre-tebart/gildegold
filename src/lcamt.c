@@ -553,7 +553,6 @@ extern signed char ai_Relations[768][768];
 extern G17MSG cm_SendRing[];
 extern int d2_ClickedId;
 extern int d2_LastWindow;
-extern char ai_CharNameFmt[];  /* 0x62a564, "%1N3" (main.c gap block; Open: data) */
 extern struct D2OBJ *d2_Objs;
 extern int sv_FrameMask;
 extern unsigned char ai_OwnPlayer;
@@ -2848,7 +2847,7 @@ int ai_ShowLoversTab(int view, int page, int scrollPage, unsigned int n, LCAMOUN
 }
 /* 0x5c03e0, the rows of the special-amount window's wedding tab (tab 4, 367 B): with n rows, switches to the page
    (ai_AmountPageSwitch view, page, scrollPage) and centres the heading at the top: the suitor's name (rows[0],
-   ai_CharNameFmt), the text txt_Ptrs[0x169e] and the partner's name (rows[1]); then draws each row (ai_AmountRow
+   "%1N3"), the text txt_Ptrs[0x169e] and the partner's name (rows[1]); then draws each row (ai_AmountRow
    at 0x4b, 0x52 + 0x70 per row, titled) with its role text txt_Ptrs[0x169f + x2c] right aligned beside it;
    enables the rows' sliders, restores the page's scroll offset and sets its scroll step 0x70; returns 1 (0 without
    rows) */
@@ -2865,10 +2864,10 @@ int ai_ShowWeddingTab(int view, int page, int scrollPage, unsigned int n, LCAMOU
         return 0;
     saved = ai_AmountPageSwitch(view, page, scrollPage);
     half = d2_Wins[d2_LastWindow].w / 2;
-    txt_Format(name, (int)ai_CharNameFmt, rows[0].rec->id);
+    txt_Format(name, (int)"%1N3", rows[0].rec->id);
     ai_CentredText(name, half, 8, half * 2, 0x55);
     ai_CentredText(txt_Ptrs[0x169e], half, 0x20, half * 2, 0x55);
-    txt_Format(name, (int)ai_CharNameFmt, rows[1].rec->id);
+    txt_Format(name, (int)"%1N3", rows[1].rec->id);
     ai_CentredText(name, half, 0x38, half * 2, 0x55);
     for (i = 0; i < n; i++) {
         y = 0x52 + i * 0x70;
@@ -4664,7 +4663,7 @@ AICHARREC *ai_PickBuildingChar(AIBLD *bld, AMOUNTCFG *cfg, char *caption, void (
                     }
                     liking = (int)gm_Liking(ai_PlayerId, rows[i].id, 1);
                     rows[i].portrait = d2_WinOpenPic(0x98, y + 1, lc_CharRecs[rows[i].id].picture, d2_LastWindow);
-                    txt_Format(text, (int)ai_CharNameFmt, rows[i].id);
+                    txt_Format(text, (int)"%1N3", rows[i].id);
                     label = d2_CreateWinText(0x96 - (0xa0 - w) / 2, h + y - 0x46, text, d2_LastWindow);
                     rows[i].name = label;
                     d2_Objs[label].centred = 1;
@@ -6291,7 +6290,7 @@ void ai_CityStatsPanel(void)
    players. The right button closes the panel
    @deep Reconstructed in full against the original: the slider pictures, gm_RankPlayers into GMRANK[8],
    the gates, the two forms by count <= 6, the caption, and per ranked player the dynasty picture
-   (AICHARREC.ref54, D2OBJ interactive / style 3 / user = the character record), the name (ai_CharNameFmt,
+   (AICHARREC.ref54, D2OBJ interactive / style 3 / user = the character record), the name ("%1N3",
    ai_CentredText at x + 0x22), the slider of (int)(GMRANK.sum * 100) coloured by clamp(ref54 - 0x59a, 0,
    7), the points at x; x = (count <= 4 ? 0x50 : 0x3a) * i + (count <= 4 ? 0x14 : 2) recomputed per use as
    in the original; the pump. All calls, arguments and constants compared. Left: register allocation: the
@@ -6340,7 +6339,7 @@ void ai_PlayerComparePanel(void)
         d2_Objs[obj].interactive = 1;
         d2_Objs[obj].style = 3;
         d2_Objs[obj].user = ai_Chars[rank->id];
-        txt_Format(buf, (int)ai_CharNameFmt, rank->id);
+        txt_Format(buf, (int)"%1N3", rank->id);
         ai_CentredText(buf, 0x36, LC_COMPARE_X(count, i) + 0x22, 300, 0x56);
         colour = min(max(((AICHARREC *)ai_Chars)[rank->id].ref54 - 0x59a, 0), 7);
         obj = d2_WinOpenSlider(0x5a, LC_COMPARE_X(count, i) + 7, 300, 0, 100, sliderPics[colour], 0x42, d2_LastWindow);

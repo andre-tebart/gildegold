@@ -660,7 +660,6 @@ extern signed char ai_Relations[768][768];
 extern G17MSG cm_SendRing[];
 extern int d2_ClickedId;
 extern int d2_LastWindow;
-extern char ai_CharNameFmt[];  /* 0x62a564, "%1N3" (main.c gap block; Open: data) */
 extern struct D2OBJ *d2_Objs;
 extern int sv_FrameMask;
 extern unsigned char ai_OwnPlayer;
