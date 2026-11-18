@@ -112,7 +112,7 @@ exe	0x00407740	ch_CellToCell	ch	byte	readable
 exe	0x00407790	ch_GetWaypoints	ch	draft	readable	deep	
 exe	0x004079b0	ch_GetNewPath	ch	draft	readable	deep	
 exe	0x00408490	ch_PathToTarget	ch	byte	readable		
-exe	0x00408690	ch_InitWalk	ch	shape	readable		
+exe	0x00408690	ch_InitWalk	ch	shape	readable	deep	
 exe	0x00408ab0	ch_WalkSound	ch	byte	readable		
 exe	0x00408cb0	ch_StartWalkAnim	ch	byte	readable		
 exe	0x00408e60	ch_NextWaypoint	ch	byte	readable		
@@ -1618,7 +1618,7 @@ exe	0x00496b10	ai_EvalLeastLikedOfEvent	amr	byte	readable
 exe	0x00496e40	ai_DecideBribe	amr	byte	readable		
 exe	0x004972d0	ai_ExecuteBribe	amr	byte	readable		
 exe	0x004973f0	ai_EvalApplyForOffice	amr	byte	readable		
-exe	0x00497490	ai_DecideApplyForOffice	amr	shape	readable		
+exe	0x00497490	ai_DecideApplyForOffice	amr	byte	readable		
 exe	0x00497630	ai_ExecuteApplyForOffice	amr	byte	readable		
 exe	0x00497660	ai_DecideProduceGood	amr	byte	readable		
 exe	0x004979d0	ai_ExecuteProduceGood	amr	byte	readable		
@@ -1640,7 +1640,7 @@ exe	0x004995d0	ai_EvalSabotage	amr	byte	readable
 exe	0x00499660	ai_DecideSabotage	amr	byte	readable		
 exe	0x00499a90	ai_ExecuteSabotage	amr	byte	readable		
 exe	0x00499b80	ai_EvalBeatUp	amr	byte	readable		
-exe	0x00499c10	ai_DecideBeatUp	amr	shape	readable		
+exe	0x00499c10	ai_DecideBeatUp	amr	byte	readable		
 exe	0x00499f20	ai_ExecuteBeatUp	amr	byte	readable		
 exe	0x0049a020	ai_DecideCitizenship	amr	byte	readable		
 exe	0x0049a0a0	ai_ExecuteCitizenship	amr	byte	readable		
@@ -3146,7 +3146,7 @@ exe	0x0050aaf0	gm_ListAmount	f3gmt	byte	readable
 exe	0x0050ab20	gm_ListAmountById	f3gmt	byte	readable		
 exe	0x0050ab50	gm_ListStock	f3gmt	byte	readable		
 exe	0x0050ab80	gm_FreeCapacity	f3gmt	byte	readable		
-exe	0x0050acf0	gm_FreeStallCapacity	f3gmt	shape	readable		
+exe	0x0050acf0	gm_FreeStallCapacity	f3gmt	shape	readable	deep	
 exe	0x0050ad70	gm_TakeableCount	f3gmt	byte	readable		
 exe	0x0050af00	gm_CollectCarried	f3gmt	byte	readable		
 exe	0x0050b010	gm_FirstBuilding	f3gmt	byte	readable		
@@ -3510,7 +3510,7 @@ exe	0x0053e300	he_NextEvent	he	draft	readable	deep
 exe	0x0053e400	he_FindEvent	he	byte	readable		
 exe	0x0053e4e0	he_SpreadGfxInfos	he	byte	readable		
 exe	0x0053e5f0	he_CreateGfxObject	he	byte	readable		
-exe	0x0053e780	he_CreateGfxInfo	he	draft	readable	deep	
+exe	0x0053e780	he_CreateGfxInfo	he	byte	readable		
 exe	0x0053e840	he_FreeGfxInfo	he	byte	readable		
 exe	0x0053e8b0	he_AddEventGfxInfo	he	byte	readable		
 exe	0x0053eba0	he_RemoveStaleGfxInfos	he	byte	readable		
@@ -3615,7 +3615,7 @@ exe	0x00549ce0	he_BeginPlague	he	byte	readable
 exe	0x00549f70	he_StartPlague	he	byte	readable		
 exe	0x0054a020	he_RunPlague	he	byte	readable		
 exe	0x0054a6f0	he_StartGang	he	byte	readable		
-exe	0x0054a7b0	he_RunGang	he	shape	readable		
+exe	0x0054a7b0	he_RunGang	he	byte	readable		
 exe	0x0054ae20	he_AllocProtectionAsk	he	byte	readable		
 exe	0x0054ae60	he_RunProtectionAsk	he	byte	readable		
 exe	0x0054b170	he_StartProtection	he	byte	readable		
@@ -3684,7 +3684,7 @@ exe	0x00552bc0	he_RunTutorialIntro	he	byte	readable
 exe	0x00552c30	he_StartOfficeAward	he	byte	readable		
 exe	0x00552ca0	he_RunOfficeAward	he	draft	readable	deep	
 exe	0x00553060	he_RegisterEventTypes22	he	byte	readable		
-exe	0x005538b0	he_EndPersonEvents	he	shape	readable		
+exe	0x005538b0	he_EndPersonEvents	he	shape	readable	deep	
 exe	0x00553ae0	he_DetectAttack	he	byte	readable		
 exe	0x00553cc0	he_NoProtectionEvent	he	byte	readable		
 exe	0x00553d10	he_NoEvent2ePair	he	byte	readable		
@@ -3748,7 +3748,7 @@ exe	0x0055d390	he_RunEvent27	he	byte	readable
 exe	0x0055d490	he_AllocHarvest	he	draft	readable	deep	
 exe	0x0055d5c0	he_RunHarvest	he	draft	readable	deep	
 exe	0x0055dbe0	he_RunDismissal	he	byte	readable		
-exe	0x0055dd70	he_AllocEvent32	he	shape	readable		
+exe	0x0055dd70	he_AllocEvent32	he	byte	readable		
 exe	0x0055de30	he_RunPromotion	he	byte	readable		
 exe	0x0055e180	he_AllocWorkerQuits	he	byte	readable		
 exe	0x0055e1d0	he_RunWorkerQuits	he	byte	readable		
@@ -4009,7 +4009,7 @@ exe	0x0057aa80	ai_TutorialInitChapter4	sv_t	byte	readable
 exe	0x0057aeb0	ai_TutorialInitChapter5	sv_t	byte	readable		
 exe	0x0057b750	ai_TutorialInitMainOutro	sv_t	byte	readable		
 exe	0x0057b810	ai_TutorialBezier	sv_t	draft	readable		shape+readable -> draft+readable at 0f1c8dc1: promote --accept-falls
-exe	0x0057b8a0	ai_TutorialMarkerUpdate	sv_t	shape	readable		
+exe	0x0057b8a0	ai_TutorialMarkerUpdate	sv_t	byte	readable		
 exe	0x0057bc30	ai_SetupTutorialPlayer	sv_t	byte	readable		
 exe	0x0057bce0	ai_TutorialWindow	sv_t	byte	readable		
 exe	0x0057bf00	ai_AlchemistCandidates	sv_t	draft	readable	deep	
@@ -4101,7 +4101,7 @@ exe	0x00589410	ai_InitBookmarks	svtip	byte	readable
 exe	0x00589450	ai_ValidateBookmarks	svtip	byte	readable		
 exe	0x005894d0	ai_SelectBookmark	svtip	byte	readable		
 exe	0x00589570	ai_SetBookmark	svtip	byte	readable		
-exe	0x00589670	ai_BookmarkWindow	svtip	shape	readable		
+exe	0x00589670	ai_BookmarkWindow	svtip	shape	readable	deep	
 exe	0x00589aa0	ai_SaveBookmarks	svtip	byte	readable		
 exe	0x00589b30	ai_LoadBookmarks	svtip	byte	readable		
 exe	0x00589bc0	ai_SaveScreenshot	svtip	byte	readable		
@@ -4290,7 +4290,7 @@ exe	0x005a4f50	ai_ThievesGuildEmptyListener	lc	byte	readable
 exe	0x005a4f70	ai_StorageContact	lc	byte	readable		
 exe	0x005a5080	ai_TrainingContact	lc	byte	readable		
 exe	0x005a5120	ai_KidnapWindow	lc	draft	readable	deep	
-exe	0x005a53e0	ai_KidnapStart	lc	draft	readable	deep	
+exe	0x005a53e0	ai_KidnapStart	lc	byte	readable		
 exe	0x005a5530	ai_RansomWindow	lc	byte	readable		
 exe	0x005a5910	ai_HostageEscape	lc	byte	readable		
 exe	0x005a5bc0	ai_KidnapContact	lc	byte	readable		
@@ -4492,11 +4492,11 @@ exe	0x005c1df0	ai_OpenAgendaMenu	lcamt	byte	readable
 exe	0x005c1e10	ai_AgendaOfficeList	lcamt	byte	readable		
 exe	0x005c2160	ai_OpenLawBook	lcamt	byte	readable		
 exe	0x005c2410	ai_LawBookInfoWindow	lcamt	byte	readable		
-exe	0x005c2490	ai_ShowWorkSettingsPage	lcamt	shape	readable		
+exe	0x005c2490	ai_ShowWorkSettingsPage	lcamt	shape	readable	deep	
 exe	0x005c26a0	ai_MasterLetterNoticeWindow	lcamt	byte	readable		
 exe	0x005c2730	ai_MasterLetterKindWindow	lcamt	byte	readable		
 exe	0x005c27b0	ai_MasterHireWindow	lcamt	byte	readable		
-exe	0x005c2a10	ai_ShowSettingGoods	lcamt	shape	readable		
+exe	0x005c2a10	ai_ShowSettingGoods	lcamt	shape	readable	deep	
 exe	0x005c2b90	ai_MasterLetterSettings	lcamt	byte	readable		
 exe	0x005c3200	ai_MasterLetterWindow	lcamt	byte	readable		
 exe	0x005c33c0	ai_PassesPartnerFilter	lcamt	byte	readable		
@@ -4574,7 +4574,7 @@ exe	0x005d08c0	ai_ApplyTrialStep	lcamt	byte	readable
 exe	0x005d09d0	ai_TrialStep1	lcamt	byte	readable		
 exe	0x005d0a40	ai_TrialStep3	lcamt	byte	readable		
 exe	0x005d0ab0	ai_TrialStep4	lcamt	byte	readable		
-exe	0x005d0b20	ai_UseGoodRaiseRelation	lcamt	draft	readable	deep	
+exe	0x005d0b20	ai_UseGoodRaiseRelation	lcamt	shape	readable	deep	
 exe	0x005d0c70	ai_QuarrelCallback	lcamt	draft	readable	deep	
 exe	0x005d0e60	ai_UseGoodTrialStep	lcamt	byte	readable		
 exe	0x005d0f20	ai_UseGoodLowerOfficialRelations	lcamt	draft	readable	deep	
