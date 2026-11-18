@@ -973,17 +973,27 @@ float ai_NormalizeEffectScale(float value)
    speed in *outSpeed, the elevation in *outElev, the heading angle (d3_VecAngle2 against d3_ZAxis) in
    *outYaw and three vectors: outDir the horizontal direction tilted by the elevation, outUp d3_YAxis tilted
    the same way, outSide their cross product; -1 when no setting in the range hits (reasoned: the names follow
-   the use in am.c). */
+   the use in am.c).
+   @deep size queue s16: 208 -> 14 ins, raw size 727 = the original (padded size). Kept: sign = 0 at its
+   declaration (the original zeroes ebp first and stores hdir.y from it), ang = range[3] before speed =
+   range[0] (the FPU stack order), 1.0f / g written inline at both uses instead of an inv local (VC6 hoists
+   g * 2 first, then 1 / g, as the original), g declared before speedStep / angStep (with equal counts the
+   symbol order decides that speedStep, not g, takes range's dead slot). Left: hdir.y's mov [..],ebp
+   scheduled before the speedStep fstp (the original after the angStep fsub), and in the success arm the c
+   products of outUp[1] / outUp[2] load c first (the original the d3_YAxis component). No lever for those:
+   all 1023 operand swaps of the five tail lines, 144 declaration orders of s / c, d3_YAxis through a
+   pointer / array view / local copies of c and s (one code each); climb round 1 best 10 ins by inlining
+   err in both tests (another place differs, not kept). */
 int ai_SolveCannonAim(float *from, float *to, float *range, float *outElev, float *outYaw, float *outSpeed,
                       float *outDir, float *outUp, float *outSide)
 {
+    float g = ai_Gravity;
     float speedStep = (range[1] - range[0]) * 0.5f;
     float angStep = (range[3] - range[2]) * 0.5f;
-    float g = ai_Gravity;
     D3VECTOR4 dir, hdir;
-    float horiz, drop, inv, s, c, h, t, err;
+    float horiz, drop, s, c, h, t, err;
     float speed, ang;
-    int sign, i;
+    int sign = 0, i;
 
     dir.x = to[0] - from[0];
     dir.y = to[1] - from[1];
@@ -997,25 +1007,23 @@ int ai_SolveCannonAim(float *from, float *to, float *range, float *outElev, floa
     *outYaw = d3_VecAngle2((D3VECTOR *)&d3_ZAxis, (D3VECTOR *)&dir);
     drop = (float)fabs(to[1] - from[1]) * ai_MeterPerInch;
     horiz = ai_MeterPerInch * horiz;
-    sign = 0;
     if (from[1] > to[1])
         sign = 1;
     else if (from[1] < to[1])
         sign = -1;
-    speed = range[0];
     ang = range[3];
-    inv = 1.0f / g;
+    speed = range[0];
     for (i = 0; i < 16; i++) {
         s = (float)sin(ang);
         c = (float)cos(ang);
         h = s * s * speed * speed / (g * 2.0f);
-        t = inv * s * speed;
+        t = 1.0f / g * s * speed;
         if (sign == 1) {
             h = h + drop;
-            t = (float)sqrt((h * inv + h * inv)) + t;
+            t = (float)sqrt((h * (1.0f / g) + h * (1.0f / g))) + t;
         } else if (sign == -1) {
             h = h - drop;
-            t = (float)sqrt((h * inv + h * inv)) + t;
+            t = (float)sqrt((h * (1.0f / g) + h * (1.0f / g))) + t;
         }
         err = t * c * speed - horiz;
         if (err > 2.5f) {
