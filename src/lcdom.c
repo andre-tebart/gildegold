@@ -5848,20 +5848,23 @@ void ai_PamphletWindow(int bld)
    empty rows. A clicked button tears that pamphlet down for 2 money: the event's end is set to now
    (cm_SendExSetHE, waiting for its slot) and on success the 2 go off (gm_SendMoneyDelta); a right click closes
    the window. The camera follows
-   @deep Reconstructed whole against the original 0x5b5690..0x5b5a0f (the window misc\pamphlet_brett, text
-   0x1912, the half-second refresh d3_Time+500, the pamphlet events 0x35 with stage > -1 and
-   gm_FindChar(idbc), the forms 2n-1 / 2n with 0x1913 (0x1916 + AIJOB.pamphletVariant at 0xc1) and the
-   button 0x1914, d2_EnableObject of d2_Wins[d2_Views[win].wins[2n-1]].parent, the fill of the empty rows
-   up to n < 5, the click search over ctl[4], he_FindEvent(1,1,evId), sv_CheckMoney 2, end = ai_Time,
-   cm_SendExSetHE(-1, ev) with the slot wait, gm_SendMoneyDelta -2, the sv_CameraFollow tail call); every
-   call, constant and reference equals the original. Left is allocation: the original caches -1 in ebx
-   through the function (or ebx,-1; the eight memset stores of ctl/evIds, d2_ClickedId = ebx, cmp
-   [d2_ClickedId], ebx, push ebx to cm_SendExSetHE, cmp edi, ebx) where ours materializes -1 at each use
-   (or ecx/edx,-1; mov [d2_ClickedId], 0xffffffff; push -1); and the row loop's induction variables: the
-   original keeps the row index as a byte offset in ebx (cmp ebx,0x10; [esp+ebx+0x54] / [esp+ebx+0x64]),
-   the form 2n in edi and n in a stack slot (frame 0x2c), ours keeps n in edi (cmp edi,5; [esp+edi*4+0x4c])
-   and the form in ebx (frame 0x28), which the proof reads as different branch conditions (+0xdb / +0xd5).
-   Tried a separate row index i (ctl[i], i < 4) beside n: VC6 merges it into n, the same code */
+   @deep size queue s17 (102 -> 59 ins, raw 889 -> 912 vs 900: padded size, frame 0x2c as the original):
+   the row loop keeps n (the form 2n-1 / 2n, the loop bound n < 5) and its own row index i for ctl[i] /
+   evIds[i] (VC6 strength-reduces i to the byte offset ebx and keeps n in memory as the original); i with
+   the bound i < 4 = control (merged into n), i < 4 && ev first 109. Left: the original caches -1 in ebx
+   (or ebx,-1; the memsets' eight stores, d2_ClickedId = ebx, the compares, push ebx to cm_SendExSetHEI,
+   re-made after the fill loop) where ours materializes it per use: c2trace const#0#1 (10 refs, lines
+   5879-5928) prio -236, cut where ev#1 takes ebp. memset(.., -1, ..) at either site = control; climb round
+   1: refresh = d3_Time + 500 between the two memsets 55 ins (not kept, order only). prior: Reconstructed
+   whole against the original 0x5b5690..0x5b5a0f (the window misc\pamphlet_brett, text 0x1912, the
+   half-second refresh d3_Time+500, the pamphlet events 0x35 with stage > -1 and gm_FindChar(idbc), the
+   forms 2n-1 / 2n with 0x1913 (0x1916 + AIJOB.pamphletVariant at 0xc1) and the button 0x1914,
+   d2_EnableObject of d2_Wins[d2_Views[win].wins[2n-1]].parent, the fill of the empty rows up to n < 5, the
+   click search over ctl[4], he_FindEvent(1,1,evId), sv_CheckMoney 2, end = ai_Time, cm_SendExSetHE(-1, ev)
+   with the slot wait, gm_SendMoneyDelta -2, the sv_CameraFollow tail call); every call, constant and
+   reference equals the original. Left is allocation: the original caches -1 in ebx through the function
+   (or ebx,-1; the eight memset stores of ctl/evIds, d2_ClickedId = ebx, cmp [d2_ClickedId], ebx, push ebx
+   to cm_SendExSetHE, cmp edi, ebx) where ours materializes -1 at each use (or ecx/ed... */
 
 void ai_NoticeBoardWindow(void)
 {
@@ -5890,6 +5893,7 @@ void ai_NoticeBoardWindow(void)
             memset(evIds, 0xff, sizeof(evIds));
             refresh = d3_Time + 500;
             n = 1;
+            i = 0;
             for (ev = (AIJOB *)he_FindEvent(1, 0, 0x35); ev != 0 && n < 5; ev = (AIJOB *)he_NextEvent()) {
                 if (ev->stage > -1) {
                     ch = (AICHARREC *)gm_FindChar(ev->idbc);
@@ -5899,10 +5903,11 @@ void ai_NoticeBoardWindow(void)
                         io_PrintText(0x1913, 0x1916 + ev->pamphletVariant, ch->id);
                         d2_SetForm(win, n * 2);
                         io_PrintText("$C");
-                        ctl[n - 1] = d2_GetWinObj(win, n * 2, io_PrintText(0x1914, 2));
-                        evIds[n - 1] = ev->id;
+                        ctl[i] = d2_GetWinObj(win, n * 2, io_PrintText(0x1914, 2));
+                        evIds[i] = ev->id;
                         d2_EnableObject(d2_Wins[d2_Views[win].wins[n * 2 - 1]].parent, 1);
                         n++;
+                        i++;
                     }
                 }
             }
