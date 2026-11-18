@@ -4419,15 +4419,7 @@ int he_RegisterEventTypes88(void)
 }
 /* 0x56fbc0, ages the character c's life value f01c by num years: fnum not above f020 -> sends the delta
    f018 - f01c; else (int)(fnum - f020) steps of v = v - f014 + f014 / v from v = f018, then the delta
-   v - f01c (cm_SendFloatDelta, field 0x1c)
-   @deep size queue: padded size right (129 = original raw) with the parenthesised (c->f020) in the compare
-   (rank lever: fld f020; fld st(1); fcompp, 10 ins), not the original's form. Left: the original keeps
-   fnum in memory (num's dead slot: fst [esp+0xc]; fcomp f020; reloaded by fld for v = fnum - f020); ours
-   holds it on the x87 stack (c2fpu: fnum prio 1 / sav 1 -> stack; the original needs savings <= 0). s3
-   tried: the conversion as a CSE without fnum, (ushort)num compared directly, v as the fnum carrier
-   (draft), if/else and if (c) {..} forms, > with swapped arms, c->f020 >= fnum, !(fnum > f020), double
-   compare, f = c->f014 before the test, fnum initialised at its declaration, v assigned inside the ftol,
-   while (n-- > 0): none puts fnum in memory. */
+   v - f01c (cm_SendFloatDelta, field 0x1c) */
 
 void he_SetLifeByAge(AICHAR *c, int num)
 {
@@ -4444,7 +4436,7 @@ void he_SetLifeByAge(AICHAR *c, int num)
     v = c->f018;
     f = c->f014;
     for (n = (int)(fnum - c->f020); n > 0; n--)
-        v = v - f + f / v;
+        v = v - f + (f / v);
     ((int (*)(int, int, float))cm_SendFloatDelta)(c->netId, 0x1c, v - c->f01c);
 }
 /* 0x56fc50, the alloc of the event 0x88 (a work at the building +0xb0 of the player +8): paused -> nothing; with a running event 0x88 of the same player and building the text 0x4096 and state -1; else the due clock now + 1 hour and state 0 (0x4c4c60), or -1 when +0xb4 is -1, and the message 0x50cc50 (pid, -(+0xb8)) */
