@@ -2058,10 +2058,10 @@ exe	0x004bbe70	anm_CreateCow	anm	byte	readable
 exe	0x004bbf00	anm_CreateAnimal	anm	byte	readable		
 exe	0x004bc030	anm_UpdateCat	anm	byte	readable		
 exe	0x004bc1a0	anm_UpdateSheep	anm	byte	readable		
-exe	0x004bc2e0	rd_DoorPos	rd	byte	readable		
-exe	0x004bc390	rd_PointsNear	rd	byte	readable		
-exe	0x004bc4b0	rd_CollectNamed	rd	byte	readable		
-exe	0x004bc520	rd_RandomNamedObject	rd	byte	readable		
+exe	0x004bc2e0	rd_DoorPos	anm	byte	readable		
+exe	0x004bc390	rd_PointsNear	anm	byte	readable		
+exe	0x004bc4b0	rd_CollectNamed	anm	byte	readable		
+exe	0x004bc520	rd_RandomNamedObject	anm	byte	readable		
 exe	0x004bc5a0	veg_FindType	rd	byte	readable		
 exe	0x004bc5f0	veg_FindPlantAt	rd	byte	readable		
 exe	0x004bc640	veg_FindPlantObject	rd	byte	readable		
@@ -2121,7 +2121,7 @@ exe	0x004c18a0	snd_EnterBuilding	f3snd	byte	readable
 exe	0x004c1bd0	snd_PlayOutdoorTrack	f3snd	byte	readable		
 exe	0x004c1f90	snd_FindActiveTrack	f3snd	byte	readable		
 exe	0x004c1fc0	snd_FindTrackKind	f3snd	byte	readable		
-exe	0x004c2000	snd_UpdateMusic	f3snd	shape	readable	deep	
+exe	0x004c2000	snd_UpdateMusic	f3snd	byte	readable		
 exe	0x004c23f0	snd_PlaySpecialTrack	f3snd	byte	readable		
 exe	0x004c2480	snd_EndSpecialTrack	f3snd	byte	readable		
 exe	0x004c24c0	snd_FadeMusic	f3snd	byte	readable		
@@ -2608,13 +2608,13 @@ exe	0x004e53e0	cm_DialogTimer	cm	byte	readable
 exe	0x004e5470	cm_MessageBox	cm	draft	readable	deep	
 exe	0x004e5730	cm_RegisterSceneKind	cm	byte	readable		
 exe	0x004e5770	cm_InitScenes	cm	byte	readable		
-exe	0x004e58e0	ai_DumpPersonHead	cm	shape	readable		
-exe	0x004e5980	ai_DumpPersonStats	cm	byte	readable		
-exe	0x004e5a40	ai_DumpPersonSkills	cm	byte	readable		
-exe	0x004e5a90	ai_DumpPersonOffices	cm	byte	readable		
-exe	0x004e5af0	ai_DumpPersonMoney	cm	byte	readable		
-exe	0x004e5b50	ai_DumpPersonRelatives	cm	byte	readable		
-exe	0x004e5bf0	ai_DebugDumpPerson	cm	byte	readable		
+exe	0x004e58e0	ai_DumpPersonHead	cmdump	shape	readable		
+exe	0x004e5980	ai_DumpPersonStats	cmdump	byte	readable		
+exe	0x004e5a40	ai_DumpPersonSkills	cmdump	byte	readable		
+exe	0x004e5a90	ai_DumpPersonOffices	cmdump	byte	readable		
+exe	0x004e5af0	ai_DumpPersonMoney	cmdump	byte	readable		
+exe	0x004e5b50	ai_DumpPersonRelatives	cmdump	byte	readable		
+exe	0x004e5bf0	ai_DebugDumpPerson	cmdump	byte	readable		
 exe	0x004e5cd0	amt_InitTable	amt	byte	readable		
 exe	0x004e5e50	amt_Rating	amt	draft	readable	deep	
 exe	0x004e6030	amt_FindOffice	amt	shape	readable	deep	
@@ -3230,7 +3230,7 @@ exe	0x005128d0	init_SetSeasonTextures	f3init	byte	readable
 exe	0x00512de0	init_PlantTextureSetHook	f3init	byte	readable		
 exe	0x00512e40	init_TextureSetHook	f3init	byte	readable		
 exe	0x00512e80	init_BuildingTextureSetHook	f3init	byte	readable		
-exe	0x00512f30	init_SetCharacterAnimations	f3init	shape	readable	deep	
+exe	0x00512f30	init_SetCharacterAnimations	f3init	byte	readable		
 exe	0x00513050	init_ShowBuildingScene	f3init	byte	readable		
 exe	0x00513400	init_FinishBuildingScene	f3init	byte	readable		
 exe	0x00513590	init_SetDetailLevel	f3init	draft	readable	deep	
@@ -3270,7 +3270,7 @@ exe	0x0051c560	ls_WriteMessageQueues	ls	byte	readable
 exe	0x0051c870	ls_WriteEnvironment	ls	byte	readable		
 exe	0x0051c920	ls_Read	ls	byte	readable		
 exe	0x0051c950	ls_LoadGame	ls	byte	readable		
-exe	0x0051cee0	ls_ReadSaveHeader	ls	byte	readable		
+exe	0x0051cee0	ls_ReadSaveHeader	ls	shape	readable		
 exe	0x0051d2d0	ls_LoadScene	ls	byte	readable		
 exe	0x0051d3d0	ls_ReadObjects	ls	byte	readable		
 exe	0x0051d4f0	ls_HookBuildingCB	ls	byte	readable		
@@ -3476,7 +3476,7 @@ exe	0x00537f40	main_EndGame	main	byte	readable
 exe	0x00538140	main_RundenBeginn	main	byte	readable		
 exe	0x005384e0	main_EndRound	main	byte	readable		
 exe	0x00539620	main_ReplaceFigure	main	byte	readable		
-exe	0x00539870	main_RoundReport	main	shape	readable		
+exe	0x00539870	main_RoundReport	main	byte	readable		
 exe	0x0053a250	main_UpdateFigure	main	shape	readable		
 exe	0x0053a450	main_UpdateFigures	main	byte	readable		
 exe	0x0053a520	main_SettleRound	main	byte	readable		
@@ -4003,8 +4003,8 @@ exe	0x00578370	ai_TutorialStop	sv_t	byte	readable
 exe	0x00578440	ai_TutorialFreeRuns	sv_t	byte	readable		
 exe	0x005784a0	ai_TutorialInitMainIntro	sv_t	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	sv_t	byte	readable		
-exe	0x00578e40	ai_TutorialInitChapter2	sv_t	byte	readable		
-exe	0x00579570	ai_TutorialInitChapter3	sv_t	shape	readable		
+exe	0x00578e40	ai_TutorialInitChapter2	sv_t	shape	readable		
+exe	0x00579570	ai_TutorialInitChapter3	sv_t	draft	readable		
 exe	0x0057aa80	ai_TutorialInitChapter4	sv_t	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	sv_t	byte	readable		
 exe	0x0057b750	ai_TutorialInitMainOutro	sv_t	byte	readable		
@@ -4089,26 +4089,26 @@ exe	0x00587b70	ai_PermissionBits1d	svgrave	byte	readable
 exe	0x00587c40	ai_EndCharExtra	svgrave	byte	readable		
 exe	0x00587c90	ai_GraveyardChatter	svgrave	byte	readable		
 exe	0x00587de0	ai_ClearTurnTable	svgrave	byte	readable		
-exe	0x00587e00	ai_HandleItemDrag	svgrave	byte	readable		
-exe	0x00588160	ai_OpenBuildingTooltip	svgrave	byte	readable		
-exe	0x00588310	ai_OpenItemTooltip	svgrave	draft	readable	deep	
-exe	0x00588950	ai_OpenUpgradeTooltip	svgrave	shape	readable		
-exe	0x00588bb0	ai_OpenHelpTooltip	svgrave	byte	readable		
-exe	0x00588c60	ai_OpenCharTooltip	svgrave	byte	readable		
-exe	0x005890c0	ai_CharInfoWindow	svgrave	byte	readable		
-exe	0x00589400	ai_ClearBookmark	svgrave	byte	readable		
-exe	0x00589410	ai_InitBookmarks	svgrave	byte	readable		
-exe	0x00589450	ai_ValidateBookmarks	svgrave	byte	readable		
-exe	0x005894d0	ai_SelectBookmark	svgrave	byte	readable		
-exe	0x00589570	ai_SetBookmark	svgrave	byte	readable		
-exe	0x00589670	ai_BookmarkWindow	svgrave	shape	readable		
-exe	0x00589aa0	ai_SaveBookmarks	svgrave	byte	readable		
-exe	0x00589b30	ai_LoadBookmarks	svgrave	byte	readable		
-exe	0x00589bc0	ai_SaveScreenshot	svgrave	byte	readable		
-exe	0x00589c90	ai_SlotKeys	svgrave	byte	readable		
-exe	0x00589cf0	ai_SpeedKeys	svgrave	byte	readable		
-exe	0x00589e00	ai_BookmarkSetBuilding	svgrave	byte	readable		
-exe	0x00589e50	ai_BookmarksPreset	svgrave	byte	readable		
+exe	0x00587e00	ai_HandleItemDrag	svtip	byte	readable		
+exe	0x00588160	ai_OpenBuildingTooltip	svtip	byte	readable		
+exe	0x00588310	ai_OpenItemTooltip	svtip	draft	readable	deep	
+exe	0x00588950	ai_OpenUpgradeTooltip	svtip	shape	readable		
+exe	0x00588bb0	ai_OpenHelpTooltip	svtip	byte	readable		
+exe	0x00588c60	ai_OpenCharTooltip	svtip	byte	readable		
+exe	0x005890c0	ai_CharInfoWindow	svtip	byte	readable		
+exe	0x00589400	ai_ClearBookmark	svtip	byte	readable		
+exe	0x00589410	ai_InitBookmarks	svtip	byte	readable		
+exe	0x00589450	ai_ValidateBookmarks	svtip	byte	readable		
+exe	0x005894d0	ai_SelectBookmark	svtip	byte	readable		
+exe	0x00589570	ai_SetBookmark	svtip	byte	readable		
+exe	0x00589670	ai_BookmarkWindow	svtip	shape	readable		
+exe	0x00589aa0	ai_SaveBookmarks	svtip	byte	readable		
+exe	0x00589b30	ai_LoadBookmarks	svtip	byte	readable		
+exe	0x00589bc0	ai_SaveScreenshot	svtip	byte	readable		
+exe	0x00589c90	ai_SlotKeys	svtip	byte	readable		
+exe	0x00589cf0	ai_SpeedKeys	svtip	byte	readable		
+exe	0x00589e00	ai_BookmarkSetBuilding	svtip	byte	readable		
+exe	0x00589e50	ai_BookmarksPreset	svtip	byte	readable		
 exe	0x00589f10	lobby_Screen	lobby	byte	readable		
 exe	0x0058a940	lobby_AddButtons	lobby	byte	readable		
 exe	0x0058a9d0	lobby_AddChatScroll	lobby	byte	readable		
@@ -4279,7 +4279,7 @@ exe	0x005a3df0	ai_DungeonBribeListener	lc	byte	readable
 exe	0x005a3ef0	ai_DungeonEmptyListener	lc	byte	readable		
 exe	0x005a3f10	ai_BurglaryWindow	lc	byte	readable		
 exe	0x005a4130	ai_BurglaryStart	lc	shape	readable		
-exe	0x005a41d0	ai_GuildSpyWindow	lc	draft	readable	deep	
+exe	0x005a41d0	ai_GuildSpyWindow	lc	byte	readable		
 exe	0x005a44e0	ai_EspionageStart	lc	byte	readable		
 exe	0x005a45c0	ai_SpyReportsWindow	lc	byte	readable		
 exe	0x005a48d0	ai_AttackWindow	lc	byte	readable		
@@ -4412,7 +4412,7 @@ exe	0x005b5690	ai_NoticeBoardWindow	lcdom	draft	readable	deep
 exe	0x005b5a20	ai_BardWindow	lcdom	byte	readable		
 exe	0x005b5e80	ai_FeastWindow	lcdom	draft	readable	deep	
 exe	0x005b6950	ai_SellBuildingWindow	lcdom	byte	readable		
-exe	0x005b6b20	ai_RenovationWindow	lcdom	draft	readable	deep	
+exe	0x005b6b20	ai_RenovationWindow	lcdom	byte	readable		
 exe	0x005b6eb0	ai_WithdrawSaleWindow	lcdom	byte	readable		
 exe	0x005b6fe0	ai_RoomUpgradeWindow	lcdom	draft	readable	deep	
 exe	0x005b7690	ai_UpgradeBuilding	lcdom	draft	readable	deep	
@@ -4642,12 +4642,12 @@ exe	0x005d9a80	ai_GypsyContact	menu	byte	readable
 exe	0x005d9b20	ai_CurseContact	menu	byte	readable		
 exe	0x005d9b90	ai_TheatreContact	menu	byte	readable		
 exe	0x005d9c30	ai_GypsyProductionContact	menu	byte	readable		
-exe	0x005d9de0	ai_OpenPokerWindow	menu	byte	readable		
-exe	0x005d9f50	ai_PokerBetControl	menu	byte	readable		
-exe	0x005da010	ai_ClosePokerWindow	menu	byte	readable		
-exe	0x005da030	ai_PokerGame	menu	byte	readable		
-exe	0x005dadf0	ai_PokerSeatPanel	menu	byte	readable		
-exe	0x005db110	ai_PokerWindow2	menu	byte	readable		
+exe	0x005d9de0	ai_OpenPokerWindow	pokerwin	byte	readable		
+exe	0x005d9f50	ai_PokerBetControl	pokerwin	byte	readable		
+exe	0x005da010	ai_ClosePokerWindow	pokerwin	byte	readable		
+exe	0x005da030	ai_PokerGame	pokerwin	byte	readable		
+exe	0x005dadf0	ai_PokerSeatPanel	pokerwin	byte	readable		
+exe	0x005db110	ai_PokerWindow2	pokerwin	byte	readable		
 exe	0x005dbc10	ai_GetDefaultEffect	shot	byte	readable		
 exe	0x005dbc20	ai_GetDefaultEffectScale	shot	byte	readable		
 exe	0x005dbc30	ai_InitWind	shot	byte	readable		
