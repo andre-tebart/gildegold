@@ -6236,11 +6236,10 @@ float gm_JobWage(char *c, int k, int a, int b)
 
     f = 0.0f;
     p = ai_BTypes + k * 0x24d;
-    if (a == -1) {
-        if (b != -1)
-            f = (unsigned char)p[0x233 + b] * 0x380;
-    } else
+    if (a != -1)
         f = (unsigned char)p[0x229 + a] * 0x380;
+    else if (b != -1)
+        f = (unsigned char)p[0x233 + b] * 0x380;
     if (c[2] == 6 || c[2] == 7)
         f = (1.0 - (2 - ai_Difficulty) * 0.25) * f;
     return f;
