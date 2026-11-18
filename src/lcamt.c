@@ -563,7 +563,6 @@ extern unsigned gm_OwnNameHeads[136];
 extern GAPDATA full_data_5fe7d0[];
 extern char ai_PlayerSlots[4][0x2f4];
 
-extern char cm_TextNewline[4];
 extern int d2_ClickedId;
 extern int d2_LastWindow;
 extern struct D2OBJ *d2_Objs;
@@ -6470,12 +6469,12 @@ void ai_PrivilegesPanel(void)
                     answers[i] = v;
                     if (v == page) {
                         if (rows != 0)
-                            io_PrintText(cm_TextNewline);
+                            io_PrintText("$A");
                         ids[i] = d2_GetWinObj(win, 2, io_PrintText(fmt, msg.text));
                         rows++;
                     } else if (page == 2 && v == 9) {
                         if (rows != 0)
-                            io_PrintText(cm_TextNewline);
+                            io_PrintText("$A");
                         k = d2_GetWinObj(win, 2, io_PrintText(fmt, msg.text));
                         ids[i] = -1;
                         d2_Objs[k].clickDisabled = 1;

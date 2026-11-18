@@ -3720,7 +3720,7 @@ int ai_OpenCharTooltip(char *ch)
                 rank = (c->flags1cc & 0x200) ? 0x23 : 0;
             io_PrintText(0x2d);
             io_PrintText("$3>%s$A", (c->sex ? 0x27b : 0x253) + rank);
-            io_PrintText(cm_TextNewline);
+            io_PrintText("$A");
         } else {
             io_PrintText(0x2c, (c->sex ? 0x18f : 0x130) + c->jobId, gm_TitlesLeft(c->jobId));
         }

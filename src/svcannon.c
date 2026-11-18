@@ -1044,7 +1044,7 @@ int ai_CannonFireCheck(CANNONSCENE *sc)
    of the three ai_ShotTable records whose id is its index is printed (ai_ShotDirty set): each entry's building
    (gm_FindById of e[i].obj, the list ends at a missing one) as the text 0x406c (no owner or the player's) or 0x406d
    (with its owner), the hit 0x4071 / 0x4073 (e[i].a == 1, more than 25 away) / 0x4072 (within 25); "$C" starts the
-   text, cm_TextNewline separates the entries. A record with entries, or with none while ai_ShotDirty is still set
+   text, "$A" separates the entries. A record with entries, or with none while ai_ShotDirty is still set
    (then the text 0x406e), is consumed (id = -1, ai_ShotDirty = 0) and shows the view; without any the view is
    hidden and ai_ShotDirty cleared */
 
@@ -1073,7 +1073,7 @@ void ai_CannonShotResults(CANNONSCENE *sc)
                     if (ai_ShotTable[rec].e[i].a == 1)
                         v = ai_ShotTable[rec].e[i].bf > 25.0f ? 0x4073 : 0x4072;
                     if (i != 0)
-                        io_PrintText(cm_TextNewline);
+                        io_PrintText("$A");
                     else
                         io_PrintText("$C");
                     w = bld->owner;

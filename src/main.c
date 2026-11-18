@@ -2734,7 +2734,7 @@ int main_ChooseCity(int unused, int host)
                             if (k != -1) {
                                 d2_SetForm(f2, 1);
                                 io_PrintText(k);
-                                io_PrintText(cm_TextNewline);
+                                io_PrintText("$A");
                                 io_PrintText(k + 1);
                             }
                             d3if_Show(sel, 0);

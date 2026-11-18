@@ -401,7 +401,6 @@ void gm_SelectModelVariant(char *o);  /* 0x4fb5a0, f3gm.c: the model variant of 
 int gm_PlaceOnStage(int id, int a, int b, int *p4, int *p5);  /* 0x4fbd10 */
 int gm_FindObjectInst(int id);  /* 0x4fe980 */
 int gm_RemoveOwned(int *list, int id);  /* 0x5000c0, f3gm.h */
-extern char cm_WalkToDummyWhy[20];  /* 0x60c4a0 */
 extern int veg_NextId;  /* 0x6f0748 */
 extern char *ai_BTypes;  /* 0x7e3f30 */
 #ifndef DATA_VIEWS_H
@@ -1048,7 +1047,6 @@ void d3fl_SetShift(struct D3FLMAP *map, unsigned char shift, char light);  /* 0x
 void d3if_Prerender(char map);  /* 0x447860 */
 
 extern int cm_PartyTurn;  /* 0x6f0d78 */
-extern char cm_TextNewline[];  /* 0x60c6c0 */
 
 
 void cm_ExecCutscene(char *m);  /* 0x4e4060, runs the scene party m */
