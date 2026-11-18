@@ -149,9 +149,6 @@ extern int ai_DragStartX;               /* 0x6f26b4, the mouse position the drag
 extern int ai_DragStartY;               /* 0x6f26b8 */
 extern int ai_Dragging;                 /* 0x6f26bc, 1 while the town map is dragged */
 extern int *ai_PlacementSites;          /* 0x6f26b0, the candidate site list of the running building placement (the map window marks each entry) */
-extern char ai_CourtshipForm[24];       /* 0x62d40c, the form of the courtship (advertising) confirm window "privillegien\werbung2" (ai_CourtshipConfirm) */
-extern char ai_WorkerDismissalForm[32];  /* 0x62d5dc, the form of the worker dismissal window "privillegien\arbeiter_ausweisen" (ai_WorkerDismissalWindow) */
-extern char ai_MiracleForm[20];  /* 0x62d64c, the form of the miracle order's window "privillegien\wunder" (ai_MiracleWindow) */
 /* The production settings chain (0x6f26c0, the head ai_Settings): one 0x4c-byte record per building, the seed at +4,
    the rotation byte at +8, seven {good, weight, lock} slots at +0xc (stride 8) and the factor at +0x44 */
 typedef struct G8SLOT {                 /* one slot of a setting (stride 8) */

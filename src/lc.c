@@ -704,7 +704,6 @@ extern struct D2PIC *d2_Pics;
 extern int sv_FrameMask;
 extern char ai_Chars[768][0x21c];
 extern GAPDATA full_data_60d224[];
-extern char ai_UseObjForm[];
 extern unsigned char ai_OwnPlayer;
 extern char * cm_FieldObject;
 extern signed char ai_Relations[768][768];
@@ -13961,8 +13960,6 @@ typedef struct AIAMOUNTTAB {            /* 0x14 bytes, one tab of the special-am
     int (*show)(int view, int page, int scrollPage, unsigned int n, LCAMOUNTROW *rows);
 } AIAMOUNTTAB;
 extern AIAMOUNTTAB ai_AmountTabs[];     /* 0x62d148, the eight tabs */
-extern char ai_AmountInfoFmt[16];
-extern char ai_AmountInfoForm[16];
 int gv_TableRecordText();
 int gm_IsUnderAge(unsigned short id); int ai_WorksForMaster();
 typedef struct LCPICKROW {         /* 0x20 bytes, one character row of ai_PickBuildingChar */

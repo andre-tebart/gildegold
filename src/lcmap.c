@@ -595,7 +595,6 @@ extern struct D2PIC *d2_Pics;
 extern int sv_FrameMask;
 extern char ai_Chars[768][0x21c];
 extern GAPDATA full_data_60d224[];
-extern char ai_UseObjForm[];
 extern unsigned char ai_OwnPlayer;
 extern char * cm_FieldObject;
 extern signed char ai_Relations[768][768];

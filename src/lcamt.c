@@ -597,7 +597,6 @@ extern struct D2PIC *d2_Pics;
 extern int sv_FrameMask;
 extern char ai_Chars[768][0x21c];
 extern GAPDATA full_data_60d224[];
-extern char ai_UseObjForm[];
 extern unsigned char ai_OwnPlayer;
 extern char * cm_FieldObject;
 extern signed char ai_Relations[768][768];
@@ -3473,9 +3472,7 @@ void ai_AmountListWindow(int kind)
     } while (sv_RunFrame(ai_AmountListWindow, 0x657c7) != 0);
     d2_CloseView(win);
 }
-extern char ai_AmountInfoFmt[16];
-extern char ai_AmountInfoForm[16];
-/* 0x5c1a80, the info box of an amount kind (the form "special\amtinfo"): the caption ai_AmountInfoFmt over
+/* 0x5c1a80, the info box of an amount kind (the form "special\amtinfo"): the caption "$Z$[ %s $]$A$Z" over
    the kind's name text (0x253 + kind), the two texts 2 * kind + 0x134b / 0x134c, then the frame pump
    (0x5309a0, this, 0x657c7) with dm_L.rup ending it; closes the view. Both callers also pass a character
    (the row's holder, or 0), which the box does not read */
@@ -3485,10 +3482,10 @@ void ai_AmountInfoWindow(int kind, AICHARREC *ch)
     int win;
 
     (void)ch;
-    win = d2_OpenForm(0, 0, ai_AmountInfoForm);
+    win = d2_OpenForm(0, 0, "special\\amtinfo");
     d2_CentreViewWindows(win);
     d2_SetForm(win, 2);
-    io_PrintText(ai_AmountInfoFmt, kind + 0x253);
+    io_PrintText("$Z$[ %s $]$A$Z", kind + 0x253);
     d2_SetForm(win, 1);
     io_PrintText(kind * 2 + 0x134b);
     io_PrintText(kind * 2 + 0x134c);
@@ -5614,7 +5611,7 @@ int cm_GetSlotState();
 
 /* 0x5c6910, the confirm dialog of the courtship (advertising) list 0x5c6aa0: the rating 0x5c6620 of the own
    character (ai_CharInts[ai_PlayerId][0]) and the partner ch->netId; the window "privillegien\werbung2"
-   ai_CourtshipForm with the text 0x1ce5 (ch->id, the rating); the frame loop 0x5309a0 (this, 0x657c7): a click 0
+   "privillegien\werbung2" with the text 0x1ce5 (ch->id, the rating); the frame loop 0x5309a0 (this, 0x657c7): a click 0
    sends the marriage proposal message 0x41 (the own netId as to / fromId / arg[0], the partner's as arg[1], the
    clock, flags 2) through 0x4c4b70 and waits for its slot (0x4c3ae0 / 0x52fe00), the result 1; click 1 only
    pops; the exit 0x4758f0, d2_ClickedId = -1 and di_ClearEvents(0x11)
@@ -5640,7 +5637,7 @@ int ai_CourtshipConfirm(AICHARREC *ch)
     int slot;
 
     v = ai_CourtshipRounds(ai_CharInts[ai_PlayerId][0], ch->netId);
-    win = d2_OpenForm(0, 0, ai_CourtshipForm);
+    win = d2_OpenForm(0, 0, "privillegien\\werbung2");
     d2_CentreViewWindows(win);
     d2_SetForm(win, 1);
     io_PrintText(0x1ce5, ch->id, v);
@@ -5760,7 +5757,7 @@ int ai_CourtshipListWindow(G8CHARREC *ch, LCORDMSG *m)
    message. ch's courtship event 0x41 (he_FindEvent, AIJOB.partner1 = ch) gives the state: none 1, running 2, done
    (pairDone) 3, a round to pay (pairDrawn) 4. A character that is no player (kind != 6) without a courtship posts
    the courtship message 0x41 for m->target when that character exists and lives (returns 0x10); else it returns 0x20.
-   A player without one gets the candidate list (ai_CourtshipListWindow); else the window ai_CourtshipForm: the
+   A player without one gets the candidate list (ai_CourtshipListWindow); else the window "privillegien\werbung2": the
    caption 0x1cf3 and 0x1ce7 (ch, the partner, the rounds left) while it runs, 0x1ce3 / 0x1d31 (the partner) once done,
    and in a round to pay 0x1cf4 (the partner, the rounds left) and the three gift buttons 0x1cf5 .. 0x1cf7 (the gift
    text 0x1d11 + pairPick, pairPrice) with the close button 0x1cf8. A gift the player can pay counts gain rounds,
@@ -5837,7 +5834,7 @@ int ai_CourtshipWindow(AICHARREC *ch, LCORDMSG *m)
     }
     if (state == 1)
         return ai_CourtshipListWindow((G8CHARREC *)ch, m);
-    win = d2_OpenForm(0, 0, ai_CourtshipForm);
+    win = d2_OpenForm(0, 0, "privillegien\\werbung2");
     d2_CentreViewWindows(win);
     d2_SetPointerSprite(0, 0);
     d2_SetForm(win, 1);
@@ -8040,7 +8037,7 @@ int ai_ExpelWorkerWindow(AICHARREC *me, LCORDMSG *m)
     if (bld->owner == 0xffff)
         return 0;
     owner = &((AICHARREC *)ai_Chars)[bld->owner];
-    win = d2_OpenForm(0, 0, ai_WorkerDismissalForm);
+    win = d2_OpenForm(0, 0, "privillegien\\arbeiter_ausweisen");
     d2_SetPointerSprite(0, 0);
     d2_CentreViewWindows(win);
     d2_SetForm(win, 1);
@@ -8550,7 +8547,7 @@ void ai_Miracle(AICHARREC *me, int which)
 /* 0x5cd2e0, the miracle order's ask (ord_MiracleOrder; 282 B): the character ch (its kind 6 / 7 at +2, its netId
    at +4, its money at +0x194). A kind 7 character returns 0; another kind: money < 4 returns 0x20, else the
    payment 0x4c5f60 (-4) and a random miracle ai_Miracle (the character, 0x42ec00 (6) & 0xffff), return 0x10.
-   Kind 6: the window ai_MiracleForm, 0x476f80 / 0x475600 / 0x475f70 with the caption 0x515960
+   Kind 6: the window "privillegien\wunder", 0x476f80 / 0x475600 / 0x475f70 with the caption 0x515960
    (0x1df6, 4); click 0 (0x520f90 (4)) pays 0x4c5f60 (-4) and runs ai_Miracle (0x42ec00 (6) & 0xffff), return 1;
    click 1 sets 0x6f22a0; the pump 0x5309a0 (this, 0x657c7) and the end 0x4758f0. The second argument m is not
    read
@@ -8583,7 +8580,7 @@ int ai_MiracleWindow(void *chp, int *m)
         return 0;
     }
     ret = 0;
-    win = d2_OpenForm(0, 0, ai_MiracleForm);
+    win = d2_OpenForm(0, 0, "privillegien\\wunder");
     d2_SetPointerSprite(0, 0);
     d2_CentreViewWindows(win);
     d2_SetForm(win, 1);
@@ -9165,7 +9162,7 @@ int ai_InterrogationWindow(AICHARREC *me, LCORDMSG *m)
 }
 /* 0x5ce7f0, the worker dismissal window "privillegien_arbeiter_ausweisen" (352 B): the character ch, kinds
    6 / 7 only; its office (the byte +0x166) through amt_GetFirstOffice (the list out[0]); the window
-   ai_WorkerDismissalForm with the text 0x1e24 ((ch->sex != 0 ? 0x27b : 0x253) + the office) and the
+   "privillegien\arbeiter_ausweisen" with the text 0x1e24 ((ch->sex != 0 ? 0x27b : 0x253) + the office) and the
    button 0x1e25 / d2_GetWinObj; click 0 -> amt_SendOfficeMessage (out[0], 0, 0, the hour > 0xd ? 0xff : 3, 0xff)
    and 0x90; click 1 closes; the pump 0x5309a0 (0x657c7) and the exit 0x4758f0. The return is 0x22 when nothing
    was clicked, 0x20 for another kind, 0x40 when the office has no list. The second argument m is not read */
@@ -9188,7 +9185,7 @@ int ai_WorkerDismissalWindow(void *chp, int *m)
     i = amt_GetFirstOffice(ch->officeKind, out);
     if (i == 0)
         return 0x40;
-    win = d2_OpenForm(0, 0, ai_WorkerDismissalForm);
+    win = d2_OpenForm(0, 0, "privillegien\\arbeiter_ausweisen");
     d2_SetPointerSprite(0, 0);
     d2_CentreViewWindows(win);
     d2_SetForm(win, 1);
@@ -9606,7 +9603,7 @@ void ai_UseObjPanel(char *text)
 {
     int win;
 
-    win = d2_OpenForm(0, 0, ai_UseObjForm);
+    win = d2_OpenForm(0, 0, "panel\\useobj");
     d2_CentreViewWindows(win);
     d2_SetForm(win, 1);
     io_PrintText("%s", text);
@@ -11513,11 +11510,6 @@ AIAMOUNTTAB ai_AmountTabs[8] = {       /* 0x62d148, one table: 8 rows of 0x14 {i
     { 6, 0, -1, ai_FillCandidacyTab, ai_ShowCandidacyTab },
     { 7, 0, -1, ai_FillOfficeTab, ai_ShowOfficeTab },
 };
-char ai_AmountInfoFmt[16] = "$Z$[ %s $]$A$Z";  /* 0x62d234, the caption of the amount info box (io_PrintText's %s is the name text 0x253 + kind) */
-char ai_AmountInfoForm[16] = "special\\amtinfo";  /* 0x62d244, the form of the amount info box (d2_OpenForm) */
-char ai_CourtshipForm[24] = "privillegien\\werbung2";  /* 0x62d40c, the form of the courtship (advertising) confirm window (ai_CourtshipConfirm; the list's form "privillegien\\werbung1" 0x62d424 follows) */
-char ai_WorkerDismissalForm[32] = "privillegien\\arbeiter_ausweisen";  /* 0x62d5dc, the form of the worker dismissal window (ai_WorkerDismissalWindow) */
-char ai_MiracleForm[20] = "privillegien\\wunder";  /* 0x62d64c, the form of the miracle order's window (ai_MiracleWindow) */
 unsigned short ai_StatsChartFlags = 0;  /* 0x6f2f88, the charts the statistics panel shows (ai_CityStatsPanel: bit i the legend row i, 1 at the first open) */
 unsigned int ai_AmountTab = 0;  /* 0x6f2f8c, the open tab of the special-amount window (ai_SpecialAmountWindow, 0 .. 7; 8: no tab has rows) */
 int ai_MasterLetterPage = 0;  /* 0x6f2f90, the open page of the master letter window (ai_MasterLetterSettings): 0 the work settings, 1 the goods weights */

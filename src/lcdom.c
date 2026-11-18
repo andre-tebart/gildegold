@@ -590,7 +590,6 @@ extern struct D2PIC *d2_Pics;
 extern int sv_FrameMask;
 extern char ai_Chars[768][0x21c];
 extern GAPDATA full_data_60d224[];
-extern char ai_UseObjForm[];
 extern unsigned char ai_OwnPlayer;
 extern char * cm_FieldObject;
 extern signed char ai_Relations[768][768];
@@ -8270,7 +8269,7 @@ int ai_UseGoodWindow(G8INVOBJ *o)
     used = 0;
     rec = (G9DOMIZIL *)ai_FindUsableGoodIndex(o->id, &index);
     if (rec != 0) {
-        win = d2_OpenForm(0, 0, ai_UseObjForm);
+        win = d2_OpenForm(0, 0, "panel\\useobj");
         d2_CentreViewWindows(win);
         d2_SetForm(win, 1);
         if ((rec->mask & ((AICHARREC *)ai_Chars)[ai_PlayerId].goodsMask) == 0 && ai_FindUsableGood(o->id) != 0)
@@ -9433,7 +9432,7 @@ int ai_UseGoodSkillBonus(AICHARREC *ch);
 int ai_UseGoodDistrust(AICHARREC *ch, G8USEVIEW *use);
 /* the unit's data in the original's order: .rdata gm_SpecialItemGroups 0x5eed94 and its count (this object's named
    constants, after lc.c's literals 52.0f / 0.435f / 0.48f; its literal 128.0 follows), .data ai_ChildWindowId 0x62c418
-   (the first of the block, after lc.c's strings) .. ai_UseObjForm, .bss 0x6f2f60 .. 0x6f2f84 and the common rows */
+   (the first of the block, after lc.c's strings) .. "panel\useobj", .bss 0x6f2f60 .. 0x6f2f84 and the common rows */
 const G7GRP gm_SpecialItemGroups[3] = { { 0x1f, { 0x1cd, 0x1ce, 0x1cf, 0, 0, 0, 0, 0, 0, 0 } }, { 0x20, { 0x1d0, 0x1d1, 0x1d2, 0x1d3, 0, 0, 0, 0, 0, 0 } }, { 0x1e, { 0x1ca, 0x1cb, 0x1cc, 0, 0, 0, 0, 0, 0, 0 } } };  /* 0x5eed94, the item groups of the good kinds 0x1f, ' ' and 0x1e (3 x 0x15 bytes; lc.c's ai_FindItemGroup walks them to 0x5eedd3) */
 const int gm_SpecialItemGroupCount = 3;  /* 0x5eedd4, the number of gm_SpecialItemGroups; no reader in the surviving code (ai_FindItemGroup compares to the end address). Name a guess from the value and the place */
 int ai_ChildWindowId = -1;  /* 0x62c418, the child window ai_OpenInventoryWindow creates (d2_CreateChildWindow over its character list), -1: none; ai_CloseChildWindow removes it, the transport window and ai_InventoryPanel compare it with the clicked id */
@@ -9507,7 +9506,6 @@ G9DOMIZIL ai_DomizilTable[0x42] = {  /* 0x62c420, the 0x42 entries of 0x1c: id +
 };
 int ai_DomizilCount = 0x42;  /* 0x62cb58, the number of 0x1c-byte entries of the Domizil table ai_DomizilTable (0x62c420) */
 GAPDATA full_data_62cb5c[88] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xff, 0x00, 0x01, 0x01, 0xff, 0x01, 0xff, 0xff, 0x00, 0x00, 0x01, 0x02, 0x00, 0xff, 0x01, 0xff, 0xff, 0x01, 0xff, 0x00, 0x03, 0x01, 0x00, 0x00, 0xff, 0xff, 0x01, 0xff, 0x01, 0x04, 0x00, 0xff, 0x00, 0x00, 0xff, 0x01, 0x00, 0x01, 0x05, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0xff, 0x00, 0x06, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xff, 0x07, 0x00, 0x01, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x08, 0x01, 0x00, 0x01, 0xff, 0x00, 0x00, 0x00, 0x00, 0x08, 0x01, 0x01, 0x01, 0x01, 0x00, 0x00, 0x00 };  /* 0x62cb5c, the rest of the 92-byte block at 0x62cb58 (no reader; lcdom's .data after the count) */
-char ai_UseObjForm[13] = "panel\\useobj";  /* 0x62d010, the form of the use-object panel (d2_OpenForm) */
 struct AICHARREC *ai_InvChar = 0;  /* 0x6f2f60, the character whose inventory the inventory child window (ai_OpenInventoryWindow) lists: ai_OpenInventoryWindow points it at ai_Chars[id]; the transport window sends its goods by its netId */
 LCSETTINGS lc_Settings = { 0 };  /* 0x6f2f64, the escort kind of the last transport order, the goods-reserve clock and cursor and the equip window's row count (see LCSETTINGS) */
 int ai_StatsBldCount = 0;  /* 0x6f2f80, the rows of the stats panel's building page ai_ShowBuildingRows filled (ai_OpenBuildingListPage stores it, ai_PlayerStatsPanel loops over it) */

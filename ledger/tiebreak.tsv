@@ -4544,7 +4544,7 @@ exe	0x005cc2b0	ai_PeaceWindow	lc	7d70b044c43d4c1e	no	shape	control=shape p1=shap
 exe	0x005cc700	ai_ConvertWindow	lc	8f715ea3ea642bc4	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x005cca40	ai_PenanceWindow	lc	e81985c5ef0852f7	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005ccc10	ai_Miracle	lc	8cf458c2b4045883	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
-exe	0x005cd2e0	ai_MiracleWindow	lc	0aeafcb49304a91c	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
+exe	0x005cd2e0	ai_MiracleWindow	lcamt	2be2fffe7c387690	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	f63a298b1e02a23a
 exe	0x005cd400	ai_ChangeProfessionWindow	lc	632dc5fa1e631801	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
 exe	0x005cd8c0	ai_OpenTrial	lc	3be40c2f3c0c9fb2	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005cdb90	ai_AccuseWindow	lc	fc1b95fd523b6218	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
