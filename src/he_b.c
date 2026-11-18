@@ -4988,7 +4988,7 @@ void he_RunPlunderOffer(int ev)
             he_PlunderFailNews(d->deal, &ai_CharsT[ai_PlayerId]);
             he_ReleaseSlot(ev);
             he_FreeEvent((int *)ev);
-            return;
+            break;
         }
         if (e->slot == 0) {
             e->stage = 0;
@@ -5900,7 +5900,7 @@ void he_RunGraveLease(int ev)
             he_ExamCancelled(ev);
             he_ReleaseSlot(ev);
             he_FreeEvent((int *)ev);
-            return;
+            break;
         }
         if (e->slot == 0) {
             e->stage = 0;
