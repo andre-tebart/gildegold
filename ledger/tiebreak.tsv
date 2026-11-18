@@ -3134,7 +3134,7 @@ exe	0x0050a0b0	gm_ObjectOwnerNo	f3gm	3b8d14d0ae3ae758	no	byte	control=byte p1=by
 exe	0x0050a0f0	gm_ObjectBuilding	f3gm	18e9adf46b4a24ac	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0050a150	gm_CreditEvents	f3gm	c0c1b045fd1994ec	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0050a1c0	gm_BuildingEvents	f3gm	c04027a0f325ce1f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x0050a250	gm_GetCreditOffers	f3gm	5c32b2b215e14d7d	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	e0b1e84025becc72
+exe	0x0050a250	gm_GetCreditOffers	f3gmt	51f2f34c89928e30	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	da95d2ed1790e132
 exe	0x0050a640	gm_GetWorth	f3gm	90f6cd642319e4a9	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	4850f870d40ae10b
 exe	0x0050a6c0	gm_IsBankrupt	f3gm	ff162d644e3ed16d	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	e0b1e84025becc72
 exe	0x0050a810	gm_FindCharacterByMaster	f3gm	8c122a9f06b2203d	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	

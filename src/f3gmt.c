@@ -7235,7 +7235,7 @@ int gm_GetCreditOffers(int b, unsigned short *p, unsigned cnt, int *out)
     lim = worth * rate;
     maxAmount = (int)GM_MIN(lim, budget * 0.5);
     for (k = 0; k < cnt; k++) {
-        amount = (int)((-util_RandomU(0x1e) * 0.01 + 1.0) * (float)maxAmount);   /* 70 .. 100 % */
+        amount = (int)(((float)(-util_RandomU(0x1e) * 0.01) + 1.0) * (float)maxAmount);   /* 70 .. 100 % */
         if (k == 0)
             amount = (int)(amount * 0.25);
         else if (k == 1)
