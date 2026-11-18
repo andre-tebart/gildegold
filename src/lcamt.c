@@ -5612,20 +5612,7 @@ int cm_GetSlotState();
    "privillegien\werbung2" with the text 0x1ce5 (ch->id, the rating); the frame loop 0x5309a0 (this, 0x657c7): a click 0
    sends the marriage proposal message 0x41 (the own netId as to / fromId / arg[0], the partner's as arg[1], the
    clock, flags 2) through 0x4c4b70 and waits for its slot (0x4c3ae0 / 0x52fe00), the result 1; click 1 only
-   pops; the exit 0x4758f0, d2_ClickedId = -1 and di_ClearEvents(0x11)
-   @deep read the whole original 0x5c6910..0x5c6a9b and reconciled every statement: the rating call, the
-   window and text 0x1ce5, the frame loop, the AIMSG 0x41 build (the 14-byte ai_Time copy, arg[1] =
-   ch->netId, type, flags 2, to / fromId / arg[0] = ai_CharInts[ai_PlayerId][0]), the slot wait and the
-   exit. Only the scheduling of that message build is left: ours stores the ai_Time dwords in the order
-   +0x30 / +0x28 / +0x34 / +0x2c and pushes the cm_SendLongMessage argument before the stores, the original
-   stores +0x28 / +0x30 / +0x2c / +0x34 and pushes it after them (asmdiff: ours 113 ins, the original 112,
-   differing 34; diffclass: code 45, proof: the same store set in another order). Tried the time assignment
-   first, after the flags and last, the three own assignments and the chain in both directions, and the own
-   id as a local vs inline; the M8 at +0xc0 / +0xca pairs ours' ai_Time+0x4 / +0xc against the original's
-   +0x0 / +0x8, the same ai_Time copy crossed by the store order (references: M8 at +0xc0: ours refers to
-   ai_Time+0x4 (0x770ae4), the original's field to 0x770ae0 (ai_Time) (and 1 more), explained: the M8
-   references are the same ai_Time fields of one struct copy, paired crosswise by the store order, not
-   another object or a wrong field) */
+   pops; the exit 0x4758f0, d2_ClickedId = -1 and di_ClearEvents(0x11) */
 
 int ai_CourtshipConfirm(AICHARREC *ch)
 {
@@ -5647,11 +5634,13 @@ int ai_CourtshipConfirm(AICHARREC *ch)
         if (d2_ClickedId != -1) {
             if (d2_ClickedId == 0) {
                 memset(&msg, 0, sizeof(msg));
-                msg.time = ai_Time;
-                msg.arg[1] = ch->netId;
                 msg.type = 0x41;
                 msg.flags = 2;
-                msg.arg[0] = msg.fromId = msg.to = ai_CharInts[ai_PlayerId][0];
+                msg.to = ai_CharInts[ai_PlayerId][0];
+                msg.time = ai_Time;
+                msg.arg[1] = ch->netId;
+                msg.fromId = ai_CharInts[ai_PlayerId][0];
+                msg.arg[0] = ai_CharInts[ai_PlayerId][0];
                 slot = cm_SendLongMessage((char *)&msg);
                 while (cm_GetSlotState(slot) == 0)
                     sv_PumpNet();
