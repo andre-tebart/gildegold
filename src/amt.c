@@ -107,7 +107,7 @@ void amt_InitTable(void)
 /* 0x4e5e50, the rating of the character a (+0x164 / +0x166 the office rank and party bytes) as seen by b: the float tables 0x5edc90 (15 rows of 10: an int id, 9
    columns) and 0x5edef0 (5 rows, an int status key, 9 columns) by the rank (amt_KindColumn, 1 .. 6: b's for 0x5edc90, a's for 0x5edef0) and the status bits +0x1cc (0x400 .. 0x2000, 0x200 give the keys
    0x24 .. 0x27, 0x23); mode (>= 2: plus the absolute value of the entry, >= 3: plus 10.0); with flag the friendship value of amt_GetKind / 0x4f2720 is taken off
-   (a = b's party: added, mode 2: times 0.75)
+   (a = b's party: added, times 0.75 while the decision record 2's current value is 2)
    @deep Fixed first (own commit): the amt_TabB column is a's rank (mov cl,[edi+0x166], edi = a). Then 105
    -> 14 ins: a's status key written as the full five-way chain like b's (VC6 folds it to test ch,0x3c and
    keeps the 0x23 store to a's dead slot [esp+0x54], as the original), r = 0 after the amt_KindColumn call
@@ -133,7 +133,7 @@ float amt_Rating(char *a, char *b, int mode, int flag)
     float r, fl;
     struct {
         AMTKIND kind;                   /* b's kind of office (amt_GetKind) */
-        AIDEC dec;                      /* the decision record 2, copied right after it (the original's frame; it is not read) */
+        AIDEC dec;                      /* the decision record 2: its cur == 2 scales the friendship value */
     } rec;
     int k, i, key, akey, n;
     unsigned int f2;
@@ -190,7 +190,7 @@ float amt_Rating(char *a, char *b, int mode, int flag)
         amt_GetKind((unsigned char)b[0x166], &rec.kind);
         gv_GetTableRecord(2, (int *)&rec.dec);
         fl = ((AMTKINDF *)&rec.kind)->value;
-        if (mode == 2)
+        if (rec.dec.cur == 2)
             fl = fl * 0.75f;
         if (a[0xc] == b[0xc])
             return fl + r;
