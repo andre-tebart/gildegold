@@ -595,27 +595,7 @@ void init_FreeScenes(void)
         p += 0xf8;
     } while ((int)p < (int)INIT_SCENE_HEIGHTMAP_END);
 }
-/* 0x50d550, the scene object callback (a function start Ghidra missed) that allocates the building for a "gb_NAME" scene object o (0x50d100 resolved the name to the building type, bits 0x2000000 in +0x48): a new instance of the type without an owner (0x501580), for the KONTOR (type 0x47) the office of the player slot whose name is the part after the last '_' of the object name (the slot number goes to +0x65, its name to +5); the object and the building are linked (+0x61 / +0x200) and "f3_init:Gebaeude des Typs %s allokiert" is the (unused) log text. An object without a state of its own takes its parent's record.
-   @deep kind byte compare: the original loads the proto top byte as an int (movsx ecx, byte ptr
-   [ebp+0x4b] scheduled before 'and eax, 0xffffff', then cmp ecx, 2); ours mov al, [ebp+0x4b] / cmp al, 2
-   after the and (4 ins, 2 hunks). Got 41 -> 4 ins with i < 4 for the slot walk and a nested if (proto !=
-   -1) { id = ..; if (kind == 2 && type) }. Tried for the compare (all = control or worse): (int)proto >>
-   24, (char)(proto >> 24), proto / 0x1000000, 2u / 2L / (unsigned char)2 / '\2', (int)/(short)/(unsigned
-   char) casts, bitfield views (unsigned i:24; int k:8), int/char kind local before or after id, flag
-   local, k == two local, static const / enum constant, 2 == k, ?:, !(k != 2), k >= 2 && k <= 2, (k ^ 2) ==
-   0 (xor al), arithmetic (k - 1 == 1, k + 1, -k, ~k, k << 1, k * 2, k | 0x100, k & 0x7f, k >> 1: int
-   compare in eax after the and, regs 24), switch (k) case 2 (movsx eax; sub eax, 2), the id inside the
-   condition (comma), goto skip, flat condition with id after (17 ins). Insensitive to the declaration set.
-   (tiebreak: insensitive) prior: read the whole function against the original 0x50d550..0x50d6a0 and fixed
-   its meaning and types: the argument through SCENEOBJ (a new union for proto / protoBytes at 0x48 / 0x4b,
-   parent 0x1f8, owner 0x200, type 0x218) and the new building through INIT_BLD (name +5, object +0x61,
-   player +0x65); the KONTOR branch (strrchr '_' -> the slot name, the ai_PlayerSlots walk with the signed
-   bound, its name and index into the building), the log sprintf and the two links; Q4 clear (no raw
-   access), readability readable. The slot walk is `for (i = 1; i < 4; i++)` (VC6 turns it into the pointer
-   walk with the signed `cmp edi, end / jl`) and the id is computed in its own `if (proto != -1)` block
-   before the kind test. Left: the original loads the kind byte as an int (`movsx ecx, byte ptr [ebp +
-   0x4b]` before the `and`, `cmp ecx, 2`) where every char spelling compiles to `mov al, [ebp + 0x4b] / cmp
-   al, 2` ... */
+/* 0x50d550, the scene object callback (a function start Ghidra missed) that allocates the building for a "gb_NAME" scene object o (0x50d100 resolved the name to the building type, bits 0x2000000 in +0x48): a new instance of the type without an owner (0x501580), for the KONTOR (type 0x47) the office of the player slot whose name is the part after the last '_' of the object name (the slot number goes to +0x65, its name to +5); the object and the building are linked (+0x61 / +0x200) and "f3_init:Gebaeude des Typs %s allokiert" is the (unused) log text. An object without a state of its own takes its parent's record. */
 
 
 void init_AllocSceneBuilding(int o)
@@ -626,15 +606,19 @@ void init_AllocSceneBuilding(int o)
     SCENEOBJ *obj;
     INIT_BLD *b;
     SCENEOBJ *par;
-    int i;
+    int i, kind;
     char *u;
 
     if (init_SceneNameToPrototype((char *)o) != 0) {
         obj = (SCENEOBJ *)o;
         if (obj->proto != -1) {
+            kind = obj->protoBytes[3];
             id = obj->proto & INIT_PROTO_MASK;
-            if (obj->protoBytes[3] == 2 && obj->type != 0) {
-                if (id == INIT_KONTOR_BUILDING) {
+            if (kind == 2 && obj->type != 0) {
+                /* @original the Kontor is named by kind and index (the kind tested again, decided by VC6): the
+                   kind is a register value (movsx ecx, byte ptr [ebp+0x4b] / cmp ecx,2), which a single
+                   kind compare folds into cmp byte ptr [ebp+0x4b],2 */
+                if (kind == 2 && id == INIT_KONTOR_BUILDING) {
                     b = (INIT_BLD *)gm_CreateBuilding(INIT_KONTOR_BUILDING, 0xffff);
                     u = strrchr((char *)o, '_') + 1;
                     strcpy(tail, u);
