@@ -1631,21 +1631,10 @@ void ai_UpdateProdColumns(int win, int part, int ncols, int store, int mode)
    store (gm_Query 1, 5) gets its slot or the first free one, in ai_ProdGoods (the types 0x17 / 0x25; a building of
    class 2 only 0x17) or ai_ProdGoods2, with its reserved part, amount and stock; slots whose goods left the store
    are cleared. A left click (with the permission 0x200, nothing on the pointer) on a slot's reserve button cycles
-   the goods' reserve 0 .. 4 and sends it (cm field message). Returns 1 when a slot's check box is set
-   @deep rewritten against the original (was a condensed draft): the two level tables as local initialised arrays
-   (rows[9][4] by AIOBJ.lvl1c, rows2[9][2] by lvl1d), the grid fill (existing slot, else the first free
-   one, reserved = (unsigned)(stock * reserve) >> 2, amount, stock; the class test in the original's && /
-   || form, the free-slot search first), the clean-up of the gone goods, the check-box scan, the reserve
-   cycling click (reserve >= 4 ? 0 : reserve + 1, the cm field message); AIOBJ.reserve is unsigned (the
-   original's jb / shr). Same size and instruction count (443), 22 differing instructions, all in the
-   initialiser stores of the two local tables: the original stores five of the implicit zeros of rows[]
-   after the push for gm_BuildingClass through ebx ('+ mov [esp+0x64], ebx' ... at 0x58d807) where ours
-   stores them before it through eax / ecx (0x58d72c '- mov [esp+0x60], eax', 0x58d741 '- xor ecx, ecx'):
-   store scheduling only (the prover stops at the first such store, frame+0x50 vs +0x54); writing the zeros
-   out or declaring rows2 first makes it worse (103 / 92). */
+   the goods' reserve 0 .. 4 and sends it (cm field message). Returns 1 when a slot's check box is set */
 int ai_UpdateProdGoodsList(AIBLD *bld, AIOBJ *store)
 {
-    int rows[9][4] = { { 2 }, { 2 }, { 2 }, { 3 }, { 4 }, { 3, 2 }, { 4, 2 }, { 4, 3 }, { 4, 4 } };
+    int rows[9][4] = { { 2, 0 }, { 2, 0 }, { 2, 0 }, { 3, 0 }, { 4, 0 }, { 3, 2 }, { 4, 2 }, { 4, 3 }, { 4, 4 } };
     int rows2[9][2] = { { 0, 2 }, { 0, 2 }, { 0, 2 }, { 0, 3 }, { 0, 4 }, { 2, 3 }, { 2, 4 }, { 3, 4 }, { 4, 4 } };
     AIOBJ *item;
     int any;
