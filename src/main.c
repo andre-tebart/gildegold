@@ -3840,7 +3840,7 @@ float gm_TitlePeriodServed(int n, int *out);
 void main_UpdateFigure(int i)
 {
     AICHAR *c;
-    int one, left;
+    int left;
     char *ev;
     float f;
     AITIME when;                    /* gm_TitlePeriodServed's completion date (not used here) */
@@ -3848,6 +3848,8 @@ void main_UpdateFigure(int i)
     char txt[256];
 
     if (ai_CharsT[i].kind != 6 && ai_CharsT[i].kind != 7 && ai_CharsT[i].kind < 10) {
+        int one;
+
         c = &ai_CharsT[i];
         one = 1;
         if (ai_CharsT[i].bld != 0 || ai_CharsT[i].kind == 5 || ai_CharsT[i].kind == 1 || ai_CharsT[i].kind == 2 || ai_CharsT[i].kind == 4) {
@@ -3878,8 +3880,10 @@ void main_UpdateFigure(int i)
             }
         }
     } else if (ai_CharsT[i].kind == 6 || ai_CharsT[i].kind == 7) {
-        one = 1;
-        cm_BeginFieldBlock((char *)&ai_CharsT[i], ai_CharsT[i].netId);
+        int one = 1;
+
+        c = &ai_CharsT[i];
+        cm_BeginFieldBlock((char *)c, c->netId);
         cm_AddFieldValues(4, 1, 0x174, &one);
         cm_SendFieldDeltas();
     }

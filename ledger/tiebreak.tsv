@@ -3476,7 +3476,7 @@ exe	0x00538140	main_RundenBeginn	main	503e9d8c2106fe24	no	byte	control=byte p1=b
 exe	0x005384e0	main_EndRound	main	87bb9c64cddb5a00	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00539620	main_ReplaceFigure	main	c35457202d9f562a	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	af22ce15de209ae0
 exe	0x00539870	main_RoundReport	main	70a622d54e4c889a	yes	byte	sweep control=shape best=byte by 22 unused typedefs at the unit's start; codegens=2 compiled=48 (stopped at the goal)	cb7c05d3724b14b3
-exe	0x0053a250	main_UpdateFigure	main	ac316cd664468c41	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
+exe	0x0053a250	main_UpdateFigure	main	ac7764d6864b4bd6	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	4a8bed7379a4ae73
 exe	0x0053a450	main_UpdateFigures	main	0adcc8f2a3d2c65f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0053a520	main_SettleRound	main	3a13bbd7e2c68953	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0053b2e0	main_BeginPlayerRound	main	47b750942f01b65d	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
