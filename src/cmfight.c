@@ -2998,8 +2998,9 @@ float cm_OrderRating(AICHAR *c, int order)
     r = 0.0f;
     switch (order) {
     case 0:
-        f = 1.0f;
-        if (c->formation != 0)
+        if (c->formation == 0)
+            f = 1.0f;
+        else
             f = 0.5f;
         kind = ((AIWEAPON *)cm_CharWeapon((char *)c))->kind;
         if ((kind == 1 || kind == 2) && ((AIOBJ *)cm_CharWeaponItem((char *)c))->usesLeft <= 0)
@@ -3026,15 +3027,15 @@ float cm_OrderRating(AICHAR *c, int order)
         else
             r = 1.0f;
         break;
-    case 3:
-        r = 1.0f;
-        break;
     case 4:
     case 5:
         if (c->formation == 2)
             r = 0.2f;
         else
             r = 1.0f / gm_HealthRatio((short *)c);
+        break;
+    case 3:
+        r = 1.0f;
         break;
     }
     return r;
