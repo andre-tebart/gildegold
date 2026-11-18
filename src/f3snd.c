@@ -674,7 +674,7 @@ int snd_FindTrackKind(int kind)
 /* 0x4c2000, the music step: a new season stops the outdoor track; a finished track starts a pause (its name kept
    in snd_LastTrack); after the pause, or when the player moved to another building / room (and the current track
    loses a random draw against its priority), the track of the place starts (snd_EnterBuilding /
-snd_PlayOutdoorTrack) @deep size queue s7: k = 0 before the kind if/else (the original's xor edx,edx sits before test eax,eax, so the kind arm takes ebp for the ai_BTypes base): 19 -> 9 ins, raw 1012 vs 1008. Left: line 743 (t - snd_LastDecision > 40000): the original still has t in edi there (sub edi,ecx; cmp; then mov edi,[ai_PlayerBuilding] = b) where ours reads t from its slot; c2trace --split t: the t piece grows into the block of lines 737-743 and is cut before b = ai_PlayerBuildingB (b takes edi), so in the original b's def must come after the t use in IL while still before the jbe. Tried (no lever): all 6 orders of b2 / room / b; an elapsed local dt = t - snd_LastDecision at each of the 4 positions (forward-substituted, = control). */
+snd_PlayOutdoorTrack) */
 
 void snd_UpdateMusic(void)
 {
@@ -736,15 +736,14 @@ void snd_UpdateMusic(void)
         }
         b2 = ai_FallbackBuildingB;
         room = sv_PanelShown;
-        b = ai_PlayerBuildingB;
         if (!(t - snd_LastDecision > 40000 && trk != snd_SpecialTrack
-              && (b != 0 && snd_TrackBuilding != b || b2 != 0 && snd_TrackBuilding != b2
-                  || b == 0 && b2 == 0 && snd_TrackBuilding != 0))
+              && (ai_PlayerBuildingB != 0 && snd_TrackBuilding != ai_PlayerBuildingB || b2 != 0 && snd_TrackBuilding != b2
+                  || ai_PlayerBuildingB == 0 && b2 == 0 && snd_TrackBuilding != 0))
             && (snd_TrackRoom == room || snd_TrackBuilding == 0 || ai_BTypesT[*snd_TrackBuilding].kind != 2))
             return;
         i = snd_FindActiveTrack();
-        snd_TrackBuilding = b;
-        if (b == 0)
+        snd_TrackBuilding = ai_PlayerBuildingB;
+        if (ai_PlayerBuildingB == 0)
             snd_TrackBuilding = b2;
         snd_TrackRoom = room;
         prio = snd_LocationTracks[i].prio;
