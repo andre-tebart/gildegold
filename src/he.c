@@ -19609,7 +19609,18 @@ void he_AllocPatrolEvent(AIJOB *ev)
    else at the building of its route's current point: at the route's start it first waits the steps its level allows
    (12, 8, 4, 2, 0); once at that building's door (and the building is no town market, or the cart belongs to the
    patrol building) it moves on to the next point of the route (wrapping to 0; the field send's cm slot goes to
-   ev->exSlot), else, in a building, it sends the message 0xf (the cart, the building it is in, the point's building) */
+   ev->exSlot), else, in a building, it sends the message 0xf (the cart, the building it is in, the point's building)
+   @deep deep s32: the hunk is the order of the message 0xf fill (the last block): the original stores the
+   ai_Time words, to and car first, then type / fromId / flags just before the time's last word, loads
+   bld->id and at->id after those (m has escaped through the first branch's cm_SendLongMessage: pointer
+   loads wait for the stores), pushes &m, and only then stores n and ch (and flag9e). Ours stores n / ch
+   before the push in every order: 720 orders of type/fromId/to/flags/time/car (best p160 = fromId, to,
+   time, car, type, flags: 8 ins but draft, code 20), x the 6 orders of n/ch/flag9e on the six best (no
+   gain), 4000 sampled orders of all nine (10 ins at best), climb --ops move,swap 4 rounds from the tree
+   and from p160 (8). A fresh block-local m in each branch puts the n / ch stores after the push as the
+   original but also the type / fromId / flags stores, and hoists bld->id above the memset (8 ins / 71
+   bytes, draft): the escape is right, the store/push order is not. Not kept (every 8-ins row grades
+   draft). (declaration set: not byte under the declaration sets tried (best shape)) */
 void he_PatrolStep(AIJOB *ev, AIOBJ *c)
 {
     AICHAR *owner;
