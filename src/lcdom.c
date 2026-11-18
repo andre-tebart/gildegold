@@ -7716,16 +7716,7 @@ int ai_LiquidateAssets(int to, AICHARREC *ch, int amount, char *note)
    "<data>vegetation/*pfl_<NAME>_04.ogr", half transparent, follows the mouse over the terrain (map_PickScreen),
    uncoloured where it fits on that ground (veg_Fits), red where not; a left release there plants it (cm_SetPlant,
    waiting for the answer), pays half its price for 100 (at least 0x400) and drops the new plant's model onto the
-   ground; a right release closes the bar
-   @deep Reconstructed in full from 0x5b9730..0x5b9da9 (the PFLANZBAR ground loop, the plant goods query,
-   the PlantBar form and radio group, the pick / transform / fit loop, cm_SetPlant with the payment and the
-   model drop, the 'N' / 'J' radio keys, the model reload with its alpha); every call, store, constant and
-   string read against the original; ours 486 = original 486 instructions, frame equal (pos / above are
-   D3VECTOR4). Left: the entry's zero stores in another order (code hunk at +0x2c: the original stores
-   pick.x/y/z from ebp, then pick.w from esi, then z from esi; ours stores z from esi first, then pick from
-   ebp: tried the statements reordered and 0.0f constants, no change), order hunks at +0x6 (the prologue
-   loads), +0x231 (ebx/edi swapped for x / z: and/sar order), +0x31e and +0x3a8 (push order of the veg_Fits
-   / cm_SetPlant arguments under that swap). Allocation / scheduling only: a variant round. */
+   ground; a right release closes the bar */
 
 void ob_HandleBepflanzung(AIBLD *bld)
 {
@@ -7736,7 +7727,9 @@ void ob_HandleBepflanzung(AIBLD *bld)
     D3MATRIX m;
     D3VECTOR4 above;                /* the engine's padded vectors */
     D3VECTOR4 pos;
-    D3VECTOR4 pick;
+    struct { float x, y, z; int w; } pick;  /* the picked point (map_PickScreen fills x / y / z); @original the
+                                               fourth word is cleared with the integer zero (esi), the three
+                                               floats with the float zero (ebp): not a float as D3VECTOR4's w */
     D3TEXFLAGS tf;
     G15PLANT *plants;
     G15PLANT *plant;
@@ -7760,21 +7753,21 @@ void ob_HandleBepflanzung(AIBLD *bld)
     int z;
     int i;
 
-    last = -1;
-    radio = -1;
     model = 0;
-    x = 0;
     pick.x = 0.0f;
     pick.y = 0.0f;
     pick.z = 0.0f;
-    pick.w = 0.0f;
+    pick.w = 0;
     z = 0;
+    x = 0;
     ok = 1;
     ground = 0;
     plants = (G15PLANT *)bld->plants;
     sel = 0;
     type = 0;
     count = 0;
+    last = -1;
+    radio = -1;
     if (d3_Terrain == 0)
         return;
     for (i = 0; i < 8; i++) {
@@ -7810,12 +7803,12 @@ void ob_HandleBepflanzung(AIBLD *bld)
         hit = map_PickScreen(d3_Terrain, dm_L.x, dm_L.y, 30.0f, (D3VECTOR *)&pick);
         if (hit != -1 && model != 0) {
             /* the picked point from the camera's space into the world */
-            z = hit >> 16;
             x = hit & 0xffff;
+            z = hit >> 16;
             d3_MatTranspose(&d3_Camera->matrix, &m);
-            pos.x = m._31 * pick.z + m._21 * pick.y + m._11 * pick.x;
-            pos.y = m._32 * pick.z + m._22 * pick.y + m._12 * pick.x;
-            pos.z = m._33 * pick.z + m._23 * pick.y + m._13 * pick.x;
+            pos.x = m._11 * pick.x + m._21 * pick.y + m._31 * pick.z;
+            pos.y = m._12 * pick.x + m._22 * pick.y + m._32 * pick.z;
+            pos.z = m._13 * pick.x + m._23 * pick.y + m._33 * pick.z;
             pos.x += d3_Camera->pos.x;
             pos.y += d3_Camera->pos.y;
             pos.z += d3_Camera->pos.z;
