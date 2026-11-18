@@ -406,43 +406,37 @@ void ai_PokerPayStakes(void)
 }
 /* 0x4a7ac0, picks each NPC's strategy (seat->strategy) from its hand: 3 nothing yet, 2 go for the rank, 1 pairs,
    0 random
-   @deep byte-register class of dealt. Meaning re-read against the original (loops, deck[k+i] / deck[i+j]
-   owner at +8, shown at +0xc, seat[s].strategy at +0x30 + s*0x34, the strategy chain): equal. The original
-   keeps the unsigned char dealt in dl (cmp dl,5 / mov eax,edx; and eax,0xff) and ai_PokerTable in esi, s
-   in ebp, maxr ebx, maxn edi in the first loop (stored to [esp+0x18] after it), pairs at [esp+0x14] (inc
-   dword ptr), frame 0x28. Ours puts the table in edx, so dealt takes bl and evicts s (spilled to
-   [esp+0x18], dealt to [esp+0x24], frame 0x30). Levers (dcp try, uchar unless said): init order of
-   pairs/maxn/maxr/g, 23 orders: 79 ins each, four codegens (pairs, maxn, maxr, g gives the original's
-   first-loop roles only with a wider dealt); dealt as int: 33-37 ins, unsigned short + that init order: 24
-   ins (frame 0x28 and the loops equal, dealt in esi via movzx si and the table in edx: the table/dealt
-   roles stay swapped; not kept, the original's byte compares need a char local); char: 73; dealt read
-   through ai_PokerTable at each use: 70; G10GAME *t / G10SEAT *seat locals (first or last declared): =
-   control; dealt declared in the loop body or a tail block: = init-order variant; operand-order and &&
-   order masks on the four dealt tests (15 variants): 79-92; local declaration orders (5): = control. Left:
-   frame 0x30 vs 0x28, s/maxr ebx<->ebp, maxn/pairs edi<->[esp+0x14], table edx vs esi, dealt bl+spill vs
-   dl. (tiebreak: insensitive) prior: Read whole against the original and rewritten: both counting loops in
-   the original's index form (deck[k+i] by suits, deck[i+j] by ranks: the strength-reduced jl loop ends now
-   equal), int counters (signed jle), cnt[g++], the strategy chain with pairs <= 1 / dealt - maxr <= 1 as
-   the original's constants, the column check over deck[j*4+first]. The two counting loops are
-   instruction-equal up to registers. Remaining is allocation: the original keeps s in ebp and dealt in dl
-   for the whole body (frame 0x28), ours gives s ebx and spills it to [esp+0x18] and dealt to [esp+0x24]
-   (frame 0x30), so ours reloads them (asmdiff: -mov ebp,[esp+0x18] / -cmp edi,ebp vs +cmp [eax-4],ebp;
-   -mov byte ptr [esp+0x24],bl vs +mov dl,[esi+0xb5]; -mov esi,[esp+0x18] / -inc esi / -mov [esp+0x18],esi
-   vs +inc ebp), and pairs / maxn swap register and slot in the first loop (-inc edi / -cmp ecx,[esp+0x14]
-   vs +inc [esp+0x14] / +cmp ecx,edi). */
+   @deep size queue s18: kept dealt as unsigned short with the inits pairs / maxn / maxr / g (pk round: 4
+   dealt types x 24 init orders): 79 -> 24 ins, raw 380 -> 349, padded size (352). Left: only the table /
+   dealt registers swapped (ours table edx, dealt esi via movzx si; the original table esi, dealt dl, byte
+   compares): the original allocates dealt before the table (prio: c2trace --prio gives the table 6, the
+   uchar dealt -38: dealt pays the j loop's blocks (-42) and its compares at 474 / 477 go through the
+   zero-extension CSE temp, so they do not count for it). Tried s18, no lever: dealt not a local
+   (ai_PokerTable->dealt at each use) x 24 init orders: 70 ins, frame 0x2c. Next: something that ranks the
+   char dealt above the table (more direct references to dealt in the chain, or fewer table references),
+   then the uchar back. prior: byte-register class of dealt. Meaning re-read against the original (loops,
+   deck[k+i] / deck[i+j] owner at +8, shown at +0xc, seat[s].strategy at +0x30 + s*0x34, the strategy
+   chain): equal. The original keeps the unsigned char dealt in dl (cmp dl,5 / mov eax,edx; and eax,0xff)
+   and ai_PokerTable in esi, s in ebp, maxr ebx, maxn edi in the first loop (stored to [esp+0x18] after
+   it), pairs at [esp+0x14] (inc dword ptr), frame 0x28. Ours puts the table in edx, so dealt takes bl and
+   evicts s (spilled to [esp+0x18], dealt to [esp+0x24], frame 0x30). Levers (dcp try, uchar unless said):
+   init order of pairs/maxn/maxr/g, 23 orders: 79 ins each, four codegens (pairs, maxn, maxr, g gives the
+   original's first-loop roles only with a wider dealt); dealt as int: 33-37 ins, unsigned short + that
+   init order: 24 ins (frame 0x28 and the loops equal, dealt in esi via movzx si and the table in edx: the
+   table/... */
 
 void ai_PokerPickStrategies(void)
 {
     int cnt[6];
     int s, g, j, i, k, pairs, first;
     int n, maxn, maxr;
-    unsigned char dealt;
+    unsigned short dealt;
 
     first = 0;
     for (s = 1; s < 3; s++) {
-        maxr = 0;
-        maxn = 0;
         pairs = 0;
+        maxn = 0;
+        maxr = 0;
         g = 0;
         for (k = 0; k < 24; k += 4) {
             n = 0;
