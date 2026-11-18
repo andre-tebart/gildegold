@@ -307,12 +307,14 @@ int ai_MessageBox(int text, int flags)
         d2_MenuNavigate(list);
         if ((flags & 0x40) != 0)
             d2_RaiseViewWindows(win);
-        if (d2_ClickedId == 0) {
+        if (d2_ClickedId != 0) {
+            if (d2_ClickedId == 1) {
+                sv_PopRequest = 1;
+                ret = 0;
+            }
+        } else {
             sv_PopRequest = 1;
             ret = 1;
-        } else if (d2_ClickedId == 1) {
-            sv_PopRequest = 1;
-            ret = 0;
         }
         if (dm_L.rup != 0)
             sv_PopRequest = 1;
