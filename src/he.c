@@ -3640,27 +3640,13 @@ void ai_ShowTavernHelperNews(char *param_1, char *param_2, int param_3);
    0x1b5), a player's helper is hired when the object says so (hired): then stage 1 in an hour, else again in a day.
    Stage 1 waits 1 .. 2 hours. Stage 2: the hired helper is done: its news (ai_ShowTavernHelperNews), the object is
    reset (no helper), and when the tavern pays out (gm_HandOutMoney) its owner gets the takings (the news 0x19a7 for a
-   player) and the building's field 0x69 the amount; again in a day at 7:00
-   @deep Read whole against the original and rebuilt typed (AIJOB, AIBLD, the tavern object view
-   HETAVERNOBJ, int out[3] whose out[2] gm_HandOutMoney reads as the partner = the helper). Every call,
-   store and branch matches; what is left is VC6's tail merging and scheduling: (1) code hunk at +0x2b8,
-   stage 0's AI branch: ours 'je X; push 0; push 0; lea ecx,[esi+0x52]; push 1; push ecx; jmp' (the hour
-   block inline, the 0x18 block shared), the original 'push 0; push 0; jne X; lea edx,[esi+0x52]; push
-   0x18; push edx; jmp' (the 0x18 block inline, the hour block shared with the player branch); tried the AI
-   / player branch order both ways and the inverted AI condition: those merge more tails (dist 46 / 52).
-   (2) tail at +0x32d: the original jumps from the player's 0x18 block into the shared Send(0) call. (3)
-   order at +0x102: the original loads t->helperId before the three field-value stores (no, none, noId) and
-   out[2] = 0; the prover stops there (a call argument read after other local stores). (size: 6 of the
-   instruction difference are shared / inline tails) */
+   player) and the building's field 0x69 the amount; again in a day at 7:00 */
 void he_RunTavern(int r)
 {
     AIJOB *e = (AIJOB *)r;
     AIBLD *bld = 0;
     HETAVERNOBJ *t;
     AICHAR *helper;
-    int out[3];
-    unsigned char no, none;
-    int noId;
     char buf[0x100];
 
     if (e->stage == -1 || e->stage == -2) {
@@ -3690,21 +3676,27 @@ void he_RunTavern(int r)
             if (t != 0 && t->hired != 0) {
                 gm_AddTime(&e->end, 1, 0, 0);
                 e->exSlot = cm_SendExSetHEI(1, r);
-                return;
+            } else {
+                gm_AddTime(&e->end, 0x18, 0, 0);
+                e->end.hour = 7;
+                e->exSlot = cm_SendExSetHEI(0, r);
             }
-            gm_AddTime(&e->end, 0x18, 0, 0);
-            e->end.hour = 7;
-            e->exSlot = cm_SendExSetHEI(0, r);
-            return;
+        } else {
+            if (t != 0) {
+                if (ai_ChooseObjectTarget(&ai_CharsT[bld->owner], t) != 0) {
+                    gm_AddTime(&e->end, 1, 0, 0);
+                    e->exSlot = cm_SendExSetHEI(1, r);
+                } else {
+                    gm_AddTime(&e->end, 0x18, 0, 0);
+                    e->end.hour = 7;
+                    e->exSlot = cm_SendExSetHEI(0, r);
+                }
+            } else {
+                gm_AddTime(&e->end, 0x18, 0, 0);
+                e->end.hour = 7;
+                e->exSlot = cm_SendExSetHEI(0, r);
+            }
         }
-        if (t != 0 && ai_ChooseObjectTarget(&ai_CharsT[bld->owner], t) != 0) {
-            gm_AddTime(&e->end, 1, 0, 0);
-            e->exSlot = cm_SendExSetHEI(1, r);
-            return;
-        }
-        gm_AddTime(&e->end, 0x18, 0, 0);
-        e->end.hour = 7;
-        e->exSlot = cm_SendExSetHEI(0, r);
         return;
     case 1:
         gm_AddTime(&e->end, util_RandomU(2) + 1, 0, 0);
@@ -3712,6 +3704,10 @@ void he_RunTavern(int r)
         return;
     case 2:
         if (t != 0 && t->hired != 0) {
+            int out[3];
+            unsigned char no, none;
+            int noId;
+
             no = 0;
             none = 0xff;
             noId = -1;

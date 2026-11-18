@@ -3552,7 +3552,7 @@ exe	0x00541a80	he_AllocStammtisch	he	b2749e16fe5e41e9	no	byte	control=byte p1=by
 exe	0x00541b40	he_StammtischCommand	he	9b26f0897f3c50ea	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
 exe	0x00542100	he_RunStammtisch	he	a5c7e31fbd73074f	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
 exe	0x00542490	he_AllocTavern	he	8a564051c1b47092	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x00542590	he_RunTavern	he	fe72e272c8c54ac6	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
+exe	0x00542590	he_RunTavern	he	15c9a04c1f4eca12	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	a57a3c77c79ba088
 exe	0x00542960	he_AllocOffer	he	149a4316ce4125e1	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00542b60	he_RunWeddingOffer	he	d5c4b954e6e62337	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00543020	he_AllocQuarrel	he	c46d3067ce2ef484	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
