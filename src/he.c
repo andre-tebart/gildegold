@@ -13765,22 +13765,13 @@ void he_RunSabotage(int ev)
    gypsyFilter kinds is picked (ai_PickActionBuilding, up to 100.0; none: ended). The end is 3 days + HESPYING.days
    from now (4 when order 0x26 of the event's character answers 2). Inside the cm group "Spionage": for a player's
    event, a victim of kind 6 / 7 or fewer than 8 spies a spy is spawned at the target ("SPIONAGE") and the event
-   started (cm_SendExSetHE 0), else it is due at the end (cm_SendExSetHE 4)
-   @deep read whole against 0x559d20..0x55a02c and rewritten typed (HESPYING): the duplicate-spy loop over
-   the events 0x18 (e->chr == o->chr operand order as the original), ai_PickActionBuilding with gypsyFilter
-   by value (the view gypsyFilterValue: the original loads the high word first, which the volatile datum
-   does not), the order 0x26 buffer, the 24-hour multiples, the spawn inside the cm group Spionage; tgt
-   uninitialised as in the original (the prover's frame+0 store gone). Left is allocation only: the slots
-   of spawn / spies / victim are permuted (ours 0x1c / 0x14 / 0x18, the original 0x14 / 0x18 / 0x1c: - mov
-   [esp+0x1c],ebp + mov [esp+0x18],ebp, - inc [esp+0x14] + inc [esp+0x18]) and ours moves spawn into ebp
-   for its last test (- mov ebp,1 / jmp / mov ebp,[esp+0x1c] / test ebp,ebp; + mov [esp+0x14],1 / mov
-   eax,[esp+0x18] / test eax,eax). Tried: five declaration orders (17 .. 20 instructions, the best kept) */
+   started (cm_SendExSetHE 0), else it is due at the end (cm_SendExSetHE 4) */
 void he_AllocSpying(int ev)
 {
     AIJOB *e = (AIJOB *)ev;
     HESPYING *s = (HESPYING *)ev;
     AIBLD *tgt;
-    int spies = 0, spawn = 0;
+    int spawn = 0, spies = 0;
     AICHAR *victim, *me;
     AIJOB *o;
     int ord[0x88];
@@ -13825,7 +13816,9 @@ void he_AllocSpying(int ev)
         gm_AddTime(&s->until, (s->days + 4) * 24, 0, 0);
     else
         gm_AddTime(&s->until, (s->days + 3) * 24, 0, 0);
-    if (me->kind == 6 || victim->kind == 6 || victim->kind == 7 || spies < 8)
+    if (me->kind == 6 || victim->kind == 6 || victim->kind == 7)
+        spawn = 1;
+    else if (spies < 8)
         spawn = 1;
     cm_BeginGroup("Spionage");
     if (spawn != 0) {
