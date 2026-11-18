@@ -457,6 +457,42 @@ Where the pushes and pops sit, how many epilogue copies there are, shared agains
     through a pointer or array view (the c products of ai_SolveCannonAim's success arm keep c first);
     block-local records in ai_MistressWindow / gm_FindHome (the escape lever does not reach their
     hunks).
+- **Size queue s17 (byte or padded size by these)**:
+  - A counter the original keeps in a callee-saved register through a fill path while ours spills it
+    (and keeps the record pointer `me` there instead) was TWO counters: the count-only path (`max ==
+    0`) counts in its own `cnt`, the fill path's `n = 0` stands after its memset (the original's
+    `xor ebx,ebx` between `rep stosd` and `rep stosb`) (ai_FillFamilyTab 77 ins -> byte).
+  - A row loop whose index the original strength-reduces to a byte offset (`xor ebx,ebx; cmp
+    ebx,0x10`, `[esp+ebx+0x54]`) with the count n in memory: n bounds the loop (`n < 5`) and its own
+    index i fills the arrays (`ctl[i] = ..; evIds[i] = ..; n++; i++;`); `i < 4` as the bound merges
+    i into n (ai_NoticeBoardWindow 102 -> 59 ins, padded size).
+  - A top-tested loop with `jmp` back and an up-counting index (`xor ecx; cmp ecx,edx; jge .. inc
+    ecx; jmp`) where ours counts down: `k = 0; while (1) { if (k >= n) break; ..; k++; }`; `for (;;)`
+    with the break, `for` with the bound and `continue` forms all count down. A found pre-test
+    the original keeps (`test edx,edx; jne` before the inner search) and the walk based at
+    `&list[1]` (`[edi-4]` / `[edi]`) come back when the compare reads `*p` again instead of an `id`
+    local (ai_AddEquipmentNeeds 73 -> 10 ins, padded size).
+  - Two arrays filled from one record before a print (`prices[0..2]` unrolled into ebp / ebx / edx,
+    the picks through a byte pointer and a scaled counter): ONE loop over both (`for (i..3) {
+    prices[i] = ev->pairPrice[i]; picks[i] = ev->pairPick[i]; }`); separate loops or unrolled
+    stores = control (ai_CourtshipWindow 142 -> 15 ins, padded size). Before that, a frame 12 bytes
+    short was a block-scoped `int prices[3]` declared twice (the click read an uninitialized copy):
+    a meaning bug.
+  - A `return 1` whose test jumps into another failure's epilogue copy (`je` to the create
+    failure) where ours keeps an inline copy: the failure as the last arm (`else if (x1 != 0)
+    remove(..); else return 1;`) or as the result test (`if (x2 != 0) o2 = alloc(..); if (o2 == 0)
+    return 1;`); a `goto room` shared check was `if (kinds) y2 = y; if ((y2 != 0 || type == 0x1dd)
+    && room < count) return 1;` (cm_ExSellObjekt 127 -> 103 ins, padded size).
+  - A call the original makes in each arm (`snd_PlayFavourComment()` at both arm heads) lets the
+    arms' slot-wait tails cross-jump (one `cm_GetSlotValue` copy) (ai_SearchResourceWindow).
+  - Read the size gap first: ai_DuelDiceAnimation's 7 bytes are one parameter load per arm where
+    the original loads it once before `if (fast)`; he_RunDecay's 15 instructions are a stage tail
+    cross-jumped after allocation, blocked by a scratch rotation one step behind from the first
+    out-of-line block on (open in their notes).
+  - No lever: declaration orders for equal-size frame pairs (16 masks, = control); 16 clamp
+    spellings (ternary, min both orders, if / else, set-then-if) x both polarities for an
+    out-of-line `mov bl,3`; a local copy of a parameter (`m = mode`) to hoist its load; memset with
+    -1 instead of 0xff (a -1 cached in ebx).
 
 - **An else-if arm cross-jumped whole into a sibling's copy, the original keeps it inline**: the store order of
   the OTHER arms (default arm charId before stateArg; 0x176 arm stateArg, charId, x, z) decides it, found by
