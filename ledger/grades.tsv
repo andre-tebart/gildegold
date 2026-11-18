@@ -1072,11 +1072,11 @@ exe	0x0045b510	d3s_MeshFromMap	d3s	draft	readable	deep
 exe	0x0045b8d0	d3s_AddShadow	d3s	byte	readable		
 exe	0x0045bcd0	d3s_GetGround	d3s	byte	readable		
 exe	0x0045be10	d3s_Project	d3s	draft	readable	deep	
-exe	0x0045c620	d3s_Update	d3s	shape	readable		
+exe	0x0045c620	d3s_Update	d3s	byte	readable		
 exe	0x0045c9c0	d3s_LightCB	d3s	byte	readable		
 exe	0x0045c9f0	d3s_CollectLights	d3s	byte	readable		
 exe	0x0045ca20	d3s_UpdateObject	d3s	byte	readable		
-exe	0x0045ca60	d3s_UpdateObjectAt	d3s	shape	readable		
+exe	0x0045ca60	d3s_UpdateObjectAt	d3s	shape	readable	deep	
 exe	0x0045cc90	d3s_FreeSlot	d3s	byte	readable		
 exe	0x0045ccd0	d3s_FreeShadows	d3s	byte	readable		
 exe	0x0045cd60	d3s_FreeLightCB	d3s	byte	readable		
@@ -2329,7 +2329,7 @@ exe	0x004ca8a0	cm_ExChrUseGates	cm	byte	readable
 exe	0x004caa20	cm_ExChrAnim	cm	byte	readable		
 exe	0x004caaa0	cm_ExOwnership	cm	byte	readable		
 exe	0x004cab40	cm_ExSetHome	cm	byte	readable		
-exe	0x004cac40	cm_ExGebUpgrade	cm	shape	readable		
+exe	0x004cac40	cm_ExGebUpgrade	cm	shape	readable	deep	
 exe	0x004cb100	cm_ExBuildingDestroyed	cm	byte	readable		
 exe	0x004cb210	cm_ExHandOverCrimes	cm	byte	readable		
 exe	0x004cb250	cm_ExHire	cm	byte	readable		
@@ -2988,7 +2988,7 @@ exe	0x004fe9c0	gm_Free	f3gmt	byte	readable
 exe	0x004fea50	gm_FindById	f3gmt	byte	readable		
 exe	0x004feb30	gm_UpdatePlayers	f3gmt	byte	readable		
 exe	0x004feb60	gm_InitPlayerRecord	f3gmt	byte	readable		
-exe	0x004fec10	gm_SyncMarket	f3gmt	shape	readable		
+exe	0x004fec10	gm_SyncMarket	f3gmt	shape	readable	deep	
 exe	0x004ff190	gm_RefreshGoodsLists	f3gmt	shape	readable		
 exe	0x004ff450	gm_RandomMarketShake	f3gmt	byte	readable		
 exe	0x004ff550	gm_UpdatePrices	f3gmt	shape	readable	deep	
@@ -3254,7 +3254,7 @@ exe	0x00519b50	ls_RelinkScene	ls	byte	readable
 exe	0x00519bf0	ls_WriteObjects	ls	byte	readable		
 exe	0x00519d20	ls_WriteBuildings	ls	byte	readable		
 exe	0x0051a1a0	ls_WritePlayerRecords	ls	byte	readable		
-exe	0x0051a4b0	ls_WriteCharacters	ls	shape	readable		
+exe	0x0051a4b0	ls_WriteCharacters	ls	shape	readable	deep	
 exe	0x0051ad30	ls_ActionIndex	ls	byte	readable		
 exe	0x0051ad60	ls_ActionAt	ls	byte	readable		
 exe	0x0051ad80	ls_WriteSceneCharacter	ls	byte	readable		
@@ -3508,7 +3508,7 @@ exe	0x0053e040	he_CreateEvent	he	byte	readable
 exe	0x0053e1f0	he_FreeEvent	he	draft	readable	deep	
 exe	0x0053e300	he_NextEvent	he	draft	readable	deep	
 exe	0x0053e400	he_FindEvent	he	byte	readable		
-exe	0x0053e4e0	he_SpreadGfxInfos	he	shape	readable		
+exe	0x0053e4e0	he_SpreadGfxInfos	he	byte	readable		
 exe	0x0053e5f0	he_CreateGfxObject	he	byte	readable		
 exe	0x0053e780	he_CreateGfxInfo	he	draft	readable	deep	
 exe	0x0053e840	he_FreeGfxInfo	he	shape	readable		
@@ -3550,7 +3550,7 @@ exe	0x005414a0	he_CharAccident	he	shape	readable
 exe	0x005417d0	he_CharIllness	he	shape	readable		
 exe	0x00541a50	he_RunDueNow	he	byte	readable		
 exe	0x00541a80	he_AllocStammtisch	he	byte	readable		
-exe	0x00541b40	he_StammtischCommand	he	shape	readable		
+exe	0x00541b40	he_StammtischCommand	he	byte	readable		
 exe	0x00542100	he_RunStammtisch	he	shape	readable		
 exe	0x00542490	he_AllocTavern	he	byte	readable		
 exe	0x00542590	he_RunTavern	he	byte	readable		
@@ -3654,7 +3654,7 @@ exe	0x0054fe80	he_StartSendHomeEvent	he	byte	readable
 exe	0x0054ff20	he_RunSendHomeEvent	he	draft	readable	deep	
 exe	0x00550070	he_CreateReaper	he	byte	readable		
 exe	0x00550370	he_MoveReaper	he	shape	readable	deep	
-exe	0x005506c0	he_AimReaper	he	shape	readable		
+exe	0x005506c0	he_AimReaper	he	shape	readable	deep	
 exe	0x00550850	he_TurnReaper	he	byte	readable		
 exe	0x005509f0	he_StartReaper	he	byte	readable		
 exe	0x00550b60	he_RunReaper	he	byte	readable		
@@ -3767,7 +3767,7 @@ exe	0x0055fa90	he_RunMarketSupervisor	he	draft	readable	deep
 exe	0x00560820	he_AllocEvent3c	he	byte	readable		
 exe	0x00560900	he_RunKidnap	he	draft	readable	deep	
 exe	0x00561130	he_AllocRansom	he	byte	readable		
-exe	0x00561190	he_RunRansom	he	shape	readable		
+exe	0x00561190	he_RunRansom	he	shape	readable	deep	
 exe	0x00561470	he_AllocEvent39_3e	he	byte	readable		
 exe	0x005614c0	he_RunRansomDemand	he	shape	readable		
 exe	0x005619a0	he_AllocBurglary	he	byte	readable		
@@ -3841,7 +3841,7 @@ exe	0x0056daa0	he_RunTrainShare	he_b	byte	readable
 exe	0x0056dd20	he_AllocAlchemistDay	he_b	byte	readable		
 exe	0x0056ddc0	he_RoomBusy	he_b	byte	readable		
 exe	0x0056de10	he_RunAlchemistDay	he_b	byte	readable		
-exe	0x0056e070	he_LabIncident	he_b	draft	readable	deep	
+exe	0x0056e070	he_LabIncident	he_b	byte	readable		
 exe	0x0056e400	he_RegisterEventTypes99	he_b	byte	readable		
 exe	0x0056e460	he_AllocSecretRoom	he_b	byte	readable		
 exe	0x0056e5b0	he_RunSecretRoom	he_b	shape	readable	deep	
@@ -3857,7 +3857,7 @@ exe	0x0056f360	he_NoEvent9aFor	he_b	byte	readable
 exe	0x0056f3b0	he_NoEvent9bFor	he_b	byte	readable		
 exe	0x0056f3f0	he_SecretRoomDomizil	he_b	shape	readable		
 exe	0x0056f600	he_FindNearestSpying	he_b	byte	readable		
-exe	0x0056f740	he_SecretRoomCatchSpy	he_b	shape	readable		
+exe	0x0056f740	he_SecretRoomCatchSpy	he_b	byte	readable		
 exe	0x0056f980	he_RegisterEventTypes88	he_b	byte	readable		
 exe	0x0056fbc0	he_SetLifeByAge	he_b	shape	readable	deep	
 exe	0x0056fc50	he_AllocHaunting	he_b	byte	readable		
@@ -4385,7 +4385,7 @@ exe	0x005ae570	ai_SellCarts	lcdom	byte	readable
 exe	0x005ae6b0	ai_SendTransportOrder	lcdom	byte	readable		
 exe	0x005ae870	ai_TransportOrderDue	lcdom	byte	readable		
 exe	0x005ae8e0	ai_CartAtBuilding	lcdom	byte	readable		
-exe	0x005ae9a0	ai_TransportFromLager	lcdom	shape	readable		
+exe	0x005ae9a0	ai_TransportFromLager	lcdom	shape	readable	deep	
 exe	0x005af010	ai_TransportGoodsTotal	lcdom	byte	readable		
 exe	0x005af1a0	ai_OpenTransport	lcdom	byte	readable		
 exe	0x005af1b0	ai_OpenTransportSell	lcdom	byte	readable		
