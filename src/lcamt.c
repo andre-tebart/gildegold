@@ -4020,12 +4020,8 @@ void ai_ShowSettingGoods(int win, G8SLOT *slots, int *sliders, int *locks)
     io_PrintText(0x1949);
     d2_SetForm(win, 2);
     io_PrintText("$C");
-    i = 0;
-    for (y = 0xc; y < 0x15c; y += 0x30) {
-        if (slots[i].good == 0) {
-            sliders[i] = -1;
-            locks[i] = -1;
-        } else {
+    for (i = 0, y = 0xc; y < 0x15c; y += 0x30, i++) {
+        if (slots[i].good != 0) {
             pic = d2_WinOpenPic(0xf, i * 0x30, slots[i].good + 0xdf, d2_LastWindow);
             d2_Objs[pic].style = 3;
             d2_Objs[pic].user = &((AIGOOD *)ai_Goods)[slots[i].good];
@@ -4036,8 +4032,10 @@ void ai_ShowSettingGoods(int win, G8SLOT *slots, int *sliders, int *locks)
             sliders[i] = d2_WinOpenSlider(100, y, 200, 0, 0x64, 0x7b, 0x802, d2_LastWindow);
             d2_SetObjValue4(sliders[i], 0, 0x64, slots[i].weight);
             d2_SetObjEnabled(sliders[i], slots[i].lock == 0);
+        } else {
+            sliders[i] = -1;
+            locks[i] = -1;
         }
-        i++;
     }
 }
 /* 0x5c2b90, the master letter window "berufe\_meisterbrief_2" of a building's master (1609 B .. its switch tables

@@ -4495,7 +4495,7 @@ exe	0x005c2490	ai_ShowWorkSettingsPage	lcamt	213d2c8f42739f6d	no	shape	sweep con
 exe	0x005c26a0	ai_MasterLetterNoticeWindow	lc	882ab66010b0bb01	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005c2730	ai_MasterLetterKindWindow	lc	b96922d120b44cea	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005c27b0	ai_MasterHireWindow	lc	36c69bfdd74f82f2	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	4404f9ca1b648b10
-exe	0x005c2a10	ai_ShowSettingGoods	lcamt	d8114348687eb5ce	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=568	2eb3e29bb00f55b1
+exe	0x005c2a10	ai_ShowSettingGoods	lcamt	80efd62d81e42a09	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	47b0325554d52c51
 exe	0x005c2b90	ai_MasterLetterSettings	lc	d88621a20dc76c5e	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
 exe	0x005c3200	ai_MasterLetterWindow	lc	2400265006fee361	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x005c33c0	ai_PassesPartnerFilter	lcamt	36df523a9fabd53e	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	b1de023bb15040ae
