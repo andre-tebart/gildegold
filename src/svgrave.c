@@ -2585,7 +2585,6 @@ void ai_GraveHauntContact(AIBLD *rec)
     int poor;
     int i;
     int id;
-    int b;
     LARGE_INTEGER mask;
 
     memset(&q, 0, sizeof(q));
@@ -2643,19 +2642,16 @@ void ai_GraveHauntContact(AIBLD *rec)
                     msg.ids[0] = f->netId;
                     if (p->bld2 != 0)
                         msg.arg[0] = p->bld2->id;
+                    else if (p->bld != 0)
+                        msg.arg[0] = p->bld->id;
                     else {
-                        if (p->bld != 0)
-                            b = p->bld->id;
-                        else {
-                            int pick;
+                        int pick;
 
-                            mask.LowPart = 0x7b4c4a0;
-                            mask.HighPart = 0;
-                            pick = -1;
-                            ai_PickActionBuilding((struct AIPER *)ai_Chars[ai_PlayerId], 0, mask.QuadPart, 0, 100.0f, &pick);
-                            b = pick;
-                        }
-                        msg.arg[0] = b;
+                        mask.LowPart = 0x7b4c4a0;
+                        mask.HighPart = 0;
+                        pick = -1;
+                        ai_PickActionBuilding((struct AIPER *)ai_Chars[ai_PlayerId], 0, mask.QuadPart, 0, 100.0f, &pick);
+                        msg.arg[0] = pick;
                     }
                     id = cm_SendLongMessage((char *)&msg);
                     while (id != -1 && cm_GetSlotState(id) == 0)
