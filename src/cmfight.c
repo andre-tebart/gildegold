@@ -5252,7 +5252,7 @@ void cm_RunCutOrders(CMCUTINFO *rec)
    toggle (key 0x39 = space) with the character animations and the "pause" text, the frame of the UI, and every 0x15e timer calls
    the characters' fight-AI (0x4d2f80) and the fighters' commands (0x4d76a0). Ends with the end-of-fight code 0x4d6b70. */
 
-void cm_FightLoop(char *a)
+void cm_FightLoop(char *a, int ctx)
 {
     unsigned int t;
     int i, r;
@@ -5306,34 +5306,18 @@ void cm_FightLoop(char *a)
     }
     cm_CloseFightUI();
 }
-/* 0x4d8b10, the fight member callback (kind 3, a: the member record): on the first run of the scene party only the fight
-   result (cm_FightResult), on the later runs the fight loop
-   @deep s25: the original's FR path (mov eax,[esp+4]; push eax; call cm_FightResult; add esp,4; ret) is
-   the only forwarding call in the whole exe that VC6 did not turn into a tail jmp (grep_orig over all 4666
-   functions: unique; 613 functions read [esp+4] into eax). Toys (VC6 /O2 /Gy, scratch toycc.py) all
-   tail-call it: void / int / char / short / unsigned callers and callees, return; vs if / else vs goto vs
-   switch vs do-while(0) vs for, a dead local store after the call, a decided retest of the global after
-   the call, an unprototyped / implicit / varargs callee, a varargs or K&R caller, a 4- or 8-byte struct
-   return, a 4-byte struct argument, the callee defined above with cm_FightResult's body, static callee.
-   What blocks it in toys: an extra argument (push 2), a 12-byte struct return, a narrowing conversion of
-   the result (return (char)f(a): movsx after), a use of a after the call (if (a == 0) return;: a kept in
-   esi), the param's address taken. dcp try: (void), casts of a and of the callee (int / unsigned / float /
-   char / i64 / varargs), a copy local, else-if, two ifs, switch, goto, ternary pointer call: control or
-   worse; a double-returning view: shape 1 ins (fstp st(0) more). Left: code 6, no lead. prior: read whole
-   function against the original: same test of cm_ScenePartyRuns, same two callees with the incoming a,
-   same layout. Only difference: the original calls cm_FightResult with push [esp+4]/call/add esp,4/ret
-   where ours tail-jumps (jmp cm_FightResult); the second branch is a tail jmp on both sides. Tried
-   if/else, reversed condition (wrong order), int-cast callee, unprototyped cast, int-returning caller: all
-   still tail-call. Hunk: +0x19 '- jmp X' vs '+ mov eax,[esp+4]; push eax; call X; add esp,4; ret'. A VC6
-   tail-call decision, no meaning difference. */
+/* 0x4d8b10, the fight member callback (kind 3, cm_Kinds[].askPlayer: a the member record, ctx the party's
+   context): on the first run of the scene party only the fight result (cm_FightResult), on the later runs the
+   fight loop, which gets the callback's two arguments (VC6 tail-jumps to it; the one-argument cm_FightResult
+   call is not a tail call because the callee's argument count differs from the caller's) */
 
-void cm_FightMember(char *a)
+void cm_FightMember(char *a, int ctx)
 {
     if (cm_ScenePartyRuns == 0) {
         cm_FightResult(a);
         return;
     }
-    cm_FightLoop(a);
+    cm_FightLoop(a, ctx);
 }
 /* 0x4d8b30, clears the 16 ints at 0x92ca80 */
 

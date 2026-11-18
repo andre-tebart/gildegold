@@ -825,8 +825,8 @@ extern int cm_FightPaused;  /* 0x6f0ce4, fight paused */
 
 extern int cm_ScenePartyRuns;  /* 0x6f0d7c */
 struct MSXTRACK * msx_PlayAmbient(char *name, int vol);  /* 0x4243f0 */
-void cm_FightLoop(char *a);  /* 0x4d88c0 */
-void cm_FightMember(char *a);  /* 0x4d8b10 */
+void cm_FightLoop(char *a, int ctx);  /* 0x4d88c0 */
+void cm_FightMember();  /* 0x4d8b10, defined (char *a, int ctx), the cm_Kinds[].askPlayer callback; unprototyped here so that cm.h keeps its declaration count (the tie-break-sensitive functions of the units including it) */
 
 extern int cm_SceneChars[16];  /* 0x92ca80 */
 extern unsigned int cm_FightStart;  /* 0x6f0da4, fight start (d3_Time) */
