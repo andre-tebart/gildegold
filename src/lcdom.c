@@ -5547,20 +5547,25 @@ void ai_OpenRobberBribe(int bld)
    mix of the two characters (gm_Mix 4) reaches 1, sends the quarrel message 0x2e from ch to the player (text
    0x175b), else tells the letter failed (0x175c); the second button or a right click close it. Returns 1 once
    the letter went out, else 0
-   @deep Reconstructed whole against the original 0x5b4c60..0x5b4fab (threatening letter: the checks,
-   he_NoEvent88Pair 0x409f, gv_HeldCrimeCount 0x1756, the window 0x1759 with the talent row 4, the 2 money,
-   gm_Mix + util_RandomF >= 1 sending the quarrel message 0x2e (to ch, from -1, flags 2, arg[0] ch, arg[1]
-   the player) with 0x175b, else 0x175c): from +0xf1 on every instruction of the window, the loop and the
-   message equals the original. Left only the block layout of the early exits: the original keeps a
-   separate epilogue (xor eax,eax / pop edi / pop esi / pop ebx / add esp,0x51c / ret) after each of the 7
-   early returns and its own txt_Format/sv_MessageBox sequence for 0x409f and 0x1756, ours jumps to one
-   shared epilogue at +0xf1 and cross-jumps the two message sequences (+0x96 'push 0x409f; jmp +0xd2');
-   diffclass: tail 32, code 28 (+0x5f the sv_CheckMoney exit, +0x8d the merged message call), order 14.
-   Tried return sent for every early exit (no change) (size: 18 of the instruction difference are shared /
-   inline tails) (size: 247 vs 265 instructions, explained: ours 229 vs the original's 265: the original
-   duplicates the 6-instruction epilogue at each of its 8 returns and keeps both 6-instruction message call
-   sequences, ours shares one epilogue and one message sequence (returns=3/8 in asmdiff); no statement is
-   missing) */
+   @deep s13 (size queue): the original stores sent = 0 to its slot [esp+0xc] in the first block (test esi;
+   mov [esp+0xc],0; jne), ours sinks the store past the guards into the window path; with the store at the
+   top VC6 gives every early return its own inline epilogue as the original: the probe { static int *probe;
+   probe = &sent; } after sent = 0 removes all tail hunks (50 -> 34 ins, the rest the probe's own frame
+   slot). So the open question is what keeps the original's zero store at the top (sent is memory-homed in
+   both: sent = 1 stored from the eax shared with sv_PopRequest = 1). No lever (dcp try, = control or
+   worse): return sent at the guards / the message exits / everywhere, int sent = 0 initializer, sent = 0
+   after the first guard (52), char sent (62), the three id guards as one || (57). Next: what else reads or
+   takes sent before the guards in the original (a second use, a call taking &sent), or sent as another
+   variable's reuse. prior: Reconstructed whole against the original 0x5b4c60..0x5b4fab (threatening
+   letter: the checks, he_NoEvent88Pair 0x409f, gv_HeldCrimeCount 0x1756, the window 0x1759 with the talent
+   row 4, the 2 money, gm_Mix + util_RandomF >= 1 sending the quarrel message 0x2e (to ch, from -1, flags
+   2, arg[0] ch, arg[1] the player) with 0x175b, else 0x175c): from +0xf1 on every instruction of the
+   window, the loop and the message equals the original. Left only the block layout of the early exits: the
+   original keeps a separate epilogue (xor eax,eax / pop edi / pop esi / pop ebx / add esp,0x51c / ret)
+   after each of the 7 early returns and its own txt_Format/sv_MessageBox sequence for 0x409f and 0x1756,
+   ours jumps to one shared epilogue at +0xf1 and cross-jumps the two message sequences (+0x96 'push
+   0x409f; jmp +0xd2'); diffclass: tail 32, code 28 (+0x5f the sv_CheckMoney exit, +0x8d the merged message
+   call), o... */
 
 int ai_DrohbriefAmountCB(AICHARREC *ch)
 {
