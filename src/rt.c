@@ -568,20 +568,19 @@ void rt_InitControls(int *out)
 /* 0x4be940, the dialog "misc/routing_edit_point" for route point p of the list rt_EditRoute: the goods to load
    (loadSlots) and to unload (unloadSlots), up to three each (by the cart type), with their amounts; a button deletes the
    point and rebuilds the marks on window win
-   @deep tie-break sensitive: dcp headers sample gives 2 codegens in 32 samples, none better than built
-   (draft 35 ins). One round of spellings for the two -1 webs (original: objs1 stores from 'or edx,-1',
-   objs2 from 'or eax,-1'; ours one 'or eax,-1'): objs1/objs2 interleaved (35 ins, slots 2), objs2 first
-   (35), chained a=b=c=-1 (37) / reversed chain (= control), objs2[k] = objs1[k] (= control), gm_ListStock
-   after the inits (50) or between them (41). Left: +0x147 code hunk (the second -1 register and the
-   rt_InitControls loop's ecx/eax for ctl1/ctl2), regs eax->edx edx->ecx after it, order hunks at
-   +0x4e8/+0x523 (mov edi,1/2 after mov ebx,ecx in the original) and +0x653. Park for the unit's
-   declaration pass. (tiebreak: sensitive) prior: read whole against the original: fixed the delete-point
-   loop (p walks the list, ends 0), the btns copy into ok/del locals, btns[8] (frame 0xd0 now equal), the
-   typed AIBLD/AIOBJ/AIBTYPE/D2OBJ accesses. Left: allocation only - after gm_ListStock the original holds
-   -1 in two registers (+0x147 'or edx,-1' then objs1 stores from edx, objs2 from eax; ours one 'or eax,-1'
-   for both), so the rt_InitControls loop picks ecx/eax instead of eax/ecx (regs eax->edx edx->ecx), and
-   two order hunks at +0x4e8/+0x523 (mov edi,1/2 scheduled before vs after mov ebx,ecx). Tried chained
-   assignment of objs1/objs2 (worse). */
+   @deep deep s39: proven byte under a declaration set (5 unused typedefs at the unit's start; dcp grade).
+   The two -1 registers (or edx,-1 / or eax,-1) came from the fills written as two element loops (for (i =
+   0; i < 3; i++) objs1[i] = -1; the same for objs2; memset(.., 0xff, ..) twice is the same code): 35 -> 6
+   ins, every code / regs hunk gone; then sel, selc, kind in the two pick loops (mov ebx,ecx before mov
+   edi,1): 6 -> 2. Built in the tree's declaration set 2 ins are left: the route-mark loop's hoisted loads
+   (the original loads win before cart). prior: tie-break sensitive: dcp headers sample gives 2 codegens in
+   32 samples, none better than built (draft 35 ins). One round of spellings for the two -1 webs (original:
+   objs1 stores from 'or edx,-1', objs2 from 'or eax,-1'; ours one 'or eax,-1'): objs1/objs2 interleaved
+   (35 ins, slots 2), objs2 first (35), chained a=b=c=-1 (37) / reversed chain (= control), objs2[k] =
+   objs1[k] (= control), gm_ListStock after the inits (50) or between them (41). Left: +0x147 code hunk
+   (the second -1 register and the rt_InitControls loop's ecx/eax for ctl1/ctl2), regs eax->edx edx->ecx
+   after it, order hunks at +0x4e8/+0x523 (mov edi,1/2 after mov ebx,ecx in the original) and +0x653. Park
+   for the unit's declaration pass. (tiebreak: sensitive) */
 
 void rt_EditPointDialog(RTPOINT *p, int *win)
 {
@@ -635,12 +634,10 @@ void rt_EditPointDialog(RTPOINT *p, int *win)
     n = cnt[cart->id - 0x134];
     s = (AIOBJ *)gm_Query((void *)cart->list, 1, 0, 0x1dd);
     a = gm_ListStock((int)s, 0);
-    objs1[0] = -1;
-    objs1[1] = -1;
-    objs1[2] = -1;
-    objs2[0] = -1;
-    objs2[1] = -1;
-    objs2[2] = -1;
+    for (i = 0; i < 3; i++)
+        objs1[i] = -1;
+    for (i = 0; i < 3; i++)
+        objs2[i] = -1;
     for (i = 0; i < 3; i++) {
         rt_InitControls(ctl1[i]);
         rt_InitControls(ctl2[i]);
@@ -702,16 +699,16 @@ void rt_EditPointDialog(RTPOINT *p, int *win)
             kind = 0;
             for (i = 0; i < 3; i++) {
                 if (objs1[i] != -1 && objs1[i] == d2_PointerObj) {
-                    kind = 1;
                     sel = &p->loadSlots[i * 2];
                     selc = ctl1[i];
+                    kind = 1;
                 }
             }
             for (i = 0; i < 3; i++) {
                 if (objs2[i] != -1 && objs2[i] == d2_PointerObj) {
-                    kind = 2;
                     sel = &p->unloadSlots[i * 2];
                     selc = ctl2[i];
+                    kind = 2;
                 }
             }
             if (sel != 0) {
