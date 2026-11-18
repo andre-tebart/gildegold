@@ -2379,9 +2379,9 @@ int hst_ParseCommandline_2nd_Pass(int k)
         p++;
     }
     if (started) {
-        slot = 8;
+        k = 8;  /* @original: the last word's slot is kept in the parameter k (the frame packs it with p) */
         if (((HST_LABEL *)word)->mode.tag == hst_ListModeUse) {
-            slot = atoi(word);
+            k = atoi(word);
             q = word + 8;
         } else
             q = word + 2;
@@ -2390,7 +2390,7 @@ int hst_ParseCommandline_2nd_Pass(int k)
                 break;
         }
         if (i < 27)
-            hst_CommandCallbacks[i](row, slot, q + strlen(hst_CommandNames[i]));
+            hst_CommandCallbacks[i](row, k, q + strlen(hst_CommandNames[i]));
     }
     return 1;
 }
