@@ -1005,7 +1005,7 @@ Where the pushes and pops sit, how many epilogue copies there are, shared agains
     (the message 0xf's n / ch stores after the push of &m; 4000+ orders and the block-local m tried),
     hmt_FillCouncils (bonus: the council loop's i = 2 .. 0 with the test on i + 1).
 
-- **Deep s33 (the near-byte list to 50 instructions, notes older than s22 first, 15 items: 9 byte + 1 fix, 6
+- **Deep s33 (the near-byte list to 50 instructions, notes older than s22 first, 15 items: 8 byte (one after a fix), 7
   notes; 1 bonus)**:
   - **A parameter VC6 keeps in a register where the original reads its slot each time: one of its reads was
     another variable**: amt_Rating's `if (mode == 2)` was the decision record's `rec.dec.cur == 2` (the original's
