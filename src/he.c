@@ -14015,20 +14015,7 @@ void he_AllocBrawl(AIJOB *e)
    (0xff3); else ai_BrawlWin decides: a win tells both (0x173b / 0x173a) and the victim pays (2 with the item
    0x2b4, else 1 less), a loss tells both (0x173d / 0x173c); then the accusation (gv_Accuse 0x15) and, for a
    victim not a player, a relation loss of 25. 5: back home (else 4 more minutes) it is cancelled. Stages -2 / -1
-   kill the thug and free the event
-   @deep reconstructed from the 320-byte stub against 0x55a730..0x55af68, every case read and written
-   (HEBRAWL: place 0xac, victim 0xb4, thug 0xc8, slot 0xcc, meet 0xd0, watch 0xd4, fee 0xd8): the start's
-   cancel without thug, stages 0,1,2,7,8,9,3,4,5,-2/-1 in the original's layout order (switch tables equal,
-   case 6 absent), the brawl's item tests 0x2c0 / 0x17c / 0x2b4, news 0x1012/0x1010/0xff3/0x173a-0x173d
-   with their flags and HS_17, gv_Accuse 0x15 twice, cm_SendRelations -25; 695 vs 688 instructions,
-   refs_differ 0. Left (diffclass): tail 18 (the original shares the stage = -1 block at +0x187 with case 5
-   and the stage = 4 block at +0x2d4 with case 1 that ours keeps inline), order 12 in case 1 (- add
-   esp,0x18 before the slot store / + after the stage load, pop edi moved), code 18 + 7 in case 7: the same
-   store schedule he_RunSabotage keeps (- mov [esi+0x70],8 / mov [esi+0xd4],edx then add esi,0x52; + add
-   esi,0x52 first, mov [esi+0x1e],8 / mov [esi+0x82],edx) and the original's own stage = 4 copy at
-   +0x55aa04 that ours merged into case 1's. Tried: case 0 success first (matched, kept), the stage++
-   before slot = -1 (matched, kept), case 1 success first (worse, reverted) (size: 14 of the instruction
-   difference are shared / inline tails) */
+   kill the thug and free the event */
 void he_RunBrawl(AIJOB *e)
 {
     HEBRAWL *br = (HEBRAWL *)e;
@@ -14063,13 +14050,13 @@ void he_RunBrawl(AIJOB *e)
     }
     case 1:
         b = (AIBLD *)gm_BuildQuery(1, 1, br->meet);
-        if (b == 0) {
-            e->stage = 4;
-            return;
+        if (b != 0) {
+            br->slot = cm_SendChrGotoBuilding(br->thug, b->id, -1, 0, 1, "Pr\xfcgel");
+            e->stage++;
+            break;
         }
-        br->slot = cm_SendChrGotoBuilding(br->thug, b->id, -1, 0, 1, "Pr\xfcgel");
-        e->stage++;
-        return;
+        e->stage = 4;
+        break;
     case 2:
         br->slot = -1;
         c = (AICHAR *)gm_FindChar(br->thug);
@@ -14097,8 +14084,8 @@ void he_RunBrawl(AIJOB *e)
             d.found = 0;
             if (he_DetectAttack(&d) != 0) {
                 br->slot = gv_Accuse(0x15, 1, ai_CharsT[e->chr].netId, victim->netId, b->id);
-                e->stage = 8;
                 br->watch = d.found->id;
+                e->stage = 8;
                 e->end = ai_Time;
                 return;
             }
@@ -14147,7 +14134,7 @@ void he_RunBrawl(AIJOB *e)
     case 3:
         cm_SendChrGotoBuilding(br->thug, e->from, -1, 0, 1, "Pr\xfcgel");
         e->stage++;
-        return;
+        break;
     case 4:
         if (gm_CompareTime(&e->end, &ai_Time) >= 0)
             return;
@@ -14216,12 +14203,12 @@ void he_RunBrawl(AIJOB *e)
             e->stage = -1;
             return;
         }
-        if (c->scene->actions == 0) {
-            e->stage = -1;
+        if (c->scene->actions != 0) {
+            e->end = ai_Time;
+            gm_AddTime(&e->end, 0, 4, 0);
             return;
         }
-        e->end = ai_Time;
-        gm_AddTime(&e->end, 0, 4, 0);
+        e->stage = -1;
         return;
     case -2:
     case -1:
