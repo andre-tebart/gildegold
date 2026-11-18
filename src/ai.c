@@ -3646,7 +3646,24 @@ void ai_CalcEntryCost(AIENTRY *e0)
    master's own building, the kind-2 warehouses and offers without a goods object skipped) whose supply covers the
    need and whose buy amount - half the entry capacity, at least 1, above half the slot capacity minus the pending
    pieces, below the slot capacity - pending - 1 and the budget / price - is at least the need
-   @deep B3 behaviour draft: 43 code hunks + 9 fill, all after instruction 88 - a stack-slot / block-order difference (the original keeps the row pointer of gm_Offers[j] in a slot and initializes the loop counter with a constant 0 store, ours zeroes through eax and keeps the row base in ebp: [esp+0x14]/[esp+0x18] roles swapped at instruction 179), no meaning-class lead left: statements, constants (the special item list 0x1c1 .. 0x1c7 / 0x2af / 0x2b0), callees and field offsets all match and the Q rules are clean after this session's work. Q2 done: gm_CollectOffers -> gm_CollectOffers (unified with the f3gm.c definition), gm_Offers -> gm_Offers, gm_NOffers -> gm_NOffers (the f3gm.c evidence: the offer table of 6-int rows and its count), AISTORE.unk08 -> goodsObj (the goods object of an offer), AISLOT.unk28 -> the amount member (the union alias removed). Q6 done (description above the definition). */
+   @deep s36: now 25 ins (draft by two branch targets). Mechanism read: the offer loop's break (j >=
+   gm_NOffers) jumps in the original to the shared test eax,eax of if (!found) return 0 (eax = found:
+   zeroed by xor eax,eax and stored to found and j, reloaded at the loop bottom), ours to the return 0
+   directly: VC6 knows found == 0 at our loop top (both edges into it carry found == 0: the init and the
+   while (!found) back edge); in the original found was not known there and the 0 was one eax constant for
+   found and j. Tried: found = j = 0 / separate inits in both orders / found = 0 before gm_CollectOffers /
+   found = 0 above the entry test (all 25, other codes); for (j = 0; !found; j++) with the break, while
+   (!found) {..}: 93; for (..; j < n; j++) {..; if (found) break;}: 122; for (..; j < n && !found; ..) /
+   !found && j < n: 114 / 93. prior: B3 behaviour draft: 43 code hunks + 9 fill, all after instruction 88 -
+   a stack-slot / block-order difference (the original keeps the row pointer of gm_Offers[j] in a slot and
+   initializes the loop counter with a constant 0 store, ours zeroes through eax and keeps the row base in
+   ebp: [esp+0x14]/[esp+0x18] roles swapped at instruction 179), no meaning-class lead left: statements,
+   constants (the special item list 0x1c1 .. 0x1c7 / 0x2af / 0x2b0), callees and field offsets all match
+   and the Q rules are clean after this session's work. Q2 done: gm_CollectOffers -> gm_CollectOffers
+   (unified with the f3gm.c definition), gm_Offers -> gm_Offers, gm_NOffers -> gm_NOffers (the f3gm.c
+   evidence: the offer table of 6-int rows and its count), AISTORE.unk08 -> goodsObj (the goods object of
+   an offer), AISLOT.unk28 -> the amount member (the union alias removed). Q6 done (description above the
+   definition). */
 
 int ai_HasMaterials(AICHAR *ch, AIENTRY *e, int f)
 {
