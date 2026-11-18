@@ -1809,7 +1809,7 @@ exe	0x004aa940	aip_ExecPamphlet	aip	byte	readable
 exe	0x004aaa10	aip_ExecDrohen	aip	byte	readable		
 exe	0x004aaae0	aip_ExecAnschwaerzen	aip	byte	readable		
 exe	0x004aab90	ai_TrustedOfTwo	aip	byte	readable		
-exe	0x004aad30	ai_TrustedOfFour	aip	shape	readable	deep	
+exe	0x004aad30	ai_TrustedOfFour	aip	byte	readable		
 exe	0x004aaef0	ai_FindDarkCornerTarget	aip	byte	readable		
 exe	0x004aafb0	ai_ExecMessage74	aip	byte	readable		
 exe	0x004ab080	ai_DecideBuyDunkleEcke	aip	byte	readable		
@@ -3553,7 +3553,7 @@ exe	0x00541a80	he_AllocStammtisch	he	byte	readable
 exe	0x00541b40	he_StammtischCommand	he	shape	readable		
 exe	0x00542100	he_RunStammtisch	he	shape	readable		
 exe	0x00542490	he_AllocTavern	he	byte	readable		
-exe	0x00542590	he_RunTavern	he	draft	readable	deep	
+exe	0x00542590	he_RunTavern	he	byte	readable		
 exe	0x00542960	he_AllocOffer	he	byte	readable		
 exe	0x00542b60	he_RunWeddingOffer	he	byte	readable		
 exe	0x00543020	he_AllocQuarrel	he	byte	readable		
@@ -3613,7 +3613,7 @@ exe	0x00549970	he_StartTraining	he	byte	readable
 exe	0x00549aa0	he_RunTraining	he	draft	readable	deep	
 exe	0x00549ce0	he_BeginPlague	he	byte	readable		
 exe	0x00549f70	he_StartPlague	he	byte	readable		
-exe	0x0054a020	he_RunPlague	he	draft	readable	deep	
+exe	0x0054a020	he_RunPlague	he	byte	readable		
 exe	0x0054a6f0	he_StartGang	he	byte	readable		
 exe	0x0054a7b0	he_RunGang	he	shape	readable		
 exe	0x0054ae20	he_AllocProtectionAsk	he	byte	readable		
@@ -3724,7 +3724,7 @@ exe	0x00558f10	he_RunSabotage	he	draft	readable	deep
 exe	0x00559d20	he_AllocSpying	he	draft	readable	deep	
 exe	0x0055a030	he_RunSpying	he	draft	readable	deep	
 exe	0x0055a5f0	he_AllocBrawl	he	byte	readable		
-exe	0x0055a730	he_RunBrawl	he	draft	readable	deep	
+exe	0x0055a730	he_RunBrawl	he	byte	readable		
 exe	0x0055af70	he_AllocTheft	he	byte	readable		
 exe	0x0055b140	he_RunTheft	he	byte	readable		
 exe	0x0055b3e0	he_AllocRepair	he	byte	readable		
@@ -3856,7 +3856,7 @@ exe	0x0056f2e0	he_SecretRoomAttack	he_b	byte	readable
 exe	0x0056f360	he_NoEvent9aFor	he_b	byte	readable		
 exe	0x0056f3b0	he_NoEvent9bFor	he_b	byte	readable		
 exe	0x0056f3f0	he_SecretRoomDomizil	he_b	shape	readable		
-exe	0x0056f600	he_FindNearestSpying	he_b	shape	readable	deep	
+exe	0x0056f600	he_FindNearestSpying	he_b	byte	readable		
 exe	0x0056f740	he_SecretRoomCatchSpy	he_b	shape	readable		
 exe	0x0056f980	he_RegisterEventTypes88	he_b	byte	readable		
 exe	0x0056fbc0	he_SetLifeByAge	he_b	shape	readable	deep	
