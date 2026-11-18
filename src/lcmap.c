@@ -2892,6 +2892,7 @@ char ai_NewsKeyHS46[20] = "_NACHRICHTEN_HS_46";  /* 0x62c2ac, the second text of
 char ai_NewsKeyFriedhof12[28] = "_NACHRICHTEN_FRIEDHOF_12";  /* 0x62c364, the sound of the graveyard work news ai_TellGraveWorkSuccess (event 0x5fb) */
 char ai_NewsKeyFriedhof13[28] = "_NACHRICHTEN_FRIEDHOF_13";  /* 0x62c380, the sound of the graveyard work news (event 0x5fb) */
 char ai_NewsKeyFriedhof00[28] = "_NACHRICHTEN_FRIEDHOF_00";  /* 0x62c39c, the sound of the graveyard news ai_GraveyardMessage (event 0x5fa) */
+int ai_BauplatzCount = 0;  /* 0x6f2688 */
 int ai_DragSavedMaxY = 0;  /* 0x6f268c, the mouse bounds di_MaxY / di_MinY / di_MaxX / di_MinX kept while the town map is */
 int ai_DragSavedMinY = 0;  /* 0x6f2690, dragged with the right button (ai_DragTownMap) */
 int ai_MapScrollY = 0;  /* 0x6f2694, the town map's scroll the key / edge scroll last computed (ai_ScrollTownMap) */

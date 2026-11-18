@@ -123,7 +123,6 @@ typedef struct ORDCHARKIND {            /* the character record seen from its ki
     char pad83[0x21c - 0x83];
 } ORDCHARKIND;
 #define ORD_CHARKINDS ((ORDCHARKIND *)((char *)ai_Chars + 2))
-unsigned char ai_OwnPlayer = 0;  /* 0x6f1bc5: defined here because ord.c does not read it (the ai data area) */
 float ord_RatingRate;  /* 0x91aaf4, the change rate of the rating (ord_AdvanceRatingBase; ls.c saves it) */
 ORDSTATROUND ord_StatisticsHistory[16];  /* 0x91ab00, the statistics of the last 16 rounds */
 char ord_RatingBytes[16];  /* 0x91b460, 5 + 1 bytes */

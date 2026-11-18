@@ -40,7 +40,6 @@ const char ls_LanguageNames[][0x40] = { "GERMAN", "ENGLISH", "FRENCH", "ITALIAN"
 extern int gm_PlayerRecords[688];          /* 0x7d5f80, the 16 player records (0xac bytes each; gm_PlayerRecord, f3gm.c) */
 #define gm_PlayerFins (*(AIFIN (*)[16])&gm_PlayerRecords)  /* 0x7d5f80, gm_PlayerRecords (f3gm.c: int[688]) as the 16 AIFIN records it holds */
 /* gm_PlayerRecordBytes: view of gm_PlayerRecords (tools/data_views.py) */
-int ai_NextCrimeId = 0;  /* 0x6f1b88 .. */
 unsigned char ls_SaveSlot = 0;  /* 0x6f1c38, the slot the save header records */
 /* ai_Unk76fa24: view of cm_SaveAcks (tools/data_views.py) */
 extern int ai_NextCharNumber, ai_NextPlayerNumber;   /* 0x6f1bb8, 0x6f1bbc, 0x6f1bc0 */
