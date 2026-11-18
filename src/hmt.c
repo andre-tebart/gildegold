@@ -80,22 +80,19 @@ unsigned short hmt_RandomTextOffset(unsigned short k)
     return ret;
 }
 /* 0x4ac1a0, the text id of line n (at most 9) of record k: 0x1e2b + n, or 0x1e35 + n if textSet is set
-   @deep size queue s7: tried (no lever): n declared int in the prototype and the definition (= control,
+   @deep deep s28: the mechanism: ours copy-propagates m = n into the clamp compare (cmp di,9 on n, then
+   mov esi,edi), so n has 3 references (c2trace n#1 prio 10 sav 4 -> edi); the original compares m (mov
+   esi,[n]; cmp si,9) and keeps n in memory for the null return (mov ax,[esp+0xc]). Tried this session: m >
+   8 (19), (m = n) >= 9 / n < 9 ? n : 9 / min(n, 9) (= control), n >= 9 ? 9 : n and if/else (draft 15), m
+   int / unsigned int (draft 14..16); flip.py --want 'mov ax, WORD PTR _n' over every single statement
+   mutation: 0 hits; climb round 1: nothing. Left: code 21 / slots 2, the edi push and the n register.
+   prior: size queue s7: tried (no lever): n declared int in the prototype and the definition (= control,
    same code); roles swapped (m = n; clamp n itself; return m): 9 ins, the copy m then takes edi instead of
    n (the same push/pop edi); n assigned in the arms and returned once (if/else, ?:) = control, with the
    test flipped 19. Read: the original never holds the unclamped n in a register (mov esi,dword [n] for the
    clamp, mov ax,word [n] for the null return), so n must not be a candidate with savings >= 1; the twin
    hmt_RandomTextOffset's dead e->textSet load says both come from one shape where the textSet test's arms
-   merge. prior: size queue: 67 vs 63 raw (padded 80 vs 64): the original keeps n in memory (m = n loaded
-   straight into esi, return n reloads mov ax,[n]; only esi pushed); ours n#1 -> edi (c2trace: 3 refs, sav
-   4), so edi is pushed/popped at each exit. s3 tried (no lever): ?: / if-else / (m = n) >= 9 / min()
-   clamps x four exit shapes (if/else returns, !e early return, ?: return, textSet test flipped),
-   single-exit r / n reuse forms: control or worse. hmt_GetRecord is defined below (unknown callee). Twin
-   hmt_RandomTextOffset (0x4ac170) has a dead load of e->textSet in the original: both may come from a
-   shared inline/macro around hmt_GetRecord + textSet; next: try that shape (and n's type as int with the
-   header). prior: code hunks 53: the original keeps n only in its argument slot and reloads it after the
-   call (m in esi), ours holds n in edi across the call (extra push/pop); statements and result are equal,
-   ... */
+   merge. */
 
 unsigned short hmt_RecordTextId(unsigned short k, unsigned short n)
 {

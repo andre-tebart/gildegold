@@ -10780,7 +10780,15 @@ void ai_LawBookContact(AIBLD *bld, int room)
    hall of the class 0x17 / 0x18 / 0x19 / 0x1a) also gets the city's text (0x1a1b), an amount slider from 0x640 to
    the player's limit (ai_AmountLimit of his goods value) and a pay button: a click moves the slider's amount
    (gm_PlayerFactor) from the player to the box when sv_CheckGoodAmount allows it; the cancel button and a right
-   click close the window */
+   click close the window
+   @deep deep s28: only slots differ: amount and cancelBtn swap [esp+0x10] / [esp+0x14] (the original:
+   cancelBtn nearest esp, it gets the first -1 store at [esp+4] before push ebp). c2frame --refs: amount
+   count 4 (the store, the 0x1a1a print, &amount, gm_ConvertMoney), cancelBtn 3, payBtn 2: the packer
+   (size, then count descending) puts amount first; the original needs cancelBtn above amount. Tried:
+   payBtn = cancelBtn = -1 (= control), cancelBtn = payBtn = -1 (slots 16), the rup click as if / else-if
+   before the master test (draft 17); climb 3 rounds (61 / 353 / 213 mutants): nothing. twin.py: no byte
+   twin. Next: a source form that gives cancelBtn two more references without code (a statement VC6 merges,
+   written in two arms) or amount fewer. */
 
 void ai_GuildCashPayWindow(AIBLD *bld)
 {

@@ -1075,20 +1075,24 @@ int gm_GoodsStock(int p, int i)
     return sum;
 }
 /* 0x4ffa10, the price of the goods record n of the player p: the base price (gm_ItemPrice, 100) when no market object holds the good (gm_FindMarketObject, for another player the kind 0x1db object of its building, gm_FindPlayerBuilding); else a factor mean / demand, times demand / the market's count of the good (at least 1) when that count is above the demand and the good is not of the kind 0x17, clamped to 0.25 .. 5.0, and the price moves 0.4 of the way from the stored price to the base price times the factor; a record without a stored price (<= 0) gets the base price, at least 512
-   @deep size queue s20: the clamp written f = (t = t > 0.25 ? t : 0.25) < 5.0 ? t : 5.0 is the only form
-   (of 13: ?:, if, nested min/max, >= / > spellings, f as the target) that runs the 0.25 path through the
-   5.0 compare as the original does (no threading), but t's re-definition inside the expression makes VC6
-   compare a copy (fld st(0); fcomp 5.0 where the original has fcom 5.0): 13 ins, raw 453; not kept. The mk
-   == 0 tail: c2tail shows the mk == 0 block is the jmp and the 512 path's second call falls into the
-   epilogue label (xjump deletes the mk == 0 copy); the original lays the mk == 0 block last. = control
-   (all one code): mk == 0 as r = ..; else {..} with one return r (both polarities) x the 512 path as
-   returns / r assigned / mixed; the gm_ItemPrice calls through (int, int) / K&R / (int, short) views or
-   (int)id at each of the 15 call subsets; the record field as the argument changes registers only. Padded
-   size needs the unmerged tail (+19). prior: s10: the cm_DoubleQuarter object of the earlier fix was
-   replaced by the pooled 0.25 literal in a data session (correct per vc6-data), so ours again threads the
-   0.25 path past the 5.0 compare (the 8-byte hunk at +0x12b; 10 -> 12 ins). Padded size: ours 457 raw, 470
-   the original; the unmerged ItemPrice tail (+19) alone gives 476 -> 480 = the original's padded size.
-   climb.py 2 rounds: nothing. */
+   @deep deep s28: re-read both hunks. (1) the clamp: the original runs the 0.25 path into fcom 5.0 (no
+   threading); 7 new spellings (t-only, f = max(..) + if, two ifs on f, if/else + >=, min(max()), max then
+   min on f, the min/max inside the r product): draft 18..29 ins, all farther (t-only 23 ins / 61 bytes
+   reorders the 5.0 store). (2) the tail: the original's mk == 0 test is je to its own call block laid last
+   (0x4ffbd3), whose epilogue return r's jp also targets; ours lets xjump fold the mk == 0 copy into the
+   1122 copy (c2tail --tries: merge 1 by xjump, deleted 1109 kept 1122). The rest wrapped in if (mk != 0) {
+   .. return r; } return gm_ItemPrice(..) (with or without else): = control; count = 0 moved into that
+   block: frame 0x8 vs 0xc. climb round 1: nothing. Left: code 12 (the threaded 0.25 path, the merged mk ==
+   0 tail), size 457 vs 470. prior: size queue s20: the clamp written f = (t = t > 0.25 ? t : 0.25) < 5.0 ?
+   t : 5.0 is the only form (of 13: ?:, if, nested min/max, >= / > spellings, f as the target) that runs
+   the 0.25 path through the 5.0 compare as the original does (no threading), but t's re-definition inside
+   the expression makes VC6 compare a copy (fld st(0); fcomp 5.0 where the original has fcom 5.0): 13 ins,
+   raw 453; not kept. The mk == 0 tail: c2tail shows the mk == 0 block is the jmp and the 512 path's second
+   call falls into the epilogue label (xjump deletes the mk == 0 copy); the original lays the mk == 0 block
+   last. = control (all one code): mk == 0 as r = ..; else {..} with one return r (both polarities) x the
+   512 path as returns / r assigned / mixed; the gm_ItemPrice calls through (int, int) / K&R / (int, short)
+   views or (int)id at each of the 15 call subsets; the record field as the argument changes registers
+   only. Padded size needs the unmerged tail (+19). */
 float gm_StockPrice(int p, int n)
 {
     unsigned id;
