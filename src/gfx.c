@@ -510,25 +510,25 @@ void d2_DragInput(void)
     }
 }
 /* 0x477ba0, mouse and keys on the focused slider object
-   @deep s13 (size queue): 66 -> 10 ins, raw 796 -> 806 (padded 816 = the original's): the original sums
-   the bottom edge o->y + o->h ONCE in the vertical test (movsx y, movsx h, add, then - f6->h) and reuses
-   that sum for a = .. - f0->h - py; written out at both uses VC6 reassociates the test to o->h - f6->h +
-   o->y and recomputes the sum for a, a CSE fewer, which cost mx its ebx (every earlier hunk). The sum as
-   bottom assigned inside the test (py < (bottom = o->y + o->h) - f6->h); bottom as a statement at the top
-   of the block or after d: 134 / 150 ins (computed on every path). Spellings of the sums, parens, (int)
-   casts, operands swapped: = control. Left (10 ins, 1 byte): the first vertical test loads o->y into edi,
-   f6->h into edx, lea eax,[edx+edi], then py into edi; ours loads py into edi first and adds (add eax,edx:
-   the missing byte). py on the right of the compare (f6->h + o->y < py): 12 ins; climb round 1 (147
-   mutants): nothing better. prior: headers sample: insensitive (32). Frame slots read with dcp frame:
-   original mn [esp+0x10] (home of ebp), fl 0x14, py 0x18, mx 0x1c (home of ebx), f0/a 0x20 (shared), d
-   0x24, len 0x28, v2 0x2c; ours the same variables, mx only in a slot at 0x2c, so every remaining hunk
-   (vertical test using edi for py and reloading o->y, the +4 slot shift, the clamp's cmp eax,ebx tail)
-   follows from mx not getting ebx. No meaning difference (fl / v2 read uninitialized on the ldown==0 path
-   in both). Tried with dcp try: all 1679 orders of the 7 field-load lines (fl, mx, mn, len, v2, d,
-   DragSlider; d after mx/mn): best p0623145 43 ins but frame 0x1c vs 0x20 and mx rematerialized from
-   [esi+0x84] (worse in kind, not kept); 23 spellings of the vertical tests and a (all = control, VC6
-   canonicalizes them); d inline at both uses (105 ins, frame smaller); block-scoped hi/d (= control); d =
-   mx; d -= mn and d = -mn + m...
+   @deep deep s27: the goto wheel (the else of the two drag tests skipping the clamp and store) checked
+   against the plain forms: the clamp + store written out in both arms (no goto) 95 ins / slots 50, the
+   original has ONE clamp copy at 0x477da1 reached by a jmp from the horizontal arm and by fall-through
+   from the vertical one, and both failing tests jump to 0x477dec (the wheel code) - the goto form is that
+   layout. Left as before: the vertical test's load order (the original movsx edi,[o->y]; mov dx,[f6->h];
+   lea eax,[edx+edi]; then mov edi,[py]; ours py into edi first, add eax,edx: 1 byte). climb round 1 (s27):
+   nothing. prior: s13 (size queue): 66 -> 10 ins, raw 796 -> 806 (padded 816 = the original's): the
+   original sums the bottom edge o->y + o->h ONCE in the vertical test (movsx y, movsx h, add, then -
+   f6->h) and reuses that sum for a = .. - f0->h - py; written out at both uses VC6 reassociates the test
+   to o->h - f6->h + o->y and recomputes the sum for a, a CSE fewer, which cost mx its ebx (every earlier
+   hunk). The sum as bottom assigned inside the test (py < (bottom = o->y + o->h) - f6->h); bottom as a
+   statement at the top of the block or after d: 134 / 150 ins (computed on every path). Spellings of the
+   sums, parens, (int) casts, operands swapped: = control. Left (10 ins, 1 byte): the first vertical test
+   loads o->y into edi, f6->h into edx, lea eax,[edx+edi], then py into edi; ours loads py into edi first
+   and adds (add eax,edx: the missing byte). py on the right of the compare (f6->h + o->y < py): 12 ins;
+   climb round 1 (147 mutants): nothing better.
+
+
+
    */
 
 void d2_SliderInput(void)
