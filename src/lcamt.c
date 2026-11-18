@@ -11334,10 +11334,10 @@ int ai_UseEventGood(G8CHARREC *ch)
 {
     AIMSG msg;
 
-    msg.time = ai_Time;
     msg.to = ch->netId;
     msg.type = 0xa4;
     msg.fromId = -1;
+    msg.time = ai_Time;
     msg.flags = 1;
     cm_SendLongMessage((char *)&msg);
     return 1;
