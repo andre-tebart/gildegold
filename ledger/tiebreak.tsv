@@ -3766,7 +3766,7 @@ exe	0x0055fa90	he_RunMarketSupervisor	he	35e5fea5f9dd0282	no	draft	control=draft
 exe	0x00560820	he_AllocEvent3c	he	7f58d4a0b86b6990	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00560900	he_RunKidnap	he	6692cff8e64c4221	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x00561130	he_AllocRansom	he	8e61b26054a9fa34	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x00561190	he_RunRansom	he	018f5e87bd81ea08	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
+exe	0x00561190	he_RunRansom	he	e829b1f4896ff578	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	6ae41dce79bc0722
 exe	0x00561470	he_AllocEvent39_3e	he	8751adc3b4d056b4	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005614c0	he_RunRansomDemand	he	7b398cebf45b153d	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
 exe	0x005619a0	he_AllocBurglary	he	5c9615a02655ad1b	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
@@ -3840,7 +3840,7 @@ exe	0x0056daa0	he_RunTrainShare	he	a90a2d5e8f072166	no	byte	control=byte p1=byte
 exe	0x0056dd20	he_AllocAlchemistDay	he	94c2b7bb5a337f9e	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0056ddc0	he_RoomBusy	he	036c9bf7654b552c	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0056de10	he_RunAlchemistDay	he	6aa2e76b7d870b01	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x0056e070	he_LabIncident	he_b	f937241ea6267a59	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=568	3ca5b3fe521e2bd8
+exe	0x0056e070	he_LabIncident	he_b	de0a3744cbde0a77	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	40c1e855ef7a115e
 exe	0x0056e400	he_RegisterEventTypes99	he	886b1d479ef4184b	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0056e460	he_AllocSecretRoom	he	b63de88acedb5ca6	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0056e5b0	he_RunSecretRoom	he_b	f7772f7a44e33a40	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	ae82ec1dc71e43f3
@@ -4537,7 +4537,7 @@ exe	0x005cacd0	ai_BewitchOrder	lc	ef3ef3d23345ff16	no	shape	control=shape p1=sha
 exe	0x005cae00	ai_CounterEspionage	lc	0c07c0390f9c71fa	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005cb1e0	ai_SwapSeats	lc	38ce63584e590092	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005cb250	ai_SeatSwapWindow	lc	965f75c95ecf4488	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x005cb4f0	ai_HatredWindow	lc	8c19b4e0445d6df8	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	cf8ed6b6e3adcef4
+exe	0x005cb4f0	ai_HatredWindow	lcamt	9e5ece4d4a8cfdba	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	172a9312bd77d39d
 exe	0x005cba90	ai_HearingWindow	lc	f9ce01d01283799c	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005cbe00	ai_ExpelWorkerWindow	lc	c05f0fddc9044a65	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x005cc2b0	ai_PeaceWindow	lc	7d70b044c43d4c1e	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
