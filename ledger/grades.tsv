@@ -2299,7 +2299,7 @@ exe	0x004c8050	cm_ExMoodDeltas	cm	byte	readable
 exe	0x004c8110	cm_ExSetField	cm	byte	readable		
 exe	0x004c81d0	cm_ExFloatDelta	cm	byte	readable		
 exe	0x004c8240	cm_ExRelations	cm	shape	readable	deep	
-exe	0x004c85c0	cm_ExLongMessage	cm	shape	readable	deep	
+exe	0x004c85c0	cm_ExLongMessage	cm	byte	readable		
 exe	0x004c87a0	cm_ExSetHE	cm	byte	readable		
 exe	0x004c88a0	cm_ExTime	cm	byte	readable		
 exe	0x004c8990	cm_ExGameOver	cm	byte	readable		
@@ -3254,7 +3254,7 @@ exe	0x00519b50	ls_RelinkScene	ls	byte	readable
 exe	0x00519bf0	ls_WriteObjects	ls	byte	readable		
 exe	0x00519d20	ls_WriteBuildings	ls	byte	readable		
 exe	0x0051a1a0	ls_WritePlayerRecords	ls	byte	readable		
-exe	0x0051a4b0	ls_WriteCharacters	ls	shape	readable	deep	
+exe	0x0051a4b0	ls_WriteCharacters	ls	byte	readable		
 exe	0x0051ad30	ls_ActionIndex	ls	byte	readable		
 exe	0x0051ad60	ls_ActionAt	ls	byte	readable		
 exe	0x0051ad80	ls_WriteSceneCharacter	ls	byte	readable		
@@ -3703,7 +3703,7 @@ exe	0x00555350	he_TransportFromHome	he	byte	readable
 exe	0x00555690	he_TransportToHome	he	byte	readable		
 exe	0x00555b60	he_TransportStadtStadt	he	shape	readable		
 exe	0x00556080	he_TransportHomeHome	he	byte	readable		
-exe	0x00556600	he_RunTransport	he	draft	readable	deep	
+exe	0x00556600	he_RunTransport	he	byte	readable		
 exe	0x00556dc0	he_AllocCartRepair	he	byte	readable		
 exe	0x00556ed0	he_RunCartRepair	he	byte	readable		
 exe	0x00557160	he_AllocMessageBox	he	byte	readable		
@@ -3767,7 +3767,7 @@ exe	0x0055fa90	he_RunMarketSupervisor	he	draft	readable	deep
 exe	0x00560820	he_AllocEvent3c	he	byte	readable		
 exe	0x00560900	he_RunKidnap	he	draft	readable	deep	
 exe	0x00561130	he_AllocRansom	he	byte	readable		
-exe	0x00561190	he_RunRansom	he	shape	readable	deep	
+exe	0x00561190	he_RunRansom	he	byte	readable		
 exe	0x00561470	he_AllocEvent39_3e	he	byte	readable		
 exe	0x005614c0	he_RunRansomDemand	he	byte	readable		
 exe	0x005619a0	he_AllocBurglary	he	byte	readable		
@@ -3844,7 +3844,7 @@ exe	0x0056de10	he_RunAlchemistDay	he_b	byte	readable
 exe	0x0056e070	he_LabIncident	he_b	byte	readable		
 exe	0x0056e400	he_RegisterEventTypes99	he_b	byte	readable		
 exe	0x0056e460	he_AllocSecretRoom	he_b	byte	readable		
-exe	0x0056e5b0	he_RunSecretRoom	he_b	shape	readable	deep	
+exe	0x0056e5b0	he_RunSecretRoom	he_b	byte	readable		
 exe	0x0056efc0	he_AllocEvent9a	he_b	byte	readable		
 exe	0x0056f040	he_FreeEventNow	he_b	byte	readable		
 exe	0x0056f050	he_AllocDomizilEvent	he_b	byte	readable		
@@ -3868,7 +3868,7 @@ exe	0x005706e0	he_AllocPlunder	he_b	draft	readable	deep
 exe	0x005707a0	he_RunPlunder	he_b	byte	readable		
 exe	0x00570bf0	he_PlunderTakePrice	he_b	byte	readable		
 exe	0x00570c70	he_PlunderFailNews	he_b	byte	readable		
-exe	0x00570cc0	he_RunPlunderOffer	he_b	shape	readable		
+exe	0x00570cc0	he_RunPlunderOffer	he_b	byte	readable		
 exe	0x00570ea0	he_NoEvent88Pair	he_b	byte	readable		
 exe	0x00570ef0	he_AllocMasterWork	he_b	byte	readable		
 exe	0x00571000	he_RunMasterWork	he_b	shape	readable		
@@ -3887,7 +3887,7 @@ exe	0x005726b0	he_RunMeetingScene	he_b	byte	readable
 exe	0x00572860	he_AllocPlunderOfferLease	he_b	byte	readable		
 exe	0x005728d0	he_AnswerGraveLease	he_b	byte	readable		
 exe	0x005729c0	he_ExamCancelled	he_b	byte	readable		
-exe	0x00572a50	he_RunGraveLease	he_b	shape	readable		
+exe	0x00572a50	he_RunGraveLease	he_b	byte	readable		
 exe	0x00572b90	he_AllocGraveyardWorkers	he_b	byte	readable		
 exe	0x00572bf0	he_RunGraveyardWorkers	he_b	byte	readable		
 exe	0x00572fd0	he_RunGraveyardTheft	he_b	byte	readable		
@@ -4604,7 +4604,7 @@ exe	0x005d33b0	ai_ListFiles	menu	byte	readable
 exe	0x005d34b0	ai_FilePickWindow	menu	byte	readable		
 exe	0x005d3810	ai_MessageBox	menu	shape	readable		
 exe	0x005d3a00	ai_RegisterSaveSlot	menu	shape	readable	deep	
-exe	0x005d3ab0	ai_FillSaveSlots	menu	shape	readable	deep	
+exe	0x005d3ab0	ai_FillSaveSlots	menu	byte	readable		
 exe	0x005d4080	ai_LoadGameWindow	menu	byte	readable		
 exe	0x005d42b0	ai_JoinGameWindow	menu	byte	readable		
 exe	0x005d44c0	ai_EditText	menu	byte	readable		
