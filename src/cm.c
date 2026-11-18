@@ -6205,12 +6205,9 @@ int cm_ExHeldRounds(G17MSG *m, G17STAT *s)
         return 1;
     v = c->heldRounds + m->heldRounds.delta;
     v = v < 0 ? 0 : v;
-    if (v >= 0xff)
-        v = 0xff;
-    c->heldRounds = v;
-    v = c->heldRounds != 0 ? c->heldRounds : 0;
-    c->heldRounds = v;
-    if (c->id == ai_PlayerId && ai_GameState != 0 && (unsigned char)v != 0)
+    c->heldRounds = v >= 0xff ? 0xff : v;
+    c->heldRounds = c->heldRounds > 0 ? c->heldRounds : 0;
+    if (c->id == ai_PlayerId && ai_GameState != 0 && c->heldRounds > 0)
         sv_PopTo(ai_GameFrame);
     amt_ClearOfficesIfAll((char *)c, m->heldRounds.all);
     if (s != 0)
