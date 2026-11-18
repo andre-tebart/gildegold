@@ -891,15 +891,19 @@ int d2_ShpBlit16ScaledLit(int x, int y, D2SURF *surf, D2SHP *s, unsigned char n)
 
 /* 0x47b900, draws a 16 bit run-length shape half dark: every pixel of the literal runs is replaced by its grey
    (r + b) * 0.2f + g * 0.59f through dd_RGB, the skip runs are stepped over.
-   @deep 128 -> 2 ins (draft -> shape): r, g, b are unsigned char (dd_SplitRGB's out types), the grey
-   written out in each dd_RGB argument (a named unsigned char goes through a slot, an int one reallocates
-   everything), k / m locals as the sibling, run / cp / line init order and line += pitch before cp = run
-   (frame order line, cp, i). Left: the three reloads at the run loop's exit edge, ours mov ecx,[s]; mov
-   edi,[line]; mov edx,[surf], the original surf, s, line (c2trace: split pieces s id a, line id c, surf id
-   e; reloads go in ascending id). headers sample insensitive; no lever: declaration order (--move-line,
-   all = control), px++/d++ order, *d++, for-increment forms, while forms, (int)s->h, line as &bits[..],
-   pitch local, run = px, parenthesised macro operands, flip.py (163 mutants, 0 with surf first) (tiebreak:
-   not measured (dcp headers sample d2_ShpBlit16HalfDark)) */
+   @deep deep s24: climb --rounds 2 (264 mutants): nothing below 2 ins. The hunk is the same class as
+   d3anim_MapBones (split pieces reloaded in ascending piece id at a loop exit edge; the ids come from
+   freed values, so the lever would be a value created or removed elsewhere, not the reload site). Left:
+   the three reloads at the k loop's exit, ours ecx=s, edi=line, edx=surf, the original edx=surf, ecx=s,
+   edi=line. prior: 128 -> 2 ins (draft -> shape): r, g, b are unsigned char (dd_SplitRGB's out types), the
+   grey written out in each dd_RGB argument (a named unsigned char goes through a slot, an int one
+   reallocates everything), k / m locals as the sibling, run / cp / line init order and line += pitch
+   before cp = run (frame order line, cp, i). Left: the three reloads at the run loop's exit edge, ours mov
+   ecx,[s]; mov edi,[line]; mov edx,[surf], the original surf, s, line (c2trace: split pieces s id a, line
+   id c, surf id e; reloads go in ascending id). headers sample insensitive; no lever: declaration order
+   (--move-line, all = control), px++/d++ order, *d++, for-increment forms, while forms, (int)s->h, line as
+   &bits[..], pitch local, run = px, parenthesised macro operands, flip.py (163 mutants, 0 with surf first)
+   (tiebreak: not measured (dcp headers sample d2_ShpBlit16HalfDark)) */
 
 void d2_ShpBlit16HalfDark(unsigned int x, unsigned int y, D2SURF *surf, D2SHP *s)
 {
