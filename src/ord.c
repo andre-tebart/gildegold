@@ -2460,29 +2460,35 @@ void ord_ReportStatistics(void)
         ids[1] = 0x1bfb;
         ids[2] = 0x1c01;
         ids[3] = 0x1c07;
-        if (m < 0.3)
-            k = ids[k];
-        else if (m < 0.5)
-            k = ids[k + 2];
-        else
-            k = ids[k + 4];
-        txt_Format(tierText, "%s%s", k, k + 1);
-        any = 1;
+        if (m < 0.3) {
+            txt_Format(tierText, "%s%s", ids[k], ids[k] + 1);
+            any = 1;
+        } else if (m < 0.5) {
+            txt_Format(tierText, "%s%s", ids[k + 2], ids[k + 2] + 1);
+            any = 1;
+        } else {
+            txt_Format(tierText, "%s%s", ids[k + 4], ids[k + 4] + 1);
+            any = 1;
+        }
     }
     if (d > 0.55) {
         txt_Format(sentence, 0x1c0d, txt0, txt1, txt2, txt3, 0x1c0e);
         for (i = 0; i < 768; i++)
-            if (ORD_CHARS[i].kind == 6
-                && (he_ShowNews(ORD_CHARS[i].netId, -1, sentence, 1, 0x5f8, 0), any))
-                he_ShowNews(ORD_CHARS[i].netId, -1, tierText, 0, 0x5f8, 0);
+            if (ORD_CHARS[i].kind == 6) {
+                he_ShowNews(ORD_CHARS[i].netId, -1, sentence, 1, 0x5f8, 0);
+                if (any)
+                    he_ShowNews(ORD_CHARS[i].netId, -1, tierText, 0, 0x5f8, 0);
+            }
         return;
     }
     if (d < 0.45) {
         txt_Format(sentence, 0x1c0f, txt0, txt1, txt2, txt3, 0x1c10);
         for (i = 0; i < 768; i++)
-            if (ORD_CHARS[i].kind == 6
-                && (he_ShowNews(ORD_CHARS[i].netId, -1, sentence, 1, 0x5f8, 0), any))
-                he_ShowNews(ORD_CHARS[i].netId, -1, tierText, 0, 0x5f8, 0);
+            if (ORD_CHARS[i].kind == 6) {
+                he_ShowNews(ORD_CHARS[i].netId, -1, sentence, 1, 0x5f8, 0);
+                if (any)
+                    he_ShowNews(ORD_CHARS[i].netId, -1, tierText, 0, 0x5f8, 0);
+            }
         return;
     }
     if (any) {
