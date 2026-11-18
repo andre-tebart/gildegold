@@ -490,7 +490,7 @@ void ai_PokerPickStrategies(void)
 
 void ai_PokerNpcFold(void)
 {
-    int s, j, suitN, suit, m, mySuit, any;
+    int s, j, suitN, suit, m, mySuit;
     int rankN, rank;
     G10SEAT *st, *o;
 
@@ -512,6 +512,8 @@ void ai_PokerNpcFold(void)
                     break;
                 case 1:
                     if (st->bold != 0) {
+                        int any;
+
                         m = ai_PokerFindPair(st->card, 0, 7, &any);
                         if (m < suitN && ai_PokerTable->phase >= 6 && ai_PokerTable->dealt >= 5)
                             st->foldedAt = ai_PokerTable->phase;
@@ -523,6 +525,8 @@ void ai_PokerNpcFold(void)
                     break;
                 case 2:
                     if (st->bold == 0) {
+                        int any;
+
                         m = ai_PokerFindPair(st->card, 0, 7, &any);
                         if (ai_PokerTable->dealt < 5 && m == 3 && util_RandomU(4) == 1)
                             st->foldedAt = ai_PokerTable->phase;
@@ -530,6 +534,8 @@ void ai_PokerNpcFold(void)
                     break;
                 case 3:
                     if (st->bold == 0) {
+                        int any;
+
                         m = ai_PokerFindPair(st->card, 0, 7, &any);
                         if (ai_PokerTable->dealt < 5 && m == 3 && util_RandomU(5) == 1)
                             st->foldedAt = ai_PokerTable->phase;
