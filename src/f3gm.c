@@ -1987,7 +1987,6 @@ void gm_PopulationStep(void)
 {
     ORDCHAR *c, *a, *b, *nc;
     int settled, n, kids, i, t, h;
-    int v, level;
 
     settled = 0;
     kids = 0;
@@ -2025,10 +2024,9 @@ void gm_PopulationStep(void)
             a = ORD_CHAR(gm_FindChar(c->relatives[1]));
             b = ORD_CHAR(gm_FindChar(c->relatives[2]));
             if ((a == 0 || a->kind == 0xf) && (b == 0 || b->kind == 0xf)) {
-                v = 3;
-                level = 2;
+                int kind = 3, level = 2;
                 cm_BeginFieldBlock((char *)c, c->netId);
-                cm_AddFieldValue(1, 1, (char *)&c->kind - cm_FieldObject, &v);
+                cm_AddFieldValue(1, 1, (char *)&c->kind - cm_FieldObject, &kind);
                 if (c->level < 2)
                     cm_AddFieldValue(1, 1, (char *)&c->level - cm_FieldObject, &level);
                 cm_SendFieldValues();
@@ -2060,11 +2058,11 @@ void gm_PopulationStep(void)
             while (h != -1 && cm_GetSlotState(h) == 0)
                 sv_PumpNet();
             if (cm_GetSlotState(h) == 1) {
-                v = util_RandomU(0xc) + 10;
+                int office = util_RandomU(0xc) + 10;
                 nc = ORD_CHAR(cm_GetSlotValue(h));
                 cm_SendMoveGoodsUnchecked(nc->netId, -1, ai_OwnPlayer, (util_RandomU(0x400) + 0x400) * 0x40);
                 cm_BeginFieldBlock((char *)nc, nc->netId);
-                cm_AddFieldValue(1, 1, (char *)&nc->prevOffice - cm_FieldObject, &v);
+                cm_AddFieldValue(1, 1, (char *)&nc->prevOffice - cm_FieldObject, &office);
                 cm_SendFieldValues();
             }
         }
