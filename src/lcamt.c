@@ -10475,16 +10475,7 @@ int ai_UseGoodTwoTrialSteps(AICHARREC *ch, G8USEVIEW *use)
    used record of kind below 10, not the user or an earlier pick; the first one must hold an office) each get
    their relation to the user raised by 20 (cm_SendRelations). Each player pick (kind 6 / 7) gets the news
    0xfef naming the user (key 0x5ec); a player user sees the text 0xfe8 (the good's rank + 1 and the three) in
-   the use-object panel. Returns 1.
-   @deep Read whole against the original and written typed (AICHARREC ch / pick[3], G8USEVIEW use,
-   lc_CharRecs; the stub had no body): every call, argument, constant and condition matches in order (the
-   first pick also wants an office, the later two only the other sex). Left: (1) at the end the original
-   calls ai_FindUsableGoodIndex (+0x23a) before loading the three pick ids for txt_Format 0xfe8; ours
-   (+0x234) loads them first, because VC6 sees our earlier-defined ai_FindUsableGoodIndex write only *index
-   (the TU-boundary effect of ai_UseGood, lc lead Open: layout; inline and separate-statement spellings
-   give the same code); (2) allocation: the loop counters in edi/esi where the original has esi/edi in
-   loops 2 and 3, and loop 1's dec edi scheduled after the idiv (the original's +0x5d1452 dec edi before
-   the inc). */
+   the use-object panel. Returns 1. */
 
 int ai_UseGoodCharmOtherSex(AICHARREC *ch, G8USEVIEW *use)
 {
@@ -10498,31 +10489,28 @@ int ai_UseGoodCharmOtherSex(AICHARREC *ch, G8USEVIEW *use)
 
     use->handled = 1;
     id = util_Random(0x300) & 0xffff;
-    for (n = 0x300; n != 0; n--) {
+    for (n = 0x300; n != 0; n--, id = (id + 1) % 0x300) {
         if (id != ch->id && lc_CharRecs[id].id != 0xffff && lc_CharRecs[id].kind < 10 &&
             lc_CharRecs[id].sex != ch->sex && lc_CharRecs[id].officeKind != 0) {
             pick[0] = &lc_CharRecs[id];
             break;
         }
-        id = (id + 1) % 0x300;
     }
     id = util_Random(0x300) & 0xffff;
-    for (n = 0x300; n != 0; n--) {
+    for (n = 0x300; n != 0; n--, id = (id + 7) % 0x300) {
         if (id != ch->id && id != pick[0]->id && lc_CharRecs[id].id != 0xffff && lc_CharRecs[id].kind < 10 &&
             lc_CharRecs[id].sex != ch->sex) {
             pick[1] = &lc_CharRecs[id];
             break;
         }
-        id = (id + 7) % 0x300;
     }
     id = util_Random(0x300) & 0xffff;
-    for (n = 0x300; n != 0; n--) {
+    for (n = 0x300; n != 0; n--, id = (id + 13) % 0x300) {
         if (id != ch->id && id != pick[0]->id && id != pick[1]->id && lc_CharRecs[id].id != 0xffff &&
             lc_CharRecs[id].kind < 10 && lc_CharRecs[id].sex != ch->sex) {
             pick[2] = &lc_CharRecs[id];
             break;
         }
-        id = (id + 13) % 0x300;
     }
     cm_SendRelations(ch->netId, pick[0]->netId, 20, 1);
     cm_SendRelations(ch->netId, pick[1]->netId, 20, 1);
