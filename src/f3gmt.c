@@ -722,7 +722,11 @@ int gm_GoodsStock(int p, int i);
 #define GM_WAIT(h) while (cm_GetSlotState(h) == 0) sv_PumpNet()
 #define cm_SendExSellObjectH ((int (*)(int, int, int, int, unsigned char, int))cm_SendExSellObject)  /* 0x4c4880: it returns the slot handle of its message (cm_QueueSend's result stays in eax), which cm.h's void prototype drops; @original gm_SyncMarket pushes the goods id zero-extended (int), as ai.c's cm_SendExSellObjectI */
 
-/* 0x4fec10, the market sync of the player p (group 1, 5, 10 is the market building ai_MarketBuilding): for the own player the amount flag of every goods record is set when a building other than kind 10 holds the good in its store (0xff object) or needs it for one it holds (the four needs at +0x2e of its ai_Goods record); then every record is synced with the market object of its marketKind (its store created first with cm_SendExSellObject when missing): a flagged good the store lacks is requested (one), an unflagged one it has is sold with its count; each record goes to the server (cm_SendGoodsRecord), and the goods count of the market objects 0x92 .. 0x97, 0x2db raises the level byte +0x1c of their kind 0x11 object. For another player: the goods its two market objects (0x1db / 0x1dc) hold get the offer counter (random, then + 0x18 .. 0x1f per call; offered up to 0x80) and are sent in one group */
+/* 0x4fec10, the market sync of the player p (group 1, 5, 10 is the market building ai_MarketBuilding): for the own player the amount flag of every goods record is set when a building other than kind 10 holds the good in its store (0xff object) or needs it for one it holds (the four needs at +0x2e of its ai_Goods record); then every record is synced with the market object of its marketKind (its store created first with cm_SendExSellObject when missing): a flagged good the store lacks is requested (one), an unflagged one it has is sold with its count; each record goes to the server (cm_SendGoodsRecord), and the goods count of the market objects 0x92 .. 0x97, 0x2db raises the level byte +0x1c of their kind 0x11 object. For another player: the goods its two market objects (0x1db / 0x1dc) hold get the offer counter (random, then + 0x18 .. 0x1f per call; offered up to 0x80) and are sent in one group
+   @deep frame sweep s21: 22 -> 14 ins with the original's frame 0xac: cnt (sent by address with
+   cm_AddFieldValues) a local of the goods-list loop body. Left: order 14 (the two row pointers' add 0x80
+   in the other order, the lea edi of list before mov eax,0x92), regs 12 (the setcc compare at line 834 in
+   cl/edx where the original has dl/eax). rec / i / j / k / h as block locals = control. */
 void gm_SyncMarket(unsigned p)
 {
     int list[8];
@@ -731,7 +735,7 @@ void gm_SyncMarket(unsigned p)
     unsigned char *b;
     ORDOBJ *o, *o2, *m, *a1;
     char *gp;
-    int i, j, k, cnt, h;
+    int i, j, k, h;
     int *lp;
 
     list[0] = 0x92;
@@ -799,7 +803,8 @@ void gm_SyncMarket(unsigned p)
             }
         }
         for (lp = list; *lp != 0; lp++) {
-            cnt = 0;
+            int cnt = 0;
+
             o = (ORDOBJ *)gm_Query(((ORDBLD *)ai_MarketBuilding)->objList, 1, 0, *lp);
             if (o != 0 && (o2 = (ORDOBJ *)gm_Query(o->list, 1, 0, 0xff)) != 0) {
                 o2 = (ORDOBJ *)gm_Query(o2->list, 1, 5);
