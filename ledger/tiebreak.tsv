@@ -1480,7 +1480,7 @@ exe	0x004864b0	ai_BuildTradeOffers	ai	df2be80315c04f44	no	draft	control=draft p1
 exe	0x00487040	ai_CalcEntryCost	ai	5ca140e33749b218	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00487180	ai_HasMaterials	ai	bc9163512ce32b42	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x00487410	ai_StartProduction	ai	a707f45d335cd958	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
-exe	0x00487780	ai_AddEquipmentNeeds	ai	ee0e3b26c92f63dc	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
+exe	0x00487780	ai_AddEquipmentNeeds	ai	684e7aa4f207185e	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	4ab24560a9a4961b
 exe	0x00487b40	ai_UpdateStaff	ai	28ebb51f56ccf73a	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00487ea0	ai_OfferGrave	ai	d7b238c1748f34a2	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00487fb0	ai_BuyUpgrade	ai	770245fc9419b672	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
