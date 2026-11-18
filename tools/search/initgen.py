@@ -8,8 +8,10 @@ import re, sys
 src, func, out = sys.argv[1], sys.argv[2], sys.argv[3]
 base = open(sys.argv[4]).read() if len(sys.argv) > 4 else ""
 t = open(src, encoding="latin-1").read()
-# a definition: its line starts in column 0 (a call inside another function's body is indented)
-m = re.search(r"(?m)^(?![ \t])[^\n;{}=]*\b" + re.escape(func) + r"\([^;{]*\)\s*(?:/\*.*?\*/\s*)?\{\n", t)
+# a definition: its line starts in column 0 (a call inside another function's body is indented); a K&R
+# definition has its parameters' declarations (`int x;`) between the `)` and the `{`
+m = re.search(r"(?m)^(?![ \t])[^\n;{}=]*\b" + re.escape(func) + r"\([^;{]*\)\s*(?:/\*.*?\*/\s*)?"
+              r"(?:[A-Za-z_][^\n;{}()=]*;[ \t]*\n)*\{\n", t)
 if not m:
     sys.exit("initgen: no definition of %s in %s" % (func, src))
 body = t[m.end():]

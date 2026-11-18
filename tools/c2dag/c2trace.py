@@ -122,7 +122,11 @@ def function_span(lines, func):
             if code(lines[j]).endswith((";", "{", "}")):
                 return False
             j += 1
-        return j + 1 < len(lines) and lines[j + 1].startswith("{")
+        k = j + 1
+        # a K&R definition: `f(a, b)`, then the parameters' declarations, then the "{"
+        while k < len(lines) and re.match(r"[A-Za-z_][\w \*,\[\]]*;$", code(lines[k])):
+            k += 1
+        return k < len(lines) and lines[k].startswith("{")
     s = next(i for i, l in enumerate(lines) if re.match(r"\w[\w \*]*\b%s\(" % re.escape(func), l) and not code(l).endswith(";")
              and opens_body(i))
     e = next(i for i in range(s, len(lines)) if lines[i].rstrip() == "}")
