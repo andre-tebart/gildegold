@@ -12315,22 +12315,7 @@ void he_TransportHomeHome(int ev)
     3: a quiet transport goes on to the stage 4, else to -1.
     4: the cart unloads at its point for the player slot of a kind 0x47 goal (else the own player), stage 5.
     5: at the building of the cart's route point that takes the load (ai_IsBuildingOpen) the cart hands it over
-       (rt_LoadAtPoint) and the transport ends (-1); no such point: -1; else it waits 15 minutes
-   @deep size queue s14: padded size (raw 1940 vs 1937, 2 ins): the chance test as util_RandomU(0x69) >
-   o->fill * (float)(chance * 0.01): the float cast (no code of its own) gives the original's fxch / fild
-   fill / fmulp st(2) / fxch pair (the same barrier matched he_RunBuyBuilding's price test); (double) cast
-   or (float) around the whole product: = control. Left: case -2's from arm (push esi / push 1 / jmp into
-   the to copy, the original jumps to the guards copy's push esi); s14 tried each arm with its own return
-   (rets 28, torets shape 26 tail, guardret / fromret / fromnot / break = control). prior: size queue s10:
-   padding: ours 1936 + the 8-entry table = 1968, the original 1937 -> 1984, so any +1 byte fixes the
-   padded size; the fpu hunk alone (+4) would. Case -2 (c2tail --tries): the pair merger takes the to-arm's
-   else-jmp (12490) as anchor before the guards' (12488), so the from arm merges 3 ins into the to copy;
-   only the to arm with its own return (m2e1: shape 32) makes from jump into the guards copy as the
-   original, but then the to block moves to the other -1 site's copy (je at +0x162). FPU s10 (all draft):
-   flipped compare (fill * (chance*0.01) < rnd) 175 (product before the call); r = util_RandomU(0x69) as a
-   statement with double/float/int/ushort r, either compare side: 8..18, none with the fxch pair; (double)f
-   = chance * 0.01 inside the product (asg1, 8 ins): puts fld chance before add esp as the original, the
-   fxch pair still missing. Reading: the original generated fild fill ... */
+       (rt_LoadAtPoint) and the transport ends (-1); no such point: -1; else it waits 15 minutes */
 void he_RunTransport(int ev)
 {
     AIJOB *e = (AIJOB *)ev;
@@ -12379,7 +12364,7 @@ void he_RunTransport(int ev)
                 return;
             if (t->route != -1 && cm_GetSlotState(t->route) == 2) {
                 e->exSlot = cm_SendExSetHEI(-1, ev);
-                return;
+                break;
             }
             t->route = -1;
             mode = t->mode;
