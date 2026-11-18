@@ -60,7 +60,7 @@ unsigned short hmt_RandomRecord(short k)
     while ((short)r == k);
     return r;
 }
-/* 0x4ac170, a random text offset 0..9 for record k, 0x1e2b if there is none @deep code hunks 39: the original loads e->textSet (+0x8) into ecx without using it and tail-calls util_Random(10) with 0x1e2b live in esi; our same-meaning source emits neither; the dead load and the live range are source-shape work (match-deep) */
+/* 0x4ac170, a random text offset 0..9 for record k, 0x1e2b if there is none */
 
 unsigned short hmt_RandomTextOffset(unsigned short k)
 {
@@ -69,8 +69,14 @@ unsigned short hmt_RandomTextOffset(unsigned short k)
 
     ret = 0x1e2b;
     e = hmt_GetRecord(k);
-    if (e != 0)
-        return util_RandomU(10);
+    if (e != 0) {
+        /* @original both arms draw the same range: the original still loads e->textSet (mov ecx,[eax+8])
+           and tail-calls util_Random(10) from one merged arm (hmt_RecordTextId tests textSet the same way) */
+        if (e->textSet == 0)
+            ret = util_RandomU(10);
+        else
+            ret = util_RandomU(10);
+    }
     return ret;
 }
 /* 0x4ac1a0, the text id of line n (at most 9) of record k: 0x1e2b + n, or 0x1e35 + n if textSet is set
