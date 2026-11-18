@@ -536,16 +536,16 @@ int ai_TokenRandomOfficePerson(int mode, G12ARG *args, int k, char *fmt, char *o
    richest character (0x50a640) who passes 0x4adff0 / 0x4adfb0; fmt "...-n" selects 0 = anybody, 1 = men
    (byte 9 == 0 .. sic: byte 9 == (n != 1)), 2 = the other sex
    The -10000000 start value is HST_NO_WORTH.
-   @deep shape, slots 24 only (from draft 80 ins / frame 0x214). Moved code: AI_ZERO_BUF(n1, buf, 0x200)
-   (frame 0x210: 80 -> 64); filt = 1 then 'if (sel == 0) filt = 0; else sex = ..' and sel > 2 (the
-   original's mov [ebp-4],edi / jg); the mode 1 path joining the shared format tail (its ja into the tail
-   past the mode == 0 store) with early returns for every failure (draft -> shape, 24 ins). Left: the four
-   frame slots - the original packs filt with the AI_ZERO size temp at [ebp-4] and puts n1 at [ebp-8], best
-   -0xc, sex -0x10; ours packs filt with n1 at [ebp-4] and puts best -8, sex -0xc, zn -0x10 ('- mov
-   [ebp-8],0xff676980 / + mov [ebp-0xc],..'). No lever: 720 + 1500 declaration orders (one codegen each),
-   n1/n2 or filt in an inner block, filt as the zero size (= control), int / unsigned types for filt, sex,
-   n1 (= control), filt char or set in each arm (draft), n1 = buf + AI_ZERO_AT (draft). Declaration set
-   insensitive. (tiebreak: insensitive) */
+
+
+
+
+
+
+
+
+
+   */
 int ai_TokenRichestInhabitant(int mode, G12ARG *args, int k, char *fmt, char *out)
 {
     char buf[512];
@@ -556,7 +556,7 @@ int ai_TokenRichestInhabitant(int mode, G12ARG *args, int k, char *fmt, char *ou
     unsigned int filt;
     AICHAR *c;
 
-    AI_ZERO_BUF(n1, buf, 0x200);
+    AI_ZERO_BUF(v, buf, 0x200);
     ai_SplitTokenFormat(fmt, buf, &n1, &n2);
     if (n2 != 1)
         return 0;
