@@ -10860,11 +10860,7 @@ extern const int ai_CharWalkSteps[16];  /* 0x5ed100, the random walk steps (am.h
    user nor the target) each get the target's relation to them raised by 20 .. 51 (cm_SendRelations), and the
    target loses 50 .. 113 life (gm_AddHealth). The target, if a player (kind 6 / 7), gets the news 0x100d,
    each player office holder 0x100e / 0x100f (key 0x5fb); marks the use handled, and a player user sees the
-   text 0x10a1 (the target, the three) inside 0xfe8 in the use-object panel. Returns 1.
-   @deep deep s23: left the AMOUNTCFG fill's scheduling: the original hoists one load (mov edx,[..]) above
-   the first rep stosd and pushes ai_AmountMenu's two 0 after the fills; ours pushes a 0 first. All 120
-   orders of the ids memset / option14 / mode / kind / filter, cfg as a block local, memset -1: = control
-   or worse (the same open hunk as the sermon window in lc.c). */
+   text 0x10a1 (the target, the three) inside 0xfe8 in the use-object panel. Returns 1. */
 
 int ai_UseGoodCharmOfficials(AICHARREC *ch, G8USEVIEW *use)
 {
@@ -10884,7 +10880,8 @@ int ai_UseGoodCharmOfficials(AICHARREC *ch, G8USEVIEW *use)
         cfg.option14 = 3;
         cfg.mode = 0x400;
         cfg.kind = 6;
-        cfg.filter = gypsyFilter;
+        cfg.classMask[0] = gypsyFilterWords[0];
+        cfg.classMask[1] = gypsyFilterWords[1];
         target = (AICHARREC *)ai_AmountMenu(&cfg, txt_Ptrs[0x9c], 0, 0);
         if (target == 0)
             return 0;
