@@ -5745,28 +5745,23 @@ int cm_ExObjCell(G17MSG *m, G17STAT *s)
 
 int cm_ExWalkPath(G17MSG *m, G17STAT *s)
 {
-    CMWALKPATHMSG *d;
     CHARACTER *p;
     CHACTION *a;
-    unsigned char *cell;
     int idx, i;
 
-    d = (CMWALKPATHMSG *)m->data;
-    p = ch_FindByName(d->name);
+    p = ch_FindByName(((CMWALKPATHMSG *)m->data)->name);
     if (p == 0)
         return 1;
     a = p->actions;
     if (a == 0 || a->type != 0x3a)
         return 2;
+    i = 0;
     if (a->u.walk.path != 0) {
-        a->u.walk.pathLen = d->to;
-        idx = d->from;
-        cell = d->cells;
-        for (i = 0; i < 2 && idx < a->u.walk.pathLen; i++) {
-            ((unsigned char *)a->u.walk.path)[idx * 2] = cell[0];
-            ((unsigned char *)a->u.walk.path)[idx * 2 + 1] = cell[1];
-            cell += 2;
-            idx++;
+        a->u.walk.pathLen = ((CMWALKPATHMSG *)m->data)->to;
+        idx = ((CMWALKPATHMSG *)m->data)->from;
+        for (; i < 2 && idx < a->u.walk.pathLen; i++, idx++) {
+            ((unsigned char *)a->u.walk.path)[idx * 2] = ((CMWALKPATHMSG *)m->data)->cells[i * 2];
+            ((unsigned char *)a->u.walk.path)[idx * 2 + 1] = ((CMWALKPATHMSG *)m->data)->cells[i * 2 + 1];
         }
     }
     if (s != 0) {
