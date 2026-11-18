@@ -4294,13 +4294,14 @@ void cm_RunFight(CMFIGHTREC *a)
 {
     char buf[0x800];
     int rc[0x2e];
-    int bad = 0, nb = 0, seed, i, id, sa, sb, w, n, r;
+    int bad = 0, nb, seed, i, id, sa, sb, w, n, r;
     char *c, *p, *win, *e1, *e2;
     AICHAR *ch;
     AIBLD *bld;
     int *e;
 
     seed = cut_GetRandSeed();
+    nb = 0;
     for (i = 0; i < 16; i++) {
         id = a->defenders[i];
         if (id != -1 && gm_FindChar(id) == 0) {
@@ -4366,10 +4367,7 @@ void cm_RunFight(CMFIGHTREC *a)
             }
             cm_FightEndDialog(a);
             cm_FightOutro((char *)a);
-            cm_EndFightScene(a);
-            return;
-        }
-        if (cm_FightLootValue != 0 && cm_FightAttackerC->kind == 6) {
+        } else if (cm_FightLootValue != 0 && cm_FightAttackerC->kind == 6) {
             e1 = 0;
             bld = (AIBLD *)gm_BuildQuery(1, 1, cm_FightRecordT->attackerBldId);
             if (bld != 0)
