@@ -3112,11 +3112,7 @@ int ai_CartAtBuilding(AIBLD *bld, AIOBJ *cart)
    bits 8 / 1 need the script's consent (ai_ScriptQuery 0x29 / 0x27, 0x2a / 0x25 for a source or the warehouse,
    then ai_CampaignStep); the move goes out as cm_SendExSellObject (lagerId, the cart, the goods, n, player,
    the price over factor), a changed price shows the text 0xec with the difference and plays
-   "RollenKurz_s_01", and the slot's control drops by n. The moves are one send group, waited for; 1
-   @deep frame sweep s21: 12 -> 8 ins: inv a local of each goods loop's body (the two loops' inv share one
-   slot in the original). Left: slots 8, the n * price product (fld [esp+0x20]; fmul [esp+0x24]) with the
-   two float slots swapped: total / price rank the other way in the original (a reference count); factor *
-   total spellings = control. Lead: c2frame --refs counts of total and price, price per loop. */
+   "RollenKurz_s_01", and the slot's control drops by n. The moves are one send group, waited for; 1 */
 
 int ai_TransportFromLager(int lagerId, AIOBJ *cart, AIBLD *bld, int priced, char *source, float factor,
                           unsigned char player, unsigned int mode)
@@ -3144,8 +3140,6 @@ int ai_TransportFromLager(int lagerId, AIOBJ *cart, AIBLD *bld, int priced, char
     }
     cm_BeginSendGroup();
     for (i = 0; i < 8; i++) {
-        float inv;
-
         slot = &ai_ProdGoods2[i];
         if (slot->check == -1 || d2_GetObjValue(slot->check) == 0)
             continue;
@@ -3169,13 +3163,12 @@ int ai_TransportFromLager(int lagerId, AIOBJ *cart, AIBLD *bld, int priced, char
             price = 0.0f;
         }
         total = n * price;
-        inv = 1.0f / factor;
-        if (sv_CheckGoodAmountB(ai_Chars[ai_PlayerId], (int)(inv * total), player) == 0)
+        if (sv_CheckGoodAmountB(ai_Chars[ai_PlayerId], (int)(1.0f / factor * total), player) == 0)
             continue;
         if (slot->amount < 0)
             continue;
         limit = gm_PlayerFactor(1, player);
-        if (abs((int)(inv * n * price - total)) < limit)
+        if (abs((int)(1.0f / factor * n * price - total)) < limit)
             factor = 1.0f;
         if (mode & 8) {
             if (source != 0) {
@@ -3207,8 +3200,6 @@ int ai_TransportFromLager(int lagerId, AIOBJ *cart, AIBLD *bld, int priced, char
         d2_SetObjValue(slot->check, 0, slot->amount, d2_GetObjValue(slot->check) - n, 0);
     }
     for (i = 0; i < 16; i++) {
-        float inv;
-
         slot = &ai_ProdGoods[i];
         if (slot->check == -1 || d2_GetObjValue(slot->check) == 0)
             continue;
@@ -3224,13 +3215,12 @@ int ai_TransportFromLager(int lagerId, AIOBJ *cart, AIBLD *bld, int priced, char
         else
             price = 0.0f;
         total = n * price;
-        inv = 1.0f / factor;
-        if (sv_CheckGoodAmountB(ai_Chars[ai_PlayerId], (int)(inv * total), player) == 0)
+        if (sv_CheckGoodAmountB(ai_Chars[ai_PlayerId], (int)(1.0f / factor * total), player) == 0)
             continue;
         if (slot->amount < 0)
             continue;
         limit = gm_PlayerFactor(1, player);
-        if (abs((int)(inv * n * price - total)) < limit)
+        if (abs((int)(1.0f / factor * n * price - total)) < limit)
             factor = 1.0f;
         if (mode & 8) {
             if (source != 0) {
