@@ -1005,6 +1005,46 @@ Where the pushes and pops sit, how many epilogue copies there are, shared agains
     (the message 0xf's n / ch stores after the push of &m; 4000+ orders and the block-local m tried),
     hmt_FillCouncils (bonus: the council loop's i = 2 .. 0 with the test on i + 1).
 
+- **Deep s33 (the near-byte list to 50 instructions, notes older than s22 first, 15 items: 9 byte + 1 fix, 6
+  notes; 1 bonus)**:
+  - **A parameter VC6 keeps in a register where the original reads its slot each time: one of its reads was
+    another variable**: amt_Rating's `if (mode == 2)` was the decision record's `rec.dec.cur == 2` (the original's
+    `mov eax,[esp+0x54]` read before `add esp,0x10` lands 0x18 into the AIDEC); with mode at three reads the
+    s2x hit-inside form was byte at once. Convert a pre-`add esp` displacement before naming the variable.
+  - **The strength-reduced loop pointer is based on the most-referenced field; a test VC6 folds still counts**:
+    ai_ConvertWindow's player loop pivots on c->kind (ai_Chars+2) in the original, on c->faith in ours (one
+    reference each; the AI loop's three kind tests pivot on kind). `c->kind < 0xa && c->kind < 0xa` (or `!=
+    0xa`, `<= 0xa`) folds to one compare after the IV choice: byte. `kind >= 0` (unsigned) folds too early.
+  - **The s29 initializer lever decides which call of a sum runs first, in an inline sum**: ai_HatredWindow's
+    `t = gm_GetWorth(b); price = (t + gm_GetWorth(a)) ..` adds into eax (ours) where the original adds into
+    the first result's register (add edi,eax): every t spelling is one code. The inline `gm_GetWorth(b->id) +
+    gm_GetWorth(a->id)` gives add edi,eax but calls a first (both operand orders one code); one `= 0` on any of
+    12 locals (initgen) flips the call order: byte. A frame hunk first: the AI branch's price was its own block
+    local (dcp frame: another slot than the player path's).
+  - **Parameter types decide register ties**: d2_DrawRectOutline's r / g (unsigned int, tie at 112, served g
+    first) are `unsigned char` like d2_PutPixelRGB's parameters: byte (prototype fixed in both headers; the
+    caller pushes the same constants). Folded self-references (`g = g;`, `(void)g`) never reach the tie key.
+  - **A frame tie broken by a macro's temp**: ai_TokenRandomRich's n1, pred and found tied at count 4 in the
+    frame sort (c2frame); AI_ZERO_BUF's pointer temp as `v` instead of n1 (n1 at 2): byte, and the same for
+    ai_TokenRichestInhabitant (bonus, 24 ins).
+  - **A loop invariant from a start time**: `_start = d3_Time; while (_start + 0xfa > d3_Time)` gives `mov
+    eax,[d3_Time]; lea ebx,[eax+0xfa]` (the sum hoisted beside the start value); `_end = d3_Time + 0xfa` loads
+    straight into ebx (ai_MissionSuccessDialog, G13_WAIT).
+  - **A chain split into a clamp and its own if / else-if puts both short blocks after the first arm**:
+    ai_CourtshipWindow `if (gain > 0) rounds = min(gain, 3); if (gain <= 0) r = .. else if (gain == 1) ..`
+    (VC6 threads the jle to the gain <= 0 roll; the 3-store is no longer if-converted), not the nested form.
+  - **A dead store written in each arm**: sv_ScrollCamera's `dst[0] = v[0]` beside dst[1] / dst[2] in both arms
+    (one copy after them rotates the scratch registers), with the plain `dst[1] = d3_Camera->pos.y`.
+  - Left with notes: init_SetDetailLevel (oldlvl must outrank size: free-register order esi, edi, ebp, ebx),
+    ord_WeightedRecordSum (i and the IV tie at 64, tie key i = IV + 1), d2_DrawButton / d2_BlitPartMode (the
+    original's operand order of a sum against VC6's reassociation rank: every spelling one code),
+    gm_CharacterWages (the add's destination, as HatredWindow's but no initializer moves it),
+    he_AllocInsult (b->id's CSE temp holds eax over the 0x1d81 arguments), cm_JoinSplit (p->next7 = 0 before
+    the part's memcpy fixes the order; m / next7 tie left).
+  - Tools: vdiff / c2trace / c2frame / c2tail / c2fpu (c2trace.parse_variants) and climb --base apply `<<<N` /
+    `<<<*` blocks; initgen.py takes every declaration run (later function-scope runs, inner blocks; `<<<N` for
+    a repeated line) and a definition with a comment before its `{`.
+
 - **An else-if arm cross-jumped whole into a sibling's copy, the original keeps it inline**: the store order of
   the OTHER arms (default arm charId before stateArg; 0x176 arm stateArg, charId, x, z) decides it, found by
   climb.py swap + move in round 2 (cm_OrderAttack byte; permuting only the inlined arm's stores did not). The pair
