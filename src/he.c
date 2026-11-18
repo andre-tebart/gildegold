@@ -9974,21 +9974,15 @@ int he_StepWalkSlot(HEWALKSLOT *s)
    0x402c20, the second first when (n - m) / (n + 1) is below 0.66); its building is its own (bld2)
    or one picked for the player (ai_PickActionBuilding); a random roll below n / 10 gives none; else the character
    gets the bit 0x40000000 of field 0x1c8, the slot its id, the building, stage 1, state 9 (0x29 with +0x1f0), a
-   random step and the building's index, and it is placed on the stage there: the result is the message's handle
-   @deep read whole against the original and fixed the meaning (the slot takes the building id,
-   cm_SendSetField sets 0x40000000, ai_PickActionBuilding picks for the player's character, the roll
-   compares util_RandomF() > n * 0.1f, the result is cm_SendPlaceOnStage's handle). Left: the 64-bit kind
-   mask 0x1a7f4c3a0 is loaded into ecx/edx before the bld2 branch in the original (mov ecx, 0xa7f4c3a0 /
-   mov edx, 1 at +0x10d / +0x130, then push edx / push ecx) where ours pushes the immediates (push 1 / push
-   0xa7f4c3a0); a local __int64 mask tried, propagated the same. Plus slot reuse: gm_FindById's out in the
-   n slot [esp+0x20] vs ours [esp+0x24], regs eax->edx edx->ecx. */
+   random step and the building's index, and it is placed on the stage there: the result is the message's handle */
 int he_FillWalkSlot(HEWALKSLOT *slot, int n, int m)
 {
     int kinds[2];
     int tgt = -1;
     unsigned short id;
     AICHAR *ch;
-    int bld, idx;
+    int idx;
+    union { struct { unsigned int lo, hi; } s; __int64 q; } mask;
 
     kinds[0] = HE_WALK_PARTNERS1;
     kinds[1] = HE_WALK_PARTNERS2;
@@ -10002,27 +9996,32 @@ int he_FillWalkSlot(HEWALKSLOT *slot, int n, int m)
         && ai_FindPartnersRandomWalk((struct AIPER *)&ai_CharsT[ai_PlayerId], 1, &kinds[1], 0.0f, 100.0f, &id) == 0)
         return -1;
     ch = &ai_CharsT[id];
+    mask.s.lo = 0xa7f4c3a0;
+    mask.s.hi = 1;                      /* HE_WALK_BUILDINGS, set as two dwords */
     if (ch->bld2 != 0)
         tgt = ch->bld2->id;
-    else if (ai_PickActionBuilding((struct AIPER *)&ai_CharsT[ai_PlayerId], 0, HE_WALK_BUILDINGS, 0.0f, 100.0f, &tgt) == 0)
+    else if (ai_PickActionBuilding((struct AIPER *)&ai_CharsT[ai_PlayerId], 0, mask.q, 0.0f, 100.0f, &tgt) == 0)
         return -1;
-    if (!(util_RandomF() > n * 0.1f))
-        return -1;
-    gm_FindById(&bld, 0, 0, tgt);
-    if (bld == 0)
-        return -1;
-    idx = (bld - (int)ai_Blds) / 0xa9;
-    cm_SendSetField(ch->netId, 0x1c8, 4, 0x40000000, 0);
-    slot->chr = ch->netId;
-    slot->target = tgt;
-    slot->stage = 1;
-    slot->state = 9;
-    if (ch->v1f0 != 0)
-        slot->state = 0x29;
-    slot->step = (unsigned char)ai_RandomStrides[(unsigned short)util_Random(0x10)];
-    slot->bldIndex = (unsigned char)idx;
-    slot->holdHour = 0xff;
-    return cm_SendPlaceOnStage(ch->netId, tgt, -1);
+    if (util_RandomF() > n * 0.1f) {
+        int bld;
+
+        gm_FindById(&bld, 0, 0, tgt);
+        if (bld == 0)
+            return -1;
+        idx = (bld - (int)ai_Blds) / 0xa9;
+        cm_SendSetField(ch->netId, 0x1c8, 4, 0x40000000, 0);
+        slot->chr = ch->netId;
+        slot->target = tgt;
+        slot->stage = 1;
+        slot->state = 9;
+        if (ch->v1f0 != 0)
+            slot->state = 0x29;
+        slot->step = (unsigned char)ai_RandomStrides[(unsigned short)util_Random(0x10)];
+        slot->bldIndex = (unsigned char)idx;
+        slot->holdHour = 0xff;
+        return cm_SendPlaceOnStage(ch->netId, tgt, -1);
+    }
+    return -1;
 }
 /* 0x5516a0, plays a random gesture animation (cm_SendChrAnim) on the character c: one of four draws, each queuing one
    to three animations ("gestik/haende_reiben" ends every one) */

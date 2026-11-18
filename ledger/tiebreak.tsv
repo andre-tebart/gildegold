@@ -3661,7 +3661,7 @@ exe	0x00550ea0	he_StartRanking	he	cae17803d90075bc	no	byte	control=byte p1=byte 
 exe	0x00550ee0	he_RunRanking	he	e2f7d26331f6a9b8	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005512c0	he_StartWalk	he	74fd61584eeca851	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00551340	he_StepWalkSlot	he	d80507e56925ef69	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
-exe	0x00551440	he_FillWalkSlot	he	902bcf270135cf45	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
+exe	0x00551440	he_FillWalkSlot	he	b62831fcd8cdd3dc	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	8c7e8a2d722de762
 exe	0x005516a0	he_PlayGestures	he	57c74e5851846aa5	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00551780	he_StepWalk	he	1c0b63363243ed0b	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x00551b70	he_RunWalk	he	e48059c808ef404b	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	469d0b50a61d145c
