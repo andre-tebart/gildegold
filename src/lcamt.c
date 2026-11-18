@@ -2329,24 +2329,26 @@ unsigned int ai_FillEnemiesTab(AICHARREC *me, unsigned int max, LCAMOUNTROW *row
    four pair events 0x6f of me (AIJOB.partner1 me's netId); with max set it clears max rows of rows and fills the
    first min(max, count) of them (LCAMOUNTROW.rec) with the corner icons (ai_AmountRowStatus) and the partner
    filter filter (ai_PassesPartnerFilter, pickable); returns the count
-   @deep match-deep 2026-11-17 (s8): draft -> shape, size 195 = 195: the fill loop walks rows (i++, rows++;
-   rows->rec, ai_AmountRowStatus(rows)): the original's esi row pointer and frame 0x10 (n in a register all
-   through, filter and me reloaded). Left: n and max swapped (the original n = ebx, max = ebp; ours n =
-   ebp, max = ebx): c2trace --prio: max#1 prio 14 (memset's max * 56 counts 2 refs in a P = 4 block) > n#1
-   prio 9 (lives unreferenced through the scan's call blocks 3/4 and the fill body 14), so max is served
-   first and takes ebx. With the regs swapped the min reads n < max ? n : max (20 ins, kept); max < n ? max
-   : n gives the same allocation plus an order hunk (26). Rounds: index form with count local 63, unsigned
-   n 57, while scan = control, row local = control, row-walk (row = rows; row++) 59, lovers[n] stored
-   before the test (no c) 26 but the store order is wrong, split n++ / nested if = control; climb --base
-   rowp 2 rounds: nothing. Next: what raises n above max (an n reference the original has, or max's memset
-   refs). prior: Read the whole function against the original and rewrote it (the pair event 0x6f scan into
-   lovers[4], the clear, the min(max, n) fill loop with the corner icons and the partner filter); the
-   statements and the control flow match (same branches, same calls and arguments). Left is allocation: the
-   original keeps n in ebx all through (frame 0x10, only lovers[4]) and max in ebp, reloading me and filter
-   from their argument slots; ours keeps n in esi during the scan, homes it in a stack slot (frame 0x14:
-   mov [esp+0x18], esi / mov [esp+0xc], esi) and keeps max in ebx and filter in ebp, so the fill loop
-   reloads n (mov ecx, [esp+0x10]) and the epilogue differs (hunks at +0x44, +0xab, +0xc5). Tried:
-   declaration order, unsigned / int counters and the casts in the min (no change, or jl instead of jae). */
+   @deep deep s34: c2trace --prio: n#1 9 against max#1 14 (max +16 in the memset block, P 4); n is
+   live-through in the gm_FindChar block (-6) and referenced only in the store block (+16, P 2). The scan
+   written as lovers[n] = gm_FindChar(..); if (lovers[n] != 0) n++; puts an n reference in the call block
+   (+16 there): n 19 > max 14, n = ebx / max = ebp, and with the min as max < n ? max : n (the original's
+   cmp ebp,ebx / mov eax,ebp / jb / mov eax,ebx) the variant is 2 ins (order 6): the only hunk left is the
+   store, which the original makes after the test (test eax,eax / je / mov [esp+ebx*4+0xc],eax / inc ebx) -
+   so that form is provably not the original's, not kept. = control: initgen (n i c ev), an early return
+   for max == 0, lovers[n] = c; n++ in braces; worse: n >= 4 break in the body (22), max < n ? max : n
+   alone (26). climb round 1 and climb --base on the 2-ins variant (2 rounds): nothing. Open: an n
+   reference in the gm_FindChar / test block that keeps the store behind the test. prior: match-deep
+   2026-11-17 (s8): draft -> shape, size 195 = 195: the fill loop walks rows (i++, rows++; rows->rec,
+   ai_AmountRowStatus(rows)): the original's esi row pointer and frame 0x10 (n in a register all through,
+   filter and me reloaded). Left: n and max swapped (the original n = ebx, max = ebp; ours n = ebp, max =
+   ebx): c2trace --prio: max#1 prio 14 (memset's max * 56 counts 2 refs in a P = 4 block) > n#1 prio 9
+   (lives unreferenced through the scan's call blocks 3/4 and the fill body 14), so max is served first and
+   takes ebx. With the regs swapped the min reads n < max ? n : max (20 ins, kept); max < n ? max : n gives
+   the same allocation plus an order hunk (26). Rounds: index form with count local 63, unsigned n 57,
+   while scan = control, row local = control, row-walk (row = rows; row++) 59, lovers[n] stored before the
+   test (no c) 26 but the store order is wrong, split n++ / nested if = control; climb --base rowp 2
+   rounds: nothing. Next: what raises n above max (an n reference the original has, or max's memset refs). */
 
 unsigned int ai_FillLoversTab(AICHARREC *me, unsigned int max, LCAMOUNTROW *rows, unsigned int *filter)
 {
