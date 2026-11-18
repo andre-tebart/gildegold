@@ -662,6 +662,53 @@ Where the pushes and pops sit, how many epilogue copies there are, shared agains
     dword loaded before `rep stosd` (ai_BewitchOrder, ai_HomageWindow), two-temp swaps at a call (cm_FindNearCell,
     cm_UpdateDamagePops), bld / chr slot tie (he_RunGeselle), byte parameter kept in bl (gm_RandomAge).
 
+- **Deep s23 (the near-byte list to 20 instructions, the functions without an s22 note first, 30 items + twins)**:
+  - **flip.py on the hunk, then read the DELETE hits**: a hit that deletes an assignment `v = global;` /
+    `wz = snow->windz;` means the original has no such local: the global / field is read at each use and VC6 keeps
+    it in a register itself (he_RunStormEvent: `ai_Time.hour` at each use instead of `base = ai_TimeHourW`, byte;
+    d3t_UpdateSnow: `wz = (snow->windz)` -> `wz = snow->windz`, 8 -> 4). A hit that duplicates a statement means the
+    value has a second reference (cm_WaitTicks, not found). Hits spread over many unrelated statements (deleting
+    any store above) = a value-numbering tie, no lever in the hunk's own text (he_AllocMeeting, d3_InitObject,
+    cm_QueueSend, io_CharacterName).
+  - **A wrong field read off the frame**: a `dcp frame` slot `<- moved` whose original slot is a DEAD PARAMETER
+    slot reused for an out-parameter, stored into a record field at +0x20 where ours writes +0x1c, was the
+    meaning (cm_OrderWare: storeX / storeZ = the cell x / z of d3_GetHeightAt, not held = a / turn = a byte of the
+    point; fix + byte). ai_BurglaryStart: the map pick record's stores at aligned offsets +8/+0xc/+0x10/+0x4c
+    where ours wrote req[4..7] (fix; buf 0x80 for the frame 0xd0): check the stores' offsets in `dcp disasm`
+    with the pushes counted before calling a fill hunk "order".
+  - **A 64-bit global copied as its two words** (`cfg.classMask[0] = gypsyFilterWords[0]; [1] = ..[1]`): the
+    original loads the high word before the AMOUNTCFG memset's rep stosd; `cfg.filter = gypsyFilter` loads both
+    after. ai_UseGoodCharmOfficials, ai_BewitchOrder, ai_HomageWindow byte; ai_SermonWindow and
+    ai_UseGoodCharmPartner draft -> shape, ai_HatredWindow 24 -> 16 by the same edit (tools: a script over every
+    `X.filter = gypsyFilter;` of a below-byte function, one `dcp try` each).
+  - **A named local for a call argument computed by a ternary** (`fl = p->sex != 0 ? F1 : F0;` then the call):
+    the original loads the record pointer before `sub esp` and pushes the buffer address after the flag byte
+    (ai_FindCandidateIds, its twin ai_DecideSuitor: byte).
+  - **Clamp then one send** = `min(max(v, 0.0f), 1.0f)` (ai.h's macros), not nested ifs with a send per arm and
+    not a ternary (ahm_SendSetPlaceValue / ahm_SendSetShare byte; the arms' copies were in the wrong order).
+  - **Decompiler loop shapes**: `if (n > 0) { j = 0; do { .. } while (j < n); }` -> `for (j = 0; j < n; j++)`
+    (amt_IsColumnDecided byte); the box corners walked by `v = (float *)box + 0x16; v[-2] ..; v += 0x14` ->
+    `for (i = 1; i < 8; i++) box[i].x ..` and a search loop with a `goto` out of it -> `for` + `break` +
+    `if (i >= n) {..}` (init_LoadSiteScene byte).
+  - **Exits**: `if (x == -1) return 1;` guard first (cm_CheckCutsceneReady); the paid branch's `free; return;`
+    as an if / else falling to the shared final free (he_RunDeathDue); the object / building / none universe as
+    one if-chain and ONE `if (i == -1) return 2;` after it (cm_ExChrWalkToDummy); `cm_EndFightScene(a); return;`
+    of an early branch shared with the other branch's (cm_RunFight); the queue test `if (cm_SendQueue != 0)`
+    walk first (cm_QueueSplit).
+  - **Block locals and inits**: a block local for the value one branch converts with fild (the original fild's
+    from the temp slot: snd_UpdateAnimals `int c` in each of three atmosphere arms); `int scene` in the `if`
+    that uses it (main_BeginPlayerRound); a record (G28REC party) in the block that sends it (he_RunOffspring);
+    `x = 0` / `nb = 0` written after the first loop / call instead of as an initializer: the callee-saved pushes
+    then sit after that loop (cm_BuildPortraits, cm_RunFight); two `= {0}` records in the other declaration order
+    (rt_LoadAtPoint: the zero fills follow the declaration order).
+  - Store orders by permutation (ai_AgendaOfficeList `found = 0` first, ai_Screenshot width before height +
+    the bit masks before the bit count, he_RunOffspring stage before year++); the arms of an if swapped so the
+    original's arm falls through (gm_JobWage); dist as dx / dy / dz locals with D3VECTOR4 points
+    (gm_NearestBuilding).
+  - dcp tooling: `dcp try --apply` re-encodes the unit (a Latin-1 byte in another function's string became
+    U+FFFD and that function fell to draft); restore the byte after each apply (bug report
+    try-apply-mangles-latin1-bytes.md).
+
 - **An else-if arm cross-jumped whole into a sibling's copy, the original keeps it inline**: the store order of
   the OTHER arms (default arm charId before stateArg; 0x176 arm stateArg, charId, x, z) decides it, found by
   climb.py swap + move in round 2 (cm_OrderAttack byte; permuting only the inlined arm's stores did not). The pair
