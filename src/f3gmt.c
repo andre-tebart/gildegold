@@ -7422,16 +7422,11 @@ int gm_ListAmountById(char *l, int id)
 
 int gm_ListStock(short *l, int id)
 {
-    int a;
-
-    a = ((ORDOBJ *)l)->count;
-    if (*l == 0x1dd) {
-        a += 2;
-        return a * 5;
-    }
-    if (a == 3)
+    if (*l == 0x1dd)
+        return (((ORDOBJ *)l)->count + 2) * 5;
+    if (((ORDOBJ *)l)->count == 3)
         return 0x50;
-    return a * 0x14;
+    return ((ORDOBJ *)l)->count * 0x14;
 }
 /* 0x50ab80, how many of the goods id the stall object l can still take, at most n: the room left on its stock
    (gm_ListStock less the amount it holds) when it holds the goods already; else none when its places are full,
