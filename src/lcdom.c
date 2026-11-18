@@ -6750,20 +6750,7 @@ void ai_RoomUpgradeWindow(AIBLD *bld)
    refused at the line's highest level (text 0x17d7), without the right to the next type (gm_MayTakeJob: text 0x17d6
    for the classes 1 / 4 / 8, else 0x17d9; gm_AllowAll skips the check) or when the building site does not fit the
    next type's name (text 0x17d8); else asks (text 0x17d5) for the price, 0.3 of the next type's value, and sends the
-   message 0x1e "building_upgrade": paid by the player (then text 0x17da), of the classes 3 / 5 from the treasury
-   @deep reconstructed from the stub against the whole original 0x5b7690..0x5b7b7c: all checks (maxLevel,
-   gm_MayTakeJob 0x17d6/0x17d9, the site name strstr/_strcmpi 0x17d8), the price 0.3 *
-   gm_BuildingKindValue, the player path and the class 3/5 treasury path with both 0x1e building_upgrade
-   messages; ours 378 vs 377 ins, the first 0x290 bytes identical. Left is scheduling: the treasury path's
-   AIMSG fill (+0xad9..+0xb45): the original loads ai_Time.year before the rep stosd and copies the time
-   words interleaved with type/arg/flags/fromId/to, ours copies the 14-byte struct in another dword order
-   (tried 8 statement orders: every one leaves the copy scheduled differently); the gm_ClassTreasury result
-   move (+0xa98: mov ebx,eax before vs after the lea/push); the regs hunks eax/ecx/edx swaps around
-   cm_SendMoveGoods / sv_CheckStock. The prover stops at the cross-jumped je of the class 3 path (a
-   condition on flags set in another block) (references: M8 at +0x454: ours refers to ai_Time+0x4
-   (0x770ae4), the original's field to 0x770ae0 (ai_Time), explained: the M8 at +0x454 is the struct copy
-   msg.time = ai_Time scheduled in another dword order: both sides copy all four words of ai_Time
-   (0x770ae0/4/8/c) into msg+0x28..0x35, only the load order differs) */
+   message 0x1e "building_upgrade": paid by the player (then text 0x17da), of the classes 3 / 5 from the treasury */
 
 void ai_UpgradeBuilding(AIBLD *bld)
 {
@@ -6846,54 +6833,49 @@ void ai_UpgradeBuilding(AIBLD *bld)
         sv_MessageBox(done, 4);
         return;
     }
+    /* @original the stock check and the message stand in both treasury arms: VC6 cross-jumps the first copy
+       into the second (the class-3 arm's test eax,eax / jmp into the other arm's je), and the first copy's
+       temporaries are what turns the scratch registers on to eax for the second arm's lea (one copy behind
+       the if / else: lea ecx, 49 ins) */
     if (cls == 3) {
         first = (AIBLD *)gm_FirstBuilding(1);
         treasury = (AIROOM *)gm_Query((void *)first->objList, 2, 6, 0, 0x115);
         if (sv_MessageBox(text, 0x11) == 0)
             return;
+        if (sv_CheckStockB(treasury, treasury->list, price, ai_OwnPlayer) != 0) {
+            AIMSG msg;
+
+            memset(&msg, 0, sizeof(msg));
+            msg.type = 0x1e;
+            msg.to = ai_CharInts[ai_PlayerId][0];
+            msg.fromId = bld->id;
+            msg.flags = 1;
+            msg.time = ai_Time;
+            msg.arg[0] = bld->id;
+            cm_BeginGroup("building_upgrade");
+            cm_SendMoveGoods(-1, treasury->objId, ai_OwnPlayer, price);
+            cm_SendLongMessage((char *)&msg);
+            cm_EndGroup("building_upgrade");
+        }
     } else {
         treasury = (AIROOM *)gm_ClassTreasury(bld);
         if (sv_MessageBox(text, 0x11) == 0 || treasury == 0)
             return;
-    }
-    if (sv_CheckStockB(treasury, treasury->list, price, ai_OwnPlayer) != 0) {
-        AIMSG msg;
+        if (sv_CheckStockB(treasury, treasury->list, price, ai_OwnPlayer) != 0) {
+            AIMSG msg;
 
-        memset(&msg, 0, sizeof(msg));
-        msg.type = 0x1e;
-        msg.flags = 1;
-        msg.to = ai_CharInts[ai_PlayerId][0];
-        msg.fromId = bld->id;
-        msg.type = 0x1e;
-        msg.arg[0] = bld->id;
-        msg.flags = 1;
-        msg.fromId = bld->id;
-        msg.to = ai_CharInts[ai_PlayerId][0];
-        msg.type = 0x1e;
-        msg.type = 0x1e;
-        msg.arg[0] = bld->id;
-        msg.flags = 1;
-        msg.fromId = bld->id;
-        msg.to = ai_CharInts[ai_PlayerId][0];
-        msg.type = 0x1e;
-        msg.arg[0] = bld->id;
-        msg.type = 0x1e;
-        msg.arg[0] = bld->id;
-        msg.flags = 1;
-        msg.type = 0x1e;
-        msg.arg[0] = bld->id;
-        msg.flags = 1;
-        msg.fromId = bld->id;
-        msg.type = 0x1e;
-        msg.arg[0] = bld->id;
-        msg.time = ai_Time;
-        msg.flags = 1;
-        msg.fromId = bld->id;
-        msg.to = ai_CharInts[ai_PlayerId][0];
-        cm_BeginGroup("building_upgrade");
-        cm_SendMoveGoods(-1, treasury->objId, ai_OwnPlayer, price);
-        cm_SendLongMessage((char *)&msg);
-        cm_EndGroup("building_upgrade");
+            memset(&msg, 0, sizeof(msg));
+            msg.type = 0x1e;
+            msg.to = ai_CharInts[ai_PlayerId][0];
+            msg.fromId = bld->id;
+            msg.flags = 1;
+            msg.time = ai_Time;
+            msg.arg[0] = bld->id;
+            cm_BeginGroup("building_upgrade");
+            cm_SendMoveGoods(-1, treasury->objId, ai_OwnPlayer, price);
+            cm_SendLongMessage((char *)&msg);
+            cm_EndGroup("building_upgrade");
+        }
     }
 }
 /* 0x5b7b80, the offer to buy a building from its master (ai_BuildingWindow, another's building): refused with the
