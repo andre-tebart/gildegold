@@ -2708,8 +2708,8 @@ int ai_AmountPageSwitch(int view, int page, int scrollPage)
     io_PrintText("$C");
     d2_RemoveWindowObjects(d2_LastWindow, 1);
     if (scrollPage != -1) {
+        d2_Wins[d2_LastWindow].scrollY = 0;
         win = d2_LastWindow;
-        d2_Wins[win].scrollY = 0;
         d2_SetForm(view, scrollPage);
         io_PrintText("$C");
         d2_CreateScrollButtons(-1, -1, d2_LastWindow, win, 0x767);
