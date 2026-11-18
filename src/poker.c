@@ -406,7 +406,9 @@ void ai_PokerPayStakes(void)
 }
 /* 0x4a7ac0, picks each NPC's strategy (seat->strategy) from its hand: 3 nothing yet, 2 go for the rank, 1 pairs,
    0 random
-   @deep size queue s18: kept dealt as unsigned short with the inits pairs / maxn / maxr / g (pk round: 4
+   @deep orchestrator s18: dealt is back to unsigned char (the original's byte compares prove a char; a wider
+   type only for the size is not kept, as for d3t_MoveObjectPath); the init order stays. size queue s18: dealt
+   as unsigned short with the inits pairs / maxn / maxr / g (pk round: 4
    dealt types x 24 init orders): 79 -> 24 ins, raw 380 -> 349, padded size (352). Left: only the table /
    dealt registers swapped (ours table edx, dealt esi via movzx si; the original table esi, dealt dl, byte
    compares): the original allocates dealt before the table (prio: c2trace --prio gives the table 6, the
@@ -430,7 +432,7 @@ void ai_PokerPickStrategies(void)
     int cnt[6];
     int s, g, j, i, k, pairs, first;
     int n, maxn, maxr;
-    unsigned short dealt;
+    unsigned char dealt;
 
     first = 0;
     for (s = 1; s < 3; s++) {
