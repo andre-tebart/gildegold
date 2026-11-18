@@ -1467,7 +1467,7 @@ exe	0x004801f0	ai_EvaluateProductionCategory2	ai	draft	readable	deep
 exe	0x00480e70	ai_CalcMeisterWache	ai	draft	readable	deep	
 exe	0x004817a0	ai_CalcAngriff	ai	draft	readable	deep	
 exe	0x00481ef0	ai_CalcMeisterDiebe	ai	draft	readable	deep	
-exe	0x00482f00	ai_CalcMeisterRaeuber	ai	draft	readable	deep	
+exe	0x00482f00	ai_CalcMeisterRaeuber	ai	byte	readable		
 exe	0x004836a0	ai_CalcMeisterBank	ai	byte	readable		
 exe	0x00483a60	ai_CalcMeisterFernhaendler	ai	shape	readable		byte+draft -> shape+draft at c0993bbb: ai_bld.h types AIBLD.workSet as the AIWORKSET record (flags / budget / prod / target, what cm_ExHire copies into AICHAR.flags1b4 .. target and ls_ReadBuildings sets) instead of char[0x10]; ai_Unk483a60 never touches workSet, only its two stack slots swap (slots 12, the same code otherwise) under the changed declaration of AIBLD, so its byte match was no evidence of the original's source [waits for: the declaration set of ai.c's includes (ai.h > ai_bld.h), match-deep on the slot order]
 exe	0x00483d30	ai_StartBuildingWork	ai	byte	readable		
@@ -2398,216 +2398,216 @@ exe	0x004cd760	cm_LobbyJoin	cm	byte	readable
 exe	0x004cd7c0	cm_LobbyUpdatePlayer	cm	byte	readable		
 exe	0x004cd820	cm_LobbyRequestPlayer	cm	byte	readable		
 exe	0x004cd870	cm_ExLobby	cm	byte	readable		
-exe	0x004cd9d0	ai_FindWeaponRecord	cm	byte	readable		
-exe	0x004cda00	cm_CharWeaponAny	cm	byte	readable		
-exe	0x004cda50	cm_CharWeapon	cm	byte	readable		
-exe	0x004cdac0	cm_CharWeaponItem	cm	byte	readable		
-exe	0x004cdb20	cm_DiscardWeapons	cm	byte	readable		
-exe	0x004cdb80	cm_FightWeaponLoss	cm	byte	readable		
-exe	0x004cdcf0	cm_FightStrength	cm	byte	readable		
-exe	0x004cde20	cm_UpdateHandObject	cm	byte	readable		
-exe	0x004cdf00	cm_CutEntrySlot	cm	byte	readable		
-exe	0x004cdf80	cm_FightCutEntry	cm	shape	readable		
-exe	0x004cdfe0	cm_CellUsable	cm	byte	readable		
-exe	0x004ce040	cm_FindNearCell	cm	shape	readable		
-exe	0x004ce130	cm_FindFighter	cm	byte	readable		
-exe	0x004ce170	ai_LedSelectBits	cm	byte	readable		
-exe	0x004ce1b0	cm_CharObjDistXZ	cm	byte	readable		
-exe	0x004ce200	cm_CharCellDistXZ	cm	byte	readable		
-exe	0x004ce270	cm_OtherBuilding	cm	byte	readable		
-exe	0x004ce290	cm_LayBomb	cm	byte	readable		
-exe	0x004ce300	cm_UpdateBombs	cm	draft	readable	deep	
-exe	0x004ce5d0	cm_ThrowGrenade	cm	shape	readable		
-exe	0x004ce830	cm_UpdateGrenades	cm	draft	readable	deep	
-exe	0x004ceb70	cm_ObjectOwner	cm	byte	readable		
-exe	0x004ceb80	cm_WaitEventStop	cm	byte	readable		
-exe	0x004cec00	cm_CloseCharInfoWins	cm	byte	readable		
-exe	0x004cec30	cm_OpenCharInfoWin	cm	shape	readable		
-exe	0x004ced80	cm_UpdateCharInfoWins	cm	byte	readable		
-exe	0x004cedc0	cm_ShowDamage	cm	byte	readable		
-exe	0x004cee20	cm_UpdateDamagePops	cm	shape	readable		
-exe	0x004cef80	cm_InitDamagePops	cm	byte	readable		
-exe	0x004cefa0	cm_ClearDamagePops	cm	byte	readable		
-exe	0x004cefe0	cm_CloseFightView	cm	byte	readable		
-exe	0x004cf000	cm_UpdateSceneChars	cm	draft	readable	deep	
-exe	0x004cf370	cm_DrawScrollArrows	cm	byte	readable		
-exe	0x004cf670	cm_UpdatePointer	cm	draft	readable	deep	
-exe	0x004cf9c0	cm_UpdatePortraits	cm	draft	readable	deep	
-exe	0x004cfc10	cm_BuildPortraits	cm	shape	readable		
-exe	0x004cfe70	cm_ClosePortraits	cm	byte	readable		
-exe	0x004cfeb0	cm_ClickSceneChar	cm	byte	readable		
-exe	0x004cffd0	cm_OrderAttack	cm	byte	readable		
-exe	0x004d0200	cm_OrderEscape	cm	byte	readable		
-exe	0x004d02d0	cm_OrderConquer	cm	byte	readable		
-exe	0x004d0380	cm_OrderWare	cm	shape	readable		
-exe	0x004d0460	cm_OrderToBestCell	cm	byte	readable		
-exe	0x004d0520	cm_OrderWait	cm	byte	readable		
-exe	0x004d0570	cm_OrderClick	cm	draft	readable	deep	
-exe	0x004d0740	cm_FightMouse	cm	draft	readable	deep	
-exe	0x004d08c0	cm_ClearMarks	cm	byte	readable		
-exe	0x004d0920	cm_AddFighter	cm	byte	readable		
-exe	0x004d0a30	cm_CollectSceneChars	cm	byte	readable		
-exe	0x004d0a80	cm_CreateDummyFlag	cm	byte	readable		
-exe	0x004d0ca0	cm_PlaceFlagObjects	cm	byte	readable		
-exe	0x004d0cd0	cm_FreeNetIdSlot	cm	byte	readable		
-exe	0x004d0cf0	ai_ArmGateGuards	cm	byte	readable		
-exe	0x004d0f80	cm_ClearKind3MaskCB	cm	byte	readable		
-exe	0x004d0fa0	cm_SetupFightScene	cm	draft	readable	deep	
-exe	0x004d1a10	cm_EndFightScene	cm	byte	readable		
-exe	0x004d1c20	cm_PlaceFighters	cm	byte	readable		
-exe	0x004d1e00	cm_FightIntro	cm	byte	readable		
-exe	0x004d1eb0	cm_FightOutro	cm	byte	readable		
-exe	0x004d1f10	cm_NearestEnemy	cm	byte	readable		
-exe	0x004d2010	cm_ThreatAt	cm	byte	readable		
-exe	0x004d2170	cm_BestCellNear	cm	shape	readable		
-exe	0x004d22d0	cm_MostThreatenedCellNear	cm	shape	readable		
-exe	0x004d2450	cm_CollectEscapeObject	cm	byte	readable		
-exe	0x004d2490	cm_NearestEscapeObject	cm	shape	readable		
-exe	0x004d2550	cm_CollectWareObject	cm	byte	readable		
-exe	0x004d25a0	cm_NearestWareObject	cm	byte	readable		
-exe	0x004d2650	cm_CollectConquerPoint	cm	byte	readable		
-exe	0x004d2680	cm_NearestConquerPoint	cm	byte	readable		
-exe	0x004d27a0	cm_InitOrderChances	cm	draft	readable	deep	
-exe	0x004d2c00	cm_OrderChancesFor	cm	byte	readable		
-exe	0x004d2e30	cm_OrderRating	cm	shape	readable		
-exe	0x004d2f80	cm_GiveFightOrders	cm	byte	readable		
-exe	0x004d3120	cm_CarryOutOrder	cm	byte	readable		
-exe	0x004d3300	cm_FallDownAction	cm	byte	readable		
-exe	0x004d3390	cm_CheckDeath	cm	byte	readable		
-exe	0x004d3550	cm_HitAction	cm	byte	readable		
-exe	0x004d3980	cm_LayBombAction	cm	byte	readable		
-exe	0x004d3a30	cm_ThrowBombAction	cm	byte	readable		
-exe	0x004d3ac0	cm_CheerAction	cm	byte	readable		
-exe	0x004d3ae0	cm_PickUpAction	cm	byte	readable		
-exe	0x004d3b30	cm_CheckFightWinner	cm	byte	readable		
-exe	0x004d3d10	cm_LootStock	cm	byte	readable		
-exe	0x004d3ea0	cm_LootCarts	cm	byte	readable		
-exe	0x004d4050	cm_FightRole	cm	byte	readable		
-exe	0x004d4090	cm_LootList	cm	byte	readable		
-exe	0x004d4340	cm_FightPortraits	cm	byte	readable		
-exe	0x004d4540	cm_FightStartDialog	cm	draft	readable	deep	
-exe	0x004d4d70	cm_FightEndDialog	cm	draft	readable	deep	
-exe	0x004d60b0	cm_CheckFight	cm	shape	readable	deep	
-exe	0x004d63e0	cm_RunFight	cm	shape	readable		
-exe	0x004d6930	cm_FightResult	cm	byte	readable		
-exe	0x004d6970	cm_FightFrame	cm	byte	readable		
-exe	0x004d6a50	cm_BuildFightUI	cm	byte	readable		
-exe	0x004d6b70	cm_CloseFightUI	cm	byte	readable		
-exe	0x004d6ba0	cm_FighterAct	cm	byte	readable		
-exe	0x004d6f60	cm_FightSlotStop	cm	byte	readable		
-exe	0x004d6f90	cm_FightSlotCheer	cm	byte	readable		
-exe	0x004d7000	cm_FightSlotPickUp	cm	byte	readable		
-exe	0x004d70a0	cm_FightSlotPutDown	cm	byte	readable		
-exe	0x004d7150	cm_FightSlotWinner	cm	byte	readable		
-exe	0x004d7190	cm_PlantEscapeFlag	cm	draft	readable	deep	
-exe	0x004d7360	cm_Attack	cm	draft	readable	deep	
-exe	0x004d76a0	cm_RunCutOrders	cm	draft	readable	deep	
-exe	0x004d88c0	cm_FightLoop	cm	byte	readable		
-exe	0x004d8b10	cm_FightMember	cm	draft	readable	deep	
-exe	0x004d8b30	cm_ClearSceneChars	cm	byte	readable		
-exe	0x004d8b50	cm_DrawFightTime	cm	byte	readable		
-exe	0x004d8c40	cm_DeleteSceneChars	cm	byte	readable		
-exe	0x004d8c70	cm_StackPicture	cm	byte	readable		
-exe	0x004d8cb0	cm_TallyStack	cm	byte	readable		
-exe	0x004d8e20	cm_RunCouncilSession	cm	draft	readable	deep	
-exe	0x004da9e0	cm_AskDeposeVote	cm	byte	readable		
-exe	0x004dab50	cm_AskElectVote	cm	byte	readable		
-exe	0x004dada0	cm_SessionAskPlayer	cm	shape	readable		
-exe	0x004dae90	cm_SessionAskAI	cm	shape	readable		
-exe	0x004daf80	cm_CheckTrial	cm	byte	readable		
-exe	0x004db700	cm_RunTrial	cm	draft	readable	deep	
-exe	0x004dd960	cm_TrialAskPlayer	cm	shape	readable		
-exe	0x004de340	cm_TrialAskAI	cm	byte	readable		
-exe	0x004de4b0	cm_SinkDownAction	cm	shape	readable		
-exe	0x004de530	cm_DuelSinkDown	cm	byte	readable		
-exe	0x004de5e0	cm_DuelInitVariants	cm	byte	readable		
-exe	0x004de610	cm_DuelVariant	cm	byte	readable		
-exe	0x004de640	cm_DuelShotAction	cm	shape	readable	deep	
-exe	0x004de900	cm_DuelRound	cm	shape	readable		
-exe	0x004debe0	cm_DuelOutcome	cm	shape	readable		
-exe	0x004ded10	cm_RunDuel	cm	draft	readable	deep	
-exe	0x004dfa20	cm_DuelAftermath	cm	byte	readable		
-exe	0x004dfcb0	cm_DuelRoundDialog	cm	byte	readable		
-exe	0x004dfdd0	cm_DuelChooseRound	cm	shape	readable		
-exe	0x004dff80	cm_DuelAskAI	cm	byte	readable		
-exe	0x004dfff0	cm_DuelAskPlayer	cm	byte	readable		
-exe	0x004e0010	cm_RunPictureShow	cm	byte	readable		
-exe	0x004e0040	cm_ExecutionAftermath	cm	byte	readable		
-exe	0x004e01e0	cm_RunExecution	cm	byte	readable		
-exe	0x004e0580	cm_CheckWedding	cm	byte	readable		
-exe	0x004e06d0	cm_EndWedding	cm	byte	readable		
-exe	0x004e0770	cm_RunWedding	cm	shape	readable	deep	
-exe	0x004e0e90	cm_CheckBirth	cm	byte	readable		
-exe	0x004e0f70	cm_RunBirth	cm	draft	readable	deep	
-exe	0x004e1220	cm_DeathSceneCheck	cm	byte	readable		
-exe	0x004e1250	cm_RunDeath	cm	byte	readable		
-exe	0x004e1700	cm_RunBankruptcy	cm	byte	readable		
-exe	0x004e19a0	cm_CheckAuction	cm	byte	readable		
-exe	0x004e1a80	cm_RunAuction	cm	shape	readable		
-exe	0x004e24c0	cm_AuctionAskPlayer	cm	byte	readable		
-exe	0x004e26d0	cm_AuctionAskAI	cm	shape	readable		
-exe	0x004e2860	cm_RunSale	cm	byte	readable		
-exe	0x004e2910	cm_ShowObjectScene	cm	byte	readable		
-exe	0x004e2bd0	cm_SetViewEnabled	cm	byte	readable		
-exe	0x004e2bf0	cm_StartScript	cm	byte	readable		
-exe	0x004e2c30	cm_StartEventArg	cm	byte	readable		
-exe	0x004e2c70	cm_WaitEvent	cm	byte	readable		
-exe	0x004e2cc0	cm_WaitEventOrClick	cm	byte	readable		
-exe	0x004e2d40	cm_WaitEventFull	cm	byte	readable		
-exe	0x004e2d90	cm_StopScript	cm	byte	readable		
-exe	0x004e2dc0	cm_StopGroupScripts	cm	byte	readable		
-exe	0x004e2e00	cm_WaitGroupScripts	cm	byte	readable		
-exe	0x004e2e60	cm_LoadEventScene	cm	byte	readable		
-exe	0x004e3060	cm_FadeToBlack	cm	byte	readable		
-exe	0x004e30c0	cm_LeaveEventScene	cm	byte	readable		
-exe	0x004e3210	cm_SceneTick	cm	byte	readable		
-exe	0x004e3230	cm_CreateChar	cm	byte	readable		
-exe	0x004e3250	cm_DeleteChar	cm	byte	readable		
-exe	0x004e3270	cm_LoadVoiceBank	cm	byte	readable		
-exe	0x004e3290	cm_UnloadVoiceBank	cm	byte	readable		
-exe	0x004e32b0	cm_PlayVoice	cm	byte	readable		
-exe	0x004e32d0	cm_QueueVoice	cm	byte	readable		
-exe	0x004e32f0	cm_CreateSceneSky	cm	byte	readable		
-exe	0x004e3390	cm_DestroySceneSky	cm	byte	readable		
-exe	0x004e33d0	cm_StartSceneRain	cm	byte	readable		
-exe	0x004e33f0	cm_StopSceneRain	cm	byte	readable		
-exe	0x004e3420	cm_WaitTicks	cm	shape	readable		
-exe	0x004e3490	cm_RunSceneTicksOrClick	cm	byte	readable		
-exe	0x004e3570	cm_RunSceneTicks	cm	byte	readable		
-exe	0x004e3620	cm_PlaySpecialTrack	cm	byte	readable		
-exe	0x004e3640	cm_EndSpecialTrack	cm	byte	readable		
-exe	0x004e3650	cm_ApplySeason	cm	byte	readable		
-exe	0x004e36a0	cm_ResetCutInfos	cm	shape	readable		
-exe	0x004e3750	cm_PartyAnswered	cm	byte	readable		
-exe	0x004e37a0	cm_ShowPartyTexts	cm	byte	readable		
-exe	0x004e3800	cm_PrevPartyMember	cm	byte	readable		
-exe	0x004e3830	cm_RunSceneParty	cm	draft	readable	deep	
-exe	0x004e3fe0	cm_PauseSceneChars	cm	byte	readable		
-exe	0x004e4020	cm_ResumeSceneChars	cm	byte	readable		
-exe	0x004e4060	cm_ExecCutscene	cm	shape	readable		
-exe	0x004e4870	cm_IsPartyMember	cm	byte	readable		
-exe	0x004e48b0	cm_SendPartyNote	cm	byte	readable		
-exe	0x004e4a50	cm_CheckMaster	cm	byte	readable		
-exe	0x004e4b50	cm_CutsceneReady	cm	byte	readable		
-exe	0x004e4cc0	cm_UpdateParties	cm	byte	readable		
-exe	0x004e4f40	cm_FirstPendingParty	cm	byte	readable		
-exe	0x004e4f80	ai_RunPendingParties	cm	byte	readable		
-exe	0x004e5050	cm_FindPartyOfKind	cm	byte	readable		
-exe	0x004e50a0	cm_PartyById	cm	byte	readable		
-exe	0x004e50e0	cm_CutInfoById	cm	byte	readable		
-exe	0x004e5120	cm_FreePartySlot	cm	byte	readable		
-exe	0x004e5150	cm_AllocParty	cm	byte	readable		
-exe	0x004e5180	cm_ClearParty	cm	byte	readable		
-exe	0x004e51b0	cm_AddPartyMember	cm	byte	readable		
-exe	0x004e5210	cm_RemovePartyMember	cm	shape	readable		
-exe	0x004e52a0	cut_RandSeed	cm	byte	readable		
-exe	0x004e52c0	cut_GetRandSeed	cm	byte	readable		
-exe	0x004e52f0	cm_Random	cm	byte	readable		
-exe	0x004e5360	cm_RandomFloat	cm	byte	readable		
-exe	0x004e53e0	cm_DialogTimer	cm	byte	readable		
-exe	0x004e5470	cm_MessageBox	cm	draft	readable	deep	
-exe	0x004e5730	cm_RegisterSceneKind	cm	byte	readable		
-exe	0x004e5770	cm_InitScenes	cm	byte	readable		
+exe	0x004cd9d0	ai_FindWeaponRecord	cmfight	byte	readable		
+exe	0x004cda00	cm_CharWeaponAny	cmfight	byte	readable		
+exe	0x004cda50	cm_CharWeapon	cmfight	byte	readable		
+exe	0x004cdac0	cm_CharWeaponItem	cmfight	byte	readable		
+exe	0x004cdb20	cm_DiscardWeapons	cmfight	byte	readable		
+exe	0x004cdb80	cm_FightWeaponLoss	cmfight	byte	readable		
+exe	0x004cdcf0	cm_FightStrength	cmfight	byte	readable		
+exe	0x004cde20	cm_UpdateHandObject	cmfight	byte	readable		
+exe	0x004cdf00	cm_CutEntrySlot	cmfight	byte	readable		
+exe	0x004cdf80	cm_FightCutEntry	cmfight	shape	readable		
+exe	0x004cdfe0	cm_CellUsable	cmfight	byte	readable		
+exe	0x004ce040	cm_FindNearCell	cmfight	shape	readable		
+exe	0x004ce130	cm_FindFighter	cmfight	byte	readable		
+exe	0x004ce170	ai_LedSelectBits	cmfight	byte	readable		
+exe	0x004ce1b0	cm_CharObjDistXZ	cmfight	byte	readable		
+exe	0x004ce200	cm_CharCellDistXZ	cmfight	byte	readable		
+exe	0x004ce270	cm_OtherBuilding	cmfight	byte	readable		
+exe	0x004ce290	cm_LayBomb	cmfight	byte	readable		
+exe	0x004ce300	cm_UpdateBombs	cmfight	draft	readable	deep	
+exe	0x004ce5d0	cm_ThrowGrenade	cmfight	shape	readable		
+exe	0x004ce830	cm_UpdateGrenades	cmfight	draft	readable	deep	
+exe	0x004ceb70	cm_ObjectOwner	cmfight	byte	readable		
+exe	0x004ceb80	cm_WaitEventStop	cmfight	byte	readable		
+exe	0x004cec00	cm_CloseCharInfoWins	cmfight	byte	readable		
+exe	0x004cec30	cm_OpenCharInfoWin	cmfight	shape	readable		
+exe	0x004ced80	cm_UpdateCharInfoWins	cmfight	byte	readable		
+exe	0x004cedc0	cm_ShowDamage	cmfight	byte	readable		
+exe	0x004cee20	cm_UpdateDamagePops	cmfight	shape	readable		
+exe	0x004cef80	cm_InitDamagePops	cmfight	byte	readable		
+exe	0x004cefa0	cm_ClearDamagePops	cmfight	byte	readable		
+exe	0x004cefe0	cm_CloseFightView	cmfight	byte	readable		
+exe	0x004cf000	cm_UpdateSceneChars	cmfight	draft	readable	deep	
+exe	0x004cf370	cm_DrawScrollArrows	cmfight	byte	readable		
+exe	0x004cf670	cm_UpdatePointer	cmfight	draft	readable	deep	
+exe	0x004cf9c0	cm_UpdatePortraits	cmfight	draft	readable	deep	
+exe	0x004cfc10	cm_BuildPortraits	cmfight	shape	readable		
+exe	0x004cfe70	cm_ClosePortraits	cmfight	byte	readable		
+exe	0x004cfeb0	cm_ClickSceneChar	cmfight	byte	readable		
+exe	0x004cffd0	cm_OrderAttack	cmfight	byte	readable		
+exe	0x004d0200	cm_OrderEscape	cmfight	byte	readable		
+exe	0x004d02d0	cm_OrderConquer	cmfight	byte	readable		
+exe	0x004d0380	cm_OrderWare	cmfight	shape	readable		
+exe	0x004d0460	cm_OrderToBestCell	cmfight	byte	readable		
+exe	0x004d0520	cm_OrderWait	cmfight	byte	readable		
+exe	0x004d0570	cm_OrderClick	cmfight	draft	readable	deep	
+exe	0x004d0740	cm_FightMouse	cmfight	draft	readable	deep	
+exe	0x004d08c0	cm_ClearMarks	cmfight	byte	readable		
+exe	0x004d0920	cm_AddFighter	cmfight	byte	readable		
+exe	0x004d0a30	cm_CollectSceneChars	cmfight	byte	readable		
+exe	0x004d0a80	cm_CreateDummyFlag	cmfight	byte	readable		
+exe	0x004d0ca0	cm_PlaceFlagObjects	cmfight	byte	readable		
+exe	0x004d0cd0	cm_FreeNetIdSlot	cmfight	byte	readable		
+exe	0x004d0cf0	ai_ArmGateGuards	cmfight	byte	readable		
+exe	0x004d0f80	cm_ClearKind3MaskCB	cmfight	byte	readable		
+exe	0x004d0fa0	cm_SetupFightScene	cmfight	draft	readable	deep	
+exe	0x004d1a10	cm_EndFightScene	cmfight	byte	readable		
+exe	0x004d1c20	cm_PlaceFighters	cmfight	byte	readable		
+exe	0x004d1e00	cm_FightIntro	cmfight	byte	readable		
+exe	0x004d1eb0	cm_FightOutro	cmfight	byte	readable		
+exe	0x004d1f10	cm_NearestEnemy	cmfight	byte	readable		
+exe	0x004d2010	cm_ThreatAt	cmfight	byte	readable		
+exe	0x004d2170	cm_BestCellNear	cmfight	shape	readable		
+exe	0x004d22d0	cm_MostThreatenedCellNear	cmfight	shape	readable		
+exe	0x004d2450	cm_CollectEscapeObject	cmfight	byte	readable		
+exe	0x004d2490	cm_NearestEscapeObject	cmfight	shape	readable		
+exe	0x004d2550	cm_CollectWareObject	cmfight	byte	readable		
+exe	0x004d25a0	cm_NearestWareObject	cmfight	byte	readable		
+exe	0x004d2650	cm_CollectConquerPoint	cmfight	byte	readable		
+exe	0x004d2680	cm_NearestConquerPoint	cmfight	byte	readable		
+exe	0x004d27a0	cm_InitOrderChances	cmfight	draft	readable	deep	
+exe	0x004d2c00	cm_OrderChancesFor	cmfight	byte	readable		
+exe	0x004d2e30	cm_OrderRating	cmfight	shape	readable		
+exe	0x004d2f80	cm_GiveFightOrders	cmfight	byte	readable		
+exe	0x004d3120	cm_CarryOutOrder	cmfight	byte	readable		
+exe	0x004d3300	cm_FallDownAction	cmfight	byte	readable		
+exe	0x004d3390	cm_CheckDeath	cmfight	byte	readable		
+exe	0x004d3550	cm_HitAction	cmfight	byte	readable		
+exe	0x004d3980	cm_LayBombAction	cmfight	byte	readable		
+exe	0x004d3a30	cm_ThrowBombAction	cmfight	byte	readable		
+exe	0x004d3ac0	cm_CheerAction	cmfight	byte	readable		
+exe	0x004d3ae0	cm_PickUpAction	cmfight	byte	readable		
+exe	0x004d3b30	cm_CheckFightWinner	cmfight	byte	readable		
+exe	0x004d3d10	cm_LootStock	cmfight	byte	readable		
+exe	0x004d3ea0	cm_LootCarts	cmfight	byte	readable		
+exe	0x004d4050	cm_FightRole	cmfight	byte	readable		
+exe	0x004d4090	cm_LootList	cmfight	byte	readable		
+exe	0x004d4340	cm_FightPortraits	cmfight	byte	readable		
+exe	0x004d4540	cm_FightStartDialog	cmfight	draft	readable	deep	
+exe	0x004d4d70	cm_FightEndDialog	cmfight	draft	readable	deep	
+exe	0x004d60b0	cm_CheckFight	cmfight	shape	readable	deep	
+exe	0x004d63e0	cm_RunFight	cmfight	shape	readable		
+exe	0x004d6930	cm_FightResult	cmfight	byte	readable		
+exe	0x004d6970	cm_FightFrame	cmfight	byte	readable		
+exe	0x004d6a50	cm_BuildFightUI	cmfight	byte	readable		
+exe	0x004d6b70	cm_CloseFightUI	cmfight	byte	readable		
+exe	0x004d6ba0	cm_FighterAct	cmfight	byte	readable		
+exe	0x004d6f60	cm_FightSlotStop	cmfight	byte	readable		
+exe	0x004d6f90	cm_FightSlotCheer	cmfight	byte	readable		
+exe	0x004d7000	cm_FightSlotPickUp	cmfight	byte	readable		
+exe	0x004d70a0	cm_FightSlotPutDown	cmfight	byte	readable		
+exe	0x004d7150	cm_FightSlotWinner	cmfight	byte	readable		
+exe	0x004d7190	cm_PlantEscapeFlag	cmfight	draft	readable	deep	
+exe	0x004d7360	cm_Attack	cmfight	draft	readable	deep	
+exe	0x004d76a0	cm_RunCutOrders	cmfight	draft	readable	deep	
+exe	0x004d88c0	cm_FightLoop	cmfight	byte	readable		
+exe	0x004d8b10	cm_FightMember	cmfight	draft	readable	deep	
+exe	0x004d8b30	cm_ClearSceneChars	cmfight	byte	readable		
+exe	0x004d8b50	cm_DrawFightTime	cmscene	byte	readable		
+exe	0x004d8c40	cm_DeleteSceneChars	cmscene	byte	readable		
+exe	0x004d8c70	cm_StackPicture	cmscene	byte	readable		
+exe	0x004d8cb0	cm_TallyStack	cmscene	byte	readable		
+exe	0x004d8e20	cm_RunCouncilSession	cmscene	draft	readable	deep	
+exe	0x004da9e0	cm_AskDeposeVote	cmscene	byte	readable		
+exe	0x004dab50	cm_AskElectVote	cmscene	byte	readable		
+exe	0x004dada0	cm_SessionAskPlayer	cmscene	shape	readable		
+exe	0x004dae90	cm_SessionAskAI	cmscene	shape	readable		
+exe	0x004daf80	cm_CheckTrial	cmscene	byte	readable		
+exe	0x004db700	cm_RunTrial	cmscene	draft	readable	deep	
+exe	0x004dd960	cm_TrialAskPlayer	cmscene	shape	readable		
+exe	0x004de340	cm_TrialAskAI	cmscene	byte	readable		
+exe	0x004de4b0	cm_SinkDownAction	cmscene	shape	readable		
+exe	0x004de530	cm_DuelSinkDown	cmscene	byte	readable		
+exe	0x004de5e0	cm_DuelInitVariants	cmscene	byte	readable		
+exe	0x004de610	cm_DuelVariant	cmscene	byte	readable		
+exe	0x004de640	cm_DuelShotAction	cmscene	shape	readable	deep	
+exe	0x004de900	cm_DuelRound	cmscene	shape	readable		
+exe	0x004debe0	cm_DuelOutcome	cmscene	shape	readable		
+exe	0x004ded10	cm_RunDuel	cmscene	draft	readable	deep	
+exe	0x004dfa20	cm_DuelAftermath	cmscene	byte	readable		
+exe	0x004dfcb0	cm_DuelRoundDialog	cmscene	byte	readable		
+exe	0x004dfdd0	cm_DuelChooseRound	cmscene	shape	readable		
+exe	0x004dff80	cm_DuelAskAI	cmscene	byte	readable		
+exe	0x004dfff0	cm_DuelAskPlayer	cmscene	byte	readable		
+exe	0x004e0010	cm_RunPictureShow	cmscene	byte	readable		
+exe	0x004e0040	cm_ExecutionAftermath	cmscene	byte	readable		
+exe	0x004e01e0	cm_RunExecution	cmscene	byte	readable		
+exe	0x004e0580	cm_CheckWedding	cmscene	byte	readable		
+exe	0x004e06d0	cm_EndWedding	cmscene	byte	readable		
+exe	0x004e0770	cm_RunWedding	cmscene	shape	readable	deep	
+exe	0x004e0e90	cm_CheckBirth	cmscene	byte	readable		
+exe	0x004e0f70	cm_RunBirth	cmscene	draft	readable	deep	
+exe	0x004e1220	cm_DeathSceneCheck	cmscene	byte	readable		
+exe	0x004e1250	cm_RunDeath	cmscene	byte	readable		
+exe	0x004e1700	cm_RunBankruptcy	cmscene	byte	readable		
+exe	0x004e19a0	cm_CheckAuction	cmscene	byte	readable		
+exe	0x004e1a80	cm_RunAuction	cmscene	shape	readable		
+exe	0x004e24c0	cm_AuctionAskPlayer	cmscene	byte	readable		
+exe	0x004e26d0	cm_AuctionAskAI	cmscene	shape	readable		
+exe	0x004e2860	cm_RunSale	cmscene	byte	readable		
+exe	0x004e2910	cm_ShowObjectScene	cmscene	byte	readable		
+exe	0x004e2bd0	cm_SetViewEnabled	cmscene	byte	readable		
+exe	0x004e2bf0	cm_StartScript	cmscene	byte	readable		
+exe	0x004e2c30	cm_StartEventArg	cmscene	byte	readable		
+exe	0x004e2c70	cm_WaitEvent	cmscene	byte	readable		
+exe	0x004e2cc0	cm_WaitEventOrClick	cmscene	byte	readable		
+exe	0x004e2d40	cm_WaitEventFull	cmscene	byte	readable		
+exe	0x004e2d90	cm_StopScript	cmscene	byte	readable		
+exe	0x004e2dc0	cm_StopGroupScripts	cmscene	byte	readable		
+exe	0x004e2e00	cm_WaitGroupScripts	cmscene	byte	readable		
+exe	0x004e2e60	cm_LoadEventScene	cmscene	byte	readable		
+exe	0x004e3060	cm_FadeToBlack	cmscene	byte	readable		
+exe	0x004e30c0	cm_LeaveEventScene	cmscene	byte	readable		
+exe	0x004e3210	cm_SceneTick	cmscene	byte	readable		
+exe	0x004e3230	cm_CreateChar	cmscene	byte	readable		
+exe	0x004e3250	cm_DeleteChar	cmscene	byte	readable		
+exe	0x004e3270	cm_LoadVoiceBank	cmscene	byte	readable		
+exe	0x004e3290	cm_UnloadVoiceBank	cmscene	byte	readable		
+exe	0x004e32b0	cm_PlayVoice	cmscene	byte	readable		
+exe	0x004e32d0	cm_QueueVoice	cmscene	byte	readable		
+exe	0x004e32f0	cm_CreateSceneSky	cmscene	byte	readable		
+exe	0x004e3390	cm_DestroySceneSky	cmscene	byte	readable		
+exe	0x004e33d0	cm_StartSceneRain	cmscene	byte	readable		
+exe	0x004e33f0	cm_StopSceneRain	cmscene	byte	readable		
+exe	0x004e3420	cm_WaitTicks	cmscene	shape	readable		
+exe	0x004e3490	cm_RunSceneTicksOrClick	cmscene	byte	readable		
+exe	0x004e3570	cm_RunSceneTicks	cmscene	byte	readable		
+exe	0x004e3620	cm_PlaySpecialTrack	cmscene	byte	readable		
+exe	0x004e3640	cm_EndSpecialTrack	cmscene	byte	readable		
+exe	0x004e3650	cm_ApplySeason	cmscene	byte	readable		
+exe	0x004e36a0	cm_ResetCutInfos	cmscene	shape	readable		
+exe	0x004e3750	cm_PartyAnswered	cmscene	byte	readable		
+exe	0x004e37a0	cm_ShowPartyTexts	cmscene	byte	readable		
+exe	0x004e3800	cm_PrevPartyMember	cmscene	byte	readable		
+exe	0x004e3830	cm_RunSceneParty	cmscene	draft	readable	deep	
+exe	0x004e3fe0	cm_PauseSceneChars	cmscene	byte	readable		
+exe	0x004e4020	cm_ResumeSceneChars	cmscene	byte	readable		
+exe	0x004e4060	cm_ExecCutscene	cmscene	byte	readable		
+exe	0x004e4870	cm_IsPartyMember	cmscene	byte	readable		
+exe	0x004e48b0	cm_SendPartyNote	cmscene	byte	readable		
+exe	0x004e4a50	cm_CheckMaster	cmscene	byte	readable		
+exe	0x004e4b50	cm_CutsceneReady	cmscene	byte	readable		
+exe	0x004e4cc0	cm_UpdateParties	cmscene	byte	readable		
+exe	0x004e4f40	cm_FirstPendingParty	cmscene	byte	readable		
+exe	0x004e4f80	ai_RunPendingParties	cmscene	byte	readable		
+exe	0x004e5050	cm_FindPartyOfKind	cmscene	byte	readable		
+exe	0x004e50a0	cm_PartyById	cmscene	byte	readable		
+exe	0x004e50e0	cm_CutInfoById	cmscene	byte	readable		
+exe	0x004e5120	cm_FreePartySlot	cmscene	byte	readable		
+exe	0x004e5150	cm_AllocParty	cmscene	byte	readable		
+exe	0x004e5180	cm_ClearParty	cmscene	byte	readable		
+exe	0x004e51b0	cm_AddPartyMember	cmscene	byte	readable		
+exe	0x004e5210	cm_RemovePartyMember	cmscene	shape	readable		
+exe	0x004e52a0	cut_RandSeed	cmscene	byte	readable		
+exe	0x004e52c0	cut_GetRandSeed	cmscene	byte	readable		
+exe	0x004e52f0	cm_Random	cmscene	byte	readable		
+exe	0x004e5360	cm_RandomFloat	cmscene	byte	readable		
+exe	0x004e53e0	cm_DialogTimer	cmscene	byte	readable		
+exe	0x004e5470	cm_MessageBox	cmscene	draft	readable	deep	
+exe	0x004e5730	cm_RegisterSceneKind	cmscene	byte	readable		
+exe	0x004e5770	cm_InitScenes	cmscene	byte	readable		
 exe	0x004e58e0	ai_DumpPersonHead	cmdump	shape	readable		
 exe	0x004e5980	ai_DumpPersonStats	cmdump	byte	readable		
 exe	0x004e5a40	ai_DumpPersonSkills	cmdump	byte	readable		
@@ -3270,7 +3270,7 @@ exe	0x0051c560	ls_WriteMessageQueues	ls	byte	readable
 exe	0x0051c870	ls_WriteEnvironment	ls	byte	readable		
 exe	0x0051c920	ls_Read	ls	byte	readable		
 exe	0x0051c950	ls_LoadGame	ls	byte	readable		
-exe	0x0051cee0	ls_ReadSaveHeader	ls	shape	readable		
+exe	0x0051cee0	ls_ReadSaveHeader	ls	byte	readable		
 exe	0x0051d2d0	ls_LoadScene	ls	byte	readable		
 exe	0x0051d3d0	ls_ReadObjects	ls	byte	readable		
 exe	0x0051d4f0	ls_HookBuildingCB	ls	byte	readable		
@@ -4003,8 +4003,8 @@ exe	0x00578370	ai_TutorialStop	sv_t	byte	readable
 exe	0x00578440	ai_TutorialFreeRuns	sv_t	byte	readable		
 exe	0x005784a0	ai_TutorialInitMainIntro	sv_t	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	sv_t	byte	readable		
-exe	0x00578e40	ai_TutorialInitChapter2	sv_t	shape	readable		
-exe	0x00579570	ai_TutorialInitChapter3	sv_t	draft	readable		
+exe	0x00578e40	ai_TutorialInitChapter2	sv_t	byte	readable		
+exe	0x00579570	ai_TutorialInitChapter3	sv_t	shape	readable		
 exe	0x0057aa80	ai_TutorialInitChapter4	sv_t	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	sv_t	byte	readable		
 exe	0x0057b750	ai_TutorialInitMainOutro	sv_t	byte	readable		
@@ -4152,7 +4152,7 @@ exe	0x005912c0	ai_TradeContactChecks	lc	byte	readable
 exe	0x00591480	ai_CampaignKey1	lc	byte	readable		
 exe	0x00591520	ai_GameFrame	lc	byte	readable		
 exe	0x00591ad0	lc_PlayerInJail	lc	byte	readable		
-exe	0x00591bf0	ai_TechTreeWindow	lc	draft	readable	deep	
+exe	0x00591bf0	ai_TechTreeWindow	lc	byte	readable		
 exe	0x00592230	ai_UpgradeContact	lc	byte	readable		
 exe	0x00592290	ai_BookContact	lc	byte	readable		
 exe	0x00592320	ai_MercenaryBookContact	lc	byte	readable		
@@ -4662,6 +4662,6 @@ exe	0x005dc4a0	ai_StepShot	shot	shape	readable	deep
 exe	0x005dc9d0	ai_StepShotSlow	shot	shape	readable	deep	
 exe	0x005dcf00	ai_ShotHitsGround	shot	byte	readable		
 exe	0x005dd090	ai_NormalizeEffectScale	shot	byte	readable		
-exe	0x005dd100	ai_SolveCannonAim	shot	shape	readable		
+exe	0x005dd100	ai_SolveCannonAim	shot	shape	readable	deep	
 exe	0x005de460	MSS_auto_cleanup	mss32lib	byte	readable		
 exe	0x005de470	mss_AutoCleanupExit	mss32lib	byte	readable		
