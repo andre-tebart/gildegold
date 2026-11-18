@@ -2077,6 +2077,7 @@ extern char d2_GfxDir[256];
 /* txt_FamilyNames: view of txt_Ptrs (build/mk_txt_views.py) */
 int gm_HomeSearchStart = 0;  /* 0x6f1bb4 */
 extern char gm_CharacterStatistics[128];
+#define gm_CharStats (*(GMCHARSTATS *)&gm_CharacterStatistics)  /* 0x91b500, gm_CharacterStatistics as the record gm_CountCharacters fills: its fields read through the object (a GMCHARSTATS * local compiles baseHealth[k] += .. without the original's lea edx,[edx*4+X] before the call) */
 unsigned short gm_CreateCharacter(int type, int a2, int a3, unsigned short a4, ORDBLD *a5, unsigned a6, int a7, int a8);                     /* 0x507690 */
 int gm_SexForJob(int x);                   /* 0x503f30 */
 int gm_SexForTitle(int x);                   /* 0x503f50 */
@@ -2399,24 +2400,10 @@ void gm_FreeIconNames(void)
 #define GM_MIN(a, b) ((a) < (b) ? (a) : (b))
 #define GM_MAX(a, b) ((a) > (b) ? (a) : (b))
 
-/* 0x4fdfd0, fills the character statistics gm_CharacterStatistics: the living persons of kind < 10, per age bucket (gm_CharAge / 10, clamped to 0 .. 7) their count, health in percent of the base health and average base health, and the share under age in percent
-   @deep headers sample: insensitive. The one hunk (baseHealth[k] address materialized in edx before the
-   call, 'lea edx,[edx*4+X]' then fadd/fstp [edx]) did not move: x = x + f(), both statements so, a float
-   *p temp for one or both, a parenthesized call, the M10 objects ai_FloatZero / ai_FloatOne /
-   ai_FloatHundred in all 7 subsets (block externs: 5 or 7 ins), the 23 orders of the ageCount / underAge /
-   health / baseHealth statements (best = control at 5), st->count++ after k (VC6 knows
-   gm_CharacterBaseHealth leaves edx alone, so both forms are legal) (tiebreak: insensitive under the four
-   probes only, best draft) prior: whole function read against the original 0x4fdfd0 and reconciled (the
-   [0, 7] clamp of gm_CharAge*0.1 as MAX(MIN(..)) with its four calls, the per-age-bucket health / base
-   health sums indexed by the bucket, the averaging loop, the index loop strength-reduced to the original's
-   pointer + jl); the one remaining hunk is the addressing of baseHealth[k]: the original reuses k's dead
-   register, '+ lea edx, [edx*4 + 0x91b548]' before the call then 'fadd/fstp dword ptr [edx]', ours keeps
-   'fadd/fstp dword ptr [edx*4 + X]' (same memory, 3 bytes). Tried: += vs x = f() + x, a pointer temporary,
-   (&health[k])[8], k unsigned / char (worse) */
+/* 0x4fdfd0, fills the character statistics gm_CharacterStatistics: the living persons of kind < 10, per age bucket (gm_CharAge / 10, clamped to 0 .. 7) their count, health in percent of the base health and average base health, and the share under age in percent */
 
 void gm_CountCharacters(void)
 {
-    GMCHARSTATS *st = (GMCHARSTATS *)gm_CharacterStatistics;
     ORDCHAR *c;
     int i, k;
 
@@ -2424,20 +2411,20 @@ void gm_CountCharacters(void)
     for (i = 0; i < 0x300; i++) {
         c = &ORD_CHARS[i];
         if (c->id != 0xffff && c->health > 0 && c->kind < 10) {
-            st->count++;
+            gm_CharStats.count++;
             k = (int)GM_MAX(GM_MIN(gm_CharAge(i) * 0.1f, 7.0f), 0.0f);
-            st->ageCount[k]++;
+            gm_CharStats.ageCount[k]++;
             if (gm_IsUnderAge(i) != 0)
-                st->underAge += 1.0f;
-            st->health[k] += gm_CharacterHealth((short *)c);
-            st->baseHealth[k] += gm_CharacterBaseHealth((short *)c);
+                gm_CharStats.underAge += 1.0f;
+            gm_CharStats.health[k] += gm_CharacterHealth((short *)c);
+            gm_CharStats.baseHealth[k] += gm_CharacterBaseHealth((short *)c);
         }
     }
     for (k = 0; k < 8; k++) {
-        st->health[k] = st->health[k] / st->baseHealth[k] * 100.0f;
-        st->baseHealth[k] = st->baseHealth[k] / (float)st->ageCount[k];
+        gm_CharStats.health[k] = gm_CharStats.health[k] / gm_CharStats.baseHealth[k] * 100.0f;
+        gm_CharStats.baseHealth[k] = gm_CharStats.baseHealth[k] / (float)gm_CharStats.ageCount[k];
     }
-    st->underAge = st->underAge / (float)st->count * 100.0f;
+    gm_CharStats.underAge = gm_CharStats.underAge / (float)gm_CharStats.count * 100.0f;
 }
 
 
