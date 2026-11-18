@@ -3992,6 +3992,7 @@ void ai_TutorialMarkerUpdate(int mode)
             ai_Tutorial->markerAt = d3_Time;
             m = &ai_Tutorial->run->marks[ai_Tutorial->markerStep];
             d2_MoveObj((int)m->from[0], (int)m->from[1], ai_Tutorial->markerObj);
+            return;
         }
     } else if (mode == 2) {
         if (ai_Tutorial->markerObj != -1)
