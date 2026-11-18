@@ -6201,14 +6201,13 @@ float gm_ObjectValue(int n)
     float f;
     int i;
     unsigned char *t;
-    GMGOOD *g;
 
     f = 0.0f;
+    i = 0;
     t = (unsigned char *)ai_BTypes + gm_GoodBuilding[n] * 0x24d + 0x233;
-    for (i = 0; i < 2; i++)
+    for (; i < 2; i++)
         f += t[i] * 896.0f * 0.0013888888888888887;
-    g = GM_GOOD(n);
-    return f * g->workTime / g->batch;
+    return f * GM_GOOD(n)->workTime / GM_GOOD(n)->batch;
 }
 /* 0x508740, the wage of a job (a) or title (b) of the building kind k for the character c, reduced for the kinds 6 / 7 */
 

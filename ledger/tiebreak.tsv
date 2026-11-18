@@ -3099,7 +3099,7 @@ exe	0x005085f0	gm_PlayerFactor	f3gm	fc0d705712d5617c	no	byte	control=byte p1=byt
 exe	0x00508620	gm_CurrencyFactor	f3gm	23c14ae2d1a05643	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00508640	gm_CurrencyDivide	f3gm	521689a4b0cd188b	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00508660	gm_SumSlotAmounts	f3gm	18ec195e2b405dd0	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x005086b0	gm_ObjectValue	f3gm	f04e9072559ff4ea	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	e0b1e84025becc72
+exe	0x005086b0	gm_ObjectValue	f3gmt	6667df9e832d7634	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	c4e2eb27a3d28d43
 exe	0x00508740	gm_JobWage	f3gm	c90d43d89fc39b68	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	e0b1e84025becc72
 exe	0x005087f0	gm_ItemPrice	f3gm	f331c749edc985bd	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005089c0	gm_GoodsPrice	f3gm	93bf8d69375689f2	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
