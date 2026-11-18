@@ -54,6 +54,10 @@ def function_of(name):
     """(the comment's lines, the definition's lines) of the tree's function"""
     out = dcp("fn", name).split("\n")
     lines = [l.rstrip("\r") for l in out[1:]]
+    m = re.search(r"\bat=(\S+):(\d+)-(\d+)", out[0])
+    if m:   # the file's own Latin-1 bytes (dcp's output decodes a byte >= 0x80 of a string as U+FFFD)
+        flines = open(os.path.join(ROOT, m.group(1)), encoding="latin-1").read().split("\n")
+        lines = [l.rstrip("\r") for l in flines[int(m.group(2)) - 1:int(m.group(3))]]
     while lines and not lines[-1].strip():
         lines.pop()
     k = 0
