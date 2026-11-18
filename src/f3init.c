@@ -358,7 +358,6 @@ int d3_QuadTree = 0;  /* 0x6f1c28 */
 int init_TerrainDivide = 0;  /* 0x6f1c2c, nonzero: ai_GameFrame divides the terrain (d3fl_MakeDivide) at the game start and clears it */
 int init_UnreadBss = 0;  /* 0x6f1c30, no surviving instruction or pointer refers to it: data of functions /OPT:REF removed; size from the neighbours' addresses */
 int init_TownSoundCount = 0;  /* 0x6f1c34 */
-int main_StartHouseCheat = 0;  /* 0x6f2430, no writer in the exe: nonzero gives the first kind 6 character its start house ( */
 extern char ai_Unk7e3f40_[];
 
 
@@ -382,8 +381,6 @@ typedef struct INIT_ANIMSET {
     char names[36][0x30];           /* 0x04 .. 0x6c3 */
 } INIT_ANIMSET;
 extern INIT_ANIMSET init_ClassAnims[19];
-int init_BonusStart = 0;  /* 0x6f2440, a start bonus switch (a guess: only read, 0 in .data; init_CreateOpponents, main_GameLoop) */
-int main_MoneyCheat = 0;  /* 0x6f2444, set from the command line switch "MO_MONEY" (main.c); nonzero gives 500000 start money instead of 2000 and the first kind 6 character its starter buildings */
 #include "anm.h"
 #include "rd.h"
 extern int ai_MapSize;

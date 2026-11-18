@@ -2235,3 +2235,4 @@ void ai_CabinetContact(AIBLD *rec, AIOBJ *room)
 
 /* the unit's .bss (after sv_t.c's 0x6f263c .. 0x6f2660) */
 int ai_ShotDirty = 0;  /* 0x6f2664, set when ai_ShotTableStore stored a record, cleared by the scene (ai_CannonShotResults) */
+int svc_UnreadBss = 0;  /* 0x6f2668, no surviving instruction or pointer refers to it: data of functions /OPT:REF removed; size from the neighbours' addresses */

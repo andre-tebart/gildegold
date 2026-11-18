@@ -496,9 +496,6 @@ extern int ai_GameFlags;                /* 0x6f23f8, the game flags: the load wi
 void d2_EnableObject(int obj, int on);      /* 0x475aa0, d2.h: enables / disables an object and its items */
 int sv_OpenMessageBox(int text, unsigned char flags); /* 0x521900, sv.c: opens the waiting box with text */
 
-int ai_LeaveGame = 0;  /* 0x6f25a0, set with ai_GameOver when the menu leaves the game (the
-                                       load window / the game loop end); main.c clears it when a game
-                                       starts ( */
 OPTIONBYTES ai_GfxResolution = {0};  /* 0x6f2f94: byte 0 cur_res */
 /* ai_ContactTextProductionTailor: view of txt_Ptrs (build/mk_txt_views.py) */
 EFFECTSTATE ai_EffectState;  /* 0x6f3300 .. 0x6f34f0, the wind state ai_InitWind builds */

@@ -2656,9 +2656,6 @@ char ord_KindTable[] = { 0, 0, 0, 0, 0, 0, 0, 0, 8, 0, 50, 0, 0, 0, 0, 0, 12, 0,
 int gm_RichestYear = -1;  /* 0x61772c, the game year (ai_Time.year) of gm_FindRichest's last search */
 int gm_RichestWorth = -1000000;  /* 0x617730, the worth of gm_RichestChar (0xc80 when none was found) */
 float gm_BirthChance[6] = { 0.240015402f, 0.222200006f, 0.125f, 0.0555500016f, 0.0138499998f, 0.0f };  /* 0x617734, a float per number of children / relatives */
-int ai_GameFlags = 0;  /* 0x6f23f8 */
-int ai_Difficulty = 0;  /* 0x6f23fc */
-int gm_AllowAll = 0;  /* 0x6f2448 */
 extern int gm_PlayerRecords[688];
 extern int gm_ClassBuilding[32];
 char * ai_Blds;  /* 0x889f74, the buildings ( */

@@ -4322,5 +4322,6 @@ int ai_DragViewWin = -1;  /* 0x62a8d4, the first window of the tooltip view ai_D
 char *ai_DragPicked = 0;  /* 0x6f266c, the picked object (ai_PickedObject) the tooltip was last opened for, 0 = none */
 int ai_DragCutscene = 0;  /* 0x6f2670, 1 while the tooltip view holds d2_CutsceneActive set */
 int ai_ScreenshotCount = 0;  /* 0x6f2674, the number of the next screenshot (gamedata/screenshots/gilde%04i.bmp, ai_SaveScreenshot) */
+int svg_UnreadBss = 0;  /* 0x6f2678, no surviving instruction or pointer refers to it: data of functions /OPT:REF removed; size from the neighbours' addresses */
 AIBOOKMARK ai_Bookmarks[11];  /* 0x6f5ec0, the function-key building bookmarks (ai_BookmarksInit sets the keys F1 .. F11) */
 unsigned char ai_TurnTable[0x4000];  /* 0x6f5f60, the 0x4000-byte table ai_ClearTurnTable clears once at engine open; no other code refers to it (its role is taken from that function's name), it ends where ai_ShotTable starts */

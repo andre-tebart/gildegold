@@ -1257,9 +1257,6 @@ int snd_VoiceBankClick = 0;  /* 0x6f0cc0, voice bank: click comments */
 int snd_VoiceBankNoise = 0;  /* 0x6f0cc4, voice bank: click noises */
 int snd_UnreadBss = 0;  /* 0x6f0cc8, no surviving instruction or pointer refers to it: data of functions /OPT:REF removed; size from the neighbours' addresses */
 int snd_VoiceBankGreeting = 0;  /* 0x6f0ccc, voice bank: greeting */
-int snd_Bank = 0;  /* 0x6f2404, the sample bank */
-int snd_MusicEnabled = 0;  /* 0x6f2578, the "msx" setting of game.INI [Sound]: music enabled */
-int snd_SfxEnabled = 0;  /* 0x6f257c, the "sfx" setting of game.INI [Sound]: effects and voices on */
 extern int * d3t_Rain;
 /* ai_Selected: view of ai_Chars (tools/data_views.py) */
 char snd_TimeCopy[14];  /* 0xf81240, a copy of ai_Time */

@@ -7686,10 +7686,6 @@ int sv_DisabledCount = 0;  /* 0x6f23ec, the entries of sv_DisabledWidgets */
 unsigned char sv_BookPhase = 0;  /* 0x6f23f0, toggled 0 / 1 each frame by the open book's update: which page of the shown pair is redrawn this frame */
 unsigned char sv_InMissionComplete = 0;  /* 0x6f23f1, 1 while sv_RunFrame plays ai_MissionCompleteSequence (no re-entry); sv's by use, see sv.c's lead comment */
 int sv_UnreadBss8 = 0;  /* 0x6f23f4, no surviving instruction or pointer refers to it: data of functions /OPT:REF removed; size from the neighbours' addresses */
-unsigned char ai_GameState = 0;  /* 0x6f25ac */
-/* the two flags after ai_GameState are objects of their own (the original reads each as a byte: no views of it) */
-unsigned char main_GameEnded = 0;  /* 0x6f25ad, nonzero when the player has reached the game's goal: the round start plays the fanfare and the outro (cleared at the game start) */
-unsigned char sv_MenuOpen = 0;  /* 0x6f25ae, 1 while a menu screen runs */
 SVQUICKJUMP sv_QuickJump;  /* 0x75e8c0, the info panel's flag (sv_PanelFlag) and pending quick jump (sv_quickjump.h) */
 int sv_SelectionFlags[0xc0];  /* 0x75e920, the mirror of the character selection flags (byte i per character) */
 int sv_SkyScene;  /* 0x75ec20 */

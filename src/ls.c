@@ -43,8 +43,6 @@ extern int gm_PlayerRecords[688];          /* 0x7d5f80, the 16 player records (0
 int ai_NextCrimeId = 0;  /* 0x6f1b88 .. */
 unsigned char ls_SaveSlot = 0;  /* 0x6f1c38, the slot the save header records */
 /* ai_Unk76fa24: view of cm_SaveAcks (tools/data_views.py) */
-int ai_NextEventId = 0;  /* 0x6f2618 */
-int he_EventTop = 0;  /* 0x6f261c, the highest used index of he_Events (own object: ai_NextEventId is a 4-byte int) */
 extern int ai_NextCharNumber, ai_NextPlayerNumber;   /* 0x6f1bb8, 0x6f1bbc, 0x6f1bc0 */
 /* ls_RefTargets: view of cm_SendStates (tools/data_views.py) */
 int gv_WriteCrimes();                     /* 0x4f28d0 */
@@ -90,7 +88,6 @@ extern char hst_Key[];                 /* 0xf83520, the history key ("G12", 0x20
 int gv_ReadEffects();                     /* 0x4ed910 */
 
 /* he_EventTop: view of ai_NextEventId (tools/data_views.py) */
-int he_QuickTop = 0;  /* 0x6f2620 / */
 extern unsigned char he_Events[339968];
 extern char * he_QuickList[10921];
 extern int he_EventCount;

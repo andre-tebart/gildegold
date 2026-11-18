@@ -1210,7 +1210,6 @@ int ai_PlayerPrototypeCount = 0;  /* 0x6f0e28 */
 AHMGRID * ai_PlayerPrototypes = 0;  /* 0x6f0e2c */
 int ai_RecipePrototypeCount = 0;  /* 0x6f0e30 */
 AHMGRID * ai_RecipePrototypes = 0;  /* 0x6f0e34 */
-unsigned short ai_PlayerId = 0;  /* 0x6f25b8: the local player's character id (the owner field of the building records); defined here because ahm.c does not read it */
 extern char ai_Chars[768][0x21c];
 extern char * ai_BTypes;
 extern signed char ai_Relations[768][768];

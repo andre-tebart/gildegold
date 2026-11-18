@@ -1493,6 +1493,5 @@ int ai_LoadMissions(void *f)
     return 1;
 }
 
-int ai_GameOver = 0;  /* 0x6f259c */
 extern int sv_FrameMask;
 G13MIS ai_Missions[0x80];  /* 0xf82320 */

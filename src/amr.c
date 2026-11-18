@@ -35,7 +35,6 @@
 extern int ai_PlayerCountYear;
 extern int ai_NumPlayerChars;
 AGCH ai_DuelOpponent = {0};  /* 0x6f0478 */
-int ai_WriteActionTable = 0;  /* 0x6f2464, set: write the action table */
 extern char ai_DataPath[608];
 /* ai_Unk7e3f80: view of ai_PlayerSlots (tools/data_views.py) */
 /* ai_Unk7e3f84: view of ai_PlayerSlots (tools/data_views.py) */

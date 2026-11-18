@@ -17369,11 +17369,6 @@ struct D3SKY *cm_SceneSky = 0;  /* 0x6f0db8 */
 int cm_SceneRain = 0;  /* 0x6f0dbc */
 int cm_DialogStart = 0;  /* 0x6f0dc0 */
 char cm_MessageBoxOpen = 0;  /* 0x6f0dc4 */
-int cm_TutorialActive = 0;  /* 0x6f2438 */
-int cm_FightFixedLight = 0;  /* 0x6f244c */
-int cm_NetFlags = 0;  /* 0x6f2594, flags */
-int cm_RequestedSaveSlot = 0;  /* 0x6f25c8 */
-char cm_RequestedSaveName[72] = {0};  /* 0x6f25d0 */
 extern unsigned int ai_MissionSeed;
 extern int ai_TimeCopy[4];
 extern char * sv_SelectedObject;

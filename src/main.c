@@ -5238,7 +5238,10 @@ GAPDATA full_data_62a9f8[16] = { 0x54, 0x6f, 0x6f, 0x6c, 0x54, 0x69, 0x70, 0x5c,
 int ai_DomizilCount = 0x42;  /* 0x62cb58, the number of 0x1c-byte entries of the Domizil table ai_DomizilTable (0x62c420) */
 GAPDATA full_data_62cb5c[88] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xff, 0x00, 0x01, 0x01, 0xff, 0x01, 0xff, 0xff, 0x00, 0x00, 0x01, 0x02, 0x00, 0xff, 0x01, 0xff, 0xff, 0x01, 0xff, 0x00, 0x03, 0x01, 0x00, 0x00, 0xff, 0xff, 0x01, 0xff, 0x01, 0x04, 0x00, 0xff, 0x00, 0x00, 0xff, 0x01, 0x00, 0x01, 0x05, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0xff, 0x00, 0x06, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xff, 0x07, 0x00, 0x01, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x08, 0x01, 0x00, 0x01, 0xff, 0x00, 0x00, 0x00, 0x00, 0x08, 0x01, 0x01, 0x01, 0x01, 0x00, 0x00, 0x00 };  /* 0x62cb5c, the rest of the 92-byte block at 0x62cb58 (no reader) */
 GAPDATA full_data_62d6bc[252] = { 0x73, 0x70, 0x65, 0x63, 0x69, 0x61, 0x6c, 0x5c, 0x75, 0x6e, 0x69, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x32, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x01, 0x00, 0x01, 0x00, 0x01, 0x01, 0x01, 0x14, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x02, 0x00, 0x02, 0x00, 0x02, 0x02, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x01, 0x00, 0x01, 0x00, 0x01, 0x01, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };  /* 0x62d6bc */
+int ai_GameFlags = 0;  /* 0x6f23f8 */
+int ai_Difficulty = 0;  /* 0x6f23fc */
 int snd_SystemBank = 0;  /* 0x6f2400, the handle of the system sample bank system.sbf (main_ 0x532160 loads it) */
+int snd_Bank = 0;  /* 0x6f2404, the sample bank */
 int snd_ThunderBank = 0;  /* 0x6f2408 */
 int snd_BookBank = 0;  /* 0x6f240c */
 int snd_RoomBank = 0;  /* 0x6f2410 */
@@ -5248,26 +5251,52 @@ int main_Movie = 0;  /* 0x6f241c, the id mov_Open gave the movie that plays (int
 GAPDATA full_data_6f2420[8] = { 0 };  /* 0x6f2420 */
 int main_StartCoupleOn = 0;  /* 0x6f2428, nonzero: main_GameLoop creates the starting couple (main_CreateStartCouple) after main_StartGame in a single player game; no writer in the image */
 int main_TextureDivider = 0;  /* 0x6f242c, the Gfx/TextureDivider key of game.INI */
+int main_StartHouseCheat = 0;  /* 0x6f2430, no writer in the exe: nonzero gives the first kind 6 character its start house ( */
 int main_DirectStart = 0;  /* 0x6f2434, nonzero: WinMain skips the main menu, starts the single player game at once (main_JobName picks the job) and quits after it; no writer in the image */
+int cm_TutorialActive = 0;  /* 0x6f2438 */
+int main_UnreadBss = 0;  /* 0x6f243c, no surviving instruction or pointer refers to it: data of functions /OPT:REF removed; size from the neighbours' addresses */
+int init_BonusStart = 0;  /* 0x6f2440, a start bonus switch (a guess: only read, 0 in .data; init_CreateOpponents, main_GameLoop) */
+int main_MoneyCheat = 0;  /* 0x6f2444, set from the command line switch "MO_MONEY" (main.c); nonzero gives 500000 start money instead of 2000 and the first kind 6 character its starter buildings */
+int gm_AllowAll = 0;  /* 0x6f2448 */
+int cm_FightFixedLight = 0;  /* 0x6f244c */
 GAPDATA full_data_6f2450[12] = { 0 };  /* 0x6f2450 */
 int main_DevMenu = 0;  /* 0x6f245c, nonzero: the main menu shows the data-tool buttons */
 int main_TextReopen = 0;  /* 0x6f2460 */
+int ai_WriteActionTable = 0;  /* 0x6f2464, set: write the action table */
 int main_HmtMode = 0;  /* 0x6f2468 */
 int main_HmtBuild = 0;  /* 0x6f246c */
 char main_JobName[0x104] = { 0 };  /* 0x6f2470, the job name of the BERUF=" command line option (WinMain: the starting job, matched against txt_JobNames, else 0x38) */
 int main_MoviesOpen = 0;  /* 0x6f2574, nonzero while the movie player is set up (mov_Init); the outro opens and closes it itself otherwise */
+int snd_MusicEnabled = 0;  /* 0x6f2578, the "msx" setting of game.INI [Sound]: music enabled */
+int snd_SfxEnabled = 0;  /* 0x6f257c, the "sfx" setting of game.INI [Sound]: effects and voices on */
 int main_WeatherSound = 0;  /* 0x6f2580, the "weather" key of [Sound] (WinMain): the rain / weather sounds play */
 int main_Inactive = 0;  /* 0x6f2584, 1 while the app is deactivated (WM_ACTIVATEAPP) */
 HWND main_Window = 0;  /* 0x6f2588, the game window ("Die Gilde") */
 char main_ScreenOpen = 0;  /* 0x6f258c, the video mode is open ( */
+int ai_CurrentPlayer = 0;  /* 0x6f2590, the player index whose turn the local round loop simulates */
+int cm_NetFlags = 0;  /* 0x6f2594, flags */
 int main_Round = 0;  /* 0x6f2598, the round number (1 at the game start) */
+int ai_GameOver = 0;  /* 0x6f259c */
+int ai_LeaveGame = 0;  /* 0x6f25a0, set with ai_GameOver when the menu leaves the game (the
+                                       load window / the game loop end); main.c clears it when a game
+                                       starts ( */
 int main_ScreenRestart = 0;  /* 0x6f25a4, nonzero: the screen must be re-initialised (set by the gfx options screen 0x5d5fd0 when the resolution changed) */
 int main_DayEnding = 0;  /* 0x6f25a8, set by sv_RunFrame when the day ends (hour 23 or the end request) before it pops to main_GameLoop, cleared by main_GameLoop before the next day */
+unsigned char ai_GameState = 0;  /* 0x6f25ac */
+/* the two flags after ai_GameState are objects of their own (the original reads each as a byte: no views of it) */
+unsigned char main_GameEnded = 0;  /* 0x6f25ad, nonzero when the player has reached the game's goal: the round start plays the fanfare and the outro (cleared at the game start) */
+unsigned char sv_MenuOpen = 0;  /* 0x6f25ae, 1 while a menu screen runs */
 int main_ReplaceFigureOn = 0;  /* 0x6f25b0, nonzero: a bankrupt player's figure is replaced (main_RoundReport calls main_ReplaceFigure then clears it); no writer in the image */
 int main_QuitProgram = 0;  /* 0x6f25b4, set by quit / Escape / WM_QUIT: WinMain exits */
+unsigned short ai_PlayerId = 0;  /* 0x6f25b8: the local player's character id (the owner field of the building records); main.c's by place (main's .bss block 0x6f23f8 .. 0x6f2640) */
 int main_ScreenSaverOff = 0;  /* 0x6f25bc, the screen saver was switched off and is restored at exit */
 int main_NoRoundFade = 0;  /* 0x6f25c0, 1 skips the black fade before the round page (set by main_RoundReport, cleared at the game start) */
 int main_UdpOpen = 0;  /* 0x6f25c4, the udp socket of the network game is open (udp_Init .. udp_Exit) */
+int cm_RequestedSaveSlot = 0;  /* 0x6f25c8 */
+char cm_RequestedSaveName[72] = {0};  /* 0x6f25d0 */
+int ai_NextEventId = 0;  /* 0x6f2618 */
+int he_EventTop = 0;  /* 0x6f261c, the highest used index of he_Events (own object: ai_NextEventId is a 4-byte int) */
+int he_QuickTop = 0;  /* 0x6f2620 / */
 char he_FindFirst = 0;  /* 0x6f2624, he.h */
 GAPDATA full_data_6f2625[3] = { 0 };  /* 0x6f2625 */
 int he_FindUnused = 0;  /* 0x6f2628, he.h */
@@ -5277,8 +5306,6 @@ GAPDATA full_data_6f2631[3] = { 0 };  /* 0x6f2631 */
 int he_ReaperMusic = 0;  /* 0x6f2634, he.h; owner he or main (an open question of he.c) */
 AIBLD *he_PatrolBuilding = 0;  /* 0x6f2638, he.h; owner he or main (an open question of he.c) */
 int he_MessageFilterMask = 0;  /* 0x6f263c, he.h; owner he or main (an open question of he.c) */
-GAPDATA full_data_6f2678[4] = { 0 };  /* 0x6f2678 */
-GAPDATA full_data_6f26c4[4] = { 0 };  /* 0x6f26c4, the alignment after ai_Settings, before ai_NewsText */
 extern int ai_MapHeight;
 char he_OptionsPath[256];  /* 0x6fa0e0, the options INI path he_LoadMessageFilter copies from ai_OptionsFile for its
                                       GetPrivateProfileIntA / WritePrivateProfileStringA calls (he_SaveMessageFilter) */
