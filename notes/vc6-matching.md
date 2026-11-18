@@ -1213,6 +1213,43 @@ Where the pushes and pops sit, how many epilogue copies there are, shared agains
     (he_FreeGfxInfo: push ebx behind the je); `rec->heads[h]` instead of a walked out pointer
     (gm_ResolveHeadIcons); the x clamp before the z clamp.
 
+- **Deep s38 (the near-byte list to 80 instructions, notes older than s22 first: the 15 at 28-32 instructions,
+  7 byte, 3 closer, 5 notes)**:
+  - **Two records of equal count swapped in the frame, an AI_ZERO asm block in scope**: declare the pair in each
+    block that uses it (ai_DecideApplyForOffice's AIARG s1 / s2 in the rank block and in the leisure block:
+    four block locals, byte). Renaming them changed nothing there (the asm names only _zp / _zn).
+  - **A small local sharing another's slot in the original, three slots of equal density in a frame > 0x80**: an
+    escaped local (its address went to a call) conflicts with every local whose life lies inside its scope
+    before the scope's last call; the original's scope ended earlier. ai_DecideBeatUp: cid in a block around
+    the partner pick that closes before gm_Mix, so g joins cid's slot (c2frame X rows); the three 4-byte slots
+    then all weigh 1500 and the unstable sort gives the original's order (byte, kept with an @original).
+  - **A local converted in place instead of a second variable**: he_RunGang's case 1 `sum =
+    gm_PlayerFactor(sum, ..)` (no v there): sum shares member's slot as in the original; with `idx = 0;` before
+    `member = 0;` byte. A pointer-walked id loop as a plain index loop gave the same code (kept, plainer).
+  - **The first operand of an == between two record fields is loaded first**: `j->ownerCh == e->ownerCh`
+    (he_AllocEvent32: every scratch register after it rotated; byte).
+  - **add esp of two consecutive calls merged in the original, ours split at a join**: write the second call at
+    the end of each arm (he_CreateGfxInfo's d3if_SelectScene(scene, 1) after the sprintf and after
+    he_CreateGfxObject: the arms' add esp merge, the tails cross-jump; then a 4-store permutation, byte;
+    he_EndPersonEvents' 0x45 loop: he_EndEventNow in each arm, as its 0x41 loop).
+  - **A shared tail kept at the last site in the original, the first in ours**: a `return;` at the end of the
+    later arm (ai_TutorialMarkerUpdate phase 4; separate ifs instead of the else-if chain give the same code).
+  - **goto found out of two search loops**: plain `for (rec = first; rec != 0; rec = next)` loops, each match
+    showing the message and returning, the fill after the loops (ai_KidnapStart byte; the fill's position in
+    the source rotates the scratch registers of the loop above it). A raw int request array was AMOUNTCFG.
+  - **A loop counter in a dead parameter's slot**: the frame list tie (equal counts) goes to the local that
+    reaches its count first in the walk; `for (i = 0, y = 0xc; y < K; y += 0x30, i++)` lets y beat the
+    strength-reduced cursor of `sliders[i]` and join win's dead slot (ai_ShowSettingGoods 32 -> 6; i++ first
+    loses it).
+  - **A literal pushed as an immediate although a variable holding the same value is in a register**: the
+    variable was set in each arm before the join, not in the common block (VC6 propagates `ret = 1` within the
+    block to the literal 1): ai_UseGoodRaiseRelation 31 -> 24.
+  - Left with notes: ch_InitWalk (the frame wants t and y in one 12-byte local, which then orders a pointer load
+    after its stores), ai_BookmarkWindow (const 0 / 1 webs decide i / o), ai_PickBuildSite (an empty slot and
+    the sqrt spill's own slot), ai_ShowWorkSettingsPage and gm_FreeStallCapacity (one reference decides two
+    callee-saved registers), he_EndPersonEvents (the constant 3 of seven byte tests gets bl; no spelling of
+    the test changes it).
+
 - **An else-if arm cross-jumped whole into a sibling's copy, the original keeps it inline**: the store order of
   the OTHER arms (default arm charId before stateArg; 0x176 arm stateArg, charId, x, z) decides it, found by
   climb.py swap + move in round 2 (cm_OrderAttack byte; permuting only the inlined arm's stores did not). The pair
