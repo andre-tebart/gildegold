@@ -320,6 +320,36 @@ Where the pushes and pops sit, how many epilogue copies there are, shared agains
   - A record pointer's `+ 4` added after both calls in the original: the record pointers as locals and `->name`
     at the use (cm_RunWedding, GMHEAD).
   climb.py found none of these (its best rows were meaning changes: a local read before a call that writes it).
+- **Size queue s13 (byte or padded size by these)**:
+  - A he_ run handler's switch whose stage tails cross-jump the other way round (`cm_SendExSetHEI(..)` /
+    `stage = 4` copies): `break` instead of `return` at the end of SOME cases (found per site with a generated
+    round: each `return;` of the switch turned into `break;` alone, then all but one, then the pairs of the
+    movers; most sites are = control, one or two decide it), plus the arm of an `if` that ends a case written
+    with its own `return` (`if (--left <= 0) { ..; send(3); return; } send(1); break;`), or the good case
+    tested first (`if (b != 0) { ..; break; } stage = 4; break;`) (he_RunPlague, he_RunBrawl byte).
+  - Four `return -1` with one shared epilogue in ours, an inline copy each in the original and the success
+    return last: the search loop breaks with a found flag and the returns follow the loop (`if (!found) return
+    -1; if (r < 0) return -1; return c[r]->netId;`); the returns inside the loop, a `for (;;)` / `while` form
+    or `if (i == 0)` after a break loop (an extra `test; jne`) are not it (ai_TrustedOfFour byte).
+  - Stage 0 of he_RunTavern: an AI owner with no object gets its OWN day-later block (`if (t != 0) { if
+    (choose) hire else later } else later`); `t != 0 && choose` (any arm order or inversion, VC6 canonicalizes
+    them all) shares one block and costs a send call (7 vs 6).
+  - A field value block (`no`, `none`, `noId`, `out[3]` sent by address to cm_AddFieldDelta / gm_HandOutMoney)
+    declared at function scope: the next pointer load waits for their stores; declared in the block that fills
+    them, the load moves above them (all four needed) (he_RunTavern).
+  - A sum the original computes once and reuses (`movsx y; movsx h; add`), ours reassociated (`h - f6->h + y`)
+    and computed again for the next statement: the sum assigned inside the test and reused (`py < (bottom =
+    o->y + o->h) - f6->h` .. `a = bottom - f0->h - py`); no spelling of the plain sum moves it, a statement
+    before the test is computed on every path (d2_SliderInput 66 -> 10 ins, padded size).
+  - Frame 8 bytes short with two 3-float vectors: both `D3VECTOR4`; the loop's coordinates loaded onto the FPU
+    and one spilled into the vector's slot = the vector filled first (`diff.x = (body->pos.x); ..`) and reduced
+    after (`diff.x -= here.x; ..`) (he_FindNearestSpying byte).
+  - Open: a memory-homed result flag (`sent = 0` at the top, `sent = 1` in the loop) whose zero store the
+    original keeps in the first block: with it there every early `return 0` keeps an inline epilogue (probe
+    `{ static int *p; p = &sent; }` removes all tail hunks); ours sinks the store and the returns share one
+    block (ai_DrohbriefAmountCB, the forms tried in its note).
+  - The tail copy of an if-arm with different registers from the shared tail (d3_SetFog: copy eax/edx, tail
+    ecx/edx/eax) was duplicated BEFORE allocation, not by the post-allocation return-block copy.
 
 - **An else-if arm cross-jumped whole into a sibling's copy, the original keeps it inline**: the store order of
   the OTHER arms (default arm charId before stateArg; 0x176 arm stateArg, charId, x, z) decides it, found by
