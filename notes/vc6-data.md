@@ -566,3 +566,42 @@ original's order (reverse-engineering LINK's name order) is kept for the very en
   the old .data -48 had cancelled. So no group is "placed" until that is fixed; the extents are the measure:
   commongaps finds no unexplained pair except cl's bumps; groups outside the name-order range: amt (the bump), txt /
   ch (bumps), d3s (EdgeX / EdgeY above).
+
+### s13 additions
+- **LIBC's .bss member by member** (`tools/exe/libbss.py`): the map lists only public symbols, so a member's static
+  .bss (strerror's errmsg, time's caches, asctime's buf, cvt's g_*) is invisible there. The tool reads every
+  member's .bss size / alignment from LIBC.LIB, takes our load order from a `link /VERBOSE` rerun of link.rsp in a
+  scratch directory ("Found SYM / Referenced in OBJ / Loaded LIBC.LIB(member)"; `--pulls` prints it) and lays it out;
+  the result equals our map at every public symbol. LINK aligns each member's .bss section on its own (time, cfin,
+  cfout, tzset, gmtime 8; 87cdisp 16). The original's runs come from `dcp answers`; its open runs are members with
+  no public symbol (_file's _cflush, _newmode, nlsdata2 + ncommode, txtmode) and pads. With the original's member
+  order (`--order`) the simulation ends exactly at 0x6f3300 and puts every named member at its original address.
+- **The +64 of the common area, completely**: our LIBC .bss ends +48 (0x6f3330), the first common (shot's 496 bytes)
+  is 32-aligned -> 0x6f3340. The +48 = strerror.obj's 40-byte .bss (ours only) + 8 bytes of alignment pads from the
+  member order. Each half alone keeps the start off (without strerror: end 0x6f3310 -> commons +32; the original
+  order with strerror: end 0x6f3328 -> +64). Member by member, ours / original:
+  _file 4 / fpinit 8 (ours: _file first; fprintf, which pulls _file, before ch's __fltused), time 24 al8 + strtok 4
+  before crt0dat 76 (original: crt0dat first, so no pad before time), strerror 40 (original: absent), wincrt0 12,
+  _sftbuf 8 before cvt 13 (original cvt first: fpinit's externals before fprintf's), 87cdisp 9 al16, cfin 24 al8 late
+  (ours: pulled by atof's externals after evt; original right after 87cdisp: atof pulled early), then the same
+  handler .. a_cmp in both.
+- **The same LIBC member set except strerror.obj** (members with .bss / .data; cprintf / woutput / wwincrt0 /
+  cscanf / fgetc / mbsdup / wsetenv in `dcp answers` are ambiguous attributions of output / input / wincrt0 code).
+  The original links syserr.obj (its .data after dosmap, i.e. pulled by a LIBC member's external in LINK's second
+  wave, not by a game object) but neither strerror.obj (40) nor _strerr.obj (134 .bss): of the four members that
+  reference _sys_errlist (strerror, _strerr, perror, wperror) only perror / wperror have no .bss, and their text is
+  discarded by /OPT:REF with the caller. So a removed function called perror(); gzio's HAVE_STRERROR is a stand-in
+  that gets syserr's data (the s9 fix, worth .rdata 809 / .data 180 and the whole game .bss position) at +40 .bss.
+  Not fixable without inventing the perror call (decision: no invented dead functions).
+- **Every LIBC order difference is a removed function's** (re-checked with the pull triggers): fpinit / ftol before
+  udp's fprintf (util or udp: a float -> int in removed code; no surviving function there touches a float), rand
+  right after udp's __iob and before ch's sprintf (ch's first rand, line 1441, is far below its first sprintf, line
+  528: a removed function of udp or of ch above ch_UpdateLowPoly), atof + crt0dat right after chc's strncpy (chc / kb), fwrite after sb's fread, fgets
+  before txt's strncmp. No respelling in a surviving function reproduces any of them.
+- **Common extents (s13 re-check)**: every group lies inside its name-order range except amt, txt, ch (cl's +32 bump
+  after a huge common, s12). So the total +448 = +64 start + name-order pads + bumps; no extent is a size error.
+- **State at s13's end**: unchanged layout (36 steps, total +448, 0 groups placed); the +64 is explained to the byte
+  and is not reachable without the removed functions. The remaining .data steps re-checked by strdiff are the
+  accepted removed-function literal class ("SHAPBANK" and "..." in d2's run: the only surviving SHAPBANK user is
+  shp's d2_BankAppendShape, "..." has no surviving game user; main's run; "!bk_" / "bk_" in rd). Not re-checked:
+  am / poker ("Keine Methode", "gb_"), cmdump ("handwerker3_MANN" / "buerger2_MANN" order, "!vg_").
