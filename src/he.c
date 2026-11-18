@@ -9555,12 +9555,8 @@ int he_MoveReaper(int ev)
 }
 /* 0x5506c0, turns the reaper towards its next target: both the reaper object and the building reaperTo's object
    need a mesh driver; the target is the point above reaperTo's object (its height + 80), the object's angles are
-   set from the direction to it (d3_VecAngle2 writes them), cached in reaperRot with the target in reaperPos, and
-   reaperPlaced = 1. 1 = done, 0 = an object missing
-   @deep frame sweep s21: frame equal, target / at swapped (the original has target at [esp+0x1c]: its
-   count must rank below at's). No lever: bld a block local of the reaper if (26 ins, frame 0x30), target /
-   at / dir block locals of the inner if (draft 29), both (35), target.y += (= control). Lead: c2frame
-   --refs counts of target vs at (the twin he_MoveReaper matched with per-call blocks). */
+   set from the direction to it (d3_VecAngle2 writes them), cached in reaperRot with the reaper's own world
+   position in reaperPos, and reaperPlaced = 1. 1 = done, 0 = an object missing */
 int he_AimReaper(int ev)
 {
     AIJOB *e = (AIJOB *)ev;
@@ -9583,9 +9579,9 @@ int he_AimReaper(int ev)
             e->reaperRot.x = e->reaper->rotation.x;
             e->reaperRot.y = e->reaper->rotation.y;
             e->reaperRot.z = e->reaper->rotation.z;
-            e->reaperPos.x = target.x;
-            e->reaperPos.y = target.y;
-            e->reaperPos.z = target.z;
+            e->reaperPos.x = at.x;
+            e->reaperPos.y = at.y;
+            e->reaperPos.z = at.z;
             e->reaperPlaced = 1;
             d3if_SelectScene(scene, 1);
             return 1;
