@@ -1241,7 +1241,7 @@ exe	0x004690b0	d2_GetPic	d2	byte	readable
 exe	0x00469180	d2_GetPicEx	d2	byte	readable		
 exe	0x00469250	d2_SetObjPic	d2	byte	readable		
 exe	0x00469310	d2_DrawFrame	d2	byte	readable		
-exe	0x004694c0	d2_DrawInput	d2	draft	readable	deep	
+exe	0x004694c0	d2_DrawInput	d2	byte	readable		
 exe	0x00469ca0	d2_OpenInputIcon	d2	byte	readable		
 exe	0x00469ee0	d2_WinOpenInputIcon	d2	byte	readable		
 exe	0x00469fe0	d2_InputSetString	d2	byte	readable		
@@ -1747,7 +1747,7 @@ exe	0x004a58d0	ai_PickPartnerChain	amt_ai	byte	readable
 exe	0x004a5a30	ai_PickPartnerInRange	amt_ai	byte	readable		
 exe	0x004a5b50	ai_FindPartnersRandomWalk	amt_ai	byte	readable		
 exe	0x004a5d30	ai_PickPartnerRandomWalk	amt_ai	byte	readable		
-exe	0x004a5ef0	ai_FindCandidates	amt_ai	shape	readable	deep	
+exe	0x004a5ef0	ai_FindCandidates	amt_ai	byte	readable		
 exe	0x004a61d0	ai_PickPartnerChainLevel	amt_ai	byte	readable		
 exe	0x004a63f0	ai_PickActionBuilding	amt_ai	byte	readable		
 exe	0x004a6570	ai_PickActionBuildings	amt_ai	byte	readable		
@@ -2503,7 +2503,7 @@ exe	0x004d7190	cm_PlantEscapeFlag	cmfight	draft	readable	deep
 exe	0x004d7360	cm_Attack	cmfight	draft	readable	deep	
 exe	0x004d76a0	cm_RunCutOrders	cmfight	draft	readable	deep	
 exe	0x004d88c0	cm_FightLoop	cmfight	byte	readable		
-exe	0x004d8b10	cm_FightMember	cmfight	draft	readable	deep	
+exe	0x004d8b10	cm_FightMember	cmfight	byte	readable		
 exe	0x004d8b30	cm_ClearSceneChars	cmfight	byte	readable		
 exe	0x004d8b50	cm_DrawFightTime	cmscene	byte	readable		
 exe	0x004d8c40	cm_DeleteSceneChars	cmscene	byte	readable		
@@ -2968,7 +2968,7 @@ exe	0x004fdcb0	gm_CharacterHome	f3gm	byte	readable
 exe	0x004fddb0	gm_SpawnCharacter	f3gm	byte	readable		
 exe	0x004fde90	unk_LoadIconNames	f3gm	byte	readable		
 exe	0x004fdfb0	gm_FreeIconNames	f3gm	byte	readable		
-exe	0x004fdfd0	gm_CountCharacters	f3gm	draft	readable	deep	
+exe	0x004fdfd0	gm_CountCharacters	f3gm	byte	readable		
 exe	0x004fe140	gm_AddTime	f3gmt	draft	readable	deep	
 exe	0x004fe1e0	gm_SetTime	f3gmt	byte	readable		
 exe	0x004fe210	gm_CompareTime	f3gmt	byte	readable		
@@ -3181,7 +3181,7 @@ exe	0x0050d350	init_SceneObjectDestroyCB	f3init	byte	readable
 exe	0x0050d380	init_HookObject	f3init	byte	readable		
 exe	0x0050d460	init_ResetSceneUniverses	f3init	byte	readable		
 exe	0x0050d490	init_FreeScenes	f3init	byte	readable		
-exe	0x0050d550	init_AllocSceneBuilding	f3init	draft	readable	deep	
+exe	0x0050d550	init_AllocSceneBuilding	f3init	byte	readable		
 exe	0x0050d6a0	init_InheritOwner	f3init	shape	readable		
 exe	0x0050d6d0	init_LoadTownScene	f3init	byte	readable		
 exe	0x0050d730	init_AdjustSceneLights	f3init	byte	readable		
@@ -3312,8 +3312,8 @@ exe	0x00522040	sv_PanelImage	sv	byte	readable
 exe	0x00522100	sv_SetPanelEnabled	sv	byte	readable		
 exe	0x00522280	sv_ClosePanelWidgets	sv	byte	readable		
 exe	0x005223c0	sv_DestroyScreen	sv	byte	readable		
-exe	0x005224a0	sv_LoadGroundplan	sv	draft	readable	deep	
-exe	0x005229b0	sv_UpdateGroundplan	sv	draft	readable	deep	
+exe	0x005224a0	sv_LoadGroundplan	sv	byte	readable		
+exe	0x005229b0	sv_UpdateGroundplan	sv	byte	readable		
 exe	0x00522ec0	sv_SetResearchClass	sv	byte	readable		
 exe	0x00522f10	sv_UpdateCityPanel	sv	byte	readable		
 exe	0x00524010	sv_RedrawScreen	sv	byte	readable		
@@ -3610,7 +3610,7 @@ exe	0x00549430	he_RunTrialEvent	he	shape	readable
 exe	0x005496f0	he_StartNextTrialStep	he	byte	readable		
 exe	0x00549770	he_RunTrialSteps	he	shape	readable		
 exe	0x00549970	he_StartTraining	he	byte	readable		
-exe	0x00549aa0	he_RunTraining	he	draft	readable	deep	
+exe	0x00549aa0	he_RunTraining	he	byte	readable		
 exe	0x00549ce0	he_BeginPlague	he	byte	readable		
 exe	0x00549f70	he_StartPlague	he	byte	readable		
 exe	0x0054a020	he_RunPlague	he	byte	readable		
@@ -3880,7 +3880,7 @@ exe	0x00571ac0	he_AllocGraveTraining	he_b	byte	readable
 exe	0x00571c30	he_RunGraveTraining	he_b	byte	readable		
 exe	0x00571f60	he_AllocMeeting	he_b	shape	readable	deep	
 exe	0x005720f0	he_CatchMeetingDisease	he_b	shape	readable	deep	
-exe	0x00572310	he_SpreadMeetingDisease	he_b	shape	readable	deep	
+exe	0x00572310	he_SpreadMeetingDisease	he_b	byte	readable		
 exe	0x005725b0	he_RunMeeting	he_b	byte	readable		
 exe	0x005726a0	he_AllocMeetingScene	he_b	byte	readable		
 exe	0x005726b0	he_RunMeetingScene	he_b	byte	readable		
@@ -4503,7 +4503,7 @@ exe	0x005c33c0	ai_PassesPartnerFilter	lcamt	byte	readable
 exe	0x005c37a0	ai_PassesBuildingFilter	lcamt	draft	readable	deep	
 exe	0x005c39a0	ai_PassesMapPickFilter	lcamt	byte	readable		
 exe	0x005c3bb0	ai_PickBuildingChar	lcamt	draft	readable	deep	
-exe	0x005c4100	ai_LawSelectionEntry	lcamt	draft	readable	deep	
+exe	0x005c4100	ai_LawSelectionEntry	lcamt	byte	readable		
 exe	0x005c4150	ai_FamilyTreeWindow	lcamt	draft	readable	deep	
 exe	0x005c5310	ai_CharInfoPanel	lcamt	draft	readable	deep	
 exe	0x005c6050	ai_GiftWindow	lcamt	byte	readable		
