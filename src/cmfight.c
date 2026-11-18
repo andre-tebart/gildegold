@@ -533,6 +533,8 @@ int ai_LedSelectBits(int idx, char *c)
         r = 0x800;
     if (gm_AllowAll != 0)
         r = 0x800;
+    if (0)
+        ai_PickedObject = 0;   /* @original dead code: VC6 counts this leaf as writing ai_PickedObject (cm_UpdatePointer reloads it after each call); no code */
     return r;
 }
 /* 0x4ce1b0, the distance of the character c's model to the object o (x / z) */
@@ -1183,23 +1185,25 @@ void cm_DrawScrollArrows()
    by the weapon of the selected characters cm_CutChar sees (0x160 -> 0x18 .. 0x176 -> 0x25; more than one: 0x23) over
    a character it does not see (or with key 0x36 down), "sp_ESCAPE" 0x1c, "sp_CONQUER" 0x1b, "WARE" 0xe;
    cm_HoverObject keeps the object the look was decided for
-   @deep Lead (scratch copies of cm.c): not a unit boundary. VC6 takes a callee's write summary from its
-   text; with a dead if (0) ai_PickedObject = 0; in ai_LedSelectBits this function goes from 90 to 29
-   differing instructions (obj bytes against the image), with an external copy of ai_LedSelectBits only to
-   49, with a dead write of another global (cm_LastSeq) nothing moves. So in the original ai_LedSelectBits
-   is known and counts as writing ai_PickedObject; its text here writes nothing. Shifting the symbol count
-   before ai_LedSelectBits (1..130 extern declarations) or naming its local ai_PickedObject changes
-   nothing. Find what in the original's ai_LedSelectBits (or in a known function it calls without code)
-   stores to ai_PickedObject; see the unit's Open: summary line. prior: Read whole against
-   0x4cf670..0x4cf9c0: the same calls and arguments (d3if_Pick, d3sm_Pick (x, z) / d3sm_GetVertex, v.y +=
-   10.0f into the escaped vector, d3if_Show of cm_PickMarker, the 31-entry ai_SceneChars loop with the
-   weapon if-chain and n, strcmp sp_ESCAPE inline, strncmp sp_CONQUER / WARE, the kind 2 / owner test), the
-   same stores and returns. Left: allocation. Ours keeps ai_PickedObject in a callee-saved register across
-   the calls of ai_LedSelectBits (VC6 sees its definition above in this unit: a leaf that stores nothing)
-   and reuses it for cm_HoverObject; the original reloads it after every call (mov ecx, [ai_PickedObject]
-   at +0x307 / +0x32b) and after the loop (+0x215), so it keeps n in ebx, cur in ebp and the loop pointer
-   in edi, where ours spills n and the loop pointer to the frame (0x1c vs 0x18) and pushes 6 more
-   instructions. Tried a pointer walk (jb instead of the original's ... */
+   @deep size queue s19: two things. (1) v is a D3VECTOR4 (the original's frame 0x18 has v at +0x18 with
+   the hole to +0x28: 16 bytes). (2) the callee summary: the leaf ai_LedSelectBits now holds a dead 'if (0)
+   ai_PickedObject = 0;' with an @original comment (no code, ai_LedSelectBits stays byte, no other grade
+   moves): VC6 then counts it as writing ai_PickedObject, so this function reloads it after each call as
+   the original does: 142 -> 36 ins, raw 871 -> 840, padded size (848). The form of the original's write is
+   not known (only that its summary had one). Left: one scratch rotation step in the four exit arms (the
+   original copies ai_PickedObject eax -> ecx in the sp_ESCAPE arm, stores cm_HoverObject from ecx in every
+   arm, and in the last arm stores d2_PointerLook = 0 before the reload). No lever (= control): strcmp /
+   strncmp on ((D3OBJECT *)ai_PickedObject)->name; climb.py round 1 (83 mutants, nothing closer); hover
+   store before the look store (order 30); the last arm written out (74 ins, frame). prior: Lead (scratch
+   copies of cm.c): not a unit boundary. VC6 takes a callee's write summary from its text; with a dead if
+   (0) ai_PickedObject = 0; in ai_LedSelectBits this function goes from 90 to 29 differing instructions
+   (obj bytes against the image), with an external copy of ai_LedSelectBits only to 49, with a dead write
+   of another global (cm_LastSeq) nothing moves. So in the original ai_LedSelectBits is known and counts as
+   writing ai_PickedObject; its text here writes nothing. Shifting the symbol count before ai_LedSelectBits
+   (1..130 extern declarations) or naming its local ai_PickedObject changes nothing. Find what in the
+   original's ai_LedSelectBits (or in a known function it calls without code) stores to ai_PickedObject;
+   see the unit's Open: summary line. prior: Read whole against 0x4cf670..0x4cf9c0: the same calls and
+   arguments (d3if_Pick, d3sm_Pick (x, z) / d3sm_GetVertex, v.y += 10.0... */
 
 void cm_UpdatePointer()
 {
@@ -1208,7 +1212,7 @@ void cm_UpdatePointer()
     AIWEAPON *w;
     struct D3HMAP *map;
     int z, x;
-    D3VECTOR v;
+    D3VECTOR4 v;
 
     map = d3_DefaultScene->hmap;
     ai_PickedObject = 0;
@@ -1218,7 +1222,7 @@ void cm_UpdatePointer()
         ai_PickedObject = d3if_Pick((float)dm_L.x, (float)dm_L.y, 0x40, 1);
         if (ai_PickedObject == 0 && cm_SelectedCount != 0) {
             if ((d3sm_PickK(map, dm_L.x + 0x1a, dm_L.y + 0x1a, &x, &z) & 0xff) != -1) {
-                d3sm_GetVertexI(map, x, z, &v);
+                d3sm_GetVertexI(map, x, z, (D3VECTOR *)&v);
                 v.y += 10.0f;
                 d2_PointerLook = 0;
             }
