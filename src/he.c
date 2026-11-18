@@ -10515,22 +10515,25 @@ void he_RunDelay(int ev)
    (the kind the person tooltip names) is `from` to the other kind (1 - from, a field delta of AICHAR +0xc), walking
    the 0x300 characters from a random one (ids in use, kinds up to 4); found fewer than n, it tries again 5 minutes
    later. A negative stage, no rounds or no characters left free the event, flag 4 of opts holds it
-   @deep size queue s18 (padded size kept, 6 ins). Round: the loop test != 0 / > 0 x left = 0x300 in the
-   for or before n / ring / at the top x cnt = 0 at its declaration or before the loop (14 variants): every
-   != 0 form gives left the memory home and cnt ebp (17-29 ins: the original has cnt's store mov
-   [esp+0x10],0 in the first block and mov ebp,0x300 before the loop, left in ebp with dec ebp; test
-   ebp,ebp; jne); ours with != never pushes ebp for gm_AddTime's zeros either, so the push ebp follows from
-   left holding ebp at the loop's == 0 exit (a post-allocation known-value use), not from the source. Next:
-   what ranks left above cnt with the != test (c2trace --prio 'left|cnt' on ne-na-decl). prior: size queue
-   s14: padded size, 99 -> 6 ins (raw 540 vs 538): (a) the candidate test reads ai_CharsT[ring].id / .kind
-   / .b00c by index and c = &ai_CharsT[ring] only inside for the calls (the original's shl eax,2 offset CSE
-   with lea ecx; through c the fields go via eax); (b) the loop as left > 0: puts left in ebp and cnt in
-   its frame slot (frame 0x10) as the original. Left: the original's loop test is jne (left != 0) and on
-   the loop's fall-through exit it pushes ebp (left, known 0) for gm_AddTime's two zeros; with != (any for
-   / while / do / && / truthy / unsigned spelling, all one code) VC6 ranks cnt (prio -8) above left (-11,
-   c2trace) and left goes to the dead parameter slot: in the original the two pushes count as left's
-   references, so its IL had left at those pushes. short left: 6 ins too (test bp,bp, push 0). Next: what
-   makes VC6 substitute left for the zero constants (value numbering on... */
+   @deep size queue s18 (padded size kept, 6 ins). The push ebp for gm_AddTime's zeros is VC6's equality
+   propagation: with if (cnt < n && left == 0) after the loop (lz-gt-rev: 4 ins, raw 542, padded) the
+   then-block pushes ebp, left gets the references at the pushes (c2trace: left prio 11, 5 refs -> ebp; cnt
+   memory, n ebx: the original's roles); but the left test stays (test ebp,ebp / jne) and the loop test is
+   jg, while the original has the != 0 loop and no left test at all. With the != loop the same test is
+   decided on the exit edge before the propagation (lz-rev: test gone, pushes 0, left memory, 25 ins). Not
+   kept: the original has no left test. Also tried: != / > 0 x left = 0x300 placement x cnt = 0 placement
+   (14 variants, 8-29 ins), the success code inside the loop (82), left != 0 && cnt < n in the for (8).
+   Next: a form whose IL keeps a left == 0 fact into the retry block without a test that survives (the
+   original's). prior: size queue s14: padded size, 99 -> 6 ins (raw 540 vs 538): (a) the candidate test
+   reads ai_CharsT[ring].id / .kind / .b00c by index and c = &ai_CharsT[ring] only inside for the calls
+   (the original's shl eax,2 offset CSE with lea ecx; through c the fields go via eax); (b) the loop as
+   left > 0: puts left in ebp and cnt in its frame slot (frame 0x10) as the original. Left: the original's
+   loop test is jne (left != 0) and on the loop's fall-through exit it pushes ebp (left, known 0) for
+   gm_AddTime's two zeros; with != (any for / while / do / && / truthy / unsigned spelling, all one code)
+   VC6 ranks cnt (prio -8) above left (-11, c2trace) and left goes to the dead parameter slot: in the
+   original the two pushes count as left's references, so its IL had left at those pushes. short left: 6
+   ins too (test bp,bp, push 0). Next: what makes VC6 substitute left for the zero constants (value
+   numbering on... */
 void he_RunConversion(int ev)
 {
     AIJOB *e = (AIJOB *)ev;
