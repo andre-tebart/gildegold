@@ -2091,7 +2091,6 @@ void init_LoadSiteScene(char *name)
     D3MATRIX cam;
     D3OBJECT *o, *p, *next, *id;
     D3BOXVERT *box;
-    float *v;
     int i;
 
     memset(&list, 0, sizeof list);
@@ -2100,42 +2099,32 @@ void init_LoadSiteScene(char *name)
     if (list.n != 0) {
         o = list.obj[0];
         if (strnicmp(name, "bk_", 3) == 0 || strnicmp(name, "!bk_", 4) == 0) {
-            i = 0;
-            if (0 < ai_NBauplaetze) {
-                do {
-                    if (strcmpi(name, ai_Bauplaetze[i].name) == 0) {
-                        if (i < ai_NBauplaetze)
-                            goto place;
-                        break;
-                    }
-                    i++;
-                } while (i < ai_NBauplaetze);
+            for (i = 0; i < ai_NBauplaetze; i++) {
+                if (strcmpi(name, ai_Bauplaetze[i].name) == 0)
+                    break;
             }
-            d3_MatIdentity(&cam);
-            box = ((D3MESHOPS *)o->info->mesh)->GetBox(o, o->info, &cam);
-            ai_Bauplaetze = (G15BK *)realloc(ai_Bauplaetze, (ai_NBauplaetze * 3 + 3) * 0x20);
-            strcpy(ai_Bauplaetze[ai_NBauplaetze].name, name);
-            ai_Bauplaetze[ai_NBauplaetze].x0 = box[0].x;
-            ai_Bauplaetze[ai_NBauplaetze].y0 = box[0].y;
-            ai_Bauplaetze[ai_NBauplaetze].z0 = box[0].z;
-            ai_Bauplaetze[ai_NBauplaetze].x1 = box[0].x;
-            ai_Bauplaetze[ai_NBauplaetze].y1 = box[0].y;
-            ai_Bauplaetze[ai_NBauplaetze].z1 = box[0].z;
-            v = (float *)box + 0x16;            /* the 7 remaining corners: 20 floats (0x50) apart */
-            i = 7;
-            do {
-                ai_Bauplaetze[ai_NBauplaetze].x0 = min(v[-2], ai_Bauplaetze[ai_NBauplaetze].x0);
-                ai_Bauplaetze[ai_NBauplaetze].y0 = min(v[-1], ai_Bauplaetze[ai_NBauplaetze].y0);
-                ai_Bauplaetze[ai_NBauplaetze].z0 = min(v[0], ai_Bauplaetze[ai_NBauplaetze].z0);
-                ai_Bauplaetze[ai_NBauplaetze].x1 = max(v[-2], ai_Bauplaetze[ai_NBauplaetze].x1);
-                ai_Bauplaetze[ai_NBauplaetze].y1 = max(v[-1], ai_Bauplaetze[ai_NBauplaetze].y1);
-                ai_Bauplaetze[ai_NBauplaetze].z1 = max(v[0], ai_Bauplaetze[ai_NBauplaetze].z1);
-                v += 0x14;
-                i--;
-            } while (i != 0);
-            ai_NBauplaetze++;
+            if (i >= ai_NBauplaetze) {
+                d3_MatIdentity(&cam);
+                box = ((D3MESHOPS *)o->info->mesh)->GetBox(o, o->info, &cam);
+                ai_Bauplaetze = (G15BK *)realloc(ai_Bauplaetze, (ai_NBauplaetze * 3 + 3) * 0x20);
+                strcpy(ai_Bauplaetze[ai_NBauplaetze].name, name);
+                ai_Bauplaetze[ai_NBauplaetze].x0 = box[0].x;
+                ai_Bauplaetze[ai_NBauplaetze].y0 = box[0].y;
+                ai_Bauplaetze[ai_NBauplaetze].z0 = box[0].z;
+                ai_Bauplaetze[ai_NBauplaetze].x1 = box[0].x;
+                ai_Bauplaetze[ai_NBauplaetze].y1 = box[0].y;
+                ai_Bauplaetze[ai_NBauplaetze].z1 = box[0].z;
+                for (i = 1; i < 8; i++) {
+                    ai_Bauplaetze[ai_NBauplaetze].x0 = min(box[i].x, ai_Bauplaetze[ai_NBauplaetze].x0);
+                    ai_Bauplaetze[ai_NBauplaetze].y0 = min(box[i].y, ai_Bauplaetze[ai_NBauplaetze].y0);
+                    ai_Bauplaetze[ai_NBauplaetze].z0 = min(box[i].z, ai_Bauplaetze[ai_NBauplaetze].z0);
+                    ai_Bauplaetze[ai_NBauplaetze].x1 = max(box[i].x, ai_Bauplaetze[ai_NBauplaetze].x1);
+                    ai_Bauplaetze[ai_NBauplaetze].y1 = max(box[i].y, ai_Bauplaetze[ai_NBauplaetze].y1);
+                    ai_Bauplaetze[ai_NBauplaetze].z1 = max(box[i].z, ai_Bauplaetze[ai_NBauplaetze].z1);
+                }
+                ai_NBauplaetze++;
+            }
         }
-place:
         for (i = 0; i < list.n; i++) {
             o = list.obj[i];
             id = d3_SpawnObject(2, name);
