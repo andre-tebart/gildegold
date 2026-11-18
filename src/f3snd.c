@@ -433,18 +433,22 @@ void snd_UpdateAnimals(void)
         bt = &ai_BTypesT[ai_PlayerBuildingT->type];
         panel = sv_PanelShown;
         if (bt->kind == 0x16 && panel != 0 && *panel == 0x120) {
+            int c;
+
             if (snd_AtmoTrack == 0) {
                 snd_AtmoTrack = msx_PlayAmbient("Athmos\\Athmo_Witshaus.mp3", 5);
                 return;
             }
-            n = ch_Count(d3_CurrentScene, 0) * 9;
-            vol = 64.0f < n ? 64.0f : n;
+            c = ch_Count(d3_CurrentScene, 0) * 9;
+            vol = 64.0f < c ? 64.0f : c;
             msx_SetTrackVolume(snd_AtmoTrack, (int)vol);
             return;
         }
         if (bt->kind == 0x12 || bt->kind == 0x14 || bt->kind == 8 || bt->kind == 0x15 || bt->kind == 0xe) {
-            n = ch_Count(d3_CurrentScene, 0) * 6;
-            vol = 64.0f < n ? 64.0f : n;
+            int c;
+
+            c = ch_Count(d3_CurrentScene, 0) * 6;
+            vol = 64.0f < c ? 64.0f : c;
             if (snd_AtmoTrack == 0) {
                 if (ai_PlayerBuildingT->smokeEffect == -1)
                     return;
@@ -460,8 +464,10 @@ void snd_UpdateAnimals(void)
             return;
         }
         if (bt->kind == 7 && panel != 0 && *panel == 0xf7) {
-            n = ch_Count(d3_CurrentScene, 0) * 6;
-            vol = 64.0f < n ? 64.0f : n;
+            int c;
+
+            c = ch_Count(d3_CurrentScene, 0) * 6;
+            vol = 64.0f < c ? 64.0f : c;
             if (snd_AtmoTrack == 0) {
                 snd_AtmoTrack = msx_PlayAmbient("Athmos\\Athmo_Schreibstube.mp3", (int)vol);
                 return;
