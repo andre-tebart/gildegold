@@ -1418,7 +1418,6 @@ void he_RunIncomeEvent(AIJOB *ev)
     AIOBJ *to;
     char text[0x100];
     AICHAR *owner;
-    AICHAR *rec;
     GMGOOD *good;
     AIOBJ *stock;
     int i;
@@ -1427,18 +1426,15 @@ void he_RunIncomeEvent(AIJOB *ev)
     owner = 0;
     gm_FindById((int *)&bld, 0, 0, ev->incomeBld);
     if (bld == 0) {
-        for (rec = ai_CharsT; (int)rec < (int)&ai_CharsT[768]; rec++) {
-            if (rec->job == ev)
-                sv_MoveToGroup(0, 0, rec->id, 0);
+        for (i = 0; i < 768; i++) {
+            if (ai_CharsT[i].job == ev)
+                sv_MoveToGroup(0, 0, ai_CharsT[i].id, 0);
         }
         he_FreeEvent((int *)ev);
         return;
     }
-    if (bld->owner != 0xffff) {
-        rec = &ai_CharsT[bld->owner];
-        if (rec != he_PlayerCh)
-            owner = rec;
-    }
+    if (bld->owner != 0xffff && &ai_CharsT[bld->owner] != he_PlayerCh)
+        owner = &ai_CharsT[bld->owner];
     switch (ev->stage) {
     case 0:
         ev->stage++;
@@ -1476,9 +1472,9 @@ void he_RunIncomeEvent(AIJOB *ev)
                     txt_Format(text, 0x1bb7, ev->incomeGood * 2 + 0x9a8, bld);
                     he_MessageBoxQuickjump(ai_CharsT[ev->chr].netId, -1, text, 0, 0x5f1, bld->id, -1, 0,
                                            "_NACHRICHTEN_HS_07");
-                    for (rec = ai_CharsT; (int)rec < (int)&ai_CharsT[768]; rec++) {
-                        if (rec->job == ev)
-                            sv_MoveToGroup((unsigned char *)bld, 0, rec->id, 0);
+                    for (i = 0; i < 768; i++) {
+                        if (ai_CharsT[i].job == ev)
+                            sv_MoveToGroup((unsigned char *)bld, 0, ai_CharsT[i].id, 0);
                     }
                     he_FreeEvent((int *)ev);
                     return;
@@ -1504,17 +1500,17 @@ void he_RunIncomeEvent(AIJOB *ev)
             ev->stage = -1;
             return;
         }
-        for (rec = ai_CharsT; (int)rec < (int)&ai_CharsT[768]; rec++) {
-            if (rec->job == ev)
-                sv_MoveToGroup((unsigned char *)bld, 0, rec->id, 0);
+        for (i = 0; i < 768; i++) {
+            if (ai_CharsT[i].job == ev)
+                sv_MoveToGroup((unsigned char *)bld, 0, ai_CharsT[i].id, 0);
         }
         he_FreeEvent((int *)ev);
         return;
     case -2:
     case -1:
-        for (rec = ai_CharsT; (int)rec < (int)&ai_CharsT[768]; rec++) {
-            if (rec->job == ev)
-                sv_MoveToGroup(0, 0, rec->id, 0);
+        for (i = 0; i < 768; i++) {
+            if (ai_CharsT[i].job == ev)
+                sv_MoveToGroup(0, 0, ai_CharsT[i].id, 0);
         }
         he_FreeEvent((int *)ev);
         return;
