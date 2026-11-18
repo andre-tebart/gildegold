@@ -3559,7 +3559,7 @@ exe	0x00543020	he_AllocQuarrel	he	c46d3067ce2ef484	no	byte	control=byte p1=byte 
 exe	0x00543180	he_RunQuarrel	he	9194f33821b8c867	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005432f0	he_RunMasterExam	he	2f99211f1366d2df	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	4cbf06cae45cb11e
 exe	0x005436a0	he_AllocFeast	he	b66a669f1abe07c8	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x005437c0	he_RunFeast	he	54f11ddfa73733c3	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
+exe	0x005437c0	he_RunFeast	he	f1fd1bd257ec877d	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	fdfeb76d9b3d40ec
 exe	0x00543ac0	he_RunFeastExam	he	7af923e60dd454ec	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x00544070	he_AllocTribute	he	ab791732ebd24965	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00544330	he_RunTribute	he	9c60689a77e21f38	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	f111e71d622b1b2b
