@@ -908,12 +908,7 @@ int gv_RetireCrimeIds(int culprit, int n, int *ids)
 }
 /* 0x4f3c50, the culprits of the open crimes (state 1) the character t holds evidence of (ai_Evidence): counts the crimes
    per culprit and keeps the 32 most frequent in ids[] / cnt[], sorted by count (descending, one insertion pass per
-   culprit); ids is first -1, cnt 0; returns the number of different culprits (at most 0x20)
-   @deep read whole function against the original: all statements reconciled (init, memset of the culprit
-   list, evidence walk with gv_FindCrime, count + insertion pass); only the register of n++ differs: ours
-   'mov ecx,[esp+0x10]; inc ecx; mov [esp+0x10],ecx' before 'mov ecx,1' (c), the original's uses ebp and
-   stores after 'mov ecx,1' (0x4f3d15..0x4f3d27); statement orders tried (n++ before/after culprits[i]=-1 /
-   c=1), this one is closest */
+   culprit); ids is first -1, cnt 0; returns the number of different culprits (at most 0x20) */
 
 int gv_RankCulprits(int *ids, int *cnt, unsigned short t)
 {
@@ -939,9 +934,9 @@ int gv_RankCulprits(int *ids, int *cnt, unsigned short t)
     for (i = 0; i < 0x200; i++) {
         own = culprits[i];
         if (own != -1) {
+            c = 1;
             n++;
             culprits[i] = -1;
-            c = 1;
             for (k = i + 1; k < 0x200; k++) {
                 if (culprits[k] == own) {
                     c++;
