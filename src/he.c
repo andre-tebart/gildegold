@@ -8930,7 +8930,10 @@ void he_RunDiseaseSim(int ev)
 /* 0x54ef70, the init of the "Dunkle Ecke" (dark corner) robbery event 0x74: no carrier, a random walk over the
    buildings, 5 + random(4) steps, due a minute from now; it ends at once when another player's robbery runs at the
    same victim, or the victim building or its job table (object 0x12c) is gone; else the job table gets the year,
-   and the carrier figure (cm_SendSpawnCharacter 0xe "DunkleEcke") is spawned at the victim */
+   and the carrier figure (cm_SendSpawnCharacter 0xe "DunkleEcke") is spawned at the victim
+   @deep deep s23: the init stores loot / target after the steps roll (carrier, cursor, step, steps, loot,
+   target): 12 -> 4 ins. Left: year = ai_Time.year stored after the cm_BeginFieldBlock pushes in the
+   original (ours before); year after the call or before gm_FindById: worse. */
 
 void he_StartDarkCorner(int ev)
 {
@@ -8946,9 +8949,9 @@ void he_StartDarkCorner(int ev)
     d->carrier = -1;
     d->cursor = (unsigned short)util_Random(0x100);
     d->step = ai_RandomStrides[(unsigned short)util_Random(0x10)];
+    d->steps = (unsigned short)util_Random(4) + 5;
     d->loot = 0;
     d->target = -1;
-    d->steps = (unsigned short)util_Random(4) + 5;
     e->end = ai_Time;
     e->start = ai_Time;
     gm_AddTime(&e->end, 0, 1, 0);
