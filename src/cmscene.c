@@ -991,6 +991,8 @@ void cm_SessionAskPlayer(CMCUTINFO *r, CMSESSIONREQ *m)
             return;
         res = cm_AskDeposeVote(c, holder, challenger, &click);
         r->session.click = click;
+        r->session.answer = res;
+        sprintf(r->text, ch_EmptyName);
     } else {
         if (m->mode != 2)
             return;
@@ -998,9 +1000,9 @@ void cm_SessionAskPlayer(CMCUTINFO *r, CMSESSIONREQ *m)
             return;
         res = cm_AskElectVote(m->office, c, m->ids, &click);
         r->session.click = click;
+        r->session.answer = res;
+        sprintf(r->text, ch_EmptyName);
     }
-    r->session.answer = res;
-    sprintf(r->text, ch_EmptyName);
 }
 /* 0x4dae90, the session member callback for the other characters (cm_RunSceneParty, scene kind 1), as cm_SessionAskPlayer but the
    character decides itself: mode 1 the one of holder and challenger it trusts more (ai_TrustedOfTwo), mode 2 the applicant
