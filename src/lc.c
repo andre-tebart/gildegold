@@ -13041,64 +13041,44 @@ typedef struct LCRANSOMEVENT {          /* the ransom event 0x3d's words over AI
    AICHAR.heldRounds is set shows the message and returns, otherwise the event's cm slot is set (0x4c4c60
    (-1, rec)); with no event the request (0, 0x400, the two words of gypsyFilter, 6, the eight -1 at +0x1c) and
    the text 0x19b8 go to 0x525220 (bld, 0) / 0x5c1130 (the request, the text, 0, the callback 0x5a5120), then
-   0x525440 / 0x52d7a0
-   @deep readability cleared (AIJOB/LCKIDNAPEVENT/LCRANSOMEVENT/AICHARREC fields, gypsyFilterWords,
-   ai_TextKidnapMessage); left: regs 32 and code 20, allocation and scheduling only (equal 99 ins / 333
-   bytes): the two rep stosd fills and the gypsyFilter low-word load are placed differently (ours lea
-   edx,[buf] where the original has mov edx,[gypsyFilter]; push 0x19b8; the ecx/edx/eax roles of the
-   [rec+0xb0] load and the two req stores differ). Tried: req[2]/req[3] store order, the loads moved before
-   the -1 fill (M8 gone, diff 58 bytes), (int)gypsyFilter + >>32 (a 64-bit read, frame 0x94): the natural
-   order is kept (references: M8 at +0xc9: ours refers to gypsyFilter (0x5eed68), the original's field to
-   0x5eed6c (gypsyFilter+0x4), explained: the M8 at +0xc9 is an alignment pairing: ours mov
-   eax,[gypsyFilter] against the original mov eax,[gypsyFilter+4]; both sides load the two words of
-   gypsyFilter into req[2]/req[3] and the prover shows the same store value (store4 [frame+0x8] =
-   [0x5eed68]4 on both sides), only the register of the first load differs) */
+   0x525440 / 0x52d7a0 */
 
 void ai_KidnapStart(AIBLD *bld)
 {
-    int req[20];
+    AMOUNTCFG cfg;
     char buf[0x40];
     AIJOB *rec;
     AICHARREC *ch;
-    int i;
 
     if (sv_CheckCharacterFlag(bld) != 0)
         return;
-    rec = (AIJOB *)he_FindEvent(1, 0, 0x3c);
-    while (rec != 0) {
-        if (((LCKIDNAPEVENT *)rec)->guild == bld->id)
-            goto found;
-        rec = (AIJOB *)he_NextEvent();
-    }
-    rec = (AIJOB *)he_FindEvent(1, 0, 0x3d);
-    for (;;) {
-        if (rec == 0) {
-            for (i = 0; i < 0x14; i++)
-                req[i] = 0;
-            for (i = 0; i < 8; i++)
-                req[7 + i] = -1;
-            req[0] = 0;
-            req[1] = 0x400;
-            req[4] = 6;
-            req[2] = gypsyFilterWords[0];
-            req[3] = gypsyFilterWords[1];
-            txt_Format(buf, 0x19b8);
-            sv_OpenPlayerBar((int)bld, 0);
-            ai_AmountMenu(req, buf, 0, ai_KidnapWindow);
-            sv_ClosePlayerBar();
-            sv_CameraFollow();
+    for (rec = (AIJOB *)he_FindEvent(1, 0, 0x3c); rec != 0; rec = (AIJOB *)he_NextEvent()) {
+        if (((LCKIDNAPEVENT *)rec)->guild == bld->id) {
+            sv_MessageBox(ai_TextKidnapMessage, 0);
             return;
         }
+    }
+    for (rec = (AIJOB *)he_FindEvent(1, 0, 0x3d); rec != 0; rec = (AIJOB *)he_NextEvent()) {
         if (((LCRANSOMEVENT *)rec)->guild == bld->id) {
             ch = (AICHARREC *)gm_FindChar(((LCRANSOMEVENT *)rec)->victim);
-            if (ch != 0 && ch->heldRounds > 0)
-                goto found;
+            if (ch != 0 && ch->heldRounds > 0) {
+                sv_MessageBox(ai_TextKidnapMessage, 0);
+                return;
+            }
             rec->exSlot = cm_SendExSetHEI(-1, (int)rec);
         }
-        rec = (AIJOB *)he_NextEvent();
     }
-found:
-    sv_MessageBox(ai_TextKidnapMessage, 0);
+    memset(&cfg, 0, sizeof(cfg));
+    memset(cfg.ids, 0xff, sizeof(cfg.ids));
+    cfg.flags = 0;
+    cfg.mode = 0x400;
+    cfg.kind = 6;
+    cfg.filter = gypsyFilter;
+    txt_Format(buf, 0x19b8);
+    sv_OpenPlayerBar((int)bld, 0);
+    ai_AmountMenu(&cfg, buf, 0, ai_KidnapWindow);
+    sv_ClosePlayerBar();
+    sv_CameraFollow();
 }
 
 /* 0x5a5530, the ransom window of the thieves' guild's kidnapping room bld "locations\diebesgilde\diebesgilde_loesegeld"
