@@ -1027,6 +1027,8 @@ void cm_SessionAskAI(CMCUTINFO *r, CMSESSIONREQ *m)
             return;
         res = ai_TrustedOfTwo(c, holder, challenger, &click);
         r->session.click = click;
+        r->session.answer = res;
+        sprintf(r->text, ch_EmptyName);
     } else {
         if (m->mode != 2)
             return;
@@ -1034,9 +1036,9 @@ void cm_SessionAskAI(CMCUTINFO *r, CMSESSIONREQ *m)
             return;
         res = ai_TrustedOfFourB(m->office, c, m->ids, &click);
         r->session.click = click;
+        r->session.answer = res;
+        sprintf(r->text, ch_EmptyName);
     }
-    r->session.answer = res;
-    sprintf(r->text, ch_EmptyName);
 }
 /* 0x4daf80, the check function of the trial (scene kind 2, run function 0x4db700) for its party p: the six participants
    (members[0 .. 4], members[5] only with six or more) must exist, not be of kind 0xf and be alive, and one held (heldRounds)
