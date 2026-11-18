@@ -18,7 +18,6 @@
    the unit uses once lc.h / lcamt.h carry the shared ones. */
 #define GAPDATA __declspec(align(1)) unsigned char
 
-#define sv_ReturnZeroV ((int (*)(int))sv_ReturnZero)  /* @original 0x5c4100 passes the research class as an argument (sv.h declares the function void) */
 #define ai_MapPickCb(cb) ((void (*)(void *, void *))(cb))  /* @original: ai_MapPick's cb is void (*)() (lc.h, its callbacks take differing pointer types); both indirect calls push two dwords and read no result (0x5b22f6/0x5b22f7 push ebp twice; 0x5b248f/0x5b2490 push the picked building and picked) */
 #define util_RandomS ((unsigned short (*)(unsigned short))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original the plague messages (ai_PlagueNews, ai_PlagueMessage, ai_PlagueMessageAll) read the 16-bit result (mov si,ax / and esi,0xffff), as f3gm.c's gm_Shuffled */
 struct SBSAMPLE;
@@ -4711,20 +4710,19 @@ AICHARREC *ai_PickBuildingChar(AIBLD *bld, AMOUNTCFG *cfg, char *caption, void (
     return result;
 }
 
-/* 0x5c4100, the law selection entry of the map pick 0x5b2180: the picked building record; when its kind has a
-   research class (0x50b090, the class written over the parameter) it returns 0, else it opens the law selection
-   window 0x5c3bb0 (param_2 the filter, param_3 the caption text, param_4 the pick callback)
-   @deep read the whole original 0x5c4100..0x5c414b and reconciled every statement: the bld guard,
-   gm_ResearchClass(*bld, &cls) with the class in the reused argument slot, the return of
-   sv_ReturnZero(cls) when the class is set and of ai_PickBuildingChar(bld, filter, text, cb) otherwise. The only
-   hunk left is that return form: the original returns sv_ReturnZero by a tail jmp (mov edx,[esp+8]; pop
-   esi; mov [esp+4],edx; jmp 0x52a040), ours by push edx / call / add esp,4 (asmdiff: ours 33 ins, the
-   original 31, differing 6, the same callee and argument). Tried the class local and the class written
-   over the bld parameter, a K&R and an int prototype of sv_ReturnZero, a 1-argument and a 4-argument call,
-   a function-pointer cast, a volatile cls, and the second return as a statement; cl 12.00.9044 tail-calls
-   only when the callee's argument layout equals the caller's (checked with scratch files), so the source
-   form that yields this jmp is not found */
+/* unlinked: the selection entry of a building with a research class, an empty stub in this build that returns 0;
+   LINK folds it (/OPT:ICF) into sv_ReturnZero, 0x52a040, where the original's tail jump in ai_LawSelectionEntry
+   points. Defined above its caller as in the original: VC6 tail-calls it with the class stored over the first
+   argument (mov [esp+4],edx; jmp), which it does only for a callee whose body it has seen */
+int ai_ResearchSelectionEntry(int cls, AMOUNTCFG *filter, char *text, void (*cb)(AICHARREC *, AIBLD *))
+{
+    return 0;
+}
 
+/* 0x5c4100, the law selection entry of the map pick 0x5b2180: the picked building record; when its kind has a
+   research class (0x50b090) it returns the research selection entry of that class (ai_ResearchSelectionEntry, 0
+   in this build), else it opens the law selection window 0x5c3bb0 (param_2 the filter, param_3 the caption
+   text, param_4 the pick callback) */
 int ai_LawSelectionEntry(AIBLD *bld, AMOUNTCFG *filter, char *text, void (*cb)(AICHARREC *, AIBLD *))
 {
     int cls;
@@ -4732,7 +4730,7 @@ int ai_LawSelectionEntry(AIBLD *bld, AMOUNTCFG *filter, char *text, void (*cb)(A
     if (bld == 0)
         return 0;
     if (gm_ResearchClass(bld->type, &cls) != 0)
-        return sv_ReturnZeroV(cls);
+        return ai_ResearchSelectionEntry(cls, filter, text, cb);
     return (int)ai_PickBuildingChar(bld, filter, text, cb);
 }
 
