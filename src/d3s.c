@@ -1307,7 +1307,7 @@ char d3s_Update(D3OBJECT *obj, D3OBJECT *light, D3TERRAIN *t)
 {
     D3SSLOT *slot = 0;
     D3OBJINFO *info, *mesh;
-    D3VECTOR ldir, lpos, opos;
+    D3VECTOR4 ldir, lpos, opos;
     D3TEXFLAGS f;
     unsigned int size, n;
     int i, j, k;
@@ -1363,22 +1363,22 @@ found:
         return 0;
     if (slot->cache)
         slot->cache->time = d3_FrameCount;
-    info = obj->info;
-    mesh = info;
+    mesh = obj->info;
+    info = mesh;
     if (D3_MESH(obj)->surf[3].info.ntris > 0 && D3_MESH(obj)->surf[3].info.nkeys > 0)
         mesh = &D3_MESH(obj)->surf[3].info;
-    d3_PointToWorld(light, &light->pos, &lpos);
+    d3_PointToWorld(light, &light->pos, (D3VECTOR *)&lpos);
     if (light->objectFlags & 0x10) {
         eps = 0.01f;
-        d3_DirToWorld(light, &d3_ZAxis, &ldir);
+        d3_DirToWorld(light, &d3_ZAxis, (D3VECTOR *)&ldir);
     } else {
         eps = 1.0f;
-        d3_PointToWorld(obj, &obj->pos, &opos);
+        d3_PointToWorld(obj, &obj->pos, (D3VECTOR *)&opos);
         ldir.x = opos.x - lpos.x;
         ldir.y = opos.y - lpos.y;
         ldir.z = opos.z - lpos.z;
     }
-    redo = !d3_VecEqual(&ldir, &slot->dir, eps) || ((D3SURF *)info)->alwaysDraw ? 1 : 0;
+    redo = !d3_VecEqual((D3VECTOR *)&ldir, &slot->dir, eps) || ((D3SURF *)info)->alwaysDraw ? 1 : 0;
     if (t) {
         if (!redo) {
             j = slot->bz0;
@@ -1395,7 +1395,7 @@ found:
         }
     }
     if (redo)
-        d3s_Project(obj, info, mesh, t, &ldir, &lpos, light, slot);
+        d3s_Project(obj, info, mesh, t, (D3VECTOR *)&ldir, (D3VECTOR *)&lpos, light, slot);
     if (d3s_AddShadow(slot, d3_Terrain))
         d3s_Object->state |= 4;
     return 0;
@@ -1428,14 +1428,20 @@ void d3s_UpdateObject(D3OBJECT *obj)
     }
 }
 /* 0x45ca60, makes the shadows of obj: projects its box along each shadow light onto the ground, and updates
-   the shadow of every light whose projected box is on screen */
+   the shadow of every light whose projected box is on screen
+   @deep frame sweep s21: 48 -> 22 ins: lpos / ldir as D3VECTOR4 (the engine's padded vectors; all three
+   D3VECTOR4: 22 ins, frame 0x38; d alone 48). Left: frame 0x34 vs 0x44: the original keeps obj in a local
+   slot [esp+0x14] (ours reads the argument) and has an untouched 12-byte hole [esp+0x40..0x4c) (d's fields
+   there never stored: d lives on the FPU, its slot stays), slots 26. Lead: obj copied to a local (the twin
+   d3s_Update's info / mesh), d as D3VECTOR4 with the x87 fields. */
 
 void d3s_UpdateObjectAt(D3OBJECT *obj)
 {
     D3OBJECT *light;
     D3OBJINFO *info;
     D3BOXVERT *verts, *box;
-    D3VECTOR lpos, ldir, d;
+    D3VECTOR d;
+    D3VECTOR4 lpos, ldir;
     float y, f, x, z, w;
     unsigned int i;
     int k;
@@ -1448,8 +1454,8 @@ void d3s_UpdateObjectAt(D3OBJECT *obj)
         light = d3s_Lights[i];
         if (!info)
             return;
-        d3_PointToWorld(light, &light->pos, &lpos);
-        d3_DirToWorld(light, &d3_ZAxis, &ldir);
+        d3_PointToWorld(light, &light->pos, (D3VECTOR *)&lpos);
+        d3_DirToWorld(light, &d3_ZAxis, (D3VECTOR *)&ldir);
         y = d3s_GetGround(obj, info, light);
         verts = (D3BOXVERT *)D3_OPS(info)->GetBox(obj, info, obj->material->meshData);
         for (k = 8, box = verts; k; k--, box++) {
