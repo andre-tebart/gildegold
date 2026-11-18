@@ -2546,7 +2546,15 @@ float cm_ThreatAt(AICHAR *c, int a, int b, float limit)
 }
 /* 0x4d2170, the safest cell around (cx, cy) for the fighter c: walks the diamond rings 0 .. r - 1 around it inside the
    height map, rates every cell whose ground type is not 0 / 0xd (the border) with cm_ThreatAt (limit r cells: r * the
-   cell size * 2) and puts the least rated one into (*ox, *oy); returns 0 when no cell was rated */
+   cell size * 2) and puts the least rated one into (*ox, *oy); returns 0 when no cell was rated
+   @deep s40: min-ternary hi / hic (sc->size - 1 < cy + k ? sc->size - 1 : cy + k, as cm_FindNearCell) and
+   k = 0 before best (the k / best stores in the original order) took 41 -> 2 ins, size 348 -> 352 right.
+   Left: the two reloads of the k-loop latch's reload block (the row loop's exit, its own 2-instruction
+   block) in another order: the original loads cy into ebp before the strength-reduced cy - k (edx); ours
+   the IV first (split pieces, pass 2 ids k#154#2 before cy#2; the block keeps list order). Same hunk as
+   cm_MostThreatenedCellNear; flip.py finds no single change that flips it here. (declaration set: no
+   declaration set makes this text byte (every symbol-count shift 0..63 at the unit's start and before the
+   function) */
 
 int cm_BestCellNear(char *c, int cx, int cy, int r, int *ox, int *oy)
 {
@@ -2556,16 +2564,13 @@ int cm_BestCellNear(char *c, int cx, int cy, int r, int *ox, int *oy)
     int k, row, col, hi, hic, m, type;
 
     sc = (D3SM *)d3_DefaultScene->hmap;
+    k = 0;
     best = 1000000000.0f;
-    for (k = 0; k < r; k++) {
-        hi = sc->size - 1;
-        if (hi >= cy + k)
-            hi = cy + k;
+    for (; k < r; k++) {
+        hi = sc->size - 1 < cy + k ? sc->size - 1 : cy + k;
         for (row = cy - k < 0 ? 0 : cy - k; row <= hi; row++) {
             m = k - abs(cy - row);
-            hic = sc->size - 1;
-            if (hic >= cx + m)
-                hic = cx + m;
+            hic = sc->size - 1 < cx + m ? sc->size - 1 : cx + m;
             for (col = cx - m < 0 ? 0 : cx - m; col <= hic; col++) {
                 type = sc->entries[sc->size * row + col].type;
                 if (type != 0 && type != 0xd) {

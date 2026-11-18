@@ -2459,8 +2459,8 @@ exe	0x004d1e00	cm_FightIntro	cm	bbcc5c91cf8748ae	no	byte	control=byte p1=byte p2
 exe	0x004d1eb0	cm_FightOutro	cm	45426294b846faaf	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004d1f10	cm_NearestEnemy	cm	825a9eeb254499b5	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004d2010	cm_ThreatAt	cm	576561423dc3c6d8	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x004d2170	cm_BestCellNear	cm	1e4255a18b96135e	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	becf1bbdf99775c9
-exe	0x004d22d0	cm_MostThreatenedCellNear	cm	bae5f70318982947	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	becf1bbdf99775c9
+exe	0x004d2170	cm_BestCellNear	cmfight	af375da2f9eca381	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=190	4c3f46b42d83a9cf
+exe	0x004d22d0	cm_MostThreatenedCellNear	cmfight	32f7280f4ebc1d3b	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=190	4c3f46b42d83a9cf
 exe	0x004d2450	cm_CollectEscapeObject	cm	d06b07e4e26dec4a	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004d2490	cm_NearestEscapeObject	cm	08505ed82c455ae7	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	becf1bbdf99775c9
 exe	0x004d2550	cm_CollectWareObject	cm	e1b341b3e6da7d70	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
