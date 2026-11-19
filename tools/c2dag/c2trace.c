@@ -307,7 +307,26 @@ static void __cdecl hGrow(unsigned long *r)
     fprintf(out, "T GROW %s id %lx piece %ld %s blk@%lx lines %ld-%ld", nb, U32(c, 0x1c), (long)U32(b, 0x38),
             *(long *)(r[4] + 8) ? "seed" : "succ", (unsigned long)b & 0xffff, lo, hi);
     pset("avail-in", av, 1);
-    fprintf(out, "\n"); fflush(out);
+    fprintf(out, "\n");
+    if (getenv("C2TRACE_IL")) {   /* the block's instructions: op@line, flag bytes +0x11/+0x12, uses (+0x1c) / defs (+0x20) */
+        void *t, *end = PTR(b, 0x20), *o; int g = 0, k, h;
+        for (t = PTR(b, 0x1c); t && t != end && g < 200 && !IsBadReadPtr(t, 0x24); t = PTR(t, 0), g++) {
+            fprintf(out, "T    IL %lx@%d f%02x.%02x", U32(t, 4), (int)*(short *)((char *)t + 0x10), U8(t, 0x11), U8(t, 0x12));
+            if (!(U8(t, 9) & 1)) { fprintf(out, " (k%02x)\n", U8(t, 8)); continue; }
+            for (k = 0; k < 2; k++) {
+                fprintf(out, k ? " D:" : " U:");
+                for (h = 0, o = PTR(t, k ? 0x20 : 0x1c); o && !IsBadReadPtr(o, 0x1c) && h < 12; o = PTR(o, 0), h++) {
+                    void *sy = PTR(o, 0x18);
+                    if (U8(o, 8) != 1 || !sy || IsBadReadPtr(sy, 0x20)) { fprintf(out, " k%x", U8(o, 8)); continue; }
+                    if (U8(sy, 4) == 2) { char cb[160]; cname(sy, cb); fprintf(out, " %s", cb); }
+                    else if (U8(sy, 4) == 1 && PTR(sy, 8) && !IsBadReadPtr(PTR(sy, 8), 0x20)) fprintf(out, " %%%s", rn(U32(PTR(sy, 8), 0x1c)));
+                    else fprintf(out, " s%x", U8(sy, 4));
+                }
+            }
+            fprintf(out, "\n");
+        }
+    }
+    fflush(out);
 }
 static void __cdecl hCut(unsigned long *r)
 {
