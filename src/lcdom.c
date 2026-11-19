@@ -5675,17 +5675,7 @@ int ai_DrohbriefWindow(int bld)
    without 3 money nothing; else the window (text 0x1761: the evidence count with the word 0x1752 / 0x1753, the
    two characters) asks: its button sends the denunciation message 0x2f to the second character (flags 9,
    arg[0] the culprit, arg[1] the player, arg[2] the receiver), takes the 3 (cm_SendMoneyDelta) and tells it
-   (0x1762); the second button or a right click close it. The camera follows after the menus
-   @deep Reconstructed whole against the original 0x5b5010..0x5b530b (both amount menus 0x175f / 0x1760
-   with the one config, gv_HeldCrimeCount 0x1756, the 3-money check, the window 0x1761 with 0x1752+(n!=1),
-   the message 0x2f flags 9 to/fromId/arg[2] the receiver, arg[0] the culprit, arg[1] the player,
-   cm_SendMoneyDelta -3, 0x1762, the sv_CameraFollow tail calls); every instruction outside the message
-   block equals the original. Left only the scheduling of the message stores: the original loads
-   judge->netId into ecx and stores to/fromId/arg[2] first, then lea/push &msg, then the byte stores 0x2f /
-   9 and arg[1] / arg[0]; ours hoists the constant byte stores (mov byte [esp+0xac],0x2f first, flags 9
-   next) and pushes &msg late (asmdiff +0x21a..+0x26c), and the cm_SendMoneyDelta / 0x1762 block after it
-   takes edx/eax for ecx/edx (regs). Tried the store orders: chained to=fromId=arg[2] both ways, type/flags
-   first or last, arg[0] before arg[1], fromId=msg.to copies: none moves the push or the byte stores */
+   (0x1762); the second button or a right click close it. The camera follows after the menus */
 
 void ai_DenounceWindow(AIBLD *bld)
 {
@@ -5697,7 +5687,6 @@ void ai_DenounceWindow(AIBLD *bld)
     AICHARREC *culprit;
     AICHARREC *judge;
     AMOUNTCFG cfg;
-    AIMSG msg;
     char title[0x40];
     char note[0x200];
 
@@ -5739,10 +5728,14 @@ void ai_DenounceWindow(AIBLD *bld)
             sv_PopRequest = 1;
         if (d2_ClickedId != -1) {
             if (d2_PointerObj == ok) {
-                msg.arg[2] = msg.fromId = msg.to = judge->netId;
+                AIMSG msg;
+
+                msg.to = judge->netId;
+                msg.fromId = judge->netId;
                 msg.type = 0x2f;
                 msg.flags = 9;
                 msg.arg[1] = ai_CharInts[ai_PlayerId][0];
+                msg.arg[2] = judge->netId;
                 msg.arg[0] = culprit->netId;
                 cm_SendLongMessage((char *)&msg);
                 cm_SendMoneyDelta(ai_CharInts[ai_PlayerId][0], -3);
