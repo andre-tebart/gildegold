@@ -3364,8 +3364,8 @@ void ai_BuildTradeOffers(AICHAR *ch, AIOBJ *store, int f)
                             goto next1;
                         if (i >= 0x80)
                             goto next1;
-                        ai_Slots[i].saving = diff;
                         ai_Slots[i].item = it->id;
+                        ai_Slots[i].saving = diff;
                         ai_Slots[i].bld = bld;
                         ai_Slots[i].entry = -1;
                         ai_Slots[i].store = o;
@@ -3405,10 +3405,10 @@ void ai_BuildTradeOffers(AICHAR *ch, AIOBJ *store, int f)
                                 ai_Entries[i].slot[0] = -1;
                                 ai_Entries[i].slot[1] = -1;
                                 ai_Entries[i].slot[2] = -1;
-                                ai_Entries[i].slot[3] = -1;
                                 ai_Entries[i].margin = diff;
                                 ai_Entries[i].bld = bld;
                                 ai_Entries[i].store = o2;
+                                ai_Entries[i].slot[3] = -1;
                                 ai_Entries[i].sellAmount = 0;
                                 ai_Entries[i].cost = 0;
                                 ai_Entries[i].pending = 0;
@@ -3450,8 +3450,8 @@ void ai_BuildTradeOffers(AICHAR *ch, AIOBJ *store, int f)
                         if (i >= 0x80)
                             goto next3;
                         ai_Slots[i].saving = diff;
-                        ai_Slots[i].bld = bld;
                         ai_Slots[i].item = it->id;
+                        ai_Slots[i].bld = bld;
                         ai_Slots[i].entry = -1;
                         ai_Slots[i].store = o;
                         ai_Slots[i].cleared10 = 0;
