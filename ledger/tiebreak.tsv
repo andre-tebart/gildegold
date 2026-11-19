@@ -3054,7 +3054,7 @@ exe	0x00504290	gm_FirstTitleNumber	f3gm	865f564383968c06	no	shape	sweep control=
 exe	0x00504350	gm_TitleNumberGroup	f3gm	9dd91bb05862984a	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005043d0	gm_TitleNumber	f3gm	2805f7652cd9c893	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005044b0	gm_TitleJob	f3gm	7d1b0339ac1f5c2d	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x00504510	gm_TitlePeriodServed	f3gm	970c57e734a7fdd7	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	291ac9aa57e40bb8
+exe	0x00504510	gm_TitlePeriodServed	f3gmt	79d77ae242919b63	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	316adef6f4548ca3
 exe	0x00504790	gm_SetJob	f3gm	85abd7009622f0a5	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00504840	gm_DropRank	f3gm	3d0d08cb5897de06	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005048e0	gm_BuildingJob	f3gm	a428649d06a651db	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	

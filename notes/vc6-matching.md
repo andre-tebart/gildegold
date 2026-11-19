@@ -4604,6 +4604,12 @@ the stack at every instruction.
   canonical**: the squares order y, x, z needed `(double)v->x * v->x + v->y * v->y + (double)v->z * v->z`; a
   cross product computed sx-first needed `((double)v0->sx - v1->sx) * ((double)v0->sy - v2->sy)`. Generate every
   subset of operands with `(double)` (2^n, one dcp try); `(float)` subsets were all one code (d3_ProjectMesh byte).
+- **An int's conversion `fild` / `fst [slot]` interleaved with later stores, its `ftol` before them, ours forwards
+  the int into the use**: the int was used TWICE (`year = (int)(hours / 24.0); hour = fmod(hours, 24.0);`): the
+  `(double)hours` CSE is the `fst` slot, and the two uses stop forwarding, so the int's statement stays where it
+  stands. A double `h = hours` copy gives `fstp; fld`. A float result kept on the FPU across calls with its
+  `fdivp` sunk after the pushes: no `(float)` cast on the quotient, `share = (double)a / (double)b;`
+  (gm_TitlePeriodServed byte).
 - **Squares summed in another order (x, z, y)**: `(float)sqrt((double)(a*a + b*b + c*c))`; without the double
   cast the order is canonical (d3t_EmitterCB).
 
