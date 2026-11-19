@@ -9553,27 +9553,12 @@ void ai_UseObjPanel(char *text)
    two flags and the start time ai_Time as field deltas, one without is sold from the character
    (cm_SendExSellObject); a good with a law accuses the character (gv_Accuse, the home building's id). A player
    (kind 6) whose callback did not report the use sees the panel, with the text 0xfe8 (rank + 1) on effect.
-   Returns the callback's result (1 without one).
-   @deep Read whole against the original and rewritten typed (AICHARREC ch, G8USEVIEW use, G9DOMIZIL entry,
-   G8INVOBJ fields minutesLeft/inUse/active/since): every call, argument, constant (0.66 double) and store
-   matches in order. Left: (1) VC6 keeps use->obj->id in bx across the ai_FindUsableGood call (ours +0x5b
-   mov bx,[eax] ... cmp bx,0x175) where the original reloads it (+0x96 mov eax,[esi]; cmp word ptr
-   [eax],0x175): ours treats the earlier-defined callee as writing no memory; replacing the call by
-   ai_FindUsableGoodIndex removes it (tested), so the original did not see that callee (lc TU boundary,
-   lead Open: layout); (2) allocation: the original keeps the constant 1 in ebx (push ebx for every count
-   1, mov eax,ebx) and ret in [esp+0x14], ours ret in a register and push 1. Tried: if/else order of the
-   callback (kept), ternary vs if for effect, return 0 vs ret, gv_Accuse as two calls (kept, -33 ins).
-   (references: M8 at +0x1d9: ours refers to ai_Time+0x6 (0x770ae6), the original's field to 0x770ae0
-   (ai_Time), explained: the M8 at +0x1d9 is misalignment: ours pushes ai_Time+6 for the +0x33 field
-   exactly as the original's +0x5cfa62 push 0x770ae6; the alignment pairs it with the original's +0x2d push
-   of ai_Time (the add esp,0x48 sits one call earlier on our side)) */
+   Returns the callback's result (1 without one). */
 
 int ai_UseGood(AICHARREC *ch, G8USEVIEW *use)
 {
     char text[0x800];
-    int index;
     int minutes;
-    int one;
     char flag;
     G9DOMIZIL *entry;
     G9DOMIZIL *found;
@@ -9592,43 +9577,46 @@ int ai_UseGood(AICHARREC *ch, G8USEVIEW *use)
     if ((entry->mask & ch->goodsMask) != 0)
         return -5;
     use->effect = (use->obj->id != 0x175 || util_RandomF() >= 0.66) ? 1 : 0;
-    if (entry->use != 0) {
+    if (entry->use != 0)
         ret = ((int (*)(AICHARREC *, G8USEVIEW *))entry->use)(ch, use);
-        if (ret == 0)
-            return 0;
-    } else {
+    else
         ret = 1;
-    }
-    ai_CampaignStep(0x2d, 0, 0, use->obj->id);
-    if (entry->mask != 0)
-        cm_SendSetField(ch->netId, 0x1ec, 4, entry->mask, 0);
-    if (entry->minutes != 0) {
-        minutes = entry->minutes;
-        one = 1;
-        flag = 1;
-        cm_BeginFieldBlock((char *)use->obj, use->obj->objId);
-        cm_AddFieldDelta(4, 1, (unsigned short)((char *)&use->obj->minutesLeft - cm_FieldObject), &minutes);
-        cm_AddFieldDelta(4, 1, (unsigned short)((char *)&use->obj->active - cm_FieldObject), &one);
-        cm_AddFieldDelta(1, 1, (unsigned short)((char *)&use->obj->inUse - cm_FieldObject), &flag);
-        cm_AddFieldDelta(4, 1, (unsigned short)((char *)&use->obj->since.year - cm_FieldObject), &ai_Time.year);
-        cm_AddFieldDelta(2, 1, (unsigned short)((char *)&use->obj->since.hour - cm_FieldObject), &ai_Time.hour);
-        cm_AddFieldDelta(4, 1, (unsigned short)((char *)&use->obj->since.min - cm_FieldObject), &ai_Time.min);
-        cm_AddFieldDelta(4, 1, (unsigned short)((char *)&use->obj->since.sec - cm_FieldObject), &ai_Time.sec);
-        cm_SendFieldDeltas();
-    }
-    if (entry->minutes == 0)
-        cm_SendExSellObject(-1, ch->netId, use->obj->id, 1, ai_OwnPlayer, 0);
-    if (entry->law != -1) {
-        if (ch->bld2 != 0)
-            gv_Accuse(entry->law, 1, ch->netId, -1, ((AIBLD *)ch->bld2)->id);
-        else
-            gv_Accuse(entry->law, 1, ch->netId, -1, -1);
-    }
-    if (ch->kind == 6 && use->handled == 0) {
-        found = (G9DOMIZIL *)ai_FindUsableGoodIndex(use->obj->id, &index);
-        if (use->effect == 1)
-            txt_Format(text, 0xfe8, found->rank + 1);
-        ai_UseObjPanel(text);
+    if (ret != 0) {
+        ai_CampaignStep(0x2d, 0, 0, use->obj->id);
+        if (entry->mask != 0)
+            cm_SendSetField(ch->netId, 0x1ec, 4, entry->mask, 0);
+        if (entry->minutes != 0) {
+            int one;
+
+            minutes = entry->minutes;
+            one = 1;
+            flag = 1;
+            cm_BeginFieldBlock((char *)use->obj, use->obj->objId);
+            cm_AddFieldDelta(4, 1, (unsigned short)((char *)&use->obj->minutesLeft - cm_FieldObject), &minutes);
+            cm_AddFieldDelta(4, 1, (unsigned short)((char *)&use->obj->active - cm_FieldObject), &one);
+            cm_AddFieldDelta(1, 1, (unsigned short)((char *)&use->obj->inUse - cm_FieldObject), &flag);
+            cm_AddFieldDelta(4, 1, (unsigned short)((char *)&use->obj->since.year - cm_FieldObject), &ai_Time.year);
+            cm_AddFieldDelta(2, 1, (unsigned short)((char *)&use->obj->since.hour - cm_FieldObject), &ai_Time.hour);
+            cm_AddFieldDelta(4, 1, (unsigned short)((char *)&use->obj->since.min - cm_FieldObject), &ai_Time.min);
+            cm_AddFieldDelta(4, 1, (unsigned short)((char *)&use->obj->since.sec - cm_FieldObject), &ai_Time.sec);
+            cm_SendFieldDeltas();
+        }
+        if (entry->minutes == 0)
+            cm_SendExSellObject(-1, ch->netId, use->obj->id, 1, ai_OwnPlayer, 0);
+        if (entry->law != -1) {
+            if (ch->bld2 != 0)
+                gv_Accuse(entry->law, 1, ch->netId, -1, ((AIBLD *)ch->bld2)->id);
+            else
+                gv_Accuse(entry->law, 1, ch->netId, -1, -1);
+        }
+        if (ch->kind == 6 && use->handled == 0) {
+            int index;
+
+            found = (G9DOMIZIL *)ai_FindUsableGoodIndex(use->obj->id, &index);
+            if (use->effect == 1)
+                txt_Format(text, 0xfe8, found->rank + 1);
+            ai_UseObjPanel(text);
+        }
     }
     return ret;
 }

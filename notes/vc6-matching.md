@@ -71,6 +71,11 @@ Where the pushes and pops sit, how many epilogue copies there are, shared agains
 
 ### Pushes on the wrong side of an early exit
 
+- **`push ebx` after the guards in the original, ours at entry; a callback's 0 result jumping straight to the
+  final `mov eax,[ret]` epilogue; a `ret = 1; jmp` arm out of line**: `if (cb) ret = cb(..); else ret = 1;
+  if (ret != 0) { ..rest.. } return ret;` instead of `return 0` inside the callback arm; the frame 4 bytes too
+  big at the same time = two address-taken ints (`one`, `index`) declared in their own blocks share one slot
+  (ai_UseGood 78 ins -> byte).
 - **Callee-saved pushes after the early guard, ours at entry, a `return pick;` inside a search loop**: the loop
   runs `while (i < 7 && pick == 0)` with one final return (ai_DrawSettingGood byte; the init order i, pick, sum
   decides ebx / ebp / edi).
