@@ -7053,11 +7053,21 @@ int ai_ExecuteApprenticeship(G5CH *p, AIARG *s1, AIARG *s2)
 /* 0x4a13e0, decide callback 0x3b: the oldest married child (0x164, not 0x10000 in 0x1c8) gets one of three
    offers of 0x4948f0 (o2 kind 0xe), the best or the worst by the child's ratio 0x80.. to the family's 0x503ee0
    values; the character needs ten times the price
-   @deep deep s23: the c index as a named local sk (climb local op) and the sum b/va first: 8 -> 2 ins.
-   Left: best->skills[sk] addressed [esi+edi+0x80] where the original has [edi+esi+0x80] (index register
-   first). sk as unsigned/long/short/char, *(skills + sk), parens, both indexes named, 30 orders of the va
-   / sk / vb statements x sum forms, sk = .. inside the max argument: no lever or worse; flip.py: only sk
-   first (worse elsewhere) and type changes flip it. */
+   @deep deep s43: the addressing order is a CSE effect: with rec[n].c unnamed (a CSE temp, no sk) VC6
+   addresses it [edi+esi+0x80] as the original, but then (a) in one sum s[n] = b/va + c/vb VC6 puts the c
+   term first (fpu 22, 8 ins, every operand order / parens the same code), (b) as s[n] = b/va; s[n] += c/vb
+   the order is right but the strength-reduced rec pointer is based on .c (lea edx,[esp+0x2c], [edx-4])
+   instead of .b (6 ins): the IV base seems to follow the last-referenced field. Tried this session: sk
+   named in vb only / s only (mixes), b named (m or sk) 14, a G8OFFER *r loop pointer (= the index forms),
+   va/vb as term temps (va = b/va; s = va + c/vb: 6), s[n] = s[n] + .. (6), the max statements interleaved
+   with the terms (84), reversed index spellings *(sk + p), sk[p], raw byte offsets, (float) casts: all =
+   control. climb --base v0s0f2 2 rounds: back to the control (named t). Open: a form where the b term is
+   first on the FPU and the last rec reference is .b with .c as a CSE. prior: deep s23: the c index as a
+   named local sk (climb local op) and the sum b/va first: 8 -> 2 ins. Left: best->skills[sk] addressed
+   [esi+edi+0x80] where the original has [edi+esi+0x80] (index register first). sk as
+   unsigned/long/short/char, *(skills + sk), parens, both indexes named, 30 orders of the va / sk / vb
+   statements x sum forms, sk = .. inside the max argument: no lever or worse; flip.py: only sk first
+   (worse elsewhere) and type changes flip it. */
 
 int ai_DecideStudy(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
 {
