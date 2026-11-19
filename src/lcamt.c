@@ -1460,20 +1460,29 @@ int ai_ShowBuildingRows(AICHARREC *ch, int max, int *ctrls)
    corners, the title and name ("%s %1N7") and below it the office of kind 7 ("%s", the deputy office text) or the
    name ("%1N5"); a character other than viewer and not of kind 6 gets the liking slider (gm_Liking of the viewer,
    0 for kind 7); a viewer of kind 6 marks its partner with the picture 0x6d3; returns 0
-   @deep rewritten from the first draft and read through against the original (all 429 instructions; ours
-   428): the layout switch (cols[3], ncols, step), the column loop with the i < n guard, the row walk by
-   pointer, the frame / family / portrait / corner icon pictures, the two text lines, the liking slider
-   (d2_SetObjValue(slider, 0, 100, 0, 1) for kind 7: the original hoists the push 1 shared with gm_Liking's
-   third argument), the partner mark and the filter. Left: scheduling of the text block - ours hoists 'xor
-   ecx, ecx / mov cx, word ptr [eax] / push ecx' (rec->id) above the kind == 7 jne and cross-jumps the
-   first txt_Format, the original keeps both arms' first txt_Format + ai_CentredText whole and merges only
-   the third txt_Format tail ('lea edx, [esp + 0x50] / push edx / call'); the variants tried
-   (ai_CentredText in both arms, the first line outside the if, the ternaries folded or not) move it
-   further; plus the layout loop's 'xor edx, edx' / 'mov [esp + 0x20], eax' placement and the 'mov esi,
-   rows' before the n test (order), and register choice in the gm_Liking argument loads. (references: M8 at
-   +0x3c4: ours refers to d2_Pics (0x6ed918), the original's field to 0x6ed938 (d2_LastWindow), explained:
-   the ref line at +0x3c4 pairs our d2_Pics load with the original's d2_LastWindow load only by their order
-   before d2_WinOpenSlider: both sides load both and pass the same arguments) */
+   @deep s47: the row walk as an index loop (row = &rows[i]) 117 -> 115; the layout loop without the off /
+   colY induction locals (rows[i].y = col * 0x80 + step; rows[i].x = j * 0xca (+ 0x65)): 95 ins / 175
+   bytes, size 1374 as the original, the layout part equal (VC6 strength-reduces j * 0xca into the
+   original's edx IV). Left: the text block only. The original's two arms compile to the same instructions
+   with other registers and NOTHING hoisted above the kind == 7 jne; ours hoists the rec->id push
+   (identical first txt_Format in both arms). Round of 24 first-line spellings per arm: ch-> in one arm
+   263-373; (sex ? 10 : 0) + 0x114 + b00d in the else arm only: 38 ins (arm 2 not hoisted, but lea instead
+   of add / add, and arm 1 still hoisted) - not kept (two spellings of one value). Open: what makes the two
+   arms' IL differ while their code is equal. prior: rewritten from the first draft and read through
+   against the original (all 429 instructions; ours 428): the layout switch (cols[3], ncols, step), the
+   column loop with the i < n guard, the row walk by pointer, the frame / family / portrait / corner icon
+   pictures, the two text lines, the liking slider (d2_SetObjValue(slider, 0, 100, 0, 1) for kind 7: the
+   original hoists the push 1 shared with gm_Liking's third argument), the partner mark and the filter.
+   Left: scheduling of the text block - ours hoists 'xor ecx, ecx / mov cx, word ptr [eax] / push ecx'
+   (rec->id) above the kind == 7 jne and cross-jumps the first txt_Format, the original keeps both arms'
+   first txt_Format + ai_CentredText whole and merges only the third txt_Format tail ('lea edx, [esp +
+   0x50] / push edx / call'); the variants tried (ai_CentredText in both arms, the first line outside the
+   if, the ternaries folded or not) move it further; plus the layout loop's 'xor edx, edx' / 'mov [esp +
+   0x20], eax' placement and the 'mov esi, rows' before the n test (order), and register choice in the
+   gm_Liking argument loads. (references: M8 at +0x3c4: ours refers to d2_Pics (0x6ed918), the original's
+   field to 0x6ed938 (d2_LastWindow), explained: the ref line at +0x3c4 pairs our d2_Pics load with the
+   original's d2_LastWindow load only by their order before d2_WinOpenSlider: both sides load both and pass
+   the same arguments) */
 
 int ai_ShowAmountRows(int win, int kind, unsigned int *filter, int n, LCAMOUNTROW *rows, AICHARREC *viewer)
 {
@@ -1545,19 +1554,19 @@ int ai_ShowAmountRows(int win, int kind, unsigned int *filter, int n, LCAMOUNTRO
         break;
     }
     i = 0;
-    for (col = 0, colY = step; col < ncols; col++) {
-        for (j = 0, off = 0; j < cols[col] && i < n; j++, off += 0xca, i++) {
-            rows[i].y = colY;
+    for (col = 0; col < ncols; col++) {
+        for (j = 0; j < cols[col] && i < n; j++, i++) {
+            rows[i].y = col * 0x80 + step;
             if (cols[col] == 3)
-                rows[i].x = off;
+                rows[i].x = j * 0xca;
             else if (cols[col] == 2)
-                rows[i].x = off + 0x65;
+                rows[i].x = j * 0xca + 0x65;
             else
                 rows[i].x = 0xca;
         }
-        colY += 0x80;
     }
-    for (i = 0, row = rows; i < n; i++, row++) {
+    for (i = 0; i < n; i++) {
+        row = &rows[i];
         x = row->x + 0x65;
         y = row->y + 0x23;
         left = x - d2_Pics[0x5da].w / 2;
