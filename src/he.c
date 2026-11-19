@@ -2576,23 +2576,36 @@ char cm_EventNames[115][0x20] = { "HE_NULL", "HE_HISTORIE", "HE_UPGRADE_DUMMY", 
    x = year / 4 + 1; for each chosen kind it creates a founder character paid twice the value of the player's first
    building of the kind (or of the building kind) (reasoned: the character of kind 4 that he_TopUpCharMoney keeps in
    money, its title from the kind's group)
-   @deep Rewritten in full from the original 0x53f6b0..0x540c8b (all five year%5 themes read instruction by
-   instruction: the per-kind counting over ai_Blds with the kind-7 owner b00c split, the eligible / missing
-   masks, the gate util_RandomF() > x/(x+he_FounderOdds[lvl]), the random pick loops, the per-option search
-   that reuses the option loop's i, the shared founder send with the 0xd field and theme 0's 0xc field, the
-   tail jmp to cm_SendFieldDeltas of theme 1). No call, store or reference differs (no ref:/differs: lines,
-   calls equal); ours 1764 vs 1751 instructions. What is left is allocation / layout: (1) the loop exits of
-   themes 2, 3, 0: ours 'inc ebx; cmp ebx,4; jl top' + a duplicated pop/ret epilogue, the original 'jge
-   0x540c80; reload esi/edi; jmp top' (tried for(;;) + goto next + if (++i >= 4) break, and a switch (t):
-   the same, the switch adds a jump table); (2) the lvl clamp's 'mov ecx,4' block placed out of line at
-   0x53f7af in the original, inline in ours (tried if (lvl > 4) / if (lvl < 5) {..} else / if (lvl <= 4)
-   {..} else); (3) the counted kind k spilled to [esp+0x20] in ours ('mov byte ptr [esp+0x20], dl'), kept
-   in edx by the original; (4) theme 0 keeps n7a / n7b in esi / edx reloaded at each loop top, ours reads
-   them from the frame and caches the constant 1 in edx (hunks 0x5404f6, 0x5405c8); (5) cnt[0x14] /
-   cnt[0x16] / ai_PlayerChar cached in registers on one side, frame / reload on the other (hunks 0x53fe09,
-   0x53fe5b, 0x53ff08, 0x5401a7, 0x540257); (6) a 'test esi, esi' after the dec of the theme 1 / 4 pick
-   counters (tried for (n = 0; n < 3; n++): worse); (7) pick = 0 stored from the zeroed mask register in
-   the original ('mov [esp+0x10], ebx'), as an immediate in ours. */
+   @deep s51: (a) the frame: 'two' as a block local of HE_SEND_FOUNDER's success block, and each year%5
+   theme's locals (floats r0.., elig / zero / bit, pick / mask / d4.., r / n, fl, rnd) declared in the
+   theme's block: frame 0x124 = the original's, 236 -> 170 (the original's per-theme variables sit in
+   different slots: elig of themes 2/3/4 and pick with n7a at 0x10, theme 0's elig at 0x1c with theme 2's
+   r2, fl with theme 2's r0 at 0x18, x and every two at 0x14). (b) no k local: bt->kind at each use (the
+   original's k in dl, ours spilled): 170 -> 167. Left: n7a opens its own slot (0x1c) because theme 0's
+   elig (count 6) is packed before it (count 5) into the 0x10 slot; the original has n7a in 0x10 and theme
+   0's elig elsewhere (c2frame --names: needs n7a packed before theme 0's elig); the lvl clamp's mov ecx,4
+   out of line (if (lvl > 4) / else-if / min-max: worse); the theme 2/3/0 loop exits (ours jl top + a
+   duplicated epilogue, the original jge to the final epilogue + reloads + jmp top); theme 1's d4 / d10
+   registers (esi/ebp swapped) and pick = 0 from ebx; ai_PlayerChar in esi in the HE_FIND_OWN loops of
+   theme 2 (ours ecx); the theme 0 constant 1 in edx. No lever: k block-local, n7a = 0 as a statement,
+   plain index loop over ai_BldsT (189), bt-less k (171). prior: Rewritten in full from the original
+   0x53f6b0..0x540c8b (all five year%5 themes read instruction by instruction: the per-kind counting over
+   ai_Blds with the kind-7 owner b00c split, the eligible / missing masks, the gate util_RandomF() >
+   x/(x+he_FounderOdds[lvl]), the random pick loops, the per-option search that reuses the option loop's i,
+   the shared founder send with the 0xd field and theme 0's 0xc field, the tail jmp to cm_SendFieldDeltas
+   of theme 1). No call, store or reference differs (no ref:/differs: lines, calls equal); ours 1764 vs
+   1751 instructions. What is left is allocation / layout: (1) the loop exits of themes 2, 3, 0: ours 'inc
+   ebx; cmp ebx,4; jl top' + a duplicated pop/ret epilogue, the original 'jge 0x540c80; reload esi/edi; jmp
+   top' (tried for(;;) + goto next + if (++i >= 4) break, and a switch (t): the same, the switch adds a
+   jump table); (2) the lvl clamp's 'mov ecx,4' block placed out of line at 0x53f7af in the original,
+   inline in ours (tried if (lvl > 4) / if (lvl < 5) {..} else / if (lvl <= 4) {..} else); (3) the counted
+   kind k spilled to [esp+0x20] in ours ('mov byte ptr [esp+0x20], dl'), kept in edx by the original; (4)
+   theme 0 keeps n7a / n7b in esi / edx reloaded at each loop top, ours reads them from the frame and
+   caches the constant 1 in edx (hunks 0x5404f6, 0x5405c8); (5) cnt[0x14] / cnt[0x16] / ai_PlayerChar
+   cached in registers on one side, frame / reload on the other (hunks 0x53fe09, 0x53fe5b, 0x53ff08,
+   0x5401a7, 0x540257); (6) a 'test esi, esi' after the dec of the theme 1 / 4 pick counters (tried for (n
+   = 0; n < 3; n++): worse); (7) pick = 0 stored from the zeroed mask register in the original ('mov
+   [esp+0x10], ebx'), as an immediate in ours. */
 void he_SpawnFounders(void)
 {
     int cnt[0x21];              /* the buildings per kind */
@@ -2601,7 +2614,6 @@ void he_SpawnFounders(void)
     int n7a = 0, n7b;           /* the others' buildings of kind 7: owner's b00c 0 / not 0 */
     float gate;
     int amt, title, slot;
-    unsigned char k;
     AIBLD *b;
     AIBTYPE *bt;
     AICHAR *c;
@@ -2621,12 +2633,11 @@ void he_SpawnFounders(void)
     for (i = 0, b = ai_BldsT; i < 0x100; i++, b++) {
         if (b->type != 0) {
             bt = &ai_BTypesT[b->type];
-            k = bt->kind;
-            if (k < 0x21) {
-                cnt[k]++;
+            if (bt->kind < 0x21) {
+                cnt[bt->kind]++;
                 if (b->owner == 0xffff || b->owner == *ai_PlayerChar)
-                    own[k]++;
-                else if (k == 7) {
+                    own[bt->kind]++;
+                else if (bt->kind == 7) {
                     if (ai_CharsT[b->owner].b00c == 0)
                         n7a++;
                     else
