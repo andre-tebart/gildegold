@@ -4594,7 +4594,9 @@ the stack at every instruction.
   `((float *)src)[k]`); hill-climb each element's spelling block by block with dcp try and a generated variants
   file (d3_MatInverse 328 -> 67 lines, byte only as macros: "4x4 inverse" below); `((float *)p)[i]` moved what 3000+ permutations did not. Dot product:
   brute-force every subset of the six operands in parentheses, or parenthesize one term, `((n.x * v.x) + ...)`.
-  No lever: term orders, swaps, global flips; 3072 variants per row (d3_GetBoxVerts, last bytes open).
+  No lever: term orders, swaps, global flips; 3072 variants per row. d3_GetBoxVerts byte: one branch through a
+  point-transform macro whose parameters are parenthesised (`((s)->x) * (m)->_11 + ..`), the other branch's paren
+  subsets searched JOINTLY over two rows (64 x 64 in one dcp try: per-row greedy rounds did not get there).
 - **A `fadd [mem]` moving in an unrelated statement**: ranks also decide how `a + b + c + mem` chains associate.
 - **`fld b.gx; fmul c.gz` vs `fld c.gz; fmul b.gx` in a sum of products**: only term order and earlier code move
   it. No lever: all 2^n factor swaps, any grouping. (d3sm_ShadowCB, open)

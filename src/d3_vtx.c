@@ -406,20 +406,14 @@ void d3_FrameNormals(D3OBJECT *obj, D3LINFO *info, D3ANIMFRAME *f)
 }
 /* 0x459ab0, transforms the 8 corners of the bounding box that follow the vertices of the mesh by the matrix m,
    from the corners of the source (no animation) or of the union of the boxes of the key frames in use.
-   Returns the corners (0 if the mesh has no vertices). info is a D3ANIMCTL (d3_anim.h) here.
-   @deep deep s35: the hunks are the term order of the flat three-product sums (the active branch: original
-   z, y, x products in all three rows; the source branch: y, x, z / z, y, x / z, y, x with the matrix
-   operand first in the second and third products of row x). Every order of the three products and of each
-   product's two operands (47 per row, 282 in one dcp try) is one code per row: VC6 orders a flat float sum
-   itself. Parenthesized operands are a lever (423 variants, 327 codes: each paren set gives another order,
-   chaotic, e.g. (c[i].x) parens in row 460: shape 20 ins, other fpu hunks), so the order follows node
-   identity, not spelling; the parens already in rows 469 / 470 of the source branch are such leftovers
-   (removing them: 50 / 24 ins). m declared at another place: = control. Not tried: a combined per-row
-   search over paren subsets (no evidence the original had parens). (declaration set: no declaration set
-   makes this text byte (every symbol-count shift 0..63 at the unit's start and before the function) */
+   Returns the corners (0 if the mesh has no vertices). info is a D3ANIMCTL (d3_anim.h) here. */
 
 D3BOXVERT *d3_GetBoxVerts(D3OBJECT *obj, D3OBJINFO *info, void *unk)
 {
+/* d = s * m for a point (row vector, w = 1); the parenthesised components give VC6's operand order */
+#define XFORM(d, s, m) ((d)->x = ((s)->x) * (m)->_11 + ((s)->y) * (m)->_21 + ((s)->z) * (m)->_31 + (m)->_41, \
+                        (d)->y = ((s)->x) * (m)->_12 + ((s)->y) * (m)->_22 + ((s)->z) * (m)->_32 + (m)->_42, \
+                        (d)->z = ((s)->x) * (m)->_13 + ((s)->y) * (m)->_23 + ((s)->z) * (m)->_33 + (m)->_43)
     D3ANIMCTL *ctl = (D3ANIMCTL *)info;
     D3MATRIX *m = (D3MATRIX *)unk;
     D3LVERT *v;
@@ -460,19 +454,21 @@ D3BOXVERT *d3_GetBoxVerts(D3OBJECT *obj, D3OBJINFO *info, void *unk)
             c[7].x = mx.x; c[7].y = mx.y; c[7].z = mx.z;
             v = (D3LVERT *)info->keys + n;
             for (i = 0; i < 8; i++, v++) {
-                v->x = c[i].z * m->_31 + c[i].y * m->_21 + c[i].x * m->_11 + m->_41;
-                v->y = c[i].z * m->_32 + c[i].y * m->_22 + c[i].x * m->_12 + m->_42;
-                v->z = c[i].z * m->_33 + c[i].y * m->_23 + c[i].x * m->_13 + m->_43;
+                XFORM(v, &c[i], m);
             }
     
         } else {
             v = (D3LVERT *)info->keys + n;
             for (i = 0; i < 8; i++, v++) {
-                v->x = v->src->y * m->_21 + m->_11 * v->src->x + v->src->z * m->_31 + m->_41;
-                v->y = v->src->y * (m->_22) + (m->_32) * (v->src->z) + (m->_12) * v->src->x + m->_42;
-                v->z = v->src->y * m->_23 + m->_33 * (v->src->z) + m->_13 * v->src->x + m->_43;
+                D3VECTOR *p = v->src;
+
+                /* the source point written out: its parentheses give the original's operand order (matching trick) */
+                v->x = p->x * m->_11 + (p->y) * m->_21 + p->z * m->_31 + m->_41;
+                v->y = p->x * (m->_12) + (p->y) * m->_22 + (p->z) * (m->_32) + m->_42;
+                v->z = p->x * m->_13 + (p->y) * (m->_23) + (p->z) * (m->_33) + m->_43;
             }
         }
         return (D3BOXVERT *)((D3LVERT *)info->keys + info->nkeys);
     }
+#undef XFORM
 }
