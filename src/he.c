@@ -5058,21 +5058,7 @@ void he_AllocRaid(int ev)
    stage 4 waits for the party's slot and keeps its id -> 5, stage 5 until the party is over -> 1; stage 1
    (only with opts 2) sends the living raiders back to the start building's object 0x146 -> -1; stage -1
    sends them to its main room and frees the event. The opts tests of the stages 0 and 2 are
-   @original `(opts == 0) & 2`, never true.
-   @deep Read whole against the original and fixed: stage -1 last in the switch (table equal), text[0x800]
-   (frame 0x924 equal), the party lists initialised -1 (G28REC.raid), the defenders scan as an index loop
-   over ai_Chars (signed jl, health && bld == the target), the start building queried into its own temp
-   before gm_Query 0xca, the spy-report search as for/break + if, the failure branch's kind tests re-read
-   ai_Chars[b->owner]; 826 vs 825 instructions. Left: scheduling and allocation only: the entry (ours mov
-   edi,1 before the 1.0f store, the original stores 1.0f first and keeps 1 in ebp: edi->ebp throughout),
-   the -1 of raid100 in ebp (ours) vs eax (+0x546704), the party.time copy loads in another register order
-   (+0x546775), the cm_LootStock / he_MessageBoxQuickjump / he_ShowNews argument address computations
-   interleaved with the pushes in another order (+0x546813..+0x54691c: the same lea chains,
-   ai_Chars[b->owner] pushed at once in the original); the prover stops at the switch jump (references: M8
-   at +0x5af: ours refers to ai_Time+0x4 (0x770ae4), the original's field to 0x770ae0 (ai_Time) (and 1
-   more), explained: the two ref: M8 lines (+0x5b5 / +0x5ba) are the party.time copy of ai_Time loaded in
-   another register order (ours eax=[+4], edx=[+0], ecx=[+8]; the original ecx=[+4], eax=[+0], edx=[+8]):
-   the alignment pairs different loads, the same four words are copied to party.time) */
+   @original `(opts == 0) & 2`, never true. */
 void he_RunRaid(int ev)
 {
     AIJOB *e = (AIJOB *)ev;
@@ -5082,8 +5068,8 @@ void he_RunRaid(int ev)
     G28REC party;
     char text[0x800];
     int i, n, k, loot, role;
-    int leaving = 0, idle;
     float chance = 1.0f, defence;
+    int leaving = 0, idle;
 
     if (e->stage == -2) {
         if ((e->opts & 2) == 0) {
@@ -5208,10 +5194,10 @@ void he_RunRaid(int ev)
                     n++;
                 }
             }
-            party.raid.raid100[0] = -1;
-            party.raid.raid100[1] = -1;
-            party.raid.raid100[2] = -1;
-            party.raid.raidHome = ((AIBLD *)gm_BuildQuery(1, 1, e->raidStart))->id;
+            for (i = 0; i < 3; i++)
+                party.raid.raid100[i] = -1;
+            home = (AIBLD *)gm_BuildQuery(1, 1, e->raidStart);
+            party.raid.raidHome = home->id;
             k = 0;
             for (i = 0; i < 8 && k < 6; i++) {
                 if (e->ids[i] != -1) {

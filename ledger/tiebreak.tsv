@@ -3571,7 +3571,7 @@ exe	0x00545640	he_RunRandomMessage	he	b93567270c6e2148	no	byte	control=byte p1=b
 exe	0x00545670	he_AllocPatrol	he	8671f1b76a9452ea	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00545840	he_RunPatrol	he	3424d8972971471d	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00546100	he_AllocRaid	he	ecc53923bc369f27	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x005461c0	he_RunRaid	he	3237d6ad35bddbaf	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
+exe	0x005461c0	he_RunRaid	he	49e0d41c538c86aa	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	f898c6a0d328ee48
 exe	0x00546c40	he_AllocFight	he	69db9e038feb3bb9	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
 exe	0x00546ef0	he_RunFight	he	58b1dac5448471a6	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00547170	he_AllocDuelChallenge	he	ef194823951c48f3	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
