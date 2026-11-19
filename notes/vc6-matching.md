@@ -1870,6 +1870,32 @@ Where the pushes and pops sit, how many epilogue copies there are, shared agains
   - Open: an ordinary reference of k in the loop in front of the call that emits nothing (k has no available
     expression to be redefined with), and the plain form of the step redefinition.
 
+- **Which late passes delete instructions in a function: the call-skip map (d3t_MoveObjectPath, not byte)**:
+  `tools/c2dag/c2fuzz.py` with the unit itself as probe (`C2FUZZ_PROBE`, the function in its probe form) switches
+  off each of c2.dll's 15353 calls in turn (12 minutes); the sites where the function only GAINS instructions are
+  the passes that remove something from it after allocation. Here three of 424 sites that change the function:
+  `0x1070afce` removes `mov reg, reg` self copies (the division result into step, the call result into the
+  return value), `0x10713cd4` / `0x10713ebb` remove a reload directly behind the store of the same slot (the k
+  piece's reload behind `k++`; with another register for the piece it becomes `mov edx, ecx`). So a reference
+  that leaves no instruction is only: a copy between two values in one register, a reload behind its own store,
+  or a variable merged with a CSE temp (the step redefinition: no copy is deleted for it, step and the temp are
+  one object, homed in an unnamed slot `-8+[ebp]`). A variable defined only by a constant and `++` (k) has no
+  such form; of this function's expressions only `time / n` and `path[i]` can be written twice. Also measured:
+  the image has no second loop of this shape (two counters in scratch registers, both reloaded behind a call:
+  scan of build/orig-asm, 1 hit); `&keys[k++].pos` in the call increments before the call and keeps k in ebx;
+  a repeated `time / n` in the exit block adds two candidates there (k#2 39 against i#2 41, one short).
+  **Which single decision gives the original: compile the control with each changing site off and diff against
+  the target listing** (the probe form's listing without its probe lines). No site gives all of it (best 32 of 51
+  lines), but `0x10709cc4` (FUN_10709bb6, the bit-set insert that puts a candidate without a register on the
+  split list) gives the original's i / k registers from the unchanged source: k is then not cut, `k++` stays in
+  its piece (k#2 62 against i#2 46; split: 29 against 43). So the "missing k reference" is the cut, not the
+  source. `--split k` shows it: k's piece grows from the entry block through the exit block first, the exit
+  block holds the d3anim_CreatePath call, so the piece keeps only ebx, runs empty in the loop body (ebx is the
+  CSE temp's) and is cut there; `k++` becomes k#3 (memory). i never enters the exit block. No lever: the region
+  split forced on (threshold patched: i and k in memory), a real block boundary between the call and `k++` or
+  between `keys[k].time = 0` and the final call, callee prototypes (21 variants; a `char` count: `inc cl`), nine
+  D3ANIMKEY layouts.
+
 - **An else-if arm cross-jumped whole into a sibling's copy, the original keeps it inline**: the store order of
   the OTHER arms (default arm charId before stateArg; 0x176 arm stateArg, charId, x, z) decides it, found by
   climb.py swap + move in round 2 (cm_OrderAttack byte; permuting only the inlined arm's stores did not). The pair
