@@ -6515,7 +6515,7 @@ void he_RunTrialEvent(int ev)
             cm_SendExSetHEI(-1, ev);
             return;
         }
-        txt_Format(text, 0x1a9c, c->id, (c->sex != 0 ? 0x5f : 0) + 0x130 + t->job);
+        txt_Format(text, 0x1a9c, c->id, (c->sex != 0 ? 0x18f : 0x130) + t->job);
         he_ShowNews(teacher->netId, teacher->netId, text, 0, 0x5f4, (char *)0);
         e->end = ai_Time;
         cm_SendExSetHEI(-1, ev);
