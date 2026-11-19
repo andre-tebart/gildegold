@@ -4384,18 +4384,27 @@ int cm_PrevPartyMember(char *m, int n)
    flag cm_Kinds[].allAtOnce 1 the owner answers for the computer members, then each player for his own character, all at once;
    with 0 the members answer one after the other (a member once the one before him has answered, the owner the computer
    ones), until cm_PartyAnswered. The counter cm_ScenePartyRuns grows by one per run; the random seed is kept
-   @deep reconstructed from the original's 551 instructions, every block read and compared (the local run,
-   the all-at-once net run with the owner's loop over the computer members and the player's own answer, the
-   one-after-the-other run with its two waits); calls, stores and branches line up one to one (ours 554 /
-   551). Left is allocation: the loop induction variables (i, &members[i], &cm_CutInfosT[i].valid) sit in
-   other registers / slots (the original keeps the k==1 owner loop's counters at esp+0x14/0x10/0x18 and c
-   of the last loop in esp+0x10, ours in ebx), code hunks at +0x1f4 (mov ecx,[esp+0x10] vs [esp+0x14]) and
-   +0x68b (lea eax,[esi*8] vs [ebx*8]); the prover stops on the stack depth at a pushed block (references:
-   M8 at +0x55d: ours refers to cm_SceneDuration (0x60d364), the original's field to 0x6f0d80
-   (cm_SceneTicks) (and 1 more), explained: the two M8 lines are crossings of the alignment, not other
-   objects: at +0x55d both sides load cm_SceneTicks and cm_SceneDuration and add them (ours in the other
-   register order), at +0x6ba both store cm_PartyTurn then cm_CutChar, the alignment pairing one store with
-   the other) */
+   @deep s51: climb round 1 found the lever: in the owner's turn loop of the one-after-the-other run, next
+   = cm_CutInfosT[i] copied before the cm_PartyTurn / cm_CutChar stores (237 -> 69; climb 3 more rounds:
+   nothing). Left: (1) the all-at-once owner loop's IV slots: the original has the cut-record IV at 0x10, i
+   at 0x14, the members IV at 0x18 and keeps the members IV in esi for the gm_FindChar argument (reloaded
+   from its slot at the latch, the rep movsd source taken from the cut slot), ours members IV at 0x14 via
+   eax, i at 0x18, esi = the loaded cut pointer; (2) the one-after-the-other player's turn: the original
+   pushes party->members[me] before the rep movsd of rec (after the cm_PartyTurn store), ours copies first.
+   No lever: the loop's continue as one positive if, the valid test split, rec copied before cm_CutChar = c
+   in the first owner loop (73), next instead of rec there (75), a separate counter j for any subset of the
+   four loops (all = control). prior: reconstructed from the original's 551 instructions, every block read
+   and compared (the local run, the all-at-once net run with the owner's loop over the computer members and
+   the player's own answer, the one-after-the-other run with its two waits); calls, stores and branches
+   line up one to one (ours 554 / 551). Left is allocation: the loop induction variables (i, &members[i],
+   &cm_CutInfosT[i].valid) sit in other registers / slots (the original keeps the k==1 owner loop's
+   counters at esp+0x14/0x10/0x18 and c of the last loop in esp+0x10, ours in ebx), code hunks at +0x1f4
+   (mov ecx,[esp+0x10] vs [esp+0x14]) and +0x68b (lea eax,[esi*8] vs [ebx*8]); the prover stops on the
+   stack depth at a pushed block (references: M8 at +0x55d: ours refers to cm_SceneDuration (0x60d364), the
+   original's field to 0x6f0d80 (cm_SceneTicks) (and 1 more), explained: the two M8 lines are crossings of
+   the alignment, not other objects: at +0x55d both sides load cm_SceneTicks and cm_SceneDuration and add
+   them (ours in the other register order), at +0x6ba both store cm_PartyTurn then cm_CutChar, the
+   alignment pairing one store with the other) */
 
 void cm_RunSceneParty(char *m, int ctx)
 {
@@ -4531,9 +4540,9 @@ void cm_RunSceneParty(char *m, int ctx)
                             continue;
                         if (cm_CutInfosT[i].valid != 0)
                             continue;
+                        next = cm_CutInfosT[i];
                         cm_PartyTurn = i;
                         cm_CutChar = (char *)c;
-                        next = cm_CutInfosT[i];
                         cb = (int (*)(CMCUTINFO *, int))cm_Kinds[party->kind].askOther;
                         if (cb != 0)
                             cb(&next, ctx);
