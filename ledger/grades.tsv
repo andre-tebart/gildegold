@@ -1003,7 +1003,7 @@ exe	0x00453e20	d3_Hermite	d3_vec	byte	readable
 exe	0x00453e80	d3_VecEqual	d3_vec	byte	readable		
 exe	0x00453ee0	d3_MatMul43	d3_vec	byte	readable		
 exe	0x00454040	d3_MatTranspose	d3_vec	byte	readable		
-exe	0x00454070	d3_MatInverse	d3_vec	draft	readable	deep	shape+readable -> draft+readable at 0f1c8dc1: promote --accept-falls
+exe	0x00454070	d3_MatInverse	d3_vec	byte	readable		
 exe	0x00454510	d3_MatIdentity	d3_vec	byte	readable		
 exe	0x00454560	d3_Normalize	d3_vec	byte	readable		
 exe	0x004545c0	d3_MatFromAngles	d3_vec	byte	readable		
@@ -1052,7 +1052,7 @@ exe	0x004591a0	d3_AnimBlendWeights	d3_vtx	byte	readable
 exe	0x00459300	d3_TransformVerts	d3_vtx	draft	readable	deep	
 exe	0x004598d0	d3_TransformNormals	d3_vtx	byte	readable		
 exe	0x00459980	d3_FrameNormals	d3_vtx	byte	readable		
-exe	0x00459ab0	d3_GetBoxVerts	d3_vtx	draft	readable	deep	shape+readable -> draft+readable at 0f1c8dc1: promote --accept-falls
+exe	0x00459ab0	d3_GetBoxVerts	d3_vtx	byte	readable		
 exe	0x00459d80	d3s_RightEdge	d3s	byte	readable		
 exe	0x00459e50	d3s_LeftEdgeColor	d3s	byte	readable		
 exe	0x00459f90	d3s_MarkSpan	d3s	byte	readable		
@@ -2909,7 +2909,7 @@ exe	0x004f8700	ord_RandomObjectId	ord	shape	readable	deep
 exe	0x004f8890	ord_GetKindRecord	ord	byte	readable		
 exe	0x004f88c0	ord_AppendStatisticsRound	ord	byte	readable		
 exe	0x004f8920	ord_RebuildGridSums	ord	byte	readable		
-exe	0x004f8ae0	ord_ComputeStatistics	ord	draft	readable	deep	shape+readable -> draft+readable at 0f1c8dc1: promote --accept-falls
+exe	0x004f8ae0	ord_ComputeStatistics	ord	byte	readable		
 exe	0x004f8ed0	ord_UpdateStatistics	ord	byte	readable		
 exe	0x004f9020	ord_LoadStatistics	ord	draft	readable	deep	
 exe	0x004f9170	ord_GetMessageRecord	ord	byte	readable		
@@ -3827,7 +3827,7 @@ exe	0x0056b750	he_CollectChild	he_b	byte	readable
 exe	0x0056b780	he_ShowConstruction	he_b	byte	readable		
 exe	0x0056bac0	he_ConstructionStage	he_b	byte	readable		
 exe	0x0056bc50	he_CreateConstruction	he_b	byte	readable		
-exe	0x0056be30	he_RunConstruction	he_b	draft	readable	deep	
+exe	0x0056be30	he_RunConstruction	he_b	shape	readable	deep	
 exe	0x0056cdd0	he_AllocMissionCheck	he_b	byte	readable		
 exe	0x0056ce40	he_RunMissionCheck	he_b	byte	readable		
 exe	0x0056d050	he_RegisterEventTypes03	he_b	byte	readable		
@@ -4308,7 +4308,7 @@ exe	0x005a6a90	ai_TrainingRoomListener	lc	byte	readable
 exe	0x005a6b50	ai_FormatCityName	lcmap	byte	readable		
 exe	0x005a6b70	ai_MapCellToScreen	lcmap	byte	readable		
 exe	0x005a6c40	ai_PlaceMapControls	lcmap	byte	readable		
-exe	0x005a6cb0	ai_BuildTownMap	lcmap	draft	readable	deep	
+exe	0x005a6cb0	ai_BuildTownMap	lcmap	byte	readable		
 exe	0x005a78a0	ai_OpenTownMap	lcmap	byte	readable		
 exe	0x005a79e0	ai_DragTownMap	lcmap	shape	readable	deep	
 exe	0x005a7bc0	ai_ScrollTownMap	lcmap	byte	readable		
