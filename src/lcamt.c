@@ -4428,24 +4428,7 @@ reject:
    bits, case 0) all. The building's class (AIBTYPE.buildingClass, 0 .. 63) must be one of cfg->filter's bits (classMask); bit 63
    also wants a building that can be entered (not flags5a bit 0) with a scene object. cfg->kind is the owner test:
    0 any, 1 no owner, 2 an owner, 3 me or none, 4 me, 5 not me, 6 another one, 7 another one not the player; with
-   option14 bit 0 an owner listed in cfg->ids fails
-   @deep s49: 139 -> 3 ins. Levers: no cls local (type->kind read at each use, the byte twin
-   ai_PassesMapPickFilter's form: 139 -> 85, 0xffff then in esi), then classMask[1] as a local mask read
-   right after type, before lo = 0 (85 -> 3; before type 29, after lo/hi 31). Left: the original loads
-   classMask[0] into eax before the match test (mov eax,[ecx+8]; test eax,edx), ours folds it (test
-   [ecx+8],edx): size 478 vs 480. No lever: operand order, != 0, if / else-if, two ifs, a local for
-   classMask[0], (unsigned)filter, int lo / hi / mask, the object test as || or && (same code), the empty
-   test as filter == 0 (12). flip.py --want 'mov eax, DWORD PTR \[ecx\+8\]' hits only lo as unsigned char
-   and the test line duplicated (a second use: CSE) - so classMask[0] had a second use in the original that
-   VC6 dropped? prior: read in full against the original: the same tests in the same order (no filter / no
-   building / no character, the empty filter as the two classMask words and kind, the class bit lo / hi
-   from AIBTYPE.buildingClass > 0x1f, bit 63's flags5a / object test, the owner switch 0 .. 7 with the
-   original's kind == 0 test before it, the ids loop of option14 bit 0, match && ownerOk && listed); the
-   switch tables are equal. AMOUNTCFG +8 is a union of filter (__int64) and classMask[2] (the original
-   compares the two words). Left: allocation - the original keeps cfg in edx then ecx, the 0 / 0xffff
-   constant in esi, classMask[1] in ebx from +0x75 and match in a stack slot; ours keeps me in ebp and
-   spills cfg (+0xc3 mov [esp + 0x1c], ecx). Tried: lo / hi zeroed at the top or at the branch, an AIBTYPE
-   pointer, classMask[1] in a local (worse: 160). */
+   option14 bit 0 an owner listed in cfg->ids fails */
 
 int ai_PassesBuildingFilter(AICHARREC *me, AMOUNTCFG *cfg, AIBLD *bld)
 {
@@ -4457,12 +4440,14 @@ int ai_PassesBuildingFilter(AICHARREC *me, AMOUNTCFG *cfg, AIBLD *bld)
     int listed;
     int i;
     unsigned int mask;
+    unsigned int mask0;
 
     if (cfg == 0)
         return 1;
     if (bld == 0 || me == 0)
         return 0;
-    if (cfg->classMask[0] == 0 && cfg->classMask[1] == 0 && cfg->kind == 0)
+    mask0 = cfg->classMask[0];
+    if (mask0 == 0 && cfg->classMask[1] == 0 && cfg->kind == 0)
         return 1;
     match = 0;
     ownerOk = 0;
@@ -4481,7 +4466,7 @@ int ai_PassesBuildingFilter(AICHARREC *me, AMOUNTCFG *cfg, AIBLD *bld)
         if (bld->object == 0)
             return 0;
     }
-    if ((cfg->classMask[0] & lo) || (mask & hi))
+    if ((mask0 & lo) || (mask & hi))
         match = 1;
     if (cfg->kind == 0)
         ownerOk = 1;
