@@ -3629,7 +3629,7 @@ exe	0x0054c570	he_RunAccidentSim	he	1cd38ff0b44a4994	no	byte	control=byte p1=byt
 exe	0x0054c870	he_StartAuctionEvent	he	97e95a9a565ba8e0	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0054c8e0	he_RunAuctionEvent	he	09addb0697241c4d	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x0054cc20	he_StartTitleCeremony	he	acf5626e8384932d	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x0054cc50	he_RunTitleCeremony	he	b5d524a0cdffa4fd	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
+exe	0x0054cc50	he_RunTitleCeremony	he	ed6f8b5021879f90	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	4bf7c867e46c8cb4
 exe	0x0054d190	he_StartInnSim	he	efd55aa71ab4e197	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0054d1e0	he_FindGuestInn	he	b0da49d9024ebba3	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
 exe	0x0054d260	he_RunInnSim	he	ad22ad0172723857	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	

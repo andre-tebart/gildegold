@@ -8039,6 +8039,7 @@ void he_RunTitleCeremony(int ev)
     AIJOB *e = (AIJOB *)ev;
     HETITLE *t = (HETITLE *)ev;
     AICHAR *own, *c;
+    int text;
 
     own = &ai_CharsT[e->chr];
     if (ai_PlayerId != e->chr || ai_GameState == 0)
@@ -8081,8 +8082,13 @@ void he_RunTitleCeremony(int ev)
                 io_PrintText(0x429f, &e->end);
             else if (t->title != 2)
                 io_PrintText(0x1617, &ai_PlayerSlotsT[ai_OwnPlayer].name[0x20], &e->end, c->id, (c->sex == 0 ? t->title + 0x114 : t->title + 0x11e));
-            else
-                io_PrintText(0x1618, &ai_PlayerSlotsT[ai_OwnPlayer].name[0x20], &e->end, c->id, (c->sex != 0 ? 10 : 0) + 0x116);
+            else {
+                if (c->sex != 0)
+                    text = 0x120;
+                else
+                    text = 0x116;
+                io_PrintText(0x1618, &ai_PlayerSlotsT[ai_OwnPlayer].name[0x20], &e->end, c->id, text);
+            }
             if (t->title == 2) {
                 snd_QueueVoice(-7, 0, "FanfarePositivHeldenhaftKurz", 0, 100);
                 snd_QueueVoice(-8, 0, "_VERLEIHUNG_BUERGERRECHT", 0, 0xfa);
