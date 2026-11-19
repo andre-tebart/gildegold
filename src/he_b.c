@@ -2777,12 +2777,7 @@ void he_RunConstruction(int ev)
     AIBLD *bld;
     float best;
     float dist;
-    float radius;
-    D3VECTOR center;
     int scene;
-    D3VECTOR v;
-    D3VECTOR at;
-    AITIME now;
     int minutes;
     AIBUILDSITE site;
     AIVGLIST list;
@@ -2890,7 +2885,9 @@ void he_RunConstruction(int ev)
         gm_AddTime(&e->end, 0, 1, 0);
         e->stage++;
         return;
-    case 5:
+    case 5: {
+        D3VECTOR v;
+
         e->exSlot = -1;
         d3if_SelectScene(0, 1);
         gm_FindById((int *)&bld, 0, 0, c->bld);
@@ -2910,8 +2907,8 @@ void he_RunConstruction(int ev)
                 v.z -= site.pos[2];
                 dist = sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
                 if (dist < best && d3_FindObject((int)ai_BldsT[i].object, 0x100, 0, "dummy_TUER") != 0) {
-                    best = dist;
                     nearest = &ai_BldsT[i];
+                    best = dist;
                 }
             }
         }
@@ -2942,6 +2939,7 @@ void he_RunConstruction(int ev)
         e->stage++;
         d3if_SelectScene(scene, 1);
         return;
+    }
     case 6:
         e->exSlot = -1;
         gm_AddTime(&e->end, 0, 0x14, 0);
@@ -2978,9 +2976,12 @@ void he_RunConstruction(int ev)
         if (bld == 0)
             gm_FindById((int *)&bld, 0, 0, c->bld);
         if (c->script == -1 && c->stage >= 2) {
+            D3VECTOR at;
+            D3VECTOR v;
+
             d3if_SelectScene(0, 1);
-            sprintf(u.name, "he_%i", e->id);
             door = 0;
+            sprintf(u.name, "he_%i", e->id);
             o = d3_FindObject(0, 0x1c0, 0, u.name);
             d3_PointToWorld(o, &o->pos, &at);
             best = 1e35f;
@@ -3021,92 +3022,98 @@ void he_RunConstruction(int ev)
                 cm_SendExSysMessage(0xc, u.msg);
             }
         }
-        if (c->stage <= c->stages)
-            break;
-        d3if_SelectScene(0, 1);
-        if (c->script != -1) {
-            sc = evt_FindById(c->script);
-            if (sc != 0)
-                evt_Stop(sc);
-            c->script = -1;
-        }
-        if (scene != 0) {
-            d3t_InflateObjectTree((D3OBJECT *)bld->object);
-            ((D3OBJECT *)bld->object)->flags |= 4;
-        }
-        he_ShowConstruction(ev);
-        if (bld->object != 0) {
-            season = gm_ClockSeason(&ai_Time);
-            if (season == 1)
-                init_TextureSet = 1;
-            else if (season == 0)
-                init_TextureSet = 0;
-            else if (season == 2)
-                init_TextureSet = 2;
-            else if (season == 3)
-                init_TextureSet = 3;
-            init_TextureSetHook((int)bld->object);
-        }
-        if (d3_QuadTree != 0)
-            d3q_Rebuild((D3OBJECT *)bld->object, (D3QNODE *)d3_QuadTree);
-        if (bld->object != 0 && ((D3OBJECT *)bld->object)->type == 1)
-            d3if_ShowTree((D3OBJECT *)bld->object, 1);
-        if (ai_CharsT[bld->owner].kind == 6 || ai_CharsT[bld->owner].kind == 5 || ai_CharsT[bld->owner].kind == 7)
-            sv_CreateBanners((char *)bld);
-        ai_CheckBuildSites();
-        if (((D3OBJECT *)bld->object)->info == 0)
-            d3_InflateObject((D3OBJECT *)bld->object);
-        if (((D3OBJECT *)bld->object)->material != 0
-            && d3t_GetBoundingSphere((D3OBJECT *)bld->object, d3_Camera, &center, &radius) != 0) {
-            size = (int)(radius * 1.8);
-            sc = evt_Load("Effekte/geb_bauen.esc");
-            if (sc != 0) {
-                evt_RunScriptArgs(sc, 6, (int)center.x, (int)center.y, (int)center.z, (int)radius, size, bld->object);
-                sc->group = 0;
+        if (c->stage > c->stages) {
+            D3VECTOR4 center;
+            float radius;
+
+            d3if_SelectScene(0, 1);
+            if (c->script != -1) {
+                sc = evt_FindById(c->script);
+                if (sc != 0)
+                    evt_Stop(sc);
+                c->script = -1;
             }
-        }
-        rd_BuildRoad(bld->object, bld->type);
-        if (e->opts & 2) {
-            cm_SendSetField(bld->id, 0x5a, 2, 0, 1);
-            if (bld->type >= 4 && bld->type <= 7) {
-                now = ai_Time;
-                cm_BeginFieldBlock((char *)bld, bld->id);
-                cm_AddFieldDelta(1, 0xe, 0x69, &now);
-                cm_SendFieldDeltas();
+            if (scene != 0) {
+                d3t_InflateObjectTree((D3OBJECT *)bld->object);
+                ((D3OBJECT *)bld->object)->flags |= 4;
             }
-            if (ai_CharsT[bld->owner].kind == 6) {
-                if (bld->type >= 4 && bld->type <= 7) {
-                    txt_Format(text, 0x1c2f, bld);
-                    he_MessageBoxQuickjump(ai_CharsT[bld->owner].netId, e->from, text, 1, 0x5f6, bld->id, -1, 0,
-                                           "_NACHRICHTEN_HS_49");
-                } else {
-                    txt_Format(text, 0x1c27, bld);
-                    he_MessageBoxQuickjump(ai_CharsT[bld->owner].netId, e->from, text, 0, 0x5f6, bld->id, -1, 0,
-                                           "_NACHRICHTEN_HS_49");
+            he_ShowConstruction(ev);
+            if (bld->object != 0) {
+                season = gm_ClockSeason(&ai_Time);
+                if (season == 1)
+                    init_TextureSet = 1;
+                else if (season == 0)
+                    init_TextureSet = 0;
+                else if (season == 2)
+                    init_TextureSet = 2;
+                else if (season == 3)
+                    init_TextureSet = 3;
+                init_TextureSetHook((int)bld->object);
+            }
+            if (d3_QuadTree != 0)
+                d3q_Rebuild((D3OBJECT *)bld->object, (D3QNODE *)d3_QuadTree);
+            if (bld->object != 0 && ((D3OBJECT *)bld->object)->type == 1)
+                d3if_ShowTree((D3OBJECT *)bld->object, 1);
+            if (ai_CharsT[bld->owner].kind == 6 || ai_CharsT[bld->owner].kind == 5 || ai_CharsT[bld->owner].kind == 7)
+                sv_CreateBanners((char *)bld);
+            ai_CheckBuildSites();
+            if (((D3OBJECT *)bld->object)->info == 0)
+                d3_InflateObject((D3OBJECT *)bld->object);
+            if (((D3OBJECT *)bld->object)->material != 0
+                && d3t_GetBoundingSphere((D3OBJECT *)bld->object, d3_Camera, (D3VECTOR *)&center, &radius) != 0) {
+                size = (int)(radius * 1.8);
+                sc = evt_Load("Effekte/geb_bauen.esc");
+                if (sc != 0) {
+                    evt_RunScriptArgs(sc, 6, (int)center.x, (int)center.y, (int)center.z, (int)radius, size, bld->object);
+                    sc->group = 0;
                 }
-                sb_PlaySample(snd_SystemBank, "NeuesGebaeude_s", 1, 0x3f, 0x7f, 0, 0);
             }
-            if (ai_CharsT[bld->owner].kind == 6 || ai_CharsT[bld->owner].kind == 5) {
-                for (ch = ai_CharsT; (int)&ch->netId < (int)&ai_CharsT[0x300].netId; ch++) {
-                    if ((ch->kind == 6 || ch->kind == 7) && ch->netId != ai_CharsT[bld->owner].netId) {
-                        txt_Format(text, 0x1c30, bld->owner, bld->type * 14 + 0x48e);
-                        he_MessageBoxQuickjump(ch->netId, -1, text, 0, 0x607, bld->id, -1, 0, "_NACHRICHTEN_HS_50");
+            rd_BuildRoad(bld->object, bld->type);
+            if (e->opts & 2) {
+                cm_SendSetField(bld->id, 0x5a, 2, 0, 1);
+                if (bld->type >= 4 && bld->type <= 7) {
+                    AITIME now;
+
+                    now = ai_Time;
+                    cm_BeginFieldBlock((char *)bld, bld->id);
+                    cm_AddFieldDelta(1, 0xe, 0x69, &now);
+                    cm_SendFieldDeltas();
+                }
+                if (ai_CharsT[bld->owner].kind == 6) {
+                    if (bld->type >= 4 && bld->type <= 7) {
+                        txt_Format(text, 0x1c2f, bld);
+                        he_MessageBoxQuickjump(ai_CharsT[bld->owner].netId, e->from, text, 1, 0x5f6, bld->id, -1, 0,
+                                               "_NACHRICHTEN_HS_49");
+                    } else {
+                        txt_Format(text, 0x1c27, bld);
+                        he_MessageBoxQuickjump(ai_CharsT[bld->owner].netId, e->from, text, 0, 0x5f6, bld->id, -1, 0,
+                                               "_NACHRICHTEN_HS_49");
+                    }
+                    sb_PlaySample(snd_SystemBank, "NeuesGebaeude_s", 1, 0x3f, 0x7f, 0, 0);
+                }
+                if (ai_CharsT[bld->owner].kind == 6 || ai_CharsT[bld->owner].kind == 5) {
+                    for (ch = ai_CharsT; (int)&ch->netId < (int)&ai_CharsT[0x300].netId; ch++) {
+                        if ((ch->kind == 6 || ch->kind == 7) && ch->netId != ai_CharsT[bld->owner].netId) {
+                            txt_Format(text, 0x1c30, bld->owner, bld->type * 14 + 0x48e);
+                            he_MessageBoxQuickjump(ch->netId, -1, text, 0, 0x607, bld->id, -1, 0, "_NACHRICHTEN_HS_50");
+                        }
                     }
                 }
+                memset(u.msg, 0, sizeof(u.msg));
+                cm_SendExSysMessage(0xc, u.msg);
             }
-            memset(u.msg, 0, sizeof(u.msg));
-            cm_SendExSysMessage(0xc, u.msg);
+            if (bld->type >= 4 && bld->type <= 7) {
+                home = ai_CharsT[bld->owner].bld2;
+                if (home == 0 || home->type <= bld->type)
+                    ai_CharsT[bld->owner].bld2 = bld;
+            }
+            gm_MoveIntoHome((char *)&ai_CharsT[bld->owner], (char *)bld);
+            d3if_SelectScene(scene, 1);
+            e->text = 0;
+            he_FreeEvent((int *)ev);
+            return;
         }
-        if (bld->type >= 4 && bld->type <= 7) {
-            home = ai_CharsT[bld->owner].bld2;
-            if (home == 0 || home->type <= bld->type)
-                ai_CharsT[bld->owner].bld2 = bld;
-        }
-        gm_MoveIntoHome((char *)&ai_CharsT[bld->owner], (char *)bld);
-        d3if_SelectScene(scene, 1);
-        e->text = 0;
-        he_FreeEvent((int *)ev);
-        return;
+        break;
     case -2:
     case -1:
         gm_FindById((int *)&bld, 0, 0, c->bld);
