@@ -635,7 +635,6 @@ void ai_EvaluateProduction(AICHAR *ch)
 {
     AIOBJ *a, *b, *x;
     AIENTRY *e;
-    AIGOOD *g;
     AIINFOP info;
     char buf[256];
     int i, j, k, id, r, t, n1, n2, found;
@@ -725,9 +724,8 @@ void ai_EvaluateProduction(AICHAR *ch)
     } while (i < 32);
     for (i = 0; i < ai_NEntries; i++) {
         e = &ai_Entries[info.perm[i]];
-        g = &ai_GoodsT[e->item];
-        if (((g->type != 0x17 && g->type != '%') || e->amount < 5) && b->lvl1c >= e->need1c && b->lvl1d >= e->need20
-            && e->capacity >= g->batch && (x = gm_FindMarketObject(e->item)) != 0
+        if (((ai_GoodsT[e->item].type != 0x17 && ai_GoodsT[e->item].type != '%') || e->amount < 5) && b->lvl1c >= e->need1c && b->lvl1d >= e->need20
+            && e->capacity >= ai_GoodsT[e->item].batch && (x = gm_FindMarketObject(e->item)) != 0
             && gm_FreeCapacity(x, e->item, 1000000) >= ai_GoodsT[e->item].batch + e->amount && ai_HasMaterials(ch, e, 1)) {
             k = info.perm[i];
             ai_Entries[k].flags |= 8;
@@ -740,9 +738,8 @@ void ai_EvaluateProduction(AICHAR *ch)
     }
     for (i = 0; i < ai_NEntries; i++) {
         e = &ai_Entries[info.perm[i]];
-        g = &ai_GoodsT[e->item];
-        if (((g->type != 0x17 && g->type != '%') || e->amount < 5) && b->lvl1c >= e->need1c && b->lvl1d >= e->need20
-            && e->capacity >= g->batch && (x = gm_FindMarketObject(e->item)) != 0
+        if (((ai_GoodsT[e->item].type != 0x17 && ai_GoodsT[e->item].type != '%') || e->amount < 5) && b->lvl1c >= e->need1c && b->lvl1d >= e->need20
+            && e->capacity >= ai_GoodsT[e->item].batch && (x = gm_FindMarketObject(e->item)) != 0
             && gm_FreeCapacity(x, e->item, 1000000) >= ai_GoodsT[e->item].batch + e->amount && ai_HasMaterials(ch, e, 0)) {
             e = &ai_Entries[info.perm[i]];
             ai_StartProduction(ch, e);
@@ -824,7 +821,6 @@ void ai_EvaluateProductionFlags(AICHAR *ch)
 {
     AIOBJ *a, *b, *x;
     AIENTRY *e;
-    AIGOOD *g;
     AIINFOP info;
     char buf[256];
     int i, j, k, id, r, t, n1, n2, found;
@@ -918,10 +914,9 @@ void ai_EvaluateProductionFlags(AICHAR *ch)
         k = info.perm[i];
         if (!(ai_Entries[k].flags & 0x20) && !(ai_Entries[k].flags & 0x200)) {
             e = &ai_Entries[k];
-            g = &ai_GoodsT[e->item];
-            if (((g->type != 0x17 && g->type != '%') || ai_Entries[k].amount < 5)
+            if (((ai_GoodsT[e->item].type != 0x17 && ai_GoodsT[e->item].type != '%') || ai_Entries[k].amount < 5)
                 && b->lvl1c >= ai_Entries[k].need1c && b->lvl1d >= ai_Entries[k].need20
-                && ai_Entries[k].capacity >= g->batch && (x = gm_FindMarketObject(e->item)) != 0
+                && ai_Entries[k].capacity >= ai_GoodsT[e->item].batch && (x = gm_FindMarketObject(e->item)) != 0
                 && gm_FreeCapacity(x, e->item, 1000000) >= ai_GoodsT[e->item].batch + ai_Entries[k].amount
                 && ai_HasMaterials(ch, e, 1)) {
                 k = info.perm[i];
@@ -938,10 +933,9 @@ void ai_EvaluateProductionFlags(AICHAR *ch)
         k = info.perm[i];
         if (!(ai_Entries[k].flags & 0x20) && !(ai_Entries[k].flags & 0x200)) {
             e = &ai_Entries[k];
-            g = &ai_GoodsT[e->item];
-            if (((g->type != 0x17 && g->type != '%') || ai_Entries[k].amount < 5)
+            if (((ai_GoodsT[e->item].type != 0x17 && ai_GoodsT[e->item].type != '%') || ai_Entries[k].amount < 5)
                 && b->lvl1c >= ai_Entries[k].need1c && b->lvl1d >= ai_Entries[k].need20
-                && ai_Entries[k].capacity >= g->batch && (x = gm_FindMarketObject(e->item)) != 0
+                && ai_Entries[k].capacity >= ai_GoodsT[e->item].batch && (x = gm_FindMarketObject(e->item)) != 0
                 && gm_FreeCapacity(x, e->item, 1000000) >= ai_GoodsT[e->item].batch + ai_Entries[k].amount
                 && ai_HasMaterials(ch, e, 0)) {
                 e = &ai_Entries[info.perm[i]];
@@ -2724,7 +2718,6 @@ void ai_EvaluateProductionGypsies(AICHAR *ch)
 {
     AIOBJ *a, *b, *x;
     AIENTRY *e;
-    AIGOOD *g;
     AIINFOP info;
     char buf[256];
     int i, j, k, id, r, t, found;
@@ -2818,10 +2811,9 @@ void ai_EvaluateProductionGypsies(AICHAR *ch)
         k = info.perm[i];
         if (!(ai_Entries[k].flags & 0x400)) {
             e = &ai_Entries[k];
-            g = &ai_GoodsT[e->item];
-            if (((g->type != 0x17 && g->type != '%') || ai_Entries[k].amount < 5)
+            if (((ai_GoodsT[e->item].type != 0x17 && ai_GoodsT[e->item].type != '%') || ai_Entries[k].amount < 5)
                 && b->lvl1c >= ai_Entries[k].need1c && b->lvl1d >= ai_Entries[k].need20
-                && ai_Entries[k].capacity >= g->batch && (x = gm_FindMarketObject(e->item)) != 0
+                && ai_Entries[k].capacity >= ai_GoodsT[e->item].batch && (x = gm_FindMarketObject(e->item)) != 0
                 && gm_FreeCapacity(x, e->item, 1000000) >= ai_GoodsT[e->item].batch + ai_Entries[k].amount
                 && ai_HasMaterials(ch, e, 1)) {
                 k = info.perm[i];
@@ -2838,10 +2830,9 @@ void ai_EvaluateProductionGypsies(AICHAR *ch)
         k = info.perm[i];
         if (!(ai_Entries[k].flags & 0x400)) {
             e = &ai_Entries[k];
-            g = &ai_GoodsT[e->item];
-            if (((g->type != 0x17 && g->type != '%') || ai_Entries[k].amount < 5)
+            if (((ai_GoodsT[e->item].type != 0x17 && ai_GoodsT[e->item].type != '%') || ai_Entries[k].amount < 5)
                 && b->lvl1c >= ai_Entries[k].need1c && b->lvl1d >= ai_Entries[k].need20
-                && ai_Entries[k].capacity >= g->batch && (x = gm_FindMarketObject(e->item)) != 0
+                && ai_Entries[k].capacity >= ai_GoodsT[e->item].batch && (x = gm_FindMarketObject(e->item)) != 0
                 && gm_FreeCapacity(x, e->item, 1000000) >= ai_GoodsT[e->item].batch + ai_Entries[k].amount
                 && ai_HasMaterials(ch, e, 0)) {
                 e = &ai_Entries[info.perm[i]];
