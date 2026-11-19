@@ -1348,7 +1348,7 @@ void cm_UpdatePortraits()
             if (cm_Portraits[i].weaponPic != -1)
                 d2_RemoveObj(cm_Portraits[i].weaponPic);
             d2_LastWindow = cm_Portraits[i].win;
-            cm_Portraits[i].weaponPic = d2_WinOpenPic(0x54, 0xf, w->id + 0xdf, cm_Portraits[i].win);
+            cm_Portraits[i].weaponPic = d2_WinOpenPic(0x54, 0xf, w->id + 0xdf, d2_LastWindow);
             d2_ScaleObject(cm_Portraits[i].weaponPic, -2);
         }
         if (cm_Portraits[i].countText == -1)
