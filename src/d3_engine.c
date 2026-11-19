@@ -549,7 +549,7 @@ __inline void d3_FtoI2(float f, int *dst)
 }
 
 /* 0x439c90, clips the polygon in d3_ClipList[0] (d3_ClipIn vertices) at the planes of info
-(Sutherland-Hodgman); returns the vertex list of the result, d3_ClipOut vertices. @deep deep s23: left the d1 plane sum's first product (the original multiplies plane.z by b->z after the x product: fld [edx+8]; fmul [ebx+4]) and the fild of b->fog - a->fog scheduled before the byte loads. climb round 1 (241 mutants): nothing. */
+(Sutherland-Hodgman); returns the vertex list of the result, d3_ClipOut vertices. @deep deep s44: still 12 ins (order 24, fpu 8). The d1 sum: 144 spellings (every product order x operand order x grouping): only 7 codes; operand order inside a product never changes the code, the parenthesised (b->z * plane.z) is computed first with plane.z loaded first (ours) where the original computes plane.x * b->x first and then loads b->z; no grouping gives that. The fog / &c hunk: explicit (float) casts on the colour deltas (all 31 subsets) = control; d3_FtoI(&c, f) instead of d3_FtoI2 (any subset) swaps the dst / f slots (worse); the 120 orders of the four colour deltas and df: worse; colours in their own D3VECTOR4 / float[4] / float[5]: frame grows; df and c block-scoped: = control. climb 3 rounds (beam 3): nothing. The fog hunk sits at the start of c2dag block 164 behind the 81-instruction cut of block 163 (ln 50 / 51): the region boundary may be the mechanism. prior: deep s23: left the d1 plane sum's first product (the original multiplies plane.z by b->z after the x product: fld [edx+8]; fmul [ebx+4]) and the fild of b->fog - a->fog scheduled before the byte loads. climb round 1 (241 mutants): nothing. */
 D3CVERT **d3_ClipPoly(D3CLIPINFO *info)
 {
     D3CVERT **in, **out;
