@@ -2962,7 +2962,7 @@ go:
             cam = (char *)d3_Camera;
             if (cam != 0 && dm_L.rhold != 0 && dm_L.ldown == 0) {    /* the right button alone: drag the map */
                 d3_MatTranspose(&d3_Camera->matrix, right);
-                k = ai_OptionScrollSpeed * 0.0606060606060606;
+                k = ai_OptionScrollSpeed * (1.0 / 16.5);
                 v[0] = (dm_P.x - sv_DragLastX) * k;
                 v[1] = -(dm_P.y - sv_DragLastY) * k;
                 fwd[0] = right[0] * ax[0] + right[4] * ax[1] + right[8] * ax[2];
