@@ -1913,18 +1913,18 @@ int ai_SpecialAmountList(G8CHARREC *ch, char *text)
    views the list as that character; a click on a row's frame chooses its character: without pick the window closes
    with it, else pick (character, 0) decides (the window disabled meanwhile); a vacant seat ends the viewing. Returns
    the chosen character record (0: none)
-   @deep size queue s16: the viewer ternaries of the two row calls written on viewing (viewing ? viewer :
-   ..) to raise viewing's references against win: worse (104-109 ins); c2trace: win#2 (sav 20) takes ebx
-   over viewing#2 (sav 8) in pass 3 after the bulk split. prior: Reconstructed the whole body (1655 B)
-   against the original: captions, the row fill of the kinds 0 / 1..6 / 7 / 8, the corner icons written out
-   in line (the original inlines ai_AmountRowStatus's code; __inline on the definition drops the
-   out-of-line copy other units link to), ai_ShowAmountRows / ai_ShowOfficeRows, the rup / rhold / lclick
-   dispatch and the pick callback. 497 vs 499 instructions; every remaining code hunk is register
-   allocation: the original keeps viewing in ebx (spilled to [esp+0x1c]) and reloads win from [esp+0x18]
-   for each d2_SetForm / d2_SetViewEnabled / d2_CloseView, ours keeps win in ebx and viewing in a slot
-   (hunks at +0xa, +0x3a, +0x56, +0x49b, +0x539, +0x54a, +0x5dc, +0x5ee, +0x624). Tried: declaration order,
-   an extra viewing = 0 at the top (dead-store eliminated), &c->kind as the loop bound (fixed the bound
-   compare). The prover stops at the first call only because... */
+   @deep s47: the kind-0 hand walk ((int)&c->kind < ..) as the plain index loop (c = &lc_CharRecs[i]): 99
+   -> 97; climb round 1: redraw = 0 before the row-call if / else (not after): 97 -> 93 ins, 1301 -> 522
+   bytes; both kept. Left: the size gap (1645 vs 1655) is all allocation: the original keeps viewing in ebx
+   (xor ebx,ebx at the top is also the d2_OpenForm 0 pushes and viewer's init; viewing = 1 is mov ebx,esi
+   from redraw's 1) and reloads win from [esp+0x18] into esi inside the redraw block (redraw itself in esi)
+   and into eax at the pick / close calls; ours keeps win in ebx. c2trace: pass 3 win#2 prio -67 takes ebx
+   over viewing#2 -75 (both cut in pass 1 where n took ebp). Round without effect on that: viewing = 0 at
+   the top (before / after chosen), the rhold arms nested, the viewing / viewer / redraw store orders in
+   the three arms (all keep win in ebx). Open: what lowers win (or raises viewing) by 8+. prior: size queue
+   s16: the viewer ternaries of the two row calls written on viewing (viewing ? viewer : ..) to raise
+   viewing's references against win: worse (104-109 ins); c2trace: win#2 (sav 20) takes ebx over viewing#2
+   (sav 8) in pass 3 after the bulk split. */
 
 int ai_SpecialAmountListWindow(int kind, unsigned int *filter, char *caption, char *caption2,
                                int (*pick)(AICHARREC *, int))
@@ -1975,7 +1975,8 @@ int ai_SpecialAmountListWindow(int kind, unsigned int *filter, char *caption, ch
             }
             if (kind == 0) {
                 n = 0;
-                for (c = lc_CharRecs; (int)&c->kind < (int)&lc_CharRecs[0x300].kind && n < 8; c++) {
+                for (i = 0; i < 0x300 && n < 8; i++) {
+                    c = &lc_CharRecs[i];
                     if (c->kind == 6 || c->kind == 7 || c->kind == 5)
                         rows[n++].rec = c;
                 }
@@ -2050,11 +2051,11 @@ int ai_SpecialAmountListWindow(int kind, unsigned int *filter, char *caption, ch
                         rows[i].icons[3] = 0x6cf;
                 }
             }
+            redraw = 0;
             if (kind == 0 || kind == 7)
                 ai_ShowAmountRows(d2_LastWindow, kind, filter, n, rows, viewer ? viewer : &lc_CharRecs[ai_PlayerId]);
             else
                 ai_ShowOfficeRows(d2_LastWindow, kind, filter, n, rows, viewer ? viewer : &lc_CharRecs[ai_PlayerId]);
-            redraw = 0;
         }
         if (dm_L.rup != 0) {
             sv_PopRequest = 1;
