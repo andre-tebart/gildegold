@@ -2346,15 +2346,25 @@ void cm_DuelOutcome(G28REC *m)
    lines) and the damage taken off its health and v024; the loser loses an office he holds (texts 0x1123 + sex, the news
    0x10c7 to every character of the kinds 6 / 7, when m's host is the player's character) or the draw text 0x1122; the
    player's host sends the relations of both; then the scene is torn down
-   @deep reconstructed from the original's disassembly (all 873 instructions read: the block-scoped scene
-   name table, the cheat round (BETRUG marks, the seconds' shots), the rounds, the result / damage / office
-   texts, the teardown); instruction counts equal (873/873), the frame equal (0xa08). Left: two hunks of
-   allocation and scheduling only. 0x4df899: the original computes (w->sex != 0) + 0x10c8 in eax with cl as
-   the byte temp (mov cl,[edi+9]; xor eax,eax; test cl,cl; setne al), ours in ecx with al (mov al,[edi+9];
-   xor ecx,ecx; ...), the same pushes after a renaming. 0x4df935: before the host test the original
-   computes the ai_CharsT index first and reloads m from [esp+0xa1c] after add esp,4, ours loads m
-   ([esp+0xa20]) before the add (same compare, netId == m->host). The rest are regs hunks. The prover stops
-   at the scene name table's initializer (a 4-byte store across two cells). */
+   @deep deep s46: the final host test as m->host == ai_CharsT[ai_PlayerId].netId (the operand order of the
+   office test): the ai_CharsT index is computed first and m reloaded after add esp,4 as in the original
+   (74 -> 68 ins, kept); the reverse order in the office test is worse (81). Left: from the txt_Format of
+   the news on, one rotation of the scratch registers: the original loads w->sex into cl and builds the
+   setne result in eax, ours al / ecx. = control or worse for that argument: 0x10c8 + (w->sex != 0), w->sex
+   != 0 ? 0x10c9 : 0x10c8, (w->sex ? 1 : 0) + .., !!w->sex, (w->sex == 0 ? 0 : 1) (= base); (w->sex > 0)
+   74, (unsigned char) / (char) casts 70 / 73, 0x10c9 - (w->sex == 0) 74; ai_CharsT[i] written out instead
+   of the c pointer: = control. The rotation step is earlier than the argument (the kind test's al is
+   reused in ours, the original moves on to ecx): look for one temporary more in the loop body or the
+   office test above (amt_FindOffice's &kind / &office). prior: reconstructed from the original's
+   disassembly (all 873 instructions read: the block-scoped scene name table, the cheat round (BETRUG
+   marks, the seconds' shots), the rounds, the result / damage / office texts, the teardown); instruction
+   counts equal (873/873), the frame equal (0xa08). Left: two hunks of allocation and scheduling only.
+   0x4df899: the original computes (w->sex != 0) + 0x10c8 in eax with cl as the byte temp (mov cl,[edi+9];
+   xor eax,eax; test cl,cl; setne al), ours in ecx with al (mov al,[edi+9]; xor ecx,ecx; ...), the same
+   pushes after a renaming. 0x4df935: before the host test the original computes the ai_CharsT index first
+   and reloads m from [esp+0xa1c] after add esp,4, ours loads m ([esp+0xa20]) before the add (same compare,
+   netId == m->host). The rest are regs hunks. The prover stops at the scene name table's initializer (a
+   4-byte store across two cells). */
 
 void cm_RunDuel(G28REC *m)
 {
@@ -2588,7 +2598,7 @@ void cm_RunDuel(G28REC *m)
         snd_PlayVoice(-8, 0, "_DUELL_INTRO_D2", 0);
     }
     cm_WaitTicks(5);
-    if (ai_CharsT[ai_PlayerId].netId == m->host) {
+    if (m->host == ai_CharsT[ai_PlayerId].netId) {
         cm_SendRelations(ca.netId, cb.netId, 0xf, 1);
         cm_SendRelations(cb.netId, ca.netId, 0xf, 1);
     }
