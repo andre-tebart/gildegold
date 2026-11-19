@@ -2392,15 +2392,23 @@ typedef struct LCOFFEREVENT {           /* the wedding offer event 0x2c's words 
    years ahead (LCAMOUNTROW.rec, x2c the role: 0 the suitor, 1 the partner, 2, 3, 3, 4 the guests; x34 the event's
    id), up to max of them, each with the corner icons (ai_AmountRowStatus) and the partner filter filter
    (ai_PassesPartnerFilter, pickable); returns the count
-   @deep Read the whole function against the original and reconstructed it from the skeleton (the wedding
-   offer events 0x2c, LCOFFEREVENT a local view of he.c's HEOFFER): the count path (5 or 6 characters per
-   wedding me takes part in) and the fill path (the soonest wedding within 200, the roles 0 1 2 3 3 4, x34
-   the event id, the corner icons and the partner filter). 218 vs 218 instructions, the same branches and
-   calls; left is allocation: in the count path the original keeps mine in ebx and me in ebp, ours mine in
-   ebp and me in edi; in the fill path the original keeps mine in ebp, me in esi (reloaded at +0x162) and
-   caches n in ebp in the row loop (xor ebp, ebp; mov [esp+0x10], ebp at the loop exit), ours keeps me in
-   ebp and n in its slot (+0x25f, +0x28f). Tried: the k = 5 placement (fixed the branch target at +0xce;
-   moves the count path's registers). */
+   @deep deep s46: j is an int (the row loop ends inc edi / cmp edi,6 / jl; j < max stays an unsigned jae):
+   86 -> 84, kept. roles[5] = 4 after the guests[5] == me test makes the count path byte-equal and the fill
+   path 47 ins (the original's last test jumps straight to the fill: if (!mine) decided on that path, the
+   roles[5] store sits between the cmp and that je), but adds one instruction (size 725 vs 717, padded 736
+   vs 720), not kept; with roles[0] / roles[4] moved as well 46 (361 bytes). Left in the fill path: the
+   original reloads me into esi per event (dead after the guest tests, esi then walks rows) and keeps mine
+   in ebp and the row count n in ebp in the row loop (xor ebp,ebp; home [esp+0x10] at the loop exit), ours
+   keeps me in ebp. = control / worse: soonest = 200 after the count path (90), n = 0 per path (= control),
+   n before soonest (90). climb round 1: only the roles[5] move. prior: Read the whole function against the
+   original and reconstructed it from the skeleton (the wedding offer events 0x2c, LCOFFEREVENT a local
+   view of he.c's HEOFFER): the count path (5 or 6 characters per wedding me takes part in) and the fill
+   path (the soonest wedding within 200, the roles 0 1 2 3 3 4, x34 the event id, the corner icons and the
+   partner filter). 218 vs 218 instructions, the same branches and calls; left is allocation: in the count
+   path the original keeps mine in ebx and me in ebp, ours mine in ebp and me in edi; in the fill path the
+   original keeps mine in ebp, me in esi (reloaded at +0x162) and caches n in ebp in the row loop (xor ebp,
+   ebp; mov [esp+0x10], ebp at the loop exit), ours keeps me in ebp and n in its slot (+0x25f, +0x28f).
+   Tried: the k = 5 placement (fixed the branch target at +0xce; moves the count path's registers). */
 
 unsigned int ai_FillWeddingTab(AICHARREC *me, unsigned int max, LCAMOUNTROW *rows, unsigned int *filter)
 {
@@ -2409,7 +2417,7 @@ unsigned int ai_FillWeddingTab(AICHARREC *me, unsigned int max, LCAMOUNTROW *row
     LCOFFEREVENT *ev;
     AICHARREC *c;
     unsigned int n;
-    unsigned int j;
+    int j;
     int soonest;
     int mine;
     int k;
