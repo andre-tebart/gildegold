@@ -8352,21 +8352,28 @@ int amt_SendOfficeMessage(unsigned char a, char *b, char *c, int d, unsigned cha
       names the skill 0x16b7 + it).
    5: the poorest of the first 8 players (kinds 5 .. 7) gets 3 .. 7 % of his worth for a building found by
       ai_PickActionBuilding (the kinds 0x1b07d43b4; the text 0x1dff).
-   @deep Rewritten whole from the original 0x5ccc10..0x5cd2da (was a skeleton named
-   ai_EspionageOverviewWindow): all six miracle branches, the common news tail and every call, argument,
-   constant and branch read against the original; the frame matches (0x1450, the case-scoped locals), the
-   __int64 masks as LARGE_INTEGER halves like am.c's (that fixed the mov eax/ecx materialisation); ours=551
-   original=552. Left: slot assignment of the compiler temps and escaped locals (case 0: bld 0x14 vs 0x18
-   and the rand fild temp 0x18 vs 0x14; case 3/4: id 0x18 vs 0x10, flags 0x10 vs 0x14; case 5: out 0x1c vs
-   0x20, the worth spill), the lea/push scheduling that follows from them (case 3 amt_FindOffice args, the
-   0x1dfd txt_Format lea at 0x5cd038), and the skill loop's exit test (the original 'dec ecx; test ecx,ecx;
-   mov esi,edx; jne' at 0x5cd0dc, ours 'dec ecx; mov esi,edx; jne'). Tried declaration order (no effect),
-   the worth temp folded into the expression (worse), three loop forms (for j 5..0 with i=-1, for j 0..5, a
-   found index: the last is kept, closest). (references: M8 at +0x17d: ours refers to sprintf (0x5de652),
-   the original's field to 0x5176d0 (txt_Format), explained: the M8 at +0x17d pairs our first sprintf call
-   with the original's next txt_Format: an alignment shift by one push in the case-1 sprintf argument
-   scheduling; both sides call txt_Format, txt_Format, sprintf, txt_Format, sprintf in that order with the
-   same arguments) */
+   @deep s47: read the diff again. Two independent things are left. (1) The frame packing (frame > 0x80:
+   count * 1000 / size order) puts the case locals into other slots of the shared dead-parameter area: case
+   0 bld at +0x14 / the rand fild temp at +0x30 where the original has +0x18 / +0x2c, case 1 v at +0x10
+   against +0x14, case 2 out at +0x10 against +0x1c (dcp frame: the original packs me / worth / v / out /
+   flags and which / bld / n across arg+0..0xc in another order); c2frame --names would give the counts
+   each needs. (2) From case 1 on, the scratch registers are one step behind (ours lea ecx / edx for the
+   first txt_Format / sprintf arguments, the original eax / ecx), so one temporary more is handed out in
+   ours before case 1 (case 0's tail or the 0x1df7 title). No variant round this session. prior: Rewritten
+   whole from the original 0x5ccc10..0x5cd2da (was a skeleton named ai_EspionageOverviewWindow): all six
+   miracle branches, the common news tail and every call, argument, constant and branch read against the
+   original; the frame matches (0x1450, the case-scoped locals), the __int64 masks as LARGE_INTEGER halves
+   like am.c's (that fixed the mov eax/ecx materialisation); ours=551 original=552. Left: slot assignment
+   of the compiler temps and escaped locals (case 0: bld 0x14 vs 0x18 and the rand fild temp 0x18 vs 0x14;
+   case 3/4: id 0x18 vs 0x10, flags 0x10 vs 0x14; case 5: out 0x1c vs 0x20, the worth spill), the lea/push
+   scheduling that follows from them (case 3 amt_FindOffice args, the 0x1dfd txt_Format lea at 0x5cd038),
+   and the skill loop's exit test (the original 'dec ecx; test ecx,ecx; mov esi,edx; jne' at 0x5cd0dc, ours
+   'dec ecx; mov esi,edx; jne'). Tried declaration order (no effect), the worth temp folded into the
+   expression (worse), three loop forms (for j 5..0 with i=-1, for j 0..5, a found index: the last is kept,
+   closest). (references: M8 at +0x17d: ours refers to sprintf (0x5de652), the original's field to 0x5176d0
+   (txt_Format), explained: the M8 at +0x17d pairs our first sprintf call with the original's next
+   txt_Format: an alignment shift by one push in the case-1 sprintf argument scheduling; both sides call
+   txt_Format, txt_Format, sprintf, txt_Format, sprintf in that order with the same arguments) */
 
 void ai_Miracle(AICHARREC *me, int which)
 {
