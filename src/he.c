@@ -18153,17 +18153,13 @@ void he_RunFire(AIJOB *ev)
 /* 0x564860, the allocation handler of the burning event 0x4f (HEBURN): helpers[] = -1, the due clock and the second
    clock are now, state 0; no building bld: the record is freed; else the burning time is scaled by the distance
    (d3_PointToWorld positions) to the nearest building of kind 3 (gm_NearestBuilding) times 0.001, at most 1.5
-   (none: 1.0)
-   @deep near-byte sweep s22: left the scale / f x87 handling (the original keeps the clamped value on the
-   stack: fld st(0); fcomp 1.5, then fimul duration). = control: (float) on the sqrt product, f * duration;
-   scale used directly with no f: 11. */
+   (none: 1.0) */
 void he_AllocBurn(AIJOB *ev)
 {
     HEBURN *x = (HEBURN *)ev;
     AIBLD *b, *n;
     D3VECTOR4 p1, p2;
     float dx, dy, dz;
-    double f;
     float scale;  /* a float: the original keeps the 1.0f a load (fld dword [1.0f]) joined with the distance */
 
     memset(x->helpers, -1, sizeof x->helpers);
@@ -18182,15 +18178,14 @@ void he_AllocBurn(AIJOB *ev)
         dx = p1.x - p2.x;
         dy = p1.y - p2.y;
         dz = p1.z - p2.z;
-        scale = sqrt(dx * dx + dy * dy + dz * dz) * 0.001;
+        scale = sqrt(dx * dx + dy * dy + dz * dz);
+        scale *= 0.001;
     } else {
         scale = 1.0f;
     }
-    f = scale;
-    if (f > 1.5)
-        f = 1.5;
+    scale = min(1.5, scale);
     ev->exSlot = -1;
-    x->duration = (int)(x->duration * f);
+    x->duration = (int)(x->duration * scale);
 }
 /* 0x5649b0, the run handler of the burning event 0x4f (HEBURN; alloc handler he_AllocBurn): a posted event (opts 2)
    waits for its cm slot. Stage 0, every 4 minutes while state < 3 (the building gone: on to stage 1; its flag
