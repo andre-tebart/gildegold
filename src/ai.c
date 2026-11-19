@@ -3202,20 +3202,7 @@ void ai_UpdateProduction(AICHAR *ch, AIOBJ *a, AIOBJ *b)
     for (i = 0; i < ai_NEntries; i++)
         ai_Entries[i].rank = i;
 }
-/* 0x486190, the workshop's slot table: the goods of two fixed lists, and what the running jobs bring in and out
-   @deep Read whole against the original 0x486190..0x4864ab and rewritten: the two weapon-list loops as
-   index loops over ai_WeaponList[k] / ai_WeaponList2[k] (the original walks both with ebp as k, the second
-   also reading ai_WeaponList[k] for the price), the slot count n = ai_NSlots kept across the search and
-   the new slot's fields stored as ai_Slots[n] (the original's [eax + ai_Slots + off] stores before the
-   gm_GoodsPrice call, [esi + ...] after), amount / capacity stored at ai_Slots[ai_NSlots] after their
-   calls and n = ++ai_NSlots (the original's mov ecx,[ai_NSlots] / inc ecx / mov [ai_NSlots],ecx), the
-   event 0xb part with id unsigned short (mov di,word), the input search as !found && k < 3 (found tested
-   after the body). Every call, constant and field matches. Left is allocation: the original keeps n in ecx
-   and copies it to esi for the post-call stores, the zero in esi and both the loop pointer (ebp) and its
-   copy (edi) in registers; ours keeps n in esi, the zero in edx and spills the k pointer to [esp+0x10]
-   (frame 0xbc vs 0xb8, the frame / slots hunks); in the job part the original reloads ai_NSlots per item
-   (+0x28f) where ours hoists it into ebp before the item loop, and the job pointer / item registers are
-   rotated (ebp/ebx, di/si). */
+/* 0x486190, the workshop's slot table: the goods of two fixed lists, and what the running jobs bring in and out */
 
 void ai_FillSlotTable(AICHAR *ch, AIOBJ *obj)
 {
@@ -3223,52 +3210,51 @@ void ai_FillSlotTable(AICHAR *ch, AIOBJ *obj)
     AIRECIPE rec;
     void *p;
     unsigned short id;
-    int i, j, k, n, found;
+    int i, j, k, found;
 
-    n = ai_NSlots;
     for (k = 0; ai_WeaponList[k] != 0; k++) {
-        for (i = 0; i < n; i++) {
+        for (i = 0; i < ai_NSlots; i++) {
             if (ai_Slots[i].item == ai_WeaponList[k])
                 break;
         }
-        if (i < n)
+        if (i < ai_NSlots)
             continue;
-        ai_Slots[n].item = ai_WeaponList[k];
-        ai_Slots[n].entry = -1;
-        ai_Slots[n].bld = 0;
-        ai_Slots[n].cleared10 = 0;
-        ai_Slots[n].make = 0;
-        ai_Slots[n].sellAmount = 0;
-        ai_Slots[n].price = gm_GoodsPrice(ai_WeaponList[k], ai_OwnPlayer);
-        ai_Slots[n].pending = 0;
-        ai_Slots[n].amount = 0;
-        ai_Slots[n].rank = 0x81;
-        ai_Slots[n].flags = 0;
+        ai_Slots[ai_NSlots].item = ai_WeaponList[k];
+        ai_Slots[ai_NSlots].entry = -1;
+        ai_Slots[ai_NSlots].bld = 0;
+        ai_Slots[ai_NSlots].cleared10 = 0;
+        ai_Slots[ai_NSlots].make = 0;
+        ai_Slots[ai_NSlots].sellAmount = 0;
+        ai_Slots[ai_NSlots].price = gm_GoodsPrice(ai_WeaponList[k], ai_OwnPlayer);
+        ai_Slots[ai_NSlots].pending = 0;
+        ai_Slots[ai_NSlots].amount = 0;
+        ai_Slots[ai_NSlots].rank = 0x81;
+        ai_Slots[ai_NSlots].flags = 0;
         ai_Slots[ai_NSlots].amount = gm_ListAmountById(obj, ai_WeaponList[k]);
         ai_Slots[ai_NSlots].capacity = gm_FreeCapacity(obj, ai_WeaponList[k], 1000000);
-        n = ++ai_NSlots;
+        ai_NSlots++;
     }
     for (k = 0; ai_WeaponList2[k] != 0; k++) {
-        for (i = 0; i < n; i++) {
+        for (i = 0; i < ai_NSlots; i++) {
             if (ai_Slots[i].item == ai_WeaponList2[k])
                 break;
         }
-        if (i < n)
+        if (i < ai_NSlots)
             continue;
-        ai_Slots[n].item = ai_WeaponList2[k];
-        ai_Slots[n].entry = -1;
-        ai_Slots[n].bld = 0;
-        ai_Slots[n].cleared10 = 0;
-        ai_Slots[n].make = 0;
-        ai_Slots[n].sellAmount = 0;
-        ai_Slots[n].price = gm_GoodsPrice(ai_WeaponList[k], ai_OwnPlayer);
-        ai_Slots[n].pending = 0;
-        ai_Slots[n].amount = 0;
-        ai_Slots[n].rank = 0x81;
-        ai_Slots[n].flags = 0;
+        ai_Slots[ai_NSlots].item = ai_WeaponList2[k];
+        ai_Slots[ai_NSlots].entry = -1;
+        ai_Slots[ai_NSlots].bld = 0;
+        ai_Slots[ai_NSlots].cleared10 = 0;
+        ai_Slots[ai_NSlots].make = 0;
+        ai_Slots[ai_NSlots].sellAmount = 0;
+        ai_Slots[ai_NSlots].price = gm_GoodsPrice(ai_WeaponList[k], ai_OwnPlayer);
+        ai_Slots[ai_NSlots].pending = 0;
+        ai_Slots[ai_NSlots].amount = 0;
+        ai_Slots[ai_NSlots].rank = 0x81;
+        ai_Slots[ai_NSlots].flags = 0;
         ai_Slots[ai_NSlots].amount = gm_ListAmountById(obj, ai_WeaponList2[k]);
         ai_Slots[ai_NSlots].capacity = gm_FreeCapacity(obj, ai_WeaponList2[k], 1000000);
-        n = ++ai_NSlots;
+        ai_NSlots++;
     }
     for (job = he_FindEvent(2, 0, 0xb, 3, ch->bld->id); job; job = he_NextEvent()) {
         p = gm_FindObjectInst(job->u.id);
