@@ -4429,9 +4429,17 @@ reject:
    also wants a building that can be entered (not flags5a bit 0) with a scene object. cfg->kind is the owner test:
    0 any, 1 no owner, 2 an owner, 3 me or none, 4 me, 5 not me, 6 another one, 7 another one not the player; with
    option14 bit 0 an owner listed in cfg->ids fails
-   @deep read in full against the original: the same tests in the same order (no filter / no building / no
-   character, the empty filter as the two classMask words and kind, the class bit lo / hi from
-   AIBTYPE.buildingClass > 0x1f, bit 63's flags5a / object test, the owner switch 0 .. 7 with the
+   @deep s49: 139 -> 3 ins. Levers: no cls local (type->kind read at each use, the byte twin
+   ai_PassesMapPickFilter's form: 139 -> 85, 0xffff then in esi), then classMask[1] as a local mask read
+   right after type, before lo = 0 (85 -> 3; before type 29, after lo/hi 31). Left: the original loads
+   classMask[0] into eax before the match test (mov eax,[ecx+8]; test eax,edx), ours folds it (test
+   [ecx+8],edx): size 478 vs 480. No lever: operand order, != 0, if / else-if, two ifs, a local for
+   classMask[0], (unsigned)filter, int lo / hi / mask, the object test as || or && (same code), the empty
+   test as filter == 0 (12). flip.py --want 'mov eax, DWORD PTR \[ecx\+8\]' hits only lo as unsigned char
+   and the test line duplicated (a second use: CSE) - so classMask[0] had a second use in the original that
+   VC6 dropped? prior: read in full against the original: the same tests in the same order (no filter / no
+   building / no character, the empty filter as the two classMask words and kind, the class bit lo / hi
+   from AIBTYPE.buildingClass > 0x1f, bit 63's flags5a / object test, the owner switch 0 .. 7 with the
    original's kind == 0 test before it, the ids loop of option14 bit 0, match && ownerOk && listed); the
    switch tables are equal. AMOUNTCFG +8 is a union of filter (__int64) and classMask[2] (the original
    compares the two words). Left: allocation - the original keeps cfg in edx then ecx, the 0 / 0xffff
@@ -4442,13 +4450,13 @@ reject:
 int ai_PassesBuildingFilter(AICHARREC *me, AMOUNTCFG *cfg, AIBLD *bld)
 {
     AIBTYPE *type;
-    unsigned char cls;
     unsigned int lo;
     unsigned int hi;
     int match;
     int ownerOk;
     int listed;
     int i;
+    unsigned int mask;
 
     if (cfg == 0)
         return 1;
@@ -4460,20 +4468,20 @@ int ai_PassesBuildingFilter(AICHARREC *me, AMOUNTCFG *cfg, AIBLD *bld)
     ownerOk = 0;
     listed = 1;
     type = &((AIBTYPE *)ai_BTypes)[bld->type];
-    cls = type->kind;
+    mask = cfg->classMask[1];
     lo = 0;
     hi = 0;
-    if (cls > 0x1f)
-        hi = 1 << (cls - 0x20);
+    if (type->kind > 0x1f)
+        hi = 1 << (type->kind - 0x20);
     else
-        lo = 1 << cls;
-    if (cfg->classMask[1] & 0x80000000) {
+        lo = 1 << type->kind;
+    if (mask & 0x80000000) {
         if (bld->flags5a & 1)
             return 0;
         if (bld->object == 0)
             return 0;
     }
-    if ((cfg->classMask[0] & lo) || (cfg->classMask[1] & hi))
+    if ((cfg->classMask[0] & lo) || (mask & hi))
         match = 1;
     if (cfg->kind == 0)
         ownerOk = 1;
