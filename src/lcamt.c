@@ -7937,23 +7937,7 @@ int ai_HearingWindow(AICHARREC *me, LCORDMSG *m)
    0x1ce0 and 0x81; else the map pick of a building (0x1ddc; none or no owner: 0), the window (0x1ddd: the 5, the
    owner, the building) whose first button, when the player has the 5 (sv_CheckMoney), does it for a kind 0 worker
    in that building from a random start (none: only the payment) and tells 0x1dde: 0x81; the second button or a
-   right click close it with 0
-   @deep deep s37: 130 -> 31 ins: the worker search as for (n = 0x300; n != 0; n--, i = (i + 1) % 0x300)
-   (the ai_UseGoodCharmOtherSex lever). Left (slots 26, code 17): the constant 0x80 lives in cl from the
-   top (mov cl,0x80; test byte ptr [ebx+0x1c8],cl; jne - ours mov cl,[..]; test cl,cl; js at both power
-   tests), two 4-byte slots swapped ([esp+0x14] / [esp+0x18]: the slot handle against the menu result) and
-   the text buffers' offsets (lea [esp+0x17c] against ours 0x7c: the two 0x100 buffers the other way
-   round). Not tried yet: powerFlags as unsigned char / an int mask so the 0x80 test is no sign test, the
-   buffers' block scope. prior: Rewritten whole from the original 0x5cbe00..0x5cc2ab (the draft was a
-   skeleton): both branches read statement by statement against the disassembly (holder by m->kind, the
-   power bit 0x80, gm_FindChar / gm_BuildQuery(1, 1, target2), the payment, cm_SendSetField, the owner news
-   with the owner index as pid in the AI branch, gm_InheritEstate / cm_SendKillCharacter, the map pick with
-   mode 0x410 and flags 0, the slot wait, the random worker search (i+1) % 0x300 over id != 0xffff, bld,
-   kind 0); ours=373 original=373. Left is allocation: the original keeps me in ebx through the AI branch
-   (ours reloads it into edx), the constant 0x80 in cl (test byte ptr [ebx+0x1c8], cl; ours mov cl,[..];
-   test cl,cl; js - the same bit-7 test, where the prover stops), the search loop keeps bld in the slot
-   [esp+0x18] with 0xffff in ebp and tests cmp byte ptr [kind], 0 (ours bld in ebx, mov dl / test dl), ret
-   in ebp (ours [esp+0x14]); the rest regs / slots. Tried a mask variable for 0x80 (no change). */
+   right click close it with 0 */
 
 int ai_ExpelWorkerWindow(AICHARREC *me, LCORDMSG *m)
 {
@@ -7962,7 +7946,8 @@ int ai_ExpelWorkerWindow(AICHARREC *me, LCORDMSG *m)
     AIBLD *bld;
     int ok;
     AMOUNTCFG cfg;
-    char text[0x300];
+    char text[0x100];
+    char news[0x200];
     AICHARREC *target;
     AICHARREC *owner;
     AICHARREC *worker;
@@ -7976,13 +7961,15 @@ int ai_ExpelWorkerWindow(AICHARREC *me, LCORDMSG *m)
     if (me->kind != 6) {
         if (me->money < 5)
             return 0x20;
-        if (m->kind == 3 && !(me->powerFlags & LC_POWER_EXPEL)) {
+        /* @original the AI branch tests the bit as a signed int (0x80 in cl, test byte ptr [..],cl); the
+           unsigned field gives the sign test the player branch has */
+        if (m->kind == 3 && !((int)me->powerFlags & LC_POWER_EXPEL)) {
             holder = me;
         } else {
             if (m->kind != 4)
                 return 0x60;
             holder = m->partner;
-            if (holder == 0 || (holder->powerFlags & LC_POWER_EXPEL))
+            if (holder == 0 || ((int)holder->powerFlags & LC_POWER_EXPEL))
                 return 0x60;
         }
         target = (AICHARREC *)gm_FindChar(m->target);
@@ -7994,8 +7981,8 @@ int ai_ExpelWorkerWindow(AICHARREC *me, LCORDMSG *m)
         cm_SendMoneyDelta(me->netId, -5);
         cm_SendSetField(holder->netId, 0x1c8, 4, LC_POWER_EXPEL, 0);
         if (((AICHARREC *)ai_Chars)[bld->owner].kind == 6 || ((AICHARREC *)ai_Chars)[bld->owner].kind == 7) {
-            txt_Format(text, 0x1ddf, me->id, bld, target->id);
-            he_ShowNews(bld->owner, bld->owner, text, 0, 0x5fb, "_NACHRICHTEN_HS_20");
+            txt_Format(news, 0x1ddf, me->id, bld, target->id);
+            he_ShowNews(bld->owner, bld->owner, news, 0, 0x5fb, "_NACHRICHTEN_HS_20");
         }
         gm_InheritEstate((struct ORDCHAR *)target, (struct ORDCHAR *)ai_PlayerChar);
         cm_SendKillCharacter(target->netId, 1);
@@ -8042,8 +8029,8 @@ int ai_ExpelWorkerWindow(AICHARREC *me, LCORDMSG *m)
                     h = cm_SendSetField(holder->netId, 0x1c8, 4, LC_POWER_EXPEL, 0);
                     while (cm_GetSlotState(h) == 0)
                         sv_PumpNet();
-                    txt_Format(text, 0x1dde);
-                    sv_MessageBox(text, 0);
+                    txt_Format(news, 0x1dde);
+                    sv_MessageBox(news, 0);
                     worker = 0;
                     i = util_RandomU(0x300);
                     for (n = 0x300; n != 0; n--, i = (i + 1) % 0x300) {
@@ -8055,8 +8042,8 @@ int ai_ExpelWorkerWindow(AICHARREC *me, LCORDMSG *m)
                     }
                     if (worker != 0) {
                         if (owner->kind == 6 || owner->kind == 7) {
-                            txt_Format(text, 0x1ddf, me->id, bld, worker->id);
-                            he_ShowNews(owner->netId, owner->netId, text, 0, 0x5fb, "_NACHRICHTEN_HS_20");
+                            txt_Format(news, 0x1ddf, me->id, bld, worker->id);
+                            he_ShowNews(owner->netId, owner->netId, news, 0, 0x5fb, "_NACHRICHTEN_HS_20");
                         }
                         gm_InheritEstate((struct ORDCHAR *)worker, (struct ORDCHAR *)ai_PlayerChar);
                         cm_SendKillCharacter(worker->netId, 1);

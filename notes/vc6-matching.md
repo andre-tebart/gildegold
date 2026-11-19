@@ -4220,6 +4220,12 @@ Store order in a fill, hoisted loads and sunk stores, statement order effects, `
   0` whose `xor eax,eax` the original hoists to the entry and joins past the final `mov eax,esi`. No lever: ret
   locals, f = 0 placement, flat / nested / duplicated failure returns.
 
+- **`mov cl,0x80` early, `test byte ptr [x],cl; jne` at two bit-7 tests, ours `mov cl,[x]; test cl,cl; js`**:
+  the field was tested as a signed int there (`(int)p->flags & 0x80`): an unsigned operand gets the sign-test
+  peephole before allocation, the int keeps 0x80 as a constant candidate (ai_ExpelWorkerWindow byte; making
+  the field `int` broke `(flags >> 5) & 1` in ai_GiftWindow: sar). Its `char text[0x300]` was two buffers
+  (`text[0x100]` for the captions, `news[0x200]` for the news / message texts).
+
 ### Operand order in sums, compares and addresses
 
 - **`mov cl,[a]; mov al,[b]; test al,cl` with the loads swapped, every operand order = control**: the two
