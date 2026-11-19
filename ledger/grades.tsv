@@ -2298,7 +2298,7 @@ exe	0x004c7f70	cm_ExFieldValues	cm	byte	readable
 exe	0x004c8050	cm_ExMoodDeltas	cm	byte	readable		
 exe	0x004c8110	cm_ExSetField	cm	byte	readable		
 exe	0x004c81d0	cm_ExFloatDelta	cm	byte	readable		
-exe	0x004c8240	cm_ExRelations	cm	shape	readable	deep	
+exe	0x004c8240	cm_ExRelations	cm	byte	readable		
 exe	0x004c85c0	cm_ExLongMessage	cm	byte	readable		
 exe	0x004c87a0	cm_ExSetHE	cm	byte	readable		
 exe	0x004c88a0	cm_ExTime	cm	byte	readable		
@@ -2431,7 +2431,7 @@ exe	0x004cefa0	cm_ClearDamagePops	cmfight	byte	readable
 exe	0x004cefe0	cm_CloseFightView	cmfight	byte	readable		
 exe	0x004cf000	cm_UpdateSceneChars	cmfight	draft	readable	deep	
 exe	0x004cf370	cm_DrawScrollArrows	cmfight	byte	readable		
-exe	0x004cf670	cm_UpdatePointer	cmfight	draft	readable	deep	
+exe	0x004cf670	cm_UpdatePointer	cmfight	byte	readable		
 exe	0x004cf9c0	cm_UpdatePortraits	cmfight	draft	readable	deep	
 exe	0x004cfc10	cm_BuildPortraits	cmfight	byte	readable		
 exe	0x004cfe70	cm_ClosePortraits	cmfight	byte	readable		
@@ -2826,7 +2826,7 @@ exe	0x004f39e0	gv_CulpritGuilt	gs	byte	readable
 exe	0x004f3a30	gv_RetireCrimesOf	gs	byte	readable		
 exe	0x004f3b40	gv_RetireCrimeIds	gs	byte	readable		
 exe	0x004f3c50	gv_RankCulprits	gs	byte	readable		
-exe	0x004f3dd0	gv_RankCulpritsAll	gs	shape	readable	deep	
+exe	0x004f3dd0	gv_RankCulpritsAll	gs	byte	readable		
 exe	0x004f3fe0	gv_HeldCrimesOf	gs	byte	readable		
 exe	0x004f4080	gv_HeldCrimeIdsOf	gs	byte	readable		
 exe	0x004f4130	gv_HeldCrimeCount	gs	byte	readable		
@@ -3580,7 +3580,7 @@ exe	0x005471e0	he_DuelAccepted	he	byte	readable
 exe	0x005472d0	he_DuelDeclined	he	byte	readable		
 exe	0x00547430	he_RunDuelChallenge	he	byte	readable		
 exe	0x00547750	he_AllocInsult	he	draft	readable	deep	
-exe	0x00547ba0	he_RunInsult	he	draft	readable	deep	
+exe	0x00547ba0	he_RunInsult	he	byte	readable		
 exe	0x00547ee0	he_AllocGeselle	he	byte	readable		
 exe	0x00547f90	he_RunGeselle	he	shape	readable	deep	
 exe	0x00548110	he_AllocInsultNews	he	byte	readable		
@@ -3921,7 +3921,7 @@ exe	0x005748d0	he_RunCircusShow	he_b	byte	readable
 exe	0x00574fe0	he_FindMeetingRoom	he_b	byte	readable		
 exe	0x00575030	he_CircusShowIncome	he_b	byte	readable		
 exe	0x00575150	he_AllocPettyLoss	he_b	byte	readable		
-exe	0x005751e0	he_RunPettyLoss	he_b	draft	readable	deep	
+exe	0x005751e0	he_RunPettyLoss	he_b	byte	readable		
 exe	0x00575320	he_AllocEventGood	he_b	byte	readable		
 exe	0x005753a0	he_RunEventGood	he_b	byte	readable		
 exe	0x00575430	he_GiveDomizilGood	he_b	byte	readable		
