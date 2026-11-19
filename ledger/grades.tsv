@@ -2154,7 +2154,7 @@ exe	0x004c3b30	cm_BeginSendGroup	cm	byte	readable
 exe	0x004c3b40	cm_EndSendGroup	cm	byte	readable		
 exe	0x004c3b50	cm_SendGroupState	cm	byte	readable		
 exe	0x004c3ba0	cm_BeginFieldBlock	cm	byte	readable		
-exe	0x004c3c00	cm_AddFieldDelta	cm	draft	readable	deep	
+exe	0x004c3c00	cm_AddFieldDelta	cm	byte	readable		
 exe	0x004c3d00	cm_AddFieldValues	cm	byte	readable		
 exe	0x004c3d90	cm_AddFieldValue	cm	byte	readable		
 exe	0x004c3e70	ai_BeginNeedBlock	cm	byte	readable		
