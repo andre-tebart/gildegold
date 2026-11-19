@@ -2484,7 +2484,6 @@ void ai_EvaluateProductionGraveyard(AICHAR *ch)
 {
     AIOBJ *a, *b, *x;
     AIENTRY *e;
-    AIGOOD *g;
     AIINFOP info;
     char buf[256];
     int i, j, k, id, r, t, found;
@@ -2581,10 +2580,9 @@ void ai_EvaluateProductionGraveyard(AICHAR *ch)
         k = info.perm[i];
         if (!(ai_Entries[k].flags & 0x400)) {
             e = &ai_Entries[k];
-            g = &ai_GoodsT[e->item];
-            if (((g->type != 0x17 && g->type != '%') || ai_Entries[k].amount < 5)
+            if (((ai_GoodsT[e->item].type != 0x17 && ai_GoodsT[e->item].type != '%') || ai_Entries[k].amount < 5)
                 && b->lvl1c >= ai_Entries[k].need1c && b->lvl1d >= ai_Entries[k].need20
-                && ai_Entries[k].capacity >= g->batch && (x = gm_FindMarketObject(e->item)) != 0
+                && ai_Entries[k].capacity >= ai_GoodsT[e->item].batch && (x = gm_FindMarketObject(e->item)) != 0
                 && gm_FreeCapacity(x, e->item, 1000000) >= ai_GoodsT[e->item].batch + ai_Entries[k].amount
                 && ai_HasMaterials(ch, e, 1)) {
                 k = info.perm[i];
@@ -2601,10 +2599,9 @@ void ai_EvaluateProductionGraveyard(AICHAR *ch)
         k = info.perm[i];
         if (!(ai_Entries[k].flags & 0x400)) {
             e = &ai_Entries[k];
-            g = &ai_GoodsT[e->item];
-            if (((g->type != 0x17 && g->type != '%') || ai_Entries[k].amount < 5)
+            if (((ai_GoodsT[e->item].type != 0x17 && ai_GoodsT[e->item].type != '%') || ai_Entries[k].amount < 5)
                 && b->lvl1c >= ai_Entries[k].need1c && b->lvl1d >= ai_Entries[k].need20
-                && ai_Entries[k].capacity >= g->batch && (x = gm_FindMarketObject(e->item)) != 0
+                && ai_Entries[k].capacity >= ai_GoodsT[e->item].batch && (x = gm_FindMarketObject(e->item)) != 0
                 && gm_FreeCapacity(x, e->item, 1000000) >= ai_GoodsT[e->item].batch + ai_Entries[k].amount
                 && ai_HasMaterials(ch, e, 0)) {
                 e = &ai_Entries[info.perm[i]];
