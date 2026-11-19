@@ -6269,17 +6269,7 @@ void ai_CityStatsPanel(void)
    "panel\pcompare8" and prints the caption 0x1f35; per player a column: the dynasty picture of the character
    (AICHARREC.ref54, its object linked to the character), the name, a slider of the weighted sum (GMRANK.sum * 100) in
    the dynasty's colour and the points. The columns lie 0x50 apart from 0x14, or 0x3a apart from 2 for more than four
-   players. The right button closes the panel
-   @deep Reconstructed in full against the original: the slider pictures, gm_RankPlayers into GMRANK[8],
-   the gates, the two forms by count <= 6, the caption, and per ranked player the dynasty picture
-   (AICHARREC.ref54, D2OBJ interactive / style 3 / user = the character record), the name ("%1N3",
-   ai_CentredText at x + 0x22), the slider of (int)(GMRANK.sum * 100) coloured by clamp(ref54 - 0x59a, 0,
-   7), the points at x; x = (count <= 4 ? 0x50 : 0x3a) * i + (count <= 4 ? 0x14 : 2) recomputed per use as
-   in the original; the pump. All calls, arguments and constants compared. Left: register allocation: the
-   original keeps win in esi (saved with edi before ai_CampaignStep, ebp pushed at the loop) and holds the
-   constant 1 in edi after the loop for sv_PopRequest and ai_CampaignStep; ours keeps win in ebp and pushes
-   ebp first. Hunks 0x5c8369 (3), 0x5c83b1 (2), 0x5c83e5 (7), 0x5c85dd (18), 0x5c861f (13) are those saves
-   and the register constant. */
+   players. The right button closes the panel */
 
 void ai_PlayerComparePanel(void)
 {
@@ -6315,7 +6305,8 @@ void ai_PlayerComparePanel(void)
     d2_SetForm(win, 1);
     io_PrintText(0x1f35);
     d2_SetForm(win, 2);
-    for (i = 0, rank = ranks; i < count; i++, rank++) {
+    for (i = 0; i < count; i++) {
+        rank = &ranks[i];
         value = (int)(rank->sum * 100.0f);
         obj = d2_WinOpenPic(0x28, LC_COMPARE_X(count, i), ((AICHARREC *)ai_Chars)[rank->id].ref54, d2_LastWindow);
         d2_Objs[obj].interactive = 1;
