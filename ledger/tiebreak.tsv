@@ -4178,7 +4178,7 @@ exe	0x005950e0	ai_FarTradeContact	lc	2826dc29eca02f9f	no	byte	control=byte p1=by
 exe	0x00595170	ai_SmithyContact	lc	7b89b53e9278130f	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	363b43c45b83d63b
 exe	0x00595330	ai_CarpenterContact	lc	11f0c47ab092a56a	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	363b43c45b83d63b
 exe	0x00595480	ai_TradeSearchWindow	lc	67daff8d7e96f5b3	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
-exe	0x00595a00	ai_AquariumSearchWindow	lc	a7e9abf439e34b64	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
+exe	0x00595a00	ai_AquariumSearchWindow	lc	ca1172d0ec5a6b60	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	8fdeb4f1601c0522
 exe	0x00595ed0	ai_PerfumeryContact	lc	54f42bb8ba9a40c4	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	363b43c45b83d63b
 exe	0x00596060	ai_IdleContact	lc	744a0d1f84529fda	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00596080	ai_AquariumContact	lc	acb836a998ef8f69	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	

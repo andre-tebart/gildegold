@@ -5537,18 +5537,9 @@ void ai_TradeSearchWindow(AIBLD *bld, AIROOM *room)
 /* 0x595a00, the second search window of a building (as ai_TradeSearchWindow: "HANDEL\HANDEL_SUCHEN", frame
    texts 0x70f / 0x741, title 0x1806): always the three goods 0x1c1 .. 0x1c3 as picture buttons, captioned with
    the searches running (the search events 0x15 of the building, LCSEARCHEVENT: 1 the text 0x1807, more 0x1808,
-   none the good's name). A click on a good posts the search message 0x15 (LCSEARCHWORDS: the good, the room
-   object, up to six selected characters) and waits for its slot; no selected character gives the text 0x1801.
-   Nothing when the building's character is busy (sv_CheckCharacterFlag)
-   @deep Rebuilt whole from the original 0x595a00..0x595ec5 (356 vs 354 instructions, same size 1222), the
-   twin of ai_TradeSearchWindow (@deep): goods 0x1c1..0x1c3, search events / message 0x15 (LCSEARCHEVENT /
-   LCSEARCHWORDS), texts 0x1806 / 0x1807 / 0x1808 / 0x1801, the picture buttons, the slot wait and the
-   sv_CameraFollow tail call; every statement, constant, callee and reference reads equal. Left: allocation
-   only, the same as the twin: ours keeps bld in ebp and the constant 0 in edi from the prologue (-push ebp
-   / xor edi,edi; push edi and cmp eax,edi for each 0 argument and null test, e.g. -0x595a16 push edi |
-   +push 0, -0x595a6f cmp eax,edi | +test eax,eax), later 0 in ebx around the frame loop; the original
-   holds bld in edi, pushes ebx/ebp/esi only after sv_CheckCharacterFlag and pushes 0 as immediates. The
-   slot shift (goods at esp+0x20 vs +0x18) is that extra prologue push. */
+   none the good's name). A click on a good posts the search message 0x15 (LCSEARCHWORDS' count and good, the
+   room object in arg[2] where 0x14 has it in arg[1], up to six selected characters) and waits for its slot; no selected character gives the text 0x1801.
+   Nothing when the building's character is busy (sv_CheckCharacterFlag) */
 
 void ai_AquariumSearchWindow(AIBLD *bld, AIROOM *room)
 {
@@ -5574,9 +5565,8 @@ void ai_AquariumSearchWindow(AIBLD *bld, AIROOM *room)
     store = gm_Query((void *)bld->objList, 2, 6, 0, 0x2a);
     if (sv_CheckCharacterFlag(bld) != 0)
         return;
-    searches[0] = 0;
-    searches[1] = 0;
-    searches[2] = 0;
+    for (i = 0; i < 3; i++)
+        searches[i] = 0;
     for (ev = (LCSEARCHEVENT *)he_FindEvent(2, 0, 0x15, 3, bld->id); ev != 0; ev = (LCSEARCHEVENT *)he_NextEvent())
         for (i = 0; i < 3; i++)
             if (ev->good == goods[i]) {
@@ -5612,9 +5602,8 @@ void ai_AquariumSearchWindow(AIBLD *bld, AIROOM *room)
     while (sv_RunFrame((int)ai_AquariumSearchWindow, 0x677c7) != 0) {
         ai_UpdateProdGoodsList(bld, store);
         ai_LayoutProdGoodsList(win, 1, 0, bld);
-        searches[0] = 0;
-        searches[1] = 0;
-        searches[2] = 0;
+        for (i = 0; i < 3; i++)
+            searches[i] = 0;
         for (ev = (LCSEARCHEVENT *)he_FindEvent(2, 0, 0x15, 3, bld->id); ev != 0; ev = (LCSEARCHEVENT *)he_NextEvent())
             for (i = 0; i < 3; i++)
                 if (ev->good == goods[i]) {
@@ -5647,7 +5636,7 @@ void ai_AquariumSearchWindow(AIBLD *bld, AIROOM *room)
                 msg.fromId = bld->id;
                 msg.time = ai_Time;
                 ((LCSEARCHWORDS *)msg.arg)->good = (unsigned short)goods[sel];
-                ((LCSEARCHWORDS *)msg.arg)->room = room->objId;
+                msg.arg[2] = room->objId; /* the message 0x15 carries the room in arg[2], not at LCSEARCHWORDS.room */
                 picked = 0;
                 for (i = 0; i < 0x300 && picked < 6; i++)
                     if (((AICHARREC *)ai_Chars)[i].selected != 0)
