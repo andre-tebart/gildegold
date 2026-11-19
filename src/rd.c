@@ -470,23 +470,22 @@ fail:
    && tz >= 0 (test esi,esi; jl), the -1 stores are or ecx,-1, and the 0 it compares tx / tz against at
    entry is i's register ebx (xor ebx,ebx before cmp esi,ebx; push edi only after that test, push ebp after
    the n <= 0 test); g sits in a slot ([esp+0x18]) and g->cells is re-read per row (mov eax,[g]; mov
-   edx,[eax+0x24]; add edx,[row]); i - z (ebp) and j - x (ecx) are IVs, j esi, n edi. With >= 0 (t1): 135
-   ins / 272 bytes (no edi = -1 any more, the epilogue tests right) but ours still loads the arguments
-   before sub esp and keeps i in memory (c2trace: i#1 cut where k#f9 took ebx; i#5 gets ecx only in pass
-   3). Row forms with >= 0: &g->cells[row] with row += n * 7 133, the index form 135, row in the for header
-   137, the c init in the inner for 135, without the g local (r->grid->cells) = the same code. Not kept
-   (the count is not comparable while the prologue differs). Open: what makes i a pass-1 register (ebx) and
-   keeps g->cells unhoisted. prior: match-deep 2026-11-10: headers sample insensitive (32 samples, one
-   codegen). Kept: no separate 'if (n < 1) return 0' (the original's n <= 0 test jumps straight to the
-   return-0 epilogue, the tx/tz test threaded) and the grid in a local g (136 -> 132 ins). Left: the loop
-   allocation - the original keeps i in ebx (coalesced with the zero it compares tx against at entry, 'xor
-   ebx,ebx; cmp esi,ebx'), i - z in ebp (spilled per row), j in esi, j - x in ecx (x re-read and negated
-   per row), the cell pointer in edx re-formed per row from g->cells (reloaded) + row (a frame slot); ours
-   strength-reduces cells + row into one slot, keeps -x in a slot, i in memory, and holds -1 in edi from
-   entry (prologue loads before sub esp). = control: dz / dx locals, the three found stores in all 6
-   orders; worse or no closer: tx >= 0 && tz >= 0 (135, though 272 bytes), index form g->cells[(i * n + j)
-   * 7] (132, regs), a row pointer g->cells + i * n * 7, row + j * 7 inside the loop, the row step in the
-   for header (134). (tiebreak: insensitive) */
+   edx,[eax+0x24]; add edx,[row]); i - z (ebp) and j - x (ecx) are IVs, j esi, n edi. Kept: >= 0 (132 ->
+   135 ins, 317 -> 272 bytes, size 338 = 338; no edi = -1 any more). Left: ours loads the arguments before
+   sub esp and keeps i in memory (c2trace: i#1 cut where k#f9 took ebx; i#5 gets ecx only in pass 3). Row
+   forms on top: &g->cells[row] with row += n * 7 133, the index form 135, row in the for header 137, the c
+   init in the inner for 135, without the g local (r->grid->cells) = the same code. Open: what makes i a
+   pass-1 register (ebx) and keeps g->cells unhoisted. prior: match-deep 2026-11-10: headers sample
+   insensitive (32 samples, one codegen). Kept: no separate 'if (n < 1) return 0' (the original's n <= 0
+   test jumps straight to the return-0 epilogue, the tx/tz test threaded) and the grid in a local g (136 ->
+   132 ins). Left: the loop allocation - the original keeps i in ebx (coalesced with the zero it compares
+   tx against at entry, 'xor ebx,ebx; cmp esi,ebx'), i - z in ebp (spilled per row), j in esi, j - x in ecx
+   (x re-read and negated per row), the cell pointer in edx re-formed per row from g->cells (reloaded) +
+   row (a frame slot); ours strength-reduces cells + row into one slot, keeps -x in a slot, i in memory,
+   and holds -1 in edi from entry (prologue loads before sub esp). = control: dz / dx locals, the three
+   found stores in all 6 orders; worse or no closer: tx >= 0 && tz >= 0 (135, though 272 bytes), index form
+   g->cells[(i * n + j) * 7] (132, regs), a row pointer g->cells + i * n * 7, row + j * 7 inside the loop,
+   the row step in the for header (134). (tiebreak: insensitive) */
 
 int rd_PathToRoad(G15ROAD *r, int x, int z, int tx, int tz)
 {
