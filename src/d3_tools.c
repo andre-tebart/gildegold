@@ -1012,44 +1012,44 @@ int d3t_MoveCameraPath(int time, int n, ...)
     return 1;
 }
 /* 0x413960, moves obj along the n objects in path (null entries are skipped) within time
-   @deep s52 (one-function session; source unchanged, 49 ins / 132 bytes, raw 418 vs 416). The two levers
-   are now exact. Probe sweep (every scalar stored at every statement boundary, singles and pairs): ONE
-   pair leaves only its two probe stores (2 ins): a k read in the loop in front of the call (loop head or
-   body start) plus a step read as the last statement before k++ (the time store may stand anywhere). (II)
-   is therefore a piece of step, not of i: step read twice behind the call is step#3 (2 refs, prio 80..88,
-   eax by its idiv preference), from its first reference to the block end; the plain step load is edx by
-   the cyclic rotation (path eax, lea ecx, step edx). (II) has a form that emits nothing: `step = time /
-   n;` again BEHIND the time store (any place up to k++, or `else step = time / n;`): CSEd with the first
-   block, the copy stays as a reference of step and leaves no instruction; with the k probe 1 ins (only
-   `mov [probe],ecx`), alone 45 ins / 131 bytes (i / k still swapped), not applied (no plain reading, not
-   byte). In front of the use it does nothing (`step = time / n; keys[k - 1].time = step`, `keys[..].time =
-   step = time / n`). (I) alternatives measured: a k or k - 1 read in head / body start (1..2 ins); three
-   more candidates in the exit block (af's three dwords read a second time in the tail: P 4 -> 7, k#2 47 >
-   i#2 43) without any k reference; with step#3 present i#2 45 = n#2 45, k#2 31. No form found for (I) that
-   emits nothing: k has no available expression to be redefined with. Ruled out s52 (= control unless
-   named): D3_ZERO as an __inline asm function (VC6 emits a call, with / without label, __forceinline);
-   __inline vector-subtract / key helpers (57..78), time setter helper; empty __inline helpers taking k /
-   step; declaration counts 1..64; time reused as k; k = 1 before the division (k avoids eax / edx, gets no
-   register: 51, order hunk); duplicate `k = 1` / `i = 0` statements; a block boundary at every body
-   position (real test: registers unchanged; label, do-while(0), second `if (o)`, nested `if (o)`:
-   removed); decided tests leave no reference (`if (!obj) return 0` behind a dereference); `if (i < n)` in
-   the body is a real test; two identical return arms under `if (k)` keep the test (50), under `if (path)`
-   33; int / int-bitfield / union flag structs (63 or control); a struct copy `f = af` passed instead
-   (elided); dead accumulators `t += step`, `time -= step`; re-read `step = keys[k - 1].time`;
-   `&keys[k++].pos` in the call (105); k++ and time store at every position pair on the probe bases; i++ in
-   both arms with probes (46..53); 1247 single assignments `v = expr` on the step-redefinition base (only
-   meaning-changing hits); 286 sets of step redefinitions; climb 2 rounds from that base (34). Open: the k
-   reference in front of the call. prior: s31 (one-function session; source unchanged, 49 ins / 132 bytes,
-   raw 418 vs 416). New: the two levers of s8 are two piece EXTENTS, and two minimal probes together give
-   every register of the original: (I) a k reference in the loop head (`{ extern int p1; p1 = k; }` before
-   `if (o = path[i])`: k#2 51 > i#2 47 -> k ecx, i edx) or two in the tail (`p1 = k; p3 = k;`: k#2 45 >
-   43); (II) an i reference in the found body right behind the call (`{ extern int p2; p2 = i; }` before
-   the time store): i's piece then starts behind the call (reloaded there, not at the block end), edx is
-   busy at the step load and the step temp takes eax, the tail starts at edx. ph-i-aftercall (head k probe
-   + body i probe) differs from the original only by the two probe stores and the order the probe store
-   causes (vdiff: 10 ins); pt-i-aftercall (tail k probes + i probe) the same (11). With i at the body END
-   instead (`p2 = i` behind k++): 9 ins but step edx / i eax swapped. So the original's text references k
-in head (or tail) and i behind the call, and both references leave no instruction. Ruled out s31 (= control unless named): initializers `= 0` on o, i, k, step, every subset, on six bases (control, `k = 1;` statement, time store before the call, `time / n` CSE, `time /= n`, k = 1 statement + CSE; 72 + 42 variants): only `int i = 0` moves code (49 / 129, raw 419); `k = 1` at the declaration 132 ins; declaration orders; k++ at every body position with shifted indices (73..109); the time store at every position among the subtractions, pos / rot order (224: time position is no lever, pos first 108); block scopes of i and o around / inside the loop (128, 4 codes); a local for n + 1, the anim result, the bound (cnt), ++n / n++ in the call, a key pointer in the tail, a rotation pointer; while / do-while / ++i / ++k / k += 1 / n > i / `!= 0` / split test; an in-loop exit or break (`for (;;) if (i >= n) ..`); i++ in both arms (52, not merged); path[i] written out; time reused as k (with initializers); no-op statements on k (`k = k`, `k += 0`, `k |= 0` .. 13 forms in head, latch, tail, for increment: all removed); types of i / k (int, unsigned, long, short, char, unsigned short / char: 48, unsigned i 53, the rest 62+); climb 4 rounds beam 6 (1379 mutants: best the time store before the call, 45 ins, raw 419); flip.py --want "mov ecx, 1 .. inc edx / cmp edx, ebx": only that swap. Open: an ordinary construct whose k reference (head / tail) and i reference (behind the call) survive to allocation but emit nothing (a copy coalesced after allocation, code merged by cross-jumping); none found. */
+   @deep fresh look after s52 (source unchanged, 49 ins / 132 bytes, raw 418 vs 416). New facts: (a) both
+   missing references also work from an else arm of the null test: `else step = time / n;` plus a k read in
+   that else arm leaves only the k probe store (1 ins); so each reference may stand anywhere in the loop
+   outside the found body after the call (k) / behind the time store (step). (b) The scratch rotation
+   explains every register left: path eax, lea ecx, then the step load takes edx unless edx is busy (i
+   piece live behind the call) or step is a register piece; with step in eax the exit block follows by
+   itself (ecx busy with k: edx, eax, ecx). So (II) is exactly "edx not free at the step load". (c)
+   Priorities (c2trace --prio): k#2 29 against i#2 43; k gains 16 per reference in the entry block (P 8), 6
+   per extra distinct value in the exit block (P 4, three k uses), 28 for a reference in the found body in
+   front of the call; i cannot lose (head P 4, latch P 2 are minimal). (d) The frame rules out i++ in both
+   arms (while / continue forms): i then outcounts k and takes the time parameter slot (slots hunk), so the
+   loop is the plain for. Ruled out this session (= control unless named): unsigned char bit-fields for the
+   flags (control), int bit-fields (dword `or ah`, 63); __assume(k < 64) at head / body / end; dead stores
+   keeping a reference (float, D3VECTOR field from path[i] or o behind the call, int array); dead arms of
+   decided tests (`else if (o)`, `if (!obj)` behind the dereference) keep no reference; a second `if (o)` /
+   `if (path[i])` block for time store and k++ (control / 63); the time store written twice (removed
+   early); the pre-loop fill spelled with k (`k = 0; keys[k].. ; k++`, `keys[k - 1].time`, 49 / 133 order
+   hunk); `keys[k++ - 1].time` (control at the end, 105 behind the call); `&keys[k++].pos` in the call with
+   shifted indices (105); step defined only inside the loop with `keys[0].time = time / n` (head, body
+   start, behind the call, for-init: 49 / 129, no lever); step redefined in head or for-increment (no lever
+   / 46); time reused as k (control), as step (59, slots); a key pointer local (control or 59); exit block
+   spellings on the else-step base (anim local, count local, n++, &keys[0], f = af, *&af, step redefined
+   there, &= 0, self xor, chained store: all one code; memset of the time field 46, lea + store); the exit
+   written on two paths (explicit `if (n <= 0)` return in front of the loop: k is folded to 1 there, the
+   copies do not merge, 55..78); a real block boundary behind the call does not start the i piece (39).
+   Identical return arms under `if (path)` do double the k references (loop then exact) but the compare
+   stays. Open as before: an ordinary construct that references k in the loop in front of the call (or adds
+   three distinct values / two k uses to the exit block) and one that keeps step or i referenced behind the
+   time store, both without an instruction; VC6 removes every dead or duplicate form tried before
+   allocation, only a re-evaluated `time / n` survives as a reference. prior: s31 (one-function session;
+   source unchanged, 49 ins / 132 bytes, raw 418 vs 416). New: the two levers of s8 are two piece EXTENTS,
+   and two minimal probes together give every register of the original: (I) a k reference in the loop head
+   (`{ extern int p1; p1 = k; }` before `if (o = path[i])`: k#2 51 > i#2 47 -> k ecx, i edx) or two in the
+   tail (`p1 = k; p3 = k;`: k#2 45 > 43); (II) an i reference in the found body right behind the call (`{
+   extern int p2; p2 = i; }` before the time store): i's piece then starts behind the call (reloaded there,
+   not at the block end), edx is busy at the step load and the step temp takes eax, the tail starts at edx.
+   ph-i-aftercall (head k probe + body i probe) differs from the original only by the two probe stores and
+the order the probe store causes (vdiff: 10 ins); pt-i-aftercall (tail k probes + i probe) the same (11). With i at the body END instead (`p2 = i` behind k++): 9 ins but step edx / i eax swapped. So the original's text references k in head (or tail) and i behind the call, and both references leave no instruction. Ruled out s31 (= control unless named): initializers `= 0` on o, i, k, step, every subset, on six bases (control, `k = 1;` statement, time store before the call, `time / n` CSE, `time /= n`, k = 1 statement + CSE; 72 + 42 variants): only `int i = 0` moves code (49 / 129, raw 419); `k = 1` at the declaration 132 ins; declaration orders; k++ at every body position with shifted indices (73..109); the time store at every position among the subtractions, pos / rot order (224: time position is no lever, pos first 108); block scopes of i and o around / inside the loop (128, 4 codes); a local for n + 1, the anim result, the bound (cnt), ++n / n++ in the call, a key pointer in the tail, a rotation pointer; while / do-while / ++i / ++k / k += 1 / n > i / `!= 0` / split test; an in-loop exit or break (`for (;;) if (i >= n) ..`); i++ in both arms (52, not merged); path[i] written out; time reused as k (with initializers); no-op statements on k (`k = k`, `k += 0`, `k |= 0` .. 13 forms in head, latch, tail, for increment: all removed); types of i / k (int, unsigned, long, short, char, unsigned short / char: 48, unsigned i 53, the rest 62+); climb 4 rounds beam 6 (1379 mutants: best the time store before the call, 45 ins, raw 419); flip.py --want "mov ecx, 1 .. inc edx / cmp edx, ebx": only that swap. Open: an ordinary construct whose k reference (head / tail) and i reference (behind the call) survive to allocation but emit nothing (a copy coalesced after allocation, code merged by cross-jumping); none found. */
 
 D3ANIM *d3t_MoveObjectPath(D3OBJECT *obj, int time, int n, D3OBJECT **path)
 {
