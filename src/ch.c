@@ -919,7 +919,6 @@ void ch_CheckAniMorph(CHARACTER *ch)
     char name[0x60];
     char msg[0x200];
     D3ANIMDATA *a;
-    D3ANIMFRAME *fr, *nf;
     int n, i;
     char loops;
 
@@ -948,13 +947,11 @@ void ch_CheckAniMorph(CHARACTER *ch)
         i = ch->next->first != -1 ? ch->next->first : 0;
         sprintf(name, "morph_%i", ch);
         a = ch->slot->data;
-        fr = &a->frames[ch->slot->frame];
-        nf = &ch->next->frames[i];
-        n = nf->time - fr->time;
+        n = ch->next->frames[i].time - a->frames[ch->slot->frame].time;
         n = (n + a->frames[a->nframes - 1].time) / 2;
         n = (int)(n + 0.5f);
         if (obj->info) {
-            if (d3anim_CreateMorphAnim(D3OBJ_ANIM(obj)->mesh, a, fr, ch->next, nf, 0, name, n)) {
+            if (d3anim_CreateMorphAnim(D3OBJ_ANIM(obj)->mesh, a, &a->frames[ch->slot->frame], ch->next, &ch->next->frames[i], 0, name, n)) {
                 f.u.all = 0;
                 f.b8 = 1;
                 f.u.c.b1 = 0x18;
