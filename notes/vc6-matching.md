@@ -2311,6 +2311,11 @@ copied back into short predecessors only after all of this.
   a redundant `ret = 0;` at the start of the other arm adds values to that arm's block and ranks its
   candidate up (ai_QuarrelCallback byte; the else arm's `ret = 0` with an @original comment).
 
+- **ebp pushed after the guard in ours, in the prologue in the original; `mov cl,[x+2]; cmp cl,6` where ours
+  compares memory; the final pops in another order**: the trailing `ret = 1;` after an `if` was written in BOTH
+  arms (`if (ch->kind == 6) { ..; ret = 1; } else { ret = 1; }`): two return copies in the IL (flip.py found it
+  as `ret = 1` moved into the if, which changed the meaning) (ai_UseGoodLowerOfficialRelations 32 -> byte).
+
 ### Compare operand order and the constant written
 
 - **Operands swapped**: write the condition from the other side first. `if (best < s) { best = s; pick = cp; }`

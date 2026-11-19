@@ -10340,30 +10340,7 @@ int ai_UseGoodTrialStep(AICHARREC *ch, G8USEVIEW *use)
    not the target, the user or an earlier pick) each get the target's relation lowered by 20, 40 when the user
    holds the good 0x2c5 (cm_SendRelations). A player target (kind 6 / 7) gets the news 0xfec naming the three,
    each player pick the news 0xfed naming the target (key 0x5fb); a player user sees the text 0xfe8 (the good's
-   rank + 1 and the three) in the use-object panel. Returns 1.
-   @deep deep s37: 72 -> 32 ins: the three searches as for (n = 0x300; n != 0; n--, id = (id + k) % 0x300)
-   (the lever that made the twin ai_UseGoodCharmOtherSex byte: the original's dec / test pair, the loop
-   registers, and the tail's call order follows by itself; the unit-boundary reading of the tail in the
-   prior note is wrong). Left (slots 32, code 12, order 6): the original's frame is 4 bytes larger (0x960;
-   one more 4-byte local at [esp+0x10], written at +0x134 'mov [esp+0x10],eax' and read back as 'mov
-   edx,[esp+0x10]' in loops 2 / 3 and before the sends: a value kept in memory across the searches, most
-   likely target->id or the amount), ebp is pushed in the prologue (ours after the null test), ch->kind is
-   loaded into cl for the first test (mov cl,[esi+2]; cmp cl,6), and the failure return has mov eax,ebx
-   behind pop esi. Not tried yet: target->id as a named local, level / amount forms. prior: Read whole
-   against the original and rewritten typed (AICHARREC ch / target / pick[3], G8USEVIEW use, AMOUNTCFG cfg,
-   lc_CharRecs); every call, argument, constant and store matches in order (the draft compared the picks
-   with use instead of ch, had two picks of three and no tail). The ret = 0 / if (target != 0) { .. ret =
-   1; } form gives the original's zero register and two epilogues. Left: (1) at the end the original calls
-   ai_FindUsableGoodIndex (+0x361) before loading the three pick ids for txt_Format 0xfe8; ours (+0x35b)
-   loads them first and calls after, because VC6 sees our earlier-defined ai_FindUsableGoodIndex write only
-   *index (the same TU-boundary effect as ai_UseGood, lc lead Open: layout); the inline and
-   separate-statement spellings give the same code, so the M8 at +0x3b0 (ai_UseObjPanel | txt_Format) is
-   this misalignment; (2) allocation: the zero in esi where the original has ebx, ebp pushed after the null
-   test (ours +0x5d0fc3 push ebp) where the original pushes it at entry, the loop counters in ebp/esi
-   swapped, and loop 1's dec ebp scheduled after the idiv (the original before). (references: M8 at +0x3b0:
-   ours refers to ai_UseObjPanel (0x5cf820), the original's field to 0x5176d0 (txt_Format), explained: the
-   M8 is the call reordered across the pick id loads (VC6 sees the callee in our TU), not another callee:
-   both sides call txt_Format and ai_UseObjPanel once at the end) */
+   rank + 1 and the three) in the use-object panel. Returns 1. */
 
 int ai_UseGoodLowerOfficialRelations(AICHARREC *ch, G8USEVIEW *use)
 {
@@ -10438,8 +10415,12 @@ int ai_UseGoodLowerOfficialRelations(AICHARREC *ch, G8USEVIEW *use)
             found = (G9DOMIZIL *)ai_FindUsableGoodIndex(use->obj->id, &index);
             txt_Format(news, 0xfe8, found->rank + 1, pick[0]->id, pick[1]->id, pick[2]->id);
             ai_UseObjPanel(news);
+            ret = 1;
+        } else {
+            /* @original ret = 1 written in both arms: the arms' two return copies keep ebp's push in
+               the prologue and ch->kind loaded into cl at the top */
+            ret = 1;
         }
-        ret = 1;
     }
     return ret;
 }
