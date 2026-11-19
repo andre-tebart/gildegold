@@ -2324,7 +2324,7 @@ exe	0x004c9c10	cm_ExChrStop	cm	fd4b19fd4ace2a47	no	byte	control=byte p1=byte p2=
 exe	0x004c9c80	cm_ExChrSetPos	cm	ffb7ebc1ac107482	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004c9d00	cm_ExCartState	cm	a434c29f67483929	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004c9d80	cm_ExPlaceOnStage	cm	1307fcf947066103	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x004c9dc0	cm_ExChrGotoBuilding	cm	334e1eec91fe6315	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
+exe	0x004c9dc0	cm_ExChrGotoBuilding	cm	2b426caef84d6c63	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	b1d9fac87afd03a0
 exe	0x004ca8a0	cm_ExChrUseGates	cm	4a9736abdae0bea0	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	be859671db584664
 exe	0x004caa20	cm_ExChrAnim	cm	7e2f163967756abc	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004caaa0	cm_ExOwnership	cm	99f3910e0d56c489	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	

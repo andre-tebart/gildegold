@@ -4588,10 +4588,20 @@ int cm_ExPlaceOnStage(G17MSG *m, G17STAT *s)
    building through the gate of its room (ch_UseGate) and its transporter, out of another building through its
    door ("dummy_EINGANG"), a walk (0x2d) to the door ("dummy_TUER") of the target, the scene change 0x33 between
    two 0x38 actions, then the room's gate or the sit-down 0x39. Each action gets the message's reason.
-   @deep read whole against the original and fixed the meaning (NoCase door lookup on the target, the
-   out-of-building branch compares with the 0x44 building, o kept from function start, the last gate
-   through the start building cb, the objId/universe test as if/else, if/else FindObject calls VC6 merges,
-   hm loaded before d3_PointToWorld, 16-byte vector frame). Frame equal now; left: instruction
+   @deep s2: g = &ai_GoodsT[q->id] named at both gate sites (cm_ExChrUseGates's form) 319 -> 273; x,y,z
+   then hasPos in the cb->object door block (the original jumps into the other branch's tail at the z
+   store); goto done -> q==0 chained as if/else-if (same code); memcpy -> strcpy of TRANSPORTER_ENTRY (same
+   code). Tree draft 275 / 1622 bytes: the inline strcpy shape (original sub eax,ecx; lea edx,[eax+0x70],
+   ours lea edx,[eax+0x70]; sub edx,ecx) rotates every scratch register behind 4648. flip.py: any extra
+   decided test fixes it (dup 'if (p->group != -1)' -> shape 8 ins; dup objId tests 14/46; del else i = 0
+   62); c2trace shows the same allocation for both, so it is not a register candidate: the number of IL
+   nodes/blocks before the copy decides. With the dup: left only the sib order of 4 copies (4665,4675 ours
+   [edx+ecx] original [ecx+edx]; 4704,4711 the reverse). Not levers: every dst/src spelling of the strcpy,
+   cb init forms (else cb=0, ternary: frame changes), else-if operand order, to->id swap, tail written out
+   at the goto. prior: read whole against the original and fixed the meaning (NoCase door lookup on the
+   target, the out-of-building branch compares with the 0x44 building, o kept from function start, the last
+   gate through the start building cb, the objId/universe test as if/else, if/else FindObject calls VC6
+   merges, hm loaded before d3_PointToWorld, 16-byte vector frame). Frame equal now; left: instruction
    choice/scheduling of the inline strcpy into r->why (ours lea edx,[eax+0x70]; add ecx,0x3d; sub edx,ecx |
    the original add ecx,0x3d; sub eax,ecx; lea edx,[eax+0x70]) at every copy, ai_Goods index lea
    eax,[eax+edx+1] | add eax,edx; inc eax, the text test add eax,0x1d; cmp byte [eax],0 | mov
@@ -4611,6 +4621,7 @@ int cm_ExChrGotoBuilding(G17MSG *m, G17STAT *s)
     CHACTION *r;
     D3SM *hm;
     int save, scene, k, i;
+    AIGOOD *g;
 
     cb = 0;
     o = 0;
@@ -4636,7 +4647,8 @@ int cm_ExChrGotoBuilding(G17MSG *m, G17STAT *s)
         if (p->scriptGroup != -1) {
             q = (AIOBJ *)gm_Query((void *)cb->objList, 1, 1, p->scriptGroup);
             if (q != 0 && q->id != 0xfd) {
-                sprintf(gate, "dummy_gate_ob_%s", strupr(ai_GoodsT[q->id].name));
+                g = &ai_GoodsT[q->id];
+                sprintf(gate, "dummy_gate_ob_%s", strupr(g->name));
                 q2 = (AIOBJ *)gm_Query((void *)cb->objList, 1, 0, 0xfd);
                 k = init_BuildingSceneUniverse((unsigned char *)cb);
                 if (k >= 0 && q2 != 0) {
@@ -4681,8 +4693,8 @@ int cm_ExChrGotoBuilding(G17MSG *m, G17STAT *s)
                     d3_PointToWorld((D3OBJECT *)cb->object, &((D3OBJECT *)cb->object)->pos, (D3VECTOR *)&v);
                 r->move.pos.x = v.x;
                 r->move.pos.y = v.y;
-                r->move.hasPos = 1;
                 r->move.pos.z = v.z;
+                r->move.hasPos = 1;
             }
         }
     } else if (p->group != from->id && p->group != -1) {
@@ -4785,23 +4797,20 @@ int cm_ExChrGotoBuilding(G17MSG *m, G17STAT *s)
         }
         if (m->go.noObject == 0) {
             q = (AIOBJ *)gm_Query((void *)to->objList, 1, 1, m->go.objId);
-            if (q == 0) {
+            if (q == 0)
                 q = (AIOBJ *)gm_Query((void *)to->objList, 1, 0, 0xfd);
-                if (q == 0) {
-                    i = init_BuildingSceneUniverse((unsigned char *)to);
-                    if (i >= 0) {
-                        ch_AddAction(p, 0x38, 0);
-                        r = ch_AddAction(p, 0x33, i, to->id, -1);
-                        if (r != 0) {
-                            strcpy(r->why, m->go.reason);
-                            strcpy(r->u.name, "dummy_TRANSPORTER");
-                        }
-                        ch_AddAction(p, 0x38, 1);
+            if (q == 0) {
+                i = init_BuildingSceneUniverse((unsigned char *)to);
+                if (i >= 0) {
+                    ch_AddAction(p, 0x38, 0);
+                    r = ch_AddAction(p, 0x33, i, to->id, -1);
+                    if (r != 0) {
+                        strcpy(r->why, m->go.reason);
+                        strcpy(r->u.name, "dummy_TRANSPORTER");
                     }
-                    goto done;
+                    ch_AddAction(p, 0x38, 1);
                 }
-            }
-            if (q->id == 0xfd) {
+            } else if (q->id == 0xfd) {
                 if (to->id != p->group) {
                     k = init_BuildingSceneUniverse((unsigned char *)to);
                     if (k < 0)
@@ -4810,7 +4819,7 @@ int cm_ExChrGotoBuilding(G17MSG *m, G17STAT *s)
                     r = ch_AddAction(p, 0x33, k, to->id, q->objId);
                     if (r != 0) {
                         strcpy(r->why, m->go.reason);
-                        memcpy(r->u.name, "dummy_TRANSPORTER_ENTRY", 24);
+                        strcpy(r->u.name, "dummy_TRANSPORTER_ENTRY");
                     }
                     ch_AddAction(p, 0x38, 1);
                     d3if_SelectScene(k, 1);
@@ -4830,7 +4839,8 @@ int cm_ExChrGotoBuilding(G17MSG *m, G17STAT *s)
                 }
             } else {
                 i = init_ObjectSceneUniverse((unsigned short *)q);
-                sprintf(gate, "dummy_gate_ob_%s", strupr(ai_GoodsT[q->id].name));
+                g = &ai_GoodsT[q->id];
+                sprintf(gate, "dummy_gate_ob_%s", strupr(g->name));
                 if (cb != 0) {
                     r = ch_UseGate(p, "dummy_EINGANG", gate, i, cb->id, q->objId);
                     if (r != 0)
@@ -4839,7 +4849,6 @@ int cm_ExChrGotoBuilding(G17MSG *m, G17STAT *s)
             }
         }
     }
-done:
     d3if_SelectScene(save, 1);
     if (s != 0) {
         s->state = 1;
