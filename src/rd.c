@@ -200,7 +200,7 @@ void veg_GrowPlants(G15PLANT *p)
    canonicalises the address, the spelling is no lever. int / unsigned / unsigned char x local (x = q->x
    before the placement): 69-73 ins but the height part then has the original's order ((size * z + heights)
    + x) with eax / esi / edi registers. Next: what makes the heights load a register candidate (one CSE web
-   per statement?) and x the index register; c2trace on the height lines. prior (kept): see below prior:
+   per statement?) and x the index register; c2trace on the height lines. prior:
    match-deep 2026-11-10: headers sample insensitive (32 samples, one codegen). Kept: q->x / q->z read at
    their uses instead of int locals x, z (40 -> 36 ins; x's fild temp now shares [esp+0x10] as in the
    original). Left: the height address - the original forms (z*size + heights) and indexes [edx + x] so ecx
