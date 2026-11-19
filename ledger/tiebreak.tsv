@@ -4126,7 +4126,7 @@ exe	0x0058d720	ai_UpdateProdGoodsList	lc	de87f8608faaa444	no	draft	control=draft
 exe	0x0058dd00	ai_LayoutProdGoodsList	lc	b0e39c493abb9992	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0058e130	ai_UpdateMarketGoodsList	lc	2f5fa8adc7ade174	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x0058e440	ai_LayoutMarketGoodsList	lc	42c7f359ea9805ce	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
-exe	0x0058e6a0	ai_ShowProdSlot	lc	02e6cf233e3c6a31	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
+exe	0x0058e6a0	ai_ShowProdSlot	lc	b7fcd7e004c6410b	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	54476f2c7d5c27a2
 exe	0x0058ee30	ai_UpdateStoreGoods	lc	f45c76c26789f234	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x0058f290	ai_LayoutStoreGoods	lc	dc61d0ac15f07f03	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0058f510	ai_MarketContact	lc	a57ae76fa85db3df	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	

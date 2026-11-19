@@ -2064,8 +2064,9 @@ void ai_ShowProdSlot(int view, int part, LCPRODSLOT *slot, int input, unsigned c
                 d2_Objs[slot->check].greyed = 0;
             else
                 d2_Objs[slot->check].greyed = 1;
+            max = slot->stock;
             value = d2_GetObjValue(slot->check);
-            d2_SetObjValue(slot->slider, 0, slot->stock, slot->amount - (value < 0 ? 0 : value), slot->reserved);
+            d2_SetObjValue(slot->slider, 0, max, slot->amount - (value < 0 ? 0 : value), slot->reserved);
         } else {
             if (slot->amount != 0)
                 d2_Objs[slot->check].greyed = 0;
