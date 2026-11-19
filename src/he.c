@@ -7371,10 +7371,10 @@ void he_RunProtection(int ev)
             memset(&msg, 0, sizeof(msg));
             msg.fromId = b->id;
             msg.to = ai_CharsT[owner].netId;
-            msg.time = ai_Time;
             msg.type = 0x63;
             msg.flags = 9;
             msg.arg[0] = e->id;
+            msg.time = ai_Time;
             cm_SendLongMessage((char *)&msg);
             e->end = ai_Time;
             gm_AddTime(&e->end, 3, 0, 0);
