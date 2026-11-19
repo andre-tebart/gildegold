@@ -6285,26 +6285,17 @@ int gm_TitleGroup(); void gm_AddTime(struct AITIME *c, int hours, int mins, int 
    share, or 0x15be past the sixth title; otherwise the exam offer 0x15bf (fee 4, the title name), 0x15c0 for an
    odd title and 0x15c1. Its button 0 takes the exam: under 4 in money the text 0x74, else the player pays 4 and
    posts the exam message 0x26 (flags 9, from -1, due in two hours) and the window closes; button 1 or a right
-   click close it; then the camera follows
-   @deep Reconstructed whole against the original (the four text branches 0x15bb..0x15c1, the slider, the
-   exam message 0x26 with its time +2h, the money check 0x74, the clicks); block layout matched (the
-   exam==0 && served>=1.0 && next<=6 chain, 0x15be / 0x15bc as separate arms), sizes 899/897. Left two
-   scheduling/regs hunks: the 0x15bd arm loads the job byte before 'and ecx,0x5f' (ours 'mov
-   dl,[esi+0x164]' ahead, the original 'mov cl,[esi+0x164]' after sbb) with the regs eax/ecx/edx rotated;
-   and the message's AITIME copy: the original loads ai_TimeHourW (mov edx,[0x770ae4]) before the rep stosd
-   and stores time.hour first, ours copies the clock after it in 0,4,8,c order. Tried: other field orders
-   (time first moves the hour load but leaves an M8), title as sex?0x18f:0x130 (matches the original's
-   neg/sbb/and/add form). The 100.0f is VC6's pooled __real constant (ai_FloatHundred) */
+   click close it; then the camera follows */
 void ai_MasterExamWindow(AIBLD *bld)
 {
     int win;
     int next;
     int slider;
+    int title;
     AICHARREC *ch;
     AIJOB *exam;                        /* a pending exam event 0x26 of the player */
     float served;
     AITIME left;
-    AIMSG msg;
     char text[0x100];
 
     ch = &((AICHARREC *)ai_Chars)[ai_PlayerId];
@@ -6317,7 +6308,7 @@ void ai_MasterExamWindow(AIBLD *bld)
     served = gm_TitlePeriodServed(ai_PlayerId, (int *)&left);
     exam = (AIJOB *)he_FindEvent(2, 2, ai_PlayerId, 0, 0x26);
     if (exam == 0 && served >= 1.0 && next <= 6) {
-        int title = ch->sex != 0 ? 0x18f : 0x130;   /* the job titles' texts: 0x130.., female 0x18f.. */
+        title = ch->sex != 0 ? 0x18f : 0x130;   /* the job titles' texts: 0x130.., female 0x18f.. */
 
         gm_TitleGroup(ch->jobId);
         d2_SetForm(win, 1);
@@ -6332,7 +6323,11 @@ void ai_MasterExamWindow(AIBLD *bld)
         d2_SetForm(win, 1);
         io_PrintText(0x15bb);
         d2_SetForm(win, 2);
-        io_PrintText(0x15bd, ch->id, ch->jobId - 1 + (ch->sex != 0 ? 0x18f : 0x130));
+        if (ch->sex != 0)
+            title = 0x18f;
+        else
+            title = 0x130;
+        io_PrintText(0x15bd, ch->id, ch->jobId - 1 + title);
     } else if (next >= 7) {
         d2_SetForm(win, 1);
         io_PrintText(0x15bb);
@@ -6354,14 +6349,16 @@ void ai_MasterExamWindow(AIBLD *bld)
                     txt_Format(text, 0x74, 4);
                     sv_MessageBox(text, 4);
                 } else {
+                    AIMSG msg;
+
                     gm_SendMoneyDelta(ch->netId, -4);
                     memset(&msg, 0, sizeof(msg));
                     msg.type = 0x26;
                     msg.to = ch->netId;
                     msg.fromId = -1;
-                    msg.time = ai_Time;
                     msg.flags = 9;
                     msg.arg[0] = ch->netId;
+                    msg.time = ai_Time;
                     gm_AddTime(&msg.time, 2, 0, 0);
                     cm_SendLongMessage((char *)&msg);
                     sv_PopRequest = 1;
