@@ -1397,7 +1397,7 @@ exe	0x00479610	d2_BlitPartFromDD	gfx	byte	readable
 exe	0x004796c0	d2_ClearSurface	gfx	byte	readable		
 exe	0x00479780	d2_CopySurface	gfx	byte	readable		
 exe	0x004797d0	d2_ClearRect	gfx	byte	readable		
-exe	0x004798f0	d2_GetPixelColour	gfx	draft	readable	deep	
+exe	0x004798f0	d2_GetPixelColour	gfx	byte	readable		
 exe	0x004799e0	d2_PutPixelRGB	gfx	byte	readable		
 exe	0x00479b60	d2_PutPixel	gfx	byte	readable		
 exe	0x00479b90	d2_PutPixelClipped	gfx	byte	readable		
@@ -1765,7 +1765,7 @@ exe	0x004a79d0	ai_PokerSwapCard	poker	byte	readable
 exe	0x004a7a20	ai_PokerPayStakes	poker	byte	readable		
 exe	0x004a7ac0	ai_PokerPickStrategies	poker	draft	readable	deep	
 exe	0x004a7c20	ai_PokerNpcFold	poker	byte	readable		
-exe	0x004a7e70	ai_PokerOpenCounts	poker	draft	readable	deep	
+exe	0x004a7e70	ai_PokerOpenCounts	poker	byte	readable		
 exe	0x004a7f50	ai_PokerRateHand	poker	byte	readable		
 exe	0x004a8190	ai_PokerShowdown	poker	draft	readable	deep	
 exe	0x004a8520	ai_PokerDealThree	poker	byte	readable		
@@ -2538,7 +2538,7 @@ exe	0x004e0580	cm_CheckWedding	cmscene	byte	readable
 exe	0x004e06d0	cm_EndWedding	cmscene	byte	readable		
 exe	0x004e0770	cm_RunWedding	cmscene	shape	readable	deep	
 exe	0x004e0e90	cm_CheckBirth	cmscene	byte	readable		
-exe	0x004e0f70	cm_RunBirth	cmscene	draft	readable	deep	
+exe	0x004e0f70	cm_RunBirth	cmscene	byte	readable		
 exe	0x004e1220	cm_DeathSceneCheck	cmscene	byte	readable		
 exe	0x004e1250	cm_RunDeath	cmscene	byte	readable		
 exe	0x004e1700	cm_RunBankruptcy	cmscene	byte	readable		
@@ -3193,7 +3193,7 @@ exe	0x0050e330	init_CreateOpponents	f3init	byte	readable
 exe	0x0050e5a0	init_PlaceOffices	f3init	byte	readable		
 exe	0x0050e690	init_CreateStartCharacters	f3init	draft	readable	deep	
 exe	0x0050f0b0	init_CreateOpeningObjects	f3init	byte	readable		
-exe	0x0050f340	init_StockMarketStalls	f3init	shape	readable	deep	
+exe	0x0050f340	init_StockMarketStalls	f3init	byte	readable		
 exe	0x0050f570	init_Betrieb	f3init	shape	readable	deep	
 exe	0x0050f750	init_OpenBuilding	f3init	byte	readable		
 exe	0x0050f910	init_OpenTown	f3init	draft	readable	deep	
@@ -4191,7 +4191,7 @@ exe	0x005966f0	ai_FeastContact	lc	byte	readable
 exe	0x005967c0	ai_MistressAffairWindow	lc	byte	readable		
 exe	0x00596ba0	ai_MistressWindow	lc	draft	readable	deep	
 exe	0x00596f90	ai_MistressContact	lc	byte	readable		
-exe	0x00596ff0	ai_MasterExamWindow	lc	draft	readable	deep	
+exe	0x00596ff0	ai_MasterExamWindow	lc	byte	readable		
 exe	0x00597380	ai_EspionageAmountMenu	lc	byte	readable		
 exe	0x005973f0	ai_SuicideWindow	lc	byte	readable		
 exe	0x00597500	ai_StudyContact	lc	byte	readable		
