@@ -4466,8 +4466,8 @@ exe	0x005bf0d0	ai_FillFamilyTab	lcamt	byte	readable
 exe	0x005bf300	ai_FillFriendsTab	lcamt	byte	readable		
 exe	0x005bf4f0	ai_FillEnemiesTab	lcamt	byte	readable		
 exe	0x005bf6f0	ai_FillLoversTab	lcamt	shape	readable	deep	
-exe	0x005bf7c0	ai_FillWeddingTab	lcamt	draft	readable	deep	
-exe	0x005bfa90	ai_FillQuarrelTab	lcamt	draft	readable	deep	
+exe	0x005bf7c0	ai_FillWeddingTab	lcamt	byte	readable		
+exe	0x005bfa90	ai_FillQuarrelTab	lcamt	byte	readable		
 exe	0x005bfc40	ai_FillCandidacyTab	lcamt	byte	readable		
 exe	0x005bfd90	ai_FillOfficeTab	lcamt	byte	readable		
 exe	0x005bfed0	ai_AmountPageSwitch	lcamt	byte	readable		
@@ -4561,7 +4561,7 @@ exe	0x005cf020	ai_InterrogationWindow2	lcamt	byte	readable
 exe	0x005cf260	ai_ChooseProfessionWindow	lcamt	byte	readable		
 exe	0x005cf4f0	ai_UniversityWindow	lcamt	byte	readable		
 exe	0x005cf820	ai_UseObjPanel	lcamt	byte	readable		
-exe	0x005cf8a0	ai_UseGood	lcamt	draft	readable	deep	
+exe	0x005cf8a0	ai_UseGood	lcamt	byte	readable		
 exe	0x005cfb60	ai_UseGoodAddMoney	lcamt	byte	readable		
 exe	0x005cfb80	ai_UseGoodHeal	lcamt	byte	readable		
 exe	0x005cfc00	ai_UseGoodInfectOwner	lcamt	byte	readable		
