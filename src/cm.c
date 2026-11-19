@@ -663,18 +663,7 @@ unsigned int cm_JoinSplit(G17MSG *m)
     r->next7 = 0;
     return cm_LongMsgLen;
 }
-/* 0x4c39c0, queues a copy of src in the send ring; returns its slot, -1: closed or the slot is still in use
-   @deep deep s23: left the slot address computed in eax after the net_Conn.s load (original: mov eax,ebx;
-   shl eax,4; add eax,ebx; lea ebp,[..]; mov eax,[net_Conn]). The slot inline in the tx test, m == tx,
-   cm_SendRing + i: = control or worse; flip.py: deleting any of a dozen unrelated statements
-   (cm_SendStates stores, m->idx, i's type) flips it: a value-numbering tie. (Its sibling cm_QueueSplit
-   went byte with the queue test p != 0 first and last->next7 = m->seq.) prior: read in full against the
-   original: the append was if/else inverted with a while walk from p = cm_SendQueue (fixed; now 91/91
-   instructions, all else equal). Tried m = cm_SendRing + i (no change). Left: scheduling only at +0x19:
-   ours loads net_Conn.s into eax before computing the slot address in ebp ('- mov eax,[net_Conn]; mov
-   ebp,ebx; shl ebp,4; add ebp,ebx; ... lea ebp,[ebp+ebp*8+cm_SendRing]'), the original computes it in eax
-   first then loads net_Conn.s ('+ mov eax,ebx; shl eax,4; add eax,ebx; lea ebp,[eax+eax*8+cm_SendRing];
-   mov eax,[net_Conn]'): the same 6 instructions, another order and temp register */
+/* 0x4c39c0, queues a copy of src in the send ring; returns its slot, -1: closed or the slot is still in use */
 
 int cm_QueueSend(G17MSG *src)
 {
@@ -683,8 +672,9 @@ int cm_QueueSend(G17MSG *src)
 
     if (net_Conn.closed != 0)
         return -1;
-    i = (cm_LastSeq + 1) & 0x7fff;
-    m = &cm_SendRing[i];
+    i = cm_LastSeq + 1;
+    m = &cm_SendRing[i & 0x7fff];
+    i &= 0x7fff;
     if (net_Conn.s != INVALID_SOCKET && (G17MSG *)net_Conn.tx == m)
         return -1;
     for (p = cm_SendQueue; p != 0; p = p->next)
