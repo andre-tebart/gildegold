@@ -5389,20 +5389,7 @@ void d2_SetObjEnabled(); void d2_SetCaption(); int d2_WinOpenPic(short x, short 
    with the searches running (the search events 0x14 of the building, LCSEARCHEVENT: 1 the text 0x17ff, more
    0x1800, none the good's name), next to the store's goods list. A click on a good posts the search message
    0x14 (the good, the room object, up to six selected characters) and waits for its slot; no selected
-   character gives the text 0x1801. Nothing when the building's character is busy (sv_CheckCharacterFlag)
-   @deep Rebuilt whole from the original 0x595480..0x5959ff (410 vs 405 instructions, same size 1408):
-   goods table by building class, the search-event counts (LCSEARCHEVENT +0xac count / +0xae good), the
-   picture buttons, the per-frame captions (0x17ff / 0x1800 / %s with the good's text), the click -> search
-   message 0x14 (LCSEARCHWORDS over msg.arg: count, good, room objId; ids filled by a j<6 loop that VC6
-   turns into rep stosd), slot wait, sv_CameraFollow tail call; every statement, constant, callee and
-   reference reads equal. Left: allocation only. Ours keeps the constant 0 in esi (xor esi,esi in the
-   prologue; push esi / cmp eax,esi for every 0 argument and null test up to the frame loop, e.g. -0x5954a0
-   push esi | +push 0, -0x59557f cmp eax,esi | +test eax,eax) and 2 in edi, so edi is pushed in the
-   prologue (original: esi=2 only, ebx/edi pushed after sv_CheckCharacterFlag) and the frame loop gets a
-   re-entry block (-0x595740 jmp X / xor esi,esi) - the slot offsets shift by that push (slots 48) and the
-   epilogue pops differ (fpu 13 = the pop order). Tried: a separate caption-loop counter, i declared first,
-   the class-8 / level condition as one if, implicit null tests, an unsigned char count: no change (the
-   count one worse). */
+   character gives the text 0x1801. Nothing when the building's character is busy (sv_CheckCharacterFlag) */
 
 void ai_TradeSearchWindow(AIBLD *bld, AIROOM *room)
 {
@@ -5450,9 +5437,8 @@ void ai_TradeSearchWindow(AIBLD *bld, AIROOM *room)
     }
     if (sv_CheckCharacterFlag(bld) != 0)
         return;
-    searches[0] = 0;
-    searches[1] = 0;
-    searches[2] = 0;
+    for (i = 0; i < 3; i++)
+        searches[i] = 0;
     for (ev = (LCSEARCHEVENT *)he_FindEvent(2, 0, 0x14, 3, bld->id); ev != 0; ev = (LCSEARCHEVENT *)he_NextEvent())
         for (i = 0; i < 3; i++)
             if (ev->good == goods[i]) {
@@ -5488,9 +5474,8 @@ void ai_TradeSearchWindow(AIBLD *bld, AIROOM *room)
     while (sv_RunFrame((int)ai_TradeSearchWindow, 0x677c7) != 0) {
         ai_UpdateProdGoodsList(bld, store);
         ai_LayoutProdGoodsList(win, 1, 0, bld);
-        searches[0] = 0;
-        searches[1] = 0;
-        searches[2] = 0;
+        for (i = 0; i < 3; i++)
+            searches[i] = 0;
         for (ev = (LCSEARCHEVENT *)he_FindEvent(2, 0, 0x14, 3, bld->id); ev != 0; ev = (LCSEARCHEVENT *)he_NextEvent())
             for (i = 0; i < 3; i++)
                 if (ev->good == goods[i]) {
