@@ -2015,7 +2015,17 @@ typedef struct CMFIGHTREC {
    "dummy_DEFENSE_ENTRY", the scene characters collected, the carts "ob_KARREN_<size>_KAMPF.ogr" put at their
    dummies "dummy_KARREN_0<n>" with up to three of their goods shown as "WARE_0<n>" (shuffled), the border cells of the
    height map set to the ground type 0xd and cm_DefenseFactor from the defender's building
-   @deep Read in full against 0x4d0fa0..0x4d1a0b and rewritten: the scenario choice (AIBTYPE record 0x24d,
+   @deep s49: 156 -> 84 ins. Lever: the cart loop's counter advanced right after the dummy name's sprintf
+   (for (i = 0; i < 3; cart++) { goods = 0; shuffle; sprintf(name, .., i + 1); i++; ..}): the original
+   computes i + 1 once into edi (lea edi,[esi+1]), spills it and copies it back at the latch (mov esi,edi);
+   that also put the fighter loops' counter / pointer registers right. ++i inside the sprintf and i++
+   before it: 134; i++ at the body's end = control 156; after the FindObject line: 84 (same). Also
+   measured: the cart / order pointer walks are the original's (cart in [esp+0x10] read through ecx / esi,
+   order walked by edi): the index forms take the frame 4 smaller; the three goods clears are stores of the
+   zero in ebx (element loop / memset: other code). Left: i lives in a slot at the loop head in ours (mov
+   edx,[esp+0x24]; lea esi,[edx+1]) where the original has it in esi; the slots of border ([esp+0x18] vs
+   0x1c), b ([0x10] vs 0x14), cart ([0x20] vs 0x10) follow from that. climb 2 rounds from here: nothing.
+   prior: Read in full against 0x4d0fa0..0x4d1a0b and rewritten: the scenario choice (AIBTYPE record 0x24d,
    kind / level), the fight tables (index loops: VC6 jl on the strength-reduced pointer), the sounds and
    the role voices (copy branch last), the boots, the fighters (cm_AddFighter, side leader at +0x16c, the
    defenders' walkSpeed *1.2), the scene chars, the nine WARE objects, the cart loop (nested ifs, goods
@@ -2026,9 +2036,9 @@ typedef struct CMFIGHTREC {
    ebx,edi' vs 'test ebx,ebx', the cart pointer slot [esp+0x18] vs [esp+0x10]) and the slot layout of order
    / goods / pos (the prover stops at gm_ShuffledBytes(9, frame-0x10 vs frame-0x1c)). (references: M8 at
    +0x96b: ours refers to d3_DefaultScene (0x5fb5b0), the original's field to 0x633738 (d3_Terrain),
-   explained: the M8 at +0x96b is an alignment artifact: both sides load d3_DefaultScene and
-   d3_Terrain and push d3_Terrain then hmap for d3sm_Build (ours ecx=scene eax=terrain, the original
-   edx=scene ecx=terrain); the aligner pairs our scene load with the original's terrain load by register) */
+   explained: the M8 at +0x96b is an alignment artifact: both sides load d3_DefaultScene and d3_Terrain and
+   push d3_Terrain then hmap for d3sm_Build (ours ecx=scene eax=terrain, the original edx=scene
+   ecx=terrain); the aligner pairs our scene load with the original's terrain load by register) */
 void cm_SetupFightScene(CMFIGHTREC *rec)
 {
     char name[0x100];
