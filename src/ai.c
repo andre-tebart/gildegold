@@ -2459,20 +2459,27 @@ void ai_EndWorkerPose(AICHAR *ch)
    ai_EvaluateProduction picks the good to make (the current one at 8 / 13 o'clock, the player's drawn setting, a
    random entry with or without its materials), skipping the entries flagged 0x400: those lose flag 8 and get job
    orders of type 0x8c when a slot flagged 0x400 | 0x10 marks them 0x10, the others of type 4 for flag 8
-   @deep Read whole against the original 0x483fc0..0x484a56 and fixed: the entry tests on ai_Entries[i] /
-   ai_Entries[k] with the entry field on the left (capacity >= batch, lvl1c >= need1c, lvl1d >= need20,
-   gm_FreeCapacity >= batch + amount; the original's mov eax,[esi+ai_Entries+0x40] / cmp eax,edx / jl), the
-   two 0x400 / flag-8 loops without the 0 < ai_NEntries wrapper (each reloads and tests ai_NEntries), the
-   watch loop's j >= ai_NEntries, health > 0 (jbe), info.n2++ / info.n1++ counted in the struct (the
-   original keeps n1 in edx and stores it after the loop), info.n1 = min(info.n1, info.n2), the job-order
-   loop as if (flags & 0x10) { if (flags & 0x400) type 0x8c } else if (flags & 8) type 4 with type stored
-   before e and the watch copy from *info.e, the info fields stored ch, b, c, z2, z1. 470 -> 138 differing,
-   every call, constant and field the same. Left is allocation: the goods-record address of the random
-   loops (+0x454 / +0x555: ours add ebp,edx / mov eax,ecx / add eax,ebp / mov dl,[eax]; the original add
-   ecx,edx / lea edx,[eax+ecx] / mov cl,[eax+ecx], item in eax vs ecx), the zero register compare at +0x1e8
-   (test esi,esi vs cmp esi,ebp), the watch copy's register / scheduling order at +0x7e9 (mov ebx,4 / lea
-   before mov ecx,0x16), and 144 regs lines; the prover stops at +0x562 on the register-swapped compare of
-   the same fields. */
+   @deep s47: shape. The goods record read as ai_GoodsT[e->item] in both random loops (no AIGOOD *g local):
+   138 -> 52 and draft -> shape (the same lever moved its three draft siblings 36-85 ins). The 8 / 13
+   o'clock search sets found = 1 like the other arm (no goto done there) and one if (found) goto done after
+   the if / else: 52 -> 44, the first 487 lines equal. Left: the second random loop's success block (ours
+   lea edx / mov ax / edx for e = &ai_Entries[info.perm[i]] and the sprintf name, the original eax / dx /
+   ecx: one scratch step) and the watch-copy block after the slot loop (mov ebx,4 / the lea pair before mov
+   ecx,0x16, the slot-copy address order). k = info.perm[i] named again, the slots index operands swapped:
+   = control; climb round 1 (452 mutants): nothing closer. prior: Read whole against the original
+   0x483fc0..0x484a56 and fixed: the entry tests on ai_Entries[i] / ai_Entries[k] with the entry field on
+   the left (capacity >= batch, lvl1c >= need1c, lvl1d >= need20, gm_FreeCapacity >= batch + amount; the
+   original's mov eax,[esi+ai_Entries+0x40] / cmp eax,edx / jl), the two 0x400 / flag-8 loops without the 0
+   < ai_NEntries wrapper (each reloads and tests ai_NEntries), the watch loop's j >= ai_NEntries, health >
+   0 (jbe), info.n2++ / info.n1++ counted in the struct (the original keeps n1 in edx and stores it after
+   the loop), info.n1 = min(info.n1, info.n2), the job-order loop as if (flags & 0x10) { if (flags & 0x400)
+   type 0x8c } else if (flags & 8) type 4 with type stored before e and the watch copy from *info.e, the
+   info fields stored ch, b, c, z2, z1. 470 -> 138 differing, every call, constant and field the same. Left
+   is allocation: the goods-record address of the random loops (+0x454 / +0x555: ours add ebp,edx / mov
+   eax,ecx / add eax,ebp / mov dl,[eax]; the original add ecx,edx / lea edx,[eax+ecx] / mov cl,[eax+ecx],
+   item in eax vs ecx), the zero register compare at +0x1e8 (test esi,esi vs cmp esi,ebp), the watch copy's
+   register / scheduling order at +0x7e9 (mov ebx,4 / lea before mov ecx,0x16), and 144 regs lines; the
+   prover stops at +0x562 on the register-swapped compare of the same fields. */
 
 void ai_EvaluateProductionGraveyard(AICHAR *ch)
 {
@@ -2509,7 +2516,7 @@ void ai_EvaluateProductionGraveyard(AICHAR *ch)
                         ai_Entries[i].flags |= 8;
                         ai_StartProduction(ch, &ai_Entries[i]);
                         ch->prod = (unsigned short)ai_Entries[i].item;
-                        goto done;
+                        found = 1;
                     }
                     break;
                 }
@@ -2529,9 +2536,9 @@ void ai_EvaluateProductionGraveyard(AICHAR *ch)
             }
         }
         ch->flags1b4 &= ~0x100;
-        if (found)
-            goto done;
     }
+    if (found)
+        goto done;
     if (ai_CharsT[ch->bld->owner].kind == 6 && (id = ai_DrawSettingGood(ch->bld)) != 0) {
         for (i = 0; i < 32; i++) {
             if (ai_Entries[i].item == id) {

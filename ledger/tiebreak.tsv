@@ -1472,7 +1472,7 @@ exe	0x004836a0	ai_CalcMeisterBank	ai	6c8e69d5968668ad	no	byte	control=byte p1=by
 exe	0x00483a60	ai_CalcMeisterFernhaendler	ai	3970287b34b39b1c	yes	byte	sweep control=shape best=byte by 17 unused typedefs at the unit's start; codegens=2 compiled=36 (stopped at the goal)	63fd104250288054
 exe	0x00483d30	ai_StartBuildingWork	ai	fb4756fabe173208	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
 exe	0x00483ee0	ai_EndWorkerPose	ai	7830a709dbd548a9	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x00483fc0	ai_EvaluateProductionGraveyard	ai	e383ffa24c1611fd	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	8d9a8cc40ed71f2b
+exe	0x00483fc0	ai_EvaluateProductionGraveyard	ai	a32996d8088bcacd	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	ad4f9069e48e9056
 exe	0x00484a60	ai_Unk484a60	ai	cec6c71338ef4f07	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x004854f0	ai_UpdateProduction	ai	971ddfb4cbfec75d	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	9ae3229e4c037d19
 exe	0x00486190	ai_FillSlotTable	ai	34aebf3db62ccc91	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
