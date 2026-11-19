@@ -2007,12 +2007,13 @@ void cm_SendMessage41(void *p);                         /* 0x4c5800 */
    building records (kind below 0x44, with an owner) and the building kind bytes +0x247 / +0x248; then normalises
    the grid cells and rates the result (ord_WeightedRecordSum, ord_StatisticsRating, gm_IncomeRating). out[0] the
    income rating, out[1] / out[3] the shares without a bld / bld2, out[2] the combined rating, out[4] the number of
-characters, out[5] the rating, out[7] / out[8] the kind sums, out[9] the overall score @deep s47: 74 -> 21 ins. Kept: the two shares as double divisions, 1.0f - (float)(n1 / (double)cntf) (two float divisions by one local become VC6's shared reciprocal; the original divides twice: one double division in the pair is enough, both = one code; cntf then sorts to [esp+0x18]); m = max(m, halfWeightSum) (the macro's parentheses: fld half; fld st(1); fcompp); out[5] before the int stores (climb move); out[5] as s50/s4c * (s58/s54) (the tie order of the four equal-count ints in the frame follows the expression: s58/s54 slots first). Left: only the out[9] statement (fpu 21): the original loads out[0] once as a CSE (fld [esi] after the two 1-out[3] / 1-out[1] loads, before 1-out[2]) and uses st(k); ours uses fadd [esi] / fmul [esi]. = control: all 576 sum x product term orders, (out[0]) / *out, 2 / 2.0f / 2.0, /4, /3. A named copy f = out[0] (before out[9]) loads it first and breaks the out[2] forwarding (59 ins); inside the expression 63. flip.py --want 'fld DWORD PTR [esi]' only by moving the WeightedRecordSum call into the loop (meaning). prior: deep s46: n0++ / n1++ after the bt line (the original increments after the building-kind multiply): order 24 -> 8 (78 -> 74 ins, kept); the inv local dropped, the grid cell divided by (cntf + cntf) (VC6 hoists the reciprocal itself: the same code, so inv was its own). = control: the building loop as an index loop (p = &ai_Blds[i]), (float)n1 / cntf, a separate f = n1 / cntf; out[3] = 1.0f - f. Worse: out[3] before out[0] = gm_IncomeRating() (82), buildingCount /= (cntf + cntf) (80). Left: the shared 1 / cntf of out[3] / out[1] (the original divides twice by [esp+0x18]: cntf there has 2 more references and sorts to 0x18 in the frame, ours shares y's slot at 0x30), the fpu / slot hunks that follow from it, out[0] kept in st for out[9]. */
+characters, out[5] the rating, out[7] / out[8] the kind sums, out[9] the overall score */
 void ord_ComputeStatistics(float *out)
 {
     int cnt, n1, n0, i, j, k;
     int sumA, sumC, sumD, s58, s54, s50, s4c;
     float cntf, f, m, sum, w, g;
+    float q3, q1, q2, income;               /* the inverted shares and the income rating of out[9] */
     ORDCHAR *c;
     ORDBLD *p;
     unsigned char *b;
@@ -2084,6 +2085,8 @@ void ord_ComputeStatistics(float *out)
     ((int *)out)[4] = cnt;
     ((int *)out)[8] = sumA;
     out[0] = gm_IncomeRating();
+    /* @original the shares divide in double: two float divisions by cntf become one shared reciprocal (VC6), the
+       original divides twice */
     out[3] = 1.0f - (float)(n1 / (double)cntf);
     out[1] = 1.0f - (float)(n0 / (double)cntf);
 
@@ -2098,9 +2101,14 @@ void ord_ComputeStatistics(float *out)
         }
     }
     f = ord_WeightedRecordSum(rec);
-    out[2] = (float)((1.0 - (f * 0.7f + ord_StatisticsRatingR(rec) * 0.3)) * sum);
-    out[9] = (((1.0f - out[2]) + out[0] + (1.0f - out[1]) + (1.0f - out[3])) * 0.25f
-              + (1.0f - out[2]) * out[0] * (1.0f - out[1]) * (1.0f - out[3]) * 2) * 0.33333334f;
+    f = (float)((1.0 - (f * 0.7f + ord_StatisticsRatingR(rec) * 0.3)) * sum);
+    out[2] = f;
+    q3 = 1.0f - out[3];
+    q1 = 1.0f - out[1];
+    income = out[0];
+    q2 = 1.0f - f;
+    out[9] = ((q2 + income + q1 + q3) * 0.25f
+              + q2 * income * q1 * q3 * 2) * 0.33333334f;
 }
 /* 0x4f8ed0, recomputes the statistics (ord_ComputeStatistics) into ord_Statistics, smooths the rating out[5] into
    ai_Rating (the first time ai_RatingBase starts at 0.95 of it), sets the change rate ord_RatingRate from the gap

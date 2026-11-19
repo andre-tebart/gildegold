@@ -4654,6 +4654,18 @@ the stack at every instruction.
 
 ### Values kept on the FPU vs stored and reloaded
 
+- **Two divisions by one float local turned into `fld 1.0; fdiv x` + `fmul st,st(1)` (a shared reciprocal), the
+  original dividing twice (`fild n; fdiv [x]`)**: VC6 shares 1/x between float divisions only; one of them in double
+  stops it: `1.0f - (float)(n / (double)x)` (ord_ComputeStatistics; `(float)n / x`, a temp, call between: = control).
+- **A field read once onto the FPU (`fld [esi]` among the CSE loads) for a value used twice in one product / sum
+  chain, ours `fadd [esi]` / `fmul [esi]`**: named float locals for every term, assigned in the original's load
+  order right before the statement (`q3 = 1 - out[3]; q1 = 1 - out[1]; income = out[0]; q2 = 1 - f;`); a local
+  first used earlier in the function (a loop variable reused) ranks too low: take a fresh one. The stored value
+  forwarded with `fst` came from a local too: `f = ..; out[2] = f;` (ord_ComputeStatistics).
+- **Equal-count int locals in the slot order of the other pair**: the tie follows the order the expression that
+  reads them evaluates them: `(float)a / b * ((float)c / d)` puts c / d first (ord_ComputeStatistics).
+
+
 - **Two results held on the x87 stack until after a call's argument copy (`fxch; fstp [key.rot.x] .. fstp
   [key.rot.y]` at the end), a third copied through memory (`fstp v.z; mov edx,[v.z]`)**: the values were fields
   of a block-local D3VECTOR4 copied field by field into the key at the end (`v.y = angle - v.y; v.z = -v.z;
