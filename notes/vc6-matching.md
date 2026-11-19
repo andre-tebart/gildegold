@@ -1631,6 +1631,61 @@ Where the pushes and pops sit, how many epilogue copies there are, shared agains
     (VC6's shared 1 / cntf), ai_FillWeddingTab (roles[5] after the test: 47 ins at +1 instruction), rt_LoadRoutes
     (the r pointer form: frame 0xc, i spilled).
 
+- **Deep s47 (the near-byte list to 300 instructions minus everything named in these notes, the 15 tagged / draft
+  ones with the fewest instructions at 89-138: 3 byte (one with a meaning fix), 1 draft -> shape, 11 closer or
+  noted; bonus: the shape lever in three draft siblings)**:
+  - **A constant 0 held in a callee-saved register from the prologue (`xor esi,esi`, `push esi` for every 0
+    argument, `cmp eax,esi`), the original pushing 0 as immediates and clearing a counter array from a scratch
+    `xor ecx,ecx`**: the three clears `searches[0] = 0; searches[1] = 0; searches[2] = 0;` (twice: before the
+    frame loop and in it) were an element loop `for (i = 0; i < 3; i++) searches[i] = 0;` (memset of the array:
+    the same code). The unrolled stores were the 0 web's references that made 0 a candidate:
+    ai_TradeSearchWindow 103 -> byte, its twin ai_AquariumSearchWindow 120 -> byte (the s46 `= {0}` lever's
+    sibling: a zero fill that VC6 writes itself does not count toward the 0 candidate).
+  - **A ternary text id computed into a callee-saved register before the call's other argument loads (`neg cl;
+    sbb ecx,ecx; and ecx,0xa; add ecx,0x114; mov edi,ecx` before the call, `add eax,edi` at the push)**: the
+    text-id base as an int local right before the call, `text = (ch->sex != 0 ? 10 : 0) + 0x114;
+    io_PrintText(0x1d8f, text + ch->b00d, ..)` (if / else of 0x11e / 0x114: the same code). The local also
+    re-ranked done / win (done went to its slot, win to ebp): ai_DivorceDialog 89 -> byte. The s45 lever
+    (ternary as an if / else int) for a ternary that is part of a sum.
+  - **A record address computed into a register before its field tests (`add ebp,edx; mov eax,ecx; add eax,ebp;
+    mov dl,[eax]`) where the original forms it in place (`add ecx,edx; lea edx,[eax+ecx]; mov cl,[eax+ecx]`)**: no
+    `AIGOOD *g = &ai_GoodsT[e->item];` local: `ai_GoodsT[e->item].type` / `.batch` written at each use (VC6's CSE
+    temp, not a candidate) - ai_EvaluateProductionGraveyard 138 -> 52, draft -> shape; the siblings
+    ai_EvaluateProductionGypsies 328 -> 243, ..Flags 335 -> 262, ai_EvaluateProduction 548 -> 512. The s43 lever
+    (pointer locals written out at each use) for a table record.
+  - **One arm leaves a search by `goto done`, the other sets `found = 1` and tests it after**: both set the flag,
+    one `if (found) goto done;` after the if / else (ai_EvaluateProductionGraveyard 52 -> 44, the first 487
+    listing lines equal).
+  - **Two characters' ids re-read after a memset / rep stosd in ours, the original comparing two registers (`cmp
+    dx,bp`) and reusing them for the record fill**: the ids as `unsigned short` locals read once (`theirs =
+    p->chr; mine = e->chr; if (theirs != mine) { memset(&party..); party.members[0] = ai_CharInts[mine][0]; ..`):
+    the memset does not kill them (he_RunGathering 122 -> 72, size 1454 -> 1486 of 1497; int locals 80, the other
+    read order 74).
+  - **Layout loops with hand induction locals (`for (j = 0, off = 0; ..; j++, off += 0xca)`, `colY += 0x80`)**:
+    the products written out (`rows[i].x = j * 0xca (+ 0x65)`, `rows[i].y = col * 0x80 + step`): VC6 builds the
+    same IVs itself with the original's registers and size (ai_ShowAmountRows 117 -> 95, size 1370 -> 1374 =
+    the original). `do { .. i++; } while (i < 3);` with `i = 0;` at the top as two plain `for (i = 0; i < 3;
+    i++)` loops: d3s_ShadowTriangle 133 -> 120, size 906 -> 905 = the original. A hand `do { .. o++; } while
+    (--n)` over a call's result as `for (k = 0; k < n; k++) { o = &offices[k]; ..}`: the countdown store moves
+    behind `push ebx` as the original's (he_RunSixGroupEvent).
+  - **The frame 8 bytes larger, the walk tail's address-taken ix / iz / py in their own slots**: all three as
+    block locals of the tail (`{ int ix, iz; float py; .. d3_GetHeightAt(.., &ix, &iz, &py) .. }`), not only one
+    or two: they pack into the dead parameter slots (cm_Attack 114 -> 101). An unparenthesised `a * 0.01 * b`
+    of two byte fields was regrouped by VC6 into `a * b * 0.01` (fild, fild, fmulp, fmul); `(a * 0.01) * b`
+    keeps the original's fmul between the filds (cm_Attack 101 -> 95).
+  - **`cmp reg,-1; jle` with -1 in a callee-saved register from the prologue where the original has `test
+    reg,reg; jl`**: the found test was `tx >= 0 && tz >= 0`, not `> -1` (rd_PathToRoad: size 341 -> 338 = the
+    original, the -1 candidate gone; the instruction count rose 132 -> 135 behind the prologue difference).
+  - Fixed: ai_AquariumSearchWindow's search message 0x15 carries the room object in arg[2] (+0x60), not in
+    LCSEARCHWORDS.room (+0x5c, the 0x14 message's place): a one-instruction slot hunk inside a message fill.
+  - Left with notes: lc_UpdateGoodsReserves (the cursor as a temp copied into i: a while whose continue skips
+    the increment gives the copy shape), he_RunSixGroupEvent (n takes eax, one rotation), ai_SpecialAmountListWindow
+    (win -67 over viewing -75 for ebx), d3_InflateObject, ai_KidnapWindow (the 1 is no candidate in ours),
+    cm_Attack (g / k ranks: one k reference fewer swaps them), ai_ShowAmountRows (the two text arms' first call:
+    nothing hoisted in the original), he_RunGathering (the not-found block last: every search spelling is one
+    code), rd_PathToRoad (i in ebx, g->cells re-read per row), ai_Miracle (case slot packing, one rotation),
+    d3s_ShadowTriangle (y outranks minY; the original computes y in minY's ebp).
+
 - **An else-if arm cross-jumped whole into a sibling's copy, the original keeps it inline**: the store order of
   the OTHER arms (default arm charId before stateArg; 0x176 arm stateArg, charId, x, z) decides it, found by
   climb.py swap + move in round 2 (cm_OrderAttack byte; permuting only the inlined arm's stores did not). The pair
