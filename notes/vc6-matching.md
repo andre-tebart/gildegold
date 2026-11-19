@@ -2304,6 +2304,13 @@ copied back into short predecessors only after all of this.
   xor reg,reg` (d3t_DropObject); `r != -2 ? 0 : -3` is `sub / neg / sbb / and / add`; a side-effect string
   argument chosen by if/else is a ternary with a comma expression.
 
+- **A failure return `mov eax,reg` (the zero register) where ours has `xor eax,eax`, the returns not merged**: a
+  const-0 return is always `xor eax,eax`; `mov eax,esi` is a real variable piece (`ret = 0; .. goto done; ..
+  ret = 1; done: return ret;`, the copies per predecessor). When the arm's own `if (b == 0) goto done;` gives
+  the right layout but a parameter outranks the one the original kept in ebx (c2trace --prio: ch 17 > req 16),
+  a redundant `ret = 0;` at the start of the other arm adds values to that arm's block and ranks its
+  candidate up (ai_QuarrelCallback byte; the else arm's `ret = 0` with an @original comment).
+
 ### Compare operand order and the constant written
 
 - **Operands swapped**: write the condition from the other side first. `if (best < s) { best = s; pick = cp; }`
