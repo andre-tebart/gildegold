@@ -1493,6 +1493,53 @@ Where the pushes and pops sit, how many epilogue copies there are, shared agains
     the decided x test), ord_RandomObjectId, gm_BuildingRank (the default body one rotation step), ai_IntimidateContact,
     gm_CharacterIncomes, d3_ProjectMesh.
 
+- **Deep s44 (the near-byte list to 200 instructions minus everything named in these notes, the 15 with the fewest
+  instructions at 12-44: 12 byte, 3 closer with notes; bonus amt_FindOffice byte)**:
+  - **A hand pointer walk over a table (`for (c = recs; (int)c < (int)end; c++)`, `for (i = 0, rank = ranks; ..;
+    i++, rank++)`, a `do { if (p->idx == x) break; p++; i++; if (p >= end) return 0; } while (1)`)**: the plain index
+    loop (`for (i = 0; i < 768; i++) .. lc_CharRecs[i].id`, or `rank = &ranks[i];` per pass). VC6 strength-reduces
+    it into the same pointer compare (the signed `jl` included) but the IV inits, the temps and the saves come out
+    as the original's: ai_PickBuildingChar 38 -> byte, ai_PlayerComparePanel 41 -> byte, amt_AcceptApplication
+    (with `k.id != m->kind` read from the message again, not from the byte local) 43 -> byte.
+  - **A record field read through a callee-saved register late, `push` of an argument late, the records filled
+    after a call in another arm**: the records of the call arm (`AIARG s1, s2` passed to ai_ChooseSubAction) were
+    block locals of that arm; the tail's own s1 / s2 then never escape and its loads hoist above `*o1 = s1`
+    (ai_DecideUseMilitaryObject, then a 720-order round of the tail fill: `s2.kind = 4; s2.ref = b->id; *o1 =
+    s1; ..`). The same for a message in a loop: AIMSG msg declared in the click block that fills and sends it
+    (the address went to the send in the previous pass) plus a 360-order round of the fill: ai_DungeonBribeWindow
+    byte (s43's block-scope lever, now for loops).
+  - **`fld st(0)` / `fstp st(0)` around one of several sin / cos terms of the loop index, the last term consumed by
+    `fmul [mem]`**: the index converted once into a float local (`f = i;` at the loop top, `f` in all four terms)
+    and the fourth term as `v.w` (float) instead of a double d: d3fl_UpdateWater byte.
+  - **`xor eax,eax` / `mov eax,1` placed before the out-parameter stores, the exits sharing them**: one result
+    variable set in each arm of if / else and one `*worth = ..; return r;` (gm_FindRichest, the goto none gone);
+    `r = 0;` before the guard, a `break` with `r = 1` in the search and the copy under `if (r)`
+    (amt_FindOffice, prologue `xor eax,eax`).
+  - **The ai_DecideBlutrache helper loop**: `who[cnt++] = ..` before `s += t;` and `for (i = 0, cnt = 0; ..)`
+    (climb swap from the cfor base; the xor order of i / cnt follows the for-init).
+  - **A switch case whose no-work path jumps (goto) past the next case**: write `ev->stage++; return;` in the case
+    itself and put `case 0:` with the same two lines before the next case: VC6 cross-jumps case 0 into case 1's
+    copy and the table entry is the original's (he_RunProduktion 40 -> 4). The same function's debug line had its
+    own `char buf[0x200]`: one reference at the top of a 0x600 region = a second array behind a 0x400 one.
+  - **`push 1` / `push 0` where ours computes the flag**: `f(x, c ? 1 : 0)` was the call written in both arms
+    (`if (c) f(x, 1); else f(x, 0);`): ai_OfficeApplicantsWindow 42 -> byte.
+  - **Copy temps in a callee-saved register (esi) and the pops at the end where ours copies through ecx and pops
+    right after the rep movsd**: the value stored before the copies in ours was assigned AFTER them in the
+    original (`m.fight.health = c->v024;` last): its load is scheduled first, the scratch registers are busy and
+    the copies take esi (cm_SendFightCommand, the 7 positions of the one statement).
+  - **`mov eax, 4` for a mask held over the flag test, three zero words from one register**: the `__int64` mask
+    as `LARGE_INTEGER mask; mask.LowPart = 4; mask.HighPart = 0;` right before the call (he_AllocPlunder; the
+    s40 union lever; before the flag test it is 2 instructions off, `HighPart` first worse).
+  - **A one-rotation register shift through a short function**: the byte sibling's named local (`plants =
+    (G15PLANT *)b->plants;` as he_RunHarvest has it) plus `harvestType` before `harvestScript` (he_AllocHarvest).
+  - **An order hunk at the start of a long float block**: parenthesised products `(d.x * t) + a->x` in the four
+    pool stores move the 81-instruction region cut (d3_ClipPoly 12 -> 6; c2dag shows the block ending at the
+    colour delta). Read c2dag's block sizes before spelling the hunk's own statement.
+  - **`ang *= 0.25;` as its own statement** before the rotation call (fld ang / fmul / fadd rotation.y), and
+    `n = cm_Random(..) + w->dmgMin;` in one statement (the add into eax): cm_UpdateSceneChars 41 -> 8.
+  - Left with notes: d3_ClipPoly (the d1 operand order, one fstp), he_RunProduktion (`(skill + 0.5) * fv`
+    scheduled before the flag load), cm_UpdateSceneChars (c->health pushed before the _ftol).
+
 - **An else-if arm cross-jumped whole into a sibling's copy, the original keeps it inline**: the store order of
   the OTHER arms (default arm charId before stateArg; 0x176 arm stateArg, charId, x, z) decides it, found by
   climb.py swap + move in round 2 (cm_OrderAttack byte; permuting only the inlined arm's stores did not). The pair
