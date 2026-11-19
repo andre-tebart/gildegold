@@ -2751,25 +2751,30 @@ void sv_CreateBanners(char *b);
    script SpecialEvents\\Hausbau_2.esc from stage 2 on) and at the last one shows the building, builds its road,
    sends the news and moves the owner in; -1 / -2 tear the construction down; every stage but the waiting ones goes
    on through the cm slot cm_SendExSetHE gives
-   @deep size queue s16: 202 -> 70 ins, raw 4000 = the original's padded size. Kept: stage 0's two exits
-   (payer gone, the success send) end with break (retgen sites 0+1: the original's stage 0 jumps into stage
-   3's copies), stage 3's bld test written positive (if (bld != 0) { ..; send(stage + 1); return; }
-   send(-1); return;: its failure send cross-jumps into stage 1's copy as in the original), the bounding
-   sphere into its own center / radius locals (the original's lea [esp+0x20] / [esp+0x14]; &v / &best kept
-   best address-taken and moved every slot). Left: only frame slots (frame 0x3a4 vs 0x38c): the original
-   shares [0x14] best / i / radius, [0x18] dist / nearest, [0x30] v / now, center at [0x20]. Block-scoping
-   center+radius, now, at, v (31 subsets) gives frame 0x388 at best (sphere+now+at 67 ins, but raw 4004,
-   padded too big); a sphere with &at / &v (any radius) brings back 2400 bytes of slot hunks. Next: c2frame
-   on sphere+now+at for the 4 missing bytes. prior: reconstructed the whole function (1213 vs 1211
-   instructions) against the original 0x56be30..0x56cda7, every stage 0..7 and -1/-2 read and written
-   (HECONSTRUCTION words, HEFINVIEW.buildPaid, gm_AddToTreasury's eax kept @original); no call, store or
-   reference differs (diffclass: no differs/ref lines). Left: (1) VC6 cross-jumping of the identical
-   cm_SendExSetHE tails in stages 0..3 lands the other way: the original's stage 0 jumps forward into stage
-   3's copies (0x56bf0e jmp 0x56c050, je 0x56c00a) and stage 3's bld==0 into stage 1's (je 0x56bf6f), ours
-   keeps stage 0's copies and stage 3 jumps back (code hunks +0x9c, +0x10c, +0x200..+0x225; gotos to labels
-   in stage 3 tried: worse, 1228 instructions, VC6 moves labelled blocks out of line); (2) the frame 0x394
-   vs 0x38c and the slot packing: the original shares [esp+0x14] best / i / radius, [esp+0x18] dist /
-   nearest, [esp+0x30] the PointToWorld ... */
+   @deep s47: 70 -> 32 ins, frame 0x38c = the original's. Read from the original's leas (pending pushes
+   subtracted): 0x10 bld, 0x14 best/i/radius, 0x18 dist/nearest, 0x1c scene, 0x20 v/center (16 bytes), 0x30
+   at/now, 0x40 minutes, 0x44 site, 0x98 list, 0x11c u, 0x19c text. Kept: v a block local of each search
+   (case 5 block, the stage-7 search block with at), now in its type block, the completion as if (c->stage
+   > c->stages) { D3VECTOR4 center; float radius; ..} break; (center is 16 bytes: the slot 0x20..0x30; it
+   must conflict with now, so its block encloses now's), door = 0 before the sprintf (order), nearest =
+   &ai_BldsT[i] before best = dist in stage 5 (regs). Left: only the slot order of scene (ours 0x18) and
+   dist/nearest (ours 0x1c): equal densities 2250, VC6's unstable qsort. c2frame counts: scene 9, dist 6 +
+   nearest 3. A model of VC6's qsort (cutoff 8, ascending, table reversed) fitted to 4 compiles says the
+   original has scene 8 OR dist+nearest 10 (one counted reference: counts are taken after allocation and
+   before tail merging / the store-load peephole, so the final code can be identical). Probes that flip it
+   (all change meaning): deleting one SelectScene(scene) (2917 / 2952 / 2967 / -1 case), the -1 case's
+   memset (its rep stosd forces the scene reload into edi), moving if (scene != 0). = control: nearest /
+   best init order, if (!nearest), nested dist test, (float)sqrt, best in the for init, door / best order
+   in stage 7, stage-5 failure via one shared exit (worse). prior: size queue s16: 202 -> 70 ins, raw 4000
+   = the original's padded size. Kept: stage 0's two exits (payer gone, the success send) end with break
+   (retgen sites 0+1: the original's stage 0 jumps into stage 3's copies), stage 3's bld test written
+   positive (if (bld != 0) { ..; send(stage + 1); return; } send(-1); return;: its failure send cross-jumps
+   into stage 1's copy as in the original), the bounding sphere into its own center / radius locals (the
+   original's lea [esp+0x20] / [esp+0x14]; &v / &best kept best address-taken and moved every slot). Left:
+   only frame slots (frame 0x3a4 vs 0x38c): the original shares [0x14] best / i / radius, [0x18] dist /
+   nearest, [0x30] v / now, center at [0x20]. Block-scoping center+radius, now, at, v (31 subsets) gives
+   frame 0x388 at best (sphere+now+at 67 ins, but raw 4004, padded too big); a sphere with &at / &v (any
+   radius) brings back 2400 bytes of slot hunks. Next: c2frame on sphere+now+at for the 4 missing bytes. */
 void he_RunConstruction(int ev)
 {
     AIJOB *e = (AIJOB *)ev;
