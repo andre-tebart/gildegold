@@ -1765,6 +1765,42 @@ Where the pushes and pops sit, how many epilogue copies there are, shared agains
     frame packing), sv_HandleSelectionMouse (159: the send through c gives the original's IV base but map
     moves into a register).
 
+- **Deep s50 (large drafts: the 8 with the fewest instructions at 163-212 of the draft pool without notes here: 3
+  byte, 1 meaning fix, 2 closer, 4 notes)**:
+  - **Every failure exit a `goto fail` / `goto done` to one cleanup block (`if (e->slot) he_ReleaseSlot(ev);
+    he_FreeEvent(ev);`), ours 54 instructions longer with duplicated return blocks and uncross-jumped news
+    tails**: the cleanup written out at each exit (`if (bld == 0) { if (e->slot != 0) he_ReleaseSlot(ev);
+    he_FreeEvent(ev); return; }`, the same for the plain free). VC6 cross-jumps the copies into one block itself,
+    and the parameter's register piece then ends where the original's does (the stage tails reload ev from the
+    argument slot and share their news / free blocks): he_RunFeastExam 186 -> byte, size 1577 -> 1455 = the
+    original, in one variant. The guide's first rule (replace the goto first) for a whole handler; he_RunTrade's
+    goto done / wait / moving written out (18 combinations) was worse: its labels are a real shared tail.
+  - **A flag initialised in its declaration at the top (`int leaving = 0, idle = 1;`) where the original keeps
+    the constant 1 in ebp for every `push 1` and ours has `mov edi,1; mov ebp,edi`**: the flag set right before
+    the search loop that clears it (`idle = 1; for (..) if (busy) { idle = 0; break; }`): the constant 1 and the
+    flag are one value at the top, he_RunRaid 199 -> 172 and the size equal. Then the three `raid100[k] = -1`
+    stores as an element loop (`for (i = 0; i < 3; i++) party.raid.raid100[i] = -1;`: the -1 left ebp for a
+    scratch `or eax,-1`, 172 -> 18; the s47 lever for a -1 fill), `float chance = 1.0f` declared before the int
+    flags (the 1.0f store first), and the start building into the existing `home` local before `raidHome =
+    home->id` (k = 0 after the call): byte.
+  - **The slider's max read into a register before d2_GetObjValue (`mov edi,[esi+0x34]` before the call)**: the
+    value in the existing `max` local first, `max = slot->stock; value = d2_GetObjValue(..); d2_SetObjValue(..,
+    max, ..)` (ai_ShowProdSlot 163 -> 2). Then `(float)(1.0 - a / b)` as `1.0 - (a / b)` without the cast: the
+    fsubr after the index arithmetic as the original (byte).
+  - **A frame 4 bytes larger in the original with a hole behind a 12-byte vector, the struct copy `zpos =
+    cam->pos` through a pointer register in ours, field loads in the original**: zpos a D3VECTOR4 copied field by
+    field (the original's dead pos.y store kept), the rotation copied field by field too (sv_MouseCamera 188 ->
+    170, frame 0x90 equal; zrot as D3VECTOR4 too gives 164 but frame 0x94).
+  - **b assigned before the test that guards its only use (`b = path_Goal; if (path_Start != b)`)**: inside the
+    test as the sibling path_Search2 has it (path_Search1 176 -> 150, the M8s gone).
+  - Fixed: sv_MouseCamera's drag scale is `1.0 / 16.5` (the double 0x3faf07c1f07c1f08); the literal
+    0.0606060606060606 is one ulp below it (an M10 at +0x5db).
+  - Left with notes: he_RunHerbGathering (0 a register candidate in ours, savings 0; -1 from the entry; text /
+    line tie in the frame packer), path_Search1 (the start cell a word local in map's dead slot), sv_MouseCamera
+    (my / 32000 / -32000 register ranks; HF / AF kept on the FPU after the store), init_SyncSceneObjects (a in
+    ebx with 16-bit compares in the part loop), he_RunCustomers (one scratch rotation from the first JobCost; a
+    stage 2 candidate re-rotates it).
+
 - **An else-if arm cross-jumped whole into a sibling's copy, the original keeps it inline**: the store order of
   the OTHER arms (default arm charId before stateArg; 0x176 arm stateArg, charId, x, z) decides it, found by
   climb.py swap + move in round 2 (cm_OrderAttack byte; permuting only the inlined arm's stores did not). The pair
