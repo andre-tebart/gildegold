@@ -2146,7 +2146,7 @@ exe	0x004c3630	cm_WaitHello	cm	417543100b810c76	no	byte	control=byte p1=byte p2=
 exe	0x004c3680	cm_FlushSendQueue	cm	16fb4fbe951e9018	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004c3720	cm_QueueSplit	cm	bc095e5aec53e8b8	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	becf1bbdf99775c9
 exe	0x004c3850	cm_SplitComplete	cm	38026895b5584008	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x004c38e0	cm_JoinSplit	cm	15c13d705084b87f	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	d88bbccf582ef3cd
+exe	0x004c38e0	cm_JoinSplit	cm	b2987f384d6d7214	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	fe6aaa234919bea1
 exe	0x004c39c0	cm_QueueSend	cm	dcd150f5e25d59d8	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	becf1bbdf99775c9
 exe	0x004c3ae0	cm_GetSlotState	cm	1c223fefc0c81ffc	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004c3b10	cm_GetSlotValue	cm	a76f6eb2cf4ecbf9	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	

@@ -617,17 +617,15 @@ int cm_SplitComplete(G17MSG *m)
     return 0;
 }
 /* 0x4c38e0, joins the parts of the split message m into cm_LongMsg and frees them; returns the length
-   @deep s(this): 16 -> 12 ins. Kept: in the parts loop p->next7 = 0; p = r; memcpy(.., p->data, 0x80);
-   p->type = 0; (p then lives across the copy: p in edx, the p->sender temp in ecx, the store before rep
-   movsd and n += 0x80 after it, all as the original). Left (12 ins): the first part only, m in ecx and the
-   m->next7 CSE in esi where the original has m in esi, next7 in ecx (and m->sender in dl). c2trace: m#1
-   and temp(m->next7) tie at prio 8, m (tie 6) served first and takes ecx; for the original's esi m must
-   come after the next7 temp, the m->sender temp (edx) and the zero constant (ebx, prio -12), i.e. m's
-   priority must be far lower (or those higher). flip.py --want 'mov esi, DWORD PTR _m$': only meaning
-   changes (if (r == 1) after the first search: 2 ins, the loop's r != 1: 4 ins: an undecided exit test
-   adds blocks m lives through). No lever (= control): p = r / m = r before the first part's fields, a
-   found flag with break, for(;;) with if (r == 0) return 0 inside, while forms, !r; the whole work nested
-   in the search loop (cm_SplitComplete's shape) and a goto found are worse (tail 38). prior: deep s33: the
+   @deep s(this): 16 -> 0 ins / 2 bytes (shape). Kept: the parts loop as p->next7 = 0; p = r; memcpy(..,
+   p->data, 0x80); p->type = 0; (p in edx across the copy, as the original) and the first search as r = 0;
+   for (q ..) if (match) { r = q; break; } if (r == 0) return 0; (m then in esi, the next7 CSE in ecx: with
+   the plain for/break m and the CSE tied at prio 8 and m took ecx; the r = q copy block lowers m by one).
+   Left: only jump targets: the two loop guards (empty receive queue) jump to the first return 0 copy
+   (+0x11, of if (m->next7 == 0)) in the original, to the first search's return copy (+0x38) in ours (pair
+   merger: ours merges the second search's return 0 into the first search's). No lever: while / for-init /
+   r != 0 break forms of the first search, r = 0 before the next7 test; the second search in the same r / q
+   style puts the registers back (12 ins); for(;;) with return inside is worse. prior: deep s33: the
    original clears p->next7 BEFORE the part's memcpy (mov [edx+0xc],ebx between mov ecx,0x20 and rep movsd;
    n += 0x80 then lands after the copy as the original): with that order (variant pfirst) the layout and
    every instruction order match and only registers are left (32 ins, regs): the original m in esi /
@@ -640,14 +638,17 @@ int cm_SplitComplete(G17MSG *m)
 
 unsigned int cm_JoinSplit(G17MSG *m)
 {
-    G17MSG *r, *p;
+    G17MSG *r, *p, *q;
     int n;
 
     if (m->next7 == 0)
         return 0;
-    for (r = cm_RecvQueue; r != 0; r = r->next)
-        if (r->sender == m->sender && r->seq == m->next7)
+    r = 0;
+    for (q = cm_RecvQueue; q != 0; q = q->next)
+        if (q->sender == m->sender && q->seq == m->next7) {
+            r = q;
             break;
+        }
     if (r == 0)
         return 0;
     m->next7 = 0;
