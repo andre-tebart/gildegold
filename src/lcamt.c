@@ -2518,14 +2518,23 @@ unsigned int ai_FillWeddingTab(AICHARREC *me, unsigned int max, LCAMOUNTROW *row
    crime events 0x18 of me (role 1). With max 0 it only counts them; else it fills rows with them (LCAMOUNTROW.rec,
    x2c the role; the crimes up to max rows) and gives each the corner icons (ai_AmountRowStatus) and the partner
    filter filter (ai_PassesPartnerFilter, pickable); returns the count
-   @deep Read the whole function against the original and reconstructed it from the skeleton: the quarrel
-   opponent of the insult event 0x47 (powerFlags 0x400), the crime events 0x18 of me (he_FindEvent(2, 2,
-   me->id, 0, 0x18), id4), the count path and the fill path with the corner icons and the partner filter.
-   The count path counts in its own variable (the original keeps it in edi, the fill path's n in ebp). 156
-   vs 155 instructions, the same calls, stores and branches; left is allocation: VC6 gives ours a zero
-   register (xor ebp, ebp; cmp eax, ebp / push ebp / mov [esi+0x2c], ebp instead of test eax, eax / push 0
-   / mov [esi+0x2c], 0) and keeps n in ebx, where the original keeps max in ebx (test ebx, ebx; cmp ebp,
-   ebx at +0x146) and n in ebp. Tried: one shared counter for both paths (code 84 instead of 49). */
+   @deep deep s46: c2trace: n#1 (prio 33) takes ebx before max (prio -52: live unreferenced through the
+   fill path's quarrel search, P 3-5 per block) and the constant 0 (const#0#5, 21 refs, -36) gets ebp in
+   pass 2 after max is split; the original serves max first (ebx from the prologue, the count path's
+   he_FindEvent(1, 0, ..) pushes ebx because VC6 value-numbers max == 0 in that arm) so n takes ebp and no
+   zero register exists. = control: he_FindEvent(1, max / n, ..) (value numbering), rows[n] / n++ in the
+   quarrel arms, count++ for count = 1, a local copy m = max before the fill. Worse: count = 0 inside the
+   max == 0 block (67), one n = 0 at the top (66, regs 14 but code 86), unsigned i loop (67). climb round
+   1: nothing (best move@45+2 345 bytes). Open: what ranks max above n (33) or keeps ebx from n (a
+   candidate with prio > 33 that conflicts with n and frees ebx before the last loop). prior: Read the
+   whole function against the original and reconstructed it from the skeleton: the quarrel opponent of the
+   insult event 0x47 (powerFlags 0x400), the crime events 0x18 of me (he_FindEvent(2, 2, me->id, 0, 0x18),
+   id4), the count path and the fill path with the corner icons and the partner filter. The count path
+   counts in its own variable (the original keeps it in edi, the fill path's n in ebp). 156 vs 155
+   instructions, the same calls, stores and branches; left is allocation: VC6 gives ours a zero register
+   (xor ebp, ebp; cmp eax, ebp / push ebp / mov [esi+0x2c], ebp instead of test eax, eax / push 0 / mov
+   [esi+0x2c], 0) and keeps n in ebx, where the original keeps max in ebx (test ebx, ebx; cmp ebp, ebx at
+   +0x146) and n in ebp. Tried: one shared counter for both paths (code 84 instead of 49). */
 
 unsigned int ai_FillQuarrelTab(AICHARREC *me, unsigned int max, LCAMOUNTROW *rows, unsigned int *filter)
 {
