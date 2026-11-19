@@ -4708,7 +4708,25 @@ void ai_SendFreeThieves(AICHAR *ch)
    0x211 exists, each spare character (no job, its model in this building) loses the free mark, gets the used
    mark (flags1c8 bit 4) and one message 0x8f goes to the owner with the spy class in arg[1] (1: sk81 < sk82,
    else 2, 4 when sk82 >= sk84) and its netId in arg[0].
-   @deep behaviour draft: 62 code hunks, 38 differing asm lines of 150 instructions; the body was read against tools/asmdiff.py (every statement, constant, callee and field offset equals the original: the n = 1 count over the 0x8f-job characters, the kind 0x1d main-object 0x211 gate, the flags1b4 bit 0x10 free mark, the sk81 / sk82 / sk84 classes 1 / 2 / 4, flags1c8 bit 4). What is left is the prologue register pair (original: ebp = the parameter, ebx = n; ours: ebx = the parameter, ebp = n; spell.py 48987c push-pop) and the reloads of [ch+0x16c] (spell.py 4898b5 / 489924 / 4899a5 reload, the original re-reads ch->bld at each use while ours keeps it). Tried, byte-identical (kept where cleaner): dropping the AICHAR *c alias for the parameter, swapping the i / n declaration order. Readability: Q1 cleared with the evidenced name ai_SendFreeSpies (the job kind 0x8f is he.c's espionage event 0x571ac0, the same band as ai_SendFreeThieves), Q6 description rewritten. */
+   @deep s42 (38 -> 25 ins): the send and n-- written in each arm (the byte twin ai_SendFreeThieves' style)
+   and the class-4 case as if (sk82 < sk84) { send; n--; } else { arg[1] = 4; send; n--; }: the parameter /
+   n registers (ebx / ebp) and every slot are the original's now. Left (raw size 505 vs 503): the
+   original's three sends are ONE call: arm 1 ends push &msg / jmp into it, arm 2 computes &msg and pushes
+   it BEFORE the jb that skips the arg[1] = 4 store (mov [esp+0x70],edi after the push), and the first
+   compare loads sk82 (cl, reused by the second compare) before sk81 (dl). = control: n-- per arm alone, a
+   c alias of the parameter, arg[0] before arg[1] = 2; worse: the arms with sk82 >= sk84 first (30), class
+   4 as a ternary (43-48), the compares spelled sk82 > sk81 / sk84 > sk82 (27). Next: what puts the push
+   into the compare block (the call's argument evaluated before the if: an inline / macro form?). prior:
+   behaviour draft: 62 code hunks, 38 differing asm lines of 150 instructions; the body was read against
+   tools/asmdiff.py (every statement, constant, callee and field offset equals the original: the n = 1
+   count over the 0x8f-job characters, the kind 0x1d main-object 0x211 gate, the flags1b4 bit 0x10 free
+   mark, the sk81 / sk82 / sk84 classes 1 / 2 / 4, flags1c8 bit 4). What is left is the prologue register
+   pair (original: ebp = the parameter, ebx = n; ours: ebx = the parameter, ebp = n; spell.py 48987c
+   push-pop) and the reloads of [ch+0x16c] (spell.py 4898b5 / 489924 / 4899a5 reload, the original re-reads
+   ch->bld at each use while ours keeps it). Tried, byte-identical (kept where cleaner): dropping the
+   AICHAR *c alias for the parameter, swapping the i / n declaration order. Readability: Q1 cleared with
+   the evidenced name ai_SendFreeSpies (the job kind 0x8f is he.c's espionage event 0x571ac0, the same band
+   as ai_SendFreeThieves), Q6 description rewritten. */
 
 void ai_SendFreeSpies(AICHAR *ch)
 {
@@ -4744,14 +4762,19 @@ void ai_SendFreeSpies(AICHAR *ch)
                             msg.arg[0] = ai_CharsT[i].netId;
                             msg.arg[1] = 1;
                             cm_SendLongMessage(&msg);
+                            n--;
                         } else {
                             msg.arg[1] = 2;
                             msg.arg[0] = ai_CharsT[i].netId;
-                            if (ai_CharsT[i].sk82 >= ai_CharsT[i].sk84)
+                            if (ai_CharsT[i].sk82 < ai_CharsT[i].sk84) {
+                                cm_SendLongMessage(&msg);
+                                n--;
+                            } else {
                                 msg.arg[1] = 4;
-                            cm_SendLongMessage(&msg);
+                                cm_SendLongMessage(&msg);
+                                n--;
+                            }
                         }
-                        n--;
                         ai_CharsT[i].flags1c8 |= 4;
                     }
                 }
