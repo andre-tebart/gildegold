@@ -2007,7 +2007,7 @@ void cm_SendMessage41(void *p);                         /* 0x4c5800 */
    building records (kind below 0x44, with an owner) and the building kind bytes +0x247 / +0x248; then normalises
    the grid cells and rates the result (ord_WeightedRecordSum, ord_StatisticsRating, gm_IncomeRating). out[0] the
    income rating, out[1] / out[3] the shares without a bld / bld2, out[2] the combined rating, out[4] the number of
-characters, out[5] the rating, out[7] / out[8] the kind sums, out[9] the overall score @deep deep s46: n0++ / n1++ after the bt line (the original increments after the building-kind multiply): order 24 -> 8 (78 -> 74 ins, kept); the inv local dropped, the grid cell divided by (cntf + cntf) (VC6 hoists the reciprocal itself: the same code, so inv was its own). = control: the building loop as an index loop (p = &ai_Blds[i]), (float)n1 / cntf, a separate f = n1 / cntf; out[3] = 1.0f - f. Worse: out[3] before out[0] = gm_IncomeRating() (82), buildingCount /= (cntf + cntf) (80). Left: the shared 1 / cntf of out[3] / out[1] (the original divides twice by [esp+0x18]: cntf there has 2 more references and sorts to 0x18 in the frame, ours shares y's slot at 0x30), the fpu / slot hunks that follow from it, out[0] kept in st for out[9]. prior: Read all of it against the original and rebuilt: the character loop is an index loop (cmp esi, end; jl) with the two buildings unrolled (ORDCHAR gains bld / bld2 at 0x16c / 0x170, block-scoped x, y share the n0 / n1 slots as in the original), the building-kind pointer computed before the object test, ORDBLD gains owner (0x27), out[4] / out[7] / out[8] are ints, the minimum is the kind table's record 1 (0x617470, was 0x44), the volume rating multiplies 1.0 - (f * 0.7f + rating * 0.3), ord_StatisticsRating gets the record buffer (@original push), the grid compares as the original's (!(m > half), ws > 1.0f ? ws : 1.0f). 301 = 301 instructions; diffclass has no code hunk left, only fpu 58 / slots 58 / order 24 and one branch target: ours turns n1 / cntf and n0 / cntf into a shared reciprocal (fld 1.0; fdiv cntf; fild; fmul st(1); ... fstp st(0)) where the original divides twice (fild; fdiv dword ptr [esp+0x18]), which shifts the grid loop head 8 bytes (jne at +0x350: ours to +0x309, the original's +0x301); the final score keeps out[0] in st (fld dword ptr [esi]) where ours re-reads it (fadd dword ptr [esi]). Tried: (float)cnt instead of the cntf local (no reciprocal, but the temp lands in the parameter slot, frame 0x60), inv before out[3] (worse). */
+characters, out[5] the rating, out[7] / out[8] the kind sums, out[9] the overall score @deep s47: 74 -> 21 ins. Kept: the two shares as double divisions, 1.0f - (float)(n1 / (double)cntf) (two float divisions by one local become VC6's shared reciprocal; the original divides twice: one double division in the pair is enough, both = one code; cntf then sorts to [esp+0x18]); m = max(m, halfWeightSum) (the macro's parentheses: fld half; fld st(1); fcompp); out[5] before the int stores (climb move); out[5] as s50/s4c * (s58/s54) (the tie order of the four equal-count ints in the frame follows the expression: s58/s54 slots first). Left: only the out[9] statement (fpu 21): the original loads out[0] once as a CSE (fld [esi] after the two 1-out[3] / 1-out[1] loads, before 1-out[2]) and uses st(k); ours uses fadd [esi] / fmul [esi]. = control: all 576 sum x product term orders, (out[0]) / *out, 2 / 2.0f / 2.0, /4, /3. A named copy f = out[0] (before out[9]) loads it first and breaks the out[2] forwarding (59 ins); inside the expression 63. flip.py --want 'fld DWORD PTR [esi]' only by moving the WeightedRecordSum call into the loop (meaning). prior: deep s46: n0++ / n1++ after the bt line (the original increments after the building-kind multiply): order 24 -> 8 (78 -> 74 ins, kept); the inv local dropped, the grid cell divided by (cntf + cntf) (VC6 hoists the reciprocal itself: the same code, so inv was its own). = control: the building loop as an index loop (p = &ai_Blds[i]), (float)n1 / cntf, a separate f = n1 / cntf; out[3] = 1.0f - f. Worse: out[3] before out[0] = gm_IncomeRating() (82), buildingCount /= (cntf + cntf) (80). Left: the shared 1 / cntf of out[3] / out[1] (the original divides twice by [esp+0x18]: cntf there has 2 more references and sorts to 0x18 in the frame, ours shares y's slot at 0x30), the fpu / slot hunks that follow from it, out[0] kept in st for out[9]. */
 void ord_ComputeStatistics(float *out)
 {
     int cnt, n1, n0, i, j, k;
@@ -2079,18 +2079,17 @@ void ord_ComputeStatistics(float *out)
     if (sumA <= k)
         sumA = k;
     cntf = (float)cnt;
+    out[5] = cntf / sumA * ((float)s50 / s4c * ((float)s58 / s54) + 0.5) * sumD;
     ((int *)out)[7] = sumC;
     ((int *)out)[4] = cnt;
     ((int *)out)[8] = sumA;
-    out[5] = cntf / sumA * ((float)s58 / s54 * ((float)s50 / s4c) + 0.5) * sumD;
     out[0] = gm_IncomeRating();
-    out[3] = 1.0f - n1 / cntf;
-    out[1] = 1.0f - n0 / cntf;
+    out[3] = 1.0f - (float)(n1 / (double)cntf);
+    out[1] = 1.0f - (float)(n0 / (double)cntf);
 
     for (i = 0; i < 8; i++) {
         for (j = 0; j < 8; j++) {
-            if (!(m > ai_Grid[i][j].halfWeightSum))
-                m = ai_Grid[i][j].halfWeightSum;
+            m = max(m, ai_Grid[i][j].halfWeightSum);
             w = ai_Grid[i][j].weightSum > 1.0f ? ai_Grid[i][j].weightSum : 1.0f;
             ai_Grid[i][j].weightSum = w;
             g = ai_Grid[i][j].buildingCount / (cntf + cntf);
