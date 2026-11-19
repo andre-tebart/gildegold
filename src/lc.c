@@ -1052,7 +1052,7 @@ int ai_ProductionWindow(AIBLD *bld)
     int fresh;
     int first;
     int text;
-    unsigned char cls;
+    AIBTYPE *type;
     int slot;
     int down;
     int up;
@@ -1084,16 +1084,16 @@ int ai_ProductionWindow(AIBLD *bld)
     ncols = 0;
     d2_SetForm(win, 0);
     text = 0x70b;
-    cls = ((AIBTYPE *)ai_BTypes)[bld->type].kind;
-    if (cls == 0x13 || cls == 4 || cls == 0x10)
+    type = &((AIBTYPE *)ai_BTypes)[bld->type];
+    if (type->kind == 0x13 || type->kind == 4 || type->kind == 0x10)
         text = 0x72f;
-    else if (cls == 8 || cls == 0xe)
+    else if (type->kind == 8 || type->kind == 0xe)
         text = 0x70f;
-    else if (cls == 6)
+    else if (type->kind == 6)
         text = 0x713;
-    else if (cls == 0x16)
+    else if (type->kind == 0x16)
         text = 0x717;
-    else if (cls == 0xd || cls == 0xc || cls == 0xb)
+    else if (type->kind == 0xd || type->kind == 0xc || type->kind == 0xb)
         text = 0x717;
     sv_OpenWindowFrame(d2_LastWindow, text, 0x742);
     sv_CreateScrollButtons(0x270, 0x15e, d2_LastWindow, d2_GetViewWin(win, 2), 0x78, &down, &up, &bar);
