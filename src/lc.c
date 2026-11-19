@@ -1964,19 +1964,7 @@ int d2_RemoveWindow(int win);                                   /* 0x472ce0 (d2.
    times it, else the building's priceFactor; a building of kind 0x47 prices by its player slot), the progress
    of the building's running job of the goods (job 4 / 3) as the icon's fill, the icon's and the bar's values
    (the input clamped to the amount, without the permission less the reserved part), the tooltip "%s~ %li %s"
-   (name, amount, unit) and the positions of all its objects in the window
-   @deep rewritten against the original (was a condensed draft, 1649 B; now 1931 vs 1936, 637 vs 638 instructions, same
-   calls, no ref differences): the empty slot's clean-up, the stock bar, the icon (input icon style 0xca /
-   0x8a or a picture), the side labels 0x747 / 0x746, the sell price (kind 0x47 by its player slot, the
-   market class 0xa * 1.1, else * priceFactor) and the buy price (* 0.9) through one gm_FormatAmount each,
-   the job progress fill (job 4 / 3), the input clamp and the bar values, the tooltip '%s~ %li %s', the
-   moves. The slot type is LCPRODSLOT (fields named), AIBLD gets priceFactor / playerSlot in this unit's
-   view, d2_CreateWinText's 16-bit call goes through d2_CreateWinTextS. All code hunks read: allocation and
-   scheduling - the d2_Objs base loaded before or after the index arithmetic (0x58ec03 '- lea
-   edx,[eax+eax*2]... mov ecx,[d2_Objs]' / '+ mov edx,[d2_Objs] ... lea eax'), the bar's stock loaded into
-   edi before d2_GetObjValue (0x58eb84 '+ mov edi, [esi+0x34]'), the argument loads of the sprintf
-   (0x58ec5f) and of the moves in another register order (0x58ed57: the aligner pairs the slider move with
-   the buy-price move). */
+   (name, amount, unit) and the positions of all its objects in the window */
 void ai_ShowProdSlot(int view, int part, LCPRODSLOT *slot, int input, unsigned char side, AIBLD *bld)
 {
     D2WIN *win;
@@ -2048,9 +2036,9 @@ void ai_ShowProdSlot(int view, int part, LCPRODSLOT *slot, int input, unsigned c
             if (slot->check != -1)
                 d2_Objs[slot->check].fillFraction = 0;
         } else if (job->kind == 4) {
-            d2_Objs[slot->check].fillFraction = (float)(1.0 - job->prodLeft / job->prodWork);
+            d2_Objs[slot->check].fillFraction = 1.0 - (job->prodLeft / job->prodWork);
         } else if (job->kind == 3) {
-            d2_Objs[slot->check].fillFraction = (float)(1.0 - job->incomeAmount / job->incomeAmountF);
+            d2_Objs[slot->check].fillFraction = 1.0 - (job->incomeAmount / job->incomeAmountF);
         }
         if (input) {
             value = d2_GetObjValue(slot->check);
