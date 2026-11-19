@@ -11588,15 +11588,25 @@ void he_AllocCustomersHire(AIJOB *ev)
    the event's character, a player character (kind 6 / 7) gets the news 0x1bb1; it walks to the target object's
    entrance ("dummy_EINGANG"; target 0: the building's main room object, -1: its 0xfd object); with hires left
    stage 1 again 10 .. 19 minutes later, else the event is freed
-   @deep Read all of it against the original and rewrote it typed (AIJOB / HEHIRE / AIBLD / AIBTYPE.jobs /
-   AICHAR / AIOBJ): the cost check (cost > gm_GetGoodsValue), the shared free tail after the switch, the
-   spawn and the hire inside their one-count loops, the 0x1bb1 quick jump's arguments, the target lookup's
-   branch layout (0 / -1). 357 = 357 instructions; left: the two gm_JobCost(&ai_CharsT[b->owner], b->type,
-   h->job, -1) calls (+0x5a, +0x281): the original loads the owner index and h->job first (xor eax / xor
-   ecx / mov ax, [edi + 0x27] / mov cl, [esi + 0xac] / push -1 / push ecx / the owner lea chain / xor edx /
-   mov dl, [edi]), ours h->job and b->type first (xor edx / xor eax / mov dl, [esi + 0xac] / mov al, [edi]
-   / push -1 / push edx / push eax / then the owner): the same loads and pushes in another order and
-   registers; he_RunCustomers' (owner, type, -1, 1) call schedules as the original */
+   @deep s42: the two gm_JobCost calls are the only hunks. c2dag shows VC6 assigns the arg temps before
+   scheduling: ours job=edx, type=eax, owner chain eax,eax,ecx,edx (so the owner load cannot hoist above
+   the type push); the original's job=ecx, owner idx eax, chain eax,eax,edx,eax, type edx (type loaded
+   after the chain). flip.py --want (mov cl,[esi+172] before push -1) hits only by DELETING bt =
+   &ai_BTypesT[b->type] (either case) or the cost line: the call's type arg and bt's b->type interact.
+   Inlining bt (case 1 only) gives the original's call bytes exactly but loses bt in ebp (77 ins); bt moved
+   after the if / into the loop / bt2 after n: 120-185 ins. = control: case order (case 0 last, -2/-1
+   last), e->stage++, (int) casts on job/type, ai_Chars[b->owner], ai_CharsT + owner. climb round 1:
+   nothing. Next: why the type temp joins bt's b->type (a CSE across the call? c2trace temp#2d4/2cb); try
+   bt from a separate type local (t = b->type before the call). prior: Read all of it against the original
+   and rewrote it typed (AIJOB / HEHIRE / AIBLD / AIBTYPE.jobs / AICHAR / AIOBJ): the cost check (cost >
+   gm_GetGoodsValue), the shared free tail after the switch, the spawn and the hire inside their one-count
+   loops, the 0x1bb1 quick jump's arguments, the target lookup's branch layout (0 / -1). 357 = 357
+   instructions; left: the two gm_JobCost(&ai_CharsT[b->owner], b->type, h->job, -1) calls (+0x5a, +0x281):
+   the original loads the owner index and h->job first (xor eax / xor ecx / mov ax, [edi + 0x27] / mov cl,
+   [esi + 0xac] / push -1 / push ecx / the owner lea chain / xor edx / mov dl, [edi]), ours h->job and
+   b->type first (xor edx / xor eax / mov dl, [esi + 0xac] / mov al, [edi] / push -1 / push edx / push eax
+   / then the owner): the same loads and pushes in another order and registers; he_RunCustomers' (owner,
+   type, -1, 1) call schedules as the original */
 void he_RunHire(int ev)
 {
     AIJOB *e = (AIJOB *)ev;
