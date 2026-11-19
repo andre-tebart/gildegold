@@ -119,6 +119,12 @@ Where the pushes and pops sit, how many epilogue copies there are, shared agains
 
 ### A result in a register, a hoisted constant, a reload from its slot
 
+- **`xor edi,edi` in the prologue and one failure returning `mov eax,edi` (its own epilogue copy), another failure
+  `xor eax,eax`, the success `mov eax,1`**: `ret = 0;` at the top, each failure `goto done;`, `ret = 1;` after the
+  work, `done: return ret;` (the lcamt callback style, ai_QuarrelCallback). Every goto-free spelling of ret
+  (`return ret` in the arm, `ret = 1` per arm, a final `if (bld)`) folds to `xor eax,eax`: VC6 folds a value only
+  one definition reaches; the label merges ret = 0 and ret = 1 (ai_UseGoodSendHome 90 -> 260 = 260 instructions).
+
 - **`xor eax,eax` before the first `test esi,esi; je exit` (it serves both the next `mov ax,[esi]` and the
   return 0), ours `xor eax,eax` after the test and again in the exit**: the first test was a guard `if (o == 0)
   return 0;`, the rest nested as before (`if (g != 0) {..} return 0;`). Guarding the second test as well breaks
@@ -2738,6 +2744,11 @@ Rotation, test position, countdown, induction variables and strength reduction, 
 
 ### Counters, countdowns and increment order
 
+- **A function-scope result count kept in a register only inside a row loop (`xor ebp,ebp` before the loop, `mov
+  [n],ebp` at its exit), ours the count in its slot all through**: the loop counts in its own local and the result
+  takes it after the loop (`for (j = 0, k = 0; ..; j++) { .. rows[k] .. k++; } n = k;`); the loop's `j = 0` and `k = 0`
+  in the for-init, j first (ai_FillWeddingTab 84 ins -> byte; the per-event flag `mine = 0` stood before the
+  event's date test).
 - **Two word-copy loops that walk two pointers with a down counter (`lea ecx,dst; lea eax,src; mov edx,n; mov
   edi,[eax]; add eax,4; mov [ecx],edi; add ecx,4; dec edx`), ours one pointer plus the difference
   (`sub ecx,eax; [edx+eax]`)**: index loops over the fields, `for (k..) ev->ids[k] = msg->ids[k];` and for a
