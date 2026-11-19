@@ -1801,20 +1801,32 @@ int ai_WorksForMaster(struct AICHAR *c);                     /* 0x47dd70 */
    by that parent. Otherwise, the partner alive and c at most 38 years old, a new pregnancy value is drawn from
    gm_BirthChance by the number of c's children, unless a child is a player or a kind 5 character, c has 4
    children or the player partner has 5
-   @deep read in full against the original and reconstructed (relatives[3..7] indexing, the party G28REC,
-   util_RandomF, b1b1 > 0, w00a > 0x26, the member forwarded from party.members[1]); statement structure
-   and branch targets equal, size 971 = 971. Left: (1) frame 0x12c vs 0x128: the original packs the spill
-   of the child count n (ebx, stored at +0x2e1 / reloaded at +0x372) and the float temp of the last
-   cm_SendFloatDelta into the slot of the address-taken arg ([esp+0x10]); ours gives arg its own slot
-   [esp+0x14] (tried: n as arg itself, fv inlined, a separate delta variable: all worse); (2) regs:
-   c/o/mate rotate ebp<->ebx through the whole function (original keeps 0 in ebx as mate's start and c in
-   edi, reloading c from the parameter in the second part); (3) the party fill hunk at +0x23f: the same 13
-   stores, the time words 8/0xc and host/members[0] scheduled around the two pushes (tried 11 statement
-   orders, this is the closest) */
+   @deep deep s46: frame fixed: arg is a block local of the pregnancy block (the n spill and fv then share
+   its slot, 0x128 = 0x128); party fill order: members[1] and time after used (climb move). Left (66 ins /
+   33 bytes, shape): a pure ebx<->ebp swap, o and mate (and m / n in the second half). c2trace --seq:
+   mate#1 (prio 14, avail ebx ebp) takes ebp and o#1 (prio -23) is left ebx; the original has mate = ebx
+   (the zero of mate = 0 / clk.min = 0 / gm_AddTime's 0 args) and o = ebp. Which of ebx / ebp mate picks
+   follows the block structure, not the priorities: arg = 2 moved after clk.min plus mate = o before the
+   arm's bld2 test gives mate ebx and everything else right (4 ins, but draft: the arg = 2 store then sits
+   after gm_AddTime where the original stores it between the pushes, and mov ebx,ebp before the t code),
+   every other single position of arg = 2 or of mate = o in either arm flips the whole function (66 .. 126
+   ins; ps_v3 / ps_v4 rounds of 27 / 16 positions). climb round 1 (tree) and 2 rounds from the 6-ins base:
+   only the party order and that 4-ins text. Open: the ordinary form that makes mate prefer ebx with arg =
+   2 before gm_AddTime and mate = o at the arm's end (the byte-candidate kind / the bulk split of the const
+   0 webs decides the pick). prior: read in full against the original and reconstructed (relatives[3..7]
+   indexing, the party G28REC, util_RandomF, b1b1 > 0, w00a > 0x26, the member forwarded from
+   party.members[1]); statement structure and branch targets equal, size 971 = 971. Left: (1) frame 0x12c
+   vs 0x128: the original packs the spill of the child count n (ebx, stored at +0x2e1 / reloaded at +0x372)
+   and the float temp of the last cm_SendFloatDelta into the slot of the address-taken arg ([esp+0x10]);
+   ours gives arg its own slot [esp+0x14] (tried: n as arg itself, fv inlined, a separate delta variable:
+   all worse); (2) regs: c/o/mate rotate ebp<->ebx through the whole function (original keeps 0 in ebx as
+   mate's start and c in edi, reloading c from the parameter in the second part); (3) the party fill hunk
+   at +0x23f: the same 13 stores, the time words 8/0xc and host/members[0] scheduled around the two pushes
+   (tried 11 statement orders, this is the closest) */
 void gm_PartnerStep(ORDCHAR *c)
 {
     ORDCHAR *o, *mate, *child;
-    int arg, t, kids, n, m, k, h;
+    int t, kids, n, m, k, h;
     float fv;
     char kind;
 
@@ -1823,6 +1835,7 @@ void gm_PartnerStep(ORDCHAR *c)
     o = ORD_CHAR(gm_FindChar(c->partner));
     if (c->pregnancy > 1.0f) {
         AITIME clk;
+        int arg;
 
         cm_SendFloatDelta(c->netId, 0x7c, util_RandomF() * -0.5f - c->pregnancy);
         gm_NetMsgCount++;
@@ -1872,13 +1885,13 @@ void gm_PartnerStep(ORDCHAR *c)
             memset(&party, 0, sizeof(party));
             arg = 0x12;
             party.host = mate->netId;
-            party.time = clk;
             party.members[0] = party.host;
-            party.members[1] = child->netId;
             party.kind = 7;
             party.flags = 0xa0;
             party.thing = -1;
             party.used = 2;
+            party.members[1] = child->netId;
+            party.time = clk;
             cm_BeginFieldBlock((char *)child, party.members[1]);
             cm_AddFieldDelta(1, 1, 2, &arg);
             cm_SendFieldDeltas();
