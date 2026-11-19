@@ -51,7 +51,7 @@ exe	0x00403ab0	ch_AnimDone	ch	byte	readable
 exe	0x00403b00	ch_SetNextAnim	ch	byte	readable		
 exe	0x00403c10	ch_StopAnim	ch	byte	readable		
 exe	0x00403d60	ch_ReleaseMorph	ch	byte	readable		
-exe	0x00403dc0	ch_CheckAniMorph	ch	shape	readable		
+exe	0x00403dc0	ch_CheckAniMorph	ch	byte	readable		
 exe	0x00404200	ch_PreloadAnims	ch	byte	readable		
 exe	0x00404360	ch_LoadLowAnims	ch	byte	readable		
 exe	0x004044a0	ch_AttachAni	ch	byte	readable		
@@ -2518,7 +2518,7 @@ exe	0x004daf80	cm_CheckTrial	cmscene	byte	readable
 exe	0x004db700	cm_RunTrial	cmscene	draft	readable	deep	
 exe	0x004dd960	cm_TrialAskPlayer	cmscene	byte	readable		
 exe	0x004de340	cm_TrialAskAI	cmscene	byte	readable		
-exe	0x004de4b0	cm_SinkDownAction	cmscene	shape	readable	deep	
+exe	0x004de4b0	cm_SinkDownAction	cmscene	byte	readable		
 exe	0x004de530	cm_DuelSinkDown	cmscene	byte	readable		
 exe	0x004de5e0	cm_DuelInitVariants	cmscene	byte	readable		
 exe	0x004de610	cm_DuelVariant	cmscene	byte	readable		
@@ -3606,7 +3606,7 @@ exe	0x00549080	he_RunPilloryPunishment	he	byte	readable
 exe	0x00549110	he_AllocOffspring	he	byte	readable		
 exe	0x00549120	he_RunOffspring	he	byte	readable		
 exe	0x005493a0	he_StartTrialEvent	he	byte	readable		
-exe	0x00549430	he_RunTrialEvent	he	shape	readable		
+exe	0x00549430	he_RunTrialEvent	he	byte	readable		
 exe	0x005496f0	he_StartNextTrialStep	he	byte	readable		
 exe	0x00549770	he_RunTrialSteps	he	byte	readable		
 exe	0x00549970	he_StartTraining	he	byte	readable		
@@ -3644,7 +3644,7 @@ exe	0x0054e770	he_StartLover	he	byte	readable
 exe	0x0054e890	he_RunLover	he	byte	readable		
 exe	0x0054eb80	he_IsSimCandidate	he	byte	readable		
 exe	0x0054ebd0	he_RunDiseaseSim	he	byte	readable		
-exe	0x0054ef70	he_StartDarkCorner	he	shape	readable	deep	
+exe	0x0054ef70	he_StartDarkCorner	he	byte	readable		
 exe	0x0054f160	he_RunDarkCorner	he	draft	readable	deep	
 exe	0x0054fb50	he_StartEffectEvent	he	byte	readable		
 exe	0x0054fc00	he_CreateSmokeEffect	he	byte	readable		
@@ -3779,7 +3779,7 @@ exe	0x00563980	he_AllocDueInOne	he	byte	readable
 exe	0x005639c0	he_RunAttack	he	draft	readable	deep	
 exe	0x005642e0	he_AllocFire	he	byte	readable		
 exe	0x005644e0	he_RunFire	he	byte	readable		
-exe	0x00564860	he_AllocBurn	he	draft	readable	deep	shape+readable -> draft+readable at 0f1c8dc1: promote --accept-falls
+exe	0x00564860	he_AllocBurn	he	byte	readable		
 exe	0x005649b0	he_RunBurn	he	draft	readable	deep	
 exe	0x005652b0	he_AllocStorm	he	byte	readable		
 exe	0x00565410	he_RunStormEvent	he	byte	readable		
@@ -4514,7 +4514,7 @@ exe	0x005c6910	ai_CourtshipConfirm	lcamt	byte	readable
 exe	0x005c6aa0	ai_CourtshipListWindow	lcamt	byte	readable		
 exe	0x005c6d00	ai_CourtshipWindow	lcamt	byte	readable		
 exe	0x005c72d0	ai_PlotRatingBaseChart	lcamt	byte	readable		
-exe	0x005c7460	ai_PlotScoreChart	lcamt	shape	readable	deep	
+exe	0x005c7460	ai_PlotScoreChart	lcamt	byte	readable		
 exe	0x005c7560	ai_PlotNoFirstChart	lcamt	byte	readable		
 exe	0x005c76b0	ai_PlotNoSecondChart	lcamt	byte	readable		
 exe	0x005c7800	ai_PlotCombinedChart	lcamt	byte	readable		
@@ -4592,7 +4592,7 @@ exe	0x005d2320	ai_UseGoodDrainActionPoints8	lcamt	byte	readable
 exe	0x005d2440	ai_UseGoodHoldRound	lcamt	byte	readable		
 exe	0x005d2580	ai_UseGoodCharmPartner	lcamt	shape	readable	deep	
 exe	0x005d2720	ai_UseGoodWeakenSkills3	lcamt	byte	readable		
-exe	0x005d2960	ai_UseGoodFrameChar	lcamt	shape	readable		
+exe	0x005d2960	ai_UseGoodFrameChar	lcamt	byte	readable		
 exe	0x005d2bc0	ai_UseGoodFrameChar2	lcamt	byte	readable		
 exe	0x005d2e80	ai_UseGoodHeatBuilding	lcamt	byte	readable		
 exe	0x005d2f20	ai_UseEventGood	lcamt	byte	readable		
