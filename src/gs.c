@@ -966,19 +966,12 @@ int gv_RankCulprits(int *ids, int *cnt, unsigned short t)
 /* 0x4f3dd0, as gv_RankCulprits over all the crimes (state not 0) the character t holds evidence of: per culprit the
    count of crimes (tot) and of the open ones (state 1, st); the 32 culprits with the most crimes are kept in ids[] /
    open[] / total[], sorted by total (descending, one insertion pass per culprit); returns the number of culprits (at
-   most 0x20). The test of a new culprit compares tot with open[0x1f], not total[0x1f] (as the original does).
-   @deep read whole function against the original and reconciled every statement (memsets, evidence walk
-   with gv_FindCrime and the unsigned state test, per-culprit count of total/open, the open[0x1f] compare
-   as the original codes it, the 3-array insertion pass, the clamp); instruction counts equal (154/154),
-   only stack-slot assignment differs: the m/i+1/&rec[i] slots rotate (0x1c/0x20/0x24) and in the sort the
-   counter/x/y slots rotate (ours 0x10/0x18/0x28, the original's 0x18/0x28/0x10: the original's counter
-   shares own's slot and y st's), plus 'xor edi,edi; mov [m],edi' scheduled before 'mov esi,
-   &ai_Evidence[0][1]' at 0x4f3e25 */
+   most 0x20). The test of a new culprit compares tot with open[0x1f], not total[0x1f] (as the original does). */
 
 int gv_RankCulpritsAll(int *ids, int *open, int *total, unsigned short t)
 {
     CRIME *rec[0x200];
-    int n, m, i, k, tot, st, own, x, y, id;
+    int n, m, i, k, tot, st, own, x, id;
     ORDCHAR *ch;
 
     memset(ids, 0xff, 0x20 * sizeof(int));
@@ -986,8 +979,8 @@ int gv_RankCulpritsAll(int *ids, int *open, int *total, unsigned short t)
     memset(open, 0, 0x20 * sizeof(int));
     memset(total, 0, 0x20 * sizeof(int));
     memset(rec, 0, sizeof(rec));
-    m = 0;
     ch = &ORD_CHARS[t];
+    m = 0;
     for (i = 0; i < 0x800; i++) {
         if (ai_Evidence[i][0] == ch->netId) {
             k = gv_FindCrime(ai_Evidence[i][1]);
@@ -1021,13 +1014,13 @@ int gv_RankCulpritsAll(int *ids, int *open, int *total, unsigned short t)
                 x = total[k];
                 if (x > total[k - 1]) {
                     id = ids[k];
-                    y = open[k];
+                    st = open[k];
                     ids[k] = ids[k - 1];
                     total[k] = total[k - 1];
                     open[k] = open[k - 1];
                     ids[k - 1] = id;
                     total[k - 1] = x;
-                    open[k - 1] = y;
+                    open[k - 1] = st;
                 }
             }
         }
