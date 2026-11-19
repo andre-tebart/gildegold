@@ -3103,33 +3103,26 @@ int cm_CheckBirth(G28REC *m)
    (random 0 / 1, + 2 for a girl, + 4 when members[0] has sex 1), 2 .. 5 screams "_GEBURT_GESCHREI" with random delays; then the
    view "cutscenes\\geburt" with the text 0x1aae (a boy) / 0x1aaf and the name box ("$L%t" with the child's first name,
    15 characters) until Enter or the box losing the focus gives a non-empty name, the frames end or the tutorial runs; the
-   name box's text is sent as the child's first name (16 bytes at +0x30). Nothing when one of them is not found
-   @deep read whole against the original 0x4e0f70..0x4e1212 and fixed: void (no return value), the name
-   buffer 16 bytes and sent as the first name (cm_AddFieldDelta(1, 0x10, 0x30, name)), the voice calls with
-   the bank and 5 arguments, the name-box loop (Enter or no focused input -> read the box), the text
-   0x1aae/0x1aaf as if/else. The only code hunks left (+0xb8..+0x10b) are argument scheduling of
-   cm_QueueVoice(-8, bank, "_GEBURT", n, 0): the original pushes the last 0 before evaluating n (push 0 /
-   push 2 hoisted, the four cm_Random calls share one add esp,4 at the join, add esp 0x14 after the call),
-   ours evaluates n first (add esp,4 per branch, push 0 after, the stack cleanup merged into the next
-   call's add esp 0x20); tried n as a nested ?: inside the argument list and as an if/else before the call:
-   identical object. The rest is slots (the prologue saves ebp before esi: '+ push ebp / + push esi / + mov
-   esi,[esp+0x20]' vs '- push esi / - mov esi,[esp+0x1c] / - push ebp'), regs (ebx<->edi) and the epilogue
-   order */
+   name box's text is sent as the child's first name (16 bytes at +0x30). Nothing when one of them is not found */
 
 void cm_RunBirth(G28REC *m)
 {
     char name[0x10];
     AICHAR *a, *b;
-    int bank, sc, view, box, n, k;
+    int bank, sc, view, box, k;
 
     a = (AICHAR *)gm_FindChar(m->members[0]);
     b = (AICHAR *)gm_FindChar(m->members[1]);
     if (a == 0 || b == 0)
         return;
-    n = 8;
-    cm_BeginFieldBlock((char *)b, b->netId);
-    cm_AddFieldDelta(1, 1, 2, &n);
-    cm_SendFieldDeltas();
+    {
+        int kind;
+
+        kind = 8;
+        cm_BeginFieldBlock((char *)b, b->netId);
+        cm_AddFieldDelta(1, 1, 2, &kind);
+        cm_SendFieldDeltas();
+    }
     cm_DialogFrameFlags = 0x702c6;
     d2_CutsceneActive = 1;
     bank = cm_LoadVoiceBank("GEBURT.sbf", 0);
@@ -3137,11 +3130,17 @@ void cm_RunBirth(G28REC *m)
     cm_LoadEventScene("Geburt.ed3");
     sc = cm_StartScript("cutscenes\\geburt\\enter_Geburt.esc");
     if (cm_RunSceneTicksOrClick(0x1964, 0, 0) == 0) {
-        if (a->sex == 0)
-            n = b->sex == 0 ? cm_Random(2) : cm_Random(2) + 2;
-        else
-            n = b->sex == 0 ? cm_Random(2) + 4 : cm_Random(2) + 6;
-        cm_QueueVoice(-8, bank, "_GEBURT", n, 0);
+        if (a->sex == 0) {
+            if (b->sex == 0)
+                cm_QueueVoice(-8, bank, "_GEBURT", cm_Random(2), 0);
+            else
+                cm_QueueVoice(-8, bank, "_GEBURT", cm_Random(2) + 2, 0);
+        } else {
+            if (b->sex == 0)
+                cm_QueueVoice(-8, bank, "_GEBURT", cm_Random(2) + 4, 0);
+            else
+                cm_QueueVoice(-8, bank, "_GEBURT", cm_Random(2) + 6, 0);
+        }
         if (cm_RunSceneTicksOrClick(0x3e8, 0, 0) == 0) {
             for (k = cm_Random(4) + 2; k > 0; k--)
                 cm_QueueVoice(-8, bank, "_GEBURT_GESCHREI", cm_Random(5), (unsigned short)util_RandomU(0x800) + 0x3e8);
