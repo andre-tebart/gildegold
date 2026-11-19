@@ -1140,7 +1140,7 @@ void snd_PlayFavourComment(void)
    (gm_Liking / 33) picks "_SCHLECHTE_GUNST" (0), "_MITTLERE_GUNST" (1) or "_GUTE_GUNST" (2 and up); with the
    building's goods list empty (AIRECIPE.count 0) the variation is 3, else the random r. a is the character's
    scene record (AITASK). x is volatile because the original reloads it from its slot before every use
-(matching trick, do not clean). @deep near-byte sweep s22: left the pop esi placed before je (ours) vs after the test ebx (original) around the goods-list call; not worked (the volatile x is the open question: an ordinary form that spills x is the first lever). */
+(matching trick, do not clean). @deep deep s43: without volatile (int x, int x[1], an ok flag from an if / else of the two list calls: all one code, 12 ins) VC6 threads the decided x test: on the count == 0 path x is known 1, so it keeps x in eax (mov eax,1 before the je) and drops the arm-0 reload; the original stores 1 to the slot, joins, and reloads x in each of the three level arms, i.e. nothing in the original let VC6 know x at the join. With volatile only the pop esi placement is left (ours before the je, the original between test ebx and jne). Also tried: x = 0 after util_RandomU (14), the three arms as one call with x ? 3 : r each (91). Open: the ordinary construct that blocks the jump threading (x's address escaping, x set through a pointer / another variable, a different flag form). prior: near-byte sweep s22: left the pop esi placed before je (ours) vs after the test ebx (original) around the goods-list call; not worked (the volatile x is the open question: an ordinary form that spills x is the first lever). */
 
 void ai_FavourComment(char *a)
 {
