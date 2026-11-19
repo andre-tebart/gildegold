@@ -4667,14 +4667,7 @@ void cm_FightSlotWinner(CMFIGHTSLOT *f)
 /* 0x4d7190, the escape flag of a fighter action f: the escape dummy named by f gets the fighter as its owner (the
    fighter marked fled, text 0x11b8); when the owner changes the old flag is deleted and a new "ub_FLUCHTFLAGGE" object
    (animated, the texture set 'g' + ref54 of the side leader of the kinds 5 .. 7, named "CONQUER_FLAG") is put at the
-   dummy's place (the name of the fled bit is a reasoned guess from the flag).
-   @deep Read against the original in full; typed (CMFIGHTSLOT with the dummy name, D3OBJECT.flagObj at
-   0x204, CHARACTER.flags.fled, AICHAR.ref54) and the fled bit set through the bitfield (or byte ptr
-   [eax+0x8d], 4 as the original). Left: one code hunk at 0x4d72cc: the original tests the texture set k
-   (mov al,[eax+0x54]; add al,0x67; test al,al; mov [esp+0xc],al; je), ours reuses the add's flags (no
-   test) - tried k char / unsigned char / int arithmetic, k = 0 before the if with the test after it, the
-   assignment inside the condition, if (k): all compile without the test; the rest is order (the 0x212 /
-   0x220 / 0x224 stores) and regs. ins 128 vs 129. */
+   dummy's place (the name of the fled bit is a reasoned guess from the flag). */
 
 void cm_PlantEscapeFlag(CMFIGHTSLOT *f)
 {
@@ -4708,16 +4701,17 @@ void cm_PlantEscapeFlag(CMFIGHTSLOT *f)
                 cm_FlagObjects[cm_FlagObjectCount] = (char *)d3_CreateObject(0, (D3VECTOR *)&pos, &rot, &ch_EmptyName);
                 d3t_PlayAnim(r, "sonstiges/anim_FLUCHTFLAGGE.baf", 1);
                 side = (AICHAR *)c->bld;  /* in a fight: the leader of the fighter's side */
-                k = 0;
                 if (side != 0 && side->ref54 != 0 && (side->kind == 5 || side->kind == 6 || side->kind == 7))
                     k = side->ref54 + 'g';
+                else
+                    k = 0;
                 if (k != 0)
                     d3if_SelectTextureSet(r, (struct D3SURF *)r->info, k, 1);
                 sprintf(r->name, "CONQUER_FLAG");
                 r->owner = 0;
-                r->stateFlags = (r->stateFlags & 0xf7) | 0x44;
                 r->kind = 4;
                 r->mask = 1;
+                r->stateFlags = (r->stateFlags & 0xf7) | 0x44;
                 o->flagObj = r;
             } else
                 o->flagObj = 0;
