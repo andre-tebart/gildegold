@@ -1028,9 +1028,21 @@ void ai_LayoutProdGoodsList(int param_1, int param_2, int param_3, int param_4);
    Then it collects the goods of the first room into ai_ProdColumns (new kinds only, at most 16), computes each
    column's inputs, the amount the stock of inputs makes and the stock of the goods, shows the count and lays
    out the columns and the goods list; on the way out it saves the scroll position in bld->prodScroll
-   @deep reconstructed from the original (2335 B, was a 615 B skeleton): the click on a column picture (the
-   member-row any-loop, the job-worker selection, the capacity / input checks with txt 0xbe/0xbf/0xc0, the
-   job search, the order message AIMSG type 4 with its cm_GetSlotState wait, sv_MoveToGroup), the
+   @deep s49: 151 -> 127 ins. Lever: fresh = 1 inside the count > 1 test (the byte sibling
+   ai_ExtractResourceWindow's form; 151 -> 127). The original's class test is an AIBTYPE pointer with
+   type->kind read at each test (lea eax,[edi+eax*4]; mov al,[eax]: typeptr-nocls fixes that hunk, 126 ins)
+   but in our current allocation it raises the size 2335 -> 2337, so not kept. Left (allocation): the
+   original keeps bld in ebp from the prologue (mov ebp,[esp+0x134] before push esi), win in esi across the
+   frame loop (cmp [d2_ClickedForm],esi), the click loop's column offset c and its countdown in two slots
+   ([esp+0x1c] / [esp+0x20], frame 0x128 vs ours 0x124: ours has the offset in ebp, c2trace k#519 prio -426
+   still takes ebp); the member loop's character index premultiplied (shl eax,2; mov
+   ecx,[eax+ai_Chars.job]) where ours forms ch. No lever (s49): ch written out at each use (the sibling's
+   form: 211-239), the second column loop as an index or p = &ai_ProdColumns[c] per pass (= control), g
+   written out at each use (frame right 0x128 but 296+: the original has g as a pointer, esi, and the k
+   loop walks &g->in[k]), int cls (272), climb round 1 (305 mutants, nothing comparable: frame size).
+   prior: reconstructed from the original (2335 B, was a 615 B skeleton): the click on a column picture
+   (the member-row any-loop, the job-worker selection, the capacity / input checks with txt 0xbe/0xbf/0xc0,
+   the job search, the order message AIMSG type 4 with its cm_GetSlotState wait, sv_MoveToGroup), the
    right-click branch, the column collection (gm_Query 1,5 / gm_QueryNext, ncols < 16), the per-column
    inputs with min(...)/need and batch, the stock, the count text, ai_UpdateProdColumns /
    ai_UpdateProdGoodsList / ai_LayoutProdGoodsList in the original order, the scroll save. Same size (2335
