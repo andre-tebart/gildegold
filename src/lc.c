@@ -10519,19 +10519,7 @@ int amt_CanUseMayorPower2(); void d2_SetObjEnabled();
    the list is rebuilt when their number changes. The apply button (enabled with fewer than 4 applicants and no
    application of me's own) applies (amt_ApplyForOffice, waiting for its slot); the other two open the office's
    column in the special-amount list and the office's info. Returns 1 when the application went through (the
-   campaign hears 0x2f)
-   @deep Read the whole original 0x5a0220..0x5a0586 and reconstructed it: the applicant scan over ai_Chars
-   (index loop, AICHAR.appliedOffice), the LCAMOUNTROW layout (x / x30 / y / rec in the original's store
-   order), the slot wait (while slot != -1 && cm_GetSlotState == 0), amt_KindColumn into a temporary before
-   ai_SpecialAmountListWindow, the ternary enable; button texts named (ai_TextOfficeApply/Column/Info).
-   What is left is one register-role difference: the original keeps the apply button id in ebp (reloaded
-   from its slot [esp+0x14] after the rebuild: 'mov ebp, dword ptr [esp + 0x18]; push ebp' at +0x24d, 'cmp
-   eax, ebp' at +0x286) and the shown count in memory ([esp+0x24]); ours keeps shown in ebp ('cmp ebp, ebx'
-   at +0x8a, 'mov ebp, dword ptr [esp + 0x30]' after d2_SetObjEnabled) and apply in memory, which shifts
-   the slots of ok / column / colWidth (0x18 <-> 0x20, 0x24 <-> 0x28) and turns the enable's 'push 1 / push
-   0' into 'mov eax, 1 / xor eax, eax; push eax'. Tried: declaration orders of apply / shown / win, the
-   field store orders, the loop forms. Instruction count 271 vs 269. Allocation (VC6's region split of the
-   outer loop), a variant round. */
+   campaign hears 0x2f) */
 
 int ai_OfficeApplicantsWindow(AICHARREC *me, unsigned int office)
 {
@@ -10601,7 +10589,10 @@ int ai_OfficeApplicantsWindow(AICHARREC *me, unsigned int office)
                         ai_AmountRow(rows[i].x, rows[i].y, d2_LastWindow, 0x56, &rows[i], 1);
                     }
                 }
-                d2_SetObjEnabled(apply, (n < 4 && me->appliedOffice == 0) ? 1 : 0);
+                if (n < 4 && me->appliedOffice == 0)
+                    d2_SetObjEnabled(apply, 1);
+                else
+                    d2_SetObjEnabled(apply, 0);
             }
         }
         if (dm_L.rup != 0) {
