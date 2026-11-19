@@ -11509,21 +11509,23 @@ void he_RunSale(int ev)
    the CompareTime / BuildQuery lines are equal). Rounds (s50, all = control): ai_Chars[b->owner] (char
    rows) at either or both of the first JobCost / GetGoodsValue, the compare inline ((int)gm_JobCost(..) >
    gm_GetGoodsValue(..)), (int)b->type; every position of the case -2 / -1 block, case 0 and default among
-   cases 1 / 2 / 3 (120 orders: one other code, 214). Worse: the compare swapped (216). Next: c2trace the
-   temps of line 11548 (which temp the original creates first), and the sibling he_RunCustomersHire's same
-   hunk (its note: owner index and job first in the original). prior: Read all of it against the original
-   and rewrote it typed (AIJOB / HECUSTOMERS / AIBLD / AICHAR / HEFINVIEW): the shared free tail (the cases
-   break to one he_FreeEvent after the switch), the spawn call inside the search loop, the serve body
-   inside its loop, the cost check (cost > gm_GetGoodsValue), the 0x1bab quick jump's argument order, no
-   gm_GetGoodsValue in stage 3. 408 = 408 instructions, the same blocks; left: regs (220) and scheduling:
-   the argument loads of the 0x1a40 news (+0x3e6 / +0x3f3: e->from loaded before / after the text pointer),
-   the person's netId vs e->from load order at +0x524, the 0x1bab txt_Format arguments (+0x67b, ecx/eax
-   swapped), and the two he_MessageBoxQuickjump calls of +0x6a8 / +0x716 (the same pushes, the original
-   loads target, the chr index and b->id in another order) (references: M8 at +0x283: ours refers to
-   ai_Time+0x8 (0x770ae8), the original's field to 0x770ae4 (ai_TimeHourW) (and 1 more), explained: the two
-   M8 lines (+0x283, +0x493) are the AITIME copies e->end = ai_Time under a register renaming (ours
-   eax/ecx/eax/cx, the original edx/eax/edx/ax): both copy [T], [T+4], [T+8], [T+0xc] in order; the aligner
-   pairs ours' T+8 load with the original's T+4 load because of the renamed registers) */
+   cases 1 / 2 / 3 (120 orders: one other code, 214). Worse: the compare swapped (216). climb round 1: best
+   108 ins only through a meaning change (a float local t = c->person in stage 2 reused by stage 3's
+   gm_FindChar): a candidate added in stage 2 re-rotates stage 1, so the lever is a value of stages 2 / 3,
+   not stage 1's text. Next: c2trace the temps of 11548 and of stage 2 (c->person = p->netId; the original
+   loads e->from before p->netId there). prior: Read all of it against the original and rewrote it typed
+   (AIJOB / HECUSTOMERS / AIBLD / AICHAR / HEFINVIEW): the shared free tail (the cases break to one
+   he_FreeEvent after the switch), the spawn call inside the search loop, the serve body inside its loop,
+   the cost check (cost > gm_GetGoodsValue), the 0x1bab quick jump's argument order, no gm_GetGoodsValue in
+   stage 3. 408 = 408 instructions, the same blocks; left: regs (220) and scheduling: the argument loads of
+   the 0x1a40 news (+0x3e6 / +0x3f3: e->from loaded before / after the text pointer), the person's netId vs
+   e->from load order at +0x524, the 0x1bab txt_Format arguments (+0x67b, ecx/eax swapped), and the two
+   he_MessageBoxQuickjump calls of +0x6a8 / +0x716 (the same pushes, the original loads target, the chr
+   index and b->id in another order) (references: M8 at +0x283: ours refers to ai_Time+0x8 (0x770ae8), the
+   original's field to 0x770ae4 (ai_TimeHourW) (and 1 more), explained: the two M8 lines (+0x283, +0x493)
+   are the AITIME copies e->end = ai_Time under a register renaming (ours eax/ecx/eax/cx, the original
+   edx/eax/edx/ax): both copy [T], [T+4], [T+8], [T+0xc] in order; the aligner pairs ours' T+8 load with
+   the original's T+4 load because of the renamed registers) */
 void he_RunCustomers(int ev)
 {
     AIJOB *e = (AIJOB *)ev;
