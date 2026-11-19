@@ -7300,22 +7300,30 @@ void he_StartProtection(int ev)
    Stage 3 reports: paid, the building gets the flag 0x100, the owner pays the collector, the home building
    counts it, the news 0x1a8d, stage 4 in 48 hours; refused (0x1a8e) or else (0x1a8f), stage 4 in five minutes.
    Stage 4 shows the news 0x1a90 to both when paid and sends the collector home
-   @deep Read all of it against the original and rewrote it typed (AIJOB / HEPROTECTION / AIMSG / AIBLD /
-   AICHAR): fixed the meaning errors - stage 3 goes to stage 4 with cm_SendExSetHEI(4) (the original's ebx =
-   4, not 1), the AIMSG fields (to +8, fromId +0xc, time, flags +0x36, arg[0]; no store at +0x34), the
-   owner's sel / mood[11][2] at stride 0x21c (was 0x14), the roll's direction (!(mood * 0.001f >
-   util_RandomF()): test ah,5 / jnp), the refused / other branches as two full copies, text[0x200] (frame
-   0x2fc equal). 580 = 580 instructions, the frame and switch table equal. Left, scheduling and allocation
-   only: the owner record addressed as a byte offset kept in edx (lea edx,[eax+eax*8]; shl edx,2; mov
-   al,[edx+ai_Chars+2], reused for [edx+ai_CharInts] after the memset) where ours forms the pointer (lea
-   edx,[eax*4+ai_Chars]); the AIMSG stores and the ai_Time copies in another order / with ecx<->edx swapped
-   (tried 8 field orders, the best kept); the cm_SendSetField / amount load order in the paid branch and
-   the 0x1a8d txt_Format argument loads. The M8 at +0x20a is the aligner pairing ours' mov edx,[ai_Time+8]
-   with the original's mov edx,[ai_TimeHourW] inside the same 14-byte ai_Time copy, both copying in the
-   same order (registers swapped) (references: M8 at +0x20a: ours refers to ai_Time+0x8 (0x770ae8), the
-   original's field to 0x770ae4 (ai_TimeHourW), explained: the ref: line is the ai_Time struct copy into
-   e->end, the same four loads in the same order on both sides with ecx/edx/eax renamed; the aligner pairs
-   different loads, no other object is referenced) */
+   @deep s49: draft 148 -> shape 8. Fixed: the 0x63 question's wait is gm_AddTime(&e->end, 3, 0, 0) (3
+   hours; the original pushes 0, 0, 3). Levers: the owner as an int index local read at each use (owner =
+   b->owner; ai_CharsT[owner].kind / .netId) instead of an AICHAR pointer: the original's byte-offset CSE
+   (lea edx,[eax+eax*8]; shl edx,2) kept across the memset (148 -> 28); the fill order fromId, to, type,
+   flags, arg[0], time (719 orders: shape 8). Left: the original loads b->id (mov ecx,[ebp+1]) before the
+   netId (mov eax,[edx+ai_CharInts]); ours the other way, so the to / fromId stores swap ecx / eax. No
+   lever: unsigned short owner (10), to re-read through b->owner (208), owner read before the amount (65),
+   msg as a block local, memset(.., sizeof(AIMSG)), every fill order (p1-0-.. = 8 with order 20), climb
+   round 1 (155 mutants: nothing). prior: Read all of it against the original and rewrote it typed (AIJOB /
+   HEPROTECTION / AIMSG / AIBLD / AICHAR): fixed the meaning errors - stage 3 goes to stage 4 with
+   cm_SendExSetHEI(4) (the original's ebx = 4, not 1), the AIMSG fields (to +8, fromId +0xc, time, flags
+   +0x36, arg[0]; no store at +0x34), the owner's sel / mood[11][2] at stride 0x21c (was 0x14), the roll's
+   direction (!(mood * 0.001f > util_RandomF()): test ah,5 / jnp), the refused / other branches as two full
+   copies, text[0x200] (frame 0x2fc equal). 580 = 580 instructions, the frame and switch table equal. Left,
+   scheduling and allocation only: the owner record addressed as a byte offset kept in edx (lea
+   edx,[eax+eax*8]; shl edx,2; mov al,[edx+ai_Chars+2], reused for [edx+ai_CharInts] after the memset)
+   where ours forms the pointer (lea edx,[eax*4+ai_Chars]); the AIMSG stores and the ai_Time copies in
+   another order / with ecx<->edx swapped (tried 8 field orders, the best kept); the cm_SendSetField /
+   amount load order in the paid branch and the 0x1a8d txt_Format argument loads. The M8 at +0x20a is the
+   aligner pairing ours' mov edx,[ai_Time+8] with the original's mov edx,[ai_TimeHourW] inside the same
+   14-byte ai_Time copy, both copying in the same order (registers swapped) (references: M8 at +0x20a: ours
+   refers to ai_Time+0x8 (0x770ae8), the original's field to 0x770ae4 (ai_TimeHourW), explained: the ref:
+   line is the ai_Time struct copy into e->end, the same four loads in the same order on both sides with
+   ecx/edx/eax renamed; the aligner pairs different loads, no other object is referenced) */
 
 void he_RunProtection(int ev)
 {
