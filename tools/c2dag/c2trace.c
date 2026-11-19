@@ -328,6 +328,27 @@ static void __cdecl hGrow(unsigned long *r)
     }
     fflush(out);
 }
+/* every instruction the back end unlinks (FUN_10702ae5(instr = ecx)), with the caller: C2TRACE_DEL=1. Shows which
+   instructions exist at allocation and leave no code (self copies, reloads behind a store, dead tests ..) */
+static void __cdecl hDel(unsigned long *r)
+{
+    void *t = (void *)r[7], *o; int k, h;
+    unsigned long ret = IsBadReadPtr((void *)r[4], 4) ? 0 : *(unsigned long *)r[4];
+    if (!trOn() || !t || IsBadReadPtr(t, 0x24)) return;
+    fprintf(out, "T DEL %lx@%d from %lx", U32(t, 4), (int)*(short *)((char *)t + 0x10), ret - (unsigned long)real);
+    if (U8(t, 9) & 1)
+        for (k = 0; k < 2; k++) {
+            fprintf(out, k ? " D:" : " U:");
+            for (h = 0, o = PTR(t, k ? 0x20 : 0x1c); o && !IsBadReadPtr(o, 0x1c) && h < 12; o = PTR(o, 0), h++) {
+                void *sy = PTR(o, 0x18);
+                if (U8(o, 8) != 1 || !sy || IsBadReadPtr(sy, 0x20)) { fprintf(out, " k%x", U8(o, 8)); continue; }
+                if (U8(sy, 4) == 2) { char cb[160]; cname(sy, cb); fprintf(out, " %s", cb); if (PTR(sy, 0x10) && !IsBadReadPtr(PTR(sy, 0x10), 0x20)) fprintf(out, "=%s", rn(U32(PTR(sy, 0x10), 0x1c))); }
+                else if (U8(sy, 4) == 1 && PTR(sy, 8) && !IsBadReadPtr(PTR(sy, 8), 0x20)) fprintf(out, " %%%s", rn(U32(PTR(sy, 8), 0x1c)));
+                else fprintf(out, " s%x", U8(sy, 4));
+            }
+        }
+    fprintf(out, "\n"); fflush(out);
+}
 static void __cdecl hCut(unsigned long *r)
 {
     void *t = (void *)r[7]; void *c = candById(r[6]); char nb[160];
@@ -757,6 +778,7 @@ static void install(void)
                     if (!getenv("C2TRACE_LITE")) midhook(0x739f7, 5, hNoReg, t3);
                     if (!getenv("C2TRACE_LITE")) midhook(0x43332, 8, hUnprof, t4);
                     midhook(0x453f8, 5, hSplit, t5);
+                    if (getenv("C2TRACE_DEL")) { static const unsigned char td[] = { 0x8b, 0x41, 0x0c, 0x8b, 0x11 }; midhook(0x2ae5, 5, hDel, td); }
                     if (!getenv("C2TRACE_LITE")) midhook(0x44000, 6, hMark, t6);
                     midhook(0x8a6e, 6, hIns, t7);
                     if (!getenv("C2TRACE_LITE")) midhook(0x7496c, 6, hFwd, t8);
