@@ -12193,18 +12193,11 @@ int amt_GetFirstOffice(unsigned int k, struct AMTREC *out); void cm_BeginGroup(c
    twice, the jailer) with the amount slider (0x96 .. the player's money in the city's coin, gm_ConvertMoney, step
    0xfa) and the bribe button: the bribe message 0x39 to the jailer (arg: the player's netId, the jailer's netId,
    the amount back in base money, gm_PlayerFactor) goes in the group "kerkermeister_bestechen" with the payment
-   (cm_SendMoveGoods)
-   @deep Read whole against the original and reconstructed; every call, argument and message field matches
-   (ours 178, the original 177). Left, at +0x16a..+0x1a8: the original loads jailer->netId once (mov ecx,
-   [esi+4]) before the msg.type byte store and reuses it for msg.to and msg.arg[1]; ours reloads it after
-   the stores (msg.arg[1] = msg.to gives the single load but not the order; a to / arg[1] first order is
-   worse) and schedules the d2_GetObjValue pushes and the cm_SendMoveGoods argument loads in another order
-   (scheduling only). The prover stops there: the same value loaded at another time across the byte store. */
+   (cm_SendMoveGoods) */
 void ai_DungeonBribeWindow(AIBLD *bld)
 {
     AMTREC office;
     int bribeBtn;
-    AIMSG msg;
     char buf[0x800];
     AICHARREC *jailer;
     int win;
@@ -12239,12 +12232,14 @@ void ai_DungeonBribeWindow(AIBLD *bld)
         if (dm_L.rup != 0)
             sv_PopRequest = 1;
         if (d2_ClickedId != -1 && d2_PointerObj == bribeBtn) {
+            AIMSG msg;
+
             msg.type = 0x39;
             msg.to = jailer->netId;
             msg.fromId = -1;
             msg.flags = 9;
-            msg.arg[1] = jailer->netId;
             msg.arg[0] = ((AICHARREC *)ai_Chars)[ai_PlayerId].netId;
+            msg.arg[1] = jailer->netId;
             msg.arg[2] = gm_PlayerFactor(d2_GetObjValue(slider), ai_OwnPlayer);
             cm_BeginGroup("kerkermeister_bestechen");
             cm_SendMoveGoods(jailer->netId, ((AICHARREC *)ai_Chars)[ai_PlayerId].netId, ai_OwnPlayer, msg.arg[2]);
