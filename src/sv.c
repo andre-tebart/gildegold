@@ -6040,13 +6040,22 @@ void sv_ButtonRow(int f, int y, int *out, int n, ...)
 /* 0x52e4b0, sv_ButtonRow with the font 0x54 and the button kind 0xc5 (rt_EditCartRoute's tab row): n buttons in a
    row in the window f at the height y, labelled with the n string arguments, as wide as the widest label + 0x20,
    spread evenly or put side by side 8 apart and centred; the ids go to out[]
-   @deep Read whole against the original 0x52e4b0..0x52e5fc and rewritten as sv_ButtonRow's twin: D2WIN
-   *win (w +8), the va_arg label loop with the inline strcpy, d2_TextWidth(s, 0x54) + 0x20, one widest
-   width wmax (a slot, as the original), the spread / side-by-side branch with the if/else difference, the
-   slider x as x - wmax / 2, D2OBJ.font = 0x54, kind 0xc5. Same size (333 = 333); the whole diff is the
-   ebx/edi rotation: with --regs ebx=edi,edi=ebx only the prologue's push order / the load of n (ours mov
-   edi,[esp+0x81c] before push ebp, the original after push edi), the reload of n after the label loop
-   scheduled one line later, the 'add ebx,ebp' line order and the pop order remain. */
+   @deep s45: c2trace: the swap is a priority tie: loop 2's IVs x - wmax / 2 (k#14d), labels[i] (k#14f) and
+   x itself all have prio 109; ours x -> edi, k#14d edi, k#14f ebx, loop 1's down counter (copy of n) ebx
+   and label pointer edi; the original has every pair the other way (n / counter edi, label pointer ebx, x
+   ebx). So the lever is which candidate is created / ranked first, not a spelling. No change (= control):
+   x - wmax / 2 hoisted as x -= wmax / 2 (71 ins, x becomes the IV), strcpy(labels[i], s = va_arg(..)),
+   out[i] = id = .., x = x + step, wmax = max(w, wmax), n > i; worse: out[i] read back for font / width
+   (84), d2_Wins[f].w for win->w (125), d2_TextWidth(labels[i]) (frame 0x804). climb 2 rounds: nothing.
+   Next: one reference more or fewer for x or the labels pointer (c2trace --prio x), the sibling
+   sv_ButtonRow's state (its own swap is edi / ebx too). prior: Read whole against the original
+   0x52e4b0..0x52e5fc and rewritten as sv_ButtonRow's twin: D2WIN *win (w +8), the va_arg label loop with
+   the inline strcpy, d2_TextWidth(s, 0x54) + 0x20, one widest width wmax (a slot, as the original), the
+   spread / side-by-side branch with the if/else difference, the slider x as x - wmax / 2, D2OBJ.font =
+   0x54, kind 0xc5. Same size (333 = 333); the whole diff is the ebx/edi rotation: with --regs
+   ebx=edi,edi=ebx only the prologue's push order / the load of n (ours mov edi,[esp+0x81c] before push
+   ebp, the original after push edi), the reload of n after the label loop scheduled one line later, the
+   'add ebx,ebp' line order and the pop order remain. */
 
 void sv_TabButtonRow(int f, int y, int *out, int n, ...)
 {
