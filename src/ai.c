@@ -3486,11 +3486,9 @@ void ai_BuildTradeOffers(AICHAR *ch, AIOBJ *store, int f)
         if (j < ai_NEntries)
             continue;
         p = gm_FindMarketObject(ai_Slots[i].item);
-        if (p == 0) {
-            ai_Slots[i].saving = -1000000.0f;
-        } else {
+        if (p != 0) {
             price = gm_ItemPrice(ai_Slots[i].item, 100);
-            diff = gm_GoodsPrice(ai_Slots[i].item, ai_OwnPlayer);
+            diff = gm_GoodsPrice(ai_Slots[i].item, ai_OwnPlayer) - price;
             if (ai_NEntries < 0x20) {
                 ai_Entries[ai_NEntries].item = ai_Slots[i].item;
                 ai_Entries[ai_NEntries].slot[0] = -1;
@@ -3501,7 +3499,7 @@ void ai_BuildTradeOffers(AICHAR *ch, AIOBJ *store, int f)
                 ai_Entries[ai_NEntries].store = p;
                 ai_Entries[ai_NEntries].sellAmount = 0;
                 ai_Entries[ai_NEntries].cost = 0;
-                ai_Entries[ai_NEntries].margin = diff - price;
+                ai_Entries[ai_NEntries].margin = diff;
                 ai_Entries[ai_NEntries].pending = 0;
                 ai_Entries[ai_NEntries].rank = 0x21;
                 ai_Entries[ai_NEntries].flags = 0;
@@ -3511,7 +3509,8 @@ void ai_BuildTradeOffers(AICHAR *ch, AIOBJ *store, int f)
                 ai_Entries[ai_NEntries].buyerCapacity = gm_FreeCapacity(p, ai_Slots[i].item, 1000000);
                 ai_NEntries++;
             }
-        }
+        } else
+            ai_Slots[i].saving = -1000000.0f;
     }
     for (job = he_FindEvent(2, 0, 0xb, 3, ch->bld->id); job; job = he_NextEvent()) {
         p = gm_FindObjectInst(job->u.id);
