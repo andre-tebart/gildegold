@@ -17904,7 +17904,18 @@ void he_AllocDueInOne(AIJOB *ev)
    event's character, 0x1c56 to a player owner; stage 5). Stage 3 waits for the party's slot and keeps its id (stage
    4), stage 4 waits (5 minutes) until the party is over (stage 5 in a second); stages 5 / -2 / -1 send the gang to
    the start building's main room and free the record
-   @deep Reconstructed whole from the skeleton against 0x5639c0..0x5642d4 (713 vs 710 instructions, switch
+   @deep s51: the byte sibling he_RunRaid's forms: raid100 as an element loop (239 -> 84), the start
+   building read into home before gm_Query 0xca (home->objList) and again before raidHome = home->id (84 ->
+   54, size = the original's 2291), then a 720-order round of the party fill: thing, used, host, variant,
+   members[1], members[0] (54 -> 40). Left: (1) the slots of o and chance swapped through the whole
+   function (the original o at 0x10, chance at 0x14): c2frame packs o (count 7) first and chance's slot
+   takes the loop temps of stages 1 / 5 and the reportKnow fild temp (weight 12 against 9), so chance's
+   slot sorts first; the original needs o's slot denser. A separate room local in stage 5 fixes the slots
+   but drops the o = 0 store at the top (the original's o = 0 reaches stage 5's o->objId): wrong. Moving
+   the o / chance declarations: only the store order moves. (2) members[1]'s owner->netId load: the
+   original after members[0] (me from its slot), ours (with this fill order) before; members[0] first costs
+   6 elsewhere (46). No lever: if (gm_AllowAll), while-form of the report search, o && in the move test.
+   prior: Reconstructed whole from the skeleton against 0x5639c0..0x5642d4 (713 vs 710 instructions, switch
    tables equal), as the twin of he_RunRaid (the raid* words of AIJOB): stage 0 the gang to the target
    ('Angriff', no null check of the figure as the original), stage 1 the actions wait (10 minutes), stage 2
    the roll random(0x4b) + 100 * the spy report's (reportKnow + 100) / 100 (10 with gm_AllowAll) against
@@ -17983,11 +17994,11 @@ void he_RunAttack(AIJOB *ev)
             party.kind = 3;
             party.flags = 0xa2;
             party.thing = b->id;
-            party.host = ai_CharInts[ai_PlayerId][0];
             party.used = 2;
+            party.host = ai_CharInts[ai_PlayerId][0];
             party.variant = 2;
-            party.members[0] = me->netId;
             party.members[1] = owner->netId;
+            party.members[0] = me->netId;
             for (i = 0; i < 16; i++) {
                 party.raid.raiders[i] = -1;
                 party.raid.defenders[i] = -1;
