@@ -9716,29 +9716,31 @@ int ai_UseGoodInfectOwner(AICHARREC *ch, G8USEVIEW *use)
    object's bldId and sets the bit 0x20 of the building's word 0x5a (cm_SendSetField). An owner (not 0xffff) of
    kind 6 / 7 gets the news 0xff2 about the building (key 0x5fb). Returns 1. The message is cleared with
    D3_ZERO before and after the 0x76 message in each path, as the original's code has it.
-   @deep s15 (size queue, 926 vs 938): read the entry again: the original holds the constant 6 in ebx (cmp
+   @deep deep s47: the structure is the lcamt callback style (ai_QuarrelCallback): ret = 0 at the top, each
+   failure 'goto done', ret = 1 after the rest, done: return ret. This gives the original's xor edi,edi at
+   entry, the mov eax,edi failure return and 260 = 260 instructions (kept, 90 -> 89 ins). Left: (1) the two
+   failure blocks swapped at the end (original: path 2's mov eax,edi block before path 1's xor eax,eax);
+   (2) the message fill order in all three fills: the original loads ai_Time 0 / 8 / 4 (12 late), stores to
+   / time between, loads *id and pushes &msg BEFORE the type / fromId / time12 / flags stores; ours loads
+   *id after them (the pointer load ordered after stores to the escaped msg). Tried: ret forms without goto
+   (all fold to xor eax,eax: VC6 folds ret where only one def reaches), time-before-to (84 ins, worse
+   layout elsewhere), every insertion of to / time / id into the type..good order (224 variants, best 88).
+   prior: s15 (size queue, 926 vs 938): read the entry again: the original holds the constant 6 in ebx (cmp
    [esi+2],bl for ch->kind == 6 and cfg.kind = 6 store) and zeroes edi at the entry; path 1 clobbers edi
    (rep stosd of cfg) and its pick failure returns xor eax,eax (block at the end), path 2's query failure
    returns mov eax,edi (its own epilogue copy before it): a variable that is 0 from the entry and still
    unknown to VC6 on path 2 (not a literal return 0, which folds), dead on path 1. Not tried yet: a result
    variable (ret = 0 at the top, return ret on path 2's failure, return 0 / ret = 1 elsewhere) and the
-   forms that make const 6 a candidate (kind == 6 and cfg.kind = 6 in one block). prior: Rewritten from the
-   original's whole extent (938 B; the old draft note of a second ai_MapPick block was past the end): typed
-   AICHARREC / G8USEVIEW / AMOUNTCFG / AIMSG (effect words), both paths written out as the original has
-   them with the D3_ZERO before and after the 0x76 message; every call, argument, constant and store
-   matches (252 vs 260 instructions). Left: (1) frame layout: the original puts msg next to the D3_ZERO
-   temps (ebp-0x104) and cfg below it (ebp-0x154), ours cfg at ebp-0x5c and msg at ebp-0x154 (declaration
-   order and names tried, no effect); (2) scheduling of the message stores (ai_Time's 14-byte copy and the
-   type / fromId / flags stores in another order); (3) the original holds 0 in edi from the entry (xor
-   edi,edi; the path-2 failure returns mov eax,edi), ours none. Tried: early returns vs if (bld != 0) { ..
-   } else return 0 (kept, -23 ins). (references: M8 at +0xbd: ours r... */
+   forms that make const 6 a candidate (kind == 6 and cfg.kind = 6 in one block). */
 
 int ai_UseGoodSendHome(AICHARREC *ch, G8USEVIEW *use)
 {
     AIMSG msg;
     AIBLD *bld;
     int *id;
+    int ret;
 
+    ret = 0;
     if (ch->kind == 6) {
         AMOUNTCFG cfg;
         char text[0x100];
@@ -9751,38 +9753,34 @@ int ai_UseGoodSendHome(AICHARREC *ch, G8USEVIEW *use)
         cfg.kind = 6;
         cfg.filter = 0x1a0744300;
         bld = (AIBLD *)ai_MapPick(1, &cfg, text, 0, 0);
-        if (bld != 0) {
-            D3_ZERO(&msg, sizeof(msg));
-            msg.to = ch->netId;
-            msg.time = ai_Time;
-            id = &bld->id;
-            msg.type = 0x76;
-            msg.fromId = -1;
-            msg.flags = 10;
-            msg.effect.target = *id;
-            msg.effect.good = 0x178;
-            cm_SendLongMessage((char *)&msg);
-            D3_ZERO(&msg, sizeof(msg));
-        } else {
-            return 0;
-        }
+        if (bld == 0)
+            goto done;
+        D3_ZERO(&msg, sizeof(msg));
+        msg.to = ch->netId;
+        msg.time = ai_Time;
+        id = &bld->id;
+        msg.type = 0x76;
+        msg.fromId = -1;
+        msg.flags = 10;
+        msg.effect.target = *id;
+        msg.effect.good = 0x178;
+        cm_SendLongMessage((char *)&msg);
+        D3_ZERO(&msg, sizeof(msg));
     } else {
         bld = (AIBLD *)gm_BuildQuery(1, 1, use->target);
-        if (bld != 0) {
-            D3_ZERO(&msg, sizeof(msg));
-            msg.to = ch->netId;
-            msg.time = ai_Time;
-            id = &bld->id;
-            msg.type = 0x76;
-            msg.fromId = -1;
-            msg.flags = 10;
-            msg.effect.target = *id;
-            msg.effect.good = 0x178;
-            cm_SendLongMessage((char *)&msg);
-            D3_ZERO(&msg, sizeof(msg));
-        } else {
-            return 0;
-        }
+        if (bld == 0)
+            goto done;
+        D3_ZERO(&msg, sizeof(msg));
+        msg.to = ch->netId;
+        msg.time = ai_Time;
+        id = &bld->id;
+        msg.type = 0x76;
+        msg.fromId = -1;
+        msg.flags = 10;
+        msg.effect.target = *id;
+        msg.effect.good = 0x178;
+        cm_SendLongMessage((char *)&msg);
+        D3_ZERO(&msg, sizeof(msg));
     }
     msg.to = ch->netId;
     msg.time = ai_Time;
@@ -9801,7 +9799,9 @@ int ai_UseGoodSendHome(AICHARREC *ch, G8USEVIEW *use)
         txt_Format(news, 0xff2, bld);
         he_ShowNews(lc_CharRecs[bld->owner].netId, -1, news, 0, 0x5fb, 0);
     }
-    return 1;
+    ret = 1;
+done:
+    return ret;
 }
 /* 0x5d0320, the use callback of the Domizil good 0x17b (reached through its table entry +0x14): picks the target
    character, for a player (kind 6) with the special-amount menu (ai_AmountMenu, the gypsy filter, mode 0x400, the
