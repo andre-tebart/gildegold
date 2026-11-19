@@ -8022,18 +8022,7 @@ void he_StartTitleCeremony(int ev)
    text by sex) with the fanfare by the title's height and the herald's voice, then the click sound; for another
    character the news 0x42a4 / 0x42a2 / 0x42a0, 0x161b or 0x161a with the rival's voice; then the news 0x161c below
    (stage 1). Stage 1 frees the event when the window is answered (button 0, or the event bar's confirmation of
-   its slot); without a window it starts over
-   @deep Read all of it against the original and rewrote it typed (AIJOB / HETITLE / AICHAR /
-   GMPLAYERSLOT): reconstructed the missing statements (the voices: the fanfare by the title's height Kurz
-   / Mittel / Lang, _VERLEIHUNG_TITEL / _BUERGERRECHT, _TITEL_MAENNLICH / WEIBLICH with the title, the
-   _ERHALTEN_HS_02..04 heralds, the click sound; the rival's _KONKURENT / _FB_HS_02..04 voices), fixed the
-   news arguments (&e->end, not ev; the player's name &ai_PlayerSlotsT[ai_OwnPlayer].name[0x20]), the
-   per-sex title text as two sums (sex == 0 ? title + 0x114 : title + 0x11e). 448 = 448 instructions, the
-   same blocks in the same order. Left, allocation and scheduling only: the saved registers pushed ebx,
-   ebp, esi, edi in the original (ours ebx, ebp, edi, esi; ev in edi, the character in esi on both sides),
-   ecx / edx / eax swapped through the news and voice argument loads, and in the 0x1618 news (+0x237) the
-   original computes the sex term in eax and loads ai_OwnPlayer before the character's id (ours the id
-   first, the term in edx); tried the locals' declaration order */
+   its slot); without a window it starts over */
 void he_RunTitleCeremony(int ev)
 {
     AIJOB *e = (AIJOB *)ev;
@@ -8113,13 +8102,25 @@ void he_RunTitleCeremony(int ev)
                 snd_QueueVoice(-7, 0, "MausclickLinks_s_01", -1, 0);
             }
         } else {
-            if (t->title == 9)
-                io_PrintText(0x42a4, c->id, (c->sex != 0 ? 10 : 0) + 0x11d, c->id);
-            else if (t->title == 8)
-                io_PrintText(0x42a2, c->id, (c->sex != 0 ? 10 : 0) + 0x11c, c->id);
-            else if (t->title == 7)
-                io_PrintText(0x42a0, c->id, (c->sex != 0 ? 10 : 0) + 0x11b, c->id);
-            else if (t->title != 2)
+            if (t->title == 9) {
+                if (c->sex != 0)
+                    text = 0x127;
+                else
+                    text = 0x11d;
+                io_PrintText(0x42a4, c->id, text, c->id);
+            } else if (t->title == 8) {
+                if (c->sex != 0)
+                    text = 0x126;
+                else
+                    text = 0x11c;
+                io_PrintText(0x42a2, c->id, text, c->id);
+            } else if (t->title == 7) {
+                if (c->sex != 0)
+                    text = 0x125;
+                else
+                    text = 0x11b;
+                io_PrintText(0x42a0, c->id, text, c->id);
+            } else if (t->title != 2)
                 io_PrintText(0x161a, c->id, c->id, (c->sex == 0 ? t->title + 0x114 : t->title + 0x11e), c->id);
             else
                 io_PrintText(0x161b, c->id);
