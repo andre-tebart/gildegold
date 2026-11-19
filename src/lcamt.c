@@ -9717,33 +9717,36 @@ int ai_UseGoodInfectOwner(AICHARREC *ch, G8USEVIEW *use)
    kind 6 / 7 gets the news 0xff2 about the building (key 0x5fb). Returns 1. The message is cleared with
    D3_ZERO before and after the 0x76 message in each path, as the original's code has it.
    @deep deep s47: levers found: (a) ret = 0 at the top, failures 'goto done', ret = 1 after the work,
-   done: return ret (the lcamt callback style, ai_QuarrelCallback): xor edi,edi at entry, the mov eax,edi
-   failure return, 260 = 260; (b) each 0x76 message and the 0x77 message a block local of its own block
-   (one slot): the *id load and the &msg push before the type / fromId stores (90 -> 70); (c) fill order
-   to, type, fromId, time, flags, id, target, good (5040 orders; path 1 byte-equal), path 2 with id right
-   after type (with path 1's order VC6 lays path 2 out differently, 64), 0x77 to, type, fromId, time,
-   flags, target (-> 26); (d) path 1 as if (bld != 0) { .. } else goto done; (the failure epilogues in the
-   original's order, -> 22). Left: path 2 one scratch step behind from its first instruction (ours mov
-   edx,[use] / mov eax,[edx+4] / lea ecx,[msg], the original eax / ecx / lea eax) and its fill loading
-   netId before ai_Time. With the arms swapped (if (ch->kind != 6) {path 2} else {path 1}) path 2 gets the
-   original's eax / ecx but is laid out first (86): the rotation path 2 sees is the one after the entry;
-   with path 1 first one temp of the original's is missing before path 2. No lever: path 2's fill in 840
-   orders, id at every place of either path (*id / bld->id), the 0x77 fill in 720 orders, ret = 1 at every
-   tail position x SendSetField(*id / bld->id), the tail (1..7 statements) written in both arms, path 1 /
-   path 2 failure as return 0 / return ret / ret = 0; goto, bld = 0 / id = 0 at the top, the query inside
-   the test, path 2's msg at the else-block level, classMask / ids loop, climb 5 rounds (--unsafe: only
-   msg.to before path 2's D3_ZERO, a meaning change). prior: s15 (size queue, 926 vs 938): read the entry
-   again: the original holds the constant 6 in ebx (cmp [esi+2],bl for ch->kind == 6 and cfg.kind = 6
-   store) and zeroes edi at the entry; path 1 clobbers edi (rep stosd of cfg) and its pick failure returns
-   xor eax,eax (block at the end), path 2's query failure returns mov eax,edi (its own epilogue copy before
-   it): a variable that is 0 from the entry and still unknown to VC6 on path 2 (not a literal return 0,
-   which folds), dead on path 1. Not tried yet: a result variable (ret = 0 at the top, return ret on path
-   2's failure, return 0 / ret = 1 elsewhere) and the forms that make const 6 a candidate (kind == 6 and
-   cfg.kind = 6 in one block). */
+   done: return ret (the lcamt callback style, ai_QuarrelCallback): xor edi,edi at entry and the mov
+   eax,edi failure return, 260 = 260; (b) each 0x76 message and the 0x77 message a block local of its own
+   block (one slot): the *id load and the &msg push before the type / fromId stores (90 -> 70); (c) fill
+   order to, type, fromId, time, flags, id, target, good (5040 orders; path 1 byte-equal), path 2 with id
+   right after type, 0x77 to, type, fromId, time, flags, target (-> 26); (d) path 1 as if (bld != 0) { .. }
+   else goto done (failure epilogues in the original's order, -> 22). Left: path 2 (the gm_BuildQuery arm)
+   runs one scratch register behind from its first instruction (ours mov edx,[use] / mov eax,[edx+4] / lea
+   ecx,[msg], the original eax / ecx / lea eax), so its fill loads netId before ai_Time. Mechanism
+   (probes): the rotation is strictly sequential through path 1 into path 2 (one extra temp at path 1's
+   end, e.g. a probe store of &msg, gives the original's eax / ecx; removing path 1's second D3_ZERO gives
+   ecx); with the arms swapped path 2 starts at eax too (laid out first, 86). So the original has exactly
+   one temporary more than ours between path 1's last lea (second D3_ZERO, ecx in both) and path 2's use
+   load, leaving no code; the same count applied to path 2 (eax -> edx at its end) says each arm of the
+   original has one hidden temp more. Writing the tail (1..7 statements) in both arms (cross-jumped copy)
+   fixes path 2's start for 3 and 6 statements but the two copies then differ by the rotation and are not
+   merged (117..173). No lever: path 2's fill in 840 orders, id at every place of either path (*id /
+   bld->id), the 0x77 fill in 720 orders, ret = 1 at every tail position x SendSetField(*id / bld->id),
+   failure as return 0 / return ret / ret = 0; goto, bld = 0 / id = 0 at the top, the query inside the
+   test, path 2's msg at the else-block level, classMask / ids loop, id = &bld->id again at each arm's end,
+   climb 3 / 5 rounds (seeds 3, 7, --unsafe: only msg.to before path 2's D3_ZERO, a meaning change). prior:
+   s15 (size queue, 926 vs 938): read the entry again: the original holds the constant 6 in ebx (cmp
+   [esi+2],bl for ch->kind == 6 and cfg.kind = 6 store) and zeroes edi at the entry; path 1 clobbers edi
+   (rep stosd of cfg) and its pick failure returns xor eax,eax (block at the end), path 2's query failure
+   returns mov eax,edi (its own epilogue copy before it): a variable that is 0 from the entry and still
+   unknown to VC6 on path 2 (not a literal return 0, which folds), dead on path 1. Not tried yet: a result
+   variable (ret = 0 at the top, return ret on path 2's failure, return 0 / ret = 1 elsewhere) and the
+   forms that make const 6 a candidate (kind == 6 and cfg.kind = 6 in one block). */
 
 int ai_UseGoodSendHome(AICHARREC *ch, G8USEVIEW *use)
 {
-    /* msgs per block */
     AIBLD *bld;
     int *id;
     int ret;
@@ -9762,19 +9765,19 @@ int ai_UseGoodSendHome(AICHARREC *ch, G8USEVIEW *use)
         cfg.filter = 0x1a0744300;
         bld = (AIBLD *)ai_MapPick(1, &cfg, text, 0, 0);
         if (bld != 0) {
-        AIMSG msg;
+            AIMSG msg;
 
-        D3_ZERO(&msg, sizeof(msg));
-        msg.to = ch->netId;
-        msg.type = 0x76;
-        msg.fromId = -1;
-        msg.time = ai_Time;
-        msg.flags = 10;
-        id = &bld->id;
-        msg.effect.target = *id;
-        msg.effect.good = 0x178;
-        cm_SendLongMessage((char *)&msg);
-        D3_ZERO(&msg, sizeof(msg));
+            D3_ZERO(&msg, sizeof(msg));
+            msg.to = ch->netId;
+            msg.type = 0x76;
+            msg.fromId = -1;
+            msg.time = ai_Time;
+            msg.flags = 10;
+            id = &bld->id;
+            msg.effect.target = *id;
+            msg.effect.good = 0x178;
+            cm_SendLongMessage((char *)&msg);
+            D3_ZERO(&msg, sizeof(msg));
         } else {
             goto done;
         }
@@ -9783,31 +9786,33 @@ int ai_UseGoodSendHome(AICHARREC *ch, G8USEVIEW *use)
         if (bld == 0)
             goto done;
         {
-        AIMSG msg;
+            AIMSG msg;
 
-        D3_ZERO(&msg, sizeof(msg));
-        msg.to = ch->netId;
-        msg.type = 0x76;
-        id = &bld->id;
-        msg.fromId = -1;
-        msg.time = ai_Time;
-        msg.flags = 10;
-        msg.effect.target = *id;
-        msg.effect.good = 0x178;
-        cm_SendLongMessage((char *)&msg);
-        D3_ZERO(&msg, sizeof(msg));
+            D3_ZERO(&msg, sizeof(msg));
+            msg.to = ch->netId;
+            msg.type = 0x76;
+            id = &bld->id;
+            msg.fromId = -1;
+            msg.time = ai_Time;
+            msg.flags = 10;
+            msg.effect.target = *id;
+            msg.effect.good = 0x178;
+            cm_SendLongMessage((char *)&msg);
+            D3_ZERO(&msg, sizeof(msg));
         }
     }
     {
-    AIMSG msg;
+        /* @original a message of its own block: VC6 gives it the slot of the 0x76 messages, which the
+           D3_ZERO after each send has cleared, so its other fields are 0 */
+        AIMSG msg;
 
-    msg.to = ch->netId;
-    msg.type = 0x77;
-    msg.fromId = -1;
-    msg.time = ai_Time;
-    msg.flags = 1;
-    msg.effect.target = *id;
-    cm_SendLongMessage((char *)&msg);
+        msg.to = ch->netId;
+        msg.type = 0x77;
+        msg.fromId = -1;
+        msg.time = ai_Time;
+        msg.flags = 1;
+        msg.effect.target = *id;
+        cm_SendLongMessage((char *)&msg);
     }
     cm_BeginFieldBlock((char *)use->obj, use->obj->objId);
     cm_AddFieldDelta(4, 1, (unsigned short)((char *)&use->obj->bldId - cm_FieldObject), id);
