@@ -7564,23 +7564,34 @@ void he_StartGathering(int ev)
    in 30 minutes: the opponent's figures defend, ours raid, stage 3), else the figures idle about the place
    (he_CharacterBehavior) for ten minutes more. Stage 3 waits for the party's slot (stage 4 with its id, stage 5
    without), stage 4 waits until the party is over, stage 5 sends the figures home and ends the event
-   @deep Read all of it against the original and rewrote it typed (AIJOB / HEGATHERING / G28REC kind 3 /
-   AICHAR / D3OBJECT): fixed the party record (members[0] is e's character, [1] the opponent's, thing -1,
-   variant 4, the raid lists and raidHome), the opponent search (an event 0x48 at the same place of another
-   character), the stage 4 test order (4 when cm_PartyById finds the party), the frame (giveUp and pos at
-   function scope: 0x138 = 0x138), the switch table equal. 478 vs 484 instructions. Left: the register
-   allocation of stage 2's opponent: the original keeps the found event p in a stack slot ([esp+0x10],
-   shared with the free flag) besides ebp, loads p->chr into dx and e->chr into bp for the compare and
-   reuses both for the party members (and ebp,0xffff / and edx,0xffff), reloading p from the slot for the
-   defenders loop; ours keeps p in ebp and reloads p->chr. With p spilled, VC6 lays the party block right
-   after the loop and the not-found block (ten minutes more, he_CharacterBehavior) behind it (the loop exit
-   jumps forward: test eax,eax; mov [esp+0x10],eax; je), ours lays the not-found block after the loop: the
-   43-line hunk at +0x298 and the shifted 33 lines at +0x487 are those blocks, the same code. Tried: a
-   while loop with the condition, the free flag and p as one variable, the compare operands swapped, 3
-   orders of the party's time / raid stores (references: M8 at +0x3f7: ours refers to ai_Time (0x770ae0),
-   the original's field to 0x770ae4 (ai_TimeHourW) (and 1 more), explained: the two ref: lines are the
-   ai_Time copy into party.time, the same four loads on both sides with eax/ecx/edx renamed and interleaved
-   with raidHome / raid100 stores; no other object is referenced) */
+   @deep s47: the two characters of the meeting as unsigned short locals read once after the coin toss (if
+   (p && random) { theirs = p->chr; mine = e->chr; if (theirs != mine) { party .. members[0] =
+   ai_CharInts[mine][0], [1] = ..[theirs] } }): the original's cmp dx,bp and the members from the same two
+   registers past the rep stosd; 122 -> 72 ins, size 1454 -> 1486 (original 1497); the int type 80, mine
+   read first 74, mine != theirs 74. Left: only the block layout of the search loop's exit (the original
+   falls from the first p test into the loop body, leaves the loop by je to the not-found block laid after
+   the party block, and the loop back edge is mov ebp,eax; jmp; ours puts the not-found block between the
+   first test and the loop body, jne back). Every spelling of the search gives the same code: for + break,
+   for + continue, while (p) { if (..) break; }, a found flag, the whole meeting inside the loop with
+   break, the not-found block first under the inverted condition, nested ifs. Open: what in the flow graph
+   puts the not-found block last (c2tail --tries). prior: Read all of it against the original and rewrote
+   it typed (AIJOB / HEGATHERING / G28REC kind 3 / AICHAR / D3OBJECT): fixed the party record (members[0]
+   is e's character, [1] the opponent's, thing -1, variant 4, the raid lists and raidHome), the opponent
+   search (an event 0x48 at the same place of another character), the stage 4 test order (4 when
+   cm_PartyById finds the party), the frame (giveUp and pos at function scope: 0x138 = 0x138), the switch
+   table equal. 478 vs 484 instructions. Left: the register allocation of stage 2's opponent: the original
+   keeps the found event p in a stack slot ([esp+0x10], shared with the free flag) besides ebp, loads
+   p->chr into dx and e->chr into bp for the compare and reuses both for the party members (and ebp,0xffff
+   / and edx,0xffff), reloading p from the slot for the defenders loop; ours keeps p in ebp and reloads
+   p->chr. With p spilled, VC6 lays the party block right after the loop and the not-found block (ten
+   minutes more, he_CharacterBehavior) behind it (the loop exit jumps forward: test eax,eax; mov
+   [esp+0x10],eax; je), ours lays the not-found block after the loop: the 43-line hunk at +0x298 and the
+   shifted 33 lines at +0x487 are those blocks, the same code. Tried: a while loop with the condition, the
+   free flag and p as one variable, the compare operands swapped, 3 orders of the party's time / raid
+   stores (references: M8 at +0x3f7: ours refers to ai_Time (0x770ae0), the original's field to 0x770ae4
+   (ai_TimeHourW) (and 1 more), explained: the two ref: lines are the ai_Time copy into party.time, the
+   same four loads on both sides with eax/ecx/edx renamed and interleaved with raidHome / raid100 stores;
+   no other object is referenced) */
 void he_RunGathering(int ev)
 {
     AIJOB *e = (AIJOB *)ev;
@@ -7590,6 +7601,7 @@ void he_RunGathering(int ev)
     D3OBJECT *o;
     int *id;
     int i, k, n, freeIt;
+    unsigned short mine, theirs;
     int *r;
     G28REC party;
     AITIME giveUp;
@@ -7648,39 +7660,43 @@ void he_RunGathering(int ev)
         p = (AIJOB *)he_FindEvent(1, 0, 0x48);
         while (p != 0 && (strcmp(g->place, ((HEGATHERING *)p)->place) != 0 || e->chr == p->chr))
             p = (AIJOB *)he_NextEvent();
-        if (p != 0 && (short)util_Random(2) != 0 && e->chr != p->chr) {
-            memset(&party, 0, sizeof(party));
-            party.kind = 3;
-            party.flags = 0xa2;
-            party.thing = -1;
-            party.used = 2;
-            party.variant = 4;
-            party.host = ai_CharInts[ai_PlayerId][0];
-            party.members[0] = ai_CharInts[e->chr][0];
-            party.members[1] = ai_CharInts[p->chr][0];
-            for (i = 0; i < 16; i++) {
-                party.raid.raiders[i] = -1;
-                party.raid.defenders[i] = -1;
+        if (p != 0 && (short)util_Random(2) != 0) {
+            theirs = p->chr;
+            mine = e->chr;
+            if (theirs != mine) {
+                memset(&party, 0, sizeof(party));
+                party.kind = 3;
+                party.flags = 0xa2;
+                party.thing = -1;
+                party.used = 2;
+                party.variant = 4;
+                party.host = ai_CharInts[ai_PlayerId][0];
+                party.members[0] = ai_CharInts[mine][0];
+                party.members[1] = ai_CharInts[theirs][0];
+                for (i = 0; i < 16; i++) {
+                    party.raid.raiders[i] = -1;
+                    party.raid.defenders[i] = -1;
+                }
+                for (n = 0, i = 0; i < 8 && n < 6; i++) {
+                    if (p->ids[i] != -1)
+                        party.raid.defenders[n++] = p->ids[i];
+                }
+                for (n = 0, i = 0; i < 6 && n < 6; i++) {
+                    if (e->ids[i] != -1)
+                        party.raid.raiders[n++] = e->ids[i];
+                }
+                party.raid.raid100[0] = -1;
+                party.raid.raid100[1] = -1;
+                party.raid.raid100[2] = -1;
+                party.raid.raidHome = g->home;
+                party.time = ai_Time;
+                gm_AddTime(&party.time, 0, 0x1e, 0);
+                g->partySlot = cm_SendNewParty(&party);
+                e->stage = 3;
+                gm_AddTime(&e->end, 0, 10, 0);
+                e->exSlot = cm_SendExSetHEI(3, ev);
+                return;
             }
-            for (n = 0, i = 0; i < 8 && n < 6; i++) {
-                if (p->ids[i] != -1)
-                    party.raid.defenders[n++] = p->ids[i];
-            }
-            for (n = 0, i = 0; i < 6 && n < 6; i++) {
-                if (e->ids[i] != -1)
-                    party.raid.raiders[n++] = e->ids[i];
-            }
-            party.raid.raid100[0] = -1;
-            party.raid.raid100[1] = -1;
-            party.raid.raid100[2] = -1;
-            party.raid.raidHome = g->home;
-            party.time = ai_Time;
-            gm_AddTime(&party.time, 0, 0x1e, 0);
-            g->partySlot = cm_SendNewParty(&party);
-            e->stage = 3;
-            gm_AddTime(&e->end, 0, 10, 0);
-            e->exSlot = cm_SendExSetHEI(3, ev);
-            return;
         }
         gm_AddTime(&e->end, 0, 10, 0);
         if (d3_CurrentScene == 0 && (o = d3_FindObject(0, 0x140, 0, g->place)) != 0) {
