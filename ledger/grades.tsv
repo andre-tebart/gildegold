@@ -3561,7 +3561,7 @@ exe	0x00543180	he_RunQuarrel	he	byte	readable
 exe	0x005432f0	he_RunMasterExam	he	byte	readable		
 exe	0x005436a0	he_AllocFeast	he	byte	readable		
 exe	0x005437c0	he_RunFeast	he	draft	readable	deep	
-exe	0x00543ac0	he_RunFeastExam	he	draft	readable	deep	
+exe	0x00543ac0	he_RunFeastExam	he	byte	readable		
 exe	0x00544070	he_AllocTribute	he	byte	readable		
 exe	0x00544330	he_RunTribute	he	byte	readable		
 exe	0x00544550	he_DrawPairPicks	he	byte	readable		
@@ -3572,7 +3572,7 @@ exe	0x00545640	he_RunRandomMessage	he	byte	readable
 exe	0x00545670	he_AllocPatrol	he	byte	readable		
 exe	0x00545840	he_RunPatrol	he	byte	readable		
 exe	0x00546100	he_AllocRaid	he	byte	readable		
-exe	0x005461c0	he_RunRaid	he	draft	readable	deep	
+exe	0x005461c0	he_RunRaid	he	byte	readable		
 exe	0x00546c40	he_AllocFight	he	byte	readable		
 exe	0x00546ef0	he_RunFight	he	byte	readable		
 exe	0x00547170	he_AllocDuelChallenge	he	byte	readable		
@@ -4127,7 +4127,7 @@ exe	0x0058d720	ai_UpdateProdGoodsList	lc	byte	readable
 exe	0x0058dd00	ai_LayoutProdGoodsList	lc	byte	readable		
 exe	0x0058e130	ai_UpdateMarketGoodsList	lc	byte	readable		
 exe	0x0058e440	ai_LayoutMarketGoodsList	lc	byte	readable		
-exe	0x0058e6a0	ai_ShowProdSlot	lc	draft	readable	deep	
+exe	0x0058e6a0	ai_ShowProdSlot	lc	byte	readable		
 exe	0x0058ee30	ai_UpdateStoreGoods	lc	byte	readable		
 exe	0x0058f290	ai_LayoutStoreGoods	lc	byte	readable		
 exe	0x0058f510	ai_MarketContact	lc	byte	readable		
