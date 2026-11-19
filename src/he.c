@@ -8549,18 +8549,21 @@ void he_StartPopulation(int ev)
    newcomer is created (cm_SendCreateCharacter, stage 3: it gets a free home, (51 .. 100) * 32 money and its fields
    2 / 0xc set); stage 6 likewise kills a homeless figure of kind 0 without a workplace (-2000 health); stage 7 gives
    a homeless figure of kind 0 / 1 a free home every ten minutes until 22:00, then the event rests until 6:00
-   @deep s6: every draw through util_RandomU (mov di, ax / mov bx, ax as the original; 244 -> 240 ins, size
-   2212 vs 2192 plus the 8-entry table). Left at the draws: the 0xffff constant / the draw in ebx vs ebp
-   (ours mov bp, ax / mov ebx, 0xffff; the original mov bx, ax / mov ebp, 0xffff). prior: Reconstructed
-   whole against the original (all 8 cases: the switch table equal; every call, push order and gm_AddTime
-   argument read from the pushes: case 0 (0,0,5), 1 and the 2/3/6 waits (1,0,0), creation (0,0,1), the kill
-   (0,0x1e,0), case 7 (0,0xa,0); ORDSTATS out[4]/out[8] as ints, col[3] against 0.1 / 0.3, the 2.0f / 1.0f
-   literals; the newcomer's cm_SendMoveGoodsUnchecked(netId, -1, own, (51..100)<<5), its field deltas 2 /
-   0xc; the free-home loop with the unsigned short compare). Left: allocation and VC6 cross-jumping. The
-   original keeps -1 in ebp (case 3's c==0 path stores an immediate 0xffffffff and jumps into the slot==2
-   block after its store), case 3's found flag in [esp+0x10] with b in ebx, case 7's found in ebp with b in
-   [esp+0x10] (ours the reverse: found ebp / b ebx in case 3, found [esp+0x10] in case 7); the original
-   merges the cm_SendExSetHE call tails of case 1 (<=0.3), case... */
+   @deep s51: two levers: case 3's free-home search as while (n != 0) { ..; n--; i = ..; if (found != 0)
+   break; } (240 -> 231: c gets ebp as the original's, found in memory), and cases 2 and 6 ending with
+   break (into the one he_FreeEvent-less end after the switch) instead of return (231 -> 192; size 2212 ->
+   2215, padded equal). A subset round of break-for-return over cases 1/2/3/6/7 (63 variants): only 2 + 6
+   helps, 1 / 7 are the same code, 3 is worse. Left: (1) -1 in ebx (ours) / ebp (the original) from the
+   prologue, case 3's 0 in eax (ours) / ebx; (2) case 1's final cm_SendExSetHE(7) tail: the original jmps
+   into case 2's copy, ours keeps its own; case 3's c == 0 path: the original stores -1 as an immediate and
+   jmps into the slot==2 block's send(6), ours the reverse; (3) case 3's loop: the original tests n at the
+   top and found at the bottom (je top) and the exit tests found again; do { if (n == 0) break; .. } while
+   (found == 0) gives 185 but more tail hunks; while (found == 0) { if (n == 0) break; .. }: 201; for(;;):
+   the same code. (4) the crossed M8s are case 7's e->end = ai_Time copy order. Earlier: while (n != 0 &&
+   found == 0): worse (247). prior: s6: every draw through util_RandomU (mov di, ax / mov bx, ax as the
+   original; 244 -> 240 ins, size 2212 vs 2192 plus the 8-entry table). Left at the draws: the 0xffff
+   constant / the draw in ebx vs ebp (ours mov bp, ax / mov ebx, 0xffff; the original mov bx, ax / mov ebp,
+   0xffff). */
 
 void he_RunPopulation(int ev)
 {
@@ -8613,7 +8616,7 @@ void he_RunPopulation(int ev)
             e->end = ai_Time;
             e->end.min++;
             e->exSlot = cm_SendExSetHEI(7, ev);
-            return;
+            break;
         }
         if (util_RandomF() > p->chance) {
             p->slot = -1;
@@ -8621,7 +8624,7 @@ void he_RunPopulation(int ev)
             e->end = ai_Time;
             gm_AddTime(&e->end, 0, 0, 1);
             e->exSlot = cm_SendExSetHEI(3, ev);
-            return;
+            break;
         }
         p->chance -= p->step;
         e->end = ai_Time;
@@ -8653,13 +8656,15 @@ void he_RunPopulation(int ev)
         found = 0;
         n = 0x100;
         i = util_RandomU(0x100);
-        while (found == 0 && n != 0) {
+        while (n != 0) {
             b = &ai_BldsT[i];
             if (ai_BTypesT[b->type].kind == 1 && ord_GetKindRecord(b->type, kind) != 0
                 && (unsigned short)b->residents < (unsigned short)kind[0])
                 found = 1;
             n--;
             i = (i + 1) % 0x100;
+            if (found != 0)
+                break;
         }
         if (found != 0)
             cm_SendBoss(c->netId, b->id);
@@ -8678,7 +8683,7 @@ void he_RunPopulation(int ev)
             e->end = ai_Time;
             e->end.min++;
             e->exSlot = cm_SendExSetHEI(7, ev);
-            return;
+            break;
         }
         if (util_RandomF() > p->chance) {
             i = util_RandomU(0x300);
@@ -8696,7 +8701,7 @@ void he_RunPopulation(int ev)
             e->end = ai_Time;
             gm_AddTime(&e->end, 0, 0x1e, 0);
             e->exSlot = cm_SendExSetHEI(1, ev);
-            return;
+            break;
         }
         p->chance -= p->step;
         e->end = ai_Time;
