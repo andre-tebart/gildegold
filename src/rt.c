@@ -1209,20 +1209,24 @@ int rt_SaveRoutes(void *f)
 /* 0x4c0040, "rt_load": reads the route points of a saved game from f (a count, then per point its cartId,
    buildingId, loadSlots, unloadSlots) and rebuilds each cart's route from the consecutive points with its id;
    returns 0 on a read error
-   @deep insensitive (headers sample: 1 codegen). Rewrote the rebuild loop with buf[i] fields and r =
-   &buf[i] only for the r != 0 test: frame 0xc -> 0x8 (matches), 327 -> 286 bytes. Left: the original
-   pushes ebp in the prologue and keeps i in ebp in both loops, buf in ebx (kept in ebx into the second
-   loop: 'jmp' past 'mov ebx,[buf]' on first entry), c spilled to [esp+0x10] and reloaded per inner
-   iteration; ours keeps i in ebx (loop 1) and in a stack slot (loop 2), c in ebp with ebp pushed only
-   around loop 2, buf IV in esi ('add esi,8' vs 'lea esi,[ebx+8]'). Tried (dcp try): pointer r through the
-   inner loop with i++/r++ in 4 positions x r at outer top or inner x break vs while-condition (44
-   variants, best 73 ins/321 bytes, all frame 0xc), outer do-while with if (n > 0), i++ before AddPoint,
-   pointer first loop (= control), separate counter j for loop 2 in both declaration orders (= control),
-   unsigned n (worse), !c->route (= control). (tiebreak: not measured (dcp headers sample rt_LoadRoutes))
-   prior: read whole against the original 0x4c0040..0x4c01a1: the same reads, the same rebuild loop (per
-   point: rt_AddPoint, the first point becomes c->route, buildingId, cartId, two 0x18-byte rep movsd
-   copies, i++, break at i >= n, continue while the next point (r != 0) has the cart's id), mem_Free. Left:
-   allocation only - see the stuck reason. */
+   @deep deep s46: read the original's rebuild loop again: at the outer top it recomputes r = buf + (i <<
+   6) into ebx (buf spilled to [esp+0x14], the first entry jumps past its reload), the inner loop reads
+   r->cartId / r->buildingId / r + 8 / r + 0x20, then i++ (inc ebp), r++ (add ebx,0x40), break at i >= n,
+   and continues while r != 0 (test ebx,ebx) and c->objId == r->cartId (c spilled to [esp+0x10], reloaded
+   per pass); n sits in the parameter slot of f (f is held in edi). That text (r = &buf[i] at the outer
+   top, r++ after i++; for or while / while (1) with one break test): 73 ins / 324 bytes but frame 0xc vs
+   0x8 (one 4-byte local more than the original's c / buf spills), not kept. Next: the rptr text with what
+   keeps the extra slot out (c2frame --names on it: which local opened the third slot). prior: insensitive
+   (headers sample: 1 codegen). Rewrote the rebuild loop with buf[i] fields and r = &buf[i] only for the r
+   != 0 test: frame 0xc -> 0x8 (matches), 327 -> 286 bytes. Left: the original pushes ebp in the prologue
+   and keeps i in ebp in both loops, buf in ebx (kept in ebx into the second loop: 'jmp' past 'mov
+   ebx,[buf]' on first entry), c spilled to [esp+0x10] and reloaded per inner iteration; ours keeps i in
+   ebx (loop 1) and in a stack slot (loop 2), c in ebp with ebp pushed only around loop 2, buf IV in esi
+   ('add esi,8' vs 'lea esi,[ebx+8]'). Tried (dcp try): pointer r through the inner loop with i++/r++ in 4
+   positions x r at outer top or inner x break vs while-condition (44 variants, best 73 ins/321 bytes, all
+   frame 0xc), outer do-while with if (n > 0), i++ before AddPoint, pointer first loop (= control),
+   separate counter j for loop 2 in both declaration orders (= control), unsigned n (worse), !c->route (=
+   control). (tiebreak: not measured (dcp headers sample rt_LoadRoutes)) */
 
 int rt_LoadRoutes(void *f)
 {
