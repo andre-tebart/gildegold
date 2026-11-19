@@ -2829,18 +2829,7 @@ int cm_ExCreateCharacter(G17MSG *m, G17STAT *s)
 }
 /* 0x4c6cd0, handler of type 0xc: creates a named character (gm_CreateCharacter, type 6 with s, else 7) with its first
    and family name; a player character's record and its relatives[1] get the family name too. The generator is
-   seeded with the message's dword at 0x12 (inside age / job / ref54), not with its seed: as the original does
-   @deep Read whole against 0x4c6cd0..0x4c6e00: the same calls with the same arguments (util_Seed of the
-   dword at data+0x12 as the original, gm_CreateCharacter(s ? 6 : 7, parent1, parent2, age, 0, job, 0, a8),
-   the three strncpy of first / family, gm_FindChar of relatives[1]), the same stores (cm_LastCharId, the
-   AIFIN w00 / family / camAngle -1.0, ref54, b00c, the G17STAT) and branches, every AICHAR field addressed
-   as ai_CharsT[k].field off the k*0x21c index as the original does. Left is scheduling / allocation: the
-   original computes the ternary (mov eax,[esp+0x10]; neg; sbb; add eax,7) before the byte argument loads,
-   ours after them in edx (hunks 0x4c6cfe / 0x4c6d0d); the netId load for cm_LastCharId sits between the
-   strncpy pushes in other registers (0x4c6d4b..0x4c6d70: ours lea eax / mov edx, the original mov eax /
-   lea edx); the ref54 / s loads at 0x4c6de0 in ecx / eax swapped. Tried: the ternary into a local before
-   the call (no change), the strncpy before the cm_LastCharId store (moves the store after the call:
-   further from the original, reverted). */
+   seeded with the message's dword at 0x12 (inside age / job / ref54), not with its seed: as the original does */
 
 int cm_ExCreateNamedCharacter(G17MSG *m, G17STAT *s)
 {
@@ -2848,13 +2837,18 @@ int cm_ExCreateNamedCharacter(G17MSG *m, G17STAT *s)
     AIFIN *t;
     char *r;
     unsigned int k;
+    int type;
 
     if (net_Conn.s != INVALID_SOCKET)
         ai_NextObjectId = m->named.objectId;
     else
         m->named.seed = rand();
     util_Seed(m->named.seedRead);
-    k = gm_CreateCharacter(s != 0 ? 6 : 7, m->named.parent1, m->named.parent2, m->named.age, 0, m->named.job, 0, m->named.a8);
+    if (s != 0)
+        type = 6;
+    else
+        type = 7;
+    k = gm_CreateCharacter(type, m->named.parent1, m->named.parent2, m->named.age, 0, m->named.job, 0, m->named.a8);
     if (k == 0xffff)
         return 1;
     cm_LastCharId = ai_CharsT[k].netId;
