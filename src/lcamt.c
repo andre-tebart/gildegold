@@ -6597,21 +6597,11 @@ int ai_MedicusHandler(AICHARREC *ch, LCORDMSG *m)
    its worth: 0x11. A kind 6 / 7 character's player gets the window "privillegien\scheidung" with the offer
    (0x1d8f: the text 0x114 + b00d (+ 10 for sex), 8, the price 8 % of the worth plus 4 %, the spouse's id); its
    first button pays 8 and the price (sv_CheckMoney / sv_CheckGoodAmount), sends the same fields and the money,
-   each waited for, and prints 0x1d90: 0x81; the second button or the right button close it: 2, else 0
-   @deep Reconstructed in full against the original: the AI path (money >= 8, goods / worth >= 0.12, the -1
-   fields 0x5c of both and 0x50 of the spouse through cm_BeginFieldBlock / cm_AddFieldValue /
-   cm_SendFieldDeltas, the spouse paid (int)(worth * 0.08), 0x11) and the player window (the offer 0x1d8f
-   with (sex ? 10 : 0) + 0x114 + b00d, 8, price - (int)(worth * -0.04) and the spouse's id twice, the two
-   buttons by d2_ClickedId 0 / 1, the waited sends with cm_SendFieldValues, 0x1d90, done 0x81 / 2). Every
-   call, argument and constant compared. Left: allocation: the original keeps done and price in frame slots
-   ([esp+0xc] next to the field value -1 at [esp+8]) and win in ebp, with the constant 1 in edi; ours keeps
-   done in ebp and spills win. A two-int array for the field value and done (v[0] = -1, v[1] = done) moves
-   89 -> 56 differing instructions, a hint that the original's done sits in an aggregate with the field
-   value, but it is not shape and not written that way. Hunks 0x5c8ef3 (6), 0x5c9065 (7), 0x5c9082 (45: the
-   done/win registers and the text arg's evaluation order), 0x5c9244 (12), 0x5c9277 (17). */
+   each waited for, and prints 0x1d90: 0x81; the second button or the right button close it: 2, else 0 */
 int ai_DivorceDialog(AICHARREC *ch, LCORDMSG *m)
 {
     int win;
+    int text;
     AICHARREC *spouse;
     int slot;
     int none;
@@ -6648,7 +6638,8 @@ int ai_DivorceDialog(AICHARREC *ch, LCORDMSG *m)
     d2_SetPointerSprite(0, 0);
     d2_CentreViewWindows(win);
     d2_SetForm(win, 1);
-    slot = io_PrintText(0x1d8f, (ch->sex != 0 ? 10 : 0) + 0x114 + ch->b00d, 8, price - (int)(worth * -0.04), spouse->id,
+    text = (ch->sex != 0 ? 10 : 0) + 0x114;
+    slot = io_PrintText(0x1d8f, text + ch->b00d, 8, price - (int)(worth * -0.04), spouse->id,
                         spouse->id);
     d2_GetWinObj(win, 1, slot);
     d2_GetWinObj(win, 1, slot + 1);
