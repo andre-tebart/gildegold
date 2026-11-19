@@ -1417,6 +1417,47 @@ Where the pushes and pops sit, how many epilogue copies there are, shared agains
     counted spill reference each: the c2frame replay gives the original's slot groups then), d3fl_Prerender (n
     never in a register in the original, more memory references; the split pieces decide).
 
+- **Deep s42 (the near-byte list to 80 instructions: no untagged function left after the exclusions, so the 15
+  tagged ones with the oldest notes (no session marker) at 36-38 instructions: 6 byte, 3 closer, 6 notes)**:
+  - **A counter that should share a slot with a dead local, a swap temp that should share with a counting
+    variable**: the swap temp was the counting variable itself. gv_RankCulpritsAll's insertion pass used st (the
+    open count of the culprit just counted) as the temp for open[k] (`st = open[k]; .. open[k - 1] = st;`): st then
+    lives through the pass, the down-counter conflicts with it and joins own's slot, x opens its own (c2frame
+    --names: the packer searches the slots newest first, so who joins what is decided by the conflicts of the
+    locals listed before). Byte; the y local was the only change.
+  - **One scratch register for a value stored at every exit (`mov ecx,eax` in the first arm, the store from ecx in
+    all four)**: the arms did not end in their own `store; return;` but set the look in an else-if chain and fell
+    into ONE shared `cm_HoverObject = ai_PickedObject; return;`, which VC6 duplicates into each arm: one load
+    temp, one register, and the copy where the value is already in eax (cm_UpdatePointer byte, size 840 -> 848).
+  - **A clamp's `-0x7f` arm out of line (the original `jle` / `jl` to a block behind the loop or at the
+    function's end)**: the clamp was `min(max(..), 0x7f)` with the min / max macros, and the operand order of max
+    decides the jump: `max(v, -0x7f)` = `v > -0x7f ? v : -0x7f` gives `jle`, `max(-0x7f, v)` gives `jl` (one
+    function used both; cm_ExRelations byte, five sites). The if / else-if clamps and plain ternaries are other
+    layouts.
+  - **A default overwritten in one arm** (`x = per->money; if (draw < x) x = ..;`) as if / else: the s41 lever
+    again, the amount and the record pointer swap esi / edi back and edi is saved lazily (he_RunPettyLoss byte).
+  - **A record block-scoped, then a move / swap climb from that base**: he_RunInsult's G28REC party in the block
+    that fills and sends it (40 ins on its own) and climb `--base FILE:blk --ops move,swap` round 2 (host first,
+    variant before members[1]): byte. The climb from the tree had found nothing; the block scope changes which
+    orders the scheduler can keep.
+  - **`fdivr st,st(1)` / `fstp result` / `fstp st(0)` where ours has `fdivp`**: the product was stored first and
+    then divided (`ratio = a * b; ratio /= c;`): the product is ratio's first definition on the FPU and dies with
+    a dead pop after the store; one statement lets the /O2 peephole fold the pop into fdivp (he_RunKidnap fpu
+    hunk gone). The ratio written inline into the if is worse: VC6 evaluates the call of the comparison first.
+  - **A search loop's success returning through r (`mov eax,esi`), the default arm not folded**: the s41 found
+    flag again (ord_ApplyForOffice 36 -> 15 with `r = 1` inside the kind test, which gives the original's m / c / r
+    registers).
+  - **The send + count written in each arm** (the byte twin's style) gave ai_SendFreeSpies its parameter / count
+    registers back (38 -> 25); the original's three sends are one call with `push &msg` hoisted into the compare
+    block before the `jb` that skips `arg[1] = 4` (open).
+  - Tool: `permute.py` + `dcp try` of 5040 orders took about 7 minutes and holds the daemon (every other dcp call
+    waits); `sort` behind it buffers the rows until the end.
+  - Left with notes: he_RunHire (the arg temps of gm_JobCost: flip.py names only the deletion of bt), ord_LevelOrder
+    (r = 4 block between the kind-3 and kind-1 code with one shared return), veg_LoadModel (the heights load as a
+    register candidate), d3d_EnumDeviceCallback (D3_COPY temps in dead parameter slots), gm_UpdatePrices (the
+    p * 17 hoist common to three arms), ai_AmountMenu (the loop-top r = 0 skipped on entry), he_RunBurn (the case
+    -1 name buffer's density), and the closer ones ord_ApplyForOffice, he_RunKidnap, ai_SendFreeSpies.
+
 - **An else-if arm cross-jumped whole into a sibling's copy, the original keeps it inline**: the store order of
   the OTHER arms (default arm charId before stateArg; 0x176 arm stateArg, charId, x, z) decides it, found by
   climb.py swap + move in round 2 (cm_OrderAttack byte; permuting only the inlined arm's stores did not). The pair
