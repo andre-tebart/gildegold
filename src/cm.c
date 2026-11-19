@@ -2975,23 +2975,31 @@ int cm_ExMoveGoodsUnchecked(G17MSG *m, G17STAT *s)
    an object's or a character's list, gm_FindById) to the buyer; with a price, the buyer pays count * price in the
    money good of the player slot to the seller (gm_TakeObjekt / gm_AddObjekt) and both book it. A store (an object of
    kind 0x2a / 0x116) of the own player character gives the status text of its building and a sound
-   @deep size queue s17 (127 -> 103 ins, raw 2089 -> 2059 vs 2061: padded size): the two gotos gone, each
-   its plain form: the room check as 'if (store kinds) y2 = y; if ((y2 != 0 || y->type == 0x1dd) &&
-   gm_FreeCapacity(..) < count) return 1;' (121; two FreeCapacity calls 144 / 145), the money goto as if
-   (ys != 0 && r2 != 0) (= control); the buyer's room 'if (x2 != 0) o2 = gm_AllocRaum(..); if (o2 == 0)
-   return 1;' (112, 2071) and the seller's 'else if (x1 != 0) RemoveFromBuilding else return 1' (103, 2059:
-   its failure jumps to a shared return-1 copy as the original). Left: register rotation from the
-   gm_TakeObjekt call on (0x4c768b: the original pushes count * price first), the ys type test's mov
-   ecx,eax copy, the goods-record address add order (0x4c774f). prior: Read whole against
-   0x4c70b0..0x4c78bd and rewritten typed (G17SELLMSG, AIOBJ / AIBLD / AICHAR / GMSTOCK / GMPLAYERSLOT):
-   the same calls in the same order with the same arguments, stores, constants and strings; fixed on the
-   way: one buf[0x200] for the sprintf texts and the status text (frame 0x228 now equal), the reserve check
-   as one expression (the original spills the ListStock term), the room check of the buyer object shared by
-   the store kinds and 0x1dd (one gm_FreeCapacity call), the goods record taken before o2->count++. Left:
-   block layout and scheduling - the y2 = y store is laid out after the room check (0x4c735d, the original
-   inline with a jmp), the return-1 tails the original shares (0x4c7594 / 0x4c77ad jump to +0x66d, ours
-   inline), the gm_TakeObjekt / txt_Format argument loads in another order (0x4c768b, 0x4c7865), register
-   renamings (0x4c766f, 0x4c76d1, 0x4c77ed, 0x4c7841). Trie... */
+   @deep s(this): the whole rest of the function (gm_AllocRaum push copy at 0x4c77a3, the goods-record regs
+   at 0x4c7737, cm_LastObjectId 0x4c7663, the gm_TakeObjekt argument order 0x4c767f, the y2/ys copies at
+   0x4c76b8 / 0x4c7807, txt_Format at 0x4c7847) is ONE allocation cascade: the bulk split (142 blocks,
+   regions) queues its candidates in another order. Probe that matches all of it: a fresh candidate for
+   m->sell.buyer at the second buyer block, 'short t; .. if ((t = m->sell.buyer) != -1) { ..
+   gm_CreateObject(t, ..)' = 5 ins (only its own mov dx / cmp dx / movsx left; climb --rounds 3 found it,
+   nothing better). c2trace: control's m->sell.buyer at 0x4c7640 is a piece (temp#2, edx, prio 13) of the
+   CSE web first created at 'if (m->sell.buyer != -1)' of the FIRST buyer block (3062); the short local is
+   a new candidate with the same prio 13 created later (ties: later-created first), which reorders the
+   split queue. So the original's value at the second buyer test is a candidate created there, not a piece
+   of the first block's web. No lever (= control): an int / long / unsigned local for it (folded), assigned
+   in the test or before, the third use at the s block (160), gm_AllocRaum forms (nested if / else return 1
+   = same ins, early x2 == 0 return 112, || 143, ternary / else o2 = 0 = control), a block local or a
+   separate local / x2 for the status building (128/129), switch or locals for gd->type (= control or
+   worse), (char)m in cm_ResolveId (386+). Next: what kills or splits the m->sell.buyer CSE between 3063
+   and 3139 in the original (a call taking m, a store through m, the field read through another view), or a
+   prototype of gm_CreateObject with a short id (f3gmt; 22 callers). prior: size queue s17 (127 -> 103 ins,
+   raw 2089 -> 2059 vs 2061: padded size): the two gotos gone, each its plain form: the room check as 'if
+   (store kinds) y2 = y; if ((y2 != 0 || y->type == 0x1dd) && gm_FreeCapacity(..) < count) return 1;' (121;
+   two FreeCapacity calls 144 / 145), the money goto as if (ys != 0 && r2 != 0) (= control); the buyer's
+   room 'if (x2 != 0) o2 = gm_AllocRaum(..); if (o2 == 0) return 1;' (112, 2071) and the seller's 'else if
+   (x1 != 0) RemoveFromBuilding else return 1' (103, 2059: its failure jumps to a shared return-1 copy as
+   the original). Left: register rotation from the gm_TakeObjekt call on (0x4c768b: the original pushes
+   count * price first), the ys type test's mov ecx,eax copy, the goods-record address add order
+   (0x4c774f). */
 
 int cm_ExSellObjekt(G17MSG *m, G17STAT *s)
 {
