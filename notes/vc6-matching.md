@@ -3102,6 +3102,12 @@ a stack slot is a split piece, and the piece's extent is decided by the rules be
 
 ### A constant or zero kept in a register
 
+- **A zero register (`xor ebp,ebp; cmp eax,ebp; push ebp`) where the original tests `test eax,eax` and keeps a
+  parameter in that register (`push ebx` of the parameter known 0 in the arm of its `== 0` test)**: a search
+  loop that fills a row inside its hit arms was a plain search into a local (`c = 0; for (..) { if (..) { c =
+  gm_FindChar(..); break; } }`) followed by one `if (c != 0) { rows[0].. ; n = 1; }`: VC6 decides that test per
+  path (no code), the counter is no longer live unreferenced through the search, and the parameter outranks the
+  zero (ai_FillQuarrelTab 65 ins -> byte; the count path kept its in-arm form).
 - **An address constant in a scratch register for an entry test and a loop guard (`mov ecx,&T[47]; cmp eax,ecx;
   jae; add; cmp eax,ecx; ja`), the loop's bottom test immediate**: the bound through a count local, `n = 48; ..
   after >= &T[n - 1] .. p <= &T[n - 1]`: the address is a CSE temp (refcost > 0) before n folds. A literal
