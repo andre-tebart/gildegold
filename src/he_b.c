@@ -7114,15 +7114,7 @@ void he_AllocPettyLoss(int ev)
    (gm_FindChar): freed. Else the stage advances and the next run is due in 3 + random(3) hours; a character with money
    loses 1 + random(2) of it when a first such draw is below his money, else all of it (gm_SendMoneyDelta); one of the
    kinds 6 / 7 is told (the news 0x5fb, the text 0x1008 with the amount); past the stage 3 the event is due now (and freed then).
-   "Petty loss" is a reasoned guess from that effect.
-   @deep read whole against the original and reconstructed (the amount is all the money unless a first draw
-   1+random(2) is below it, then a second draw; the stage>3 due-now inside the money block; free on
-   -1/-2/>3/no char). Only allocation is left: the original keeps per in esi and the amount in edi and
-   saves edi lazily (push edi after the money>=1 test at +0x7a, pop edi before the stage test at +0xf0);
-   ours puts per in edi, the amount in esi and saves all four in the prologue. Hunks: regs 46 (edi->esi,
-   esi->edi), code 11 = the push/pop edi placement (+0x13, +0x7a/+0x7d mov edi,eax, +0xed..+0xf1, the two
-   epilogues). Tried: money local vs re-read, x block-scoped, early return on money<1, declaration order.
-   proof: only eax at the (void) return differs. */
+   "Petty loss" is a reasoned guess from that effect. */
 void he_RunPettyLoss(int ev)
 {
     AIJOB *e = (AIJOB *)ev;
@@ -7139,9 +7131,10 @@ void he_RunPettyLoss(int ev)
     gm_AddTime(&e->end, (util_Random(3) & 0xffff) + 3, 0, 0);
     if (per->money < 1)
         return;
-    x = per->money;
-    if ((util_Random(2) & 0xffff) + 1 < x)
+    if ((util_Random(2) & 0xffff) + 1 < per->money)
         x = util_RandomU(2) + 1;
+    else
+        x = per->money;
     gm_SendMoneyDelta(per->netId, -x);
     if (per->kind == 6 || per->kind == 7) {
         txt_Format(text, 0x1008, x);
