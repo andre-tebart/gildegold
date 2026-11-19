@@ -3658,7 +3658,7 @@ void *surf;
     int saved;
     D2WIN *w = &d2_Wins[win];
     D2WIN *w2;
-    int i, ob, in, v, n, p, pw, ph, sw, sh, x;
+    int i, ob, in, v, n, p, pw, ph, sw, sh;
     char buf[32];
     void *pic;
 
@@ -3753,21 +3753,17 @@ void *surf;
                 sh = d2_Pics[w->frame + 4].h;
                 sw = d2_Pics[w->frame + 4].w;
                 n = (int)((float)((w->w - pw * 2) / sw) + 1.5f);
-                if (n > 0) {
-                    for (x = 0; n; n--, x += sw) {
-                        d2_DrawShape(w->x + x + pw, w->y, surf, pic, 4);
-                        d2_DrawShape(w->x + x + pw, w->h + w->y - sh, surf, pic, 5);
-                    }
+                for (i = 0; i < n; i++) {
+                    d2_DrawShape(w->x + i * sw + pw, w->y, surf, pic, 4);
+                    d2_DrawShape(w->x + i * sw + pw, w->h + w->y - sh, surf, pic, 5);
                 }
                 sw = d2_Pics[w->frame + 7].w;
                 sh = d2_Pics[w->frame + 7].h;
                 d2_SetClipRect(w->x, w->y, w->w + w->x, w->h - ph + w->y);
                 n = (int)((float)((w->h - ph * 2) / sh) + 1.5f);
-                if (n > 0) {
-                    for (x = 0; n; n--, x += sh) {
-                        d2_DrawShape(w->x, w->y + x + ph, surf, pic, 6);
-                        d2_DrawShape(w->w + w->x - sw, w->y + x + ph, surf, pic, 7);
-                    }
+                for (i = 0; i < n; i++) {
+                    d2_DrawShape(w->x, w->y + i * sh + ph, surf, pic, 6);
+                    d2_DrawShape(w->w + w->x - sw, w->y + i * sh + ph, surf, pic, 7);
                 }
                 d2_SetClipRect(w->x, w->y, w->w + w->x, w->h + w->y);
                 if (w->cornerObj == -1)
