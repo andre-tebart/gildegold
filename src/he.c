@@ -7322,7 +7322,8 @@ void he_RunProtection(int ev)
     AIJOB *e = (AIJOB *)ev;
     HEPROTECTION *q = (HEPROTECTION *)ev;
     AIBLD *b, *home;
-    AICHAR *c, *owner;
+    AICHAR *c;
+    int owner;
     AIMSG msg;
     char text[0x200];
 
@@ -7365,11 +7366,11 @@ void he_RunProtection(int ev)
             return;
         }
         q->amount = (int)((float)gm_EquipmentValue((unsigned char *)b, 100) * 0.065f);
-        owner = &ai_CharsT[b->owner];
-        if (owner->kind == 6 || owner->kind == 7) {
+        owner = b->owner;
+        if (ai_CharsT[owner].kind == 6 || ai_CharsT[owner].kind == 7) {
             memset(&msg, 0, sizeof(msg));
             msg.fromId = b->id;
-            msg.to = owner->netId;
+            msg.to = ai_CharsT[owner].netId;
             msg.time = ai_Time;
             msg.type = 0x63;
             msg.flags = 9;
