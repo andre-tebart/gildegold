@@ -19533,13 +19533,7 @@ void he_AllocTutorialBuildingTour(AIJOB *ev)
    the character's buildings (gm_BuildQuery(1, 4, chr), at most 0x40) plus the market building, picks one at
    random and shows it in the panel (sv_SelectPanelObject; in 3 of 4 cases, unless it is the market, at its main
    object or main room), the next run random(2) hours and random(0x3c) minutes from now; from 22:00 the next
-   stage; stage 2 sets the kind byte to 6 and frees the event
-   @deep read the whole function against the original and fixed the meaning (list[0x40] frame 0x100, the
-   missing if (n != 0) around the pick, typed AIJOB/AIBLD/AIOBJ, sv_SelectPanelObject with its prototype);
-   122 vs 122 instructions, the same statements; left: the callee-saved pair is swapped (ours push edi=ev
-   first then esi=n, the original push esi; xor esi,esi; push edi; mov edi,ev) so every epilogue pops in
-   the other order ('- pop esi / + pop esi' after pop edi at +0x46, +0x76, +0x157, +0x180) and the
-   registers are renamed edi<->esi: allocation only; reordering the locals did not change it */
+   stage; stage 2 sets the kind byte to 6 and frees the event */
 void he_RunTutorialBuildingTour(AIJOB *ev)
 {
     int n;
@@ -19586,8 +19580,7 @@ void he_RunTutorialBuildingTour(AIJOB *ev)
         return;
     case 2:
         ai_CharsT[ev->chr].kind = 6;
-        he_FreeEvent((int *)ev);
-        return;
+        /* fall through */
     case -2:
     case -1:
         he_FreeEvent((int *)ev);
