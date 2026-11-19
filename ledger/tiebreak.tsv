@@ -2467,7 +2467,7 @@ exe	0x004d2550	cm_CollectWareObject	cm	e1b341b3e6da7d70	no	byte	control=byte p1=
 exe	0x004d25a0	cm_NearestWareObject	cm	4a505dfdee6e306f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004d2650	cm_CollectConquerPoint	cm	de12fef1c50d0065	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004d2680	cm_NearestConquerPoint	cm	fde692712c82b0ac	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x004d27a0	cm_InitOrderChances	cm	dcd6f06463d864e8	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
+exe	0x004d27a0	cm_InitOrderChances	cmfight	631748a4ac1c8fc4	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	778b52aadc57bf18
 exe	0x004d2c00	cm_OrderChancesFor	cm	3b924ecc2d89a7b2	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004d2e30	cm_OrderRating	cm	87f56cf2e454e2b7	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	becf1bbdf99775c9
 exe	0x004d2f80	cm_GiveFightOrders	cm	51e058fe67354adc	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	

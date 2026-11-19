@@ -2729,22 +2729,11 @@ D3OBJECT *cm_NearestConquerPoint(AICHAR *c)
 }
 /* 0x4d27a0, builds the fight AI's order chances cm_OrderChances[6 kinds][5 strength levels][6 orders]: the
    percentages stored one by one, then each row made cumulative (v[k] = v[k] * 0.01 + v[k - 1]), and in each row
-   a value equal to an earlier one cleared (an order that adds no chance is never drawn)
-   @deep Read all 187 instructions against the original: the 120 stores are equal, the two loops do the
-   same work (cumulative row times 0.01; clear a later value equal to an earlier one in each 6-row). Left:
-   (1) loop 1, the original keeps t in a stack slot (push ecx frame; fst [esp+0x10] / fld [esp+0x10] around
-   the k != 0 branch) where ours keeps it in st(0) (fst [eax]; jmp; fstp st(0)); (2) loop 2, the original
-   recomputes (b + i) * 6 (lea eax,[ebx+ebp]; lea eax,[eax+eax*2]; add eax,eax) in every j round and keeps
-   b (ebp += 5, cmp 0x1e) and i (ebx, cmp 5) apart, ours strength-reduces them to one row offset (edi += 6,
-   a countdown, cmp 0xb4). Tried: a flat index n, a pointer walk with a signed compare (now, as the
-   original's jl), a [30][6] view, a precomputed e = (b + i) * 6 + j: none changes VC6's induction choice.
-   Induction / allocation only. */
+   a value equal to an earlier one cleared (an order that adds no chance is never drawn) */
 
 void cm_InitOrderChances()
 {
-    int row, k, b, i, j;
-    float t;
-    float *p;
+    int k, b, i, j;
 
     memset(cm_OrderChances, 0, 0x2d0);
     cm_OrderChances[0x0] = 10.0f;
@@ -2867,22 +2856,21 @@ void cm_InitOrderChances()
     cm_OrderChances[0xa2] = 100.0f;
     cm_OrderChances[0xa8] = 100.0f;
     cm_OrderChances[0xae] = 100.0f;
-    for (p = cm_OrderChances; (int)p < (int)&cm_OrderChances[6 * 5 * 6];) {
-        for (row = 0; row < 5; row++) {
-            for (k = 0; k < 6; k++, p++) {
-                t = (float)(*p * 0.01);
-                *p = t;
+    for (b = 0; b < 6 * 5; b += 5) {
+        for (i = 0; i < 5; i++) {
+            for (k = 0; k < 6; k++) {
+                cm_OrderChances[(b + i) * 6 + k] *= 0.01;
                 if (k != 0)
-                    *p = t + p[-1];
+                    cm_OrderChances[(b + i) * 6 + k] += cm_OrderChances[(b + i) * 6 + k - 1];
             }
         }
     }
-    for (b = 0; b < 6 * 5; b += 5) {
+    for (b = 0; b < 6; b++) {
         for (i = 0; i < 5; i++) {
             for (j = 0; j < 6; j++) {
                 for (k = j + 1; k < 6; k++) {
-                    if (cm_OrderChances[(b + i) * 6 + k] == cm_OrderChances[(b + i) * 6 + j])
-                        cm_OrderChances[(b + i) * 6 + k] = 0;
+                    if (cm_OrderChances[(b * 5 + i) * 6 + k] == cm_OrderChances[(b * 5 + i) * 6 + j])
+                        cm_OrderChances[(b * 5 + i) * 6 + k] = 0;
                 }
             }
         }
