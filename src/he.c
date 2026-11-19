@@ -4171,20 +4171,7 @@ int ai_MasterExamPassed();
    due in a day. Stage 1 waits for the answer in that window (d2_ClickedId 0: passed, 1: failed) or for the due time
    (then stage 2); stage 2 decides by ai_MasterExamPassed. Passed: the examiner hears 0x1785; failed: the candidate
    leaves the feast's guests (the table's field, or the feast event re-posted) and the examiner hears 0x1786; either
-   only while the candidate is a guest. The text 0x1771 reads the owner of a null building: kept as the original
-   @deep reconstructed and read in full against the original (all 4 search loops, the field delta / feast
-   re-post on failure, the 0x1785 / 0x1786 news, the stage 0 window and texts, the 0x200 buffer). The
-   calls, stores and branches match per path; what differs is tail merging: the original reloads ev from
-   its argument slot (mov edx/esi, [esp+0x220]) before the closing he_FreeEvent / he_ReleaseSlot of the
-   stage 1 / 2 paths, so their tails are identical and cross-jumped (stage 1 not-found exits jmp +0x479,
-   the news calls share +0x471 / +0x295), where ours keeps ev in esi on the passed paths and duplicates
-   each return block (returns 13/9, txt_Format x4 vs x3, he_ShowNews x4 vs x2). Hunks: code at +0xf8 (mov
-   ecx,eax: master kept in a register), +0x172/+0x19b/+0x386/+0x3b5 (duplicated return blocks), +0x1ba (the
-   0x1785 news not cross-jumped into the 0x1786 one), +0x404 (the stage 1 news tail), +0x53e/+0x578 (the
-   ai_Time copies into start / end: regs + order) (size: 539 vs 485 instructions, explained: 54
-   instructions: four duplicated return blocks (push ev; call he_FreeEvent [; he_ReleaseSlot]; four pops;
-   add esp; ret, ~8-10 each) and two news sequences (txt_Format + he_ShowNews, ~16 each) that the original
-   cross-jumps because it reloads ev from the argument slot on those paths: allocation, not statements) */
+   only while the candidate is a guest. The text 0x1771 reads the owner of a null building: kept as the original */
 void he_RunFeastExam(int ev)
 {
     AIJOB *e = (AIJOB *)ev;
@@ -4195,27 +4182,52 @@ void he_RunFeastExam(int ev)
     int i, none;
     char buf[0x200];
 
-    if (e->stage == -1 || e->stage == -2)
-        goto fail;
+    if (e->stage == -1 || e->stage == -2) {
+        if (e->slot != 0)
+            he_ReleaseSlot(ev);
+        he_FreeEvent((int *)ev);
+        return;
+    }
     if (e->examAt == 0) {
         gm_FindById(&bld, 0, 0, e->from);
-        if (bld == 0)
-            goto fail;
+        if (bld == 0) {
+            if (e->slot != 0)
+                he_ReleaseSlot(ev);
+            he_FreeEvent((int *)ev);
+            return;
+        }
         table = (AIOBJ *)gm_Query((void *)bld->objList, 1, 0, 0x17);
-        if (table == 0 || bld->owner == 0xffff)
-            goto fail;
+        if (table == 0 || bld->owner == 0xffff) {
+            if (e->slot != 0)
+                he_ReleaseSlot(ev);
+            he_FreeEvent((int *)ev);
+            return;
+        }
         master = &ai_CharsT[bld->owner];
-        if (master == 0)
-            goto fail;
+        if (master == 0) {
+            if (e->slot != 0)
+                he_ReleaseSlot(ev);
+            he_FreeEvent((int *)ev);
+            return;
+        }
     } else if (e->examAt == 1) {
         feast = (AIJOB *)he_FindEvent(2, 1, e->examFeast, 0, 0x37);
-        if (feast == 0)
-            goto fail;
+        if (feast == 0) {
+            if (e->slot != 0)
+                he_ReleaseSlot(ev);
+            he_FreeEvent((int *)ev);
+            return;
+        }
         master = &ai_CharsT[feast->chr];
-        if (master == 0)
-            goto fail;
+        if (master == 0) {
+            if (e->slot != 0)
+                he_ReleaseSlot(ev);
+            he_FreeEvent((int *)ev);
+            return;
+        }
     } else {
-        goto done;
+        he_FreeEvent((int *)ev);
+        return;
     }
     cand = &ai_CharsT[e->chr];
     if (cand->kind != 6 && cand->kind != 7)
@@ -4223,8 +4235,10 @@ void he_RunFeastExam(int ev)
     switch (e->stage) {
     case 0:
         he_OpenEventSlot(ev, 0, 0, "Berufe\\Messagebox_Meisterpruefung", 0x5ec);
-        if (e->slot == 0)
-            goto done;
+        if (e->slot == 0) {
+            he_FreeEvent((int *)ev);
+            return;
+        }
         d2_SetForm(e->slot->win, 0);
         if (e->examAt == 0)
             io_PrintText(0x1770, bld->owner, cand->id, e->examText, bld, master->id, cand->id);
@@ -4327,12 +4341,6 @@ void he_RunFeastExam(int ev)
         he_FreeEvent((int *)ev);
         return;
     }
-    return;
-fail:
-    if (e->slot != 0)
-        he_ReleaseSlot(ev);
-done:
-    he_FreeEvent((int *)ev);
 }
 /* 0x544070, a Ghidra miss (disassembled): the alloc handler of the tribute event 0x35, once it is started (opts bit 4
    clear). Without its collector (idbc) the event is re-posted; with more than four tribute events running it is
