@@ -2077,16 +2077,7 @@ void he_RunNewOccurrenceMsg(int ev)
 }
 
 
-/* 0x56a7b0, the allocation handler of the trade event 0xb: when another event of the same kind already works for the same good (0xac) of another sender (0x10) this record is freed; else both clocks (0x52 / 0x60) are the start clock (0x44), due 1 unit later, the handles 0xe8 / 0xec = -1, and a move-goods message 0xf (AIMSG: type 0xf, to the character chr, fromId -1, the clock, the good (arg[0]), the buyer (from, arg[1]), the building (0xb0, arg[2]), the event id (0xa0)) is posted unless the flag 0xf1 is set (then due 1 + 0x1e later); modes 0xf0 = 4 when the character (0xb4) exists
-   @deep read the whole function against the original and rebuilt it on AIJOB / AIMSG: the same-kind /
-   same-good check over he_FindEvent, the two clocks, the handles -1, the move-goods message 0xf (type, to
-   = the character's netId, fromId -1, the clock, arg[0] the good, arg[1] the buyer, arg[2] the building,
-   0xa0 the event id), the flag 0xf1 branch, modes 4. Only scheduling / allocation is left: the msg setup
-   is one scheduling region - the original hoists ev->start.year into edx above the memset (mov edx,[ebx]
-   before rep stosd) and interleaves the clock stores (year 0x28, secword 0x34, min 0x30, hourword 0x2c)
-   with type / fromId / to / flags / arg[], ours stores the four clock fields together after the memset;
-   plus the eax / ecx register swaps in the arg stores. 130 vs 129 instructions. Tried: the typed AIMSG
-   field assignments in the source order and the HETRADEMSG view for 0xa0; the store set is identical. */
+/* 0x56a7b0, the allocation handler of the trade event 0xb: when another event of the same kind already works for the same good (0xac) of another sender (0x10) this record is freed; else both clocks (0x52 / 0x60) are the start clock (0x44), due 1 unit later, the handles 0xe8 / 0xec = -1, and a move-goods message 0xf (AIMSG: type 0xf, to the character chr, fromId -1, the clock, the good (arg[0]), the buyer (from, arg[1]), the building (0xb0, arg[2]), the event id (0xa0)) is posted unless the flag 0xf1 is set (then due 1 + 0x1e later); modes 0xf0 = 4 when the character (0xb4) exists */
 void he_AllocTrade(AIJOB *ev)
 {
     HETRADE *p = (HETRADE *)ev;
@@ -2094,7 +2085,7 @@ void he_AllocTrade(AIJOB *ev)
     AIJOB *e2;
 
     for (e2 = (AIJOB *)he_FindEvent(2, 0, 0xb, 3, ev->from); e2 != 0; e2 = (AIJOB *)he_NextEvent()) {
-        if (p->cart == ((HETRADE *)e2)->cart && e2->id != ev->id) {
+        if (((HETRADE *)e2)->cart == p->cart && e2->id != ev->id) {
             he_FreeEvent((int *)ev);
             return;
         }
@@ -2105,14 +2096,14 @@ void he_AllocTrade(AIJOB *ev)
     p->msgSlot = -1;
     gm_AddTime(&ev->end, 0, 1, 0);
     memset(&msg, 0, sizeof(msg));
-    msg.time = ev->start;
     msg.type = 0xf;
     msg.fromId = -1;
     msg.to = ai_CharsT[ev->chr].netId;
     msg.flags = 2;
-    msg.arg[2] = p->bld;
-    msg.arg[1] = ev->from;
+    msg.time = ev->start;
     msg.arg[0] = p->cart;
+    msg.arg[1] = ev->from;
+    msg.arg[2] = p->bld;
     ((HETRADEMSG *)&msg)->jobId = ev->id;
     if (gm_FindObjectInst(p->cart) != 0) {
         if (ev->flags != 0)
