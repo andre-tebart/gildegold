@@ -1573,17 +1573,26 @@ int he_HasEvent9f(AICHAR *a);
    (cm_SendMakeGoods); without units and the good no longer in the store, the good is ordered (cm_SendExSellObject).
    A shortage reports as above (once), stops the smoke and waits 5 minutes. Stage 2 goes back to 1 while workers are
    left, else the workers leave the building's group, the smoke stops and the event is freed; -1 / -2 free it
-   @deep rebuilt from the whole original (frame 0x724: name[MAX_PATH] at 0x20, text[0x600] at 0x124; the
-   case order 1/0/2/-1; txt_Format(text, id, bld, good*2+0x9a8); the shortage news chains; the make / order
-   slots; while amount <= 0.0f; the minutes product with the call converted in place). 1147 vs 1151
-   instructions. Left is allocation: VC6 keeps &ev->clock60 (the CSE, or the clock variable) in ebx where
-   the original keeps it in the stack slot 0x8 (mov [esp+0x24], eax at +0x79e) and caches the constant 0 in
-   ebx instead (xor ebx, ebx at +0x8cc / +0x96b; cmp ax, bx / push ebx / cmp [ebp+0xc8], ebx / mov
-   [esp+0x28], ebx for the qword high half): every code hunk from +0x792 to +0xd95 is that (push ebx vs
-   push 0, mov ecx, ebx vs mov edx, [esp+0x18]), and the slots hunks follow from it (factor f at 0x8 vs
-   0xc). The tail hunk: case 1's no-worker path shares case 0's stage++ inline in the original (+0x87) and
-   as a tail block in ours (+0xda0), the cause of the one switch entry that differs; goto / fall-through
-   spellings gave the same layout (size: 8 of the instruction difference are shared / inline tails) */
+   @deep deep s44: 40 -> 4 ins, size right (3793). Two levers: case 1's no-worker path written out in case
+   1 (if (w0 <= 0 && w1 <= 0) { ev->stage++; return; }, no goto work) with case 0 placed before case 2: VC6
+   cross-jumps case 0 into case 1's copy (the switch entry +0x87, the stage in eax from the switch); and
+   the debug line's buffer is its own char buf[0x200] (the original's only reference to esp+0x534), text is
+   char text[0x400]. Left (4 ins): line 'fv = (gm_GetSkill(worker, 1) + 0.5) * fv;' - the original
+   schedules mov al,[esi+0x1b4] (the flags1b4 test) and add esp,8 before fadd 0.5 / fmul fv; ours fadd /
+   fmul first (c2dag: fadd prio 131072 h=8 above the flag load 106496 h=5; the op=263 node of the
+   parenthesised sum). Tried: fv *= .., fv * (..), 0.5f (fpu hunk), (float) cast, 0.5 + .., (double)fv, the
+   flag test as != 0 / == 1 / ternary / if-else: none moves it. prior: rebuilt from the whole original
+   (frame 0x724: name[MAX_PATH] at 0x20, text[0x600] at 0x124; the case order 1/0/2/-1; txt_Format(text,
+   id, bld, good*2+0x9a8); the shortage news chains; the make / order slots; while amount <= 0.0f; the
+   minutes product with the call converted in place). 1147 vs 1151 instructions. Left is allocation: VC6
+   keeps &ev->clock60 (the CSE, or the clock variable) in ebx where the original keeps it in the stack slot
+   0x8 (mov [esp+0x24], eax at +0x79e) and caches the constant 0 in ebx instead (xor ebx, ebx at +0x8cc /
+   +0x96b; cmp ax, bx / push ebx / cmp [ebp+0xc8], ebx / mov [esp+0x28], ebx for the qword high half):
+   every code hunk from +0x792 to +0xd95 is that (push ebx vs push 0, mov ecx, ebx vs mov edx, [esp+0x18]),
+   and the slots hunks follow from it (factor f at 0x8 vs 0xc). The tail hunk: case 1's no-worker path
+   shares case 0's stage++ inline in the original (+0x87) and as a tail block in ours (+0xda0), the cause
+   of the one switch entry that differs; goto / fall-through spellings gave the same layout (size: 8 of the
+   instruction difference are shared / inline tails) */
 void he_RunProduktion(AIJOB *ev)
 {
     HEPRODUCTION *p = (HEPRODUCTION *)ev;
@@ -1594,7 +1603,8 @@ void he_RunProduktion(AIJOB *ev)
     float sum;
     AIBTYPE *bt;
     char name[MAX_PATH];
-    char text[0x600];
+    char text[0x400];
+    char buf[0x200];
     AICHAR *rec;
     AICHAR *worker;
     AICHAR *master;
@@ -1611,19 +1621,16 @@ void he_RunProduktion(AIJOB *ev)
     if (ev->chr == 0xffff) {
         bld = (AIBLD *)gm_FindBuildingById(p->bld);
         if (bld != 0)
-            txt_Format(text, "he_RunProduktion(): geb:%G", bld);
+            txt_Format(buf, "he_RunProduktion(): geb:%G", bld);
         he_FreeEvent((int *)ev);
         return;
     }
     switch (ev->stage) {
     case 1:
-        if (ev->words14[0] > 0 || ev->words14[1] > 0)
-            goto work;
-        /* no workers left: on to stage 2 */
-    case 0:
-        ev->stage++;
-        return;
-work:
+        if (ev->words14[0] <= 0 && ev->words14[1] <= 0) {
+            ev->stage++;    /* no workers left: on to stage 2 */
+            return;
+        }
         if (p->slot != -1) {
             if (cm_GetSlotState(p->slot) == 0)
                 return;
@@ -1842,6 +1849,9 @@ lacking:
         p->slot = -1;
         gm_AddTime(&ev->end, 0, 5, 0);
         ev->clock60 = ev->end;
+        return;
+    case 0:
+        ev->stage++;
         return;
     case 2:
         if (ev->words14[0] > 0 || ev->words14[1] > 0) {
