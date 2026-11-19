@@ -179,8 +179,8 @@ unsigned short path_Search1(PMAP *map, int sx, int sy, short ex, int ey, int typ
     path_Goal = (short)(ey << path_Shift) + ex;
     path_Stamp++;
     PATH_INITNODE(&map->nodes[(unsigned short)a], 5);
-    b = path_Goal;
-    if (path_Start != b) {
+    if (path_Start != path_Goal) {
+        b = path_Goal;
         PATH_INITNODE(&map->nodes[b], 9);
         path_Tab1Sel = path_Tab1[type];
         path_Tab2Sel = path_Tab2[type];
