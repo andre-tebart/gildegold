@@ -3619,7 +3619,7 @@ exe	0x0054a7b0	he_RunGang	he	byte	readable
 exe	0x0054ae20	he_AllocProtectionAsk	he	byte	readable		
 exe	0x0054ae60	he_RunProtectionAsk	he	byte	readable		
 exe	0x0054b170	he_StartProtection	he	byte	readable		
-exe	0x0054b1e0	he_RunProtection	he	draft	readable	deep	
+exe	0x0054b1e0	he_RunProtection	he	shape	readable	deep	
 exe	0x0054b9b0	he_StartAudit	he	byte	readable		
 exe	0x0054ba20	he_RunAudit	he	byte	readable		
 exe	0x0054be20	he_StartGathering	he	byte	readable		
@@ -3630,7 +3630,7 @@ exe	0x0054c570	he_RunAccidentSim	he	byte	readable
 exe	0x0054c870	he_StartAuctionEvent	he	byte	readable		
 exe	0x0054c8e0	he_RunAuctionEvent	he	draft	readable	deep	
 exe	0x0054cc20	he_StartTitleCeremony	he	byte	readable		
-exe	0x0054cc50	he_RunTitleCeremony	he	draft	readable	deep	
+exe	0x0054cc50	he_RunTitleCeremony	he	byte	readable		
 exe	0x0054d190	he_StartInnSim	he	byte	readable		
 exe	0x0054d1e0	he_FindGuestInn	he	byte	readable		
 exe	0x0054d260	he_RunInnSim	he	byte	readable		
