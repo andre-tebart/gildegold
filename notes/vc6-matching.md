@@ -1590,6 +1590,47 @@ Where the pushes and pops sit, how many epilogue copies there are, shared agains
     (view / first 181 / 182: one more distinct value in block 0), he_NextEvent (the global cursor candidate
     takes eax before the hoisted filters).
 
+- **Deep s46 (the near-byte list to 200 instructions minus everything named in these notes, the 15 tagged ones
+  with the fewest instructions at 65-86: 5 byte, 10 notes, 7 of them closer)**:
+  - **Zero stores of a counter array from two scratch zero registers (`xor eax,eax` / `xor ecx,ecx`, the first
+    element an immediate) where ours keeps 0 in a callee-saved register over the function**: two arrays with
+    aggregate initializers, `int rcnt[4] = {0}; int cnt[6] = {0};` (the later-declared one at the lower address).
+    The initializer stores never join the global constant-0 web, so the later `*g = 0` / `*r = 0` stay
+    immediates (ai_PokerOpenCounts 66 -> byte; hand stores in any order, chains, one `cnt[10] = {0}` and the
+    explicit `{0, 0, ..}` lists were all other code).
+  - **A 32 bpp pixel read at byte offsets 0 / 4 / 8 (`mov dl,[eax+ecx*4+4]`)**: the low bytes of three
+    consecutive dwords, `r = (unsigned char)((DWORD *)surf->bits)[i]; g = ..[i + 1]; b = ..[i + 2];`, and the
+    24 bpp arm indexing the byte array with no pointer local: the scratch rotation of the whole function was
+    the p / i locals (d2_GetPixelColour 66 -> byte).
+  - **An address-taken int sent as a field delta pins a slot over the whole function (frame 4 bytes larger,
+    the other locals out of the dead parameter slot)**: the int is a block local of the field block that sends it
+    (`{ int kind; kind = 8; cm_BeginFieldBlock(..); cm_AddFieldDelta(1, 1, 2, &kind); .. }`); cm_RunBirth's
+    script handle then shares m's slot, gm_PartnerStep's arg declared in the pregnancy block lets the n spill
+    and the float temp share its slot (frame equal). Then cm_RunBirth's `push 0` / `push 2` hoisted above the
+    sex tests with one `add esp,4` at the join: the voice call written out in four nested if / else arms
+    (`cm_QueueVoice(-8, bank, "_GEBURT", cm_Random(2) + 2, 0)` each): VC6 hoists the arms' common first pushes
+    and merges the tails; a ternary argument evaluates the ternary first (byte).
+  - **ai_MasterExamWindow**: the s45 levers together: the 0x15bd arm's title as an int set by if / else before
+    the call (the job byte loaded after the sbb), the exam AIMSG a block local of the click arm and a 720-order
+    round of its fill (type, to, fromId, flags, arg[0], time): 82 -> byte in one 1441-variant round.
+  - **A register swap of the event and the character through the whole function**: the default of a news chain
+    (`n = 0;` before `if (..) n = A; else if (..) n = B; else if (..) n = C;`) written as the chain's own `else n
+    = 0;` (he_RunOfficeAward 76 -> 9). The original still branches for the last arm (xor before the chain, no
+    setne / dec / and): the form that gives both is open.
+  - **`goto insert` / `goto shift` in a slot search**: a found flag (`found = 1; break;` in both arms, the insert
+    under `if (found)`): the identical code (he_RunAuctionEvent). Writing the insert out in both arms with
+    `break` was closer (52) but not cross-jumped: +16 bytes, a size-queue entry more.
+  - **`inc edi; cmp edi,6; jl` closing a row loop whose head tests `j < max` with jae**: the index is an int
+    (ai_FillWeddingTab). **`inc ebp` after the multiply chain of a pointer computation**: `n0++;` after the
+    `bt = ..` line (ord_ComputeStatistics order 24 -> 8). **The ai_CharsT index computed before m is reloaded**:
+    `m->host == ai_CharsT[ai_PlayerId].netId` (cm_RunDuel 74 -> 68).
+  - Left with notes: ai_FillQuarrelTab (n 33 takes ebx before max -52), gm_PartnerStep (mate picks ebp although
+    ebx is free: the block shape decides), cm_DuelShotAction (J reached before the sample subtree: a cross-jumped
+    copy?), d3_CornerCB, cm_RunDuel (one scratch rotation from the news argument), he_RunOfficeAward (the sex in
+    al across the rep movsd), he_RunAuctionEvent (n's stack home: one combined search test gives it), ord_ComputeStatistics
+    (VC6's shared 1 / cntf), ai_FillWeddingTab (roles[5] after the test: 47 ins at +1 instruction), rt_LoadRoutes
+    (the r pointer form: frame 0xc, i spilled).
+
 - **An else-if arm cross-jumped whole into a sibling's copy, the original keeps it inline**: the store order of
   the OTHER arms (default arm charId before stateArg; 0x176 arm stateArg, charId, x, z) decides it, found by
   climb.py swap + move in round 2 (cm_OrderAttack byte; permuting only the inlined arm's stores did not). The pair
