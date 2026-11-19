@@ -17969,7 +17969,8 @@ void he_RunAttack(AIJOB *ev)
         owner = &ai_CharsT[b->owner];
         me = &ai_CharsT[ev->chr];
         defence = (float)(gm_BuildingSkill(b, 5, 1) * 0.01 + 1.0);
-        o = (AIOBJ *)gm_Query((void *)((AIBLD *)gm_BuildQuery(1, 1, ev->raidStart))->objList, 1, 0, 0xca);
+        home = (AIBLD *)gm_BuildQuery(1, 1, ev->raidStart);
+        o = (AIOBJ *)gm_Query((void *)home->objList, 1, 0, 0xca);
         for (; o != 0; o = (AIOBJ *)gm_QueryNext())
             if (o->reportBld == b->id)
                 break;
@@ -17998,10 +17999,10 @@ void he_RunAttack(AIJOB *ev)
                     n++;
                 }
             }
-            party.raid.raid100[0] = -1;
-            party.raid.raid100[1] = -1;
-            party.raid.raid100[2] = -1;
-            party.raid.raidHome = ((AIBLD *)gm_BuildQuery(1, 1, ev->raidStart))->id;
+            for (i = 0; i < 3; i++)
+                party.raid.raid100[i] = -1;
+            home = (AIBLD *)gm_BuildQuery(1, 1, ev->raidStart);
+            party.raid.raidHome = home->id;
             k = 0;
             for (i = 0; i < 8 && k < 6; i++) {
                 if (ev->ids[i] != -1) {
