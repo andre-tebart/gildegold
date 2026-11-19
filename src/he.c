@@ -8904,10 +8904,7 @@ void he_RunDiseaseSim(int ev)
 /* 0x54ef70, the init of the "Dunkle Ecke" (dark corner) robbery event 0x74: no carrier, a random walk over the
    buildings, 5 + random(4) steps, due a minute from now; it ends at once when another player's robbery runs at the
    same victim, or the victim building or its job table (object 0x12c) is gone; else the job table gets the year,
-   and the carrier figure (cm_SendSpawnCharacter 0xe "DunkleEcke") is spawned at the victim
-   @deep deep s23: the init stores loot / target after the steps roll (carrier, cursor, step, steps, loot,
-   target): 12 -> 4 ins. Left: year = ai_Time.year stored after the cm_BeginFieldBlock pushes in the
-   original (ours before); year after the call or before gm_FindById: worse. */
+   and the carrier figure (cm_SendSpawnCharacter 0xe "DunkleEcke") is spawned at the victim */
 
 void he_StartDarkCorner(int ev)
 {
@@ -8916,7 +8913,6 @@ void he_StartDarkCorner(int ev)
     AIJOB *o;
     AIBLD *bld;
     AIOBJ *jt;
-    int year;
 
     if ((e->opts & 4) != 0)
         return;
@@ -8940,10 +8936,14 @@ void he_StartDarkCorner(int ev)
         e->exSlot = cm_SendExSetHEI(-1, ev);
         return;
     }
-    year = ai_Time.year;
-    cm_BeginFieldBlock((char *)jt, jt->objId);
-    cm_AddFieldDelta(4, 1, (char *)jt - cm_FieldObject + 0x28, &year);  /* HEJOBTABLE.year */
-    cm_SendFieldDeltas();
+    {
+        int year;
+
+        year = ai_Time.year;
+        cm_BeginFieldBlock((char *)jt, jt->objId);
+        cm_AddFieldDelta(4, 1, (char *)jt - cm_FieldObject + 0x28, &year);  /* HEJOBTABLE.year */
+        cm_SendFieldDeltas();
+    }
     cm_BeginGroup("Dunkle Ecke");
     d->carrier = cm_SendSpawnCharacterR(0xe, bld->id, -1, 0, 0, 0, "DunkleEcke");
     e->exSlot = cm_SendExSetHEI(0, ev);
