@@ -6513,9 +6513,14 @@ int gm_BuildingCarts(ORDBLD *b, int *out)
 /* 0x5090b0, the rank byte (+0x247) of the building b's kind record. The original switches on the kind's class
    (the record's first byte) into three groups, 2 / 5 / 7, 4 / 0xb .. 0xd / 0x10 / 0x13 and the rest, that all
    return the same byte (its jump table: two bodies, the second shared by the last group and the default)
-   @deep near-byte sweep s22: left the two return bodies' registers (the original's first body uses ecx,
-   the second edx). = control: the case groups swapped, the default return after the switch; one body for
-   the last group and default: 26. */
+   @deep deep s43: the original's table is [0] = 2/5/7 -> body ecx (0x5090e9), [1] = the 4 group and [2] =
+   default -> body edx (0x5090f4, cross-jumped): A ecx, B edx, default edx. Ours: A ecx, B edx, default ecx
+   (merged with A), so only the default body's scratch register is one rotation step off. All 6 orders of
+   the three groups, break + one return r, GM_BTYPE(*b)->kind / ->level, a GMBTYPE *bt, an int i = *b: all
+   = control (VC6 builds the arms in its own order). Open: what gives the default body one temp step more
+   (or the B body one fewer). prior: near-byte sweep s22: left the two return bodies' registers (the
+   original's first body uses ecx, the second edx). = control: the case groups swapped, the default return
+   after the switch; one body for the last group and default: 26. */
 
 int gm_BuildingRank(unsigned char *b)
 {
