@@ -1801,6 +1801,42 @@ Where the pushes and pops sit, how many epilogue copies there are, shared agains
     ebx with 16-bit compares in the part loop), he_RunCustomers (one scratch rotation from the first JobCost; a
     stage 2 candidate re-rotates it).
 
+- **Deep s51 (large drafts: the 8 with the fewest instructions at 232-246 of the draft pool without notes here: 1
+  byte, 6 closer, 1 note)**:
+  - **A count global copied into a local (`n = ai_NSlots;` .. `ai_Slots[n].f = ..`, `n = ++ai_NSlots`) where the
+    original keeps the count in ecx between the calls and recomputes the slot offset into esi for the post-call
+    stores**: there was no copy: `ai_Slots[ai_NSlots].f` and `i < ai_NSlots` at each use, `ai_NSlots++`. A scalar
+    global is its own candidate between its kills; the named copy took esi for the whole loop and spilled the
+    loop pointer (frame 4 bytes larger): ai_FillSlotTable 232 -> byte in one variant.
+  - **A frame 4 bytes larger in a long handler made of themes / cases, each original slot holding variables of
+    several themes (theme 2's r0 with theme 0's fl, theme 0's elig apart from the other themes' elig)**: every
+    theme's locals declared in the theme's block, and the address-taken send int (`two = 2; ..
+    cm_AddFieldDelta(.., &two)`) a block local of the macro's success block: he_SpawnFounders 236 -> 170, frame
+    = the original's. The s46 block-local lever for a whole function: per-theme variables are other variables
+    to the frame packer. Then an `unsigned char k = bt->kind;` local spilled in ours, kept in dl by the
+    original: `bt->kind` at each use (170 -> 167).
+  - **The byte sibling's forms carry over to the copy**: he_RunAttack (he_RunRaid's twin) with the raid100
+    element loop and the start building read into `home` before gm_Query / raidHome: 239 -> 54, size = the
+    original; then a 720-order round of the party fill (-> 40).
+  - **A record copy placed before the global stores that precede it in ours** (`next = cm_CutInfosT[i];` before
+    `cm_PartyTurn = i; cm_CutChar = c;`): cm_RunSceneParty 237 -> 69 (climb round 1's move).
+  - **A case's exits `return;` where the original's cross-jumped tails come out the other way round**: the case
+    ending with `break;` into the empty end after the switch (he_RunPopulation cases 2 / 6: 231 -> 192, a 63-way
+    subset round of the cases; the other cases' break is the same code or worse). A search loop
+    `while (found == 0 && n != 0)` as `while (n != 0) { ..; if (found != 0) break; }` gave the character ebp
+    as the original (240 -> 231).
+  - **A message-box arm with its own `he_FreeEvent(ev); return;` right before the switch's `break` to the shared
+    free**: drop it, the arm falls into the free (he_RunBuildingSpying, with the no-spy exit as break: 246 ->
+    178); `(rank * 120.0) * (252.0f / (int)mean) / n` parenthesised (the s49 product lever) and the `all = 1`
+    flag right before its loop (s50) -> 170.
+  - Rejected: climb's new `int t = market->objId;` for one sprintf / send pair (ai_MeisterTradeAllgemein 240 ->
+    163): the frame sort of a > 0x80 frame is unstable, an extra entry reorders equal densities; no source
+    reason for the local.
+  - Left with notes: he_SpawnFounders (n7a packed after theme 0's elig), cm_RunSceneParty (the owner loop's IV
+    slots), he_RunAttack (o / chance slot weights), he_RunPopulation (-1 in ebx vs ebp), ai_MeisterTradeAllgemein
+    (the unstable frame sort), d3fl_MakeDivide (the tile loop's hoisted products), he_RunBuildingSpying (0 in
+    ebx in the original).
+
 - **An else-if arm cross-jumped whole into a sibling's copy, the original keeps it inline**: the store order of
   the OTHER arms (default arm charId before stateArg; 0x176 arm stateArg, charId, x, z) decides it, found by
   climb.py swap + move in round 2 (cm_OrderAttack byte; permuting only the inlined arm's stores did not). The pair
