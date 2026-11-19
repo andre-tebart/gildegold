@@ -4600,6 +4600,10 @@ the stack at every instruction.
 - **A `fadd [mem]` moving in an unrelated statement**: ranks also decide how `a + b + c + mem` chains associate.
 - **`fld b.gx; fmul c.gz` vs `fld c.gz; fmul b.gx` in a sum of products**: only term order and earlier code move
   it. No lever: all 2^n factor swaps, any grouping. (d3sm_ShadowCB, open)
+- **`(double)` casts on single operands as rank movers where parentheses, `(float)` casts and term orders are
+  canonical**: the squares order y, x, z needed `(double)v->x * v->x + v->y * v->y + (double)v->z * v->z`; a
+  cross product computed sx-first needed `((double)v0->sx - v1->sx) * ((double)v0->sy - v2->sy)`. Generate every
+  subset of operands with `(double)` (2^n, one dcp try); `(float)` subsets were all one code (d3_ProjectMesh byte).
 - **Squares summed in another order (x, z, y)**: `(float)sqrt((double)(a*a + b*b + c*c))`; without the double
   cast the order is canonical (d3t_EmitterCB).
 
