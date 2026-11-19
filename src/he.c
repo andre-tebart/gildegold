@@ -15271,22 +15271,13 @@ void he_RunEvent27(int ev)
    harvestPlant and the worker harvestWorker. A plant missing or held by another event (fallId) lets the worker leave
    the building's group and frees the record, as does a missing worker or one already harvesting (job kind 0x28).
    Else the worker joins the group at the building's object 0xfd, the plant is taken under the event's id
-   (cm_SetPlant, fall 1; its send slot to harvestSlot), no script runs yet and the plant's type is noted
-   @deep read whole against 0x55d490..0x55d5bb and reconstructed (the building / plant / worker checks, the
-   group move at object 0xfd, cm_SetPlant (bld, x, z, type, 1, id), harvestScript = -1, harvestType = plant
-   type; AIJOB got harvestType at 0xbc). 103 vs 103 instructions, the same calls and stores; left is
-   allocation and scheduling: the gm_FindChar argument (+0x502:
-   original mov edx,[esi+0xb0] / mov edi,eax / push edx, ours mov edi,eax / mov eax,[esi+0xb0] / push eax),
-   regs eax/ecx/edx renamings at +0x530 .. +0x599 and the +0x57b order of the harvestType load; proof stops
-   only on cm_SetPlant's byte argument whose upper bits come from another scratch register (edx vs ecx).
-   Tried: declaration order c / pl, the nested if / else form and the early-return form (both compile
-   identically) */
+   (cm_SetPlant, fall 1; its send slot to harvestSlot), no script runs yet and the plant's type is noted */
 void he_AllocHarvest(int ev)
 {
     AIJOB *e = (AIJOB *)ev;
     AIBLD *b;
     AICHAR *c;
-    G15PLANT *pl;
+    G15PLANT *pl, *plants;
     short *o;
 
     e->end = ai_Time;
@@ -15297,7 +15288,8 @@ void he_AllocHarvest(int ev)
         he_FreeEvent((int *)ev);
         return;
     }
-    pl = veg_FindPlantId((G15PLANT *)b->plants, e->harvestPlant);
+    plants = (G15PLANT *)b->plants;
+    pl = veg_FindPlantId(plants, e->harvestPlant);
     c = (AICHAR *)gm_FindChar(e->harvestWorker);
     if (pl == 0 || pl->fallId != -1) {
         if (c != 0)
@@ -15312,8 +15304,8 @@ void he_AllocHarvest(int ev)
     o = (short *)gm_Query((void *)b->objList, 1, 0, 0xfd);
     sv_MoveToGroup((unsigned char *)b, o, c->id, (char *)ev);
     e->harvestSlot = cm_SetPlant(e->harvestBld, pl->x, pl->z, pl->type, 1, e->id);
-    e->harvestScript = -1;
     e->harvestType = pl->type;
+    e->harvestScript = -1;
 }
 /* 0x55d5c0, the run handler of the harvest event, by its stage (the jump table 0x55dbc0 after the code): the building
    harvestBld, its plant harvestPlant and the worker harvestWorker; a missing plant or one another event holds (fallId)
