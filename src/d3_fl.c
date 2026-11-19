@@ -1805,10 +1805,7 @@ D3BOXVERT *d3fl_TileBox(D3FLMAP *map, D3FLTILE *t, int tx, int ty)
     D3FL_CORNER(7, x0, z1, h)
     return d3fl_Box;
 }
-/* 0x442ed0, animates n water regions: texture frame, texture offsets and the 16 wave vectors
-   @deep deep s23: left the x87 handling of the converted i: the original copies it (fld st(1); faddp) at
-   the v.x / v.y sums and keeps the d product on the stack (fmul [esi+0x34] without the extra fld / fstp
-   st(0)). d as v.w, d inline, (float) on d: = control or far worse. */
+/* 0x442ed0, animates n water regions: texture frame, texture offsets and the 16 wave vectors */
 
 void d3fl_UpdateWater(unsigned long time, unsigned int n, D3FLREGION *r)
 {
@@ -1816,7 +1813,7 @@ void d3fl_UpdateWater(unsigned long time, unsigned int n, D3FLREGION *r)
     int i, dt;
     float t, *w;
     D3VECTOR4 v;
-    double d;
+    float f;
 
     for (k = 0; k < n; k++, r++) {
         if (r->tex && r->tex->frames > 0 && r->tex->speed > 0)
@@ -1831,14 +1828,15 @@ void d3fl_UpdateWater(unsigned long time, unsigned int n, D3FLREGION *r)
                 r->wavePhase[i] = (float)fmod(t * r->speed[i] + r->wavePhase[i], D3FL_2PI);
             for (i = 0; i < 16; i++) {
                 w = r->wave[i >> 2][i & 3];
-                v.x = (float)sin(cos(2.7 * i) * D3FL_2PI + r->wavePhase[0] + i);
-                v.y = (float)cos(sin(3.1415927f - 2.4 * i) * D3FL_2PI + r->wavePhase[1] + i);
-                v.z = (float)sin(i - cos(2.5 * i) * D3FL_2PI + r->wavePhase[2] + 2.2);
-                d = cos(i - sin(2.6 * i + 3.1415927f) * D3FL_2PI + r->wavePhase[3] + 4.0);
+                f = i;
+                v.x = (float)sin(cos(2.7 * f) * D3FL_2PI + r->wavePhase[0] + f);
+                v.y = (float)cos(sin(3.1415927f - 2.4 * f) * D3FL_2PI + r->wavePhase[1] + f);
+                v.z = (float)sin(f - cos(2.5 * f) * D3FL_2PI + r->wavePhase[2] + 2.2);
+                v.w = (float)cos(f - sin(2.6 * f + 3.1415927f) * D3FL_2PI + r->wavePhase[3] + 4.0);
                 w[0] = v.x * r->amp[0];
                 w[1] = v.y * r->amp[1];
                 w[2] = v.z * r->amp[2];
-                w[3] = (float)(d * r->amp[3]);
+                w[3] = v.w * r->amp[3];
             }
             r->time = time;
         }
