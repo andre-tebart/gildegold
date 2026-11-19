@@ -729,7 +729,7 @@ exe	0x00438c30	d3_NextGroup	d3_engine	byte	readable
 exe	0x00438c60	d3_TypeInMask	d3_engine	byte	readable		
 exe	0x00438d40	d3_ForEachObject	d3_engine	byte	readable		
 exe	0x00438e60	d3_ForEachObject2	d3_engine	byte	readable		
-exe	0x00438f60	d3_ProjectMesh	d3_engine	draft	readable	deep	shape+readable -> draft+readable at 0f1c8dc1: promote --accept-falls
+exe	0x00438f60	d3_ProjectMesh	d3_engine	byte	readable		
 exe	0x004391d0	d3_SetupFrustum	d3_engine	draft	readable	deep	
 exe	0x00439650	d3_ClipBox	d3_engine	byte	readable		
 exe	0x00439870	d3_UpdateWorldMatrix	d3_engine	byte	readable		
@@ -3055,7 +3055,7 @@ exe	0x00504290	gm_FirstTitleNumber	f3gmt	byte	readable
 exe	0x00504350	gm_TitleNumberGroup	f3gmt	byte	readable		
 exe	0x005043d0	gm_TitleNumber	f3gmt	byte	readable		
 exe	0x005044b0	gm_TitleJob	f3gmt	byte	readable		
-exe	0x00504510	gm_TitlePeriodServed	f3gmt	draft	readable	deep	shape+readable -> draft+readable at 0f1c8dc1: promote --accept-falls
+exe	0x00504510	gm_TitlePeriodServed	f3gmt	byte	readable		
 exe	0x00504790	gm_SetJob	f3gmt	byte	readable		
 exe	0x00504840	gm_DropRank	f3gmt	byte	readable		
 exe	0x005048e0	gm_BuildingJob	f3gmt	byte	readable		
@@ -4483,7 +4483,7 @@ exe	0x005c0790	ai_ShowOfficeTab	lcamt	byte	readable
 exe	0x005c08b0	ai_ClearAmountTabs	lcamt	byte	readable		
 exe	0x005c08d0	ai_AmountLikingRows	lcamt	byte	readable		
 exe	0x005c0970	ai_SpecialAmountWindow	lcamt	byte	readable		
-exe	0x005c1130	ai_AmountMenu	lcamt	draft	readable	deep	
+exe	0x005c1130	ai_AmountMenu	lcamt	byte	readable		
 exe	0x005c1500	ai_AmountListWindow	lcamt	byte	readable		
 exe	0x005c1a80	ai_AmountInfoWindow	lcamt	byte	readable		
 exe	0x005c1b20	ai_OpenAmountKindMenu	lcamt	byte	readable		
@@ -4500,7 +4500,7 @@ exe	0x005c2a10	ai_ShowSettingGoods	lcamt	shape	readable	deep
 exe	0x005c2b90	ai_MasterLetterSettings	lcamt	byte	readable		
 exe	0x005c3200	ai_MasterLetterWindow	lcamt	byte	readable		
 exe	0x005c33c0	ai_PassesPartnerFilter	lcamt	byte	readable		
-exe	0x005c37a0	ai_PassesBuildingFilter	lcamt	draft	readable	deep	
+exe	0x005c37a0	ai_PassesBuildingFilter	lcamt	byte	readable		
 exe	0x005c39a0	ai_PassesMapPickFilter	lcamt	byte	readable		
 exe	0x005c3bb0	ai_PickBuildingChar	lcamt	byte	readable		
 exe	0x005c4100	ai_LawSelectionEntry	lcamt	byte	readable		
@@ -4540,7 +4540,7 @@ exe	0x005cb1e0	ai_SwapSeats	lcamt	byte	readable
 exe	0x005cb250	ai_SeatSwapWindow	lcamt	byte	readable		
 exe	0x005cb4f0	ai_HatredWindow	lcamt	byte	readable		
 exe	0x005cba90	ai_HearingWindow	lcamt	byte	readable		
-exe	0x005cbe00	ai_ExpelWorkerWindow	lcamt	draft	readable	deep	
+exe	0x005cbe00	ai_ExpelWorkerWindow	lcamt	byte	readable		
 exe	0x005cc2b0	ai_PeaceWindow	lcamt	byte	readable		
 exe	0x005cc700	ai_ConvertWindow	lcamt	byte	readable		
 exe	0x005cca40	ai_PenanceWindow	lcamt	byte	readable		
@@ -4569,15 +4569,15 @@ exe	0x005cff70	ai_UseGoodSendHome	lcamt	draft	readable	deep
 exe	0x005d0320	ai_UseGoodWeakenSkills	lcamt	byte	readable		
 exe	0x005d0530	ai_UseGoodWeakenSkills2	lcamt	byte	readable		
 exe	0x005d06e0	ai_UseGoodCureAilment	lcamt	byte	readable		
-exe	0x005d0780	ai_UseGoodHalveWorkerValue	lcamt	draft	readable	deep	
+exe	0x005d0780	ai_UseGoodHalveWorkerValue	lcamt	byte	readable		
 exe	0x005d08c0	ai_ApplyTrialStep	lcamt	byte	readable		
 exe	0x005d09d0	ai_TrialStep1	lcamt	byte	readable		
 exe	0x005d0a40	ai_TrialStep3	lcamt	byte	readable		
 exe	0x005d0ab0	ai_TrialStep4	lcamt	byte	readable		
 exe	0x005d0b20	ai_UseGoodRaiseRelation	lcamt	shape	readable	deep	
-exe	0x005d0c70	ai_QuarrelCallback	lcamt	draft	readable	deep	
+exe	0x005d0c70	ai_QuarrelCallback	lcamt	byte	readable		
 exe	0x005d0e60	ai_UseGoodTrialStep	lcamt	byte	readable		
-exe	0x005d0f20	ai_UseGoodLowerOfficialRelations	lcamt	draft	readable	deep	
+exe	0x005d0f20	ai_UseGoodLowerOfficialRelations	lcamt	byte	readable		
 exe	0x005d1300	ai_UseGoodTwoTrialSteps	lcamt	byte	readable		
 exe	0x005d13e0	ai_UseGoodCharmOtherSex	lcamt	byte	readable		
 exe	0x005d1680	ai_UseGoodSowDiscord	lcamt	byte	readable		
