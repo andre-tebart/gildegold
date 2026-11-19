@@ -11165,7 +11165,6 @@ int ai_UseGoodFrameChar(AICHARREC *ch, G8USEVIEW *use)
     int n;
 
     ret = 0;
-    n = 0;
     if (ch->kind == 6) {
         memset(&cfg, 0, sizeof(cfg));
         memset(cfg.ids, 0xff, sizeof(cfg.ids));
@@ -11185,6 +11184,7 @@ int ai_UseGoodFrameChar(AICHARREC *ch, G8USEVIEW *use)
         ret = 1;
     }
     twice = ai_InventoryHas(ch, 0x2c5) != 0;
+    n = 0;
     for (i = 0; i < 0x1d; i++) {
         if (gv_Decisions[i].valueText == 2 && (char)gv_Decisions[i].rule != 0 && gv_Decisions[i].cur != 0)
             laws[n++] = gv_Decisions[i].id;
