@@ -1458,6 +1458,41 @@ Where the pushes and pops sit, how many epilogue copies there are, shared agains
     p * 17 hoist common to three arms), ai_AmountMenu (the loop-top r = 0 skipped on entry), he_RunBurn (the case
     -1 name buffer's density), and the closer ones ord_ApplyForOffice, he_RunKidnap, ai_SendFreeSpies.
 
+- **Deep s43 (the near-byte list to 200 instructions minus everything named in these notes: the 3 untagged ones
+  and the 12 tagged ones with the fewest instructions, 7 byte, 8 notes)**:
+  - **Four callee-saved registers rotated pairwise (n / ch and target / twice), the original comparing a pointer
+    with the counter's zero register (`cmp edi,ebp`)**: the counter's `n = 0;` stood right before its loop, not
+    with `ret = 0;` at the top (ai_UseGoodFrameChar 82 -> byte; its byte twin with two more calls tolerates the
+    top init). A counter initialised far above its loop is a candidate over the whole function.
+  - **A temp spilled to a slot and reloaded inside one expression (`mov [esp+0x10],eax` .. `mov edx,[esp+0x10]`),
+    the frame's slot order one 4-byte local off**: the original had no named pointer locals for the two frame
+    records; `&a->frames[s->frame]` / `&next->frames[i]` written at each use (as CSE temps) take the registers
+    the named fr / nf held, and the pressure spills the difference into the slot that then sorts first
+    (ch_CheckAniMorph 86 -> byte; climb's `inline:fr` found the first half).
+  - **`and eax,0x5f; add eax,0x130; .. add eax,ecx` where ours has one `lea [eax+ecx+0x130]`**: a ternary of the
+    two constants, `(c->sex != 0 ? 0x18f : 0x130) + t->job`, not `(sex ? 0x5f : 0) + 0x130 + job` (he_RunTrialEvent
+    94 -> byte; the rest of the function followed).
+  - **The store of an address-taken local sunk behind the next call's pushes**: block scope again
+    (`{ int year; year = ai_Time.year; cm_BeginFieldBlock(..); cm_AddFieldDelta(.., &year); .. }`):
+    he_StartDarkCorner byte.
+  - **The (float) cast lever of s41 again**: `rot.y = cm_Random(0x168) * 3.14159274f * (1 / 180.0);` without the
+    explicit cast lets the pos loads fall behind the fild (cm_SinkDownAction byte; its byte twin
+    cm_FallDownAction keeps the cast, the sound call in between changes the block).
+  - **`fld unit; fmul score` where the original loads the score first**: the byte siblings (the other ai_Plot*Chart
+    functions, below twin.py's 0.5 threshold) named the two values `from = ..score; to = ..score;` before the call;
+    as float locals the products come out in the original's order (ai_PlotScoreChart byte). Read the neighbours
+    by name when twin.py finds nothing.
+  - **Pops of the dying distance terms before `fmul 0.001`, then `fld st(0); fcomp 1.5` and `fimul` consuming the
+    clamped value**: `scale = sqrt(..); scale *= 0.001;` (the s42 `r = a * b; r /= c` lever), and the clamp in the
+    same float as `scale = min(1.5, scale);` with no double copy (`min(scale, 1.5)` / if-clamps keep the value
+    alive past the multiply): he_AllocBurn byte.
+  - **A strength-reduced pointer's base field follows the LAST field referenced in source order in the loop**:
+    swapping the two stores of an entry clear moves the base from `state` to `charId` (cm_ResetCutInfos); naming
+    / unnaming an index changes which field the rec pointer is based on (ai_DecideStudy). Both still open.
+  - Left with notes: ai_DecideStudy, cm_ResetCutInfos, ai_FavourComment (the volatile x: without it VC6 threads
+    the decided x test), ord_RandomObjectId, gm_BuildingRank (the default body one rotation step), ai_IntimidateContact,
+    gm_CharacterIncomes, d3_ProjectMesh.
+
 - **An else-if arm cross-jumped whole into a sibling's copy, the original keeps it inline**: the store order of
   the OTHER arms (default arm charId before stateArg; 0x176 arm stateArg, charId, x, z) decides it, found by
   climb.py swap + move in round 2 (cm_OrderAttack byte; permuting only the inlined arm's stores did not). The pair
