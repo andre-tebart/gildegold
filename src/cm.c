@@ -2184,14 +2184,7 @@ int cm_SendTableRequest(G17TABLEMSG *p)
     return cm_QueueSend(&m);
 }
 /* 0x4c5dc0, message 0x55: the command cmd of the fighter slot f of the current fight, with the position and rotation
-   of the fighter c's body and its health; for an attack (2) also the target's current health
-   @deep Read whole against 0x4c5dc0..0x4c5e7a: the same stores (fight id, cmd, the 0x2c-byte slot by rep
-   movsd, health, pos x/y/z, rot x/y/z, the target's health for cmd 2), calls and branches. Left is
-   allocation: the original keeps esi/edi pushed to the end and copies the six vector dwords through esi
-   (mov esi,[eax+0x4c] / mov [esp+0x1d],esi ...), ours pops esi/edi right after the rep movsd and copies
-   through ecx, so every m offset differs by 8 (slots) and the cmd-2 push uses edx vs ecx. Tried: struct
-   copies of pos / rot (keeps esi but adds lea / add for the addresses, 34 ins), memcpy of 12 bytes (same),
-   one struct copy plus element copies (29 ins, bigger), element copies (this, 43 ins, size 183 vs 186). */
+   of the fighter c's body and its health; for an attack (2) also the target's current health */
 
 int cm_SendFightCommand(AICHAR *c, int cmd, CMFIGHTSLOT *f)
 {
@@ -2205,13 +2198,13 @@ int cm_SendFightCommand(AICHAR *c, int cmd, CMFIGHTSLOT *f)
     m.fight.slot = *f;
     if (c != 0 && c->model != 0) {
         b = c->model->body;
-        m.fight.health = c->v024;
         m.fight.pos.x = b->pos.x;
         m.fight.pos.y = b->pos.y;
         m.fight.pos.z = b->pos.z;
         m.fight.rot.x = b->rotation.x;
         m.fight.rot.y = b->rotation.y;
         m.fight.rot.z = b->rotation.z;
+        m.fight.health = c->v024;
         if (cmd == 2) {
             t = (AICHAR *)cm_FindFighter(m.fight.slot.target);
             if (t != 0)
