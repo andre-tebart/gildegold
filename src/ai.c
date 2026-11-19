@@ -3357,18 +3357,13 @@ void ai_BuildTradeOffers(AICHAR *ch, AIOBJ *store, int f)
                     if (q && q[1]) {
                         price = gm_GoodsPrice(it->id, (unsigned char)bld->playerSlot);
                         diff = gm_ItemPrice(it->id, 100) - price;
-                        i = 0;
-                        if (ai_NSlots > 0) {
-                            for (; i < ai_NSlots; i++) {
-                                if (ai_Slots[i].item == it->id) {
-                                    if (i < ai_NSlots && diff < ai_Slots[i].saving)
-                                        goto next1;
-                                    break;
-                                }
-                            }
-                            if (i >= 0x80)
-                                goto next1;
-                        }
+                        for (i = 0; i < ai_NSlots; i++)
+                            if (ai_Slots[i].item == it->id)
+                                break;
+                        if (i < ai_NSlots && diff < ai_Slots[i].saving)
+                            goto next1;
+                        if (i >= 0x80)
+                            goto next1;
                         ai_Slots[i].saving = diff;
                         ai_Slots[i].item = it->id;
                         ai_Slots[i].bld = bld;
@@ -3400,16 +3395,11 @@ void ai_BuildTradeOffers(AICHAR *ch, AIOBJ *store, int f)
                         if (q && q[1]) {
                             diff = gm_ItemPrice(it->id, 100);
                             price = gm_GoodsPrice(it->id, (unsigned char)bld->playerSlot) - diff;
-                            i = 0;
-                            if (ai_NEntries > 0) {
-                                for (; i < ai_NEntries; i++) {
-                                    if (ai_Entries[i].item == it->id) {
-                                        if (i < ai_NEntries && price < ai_Entries[i].margin)
-                                            goto next2;
-                                        break;
-                                    }
-                                }
-                            }
+                            for (i = 0; i < ai_NEntries; i++)
+                                if (ai_Entries[i].item == it->id)
+                                    break;
+                            if (i < ai_NEntries && price < ai_Entries[i].margin)
+                                goto next2;
                             if (ai_NEntries < 0x20) {
                                 ai_Entries[i].item = it->id;
                                 ai_Entries[i].slot[0] = -1;
@@ -3452,18 +3442,13 @@ void ai_BuildTradeOffers(AICHAR *ch, AIOBJ *store, int f)
                     if (q && q[1]) {
                         price = gm_GoodsPrice(it->id, ai_OwnPlayer) * bld->priceRate * 0.01f;
                         diff = gm_ItemPrice(it->id, 100) - price;
-                        i = 0;
-                        if (ai_NSlots > 0) {
-                            for (; i < ai_NSlots; i++) {
-                                if (ai_Slots[i].item == it->id) {
-                                    if (i < ai_NSlots && diff < ai_Slots[i].saving)
-                                        goto next3;
-                                    break;
-                                }
-                            }
-                            if (i >= 0x80)
-                                goto next3;
-                        }
+                        for (i = 0; i < ai_NSlots; i++)
+                            if (ai_Slots[i].item == it->id)
+                                break;
+                        if (i < ai_NSlots && diff < ai_Slots[i].saving)
+                            goto next3;
+                        if (i >= 0x80)
+                            goto next3;
                         ai_Slots[i].saving = diff;
                         ai_Slots[i].bld = bld;
                         ai_Slots[i].item = it->id;
