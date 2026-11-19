@@ -1837,6 +1837,39 @@ Where the pushes and pops sit, how many epilogue copies there are, shared agains
     (the unstable frame sort), d3fl_MakeDivide (the tile loop's hoisted products), he_RunBuildingSpying (0 in
     ebx in the original).
 
+- **Deep s52 (one function: d3t_MoveObjectPath, not byte; the two levers narrowed to exact probes)**:
+  - **Probe sweeps instead of guessed probes**: a generator that stores every scalar (`qN = v;`) at every statement
+    boundary (13 positions x 8 values, then pairs: 92 + 814 + 814 variants) lists every reference set that gives
+    the original. Here exactly one pair leaves only its own two stores (2 ins): a k read in the loop before the
+    call (loop head or body start) plus a step read as the LAST statement before `k++`. The s31 pair (k head + i
+    behind the call) is the same thing at 10 ins. Run the sweep before reading traces.
+  - **A redefinition with an equal, already available value is a reference that emits nothing**: `step = time / n;`
+    again behind its use in the loop (anywhere behind the time store, or in the else arm) is CSEd with the
+    computation in the first block; the copy `step = temp` stays in the IL, counts as a reference of step (piece
+    step#3, 2 refs, prio 88, takes eax by its idiv preference) and leaves no instruction (the CSE temp is homed in
+    step's slot, the store back is dropped late). With the k probe: 1 ins, only the probe store. Before the use
+    (`step = time / n; keys[k - 1].time = step;`, `keys[..].time = step = time / n`) it does nothing. Removed
+    before allocation as before: dead accumulators (`t += step`, `time -= step`), a duplicated store, a re-read
+    of the stored field, empty `__inline` helpers called with the value, `x = x`.
+  - **The scratch rotation is cyclic and a body piece replaces a temp**: the step load is edx by rotation (path
+    eax, lea ecx, step edx); the original's eax is the piece step#3. A value read twice in the call's block is a
+    piece from its first reference to the block end.
+  - **Three more candidates in the exit block flip the i / k race without any k reference**: k's three uses in
+    `keys[k].time = 0` weigh 6 per distinct candidate of that block (k - i = 6 Pt - 6 Ph - 10 Pl). Reading af's
+    three dwords a second time in the tail makes them memory candidates (P 4 -> 7, k#2 47 > i#2 43). No ordinary
+    form found: a second struct copy is elided before allocation, int / int-bitfield flag structs change the flag
+    code (63 ins).
+  - **No lever (= control unless named)**: the zeroing as an `__inline` asm function (VC6 emits a call, with or
+    without a label, `__forceinline` too); vector-subtract / key helpers as `__inline` functions (57..78, pointer
+    temps) and a time setter helper; declaration counts 1..64 before the function; `k = 1` before the division
+    (k then avoids eax / edx, i takes ecx first and k gets no register: 51, store order hunk); a block boundary
+    behind the call or anywhere in the body (a real test: registers unchanged; label, `do { } while (0)`, a
+    second `if (o)`: removed); `if (!obj) return 0;` behind a dereference of obj is decided and leaves nothing,
+    not even a reference; `if (i < n)` in the body is not decided; a test with two identical arms (`if (k)
+    return f(..); return f(..);`) merges the arms but keeps the `test`; `&keys[k++].pos` in the call (105).
+  - Open: an ordinary reference of k in the loop in front of the call that emits nothing (k has no available
+    expression to be redefined with), and the plain form of the step redefinition.
+
 - **An else-if arm cross-jumped whole into a sibling's copy, the original keeps it inline**: the store order of
   the OTHER arms (default arm charId before stateArg; 0x176 arm stateArg, charId, x, z) decides it, found by
   climb.py swap + move in round 2 (cm_OrderAttack byte; permuting only the inlined arm's stores did not). The pair
