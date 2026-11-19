@@ -4771,27 +4771,19 @@ int ai_PickActionBuildings(struct AIPER *p, int a, __int64 mask, float lo, float
 
 /* 0x5706e0, the alloc of the plunder event 0x8a: paused -> nothing; the buildings the character (chr) can plunder are
    picked (ai_PickActionBuildings, mask 4, at most 5, into bld) -> none -> free; the picked slot of the found index
-   (when below 5) is cleared, at = 0, the due clock is now + 1 hour and the event is scheduled (cm_SendExSetHE)
-   @deep only allocation / scheduling is left: ours 54 ins vs the original's 56, differing 42, hunks regs
-   32 + one code hunk at 0x5706e5 (+0x5). Read whole against 0x5706e0..0x570795: the meaning is equal - the
-   same 8 pushed dwords (p, 5, mask 4, lo 0, hi 0, n 5, out = &bld), the same he_FreeEvent, the same stores
-   (bld[r] = 0 for r < 5, at = 0, end = ai_Time, exSlot = cm_SendExSetHE's result), the same constants and
-   the same shared epilogue. What differs is the argument setup's schedule and registers: the original
-   keeps the mask's 4 in eax (mov eax,4 before the opts test, test al) and the out pointer in edx, zeroes
-   the three words with ecx and pushes the mask's low dword from eax; ours tests the immediate 4, computes
-   the out pointer in eax and pushes the words as immediates, and the gm_AddTime/cm_SendExSetHE tail uses
-   ecx/edx swapped (0x57074d). Tried: typed AIJOB/HEPLUNDER accesses (the current form, no code change),
-   the out pointer as a local and as (int *)(ev + 0xb4), and the mask as a local (worse / unchanged,
-   reverted). */
+   (when below 5) is cleared, at = 0, the due clock is now + 1 hour and the event is scheduled (cm_SendExSetHE) */
 void he_AllocPlunder(int ev)
 {
     AIJOB *e = (AIJOB *)ev;
     HEPLUNDER *p = (HEPLUNDER *)ev;
     int r;
+    LARGE_INTEGER mask;
 
     if (e->opts & 4)
         return;
-    r = ai_PickActionBuildings((struct AIPER *)((unsigned)&ai_Chars + e->chr * 0x21c), 5, 4, 0, 0, 5, p->bld);
+    mask.LowPart = 4;
+    mask.HighPart = 0;
+    r = ai_PickActionBuildings((struct AIPER *)((unsigned)&ai_Chars + e->chr * 0x21c), 5, mask.QuadPart, 0, 0, 5, p->bld);
     if (r == 0) {
         he_FreeEvent((int *)ev);
         return;
