@@ -1195,29 +1195,31 @@ char d3fl_SameType(D3FLMAP *map, int x, int y, int n)
 }
 /* 0x441300, the divide maps: per map quad, which diagonal splits it (bit 7) and whether all its
    corners have the same tile type (bit 6); then the height range of each tile
-   @deep S1 kept: (1) the divide byte as ((abs <= abs) << 1 | SameType) << 6 in both loops (setle / add
-   al,al / or / shl 6; * 2 distributes the shift), 331 -> 323; (2) a block-local int size = map->size; in
-   the level inner loop (not the function-scope size reassigned): size#2 takes ecx first, s esi, h ebp, map
-   ebp everywhere as in the original, 323 -> 246 (frame equal). Left (vdiff per region: L0 60 / LV 117 /
-   tile 71 lines): L0 and LV keep x1 in memory in the original ([esp+0x34] / [esp+0x40], in L0 a later
-   piece of x1 reloaded into edi) and give edi to y1*size (reloaded y1 then imul edi,size); ours gives x1
-   (named, 5 refs: prio 440 in L0, 1200 in LV) edi and spills y1*size (prio 272). LV: the original enters
-   the y loop by a jmp past the y1 reload, y1 named at the y head ([esp+0x3c]). Tile: the original hoists
-   n*i / n*j to the i-loop top ([esp+0x3c]/[esp+0x40], y loop entered by jmp), mn's 0xff through the byte
-   slot [esp+0x48]; ours computes both products at each y (the body reuses the y test's map->n load). No
-   lever (S1): block-local x1 / y1 / mn,mx / k / v (= control), block-local h (worse), x1 inline (L0/LV
-   worse, map loses ebp), y1 inline in LV (227 ins but y1 computed in the x loop: not the original), h as
-   map->height, LV body statement orders, size per y (frame +8), third index spellings (y*s*size, size*s*y,
-   (y*size)*s ..: all one code), declaration orders, tile index spellings / init orders / loop forms (< n +
-   1, n >= y), n = map->n, named x0/y0 (hoist right but the x loop loses its strength reduction), D3FLTILE
-   *t (at the top: worse; before the stores: = control). climb (rounds 1-3) leads change the meaning
-   (commute) or add 2 idivs (inline n). prior: B: code 497 / regs 2 / fill 1 - semantics verified in round
-   4 (level loops 0/1/2, d3fl_PrepareWater, tile height range; readable): the remaining code hunks are
-   register allocation (map in ebp in the original, edi in ours), the stack slots, and the (abs <= abs) * 2
-   | SameType << 6 expression, where the original builds 2*x in a byte (add al,al) and shifts once after
-   the OR while ours distributes the shift (shl al,7 / shl,6) - the same value. Tried byte/int temp, d |=
-   ...; d <<= 6, * 64, +, ? 2 : 0, (x << 1 | f) << 6, casts (round-4 note): all same operation other
-   spelling, needs vargen */
+   @deep s51 (the tile loop, ours 30 bytes shorter there: the size gap 812 vs 852 is 30 in the tile loop,
+   10 in the level loops): the original hoists n*i / n*j to the i-loop top before the y test ([esp+0x3c] /
+   [esp+0x40], y loop entered by a jmp past their reloads, x as the IV n*i + x in edi with the n+1
+   countdown in [esp+0x48]) and initialises mn through that byte slot (mov byte [esp+0x48],0xff; mov
+   bl,[esp+0x48]: mn's home is the countdown's slot, its piece in bl); ours computes both products per y
+   and sets bl directly. Round: x0 / y0 named block locals of the i loop (287 / x0 only 271 / y0 only 290),
+   the k operands as i * map->n / x + map->n * i (= control), mn before mx (246, other code, same count).
+   Open: the form that makes VC6 hoist the products (and spill mn's init). prior: S1 kept: (1) the divide
+   byte as ((abs <= abs) << 1 | SameType) << 6 in both loops (setle / add al,al / or / shl 6; * 2
+   distributes the shift), 331 -> 323; (2) a block-local int size = map->size; in the level inner loop (not
+   the function-scope size reassigned): size#2 takes ecx first, s esi, h ebp, map ebp everywhere as in the
+   original, 323 -> 246 (frame equal). Left (vdiff per region: L0 60 / LV 117 / tile 71 lines): L0 and LV
+   keep x1 in memory in the original ([esp+0x34] / [esp+0x40], in L0 a later piece of x1 reloaded into edi)
+   and give edi to y1*size (reloaded y1 then imul edi,size); ours gives x1 (named, 5 refs: prio 440 in L0,
+   1200 in LV) edi and spills y1*size (prio 272). LV: the original enters the y loop by a jmp past the y1
+   reload, y1 named at the y head ([esp+0x3c]). Tile: the original hoists n*i / n*j to the i-loop top
+   ([esp+0x3c]/[esp+0x40], y loop entered by jmp), mn's 0xff through the byte slot [esp+0x48]; ours
+   computes both products at each y (the body reuses the y test's map->n load). No lever (S1): block-local
+   x1 / y1 / mn,mx / k / v (= control), block-local h (worse), x1 inline (L0/LV worse, map loses ebp), y1
+   inline in LV (227 ins but y1 computed in the x loop: not the original), h as map->height, LV body
+   statement orders, size per y (frame +8), third index spellings (y*s*size, size*s*y, (y*size)*s ..: all
+   one code), declaration orders, tile index spellings / init orders / loop forms (< n + 1, n >= y), n =
+   map->n, named x0/y0 (hoist right but the x loop loses its strength reduction), D3FLTILE *t (at the top:
+   worse; before the stores: = control). climb (rounds 1-3) leads change the meaning (commute) or add 2
+   idivs (inline n). */
 
 void d3fl_MakeDivide(D3FLMAP *map)
 {
