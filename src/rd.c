@@ -518,7 +518,7 @@ int rd_PathToRoad(G15ROAD *r, int x, int z, int tx, int tz)
             row += n * 0x1c;
         }
     }
-    if (tx > -1 && tz > -1) {
+    if (tx >= 0 && tz >= 0) {
         r->max = 0x400;
         r->pts = r->path;
         r->n = 0;
