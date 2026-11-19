@@ -3301,7 +3301,7 @@ exe	0x00520fe0	sv_CheckCharacterFlag	sv	byte	readable
 exe	0x00521040	sv_CheckGoodAmount	sv	byte	readable		
 exe	0x005210a0	sv_CheckStock	sv	byte	readable		
 exe	0x00521150	sv_MessageBox	sv	shape	readable	deep	
-exe	0x00521410	sv_MessageBoxGreen	sv	shape	readable	deep	
+exe	0x00521410	sv_MessageBoxGreen	sv	byte	readable		
 exe	0x005216a0	sv_MessageBoxYesNo	sv	byte	readable		
 exe	0x00521900	sv_OpenMessageBox	sv	byte	readable		
 exe	0x00521960	sv_SelectPanelObject	sv	byte	readable		
@@ -3546,8 +3546,8 @@ exe	0x00541170	he_PostEventA6	he	byte	readable
 exe	0x00541200	he_EndEventNow	he	byte	readable		
 exe	0x00541250	he_SetEventChar	he	byte	readable		
 exe	0x00541280	he_CharacterBehavior	he	byte	readable		
-exe	0x005414a0	he_CharAccident	he	shape	readable	deep	
-exe	0x005417d0	he_CharIllness	he	shape	readable	deep	
+exe	0x005414a0	he_CharAccident	he	byte	readable		
+exe	0x005417d0	he_CharIllness	he	byte	readable		
 exe	0x00541a50	he_RunDueNow	he	byte	readable		
 exe	0x00541a80	he_AllocStammtisch	he	byte	readable		
 exe	0x00541b40	he_StammtischCommand	he	byte	readable		
