@@ -179,46 +179,40 @@ void d3_MatTranspose(D3MATRIX *src, D3MATRIX *dst)
 }
 /* 0x454070, inverse of a 4x4 matrix (cofactor expansion; falls back to the transpose when |det| < 1e-7).
    Each m[k] is spelled either m[k] or src->_ij: the spelling changes VC6's operand order of the products
-   (matching trick, found by search; no meaning).
-   @deep size queue: 1160 vs 1176 raw (padded 1168 vs 1184). The gap is the det statement: the original
-   multiplies each 2x2 minor CSE in the order mem * CSE (fld [m]; fmul st,st(k), never consuming the CSE),
-   so the 5 stack CSEs die at the statement end: fstp det; fstp st(0) x5; fld det (+14 bytes); ours
-   multiplies CSE * mem (fld st(k); fmul [m]) and the last uses become fxch / fsubp st(k) (no dead pops,
-   fst det). s3 tried: fabs(det) < 1e-07 (double) = no size change; inverted test (if >= ... else
-   transpose): worse; inv local: = control; o / m assignments as statements after det: = control / worse;
-   per-site operand order of the 12 member * (minor) products in det: swapping operands = control (all 12),
-   parenthesising the member (P0..P11): moves sizes (P3 1170, P6/P7/P9 1172 = the right padded size) but by
-   changing ranks elsewhere, not the det pops, 124-227 ins (kept none). Next: make the det products load
-   the member first (rank of the CSE below the member), e.g. the minors as named float locals or as
-   products written mem * minor everywhere in the later o[] statements (CSEs shared with o[0]). */
+   (matching trick, found by search; no meaning). */
 
 void d3_MatInverse(D3MATRIX *src, D3MATRIX *dst)
 {
-    float *m = (float *)src, *o = (float *)dst;
+#define E(i, j) (src->_##i##j)
+#define DET2(a, b, c, d) ((a) * (d) - (b) * (c))
+#define DET3(a1, a2, a3, b1, b2, b3, c1, c2, c3) (a1 * DET2(b2, b3, c2, c3) - b1 * DET2(a2, a3, c2, c3) + c1 * DET2(a2, a3, b2, b3))
     float det;
 
-    det = (src->_22 * (src->_33 * src->_44 - src->_43 * src->_34) - src->_32 * (m[6] * src->_44 - src->_43 * m[7]) + m[13] * (m[6] * src->_34 - m[7] * src->_33)) * src->_11 - (m[1] * (src->_33 * src->_44 - src->_43 * src->_34) - src->_32 * (src->_44 * src->_13 - src->_43 * m[3]) + m[13] * (src->_34 * src->_13 - m[3] * src->_33)) * src->_21 + (m[1] * (m[6] * src->_44 - src->_43 * m[7]) - src->_22 * (src->_44 * src->_13 - src->_43 * m[3]) + m[13] * (m[7] * src->_13 - m[3] * m[6])) * src->_31 - (m[1] * (m[6] * src->_34 - m[7] * src->_33) - src->_22 * (src->_34 * src->_13 - m[3] * src->_33) + src->_32 * (m[7] * src->_13 - m[3] * m[6])) * src->_41;
+    det = E(1, 1) * DET3(E(2, 2), E(2, 3), E(2, 4), E(3, 2), E(3, 3), E(3, 4), E(4, 2), E(4, 3), E(4, 4)) - E(2, 1) * DET3(E(1, 2), E(1, 3), E(1, 4), E(3, 2), E(3, 3), E(3, 4), E(4, 2), E(4, 3), E(4, 4)) + E(3, 1) * DET3(E(1, 2), E(1, 3), E(1, 4), E(2, 2), E(2, 3), E(2, 4), E(4, 2), E(4, 3), E(4, 4)) - E(4, 1) * DET3(E(1, 2), E(1, 3), E(1, 4), E(2, 2), E(2, 3), E(2, 4), E(3, 2), E(3, 3), E(3, 4));
     if (fabs(det) < 1e-07f) {
         d3_MatTranspose(src, dst);
         return;
     }
     det = 1.0f / det;
-    o[0] = (src->_22 * (src->_33 * src->_44 - m[14] * src->_34) - src->_32 * (src->_23 * src->_44 - m[14] * m[7]) + src->_42 * (src->_23 * src->_34 - m[7] * src->_33)) * det;
-    o[1] = -(((src->_33 * src->_44 - m[14] * src->_34) * m[1] - (src->_44 * src->_13 - m[14] * m[3]) * src->_32 + (src->_34 * src->_13 - m[3] * src->_33) * src->_42) * det);
-    o[2] = ((src->_23 * src->_44 - m[14] * m[7]) * m[1] - (src->_44 * src->_13 - m[14] * m[3]) * src->_22 + (m[7] * src->_13 - m[3] * src->_23) * src->_42) * det;
-    o[3] = -(((src->_23 * src->_34 - m[7] * src->_33) * m[1] - (src->_34 * src->_13 - m[3] * src->_33) * src->_22 + (m[7] * src->_13 - m[3] * src->_23) * src->_32) * det);
-    o[4] = -(((src->_33 * src->_44 - m[14] * src->_34) * src->_21 - (src->_23 * src->_44 - m[14] * m[7]) * src->_31 + (src->_23 * src->_34 - m[7] * src->_33) * src->_41) * det);
-    o[5] = ((src->_33 * src->_44 - m[14] * src->_34) * m[0] - (src->_44 * src->_13 - m[14] * m[3]) * src->_31 + (src->_34 * src->_13 - m[3] * src->_33) * src->_41) * det;
-    o[6] = -(((src->_23 * src->_44 - m[14] * m[7]) * m[0] - (src->_44 * src->_13 - m[14] * m[3]) * src->_21 + (m[7] * src->_13 - m[3] * src->_23) * src->_41) * det);
-    o[7] = ((src->_23 * src->_34 - m[7] * src->_33) * m[0] - (src->_34 * src->_13 - m[3] * src->_33) * src->_21 + (m[7] * src->_13 - m[3] * src->_23) * src->_31) * det;
-    o[8] = ((src->_32 * src->_44 - src->_42 * src->_34) * src->_21 - (src->_44 * src->_22 - m[7] * src->_42) * src->_31 + (src->_34 * src->_22 - src->_32 * m[7]) * src->_41) * det;
-    o[9] = -(((src->_32 * src->_44 - src->_42 * src->_34) * m[0] - (m[1] * src->_44 - m[3] * src->_42) * src->_31 + (m[1] * src->_34 - src->_32 * m[3]) * src->_41) * det);
-    o[10] = ((src->_44 * src->_22 - m[7] * src->_42) * m[0] - (m[1] * src->_44 - m[3] * src->_42) * src->_21 + (m[7] * m[1] - m[3] * src->_22) * src->_41) * det;
-    o[11] = -(((src->_34 * src->_22 - (src->_32) * m[7]) * m[0] - (m[1] * src->_34 - src->_32 * m[3]) * src->_21 + (m[7] * m[1] - m[3] * src->_22) * src->_31) * det);
-    o[12] = -(((m[14] * src->_32 - src->_42 * src->_33) * src->_21 - (m[14] * src->_22 - src->_42 * src->_23) * src->_31 + (src->_33 * src->_22 - src->_32 * src->_23) * src->_41) * det);
-    o[13] = ((m[14] * src->_32 - src->_42 * src->_33) * m[0] - (m[14] * m[1] - src->_42 * src->_13) * src->_31 + (m[1] * src->_33 - src->_32 * src->_13) * src->_41) * det;
-    o[14] = -(((m[14] * src->_22 - src->_42 * src->_23) * m[0] - (m[14] * m[1] - src->_42 * src->_13) * src->_21 + (m[1] * src->_23 - src->_22 * src->_13) * src->_41) * det);
-    o[15] = ((src->_33 * src->_22 - src->_32 * src->_23) * m[0] - (m[1] * src->_33 - src->_32 * src->_13) * src->_21 + (m[1] * src->_23 - src->_22 * src->_13) * src->_31) * det;
+    dst->_11 = DET3(E(2, 2), E(2, 3), E(2, 4), E(3, 2), E(3, 3), E(3, 4), E(4, 2), E(4, 3), E(4, 4)) * det;
+    dst->_12 = -DET3(E(1, 2), E(1, 3), E(1, 4), E(3, 2), E(3, 3), E(3, 4), E(4, 2), E(4, 3), E(4, 4)) * det;
+    dst->_13 = DET3(E(1, 2), E(1, 3), E(1, 4), E(2, 2), E(2, 3), E(2, 4), E(4, 2), E(4, 3), E(4, 4)) * det;
+    dst->_14 = -DET3(E(1, 2), E(1, 3), E(1, 4), E(2, 2), E(2, 3), E(2, 4), E(3, 2), E(3, 3), E(3, 4)) * det;
+    dst->_21 = -DET3(E(2, 1), E(2, 3), E(2, 4), E(3, 1), E(3, 3), E(3, 4), E(4, 1), E(4, 3), E(4, 4)) * det;
+    dst->_22 = DET3(E(1, 1), E(1, 3), E(1, 4), E(3, 1), E(3, 3), E(3, 4), E(4, 1), E(4, 3), E(4, 4)) * det;
+    dst->_23 = -DET3(E(1, 1), E(1, 3), E(1, 4), E(2, 1), E(2, 3), E(2, 4), E(4, 1), E(4, 3), E(4, 4)) * det;
+    dst->_24 = DET3(E(1, 1), E(1, 3), E(1, 4), E(2, 1), E(2, 3), E(2, 4), E(3, 1), E(3, 3), E(3, 4)) * det;
+    dst->_31 = DET3(E(2, 1), E(2, 2), E(2, 4), E(3, 1), E(3, 2), E(3, 4), E(4, 1), E(4, 2), E(4, 4)) * det;
+    dst->_32 = -DET3(E(1, 1), E(1, 2), E(1, 4), E(3, 1), E(3, 2), E(3, 4), E(4, 1), E(4, 2), E(4, 4)) * det;
+    dst->_33 = DET3(E(1, 1), E(1, 2), E(1, 4), E(2, 1), E(2, 2), E(2, 4), E(4, 1), E(4, 2), E(4, 4)) * det;
+    dst->_34 = -DET3(E(1, 1), E(1, 2), E(1, 4), E(2, 1), E(2, 2), E(2, 4), E(3, 1), E(3, 2), E(3, 4)) * det;
+    dst->_41 = -DET3(E(2, 1), E(2, 2), E(2, 3), E(3, 1), E(3, 2), E(3, 3), E(4, 1), E(4, 2), E(4, 3)) * det;
+    dst->_42 = DET3(E(1, 1), E(1, 2), E(1, 3), E(3, 1), E(3, 2), E(3, 3), E(4, 1), E(4, 2), E(4, 3)) * det;
+    dst->_43 = -DET3(E(1, 1), E(1, 2), E(1, 3), E(2, 1), E(2, 2), E(2, 3), E(4, 1), E(4, 2), E(4, 3)) * det;
+    dst->_44 = DET3(E(1, 1), E(1, 2), E(1, 3), E(2, 1), E(2, 2), E(2, 3), E(3, 1), E(3, 2), E(3, 3)) * det;
+#undef E
+#undef DET2
+#undef DET3
 }
 /* 0x454510, identity */
 

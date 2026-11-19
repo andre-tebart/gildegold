@@ -4592,7 +4592,7 @@ the stack at every instruction.
   or `float *` kill the CSE.
 - **`m[k]` operand order in products / dot products**: rank depends on the element spelling (`m[k]` / `src->_ij` /
   `((float *)src)[k]`); hill-climb each element's spelling block by block with dcp try and a generated variants
-  file (d3_MatInverse 328 -> 67 lines); `((float *)p)[i]` moved what 3000+ permutations did not. Dot product:
+  file (d3_MatInverse 328 -> 67 lines, byte only as macros: "4x4 inverse" below); `((float *)p)[i]` moved what 3000+ permutations did not. Dot product:
   brute-force every subset of the six operands in parentheses, or parenthesize one term, `((n.x * v.x) + ...)`.
   No lever: term orders, swaps, global flips; 3072 variants per row (d3_GetBoxVerts, last bytes open).
 - **A `fadd [mem]` moving in an unrelated statement**: ranks also decide how `a + b + c + mem` chains associate.
@@ -4644,7 +4644,12 @@ the stack at every instruction.
   `gy = -1.0f; ... gy * m._21`), giving `fmul 1.0; fsubp` / `fsubr`.
 - **Int factors**: `(int)(k * C * data)` gives `fild; fimul; fmul`; `fild; fmul const; fimul` is `(int)((float)(k
   * C) * (int)data)`; `n * (x * 0.01)` gives fmul-then-fimul (0x4d3d10).
-- **4x4 inverse**: write the determinant and each element in full; cofactor temps change the shape.
+- **4x4 inverse**: write the determinant and each element in full; cofactor temps change the shape. Byte form
+  (d3_MatInverse): Graphics Gems det3x3 / det2x2 as MACROS, `#define E(i, j) (src->_##i##j)`, `DET2(a,b,c,d) ((a) *
+  (d) - (b) * (c))`, `DET3(..) (a1 * DET2(..) - b1 * DET2(..) + c1 * DET2(..))`: the macro's parentheses around
+  each element are rank levels; they made VC6 load the member before the 2x2-minor CSE (`fld [m]; fmul st,st(k)`,
+  dead pops after the det store), which no spelling of the hand-expanded text did. When a product chain is a
+  textbook formula, try it as the textbook's macros (paren levels per argument) before per-site spellings.
 - **A hoisted `oy + 1.0`**: `h * cy + (oy + 1.0f)`.
 
 ### Values kept on the FPU vs stored and reloaded
