@@ -864,13 +864,23 @@ typedef struct GVSHOTMSG {              /* 0x80 bytes, the data of message 0x67 
    building's effect slot is busy (flag 2), the first ball pays (gm_SendMoneyDelta(-cost), cm_SendMoveGoodsUnchecked of x; the ball a
    also files an accusation, gv_Accuse (8, 1, ch)), and each ball is sent as message 0x67 (GVSHOTMSG); returns the last answer, -1
    when nothing was sent
-   @deep read the whole function against the original (slot busy test, mode by d / b, memset, the three
-   ball blocks with payment / accusation, the GVSHOTMSG fields and SHOTREC copies, v2 cleared after the
-   first ball, the return value of cm_SendShots); 167 vs 167 instructions. Left: slot assignment (v2 / mode
-   and first / r swapped: mov [esp+8] vs [esp+0xc], [esp+0x18] vs [esp+0x1c]) and in the first ball block
-   ours reads the parameter v where the original reads its copy v2 (mov ecx,[esp+0xe4] vs mov
-   ecx,[esp+0x40]): VC6 forwards v2 = v in ours, the copy stays a slot in the original; m.v / m.mode store
-   order follows from it ([esp+0x50] / [esp+0x54]). */
+   @deep s45: the asm read again: the original's slots are v2 [esp+8] / mode [esp+0xc] / first [0x10] / r
+   [0x14] and ball a reads v2 from its slot (eax) and mode (ecx); ours forwards v2 = v into ball a (reads
+   the parameter, 3 bytes longer: size 597 vs 594), so v2 has one reference fewer and the slot sort flips.
+   Probe: v2 kept in memory (*(int *)&v2 = *(int *)&v, or memcpy(&v2, &v, 4)) gives 16 ins / 8 bytes, the
+   frame right; left then only the load order of ball a and b (original: mode into ecx first, v2 into eax).
+   So the original's v2 is NOT forwarded: something joins into ball a's path at CSE time or takes v2's
+   address; the probe is no source. No lever: v2 = v moved last / into the bld block (worse, 349 bytes), if
+   (first) around ball a's payment (= control), *(float *)&v (= control). climb 2 rounds: 44 ins (m.v
+   before m.mode, send before first = 0). flip.py --want on a v2 slot read: only 'delete v2 = v'. Next:
+   find the join (vc6-matching 'Reloads the original keeps': a block's return / a decided test after CSE),
+   e.g. the mode test written so a path redefines v2. prior: read the whole function against the original
+   (slot busy test, mode by d / b, memset, the three ball blocks with payment / accusation, the GVSHOTMSG
+   fields and SHOTREC copies, v2 cleared after the first ball, the return value of cm_SendShots); 167 vs
+   167 instructions. Left: slot assignment (v2 / mode and first / r swapped: mov [esp+8] vs [esp+0xc],
+   [esp+0x18] vs [esp+0x1c]) and in the first ball block ours reads the parameter v where the original
+   reads its copy v2 (mov ecx,[esp+0xe4] vs mov ecx,[esp+0x40]): VC6 forwards v2 = v in ours, the copy
+   stays a slot in the original; m.v / m.mode store order follows from it ([esp+0x50] / [esp+0x54]). */
 
 int gv_FireShots(AIBLD *bld, AICHAR *ch, SHOTREC *a, SHOTREC *b, SHOTREC *d, float v, int cost, int x)
 {
