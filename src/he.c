@@ -16453,7 +16453,7 @@ void he_RunMarketSupervisor(AIJOB *ev)
         else
             amount = 0;
         util_Random(10);
-        g = (float)(minutes * (1.0 / 60) * (s.demand * (1.0f / 14)));
+        g = (float)((minutes * (1.0 / 60)) * (s.demand * (1.0f / 14)));
         if (g != 0.0f)
             s.f2c += g;
         if (s.f2c >= 1.0f) {
@@ -16515,7 +16515,7 @@ void he_RunMarketSupervisor(AIJOB *ev)
             if (q == 0)
                 continue;
             have = gm_ListAmount(st, q);
-            g = (float)(minutes * (1.0 / 60) * (s.demand * (1.0f / 14)));
+            g = (float)((minutes * (1.0 / 60)) * (s.demand * (1.0f / 14)));
             s.f2c += g;
             if (s.f2c >= 1.0f) {
                 n = (int)s.f2c;
@@ -16564,7 +16564,7 @@ void he_RunMarketSupervisor(AIJOB *ev)
             q = (AIOBJ *)gm_Query((void *)st->list, 1, 0, s2.item);
             if (q == 0)
                 continue;
-            g = (float)(minutes * (1.0 / 60) * (s2.demand * (1.0f / 14)));
+            g = (float)((minutes * (1.0 / 60)) * (s2.demand * (1.0f / 14)));
             f = (unsigned short)util_Random(3) + g;
             fv = (float)gm_FreeCapacity((short *)st, s2.item, (int)(1.0f > f ? 1.0f : f));
             have = gm_ListAmount(st, q);
