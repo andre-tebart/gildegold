@@ -540,6 +540,7 @@ void d2_SliderInput(void)
     void *h;
     int px, py, v, mn, mx, len, v2, d, a, bottom;
     unsigned int fl;
+    int drag;
 
     if (dm_L.ldown == 0 || d2_DragSlider == -1)
         d2_DragSlider = -1;
@@ -573,6 +574,7 @@ void d2_SliderInput(void)
         v2 = o->u.s.value2;
         d = mx - mn;
         d2_DragSlider = d2_PointerObj;
+        drag = 1;
         if ((fl & 0x48) == 0) {
             if ((fl & 2) && px > f6->w + o->x && px < o->w - f6->w + o->x) {
                 a = px - f0->w - o->x;
@@ -584,19 +586,20 @@ void d2_SliderInput(void)
                 a = bottom - f0->h - py;
                 v = (int)(a * ((double)d / len) + mn + 0.5);
             } else {
-                goto wheel;
+                drag = 0;
             }
-            if (v < mn)
-                v = mn;
-            else if ((fl & 0x10) && v > v2)
-                v = v2;
-            else if (v > mx)
-                v = mx;
-            o->dirty = 1;
-            d2_Objs[d2_PointerObj].u.s.value = v;
+            if (drag) {
+                if (v < mn)
+                    v = mn;
+                else if ((fl & 0x10) && v > v2)
+                    v = v2;
+                else if (v > mx)
+                    v = mx;
+                o->dirty = 1;
+                d2_Objs[d2_PointerObj].u.s.value = v;
+            }
         }
     }
-wheel:
     if (dm_L.lclick == 0) {
         if (dm_L.lhold == 0)
             return;
