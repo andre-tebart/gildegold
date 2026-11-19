@@ -4644,24 +4644,9 @@ void ai_GraveyardMessagePlain(int param_1, unsigned short *param_2, unsigned sho
    stage 3 sends the agent back to its building, stage 4 waits until it is there and reports to the event's
    character (aged: ai_GraveyardMessage, its last argument 0 when random + 1 - the agent's skill 1 is above 1;
    else ai_GraveyardMessagePlain); then the event ends (stage -1)
-   @deep size queue s17 (raw 1044 with the table, padded 1056 vs 1024): the stage-1 tail is a
-   post-allocation cross-jump into stage 3's call (push text; push 1; jmp to stage 3's mov eax,[eax+1]
-   after its push 0), so stage 3's argument temps must have stage 1's registers: the original's scratch
-   rotation is one step ahead of ours from the -1/-2 block on (that block xor edx,edx / mov dx,[eax] vs
-   ours ecx; stage 3 FindChar push edx vs ecx; stage 3's loads eax/ecx vs edx/eax; stage 4 push edx vs
-   ecx); the code before it (FindChar, the stage CSE in ecx, compares, table) is identical. Rounds: retgen
-   single (12 sites, every return -> break alone / all but one) = all one code, no change in the tail; told
-   as short / char / uchar / ushort (flip.py hit: the -1 block's register flips with told int->short)
-   677..710 bytes, none closer. flip.py --want the stage-1 'push 1; jmp': no mutant of 487. Next: find the
-   temp the original has one more of before the -1 block in code order (c2trace temps; the stage compare
-   spelled as a switch / a local). prior: read the whole function against the original: typed as AIJOB +
-   HEDECAY (event 0x89, am.c ai_ExecGraveyardOwner2 / sv_t.c), the walk text literal, the default stage
-   leaves the event alone, the message's last argument as the original's told flag (!(random + 1 - skill >
-   1.0) -> 1), the age sum level / 50 + (random + type level * 2) with he_SetLifeByAge taking an int (its
-   callee narrows it: and eax, 0xffff at 0x56fbcd; the caller keeps the and at +0x1bf). Left: the original's
-   stage 1 pushes the walk text and 1 and jumps into stage 3's cm_SendChrGotoBuilding call tail, ours keeps
-   its own copy (15 instructions, the whole size difference), and stage 4's per address computed after the
-   agent id push (+0x321); the M8 at +0x2d2 is the alignment of stage 4's ai_Time copy. */
+   @original case 1 ends with break where the other cases return: VC6 then merges case 1's walk call into case
+   3's copy (push text; push 1; jmp), as in he_RunPlunder; the age sum is a named local (one temporary more,
+   which puts stage 3's registers on stage 1's) */
 void he_RunDecay(int ev)
 {
     AIJOB *e = (AIJOB *)ev;
@@ -4671,6 +4656,7 @@ void he_RunDecay(int ev)
     AIBTYPE *bt;
     float chance;
     int told;
+    int age;
 
     agent = (AICHAR *)gm_FindChar(d->agent);
     if (e->stage == -1 || e->stage == -2) {
@@ -4697,7 +4683,7 @@ void he_RunDecay(int ev)
         }
         cm_SendChrGotoBuilding(d->agent, bld->id, -1, 0, 1, "HAUCH DES VERFALLS");
         e->stage++;
-        return;
+        break;
     case 2:
         gm_BuildQuery(1, 1, d->home);
         agent = (AICHAR *)gm_FindChar(d->agent);
@@ -4720,7 +4706,8 @@ void he_RunDecay(int ev)
                 bld = agent->bld;
                 bt = &ai_BTypesT[bld->type];
                 d->aged = 1;
-                he_SetLifeByAge(victim, (util_Random(3) & 0xffff) + bt->cap247 * 2 + bld->level / 50);
+                age = util_RandomU(3) + bt->cap247 * 2 + bld->level / 50;
+                he_SetLifeByAge(victim, age);
                 ai_TellGraveWorkSuccess((int)victim);
                 e->stage++;
                 return;
