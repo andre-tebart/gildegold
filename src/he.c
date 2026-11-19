@@ -2544,6 +2544,7 @@ void he_TopUpCharMoney(void)
                 sv_PumpNet(); \
             } while (1); \
         if (cm_GetSlotState(slot) == 1) { \
+            int two; \
             two = 2; \
             c = (AICHAR *)cm_GetSlotValue(slot); \
             cm_SendMoveGoods(c->netId, -1, ai_OwnPlayer, amt); \
@@ -2596,11 +2597,10 @@ void he_SpawnFounders(void)
 {
     int cnt[0x21];              /* the buildings per kind */
     int own[0x21];              /* the player's or nobody's per kind */
-    int lvl, x, i, n, r, t;
+    int lvl, x, i, t;
     int n7a = 0, n7b;           /* the others' buildings of kind 7: owner's b00c 0 / not 0 */
-    float gate, r0, r1, r2, r3;
-    int d4, d13, d10, mask, zero, pick, elig, bit;
-    int amt, title, slot, two, fl, rnd;
+    float gate;
+    int amt, title, slot;
     unsigned char k;
     AIBLD *b;
     AIBTYPE *bt;
@@ -2637,6 +2637,8 @@ void he_SpawnFounders(void)
     }
     t = ai_Time.year % 5;
     if (t == 1) {
+        int d4, d13, d10, mask, zero, pick;
+        int r, n;
         /* the others' buildings of the kinds 4 / 0x13 / 0x10 */
         d10 = cnt[0x10] - own[0x10];
         d4 = cnt[4] - own[4];
@@ -2707,6 +2709,9 @@ void he_SpawnFounders(void)
         }
         HE_SEND_FOUNDER(0, (void)0);
     } else if (t == 2) {
+        float r0, r1, r2, r3;
+        int elig, zero, bit;
+        int r, n;
         /* the kinds 0x12 / 0x15 / 0x14 / 0xe */
         r0 = cnt[0x12] > 0 ? (float)own[0x12] / cnt[0x12] : 0.0f;
         r1 = cnt[0x15] > 0 ? (float)own[0x15] / cnt[0x15] : 0.0f;
@@ -2792,6 +2797,9 @@ void he_SpawnFounders(void)
             HE_SEND_FOUNDER(util_Random(2), (void)0);
         }
     } else if (t == 3) {
+        float r0, r1;
+        int elig, zero, bit;
+        int r, n;
         /* the kinds 8 / 0x16 */
         r0 = cnt[8] > 0 ? (float)own[8] / cnt[8] : 0.0f;
         r1 = cnt[0x16] > 0 ? (float)own[0x16] / cnt[0x16] : 0.0f;
@@ -2847,6 +2855,10 @@ void he_SpawnFounders(void)
             HE_SEND_FOUNDER(util_Random(2), (void)0);
         }
     } else if (t == 0) {
+        float r0, r2;
+        int elig, zero, bit;
+        int r, n;
+        int fl;
         /* the kinds 9 / 7 / 5; kind 7 also when the others' kind 7 buildings are all of one b00c class */
         r0 = cnt[9] > 0 ? (float)own[9] / cnt[9] : 0.0f;
         r2 = cnt[5] > 0 ? (float)own[5] / cnt[5] : 0.0f;
@@ -2927,6 +2939,10 @@ void he_SpawnFounders(void)
             HE_SEND_FOUNDER(util_Random(2), cm_AddFieldDelta(1, 1, 0xc, &fl));
         }
     } else if (t == 4) {
+        float r0, r1, r2;
+        int elig, zero, bit;
+        int r, n;
+        int rnd;
         /* the kinds 0x20 / 0x1f / 0x1d */
         r0 = cnt[0x20] > 0 ? (float)own[0x20] / cnt[0x20] : 0.0f;
         r1 = cnt[0x1f] > 0 ? (float)own[0x1f] / cnt[0x1f] : 0.0f;
