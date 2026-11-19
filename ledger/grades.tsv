@@ -1472,7 +1472,7 @@ exe	0x004836a0	ai_CalcMeisterBank	ai	byte	readable
 exe	0x00483a60	ai_CalcMeisterFernhaendler	ai	byte	readable		
 exe	0x00483d30	ai_StartBuildingWork	ai	byte	readable		
 exe	0x00483ee0	ai_EndWorkerPose	ai	byte	readable		
-exe	0x00483fc0	ai_EvaluateProductionGraveyard	ai	draft	readable	deep	
+exe	0x00483fc0	ai_EvaluateProductionGraveyard	ai	shape	readable	deep	
 exe	0x00484a60	ai_EvaluateProductionGypsies	ai	draft	readable	deep	
 exe	0x004854f0	ai_UpdateProduction	ai	byte	readable		
 exe	0x00486190	ai_FillSlotTable	ai	draft	readable	deep	
@@ -4178,8 +4178,8 @@ exe	0x00594e50	ai_CriminalContact	lc	byte	readable
 exe	0x005950e0	ai_FarTradeContact	lc	byte	readable		
 exe	0x00595170	ai_SmithyContact	lc	byte	readable		
 exe	0x00595330	ai_CarpenterContact	lc	byte	readable		
-exe	0x00595480	ai_TradeSearchWindow	lc	draft	readable	deep	
-exe	0x00595a00	ai_AquariumSearchWindow	lc	draft	readable	deep	
+exe	0x00595480	ai_TradeSearchWindow	lc	byte	readable		
+exe	0x00595a00	ai_AquariumSearchWindow	lc	byte	readable		
 exe	0x00595ed0	ai_PerfumeryContact	lc	byte	readable		
 exe	0x00596060	ai_IdleContact	lc	byte	readable		
 exe	0x00596080	ai_AquariumContact	lc	byte	readable		
@@ -4523,7 +4523,7 @@ exe	0x005c7f00	ai_CityStatsPanel	lcamt	byte	readable
 exe	0x005c82f0	ai_PlayerComparePanel	lcamt	byte	readable		
 exe	0x005c8640	ai_PrivilegesPanel	lcamt	byte	readable		
 exe	0x005c8bc0	ai_MedicusHandler	lcamt	byte	readable		
-exe	0x005c8ef0	ai_DivorceDialog	lcamt	draft	readable	deep	
+exe	0x005c8ef0	ai_DivorceDialog	lcamt	byte	readable		
 exe	0x005c9290	ai_BlackmailWindow	lcamt	byte	readable		
 exe	0x005c9550	ai_BlackmailBuildingListener	lcamt	byte	readable		
 exe	0x005c9990	ai_BlackmailContactWindow	lcamt	byte	readable		
