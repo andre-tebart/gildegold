@@ -735,7 +735,7 @@ exe	0x00439650	d3_ClipBox	d3_engine	9a1bc9ae153d8646	no	byte	control=byte p1=byt
 exe	0x00439870	d3_UpdateWorldMatrix	d3_engine	d778b32a834b040b	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004399e0	d3_ClipObject	d3_engine	09279b8da5ea88eb	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00439a60	d3_ClipMesh	d3_engine	0c7da209a1568f8e	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x00439c90	d3_ClipPoly	d3_engine	12bd5273536c2033	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	cd7ec9ed5ef4b6d7
+exe	0x00439c90	d3_ClipPoly	d3_engine	bbc3c4e51b4c557f	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	6924274cd267c0b8
 exe	0x0043a000	d3_SelectSurf	d3_engine	c707499252b3b3f9	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0043a160	d3_DrawObjectCB	d3_engine	434ecae527907ce1	no	draft	sample n=32 seed=1 compiled=32 codegens=1 best=draft	
 exe	0x0043a610	d3_SetFogRange	d3_engine	f4263bdaf20a30d4	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	

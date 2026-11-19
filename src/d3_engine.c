@@ -549,7 +549,7 @@ __inline void d3_FtoI2(float f, int *dst)
 }
 
 /* 0x439c90, clips the polygon in d3_ClipList[0] (d3_ClipIn vertices) at the planes of info
-(Sutherland-Hodgman); returns the vertex list of the result, d3_ClipOut vertices. @deep deep s44: still 12 ins (order 24, fpu 8). The d1 sum: 144 spellings (every product order x operand order x grouping): only 7 codes; operand order inside a product never changes the code, the parenthesised (b->z * plane.z) is computed first with plane.z loaded first (ours) where the original computes plane.x * b->x first and then loads b->z; no grouping gives that. The fog / &c hunk: explicit (float) casts on the colour deltas (all 31 subsets) = control; d3_FtoI(&c, f) instead of d3_FtoI2 (any subset) swaps the dst / f slots (worse); the 120 orders of the four colour deltas and df: worse; colours in their own D3VECTOR4 / float[4] / float[5]: frame grows; df and c block-scoped: = control. climb 3 rounds (beam 3): nothing. The fog hunk sits at the start of c2dag block 164 behind the 81-instruction cut of block 163 (ln 50 / 51): the region boundary may be the mechanism. prior: deep s23: left the d1 plane sum's first product (the original multiplies plane.z by b->z after the x product: fld [edx+8]; fmul [ebx+4]) and the fild of b->fog - a->fog scheduled before the byte loads. climb round 1 (241 mutants): nothing. */
+(Sutherland-Hodgman); returns the vertex list of the result, d3_ClipOut vertices. @deep deep s44: 12 -> 6 ins. The fog / &c order hunk was the 81-instruction region cut of the intersection block (c2dag block 163 ended at the col[3] delta): parenthesised products in the four pool stores, pool->x = (d.x * t) + a->x .. pool->u (m15 of the 127 subsets of the pool / t / d1 parens), move the cut so the lea &c and the fild of the fog delta fall as in the original. Left: (1) one fstp [esp+0x44] (d.w) one instruction later than the original (parens on the FtoI2 arguments / df / pool->v on top: = this); (2) the d1 sum: the original computes plane.x * b->x first and then loads b->z (fld [edx+8]; fmul [ebx+4]); ours computes the parenthesised (b->z * plane.z) first with plane.z loaded first. 144 spellings of d1 (product order x operand order x grouping) give 7 codes, none the original's; operand order inside a product never changes the code; (px*bx + bz*pz) + by*py moves the strength-reduced plane pointer's base from .y to .x (the s43 last-field finding). Also tried: (float) casts on the deltas (= control), d3_FtoI(&c, f) (slot swap), the 120 orders of the delta lines, colour deltas in their own vector / array, df / c block-scoped; climb 3 rounds before the parens: nothing. prior: deep s23: left the d1 plane sum's first product (the original multiplies plane.z by b->z after the x product: fld [edx+8]; fmul [ebx+4]) and the fild of b->fog - a->fog scheduled before the byte loads. climb round 1 (241 mutants): nothing. */
 D3CVERT **d3_ClipPoly(D3CLIPINFO *info)
 {
     D3CVERT **in, **out;
@@ -591,10 +591,10 @@ D3CVERT **d3_ClipPoly(D3CLIPINFO *info)
                 d.y = b->y - a->y;
                 d.z = b->z - a->z;
                 d.w = b->u - a->u;
-                pool->x = d.x * t + a->x;
-                pool->y = d.y * t + a->y;
-                pool->z = d.z * t + a->z;
-                pool->u = d.w * t + a->u;
+                pool->x = (d.x * t) + a->x;
+                pool->y = (d.y * t) + a->y;
+                pool->z = (d.z * t) + a->z;
+                pool->u = (d.w * t) + a->u;
                 pool->v = (b->v - a->v) * t + a->v;
                 d.x = (float)(b->col[0] - a->col[0]);
                 d.y = (float)(b->col[1] - a->col[1]);
