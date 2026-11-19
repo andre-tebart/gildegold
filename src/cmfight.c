@@ -1290,19 +1290,7 @@ void cm_UpdatePointer()
 /* 0x4cf9c0, refreshes the portrait boxes cm_Portraits: after a click a portrait's checked state becomes its
    character's selection; each box of a character whose body is of type 1 hides its window and frame, the others
    show the selection, the name with the health in percent ("%1N1 %i%"), the picture of the weapon (replaced when the
-   weapon changed) and, for a kind 1 / 2 weapon, the count left; cm_SelectedCount counts the selected ones
-   @deep Read whole against 0x4cf9c0..0x4cfc0a: the same calls, arguments, stores and branches in the same
-   order (click loop on checked, the type 1 body hiding d2_Wins[win] / d2_Wins[frame].parent, selection,
-   txt_Format name / health, the weapon picture replaced when D2OBJ.pic differs, the uses left text). Left:
-   VC6's choices only: ours keeps -1 in ebp (or ebp, -1; cmp reg, ebp) where the original compares with the
-   immediate and uses ebp for d2_Objs, and ours biases the loop pointer of the second loop to
-   &cm_Portraits[0].win (mov esi, cm_Portraits+8; fields at -8 / -4 / +0 .. +0x14, end +0xc8) where the
-   original walks from the struct (+0 .. +0x1c, end +0xc0). Tried a CMPORTRAIT * walk (worse: 49 ins) and
-   the index form (this) (references: M8 at +0x74: ours refers to cm_Portraits+0x8 (0x930408), the
-   original's field to 0x930400 (cm_Portraits) (and 1 more), explained: the two M8 are the biased induction
-   pointer: +0x74 is the loop start &cm_Portraits[0].win against &cm_Portraits[0], +0x234 its end
-   &cm_Portraits[6].win against &cm_Portraits[6] (cm_DamagePops follows the array); every field access
-   lands on the same address) */
+   weapon changed) and, for a kind 1 / 2 weapon, the count left; cm_SelectedCount counts the selected ones */
 
 void cm_UpdatePortraits()
 {
@@ -1351,17 +1339,14 @@ void cm_UpdatePortraits()
             cm_Portraits[i].weaponPic = d2_WinOpenPic(0x54, 0xf, w->id + 0xdf, d2_LastWindow);
             d2_ScaleObject(cm_Portraits[i].weaponPic, -2);
         }
-        if (cm_Portraits[i].countText == -1)
-            continue;
-        if (w->kind == 1 || w->kind == 2) {
+        if (cm_Portraits[i].countText != -1 && (w->kind == 1 || w->kind == 2)) {
             item = (AIOBJ *)cm_CharWeaponItem((char *)cm_Portraits[i].c);
             if (item != 0) {
                 sprintf(buf, "%i", item->usesLeft);
                 d2_SetObjText(cm_Portraits[i].countText, buf);
-                continue;
-            }
-        }
-        if (cm_Portraits[i].countText != -1)
+            } else if (cm_Portraits[i].countText != -1)
+                d2_SetObjText(cm_Portraits[i].countText, &ch_EmptyName);
+        } else if (cm_Portraits[i].countText != -1)
             d2_SetObjText(cm_Portraits[i].countText, &ch_EmptyName);
     }
 }
