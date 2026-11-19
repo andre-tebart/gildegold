@@ -2876,29 +2876,27 @@ extern unsigned char init_TextureSet;      /* 0x6f1c24 */
    An instance flagged 0xa0 (+0x13) gets the effect "Effekte/upgrade2.esc" at its bounding sphere once (the flags are
    cleared). The objects named "no_*" are hidden when the prototype after the prefix has an instance, "pfl_*" /
    "vg_*" select the texture set init_TextureSet.
-   @deep match-deep 48: headers sample insensitive (32 samples, one codegen). Allocation-heavy: the
-   original keeps rec in a register copy (mov esi,eax after the [esp+0x10] store) through the parent branch
-   up to the part loop, where esi becomes ia; ours keeps rec in edi / reloads. Part loop: the original
-   reloads a into ebx from [esp+0x18] on the back edge (jmp into the loop body), and cx,0x7fff 16-bit and;
-   ours and eax/test ax. Tried (dcp try rows): no_ query written in both arms (if ==2 Query(SceneBuilding
-   list) else Query(base)): code 127->110 but 205->218 ins, the original's base arm sits out of line after
-   the first ret and ours inline (also !=2 order: tail 27, 218); flags block moved out of kind==1: =
-   control; v = ... inline in the if: = control; v == a order: 218, code 112; ia/ib init order / chained: =
-   control; v replaced by the masked expression at each use: 205 ins, code 99, bytes 1047; n inlined in the
-   loop test: 214; b before a: 214; (a = ..) != (b = ..): = control; a register copy r of rec for branch A:
-   = control; r assigned in the condition and rec = r: frame 0x28 vs 0x24, 255 ins. Left: regs 104 / code
-   127 / slots 28 (rec esi vs edi, s at [esp+0x20] vs [esp+0x24], base at [esp+0x34] vs [esp+0x30], push
-   ebx before cmp eax,1 and pop ebx at the end in the original (ebx = rec in the flags section, ours eax
-   reloads)) (tiebreak: insensitive) prior: reconstructed from the whole original 0x511f20..0x5124c9 (the
-   old draft summarised the record walks): the class chain as one if / else-if over g[0] with the instance
-   queries in the conditions, the part-order walk over the scene building's ai_BTypes part list (nParts
-   +0x22, parts +0x23, & 0x7fff, first / second index) and the parent's later parts, the part queries as
-   gm_Query(base, 1, 4, class) (the draft had 4, 1), gm_PermissionBits on ai_SceneBuilding itself (not its
-   list), the effect script Effekte/upgrade2.esc (the draft had a cut string) with its 8 arguments (center
-   x/y/z, radius, radius*1.5, o), d3_Camera, the no_ query with the ternary list argument; Q2/Q4/Q6 cleared
-   through SCENEOBJ.info / INIT_OBJ.flags / obj / INIT_BTYPEREC. 519 -> 283 differing, 465 vs 465
-   instructions, size equal. Left: allocation - the original keeps rec in esi across branch D and the A
-   branch (ours edi / [es... */
+   @deep s50: the part loop of the original compares 16-bit (a in ebx loaded with mov bx,[eax] and kept in
+   [esp+0x18], reloaded into ebx on the loop's back edge only; v from mov cx,[edi]; and cx,0x7fff; cmp
+   bx,cx; b compared from [esp+0x1c]; ia in esi); ours keeps a / b in memory slots and v in eax (and
+   eax,0x7fff; test ax,ax). Round (s50): the 64 type products of a / b / v over unsigned short / short /
+   int / unsigned: int / int / int 193 (frame equal, but ints lose the original's 16-bit compares: not
+   kept), the others 191-195 with frame 0x20 (the slot of a / b gone: rejected) or = control. Next: a
+   register for a in the part loop (a candidate rank question: a's references against rec / s / ia;
+   c2trace). prior: match-deep 48: headers sample insensitive (32 samples, one codegen). Allocation-heavy:
+   the original keeps rec in a register copy (mov esi,eax after the [esp+0x10] store) through the parent
+   branch up to the part loop, where esi becomes ia; ours keeps rec in edi / reloads. Part loop: the
+   original reloads a into ebx from [esp+0x18] on the back edge (jmp into the loop body), and cx,0x7fff
+   16-bit and; ours and eax/test ax. Tried (dcp try rows): no_ query written in both arms (if ==2
+   Query(SceneBuilding list) else Query(base)): code 127->110 but 205->218 ins, the original's base arm
+   sits out of line after the first ret and ours inline (also !=2 order: tail 27, 218); flags block moved
+   out of kind==1: = control; v = ... inline in the if: = control; v == a order: 218, code 112; ia/ib init
+   order / chained: = control; v replaced by the masked expression at each use: 205 ins, code 99, bytes
+   1047; n inlined in the loop test: 214; b before a: 214; (a = ..) != (b = ..): = control; a register copy
+   r of rec for branch A: = control; r assigned in the condition and rec = r: frame 0x28 vs 0x24, 255 ins.
+   Left: regs 104 / code 127 / slots 28 (rec esi vs edi, s at [esp+0x20] vs [esp+0x24], base at [esp+0x34]
+   vs [esp+0x30], push ebx before cmp eax,1 and pop ebx at the end in the original (ebx = rec in the flags
+   section, ours eax reloads)) (tiebreak: insensitive) */
 void init_SyncSceneObjects(char *o)
 {
     SCENEOBJ *so = (SCENEOBJ *)o;
