@@ -3206,7 +3206,16 @@ next:;
    button the tabbed window (ai_SpecialAmountWindow, the last tab), the menu disabled meanwhile; a character
    chosen there closes the menu too unless pick decides or cfg->option14 has bit 4; a right release closes it.
    Returns the chosen character record (0: none); prompt is not read
-   @deep Reconstructed the whole body against the original (975 B): the nine picture buttons in the order
+   @deep s42: read the loop entry in dcp disasm: the original has xor ebp,ebp before d2_SetPointerSprite
+   (pushes ebp twice), then jmp over the loop's own xor ebp,ebp (the latch's target, r = 0 per iteration):
+   the entry edge already holds r = 0 in ebp, so VC6 skipped the redundant loop-top store; the column-7
+   zero stores use ebp (r) where ours use eax (the tested call result). = control: r = 0 added before
+   d2_SetPointerSprite / after it / after d2_ClickedId / before the button loop / at the top (dead-store
+   eliminated each time), interactive = r / style = r (r folded to 0); the arms of the column-7 test
+   swapped: 39 (code 33, regs 26); r = 0 + SetPointerSprite(r, r) with the r = 0 at the latch (do { .. if
+   (!sv_RunFrame) break; r = 0; } while (1)): 94, frame 0x4c. Next: what makes const 0 / r live in ebp
+   across SetPointerSprite and ClickedId (a register candidate for 0 with enough uses before the loop?).
+   prior: Reconstructed the whole body against the original (975 B): the nine picture buttons in the order
    0,8,6,4,5,1,2,3,7, the lockSecond / column-7 enables, the click dispatch (hit > -1 && hit < 9 list, else
    the tabbed window button) and the pick / option14 close. Left (code 6, all at the loop entry): the
    original computes r = 0 into ebp before d2_SetPointerSprite, pushes ebp twice and enters the do-while
