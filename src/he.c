@@ -5675,21 +5675,11 @@ void he_AllocInsult(int ev)
    partner2 (b) half an hour from now (G28REC, held by the player's character, flags 0xa2); stages 2 and 1 (a
    player's challenge sent, he_RunDuelChallenge goes on) take the quarrel flag 0x400 (flags1c8) from both and end
    the event in two minutes; stage -1 / -2 (left) does the same when it was started and frees the event; all only
-   once started (opts 2)
-   @deep Read whole against the original and fixed: typed over AIJOB / AICHAR / G28REC (the fight party of
-   kind 4: members a / b, host the player's character, thing -1, used 2, flags 0xa2, variant 0, time now +
-   0x1e minutes), exSlot cleared once before the switch, the cases 2 / 1 / -2,-1 with 0 the default (jump
-   table equal, 5 entries); 798 vs 798 bytes, the rest of the function equal. Left: scheduling of the party
-   block only (+0x547c3b..+0x547ca5, 46 lines): the original copies time.hour right after members[0],
-   pushes the gm_AddTime arguments (0x1e, 0, &party.time) before the kind / flags / thing / used stores and
-   copies year / min / sec last; ours (party.time = ai_Time placed after members[1]; placed after
-   members[0] it is worse, 41 ins and an alignment M8) stores kind .. used first and pushes later: the same
-   stores and loads in another order; the prover stops at the switch jump */
+   once started (opts 2) */
 void he_RunInsult(int ev)
 {
     AIJOB *e = (AIJOB *)ev;
     AICHAR *a, *b;
-    G28REC party;
 
     if (e->exSlot != -1 && cm_GetSlotState(e->exSlot) == 0)
         return;
@@ -5702,16 +5692,18 @@ void he_RunInsult(int ev)
         b = (AICHAR *)gm_FindChar(e->partner2);
         if (a != 0) {
             if (b != 0) {
+                G28REC party;
+
                 memset(&party, 0, sizeof(party));
+                party.host = ai_CharInts[ai_PlayerId][0];
                 party.members[0] = a->netId;
                 party.kind = 4;
                 party.flags = 0xa2;
                 party.thing = -1;
                 party.used = 2;
-                party.host = ai_CharInts[ai_PlayerId][0];
+                party.variant = 0;
                 party.members[1] = b->netId;
                 party.time = ai_Time;
-                party.variant = 0;
                 gm_AddTime(&party.time, 0, 0x1e, 0);
                 cm_SendNewParty(&party);
             }
