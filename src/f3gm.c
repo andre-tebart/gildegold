@@ -421,18 +421,14 @@ int gm_IncomeKind5(unsigned id, GMINCOME *out, unsigned char flags)
 /* 0x4fa4b0, collects the incomes of the character id into the record out (cleared first): none (0) for a free
    record, one not in use (health 0) or one under age (gm_IsUnderAge); else the kind 1 or 2 (2 when the title group
    of the character's job has a town object, amt_HasTownObject), 5, 3 (only when v1a8 is positive) and 4. Returns 1
-   @deep near-byte sweep s22: the zero fill before i (loop / memset), id &= 0xffff: 36-45 ins (the frame of
-   the prologue moves the wrong way); memset after i = control. Callees IncomeKind1/2/5 now byte: no change
-   here. prior: Read whole against the original: statement structure equal (branch targets shift only by
-   the one-instruction size difference). Tried: index loop vs memset (identical code), the index
-   ORD_CHARS[(unsigned short)id] at each use (out in ebx, id in edi, ebp pushed late: allocation), a
-   character pointer c (lea ebp,[..+ai_Chars] where the original folds the base into [esi+ai_Chars+off]:
-   wrong form, reverted), the index temp i = (unsigned short)id (kept: 11 of 84 differ). Remaining hunk at
-   +0x5: ours mov edx,ebx / and edx,0xffff / mov ecx,0xe / xor eax,eax / rep stosd / lea eax,[edx+edx*2],
-   the original mov eax,ebx / and eax,0xffff / lea eax,[eax+eax*2] scheduled before xor eax,eax / rep
-   stosd: the same instructions with the index in edx instead of eax and the memset moved before it;
-   because of that order ours repeats xor eax,eax at the first return 0 (the original reuses the zero eax
-   of the stosd), the one extra instruction. Scheduling / allocation of the prologue only. */
+   @deep deep s43: the original computes the whole index chain (mov eax,ebx / and 0xffff / lea x3 / x5 / x9
+   / shl 2 -> esi) in eax before xor eax,eax / rep stosd; ours takes edx for the masked id, so the lea
+   chain waits behind the stosd. = control: i = id & 0xffff, k = 0 before i, memset(out, 0, 0x38) / sizeof;
+   worse: unsigned short i (36), a ORDCHAR *c (26), the three guards as one || (40), the fill counting down
+   (20), an unsigned short id parameter (46, the header prototype unchanged), climb 2 rounds (nothing).
+   prior: near-byte sweep s22: the zero fill before i (loop / memset), id &= 0xffff: 36-45 ins (the frame
+   of the prologue moves the wrong way); memset after i = control. Callees IncomeKind1/2/5 now byte: no
+   change here. */
 
 int gm_CharacterIncomes(unsigned id, GMINCOME *out, unsigned char flags)
 {
