@@ -243,27 +243,26 @@ void d3s_DrawSpans(int rows, int w, unsigned char flags, char top, int y0)
     }
 }
 /* 0x45a2e0, a shadow triangle: edges from the three points p (x, y pairs), colours c, radius pixels / rows around
-   @deep area == ai_FloatZero now (M10 fixed: the original compares against the pooled cm.c datum).
-   headers sample: insensitive (one codegen). Left: the edge-choice webs - original b ebx / e esi / d
-   spilled to p's dead slot [esp+0x1c] / l ecx, ours b spilled / d esi / e ebx (VC6 then reloads b into ebp
-   once minY dies); y reuses minY's ebp in the original (add ebp,0xffff; sar) and y+n is an add ebp,edi
-   before the if (left). Tried (dcp try, all draft): arm statement orders 20 combos (b/d/e/l order, d = l =
-   t, l = d = t) = control; t reused as d like d3s_ShadowPoly (b; l = t; t = e; e = TriEdge[t][0]) 148 ins;
-   y as minY = control; y += n before/after 133-141 ins; n ternary forms (+0xffff in both arms, n -= y)
-   139; second pass DrawSpans inline per arm 153+ (frame 0xc); block scope for b/d/e/l/y/n/left and 24
-   declaration orders = control; reference-count probes (if (left) as the compare 141, > vs - > 0 forms
-   130-132, != operands swapped 131, left before ShadowRadius store 127, all combined 121 ins but these
-   respell the original's sub/test shapes, not the spill). Next: find why VC6 ranks d over b (region-based
-   spill?), e.g. with toyasm.py on a reduced edge-choice + two-call tail (tiebreak: insensitive) prior:
-   Read in full against 0x45a2e0..0x45a66a: the orientation test, both edge loops (reversed with the p+4 /
-   p+5 / c+2 walking pointers, forward indexed), the flag masks, the top-vertex edge choice (e / b / d / l
-   over d3_TriEdge), the colour gradient d3s_Area (65536 / area * (dc0 * (p5 - p3) - dc2 * (p1 - p3)),
-   inline FtoI), both span passes with their left / right edges; every statement, call and argument agrees
-   (ours 0x169 ins vs the original's, size 906 vs 905). Left: allocation - in the edge choice the original
-   keeps d in [esp+0x1c], b in ebx, e in esi and l in ecx ('+ mov ebx,[eax*8+TriEdge+4] / mov
-   [esp+0x1c],esi / mov esi,[esi*8+TriEdge] / mov ecx,eax'), ours keeps b in the slot and d in esi, which
-   renames every later EdgeY index and the d3s_DrawSpans / d3s_RightEdge pushes (+0x15b..+0x37e); the
-   orientation pointers in ebx vs ours edx; reordering the declarations does not move it. */
+   @deep s47: the two edge loops as plain for (i = 0; i < 3; i++) loops (no i = 0 at the top, minY and t
+   still initialised first): the first 101 instructions now equal, size 905 = 905, 133 -> 120 ins; kept (t
+   = -1 before minY = the same code; i = 0 at the top in any order 133-139; i = 0 before each do 126).
+   Left: the edge-choice webs as before. c2trace now: y#1 prio 130 takes esi first, e#1 123 ebx, minY#1 102
+   ebp, then b#1 98 finds no register (split; b#3 gets ebp only after minY dies), d#1 52 esi, l#1 52 ecx.
+   The original has b in ebx, e in esi, d in the slot, l in ecx, and y computed in minY's ebp in place (add
+   ebp,0xffff; sar ebp,16): so y does not outrank minY there. Open: what makes y share minY's register (y
+   as minY was = control in s46). prior: area == ai_FloatZero now (M10 fixed: the original compares against
+   the pooled cm.c datum). headers sample: insensitive (one codegen). Left: the edge-choice webs - original
+   b ebx / e esi / d spilled to p's dead slot [esp+0x1c] / l ecx, ours b spilled / d esi / e ebx (VC6 then
+   reloads b into ebp once minY dies); y reuses minY's ebp in the original (add ebp,0xffff; sar) and y+n is
+   an add ebp,edi before the if (left). Tried (dcp try, all draft): arm statement orders 20 combos (b/d/e/l
+   order, d = l = t, l = d = t) = control; t reused as d like d3s_ShadowPoly (b; l = t; t = e; e =
+   TriEdge[t][0]) 148 ins; y as minY = control; y += n before/after 133-141 ins; n ternary forms (+0xffff
+   in both arms, n -= y) 139; second pass DrawSpans inline per arm 153+ (frame 0xc); block scope for
+   b/d/e/l/y/n/left and 24 declaration orders = control; reference-count probes (if (left) as the compare
+   141, > vs - > 0 forms 130-132, != operands swapped 131, left before ShadowRadius store 127, all combined
+   121 ins but these respell the original's sub/test shapes, not the spill). Next: find why VC6 ranks d
+   over b (region-based spill?), e.g. with toyasm.py on a reduced edge-choice + two-call tail (tiebreak:
+   insensitive) */
 
 void d3s_ShadowTriangle(float *p, unsigned char *c, unsigned char *dst, int pitch, unsigned char flags, char *base, int radius)
 {
@@ -273,10 +272,9 @@ void d3s_ShadowTriangle(float *p, unsigned char *c, unsigned char *dst, int pitc
     float area;
 
     minY = pitch << 16;
-    i = 0;
     t = -1;
     if (p[0] * p[5] + ((p[2] * p[1] + (p[3] * p[4] - p[2] * p[5])) - p[0] * p[3]) - p[4] * p[1] > 0.0) {
-        do {
+        for (i = 0; i < 3; i++) {
             d3s_EdgeX[i] = (int)(p[4 - i * 2] * 65536.0f);
             d3s_EdgeY[i] = (int)(p[5 - i * 2] * 65536.0f);
             d3s_EdgeC[i] = c[2 - i] << 16;
@@ -284,10 +282,9 @@ void d3s_ShadowTriangle(float *p, unsigned char *c, unsigned char *dst, int pitc
                 minY = d3s_EdgeY[i];
                 t = i;
             }
-            i++;
-        } while (i < 3);
+        }
     } else {
-        do {
+        for (i = 0; i < 3; i++) {
             d3s_EdgeX[i] = (int)(p[i * 2] * 65536.0f);
             d3s_EdgeY[i] = (int)(p[i * 2 + 1] * 65536.0f);
             d3s_EdgeC[i] = c[i] << 16;
@@ -295,8 +292,7 @@ void d3s_ShadowTriangle(float *p, unsigned char *c, unsigned char *dst, int pitc
                 minY = d3s_EdgeY[i];
                 t = i;
             }
-            i++;
-        } while (i < 3);
+        }
     }
     if (t != -1) {
         if (base == 0)
