@@ -3593,15 +3593,7 @@ int cm_ExFloatDelta(G17MSG *m, G17STAT *s)
    the characters m->rel.from and m->rel.to (netIds); kind 4 drifts every relation towards 0 by the level (the
    higher, the narrower the band left alone), 3 scales everyone's memory towards `to` (but its partner's) by scale,
    0..2 add delta to from's relation to `to` (1 half of it, a positive one, to the memory as well, 2 clears the
-   memory); each kept in -0x7f..0x7f
-   @deep size queue s11: padded size fixed (raw 925 -> 881 vs 889, padded 896 = 896), shape 72 -> 36 ins:
-   the not-found / gone tests of ci and cj as one || test each (the original's four return 1 jump to one
-   block; ours had an epilogue copy each). Left: the clamp blocks' layout: the original puts every v =
-   -0x7f arm out of line (kind 4: behind the loop nest; kind 0 / 1: at the function's end; the memory clamp
-   of kind 1 through eax, not immediate stores). Tried: the clamps as ternaries or as two plain ifs (=
-   control); as if (v > -0x7f) { if (v >= 0x7f) v = 0x7f; } else v = -0x7f per site, all 15 subsets: all
-   four = draft 22 (kind 2 right, kind 4 / 0 / 1 not), best shape mask13 30 ins (kinds 4, 1, 0 nested); the
-   kind-1 memory clamp written through v (draft 32, moves kind 3's float code). */
+   memory); each kept in -0x7f..0x7f */
 
 int cm_ExRelations(G17MSG *m, G17STAT *s)
 {
@@ -3649,10 +3641,7 @@ int cm_ExRelations(G17MSG *m, G17STAT *s)
                         v += dn;
                     else if (v < lo)
                         v += dp;
-                    if (v <= -0x7f)
-                        v = -0x7f;
-                    else if (v >= 0x7f)
-                        v = 0x7f;
+                    v = min(max(v, -0x7f), 0x7f);
                     ai_Relations[i][j] = (signed char)v;
                 }
             }
@@ -3678,33 +3667,19 @@ int cm_ExRelations(G17MSG *m, G17STAT *s)
                 v = ai_Relations[cj][ci];
                 ai_RelationMemory[cj][ci] = 0;
                 v += m->rel.delta;
-                if (v < -0x7f)
-                    v = -0x7f;
-                else if (v >= 0x7f)
-                    v = 0x7f;
+                v = min(max(-0x7f, v), 0x7f);
                 ai_Relations[cj][ci] = (signed char)v;
             } else if (kind == 1) {
                 v = ai_Relations[cj][ci] + m->rel.delta;
-                if (v < -0x7f)
-                    v = -0x7f;
-                else if (v >= 0x7f)
-                    v = 0x7f;
+                v = min(max(-0x7f, v), 0x7f);
                 ai_Relations[cj][ci] = (signed char)v;
                 if (m->rel.delta >= 0)
                     v /= 2;
                 v += ai_RelationMemory[cj][ci];
-                if (v < -0x7f)
-                    ai_RelationMemory[cj][ci] = -0x7f;
-                else if (v >= 0x7f)
-                    ai_RelationMemory[cj][ci] = 0x7f;
-                else
-                    ai_RelationMemory[cj][ci] = (signed char)v;
+                ai_RelationMemory[cj][ci] = (signed char)min(max(-0x7f, v), 0x7f);
             } else if (kind == 0) {
                 v = ai_Relations[cj][ci] + m->rel.delta;
-                if (v < -0x7f)
-                    v = -0x7f;
-                else if (v >= 0x7f)
-                    v = 0x7f;
+                v = min(max(-0x7f, v), 0x7f);
                 ai_Relations[cj][ci] = (signed char)v;
             }
         }
