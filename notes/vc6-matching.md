@@ -2316,6 +2316,12 @@ copied back into short predecessors only after all of this.
   arms (`if (ch->kind == 6) { ..; ret = 1; } else { ret = 1; }`): two return copies in the IL (flip.py found it
   as `ret = 1` moved into the if, which changed the meaning) (ai_UseGoodLowerOfficialRelations 32 -> byte).
 
+- **A loop entered by `jmp` past its own `xor reg,reg` (the latch target), the zero already in reg from `push
+  reg; push reg` before the loop; zero stores in the loop body through that reg (ours: `push 0`, the stores of the
+  tested call result eax)**: the loop-top `r = 0;` stood AFTER the first if / else of the body, not first: r then
+  does not interfere with the const-0 piece over the earlier zeros, the copy coalesces into its register and the
+  piece wraps around the loop (ai_AmountMenu 38 -> byte; every earlier `r = 0` / `f(r, r)` form folded).
+
 ### Compare operand order and the constant written
 
 - **Operands swapped**: write the condition from the other side first. `if (best < s) { best = s; pick = cp; }`

@@ -3232,25 +3232,7 @@ next:;
    (amt_HasColumn7Holder). A click on a picture opens the kind's list (ai_SpecialAmountListWindow), on the
    button the tabbed window (ai_SpecialAmountWindow, the last tab), the menu disabled meanwhile; a character
    chosen there closes the menu too unless pick decides or cfg->option14 has bit 4; a right release closes it.
-   Returns the chosen character record (0: none); prompt is not read
-   @deep s42: read the loop entry in dcp disasm: the original has xor ebp,ebp before d2_SetPointerSprite
-   (pushes ebp twice), then jmp over the loop's own xor ebp,ebp (the latch's target, r = 0 per iteration):
-   the entry edge already holds r = 0 in ebp, so VC6 skipped the redundant loop-top store; the column-7
-   zero stores use ebp (r) where ours use eax (the tested call result). = control: r = 0 added before
-   d2_SetPointerSprite / after it / after d2_ClickedId / before the button loop / at the top (dead-store
-   eliminated each time), interactive = r / style = r (r folded to 0); the arms of the column-7 test
-   swapped: 39 (code 33, regs 26); r = 0 + SetPointerSprite(r, r) with the r = 0 at the latch (do { .. if
-   (!sv_RunFrame) break; r = 0; } while (1)): 94, frame 0x4c. Next: what makes const 0 / r live in ebp
-   across SetPointerSprite and ClickedId (a register candidate for 0 with enough uses before the loop?).
-   prior: Reconstructed the whole body against the original (975 B): the nine picture buttons in the order
-   0,8,6,4,5,1,2,3,7, the lockSecond / column-7 enables, the click dispatch (hit > -1 && hit < 9 list, else
-   the tabbed window button) and the pick / option14 close. Left (code 6, all at the loop entry): the
-   original computes r = 0 into ebp before d2_SetPointerSprite, pushes ebp twice and enters the do-while
-   past the loop head's xor ebp, ebp (+0x26c: xor ebp,ebp / push ebp / push ebp, +0x29e: jmp past +0x2a0);
-   ours pushes 0, 0 and falls into the head's xor, so the two zero stores of the column-7 button use eax
-   (the call's 0) instead of ebp (regs hunk +0x2a9). Tried: r = 0 before OpenForm (dead-store eliminated),
-   r = 0 with SetPointerSprite(r, r), the r = 0 in the latch (for(;;) with break, and a comma in the while:
-   loses the hoisted btn[8] offset, frame 0x4c). A loop-entry layout variant round. */
+   Returns the chosen character record (0: none); prompt is not read */
 
 int ai_AmountMenu(AMOUNTCFG *cfg, char *caption, int prompt, int (*pick)(AICHARREC *, int))
 {
@@ -3303,7 +3285,6 @@ int ai_AmountMenu(AMOUNTCFG *cfg, char *caption, int prompt, int (*pick)(AICHARR
     d2_SetPointerSprite(0, 0);
     d2_ClickedId = -1;
     do {
-        r = 0;
         if (amt_HasColumn7Holder() == 0) {
             d2_Objs[btn[8]].interactive = 0;
             d2_Objs[btn[8]].style = 0;
@@ -3311,6 +3292,7 @@ int ai_AmountMenu(AMOUNTCFG *cfg, char *caption, int prompt, int (*pick)(AICHARR
             d2_Objs[btn[8]].interactive = 1;
             d2_Objs[btn[8]].style = 3;
         }
+        r = 0;
         if (dm_L.rup != 0) {
             sv_PopRequest = 1;
         } else if (d2_ClickedId != -1) {
