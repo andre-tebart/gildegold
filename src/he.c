@@ -16583,13 +16583,12 @@ void he_RunMarketSupervisor(AIJOB *ev)
             cm_SendGoodsDelta(&s2, pl);
         }
     }
-    if (ai_Time.hour >= 22) {
+    if (ai_Time.hour < 22) {
+        ev->end = ai_Time;
+        gm_AddTime(&ev->end, 1, 0, 0);
+        ev->stage = 0;
+    } else
         he_FreeEvent((int *)ev);
-        return;
-    }
-    ev->end = ai_Time;
-    gm_AddTime(&ev->end, 1, 0, 0);
-    ev->stage = 0;
 }
 /* 0x560820, the alloc handler of the kidnap event 0x3c (HEEV3C; ai_CalcMeisterDiebe posts it for a thieves' guild,
    its run handler he_RunKidnap): the record is cancelled (stage -1) when another event 0x3c (he_FindEvent / he_NextEvent)
