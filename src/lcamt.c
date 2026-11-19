@@ -4579,22 +4579,13 @@ typedef struct LCPICKROW {         /* 0x20 bytes, one character row of ai_PickBu
    given and the scroll buttons past two rows. Each row is the picture 0x5db, the portrait, the name centred below it
    and the player's liking of the character as a disabled bar; a row cfg's partner filter refuses is greyed and not
    clickable (or left out when cfg->flags is 0). A click on a row returns its character record, or with a callback cb
-   calls cb (the record, bld) and redraws the rows; a right click closes the window. Returns the picked record or 0
-   @deep reconstructed the whole function against the original 0x5c3bb0..0x5c40fd (rows LCPICKROW 0x20 B
-   with id at +0x14, the master/owner/bld2/bld loops read through bld-> and bt->kind as the
-   original's CSE shows, the 'if (n != 0)' guard of the row loop, the shown/step form that gives mov
-   eax,0x5a / xor eax,eax / add ebp,eax, the liking bar, the click search). Left: the two loop heads
-   schedule the row pointer and the ai_Chars start in another order with another temp: ours 'mov eax, esi;
-   mov edx, ai_Chars; shl eax, 5; lea edi, [esp+eax+0x68]', the original 'mov edx, esi; shl edx, 5; lea
-   edi, [esp+edx+0x68]; mov edx, ai_Chars' (and the same at 0x5c3cca with ecx/edx); the rest is regs
-   (eax/ecx/edx renaming). 417 vs 417 instructions. */
+   calls cb (the record, bld) and redraws the rows; a right click closes the window. Returns the picked record or 0 */
 
 AICHARREC *ai_PickBuildingChar(AIBLD *bld, AMOUNTCFG *cfg, char *caption, void (*cb)(AICHARREC *, AIBLD *))
 {
     LCPICKROW rows[16];
     char text[32];
     AICHARREC *result;
-    AICHARREC *c;
     int win;
     int listWin;
     int radio;
@@ -4625,20 +4616,20 @@ AICHARREC *ai_PickBuildingChar(AIBLD *bld, AMOUNTCFG *cfg, char *caption, void (
         rows[n++].id = bld->owner;
     bt = &((AIBTYPE *)ai_BTypes)[bld->type];
     if (bt->kind == 1 || bt->kind == 2) {
-        for (c = lc_CharRecs; (int)c < (int)ai_Chars[768]; c++) {
+        for (i = 0; i < 768; i++) {
             if (n >= 16)
                 break;
-            if (c->bld2 == (int)bld && c->id != bld->masterId && c->id != bld->owner)
-                rows[n++].id = c->id;
+            if (lc_CharRecs[i].bld2 == (int)bld && lc_CharRecs[i].id != bld->masterId && lc_CharRecs[i].id != bld->owner)
+                rows[n++].id = lc_CharRecs[i].id;
         }
     }
     if ((bt->kind > 3 && bt->kind < 10) || (bt->kind > 10 && bt->kind < 15) ||
         bt->kind == 16 || (bt->kind > 17 && bt->kind < 23)) {
-        for (c = lc_CharRecs; (int)c < (int)ai_Chars[768]; c++) {
+        for (i = 0; i < 768; i++) {
             if (n >= 16)
                 break;
-            if (c->bld == bld && c->id != bld->masterId && c->id != bld->owner)
-                rows[n++].id = c->id;
+            if (lc_CharRecs[i].bld == bld && lc_CharRecs[i].id != bld->masterId && lc_CharRecs[i].id != bld->owner)
+                rows[n++].id = lc_CharRecs[i].id;
         }
     }
     win = d2_OpenForm(0, 0, "Gesetze\\Auswahl2");
