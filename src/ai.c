@@ -3393,12 +3393,12 @@ void ai_BuildTradeOffers(AICHAR *ch, AIOBJ *store, int f)
                     for (it = gm_Query(o2->list, 1, 5); it; it = gm_QueryNext()) {
                         q = gm_FindGoods(bld->playerSlot, it->id);
                         if (q && q[1]) {
-                            diff = gm_ItemPrice(it->id, 100);
-                            price = gm_GoodsPrice(it->id, (unsigned char)bld->playerSlot) - diff;
+                            price = gm_ItemPrice(it->id, 100);
+                            diff = gm_GoodsPrice(it->id, (unsigned char)bld->playerSlot) - price;
                             for (i = 0; i < ai_NEntries; i++)
                                 if (ai_Entries[i].item == it->id)
                                     break;
-                            if (i < ai_NEntries && price < ai_Entries[i].margin)
+                            if (i < ai_NEntries && diff < ai_Entries[i].margin)
                                 goto next2;
                             if (ai_NEntries < 0x20) {
                                 ai_Entries[i].item = it->id;
@@ -3406,7 +3406,7 @@ void ai_BuildTradeOffers(AICHAR *ch, AIOBJ *store, int f)
                                 ai_Entries[i].slot[1] = -1;
                                 ai_Entries[i].slot[2] = -1;
                                 ai_Entries[i].slot[3] = -1;
-                                ai_Entries[i].margin = price;
+                                ai_Entries[i].margin = diff;
                                 ai_Entries[i].bld = bld;
                                 ai_Entries[i].store = o2;
                                 ai_Entries[i].sellAmount = 0;
