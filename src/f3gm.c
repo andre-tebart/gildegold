@@ -731,18 +731,11 @@ void gm_EndDayIncomes(unsigned flags)
 }
 /* 0x4fad60, finds the richest character (the highest gm_GetWorth of the used records of kind < 10 that are alive),
    searching again only when the cached one is gone or the game year has advanced; out: its id (-1 when none) and
-   its worth (0xc80 when none). Returns 1 when one was found
-   @deep Read whole against the original: the cache test (char 0 / year advanced / id 0xffff / health 0),
-   the 0x300 loop (id, kind < 10, health > 0, gm_GetWorth), the else-goto block order (now equal: branch
-   targets agree, sizes 71/71) and both returns. Left: diffclass regs hunks eax<->ecx (gm_RichestChar in
-   ecx, the year in eax at entry; asmdiff shows the same instructions rotated) and two code hunks that are
-   scheduling of the same instructions: at 0x4fae00 the original sets eax=1 before the stores and loads the
-   worth pointer after pop ebp ([esp+0xc]) where ours loads both out-pointers first; at 0x4fae37 pop ebx
-   placed after the stores instead of before. Tried: ai_Time.year > gm_RichestYear (worse), if/goto layouts. */
+   its worth (0xc80 when none). Returns 1 when one was found */
 
 int gm_FindRichest(short *id, int *worth)
 {
-    int best, bi, i, v;
+    int best, bi, i, v, r;
 
     best = -100000;
     bi = 0xffff;
@@ -764,18 +757,17 @@ int gm_FindRichest(short *id, int *worth)
         } else {
             gm_RichestChar = 0;
             gm_RichestWorth = 0xc80;
-            goto none;
         }
     }
     if (gm_RichestChar != 0) {
+        r = 1;
         *id = gm_RichestChar->id;
-        *worth = gm_RichestWorth;
-        return 1;
+    } else {
+        r = 0;
+        *id = -1;
     }
-none:
-    *id = -1;
     *worth = gm_RichestWorth;
-    return 0;
+    return r;
 }
 /* 0x4fae50, the owner of the building b hands out money to the other characters (in use, of kind < 10 but not 6 / 7 / 8,
    not the owner): each one with the chance b1b0 * 0.25 * (1 + 0.0125 * the building's skill 9), times 0.8 / 0.7 / 0.6
