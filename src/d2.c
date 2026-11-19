@@ -3650,7 +3650,7 @@ void d2_DrawWindowBackground(D2WIN *w, void *surf)
 #define D2WOP(o) ((D2WIN *)((char *)d2_Wins + (o)))   /* window at byte offset o (win * 0x3c4); a pointer, so
                                                          the original's offset-in-a-register addressing stays */
 
-/* 0x471a90, draws a window: its objects, scroll buttons, background and frame @deep near: 613 vs 613 instructions, 45/1872 bytes differ, 54 asm lines - only stack-slot permutations of the frame locals (the (int)((float)..+1.5f) casts use [esp+0x40] where the original has [esp+0x44] at 471d86/471de8/471e99/471ecf, and the scroll-button loop locals are permuted at 471e18/471e38/471eba/471f15/471fbc/[0x50]/[0x54]/[0x58]/[0x68]/[0x6c]) plus two moved add/sub pairs at 471fa7 and 471ff2 - i.e. declaration-order / spill allocation (vargen, listing). Tried: rewriting w->w + w->x - pw as w->w - pw + w->x at 471fa7/471ff2 - identical bytes, reverted; spell.py reload entries name the loop locals re-read at their uses (sw/sh/pw/ph/x are locals used as-is, nothing to drop - 471e38/471e4f/471eba/471f15/471fdb), iv-shift is the loop base suggestion only. Q2 clean (all fields named; the cornerObj / extraObj child objects are the 0x3bc / 0x3c0 pair). Named this session: d2_WinBorderPic / d2_WinBorderPergaPic (d2_FindPic of _WIN_BORDER / _WIN_BORDER_PERGA), D2OBJ.winIndex -> winIndex, d2_SetObjEnabled -> d2_SetObjEnabled. */
+/* 0x471a90, draws a window: its objects, scroll buttons, background and frame */
 void d2_DrawWindow(win, surf)
 int win;
 void *surf;
@@ -3760,17 +3760,19 @@ void *surf;
                 sw = d2_Pics[w->frame + 7].w;
                 sh = d2_Pics[w->frame + 7].h;
                 d2_SetClipRect(w->x, w->y, w->w + w->x, w->h - ph + w->y);
+                /* @original the right edges w->w + w->x - sw / - pw add first and subtract last (0x471f2e, 0x471fa7,
+                   0x471ff2): an unsigned subtrahend; with int VC6 reassociates to (w->w - pw) + w->x */
                 n = (int)((float)((w->h - ph * 2) / sh) + 1.5f);
                 for (i = 0; i < n; i++) {
                     d2_DrawShape(w->x, w->y + i * sh + ph, surf, pic, 6);
-                    d2_DrawShape(w->w + w->x - sw, w->y + i * sh + ph, surf, pic, 7);
+                    d2_DrawShape(w->w + w->x - (unsigned)sw, w->y + i * sh + ph, surf, pic, 7);
                 }
                 d2_SetClipRect(w->x, w->y, w->w + w->x, w->h + w->y);
                 if (w->cornerObj == -1)
                     d2_DrawShape(w->x, w->y, surf, pic, 0);
-                d2_DrawShape(w->w + w->x - pw, w->y, surf, pic, 1);
+                d2_DrawShape(w->w + w->x - (unsigned)pw, w->y, surf, pic, 1);
                 d2_DrawShape(w->x, w->h + w->y - ph, surf, pic, 2);
-                d2_DrawShape(w->w + w->x - pw, w->h + w->y - ph, surf, pic, 3);
+                d2_DrawShape(w->w + w->x - (unsigned)pw, w->h + w->y - ph, surf, pic, 3);
             }
         }
         if (w->backgroundState)
