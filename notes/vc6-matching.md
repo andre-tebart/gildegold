@@ -2322,6 +2322,13 @@ copied back into short predecessors only after all of this.
   does not interfere with the const-0 piece over the earlier zeros, the copy coalesces into its register and the
   piece wraps around the loop (ai_AmountMenu 38 -> byte; every earlier `r = 0` / `f(r, r)` form folded).
 
+- **A const-1 register (`mov ebp,1` before a call in ONE arm: `push ebp`, `cfg.flags = ebp`), the other arm
+  `mov ebp,1` after its null test, the final `mov eax,ebp`; each arm's own failure test**: `ret = 0; if (..) { ..;
+  if (bld == 0) goto done; ret = 1; } else { ..; if (bld == 0) goto done; ret = 1; } loop; done: return ret;` -
+  `ret = 1` in both arms, not once at the join (there the const-1 web takes the loop's 1s too and stays in memory)
+  (ai_UseGoodHalveWorkerValue 50 -> byte). The family's ret / goto done / return ret callbacks: put ret = 1 where
+  each path's own 1-constants are, and look for the arm-tail sinking of identical `if (x == 0) goto done;`.
+
 ### Compare operand order and the constant written
 
 - **Operands swapped**: write the condition from the other side first. `if (best < s) { best = s; pick = cp; }`
