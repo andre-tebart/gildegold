@@ -617,15 +617,21 @@ int cm_SplitComplete(G17MSG *m)
     return 0;
 }
 /* 0x4c38e0, joins the parts of the split message m into cm_LongMsg and frees them; returns the length
-   @deep s(this): 16 -> 0 ins / 2 bytes (shape). Kept: the parts loop as p->next7 = 0; p = r; memcpy(..,
-   p->data, 0x80); p->type = 0; (p in edx across the copy, as the original) and the first search as r = 0;
-   for (q ..) if (match) { r = q; break; } if (r == 0) return 0; (m then in esi, the next7 CSE in ecx: with
-   the plain for/break m and the CSE tied at prio 8 and m took ecx; the r = q copy block lowers m by one).
-   Left: only jump targets: the two loop guards (empty receive queue) jump to the first return 0 copy
-   (+0x11, of if (m->next7 == 0)) in the original, to the first search's return copy (+0x38) in ours (pair
-   merger: ours merges the second search's return 0 into the first search's). No lever: while / for-init /
-   r != 0 break forms of the first search, r = 0 before the next7 test; the second search in the same r / q
-   style puts the registers back (12 ins); for(;;) with return inside is worse. prior: deep s33: the
+   @deep s(this): 16 -> 0 ins / 1 byte (shape). Kept: the parts loop as p->next7 = 0; p = r; memcpy(..,
+   p->data, 0x80); p->type = 0; (p in edx across the copy, as the original); the first search as r = 0; for
+   (q ..) if (match) { r = q; break; } if (r == 0) return 0; (puts m in esi and the next7 CSE in ecx: with
+   the plain for / break they tie at prio 8 and m took ecx); the m->next7 == 0 exit as goto fail with fail:
+   return 0; at the end (the second search's return 0 then merges into that copy: its loop guard jumps to
+   +0x11 as the original). Left (1 byte): the first search's loop guard (empty receive queue) jumps to the
+   first search's own return copy (+0x38) in ours, to the top return copy (+0x11) in the original.
+   Mechanism (c2tail --il merge): our first-search return 0 block sits right behind the loop bottom (the
+   found path's trampoline is removed, so it is entered by fall-through) and the pair merger does not merge
+   two fall-through copies of 1 instruction; in the original it was merged into the top copy and the loop
+   bottom got an epilogue duplicate. Tried without success: that return as goto fail (the shared block is
+   then laid out behind loop 1: 8 ins), as goto a second end label, as if (r != 0) goto found; return 0;,
+   if (r != 0) {..} [else] return 0; (tail 38), an explicit q = cm_RecvQueue; if (q == 0) return 0; guard
+   with do-while, for(;;) with return inside, while / for-init forms, return (unsigned)r / m->next7
+   spellings; the label order at the end changes it (fail2 before fail: 2 bytes). prior: deep s33: the
    original clears p->next7 BEFORE the part's memcpy (mov [edx+0xc],ebx between mov ecx,0x20 and rep movsd;
    n += 0x80 then lands after the copy as the original): with that order (variant pfirst) the layout and
    every instruction order match and only registers are left (32 ins, regs): the original m in esi /
@@ -642,7 +648,7 @@ unsigned int cm_JoinSplit(G17MSG *m)
     int n;
 
     if (m->next7 == 0)
-        return 0;
+        goto fail;
     r = 0;
     for (q = cm_RecvQueue; q != 0; q = q->next)
         if (q->sender == m->sender && q->seq == m->next7) {
@@ -668,6 +674,8 @@ unsigned int cm_JoinSplit(G17MSG *m)
     }
     r->next7 = 0;
     return cm_LongMsgLen;
+fail:
+    return 0;
 }
 /* 0x4c39c0, queues a copy of src in the send ring; returns its slot, -1: closed or the slot is still in use */
 
