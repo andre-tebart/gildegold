@@ -1709,6 +1709,62 @@ Where the pushes and pops sit, how many epilogue copies there are, shared agains
     he_MoveReaper (every operand order of the step / target lines is one code), gm_RankPlayers, ch_ActTurn,
     d3t_UpdateSnow.
 
+- **Deep s49 (large drafts: the 8 with the fewest instructions at 139-159 of the draft pool without notes here: 1
+  byte, 2 draft -> shape (one after a meaning fix), 5 closer with notes)**:
+  - **Two callee-saved registers swapped through a whole handler (the event pointer and the character), the
+    sex-dependent text ids passed as `(c->sex != 0 ? 10 : 0) + K`**: the ids as an int set by if / else right
+    before each call (`if (c->sex != 0) text = K + 10; else text = K; io_PrintText(.., text, ..)`; the s45 / s47
+    lever). Each site splits the call block and adds character references, so the character's priority rose
+    above the event's (c2trace 55 -> 64 against 63) and the pair swapped: he_RunTitleCeremony 150 -> byte with
+    four of the six sites (0x1618 and the rival's 0x42a4 / 0x42a2 / 0x42a0), the two `title + 0x114 / 0x11e`
+    sites inline (all six: 12 ins). A subset round (3^n: inline / if-else / ternary local per site) finds it in
+    one `dcp try`; `flip.py --want 'mov\s+edi, DWORD PTR _ev\$'` named the 0x1618 line first.
+  - **A table index kept as a byte offset across a memset (`lea edx,[eax+eax*8]; shl edx,2; mov al,[edx+X]` ..
+    `rep stosd` .. `mov eax,[edx+Y]`)**: the record was read at each use through an int index local (`owner =
+    b->owner; if (ai_CharsT[owner].kind == 6 ..) { memset(&msg ..); msg.to = ai_CharsT[owner].netId;`), not
+    through an `AICHAR *` pointer and not through `b->owner` again (VC6 re-reads that after the memset): the
+    offset is a CSE the inline memset does not kill (he_RunProtection 148 -> 28, then a 719-order fill round:
+    shape 8).
+  - **The byte twin's form first**: ai_PassesBuildingFilter's class as `type->kind` at each use (no `unsigned
+    char cls` local, as its byte twin ai_PassesMapPickFilter) put 0xffff into esi (139 -> 85); then the
+    word read three times (`cfg->classMask[1]`: sign test, hi test) as a local read right after the type pointer,
+    before `lo = 0` (the original's `mov ebx,[edx+0xc]` in the type block): 85 -> 3. ai_ProductionWindow:
+    `fresh = 1;` inside the `count > 1` test as the byte sibling ai_ExtractResourceWindow (151 -> 127).
+  - **A price stored across a call in one frame slot in all blocks of a function**: the same variable for the same
+    role in each copy of a block. ai_BuildTradeOffers' entries block had `diff = item price; price = goods -
+    diff;` where the slots block has `price` stored and `diff` on the FPU: naming them alike (`price =
+    gm_ItemPrice(..); diff = gm_GoodsPrice(..) - price;`) removed every slot hunk (152 -> 130); then climb move /
+    swap rounds on the record fills (130 -> 14).
+  - **A not-found arm placed at the end (`je` far forward, the -1e6 store after the loop's code)**: `if (p != 0)
+    {..} else ai_Slots[i].saving = -1000000.0f;` instead of `if (p == 0) {fail} else {..}` (ai_BuildTradeOffers,
+    with the margin computed in the goods price's definition `diff = gm_GoodsPrice(..) - price`: size 2952 ->
+    2953 = the original).
+  - **A search with `goto next` and a re-test `i < n` inside the loop is one code with the plain `for (..) if
+    (match) break; if (i < n && worse) goto next; if (i >= 0x80) goto next;`** (17 forms, all the control): keep
+    the plain one for readability.
+  - **`lea edi,[esi+1]` after a call, spilled, `mov esi,edi` at the latch, the counter not strength-reduced**: the
+    counter was advanced in the body right after its last use, `for (i = 0; i < 3; cart++) { ..; sprintf(name,
+    "..%i", i + 1); i++; ..}` (cm_SetupFightScene 156 -> 84; `++i` in the argument: 134, `i++` in the header:
+    control). The fighter loops' esi / edi swap went with it.
+  - **A guard's free block reused for a later exit (`jae` back to +0x14, he_FreeEvent once fewer)**: the late exit
+    written as the else arm, `if (ai_Time.hour < 22) { next run; } else he_FreeEvent(ev);`; `if (hour >= 22) {
+    free; return; }` keeps its own copy (he_RunMarketSupervisor, size 3479 -> 3457, padded right).
+  - **`fld K; fdiv b; fmul a` where the original has `fld a; fmul K; fdiv b`**: `a * K / b` in float context is
+    reassociated into `K / b * a`; `(a * K) / b` keeps the original's order (he_RunMarketSupervisor, three
+    sites). The same for `m * (1.0 / 60) * (d * k)` flattened into `d * k * m * (1.0 / 60)`: `(m * (1.0 / 60))
+    * (d * k)` keeps `fild m; fmul; fld d; fmul; fmulp`.
+  - **Rejected for size**: ai_ProductionWindow's class tests through an AIBTYPE pointer (`type->kind` at each
+    test: the original's `lea eax,[edi+eax*4]; mov al,[eax]`) fixed that hunk but raised the size 2335 -> 2337
+    in the current allocation: reverted.
+  - Fixed: he_RunProtection's player-owner question waits 3 hours (`gm_AddTime(&e->end, 3, 0, 0)`; the original
+    pushes 0, 0, 3), not 3 minutes.
+  - Left with notes: ai_PassesBuildingFilter (3: the original loads classMask[0] into eax before `test`;
+    flip.py hits only a duplicated test line), he_RunProtection (shape 8: b->id / netId load order),
+    ai_ProductionWindow (bld in ebp, the column offset in a slot), ai_BuildTradeOffers (14: the shop entries
+    fill's -1 register), cm_SetupFightScene (84: i in a slot at the loop head), he_RunMarketSupervisor (122:
+    frame packing), sv_HandleSelectionMouse (159: the send through c gives the original's IV base but map
+    moves into a register).
+
 - **An else-if arm cross-jumped whole into a sibling's copy, the original keeps it inline**: the store order of
   the OTHER arms (default arm charId before stateArg; 0x176 arm stateArg, charId, x, z) decides it, found by
   climb.py swap + move in round 2 (cm_OrderAttack byte; permuting only the inlined arm's stores did not). The pair
