@@ -311,7 +311,23 @@ void d2_RadioSelect(int g, int sel);                                            
 
 /* 0x4b4040, the dialog "Menu\CHOOSEHISTORY": picks the mission kind ai_MissionMode (0..5, the first button:
    none) and then a mission (0x4b3e70); returns its type (0xff: cancelled)
-   @deep behaviour: instructions identical under the esi<->edi renaming (tools/asmdiff.py --regs esi=edi,edi=esi leaves only the prologue/epilogue push/pop order), the 82-instruction code hunk at 0x4b4094 is not classified regs only because the joined hunk holds 7 registers (diffclass find_map limit 6). The swapped candidates are view (ours edi, original esi) and the first/o5/g colour (ours esi, original edi); c2prio: _first prio 182 -> esi, _view prio 181 -> edi, a 1-point allocation difference (the original ranks view above first). Last-bytes pass: spell.py dup-tail 0x4b4094 (no if/else arm at that block - difflib noise from the swap), push-pop 0x4b421f (one final return already; the original's je to the loop test is matched), order 0x4b4265 (same instruction set after the renaming); no meaning-class lead, no source form left. Tried: declaration order 'first, view' (no effect on C2 priorities). Readability done (Q1/Q2 cleared, Q6 present, Q7 clean). Left: C2 register-priority / colouring work (c2prio / vargen ren). */
+   @deep s45: c2trace --prio: view 181 vs first 182, both from block 0 (P = 13: view 9 refs there, first 7)
+   less view's 25 loop blocks; one more distinct value referenced in block 0 (P 14) would rank view first
+   (view 199 / first 196), as the original. No lever found: o6 = -1 as the else of the ai_NumPlayers test
+   (61 ins), r = 0 before the loop (132), o6 = -1 right before the test (60), first++ per GetWinObj (91),
+   o[7] / o[6] arrays (frame 0x1c vs 0x18), the GetWinObj run as a loop (draft). climb 2 rounds: nothing.
+   Next: what else the original reads in the first block (a value VC6 counts as a candidate: a global, a
+   named local), e.g. the 0x1ac5 text call's arguments. prior: behaviour: instructions identical under the
+   esi<->edi renaming (tools/asmdiff.py --regs esi=edi,edi=esi leaves only the prologue/epilogue push/pop
+   order), the 82-instruction code hunk at 0x4b4094 is not classified regs only because the joined hunk
+   holds 7 registers (diffclass find_map limit 6). The swapped candidates are view (ours edi, original esi)
+   and the first/o5/g colour (ours esi, original edi); c2prio: _first prio 182 -> esi, _view prio 181 ->
+   edi, a 1-point allocation difference (the original ranks view above first). Last-bytes pass: spell.py
+   dup-tail 0x4b4094 (no if/else arm at that block - difflib noise from the swap), push-pop 0x4b421f (one
+   final return already; the original's je to the loop test is matched), order 0x4b4265 (same instruction
+   set after the renaming); no meaning-class lead, no source form left. Tried: declaration order 'first,
+   view' (no effect on C2 priorities). Readability done (Q1/Q2 cleared, Q6 present, Q7 clean). Left: C2
+   register-priority / colouring work (c2prio / vargen ren). */
 int ai_ChooseMission(void)
 {
     int o0, o1, o2, o3, o4, o5, o6;
