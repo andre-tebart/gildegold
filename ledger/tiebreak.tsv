@@ -2432,7 +2432,7 @@ exe	0x004cefe0	cm_CloseFightView	cm	29288b8309f63bf8	no	byte	control=byte p1=byt
 exe	0x004cf000	cm_UpdateSceneChars	cmfight	b3967e39b5e7e95d	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	ba42a3144707ff9c
 exe	0x004cf370	cm_DrawScrollArrows	cm	d210b0104bdcf38c	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=253	653ac214333ac5bd
 exe	0x004cf670	cm_UpdatePointer	cm	41b9acf9329f06ba	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
-exe	0x004cf9c0	cm_UpdatePortraits	cm	adf16f621167f864	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
+exe	0x004cf9c0	cm_UpdatePortraits	cmfight	634b69a2ca6d4fc0	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	2f0e77b90f55198a
 exe	0x004cfc10	cm_BuildPortraits	cm	eb9c3bb5cf2b420b	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	becf1bbdf99775c9
 exe	0x004cfe70	cm_ClosePortraits	cm	bab8a98d1c29c911	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004cfeb0	cm_ClickSceneChar	cm	fadecc4c35a057a9	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
