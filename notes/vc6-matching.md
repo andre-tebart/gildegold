@@ -1895,6 +1895,18 @@ Where the pushes and pops sit, how many epilogue copies there are, shared agains
   split forced on (threshold patched: i and k in memory), a real block boundary between the call and `k++` or
   between `keys[k].time = 0` and the final call, callee prototypes (21 variants; a `char` count: `inc cl`), nine
   D3ANIMKEY layouts.
+- **Register preferences (read from c2.dll: FUN_10709f0b adds `{register, count}` to the list at candidate + 0x38;
+  five callers in the reference scan FUN_10707a0b, one in the choice FUN_10709937)**: a preference is only added
+  by a COPY instruction (IL op 1, 0x11f, 0x1dd, 0x17f, 0x181) between a candidate and a physical register or an
+  already assigned candidate, and by op 0x12 (lea) for its base candidate. So: the idiv result (`step` prefers
+  eax), a shift count (ecx), a remainder (edx), a call result, `x = y` with y assigned (`i = 0` gives the zero
+  constant a preference for i's register once i has one). Pieces of one variable do NOT prefer each other's
+  register (d3t_MoveObjectPath: k#3 assigned first at prio 132, k#2 `prefs[ ]`). The choice takes the register
+  with the lowest score (preference counts of the waiting interfering candidates, 100 x savings for one whose
+  only register it is), ties eax, ecx, edx, esi, edi, ebx: with nothing assigned to ecx / edx yet, the first of
+  two scratch candidates always takes ecx; two waiting candidates that each still have two registers ({ecx,
+  ebx}) do not push it off. For a swap of two scratch candidates the lever is therefore their priority order,
+  never a preference, unless one of them is in a copy with a fixed register.
 
 - **An else-if arm cross-jumped whole into a sibling's copy, the original keeps it inline**: the store order of
   the OTHER arms (default arm charId before stateArg; 0x176 arm stateArg, charId, x, z) decides it, found by
