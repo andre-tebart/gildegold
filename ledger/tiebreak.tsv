@@ -1476,7 +1476,7 @@ exe	0x00483fc0	ai_EvaluateProductionGraveyard	ai	a32996d8088bcacd	no	shape	sweep
 exe	0x00484a60	ai_Unk484a60	ai	cec6c71338ef4f07	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x004854f0	ai_UpdateProduction	ai	971ddfb4cbfec75d	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	9ae3229e4c037d19
 exe	0x00486190	ai_FillSlotTable	ai	34aebf3db62ccc91	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
-exe	0x004864b0	ai_BuildTradeOffers	ai	863bd5d4ce318100	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	4ef0133f16ee2190
+exe	0x004864b0	ai_BuildTradeOffers	ai	e68d144dcdce8266	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	bfba6b6f24082ac4
 exe	0x00487040	ai_CalcEntryCost	ai	5ca140e33749b218	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00487180	ai_HasMaterials	ai	bc9163512ce32b42	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x00487410	ai_StartProduction	ai	a707f45d335cd958	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	

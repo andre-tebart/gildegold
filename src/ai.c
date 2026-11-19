@@ -3311,26 +3311,35 @@ void ai_FillSlotTable(AICHAR *ch, AIOBJ *obj)
    other-store capacity, budget / 4 / price), each entry's amount = min (amount, the other store's capacity), and
    both tables are selection-sorted by amount * sort key, the result positions kept in AIENTRY.rank /
    AISLOT.rank
-   @deep Read whole against the original 0x4864b0..0x487035 and fixed: the shop and market price
-   differences kept as one float in the FPU across the search (margin = gm_GoodsPrice - gm_ItemPrice, the
-   original's fsub [esp+0x18] / fcom / fstp), the slot limit as i >= 0x80 (cmp 0x80 / jge), the kind 2
-   price as gm_GoodsPrice * bld->priceRate * 0.01f (fimul [bld+0x45] / fmul dword 0.01), the building walk
-   as do { ...; k++; bld = &ai_BldsT[k]; } while (k < 256) (the original's latch off += 0xa9 / lea bld),
-   the input search as !found && k < 3, the entry buyAmount as min(buyerCapacity, amount). Readability:
-   AIBLD.playerSlot (the kind 0x47 shop's player, was unk65), AIBLD.saved45 -> priceRate (its only reader),
-   AISLOT.unk38 -> sellerAmount, AIENTRY.unk50 -> buyerCapacity, an AISLOT temporary instead of the AIENTRY
-   cast. 276 -> 152 differing, 862 = 862 instructions, every call, constant and field the same. Left is
-   scheduling and allocation: the order of the record stores in the four fill blocks (+0x115, +0x2f2,
-   +0x371, +0x520: item / bld / fstp interleaved otherwise), the gm_Query argument pushes of the kind 2
-   store at +0x43a, the not-found saving = -1e6 tail the original shares at +0x7ad, and slot rotations of
-   the float temporaries ([esp+0x14] / [0x1c], [0x18] / [0x1c]). (size: 3 of the instruction difference are
-   shared / inline tails) (references: M8 at +0x30a: ours refers to ai_Entries+0x4 (0xf88a44), the
-   original's field to 0xf88a54 (ai_Entries+0x14) (and 1 more), explained: the two M8 lines are the new
-   entry's stores in the shop part (+0x2f2..+0x33b): both sides store item, slot[0..3] = -1, margin, bld,
-   store, sellAmount, cost, pending, rank, flags at the same fields; VC6 schedules our fstp margin before
-   the slot stores and the item after them, the original item / slots / margin, so the alignment pairs each
-   store with another field of the same record (moving the margin assignment anywhere in the source block
-   gives identical code)) */
+   @deep s49: 152 -> 14 ins, size 2952 -> 2953 = the original. Levers: the three item searches as plain for
+   .. break loops (same code, readability); the entries block's names as the slots block's (price = the
+   item price stored across the call, diff = the margin on the FPU: 152 -> 130, the slot hunks gone); climb
+   move / swap (item before saving in both slot fills; slot[2] / slot[3] = -1 after the entry's store: 130
+   -> 30 -> 14); the market block as if (p != 0) {..} else saving = -1e6 with diff = gm_GoodsPrice(..) -
+   price and the margin stored after pending (30 -> 18, size right). Left: the shop entries fill (+0x2ef):
+   the original materialises -1 in edx before the record address (or edx,-1; lea esi; mov eax,[esp+0x10]
+   bld) and stores item, slot[0..3], then fstp margin, bld, store; ours loads bld into edx first, -1 in eax
+   and the fstp margin first. All 156 positions of margin / slot[3] in that fill: no closer row; climb
+   round 2 from the tree found only this. prior: Read whole against the original 0x4864b0..0x487035 and
+   fixed: the shop and market price differences kept as one float in the FPU across the search (margin =
+   gm_GoodsPrice - gm_ItemPrice, the original's fsub [esp+0x18] / fcom / fstp), the slot limit as i >= 0x80
+   (cmp 0x80 / jge), the kind 2 price as gm_GoodsPrice * bld->priceRate * 0.01f (fimul [bld+0x45] / fmul
+   dword 0.01), the building walk as do { ...; k++; bld = &ai_BldsT[k]; } while (k < 256) (the original's
+   latch off += 0xa9 / lea bld), the input search as !found && k < 3, the entry buyAmount as
+   min(buyerCapacity, amount). Readability: AIBLD.playerSlot (the kind 0x47 shop's player, was unk65),
+   AIBLD.saved45 -> priceRate (its only reader), AISLOT.unk38 -> sellerAmount, AIENTRY.unk50 ->
+   buyerCapacity, an AISLOT temporary instead of the AIENTRY cast. 276 -> 152 differing, 862 = 862
+   instructions, every call, constant and field the same. Left is scheduling and allocation: the order of
+   the record stores in the four fill blocks (+0x115, +0x2f2, +0x371, +0x520: item / bld / fstp interleaved
+   otherwise), the gm_Query argument pushes of the kind 2 store at +0x43a, the not-found saving = -1e6 tail
+   the original shares at +0x7ad, and slot rotations of the float temporaries ([esp+0x14] / [0x1c], [0x18]
+   / [0x1c]). (size: 3 of the instruction difference are shared / inline tails) (references: M8 at +0x30a:
+   ours refers to ai_Entries+0x4 (0xf88a44), the original's field to 0xf88a54 (ai_Entries+0x14) (and 1
+   more), explained: the two M8 lines are the new entry's stores in the shop part (+0x2f2..+0x33b): both
+   sides store item, slot[0..3] = -1, margin, bld, store, sellAmount, cost, pending, rank, flags at the
+   same fields; VC6 schedules our fstp margin before the slot stores and the item after them, the original
+   item / slots / margin, so the alignment pairs each store with another field of the same record (moving
+   the margin assignment anywhere in the source block gives identical code)) */
 
 void ai_BuildTradeOffers(AICHAR *ch, AIOBJ *store, int f)
 {
@@ -3404,10 +3413,10 @@ void ai_BuildTradeOffers(AICHAR *ch, AIOBJ *store, int f)
                                 ai_Entries[i].item = it->id;
                                 ai_Entries[i].slot[0] = -1;
                                 ai_Entries[i].slot[1] = -1;
-                                ai_Entries[i].slot[2] = -1;
                                 ai_Entries[i].margin = diff;
                                 ai_Entries[i].bld = bld;
                                 ai_Entries[i].store = o2;
+                                ai_Entries[i].slot[2] = -1;
                                 ai_Entries[i].slot[3] = -1;
                                 ai_Entries[i].sellAmount = 0;
                                 ai_Entries[i].cost = 0;
@@ -3449,8 +3458,8 @@ void ai_BuildTradeOffers(AICHAR *ch, AIOBJ *store, int f)
                             goto next3;
                         if (i >= 0x80)
                             goto next3;
-                        ai_Slots[i].saving = diff;
                         ai_Slots[i].item = it->id;
+                        ai_Slots[i].saving = diff;
                         ai_Slots[i].bld = bld;
                         ai_Slots[i].entry = -1;
                         ai_Slots[i].store = o;
