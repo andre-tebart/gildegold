@@ -16425,7 +16425,7 @@ void he_RunMarketSupervisor(AIJOB *ev)
             s.daily[1] = (int)(s.daily[1] + f);
         }
         if (s.demand * 1.5f < s.mean) {
-            if (util_RandomF() > s.demand * 1.5f / s.mean)
+            if (util_RandomF() > (s.demand * 1.5f) / s.mean)
                 s.mean = s.demand * 0.4f;
         } else if (s.demand * 0.4f > s.mean) {
             if (util_RandomF() > s.mean / (s.demand * 0.4f))
@@ -16487,7 +16487,7 @@ void he_RunMarketSupervisor(AIJOB *ev)
             s.mean = (float)(s.mean < s.demand * 3.0 ? s.mean : s.demand * 3.0);
         }
         if (s.demand * 1.5f < s.mean) {
-            if (util_RandomF() > s.demand * 1.5f / s.mean)
+            if (util_RandomF() > (s.demand * 1.5f) / s.mean)
                 s.mean = amount > s.demand * 0.5 ? s.demand * 0.4f : s.demand * 0.8f;
         } else if (s.demand * 0.4f > s.mean) {
             if (util_RandomF() > s.mean / (s.demand * 0.4f))
@@ -16542,7 +16542,7 @@ void he_RunMarketSupervisor(AIJOB *ev)
                     s.mean = 1.0f;
             }
             if (s.demand * 2.5f < s.mean) {
-                if (util_RandomF() > s.demand * 2.5f / s.mean)
+                if (util_RandomF() > (s.demand * 2.5f) / s.mean)
                     s.mean = s.demand * 0.8f;
             } else if (s.demand * 0.8f > s.mean) {
                 if (util_RandomF() > s.mean / (s.demand * 0.8f))
