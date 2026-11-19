@@ -4604,6 +4604,15 @@ the stack at every instruction.
   cast the order is canonical (d3t_EmitterCB).
 
 ### Product and sum chains: association, factoring, folding
+
+- **`a*s*k*K + a*s*0.5` factored by VC6 into `(a*K + 0.5)*s*k`, the original expanded (`fild s; fild a; fmul st,st(1);
+  fmul k; fmul K; fxch; fmul k; fmul 0.5; faddp`)**: nest each product, `(((float)a * s) * k) * K + ((float)s * k) *
+  0.5f` (ai_BuildTownMap; casts, orders, /2 had all been factored).
+- **A building / camera fallback whose building block lies after the epilogue with its own pushes**: `obj = cam; if
+  ((b = A) == 0 && (b = B) == 0 && obj == 0) return; if (b != 0 && b->object != 0) f(b->object ..); else f(obj ..);`
+  (the `b != 0` test is decided per path; ai_BuildTownMap). A loop case written as `if (..) { ..; continue; }` instead
+  of if / else moved the loop latch into the right split region (212 -> 45 ins there).
+
 - **`a*14 - b*14` with b loaded once but multiplied at every use (the volatile a reloaded each time), ours keeps
   b*14 as one CSE**: the source was `(a - b) * 14`: VC6 distributes the constant per use after CSE, so only the load
   of b is shared (cm_DrawFightTime byte, d3_Time volatile).

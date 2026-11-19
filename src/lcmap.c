@@ -1275,6 +1275,7 @@ void ai_BuildTownMap(LCMAPWIN *m)
         }
         d2_LastWindow = m->screen;
         d2_LastWindowPtr = &d2_Wins[d2_LastWindow];
+        /* the products nested as written: unnested, VC6 factors them into (dir * K + 0.5) * size * scale */
         if (m->marks[i].bld->type == 'G') {
             x = (int)((((float)dirs[m->marks[i].bld->side][0] * hm->size) * ai_MapCellScale) * 0.48f + ((float)hm->size * ai_MapCellScale) * 0.5f);
             y = (int)((((float)dirs[m->marks[i].bld->side][1] * hm->size) * ai_MapCellScale) * 0.48f + ((float)hm->size * ai_MapCellScale) * 0.5f);
