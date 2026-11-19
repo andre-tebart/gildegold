@@ -1762,19 +1762,27 @@ void he_FreeEvent(int *r)
 /* 0x53e300, the next event record after he_Cursor that passes he_FindEvent's filter (he_FindKind, he_FindId, he_FindChr,
    he_FindFrom; a record whose first filters matched stays matched through the free records after it), up to the last
    used record he_EventTop (an error when that is out of range); 0 at the end
-   @deep read whole against the original and rewritten on AIJOB with the typed filter globals: the
-   he_EventTop range check and its error, the cursor checks (0 / == last / > last), the he_FindFirst step,
-   the filters hoisted (kind byte 0xff, id -1, chr word 0xffff, from -1), the ok flag kept over the free
-   records, the step to last and the cursor clear all match instruction for instruction. Left is
-   allocation: ours keeps the cursor in eax (returned directly) and saves edi late (push edi before the chr
-   load), the original keeps it in esi, pushes esi at the entry and moves it to eax in the shared epilogue
-   (+0x3ee mov eax, esi), so eax / esi / edi / edx rename through the function and the last local's slot
-   moves [esp+8] -> [esp+0xc]; tried the cursor as a local with returns in place, the single exit, and
-   he_Cursor itself throughout: the same two allocations */
+   @deep s45: the three gotos replaced by a match flag (match = 1; each filter sets ok or clears match; if
+   (!match) ok = 0;): the same code (VC6 decides the flag per path). c2trace: the cursor is the global
+   candidate he_Cursor (k#24, prio 23, 14 refs), served before the hoisted filters (prio -42 each) and
+   takes eax; the original has the cursor in esi and he_FindKind in al (mov al,[he_FindFirst] also in eax),
+   so in the original the cursor is not served first or eax is closed to it. No change: the cursor as a
+   local p (he_Cursor = ++p), the filters copied into locals before the loop (182 bytes), both. Next: what
+   makes the cursor rank below the filters or keeps eax from it (a call / return use in its range? the
+   err_Message branch?). prior: read whole against the original and rewritten on AIJOB with the typed
+   filter globals: the he_EventTop range check and its error, the cursor checks (0 / == last / > last), the
+   he_FindFirst step, the filters hoisted (kind byte 0xff, id -1, chr word 0xffff, from -1), the ok flag
+   kept over the free records, the step to last and the cursor clear all match instruction for instruction.
+   Left is allocation: ours keeps the cursor in eax (returned directly) and saves edi late (push edi before
+   the chr load), the original keeps it in esi, pushes esi at the entry and moves it to eax in the shared
+   epilogue (+0x3ee mov eax, esi), so eax / esi / edi / edx rename through the function and the last
+   local's slot moves [esp+8] -> [esp+0xc]; tried the cursor as a local with returns in place, the single
+   exit, and he_Cursor itself throughout: the same two allocations */
 char *he_NextEvent(void)
 {
     char ok = 0;
     AIJOB *last = 0;
+    char match;
 
     if (he_EventTop < 0 || he_EventTop >= 0x400)
         err_Message("he_fn_Handlung(): invalid Handlungen_LAST");
@@ -1788,33 +1796,35 @@ char *he_NextEvent(void)
         he_Cursor++;
     for (;;) {
         if (he_Cursor->kind != 0) {
+            match = 1;
             if (he_FindKind != 0xff) {
-                if ((unsigned char)he_Cursor->kind != he_FindKind)
-                    goto mismatch;
-                ok = 1;
+                if ((unsigned char)he_Cursor->kind == he_FindKind)
+                    ok = 1;
+                else
+                    match = 0;
             }
-            if (he_FindId != -1) {
-                if (he_Cursor->id != he_FindId)
-                    goto mismatch;
-                ok = 1;
+            if (match && he_FindId != -1) {
+                if (he_Cursor->id == he_FindId)
+                    ok = 1;
+                else
+                    match = 0;
             }
-            if (he_FindChr != 0xffff) {
-                if (he_Cursor->chr != he_FindChr)
-                    goto mismatch;
-                ok = 1;
+            if (match && he_FindChr != 0xffff) {
+                if (he_Cursor->chr == he_FindChr)
+                    ok = 1;
+                else
+                    match = 0;
             }
-            if (he_FindFrom != -1) {
+            if (match && he_FindFrom != -1) {
                 if (he_Cursor->from == he_FindFrom)
                     break;
-                goto mismatch;
+                match = 0;
             }
+            if (!match)
+                ok = 0;
         }
         if (ok)
             break;
-        goto step;
-mismatch:
-        ok = 0;
-step:
         if (he_Cursor >= last) {
             he_Cursor = 0;
             break;
