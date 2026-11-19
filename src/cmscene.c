@@ -2075,10 +2075,7 @@ void cm_TrialAskAI(CMCUTINFO *r, AIPLAN *m)
     }
 }
 /* 0x4de4b0, the sink-to-ground action's callback (cm_DuelSinkDown): a blood puddle "ub_Blutlache" turned at random at
-   the character's place, as cm_FallDownAction without the sound
-   @deep near-byte sweep s22: left the a->ch->obj->pos loads scheduled after the fild in the original
-   (before in ours). climb round 1: nothing; D3VECTOR4 rot: frame 0x18 (no); a pos local: 10; rot.z after
-   rot.y: 9; / 180.0 = control. */
+   the character's place, as cm_FallDownAction without the sound */
 
 void cm_SinkDownAction(CHACTION *a)
 {
@@ -2088,7 +2085,7 @@ void cm_SinkDownAction(CHACTION *a)
     rot.x = 0;
     rot.y = 0;
     rot.z = 0;
-    rot.y = (float)(cm_Random(0x168) * 3.14159274f * 0.005555555555555556);
+    rot.y = cm_Random(0x168) * 3.14159274f * 0.005555555555555556;
     b = d3_CreateObject(0, &a->ch->obj->pos, &rot, "ub_Blutlache");
     d3t_PlayAnim(b, "sonstiges\\ub_Blutlache.baf", 0x12);
 }
