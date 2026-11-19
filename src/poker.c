@@ -547,67 +547,33 @@ void ai_PokerNpcFold(void)
     }
 }
 /* 0x4a7e70, counts the open cards (2 .. dealt-1) of seat s per suit and rank: the most common suit (count n, suit g)
-   and rank (count m, rank r)
-   @deep constant-0 web, not text order. The original keeps 0 in no callee-saved register: cnt[1..4]
-   stored from eax (the xor eax,eax that also zero-extends dealt), cnt[5..9] from ecx, cnt[0] and *g / *r
-   as immediates (mov dword ptr [esi], 0), frame 0x28 + push ebx/esi; ours makes one zero web over the
-   init, *g = 0 and *r = 0 and gives it edi for the whole function (push edi / xor edi,edi / mov
-   [esp+..],edi / mov [esi],edi). Probes: with *g and *r stored as 7 the init block takes a scratch zero
-   (eax, no edi) and drops to 52 ins, so the *g / *r zeros join the web; with only *r = 7 still edi. Tried
-   this round (dcp try, all draft 66 ins unless said): *g/*r = 0L, (long)0, '\0', (char)0, (short)0, 0u (=
-   control: typed zeros fold into one web); chained zero groups (1..4, 5..9, c0 separate, reversed, all
-   ten, pairs; new code, 66 ins each); k = 0 copied into the stores (= control); dealt load first / after
-   the init / read in the for test (= control); *g = 0 before *n = cnt[4] (66, worse hunks); two arrays
-   rank[4] / suit[6] with explicit stores (= control). Not yet: a candidate that outranks the zero for
-   edi/ebp cannot help (the original leaves edi and ebp free), so the zero must leave the global allocator:
-   compare d3sndw_Update (0 in ebx up to the main loop, immediates after, unsolved). Hunks: init block (35
-   ins), every frame offset +4 from the extra push, mov [esi],edi vs mov dword ptr [esi],0 twice.
-   (tiebreak: insensitive) prior: Read whole against the original: zeroes the 10 counters (ranks 0..3,
-   suits 4..9) in the original's store order, dealt as an int (zero-extended byte, signed cmp eax,2 / jle),
-   counts cards 2..dealt-1 (the loop is instruction-equal: lea esi,[eax-2], deck[k].rank / deck[k].suit+4),
-   then the two max scans with the original's compare direction (cmp ecx,ebx / jle, now equal). Remaining
-   is the zero constant's allocation only: ours keeps one 0 in edi for the whole function (push edi / xor
-   edi,edi, the 10 stores and both *g = 0 / *r = 0 from edi, pop edi), the original zeroes with eax (xor
-   eax,eax that also zero-extends dealt) and ecx before the pushes, stores cnt[0] and *g / *r as immediates
-   (asmdiff: -xor edi,edi / -mov [esp+..],edi vs +xor eax,eax / +xor ecx,ecx / +mov [esp+..],eax|ecx / +mov
-   dword ptr [esp+8],0; -mov [esi],edi vs +mov dword ptr [esi],0), which shifts every frame offset by the
-   extra push. Tried: chained zero assignments, int cnt[10] = {0} (rep stosd), two arrays rank[4] / suit[6]
-   (zeroing loops: rep stosd), for vs do/while card loop. */
+   and rank (count m, rank r) */
 
 void ai_PokerOpenCounts(G10SEAT *s, int *n, int *g, int *m, int *r)
 {
-    int cnt[10];                        /* cnt[0..3] per rank, cnt[4..9] per suit */
+    int rcnt[4] = {0};
+    int cnt[6] = {0};
     int i, k, dealt;
 
-    cnt[1] = 0;
-    cnt[5] = 0;
-    cnt[2] = 0;
-    cnt[6] = 0;
-    cnt[3] = 0;
-    cnt[4] = 0;
     dealt = ai_PokerTable->dealt;
-    cnt[7] = 0;
-    cnt[8] = 0;
-    cnt[0] = 0;
-    cnt[9] = 0;
     for (i = 2; i < dealt; i++) {
         k = s->card[i];
-        cnt[ai_PokerDeck[k].rank]++;
-        cnt[ai_PokerDeck[k].suit + 4]++;
+        rcnt[ai_PokerDeck[k].rank]++;
+        cnt[ai_PokerDeck[k].suit]++;
     }
-    *n = cnt[4];
+    *n = cnt[0];
     *g = 0;
     for (i = 1; i < 6; i++) {
-        if (cnt[i + 4] > *n) {
-            *n = cnt[i + 4];
+        if (cnt[i] > *n) {
+            *n = cnt[i];
             *g = i;
         }
     }
-    *m = cnt[0];
+    *m = rcnt[0];
     *r = 0;
     for (i = 1; i < 4; i++) {
-        if (cnt[i] > *m) {
-            *m = cnt[i];
+        if (rcnt[i] > *m) {
+            *m = rcnt[i];
             *r = i;
         }
     }
