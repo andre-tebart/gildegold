@@ -4714,16 +4714,25 @@ void cm_PlantEscapeFlag(CMFIGHTSLOT *f)
    also orders the other side's AI to strike back (cm_OrderAttack, unless an order is pending); the fight command 2 goes
    out (cm_SendFightCommand). Out of range c walks to the free cell near g (cm_SendObjCell), unless c holds its place.
    Returns the send slot, -1 when nothing was sent.
-   @deep Read against the original in full. Fixed: the walk takes g's body position (g->scene->obj->pos,
-   was g + 0x34), the side-leader bonus is 1.25 (the 0x5ecebc float, was 1.5), the AI order is renewed when
-   the pending one's send slot is still busy (cm_GetSlotState != 0, was == 0), the damage is computed in
-   the slot record itself, the range test as !(dist > range) in one condition with the melee kinds (walk
-   out of line as the original), both exits return the send slot (cm_SendFightCommand / cm_SendObjCell now
-   return cm_QueueSend's slot: the original has no xor eax after them). Instruction count equal (273).
-   Left: allocation - the original packs ix / iz / py and the fild temporaries into the dead parameter
-   slots (rec / c / g at [esp+0x48..0x50], frame 0x34) where ours keeps two of them in the frame (0x3c); g
-   in esi and the weapon in edi (ours esi / edi swapped), the random value in esi; the g load moved before
-   the rep stosd. */
+   @deep s47: ix / iz / py as block locals of the walk tail ({ int ix, iz; float py; .. } after the
+   in-range arm): frame 0x3c -> 0x34 as the original (they pack into the dead parameter slots), 114 -> 101;
+   ix/iz alone or py alone keep 0x38. The hit roll as (k->accuracy * 0.01) * c->sk83 (VC6 regrouped the
+   unparenthesised product into acc * sk83 * 0.01): fpu hunks gone, 95; kept. The store order of id /
+   active / target around the memset (23 orders): no gain. Left: g and k swap esi / edi through the body:
+   the original loads g into esi before the rep stosd (g ranks above k, so it avoids edi), ours ranks k
+   first and loads g into edi after the stosd; r then sits in si (mov si,ax). Lowering k by one reference
+   (kind = k->kind int local for the two kind tests) swaps them the original's way (49 ins) but spills kind
+   (frame 0x38): the lever is k's / g's reference count, not that local. climb 2 rounds: only a float t
+   mutant (76, meaning differs). prior: Read against the original in full. Fixed: the walk takes g's body
+   position (g->scene->obj->pos, was g + 0x34), the side-leader bonus is 1.25 (the 0x5ecebc float, was
+   1.5), the AI order is renewed when the pending one's send slot is still busy (cm_GetSlotState != 0, was
+   == 0), the damage is computed in the slot record itself, the range test as !(dist > range) in one
+   condition with the melee kinds (walk out of line as the original), both exits return the send slot
+   (cm_SendFightCommand / cm_SendObjCell now return cm_QueueSend's slot: the original has no xor eax after
+   them). Instruction count equal (273). Left: allocation - the original packs ix / iz / py and the fild
+   temporaries into the dead parameter slots (rec / c / g at [esp+0x48..0x50], frame 0x34) where ours keeps
+   two of them in the frame (0x3c); g in esi and the weapon in edi (ours esi / edi swapped), the random
+   value in esi; the g load moved before the rep stosd. */
 
 int cm_Attack(CMCUTINFO *rec, AICHAR *c, AICHAR *g)
 {
@@ -4734,9 +4743,8 @@ int cm_Attack(CMCUTINFO *rec, AICHAR *c, AICHAR *g)
     AICHAR *side;
     CMCUTINFO *other;
     CMCUTENTRY *e;
-    int i, n, hit, ix, iz, state;
+    int i, n, hit, state;
     unsigned short r;
-    float py;
 
     memset(&s, 0, sizeof(s));
     s.id = c->netId;
@@ -4757,7 +4765,7 @@ int cm_Attack(CMCUTINFO *rec, AICHAR *c, AICHAR *g)
             return -1;
         r = util_RandomU(0xff);
         side = (AICHAR *)c->bld;  /* in a fight: the leader of the fighter's side */
-        if (r > 0xff - (int)(k->accuracy * 0.01 * c->sk83)) {
+        if (r > 0xff - (int)((k->accuracy * 0.01) * c->sk83)) {
             n = k->dmgMax - k->dmgMin;
             hit = 1;
             s.damage = (int)((double)(unsigned int)(cm_Random(n) + k->dmgMin) * g->f01c * 0.01);
@@ -4792,13 +4800,18 @@ int cm_Attack(CMCUTINFO *rec, AICHAR *c, AICHAR *g)
         cm_SendSetField(c->netId, 0x1c8, 4, 0x20000000, 0);
         return cm_SendFightCommand(c, 2, &s);
     }
-    if (c->scene->actions != 0 || s.held != 0)
-        return -1;
-    if (!d3_GetHeightAt((struct D3SM *)h, &g->scene->obj->pos, &ix, &iz, &py))
-        return -1;
-    if (cm_FindNearCell(ix, iz, &ix, &iz) == 0)
-        return -1;
-    return cm_SendObjCell(c->scene->obj->name, ix, iz, 0);
+    {
+        int ix, iz;
+        float py;
+
+        if (c->scene->actions != 0 || s.held != 0)
+            return -1;
+        if (!d3_GetHeightAt((struct D3SM *)h, &g->scene->obj->pos, &ix, &iz, &py))
+            return -1;
+        if (cm_FindNearCell(ix, iz, &ix, &iz) == 0)
+            return -1;
+        return cm_SendObjCell(c->scene->obj->name, ix, iz, 0);
+    }
 }
 
 
