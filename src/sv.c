@@ -2858,7 +2858,8 @@ int sv_MouseCamera(void)
     AIFIN *rec;
     float z, f2, ang, lo, hi;
     double k;                       /* the drag scale: the scroll speed option / 16.5 */
-    D3VECTOR zpos, zrot;            /* the camera position / rotation of the zoom and turn */
+    D3VECTOR4 zpos;                 /* the camera position of the zoom and turn */
+    D3VECTOR zrot;                  /* its rotation */
     float dst[4], right[16], fwd[4], v[4];   /* right is a D3MATRIX: d3_MatTranspose writes 0x40 bytes */
     D3SM *hm;                       /* the scene's height map */
     const float *ax = (const float *)&d3_ZAxis;
@@ -2930,14 +2931,18 @@ go:
         if (dm_L.rhold != 0 && dm_L.ldown != 0 && sv_ZoomTurnOn != 0) {     /* both buttons: zoom and turn by the drag */
             f2 = ((dm_L.wup - dm_L.wdown) * 5.0f + my - sv_ZoomStartY) * 0.0015f;
             sv_CameraHeightFactor = sv_ZoomStartHeight + f2;
-            zpos = ((D3OBJECT *)cam)->pos;
+            zpos.x = ((D3OBJECT *)cam)->pos.x;
+            zpos.y = ((D3OBJECT *)cam)->pos.y;
+            zpos.z = ((D3OBJECT *)cam)->pos.z;
             zpos.y = (sv_CameraHeightFar - sv_CameraHeightNear) * sv_CameraHeightFactor + sv_ZoomBaseY;
             sv_CameraAngleFactor = f2 + sv_ZoomStartAngle;
-            zrot = ((D3OBJECT *)cam)->rotation;
+            zrot.x = ((D3OBJECT *)cam)->rotation.x;
+            zrot.y = ((D3OBJECT *)cam)->rotation.y;
+            zrot.z = ((D3OBJECT *)cam)->rotation.z;
             zrot.x = (sv_CameraAngleFar - sv_CameraAngleNear) * sv_CameraAngleFactor + sv_CameraAngleNear;
             zrot.y = sv_ZoomStartTurn - (dm_P.x - sv_ZoomStartX) * 0.0035f;
-            if (d3_VecEqual(&((D3OBJECT *)cam)->pos, &zpos, 0.1f) == 0 || d3_VecEqual(&d3_Camera->rotation, &zrot, 0.001f) == 0) {
-                d3_SetObjectPos(d3_Camera, &zpos);
+            if (d3_VecEqual(&((D3OBJECT *)cam)->pos, (D3VECTOR *)&zpos, 0.1f) == 0 || d3_VecEqual(&d3_Camera->rotation, &zrot, 0.001f) == 0) {
+                d3_SetObjectPos(d3_Camera, (D3VECTOR *)&zpos);
                 d3_SetObjectRot(d3_Camera, &zrot);
                 rec = (AIFIN *)gm_PlayerRecord(ai_Chars[ai_PlayerId]);
                 if (rec != 0) {
