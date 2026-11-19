@@ -1192,26 +1192,7 @@ void cm_DrawScrollArrows()
    the ground cell under the cursor is looked up, else the pick marker is hidden) and the cursor look d2_PointerLook:
    by the weapon of the selected characters cm_CutChar sees (0x160 -> 0x18 .. 0x176 -> 0x25; more than one: 0x23) over
    a character it does not see (or with key 0x36 down), "sp_ESCAPE" 0x1c, "sp_CONQUER" 0x1b, "WARE" 0xe;
-   cm_HoverObject keeps the object the look was decided for
-   @deep size queue s19: two things. (1) v is a D3VECTOR4 (the original's frame 0x18 has v at +0x18 with
-   the hole to +0x28: 16 bytes). (2) the callee summary: the leaf ai_LedSelectBits now holds a dead 'if (0)
-   ai_PickedObject = 0;' with an @original comment (no code, ai_LedSelectBits stays byte, no other grade
-   moves): VC6 then counts it as writing ai_PickedObject, so this function reloads it after each call as
-   the original does: 142 -> 36 ins, raw 871 -> 840, padded size (848). The form of the original's write is
-   not known (only that its summary had one). Left: one scratch rotation step in the four exit arms (the
-   original copies ai_PickedObject eax -> ecx in the sp_ESCAPE arm, stores cm_HoverObject from ecx in every
-   arm, and in the last arm stores d2_PointerLook = 0 before the reload). No lever (= control): strcmp /
-   strncmp on ((D3OBJECT *)ai_PickedObject)->name; climb.py round 1 (83 mutants, nothing closer); hover
-   store before the look store (order 30); the last arm written out (74 ins, frame). prior: Lead (scratch
-   copies of cm.c): not a unit boundary. VC6 takes a callee's write summary from its text; with a dead if
-   (0) ai_PickedObject = 0; in ai_LedSelectBits this function goes from 90 to 29 differing instructions
-   (obj bytes against the image), with an external copy of ai_LedSelectBits only to 49, with a dead write
-   of another global (cm_LastSeq) nothing moves. So in the original ai_LedSelectBits is known and counts as
-   writing ai_PickedObject; its text here writes nothing. Shifting the symbol count before ai_LedSelectBits
-   (1..130 extern declarations) or naming its local ai_PickedObject changes nothing. Find what in the
-   original's ai_LedSelectBits (or in a known function it calls without code) stores to ai_PickedObject;
-   see the unit's Open: summary line. prior: Read whole against 0x4cf670..0x4cf9c0: the same calls and
-   arguments (d3if_Pick, d3sm_Pick (x, z) / d3sm_GetVertex, v.y += 10.0... */
+   cm_HoverObject keeps the object the look was decided for */
 
 void cm_UpdatePointer()
 {
@@ -1275,28 +1256,16 @@ void cm_UpdatePointer()
     if (n > 1)
         cur = 0x23;
     if (ai_PickedObject != 0 && d2_PointerObj == -1) {
-        if (strcmp(ai_PickedObject, "sp_ESCAPE") == 0 && n != 0) {
+        if (strcmp(ai_PickedObject, "sp_ESCAPE") == 0 && n != 0)
             d2_PointerLook = 0x1c;
-            cm_HoverObject = ai_PickedObject;
-            return;
-        }
-        if (strncmp(ai_PickedObject, "sp_CONQUER", 10) == 0 && n != 0) {
+        else if (strncmp(ai_PickedObject, "sp_CONQUER", 10) == 0 && n != 0)
             d2_PointerLook = 0x1b;
-            cm_HoverObject = ai_PickedObject;
-            return;
-        }
-        if (strncmp(ai_PickedObject, "WARE", 4) == 0 && n != 0) {
+        else if (strncmp(ai_PickedObject, "WARE", 4) == 0 && n != 0)
             d2_PointerLook = 0xe;
-            cm_HoverObject = ai_PickedObject;
-            return;
-        }
-        if (((D3OBJECT *)ai_PickedObject)->kind == 2 && n != 0) {
+        else if (((D3OBJECT *)ai_PickedObject)->kind == 2 && n != 0) {
             if (!(ai_LedSelectBits(((AICHAR *)cm_CutChar)->id, (char *)((D3OBJECT *)ai_PickedObject)->owner) & 0x800) ||
-                kb_Down[0x36] != 0) {
-                cm_HoverObject = ai_PickedObject;
+                kb_Down[0x36] != 0)
                 d2_PointerLook = cur;
-                return;
-            }
         } else
             d2_PointerLook = 0;
         cm_HoverObject = ai_PickedObject;
