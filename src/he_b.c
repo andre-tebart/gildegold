@@ -2131,28 +2131,26 @@ void he_AllocTrade(AIJOB *ev)
    ("Meister %s (%s) kauft ..."); a buy that found nothing is tried again every half hour up to t->tries times
    (before 20:00). Then the cart moves on to the building of the first slot left, else home (ev->from): the
    message 0xf, unless that is this building (5 minutes) or the trade is deferred (1 1/2 hours)
-   @deep size queue s20: 420 -> 224 ins, frame 0x1b0 -> 0x1a8 (the original's), raw 2603 -> 2580 (padded
-   2592 = the original's): the sell / buy loops as plain index loops over t->sell[i] / t->sellBld[i] (no
-   hand-advanced slotBld / slotGood pointers: 218 alone) and home a local of the if (t->bld == -1) block
-   (escaped by &home; a function-scope escaped local conflicts with every slot, the original shares it).
-   buf in the sprintf block: worse (code 240). climb.py round 1: only a meaning change (t->bld through a
-   float). Left: regs 148 (the zero constant in ebp in the original, edi in ours), slots 152, code 80 (the
-   transport-match block placement noted below). prior: rebuilt from the whole original over HETRADE (the
-   trade event's words named: cart, bld, chr, the sell / buy slots, buyAmount, the two send slots, tries /
-   deferred) and AIBLD.priceFactor (0x49): the waits on the two send slots, the transport check,
-   ai_CartAtBuilding, the cargo object 0x1dd and its slot count, the store move of the cargo, the sell loop
-   (0.9 / 0.8 prices, the budget), the buy loop (min() of the amount wanted and the stock beyond the
-   reserve, evaluated twice as the original does; the money of the character and its master; the debug
-   sprintf), the half-hour retries, the next building and the move-on message. 857 vs 851 instructions.
-   Left is allocation and block placement: the zero constant is ebp in the original and edi in ours (cmp
-   esi, ebp / jle vs cmp esi, edi), the loop pointers and the shared stack slots differ (frame 0x1b0 vs
-   0x1a8: the original shares left / the sell slot pointer at 0x4 and n / the price at 0x8), and the
-   original keeps the transport-match block (+0x9e8: cmp goal, bld; jne free; then the wait tail) at the
-   end where ours places it after the ai_CartAtBuilding free (+0x16b); the goto / break spellings gave the
-   same layout (references: M8 at +0x2ff: ours refers to gm_AddTime (0x4fe140), the original's field to
-   0x53e1f0 (he_FreeEvent), explained: the M8 at +0x2ff (gm_AddTime vs he_FreeEvent) is that block
-   placement: the alignment pairs our wait call with the original's free call of the nothing path (if
-   moveSlot == -1 free, else wait); both calls exist on both sides) */
+   @deep s(this): 224 -> 2 ins (shape, 13 bytes). Kept: the cart / bld test as two ifs (if (cart == 0) goto
+   done; if (bld == 0) goto done;: an || sends the block walk into done first); the transport loop with its
+   entry test as if (e == 0) break; inside for (..;;..) (a for loop's entry test sends the walk to the loop
+   exit first; this puts the moving block last as the original); moving: if (goal == bld) goto wait; goto
+   done; (wait falls into the exit); the message test if (m.n == m.ch) (no reload of bld->id after the
+   jobId store); no if (t->bld == -1) around the buy-slot loop (its entry test is the loop's own); the sell
+   block's have / put / price as block locals (the sell price shares the buy pointer's slot, n the sell
+   counter's). Left: one order hunk at the end of the sell loop body (+0x4a0): ours reloads ev (ebx) before
+   slots (esi) / cargo (edi), the original after. Levers that flip it but change meaning or the prologue:
+   any one constant changed at one site (0xa / 0x2a / -1 / the 0 of n < 0 ? 0 : n; flip.py), the inits'
+   order (flags before left: 2 bytes in the prologue stores; 720 orders, none byte), climb round 1 nothing
+   else. No lever: declaration moves, slots spelled as min / if-else, ev for t in the sell clears; the sell
+   / buy clears swapped and the found loop's && order are worse. prior: size queue s20: 420 -> 224 ins,
+   frame 0x1b0 -> 0x1a8 (the original's), raw 2603 -> 2580 (padded 2592 = the original's): the sell / buy
+   loops as plain index loops over t->sell[i] / t->sellBld[i] (no hand-advanced slotBld / slotGood
+   pointers: 218 alone) and home a local of the if (t->bld == -1) block (escaped by &home; a function-scope
+   escaped local conflicts with every slot, the original shares it). buf in the sprintf block: worse (code
+   240). climb.py round 1: only a meaning change (t->bld through a float). Left: regs 148 (the zero
+   constant in ebp in the original, edi in ours), slots 152, code 80 (the transport-match block placement
+   noted below). */
 void he_RunTrade(AIJOB *ev)
 {
     HETRADE *t = (HETRADE *)ev;
@@ -2172,8 +2170,6 @@ void he_RunTrade(AIJOB *ev)
     AIOBJ *g;
     int i;
     int found;
-    int have;
-    int put;
 
     n = 0;
     left = 0;
@@ -2202,9 +2198,13 @@ void he_RunTrade(AIJOB *ev)
     gm_FindById(0, (int *)&cart, 0, t->cart);
     gm_FindById((int *)&bld, 0, 0, t->bld);
     gm_FindById(0, 0, (int *)&chr, t->chr);
-    if (cart == 0 || bld == 0)
+    if (cart == 0)
         goto done;
-    for (e = (AIJOB *)he_FindEvent(2, 0, 0xf, 2, ev->chr); e != 0; e = (AIJOB *)he_NextEvent()) {
+    if (bld == 0)
+        goto done;
+    for (e = (AIJOB *)he_FindEvent(2, 0, 0xf, 2, ev->chr); ; e = (AIJOB *)he_NextEvent()) {
+        if (e == 0)
+            break;
         if (((HETRANSPORT *)e)->cart == t->cart)
             goto moving;
     }
@@ -2247,6 +2247,8 @@ void he_RunTrade(AIJOB *ev)
                     else if ((store = (AIOBJ *)gm_Query((void *)bld->objList, 2, 6, 0, 0x2a)) == 0)
                         store = (AIOBJ *)gm_Query((void *)bld->objList, 2, 6, 0, 0x116);
                     if (store != 0) {
+                        int have, put, price;
+
                         have = gm_ListAmount(cargo, g);
                         put = gm_FreeCapacity(store, g->id, have);
                         price = (int)(gm_GoodsPrice(g->id, ai_OwnPlayer) * 0.9);
@@ -2320,17 +2322,15 @@ void he_RunTrade(AIJOB *ev)
         if (t->sell[i] != 0)
             t->bld = t->sellBld[i];
     }
+    for (i = 0; t->bld == -1 && i < slots; i++) {
+        if (t->buy[i] != 0)
+            t->bld = t->buyBld[i];
+    }
     if (t->bld == -1) {
-        for (i = 0; t->bld == -1 && i < slots; i++) {
-            if (t->buy[i] != 0)
-                t->bld = t->buyBld[i];
-        }
-        if (t->bld == -1) {
-            AIBLD *home;
+        AIBLD *home;
 
-            gm_FindById((int *)&home, 0, 0, ev->from);
-            t->bld = home->id;
-        }
+        gm_FindById((int *)&home, 0, 0, ev->from);
+        t->bld = home->id;
     }
     if (t->deferred != 0) {
         gm_AddTime(&ev->end, 1, 30, 0);
@@ -2346,16 +2346,17 @@ void he_RunTrade(AIJOB *ev)
     m.n = bld->id;
     m.ch = t->bld;
     ((HETRADEMSG *)&m)->jobId = ev->id;
-    if (bld->id == t->bld) {
+    if (m.n == m.ch) {
         gm_AddTime(&ev->end, 0, 5, 0);
         return;
     }
     t->msgSlot = cm_SendLongMessage((char *)&m);
     gm_AddTime(&ev->end, 0, 10, 0);
     return;
-moving:                                 /* a transport of the cart runs: wait for it when it comes here */
-    if (((HETRANSPORT *)e)->goal != t->bld)
-        goto done;
+moving:
+    if (((HETRANSPORT *)e)->goal == t->bld)
+        goto wait;
+    goto done;
 wait:
     gm_AddTime(&ev->end, 0, 5, 0);
     return;

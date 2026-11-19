@@ -3817,7 +3817,7 @@ exe	0x0056a360	he_AllocSearch9	he	fa8b7bff56992e81	no	byte	control=byte p1=byte 
 exe	0x0056a3d0	he_RunSearch9	he	1f8e1aa7958671ac	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0056a710	he_RunNewOccurrenceMsg	he	f04cb8211b2caa8c	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0056a7b0	he_AllocTrade	he	dc0c31a7dc5ef06e	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
-exe	0x0056a960	he_RunTrade	he	8c3a06eed0f64335	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
+exe	0x0056a960	he_RunTrade	he_b	b0eae9f3479429a1	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	40f6d20846336f0d
 exe	0x0056b380	he_AllocResearch	he	136c4459c6543441	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0056b3f0	he_RunResearch	he	8ac901e52d6dfa5f	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	699659123a5c0eed
 exe	0x0056b570	he_AllocGebaeudeBauen	he	1d0c9beb4db54cfc	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
