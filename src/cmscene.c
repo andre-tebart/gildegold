@@ -4275,7 +4275,15 @@ void cm_ApplySeason(void)
 /* 0x4e36a0, resets the 16 cutscene records cm_CutInfos for the party m: each one fresh 1, ready / valid 0, recvFlag 1, no
    text, and the member's netId m->members[j] as its playerId (-1 without a party); for a fight (kind 3) the 16 entries
    of each of the first m->used records whose playerId is set are freed (charId -1, state 0)
-   @deep near-byte sweep s22: members read by index, no ids walk (10 -> 4 ins). Left: the clear loop's row
+   @deep deep s43: the strength-reduced base follows the last field referenced in source order inside a
+   loop (swapping the two entry stores moves the inner base from state to charId, the rest equal), so the
+   original's outer IV at playerId means playerId counted as the row's base there, not the inner loop's
+   entries[0].state. Tried this session (all = control unless noted): a row pointer walked with i (r++),
+   the test as if (!= -1) { loop }, a while loop with i++ at the end, the inner loop as do-while, (int)-1,
+   an entry pointer e = entries; e[q] / e++ (24, the zero / -1 registers swap and no lea), an end-pointer
+   walk (62), q counting down (6), unsigned char i (54), climb 2 rounds (nothing). Open: what makes the
+   playerId reference the IV base (an inner-loop form whose init is not derived from the outer IV). prior:
+   near-byte sweep s22: members read by index, no ids walk (10 -> 4 ins). Left: the clear loop's row
    pointer starts at playerId (0x92caf0, test [esi]) with lea eax,[esi+0x88] per row in the original, ours
    at entries (test [esi-0x88]). A row pointer local r = &cm_CutInfosT[i] = control. */
 
