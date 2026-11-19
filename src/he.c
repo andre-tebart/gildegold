@@ -5082,7 +5082,7 @@ void he_RunRaid(int ev)
     G28REC party;
     char text[0x800];
     int i, n, k, loot, role;
-    int leaving = 0, idle = 1;
+    int leaving = 0, idle;
     float chance = 1.0f, defence;
 
     if (e->stage == -2) {
@@ -5157,6 +5157,7 @@ void he_RunRaid(int ev)
     case 2:
         if ((e->opts == 0) & 2)
             return;
+        idle = 1;
         for (i = 0; i < 8; i++) {
             if (e->ids[i] != -1 && (c = (AICHAR *)gm_FindChar(e->ids[i])) != 0 && c->scene->actions != 0) {
                 idle = 0;
