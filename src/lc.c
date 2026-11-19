@@ -1208,8 +1208,8 @@ int ai_ProductionWindow(AIBLD *bld)
         item = (AIOBJ *)gm_Query((void *)room->list, 1, 5);
         if (item != 0) {
             do {
-                fresh = 1;
                 if (item->count > 1) {
+                    fresh = 1;
                     for (k = 0; fresh && k < ncols; k++)
                         if (ai_ProdColumns[k].good == item->id)
                             fresh = 0;
