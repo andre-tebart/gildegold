@@ -923,27 +923,23 @@ void gm_RandomMarketShake(int unused)
     }
 }
 /* 0x4ff550, the daily price update of the player p at the clock t: the date's year and month are interpolated in the player slot's two yearly tables (GMPOINT, at +0x64 and +0xb4) into the block's two indices, each scaled by its factor / 1000; then for the 0x55 goods records the demand moves halfway to gm_GoodsDemand (not for the kinds 0x17 / 0x25), the stock is gm_GoodsStock for the own player and the base stock for the others, the price is gm_StockPrice, a record with the byte +0x40 set takes its stock as demand, and the four counters +0x10 .. +0x1c are cleared; without a network game the market syncs (gm_SyncMarket) and shakes (gm_RandomMarketShake)
-   @deep match-deep 2026-11-14: draft 40 -> shape 37 ins. Fixed: the goods kind through a pointer local (g
-   = GM_GOOD(item); g->type tested twice: the original's add eax,edx; mov al,[eax]) and cm_DoubleHalf for
-   the 0.5 (M10). Table B matches the original exactly; what is left is table A's three inner arms: the
-   original hoists p*17 (mov eax,ebp; shl eax,4; add eax,ebp) above 'cmp ebx,edi' for all three arms and
-   loads the lower value first (arm 1 A[k].value in ebp, arm 2 A[k-1].value into the p slot [esp+0x24],
-   A[k-1].year into [esp+0x10]); ours loads A[k+1].value first and the k>0 arm starts with its two CSE
-   loads, so nothing is hoisted. Tried (dcp try): 63 spellings of both arm expressions (operand / term /
-   factor orders) = control; the arms nested under else {} = control, as if (k < n - 1) {..} else (61), k
-   <= 0 arm first (59), d.year for year = control, the table B form with temp a for A (244, frame 0xc), a
-   temp per arm = control. headers sample: insensitive. flip.py (want the hoist): only mutants that break
-   the CSE of A[k-1].year in the k>0 arm hoist (157 ins, frame 0xc). (tiebreak: not measured (dcp headers
-   sample gm_UpdatePrices)) prior: read the whole function against the original 0x4ff550..0x4ff8b2 and
-   reconciled every statement: date / yearly table interpolation of both GMPOINT tables, the block indices
-   and factors (GMBLOCK), the goods loop (demand, stock, price, demandIsStock, the daily counters), the
-   net_Conn.s gate. Tried: else-if chain (kept), the inner three cases nested under if (k < n - 1) (worse,
-   64 ins), a temporary for table A like table B (worse, 245 ins). What remains is CSE placement in table
-   A: the original computes p*17 (mov eax,ebp; shl eax,4; add eax,ebp) once before 'cmp ebx,edi; jne' and
-   reuses it in all three inner cases, ours recomputes it in the k>0 case (0x4ff660..0x4ff665) and in the
-   k<=0 case (0x4ff6b1..0x4ff6bc): those 6 instructions are the whole size difference; the rest is ebx/ebp
-   rotation and the [esp+0x10]/[esp+0x24] slot swap (diffclass: slots), plus the folded 'mov al,[eax+edx]'
-   vs 'ad... */
+   @deep s42: the hoisted p*17 (GM_BLOCK(p)'s index) above cmp ebx,edi is common code of the three inner
+   table-A arms (all store to GM_BLOCK(p)->demandIndex): VC6 hoisted it in the original, ours computes it
+   per arm. The inner arms as one ternary (year == A[k].year ? .. : k > 0 ? .. : A[0].value) or only the
+   last two as a ternary: 244 / 266 ins, frame 0xc (the whole function's allocation moves). Earlier rounds
+   (see prior) stand. Next: c2dag / flip on what makes the destination address anticipated in the k > 0
+   test block (the else-if test block computes nothing of it in ours). prior: match-deep 2026-11-14: draft
+   40 -> shape 37 ins. Fixed: the goods kind through a pointer local (g = GM_GOOD(item); g->type tested
+   twice: the original's add eax,edx; mov al,[eax]) and cm_DoubleHalf for the 0.5 (M10). Table B matches
+   the original exactly; what is left is table A's three inner arms: the original hoists p*17 (mov eax,ebp;
+   shl eax,4; add eax,ebp) above 'cmp ebx,edi' for all three arms and loads the lower value first (arm 1
+   A[k].value in ebp, arm 2 A[k-1].value into the p slot [esp+0x24], A[k-1].year into [esp+0x10]); ours
+   loads A[k+1].value first and the k>0 arm starts with its two CSE loads, so nothing is hoisted. Tried
+   (dcp try): 63 spellings of both arm expressions (operand / term / factor orders) = control; the arms
+   nested under else {} = control, as if (k < n - 1) {..} else (61), k <= 0 arm first (59), d.year for year
+   = control, the table B form with temp a for A (244, frame 0xc), a temp per arm = control. headers
+   sample: insensitive. flip.py (want the hoist): only mutants that break the CSE of A[k-1].year in the k>0
+   arm hoist (157 ins, frame 0xc). (tiebreak: not measured (dcp headers sample gm_UpdatePrices)) */
 void gm_UpdatePrices(unsigned p, void *t)
 {
     GMDATE d;
