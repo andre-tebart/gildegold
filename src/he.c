@@ -7863,26 +7863,35 @@ void he_StartAuctionEvent(int ev)
    is due the next day at 13:30 (stage 1). Stage 1 invites as bidders up to 8 living player characters (kind 6 /
    7, not held, worth at least the price), then the 8 worthiest such characters of the kinds 3 .. 5, and posts the
    auction party (G28REC kind 10, cm_RunAuction) for 30 minutes from now when there is one; the event ends
-   @deep Read all of it against the original and rewrote it typed (AIJOB / HEAUCTION / AICHAR / G28REC): it
-   is the auction event 0x67, not a ranking: fixed the party (kind 10, flags 0x22, thing -1, used n, the
-   bidders in members[] directly, auction.building / price, the 0 at +0x84 as auction.zero84), the index
-   loops over ai_CharsT (signed jl), the insertion with the original's jumps (an empty slot goes straight
-   to the insert, a better value shifts first, an exhausted search continues: goto insert / goto shift),
-   stage 0's next day 13:30. 246 vs 248 instructions, the control flow the same. Left, allocation and
-   scheduling: the original keeps the bidder count n in ebx with a stack home ([esp+0x10], frame 0x358 vs
-   ours 0x354) and uses ebx in the shift (mov ebx,[esp+0x10] after it), ours uses ebp and reloads ev from
-   the argument (mov ebp,[esp+0x368]); and the party stores at +0x1a3..+0x210 in another order (the
-   original: price, time.hour, kind, flags, thing, used, host, building, time.year, zero84, time+8,
-   time+0xc; tried 5 source orders, the best kept) (references: M8 at +0x1e6: ours refers to ai_Time
-   (0x770ae0), the original's field to 0xac (and 1 more), explained: the ref: lines are the ai_Time copy
-   into party.time and the e+0xac load, paired across the reordered party stores: the same loads and stores
-   on both sides in another order, no other object) */
+   @deep deep s46: the gotos insert / shift are a found flag (found = 1; break; in both arms of the slot
+   search, the insert under if (found)): the same code as the goto text (VC6 decides the flag per path),
+   kept. Insert written out in both arms with break: 52 ins but the insert tail is not shared (size 848 vs
+   832, the size queue grows), not kept. One loop test (best[i] == -1 || v > val[i]) + found, the shift
+   under if (best[i] != -1) inside if (found): the frame and n's stack home are the original's (n in ebx
+   stored at [esp+0x10] after n = 0 and after the first loop, ebx the shift temp, reloaded after), 69 ins;
+   left there: the redundant best[i] != -1 re-test (the original jumps from the empty-slot test straight to
+   the insert) and the party fill order. found = 2 for the shift case: = control. Next: the f3 search (one
+   test) with the shift reached without a re-test, then the party fill order round (12 stores). prior: Read
+   all of it against the original and rewrote it typed (AIJOB / HEAUCTION / AICHAR / G28REC): it is the
+   auction event 0x67, not a ranking: fixed the party (kind 10, flags 0x22, thing -1, used n, the bidders
+   in members[] directly, auction.building / price, the 0 at +0x84 as auction.zero84), the index loops over
+   ai_CharsT (signed jl), the insertion with the original's jumps (an empty slot goes straight to the
+   insert, a better value shifts first, an exhausted search continues: goto insert / goto shift), stage 0's
+   next day 13:30. 246 vs 248 instructions, the control flow the same. Left, allocation and scheduling: the
+   original keeps the bidder count n in ebx with a stack home ([esp+0x10], frame 0x358 vs ours 0x354) and
+   uses ebx in the shift (mov ebx,[esp+0x10] after it), ours uses ebp and reloads ev from the argument (mov
+   ebp,[esp+0x368]); and the party stores at +0x1a3..+0x210 in another order (the original: price,
+   time.hour, kind, flags, thing, used, host, building, time.year, zero84, time+8, time+0xc; tried 5 source
+   orders, the best kept) (references: M8 at +0x1e6: ours refers to ai_Time (0x770ae0), the original's
+   field to 0xac (and 1 more), explained: the ref: lines are the ai_Time copy into party.time and the
+   e+0xac load, paired across the reordered party stores: the same loads and stores on both sides in
+   another order, no other object) */
 void he_RunAuctionEvent(int ev)
 {
     AIJOB *e = (AIJOB *)ev;
     HEAUCTION *a = (HEAUCTION *)ev;
     AIBLD *b;
-    int n, i, j, k, v;
+    int n, i, j, k, v, found;
     int best[8];
     int val[8];
     G28REC party;
@@ -7926,21 +7935,25 @@ void he_RunAuctionEvent(int ev)
                 v = gm_GetGoodsValue(&ai_CharsT[k]);
                 if (v < a->price)
                     continue;
+                found = 0;
                 for (i = 0; i < 8; i++) {
-                    if (best[i] == -1)
-                        goto insert;
-                    if (v > val[i])
-                        goto shift;
+                    if (best[i] == -1) {
+                        found = 1;
+                        break;
+                    }
+                    if (v > val[i]) {
+                        for (j = 7; j > i; j--) {
+                            best[j] = best[j - 1];
+                            val[j] = val[j - 1];
+                        }
+                        found = 1;
+                        break;
+                    }
                 }
-                continue;
-            shift:
-                for (j = 7; j > i; j--) {
-                    best[j] = best[j - 1];
-                    val[j] = val[j - 1];
+                if (found) {
+                    val[i] = v;
+                    best[i] = ai_CharsT[k].netId;
                 }
-            insert:
-                val[i] = v;
-                best[i] = ai_CharsT[k].netId;
             }
         }
         for (i = 0; i < 8 && n < 8; i++) {
