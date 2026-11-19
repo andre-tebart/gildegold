@@ -2131,26 +2131,9 @@ void he_AllocTrade(AIJOB *ev)
    ("Meister %s (%s) kauft ..."); a buy that found nothing is tried again every half hour up to t->tries times
    (before 20:00). Then the cart moves on to the building of the first slot left, else home (ev->from): the
    message 0xf, unless that is this building (5 minutes) or the trade is deferred (1 1/2 hours)
-   @deep s(this): 224 -> 2 ins (shape, 13 bytes). Kept: the cart / bld test as two ifs (if (cart == 0) goto
-   done; if (bld == 0) goto done;: an || sends the block walk into done first); the transport loop with its
-   entry test as if (e == 0) break; inside for (..;;..) (a for loop's entry test sends the walk to the loop
-   exit first; this puts the moving block last as the original); moving: if (goal == bld) goto wait; goto
-   done; (wait falls into the exit); the message test if (m.n == m.ch) (no reload of bld->id after the
-   jobId store); no if (t->bld == -1) around the buy-slot loop (its entry test is the loop's own); the sell
-   block's have / put / price as block locals (the sell price shares the buy pointer's slot, n the sell
-   counter's). Left: one order hunk at the end of the sell loop body (+0x4a0): ours reloads ev (ebx) before
-   slots (esi) / cargo (edi), the original after. Levers that flip it but change meaning or the prologue:
-   any one constant changed at one site (0xa / 0x2a / -1 / the 0 of n < 0 ? 0 : n; flip.py), the inits'
-   order (flags before left: 2 bytes in the prologue stores; 720 orders, none byte), climb round 1 nothing
-   else. No lever: declaration moves, slots spelled as min / if-else, ev for t in the sell clears; the sell
-   / buy clears swapped and the found loop's && order are worse. prior: size queue s20: 420 -> 224 ins,
-   frame 0x1b0 -> 0x1a8 (the original's), raw 2603 -> 2580 (padded 2592 = the original's): the sell / buy
-   loops as plain index loops over t->sell[i] / t->sellBld[i] (no hand-advanced slotBld / slotGood
-   pointers: 218 alone) and home a local of the if (t->bld == -1) block (escaped by &home; a function-scope
-   escaped local conflicts with every slot, the original shares it). buf in the sprintf block: worse (code
-   240). climb.py round 1: only a meaning change (t->bld through a float). Left: regs 148 (the zero
-   constant in ebp in the original, edi in ours), slots 152, code 80 (the transport-match block placement
-   noted below). */
+   @original the exits share one free (done) and one 5-minute wait (wait) by goto, the transport loop tests e == 0
+   inside its body and the cart / building tests are two ifs: that flow graph lays the transport-match block out
+   last, in front of the wait, as the original does */
 void he_RunTrade(AIJOB *ev)
 {
     HETRADE *t = (HETRADE *)ev;
@@ -2172,8 +2155,7 @@ void he_RunTrade(AIJOB *ev)
     int found;
 
     n = 0;
-    left = 0;
-    flags = 0;
+    flags = left = 0;
     cart = 0;
     bld = 0;
     chr = 0;
