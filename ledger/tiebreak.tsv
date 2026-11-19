@@ -4307,7 +4307,7 @@ exe	0x005a6a90	ai_TrainingRoomListener	lc	1589e4e5be595cde	no	byte	control=byte 
 exe	0x005a6b50	ai_FormatCityName	lc	1eb7230d7067f753	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005a6b70	ai_MapCellToScreen	lc	b3aa21dd9753abb3	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	30578619275d8fd1
 exe	0x005a6c40	ai_PlaceMapControls	lc	4b250049dce5b393	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x005a6cb0	ai_BuildTownMap	lc	9033cb73e186a9a1	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
+exe	0x005a6cb0	ai_BuildTownMap	lcmap	3ae794c81bdbe9fe	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	321c144d1cd76753
 exe	0x005a78a0	ai_OpenTownMap	lc	30bc1fd419c0218a	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005a79e0	ai_DragTownMap	lcmap	d237f887976f6617	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=379	db1d26fd81240c3a
 exe	0x005a7bc0	ai_ScrollTownMap	lc	ef55dc5dac75a585	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	

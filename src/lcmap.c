@@ -1211,37 +1211,7 @@ char d3_GetHeightAt(struct D3SM *h, struct D3VECTOR *pos, int *px, int *pz, floa
    scene row and the rest placed (the picture kind + 0x47f, named by the city or player slot); a mark that fails
    the request filter (ai_PassesMapPickFilter) is greyed out; then the crests. With the flag 4 the ambush spots
    (picture 0x550) and with 8 the building placement sites (0x54f) are added; the window scrolls to the player's
-   building (else the fallback building, else the camera), clamped to the map.
-   @deep s47: 212 -> 23 ins. Kept: the foreign-city coordinate nested ((((float)dir * size) * scale) * K +
-   ((float)size * scale) * 0.5f: the parentheses stop VC6's factoring; size 3049 now right); pos a
-   D3VECTOR4 (frame 0x8c); the first mark loop's scene-object case ends with continue (no else: the loop
-   latch joins the right region, m stays in ecx at the head); win as d2_LastWindowPtr = win = &d2_Wins[..]
-   (store order); the scroll target with obj = d3_Camera first and d3_PointToWorld written in both arms
-   (the original's out-of-line building block, 149 -> ..). Left (23 ins): (1) first loop head: the original
-   loads bld into eax and the object into edx, then mov eax,edx (a CSE plus the obj copy); ours mov
-   edx,[esi]; mov eax,[edx+0x61] (obj coalesced with the load); (2) the scroll target: the original places
-   the building block after the epilogue with its own pushes (push eax) and jmp into the shared call; ours
-   inline before the camera pushes with mov ecx,eax. Tried for (2): if (bld->object) PTW(bld->object) else
-   PTW(obj) (t2: the block's own pushes but placed inline, 62), arms swapped (== 0 && == 0: same codes),
-   the whole scroll tail written in both arms (180). strcpy for the name copies = the same code as the hand
-   loop. prior: Reconstructed against the original (all 901 instructions read): the mark collection
-   (gm_BuildQuery 1/6, the 'D'/'E'/flags5a/'G'-needs-a-hall filter), the scene-cell marks via
-   d3_PointToWorld/d3_GetHeightAt/ai_MapCellToScreen, the foreign city marks on the map edge (dirs table,
-   0.48 / 0.435), the row sort, the placement pass with captionX/Y -1 and the request filter, the crests,
-   the ambush spots (flag 4, packed ctrls) and the placement sites (flag 8), the clamped scroll. Remaining:
-   (1) VC6 factors our foreign-city coordinate (float)dirs[s][k] * size * scale * K + (float)size * scale *
-   0.5f into (dir*K + 0.5) * size * scale (fild dir; fmul K; fadd 0.5; fimul size; fmul scale) where the
-   original keeps the expanded form (fild size; fild dir; fmul st,st(1); fmul scale; fmul K; fxch; fmul
-   scale; fmul 0.5; faddp) - tried reordering the terms, casting either factor, (float)(dir*size), /2, a
-   memory constant, volatile scale and double: VC6 factors every spelling; (2) the original keeps m in ecx
-   through the first mark loop and lays the player-building scroll path out of line at the end (+0xbcf)
-   with one shared epilogue (returns 1 vs ours 2); (3) frame 0x8c vs 0x88 (slot sharing), regs/slots
-   elsewhere. (references: M10 at +0x209: our constant 0.48 (__real@3ef5c28f) where the original's field
-   refers to 5.33 at 0x62c270 (and 3 more), explained: the M8/M10 ref lines (0.48 / 0.435 / ai_MapCellScale
-   against the original's 5.33 / 0.5 fields) are the same four constants in the factored order: every
-   constant and object the original multiplies by appears in ours, aligned to other instructions) (size:
-   887 vs 901 instructions, explained: ours 887 vs 901: the factored coordinate is 5 instructions where the
-   original's expanded form is 9, four times (minus the original's shared y tail); the rest is allocation) */
+   building (else the fallback building, else the camera), clamped to the map. */
 void ai_BuildTownMap(LCMAPWIN *m)
 {
     struct D3SM *hm;
@@ -1262,9 +1232,6 @@ void ai_BuildTownMap(LCMAPWIN *m)
     D3OBJECT *obj;
     char *spot;
     int *ctl;
-    char *src;
-    char *dst;
-    char c;
     int j;
     int n;
 
@@ -1298,8 +1265,8 @@ void ai_BuildTownMap(LCMAPWIN *m)
     d2_LastWindow = m->screen;
     for (i = 0; i < m->nMarks; i++) {
         if (m->marks[i].bld->object != 0) {
-            obj = (D3OBJECT *)m->marks[i].bld->object;
-            d3_PointToWorld(obj, &obj->pos, (D3VECTOR *)&pos);
+            bld = m->marks[i].bld;
+            d3_PointToWorld((D3OBJECT *)bld->object, &((D3OBJECT *)bld->object)->pos, (D3VECTOR *)&pos);
             d3_GetHeightAt(hm, (D3VECTOR *)&pos, &x, &y, &py);
             m->marks[i].cellX = x;
             m->marks[i].cellZ = y;
@@ -1325,12 +1292,7 @@ void ai_BuildTownMap(LCMAPWIN *m)
         m->marks[i].cellZ = y;
         d2_MoveObj(d2_LastWindowPtr->x + x, d2_LastWindowPtr->y + y, m->marks[i].ctrl);
         if (m->marks[i].bld->type == 'G') {
-            src = ((GMPLAYERSLOT *)ai_PlayerSlots)[m->marks[i].bld->playerSlot].name;
-            dst = d2_Objs[m->marks[i].ctrl].caption;
-            do {
-                c = *src++;
-                *dst++ = c;
-            } while (c != 0);
+            strcpy(d2_Objs[m->marks[i].ctrl].caption, ((GMPLAYERSLOT *)ai_PlayerSlots)[m->marks[i].bld->playerSlot].name);
         } else {
             ai_FormatCityName((int)m->marks[i].bld, d2_Objs[m->marks[i].ctrl].caption);
         }
@@ -1365,12 +1327,7 @@ void ai_BuildTownMap(LCMAPWIN *m)
             d2_Objs[m->marks[i].ctrl].style = 0x43;
             d2_Objs[m->marks[i].ctrl].capfont = 0x56;
             if (m->marks[i].bld->type == 'G') {
-                src = ((GMPLAYERSLOT *)ai_PlayerSlots)[m->marks[i].bld->playerSlot].name;
-                dst = d2_Objs[m->marks[i].ctrl].caption;
-                do {
-                    c = *src++;
-                    *dst++ = c;
-                } while (c != 0);
+                strcpy(d2_Objs[m->marks[i].ctrl].caption, ((GMPLAYERSLOT *)ai_PlayerSlots)[m->marks[i].bld->playerSlot].name);
             } else {
                 ai_FormatCityName((int)m->marks[i].bld, d2_Objs[m->marks[i].ctrl].caption);
             }
@@ -1448,15 +1405,12 @@ void ai_BuildTownMap(LCMAPWIN *m)
 
     /* scrolled to the player's building */
     obj = d3_Camera;
-    if ((bld = (AIBLD *)ai_PlayerBuilding) != 0 || (bld = (AIBLD *)ai_FallbackBuilding) != 0) {
-        if (bld->object != 0)
-            obj = (D3OBJECT *)bld->object;
+    if ((bld = (AIBLD *)ai_PlayerBuilding) == 0 && (bld = (AIBLD *)ai_FallbackBuilding) == 0 && obj == 0)
+        return;
+    if (bld != 0 && bld->object != 0)
+        d3_PointToWorld(((D3OBJECT *)bld->object), &((D3OBJECT *)bld->object)->pos, (D3VECTOR *)&pos);
+    else
         d3_PointToWorld(obj, &obj->pos, (D3VECTOR *)&pos);
-    } else {
-        if (obj == 0)
-            return;
-        d3_PointToWorld(obj, &obj->pos, (D3VECTOR *)&pos);
-    }
     d3_GetHeightAt(hm, (D3VECTOR *)&pos, &x, &y, &py);
     tmp.cellX = x;
     tmp.cellZ = y;
