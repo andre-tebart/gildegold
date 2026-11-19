@@ -18205,17 +18205,25 @@ void he_AllocBurn(AIJOB *ev)
    0x20d ticks); below state 3 back to stage 0; the helpers at the door ("dummy_TUER", 80 away) go back into the
    building, the others to the water; burnt down or gone: the event ends (cm_SendExSetHE). Stages -2 / -1: the
    helpers are sent back into the building, the three scripts stopped, the building's sound freed, the record freed
-   @deep Reconstructed whole from the skeleton against 0x5649b0..0x5652ab (switch tables equal, 671 vs 677
-   instructions): stage 0 (sounds, message box 0x42d6, the dummies names[3][64] / p {-243,-90,190}, the
-   hausbrand.esc script, the helpers loop over ai_CharsT), stage 1 (worked minutes * 1/6 twice, the rain
-   factor r = rain * 0.002; r * 0.7 + 1, the Brand_Zerstoert voices with the unsigned tick compare, the
-   helpers to the door / the water), stages -2 / -1 (helpers back, scripts stopped, d3snd_Free). Left: one
-   code hunk at +0x7b3 (0x565163, 22 lines): the two cm_SendChrGotoBuilding calls after d3_VecEqual; the
-   original pushes the whole argument list per branch and pushes eax (the VecEqual result, 0) as the fourth
-   argument in the == 0 branch, joining at the call; ours selects the building id into eax and jumps into
-   one shared push sequence (VC6 cross-jumping). Tried: != 0 order with nested if, continue form, the
-   result kept in a variable passed as the argument (worse: regs everywhere), NULL in one call; the rest
-   are regs / slots / order (the case -1 name buffer at frame 0x18 in the original, ours 0xe0). */
+   @deep s42: (1) the slot hunks: the case -1 name buffer sits at esp+0x28 in the original, BELOW names
+   (0x68) - in ours above it (0xe8): the frame (> 0x80) is sorted by count * 1000 / size, and name (2 refs
+   / 64 = 31) ranks below names (14 / 192 = 72) in ours (c2frame --names); the original's name refs in case
+   -1 are the same two, so the density difference is elsewhere (name 64 bytes is forced: the frame 0x518 is
+   exactly n, b, p, names, name, text; other sizes change the frame). (2) the VecEqual arms: = control: the
+   test as !d3_VecEqual(..), braces / else { if (n) .. }; the arms swapped: 46. Next: which local shares
+   name's slot or which count makes names' density lower in the original (c2frame replay with variants of
+   the stage 0 block). prior: Reconstructed whole from the skeleton against 0x5649b0..0x5652ab (switch
+   tables equal, 671 vs 677 instructions): stage 0 (sounds, message box 0x42d6, the dummies names[3][64] /
+   p {-243,-90,190}, the hausbrand.esc script, the helpers loop over ai_CharsT), stage 1 (worked minutes *
+   1/6 twice, the rain factor r = rain * 0.002; r * 0.7 + 1, the Brand_Zerstoert voices with the unsigned
+   tick compare, the helpers to the door / the water), stages -2 / -1 (helpers back, scripts stopped,
+   d3snd_Free). Left: one code hunk at +0x7b3 (0x565163, 22 lines): the two cm_SendChrGotoBuilding calls
+   after d3_VecEqual; the original pushes the whole argument list per branch and pushes eax (the VecEqual
+   result, 0) as the fourth argument in the == 0 branch, joining at the call; ours selects the building id
+   into eax and jumps into one shared push sequence (VC6 cross-jumping). Tried: != 0 order with nested if,
+   continue form, the result kept in a variable passed as the argument (worse: regs everywhere), NULL in
+   one call; the rest are regs / slots / order (the case -1 name buffer at frame 0x18 in the original, ours
+   0xe0). */
 void he_RunBurn(AIJOB *ev)
 {
     HEBURN *x = (HEBURN *)ev;
