@@ -782,21 +782,15 @@ void cm_BeginFieldBlock(char *o, int id)
         cm_FieldObject = o;
 }
 /* 0x4c3c00, adds n values of size bytes at field as differences to the object's values
-   @deep read the whole function against the original 0x4c3c00..0x4c3cf4: the size check, the length test,
-   the entry header (size, n, the field word through the sibling cm_AddFieldValue's union pointer, readable
-   now), the object pointer and the three delta loops line up; ours 101 vs 100. Left: the loops' induction
-   variables - the original walks three pointers each stepped on its own ('+ mov esi,[edx] / + mov
-   ebx,[ecx] / + sub esi,ebx / + add ecx,4 / + mov [eax],esi / + add eax,4 / + add edx,4', the same for 2
-   and 1 bytes), ours fuses them into one base with two differences ('- sub ecx,edx / - sub eax,edx / - mov
-   edi,[edx] / - mov ebx,[ecx+edx] / - mov [eax+edx],edi'), plus the esi/edi swap of n and len. Tried:
-   block-local typed pointers with *d++ = *s++ - *o++ (fused all three), the counter as i = n .. 1 (same),
-   the entry and the object as unions of typed pointers (p and o stay apart, v still fuses with o, and the
-   header gets worse: 260 bytes), byte pointers stepped by += size with *(T *) reads (worse). */
+   @original as cm_AddFieldValue: the loops walk the parameter v itself (likely VC6's cast-as-lvalue
+   `*((T *)v)++`, written through the union q) and the object through its own pointer o; indexed loops let
+   VC6 fuse the three pointers into one base with two differences */
 
 int cm_AddFieldDelta(unsigned char size, unsigned char n, unsigned short field, void *v)
 {
     union { unsigned char *b; unsigned short *w; short *s; int *i; } p;    /* the entry: size, n, field, the deltas */
-    unsigned char *b;
+    union { void *v; unsigned char *b; short *s; int *i; } q;              /* the caller's values */
+    union { unsigned char *b; short *s; int *i; } o;                       /* the object's values */
     unsigned int i, len;
 
     if (size != 1 && size != 2 && size != 4)
@@ -810,19 +804,28 @@ int cm_AddFieldDelta(unsigned char size, unsigned char n, unsigned short field, 
     *p.b++ = size;
     *p.b++ = n;
     *p.w++ = field;
-    b = (unsigned char *)cm_FieldObject + field;
+    o.b = (unsigned char *)cm_FieldObject + field;
     switch (size) {
     case 1:
-        for (i = 0; i < n; i++)
-            p.b[i] = ((unsigned char *)v)[i] - b[i];
+        for (i = 0; i < n; i++) {
+            q.v = v;
+            *p.b++ = *q.b++ - *o.b++;
+            v = q.v;
+        }
         break;
     case 2:
-        for (i = 0; i < n; i++)
-            p.s[i] = ((short *)v)[i] - ((short *)b)[i];
+        for (i = 0; i < n; i++) {
+            q.v = v;
+            *p.s++ = *q.s++ - *o.s++;
+            v = q.v;
+        }
         break;
     case 4:
-        for (i = 0; i < n; i++)
-            p.i[i] = ((int *)v)[i] - ((int *)b)[i];
+        for (i = 0; i < n; i++) {
+            q.v = v;
+            *p.i++ = *q.i++ - *o.i++;
+            v = q.v;
+        }
         break;
     }
     return 0;
