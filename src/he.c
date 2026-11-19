@@ -7295,7 +7295,7 @@ void he_StartProtection(int ev)
    it waits while not started or while its cm slot is busy; without the collector, the building or its owner it
    ends in two minutes. Stage 1 sends the collector to the building, stage 2 (once the collector is idle) sizes
    the amount (6.5% of the building's equipment value) and asks: a player owner gets the question event 0x63
-   (he_RunProtectionAsk) and three minutes, else the answer is 2 for a building already paying (the flag 0x100),
+   (he_RunProtectionAsk) and three hours, else the answer is 2 for a building already paying (the flag 0x100),
    1 (pays) for an owner whose sel is 0xb or when a roll stays below 0.001 * its mood[11][2], else a coin toss.
    Stage 3 reports: paid, the building gets the flag 0x100, the owner pays the collector, the home building
    counts it, the news 0x1a8d, stage 4 in 48 hours; refused (0x1a8e) or else (0x1a8f), stage 4 in five minutes.
@@ -7377,7 +7377,7 @@ void he_RunProtection(int ev)
             msg.arg[0] = e->id;
             cm_SendLongMessage((char *)&msg);
             e->end = ai_Time;
-            gm_AddTime(&e->end, 0, 3, 0);
+            gm_AddTime(&e->end, 3, 0, 0);
             e->stage = 3;
             q->answer = 2;
             e->exSlot = cm_SendExSetHEI(3, ev);
