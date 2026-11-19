@@ -75,6 +75,7 @@ exe	0x004bcc20	rd_BuildRoad	1
 exe	0x004bd340	rd_PathToRoad	1
 exe	0x004be940	rt_EditPointDialog	1
 exe	0x004c0040	rt_LoadRoutes	1
+exe	0x004c38e0	cm_JoinSplit	1
 exe	0x004d6970	cm_FightFrame	1
 exe	0x004e5e50	amt_Rating	1
 exe	0x004e6180	amt_ApplyForOffice	1

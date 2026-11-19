@@ -2146,8 +2146,8 @@ exe	0x004c3630	cm_WaitHello	cm	byte	readable
 exe	0x004c3680	cm_FlushSendQueue	cm	byte	readable		
 exe	0x004c3720	cm_QueueSplit	cm	byte	readable		
 exe	0x004c3850	cm_SplitComplete	cm	byte	readable		
-exe	0x004c38e0	cm_JoinSplit	cm	draft	readable	deep	
-exe	0x004c39c0	cm_QueueSend	cm	draft	readable	deep	
+exe	0x004c38e0	cm_JoinSplit	cm	shape	readable	deep	
+exe	0x004c39c0	cm_QueueSend	cm	byte	readable		
 exe	0x004c3ae0	cm_GetSlotState	cm	byte	readable		
 exe	0x004c3b10	cm_GetSlotValue	cm	byte	readable		
 exe	0x004c3b30	cm_BeginSendGroup	cm	byte	readable		
@@ -3818,7 +3818,7 @@ exe	0x0056a360	he_AllocSearch9	he_b	byte	readable
 exe	0x0056a3d0	he_RunSearch9	he_b	byte	readable		
 exe	0x0056a710	he_RunNewOccurrenceMsg	he_b	byte	readable		
 exe	0x0056a7b0	he_AllocTrade	he_b	byte	readable		
-exe	0x0056a960	he_RunTrade	he_b	draft	readable	deep	
+exe	0x0056a960	he_RunTrade	he_b	byte	readable		
 exe	0x0056b380	he_AllocResearch	he_b	byte	readable		
 exe	0x0056b3f0	he_RunResearch	he_b	byte	readable		
 exe	0x0056b570	he_AllocGebaeudeBauen	he_b	byte	readable		
@@ -3863,7 +3863,7 @@ exe	0x0056fbc0	he_SetLifeByAge	he_b	byte	readable
 exe	0x0056fc50	he_AllocHaunting	he_b	byte	readable		
 exe	0x0056fda0	he_RunHaunting	he_b	byte	readable		
 exe	0x00570130	he_AllocDecay	he_b	byte	readable		
-exe	0x005702e0	he_RunDecay	he_b	draft	readable	deep	
+exe	0x005702e0	he_RunDecay	he_b	byte	readable		
 exe	0x005706e0	he_AllocPlunder	he_b	byte	readable		
 exe	0x005707a0	he_RunPlunder	he_b	byte	readable		
 exe	0x00570bf0	he_PlunderTakePrice	he_b	byte	readable		
