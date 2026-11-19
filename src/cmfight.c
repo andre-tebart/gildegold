@@ -2196,12 +2196,13 @@ void cm_SetupFightScene(CMFIGHTREC *rec)
             d3if_Show(o, 0);
     }
     cart = rec->carts;
-    for (i = 0; i < 3; i++, cart++) {
+    for (i = 0; i < 3; cart++) {
         goods[0] = 0;
         goods[1] = 0;
         goods[2] = 0;
         gm_ShuffledBytes(9, (unsigned char *)order);
         sprintf(name, "dummy_KARREN_0%i", i + 1);
+        i++;
         o = d3_FindObject(0, 0x100, 0, name);
         if (o != 0) {
             if (*cart != -1) {
