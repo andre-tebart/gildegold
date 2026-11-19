@@ -2429,7 +2429,7 @@ exe	0x004cee20	cm_UpdateDamagePops	cm	b75a0ca50b800844	no	shape	sweep control=sh
 exe	0x004cef80	cm_InitDamagePops	cm	39152d45e485d07f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004cefa0	cm_ClearDamagePops	cm	076a1d9edec54d1a	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004cefe0	cm_CloseFightView	cm	29288b8309f63bf8	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x004cf000	cm_UpdateSceneChars	cm	4fc7a6127c590490	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
+exe	0x004cf000	cm_UpdateSceneChars	cmfight	b3967e39b5e7e95d	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	ba42a3144707ff9c
 exe	0x004cf370	cm_DrawScrollArrows	cm	d210b0104bdcf38c	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=253	653ac214333ac5bd
 exe	0x004cf670	cm_UpdatePointer	cm	41b9acf9329f06ba	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x004cf9c0	cm_UpdatePortraits	cm	adf16f621167f864	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	

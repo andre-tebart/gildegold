@@ -1030,7 +1030,16 @@ void cm_CloseFightView()
    sent for it (health 1 is reset to 100); a character holding weapon 0x172 is shown to the others only near them
    (faded by the distance to the nearest one in another building, rest 255) or half-transparent when cm_CutChar
    sees it (0x800); a fighter in cutscene state 2 turns towards its partner; ends with the damage numbers
-   @deep Read whole against 0x4cf000..0x4cf370: the same calls with the same arguments (VecEqual c then o,
+   @deep deep s44: 41 -> 8 ins, size right. Kept: n = cm_Random(..) + w->dmgMin as one statement (the add
+   into eax, 41 -> 33); ang *= 0.25; as its own statement before body = g->obj (fld ang / fmul / fadd
+   rotation.y, the fpu hunk); no goto turn: the stateFlags |= 2 written in each arm, the found part under
+   if (found != 0) (the scratch rotation from 1095 on). Left (8 ins): the original pushes c->health (xor
+   edx / mov dl,[esi+8] / push edx) after the _ftol of the damage, ours before the fild (c2dag: the IL has
+   the push before the _ftol call node and the scheduler keeps it; with dmg as its own statement the
+   scheduler still hoists it). Tried: dmg local, (int)c->health, ai_SceneCharsT[i]->health, b, the product
+   spellings (/ 100.0, c->f01c * n, (float)n: same code; (double), 0.01f, 0.01 * n: fpu hunks), cm_Random
+   inline in the call (worse, health loaded before the call); climb 3 rounds from this text: nothing.
+   prior: Read whole against 0x4cf000..0x4cf370: the same calls with the same arguments (VecEqual c then o,
    SetObjectAlpha with the info pointer and the D3TEXFLAGS by value, SetObjectRotXYZ with the float angles,
    fabs(ang) > 0.08), constants (255 - 255 * (best * 0.01f)) and stores. Left: the hunk at +0x77..+0xa1, a
    scheduling difference: the original loads c->health (xor edx,edx; mov dl,[esi+8]; push edx) after the
@@ -1066,8 +1075,8 @@ void cm_UpdateSceneChars()
                 continue;
             }
             w = (AIWEAPON *)ai_FindWeaponRecord(0x16e);
-            n = cm_Random(w->dmgMax - w->dmgMin);
-            cm_SendDamage(c->netId, (int)((n + w->dmgMin) * c->f01c * 0.01), c->health);
+            n = cm_Random(w->dmgMax - w->dmgMin) + w->dmgMin;
+            cm_SendDamage(c->netId, (int)(n * c->f01c * 0.01), c->health);
         }
     }
     for (i = 0; i < 32; i++) {
@@ -1086,6 +1095,7 @@ void cm_UpdateSceneChars()
                 d3if_ShowTree(c->scene->obj, 1);
                 c->scene->obj->stateFlags &= 0xfd;
                 d3_SetObjectAlpha(c->scene->obj, c->scene->obj->info, col);
+                c->scene->obj->stateFlags |= 2;
             } else {
                 best = 999999.0f;
                 found = 0;
@@ -1101,17 +1111,16 @@ void cm_UpdateSceneChars()
                     }
                 }
                 d3if_ShowTree(c->scene->obj, found);
-                if (found == 0)
-                    goto turn;
-                col.all = 0;
-                col.b[2] = 0;
-                col.b[0] = (unsigned char)(int)(255.0f - 255.0f * (best * 0.01f));
-                c->scene->obj->stateFlags &= 0xfd;
-                d3_SetObjectAlpha(c->scene->obj, c->scene->obj->info, col);
+                if (found != 0) {
+                    col.all = 0;
+                    col.b[2] = 0;
+                    col.b[0] = (unsigned char)(int)(255.0f - 255.0f * (best * 0.01f));
+                    c->scene->obj->stateFlags &= 0xfd;
+                    d3_SetObjectAlpha(c->scene->obj, c->scene->obj->info, col);
+                    c->scene->obj->stateFlags |= 2;
+                }
             }
-            c->scene->obj->stateFlags |= 2;
         }
-turn:
         e = (CMCUTENTRY *)cm_FightCutEntry((char *)c);
         if (e != 0 && e->state == 2 && e->turn != 0) {
             o = (AICHAR *)cm_FindFighter(e->stateArg);
@@ -1121,8 +1130,9 @@ turn:
                     g = c->scene;
                     if (g->actions == 0 || (g->actions->type != 0x2d && g->actions->type != 0x3a)) {
                         if (fabs(ang) > 0.08) {
+                            ang *= 0.25;
                             body = g->obj;
-                            d3_SetObjectRotXYZ(body, body->rotation.x, body->rotation.y + ang * 0.25, body->rotation.z);
+                            d3_SetObjectRotXYZ(body, body->rotation.x, body->rotation.y + ang, body->rotation.z);
                         }
                     }
                 }
