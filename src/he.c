@@ -16579,20 +16579,30 @@ void he_AllocEvent3c(AIJOB *ev)
    and sends the master the ransom message 0x3d; a failed one tells the master 0x19bd and the victim 0x19bf and costs
    each gang member half its life value plus a random share. The gang is released (sv_MoveToGroup) and the record
    freed. Stages -2 / -1 send the gang back to the target building and free the record
-   @deep Reconstructed whole from the old stub against the original 0x560900..0x561128 (672 ins): the five
-   stages (0 send the gang of AIJOB.ids to the target building's main room 'Entführen', 1 wait for them at
-   the door, 2 the kidnap roll by the guild's skill 15, the gang's size and mean skill 3 against the
-   victim's skill 3, the item 0x17c escape, the cell move 'dummy_EINGANG_ZELLE', the news 0x19bc / 0x19be /
-   0x19c0 / 0x19bd / 0x19bf, the hostage field delta, message 0x5b and the ransom message 0x3d, the gang's
-   health loss, the release; -2 / -1 send the gang back), every call with its arguments, every constant
-   (0.01f, 1.0, 0.1f, 0.5f, 0.7, 0.5), text[0x200] (frame 0x310 equal), the message fields. Same calls,
-   switch tables equal, 665 vs 672 instructions, no ref / literal difference. Left: (1) the AIMSG fill at
-   0x560eac (35 lines): the same stores to m scheduled across the push of &m in another order, ours loading
-   b->id twice where the original keeps it in eax for fromId and arg[1] (tried: the fields in other orders,
-   a chained m.arg[1] = m.fromId = b->id and m.arg[1] = m.fromId, both worse: 111); (2) tail: ours shares
-   stage 2's cancel block (stage -1; return) with another, the original keeps it inline at +0x271 (7
-   instructions, returns 10 / 11); (3) fpu at 0x560c60, the operand order of the ratio product. (size: 7 of
-   the instruction difference are shared / inline tails) */
+   @deep s42 (37 -> 28 ins): (1) fpu fixed: the ratio in two statements (ratio = skill factor * gang
+   factor; ratio /= victim->skills[3];): the original's fdivr st,st(1) / fstp ratio / fstp st(0) is the
+   product kept on the FPU as ratio's first definition (the one-statement form has VC6 pop it in fdivp; the
+   ratio inline in the if is worse: the call is evaluated first). (2) message 0x3d fill: all 5040 orders of
+   the seven stores, best type / to / time / arg[1] / fromId / flags / arg[0] (28); the original loads
+   b->id ONCE (eax for fromId and arg[1]) and stores type / fromId / flags / arg[0] / arg[1] behind the
+   push of &m; ours reloads b->id after the arg[1] store (m is address-taken). Chained m.fromId = m.arg[1]
+   = b->id (both directions, 1440 orders): 106+ (a new candidate shifts every register); m block-scoped:
+   108-112 (frame, M8). (3) tail: stage 2's first cancel (b / victim / master / heldRounds) jumps into a
+   shared ev->stage = -1 copy, the original keeps its copy inline (returns 10 / 11). prior: Reconstructed
+   whole from the old stub against the original 0x560900..0x561128 (672 ins): the five stages (0 send the
+   gang of AIJOB.ids to the target building's main room 'Entführen', 1 wait for them at the door, 2 the
+   kidnap roll by the guild's skill 15, the gang's size and mean skill 3 against the victim's skill 3, the
+   item 0x17c escape, the cell move 'dummy_EINGANG_ZELLE', the news 0x19bc / 0x19be / 0x19c0 / 0x19bd /
+   0x19bf, the hostage field delta, message 0x5b and the ransom message 0x3d, the gang's health loss, the
+   release; -2 / -1 send the gang back), every call with its arguments, every constant (0.01f, 1.0, 0.1f,
+   0.5f, 0.7, 0.5), text[0x200] (frame 0x310 equal), the message fields. Same calls, switch tables equal,
+   665 vs 672 instructions, no ref / literal difference. Left: (1) the AIMSG fill at 0x560eac (35 lines):
+   the same stores to m scheduled across the push of &m in another order, ours loading b->id twice where
+   the original keeps it in eax for fromId and arg[1] (tried: the fields in other orders, a chained
+   m.arg[1] = m.fromId = b->id and m.arg[1] = m.fromId, both worse: 111); (2) tail: ours shares stage 2's
+   cancel block (stage -1; return) with another, the original keeps it inline at +0x271 (7 instructions,
+   returns 10 / 11); (3) fpu at 0x560c60, the operand order of the ratio product. (size: 7 of the
+   instruction difference are shared / inline tails) */
 void he_RunKidnap(AIJOB *ev)
 {
     HEEV3C *x = (HEEV3C *)ev;
@@ -16668,8 +16678,8 @@ void he_RunKidnap(AIJOB *ev)
                 sum += ((AICHAR *)gm_FindChar(ev->ids[k]))->skills[3];
             }
         }
-        ratio = (float)((gm_BuildingSkill((unsigned char *)b, 0xf, 1) * 0.01f + 1.0) * ((n * 0.1f + 1.0f) * (sum / n))
-                / victim->skills[3]);
+        ratio = (gm_BuildingSkill((unsigned char *)b, 0xf, 1) * 0.01f + 1.0) * ((n * 0.1f + 1.0f) * (sum / n));
+        ratio /= victim->skills[3];
         if (util_RandomF() + 0.5f < ratio)
             ok = 1;
         if (ai_InventoryHas(victim, 0x17c) != 0) {
@@ -16715,10 +16725,10 @@ void he_RunKidnap(AIJOB *ev)
             m.type = 0x3d;
             m.to = master->netId;
             m.time = ai_Time;
+            m.arg[1] = b->id;
             m.fromId = b->id;
             m.flags = 0x12;
             m.arg[0] = victim->netId;
-            m.arg[1] = b->id;
             cm_SendLongMessage((char *)&m);
         } else {
             if (master->kind == 6 || master->kind == 7) {
