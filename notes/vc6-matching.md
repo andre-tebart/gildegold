@@ -1540,6 +1540,56 @@ Where the pushes and pops sit, how many epilogue copies there are, shared agains
   - Left with notes: d3_ClipPoly (the d1 operand order, one fstp), he_RunProduktion (`(skill + 0.5) * fv`
     scheduled before the flag load), cm_UpdateSceneChars (c->health pushed before the _ftol).
 
+- **Deep s45 (the near-byte list to 200 instructions minus everything named in these notes, the 15 tagged ones
+  with the fewest instructions at 44-58: 8 byte, 7 notes; he_AllocTrade from s44's 20-instruction try)**:
+  - **A ternary argument computed first (`mov eax,[s]; neg; sbb; add eax,7` before the other argument loads)**:
+    the value was an int local set by if / else right before the call (`if (s != 0) type = 6; else type = 7;
+    k = f(type, ..)`): VC6 if-converts it to the neg / sbb form but keeps it ahead of the call's argument tree.
+    `type = s ? 6 : 7;` is forward-substituted (= the inline ternary), a char / unsigned char local or the
+    default-then-overwrite form are other code (cm_ExCreateNamedCharacter 58 -> byte).
+  - **`push &msg` hoisted above the constant byte stores of a message fill in a loop, the netId CSE in another
+    scratch register**: AIMSG msg as a block local of the click block (s44) AND the chained `msg.arg[2] =
+    msg.fromId = msg.to = x;` written as separate stores (the chain is one tree: no order of it moves), then an
+    order round with the three stores split (420 orders, the triple's internal order fixed): `to, fromId,
+    type, flags, arg[1], arg[2], arg[0]` (ai_DenounceWindow 44 -> byte). The same split stores at function scope
+    stay at 42+: the block scope is what lets the loads pass the stores.
+  - **A switch case freeing the record, then `case -2: case -1:` freeing it again (two FreeEvent calls in
+    ours, one call reached by fall-through in the original)**: `case 2: ..kind = 6; /* fall through */ case -2:
+    case -1: he_FreeEvent(ev);`. One reference of ev fewer lowered it below the counter n: the callee-saved
+    pair esi / edi came out the original's way (he_RunTutorialBuildingTour 52 -> byte). Read the jump table:
+    two entries pointing into one call block = fall-through.
+  - **A test the original does not thread (it jumps to the shared `cmp eax,-1` copy, ours straight to the
+    push), plus a constant -1 in a callee-saved register only in ours**: the guard folded into the arm's
+    condition with the redundant re-test in each arm: `if (ct != -1 && (kind == 1 || kind == 2)) { item = ..;
+    if (item) {..} else if (ct != -1) empty; } else if (ct != -1) empty;` (cm_UpdatePortraits; the separate
+    `if (ct == -1) continue;` guard threads the else). Before it, climb's `local` mutation found `d2_LastWindow
+    = p->win; d2_WinOpenPic(.., d2_LastWindow)`: the global just stored is the argument (46 -> 14).
+  - **`test al,al` kept after `add al,0x67`, the record pointer in ebp instead of ebx**: `k = 0; if (..) k =
+    ..;` as `if (..) k = ..; else k = 0;` (the s41 default lever): the byte value then counts as a candidate
+    across the join, the pointer avoids ebx; then a 24-order round of the tail stores (cm_PlantEscapeFlag 49
+    -> byte).
+  - **A stored float reloaded from a 4-byte spill slot (`fst [esp+0x10]` .. `fld [esp+0x10]`, push ecx frame)
+    where ours keeps the named t on the FPU**: there was no t: `c[x] *= 0.01; if (k != 0) c[x] += c[x - 1];`
+    (VC6's CSE of the stored value spills). Before it the hand pointer walk as a plain index loop, and the
+    second loop over the kinds (`for (b = 0; b < 6; b++) .. c[(b * 5 + i) * 6 + k]`) instead of `b += 5`:
+    the original's (b + i) * 6 recomputed per j round with b / i apart (cm_InitOrderChances 54 -> byte).
+  - **Two hand-written border loops `for (x = 0; n; n--, x += sw)`**: plain index loops with `i * sw` in the
+    coordinate (VC6 strength-reduces them into the same countdown and x slot, and the dead-parameter slots pair
+    as the original's): d2_DrawWindow 54 -> 12. The last 12 were `w->w + w->x - pw` computed as `(w->w - pw) +
+    w->x` in ours whatever the spelling (all 216 spellings = one code): only an unsigned subtrahend keeps add
+    then sub; kept as `- (unsigned)pw` with an @original comment (byte). Open: the plain source of that.
+  - **he_AllocTrade** (s44's ingredients): the `e2->cart == p->cart` swap plus a 720-order round of the six
+    message stores after type / fromId / to (`flags, time, arg[2], jobId, arg[1], arg[0]`): byte.
+  - Gotos to a mismatch / step label in a filter loop (he_NextEvent) as a match flag (`match = 1;` each filter
+    sets ok or clears match, `if (!match) ok = 0;`): the same code; VC6 decides the flag per path.
+  - Probes: `*(int *)&v2 = *(int *)&v` (v2 kept in memory) takes gv_FireShots 46 -> 16: the original does not
+    forward `v2 = v` into the first ball; the source form that blocks it is still open.
+  - Left with notes: gv_FireShots (v2 forwarding), sv_TabButtonRow (a 109 / 109 / 109 priority tie of x and the
+    loop IVs), ai_BribeAmountCB (the gm_GetWorth call order: a deeper argument tree goes first), vfs_EntryPath
+    (out served before the loop pointer's two webs), rt_ChooseGoodsDialog (const 1 avoids ebx), ai_ChooseMission
+    (view / first 181 / 182: one more distinct value in block 0), he_NextEvent (the global cursor candidate
+    takes eax before the hoisted filters).
+
 - **An else-if arm cross-jumped whole into a sibling's copy, the original keeps it inline**: the store order of
   the OTHER arms (default arm charId before stateArg; 0x176 arm stateArg, charId, x, z) decides it, found by
   climb.py swap + move in round 2 (cm_OrderAttack byte; permuting only the inlined arm's stores did not). The pair
