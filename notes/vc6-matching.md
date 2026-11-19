@@ -1686,6 +1686,29 @@ Where the pushes and pops sit, how many epilogue copies there are, shared agains
     code), rd_PathToRoad (i in ebx, g->cells re-read per row), ai_Miracle (case slot packing, one rotation),
     d3s_ShadowTriangle (y outranks minY; the original computes y in minY's ebp).
 
+- **Deep s48 (revisit: the 15 near-byte functions (2-4 instructions) whose notes date from s36 or earlier: 3 byte,
+  1 same-code readability fix, 11 notes)**:
+  - **`call f; fmul K; fcomp [param]; add esp,4` where ours has `add esp,4` before the fcomp**: the scaled call
+    result was a named float compared from the parameter's side, `half = gm_CharacterBaseHealth(c) * 0.5f; if
+    (value < half && ..)` (he_CharAccident, he_CharIllness byte). Inline in either order, `/ 2`, `0.5f *`,
+    a double constant, a `(float)` cast, the local compared as `half > value`: all the add-first code. A plain
+    `f(c) > p` without the multiply already puts the fcomp first (he_RunDiseaseSim).
+  - **A -1 init stored before the early guard, but then the zero register leaves esi (82 ins)**: the loop counter
+    `i = 0;` belonged right before its loop (`win = d2_LastWindowPtr; i = 0; while (i < win->nobjs)`), not with
+    t0 / ret / bar at the top: then `t0, ret, bar = -1` before the guard is byte (sv_MessageBoxGreen; s43's
+    counter lever for a while loop; `for (i = 0; ..)` and `i = 0` before the win load are other code).
+  - **`goto` to the code behind an if / else whose failing arm skips a clamp + store**: a flag (`drag = 1; .. else
+    drag = 0; if (drag) {clamp; store}`) compiles to the identical code (d2_SliderInput, the goto gone).
+  - **c2dag reading of an order hunk**: a load issued before an `and reg,K` in ours where the original issues the
+    other load first = the `and`'s flags edge into the block's final `cmp` gives its load one height more
+    (d3t_EarthCB, open). A reload or store placed one step off at the start of a long float block is the 81-node
+    region cut (d3_EnvMapCoords 83 nodes, d3t_UpdateSnow 83 + 81): count the nodes with c2dag before spelling.
+  - Left with notes: d3_MirCreateOutline (a two-register address's operand order follows the load order at
+    every site), ch_GetWaypoints, d2_ShpBlit16HalfDark, d3_EnvMapCoords, d3t_EarthCB, he_CatchMeetingDisease
+    (delta as a block local gives the frame, a then loses ebx to ch), d2_SliderInput, he_AllocMeeting,
+    he_MoveReaper (every operand order of the step / target lines is one code), gm_RankPlayers, ch_ActTurn,
+    d3t_UpdateSnow.
+
 - **An else-if arm cross-jumped whole into a sibling's copy, the original keeps it inline**: the store order of
   the OTHER arms (default arm charId before stateArg; 0x176 arm stateArg, charId, x, z) decides it, found by
   climb.py swap + move in round 2 (cm_OrderAttack byte; permuting only the inlined arm's stores did not). The pair
