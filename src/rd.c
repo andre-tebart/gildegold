@@ -192,24 +192,25 @@ void veg_GrowPlants(G15PLANT *p)
 }
 /* 0x4bc940, loads plant q's model ("%svegetation/*pfl_<type>_0<n>[_FALL].ogr"), names it "_ID<id>" and places it
    on the height map (origin + x * axisx + z * axisz + height * axisy).
-   @deep match-deep 2026-11-10: headers sample insensitive (32 samples, one codegen). Kept: q->x / q->z
-   read at their uses instead of int locals x, z (40 -> 36 ins; x's fild temp now shares [esp+0x10] as in
-   the original). Left: the height address - the original forms (z*size + heights) and indexes [edx + x] so
-   ecx is free for the zero-extended byte (heights reloaded into ecx, ebp, edi), ours forms z*size + x and
+   @deep s42: the original's three height statements load tr->heights into ecx / ebp / edi (registers freed
+   as q and z die: allocator choices, not the scratch rotation), add it to z * size first and index [edx +
+   x(esi)], so ecx is free for the byte; ours adds x first and indexes [edx + heights] with the byte in bl
+   (o spilled). = control: *(heights + x + z * size), (heights + x)[z * size], (heights + z * size)[x],
+   (heights + size * z)[x], heights[x + size * z], int casts on x / z, both pointer-sum orders: VC6
+   canonicalises the address, the spelling is no lever. int / unsigned / unsigned char x local (x = q->x
+   before the placement): 69-73 ins but the height part then has the original's order ((size * z + heights)
+   + x) with eax / esi / edi registers. Next: what makes the heights load a register candidate (one CSE web
+   per statement?) and x the index register; c2trace on the height lines. prior (kept): see below prior:
+   match-deep 2026-11-10: headers sample insensitive (32 samples, one codegen). Kept: q->x / q->z read at
+   their uses instead of int locals x, z (40 -> 36 ins; x's fild temp now shares [esp+0x10] as in the
+   original). Left: the height address - the original forms (z*size + heights) and indexes [edx + x] so ecx
+   is free for the zero-extended byte (heights reloaded into ecx, ebp, edi), ours forms z*size + x and
    indexes [edx + heights], needs bl and spills o (ebx) to [esp+0x20], which also sinks pos[2]'s
    fmul/fadd/fstp past the call's pushes (hunks 0x4bcb02, 0x4bcb21, 0x4bcb46, 0x4bcb61). All = control:
    (heights + z*size)[x], *(heights + z*size + x), x first, (int)/(unsigned char *) integer address
    arithmetic, (unsigned) index or size, int/float casts on the height, axisy first / explicit pos = pos +
    .. forms, a row pointer or index local assigned per component, pos as D3VECTOR; unsigned/uchar/ushort x,
-   z locals and D3VECTOR4 pos are worse. prior:
-   match-base 2026-10-31: read against the original; 182 vs 180 instructions (was 158), differing 40 (was
-   162). The placement is pos = origin, then += x * axisx, += z * axisz, += height * axisy component by
-   component through the typed D3TERRAIN (d3_sm.h; origin copied by integer moves, each height re-read per
-   component), and each branch has its own sprintf with the literal format (tail-merged, as the original).
-   Left: register choice in the height part - ours needs a byte register for heights[z * size + x] and
-   spills o (ebx) to [esp+0x20] around it where the original uses ecx with the row base in edx (hunks
-   0x4bca81, 0x4bcb02, 0x4bcb21, 0x4bcb46); the index spellings heights[size * z + x] / *(heights + z *
-   size + x) / x first compile the same. */
+   z locals and D3VECTOR4 pos are worse. */
 
 void veg_LoadModel(G15PLANT *q, int fall)
 {
