@@ -1844,7 +1844,7 @@ int ord_RandomCellPoint(int x, int y, int z)
 /* 0x4f8700, picks a random object id for the character c (-1 without one): the ids of its two buildings
    (bld / bld2, when their object is present) and, up to 0x20 times, of up to 3 random buildings (3 of 4
    chances each) of a random one of the 20 kinds of the table (4 x 5), through gm_BuildQuery(1, 5, kind),
-until 16 are collected; then one of them at random @deep near-byte sweep s22: goto done -> break (same code, kept). Left regs 8: kinds[idx] loaded into edx (original eax) and the list store's [esi+1] in eax (original edx): one scratch rotation step. = control: break / n < 16 in the inner condition, the kinds as an initializer; worse: k = 0 before idx (10), return in the loop (60), the c == 0 guard first (72). climb round 1: nothing. */
+until 16 are collected; then one of them at random @deep deep s43: flip.py --want 'mov eax, DWORD PTR _kinds' names only meaning changes and idx as short / char (one temp fewer: the rotation is decided at the idx expression). Tried, = control: idx = U(4)*5; idx += U(5), the inner loop as for, list[n++], the first id stored as list[n] / n++ / n = 1 first, tries before n; worse: idx inline (30), a k temp for U(5) (13), n++ / k++ swapped (10), n = 0 in an else (66), kinds as int [4][5] with [U(4)][U(5)] (30-35), climb 3 rounds (nothing). prior: near-byte sweep s22: goto done -> break (same code, kept). Left regs 8: kinds[idx] loaded into edx (original eax) and the list store's [esi+1] in eax (original edx): one scratch rotation step. = control: break / n < 16 in the inner condition, the kinds as an initializer; worse: k = 0 before idx (10), return in the loop (60), the c == 0 guard first (72). climb round 1: nothing. */
 
 int ord_RandomObjectId(char *c)
 {
