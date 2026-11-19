@@ -1413,17 +1413,7 @@ int ai_ExecBuyDunkleEcke(AIPER *p, AIARG *a, AIARG *b)
    best building of kind 0x1f holding object 0x27c picks a victim within 25..57 units and up to four helpers
    (ai_PickPartnerChainLevel) by their weight (office level / 3 + 2): a helper is taken when the running sum
    with its weight reaches p's money (s + w >= money, as the original compares); the sum into m->arg2, the
-   victim and helpers into m / m2 (kind 7)
-   @deep Read whole 0x4ab3e0..0x4ab6b0 against the C: the early checks (flag 8, money >= 5, a 0x44/0, c,
-   gm_TitleJob 0xe int result, kind 3), the 0x100-building walk with gm_BathObjectCount, flags = 0 at the
-   top (its address goes to ai_PickPartnerChainF, the original zeroes it in p's arg slot),
-   PARTNER_FLAGS_ANY, the 25+random(32) radius, o's office level /3+2 (read through o),
-   ai_PickPartnerChainLevel, the helper loop and the AIARG stores all correspond; 222 vs 222 instructions,
-   frame 0x1c equal. Left: register choice in the helper loop and the tail - the original forms s + w with
-   lea ecx, [eax + esi] and loads p->money into eax after it (ours: mov ecx, [ebp+0x194] first, add eax,
-   esi in place), the who[] address in eax vs edx, and the tail loads o into ecx / m into eax where ours
-   swaps them; plus the order hunk xor ebx / xor edi. Tried: t = s + (w), w then s + w / s += w, p->money
-   <= s + t, for (i = 0, cnt = 0; ...) - no change. */
+   victim and helpers into m / m2 (kind 7) */
 
 int ai_DecideBlutrache(int a, AIPER *p, int c, AIARG *m, AIARG *m2)
 {
@@ -1481,12 +1471,11 @@ int ai_DecideBlutrache(int a, AIPER *p, int c, AIARG *m, AIARG *m2)
     n = ai_PickPartnerChainLevel(p, 4, flags, 25.0f, 75.0f, bestv, ids);
     if (n == 0)
         return 0;
-    cnt = 0;
-    for (i = 0; i < n; i++) {
-t = amt_GetKindLevel(ai_CharsT[ids[i]].officeKind) / 3 + 2;
+    for (i = 0, cnt = 0; i < n; i++) {
+        t = amt_GetKindLevel(ai_CharsT[ids[i]].officeKind) / 3 + 2;
         if (s + t >= p->money) {
-            s += t;
             who[cnt++] = &((AIPER *)ai_CharsT)[ids[i]];
+            s += t;
         }
     }
     if (cnt == 0)
