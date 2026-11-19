@@ -1294,7 +1294,7 @@ exe	0x0046f840	d2_ScrollWindow	d2	byte	readable
 exe	0x0046fad0	d2_LayoutButtons	d2	byte	readable		
 exe	0x0046fba0	d2_DrawWindowText	d2	draft	readable	deep	
 exe	0x004713c0	d2_DrawWindowBackground	d2	byte	readable		
-exe	0x00471a90	d2_DrawWindow	d2	shape	readable	deep	
+exe	0x00471a90	d2_DrawWindow	d2	byte	readable		
 exe	0x004721e0	d2_SetBackgroundTexture	d2	byte	readable		
 exe	0x00472270	d2_CreateScrollButtons	d2	byte	readable		
 exe	0x00472390	d2_CreateWindow	d2	draft	readable	deep	
@@ -2283,7 +2283,7 @@ exe	0x004c6a90	cm_ExLoadSize	cm	byte	readable
 exe	0x004c6ad0	cm_ExLoadBlock	cm	byte	readable		
 exe	0x004c6b20	cm_ExCreateBuilding	cm	byte	readable		
 exe	0x004c6bf0	cm_ExCreateCharacter	cm	byte	readable		
-exe	0x004c6cd0	cm_ExCreateNamedCharacter	cm	draft	readable	deep	
+exe	0x004c6cd0	cm_ExCreateNamedCharacter	cm	byte	readable		
 exe	0x004c6e10	cm_ExTakeOverCharacter	cm	byte	readable		
 exe	0x004c6ec0	cm_ExDeleteObject	cm	byte	readable		
 exe	0x004c6f60	cm_ExMoveGoods	cm	byte	readable		
@@ -2432,7 +2432,7 @@ exe	0x004cefe0	cm_CloseFightView	cmfight	byte	readable
 exe	0x004cf000	cm_UpdateSceneChars	cmfight	shape	readable	deep	
 exe	0x004cf370	cm_DrawScrollArrows	cmfight	byte	readable		
 exe	0x004cf670	cm_UpdatePointer	cmfight	byte	readable		
-exe	0x004cf9c0	cm_UpdatePortraits	cmfight	draft	readable	deep	
+exe	0x004cf9c0	cm_UpdatePortraits	cmfight	byte	readable		
 exe	0x004cfc10	cm_BuildPortraits	cmfight	byte	readable		
 exe	0x004cfe70	cm_ClosePortraits	cmfight	byte	readable		
 exe	0x004cfeb0	cm_ClickSceneChar	cmfight	byte	readable		
@@ -2467,7 +2467,7 @@ exe	0x004d2550	cm_CollectWareObject	cmfight	byte	readable
 exe	0x004d25a0	cm_NearestWareObject	cmfight	byte	readable		
 exe	0x004d2650	cm_CollectConquerPoint	cmfight	byte	readable		
 exe	0x004d2680	cm_NearestConquerPoint	cmfight	byte	readable		
-exe	0x004d27a0	cm_InitOrderChances	cmfight	draft	readable	deep	
+exe	0x004d27a0	cm_InitOrderChances	cmfight	byte	readable		
 exe	0x004d2c00	cm_OrderChancesFor	cmfight	byte	readable		
 exe	0x004d2e30	cm_OrderRating	cmfight	byte	readable		
 exe	0x004d2f80	cm_GiveFightOrders	cmfight	byte	readable		
@@ -2499,7 +2499,7 @@ exe	0x004d6f90	cm_FightSlotCheer	cmfight	byte	readable
 exe	0x004d7000	cm_FightSlotPickUp	cmfight	byte	readable		
 exe	0x004d70a0	cm_FightSlotPutDown	cmfight	byte	readable		
 exe	0x004d7150	cm_FightSlotWinner	cmfight	byte	readable		
-exe	0x004d7190	cm_PlantEscapeFlag	cmfight	draft	readable	deep	
+exe	0x004d7190	cm_PlantEscapeFlag	cmfight	byte	readable		
 exe	0x004d7360	cm_Attack	cmfight	draft	readable	deep	
 exe	0x004d76a0	cm_RunCutOrders	cmfight	draft	readable	deep	
 exe	0x004d88c0	cm_FightLoop	cmfight	byte	readable		
@@ -3802,7 +3802,7 @@ exe	0x00567a80	he_RunHint	he	byte	readable
 exe	0x00567b80	he_AllocTip	he	byte	readable		
 exe	0x00567c00	he_RunTip	he	byte	readable		
 exe	0x00567d20	he_AllocTutorialBuildingTour	he	byte	readable		
-exe	0x00567d60	he_RunTutorialBuildingTour	he	draft	readable	deep	
+exe	0x00567d60	he_RunTutorialBuildingTour	he	byte	readable		
 exe	0x00567f00	he_AllocPatrolEvent	he	byte	readable		
 exe	0x00567f50	he_PatrolStep	he	shape	readable	deep	
 exe	0x00568220	he_RunPatrolEvent	he	byte	readable		
@@ -3817,7 +3817,7 @@ exe	0x0056a170	he_RunSearchEvent	he_b	byte	readable
 exe	0x0056a360	he_AllocSearch9	he_b	byte	readable		
 exe	0x0056a3d0	he_RunSearch9	he_b	byte	readable		
 exe	0x0056a710	he_RunNewOccurrenceMsg	he_b	byte	readable		
-exe	0x0056a7b0	he_AllocTrade	he_b	draft	readable	deep	
+exe	0x0056a7b0	he_AllocTrade	he_b	byte	readable		
 exe	0x0056a960	he_RunTrade	he_b	draft	readable	deep	
 exe	0x0056b380	he_AllocResearch	he_b	byte	readable		
 exe	0x0056b3f0	he_RunResearch	he_b	byte	readable		
@@ -4405,7 +4405,7 @@ exe	0x005b4820	ai_BribeAmountCB	lcdom	draft	readable	deep
 exe	0x005b4bf0	ai_OpenRobberBribe	lcdom	byte	readable		
 exe	0x005b4c60	ai_DrohbriefAmountCB	lcdom	draft	readable	deep	
 exe	0x005b4fb0	ai_DrohbriefWindow	lcdom	byte	readable		
-exe	0x005b5010	ai_DenounceWindow	lcdom	draft	readable	deep	
+exe	0x005b5010	ai_DenounceWindow	lcdom	byte	readable		
 exe	0x005b5310	ai_PamphletAmountCB	lcdom	byte	readable		
 exe	0x005b5610	ai_PamphletWindow	lcdom	byte	readable		
 exe	0x005b5690	ai_NoticeBoardWindow	lcdom	draft	readable	deep	
