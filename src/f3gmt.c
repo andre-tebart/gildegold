@@ -5122,19 +5122,24 @@ void he_RecheckPersonEvents();                     /* 0x53ed40 */
 /* 0x506180, the ranking of the players: the up to 8 characters of the kinds 5 / 6 / 7 into out (*count of them),
    each with its talents, title, office, reputation and worth (see GMRANK), the weighted sum 0.15 * (title + office +
    reputation) + 0.3 * worthShare + 0.25 * talents and the points; every line is formatted into a log buffer
-   @deep deep s32: draft 16 -> shape 4 ins. Kept: the sum as (r->reputation + (r->title + r->office)) *
-   0.15f (VC6 orders a left-assoc float chain itself: all 6 orders of title + office + reputation are one
-   code with fld reputation first; the original's fld title; fadd office; fadd reputation comes from the
-   right-nested grouping), acc = 0.0f then for (j = 0, liked = 0; ..) (j's xor ebx ahead of liked's xor ebp
-   and the acc store, the original's order), best = 0 before n = 0, the first loop as for (i = 0; i < 0x300
-   && n < 8; i++) (= the break form). Left (4 ins, the prologue): the original stores best = 0 from edx
-   (n's zero: xor edx; push edi; mov [esp+0x1c],edx; xor edi,edi), ours from edi (push edi; xor edi,edi;
-   mov [esp+0x1c],edi; xor edx,edx): c2trace const#0#16 (pass 5, lines best/n/i, savings 0) took edi. =
-   control or worse: all 6 orders of best/n/r, n = best = 0, best = n, = 0 initializers (initgen),
-   int/unsigned types of n/i/best, out[n].id = i, a c pointer in loop 1, n < 8 first in the for (26 ins).
-   climb round 1 + 2 from this text: nothing. flip --want 'xor edx, edx\s+push edi': only i = 1 and r->id =
-   i moved out of the if (both meaning changes). (declaration set: no declaration set makes this text byte
-   (every symbol-count shift 0..63 at the unit's start and before the function) */
+   @deep deep s48: best = 0 moved right before the second loop (22) or after the n == 0 return (34+), the
+   skill sum as an index loop over ORD_CHARS[r->id].skills[j] (34), the first loop as out[n].id = i
+   (r_index1, 20 with best late), r = &out[i] per pass in the second loop (27), and their combinations (19
+   variants): none below the control's 4. Left: best = 0 stored from n's zero (edx) in the original, from
+   edi in ours (prologue, 4 ins). prior: deep s32: draft 16 -> shape 4 ins. Kept: the sum as (r->reputation
+   + (r->title + r->office)) * 0.15f (VC6 orders a left-assoc float chain itself: all 6 orders of title +
+   office + reputation are one code with fld reputation first; the original's fld title; fadd office; fadd
+   reputation comes from the right-nested grouping), acc = 0.0f then for (j = 0, liked = 0; ..) (j's xor
+   ebx ahead of liked's xor ebp and the acc store, the original's order), best = 0 before n = 0, the first
+   loop as for (i = 0; i < 0x300 && n < 8; i++) (= the break form). Left (4 ins, the prologue): the
+   original stores best = 0 from edx (n's zero: xor edx; push edi; mov [esp+0x1c],edx; xor edi,edi), ours
+   from edi (push edi; xor edi,edi; mov [esp+0x1c],edi; xor edx,edx): c2trace const#0#16 (pass 5, lines
+   best/n/i, savings 0) took edi. = control or worse: all 6 orders of best/n/r, n = best = 0, best = n, = 0
+   initializers (initgen), int/unsigned types of n/i/best, out[n].id = i, a c pointer in loop 1, n < 8
+   first in the for (26 ins). climb round 1 + 2 from this text: nothing. flip --want 'xor edx, edx\s+push
+   edi': only i = 1 and r->id = i moved out of the if (both meaning changes). (declaration set: no
+   declaration set makes this text byte (every symbol-count shift 0..63 at the unit's start and before the
+   function) */
 
 void gm_RankPlayers(int *count, GMRANK *out)
 {

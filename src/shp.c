@@ -888,19 +888,15 @@ int d2_ShpBlit16ScaledLit(int x, int y, D2SURF *surf, D2SHP *s, unsigned char n)
 
 /* 0x47b900, draws a 16 bit run-length shape half dark: every pixel of the literal runs is replaced by its grey
    (r + b) * 0.2f + g * 0.59f through dd_RGB, the skip runs are stepped over.
-   @deep deep s24: climb --rounds 2 (264 mutants): nothing below 2 ins. The hunk is the same class as
-   d3anim_MapBones (split pieces reloaded in ascending piece id at a loop exit edge; the ids come from
-   freed values, so the lever would be a value created or removed elsewhere, not the reload site). Left:
-   the three reloads at the k loop's exit, ours ecx=s, edi=line, edx=surf, the original edx=surf, ecx=s,
-   edi=line. prior: 128 -> 2 ins (draft -> shape): r, g, b are unsigned char (dd_SplitRGB's out types), the
-   grey written out in each dd_RGB argument (a named unsigned char goes through a slot, an int one
-   reallocates everything), k / m locals as the sibling, run / cp / line init order and line += pitch
-   before cp = run (frame order line, cp, i). Left: the three reloads at the run loop's exit edge, ours mov
-   ecx,[s]; mov edi,[line]; mov edx,[surf], the original surf, s, line (c2trace: split pieces s id a, line
-   id c, surf id e; reloads go in ascending id). headers sample insensitive; no lever: declaration order
-   (--move-line, all = control), px++/d++ order, *d++, for-increment forms, while forms, (int)s->h, line as
-   &bits[..], pitch local, run = px, parenthesised macro operands, flip.py (163 mutants, 0 with surf first)
-   (tiebreak: not measured (dcp headers sample d2_ShpBlit16HalfDark)) */
+   @deep deep s48: the three reloads at the i loop latch (original surf, s, line; ours s, line, surf;
+   c2trace: s#3 ecx, surf#3 edx, line#3 edi, all pass-3 pieces). Rounds: d = line + surf->pitch * i / d =
+   surf->bits + (surf->pitch * (y + i) + x) (no line +=: 95 / 69), the m loop over px[m] / d[m] with d +=
+   run->n (114), r / g / b as block locals (= control), line += pitch after cp / run (24), all 6 orders of
+   the run / cp / line inits (4..64): no lever. Left: the 2-ins reload order at 0x47ba1b. prior: deep s24:
+   climb --rounds 2 (264 mutants): nothing below 2 ins. The hunk is the same class as d3anim_MapBones
+   (split pieces reloaded in ascending piece id at a loop exit edge; the ids come from freed values, so the
+   lever would be a value created or removed elsewhere, not the reload site). Left: the three reloads at
+   the k loop's exit, ours ecx=s, edi=line, edx=surf, the original edx=surf, ecx=s, edi=line. */
 
 void d2_ShpBlit16HalfDark(unsigned int x, unsigned int y, D2SURF *surf, D2SHP *s)
 {

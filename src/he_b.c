@@ -5451,7 +5451,10 @@ void he_RunGraveTraining(int ev)
    (to the netId, from the building bldId, the clock, flags 0xa, arg 0 = the id, arg 1 = -1, arg 2 = unkb0) is
    sent, unkb4 / unkb0 are capped at 2, unkb8 = 0, the money -((unkb4 + 2) * (unkb0 + 2)) is taken from the
    character, due now + 5 hours, then the event is scheduled (cm_SendExSetHE)
-   @deep deep s23: left the money product's two loads swapped (original kind [+0xb4] into ecx first, ours
+   @deep deep s48: the clamps swapped (12..14), the product's factors swapped (= control), m->rounds = 0
+   after the clamps / before the send (6), initgen (every local = 0): = control. Left: the 4-ins load order
+   of the product at 0x57207c (the s23 flip.py finding stands: decided by the message fill above). prior:
+   deep s23: left the money product's two loads swapped (original kind [+0xb4] into ecx first, ours
    radius). Operand order / negation spellings (8 forms), climb round 1, r as AIJOB *, e->end moved, 1500
    sampled orders of the msg fill: = control or worse. flip.py --want 'mov ecx,[esi+180]': deleting
    msg.type / msg.flags / msg.arg[1] / msg.arg[2] or swapping memset with msg.type gives the original's
@@ -5504,18 +5507,18 @@ void he_AllocMeeting(int ev)
    gives its severity util_Random(range); a severity above 0 is written into the disease's bit field (a field
    delta of v02c) and costs severity * the record's cost health (gm_AddHealth), the health left stored in *health
    when given. Returns the disease kind, 0 when none was caught.
-   @deep deep s24: the severity as its own local sev (not the reused b) = the same code, kept (one register
-   either way, esi). a = 0 before the call again with the pick written as (a == 0 || (b != 0 && rnd == 0))
-   { if (b == 0) return 0; a = b; } (or: 3 ins with a = 0 inside, 79 with a = 0 at the top), if / else-if +
-   one if (a == 0) return 0 (7 / 79), the zero test first (23 / 97): a = 0 at the top always lets ch#1
-   (prio -1) take ebp before a#1 (-12, c2trace), frame 0x14. Left: the original's xor ebx,ebx before the
-   util_RandomF call (ours after the chance test). prior: s15: more forms of a = 0 before the call, all
-   below ch again: a = 0 at the top with b = 0 inside the test (80 ins), a = b = 0 at the top with if
-   (util_RandomF() < chance) (82), the early return form if (.. >= chance) return 0; (104), one final
-   return a; with the b == 0 / chance-fail paths reaching it (93-95: VC6 folds them to xor eax,eax as the
-   original, but a still loses ebx). climb from a = 0; b = 0; at the top (2 rounds): the only movers are
-   meaning changes (gm_AddHealth only when health != 0: 52; b's coin inside the 0x1800000 test: 37). Kept:
-   the s14 text (2 ins, right size). */
+   @deep deep s48: a = 0; b = 0; at the top with delta (the field-delta int) as a block local of the
+   lottery block gives the original's frame 0x10 (function-scope delta: 0x14), but a still in memory
+   (c2trace: a#1 prio -8 split alone where ch#1 prio 0 took ebp; the original never keeps ch in a register:
+   [esp+0x24] reloaded in every arm). 127 variants (a / b init orders and the < form x delta / d / res /
+   bits as block locals x cost after the sev test): best with the original frame 76 ins; climb round 1 from
+   that base: nothing. Left: the 2-ins xor ebx,ebx place (the tree's text). prior: deep s24: the severity
+   as its own local sev (not the reused b) = the same code, kept (one register either way, esi). a = 0
+   before the call again with the pick written as (a == 0 || (b != 0 && rnd == 0)) { if (b == 0) return 0;
+   a = b; } (or: 3 ins with a = 0 inside, 79 with a = 0 at the top), if / else-if + one if (a == 0) return
+   0 (7 / 79), the zero test first (23 / 97): a = 0 at the top always lets ch#1 (prio -1) take ebp before
+   a#1 (-12, c2trace), frame 0x14. Left: the original's xor ebx,ebx before the util_RandomF call (ours
+   after the chance test). */
 int he_CatchMeetingDisease(AICHAR *ch, float chance, int kind, float *health)
 {
     unsigned int bits, delta;

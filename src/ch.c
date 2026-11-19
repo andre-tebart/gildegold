@@ -2371,21 +2371,13 @@ void ch_ActAnimOnce(CHACTION *a)
         ch_RemoveAction(a);
 }
 /* 0x406e60, turn action: args[0] degrees (args[1]: relative to the z axis), plays "dreh_90_*" and turns
-   @deep deep s24: flip.py --want the original's fchs / fstp v.z before or dl,8: one hit only, deleting v.y
-   = angle - v.y (a meaning change, draft 82); keys[1].rot.y = angle - v.y without the v.y store in 4
+   @deep deep s48: c2dag: the slot block is one 63-node region (no 81 cut); fchs (h 12) / fstp v.z (h 10)
+   rank below or dl,8 and the push of &f (lea eax h 26), so ours issues them after the push; the original
+   before. initgen (= 0 initializers): = control. Left: the 4-ins fchs / fstp v.z place at 0x40700f. prior:
+   deep s24: flip.py --want the original's fchs / fstp v.z before or dl,8: one hit only, deleting v.y =
+   angle - v.y (a meaning change, draft 82); keys[1].rot.y = angle - v.y without the v.y store in 4
    positions: draft 54..102 (frame 0xc4 / 0xd4); v.z = -v.z moved to every line of the slot block: 18..110.
-   Left: the 4-ins position of fchs / fstp v.z (the original before or dl,8 / push eax, ours after). prior:
-   size queue: done (915 = original, padded 928; 4 ins / 10 bytes, shape). s3 lever: the slot branch's turn
-   values in a block-local D3VECTOR4 v copied field by field into keys[1].rot at the end (v.x and v.y =
-   angle - v.y are x87 candidates held to the copies, v.z = -v.z goes through memory: no fit), dir
-   block-local in the args[1] branch (shares v's slot, so the frame loads are no longer ordered after its
-   escape), keys[0].time after the flag ors (before: IL tail merge with the else branch sank the
-   ors/zeros/call into one shared block), fr inlined as s->data->frames[s->data->nframes - 1] (climb
-   inline:fr: the original's eax/ecx/edx for data/nframes/index). Left (4 ins): the original emits fchs;
-   fstp v.z before or dl,8 / push eax (ours after). Tried s3 on that: climb --rounds 2 (1175 mutants,
-   nothing closer); defs order (only y,x,z gives shape), Y/N order (YN only), zero/copy placement (= same
-   code). c2dag: VC6 merges identical statements of both branches into a shared block at IL level when they
-   can sink (variants whose order breaks this went from 841 to 915 bytes). */
+   Left: the 4-ins position of fchs / fstp v.z (the original before or dl,8 / push eax, ours after). */
 
 void ch_ActTurn(CHACTION *a)
 {
@@ -2665,26 +2657,21 @@ int ch_CellToCell(D3SM *h, int x, int z, D3SM *to, int *px, int *pz)
 }
 /* 0x407790, the character's cells in ch_PathMap (transport, body, the next path cells), then a corner
    cell for each diagonal step
-   @deep deep s27: a = CH_ACTIONS(ch) assigned as the first statement instead of the declaration's
-   initializer (climb round 1, init@2): the x / z slot swaps are gone, 10 -> 2 ins. Left: the n hunk at
-   0x40783c, the original setne cl; inc ecx; mov ebp,ecx; add ebp,edi (the 1/2 count copied into n, then i
-   added: as if the count were a value still live after the add), ours add ecx,edi; mov ebp,ecx. = control:
-   n = k; n += i in every placement (before the for, in its init, n = n + i, n += cur), (k) + i operand
-   orders, n = cur + k before the loop, a while loop, transport == 0 ? 1 : 2, CH_TRANSPORT(ch) ?. Worse:
-   (transport != 0) + 1 / i + 1 + (t ? 1 : 0) (8: lea ebp,[ecx+edi+1]), t ? i + 2 : i + 1 (32), the bound i
-   < cur + n in the loop test (91), if / else n = 2 / 1 (41), n = 1; if (t) n = 2 (72). flip.py --want 'mov
-   ebp, ecx / add ebp, edi': 279 mutants, no hit; climb 3 rounds: nothing. prior: match-deep 2026-11-10:
-   headers sample insensitive (32, one codegen). Frame read: x and z live in dead parameter slots (original
-   z in ch's slot [esp+0x1c], x in out's slot [esp+0x20]; ours swapped); start = out is the push-ecx slot
-   in both. Slot hunk: out->z = z; out->x = x (store order) puts the slots right but swaps the loads (order
-   8, code 4); a dead z = 0; before ch_PosToCell also puts them right but adds the store (3 ins: the store
-   + the n hunk), so the tie-break is z's reference weight; no-code extra references tried: ch_PosToCell in
-   both arms of the transport if (47), both stores in both arms of an if (16), i = x / n = z temporaries (=
-   control). n hunk (original mov ebp,ecx; add ebp,edi, ours add ecx,edi; mov ebp,ecx): n = k; n += i (in
-   the for or before it), n = cur + k before the loop, i = cur; n = k + i (all = control); (t != 0) + 1 in
-   any operand order (16); t ? 1 : 0 + 1 forms (16); if/else n = i + 2 / i + 1 (40); n = i + 1; if (t) n++
-   (91); bound inlined in the loop test (66). Left: the two slot swaps at 4077d7 / 4077f1 and the n
-   computation at 40783c. (tiebreak: insensitive) */
+   @deep deep s48: the n hunk (original setne cl; inc ecx; mov ebp,ecx; add ebp,edi) reproduced by none of:
+   n and i as block locals of the walk if (= control), the count as its own local k (int / char / unsigned
+   char / unsigned; k = t ? 2 : 1, k = (t != 0) + 1, k = t != 0; k++; at the top or in the block; n = i + k
+   / k + i / before the for / n = cur + k): = control or 5..72 (char k: code 9, 5 ins); if / else k = 2 / 1
+   (72); unsigned n (6: jae / jb), short n (36), n = t ? 2 : 1; n += i (= control), a count-down loop n > 0
+   .. n-- (36). Left: the 2-ins n computation at 0x40783c. prior: deep s27: a = CH_ACTIONS(ch) assigned as
+   the first statement instead of the declaration's initializer (climb round 1, init@2): the x / z slot
+   swaps are gone, 10 -> 2 ins. Left: the n hunk at 0x40783c, the original setne cl; inc ecx; mov ebp,ecx;
+   add ebp,edi (the 1/2 count copied into n, then i added: as if the count were a value still live after
+   the add), ours add ecx,edi; mov ebp,ecx. = control: n = k; n += i in every placement (before the for, in
+   its init, n = n + i, n += cur), (k) + i operand orders, n = cur + k before the loop, a while loop,
+   transport == 0 ? 1 : 2, CH_TRANSPORT(ch) ?. Worse: (transport != 0) + 1 / i + 1 + (t ? 1 : 0) (8: lea
+   ebp,[ecx+edi+1]), t ? i + 2 : i + 1 (32), the bound i < cur + n in the loop test (91), if / else n = 2 /
+   1 (41), n = 1; if (t) n = 2 (72). flip.py --want 'mov ebp, ecx / add ebp, edi': 279 mutants, no hit;
+   climb 3 rounds: nothing. */
 
 int ch_GetWaypoints(D3SM *h, CHARACTER *ch, CHWAYPT *out)
 {

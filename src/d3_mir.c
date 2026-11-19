@@ -65,14 +65,23 @@ char d3_MirBoundaryEdges(unsigned int n, unsigned char *used, D3PVERT **pts, uns
    vertices in edges[], nedge of them) into the outline segments: connected edges that are collinear are
    merged, *out gets the (start, end) vertex pairs, *nout their count (2 per segment). Returns 0 only for n < 3.
    used[0..nedge) = edge taken by the current chain, used[nedge..2*nedge) (mark) = edge taken by any chain
-   @deep deep s30: fixed the new-chain clear (D3M_ZERO_VAR(used, nedge), the original reads nedge from the
-   dead pts slot it passed as the count pointer): frame 0x48 as the original, 14 -> 2 ins. The dead stores
-   mark = 0 / tail = 0 are one code with the declaration initializer mark = 0 alone (tail's is = control).
-   Left: the head chain's mark[head] = 1, written used[nedge + head]: [edx+eax] where the original has
-   [eax+edx] (regs 2). With mark[head] (any spelling: *(mark + head), head[mark], chained with used[i]) VC6
-   loads head before mark (order 10 with mark = 0; head = 0 instead fixes that block but reverses the two
-   mark[i] accesses of the restart scan, 6). Tried: 64 initializer subsets x both forms, 24 orders of the
-   head block, climb 3 rounds from the plain form (10) and 2 from the tree (2): nothing closer. */
+   @deep deep s48: the address operand order follows the evaluation order of the two loads at every site:
+   mark[x] loads x first and addresses [x+mark], used[nedge + x] loads the mark temp first and addresses
+   [mark+x]; the original's head block loads mark first (edx) and addresses [head+mark] ([eax+edx]), which
+   no spelling gives. Rounds (dcp try): head + nedge, (used + head)[nedge], *(used + nedge + head), *(head
+   + used + nedge), (nedge + head)[used], (int) casts: = control; *(head + mark) / mark[(int)head] =
+   mark[head] (6, order 10); 63 masks of {arm 1 mark[tail] / used[nedge + tail], arm 2 mark[head], restart
+   test and store as used[nedge + i], head = 0 initializer, mark = 0 initializer dropped}: best = control
+   (2), every other 4..12; nres = 0 inside the if / before res / at the top (4..15), head = tail = 0 right
+   before the do (10 / 14): no lever. Left: the regs-2 hunk at 0x454acf ([edx+eax] for [eax+edx]). prior:
+   deep s30: fixed the new-chain clear (D3M_ZERO_VAR(used, nedge), the original reads nedge from the dead
+   pts slot it passed as the count pointer): frame 0x48 as the original, 14 -> 2 ins. The dead stores mark
+   = 0 / tail = 0 are one code with the declaration initializer mark = 0 alone (tail's is = control). Left:
+   the head chain's mark[head] = 1, written used[nedge + head]: [edx+eax] where the original has [eax+edx]
+   (regs 2). With mark[head] (any spelling: *(mark + head), head[mark], chained with used[i]) VC6 loads
+   head before mark (order 10 with mark = 0; head = 0 instead fixes that block but reverses the two mark[i]
+   accesses of the restart scan, 6). Tried: 64 initializer subsets x both forms, 24 orders of the head
+   block, climb 3 rounds from the plain form (10) and 2 from the tree (2): nothing closer. */
 
 char d3_MirCreateOutline(D3PVERT **pts, unsigned int n, unsigned int *nout, D3PVERT ***out)
 {

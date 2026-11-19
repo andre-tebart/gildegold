@@ -510,20 +510,20 @@ void d2_DragInput(void)
     }
 }
 /* 0x477ba0, mouse and keys on the focused slider object
-   @deep deep s29: f6 declared with an initializer (no code; the first-reference tie key): the vertical
-   test's o->y / f6->h / py loads come out as the original's, draft 10 -> shape 4 (kept with @original).
-   Left (regs 4): the bottom sum loads o->y into eax and o->h into edi where the original loads o->h
-   (+0x16) into edi first, then o->y (+0x12) into eax; bottom = o->h + o->y = the same code; a second
-   initializer on any other local: = or worse (f0 =, mn 8, v2 39, fl 47). prior: deep s27: the goto wheel
-   (the else of the two drag tests skipping the clamp and store) is the original's layout: written out in
-   both arms (no goto) 95 ins / slots 50; the original has ONE clamp copy at 0x477da1 (jmp from the
-   horizontal arm, fall-through from the vertical one) and both failing tests jump to the wheel code. Left
-   (10 ins, 1 byte): the first vertical test's evaluation order, the original o->y first (movsx edi,[o->y];
-   mov dx,[f6->h]; lea eax,[edx+edi]) and py loaded after (mov edi,[py]), ours py into edi first, o->y into
-   eax, add eax,edx. = control: py > (top = f6->h + o->y) / (top = o->y + f6->h) in a new local; worse: the
-   compare reversed (f6->h + o->y < py, o->y + f6->h < py, (top = ..) < py: 12, py still first), py - o->y
-   > f6->h / py - f6->h > o->y / o->y < py - f6->h (9 ins / 331 B, another code). climb.py 3 rounds (s27):
-   nothing.
+   @deep deep s48: goto wheel replaced by a drag flag (drag = 1; .. else drag = 0; if (drag) { clamp; store
+   }): the identical code, kept. With the flag text: initgen (14 = 0 initializers) best = control (mn 8, v2
+   39, fl 47), f6 without its initializer 10, bottom = o->h + o->y = control. Left: regs 4 at 0x477d5c
+   (o->h into edi, o->y into eax in the original). prior: deep s29: f6 declared with an initializer (no
+   code; the first-reference tie key): the vertical test's o->y / f6->h / py loads come out as the
+   original's, draft 10 -> shape 4 (kept with @original). Left (regs 4): the bottom sum loads o->y into eax
+   and o->h into edi where the original loads o->h (+0x16) into edi first, then o->y (+0x12) into eax;
+   bottom = o->h + o->y = the same code; a second initializer on any other local: = or worse (f0 =, mn 8,
+   v2 39, fl 47).
+
+
+
+
+
 
 
 

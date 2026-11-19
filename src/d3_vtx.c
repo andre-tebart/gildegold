@@ -20,25 +20,18 @@
 #include "cm.h"
 
 /* 0x458e70, environment map coordinates of the vertices of a part that has a reflecting texture
-   @deep deep s24: the volatile d is gone: d is a plain float local of each if (v->used) block (= the
-   volatile's code exactly; two function-scope locals d / d2 also = control; one plain function-scope d: 20
-   ins, the second loop's nv sums reorder). nv as block locals = control; b as block locals: draft (slots).
-   nv sum orders with a plain function d: 14..24 ins. climb round 1 on the block-local text: nothing. Left:
-   the same order hunk as before (fr reloaded from part's slot after the fmul of v->u where the original
-   loads it before the call's add esp,4). prior: Hunk (first loop, the normals path): the original reloads
-   fr (spilled into part's parameter slot) right after the fadd of v->u = (b.x + 1.0f) * 0.5f, BEFORE the
-   d3_Normalize call's add esp,4 (mov eax,[esp+0x7c]); ours after the fmul (mov eax,[esp+0x78]). Everything
-   else equal. flip.py --want 'mov eax, _fr before add esp': only meaning changes flip it (swap
-   d3_Normalize with v->u; delete or duplicate any of b.x / b.y / b.z / nv.x / nv.y / d earlier in the
-   body): the count of IL before the reload decides (a scheduling region cut?), not the statement itself.
-   Rounds (session s12): volatile on nv.z = control (dropped, kept plain); d without volatile: +28 ins (d *
-   nv.z operand order flips in both loops and the second loop's nv sums reorder; b.z = d * nv.z = same
-   code); d as double, d as nv.w / b.w, D3VECTOR4 nv: worse; v->u forms (0.5f * (..), 1.0f + b.x),
-   (float)(int) / (unsigned) casts of the normals, k += 3 index, for-init v, v++ in the body, else instead
-   of return, slot != 0: = control or worse; climb 2 rounds: nothing. Left: the volatile d (no @original
-   comment yet) reproduces the original's fst/reload of d; find the plain form of d (or of nv) that gives
-   the same FPU code, then the reload order may follow. c2dag.py shows another function's graph here
-   (unusable). */
+   @deep deep s48: c2dag: the first loop's body block has 83 nodes, so the 81-node region cut falls just
+   before v->u's fmul; the original's fr reload (mov eax,[esp+0x7c]) sits before the d3_Normalize add esp,
+   in the call's region. Rounds: 127 masks of parenthesised first products in the first loop's nv.x / nv.y
+   / nv.z, b.x / b.y / b.z and d lines (each paren adds a node: best 6 ins, p0011110 / p0101110 / p1001110
+   = order 14), the (float) casts of the three normals dropped (= control: no node), the v walks as index
+   loops with v = &part->keys[i] (frame +4, 85 / 98). Left: the 2-ins reload placement at 0x459065; a node
+   fewer before the cut is what flip.py's deletions did. prior: deep s24: the volatile d is gone: d is a
+   plain float local of each if (v->used) block (= the volatile's code exactly; two function-scope locals d
+   / d2 also = control; one plain function-scope d: 20 ins, the second loop's nv sums reorder). nv as block
+   locals = control; b as block locals: draft (slots). nv sum orders with a plain function d: 14..24 ins.
+   climb round 1 on the block-local text: nothing. Left: the same order hunk as before (fr reloaded from
+   part's slot after the fmul of v->u where the original loads it before the call's add esp,4). */
 void d3_EnvMapCoords(XOBJ *obj, XPART *part)
 {
     D3MATRIX m;

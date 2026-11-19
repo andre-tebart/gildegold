@@ -9495,22 +9495,17 @@ int he_CreateReaper(int ev)
    object moves along the direction by the time since reaperClock times a speed of 0.5 + 0.25 per cm_SpeedLevel,
    rising (0.978 per time unit, with a tenth of the step) while it is less than 80 above the ground there, and its
    position and angles are cached; 1 = flying, 0 = the object or the building missing
-   @deep deep s24: dist written as the full length sqrt(x*x + y*y + z*z) with dir.y = 0.0f (VC6 folds the
-   zero term: every term order = control; kept, it gives the dir.y = 0 store its use). flip.py --want the
-   original's fld dir.y / fadd at.y for target.y: 5 hits, the only non-local one deletes dir.y = 0.0f (then
-   the order is right but the original's zero store is missing: draft 1); dir.y = 0.0f at each position of
-   the first dir block: = control or worse (5..19). Left: target.y = dir.y + at.y emitted as fld at.y /
-   fadd dir.y (the original dir.y first, as x and z). prior: size queue s20: 118 -> 4 ins, raw 831 -> 839
-   (the original's size, padded 848 both). Found: the second d3_GetHeightAt reads the height map from a
-   block local of the else arm (D3SM *hm = d3_Scenes[0].hmap first: the original's mov edi,[hmap] before
-   the clock math, scene spilled to its slot and reloaded for the last d3if_SelectScene, ret in ebx, 0 in
-   ebp); the two calls' out values are block locals (the first call's int x, z / float ground in a block
-   around the call and target.y, the else arm's own int x, z / float h): the original's frame shares ground
-   with step (ev's argument slot), h with dist and x with the fild qword temps, which needs disjoint block
-   scopes (function-scope escaped locals conflict with every slot: frame 0x54 / 0x58); ret = 2 before
-   reaperPlaced = 0. Left: target.y = dir.y + at.y loads at.y first in ours (fld [at.y]; fadd [dir.y]), the
-   original dir.y first; = this code: at.y + dir.y, dir.y *= step / dir.y * step, all six declaration
-   orders of target / at / dir, hm / step in the else block; climb.py round 1: nothing. */
+   @deep deep s48: all 64 operand orders of the three dir *= step and target = dir + at lines are one code
+   (VC6 orders the operands itself); (dir.y) / (at.y) parentheses, a (float) cast: = control; the
+   assignment inside the sum (target.y = (dir.y = step * dir.y) + at.y: fpu 23, all three: 19), the scale
+   and sum interleaved (20), dir.y scaled first (12); dist as sqrt(x*x + z*z) with dir.y = 0.0f anywhere: =
+   control (same code, plainer). Left: target.y's fld at.y / fadd dir.y at 0x5505bf. prior: deep s24: dist
+   written as the full length sqrt(x*x + y*y + z*z) with dir.y = 0.0f (VC6 folds the zero term: every term
+   order = control; kept, it gives the dir.y = 0 store its use). flip.py --want the original's fld dir.y /
+   fadd at.y for target.y: 5 hits, the only non-local one deletes dir.y = 0.0f (then the order is right but
+   the original's zero store is missing: draft 1); dir.y = 0.0f at each position of the first dir block: =
+   control or worse (5..19). Left: target.y = dir.y + at.y emitted as fld at.y / fadd dir.y (the original
+   dir.y first, as x and z). */
 int he_MoveReaper(int ev)
 {
     AIJOB *e = (AIJOB *)ev;
