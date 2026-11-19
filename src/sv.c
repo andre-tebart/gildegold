@@ -2833,9 +2833,20 @@ static const float sv_ZoomPixelsPerUnit = -666.6667f;  /* 0x5eeb78, .rdata: -1 /
    alone drags the map by the mouse delta scaled by the scroll speed option, rotated into the view and clamped to
    the height map 20 cells in. The wheel alone zooms by 0.1 a notch. Each change goes into the player's camera
    record. Returns the activity: sv_MouseCamActive - wheel down + wheel up + sv_ZoomTurnOn
-   @deep deep pass: 458 -> 182 ins. Earlier: read whole and reconstructed (free-mouse start, zoom/turn
-   start and y range, release, both-button zoom/turn, wheel, drag with dead dst stores and the clamp, the
-   return); left were allocation, frame 0x7c vs 0x90 and the -666.6667 constant. This pass (the
+   @deep s50: fixed the drag scale constant (1.0 / 16.5: the original's double 0x3faf07c1f07c1f08, ours had
+   the truncated literal ..1f07, the M10). zpos as a D3VECTOR4 with field copies of cam->pos and zrot
+   (D3VECTOR) copied field by field: frame 0x90 as the original (the 4-byte hole behind zpos before the
+   matrix), 188 -> 170 ins, size 2364 vs 2379. Rounds (18 variants): zrot D3VECTOR4 too gives 164 ins but
+   frame 0x94 (rejected); sv_CameraHeightFactor / AngleFactor as assignments inside the zpos.y / zrot.x
+   products (chain) worse (174-186), parenthesised products = plain. Left: (1) registers: the original my
+   in bp, 32000 in ebx, -32000 in edi, ours my in di, 32000 in ebp, -32000 in ebx (the free-mouse start
+   then loads x, y, MinX first in the original); (2) the both-button block keeps sv_CameraHeightFactor /
+   AngleFactor on the FPU after the store (fld StartHeight; fadd st,st(1); fst [HF]; .. fmul st,st(1); fstp
+   st(0)) where ours stores with fstp and multiplies from memory; (3) the wheel compare fcom vs fld st(0);
+   fcomp; (4) the d3_ZAxis terms in another order (fwd[0] = right[0] * ax[0] .. read as ax[2] first in the
+   original). prior: deep pass: 458 -> 182 ins. Earlier: read whole and reconstructed (free-mouse start,
+   zoom/turn start and y range, release, both-button zoom/turn, wheel, drag with dead dst stores and the
+   clamp, the return); left were allocation, frame 0x7c vs 0x90 and the -666.6667 constant. This pass (the
    sv_ScrollCamera lessons): -666.6667 is a static const float of the unit (sv_ZoomPixelsPerUnit, 0x5eeb78,
    loaded from memory: fmul dword after fchs; a literal or / -0.0015f folds); dst / v / fwd 4-float vectors
    (frame 0x8c now); dst[0] = v[0] after the branches; sin / cos at the uses; fwd[1] = 0 between fwd[2] and
