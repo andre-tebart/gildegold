@@ -4588,25 +4588,34 @@ int cm_ExPlaceOnStage(G17MSG *m, G17STAT *s)
    building through the gate of its room (ch_UseGate) and its transporter, out of another building through its
    door ("dummy_EINGANG"), a walk (0x2d) to the door ("dummy_TUER") of the target, the scene change 0x33 between
    two 0x38 actions, then the room's gate or the sit-down 0x39. Each action gets the message's reason.
-   @deep s2: g = &ai_GoodsT[q->id] named at both gate sites (cm_ExChrUseGates's form) 319 -> 273; x,y,z
-   then hasPos in the cb->object door block (the original jumps into the other branch's tail at the z
-   store); goto done -> q==0 chained as if/else-if (same code); memcpy -> strcpy of TRANSPORTER_ENTRY (same
-   code). Tree draft 275 / 1622 bytes: the inline strcpy shape (original sub eax,ecx; lea edx,[eax+0x70],
-   ours lea edx,[eax+0x70]; sub edx,ecx) rotates every scratch register behind 4648. flip.py: any extra
-   decided test fixes it (dup 'if (p->group != -1)' -> shape 8 ins; dup objId tests 14/46; del else i = 0
-   62); c2trace shows the same allocation for both, so it is not a register candidate: the number of IL
-   nodes/blocks before the copy decides. With the dup: left only the sib order of 4 copies (4665,4675 ours
-   [edx+ecx] original [ecx+edx]; 4704,4711 the reverse). Not levers: every dst/src spelling of the strcpy,
-   cb init forms (else cb=0, ternary: frame changes), else-if operand order, to->id swap, tail written out
-   at the goto. prior: read whole against the original and fixed the meaning (NoCase door lookup on the
-   target, the out-of-building branch compares with the 0x44 building, o kept from function start, the last
-   gate through the start building cb, the objId/universe test as if/else, if/else FindObject calls VC6
-   merges, hm loaded before d3_PointToWorld, 16-byte vector frame). Frame equal now; left: instruction
-   choice/scheduling of the inline strcpy into r->why (ours lea edx,[eax+0x70]; add ecx,0x3d; sub edx,ecx |
-   the original add ecx,0x3d; sub eax,ecx; lea edx,[eax+0x70]) at every copy, ai_Goods index lea
-   eax,[eax+edx+1] | add eax,edx; inc eax, the text test add eax,0x1d; cmp byte [eax],0 | mov
-   cl,[edx+0x1d]; lea eax,[edx+0x1d]; test cl,cl, and loads scheduled before/after pushes (0x4ca0ec,
-   0x4ca392, 0x4ca43c); dst spellings (char*)r+0x70, r->args+0x10, (char*)m+0x3d src tried, no change */
+   @deep s2: g = &ai_GoodsT[q->id] named at both gate sites (cm_ExChrUseGates's form) 319 -> 273; door
+   block stores x,y,z then hasPos (the original jumps into the other branch's tail at the z store); goto
+   done -> q==0 chained as if/else-if (same code); memcpy -> strcpy of TRANSPORTER_ENTRY (same code). Tree:
+   draft 275 ins / 1622 bytes. Hunk 1 (every scratch register behind it rotates): the inline strcpy at 4648
+   (original add ecx,0x3d; sub eax,ecx; lea edx,[eax+0x70], ours lea edx,[eax+0x70]; add ecx,0x3d; sub
+   edx,ecx). c2trace: in ours r->why (r+0x70) is one CSE temp (temp#501, 4 refs per copy, 13 webs); in the
+   original form r has 5 refs and the temp 2, i.e. VC6 did not make r+0x70 a temp. flip.py: only a
+   duplicated decided test on a FIELD load flips it (dup 'if (p->group != -1)' before cb's query -> shape 8
+   ins; dup objId tests 14/46; dup p->transport/m->go.text other code); dup of register tests (p, to, s,
+   cb) and every other natural form do nothing; c2trace allocation identical, so it is decided before
+   allocation (CSE of the address). With the dup, left 8 ins = sib order of 4 copies (4665,4675 ours
+   [edx+ecx]/[edx+eax], original [ecx+edx]/[eax+edx]; 4704,4711 the reverse); flip on the dup base finds no
+   single mutation for them (one meaning-changing hit: del the 0xfd query). climb (no inexpr) on both
+   bases: nothing. Not levers (= control): every dst/src spelling of the strcpy ((char*)r+0x70, &r->why[0],
+   args+0x10, (char*)m+0x3d), a G17GOTOMSG *go local (4 forms), declaration order (all moves), renaming r
+   per site, the strcpy-entry/memcpy, two-ifs/else-block for the room-id errors. Worse: cb init as
+   else/ternary (frame), nested p->group != -1 around home/else-if, else-if operand swap, to->id swap, r !=
+   0 / else return in the home branch (307), i = 0 first (261, other code). Beware climb's inexpr:i@155 (68
+   ins): a dangling-else meaning change, not a lead. prior: read whole against the original and fixed the
+   meaning (NoCase door lookup on the target, the out-of-building branch compares with the 0x44 building, o
+   kept from function start, the last gate through the start building cb, the objId/universe test as
+   if/else, if/else FindObject calls VC6 merges, hm loaded before d3_PointToWorld, 16-byte vector frame).
+   Frame equal now; left: instruction choice/scheduling of the inline strcpy into r->why (ours lea
+   edx,[eax+0x70]; add ecx,0x3d; sub edx,ecx | the original add ecx,0x3d; sub eax,ecx; lea edx,[eax+0x70])
+   at every copy, ai_Goods index lea eax,[eax+edx+1] | add eax,edx; inc eax, the text test add eax,0x1d;
+   cmp byte [eax],0 | mov cl,[edx+0x1d]; lea eax,[edx+0x1d]; test cl,cl, and loads scheduled before/after
+   pushes (0x4ca0ec, 0x4ca392, 0x4ca43c); dst spellings (char*)r+0x70, r->args+0x10, (char*)m+0x3d src
+   tried, no change */
 int cm_ExChrGotoBuilding(G17MSG *m, G17STAT *s)
 {
     char buf[0x80];
