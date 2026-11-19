@@ -4564,7 +4564,7 @@ exe	0x005cf8a0	ai_UseGood	lc	57710b18a450feaf	no	draft	control=draft p1=draft p2
 exe	0x005cfb60	ai_UseGoodAddMoney	lc	880c8769d5cbb0d1	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005cfb80	ai_UseGoodHeal	lc	2584a89487bf1132	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005cfc00	ai_UseGoodInfectOwner	lc	dbd476e65ef15b7a	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
-exe	0x005cff70	ai_UseGoodSendHome	lc	e8bbdc061d5472e5	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
+exe	0x005cff70	ai_UseGoodSendHome	lcamt	1b898670254a2e8e	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	bef678030dd407a3
 exe	0x005d0320	ai_UseGoodWeakenSkills	lc	70ec67397ad64dfa	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	a8a81ae8260ddcfe
 exe	0x005d0530	ai_UseGoodWeakenSkills2	lc	793a355ba9849df0	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	a8a81ae8260ddcfe
 exe	0x005d06e0	ai_UseGoodCureAilment	lc	71d85b2a537c683c	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
