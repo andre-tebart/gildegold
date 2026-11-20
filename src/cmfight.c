@@ -3987,7 +3987,7 @@ void cm_FightEndDialog(CMFIGHTREC *a)
                 ob = (AIOBJ *)gm_Query(ca->objList, 2, 6, 0, 0x116);
             v = gm_GetGoodsValue((char *)cm_FightDefender);
             v = v < 0x9c400 ? v : 0x9c400;
-            v = (int)(((double)cm_Random(0x32) * 0.001 + 0.07) * (v < 0 ? 0 : v));
+            v = (int)((float)((double)cm_Random(0x32) * 0.001 + 0.07) * (v < 0 ? 0 : v));
             txt_Format(tc, "$Z%T$A", v);
             cm_SendMoveGoods(cm_FightAttackerC->netId, cm_FightDefenderC->netId, ai_OwnPlayer, v);
             if (ob != 0 && obj != 0) {
@@ -4096,7 +4096,7 @@ void cm_FightEndDialog(CMFIGHTREC *a)
                 p = (AIOBJ *)gm_Query(ca->objList, 2, 6, 0, 0x116);
             v = gm_GetGoodsValue((char *)cm_FightDefender);
             v = v < 0x9c400 ? v : 0x9c400;
-            v = (int)(((double)cm_Random(0x32) * 0.001 + 0.07) * (v < 0 ? 0 : v));
+            v = (int)((float)((double)cm_Random(0x32) * 0.001 + 0.07) * (v < 0 ? 0 : v));
             txt_Format(tc, "$Z%T$A", v);
             cm_SendMoveGoods(cm_FightAttackerC->netId, cm_FightDefenderC->netId, ai_OwnPlayer, v);
             if (p != 0 && obj != 0) {
