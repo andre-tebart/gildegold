@@ -4375,25 +4375,27 @@ int cm_PrevPartyMember(char *m, int n)
    each block; next stays function-scope, block-local next 75..87): 69 -> 65; in the player's turn r =
    cm_CutInfosT[me] before cm_PartyTurn = me: 63 (gm_FindChar before the copy 77). Left only the
    all-at-once owner loop: the original keeps the members IV (&party->members[i]) in esi as a split piece
-   over the loop head / tests / latch region (reloaded mov esi,[esp+0x24] only at the body's end, the
-   continues jump in with esi live), and loads the cut IV for the valid test into ecx (reloads it into esi
-   for the rep movsd); ours: members IV in memory (savings 0 in c2trace: k#3ad#2 pass 3 'memory: savings 0
-   < 1'), the cut IV in eax kept to mov esi,eax. One more w2 reference of the members IV in the head gives
-   it esi (flip --want: dup of c = gm_FindChar(..) 63 -> 15, sav 4) - the original has no second read in
-   its code, so look for what lowers the piece's boundary costs or adds a reference. = control: the tests
-   as a positive if, split tests, c-test alone, assign in the test, ((G28REC *)m)->members, *(members + i),
-   a ci pointer for valid / copy, no cb local, host test as if-else; worse: r before cm_CutChar 67, cb
-   moved 67, host operand order 69, an int id = members[i] local 47 (members IV in esi but the rest off).
-   climb rounds 1-2 (seed 7): nothing below 63. prior: s51: climb round 1 found the lever: in the owner's
-   turn loop of the one-after-the-other run, next = cm_CutInfosT[i] copied before the cm_PartyTurn /
-   cm_CutChar stores (237 -> 69; climb 3 more rounds: nothing). Left: (1) the all-at-once owner loop's IV
-   slots: the original has the cut-record IV at 0x10, i at 0x14, the members IV at 0x18 and keeps the
-   members IV in esi for the gm_FindChar argument (reloaded from its slot at the latch, the rep movsd
-   source taken from the cut slot), ours members IV at 0x14 via eax, i at 0x18, esi = the loaded cut
-   pointer; (2) the one-after-the-other player's turn: the original pushes party->members[me] before the
-   rep movsd of rec (after the cm_PartyTurn store), ours copies first. No lever: the loop's continue as one
-   positive if, the valid test split, rec copied before cm_CutChar = c in the first owner loop (73), next
-   instead of rec there (75), a separate counter j for any subset of the four loops (all = control). */
+   over the loop head / tests / latch (reload mov esi,[esp+0x24] only at the body's end) and loads the cut
+   IV for the valid test into ecx; ours keeps the members IV in memory (c2trace k#3ad#2 pass 3: head use
+   +4, reload -4, latch use +4, latch store -4 = savings 0) and the cut IV in eax (mov esi,eax). KEY PROBE:
+   one more reference of party->members[i] in the test chain fixes the WHOLE loop: '|| party->members[i] ==
+   0' appended after the valid test = 4 ins (only its own cmp [esi],0 / je left; same for == -1: 4 lines),
+   a dup of c = gm_FindChar(..) 15. So the original has a test / reference of party->members[i] there that
+   leaves no code (a decided test? a merged / cross-jumped copy?). Removed before allocation (= control):
+   an empty if (members[i] == -1) ;, a dead local store. Tests on other values there are worse (c->netId
+   75, cm_CutInfosT[i].playerId 80, i < 0 53). = control: tests as positive if / split / nested, assign in
+   test, ((G28REC *)m)->members, a ci pointer, memcpy, no cb local, c / h / cb block-local, while forms,
+   do-while(0) probes, r scopes (64 combinations); climb rounds 1-3 nothing. prior: s51: climb round 1
+   found the lever: in the owner's turn loop of the one-after-the-other run, next = cm_CutInfosT[i] copied
+   before the cm_PartyTurn / cm_CutChar stores (237 -> 69; climb 3 more rounds: nothing). Left: (1) the
+   all-at-once owner loop's IV slots: the original has the cut-record IV at 0x10, i at 0x14, the members IV
+   at 0x18 and keeps the members IV in esi for the gm_FindChar argument (reloaded from its slot at the
+   latch, the rep movsd source taken from the cut slot), ours members IV at 0x14 via eax, i at 0x18, esi =
+   the loaded cut pointer; (2) the one-after-the-other player's turn: the original pushes
+   party->members[me] before the rep movsd of rec (after the cm_PartyTurn store), ours copies first. No
+   lever: the loop's continue as one positive if, the valid test split, rec copied before cm_CutChar = c in
+   the first owner loop (73), next instead of rec there (75), a separate counter j for any subset of the
+   four loops (all = control). */
 
 void cm_RunSceneParty(char *m, int ctx)
 {
