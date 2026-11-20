@@ -1205,42 +1205,37 @@ int cm_CheckTrial(G28REC *p)
    else the judge picks the sentence (mode 5, gv_CheckSentence / gv_PassSentence, texts 0x152f .. 0x1531). On the host the
    accuser, the judge and the assessors get the fees (cm_SendMoveGoodsUnchecked, a third of the plan's rating each) and
    with the item 0x22e the accused's relations change. Every voice bank loaded is freed at the end.
-   @deep deep s47: 885 -> 129 ins (frame right). Kept: (1) the reading loop's AIDEC dec block-local and the
-   opening dec.cur read in its own block (the original's dec.cur-dec shares crime's slot 0x240, the loop
-   dec other/factors/texts 0xb0); (2) both clamps as max(min(v, hi), 0) (sel itself stays unclamped: the
-   original indexes instruments/files/texts with the raw sel); (3) the assessor vote blocks with block
-   locals (AICHAR *assessor; int vote): slot packing {p, c5, ev2} / {k, severity}; (4) the three verdict
-   voices' sex test as (x == 1) & 1 (exact locally: xor; cmp; sete; and reg,1); (5) crime copy before
-   groups[i] = 1, plan.plea = plea after the score line. Left (41 ins in the best probes, 129 now): a
-   register chain from the grouping loop to the plea (grouping loop: the original loads the i*4 IV into edx
-   for the -1 test, then mov eax,edx; its latch in ecx and ncrimes reloaded after the loop; reading loop:
-   &dec pushed (edx) before the crime copy; gv_CrimeText's &text after the copy; the plea's host-check load
-   order) - c2trace: ncrimes#1 (byte-flagged by plan.crimes = (unsigned char)ncrimes, avail ebx) is split
-   alone into 50 pieces, its piece #3 (lines grouping test .. reading-loop test) takes edx; in the original
-   that piece ends at the grouping loop. Mechanism: a tie / piece-order effect, global: ANY extra candidate
-   late in the function flips it to the original's: (x == 1) & 3 or & 0xff instead of & 1 at the three
-   verdict sites -> 17 ins (only the masks wrong), a named int for c4->netId at the relations -> 22,
-   (unsigned char)(x == 1) -> 43 - none of these is the original's local code. Not it (= control):
-   declaration order of the locals, symbol-count probes (extern decls 1..48 before the function: 129/131
-   only), the three continues as if-blocks, k renamed per use, crime/other scopes, groups memset as a loop,
-   CM_WAIT_VOICE's loop as while (1) / for (;;) (for (;;) and while (playing) change the layout),
-   strcpy/strcat spellings of the torture path, fin at function scope, & 1u / % 2u / 1L / bitfield
-   spellings of the mask. Also open: the inline strcpy store [eax+edx] vs the original's [edx+eax] (torture
-   file path), and the original's 2340 vs ours 2339 instructions (the latch reload of ncrimes). Next: find
-   a same-code candidate change in the late region (verdict / fees / relations) - e.g. a value the original
-   names or writes twice. prior: Rebuilt whole from the original (2340 instructions), every region read
-   against it: the plan record init, the crime grouping and reading loops, the plea, the torture
-   (instrument tables, rolls, confession), the vote of judge and assessors, the verdict, fees, relations
-   and the bank cleanup (including the original's double unload of bankF2). The callees, arguments,
-   literals and statement order agree (ours 2333 vs 2340). Left is allocation and layout: the frame 0x784
-   vs 0x760 and its slot renaming (slots 750), register choice (regs 134), and two clamps VC6 lowers
-   differently: dec.cur to 0..4 (ours inline jmp/mov eax,4 at +0xaa, the original out of line at +0x24f)
-   and the instrument 0..6 (ours setle/dec/and at +0x11ed, the original jle/jmp blocks). (references: M8 at
-   +0x1297: ours refers to sprintf (0x5de652), the original's field to 0x4e2bd0 (cm_SetViewEnabled) (and 2
-   more), explained: the three M8 lines (+0x1297 sprintf|cm_SetViewEnabled, +0x1648, +0x1a4b) are alignment
-   crossings: the same calls in the same order on both sides, paired one call apart where the surrounding
-   pushes are scheduled differently; the proof stops only on the crime id array's frame offset (frame+0x154
-   vs +0x130)) */
+   @deep deep s47: 885 -> 128 ins, and 6 ins (only the three masks) in the probe below. Kept: (1) the
+   reading loop's AIDEC dec block-local, the opening dec.cur read in its own block (frame 0x784 -> 0x760);
+   (2) both clamps as max(min(v, hi), 0) (sel stays unclamped: the original indexes instruments/files/texts
+   with the raw sel); (3) the assessor vote blocks with block locals (AICHAR *assessor; int vote): slot
+   packing {p, c5, ev2} / {k, severity}; (4) the three verdict voices' sex test as (x == 1) & 1 (exact
+   locally: xor; cmp; sete; and reg,1); (5) groups[i] = 1 before the crime copy (the original's mov eax,edx
+   copy of the i*4 IV); plan.amount before plea, plan.plea = plea after the score line. Left: a global
+   allocation knife edge: with the masks as & 3 (or & 0xff) the whole function is right except the masks
+   and the torture path's inline strcpy store ([eax+edx] vs the original's [edx+eax]) - 6 ins; with & 1 the
+   chain grouping loop .. plea goes wrong (128). Only the NOT GUILTY site's mask ((c0->sex == 1) & 1) + 2
+   decides it (subset round: & 3 there alone -> 6 ins). Other single-constant probes flip it the same way:
+   the 1st (line ~1355, the judge opens) or the 9th (torture confession arm) cm_SetViewEnabled(cm_TextBox,
+   1) as 2. So the original's constant-1 candidate has slightly lower priority than ours (c2trace: a const
+   piece materialised in the grouping loop cuts ncrimes#1's piece, op 2b4 'line 1788'). No lever for it
+   found: site C spelled ?: 3 : 2 / (x == 1) + 2 / | 2 / ?: 1 : 0 / && / % 2u / 1u / (unsigned char) (=
+   control or worse), symbol-count probes 0..63 (no), declaration order (no), CM_WAIT_VOICE loop constant
+   (decided: no effect), bankPlea for the plea bank (= control). Next: look for one 1-reference fewer (or a
+   differently-typed 1) near the judge's opening or the not-guilty arm that leaves the code equal; the
+   strcpy store order may follow from the same allocation (it is [delta+src] in 90 byte functions). prior:
+   Rebuilt whole from the original (2340 instructions), every region read against it: the plan record init,
+   the crime grouping and reading loops, the plea, the torture (instrument tables, rolls, confession), the
+   vote of judge and assessors, the verdict, fees, relations and the bank cleanup (including the original's
+   double unload of bankF2). The callees, arguments, literals and statement order agree (ours 2333 vs
+   2340). Left is allocation and layout: the frame 0x784 vs 0x760 and its slot renaming (slots 750),
+   register choice (regs 134), and two clamps VC6 lowers differently: dec.cur to 0..4 (ours inline jmp/mov
+   eax,4 at +0xaa, the original out of line at +0x24f) and the instrument 0..6 (ours setle/dec/and at
+   +0x11ed, the original jle/jmp blocks). (references: M8 at +0x1297: ours refers to sprintf (0x5de652),
+   the original's field to 0x4e2bd0 (cm_SetViewEnabled) (and 2 more), explained: the three M8 lines
+   (+0x1297 sprintf|cm_SetViewEnabled, +0x1648, +0x1a4b) are alignment crossings: the same calls in the
+   same order on both sides, paired one call apart where the surrounding pushes are scheduled differently;
+   the proof stops only on the crime id array's frame offset (frame+0x154 vs +0x130)) */
 
 void cm_RunTrial(G28REC *m)
 {
@@ -1380,8 +1375,8 @@ void cm_RunTrial(G28REC *m)
     for (i = 0; i < ncrimes; i++) {
         if (groups[i] == -1)
             continue;
-        crime = ((CRIME *)ai_Crimes)[crimeIds[i]];
         groups[i] = 1;
+        crime = ((CRIME *)ai_Crimes)[crimeIds[i]];
         for (j = i + 1; j < ncrimes; j++) {
             if (groups[j] == -1)
                 continue;
@@ -1431,8 +1426,8 @@ void cm_RunTrial(G28REC *m)
     cm_StartEventArg("cutscenes\\prozess\\prozess-angeklagter.esc", (int)"1");
     for (i = 0; i < m->used && cm_CutInfosT[i].playerId != plan.ids[1]; i++)
         ;
-    plea = cm_CutInfosT[i].session.answer;
     plan.amount = cm_CutInfosT[i].session.amount;
+    plea = cm_CutInfosT[i].session.answer;
     cm_SetViewEnabled(cm_TextBox, 1);
     d2_SetForm(cm_TextBox, 0);
     io_PrintText("$C");
