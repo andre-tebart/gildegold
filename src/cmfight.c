@@ -3757,37 +3757,37 @@ int cm_FightStartDialog(CMFIGHTREC *a)
    money and goods is taken, 3 the attacker gains face, 0 the town guards are called, 0x11a4 .. 0x11a7), the bars of
    the defenders of a building of kind 0x13 (flags 4: their health, the money for the wounded) or the AI's capture
    (flags 2, the AI attacking: the same outcomes by random)
-   @deep deep s50: the top matches but for slots (obj [esp+0x18] / the second zero init [esp+0x10] in the
-   original, ours 0x1c / 0x1c+4); side: the original loads each choice into edi and stores side once at the
-   join ([esp+0x20] before d2_OpenForm), ours stores per assignment (ternary / if-else / default spellings
-   of both choices: = control or worse). Layout: the original lays the last pump (pump:) right after the
-   cart loot loop, non-rotated (mov esi,1 hoisted; one sv_RunFrame call: x5 in all), ours jumps from the
-   loot branch to a rotated copy at the function's end (x6); the pump body as continue / for(;;) break /
-   else-if: = control. Gotos written out (8 combos of pump / take_done / face): best take_done written out
-   in the AI k == 2 arm with goto pump kept (p0t1f0: 659 ins but 3518 bytes, not kept); writing the pump
-   out at each goto: 669..764. Checked: no variable is read uninitialized on any path (the
-   cm_FightStartDialog lever). Next: the structure that keeps the pump inline after the loot loop (the
-   shared exits of the capture / bars branches), then the slot counts (c2frame). prior: Read in full
-   against 0x4d4d70..0x4d60a3 and rewritten typed (CMFIGHTREC, AICHAR via cm_FightAttackerC/DefenderC and
-   ai_CharsT, AIBLD, AIBTYPE, AIOBJ, AIFIN; no G20_ macros). Meaning fixes: the money/goods take clears tc
-   (the draft cleared ba), tc[0] = ch_EmptyName[0] (the draft stored the address), the loot list mode as
-   two calls (the original's push 0 / push 1 merged tail, was setne). The original's shared tails are kept
-   as in its layout: the take tail (take_done) and the face block (face) are reached from both capture
-   branches, the last pump (pump) from the take and the flags-4 bars. All statements line up (ours 1510 vs
-   1508). Left: allocation and tail placement - the original keeps a in its arg slot and reloads it
-   ([esp+0x1138]) where ours holds it in ebx, side in edi stored once to [esp+0x14] (ours stores it per
-   branch), our zero register edi (xor edi,edi; push edi) vs the original's immediates, the slot pairs
-   ob/cnt [esp+0x14]/[esp+0x1c] swapped between the two take copies; ours merges the roundSums tail of the
-   flags-4 branch into the take's (gm_BuildQuery x7 vs x8) and rotates the last pump (sv_RunFrame x6 vs x5;
-   the original's last pump is a non-rotated loop with esi=1 hoisted, a for(;;)/break form compiles the
-   same as ours); the epilogue after the n==1 path sits inline in the original at 0x4d5685, ours jumps to
-   it. (references: M8 at +0x9eb: ours refers to cm_FightAttacker (0x6f0cec), the original's field to
-   0x6f0ce8 (cm_FightDefender, cm_FightDefenderC) (and 1 more), explained: the three M8 lines (+0x9e8
-   cm_FightAttacker|cm_FightDefender, +0xe4f gm_BuildingJob|gm_TitleJob, +0xf47 gm_Query|gm_GetGoodsValue)
-   are alignment artefacts inside code hunks: asmdiff --symbols shows the same calls on both sides one
-   instruction pair off (gm_BuildingJob then gm_TitleJob, gm_Query 0x2a/0x116 then
-   gm_GetGoodsValue(cm_FightDefender)); the call-count lines are the merged roundSums tail and the rotated
-   pump) */
+   @deep deep s50: no gotos left: the last pump is one loop at the end, while (wait && sv_RunFrame(..)),
+   wait = 1 set by the loot, the take (written out in both capture arms) and the bars of flags 4; the face
+   block written out in the n == 3 arm. VC6 threads wait per path (no code): the pump now sits after the
+   loot loop, non-rotated, sv_RunFrame x5 and gm_BuildQuery x8 as the original (an if (wait) while (..)
+   form stays rotated, x6; all spellings of the flag in the loop head compile the same). 696 -> 565 ins,
+   but 1521 vs 1508 instructions / 4974 vs 4915 bytes: the two take tails (player n == 2, AI k == 2) stay
+   two copies where the original has one (shared by cross-jumping or a jump into the player's copy). Left
+   besides that: the slots (obj [esp+0x18] / the second zero init [esp+0x10] in the original, ours 0x1c /
+   0x20 at the top), side stored once at the join in the original (ours per assignment; ternary / if-else
+   spellings = control), registers. prior: Read in full against 0x4d4d70..0x4d60a3 and rewritten typed;
+   meaning fixes: the money/goods take clears tc, tc[0] = ch_EmptyName[0], the loot list mode as two calls.
+   prior: Read in full against 0x4d4d70..0x4d60a3 and rewritten typed (CMFIGHTREC, AICHAR via
+   cm_FightAttackerC/DefenderC and ai_CharsT, AIBLD, AIBTYPE, AIOBJ, AIFIN; no G20_ macros). Meaning fixes:
+   the money/goods take clears tc (the draft cleared ba), tc[0] = ch_EmptyName[0] (the draft stored the
+   address), the loot list mode as two calls (the original's push 0 / push 1 merged tail, was setne). The
+   original's shared tails are kept as in its layout: the take tail (take_done) and the face block (face)
+   are reached from both capture branches, the last pump (pump) from the take and the flags-4 bars. All
+   statements line up (ours 1510 vs 1508). Left: allocation and tail placement - the original keeps a in
+   its arg slot and reloads it ([esp+0x1138]) where ours holds it in ebx, side in edi stored once to
+   [esp+0x14] (ours stores it per branch), our zero register edi (xor edi,edi; push edi) vs the original's
+   immediates, the slot pairs ob/cnt [esp+0x14]/[esp+0x1c] swapped between the two take copies; ours merges
+   the roundSums tail of the flags-4 branch into the take's (gm_BuildQuery x7 vs x8) and rotates the last
+   pump (sv_RunFrame x6 vs x5; the original's last pump is a non-rotated loop with esi=1 hoisted, a
+   for(;;)/break form compiles the same as ours); the epilogue after the n==1 path sits inline in the
+   original at 0x4d5685, ours jumps to it. (references: M8 at +0x9eb: ours refers to cm_FightAttacker
+   (0x6f0cec), the original's field to 0x6f0ce8 (cm_FightDefender, cm_FightDefenderC) (and 1 more),
+   explained: the three M8 lines (+0x9e8 cm_FightAttacker|cm_FightDefender, +0xe4f
+   gm_BuildingJob|gm_TitleJob, +0xf47 gm_Query|gm_GetGoodsValue) are alignment artefacts inside code hunks:
+   asmdiff --symbols shows the same calls on both sides one instruction pair off (gm_BuildingJob then
+   gm_TitleJob, gm_Query 0x2a/0x116 then gm_GetGoodsValue(cm_FightDefender)); the call-count lines are the
+   merged roundSums tail and the rotated pump) */
 void cm_FightEndDialog(CMFIGHTREC *a)
 {
     char ba[0x800];
@@ -3801,6 +3801,7 @@ void cm_FightEndDialog(CMFIGHTREC *a)
     AIFIN *rec;
     int win, i, n, role = 0, v, cnt, total, na, nb, id, k;
     int h, row, col, px, py;
+    int wait = 0;
 
     obj = 0;
     d2_CopyCaption(&ch_EmptyName);
@@ -3947,11 +3948,7 @@ void cm_FightEndDialog(CMFIGHTREC *a)
                 }
             }
         }
-    pump:   /* (the take and the bars of flags 4 too) */
-        while (sv_RunFrame((int)cm_FightEndDialog, 0x7d6c6)) {
-            if (dm_L.rup != 0 || d2_ClickedId == 0)
-                sv_PopRequest = 1;
-        }
+        wait = 1;
     } else if ((a->flags & 2) && side == cm_FightAttackerC && side->id == ai_PlayerId) {
         /* the player took the building: four outcomes to choose */
         ca = (AIBLD *)gm_BuildQuery(1, 1, a->placeId);
@@ -4004,7 +4001,6 @@ void cm_FightEndDialog(CMFIGHTREC *a)
                     v = (int)(gm_GoodsPrice(q->id, ai_OwnPlayer) * cnt + v);
                 }
             }
-        take_done:     /* (k == 2 below too) the take shown, its value added to the attacker's records */
             d2_SetForm(win, 1);
             io_PrintText(tc);
             rec = (AIFIN *)gm_PlayerRecord((char *)cm_FightAttacker);
@@ -4014,9 +4010,14 @@ void cm_FightEndDialog(CMFIGHTREC *a)
                 b = (AIBLD *)gm_BuildQuery(1, 1, a->attackerBldId);
                 b->roundSums[0] += v;
             }
-            goto pump;
+            wait = 1;
         } else if (n == 3) {
-            goto face;
+            tc[0] = ch_EmptyName[0];
+            memset(tc + 1, 0, 0x3ff);
+            txt_Format(tc, 0x11a6, cm_FightAttackerC->id, ca);
+            cm_MessageBox(tc, 0);
+            if (ai_CharsT[ai_PlayerId].netId == cm_FightOwner)
+                gm_ChangeBuildingState((unsigned char *)ca, 0x14 - cm_Random(0x14));
         } else if (n == 0) {
             /* the town guards are called: every guard (title groups 10 .. 12) turns against the attacker */
             txt_Format(ba, 0x11a7, cm_FightAttackerC->id, cm_FightAttackerC->id);
@@ -4071,7 +4072,7 @@ void cm_FightEndDialog(CMFIGHTREC *a)
                 b = (AIBLD *)gm_BuildQuery(1, 1, a->attackerBldId);
                 b->roundSums[0] += total;
             }
-            goto pump;
+            wait = 1;
         }
     } else if ((a->flags & 2) && side == cm_FightAttackerC && cm_FightAttackerC->kind != 6 && cm_FightAttackerC->kind != 7) {
         /* the AI took the building: the outcome by random (a guard's or a job's building of its own always) */
@@ -4107,9 +4108,17 @@ void cm_FightEndDialog(CMFIGHTREC *a)
                     v = (int)(gm_GoodsPrice(q->id, ai_OwnPlayer) * cnt + v);
                 }
             }
-            goto take_done;
+            d2_SetForm(win, 1);
+            io_PrintText(tc);
+            rec = (AIFIN *)gm_PlayerRecord((char *)cm_FightAttacker);
+            if (rec != 0)
+                rec->lootTakings += v;
+            if (a->attackerBldId != -1) {
+                b = (AIBLD *)gm_BuildQuery(1, 1, a->attackerBldId);
+                b->roundSums[0] += v;
+            }
+            wait = 1;
         } else if (k == 3) {
-        face:   /* the attacker gains face (n == 3 above too): the building's state drops by 1 .. 20 */
             tc[0] = ch_EmptyName[0];
             memset(tc + 1, 0, 0x3ff);
             txt_Format(tc, 0x11a6, cm_FightAttackerC->id, ca);
@@ -4125,6 +4134,10 @@ void cm_FightEndDialog(CMFIGHTREC *a)
                     cm_SendRelations(cm_FightAttackerC->netId, ch->netId, 6, 1);
             }
         }
+    }
+    while (wait && sv_RunFrame((int)cm_FightEndDialog, 0x7d6c6)) {
+        if (dm_L.rup != 0 || d2_ClickedId == 0)
+            sv_PopRequest = 1;
     }
     di_ClearEvents(0x10);
     d2_CloseView(win);
