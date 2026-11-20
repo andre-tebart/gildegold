@@ -1762,22 +1762,23 @@ void he_FreeEvent(int *r)
 /* 0x53e300, the next event record after he_Cursor that passes he_FindEvent's filter (he_FindKind, he_FindId, he_FindChr,
    he_FindFrom; a record whose first filters matched stays matched through the free records after it), up to the last
    used record he_EventTop (an error when that is out of range); 0 at the end
-   @deep s45: the three gotos replaced by a match flag (match = 1; each filter sets ok or clears match; if
-   (!match) ok = 0;): the same code (VC6 decides the flag per path). c2trace: the cursor is the global
-   candidate he_Cursor (k#24, prio 23, 14 refs), served before the hoisted filters (prio -42 each) and
-   takes eax; the original has the cursor in esi and he_FindKind in al (mov al,[he_FindFirst] also in eax),
-   so in the original the cursor is not served first or eax is closed to it. No change: the cursor as a
-   local p (he_Cursor = ++p), the filters copied into locals before the loop (182 bytes), both. Next: what
-   makes the cursor rank below the filters or keeps eax from it (a call / return use in its range? the
-   err_Message branch?). prior: read whole against the original and rewritten on AIJOB with the typed
-   filter globals: the he_EventTop range check and its error, the cursor checks (0 / == last / > last), the
-   he_FindFirst step, the filters hoisted (kind byte 0xff, id -1, chr word 0xffff, from -1), the ok flag
-   kept over the free records, the step to last and the cursor clear all match instruction for instruction.
-   Left is allocation: ours keeps the cursor in eax (returned directly) and saves edi late (push edi before
-   the chr load), the original keeps it in esi, pushes esi at the entry and moves it to eax in the shared
-   epilogue (+0x3ee mov eax, esi), so eax / esi / edi / edx rename through the function and the last
-   local's slot moves [esp+8] -> [esp+0xc]; tried the cursor as a local with returns in place, the single
-   exit, and he_Cursor itself throughout: the same two allocations */
+   @deep s52: the mechanism, by probe: with the cursor loaded into a local before the he_EventTop check (p
+   live across err_Message, so callee-saved) everything matches but the load's place and temp#aa /
+   he_FindKind (al / cl swapped): 12 ins. So in the original the cursor (k#24, pref eax from the return
+   copy, prio 23) must not get eax: either it spans a call or eax is taken over its range by a candidate
+   served before it (he_EventTop#1 eax prio 26 ends at line 1790; temp#aa 28 takes ecx because of the
+   cursor's eax pref, as the original). = control: a cursor local p (folds into he_Cursor), p with volatile
+   stores, an extern or block-static global instead of the he_QuickList view macro, the filters (or only
+   he_FindKind) as locals before the loop, the error test as >= 0 && < 0x400, he_FindFirst spellings (== 1:
+   59, arms swapped: 62), returns inside the loop (60-63). flip --want 'mov eax, esi' / 'mov esi,
+   _he_Cursor': nothing ordinary. climb 3 rounds: nothing. prior: s45: the three gotos replaced by a match
+   flag (match = 1; each filter sets ok or clears match; if (!match) ok = 0;): the same code (VC6 decides
+   the flag per path). c2trace: the cursor is the global candidate he_Cursor (k#24, prio 23, 14 refs),
+   served before the hoisted filters (prio -42 each) and takes eax; the original has the cursor in esi and
+   he_FindKind in al (mov al,[he_FindFirst] also in eax), so in the original the cursor is not served first
+   or eax is closed to it. No change: the cursor as a local p (he_Cursor = ++p), the filters copied into
+   locals before the loop (182 bytes), both. Next: what makes the cursor rank below the filters or keeps
+   eax from it (a call / return use in its range? the err_Message branch?). */
 char *he_NextEvent(void)
 {
     char ok = 0;
