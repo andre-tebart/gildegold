@@ -13459,8 +13459,8 @@ void he_RunSabotage(int ev)
             x->saboteur = c->netId;
             sv_MoveToGroup(0, 0, c->id, (char *)ev);
             cm_SendMoveGoodsUnchecked(-1, ai_CharsT[e->chr].netId, ai_OwnPlayer, x->fee);
-            x->slot = -1;
             e->stage++;
+            x->slot = -1;
             return;
         }
         x->saboteur = -1;
@@ -13630,7 +13630,6 @@ void he_RunSabotage(int ev)
             AIBTYPE *bt;
             struct SBSAMPLE *snd;
 
-            scene = d3_CurrentScene;
             a.x = -243.0f;
             a.y = -90.0f;
             a.z = 190.0f;
@@ -13640,6 +13639,7 @@ void he_RunSabotage(int ev)
             dir.z = 38.0f;
             dir.w = 0;
             scale = 1.0f;
+            scene = d3_CurrentScene;
             b = (AIBLD *)gm_BuildQuery(1, 1, x->target);
             if (b == 0) {
                 e->stage = -1;
