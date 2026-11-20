@@ -17484,33 +17484,51 @@ void he_AllocAmbush(AIJOB *ev)
    as raiders, in 15 minutes (stage 2). Else it waits 10 .. 14 minutes more until the event's time is up (then the
    cm ends it). Stage 2 waits for the party's slot (no party: cm slot 1), stage 3 waits (5 minutes) while the party
    runs, then ends a second later. Stages -2 / -1 send the gang (option 2) home and free the record
-   @deep s51: fixed stage 3's end clock (gm_AddTime(&end, 0, 0, 1): the original pushes 1, 0, 0) and laid
-   the level bands out as the original (if (level == 0 && ..) nearby = 1; else if (level == 1) { if (..)
-   nearby = 1; } .. else if (level == 5 && value > 700) nearby = 1;); 159 -> 146 ins, size 2155 vs 2162.
-   Read from the original: slots (frame > 0x80, density order) n +0x10, owner and stage 0's down-count
-   +0x14, o and stage -1's count +0x18, scene +0x1c, cartObj +0x20, busy +0x2c; b in ebx through the party
-   block, o and n memory there (so the strstr test of o is not threaded away and the second
-   ai_ArmGateGuards pushes literal 1); raid100 is if / else with two stores (ours a ternary: 5 bytes of the
-   size gap). Mechanism (c2trace --split): the post-loop block opens its own region (r5) in pass 4's bulk
-   split, so o#3 (outer test + strstr) takes ebx before b#1 (prio -3: b lives unreferenced through the 16 /
-   raid100 / arm loops) and n#4 takes edi in the arm loop. Measured: raid100 if / else alone 146 -> 239
-   (rotates the rest); with it climb move / swap: owner = -1 below d3_PointToWorld 117 (not the original's
-   store place), + owner before ambushed 115, + a probe read of n before memset 111; probe extra b
-   reference after raidHome 122; o address-taken probe 118. flip want b in ebx: 40 hits, all meaning
-   changes (deleting stores, duplicating raidHome, the chance block reordered); flip want cmp [n],1: only a
-   duplicated cm_SendChrGotoBuilding in stage 0. = control: continue / nested forms of the transport loop
-   (7 masks), n >= 3 as a break, b as a block-local or tested by if (b != 0) {..} break, case 1 / opts
-   block-scoped locals, the chance block as if / else / != 0, the band tests nested / negated / ternary /
-   goto take (the band sense jl take vs the original's jge nb / jmp take is the block-order pass's choice),
-   stage 0's loop as continue / nested, raidHome after memcpy, o->name tests. Left: the region split (b / o
-   / n), the transport loop's scratch rotation (d3_VecEqual argument ecx vs eax), the take block's stores
-   before the gm_Query argument loads, stage 3's common ai_Time load hoisted above its test. prior: size
-   queue s19 (raw 2172, padded 2176 vs 2192): the ai_ArmGateGuards prototype is in reach now (cm.h,
-   unsigned char kind): ours pushes eax as the original, the movsx of the older note is gone. Read at the
-   arm loop: the original keeps n in a slot ([esp+0x10]: cmp [esp+0x10],1 and push 1), ours n in edi, so
-   VC6's equality propagation turns the second call's literal 1 into push edi inside the n == 1 arm; the
-   lever is what keeps n memory-homed in the original (as gm_CreateObject's last). No lever: the stage 1
-   cart count as its own local (cnt, either declaration order) = control. */
+   @deep s52: applied what is visibly the original's, 146 -> 231 ins (the rest rotates): (1) the transport
+   loop's condition starts with the flag, for (; all != 0 && o != 0 && t != 0 && n < 3; ..): the latch then
+   jumps to the o test as the original (VC6 threads one test per edge only); (2) the bands set their own
+   flag rich (rich = 0 at the body's top, if (rich != 0 || nearby != 0)): VC6 decides rich per path and the
+   bands get the original's jge test / jmp take (the or-chain of all bands falls through to the next band
+   instead); (3) raid100 as if / else with two stores. Read from the original, all three still open: o, n,
+   owner, scene behave as memory-only values in stage 1: o is tested AGAIN before strstr (mov eax,[o]; test
+   eax,eax; je) although the party block is only reached with o != 0 (ours: no test, every spelling of
+   either test, a flag raid = 1 / if (raid), a name local, o through a pointer or a one-element array or a
+   struct with cartObj[3] = control or no test); n is loaded into eax at the arm loop's guard and latch and
+   compared from memory (cmp [n],1; push 1), but kept in esi across gm_Query in the take block (so n's
+   address did not go to a call); scene and o are loaded into eax pieces after the loop (ours a rotated
+   temp ecx, so everything behind is one scratch step off); b sits in ebx. Probes (never kept): { static
+   void *pm; pm = &n; } for n and o gives the original's slots (n +0x10, o +0x18), the strstr test, cmp
+   [n],1, push 1 and b in ebx at once (137 ins with the probe's code), but n is then reloaded after
+   gm_Query; address-taking in dead code (if (0), a dead store) = control. b in ebx alone: all#1's priority
+   (4) must fall below b#1's (-1): all = 1 above if (ev->opts & 2) does it (114 ins) but puts mov ebx,1
+   before the option test (the original has it behind). flip: no single mutation gives cmp [n],1 (755
+   mutants); the strstr test appears only when the post-loop o test is changed. Under 100 basic blocks
+   (cases removed as a probe: split one by one) n still takes edi. Take block: the original loads t->cart
+   first (edx), keeps the chr * 0x87 chain in eax (lea eax,[eax+eax*8]) and stores carts[n] after the
+   pushes, ambushed after the ai_CharInts load: order carts / owner / ambushed gives the ambushed store's
+   place (237 from 239), the cart load stays late. First code difference in the loop: d3_VecEqual's
+   argument mov eax,[eax+0x34] in place (ours a new temp ecx). prior: s51: fixed stage 3's end clock
+   (gm_AddTime(&end, 0, 0, 1): the original pushes 1, 0, 0) and laid the level bands out as the original
+   (if (level == 0 && ..) nearby = 1; else if (level == 1) { if (..) nearby = 1; } .. else if (level == 5
+   && value > 700) nearby = 1;); 159 -> 146 ins, size 2155 vs 2162. Read from the original: slots (frame >
+   0x80, density order) n +0x10, owner and stage 0's down-count +0x14, o and stage -1's count +0x18, scene
+   +0x1c, cartObj +0x20, busy +0x2c; b in ebx through the party block, o and n memory there (so the strstr
+   test of o is not threaded away and the second ai_ArmGateGuards pushes literal 1); raid100 is if / else
+   with two stores (ours a ternary: 5 bytes of the size gap). Mechanism (c2trace --split): the post-loop
+   block opens its own region (r5) in pass 4's bulk split, so o#3 (outer test + strstr) takes ebx before
+   b#1 (prio -3: b lives unreferenced through the 16 / raid100 / arm loops) and n#4 takes edi in the arm
+   loop. Measured: raid100 if / else alone 146 -> 239 (rotates the rest); with it climb move / swap: owner
+   = -1 below d3_PointToWorld 117 (not the original's store place), + owner before ambushed 115, + a probe
+   read of n before memset 111; probe extra b reference after raidHome 122; o address-taken probe 118. flip
+   want b in ebx: 40 hits, all meaning changes (deleting stores, duplicating raidHome, the chance block
+   reordered); flip want cmp [n],1: only a duplicated cm_SendChrGotoBuilding in stage 0. = control:
+   continue / nested forms of the transport loop (7 masks), n >= 3 as a break, b as a block-local or tested
+   by if (b != 0) {..} break, case 1 / opts block-scoped locals, the chance block as if / else / != 0, the
+   band tests nested / negated / ternary / goto take (the band sense jl take vs the original's jge nb / jmp
+   take is the block-order pass's choice), stage 0's loop as continue / nested, raidHome after memcpy,
+   o->name tests. Left: the region split (b / o / n), the transport loop's scratch rotation (d3_VecEqual
+   argument ecx vs eax), the take block's stores before the gm_Query argument loads, stage 3's common
+   ai_Time load hoisted above its test. */
 void he_RunAmbush(AIJOB *ev)
 {
     HEAMBUSH *x = (HEAMBUSH *)ev;
@@ -17523,7 +17541,7 @@ void he_RunAmbush(AIJOB *ev)
     D3OBJECT *o;
     D3VECTOR4 pos;
     int *p;
-    int k, n, all, nearby, scene, owner, chance, value, level;
+    int k, n, all, nearby, rich, scene, owner, chance, value, level;
 
     if (ev->exSlot != -1 && cm_GetSlotState(ev->exSlot) == 0)
         return;
@@ -17576,13 +17594,14 @@ void he_RunAmbush(AIJOB *ev)
             he_CharacterBehavior(ev, (float *)&pos);
             busy = (AIJOB *)he_FindEvent(1, 0, 0x51);
             t = (AIJOB *)he_FindEvent(1, 0, 0xf);
-            if (all != 0) {
-                for (; o != 0 && t != 0 && n < 3; t = (AIJOB *)he_NextEvent()) {
+            {
+                for (; all != 0 && o != 0 && t != 0 && n < 3; t = (AIJOB *)he_NextEvent()) {
                     unsigned goods[0x2e];
 
                     if (((HETRANSPORT *)t)->ambushed != 0 || t->chr == ev->chr || (owner != -1 && owner != ai_CharInts[t->chr][0]))
                         continue;
                     nearby = 0;
+                    rich = 0;
                     cart = (AIOBJ *)gm_FindObjectInst(((HETRANSPORT *)t)->cart);
                     if (cart == 0)
                         continue;
@@ -17594,22 +17613,22 @@ void he_RunAmbush(AIJOB *ev)
                         continue;
                     level = (int)(x->skill * 0.023809524f);
                     if (level == 0 && value > 100 && value < 500)
-                        nearby = 1;
+                        rich = 1;
                     else if (level == 1) {
                         if (value > 200 && value < 750)
-                            nearby = 1;
+                            rich = 1;
                     } else if (level == 2) {
                         if (value > 300 && value < 1000)
-                            nearby = 1;
+                            rich = 1;
                     } else if (level == 3) {
                         if (value > 500 && value < 1500)
-                            nearby = 1;
+                            rich = 1;
                     } else if (level == 4) {
                         if (value > 600 && value < 1750)
-                            nearby = 1;
+                            rich = 1;
                     } else if (level == 5 && value > 700)
-                        nearby = 1;
-                    if (nearby != 0) {
+                        rich = 1;
+                    if (rich != 0 || nearby != 0) {
                         carts[n] = t;
                         ((HETRANSPORT *)t)->ambushed = 1;
                         owner = ai_CharInts[t->chr][0];
@@ -17643,8 +17662,12 @@ void he_RunAmbush(AIJOB *ev)
                     party.raid.raiders[k] = -1;
                     party.raid.defenders[k] = -1;
                 }
-                for (k = 0; k < 3; k++)
-                    party.raid.raid100[k] = cartObj[k] != 0 ? cartObj[k]->objId : -1;
+                for (k = 0; k < 3; k++) {
+                    if (cartObj[k] != 0)
+                        party.raid.raid100[k] = cartObj[k]->objId;
+                    else
+                        party.raid.raid100[k] = -1;
+                }
                 for (k = 0; k < n; k++) {
                     if (cartObj[k]->escort == 2 && n == 1) {
                         ai_ArmGateGuards(&party, cartObj[k]->escort);
