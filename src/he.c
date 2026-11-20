@@ -13885,16 +13885,16 @@ void he_RunSpying(int ev)
         }
         txt_Format(text, (int)"Spionage: next target = %G", bld);
         c = (AICHAR *)gm_FindChar(s->spy);
-        if (c == 0) {
-            gm_AddTime(&e->end, 0, 1, 0);
-            e->exSlot = cm_SendExSetHEI(-1, ev);
+        if (c != 0) {
+            cm_SendChrStop(c->netId);
+            cm_SendChrGotoBuilding(c->netId, bld->id, -1, 0, 1, "Spionage");
+            gm_AddTime(&e->end, 0, 5, 0);
+            s->at = bld->id;
+            e->exSlot = cm_SendExSetHEI(2, ev);
             return;
         }
-        cm_SendChrStop(c->netId);
-        cm_SendChrGotoBuilding(c->netId, bld->id, -1, 0, 1, "Spionage");
-        gm_AddTime(&e->end, 0, 5, 0);
-        s->at = bld->id;
-        e->exSlot = cm_SendExSetHEI(2, ev);
+        gm_AddTime(&e->end, 0, 1, 0);
+        e->exSlot = cm_SendExSetHEI(-1, ev);
         return;
     case 2:
         gm_FindById(&bld, 0, 0, s->at);
