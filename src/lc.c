@@ -1283,22 +1283,7 @@ int d2_SetForm(int view, int n); int io_PrintText(char *fmt, ...);
    0x74f none, the column picture's icon 0x750 + the worst; shows the progress of the running job (kind 9 for
    column 0, else the kind 8 job of the column's goods: the progress picture 0x4fd and the fill fraction of the
    elapsed time) and the amount text (200 / 0xc9); then removes the columns from ncols up to 16. The fourth
-   argument is not read
-   @deep size queue s16: the input pictures' x goes through a short-x view (d2_WinOpenPicStyledS, as sv.c /
-   svtip.c): the original pushes k * 0x31 + 0x11 without movsx and computes it per call (110 -> 91 ins, raw
-   1429 -> 1427, padded still 1440 vs 1424: 3 bytes over). Left: the original holds 0x54 in ebp for the two
-   font stores and loads -1 into ecx per iconx / icony pair; ours makes -1 the ebp candidate (4 refs). No
-   lever: iconx = icony = -1 / icony = iconx = -1 chains (= control), icony copied from iconx (worse),
-   climb round 1 (its best was a float local, a meaning change). prior: rewritten from the original (was a
-   condensed skeleton, 1097 B; now 1429 vs 1421, 408 vs 406 instructions, same calls): the column build
-   (child window, font 0x54, frame 0x749, goods picture, input pictures with (short)(k*0x31+0x11), amount
-   window), the input marks from the AIRECIPE goods list (0x74f none / 0x74e short / 0x74d enough, icon
-   0x750 + worst), the job progress (kind 9 for column 0, else the kind 8 job of the goods; progress
-   picture 0x4fd, fillFraction = minutes(start, now) / minutes(start, end)), the amount texts 200 / 0xc9,
-   the removal of the columns up to 16 (the inPics loop the original unrolls through a pointer). All hunks
-   read: allocation - the original holds 0x54 in ebp for the two font stores and -1 in ecx per store (ours:
-   -1 in ebp, 0x54 immediate: 0x58c734 '+ mov ebp, 0x54' / 0x58c7a1 '- or ebp, -1'), keeps k in ebx with
-   the x recomputed (lea/shl) where ours strength-r... */
+   argument is not read */
 void ai_UpdateResourceColumns(int win, int part, int ncols, int unused)
 {
     AIBLD *bld;
@@ -1361,7 +1346,6 @@ void ai_UpdateResourceColumns(int win, int part, int ncols, int unused)
             }
         }
         d2_Objs[ai_ProdColumns[c].pic].icon = worst + 0x750;
-        amount = 0;
         if (c == 0) {
             job = (AIJOB *)he_FindEvent(2, 0, 9, 3, bld->id);
         } else {
@@ -1382,6 +1366,7 @@ void ai_UpdateResourceColumns(int win, int part, int ncols, int unused)
             }
             if (ai_ProdColumns[c].pic != -1)
                 d2_Objs[ai_ProdColumns[c].pic].fillFraction = 0;
+            amount = 0;
         }
         if (c == 0) {
             d2_LastWindow = ai_ProdColumns[0].amountWin;
