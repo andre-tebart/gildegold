@@ -1883,6 +1883,25 @@ Where the pushes and pops sit, how many epilogue copies there are, shared agains
   - Open: an ordinary reference of k in the loop in front of the call that emits nothing (k has no available
     expression to be redefined with), and the plain form of the step redefinition.
 
+- **Deep s53 (one function: ai_FamilyTreeWindow 277 -> 20 ins, size equal, not byte)**:
+  - **`mov bx, word ptr [..]` reading an int array element that is then kept in ebx (`add ebx,2; push ebx`) over
+    a call** = a `short` local holding the element (`t = siblingX[i];` before `d2_WinOpenPic(t, ..)`, `.x = w / 2 +
+    t`, `d2_WinOpenPic(t + 2, ..)`), not the element written at each use; a loop whose original form is the
+    strength-reduced pointer walk keeps the plain `siblingX[i - 4]` (277 -> 145).
+  - **A loop counter in another local's slot** (dcp frame: "shared in the original" i / hi): that loop had its own
+    counter (`j` for the father's relatives walk), whose lifetime lets it share hi's slot (145 -> 71).
+  - **`lea ebp,[eax+ebx]` at the end of a sum where ours accumulates in the target (`mov esi,eax; ..; add
+    esi,ebx`)**: the sum was no named local; it was written out at each use (a CSE temp copied into the
+    register) (71 -> 43).
+  - **Fills of small coordinate arrays in index order** (`oddX[0]; oddX[1]; oddX[2]; ..`) moved which register
+    holds the first value and stopped VC6 hoisting a load above the odd / even test (43 -> 30).
+  - **Zero inits stored before each `rep stosd` in the original, ours storing computed values there**: the zero
+    statements first, then the computed ones, then the memsets (`k = 0; n = 0; .. half = ..; w = ..; h = ..;
+    memset(..)`); stores of equal height keep list order around the rep stosd (840 orders, 30 -> 20).
+  - Left: an operand-order hunk of a reassociated sum against a CSE temp (`half - w + w / 2`) and the SIB base /
+    index order of `d2_Objs[row[k].ctrl]` stores (the original keeps c1's `[d2_Objs + idx]` at two boxes, swaps at
+    the others): no spelling, declaration, counter-sharing or order round moves either (function note).
+
 - **Which late passes delete instructions in a function: the call-skip map (d3t_MoveObjectPath, not byte)**:
   `tools/c2dag/c2fuzz.py` with the unit itself as probe (`C2FUZZ_PROBE`, the function in its probe form) switches
   off each of c2.dll's 15353 calls in turn (12 minutes); the sites where the function only GAINS instructions are
