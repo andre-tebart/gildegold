@@ -17227,9 +17227,9 @@ void he_RunBuildingSpying(AIJOB *ev)
     AIOBJ *room = 0, *stall, *it;
     HESPYREPORT rec;
     char text[0x400];
-    int k, n, sum, all, worth, goods, know, amt;
+    int k, n, sum, all, worth, goods, know;
     double mean;
-    float t, v;
+    float t, v, amt;
 
     switch (ev->stage) {
     case 0:
@@ -17331,7 +17331,7 @@ void he_RunBuildingSpying(AIJOB *ev)
         goods = 0;
         if (stall != 0) {
             for (it = (AIOBJ *)gm_Query((void *)stall->list, 1, 5); it != 0; it = (AIOBJ *)gm_QueryNext()) {
-                amt = gm_ListAmount(stall, it);
+                amt = (float)gm_ListAmount(stall, it);
                 goods += amt * gm_GoodsPrice(it->id, ai_OwnPlayer);
             }
         }
