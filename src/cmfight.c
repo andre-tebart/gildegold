@@ -744,26 +744,7 @@ CMGRENADE *cm_ThrowGrenade(D3VECTOR *p, int x, int y)
    (smoke, earth and explosion effects at its position), lowers the terrain at its cell by 5 and clears the cell's
    type there (the map rebuilt), sounds "Explosion_s" and hurts every scene character within 100.0 of the cell's
    vertex by a random weapon damage (0x176) scaled by its life value and the distance; returns the number of used
-   slots
-   @deep size queue s19: as cm_UpdateBombs (byte): the k local written inline into t's product (t =
-   (int)((cm_Random(..) + w->dmgMin) * (c->f01c * 0.01))) gives the original's frame 0x40 and t's own slot,
-   and the scene-char read as 'if (ai_SceneCharsT[j] == 0) continue; ch = ai_SceneCharsT[j]->scene; c =
-   ai_SceneCharsT[j];' gives the original's eax -> edi copy of c with ch read first: 99 -> 78 ins, raw 828
-   (padded size kept, 832). Left: register rotation in the terrain block (the original: mov
-   eax,[d3_Terrain]; mov edx,[rec->y]; mov ecx,[rec->x]; imul edx,[eax]; add ecx,edx; types at +0x14
-   through edx; ours keeps x in ebp) and an extra d3_Terrain reload before MakeDivide in the original. No
-   lever: the map local / cell local written out (nocell 79, nomap 78 = other regs, nomap-nocell 79); the
-   sound moved before the terrain block reaches 51 ins but is not the original's order (its sound pushes
-   follow MakeLight's add esp). prior: size queue s18: a / b with an int pad word (struct { float x, y, z;
-   int w; }): the original stores both w as integer 0 from its cached zero register (mov [..],ebx; b.y =
-   0.0f stays an immediate), so the integer 0 gains the references that give it ebx: 121 -> 99 ins, raw 843
-   -> 826, padded size (832). Left: frame 0x3c vs 0x40: the original keeps t in its own slot [esp+0x24]
-   (fild t, then fld dist; fmul 0.01f; fsubr 1.0), ours computes (1.0 - dist * 0.01f) before the k product
-   and reuses dist's slot for t. No lever (= control): the factor's operand orders (t * f / f * t, 0.01f *
-   dist), (c->f01c * 0.01) * k, (double)t. The same int pad is in cm_UpdateBombs (w from edi) and
-   he_RunSabotage (ebx). prior: read whole against the original: grenade walk (index loop over CMGRENADE,
-   base +0xc, jl), path-ended test D3ANIM.flags2d & 0x20, vectors a/b (D3VECTOR4, a reused for the vertex
-   difference), co... */
+   slots */
 
 int cm_UpdateGrenades()
 {
@@ -775,9 +756,8 @@ int cm_UpdateGrenades()
     CHARACTER *ch;
     struct { float x, y, z; int w; } a, b;   /* @original the pad word is an int: its 0 stores use the cached zero register */
     D3COLOR col;
-    D3FLMAP *map;
     float dist;
-    int i, j, t, amt, cell;
+    int i, j, t, amt;
 
     g = (struct D3SM *)d3_DefaultScene->hmap;
     cnt = 0;
@@ -807,10 +787,10 @@ int cm_UpdateGrenades()
         d3t_CreateSmoke(0, (D3VECTOR *)&a, 0x1e, 15.0f, 50.0f, 100.0f, 150.0f, 140.0f, 35.0f, (D3VECTOR *)&b, 0x190, 6, col);
         d3t_CreateEarth(0, (D3VECTOR *)&a, 0x1e, 5.0f, 2.5f, 1.0f, 3.0f, -3.0f, 4.0f, 7.0f, 8.0f, col);
         d3t_CreateExplosion(0, (D3VECTOR *)&a, 0x1e, 70.0f, 50.0f, 20.0f, 60.0f, 0x3c);
-        map = (D3FLMAP *)d3_Terrain;
-        cell = rec->x + rec->y * map->size;
-        if (map->types[cell] != 0) {
-            map->height[cell] -= 5;
+        /* @original the cell index reads x through the table and y through rec: written this way VC6 keeps the
+           index as one value for both arrays */
+        if (((D3FLMAP *)d3_Terrain)->types[cm_GrenadesT[i].x + rec->y * ((D3FLMAP *)d3_Terrain)->size] != 0) {
+            ((D3FLMAP *)d3_Terrain)->height[cm_GrenadesT[i].x + rec->y * ((D3FLMAP *)d3_Terrain)->size] -= 5;
             ((D3FLMAP *)d3_Terrain)->types[rec->x + rec->y * ((D3FLMAP *)d3_Terrain)->size] = 0;
             d3fl_MakeDivide((D3FLMAP *)d3_Terrain);
             d3fl_MakeLight((D3FLMAP *)d3_Terrain);
