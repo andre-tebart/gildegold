@@ -2658,29 +2658,29 @@ extern char ai_DataPath[];  /* 0x75dca0, the data path (am.h) */
    ai_ObjectAngle; green 0x40c040 on a site, red 0xc04040 off it), and a left release on a site asks the
    confirmation (text 0x17ef: the cost, the name, AIBTYPE.v243); returns the chosen site object and copies the
    picked model name names[idx] to out (out = "" and 0 when none was chosen)
-   @deep s(this) match-deep: 275 -> 59 ins by three frame levers read off the packing (c2frame --names + a
-   replay of the packer): (1) the name loop's letter and the model's fade are ONE float variable (count 10:
-   one slot between color and tf, conflicting with tf, so tf keeps its own); (2) px / pz block locals of
-   the height-map block (address-taken function locals never share; px shares best's slot, pz sel's); (3)
-   flagPath MAX_PATH bytes; the banner loop a for (i = 0 before the guard); ok = 1 / ok = 0 before each
-   arm's sv_SetStatusText (the original's mov edi,1 / xor edi,edi before the call). Left (59): result /
-   count slots swapped (both weight 4, the unstable sort); the banner's objectFlags store before
-   obj->info's load (24 fill orders x 7 sel / cur forms: no lever); sel = cur via eax; ok in esi where the
-   original has edi (and color / hmap pieces esi where ours edi). ok gets edi as soon as it interferes with
-   hit (esi): ok = 0 before 'hit = ..' (31 ins, but its xor lands early) or ok = 1 at the then-arm's head
-   (36, mov early) - so in the original ok is chosen after the color piece took esi (ok a pass-2 piece?) or
-   hit lives longer. Probes that also fix it: one 0x40 / 1 constant changed at one site (const candidates'
-   priorities). No lever: ok = 0 at the loop top / before the loop / at function top (dead), cur = ok = 0,
-   ok = hit, swapped arms (101), tf byte store orders, type = &ai_BTypes[kind] as a local (129+, bigger).
-   prior: Reconstructed in full from the original 0x58ff00..0x590995 (the name loop, the banner loop, the
-   interactive placement loop, the confirm and the cleanup), every call, store and string read against it;
-   refs_differ=0, ours 786 vs 787 instructions, frame equal. Left: 14 code lines of allocation/scheduling
-   only: +0x311 the original copies the banner to eax before storing sel and cur (mov eax, esi; mov [sel],
-   eax; mov [cur], eax) where ours stores esi twice (tried sel = cur = obj, cur = sel, D3OBJECT * sel, sel
-   = flags[i]: no change); +0x7ba fld v.y; fadd cm_Pi in the original vs fld cm_Pi; fadd v.y in ours (v.y
-   += cm_Pi, v.y = v.y + cm_Pi and cm_Pi + v.y all give ours); +0x97f the original pushes the known-zero
-   esi for sv_MessageBox(txt_Ptrs[0x17f0], 0) where ours pushes 0 (the original keeps esi as the zero
-   register through the banner loop). The rest is slots / order / regs. A variant round. */
+   @deep s(this) match-deep: 275 -> 16 ins (shape). Frame: the name loop's letter and the model's fade are
+   ONE float (letter), px / pz block locals of the height-map block, flagPath MAX_PATH bytes; the banners a
+   D3OBJECT *flags[] array used directly (flags[i]->objectFlags, no obj copy: the flag store then may alias
+   the info load, as in the original); the banner loop a for; cur = sel = flags[i]; ok = 1 / ok = 0 before
+   each arm's sv_SetStatusText; model->stateFlags |= 2 written in both colour arms (VC6 hoists it back
+   above the ok test, but the IL refs drop ok's priority below const#0#9 so ok is assigned after color#2
+   took esi: ok edi, color / hmap esi as in the original). Left (16): result and count slots swapped (frame
+   0x2c / 0x30). The packer list has result ahead of count (both 4 refs; on a tie the one whose LAST
+   counted ref comes first in the walk: result's 'if (result == 0)' before count's final cleanup), and the
+   density sort is c2.dll's K&R quicksort at 0x1076fc94 (swap lo/mid, last++ for dens > pivot; reproduced
+   in Python: B -> A exact): only count ahead of result in the list gives the original's order (probe: the
+   final cleanup loop moved above the result test flips it, but changes the code order). Not yet found: a
+   form where count's 4th counted ref precedes result's 4th with the original's code order. No lever:
+   declaration order, init order (90 moves), result test / confirm arm swaps. prior: Reconstructed in full
+   from the original 0x58ff00..0x590995 (the name loop, the banner loop, the interactive placement loop,
+   the confirm and the cleanup), every call, store and string read against it; refs_differ=0, ours 786 vs
+   787 instructions, frame equal. Left: 14 code lines of allocation/scheduling only: +0x311 the original
+   copies the banner to eax before storing sel and cur (mov eax, esi; mov [sel], eax; mov [cur], eax) where
+   ours stores esi twice (tried sel = cur = obj, cur = sel, D3OBJECT * sel, sel = flags[i]: no change);
+   +0x7ba fld v.y; fadd cm_Pi in the original vs fld cm_Pi; fadd v.y in ours (v.y += cm_Pi, v.y = v.y +
+   cm_Pi and cm_Pi + v.y all give ours); +0x97f the original pushes the known-zero esi for
+   sv_MessageBox(txt_Ptrs[0x17f0], 0) where ours pushes 0 (the original keeps esi as the zero register
+   through the banner loop). The rest is slots / order / regs. A variant round. */
 int lc_GebaeudeAusrichten(int kind, char *out)
 {
     char names[128][0x60];          /* the model files of the kind found in the vfs */
