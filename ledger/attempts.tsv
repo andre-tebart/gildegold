@@ -144,6 +144,7 @@ exe	0x00582b40	ai_GraveDetail	1
 exe	0x00583240	ai_GraveWindow	1
 exe	0x00583700	ai_RentGraveDetail	1
 exe	0x00588310	ai_OpenItemTooltip	1
+exe	0x0058ff00	lc_GebaeudeAusrichten	1
 exe	0x005a7cd0	ai_UpdateTownMap	1
 exe	0x005c4150	ai_FamilyTreeWindow	1
 exe	0x005ccc10	ai_Miracle	1

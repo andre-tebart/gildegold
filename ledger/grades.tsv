@@ -4145,7 +4145,7 @@ exe	0x0058fd40	ai_ObjectPosition	lc	byte	readable
 exe	0x0058fd90	ai_ObjectAngle	lc	byte	readable		
 exe	0x0058fe10	ai_FindNearestObject	lc	byte	readable		
 exe	0x0058feb0	ai_DropObjectAt	lc	byte	readable		
-exe	0x0058ff00	lc_GebaeudeAusrichten	lc	draft	readable	deep	
+exe	0x0058ff00	lc_GebaeudeAusrichten	lc	shape	readable	deep	
 exe	0x005909a0	ai_ConstructionWindow	lc	draft	readable	deep	
 exe	0x00591170	ai_HandleMapKey	lc	byte	readable		
 exe	0x005912c0	ai_TradeContactChecks	lc	byte	readable		
@@ -4199,7 +4199,7 @@ exe	0x005976a0	ai_TavernRulesWindow	lc	byte	readable
 exe	0x00597780	ai_DrawDice	lc	byte	readable		
 exe	0x00597810	ai_DrawDuelDice	lc	byte	readable		
 exe	0x00597920	ai_DrawDuelThrow	lc	byte	readable		
-exe	0x00597a10	ai_DuelDiceAnimation	lc	draft	readable	deep	
+exe	0x00597a10	ai_DuelDiceAnimation	lc	byte	readable		
 exe	0x00597e70	ai_DrawDuelEnd	lc	byte	readable		
 exe	0x00598170	ai_TavernDiceWindow	lc	byte	readable		
 exe	0x00598b80	ai_StammtischWindow	lc	byte	readable		
