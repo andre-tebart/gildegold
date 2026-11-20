@@ -2658,29 +2658,31 @@ extern char ai_DataPath[];  /* 0x75dca0, the data path (am.h) */
    ai_ObjectAngle; green 0x40c040 on a site, red 0xc04040 off it), and a left release on a site asks the
    confirmation (text 0x17ef: the cost, the name, AIBTYPE.v243); returns the chosen site object and copies the
    picked model name names[idx] to out (out = "" and 0 when none was chosen)
-   @deep s(this) match-deep: 275 -> 16 ins (shape). Frame: the name loop's letter and the model's fade are
-   ONE float (letter), px / pz block locals of the height-map block, flagPath MAX_PATH bytes; the banners a
-   D3OBJECT *flags[] array used directly (flags[i]->objectFlags, no obj copy: the flag store then may alias
-   the info load, as in the original); the banner loop a for; cur = sel = flags[i]; ok = 1 / ok = 0 before
-   each arm's sv_SetStatusText; model->stateFlags |= 2 written in both colour arms (VC6 hoists it back
-   above the ok test, but the IL refs drop ok's priority below const#0#9 so ok is assigned after color#2
-   took esi: ok edi, color / hmap esi as in the original). Left (16): result and count slots swapped (frame
-   0x2c / 0x30). The packer list has result ahead of count (both 4 refs; on a tie the one whose LAST
-   counted ref comes first in the walk: result's 'if (result == 0)' before count's final cleanup), and the
-   density sort is c2.dll's K&R quicksort at 0x1076fc94 (swap lo/mid, last++ for dens > pivot; reproduced
-   in Python: B -> A exact): only count ahead of result in the list gives the original's order (probe: the
-   final cleanup loop moved above the result test flips it, but changes the code order). Not yet found: a
-   form where count's 4th counted ref precedes result's 4th with the original's code order. No lever:
-   declaration order, init order (90 moves), result test / confirm arm swaps. prior: Reconstructed in full
-   from the original 0x58ff00..0x590995 (the name loop, the banner loop, the interactive placement loop,
-   the confirm and the cleanup), every call, store and string read against it; refs_differ=0, ours 786 vs
-   787 instructions, frame equal. Left: 14 code lines of allocation/scheduling only: +0x311 the original
-   copies the banner to eax before storing sel and cur (mov eax, esi; mov [sel], eax; mov [cur], eax) where
-   ours stores esi twice (tried sel = cur = obj, cur = sel, D3OBJECT * sel, sel = flags[i]: no change);
-   +0x7ba fld v.y; fadd cm_Pi in the original vs fld cm_Pi; fadd v.y in ours (v.y += cm_Pi, v.y = v.y +
-   cm_Pi and cm_Pi + v.y all give ours); +0x97f the original pushes the known-zero esi for
-   sv_MessageBox(txt_Ptrs[0x17f0], 0) where ours pushes 0 (the original keeps esi as the zero register
-   through the banner loop). The rest is slots / order / regs. A variant round. */
+   @deep s(this) match-deep: 275 -> 16 ins (shape). Frame: the name loop's letter and the shown model's
+   fade are ONE float (f), px / pz block locals of the height-map block, flagPath MAX_PATH bytes; the
+   banners a D3OBJECT *flags[] array used directly (flags[i]->objectFlags, no obj copy: the flag store then
+   may alias the info load, as in the original); the banner loop a for; cur = sel = flags[i]; ok = 1 / ok =
+   0 before each arm's sv_SetStatusText; model->stateFlags |= 2 written in both colour arms (VC6 hoists it
+   back above the ok test; the IL refs drop ok's priority below const#0#9, so ok is assigned after color#2
+   took esi: ok edi, color / hmap esi). Left (16): result and count slots swapped (frame 0x30 / 0x2c in the
+   original). Mechanism: both weigh 4 (dens 1000); the packer list puts the local that reaches its final
+   count first in the ref walk (layout order) ahead: result (last ref: the 'if (result == 0)' load) before
+   count (last ref: the final cleanup's bound); c2.dll's density sort is the K&R quicksort at 0x1076fc94
+   (mid to lo, last++ for dens > pivot; reproduced in Python from c2frame's B rows: exact), and only count
+   ahead of result in the list gives the original's A order (probe: the final cleanup loop above the result
+   test flips it but moves code). The listing counts per slot are equal in both binaries, so the original's
+   walk differs by a ref that a late pass creates or removes. No lever: declaration order, init order (90
+   moves), dead count = 0, loop forms of the banner loop (for / ++i / while / if + do), result test /
+   confirm arm swaps, climb 3 rounds (nothing below 16). prior: Reconstructed in full from the original
+   0x58ff00..0x590995 (the name loop, the banner loop, the interactive placement loop, the confirm and the
+   cleanup), every call, store and string read against it; refs_differ=0, ours 786 vs 787 instructions,
+   frame equal. Left: 14 code lines of allocation/scheduling only: +0x311 the original copies the banner to
+   eax before storing sel and cur (mov eax, esi; mov [sel], eax; mov [cur], eax) where ours stores esi
+   twice (tried sel = cur = obj, cur = sel, D3OBJECT * sel, sel = flags[i]: no change); +0x7ba fld v.y;
+   fadd cm_Pi in the original vs fld cm_Pi; fadd v.y in ours (v.y += cm_Pi, v.y = v.y + cm_Pi and cm_Pi +
+   v.y all give ours); +0x97f the original pushes the known-zero esi for sv_MessageBox(txt_Ptrs[0x17f0], 0)
+   where ours pushes 0 (the original keeps esi as the zero register through the banner loop). The rest is
+   slots / order / regs. A variant round. */
 int lc_GebaeudeAusrichten(int kind, char *out)
 {
     char names[128][0x60];          /* the model files of the kind found in the vfs */
