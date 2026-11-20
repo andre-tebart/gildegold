@@ -5072,33 +5072,24 @@ void ai_ShowMissions(int owner);
    powerFlags has 0x20) and with it the profession choice for a jobless child (no event 0x5e and f020 at most the
    age + 4) or the university for one with a profession that has not studied (powerFlags 0x10000), and for the
    player's own character the missions button when it has missions. The right button closes it.
-   @deep s48: kept (100 -> 20 ins, draft -> shape): professionBtn / universityBtn as scalars with a
-   block-local int btns[2] per sv_ButtonRow arm (giftBtn = btns[0]; X = btns[1];) - the frame then shares
-   each scalar's slot with its arm's array and universityBtn takes ebp in the click loop as in the
-   original; row = 0 before d2_SetForm(win, 3); in the skill loop row++; y += 0x18; before the txt_Format;
-   each header / ailment line's row++ after the .centred store. Left (20 ins, two causes): (1) the job /
-   title arms: the original adds into the jobId CSE register (and eax,0xff .. add eax,ecx; push eax), ours
-   into the ternary's (add ecx,eax; push ecx), which also rotates the title arm's ternary to edx. Mechanism
-   (probe): VC6 adds into jobId's register only when the ternary's register is not free after the add - a
-   named base kept live after the print (probe: officeBase = sex ? 0x18f : 0x130; print(jobId +
-   officeBase); probeX = officeBase;) gives add eax,reg; ord_WageReportOrder (byte) has that shape with a
-   base local in ebx. Every plain form folds the base (single-use locals, i / y / row / officeBase reused,
-   t += forms): ~70 spellings, casts, bitfield views, __inline helpers, nested / two-if / one-call / sex-if
-   arms, probes of chr->sex / chr->jobId earlier: all add ecx,eax. Open: what keeps the ternary's ecx alive
-   past the add in the original. (2) the click loop's entry reloads (ebx win, esi giftBtn, ebp
-   universityBtn in the original; ours ebp before esi): swapping the universityBtn / giftBtn inits fixes it
-   but moves the init stores; candidate-id order (decl moves = control). prior: Reconstructed in full
-   against the original (all 999 instructions read: the dates, profession / title, offices, worth, partner
-   / betrothal event 0x41 walk, faith, children, the skill bars and the nine ailment rows, the button
-   ladder of page 4 and the click dispatch); all calls, literals and references agree, no M8/M9. Remaining:
-   the original does not strength-reduce or constant-fold the row counter of page 3 - in the skill loop it
-   keeps row in esi (inc esi; lea eax,[esi+esi*2]; lea ecx,[eax*8+1]) and computes the header / ailment
-   rows at run time (lea ecx,[eax*8+0xa]; inc esi), where ours carries row*0x18+1 as a stepped counter and
-   folds the later rows to constants (mov esi,7 / push 0x9a / push 0xb2): tried ++row in the call,
-   (row+1)*0x18+1 with a trailing row++, both keep the reduction (8 instructions fewer: ours 991 vs 999);
-   the original keeps universityBtn[0] in ebp (cmp eax,ebp) where ours reloads [esp+0x24]; the rest is
-   order / regs / slots; proof stops at the escaped frame layout (gift / professionBtn / universityBtn
-   slots). */
+   @deep s48: proven byte under a declaration set (5 unused typedefs at the unit's start;
+   ledger/tiebreak.tsv): the text is done, the unit's declaration set is the open part. Levers:
+   professionBtn / universityBtn as scalars with a block-local int btns[2] per sv_ButtonRow arm; row = 0
+   before d2_SetForm(win, 3); the skill loop's row++; y += 0x18; before the txt_Format and each header /
+   ailment line's row++ after the .centred store; the job / title text base as a local set by if / else (if
+   (chr->sex) base = 0x18f; else base = 0x130;) - a variable with two definitions is no forward-substituted
+   ternary, so VC6 adds into the jobId register (add eax,ecx) as the original; ~70 ternary spellings never
+   did. prior: Reconstructed in full against the original (all 999 instructions read: the dates, profession
+   / title, offices, worth, partner / betrothal event 0x41 walk, faith, children, the skill bars and the
+   nine ailment rows, the button ladder of page 4 and the click dispatch); all calls, literals and
+   references agree, no M8/M9. Remaining: the original does not strength-reduce or constant-fold the row
+   counter of page 3 - in the skill loop it keeps row in esi (inc esi; lea eax,[esi+esi*2]; lea
+   ecx,[eax*8+1]) and computes the header / ailment rows at run time (lea ecx,[eax*8+0xa]; inc esi), where
+   ours carries row*0x18+1 as a stepped counter and folds the later rows to constants (mov esi,7 / push
+   0x9a / push 0xb2): tried ++row in the call, (row+1)*0x18+1 with a trailing row++, both keep the
+   reduction (8 instructions fewer: ours 991 vs 999); the original keeps universityBtn[0] in ebp (cmp
+   eax,ebp) where ours reloads [esp+0x24]; the rest is order / regs / slots; proof stops at the escaped
+   frame layout (gift / professionBtn / universityBtn slots). */
 void ai_CharInfoPanel(AICHARREC *chr, int other)
 {
     int win;
@@ -5123,6 +5114,7 @@ void ai_CharInfoPanel(AICHARREC *chr, int other)
     int any;
     int row;
     int obj;
+    int base;
 
     dead = 0;
     takeOverBtn = -1;
@@ -5149,10 +5141,19 @@ void ai_CharInfoPanel(AICHARREC *chr, int other)
     } else {
         io_PrintText("$5<$R%s$0<$3>$L%i$A$0>", 0x1f54, (int)gm_CharAge(chr->id));
     }
-    if (chr->jobId != 0)
-        io_PrintText("$5<$R%s$0<$3>$L%s$A$0>", 0x1f55, (chr->sex ? 0x18f : 0x130) + chr->jobId);
-    else if (chr->title != 0)
-        io_PrintText("$5<$R%s$0<$3>$L%s$A$0>", 0x1f56, (chr->sex ? 0x230 : 0x20d) + chr->title);
+    if (chr->jobId != 0) {
+        if (chr->sex)
+            base = 0x18f;
+        else
+            base = 0x130;
+        io_PrintText("$5<$R%s$0<$3>$L%s$A$0>", 0x1f55, chr->jobId + base);
+    } else if (chr->title != 0) {
+        if (chr->sex)
+            base = 0x230;
+        else
+            base = 0x20d;
+        io_PrintText("$5<$R%s$0<$3>$L%s$A$0>", 0x1f56, chr->title + base);
+    }
     officeBase = chr->sex ? 0x27b : 0x253;
     if (chr->officeKind == 0 && chr->secondOffice == 0) {
         txt_Format(text, "%s", "-");
