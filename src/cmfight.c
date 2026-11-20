@@ -4074,10 +4074,8 @@ void cm_FightEndDialog(CMFIGHTREC *a)
                 cm_SendMoveGoods(cm_FightAttackerC->netId, -1, ai_OwnPlayer, total);
             else if (ai_PlayerId == cm_FightAttackerC->id)
                 io_PrintText(0x11b6);
-            if (a->attackerBldId != -1) {
-                b = (AIBLD *)gm_BuildQuery(1, 1, a->attackerBldId);
-                b->roundSums[0] += total;
-            }
+            if (a->attackerBldId != -1)
+                ((AIBLD *)gm_BuildQuery(1, 1, a->attackerBldId))->roundSums[0] += total;
             wait = 1;
         }
     } else if ((a->flags & 2) && side == cm_FightAttackerC && cm_FightAttackerC->kind != 6 && cm_FightAttackerC->kind != 7) {
