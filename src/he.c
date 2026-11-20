@@ -13416,7 +13416,24 @@ int ord_DispatchOrder(int id, char *c, int *m);
    stage is 6. 6: back home (else 4 more minutes) it is cancelled. 7: the accusation answered, the proof goes to the
    watch (cm_SendProofExecuted), the stage is 8 in 10 minutes. 8: while the watch event still holds it 6 more
    minutes, then the saboteur walks home (stage 6). Stages -2 / -1 kill the saboteur and free the event
-   @deep s50: 137 -> 100 ins, size now the original's 3544 (125 bytes differ). Kept: stage 0 as he_RunBrawl
+   @deep s51: 100 -> 98 ins. Kept: stage 5's a / dir / scale as initialized declarations before dummies (a
+   = { -243, -90, 190, 0 }, dir = { -50, 0, 38, 0 }, scale = 1.0f; scene = d3_CurrentScene the first
+   statement): the stosw now after the vector stores as the original (stage 5 byte). Left: only stage 4's
+   failure path one eax/ecx/edx rotation step behind from the owner chain (+0x70c) to the failure gv_Accuse
+   (+0x5597a0). Measured (c2dag): the success tail's last temps are eax (&end slot reload), ecx (copy), edx
+   (4 data); the probe's temp (after gm_AddTime, before return) takes eax and the failure then matches (42
+   ins, only the probe), as does any read placed there (p-scene, a reload of me after the call: 50 with
+   me's slot count changed; a re-query of b at the failure start: 48). So the original had one scratch temp
+   (eax) between the success tail's gm_AddTime and the owner chain that leaves no code. = control this
+   session: if/else forms (success without return + common return/break, failure in else), the condition
+   inverted (!(..) forms; < 1.0f || has changes the fcomp test to test ah,5), the owner / me index casts
+   ((int), (unsigned), & 0xffff, byte offset), the loop as while / do / ++i / continue forms / i = 0 apart,
+   stage++ as stage + 1, the loop body through c, a dead-store double of e->end = ai_Time (worse 106),
+   x->blasts = 0 in the failure (101), an int-returning gm_AddTime cast (= control: an unused result is no
+   temp). flip (want push 704 + the failure chain's lea ecx): only the duplicated gm_AddTime (1013 of 1230
+   mutants). climb 1 round: only a float t = me->kind (meaning change). Next: cross-jumped-away code
+   (notes: an extra body VC6 merged after allocation skips a rotation step), a late-removed copy. prior:
+   s50: 137 -> 100 ins, size now the original's 3544 (125 bytes differ). Kept: stage 0 as he_RunBrawl
    (e->stage++ then x->slot = -1); stage 1 and stage 3 end with break (their stage++ tails are then no
    cross-jump targets, so stage 2's stage++ jumps into stage 4's +0x7cd as the original); stage 3's found
    path stores watch before stage 7; stage 4's accusation exit (if (b->owner != 0xffff) {..; e->stage = -1;
@@ -13436,16 +13453,7 @@ int ord_DispatchOrder(int id, char *c, int *m);
    failure as else arm; worse: swap me / owner, stage++ after the call, gv_Accuse in both arms of the kind
    test, me->netId / owner->netId in the accusations. climb 2 + 4 (unsafe) rounds: only meaning changes or
    a float local (t = me->kind) in the inventory branch. (2) stage 5's stosw (dummies' zero-fill tail)
-   after the float vector stores in the original; dummies' declaration position = control. prior: size
-   queue s18: stage 5's a / dir with an int pad word (struct { float x, y, z; int w; }: the original stores
-   both w as integer 0 from its cached ebx, as cm_UpdateGrenades): 160 -> 142 ins; stage 2's busy test
-   written positive (if (c->scene->actions != 0) { end = now + 4; stage = 2; return; } stage++; return;) so
-   its stage++ jumps into stage 4's copy as the original (je +0x7cd): 142 -> 137 ins, raw 3575 -> 3553,
-   padded size (3600). retgen single (30 return sites, 61 variants): no row below the control. Left: the
-   stage = 6 tail at +0x10f (ours inline at +0xd5d), stage 3's found-path store order (add esi,0x52 first
-   in the original), stage 4's failure-path lea order (lea ecx / lea ebx, the scratch rotation behind it
-   through +0x5597a0), stage 5's dir.y also stored from ebx in the original (dir.y = 0.0f / 0: = same
-   code). */
+   after the float vector stores in the original; dummies' declaration position = control. */
 void he_RunSabotage(int ev)
 {
     AIJOB *e = (AIJOB *)ev;
@@ -13632,24 +13640,17 @@ void he_RunSabotage(int ev)
     case 5:
         if (x->blasts < 1) {
             int scene;
-            float scale;
             D3COLOR col;
-            struct { float x, y, z; int w; } a, dir;   /* @original the pad word is an int: its 0 stores use the cached zero register */
+            /* @original the pad word is an int: its 0 stores use the cached zero register */
+            struct { float x, y, z; int w; } a = { -243.0f, -90.0f, 190.0f, 0 };
+            struct { float x, y, z; int w; } dir = { -50.0f, 0, 38.0f, 0 };
+            float scale = 1.0f;
             char dummies[3][0x40] = { "dummy_TUER", "dummy_FAHNE", "dummy_RAUCH_0" };
 
             D3OBJECT *o;
             AIBTYPE *bt;
             struct SBSAMPLE *snd;
 
-            a.x = -243.0f;
-            a.y = -90.0f;
-            a.z = 190.0f;
-            a.w = 0;
-            dir.x = -50.0f;
-            dir.y = 0;
-            dir.z = 38.0f;
-            dir.w = 0;
-            scale = 1.0f;
             scene = d3_CurrentScene;
             b = (AIBLD *)gm_BuildQuery(1, 1, x->target);
             if (b == 0) {
