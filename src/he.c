@@ -17484,24 +17484,30 @@ void he_AllocAmbush(AIJOB *ev)
    as raiders, in 15 minutes (stage 2). Else it waits 10 .. 14 minutes more until the event's time is up (then the
    cm ends it). Stage 2 waits for the party's slot (no party: cm slot 1), stage 3 waits (5 minutes) while the party
    runs, then ends a second later. Stages -2 / -1 send the gang (option 2) home and free the record
-   @deep s51: fixed the stage 3 meaning bug (the end clock gets gm_AddTime(&end, 0, 0, 1), one second, not
-   an hour: the original pushes 1, 0, 0). 159 -> 146 ins, size 2155 vs 2162. Kept: the level bands as if
-   (level == 0 && ..) nearby = 1; else if (level == 1) { if (value > 200 && value < 750) nearby = 1; } ..
-   else if (level == 5 && value > 700) nearby = 1; if (nearby != 0) {..}: the original's addresses; left
-   there: each nested band's sense (ours jl take / jmp nb, the original jge nb / jmp take; nested ifs, a
-   negated or, a ternary = same code). Left elsewhere: (1) the party block: the original keeps b in ebx and
-   o in its slot (the strstr test of o kept: o not known there), ours o#3 takes ebx (c2trace: b#1 prio -3
-   split, o#3 pass 5); n memory in the original's arm loop (cmp [n],1; the second ai_ArmGateGuards pushes
-   1), ours n#4 in edi (push edi); slots n / o swapped (original n +0x10, o +0x18). (2) raid100 as if /
-   else stores (the original's two stores, jmp) = right shape but rotates everything (242). (3) the take
-   block's stores sink below the gm_Query argument loads in the original (permute of the 4 statements: 153
-   best). (4) stage 1's d3_VecEqual argument one rotation step (ecx vs eax). = control: b as a block-local
-   home, climb 2 rounds (only a float escort local). prior: size queue s19 (raw 2172, padded 2176 vs 2192):
-   the ai_ArmGateGuards prototype is in reach now (cm.h, unsigned char kind): ours pushes eax as the
-   original, the movsx of the older note is gone. Read at the arm loop: the original keeps n in a slot
-   ([esp+0x10]: cmp [esp+0x10],1 and push 1), ours n in edi, so VC6's equality propagation turns the second
-   call's literal 1 into push edi inside the n == 1 arm; the lever is what keeps n memory-homed in the
-   original (as gm_CreateObject's last). No lever: the stage 1 cart count as its own local (cnt, either
+   @deep s51: fixed stage 3's end clock (gm_AddTime(&end, 0, 0, 1): the original pushes 1, 0, 0) and laid
+   the level bands out as the original (if (level == 0 && ..) nearby = 1; else if (level == 1) { if (..)
+   nearby = 1; } .. else if (level == 5 && value > 700) nearby = 1;); 159 -> 146 ins, size 2155 vs 2162.
+   Facts read from the original: frame slots (> 0x80, density order) n +0x10, owner and stage 0's
+   down-count +0x14, o and stage -1's count +0x18, scene +0x1c, cartObj +0x20, busy +0x2c; b in ebx through
+   the party block; o and n memory there (the strstr test of o stays: o is no register there, so the test
+   is not threaded away; the second ai_ArmGateGuards pushes literal 1: n == 1 not in a register); raid100
+   is if / else with two stores (ours ternary: 5 bytes of the size gap). Levers measured (dcp try rows):
+   raid100 if / else 146 -> 239 alone (rotates the rest); with it, climb move / swap: owner = -1 moved
+   below d3_PointToWorld 117 (not the original's store position, but owner's live range decides the slots),
+   + owner = .. before ambushed 115, + a probe read of n before the party memset 111; a probe extra
+   reference of b after raidHome gives b ebx (122); o address-taken probe 118 (o must lose its register:
+   o#3 takes ebx before b#1 in the bulk split). = control: continue forms of the transport loop (all 7
+   nestings), b as a block-local home, raidHome after memcpy, o->name tests, nested / negated band tests
+   (each band's sense: ours jl take / jmp nb, the original jge nb / jmp take). flip (want cmp [n],1 in the
+   arm loop): only a duplicated cm_SendChrGotoBuilding in stage 0 (the region split of the whole function
+   decides n#4). Left: the region split (n#4 edi, o#3 ebx), stage 1's transport-loop scratch rotation (ecx
+   vs eax at the d3_VecEqual argument), the take block's store order, stage 3's arm hoisting (ours hoists
+   the ai_Time load: the arms' registers differ in the original). prior: size queue s19 (raw 2172, padded
+   2176 vs 2192): the ai_ArmGateGuards prototype is in reach now (cm.h, unsigned char kind): ours pushes
+   eax as the original, the movsx of the older note is gone. Read at the arm loop: the original keeps n in
+   a slot ([esp+0x10]: cmp [esp+0x10],1 and push 1), ours n in edi, so VC6's equality propagation turns the
+   second call's literal 1 into push edi inside the n == 1 arm; the lever is what keeps n memory-homed in
+   the original (as gm_CreateObject's last). No lever: the stage 1 cart count as its own local (cnt, either
    declaration order) = control. */
 void he_RunAmbush(AIJOB *ev)
 {
