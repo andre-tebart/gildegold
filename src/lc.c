@@ -7310,19 +7310,7 @@ int gv_EvidencePrice(); void cm_SendScriptMessage(void *p); void cm_SendProofExe
    amount rows with the culprits; on a change frame 1 shows 0x18a3 and per offer its row and its text (0x18a5 with
    the law's name 0x13fd + law * 5 and the price, 0x18a6 for none), and frame 2 shows 0x18a8 while an order 0x74
    of this building runs (he_FindEvent), else the order button 0x18a7 once corner->cornerYear is past. A click on
-   it sends the order message 0x74 (the player, the building, the clock, the room); the right button leaves
-   @deep frame sweep s21: 73 -> 47 ins: price / who (gv_EvidencePrice's out-parameters) locals of the
-   evidence loop's body; msg / text as block locals = control. Left: code 55, regs 36. prior: Reconstructed
-   whole from the original (the three gv_EvidencePrice offers with cur/vals/law, the rows LCAMOUNTROW, the
-   y-controlled draw loop to 0x181, the order-0x74 event check via AIJOB.id2, AIOBJ.cornerYear vs
-   ai_Time.year, the AIMSG 0x74 with D3_ZERO, time copy, arg[1]/arg[2]). Left: frame layout and allocation
-   only: the original lays the arrays cur -0x18 / vals -0x28 / law -0x40 and price -0x2c / who -0x30 /
-   D3_ZERO's _zn -0x34 _zp -0x1c, ours cur -0x20 / vals -0x34 / price -0x10 / who -0x14 / _zn -0x28 _zp
-   -0x24 (the indexed [ebp+edi-0x18] vs [ebp+edi-0x20] lines are the 'code' hunks); the original keeps 0 in
-   ebx through the head (push ebx, vals=ebx), ours in edi after rep stosd; ours loads cur[i] before the
-   gv_EvidencePrice test ('mov ecx,[ebp+edi-0x20]'), the original in each branch; 'mov [ebp-4],0' vs ours
-   'mov [ebp-4],esi'. Tried: five declaration orders of the locals (no change: VC6 does not lay them by
-   declaration), ctl before cur, the compare's operand order */
+   it sends the order message 0x74 (the player, the building, the clock, the room); the right button leaves */
 
 void ai_DarkCornerMenu(AIBLD *bld, AIOBJ *room, AIOBJ *corner)
 {
@@ -7342,14 +7330,14 @@ void ai_DarkCornerMenu(AIBLD *bld, AIOBJ *room, AIOBJ *corner)
     int found;
     AIJOB *ev;
 
+    vals[0] = 0;
+    vals[1] = 0;
+    vals[2] = 0;
     ctl = -1;
     cur[0] = -1;
     cur[1] = -1;
     cur[2] = -1;
     memset(rows, 0, sizeof(rows));
-    vals[0] = 0;
-    vals[1] = 0;
-    vals[2] = 0;
     win = d2_OpenForm(0, 0, "locations\\Wirtshaus\\DUNKLEECKE");
     d2_CentreViewWindows(win);
     d2_SetForm(win, 0);
@@ -7363,11 +7351,11 @@ void ai_DarkCornerMenu(AIBLD *bld, AIOBJ *room, AIOBJ *corner)
             unsigned short who;
 
             if (gv_EvidencePrice(corner->recs[i], ai_Chars[bld->owner], &price, &who, &law[i]) != 0) {
-                if (corner->recs[i] != cur[i])
+                if (cur[i] != corner->recs[i])
                     changed = 1;
-                cur[i] = corner->recs[i];
                 rows[i].rec = (AICHARREC *)ai_Chars[who];
                 vals[i] = price;
+                cur[i] = corner->recs[i];
             } else if (cur[i] != -1) {
                 changed = 1;
                 rows[i].rec = 0;
@@ -7393,8 +7381,8 @@ void ai_DarkCornerMenu(AIBLD *bld, AIOBJ *room, AIOBJ *corner)
                     txt_Format(text, 0x18a5, law[i] * 5 + 0x13fd, vals[i]);
                 ai_LeftAlignedText(text, half, y, 0xf0, 0x54);
             }
-            found = 0;
             changed = 0;
+            found = 0;
             ctl = -1;
             for (ev = (AIJOB *)he_FindEvent(1, 0, 0x74); ev != 0; ev = (AIJOB *)he_NextEvent()) {
                 if (ev->id2 == bld->id) {
