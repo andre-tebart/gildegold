@@ -6030,18 +6030,7 @@ void ai_MistressAffairWindow(AICHARREC *player, AICHARREC *ch, AIJOB *ev)
    below four) picks a character in the amount menu (mode 0x2040a, 0x20409 for a female player; the gypsy
    filter, kind 6; the texts 0x1a53 / 0x1a54), asks (0x1a55 / 0x1a56) and posts the message 0x6f (flags 2, from
    the building, the player and the picked character); a mistress' button opens her window
-   ai_MistressAffairWindow with this one disabled. A right click closes it; then the camera follows
-   @deep size queue s16: cfg, msg, prompt / title, text and pick declared in the blocks that use them (all
-   31 subsets): two codes, the control's and one 2 bytes off (msg block-local); no lever for the -1 /
-   store-order hunks. prior: Reconstructed whole from the original (all statements, calls, the 0x6f message
-   record, the amount-menu config, the texts 0x1a50..0x1a56 and the mistress buttons read and compared; the
-   -1 inits are inline memsets, which gives the original's ebx=0). Left is allocation/scheduling only: the
-   original keeps the -1 of memset(ctl) in esi up to d2_ClickedId = esi and skips the loop-top 'or esi,-1'
-   on the first pass (jmp +0xa2), ours materializes -1 again ('mov [d2_ClickedId], 0xffffffff', 'or eax,-1;
-   or ecx,-1'); the player-record index (ai_PlayerId*0x21c) is computed before/after the ev+0xac load, the
-   cfg/msg field stores are scheduled in another order (mode/filter/kind, to/fromId/arg[0]/arg[1]) and the
-   0x1a55/0x1a56 arms swap eax/ecx. Tried: explicit -1 stores in the original's order (ebx stayed -1),
-   if/else for the sex and stage tests, field reorderings */
+   ai_MistressAffairWindow with this one disabled. A right click closes it; then the camera follows */
 
 void ai_MistressWindow(AIBLD *bld)
 {
@@ -6054,14 +6043,16 @@ void ai_MistressWindow(AIBLD *bld)
     int evIds[4];                       /* their pair events */
     int enabled[4];                     /* the event's stage is 0 */
     AMOUNTCFG cfg;
-    AIMSG msg;
     AIJOB *ev;
     AICHARREC *pick;
     char prompt[0x40];
     char title[0x40];
     char text[0x200];
 
-    memset(ctl, 0xff, sizeof(ctl));
+    ctl[0] = -1;
+    ctl[1] = -1;
+    ctl[2] = -1;
+    ctl[3] = -1;
     sv_ReleaseNamePlates();
     win = d2_OpenForm(0, 0, "locations\\wohnsitz\\geliebte");
     d2_SetForm(win, 0);
@@ -6075,9 +6066,9 @@ void ai_MistressWindow(AIBLD *bld)
         take = d2_GetWinObj(win, 2, io_PrintText(0x1a51));
     d2_ClickedId = -1;
     do {
-        memset(evIds, 0xff, sizeof(evIds));
-        memset(charIds, 0xff, sizeof(charIds));
         n = 0;
+        memset(charIds, 0xff, sizeof(charIds));
+        memset(evIds, 0xff, sizeof(evIds));
         for (ev = (AIJOB *)he_FindEvent(1, 0, 0x6f); ev != 0 && n < 4; ev = (AIJOB *)he_NextEvent()) {
             if (ev->partner1 == ai_CharInts[ai_PlayerId][0]) {
                 evIds[n] = ev->id;
@@ -6111,8 +6102,8 @@ void ai_MistressWindow(AIBLD *bld)
             if (d2_PointerObj == take) {
                 memset(&cfg, 0, sizeof(cfg));
                 cfg.kind = 6;
-                cfg.filter = gypsyFilter;
                 cfg.mode = ((AICHARREC *)ai_Chars)[ai_PlayerId].sex != 0 ? 0x20409 : 0x2040a;
+                cfg.filter = gypsyFilter;
                 txt_Format(title, 0x1a53);
                 txt_Format(prompt, 0x1a54);
                 pick = (AICHARREC *)ai_AmountMenu(&cfg, title, prompt, 0);
@@ -6122,13 +6113,15 @@ void ai_MistressWindow(AIBLD *bld)
                     else
                         txt_Format(text, 0x1a56, pick->id);
                     if (sv_MessageBox(text, 1) != 0) {
+                        AIMSG msg;
+
                         memset(&msg, 0, sizeof(msg));
                         msg.type = 0x6f;
                         msg.flags = 2;
                         msg.to = ai_CharInts[ai_PlayerId][0];
                         msg.fromId = bld->id;
-                        msg.arg[0] = ai_CharInts[ai_PlayerId][0];
                         msg.arg[1] = pick->netId;
+                        msg.arg[0] = ai_CharInts[ai_PlayerId][0];
                         cm_SendLongMessage((char *)&msg);
                     }
                 }

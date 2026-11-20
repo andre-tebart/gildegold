@@ -4188,7 +4188,7 @@ exe	0x00596400	ai_RobberContact	lc	6b06516ecd33889d	no	byte	control=byte p1=byte
 exe	0x005965f0	ai_RhetoricContact	lc	a9a2d143c71d8cfe	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005966f0	ai_FeastContact	lc	55cc66e72abaf972	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005967c0	ai_MistressAffairWindow	lc	a1cf0d896d99da95	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	65f3805095278c82
-exe	0x00596ba0	ai_MistressWindow	lc	97780e0ee4ce3f79	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
+exe	0x00596ba0	ai_MistressWindow	lc	e139b0d23681f2db	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	8dec3d369300eb4e
 exe	0x00596f90	ai_MistressContact	lc	f1a175ae2bc4d1d2	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00596ff0	ai_MasterExamWindow	lc	97bcc5db0e2ab660	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x00597380	ai_EspionageAmountMenu	lc	ac6bb1a1d22ca37c	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
