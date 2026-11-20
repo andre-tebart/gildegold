@@ -3622,7 +3622,7 @@ exe	0x0054b1e0	he_RunProtection	he	815cde0d560e2182	no	shape	sweep control=shape
 exe	0x0054b9b0	he_StartAudit	he	5306192d3e0f42d8	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0054ba20	he_RunAudit	he	039693825105d527	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0054be20	he_StartGathering	he	7d443c6356ada751	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x0054bec0	he_RunGathering	he	396e5de1b966cdb6	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
+exe	0x0054bec0	he_RunGathering	he	36e036ba48b8e292	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	8c21d89be1deecde
 exe	0x0054c4c0	he_AllocSim	he	a9c786f86270d08f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0054c510	he_IsAtWork	he	32e7b3634e401b60	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0054c570	he_RunAccidentSim	he	1cd38ff0b44a4994	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	

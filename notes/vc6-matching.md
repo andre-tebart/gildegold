@@ -4360,6 +4360,12 @@ Store order in a fill, hoisted loads and sunk stores, statement order effects, `
 - **lea operand order `[esi+edi]` vs `[edi+esi]` for `i = (step + i) % N`**: follows which variable was defined
   first in the loop body (`i = ..; step = ..` flips it), not the text. ai_TokenRandomPlayer: outer `for (i = 0; i
   < 0x300; i++)` around a search that reassigns i (byte); `do .. while (i + 1 < 0x300)` left the lea.
+- **A search loop whose break path re-tests the found pointer (`test ebp,ebp; je notfound` behind the break),
+  the not-found block laid after the hit's block**: the loop walks its own pointer and the found one mirrors it
+  (`q = he_FindEvent(..); p = q; if (q != 0) do { if (match(q)) break; q = he_NextEvent(); p = q; } while (q
+  != 0); if (p != 0 && ..)`): the facts (tests, the deref) are on q, so p's test stays; the `if (q) do .. while`
+  form gives the layout (a plain `while` / `for` puts the not-found block after the first test). A `p = 0`
+  + `p = q; break;` form decides the test again (he_RunGathering byte).
 - **lea operand order `[ecx+eax+2]` vs `[eax+ecx+2]` of a sum against a CSE reused in a later compare** (`t->size +
   plants[i].x + 2` and `plants[i].x - t->size - 2` in a reach test, size reused for the z test): every spelling,
   type and loop form was one code, flip hit only meaning-changing deletions over the whole function; the CSE was
