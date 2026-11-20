@@ -3930,8 +3930,7 @@ void cm_FightEndDialog(CMFIGHTREC *a)
             if (rec != 0)
                 rec->lootTakings += v;
             if (a->attackerBldId != -1) {
-                b = (AIBLD *)gm_BuildQuery(1, 1, a->attackerBldId);
-                b->roundSums[0] += v;
+                ((AIBLD *)gm_BuildQuery(1, 1, a->attackerBldId))->roundSums[0] += v;
             }
         }
         for (i = 0; i < 3; i++) {
