@@ -2686,7 +2686,7 @@ int lc_GebaeudeAusrichten(int kind, char *out)
     char names[128][0x60];          /* the model files of the kind found in the vfs */
     char text[0x400];               /* the confirmation text */
     char found[0x100];              /* vfs_GetPath's output */
-    int flags[0x100];               /* the banner per site */
+    D3OBJECT *flags[0x100];         /* the banner per site */
     int sites[0x100];               /* the "bk_" site objects (ai_FindBauplaetze) */
     char flagPath[MAX_PATH];
     char path[0x100];
@@ -2702,7 +2702,6 @@ int lc_GebaeudeAusrichten(int kind, char *out)
     D3TEXFLAGS tf;
     struct D3HMAP *hmap;
     D3OBJECT *model;
-    D3OBJECT *obj;
     AIBTYPE *type;
     unsigned char *b;
     float letter;
@@ -2781,25 +2780,24 @@ int lc_GebaeudeAusrichten(int kind, char *out)
         if (sites[i] != 0) {
             d3_PointToWorld((D3OBJECT *)sites[i], &((D3OBJECT *)sites[i])->pos, (D3VECTOR *)&pos);
             sprintf(flagPath, "%s*sp_BAU_WIMPEL.ogr", ai_DataPath);
-            obj = d3_LoadGroup(flagPath, 0, 0);
-            flags[i] = (int)obj;
-            d3t_InflateObjectTree(obj);
-            d3_SetObjectPos(obj, (D3VECTOR *)&pos);
-            obj->objectFlags &= ~2;
+            flags[i] = d3_LoadGroup(flagPath, 0, 0);
+            d3t_InflateObjectTree(flags[i]);
+            d3_SetObjectPos(flags[i], (D3VECTOR *)&pos);
+            flags[i]->objectFlags &= ~2;
             tf.all = 0;
             tf.b[2] = 1;
             tf.b[0] = 0x80;
-            d3_SetObjectAlpha(obj, obj->info, tf);
-            d3t_SetTreeColor(obj, 0xc0, 0xa0, 0x80);
+            d3_SetObjectAlpha(flags[i], flags[i]->info, tf);
+            d3t_SetTreeColor(flags[i], 0xc0, 0xa0, 0x80);
             dx = pos.x - d3_Camera->pos.x;
             dy = pos.y - d3_Camera->pos.y;
             dz = pos.z - d3_Camera->pos.z;
             d = (float)sqrt(dz * dz + dy * dy + dx * dx);
             if (d < best) {
                 best = d;
-                sel = cur = (int)obj;
+                sel = cur = (int)flags[i];
             }
-            d3t_PlayAnim(obj, "sonstiges\\sp_WIMPEL.baf", 1);
+            d3t_PlayAnim(flags[i], "sonstiges\\sp_WIMPEL.baf", 1);
         }
     }
     if (sel != 0) {
@@ -2827,7 +2825,7 @@ int lc_GebaeudeAusrichten(int kind, char *out)
                     i = 0;
                     do {
                         if (flags[i] != 0)
-                            d3if_Delete((D3OBJECT *)flags[i]);
+                            d3if_Delete(flags[i]);
                         i++;
                     } while (i < count);
                     return 0;
@@ -2964,7 +2962,7 @@ int lc_GebaeudeAusrichten(int kind, char *out)
         i = 0;
         do {
             if (flags[i] != 0)
-                d3if_Delete((D3OBJECT *)flags[i]);
+                d3if_Delete(flags[i]);
             i++;
         } while (i < count);
         if (model != 0)
