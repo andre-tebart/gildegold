@@ -4360,6 +4360,12 @@ Store order in a fill, hoisted loads and sunk stores, statement order effects, `
 - **lea operand order `[esi+edi]` vs `[edi+esi]` for `i = (step + i) % N`**: follows which variable was defined
   first in the loop body (`i = ..; step = ..` flips it), not the text. ai_TokenRandomPlayer: outer `for (i = 0; i
   < 0x300; i++)` around a search that reassigns i (byte); `do .. while (i + 1 < 0x300)` left the lea.
+- **A count kept in ebx with a stack home (frame 4 larger, `mov [esp+X],ebx` after its inits, reloaded after an
+  inner loop that borrows ebx) where ours borrows ebp and reloads the event pointer from its argument**: the
+  event pointer must outrank the count by a few points: the statement after an `if (n != 0) { .. }` written in
+  both arms (`.. cm_SendNewParty(&party); e->end = ai_Time; } else e->end = ai_Time;`, VC6 merges the copies,
+  the references count twice); `flip.py --want 'sub esp, <frame>'` named it (a statement moved into the if),
+  then climb `--ops move,swap` from that variant: byte (he_RunAuctionEvent).
 - **A search loop whose break path re-tests the found pointer (`test ebp,ebp; je notfound` behind the break),
   the not-found block laid after the hit's block**: the loop walks its own pointer and the found one mirrors it
   (`q = he_FindEvent(..); p = q; if (q != 0) do { if (match(q)) break; q = he_NextEvent(); p = q; } while (q
