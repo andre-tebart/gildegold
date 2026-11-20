@@ -4523,35 +4523,7 @@ unsigned int ai_MarriageTest(int param_1, int param_2);
    get the flag 0x40000) and posts it with key 5. Stage 4 re-posts it. Stage 5: when they are each other's
    relatives[0], both relations go to 0x7f, a player or kind 5 a hears 0x1d31 and the partner of sex 1 gets f07c 1.1,
    b's reserved grave entry is ordered, and the wedding party (G28REC kind 6, flags 0xb2, two hours on, between 7 and
-   22 o'clock) is sent with the event posted with key 4; else a player a hears the family text again
-   @deep s52: 280 -> 26. Kept: three text buffers of 0x200, the family text line[0x200] a block local of
-   each branch that writes it and the party record a block local of case 5's success block (they share one
-   0x200 slot: the record at its top end, [ebp-0x128]); c1 / c2 block locals per branch; who, yard, entry,
-   party declared in one block around case 5's success path (the original's five 4-byte slots: a in the
-   argument slot); case 4 written behind case 5 (the original's layout and scratch step); party.time =
-   ai_Time as the last of the fill. Left (26 ins): the missing-partner else block (e->end = ai_Time;
-   gm_AddTime; send(-1)): the original keeps it whole with data in edx and the pointer copy in ecx (mov
-   edx,[ai_Time]; lea eax,[esi+0x52]; mov ecx,eax; push 0 ..), ours has the after-switch block's registers
-   (ecx / edx) there and VC6 merges it whole into that block. Without the goto delay (r == 0 written out
-   with its own gm_AddTime / send / return) the else block has the original's registers but is then merged
-   into r == 0's copy (38 ins): the original has r == 0 jump into the after-switch block's pushes and the
-   else block apart. prior: reconstructed and read in full against the original (stage -1/-2 flag clearing,
-   the slot wait, stage 0's ai_MarriageTest ladder with the 0x42f6 / 0x42f7, 0x1ceb.. and 0x1cf3 / 0x1cf4
-   texts, the rounds, stage 1 'werbung' links, stage 4, stage 5's mutual test (bitwise, as the original),
-   relations, 0x1d31, f07c, the grave order and the G28REC party cleared by MEM_ZERO). Fixed meaning: the
-   party's members are a's / b's netIds (was the event id), the stage 5 short text 0x1cf1 passes b's id,
-   three buffers 0x200 / 0x200 / 0xec, the if/else nesting and the 'delay' join that put the free and the
-   missing-partner blocks at the end. Calls, stores and references agree (no differs / ref lines). Left:
-   frame layout (the text buffer at [ebp-0x100] and the party record at [ebp-0x214] where the original has
-   them at [ebp-0x214] / [ebp-0x128], so every strlen append's lea [ebp+ecx-K] shows as code, +0xa81 ..),
-   the slot of a ([ebp-8] vs the argument slot [ebp+8]) and of the MEM_ZERO temporaries, the scheduling of
-   the party record's stores (+0xbb0 .. +0xc3c), and tail merging (+0xcb7: VC6 cross-jumps our
-   missing-partner block and case 4 into the common tail where the original keeps them separate; switch
-   entry 4 differs for that reason); tried declaration order, names, the buffer size and an inner scope for
-   the record: no change of the layout (size: 1034 vs 1064 instructions, explained: 30 instructions: the
-   missing-partner block (end = now, gm_AddTime, cm_SendExSetHE, epilogue: 25) and case 4's own pushes +
-   jmp (5), which VC6 cross-jumps into the common tail in ours and keeps apart in the original (different
-   register choice in its end copy); no statements missing) */
+   22 o'clock) is sent with the event posted with key 4; else a player a hears the family text again */
 void he_RunCourtship(int ev)
 {
     AIJOB *e = (AIJOB *)ev;
@@ -4562,212 +4534,7 @@ void he_RunCourtship(int ev)
 
     a = (AICHAR *)gm_FindChar(e->partner1);
     b = (AICHAR *)gm_FindChar(e->partner2);
-    if (e->stage != -1 && e->stage != -2) {
-        if (e->opts & 4)
-            return;
-        if (a != 0 && b != 0 && a->sex != b->sex) {
-            if (e->exSlot != -1 && cm_GetSlotState(e->exSlot) == 0)
-                return;
-            e->exSlot = -1;
-            switch (e->stage) {
-            case 0:
-                r = ai_MarriageTest(e->partner1, e->partner2);
-                if (r == -0x405) {
-                    e->end = ai_Time;
-                    gm_AddTime(&e->end, 0, 2, 0);
-                    e->exSlot = cm_SendExSetHEI(-1, ev);
-                    txt_Format(gave, 0x42f6, b->id);
-                    he_ShowNews(a->netId, a->netId, gave, 1, 0x5f4, 0);
-                    return;
-                }
-                if (r == -0x406) {
-                    e->end = ai_Time;
-                    gm_AddTime(&e->end, 0, 2, 0);
-                    e->exSlot = cm_SendExSetHEI(-1, ev);
-                    txt_Format(gave, 0x42f7, b->id);
-                    he_ShowNews(a->netId, a->netId, gave, 1, 0x5f4, 0);
-                    return;
-                }
-                if (r == -0x400 || r == -0x401 || r == -0x402)
-                    break;
-                if (r == -0x403) {
-                    if (a->kind == 6) {
-                        AICHAR *c1, *c2;
-                        char line[0x200];
-
-                        c1 = (AICHAR *)gm_FindChar(b->relatives[1]);
-                        c2 = (AICHAR *)gm_FindChar(b->relatives[0]);
-                        if (c1 != 0 && c1->health > 0 && b->kind != 5) {
-                            txt_Format(line, 0x1ceb, c1->id, a->id);
-                            txt_Format(line + strlen(line), 0x1cee);
-                            txt_Format(line + strlen(line), 0x1cf2, b->id);
-                            txt_Format(line + strlen(line), 0x1cef, c2->id);
-                            txt_Format(line + strlen(line), 0x1cf0, c1->id);
-                        } else {
-                            txt_Format(line, 0x1ceb, b->id, a->id);
-                            txt_Format(line + strlen(line), 0x1cee);
-                            txt_Format(line + strlen(line), 0x1cf1);
-                            txt_Format(line + strlen(line), 0x1cef, c2->id);
-                            txt_Format(line + strlen(line), 0x1cf0, b->id);
-                        }
-                        he_ShowNews(a->netId, a->netId, line, 1, 0x5f4, 0);
-                    }
-                    break;
-                }
-                if (r == 0) {
-                    if (a->kind == 6) {
-                        AICHAR *c1;
-                        char line[0x200];
-
-                        c1 = (AICHAR *)gm_FindChar(b->relatives[1]);
-                        if (c1 != 0 && c1->health > 0 && b->kind != 5) {
-                            txt_Format(line, 0x1ceb, c1->id, a->id);
-                            txt_Format(line + strlen(line), 0x1cec);
-                            txt_Format(line + strlen(line), 0x1cf2, b->id);
-                            txt_Format(line + strlen(line), 0x1ced);
-                            txt_Format(line + strlen(line), 0x1cf0, c1->id);
-                        } else {
-                            txt_Format(line, 0x1ceb, b->id, a->id);
-                            txt_Format(line + strlen(line), 0x1cec);
-                            txt_Format(line + strlen(line), 0x1cf1);
-                            txt_Format(line + strlen(line), 0x1ced);
-                            txt_Format(line + strlen(line), 0x1cf0, b->id);
-                        }
-                        he_ShowNews(a->netId, a->netId, line, 1, 0x5f4, 0);
-                    }
-                    e->end = ai_Time;
-                    goto delay;
-                }
-                if (r == 1) {
-                    e->pairRounds = (char)ai_CourtshipRounds(e->partner1, e->partner2);
-                    e->pairRound++;
-                }
-                if (e->pairRound >= e->pairRounds) {
-                    e->end = ai_Time;
-                    gm_AddTime(&e->end, 0, 2, 0);
-                    e->exSlot = cm_SendExSetHEI(1, ev);
-                    return;
-                }
-                if (a->kind == 6) {
-                    char line[0x200];
-
-                    txt_Format(line, 0x1cf3);
-                    txt_Format(line + strlen(line), 0x1cf4, b->id, 0x5d, e->pairRounds - e->pairRound, 0x5d);
-                    he_ShowNews(a->netId, a->netId, line, 0, 0x5f4, 0);
-                } else if (a->kind == 5) {
-                    e->pairRound += (char)util_Random(2) + 1;
-                } else if ((short)util_Random(4) == 0) {
-                    e->pairRound++;
-                }
-                e->end = ai_Time;
-                gm_AddTime(&e->end, 0x18, 0, 0);
-                e->end.hour = 8;
-                e->pairDrawn = 1;
-                he_DrawPairPicks(ev, a, b);
-                e->exSlot = -1;
-                cm_SendExSetHEI(0, ev);
-                return;
-            case 1:
-                cm_BeginGroup("werbung");
-                cm_BeginFieldBlock((char *)b, b->netId);
-                cm_AddFieldDelta(4, 1, 0x5c, &a->netId);    /* b->relatives[0] = a->netId */
-                cm_AddFieldDelta(2, 1, 0x50, &a->w050);     /* b->w050 = a->w050 */
-                cm_SendFieldDeltas();
-                cm_BeginFieldBlock((char *)a, a->netId);
-                cm_AddFieldDelta(4, 1, 0x5c, &b->netId);    /* a->relatives[0] = b->netId */
-                cm_SendFieldDeltas();
-                cm_SendSetField(b->netId, 0x1c8, 4, 0x40000, 0);
-                cm_SendSetField(a->netId, 0x1c8, 4, 0x40000, 0);
-                cm_EndGroup("werbung");
-                e->end = ai_Time;
-                gm_AddTime(&e->end, 0, 1, 0);
-                e->exSlot = cm_SendExSetHEI(5, ev);
-                return;
-            case 5:
-                /* each other's relatives[0]: the original tests both, bitwise (and edx, eax; test dl, 1) */
-                if (!((a->relatives[0] == b->netId) & (b->relatives[0] == a->netId) & 1)) {
-                    if (a->kind == 6) {
-                        AICHAR *c1, *c2;
-                        char line[0x200];
-
-                        c1 = (AICHAR *)gm_FindChar(b->relatives[1]);
-                        c2 = (AICHAR *)gm_FindChar(b->relatives[0]);
-                        if (c1 != 0 && c1->health > 0 && b->kind != 5) {
-                            txt_Format(line, 0x1ceb, c1->id, a->id);
-                            txt_Format(line + strlen(line), 0x1cee);
-                            txt_Format(line + strlen(line), 0x1cf2, b->id);
-                            txt_Format(line + strlen(line), 0x1cef, c2->id);
-                            txt_Format(line + strlen(line), 0x1cf0, c1->id);
-                        } else {
-                            txt_Format(line, 0x1ceb, b->id, a->id);
-                            txt_Format(line + strlen(line), 0x1cee);
-                            txt_Format(line + strlen(line), 0x1cf1, b->id);
-                            txt_Format(line + strlen(line), 0x1cef, c2->id);
-                            txt_Format(line + strlen(line), 0x1cf0, b->id);
-                        }
-                        he_ShowNews(a->netId, a->netId, line, 1, 0x5f4, 0);
-                    }
-                    break;
-                }
-                {
-                    AICHAR *who;
-                    AIBLD *yard;
-                    int *entry;
-                    G28REC party;
-
-                    cm_SendRelations(a->netId, b->netId, 0x7f - ai_Relations[a->id][b->id], 1);
-                    cm_SendRelations(b->netId, a->netId, 0x7f - ai_Relations[b->id][a->id], 1);
-                    if (a->kind == 6 || a->kind == 5) {
-                        who = a;
-                        if (a->sex != 1)
-                            who = b;
-                        txt_Format(news, 0x1d31, b->id);
-                        he_ShowNews(a->netId, a->netId, news, 0, 0x5f4, 0);
-                        cm_SendFloatDelta(who->netId, 0x7c, 1.1f - who->f07c);
-                    }
-                    if (gv_FindReservedEntry(b, &yard, &entry) != 0)
-                        gv_OrderSetGraveHolder(0, yard, *entry, gv_EntryIndex((char *)yard->yard, entry));
-                    MEM_ZERO(&party, sizeof(party));
-                    party.members[0] = a->netId;
-                    party.members[1] = b->netId;
-                    party.host = ai_CharsT[ai_PlayerId].netId;
-                    party.kind = 6;
-                    party.flags = 0xb2;
-                    party.thing = -1;
-                    party.used = 2;
-                    party.time = ai_Time;
-                    gm_AddTime(&party.time, 2, 0, 0);
-                    party.time.min = 0;
-                    if (party.time.hour > 0x16) {
-                        party.time.year++;
-                        party.time.hour = 0xb;
-                    } else if (party.time.hour < 7) {
-                        party.time.hour = 0xb;
-                    }
-                    e->end = party.time;
-                    e->pairDone = 1;
-                    e->exSlot = -1;
-                    cm_SendExSetHEI(4, ev);
-                    cm_SendNewParty(&party);
-                    return;
-                }
-            case 4:
-                gm_AddTime(&e->end, 0, 2, 0);
-                e->exSlot = cm_SendExSetHEI(-1, ev);
-                return;
-            default:
-                return;
-            }
-            e->end = ai_Time;
-        delay:
-            gm_AddTime(&e->end, 0, 2, 0);
-            e->exSlot = cm_SendExSetHEI(-1, ev);
-        } else {
-            e->end = ai_Time;
-            gm_AddTime(&e->end, 0, 2, 0);
-            e->exSlot = cm_SendExSetHEI(-1, ev);
-        }
-    } else {
+    if (e->stage == -1 || e->stage == -2) {
         if (e->opts & 2) {
             if (b != 0 && (b->flags1c8 & 0x40000) && a == 0)
                 cm_SendSetField(b->netId, 0x1c8, 4, 0, 0x40000);
@@ -4775,6 +4542,213 @@ void he_RunCourtship(int ev)
                 cm_SendSetField(a->netId, 0x1c8, 4, 0, 0x40000);
         }
         he_FreeEvent((int *)ev);
+    } else {
+        if (e->opts & 4)
+            return;
+        if (a == 0 || b == 0 || a->sex == b->sex) {
+            e->end = ai_Time;
+            gm_AddTime(&e->end, 0, 2, 0);
+            e->exSlot = cm_SendExSetHEI(-1, ev);
+            return;
+        }
+        if (e->exSlot != -1 && cm_GetSlotState(e->exSlot) == 0)
+            return;
+        e->exSlot = -1;
+        switch (e->stage) {
+        case 0:
+            r = ai_MarriageTest(e->partner1, e->partner2);
+            if (r == -0x405) {
+                e->end = ai_Time;
+                gm_AddTime(&e->end, 0, 2, 0);
+                e->exSlot = cm_SendExSetHEI(-1, ev);
+                txt_Format(gave, 0x42f6, b->id);
+                he_ShowNews(a->netId, a->netId, gave, 1, 0x5f4, 0);
+                return;
+            }
+            if (r == -0x406) {
+                e->end = ai_Time;
+                gm_AddTime(&e->end, 0, 2, 0);
+                e->exSlot = cm_SendExSetHEI(-1, ev);
+                txt_Format(gave, 0x42f7, b->id);
+                he_ShowNews(a->netId, a->netId, gave, 1, 0x5f4, 0);
+                return;
+            }
+            if (r == -0x400 || r == -0x401 || r == -0x402) {
+                e->end = ai_Time;
+                break;
+            }
+            if (r == -0x403) {
+                if (a->kind == 6) {
+                    AICHAR *c1, *c2;
+                    char line[0x200];
+
+                    c1 = (AICHAR *)gm_FindChar(b->relatives[1]);
+                    c2 = (AICHAR *)gm_FindChar(b->relatives[0]);
+                    if (c1 != 0 && c1->health > 0 && b->kind != 5) {
+                        txt_Format(line, 0x1ceb, c1->id, a->id);
+                        txt_Format(line + strlen(line), 0x1cee);
+                        txt_Format(line + strlen(line), 0x1cf2, b->id);
+                        txt_Format(line + strlen(line), 0x1cef, c2->id);
+                        txt_Format(line + strlen(line), 0x1cf0, c1->id);
+                    } else {
+                        txt_Format(line, 0x1ceb, b->id, a->id);
+                        txt_Format(line + strlen(line), 0x1cee);
+                        txt_Format(line + strlen(line), 0x1cf1);
+                        txt_Format(line + strlen(line), 0x1cef, c2->id);
+                        txt_Format(line + strlen(line), 0x1cf0, b->id);
+                    }
+                    he_ShowNews(a->netId, a->netId, line, 1, 0x5f4, 0);
+                }
+                e->end = ai_Time;
+                break;
+            }
+            if (r == 0) {
+                if (a->kind == 6) {
+                    AICHAR *c1;
+                    char line[0x200];
+
+                    c1 = (AICHAR *)gm_FindChar(b->relatives[1]);
+                    if (c1 != 0 && c1->health > 0 && b->kind != 5) {
+                        txt_Format(line, 0x1ceb, c1->id, a->id);
+                        txt_Format(line + strlen(line), 0x1cec);
+                        txt_Format(line + strlen(line), 0x1cf2, b->id);
+                        txt_Format(line + strlen(line), 0x1ced);
+                        txt_Format(line + strlen(line), 0x1cf0, c1->id);
+                    } else {
+                        txt_Format(line, 0x1ceb, b->id, a->id);
+                        txt_Format(line + strlen(line), 0x1cec);
+                        txt_Format(line + strlen(line), 0x1cf1);
+                        txt_Format(line + strlen(line), 0x1ced);
+                        txt_Format(line + strlen(line), 0x1cf0, b->id);
+                    }
+                    he_ShowNews(a->netId, a->netId, line, 1, 0x5f4, 0);
+                }
+                e->end = ai_Time;
+                break;
+            }
+            if (r == 1) {
+                e->pairRounds = (char)ai_CourtshipRounds(e->partner1, e->partner2);
+                e->pairRound++;
+            }
+            if (e->pairRound >= e->pairRounds) {
+                e->end = ai_Time;
+                gm_AddTime(&e->end, 0, 2, 0);
+                e->exSlot = cm_SendExSetHEI(1, ev);
+                return;
+            }
+            if (a->kind == 6) {
+                char line[0x200];
+
+                txt_Format(line, 0x1cf3);
+                txt_Format(line + strlen(line), 0x1cf4, b->id, 0x5d, e->pairRounds - e->pairRound, 0x5d);
+                he_ShowNews(a->netId, a->netId, line, 0, 0x5f4, 0);
+            } else if (a->kind == 5) {
+                e->pairRound += (char)util_Random(2) + 1;
+            } else if ((short)util_Random(4) == 0) {
+                e->pairRound++;
+            }
+            e->end = ai_Time;
+            gm_AddTime(&e->end, 0x18, 0, 0);
+            e->end.hour = 8;
+            e->pairDrawn = 1;
+            he_DrawPairPicks(ev, a, b);
+            e->exSlot = -1;
+            cm_SendExSetHEI(0, ev);
+            return;
+        case 1:
+            cm_BeginGroup("werbung");
+            cm_BeginFieldBlock((char *)b, b->netId);
+            cm_AddFieldDelta(4, 1, 0x5c, &a->netId);    /* b->relatives[0] = a->netId */
+            cm_AddFieldDelta(2, 1, 0x50, &a->w050);     /* b->w050 = a->w050 */
+            cm_SendFieldDeltas();
+            cm_BeginFieldBlock((char *)a, a->netId);
+            cm_AddFieldDelta(4, 1, 0x5c, &b->netId);    /* a->relatives[0] = b->netId */
+            cm_SendFieldDeltas();
+            cm_SendSetField(b->netId, 0x1c8, 4, 0x40000, 0);
+            cm_SendSetField(a->netId, 0x1c8, 4, 0x40000, 0);
+            cm_EndGroup("werbung");
+            e->end = ai_Time;
+            gm_AddTime(&e->end, 0, 1, 0);
+            e->exSlot = cm_SendExSetHEI(5, ev);
+            return;
+        case 5:
+            /* each other's relatives[0]: the original tests both, bitwise (and edx, eax; test dl, 1) */
+            if (!((a->relatives[0] == b->netId) & (b->relatives[0] == a->netId) & 1)) {
+                if (a->kind == 6) {
+                    AICHAR *c1, *c2;
+                    char line[0x200];
+
+                    c1 = (AICHAR *)gm_FindChar(b->relatives[1]);
+                    c2 = (AICHAR *)gm_FindChar(b->relatives[0]);
+                    if (c1 != 0 && c1->health > 0 && b->kind != 5) {
+                        txt_Format(line, 0x1ceb, c1->id, a->id);
+                        txt_Format(line + strlen(line), 0x1cee);
+                        txt_Format(line + strlen(line), 0x1cf2, b->id);
+                        txt_Format(line + strlen(line), 0x1cef, c2->id);
+                        txt_Format(line + strlen(line), 0x1cf0, c1->id);
+                    } else {
+                        txt_Format(line, 0x1ceb, b->id, a->id);
+                        txt_Format(line + strlen(line), 0x1cee);
+                        txt_Format(line + strlen(line), 0x1cf1, b->id);
+                        txt_Format(line + strlen(line), 0x1cef, c2->id);
+                        txt_Format(line + strlen(line), 0x1cf0, b->id);
+                    }
+                    he_ShowNews(a->netId, a->netId, line, 1, 0x5f4, 0);
+                }
+                e->end = ai_Time;
+                break;
+            }
+            {
+                AICHAR *who;
+                AIBLD *yard;
+                int *entry;
+                G28REC party;
+
+                cm_SendRelations(a->netId, b->netId, 0x7f - ai_Relations[a->id][b->id], 1);
+                cm_SendRelations(b->netId, a->netId, 0x7f - ai_Relations[b->id][a->id], 1);
+                if (a->kind == 6 || a->kind == 5) {
+                    who = a;
+                    if (a->sex != 1)
+                        who = b;
+                    txt_Format(news, 0x1d31, b->id);
+                    he_ShowNews(a->netId, a->netId, news, 0, 0x5f4, 0);
+                    cm_SendFloatDelta(who->netId, 0x7c, 1.1f - who->f07c);
+                }
+                if (gv_FindReservedEntry(b, &yard, &entry) != 0)
+                    gv_OrderSetGraveHolder(0, yard, *entry, gv_EntryIndex((char *)yard->yard, entry));
+                MEM_ZERO(&party, sizeof(party));
+                party.members[0] = a->netId;
+                party.members[1] = b->netId;
+                party.host = ai_CharsT[ai_PlayerId].netId;
+                party.kind = 6;
+                party.flags = 0xb2;
+                party.thing = -1;
+                party.used = 2;
+                party.time = ai_Time;
+                gm_AddTime(&party.time, 2, 0, 0);
+                party.time.min = 0;
+                if (party.time.hour > 0x16) {
+                    party.time.year++;
+                    party.time.hour = 0xb;
+                } else if (party.time.hour < 7) {
+                    party.time.hour = 0xb;
+                }
+                e->end = party.time;
+                e->pairDone = 1;
+                e->exSlot = -1;
+                cm_SendExSetHEI(4, ev);
+                cm_SendNewParty(&party);
+                return;
+            }
+        case 4:
+            gm_AddTime(&e->end, 0, 2, 0);
+            e->exSlot = cm_SendExSetHEI(-1, ev);
+            return;
+        default:
+            return;
+        }
+        gm_AddTime(&e->end, 0, 2, 0);
+        e->exSlot = cm_SendExSetHEI(-1, ev);
     }
 }
 /* 0x5455e0, the alloc handler of the random-message event 0x42 (ai_PostRandomMessages wraps a random message in
