@@ -13710,13 +13710,13 @@ void he_RunSabotage(int ev)
             e->stage = -1;
             return;
         }
-        if (c->scene->actions == 0) {
-            e->stage = -1;
+        if (c->scene->actions != 0) {
+            e->end = ai_Time;
+            gm_AddTime(&e->end, 0, 4, 0);
+            e->stage = 6;
             return;
         }
-        e->end = ai_Time;
-        gm_AddTime(&e->end, 0, 4, 0);
-        e->stage = 6;
+        e->stage = -1;
         return;
     case -2:
     case -1:
