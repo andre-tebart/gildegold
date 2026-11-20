@@ -17581,9 +17581,23 @@ void he_RunAmbush(AIJOB *ev)
                     if (value <= 0)
                         continue;
                     level = (int)(x->skill * 0.023809524f);
-                    if ((level == 0 && value > 100 && value < 500) || (level == 1 && value > 200 && value < 750)
-                        || (level == 2 && value > 300 && value < 1000) || (level == 3 && value > 500 && value < 1500)
-                        || (level == 4 && value > 600 && value < 1750) || (level == 5 && value > 700) || nearby != 0) {
+                    if (level == 0 && value > 100 && value < 500)
+                        nearby = 1;
+                    else if (level == 1) {
+                        if (value > 200 && value < 750)
+                            nearby = 1;
+                    } else if (level == 2) {
+                        if (value > 300 && value < 1000)
+                            nearby = 1;
+                    } else if (level == 3) {
+                        if (value > 500 && value < 1500)
+                            nearby = 1;
+                    } else if (level == 4) {
+                        if (value > 600 && value < 1750)
+                            nearby = 1;
+                    } else if (level == 5 && value > 700)
+                        nearby = 1;
+                    if (nearby != 0) {
                         carts[n] = t;
                         ((HETRANSPORT *)t)->ambushed = 1;
                         owner = ai_CharInts[t->chr][0];
