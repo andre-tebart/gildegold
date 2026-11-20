@@ -10876,32 +10876,13 @@ void he_StartOfficeAward(int ev)
    shows the news 0x42ab / 0x42af / 0x42ad (offices 0x25 / 0x24 / 0x23) with the address text 0x42a5 .. 0x42aa,
    the award's clock and the office's text by sex; for another character the news 0x42ac / 0x42b0 / 0x42ae with
    the character; then the news 0x161c below (stage 1). Stage 1 frees the event when the window is answered
-   (button 0, or the event bar's confirmation of its slot); without a window it starts over
-   @deep deep s46: the other character's news chain as if / else-if with the default in its own else (else
-   officeNews = 0;) instead of officeNews = 0 before the chain: the register swap of ev / the character is
-   gone (76 -> 9 ins, kept); the own character's chain keeps its officeNews = 0 default (without it, or
-   with the else form there too: 104 .. 119). The else's zero is if-converted in ours (setne / dec / and
-   0x42ae) where the original branches (xor ecx,ecx before cmp 0x25, jne / mov ecx,0x42ae); else {
-   officeNews = 0; if (a->office == 0x23) officeNews = 0x42ae; } gives the original's code there (4 ins)
-   but is no plausible source, not kept; a switch with default 27, the switch after a default 110, the
-   ternary chain = else form, the officeNews = 0 hoisted before if (c == own) 110, its own news local =
-   control. Left besides: the address test after the shared rep movsd: the original tests the sex still in
-   al (cmp al,1 / movsb), ours reloads it after the movsb; a sex local (int / char, all uses or only the
-   test) 84 .. 124, the addrNews++ test written in each arm (cross-jumped) 27. prior: Read all of it
-   against the original and rewrote it typed (AIJOB / HEOFFICEAWARD / AICHAR / HEEVSLOT, as
-   he_RunTitleCeremony): the voices are strcpy'd (inlined rep movsd) into a 0x200 local buffer, which the
-   office voice reuses (an unknown office replays the address). 298 = 298 instructions, the same blocks;
-   left: regs (ebp/ebx swapped for ev and the character), the saved-register push order (slots), and one
-   4-line hunk at +0x1f2: after the address strcpy's shared rep movsd the original tests the sex still in
-   al (cmp al, 1 / movsb), ours reloads it (movsb / cmp byte ptr [ebx + 9], 1): VC6's CSE across the
-   intrinsic copy. Tried strcpy(voice, sex == 1 ? W : M) (no longer inlined: worse) */
+   (button 0, or the event bar's confirmation of its slot); without a window it starts over */
 void he_RunOfficeAward(int ev)
 {
     AIJOB *e = (AIJOB *)ev;
     HEOFFICEAWARD *a = (HEOFFICEAWARD *)ev;
     AICHAR *own, *c;
     int addrNews, officeNews;
-    char voice[0x200];
 
     own = &ai_CharsT[e->chr];
     if (ai_PlayerId != e->chr || ai_GameState == 0)
@@ -10930,6 +10911,8 @@ void he_RunOfficeAward(int ev)
         d2_CentreViewWindows(e->slot->win);
         d2_SetForm(e->slot->win, 1);
         if (c == own) {
+            char voice[0x200];
+
             officeNews = 0;
             if (c->b00d == 9) {
                 addrNews = 0x42a9;
@@ -10977,14 +10960,13 @@ void he_RunOfficeAward(int ev)
             snd_QueueVoice(-7, 0, "MausclickLinks_s_01", -1, 0);
             io_PrintText(officeNews, addrNews, &a->when, c->sex == 0 ? 0x253 : a->office + 0x27b);
         } else {
+            officeNews = 0;
             if (a->office == 0x25)
                 officeNews = 0x42ac;
             else if (a->office == 0x24)
                 officeNews = 0x42b0;
             else if (a->office == 0x23)
                 officeNews = 0x42ae;
-            else
-                officeNews = 0;
             io_PrintText(officeNews, c->id, c->sex == 0 ? 0x253 : a->office + 0x27b);
         }
         d2_SetForm(e->slot->win, 2);
