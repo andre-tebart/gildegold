@@ -80,6 +80,7 @@ exe	0x004c38e0	cm_JoinSplit	1
 exe	0x004c70b0	cm_ExSellObjekt	1
 exe	0x004c9dc0	cm_ExChrGotoBuilding	1
 exe	0x004d6970	cm_FightFrame	1
+exe	0x004db700	cm_RunTrial	1
 exe	0x004e3830	cm_RunSceneParty	1
 exe	0x004e5e50	amt_Rating	1
 exe	0x004e6180	amt_ApplyForOffice	1

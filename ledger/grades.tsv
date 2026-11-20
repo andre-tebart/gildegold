@@ -2509,7 +2509,7 @@ exe	0x004d8b50	cm_DrawFightTime	cmscene	byte	readable
 exe	0x004d8c40	cm_DeleteSceneChars	cmscene	byte	readable		
 exe	0x004d8c70	cm_StackPicture	cmscene	byte	readable		
 exe	0x004d8cb0	cm_TallyStack	cmscene	byte	readable		
-exe	0x004d8e20	cm_RunCouncilSession	cmscene	draft	readable	deep	
+exe	0x004d8e20	cm_RunCouncilSession	cmscene	byte	readable		
 exe	0x004da9e0	cm_AskDeposeVote	cmscene	byte	readable		
 exe	0x004dab50	cm_AskElectVote	cmscene	byte	readable		
 exe	0x004dada0	cm_SessionAskPlayer	cmscene	byte	readable		
@@ -2522,7 +2522,7 @@ exe	0x004de4b0	cm_SinkDownAction	cmscene	byte	readable
 exe	0x004de530	cm_DuelSinkDown	cmscene	byte	readable		
 exe	0x004de5e0	cm_DuelInitVariants	cmscene	byte	readable		
 exe	0x004de610	cm_DuelVariant	cmscene	byte	readable		
-exe	0x004de640	cm_DuelShotAction	cmscene	draft	readable	deep	shape+readable -> draft+readable at 0f1c8dc1: promote --accept-falls
+exe	0x004de640	cm_DuelShotAction	cmscene	byte	readable		
 exe	0x004de900	cm_DuelRound	cmscene	byte	readable		
 exe	0x004debe0	cm_DuelOutcome	cmscene	byte	readable		
 exe	0x004ded10	cm_RunDuel	cmscene	byte	readable		
@@ -2605,7 +2605,7 @@ exe	0x004e52c0	cut_GetRandSeed	cmscene	byte	readable
 exe	0x004e52f0	cm_Random	cmscene	byte	readable		
 exe	0x004e5360	cm_RandomFloat	cmscene	byte	readable		
 exe	0x004e53e0	cm_DialogTimer	cmscene	byte	readable		
-exe	0x004e5470	cm_MessageBox	cmscene	draft	readable	deep	
+exe	0x004e5470	cm_MessageBox	cmscene	byte	readable		
 exe	0x004e5730	cm_RegisterSceneKind	cmscene	byte	readable		
 exe	0x004e5770	cm_InitScenes	cmscene	byte	readable		
 exe	0x004e58e0	ai_DumpPersonHead	cmdump	byte	readable		
