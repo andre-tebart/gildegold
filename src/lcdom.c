@@ -5431,29 +5431,32 @@ int ai_BribeAmountCB(AICHARREC *ch);
    to the player rises by amount * (6 with the flag 0x800 of the player's flags1cc, else 4) * 500 / the two worths
    (cm_SendRelations, the slot waited for), a player character ch (kind 6 / 7) gets the news 0x1751, and the
    bribe is a crime (gv_Accuse law 0x10). Returns 1 once the bribe was given, else 0
-   @deep s45: the original's ai_PlayerId is one global CSE (mov cx,[ai_PlayerId]) from the flags1cc index
-   across the 6 / 4 ternary into the first gm_GetWorth push, so the player's call must come first in the
-   sum. VC6 orders the two calls by the operands' trees, not their source order: = control for the sum
-   swapped, (short) / (int) / (unsigned short) casts on either argument, ai_PlayerId + 0, *&ai_PlayerId,
-   ch[0].id, (float) of the sum, extra parentheses, (float)amount, worth = (sum) inside the expression.
-   gm_GetWorth(((AICHARREC *)ai_Chars)[ai_PlayerId].id) puts the player's call first (13 ins: the arg then
-   comes from the record, mov dx,[eax+X], no CSE) = the deeper argument is evaluated first. (worth =
-   gm_GetWorth(ai_PlayerId)) + .. inside: 32 ins but frame 0x434. int arithmetic, 500.0 double: worse.
-   climb 2 rounds: 38 ins via rec written out (no). Next: an argument tree for the player's call as deep as
-   ch->id's that still loads ai_PlayerId (a macro / helper of the original?), or the sum's operands as a
-   CSE'd index (c2dag of the sum). prior: Reconstructed whole against the original 0x5b4820..0x5b4be8
-   (bribe window: slider, give/cancel, LCFIN.spyPaid, cm_SendMoveGoods, cm_SendRelations with the slot
-   wait, the 0x1751 news for kinds 6/7, gv_Accuse law 0x10): every callee, argument, constant and store
-   matches, 293 vs 293 instructions. Left only the evaluation order of the two gm_GetWorth calls in the
-   relation divisor amount * (flags1cc & 0x800 ? 6 : 4) * 500 / (gm_GetWorth(ai_PlayerId) +
-   gm_GetWorth(ch->id)): the original calls the player's first (+0x288 'mov cx,[ai_PlayerId]' CSE'd from
-   the flags1cc index, push ecx, call; then 'mov ax,[esi]; push eax; call'), ours calls ch's first (+0x284
-   'mov ax,[esi]; push eax; call', then 'mov cx,[ai_PlayerId]; push ecx; call'); the rest are the register
-   renamings that follow (regs 54: eax->edx ecx->eax edx->ecx at +0x4ae6/+0x4b32/+0x4b84). Tried both
-   operand orders (VC6 canonicalizes them), a player-worth temp before the expression (fixes the call order
-   but then the 6/4 ternary goes to a memory slot: frame 0x434 vs 0x430), the ternary as if/else, double
-   constants, a register float: the same or worse. The max computation got the original's order with the
-   worth temp (byte there) */
+   @deep s52: the same order holds at BOTH sums: the first one (max, +0x81) is byte only through the worth
+   temp; written plainly it also calls ch's first. Probes at the first sum (tools/c2dag/vlist.py): VC6
+   calls the operand with the more complex argument first, source order and identities never count:
+   ch->field > a global > a local, a byte field / byte global (movzx) above a word one, ai_Chars[..].id
+   above ch->id. Only *(volatile unsigned short *)&ai_PlayerId puts the player's call first with the plain
+   global's code (first sum = control; second sum: the original's call order and add ebp,eax, but two
+   loads, no CSE). = control or ch first: bitfield / union / array / const / short / int views of
+   ai_PlayerId, a struct-member global, a static const pointer, a block extern, the address taken, a local
+   pointer copy of ch, 64 in-function declaration counts, the unit's gm_GetWorth prototype as () / (short)
+   (the same code), (int) / (unsigned) (zero-extends), AICHARREC.id as short (movsx at the text), cl flags
+   /Oa /Ow /Ox /O1, flip.py over the plain text (0 hits). A local me = ai_PlayerId: ch first, me in ebp.
+   Statement forms (k, gain = amount * k * 500, worth = .., worth += .., relation = gain / worth and
+   variants): VC6 merges the single-use product into the division behind the calls, k then lives in memory
+   (32, frame 0x434). The AI twin (amr.c 2032 / 2039) writes gm_GetWorth(p->id) + gm_GetWorth(c->id). Open:
+   what ranks the original's ai_PlayerId argument above ch->id (the original pushes the global's value,
+   loaded once before the flags1cc index). prior: s45: the original's ai_PlayerId is one global CSE (mov
+   cx,[ai_PlayerId]) from the flags1cc index across the 6 / 4 ternary into the first gm_GetWorth push, so
+   the player's call must come first in the sum. VC6 orders the two calls by the operands' trees, not their
+   source order: = control for the sum swapped, (short) / (int) / (unsigned short) casts on either
+   argument, ai_PlayerId + 0, *&ai_PlayerId, ch[0].id, (float) of the sum, extra parentheses,
+   (float)amount, worth = (sum) inside the expression. gm_GetWorth(((AICHARREC *)ai_Chars)[ai_PlayerId].id)
+   puts the player's call first (13 ins: the arg then comes from the record, mov dx,[eax+X], no CSE) = the
+   deeper argument is evaluated first. (worth = gm_GetWorth(ai_PlayerId)) + .. inside: 32 ins but frame
+   0x434. int arithmetic, 500.0 double: worse. climb 2 rounds: 38 ins via rec written out (no). Next: an
+   argument tree for the player's call as deep as ch->id's that still loads ai_PlayerId (a macro / helper
+   of the original?), or the sum's operands as a CSE'd index (c2dag of the sum). */
 
 int ai_BribeAmountCB(AICHARREC *ch)
 {
