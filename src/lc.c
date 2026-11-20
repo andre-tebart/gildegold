@@ -1027,36 +1027,7 @@ void ai_LayoutProdGoodsList(int param_1, int param_2, int param_3, int param_4);
    selects the workers of the building's job of that goods. A right click clears the marks (or pops the window).
    Then it collects the goods of the first room into ai_ProdColumns (new kinds only, at most 16), computes each
    column's inputs, the amount the stock of inputs makes and the stock of the goods, shows the count and lays
-   out the columns and the goods list; on the way out it saves the scroll position in bld->prodScroll
-   @deep s50: kept (draft, 127 -> 210 ins but the original's code at those spots): the member loop without
-   the ch pointer (job = ai_Chars[chr].job, powerFlags / selected through ai_Chars[chr]: the original's shl
-   eax,2 / [eax+field] form, as byte ai_ProductionGoodsWindow) and the class test through an AIBTYPE *type
-   pointer (type->kind per test: the original's lea eax,[edi+eax*4]; mov al,[eax]). The count rose because
-   everything behind is out of step: what is left is ONE allocation decision - the original keeps bld in
-   ebp (prologue mov ebp,[esp+0x134], [ebp+1] in the member loop and the order branch) and the click loop's
-   column offset in a slot ([esp+0x1c], with its countdown [esp+0x20]: the frame's missing 4 bytes, 0x124
-   vs 0x128); ours gives the offset (c2trace k#555#1, prio -426, pass 2, avail{ebp}) ebp ahead of bld#2
-   (-735) / bld#3 (-491, pass 3 regions). The ai_Time copy M8s (crossed) follow from it. No lever (s50):
-   the click loop without continue (nested if / else: = control), the column-loop k continue as an if
-   (worse), the msg fill in ai_ProductionGoodsWindow's / ai_ExtractResourceWindow's orders and nIds /
-   reserved14 / flags at each position (+-4, no frame change), job->from == bld->id operand order, probes
-   (the member-loop good compare removed, an extra bld ref in the member loop: neither moves the frame).
-   climb 2 rounds from the ch variant: best only col->good as an int local (130 ins at the old start, frame
-   still wrong). Next: what lowers the offset IV's priority or raises bld's (c2trace --prio 'k#555|bld#2'),
-   e.g. the original's edi load of bld->id in the member loop (mov edi,[ebp+1]; cmp esi,edi where byte
-   siblings fold it into cmp: a CSE or a candidate for bld->id). prior: s49: 151 -> 127 ins. Lever: fresh =
-   1 inside the count > 1 test (the byte sibling ai_ExtractResourceWindow's form; 151 -> 127). The
-   original's class test is an AIBTYPE pointer with type->kind read at each test (lea eax,[edi+eax*4]; mov
-   al,[eax]: typeptr-nocls fixes that hunk, 126 ins) but in our current allocation it raises the size 2335
-   -> 2337, so not kept. Left (allocation): the original keeps bld in ebp from the prologue (mov
-   ebp,[esp+0x134] before push esi), win in esi across the frame loop (cmp [d2_ClickedForm],esi), the click
-   loop's column offset c and its countdown in two slots ([esp+0x1c] / [esp+0x20], frame 0x128 vs ours
-   0x124: ours has the offset in ebp, c2trace k#519 prio -426 still takes ebp); the member loop's character
-   index premultiplied (shl eax,2; mov ecx,[eax+ai_Chars.job]) where ours forms ch. No lever (s49): ch
-   written out at each use (the sibling's form: 211-239), the second column loop as an index or p =
-   &ai_ProdColumns[c] per pass (= control), g written out at each use (frame right 0x128 but 296+: the
-   original has g as a pointer, esi, and the k loop walks &g->in[k]), int cls (272), climb round 1 (305
-   mutants, nothing comparable: frame size). */
+   out the columns and the goods list; on the way out it saves the scroll position in bld->prodScroll */
 int ai_ProductionWindow(AIBLD *bld)
 {
     int win;
@@ -1240,13 +1211,13 @@ int ai_ProductionWindow(AIBLD *bld)
             for (k = 0; k < 4; k++) {
                 col->in[k] = ((AIGOOD *)ai_Goods)[col->good].in[k];
                 col->need[k] = ((AIGOOD *)ai_Goods)[col->good].need[k];
-                if (col->in[k] == 0)
-                    continue;
-                item = (AIOBJ *)gm_Query((void *)store->list, 1, 0, col->in[k]);
-                if (item == 0)
-                    col->maxAmount = 0;
-                else
-                    col->maxAmount = min(col->maxAmount, gm_ListAmount(store, item) / ((AIGOOD *)ai_Goods)[col->good].need[k]);
+                if (col->in[k] != 0) {
+                    item = (AIOBJ *)gm_Query((void *)store->list, 1, 0, col->in[k]);
+                    if (item == 0)
+                        col->maxAmount = 0;
+                    else
+                        col->maxAmount = min(col->maxAmount, gm_ListAmount(store, item) / ((AIGOOD *)ai_Goods)[col->good].need[k]);
+                }
             }
             col->maxAmount = ((AIGOOD *)ai_Goods)[col->good].batch * col->maxAmount;
             item = (AIOBJ *)gm_Query((void *)store->list, 1, 0, col->good);
