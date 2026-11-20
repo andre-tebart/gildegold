@@ -8298,6 +8298,8 @@ void ai_Miracle(AICHARREC *me, int which)
     char healed[0x400];
     char unhealed[0x400];
     AICHARREC *c;
+    AIBLD *bld;
+    int out;
     int price;
     int i;
 
@@ -8305,8 +8307,6 @@ void ai_Miracle(AICHARREC *me, int which)
         return;
     txt_Format(title, 0x1df7, me->id);
     if (which == 0) {
-        AIBLD *bld;
-        int out;
         int worth;
         LARGE_INTEGER kinds;
 
@@ -8350,8 +8350,6 @@ void ai_Miracle(AICHARREC *me, int which)
         }
         return;
     } else if (which == 2) {
-        AIBLD *bld;
-        int out;
         char level;
         LARGE_INTEGER kinds;
 
@@ -8415,7 +8413,6 @@ void ai_Miracle(AICHARREC *me, int which)
         int worth;
         int v;
         int j;
-        AIBLD *bld;
         int out;
         LARGE_INTEGER kinds;
 
