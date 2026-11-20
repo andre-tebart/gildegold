@@ -2522,7 +2522,7 @@ exe	0x004de4b0	cm_SinkDownAction	cm	76d25605dbe5f924	no	shape	sweep control=shap
 exe	0x004de530	cm_DuelSinkDown	cm	964048c9348f33c0	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004de5e0	cm_DuelInitVariants	cm	56ac0f11cb8ea2b1	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004de610	cm_DuelVariant	cm	6da37e1272d92434	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x004de640	cm_DuelShotAction	cm	7762b9f6a17878fd	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	94928e7b694a18c4
+exe	0x004de640	cm_DuelShotAction	cmscene	9d08bfe07910952e	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	136b418e2d5c2e87
 exe	0x004de900	cm_DuelRound	cm	1721b1bb60bb83f1	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	becf1bbdf99775c9
 exe	0x004debe0	cm_DuelOutcome	cm	d1822066c21581f6	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	becf1bbdf99775c9
 exe	0x004ded10	cm_RunDuel	cmscene	1759826011ddf7c0	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	e0992a60c2fd9b55

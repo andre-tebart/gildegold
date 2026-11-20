@@ -2155,6 +2155,13 @@ copied back into short predecessors only after all of this.
   size. A tail merged in ours and not in the original (or the reverse) is almost always another block in
   front of the exit label: find the flow-graph change that lets the walk finish another return first.
 
+- **An arm laid out behind a LATER return (not in reverse postorder of the real graph: the hit path's second
+  half after the hit-reaction's `ret`, jumping back into the shared code)**: the flag was set by its own if / else
+  and the work ran under a second, decided test: `if (r < acc) hit = 1; else hit = 0; if (hit) {..} else dmg = 0;`
+  (the block order is taken on the graph with the decided test, which is then threaded). A flag set inside the
+  arms with the work in the same arm, or the work alone under `if (hit)`, kept the RPO layout (cm_DuelShotAction
+  70 -> 8 ins, then byte with `acc = acc * 0.8;` without the cast: its fstp sinks behind the next pushes).
+
 ### Which arm is inline and which is out of line
 
 - **`if (A || .. || F) X else if (G || ..) Y` with X laid out last (near je to it, the G tests inline), the

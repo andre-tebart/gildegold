@@ -2132,26 +2132,7 @@ int cm_DuelVariant(int n)
    the damage 5 + (0..15) when the other won the roll round, else 15 + (0..30) (* 0.75 when the target has the item 0x2b5), added
    to the target's score byte cm_DuelScore[0] / [1] and shown (cm_ShowDamage); the shot sound, then the target sinks
    (cm_DuelSinkDown: the duel is over) or, on a hit, bleeds, staggers and loses the damage from v024 and its health (text
-   0x1102 + variant), on a miss dodges (text 0x1109 + variant)
-   @deep deep s46: the hit tail as a test at the join (if / else setting hit / dmg, then if (hit != 0) {
-   0x2b5 test .. cm_ShowDamage }: a decided test): 70 ins, the same layout as the control (J still right
-   behind the 0x1e arm); with hit = dmg = 0 preset 95. Block-order reading (c2 walks the jump edge first,
-   RPO): the original's order rand, H, 0xf arm, miss, sample.., 0x1e arm, J needs J and the 0x1e arm
-   finished before the sample subtree, i.e. J's successor must not be the sample block when the walk
-   reaches J - J's jmp back into the sample is probably a cross-jumped copy (xjump after block order): look
-   for a form where the hit path has its own copy of the code after the join (sample call / sink test) that
-   the merger folds into the miss path's. Not tried yet: that duplicated tail; c2tail --il on the control.
-   prior: see below. prior: size queue s11: raw 679 vs 689 (10 short). Kept: d2_SetForm(cm_TextBox, 0)
-   before sh / tg are read from the action (the original loads a->shot after the call): 78 -> 70 ins. Left:
-   (1) block layout: the original lays out [hit tests][0xf arm, jmp J][miss: hit = dmg = 0][sample ..
-   returns][0x1e arm][J: the 0x2b5 test .. cm_ShowDamage, jmp back to the sample]; ours puts the 0x1e arm
-   and J right after the 0xf arm (the short / near jumps are the 10 bytes). By c2's reverse-postorder walk
-   the original's order needs J reached only after the sample's subtree; no text order gave it. Tried (no
-   lever or worse): the roll test as ternary / negated (= control), dmg preset + if (draft 72), the roll as
-   else-if (78), the rand test negated with the miss first (>= : draft 86; !(<): draft 76), hit / dmg
-   zeroed before the test (draft 95), sh / tg read order (= same). climb --rounds 2 from here: only paren
-   (tg->f01c) at the b line (66 ins; the original's fld f01c; fimul dmg there) - a paren trick, not
-   applied. (2) acc's fstp after the 0x16f pushes in the original. */
+   0x1102 + variant), on a miss dodges (text 0x1109 + variant) */
 
 void cm_DuelShotAction(CHACTION *a)
 {
@@ -2165,13 +2146,16 @@ void cm_DuelShotAction(CHACTION *a)
     tg = a->shot.target;
     acc = (float)gm_GetSkill((char *)sh, 3);
     gm_GetSkill((char *)tg, 3);
-    acc = (float)(acc * 0.8);
+    acc = acc * 0.8;
     if (ai_InventoryHas(sh, 0x16f) != 0)
         acc = (float)(acc * 1.5);
     if (((int)sh == cm_DuelLeft && cm_DuelRightInsultWon != 0) || ((int)sh == cm_DuelRight && cm_DuelLeftInsultWon != 0))
         acc = (float)(acc * 0.66);
-    if ((float)cm_RandomFloat() < acc) {
+    if ((float)cm_RandomFloat() < acc)
         hit = 1;
+    else
+        hit = 0;
+    if (hit) {
         if (((int)sh == cm_DuelLeft && cm_DuelRightRollWon != 0) || ((int)sh == cm_DuelRight && cm_DuelLeftRollWon != 0))
             dmg = cm_Random(0xf) + 5;
         else
@@ -2182,11 +2166,9 @@ void cm_DuelShotAction(CHACTION *a)
             cm_DuelScore[0] += dmg;
         else
             cm_DuelScore[1] += dmg;
-        cm_ShowDamage((char *)tg, (int)(tg->f01c * 0.01 * dmg), 0);
-    } else {
-        hit = 0;
+        cm_ShowDamage((char *)tg, (int)((tg->f01c * 0.01) * dmg), 0);
+    } else
         dmg = 0;
-    }
     sb_PlaySampleI(0, "Schuss", 1, 0x3f, 0x7f, 0, 0);
     if (cm_DuelSinkDown((char *)tg, dmg) == 0) {
         if (hit != 0) {
@@ -2197,7 +2179,7 @@ void cm_DuelShotAction(CHACTION *a)
             n = cm_DuelVariant(6);
             io_PrintText(n + 0x1102, tg->id);
             snd_PlayVoice(tg->id, 0, "_DUELL_INTRO_C2_AUSWAHL_SCHIESSEN_TREFFER", n);
-            b = (float)(tg->f01c * dmg * 0.01);
+            b = (float)(tg->f01c * 0.01 * dmg);
             tg->v024 = (int)(tg->v024 - b);
             gm_AddHealth(tg->id, (int)-b);
         } else {
