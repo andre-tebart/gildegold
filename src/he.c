@@ -13416,33 +13416,36 @@ int ord_DispatchOrder(int id, char *c, int *m);
    stage is 6. 6: back home (else 4 more minutes) it is cancelled. 7: the accusation answered, the proof goes to the
    watch (cm_SendProofExecuted), the stage is 8 in 10 minutes. 8: while the watch event still holds it 6 more
    minutes, then the saboteur walks home (stage 6). Stages -2 / -1 kill the saboteur and free the event
-   @deep s50: meaning fix committed (stage 6's actions == 0 exit clears saboteur before stage -1; the
-   original jumps into stage 0's failure block +0x10f). Kept: stage 3 found path stores watch before stage
-   7; stage 0 as he_RunBrawl (e->stage++ then x->slot = -1: the stage load before the slot store); stage
-   5's scene = d3_CurrentScene after scale = 1.0f (the scene store after the vector inits): 146 -> 134.
-   Left: (1) stage 4's failure path is one scratch rotation step behind from its first statement (owner's
-   lea chain: ours lea eax,[eax+eax*8]; lea ebx,[eax*4+X], the original lea ecx / lea ebx after the me
-   load; every temp to +0x5597a0 rotated eax->ecx->edx): a clean probe { extern int sabProbe; sabProbe =
-   d3_CurrentScene; } right before the recompute owner = &ai_CharsT[b->owner] gives 78 ins (the regs hunks
-   gone), before me 84, before the InventoryHas test 88; anywhere earlier (success block, its tail) far
-   worse. So one rotating temp at the failure block's start is missing in ours. = control: owner / me
-   spelled ai_CharsT + o, via a local, the inventory test nested / as a flag (if / else, assignment),
-   chance inline or double, the tail's copy as memcpy, else-arm form; swap me / owner 140; gv_Accuse with
-   me->netId / owner->netId much worse. flip --want on the original's recompute: only a duplicated
-   gm_AddTime(&e->end, 0, 10, 0) at the success tail. (2) stage 1's add esp hoisted: with the brawl order
-   of stage 0, stage 2's stage++ tail cross-jumps into stage 1's (the original: into stage 4's inventory
-   tail +0x7cd), which splits stage 1's block before scheduling. (3) stage 5's stosw (dummies init tail)
-   after the float stores in the original; dummies' declaration position = control. (4) two order hunks in
-   stage 5's message fill (+0x55993e: the four msg stores after push 0x10; +0x5599bc ecx = b->id load
-   later). prior: size queue s18: stage 5's a / dir with an int pad word (struct { float x, y, z; int w; }:
-   the original stores both w as integer 0 from its cached ebx, as cm_UpdateGrenades): 160 -> 142 ins;
-   stage 2's busy test written positive (if (c->scene->actions != 0) { end = now + 4; stage = 2; return; }
-   stage++; return;) so its stage++ jumps into stage 4's copy as the original (je +0x7cd): 142 -> 137 ins,
-   raw 3575 -> 3553, padded size (3600). retgen single (30 return sites, 61 variants): no row below the
-   control. Left: the stage = 6 tail at +0x10f (ours inline at +0xd5d), stage 3's found-path store order
-   (add esi,0x52 first in the original), stage 4's failure-path lea order (lea ecx / lea ebx, the scratch
-   rotation behind it through +0x5597a0), stage 5's dir.y also stored from ebx in the original (dir.y =
-   0.0f / 0: = same code). */
+   @deep s50: 137 -> 100 ins, size now the original's 3544 (125 bytes differ). Kept: stage 0 as he_RunBrawl
+   (e->stage++ then x->slot = -1); stage 1 and stage 3 end with break (their stage++ tails are then no
+   cross-jump targets, so stage 2's stage++ jumps into stage 4's +0x7cd as the original); stage 3's found
+   path stores watch before stage 7; stage 4's accusation exit (if (b->owner != 0xffff) {..; e->stage = -1;
+   break;}) as break (size 3540 -> 3544); stage 5's AIMSG msg a block local of the message block (both
+   order hunks gone), scene = d3_CurrentScene after scale = 1.0f; stage 6's busy test written positive (its
+   stage -1 exit cross-jumps into stage 0's +0x10f, the stage = -1 store; NOT the saboteur store at +0x109:
+   an earlier commit of this session wrongly cleared saboteur there and was reverted). Left: (1) stage 4's
+   failure path one eax/ecx/edx rotation step behind from its first statement (owner's chain: ours lea
+   eax,[eax+eax*8]; lea ebx,[eax*4+X], the original lea ecx after the me load; all temps through the
+   failure accuse at +0x5597a0 rotated): a clean probe { extern int sabProbe; sabProbe = d3_CurrentScene; }
+   at the end of the success tail (after gm_AddTime(&e->end, 0, 10, 0), before its return) or before the
+   recompute leaves only the probe's own code (42 ins), so exactly one rotating temp between the success
+   tail's call and the recompute is missing in ours. flip (anchored on the recompute): only a duplicated
+   gm_AddTime there. = control: success tail ending break, owner / me spelled ai_CharsT + o / via a local /
+   inline in the InventoryHas test, the roll as nested ifs / a flag / chance inline / commuted / <=, the
+   copy as memcpy or through an AITIME pointer, gm_AddTime / gm_CompareTime through ((AIJOB *)ev), the
+   failure as else arm; worse: swap me / owner, stage++ after the call, gv_Accuse in both arms of the kind
+   test, me->netId / owner->netId in the accusations. climb 2 + 4 (unsafe) rounds: only meaning changes or
+   a float local (t = me->kind) in the inventory branch. (2) stage 5's stosw (dummies' zero-fill tail)
+   after the float vector stores in the original; dummies' declaration position = control. prior: size
+   queue s18: stage 5's a / dir with an int pad word (struct { float x, y, z; int w; }: the original stores
+   both w as integer 0 from its cached ebx, as cm_UpdateGrenades): 160 -> 142 ins; stage 2's busy test
+   written positive (if (c->scene->actions != 0) { end = now + 4; stage = 2; return; } stage++; return;) so
+   its stage++ jumps into stage 4's copy as the original (je +0x7cd): 142 -> 137 ins, raw 3575 -> 3553,
+   padded size (3600). retgen single (30 return sites, 61 variants): no row below the control. Left: the
+   stage = 6 tail at +0x10f (ours inline at +0xd5d), stage 3's found-path store order (add esi,0x52 first
+   in the original), stage 4's failure-path lea order (lea ecx / lea ebx, the scratch rotation behind it
+   through +0x5597a0), stage 5's dir.y also stored from ebx in the original (dir.y = 0.0f / 0: = same
+   code). */
 void he_RunSabotage(int ev)
 {
     AIJOB *e = (AIJOB *)ev;
