@@ -17222,7 +17222,7 @@ void he_RunBuildingSpying(AIJOB *ev)
     HEBLDSPY *x = (HEBLDSPY *)ev;
     AIBLD *b, *g;
     AICHAR *c, *owner, *master, *spy = 0, *p;
-    AIOBJ *room = 0, *stall, *it;
+    AIOBJ *room = 0, *stall, *it, *obj;
     HESPYREPORT rec;
     char text[0x400];
     int k, n, sum, all, worth, goods, know;
@@ -17352,11 +17352,12 @@ void he_RunBuildingSpying(AIJOB *ev)
             p = (AICHAR *)gm_FindCharacterByMaster((int)g);
             if (spy != 0 && (p == 0 || (p->flags1b4 & 1) == 0)) {
                 txt_Format(text, 0x19f8, spy->id, owner->id, b);
-                he_MessageBoxQuickjump(master->netId, master->netId, text, 1, 0x5f0, x->home,
-                                       ((AIOBJ *)gm_BuildingMainObject((unsigned char *)g))->objId, 0, "_NACHRICHTEN_HS_78");
+                obj = (AIOBJ *)gm_BuildingMainObject((unsigned char *)g);
+                he_MessageBoxQuickjump(master->netId, master->netId, text, 1, 0x5f0, x->home, obj->objId, 0, "_NACHRICHTEN_HS_78");
             }
         }
-        break;
+        he_FreeEvent((int *)ev);
+        return;
     case -2:
     case -1:
         g = (AIBLD *)gm_BuildQuery(1, 1, x->home);
