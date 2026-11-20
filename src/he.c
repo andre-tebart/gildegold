@@ -10102,24 +10102,24 @@ int he_PickNearBuilding(AICHAR *c, int n, AIBLD **blds, int *bldId, int *objId);
    walk keeps its building), else the next of the 0x100 buildings in steps of
    the slot's step whose kind is in HE_WALK_BUILDINGS; the character is sent there (cm_SendChrGotoBuilding
    "Sim Politicians", its flag 0 for the kinds 0x16 / 7 / 0xf, else 1)
-   @deep size queue s20: 86 -> 48 ins, raw 985 -> 991 (padded 992; the original 1001 -> 1008: 2 bytes
-   short). Found: the walk loop tests the kind through a type record pointer (bt = &ai_BTypesT[b->type]; if
-   (bt->kind > 0x1f) hi = 1 << (bt->kind - 0x20); else lo = 1 << bt->kind;: the original's ai_BTypes reload
-   per pass with the dead lea of bt, b in ebp, lo in edi) and the final test reads bt->kind three times
-   (lea eax,[..]; mov al,[eax]); held = 0x100 before idx / budget (climb.py). Left (code 48, slots 32):
-   stage, the original's mov cl,[s->stage]; mov edi,ecx; and edi,0xff (a byte value widened into a register
-   int: ours xor ecx; mov cl) with budget / 2 + 1 stored and reloaded into edi for the idiv; the frame
-   slots of budget and b swapped (frame > 0x80: density sort). Tried: unsigned char stage (bl + a byte
-   slot, frame 0x94), no stage local with s->stage++ / s->stage + 1 (frame 0x90), kind through bt in the
-   loop with a kind local (= control). prior: read whole against the original and reconstructed (hold
-   sets/clears bit 0x1000 in the right argument, sv_IsAtDoor(c, building), the char holdHour test, weather
-   computed before util_Random, the walk loop reusing budget as the step and held as the countdown, idx = 0
-   for the inn path, unsigned char kind). Left, allocation: the frame slots of budget and b are swapped
-   (ours b [esp+0x10] / budget [esp+0x14], the original budget 0x10 / b 0x14; every declaration order
-   tried, no change); in the walk loop ours keeps ai_BTypes in ebp and b in edi, the original reloads
-   ai_BTypes each pass (mov eax, [ai_BTypes]; add eax, ecx; lea eax, [eax+edx*4] dead) with b in ebp and lo
-   in edi; the stage byte widened via mov edi, ecx / and edi, 0xff vs ours xor ecx / mov cl; budget / 2 + 1
-   kept in edi vs stored and reloaded. 337 vs 341 instructions. */
+   @deep s52: kept the walk loop's count as held--; before the idx step and while (held != 0) (the
+   original's dec / test pair; 48 -> 41). The stage: the original reads s->stage into cl (no xor) and
+   widens it into edi (and edi,0xff): no stage local, s->stage read in both tests and s->stage++ (ns-inc)
+   gives exactly that, but the frame grows (idx spilled: idx#1 live from its = 0 at the top loses to c);
+   with idx = 0 just before the util_RandomF branch (ns-i-before) the frame is right (70 ins): left there a
+   zero register ebx through the guards (cmp eax,ebx / push ebx; the original test / push 0), budget / 2 +
+   1 kept in a register (budget#2) where the original stores it and reloads it into edi for the idiv, the b
+   / budget slots swapped, the two final GotoBuilding arms in the other order. = control: budget /= 2;
+   budget++ forms; unsigned char stage (frame 0x94). prior: size queue s20: 86 -> 48 ins, raw 985 -> 991
+   (padded 992; the original 1001 -> 1008: 2 bytes short). Found: the walk loop tests the kind through a
+   type record pointer (bt = &ai_BTypesT[b->type]; if (bt->kind > 0x1f) hi = 1 << (bt->kind - 0x20); else
+   lo = 1 << bt->kind;: the original's ai_BTypes reload per pass with the dead lea of bt, b in ebp, lo in
+   edi) and the final test reads bt->kind three times (lea eax,[..]; mov al,[eax]); held = 0x100 before idx
+   / budget (climb.py). Left (code 48, slots 32): stage, the original's mov cl,[s->stage]; mov edi,ecx; and
+   edi,0xff (a byte value widened into a register int: ours xor ecx; mov cl) with budget / 2 + 1 stored and
+   reloaded into edi for the idiv; the frame slots of budget and b swapped (frame > 0x80: density sort).
+   Tried: unsigned char stage (bl + a byte slot, frame 0x94), no stage local with s->stage++ / s->stage + 1
+   (frame 0x90), kind through bt in the loop with a kind local (= control). */
 void he_StepWalk(HEWALKSLOT *s)
 {
     AIBLD *b = 0;
@@ -10221,8 +10221,9 @@ next:
                     break;
                 b = 0;
             }
+            held--;
             idx = (idx + budget) % 0x100;
-        } while (--held != 0);
+        } while (held != 0);
     }
     if (b == 0) {
         s->state |= 4;
