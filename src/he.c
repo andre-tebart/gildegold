@@ -17251,12 +17251,12 @@ void he_RunBuildingSpying(AIJOB *ev)
         ev->stage = 1;
         return;
     case 1:
+        all = 1;
         b = (AIBLD *)gm_BuildQuery(1, 1, x->target);
         if (b == 0) {
             ev->stage = -1;
             return;
         }
-        all = 1;
         for (k = 0; k < 8; k++) {
             c = (AICHAR *)gm_FindChar(ev->ids[k]);
             if (c != 0 && c->model != 0 && sv_IsAtDoor(c, b) == 0 && c->scene->actions != 0)
@@ -17300,8 +17300,8 @@ void he_RunBuildingSpying(AIJOB *ev)
         }
         master = (AICHAR *)gm_FindChar(ai_CharInts[g->owner][0]);
         room = (AIOBJ *)gm_GetGebaeudeHauptraum((unsigned char *)g);
-        n = 0;
         sum = 0;
+        n = 0;
         for (k = 0; k < 8; k++) {
             c = (AICHAR *)gm_FindChar(ev->ids[k]);
             if (c != 0) {
@@ -17313,8 +17313,10 @@ void he_RunBuildingSpying(AIJOB *ev)
                 n++;
             }
         }
-        if (n == 0)
-            break;
+        if (n == 0) {
+            he_FreeEvent((int *)ev);
+            return;
+        }
         sum /= n;
         sum = (int)(42.0f > sum ? 42.0f : sum);
         b = (AIBLD *)gm_BuildQuery(1, 1, x->target);
