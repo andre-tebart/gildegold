@@ -4038,13 +4038,13 @@ void cm_FightEndDialog(CMFIGHTREC *a)
         b = (AIBLD *)gm_BuildQuery(1, 1, a->attackerBldId);
         if (ai_BTypesT[b->type].kind == 0x13) {
             total = 0;
-            for (cnt = 0; cnt < 16; cnt++) {
-                id = a->defenders[cnt];
+            for (v = 0; v < 16; v++) {
+                id = a->defenders[v];
                 if (id == -1)
                     continue;
                 c = (AICHAR *)cm_FindFighter(id);
-                col = cnt % 4;
-                row = cnt / 4 + 1;
+                col = v % 4;
+                row = v / 4 + 1;
                 px = col * 80 + 0x30;
                 py = row * 100;
                 d2_WinOpenPic(px, py, 0x5db, d2_LastWindow);
@@ -4052,9 +4052,9 @@ void cm_FightEndDialog(CMFIGHTREC *a)
                 sv_ValueBar(px, py + 0x3c, c->sk83, 0x4eb);
                 h = 0;
                 if (c->health == 0) {
-                    v = (int)(c->sk83 * 0.023809524f + 1.0f);
+                    h = (int)(c->sk83 * 0.023809524f + 1.0f);
                     d2_WinOpenPic(px + 6, py + 6, 0x3b, d2_LastWindow);
-                    h = gm_PlayerFactor(v * 40, ai_OwnPlayer);
+                    h = gm_PlayerFactor(h * 40, ai_OwnPlayer);
                 }
                 if (side == cm_FightAttackerC) {
                     if (c->health > 0) {
