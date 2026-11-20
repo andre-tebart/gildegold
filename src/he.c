@@ -13415,38 +13415,7 @@ int ord_DispatchOrder(int id, char *c, int *m);
    building ("dummy_TUER" / "dummy_FAHNE" / "dummy_RAUCH_0") and the next follows in random 2 minutes; after it the
    stage is 6. 6: back home (else 4 more minutes) it is cancelled. 7: the accusation answered, the proof goes to the
    watch (cm_SendProofExecuted), the stage is 8 in 10 minutes. 8: while the watch event still holds it 6 more
-   minutes, then the saboteur walks home (stage 6). Stages -2 / -1 kill the saboteur and free the event
-   @deep s51: 100 -> 0 ins (shape, 4 bytes). Kept: stage 5's a / dir / scale as initialized declarations
-   before dummies (the stosw after the vector stores as the original); stage 4 as a success flag: ok = 0;
-   if (roll && !has) { ok = 1; news, accusation, loop } if (!ok) { the failure: owner / me again, the
-   caught path (stage++ return), the failed path } e->stage++; end = now; gm_AddTime(10); return. The
-   flag's decided test keeps the block structure that gives the failure the original's eax/ecx/edx rotation
-   step (every probe that fixed it added one scratch temp after the success tail's gm_AddTime; the plain
-   if-return forms, else arms, casts, loop forms, inline helpers, prototype casts were all = control).
-   Left: 4 bytes at +0x8bc: stage 5's else (stage = 6; return) jae cross-jumps into stage 8's stage = 6
-   tail (+0x485) where the original jumps into stage 6's (+0xd9d); before the flag form it was right, so
-   the stage 4 block structure decides which copy the xjump finds first. prior: s50: 137 -> 100 ins, size
-   now the original's 3544 (125 bytes differ). Kept: stage 0 as he_RunBrawl (e->stage++ then x->slot = -1);
-   stage 1 and stage 3 end with break (their stage++ tails are then no cross-jump targets, so stage 2's
-   stage++ jumps into stage 4's +0x7cd as the original); stage 3's found path stores watch before stage 7;
-   stage 4's accusation exit (if (b->owner != 0xffff) {..; e->stage = -1; break;}) as break (size 3540 ->
-   3544); stage 5's AIMSG msg a block local of the message block (both order hunks gone), scene =
-   d3_CurrentScene after scale = 1.0f; stage 6's busy test written positive (its stage -1 exit cross-jumps
-   into stage 0's +0x10f, the stage = -1 store; NOT the saboteur store at +0x109: an earlier commit of this
-   session wrongly cleared saboteur there and was reverted). Left: (1) stage 4's failure path one
-   eax/ecx/edx rotation step behind from its first statement (owner's chain: ours lea eax,[eax+eax*8]; lea
-   ebx,[eax*4+X], the original lea ecx after the me load; all temps through the failure accuse at +0x5597a0
-   rotated): a clean probe { extern int sabProbe; sabProbe = d3_CurrentScene; } at the end of the success
-   tail (after gm_AddTime(&e->end, 0, 10, 0), before its return) or before the recompute leaves only the
-   probe's own code (42 ins), so exactly one rotating temp between the success tail's call and the
-   recompute is missing in ours. flip (anchored on the recompute): only a duplicated gm_AddTime there. =
-   control: success tail ending break, owner / me spelled ai_CharsT + o / via a local / inline in the
-   InventoryHas test, the roll as nested ifs / a flag / chance inline / commuted / <=, the copy as memcpy
-   or through an AITIME pointer, gm_AddTime / gm_CompareTime through ((AIJOB *)ev), the failure as else
-   arm; worse: swap me / owner, stage++ after the call, gv_Accuse in both arms of the kind test, me->netId
-   / owner->netId in the accusations. climb 2 + 4 (unsafe) rounds: only meaning changes or a float local (t
-   = me->kind) in the inventory branch. (2) stage 5's stosw (dummies' zero-fill tail) after the float
-   vector stores in the original; dummies' declaration position = control. */
+   minutes, then the saboteur walks home (stage 6). Stages -2 / -1 kill the saboteur and free the event */
 void he_RunSabotage(int ev)
 {
     AIJOB *e = (AIJOB *)ev;
@@ -13563,7 +13532,7 @@ void he_RunSabotage(int ev)
         e->end = ai_Time;
         gm_AddTime(&e->end, 0, 4, 0);
         e->stage = 6;
-        return;
+        break;
     }
     case 4: {
         float chance;
