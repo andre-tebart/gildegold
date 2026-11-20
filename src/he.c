@@ -13521,7 +13521,7 @@ void he_RunSabotage(int ev)
         cm_SendChrAnim(x->saboteur, "spezial/einhaendig_vom_boden_nehmen", 1);
         cm_SendChrGotoBuilding(x->saboteur, e->from, -1, 0, 1, "Sabotage");
         e->stage++;
-        return;
+        break;
     }
     case 7: {
         HEWATCH *w;
