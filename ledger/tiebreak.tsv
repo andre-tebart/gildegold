@@ -3719,7 +3719,7 @@ exe	0x00558a40	he_RunStudy	he	9d5863752edb7928	no	shape	sweep control=shape best
 exe	0x00558de0	he_AllocEvent17	he	d8574a402148cfb4	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00558e10	he_RunEvent17	he	f85a904a4b43704b	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00558e70	he_AllocSabotage	he	cd93edbba1fa8484	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x00558f10	he_RunSabotage	he	1a0d02041b1eb643	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
+exe	0x00558f10	he_RunSabotage	he	63052a13134c8829	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	059022e4b7138b1a
 exe	0x00559d20	he_AllocSpying	he	369f0df784f23ec3	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x0055a030	he_RunSpying	he	fd4dccc7ba8ebe5d	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	110b9c28578fc126
 exe	0x0055a5f0	he_AllocBrawl	he	d7dbfd9901533ac2	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	951e95f1fe8c0813

@@ -13416,44 +13416,37 @@ int ord_DispatchOrder(int id, char *c, int *m);
    stage is 6. 6: back home (else 4 more minutes) it is cancelled. 7: the accusation answered, the proof goes to the
    watch (cm_SendProofExecuted), the stage is 8 in 10 minutes. 8: while the watch event still holds it 6 more
    minutes, then the saboteur walks home (stage 6). Stages -2 / -1 kill the saboteur and free the event
-   @deep s51: 100 -> 98 ins. Kept: stage 5's a / dir / scale as initialized declarations before dummies (a
-   = { -243, -90, 190, 0 }, dir = { -50, 0, 38, 0 }, scale = 1.0f; scene = d3_CurrentScene the first
-   statement): the stosw now after the vector stores as the original (stage 5 byte). Left: only stage 4's
-   failure path one eax/ecx/edx rotation step behind from the owner chain (+0x70c) to the failure gv_Accuse
-   (+0x5597a0). Measured (c2dag): the success tail's last temps are eax (&end slot reload), ecx (copy), edx
-   (4 data); the probe's temp (after gm_AddTime, before return) takes eax and the failure then matches (42
-   ins, only the probe), as does any read placed there (p-scene, a reload of me after the call: 50 with
-   me's slot count changed; a re-query of b at the failure start: 48). So the original had one scratch temp
-   (eax) between the success tail's gm_AddTime and the owner chain that leaves no code. = control this
-   session: if/else forms (success without return + common return/break, failure in else), the condition
-   inverted (!(..) forms; < 1.0f || has changes the fcomp test to test ah,5), the owner / me index casts
-   ((int), (unsigned), & 0xffff, byte offset), the loop as while / do / ++i / continue forms / i = 0 apart,
-   stage++ as stage + 1, the loop body through c, a dead-store double of e->end = ai_Time (worse 106),
-   x->blasts = 0 in the failure (101), an int-returning gm_AddTime cast (= control: an unused result is no
-   temp). flip (want push 704 + the failure chain's lea ecx): only the duplicated gm_AddTime (1013 of 1230
-   mutants). climb 1 round: only a float t = me->kind (meaning change). Next: cross-jumped-away code
-   (notes: an extra body VC6 merged after allocation skips a rotation step), a late-removed copy. prior:
-   s50: 137 -> 100 ins, size now the original's 3544 (125 bytes differ). Kept: stage 0 as he_RunBrawl
-   (e->stage++ then x->slot = -1); stage 1 and stage 3 end with break (their stage++ tails are then no
-   cross-jump targets, so stage 2's stage++ jumps into stage 4's +0x7cd as the original); stage 3's found
-   path stores watch before stage 7; stage 4's accusation exit (if (b->owner != 0xffff) {..; e->stage = -1;
-   break;}) as break (size 3540 -> 3544); stage 5's AIMSG msg a block local of the message block (both
-   order hunks gone), scene = d3_CurrentScene after scale = 1.0f; stage 6's busy test written positive (its
-   stage -1 exit cross-jumps into stage 0's +0x10f, the stage = -1 store; NOT the saboteur store at +0x109:
-   an earlier commit of this session wrongly cleared saboteur there and was reverted). Left: (1) stage 4's
-   failure path one eax/ecx/edx rotation step behind from its first statement (owner's chain: ours lea
-   eax,[eax+eax*8]; lea ebx,[eax*4+X], the original lea ecx after the me load; all temps through the
-   failure accuse at +0x5597a0 rotated): a clean probe { extern int sabProbe; sabProbe = d3_CurrentScene; }
-   at the end of the success tail (after gm_AddTime(&e->end, 0, 10, 0), before its return) or before the
-   recompute leaves only the probe's own code (42 ins), so exactly one rotating temp between the success
-   tail's call and the recompute is missing in ours. flip (anchored on the recompute): only a duplicated
-   gm_AddTime there. = control: success tail ending break, owner / me spelled ai_CharsT + o / via a local /
-   inline in the InventoryHas test, the roll as nested ifs / a flag / chance inline / commuted / <=, the
-   copy as memcpy or through an AITIME pointer, gm_AddTime / gm_CompareTime through ((AIJOB *)ev), the
-   failure as else arm; worse: swap me / owner, stage++ after the call, gv_Accuse in both arms of the kind
-   test, me->netId / owner->netId in the accusations. climb 2 + 4 (unsafe) rounds: only meaning changes or
-   a float local (t = me->kind) in the inventory branch. (2) stage 5's stosw (dummies' zero-fill tail)
-   after the float vector stores in the original; dummies' declaration position = control. */
+   @deep s51: 100 -> 0 ins (shape, 4 bytes). Kept: stage 5's a / dir / scale as initialized declarations
+   before dummies (the stosw after the vector stores as the original); stage 4 as a success flag: ok = 0;
+   if (roll && !has) { ok = 1; news, accusation, loop } if (!ok) { the failure: owner / me again, the
+   caught path (stage++ return), the failed path } e->stage++; end = now; gm_AddTime(10); return. The
+   flag's decided test keeps the block structure that gives the failure the original's eax/ecx/edx rotation
+   step (every probe that fixed it added one scratch temp after the success tail's gm_AddTime; the plain
+   if-return forms, else arms, casts, loop forms, inline helpers, prototype casts were all = control).
+   Left: 4 bytes at +0x8bc: stage 5's else (stage = 6; return) jae cross-jumps into stage 8's stage = 6
+   tail (+0x485) where the original jumps into stage 6's (+0xd9d); before the flag form it was right, so
+   the stage 4 block structure decides which copy the xjump finds first. prior: s50: 137 -> 100 ins, size
+   now the original's 3544 (125 bytes differ). Kept: stage 0 as he_RunBrawl (e->stage++ then x->slot = -1);
+   stage 1 and stage 3 end with break (their stage++ tails are then no cross-jump targets, so stage 2's
+   stage++ jumps into stage 4's +0x7cd as the original); stage 3's found path stores watch before stage 7;
+   stage 4's accusation exit (if (b->owner != 0xffff) {..; e->stage = -1; break;}) as break (size 3540 ->
+   3544); stage 5's AIMSG msg a block local of the message block (both order hunks gone), scene =
+   d3_CurrentScene after scale = 1.0f; stage 6's busy test written positive (its stage -1 exit cross-jumps
+   into stage 0's +0x10f, the stage = -1 store; NOT the saboteur store at +0x109: an earlier commit of this
+   session wrongly cleared saboteur there and was reverted). Left: (1) stage 4's failure path one
+   eax/ecx/edx rotation step behind from its first statement (owner's chain: ours lea eax,[eax+eax*8]; lea
+   ebx,[eax*4+X], the original lea ecx after the me load; all temps through the failure accuse at +0x5597a0
+   rotated): a clean probe { extern int sabProbe; sabProbe = d3_CurrentScene; } at the end of the success
+   tail (after gm_AddTime(&e->end, 0, 10, 0), before its return) or before the recompute leaves only the
+   probe's own code (42 ins), so exactly one rotating temp between the success tail's call and the
+   recompute is missing in ours. flip (anchored on the recompute): only a duplicated gm_AddTime there. =
+   control: success tail ending break, owner / me spelled ai_CharsT + o / via a local / inline in the
+   InventoryHas test, the roll as nested ifs / a flag / chance inline / commuted / <=, the copy as memcpy
+   or through an AITIME pointer, gm_AddTime / gm_CompareTime through ((AIJOB *)ev), the failure as else
+   arm; worse: swap me / owner, stage++ after the call, gv_Accuse in both arms of the kind test, me->netId
+   / owner->netId in the accusations. climb 2 + 4 (unsafe) rounds: only meaning changes or a float local (t
+   = me->kind) in the inventory branch. (2) stage 5's stosw (dummies' zero-fill tail) after the float
+   vector stores in the original; dummies' declaration position = control. */
 void he_RunSabotage(int ev)
 {
     AIJOB *e = (AIJOB *)ev;
@@ -13576,6 +13569,7 @@ void he_RunSabotage(int ev)
         float chance;
         AICHAR *me, *owner;
         int i;
+        int ok;
 
         if (gm_CompareTime(&e->end, &ai_Time) >= 0)
             return;
@@ -13588,7 +13582,9 @@ void he_RunSabotage(int ev)
         owner = &ai_CharsT[b->owner];
         me = &ai_CharsT[e->chr];
         chance = gm_Mix((int)me, (int)owner, 2);
+        ok = 0;
         if (util_RandomF() + chance >= 1.0f && ai_InventoryHas(owner, 0x2c0) == 0) {
+            ok = 1;
             txt_Format(text, 0x1735, owner->id, b);
             he_MessageBoxQuickjump(me->netId, -1, text, 0, 0x5f0, b->id, -1, 0, 0);
             if (b->owner != 0xffff) {
@@ -13605,36 +13601,38 @@ void he_RunSabotage(int ev)
                     he_MessageBoxQuickjump(ai_CharsT[i].netId, -1, text, 0, 0x5f0, b->id, -1, 0, 0);
                 }
             }
-            e->stage++;
-            e->end = ai_Time;
-            gm_AddTime(&e->end, 0, 10, 0);
-            return;
         }
-        owner = &ai_CharsT[b->owner];
-        me = &ai_CharsT[e->chr];
-        if (ai_InventoryHas(owner, 0x2c0) != 0) {
-            gm_SendMoneyDelta(me->netId, -1);
-            if (me->kind == 6 || me->kind == 7) {
-                txt_Format(text, 0x1013, owner->id, b);
-                he_ShowNews(me->netId, -1, text, 0, 0x5fa, 0);
+        if (!ok) {
+            owner = &ai_CharsT[b->owner];
+            me = &ai_CharsT[e->chr];
+            if (ai_InventoryHas(owner, 0x2c0) != 0) {
+                gm_SendMoneyDelta(me->netId, -1);
+                if (me->kind == 6 || me->kind == 7) {
+                    txt_Format(text, 0x1013, owner->id, b);
+                    he_ShowNews(me->netId, -1, text, 0, 0x5fa, 0);
+                }
+                if (owner->kind == 6 || owner->kind == 7) {
+                    txt_Format(text, 0x1011, b);
+                    he_ShowNews(owner->netId, -1, text, 0, 0x5fb, "_NACHRICHTEN_HS_17");
+                }
+                e->stage++;
+                return;
             }
-            if (owner->kind == 6 || owner->kind == 7) {
-                txt_Format(text, 0x1011, b);
-                he_ShowNews(owner->netId, -1, text, 0, 0x5fb, "_NACHRICHTEN_HS_17");
+            txt_Format(text, 0x1738, b->owner, b);
+            he_MessageBoxQuickjump(me->netId, -1, text, 0, 0x5f0, b->id, -1, 0, 0);
+            if (b->owner != 0xffff) {
+                txt_Format(text, 0x1739, b);
+                he_MessageBoxQuickjump(owner->netId, -1, text, 0, 0x5f0, b->id, -1, 0, 0);
+                gv_Accuse(0x18, 1, ai_CharsT[e->chr].netId, ai_CharsT[b->owner].netId, b->id);
+                e->stage = -1;
+                break;
             }
-            e->stage++;
-            return;
-        }
-        txt_Format(text, 0x1738, b->owner, b);
-        he_MessageBoxQuickjump(me->netId, -1, text, 0, 0x5f0, b->id, -1, 0, 0);
-        if (b->owner != 0xffff) {
-            txt_Format(text, 0x1739, b);
-            he_MessageBoxQuickjump(owner->netId, -1, text, 0, 0x5f0, b->id, -1, 0, 0);
-            gv_Accuse(0x18, 1, ai_CharsT[e->chr].netId, ai_CharsT[b->owner].netId, b->id);
             e->stage = -1;
-            break;
+            return;
         }
-        e->stage = -1;
+        e->stage++;
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 0, 10, 0);
         return;
     }
     case 5:
