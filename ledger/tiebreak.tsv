@@ -4205,7 +4205,7 @@ exe	0x00598b80	ai_StammtischWindow	lc	dfc108fbe34cde0b	no	byte	control=byte p1=b
 exe	0x00598dc0	ai_StammtischJoinWindow	lc	6f2d3dbcc50519d2	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00599240	ai_OpenStammtisch	lc	0e69aa63b089b742	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x005992c0	ai_DarkCornerMenu	lc	f25e80acd7662647	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	34f77269ad8811bc
-exe	0x005996b0	ai_DarkCornerBuy	lc	c436b5779222346c	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
+exe	0x005996b0	ai_DarkCornerBuy	lc	bc268831ca97d02c	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	d028826fbe2d858f
 exe	0x00599aa0	ai_DarkCornerTable	lc	43b2cfbef1c91eb5	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00599af0	ai_TavernContact	lc	a70f2b783c817d8f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x00599cb0	ai_BreweryContact	lc	d9a53acc28837abf	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	363b43c45b83d63b

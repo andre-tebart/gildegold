@@ -7404,19 +7404,7 @@ void ai_DarkCornerMenu(AIBLD *bld, AIOBJ *room, AIOBJ *corner)
    offer's row buys it while it is still among the corner's offers and the player can pay (sv_CheckGoodAmount):
    in the group "buy dunkle ecke" the script message 0x53 {'buy ', the player, the building, the offer, the
    price} (cm_SendScriptMessage), the proof message (cm_SendProofExecuted) and the price paid to the owner
-   (cm_SendMoveGoodsUnchecked). The frames are pumped with ai_DarkCornerMenu's callback
-   @deep size queue s16: the offer row stores as rows[i].rec, cur[i], vals[i] (all 6 orders): 119 -> 94
-   ins, raw 1016 -> 1020 (padded 1024 vs 1008). climb.py round 2 further: rows[i].x after .pickable and
-   cur[sel] read at each use instead of id (85 ins), not kept (an id local reads better and the size
-   stays). prior: Reconstructed whole from the original (as ai_DarkCornerMenu: the three gv_EvidencePrice
-   offers, the rows, the y-controlled draw loop; the click finds the row by its ctl[0], checks the offer is
-   still in corner->recs and sv_CheckGoodAmount, then the group 'buy dunkle ecke' with the script message
-   {'buy ', player, building, offer, price}, cm_SendProofExecuted and the payment to the owner; the 'nicht
-   mehr zum verkauf' box behind the original's sel == 3 test). Left: allocation and frame layout only: the
-   original keeps 0 in ebx through the head (push ebx, vals = ebx), ours in edi after rep stosd; ours
-   hoists the cur[i] load above the gv_EvidencePrice test ('mov ecx,[esp+esi+0x28]'), the original loads it
-   in each branch; the original keeps x in ebp and half in [esp+0x10], ours the reverse; sel in ebp
-   ('[esp+ebp*4+0x14]') vs ours edi with 'lea edx,[eax*4]'; ai_OwnPlayer via cl vs al; the slots o... */
+   (cm_SendMoveGoodsUnchecked). The frames are pumped with ai_DarkCornerMenu's callback */
 
 void ai_DarkCornerBuy(AIBLD *bld, AIOBJ *corner)
 {
@@ -7438,13 +7426,13 @@ void ai_DarkCornerBuy(AIBLD *bld, AIOBJ *corner)
     int id;
     int cost;
 
+    vals[0] = 0;
+    vals[1] = 0;
+    vals[2] = 0;
     cur[0] = -1;
     cur[1] = -1;
     cur[2] = -1;
     memset(rows, 0, sizeof(rows));
-    vals[0] = 0;
-    vals[1] = 0;
-    vals[2] = 0;
     win = d2_OpenForm(0, 0, "locations\\Wirtshaus\\DUNKLEECKE");
     d2_CentreViewWindows(win);
     d2_SetForm(win, 0);
@@ -7472,7 +7460,7 @@ void ai_DarkCornerBuy(AIBLD *bld, AIOBJ *corner)
             d2_RemoveWindowObjects(d2_LastWindow, 1);
             io_PrintText((char *)0x18a3);
             half = d2_LastWindowPtr->w / 2;
-            x = half - d2_Pics[0x5da].w - 0x28;
+            x = d2_LastWindowPtr->w / 2 - d2_Pics[0x5da].w - 0x28;
             for (i = 0, y = 0x46; y < 0x46 + 3 * 0x69; i++, y += 0x69) {
                 rows[i].x = x;
                 rows[i].y = y - 0x1e;
@@ -7496,14 +7484,14 @@ void ai_DarkCornerBuy(AIBLD *bld, AIOBJ *corner)
                 }
             }
             if (sel != -1) {
-                id = cur[sel];
                 for (i = 0; i < 3; i++) {
-                    if (corner->recs[i] == id) {
+                    if (corner->recs[i] == cur[sel]) {
+                        id = cur[sel];
                         cost = vals[sel];
-                        if (sv_CheckGoodAmount(ai_Chars[ai_PlayerId], cost, ai_OwnPlayer) != 0) {
+                        if (sv_CheckGoodAmountB(ai_Chars[ai_PlayerId], cost, ai_OwnPlayer) != 0) {
                             req[0] = 0x62757920;    /* 'buy ' */
-                            req[1] = ((AICHARREC *)ai_Chars)[ai_PlayerId].netId;
                             req[2] = bld->id;
+                            req[1] = ((AICHARREC *)ai_Chars)[ai_PlayerId].netId;
                             req[3] = id;
                             req[4] = cost;
                             cm_BeginGroup("buy dunkle ecke");
