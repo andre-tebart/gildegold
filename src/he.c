@@ -11336,36 +11336,13 @@ void he_RunSale(int ev)
    stage 3 an hour later. Stage 3 serves one: the customer pays the job cost (cm_SendMoveGoodsUnchecked) to the
    event's character, whose player record counts it (HEFINVIEW.customerTakings), a player character (kind 6 / 7)
    gets the news 0x1bab (0x60c when the building's master is a character with flags1b4 bit 0, else 0x5f2); with
-   customers left stage 1 again after 30 .. 39 minutes, else the event is freed
-   @deep s50: 408 = 408 instructions, the same blocks; the scratch rotation is off by one from the first
-   gm_JobCost call (+0x5c: ours xor ecx for b->type and edx for the owner index chain, the original xor edx
-   / ecx; GetGoodsValue's chain the original computes in eax / ecx), nothing differs before it (the switch,
-   the CompareTime / BuildQuery lines are equal). Rounds (s50, all = control): ai_Chars[b->owner] (char
-   rows) at either or both of the first JobCost / GetGoodsValue, the compare inline ((int)gm_JobCost(..) >
-   gm_GetGoodsValue(..)), (int)b->type; every position of the case -2 / -1 block, case 0 and default among
-   cases 1 / 2 / 3 (120 orders: one other code, 214). Worse: the compare swapped (216). climb round 1: best
-   108 ins only through a meaning change (a float local t = c->person in stage 2 reused by stage 3's
-   gm_FindChar): a candidate added in stage 2 re-rotates stage 1, so the lever is a value of stages 2 / 3,
-   not stage 1's text. Next: c2trace the temps of 11548 and of stage 2 (c->person = p->netId; the original
-   loads e->from before p->netId there). prior: Read all of it against the original and rewrote it typed
-   (AIJOB / HECUSTOMERS / AIBLD / AICHAR / HEFINVIEW): the shared free tail (the cases break to one
-   he_FreeEvent after the switch), the spawn call inside the search loop, the serve body inside its loop,
-   the cost check (cost > gm_GetGoodsValue), the 0x1bab quick jump's argument order, no gm_GetGoodsValue in
-   stage 3. 408 = 408 instructions, the same blocks; left: regs (220) and scheduling: the argument loads of
-   the 0x1a40 news (+0x3e6 / +0x3f3: e->from loaded before / after the text pointer), the person's netId vs
-   e->from load order at +0x524, the 0x1bab txt_Format arguments (+0x67b, ecx/eax swapped), and the two
-   he_MessageBoxQuickjump calls of +0x6a8 / +0x716 (the same pushes, the original loads target, the chr
-   index and b->id in another order) (references: M8 at +0x283: ours refers to ai_Time+0x8 (0x770ae8), the
-   original's field to 0x770ae4 (ai_TimeHourW) (and 1 more), explained: the two M8 lines (+0x283, +0x493)
-   are the AITIME copies e->end = ai_Time under a register renaming (ours eax/ecx/eax/cx, the original
-   edx/eax/edx/ax): both copy [T], [T+4], [T+8], [T+0xc] in order; the aligner pairs ours' T+8 load with
-   the original's T+4 load because of the renamed registers) */
+   customers left stage 1 again after 30 .. 39 minutes, else the event is freed */
 void he_RunCustomers(int ev)
 {
     AIJOB *e = (AIJOB *)ev;
     HECUSTOMERS *c = (HECUSTOMERS *)ev;
     AIBLD *b;
-    AICHAR *p, *m;
+    AICHAR *p, *m, *owner;
     AIOBJ *o;
     HEFINVIEW *f;
     int i, cost;
@@ -11384,7 +11361,8 @@ void he_RunCustomers(int ev)
         b = (AIBLD *)gm_BuildQuery(1, 1, e->from);
         if (b == 0)
             break;
-        cost = (int)gm_JobCost(&ai_CharsT[b->owner], b->type, -1, 1);
+        owner = &ai_CharsT[b->owner];
+        cost = (int)gm_JobCost(owner, b->type, -1, 1);
         if (cost > gm_GetGoodsValue(&ai_CharsT[b->owner])) {
             txt_Format(text, 0x1a40, b);
             he_MessageBoxQuickjump(ai_CharsT[b->owner].netId, e->from, text, 0, 0x5f2, b->id, c->target, 0, 0);
@@ -11433,7 +11411,8 @@ void he_RunCustomers(int ev)
         p = (AICHAR *)gm_FindChar(c->person);
         for (i = 0; i < 12; i++) {
             if (p != 0 && c->count[i] > 0) {
-                cost = (int)gm_JobCost(&ai_CharsT[b->owner], b->type, -1, 1);
+                owner = &ai_CharsT[b->owner];
+                cost = (int)gm_JobCost(owner, b->type, -1, 1);
                 c->count[i]--;
                 if (ai_CharsT[e->chr].kind == 6 || ai_CharsT[e->chr].kind == 7) {
                     m = (AICHAR *)gm_FindCharacterByMaster(b);
