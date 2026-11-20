@@ -4091,24 +4091,24 @@ void cm_FightEndDialog(CMFIGHTREC *a)
             memset(tc + 1, 0, 0x3ff);
             txt_Format(tc, 0x11a5, cm_FightAttackerC->id, ca);
             cm_MessageBox(tc, 0);
-            ob = (AIOBJ *)gm_Query(ca->objList, 2, 6, 0, 0x2a);
-            if (ob == 0)
-                ob = (AIOBJ *)gm_Query(ca->objList, 2, 6, 0, 0x116);
+            p = (AIOBJ *)gm_Query(ca->objList, 2, 6, 0, 0x2a);
+            if (p == 0)
+                p = (AIOBJ *)gm_Query(ca->objList, 2, 6, 0, 0x116);
             v = gm_GetGoodsValue((char *)cm_FightDefender);
             v = v < 0x9c400 ? v : 0x9c400;
             v = (int)(((double)cm_Random(0x32) * 0.001 + 0.07) * (v < 0 ? 0 : v));
             txt_Format(tc, "$Z%T$A", v);
             cm_SendMoveGoods(cm_FightAttackerC->netId, cm_FightDefenderC->netId, ai_OwnPlayer, v);
-            if (ob != 0 && obj != 0) {
-                for (q = (AIOBJ *)gm_Query(ob->list, 1, 5); q != 0; q = (AIOBJ *)gm_QueryNext()) {
-                    cnt = (int)(((double)(cm_Random(0x14) + 0x50) * 0.01) * q->count);
-                    if (cnt < 1)
-                        cnt = 1;
-                    sprintf(tmp, "%i %s$A", cnt, (char *)txt_ObjectNames[q->id][0]);
+            if (p != 0 && obj != 0) {
+                for (q = (AIOBJ *)gm_Query(p->list, 1, 5); q != 0; q = (AIOBJ *)gm_QueryNext()) {
+                    n = (int)(((double)(cm_Random(0x14) + 0x50) * 0.01) * q->count);
+                    if (n < 1)
+                        n = 1;
+                    sprintf(tmp, "%i %s$A", n, (char *)txt_ObjectNames[q->id][0]);
                     strcat(tc, tmp);
                     if (ai_CharsT[ai_PlayerId].netId == cm_FightOwner)
-                        cm_SendExSellObject(obj->objId, ob->objId, q->id, cnt, ai_OwnPlayer, 0);
-                    v = (int)(gm_GoodsPrice(q->id, ai_OwnPlayer) * cnt + v);
+                        cm_SendExSellObject(obj->objId, p->objId, q->id, n, ai_OwnPlayer, 0);
+                    v = (int)(gm_GoodsPrice(q->id, ai_OwnPlayer) * n + v);
                 }
             }
             d2_SetForm(win, 1);
