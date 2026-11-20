@@ -4524,12 +4524,23 @@ unsigned int ai_MarriageTest(int param_1, int param_2);
    relatives[0], both relations go to 0x7f, a player or kind 5 a hears 0x1d31 and the partner of sex 1 gets f07c 1.1,
    b's reserved grave entry is ordered, and the wedding party (G28REC kind 6, flags 0xb2, two hours on, between 7 and
    22 o'clock) is sent with the event posted with key 4; else a player a hears the family text again
-   @deep reconstructed and read in full against the original (stage -1/-2 flag clearing, the slot wait,
-   stage 0's ai_MarriageTest ladder with the 0x42f6 / 0x42f7, 0x1ceb.. and 0x1cf3 / 0x1cf4 texts, the
-   rounds, stage 1 'werbung' links, stage 4, stage 5's mutual test (bitwise, as the original), relations,
-   0x1d31, f07c, the grave order and the G28REC party cleared by MEM_ZERO). Fixed meaning: the party's
-   members are a's / b's netIds (was the event id), the stage 5 short text 0x1cf1 passes b's id, three
-   buffers 0x200 / 0x200 / 0xec, the if/else nesting and the 'delay' join that put the free and the
+   @deep s52: 280 -> 26. Kept: three text buffers of 0x200, the family text line[0x200] a block local of
+   each branch that writes it and the party record a block local of case 5's success block (they share one
+   0x200 slot: the record at its top end, [ebp-0x128]); c1 / c2 block locals per branch; who, yard, entry,
+   party declared in one block around case 5's success path (the original's five 4-byte slots: a in the
+   argument slot); case 4 written behind case 5 (the original's layout and scratch step); party.time =
+   ai_Time as the last of the fill. Left (26 ins): the missing-partner else block (e->end = ai_Time;
+   gm_AddTime; send(-1)): the original keeps it whole with data in edx and the pointer copy in ecx (mov
+   edx,[ai_Time]; lea eax,[esi+0x52]; mov ecx,eax; push 0 ..), ours has the after-switch block's registers
+   (ecx / edx) there and VC6 merges it whole into that block. Without the goto delay (r == 0 written out
+   with its own gm_AddTime / send / return) the else block has the original's registers but is then merged
+   into r == 0's copy (38 ins): the original has r == 0 jump into the after-switch block's pushes and the
+   else block apart. prior: reconstructed and read in full against the original (stage -1/-2 flag clearing,
+   the slot wait, stage 0's ai_MarriageTest ladder with the 0x42f6 / 0x42f7, 0x1ceb.. and 0x1cf3 / 0x1cf4
+   texts, the rounds, stage 1 'werbung' links, stage 4, stage 5's mutual test (bitwise, as the original),
+   relations, 0x1d31, f07c, the grave order and the G28REC party cleared by MEM_ZERO). Fixed meaning: the
+   party's members are a's / b's netIds (was the event id), the stage 5 short text 0x1cf1 passes b's id,
+   three buffers 0x200 / 0x200 / 0xec, the if/else nesting and the 'delay' join that put the free and the
    missing-partner blocks at the end. Calls, stores and references agree (no differs / ref lines). Left:
    frame layout (the text buffer at [ebp-0x100] and the party record at [ebp-0x214] where the original has
    them at [ebp-0x214] / [ebp-0x128], so every strlen append's lea [ebp+ecx-K] shows as code, +0xa81 ..),
@@ -4544,14 +4555,10 @@ unsigned int ai_MarriageTest(int param_1, int param_2);
 void he_RunCourtship(int ev)
 {
     AIJOB *e = (AIJOB *)ev;
-    AICHAR *a, *b, *c1, *c2, *who;
+    AICHAR *a, *b;
     unsigned int r;
-    AIBLD *yard;
-    int *entry;
     char news[0x200];
     char gave[0x200];
-    char line[0xec];
-    G28REC party;
 
     a = (AICHAR *)gm_FindChar(e->partner1);
     b = (AICHAR *)gm_FindChar(e->partner2);
@@ -4585,6 +4592,9 @@ void he_RunCourtship(int ev)
                     break;
                 if (r == -0x403) {
                     if (a->kind == 6) {
+                        AICHAR *c1, *c2;
+                        char line[0x200];
+
                         c1 = (AICHAR *)gm_FindChar(b->relatives[1]);
                         c2 = (AICHAR *)gm_FindChar(b->relatives[0]);
                         if (c1 != 0 && c1->health > 0 && b->kind != 5) {
@@ -4606,6 +4616,9 @@ void he_RunCourtship(int ev)
                 }
                 if (r == 0) {
                     if (a->kind == 6) {
+                        AICHAR *c1;
+                        char line[0x200];
+
                         c1 = (AICHAR *)gm_FindChar(b->relatives[1]);
                         if (c1 != 0 && c1->health > 0 && b->kind != 5) {
                             txt_Format(line, 0x1ceb, c1->id, a->id);
@@ -4636,6 +4649,8 @@ void he_RunCourtship(int ev)
                     return;
                 }
                 if (a->kind == 6) {
+                    char line[0x200];
+
                     txt_Format(line, 0x1cf3);
                     txt_Format(line + strlen(line), 0x1cf4, b->id, 0x5d, e->pairRounds - e->pairRound, 0x5d);
                     he_ShowNews(a->netId, a->netId, line, 0, 0x5f4, 0);
@@ -4668,14 +4683,13 @@ void he_RunCourtship(int ev)
                 gm_AddTime(&e->end, 0, 1, 0);
                 e->exSlot = cm_SendExSetHEI(5, ev);
                 return;
-            case 4:
-                gm_AddTime(&e->end, 0, 2, 0);
-                e->exSlot = cm_SendExSetHEI(-1, ev);
-                return;
             case 5:
                 /* each other's relatives[0]: the original tests both, bitwise (and edx, eax; test dl, 1) */
                 if (!((a->relatives[0] == b->netId) & (b->relatives[0] == a->netId) & 1)) {
                     if (a->kind == 6) {
+                        AICHAR *c1, *c2;
+                        char line[0x200];
+
                         c1 = (AICHAR *)gm_FindChar(b->relatives[1]);
                         c2 = (AICHAR *)gm_FindChar(b->relatives[0]);
                         if (c1 != 0 && c1->health > 0 && b->kind != 5) {
@@ -4695,40 +4709,51 @@ void he_RunCourtship(int ev)
                     }
                     break;
                 }
-                cm_SendRelations(a->netId, b->netId, 0x7f - ai_Relations[a->id][b->id], 1);
-                cm_SendRelations(b->netId, a->netId, 0x7f - ai_Relations[b->id][a->id], 1);
-                if (a->kind == 6 || a->kind == 5) {
-                    who = a;
-                    if (a->sex != 1)
-                        who = b;
-                    txt_Format(news, 0x1d31, b->id);
-                    he_ShowNews(a->netId, a->netId, news, 0, 0x5f4, 0);
-                    cm_SendFloatDelta(who->netId, 0x7c, 1.1f - who->f07c);
+                {
+                    AICHAR *who;
+                    AIBLD *yard;
+                    int *entry;
+                    G28REC party;
+
+                    cm_SendRelations(a->netId, b->netId, 0x7f - ai_Relations[a->id][b->id], 1);
+                    cm_SendRelations(b->netId, a->netId, 0x7f - ai_Relations[b->id][a->id], 1);
+                    if (a->kind == 6 || a->kind == 5) {
+                        who = a;
+                        if (a->sex != 1)
+                            who = b;
+                        txt_Format(news, 0x1d31, b->id);
+                        he_ShowNews(a->netId, a->netId, news, 0, 0x5f4, 0);
+                        cm_SendFloatDelta(who->netId, 0x7c, 1.1f - who->f07c);
+                    }
+                    if (gv_FindReservedEntry(b, &yard, &entry) != 0)
+                        gv_OrderSetGraveHolder(0, yard, *entry, gv_EntryIndex((char *)yard->yard, entry));
+                    MEM_ZERO(&party, sizeof(party));
+                    party.members[0] = a->netId;
+                    party.members[1] = b->netId;
+                    party.host = ai_CharsT[ai_PlayerId].netId;
+                    party.kind = 6;
+                    party.flags = 0xb2;
+                    party.thing = -1;
+                    party.used = 2;
+                    party.time = ai_Time;
+                    gm_AddTime(&party.time, 2, 0, 0);
+                    party.time.min = 0;
+                    if (party.time.hour > 0x16) {
+                        party.time.year++;
+                        party.time.hour = 0xb;
+                    } else if (party.time.hour < 7) {
+                        party.time.hour = 0xb;
+                    }
+                    e->end = party.time;
+                    e->pairDone = 1;
+                    e->exSlot = -1;
+                    cm_SendExSetHEI(4, ev);
+                    cm_SendNewParty(&party);
+                    return;
                 }
-                if (gv_FindReservedEntry(b, &yard, &entry) != 0)
-                    gv_OrderSetGraveHolder(0, yard, *entry, gv_EntryIndex((char *)yard->yard, entry));
-                MEM_ZERO(&party, sizeof(party));
-                party.members[0] = a->netId;
-                party.members[1] = b->netId;
-                party.host = ai_CharsT[ai_PlayerId].netId;
-                party.time = ai_Time;
-                party.kind = 6;
-                party.flags = 0xb2;
-                party.thing = -1;
-                party.used = 2;
-                gm_AddTime(&party.time, 2, 0, 0);
-                party.time.min = 0;
-                if (party.time.hour > 0x16) {
-                    party.time.year++;
-                    party.time.hour = 0xb;
-                } else if (party.time.hour < 7) {
-                    party.time.hour = 0xb;
-                }
-                e->end = party.time;
-                e->pairDone = 1;
-                e->exSlot = -1;
-                cm_SendExSetHEI(4, ev);
-                cm_SendNewParty(&party);
+            case 4:
+                gm_AddTime(&e->end, 0, 2, 0);
+                e->exSlot = cm_SendExSetHEI(-1, ev);
                 return;
             default:
                 return;
