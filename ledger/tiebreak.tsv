@@ -4121,7 +4121,7 @@ exe	0x0058ba70	lobby_ShowChat	lobby	a71645ef9f0dd2d9	no	shape	sweep control=shap
 exe	0x0058bbd0	ai_InitProductionTables	lc	090a20c9a975afb9	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x0058bd60	ai_ProductionWindow	lc	28e9163230de08c0	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x0058c680	ai_UpdateResourceColumns	lc	c37d65b151986ad2	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
-exe	0x0058cc10	ai_UpdateProdColumns	lc	05130ffaa607669f	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
+exe	0x0058cc10	ai_UpdateProdColumns	lc	0030099ba90e4b54	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	e5f343d01b829a7b
 exe	0x0058d720	ai_UpdateProdGoodsList	lc	de87f8608faaa444	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
 exe	0x0058dd00	ai_LayoutProdGoodsList	lc	b0e39c493abb9992	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0058e130	ai_UpdateMarketGoodsList	lc	2f5fa8adc7ade174	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	

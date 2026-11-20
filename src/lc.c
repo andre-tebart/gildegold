@@ -1380,19 +1380,7 @@ void d2_SetPointerItem(int id, int amount); void d2_ClearPointerItems(void);
    income job 3: the picture 0x4fc by day while job 4 waits on nothing, else 0x50b / 0x50c, its progress as the
    fill fraction and its amount); then the amount text: without a picked input the texts 0xb8 / 0xba / 0xbb by
    mode, with one it highlights it and prints the batch (0xc1 / 0xc2 in the language's word order), the amount of
-   the input a run takes (0xc3 / 0xc4) and what is missing (0xc5 / 0xc6). Removes the columns from ncols up to 16
-   @deep size queue s16: the input pictures' x through the short-x view d2_WinOpenPicStyledS (no movsx, no
-   strength reduction, as the original): 186 -> 161 ins; raw 2802 vs 2827 (frame 0xd8 vs 0xf0 left: 0x18
-   bytes of locals missing). prior: rewritten from the original (was a condensed draft, 1812 B; now 794 vs
-   794 instructions, 2804 vs 2827 B, same calls): the picked-input marks (ai_ProdSelectedInput ->
-   LCPRODCOL.selected), the column build with the input captions (need, font 0x54, caption -8 / 6), the
-   input marks 0x74d..0x74f with the missing amount, the job search (production job 4, then income job 3),
-   the day test (hour >= start && hour < end: the original's test ah,5), the pictures 0x4fc / 0x50b /
-   0x50c, the fill 1.0 - prodLeft / prodWork (AIJOB's new production words) or 1.0 - incomeAmount /
-   incomeAmountF, the amount texts (the three format literals that sat in main.c's gap block), the batch /
-   need / missing texts 0xc1..0xc6 in both language orders, the column removal. All code hunks read: block
-   layout and allocation - the original lays the found-job block out of line after the mode 0 text
-   (0x58d110 '- xor ebp, ebp; cm... */
+   the input a run takes (0xc3 / 0xc4) and what is missing (0xc5 / 0xc6). Removes the columns from ncols up to 16 */
 void ai_UpdateProdColumns(int win, int part, int ncols, int store, int mode)
 {
     AIBLD *bld;
@@ -1407,7 +1395,7 @@ void ai_UpdateProdColumns(int win, int part, int ncols, int store, int mode)
     int season;
     int hour;
     int cls;
-    char buf[0xc];
+    char buf[0x20];
     AIRECIPE list;
 
     bld = 0;
@@ -1431,7 +1419,13 @@ void ai_UpdateProdColumns(int win, int part, int ncols, int store, int mode)
         if (ai_ProdColumns[c].win < 0) {
             ai_ProdColumns[c].win = d2_CreateChildWindow(ai_ProdColumns[c].x, ai_ProdColumns[c].y, 0xcd, 0x57, 0x10, d2_LastWindow);
             d2_Wins[ai_ProdColumns[c].win].font = 0x54;
-            d2_WinOpenPic(0, 0, 0x74c, ai_ProdColumns[c].win);
+            /* @original the frame picture by the building class with the same picture in both arms: VC6
+               merges the arms and drops the compare, but keeps the read of cls (mov ecx,[cls] before the
+               call) and its slot; the class compared is not in the code (0x1e is a guess) */
+            if (cls == 0x1e)
+                d2_WinOpenPic(0, 0, 0x74c, ai_ProdColumns[c].win);
+            else
+                d2_WinOpenPic(0, 0, 0x74c, ai_ProdColumns[c].win);
             ai_ProdColumns[c].pic = d2_WinOpenPic(0xd, 5, ai_ProdColumns[c].good + 0xdf, ai_ProdColumns[c].win);
             d2_Objs[ai_ProdColumns[c].pic].interactive = 1;
             d2_Objs[ai_ProdColumns[c].pic].iconx = -1;
@@ -1482,7 +1476,6 @@ void ai_UpdateProdColumns(int win, int part, int ncols, int store, int mode)
             for (job = (AIJOB *)he_FindEvent(2, 0, 3, 3, bld->id); job != 0; job = (AIJOB *)he_NextEvent())
                 if (job->u.w.lo == ai_ProdColumns[c].good)
                     break;
-        amount = 0;
         if (job == 0 || (job->words14[0] == 0 && job->words14[1] == 0)) {
             if (ai_ProdColumns[c].bar != -1) {
                 d2_RemoveObj(ai_ProdColumns[c].bar);
@@ -1490,6 +1483,7 @@ void ai_UpdateProdColumns(int win, int part, int ncols, int store, int mode)
             }
             if (ai_ProdColumns[c].pic != -1)
                 d2_Objs[ai_ProdColumns[c].pic].fillFraction = 0;
+            amount = 0;
         } else {
             pic = 0;
             season = gm_ClockSeason(&ai_Time);
