@@ -8449,22 +8449,7 @@ void he_StartPopulation(int ev)
    (> 0.3) -> stage 6, deaths; else stage 7 from 15:00. Stage 2 draws against chance every hour until 20:00: a
    newcomer is created (cm_SendCreateCharacter, stage 3: it gets a free home, (51 .. 100) * 32 money and its fields
    2 / 0xc set); stage 6 likewise kills a homeless figure of kind 0 without a workplace (-2000 health); stage 7 gives
-   a homeless figure of kind 0 / 1 a free home every ten minutes until 22:00, then the event rests until 6:00
-   @deep s51: two levers: case 3's free-home search as while (n != 0) { ..; n--; i = ..; if (found != 0)
-   break; } (240 -> 231: c gets ebp as the original's, found in memory), and cases 2 and 6 ending with
-   break (into the one he_FreeEvent-less end after the switch) instead of return (231 -> 192; size 2212 ->
-   2215, padded equal). A subset round of break-for-return over cases 1/2/3/6/7 (63 variants): only 2 + 6
-   helps, 1 / 7 are the same code, 3 is worse. Left: (1) -1 in ebx (ours) / ebp (the original) from the
-   prologue, case 3's 0 in eax (ours) / ebx; (2) case 1's final cm_SendExSetHE(7) tail: the original jmps
-   into case 2's copy, ours keeps its own; case 3's c == 0 path: the original stores -1 as an immediate and
-   jmps into the slot==2 block's send(6), ours the reverse; (3) case 3's loop: the original tests n at the
-   top and found at the bottom (je top) and the exit tests found again; do { if (n == 0) break; .. } while
-   (found == 0) gives 185 but more tail hunks; while (found == 0) { if (n == 0) break; .. }: 201; for(;;):
-   the same code. (4) the crossed M8s are case 7's e->end = ai_Time copy order. Earlier: while (n != 0 &&
-   found == 0): worse (247). prior: s6: every draw through util_RandomU (mov di, ax / mov bx, ax as the
-   original; 244 -> 240 ins, size 2212 vs 2192 plus the 8-entry table). Left at the draws: the 0xffff
-   constant / the draw in ebx vs ebp (ours mov bp, ax / mov ebx, 0xffff; the original mov bx, ax / mov ebp,
-   0xffff). */
+   a homeless figure of kind 0 / 1 a free home every ten minutes until 22:00, then the event rests until 6:00 */
 
 void he_RunPopulation(int ev)
 {
@@ -8490,7 +8475,7 @@ void he_RunPopulation(int ev)
         p->count = 0;
         gm_AddTime(&e->end, 0, 0, 5);
         e->exSlot = cm_SendExSetHEI(1, ev);
-        return;
+        break;
     case 1:
         ord_GetStatistics((int *)&st);
         x = (float)(st.sumA - st.chars) / st.sumA;
@@ -8500,24 +8485,24 @@ void he_RunPopulation(int ev)
         if (st.col[3] < 0.1) {
             p->chance = (2.0f - st.score) * p->chance;
             e->exSlot = cm_SendExSetHEI(2, ev);
-            return;
+            break;
         }
         if (st.col[3] > 0.3) {
             p->chance = (float)fabs((st.score + 1.0f) * p->chance);
             p->step = (float)fabs(p->step);
             e->exSlot = cm_SendExSetHEI(6, ev);
-            return;
+            break;
         }
         e->end = ai_Time;
         e->end.hour = 0xf;
         e->exSlot = cm_SendExSetHEI(7, ev);
-        return;
+        break;
     case 2:
         if (ai_Time.hour >= 0x14) {
             e->end = ai_Time;
             e->end.min++;
             e->exSlot = cm_SendExSetHEI(7, ev);
-            break;
+            return;
         }
         if (util_RandomF() > p->chance) {
             p->slot = -1;
@@ -8531,13 +8516,13 @@ void he_RunPopulation(int ev)
         e->end = ai_Time;
         gm_AddTime(&e->end, 1, 0, 0);
         e->exSlot = cm_SendExSetHEI(2, ev);
-        return;
+        break;
     case 3:
         if (cm_GetSlotState(p->slot) == 0) {
             e->end = ai_Time;
             gm_AddTime(&e->end, 0, 0, 1);
             e->exSlot = cm_SendExSetHEI(3, ev);
-            return;
+            break;
         }
         if (cm_GetSlotState(p->slot) == 2) {
             gm_AddTime(&e->end, 1, 0, 0);
@@ -8546,6 +8531,7 @@ void he_RunPopulation(int ev)
             return;
         }
         c = (AICHAR *)cm_GetSlotValue(p->slot);
+        b = 0;
         id = util_RandomU(2);
         zero = 0;
         if (c == 0) {
@@ -8557,15 +8543,13 @@ void he_RunPopulation(int ev)
         found = 0;
         n = 0x100;
         i = util_RandomU(0x100);
-        while (n != 0) {
+        while (found == 0 && n != 0) {
             b = &ai_BldsT[i];
             if (ai_BTypesT[b->type].kind == 1 && ord_GetKindRecord(b->type, kind) != 0
                 && (unsigned short)b->residents < (unsigned short)kind[0])
                 found = 1;
             n--;
             i = (i + 1) % 0x100;
-            if (found != 0)
-                break;
         }
         if (found != 0)
             cm_SendBoss(c->netId, b->id);
@@ -8578,13 +8562,13 @@ void he_RunPopulation(int ev)
         gm_AddTime(&e->end, 1, 0, 0);
         p->count++;
         e->exSlot = cm_SendExSetHEI(1, ev);
-        return;
+        break;
     case 6:
         if (ai_Time.hour >= 0x14) {
             e->end = ai_Time;
             e->end.min++;
             e->exSlot = cm_SendExSetHEI(7, ev);
-            break;
+            return;
         }
         if (util_RandomF() > p->chance) {
             i = util_RandomU(0x300);
@@ -8602,14 +8586,15 @@ void he_RunPopulation(int ev)
             e->end = ai_Time;
             gm_AddTime(&e->end, 0, 0x1e, 0);
             e->exSlot = cm_SendExSetHEI(1, ev);
-            break;
+            return;
         }
         p->chance -= p->step;
         e->end = ai_Time;
         gm_AddTime(&e->end, 1, 0, 0);
         e->exSlot = cm_SendExSetHEI(6, ev);
-        return;
+        break;
     case 7:
+        b = 0;
         found = 0;
         i = util_RandomU(0x300);
         n = 0x300;
@@ -8619,8 +8604,8 @@ void he_RunPopulation(int ev)
                 found = 1;
                 break;
             }
-            i = (i + 1) % 0x300;
             n--;
+            i = (i + 1) % 0x300;
         } while (n != 0);
         if (found != 0) {
             found = 0;
@@ -8644,16 +8629,16 @@ void he_RunPopulation(int ev)
             e->end.min = 0;
             e->end.hour = 6;
             e->exSlot = cm_SendExSetHEI(0, ev);
-            return;
+            break;
         }
         if (e->end.hour < 0xf) {
             e->end = ai_Time;
             e->end.min++;
             e->exSlot = cm_SendExSetHEI(0, ev);
-            return;
+            break;
         }
         e->exSlot = cm_SendExSetHEI(7, ev);
-        return;
+        break;
     }
 }
 

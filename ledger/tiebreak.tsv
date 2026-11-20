@@ -3638,7 +3638,7 @@ exe	0x0054d7d0	he_RunSkillUp	he	66ec298aa489e718	no	byte	control=byte p1=byte p2
 exe	0x0054da20	he_StartBard	he	84dfa520dfb293ae	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0054da80	he_RunBard	he	848f0c582b3fd727	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0054de60	he_StartPopulation	he	5d7b369cdf470734	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x0054dec0	he_RunPopulation	he	1a10419373e7c441	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
+exe	0x0054dec0	he_RunPopulation	he	b2498daa4f382c3e	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	540ad89337e7c6a9
 exe	0x0054e770	he_StartLover	he	afd7cc88fa9832c8	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0054e890	he_RunLover	he	7509c332593cc8ff	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0054eb80	he_IsSimCandidate	he	07713905d1bd4c5f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
