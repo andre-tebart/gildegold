@@ -4027,7 +4027,8 @@ void cm_FightEndDialog(CMFIGHTREC *a)
             /* the town guards are called: every guard (title groups 10 .. 12) turns against the attacker */
             txt_Format(ba, 0x11a7, cm_FightAttackerC->id, cm_FightAttackerC->id);
             cm_MessageBox(ba, 0);
-            for (ch = &ai_CharsT[0]; ch < &ai_CharsT[0x300]; ch++) {
+            for (i = 0; i < 0x300; i++) {
+                ch = &ai_CharsT[i];
                 if (ch->id != 0xffff && ch->health != 0 &&
                     ((k = gm_TitleGroup(ch->jobId)) == 10 || k == 11 || k == 12))
                     cm_SendRelations(cm_FightAttackerC->netId, ch->netId, 6, 1);
@@ -4134,7 +4135,8 @@ void cm_FightEndDialog(CMFIGHTREC *a)
         } else if (k == 1) {
             txt_Format(bb, 0x11a7, cm_FightAttackerC->id, cm_FightAttackerC->id);
             cm_MessageBox(bb, 0);
-            for (ch = &ai_CharsT[0]; ch < &ai_CharsT[0x300]; ch++) {
+            for (i = 0; i < 0x300; i++) {
+                ch = &ai_CharsT[i];
                 if (ch->id != 0xffff && ch->health != 0 &&
                     ((k = gm_TitleGroup(ch->jobId)) == 10 || k == 11 || k == 12))
                     cm_SendRelations(cm_FightAttackerC->netId, ch->netId, 6, 1);
