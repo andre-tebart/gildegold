@@ -4229,7 +4229,7 @@ exe	0x0059c120	ai_FillExchangeRows	lc	9461d3105ce1222a	no	byte	control=byte p1=b
 exe	0x0059c450	ai_ShowExchangeRows	lc	60f4dac23f5ce535	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0059c6b0	ai_ClickedExchangeRecord	lc	45d22571fe329b04	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0059c6e0	ai_UsedRecordCount	lc	ac684472964e9392	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
-exe	0x0059c700	ai_ExchangeWindow	lc	91948b68d09cdd1d	yes	draft	control=draft p1=draft p2=draft p3=draft* p4=draft	
+exe	0x0059c700	ai_ExchangeWindow	lc	a904a460fc078601	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	ac788a436e30daed
 exe	0x0059d2d0	ai_ExchangeFeesWindow	lc	30d16c0ba82c4140	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0059d410	ai_MoneyMessengerWindow	lc	e18fbf7d75ff4ceb	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x0059d5e0	ai_MoneyExchangeWindow	lc	f6516a7e3c12a86a	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape	
