@@ -4649,36 +4649,7 @@ void cm_PlantEscapeFlag(CMFIGHTSLOT *f)
    percent of g's life value, * 1.25 when c's side leader has the item 0x2b9); in the player's own fight a melee attack
    also orders the other side's AI to strike back (cm_OrderAttack, unless an order is pending); the fight command 2 goes
    out (cm_SendFightCommand). Out of range c walks to the free cell near g (cm_SendObjCell), unless c holds its place.
-   Returns the send slot, -1 when nothing was sent.
-   @deep deep s50: r as int (the original's mov si,ax / and esi,0xffff, cmp esi,ecx) and the damage without
-   the n local (cm_Random(k->dmgMax - k->dmgMin) + k->dmgMin): 89 ins / 246 bytes (was 95 / 514). Left: the
-   esi/edi swap of k against g/r/hit/g->scene, a one-step scratch rotation in the walk tail and
-   SendSetField, and g reloaded into eax for cm_CutEntrySlot(other, g) in the original (its edi piece
-   starts at cm_CharWeaponItem(g)). Mechanism (c2trace --seq / --prio, P from the compiler's own trace):
-   callee-saved picks go esi, edi, ebp, ebx; k#1 prio 52 (blk 4 kind test +20 P=5, damage blk +30 P=5) is
-   assigned before r#1 40 (roll blk P=5, 4 refs), so k takes esi. hit = 1 moved above the roll gives r 56 >
-   k 44 (roll blk P=7, damage blk P=3) and k/g/r then sit where the original has them (48 equal lines from
-   the CharWeapon call) - but hit then overlaps r and side spills (frame 0x38): the original has r above k
-   with hit set in the arm, so its roll / damage blocks differ in P some other way. No lever (= control or
-   worse): r types (ushort, unsigned, long, short, util_Random & 0xffff, cast), hit types, hit / r one
-   variable (separate webs), dead hit = 0 / threshold local (folded), s.kill in the arms, hit = r > ..
-   (cm_RunOrders form), st local for the accuracy (all orders), casts and 0.01 / 100.0 spellings (23 =
-   control), else-arm spellings, inverted roll, ternary, damage forms (n = Random + min, n = Random), hit
-   && side test (meaning), switch on kind, kind tests in one condition / nested, kind int / char / float
-   local (spills or fild), every block-scope subset of r / hit / side / other / e / i / n / state (93 =
-   control), the in-range test through a flag (= control), a single return (= control), g->netId / c->netId
-   locals before the memset (fold), gs = g->scene local (worse). Callee cm_FindNearCell (above, shape 6
-   ins) is the only callee below byte. climb (3 rounds, also from hit1top): only kind as a float local or a
-   c->netId local (frame 0x3c). prior: s47: ix / iz / py as block locals of the walk tail ({ int ix, iz;
-   float py; .. } after the in-range arm): frame 0x3c -> 0x34 as the original (they pack into the dead
-   parameter slots), 114 -> 101; ix/iz alone or py alone keep 0x38. The hit roll as (k->accuracy * 0.01) *
-   c->sk83 (VC6 regrouped the unparenthesised product into acc * sk83 * 0.01): fpu hunks gone, 95; kept.
-   The store order of id / active / target around the memset (23 orders): no gain. Left: g and k swap esi /
-   edi through the body: the original loads g into esi before the rep stosd (g ranks above k, so it avoids
-   edi), ours ranks k first and loads g into edi after the stosd; r then sits in si (mov si,ax). Lowering k
-   by one reference (kind = k->kind int local for the two kind tests) swaps them the original's way (49
-   ins) but spills kind (frame 0x38): the lever is k's / g's reference count, not that local. climb 2
-   rounds: only a float t mutant (76, meaning differs). */
+   Returns the send slot, -1 when nothing was sent. */
 
 int cm_Attack(CMCUTINFO *rec, AICHAR *c, AICHAR *g)
 {
@@ -4711,13 +4682,14 @@ int cm_Attack(CMCUTINFO *rec, AICHAR *c, AICHAR *g)
             return -1;
         r = util_RandomU(0xff);
         side = (AICHAR *)c->bld;  /* in a fight: the leader of the fighter's side */
-        if (r > 0xff - (int)((k->accuracy * 0.01) * c->sk83)) {
+        if (r > 0xff - (int)((k->accuracy * 0.01) * c->sk83))
             hit = 1;
-            s.damage = (int)((double)(unsigned int)(cm_Random(k->dmgMax - k->dmgMin) + k->dmgMin) * g->f01c * 0.01);
-        } else {
+        else
             hit = 0;
+        if (hit != 0)
+            s.damage = (int)((double)(unsigned int)(cm_Random(k->dmgMax - k->dmgMin) + k->dmgMin) * g->f01c * 0.01);
+        else
             s.damage = 0;
-        }
         if (side != 0 && ai_InventoryHas(side, 0x2b9) != 0)
             s.damage = (int)(s.damage * 1.25f);
         s.hit = 1;
