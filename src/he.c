@@ -5584,24 +5584,7 @@ void he_RunDuelChallenge(int ev)
    challenge (he_RunDuelChallenge) -> 1, both in a quarrel. Else b answers by itself: with util_RandomF() +
    gm_Mix(b, a, 3) of 1 or more it challenges (both in a quarrel, a player a hears the duel intro news 0x1d83)
    -> 2; below, it declines as he_DuelDeclined does (a hears 0x1d81, b's district's opinion and b's relation to a
-   drop) and the event ends in two minutes
-   @deep deep s33: the chance written inline (util_RandomF() + gm_Mix(b, a, 3) >= 1.0f, no liking local:
-   the same code). Left as before: the 0x1d81 news arguments. Mechanism read: b->id (used twice in the
-   call) is a CSE candidate (c2trace temp at that line, prio 50) that takes eax for the whole argument run,
-   so the sex byte goes to cl and the id load is scheduled between it and the setne; the original loads sex
-   into al and finishes (sex != 0) + 0x1d68 in ecx before the id (he_DuelDeclined, byte, the same
-   statement, compiles that way). Tried: district = 0 after the news (18), the ternary 0x1d69 : 0x1d68 (=
-   control), district initialised at the declaration (frame +4), the text buffer at function scope (frame
-   0x234, same order), the chance's operand orders (= control), climb round 1 (133 mutants, best = start).
-   prior: Read whole against the original and fixed: typed over AIJOB / AICHAR / AIMSG (the message 0x46
-   with msg.time + 6 hours through gm_AddTime2, the original's +0x28), the second office array 6 ints and
-   the text / message buffers block-scoped (frame 0x134 equal), the chance as util_RandomF() + gm_Mix(b, a,
-   3) >= ai_FloatOne (the original's and eax,0x100 / jne), the null-pointer flag test of the gone branch
-   kept (@original). 338 vs 338 instructions; left: scheduling only in the 0x1d81 news arguments
-   (+0x547951, 16 lines): the original loads b->sex into al, setne cl, add ecx,0x1d68, then xor eax / mov
-   ax,[ebp]; ours loads sex into cl, the id first (xor eax / mov ax,[ebp]) and setne dl / add edx: the same
-   instructions in another order and registers (0x1d68 + (sex != 0) spelled either way compiles alike;
-   he_DuelDeclined's identical expression is proved equal); the prover stops at the escaped frame (+0x286) */
+   drop) and the event ends in two minutes */
 void he_AllocInsult(int ev)
 {
     AIJOB *e = (AIJOB *)ev;
@@ -5672,8 +5655,13 @@ void he_AllocInsult(int ev)
     district = 0;
     if (a->kind == 6 || a->kind == 7) {
         char text[0x100];
+        int txt;
 
-        txt_Format(text, 0x1d81, b->id, b->id, (b->sex != 0) + 0x1d68);
+        if (b->sex != 0)
+            txt = 0x1d69;
+        else
+            txt = 0x1d68;
+        txt_Format(text, 0x1d81, b->id, b->id, txt);
         he_ShowNews(a->netId, a->netId, text, 0, 0x5fa, (char *)0);
     }
     if (b->officeKind != 0) {
