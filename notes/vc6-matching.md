@@ -2162,6 +2162,13 @@ copied back into short predecessors only after all of this.
   arms with the work in the same arm, or the work alone under `if (hit)`, kept the RPO layout (cm_DuelShotAction
   70 -> 8 ins, then byte with `acc = acc * 0.8;` without the cast: its fstp sinks behind the next pushes).
 
+- (Meaning) **A whole region's allocation off (a local in a register the original keeps in memory, the constant 0 in
+  esi missing), flip.py pointing at one call's argument**: count the pushes before reading an `[esp+N]` argument
+  load behind a cdecl call whose `add esp` is deferred: `push ecx; call io_PrintText; mov eax,[esp+0x10]` reads one
+  slot lower than the same offset before the push. cm_MessageBox passed fl to d2_CentreViewWindows where the
+  original passes win (byte after the fix; the other levers there: the loop's flag tests inline in a plain while,
+  the click tests as one else-if chain).
+
 ### Which arm is inline and which is out of line
 
 - **`if (A || .. || F) X else if (G || ..) Y` with X laid out last (near je to it, the G tests inline), the

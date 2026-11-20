@@ -5217,37 +5217,7 @@ int cm_DialogTimer(int dlg, int a, int c)
 /* 0x4e5470, a message box for the text id with the flags (2: "Messagebox_Autosize", 0x10: "_BIG", 0x20: "_VERY_BIG", 0x100: "_NONE_PERGA" (form 1), else "misc\\Messagebox";
    8: the frame wait flags 0x717c6, 0x80: a timer slider (0x500 ms), 0x40: raises the dialog's windows every frame, 4: ends after 500 ms): the dialog's
    objects are put into a radio group (all but the type 0x40), the loop runs the frame wait sv_RunFrame until the stop request; the answer: the selected
-   button index + 1 when the text window is clicked, 0 otherwise (a right click on it, the escape key, a timeout); not reentrant (cm_MessageBoxOpen).
-   @deep deep s47: 103 -> 43 ins. Kept: (1) no raise / ends / timed locals: the loop is a plain while
-   (sv_RunFrame(..)) with (flags & 0x40), (flags & 0x80) && slider != -1, (flags & 4) && .. tested inline -
-   VC6 rotates it to if + do/while and hoists the invariant ands into the preheader (the original's raise
-   in flags' slot, ends in ebx, timed = the CSE of the slider test) [75 ins, frame now right]; (2) the
-   click tests as one else-if chain: if (Clicked == 0 && Hit == textwin) {ret = sel + 1; pop} else if
-   (Clicked == 1 && Hit == textwin || kb_Last == 1) {ret = 0; pop} (one ret = 0: the loop now byte) [43].
-   Left: region before the radio loop only: the original holds the constant 0 in esi from the first block
-   (push esi before the guard, mov [ret],esi, push esi for the d2_OpenForm / d2_CreateRadioGroup zeros, i
-   starts in it: cmp word [nobjs],0 immediate) and keeps fl in memory (mov eax,[sv_FrameMask]; and al,0xc7;
-   mov [fl],eax); ours gives fl's first piece esi (c2trace pass 3: fl#3 lines def +
-   d2_CentreViewWindows(fl), prio 14 sav 4) and the zero piece (sav 0) memory. Probes: fl's top def moved
-   into an else arm (if (flags & 8) fl = 0x717c6; else fl = mask..) makes everything else byte (9 ins: only
-   the load's position) - so fl's top-def -> Centre use is the whole difference; flip.py --want 'and al'
-   only by deleting the Centre call. No lever (= control or worse): textwin as id, fl = ..; fl &= ..;
-   unsigned fl; mask local + else / ?: (39, mask takes esi); fl def before the guard (32, wrong meaning);
-   return ret at the guard; the whole body nested under if (!open) (51); i = 0 at the top (79+); climb
-   --rounds 3 (only meaning-changing rows). prior: s15 (size queue, 687 vs 697): meaning fixed: the answer
-   starts at 0, not -1 (the original zeroes ret's slot in the first block from esi = 0 and returns that
-   slot), and the slider handle starts at -1 in its own slot (read as slider when the 0x80 flag is off):
-   slider = -1; ret = 0; at the top, no else arm. The original's allocation: frame 0x18 (win 0, fl 4, ret
-   8, t0 0xc, slider 0x10, timed 0x14; textwin in id's arg slot, raise in flags' arg slot), ebp never used,
-   esi = the constant 0 from the first block (push esi for d2_OpenForm / d2_CreateRadioGroup, i starts in
-   it, slider later), flags in ebx but split around the radio loop (d2_Objs in ebx there, flags reloaded
-   from its arg slot after it), radio edi. Ours: ret#2 takes ebp in pass 2 (sav 20), fl esi, flags ebx
-   whole, d2_Objs ebp. Rounds (dcp try): i = 0 at the top with for (; ..): 98 ins (ret still ebp);
-   CreateRadioGroup(i = 0): = control; the click tests flat (clicked == 0 && hit == textwin first, then
-   (clicked == 1 && hit == textwin) || kb_Last == 1): = control; while loop with raise / ends before it:
-   130 (the original computes them after the first sv_RunFrame test: if + do/while is right); climb round
-   1: only inline:ends (75 ins, ends must stay: and ebx,4). Open: what keeps ret out of ebp (and flags off
-   ebx in the radio loop) in the original. */
+   button index + 1 when the text window is clicked, 0 otherwise (a right click on it, the escape key, a timeout); not reentrant (cm_MessageBoxOpen). */
 
 int cm_MessageBox(int id, int flags)
 {
@@ -5275,7 +5245,7 @@ int cm_MessageBox(int id, int flags)
         fl = 0x717c6;
     io_PrintText(id);
     textwin = d2_LastWindow;
-    d2_CentreViewWindows(fl);
+    d2_CentreViewWindows(win);
     cm_MessageBoxOpen = 1;
     radio = d2_CreateRadioGroup(0);
     for (i = 0; i < d2_LastWindowPtr->nobjs; i++) {
