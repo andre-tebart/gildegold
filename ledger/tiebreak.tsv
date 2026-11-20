@@ -2486,7 +2486,7 @@ exe	0x004d4050	cm_FightRole	cm	600c0db2f6fc434c	no	shape	sweep control=shape bes
 exe	0x004d4090	cm_LootList	cm	d34758732e8dad41	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004d4340	cm_FightPortraits	cm	ada8cd56d035024d	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004d4540	cm_FightStartDialog	cm	9ce318461f52abe5	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
-exe	0x004d4d70	cm_FightEndDialog	cm	20139f63fbe2d006	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
+exe	0x004d4d70	cm_FightEndDialog	cmfight	050351c4348dc582	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	64bafd2743ec7c52
 exe	0x004d60b0	cm_CheckFight	cm	0b7b31b5b3479690	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	659a095851fd8c82
 exe	0x004d63e0	cm_RunFight	cm	c9cbf40840b07b95	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	becf1bbdf99775c9
 exe	0x004d6930	cm_FightResult	cm	33c238c4414c4fe7	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
