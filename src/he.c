@@ -12894,34 +12894,40 @@ int sv_IsAtDoor();
    without the building's flag 0x2000) goes into the building's store object 0x2a (gm_FreeCapacity, sold to the
    own player by cm_SendExSellObject); the news 0x1802 + 0x1803 (or 0x1804 for nothing) goes to the character of
    kind 6 / 7 unless its master has flags1b4 bit 0. Stages -2 / -1 send the gatherers back and free the event
-   @deep s50: meaning read again (all calls / constants / fields agree; the gm_AddTime waits are minutes 5
-   / 10 as the original's pushes). What is left is two things. (1) Constants: ours makes 0 a register
-   candidate (c2trace const#0#47, 13 refs 13081-13231, pass 11, edi, savings 0) and -1 one from the entry
-   (const#0#35 esi: refs at the stage test 13082, netId 13086 and the stage -1 stores); the original has no
-   0 register (test eax,eax / push 0 / mov [esp+0x10],0) and -1 in edi only from the netId test (mov
-   eax,[ebx+0xc]; or edi,-1; cmp eax,edi), reused for stage 2's -1 store. Because the top wait pushes edi
-   in ours, the stage 2 / 3 / 4 waits cannot cross-jump into it (the tail hunks, +31 bytes). (2) Frame:
-   text / line tie in the packer (4*1000/1024 = 2*1000/512 = 3, unstable sort: ours line nearest esp, the
-   original text), and m opens its own slot 0x14 because it is passed after tmp@13216 (the inline strcat
-   temp, count 2 = m's count) which takes slot 0x10 first; the original's m shares 0x10 with amount. Rounds
-   without effect (= control): the guard as if (chr == 0xffff || netId == -1) {free; return;}, the
-   condition as nested ifs / !(..&&..), line as a block local of the got arm, text / line in case 4, the
-   declaration order of m (top, first, last, all case-4 locals at function scope), text / line order.
-   Worse: nearest = 0 in case 1 (168, 1351 B), after the hours test (178), any = 0 after the b test (162
-   ins but 1331 B), the hours test as !(start <= h && h < end) (M8). climb round 1: only inline:o (calls
-   duplicated, rejected). prior: reconstructed from 0x557e20..0x5584c4 (all 7 stages, the jump table equal;
-   the day-hours wait, the nearest type-0xb field by 3D distance, the door waits, the harvest with
-   gm_BuildingSkill 0x1e/0xb * (1/90) + 1, the winter halving, gm_FreeCapacity, the news 0x1802+0x1803 /
-   0x1804 via strcat, every call and argument read against the original); case-scoped locals reproduce the
-   original's shared [esp+0x10] slot. Left is register allocation of constants: ours caches 0 in edi from
-   the entry (xor edi,edi / xor ebp,ebp; cmp ebp,edi where the original has test ebp,ebp; push edi for push
-   0) and -1 in esi (or esi,-1; mov [ebx+0x70],esi where the original has mov [ebx+0x70],0xffffffff), the
-   original only -1 in edi from the netId test (mov eax,[ebx+0xc] / or edi,-1 / cmp eax,edi); tails: the
-   original cross-jumps the gm_AddTime(..,0,5,0) / (..,0,10,0) waits of stages 2 / 3 / 4 into the block at
-   +0x91 / +0x95 that ours keeps inline; in stage 4 ours merges the fmul qword [esp+0x24] of both skill
-   branches into the shared _ftol tail, the original keeps one per branch. Tried: a single goto wait label
-   (worse layout, reverted), nested / flat stage-1 failure blocks (the flat if (nearest == 0) form matches)
-   (size: 22 of the instruction difference are shared / inline tails) */
+   @deep s52: the harvest is one expression per arm with no rate local, amount = (int)((random(6) + 9) *
+   h->n * (gm_BuildingSkill(b, 0x1e, 1) * (1.0 / 90) + 1.0)): the original keeps fmul qword [tmp] in each
+   arm and joins at add esp,0x10 / _ftol (a rate local sinks the fmul into the join: 168 -> 167, the fpu
+   and branch hunks gone). Mechanism of everything left (c2trace --raw, scores line): case 4's b (b#3, prio
+   41) must be assigned before stage 1's f (f#1, 52) and got (46): b takes ebp, the -1 constant's piece
+   then has esi as its only register (score esi=100), so got / f avoid esi and take edi, nearest gets esi,
+   i ebp, o esi, season edi, stage 3's b edi and any ebp: all the original's registers, no 0 / -1 register
+   from the entry, and the stage 2 / 3 / 4 waits become equal to the top wait. The frame says the same: the
+   original packs m with amount at +0x10 (m counted 3: its test exists twice before the tails are merged)
+   and text nearest esp (text counted 5, 5 * 1000 / 1024 = 4 > line's 3). So [the kind 6 / 7 test, the m
+   test, he_MessageBoxQuickjump] is written twice in the original. Tried: in both arms of if (got != 0):
+   every register and slot right, 72 ins, but VC6 keeps the then-arm's copy (the original keeps the else
+   arm's: then .. strcat; jmp tail; else: txt_Format 0x1804; tail) and the top wait block is laid inline
+   with the stage waits not merged into it (the original: the stage waits jump into the top's block behind
+   the switch jmp); the arms swapped (if (got == 0)): two unmerged copies, 118. Per kind (if (kind == 6) {
+   if (m ..) box } else if (kind == 7) { .. }): the frame right, b#3 47 < 52, and cmp cl,6; jne instead of
+   the original's je box; cmp cl,7; jne end. = control: block-local rate per arm, rate / rate2, a double x
+   across the join (fmul sunk either way), decided re-tests of b / text, text / line order or size, flip's
+   hits are all extra references in case 4's tail (dup txt_Format / the box). prior: s50: meaning read
+   again (all calls / constants / fields agree; the gm_AddTime waits are minutes 5 / 10 as the original's
+   pushes). What is left is two things. (1) Constants: ours makes 0 a register candidate (c2trace
+   const#0#47, 13 refs 13081-13231, pass 11, edi, savings 0) and -1 one from the entry (const#0#35 esi:
+   refs at the stage test 13082, netId 13086 and the stage -1 stores); the original has no 0 register (test
+   eax,eax / push 0 / mov [esp+0x10],0) and -1 in edi only from the netId test (mov eax,[ebx+0xc]; or
+   edi,-1; cmp eax,edi), reused for stage 2's -1 store. Because the top wait pushes edi in ours, the stage
+   2 / 3 / 4 waits cannot cross-jump into it (the tail hunks, +31 bytes). (2) Frame: text / line tie in the
+   packer (4*1000/1024 = 2*1000/512 = 3, unstable sort: ours line nearest esp, the original text), and m
+   opens its own slot 0x14 because it is passed after tmp@13216 (the inline strcat temp, count 2 = m's
+   count) which takes slot 0x10 first; the original's m shares 0x10 with amount. Rounds without effect (=
+   control): the guard as if (chr == 0xffff || netId == -1) {free; return;}, the condition as nested ifs /
+   !(..&&..), line as a block local of the got arm, text / line in case 4, the declaration order of m (top,
+   first, last, all case-4 locals at function scope), text / line order. Worse: nearest = 0 in case 1 (168,
+   1351 B), after the hours test (178), any = 0 after the b test (162 ins but 1331 B), the hours test as
+   !(start <= h && h < end) (M8). climb round 1: only inline:o (calls duplicated, rejected). */
 void he_RunHerbGathering(int ev)
 {
     AIJOB *e = (AIJOB *)ev;
@@ -13026,7 +13032,6 @@ void he_RunHerbGathering(int ev)
             AIBLD *b;
             AIOBJ *o;
             AICHAR *c, *m;
-            double rate;
             int i, amount, got;
 
             b = (AIBLD *)gm_BuildQuery(1, 1, e->from);
@@ -13049,13 +13054,10 @@ void he_RunHerbGathering(int ev)
             if (o == 0)
                 break;
             season = gm_ClockSeason(&ai_Time);
-            if (ai_BTypesT[b->type].kind == ' ') {
-                rate = gm_BuildingSkill((unsigned char *)b, 0x1e, 1) * (1.0 / 90) + 1.0;
-                amount = (int)(((unsigned short)util_Random(6) + 9) * h->n * rate);
-            } else {
-                rate = gm_BuildingSkill((unsigned char *)b, 0xb, 1) * (1.0 / 90) + 1.0;
-                amount = (int)(((unsigned short)util_Random(6) + 9) * h->n * rate);
-            }
+            if (ai_BTypesT[b->type].kind == ' ')
+                amount = (int)(((unsigned short)util_Random(6) + 9) * h->n * (gm_BuildingSkill((unsigned char *)b, 0x1e, 1) * (1.0 / 90) + 1.0));
+            else
+                amount = (int)(((unsigned short)util_Random(6) + 9) * h->n * (gm_BuildingSkill((unsigned char *)b, 0xb, 1) * (1.0 / 90) + 1.0));
             if (season == 3 && (b->flags5aw & 0x2000) == 0)
                 amount = (int)(amount * 0.5);
             got = gm_FreeCapacity((short *)o, h->good, amount);
