@@ -4037,13 +4037,13 @@ void cm_FightEndDialog(CMFIGHTREC *a)
         b = (AIBLD *)gm_BuildQuery(1, 1, a->attackerBldId);
         if (ai_BTypesT[b->type].kind == 0x13) {
             total = 0;
-            for (i = 0; i < 16; i++) {
-                id = a->defenders[i];
+            for (cnt = 0; cnt < 16; cnt++) {
+                id = a->defenders[cnt];
                 if (id == -1)
                     continue;
                 c = (AICHAR *)cm_FindFighter(id);
-                col = i % 4;
-                row = i / 4 + 1;
+                col = cnt % 4;
+                row = cnt / 4 + 1;
                 px = col * 80 + 0x30;
                 py = row * 100;
                 d2_WinOpenPic(px, py, 0x5db, d2_LastWindow);
