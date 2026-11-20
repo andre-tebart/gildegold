@@ -10101,25 +10101,7 @@ int he_PickNearBuilding(AICHAR *c, int n, AIBLD **blds, int *bldId, int *objId);
    0x20 inns (gm_BuildQuery 1, 5, 0x16) the one he_PickNearBuilding picks (only looked up by gm_FindBuildingById, the
    walk keeps its building), else the next of the 0x100 buildings in steps of
    the slot's step whose kind is in HE_WALK_BUILDINGS; the character is sent there (cm_SendChrGotoBuilding
-   "Sim Politicians", its flag 0 for the kinds 0x16 / 7 / 0xf, else 1)
-   @deep s52: kept the walk loop's count as held--; before the idx step and while (held != 0) (the
-   original's dec / test pair; 48 -> 41). The stage: the original reads s->stage into cl (no xor) and
-   widens it into edi (and edi,0xff): no stage local, s->stage read in both tests and s->stage++ (ns-inc)
-   gives exactly that, but the frame grows (idx spilled: idx#1 live from its = 0 at the top loses to c);
-   with idx = 0 just before the util_RandomF branch (ns-i-before) the frame is right (70 ins): left there a
-   zero register ebx through the guards (cmp eax,ebx / push ebx; the original test / push 0), budget / 2 +
-   1 kept in a register (budget#2) where the original stores it and reloads it into edi for the idiv, the b
-   / budget slots swapped, the two final GotoBuilding arms in the other order. = control: budget /= 2;
-   budget++ forms; unsigned char stage (frame 0x94). prior: size queue s20: 86 -> 48 ins, raw 985 -> 991
-   (padded 992; the original 1001 -> 1008: 2 bytes short). Found: the walk loop tests the kind through a
-   type record pointer (bt = &ai_BTypesT[b->type]; if (bt->kind > 0x1f) hi = 1 << (bt->kind - 0x20); else
-   lo = 1 << bt->kind;: the original's ai_BTypes reload per pass with the dead lea of bt, b in ebp, lo in
-   edi) and the final test reads bt->kind three times (lea eax,[..]; mov al,[eax]); held = 0x100 before idx
-   / budget (climb.py). Left (code 48, slots 32): stage, the original's mov cl,[s->stage]; mov edi,ecx; and
-   edi,0xff (a byte value widened into a register int: ours xor ecx; mov cl) with budget / 2 + 1 stored and
-   reloaded into edi for the idiv; the frame slots of budget and b swapped (frame > 0x80: density sort).
-   Tried: unsigned char stage (bl + a byte slot, frame 0x94), no stage local with s->stage++ / s->stage + 1
-   (frame 0x90), kind through bt in the loop with a kind local (= control). */
+   "Sim Politicians", its flag 0 for the kinds 0x16 / 7 / 0xf, else 1) */
 void he_StepWalk(HEWALKSLOT *s)
 {
     AIBLD *b = 0;
@@ -10128,7 +10110,7 @@ void he_StepWalk(HEWALKSLOT *s)
     AIBLD *inns[0x20];
     AICHAR *c;
     AITASK *model;
-    int weather, stage, n, hour;
+    int weather, n, hour;
     int idx = 0;
     unsigned int lo, hi;
     AIBTYPE *bt;
@@ -10168,15 +10150,14 @@ void he_StepWalk(HEWALKSLOT *s)
             cm_SendCharHalt(c->netId);
             s->holdHour = 0xff;
         }
-        stage = s->stage;
-        if (10 - stage < budget) {
+        if (10 - s->stage < budget) {
             s->state |= 4;
             return;
         }
         if ((s->state & 0x10) == 0) {
             budget = budget / 2 + 1;
-            if ((stage + 2) % budget == 0 && held == 0) {
-                s->stage = (unsigned char)(stage + 1);
+            if ((s->stage + 2) % budget == 0 && held == 0) {
+                s->stage++;
                 he_PlayGestures(c);
                 s->state |= 0x10;
                 return;
@@ -10187,6 +10168,7 @@ void he_StepWalk(HEWALKSLOT *s)
     cm_SendChrStop(c->netId);
     if (util_RandomF() > 0.5f) {
         AIBLD *e = (AIBLD *)gm_BuildQuery(1, 5, 0x16);
+        int bldId, objId;
 
         n = 0;
         if (e != 0) {
@@ -10197,8 +10179,8 @@ void he_StepWalk(HEWALKSLOT *s)
                     inns[n++] = e;
                 e = (AIBLD *)gm_BuildNext();
             } while (e != 0);
-            if (n != 0 && he_PickNearBuilding(c, n, inns, &budget, &held) != 0)
-                gm_FindBuildingById(budget);
+            if (n != 0 && he_PickNearBuilding(c, n, inns, &bldId, &objId) != 0)
+                gm_FindBuildingById(bldId);
         }
     } else {
         /* the budget is the step from here, held the buildings left */
