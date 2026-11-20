@@ -16222,8 +16222,8 @@ void he_RunMarketSupervisor(AIJOB *ev)
     AIOBJ *o, *q, *st;
     AIBLD *b;
     AIGOOD *good;
-    int minutes, i, pl, inStore, amount, k, have, n;
-    float g, fv;
+    int minutes, i, pl, inStore, amount, k, n;
+    float g, f;
 
     if (ai_MarketBuilding == 0) {
         he_FreeEvent((int *)ev);
@@ -16254,7 +16254,6 @@ void he_RunMarketSupervisor(AIJOB *ev)
         cm_SendMoveGoods(he_PlayerCh->netId, -1, ai_OwnPlayer, HE_SUPERVISOR_MONEY);
 
     for (i = 0; i < 0x55; i++) {
-        float f;
 
         rec = &gm_StockBlocks[ai_OwnPlayer].goods[i];
         if (rec->item == 0)
@@ -16378,6 +16377,8 @@ void he_RunMarketSupervisor(AIJOB *ev)
         if (st == 0)
             continue;
         for (i = 0; i < 0x55; i++) {
+            int have;
+
             s = gm_StockBlocks[pl].goods[i];
             if (s.item == 0)
                 continue;
@@ -16427,7 +16428,7 @@ void he_RunMarketSupervisor(AIJOB *ev)
             continue;
         for (i = 0; i < 0x55; i++) {
             GMSTOCK s2;
-            float f;
+            int have;
 
             s2 = gm_StockBlocks[pl].goods[i];
             if (s2.item == 0)
@@ -16437,10 +16438,10 @@ void he_RunMarketSupervisor(AIJOB *ev)
                 continue;
             g = (float)(s2.demand * (1.0f / 14) * (minutes * (1.0 / 60)));
             f = (unsigned short)util_Random(3) + g;
-            fv = (float)gm_FreeCapacity((short *)st, s2.item, (int)(1.0f > f ? 1.0f : f));
+            f = (float)gm_FreeCapacity((short *)st, s2.item, (int)(1.0f > f ? 1.0f : f));
             have = gm_ListAmount(st, q);
             if (have < s2.demand * 0.5) {
-                cm_SendExSellObject(st->objId, -1, s2.item, (int)fv, ai_OwnPlayer, 0);
+                cm_SendExSellObject(st->objId, -1, s2.item, (int)f, ai_OwnPlayer, 0);
                 s2.mean = (float)(g * 0.5 + s2.mean);
                 s2.mean = (float)(s2.mean < s2.demand * 3.0 ? s2.mean : s2.demand * 3.0);
             } else {
