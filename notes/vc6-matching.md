@@ -3469,6 +3469,15 @@ a stack slot is a split piece, and the piece's extent is decided by the rules be
   away after allocation (groups 0xe .. 0x10 and 1 / 3 with the default's `*a = 1; *b = 0;`, own bodies in
   building-type order); equal bodies are not neutral. Return vs break per case: one code (gm_JobSlots byte).
 - **A dead `lea` of an address**: a store written twice (flip.py dup hit; gm_EndDayIncomes).
+- **A failure path one rotation step behind after a success arm that ends in `..; gm_AddTime(..); return;`**
+  (a probe read placed after the success tail's last call fixes it, every if / else / return / break / cast /
+  loop form is = control, flip only finds the duplicated call): the success was a flag and the shared tail
+  came after both: `ok = 0; if (roll && !has) { ok = 1; ..news.. } if (!ok) { ..failure..; return; }
+  e->stage++; e->end = ai_Time; gm_AddTime(..); return;`. The decided `if (!ok)` keeps a block structure that
+  costs one scratch step, and VC6 threads the flag (he_RunSabotage 98 -> byte).
+- **A `stage = K; return;` exit pair-merged into the wrong one of two equal copies** (ours jumps into an earlier
+  case's copy, the original into a later one): the earlier case's tail ended with `break`, not `return`
+  (he_RunSabotage stage 8; c2tail shows the pair merges with kept / deleted lines).
 - **The rotation two steps behind after an index chain, so two cross-jumped call tails merge in ours** (the
   original's next block starts at eax, ours at ecx; its `xor edx,edx; mov dx,[esi]` id push differs from the
   other arm's eax copy and stays apart): the record pointer was a named local, `c = (AIPER *)&ai_CharsT[i];
