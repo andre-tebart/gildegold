@@ -13417,24 +13417,24 @@ int ord_DispatchOrder(int id, char *c, int *m);
    the event cancelled. 7: the accusation answered, the proof goes to the
    watch (cm_SendProofExecuted), the stage is 8 in 10 minutes. 8: while the watch event still holds it 6 more
    minutes, then the saboteur walks home (stage 6). Stages -2 / -1 kill the saboteur and free the event
-   @deep size queue s18: stage 5's a / dir with an int pad word (struct { float x, y, z; int w; }: the
-   original stores both w as integer 0 from its cached ebx, as cm_UpdateGrenades): 160 -> 142 ins; stage
-   2's busy test written positive (if (c->scene->actions != 0) { end = now + 4; stage = 2; return; }
-   stage++; return;) so its stage++ jumps into stage 4's copy as the original (je +0x7cd): 142 -> 137 ins,
-   raw 3575 -> 3553, padded size (3600). retgen single (30 return sites, 61 variants): no row below the
-   control. Left: the stage = 6 tail at +0x10f (ours inline at +0xd5d), stage 3's found-path store order
-   (add esi,0x52 first in the original), stage 4's failure-path lea order (lea ecx / lea ebx, the scratch
-   rotation behind it through +0x5597a0), stage 5's dir.y also stored from ebx in the original (dir.y =
-   0.0f / 0: = same code). prior: reconstructed from the 425-byte stub against 0x558f10..0x559d14: all 11
-   stages read and written (the switch tables now equal: case order 0,1,2,3,7,8,4,5,6,-2/-1 as the original
-   lays them out), every call, argument and string checked (refs_differ=0; the explosion message 0x4f,
-   smoke / earth / explosion arguments as cm.c's bomb, the dummy object names, HEDETECT, gv_Accuse,
-   CRIME.id for cm_SendProofExecuted, HEWATCH.attackId), the effect block's FPU order matches. Left
-   (diffclass): regs 144, order 20, tail 20 and code 88 that are allocation / scheduling: stage 3 found
-   path ours stores stage 7 before add esp,0x14 where the original rebases on add esi,0x52 first (mov
-   [esi+0x1e],7 / mov [esi+0x7a],edx); stage 4's failure path recomputes owner / me with ours lea ebx
-   before push ebx, the original lea ecx then lea ebx (+0x55961b..+0x559635), and the gv_Accuse argument
-   loads in another order (+0x5... */
+   @deep s50: meaning fix committed: stage 6's actions == 0 exit clears saboteur (= -1) before stage -1
+   (the original jumps into stage 0's failure block +0x10f), which removed the tail hunk; size now 3539 vs
+   3544. Kept: stage 3's found path stores watch before stage 7 (the original's add esi,0x52 rebase first):
+   146 -> 138. Tried: stage 0 tail as e->stage++ then x->slot = -1 matches stage 0 (the stage load hoisted
+   before the slot store) but moves stage 1's add esp (136 total, order 32): the two tails interact
+   (cross-jump?), open. Left: stage 4's failure path (owner / me recomputed: original lea ecx,[eax+eax*8];
+   lea ebx,[ecx*4+X] after the next xor / mov ax, then lea edx / lea ebp), the scratch rotation behind it
+   through +0x5597a0 (eax->ecx->edx), stage 4's gv_Accuse argument load order (+0x559774), stage 5's stosw
+   / mov [esp+0x1c],ebp order, two order hunks +0x559952 / +0x5599d0. Not tried yet: twin.py found no byte
+   twin; climb.py not run on the fixed text. prior: size queue s18: stage 5's a / dir with an int pad word
+   (struct { float x, y, z; int w; }: the original stores both w as integer 0 from its cached ebx, as
+   cm_UpdateGrenades): 160 -> 142 ins; stage 2's busy test written positive (if (c->scene->actions != 0) {
+   end = now + 4; stage = 2; return; } stage++; return;) so its stage++ jumps into stage 4's copy as the
+   original (je +0x7cd): 142 -> 137 ins, raw 3575 -> 3553, padded size (3600). retgen single (30 return
+   sites, 61 variants): no row below the control. Left: the stage = 6 tail at +0x10f (ours inline at
+   +0xd5d), stage 3's found-path store order (add esi,0x52 first in the original), stage 4's failure-path
+   lea order (lea ecx / lea ebx, the scratch rotation behind it through +0x5597a0), stage 5's dir.y also
+   stored from ebx in the original (dir.y = 0.0f / 0: = same code). */
 void he_RunSabotage(int ev)
 {
     AIJOB *e = (AIJOB *)ev;
@@ -13505,8 +13505,8 @@ void he_RunSabotage(int ev)
         d.found = 0;
         if (he_DetectAttack((int)&d) != 0) {
             x->slot = gv_Accuse(0x18, 1, ai_CharsT[e->chr].netId, ai_CharsT[b->owner].netId, x->target);
-            e->stage = 7;
             x->watch = d.found->id;
+            e->stage = 7;
             e->end = ai_Time;
             return;
         }
