@@ -13483,7 +13483,7 @@ void he_RunSabotage(int ev)
         }
         x->slot = cm_SendChrGotoBuilding(x->saboteur, b->id, -1, 0, 1, "Sabotage");
         e->stage++;
-        return;
+        break;
     case 2:
         x->slot = -1;
         c = (AICHAR *)gm_FindChar(x->saboteur);
