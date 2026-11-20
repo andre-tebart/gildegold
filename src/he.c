@@ -16190,26 +16190,31 @@ float gm_StockPrice(int p, int n);  /* 0x4ffa10 (f3gm.c; f3gm.h does not declare
    their object 0x1db and buy into 0x1dc. Each mean is kept between a quarter (at least 1) and three times the
    demand and reset by a random roll when it strays beyond 1.5 / 2.5 times or below 0.4 / 0.8 times of it; the
    price is refreshed (gm_StockPrice) on most rolls. From 22:00 the record is freed, else it is due in an hour
-   @deep s50: block locals per pass (n in pass 2 / 3, have in pass 3 / 4, f in pass 1 / 4: f and k =
-   control, g block-local: bytes 1598 -> 765 but fpu 42, kept out): 122 -> 84 ins; pass 1 now equal. Left
-   from pass 2 on: ours coalesces amount = n into n (n's home written at every definition of n, the later
-   (float)amount reads n's home), the original keeps them apart: n in edi only, its int -> float in a temp
-   slot ([esp+0x34]), amount's own home [esp+0x10] stored at amount = n and read by the later filds (16337
-   / 16353); same in pass 3 (n's fild through a temp). No lever: amount -> n at any subset of the later
-   uses (32 variants, one code), s.f2c -= n / (float)n; s.f2c -= (int)s.f2c in both passes moves the store
-   to the _ftol result (eax) but keeps the coalescing (128). climb 2 rounds: nothing. Slot pairs: the
-   original's g in pass 2 at raw [esp+0x18] (ours 0x10). prior: s49: 156 -> 122 ins, 964 = 964
-   instructions, size 3479 -> 3463 (the original 3459, padded equal). Levers: the end as if (ai_Time.hour <
-   22) { next run } else he_FreeEvent(ev) (VC6 then cross-jumps the free into the first guard's block as
-   the original: the tail hunk and one he_FreeEvent copy gone, 156 -> 137); the rolls' bound as (s.demand *
-   1.5f) / s.mean (without the parentheses VC6 reassociates it into 1.5f / mean * demand: 137 -> 125); the
-   hourly share as (minutes * (1.0 / 60)) * (demand * (1.0f / 14)) at the three sites (the fild / fmul 1/60
-   / fld / fmul / fmulp order: 125 -> 122, but the slot hunks grow 106 -> 160). No lever: if / else at the
-   first guard, minutes / 60.0, no (float) cast, the bound as < from the other side (167). Left: the frame
-   packing only (dcp frame: the original's [esp+0xc] is shared by five of our slots, its [esp+0x20] by two;
-   ours minutes at [esp+0x30], the original [esp+0x28]; pass 2's n has a stack home written at each
-   definition in ours, the original keeps it in edi and stores only amount = n into [esp+0x10]). Next:
-   c2frame --names on the variable sets of the passes (one s / n / k per pass?). */
+   @deep s50: block locals per pass (n in pass 2 / 3, have in pass 3 / 4, f in pass 1 / 4, g in pass 3) and
+   the hourly share in pass 1's form at all four sites (s.demand * (1.0f / 14) * (minutes * (1.0 / 60))):
+   122 -> 67 ins, pass 1 equal. Left, pass 2 (the root of the rest): the listing shows VC6 substituting n
+   for amount after amount = n (fild _n$ at 16344 / 16360, n's home stored at every n definition); the
+   original keeps the copy as a store (mov [amount],edi) and its filds read amount's home, n stays in edi
+   (its s.f2c fild through a temp [esp+0x34], the slot pass 3's n fild uses too). No lever for the
+   substitution (all = control or worse): amount -> n at any subset of the later uses (32), s.f2c -=
+   (int)s.f2c / (float)n / -= n (removes n's own memory use, the substitution stays), the ListAmount result
+   in another local (inStore / have), n reused for the later k's (nA / nB), if ((amount = n) != 0), n = 0
+   before the if, long / unsigned n or amount, (long) cast, a static &amount probe (memory-only amount:
+   301), amount for pass 3's have, gm_FindMarketObject(rec->item) before the copy (flip hit, 126). flip
+   --want 'mov _amount, edi' hits only meaning changes (n as char / short, deleting n = 0 or a clamp,
+   swapping the clamps). climb 2 rounds: nothing. Slots follow: the original packs f / amount / have (frame
+   0xc) and keeps g alone (0x14). prior: s49: 156 -> 122 ins, 964 = 964 instructions, size 3479 -> 3463
+   (the original 3459, padded equal). Levers: the end as if (ai_Time.hour < 22) { next run } else
+   he_FreeEvent(ev) (VC6 then cross-jumps the free into the first guard's block as the original: the tail
+   hunk and one he_FreeEvent copy gone, 156 -> 137); the rolls' bound as (s.demand * 1.5f) / s.mean
+   (without the parentheses VC6 reassociates it into 1.5f / mean * demand: 137 -> 125); the hourly share as
+   (minutes * (1.0 / 60)) * (demand * (1.0f / 14)) at the three sites (the fild / fmul 1/60 / fld / fmul /
+   fmulp order: 125 -> 122, but the slot hunks grow 106 -> 160). No lever: if / else at the first guard,
+   minutes / 60.0, no (float) cast, the bound as < from the other side (167). Left: the frame packing only
+   (dcp frame: the original's [esp+0xc] is shared by five of our slots, its [esp+0x20] by two; ours minutes
+   at [esp+0x30], the original [esp+0x28]; pass 2's n has a stack home written at each definition in ours,
+   the original keeps it in edi and stores only amount = n into [esp+0x10]). Next: c2frame --names on the
+   variable sets of the passes (one s / n / k per pass?). */
 void he_RunMarketSupervisor(AIJOB *ev)
 {
     GMSTOCK *rec;
