@@ -16409,7 +16409,7 @@ void he_RunMarketSupervisor(AIJOB *ev)
                 }
             }
             if (have < g) {
-                s.mean += (float)((g - have) * 0.4);
+                s.mean = (float)(s.mean + (g - have) * 0.4);
                 s.mean = (float)(s.mean < s.demand * 3.0 ? s.mean : s.demand * 3.0);
             } else {
                 s.mean = (float)(s.mean - g * 0.5);
