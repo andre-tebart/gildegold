@@ -1922,18 +1922,30 @@ int ai_SpecialAmountList(G8CHARREC *ch, char *text)
    views the list as that character; a click on a row's frame chooses its character: without pick the window closes
    with it, else pick (character, 0) decides (the window disabled meanwhile); a vacant seat ends the viewing. Returns
    the chosen character record (0: none)
-   @deep s47: the kind-0 hand walk ((int)&c->kind < ..) as the plain index loop (c = &lc_CharRecs[i]): 99
-   -> 97; climb round 1: redraw = 0 before the row-call if / else (not after): 97 -> 93 ins, 1301 -> 522
-   bytes; both kept. Left: the size gap (1645 vs 1655) is all allocation: the original keeps viewing in ebx
-   (xor ebx,ebx at the top is also the d2_OpenForm 0 pushes and viewer's init; viewing = 1 is mov ebx,esi
-   from redraw's 1) and reloads win from [esp+0x18] into esi inside the redraw block (redraw itself in esi)
-   and into eax at the pick / close calls; ours keeps win in ebx. c2trace: pass 3 win#2 prio -67 takes ebx
-   over viewing#2 -75 (both cut in pass 1 where n took ebp). Round without effect on that: viewing = 0 at
-   the top (before / after chosen), the rhold arms nested, the viewing / viewer / redraw store orders in
-   the three arms (all keep win in ebx). Open: what lowers win (or raises viewing) by 8+. prior: size queue
-   s16: the viewer ternaries of the two row calls written on viewing (viewing ? viewer : ..) to raise
-   viewing's references against win: worse (104-109 ins); c2trace: win#2 (sav 20) takes ebx over viewing#2
-   (sav 8) in pass 3 after the bulk split. */
+   @deep s48: kept (93 -> 43 ins): the kind else arm written as the whole exit (sv_PopRequest = 1;
+   sv_RunFrame(..); d2_CloseView(win); return 0;, the twin ai_AmountListWindow's else { return; } + if (n
+   == 0) return; shape), redraw = 0 after the two row calls (the twin's place), viewer = 0 before viewing =
+   0 in the vacant-seat arm, n = 0 first. Mechanism: pass 3 race win#2 vs viewing#2 for ebx (chosen#2 49
+   takes edi first); with else n = 0 the single exit block joins region r1 by its first predecessor and
+   win#2 (-67) beats viewing#2 (-75): every climb mutation leaves that margin at exactly 8 (margin of win -
+   viewing per variant from c2trace); the else-arm exit with its own d2_CloseView(win) takes win#2 to -99
+   (also else { d2_CloseView(win); return 0; }; without the CloseView no flip; goto none either way no
+   flip). Left (43 ins, all one cause): pass 4 in the header region: win#4 (SetForm x3 + the else exit's
+   CloseView, prio -2 -> ebp) loses to kind#4 (4 -> esi); the original has win esi, kind ebx, and loads win
+   from its slot in the else copy, so the two exit copies cross-jump into one (ours keep two: push ebp in
+   the else copy, size 1700 vs 1655). Probes (meaning changed): SetForm(win,2)->(win,3) or
+   RemoveWindowObjects(..,1)->2 give win#4 esi (21 ins) but the else copy still pushes esi. So the
+   original's else exit lies outside win#4's piece (another pass-3 region than the header?). Open: which
+   form keeps the else exit out of win#4's piece. prior: s47: the kind-0 hand walk ((int)&c->kind < ..) as
+   the plain index loop (c = &lc_CharRecs[i]): 99 -> 97; climb round 1: redraw = 0 before the row-call if /
+   else (not after): 97 -> 93 ins, 1301 -> 522 bytes; both kept. Left: the size gap (1645 vs 1655) is all
+   allocation: the original keeps viewing in ebx (xor ebx,ebx at the top is also the d2_OpenForm 0 pushes
+   and viewer's init; viewing = 1 is mov ebx,esi from redraw's 1) and reloads win from [esp+0x18] into esi
+   inside the redraw block (redraw itself in esi) and into eax at the pick / close calls; ours keeps win in
+   ebx. c2trace: pass 3 win#2 prio -67 takes ebx over viewing#2 -75 (both cut in pass 1 where n took ebp).
+   Round without effect on that: viewing = 0 at the top (before / after chosen), the rhold arms nested, the
+   viewing / viewer / redraw store orders in the three arms (all keep win in ebx). Open: what lowers win
+   (or raises viewing) by 8+. */
 
 int ai_SpecialAmountListWindow(int kind, unsigned int *filter, char *caption, char *caption2,
                                int (*pick)(AICHARREC *, int))
@@ -1954,9 +1966,9 @@ int ai_SpecialAmountListWindow(int kind, unsigned int *filter, char *caption, ch
     int i;
     int hit;
 
+    n = 0;
     chosen = 0;
     viewer = 0;
-    n = 0;
     win = d2_OpenForm(0, 0, "special\\amt2");
     d2_CentreViewWindows(win);
     viewing = 0;
@@ -2008,7 +2020,10 @@ int ai_SpecialAmountListWindow(int kind, unsigned int *filter, char *caption, ch
                     rows[i].office = seats8[i].kind;
                 }
             } else {
-                n = 0;
+                sv_PopRequest = 1;
+                sv_RunFrame(ai_SpecialAmountListWindow, 0x657c7);
+                d2_CloseView(win);
+                return 0;
             }
             if (n == 0) {
                 sv_PopRequest = 1;
@@ -2060,11 +2075,11 @@ int ai_SpecialAmountListWindow(int kind, unsigned int *filter, char *caption, ch
                         rows[i].icons[3] = 0x6cf;
                 }
             }
-            redraw = 0;
             if (kind == 0 || kind == 7)
                 ai_ShowAmountRows(d2_LastWindow, kind, filter, n, rows, viewer ? viewer : &lc_CharRecs[ai_PlayerId]);
             else
                 ai_ShowOfficeRows(d2_LastWindow, kind, filter, n, rows, viewer ? viewer : &lc_CharRecs[ai_PlayerId]);
+            redraw = 0;
         }
         if (dm_L.rup != 0) {
             sv_PopRequest = 1;
@@ -2102,8 +2117,8 @@ int ai_SpecialAmountListWindow(int kind, unsigned int *filter, char *caption, ch
             if (hit > -1 && hit < n) {
                 c = rows[hit].rec;
                 if (c->id == 0xffff) {
-                    viewing = 0;
                     viewer = 0;
+                    viewing = 0;
                 } else if (pick == 0) {
                     chosen = c;
                     sv_PopRequest = 1;
