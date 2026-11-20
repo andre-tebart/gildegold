@@ -17192,33 +17192,31 @@ typedef struct HEBLDSPY {               /* the building spying event 0x40's word
    + a random -2 .. 1, within 2 .. 100; a player master (kind 6 / 7) without a character of the building with the
    flag 1 (+0x1b4) gets the message box 0x19f8 ("_NACHRICHTEN_HS_78", a quick jump to the main object). The record is
    freed. Stages -2 / -1 send the spies back and free it
-   @deep s51: the exits: the message-box arm's own he_FreeEvent + return dropped (the arm falls into the
-   break -> free), case 2's no-spy exit as break (246 -> 178); the spying time as (rank * 120.0) * (252.0f
-   / (int)mean) / n (the original's fmul 120.0 right after the rank fild, s49's parenthesised product) and
-   all = 1 set after the b == 0 guard, right before the door loop (178 -> 170). Size 1934 -> 1883 (orig
-   1910): the original keeps its own he_FreeEvent copy for case 2's n == 0 exit (written out with return:
-   234, the other copies then do not merge as now). Left: 0 in ebx through the whole function in the
-   original (cmp reg,ebx / push ebx; ours test / push 0 in cases 1 / 2: one 0 reference more in the
-   original makes 0 a candidate), case 1's loop: the original has &ids[k] in ebp and the countdown in
-   [esp+0x10], ours ebx / ebp; the frame slots of spy / room / all. No lever: spy = 0 right before case 2's
-   loop (worse). prior: Reconstructed whole from the skeleton against 0x5628e0..0x56306c (615 vs 605
-   instructions, switch tables equal): stage 0 the spies to the target ('GebSpionage', 10 minutes), stage 1
-   the door / actions check (5 minutes), the mean skill 2 points (at least 1.0), the spying time rank * 120
-   * (252 / mean) / n clamped to 2880 (start / end clocks), stage 2 back home, the mean (at least 42), the
-   report HESPYREPORT (a tenth of the owner's worth capped at 1.6 million, the stall goods' price, skill 7,
-   the knowledge n * mean / 4 by rank + rand 4 - 2 within 2 .. 100) sent by cm_SendSpyReport, the message
-   box 0x19f8 '_NACHRICHTEN_HS_78' for a player master without a flag-1 character; -2 / -1 back home. Every
-   call, argument and constant read. Tried: the clamp as its own statement t = 2880.0f < t ? 2880.0f : t
-   (matched the compare), gm_BuildingRank inline and as a local, the factor orders (120.0 * rank, 252 /
-   mean first): ours still multiplies by 120.0 after (252 / (int)mean) (+0x25e, fpu order); goods += amt *
-   gm_GoodsPrice (the call order). Left: allocation: the original keeps 0 in ebx (cmp reg, ebx; push ebx)
-   and all / the loop counter in slots, ours in registers (+0x13f .. +0x1a0 code hunks), master in ebx vs
-   ours in a slot (+0x661 .. +0x6b5, the message box pushes), the rec.when copy registers (+0x5ca), and one
-   more free / return tail copy of ours (returns 12/11, +0x75f) (references: M8 at +0x5ca: ours refers to
-   ai_Time (0x770ae0), the original's field to 0x770ae4 (ai_TimeHourW) (and 1 more), explained: the two M8
-   lines are the struct copy rec.when = ai_Time (HESPYREPORT): both sides copy the same four words of
-   ai_Time into the same slots, the original loads them into edx / eax / ecx, ours into eax / ecx / edx, so
-   the aligned loads name the words crossed; no other ref or literal differs) */
+   @deep s52: meaning fixed: the stall amount is a float local (amt = (float)gm_ListAmount(..); goods +=
+   amt * gm_GoodsPrice(..): fild / fstp dword before the price call, fmul dword after it). Then read with
+   the pushes pending and applied: all = 1 stands BEFORE the building query in case 1 (mov [all],1 ahead of
+   the pushes), case 2's no-spy exit frees and returns by itself (if (n == 0) { he_FreeEvent(ev); return;
+   }), sum = 0 before n = 0 in case 2: the 0 register in ebx through cases 1 / 2 (sum in case 1 and n in
+   case 2 start as that register), b / the countdown / owner / master in memory as the original; dcp
+   asmdiff: 18 instructions left, all frame slots. The original's frame (> 0x80, density order): +0x10 n
+   with case 1's two countdowns, +0x14 room / all / worth / goods, +0x18 b (case 1) / owner / case -1's
+   countdown, +0x1c sum, +0x24 mean / master, +0x2c spy alone. Ours (c2frame --names): +0x10 room / goods /
+   the countdowns / worth, +0x14 n / all, +0x18 spy / b / case -1's countdown, +0x24 owner / mean, +0x2c
+   master. Replayed: the original needs room packed before n (room's count >= n's 6, ours 5) so that the
+   first countdown joins n's slot and all then room's, and owner packed before b (count 3, ours 2) so that
+   b and case -1's countdown join owner's slot and nothing joins spy's. = control or worse: declaration
+   order (the packing order among equal counts does not follow it), room / spy inits as statements, int all
+   = 0, separate n / sum variables for case 2 (196 / 182), blockscope.py (no candidate). climb round 2's
+   other hit (FindCharacterByMaster inside the spy test) changes the call order: rejected. prior: s51: the
+   exits: the message-box arm's own he_FreeEvent + return dropped (the arm falls into the break -> free),
+   case 2's no-spy exit as break (246 -> 178); the spying time as (rank * 120.0) * (252.0f / (int)mean) / n
+   (the original's fmul 120.0 right after the rank fild, s49's parenthesised product) and all = 1 set after
+   the b == 0 guard, right before the door loop (178 -> 170). Size 1934 -> 1883 (orig 1910): the original
+   keeps its own he_FreeEvent copy for case 2's n == 0 exit (written out with return: 234, the other copies
+   then do not merge as now). Left: 0 in ebx through the whole function in the original (cmp reg,ebx / push
+   ebx; ours test / push 0 in cases 1 / 2: one 0 reference more in the original makes 0 a candidate), case
+   1's loop: the original has &ids[k] in ebp and the countdown in [esp+0x10], ours ebx / ebp; the frame
+   slots of spy / room / all. No lever: spy = 0 right before case 2's loop (worse). */
 void he_RunBuildingSpying(AIJOB *ev)
 {
     HEBLDSPY *x = (HEBLDSPY *)ev;
