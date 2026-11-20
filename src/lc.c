@@ -3772,24 +3772,7 @@ void ai_MercenaryBookContact(char *bld)
    message (type 9 / 8) first when there is none (and waiting for its slot); with none marked it selects the
    workers of that job (column 0 clears them). A right click clears the marks or pops the window. Each column
    gets its inputs, the amount the store's inputs make and its stock; the count text shows the goods columns;
-   the frame callback is ai_ProductionWindow's
-   @deep size queue s17 (raw 2015 vs 1998, padded 2016 vs 2000; 141 ins): snd_PlayFavourComment stands in
-   each arm of if (c == 0) {..} else {..} as in the original (it calls it at 0x592654 and 0x59273e): now
-   the column-0 arm's slot wait jumps into the other arm's job = cm_GetSlotValue(slot) tail as the original
-   (144 -> 141). Left: bld in ebp where the original has ebx (and ai_ProdColumns index base the other way),
-   the frame's equal-size pairs swapped (ncols / c, store / room, win / res, down / up: every declaration
-   order of the four pairs = control, so reference counts / the unstable sort decide), and the goods-column
-   loop keeps ncols in memory where the original holds a split piece in ebx (mov ebx,[ncols] after
-   gm_Query, mov edi,ebx; imul edi,0x58, cmp edx,ebx, inc ebx). climb round 1 (364 mutants): nothing
-   closer. prior: Reconstructed in full from the original 0x5923c0..0x592b8d (was a skeleton) on the model
-   of ai_ProductionWindow: the three rooms (0xff / 0x2a / 0xfe), the member-row any-loop, the column click
-   (no marks: select / clear the workers of job 9 / 8; marks: the job 9 / 8 found or created by the message
-   type 9 / 8 with its slot wait, sv_MoveToGroup, the stage), the right click, the goods columns from 1 on
-   (gm_Query 1, 4, 0x17, new kinds, < 16), the inputs / amount / stock per column, the count text and the
-   three update calls with ai_ProductionWindow as the frame callback. ours=609 original=603. Left:
-   allocation only: the original keeps bld in ebx (reloaded from edi at the loop end, 0x592b6c 'mov ebx,
-   edi') and ncols in ebx inside the column collection where ours keeps bld in ebp and ncols in [esp+0x10]
-   (0x592992: ours 'mov ecx, [esp+0x10]; inc ecx; ... mov [esp+0x10], ecx' vs the original 'inc ... */
+   the frame callback is ai_ProductionWindow's */
 int ai_SearchResourceWindow(AIBLD *bld)
 {
     AIMSG msg;
@@ -3855,13 +3838,15 @@ int ai_SearchResourceWindow(AIBLD *bld)
                     for (i = 0; i < 0x20; i++) {
                         if (sv_MemberRows[i].chr == 0xffff)
                             break;
-                        job = ((AICHARREC *)ai_Chars)[sv_MemberRows[i].chr].job;
                         if (c == 0) {
+                            job = ((AICHARREC *)ai_Chars)[sv_MemberRows[i].chr].job;
                             if (job != 0 && job->kind == 9 && job->from == bld->id)
                                 ((AICHARREC *)ai_Chars)[sv_MemberRows[i].chr].selected = 0;
-                        } else if (job != 0 && job->kind == 8 && job->from == bld->id &&
-                                   job->u.w.lo == ai_ProdColumns[c].good) {
-                            ((AICHARREC *)ai_Chars)[sv_MemberRows[i].chr].selected = 1;
+                        } else {
+                            job = ((AICHARREC *)ai_Chars)[sv_MemberRows[i].chr].job;
+                            if (job != 0 && job->kind == 8 && job->from == bld->id &&
+                                job->u.w.lo == ai_ProdColumns[c].good)
+                                ((AICHARREC *)ai_Chars)[sv_MemberRows[i].chr].selected = 1;
                         }
                     }
                     continue;
@@ -3885,8 +3870,6 @@ int ai_SearchResourceWindow(AIBLD *bld)
                         while (cm_GetSlotState(slot) == 0)
                             sv_RunFrame(0, 0x20007);
                         job = (AIJOB *)cm_GetSlotValue(slot);
-                        if (job == 0)
-                            continue;
                     }
                 } else {
                     snd_PlayFavourComment();
@@ -3909,10 +3892,10 @@ int ai_SearchResourceWindow(AIBLD *bld)
                         while (cm_GetSlotState(slot) == 0)
                             sv_RunFrame(0, 0x20007);
                         job = (AIJOB *)cm_GetSlotValue(slot);
-                        if (job == 0)
-                            continue;
                     }
                 }
+                if (job == 0)
+                    continue;
                 for (i = 0; i < 0x20; i++) {
                     if (sv_MemberRows[i].chr == 0xffff)
                         break;
@@ -3961,13 +3944,13 @@ int ai_SearchResourceWindow(AIBLD *bld)
             for (k = 0; k < 4; k++) {
                 col->in[k] = ((AIGOOD *)ai_Goods)[col->good].in[k];
                 col->need[k] = ((AIGOOD *)ai_Goods)[col->good].need[k];
-                if (col->in[k] == 0)
-                    continue;
-                item = (AIOBJ *)gm_Query((void *)store->list, 1, 0, col->in[k]);
-                if (item == 0)
-                    col->maxAmount = 0;
-                else
-                    col->maxAmount = min(col->maxAmount, gm_ListAmount(store, item) / ((AIGOOD *)ai_Goods)[col->good].need[k]);
+                if (col->in[k] != 0) {
+                    item = (AIOBJ *)gm_Query((void *)store->list, 1, 0, col->in[k]);
+                    if (item == 0)
+                        col->maxAmount = 0;
+                    else
+                        col->maxAmount = min(col->maxAmount, gm_ListAmount(store, item) / ((AIGOOD *)ai_Goods)[col->good].need[k]);
+                }
             }
             col->maxAmount = ((AIGOOD *)ai_Goods)[col->good].batch * col->maxAmount;
             item = (AIOBJ *)gm_Query((void *)store->list, 1, 0, col->good);
