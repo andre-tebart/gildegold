@@ -124,6 +124,10 @@ Where the pushes and pops sit, how many epilogue copies there are, shared agains
   work, `done: return ret;` (the lcamt callback style, ai_QuarrelCallback). Every goto-free spelling of ret
   (`return ret` in the arm, `ret = 1` per arm, a final `if (bld)`) folds to `xor eax,eax`: VC6 folds a value only
   one definition reaches; the label merges ret = 0 and ret = 1 (ai_UseGoodSendHome 90 -> 260 = 260 instructions).
+  The rest of that function: each message a block local (one slot), and the whole tail after the paths (0x77
+  message, field block, news) written in BOTH arms with the arms' fills in the same order: VC6 cross-jumps the
+  first copy away, and its temporaries put the second arm one scratch register further (probe: one extra temp
+  at the first arm's end gave the original's `mov eax,[use]`) -> byte.
 
 - **`xor eax,eax` before the first `test esi,esi; je exit` (it serves both the next `mov ax,[esi]` and the
   return 0), ours `xor eax,eax` after the test and again in the exit**: the first test was a guard `if (o == 0)
