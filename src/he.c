@@ -17032,7 +17032,7 @@ void he_RunBurglary(AIJOB *ev)
         if (b != 0) {
             owner = &ai_CharsT[b->owner];
             d.bld = b;
-            d.range = 2500.0f;
+            d.range = 5000.0f;
             d.ev = ev;
             d.found = 0;
             if (he_DetectAttack(&d) != 0) {
