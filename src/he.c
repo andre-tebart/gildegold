@@ -9370,27 +9370,7 @@ void he_StartSendHomeEvent(int ev)
 /* 0x54ff20, the run handler of the send-home event 0x77 (its init 0x54fe80): every 30 minutes until homeUntil, each
    living character standing in the building bldId and sent there (model->bldId) who has a home goes home with a
    chance of one half: its action is cleared (messages 0x47 / 0x4d) and it walks to its home object ("Unkendunk");
-   a missing building or a freed event (-1 / -2) frees it
-   @deep s1 (match-deep): still 21 ins, only the IV base (ours model +0x184, the original netId +4). Probes
-   measuring the base directly (compile + listing, tools: a flip.listing wrapper): one more health test in
-   the condition makes health (+8) the base; any first test on kind / v174 before health gives health too,
-   on id / netId leaves model; a second bld test gives bld; one more bld2 use in the then-block gives bld2,
-   two more health uses health, two more bld uses bld, while netId needs four more Halt(c->netId) calls
-   before the base moves to +4 (three are not enough): the base follows a weighted reference count per
-   field in which the then-block (and the nested Goto) counts less than the condition chain. Named locals
-   for model / bld2 / netId and index against pointer (16 combinations): bases 0x16c / 0x170 / 0x184 only.
-   Pointer walks over ai_CharInts or AICHAR * (48 ins): VC6 re-bases them. continue forms / nested ifs:
-   0x184. So the original's text weighs netId over model + bld2: look for references that leave no code (a
-   decided test, a statement written in both arms and merged) on netId / health, or fewer model / bld2
-   references at that point. prior: deep s35: the IV base (ours ai_Chars+0x184 = model, the original +4 =
-   netId) is no reference count: probes with a second cm_SendCharHalt(c->netId) (netId 4 refs), without the
-   model test, without the bld2 test, bld2 test first, health != 0, the condition split into nested ifs,
-   ai_CharsT[i].f at every use: all keep a wrong base (M8 x2), removing the health test gives base bld2
-   (+0x170). flip.py --want 'mov esi, OFFSET FLAT:_ai_Chars\+(?!388)' hits only meaning changes (health >=
-   0, a duplicated gm_HomeObject / goto call). climb round 1: nothing. Byte twins with base +4
-   (he_RunDemolish, gm_ChangeBuildingState) test kind/bld then use netId 3x; their loops have no byte field
-   test first. Left: the base choice (and with it cmp [esi],0 against the original's mov eax,[esi+0x180];
-   test eax,eax). */
+   a missing building or a freed event (-1 / -2) frees it */
 
 void he_RunSendHomeEvent(int ev)
 {
@@ -9414,9 +9394,9 @@ void he_RunSendHomeEvent(int ev)
         return;
     }
     for (i = 0; i < 768; i++) {
-        c = &ai_CharsT[i];
-        if (c->health > 0 && c->model != 0 && c->bld == bld && c->bld2 != 0
-            && util_RandomF() > 0.5 && c->model->bldId == e->bldId) {
+        if (ai_CharsT[i].health > 0 && ai_CharsT[i].model != 0 && ai_CharsT[i].bld == bld && ai_CharsT[i].bld2 != 0
+            && util_RandomF() > 0.5 && ai_CharsT[i].model->bldId == e->bldId) {
+            c = &ai_CharsT[i];
             home = (AIOBJ *)gm_HomeObject((unsigned char *)c->bld2);
             cm_SendCharClear(c->netId, 0, 0);
             cm_SendCharHalt(c->netId);
