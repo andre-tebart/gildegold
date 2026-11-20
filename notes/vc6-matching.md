@@ -5794,6 +5794,11 @@ How to work: variant rounds, the c2 tools, sweeps, what the tools' output means,
   d2_ShpConvert8To16 = d2_ShpConvert24To16 plus the palette lookup (`if (0 < *srccnt) do .. while (m <
   *srccnt)`, `src[1]` at each use); d2_ShpBlit16ScaledLit = d2_ShpBlit16Scaled plus the light table, top / bottom
   clips only (`unsigned char n`, `int y`: `and edi,0xff` / `idiv` / `jl`). All byte in one or two rounds.
+- **A byte sibling's statement inside a bigger function**: the news text id `(w->sex != 0) + 0x10c8` (`setne` into
+  the wrong scratch pair from there on) was the sibling's `int txt; if (w->sex != 0) txt = 0x10c9; else txt =
+  0x10c8;` (cm_DuelOutcome, byte): 68 -> 9; the last hunk then flipped to the other operand order of the host test
+  (`ai_CharsT[ai_PlayerId].netId == m->host`) that an earlier round had rejected: byte. Re-run rejected rounds after
+  a lever moves the rotation. (cm_RunDuel, deep s54)
 - **A twin in another unit**: sv_MessageBox (0x521150) = ai_Unk4e5470 in cm.c (`timed = flags & 0x80`, `if (timed)
   bar = call; else bar = -1;`, `if (sv_RunFrame(..)) { quick = flags & 0x40; n = flags & 4; do { .. } while
   (sv_RunFrame(..)); }`): 212 -> 133 hunks.

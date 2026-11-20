@@ -2525,7 +2525,7 @@ exe	0x004de610	cm_DuelVariant	cm	6da37e1272d92434	no	byte	control=byte p1=byte p
 exe	0x004de640	cm_DuelShotAction	cm	7762b9f6a17878fd	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	94928e7b694a18c4
 exe	0x004de900	cm_DuelRound	cm	1721b1bb60bb83f1	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	becf1bbdf99775c9
 exe	0x004debe0	cm_DuelOutcome	cm	d1822066c21581f6	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	becf1bbdf99775c9
-exe	0x004ded10	cm_RunDuel	cm	a3b1df4c9e00975e	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft	
+exe	0x004ded10	cm_RunDuel	cmscene	1759826011ddf7c0	no	draft	sweep control=draft best=draft by the build's declarations; codegens=1 compiled=127	e0992a60c2fd9b55
 exe	0x004dfa20	cm_DuelAftermath	cm	bd9fdfaccb90c57c	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004dfcb0	cm_DuelRoundDialog	cm	fec32a8e410a2ed7	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte	
 exe	0x004dfdd0	cm_DuelChooseRound	cm	866f2d0148c224cb	no	shape	sweep control=shape best=shape by the build's declarations; codegens=1 compiled=127	becf1bbdf99775c9
