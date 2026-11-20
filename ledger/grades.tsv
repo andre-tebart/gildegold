@@ -3535,7 +3535,7 @@ exe	0x0053f370	he_PostWorkshopEvents98	he	byte	readable
 exe	0x0053f430	he_InnStaffLeave	he	byte	readable		
 exe	0x0053f500	he_ClearInnDarkCorner	he	byte	readable		
 exe	0x0053f5b0	he_TopUpCharMoney	he	byte	readable		
-exe	0x0053f6b0	he_SpawnFounders	he	draft	readable	deep	
+exe	0x0053f6b0	he_SpawnFounders	he	byte	readable		
 exe	0x00540c90	he_PostEvent67	he	byte	readable		
 exe	0x00540e40	he_InnReport	he	byte	readable		
 exe	0x00540fe0	he_DailyEventChecks	he	byte	readable		
@@ -3712,7 +3712,7 @@ exe	0x005578a0	he_RunSlotOrder	he	byte	readable
 exe	0x00557b30	he_AllocSlotOrderStore	he	byte	readable		
 exe	0x00557b70	he_RunStoreExtension	he	byte	readable		
 exe	0x00557d70	he_AllocHerbGathering	he	byte	readable		
-exe	0x00557e20	he_RunHerbGathering	he	draft	readable	deep	
+exe	0x00557e20	he_RunHerbGathering	he	byte	readable		
 exe	0x005584d0	he_AllocAnimalHunt	he	byte	readable		
 exe	0x00558550	he_RunAnimalHunt	he	byte	readable		
 exe	0x005588c0	he_AllocStudy	he	byte	readable		
@@ -3771,10 +3771,10 @@ exe	0x00561190	he_RunRansom	he	byte	readable
 exe	0x00561470	he_AllocEvent39_3e	he	byte	readable		
 exe	0x005614c0	he_RunRansomDemand	he	byte	readable		
 exe	0x005619a0	he_AllocBurglary	he	byte	readable		
-exe	0x00561a20	he_RunBurglary	he	shape	readable	deep	
-exe	0x005628e0	he_RunBuildingSpying	he	draft	readable	deep	
+exe	0x00561a20	he_RunBurglary	he	byte	readable	deep	
+exe	0x005628e0	he_RunBuildingSpying	he	shape	readable	deep	
 exe	0x00563070	he_AllocAmbush	he	byte	readable		
-exe	0x005630f0	he_RunAmbush	he	draft	readable	deep	
+exe	0x005630f0	he_RunAmbush	he	byte	readable		
 exe	0x00563980	he_AllocDueInOne	he	byte	readable		
 exe	0x005639c0	he_RunAttack	he	byte	readable		
 exe	0x005642e0	he_AllocFire	he	byte	readable		
