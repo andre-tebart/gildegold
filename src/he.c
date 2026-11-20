@@ -15329,30 +15329,7 @@ void he_AllocHarvest(int ev)
    object 0x2a (0x4c4880), posts the next harvest order (message 0x28, ai_SendJobOrders' kind) for the first plant of
    the same tree at the same or a later state within the tree's reach, lets the worker go and frees the record.
    Stages -2 / -1 put the plant back under the event's id and free the record. The case -2 / -1 body and the shared
-   tails lie after the last case (0x55db60 ..), the jump table after them: one function, 0x55d5c0 .. 0x55dbd8.
-   @deep s15: case 3's message fill: the original copies m.time = ai_Time through edi because eax (the
-   e->chr chain, then the b->id CSE), ecx (m.to's value, then the constant 1) and edx (i) are all live
-   across the copy in the IL; that needs the fill order type, to, nIds, fromId, time, arg[0], reserved14,
-   arg[3], arg[1], flags with fromId / arg[0] as two statements around the time copy (b->id one CSE live
-   across it). Found by a 3000-order random sample of the 10 split statements (shape, 4 ins; 6000 more
-   orders: nothing below 4). Left: lea ebx,[ecx+eax+2] where the original has [eax+ecx+2] in both reach
-   tests (eax = plants[i].x CSE, ecx = the t->size CSE); the lea is formed before scheduling (c2dag: a
-   synthesized node, line flag 0x10000) from the IL add's operand order (c2trace --raw: our add uses the
-   size temp first). = control: every spelling of the sum and the compares (68), nested ifs / continue /
-   while / do forms, plants as an int local, a separate loop index or id variable, the declaration order
-   and dead = 0 initializers of every local (178; t with one more gives a movsx move only), a default arm,
-   18 neutral respellings over the function (casts, != 0, ++, sizeof), unsigned / long i; climb all ops 5
-   rounds. flip --want '[eax+ecx+2]': only meaning-changing hits spread over the function: deleting either
-   sv_MoveToGroup (m103: lea right, 8 ins of the missing call; the temps' ids all shift by about 0x20, the
-   allocator passes 8 -> 6), cm_SetPlant, gm_Query, m.to, case 2's harvestScript test; short / char i. So
-   the IL operand order is decided by something function-wide (a node / temp key), not by the scan's text.
-   prior: size queue s14: right size (raw 1536 = 1536), 119 -> 67 ins: case 0 ends with break instead of
-   return (retgen single: that site alone; the other sites = control or worse: s2 131). Left: case 2's
-   message fill: the original copies m.time = ai_Time through edi (free after the memset's rep stosd)
-   interleaved with the type / reserved14 stores, ours through eax / ecx with arg[1]'s load early; and lea
-   ebx,[eax+ecx+2] operand order in the ripe search (x + size, ours size + x; both spellings one code).
-   Tried: AIMSG m in the if (ripe) block (= control), the bound operands swapped (= control); climb
-   move,swap 2 rounds: 24 ins by moving m.time after m.flags (not the original's store order, not kept). */
+   tails lie after the last case (0x55db60 ..), the jump table after them: one function, 0x55d5c0 .. 0x55dbd8. */
 
 void he_RunHarvest(int ev)
 {
@@ -15367,7 +15344,7 @@ void he_RunHarvest(int ev)
     GMGOOD *g;
     struct CHARACTER *ch;
 
-    int i;
+    int i, size;
     char spot[0x40];
     char path[0x80];
     char name[0x80];
@@ -15449,8 +15426,8 @@ void he_RunHarvest(int ev)
         for (i = 0; i < 0x40; i++) {
             if (plants[i].state != -1 && plants[i].id != e->harvestPlant && plants[i].state >= pl->state
                 && pl->type == plants[i].type
-                && pl->x < t->size + plants[i].x + 2 && pl->x > plants[i].x - t->size - 2
-                && pl->z < t->size + plants[i].z + 2 && pl->z > plants[i].z - t->size - 2) {
+                && pl->x < t->size + plants[i].x + 2 && pl->x > plants[i].x - (size = t->size) - 2
+                && pl->z < size + plants[i].z + 2 && pl->z > plants[i].z - size - 2) {
                 ripe = &plants[i];
                 break;
             }

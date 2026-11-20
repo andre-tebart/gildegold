@@ -4360,6 +4360,14 @@ Store order in a fill, hoisted loads and sunk stores, statement order effects, `
 - **lea operand order `[esi+edi]` vs `[edi+esi]` for `i = (step + i) % N`**: follows which variable was defined
   first in the loop body (`i = ..; step = ..` flips it), not the text. ai_TokenRandomPlayer: outer `for (i = 0; i
   < 0x300; i++)` around a search that reassigns i (byte); `do .. while (i + 1 < 0x300)` left the lea.
+- **lea operand order `[ecx+eax+2]` vs `[eax+ecx+2]` of a sum against a CSE reused in a later compare** (`t->size +
+  plants[i].x + 2` and `plants[i].x - t->size - 2` in a reach test, size reused for the z test): every spelling,
+  type and loop form was one code, flip hit only meaning-changing deletions over the whole function; the CSE was
+  a local assigned inside the SECOND compare (`pl->x > plants[i].x - (size = t->size) - 2`, z test `size`):
+  the first sum keeps its own `t->size`, the named value starts at the reuse (he_RunHarvest byte; assigning it in
+  the first sum loads it first and moves the scratch registers). A copy of a global struct through edi after a
+  memset's rep stosd = eax, ecx and edx all held across it (he_RunHarvest: `fromId = b->id; time = ai_Time;
+  arg[0] = b->id;` with the b->id CSE and `to` / the constant 1 live; a random sample of 3000 fill orders found it).
 - **Subtraction and mixed -/+ chains are reassociated**: `w->w - r->w - l->w` = `w->w - l->w - r->w`
   (d2_DrawButton 0x46c039), `w->w - r->w + w->x` = `w->x + w->w - r->w` (0x46c091): no lever for the d2
   member-load-order family; the leftover is register allocation.
