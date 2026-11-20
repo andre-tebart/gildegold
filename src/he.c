@@ -9371,27 +9371,26 @@ void he_StartSendHomeEvent(int ev)
    living character standing in the building bldId and sent there (model->bldId) who has a home goes home with a
    chance of one half: its action is cleared (messages 0x47 / 0x4d) and it walks to its home object ("Unkendunk");
    a missing building or a freed event (-1 / -2) frees it
-   @deep deep s35: the IV base (ours ai_Chars+0x184 = model, the original +4 = netId) is no reference
-   count: probes with a second cm_SendCharHalt(c->netId) (netId 4 refs), without the model test, without
-   the bld2 test, bld2 test first, health != 0, the condition split into nested ifs, ai_CharsT[i].f at
-   every use: all keep a wrong base (M8 x2), removing the health test gives base bld2 (+0x170). flip.py
-   --want 'mov esi, OFFSET FLAT:_ai_Chars\+(?!388)' hits only meaning changes (health >= 0, a duplicated
-   gm_HomeObject / goto call). climb round 1: nothing. Byte twins with base +4 (he_RunDemolish,
-   gm_ChangeBuildingState) test kind/bld then use netId 3x; their loops have no byte field test first.
-   Left: the base choice (and with it cmp [esi],0 against the original's mov eax,[esi+0x180]; test
-   eax,eax). prior: Read whole against the original and rewritten typed (AIJOB stage/bldId/end, the new
-   AIJOB.homeUntil at 0xb0, AICHAR health/model/bld/bld2/netId, the rand > 0.5 test as and 0x4100/jne, the
-   768 loop with jl). Every statement, call and argument now equal. Left: VC6's choice of the loop's
-   induction pointer inside ai_Chars: ours esi = ai_Chars+0x184 (model) with fields at [esi-0x17c],
-   [esi-0x18], [esi-0x14], [esi-0x180], end cmp esi,0x7d6104; the original esi = ai_Chars+4 (netId,
-   ai_CharInts) with [esi+4], [esi+0x168], [esi+0x16c], [esi], end 0x7d5f84; each access names the same
-   absolute field. Its side effect: ours cmp dword ptr [esi],0 where the original has mov eax,[esi+0x180];
-   test eax,eax (+0x4e, 99 vs 100 instructions). Tried: c = &ai_CharsT[i] pointer, direct ai_CharsT[i],
-   ((AICHAR *)ai_Chars)[i]: all pick +0x184. Lead: the original may address the record through a sub-object
-   at +4. (references: M8 at +0x3b: ours refers to ai_Chars+0x184 (0x770d04), the original's field to
-   0x770b84 (ai_CharInts) (and 1 more), explained: the two ref: lines (M8 +0x3b ai_Chars+0x184 vs
-   ai_Chars+4, +0xdd the end 0x7d6104 vs 0x7d5f84) are the same induction pointer over ai_Chars at another
-   base offset, 0x180 apart on both lines; every load through it reads the same absolute field) */
+   @deep s1 (match-deep): still 21 ins, only the IV base (ours model +0x184, the original netId +4). Probes
+   measuring the base directly (compile + listing, tools: a flip.listing wrapper): one more health test in
+   the condition makes health (+8) the base; any first test on kind / v174 before health gives health too,
+   on id / netId leaves model; a second bld test gives bld; one more bld2 use in the then-block gives bld2,
+   two more health uses health, two more bld uses bld, while netId needs four more Halt(c->netId) calls
+   before the base moves to +4 (three are not enough): the base follows a weighted reference count per
+   field in which the then-block (and the nested Goto) counts less than the condition chain. Named locals
+   for model / bld2 / netId and index against pointer (16 combinations): bases 0x16c / 0x170 / 0x184 only.
+   Pointer walks over ai_CharInts or AICHAR * (48 ins): VC6 re-bases them. continue forms / nested ifs:
+   0x184. So the original's text weighs netId over model + bld2: look for references that leave no code (a
+   decided test, a statement written in both arms and merged) on netId / health, or fewer model / bld2
+   references at that point. prior: deep s35: the IV base (ours ai_Chars+0x184 = model, the original +4 =
+   netId) is no reference count: probes with a second cm_SendCharHalt(c->netId) (netId 4 refs), without the
+   model test, without the bld2 test, bld2 test first, health != 0, the condition split into nested ifs,
+   ai_CharsT[i].f at every use: all keep a wrong base (M8 x2), removing the health test gives base bld2
+   (+0x170). flip.py --want 'mov esi, OFFSET FLAT:_ai_Chars\+(?!388)' hits only meaning changes (health >=
+   0, a duplicated gm_HomeObject / goto call). climb round 1: nothing. Byte twins with base +4
+   (he_RunDemolish, gm_ChangeBuildingState) test kind/bld then use netId 3x; their loops have no byte field
+   test first. Left: the base choice (and with it cmp [esi],0 against the original's mov eax,[esi+0x180];
+   test eax,eax). */
 
 void he_RunSendHomeEvent(int ev)
 {
