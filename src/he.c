@@ -13634,7 +13634,7 @@ void he_RunSabotage(int ev)
             D3COLOR col;
             struct { float x, y, z; int w; } a, dir;   /* @original the pad word is an int: its 0 stores use the cached zero register */
             char dummies[3][0x40] = { "dummy_TUER", "dummy_FAHNE", "dummy_RAUCH_0" };
-            AIMSG msg;
+
             D3OBJECT *o;
             AIBTYPE *bt;
             struct SBSAMPLE *snd;
@@ -13664,6 +13664,8 @@ void he_RunSabotage(int ev)
             o = (D3OBJECT *)b->object;
             if (o != 0) {
                 if (x->blasts == 0) {
+                    AIMSG msg;
+
                     msg.type = 0x4f;
                     msg.fromId = -1;
                     msg.flags = 2;
