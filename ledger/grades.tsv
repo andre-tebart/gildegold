@@ -3560,7 +3560,7 @@ exe	0x00543020	he_AllocQuarrel	he	byte	readable
 exe	0x00543180	he_RunQuarrel	he	byte	readable		
 exe	0x005432f0	he_RunMasterExam	he	byte	readable		
 exe	0x005436a0	he_AllocFeast	he	byte	readable		
-exe	0x005437c0	he_RunFeast	he	draft	readable	deep	
+exe	0x005437c0	he_RunFeast	he	byte	readable		
 exe	0x00543ac0	he_RunFeastExam	he	byte	readable		
 exe	0x00544070	he_AllocTribute	he	byte	readable		
 exe	0x00544330	he_RunTribute	he	byte	readable		
@@ -3579,7 +3579,7 @@ exe	0x00547170	he_AllocDuelChallenge	he	byte	readable
 exe	0x005471e0	he_DuelAccepted	he	byte	readable		
 exe	0x005472d0	he_DuelDeclined	he	byte	readable		
 exe	0x00547430	he_RunDuelChallenge	he	byte	readable		
-exe	0x00547750	he_AllocInsult	he	draft	readable	deep	
+exe	0x00547750	he_AllocInsult	he	byte	readable		
 exe	0x00547ba0	he_RunInsult	he	byte	readable		
 exe	0x00547ee0	he_AllocGeselle	he	byte	readable		
 exe	0x00547f90	he_RunGeselle	he	shape	readable	deep	
@@ -3651,7 +3651,7 @@ exe	0x0054fc00	he_CreateSmokeEffect	he	byte	readable
 exe	0x0054fc70	he_CreatePointsEffect	he	byte	readable		
 exe	0x0054fce0	he_RunEffectEvent	he	byte	readable		
 exe	0x0054fe80	he_StartSendHomeEvent	he	byte	readable		
-exe	0x0054ff20	he_RunSendHomeEvent	he	draft	readable	deep	
+exe	0x0054ff20	he_RunSendHomeEvent	he	byte	readable		
 exe	0x00550070	he_CreateReaper	he	byte	readable		
 exe	0x00550370	he_MoveReaper	he	shape	readable	deep	
 exe	0x005506c0	he_AimReaper	he	byte	readable		
@@ -3674,7 +3674,7 @@ exe	0x00552200	he_StartExamOffer	he	byte	readable
 exe	0x00552270	he_RunExamOffer	he	byte	readable		
 exe	0x005524e0	he_StartDue	he	byte	readable		
 exe	0x00552520	he_RunDelay	he	byte	readable		
-exe	0x005525a0	he_RunConversion	he	draft	readable	deep	
+exe	0x005525a0	he_RunConversion	he	byte	readable		
 exe	0x005527c0	he_StartSkillBonus	he	byte	readable		
 exe	0x00552820	he_RunSkillBonus	he	byte	readable		
 exe	0x00552880	he_StartApplicants	he	byte	readable		
@@ -3682,7 +3682,7 @@ exe	0x00552920	he_RunApplicants	he	byte	readable
 exe	0x00552b90	he_AllocTutorialIntro	he	byte	readable		
 exe	0x00552bc0	he_RunTutorialIntro	he	byte	readable		
 exe	0x00552c30	he_StartOfficeAward	he	byte	readable		
-exe	0x00552ca0	he_RunOfficeAward	he	draft	readable	deep	
+exe	0x00552ca0	he_RunOfficeAward	he	byte	readable		
 exe	0x00553060	he_RegisterEventTypes22	he	byte	readable		
 exe	0x005538b0	he_EndPersonEvents	he	shape	readable	deep	
 exe	0x00553ae0	he_DetectAttack	he	byte	readable		
@@ -3765,7 +3765,7 @@ exe	0x0055efc0	he_RunRoutine	he	draft	readable	deep
 exe	0x0055fa20	he_AllocMarket	he	byte	readable		
 exe	0x0055fa90	he_RunMarketSupervisor	he	draft	readable	deep	
 exe	0x00560820	he_AllocEvent3c	he	byte	readable		
-exe	0x00560900	he_RunKidnap	he	draft	readable	deep	
+exe	0x00560900	he_RunKidnap	he	byte	readable		
 exe	0x00561130	he_AllocRansom	he	byte	readable		
 exe	0x00561190	he_RunRansom	he	byte	readable		
 exe	0x00561470	he_AllocEvent39_3e	he	byte	readable		
@@ -4146,7 +4146,7 @@ exe	0x0058fd90	ai_ObjectAngle	lc	byte	readable
 exe	0x0058fe10	ai_FindNearestObject	lc	byte	readable		
 exe	0x0058feb0	ai_DropObjectAt	lc	byte	readable		
 exe	0x0058ff00	lc_GebaeudeAusrichten	lc	shape	readable	deep	
-exe	0x005909a0	ai_ConstructionWindow	lc	draft	readable	deep	
+exe	0x005909a0	ai_ConstructionWindow	lc	byte	readable		
 exe	0x00591170	ai_HandleMapKey	lc	byte	readable		
 exe	0x005912c0	ai_TradeContactChecks	lc	byte	readable		
 exe	0x00591480	ai_CampaignKey1	lc	byte	readable		
@@ -4230,7 +4230,7 @@ exe	0x0059c120	ai_FillExchangeRows	lc	byte	readable
 exe	0x0059c450	ai_ShowExchangeRows	lc	byte	readable		
 exe	0x0059c6b0	ai_ClickedExchangeRecord	lc	byte	readable		
 exe	0x0059c6e0	ai_UsedRecordCount	lc	byte	readable		
-exe	0x0059c700	ai_ExchangeWindow	lc	draft	readable	deep	
+exe	0x0059c700	ai_ExchangeWindow	lc	byte	readable		
 exe	0x0059d2d0	ai_ExchangeFeesWindow	lc	byte	readable		
 exe	0x0059d410	ai_MoneyMessengerWindow	lc	byte	readable		
 exe	0x0059d5e0	ai_MoneyExchangeWindow	lc	byte	readable		
