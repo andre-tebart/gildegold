@@ -2658,15 +2658,24 @@ extern char ai_DataPath[];  /* 0x75dca0, the data path (am.h) */
    ai_ObjectAngle; green 0x40c040 on a site, red 0xc04040 off it), and a left release on a site asks the
    confirmation (text 0x17ef: the cost, the name, AIBTYPE.v243); returns the chosen site object and copies the
    picked model name names[idx] to out (out = "" and 0 when none was chosen)
-   @deep Reconstructed in full from the original 0x58ff00..0x590995 (the name loop, the banner loop, the
-   interactive placement loop, the confirm and the cleanup), every call, store and string read against it;
-   refs_differ=0, ours 786 vs 787 instructions, frame equal. Left: 14 code lines of allocation/scheduling
-   only: +0x311 the original copies the banner to eax before storing sel and cur (mov eax, esi; mov [sel],
-   eax; mov [cur], eax) where ours stores esi twice (tried sel = cur = obj, cur = sel, D3OBJECT * sel, sel
-   = flags[i]: no change); +0x7ba fld v.y; fadd cm_Pi in the original vs fld cm_Pi; fadd v.y in ours (v.y
-   += cm_Pi, v.y = v.y + cm_Pi and cm_Pi + v.y all give ours); +0x97f the original pushes the known-zero
-   esi for sv_MessageBox(txt_Ptrs[0x17f0], 0) where ours pushes 0 (the original keeps esi as the zero
-   register through the banner loop). The rest is slots / order / regs. A variant round. */
+   @deep s(this) match-deep: 275 -> 59 ins by three frame levers, read off the packing (c2frame --names + a
+   replay of the packer): (1) the name loop's letter and the model's shown fade are ONE float variable
+   (letter; count 10 = one slot between color and tf, and it conflicts with tf so tf keeps its own slot);
+   (2) px / pz are block locals of the height-map block (address-taken function locals never share; in the
+   original px shares best's slot, pz sel's); (3) flagPath is MAX_PATH (0x104) bytes (every array from
+   flags on 4 bytes up); and the banner loop as a for (i = 0 before the guard: the xor edi / xor esi above
+   the count test). Left: result / count slots swapped (both weight 4: the unstable sort), the banner's
+   objectFlags store before obj->info's load (24 orders of the flag / tf stores x 7 sel / cur forms: none
+   moves it), sel = cur via eax, and color / the zero register in esi / edi swapped through the placement
+   loop. prior: Reconstructed in full from the original 0x58ff00..0x590995 (the name loop, the banner loop,
+   the interactive placement loop, the confirm and the cleanup), every call, store and string read against
+   it; refs_differ=0, ours 786 vs 787 instructions, frame equal. Left: 14 code lines of
+   allocation/scheduling only: +0x311 the original copies the banner to eax before storing sel and cur (mov
+   eax, esi; mov [sel], eax; mov [cur], eax) where ours stores esi twice (tried sel = cur = obj, cur = sel,
+   D3OBJECT * sel, sel = flags[i]: no change); +0x7ba fld v.y; fadd cm_Pi in the original vs fld cm_Pi;
+   fadd v.y in ours (v.y += cm_Pi, v.y = v.y + cm_Pi and cm_Pi + v.y all give ours); +0x97f the original
+   pushes the known-zero esi for sv_MessageBox(txt_Ptrs[0x17f0], 0) where ours pushes 0 (the original keeps
+   esi as the zero register through the banner loop). The rest is slots / order / regs. A variant round. */
 int lc_GebaeudeAusrichten(int kind, char *out)
 {
     char names[128][0x60];          /* the model files of the kind found in the vfs */
@@ -2674,7 +2683,7 @@ int lc_GebaeudeAusrichten(int kind, char *out)
     char found[0x100];              /* vfs_GetPath's output */
     int flags[0x100];               /* the banner per site */
     int sites[0x100];               /* the "bk_" site objects (ai_FindBauplaetze) */
-    char flagPath[0x100];
+    char flagPath[MAX_PATH];
     char path[0x100];
     D3MATRIX mat;
     char bname[0x40];
@@ -2692,7 +2701,6 @@ int lc_GebaeudeAusrichten(int kind, char *out)
     AIBTYPE *type;
     unsigned char *b;
     float letter;
-    float shown;
     float best;
     float d;
     float dx;
@@ -2710,8 +2718,6 @@ int lc_GebaeudeAusrichten(int kind, char *out)
     int count;
     int picked;
     int ok;
-    int px;
-    int pz;
     int i;
 
     hmap = d3_DefaultScene->hmap;
@@ -2766,200 +2772,199 @@ int lc_GebaeudeAusrichten(int kind, char *out)
     rot.y = 0;
     rot.z = 0;
     ai_PlacementSites = sites;
-    if (count > 0) {
-        i = 0;
-        do {
-            if (sites[i] != 0) {
-                d3_PointToWorld((D3OBJECT *)sites[i], &((D3OBJECT *)sites[i])->pos, (D3VECTOR *)&pos);
-                sprintf(flagPath, "%s*sp_BAU_WIMPEL.ogr", ai_DataPath);
-                obj = d3_LoadGroup(flagPath, 0, 0);
-                flags[i] = (int)obj;
-                d3t_InflateObjectTree(obj);
-                d3_SetObjectPos(obj, (D3VECTOR *)&pos);
-                obj->objectFlags &= ~2;
-                tf.all = 0;
-                tf.b[2] = 1;
-                tf.b[0] = 0x80;
-                d3_SetObjectAlpha(obj, obj->info, tf);
-                d3t_SetTreeColor(obj, 0xc0, 0xa0, 0x80);
-                dx = pos.x - d3_Camera->pos.x;
-                dy = pos.y - d3_Camera->pos.y;
-                dz = pos.z - d3_Camera->pos.z;
-                d = (float)sqrt(dz * dz + dy * dy + dx * dx);
-                if (d < best) {
-                    best = d;
-                    sel = cur = (int)obj;
-                }
-                d3t_PlayAnim(obj, "sonstiges\\sp_WIMPEL.baf", 1);
+    for (i = 0; i < count; i++) {
+        if (sites[i] != 0) {
+            d3_PointToWorld((D3OBJECT *)sites[i], &((D3OBJECT *)sites[i])->pos, (D3VECTOR *)&pos);
+            sprintf(flagPath, "%s*sp_BAU_WIMPEL.ogr", ai_DataPath);
+            obj = d3_LoadGroup(flagPath, 0, 0);
+            flags[i] = (int)obj;
+            d3t_InflateObjectTree(obj);
+            d3_SetObjectPos(obj, (D3VECTOR *)&pos);
+            obj->objectFlags &= ~2;
+            tf.all = 0;
+            tf.b[2] = 1;
+            tf.b[0] = 0x80;
+            d3_SetObjectAlpha(obj, obj->info, tf);
+            d3t_SetTreeColor(obj, 0xc0, 0xa0, 0x80);
+            dx = pos.x - d3_Camera->pos.x;
+            dy = pos.y - d3_Camera->pos.y;
+            dz = pos.z - d3_Camera->pos.z;
+            d = (float)sqrt(dz * dz + dy * dy + dx * dx);
+            if (d < best) {
+                best = d;
+                sel = cur = (int)obj;
             }
-            i++;
-        } while (i < count);
-        if (sel != 0) {
-            d3_LightInvalidate(1);
-            di_ClearEvents(2);
-            kb_Last = '2';
-            do {
-                if (reload) {
-                    /* a new model of names[] at the old one's place */
-                    shown = 0.0f;
-                    if (model != 0) {
-                        pos.x = model->pos.x;
-                        pos.y = model->pos.y;
-                        pos.z = model->pos.z;
-                        rot.x = model->rotation.x;
-                        rot.y = model->rotation.y;
-                        rot.z = model->rotation.z;
-                        d3if_Delete(model);
-                    }
-                    strcpy(path, names[util_Random(n) & 0xffff]);
-                    model = d3_LoadGroup(path, 0, 0);
-                    if (model == 0) {
-                        sprintf(buf, "lc_GebaeudeAusrichten(): Could not load 3D-Object-Group '%s'...", path);
-                        err_Message(buf);
-                        i = 0;
-                        do {
-                            if (flags[i] != 0)
-                                d3if_Delete((D3OBJECT *)flags[i]);
-                            i++;
-                        } while (i < count);
-                        return 0;
-                    }
-                    model->objectFlags &= ~2;
-                    d3_SetObjectPos(model, (D3VECTOR *)&pos);
+            d3t_PlayAnim(obj, "sonstiges\\sp_WIMPEL.baf", 1);
+        }
+    }
+    if (sel != 0) {
+        d3_LightInvalidate(1);
+        di_ClearEvents(2);
+        kb_Last = '2';
+        do {
+            if (reload) {
+                /* a new model of names[] at the old one's place */
+                letter = 0.0f;
+                if (model != 0) {
+                    pos.x = model->pos.x;
+                    pos.y = model->pos.y;
+                    pos.z = model->pos.z;
+                    rot.x = model->rotation.x;
+                    rot.y = model->rotation.y;
+                    rot.z = model->rotation.z;
+                    d3if_Delete(model);
+                }
+                strcpy(path, names[util_Random(n) & 0xffff]);
+                model = d3_LoadGroup(path, 0, 0);
+                if (model == 0) {
+                    sprintf(buf, "lc_GebaeudeAusrichten(): Could not load 3D-Object-Group '%s'...", path);
+                    err_Message(buf);
+                    i = 0;
+                    do {
+                        if (flags[i] != 0)
+                            d3if_Delete((D3OBJECT *)flags[i]);
+                        i++;
+                    } while (i < count);
+                    return 0;
+                }
+                model->objectFlags &= ~2;
+                d3_SetObjectPos(model, (D3VECTOR *)&pos);
+                d3t_DropObject(model, 1, 0);
+                cur = ai_FindNearestObject((float *)&pos, sites);
+                if (cur != 0) {
+                    ai_ObjectAngle(&rot, cur);
+                    d3_SetObjectRot(model, &rot);
                     d3t_DropObject(model, 1, 0);
-                    cur = ai_FindNearestObject((float *)&pos, sites);
-                    if (cur != 0) {
-                        ai_ObjectAngle(&rot, cur);
-                        d3_SetObjectRot(model, &rot);
-                        d3t_DropObject(model, 1, 0);
-                        sv_SetStatusText(" ");
-                        if (color != 1) {
-                            d3t_SetTreeColor(model, 0x40, 0xc0, 0x40);
-                            color = 1;
-                        }
-                    } else {
-                        sv_SetStatusText(txt_Ptrs[0x17f1]);
-                        if (color != 2) {
-                            d3t_SetTreeColor(model, 0xc0, 0x40, 0x40);
-                            color = 2;
-                        }
-                    }
-                    model->rotation.x = 0;
-                    model->rotation.y = 0;
-                    model->rotation.z = 0;
-                    model->pos.x = 0;
-                    model->pos.y = 0;
-                    model->pos.z = 0;
-                    d3t_GetObjectBounds(&bmin, &bmax, model);
-                    model->pos.x = pos.x;
-                    model->pos.y = pos.y;
-                    model->pos.z = pos.z;
-                    model->rotation = rot;
-                    reload = 0;
-                }
-                if (kb_Last == '2' ||
-                    (dm_L.lclick != 0 && (d2_PointerObj == sv_PanelBuildingIcon || d2_PointerObj == sv_PanelCompass))) {
-                    /* the map window picks the place */
-                    picked = ai_MapPick(8, 0, txt_Ptrs[0x17ec], 0, 0);
-                    if (picked != 0) {
-                        sv_FlyCameraToModel(picked);
-                        d3_PointToWorld((D3OBJECT *)picked, &((D3OBJECT *)picked)->pos, (D3VECTOR *)&pos);
-                        ai_DropObjectAt(model, (D3VECTOR *)&pos);
-                    } else if (firstPick) {
-                        sv_PopRequest = 1;
-                    }
-                    firstPick = 0;
-                }
-                hit = ai_FindNearestObject((float *)&model->pos, sites);
-                if (hit != 0) {
-                    if (hit != cur) {
-                        cur = hit;
-                        d3_PointToWorld((D3OBJECT *)hit, &((D3OBJECT *)hit)->pos, (D3VECTOR *)&pos);
-                        d3_SetObjectPos(model, (D3VECTOR *)&pos);
-                        ai_ObjectAngle(&ang, hit);
-                        d3_SetObjectRot(model, &ang);
-                    }
                     sv_SetStatusText(" ");
-                    ok = 1;
                     if (color != 1) {
                         d3t_SetTreeColor(model, 0x40, 0xc0, 0x40);
                         color = 1;
                     }
                 } else {
-                    cur = 0;
                     sv_SetStatusText(txt_Ptrs[0x17f1]);
-                    ok = 0;
                     if (color != 2) {
                         d3t_SetTreeColor(model, 0xc0, 0x40, 0x40);
                         color = 2;
                     }
                 }
-                if (dm_L.rup != 0)
-                    sv_PopRequest = 1;
-                if (model != 0 && shown < 90.0f) {
-                    /* the model half transparent, once per model */
-                    model->stateFlags &= ~2;
-                    tf.all = 0;
-                    tf.b[2] = 1;
-                    tf.b[0] = 0xdd;
-                    d3_SetObjectAlpha(model, model->info, tf);
-                    model->stateFlags |= 2;
-                    if (ok) {
-                        if (color != 1) {
-                            d3t_SetTreeColor(model, 0x40, 0xc0, 0x40);
-                            color = 1;
-                        }
-                    } else {
-                        if (color != 2) {
-                            d3t_SetTreeColor(model, 0xc0, 0x40, 0x40);
-                            color = 2;
-                        }
-                    }
-                    shown = 90.0f;
-                }
-                if (sv_UpdateCamera() == 0) {
-                    /* the model follows the mouse over the height map */
-                    if (d3sm_Pick(hmap, dm_L.x, dm_L.y, &px, &pz) && d3sm_GetVertex(hmap, px, pz, (D3VECTOR *)&pos)) {
-                        d3_SetObjectPos(model, (D3VECTOR *)&pos);
-                        d3t_DropObject(model, 1, 0);
-                    }
-                    d3_RelightObject(model);
-                    v.x = model->rotation.x;
-                    v.y = model->rotation.y;
-                    v.z = model->rotation.z;
-                    v.y += 3.14159274f;
-                    d3_MatFromAngles((D3VECTOR4 *)&v, &mat);
-                }
-                if (dm_L.lup != 0 && ok) {
-                    type = (AIBTYPE *)ai_BTypes + kind;
-                    i = gm_BuildingKindCost((int)ai_Chars[ai_PlayerId], kind);
-                    txt_Format(text, 0x17ef, i, kind * 14 + 0x48e, type->v243);
-                    if (sv_MessageBox(text, 1) != 0) {
-                        sv_PopRequest = 1;
-                        result = cur;
-                    } else {
-                        sv_PopRequest = 1;
-                        result = 0;
-                    }
-                }
-            } while (sv_RunFrame((int)lc_GebaeudeAusrichten, 0x657c7) != 0);
-            if (result == 0) {
-                d3if_Delete(model);
-                out[0] = ch_EmptyName[0];
-                model = 0;
-            } else {
-                strcpy(out, names[idx]);
+                model->rotation.x = 0;
+                model->rotation.y = 0;
+                model->rotation.z = 0;
+                model->pos.x = 0;
+                model->pos.y = 0;
+                model->pos.z = 0;
+                d3t_GetObjectBounds(&bmin, &bmax, model);
+                model->pos.x = pos.x;
+                model->pos.y = pos.y;
+                model->pos.z = pos.z;
+                model->rotation = rot;
+                reload = 0;
             }
-            i = 0;
-            do {
-                if (flags[i] != 0)
-                    d3if_Delete((D3OBJECT *)flags[i]);
-                i++;
-            } while (i < count);
-            if (model != 0)
-                d3if_Delete(model);
-            return result;
+            if (kb_Last == '2' ||
+                (dm_L.lclick != 0 && (d2_PointerObj == sv_PanelBuildingIcon || d2_PointerObj == sv_PanelCompass))) {
+                /* the map window picks the place */
+                picked = ai_MapPick(8, 0, txt_Ptrs[0x17ec], 0, 0);
+                if (picked != 0) {
+                    sv_FlyCameraToModel(picked);
+                    d3_PointToWorld((D3OBJECT *)picked, &((D3OBJECT *)picked)->pos, (D3VECTOR *)&pos);
+                    ai_DropObjectAt(model, (D3VECTOR *)&pos);
+                } else if (firstPick) {
+                    sv_PopRequest = 1;
+                }
+                firstPick = 0;
+            }
+            hit = ai_FindNearestObject((float *)&model->pos, sites);
+            if (hit != 0) {
+                if (hit != cur) {
+                    cur = hit;
+                    d3_PointToWorld((D3OBJECT *)hit, &((D3OBJECT *)hit)->pos, (D3VECTOR *)&pos);
+                    d3_SetObjectPos(model, (D3VECTOR *)&pos);
+                    ai_ObjectAngle(&ang, hit);
+                    d3_SetObjectRot(model, &ang);
+                }
+                sv_SetStatusText(" ");
+                ok = 1;
+                if (color != 1) {
+                    d3t_SetTreeColor(model, 0x40, 0xc0, 0x40);
+                    color = 1;
+                }
+            } else {
+                cur = 0;
+                sv_SetStatusText(txt_Ptrs[0x17f1]);
+                ok = 0;
+                if (color != 2) {
+                    d3t_SetTreeColor(model, 0xc0, 0x40, 0x40);
+                    color = 2;
+                }
+            }
+            if (dm_L.rup != 0)
+                sv_PopRequest = 1;
+            if (model != 0 && letter < 90.0f) {
+                /* the model half transparent, once per model */
+                model->stateFlags &= ~2;
+                tf.all = 0;
+                tf.b[2] = 1;
+                tf.b[0] = 0xdd;
+                d3_SetObjectAlpha(model, model->info, tf);
+                model->stateFlags |= 2;
+                if (ok) {
+                    if (color != 1) {
+                        d3t_SetTreeColor(model, 0x40, 0xc0, 0x40);
+                        color = 1;
+                    }
+                } else {
+                    if (color != 2) {
+                        d3t_SetTreeColor(model, 0xc0, 0x40, 0x40);
+                        color = 2;
+                    }
+                }
+                letter = 90.0f;
+            }
+            if (sv_UpdateCamera() == 0) {
+                /* the model follows the mouse over the height map */
+                int px;
+                int pz;
+
+                if (d3sm_Pick(hmap, dm_L.x, dm_L.y, &px, &pz) && d3sm_GetVertex(hmap, px, pz, (D3VECTOR *)&pos)) {
+                    d3_SetObjectPos(model, (D3VECTOR *)&pos);
+                    d3t_DropObject(model, 1, 0);
+                }
+                d3_RelightObject(model);
+                v.x = model->rotation.x;
+                v.y = model->rotation.y;
+                v.z = model->rotation.z;
+                v.y += 3.14159274f;
+                d3_MatFromAngles((D3VECTOR4 *)&v, &mat);
+            }
+            if (dm_L.lup != 0 && ok) {
+                type = (AIBTYPE *)ai_BTypes + kind;
+                i = gm_BuildingKindCost((int)ai_Chars[ai_PlayerId], kind);
+                txt_Format(text, 0x17ef, i, kind * 14 + 0x48e, type->v243);
+                if (sv_MessageBox(text, 1) != 0) {
+                    sv_PopRequest = 1;
+                    result = cur;
+                } else {
+                    sv_PopRequest = 1;
+                    result = 0;
+                }
+            }
+        } while (sv_RunFrame((int)lc_GebaeudeAusrichten, 0x657c7) != 0);
+        if (result == 0) {
+            d3if_Delete(model);
+            out[0] = ch_EmptyName[0];
+            model = 0;
+        } else {
+            strcpy(out, names[idx]);
         }
+        i = 0;
+        do {
+            if (flags[i] != 0)
+                d3if_Delete((D3OBJECT *)flags[i]);
+            i++;
+        } while (i < count);
+        if (model != 0)
+            d3if_Delete(model);
+        return result;
     }
     sv_MessageBox(txt_Ptrs[0x17f0], 0);
     return 0;
