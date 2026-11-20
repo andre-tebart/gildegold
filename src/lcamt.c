@@ -8267,27 +8267,28 @@ int amt_SendOfficeMessage(unsigned char a, char *b, char *c, int d, unsigned cha
       names the skill 0x16b7 + it).
    5: the poorest of the first 8 players (kinds 5 .. 7) gets 3 .. 7 % of his worth for a building found by
       ai_PickActionBuilding (the kinds 0x1b07d43b4; the text 0x1dff).
-   @deep s48: kept (133 -> 77 ins): bld one function-scope local shared by the cases 0 / 2 / 5 and out one
-   shared by 0 / 2 (case 5 keeps its own block-local out): c2frame then packs the case locals into the
-   original's slots (0x10 n / worth0 / id3 / id4 / the case-5 fild temp, 0x14 the case-0 fild temp / v /
-   flags3 / flags4 / worth5, 0x18 bld, 0x1c out, 0x20 case-5 out, 0x24 kind / chars, 0x44 office); slots 6
-   left. Left: the scratch rotation: the original starts the cases 1 and 3 at eax (lea eax text / lea eax
-   &id) where ours continues the previous case's rotation (ecx / edx), and case 5's chars loop / GetWorth
-   push are two steps off; case 2 and 4 agree. flip.py: case 1 flips only by deleting case 0's tail or
-   swapping its two last calls (meaning); case 3 flips by deleting / duplicating case 2 statements and case
-   4 ones (m436 del gain = util_Random, m510 del cm_AddFieldValues) - so the rotation is not simply
-   sequential in source order. No lever: the tail written in each case (not cross-jumped, 121+), a switch
-   (jump table), kinds as __int64 / QuadPart / literal / function scope, worth function scope, the
-   &ai_PlayerSlots argument spellings, climb 2 rounds. Also left: case 4's skill loop exit test (the
-   original dec ecx; test ecx,ecx), and the common tail's xor eax,eax placement (strcat inline). prior:
-   s47: read the diff again. Two independent things are left. (1) The frame packing (frame > 0x80: count *
-   1000 / size order) puts the case locals into other slots of the shared dead-parameter area: case 0 bld
-   at +0x14 / the rand fild temp at +0x30 where the original has +0x18 / +0x2c, case 1 v at +0x10 against
-   +0x14, case 2 out at +0x10 against +0x1c (dcp frame: the original packs me / worth / v / out / flags and
-   which / bld / n across arg+0..0xc in another order); c2frame --names would give the counts each needs.
-   (2) From case 1 on, the scratch registers are one step behind (ours lea ecx / edx for the first
-   txt_Format / sprintf arguments, the original eax / ecx), so one temporary more is handed out in ours
-   before case 1 (case 0's tail or the 0x1df7 title). No variant round this session. */
+   @deep s48: kept (133 -> 76 ins / 72 bytes): bld one function-scope local shared by the cases 0 / 2 / 5
+   and out one shared by 0 / 2 (case 5 keeps its own block-local out): c2frame then packs the case locals
+   into the original's slots (0x10 n / worth0 / id3 / id4 / the case-5 fild temp, 0x14 the case-0 fild temp
+   / v / flags3 / flags4 / worth5, 0x18 bld, 0x1c out, 0x20 case-5 out, 0x24 kind / chars, 0x44 office);
+   case 4's skill search as j = 5; while (j != 0) { if (..) { skill = i; break; } j--; i = (i + 1) % 5; }
+   (the original's dec ecx; test ecx,ecx). Left: the scratch rotation: the original starts the cases 1 and
+   3 at eax (lea eax text / lea eax &id) where ours continues the previous case's rotation (ecx / edx), and
+   case 5's two GetWorth id pushes are one step off; cases 2 and 4 agree. flip.py: case 1 flips only by
+   deleting case 0's tail or swapping its two last calls (meaning); case 3 flips by deleting / duplicating
+   case 2 statements or case 4 ones (del gain = util_Random, del cm_AddFieldValues) - the rotation is not
+   simply sequential in source order. Also left: the common tail's xor eax,eax (strcat inline) is the join
+   label's first instruction in the original. No lever: the tail written in each case (not cross-jumped,
+   121+), a switch (jump table), kinds as __int64 / QuadPart / literal / function scope, worth function
+   scope, the &ai_PlayerSlots argument spellings, climb 2 rounds. prior: s47: read the diff again. Two
+   independent things are left. (1) The frame packing (frame > 0x80: count * 1000 / size order) puts the
+   case locals into other slots of the shared dead-parameter area: case 0 bld at +0x14 / the rand fild temp
+   at +0x30 where the original has +0x18 / +0x2c, case 1 v at +0x10 against +0x14, case 2 out at +0x10
+   against +0x1c (dcp frame: the original packs me / worth / v / out / flags and which / bld / n across
+   arg+0..0xc in another order); c2frame --names would give the counts each needs. (2) From case 1 on, the
+   scratch registers are one step behind (ours lea ecx / edx for the first txt_Format / sprintf arguments,
+   the original eax / ecx), so one temporary more is handed out in ours before case 1 (case 0's tail or the
+   0x1df7 title). No variant round this session. */
 
 void ai_Miracle(AICHARREC *me, int which)
 {
@@ -8393,11 +8394,13 @@ void ai_Miracle(AICHARREC *me, int which)
         c = &((AICHARREC *)ai_Chars)[(unsigned short)id];
         skill = -1;
         i = util_RandomU(5);
-        for (j = 5; j != 0; j--) {
+        j = 5;
+        while (j != 0) {
             if (c->skills[i] < 0xe7) {
                 skill = i;
                 break;
             }
+            j--;
             i = (i + 1) % 5;
         }
         if (skill == -1)
