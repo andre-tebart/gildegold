@@ -4374,6 +4374,10 @@ Store order in a fill, hoisted loads and sunk stores, statement order effects, `
   (`col = ev->groups[ev->stage]; n = amt_GetColumnOffices(col, 6, offices);`): the local's register does not
   advance the rotation the way the inline load did. flip only named meaning-changing statements of an earlier
   block (a swapped store there rotated everything behind it, the call's registers too) (he_RunSixGroupEvent byte).
+  Same lever for an out-of-line return block one step off (an `ev->end = ai_Time` copy inside a loop, ours
+  edx / ecx where the original has ecx / eax): the stage head's query argument as a local, `id = x->target; b =
+  gm_BuildQuery(1, 1, id);` (he_RunRobbery 18 -> byte). flip.py --want must be anchored to the block (the code
+  before it, e.g. the previous return's stage store and `ret`): an unanchored pattern hits the twin copies.
 - **A count kept in ebx with a stack home (frame 4 larger, `mov [esp+X],ebx` after its inits, reloaded after an
   inner loop that borrows ebx) where ours borrows ebp and reloads the event pointer from its argument**: the
   event pointer must outrank the count by a few points: the statement after an `if (n != 0) { .. }` written in

@@ -18937,27 +18937,7 @@ typedef struct HEROBBERY {                 /* the robbery event 0x75's words ove
    player and, with a home store (0x116), each goods of the target's stall (0x2a), by half a chance, n * 0.1 of its
    amount (at least 1, n the gang's size) sold into the store and counted at its price (no store: the loot is lost);
    the player gets the loot list (0x1a85), the owner 0x1a86; a failed robbery tells the player 0x19e7 and the owner
-   0x19e9; freed. Stages -2 / -1 send the gang home ("Raubzug") and free the record
-   @deep s49: fixed the field 0x69 delta: the original passes &money (lea of money's slot, the one fiadd'ed
-   in the goods loop), not &store; money is a block local of the theft block. d is a block local of case
-   2's if (b != 0) block (frame 0x7fc -> 0x7f4); he_DetectAttack takes an int (d.found now held across
-   gv_Accuse as in the original). Store now sits at the original's 0x14. Left (130 ins): ours keeps the
-   constant 0 in ebp from the top (a const#0 split piece, pass 17, prio -1 sav 1, lines from the top to
-   case 4: cmp reg,ebp / push ebp) where the original only stores store = 0 / n = 0 from ebp at the top and
-   then has test reg,reg / push 0. flip --want 'push 0 push 10': only n's or store's top init moved it (n =
-   0 inside case 5: the zero piece goes, 115 ins, but the original stores n = 0 at the top). Tried =
-   control: case 4 else-if, case 3's || split, every break as free + return, default first,
-   return-as-break; climb 3 rounds: 134 best (a renaming local, not kept). Next: the zero piece's savings
-   (c2trace --prio const#0 for the pass-17 piece), money's slot (ours 0x24, the original 0x1c), case 1's
-   ai_Time copy one scratch step off. prior: size queue s20: frame 0x800 -> 0x7f4 (the original's), 214 ->
-   180 ins: reward is a local of case 4's if (b != 0) block and vals one of case 5's loot block (escaped
-   function-scope locals conflict with every slot; block locals share: reward with master, vals with room /
-   stall as the original packs them); stall in the block = this code. Raw size unchanged (3514 vs 3523: the
-   gap is the zero in ebp, push ebp / cmp reg,ebp where the original has push 0 / test reg,reg, 1 byte
-   each). Left: ours keeps the entry zero (n = 0, store = 0 at the top, both stored from ebp in the
-   original too) in ebp through the switch: n, known 0, replaces literal zeros (equality propagation) until
-   case 5's n++; the original spills n to [esp+0x30] and reuses ebp (room in case -1, the counter in case 0
-   / 2). */
+   0x19e9; freed. Stages -2 / -1 send the gang home ("Raubzug") and free the record */
 void he_RunRobbery(AIJOB *ev)
 {
     HEROBBERY *x = (HEROBBERY *)ev;
@@ -18973,7 +18953,7 @@ void he_RunRobbery(AIJOB *ev)
     char names[3][64] = { "gestik/mit_faust_droh", "gestikg/herranwinken", "spezial/meckern" };
     char text[0x200];
     char line[0x100];
-    int k, ok, amt;
+    int k, ok, amt, id;
 
     switch (ev->stage) {
     case 0:
@@ -18992,7 +18972,8 @@ void he_RunRobbery(AIJOB *ev)
         ev->stage = 1;
         return;
     case 1:
-        b = (AIBLD *)gm_BuildQuery(1, 1, x->target);
+        id = x->target;
+        b = (AIBLD *)gm_BuildQuery(1, 1, id);
         for (k = 0; k < 8; k++) {
             if (ev->ids[k] != -1 && (c = (AICHAR *)gm_FindChar(ev->ids[k])) != 0 && c->model != 0
                 && sv_IsAtDoor(c, b) == 0) {
