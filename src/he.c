@@ -17487,28 +17487,30 @@ void he_AllocAmbush(AIJOB *ev)
    @deep s51: fixed stage 3's end clock (gm_AddTime(&end, 0, 0, 1): the original pushes 1, 0, 0) and laid
    the level bands out as the original (if (level == 0 && ..) nearby = 1; else if (level == 1) { if (..)
    nearby = 1; } .. else if (level == 5 && value > 700) nearby = 1;); 159 -> 146 ins, size 2155 vs 2162.
-   Facts read from the original: frame slots (> 0x80, density order) n +0x10, owner and stage 0's
-   down-count +0x14, o and stage -1's count +0x18, scene +0x1c, cartObj +0x20, busy +0x2c; b in ebx through
-   the party block; o and n memory there (the strstr test of o stays: o is no register there, so the test
-   is not threaded away; the second ai_ArmGateGuards pushes literal 1: n == 1 not in a register); raid100
-   is if / else with two stores (ours ternary: 5 bytes of the size gap). Levers measured (dcp try rows):
-   raid100 if / else 146 -> 239 alone (rotates the rest); with it, climb move / swap: owner = -1 moved
-   below d3_PointToWorld 117 (not the original's store position, but owner's live range decides the slots),
-   + owner = .. before ambushed 115, + a probe read of n before the party memset 111; a probe extra
-   reference of b after raidHome gives b ebx (122); o address-taken probe 118 (o must lose its register:
-   o#3 takes ebx before b#1 in the bulk split). = control: continue forms of the transport loop (all 7
-   nestings), b as a block-local home, raidHome after memcpy, o->name tests, nested / negated band tests
-   (each band's sense: ours jl take / jmp nb, the original jge nb / jmp take). flip (want cmp [n],1 in the
-   arm loop): only a duplicated cm_SendChrGotoBuilding in stage 0 (the region split of the whole function
-   decides n#4). Left: the region split (n#4 edi, o#3 ebx), stage 1's transport-loop scratch rotation (ecx
-   vs eax at the d3_VecEqual argument), the take block's store order, stage 3's arm hoisting (ours hoists
-   the ai_Time load: the arms' registers differ in the original). prior: size queue s19 (raw 2172, padded
-   2176 vs 2192): the ai_ArmGateGuards prototype is in reach now (cm.h, unsigned char kind): ours pushes
-   eax as the original, the movsx of the older note is gone. Read at the arm loop: the original keeps n in
-   a slot ([esp+0x10]: cmp [esp+0x10],1 and push 1), ours n in edi, so VC6's equality propagation turns the
-   second call's literal 1 into push edi inside the n == 1 arm; the lever is what keeps n memory-homed in
-   the original (as gm_CreateObject's last). No lever: the stage 1 cart count as its own local (cnt, either
-   declaration order) = control. */
+   Read from the original: slots (frame > 0x80, density order) n +0x10, owner and stage 0's down-count
+   +0x14, o and stage -1's count +0x18, scene +0x1c, cartObj +0x20, busy +0x2c; b in ebx through the party
+   block, o and n memory there (so the strstr test of o is not threaded away and the second
+   ai_ArmGateGuards pushes literal 1); raid100 is if / else with two stores (ours a ternary: 5 bytes of the
+   size gap). Mechanism (c2trace --split): the post-loop block opens its own region (r5) in pass 4's bulk
+   split, so o#3 (outer test + strstr) takes ebx before b#1 (prio -3: b lives unreferenced through the 16 /
+   raid100 / arm loops) and n#4 takes edi in the arm loop. Measured: raid100 if / else alone 146 -> 239
+   (rotates the rest); with it climb move / swap: owner = -1 below d3_PointToWorld 117 (not the original's
+   store place), + owner before ambushed 115, + a probe read of n before memset 111; probe extra b
+   reference after raidHome 122; o address-taken probe 118. flip want b in ebx: 40 hits, all meaning
+   changes (deleting stores, duplicating raidHome, the chance block reordered); flip want cmp [n],1: only a
+   duplicated cm_SendChrGotoBuilding in stage 0. = control: continue / nested forms of the transport loop
+   (7 masks), n >= 3 as a break, b as a block-local or tested by if (b != 0) {..} break, case 1 / opts
+   block-scoped locals, the chance block as if / else / != 0, the band tests nested / negated / ternary /
+   goto take (the band sense jl take vs the original's jge nb / jmp take is the block-order pass's choice),
+   stage 0's loop as continue / nested, raidHome after memcpy, o->name tests. Left: the region split (b / o
+   / n), the transport loop's scratch rotation (d3_VecEqual argument ecx vs eax), the take block's stores
+   before the gm_Query argument loads, stage 3's common ai_Time load hoisted above its test. prior: size
+   queue s19 (raw 2172, padded 2176 vs 2192): the ai_ArmGateGuards prototype is in reach now (cm.h,
+   unsigned char kind): ours pushes eax as the original, the movsx of the older note is gone. Read at the
+   arm loop: the original keeps n in a slot ([esp+0x10]: cmp [esp+0x10],1 and push 1), ours n in edi, so
+   VC6's equality propagation turns the second call's literal 1 into push edi inside the n == 1 arm; the
+   lever is what keeps n memory-homed in the original (as gm_CreateObject's last). No lever: the stage 1
+   cart count as its own local (cnt, either declaration order) = control. */
 void he_RunAmbush(AIJOB *ev)
 {
     HEAMBUSH *x = (HEAMBUSH *)ev;
