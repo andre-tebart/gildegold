@@ -18963,7 +18963,7 @@ void he_RunRobbery(AIJOB *ev)
     HEROBBERY *x = (HEROBBERY *)ev;
     AIBLD *b, *g, *gb;
     AICHAR *c, *owner, *master, *guard;
-    AIOBJ *room, *stall, *store = 0, *it;
+    AIOBJ *room = 0, *stall, *store = 0, *it;
     HEWATCH *w;
     AIJOB *patrol;
     HEFINVIEW *fin;
