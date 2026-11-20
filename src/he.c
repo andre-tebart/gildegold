@@ -16953,26 +16953,24 @@ void he_AllocBurglary(AIJOB *ev)
    counted at its price; the loot list goes to the master (0x19e6, "_NACHRICHTEN_HS_74") and the owner is told 0x19e8
    ("_NACHRICHTEN_HS_27"); a failed one tells the master 0x19e7 ("_NACHRICHTEN_HS_75") and the owner 0x19e9. The spy
    report moves out of the guild and the record is freed. Stages -2 / -1 send the gang back to the guild and free it
-   @deep size queue s20 (twin of he_RunRobbery): 348 -> 108 ins, frame 0x740 -> 0x738 (the original's): the
-   reward / spy report union (one word for both) was the stand-in for VC6's slot packing; plain locals do
-   it: reward a local of case 4's if (b != 0) block (escaped by &reward, so only a block local shares a
-   slot), report = 0 at function scope, vals a local of the loot block (R alone: 106 ins, frame 0x740).
-   Left: slots 134, code 22, order 10. prior: Reconstructed whole against 0x561a20..0x5628dc (the false
-   start 0x561c20 taken in): every stage of the switch (0 send the gang 'Einbruch', 1 wait at the door, 2
-   he_DetectAttack range 5000 / gv_Accuse 0x17, 3 cm_GetSlotState / cm_SendProofExecuted, 4 reward
-   gm_PlayerFactor(550 + rand 200) news 0x19ea / 0x19eb, field 0x65, health -100 - rand 100, back
-   'Entdeckt', 5 the theft roll from the 0xca spy report and skill 7, gm_BuildingValues money with the
-   skill 1 bonus, the stall goods sold into the 0x116 store, the news 0x19e6 .. 0x19e9, cm_SendMoveObject;
-   -2 / -1 back to the guild), every call with its arguments, every constant and string; 1214 vs 1214
-   instructions, switch tables equal, no ref / literal difference. Tried: the know clamp as two statements
-   with 0.001f > know (matched), money = money < 0 ? 0 : money (the setl form, matched), the reward / spy
-   report word as one union (the original's single [esp+0x1c] slot with one zero init), a patrol local for
-   d.found. Left: allocation: the original keeps 0 in ebx, room in edi and master in ebp (and [esp+0x2c])
-   from the prologue, ours keeps 0 in ebx/edi with room in a slot (code hunk at +0x1b: the zero-init stores
-   [esp+0x34]/[0x2c]/[0x30]/[0x1c] vs ours [0x28]/[0x10]/[0x2c]/[0x20]/[0x30]); the original holds d.found
-   in edi across gv_Accuse (+0x26b, ours reloads it from d after the call); test reg,reg vs cmp reg,ebx(0)
-   in stage 3 (+0x364, +0x3b3); frame 0x740 vs 0x738 (two more slots of ours); 5 branch targets: stage 3's
-   'stage = -1; return' tail merged with stage 0's copy in ours, with stage 4's in the original */
+   @deep s48: fixed the watch range (5000.0f, the original's 0x459c4000; ours had 2500.0f). Stage 2's code
+   (the original loads d.found into edi before gv_Accuse and keeps it across the call) needs d escaped
+   beyond he_DetectAttack: with the callee unknown (dcp try: an extern he_DetectAttackX prototype) or a
+   store of d into a static in he_DetectAttack (unitprobe), stage 2 matches; then d must be a block local
+   of case 2's if (b != 0) block (else d and vals stop sharing a slot: frame 0x740): 104 -> 90 ins, left
+   slots 134 / order 6 only. bprobe he 0x561a20: a unit boundary there changes he_RunBurglary and
+   he_RunRobbery only (the twin has the same stage 2 hunk); dcp unit split he 0x561a20 --dry-run moves 36
+   functions (0x561a20 .. he_RegisterEventTypes02), no data. Not split yet: the callers above (he_RunBrawl
+   ..) read d.found after the call and need no knowledge, so the boundary is not proven by them; check the
+   .rdata literal runs for a TU break near 0x561a20 (dcp-layout) before splitting. Left with the unknown
+   callee: the slot table: ours (c2frame --names) amt-group 0x10, know/ok/stall 0x14, owner 0x18, money
+   0x1c, report/reward/room 0x20, b 0x24, master 0x28; the original has know at 0x10, the report group at
+   0x1c, master at 0x2c, the amt group at 0x20: the amt group (weight 19 with six float temps) ranks lower
+   in the original. prior: size queue s20 (twin of he_RunRobbery): 348 -> 108 ins, frame 0x740 -> 0x738
+   (the original's): the reward / spy report union (one word for both) was the stand-in for VC6's slot
+   packing; plain locals do it: reward a local of case 4's if (b != 0) block (escaped by &reward, so only a
+   block local shares a slot), report = 0 at function scope, vals a local of the loot block (R alone: 106
+   ins, frame 0x740). Left: slots 134, code 22, order 10. */
 void he_RunBurglary(AIJOB *ev)
 {
     HEBURGLARY *x = (HEBURGLARY *)ev;
