@@ -3720,7 +3720,7 @@ exe	0x00558a40	he_RunStudy	he	byte	readable
 exe	0x00558de0	he_AllocEvent17	he	byte	readable		
 exe	0x00558e10	he_RunEvent17	he	byte	readable		
 exe	0x00558e70	he_AllocSabotage	he	byte	readable		
-exe	0x00558f10	he_RunSabotage	he	draft	readable	deep	
+exe	0x00558f10	he_RunSabotage	he	byte	readable		
 exe	0x00559d20	he_AllocSpying	he	byte	readable		
 exe	0x0055a030	he_RunSpying	he	byte	readable		
 exe	0x0055a5f0	he_AllocBrawl	he	byte	readable		
