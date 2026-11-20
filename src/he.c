@@ -10146,44 +10146,43 @@ void he_StepWalk(HEWALKSLOT *s)
     }
     gm_FindById((int *)&b, 0, 0, s->target);
     held = 0;
-    if (b == 0)
-        goto next;
-    weather = (d3t_Rain != 0 ? 2 : 0) + (d3t_Snow != 0);
-    budget = weather + (unsigned short)util_Random(6) + 2;
-    if (sv_IsAtDoor((char *)c, (char *)b) == 0)
-        return;
-    model = c->model;
-    if (model != 0 && model->bldId != -1 && model->scriptGroup != -1) {
-        hour = s->holdHour;
-        s->state |= 0x40;
-        held = 1;
-        if (hour == 0xff) {
-            s->holdHour = (char)ai_Time.hour;
-            cm_SendSetField(c->netId, 0x1c8, 4, 0, 0x1000);
+    if (b != 0) {
+        weather = (d3t_Rain != 0 ? 2 : 0) + (d3t_Snow != 0);
+        budget = weather + (unsigned short)util_Random(6) + 2;
+        if (sv_IsAtDoor((char *)c, (char *)b) == 0)
+            return;
+        model = c->model;
+        if (model != 0 && model->bldId != -1 && model->scriptGroup != -1) {
+            hour = s->holdHour;
+            s->state |= 0x40;
+            held = 1;
+            if (hour == 0xff) {
+                s->holdHour = (char)ai_Time.hour;
+                cm_SendSetField(c->netId, 0x1c8, 4, 0, 0x1000);
+                return;
+            }
+            if (ai_Time.hour <= hour + 1)
+                return;
+            s->state &= ~0x40;
+            cm_SendSetField(c->netId, 0x1c8, 4, 0x1000, 0);
+            cm_SendCharHalt(c->netId);
+            s->holdHour = 0xff;
+        }
+        stage = s->stage;
+        if (10 - stage < budget) {
+            s->state |= 4;
             return;
         }
-        if (ai_Time.hour <= hour + 1)
-            return;
-        s->state &= ~0x40;
-        cm_SendSetField(c->netId, 0x1c8, 4, 0x1000, 0);
-        cm_SendCharHalt(c->netId);
-        s->holdHour = 0xff;
-    }
-    stage = s->stage;
-    if (10 - stage < budget) {
-        s->state |= 4;
-        return;
-    }
-    if ((s->state & 0x10) == 0) {
-        budget = budget / 2 + 1;
-        if ((stage + 2) % budget == 0 && held == 0) {
-            s->stage = (unsigned char)(stage + 1);
-            he_PlayGestures(c);
-            s->state |= 0x10;
-            return;
+        if ((s->state & 0x10) == 0) {
+            budget = budget / 2 + 1;
+            if ((stage + 2) % budget == 0 && held == 0) {
+                s->stage = (unsigned char)(stage + 1);
+                he_PlayGestures(c);
+                s->state |= 0x10;
+                return;
+            }
         }
     }
-next:
     s->state &= ~0x10;
     cm_SendChrStop(c->netId);
     if (util_RandomF() > 0.5f) {
